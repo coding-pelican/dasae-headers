@@ -94,6 +94,8 @@ fn_((HashMap_Ensured_valMut(HashMap_Ensured self, TypeInfo val_ty))(u_P$raw)) {
 fn_((HashMap_Ensured_foundExisting(
     HashMap_Ensured self, TypeInfo key_ty, TypeInfo val_ty
 ))(O$HashMap_Entry)) {
+    let_ignore = key_ty;
+    let_ignore = val_ty;
     return expr_(O$HashMap_Entry $scope)(if (self.found_existing) {
         $break_(some({ .key = self.key, .val = self.val, debug_only(.key_ty = key_ty, .val_ty = val_ty) }));
     }) expr_(else)({
@@ -104,6 +106,8 @@ fn_((HashMap_Ensured_foundExisting(
 fn_((HashMap_Ensured_foundExistingMut(
     HashMap_Ensured self, TypeInfo key_ty, TypeInfo val_ty
 ))(O$HashMap_EntryMut)) {
+    let_ignore = key_ty;
+    let_ignore = val_ty;
     return expr_(O$HashMap_EntryMut $scope)(if (self.found_existing) {
         $break_(some({ .key = self.key, .val = self.val, debug_only(.key_ty = key_ty, .val_ty = val_ty) }));
     }) expr_(else)({
@@ -417,6 +421,8 @@ $static fn_((HashMap__growIfNeeded(HashMap* self, TypeInfo key_ty, TypeInfo val_
 fn_((HashMap_empty(
     TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx
 ))(HashMap)) {
+    let_ignore = key_ty;
+    let_ignore = val_ty;
     claim_assert_nonnull(ctx);
     return (HashMap){
         .metadata = none(),
@@ -565,6 +571,7 @@ fn_((HashMap_ptrMutBy(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P$raw) $s
 fn_((HashMap_for(HashMap self, TypeInfo val_ty, u_V$raw key, u_V$raw ret_key))(O$u_V$raw) $scope) {
     debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
     debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eq);
+    let_ignore = val_ty;
     if_some((HashMap__idx(self, key))(idx)) {
         return_some({ .inner = u_memcpy(ret_key.ref, HashMap__keyAt(self, ret_key.type, idx).as_const).raw });
     }
@@ -574,6 +581,7 @@ fn_((HashMap_for(HashMap self, TypeInfo val_ty, u_V$raw key, u_V$raw ret_key))(O
 fn_((HashMap_ptrFor(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P_const$raw) $scope) {
     debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
     debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eq);
+    let_ignore = val_ty;
     if_some((HashMap__idx(self, key))(idx)) {
         return_some(HashMap__keyAt(self, key.type, idx).as_const);
     }
@@ -583,6 +591,7 @@ fn_((HashMap_ptrFor(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P_const$raw
 fn_((HashMap_ptrMutFor(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P$raw) $scope) {
     debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
     debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eq);
+    let_ignore = val_ty;
     if_some((HashMap__idx(self, key))(idx)) {
         return_some(HashMap__keyAt(self, key.type, idx));
     }
@@ -614,6 +623,7 @@ fn_((HashMap_entryMut(HashMap self, TypeInfo val_ty, u_V$raw key))(O$HashMap_Ent
 fn_((HashMap_contains(HashMap self, TypeInfo val_ty, u_V$raw key))(bool)) {
     debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eq);
     debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eq);
+    let_ignore = val_ty;
     return isSome(HashMap__idx(self, key));
 };
 
@@ -792,6 +802,7 @@ fn_((HashMap_remove(HashMap* self, TypeInfo val_ty, u_V$raw key))(bool)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eq);
     debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eq);
+    let_ignore = val_ty;
     if_some((HashMap__idx(*self, key))(idx)) {
         HashMap_Ctrl_remove(HashMap__metadataAt(*self, idx));
         self->size--;
@@ -830,6 +841,7 @@ fn_((HashMap_removeByPtr(HashMap* self, TypeInfo val_ty, u_P$raw key_ptr))(void)
     claim_assert_nonnull(key_ptr.raw);
     debug_assert_eqBy(self->key_ty, key_ptr.type, TypeInfo_eq);
     debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eq);
+    let_ignore = val_ty;
 
     let idx = expr_(u32 $scope)(if (key_ptr.type.size > 0) {
         $break_((intFromPtr(key_ptr.raw) - intFromPtr(HashMap__keys(*self, key_ptr.type).raw)) / key_ptr.type.size);
@@ -924,6 +936,8 @@ fn_((HashMap_iter(const HashMap* self, TypeInfo key_ty, TypeInfo val_ty))(HashMa
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
     debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eq);
+    let_ignore = key_ty;
+    let_ignore = val_ty;
     return (HashMap_Iter){
         .map = self,
         .idx = 0,
@@ -982,21 +996,21 @@ fn_((HashMap_Iter_nextMut(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))
 fn_((HashMap_keyIter(HashMap self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_KeyIter) $scope) {
     debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
     debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eq);
+    let_ignore = val_ty;
     return_(expr_(HashMap_KeyIter $scope)(
         if_some((self.metadata)(metadata)) {
-            $break_((HashMap_KeyIter){
-                .len = HashMap_cap(self),
-                .metadata = metadata,
-                .keys = HashMap__keys(self, key_ty).raw,
+        $break_((HashMap_KeyIter){
+            .len = HashMap_cap(self),
+            .metadata = metadata,
+            .keys = HashMap__keys(self, key_ty).raw,
                 debug_only(.key_ty = key_ty) });
-        } else_none {
-            $break_((HashMap_KeyIter){
-                .len = 0,
-                .metadata = null,
-                .keys = null,
+    } else_none {
+        $break_((HashMap_KeyIter){
+            .len = 0,
+            .metadata = null,
+            .keys = null,
                 debug_only(.key_ty = key_ty) });
-        }
-    ) $unscoped_(expr));
+    }) $unscoped_(expr));
 } $unscoped_(fn);
 
 fn_((HashMap_KeyIter_next(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P_const$raw) $scope) {
@@ -1034,21 +1048,21 @@ fn_((HashMap_KeyIter_nextMut(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P$raw)
 fn_((HashMap_valIter(HashMap self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_ValIter) $scope) {
     debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
     debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eq);
+    let_ignore = key_ty;
     return_(expr_(HashMap_ValIter $scope)(
         if_some((self.metadata)(metadata)) {
-            $break_((HashMap_ValIter){
-                .len = HashMap_cap(self),
-                .metadata = metadata,
-                .vals = HashMap__vals(self, val_ty).raw,
+        $break_((HashMap_ValIter){
+            .len = HashMap_cap(self),
+            .metadata = metadata,
+            .vals = HashMap__vals(self, val_ty).raw,
                 debug_only(.val_ty = val_ty) });
-        } else_none {
-            $break_((HashMap_ValIter){
-                .len = 0,
-                .metadata = null,
-                .vals = null,
+    } else_none {
+        $break_((HashMap_ValIter){
+            .len = 0,
+            .metadata = null,
+            .vals = null,
                 debug_only(.val_ty = val_ty) });
-        }
-    ) $unscoped_(expr));
+    }) $unscoped_(expr));
 } $unscoped_(fn);
 
 fn_((HashMap_ValIter_next(HashMap_ValIter* self, TypeInfo val_ty))(O$u_P_const$raw) $scope) {

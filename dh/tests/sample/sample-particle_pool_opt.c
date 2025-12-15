@@ -1,6 +1,7 @@
 #include "dh/prl.h"
-#include "dh/Thrd.h"
+#include "dh/meta.h"
 #include "dh/atom.h"
+#include "dh/Thrd.h"
 
 #include "dh/io/stream.h"
 #include "dh/time/Instant.h"
@@ -94,6 +95,9 @@ typedef struct mp_ThrdPool_Stats {
     atom_V$$(f64) total_sync_time;
     atom_V$$(usize) task_count;
     atom_V$$(usize) wait_count;
+    atom_V$$(usize) loop_iterations;
+    atom_V$$(usize) cond_wait_count;
+    atom_V$$(usize) empty_wakeups;
 } mp_ThrdPool_Stats;
 
 $static mp_ThrdPool_Stats mp__worker_stats[mp_max_thrd_count];
@@ -107,6 +111,9 @@ $static fn_((mp_ThrdPool_enableStats(void))(void)) {
         atom_V_store(&mp__worker_stats[i].total_sync_time, 0.0, atom_MemOrd_monotonic);
         atom_V_store(&mp__worker_stats[i].task_count, 0ull, atom_MemOrd_monotonic);
         atom_V_store(&mp__worker_stats[i].wait_count, 0ull, atom_MemOrd_monotonic);
+        atom_V_store(&mp__worker_stats[i].loop_iterations, 0ull, atom_MemOrd_monotonic);
+        atom_V_store(&mp__worker_stats[i].cond_wait_count, 0ull, atom_MemOrd_monotonic);
+        atom_V_store(&mp__worker_stats[i].empty_wakeups, 0ull, atom_MemOrd_monotonic);
     });
 }
 
@@ -123,13 +130,16 @@ $static fn_((mp_ThrdPool_printStats(mp_ThrdPool* pool))(void)) {
         let idle = atom_V_load(&mp__worker_stats[i].total_idle_time, atom_MemOrd_monotonic);
         let sync = atom_V_load(&mp__worker_stats[i].total_sync_time, atom_MemOrd_monotonic);
         let tasks = atom_V_load(&mp__worker_stats[i].task_count, atom_MemOrd_monotonic);
+        let loops = atom_V_load(&mp__worker_stats[i].loop_iterations, atom_MemOrd_monotonic);
+        let waits = atom_V_load(&mp__worker_stats[i].cond_wait_count, atom_MemOrd_monotonic);
+        let empty = atom_V_load(&mp__worker_stats[i].empty_wakeups, atom_MemOrd_monotonic);
 
         let total = work + idle + sync;
         let efficiency = (total > 0.0) ? (work / total * 100.0) : 0.0;
 
         io_stream_println(
-            u8_l("Worker {:uz}: {:.1fl}% eff | Work: {:.2fl}s | Idle: {:.2fl}s | Sync: {:.2fl}s | Tasks: {:uz}"),
-            i, efficiency, work, idle, sync, tasks
+            u8_l("Worker {:uz}: {:.1fl}% eff | Tasks: {:uz} | Loops: {:uz} | Waits: {:uz} | Empty: {:uz}"),
+            i, efficiency, tasks, loops, waits, empty
         );
 
         total_work += work;
@@ -154,9 +164,11 @@ $static fn_((mp_ThrdPool_printStats(mp_ThrdPool* pool))(void)) {
 $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, Void), ($ignore, args)$scope) {
     let pool = args->pool;
     let worker_id = args->worker_id;
-    let stats_enabled = atom_V_load(&mp__stats_enabled, atom_MemOrd_acquire);
 
     while (atom_V_load(&pool->running, atom_MemOrd_acquire)) {
+        // Track loop iterations
+        atom_V_fetchAdd(&mp__worker_stats[worker_id].loop_iterations, 1, atom_MemOrd_monotonic);
+
         let idle_start = time_Instant_now();
 
         O$$(P$mp_ThrdPool_Task) maybe_task = none();
@@ -165,6 +177,7 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, V
         with_fini_(Thrd_Mtx_lock(&pool->mutex), Thrd_Mtx_unlock(&pool->mutex)) {
             while (atom_V_load(&pool->count, atom_MemOrd_acquire) == 0
                    && atom_V_load(&pool->running, atom_MemOrd_acquire)) {
+                atom_V_fetchAdd(&mp__worker_stats[worker_id].cond_wait_count, 1, atom_MemOrd_monotonic);
                 Thrd_Cond_wait(&pool->cond_has_task, &pool->mutex);
             }
 
@@ -174,6 +187,9 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, V
                 atom_V_store(&pool->tail, tail + 1, atom_MemOrd_monotonic);
                 atom_V_fetchSub(&pool->count, 1, atom_MemOrd_monotonic);
                 atom_V_fetchAdd(&pool->active_tasks, 1, atom_MemOrd_monotonic);
+            } else {
+                // Woke up but no task available
+                atom_V_fetchAdd(&mp__worker_stats[worker_id].empty_wakeups, 1, atom_MemOrd_monotonic);
             }
         }
         let sync_end = time_Instant_now();
@@ -183,6 +199,7 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, V
             task->workerFn(task->range, task->params);
             let work_end = time_Instant_now();
 
+            let stats_enabled = atom_V_load(&mp__stats_enabled, atom_MemOrd_acquire);
             if (stats_enabled) {
                 let idle_time = time_Duration_asSecs$f64(time_Instant_durationSince(sync_start, idle_start));
                 let sync_time = time_Duration_asSecs$f64(time_Instant_durationSince(sync_end, sync_start));
@@ -207,15 +224,17 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, V
 
 // ThreadPool 초기화 수정 (worker_id 전달)
 $attr($must_check)
-$static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
+$static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $guard) {
     let_(pool, mp_ThrdPool*) = u_castP$((mp_ThrdPool*)(try_((mem_Allocator_create(gpa, typeInfo$(InnerType))))));
+    let field_types = typeInfos$(S_InnerT$(FieldType$(mp_ThrdPool, workers)), S_InnerT$(FieldType$(mp_ThrdPool, threads)));
+    let field_mem = try_(mem_Allocator_create(gpa, u_typeInfoRecordN(thrd_count, field_types)));
+    errdefer_($ignore, mem_Allocator_destroy(gpa, field_mem));
+    let fields = u_fieldSlisMut(field_mem, thrd_count, field_types, A_ref$((S$u_S$raw)((A$$(2, u_S$raw)){})));
+    let workers = u_castS$((FieldType$(mp_ThrdPool, workers))(*S_at((fields)[0])));
+    let threads = u_castS$((FieldType$(mp_ThrdPool, threads))(*S_at((fields)[1])));
     asg_lit((pool)($init((LitType){
-        $field((workers)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(
-            gpa, typeInfo$(InnerType), thrd_count
-        )))))),
-        $field((threads)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(
-            gpa, typeInfo$(InnerType), thrd_count
-        )))))),
+        $field((workers)),
+        $field((threads)),
         $field((tasks)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(
             gpa, typeInfo$(InnerType), mp_max_task_count
         )))))),
@@ -228,14 +247,14 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
         .active_tasks = atom_V_init(0ull),
         .running = atom_V_init(true),
     })));
+    claim_assert_fmt(pool->workers.len == thrd_count, "workers.len(%zu) != thrd_count(%zu)", pool->workers.len, thrd_count);
+    claim_assert_fmt(pool->threads.len == thrd_count, "threads.len(%zu) != thrd_count(%zu)", pool->threads.len, thrd_count);
     for_(($s(pool->workers), $s(pool->threads), $r(0, thrd_count))(worker, thread, i) {
         *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool, i));
-        *thread = catch_((Thrd_spawn(
-            Thrd_SpawnConfig_default, worker->as_raw
-        ))($ignore, claim_unreachable));
+        *thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw));
     });
     return_ok(pool);
-} $unscoped_(fn);
+} $unguarded_(fn);
 
 $static fn_((mp_ThrdPool_shutdown(mp_ThrdPool* self))(void)) {
     atom_V_store(&self->running, false, atom_MemOrd_release);
@@ -248,12 +267,15 @@ $static fn_((mp_ThrdPool_shutdown(mp_ThrdPool* self))(void)) {
     Thrd_Cond_fini(&self->cond_all_done);
 }
 
-$static fn_((mp_ThrdPool_fini(mp_ThrdPool* self, mem_Allocator gpa))(void)) {
-    mp_ThrdPool_shutdown(self);
-    mem_Allocator_free(gpa, u_anyS(self->workers));
-    mem_Allocator_free(gpa, u_anyS(self->threads));
-    mem_Allocator_free(gpa, u_anyS(self->tasks));
-    mem_Allocator_destroy(gpa, u_anyP(self));
+$static fn_((mp_ThrdPool_fini(mp_ThrdPool** self, mem_Allocator gpa))(void)) {
+    mp_ThrdPool_shutdown(*self);
+    mem_Allocator_free(gpa, u_anyS((*self)->tasks));
+    // Free the contiguous field memory block (workers array is at the start of the block)
+    let field_types = typeInfos$(S_InnerT$(FieldType$(mp_ThrdPool, workers)), S_InnerT$(FieldType$(mp_ThrdPool, threads)));
+    let field_mem = u_recordNPtrMut(u_anyS((*self)->workers), (*self)->workers.len, field_types, 0);
+    mem_Allocator_destroy(gpa, field_mem);
+    mem_Allocator_destroy(gpa, u_anyP(*self));
+    *self = null;
 }
 
 $attr($maybe_unused)
@@ -311,112 +333,6 @@ $static fn_((mp_parallel_for_pooled(mp_ThrdPool* pool, R range, mp_ThrdPool_Task
     mp_ThrdPool_waitAll(pool);
 }
 
-// ============================================
-// Lock-Free Barrier 구현
-// ============================================
-
-typedef struct SpinBarrier {
-    atom_V$$(usize) counter;
-    atom_V$$(usize) generation;
-    usize thread_count;
-} SpinBarrier;
-$attr($maybe_unused)
-$static fn_((SpinBarrier_init(usize thread_count))(SpinBarrier)) {
-    return lit$((SpinBarrier){
-        .counter = atom_V_init(0ull),
-        .generation = atom_V_init(0ull),
-        .thread_count = thread_count,
-    });
-}
-$attr($maybe_unused)
-$static fn_((SpinBarrier_wait(SpinBarrier* self))(void)) {
-    let gen = atom_V_load(&self->generation, atom_MemOrd_acquire);
-    let count = atom_V_fetchAdd(&self->counter, 1, atom_MemOrd_acq_rel) + 1;
-
-    if (count == self->thread_count) {
-        // 마지막 스레드: 리셋
-        atom_V_store(&self->counter, 0ull, atom_MemOrd_release);
-        atom_V_store(&self->generation, gen + 1, atom_MemOrd_release);
-    } else {
-        // 다른 스레드: spin wait
-        while (atom_V_load(&self->generation, atom_MemOrd_acquire) == gen) {
-            atom_spinLoopHint();
-#if UNUSED_CODE
-#if defined(__x86_64__) || defined(_M_X64)
-            _mm_pause(); // x86 PAUSE instruction
-#elif defined(__aarch64__) || defined(_M_ARM64)
-            __asm__ __volatile__("yield");
-#endif
-#endif /* UNUSED_CODE */
-        }
-    }
-}
-
-typedef struct HybridBarrier {
-    atom_V$$(usize) counter;
-    atom_V$$(usize) generation;
-    usize thread_count;
-    Thrd_Mtx mutex;
-    Thrd_Cond cond;
-} HybridBarrier;
-
-// ============================================
-// Hybrid Barrier (짧게 spin 후 sleep)
-// ============================================
-
-$static fn_((HybridBarrier_init(usize thread_count))(HybridBarrier)) {
-    return lit$((HybridBarrier){
-        .counter = atom_V_init(0),
-        .generation = atom_V_init(0),
-        .thread_count = thread_count,
-        .mutex = Thrd_Mtx_init(),
-        .cond = Thrd_Cond_init(),
-    });
-}
-
-$static fn_((HybridBarrier_fini(HybridBarrier* self))(void)) {
-    Thrd_Mtx_fini(&self->mutex);
-    Thrd_Cond_fini(&self->cond);
-}
-
-#define HYBRID_BARRIER_SPIN_COUNT (100) // 짧게 spin
-
-$static fn_((HybridBarrier_wait(HybridBarrier* self))(void)) {
-    let gen = atom_V_load(&self->generation, atom_MemOrd_acquire);
-    let count = atom_V_fetchAdd(&self->counter, 1, atom_MemOrd_acq_rel) + 1;
-
-    if (count == self->thread_count) {
-        // 마지막 스레드: 리셋 및 모두 깨우기
-        atom_V_store(&self->counter, 0ull, atom_MemOrd_release);
-        atom_V_store(&self->generation, gen + 1, atom_MemOrd_release);
-
-        Thrd_Mtx_lock(&self->mutex);
-        Thrd_Cond_broadcast(&self->cond);
-        Thrd_Mtx_unlock(&self->mutex);
-    } else {
-        // 다른 스레드: 짧게 spin 후 sleep
-        usize spin_count = 0;
-        while (atom_V_load(&self->generation, atom_MemOrd_acquire) == gen) {
-            if (spin_count < HYBRID_BARRIER_SPIN_COUNT) {
-#if defined(__x86_64__) || defined(_M_X64)
-                _mm_pause();
-#elif defined(__aarch64__) || defined(_M_ARM64)
-                __asm__ __volatile__("yield");
-#endif
-                spin_count++;
-            } else {
-                // Spin 한계 도달: sleep
-                Thrd_Mtx_lock(&self->mutex);
-                while (atom_V_load(&self->generation, atom_MemOrd_acquire) == gen) {
-                    Thrd_Cond_wait(&self->cond, &self->mutex);
-                }
-                Thrd_Mtx_unlock(&self->mutex);
-                break;
-            }
-        }
-    }
-}
-
 #include "dh/math/common.h"
 #include "dh/Rand.h"
 
@@ -464,9 +380,9 @@ $static fn_((RandGaussian_next$f64(RandGaussian* self, f64 mean, f64 std_dev))(f
 // #define State_grid_width (100ull)                      // Was 200
 // #define State_grid_height (100ull)                     // Was 200
 // #define State_max_particles_per_cell (31ull)           // Was 32
-#define State_cell_size (10.0)              // 20.0 → 10.0
-#define State_grid_width (200ull)           // 100 → 200
-#define State_grid_height (200ull)          // 100 → 200
+#define State_cell_size (10.0) // 20.0 → 10.0
+#define State_grid_width (200ull) // 100 → 200
+#define State_grid_height (200ull) // 100 → 200
 #define State_max_particles_per_cell (3ull) // 16 → 63
 
 #define State_boundary_radius (500.0)
@@ -504,17 +420,6 @@ typedef struct State {
     mp_ThrdPool* pool; // 비교용으로 유지
     S$Particle particles;
     S$Cell grid;
-
-    // Persistent worker 추가
-    S$$(union Thrd_FnCtx$(State_persistentWorker)) persistent_workers;
-    S$$(Thrd) persistent_threads;
-    atom_V$$(bool) workers_running;
-    atom_V$$(SimPhase) current_phase;
-
-    // Worker-only barrier (main thread 제외!)
-    HybridBarrier worker_barrier;
-    // Phase completion flag
-    atom_V$$(bool) phase_complete;
 } State;
 
 #define State_enable_randomization 0
@@ -627,113 +532,6 @@ fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) 
 }
 
 // ============================================
-// Persistent Worker 시스템
-// ============================================
-
-$static Thrd_fn_(State_persistentWorker, ({ State* state; usize worker_id; usize worker_count; }, Void));
-$static fn_((State_initPersistentWorkers(State* self, usize worker_count, mem_Allocator gpa))(E$void)) $must_check;
-$static fn_((State_finiPersistentWorkers(State* self, mem_Allocator gpa))(void));
-
-// ============================================
-// Grid 초기화 함수
-// ============================================
-
-$static fn_((State_clearGridLocal(S$Cell grid))(void)) {
-    for_(($s(grid))(cell) { cell->count = 0; });
-}
-
-// ============================================
-// Barrier 기반 시뮬레이션 루프
-// ============================================
-
-$static fn_((State_simulate_hybrid(State* self, usize frame_amount))(void)) {
-    io_stream_println(u8_l("\nStarting simulation for {:uz} frames at {:.1fl} FPS..."), frame_amount, State_target_fps);
-    io_stream_println(u8_l("Using {:uz} threads (Hybrid Barrier)"), self->persistent_workers.len);
-
-    f64 total_time = 0.0;
-    f64 build_grid_time = 0.0;
-    f64 gravity_update_time = 0.0;
-    f64 collision_time = 0.0;
-
-    for_(($r(0, frame_amount))(frame) {
-        let frame_start = time_Instant_now();
-
-        // Build Grid Phase
-        let t0 = time_Instant_now();
-        State_clearGridLocal(self->grid);
-        atom_V_store(&self->phase_complete, false, atom_MemOrd_release);
-        atom_V_store(&self->current_phase, (SimPhase)SimPhase_build_grid, atom_MemOrd_release);
-
-        // Completion 대기 (spin은 짧게만)
-        usize spin = 0;
-        while (!atom_V_load(&self->phase_complete, atom_MemOrd_acquire)) {
-            if (spin++ < 1000) {
-                // _mm_pause();
-                atom_spinLoopHint();
-            } else {
-                catch_((Thrd_yield())($ignore, claim_unreachable));
-                spin = 0;
-            }
-        }
-        let t1 = time_Instant_now();
-        build_grid_time += time_Duration_asSecs$f64(time_Instant_durationSince(t1, t0));
-
-        // Gravity + Update Phase
-        atom_V_store(&self->phase_complete, false, atom_MemOrd_release);
-        atom_V_store(&self->current_phase, (SimPhase)SimPhase_update_positions, atom_MemOrd_release);
-        spin = 0;
-        while (!atom_V_load(&self->phase_complete, atom_MemOrd_acquire)) {
-            if (spin++ < 1000) {
-                // _mm_pause();
-                atom_spinLoopHint();
-            } else {
-                catch_((Thrd_yield())($ignore, claim_unreachable));
-                spin = 0;
-            }
-        }
-        let t2 = time_Instant_now();
-        gravity_update_time += time_Duration_asSecs$f64(time_Instant_durationSince(t2, t1));
-
-        // Collisions Phase
-        atom_V_store(&self->phase_complete, false, atom_MemOrd_release);
-        atom_V_store(&self->current_phase, (SimPhase)SimPhase_handle_collisions, atom_MemOrd_release);
-        spin = 0;
-        while (!atom_V_load(&self->phase_complete, atom_MemOrd_acquire)) {
-            if (spin++ < 1000) {
-                // _mm_pause();
-                atom_spinLoopHint();
-            } else {
-                catch_((Thrd_yield())($ignore, claim_unreachable));
-                spin = 0;
-            }
-        }
-        let t3 = time_Instant_now();
-        collision_time += time_Duration_asSecs$f64(time_Instant_durationSince(t3, t2));
-
-        let frame_end = time_Instant_now();
-        let frame_time = time_Instant_durationSince(frame_end, frame_start);
-        total_time += time_Duration_asSecs$f64(frame_time);
-
-        if (frame % as$(usize)(State_target_fps) == 0) {
-            io_stream_println(
-                u8_l("Frame {:uz}: {:.2fl} ms ({:.1fl} FPS) | Avg: {:.2fl} ms ({:.1fl} FPS)"),
-                frame, time_Duration_asSecs$f64(frame_time) * 1000.0, 1.0 / time_Duration_asSecs$f64(frame_time),
-                (total_time / (frame + 1)) * 1000.0, (frame + 1) / total_time
-            );
-        }
-    });
-
-    let avg_fps = as$(f64)(frame_amount) / total_time;
-    io_stream_println(u8_l("\n=== Performance Breakdown ==="));
-    io_stream_println(u8_l("Build Grid:     {:.2fl} ms ({:.1fl}%)"), (build_grid_time / as$(f64)(frame_amount)) * 1000.0, (build_grid_time / total_time) * 100.0);
-    io_stream_println(u8_l("Gravity+Update: {:.2fl} ms ({:.1fl}%)"), (gravity_update_time / as$(f64)(frame_amount)) * 1000.0, (gravity_update_time / total_time) * 100.0);
-    io_stream_println(u8_l("Collisions:     {:.2fl} ms ({:.1fl}%)"), (collision_time / as$(f64)(frame_amount)) * 1000.0, (collision_time / total_time) * 100.0);
-
-    io_stream_println(u8_l("\n=== Simulation Complete ==="));
-    io_stream_println(u8_l("Average FPS: {:.2fl}"), avg_fps);
-}
-
-// ============================================
 // 메인
 // ============================================
 
@@ -769,12 +567,12 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     );
     var gpa = heap_Page_allocator(&(heap_Page){});
     var pool = try_(mp_ThrdPool_init(gpa, cpu_count));
-    // defer_(mp_ThrdPool_fini(pool, gpa));
+    defer_(mp_ThrdPool_fini(&pool, gpa));
     mp_ThrdPool_enableStats();
-    // defer_(mp_ThrdPool_printStats(pool));
+    defer_(mp_ThrdPool_printStats(pool));
     io_stream_println(u8_l("Using Thread Pool with {:uz} workers\n"), pool->threads.len);
 
-    io_stream_println(u8_l("\nAllocating memory..."));
+    io_stream_println(u8_l("Allocating memory..."));
     let particles = try_(u_castE$((E$$(S$Particle))(mem_Allocator_alloc(gpa, typeInfo$(Particle), State_particles))));
     defer_(mem_Allocator_free(gpa, u_anyS(particles)));
     let grid = try_(u_castE$((E$$(S$Cell))(mem_Allocator_alloc(gpa, typeInfo$(Cell), State_grid_width * State_grid_height))));
@@ -789,6 +587,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     }) $unscoped_(expr);
     io_stream_println(u8_l("Simulating {:uz} frames..."), frame_amount);
     State_simulate(&state, pool, frame_amount);
+
     io_stream_println(u8_l("\nSample particles:"));
     for_(($r(0, 3), $s(particles))(i, particle) {
         io_stream_println(
@@ -796,13 +595,6 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
             i, particle->pos.x, particle->pos.y, particle->vel.x, particle->vel.y
         );
     });
-    mp_ThrdPool_printStats(pool);
-    mp_ThrdPool_fini(pool, gpa);
-
-    io_stream_println(u8_l("\n=== Testing Lock-Free Barrier ==="));
-    try_(State_initPersistentWorkers(&state, cpu_count, gpa));
-    defer_(State_finiPersistentWorkers(&state, gpa));
-    State_simulate_hybrid(&state, frame_amount);
 
     io_stream_println(u8_l("\n=== Program Complete ==="));
     return_ok({});
@@ -1104,130 +896,4 @@ fn_((State_handleCollisions(State* self))(void)) {
             .grid = self->grid,
         }))
     );
-}
-
-Thrd_fn_(State_persistentWorker, ($ignore, args)$scope) {
-    let state = args->state;
-    let worker_id = args->worker_id;
-    let worker_count = args->worker_count;
-
-    // 작업 범위 미리 계산
-    let chunk = (State_particles + worker_count - 1) / worker_count;
-    let range_begin = worker_id * chunk;
-    let range_end = prim_min((worker_id + 1) * chunk, State_particles);
-    let range = $r(range_begin, range_end);
-
-    // Thread-local 그리드
-    $static $Thrd_local LocalGrid local_grid = {};
-
-    while (atom_V_load(&state->workers_running, atom_MemOrd_acquire)) {
-        // Phase 대기 (spin-wait는 짧게만)
-        var phase = SimPhase_idle;
-        usize spin = 0;
-        do {
-            phase = atom_V_load(&state->current_phase, atom_MemOrd_acquire);
-            if (phase == SimPhase_idle && spin++ < 1000) {
-                atom_spinLoopHint();
-            } else if (phase == SimPhase_idle) {
-                // 1000번 spin 후 yield
-                catch_((Thrd_yield())($ignore, claim_unreachable));
-                spin = 0;
-            }
-        } while (phase == SimPhase_idle);
-        if (phase == SimPhase_shutdown) { break; }
-
-        switch (phase) {
-        case SimPhase_build_grid: {
-            // 로컬 그리드 초기화
-            mem_setBytes0(mem_asBytes(&local_grid));
-            // 로컬 그리드에 입자 할당
-            for_(((range), $s(state->particles))(i, particle) {
-                let cell_idx = State_hashPosition(particle->pos);
-                let local_cell = A_at((local_grid.cells)[cell_idx]);
-                if (local_cell->count < State_max_particles_per_cell) {
-                    *A_at((local_cell->indices)[local_cell->count]) = i;
-                    local_cell->count++;
-                }
-            });
-            // 전역 그리드에 병합
-            for_(($r(0, State_grid_width * State_grid_height))(cell_idx) {
-                let local_cell = A_at((local_grid.cells)[cell_idx]);
-                if (local_cell->count == 0) { continue; }
-                let global_cell = S_at((state->grid)[cell_idx]);
-                let global_pos = atom_fetchAdd(&global_cell->count, local_cell->count, atom_MemOrd_acq_rel);
-                let copy_count = prim_min(local_cell->count, State_max_particles_per_cell - global_pos);
-                for_(($r(0, copy_count))(k) {
-                    let src_idx = *A_at((local_cell->indices)[k]);
-                    let dst_pos = global_pos + k;
-                    if (dst_pos < State_max_particles_per_cell) {
-                        *A_at((global_cell->indices)[dst_pos]) = src_idx;
-                    }
-                });
-            });
-            break;
-        }
-        case SimPhase_update_positions: {
-            State_applyGravityAndUpdate_worker(
-                range,
-                u_anyV(lit$((State_ApplyGravityAndUpdateArgs){
-                    .particles = state->particles,
-                }))
-            );
-            break;
-        }
-        case SimPhase_handle_collisions: {
-            State_handleCollisions_worker(
-                range,
-                u_anyV(lit$((State_HandleCollisionsArgs){
-                    .particles = state->particles,
-                    .grid = state->grid,
-                }))
-            );
-            break;
-        }
-        case SimPhase_shutdown:
-            return_({});
-        case SimPhase_idle:
-        default:
-            break;
-        }
-        // Barrier 동기화
-        HybridBarrier_wait(&state->worker_barrier);
-
-        // 마지막 worker가 completion flag 설정
-        if (worker_id == 0) {
-            atom_V_store(&state->phase_complete, true, atom_MemOrd_release);
-            atom_V_store(&state->current_phase, (SimPhase)SimPhase_idle, atom_MemOrd_release);
-        }
-    }
-    return_({});
-} $unscoped_(Thrd_fn);
-
-fn_((State_initPersistentWorkers(State* self, usize worker_count, mem_Allocator gpa))(E$void) $guard) {
-    asg_lit((&self->persistent_workers)(u_castS$((LitType)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), worker_count))))));
-    errdefer_($ignore, mem_Allocator_free(gpa, u_anyS(self->persistent_workers)));
-    asg_lit((&self->persistent_threads)(u_castS$((LitType)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), worker_count))))));
-    errdefer_($ignore, mem_Allocator_free(gpa, u_anyS(self->persistent_threads)));
-
-    atom_V_store(&self->workers_running, true, atom_MemOrd_release);
-    atom_V_store(&self->current_phase, (SimPhase)SimPhase_idle, atom_MemOrd_release);
-    self->worker_barrier = HybridBarrier_init(worker_count);
-
-    for_(($r(0, worker_count), $s(self->persistent_workers), $s(self->persistent_threads))(i, worker, thread) {
-        *worker = Thrd_FnCtx_from$((State_persistentWorker)(self, i, worker_count));
-        *thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw));
-    });
-
-    return_ok({});
-} $unguarded_(fn);
-
-fn_((State_finiPersistentWorkers(State* self, mem_Allocator gpa))(void)) {
-    atom_V_store(&self->current_phase, (SimPhase)SimPhase_shutdown, atom_MemOrd_release);
-    HybridBarrier_wait(&self->worker_barrier);
-    for_(($s(self->persistent_threads))(thread) {
-        Thrd_join(*thread);
-    });
-    HybridBarrier_fini(&self->worker_barrier);
-    mem_Allocator_free(gpa, u_anyS(self->persistent_threads));
-    mem_Allocator_free(gpa, u_anyS(self->persistent_workers));
 }

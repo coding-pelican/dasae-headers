@@ -28,11 +28,11 @@ fn_((search_binary(u_S_const$raw seq, u_V$raw ctx, search_OrdFn ordFn))(O$usize)
     var_(high, usize) = seq.len;
     while (low < high) {
         let mid = low + (high - low) / 2;
-        switch (search__ord(ordFn, u_atS(seq, mid), ctx.ref.as_const)) /* clang-format off */ {
-            case_((cmp_Ord_lt)) { low = mid + 1; continue; } $end(case);
-            case_((cmp_Ord_gt)) { high = mid; continue; } $end(case);
-            case_((cmp_Ord_eq)) { return_some(mid); } $end(case);
-        } /* clang-format on */
+        switch (search__ord(ordFn, u_atS(seq, mid), ctx.ref.as_const)) {
+        case_((cmp_Ord_lt)) low = mid + 1; continue $end(case);
+        case_((cmp_Ord_gt)) high = mid; continue $end(case);
+        case_((cmp_Ord_eq)) return_some(mid) $end(case);
+        }
     }
     return_none();
 } $unscoped_(fn);
@@ -104,14 +104,14 @@ fn_((search_eqRange(u_S_const$raw seq, u_V$raw ctx, search_OrdFn ordFn))(R)) {
     var_(high, usize) = seq.len;
     while (low < high) {
         let mid = low + (high - low) / 2;
-        switch (search__ord(ordFn, u_atS(seq, mid), ctx.ref.as_const)) /* clang-format off */ {
-            case_((cmp_Ord_lt)) { low = mid + 1; continue; } $end(case);
-            case_((cmp_Ord_gt)) { high = mid; continue; } $end(case);
-            case_((cmp_Ord_eq)) { return $r(
-                low + search_lowerBound(u_sliceS(seq, $r(low, mid)), ctx, ordFn),
-                mid + search_upperBound(u_sliceS(seq, $r(mid, high)), ctx, ordFn)
-            ); } $end(case);
-        } /* clang-format on */
+        switch (search__ord(ordFn, u_atS(seq, mid), ctx.ref.as_const)) {
+        case_((cmp_Ord_lt)) low = mid + 1; continue $end(case);
+        case_((cmp_Ord_gt)) high = mid; continue $end(case);
+        case_((cmp_Ord_eq)) return $r(
+            low + search_lowerBound(u_sliceS(seq, $r(low, mid)), ctx, ordFn),
+            mid + search_upperBound(u_sliceS(seq, $r(mid, high)), ctx, ordFn)
+        ) $end(case);
+        }
     }
     return $r(low, low);
 };

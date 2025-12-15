@@ -62,11 +62,15 @@ AlignConsecutiveShortCaseStatements:
   AcrossComments: true
   AlignCaseArrows: false
   AlignCaseColons: false
+AlignTrailingComments: false
+SpacesBeforeTrailingComments: 1
 AlignEscapedNewlines: DontAlign
 AlignOperands: AlignAfterOperator
 AllowShortBlocksOnASingleLine: Always
 AllowShortIfStatementsOnASingleLine: Always
 AllowShortLoopsOnASingleLine: true
+AllowShortCaseExpressionOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
 # BinPackArguments: false
 BinPackArguments: true
 # BinPackParameters: false
@@ -237,8 +241,8 @@ Macros:
   # - "blk_defer=("
   # - "blk_deferral=)"
 
-  - "return_(Expr)=return Expr"
-  - "return_void(Expr)=return Expr"
+  # - "return_(Expr)=return Expr"
+  # - "return_void(Expr)=return Expr"
 
   # - "return_some(Expr)=return Expr"
   # - "return_some_void(Expr)=return Expr"
@@ -248,8 +252,8 @@ Macros:
   # - "return_ok_void(Expr)=return Expr"
   # - "return_err(Expr)=return Expr"
 
-  - "$break_(Expr)=return Expr"
-  - "$break_void(Expr)=return Expr"
+  # - "$break_(Expr)=return Expr"
+  # - "$break_void(Expr)=return Expr"
 
   # - "$break_some(Expr)=return Expr"
   # - "$break_some_void(Expr)=return Expr"
@@ -280,6 +284,8 @@ Macros:
   - "else_ok_void=else"
 
   - "match_(Expr)=switch (expr)"
+  - "case_(tag)=case tag:"
+  - "default_(Expr)=case Expr otherwise:"
 
 AttributeMacros:
   - $attr

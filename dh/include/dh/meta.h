@@ -107,10 +107,10 @@ $attr($inline_always)
 $static fn_((u_fieldSlisMut(u_P$raw record, usize n, S_const$TypeInfo fields, S$u_S$raw out))(S$u_S$raw));
 /// Get record pointer (immutable) from field pointer
 $attr($inline_always)
-$static fn_((u_recordNPtr(u_P_const$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P_const$raw));
+$static fn_((u_recordNPtr(u_S_const$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P_const$raw));
 /// Get record pointer (mutable) from field pointer
 $attr($inline_always)
-$static fn_((u_recordNPtrMut(u_P$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P$raw));
+$static fn_((u_recordNPtrMut(u_S$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P$raw));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -158,6 +158,7 @@ $static fn_((u_offsetTo(TypeInfo record, S_const$TypeInfo fields, usize field_id
     claim_assert_nonnull(fields.ptr);
     claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx(%zu) >= len(%zu)", field_idx, fields.len);
     debug_assert_fmt(TypeInfo_eq(record, u_typeInfoRecord(fields)), "Type mismatch: record type does not match expected type");
+    let_ignore = record;
     usize end_offset = 0;
     for_(($s(fields))(field) {
         let align_val = mem_log2ToAlign(field->align);
@@ -405,20 +406,24 @@ $static fn_((u_fieldSlisMut(u_P$raw record, usize n, S_const$TypeInfo fields, S$
     });
     return out;
 };
-$static fn_((u_recordNPtr(u_P_const$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P_const$raw)) {
-    claim_assert_nonnull(field.raw);
+$static fn_((u_recordNPtr(u_S_const$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P_const$raw)) {
+    claim_assert_nonnull(field.ptr);
+    claim_assert_fmt(field.len == n, "Field length mismatch: len(%zu) != n(%zu)", field.len, n);
+    claim_assert_nonnull(fields.ptr);
     let offset = u_offsetToN(n, fields, field_idx);
     return (u_P_const$raw){
-        .raw = as$(P_const$raw)(as$(const u8*)(field.raw) - offset),
+        .raw = as$(P_const$raw)(as$(const u8*)(field.ptr) - offset),
         .type = u_typeInfoRecordN(n, fields)
     };
 };
 $attr($inline_always)
-$static fn_((u_recordNPtrMut(u_P$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P$raw)) {
-    claim_assert_nonnull(field.raw);
+$static fn_((u_recordNPtrMut(u_S$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P$raw)) {
+    claim_assert_nonnull(field.ptr);
+    claim_assert_fmt(field.len == n, "Field length mismatch: len(%zu) != n(%zu)", field.len, n);
+    claim_assert_nonnull(fields.ptr);
     let offset = u_offsetToN(n, fields, field_idx);
     return (u_P$raw){
-        .raw = as$(P$raw)(as$(u8*)(field.raw) - offset),
+        .raw = as$(P$raw)(as$(u8*)(field.ptr) - offset),
         .type = u_typeInfoRecordN(n, fields)
     };
 };

@@ -1,4 +1,5 @@
 /* Actor.h */
+#include "dh/meta.h"
 #ifndef Actor__included
 #define Actor__included 1
 
@@ -302,13 +303,14 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     // 100만 개 Actor 생성
     io_stream_println(u8_l("Creating {:uz} actors..."), total_actors);
 
+    // 상태 및 코루틴 컨텍스트 할당 (arena에서)
     let actor_gpa = heap_Arena_allocator(&sys.arena_actor);
-    // 상태 할당 (arena에서)
-    let states = u_castS$((S$(EchoState))(try_((mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), total_actors)))));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, u_anyS(states)));
-    // 코루틴 컨텍스트 할당 (arena에서)
-    let ctxs = u_castS$((S$$(Co_CtxFn$(echo_actor)))(try_((mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), total_actors)))));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, u_anyS(ctxs)));
+    let field_types = typeInfos$(EchoState, Co_CtxFn$(echo_actor));
+    let field_mem = try_(mem_Allocator_create(actor_gpa, u_typeInfoRecordN(total_actors, field_types)));
+    defer_(mem_Allocator_destroy(actor_gpa, field_mem));
+    let fields = u_fieldSlisMut(field_mem, total_actors, field_types, A_ref$((S$u_S$raw)((A$$(2, u_S$raw)){})));
+    let states = u_castS$((S$(EchoState))(*S_at((fields)[0])));
+    let ctxs = u_castS$((S$$(Co_CtxFn$(echo_actor)))(*S_at((fields)[1])));
     // Actor 생성
     for_(($rf(0), $s(states), $s(ctxs))(i, state, ctx) {
         state->id = i;

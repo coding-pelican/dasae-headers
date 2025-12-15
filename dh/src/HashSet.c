@@ -58,6 +58,8 @@ fn_((HashSet_Ensured_keyMut(HashSet_Ensured self, TypeInfo key_ty))(u_P$raw)) {
 };
 
 fn_((HashSet_Ensured_foundExisting(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_Entry)) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    let_ignore = key_ty;
     return expr_(O$HashSet_Entry $scope)(if (self.found_existing) {
         $break_(some({ .key = self.key, debug_only(.key_ty = key_ty) }));
     }) expr_(else)({
@@ -66,6 +68,8 @@ fn_((HashSet_Ensured_foundExisting(HashSet_Ensured self, TypeInfo key_ty))(O$Has
 };
 
 fn_((HashSet_Ensured_foundExistingMut(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_EntryMut)) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    let_ignore = key_ty;
     return expr_(O$HashSet_EntryMut $scope)(if (self.found_existing) {
         $break_(some({ .key = self.key, debug_only(.key_ty = key_ty) }));
     }) expr_(else)({
@@ -343,6 +347,7 @@ $static fn_((HashSet__growIfNeeded(HashSet* self, TypeInfo key_ty, mem_Allocator
 
 fn_((HashSet_empty(TypeInfo key_ty, P_const$HashSet_Ctx ctx))(HashSet)) {
     claim_assert_nonnull(ctx);
+    let_ignore = key_ty;
     return (HashSet){
         .metadata = none(),
         .size = 0,
@@ -739,7 +744,9 @@ fn_((HashSet_rehash(HashSet* self, TypeInfo key_ty))(void)) {
     }
 };
 
-fn_((HashSet_isSubset(HashSet self, HashSet other))(bool)) {
+fn_((HashSet_isSubset(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    debug_assert_eqBy(key_ty, other.key_ty, TypeInfo_eq);
     if (self.size > other.size) { return false; }
     if (self.size == 0) { return true; }
 
@@ -747,7 +754,7 @@ fn_((HashSet_isSubset(HashSet self, HashSet other))(bool)) {
     for_(($r(0, cap))(i) {
         let ctrl = *HashSet__metadataAt(self, i);
         if (HashMap_Ctrl_isUsed(ctrl)) {
-            let key = HashSet__keyAt(self, self.key_ty, i);
+            let key = HashSet__keyAt(self, key_ty, i);
             if (!HashSet_contains(other, u_load(u_deref(key)))) {
                 return false;
             }
@@ -756,12 +763,16 @@ fn_((HashSet_isSubset(HashSet self, HashSet other))(bool)) {
     return true;
 };
 
-fn_((HashSet_isSuperset(HashSet self, HashSet other))(bool)) {
+fn_((HashSet_isSuperset(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    debug_assert_eqBy(key_ty, other.key_ty, TypeInfo_eq);
     prim_swap(&self, &other);
-    return HashSet_isSubset(self, other);
+    return HashSet_isSubset(self, key_ty, other);
 };
 
-fn_((HashSet_isDisjoint(HashSet self, HashSet other))(bool)) {
+fn_((HashSet_isDisjoint(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
+    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
+    debug_assert_eqBy(key_ty, other.key_ty, TypeInfo_eq);
     // Check the smaller set's elements against the larger set
     let smaller = self.size <= other.size ? self : other;
     let larger = self.size <= other.size ? other : self;
@@ -772,7 +783,7 @@ fn_((HashSet_isDisjoint(HashSet self, HashSet other))(bool)) {
     for_(($r(0, cap))(i) {
         let ctrl = *HashSet__metadataAt(smaller, i);
         if (HashMap_Ctrl_isUsed(ctrl)) {
-            let key = HashSet__keyAt(smaller, smaller.key_ty, i);
+            let key = HashSet__keyAt(smaller, key_ty, i);
             if (HashSet_contains(larger, u_load(u_deref(key)))) {
                 return false;
             }
@@ -786,6 +797,7 @@ fn_((HashSet_isDisjoint(HashSet self, HashSet other))(bool)) {
 fn_((HashSet_iter(const HashSet* self, TypeInfo key_ty))(HashSet_Iter)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eq);
+    let_ignore = key_ty;
     return (HashSet_Iter){
         .set = self,
         .idx = 0,
@@ -839,19 +851,18 @@ fn_((HashSet_keyIter(HashSet self, TypeInfo key_ty))(HashSet_KeyIter) $scope) {
     debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eq);
     return_(expr_(HashSet_KeyIter $scope)(
         if_some((self.metadata)(metadata)) {
-            $break_((HashSet_KeyIter){
-                .len = HashSet_cap(self),
-                .metadata = metadata,
-                .keys = HashSet__keys(self, key_ty).raw,
+        $break_((HashSet_KeyIter){
+            .len = HashSet_cap(self),
+            .metadata = metadata,
+            .keys = HashSet__keys(self, key_ty).raw,
                 debug_only(.key_ty = key_ty) });
-        } else_none {
-            $break_((HashSet_KeyIter){
-                .len = 0,
-                .metadata = null,
-                .keys = null,
+    } else_none {
+        $break_((HashSet_KeyIter){
+            .len = 0,
+            .metadata = null,
+            .keys = null,
                 debug_only(.key_ty = key_ty) });
-        }
-    ) $unscoped_(expr));
+    }) $unscoped_(expr));
 } $unscoped_(fn);
 
 fn_((HashSet_KeyIter_next(HashSet_KeyIter* self, TypeInfo key_ty))(O$u_P_const$raw) $scope) {

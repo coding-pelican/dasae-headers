@@ -98,9 +98,9 @@ fn_((mem_ord(u_S_const$raw lhs, u_S_const$raw rhs))(cmp_Ord)) {
     let len = int_min(lhs.len, rhs.len);
     for_(($us(u_sliceS(lhs, $r(0, len))), $us(u_sliceS(rhs, $r(0, len))))(l, r) {
         switch (u_memord(l, r)) {
-            case_((cmp_Ord_lt)) return cmp_Ord_lt $end(case);
-            case_((cmp_Ord_gt)) return cmp_Ord_gt $end(case);
-            case_((cmp_Ord_eq)) continue $end(case);
+        case cmp_Ord_lt: return cmp_Ord_lt;
+        case cmp_Ord_gt: return cmp_Ord_gt;
+        case cmp_Ord_eq: continue;
         }
     });
     return prim_ord(lhs.len, rhs.len);
@@ -178,7 +178,7 @@ fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {
     }) $unscoped_(expr);
 };
 
-fn_((mem_tokenizeValue(u_S_const$raw buf, u_V$raw value, P$mem_TokenIter ret_mem))(P$mem_TokenIter)) {
+fn_((mem_tokenizeValue(u_S_const$raw buf, u_V$raw value, V$mem_TokenIter$raw ret_mem))(V$mem_TokenIter$raw)) {
     claim_assert_nonnull(ret_mem);
     ret_mem->buf = buf.raw;
     ret_mem->idx = 0;
@@ -187,7 +187,7 @@ fn_((mem_tokenizeValue(u_S_const$raw buf, u_V$raw value, P$mem_TokenIter ret_mem
     debug_only(ret_mem->type = value.inner_type;) return ret_mem;
 };
 
-fn_((mem_tokenizePattern(u_S_const$raw buf, u_S_const$raw pattern, P$mem_TokenIter ret_mem))(P$mem_TokenIter)) {
+fn_((mem_tokenizePattern(u_S_const$raw buf, u_S_const$raw pattern, V$mem_TokenIter$raw ret_mem))(V$mem_TokenIter$raw)) {
     claim_assert_nonnull(ret_mem);
     ret_mem->buf = buf.raw;
     ret_mem->idx = 0;
@@ -196,7 +196,7 @@ fn_((mem_tokenizePattern(u_S_const$raw buf, u_S_const$raw pattern, P$mem_TokenIt
     debug_only(ret_mem->type = pattern.type;) return ret_mem;
 };
 
-fn_((mem_tokenizeChoice(u_S_const$raw buf, u_S_const$raw choice, P$mem_TokenIter ret_mem))(P$mem_TokenIter)) {
+fn_((mem_tokenizeChoice(u_S_const$raw buf, u_S_const$raw choice, V$mem_TokenIter$raw ret_mem))(V$mem_TokenIter$raw)) {
     claim_assert_nonnull(ret_mem);
     ret_mem->buf = buf.raw;
     ret_mem->idx = 0;
@@ -205,39 +205,39 @@ fn_((mem_tokenizeChoice(u_S_const$raw buf, u_S_const$raw choice, P$mem_TokenIter
     debug_only(ret_mem->type = choice.type;) return ret_mem;
 };
 
-$static fn_((mem_TokenIter__buf(mem_TokenIter* self, TypeInfo type))(u_S_const$raw)) {
+$static fn_((mem_TokenIter__buf(mem_TokenIter$raw* self, TypeInfo type))(u_S_const$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return (u_S_const$raw){ .raw = self->buf, .type = type };
 };
 
-$static fn_((mem_TokenIter__value(mem_TokenIter* self, TypeInfo type))(u_V$raw)) {
+$static fn_((mem_TokenIter__value(mem_TokenIter$raw* self, TypeInfo type))(u_V$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return (u_V$raw){ .inner = self->delim.value.inner, .inner_type = type };
 };
 
-$static fn_((mem_TokenIter__pattern(mem_TokenIter* self, TypeInfo type))(u_S_const$raw)) {
+$static fn_((mem_TokenIter__pattern(mem_TokenIter$raw* self, TypeInfo type))(u_S_const$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return (u_S_const$raw){ .raw = self->delim.pattern, .type = type };
 };
 
-$static fn_((mem_TokenIter__choice(mem_TokenIter* self, TypeInfo type))(u_S_const$raw)) {
+$static fn_((mem_TokenIter__choice(mem_TokenIter$raw* self, TypeInfo type))(u_S_const$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eq);
     return (u_S_const$raw){ .raw = self->delim.choice, .type = type };
 };
 
-$static fn_((mem_TokenIter__isDelim(mem_TokenIter* self, TypeInfo type, usize index))(bool)) {
+$static fn_((mem_TokenIter__isDelim(mem_TokenIter$raw* self, TypeInfo type, usize index))(bool)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let buf = mem_TokenIter__buf(self, type);
     return expr_(bool $scope)(switch (self->delim_type) {
-        case_((mem_delimType_value)) {
+        case mem_delimType_value: {
             let delim = mem_TokenIter__value(self, type);
             $break_(u_memeql(u_atS(buf, index), delim.ref.as_const));
-        } $end(case);
-        case_((mem_delimType_pattern)) {
+        };
+        case mem_delimType_pattern: {
             let delim = mem_TokenIter__pattern(self, type);
             $break_(mem_startsWith(u_suffixS(buf, index), delim));
-        } $end(case);
-        case_((mem_delimType_choice)) {
+        };
+        case mem_delimType_choice: {
             let delims = mem_TokenIter__choice(self, type);
             $break_(eval_(bool $scope)(for_(($us(delims))(delim) {
                 if (!u_memeql(u_atS(buf, index), delim)) { continue; }
@@ -245,26 +245,26 @@ $static fn_((mem_TokenIter__isDelim(mem_TokenIter* self, TypeInfo type, usize in
             })) eval_(else)({
                 $break_(false);
             }) $unscoped_(eval));
-        } $end(case);
+        };
     }) $unscoped_(expr);
 };
 
-fn_((mem_TokenIter_reset(mem_TokenIter* self))(void)) { claim_assert_nonnull(self), self->idx = 0; };
+fn_((mem_TokenIter_reset(mem_TokenIter$raw* self))(void)) { claim_assert_nonnull(self), self->idx = 0; };
 
-fn_((mem_TokenIter_next(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw) $scope) {
+fn_((mem_TokenIter_next(mem_TokenIter$raw* self, TypeInfo type))(O$u_S_const$raw) $scope) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let token = orelse_((mem_TokenIter_peek(self, type))(return_none()));
     self->idx += token.len;
     return_some(token);
 } $unscoped_(fn);
 
-fn_((mem_TokenIter_peek(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw) $scope) {
+fn_((mem_TokenIter_peek(mem_TokenIter$raw* self, TypeInfo type))(O$u_S_const$raw) $scope) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eq);
     while (self->idx < self->buf.len && mem_TokenIter__isDelim(self, type, self->idx)) {
         self->idx += expr_(usize $scope)(switch (self->delim_type) {
-            case_((mem_delimType_value)) $break_(1) $end(case);
-            case_((mem_delimType_pattern)) $break_(self->delim.pattern.len) $end(case);
-            case_((mem_delimType_choice)) $break_(1) $end(case);
+            case mem_delimType_value:   $break_(1);
+            case mem_delimType_pattern: $break_(self->delim.pattern.len);
+            case mem_delimType_choice:  $break_(1);
         }) $unscoped_(expr);
     }
     let begin = self->idx;
@@ -274,14 +274,14 @@ fn_((mem_TokenIter_peek(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw) $s
     return_some(u_sliceS(mem_TokenIter__buf(self, type), $r(begin, end)));
 } $unscoped_(fn);
 
-fn_((mem_TokenIter_rest(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw) $scope) {
+fn_((mem_TokenIter_rest(mem_TokenIter$raw* self, TypeInfo type))(O$u_S_const$raw) $scope) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eq);
     var idx = self->idx;
     while (idx < self->buf.len && mem_TokenIter__isDelim(self, type, idx)) {
         idx += expr_(usize $scope)(switch (self->delim_type) {
-            case_((mem_delimType_value)) $break_(1) $end(case);
-            case_((mem_delimType_pattern)) $break_(self->delim.pattern.len) $end(case);
-            case_((mem_delimType_choice)) $break_(1) $end(case);
+            case mem_delimType_value:   $break_(1);
+            case mem_delimType_pattern: $break_(self->delim.pattern.len);
+            case mem_delimType_choice:  $break_(1);
         }) $unscoped_(expr);
     }
     return_some(u_suffixS(mem_TokenIter__buf(self, type), idx));

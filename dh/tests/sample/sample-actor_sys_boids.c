@@ -1,4 +1,5 @@
 /* Actor.h */
+#include "dh/meta.h"
 #ifndef Actor__included
 #define Actor__included 1
 
@@ -17,7 +18,7 @@ typedef enum_(MessageType $bits(8)) {
     MessageType_broadcast = 4,
     MessageType_stop = 5,
     BoidMsg_neighbor_info = 100, // 이웃 정보
-    BoidMsg_update = 101,        // 프레임 업데이트
+    BoidMsg_update = 101, // 프레임 업데이트
     BoidMsg_stop = 102,
 } MessageType;
 
@@ -44,9 +45,9 @@ typedef struct Mailbox {
 // Actor 구조
 typedef struct Actor {
     Co_Ctx* coroutine; // 코루틴 컨텍스트
-    Mailbox mailbox;   // 메시지 큐
-    P$raw state;       // Actor 상태 (타입 소거)
-    u32 id;            // Actor ID
+    Mailbox mailbox; // 메시지 큐
+    P$raw state; // Actor 상태 (타입 소거)
+    u32 id; // Actor ID
     bool active       : 1;
     bool has_messages : 1;
 } Actor;
@@ -55,10 +56,10 @@ T_use_E$(P$Actor);
 
 // Actor 시스템 (Arena allocator 사용)
 typedef struct ActorSystem {
-    mem_Allocator allocator;  // 기본 allocator
-    heap_Arena arena_actor;   // Actor 전용 arena
+    mem_Allocator allocator; // 기본 allocator
+    heap_Arena arena_actor; // Actor 전용 arena
     heap_Arena arena_message; // 메시지 전용 arena
-    S$Actor actors;           // Actor 슬라이스
+    S$Actor actors; // Actor 슬라이스
     usize next_id;
 } ActorSystem;
 T_use_E$(ActorSystem);
@@ -233,12 +234,12 @@ typedef struct NeighborInfo {
 // Boids 파라미터
 typedef struct BoidsParams {
     f32 separation_radius; // 분리 반경
-    f32 alignment_radius;  // 정렬 반경
-    f32 cohesion_radius;   // 응집 반경
-    f32 separation_force;  // 분리 힘
-    f32 alignment_force;   // 정렬 힘
-    f32 cohesion_force;    // 응집 힘
-    f32 max_speed;         // 최대 속도
+    f32 alignment_radius; // 정렬 반경
+    f32 cohesion_radius; // 응집 반경
+    f32 separation_force; // 분리 힘
+    f32 alignment_force; // 정렬 힘
+    f32 cohesion_force; // 응집 힘
+    f32 max_speed; // 최대 속도
     f32 world_width;
     f32 world_height;
 } BoidsParams;
@@ -468,16 +469,13 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     // Boid 상태 할당
     io_stream_println(u8_l("Allocating boid states..."));
-    let states = u_castS$((S$BoidState)(try_(mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), num_boids))));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, u_anyS(states)));
-
-    // 코루틴 할당
-    io_stream_println(u8_l("Allocating coroutines..."));
-    let ctxs = u_castS$((S$$(Co_CtxFn$(boid_actor)))(try_(mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), num_boids))));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, u_anyS(ctxs)));
-
-    // Actors 슬라이스
-    let actors = u_castS$((S$P$Actor)(try_(mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), num_boids))));
+    let field_types = typeInfos$(BoidState, Co_CtxFn$(boid_actor), P$Actor);
+    let field_mem = try_(mem_Allocator_create(actor_gpa, u_typeInfoRecordN(num_boids, field_types)));
+    defer_(mem_Allocator_destroy(actor_gpa, field_mem));
+    let fields = u_fieldSlisMut(field_mem, num_boids, field_types, A_ref$((S$u_S$raw)((A$$(3, u_S$raw)){})));
+    let states = u_castS$((S$BoidState)(*S_at((fields)[0])));
+    let ctxs = u_castS$((S$$(Co_CtxFn$(boid_actor)))(*S_at((fields)[1])));
+    let actors = u_castS$((S$P$Actor)(*S_at((fields)[2])));
 
     // Boids 생성
     io_stream_println(u8_l("Creating {:zu} boid actors..."), num_boids);

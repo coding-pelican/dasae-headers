@@ -241,10 +241,10 @@ $static fn_((RandGaussian_next$f64(RandGaussian* self, f64 mean, f64 std_dev))(f
 
 #define State_particles_log2 (20ull)
 #define State_particles (1ull << State_particles_log2) // 2^20 = 1,048,576
-#define State_cell_size (20.0)                         // Was 10.0
-#define State_grid_width (100ull)                      // Was 200
-#define State_grid_height (100ull)                     // Was 200
-#define State_max_particles_per_cell (16ull)           // Was 32
+#define State_cell_size (20.0) // Was 10.0
+#define State_grid_width (100ull) // Was 200
+#define State_grid_height (100ull) // Was 200
+#define State_max_particles_per_cell (16ull) // Was 32
 
 #define State_boundary_radius (500.0)
 #define State_gravity (9.81)
@@ -577,8 +577,8 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
         let gx = cell_idx % State_grid_width;
         let gy = cell_idx / State_grid_width;
 
-        for_(($r(0, 3))(dy_offset) {          // 0, 1, 2
-            for_(($r(0, 3))(dx_offset) {      // 0, 1, 2
+        for_(($r(0, 3))(dy_offset) { // 0, 1, 2
+            for_(($r(0, 3))(dx_offset) { // 0, 1, 2
                 let dx = as$(isize)(dx_offset)-1; // Convert to -1, 0, 1
                 let dy = as$(isize)(dy_offset)-1;
 

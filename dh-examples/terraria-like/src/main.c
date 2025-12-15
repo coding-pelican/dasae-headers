@@ -15,136 +15,136 @@
 
 // Background tiles (walls, decorative)
 typedef enum BgTile : u8 {
-    BgTile_none       = 0,
+    BgTile_none = 0,
     BgTile_stone_wall = 1,
-    BgTile_dirt_wall  = 2,
-    BgTile_wood_wall  = 3,
+    BgTile_dirt_wall = 2,
+    BgTile_wood_wall = 3,
     BgTile_glass_wall = 4,
 } BgTile;
 
 // Foreground block types (solid terrain)
 typedef enum FgTile : u8 {
-    FgTile_air         = 0,
-    FgTile_stone       = 1,
-    FgTile_dirt        = 2,
-    FgTile_grass       = 3,
-    FgTile_wood        = 4,
-    FgTile_leaves      = 5,
-    FgTile_sand        = 6,
-    FgTile_coal_ore    = 7,
-    FgTile_iron_ore    = 8,
-    FgTile_gold_ore    = 9,
+    FgTile_air = 0,
+    FgTile_stone = 1,
+    FgTile_dirt = 2,
+    FgTile_grass = 3,
+    FgTile_wood = 4,
+    FgTile_leaves = 5,
+    FgTile_sand = 6,
+    FgTile_coal_ore = 7,
+    FgTile_iron_ore = 8,
+    FgTile_gold_ore = 9,
     FgTile_diamond_ore = 10,
-    FgTile_bedrock     = 11,
+    FgTile_bedrock = 11,
 } FgTile;
 
 // Entity tiles (furniture, interactive objects)
 typedef enum EntityTileType : u8 {
-    EntityTileType_none           = 0,
+    EntityTileType_none = 0,
     // Passable (can walk through, can stand on)
-    EntityTileType_platform       = 1,
+    EntityTileType_platform = 1,
     EntityTileType_crafting_table = 2,
-    EntityTileType_chair          = 3,
-    EntityTileType_table          = 4,
+    EntityTileType_chair = 3,
+    EntityTileType_table = 4,
     // Tree system
-    EntityTileType_tree_trunk     = 5, // 나무 기둥 (엔티티)
-    EntityTileType_wood_plank     = 6, // 나무 판자 (블럭)
+    EntityTileType_tree_trunk = 5, // 나무 기둥 (엔티티)
+    EntityTileType_wood_plank = 6, // 나무 판자 (블럭)
     // Impenetrable (solid collision)
-    EntityTileType_chest          = 10,
-    EntityTileType_furnace        = 11,
-    EntityTileType_anvil          = 12,
+    EntityTileType_chest = 10,
+    EntityTileType_furnace = 11,
+    EntityTileType_anvil = 12,
     // Interactive impenetrable
-    EntityTileType_door_closed    = 20,
-    EntityTileType_door_open      = 21,
+    EntityTileType_door_closed = 20,
+    EntityTileType_door_open = 21,
     // Lighting
-    EntityTileType_torch          = 30,
-    EntityTileType_lantern        = 31,
+    EntityTileType_torch = 30,
+    EntityTileType_lantern = 31,
 } EntityTileType;
 typedef struct EntityTile {
     EntityTileType type;
-    m_V2i32        origin;    // For multi-tile objects, points to top-left tile
-    bool           is_origin; // True if this is the origin tile
-    u32            metadata;  // Generic storage for tile-specific data
+    m_V2i32 origin; // For multi-tile objects, points to top-left tile
+    bool is_origin; // True if this is the origin tile
+    u32 metadata; // Generic storage for tile-specific data
 } EntityTile;
 
 typedef struct TileProps {
-    m_V2i32 size;        // Width x Height in tiles
-    bool    obstacle;    // Can entities pass through?
-    bool    platform;    // Can stand on top but pass through from below?
-    bool    interactive; // Can be interacted with?
-    u8      light_level; // Light emission (0-15)
+    m_V2i32 size; // Width x Height in tiles
+    bool obstacle; // Can entities pass through?
+    bool platform; // Can stand on top but pass through from below?
+    bool interactive; // Can be interacted with?
+    u8 light_level; // Light emission (0-15)
 } TileProps;
 
 typedef enum ItemType : u16 {
-    ItemType_none            = 0,
+    ItemType_none = 0,
     // Blocks
-    ItemType_stone           = 1,
-    ItemType_dirt            = 2,
-    ItemType_grass           = 3,
-    ItemType_wood            = 4,
-    ItemType_sand            = 5,
+    ItemType_stone = 1,
+    ItemType_dirt = 2,
+    ItemType_grass = 3,
+    ItemType_wood = 4,
+    ItemType_sand = 5,
     // Furniture
-    ItemType_platform        = 50,
-    ItemType_crafting_table  = 51,
-    ItemType_chair           = 52,
-    ItemType_table           = 53,
-    ItemType_chest           = 54,
-    ItemType_door            = 55,
-    ItemType_torch           = 56,
+    ItemType_platform = 50,
+    ItemType_crafting_table = 51,
+    ItemType_chair = 52,
+    ItemType_table = 53,
+    ItemType_chest = 54,
+    ItemType_door = 55,
+    ItemType_torch = 56,
     // Tools
-    ItemType_wooden_pickaxe  = 100,
-    ItemType_stone_pickaxe   = 101,
-    ItemType_iron_pickaxe    = 102,
+    ItemType_wooden_pickaxe = 100,
+    ItemType_stone_pickaxe = 101,
+    ItemType_iron_pickaxe = 102,
     ItemType_diamond_pickaxe = 103,
-    ItemType_wooden_axe      = 110,
-    ItemType_wooden_hammer   = 120,
+    ItemType_wooden_axe = 110,
+    ItemType_wooden_hammer = 120,
     // Resources
-    ItemType_coal            = 200,
-    ItemType_iron_ore        = 201,
-    ItemType_gold_ore        = 202,
-    ItemType_diamond         = 203,
+    ItemType_coal = 200,
+    ItemType_iron_ore = 201,
+    ItemType_gold_ore = 202,
+    ItemType_diamond = 203,
 } ItemType;
 typedef struct ItemStack {
     ItemType item_type;
-    u16      count;
+    u16 count;
 } ItemStack;
 
 typedef u32 EntityId;
 typedef enum EntityType : u8 {
-    EntityType_player    = 0,
+    EntityType_player = 0,
     EntityType_item_drop = 1,
-    EntityType_zombie    = 2,
-    EntityType_skeleton  = 3,
+    EntityType_zombie = 2,
+    EntityType_skeleton = 3,
 } EntityType;
 typedef struct Entity {
-    EntityId   id;
+    EntityId id;
     EntityType entity_type;
-    m_V2f32    position;
-    m_V2f32    velocity;
-    m_V2f32    size; // Size in world units (tiles)
-    i16        health;
-    i16        max_health;
-    bool       alive;
-    bool       grounded;
-    bool       on_platform; // Standing on a platform
+    m_V2f32 position;
+    m_V2f32 velocity;
+    m_V2f32 size; // Size in world units (tiles)
+    i16 health;
+    i16 max_health;
+    bool alive;
+    bool grounded;
+    bool on_platform; // Standing on a platform
 
     // Entity-specific data
     ItemStack item_stack; // For item_drop entities
 } Entity;
 
-#define Game_world_width           (500)
-#define Game_world_height          (200)
-#define Game_player_size_x         (1.25f)
-#define Game_player_size_y         (2.625f)
+#define Game_world_width (500)
+#define Game_world_height (200)
+#define Game_player_size_x (1.25f)
+#define Game_player_size_y (2.625f)
 #define Game_player_health_default (100)
-#define Game_inventory_size        (40)
-#define Game_hotbar_size           (10)
-#define Game_max_entities          (1000)
+#define Game_inventory_size (40)
+#define Game_hotbar_size (10)
+#define Game_max_entities (1000)
 
 // Rendering constants
-#define Render_screen_width  (120)
+#define Render_screen_width (120)
 #define Render_screen_height (40)
-#define Render_tile_size     (1) // Each tile = 1 pixel for simplicity
+#define Render_tile_size (1) // Each tile = 1 pixel for simplicity
 
 // ============================================================================
 // INPUT STATE
@@ -152,7 +152,7 @@ typedef struct Entity {
 
 typedef struct InputState {
     m_V2f32 cursor_world_pos;
-    O$u8  hotbar_selection;
+    O$u8 hotbar_selection;
     union {
         u8 states;
         struct {
@@ -172,10 +172,10 @@ typedef struct InputState {
 // ============================================================================
 
 typedef struct WorldLayer {
-    BgTile     bg_tiles[Game_world_height][Game_world_width];
-    FgTile     fg_tiles[Game_world_height][Game_world_width];
+    BgTile bg_tiles[Game_world_height][Game_world_width];
+    FgTile fg_tiles[Game_world_height][Game_world_width];
     EntityTile entity_tiles[Game_world_height][Game_world_width];
-    u8         block_health[Game_world_height][Game_world_width]; // Mining progress
+    u8 block_health[Game_world_height][Game_world_width]; // Mining progress
 } WorldLayer;
 
 typedef struct WorldState {
@@ -184,29 +184,29 @@ typedef struct WorldState {
 } WorldState;
 
 typedef struct PlayerData {
-    EntityId  entity_id;
+    EntityId entity_id;
     ItemStack inventory[Game_inventory_size];
-    u8        selected_hotbar_slot;
+    u8 selected_hotbar_slot;
 } PlayerData;
 
 typedef struct EntitySystem {
-    Entity   data[Game_max_entities];
-    u32      count;
+    Entity data[Game_max_entities];
+    u32 count;
     EntityId next_id;
 } EntitySystem;
 
 typedef struct Camera {
     m_V2f32 position; // Camera center position in world coordinates
-    f32     zoom;     // Zoom level (1.0 = normal)
+    f32 zoom; // Zoom level (1.0 = normal)
 } Camera;
 
 typedef struct Renderer {
-    engine_Window*     window;
-    engine_Canvas*     canvas;
-    engine_Input*      input;
+    engine_Window* window;
+    engine_Canvas* canvas;
+    engine_Input* input;
     engine_core_VT100* core;
-    Camera             camera;
-    mem_Allocator      allocator;
+    Camera camera;
+    mem_Allocator allocator;
 } Renderer;
 
 typedef struct GameState {
@@ -219,16 +219,16 @@ typedef struct GameState {
         InputState input;
     } player;
     EntitySystem entities;
-    Renderer     renderer;
+    Renderer renderer;
 } GameState;
 
 // ============================================================================
 // PHYSICS CONSTANTS
 // ============================================================================
 
-#define Game_gravity           (90.0f)
-#define Game_player_speed_x    (18.0f)
-#define Game_jump_velocity     (18.0f) // 점프력 증가
+#define Game_gravity (90.0f)
+#define Game_player_speed_x (18.0f)
+#define Game_jump_velocity (18.0f) // 점프력 증가
 #define Game_terminal_velocity (30.0f)
 
 // ============================================================================
@@ -238,50 +238,29 @@ typedef struct GameState {
 // Background tile colors
 fn_((Render_getBgTileColor(BgTile tile))(Color)) {
     switch (tile) {
-    case BgTile_none:
-        return Color_transparent;
-    case BgTile_stone_wall:
-        return literal_Color_fromOpaque(100, 100, 100); // Gray
-    case BgTile_dirt_wall:
-        return literal_Color_fromOpaque(139, 69, 19); // Brown
-    case BgTile_wood_wall:
-        return literal_Color_fromOpaque(160, 82, 45); // Saddle brown
-    case BgTile_glass_wall:
-        return literal_Color_fromOpaque(173, 216, 230); // Light blue
-    default:
-        return Color_black;
+    case BgTile_none:       return Color_transparent;
+    case BgTile_stone_wall: return literal_Color_fromOpaque(100, 100, 100); // Gray
+    case BgTile_dirt_wall:  return literal_Color_fromOpaque(139, 69, 19); // Brown
+    case BgTile_wood_wall:  return literal_Color_fromOpaque(160, 82, 45); // Saddle brown
+    case BgTile_glass_wall: return literal_Color_fromOpaque(173, 216, 230); // Light blue
     }
 }
 
 // Foreground tile colors
 fn_((Render_getFgTileColor(FgTile tile))(Color)) {
     switch (tile) {
-    case FgTile_air:
-        return Color_transparent;
-    case FgTile_stone:
-        return literal_Color_fromOpaque(128, 128, 128); // Gray
-    case FgTile_dirt:
-        return literal_Color_fromOpaque(139, 69, 19); // Brown
-    case FgTile_grass:
-        return literal_Color_fromOpaque(34, 139, 34); // Forest green
-    case FgTile_wood:
-        return literal_Color_fromOpaque(160, 82, 45); // Saddle brown
-    case FgTile_leaves:
-        return literal_Color_fromOpaque(0, 128, 0); // Green
-    case FgTile_sand:
-        return literal_Color_fromOpaque(238, 203, 173); // Peach puff
-    case FgTile_coal_ore:
-        return literal_Color_fromOpaque(64, 64, 64); // Dark gray
-    case FgTile_iron_ore:
-        return literal_Color_fromOpaque(192, 192, 192); // Silver
-    case FgTile_gold_ore:
-        return literal_Color_fromOpaque(255, 215, 0); // Gold
-    case FgTile_diamond_ore:
-        return literal_Color_fromOpaque(0, 191, 255); // Deep sky blue
-    case FgTile_bedrock:
-        return literal_Color_fromOpaque(25, 25, 25); // Very dark gray
-    default:
-        return Color_black;
+    case FgTile_air:         return Color_transparent;
+    case FgTile_stone:       return literal_Color_fromOpaque(128, 128, 128); // Gray
+    case FgTile_dirt:        return literal_Color_fromOpaque(139, 69, 19); // Brown
+    case FgTile_grass:       return literal_Color_fromOpaque(34, 139, 34); // Forest green
+    case FgTile_wood:        return literal_Color_fromOpaque(160, 82, 45); // Saddle brown
+    case FgTile_leaves:      return literal_Color_fromOpaque(0, 128, 0); // Green
+    case FgTile_sand:        return literal_Color_fromOpaque(238, 203, 173); // Peach puff
+    case FgTile_coal_ore:    return literal_Color_fromOpaque(64, 64, 64); // Dark gray
+    case FgTile_iron_ore:    return literal_Color_fromOpaque(192, 192, 192); // Silver
+    case FgTile_gold_ore:    return literal_Color_fromOpaque(255, 215, 0); // Gold
+    case FgTile_diamond_ore: return literal_Color_fromOpaque(0, 191, 255); // Deep sky blue
+    case FgTile_bedrock:     return literal_Color_fromOpaque(25, 25, 25); // Very dark gray
     }
 }
 
@@ -301,60 +280,41 @@ fn_((FgTile_isSolid(FgTile tile))(bool)) {
     case FgTile_diamond_ore:
     case FgTile_bedrock:
         return true;
-    default:
-        claim_unreachable;
     }
 }
 
 // Entity tile colors
 fn_((Render_getEntityTileColor(EntityTileType tile))(Color)) {
     switch (tile) {
-    case EntityTileType_none:
-        return Color_transparent;
-    case EntityTileType_platform:
-        return literal_Color_fromOpaque(160, 82, 45); // Saddle brown
-    case EntityTileType_crafting_table:
-        return literal_Color_fromOpaque(139, 69, 19); // Brown
-    case EntityTileType_chair:
-        return literal_Color_fromOpaque(101, 67, 33); // Dark brown
-    case EntityTileType_table:
-        return literal_Color_fromOpaque(139, 69, 19); // Brown
-    // Tree system
-    case EntityTileType_tree_trunk:
-        return literal_Color_fromOpaque(160, 82, 45); // Saddle brown (나무 기둥)
-    case EntityTileType_wood_plank:
-        return literal_Color_fromOpaque(222, 184, 135); // Burlywood (나무 판자)
-    case EntityTileType_chest:
-        return literal_Color_fromOpaque(139, 69, 19); // Brown
-    case EntityTileType_furnace:
-        return literal_Color_fromOpaque(105, 105, 105); // Dim gray
-    case EntityTileType_anvil:
-        return literal_Color_fromOpaque(192, 192, 192); // Silver
+    case EntityTileType_none:           return Color_transparent;
+    case EntityTileType_platform:       return literal_Color_fromOpaque(160, 82, 45); // Saddle brown
+    case EntityTileType_crafting_table: return literal_Color_fromOpaque(139, 69, 19); // Brown
+    case EntityTileType_chair:          return literal_Color_fromOpaque(101, 67, 33); // Dark brown
+    case EntityTileType_table:          return literal_Color_fromOpaque(139, 69, 19); // Brown
+
+    case EntityTileType_tree_trunk: return literal_Color_fromOpaque(160, 82, 45); // Saddle brown (나무 기둥)
+    case EntityTileType_wood_plank: return literal_Color_fromOpaque(222, 184, 135); // Burlywood (나무 판자)
+    case EntityTileType_chest:      return literal_Color_fromOpaque(139, 69, 19); // Brown
+    case EntityTileType_furnace:    return literal_Color_fromOpaque(105, 105, 105); // Dim gray
+    case EntityTileType_anvil:      return literal_Color_fromOpaque(192, 192, 192); // Silver
+
     case EntityTileType_door_closed:
     case EntityTileType_door_open:
         return literal_Color_fromOpaque(101, 67, 33); // Dark brown
-    case EntityTileType_torch:
-        return literal_Color_fromOpaque(255, 69, 0); // Red orange
-    case EntityTileType_lantern:
-        return literal_Color_fromOpaque(255, 215, 0); // Gold
-    default:
-        return Color_black;
+
+    case EntityTileType_torch:   return literal_Color_fromOpaque(255, 69, 0); // Red orange
+    case EntityTileType_lantern: return literal_Color_fromOpaque(255, 215, 0); // Gold
     }
 }
 
 // Entity colors
 fn_((Render_getEntityColor(EntityType entity_type))(Color)) {
     switch (entity_type) {
-    case EntityType_player:
-        return literal_Color_fromOpaque(0, 0, 255); // Blue
-    case EntityType_item_drop:
-        return literal_Color_fromOpaque(255, 255, 0); // Yellow
-    case EntityType_zombie:
-        return literal_Color_fromOpaque(0, 128, 0); // Green
-    case EntityType_skeleton:
-        return literal_Color_fromOpaque(255, 255, 255); // White
-    default:
-        return Color_white;
+    case EntityType_player:    return literal_Color_fromOpaque(0, 0, 255); // Blue
+    case EntityType_item_drop: return literal_Color_fromOpaque(255, 255, 0); // Yellow
+    case EntityType_zombie:    return literal_Color_fromOpaque(0, 128, 0); // Green
+    case EntityType_skeleton:  return literal_Color_fromOpaque(255, 255, 255); // White
+    default:                   return Color_white;
     }
 }
 
@@ -434,118 +394,118 @@ fn_((EntityTile_props(EntityTileType tile_type))(TileProps)) {
     switch (tile_type) {
     case EntityTileType_none:
         return (TileProps){
-            .size        = { .x = 1, .y = 1 },
-            .obstacle    = false,
-            .platform    = false,
+            .size = { .x = 1, .y = 1 },
+            .obstacle = false,
+            .platform = false,
             .interactive = false,
             .light_level = 0,
         };
     // Passable platforms
     case EntityTileType_platform:
         return (TileProps){
-            .size        = { .x = 1, .y = 1 },
-            .obstacle    = false,
-            .platform    = true,
+            .size = { .x = 1, .y = 1 },
+            .obstacle = false,
+            .platform = true,
             .interactive = false,
             .light_level = 0,
         };
     case EntityTileType_crafting_table:
         return (TileProps){
-            .size        = { .x = 2, .y = 1 },
-            .obstacle    = false,
-            .platform    = true,
+            .size = { .x = 2, .y = 1 },
+            .obstacle = false,
+            .platform = true,
             .interactive = true,
             .light_level = 0,
         };
     case EntityTileType_chair:
         return (TileProps){
-            .size        = { .x = 1, .y = 2 },
-            .obstacle    = false,
-            .platform    = true,
+            .size = { .x = 1, .y = 2 },
+            .obstacle = false,
+            .platform = true,
             .interactive = false,
             .light_level = 0,
         };
     case EntityTileType_table:
         return (TileProps){
-            .size        = { .x = 3, .y = 2 },
-            .obstacle    = false,
-            .platform    = true,
+            .size = { .x = 3, .y = 2 },
+            .obstacle = false,
+            .platform = true,
             .interactive = false,
             .light_level = 0,
         };
     // Tree system
     case EntityTileType_tree_trunk:
         return (TileProps){
-            .size        = { .x = 1, .y = 1 },
-            .obstacle    = false,
-            .platform    = false,
+            .size = { .x = 1, .y = 1 },
+            .obstacle = false,
+            .platform = false,
             .interactive = true, // 채굴 가능
             .light_level = 0,
         };
     case EntityTileType_wood_plank:
         return (TileProps){
-            .size        = { .x = 1, .y = 1 },
-            .obstacle    = true,
-            .platform    = false,
+            .size = { .x = 1, .y = 1 },
+            .obstacle = true,
+            .platform = false,
             .interactive = true, // 채굴 가능
             .light_level = 0,
         };
     case EntityTileType_chest:
         return (TileProps){
-            .size        = { .x = 2, .y = 2 },
-            .obstacle    = false,
-            .platform    = false,
+            .size = { .x = 2, .y = 2 },
+            .obstacle = false,
+            .platform = false,
             .interactive = true,
             .light_level = 0,
         };
     // Solid objects
     case EntityTileType_furnace:
         return (TileProps){
-            .size        = { .x = 2, .y = 2 },
-            .obstacle    = false,
-            .platform    = false,
+            .size = { .x = 2, .y = 2 },
+            .obstacle = false,
+            .platform = false,
             .interactive = true,
             .light_level = 3,
         };
     case EntityTileType_anvil:
         return (TileProps){
-            .size        = { .x = 2, .y = 1 },
-            .obstacle    = false,
-            .platform    = false,
+            .size = { .x = 2, .y = 1 },
+            .obstacle = false,
+            .platform = false,
             .interactive = true,
             .light_level = 0,
         };
     // Doors
     case EntityTileType_door_closed:
         return (TileProps){
-            .size        = { .x = 1, .y = 3 },
-            .obstacle    = true,
-            .platform    = false,
+            .size = { .x = 1, .y = 3 },
+            .obstacle = true,
+            .platform = false,
             .interactive = true,
             .light_level = 0,
         };
     case EntityTileType_door_open:
         return (TileProps){
-            .size        = { .x = 1, .y = 3 },
-            .obstacle    = false,
-            .platform    = false,
+            .size = { .x = 1, .y = 3 },
+            .obstacle = false,
+            .platform = false,
             .interactive = true,
             .light_level = 0,
         };
     // Lighting
     case EntityTileType_torch:
         return (TileProps){
-            .size        = { .x = 1, .y = 1 },
-            .obstacle    = false,
-            .platform    = false,
+            .size = { .x = 1, .y = 1 },
+            .obstacle = false,
+            .platform = false,
             .interactive = false,
             .light_level = 10,
         };
     case EntityTileType_lantern:
         return (TileProps){
-            .size        = { .x = 1, .y = 1 },
-            .obstacle    = false,
-            .platform    = false,
+            .size = { .x = 1, .y = 1 },
+            .obstacle = false,
+            .platform = false,
             .interactive = false,
             .light_level = 12,
         };
@@ -569,25 +529,23 @@ fn_((hash2D(usize x, usize y))(u32)) {
 // ============================================================================
 
 fn_((Game_init(mem_Allocator allocator))(GameState*)) {
-    let self = u_castP$((GameState*)(
-        catch_((mem_Allocator_create(allocator, typeInfo$(GameState)))(
-            $ignore, claim_unreachable
-        ))
-    ));
+    let self = u_castP$((GameState*)(catch_((mem_Allocator_create(allocator, typeInfo$(GameState)))(
+        $ignore, claim_unreachable
+    ))));
 
     // Initialize memory to zero
-    self->player.data.entity_id            = 0;
+    self->player.data.entity_id = 0;
     self->player.data.selected_hotbar_slot = 0;
-    self->entities.count                   = 0;
-    self->entities.next_id                 = 0;
-    self->world.state.time_of_day          = 0.25f; // Start at morning
-    self->world.state.tick_count           = 0;
+    self->entities.count = 0;
+    self->entities.next_id = 0;
+    self->world.state.time_of_day = 0.25f; // Start at morning
+    self->world.state.tick_count = 0;
 
     // Initialize empty world
     for_(($r(0, Game_world_height))(y) {
         for_(($r(0, Game_world_width))(x) {
-            self->world.layer.fg_tiles[y][x]     = FgTile_air;
-            self->world.layer.bg_tiles[y][x]     = BgTile_none;
+            self->world.layer.fg_tiles[y][x] = FgTile_air;
+            self->world.layer.bg_tiles[y][x] = BgTile_none;
             self->world.layer.entity_tiles[y][x] = (EntityTile){ 0 };
             self->world.layer.block_health[y][x] = 0;
         });
@@ -606,17 +564,17 @@ fn_((Game_init(mem_Allocator allocator))(GameState*)) {
 
     // Create player entity
     let entity = (Entity){
-        .id          = 0,
+        .id = 0,
         .entity_type = EntityType_player,
-        .position    = { .x = as$(f32)(Game_world_width) / 2.0f, .y = 50.0f },
-        .velocity    = m_V2f32_zero,
-        .size        = { .x = Game_player_size_x, .y = Game_player_size_y },
-        .health      = Game_player_health_default,
-        .max_health  = Game_player_health_default,
-        .alive       = true,
-        .grounded    = false,
+        .position = { .x = as$(f32)(Game_world_width) / 2.0f, .y = 50.0f },
+        .velocity = m_V2f32_zero,
+        .size = { .x = Game_player_size_x, .y = Game_player_size_y },
+        .health = Game_player_health_default,
+        .max_health = Game_player_health_default,
+        .alive = true,
+        .grounded = false,
         .on_platform = false,
-        .item_stack  = { .item_type = ItemType_none, .count = 0 },
+        .item_stack = { .item_type = ItemType_none, .count = 0 },
     };
     self->player.data.entity_id = unwrap_(Game_appendEntity(self, entity));
 
@@ -647,7 +605,7 @@ fn_((Game_genWorld(GameState* self))(void)) {
     // Generate terrain
     for_(($r(0, Game_world_width))(x) {
         let height_variation = flt_sin(as$(f32)(x) * 0.05f) * 10.0f;
-        let height           = as$(i32)(surface_height) + as$(i32)(height_variation);
+        let height = as$(i32)(surface_height) + as$(i32)(height_variation);
 
         for_(($r(0, Game_world_height))(y) {
             if_(let iy = as$(i32)(y), (iy > height + 30)) {
@@ -687,16 +645,16 @@ fn_((Game_genWorld(GameState* self))(void)) {
         // Add trees
         if ((x % 7 == 3) && (2 < x && x < (Game_world_width - 2))) {
             let tree_height = 5 + (hash2D(x, 0) % 3);
-            let base_y      = as$(usize)(height - 1);
+            let base_y = as$(usize)(height - 1);
             if (base_y > (tree_height + 3)) {
                 // Trunk as entity tiles (나무 기둥을 엔티티 타일로)
                 for_(($r(1, tree_height + 1))(ty) {
-                    let trunk_y                                = base_y - ty;
+                    let trunk_y = base_y - ty;
                     self->world.layer.entity_tiles[trunk_y][x] = ((EntityTile){
-                        .type      = EntityTileType_tree_trunk,
-                        .origin    = { .x = as$(i32)(x), .y = as$(i32)(trunk_y) },
+                        .type = EntityTileType_tree_trunk,
+                        .origin = { .x = as$(i32)(x), .y = as$(i32)(trunk_y) },
                         .is_origin = true,
-                        .metadata  = as$(u32)(ty), // 트리 높이 정보 저장
+                        .metadata = as$(u32)(ty), // 트리 높이 정보 저장
                     });
                 });
                 // Leaves
@@ -749,16 +707,16 @@ fn_((Game_placeEntityTile(GameState* self, i32 x, i32 y, EntityTileType tile_typ
     // Place the multi-tile object
     for_(($r(0, props.size.y))(dy) {
         for_(($r(0, props.size.x))(dx) {
-            let tx  = x + dx;
-            let ty  = y + dy;
+            let tx = x + dx;
+            let ty = y + dy;
             let utx = as$(usize)(tx);
             let uty = as$(usize)(ty);
 
             self->world.layer.entity_tiles[uty][utx] = ((EntityTile){
-                .type      = tile_type,
-                .origin    = { .x = x, .y = y },
+                .type = tile_type,
+                .origin = { .x = x, .y = y },
                 .is_origin = (dx == 0 && dy == 0),
-                .metadata  = 0,
+                .metadata = 0,
             });
         });
     });
@@ -775,8 +733,8 @@ fn_((Game_removeEntityTile(GameState* self, i32 x, i32 y))(O$EntityTileType) $sc
     if (tile.type == EntityTileType_none) { return_none(); }
 
     // Find the origin and remove all parts
-    let origin       = tile.origin;
-    let props        = EntityTile_props(tile.type);
+    let origin = tile.origin;
+    let props = EntityTile_props(tile.type);
     let removed_type = tile.type;
 
     for_(($r(0, props.size.y))(dy) {
@@ -801,7 +759,7 @@ fn_((Game_destroyTreeAbove(GameState* self, usize x, usize y))(void)) {
     // 위쪽으로 올라가면서 나무 기둥과 잎을 파괴
     for_($rev($r(0, y))(check_y) {
         let entity_tile = &self->world.layer.entity_tiles[check_y][x];
-        let fg_tile     = self->world.layer.fg_tiles[check_y][x];
+        let fg_tile = self->world.layer.fg_tiles[check_y][x];
 
         // 나무 기둥 파괴
         if (entity_tile->type == EntityTileType_tree_trunk) {
@@ -1012,20 +970,20 @@ fn_((Item_entityTileToItem(EntityTileType tile))(ItemType)) {
 fn_((Game_createItemDrop(GameState* self, m_V2f32 pos, ItemType item_type, u16 count))(void)) {
     let pos_x_hash = as$(u32)(pos.x);
     let pos_y_hash = as$(u32)(pos.y);
-    let rand_x     = as$(f32)(((hash2D(pos_x_hash, pos_y_hash) % 100) - 50) * 0.01f);
+    let rand_x = as$(f32)(((hash2D(pos_x_hash, pos_y_hash) % 100) - 50) * 0.01f);
 
     let entity = ((Entity){
-        .id          = 0,
+        .id = 0,
         .entity_type = EntityType_item_drop,
-        .position    = pos,
-        .velocity    = { .x = rand_x, .y = -2.0f },
-        .size        = { .x = 0.3f, .y = 0.3f },
-        .health      = 1,
-        .max_health  = 1,
-        .alive       = true,
-        .grounded    = false,
+        .position = pos,
+        .velocity = { .x = rand_x, .y = -2.0f },
+        .size = { .x = 0.3f, .y = 0.3f },
+        .health = 1,
+        .max_health = 1,
+        .alive = true,
+        .grounded = false,
         .on_platform = false,
-        .item_stack  = { .item_type = item_type, .count = count },
+        .item_stack = { .item_type = item_type, .count = count },
     });
     Game_appendEntity(self, entity);
 }
@@ -1056,8 +1014,8 @@ fn_((Game_pickUpItems(GameState* self, Entity* player))(void)) {
         let item = &self->entities.data[i];
         if (!item->alive || item->entity_type != EntityType_item_drop) { continue; }
 
-        let dx       = item->position.x - player->position.x;
-        let dy       = item->position.y - player->position.y;
+        let dx = item->position.x - player->position.x;
+        let dy = item->position.y - player->position.y;
         let distance = flt_sqrt((dx * dx) + (dy * dy));
         if (distance < 1.5f) {
             if (Game_addToInventory(self, item->item_stack)) {
@@ -1087,19 +1045,19 @@ fn_((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check_
         for_(($r(min_x, max_x + 1))(x) {
             if ((x < 0 || Game_world_width <= x) || (y < 0 || Game_world_height <= y)) {
                 return_({
-                    .collided    = true,
+                    .collided = true,
                     .is_obstacle = true,
                     .is_platform = false,
                 });
             }
 
             // Check block tiles
-            let ux      = as$(usize)(x);
-            let uy      = as$(usize)(y);
+            let ux = as$(usize)(x);
+            let uy = as$(usize)(y);
             let fg_tile = self->world.layer.fg_tiles[uy][ux];
             if (FgTile_isSolid(fg_tile)) {
                 return_({
-                    .collided    = true,
+                    .collided = true,
                     .is_obstacle = true,
                     .is_platform = false,
                 });
@@ -1111,7 +1069,7 @@ fn_((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check_
                 let props = EntityTile_props(entity_tile.type);
                 if (props.obstacle) {
                     return_({
-                        .collided    = true,
+                        .collided = true,
                         .is_obstacle = true,
                         .is_platform = false,
                     });
@@ -1120,12 +1078,12 @@ fn_((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check_
                 if (props.platform && check_platforms) {
                     // Check if entity bottom is near platform top
                     let entity_bottom = pos.y + (size.y / 2.0f);
-                    let platform_top  = as$(f32)(y);
+                    let platform_top = as$(f32)(y);
 
                     if (platform_top <= entity_bottom
                         && entity_bottom <= (platform_top + 0.5f)) {
                         return_({
-                            .collided    = true,
+                            .collided = true,
                             .is_platform = true,
                             .is_obstacle = false,
                         });
@@ -1136,7 +1094,7 @@ fn_((Game_checkCollision(GameState* self, m_V2f32 pos, m_V2f32 size, bool check_
     });
 
     return_({
-        .collided    = false,
+        .collided = false,
         .is_obstacle = false,
         .is_platform = false,
     });
@@ -1147,7 +1105,7 @@ fn_((Game_moveWithCollision(GameState* self, Entity* entity, f32 delta_time))(vo
     let move_y = entity->velocity.y * delta_time;
 
     // Horizontal movement
-    let new_x       = entity->position.x + move_x;
+    let new_x = entity->position.x + move_x;
     let h_collision = Game_checkCollision(self, (m_V2f32){ .x = new_x, .y = entity->position.y }, entity->size, false);
 
     if (!h_collision.collided) {
@@ -1155,7 +1113,7 @@ fn_((Game_moveWithCollision(GameState* self, Entity* entity, f32 delta_time))(vo
     } else {
         // 1칸 높이 블럭 오르기 시도 (플레이어만)
         if (entity->entity_type == EntityType_player && entity->grounded) {
-            let step_up_y         = entity->position.y - 1.0f; // 1칸 위로
+            let step_up_y = entity->position.y - 1.0f; // 1칸 위로
             let step_up_collision = Game_checkCollision(self, (m_V2f32){ .x = new_x, .y = step_up_y }, entity->size, false);
 
             if (!step_up_collision.collided) {
@@ -1171,7 +1129,7 @@ fn_((Game_moveWithCollision(GameState* self, Entity* entity, f32 delta_time))(vo
     }
 
     // Vertical movement
-    let new_y       = entity->position.y + move_y;
+    let new_y = entity->position.y + move_y;
     let v_collision = Game_checkCollision(
         self,
         (m_V2f32){ .x = entity->position.x, .y = new_y },
@@ -1180,12 +1138,12 @@ fn_((Game_moveWithCollision(GameState* self, Entity* entity, f32 delta_time))(vo
     );
 
     if (!v_collision.collided) {
-        entity->position.y  = new_y;
-        entity->grounded    = false;
+        entity->position.y = new_y;
+        entity->grounded = false;
         entity->on_platform = false;
     } else {
         if (entity->velocity.y > 0.0f) {
-            entity->grounded    = v_collision.is_obstacle;
+            entity->grounded = v_collision.is_obstacle;
             entity->on_platform = v_collision.is_platform;
         } else {
             entity->velocity.y = 0.0f;
@@ -1230,18 +1188,22 @@ fn_((Game_processInput(GameState* self))(void)) {
 
     player->velocity.x = expr_(f32 $scope) if (self->player.input.move_left) {
         $break_(-Game_player_speed_x);
-    } else if (self->player.input.move_right) {
+    }
+    else if (self->player.input.move_right) {
         $break_(Game_player_speed_x);
-    } else {
+    }
+    else {
         $break_(player->velocity.x * 0.8f);
     } $unscoped_(expr);
 
     // Movement
     player->velocity.x = expr_(f32 $scope) if (self->player.input.move_left) {
         $break_(-Game_player_speed_x);
-    } else if (self->player.input.move_right) {
+    }
+    else if (self->player.input.move_right) {
         $break_(Game_player_speed_x);
-    } else {
+    }
+    else {
         $break_(player->velocity.x * 0.8f);
     } $unscoped_(expr);
 
@@ -1254,7 +1216,7 @@ fn_((Game_processInput(GameState* self))(void)) {
     if (self->player.input.down && player->on_platform) {
         player->position.y += 0.2f; // 더 확실하게 통과하도록
         player->on_platform = false;
-        player->velocity.y  = 0.0f; // 통과 시 수직 속도 초기화
+        player->velocity.y = 0.0f; // 통과 시 수직 속도 초기화
     }
 
     // Mining/interaction
@@ -1276,15 +1238,15 @@ fn_((Game_processInput(GameState* self))(void)) {
 
 fn_((Game_handleMining(GameState* self))(void)) {
     let cursor_pos = self->player.input.cursor_world_pos;
-    let block_x    = (i32)flt_floor(cursor_pos.x);
-    let block_y    = (i32)flt_floor(cursor_pos.y);
+    let block_x = (i32)flt_floor(cursor_pos.x);
+    let block_y = (i32)flt_floor(cursor_pos.y);
     if ((block_x < 0 || Game_world_width <= block_x)
         || (block_y < 0 || Game_world_height <= block_y)) { return; }
 
     // Check distance
-    let player   = orelse_((Game_idxEntityById(self, self->player.data.entity_id))(return));
-    let dx       = cursor_pos.x - player->position.x;
-    let dy       = cursor_pos.y - player->position.y;
+    let player = orelse_((Game_idxEntityById(self, self->player.data.entity_id))(return));
+    let dx = cursor_pos.x - player->position.x;
+    let dy = cursor_pos.y - player->position.y;
     let distance = flt_sqrt((dx * dx) + (dy * dy));
     if (distance > 5.0f) { return; }
 
@@ -1293,7 +1255,7 @@ fn_((Game_handleMining(GameState* self))(void)) {
 
     // Check what layer to mine
     let selected_item = self->player.data.inventory[self->player.data.selected_hotbar_slot];
-    let is_hammer     = selected_item.item_type == ItemType_wooden_hammer;
+    let is_hammer = selected_item.item_type == ItemType_wooden_hammer;
     if (is_hammer) {
         // Hammer removes entity tiles and background
         if (self->world.layer.entity_tiles[uy][ux].type != EntityTileType_none) {
@@ -1315,7 +1277,7 @@ fn_((Game_handleMining(GameState* self))(void)) {
             if_(let item_type = Item_blockToItem(block), item_type != ItemType_none) {
                 Game_createItemDrop(self, cursor_pos, item_type, 1);
             }
-            self->world.layer.fg_tiles[uy][ux]     = FgTile_air;
+            self->world.layer.fg_tiles[uy][ux] = FgTile_air;
             self->world.layer.block_health[uy][ux] = 0;
         }
     }
@@ -1323,15 +1285,15 @@ fn_((Game_handleMining(GameState* self))(void)) {
 
 fn_((Game_handleBlockPlacement(GameState* self))(void)) {
     let cursor_pos = self->player.input.cursor_world_pos;
-    let block_x    = (i32)flt_floor(cursor_pos.x);
-    let block_y    = (i32)flt_floor(cursor_pos.y);
+    let block_x = (i32)flt_floor(cursor_pos.x);
+    let block_y = (i32)flt_floor(cursor_pos.y);
     if ((block_x < 0 || Game_world_width <= block_x)
         || (block_y < 0 || Game_world_height <= block_y)) { return; }
 
     // Check distance
-    let player   = orelse_((Game_idxEntityById(self, self->player.data.entity_id))(return));
-    let dx       = cursor_pos.x - player->position.x;
-    let dy       = cursor_pos.y - player->position.y;
+    let player = orelse_((Game_idxEntityById(self, self->player.data.entity_id))(return));
+    let dx = cursor_pos.x - player->position.x;
+    let dy = cursor_pos.y - player->position.y;
     let distance = flt_sqrt((dx * dx) + (dy * dy));
     if (distance > 5.0f) { return; }
 
@@ -1365,8 +1327,8 @@ fn_((Game_handleBlockPlacement(GameState* self))(void)) {
 
 fn_((Game_handleInteraction(GameState* self))(void)) {
     let cursor_pos = self->player.input.cursor_world_pos;
-    let block_x    = (i32)flt_floor(cursor_pos.x);
-    let block_y    = (i32)flt_floor(cursor_pos.y);
+    let block_x = (i32)flt_floor(cursor_pos.x);
+    let block_y = (i32)flt_floor(cursor_pos.y);
 
     if ((block_x < 0 || Game_world_width <= block_x)
         || (block_y < 0 || Game_world_height <= block_y)) { return; }
@@ -1421,7 +1383,7 @@ fn_((Game_updateEntityAI(GameState* self, f32 delta_time))(void)) {
         case EntityType_zombie:
         case EntityType_skeleton: {
             let player = orelse_((Game_idxEntityById(self, self->player.data.entity_id))(return));
-            let dx     = player->position.x - entity->position.x;
+            let dx = player->position.x - entity->position.x;
             if (1.0f < flt_abs(dx)) {
                 entity->velocity.x = (0.0f < dx) ? 3.0f : -3.0f;
                 if (entity->grounded && flt_abs(entity->velocity.x) < 0.1f) {
@@ -1462,7 +1424,8 @@ fn_((Game_setInput(GameState* self, InputState input))(void)) {
 fn_((Game_getPlayerPosition(GameState* self))(m_V2f32)) {
     return expr_(m_V2f32 $scope) if_some((Game_idxEntityById(self, self->player.data.entity_id))(player)) {
         $break_(player->position);
-    } else {
+    }
+    else {
         $break_(m_V2f32_zero);
     } $unscoped_(expr);
 }
@@ -1470,7 +1433,8 @@ fn_((Game_getPlayerPosition(GameState* self))(m_V2f32)) {
 fn_((Game_getBackgroundTile(GameState* self, usize x, usize y))(BgTile)) {
     return expr_(BgTile $scope) if (Game_world_width <= x || Game_world_height <= y) {
         $break_(BgTile_none);
-    } else {
+    }
+    else {
         $break_(self->world.layer.bg_tiles[y][x]);
     } $unscoped_(expr);
 }
@@ -1478,7 +1442,8 @@ fn_((Game_getBackgroundTile(GameState* self, usize x, usize y))(BgTile)) {
 fn_((Game_getFgTile(GameState* self, usize x, usize y))(FgTile)) {
     return expr_(FgTile $scope) if (Game_world_width <= x || Game_world_height <= y) {
         $break_(FgTile_bedrock);
-    } else {
+    }
+    else {
         $break_(self->world.layer.fg_tiles[y][x]);
     } $unscoped_(expr);
 }
@@ -1486,7 +1451,8 @@ fn_((Game_getFgTile(GameState* self, usize x, usize y))(FgTile)) {
 fn_((Game_getEntityTile(GameState* self, usize x, usize y))(EntityTile)) {
     return expr_(EntityTile $scope) if (Game_world_width <= x || Game_world_height <= y) {
         $break_((EntityTile){ .type = EntityTileType_none, .origin = m_V2i32_zero, .is_origin = false, .metadata = 0 });
-    } else {
+    }
+    else {
         $break_(self->world.layer.entity_tiles[y][x]);
     } $unscoped_(expr);
 }
@@ -1494,7 +1460,8 @@ fn_((Game_getEntityTile(GameState* self, usize x, usize y))(EntityTile)) {
 fn_((Game_getInventorySlot(GameState* self, usize slot))(ItemStack)) {
     return expr_(ItemStack $scope) if (Game_inventory_size <= slot) {
         $break_((ItemStack){ .item_type = ItemType_none, .count = 0 });
-    } else {
+    }
+    else {
         $break_(self->player.data.inventory[slot]);
     } $unscoped_(expr);
 }
@@ -1514,7 +1481,8 @@ fn_((Game_getEntityCount(GameState* self))(u32)) {
 fn_((Game_getEntity(GameState* self, usize index))(O$Entity)) {
     return expr_(O$Entity $scope) if (self->entities.count <= index) {
         $break_(none());
-    } else {
+    }
+    else {
         $break_(some(self->entities.data[index]));
     } $unscoped_(expr);
 }
@@ -1524,18 +1492,16 @@ fn_((Game_getEntity(GameState* self, usize index))(O$Entity)) {
 // ============================================================================
 
 fn_((Render_init(mem_Allocator allocator))(Renderer*)) {
-    let self = u_castP$((Renderer*)(
-        catch_((mem_Allocator_create(allocator, typeInfo$(Renderer)))(
-            $ignore, claim_unreachable
-        ))
-    ));
+    let self = u_castP$((Renderer*)(catch_((mem_Allocator_create(allocator, typeInfo$(Renderer)))(
+        $ignore, claim_unreachable
+    ))));
 
     // Create window
     let window_config = (engine_Window_Config){
-        .allocator     = some(allocator),
-        .rect_size     = { .x = Render_screen_width, .y = Render_screen_height },
+        .allocator = some(allocator),
+        .rect_size = { .x = Render_screen_width, .y = Render_screen_height },
         .default_color = some(Color_black),
-        .title         = some(u8_l("Terraria-like Game")),
+        .title = some(u8_l("Terraria-like Game")),
     };
     self->window = catch_((engine_Window_init(window_config))(
         $ignore, claim_unreachable
@@ -1543,11 +1509,11 @@ fn_((Render_init(mem_Allocator allocator))(Renderer*)) {
 
     // Create canvas
     let canvas_config = (engine_Canvas_Config){
-        .allocator     = some(allocator),
-        .width         = Render_screen_width,
-        .height        = Render_screen_height,
+        .allocator = some(allocator),
+        .width = Render_screen_width,
+        .height = Render_screen_height,
         .default_color = some(Color_black),
-        .type          = some(engine_CanvasType_rgba),
+        .type = some(engine_CanvasType_rgba),
     };
     self->canvas = catch_((engine_Canvas_init(canvas_config))(
         $ignore, claim_unreachable
@@ -1557,13 +1523,13 @@ fn_((Render_init(mem_Allocator allocator))(Renderer*)) {
     engine_Window_appendView(
         self->window,
         (engine_CanvasView_Config){
-            .canvas      = self->canvas,
-            .pos         = { .x = 0, .y = 0 },
-            .size        = { .x = Render_screen_width, .y = Render_screen_height },
-            .scale       = { .x = 1.0f, .y = 1.0f },
+            .canvas = self->canvas,
+            .pos = { .x = 0, .y = 0 },
+            .size = { .x = Render_screen_width, .y = Render_screen_height },
+            .scale = { .x = 1.0f, .y = 1.0f },
             .resizable_x = false,
             .resizable_y = false,
-            .visible     = true,
+            .visible = true,
         }
     );
 
@@ -1575,8 +1541,8 @@ fn_((Render_init(mem_Allocator allocator))(Renderer*)) {
     // Bind engine core (Vt100 terminal backend)
     self->core = catch_((engine_core_VT100_init((engine_core_VT100_Config){
         .allocator = some(allocator),
-        .window    = self->window,
-        .input     = self->input,
+        .window = self->window,
+        .input = self->input,
     }))(
         $ignore, claim_unreachable
     ));
@@ -1584,7 +1550,7 @@ fn_((Render_init(mem_Allocator allocator))(Renderer*)) {
     // Initialize camera
     self->camera = (Camera){
         .position = { .x = Game_world_width / 2.0f, .y = Game_world_height / 2.0f },
-        .zoom     = 1.0f,
+        .zoom = 1.0f,
     };
 
     self->allocator = allocator;
@@ -1681,8 +1647,8 @@ fn_((Render_world(GameState* self))(void)) {
                 // 타일 크기에 따라 렌더링
                 for_(($r(0, props.size.y))(dy) {
                     for_(($r(0, props.size.x))(dx) {
-                        let tile_x     = x + dx;
-                        let tile_y     = y + dy;
+                        let tile_x = x + dx;
+                        let tile_y = y + dy;
                         let screen_pos = Render_worldToScreen(camera, (m_V2f32){ .x = as$(f32)(tile_x), .y = as$(f32)(tile_y) });
                         if ((0 <= screen_pos.x && screen_pos.x < Render_screen_width) && (0 <= screen_pos.y && screen_pos.y < Render_screen_height)) {
                             engine_Canvas_drawPixel(canvas, screen_pos.x, screen_pos.y, color);
@@ -1704,16 +1670,16 @@ fn_((Render_player(GameState* self))(void)) {
     let color = literal_Color_fromOpaque(255, 0, 0); // 빨간색 플레이어
 
     // AABB 계산 (월드 좌표계에서)
-    let player_left   = player_entity->position.x - (player_entity->size.x / 2.0f);
-    let player_right  = player_entity->position.x + (player_entity->size.x / 2.0f);
-    let player_bottom = player_entity->position.y;                         // 발 부분
-    let player_top    = player_entity->position.y + player_entity->size.y; // 머리 부분
+    let player_left = player_entity->position.x - (player_entity->size.x / 2.0f);
+    let player_right = player_entity->position.x + (player_entity->size.x / 2.0f);
+    let player_bottom = player_entity->position.y; // 발 부분
+    let player_top = player_entity->position.y + player_entity->size.y; // 머리 부분
 
     // AABB를 화면 좌표로 변환
-    let screen_left   = Render_worldToScreen(camera, (m_V2f32){ .x = player_left, .y = player_bottom });
-    let screen_right  = Render_worldToScreen(camera, (m_V2f32){ .x = player_right, .y = player_bottom });
+    let screen_left = Render_worldToScreen(camera, (m_V2f32){ .x = player_left, .y = player_bottom });
+    let screen_right = Render_worldToScreen(camera, (m_V2f32){ .x = player_right, .y = player_bottom });
     let screen_bottom = Render_worldToScreen(camera, (m_V2f32){ .x = player_entity->position.x, .y = player_bottom });
-    let screen_top    = Render_worldToScreen(camera, (m_V2f32){ .x = player_entity->position.x, .y = player_top });
+    let screen_top = Render_worldToScreen(camera, (m_V2f32){ .x = player_entity->position.x, .y = player_top });
 
     // 화면 경계 내에서 AABB 렌더링
     let min_x = prim_min(screen_left.x, screen_right.x);
@@ -1742,15 +1708,14 @@ fn_((Render_entities(GameState* self))(void)) {
         let color = Render_getEntityColor(entity->entity_type);
 
         // 엔티티 크기에 따라 렌더링
-        let size_pixels_x = as$(i32)(entity->size.x* Render_tile_size);
-        let size_pixels_y = as$(i32)(entity->size.y* Render_tile_size);
+        let size_pixels_x = as$(i32)(entity->size.x * Render_tile_size);
+        let size_pixels_y = as$(i32)(entity->size.y * Render_tile_size);
 
         for_(($r(0, size_pixels_y))(dy) {
             for_(($r(0, size_pixels_x))(dx) {
                 let world_pos = ((m_V2f32){
                     .x = entity->position.x - (entity->size.x / 2.0f) + (as$(f32)(dx) / Render_tile_size),
-                    .y = entity->position.y - (entity->size.y / 2.0f) + (as$(f32)(dy) / Render_tile_size)
-                });
+                    .y = entity->position.y - (entity->size.y / 2.0f) + (as$(f32)(dy) / Render_tile_size) });
                 let screen_pos = Render_worldToScreen(camera, world_pos);
                 if ((0 <= screen_pos.x && screen_pos.x < Render_screen_width) && (0 <= screen_pos.y && screen_pos.y < Render_screen_height)) {
                     engine_Canvas_drawPixel(canvas, screen_pos.x, screen_pos.y, color);
@@ -1772,16 +1737,16 @@ fn_((Render_ui(GameState* self))(void)) {
 }
 
 fn_((Render_hotbar(GameState* self))(void)) {
-    let canvas        = self->renderer.canvas;
+    let canvas = self->renderer.canvas;
     let hotbar_height = 5;
-    let hotbar_y      = Render_screen_height - hotbar_height;
-    let slot_size     = 3;
+    let hotbar_y = Render_screen_height - hotbar_height;
+    let slot_size = 3;
 
     // 핫바 배경
     engine_Canvas_drawRect(canvas, 0, hotbar_y, Render_screen_width - 1, Render_screen_height - 1, literal_Color_fromOpaque(50, 50, 50));
     // 핫바 슬롯들
     for_(($r(0, Game_hotbar_size))(i) {
-        let slot_x = as$(i32)(i* slot_size);
+        let slot_x = as$(i32)(i * slot_size);
         let slot_y = hotbar_y + 1;
         // 슬롯 배경
         let slot_bg_color = literal_Color_fromOpaque(30, 30, 30);
@@ -1801,15 +1766,15 @@ fn_((Render_hotbar(GameState* self))(void)) {
 }
 
 fn_((Render_selectedItemInfo(GameState* self))(void)) {
-    let canvas        = self->renderer.canvas;
+    let canvas = self->renderer.canvas;
     let selected_slot = self->player.data.selected_hotbar_slot;
-    let item          = self->player.data.inventory[selected_slot];
+    let item = self->player.data.inventory[selected_slot];
 
     if (item.item_type != ItemType_none && item.count > 0) {
         // 아이템 정보 배경
-        let info_x      = 1;
-        let info_y      = 1;
-        let info_width  = 20;
+        let info_x = 1;
+        let info_y = 1;
+        let info_width = 20;
         let info_height = 4;
         engine_Canvas_drawRect(canvas, info_x, info_y, info_x + info_width, info_y + info_height, literal_Color_fromOpaque(0, 0, 0));
         // 아이템 타입 표시 (간단한 텍스트 대신 색상으로)
@@ -1826,12 +1791,12 @@ fn_((Render_selectedItemInfo(GameState* self))(void)) {
 
 fn_((Render_cursor(GameState* self))(void)) {
     let canvas = self->renderer.canvas;
-    let input  = self->renderer.input;
+    let input = self->renderer.input;
 
     // 마우스 위치 가져오기
     let mouse_pos = engine_Mouse_getPos(input->mouse);
-    let mouse_x   = mouse_pos.x;
-    let mouse_y   = mouse_pos.y;
+    let mouse_x = mouse_pos.x;
+    let mouse_y = mouse_pos.y;
 
     // 커서 표시 (십자가 모양)
     let cursor_color = literal_Color_fromOpaque(255, 255, 255);
@@ -1856,7 +1821,7 @@ fn_((Render_playerStatus(GameState* self))(void)) {
 
         // 체력 바
         let health_percent = as$(f32)(player->health) / as$(f32)(player->max_health);
-        let health_width   = as$(i32)(health_percent * 20.0f);
+        let health_width = as$(i32)(health_percent * 20.0f);
         engine_Canvas_drawRect(canvas, status_x, status_y, status_x + 20, status_y + 2, literal_Color_fromOpaque(100, 0, 0));
         engine_Canvas_drawRect(canvas, status_x, status_y, status_x + health_width, status_y + 2, Color_red);
     }
@@ -1884,7 +1849,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     let allocator = heap_Page_allocator(&(heap_Page){});
-    let game      = Game_init(allocator);
+    let game = Game_init(allocator);
     defer_(Game_fini(game, allocator));
 
     io_stream_print(u8_l("Terraria-like game with dual-layer system initialized!\n"));
@@ -1916,9 +1881,9 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_print(u8_l("Starting game loop... Press ESC to quit\n"));
 
     // Initialize timing variables
-    let target_fps        = 60.0;
+    let target_fps = 60.0;
     let target_frame_time = time_Duration_fromSecs$f64(1.0 / target_fps);
-    var prev_frame_time   = time_Instant_now();
+    var prev_frame_time = time_Instant_now();
 
     var running = true;
     while (running) {
@@ -1927,7 +1892,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
         // 2) Compute delta time
         let elapsed_time = time_Instant_durationSince(curr_frame_time, prev_frame_time);
-        let dt           = time_Duration_asSecs$f64(elapsed_time);
+        let dt = time_Duration_asSecs$f64(elapsed_time);
 
         // Handle input
         if (engine_Keyboard_pressed(game->renderer.input->keyboard, engine_KeyCode_esc)) {
@@ -1936,13 +1901,13 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
         // Simple input handling (for demonstration)
         game->player.input = (InputState){
-            .move_left        = engine_Keyboard_held(game->renderer.input->keyboard, engine_KeyCode_a),
-            .move_right       = engine_Keyboard_held(game->renderer.input->keyboard, engine_KeyCode_d),
-            .jump             = engine_Keyboard_held(game->renderer.input->keyboard, engine_KeyCode_space),
-            .down             = engine_Keyboard_held(game->renderer.input->keyboard, engine_KeyCode_s),
-            .mine             = engine_Mouse_held(game->renderer.input->mouse, engine_MouseButton_left),
-            .place            = engine_Mouse_held(game->renderer.input->mouse, engine_MouseButton_right),
-            .interact         = engine_Keyboard_pressed(game->renderer.input->keyboard, engine_KeyCode_e),
+            .move_left = engine_Keyboard_held(game->renderer.input->keyboard, engine_KeyCode_a),
+            .move_right = engine_Keyboard_held(game->renderer.input->keyboard, engine_KeyCode_d),
+            .jump = engine_Keyboard_held(game->renderer.input->keyboard, engine_KeyCode_space),
+            .down = engine_Keyboard_held(game->renderer.input->keyboard, engine_KeyCode_s),
+            .mine = engine_Mouse_held(game->renderer.input->mouse, engine_MouseButton_left),
+            .place = engine_Mouse_held(game->renderer.input->mouse, engine_MouseButton_right),
+            .interact = engine_Keyboard_pressed(game->renderer.input->keyboard, engine_KeyCode_e),
             .cursor_world_pos = { .x = 250.0f, .y = 100.0f }, // TODO: Convert mouse position to world coordinates
             .hotbar_selection = none(),
         };
@@ -1956,7 +1921,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         io_stream_print(u8_l("\rFPS: {:6.2f}"), fps);
 
         // 3) Measure how long the update+render actually took
-        let now        = time_Instant_now();
+        let now = time_Instant_now();
         let frame_used = time_Instant_durationSince(now, curr_frame_time);
 
         // 4) Sleep for remaining time to maintain target FPS
@@ -2003,8 +1968,8 @@ TEST_only(
         s_game.world.layer.fg_tiles[10][10] = FgTile_leaves;
 
         // Test collision at the same position
-        let test_pos         = (m_V2f32){ .x = 10.0f, .y = 10.0f };
-        let test_size        = (m_V2f32){ .x = 1.0f, .y = 1.0f };
+        let test_pos = (m_V2f32){ .x = 10.0f, .y = 10.0f };
+        let test_size = (m_V2f32){ .x = 1.0f, .y = 1.0f };
         let collision_result = Game_checkCollision(&s_game, test_pos, test_size, false);
 
         // Leaves should not cause collision (should be passable)
@@ -2021,8 +1986,8 @@ TEST_only(
         s_game.world.layer.fg_tiles[10][10] = FgTile_wood;
 
         // Test collision at the same position
-        let test_pos         = (m_V2f32){ .x = 10.0f, .y = 10.0f };
-        let test_size        = (m_V2f32){ .x = 1.0f, .y = 1.0f };
+        let test_pos = (m_V2f32){ .x = 10.0f, .y = 10.0f };
+        let test_size = (m_V2f32){ .x = 1.0f, .y = 1.0f };
         let collision_result = Game_checkCollision(&s_game, test_pos, test_size, false);
 
         // Wood should cause collision (should be solid)
@@ -2040,12 +2005,12 @@ TEST_only(
         let test_size = (m_V2f32){ .x = 1.0f, .y = 1.0f };
 
         // Test negative coordinates (should collide)
-        let neg_pos       = (m_V2f32){ .x = -1.0f, .y = -1.0f };
+        let neg_pos = (m_V2f32){ .x = -1.0f, .y = -1.0f };
         let neg_collision = Game_checkCollision(&s_game, neg_pos, test_size, false);
         try_(TEST_expect(neg_collision.collided));
 
         // Test coordinates beyond world bounds (should collide)
-        let out_pos       = (m_V2f32){ .x = 500.0f, .y = 200.0f };
+        let out_pos = (m_V2f32){ .x = 500.0f, .y = 200.0f };
         let out_collision = Game_checkCollision(&s_game, out_pos, test_size, false);
         try_(TEST_expect(out_collision.collided));
 
@@ -2061,10 +2026,10 @@ TEST_only(
 
         // Create tree trunk entity tile
         s_game.world.layer.entity_tiles[tree_y][tree_x] = (EntityTile){
-            .type      = EntityTileType_tree_trunk,
-            .origin    = { .x = tree_x, .y = tree_y },
+            .type = EntityTileType_tree_trunk,
+            .origin = { .x = tree_x, .y = tree_y },
             .is_origin = true,
-            .metadata  = 1
+            .metadata = 1
         };
 
         // Create leaves above
@@ -2103,10 +2068,10 @@ TEST_only(
 
         // Place a tree trunk
         s_game.world.layer.entity_tiles[y][x] = (EntityTile){
-            .type      = EntityTileType_tree_trunk,
-            .origin    = { .x = x, .y = y },
+            .type = EntityTileType_tree_trunk,
+            .origin = { .x = x, .y = y },
             .is_origin = true,
-            .metadata  = 1
+            .metadata = 1
         };
 
         // Should now have the tree trunk
@@ -2125,11 +2090,11 @@ TEST_only(
     TEST_fn_("Camera coordinate conversion" $scope) {
         let camera = (Camera){
             .position = { .x = 250.0f, .y = 100.0f },
-            .zoom     = 1.0f
+            .zoom = 1.0f
         };
 
         // Test world to screen conversion
-        let world_pos  = (m_V2f32){ .x = 250.0f, .y = 100.0f };
+        let world_pos = (m_V2f32){ .x = 250.0f, .y = 100.0f };
         let screen_pos = Render_worldToScreen(&camera, world_pos);
 
         // Center of world should map to center of screen (assuming 500x200 screen)
@@ -2138,7 +2103,7 @@ TEST_only(
 
         // Test screen to world conversion
         let screen_pos2 = (m_V2i32){ .x = 250, .y = 100 };
-        let world_pos2  = Render_screenToWorld(&camera, screen_pos2);
+        let world_pos2 = Render_screenToWorld(&camera, screen_pos2);
 
         // Should convert back to original world position
         try_(TEST_expect(world_pos2.x == 250.0f));
@@ -2149,8 +2114,8 @@ TEST_only(
 
     TEST_fn_("Tile color rendering" $scope) {
         // Test that different tile types have different colors
-        let air_color    = Render_getFgTileColor(FgTile_air);
-        let wood_color   = Render_getFgTileColor(FgTile_wood);
+        let air_color = Render_getFgTileColor(FgTile_air);
+        let wood_color = Render_getFgTileColor(FgTile_wood);
         let leaves_color = Render_getFgTileColor(FgTile_leaves);
 
         // Air should be transparent/black
@@ -2165,7 +2130,7 @@ TEST_only(
 
     TEST_fn_("Entity tile color rendering" $scope) {
         // Test that different entity tile types have different colors
-        let none_color  = Render_getEntityTileColor(EntityTileType_none);
+        let none_color = Render_getEntityTileColor(EntityTileType_none);
         let trunk_color = Render_getEntityTileColor(EntityTileType_tree_trunk);
         let plank_color = Render_getEntityTileColor(EntityTileType_wood_plank);
 
@@ -2224,15 +2189,15 @@ TEST_only(
 
         // Create a player entity
         let player_entity = (Entity){
-            .id          = 1,
+            .id = 1,
             .entity_type = EntityType_player,
-            .position    = { .x = 10.0f, .y = 10.0f },
-            .velocity    = { .x = 5.0f, .y = 0.0f },
-            .size        = { .x = 1.0f, .y = 1.0f },
-            .health      = 100,
-            .max_health  = 100,
-            .alive       = true,
-            .grounded    = false,
+            .position = { .x = 10.0f, .y = 10.0f },
+            .velocity = { .x = 5.0f, .y = 0.0f },
+            .size = { .x = 1.0f, .y = 1.0f },
+            .health = 100,
+            .max_health = 100,
+            .alive = true,
+            .grounded = false,
             .on_platform = false,
         };
 
@@ -2245,7 +2210,7 @@ TEST_only(
         s_game.world.layer.fg_tiles[10][15] = FgTile_stone;
 
         // Simulate movement that would cause collision
-        let player     = orelse_((Game_idxMutEntityById(&s_game, s_game.player.data.entity_id))(return_ok({})));
+        let player = orelse_((Game_idxMutEntityById(&s_game, s_game.player.data.entity_id))(return_ok({})));
         let original_x = player->position.x;
 
         // Apply horizontal movement that should collide
@@ -2264,15 +2229,15 @@ TEST_only(
 
         // Create a player entity above a tree trunk
         let player_entity = (Entity){
-            .id          = 1,
+            .id = 1,
             .entity_type = EntityType_player,
-            .position    = { .x = 10.0f, .y = 12.0f }, // Above tree trunk
-            .velocity    = { .x = 0.0f, .y = 2.0f },   // Falling down
-            .size        = { .x = 1.0f, .y = 1.0f },
-            .health      = 100,
-            .max_health  = 100,
-            .alive       = true,
-            .grounded    = false,
+            .position = { .x = 10.0f, .y = 12.0f }, // Above tree trunk
+            .velocity = { .x = 0.0f, .y = 2.0f }, // Falling down
+            .size = { .x = 1.0f, .y = 1.0f },
+            .health = 100,
+            .max_health = 100,
+            .alive = true,
+            .grounded = false,
             .on_platform = false,
         };
 
@@ -2283,14 +2248,14 @@ TEST_only(
 
         // Place a tree trunk below player
         s_game.world.layer.entity_tiles[10][10] = (EntityTile){
-            .type      = EntityTileType_tree_trunk,
-            .origin    = { .x = 10, .y = 10 },
+            .type = EntityTileType_tree_trunk,
+            .origin = { .x = 10, .y = 10 },
             .is_origin = true,
-            .metadata  = 1
+            .metadata = 1
         };
 
         // Simulate falling onto tree trunk
-        let player     = orelse_((Game_idxMutEntityById(&s_game, s_game.player.data.entity_id))(return_ok({})));
+        let player = orelse_((Game_idxMutEntityById(&s_game, s_game.player.data.entity_id))(return_ok({})));
         let original_y = player->position.y;
 
         // Apply vertical movement (falling)
@@ -2313,15 +2278,15 @@ TEST_only(
 
         // Create a player entity
         let player_entity = (Entity){
-            .id          = 1,
+            .id = 1,
             .entity_type = EntityType_player,
-            .position    = { .x = 250.0f, .y = 100.0f }, // Center of world
-            .velocity    = { .x = 0.0f, .y = 0.0f },
-            .size        = { .x = 1.0f, .y = 1.0f },
-            .health      = 100,
-            .max_health  = 100,
-            .alive       = true,
-            .grounded    = false,
+            .position = { .x = 250.0f, .y = 100.0f }, // Center of world
+            .velocity = { .x = 0.0f, .y = 0.0f },
+            .size = { .x = 1.0f, .y = 1.0f },
+            .health = 100,
+            .max_health = 100,
+            .alive = true,
+            .grounded = false,
             .on_platform = false,
         };
 
@@ -2349,15 +2314,15 @@ TEST_only(
 
         // Create a player entity
         let player_entity = (Entity){
-            .id          = 1,
+            .id = 1,
             .entity_type = EntityType_player,
-            .position    = { .x = 10.0f, .y = 10.0f },
-            .velocity    = { .x = 1.0f, .y = 0.0f }, // Moving right
-            .size        = { .x = 1.0f, .y = 1.0f },
-            .health      = 100,
-            .max_health  = 100,
-            .alive       = true,
-            .grounded    = false,
+            .position = { .x = 10.0f, .y = 10.0f },
+            .velocity = { .x = 1.0f, .y = 0.0f }, // Moving right
+            .size = { .x = 1.0f, .y = 1.0f },
+            .health = 100,
+            .max_health = 100,
+            .alive = true,
+            .grounded = false,
             .on_platform = false,
         };
 
@@ -2376,7 +2341,7 @@ TEST_only(
         try_(TEST_expect(!collision_result.collided));
 
         // Simulate movement through leaves
-        let player     = orelse_((Game_idxMutEntityById(&s_game, s_game.player.data.entity_id))(return_ok({})));
+        let player = orelse_((Game_idxMutEntityById(&s_game, s_game.player.data.entity_id))(return_ok({})));
         let original_x = player->position.x;
 
         Game_moveWithCollision(&s_game, player, 0.1f);
@@ -2396,10 +2361,10 @@ TEST_only(
 
         // Create tree trunk entity tile
         s_game.world.layer.entity_tiles[tree_y][tree_x] = (EntityTile){
-            .type      = EntityTileType_tree_trunk,
-            .origin    = { .x = tree_x, .y = tree_y },
+            .type = EntityTileType_tree_trunk,
+            .origin = { .x = tree_x, .y = tree_y },
             .is_origin = true,
-            .metadata  = 1
+            .metadata = 1
         };
 
         // Create leaves above the trunk

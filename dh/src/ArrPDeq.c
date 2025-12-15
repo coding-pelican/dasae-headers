@@ -244,11 +244,11 @@ $static fn_((heapify(ArrPDeq* self, TypeInfo type))(void)) {
     }
 };
 
-$static fn_((maxIndex(ArrPDeq self))(O$usize) $scope) {
+$static fn_((maxIndex(ArrPDeq self, TypeInfo type))(O$usize) $scope) {
     if (self.items.len == 0) { return_none(); }
     if (self.items.len == 1) { return_some(0); }
     if (self.items.len == 2) { return_some(1); }
-    return_some(bestItemAtIndices((ArrPDeq*)&self, self.type, 1, 2, cmp_Ord_gt).index);
+    return_some(bestItemAtIndices((ArrPDeq*)&self, type, 1, 2, cmp_Ord_gt).index);
 } $unscoped_(fn);
 
 // ============================================================================
@@ -324,7 +324,7 @@ fn_((ArrPDeq_peekMinMut(ArrPDeq self, TypeInfo type))(O$u_P$raw) $scope) {
 
 fn_((ArrPDeq_peekMax(ArrPDeq self, TypeInfo type))(O$u_P_const$raw) $scope) {
     debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    if_some((maxIndex(self))(idx)) {
+    if_some((maxIndex(self, type))(idx)) {
         return_some(u_atS(ArrPDeq_items(self, type), idx));
     }
     return_none();
@@ -332,7 +332,7 @@ fn_((ArrPDeq_peekMax(ArrPDeq self, TypeInfo type))(O$u_P_const$raw) $scope) {
 
 fn_((ArrPDeq_peekMaxMut(ArrPDeq self, TypeInfo type))(O$u_P$raw) $scope) {
     debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    if_some((maxIndex(self))(idx)) {
+    if_some((maxIndex(self, type))(idx)) {
         return_some(u_atS(ArrPDeq_itemsMut(self, type), idx));
     }
     return_none();
@@ -521,17 +521,16 @@ fn_((ArrPDeq_enqueSWithin(ArrPDeq* self, u_S_const$raw items))(void)) {
 
 fn_((ArrPDeq_dequeMin(ArrPDeq* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     claim_assert_nonnull(self);
-    let type = ret_mem.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, ret_mem.type, TypeInfo_eq);
     if (self->items.len == 0) { return_none(); }
     return_some({ .inner = ArrPDeq_removeAt(self, 0, ret_mem).inner });
 } $unscoped_(fn);
 
 fn_((ArrPDeq_dequeMax(ArrPDeq* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     claim_assert_nonnull(self);
-    let type = ret_mem.inner_type;
+    let type = ret_mem.type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    if_some((maxIndex(*self))(idx)) {
+    if_some((maxIndex(*self, type))(idx)) {
         return_some({ .inner = ArrPDeq_removeAt(self, idx, ret_mem).inner });
     }
     return_none();
@@ -539,7 +538,7 @@ fn_((ArrPDeq_dequeMax(ArrPDeq* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
 
 fn_((ArrPDeq_removeAt(ArrPDeq* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scope) {
     claim_assert_nonnull(self);
-    let type = ret_mem.inner_type;
+    let type = ret_mem.type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     claim_assert(idx < self->items.len);
     // Copy item to return value
@@ -561,10 +560,10 @@ fn_((ArrPDeq_removeAt(ArrPDeq* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scop
 
 fn_((ArrPDeq_update(ArrPDeq* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, old_item.inner_type, TypeInfo_eq);
-    debug_assert_eqBy(self->type, new_item.inner_type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, old_item.type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, new_item.type, TypeInfo_eq);
     // Find the old item by comparing with ordCtx
-    let type = old_item.inner_type;
+    let type = old_item.type;
     usize idx = 0;
     while (idx < self->items.len) {
         let item = u_atS(ArrPDeq_items(*self, type), idx);

@@ -184,7 +184,7 @@ case _tag: { \
 #define $end_pattern() \
 }
 
-#define default_() default: {
+#define default_(...) default __VA_ARGS__: {
 #define $end_default() }
 /* clang-format on */
 

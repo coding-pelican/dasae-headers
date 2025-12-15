@@ -276,7 +276,7 @@ typedef enum_(mem_DelimType $bits(8)) {
 } mem_DelimType;
 
 #define mem_TokenIter$(_T...) tpl_id(mem_TokenIter, _T)
-typedef struct mem_TokenIter {
+typedef struct mem_TokenIter$raw {
     var_(buf, S_const$raw);
     var_(idx, usize);
     var_(delim_type, mem_DelimType);
@@ -286,9 +286,9 @@ typedef struct mem_TokenIter {
         var_(choice, S_const$raw);
     } delim;
     debug_only(var_(type, TypeInfo);)
-} mem_TokenIter;
-T_use_P$(mem_TokenIter);
-typedef P$mem_TokenIter V$mem_TokenIter;
+} mem_TokenIter$raw;
+T_use_P$(mem_TokenIter$raw);
+typedef P$mem_TokenIter$raw V$mem_TokenIter$raw;
 
 #define T_use_mem_TokenIter$(_T...) \
     typedef union mem_TokenIter$(_T) { \
@@ -303,15 +303,15 @@ typedef P$mem_TokenIter V$mem_TokenIter;
             } delim; \
             debug_only(var_(type, TypeInfo);) \
         }; \
-        mem_TokenIter as_raw $like_ref; \
+        var_(as_raw, mem_TokenIter$raw) $like_ref; \
     } mem_TokenIter$(_T)
-$extern fn_((mem_tokenizeValue(u_S_const$raw buf, u_V$raw value, V$mem_TokenIter ret_mem))(V$mem_TokenIter));
-$extern fn_((mem_tokenizePattern(u_S_const$raw buf, u_S_const$raw pattern, V$mem_TokenIter ret_mem))(V$mem_TokenIter));
-$extern fn_((mem_tokenizeChoice(u_S_const$raw buf, u_S_const$raw choice, V$mem_TokenIter ret_mem))(V$mem_TokenIter));
-$extern fn_((mem_TokenIter_reset(mem_TokenIter* self))(void));
-$extern fn_((mem_TokenIter_next(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw));
-$extern fn_((mem_TokenIter_peek(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw));
-$extern fn_((mem_TokenIter_rest(mem_TokenIter* self, TypeInfo type))(O$u_S_const$raw));
+$extern fn_((mem_tokenizeValue(u_S_const$raw buf, u_V$raw value, V$mem_TokenIter$raw ret_mem))(V$mem_TokenIter$raw));
+$extern fn_((mem_tokenizePattern(u_S_const$raw buf, u_S_const$raw pattern, V$mem_TokenIter$raw ret_mem))(V$mem_TokenIter$raw));
+$extern fn_((mem_tokenizeChoice(u_S_const$raw buf, u_S_const$raw choice, V$mem_TokenIter$raw ret_mem))(V$mem_TokenIter$raw));
+$extern fn_((mem_TokenIter_reset(mem_TokenIter$raw* self))(void));
+$extern fn_((mem_TokenIter_next(mem_TokenIter$raw* self, TypeInfo type))(O$u_S_const$raw));
+$extern fn_((mem_TokenIter_peek(mem_TokenIter$raw* self, TypeInfo type))(O$u_S_const$raw));
+$extern fn_((mem_TokenIter_rest(mem_TokenIter$raw* self, TypeInfo type))(O$u_S_const$raw));
 /* clang-format off */
 #define T_use_mem_tokenizeValue$(_T...) \
     $attr($inline_always) \

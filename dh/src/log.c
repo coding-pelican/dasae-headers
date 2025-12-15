@@ -7,12 +7,12 @@
 
 // Global state
 static log_Config log_s_config = {
-    .output_file = null,         // Default to stderr
+    .output_file = null, // Default to stderr
     .min_level = log_Level_info, // Default to Info level
-    .shows_timestamp = true,     // Show timestamps by default
-    .shows_level = true,         // Show log level by default
-    .shows_location = true,      // Show location by default
-    .shows_function = true       // Show function name by default
+    .shows_timestamp = true, // Show timestamps by default
+    .shows_level = true, // Show log level by default
+    .shows_location = true, // Show location by default
+    .shows_function = true // Show function name by default
 };
 
 fn_((log_init(const char* filename))(fs_File_Err$void) $guard) {
@@ -98,20 +98,11 @@ fn_((log_message(log_Level level, const char* file, int line, const char* func, 
     if (log_s_config.shows_level) {
         const char* level_str = "????";
         switch (level) {
-        case log_Level_debug:
-            level_str = "DEBUG";
-            break;
-        case log_Level_info:
-            level_str = "INFO";
-            break;
-        case log_Level_warn:
-            level_str = "WARN";
-            break;
-        case log_Level_error:
-            level_str = "ERROR";
-            break;
-        default:
-            claim_unreachable;
+        case log_Level_debug: level_str = "DEBUG"; break;
+        case log_Level_info:  level_str = "INFO"; break;
+        case log_Level_warn:  level_str = "WARN"; break;
+        case log_Level_error: level_str = "ERROR"; break;
+        case log_Level_count: claim_unreachable;
         }
         let_ignore = fprintf(output, "[%s]", level_str);
     }

@@ -132,14 +132,14 @@ fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
     debug_assert_nonnull(fn_ctx->fn);
 
     // Couldn't we pass the stack size to Thrd_SpawnConfig?
-    switch_((Thrd_Handle handle = {})(
-        pthread_create(&handle, null, as$(fn_(((*)(void*))(void*) $T))(fn_ctx->fn), fn_ctx)
-    )) {
-        case_((/*SUCCESS*/ 0)) return_ok({ .handle = handle }) $end(case);
-        case_((/*AGAIN*/ EAGAIN)) return_err(Err_Unspecified()) $end(case); // TODO: Change to specified err
-        case_((/*PERM*/ EPERM)) $fallthrough $end(case);
-        case_((/*INVAL*/ EINVAL)) claim_unreachable $end(case);
-        default_() return_err(Err_Unexpected()) $end(default);
+    switch_((Thrd_Handle handle = {})(pthread_create(
+        &handle, null, as$(fn_(((*)(void*))(void*) $T))(fn_ctx->fn), fn_ctx
+    ))) {
+    case_((/*INVAL*/ EINVAL)) claim_unreachable $end(case);
+    case_((/*SUCCESS*/ 0)) return_ok({ .handle = handle }) $end(case);
+    case_((/*AGAIN*/ EAGAIN)) return_err(Err_Unspecified()) $end(case); // TODO: Change to specified err
+    case_((/*PERM*/ EPERM)) $fallthrough $end(case);
+    default_() return_err(Err_Unexpected()) $end(default);
     }
     claim_unreachable;
 } $unscoped_(fn);

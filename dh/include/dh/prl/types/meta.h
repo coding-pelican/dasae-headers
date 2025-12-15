@@ -526,8 +526,7 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 #define u_castP$(/*(_T)(_Expr...)*/... /*(P_const$(_T))*/) \
     __step_inline__uCast$P$(pp_defer(__emit_inline__uCast$P$)(__param_parse__uCast$P$ __VA_ARGS__))
 #define __step_inline__uCast$P$(...) __VA_ARGS__
-#define __param_parse__uCast$P$(...) __VA_ARGS__, __param_next__uCast$P$
-#define __param_next__uCast$P$(...) __VA_ARGS__
+#define __param_parse__uCast$P$(...) __VA_ARGS__,
 #if UNUSED_CODE
 #define __emit_inline__uCast$P$(_PT, _meta...) (*as$(_PT*)(_meta.inner))
 #endif /* UNUSED_CODE */
@@ -545,15 +544,13 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 #define u_castV$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __step_inline__uCast$V$(pp_defer(__emit_inline__uCast$V$)(__param_parse__uCast$V$ __VA_ARGS__))
 #define __step_inline__uCast$V$(...) __VA_ARGS__
-#define __param_parse__uCast$V$(...) __VA_ARGS__, __param_next__uCast$V$
-#define __param_next__uCast$V$(...) __VA_ARGS__
+#define __param_parse__uCast$V$(...) __VA_ARGS__,
 #define __emit_inline__uCast$V$(_T, _meta...) (*as$(_T*)(_meta.inner))
 
 #define u_castS$(/*(_T)(_Expr...)*/... /*(S_const$(_T))*/) \
     __step_inline__uCast$S$(pp_defer(__emit_inline__uCast$S$)(__param_parse__uCast$S$ __VA_ARGS__))
 #define __step_inline__uCast$S$(...) __VA_ARGS__
-#define __param_parse__uCast$S$(...) __VA_ARGS__, __param_next__uCast$S$
-#define __param_next__uCast$S$(...) __VA_ARGS__
+#define __param_parse__uCast$S$(...) __VA_ARGS__,
 #if UNUSED_CODE
 #define __emit_inline__uCast$S$(_ST, _meta...) (*as$(_ST*)(_meta.inner))
 #endif /* UNUSED_CODE */
@@ -572,15 +569,13 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 #define u_castA$(/*(_N,_T)(_Expr...)*/... /*(A$(_N,_T))*/) \
     __step_inline__uCast$A$(pp_defer(__emit_inline__uCast$A$)(__param_parse__uCast$A$ __VA_ARGS__))
 #define __step_inline__uCast$A$(...) __VA_ARGS__
-#define __param_parse__uCast$A$(...) __VA_ARGS__, __param_next__uCast$A$
-#define __param_next__uCast$A$(...) __VA_ARGS__
+#define __param_parse__uCast$A$(...) __VA_ARGS__,
 #define __emit_inline__uCast$A$(_ANT, _meta...) (*as$(_ANT*)(_meta.inner))
 
 #define u_castO$(/*(_OT)(_Expr...)*/... /*(_OT)*/) \
     __step__u_castO$__expand(pp_defer(__step__u_castO$)(__step__u_castO$__parseOT __VA_ARGS__))
 #define __step__u_castO$__expand(...) __VA_ARGS__
-#define __step__u_castO$__parseOT(_OT...) pp_uniqTok(meta), _OT, __step__u_castO$__parseExpr
-#define __step__u_castO$__parseExpr(_Expr...) _Expr
+#define __step__u_castO$__parseOT(_OT...) pp_uniqTok(meta), _OT,
 #define __step__u_castO$(__meta, _OT, _Expr...) ({ \
     typedef _OT O$Ret$u_castO$; \
     $maybe_unused typedef O$Ret$u_castO$ CastType; \
@@ -595,8 +590,7 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 #define u_castE$(/*(_ET)(_Expr...)*/... /*(_ET)*/) \
     __step__u_castE$__expand(pp_defer(__step__u_castE$)(__step__u_castE$__parseET __VA_ARGS__))
 #define __step__u_castE$__expand(...) __VA_ARGS__
-#define __step__u_castE$__parseET(_ET...) pp_uniqTok(meta), _ET, __step__u_castE$__parseExpr
-#define __step__u_castE$__parseExpr(_Expr...) _Expr
+#define __step__u_castE$__parseET(_ET...) pp_uniqTok(meta), _ET,
 #define __step__u_castE$(__meta, _ET, _Expr...) ({ \
     typedef _ET E$Ret$u_castE$; \
     $maybe_unused typedef E$Ret$u_castE$ CastType; \

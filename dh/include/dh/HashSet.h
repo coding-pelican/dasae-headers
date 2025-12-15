@@ -225,11 +225,11 @@ $extern fn_((HashSet_rehash(HashSet* self, TypeInfo key_ty))(void));
 /* --- Set Operations --- */
 
 /// Returns true if this set is a subset of other.
-$extern fn_((HashSet_isSubset(HashSet self, HashSet other))(bool));
+$extern fn_((HashSet_isSubset(HashSet self, TypeInfo key_ty, HashSet other))(bool));
 /// Returns true if this set is a superset of other.
-$extern fn_((HashSet_isSuperset(HashSet self, HashSet other))(bool));
+$extern fn_((HashSet_isSuperset(HashSet self, TypeInfo key_ty, HashSet other))(bool));
 /// Returns true if this set is disjoint from other (no common elements).
-$extern fn_((HashSet_isDisjoint(HashSet self, HashSet other))(bool));
+$extern fn_((HashSet_isDisjoint(HashSet self, TypeInfo key_ty, HashSet other))(bool));
 
 /* --- HashSet_Iter: Iterator over entries --- */
 
@@ -666,17 +666,17 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 #define T_use_HashSet_isSubset$(_K...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T(HashSet_isSubset, _K)(HashSet$(_K) self, HashSet$(_K) other))(bool)) { \
-        return HashSet_isSubset(*self.as_raw, *other.as_raw); \
+        return HashSet_isSubset(*self.as_raw, typeInfo$(_K), *other.as_raw); \
     }
 #define T_use_HashSet_isSuperset$(_K...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T(HashSet_isSuperset, _K)(HashSet$(_K) self, HashSet$(_K) other))(bool)) { \
-        return HashSet_isSuperset(*self.as_raw, *other.as_raw); \
+        return HashSet_isSuperset(*self.as_raw, typeInfo$(_K), *other.as_raw); \
     }
 #define T_use_HashSet_isDisjoint$(_K...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T(HashSet_isDisjoint, _K)(HashSet$(_K) self, HashSet$(_K) other))(bool)) { \
-        return HashSet_isDisjoint(*self.as_raw, *other.as_raw); \
+        return HashSet_isDisjoint(*self.as_raw, typeInfo$(_K), *other.as_raw); \
     }
 /* clang-format on */
 
