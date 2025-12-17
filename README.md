@@ -118,7 +118,7 @@ dasae-headers was developed with inspiration from the syntax and standard librar
 
 ### 💽 Installation
 
-> Detailed installation and build guide is in preparation. Please wait a moment!
+<!-- > Detailed installation and build guide is in preparation. Please wait a moment! -->
 
 1. Clone this repository:
 
@@ -128,19 +128,10 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 2. Install the dh-c build tool:
 
-On Windows:
-
-```ps1
-cd dasae-headers
-.\install-dh-c.ps1
-```
-
-On Linux/macOS:
-
 ```sh
 cd dasae-headers
-chmod +x install-dh-c.sh
-./install-dh-c.sh
+chmod +x install.sh
+./install.sh
 ```
 
 3. Create a new project:

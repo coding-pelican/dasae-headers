@@ -95,7 +95,7 @@ dasae-headers는 Zig와 Rust의 문법, 표준 라이브러리에서 영감을 �
 
 ### 💽 설치
 
-> 자세한 설치 및 빌드 가이드는 준비 중에 있습니다. 조금만 기다려주세요!
+<!-- > 자세한 설치 및 빌드 가이드는 준비 중에 있습니다. 조금만 기다려주세요! -->
 
 1. 이 저장소를 클론합니다:
 
@@ -105,22 +105,13 @@ git clone https://github.com/coding-pelican/dasae-headers.git
 
 2. dh-c 빌드 도구 설치:
 
-Windows의 경우:
-
-```ps1
-cd dasae-headers
-.\install-dh-c.ps1
-```
-
-Linux/macOS의 경우:
-
 ```sh
 cd dasae-headers
-chmod +x install-dh-c.sh
-./install-dh-c.sh
+chmod +x install.sh
+./install.sh
 ```
 
-3. 새 프로젝트 생성:
+1. 새 프로젝트 생성:
 
 ```sh
 dh-c project myproject
