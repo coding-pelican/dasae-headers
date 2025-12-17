@@ -43,14 +43,12 @@ fn_((mem_set(u_S$raw dst, u_V$raw val))(u_S$raw)) {
 
 fn_((mem_setBytes0(S$u8 dst))(S$u8)) {
     claim_assert_nonnull(dst.ptr);
-    let val = u_anyV(u8_n(0x00));
-    u_memsetS(u_anyS(dst), val);
+    u_memset0S(u_anyS(dst));
     return dst;
 };
 fn_((mem_set0(u_S$raw dst))(u_S$raw)) {
     claim_assert_nonnull(dst.ptr);
-    let val = u_allocV(dst.type);
-    for_(($us(dst))(elem) { u_memset(elem, val); });
+    u_memset0S(dst);
     return dst;
 };
 

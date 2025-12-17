@@ -148,11 +148,15 @@ extern "C" {
 #define ___countOf$(_T...) (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(null))[0])))
 
 #define ____TypeOf(_Expr...) __typeof__(_Expr)
-/* clang >= 16.0, gcc >= 13.1 */
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#if defined(__clang__) && GCC_VERSION >= 16
+#if defined(__clang__) && __clang_major__ >= 16
+/* Clang >= 16.0 supports `__typeof_unqual__` */
+#define ____TypeOfUnqual(_Expr...) __typeof_unqual__(_Expr)
+#elif !defined(__clang__) && GCC_VERSION >= 130100
+/* GCC >= 13.1 supports `__typeof_unqual__` */
 #define ____TypeOfUnqual(_Expr...) __typeof_unqual__(_Expr)
 #else
+/* Fallback for no support of `__typeof_unqual__` */
 #define ____TypeOfUnqual(_Expr...) TypeOf((TypeOf(_Expr))(lit0$((TypeOf(_Expr)))))
 #endif
 
