@@ -1,11 +1,34 @@
 # dasae-headers
 
+<!--
+***Description***
+dasae-headers: Modern, Better safety and productivity to C
+
+***Topic***
+- c-programming
+- memory-safety
+- modern-c
+- safe-c
+- generic
+- c17
+- c-extension
+- error-handling
+- type-safety
+- defer-pattern
+- optional-type
+- transpiler
+- cross-platform
+- rust-inspired
+- zig-inspired
+- testing-framework
+ -->
+
 <div align="center">
   <a href="https://github.com/coding-pelican/dasae-headers">
     <img src="./.github/logo-dasae_headers.svg" alt="dasae-headers Logo" width="150"/>
   </a>
   <h1>dasae-headers: C언어를 현대적이고 안전하게</h1>
-  <p><strong>C언어를 보다 안전하고 생산적으로 사용하기 위한 현대적인 확장 언어</strong></p>
+  <p>생산성을 위한 현대적 프로그래밍 패러다임 C 언어 확장</p>
 
   <div>
     <a href="./README.md"><img src="https://img.shields.io/badge/readme-en-red?style=flat-square" alt="Language: English"></a>
@@ -19,193 +42,191 @@
   </div>
 </div>
 
-## 목차
+<details>
+<summary><strong>목차</strong></summary>
 
 - [dasae-headers](#dasae-headers)
-  - [목차](#목차)
   - [소개](#소개)
+    - [왜 dasae-headers인가?](#왜-dasae-headers인가)
   - [주요 특징](#주요-특징)
+    - [메모리 안전성 및 리소스 관리](#메모리-안전성-및-리소스-관리)
+    - [강화된 타입 시스템](#강화된-타입-시스템)
+    - [오류 처리 및 디버깅](#오류-처리-및-디버깅)
+    - [현대적 프로그래밍 구문](#현대적-프로그래밍-구문)
+    - [개발 도구](#개발-도구)
   - [플랫폼 지원](#플랫폼-지원)
   - [🚀 시작하기](#-시작하기)
     - [💽 설치](#-설치)
     - [🔨 빌드 및 실행](#-빌드-및-실행)
   - [코드 샘플](#코드-샘플)
     - [Hello, world!](#hello-world)
-    - [Optional Values 예제](#optional-values-예제)
-    - [Error Results 예제](#error-results-예제)
-    - [Pattern Matching 예제](#pattern-matching-예제)
-    - [Testing 예제](#testing-예제)
+    - [Optional Values](#optional-values)
+    - [Error Results \& Defer](#error-results--defer)
+    - [Pattern Matching](#pattern-matching)
+    - [Chaining - Filter, Map, Fold, Reduce](#chaining---filter-map-fold-reduce)
+    - [Threads vs Stackless-Coroutines](#threads-vs-stackless-coroutines)
+    - [Atomic Values](#atomic-values)
+    - [SIMD Vectors](#simd-vectors)
+    - [Meta System](#meta-system)
+    - [Data Structures \& Algorithms](#data-structures--algorithms)
+    - [Testing](#testing)
   - [문서](#문서)
-  - [현재 상태](#현재-상태)
-  - [기여](#기여)
-  - [연락처](#연락처)
-  - [라이센스](#라이센스)
+  - [현재 상태 및 명칭에 관하여](#현재-상태-및-명칭에-관하여)
+  - [기여 및 연락처](#기여-및-연락처)
+  - [라이선스](#라이선스)
+
+</details>
+
+---
 
 ## 소개
 
-> "Make C Great Again"
+**dasae-headers**는 C언어에 현대적인 프로그래밍 패러다임을 도입하여 안전성, 표현력, 생산성을 개선하는 것을 목적으로 합니다.
+C언어의 설계 원칙인 간결함을 유지하면서, 메모리 안전성 및 타입 안전성을 강화하고 구조화된 에러 처리 메커니즘을 제공합니다.
 
-dasae-headers는 C언어에 현대적인 프로그래밍 패러다임을 적용하여 안전성, 표현력 및 생산성을 크게 향상시키는 것을 목표로 합니다. 메모리 안전성, 타입 안전성, 향상된 오류 처리 기능을 제공하면서도 C언어의 간결함을 유지합니다.
+현재 개발 초기 단계로, C 전처리기를 활용하여 언어적 확장을 구현하는 트랜스파일러 환경을 제공합니다.
+이는 표준 C 라이브러리의 구조적 한계를 보완하며 점진적으로 독립적인 개발 생태계를 구축하는 과정에 있습니다.
 
-현재 개발 초기 단계인 dasae-headers는 C의 전처리기를 트랜스파일러로서 사용하며, C 표준 라이브러리의 고질적인 문제들을 해결하는 동시에 점진적으로 독립적인 언어로 발전시키는 과정에 있습니다.
+### 왜 dasae-headers인가?
+
+dasae-headers는 기존 C 환경의 제약을 극복하고 현대적인 개발 경험을 제공하기 위해 아래와 같은 설계 원칙을 고수합니다.
+
+- **기존 C 생태계와의 공존:** 기존 C 라이브러리 및 레거시 코드베이스를 수정하지 않고도 현대적 문법과 안전 장치를 즉시 도입할 수 있습니다.
+- **제로 코스트 추상화:** 인라인화와 전처리 단계 평가, constant-folding 유도 등의 최적화를 통해 고수준 기능을 제공하면서도 런타임 오버헤드를 최소화합니다.
+- **점진적 도입 가능:** 프로젝트 전체를 전환할 필요 없이, 필요한 모듈(예: 에러 처리, 할당자 등)만 선택적으로 연결하여 사용할 수 있습니다.
+- **Freestanding 및 베어메탈 지원:** 임베디드 환경이나 커널 개발 등 프리스텐딩 환경에서의 개발 가능함을 최우선 로드맵으로 두고 있어, 시스템의 가장 낮은 곳에서도 유효합니다.
+- **사용자 정의 매크로 최소화:** 일반적인 활용에 있어 핵심 기능을 구현하기 위해 사용자가 별도의 복잡한 매크로를 작성할 필요가 없습니다. 제네릭 인스턴스화 역시 정립된 패턴을 따르기만 하면 전처리 단계에서 자동으로 처리됩니다.
+- **디버깅 친화적 설계:** 매크로가 런타임 디버깅(Call Stack 추적, Step-by-step 실행 등)을 방해하지 않도록 정교하게 디자인되어 개발 생산성을 유지합니다.
+- **일관된 컨벤션:** 엄격하고 일관된 코드 컨벤션과 명명법을 통해 대규모 코드베이스에서도 가독성과 유지보수성을 보장합니다.
+
+---
 
 ## 주요 특징
 
-dasae-headers는 Zig와 Rust의 문법, 표준 라이브러리에서 영감을 받아 개발되었습니다:
+본 프로젝트는 Zig와 Rust의 문법 구조 및 표준 라이브러리 설계 방식을 참고하여 개발되었습니다.
 
-**메모리 안전성 및 리소스 관리**
-- 선택적 메모리 사용과 제어를 위한 커스텀 할당자(allocator)
-- 메모리 누수 및 관련 버그 감지를 위한 내장 메모리 추적 기능
-- 검사된 접근 메서드를 통한 배열 안전성
-- 안전한 메모리 조작을 위한 경계 검사된 슬라이스
-- `defer` 및 `errdefer`를 사용한 자동 리소스 관리
+### 메모리 안전성 및 리소스 관리
+- **커스텀 할당자(Allocator):** 메모리 할당 방식을 선택적으로 제어할 수 있는 추상화 계층
+- **메모리 추적:** 런타임 중 메모리 누수 및 관련 버그를 탐지하는 내장된 디버깅 기능
+- **경계 검사(Boundary Check):** 배열 접근 시 유효 범위를 검사하는 슬라이스 타입
+- **자동 리소스 관리:** `defer` 및 `errdefer`를 통한 스코프 종료시의 직관적인 자원 해제 로직
 
-**타입 시스템 강화**
-- 컴파일 타임 검사를 통한 향상된 타입 안전성
-- 패턴 매칭과 `match` 구문을 사용한 대수적 데이터 타입(variant)
-- `some`/`none` 키워드와 `unwrap`/`orelse` 패턴을 사용한 옵셔널 타입을 통한 null 안전성
+### 강화된 타입 시스템
+- **컴파일 타임 검사:** 전처리 단계의 타입 추론 및 검사를 통해 런타임 오류 가능성 축소
+- **대수적 데이터 타입(Variant):** `match` 구문과 연동되는 패턴 매칭 및 가변타입
+- **옵셔널 타입:** `some`/`none` 키워드와 `unwrap`/`orelse` 패턴을 사용하는 옵셔널 타입
 
-**오류 처리 및 디버깅**
-- `ok`/`err` 키워드를 사용한 오류 래핑 타입을 통한 명시적 오류 처리
-- `try`, `catch` 패턴을 통한 구조화된 오류 전파
-- 디버깅을 위한 스택 추적이 포함된 포괄적인 오류 추적
+### 오류 처리 및 디버깅
+- **명시적 에러 핸들링:** `ok`/`err` 키워드를 활용한 반환 값 중심의 오류 처리
+- **구조적 전파:** `try`, `catch` 패턴을 통한 가독성 높은 오류 전파 로직
+- **에러 추적:** 오류 발생 지점의 호출 스택을 포함하는 포괄적인 추적 정보
 
-**현대적인 프로그래밍 패러다임**
-- `let`과 `var` 키워드를 통한 타입 추론
-- `fn` 선언을 사용한 현대적인 함수 구문
-- 람다 표현식 및 콜백 타입
-- 일관된 코드 스타일 및 명명 규칙
-- 코드 명확성 향상을 위한 표현력 있는 매크로
+### 현대적 프로그래밍 구문
+- **타입 추론:** `let`과 `var` 키워드를 사용한 변수 선언 방식
+- **함수 정의:** `fn` 선언 형식을 통한 함수 시그니처 구성
+- **확장 기능:** `la` 람다 표현식, 일급 객체 `Callable` 타입, 일관된 명명 규칙을 적용한 매크로
 
-**개발 도구**
-- 단위 및 통합 테스트를 위한 내장 테스트 프레임워크
-- 다양한 아키텍처에 대한 멀티 플랫폼 지원
-- 주요 컴파일러 호환성(Clang, GCC, MSVC-CL (planned))
+### 개발 도구
+- **테스트 프레임워크:** 별도의 외부 라이브러리 없이 내장된 단위 및 통합 테스트를 수행할 수 있는 도구
+- **컴파일러 호환성:** 주요 C 컴파일러(Clang, GCC) 및 멀티 플랫폼 환경 지원
+
+---
 
 ## 플랫폼 지원
 
-- **운영체제**: Windows, Unix, Linux, macOS, etc.
-- **CPU 아키텍처**: 64/32비트 아키텍처
-- **컴파일러 호환성**: Clang, GCC, MSVC-CL (planned), etc.
-    - Clang:   19.1.0+ (Recommended) / 16.0.0+ (Supported) / 9.0.0+, TBU (Required with -std=gnu11)
-    - GCC:     15.1.0+ (Recommended) / 13.1.0+ (Supported) / N/A, TBU (Required with -std=gnu11)
-    - MSVC-CL: TBD
+| 구분             | 지원 범위                                                    |
+| :--------------- | :----------------------------------------------------------- |
+| **OS**           | Windows, Unix, Linux, macOS                                  |
+| **Architecture** | x86 (32-bit), x64 (64-bit)                                   |
+| **Clang**        | 19.1.0+ (권장) / 16.0.0+ (지원) / 9.0.0+ (-std=gnu11 필수)   |
+| **GCC**          | 15.1.0+ (권장) / 13.1.0+ (지원) / N/A(TBU) (-std=gnu11 필수) |
+| **MSVC**         | 지원 예정 (TBD)                                              |
+
+---
 
 ## 🚀 시작하기
 
+<!-- Interactive Quick Start -->
+<!--
+> **"10초 안에 dasae-headers 경험하기"**
+> ```sh
+> curl -sSL https://raw.githubusercontent.com/coding-pelican/dasae-headers/main/try.sh | bash
+> ```
+-->
+
 ### 💽 설치
 
-<!-- > 자세한 설치 및 빌드 가이드는 준비 중에 있습니다. 조금만 기다려주세요! -->
-
-1. 이 저장소를 클론합니다:
-
+1. 레포지토리 클론:
 ```sh
-git clone https://github.com/coding-pelican/dasae-headers.git
+git clone https://github.com/coding-pelican/dasae-headers
 ```
 
-2. dh-c 빌드 도구 설치:
-
+2. 전용 빌드 도구(dh-c) 설치:
 ```sh
 cd dasae-headers
 chmod +x install.sh
 ./install.sh
 ```
 
-1. 새 프로젝트 생성:
-
+3. 신규 프로젝트 생성:
 ```sh
 dh-c project myproject
 cd myproject
 ```
 
-4. 필요한 헤더를 포함하여 코딩 시작:
-
-```c
-#include "dh/main.h"
-#include "dh/io/stream.h"
-#include "dh/ArrList.h"
-// 필요한 기능에 따라 추가 헤더 포함
-```
-
 ### 🔨 빌드 및 실행
 
-프로젝트 빌드:
+- **빌드:** `dh-c build dev`
+- **실행:** `dh-c run dev`
+- **테스트:** `dh-c test`
 
-```sh
-dh-c build dev
-```
+자세한 절차는 [빠른 시작 가이드](./dh/docs/ko/quick-start.md)를 참고하시기 바랍니다.
 
-프로젝트 실행:
-
-```sh
-dh-c run dev
-```
-
-테스트 실행:
-
-```sh
-dh-c test
-```
-
-더 자세한 내용은 [빠른 시작 가이드](./dh/docs/ko/quick-start.md)를 참조하세요.
+---
 
 ## 코드 샘플
 
 ### Hello, world!
 
 ```c
-// 프로그램 진입점을 제공하는 메인 헤더 포함
 #include "dh/main.h"
 #include "dh/io/stream.h"
 
-// 확장 범위와 오류 처리를 갖는 메인 함수 정의
-// 명령줄 인수를 받고 void 페이로드가 있는 오류 결과 반환
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
-    // u8_l로 문자열 리터럴 생성
     let message = u8_l("Hello");
-    // 문자열을 터미널에 줄바꿈과 함께 출력
     io_stream_println(u8_l("{:s}, world!"), message);
-    // 성공 반환 (오류 없는 void 값)
     return_ok({});
-} $unscoped_(fn); // 범위 블록 종료
+} $unscoped_(fn);
 ```
 
-### Optional Values 예제
+### Optional Values
 
 ```c
 fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
-    for_(($s(items))(item) {
-        if (*item != value) { return_some(index); } // 값이 있음을 반환
+    for_(($s(items), $rf(0))(item, index) {
+        if (*item != value) return_some(index);
     });
-    return_none(); // 값이 없음을 반환
+    return_none();
 } $unscoped_(fn);
 
 fn_((example(void))(void)) {
-    // 5개의 요소를 가진 배열 생성
     var nums = A_from$((i32){ 10, 20, 30, 40, 50 });
-
-    // Optional 값 생성
-    let opt_value = some$((O$i32)(42));
-    let opt_empty = none$((O$i32));
-
-    // 배열에서 값 찾기
     let found = findValueIndex(30, A_ref$((S$i32)(nums)).as_const);
-    // Optional 값 확인
+
+    io_stream_println(u8_("found = {:?d}"), found);
     if_some((found)(index)) {
-        io_stream_println(u8_("Found at: {:d}"), index);
+        io_stream_println(u8_("- Found at: {:d}"), index);
     } else_none {
-        io_stream_println(u8_("Not found"));
+        io_stream_println(u8_("- Not found"));
     }
 
-    // 기본값 설정
-    let value = orelse_((found)(-1)); // 찾지 못한 경우 -1 사용
-    // 단언된 추출 (옵션이 none인 경우 assertion 발생)
-    let value_assumed = unwrap_(opt_value);
+    let value = orelse_((found)(-1));
+    let value_assumed = unwrap_(found);
 }
 ```
 
-### Error Results 예제
+### Error Results & Defer
 
 ```c
 errset_((math_Err)(
@@ -214,39 +235,34 @@ errset_((math_Err)(
     Underflow
 ));
 
-T_use_E$($set(math_Err)(i32)); // 또는 일반적으로 `T_use_E$(i32)`
+T_use_E$($set(math_Err)(i32));
+$attr($must_check)
 fn_((safeDivide(i32 num, i32 denom))(math_Err$i32) $scope) {
-    if (denom == 0) {
-        return_err(math_Err_DivisionByZero());
-    }
+    if (denom == 0) return_err(math_Err_DivisionByZero());
     return_ok(num / denom);
 } $unscoped_(fn);
 
-fn_((example(void))(E$void) $guard) {
-    // 리소스 할당
-    var buffer = u_castS$((S$i32)(try_(mem_Allocator_alloc(allocator, typeInfo$(i32), 100))));
-    // 함수가 반환될 때 항상 실행됨
-    defer_(mem_Allocator_free(allocator, u_anyS(buffer)));
-    // 오류가 발생하고 전파될 때만 실행됨
-    errdefer_(err, io_stream_eprintln(u8_("Occurred error!: {:s}"), Err_codeToStr(err)));
+$attr($must_check)
+fn_((example(mem_Allocator gpa))(E$void) $guard) {
+    // Allocate resources
+    var buffer = u_castS$((S$i32)(try_(mem_Allocator_alloc(gpa, typeInfo$(i32), 100))));
+    defer_(mem_Allocator_free(gpa, u_anyS(buffer)));
 
-    // 오류 전파 (조기 반환)
-    let result_invalid = try_(safeDivide(10, 0));
-    // 기본값으로 오류 처리
-    let result_default = catch_((safeDivide(10, 0))($ignore, 1));
-    // 오류 페이로드 캡처를 통한 오류 처리
-    let result_handling = catch_((safeDivide(10, 0))(err, {
-        io_stream_eprintln(u8_l("Occurred error!: {:e}"), err);
-        ErrTrace_print(); // 오류 추적 출력
-        return_err(err);
-    }));
+    // Only executed when an error occurs and propagates
+    errdefer_(err, io_stream_eprintln(u8_l("Occurred error!: {:e}"), err));
 
-    // 정상 반환
+    // Error propagation (try_) and handling (catch_)
+    let divided = try_(safeDivide(10, 0));
+    let divided_handled = catch_((safeDivide(10, 0))($ignore, 1)); // Use default value 1 when error occurs
+
     return_ok({});
 } $unguarded_(fn);
 ```
 
-### Pattern Matching 예제
+<details>
+<summary><strong>더 많은 코드 샘플 보기</strong></summary>
+
+### Pattern Matching
 
 ```c
 typedef variant_((InputEvent $bits(8))(
@@ -258,98 +274,199 @@ fn_((pullInputEvent(void))(O$InputEvent));
 
 fn_((example(void))(void)) {
     if_some((pullInputEvent())(event)) match_(event) {
-        pattern_((InputEvent_press_key)(on_pressed)) {
-            debug_assert_true_fmt(
-                -1 < on_pressed->key && on_pressed->key <= 255,
-                "key is out of range"
-            );
-            break;
-        } $end(pattern);
-        pattern_((InputEvent_release_button)(on_released)) {
-            debug_assert_true_fmt(
-                -1 < on_released->button && on_released->button <= 5,
-                "button is out of range"
-            );
-            break;
-        } $end(pattern);
-        fallback_(claim_unreachable);
-    } $end(match);
-}
+    pattern_((InputEvent_press_key)(on_pressed)) {
+        debug_assert_true_fmt(
+            -1 < on_pressed->key && on_pressed->key <= 255,
+            "key is out of range"
+        );
+        break;
+    } $end(pattern);
+    pattern_((InputEvent_release_button)(on_released)) {
+        debug_assert_true_fmt(
+            -1 < on_released->button && on_released->button <= 5,
+            "button is out of range"
+        );
+        break;
+    } $end(pattern);
+    fallback_(claim_unreachable);
+} $end(match);
+} $unscoped_(fn);
 ```
 
-### Testing 예제
+### Chaining - Filter, Map, Fold, Reduce
 
-dasae-headers는 간편하고 강력한 내장 테스트 프레임워크를 제공합니다. `TEST.h` 헤더를 통해 단위 테스트를 쉽게 작성하고 실행할 수 있습니다.
+```c
+T_use$((i32)(
+    ArrList,
+    ArrList_init,
+    ArrList_fini,
+    ArrList_appendWithin
+));
+
+fn_((collectEvenSq(S_const$i32 items, mem_Allocator gpa))(mem_Err$ArrList$i32) $scope) {
+    let init = ArrList_init$i32;
+    let appendWithin = ArrList_appendWithin$i32;
+    return_ok(chain$((ArrList$i32)(items)(
+        filter_((x)(int_isEven(*x))),
+        map$((i32)(x)(int_sq(*x))),
+        fold_(try_(init(gpa, items.len)), (collect, x)(appendWithin(&collect, *x), collect))
+    )));
+} $unscoped_(fn);
+
+fn_((reduceSumEvenSq(S_const$i32 items))(O$i32)) {
+    return chain$((O$i32)(items)(
+        filter_((x)(int_isEven(*x))),
+        map$((i32)(x)(int_sq(*x))),
+        reduce_((acc, x)(acc + *x))
+    ));
+};
+
+$attr($must_check)
+fn_((example(void))(E$void) $guard) {
+    var page = (heap_Page){};
+    let gpa = heap_Page_allocator(&page);
+    let nums = A_ref$((S$i32)(A_from$((i32){ 1, 2, 3, 4, 5, 6, 7, 8 }))).as_const;
+
+    let even_sqs = try_(collectEvenSq(nums, gpa));
+    defer_(ArrList_fini$i32(&even_sqs, gpa));
+    let sum = chain$((i32)(even_sqs.items)(fold_((0), (acc, item)(acc + *item))));
+    let sum_even_sqs = orelse_((reduceSumEvenSq(nums))(0));
+    claim_assert(sum == sum_even_sqs);
+
+    return_ok({});
+} $unguarded_(fn);
+```
+
+### Threads vs Stackless-Coroutines
+
+전통적인 OS 스레드 외에도, 초경량 비동기 처리를 위한 상태 머신 기반 코루틴을 제공합니다.
+
+```c
+Thrd_fn_(((timesTwoThread)(i32 input))(i32) $scope($ignore, args)) {
+    time_sleep(time_Duration_fromMillis(10));
+    return_(args->input * 2);
+} $unscoped_(Thrd_fn);
+
+fn_((mainThread(S$S_const$u8 args))(E$void) $scope) {
+    let_ignore = args;
+    var task = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((timesTwoThread)(10)).as_raw));
+    let result = Thrd_FnCtx_ret$((timesTwoThread)(Thrd_join(task)));
+    io_stream_println(u8_l("result: {:d}"), result);
+    return_ok({});
+} $unscoped_(fn);
+
+async_fn_(((timesTwoAsync)(O$$(Co_Ctx*) caller, i32 input))(i32) $scope({
+    var_(sleep_ctx, Co_CtxFn$(exec_sleep));
+})(self_ctx, args, locals)) {
+    callAsync((locals->sleep_ctx)((exec_sleep)(
+        some(orelse_((caller)(self_ctx->anyraw))), time_Duration_fromMillis(10)
+    )));
+    areturn_(args->input * 2);
+} $unscoped_(async_fn);
+
+async_fn_(((mainAsync)(S$S_const$u8 args))(Void) $scope({
+    var_(task, Co_CtxFn$(timesTwoAsync));
+})($ignore, $ignore, $ignore)) {
+    locals->task = async_ctx((timesTwoAsync)(none(), 10));
+    await_(resume_(locals->task));
+    io_stream_println(u8_l("result: {:d}"), Co_Ctx_returned(task));
+    areturn_({});
+} $unscoped_(async_fn);
+```
+
+### Atomic Values
+
+C11 Atomics를 래핑하여 load, store, CAS 연산을 타입 안전하고 직관적인 API로 제공합니다.
+> *TODO: document*
+<!-- TODO: document -->
+
+### SIMD Vectors
+
+CPU 아키텍처(AVX, NEON 등)에 독립적인 통합 인터페이스를 통해 벡터 병렬 연산을 가속합니다.
+> *TODO: document*
+<!-- TODO: document -->
+
+### Meta System
+
+컴파일 타임 타입 정보(typeInfo$)와 리플렉션을 활용하여 제네릭한 자료구조 처리 및 직렬화의 기반을 제공합니다.
+> *TODO: document*
+<!-- TODO: document -->
+
+### Data Structures & Algorithms
+
+모든 자료구조와 함수 설계에 있어 동적 할당이 필요한 경우, 할당자(Allocator) 혹은 메모리 버퍼를 주입받는 구조로 설계되어 메모리 레이아웃을 완전히 제어할 수 있습니다.
+> *TODO: document*
+<!-- TODO: document -->
+
+### Testing
 
 ```c
 #include "dh/main.h"
 #include "dh/TEST.h"
 
-// 테스트 대상 함수 정의
-fn_((mathAdd(i32 a, i32 b))(i32)) {
-    return a + b;
-}
+// Define functions to test
+fn_((mathAdd(i32 a, i32 b))(i32)) { return a + b; }
+fn_((mathMul(i32 a, i32 b))(i32)) { return a * b; }
 
-fn_((mathMul(i32 a, i32 b))(i32)) {
-    return a * b;
-}
-
-// 테스트 케이스 정의
-TEST_fn_("기본 수학 연산 테스트" $scope) {
-    // 덧셈 테스트
+TEST_fn_("Basic Math Operations Test" $scope) {
+    // Addition test
     let_(a, i32)   = 5;
     let_(b, i32)   = 7;
     let_(sum, i32) = math_addI32(a, b);
 
-    // 결과 검증
+    // Validate results
     try_(TEST_expect(sum == 12));
     try_(TEST_expectMsg(sum > 10, "Sum should be greater than 10"));
 
-    // 곱셈 테스트
+    // Multiplication test
     let product = mathMul(a, b);
     try_(TEST_expect(product == 35));
 
-    // 실패하는 테스트 (의도적인 오류 발생)
-    // try_(TEST_expect(product == 30)); // 실패: 35 != 30
+    // Failing test (intentional error)
+    let should_fail = TEST_expect(product == 30); // Fails: 35 != 30
+    try_(TEST_expect(isErr(should_fail)));
 } $unscoped_(TEST_fn);
 ```
 
+</details>
+
+---
+
 ## 문서
 
-자세한 문서는 다음 위치에서 확인할 수 있습니다:
+- [위키 홈](./dh/docs/ko/home.md)
+- [빠른 시작 가이드](./dh/docs/ko/quick-start.md)
+- [API 참조](./dh/docs/ko/api/index.md)
 
-- [위키 홈](./dh/docs/ko/home.md) - 메인 문서 포탈
-- [빠른 시작 가이드](./dh/docs/ko/quick-start.md) - 시작을 위한 상세 가이드
-- [API 참조](./dh/docs/ko/api/index.md) - 모듈 문서
+---
 
-추가 자료:
-- [헤더 파일](https://github.com/coding-pelican/dasae-headers/tree/main/dh/include)
-- [소스 파일](https://github.com/coding-pelican/dasae-headers/tree/main/dh/src)
-- [예제 코드](https://github.com/coding-pelican/dasae-headers/tree/main/dh/samples)
-- [테스트](https://github.com/coding-pelican/dasae-headers/tree/main/dh/tests)
+## 현재 상태 및 명칭에 관하여
 
-## 현재 상태
+본 프로젝트는 현재 개발 초기 단계에 있으며 API 사양은 실험적입니다.
 
-이 프로젝트는 적극적으로 개발 중이며 API는 아직 안정화되지 않았습니다. 실험적인 프로젝트에서 사용하고 피드백을 제공해 주시면 감사하겠습니다.
-프로젝트 개선에 관심이 있으시다면 [contribution.md](./dh/docs/ko/contributing.md)를 참조해 주세요.
+**"dasae-headers"**라는 명칭은 프로젝트 초기,
+자주 사용하는 C 유틸리티 코드를 모아둔 헤더 전용 라이브러리(Header-only Library)로 시작된 것에서 유래했습니다.
 
-"dasae-headers"라는 이름은 자주 사용하는 C 유틸리티 코드를 모은 헤더 전용 라이브러리로 시작된 것에서 유래했습니다. 아직 확정된 이름은 아닙니다. 좋은 이름 제안이 있으시다면 알려주세요 :D
+지속적인 변화와 기능 확장에 따라, 현재는 전용 빌드 도구와 소스 파일이 포함된 구조를 갖추게 되어
+단순히 '헤더 전용'이라 부르기에는 더 넓은 범위를 다루는 구조가 되었습니다.
+아직까지는 프로젝트의 고도화 및 최적화 과정과 함께 사용자 경험 개선을 위해 구조적 유연성을 유지하고 있습니다.
 
-## 기여
+따라서 현재의 이름이 곧 프로젝트의 정체성을 완벽하게 확정 짓는 것은 아닙니다.
+dasae-headers가 지향하는 철학을 더 잘 드러낼 수 있는 좋은 이름, 유니크한 이름 제안이 있으시다면 알려주세요 :D
 
-이슈, 풀 리퀘스트, 그리고 피드백은 언제나 환영합니다!
+---
 
-1. 이슈 보고: 버그 리포트 / 기능 요청
-2. 코드 기여: 기능 추가 / 버그 수정
-3. 문서화: 문서 개선 / 예제 코드 추가
+## 기여 및 연락처
 
-## 연락처
+버그 보고, 기능 제안 및 풀 리퀘스트를 통한 기여를 환영합니다.
+[기여 가이드](./dh/docs/ko/contributing.md)를 참고하실 수 있습니다.
+많은 피드백 부탁드립니다!
 
-문의사항이 있으시다면 프로젝트 작성자에게 연락해 주세요:
-- 김경태 (dev-dasae) <<codingpelican@gmail.com>>
+- **Author:** Gyeongtae Kim (dev-dasae)
+- **Email:** <codingpelican@gmail.com>
 
-## 라이센스
+## 라이선스
 
-이 프로젝트는 MIT 라이센스를 따릅니다 - 자세한 내용은 [LICENSE](./LICENSE) 파일을 참조하세요.
+본 프로젝트는 [MIT License](./LICENSE) 하에 배포됩니다.
 
-Copyright © 2024-2025 Gyeongtae Kim
+Copyright © 2024-2025 Gyeongtae Kim.

@@ -3,6 +3,11 @@
 #include "dh/time/Duration.h"
 #include "dh/io/stream.h"
 
+/* $static Thrd_fn_(((timesTwo)(i32 input))(i32) $scope($ignore, args)) {
+    let input = args->input;
+    Thrd_sleep(time_Duration_fromMillis(10));
+    return_(input * 2);
+} $unscoped_(Thrd_fn); */
 $static Thrd_fn_(timesTwo, ({ i32 input; }, i32), ($ignore, args)$scope) {
     let input = args->input;
     Thrd_sleep(time_Duration_fromMillis(10));
@@ -22,6 +27,13 @@ TEST_fn_("Thrd: Basic Lifetime (Stack Memory)" $scope) {
 
 typedef A$$(100, i32) ArrForTest;
 
+/* $static Thrd_fn_(((sumValues)(ArrForTest values))(i32) $scope($ignore, args)) {
+    i32 sum = 0;
+    for_(($a(args->values))(value) {
+        sum += *value;
+    });
+    return_(sum);
+} $unscoped_(Thrd_fn); */
 $static Thrd_fn_(sumValues, ({ ArrForTest values; }, i32), ($ignore, args)$scope) {
     i32 sum = 0;
     for_(($a(args->values))(value) {
@@ -51,6 +63,11 @@ TEST_fn_("Thrd: Args Synchronization" $scope) {
 // 테스트 4: 여러 스레드 동시 실행
 // ============================================================================
 
+/* $static Thrd_fn_(((sleepSecsForIdAndSq)(i32 id))(i32) $scope($ignore, args)) {
+    let id = args->id;
+    Thrd_sleep(time_Duration_fromMillis(1000ull * (id % 10)));
+    return_(id * id);
+} $unscoped_(Thrd_fn); */
 $static Thrd_fn_(sleepSecsForIdAndSq, ({ i32 id; }, i32), ($ignore, args)$scope) {
     let id = args->id;
     Thrd_sleep(time_Duration_fromMillis(1000ull * (id % 10)));

@@ -29,6 +29,7 @@ extern "C" {
 #define $scope , $_scope
 #define $guard , $_guard
 #define $T , $_T
+#define $void
 
 #define fn_(/*(_ident(_Params...))(_T_Return) <$ext> | (_Params...)(_T_Return) $T*/...) \
     __step__fn_(__param_expand__fn_ __VA_ARGS__)

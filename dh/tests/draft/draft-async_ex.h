@@ -94,13 +94,33 @@ typedef struct Co_Ctx {
 
 #endif /* CO_INCLUDED */
 
-#define async_fn_(_fnName, Args, T_Return...) \
+// async_fn_(((_fnName)(_Args...))(_T_Return))
+// async_fn_(((_fnName) $scope({ _Locals... })(_ctx, _args, _locals)))
+// async_fn_(((_fnName)(_Args...))(_T_Return) $scope({ _Locals... })(_ctx, _args, _locals))
+#define async_fn_(...) __step__async_fn_(__VA_ARGS__)
+#define __step__async_fn_(...) pp_overload(__step__async_fn_, __VA_ARGS__)(__VA_ARGS__)
+#define __step__async_fn__1(_SigOrImpl...) __step__async_fn__1__eval(_SigOrImpl)(_SigOrImpl)
+#define __step__async_fn__1__eval(...) pp_overload(__step__async_fn__1__eval, __VA_ARGS__)()
+#define __step__async_fn__1__eval_1() __step__async_fn__sig
+#define __step__async_fn__sig(...) __step__async_fn____sig(__step__async_fn____sig__parse __VA_ARGS__)
+#define __step__async_fn____sig__parse(_fnName_Args...) __step__async_fn____sig__parseInner _fnName_Args, __step__async_fn____sig__parseNext
+#define __step__async_fn____sig__parseInner(_fnName...) _fnName,
+#define __step__async_fn____sig__parseNext(_T_Return...) _T_Return
+#define __step__async_fn____sig(...) ____async_fn_sig(__VA_ARGS__)
+#define __step__async_fn__1__eval_2() __step__async_fn__impl
+#define __step__async_fn__impl(...) __step__async_fn____impl(__step__async_fn____impl__parse __VA_ARGS__)
+/* TODO: Implement */
+#define __step__async_fn____impl(...) ____async_fn_impl(__VA_ARGS__)
+#define __step__async_fn__2()
+/* TODO: Implement */
+
+#define ____async_fn_sig(_fnName, Args, T_Return...) \
     use_Co_CtxArgs$(_fnName, Args); \
     use_Co_CtxFnBase$(_fnName, T_Return); \
     decl_Co_CtxFn$(_fnName); \
     fn_((_fnName($P$(Co_CtxFn$(_fnName)) ctx))($P$(Co_CtxFnBase$(_fnName))))
 
-#define async_fn_scope(_fnName, Locals...) \
+#define ____async_fn_scope(_fnName, Locals...) \
     impl_Co_CtxFn$(_fnName, Locals); \
     fn_((_fnName($P$(Co_CtxFn$(_fnName)) ctx))($P$(Co_CtxFnBase$(_fnName)))) { \
         let args = &ctx->args; \

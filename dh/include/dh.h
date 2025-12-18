@@ -22,7 +22,7 @@ extern "C" {
 #include "dh/core.h"
 #include "dh/prl.h"
 #include "dh/atom.h"
-// #include "dh/Vec.h"
+// #include "dh/simd.h"
 
 #include "dh/cmp.h"
 #include "dh/math.h"

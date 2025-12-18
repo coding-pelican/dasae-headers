@@ -51,6 +51,17 @@ static fn_((exec_findSlot(void))(O$Task*)) {
     return slot;
 }
 
+/* $static async_fn_(((exec_sleep)(O$$(Co_Ctx*) caller, u64 ms))(Void));
+$static async_fn_(((exec_sleep)(O$$(Co_Ctx*) caller, u64 ms))(Void) $scope({
+    var_(slot, O$Task*);
+    var_(time, time_Instant);
+    var_(sleep_ctx, Co_CtxFn$(exec_sleep));
+    var_(total, f64);
+    var_(await_idx, usize);
+    var_(await_curr, Co_CtxFn$(count)*);
+})(my_ctx, my_args, my_locals)) {
+} $unscoped_(async_fn); */
+
 use_Co_Ctx$(Void);
 /// \brief Sleep for a specified duration
 /// \param caller The caller context
