@@ -48,12 +48,18 @@ dasae-headers: Modern, Better safety and productivity to C
 - [dasae-headers](#dasae-headers)
   - [Introduction](#introduction)
     - [Why dasae-headers?](#why-dasae-headers)
+    - [How does it differ from traditional C?](#how-does-it-differ-from-traditional-c)
+      - [1. Code Pattern \& Platform Abstraction](#1-code-pattern--platform-abstraction)
+      - [2. Memory \& Argument Patterns](#2-memory--argument-patterns)
+      - [3. Concurrency](#3-concurrency)
+      - [4. Meta Type \& Generic System](#4-meta-type--generic-system)
+      - [5. Numerical \& Safety](#5-numerical--safety)
+      - [6. Ecosystem \& Infrastructure](#6-ecosystem--infrastructure)
+    - [What makes dasae-headers special?](#what-makes-dasae-headers-special)
+      - [1. Maximizing Static Analysis and IDE Compatibility](#1-maximizing-static-analysis-and-ide-compatibility)
+      - [2. Meta System and Anonymous Type Compatibility](#2-meta-system-and-anonymous-type-compatibility)
+      - [3. Zero-overhead Safety](#3-zero-overhead-safety)
   - [Key Features](#key-features)
-    - [Memory Safety and Resource Management](#memory-safety-and-resource-management)
-    - [Enhanced Type System](#enhanced-type-system)
-    - [Error Handling and Debugging](#error-handling-and-debugging)
-    - [Modern Programming Syntax](#modern-programming-syntax)
-    - [Development Tools](#development-tools)
   - [Platform Support](#platform-support)
   - [🚀 Getting Started](#-getting-started)
     - [💽 Installation](#-installation)
@@ -66,7 +72,7 @@ dasae-headers: Modern, Better safety and productivity to C
     - [Chaining - Filter, Map, Fold, Reduce](#chaining---filter-map-fold-reduce)
     - [Threads vs Stackless-Coroutines](#threads-vs-stackless-coroutines)
     - [Atomic Values](#atomic-values)
-    - [SIMD Vectors (Coming Soon)](#simd-vectors-coming-soon)
+    - [SIMD Vectors](#simd-vectors)
     - [Meta System](#meta-system)
     - [Data Structures \& Algorithms](#data-structures--algorithms)
     - [Testing](#testing)
@@ -81,9 +87,11 @@ dasae-headers: Modern, Better safety and productivity to C
 
 ## Introduction
 
-**dasae-headers** aims to improve the safety, expressiveness, and productivity of the C language by introducing modern programming paradigms. While maintaining the core principle of C—simplicity—it strengthens memory and type safety and provides a structured error-handling mechanism.
+**dasae-headers** aims to improve the safety, expressiveness, and productivity of the C language by introducing modern programming paradigms.
+While maintaining the core principle of C—simplicity—it strengthens memory and type safety and provides a structured error-handling mechanism.
 
-Currently in the early stages of development, it provides a transpiler-like environment leveraging the C preprocessor. This project aims to compensate for the structural limitations of the standard C library and is in the process of gradually establishing an independent development ecosystem.
+Currently in the early stages of development, it provides a transpiler-like environment leveraging the C preprocessor.
+This project aims to compensate for the structural limitations of the standard C library and is in the process of gradually establishing an independent development ecosystem.
 
 ### Why dasae-headers?
 
@@ -99,34 +107,135 @@ dasae-headers adheres to the following design principles to overcome the constra
 
 ---
 
+### How does it differ from traditional C?
+
+While maintaining the flexibility of C, dasae-headers brings modern language safety features and productivity tools in a form optimized for the system layer.
+Rather than simply adding features, it focuses on structurally addressing C's chronic design flaws and fragmented conventions.
+
+#### 1. Code Pattern & Platform Abstraction
+
+Unifies fragmented language/architecture/OS/compiler-specific APIs and complex syntax of standard C into a single interface.
+
+| Aspect                      | Traditional C (Standard C)                                  | dasae-headers                                                                       |
+| --------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Variables and Functions** | Explicit type declarations and repetitive signatures        | `let` (constant), `var` (mutable) type inference and `fn_` modern syntax            |
+| **Lambda/Closures**         | GCC nested functions or Clang blocks, platform-dependent    | `la_` syntax unifying both compiler extensions, `Callable` type for `fn_` and `la_` |
+| **Platform Support**        | Fragmented branching with `#ifdef`                          | **Unified API** (`{lang/arch/plat/comp}_cfg.h`, `os.h`, `posix.h`) provided         |
+| **Preprocessor Branching**  | Separate `#ifdef` branch definitions even for simple values | Single definition with preprocessor branching via `pp_if_`, `pp_switch_`            |
+
+#### 2. Memory & Argument Patterns
+
+Avoids unsafe patterns of returning success as `bool` and receiving result values via `out` parameters.
+`Optional` and `Error Result` enforce validation of absent values or error conditions at the type system level.
+
+| Aspect               | Traditional C (Standard C)                   | dasae-headers                                                      |
+| -------------------- | -------------------------------------------- | ------------------------------------------------------------------ |
+| **Resource Release** | `goto cleanup` or scattered manual cleanup   | Automatic scope-based cleanup with `defer_`, `errdefer_`           |
+| **Result Return**    | `bool`/error code return + `out` pointer     | **Optional** (`O$`) / **Error Result** (`E$`) return               |
+| **Result Branching** | Manual validation with `if (err)` branches   | Result control with `orelse_`, `unwrap_` / `try_`, `catch_` syntax |
+| **Data Transfer**    | Pointer and length (`len`) passed separately | **Slice** (`S$`) or **array as value** (`A$`) transfer             |
+| **Strings/Arrays**   | `0(NULL)` sentinel-based implicit length     | Explicit length field-based **Boundary Check**                     |
+
+#### 3. Concurrency
+
+Provides ultra-lightweight asynchronous environments capable of handling tens of thousands of tasks simultaneously without OS thread overhead.
+Expresses state-machine-based control flow concisely with `async_/await_` patterns.
+
+| Aspect              | Traditional C (Standard C)                           | dasae-headers                                                           |
+| ------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Async Model**     | OS native thread-centric design                      | OS native threads + **State-machine-based Stackless Coroutines**        |
+| **Sync Primitives** | Reliant on primitive `mutex`, `cond`                 | `WaitGroup`, `RwLock`, `ResetEvent`, etc.                               |
+| **Control Flow**    | Callback hell or manually implemented state machines | Coroutine control with `async_`, `await_`, `suspend_`, `resume_` syntax |
+
+#### 4. Meta Type & Generic System
+
+Escapes macro hell and validates type safety at compile time through the meta type system.
+Provides a differentiated layer that statically guarantees logical compatibility between anonymous user types not allowed in the C standard.
+
+| Aspect              | Traditional C (Standard C)                                           | dasae-headers                                                                                     |
+| ------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Implementation**  | `void*` casting (type information loss)                              | High-level abstraction based on **Meta System** (`u_*`)                                           |
+| **Anonymous Types** | Assignment impossible even with identical structure due to anonymity | Compatibility guaranteed when field memory layout and logical structure (Size/Align/Offset) match |
+| **API Exposure**    | Data structure API implementation directly embedded in macros        | **Macro-less API**: Adheres to standard function definition format                                |
+
+#### 5. Numerical & Safety
+
+Abstracts hardware architecture-specific SIMD instructions and statically detects arithmetic overflow and inappropriate type casting.
+All safety features are optimized in release mode to ensure zero runtime overhead.
+
+| Aspect                | Traditional C (Standard C)                                                | dasae-headers                                                                             |
+| --------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Vector Ops**        | Manual loop-based operations or platform-dependent APIs                   | Architecture-independent accelerated operations via `simd.h`                              |
+| **Arithmetic Safety** | Vulnerable to runtime exceptions like `Overflow`, `DivisionByZero`, `NaN` | Compile-time **Overflow/NaN static detection** layer                                      |
+| **Type Casting**      | Risk of data loss due to implicit type conversion                         | Mismatch tracking for `Signed`/`Unsigned` and size conversion, `int`<->`float` conversion |
+
+#### 6. Ecosystem & Infrastructure
+
+Manages the entire process from project creation to build and test with built-in tools without additional dependencies.
+When errors occur, preserves call stack information beyond simple return values to immediately pinpoint the cause.
+
+| Aspect                         | Traditional C (Standard C)                             | dasae-headers                                                                    |
+| ------------------------------ | ------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| **Data Structures/Algorithms** | Manual implementation or fragmented external libraries | Standard containers and algorithms like `ArrList`, `ArrPDeq`, `HashMap` provided |
+| **Memory Control**             | Dependent on fixed global allocation                   | **Allocator or memory buffer injection** possible for all APIs                   |
+| **Testing/Analysis**           | External framework integration required                | Sophisticated tracking based on built-in `TEST.h` and `ErrTrace.h`               |
+
+---
+
+### What makes dasae-headers special?
+
+Beyond simple syntax extensions, dasae-headers leverages deep understanding of compiler and static analyzer behavior
+to provide a user-centric development experience differentiated from other projects.
+
+#### 1. Maximizing Static Analysis and IDE Compatibility
+
+**Static Analyzer Transparency:**
+
+Designed so that major analysis tools like `clang-tidy` can understand the source code the same way as regular C code.
+In particular, it blocks static analyzer malfunctions (such as type mismatches from checking all branches) that occur when using `_Generic`,
+allowing developers to focus only on "real" warnings and errors, not "recognition errors."
+
+**Transparent API Exposure (Macro-less API):**
+
+Core APIs, including data structures, are not wrapped in complex macro functions.
+Macros focus on acting as operators that replace special symbols, while actual logic follows standard function definition formats.
+This eliminates the burden of users having to write separate macros or understand complex macro structures to call libraries,
+defining a predictable standard for distinguishing between "macros as operators" and "actual function usage" in core logic.
+
+#### 2. Meta System and Anonymous Type Compatibility
+
+**Meta Type-based Generic System:**
+
+Implements generic logic through the meta type system (`u_*`) rather than macros, which are blind spots for static analysis.
+Provides a zero-cost abstraction layer that optimizes identically to inlined code through LTO, constant folding, and constant propagation,
+even without directly inlining code via macros.
+
+**Structural Anonymous Type Compatibility Validation:**
+
+Unlike other libraries that require type aliasing via `typedef` to allow generics, effectively accommodates anonymous user types.
+Statically validates safety at compile time when field memory layout and logical structure (Size, Align, Offset) match,
+ensuring safe interaction between anonymous types.
+
+#### 3. Zero-overhead Safety
+
+**Compile-time Evaluation Priority for Operations and Casting Validation:**
+
+Statically detects arithmetic `Overflow`, `DivisionByZero`, `NaN`, and inappropriate type casting.
+All safety validations prioritize compile-time evaluation and function as `assertions` at runtime.
+In release mode, these validation items become branch optimization targets, securing safety without binary overhead,
+while allowing faster and more accurate identification of problem causes during development compared to traditional C.
+
+---
+
 ## Key Features
 
 This project was developed with inspiration from the syntax structures and standard library designs of Zig and Rust.
 
-### Memory Safety and Resource Management
-- **Custom Allocators:** An abstraction layer to selectively control memory allocation strategies.
-- **Memory Tracking:** Built-in debugging features to detect memory leaks and related bugs during runtime.
-- **Boundary Checking:** A slice type that validates effective ranges during array access.
-- **Automatic Resource Management:** Intuitive resource release logic through `defer` and `errdefer` upon scope termination.
-
-### Enhanced Type System
-- **Compile-time Validation:** Reduced probability of runtime errors through type inference and validation during the preprocessing stage.
-- **Algebraic Data Types (Variant):** Type-safe variants and pattern matching integrated with `match` syntax.
-- **Optional Types:** Null safety achieved through `some`/`none` keywords and `unwrap`/`orelse` patterns.
-
-### Error Handling and Debugging
-- **Explicit Error Handling:** Value-centric error processing using `ok`/`err` keywords.
-- **Structured Propagation:** Highly readable error propagation logic via `try` and `catch` patterns.
-- **Error Tracing:** Comprehensive tracing information, including the call stack at the point of error.
-
-### Modern Programming Syntax
-- **Type Inference:** Variable declaration using `let` and `var` keywords.
-- **Function Definition:** Modern function signature construction using `fn` declarations.
-- **Extended Features:** Lambda expressions using `la`, first-class `Callable` types, and macros following consistent naming conventions.
-
-### Development Tools
-- **Testing Framework:** An embedded testing framework without the need for external libraries.
-- **Compiler Compatibility:** Support for major C compilers (Clang, GCC) and multi-platform environments.
+- **Memory Safety:** Custom allocators, memory tracking, boundary checking, `defer_`/`errdefer_`-based automatic resource management
+- **Enhanced Type System:** Compile-time validation, meta type system, algebraic data types (Variant), optional types
+- **Explicit Error Handling:** `ok`/`err` keywords, `try_`/`catch_` patterns, error tracing with call stack information
+- **Modern Syntax:** Type inference (`let`/`var`), function definition (`fn_`), lambda expressions (`la_`), first-class `Callable` type
+- **Development Tools:** Built-in testing framework, support for major C compilers (Clang, GCC) and multi-platform environments
 
 ---
 
@@ -374,25 +483,29 @@ async_fn_(((mainAsync)(S$S_const$u8 args))(Void) $scope({
 
 ### Atomic Values
 
-Provides type-safe and intuitive API for load, store, CAS operations by wrapping C11 Atomics.
+Provides type-safe and intuitive API for load, store, CAS operations
+by wrapping C11 Atomics.
 > *TODO: document*
 <!-- TODO: document -->
 
-### SIMD Vectors (Coming Soon)
+### SIMD Vectors
 
-Provides vector parallel operation acceleration through a unified interface independent of CPU architectures (AVX, NEON, etc.).
+Provides vector parallel operation acceleration through a unified interface
+independent of CPU architectures (AVX, NEON, etc.).
 > *TODO: document*
 <!-- TODO: document -->
 
 ### Meta System
 
-Provides a generic data structure processing and serialization foundation by leveraging compile-time type information (typeInfo$) and reflection.
+Provides a generic data structure processing and serialization foundation
+by leveraging compile-time type information (typeInfo$) and reflection.
 > *TODO: document*
 <!-- TODO: document -->
 
 ### Data Structures & Algorithms
 
-Designs all data structures and functions to be dynamically allocated, accepting allocators or memory buffers to fully control memory layout.
+Designs all data structures and functions to be dynamically allocated,
+accepting allocators or memory buffers to fully control memory layout.
 > *TODO: document*
 <!-- TODO: document -->
 
@@ -442,17 +555,22 @@ TEST_fn_("Basic Math Operations Test" $scope) {
 
 The project is currently in the early stages of development, and API specifications are experimental.
 
-The name **"dasae-headers"** originates from the project's roots as a header-only library designed to collect frequently used C utility code.
+The name **"dasae-headers"** originates from the project's roots as a header-only library
+designed to collect frequently used C utility code.
 
-Due to continuous evolution and functional expansion, it has now adopted a structure that includes dedicated build tools and source files, moving beyond the scope of a simple "header-only" library. We maintain structural flexibility to enhance the user experience and allow for further high-level optimization.
+Due to continuous evolution and functional expansion, it has now adopted a structure that includes dedicated build tools and source files,
+moving beyond the scope of a simple "header-only" library.
+We maintain structural flexibility to enhance the user experience and allow for further high-level optimization.
 
-Consequently, the current name does not yet fully fix the final identity of the project. If you have suggestions for a unique name that better reflects the philosophy dasae-headers aims to achieve, please let us know :D
+Consequently, the current name does not yet fully fix the final identity of the project.
+If you have suggestions for a unique name that better reflects the philosophy dasae-headers aims to achieve, please let us know :D
 
 ---
 
 ## Contribution and Contact
 
-We welcome issues, feature requests, and pull requests! Please refer to the [Contributing Guide](./dh/docs/en/contributing.md) for more details.
+We welcome issues, feature requests, and pull requests!
+Please refer to the [Contributing Guide](./dh/docs/en/contributing.md) for more details.
 
 - **Author:** Gyeongtae Kim (dev-dasae)
 - **Email:** [codingpelican@gmail.com](mailto:codingpelican@gmail.com)
