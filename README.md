@@ -97,6 +97,9 @@ This project aims to compensate for the structural limitations of the standard C
 
 dasae-headers adheres to the following design principles to overcome the constraints of traditional C environments and provide a modern development experience:
 
+<details>
+<summary><strong>Design Principles</strong></summary>
+
 - **Seamless Coexistence with C Ecosystem:** Immediately introduce modern syntax and safety features without modifying existing C libraries or legacy codebases.
 - **Zero-cost Abstractions:** Provide high-level features while minimizing runtime overhead through optimizations such as inlining, preprocessing-stage evaluation, and constant-folding.
 - **Incremental Adoption:** Use only the necessary modules (e.g., error handling, allocators) selectively without needing to convert the entire project.
@@ -105,9 +108,14 @@ dasae-headers adheres to the following design principles to overcome the constra
 - **Debug-friendly Design:** Macros are meticulously designed not to interfere with runtime debugging (call stack tracing, step-by-step execution), maintaining development productivity.
 - **Consistent Conventions:** Strict and consistent code conventions and naming schemes ensure readability and maintainability even in large-scale codebases.
 
+</details>
+
 ---
 
 ### How does it differ from traditional C?
+
+<details>
+<summary><strong>Show details</strong></summary>
 
 While maintaining the flexibility of C, dasae-headers brings modern language safety features and productivity tools in a form optimized for the system layer.
 Rather than simply adding features, it focuses on structurally addressing C's chronic design flaws and fragmented conventions.
@@ -180,9 +188,14 @@ When errors occur, preserves call stack information beyond simple return values 
 | **Memory Control**             | Dependent on fixed global allocation                   | **Allocator or memory buffer injection** possible for all APIs                   |
 | **Testing/Analysis**           | External framework integration required                | Sophisticated tracking based on built-in `TEST.h` and `ErrTrace.h`               |
 
+</details>
+
 ---
 
 ### What makes dasae-headers special?
+
+<details>
+<summary><strong>Show details</strong></summary>
 
 Beyond simple syntax extensions, dasae-headers leverages deep understanding of compiler and static analyzer behavior
 to provide a user-centric development experience differentiated from other projects.
@@ -224,6 +237,8 @@ Statically detects arithmetic `Overflow`, `DivisionByZero`, `NaN`, and inappropr
 All safety validations prioritize compile-time evaluation and function as `assertions` at runtime.
 In release mode, these validation items become branch optimization targets, securing safety without binary overhead,
 while allowing faster and more accurate identification of problem causes during development compared to traditional C.
+
+</details>
 
 ---
 
