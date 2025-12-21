@@ -64,8 +64,8 @@ extern "C" {
 #define PIPE_RESULT(step_num) ret##step_num
 
 // Main pipe implementation
-#define pipe(initial_value...) comp_syn__pipe(initial_value)
-#define comp_syn__pipe(initial_value, ...) \
+#define pipe_(initial_value...) comp_syn__pipe_(initial_value)
+#define comp_syn__pipe_(initial_value, ...) \
     ({ \
         var __pipe_initial = initial_value; \
         PIPE_IMPL(__pipe_initial, ##__VA_ARGS__); \

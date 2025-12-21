@@ -5,7 +5,7 @@
  * @file    Thrd.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-05-23 (date of creation)
- * @updated 2025-05-23 (date of last update)
+ * @updated 2025-12-21 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
  * @prefix  Thrd
@@ -27,12 +27,16 @@ extern "C" {
 
 #include "Thrd/cfg.h"
 #include "Thrd/common.h"
+
+#include "Thrd/Ftx.h"
 #include "Thrd/Mtx.h"
+#include "Thrd/Sem.h"
+
 #include "Thrd/Cond.h"
-// #include "Thrd/RwLock.h"
-// #include "Thrd/Sem.h"
-// #include "Thrd/ResetEvent.h"
-// #include "Thrd/WaitGroup.h"
+#include "Thrd/RWLock.h"
+
+#include "Thrd/ResetEvent.h"
+#include "Thrd/WaitGroup.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

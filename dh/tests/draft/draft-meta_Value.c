@@ -25,7 +25,7 @@
     }
 
 #define Optptr_const$(T) pp_join($, Optptr_const, T)
-#define Optptr$(T)       pp_join($, Optptr, T)
+#define Optptr$(T) pp_join($, Optptr, T)
 #define Optptr_const$$(T) \
     struct { \
         const $P$(T) addr; \
@@ -39,10 +39,10 @@
         Optptr_const$$(T) as_const; \
     }
 
-#define someptr(...)                         { .addr = __VA_ARGS__ }
-#define noneptr()                            { .addr = null }
-#define someptr$(T, ...)                     ((T)someptr(__VA_ARGS__))
-#define noneptr$(T)                          ((T)noneptr())
+#define someptr(...) { .addr = __VA_ARGS__ }
+#define noneptr() { .addr = null }
+#define someptr$(T, ...) ((T)someptr(__VA_ARGS__))
+#define noneptr$(T) ((T)noneptr())
 #define toSomeptr(var_addr_opt, val_some...) blk({ \
     let __addr_opt = var_addr_opt; \
     debug_assert_nonnull(__addr_opt); \
@@ -136,7 +136,7 @@ $release_only(fn_((dh_main(S$S_const$u8 args))(E$void) $scope)) {
     try_(TEST_expect(x == 123));
 
     toSomeptr(&node->next, node);
-    i32 y = meta_Value_load$(i32, pipe(node->next,(unwrapptr,()->base),(Node_data,())));
+    i32 y = meta_Value_load$(i32, pipe_(node->next,(unwrapptr,()->base),(Node_data,())));
     try_(TEST_expect(y == 123));
 
     $release_only(return_ok({});)

@@ -947,7 +947,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_println(u8_l("Gravity: {:.2fl}"), State_gravity);
     io_stream_println(u8_l("Damping: {:.2fl}"), State_damping);
     io_stream_println(u8_l("Delta Time: {:.2fl}"), State_delta_time);
-    let max_cpu_count = usize_subSat(catch_((Thrd_getCpuCount())($ignore, 2)), 2) + 1;
+    let max_cpu_count = usize_subSat(catch_((Thrd_cpuCount())($ignore, 2)), 2) + 1;
     let cpu_count = prim_clamp(
         expr_(usize $scope)(if (1 < args.len) {
             $break_(catch_((fmt_parse$usize(*S_at((args)[1]), 10))($ignore, usize_limit_max)));
@@ -1035,7 +1035,7 @@ typedef struct State_InitParticlesArgs {
 fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
     static $Thrd_local bool c_initialized = false;
     if (!c_initialized) {
-        let seed = Thrd_getCurrentId() ^ range.begin;
+        let seed = Thrd_currentId() ^ range.begin;
         *State_rng() = pp_if_(State_enable_randomization)(
             pp_then_(Rand_initSeed(seed)),
             pp_else_(Rand_withSeed(Rand_default, seed))

@@ -50,7 +50,7 @@ extern "C" {
 
 /* --- Compiler Attributes --- */
 
-#define comp_align(_align) __comp_attr__comp_align(_align)
+#define comp_align(_align...) __comp_attr__comp_align(_align)
 
 #define comp_inline __comp_attr__comp_inline
 #define comp_inline_always __comp_attr__comp_inline_always
@@ -65,14 +65,23 @@ extern "C" {
 
 #define comp_on_load __comp_attr__comp_on_load
 #define comp_on_exit __comp_attr__comp_on_exit
-#define comp_on_load_priority(_priority) __comp_attr__comp_on_load_priority(_priority)
-#define comp_on_exit_priority(_priority) __comp_attr__comp_on_exit_priority(_priority)
+#define comp_on_load_priority(_priority...) __comp_attr__comp_on_load_priority(_priority)
+#define comp_on_exit_priority(_priority...) __comp_attr__comp_on_exit_priority(_priority)
 
 #define comp_noreturn __comp_attr__comp_noreturn
 
+#define comp_fallthrough __comp_attr__comp_fallthrough
+#define comp_branch_hot __comp_attr__comp_branch_hot
+#define comp_branch_cold __comp_attr__comp_branch_cold
+#define comp_branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __comp_attr__comp_branch_predict_at(_prob, _expr)
+#define comp_branch_likely(_expr... /*(bool)*/) __comp_attr__comp_branch_likely(_expr)
+#define comp_branch_unlikely(_expr... /*(bool)*/) __comp_attr__comp_branch_unlikely(_expr)
+#define comp_branch_unpredictable(_expr... /*(bool)*/) __comp_attr__comp_branch_unpredictable(_expr)
+#define comp_unreachable __comp_attr__comp_unreachable
+
 #define comp_deprecated __comp_attr__comp_deprecated
-#define comp_deprecated_msg(_msg) __comp_attr__comp_deprecated_msg(_msg)
-#define comp_deprecated_instead(_msg, _replacement) __comp_attr__comp_deprecated_instead(_msg, _replacement)
+#define comp_deprecated_msg(_msg...) __comp_attr__comp_deprecated_msg(_msg)
+#define comp_deprecated_instead(_msg, _replacement...) __comp_attr__comp_deprecated_instead(_msg, _replacement)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -155,7 +164,7 @@ extern "C" {
 /* --- Compiler Attributes --- */
 
 #if comp_type == comp_type_clang || comp_type == comp_type_gcc
-#define __comp_attr__comp_align(_align) __attribute__((aligned(_align)))
+#define __comp_attr__comp_align(_align...) __attribute__((aligned(_align)))
 
 #define __comp_attr__comp_inline inline
 #define __comp_attr__comp_inline_always __attribute__((always_inline)) inline
@@ -172,17 +181,26 @@ extern "C" {
 #define __comp_attr__comp_on_load __attribute__((constructor))
 #define __comp_attr__comp_on_exit __attribute__((destructor))
 /* Note: Priority works, but syntax is validated strictly by some parsers */
-#define __comp_attr__comp_on_load_priority(_priority) __attribute__((constructor(_priority)))
-#define __comp_attr__comp_on_exit_priority(_priority) __attribute__((destructor(_priority)))
+#define __comp_attr__comp_on_load_priority(_priority...) __attribute__((constructor(_priority)))
+#define __comp_attr__comp_on_exit_priority(_priority...) __attribute__((destructor(_priority)))
 
 #define __comp_attr__comp_noreturn __attribute__((noreturn))
 
+#define __comp_attr__comp_fallthrough __attribute__((fallthrough))
+#define __comp_attr__comp_branch_hot __attribute__((hot))
+#define __comp_attr__comp_branch_cold __attribute__((cold))
+#define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), _prob)
+#define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
+#define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
+#define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
+#define __comp_attr__comp_unreachable __builtin_unreachable()
+
 #define __comp_attr__comp_deprecated __attribute__((deprecated))
-#define __comp_attr__comp_deprecated_msg(_msg) __attribute__((deprecated(_msg)))
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __attribute__((deprecated(_msg ": Use " #_replacement " instead")))
+#define __comp_attr__comp_deprecated_msg(_msg...) __attribute__((deprecated(_msg)))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement...) __attribute__((deprecated(_msg ": Use " #_replacement " instead")))
 
 #elif comp_type == comp_type_msvc
-#define __comp_attr__comp_align(_align) __declspec(align(_align))
+#define __comp_attr__comp_align(_align...) __declspec(align(_align))
 
 #define __comp_attr__comp_inline __inline
 #define __comp_attr__comp_inline_always __forceinline
@@ -203,17 +221,26 @@ extern "C" {
    For now, define as nothing to avoid compile errors. */
 #define __comp_attr__comp_on_load
 #define __comp_attr__comp_on_exit
-#define __comp_attr__comp_on_load_priority(_priority)
-#define __comp_attr__comp_on_exit_priority(_priority)
+#define __comp_attr__comp_on_load_priority(_priority...)
+#define __comp_attr__comp_on_exit_priority(_priority...)
 
 #define __comp_attr__comp_noreturn __declspec(noreturn)
 
+#define __comp_attr__comp_fallthrough
+#define __comp_attr__comp_branch_hot
+#define __comp_attr__comp_branch_cold
+#define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), _prob)
+#define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
+#define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
+#define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
+#define __comp_attr__comp_unreachable __assume(0)
+
 #define __comp_attr__comp_deprecated __declspec(deprecated)
-#define __comp_attr__comp_deprecated_msg(_msg) __declspec(deprecated(_msg))
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __declspec(deprecated(_msg " Use " #_replacement " instead"))
+#define __comp_attr__comp_deprecated_msg(_msg...) __declspec(deprecated(_msg))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement...) __declspec(deprecated(_msg " Use " #_replacement " instead"))
 
 #else
-#define __comp_attr__comp_align(_align)
+#define __comp_attr__comp_align(_align...)
 
 #define __comp_attr__comp_inline
 #define __comp_attr__comp_inline_always
@@ -228,14 +255,23 @@ extern "C" {
 
 #define __comp_attr__comp_on_load
 #define __comp_attr__comp_on_exit
-#define __comp_attr__comp_on_load_priority(_priority)
-#define __comp_attr__comp_on_exit_priority(_priority)
+#define __comp_attr__comp_on_load_priority(_priority...)
+#define __comp_attr__comp_on_exit_priority(_priority...)
 
 #define __comp_attr__comp_noreturn
 
+#define __comp_attr__comp_fallthrough
+#define __comp_attr__comp_branch_hot
+#define __comp_attr__comp_branch_cold
+#define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), _prob)
+#define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
+#define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
+#define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
+#define __comp_attr__comp_unreachable __assume(0)
+
 #define __comp_attr__comp_deprecated
-#define __comp_attr__comp_deprecated_msg(_msg)
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement)
+#define __comp_attr__comp_deprecated_msg(_msg...)
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement...)
 #endif
 
 #if defined(__cplusplus)

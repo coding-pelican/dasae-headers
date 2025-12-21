@@ -36,10 +36,10 @@ TEST_fn_("ListSgl: Basic SinglyLinkedList Operations" $guard) {
     var four = LAdp_init(4);
     var five = LAdp_init(5);
 
-    L_prepend(&list, &two.link);               // {2}
-    LLink_insertNext(&two.link, &five.link);   // {2, 5}
-    L_prepend(&list, &one.link);               // {1, 2, 5}
-    LLink_insertNext(&two.link, &three.link);  // {1, 2, 3, 5}
+    L_prepend(&list, &two.link); // {2}
+    LLink_insertNext(&two.link, &five.link); // {2, 5}
+    L_prepend(&list, &one.link); // {1, 2, 5}
+    LLink_insertNext(&two.link, &three.link); // {1, 2, 3, 5}
     LLink_insertNext(&three.link, &four.link); // {1, 2, 3, 4, 5}
 
     try_(TEST_expect(L_len(&list) == 5));
@@ -54,23 +54,23 @@ TEST_fn_("ListSgl: Basic SinglyLinkedList Operations" $guard) {
         }) blk_deferral;
     }
 
-    let_ignore = L_shift(&list);              // {2, 3, 4, 5}
-    L_remove(&list, &five.link);              // {2, 3, 4}
+    let_ignore = L_shift(&list); // {2, 3, 4, 5}
+    L_remove(&list, &five.link); // {2, 3, 4}
     let_ignore = LLink_removeNext(&two.link); // {2, 4}
 
-    try_(TEST_expect(pipe(list.first,(unwrap_,()),(LLink_data,()),(deref,())) == 2));
+    try_(TEST_expect(pipe_(list.first, (unwrap_, ()), (LLink_data, ()), (deref, ())) == 2));
     // try_(TEST_expect(unwrap_(list.first)->data == 2));
-    try_(TEST_expect(pipe(list.first,(unwrap_,()->next),(unwrap_,()),(LLink_data,()),(deref,())) == 4));
+    try_(TEST_expect(pipe_(list.first, (unwrap_, ()->next), (unwrap_, ()), (LLink_data, ()), (deref, ())) == 4));
     // // try_(TEST_expect(unwrap_(unwrap_(list.first)->next)->data == 4));
-    try_(TEST_expect(pipe(list.first,(unwrap_,()->next),(unwrap_,()->next),(isNone,()))));
+    try_(TEST_expect(pipe_(list.first, (unwrap_, ()->next), (unwrap_, ()->next), (isNone, ()))));
     // // try_(TEST_expect(isNone(unwrap_(unwrap_(list.first)->next)->next)));
 
     LLink_reverse(&list.first);
 
-    try_(TEST_expect(pipe(list.first,(unwrap_,()),(LLink_data,()),(deref,())) == 4));
+    try_(TEST_expect(pipe_(list.first, (unwrap_, ()), (LLink_data, ()), (deref, ())) == 4));
     // // try_(TEST_expect(unwrap_(list.first)->data == 4));
-    try_(TEST_expect(pipe(list.first,(unwrap_,()->next),(unwrap_,()),(LLink_data,()),(deref,())) == 2));
+    try_(TEST_expect(pipe_(list.first, (unwrap_, ()->next), (unwrap_, ()), (LLink_data, ()), (deref, ())) == 2));
     // // try_(TEST_expect(unwrap_(unwrap_(list.first)->next)->data == 2));
-    try_(TEST_expect(pipe(list.first,(unwrap_,()->next),(unwrap_,()->next),(isNone,()))));
+    try_(TEST_expect(pipe_(list.first, (unwrap_, ()->next), (unwrap_, ()->next), (isNone, ()))));
     // // try_(TEST_expect(isNone(unwrap_(unwrap_(list.first)->next)->next)));
 } $unguarded_(TEST_fn);

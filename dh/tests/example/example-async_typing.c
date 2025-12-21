@@ -90,7 +90,7 @@ async_fn_scope(exec_sleep, {}) {
 /// \param fmt The format string
 /// \param ... The arguments to the format string
 fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
-    io_stream_print(u8_l("[ThrdId({:uz}): {:s}] "), Thrd_getCurrentId(), label);
+    io_stream_print(u8_l("[ThrdId({:uz}): {:s}] "), Thrd_currentId(), label);
     va_list args = {};
     with_fini_(va_start(args, fmt), va_end(args)) {
         io_stream_printVaArgs(fmt, args);

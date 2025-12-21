@@ -98,25 +98,25 @@ extern "C" {
 #define __step__claim_assert(_Expr, _ExprStr...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
         claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
-        unreachable; \
+        $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_msg(_Expr, _ExprStr, _msg...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
         claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _msg); \
-        unreachable; \
+        $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_fmt(_Expr, _ExprStr, fmt...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
         claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
-        unreachable; \
+        $unreachable; \
     }), 0) \
 )
 
-#define __step__claim_assert_trap()            $dispatch_on_comptime $ignore_void(unreachable, 0)
-#define __step__claim_assert_trap_msg(_msg...) $dispatch_on_comptime $ignore_void(unreachable, 0)
-#define __step__claim_assert_trap_fmt(_fmt...) $dispatch_on_comptime $ignore_void(unreachable, 0)
+#define __step__claim_assert_trap()            $dispatch_on_comptime $ignore_void($unreachable, 0)
+#define __step__claim_assert_trap_msg(_msg...) $dispatch_on_comptime $ignore_void($unreachable, 0)
+#define __step__claim_assert_trap_fmt(_fmt...) $dispatch_on_comptime $ignore_void($unreachable, 0)
 /* clang-format on */
 #endif /* on_comptime */
 

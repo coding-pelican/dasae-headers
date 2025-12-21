@@ -25,11 +25,11 @@ fn_((Thrd_yield(void))(E$void) $scope) {
     return_ok({});
 } $unscoped_(fn);
 
-fn_((Thrd_getCurrentId(void))(Thrd_Id)) {
+fn_((Thrd_currentId(void))(Thrd_Id)) {
     return as$(Thrd_Id)(pthread_self());
 }
 
-fn_((Thrd_getCpuCount(void))(E$usize) $scope) {
+fn_((Thrd_cpuCount(void))(E$usize) $scope) {
 #if plat_is_windows
 // On Windows, fall back to GetSystemInfo if sysconf is not available
 #ifdef _SC_NPROCESSORS_ONLN
@@ -58,7 +58,7 @@ fn_((Thrd_getCpuCount(void))(E$usize) $scope) {
 #endif
 } $unscoped_(fn);
 
-fn_((Thrd_getHandle(Thrd self))(Thrd_Handle)) {
+fn_((Thrd_handle(Thrd self))(Thrd_Handle)) {
     return self.handle;
 }
 
@@ -135,10 +135,10 @@ fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
     switch_((Thrd_Handle handle = {})(pthread_create(
         &handle, null, as$(fn_(((*)(void*))(void*) $T))(fn_ctx->fn), fn_ctx
     ))) {
-    case_((/*INVAL*/ EINVAL)) claim_unreachable $end(case);
-    case_((/*SUCCESS*/ 0)) return_ok({ .handle = handle }) $end(case);
+    case_((/*SUCCESS*/ 0))    return_ok({ .handle = handle }) $end(case);
     case_((/*AGAIN*/ EAGAIN)) return_err(Err_Unspecified()) $end(case); // TODO: Change to specified err
     case_((/*PERM*/ EPERM)) $fallthrough $end(case);
+    case_((/*INVAL*/ EINVAL)) claim_unreachable $end(case);
     default_() return_err(Err_Unexpected()) $end(default);
     }
     claim_unreachable;

@@ -361,8 +361,15 @@ extern "C" {
 #define blk_return_(...) comp_syn__blk_return_(__VA_ARGS__)
 
 #define $local_label comp_syn__$local_label
-#define likely(_Expr... /*bool*/) comp_syn__likely(_Expr)
-#define unlikely(_Expr... /*bool*/) comp_syn__unlikely(_Expr)
+
+#define $fallthrough __attr__$fallthrough
+#define $branch_hot __attr__$branch_hot
+#define $branch_cold __attr__$branch_cold
+#define $branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __attr__$branch_predict_at(_prob, _expr)
+#define $branch_likely(_expr... /*(bool)*/) __attr__$branch_likely(_expr)
+#define $branch_unlikely(_expr... /*(bool)*/) __attr__$branch_unlikely(_expr)
+#define $branch_unpredictable(_expr... /*(bool)*/) __attr__$branch_unpredictable(_expr)
+#define $unreachable __attr__$unreachable
 
 #define $like_ref __attr__$like_ref
 #define $like_deref __attr__$like_deref
@@ -370,8 +377,6 @@ extern "C" {
 #define $zero_sized __attr__$zero_sized
 
 #define pragma_guard_(_push, _ctx, _pop, _code...) _Pragma(_push) _Pragma(_ctx) _code _Pragma(_pop)
-
-#define unreachable __comp_syn__unreachable
 
 #define $static static
 #define $extern extern
@@ -444,27 +449,25 @@ extern "C" {
 T:
 #define comp_syn__Generic_fallback_ default:
 
-#define comp_syn__blk        /* just comment for compound statement expression ({...}) */
+#define comp_syn__blk /* just comment for compound statement expression ({...}) */
 #define comp_syn__blk_return /* just comment for compound statement expression ({...}) */
 #define comp_syn__blk_return_(...) __VA_ARGS__
 
 #define comp_syn__$local_label __label__
-#define comp_syn__likely(_Expr...) __builtin_expect(!!(_Expr), 1)
-#define comp_syn__unlikely(_Expr...) __builtin_expect(!!(_Expr), 0)
+
+#define __attr__$fallthrough comp_fallthrough
+#define __attr__$branch_hot comp_branch_hot
+#define __attr__$branch_cold comp_branch_cold
+#define __attr__$branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) comp_branch_predict_at(_prob, _expr)
+#define __attr__$branch_likely(_expr... /*(bool)*/) comp_branch_likely(_expr)
+#define __attr__$branch_unlikely(_expr... /*(bool)*/) comp_branch_unlikely(_expr)
+#define __attr__$branch_unpredictable(_expr... /*(bool)*/) comp_branch_unpredictable(_expr)
+#define __attr__$unreachable comp_unreachable
 
 #define __attr__$like_ref [1]
 #define __attr__$like_deref [0]
 #define __attr__$flexible [0]
 #define __attr__$zero_sized [0]
-
-#if defined(__GNUC__) || defined(__clang__)
-#define __comp_syn__unreachable __builtin_unreachable()
-#elif defined(_MSC_VER)
-#define __comp_syn__unreachable __assume(0)
-#else
-/* TODO: Add support for other compilers */
-#define __comp_syn__unreachable $unused(0)
-#endif
 
 #if defined(__cplusplus)
 } /* extern "C" */

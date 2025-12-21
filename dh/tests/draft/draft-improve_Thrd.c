@@ -44,11 +44,11 @@ errset_((os_windows_WaitForSingleObjectError)(
 
 fn_((os_windows_WaitForSingleObjectEx(HANDLE handle, DWORD milliseconds, bool alertable))(os_windows_WaitForSingleObjectError$void) $scope) {
     switch (WaitForSingleObjectEx(handle, milliseconds, alertable)) {
-        case_((WAIT_ABANDONED)(return_err(os_windows_WaitForSingleObjectError_WaitAbandoned())));
-        case_((WAIT_OBJECT_0)(return_ok({})));
-        case_((WAIT_TIMEOUT)(return_err(os_windows_WaitForSingleObjectError_WaitTimeOut())));
-        case_((WAIT_FAILED)(return_err(os_windows_WaitForSingleObjectError_Unexpected())));
-        default_((claim_unreachable));
+    case_((WAIT_ABANDONED)(return_err(os_windows_WaitForSingleObjectError_WaitAbandoned())));
+    case_((WAIT_OBJECT_0)(return_ok({})));
+    case_((WAIT_TIMEOUT)(return_err(os_windows_WaitForSingleObjectError_WaitTimeOut())));
+    case_((WAIT_FAILED)(return_err(os_windows_WaitForSingleObjectError_Unexpected())));
+    default_((claim_unreachable));
     }
 } $unscoped_(fn);
 
@@ -90,11 +90,11 @@ typedef struct Thrd {
     Thrd_Completion* inner;
 } Thrd;
 
-fn_((Thrd_getCurrentId(void))(Thrd_Id)) {
+fn_((Thrd_currentId(void))(Thrd_Id)) {
     return os_windows_GetCurrentThreadId();
 }
 
-fn_((Thrd_getCpuCount(void))(usize)) {
+fn_((Thrd_cpuCount(void))(usize)) {
     return as$(usize)(os_windows_GetSystemInfo().dwNumberOfProcessors);
 }
 

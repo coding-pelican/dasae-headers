@@ -202,7 +202,7 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
         Type_eq$(TypeOf(({ _Expr; })), void) \
         || Type_eq$(TypeOf(({ _Expr; })), Void) \
     ); \
-    _Expr; \
+    $ignore_void _Expr; \
     goto __step_return; \
 })
 

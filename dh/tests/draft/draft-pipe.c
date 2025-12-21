@@ -11,8 +11,8 @@
 #define EMPTY()
 #define IGNORE(...)
 #define EXPAND(...) __VA_ARGS__
-#define DEFER(...)  __VA_ARGS__ EMPTY()
-#define COMMA()     ,
+#define DEFER(...) __VA_ARGS__ EMPTY()
+#define COMMA() ,
 
 // Helper macros
 #define PAREN_OPEN() (
@@ -39,15 +39,15 @@
     )
 
 #define PIPE_REPLACE_COMMA_AND_IGNORE_IF(...) PIPE_IF((PIPE_HAS_ARGS(__VA_ARGS__)), 0comma_ignore_open, 0ignore_open)
-#define PIPE_IF(cond, t, f)                   PIPE_IF_IMPL(EXPAND cond, t, f)
-#define PIPE_IF_IMPL(cond, t, f)              pp_join(_, PIPE_IF, cond)(t, f)
-#define PIPE_IF_1(t, f)                       t
-#define PIPE_IF_0(t, f)                       f
+#define PIPE_IF(cond, t, f) PIPE_IF_IMPL(EXPAND cond, t, f)
+#define PIPE_IF_IMPL(cond, t, f) pp_join(_, PIPE_IF, cond)(t, f)
+#define PIPE_IF_1(t, f) t
+#define PIPE_IF_0(t, f) f
 
 // Apply a function with a value and arguments
-#define PIPE_MAP(F, ARG...)                     F ARG
+#define PIPE_MAP(F, ARG...) F ARG
 #define PIPE_JOIN_VALUE_TO_ARGS(value, args...) PIPE_EXPAND_WITH_PARENS_OPEN value PIPE_exec(PIPE_REPLACE_COMMA_AND_IGNORE_IF args) PIPE_exec(0comma_ignore_close) PIPE_EXPAND_WITH_PARENS_CLOSE args
-#define PIPE_APPLY(value, func, args...)        PIPE_MAP(func, PIPE_JOIN_VALUE_TO_ARGS(value, args))
+#define PIPE_APPLY(value, func, args...) PIPE_MAP(func, PIPE_JOIN_VALUE_TO_ARGS(value, args))
 
 // Process a single step in the pipe
 #define PIPE_STEP(prev_result_var, step_num, func, args...) \
@@ -64,8 +64,8 @@
 #define PIPE_RESULT(step_num) ret##step_num
 
 // Main pipe implementation
-#define pipe(initial_value...)             comp_syn__pipe(initial_value)
-#define comp_syn__pipe(initial_value, ...) ({ \
+#define pipe_(initial_value...) comp_syn__pipe_(initial_value)
+#define comp_syn__pipe_(initial_value, ...) ({ \
     var_(__pipe_initial, TypeOf(initial_value)) = initial_value; \
     PIPE_IMPL(__pipe_initial, ##__VA_ARGS__); \
 })
@@ -158,8 +158,12 @@ static fn_((Foo_eval(Foo* const self))(Foo*));
 static fn_((Foo_merge(Foo* const self, const Foo* other))(Foo*));
 static fn_((Foo_baz(const Foo* const self))(i32));
 
-$maybe_unused static $inline fn_((i32_add(i32 lhs, i32 rhs))(i32)) { return lhs + rhs; }
-$maybe_unused static $inline fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return deref(lhs) += rhs, lhs; }
+$maybe_unused
+static $inline
+fn_((i32_add(i32 lhs, i32 rhs))(i32)) { return lhs + rhs; }
+$maybe_unused
+static $inline
+fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return deref(lhs) += rhs, lhs; }
 
 /* fn_(enhancePipeExpanding(Foo foo), void) {
     // PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC (deref_,().value), PIPE_GET_ARGS (deref_,().value))
@@ -170,7 +174,7 @@ $maybe_unused static $inline fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return
     // PIPE_MAP(deref_, (ret1 IGNORE(.value)).value)
     // PIPE_MAP(deref_, (ret1.value).value)
 
-    let value = pipe(&foo,(Foo_setA,(10)),(&Foo_setB,(20)->value),(i32_addAsg,(123)),(deref,()));
+    let value = pipe_(&foo,(Foo_setA,(10)),(&Foo_setB,(20)->value),(i32_addAsg,(123)),(deref,()));
     io_stream_println(u8_l("Enhanced pipe result: {:d}\n"), value);
 } */
 
@@ -183,14 +187,14 @@ $maybe_unused static $inline fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return
 
     //     PIPE_APPLY(ret, catch, (a));
     //     PIPE_STEP(ret, 0, catch, (a));
-    //     var foo = meta_cast$(Foo*, pipe(pipe(allocator, (mem_Allocator_create,(typeInfo$(Foo)))), (catch,(a)), (abc,(def))));
+    //     var foo = meta_cast$(Foo*, pipe_(pipe_(allocator, (mem_Allocator_create,(typeInfo$(Foo)))), (catch,(a)), (abc,(def))));
     //     var foo = meta_cast$(Foo*, catch_(mem_Allocator_create(allocator, typeInfo$(Foo)), claim_unreachable));
 
-    // let pipe_ret = pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))),(catch_from,(err, ({ let_ignore = err; claim_unreachable;}))));
+    // let pipe_ret = pipe_(allocator,(mem_Allocator_create,(typeInfo$(Foo))),(catch_from,(err, ({ let_ignore = err; claim_unreachable;}))));
     // var foo      = meta_cast$(Foo*, pipe_ret);
     // let_ignore = foo;
 
-    let pipe_foo = pipe(pipe(meta_cast$(Foo*, pipe(allocator,
+    let pipe_foo = pipe_(pipe_(meta_cast$(Foo*, pipe_(allocator,
         (mem_Allocator_create,(typeInfo$(Foo))),(catch_,(claim_unreachable))
     )),(deref,())),(ref,()),
         (Foo_setA,(10)),
@@ -202,7 +206,7 @@ $maybe_unused static $inline fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return
 } */
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
-    let_ignore       = args;
+    let_ignore = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
     // Traditional approach
@@ -224,28 +228,20 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         let result = Foo_baz(foo);
 
         io_stream_println(u8_l("Traditional result: {:d}\n"), result);
-    } blk_deferral;
+    }
+    blk_deferral;
 
     // Using pipe macro
     blk_defer {
-        let bar = pipe(try_(Foo_init(allocator)),
-            (Foo_setA,(5)),
-            (Foo_setB,(15)),
-            (Foo_eval,())
-        );
+        let bar = pipe_(try_(Foo_init(allocator)), (Foo_setA, (5)), (Foo_setB, (15)), (Foo_eval, ()));
         defer_(Foo_fini(bar));
 
         let foo = try_(Foo_init(allocator));
         defer_(Foo_fini(foo));
-        let result = pipe(foo,
-            (Foo_setA,(10)),
-            (Foo_setB,(20)),
-            (Foo_eval,()),
-            (Foo_merge,(bar)),
-            (Foo_baz,())
-        );
+        let result = pipe_(foo, (Foo_setA, (10)), (Foo_setB, (20)), (Foo_eval, ()), (Foo_merge, (bar)), (Foo_baz, ()));
         io_stream_println(u8_l("Pipe result: {:d}\n"), result);
-    } blk_deferral;
+    }
+    blk_deferral;
 
     return_ok({});
 } $unguarded_(fn);
@@ -262,30 +258,20 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 #define func_2(_Name_With_Params, T_Return, _Expand_Type, _Body...) \
     pp_cat(fn_scope_, _Expand_Type)(_Name_With_Params, T_Return) _Body pp_cat(unscoped_, _Expand_Type)
 
-#define $scope           $scope
-#define fn_scope_$scope  fn_scope_ext
+#define $scope $scope
+#define fn_scope_$scope fn_scope_ext
 #define $unscoped_$scope $unguarded
 
 func_(runPipeExampleUsage(S$S_const$u8 args), E$void $scope, {
-    let_ignore       = args;
+    let_ignore = args;
     let allocator = heap_Page_allocator(create$(heap_Page));
 
-    let bar = pipe(try_(Foo_init(allocator)),
-        (Foo_setA,(5)),
-        (Foo_setB,(15)),
-        (Foo_eval,())
-    );
+    let bar = pipe_(try_(Foo_init(allocator)), (Foo_setA, (5)), (Foo_setB, (15)), (Foo_eval, ()));
     defer_(Foo_fini(bar));
 
     let foo = try_(Foo_init(allocator));
     defer_(Foo_fini(foo));
-    let result = pipe(foo,
-        (Foo_setA,(10)),
-        (Foo_setB,(20)),
-        (Foo_eval,()),
-        (Foo_merge,(bar)),
-        (Foo_baz,())
-    );
+    let result = pipe_(foo, (Foo_setA, (10)), (Foo_setB, (20)), (Foo_eval, ()), (Foo_merge, (bar)), (Foo_baz, ()));
     io_stream_println(u8_l("Pipe result: {:d}\n"), result);
 
     return_ok({});
@@ -293,11 +279,11 @@ func_(runPipeExampleUsage(S$S_const$u8 args), E$void $scope, {
 #endif /* UNUSED_CODE */
 
 // Example functions that would typically be used in a chain
-fn_((Foo_init(mem_Allocator allocator))(E$P$Foo)$scope) {
-    let foo    = meta_cast$(Foo*, try_(pipe(allocator,(mem_Allocator_create,(typeInfo$(Foo))))));
-    foo->mem   = allocator;
-    foo->a     = 0;
-    foo->b     = 0;
+fn_((Foo_init(mem_Allocator allocator))(E$P$Foo) $scope) {
+    let foo = meta_cast$(Foo*, try_(pipe_(allocator, (mem_Allocator_create, (typeInfo$(Foo))))));
+    foo->mem = allocator;
+    foo->a = 0;
+    foo->b = 0;
     foo->value = 0;
     return_ok(foo);
 } $unscoped_(fn);

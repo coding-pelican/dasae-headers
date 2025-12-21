@@ -30,7 +30,7 @@ extern "C" {
 // Thread ID type
 typedef Thrd_IdImpl Thrd_Id;
 // Thread handle type
-typedef Thrd_HandleImpl Thrd_Handle;
+typedef Thrd_Handle_Impl Thrd_Handle;
 
 // Thread function context type instantiation
 #define use_Thrd_FnCtx$(_fnName, _Args, _T_Return) comp_type_gen__use_Thrd_FnCtx$(_fnName, _Args, _T_Return)
@@ -60,6 +60,8 @@ struct Thrd_FnCtx {
     __step__Thrd_FnCtx_from$(__step__Thrd_FnCtx_from$__parseFnName __VA_ARGS__)
 #define Thrd_FnCtx_ret$(/*(_fnName)(_ctx...)*/... /*(_ReturnType$(_fnName))*/) \
     __step__Thrd_FnCtx_ret$(__step__Thrd_FnCtx_ret$__parseFnName __VA_ARGS__)
+#define Thrd_FnCtx_call$(/*(_fnName)(_args...)*/... /*(_ReturnType$(_fnName))*/) \
+    __step__Thrd_FnCtx_call$(__step__Thrd_FnCtx_call$__parseFnName __VA_ARGS__)
 
 // Thread function syntax
 #define Thrd_fn_(_fnName, _Tuple_Args_Ret_w_Tuple_Captures_w_Extension...) \
@@ -78,15 +80,15 @@ struct Thrd_FnCtx {
 // Thread functions
 extern fn_((Thrd_sleep(time_Duration duration))(void));
 extern fn_((Thrd_yield(void))(E$void)) $must_check;
-extern fn_((Thrd_getCurrentId(void))(Thrd_Id));
-extern fn_((Thrd_getCpuCount(void))(E$usize)) $must_check;
+extern fn_((Thrd_currentId(void))(Thrd_Id));
+extern fn_((Thrd_cpuCount(void))(E$usize)) $must_check;
 
 // Thread type
 typedef struct Thrd {
     Thrd_Handle handle;
 } Thrd;
 T_use_E$(Thrd);
-extern fn_((Thrd_getHandle(Thrd self))(Thrd_Handle));
+extern fn_((Thrd_handle(Thrd self))(Thrd_Handle));
 
 // Thread name buffer type
 typedef A$$(Thrd_max_name_len, u8) Thrd_NameBuf;
@@ -111,11 +113,12 @@ extern fn_((Thrd_join(Thrd self))(Thrd_FnCtx*));
 
 // Mutex type
 typedef struct Thrd_Mtx Thrd_Mtx;
-typedef struct Thrd_MtxRecur Thrd_MtxRecur;
+// Mutex recursive type
+typedef struct Thrd_Mtx_Recur Thrd_Mtx_Recur;
 // Condition variable type
 typedef struct Thrd_Cond Thrd_Cond;
-// Read-write lock type
-typedef struct Thrd_RwLock Thrd_RwLock;
+// Read-Write lock type
+typedef struct Thrd_RWLock Thrd_RWLock;
 
 /*========== Macros and Definitions =========================================*/
 
@@ -156,6 +159,13 @@ typedef struct Thrd_RwLock Thrd_RwLock;
     _fnName,
 #define __step__Thrd_FnCtx_ret$__emit(_fnName, _ctx...) \
     ((as$(Thrd_FnCtx$(_fnName)*)(_ctx))->ret.as_typed)
+
+#define __step__Thrd_FnCtx_call$(...) \
+    __step__Thrd_FnCtx_call$__emit(__VA_ARGS__)
+#define __step__Thrd_FnCtx_call$__parseFnName(_fnName...) \
+    _fnName,
+#define __step__Thrd_FnCtx_call$__emit(_fnName, _args...) \
+    Thrd_FnCtx_ret$((_fnName)(_fnName(Thrd_FnCtx_from$((_fnName)_args).as_raw)))
 
 // clang-format off
 #define comp_syn__Thrd_fn_decl(_fnName) \

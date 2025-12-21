@@ -52,8 +52,13 @@ extern "C" {
 #define atom_V_fetchSub(_p_self, _val, _ord...) __op__atom_V_fetchSub(_p_self, _val, _ord)
 #define atom_V_fetchNand(_p_self, _val, _ord...) __op__atom_V_fetchNand(_p_self, _val, _ord)
 #define atom_V_fetchAnd(_p_self, _val, _ord...) __op__atom_V_fetchAnd(_p_self, _val, _ord)
-#define atom_V_fetchOr(_p_self, _val, _ord...) __op__atom_V_fetchOr(_p_self, _val, _ord)
 #define atom_V_fetchXor(_p_self, _val, _ord...) __op__atom_V_fetchXor(_p_self, _val, _ord)
+#define atom_V_fetchOr(_p_self, _val, _ord...) __op__atom_V_fetchOr(_p_self, _val, _ord)
+
+#define atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) __op__atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord)
+#define atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord...) __op__atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord)
+#define atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) __op__atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord)
+#define atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord...) __op__atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord)
 
 /// spinLoopHint: Platform-specific CPU hints for spin-loops
 ///
@@ -73,15 +78,31 @@ $static fn_((atom_spinLoopHint(void))(void));
 #define __op__atom_V_init(_val...) { .raw = _val }
 #define __op__atom_V_init$(_VT, _val...) lit$((_VT)atom_V_init(_val))
 #define __op__atom_V_load(_p_self, _ord...) atom_load(&(_p_self)->raw, _ord)
-#define __op__atom_V_store(_p_self, _val, _ord...) atom_store(&(_p_self)->raw, make$((TypeOf((_p_self)->raw))_val), _ord)
+#define __op__atom_V_store(_p_self, _val, _ord...) atom_store(&(_p_self)->raw, _val, _ord)
 
-#define __op__atom_V_fetchXchg(_p_self, _val, _ord...) atom_fetchXchg(&(_p_self)->raw, make$((TypeOf((_p_self)->raw))_val), _ord)
-#define __op__atom_V_fetchAdd(_p_self, _val, _ord...) atom_fetchAdd(&(_p_self)->raw, make$((TypeOf((_p_self)->raw))_val), _ord)
-#define __op__atom_V_fetchSub(_p_self, _val, _ord...) atom_fetchSub(&(_p_self)->raw, make$((TypeOf((_p_self)->raw))_val), _ord)
-#define __op__atom_V_fetchNand(_p_self, _val, _ord...) atom_fetchNand(&(_p_self)->raw, make$((TypeOf((_p_self)->raw))_val), _ord)
-#define __op__atom_V_fetchAnd(_p_self, _val, _ord...) atom_fetchAnd(&(_p_self)->raw, make$((TypeOf((_p_self)->raw))_val), _ord)
-#define __op__atom_V_fetchOr(_p_self, _val, _ord...) atom_fetchOr(&(_p_self)->raw, make$((TypeOf((_p_self)->raw))_val), _ord)
-#define __op__atom_V_fetchXor(_p_self, _val, _ord...) atom_fetchXor(&(_p_self)->raw, make$((TypeOf((_p_self)->raw))_val), _ord)
+#define __op__atom_V_fetchXchg(_p_self, _val, _ord...) \
+    atom_fetchXchg(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchAdd(_p_self, _val, _ord...) \
+    atom_fetchAdd(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchSub(_p_self, _val, _ord...) \
+    atom_fetchSub(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchNand(_p_self, _val, _ord...) \
+    atom_fetchNand(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchAnd(_p_self, _val, _ord...) \
+    atom_fetchAnd(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchXor(_p_self, _val, _ord...) \
+    atom_fetchXor(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchOr(_p_self, _val, _ord...) \
+    atom_fetchOr(&(_p_self)->raw, _val, _ord)
+
+#define __op__atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    atom_cmpXchgWeak$(_OT, &(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
+#define __op__atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    atom_cmpXchgWeak(&(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
+#define __op__atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    atom_cmpXchgStrong$(_OT, &(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
+#define __op__atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    atom_cmpXchgStrong(&(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
 
 $attr($inline_always)
 $static fn_((atom_spinLoopHint(void))(void)) {

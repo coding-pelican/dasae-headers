@@ -21,7 +21,7 @@ fn_(Quad_newContaining(const S$Body bodies), Quad) {
         max_y = fmaxf(max_y, body->pos.y);
     }
 
-    let center = pipe(m_V2f32_from(min_x + max_x, min_y + max_y),(m_V2f32_scale,(0.5f)));
+    let center = pipe_(m_V2f32_from(min_x + max_x, min_y + max_y), (m_V2f32_scale, (0.5f)));
     let size = fmaxf(max_x - min_x, max_y - min_y);
     return (Quad){
         .center = center,
@@ -175,10 +175,7 @@ fn_(QuadTree_propagate(QuadTree* self), void) {
         let c3 = Sli_at(self->nodes.items, idx + 3);
 
         // Calculate total mass and weighted position for all children
-        curr->pos = pipe(c0->pos,
-            (m_V2f32_add,(c1->pos)),
-            (m_V2f32_add,(c2->pos)),
-            (m_V2f32_add,(c3->pos)));
+        curr->pos = pipe_(c0->pos, (m_V2f32_add, (c1->pos)), (m_V2f32_add, (c2->pos)), (m_V2f32_add, (c3->pos)));
         curr->mass = c0->mass
                    + c1->mass
                    + c2->mass

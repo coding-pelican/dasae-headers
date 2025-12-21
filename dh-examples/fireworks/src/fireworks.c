@@ -11,18 +11,18 @@
 
 #include "engine.h"
 
-#define window_res_width__320x200  /* template value */ (320)
+#define window_res_width__320x200 /* template value */ (320)
 #define window_res_height__320x200 /* template value */ (200)
-#define window_res_width__160x100  /* template value */ (160)
+#define window_res_width__160x100 /* template value */ (160)
 #define window_res_height__160x100 /* template value */ (100)
-#define window_res_width__80x50    /* template value */ (80)
-#define window_res_height__80x50   /* template value */ (50)
-#define window_res_width__40x25    /* template value */ (40)
-#define window_res_height__40x25   /* template value */ (25)
+#define window_res_width__80x50 /* template value */ (80)
+#define window_res_height__80x50 /* template value */ (50)
+#define window_res_width__40x25 /* template value */ (40)
+#define window_res_height__40x25 /* template value */ (25)
 
-#define window_res_width  (window_res_width__160x100)
+#define window_res_width (window_res_width__160x100)
 #define window_res_height (window_res_height__160x100)
-#define window_res_size   (as$(usize, window_res_width) * window_res_height)
+#define window_res_size (as$(usize, window_res_width) * window_res_height)
 
 /* (1.0 / target_fps__62_50) ~16ms => ~60 FPS, Assume 62.5 FPS for simplicity */
 #define target_fps__125_0 /* template value */ (125.0)
@@ -56,9 +56,9 @@ extern fn_(Particle_isDead(const Particle* p), bool);
 extern fn_(Particle_update(Particle* p, f64 dt), void);
 extern fn_(Particle_render(const Particle* p, engine_Canvas* c, f64 dt), void);
 
-#define Firework_effects_max        (25)
+#define Firework_effects_max (25)
 #define Firework_effects_per_rocket (25)
-#define Fireworks_max               (16)
+#define Fireworks_max (16)
 use_ArrList$(Particle);
 typedef struct Firework {
     var_(rocket, O$P$Particle);
@@ -307,11 +307,7 @@ fn_(Firework_init(Firework* f, mem_Allocator allocator, i64 rocket_x, i64 rocket
 
     with_(let rocket = meta_cast$(Particle*, try_(mem_Allocator_create(f->allocator, typeInfo$(Particle))))) {
         errdefer_(mem_Allocator_destroy(f->allocator, anyPtr(rocket)));
-        toSome(&f->rocket, pipe(rocket,
-            (Particle_init,(as$(f64, rocket_x), as$(f64, rocket_y), 1.0, 3.0, effect_base_color)),
-            (Particle_withSpeed,(0.0, -2.0 - Rand_f64() * -1.0)),
-            (Particle_withAcceleration,(0.0, 0.02))
-        ));
+        toSome(&f->rocket, pipe_(rocket, (Particle_init, (as$(f64, rocket_x), as$(f64, rocket_y), 1.0, 3.0, effect_base_color)), (Particle_withSpeed, (0.0, -2.0 - Rand_f64() * -1.0)), (Particle_withAcceleration, (0.0, 0.02))));
     }
 
     f->effects = type$(ArrList$Particle, try_(ArrList_initCap(typeInfo$(Particle), f->allocator, Firework_effects_per_rocket)));
@@ -338,7 +334,8 @@ fn_(Firework_fini(Firework* f), void) {
 
     log_debug("firework destroyed\n");
 }
-static $inline fn_(Firework__deadsAllEffect(const Firework* f), bool) {
+static $inline
+fn_(Firework__deadsAllEffect(const Firework* f), bool) {
     for_slice(deref(f).effects.items, effect) {
         if (Particle_isDead(effect)) { continue; }
         return false;
@@ -387,12 +384,7 @@ fn_(Firework_update(Firework* f, f64 dt), E$void $scope) {
                         f->effect_base_color.s + (Rand_f64() - 0.5) * 20.0,
                         f->effect_base_color.l + (Rand_f64() - 0.5) * 40.0
                     ));
-                    pipe(particle,
-                        (Particle_init,(x, y, width, height, color)),
-                        (Particle_withSpeed,((Rand_f64() - 0.5) * 1.0, (Rand_f64() - 0.9) * 1.0)),
-                        (Particle_withAcceleration,(0.0, 0.02)),
-                        (Particle_withFading,(0.01))
-                    );
+                    pipe_(particle, (Particle_init, (x, y, width, height, color)), (Particle_withSpeed, ((Rand_f64() - 0.5) * 1.0, (Rand_f64() - 0.9) * 1.0)), (Particle_withAcceleration, (0.0, 0.02)), (Particle_withFading, (0.01)));
                 }
             }
             log_debug("destroying rocket(%p)\n", rocket);
@@ -495,10 +487,7 @@ fn_(State_update(State* s, f64 dt), E$void $scope) {
             let rocket = unwrap(firework->rocket);
             log_debug("Spawning rocket at (%.2f, %.2f)", A_getAt(rocket->position, 0), A_getAt(rocket->position, 1));
             let mouse_pos = engine_Mouse_getPos(s->input->mouse);
-            pipe(rocket,
-                (Particle_init,(mouse_pos.x, mouse_pos.y, 1, 1, rocket->color)),
-                (Particle_withFading,(0.0))
-            );
+            pipe_(rocket, (Particle_init, (mouse_pos.x, mouse_pos.y, 1, 1, rocket->color)), (Particle_withFading, (0.0)));
             try_(Firework_update(firework, 0.0));
         }
     }

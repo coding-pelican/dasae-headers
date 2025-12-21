@@ -16,29 +16,29 @@
 #if defined(__AVX2__)
 #include <immintrin.h>
 #define SIMD_BACKEND "AVX2"
-#define SIMD_WIDTH   8
-#define SIMD_ALIGN   32
+#define SIMD_WIDTH 8
+#define SIMD_ALIGN 32
 typedef __m256 simd_f32;
 typedef __m256i simd_i32;
 #elif defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
 #include <emmintrin.h> // SSE2
 #include <xmmintrin.h> // SSE
 #define SIMD_BACKEND "SSE2"
-#define SIMD_WIDTH   4
-#define SIMD_ALIGN   16
+#define SIMD_WIDTH 4
+#define SIMD_ALIGN 16
 typedef __m128 simd_f32;
 typedef __m128i simd_i32;
 #elif defined(__ARM_NEON) || defined(__aarch64__)
 #include <arm_neon.h>
 #define SIMD_BACKEND "NEON"
-#define SIMD_WIDTH   4
-#define SIMD_ALIGN   16
+#define SIMD_WIDTH 4
+#define SIMD_ALIGN 16
 typedef float32x4_t simd_f32;
 typedef int32x4_t simd_i32;
 #else
 #define SIMD_BACKEND "SCALAR"
-#define SIMD_WIDTH   1
-#define SIMD_ALIGN   4
+#define SIMD_WIDTH 1
+#define SIMD_ALIGN 4
 typedef float simd_f32;
 typedef int simd_i32;
 #endif
@@ -49,77 +49,77 @@ typedef int simd_i32;
 
 // Load/Store operations
 #if defined(__AVX2__)
-#define simd_load(ptr)     _mm256_loadu_ps(ptr)
+#define simd_load(ptr) _mm256_loadu_ps(ptr)
 #define simd_store(ptr, v) _mm256_storeu_ps(ptr, v)
-#define simd_set1(x)       _mm256_set1_ps(x)
-#define simd_setzero()     _mm256_setzero_ps()
+#define simd_set1(x) _mm256_set1_ps(x)
+#define simd_setzero() _mm256_setzero_ps()
 #elif defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
-#define simd_load(ptr)     _mm_loadu_ps(ptr)
+#define simd_load(ptr) _mm_loadu_ps(ptr)
 #define simd_store(ptr, v) _mm_storeu_ps(ptr, v)
-#define simd_set1(x)       _mm_set1_ps(x)
-#define simd_setzero()     _mm_setzero_ps()
+#define simd_set1(x) _mm_set1_ps(x)
+#define simd_setzero() _mm_setzero_ps()
 #elif defined(__ARM_NEON) || defined(__aarch64__)
-#define simd_load(ptr)     vld1q_f32(ptr)
+#define simd_load(ptr) vld1q_f32(ptr)
 #define simd_store(ptr, v) vst1q_f32(ptr, v)
-#define simd_set1(x)       vdupq_n_f32(x)
-#define simd_setzero()     vdupq_n_f32(0.0f)
+#define simd_set1(x) vdupq_n_f32(x)
+#define simd_setzero() vdupq_n_f32(0.0f)
 #else
-#define simd_load(ptr)     (*(ptr))
+#define simd_load(ptr) (*(ptr))
 #define simd_store(ptr, v) (*(ptr) = (v))
-#define simd_set1(x)       (x)
-#define simd_setzero()     (0.0f)
+#define simd_set1(x) (x)
+#define simd_setzero() (0.0f)
 #endif
 
 // Arithmetic operations
 #if defined(__AVX2__)
-#define simd_add(a, b)       _mm256_add_ps(a, b)
-#define simd_sub(a, b)       _mm256_sub_ps(a, b)
-#define simd_mul(a, b)       _mm256_mul_ps(a, b)
-#define simd_div(a, b)       _mm256_div_ps(a, b)
-#define simd_sqrt(a)         _mm256_sqrt_ps(a)
-#define simd_fmadd(a, b, c)  _mm256_fmadd_ps(a, b, c)  // a*b + c
+#define simd_add(a, b) _mm256_add_ps(a, b)
+#define simd_sub(a, b) _mm256_sub_ps(a, b)
+#define simd_mul(a, b) _mm256_mul_ps(a, b)
+#define simd_div(a, b) _mm256_div_ps(a, b)
+#define simd_sqrt(a) _mm256_sqrt_ps(a)
+#define simd_fmadd(a, b, c) _mm256_fmadd_ps(a, b, c) // a*b + c
 #define simd_fnmadd(a, b, c) _mm256_fnmadd_ps(a, b, c) // -(a*b) + c
 #elif defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
-#define simd_add(a, b)       _mm_add_ps(a, b)
-#define simd_sub(a, b)       _mm_sub_ps(a, b)
-#define simd_mul(a, b)       _mm_mul_ps(a, b)
-#define simd_div(a, b)       _mm_div_ps(a, b)
-#define simd_sqrt(a)         _mm_sqrt_ps(a)
+#define simd_add(a, b) _mm_add_ps(a, b)
+#define simd_sub(a, b) _mm_sub_ps(a, b)
+#define simd_mul(a, b) _mm_mul_ps(a, b)
+#define simd_div(a, b) _mm_div_ps(a, b)
+#define simd_sqrt(a) _mm_sqrt_ps(a)
 // SSE2 doesn't have FMA, emulate it
-#define simd_fmadd(a, b, c)  _mm_add_ps(_mm_mul_ps(a, b), c)
+#define simd_fmadd(a, b, c) _mm_add_ps(_mm_mul_ps(a, b), c)
 #define simd_fnmadd(a, b, c) _mm_sub_ps(c, _mm_mul_ps(a, b))
 #elif defined(__ARM_NEON) || defined(__aarch64__)
-#define simd_add(a, b)       vaddq_f32(a, b)
-#define simd_sub(a, b)       vsubq_f32(a, b)
-#define simd_mul(a, b)       vmulq_f32(a, b)
-#define simd_div(a, b)       vdivq_f32(a, b)
-#define simd_sqrt(a)         vsqrtq_f32(a)
-#define simd_fmadd(a, b, c)  vfmaq_f32(c, a, b) // c + a*b
+#define simd_add(a, b) vaddq_f32(a, b)
+#define simd_sub(a, b) vsubq_f32(a, b)
+#define simd_mul(a, b) vmulq_f32(a, b)
+#define simd_div(a, b) vdivq_f32(a, b)
+#define simd_sqrt(a) vsqrtq_f32(a)
+#define simd_fmadd(a, b, c) vfmaq_f32(c, a, b) // c + a*b
 #define simd_fnmadd(a, b, c) vfmsq_f32(c, a, b) // c - a*b
 #else
-#define simd_add(a, b)       ((a) + (b))
-#define simd_sub(a, b)       ((a) - (b))
-#define simd_mul(a, b)       ((a) * (b))
-#define simd_div(a, b)       ((a) / (b))
-#define simd_sqrt(a)         sqrtf(a)
-#define simd_fmadd(a, b, c)  ((a) * (b) + (c))
+#define simd_add(a, b) ((a) + (b))
+#define simd_sub(a, b) ((a) - (b))
+#define simd_mul(a, b) ((a) * (b))
+#define simd_div(a, b) ((a) / (b))
+#define simd_sqrt(a) sqrtf(a)
+#define simd_fmadd(a, b, c) ((a) * (b) + (c))
 #define simd_fnmadd(a, b, c) ((c) - (a) * (b))
 #endif
 
 // Comparison and blend operations
 #if defined(__AVX2__)
-#define simd_cmp_gt(a, b)      _mm256_cmp_ps(a, b, _CMP_GT_OQ)
-#define simd_cmp_lt(a, b)      _mm256_cmp_ps(a, b, _CMP_LT_OQ)
+#define simd_cmp_gt(a, b) _mm256_cmp_ps(a, b, _CMP_GT_OQ)
+#define simd_cmp_lt(a, b) _mm256_cmp_ps(a, b, _CMP_LT_OQ)
 #define simd_blend(a, b, mask) _mm256_blendv_ps(a, b, mask)
-#define simd_movemask(a)       _mm256_movemask_ps(a)
+#define simd_movemask(a) _mm256_movemask_ps(a)
 #elif defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
-#define simd_cmp_gt(a, b)      _mm_cmpgt_ps(a, b)
-#define simd_cmp_lt(a, b)      _mm_cmplt_ps(a, b)
+#define simd_cmp_gt(a, b) _mm_cmpgt_ps(a, b)
+#define simd_cmp_lt(a, b) _mm_cmplt_ps(a, b)
 #define simd_blend(a, b, mask) _mm_or_ps(_mm_andnot_ps(mask, a), _mm_and_ps(mask, b))
-#define simd_movemask(a)       _mm_movemask_ps(a)
+#define simd_movemask(a) _mm_movemask_ps(a)
 #elif defined(__ARM_NEON) || defined(__aarch64__)
-#define simd_cmp_gt(a, b)      vcgtq_f32(a, b)
-#define simd_cmp_lt(a, b)      vcltq_f32(a, b)
+#define simd_cmp_gt(a, b) vcgtq_f32(a, b)
+#define simd_cmp_lt(a, b) vcltq_f32(a, b)
 #define simd_blend(a, b, mask) vbslq_f32(mask, b, a)
 // NEON doesn't have movemask, need to check differently
 static inline int simd_movemask(simd_f32 a) {
@@ -132,10 +132,10 @@ static inline int simd_movemask(simd_f32 a) {
     return result;
 }
 #else
-#define simd_cmp_gt(a, b)      ((a) > (b))
-#define simd_cmp_lt(a, b)      ((a) < (b))
+#define simd_cmp_gt(a, b) ((a) > (b))
+#define simd_cmp_lt(a, b) ((a) < (b))
 #define simd_blend(a, b, mask) ((mask) ? (b) : (a))
-#define simd_movemask(a)       ((a) != 0.0f)
+#define simd_movemask(a) ((a) != 0.0f)
 #endif
 
 // ============================================
@@ -236,7 +236,7 @@ typedef struct mp_LoopData {
     var_(params, u_V$raw);
 } mp_LoopData;
 
-$static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args) $scope) {
+$static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope) {
     let data = args->data;
     for_(((data.range))(i) {
         data.workerFn(i, data.params);
@@ -333,14 +333,18 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
 } $unscoped_(Thrd_fn);
 
 $must_check
-$static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
+$static
+fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
     let_(pool, mp_ThrdPool*) = u_castP$((P$$(mp_ThrdPool))(try_(mem_Allocator_create(gpa, typeInfo$(mp_ThrdPool)))));
     let_(workers, TypeOf(pool->workers)) = u_castS$((TypeOf(pool->workers))(try_(mem_Allocator_alloc(
-        gpa, typeInfo$(union Thrd_FnCtx$(mp_ThrdPool_worker)), mp_max_task_count))));
+        gpa, typeInfo$(union Thrd_FnCtx$(mp_ThrdPool_worker)), mp_max_task_count
+    ))));
     let_(threads, TypeOf(pool->threads)) = u_castS$((TypeOf(pool->threads))(try_(mem_Allocator_alloc(
-        gpa, typeInfo$(Thrd), thrd_count))));
+        gpa, typeInfo$(Thrd), thrd_count
+    ))));
     let_(tasks, TypeOf(pool->tasks)) = u_castS$((TypeOf(pool->tasks))(try_(mem_Allocator_alloc(
-        gpa, typeInfo$(mp_ThrdPool_Task), mp_max_task_count))));
+        gpa, typeInfo$(mp_ThrdPool_Task), mp_max_task_count
+    ))));
     asg_lit((pool)({
         .workers = workers,
         .threads = threads,
@@ -378,8 +382,7 @@ $static fn_((mp_ThrdPool_submit(mp_ThrdPool* self, R range, mp_ThrdPool_TaskFn f
 
 $static fn_((mp_ThrdPool_waitAll(mp_ThrdPool* self))(void)) {
     Thrd_Mtx_lock(&self->mutex);
-    while (atom_V_load(&self->count, atom_MemOrd_acquire) > 0 ||
-           atom_V_load(&self->active_tasks, atom_MemOrd_acquire) > 0) {
+    while (atom_V_load(&self->count, atom_MemOrd_acquire) > 0 || atom_V_load(&self->active_tasks, atom_MemOrd_acquire) > 0) {
         Thrd_Cond_wait(&self->cond_all_done, &self->mutex);
     }
     Thrd_Mtx_unlock(&self->mutex);
@@ -458,17 +461,17 @@ $static fn_((RandGaussian_next$f64(RandGaussian* self, f64 mean, f64 std_dev))(f
 #include "dh/math/vec.h"
 
 #define State_particles_log2 (23ull)
-#define State_particles      (1ull << State_particles_log2) // 2^20 = 1,048,576
-#define State_cell_size              (20.0)   // Was 10.0
-#define State_grid_width             (100ull)  // Was 200
-#define State_grid_height            (100ull)  // Was 200
-#define State_max_particles_per_cell (16ull)   // Was 32
+#define State_particles (1ull << State_particles_log2) // 2^20 = 1,048,576
+#define State_cell_size (20.0) // Was 10.0
+#define State_grid_width (100ull) // Was 200
+#define State_grid_height (100ull) // Was 200
+#define State_max_particles_per_cell (16ull) // Was 32
 
-#define State_boundary_radius    (500.0)
-#define State_gravity            (9.81)
-#define State_damping            (0.98)
-#define State_target_fps         (30.0)
-#define State_delta_time         (1.0 / 30.0)
+#define State_boundary_radius (500.0)
+#define State_gravity (9.81)
+#define State_damping (0.98)
+#define State_target_fps (30.0)
+#define State_delta_time (1.0 / 30.0)
 
 typedef struct Particles {
     S$f32 pos_x;
@@ -482,7 +485,7 @@ T_use_S$(Particles);
 typedef struct Particle {
     m_V2f32 pos;
     m_V2f32 vel;
-    f32     mass;
+    f32 mass;
 } Particle;
 T_use_S$(Particle);
 
@@ -622,12 +625,13 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
     io_stream_println(u8_l("Particles: 2^{:uz} = {:uz}"), State_particles_log2, State_particles);
     io_stream_println(u8_l("Target FPS: {:.1f}"), State_target_fps);
-    let max_cpu_count = usize_subSat(catch_((Thrd_getCpuCount())($ignore, 2)), 2) + 1;
+    let max_cpu_count = usize_subSat(catch_((Thrd_cpuCount())($ignore, 2)), 2) + 1;
     let cpu_count = prim_clamp(expr_(usize $scope) if (1 < args.len) {
         $break_(catch_((fmt_parse$usize(*at$S(args, 1), 10))($ignore, usize_limit_max)));
     } else {
         $break_(usize_limit_max);
-    } $unscoped_(expr), 1, max_cpu_count);
+    } $unscoped_(expr),
+                               1, max_cpu_count);
     var gpa = heap_Page_allocator(&(heap_Page){});
     var pool = try_(mp_ThrdPool_init(gpa, cpu_count));
     defer_(mp_ThrdPool_fini(pool, gpa));
@@ -649,7 +653,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     var state = State_init(pool, particles, grid);
     let frame_amount = expr_(usize $scope) if (2 < args.len) {
         $break_(catch_((fmt_parse$usize(*at$S(args, 2), 10))($ignore, 1000)));
-    } else {
+    }
+    else {
         $break_(1000);
     } $unscoped_(expr);
     io_stream_println(u8_l("Simulating {:uz} frames..."), frame_amount);
@@ -696,7 +701,7 @@ typedef struct State_InitParticlesArgs {
 fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
     static $Thrd_local bool c_initialized = false;
     if (!c_initialized) {
-        let seed = Thrd_getCurrentId() ^ range.begin;
+        let seed = Thrd_currentId() ^ range.begin;
         *State_rng() = pp_if_(State_enable_randomization)(
             pp_then_(Rand_initSeed(seed)),
             pp_else_(Rand_withSeed(Rand_default, seed))
@@ -772,7 +777,7 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
         simd_store(&args.vel_y.ptr[i], zero_vec);
         simd_store(&args.mass.ptr[i], simd_set1(1.0f));
     }
-// Handle remaining particles (scalar)
+    // Handle remaining particles (scalar)
     for (; i < range.end; ++i) {
         var r = as$(f32)(RandGaussian_next$f64(State_rngGaussian(), 0.0, radius_b / 2.5));
         let theta = as$(f32)(Rand_next$f64(State_rng())) * math_f32_tau;
@@ -796,16 +801,16 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
 
 fn_((State_initParticles(mp_ThrdPool* pool, Particles particles, m_V2f64 center, m_V2f64 radius_a_b))(void)) {
     mp_parallel_for_pooled(pool, $r(0, State_particles), State_initParticles_worker, u_anyV(lit$((State_InitParticlesArgs){
-        .pos_x = particles.pos_x,
-        .pos_y = particles.pos_y,
-        .vel_x = particles.vel_x,
-        .vel_y = particles.vel_y,
-        .mass = particles.mass,
-        .center_x = center.x,
-        .center_y = center.y,
-        .radius_a = radius_a_b.x,
-        .radius_b = radius_a_b.y,
-    })));
+                                                                                         .pos_x = particles.pos_x,
+                                                                                         .pos_y = particles.pos_y,
+                                                                                         .vel_x = particles.vel_x,
+                                                                                         .vel_y = particles.vel_y,
+                                                                                         .mass = particles.mass,
+                                                                                         .center_x = center.x,
+                                                                                         .center_y = center.y,
+                                                                                         .radius_a = radius_a_b.x,
+                                                                                         .radius_b = radius_a_b.y,
+                                                                                     })));
 }
 
 typedef struct State_ClearGridArgs {
@@ -822,15 +827,15 @@ fn_((State_clearGrid_worker(R range, u_V$raw params))(void)) {
 
 fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void)) {
     mp_parallel_for_pooled(pool, $r(0, State_grid_width * State_grid_height), State_clearGrid_worker, u_anyV(lit$((State_ClearGridArgs){
-        .grid = grid,
-    })));
+                                                                                                          .grid = grid,
+                                                                                                      })));
 }
 
 fn_((State_hashPosition(m_V2f32 pos))(usize)) {
     let gx_0 = as$(isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size);
     let gy_0 = as$(isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size);
-    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, as$(isize)(State_grid_width) - 1));
-    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, as$(isize)(State_grid_height) - 1));
+    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, as$(isize)(State_grid_width)-1));
+    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, as$(isize)(State_grid_height)-1));
     return gy_1 * State_grid_width + gx_1;
 }
 
@@ -909,11 +914,11 @@ fn_((State_applyGravity_worker(R range, u_V$raw params))(void)) {
 
 fn_((State_applyGravity(State* self))(void)) {
     mp_parallel_for_pooled(self->pool, $r(0, State_particles), State_applyGravity_worker, u_anyV(lit$((State_ApplyGravityArgs){
-        .pos_x = self->particles.pos_x,
-        .pos_y = self->particles.pos_y,
-        .vel_x = self->particles.vel_x,
-        .vel_y = self->particles.vel_y,
-    })));
+                                                                                              .pos_x = self->particles.pos_x,
+                                                                                              .pos_y = self->particles.pos_y,
+                                                                                              .vel_x = self->particles.vel_x,
+                                                                                              .vel_y = self->particles.vel_y,
+                                                                                          })));
 }
 
 typedef struct State_HandleCollisionsArgs {
@@ -924,8 +929,8 @@ typedef struct State_HandleCollisionsArgs {
 
 // Helper: SIMD distance calculation for batch of particles
 fn_((simd_compute_distances(
-    f32 px, f32 py,  // Reference particle (scalar)
-    f32* other_px, f32* other_py,  // Neighbor particles (array)
+    f32 px, f32 py, // Reference particle (scalar)
+    f32* other_px, f32* other_py, // Neighbor particles (array)
     f32* out_dx, f32* out_dy, f32* out_dist,
     usize count
 ))(void)) {
@@ -989,12 +994,13 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
                 let neighbor = at$S(grid, neighbor_idx);
                 let count = atom_load(&neighbor->count, atom_MemOrd_acquire);
                 let safe_count = (count < State_max_particles_per_cell)
-                    ? count : State_max_particles_per_cell;
+                                   ? count
+                                   : State_max_particles_per_cell;
                 // Gather neighbor particles (prepare for SIMD)
                 usize valid_count = 0;
                 for (usize k = 0; k < safe_count; ++k) {
                     let j = *atA(neighbor->indices, k);
-                    if (j <= i) { continue; }  // Avoid double-processing
+                    if (j <= i) { continue; } // Avoid double-processing
                     neighbor_indices[valid_count] = j;
                     neighbor_px[valid_count] = args.pos_x.ptr[j];
                     neighbor_py[valid_count] = args.pos_y.ptr[j];
@@ -1033,10 +1039,10 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
 
 fn_((State_handleCollisions(State* self))(void)) {
     mp_parallel_for_pooled(self->pool, $r(0, State_particles), State_handleCollisions_worker, u_anyV(lit$((State_HandleCollisionsArgs){
-        .pos_x = self->particles.pos_x,
-        .pos_y = self->particles.pos_y,
-        .grid = self->grid,
-    })));
+                                                                                                  .pos_x = self->particles.pos_x,
+                                                                                                  .pos_y = self->particles.pos_y,
+                                                                                                  .grid = self->grid,
+                                                                                              })));
 }
 
 typedef struct State_UpdatePositionsArgs {
@@ -1132,12 +1138,12 @@ fn_((State_updatePositions_worker(R range, u_V$raw params))(void)) {
 }
 
 fn_((State_updatePositions(State* self))(void)) {
-    mp_parallel_for_pooled(self->pool, $r(0, State_particles), State_updatePositions_worker, u_anyV(lit$((State_UpdatePositionsArgs) {
-        .pos_x = self->particles.pos_x,
-        .pos_y = self->particles.pos_y,
-        .vel_x = self->particles.vel_x,
-        .vel_y = self->particles.vel_y,
-    })));
+    mp_parallel_for_pooled(self->pool, $r(0, State_particles), State_updatePositions_worker, u_anyV(lit$((State_UpdatePositionsArgs){
+                                                                                                 .pos_x = self->particles.pos_x,
+                                                                                                 .pos_y = self->particles.pos_y,
+                                                                                                 .vel_x = self->particles.vel_x,
+                                                                                                 .vel_y = self->particles.vel_y,
+                                                                                             })));
 }
 
 /* // For completeness, here's a naive SIMD attempt (NOT RECOMMENDED):

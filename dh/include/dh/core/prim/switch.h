@@ -33,7 +33,6 @@ extern "C" {
 #define switch_(/*(_Init)(_Cond...)*/...) __syn__switch_(__syn__switch___parseInit __VA_ARGS__)
 #define case_(/*(_Enum)({...})*/...) __syn__case_(__syn__case___parseEnum __VA_ARGS__)
 #define default_(/*({...})*/...) __syn__default_(__VA_ARGS__)
-#define $fallthrough __attr__$fallthrough
 
 /*========== Macros and Definitions =========================================*/
 
@@ -57,8 +56,6 @@ extern "C" {
     default: \
         __syn__default___expand _Body
 #define __syn__default___expand(...) __VA_ARGS__
-
-#define __attr__$fallthrough __attribute__((fallthrough))
 
 #if defined(__cplusplus)
 } /* extern "C" */

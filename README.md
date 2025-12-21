@@ -536,9 +536,9 @@ fn_((mathMul(i32 a, i32 b))(i32)) { return a * b; }
 
 TEST_fn_("Basic Math Operations Test" $scope) {
     // Addition test
-    let_(a, i32)   = 5;
-    let_(b, i32)   = 7;
-    let_(sum, i32) = math_addI32(a, b);
+    let_(a, i32) = 5;
+    let_(b, i32) = 7;
+    let_(sum, i32) = mathAdd(a, b);
 
     // Validate results
     try_(TEST_expect(sum == 12));

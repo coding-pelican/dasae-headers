@@ -1,14 +1,11 @@
-#include "dh/claim/assert_static.h"
-#include "dh/core.h"
-#include "dh/debug/assert.h"
 #include "dh/main.h"
 
 int TEST_func() {
     int* target_value = null;
-    if (likely(target_value != null)) {
+    if ($branch_likely(target_value != null)) {
         return 0;
     }
-    __builtin_unreachable();
+    $unreachable;
 }
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {

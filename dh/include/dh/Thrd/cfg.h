@@ -27,25 +27,25 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 #if !defined(Thrd_use_pthread)
-#define Thrd_use_pthread (1)
+#define Thrd_use_pthread 1
 #endif /* !defined(Thrd_use_pthread) */
 
 #if Thrd_use_pthread
 #include <pthread.h>
-#include <sched.h>
-#include <semaphore.h>
-#else  /* !Thrd_use_pthread */
+// #include <sched.h>
+// #include <semaphore.h>
+#else /* !Thrd_use_pthread */
 /* TODO: Implement other fallback support */
 #endif /* !Thrd_use_pthread */
 
 #if Thrd_use_pthread
 typedef usize Thrd_IdImpl;
 #define Thrd_invalid_id usize_limit_max
-typedef pthread_t Thrd_HandleImpl;
+typedef pthread_t Thrd_Handle_Impl;
 #define Thrd_max_name_len (15)
-typedef pthread_mutex_t Thrd_MtxImpl;
-typedef pthread_cond_t Thrd_CondImpl;
-typedef pthread_rwlock_t Thrd_RwLockImpl;
+typedef pthread_mutex_t Thrd_Mtx_Impl;
+typedef pthread_cond_t Thrd_Cond_Impl;
+typedef pthread_rwlock_t Thrd_RWLock_Impl;
 #endif /* Thrd_use_pthread */
 
 #if defined(__cplusplus)

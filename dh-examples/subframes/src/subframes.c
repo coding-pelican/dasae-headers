@@ -274,12 +274,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
                         let momentum_2 = dp_norm_1;
 
                         // Update velocities
-                        *vel = pipe(m_V2f32_scale(tangent, dp_tan_1),
-                            (m_V2f32_add,(m_V2f32_scale(normal, momentum_1 * state_collision_damping)))
-                        );
-                        *other_vel = pipe(m_V2f32_scale(tangent, dp_tan_2),
-                            (m_V2f32_add,(m_V2f32_scale(normal, momentum_2 * state_collision_damping)))
-                        );
+                        *vel = pipe_(m_V2f32_scale(tangent, dp_tan_1), (m_V2f32_add, (m_V2f32_scale(normal, momentum_1 * state_collision_damping))));
+                        *other_vel = pipe_(m_V2f32_scale(tangent, dp_tan_2), (m_V2f32_add, (m_V2f32_scale(normal, momentum_2 * state_collision_damping))));
 
                         // Separate the circles
                         let overlap = radius * 2 - distance;

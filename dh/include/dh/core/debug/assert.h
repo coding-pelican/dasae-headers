@@ -67,35 +67,35 @@ extern "C" {
     (!!_Expr) || (({ \
         debug_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
         debug_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
-        $debug_point unreachable; \
+        $debug_point $unreachable; \
     }), 0) \
 )
 #define __step__debug_assert_msg(_Expr, _ExprStr, _msg...) $ignore_void( \
     (!!_Expr) || (({ \
         debug_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _msg); \
         debug_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
-        $debug_point unreachable; \
+        $debug_point $unreachable; \
     }), 0) \
 )
 #define __step__debug_assert_fmt(_Expr, _ExprStr, _fmt...) $ignore_void(\
     (!!_Expr) || (({ \
         debug_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
         debug_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
-        $debug_point unreachable; \
+        $debug_point $unreachable; \
     }), 0) \
 )
 
 #define __step__debug_assert_trap() $ignore_void(({ \
     debug_assert_failLog("(none)", __func__, __FILE__, __LINE__); \
-    $debug_point unreachable; \
+    $debug_point $unreachable; \
 }), 0)
 #define __step__debug_assert_trap_msg(_msg...) $ignore_void(({ \
     debug_assert_failLogMsg("(none)", __func__, __FILE__, __LINE__, _msg); \
-    $debug_point unreachable; \
+    $debug_point $unreachable; \
 }), 0)
 #define __step__debug_assert_trap_fmt(_fmt...) $ignore_void(({ \
     debug_assert_failLogFmt("(none)", __func__, __FILE__, __LINE__, _fmt); \
-    $debug_point unreachable; \
+    $debug_point $unreachable; \
 }), 0)
 /* clang-format on */
 #else  /* !on_comptime */
@@ -103,25 +103,25 @@ extern "C" {
 #define __step__debug_assert(_Expr, _ExprStr...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
         debug_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
-        $debug_point unreachable; \
+        $debug_point $unreachable; \
     }), 0) \
 )
 #define __step__debug_assert_msg(_Expr, _ExprStr, _msg...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
         debug_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _msg); \
-        $debug_point unreachable; \
+        $debug_point $unreachable; \
     }), 0) \
 )
 #define __step__debug_assert_fmt(_Expr, _ExprStr, fmt...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
         debug_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
-        $debug_point unreachable; \
+        $debug_point $unreachable; \
     }), 0) \
 )
 
-#define __step__debug_assert_trap()            $dispatch_on_comptime $ignore_void($debug_point unreachable, 0)
-#define __step__debug_assert_trap_msg(_msg...) $dispatch_on_comptime $ignore_void($debug_point unreachable, 0)
-#define __step__debug_assert_trap_fmt(_fmt...) $dispatch_on_comptime $ignore_void($debug_point unreachable, 0)
+#define __step__debug_assert_trap()            $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
+#define __step__debug_assert_trap_msg(_msg...) $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
+#define __step__debug_assert_trap_fmt(_fmt...) $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
 /* clang-format on */
 #endif /* on_comptime */
 

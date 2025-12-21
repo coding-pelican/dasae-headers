@@ -34,7 +34,7 @@ extern "C" {
 /* --- Structures --- */
 
 struct time_SysTime {
-    time_SysTimePlatform impl_;
+    time_SysTimePlatform impl;
 };
 T_impl_O$(time_SysTime);
 
@@ -124,11 +124,11 @@ $extern cmp_fn_neqCtx$((time_SysTime)(lhs, rhs, ctx));
 
 #if plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit)
 #define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
-    .impl_ = { .QuadPart = as$(LONGLONG)(time_SysTime_intervals_to_unix_epoch) }, \
+    .impl = { .QuadPart = as$(LONGLONG)(time_SysTime_intervals_to_unix_epoch) }, \
 })
 #else /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
 #define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
-    .impl_ = { .tv_sec = as$(time_t)(time_SysTime_intervals_to_unix_epoch), .tv_nsec = 0 }, \
+    .impl = { .tv_sec = as$(time_t)(time_SysTime_intervals_to_unix_epoch), .tv_nsec = 0 }, \
 })
 #endif
 

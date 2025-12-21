@@ -5,7 +5,7 @@
  * @file    Mtx.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-05-23 (date of creation)
- * @updated 2025-05-23 (date of last update)
+ * @updated 2025-12-20 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/Thrd
  * @prefix  Thrd_Mtx
@@ -24,38 +24,38 @@ extern "C" {
 #include "cfg.h"
 #include "common.h"
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
 struct Thrd_Mtx {
-    Thrd_MtxImpl impl;
+    Thrd_Mtx_Impl impl;
 };
 /// @brief Initializes a mutex
 /// @return A new mutex
-extern fn_((Thrd_Mtx_init(void))(Thrd_Mtx));
+$extern fn_((Thrd_Mtx_init(void))(Thrd_Mtx));
 /// @brief Finalizes a mutex
 /// @param self Pointer to the mutex to finalize
-extern fn_((Thrd_Mtx_fini(Thrd_Mtx* self))(void));
+$extern fn_((Thrd_Mtx_fini(Thrd_Mtx* self))(void));
 /// @brief Locks a mutex, blocking if the mutex is already locked
 /// @param self Pointer to the mutex to lock
-extern fn_((Thrd_Mtx_lock(Thrd_Mtx* self))(void));
+$extern fn_((Thrd_Mtx_lock(Thrd_Mtx* self))(void));
 /// @brief Attempts to lock a mutex without blocking
 /// @param self Pointer to the mutex to try locking
 /// @return true if the mutex was locked, false if it was already locked
-extern fn_((Thrd_Mtx_tryLock(Thrd_Mtx* self))(bool));
+$extern fn_((Thrd_Mtx_tryLock(Thrd_Mtx* self))(bool));
 /// @brief Unlocks a mutex
 /// @param self Pointer to the mutex to unlock
-extern fn_((Thrd_Mtx_unlock(Thrd_Mtx* self))(void));
+$extern fn_((Thrd_Mtx_unlock(Thrd_Mtx* self))(void));
 
-struct Thrd_MtxRecur {
+struct Thrd_Mtx_Recur {
     Thrd_Mtx inner;
     Thrd_Id thread_id;
     usize lock_count;
 };
-extern fn_((Thrd_MtxRecur_init(void))(Thrd_MtxRecur));
-extern fn_((Thrd_MtxRecur_fini(Thrd_MtxRecur* self))(void));
-extern fn_((Thrd_MtxRecur_lock(Thrd_MtxRecur* self))(void));
-extern fn_((Thrd_MtxRecur_tryLock(Thrd_MtxRecur* self))(bool));
-extern fn_((Thrd_MtxRecur_unlock(Thrd_MtxRecur* self))(void));
+$extern fn_((Thrd_Mtx_Recur_init(void))(Thrd_Mtx_Recur));
+$extern fn_((Thrd_Mtx_Recur_fini(Thrd_Mtx_Recur* self))(void));
+$extern fn_((Thrd_Mtx_Recur_lock(Thrd_Mtx_Recur* self))(void));
+$extern fn_((Thrd_Mtx_Recur_tryLock(Thrd_Mtx_Recur* self))(bool));
+$extern fn_((Thrd_Mtx_Recur_unlock(Thrd_Mtx_Recur* self))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

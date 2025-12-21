@@ -30,17 +30,13 @@ extern "C" {
 #endif
 #include <time.h>
 
-/*========== Macros and Definitions =========================================*/
+/*========== Macros and Declarations ========================================*/
 
-#if plat_is_windows
-typedef LARGE_INTEGER time_SysTimeWindows;
-#else /* posix */
-typedef struct timespec time_SysTimeUnix;
-#endif
 typedef pp_if_(plat_is_windows)(
-    pp_then_(time_SysTimeWindows),
-    pp_else_(time_SysTimeUnix)
-) time_SysTimePlatform;
+    pp_then_(LARGE_INTEGER),
+    pp_else_(struct timespec)
+) time_SysTime_Impl;
+typedef time_SysTime_Impl time_SysTimePlatform;
 
 #if defined(__cplusplus)
 } /* extern "C" */
