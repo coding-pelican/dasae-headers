@@ -1,9 +1,29 @@
 #include "dh/Thrd/Mtx.h"
 
+#if plat_type == plat_type_windows
 fn_((Thrd_Mtx_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){
-        .impl = PTHREAD_MUTEX_INITIALIZER
-    };
+    return (Thrd_Mtx){ .impl = SRWLOCK_INIT };
+};
+
+fn_((Thrd_Mtx_fini(Thrd_Mtx* self))(void)) {
+    let_ignore = self;
+};
+
+fn_((Thrd_Mtx_lock(Thrd_Mtx* self))(void)) {
+    AcquireSRWLockExclusive(&self->impl);
+};
+
+fn_((Thrd_Mtx_tryLock(Thrd_Mtx* self))(bool)) {
+    return TryAcquireSRWLockExclusive(&self->impl) != false;
+};
+
+fn_((Thrd_Mtx_unlock(Thrd_Mtx* self))(void)) {
+    ReleaseSRWLockExclusive(&self->impl);
+};
+
+#else
+fn_((Thrd_Mtx_init(void))(Thrd_Mtx)) {
+    return (Thrd_Mtx){ .impl = PTHREAD_MUTEX_INITIALIZER };
 };
 
 fn_((Thrd_Mtx_fini(Thrd_Mtx* self))(void)) {
@@ -21,6 +41,7 @@ fn_((Thrd_Mtx_tryLock(Thrd_Mtx* self))(bool)) {
 fn_((Thrd_Mtx_unlock(Thrd_Mtx* self))(void)) {
     pthread_mutex_unlock(&self->impl);
 };
+#endif
 
 fn_((Thrd_Mtx_Recur_init(void))(Thrd_Mtx_Recur)) {
     return (Thrd_Mtx_Recur){

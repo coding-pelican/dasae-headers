@@ -38,12 +38,19 @@ extern "C" {
 /* TODO: Implement other fallback support */
 #endif /* !Thrd_use_pthread */
 
+#if plat_is_windows
+#include "dh/os/windows.h"
+#endif /* plat_is_windows */
+
 #if Thrd_use_pthread
 typedef usize Thrd_IdImpl;
 #define Thrd_invalid_id usize_limit_max
 typedef pthread_t Thrd_Handle_Impl;
 #define Thrd_max_name_len (15)
-typedef pthread_mutex_t Thrd_Mtx_Impl;
+typedef pp_if_(plat_is_windows)(
+    pp_then_(SRWLOCK),
+    pp_else_(pthread_mutex_t)
+) Thrd_Mtx_Impl;
 typedef pthread_cond_t Thrd_Cond_Impl;
 typedef pthread_rwlock_t Thrd_RWLock_Impl;
 #endif /* Thrd_use_pthread */
