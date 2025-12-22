@@ -30,9 +30,9 @@ extern "C" {
 
 errset_((Thrd_Sem_Err)(Timeout));
 typedef struct Thrd_Sem {
-    Thrd_Mtx mtx;
-    Thrd_Cond cond;
-    usize permits;
+    var_(mtx, Thrd_Mtx);
+    var_(cond, Thrd_Cond);
+    var_(permits, usize);
 } Thrd_Sem;
 $extern fn_((Thrd_Sem_init(void))(Thrd_Sem));
 $extern fn_((Thrd_Sem_fini(Thrd_Sem* self))(void));

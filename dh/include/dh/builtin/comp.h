@@ -304,20 +304,23 @@ extern "C" {
     })
 #define __op__$in_field__expand(...) __VA_ARGS__
 
-#define cleared() comp_syn__cleared()
-#define comp_syn__cleared() \
+#define cleared() ____cleared()
+#define ____cleared() \
     {}
+#define initial(/*_expr...*/...) ____initial(__VA_ARGS__)
+#define ____initial(_expr...) \
+    { _expr }
 
-#define move(_p_val... /*(TypeOf(*_p_val))*/) comp_syn__move(_p_val)
-#define comp_syn__move(_p_val...) \
+#define move(_p_val... /*(TypeOf(*_p_val))*/) ____move(_p_val)
+#define ____move(_p_val...) \
     ({ \
         let_(__p_val, TypeOf(_p_val)) = _p_val; \
         let_(__val, TypeOfUnqual(*__p_val)) = *__p_val; \
         *__p_val = lit0$((TypeOf(__val))); \
         __val; \
     })
-#define copy(_val... /*(TypeOf(_val))*/) comp_syn__copy(_val)
-#define comp_syn__copy(_val...) (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
+#define copy(_val... /*(TypeOf(_val))*/) ____copy(_val)
+#define ____copy(_val...) (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
 
 #define T_switch$(/*(_T_Cond)(_T_Cases...)*/...) \
     __step__T_switch$(__step__T_switch$__parseTCond __VA_ARGS__)

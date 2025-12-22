@@ -1,8 +1,7 @@
 #include "dh/ArrStk.h"
 #include "dh/ArrList.h"
 
-claim_assert_static(sizeOf$(TypeOf(ArrStk)) == sizeOf$(TypeOf(ArrList)));
-claim_assert_static(alignOf$(TypeOf(ArrStk)) == alignOf$(TypeOf(ArrList)));
+claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrStk), packTypeInfo$(ArrList)));
 claim_assert_static(offsetTo(ArrStk, items) == offsetTo(ArrList, items));
 claim_assert_static(offsetTo(ArrStk, cap) == offsetTo(ArrList, cap));
 debug_assert_static(offsetTo(ArrStk, type) == offsetTo(ArrList, type));
@@ -42,8 +41,7 @@ fn_((ArrStk_clone(ArrStk self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrStk
     return_ok(listToStk(try_(ArrList_clone(stkToList(self), type, gpa))));
 } $unscoped_(fn);
 
-claim_assert_static(sizeOf$(TypeOf(ArrStk_Grip)) == sizeOf$(TypeOf(ArrList_Grip)));
-claim_assert_static(alignOf$(TypeOf(ArrStk_Grip)) == alignOf$(TypeOf(ArrList_Grip)));
+claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrStk_Grip), packTypeInfo$(ArrList_Grip)));
 claim_assert_static(offsetTo(ArrStk_Grip, buf) == offsetTo(ArrList_Grip, buf));
 claim_assert_static(offsetTo(ArrStk_Grip, len) == offsetTo(ArrList_Grip, len));
 claim_assert_static(offsetTo(ArrStk_Grip, ctx) == offsetTo(ArrList_Grip, ctx));

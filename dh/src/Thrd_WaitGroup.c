@@ -1,5 +1,8 @@
 #include "dh/Thrd/WaitGroup.h"
 
+#define Thrd_WaitGroup__is_waiting (as$(usize)(1) << 0)
+#define Thrd_WaitGroup__one_pending (as$(usize)(1) << 1)
+
 fn_((Thrd_WaitGroup_init(void))(Thrd_WaitGroup)) {
     return (Thrd_WaitGroup){
         .state = atom_V_init(0),
@@ -13,29 +16,29 @@ fn_((Thrd_WaitGroup_fini(Thrd_WaitGroup* self))(void)) {
 };
 
 fn_((Thrd_WaitGroup_start(Thrd_WaitGroup* self))(void)) {
-    let state = atom_V_fetchAdd(&self->state, Thrd_WaitGroup_one_pending, atom_MemOrd_monotonic);
-    debug_assert((state / Thrd_WaitGroup_one_pending) < (usize_limit_max / Thrd_WaitGroup_one_pending));
+    let state = atom_V_fetchAdd(&self->state, Thrd_WaitGroup__one_pending, atom_MemOrd_monotonic);
+    debug_assert((state / Thrd_WaitGroup__one_pending) < (usize_limit_max / Thrd_WaitGroup__one_pending));
     let_ignore = state;
 };
 
 fn_((Thrd_WaitGroup_startN(Thrd_WaitGroup* self, usize n))(void)) {
-    let state = atom_V_fetchAdd(&self->state, Thrd_WaitGroup_one_pending * n, atom_MemOrd_monotonic);
-    debug_assert((state / Thrd_WaitGroup_one_pending) < (usize_limit_max / Thrd_WaitGroup_one_pending));
+    let state = atom_V_fetchAdd(&self->state, Thrd_WaitGroup__one_pending * n, atom_MemOrd_monotonic);
+    debug_assert((state / Thrd_WaitGroup__one_pending) < (usize_limit_max / Thrd_WaitGroup__one_pending));
     let_ignore = state;
 };
 
 fn_((Thrd_WaitGroup_finish(Thrd_WaitGroup* self))(void)) {
-    let state = atom_V_fetchSub(&self->state, Thrd_WaitGroup_one_pending, atom_MemOrd_acq_rel);
-    debug_assert((state / Thrd_WaitGroup_one_pending) > 0);
-    if (state == (Thrd_WaitGroup_one_pending | Thrd_WaitGroup_is_waiting)) {
+    let state = atom_V_fetchSub(&self->state, Thrd_WaitGroup__one_pending, atom_MemOrd_acq_rel);
+    debug_assert((state / Thrd_WaitGroup__one_pending) > 0);
+    if (state == (Thrd_WaitGroup__one_pending | Thrd_WaitGroup__is_waiting)) {
         Thrd_ResetEvent_set(&self->event);
     }
 };
 
 fn_((Thrd_WaitGroup_wait(Thrd_WaitGroup* self))(void)) {
-    let state = atom_V_fetchAdd(&self->state, Thrd_WaitGroup_is_waiting, atom_MemOrd_acquire);
-    debug_assert((state & Thrd_WaitGroup_is_waiting) == 0);
-    if ((state / Thrd_WaitGroup_one_pending) > 0) {
+    let state = atom_V_fetchAdd(&self->state, Thrd_WaitGroup__is_waiting, atom_MemOrd_acquire);
+    debug_assert((state & Thrd_WaitGroup__is_waiting) == 0);
+    if ((state / Thrd_WaitGroup__one_pending) > 0) {
         Thrd_ResetEvent_wait(&self->event);
     }
 };
@@ -47,8 +50,8 @@ fn_((Thrd_WaitGroup_reset(Thrd_WaitGroup* self))(void)) {
 
 fn_((Thrd_WaitGroup_isDone(Thrd_WaitGroup* self))(bool)) {
     let state = atom_V_load(&self->state, atom_MemOrd_acquire);
-    debug_assert((state & Thrd_WaitGroup_is_waiting) == 0);
-    return (state / Thrd_WaitGroup_one_pending) == 0;
+    debug_assert((state & Thrd_WaitGroup__is_waiting) == 0);
+    return (state / Thrd_WaitGroup__one_pending) == 0;
 };
 
 $attr($must_check)
@@ -68,7 +71,7 @@ fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Allocator gpa, Thrd_FnC
     let thrd_ctx = u_castP$((Thrd_FnCtx$(Thrd_WaitGroup__entryInst)*)(try_((mem_Allocator_create(gpa, typeInfo$(InnerType))))));
     errdefer_($ignore, mem_Allocator_destroy(gpa, u_anyP(thrd_ctx)));
     *thrd_ctx = Thrd_FnCtx_from$((Thrd_WaitGroup__entryInst)(self, gpa, fn_ctx));
-    let thrd = try_(Thrd_spawn(Thrd_SpawnConfig_default, thrd_ctx->as_raw));
+    let thrd = try_(Thrd_spawn(Thrd_SpawnCfg_default, thrd_ctx->as_raw));
     return_ok(thrd);
 } $unguarded_(fn);
 

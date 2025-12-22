@@ -42,10 +42,22 @@ extern "C" {
         volatile _T raw; \
     }
 
+#define atom_V_zero() __op__atom_V_zero()
+#define atom_V_zero$(_VT) __op__atom_V_zero$(_VT)
 #define atom_V_init(_val...) __op__atom_V_init(_val)
 #define atom_V_init$(_VT, _val...) __op__atom_V_init$(_VT, _val)
+#define atom_V_from(_val...) __op__atom_V_from(_val)
 #define atom_V_load(_p_self, _ord...) __op__atom_V_load(_p_self, _ord)
 #define atom_V_store(_p_self, _val, _ord...) __op__atom_V_store(_p_self, _val, _ord)
+
+#define atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    __op__atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord)
+#define atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    __op__atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord)
+#define atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    __op__atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord)
+#define atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    __op__atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord)
 
 #define atom_V_fetchXchg(_p_self, _val, _ord...) __op__atom_V_fetchXchg(_p_self, _val, _ord)
 #define atom_V_fetchAdd(_p_self, _val, _ord...) __op__atom_V_fetchAdd(_p_self, _val, _ord)
@@ -55,10 +67,9 @@ extern "C" {
 #define atom_V_fetchXor(_p_self, _val, _ord...) __op__atom_V_fetchXor(_p_self, _val, _ord)
 #define atom_V_fetchOr(_p_self, _val, _ord...) __op__atom_V_fetchOr(_p_self, _val, _ord)
 
-#define atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) __op__atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord)
-#define atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord...) __op__atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord)
-#define atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) __op__atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord)
-#define atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord...) __op__atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord)
+#define atom_V_bitSet(_p_self, _bit, _ord...) __step__atom_V_bitSet(_p_self, _bit, _ord)
+#define atom_V_bitReset(_p_self, _bit, _ord...) __step__atom_V_bitReset(_p_self, _bit, _ord)
+#define atom_V_bitToggle(_p_self, _bit, _ord...) __step__atom_V_bitToggle(_p_self, _bit, _ord)
 
 /// spinLoopHint: Platform-specific CPU hints for spin-loops
 ///
@@ -75,10 +86,22 @@ $static fn_((atom_spinLoopHint(void))(void));
 
 #define __comp_int__atom_cache_line_bytes arch_cache_line_bytes
 
-#define __op__atom_V_init(_val...) { .raw = _val }
+#define __op__atom_V_zero() cleared()
+#define __op__atom_V_zero$(_VT) lit$((_VT)cleared())
+#define __op__atom_V_init(_val...) initial(.raw = _val)
 #define __op__atom_V_init$(_VT, _val...) lit$((_VT)atom_V_init(_val))
+#define __op__atom_V_from(_val...) atom_V_init$(atom_V$$(TypeOf(_val)), _val)
 #define __op__atom_V_load(_p_self, _ord...) atom_load(&(_p_self)->raw, _ord)
 #define __op__atom_V_store(_p_self, _val, _ord...) atom_store(&(_p_self)->raw, _val, _ord)
+
+#define __op__atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    atom_cmpXchgWeak$(_OT, &(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
+#define __op__atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    atom_cmpXchgWeak(&(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
+#define __op__atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    atom_cmpXchgStrong$(_OT, &(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
+#define __op__atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
+    atom_cmpXchgStrong(&(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
 
 #define __op__atom_V_fetchXchg(_p_self, _val, _ord...) \
     atom_fetchXchg(&(_p_self)->raw, _val, _ord)
@@ -95,14 +118,30 @@ $static fn_((atom_spinLoopHint(void))(void));
 #define __op__atom_V_fetchOr(_p_self, _val, _ord...) \
     atom_fetchOr(&(_p_self)->raw, _val, _ord)
 
-#define __op__atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgWeak$(_OT, &(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
-#define __op__atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgWeak(&(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
-#define __op__atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgStrong$(_OT, &(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
-#define __op__atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgStrong(&(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
+#define __step__atom_V_bitSet(_p_self, _bit, _ord...) \
+    ____atom_V_bitSet(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
+#define ____atom_V_bitSet(__mask, __val, _p_self, _bit, _ord...) ({ \
+    typedef TypeOf(*_p_self) SelfType; \
+    let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
+    let_(__val, SelfType) = atom_V_fetchOr(_p_self, __mask, _ord); \
+    boolToInt(__val & __mask != 0); \
+})
+#define __step__atom_V_bitReset(_p_self, _bit, _ord...) \
+    ____atom_V_bitReset(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
+#define ____atom_V_bitReset(__mask, __val, _p_self, _bit, _ord...) ({ \
+    typedef TypeOf(*_p_self) SelfType; \
+    let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
+    let_(__val, SelfType) = atom_V_fetchAnd(_p_self, ~__mask, _ord); \
+    boolToInt(__val & __mask != 0); \
+})
+#define __step__atom_V_bitToggle(_p_self, _bit, _ord...) \
+    ____atom_V_bitToggle(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
+#define ____atom_V_bitToggle(__mask, __val, _p_self, _bit, _ord...) ({ \
+    typedef TypeOf(*_p_self) SelfType; \
+    let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
+    let_(__val, SelfType) = atom_V_fetchXor(_p_self, __mask, _ord); \
+    boolToInt(__val & __mask != 0); \
+})
 
 $attr($inline_always)
 $static fn_((atom_spinLoopHint(void))(void)) {

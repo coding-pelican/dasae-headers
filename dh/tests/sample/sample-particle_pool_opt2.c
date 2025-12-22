@@ -49,7 +49,7 @@ $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)
         *worker = Thrd_FnCtx_from$((mp_worker)(*data));
     });
     for_(($s(threads), $s(workers))(thread, worker) {
-        *thread = catch_((Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw))(
+        *thread = catch_((Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw))(
             $ignore, claim_unreachable
         ));
     });
@@ -233,7 +233,7 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
     })));
     for_(($s(pool->workers), $s(pool->threads), $r(0, thrd_count))(worker, thread, i) {
         *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool, i));
-        *thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw));
+        *thread = try_(Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw));
     });
     return_ok(pool);
 } $unguarded_(fn);
@@ -1321,78 +1321,78 @@ Simulating 1000 frames...
 Starting OPTIMIZED simulation for 1000 frames at 30.0 FPS...
 Using 15 threads (Pool) with PHASED EXECUTION
 Barriers reduced from 4/frame to 1/frame
-Frame 0: 69.60 ms (14.4 FPS) | Avg: 69.60 ms (14.4 FPS)
-Frame 30: 70.02 ms (14.3 FPS) | Avg: 74.82 ms (13.4 FPS)
-Frame 60: 70.17 ms (14.3 FPS) | Avg: 73.53 ms (13.6 FPS)
-Frame 90: 67.63 ms (14.8 FPS) | Avg: 72.85 ms (13.7 FPS)
-Frame 120: 72.57 ms (13.8 FPS) | Avg: 72.66 ms (13.8 FPS)
-Frame 150: 69.64 ms (14.4 FPS) | Avg: 72.29 ms (13.8 FPS)
-Frame 180: 68.73 ms (14.6 FPS) | Avg: 72.16 ms (13.9 FPS)
-Frame 210: 72.20 ms (13.9 FPS) | Avg: 72.05 ms (13.9 FPS)
-Frame 240: 76.86 ms (13.0 FPS) | Avg: 72.09 ms (13.9 FPS)
-Frame 270: 77.76 ms (12.9 FPS) | Avg: 72.14 ms (13.9 FPS)
-Frame 300: 66.30 ms (15.1 FPS) | Avg: 71.95 ms (13.9 FPS)
-Frame 330: 72.00 ms (13.7 FPS) | Avg: 71.99 ms (13.9 FPS)
-Frame 360: 70.35 ms (14.2 FPS) | Avg: 71.71 ms (13.9 FPS)
-Frame 390: 69.63 ms (14.4 FPS) | Avg: 71.59 ms (13.0 FPS)
-Frame 420: 71.26 ms (14.0 FPS) | Avg: 71.42 ms (14.0 FPS)
-Frame 450: 65.26 ms (15.3 FPS) | Avg: 71.33 ms (14.0 FPS)
-Frame 480: 66.68 ms (14.0 FPS) | Avg: 71.25 ms (14.0 FPS)
-Frame 510: 64.90 ms (15.4 FPS) | Avg: 71.30 ms (14.0 FPS)
-Frame 540: 70.13 ms (14.3 FPS) | Avg: 71.20 ms (14.0 FPS)
-Frame 570: 66.93 ms (14.9 FPS) | Avg: 71.08 ms (14.1 FPS)
-Frame 600: 72.91 ms (13.7 FPS) | Avg: 71.05 ms (14.1 FPS)
-Frame 630: 69.90 ms (14.3 FPS) | Avg: 71.02 ms (14.1 FPS)
-Frame 660: 66.29 ms (15.1 FPS) | Avg: 70.96 ms (14.1 FPS)
-Frame 690: 70.43 ms (14.2 FPS) | Avg: 71.05 ms (14.1 FPS)
-Frame 720: 71.97 ms (13.9 FPS) | Avg: 71.09 ms (14.1 FPS)
-Frame 750: 69.73 ms (14.3 FPS) | Avg: 71.06 ms (14.1 FPS)
-Frame 780: 72.02 ms (13.9 FPS) | Avg: 71.00 ms (14.1 FPS)
-Frame 810: 71.52 ms (13.0 FPS) | Avg: 70.97 ms (14.1 FPS)
-Frame 840: 67.15 ms (14.9 FPS) | Avg: 70.94 ms (14.1 FPS)
-Frame 870: 70.09 ms (14.3 FPS) | Avg: 70.90 ms (14.1 FPS)
-Frame 900: 68.22 ms (14.7 FPS) | Avg: 70.82 ms (14.1 FPS)
-Frame 930: 73.72 ms (13.6 FPS) | Avg: 70.79 ms (14.1 FPS)
-Frame 960: 66.45 ms (15.0 FPS) | Avg: 70.77 ms (14.1 FPS)
-Frame 990: 68.41 ms (14.6 FPS) | Avg: 70.73 ms (14.1 FPS)
+Frame 0: 66.22 ms (15.1 FPS) | Avg: 66.22 ms (15.1 FPS)
+Frame 30: 65.74 ms (15.2 FPS) | Avg: 66.17 ms (15.1 FPS)
+Frame 60: 64.08 ms (15.6 FPS) | Avg: 66.45 ms (15.0 FPS)
+Frame 90: 63.10 ms (15.8 FPS) | Avg: 66.46 ms (15.0 FPS)
+Frame 120: 67.57 ms (14.8 FPS) | Avg: 66.58 ms (15.0 FPS)
+Frame 150: 65.50 ms (15.3 FPS) | Avg: 66.55 ms (15.0 FPS)
+Frame 180: 65.51 ms (15.3 FPS) | Avg: 66.41 ms (15.1 FPS)
+Frame 210: 66.47 ms (15.0 FPS) | Avg: 66.42 ms (15.1 FPS)
+Frame 240: 69.23 ms (14.4 FPS) | Avg: 66.44 ms (15.1 FPS)
+Frame 270: 69.72 ms (14.3 FPS) | Avg: 66.48 ms (15.0 FPS)
+Frame 300: 66.95 ms (14.9 FPS) | Avg: 66.49 ms (15.0 FPS)
+Frame 330: 66.73 ms (14.0 FPS) | Avg: 66.61 ms (15.0 FPS)
+Frame 360: 65.70 ms (15.2 FPS) | Avg: 66.60 ms (15.0 FPS)
+Frame 390: 66.58 ms (15.0 FPS) | Avg: 66.60 ms (15.0 FPS)
+Frame 420: 67.52 ms (14.8 FPS) | Avg: 66.60 ms (15.0 FPS)
+Frame 450: 65.82 ms (15.2 FPS) | Avg: 66.60 ms (15.0 FPS)
+Frame 480: 66.10 ms (15.1 FPS) | Avg: 66.62 ms (15.0 FPS)
+Frame 510: 65.66 ms (15.2 FPS) | Avg: 66.63 ms (15.0 FPS)
+Frame 540: 64.50 ms (15.5 FPS) | Avg: 66.59 ms (15.0 FPS)
+Frame 570: 61.83 ms (16.2 FPS) | Avg: 66.59 ms (15.0 FPS)
+Frame 600: 65.52 ms (15.3 FPS) | Avg: 66.56 ms (15.0 FPS)
+Frame 630: 64.37 ms (15.5 FPS) | Avg: 66.56 ms (15.0 FPS)
+Frame 660: 66.12 ms (15.1 FPS) | Avg: 66.53 ms (15.0 FPS)
+Frame 690: 66.67 ms (14.0 FPS) | Avg: 66.53 ms (15.0 FPS)
+Frame 720: 67.19 ms (14.9 FPS) | Avg: 66.55 ms (15.0 FPS)
+Frame 750: 66.61 ms (15.0 FPS) | Avg: 66.54 ms (15.0 FPS)
+Frame 780: 66.17 ms (15.1 FPS) | Avg: 66.55 ms (15.0 FPS)
+Frame 810: 64.40 ms (15.5 FPS) | Avg: 66.55 ms (15.0 FPS)
+Frame 840: 66.40 ms (15.1 FPS) | Avg: 66.58 ms (15.0 FPS)
+Frame 870: 68.73 ms (14.6 FPS) | Avg: 66.58 ms (15.0 FPS)
+Frame 900: 66.35 ms (15.1 FPS) | Avg: 66.59 ms (15.0 FPS)
+Frame 930: 82.52 ms (12.1 FPS) | Avg: 66.62 ms (15.0 FPS)
+Frame 960: 66.85 ms (14.0 FPS) | Avg: 66.67 ms (15.0 FPS)
+Frame 990: 65.52 ms (15.3 FPS) | Avg: 66.72 ms (14.9 FPS)
 
 === Optimized Simulation Complete ===
 
 Total frames: 1000
-Total time: 70.72 seconds
-Average FPS: 14.14
-Average frame time: 70.72 ms
-Target 30.00 FPS not achieved (14.14 FPS)
+Total time: 66.72 seconds
+Average FPS: 14.99
+Average frame time: 66.72 ms
+Target 30.00 FPS not achieved (14.99 FPS)
 
 Sample particles:
-- Particle 0: pos(85.85, 0.00) vel(-0.00, -0.00)
-- Particle 1: pos(-107.77, -65.65) vel(0.00, 0.00)
-- Particle 2: pos(-95.61, -82.36) vel(0.00, 0.00)
+- Particle 0: pos(168.85, 0.00) vel(-0.00, -0.00)
+- Particle 1: pos(-89.13, -54.30) vel(0.00, 0.00)
+- Particle 2: pos(-87.69, -56.58) vel(0.00, 0.00)
 
 === Program Complete ===
 
 === ThreadPool Performance Stats ===
-Worker 0: 84.7% eff | Work: 59.96s | Idle: 0.00s | Sync: 10.87s | Tasks: 4047
-Worker 1: 84.8% eff | Work: 60.10s | Idle: 0.00s | Sync: 10.74s | Tasks: 4019
-Worker 2: 84.6% eff | Work: 59.91s | Idle: 0.00s | Sync: 10.93s | Tasks: 3946
-Worker 3: 84.6% eff | Work: 59.96s | Idle: 0.00s | Sync: 10.87s | Tasks: 4030
-Worker 4: 84.8% eff | Work: 60.08s | Idle: 0.00s | Sync: 10.75s | Tasks: 3993
-Worker 5: 85.7% eff | Work: 60.73s | Idle: 0.00s | Sync: 10.12s | Tasks: 3967
-Worker 6: 85.2% eff | Work: 60.35s | Idle: 0.00s | Sync: 10.49s | Tasks: 3950
-Worker 7: 84.6% eff | Work: 59.91s | Idle: 0.00s | Sync: 10.92s | Tasks: 4111
-Worker 8: 84.8% eff | Work: 60.07s | Idle: 0.00s | Sync: 10.77s | Tasks: 4101
-Worker 9: 85.2% eff | Work: 60.37s | Idle: 0.00s | Sync: 10.47s | Tasks: 3987
-Worker 10: 84.8% eff | Work: 60.06s | Idle: 0.00s | Sync: 10.78s | Tasks: 3946
-Worker 11: 84.0% eff | Work: 60.17s | Idle: 0.00s | Sync: 10.66s | Tasks: 4005
-Worker 12: 84.9% eff | Work: 60.16s | Idle: 0.00s | Sync: 10.67s | Tasks: 3978
-Worker 13: 85.5% eff | Work: 60.57s | Idle: 0.00s | Sync: 10.26s | Tasks: 3969
-Worker 14: 85.5% eff | Work: 60.59s | Idle: 0.00s | Sync: 10.24s | Tasks: 3966
+Worker 0: 89.9% eff | Work: 60.05s | Idle: 0.00s | Sync: 6.77s | Tasks: 3987
+Worker 1: 89.6% eff | Work: 59.87s | Idle: 0.00s | Sync: 6.95s | Tasks: 3994
+Worker 2: 90.1% eff | Work: 60.18s | Idle: 0.00s | Sync: 6.64s | Tasks: 4023
+Worker 3: 90.1% eff | Work: 60.20s | Idle: 0.00s | Sync: 6.62s | Tasks: 3984
+Worker 4: 90.4% eff | Work: 60.38s | Idle: 0.00s | Sync: 6.44s | Tasks: 3994
+Worker 5: 90.2% eff | Work: 60.29s | Idle: 0.00s | Sync: 6.53s | Tasks: 4018
+Worker 6: 90.4% eff | Work: 60.38s | Idle: 0.00s | Sync: 6.44s | Tasks: 3996
+Worker 7: 90.3% eff | Work: 60.31s | Idle: 0.00s | Sync: 6.51s | Tasks: 4068
+Worker 8: 89.9% eff | Work: 60.06s | Idle: 0.00s | Sync: 6.76s | Tasks: 4018
+Worker 9: 89.8% eff | Work: 60.03s | Idle: 0.00s | Sync: 6.79s | Tasks: 4018
+Worker 10: 89.9% eff | Work: 60.09s | Idle: 0.00s | Sync: 6.72s | Tasks: 4024
+Worker 11: 90.1% eff | Work: 60.17s | Idle: 0.00s | Sync: 6.65s | Tasks: 3932
+Worker 12: 90.1% eff | Work: 60.16s | Idle: 0.00s | Sync: 6.65s | Tasks: 4004
+Worker 13: 90.3% eff | Work: 60.36s | Idle: 0.00s | Sync: 6.45s | Tasks: 3969
+Worker 14: 90.1% eff | Work: 60.18s | Idle: 0.00s | Sync: 6.64s | Tasks: 3986
 
 --- Summary ---
-Average Efficiency: 84.0%
-Total Work Time: 902.00s
+Average Efficiency: 90.1%
+Total Work Time: 902.69s
 Total Idle Time: 0.00s (0.0%)
-Total Sync Time: 159.55s (15.0%)
+Total Sync Time: 99.54s (9.9%)
 Total Tasks: 60015
 Avg Tasks per Worker: 4001.0
 */

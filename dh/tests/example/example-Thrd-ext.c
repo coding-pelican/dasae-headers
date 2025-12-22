@@ -38,7 +38,7 @@ $static fn_((exampleResetEvent(void))(void) $guard) {
     g_reset_event = Thrd_ResetEvent_init();
     defer_(Thrd_ResetEvent_fini(&g_reset_event));
 
-    var thrd = catch_((Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((resetEventWorker)()).as_raw))($ignore, return));
+    var thrd = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((resetEventWorker)()).as_raw))($ignore, return));
 
     time_sleep(time_Duration_fromMillis(100));
     report(u8_l("example"), u8_l("sending signal..."));
@@ -190,10 +190,10 @@ $static fn_((exampleProducerConsumer(void))(void) $guard) {
     g_queue_count = 0;
     g_done = false;
 
-    var prod = catch_((Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((producer)(5)).as_raw))($ignore, return));
+    var prod = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((producer)(5)).as_raw))($ignore, return));
 
-    var cons1 = catch_((Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((consumer)(1)).as_raw))($ignore, return));
-    var cons2 = catch_((Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((consumer)(2)).as_raw))($ignore, return));
+    var cons1 = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((consumer)(1)).as_raw))($ignore, return));
+    var cons2 = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((consumer)(2)).as_raw))($ignore, return));
 
     let_ignore = Thrd_join(prod);
     let c1 = Thrd_FnCtx_ret$((consumer)(Thrd_join(cons1)));

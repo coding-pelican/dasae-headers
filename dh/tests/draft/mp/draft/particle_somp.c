@@ -19,7 +19,7 @@ typedef struct mp_LoopData {
     var_(params, u_V$raw);
 } mp_LoopData;
 
-$static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args) $scope) {
+$static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope) {
     let data = args->data;
     for_(((data.range))(i) {
         data.workerFn(i, data.params);
@@ -46,7 +46,7 @@ $static fn_((mp_parallel_for(R range, mp_LoopFn func, u_V$raw user_data))(void))
         *worker = Thrd_FnCtx_from$((mp_worker)(*data));
     });
     for_(($s(threads), $s(workers))(thread, worker) {
-        *thread = catch_((Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw))(
+        *thread = catch_((Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw))(
             $ignore, claim_unreachable
         ));
     });
@@ -87,7 +87,7 @@ fn_((Rand_gaussian$f32(f32 mean, f32 std_dev))(f32)) {
 typedef struct Particle {
     m_V2f32 pos;
     m_V2f32 vel;
-    f32     mass;
+    f32 mass;
 } Particle;
 T_use_S$(Particle);
 
@@ -96,17 +96,17 @@ T_use_S$(Particle);
 // ============================================
 
 #define NUM_PARTICLES_LOG2 20u
-#define num_particles      (1u << NUM_PARTICLES_LOG2) // 2^20 = 1,048,576
-#define BOUNDARY_RADIUS    500.0f
-#define GRAVITY            9.81f
-#define DAMPING            0.98f
-#define TARGET_FPS         30.0f
-#define DELTA_TIME         (1.0f / 30.0f)
+#define num_particles (1u << NUM_PARTICLES_LOG2) // 2^20 = 1,048,576
+#define BOUNDARY_RADIUS 500.0f
+#define GRAVITY 9.81f
+#define DAMPING 0.98f
+#define TARGET_FPS 30.0f
+#define DELTA_TIME (1.0f / 30.0f)
 
 // Spatial hashing
-#define CELL_SIZE              10.0f
-#define GRID_WIDTH             200
-#define GRID_HEIGHT            200
+#define CELL_SIZE 10.0f
+#define GRID_WIDTH 200
+#define GRID_HEIGHT 200
 #define MAX_PARTICLES_PER_CELL 32
 
 typedef struct Cell {
@@ -164,12 +164,12 @@ fn_((init_particle_worker(usize i, u_V$raw data))(void)) {
 
 fn_((init_particles(S$Particle particles, f32 center_x, f32 center_y, f32 radius_a, f32 radius_b))(void)) {
     mp_parallel_for($r(0, num_particles), init_particle_worker, u_anyV(lit$((InitParticleWorkerData){
-        .particles = particles,
-        .center_x = center_x,
-        .center_y = center_y,
-        .radius_a = radius_a,
-        .radius_b = radius_b,
-    })));
+                                                                    .particles = particles,
+                                                                    .center_x = center_x,
+                                                                    .center_y = center_y,
+                                                                    .radius_a = radius_a,
+                                                                    .radius_b = radius_b,
+                                                                })));
 }
 
 // ============================================
@@ -394,14 +394,14 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     Rand_init();
     init_particles(particles, m_V2f32_zero, m_V2f32_from(BOUNDARY_RADIUS, 200.0f))
 
-    State_simulate(expr_(usize $scope) if (2 < args.len) {
-        $break_(try_(fmt_parse$usize(*at$S(args, 2), 10)));
-    } else {
-        $break_(100);
-    } $unscoped_(expr));
+        State_simulate(expr_(usize $scope) if (2 < args.len) {
+            $break_(try_(fmt_parse$usize(*at$S(args, 2), 10)));
+        } else {
+            $break_(100);
+        } $unscoped_(expr));
 
     io_stream_println(u8_l("\nSample particles:\n"));
-    for_(($r(0, 3), $s(particles))(i, particle){
+    for_(($r(0, 3), $s(particles))(i, particle) {
         io_stream_println(u8_l("Particle {:uz}: pos({:.2f}, {:.2f}) vel({:.2f}, {:.2f})"), i, particle.x, particle.y, particle.vx, particle.vy);
     });
     io_stream_println(u8_l("\n=== Program Complete ===\n"));

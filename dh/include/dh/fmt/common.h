@@ -5,7 +5,7 @@
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-09 (date of creation)
- * @updated 2025-10-25 (date of last update)
+ * @updated 2025-12-22 (date of last update)
  * @version v0.2-alpha
  * @ingroup dasae-headers(dh)/fmt
  * @prefix  fmt
@@ -98,6 +98,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
+#include "dh/fmt/cfg.h"
 #include "dh/io/Writer.h"
 #include <stdarg.h>
 
@@ -209,8 +210,8 @@ $extern fn_((fmt_Size_parse(S_const$u8 str))(O$fmt_Size));
 /// Sign display mode for numeric formatting
 typedef enum_(fmt_Sign $bits(8)) {
     fmt_Sign_auto = 0, // Only show sign for negative numbers (default)
-    fmt_Sign_always,   // Always show sign (+ or -)
-    fmt_Sign_space,    // Show space for positive, - for negative
+    fmt_Sign_always, // Always show sign (+ or -)
+    fmt_Sign_space, // Show space for positive, - for negative
 } fmt_Sign;
 
 typedef struct fmt_Spec {

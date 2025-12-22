@@ -21,8 +21,8 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define TEST__comp_enabled_default __comp_flag__TEST__comp_enabled_default
 #define TEST_comp_enabled __comp_bool__TEST_comp_enabled
+#define TEST__comp_enabled_default __comp_flag__TEST__comp_enabled_default
 
 /*========== Macros and Definitions =========================================*/
 
@@ -30,8 +30,8 @@ extern "C" {
 
 /* TODO: Add edittime decision */
 // #define __comp_flag__TEST__comp_enabled_default pp_not(on_comptime)
-#define __comp_flag__TEST__comp_enabled_default 0
 #define __comp_bool__TEST_comp_enabled TEST__comp_enabled_default
+#define __comp_flag__TEST__comp_enabled_default 0
 
 /* Override values */
 

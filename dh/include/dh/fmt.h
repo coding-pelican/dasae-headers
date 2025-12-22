@@ -5,7 +5,7 @@
  * @file    fmt.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-09 (date of creation)
- * @updated 2025-06-09 (date of last update)
+ * @updated 2025-12-22 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
  * @prefix  fmt
@@ -18,6 +18,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
+#include "fmt/cfg.h"
 #include "fmt/common.h"
 
 #if defined(__cplusplus)

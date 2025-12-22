@@ -35,8 +35,8 @@ extern "C" {
 typedef pp_if_(plat_is_windows)(
     pp_then_(LARGE_INTEGER),
     pp_else_(struct timespec)
-) time_SysTime_Impl;
-typedef time_SysTime_Impl time_SysTimePlatform;
+) time_SysTime__Impl;
+typedef time_SysTime__Impl time_SysTimePlatform;
 
 #if defined(__cplusplus)
 } /* extern "C" */

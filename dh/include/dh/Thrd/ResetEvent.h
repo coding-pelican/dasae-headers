@@ -28,11 +28,8 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((Thrd_ResetEvent_Err)(Timeout));
-#define Thrd_ResetEvent_unset 0u
-#define Thrd_ResetEvent_waiting 1u
-#define Thrd_ResetEvent_is_set 2u
 typedef struct Thrd_ResetEvent {
-    atom_V$u32 state;
+    var_(state, atom_V$u32);
 } Thrd_ResetEvent;
 $extern fn_((Thrd_ResetEvent_init(void))(Thrd_ResetEvent));
 $extern fn_((Thrd_ResetEvent_fini(Thrd_ResetEvent* self))(void));

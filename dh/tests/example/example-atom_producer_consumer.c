@@ -75,8 +75,8 @@ $static Thrd_fn_(consumer, ({ SharedBuf* buf; }, Void), ($ignore, args)$scope) {
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     var_(buffer, SharedBuf) = SharedBuf_init();
-    let producer_thrd = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((producer)(&buffer)).as_raw));
-    let consumer_thrd = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((consumer)(&buffer)).as_raw));
+    let producer_thrd = try_(Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((producer)(&buffer)).as_raw));
+    let consumer_thrd = try_(Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((consumer)(&buffer)).as_raw));
     Thrd_join(producer_thrd);
     Thrd_join(consumer_thrd);
     io_stream_println(u8_l("Processing complete"));

@@ -27,12 +27,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-T_use_atom_V$(usize);
-#define Thrd_WaitGroup_is_waiting (as$(usize)(1) << 0)
-#define Thrd_WaitGroup_one_pending (as$(usize)(1) << 1)
 typedef struct Thrd_WaitGroup {
-    atom_V$usize state;
-    Thrd_ResetEvent event;
+    var_(state, atom_V$usize);
+    var_(event, Thrd_ResetEvent);
 } Thrd_WaitGroup;
 $extern fn_((Thrd_WaitGroup_init(void))(Thrd_WaitGroup));
 $extern fn_((Thrd_WaitGroup_fini(Thrd_WaitGroup* self))(void));

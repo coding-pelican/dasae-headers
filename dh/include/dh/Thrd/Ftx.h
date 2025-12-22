@@ -27,15 +27,14 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((Thrd_Ftx_Err)(Timeout));
-T_use_atom_V$(u32);
 $extern fn_((Thrd_Ftx_wait(const atom_V$u32* ptr, u32 expect))(void));
 $attr($must_check)
 $extern fn_((Thrd_Ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Duration timeout))(Thrd_Ftx_Err$void));
 $extern fn_((Thrd_Ftx_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 
 typedef struct Thrd_Ftx_Deadline {
-    O$time_Duration timeout;
-    time_Instant started;
+    var_(timeout, O$time_Duration);
+    var_(started, time_Instant);
 } Thrd_Ftx_Deadline;
 $extern fn_((Thrd_Ftx_Deadline_init(O$time_Duration expires))(Thrd_Ftx_Deadline));
 $attr($must_check)

@@ -9,9 +9,7 @@
 #undef let
 
 #include <memoryapi.h>
-#if comp_type == comp_type_msvc
 #pragma comment(lib, "kernel32.lib")
-#endif /* comp_type == comp_type_msvc */
 
 #define auto __comp_syn__auto
 #define var __comp_syn__var

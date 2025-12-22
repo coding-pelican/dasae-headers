@@ -10,9 +10,7 @@
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#if comp_type == comp_type_msvc
 #pragma comment(lib, "ws2_32.lib")
-#endif /* comp_type == comp_type_msvc */
 
 #define auto __comp_syn__auto
 #define var __comp_syn__var

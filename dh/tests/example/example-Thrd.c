@@ -41,10 +41,10 @@ $static Thrd_fn_(demoThrdDefer, ({ time_Duration wait; }, i32), ($ignore, args)$
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    var thrd = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((demoThrd)(time_Duration_sec)).as_raw));
+    var thrd = try_(Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((demoThrd)(time_Duration_sec)).as_raw));
     defer_(report(u8_l("main"), u8_l("ret: {:d}"), Thrd_FnCtx_ret$((demoThrd)(Thrd_join(thrd)))));
 
-    var thrd_defer = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((demoThrdDefer)(time_Duration_sec)).as_raw));
+    var thrd_defer = try_(Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((demoThrdDefer)(time_Duration_sec)).as_raw));
     defer_(report(u8_l("main"), u8_l("ret: {:d}"), Thrd_FnCtx_ret$((demoThrdDefer)(Thrd_join(thrd_defer)))));
 
     for_(($r(0, 20))(i) {

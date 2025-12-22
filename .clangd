@@ -99,6 +99,7 @@ CompileFlags:
     - -Werror
     - -funsigned-char
     - -fblocks
+    - -fms-extensions
 # ========== C++ Sources ==========
 ---
 If:
@@ -125,6 +126,7 @@ CompileFlags:
     - -Werror
     - -funsigned-char
     - -fblocks
+    - -fms-extensions
 # ========== Headers ==========
 ---
 If:

@@ -23,6 +23,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
+#include "dh/atom.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -37,22 +38,23 @@ extern "C" {
 #else /* !Thrd_use_pthread */
 /* TODO: Implement other fallback support */
 #endif /* !Thrd_use_pthread */
-
 #if plat_is_windows
 #include "dh/os/windows.h"
 #endif /* plat_is_windows */
+#if plat_is_darwin
+#include <os/lock.h>
+#endif /* plat_is_darwin */
 
 #if Thrd_use_pthread
-typedef usize Thrd_IdImpl;
+typedef usize Thrd_Id__Impl;
 #define Thrd_invalid_id usize_limit_max
-typedef pthread_t Thrd_Handle_Impl;
+typedef pthread_t Thrd_Handle__Impl;
 #define Thrd_max_name_len (15)
-typedef pp_if_(plat_is_windows)(
-    pp_then_(SRWLOCK),
-    pp_else_(pthread_mutex_t)
-) Thrd_Mtx_Impl;
-typedef pthread_cond_t Thrd_Cond_Impl;
-typedef pthread_rwlock_t Thrd_RWLock_Impl;
+T_use_atom_V$(u32); /* for Thrd_Ftx, Thrd_Mtx */
+typedef struct Thrd_Mtx__Impl Thrd_Mtx__Impl;
+typedef struct Thrd_Cond__Impl Thrd_Cond__Impl;
+typedef struct Thrd_RWLock__Impl Thrd_RWLock__Impl;
+T_use_atom_V$(usize); /* for Thrd_WaitGroup */
 #endif /* Thrd_use_pthread */
 
 #if defined(__cplusplus)

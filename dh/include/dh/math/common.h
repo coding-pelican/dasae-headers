@@ -66,14 +66,57 @@ errset_((math_Err)(
 #define math_f64_nan VAL_math_f64_nan
 #define math_f64_inf VAL_math_f64_inf
 
+#define math_intCast$(/*(_OT: O$(_T: IntType))(_val: IntType)*/... /*(_OT)*/) __step__math_intCast$(__VA_ARGS__)
+#define __step__math_intCast$(...) __step__math_intCast$__emit(__step__math_intCast$__parse __VA_ARGS__)
+#define __step__math_intCast$__parse(_OT...) \
+    _OT, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max), \
+        pp_uniqTok(dst_is_signed), pp_uniqTok(src_is_signed),
+#define __step__math_intCast$__emit(...) ____math_intCast$(__VA_ARGS__)
+#define ____math_intCast$(_OT, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) (expr_(_OT $scope)({ \
+    typedef O_InnerT$(_OT) DstType; \
+    typedef TypeOf(_val) SrcType; \
+    claim_assert_static(isInt$(SrcType)); \
+    let_(__val, SrcType) = _val; \
+    let_(__min, DstType) = int_limit_min$(DstType); \
+    let_(__max, DstType) = int_limit_max$(DstType); \
+    let_(__dst_is_signed, bool) = isIInt$(DstType); \
+    let_(__src_is_signed, bool) = isIInt$(SrcType); \
+    /* Lower bound check: ensure value >= target minimum */ \
+    if (!(__dst_is_signed \
+              ? (!__src_is_signed ? true : as$(i64)(__val) >= as$(i64)(__min)) \
+              : (!__src_is_signed ? true : __val >= 0))) $break_(none()); \
+    /* Upper bound check: ensure value <= target maximum */ \
+    if (!((__src_is_signed && __val < 0) \
+              ? true \
+              : as$(u64)(__val) <= as$(u64)(__max))) $break_(none()); \
+    $break_(some(as$(DstType)(__val))); \
+}) $unscoped_(expr))
+
+#define math_fltCast$(/*(_OT: O$(_T: FltType))(_val: FltType)*/... /*(_OT)*/) __step__math_fltCast$(__VA_ARGS__)
+#define __step__math_fltCast$(...) __step__math_fltCast$__emit(__step__math_fltCast$__parse __VA_ARGS__)
+#define __step__math_fltCast$__parse(_OT...) _OT, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max),
+#define __step__math_fltCast$__emit(...) ____math_fltCast$(__VA_ARGS__)
+#define ____math_fltCast$(_OT, __val, __min, __max, _val...) (expr_(_OT $scope)({ \
+    typedef O_InnerT$(_OT) DstType; \
+    typedef TypeOf(_val) SrcType; \
+    claim_assert_static(isFlt$(SrcType)); \
+    let_(__val, SrcType) = _val; \
+    let_(__min, DstType) = flt_limit_min$(DstType); \
+    let_(__max, DstType) = flt_limit_max$(DstType); \
+    if (!(__min <= __max)) $break_(none()); \
+    if (!(__min <= __val)) $break_(none()); \
+    if (!(__val <= __max)) $break_(none()); \
+    $break_(some(as$(DstType)(__val))); \
+}) $unscoped_(expr))
+
 /* Comparison operations */
 #define math_cmp(val_lhs, val_rhs) OP_math_cmp(pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(ret), val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_eq(val_lhs, val_rhs) OP_math_eq(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ne(val_lhs, val_rhs) OP_math_ne(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_lt(val_lhs, val_rhs) OP_math_lt(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_gt(val_lhs, val_rhs) OP_math_gt(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_le(val_lhs, val_rhs) OP_math_le(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
-#define math_ge(val_lhs, val_rhs) OP_math_ge(val_lhs, val_rhs)                                                      /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_eq(val_lhs, val_rhs) OP_math_eq(val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ne(val_lhs, val_rhs) OP_math_ne(val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_lt(val_lhs, val_rhs) OP_math_lt(val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_gt(val_lhs, val_rhs) OP_math_gt(val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_le(val_lhs, val_rhs) OP_math_le(val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
+#define math_ge(val_lhs, val_rhs) OP_math_ge(val_lhs, val_rhs) /* NOLINT(bugprone-assignment-in-if-condition) */
 
 /* Arithmetic operations */
 #define math_neg(val_x) OP_math_neg(val_x)

@@ -1,7 +1,7 @@
 #include "dh/fmt/common.h"
 #include "dh/mem/common.h"
 #include "dh/ascii.h"
-
+#include "fmt_internal.h"
 
 fn_((fmt_Align_parse(u8 ch))(O$fmt_Align) $scope) {
     return_(eval_(ReturnType $scope)(for_(($rf(0), $a(fmt_Align_values))(i, value) {
@@ -130,10 +130,7 @@ $static fn_((formatUTF8Codepoint(io_Writer writer, u32 cp, fmt_Spec spec))(E$voi
 $attr($must_check)
 $static fn_((formatStr(io_Writer writer, S_const$u8 str, fmt_Spec spec))(E$void));
 
-$attr($must_check)
-$static fn_((writePadded(io_Writer writer, S_const$u8 content, fmt_Spec spec))(E$void));
-
-#include <stdio.h>
+// #include <stdio.h> /* for debugging */
 
 /*========== Main Format Functions ==========================================*/
 
@@ -148,9 +145,9 @@ fn_((fmt_format(io_Writer writer, S_const$u8 fmt, ...))(E$void) $guard) {
 // Store each format spec occurrence with its position and argument binding
 typedef struct FormatOccurrence {
     fmt_Spec spec;
-    u8 arg_index;        // Which argument this uses
+    u8 arg_index; // Which argument this uses
     usize literal_start; // Offset of literal text before this spec
-    usize literal_len;   // Length of literal text before this spec
+    usize literal_len; // Length of literal text before this spec
 } FormatOccurrence;
 
 typedef struct ParsedFormatSpec {
@@ -343,7 +340,7 @@ fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void
             asg_lit((atA(arg_collection_info, arg_idx))(some({
                 .index = arg_idx,
                 .wrapper = occurrence->spec.type_prefix, // Use first occurrence's wrapper
-                .tag = general_tag                       // Use general type
+                .tag = general_tag // Use general type
             })));
         }
     }
@@ -379,8 +376,6 @@ fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void
 
     return_ok({});
 } $unscoped_(fn);
-
-
 
 /*========== Parsing Functions ==============================================*/
 
@@ -1224,9 +1219,9 @@ fn_((formatArg(io_Writer writer, fmt_ArgType arg, fmt_Spec spec))(E$void) $scope
         pattern_((fmt_ArgType_error_result)(error_result)) {
             return formatArgErrorResult(writer, *error_result, spec);
         } $end(pattern);
-        default_() {
-            return_err(fmt_Err_InvalidFormatSpecifier());
-        } $end(default);
+    default_() {
+        return_err(fmt_Err_InvalidFormatSpecifier());
+    } $end(default);
     } $end(match);
 } $unscoped_(fn);
 
@@ -1346,34 +1341,34 @@ fn_((formatArgValue(io_Writer writer, fmt_ArgValue value, fmt_Spec spec))(E$void
         pattern_((fmt_ArgValue_sli_u8)(value)) {
             return formatStr(writer, *value, spec);
         } $end(pattern);
-        default_() {
-            return_err(fmt_Err_InvalidFormatSpecifier());
-        } $end(default);
+    default_() {
+        return_err(fmt_Err_InvalidFormatSpecifier());
+    } $end(default);
     } $end(match);
 } $unscoped_(fn);
 
-fn_((formatArgOptional(io_Writer writer, O$fmt_ArgValue optional, fmt_Spec spec))(E$void) $scope) {
+fn_((formatArgOptional(io_Writer writer, O$fmt_ArgValue optional, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: formatArgOptional ---\n");
     // Handle void optional - just print tag
     if (spec.type == fmt_Type_void) {
-        return writePadded(writer, optional.is_some ? u8_l("some") : u8_l("none"), spec);
+        return fmt__writePadded(writer, optional.is_some ? u8_l("some") : u8_l("none"), spec);
     }
     // Handle none case
     if_none((optional)) {
-        return writePadded(writer, u8_l("none"), spec);
+        return fmt__writePadded(writer, u8_l("none"), spec);
     } else_some((value)) { // Format the inner value
         return formatArgValue(writer, value, spec);
     }
-    return_ok({});
-} $unscoped_(fn);
+    claim_unreachable;
+};
 
-fn_((formatArgErrorResult(io_Writer writer, E$fmt_ArgValue error_result, fmt_Spec spec))(E$void) $scope) {
+fn_((formatArgErrorResult(io_Writer writer, E$fmt_ArgValue error_result, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: formatArgErrorResult ---\n");
     // Handle void result - just print tag or error
     if (spec.type == fmt_Type_void) {
         if_ok((error_result)(value)) {
             let_ignore = value;
-            return writePadded(writer, u8_l("ok"), spec);
+            return fmt__writePadded(writer, u8_l("ok"), spec);
         } else_err((e)) {
             return formatErr(writer, e, spec);
         }
@@ -1384,16 +1379,16 @@ fn_((formatArgErrorResult(io_Writer writer, E$fmt_ArgValue error_result, fmt_Spe
     } else_ok((value)) { // Format the ok value
         return formatArgValue(writer, value, spec);
     }
-    return_ok({});
-} $unscoped_(fn);
+    claim_unreachable;
+};
 
 
-fn_((formatBool(io_Writer writer, bool val, fmt_Spec spec))(E$void) $scope) {
+fn_((formatBool(io_Writer writer, bool val, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: formatBool ---\n");
-    return writePadded(writer, val ? u8_l("true") : u8_l("false"), spec);
-} $unscoped_(fn);
+    return fmt__writePadded(writer, val ? u8_l("true") : u8_l("false"), spec);
+};
 
-fn_((formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void) $scope) {
+fn_((formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: formatUInt ---\n");
     // printf("formatUInt: val=%llu, spec.type=%d\n", val, spec.type);
     A$$(128, u8) buf = zero$A();
@@ -1475,10 +1470,10 @@ fn_((formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void) $scope) {
 
     // pos now points one position BEFORE the first written character, so add 1
     S_const$u8 content = { .ptr = ptr$A(buf) + pos + 1, .len = lenA(buf) - pos - 1 };
-    return writePadded(writer, content, spec);
-} $unscoped_(fn);
+    return fmt__writePadded(writer, content, spec);
+};
 
-fn_((formatIInt(io_Writer writer, i64 val, fmt_Spec spec))(E$void) $scope) {
+fn_((formatIInt(io_Writer writer, i64 val, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: formatIInt ---\n");
     A$$(128, u8) buf = zero$A();
     usize pos = lenA(buf) - 1;
@@ -1532,98 +1527,14 @@ fn_((formatIInt(io_Writer writer, i64 val, fmt_Spec spec))(E$void) $scope) {
     }
     // pos now points one position BEFORE the first written character, so add 1
     S_const$u8 content = { .ptr = ptr$A(buf) + pos + 1, .len = lenA(buf) - pos - 1 };
-    return writePadded(writer, content, spec);
-} $unscoped_(fn);
+    return fmt__writePadded(writer, content, spec);
+};
 
-fn_((formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void) $scope) {
-    // printf("--- debug print: formatFlt ---\n");
-    // Apply size
-    switch (spec.size) {
-    case fmt_Size_32:
-        val = (f32)val;
-        break;
-    case fmt_Size_64:
-        // f64 is the default, no conversion needed
-        $fallthrough;
-    case fmt_Size_128:
-        // Fallback to 64-bit until 128-bit is fully supported
-        $fallthrough;
-    case fmt_Size_ptr:
-        break;
-    default:
-        claim_unreachable;
-    }
-    // Handle special values with case based on type
-    bool use_upper = (spec.type == fmt_Type_float_upper);
-    if (flt_isNan(val)) {
-        return writePadded(writer, use_upper ? u8_l("NAN") : u8_l("nan"), spec);
-    }
-    if (flt_isInf(val)) {
-        return val < 0
-                 ? writePadded(writer, use_upper ? u8_l("-INF") : u8_l("-inf"), spec)
-                 : writePadded(writer, use_upper ? u8_l("INF") : u8_l("inf"), spec);
-    }
+fn_((formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) {
+    return fmt__formatFlt(writer, val, spec);
+};
 
-    A$$(128, u8) buf = zero$A();
-    usize pos = 0;
-    // Handle sign
-    bool negative = val < 0;
-    if (negative) {
-        *atA(buf, pos++) = u8_c('-');
-        val = -val;
-    } else {
-        // Apply sign flag for positive numbers
-        switch (spec.sign) {
-        case fmt_Sign_always:
-            *atA(buf, pos++) = u8_c('+');
-            break;
-        case fmt_Sign_space:
-            *atA(buf, pos++) = u8_c(' ');
-            break;
-        case fmt_Sign_auto:
-            break;
-        }
-    }
-    // Get precision
-    u8 precision = orelse_((spec.precision)(6));
-    // Get integer and fractional parts
-    f64 int_part_f = __builtin_floor(val);
-    f64 frac_part_f = val - int_part_f;
-    u64 int_part = (u64)int_part_f;
-    // Convert integer part
-    A$$(32, u8) int_buf = zero$A();
-    usize int_pos = lenA(int_buf) - 1;
-    if (int_part == 0) {
-        *atA(int_buf, int_pos--) = u8_c('0');
-    } else {
-        u64 temp = int_part;
-        while (temp > 0) {
-            *atA(int_buf, int_pos--) = u8_c('0') + (temp % 10);
-            temp /= 10;
-        }
-    }
-    // Copy integer part to buffer (int_pos points one before first digit, so start at int_pos + 1)
-    for (usize i = int_pos + 1; i < lenA(int_buf); ++i) {
-        *atA(buf, pos++) = *atA(int_buf, i);
-    }
-    // Add fractional part if precision > 0
-    if (precision > 0) {
-        *atA(buf, pos++) = u8_c('.');
-        // Convert fractional part
-        frac_part_f *= __builtin_pow(10.0, (f64)precision);
-        u64 frac_part_u = (u64)(frac_part_f + 0.5); // Rounding
-        // Write fractional digits in reverse order
-        for (usize i = precision; i > 0; i--) {
-            *atA(buf, pos + (i - 1)) = u8_c('0') + (frac_part_u % 10);
-            frac_part_u /= 10;
-        }
-        pos += precision;
-    }
-    S_const$u8 content = { .ptr = ptr$A(buf), .len = pos };
-    return writePadded(writer, content, spec);
-} $unscoped_(fn);
-
-fn_((formatPtr(io_Writer writer, const void* ptr, fmt_Spec spec))(E$void) $scope) {
+fn_((formatPtr(io_Writer writer, const void* ptr, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: formatPtr ---\n");
     A$$(32, u8) buf = zero$A();
     usize pos = 0;
@@ -1669,10 +1580,10 @@ fn_((formatPtr(io_Writer writer, const void* ptr, fmt_Spec spec))(E$void) $scope
     }
 
     S_const$u8 content = { .ptr = ptr$A(buf), .len = pos };
-    return writePadded(writer, content, spec);
-} $unscoped_(fn);
+    return fmt__writePadded(writer, content, spec);
+};
 
-fn_((formatErr(io_Writer writer, Err err, fmt_Spec spec))(E$void) $scope) {
+fn_((formatErr(io_Writer writer, Err err, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: formatErr ---\n");
     A$$(256, u8) buf = zero$A();
     usize pos = 0;
@@ -1693,16 +1604,16 @@ fn_((formatErr(io_Writer writer, Err err, fmt_Spec spec))(E$void) $scope) {
         *atA(buf, pos++) = *ch;
     });
     S_const$u8 content = { .ptr = ptr$A(buf), .len = pos };
-    return writePadded(writer, content, spec);
-} $unscoped_(fn);
+    return fmt__writePadded(writer, content, spec);
+};
 
-fn_((formatASCIICode(io_Writer writer, u8 value, fmt_Spec spec))(E$void) $scope) {
+fn_((formatASCIICode(io_Writer writer, u8 value, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: formatASCIICode ---\n");
     A$$(1, u8) buf = zero$A();
     *atA(buf, 0) = value;
     S_const$u8 content = { .ptr = ptr$A(buf), .len = 1 };
-    return writePadded(writer, content, spec);
-} $unscoped_(fn);
+    return fmt__writePadded(writer, content, spec);
+};
 
 fn_((formatUTF8Codepoint(io_Writer writer, u32 codepoint, fmt_Spec spec))(E$void) $scope) {
     // printf("--- debug print: formatUTF8Codepoint ---\n");
@@ -1730,16 +1641,16 @@ fn_((formatUTF8Codepoint(io_Writer writer, u32 codepoint, fmt_Spec spec))(E$void
         return_err(fmt_Err_InvalidFormatSpecifier());
     }
     S_const$u8 content = { .ptr = ptr$A(buf), .len = len };
-    return writePadded(writer, content, spec);
+    return fmt__writePadded(writer, content, spec);
 } $unscoped_(fn);
 
-fn_((formatStr(io_Writer writer, S_const$u8 str, fmt_Spec spec))(E$void) $scope) {
+fn_((formatStr(io_Writer writer, S_const$u8 str, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: formatStr ---\n");
-    return writePadded(writer, str, spec);
-} $unscoped_(fn);
+    return fmt__writePadded(writer, str, spec);
+};
 
-fn_((writePadded(io_Writer writer, S_const$u8 content, fmt_Spec spec))(E$void) $scope) {
-    // printf("--- debug print: writePadded ---\n");
+fn_((fmt__writePadded(io_Writer writer, S_const$u8 content, fmt_Spec spec))(E$void) $scope) {
+    // printf("--- debug print: fmt__writePadded ---\n");
     if_none((spec.width)) {
         return io_Writer_writeBytes(writer, content);
     } else_some((width)) {

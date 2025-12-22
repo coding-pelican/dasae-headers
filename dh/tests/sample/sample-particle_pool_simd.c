@@ -264,7 +264,7 @@ $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)
         *worker = Thrd_FnCtx_from$((mp_worker)(*data));
     });
     for_(($s(threads), $s(workers))(thread, worker) {
-        *thread = catch_((Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw))(
+        *thread = catch_((Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw))(
             $ignore, claim_unreachable
         ));
     });
@@ -361,7 +361,7 @@ fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $sc
     for_(($s(pool->workers), $s(pool->threads))(worker, thread) {
         *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool));
         *thread = catch_((Thrd_spawn(
-            Thrd_SpawnConfig_default, worker->as_raw
+            Thrd_SpawnCfg_default, worker->as_raw
         ))($ignore, claim_unreachable));
     });
     return_ok(pool);

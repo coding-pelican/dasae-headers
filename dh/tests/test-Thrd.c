@@ -16,7 +16,7 @@ $static Thrd_fn_(timesTwo, ({ i32 input; }, i32), ($ignore, args)$scope) {
 
 TEST_fn_("Thrd: Basic Lifetime (Stack Memory)" $scope) {
     var worker_ctx = Thrd_FnCtx_from$((timesTwo)(42));
-    let worker = try_(Thrd_spawn(Thrd_SpawnConfig_default, worker_ctx.as_raw));
+    let worker = try_(Thrd_spawn(Thrd_SpawnCfg_default, worker_ctx.as_raw));
     let result_ctx = Thrd_join(worker);
     let result = Thrd_FnCtx_ret$((timesTwo)(result_ctx));
 
@@ -49,7 +49,7 @@ TEST_fn_("Thrd: Args Synchronization" $scope) {
     });
 
     var worker_ctx = Thrd_FnCtx_from$((sumValues)(values));
-    let worker = try_(Thrd_spawn(Thrd_SpawnConfig_default, worker_ctx.as_raw));
+    let worker = try_(Thrd_spawn(Thrd_SpawnCfg_default, worker_ctx.as_raw));
     let result_ctx = Thrd_join(worker);
     let result = Thrd_FnCtx_ret$((sumValues)(result_ctx));
 
@@ -79,7 +79,7 @@ TEST_fn_("Thrd: Multiple Threads" $scope) {
     A$$(10, Thrd) threads = zero$A();
     for_(($rf(0), $s(ref$A(workers)), $s(ref$A(threads)))(i, worker, thread) {
         asg_lit((worker)(some(Thrd_FnCtx_from$((sleepSecsForIdAndSq)(i)))));
-        *thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, unwrap_(O_asP(worker))->as_raw));
+        *thread = try_(Thrd_spawn(Thrd_SpawnCfg_default, unwrap_(O_asP(worker))->as_raw));
     });
     for_(($s(ref$A(threads)))(thread) {
         Thrd_join(*thread);

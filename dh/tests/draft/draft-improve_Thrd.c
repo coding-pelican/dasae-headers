@@ -98,7 +98,7 @@ fn_((Thrd_cpuCount(void))(usize)) {
     return as$(usize)(os_windows_GetSystemInfo().dwNumberOfProcessors);
 }
 
-/* fn_((Thrd_spawn(Thrd_SpawnConfig config, comptime f : anytype, args : anytype))(Thrd)) {
+/* fn_((Thrd_spawn(Thrd_SpawnCfg config, comptime f : anytype, args : anytype))(Thrd)) {
     const Args = @TypeOf(args);
     const Instance = struct {
         fn_args : Args,

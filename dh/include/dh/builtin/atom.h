@@ -38,15 +38,6 @@ typedef enum atom_MemOrd {
 #define atom_load(_ptr, _ord...) __op__atom_load(pp_uniqTok(ret), _ptr, _ord)
 #define atom_store(_ptr, _val, _ord...) __op__atom_store(_ptr, _val, _ord)
 
-/// RMW (Read-Modify-Write) - returns the value before the operation (Fetch-and-Op)
-#define atom_fetchXchg(_ptr, _val, _ord...) __op__atom_fetchXchg(pp_uniqTok(ret), _ptr, _val, _ord)
-#define atom_fetchAdd(_ptr, _val, _ord...) __op__atom_fetchAdd(_ptr, _val, _ord)
-#define atom_fetchSub(_ptr, _val, _ord...) __op__atom_fetchSub(_ptr, _val, _ord)
-#define atom_fetchNand(_ptr, _val, _ord...) __op__atom_fetchNand(_ptr, _val, _ord)
-#define atom_fetchAnd(_ptr, _val, _ord...) __op__atom_fetchAnd(_ptr, _val, _ord)
-#define atom_fetchXor(_ptr, _val, _ord...) __op__atom_fetchXor(_ptr, _val, _ord)
-#define atom_fetchOr(_ptr, _val, _ord...) __op__atom_fetchOr(_ptr, _val, _ord)
-
 /// Compare-and-Swap
 #define atom_cmpXchgWeak$(_OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) \
     __op__atom_cmpXchgWeak$(pp_uniqTok(expected), _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord)
@@ -56,6 +47,15 @@ typedef enum atom_MemOrd {
     __op__atom_cmpXchgStrong$(pp_uniqTok(expected), _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord)
 #define atom_cmpXchgStrong(_ptr, _expected, _desired, _succ_ord, _fail_ord...) \
     atom_cmpXchgStrong$(O$$(TypeOfUnqual(*_ptr)), _ptr, _expected, _desired, _succ_ord, _fail_ord)
+
+/// RMW (Read-Modify-Write) - returns the value before the operation (Fetch-and-Op)
+#define atom_fetchXchg(_ptr, _val, _ord...) __op__atom_fetchXchg(pp_uniqTok(ret), _ptr, _val, _ord)
+#define atom_fetchAdd(_ptr, _val, _ord...) __op__atom_fetchAdd(_ptr, _val, _ord)
+#define atom_fetchSub(_ptr, _val, _ord...) __op__atom_fetchSub(_ptr, _val, _ord)
+#define atom_fetchNand(_ptr, _val, _ord...) __op__atom_fetchNand(_ptr, _val, _ord)
+#define atom_fetchAnd(_ptr, _val, _ord...) __op__atom_fetchAnd(_ptr, _val, _ord)
+#define atom_fetchXor(_ptr, _val, _ord...) __op__atom_fetchXor(_ptr, _val, _ord)
+#define atom_fetchOr(_ptr, _val, _ord...) __op__atom_fetchOr(_ptr, _val, _ord)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -67,18 +67,6 @@ typedef enum atom_MemOrd {
 })
 #define __op__atom_store(_ptr, _val, _ord...) \
     __atomic_store(_ptr, &make$((TypeOf(*_ptr))_val), _ord)
-
-#define __op__atom_fetchXchg(__ret, _ptr, _val, _ord...) ({ \
-    var __ret = lit0$((TypeOf(*_ptr))); \
-    __atomic_exchange(_ptr, &make$((TypeOf(__ret))_val), &__ret, _ord); \
-    __ret; \
-})
-#define __op__atom_fetchAdd(_ptr, _val, _ord...) __atomic_fetch_add(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchSub(_ptr, _val, _ord...) __atomic_fetch_sub(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchNand(_ptr, _val, _ord...) __atomic_fetch_nand(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchAnd(_ptr, _val, _ord...) __atomic_fetch_and(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchXor(_ptr, _val, _ord...) __atomic_fetch_xor(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchOr(_ptr, _val, _ord...) __atomic_fetch_or(_ptr, make$((TypeOf(*_ptr))_val), _ord)
 
 #define __op__atom_cmpXchgWeak$(__expected, _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) ({ \
     typedef _OT O$Ret$atom_cmpXchgWeak; \
@@ -94,6 +82,18 @@ typedef enum atom_MemOrd {
         ? lit$((O$Ret$atom_cmpXchgStrong)none()) \
         : lit$((O$Ret$atom_cmpXchgStrong)some(__expected)); \
 })
+
+#define __op__atom_fetchXchg(__ret, _ptr, _val, _ord...) ({ \
+    var __ret = lit0$((TypeOf(*_ptr))); \
+    __atomic_exchange(_ptr, &make$((TypeOf(__ret))_val), &__ret, _ord); \
+    __ret; \
+})
+#define __op__atom_fetchAdd(_ptr, _val, _ord...) __atomic_fetch_add(_ptr, make$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchSub(_ptr, _val, _ord...) __atomic_fetch_sub(_ptr, make$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchNand(_ptr, _val, _ord...) __atomic_fetch_nand(_ptr, make$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchAnd(_ptr, _val, _ord...) __atomic_fetch_and(_ptr, make$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchXor(_ptr, _val, _ord...) __atomic_fetch_xor(_ptr, make$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchOr(_ptr, _val, _ord...) __atomic_fetch_or(_ptr, make$((TypeOf(*_ptr))_val), _ord)
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -49,7 +49,7 @@ $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)
         *worker = Thrd_FnCtx_from$((mp_worker)(*data));
     });
     for_(($s(threads), $s(workers))(thread, worker) {
-        *thread = catch_((Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw))(
+        *thread = catch_((Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw))(
             $ignore, claim_unreachable
         ));
     });
@@ -233,7 +233,7 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
     })));
     for_(($s(pool->workers), $s(pool->threads), $r(0, thrd_count))(worker, thread, i) {
         *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool, i));
-        *thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw));
+        *thread = try_(Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw));
     });
     return_ok(pool);
 } $unguarded_(fn);
@@ -353,8 +353,8 @@ $static fn_((mp_PhasedContext_waitPhase(usize phase))(void)) {
     if (target == 0) { return; }
     while (atom_V_load(A_at((mp__phased_ctx.phase_completed)[phase]), atom_MemOrd_acquire) < target) {
         // Spin-wait with pause hint
-        catch_((Thrd_yield())($ignore, claim_unreachable));
-        // atom_spinLoopHint();
+        // catch_((Thrd_yield())($ignore, claim_unreachable));
+        atom_spinLoopHint();
     }
 };
 
@@ -531,8 +531,8 @@ $static fn_((mp_WS_workerProcess(usize worker_id, usize worker_count))(void)) {
             let total = atom_V_load(&mp__ws_total_tasks, atom_MemOrd_acquire);
             if (completed >= total) { break; }
             // Yield and retry
-            catch_((Thrd_yield())($ignore, claim_unreachable));
-            // atom_spinLoopHint();
+            // catch_((Thrd_yield())($ignore, claim_unreachable));
+            atom_spinLoopHint();
         }
     }
 };
@@ -1293,10 +1293,10 @@ fn_((State_handleCollisions(State* self))(void)) {
 };
 
 /*
-$ dh-c run optimize sample-particle_pool_opt2.5.c
-Building sample-particle_pool_opt2.5 with config 'optimize'...
+$ dh-c run optimize sample-particle_pool_opt2-half.c
+Building sample-particle_pool_opt2-half with config 'optimize'...
 Build successful!
-Running sample-particle_pool_opt2.5...
+Running sample-particle_pool_opt2-half...
 ╔════════════════════════════════════════════╗
 ║  Particle Simulation                       ║
 ║  Thrd + pool + atom (opt2-phased)          ║
@@ -1323,78 +1323,78 @@ Simulating 1000 frames...
 Starting OPTIMIZED simulation for 1000 frames at 30.0 FPS...
 Using 15 threads (Pool) with PHASED EXECUTION
 Barriers reduced from 4/frame to 1/frame
-Frame 0: 42.02 ms (23.8 FPS) | Avg: 42.02 ms (23.8 FPS)
-Frame 30: 43.84 ms (22.8 FPS) | Avg: 45.73 ms (21.9 FPS)
-Frame 60: 46.91 ms (21.3 FPS) | Avg: 45.22 ms (22.1 FPS)
-Frame 90: 43.69 ms (22.9 FPS) | Avg: 45.93 ms (21.8 FPS)
-Frame 120: 41.74 ms (23.0 FPS) | Avg: 45.87 ms (21.8 FPS)
-Frame 150: 44.35 ms (22.5 FPS) | Avg: 45.73 ms (21.9 FPS)
-Frame 180: 45.41 ms (22.0 FPS) | Avg: 45.53 ms (21.0 FPS)
-Frame 210: 46.43 ms (21.5 FPS) | Avg: 45.54 ms (21.0 FPS)
-Frame 240: 43.95 ms (22.8 FPS) | Avg: 45.42 ms (22.0 FPS)
-Frame 270: 45.93 ms (21.8 FPS) | Avg: 45.35 ms (22.1 FPS)
-Frame 300: 44.99 ms (22.2 FPS) | Avg: 45.28 ms (22.1 FPS)
-Frame 330: 44.75 ms (22.3 FPS) | Avg: 45.19 ms (22.1 FPS)
-Frame 360: 43.20 ms (23.1 FPS) | Avg: 45.48 ms (21.0 FPS)
-Frame 390: 44.63 ms (22.4 FPS) | Avg: 45.47 ms (21.0 FPS)
-Frame 420: 43.38 ms (23.1 FPS) | Avg: 45.45 ms (21.0 FPS)
-Frame 450: 51.69 ms (19.3 FPS) | Avg: 45.70 ms (21.9 FPS)
-Frame 480: 42.69 ms (23.4 FPS) | Avg: 45.85 ms (21.8 FPS)
-Frame 510: 42.92 ms (23.3 FPS) | Avg: 45.81 ms (21.8 FPS)
-Frame 540: 43.49 ms (22.0 FPS) | Avg: 45.78 ms (21.8 FPS)
-Frame 570: 53.54 ms (18.7 FPS) | Avg: 45.75 ms (21.9 FPS)
-Frame 600: 46.78 ms (21.4 FPS) | Avg: 45.97 ms (21.8 FPS)
-Frame 630: 51.05 ms (19.6 FPS) | Avg: 45.98 ms (21.7 FPS)
-Frame 660: 45.11 ms (22.2 FPS) | Avg: 46.01 ms (21.7 FPS)
-Frame 690: 46.33 ms (21.6 FPS) | Avg: 46.04 ms (21.7 FPS)
-Frame 720: 45.75 ms (21.9 FPS) | Avg: 46.27 ms (21.6 FPS)
-Frame 750: 43.01 ms (23.2 FPS) | Avg: 46.23 ms (21.6 FPS)
-Frame 780: 48.17 ms (20.8 FPS) | Avg: 46.19 ms (21.6 FPS)
-Frame 810: 42.31 ms (23.6 FPS) | Avg: 46.13 ms (21.7 FPS)
-Frame 840: 42.88 ms (23.3 FPS) | Avg: 46.07 ms (21.7 FPS)
-Frame 870: 43.18 ms (23.2 FPS) | Avg: 46.01 ms (21.7 FPS)
-Frame 900: 43.34 ms (23.1 FPS) | Avg: 45.96 ms (21.8 FPS)
-Frame 930: 51.98 ms (19.2 FPS) | Avg: 45.96 ms (21.8 FPS)
-Frame 960: 44.55 ms (22.4 FPS) | Avg: 45.94 ms (21.8 FPS)
-Frame 990: 42.53 ms (23.5 FPS) | Avg: 45.89 ms (21.8 FPS)
+Frame 0: 48.05 ms (20.8 FPS) | Avg: 48.05 ms (20.8 FPS)
+Frame 30: 39.96 ms (25.0 FPS) | Avg: 42.11 ms (23.7 FPS)
+Frame 60: 44.61 ms (22.4 FPS) | Avg: 42.72 ms (23.4 FPS)
+Frame 90: 46.29 ms (21.6 FPS) | Avg: 43.48 ms (22.0 FPS)
+Frame 120: 42.10 ms (23.8 FPS) | Avg: 43.58 ms (22.9 FPS)
+Frame 150: 47.10 ms (21.2 FPS) | Avg: 43.74 ms (22.9 FPS)
+Frame 180: 44.08 ms (22.7 FPS) | Avg: 43.76 ms (22.9 FPS)
+Frame 210: 44.63 ms (22.4 FPS) | Avg: 43.82 ms (22.8 FPS)
+Frame 240: 42.57 ms (23.5 FPS) | Avg: 43.80 ms (22.8 FPS)
+Frame 270: 43.14 ms (23.2 FPS) | Avg: 43.88 ms (22.8 FPS)
+Frame 300: 41.77 ms (23.9 FPS) | Avg: 43.91 ms (22.8 FPS)
+Frame 330: 43.62 ms (22.9 FPS) | Avg: 43.94 ms (22.8 FPS)
+Frame 360: 44.72 ms (22.4 FPS) | Avg: 43.99 ms (22.7 FPS)
+Frame 390: 45.61 ms (21.9 FPS) | Avg: 44.02 ms (22.7 FPS)
+Frame 420: 42.07 ms (23.8 FPS) | Avg: 44.05 ms (22.7 FPS)
+Frame 450: 42.43 ms (23.6 FPS) | Avg: 43.00 ms (22.7 FPS)
+Frame 480: 41.91 ms (23.9 FPS) | Avg: 43.95 ms (22.8 FPS)
+Frame 510: 42.42 ms (23.6 FPS) | Avg: 43.92 ms (22.8 FPS)
+Frame 540: 43.45 ms (23.0 FPS) | Avg: 43.93 ms (22.8 FPS)
+Frame 570: 41.93 ms (23.8 FPS) | Avg: 43.95 ms (22.8 FPS)
+Frame 600: 48.18 ms (20.8 FPS) | Avg: 43.99 ms (22.7 FPS)
+Frame 630: 44.46 ms (22.5 FPS) | Avg: 44.03 ms (22.7 FPS)
+Frame 660: 42.20 ms (23.7 FPS) | Avg: 44.05 ms (22.7 FPS)
+Frame 690: 42.74 ms (23.4 FPS) | Avg: 44.05 ms (22.7 FPS)
+Frame 720: 43.55 ms (22.0 FPS) | Avg: 44.06 ms (22.7 FPS)
+Frame 750: 44.21 ms (22.6 FPS) | Avg: 44.08 ms (22.7 FPS)
+Frame 780: 42.45 ms (23.6 FPS) | Avg: 44.10 ms (22.7 FPS)
+Frame 810: 42.16 ms (23.7 FPS) | Avg: 44.10 ms (22.7 FPS)
+Frame 840: 44.89 ms (22.3 FPS) | Avg: 44.10 ms (22.7 FPS)
+Frame 870: 43.87 ms (22.8 FPS) | Avg: 44.11 ms (22.7 FPS)
+Frame 900: 42.06 ms (23.8 FPS) | Avg: 44.08 ms (22.7 FPS)
+Frame 930: 42.94 ms (23.3 FPS) | Avg: 44.07 ms (22.7 FPS)
+Frame 960: 43.14 ms (23.2 FPS) | Avg: 44.05 ms (22.7 FPS)
+Frame 990: 41.55 ms (24.1 FPS) | Avg: 44.04 ms (22.7 FPS)
 
 === Optimized Simulation Complete ===
 
 Total frames: 1000
-Total time: 45.90 seconds
-Average FPS: 21.79
-Average frame time: 45.90 ms
-Target 30.00 FPS not achieved (21.79 FPS)
+Total time: 44.04 seconds
+Average FPS: 22.71
+Average frame time: 44.04 ms
+Target 30.00 FPS not achieved (22.71 FPS)
 
 Sample particles:
 - Particle 0: pos(169.09, 0.01) vel(-0.00, -0.00)
-- Particle 1: pos(76.41, 107.72) vel(-0.00, -0.00)
+- Particle 1: pos(76.41, 107.71) vel(-0.00, -0.00)
 - Particle 2: pos(-121.12, -52.62) vel(0.00, 0.00)
 
 === Program Complete ===
 
 === ThreadPool Performance Stats ===
-Worker 0: 76.3% eff | Work: 35.04s | Idle: 0.00s | Sync: 10.91s | Tasks: 4029
-Worker 1: 76.3% eff | Work: 35.09s | Idle: 0.00s | Sync: 10.87s | Tasks: 3994
-Worker 2: 76.6% eff | Work: 35.19s | Idle: 0.00s | Sync: 10.77s | Tasks: 4013
-Worker 3: 76.8% eff | Work: 35.29s | Idle: 0.00s | Sync: 10.67s | Tasks: 4010
-Worker 4: 76.7% eff | Work: 35.24s | Idle: 0.00s | Sync: 10.72s | Tasks: 4054
-Worker 5: 77.1% eff | Work: 35.42s | Idle: 0.00s | Sync: 10.53s | Tasks: 3935
-Worker 6: 77.1% eff | Work: 35.42s | Idle: 0.00s | Sync: 10.54s | Tasks: 3953
-Worker 7: 75.6% eff | Work: 34.72s | Idle: 0.00s | Sync: 11.24s | Tasks: 4039
-Worker 8: 76.0% eff | Work: 34.95s | Idle: 0.00s | Sync: 11.02s | Tasks: 4031
-Worker 9: 76.1% eff | Work: 34.99s | Idle: 0.00s | Sync: 10.97s | Tasks: 3970
-Worker 10: 76.4% eff | Work: 35.11s | Idle: 0.00s | Sync: 10.84s | Tasks: 3974
-Worker 11: 76.0% eff | Work: 35.37s | Idle: 0.00s | Sync: 10.59s | Tasks: 4042
-Worker 12: 76.5% eff | Work: 35.15s | Idle: 0.00s | Sync: 10.81s | Tasks: 4014
-Worker 13: 76.9% eff | Work: 35.32s | Idle: 0.00s | Sync: 10.63s | Tasks: 3948
-Worker 14: 76.9% eff | Work: 35.35s | Idle: 0.00s | Sync: 10.60s | Tasks: 4009
+Worker 0: 77.3% eff | Work: 34.10s | Idle: 0.00s | Sync: 10.01s | Tasks: 3985
+Worker 1: 77.2% eff | Work: 34.06s | Idle: 0.00s | Sync: 10.06s | Tasks: 3998
+Worker 2: 77.8% eff | Work: 34.33s | Idle: 0.00s | Sync: 9.78s | Tasks: 4005
+Worker 3: 77.1% eff | Work: 34.00s | Idle: 0.00s | Sync: 10.10s | Tasks: 4007
+Worker 4: 77.0% eff | Work: 34.40s | Idle: 0.00s | Sync: 9.72s | Tasks: 4002
+Worker 5: 77.3% eff | Work: 34.08s | Idle: 0.00s | Sync: 10.03s | Tasks: 4022
+Worker 6: 77.0% eff | Work: 33.97s | Idle: 0.00s | Sync: 10.14s | Tasks: 3983
+Worker 7: 78.0% eff | Work: 34.43s | Idle: 0.00s | Sync: 9.68s | Tasks: 4027
+Worker 8: 77.6% eff | Work: 34.22s | Idle: 0.00s | Sync: 9.89s | Tasks: 4016
+Worker 9: 77.2% eff | Work: 34.05s | Idle: 0.00s | Sync: 10.06s | Tasks: 3978
+Worker 10: 77.7% eff | Work: 34.29s | Idle: 0.00s | Sync: 9.82s | Tasks: 3963
+Worker 11: 77.6% eff | Work: 34.22s | Idle: 0.00s | Sync: 9.89s | Tasks: 4038
+Worker 12: 77.6% eff | Work: 34.22s | Idle: 0.00s | Sync: 9.89s | Tasks: 3943
+Worker 13: 78.1% eff | Work: 34.45s | Idle: 0.00s | Sync: 9.65s | Tasks: 4028
+Worker 14: 77.2% eff | Work: 34.04s | Idle: 0.00s | Sync: 10.06s | Tasks: 4020
 
 --- Summary ---
-Average Efficiency: 76.5%
-Total Work Time: 527.66s
+Average Efficiency: 77.5%
+Total Work Time: 512.86s
 Total Idle Time: 0.00s (0.0%)
-Total Sync Time: 161.73s (23.5%)
+Total Sync Time: 148.80s (22.5%)
 Total Tasks: 60015
 Avg Tasks per Worker: 4001.0
 */

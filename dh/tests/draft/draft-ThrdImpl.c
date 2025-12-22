@@ -91,13 +91,13 @@
 // };
 // use_E$(Thrd);
 // // Thread spawn configuration
-// typedef struct Thrd_SpawnConfig {
+// typedef struct Thrd_SpawnCfg {
 //     usize             stack_size;
 //     O$mem_Allocator allocator;
-// } Thrd_SpawnConfig;
-// #define Thrd_SpawnConfig_default_stack_size (16ull * 1024ull * 1024ull)
-// static const Thrd_SpawnConfig Thrd_SpawnConfig_default = {
-//     .stack_size = Thrd_SpawnConfig_default_stack_size,
+// } Thrd_SpawnCfg;
+// #define Thrd_SpawnCfg_default_stack_size (16ull * 1024ull * 1024ull)
+// static const Thrd_SpawnCfg Thrd_SpawnCfg_default = {
+//     .stack_size = Thrd_SpawnCfg_default_stack_size,
 //     .allocator  = none()
 // };
 // // Thread pool type

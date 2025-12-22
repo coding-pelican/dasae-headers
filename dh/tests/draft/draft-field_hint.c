@@ -18,7 +18,7 @@ typedef struct mp_LoopData {
     var_(params, u_V$raw);
 } mp_LoopData;
 
-$static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args) $scope) {
+$static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope) {
     let data = args->data;
     for_(((data.range))(i) {
         data.workerFn(i, data.params);
@@ -46,7 +46,7 @@ $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)
         *worker = Thrd_FnCtx_from$((mp_worker)(*data));
     });
     for_(($s(threads), $s(workers))(thread, worker) {
-        *thread = catch_((Thrd_spawn(Thrd_SpawnConfig_default, worker->as_raw))(
+        *thread = catch_((Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw))(
             $ignore, claim_unreachable
         ));
     });
@@ -115,7 +115,8 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
 } $unscoped_(Thrd_fn);
 
 $must_check
-$static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
+$static
+fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
     mp_ThrdPool pool = ({
         typedef mp_ThrdPool InitType;
         (InitType){
@@ -132,62 +133,58 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
     let workers = pool.workers;
     let thrds = pool.threads;
 
-    #define $init(/*(_T){_initial...}*/... /*(_T)*/)\
-        __op__$init(__op__$init__parseT __VA_ARGS__)
-    #define __op__$init(...) __op__$init__emit(__VA_ARGS__)
-    #define __op__$init__parseT(_T...) _T,
-    #define __op__$init__emit(_T, _initial...) ({ \
-        $maybe_unused typedef _T InitType; \
-        (InitType) _initial; \
-    })
+#define $init(/*(_T){_initial...}*/... /*(_T)*/) \
+    __op__$init(__op__$init__parseT __VA_ARGS__)
+#define __op__$init(...) __op__$init__emit(__VA_ARGS__)
+#define __op__$init__parseT(_T...) _T,
+#define __op__$init__emit(_T, _initial...) ({ \
+    $maybe_unused typedef _T InitType; \
+    (InitType) _initial; \
+})
 
-    #define $asg(_val...) , $_asg, (_val)
-    #define $field(...) __op__$field(__VA_ARGS__)
-    #define __op__$field(...) pp_overload(__op__$field, __VA_ARGS__)(__VA_ARGS__)
-    #define __op__$field_1(...) __op__$field_1__emit(__VA_ARGS__)
-    #define __op__$field_1__emit(_field_val...) \
-        .__op__$field__expand _field_val = ({ \
-            $maybe_unused typedef InitType ParentType; \
-            $maybe_unused typedef FieldType$(ParentType, __op__$field__expand _field_val) FieldType; \
-            _field_val; \
-        })
-    #define __op__$field_3(...) __op__$field_3__emit(__VA_ARGS__)
-    #define __op__$field_3__emit(_field, _op, _val...) \
-        .__op__$field__expand _field = ({ \
-            $maybe_unused typedef InitType ParentType; \
-            $maybe_unused typedef FieldType$(ParentType, __op__$field__expand _field) FieldType; \
-            _val; \
-        })
-    #define __op__$field__expand(...) __VA_ARGS__
-    #define $in_field(...) __op__$in_field__emit(__VA_ARGS__)
-    #define __op__$in_field(...) pp_overload(__op__$in_field, __VA_ARGS__)(__VA_ARGS__)
-    #define __op__$in_field_1(...) __op__$in_field_1__emit(__VA_ARGS__)
-    #define __op__$in_field_1__emit(_field_val...) \
-        .__op__$in_field__expand _field_val = ({ \
-            $maybe_unused typedef FieldType ParentType; \
-            $maybe_unused typedef FieldType$(ParentType, __op__$in_field__expand _field_val) FieldType; \
-            _field_val; \
-        })
-    #define __op__$in_field_3(...) __op__$in_field_3__emit(__VA_ARGS__)
-    #define __op__$in_field_3__emit(_field, _op, _val...) \
-        .__op__$in_field__expand _field = ({ \
-            $maybe_unused typedef FieldType ParentType; \
-            $maybe_unused typedef FieldType$(ParentType, __op__$in_field__expand _field) FieldType; \
-            _val; \
-        })
-    #define __op__$in_field__expand(...) __VA_ARGS__
+#define $asg(_val...) , $_asg, (_val)
+#define $field(...) __op__$field(__VA_ARGS__)
+#define __op__$field(...) pp_overload(__op__$field, __VA_ARGS__)(__VA_ARGS__)
+#define __op__$field_1(...) __op__$field_1__emit(__VA_ARGS__)
+#define __op__$field_1__emit(_field_val...) \
+    .__op__$field__expand _field_val = ({ \
+        $maybe_unused typedef InitType ParentType; \
+        $maybe_unused typedef FieldType$(ParentType, __op__$field__expand _field_val) FieldType; \
+        _field_val; \
+    })
+#define __op__$field_3(...) __op__$field_3__emit(__VA_ARGS__)
+#define __op__$field_3__emit(_field, _op, _val...) \
+    .__op__$field__expand _field = ({ \
+        $maybe_unused typedef InitType ParentType; \
+        $maybe_unused typedef FieldType$(ParentType, __op__$field__expand _field) FieldType; \
+        _val; \
+    })
+#define __op__$field__expand(...) __VA_ARGS__
+#define $in_field(...) __op__$in_field__emit(__VA_ARGS__)
+#define __op__$in_field(...) pp_overload(__op__$in_field, __VA_ARGS__)(__VA_ARGS__)
+#define __op__$in_field_1(...) __op__$in_field_1__emit(__VA_ARGS__)
+#define __op__$in_field_1__emit(_field_val...) \
+    .__op__$in_field__expand _field_val = ({ \
+        $maybe_unused typedef FieldType ParentType; \
+        $maybe_unused typedef FieldType$(ParentType, __op__$in_field__expand _field_val) FieldType; \
+        _field_val; \
+    })
+#define __op__$in_field_3(...) __op__$in_field_3__emit(__VA_ARGS__)
+#define __op__$in_field_3__emit(_field, _op, _val...) \
+    .__op__$in_field__expand _field = ({ \
+        $maybe_unused typedef FieldType ParentType; \
+        $maybe_unused typedef FieldType$(ParentType, __op__$in_field__expand _field) FieldType; \
+        _val; \
+    })
+#define __op__$in_field__expand(...) __VA_ARGS__
 
     asg_lit((&pool)($init((LitType){
-        $field((workers)$asg(u_castS$((FieldType)(
-            try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), thrd_count))
-        )))),
+        $field((workers)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), thrd_count)))))),
         $field((threads)$asg(thrds)),
     })));
 
     let pool = $init((mp_ThrdPool){
-        $field((workers)$asg(u_castS$((FieldType)(
-            try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), thrd_count))
-        )))),
+        $field((workers)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), thrd_count)))))),
         $field((threads)$asg(thrds)),
     });
 
@@ -215,7 +212,7 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
     // for_(($s(pool->workers), $s(pool->threads))(worker, thread) {
     //     *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool));
     //     *thread = catch_((Thrd_spawn(
-    //         Thrd_SpawnConfig_default, worker->as_raw
+    //         Thrd_SpawnCfg_default, worker->as_raw
     //     ))($ignore, claim_unreachable));
     // });
     return_ok(pool);

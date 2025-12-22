@@ -11,7 +11,7 @@
 #define sync_mpmc_Node$(T) pp_join($, sync_mpmc_Node, T)
 #define sync_mpmc_Node$$(T) \
     struct sync_mpmc_Node$(T) { \
-        T                                       data; \
+        T data; \
         _Atomic(P$$(struct sync_mpmc_Node$(T))) next; \
     }
 #define sync_mpmc_Node_useT$(T) typedef sync_mpmc_Node$$(T) sync_mpmc_Node$(T)
@@ -22,10 +22,10 @@
     struct sync_mpmc_Channel$(T) { \
         _Atomic(P$$(sync_mpmc_Node$(T))) head; \
         _Atomic(P$$(sync_mpmc_Node$(T))) tail; \
-        _Atomic(bool)                    disconnected; \
-        pthread_mutex_t                  mutex; \
-        pthread_cond_t                   recv_cond; \
-        pthread_cond_t                   send_cond; \
+        _Atomic(bool) disconnected; \
+        pthread_mutex_t mutex; \
+        pthread_cond_t recv_cond; \
+        pthread_cond_t send_cond; \
     }
 #define sync_mpmc_Channel_useT$(T) typedef sync_mpmc_Channel$$(T) sync_mpmc_Channel$(T)
 
@@ -35,7 +35,7 @@
     struct sync_mpmc_Counter$(T) { \
         _Atomic(usize) senders; \
         _Atomic(usize) receivers; \
-        _Atomic(bool)  destroy; \
+        _Atomic(bool) destroy; \
         P$$(sync_mpmc_Channel$(T)) \
         chan; \
     }
@@ -77,7 +77,7 @@ typedef enum {
 } sync_mpsc_SendResult;
 
 // MPMC channel internal functions
-#define sync_mpmc_Channel_send$(T)                           pp_join($, sync_mpmc_Channel_send, T)
+#define sync_mpmc_Channel_send$(T) pp_join($, sync_mpmc_Channel_send, T)
 #define sync_mpmc_Channel_send$$(T, _allocator, chan, value) ({ \
     sync_mpsc_SendResult result = SYNC_MPSC_SEND_DISCONNECTED; \
     if (!atomic_load(&(chan)->disconnected)) { \
@@ -102,7 +102,7 @@ typedef enum {
     result; \
 })
 
-#define sync_mpmc_Channel_tryRecv$(T)                    pp_join($, sync_mpmc_Channel_tryRecv, T)
+#define sync_mpmc_Channel_tryRecv$(T) pp_join($, sync_mpmc_Channel_tryRecv, T)
 #define sync_mpmc_Channel_tryRecv$$(T, _allocator, chan) ({ \
     O$(T) \
     result = { .has_value = false }; \
@@ -112,7 +112,7 @@ typedef enum {
     sync_mpmc_Node$(T)* next = atomic_load(&tail->next); \
 \
     if (next != null) { \
-        result.value     = next->data; \
+        result.value = next->data; \
         result.has_value = true; \
         atomic_store(&(chan)->tail, next); \
         mem_Allocator_destroy(_allocator, anyPtr(tail)); \
@@ -122,7 +122,7 @@ typedef enum {
     result; \
 })
 
-#define sync_mpmc_Channel_recv$(T)                    pp_join($, sync_mpmc_Channel_recv, T)
+#define sync_mpmc_Channel_recv$(T) pp_join($, sync_mpmc_Channel_recv, T)
 #define sync_mpmc_Channel_recv$$(T, _allocator, chan) ({ \
     O$(T) \
     result; \
@@ -133,7 +133,7 @@ typedef enum {
         sync_mpmc_Node$(T)* next = atomic_load(&tail->next); \
 \
         if (next != null) { \
-            result.value     = next->data; \
+            result.value = next->data; \
             result.has_value = true; \
             atomic_store(&(chan)->tail, next); \
             mem_Allocator_destroy(_allocator, anyPtr(tail)); \
@@ -152,7 +152,7 @@ typedef enum {
     result; \
 })
 
-#define sync_mpmc_Channel_disconnect$(T)        pp_join($, sync_mpmc_Channel_disconnect, T)
+#define sync_mpmc_Channel_disconnect$(T) pp_join($, sync_mpmc_Channel_disconnect, T)
 #define sync_mpmc_Channel_disconnect$$(T, chan) ({ \
     pthread_mutex_lock(&(chan)->mutex); \
     atomic_store(&(chan)->disconnected, true); \
@@ -162,7 +162,7 @@ typedef enum {
 })
 
 // Channel creation function
-#define sync_mpsc_channel$(T)                 pp_join($, sync_mpsc_channel, T)
+#define sync_mpsc_channel$(T) pp_join($, sync_mpsc_channel, T)
 #define sync_mpsc_channel$$(T, _allocator...) ({ \
     /* Create dummy node for MPMC queue */ \
     let dummy = meta_cast$( \
@@ -194,7 +194,7 @@ typedef enum {
     counter->chan = mpmc_chan; \
 \
     sync_mpsc_Channel$(T) ch = { \
-        .sender   = { .allocator = _allocator, .counter = counter }, \
+        .sender = { .allocator = _allocator, .counter = counter }, \
         .receiver = { .allocator = _allocator, .counter = counter } \
     }; \
     ch; \
@@ -211,7 +211,7 @@ typedef enum {
     }
 
 // Sender functions
-#define sync_mpsc_Sender_send$(T)                 pp_join($, sync_mpsc_Sender_send, T)
+#define sync_mpsc_Sender_send$(T) pp_join($, sync_mpsc_Sender_send, T)
 #define sync_mpsc_Sender_send$$(T, sender, value) ({ \
     sync_mpmc_Channel_send$$(T, (sender).allocator, (sender).counter->chan, value); \
 })
@@ -220,7 +220,7 @@ typedef enum {
         return sync_mpsc_Sender_send$$(T, sender, value); \
     }
 
-#define sync_mpsc_Sender_trySend$(T)                 pp_join($, sync_mpsc_Sender_trySend, T)
+#define sync_mpsc_Sender_trySend$(T) pp_join($, sync_mpsc_Sender_trySend, T)
 #define sync_mpsc_Sender_trySend$$(T, sender, value) ({ \
     sync_mpsc_Sender_send$$(T, sender, value); \
 })
@@ -230,7 +230,7 @@ typedef enum {
     }
 
 // Sender clone function
-#define sync_mpsc_Sender_clone$(T)          pp_join($, sync_mpsc_Sender_clone, T)
+#define sync_mpsc_Sender_clone$(T) pp_join($, sync_mpsc_Sender_clone, T)
 #define sync_mpsc_Sender_clone$$(T, sender) ({ \
     usize count = atomic_fetch_add(&(sender).counter->senders, 1); \
     /* Overflow protection like in Rust */ \
@@ -246,7 +246,7 @@ typedef enum {
     }
 
 // Sender drop function
-#define sync_mpsc_Sender_drop$(T)          pp_join($, sync_mpsc_Sender_drop, T)
+#define sync_mpsc_Sender_drop$(T) pp_join($, sync_mpsc_Sender_drop, T)
 #define sync_mpsc_Sender_drop$$(T, sender) ({ \
     if (atomic_fetch_sub(&(sender).counter->senders, 1) == 1) { \
         /* Last sender - disconnect the channel */ \
@@ -279,7 +279,7 @@ typedef enum {
     }
 
 // Receiver functions
-#define sync_mpsc_Receiver_recv$(T)            pp_join($, sync_mpsc_Receiver_recv, T)
+#define sync_mpsc_Receiver_recv$(T) pp_join($, sync_mpsc_Receiver_recv, T)
 #define sync_mpsc_Receiver_recv$$(T, receiver) ({ \
     sync_mpmc_Channel_recv$$(T, (receiver).allocator, (receiver).counter->chan); \
 })
@@ -288,7 +288,7 @@ typedef enum {
         return sync_mpsc_Receiver_recv$$(T, receiver); \
     }
 
-#define sync_mpsc_Receiver_tryRecv$(T)            pp_join($, sync_mpsc_Receiver_tryRecv, T)
+#define sync_mpsc_Receiver_tryRecv$(T) pp_join($, sync_mpsc_Receiver_tryRecv, T)
 #define sync_mpsc_Receiver_tryRecv$$(T, receiver) ({ \
     sync_mpmc_Channel_tryRecv$$(T, (receiver).allocator, (receiver).counter->chan); \
 })
@@ -298,7 +298,7 @@ typedef enum {
     }
 
 // Receiver drop function
-#define sync_mpsc_Receiver_drop$(T)            pp_join($, sync_mpsc_Receiver_drop, T)
+#define sync_mpsc_Receiver_drop$(T) pp_join($, sync_mpsc_Receiver_drop, T)
 #define sync_mpsc_Receiver_drop$$(T, receiver) ({ \
     if (atomic_fetch_sub(&(receiver).counter->receivers, 1) == 1) { \
         /* Last receiver - disconnect the channel */ \
@@ -366,7 +366,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let channels = sync_mpsc_channel$i32(heap_Page_allocator(&(heap_Page){}));
     defer_(sync_mpsc_Receiver_drop$i32(channels.receiver));
     try_(Thrd_spawn(
-        Thrd_SpawnConfig_default,
+        Thrd_SpawnCfg_default,
         Thrd_FnCtx_from(countThrd, { channels.sender }).base
     ));
 

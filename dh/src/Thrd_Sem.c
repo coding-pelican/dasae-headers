@@ -11,8 +11,9 @@ fn_((Thrd_Sem_init(void))(Thrd_Sem)) {
 };
 
 fn_((Thrd_Sem_fini(Thrd_Sem* self))(void)) {
-    Thrd_Mtx_fini(&self->mtx);
+    self->permits = 0;
     Thrd_Cond_fini(&self->cond);
+    Thrd_Mtx_fini(&self->mtx);
 };
 
 fn_((Thrd_Sem_wait(Thrd_Sem* self))(void) $guard) {

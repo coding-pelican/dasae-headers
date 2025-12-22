@@ -118,7 +118,8 @@ extern "C" {
 #define at$S(_s /*: S$$(_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) \
     pp_expand(pp_defer(block_inline__at$S)(param_expand__at$S(_s, _idx)))
 
-#define S_deref$(/*(_ANT: A(_N,_T))(_self: S(_T))*/... /*(_ANT)*/) __op__S_deref$(__op__S_deref$__parseANT __VA_ARGS__)
+#define S_deref$(/*(_ANT: A(_N,_T))(_s: S(_T))*/... /*(_ANT)*/) \
+    __op__S_deref$(__op__S_deref$__parseANT __VA_ARGS__)
 #define __op__S_deref$(...) __op__S_deref$__emit(__VA_ARGS__)
 #define __op__S_deref$__parseANT(_ANT...) _ANT,
 #define __op__S_deref$__emit(_ANT, _s...) (*blk({ \
@@ -127,7 +128,7 @@ extern "C" {
     as$(_ANT*)(ensureNonnull(S_ptr(__s))); \
 }))
 
-#define S_at(/*(_self: S(_T))[_idx]*/... /*(P(_T))*/) \
+#define S_at(/*(_s: S(_T))[_idx: usize]*/... /*(P(_T))*/) \
     __op__S_at(__op__S_at__parse __VA_ARGS__)
 #define __op__S_at__parse(_s...) pp_uniqTok(s), pp_uniqTok(idx), _s,
 #define __op__S_at(...) __op__S_at__emit(__VA_ARGS__)
@@ -145,32 +146,67 @@ extern "C" {
     S_ptr(*__s) + __idx; \
 })
 #endif /* UNUSED_CODE */
-#define S_slice(/*(_self: S(_T))_range*/... /*(S(_T))*/) \
+#define S_slice$(/*(_ST: S(_T))(_s: S(_T))(_range: R)*/... /*(_ST)*/) __op__S_slice$(__op__S_slice$__parseST __VA_ARGS__)
+#define __op__S_slice$(...) __op__S_slice$__emit(__VA_ARGS__)
+#define __op__S_slice$__parseST(_ST...) _ST, __op__S_slice$__parseS
+#define __op__S_slice$__parseS(_s...) pp_uniqTok(s), _s, pp_uniqTok(range),
+#define __op__S_slice$__emit(_ST, __s, _s, __range, _range...) ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__range, R) = _range; \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
+    claim_assert_fmt(__range.end <= S_len(__s), "Invalid slice range: end(%zu) > len(%zu)", __range.end, S_len(__s)); \
+    lit$((_ST){ .ptr = &S_ptr(__s)[__range.begin], .len = len$R(__range) }); \
+})
+#define S_slice(/*(_s: S(_T))(_range: R)*/... /*(S(_T))*/) \
     __op__S_slice(__op__S_slice__parse __VA_ARGS__)
-#define __op__S_slice__parse(_s...) pp_uniqTok(s), pp_uniqTok(range), _s,
+#define __op__S_slice__parse(_s...) pp_uniqTok(s), _s, pp_uniqTok(range),
 #define __op__S_slice(...) __op__S_slice__emit(__VA_ARGS__)
-#define __op__S_slice__emit(__s, __range, _s, _range...) ({ \
+#define __op__S_slice__emit(__s, _s, __range, _range...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__range, R) = _range; \
     claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
     claim_assert_fmt(__range.end <= S_len(__s), "Invalid slice range: end(%zu) > len(%zu)", __range.end, S_len(__s)); \
     lit$((TypeOf(__s)){ .ptr = &S_ptr(__s)[__range.begin], .len = len$R(__range) }); \
 })
-#define S_prefix(/*(_self: S(_T))_end*/... /*(S(_T))*/) \
+
+#define S_prefix$(/*(_ST: S(_T))(_s: S(_T))(_end: usize)*/... /*(_ST)*/) \
+    __op__S_prefix$(__op__S_prefix$__parseST __VA_ARGS__)
+#define __op__S_prefix$(...) __op__S_prefix$__emit(__VA_ARGS__)
+#define __op__S_prefix$__parseST(_ST...) _ST, __op__S_prefix$__parseS
+#define __op__S_prefix$__parseS(_s...) pp_uniqTok(s), _s, pp_uniqTok(end),
+#define __op__S_prefix$__emit(_ST, __s, _s, __end, _end...) ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__end, usize) = _end; \
+    claim_assert_fmt(__end <= S_len(__s), "Invalid slice range: end(%zu) > len(%zu)", __end, S_len(__s)); \
+    lit$((_ST){ .ptr = S_ptr(__s), .len = __end }); \
+})
+#define S_prefix(/*(_s: S(_T))(_end: usize)*/... /*(S(_T))*/) \
     __op__S_prefix(__op__S_prefix__parse __VA_ARGS__)
-#define __op__S_prefix__parse(_s...) pp_uniqTok(s), pp_uniqTok(end), _s,
+#define __op__S_prefix__parse(_s...) pp_uniqTok(s), _s, pp_uniqTok(end),
 #define __op__S_prefix(...) __op__S_prefix__emit(__VA_ARGS__)
-#define __op__S_prefix__emit(__s, __end, _s, _end...) ({ \
+#define __op__S_prefix__emit(__s, _s, __end, _end...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__end, usize) = _end; \
     claim_assert_fmt(__end <= S_len(__s), "Invalid slice range: end(%zu) > len(%zu)", __end, S_len(__s)); \
     lit$((TypeOf(__s)){ .ptr = S_ptr(__s), .len = __end }); \
 })
-#define S_suffix(/*(_self: S(_T))_begin*/... /*(S(_T))*/) \
+
+#define S_suffix$(/*(_ST: S(_T))(_s: S(_T))(_begin: usize)*/... /*(_ST)*/) \
+    __op__S_suffix$(__op__S_suffix$__parseST __VA_ARGS__)
+#define __op__S_suffix$(...) __op__S_suffix$__emit(__VA_ARGS__)
+#define __op__S_suffix$__parseST(_ST...) _ST, __op__S_suffix$__parseS
+#define __op__S_suffix$__parseS(_s...) pp_uniqTok(s), _s, pp_uniqTok(begin),
+#define __op__S_suffix$__emit(_ST, __s, _s, __begin, _begin...) ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    let_(__begin, usize) = _begin; \
+    claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, S_len(__s)); \
+    lit$((_ST){ .ptr = S_ptr(__s) + __begin, .len = S_len(__s) - __begin }); \
+})
+#define S_suffix(/*(_s: S(_T))(_begin: usize)*/... /*(S(_T))*/) \
     __op__S_suffix(__op__S_suffix__parse __VA_ARGS__)
-#define __op__S_suffix__parse(_s...) pp_uniqTok(s), pp_uniqTok(begin), _s,
+#define __op__S_suffix__parse(_s...) pp_uniqTok(s), _s, pp_uniqTok(begin),
 #define __op__S_suffix(...) __op__S_suffix__emit(__VA_ARGS__)
-#define __op__S_suffix__emit(__s, __begin, _s, _begin...) ({ \
+#define __op__S_suffix__emit(__s, _s, __begin, _begin...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__begin, usize) = _begin; \
     claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, S_len(__s)); \

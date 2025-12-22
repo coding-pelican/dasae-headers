@@ -190,6 +190,9 @@ Macros:
   - "variant_(Expr)=pp_exec_ignore Expr"
   - "chain$(Expr)=pp_exec_ignore Expr"
 
+  # - "let_(ident, T)=T const ident"
+  # - "var_(ident, T)=T ident"
+
   - "$P_const$(T)=const T*"
   - "$P$(T)=T*"
   - "$A$(N, T)=T[N]"

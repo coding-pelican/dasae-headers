@@ -28,9 +28,9 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 // Thread ID type
-typedef Thrd_IdImpl Thrd_Id;
+typedef Thrd_Id__Impl Thrd_Id;
 // Thread handle type
-typedef Thrd_Handle_Impl Thrd_Handle;
+typedef Thrd_Handle__Impl Thrd_Handle;
 
 // Thread function context type instantiation
 #define use_Thrd_FnCtx$(_fnName, _Args, _T_Return) comp_type_gen__use_Thrd_FnCtx$(_fnName, _Args, _T_Return)
@@ -85,7 +85,7 @@ extern fn_((Thrd_cpuCount(void))(E$usize)) $must_check;
 
 // Thread type
 typedef struct Thrd {
-    Thrd_Handle handle;
+    var_(handle, Thrd_Handle);
 } Thrd;
 T_use_E$(Thrd);
 extern fn_((Thrd_handle(Thrd self))(Thrd_Handle));
@@ -98,16 +98,16 @@ extern fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8)) $mu
 extern fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void)) $must_check;
 
 // Thread spawn configuration
-typedef struct Thrd_SpawnConfig {
-    usize stack_size;
-    O$mem_Allocator allocator;
-} Thrd_SpawnConfig;
-#define Thrd_SpawnConfig_default_stack_size (16ull * 1024ull * 1024ull)
-static const Thrd_SpawnConfig Thrd_SpawnConfig_default = {
-    .stack_size = Thrd_SpawnConfig_default_stack_size,
+typedef struct Thrd_SpawnCfg {
+    var_(stack_size, usize);
+    var_(allocator, O$mem_Allocator);
+} Thrd_SpawnCfg;
+#define Thrd_SpawnCfg_default_stack_size (16ull * 1024ull * 1024ull)
+static const Thrd_SpawnCfg Thrd_SpawnCfg_default = {
+    .stack_size = Thrd_SpawnCfg_default_stack_size,
     .allocator = none()
 };
-extern fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(E$Thrd)) $must_check;
+extern fn_((Thrd_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd)) $must_check;
 extern fn_((Thrd_detach(Thrd self))(void));
 extern fn_((Thrd_join(Thrd self))(Thrd_FnCtx*));
 

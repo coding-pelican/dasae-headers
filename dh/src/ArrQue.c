@@ -1,8 +1,7 @@
 #include "dh/ArrQue.h"
 #include "dh/ArrDeq.h"
 
-claim_assert_static(sizeOf$(TypeOf(ArrQue)) == sizeOf$(TypeOf(ArrDeq)));
-claim_assert_static(alignOf$(TypeOf(ArrQue)) == alignOf$(TypeOf(ArrDeq)));
+claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrQue), packTypeInfo$(ArrDeq)));
 claim_assert_static(offsetTo(ArrQue, buf) == offsetTo(ArrDeq, buf));
 claim_assert_static(offsetTo(ArrQue, head) == offsetTo(ArrDeq, head));
 claim_assert_static(offsetTo(ArrQue, len) == offsetTo(ArrDeq, len));
@@ -39,8 +38,7 @@ fn_((ArrQue_fini(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void)) {
     ArrDeq_fini(queAsDeq(self), type, gpa);
 }
 
-claim_assert_static(sizeOf$(TypeOf(ArrQue_Grip)) == sizeOf$(TypeOf(ArrDeq_Grip)));
-claim_assert_static(alignOf$(TypeOf(ArrQue_Grip)) == alignOf$(TypeOf(ArrDeq_Grip)));
+claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrQue_Grip), packTypeInfo$(ArrDeq_Grip)));
 claim_assert_static(offsetTo(ArrQue_Grip, buf) == offsetTo(ArrDeq_Grip, buf));
 claim_assert_static(offsetTo(ArrQue_Grip, head) == offsetTo(ArrDeq_Grip, head));
 claim_assert_static(offsetTo(ArrQue_Grip, len) == offsetTo(ArrDeq_Grip, len));
@@ -151,8 +149,7 @@ fn_((ArrQue_deque(ArrQue* self, u_V$raw ret_mem))(O$u_V$raw)) {
     return ArrDeq_shift(queAsDeq(self), ret_mem);
 }
 
-claim_assert_static(sizeOf$(TypeOf(ArrQue_Iter)) == sizeOf$(TypeOf(ArrDeq_Iter)));
-claim_assert_static(alignOf$(TypeOf(ArrQue_Iter)) == alignOf$(TypeOf(ArrDeq_Iter)));
+claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrQue_Iter), packTypeInfo$(ArrDeq_Iter)));
 claim_assert_static(offsetTo(ArrQue_Iter, que) == offsetTo(ArrDeq_Iter, deq));
 claim_assert_static(offsetTo(ArrQue_Iter, idx) == offsetTo(ArrDeq_Iter, idx));
 debug_assert_static(offsetTo(ArrQue_Iter, type) == offsetTo(ArrDeq_Iter, type));

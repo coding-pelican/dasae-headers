@@ -26,10 +26,32 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define Thrd_Cond__use_pthread __comp_bool__Thrd_use_pthread
+#define __comp_bool__Thrd_Cond__use_pthread pp_expand( \
+    pp_switch_ pp_begin(plat_type)( \
+        pp_case_((plat_type_windows)(pp_false)), \
+        pp_case_((plat_type_linux)(pp_false)), \
+        pp_case_((plat_type_darwin)(pp_false)), \
+        pp_default_(pp_true) \
+    ) pp_end \
+)
+
 errset_((Thrd_Cond_Err)(Timeout));
-struct Thrd_Cond {
-    Thrd_Cond_Impl impl;
-};
+struct Thrd_Cond__Impl pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_then_({
+        var_(state, atom_V$u32);
+        var_(epoch, atom_V$u32);
+    }),
+    pp_else_({
+        var_(unused_, Void);
+    })
+);
+struct Thrd_Cond pp_switch_((plat_type)(
+    pp_case_((plat_type_windows)({ var_(impl, CONDITION_VARIABLE); })),
+    pp_case_((plat_type_linux)({ var_(impl, Thrd_Cond__Impl); })),
+    pp_case_((plat_type_darwin)({ var_(impl, Thrd_Cond__Impl); })),
+    pp_default_({ var_(impl, pthread_cond_t); })
+));
 /// @brief Initializes a condition variable
 /// @return A new condition variable
 $extern fn_((Thrd_Cond_init(void))(Thrd_Cond));

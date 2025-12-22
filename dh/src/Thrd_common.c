@@ -126,12 +126,12 @@ fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void) $scope) {
 #endif
 } $unscoped_(fn);
 
-fn_((Thrd_spawn(Thrd_SpawnConfig config, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
+fn_((Thrd_spawn(Thrd_SpawnCfg config, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
     let_ignore = config;
     debug_assert_nonnull(fn_ctx);
     debug_assert_nonnull(fn_ctx->fn);
 
-    // Couldn't we pass the stack size to Thrd_SpawnConfig?
+    // Couldn't we pass the stack size to Thrd_SpawnCfg?
     switch_((Thrd_Handle handle = {})(pthread_create(
         &handle, null, as$(fn_(((*)(void*))(void*) $T))(fn_ctx->fn), fn_ctx
     ))) {

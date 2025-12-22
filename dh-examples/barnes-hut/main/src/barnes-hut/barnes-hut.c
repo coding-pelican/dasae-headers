@@ -15,10 +15,10 @@
 #include "dh/Thrd/Mtx.h"
 
 #if debug_comp_enabled
-#define main_window_res_width  (window_res_width__80x50)
+#define main_window_res_width (window_res_width__80x50)
 #define main_window_res_height (window_res_height__80x50)
 #else /* !debug_comp_enabled */
-#define main_window_res_width  (window_res_width__320x160 - 20)
+#define main_window_res_width (window_res_width__320x160 - 20)
 #define main_window_res_height (window_res_height__320x160 + 40)
 #endif /* debug_comp_enabled */
 #define main_window_res_size (as$(usize, main_window_res_width) * main_window_res_height)
@@ -144,7 +144,7 @@ fn_(dh_main(S$S_const$u8 args), E$void $guard) {
     var sim_mutex = Thrd_Mtx_init();
     defer_(Thrd_Mtx_fini(&sim_mutex));
     global_state.sim_mutex = sim_mutex;
-    var sim_thread = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from(Simulation_thread, {}).base));
+    var sim_thread = try_(Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from(Simulation_thread, {}).base));
     defer_(catch_from(
         Thrd_FnCtx_returned(Simulation_thread, Thrd_join(sim_thread)), err,
         eval({ log_error("Thrd_join with failed: %s", Err_codeToCStr(err)); })
@@ -376,4 +376,5 @@ Thrd_fn_(Simulation_thread, ($ignore, $ignore)$guard) {
     }
 
     return_ok({});
-} $unguarded_Thrd_fn;
+}
+$unguarded_Thrd_fn;
