@@ -152,7 +152,7 @@ Expresses state-machine-based control flow concisely with `async_/await_` patter
 | Aspect              | Traditional C (Standard C)                           | dasae-headers                                                           |
 | ------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
 | **Async Model**     | OS native thread-centric design                      | OS native threads + **State-machine-based Stackless Coroutines**        |
-| **Sync Primitives** | Reliant on primitive `mutex`, `cond`                 | `WaitGroup`, `RwLock`, `ResetEvent`, etc.                               |
+| **Sync Primitives** | Reliant on primitive `mutex`, `cond`                 | `RWLock`, `ResetEvent`, `WaitGroup`, etc.                               |
 | **Control Flow**    | Callback hell or manually implemented state machines | Coroutine control with `async_`, `await_`, `suspend_`, `resume_` syntax |
 
 #### 4. Meta Type & Generic System
