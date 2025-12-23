@@ -16,42 +16,72 @@ fn_((Thrd_WaitGroup_fini(Thrd_WaitGroup* self))(void)) {
 };
 
 fn_((Thrd_WaitGroup_start(Thrd_WaitGroup* self))(void)) {
-    let state = atom_V_fetchAdd(&self->state, Thrd_WaitGroup__one_pending, atom_MemOrd_monotonic);
-    debug_assert((state / Thrd_WaitGroup__one_pending) < (usize_limit_max / Thrd_WaitGroup__one_pending));
-    let_ignore = state;
+    Thrd_WaitGroup_startOn(&self->state);
+};
+
+fn_((Thrd_WaitGroup_startOn(atom_V$usize* state))(void)) {
+    let prev_state = atom_V_fetchAdd(state, Thrd_WaitGroup__one_pending, atom_MemOrd_monotonic);
+    claim_assert((prev_state / Thrd_WaitGroup__one_pending) < (usize_limit_max / Thrd_WaitGroup__one_pending));
 };
 
 fn_((Thrd_WaitGroup_startN(Thrd_WaitGroup* self, usize n))(void)) {
-    let state = atom_V_fetchAdd(&self->state, Thrd_WaitGroup__one_pending * n, atom_MemOrd_monotonic);
-    debug_assert((state / Thrd_WaitGroup__one_pending) < (usize_limit_max / Thrd_WaitGroup__one_pending));
-    let_ignore = state;
+    Thrd_WaitGroup_startNOn(&self->state, n);
+};
+
+fn_((Thrd_WaitGroup_startNOn(atom_V$usize* state, usize n))(void)) {
+    let prev_state = atom_V_fetchAdd(state, Thrd_WaitGroup__one_pending * n, atom_MemOrd_monotonic);
+    claim_assert((prev_state / Thrd_WaitGroup__one_pending) < (usize_limit_max / Thrd_WaitGroup__one_pending));
 };
 
 fn_((Thrd_WaitGroup_finish(Thrd_WaitGroup* self))(void)) {
-    let state = atom_V_fetchSub(&self->state, Thrd_WaitGroup__one_pending, atom_MemOrd_acq_rel);
-    debug_assert((state / Thrd_WaitGroup__one_pending) > 0);
-    if (state == (Thrd_WaitGroup__one_pending | Thrd_WaitGroup__is_waiting)) {
-        Thrd_ResetEvent_set(&self->event);
+    Thrd_WaitGroup_finishOn(&self->state, &self->event);
+};
+
+fn_((Thrd_WaitGroup_finishOn(atom_V$usize* state, Thrd_ResetEvent* event))(void)) {
+    let prev_state = atom_V_fetchSub(state, Thrd_WaitGroup__one_pending, atom_MemOrd_acq_rel);
+    claim_assert((prev_state / Thrd_WaitGroup__one_pending) > 0);
+    if (prev_state == (Thrd_WaitGroup__one_pending | Thrd_WaitGroup__is_waiting)) {
+        Thrd_ResetEvent_set(event);
     }
 };
 
 fn_((Thrd_WaitGroup_wait(Thrd_WaitGroup* self))(void)) {
-    let state = atom_V_fetchAdd(&self->state, Thrd_WaitGroup__is_waiting, atom_MemOrd_acquire);
-    debug_assert((state & Thrd_WaitGroup__is_waiting) == 0);
-    if ((state / Thrd_WaitGroup__one_pending) > 0) {
-        Thrd_ResetEvent_wait(&self->event);
+    Thrd_WaitGroup_waitOn(&self->state, &self->event);
+};
+
+fn_((Thrd_WaitGroup_waitOn(atom_V$usize* state, Thrd_ResetEvent* event))(void)) {
+    let prev_state = atom_V_fetchAdd(state, Thrd_WaitGroup__is_waiting, atom_MemOrd_acquire);
+    claim_assert((prev_state & Thrd_WaitGroup__is_waiting) == 0);
+    if ((prev_state / Thrd_WaitGroup__one_pending) > 0) {
+        Thrd_ResetEvent_wait(event);
     }
 };
 
 fn_((Thrd_WaitGroup_reset(Thrd_WaitGroup* self))(void)) {
-    atom_V_store(&self->state, 0, atom_MemOrd_monotonic);
-    Thrd_ResetEvent_reset(&self->event);
+    Thrd_WaitGroup_resetOn(&self->state, &self->event);
+};
+
+fn_((Thrd_WaitGroup_resetOn(atom_V$usize* state, Thrd_ResetEvent* event))(void)) {
+    atom_V_store(state, 0, atom_MemOrd_monotonic);
+    Thrd_ResetEvent_reset(event);
 };
 
 fn_((Thrd_WaitGroup_isDone(Thrd_WaitGroup* self))(bool)) {
-    let state = atom_V_load(&self->state, atom_MemOrd_acquire);
-    debug_assert((state & Thrd_WaitGroup__is_waiting) == 0);
-    return (state / Thrd_WaitGroup__one_pending) == 0;
+    return Thrd_WaitGroup_isDoneOn(&self->state);
+};
+
+fn_((Thrd_WaitGroup_isDoneOn(atom_V$usize* state))(bool)) {
+    let prev_state = atom_V_load(state, atom_MemOrd_acquire);
+    claim_assert((prev_state & Thrd_WaitGroup__is_waiting) == 0);
+    return (prev_state / Thrd_WaitGroup__one_pending) == 0;
+};
+
+fn_((Thrd_WaitGroup_value(Thrd_WaitGroup* self))(usize)) {
+    return Thrd_WaitGroup_valueOn(&self->state);
+};
+
+fn_((Thrd_WaitGroup_valueOn(atom_V$usize* state))(usize)) {
+    return atom_V_load(state, atom_MemOrd_monotonic) / Thrd_WaitGroup__one_pending;
 };
 
 $attr($must_check)
