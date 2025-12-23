@@ -88,7 +88,7 @@ dasae-headers
 │  │  │  ├─ simd.h // SIMD Vector
 │  │  │  ├─ cmp.h // Eql + Ord
 │  │  │  ├─ math.h
-│  │  │  ├─ math
+│  │  │  ├─ math // Supports SIMD Backend
 │  │  │  │  ├─ common.h
 │  │  │  │  └─ vec_types.h
 │  │  │  │  ├─ vec.h
@@ -129,19 +129,20 @@ dasae-headers
 │  │  │  ├─ BTreeSet.h
 │  │  │  ├─ os.h
 │  │  │  ├─ os
-│  │  │  │  ├─ windows
-│  │  │  │  │  ├─ common.h
-│  │  │  │  │  └─ mem.h
-│  │  │  │  └─ windows.h
+│  │  │  │  ├─ windows.h
+│  │  │  │  └─ windows
+│  │  │  │     ├─ common.h
+│  │  │  │     └─ mem.h
 │  │  │  ├─ posix.h
 │  │  │  ├─ Thrd.h
 │  │  │  ├─ Thrd
-│  │  │  │  ├─ cfg.h
+│  │  │  │  ├─ cfg.h // for POSIX-fallback
 │  │  │  │  ├─ common.h
+│  │  │  │  ├─ Ftx.h
 │  │  │  │  ├─ Mtx.h
-│  │  │  │  ├─ Cond.h
-│  │  │  │  ├─ RwLock.h
 │  │  │  │  ├─ Sem.h
+│  │  │  │  ├─ Cond.h
+│  │  │  │  ├─ RWLock.h
 │  │  │  │  ├─ ResetEvent.h
 │  │  │  │  └─ WaitGroup.h
 │  │  │  ├─ Co.h // Coroutine
@@ -178,6 +179,7 @@ dasae-headers
 │  │  │  │  └─ Buf.h
 │  │  │  ├─ fmt.h
 │  │  │  ├─ fmt
+│  │  │  │  ├─ cfg.h // with Ryu table option
 │  │  │  │  └─ common.h
 │  │  │  ├─ log.h
 │  │  │  ├─ proc.h
@@ -218,6 +220,7 @@ dasae-headers
 │     │  ├─ example-rev_args_str.c
 │     │  ├─ example-srcLoc.c
 │     │  ├─ example-Thrd.c
+│     │  ├─ example-Thrd-ext.c
 │     │  ├─ example-trace_err.c
 │     ├─ sample
 │     │  ├─ sample-decision_tree.c
