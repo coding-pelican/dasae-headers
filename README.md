@@ -77,7 +77,7 @@ dasae-headers: Modern, Better safety and productivity to C
     - [Data Structures \& Algorithms](#data-structures--algorithms)
     - [Testing](#testing)
   - [Documentation](#documentation)
-  - [Status and Naming](#status-and-naming)
+  - [Naming](#naming)
   - [Contribution and Contact](#contribution-and-contact)
   - [License](#license)
 
@@ -566,9 +566,11 @@ TEST_fn_("Basic Math Operations Test" $scope) {
 
 ---
 
-## Status and Naming
+## Naming
 
+<!--
 The project is currently in the early stages of development, and API specifications are experimental.
+ -->
 
 The name **"dasae-headers"** originates from the project's roots as a header-only library
 designed to collect frequently used C utility code.
