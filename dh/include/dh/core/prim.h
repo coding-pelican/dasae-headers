@@ -131,6 +131,17 @@ typedef struct Void {
 #define prim_bitReset(_x, _bit...) __op__prim_bitReset(_x, _bit)
 #define prim_bitToggle(_x, _bit...) __op__prim_bitToggle(_x, _bit)
 
+/* TODO: Prepare for runtime int version with safety checks */
+/// Lower N bits `[0,N)`: (1 << n) - 1
+/// Usage: bits_maskLo((u16)(4)) -> 0x000F
+#define prim_maskLo$(/*(_T: IntType)(_n)*/... /*(_T)*/) __step__prim_maskLo$(__VA_ARGS__)
+/// Upper N bits `[Width-N,Width)`: (~0) << (width - n)
+/// Usage: bits_maskHi((u16)(4)) -> 0xF000
+#define prim_maskHi$(/*(_T: IntType)(_n)*/... /*(_T)*/) __step__prim_maskHi$(__VA_ARGS__)
+/// Arbitrary range [Offset,Offset+Length): maskLo(len) << off
+/// Usage: bits_mask((u16)(4, 4)) -> 0x00F0 (offset 4, length 4)
+#define prim_mask$(/*(_T: IntType)(_off, _len)*/... /*(_T)*/) __step__prim_mask$(__VA_ARGS__)
+
 #define prim_isZero(_x...) __op__prim_isZero(_x)
 #define prim_isNonZero(_x...) __op__prim_isNonZero(_x)
 
@@ -262,9 +273,9 @@ typedef struct Void {
 #define int_xor(_lhs, _rhs...) __op__int_xor(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define int_or(_lhs, _rhs...) __op__int_or(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 
-#define int_bitSet(_x, _bit...) __op__int_bitSet(pp_uniqTok(mask), _x, _bit)
-#define int_bitReset(_x, _bit...) __op__int_bitReset(pp_uniqTok(mask), _x, _bit)
-#define int_bitToggle(_x, _bit...) __op__int_bitToggle(pp_uniqTok(mask), _x, _bit)
+#define int_bitSet(_x, _bit...) __op__int_bitSet(_x, _bit)
+#define int_bitReset(_x, _bit...) __op__int_bitReset(_x, _bit)
+#define int_bitToggle(_x, _bit...) __op__int_bitToggle(_x, _bit)
 
 /*========== Bit Manipulation Operations ====================================*/
 
@@ -652,6 +663,26 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__prim_bitSet(_x, _bit...) (as$(TypeOf(_x))((_x) | (as$(TypeOf(_x))(1) << (_bit))))
 #define __op__prim_bitReset(_x, _bit...) (as$(TypeOf(_x))((_x) & ~(as$(TypeOf(_x))(1) << (_bit))))
 #define __op__prim_bitToggle(_x, _bit...) (as$(TypeOf(_x))((_x) ^ (as$(TypeOf(_x))(1) << (_bit))))
+
+#define __step__prim_maskLo$(...) __step__prim_maskLo$__emit(__step__prim_maskLo$__parse __VA_ARGS__)
+#define __step__prim_maskLo$__parse(_T...) _T,
+#define __step__prim_maskLo$__emit(...) ____prim_maskLo$(__VA_ARGS__)
+#define ____prim_maskLo$(_T, _n...) ( \
+    as$(_T)((as$(_T)(1) << (_n)) - as$(_T)(1)) \
+)
+#define __step__prim_maskHi$(...) __step__prim_maskHi$__emit(__step__prim_maskHi$__parse __VA_ARGS__)
+#define __step__prim_maskHi$__parse(_T...) _T,
+#define __step__prim_maskHi$__emit(...) ____prim_maskHi$(__VA_ARGS__)
+#define ____prim_maskHi$(_T, _n...) ( \
+    as$(_T)(as$(_T)(~0) << (int_bits$(_T) - (_n))) \
+)
+#define __step__prim_mask$(...) __step__prim_mask$__emit(__step__prim_mask$__parse __VA_ARGS__)
+#define __step__prim_mask$__parse(_T...) _T, __step__prim_mask$__parseNext
+#define __step__prim_mask$__parseNext(_off, _len...) _off, _len
+#define __step__prim_mask$__emit(...) ____prim_mask$(__VA_ARGS__)
+#define ____prim_mask$(_T, _off, _len...) ( \
+    (as$(_T)(prim_maskLo$((_T)(_len)) << (_off))) \
+)
 
 #define __op__prim_isZero(_x...) (as$(bool)((_x) == 0))
 #define __op__prim_isNonZero(_x...) (as$(bool)((_x) != 0))
@@ -1299,18 +1330,43 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     as$(IntType)(__lhs | __rhs); \
 })
 
-#define __op__int_bitSet(__mask, _x, _bit...) ({ \
+#define __op__int_bitSet(_x, _bit...) ({ \
     typedef TypeOf(_x) IntType; \
     as$(IntType)(_x | int_shl(as$(IntType)(1), _bit)); \
 })
-#define __op__int_bitReset(__mask, _x, _bit...) ({ \
+#define __op__int_bitReset(_x, _bit...) ({ \
     typedef TypeOf(_x) IntType; \
     as$(IntType)(_x & ~int_shl(as$(IntType)(1), _bit)); \
 })
-#define __op__int_bitToggle(__mask, _x, _bit...) ({ \
+#define __op__int_bitToggle(_x, _bit...) ({ \
     typedef TypeOf(_x) IntType; \
     as$(IntType)(_x ^ int_shl(as$(IntType)(1), _bit)); \
 })
+
+// /// int_maskLo((u32)(5)) -> 0x0000001F
+// #define int_maskLo(_type, _n...) __op__int_maskLo(_type, _n)
+// #define __op__int_maskLo(__type, __n, _type, _n...) blk({ \
+//     typedef TypeOfUnqual(_type) IntType; \
+//     claim_assert_static(isInt$(IntType)); \
+//     let_(__n, u32) = _n; \
+//     /* Safety: Shift amount must be less than width to avoid UB */ \
+//     debug_assert(__n < int_bits$(IntType)); \
+//     as$(IntType)((as$(IntType)(1) << __n) - 1); \
+// })
+
+// /// int_maskHi((u32)(5)) -> 0xFFFFFFE0
+// #define int_maskHi(_type, _n...) __op__int_maskHi(_type, _n)
+// #define __op__int_maskHi(__type, __n, _type, _n...) blk({ \
+//     typedef TypeOfUnqual(_type) IntType; \
+//     claim_assert_static(isInt$(IntType)); \
+//     let_(__n, u32) = _n; \
+//     let_(__width, u32) = int_bits$(IntType); \
+//     debug_assert(__n <= __width); \
+//     /* Safety: Shift amount must be < width. Handle n=0 explicitly. */ \
+//     (__n == 0) \
+//         ? as$(IntType)(0) \
+//         : as$(IntType)(as$(IntType)(~0) << (__width - __n)); \
+// })
 
 /*========== Bit Manipulation Implementation ================================*/
 
