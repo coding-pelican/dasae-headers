@@ -77,7 +77,7 @@ dasae-headers: Modern, Better safety and productivity to C
     - [Data Structures \& Algorithms](#data-structures--algorithms)
     - [Testing](#testing)
   - [문서](#문서)
-  - [현재 상태 및 명칭에 관하여](#현재-상태-및-명칭에-관하여)
+  - [명칭에 관하여](#명칭에-관하여)
   - [기여 및 연락처](#기여-및-연락처)
   - [라이선스](#라이선스)
 
@@ -564,9 +564,11 @@ TEST_fn_("Basic Math Operations Test" $scope) {
 
 ---
 
-## 현재 상태 및 명칭에 관하여
+## 명칭에 관하여
 
+<!--
 본 프로젝트는 현재 개발 초기 단계에 있으며 API 사양은 실험적입니다.
+ -->
 
 **"dasae-headers"**라는 명칭은 프로젝트 초기,
 자주 사용하는 C 유틸리티 코드를 모아둔 헤더 전용 라이브러리(Header-only Library)로 시작된 것에서 유래했습니다.
