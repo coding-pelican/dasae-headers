@@ -205,7 +205,19 @@ typedef struct u_E$raw {
 #define __u_init$S__emitRefMut(_type, _ptr, _len...) lit$((u_S$raw){ .ptr = _ptr, .len = _len, .type = _type })
 
 #define len$u_S u_lenS
-#define u_lenS(_s...) len$S(_s)
+#define u_lenS(_s...) ____u_lenS(_s)
+#define ____u_lenS(_s...) len$S(_s)
+
+#define ptr$u_S u_ptrS
+#define u_ptrS(_s...) __step__u_ptrS(_s)
+#define __step__u_ptrS(_s...) ____u_ptrS(pp_uniqTok(s), _s)
+#define ____u_ptrS(__s, _s...) ({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    T_switch$((TypeOf(_s))( \
+        T_case$((u_S_const$raw)(lit$((u_P_const$raw){ .raw = as$(const u8*)(__s.ptr), .type = __s.type }))), \
+        T_case$((u_S$raw)(lit$((u_P$raw){ .raw = as$(u8*)(__s.ptr), .type = __s.type }))) \
+    )); \
+})
 
 #define u_stride_static(_type...) ____u_stride_static(_type)
 #define ____u_stride_static(_type...) \

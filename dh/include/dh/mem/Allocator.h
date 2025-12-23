@@ -83,13 +83,8 @@ $extern fn_((mem_Allocator_remap(mem_Allocator self, u_S$raw old_mem, usize new_
 $extern fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(mem_Err$u_S$raw)) $must_check;
 /// Free slice
 $extern fn_((mem_Allocator_free(mem_Allocator self, u_S$raw mem))(void));
-
-/*========== Helper Functions ===============================================*/
-
 /// Duplicate slice
 $extern fn_((mem_Allocator_dupe(mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw)) $must_check;
-/// Duplicate slice with terminated zero sentinel value
-$extern fn_((mem_Allocator_dupeZ(mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw)) $must_check;
 
 #else /* on_comptime && (!on_comptime || debug_comp_enabled) */
 
@@ -105,9 +100,7 @@ $extern fn_((mem_Allocator_resize_debug(mem_Allocator self, u_S$raw old_mem, usi
 $extern fn_((mem_Allocator_remap_debug(mem_Allocator self, u_S$raw old_mem, usize new_len, SrcLoc src_loc))(O$u_S$raw));
 $extern fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_len, SrcLoc src_loc))(mem_Err$u_S$raw)) $must_check;
 $extern fn_((mem_Allocator_free_debug(mem_Allocator self, u_S$raw mem, SrcLoc src_loc))(void));
-
 $extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S$raw src, SrcLoc src_loc))(mem_Err$u_S$raw)) $must_check;
-$extern fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, u_S$raw src, SrcLoc src_loc))(mem_Err$u_S$raw)) $must_check;
 
 /*========== Macros and Declarations ========================================*/
 
@@ -125,10 +118,7 @@ $extern fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, u_S$raw src, SrcLoc s
 #define mem_Allocator_remap(_self, _old_mem, _new_len...) mem_Allocator_remap_callDebug((_self), (_old_mem), (_new_len), srcLoc())
 #define mem_Allocator_realloc(_self, _old_mem, _new_len...) mem_Allocator_realloc_callDebug((_self), (_old_mem), (_new_len), srcLoc())
 #define mem_Allocator_free(_self, _mem...) mem_Allocator_free_callDebug((_self), (_mem), srcLoc())
-
-/* Debug versions of helper operations */
 #define mem_Allocator_dupe(_self, _src...) mem_Allocator_dupe_callDebug((_self), (_src), srcLoc())
-#define mem_Allocator_dupeZ(_self, _src...) mem_Allocator_dupeZ_callDebug((_self), (_src), srcLoc())
 
 /*========== Macros and Definitions =========================================*/
 
@@ -144,9 +134,7 @@ $extern fn_((mem_Allocator_dupeZ_debug(mem_Allocator self, u_S$raw src, SrcLoc s
 #define mem_Allocator_remap_callDebug(_self, _old_mem, _new_len, _src_loc) mem_Allocator_remap_debug(_self, _old_mem, _new_len, _src_loc)
 #define mem_Allocator_realloc_callDebug(_self, _old_mem, _new_len, _src_loc) mem_Allocator_realloc_debug(_self, _old_mem, _new_len, _src_loc)
 #define mem_Allocator_free_callDebug(_self, _mem, _src_loc) mem_Allocator_free_debug(_self, _mem, _src_loc)
-
 #define mem_Allocator_dupe_callDebug(_self, _src, _src_loc) mem_Allocator_dupe_debug(_self, _src, _src_loc)
-#define mem_Allocator_dupeZ_callDebug(_self, _src, _src_loc) mem_Allocator_dupeZ_debug(_self, _src, _src_loc)
 
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */
 
