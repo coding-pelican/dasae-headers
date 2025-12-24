@@ -87,7 +87,7 @@ typedef TypeOf(void*) P$raw;
 /*========== Macros Implementation ==========================================*/
 
 #define comp_op__ptrCast$(TDestRawptr, var_rawptr) ((TDestRawptr)(var_rawptr))
-#define comp_op__ptrToInt(val_rawptr) ((usize)(val_rawptr))               // NOLINT
+#define comp_op__ptrToInt(val_rawptr) ((usize)(val_rawptr)) // NOLINT
 #define comp_op__intToPtr$(TDestRawptr, val_int) ((TDestRawptr)(val_int)) // NOLINT
 
 #define comp_op__ptrIsNull(var_rawptr) ((var_rawptr) == null)
@@ -95,7 +95,7 @@ typedef TypeOf(void*) P$raw;
 
 #define comp_op__ensureNonnull(__ptr, val_ptr...) blk({ \
     TypeOf(*val_ptr)* __ptr = val_ptr; \
-    blk_return debug_assert_nonnull(__ptr), __ptr; \
+    blk_return claim_assert_nonnull(__ptr), __ptr; \
 })
 
 #define comp_op__rawref(var_src...) (&(var_src))

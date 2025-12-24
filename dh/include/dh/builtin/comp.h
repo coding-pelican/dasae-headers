@@ -385,6 +385,11 @@ extern "C" {
 #define $extern extern
 #define $Thrd_local _Thread_local
 
+#define $cdecl __attr__$cdecl
+#define $stdcall __attr__$stdcall
+#define $fastcall __attr__$fastcall
+#define $vectorcall __attr__$vectorcall
+
 /*========== Macros and Definitions =========================================*/
 
 #define comp_attr__$inline comp_inline
@@ -471,6 +476,11 @@ T:
 #define __attr__$like_deref [0]
 #define __attr__$flexible [0]
 #define __attr__$zero_sized [0]
+
+#define __attr__$cdecl plat_cdecl
+#define __attr__$stdcall plat_stdcall
+#define __attr__$fastcall plat_fastcall
+#define __attr__$vectorcall plat_vectorcall
 
 #if defined(__cplusplus)
 } /* extern "C" */

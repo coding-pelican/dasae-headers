@@ -1,33 +1,15 @@
-/**
- * @copyright Copyright 2025. Gyeongtae Kim All rights reserved.
- *
- * @file    mem_Tracker.c
- * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
- * @date    2025-01-09 (date of creation)
- * @updated 2025-03-22 (date of last update)
- * @version v0.1-alpha.2
- * @ingroup dasae-headers(dh)/mem
- * @prefix  mem_Tracker
- *
- * @brief   Debug memory tracking system
- * @details Implementation of memory allocation tracking functionality
- */
-
 #include "dh/mem/Tracker.h"
-#include "dh/mem/common.h"
-#include "dh/heap/Classic.h"
+#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
+#else
 #include "dh/ArrList.h"
-#include "dh/core/src_loc.h"
+#include "dh/heap/Classic.h"
+#include "dh/mem/common.h"
 #include "dh/fs/Dir.h"
 #include "dh/io.h"
 #include "dh/Str.h"
 #include "dh/time.h"
-
-#include <stdio.h>
-#include <stdlib.h> // For malloc, free, and atexit
-
-#if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
-#else
+#include <stdio.h> /* TODO: Remove this dependency */
+#include <stdlib.h> /* TODO: Remove this dependency */
 
 /*========== Constants and Default Configuration ===========================*/
 
@@ -37,9 +19,9 @@ static const S_const$u8 mem_Tracker_default_log_file = u8_l(".log/mem.log");
 
 /// Individual allocation record
 typedef struct mem_Allocation {
-    P$raw ptr;              /* Allocated pointer */
-    usize size;             /* Allocation size */
-    SrcLoc src_loc;         /* Source location*/
+    P$raw ptr; /* Allocated pointer */
+    usize size; /* Allocation size */
+    SrcLoc src_loc; /* Source location*/
     time_Instant timestamp; /* Allocation time */
     struct mem_Allocation* next;
 } mem_Allocation;

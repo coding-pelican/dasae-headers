@@ -49,11 +49,12 @@ typedef struct Thrd_FnRet {
 // Thread function type
 typedef fn_(((*Thrd_WorkFn)(Thrd_FnCtx* thrd_ctx))(Thrd_FnCtx*));
 struct Thrd_FnCtx {
-    Thrd_WorkFn fn;
+    struct {
+        Thrd_WorkFn fn;
+        Thrd_Handle handle;
+    };
     union {
-        Thrd_FnArgs args $zero_sized;
-        Thrd_FnRet ret $zero_sized;
-        u8 data $zero_sized;
+        u8 data $flexible;
     };
 };
 #define Thrd_FnCtx_from$(/*(_fnName)(_args...)*/... /*(Thrd_FnCtx$(_fnName))*/) \
@@ -78,38 +79,38 @@ struct Thrd_FnCtx {
 #define $unguarded_Thrd_fn comp_syn__$unguarded_Thrd_fn
 
 // Thread functions
-extern fn_((Thrd_sleep(time_Duration duration))(void));
-extern fn_((Thrd_yield(void))(E$void)) $must_check;
-extern fn_((Thrd_currentId(void))(Thrd_Id));
-extern fn_((Thrd_cpuCount(void))(E$usize)) $must_check;
+$extern fn_((Thrd_sleep(time_Duration duration))(void));
+$extern fn_((Thrd_yield(void))(E$void)) $must_check;
+$extern fn_((Thrd_currentId(void))(Thrd_Id));
+$extern fn_((Thrd_cpuCount(void))(E$usize)) $must_check;
 
 // Thread type
 typedef struct Thrd {
-    var_(handle, Thrd_Handle);
+    var_(inner, Thrd_FnCtx*);
 } Thrd;
 T_use_E$(Thrd);
-extern fn_((Thrd_handle(Thrd self))(Thrd_Handle));
+$extern fn_((Thrd_handle(Thrd self))(Thrd_Handle));
 
 // Thread name buffer type
 typedef A$$(Thrd_max_name_len, u8) Thrd_NameBuf;
 T_use_O$(Thrd_NameBuf);
 T_use_E$(O$S_const$u8);
-extern fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8)) $must_check;
-extern fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void)) $must_check;
+$extern fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8)) $must_check;
+$extern fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void)) $must_check;
 
 // Thread spawn configuration
 typedef struct Thrd_SpawnCfg {
-    var_(stack_size, usize);
     var_(allocator, O$mem_Allocator);
+    var_(stack_size, usize);
 } Thrd_SpawnCfg;
 #define Thrd_SpawnCfg_default_stack_size (16ull * 1024ull * 1024ull)
 static const Thrd_SpawnCfg Thrd_SpawnCfg_default = {
+    .allocator = none(),
     .stack_size = Thrd_SpawnCfg_default_stack_size,
-    .allocator = none()
 };
-extern fn_((Thrd_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd)) $must_check;
-extern fn_((Thrd_detach(Thrd self))(void));
-extern fn_((Thrd_join(Thrd self))(Thrd_FnCtx*));
+$extern fn_((Thrd_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd)) $must_check;
+$extern fn_((Thrd_detach(Thrd self))(void));
+$extern fn_((Thrd_join(Thrd self))(Thrd_FnCtx*));
 
 // Mutex type
 typedef struct Thrd_Mtx Thrd_Mtx;
@@ -127,15 +128,32 @@ typedef struct Thrd_RWLock Thrd_RWLock;
     union Thrd_FnCtx$(_fnName) { \
         Thrd_FnCtx as_raw $like_ref; \
         struct { \
-            Thrd_WorkFn fn; \
+            struct { \
+                Thrd_WorkFn fn; \
+                Thrd_Handle handle; \
+            }; \
             union { \
-                Thrd_FnArgs as_raw $like_ref; \
-                struct _Args as_typed; \
-            } args; \
-            union { \
-                Thrd_FnRet as_raw $like_ref; \
-                _T_Return as_typed; \
-            } ret; \
+                struct { \
+                    union { \
+                        Thrd_FnArgs as_raw $like_ref; \
+                        struct _Args as_typed; \
+                    } args; \
+                    union { \
+                        Thrd_FnRet as_raw $like_ref; \
+                        _T_Return as_typed; \
+                    } ret; \
+                } data; \
+                struct { \
+                    union { \
+                        Thrd_FnArgs as_raw $like_ref; \
+                        struct _Args as_typed; \
+                    } args; \
+                    union { \
+                        Thrd_FnRet as_raw $like_ref; \
+                        _T_Return as_typed; \
+                    } ret; \
+                }; \
+            } \
         }; \
     }
 
@@ -177,15 +195,32 @@ typedef union Thrd_FnCtx$(_fnName) Thrd_FnCtx$(_fnName); \
 union Thrd_FnCtx$(_fnName) { \
     Thrd_FnCtx as_raw $like_ref; \
     struct { \
-        Thrd_WorkFn fn;\
+        struct { \
+            Thrd_WorkFn fn; \
+            Thrd_Handle handle; \
+        }; \
         union { \
-            Thrd_FnArgs  as_raw $like_ref; \
-            struct pp_Tuple_get1st _Tuple_Args_Ret as_typed; \
-        } args; \
-        union { \
-            Thrd_FnRet as_raw $like_ref; \
-            pp_Tuple_get2nd _Tuple_Args_Ret as_typed; \
-        } ret; \
+            struct {\
+                union { \
+                    Thrd_FnArgs as_raw $like_ref; \
+                    struct pp_Tuple_get1st _Tuple_Args_Ret as_typed; \
+                } args; \
+                union { \
+                    Thrd_FnRet as_raw $like_ref; \
+                    pp_Tuple_get2nd _Tuple_Args_Ret as_typed; \
+                } ret; \
+            } data; \
+            struct { \
+                union { \
+                    Thrd_FnArgs as_raw $like_ref; \
+                    struct pp_Tuple_get1st _Tuple_Args_Ret as_typed; \
+                } args; \
+                union { \
+                    Thrd_FnRet as_raw $like_ref; \
+                    pp_Tuple_get2nd _Tuple_Args_Ret as_typed; \
+                } ret; \
+            }; \
+        }; \
     }; \
 }
 

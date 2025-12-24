@@ -24,20 +24,21 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/Str.h"
 
 /* TODO: Add option 'trace alloc and free no disable release'  */
 #if defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled
 #else
+#include "dh/mem/Allocator.h"
+#include <stdio.h> /* TODO: Remove this dependency */
 
 /*========== Memory Tracking Types =========================================*/
 
 typedef struct mem_Tracker {
-    mem_Allocator gpa;                  /* Allocator */
+    mem_Allocator gpa; /* Allocator */
     struct mem_Allocation* allocations; /* Linked list of allocations */
-    FILE* log_file;                     /* Log file handle */
-    usize total_allocated;              /* Total bytes allocated */
-    usize active_allocs;                /* Number of active allocations */
+    FILE* log_file; /* Log file handle */
+    usize total_allocated; /* Total bytes allocated */
+    usize active_allocs; /* Number of active allocations */
 } mem_Tracker;
 
 /*========== Memory Tracker Interface ======================================*/
@@ -56,7 +57,6 @@ extern fn_((mem_Tracker_registerFree(P$raw ptr, SrcLoc src_loc))(bool));
 
 /// Get singleton instance
 extern fn_((mem_Tracker_instance(void))(mem_Tracker*));
-
 #endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled */
 
 #if defined(__cplusplus)
