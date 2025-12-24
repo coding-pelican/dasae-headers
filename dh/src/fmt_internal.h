@@ -23,6 +23,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/fmt/common.h"
+#include "dh/mem/common.h"
+#include "dh/ascii.h"
 
 /*========== Macros and Declarations ========================================*/
 

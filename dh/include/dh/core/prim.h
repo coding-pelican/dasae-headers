@@ -38,7 +38,6 @@ extern "C" {
 #include "prim/flt.h"
 #include "prim/ptr.h"
 #include "prim/null.h"
-#include "prim/wchar.h"
 
 #include "prim/struct.h"
 #include "prim/enum.h"

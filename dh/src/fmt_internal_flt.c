@@ -1,7 +1,5 @@
 #include "fmt_internal.h"
 #include "fmt_internal_ryu.h"
-#include "dh/mem/common.h"
-#include "dh/ascii.h"
 
 /*========== Constants ======================================================*/
 

@@ -1,6 +1,3 @@
-#include "dh/fmt/common.h"
-#include "dh/mem/common.h"
-#include "dh/ascii.h"
 #include "fmt_internal.h"
 
 fn_((fmt_Align_parse(u8 ch))(O$fmt_Align) $scope) {
