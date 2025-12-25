@@ -1,11 +1,14 @@
 #ifndef math_quat_types__included
 #define math_quat_types__included 1
+#if defined(__cplusplus)
+extern "C" {
+#endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
 #include "vec_types.h"
 
-/*========== Macros and Declarations ========================================*/
+/*========== Macros and Definitions =========================================*/
 
 typedef f32 m_Q4f32_S;
 typedef m_V4f32 m_Q4f32_V;
@@ -23,4 +26,7 @@ typedef struct m_Q4f32_AxisAngle {
     m_Q4f32_S angle;
 } m_Q4f32_AxisAngle;
 
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif /* defined(__cplusplus) */
 #endif /* math_quat_types__included */

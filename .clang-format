@@ -198,7 +198,7 @@ Macros:
 
   - "$P_const$(T)=const T*"
   - "$P$(T)=T*"
-  - "$A$(N, T)=T[N]"
+  - "$A$(N,T)=T[N]"
 
   - "P_const$$(T)=P<const T>"
   - "P$$(T)=P<T>"
@@ -210,8 +210,8 @@ Macros:
   - "S_const$(T)=S<const T>"
   - "S$(T)=S<T>"
 
-  - "A$$(N, T)=A<N, T>"
-  - "A$(N, T)=A<N, T>"
+  - "A$$(N,T)=TypeOf(T[N])"
+  - "A$(N,T)=TypeOf(T[N])"
 
   - "O$$(T)=O<T>"
   - "O$(T)=O<T>"

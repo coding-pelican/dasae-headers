@@ -8,7 +8,7 @@
  * @updated 2025-12-25 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/math
- * @prefix  math
+ * @prefix  m_Q
  *
  * @brief   Mathematical common quaternion operations
  * @details Provides a set of quaternion mathematical operations and functions
@@ -24,15 +24,12 @@
 
 /*========== Constants ======================================================*/
 
-#define m_Q4f32_of_static(_x, _y, _z, _w...) ____m_Q4f32_of_static(_x, _y, _z, _w)
-#define ____m_Q4f32_of_static(_x, _y, _z, _w) \
-    lit$((m_Q4f32){ .v = m_V4f32_of_static(_x, _y, _z, _w) })
-
-#define m_Q4f32_identity m_Q4f32_of_static(0.0f, 0.0f, 0.0f, 1.0f)
-#define m_Q4f32_zero m_Q4f32_of_static(0.0f, 0.0f, 0.0f, 0.0f)
+#define m_Q4f32_zero __comp_const__m_Q4f32_zero
+#define m_Q4f32_identity __comp_const__m_Q4f32_identity
 
 /*========== Creation Functions =============================================*/
 
+#define m_Q4f32_of_static(_x, _y, _z, _w...) ____m_Q4f32_of_static(_x, _y, _z, _w)
 $attr($inline_always)
 $static fn_((m_Q4f32_of(f32 x, f32 y, f32 z, f32 w))(m_Q4f32));
 $attr($inline_always)
@@ -163,11 +160,19 @@ $static fn_((m_Q4f32_backward(m_Q4f32 q))(m_V3f32));
 
 /*========== Implementation =================================================*/
 
+#define __comp_const__m_Q4f32_zero \
+    m_Q4f32_of_static(0.0f, 0.0f, 0.0f, 0.0f)
+#define __comp_const__m_Q4f32_identity \
+    m_Q4f32_of_static(0.0f, 0.0f, 0.0f, 1.0f)
+
+#define ____m_Q4f32_of_static(_x, _y, _z, _w...) lit$((m_Q4f32){ \
+    .v = m_V4f32_of_static(_x, _y, _z, _w), \
+})
 fn_((m_Q4f32_of(f32 x, f32 y, f32 z, f32 w))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_of(x, y, z, w) });
+    return m_Q4f32_of_static(x, y, z, w);
 };
 fn_((m_Q4f32_splat(f32 scalar))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_splat(scalar) });
+    return m_Q4f32_fromV4(m_V4f32_splat(scalar));
 };
 fn_((m_Q4f32_fromV3(m_V3f32 v, f32 w))(m_Q4f32)) {
     return m_Q4f32_of(v.x, v.y, v.z, w);
@@ -300,10 +305,10 @@ fn_((m_Q4f32_lookRotation(m_V3f32 forward, m_V3f32 up))(m_Q4f32)) {
     let r = m_V3f32_norm(m_V3f32_cross(up, f));
     let u = m_V3f32_cross(f, r);
 
-    let m = m_M3f32_of(
-        m_V3f32_of(r.x, u.x, f.x),
-        m_V3f32_of(r.y, u.y, f.y),
-        m_V3f32_of(r.z, u.z, f.z)
+    let m = m_M3f32_ofRows(
+        m_V3f32_of(r.x, r.y, r.z),
+        m_V3f32_of(u.x, u.y, u.z),
+        m_V3f32_of(f.x, f.y, f.z)
     );
     return m_Q4f32_fromM3(m);
 };
@@ -479,10 +484,10 @@ fn_((m_Q4f32_toM3(m_Q4f32 q))(m_M3f32)) {
     let wy = q.w * q.y;
     let wz = q.w * q.z;
 
-    return m_M3f32_of(
-        m_V3f32_of(1.0f - 2.0f * (yy + zz), 2.0f * (xy + wz), 2.0f * (xz - wy)),
-        m_V3f32_of(2.0f * (xy - wz), 1.0f - 2.0f * (xx + zz), 2.0f * (yz + wx)),
-        m_V3f32_of(2.0f * (xz + wy), 2.0f * (yz - wx), 1.0f - 2.0f * (xx + yy))
+    return m_M3f32_ofRows(
+        m_V3f32_of(1.0f - 2.0f * (yy + zz), 2.0f * (xy - wz), 2.0f * (xz + wy)),
+        m_V3f32_of(2.0f * (xy + wz), 1.0f - 2.0f * (xx + zz), 2.0f * (yz - wx)),
+        m_V3f32_of(2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (xx + yy))
     );
 };
 fn_((m_Q4f32_toM4(m_Q4f32 q))(m_M4f32)) {
@@ -496,11 +501,11 @@ fn_((m_Q4f32_toM4(m_Q4f32 q))(m_M4f32)) {
     let wy = q.w * q.y;
     let wz = q.w * q.z;
 
-    return m_M4f32_of(
-        m_V4f32_of(1.0f - 2.0f * (yy + zz), 2.0f * (xy + wz), 2.0f * (xz - wy), 0.0f),
-        m_V4f32_of(2.0f * (xy - wz), 1.0f - 2.0f * (xx + zz), 2.0f * (yz + wx), 0.0f),
-        m_V4f32_of(2.0f * (xz + wy), 2.0f * (yz - wx), 1.0f - 2.0f * (xx + yy), 0.0f),
-        m_V4f32_unit_w
+    return m_M4f32_ofRows(
+        m_V4f32_of(1.0f - 2.0f * (yy + zz), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f),
+        m_V4f32_of(2.0f * (xy + wz), 1.0f - 2.0f * (xx + zz), 2.0f * (yz - wx), 0.0f),
+        m_V4f32_of(2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (xx + yy), 0.0f),
+        m_V4f32_of(0.0f, 0.0f, 0.0f, 1.0f)
     );
 };
 

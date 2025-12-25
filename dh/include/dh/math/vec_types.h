@@ -1,7 +1,14 @@
-#ifndef MATH_VEC_TYPES_INCLUDED
-#define MATH_VEC_TYPES_INCLUDED (1)
+#ifndef math_vec_types__included
+#define math_vec_types__included 1
+#if defined(__cplusplus)
+extern "C" {
+#endif /* defined(__cplusplus) */
+
+/*========== Includes =======================================================*/
 
 #include "dh/prl.h"
+
+/*========== Macros and Definitions =========================================*/
 
 #define using_m_V$(T) \
     using_m_V2$(T); \
@@ -11,8 +18,10 @@
 #define using_m_V2$(T) \
     typedef union pp_join($, m_V2, T) pp_join($, m_V2, T); \
     union pp_join($, m_V2, T) { \
-        var_(a, A$$(2, T)); \
-        T s[2]; \
+        var_(s, A$$(2, T)); \
+        struct { \
+            T s0, s1; \
+        }; \
         struct { \
             T x, y; \
         }; \
@@ -21,8 +30,10 @@
 #define using_m_V3$(T) \
     typedef union pp_join($, m_V3, T) pp_join($, m_V3, T); \
     union pp_join($, m_V3, T) { \
-        var_(a, A$$(3, T)); \
-        T s[3]; \
+        var_(s, A$$(3, T)); \
+        struct { \
+            T s0, s1, s2; \
+        }; \
         struct { \
             T x, y, z; \
         }; \
@@ -31,8 +42,10 @@
 #define using_m_V4$(T) \
     typedef union pp_join($, m_V4, T) pp_join($, m_V4, T); \
     union pp_join($, m_V4, T) { \
-        var_(a, A$$(4, T)); \
-        T s[4]; \
+        var_(s, A$$(4, T)); \
+        struct { \
+            T s0, s1, s2, s3; \
+        }; \
         struct { \
             T x, y, z, w; \
         }; \
@@ -143,56 +156,7 @@ typedef m_V3f64 m_V3d;
 typedef m_V4f32 m_V4f;
 typedef m_V4f64 m_V4d;
 
-#define m_V_as$(TDestVec, src_vec...) FUNC_m_V_as$(TDestVec, src_vec)
-#define FUNC_m_V_as$(TDestVec, src_vec...) blk({ \
-    TDestVec __dst = cleared(); \
-    let __src = (src_vec); \
-    const usize _len = countOf$(TypeOf(__dst.s)); \
-    claim_assert_static(_len == countOf$(TypeOf(__src.s))); \
-    for (usize _i = 0; _i < _len; ++_i) { \
-        __dst.s[_i] = as$(TypeOf(__dst.s[_i]))(__src.s[_i]); \
-    } \
-    blk_return_(__dst); \
-})
-
-/* #define m_V2_Match(T) TypeOf(_Generic( \
-    (T)0,                                   \
-    u8: ((m_V2ub){ 0 }),               \
-    u16: ((m_V2us){ 0 }),              \
-    u32: ((m_V2u){ 0 }),               \
-    u64: ((m_V2ul){ 0 }),              \
-    i8: ((m_V2b){ 0 }),                \
-    i16: ((m_V2s){ 0 }),               \
-    i32: ((m_V2i){ 0 }),               \
-    i64: ((m_V2l){ 0 }),               \
-    f32: ((m_V2f){ 0 }),               \
-    f64: ((m_V2d){ 0 })                \
-))
-#define m_V3_Match(T) TypeOf(_Generic( \
-    (T){ 0 },                               \
-    u8: ((m_V3ub){ 0 }),               \
-    u16: ((m_V3us){ 0 }),              \
-    u32: ((m_V3u){ 0 }),               \
-    u64: ((m_V3ul){ 0 }),              \
-    i8: ((m_V3b){ 0 }),                \
-    i16: ((m_V3s){ 0 }),               \
-    i32: ((m_V3i){ 0 }),               \
-    i64: ((m_V3l){ 0 }),               \
-    f32: ((m_V3f){ 0 }),               \
-    f64: ((m_V3d{ 0 }))                \
-))
-#define m_V4_Match(T) TypeOf(_Generic( \
-    (T){ 0 },                               \
-    u8: ((m_V4ub){ 0 }),               \
-    u16: ((m_V4us){ 0 }),              \
-    u32: ((m_V4u){ 0 }),               \
-    u64: ((m_V4ul){ 0 }),              \
-    i8: ((m_V4b){ 0 }),                \
-    i16: ((m_V4s){ 0 }),               \
-    i32: ((m_V4i){ 0 }),               \
-    i64: ((m_V4l){ 0 }),               \
-    f32: ((m_V4f){ 0 }),               \
-    f64: ((m_V4d){ 0 })                \
-)) */
-
-#endif /* MATH_VEC_TYPES_INCLUDED */
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif /* defined(__cplusplus) */
+#endif /* math_vec_types__included */
