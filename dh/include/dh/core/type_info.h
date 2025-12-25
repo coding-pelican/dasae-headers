@@ -102,11 +102,11 @@ union TypeInfo {
 #define ____TypeInfo_unpack(_type_info...) ((TypeInfo){ .packed = (_type_info) })
 
 #define ____packTypeInfo$(_T...) ( \
-    (as$(TypeInfoPacked)(sizeOf$(_T)) & prim_maskLo$((TypeInfoPacked)(TypeInfo_size_bits))) \
+    (as$(TypeInfoPacked)(sizeOf$(_T)) & prim_maskLo_static$((TypeInfoPacked)(TypeInfo_size_bits))) \
     | (as$(TypeInfoPacked)(alignOf$(_T)) << TypeInfo_size_bits) \
 )
 #define ____TypeInfoPacked_size(_packed...) \
-    ((_packed) & prim_maskLo$((TypeInfoPacked)(TypeInfo_size_bits)))
+    ((_packed) & prim_maskLo_static$((TypeInfoPacked)(TypeInfo_size_bits)))
 #define ____TypeInfoPacked_align(_packed...) \
     (as$(u32)((_packed) >> TypeInfo_size_bits))
 

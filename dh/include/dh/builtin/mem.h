@@ -49,20 +49,20 @@ extern "C" {
 
 #undef memcpy
 #define memcpy(_p_dst, _p_src, _len...) __op__memcpy(_p_dst, _p_src, _len)
-#define raw_memcpy(_p_dst, _p_src, _len...) __op__raw_memcpy(_p_dst, _p_src, _len)
+#define raw_memcpy(_p_dst, _p_src, _len...) ____raw_memcpy(_p_dst, _p_src, _len)
 #undef memmove
 #define memmove(_p_dst, _p_src, _len...) __op__memmove(_p_dst, _p_src, _len)
-#define raw_memmove(_p_dst, _p_src, _len...) __op__raw_memmove(_p_dst, _p_src, _len)
+#define raw_memmove(_p_dst, _p_src, _len...) ____raw_memmove(_p_dst, _p_src, _len)
 #undef memset
 #define memset(_p_dst, _byte_src, _len...) __op__memset(_p_dst, _byte_src, _len)
-#define raw_memset(_p_dst, _byte_src, _len...) __op__raw_memset(_p_dst, _byte_src, _len)
+#define raw_memset(_p_dst, _byte_src, _len...) ____raw_memset(_p_dst, _byte_src, _len)
 #define memset0(_p_dst, _len...) __op__memset0(_p_dst, _len)
-#define raw_memset0(_p_dst, _len...) __op__raw_memset0(_p_dst, _len)
+#define raw_memset0(_p_dst, _len...) ____raw_memset0(_p_dst, _len)
 #undef memcmp
 #define memcmp(_p_lhs, _p_rhs, _len...) __op__memcmp(_p_lhs, _p_rhs, _len)
-#define raw_memcmp(_p_lhs, _p_rhs, _len...) __op__raw_memcmp(_p_lhs, _p_rhs, _len)
+#define raw_memcmp(_p_lhs, _p_rhs, _len...) ____raw_memcmp(_p_lhs, _p_rhs, _len)
 #undef alloca
-#define alloca(_len_bytes...) __op__alloca(_len_bytes)
+#define alloca(_len_bytes...) ____alloca(_len_bytes)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -78,16 +78,16 @@ extern "C" {
 #define __op__countTrailingZero(_Expr...) __builtin_ctz(_Expr)
 
 #define __op__memcpy(_p_dst, _p_src, _len...) __builtin_memcpy(_p_dst, _p_src, _len)
-#define __op__raw_memcpy(_p_dst, _p_src, _len...) __builtin_memcpy(_p_dst, _p_src, _len)
+#define ____raw_memcpy(_p_dst, _p_src, _len...) __builtin_memcpy(_p_dst, _p_src, _len)
 #define __op__memmove(_p_dst, _p_src, _len...) __builtin_memmove(_p_dst, _p_src, _len)
-#define __op__raw_memmove(_p_dst, _p_src, _len...) __builtin_memmove(_p_dst, _p_src, _len)
+#define ____raw_memmove(_p_dst, _p_src, _len...) __builtin_memmove(_p_dst, _p_src, _len)
 #define __op__memset(_p_dst, _byte_src, _len...) __builtin_memset(_p_dst, _byte_src, _len)
-#define __op__raw_memset(_p_dst, _byte_src, _len...) __builtin_memset(_p_dst, _byte_src, _len)
+#define ____raw_memset(_p_dst, _byte_src, _len...) __builtin_memset(_p_dst, _byte_src, _len)
 #define __op__memset0(_p_dst, _len...) __builtin_memset(_p_dst, 0x00, _len)
-#define __op__raw_memset0(_p_dst, _len...) __builtin_memset(_p_dst, 0x00, _len)
+#define ____raw_memset0(_p_dst, _len...) __builtin_memset(_p_dst, 0x00, _len)
 #define __op__memcmp(_p_lhs, _p_rhs, _len...) __builtin_memcmp(_p_lhs, _p_rhs, _len)
-#define __op__raw_memcmp(_p_lhs, _p_rhs, _len...) __builtin_memcmp(_p_lhs, _p_rhs, _len)
-#define __op__alloca(_len_bytes...) __builtin_alloca(_len_bytes)
+#define ____raw_memcmp(_p_lhs, _p_rhs, _len...) __builtin_memcmp(_p_lhs, _p_rhs, _len)
+#define ____alloca(_len_bytes...) __builtin_alloca(_len_bytes)
 
 #if defined(__cplusplus)
 } /* extern "C" */
