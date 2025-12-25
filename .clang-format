@@ -177,6 +177,9 @@ Macros:
   - release_only(inner)="[](void) -> (void) inner"
   - TEST_only(inner)="[](void) -> (void) inner"
 
+  - "pp_then_(Then)=Then"
+  - "pp_else_(Else)=Else"
+
   - "pp_switch_(Expr)=pp_exec_ignore Expr"
   - "pp_case_(Expr)=pp_exec_ignore Expr"
   - "pp_default_(Expr)=pp_exec_ignore Expr"

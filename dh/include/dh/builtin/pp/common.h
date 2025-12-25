@@ -88,11 +88,13 @@ extern "C" {
 #define __pp_ne_1_1 0
 
 #define __call__pp_if() pp_if_
-#define pp_if_(Cond...) pp_join(_, __pp_if, Cond)
-#define __pp_if_1(_Then, ...) __pp_if_1__then _Then
-#define __pp_if_1__then(...) __VA_ARGS__
-#define __pp_if_0(_Then, _Else...) __pp_if_0__else _Else
-#define __pp_if_0__else(...) __VA_ARGS__
+#define pp_if_(_Cond...) pp_join(_, ____pp_if, _Cond)
+#define ____pp_if_1(_Then, ...) ____pp_if__then _Then
+#define ____pp_if__then(...) __VA_ARGS__
+#define ____pp_if_0(...) pp_overload(____pp_if_0, __VA_ARGS__)(__VA_ARGS__)
+#define ____pp_if_0_1(_Then...)
+#define ____pp_if_0_2(_Then, _Else...) ____pp_if__else _Else
+#define ____pp_if__else(...) __VA_ARGS__
 #define pp_then_
 #define pp_else_
 
