@@ -745,7 +745,7 @@ $static fn_((mem_spanZ0Mut$u8(u8* p))(S$u8)) {
 
 #define __step__mem_toBytes$(__val, _A$N$u8, _val...) blk({ \
     var __val = _val; \
-    blk_return deref$S$((_A$N$u8), mem_asBytes(&__val)); \
+    blk_return_(deref$S$((_A$N$u8), mem_asBytes(&__val))); \
 })
 #define __step__mem_toBytes(_val...) \
     mem_toBytes$(A$$(sizeOf$(TypeOf(_val)), u8), _val)

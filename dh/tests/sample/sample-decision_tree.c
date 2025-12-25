@@ -146,7 +146,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         let_ignore = fclose(load_file);
         log_info("Loaded decision tree from decision_tree.bin");
 
-        blk_return loaded;
+        blk_return_(loaded);
     });
     defer_(TreeNode_destroyRecur(gpa, loaded_tree));
 
@@ -311,7 +311,7 @@ fn_((TreeNode_loadFromFileRecur(mem_Allocator gpa, FILE* file))(E$P$TreeNode) $s
             log_error("Failed to read node tag");
             return_err(fs_File_Err_ReadFailed());
         }
-        blk_return tag;
+        blk_return_(tag);
     });
 
     if (tag == TreeNode_leaf) {

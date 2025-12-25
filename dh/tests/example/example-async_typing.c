@@ -75,7 +75,7 @@ async_fn_scope(exec_sleep, {}) {
             static let fromMs = time_Duration_fromMillis;
             static let addDur = time_Instant_addDuration;
             static let now = time_Instant_now;
-            blk_return addDur(now(), fromMs(args->ms));
+            blk_return_(addDur(now(), fromMs(args->ms)));
         });
         asg_lit((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
     });

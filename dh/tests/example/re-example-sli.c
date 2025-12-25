@@ -77,7 +77,7 @@ fn_((slice_example(void))(void)) {
         let num_s_len = blk({
             usize len = 0;
             for (var iter = SS_at(nums_s, 0); deref(iter) != nums_s.sentinel; ++iter) { len++; }
-            blk_return len;
+            blk_return_(len);
         }); // 5 (up to but not including -1)
         printf("%llu\n", num_s_len);
 

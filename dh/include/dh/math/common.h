@@ -275,7 +275,7 @@ errset_((math_Err)(
             (__ret) = cmp_Ord_eq; \
         } \
     }; \
-    blk_return __ret; \
+    blk_return_(__ret); \
 })
 #define OP_math_eq(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) == cmp_Ord_eq)
 #define OP_math_ne(val_lhs, val_rhs) (math_cmp(val_lhs, val_rhs) != cmp_Ord_eq)
@@ -296,7 +296,7 @@ errset_((math_Err)(
     if ((__rhs) != 0) { \
         (__ret) = (__lhs) / (__rhs); \
     } \
-    blk_return __ret; \
+    blk_return_(__ret); \
 })
 #define OP_math_divSafe(__lhs, __rhs, __ret, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
@@ -307,7 +307,7 @@ errset_((math_Err)(
     } else { \
         (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) ok((__lhs) / (__rhs)))); \
     } \
-    blk_return( \
+    blk_return_( \
         *as$(E$(TypeOf(__lhs))*, __ret) \
     ); \
 })
@@ -322,7 +322,7 @@ errset_((math_Err)(
             (__ret) = as$(TypeOf(__ret))(as$(i64)(__lhs) % as$(i64)(__rhs)); \
         } \
     } \
-    blk_return __ret; \
+    blk_return_(__ret); \
 })
 #define OP_math_modSafe(__lhs, __rhs, __ret, val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
@@ -337,7 +337,7 @@ errset_((math_Err)(
             (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) ok(as$(i64)(__lhs) % as$(i64)(__rhs)))); \
         } \
     } \
-    blk_return( \
+    blk_return_( \
         *as$(E$(TypeOf(__lhs))*, __ret) \
     ); \
 })
@@ -350,63 +350,63 @@ errset_((math_Err)(
     } else { \
         (_x) = (_x) < 0 ? -(_x) : (_x); \
     } \
-    blk_return _x; \
+    blk_return_(_x); \
 })
 #define FUNC_math_sign(_x, val_x) blk({ \
     let _x = (val_x); \
-    blk_return _x < 0 ? -1 : ((_x) > 0 ? 1 : 0); \
+    blk_return_(_x < 0 ? -1 : ((_x) > 0 ? 1 : 0)); \
 })
 #define FUNC_math_min(val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    blk_return __lhs < __rhs ? __lhs : __rhs; \
+    blk_return_(__lhs < __rhs ? __lhs : __rhs); \
 })
 #define FUNC_math_max(val_lhs, val_rhs) blk({ \
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
-    blk_return __lhs > __rhs ? __lhs : __rhs; \
+    blk_return_(__lhs > __rhs ? __lhs : __rhs); \
 })
 #define FUNC_math_clamp(val_x, val_min, val_max) blk({ \
     let _x = (val_x); \
     let _min = (val_min); \
     let _max = (val_max); \
-    blk_return math_min(math_max(_min, _x), _max); \
+    blk_return_(math_min(math_max(_min, _x), _max)); \
 })
 #define FUNC_math_clampSafe(val_x, val_min, val_max) blk({ \
     let _x = val_x; \
     let _min = val_min; \
     let _max = val_max; \
-    blk_return((E$(TypeOf(_x)))ok(math_clamp(_x, _min, _max))); \
+    blk_return_((E$(TypeOf(_x)))ok(math_clamp(_x, _min, _max))); \
 })
 #define FUNC_math_wrap(val_x, val_min, val_max) blk({ \
     let _x = (val_x); \
     let _min = (val_min); \
     let _max = (val_max); \
-    blk_return _min + math_mod(_x - _min, _max - _min); \
+    blk_return_(_min + math_mod(_x - _min, _max - _min)); \
 })
 #define FUNC_math_wrapSafe(val_x, val_min, val_max) blk({ \
     let _x = val_x; \
     let _min = val_min; \
     let _max = val_max; \
-    blk_return((E$(TypeOf(_x)))ok(math_wrap(_x, _min, _max))); \
+    blk_return_((E$(TypeOf(_x)))ok(math_wrap(_x, _min, _max))); \
 })
 
 /* Rounding functions */
 #define FUNC_math_floor(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$(TypeOf(_x))(flt_floor(as$(f64)(_x))); \
+    blk_return_(as$(TypeOf(_x))(flt_floor(as$(f64)(_x)))); \
 })
 #define FUNC_math_ceil(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$(TypeOf(_x))(flt_ceil(as$(f64)(_x))); \
+    blk_return_(as$(TypeOf(_x))(flt_ceil(as$(f64)(_x)))); \
 })
 #define FUNC_math_round(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$(TypeOf(_x))(flt_round(as$(f64)(_x))); \
+    blk_return_(as$(TypeOf(_x))(flt_round(as$(f64)(_x)))); \
 })
 #define FUNC_math_trunc(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$(TypeOf(_x))(flt_trunc(as$(f64)(_x))); \
+    blk_return_(as$(TypeOf(_x))(flt_trunc(as$(f64)(_x)))); \
 })
 
 /* Exponential/logarithmic functions */
@@ -416,7 +416,7 @@ errset_((math_Err)(
     if (0 <= _x) { \
         __ret = as$(TypeOf(__ret))(flt_sqrt(as$(f64)(_x))); \
     } \
-    blk_return __ret; \
+    blk_return_(__ret); \
 })
 #define FUNC_math_sqrtSafe(val_x) blk({ \
     let _x = (val_x); \
@@ -427,7 +427,7 @@ errset_((math_Err)(
     } else { \
         __ret = (P$raw) & (E$(TypeOf(_x)))ok(as$(TypeOf(__ret))(flt_sqrt(as$(f64)(_x)))); \
     } \
-    blk_return(*(E$(TypeOf(_x))*)__ret); \
+    blk_return_(*(E$(TypeOf(_x))*)__ret); \
 })
 #define FUNC_math_pow(val_base, val_exp) blk({ \
     let _base = (val_base); \
@@ -436,7 +436,7 @@ errset_((math_Err)(
     if (_base != 0 || 0 < _exp) { \
         __ret = as$(TypeOf(__ret))(flt_powF(as$(f64)(_base), as$(f64)(_exp))); \
     } \
-    blk_return __ret; \
+    blk_return_(__ret); \
 })
 #define FUNC_math_powSafe(val_base, val_exp) blk({ \
     let _base = (val_base); \
@@ -448,7 +448,7 @@ errset_((math_Err)(
     } else { \
         __ret = (P$raw) & (E$(TypeOf(_base)))ok(as$(TypeOf(__ret))(flt_powF(as$(f64)(_base), as$(f64)(_exp)))); \
     } \
-    blk_return(*(E$(TypeOf(_x))*)__ret); \
+    blk_return_(*(E$(TypeOf(_x))*)__ret); \
 })
 #define FUNC_math_rsqrt(val_x) blk({ \
     let _x = (val_x); \
@@ -473,15 +473,15 @@ errset_((math_Err)(
 /* Trigonometric functions */
 #define FUNC_math_sin(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$(TypeOf(_x))(flt_sin(as$(f64)(_x))); \
+    blk_return_(as$(TypeOf(_x))(flt_sin(as$(f64)(_x)))); \
 })
 #define FUNC_math_cos(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$(TypeOf(_x))(flt_cos(as$(f64)(_x))); \
+    blk_return_(as$(TypeOf(_x))(flt_cos(as$(f64)(_x)))); \
 })
 #define FUNC_math_tan(val_x) blk({ \
     let _x = (val_x); \
-    blk_return as$(TypeOf(_x))(flt_tan(as$(f64)(_x))); \
+    blk_return_(as$(TypeOf(_x))(flt_tan(as$(f64)(_x)))); \
 })
 #define FUNC_math_asin(val_x) blk({ \
     let _x = (val_x); \
@@ -489,7 +489,7 @@ errset_((math_Err)(
     if (-1 <= _x && _x <= 1) { \
         __ret = flt_asin(_x); \
     } \
-    blk_return __ret; \
+    blk_return_(__ret); \
 })
 #define FUNC_math_asinSafe(val_x) blk({ \
     let _x = (val_x); \
@@ -500,7 +500,7 @@ errset_((math_Err)(
     } else { \
         __ret = (P$raw) & (E$(TypeOf(_x)))ok(flt_asin(_x)); \
     } \
-    blk_return(*(E$(TypeOf(_x))*)__ret); \
+    blk_return_(*(E$(TypeOf(_x))*)__ret); \
 })
 #define FUNC_math_acos(val_x) blk({ \
     let _x = (val_x); \
@@ -508,7 +508,7 @@ errset_((math_Err)(
     if (-1 <= _x && _x <= 1) { \
         __ret = flt_acos(_x); \
     } \
-    blk_return __ret; \
+    blk_return_(__ret); \
 })
 #define FUNC_math_acosSafe(val_x) blk({ \
     let _x = (val_x); \
@@ -519,11 +519,11 @@ errset_((math_Err)(
     } else { \
         __ret = (P$raw) & (E$(TypeOf(_x)))ok(flt_acos(_x)); \
     } \
-    blk_return(*(E$(TypeOf(_x))*)__ret); \
+    blk_return_(*(E$(TypeOf(_x))*)__ret); \
 })
 #define FUNC_math_atan(val_x) blk({ \
     let _x = (val_x); \
-    blk_return flt_atan(_x); \
+    blk_return_(flt_atan(_x)); \
 })
 #define FUNC_math_atan2(val_y, val_x) blk({ \
     let _y = (val_y); \
@@ -532,7 +532,7 @@ errset_((math_Err)(
     if (_y != 0 || _x != 0) { \
         __ret = flt_atan2(_y, _x); \
     } \
-    blk_return __ret; \
+    blk_return_(__ret); \
 })
 #define FUNC_math_atan2Safe(val_y, val_x) blk({ \
     let _y = (val_y); \
@@ -544,7 +544,7 @@ errset_((math_Err)(
     } else { \
         __ret = (P$raw) & (E$(TypeOf(_y)))ok(flt_atan2(_y, _x)); \
     } \
-    blk_return(*(E$(TypeOf(_y))*)__ret); \
+    blk_return_(*(E$(TypeOf(_y))*)__ret); \
 })
 
 #endif /* MATH_COMMON_INCLUDED */

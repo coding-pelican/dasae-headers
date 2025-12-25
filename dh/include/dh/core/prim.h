@@ -178,6 +178,7 @@ typedef struct Void {
 #define prim_clamp(_x, _lo /*$incl*/, _hi /*$incl*/...) __op__prim_clamp__step(_x, _lo, _hi)
 #define int_wrap(_x, _lo /*$incl*/, _hi /*$excl*/...) __op__int_wrap__step(_x, _lo, _hi)
 #define flt_wrap(_x, _lo /*$incl*/, _hi /*$excl*/...) __op__flt_wrap__step(_x, _lo, _hi)
+#define flt_wrap01(_x...) __op__flt_wrap01(_x)
 
 /*========== Type Predicates ================================================*/
 
@@ -305,7 +306,7 @@ typedef struct Void {
 #define flt_sub(_lhs, _rhs...) __op__flt_sub__step(_lhs, _rhs)
 #define flt_mul(_lhs, _rhs...) __op__flt_mul__step(_lhs, _rhs)
 #define flt_mulAdd(_x, _y, _z...) __op__flt_mulAdd__step(_x, _y, _z)
-#define flt_div(_x, _n...) __op__flt_div__step(_x, _n)
+#define flt_div(_x, _n...) __step__flt_div(_x, _n)
 #define flt_divTrunc(_x, _n...) __op__flt_divTrunc(_x, _n)
 #define flt_divRound(_x, _n...) __op__flt_divRound(_x, _n)
 #define flt_divFloor(_x, _n...) __op__flt_divFloor(_x, _n)
@@ -317,8 +318,10 @@ typedef struct Void {
 #define flt_modEuclid(_x, _n...) __op__flt_modEuclid__step(_x, _n)
 #define flt_modCeil(_x, _n...) __op__flt_modCeil__step(_x, _n)
 
-#define flt_neg(_x...) __op__flt_neg(_x)
-#define flt_abs(_x...) __op__flt_abs(_x)
+#define flt_neg(_x...) __step__flt_neg(_x)
+#define flt_abs(_x...) ____flt_abs(_x)
+#define flt_inv_static(_x...) ____flt_inv_static(_x)
+#define flt_inv(_x...) __step__flt_inv(_x)
 
 /*========== Floating-Point Comparison Operations ===========================*/
 
@@ -334,65 +337,67 @@ typedef struct Void {
 #define flt_min(_lhs, _rhs...) __op__flt_min(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define flt_max(_lhs, _rhs...) __op__flt_max(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define flt_clamp(_x, _lo /*$incl*/, _hi /*$incl*/...) __op__flt_clamp__step(_x, _lo, _hi)
+#define flt_clamp01(_x...) __op__flt_clamp01(_x)
 #define flt_wrap(_x, _lo /*$incl*/, _hi /*$excl*/...) __op__flt_wrap__step(_x, _lo, _hi)
+#define flt_wrap01(_x...) __op__flt_wrap01(_x)
 
 /*========== Floating-Point Classification ==================================*/
 
-#define flt_isNan(_x...) __op__flt_isNan(_x)
-#define flt_isInf(_x...) __op__flt_isInf(_x)
-#define flt_isFinite(_x...) __op__flt_isFinite(_x)
-#define flt_isNormal(_x...) __op__flt_isNormal(_x)
+#define flt_isNan(_x...) ____flt_isNan(_x)
+#define flt_isInf(_x...) ____flt_isInf(_x)
+#define flt_isFinite(_x...) ____flt_isFinite(_x)
+#define flt_isNormal(_x...) ____flt_isNormal(_x)
 
 /*========== Floating-Point Rounding Operations =============================*/
 
-#define flt_trunc(_x...) __op__flt_trunc(pp_uniqTok(x), _x)
-#define flt_round(_x...) __op__flt_round(pp_uniqTok(x), _x)
-#define flt_floor(_x...) __op__flt_floor(pp_uniqTok(x), _x)
-#define flt_ceil(_x...) __op__flt_ceil(pp_uniqTok(x), _x)
+#define flt_trunc(_x...) __step__flt_trunc(_x)
+#define flt_round(_x...) __step__flt_round(_x)
+#define flt_floor(_x...) __step__flt_floor(_x)
+#define flt_ceil(_x...) __step__flt_ceil(_x)
 
 /*========== Floating-Point Power and Root Operations =======================*/
 
-#define flt_sqrt(_x...) __op__flt_sqrt(pp_uniqTok(x), _x)
-#define flt_cbrt(_x...) __op__flt_cbrt(pp_uniqTok(x), _x)
+#define flt_sqrt(_x...) ____flt_sqrt(_x)
+#define flt_cbrt(_x...) ____flt_cbrt(_x)
 #define flt_sq(_x...) __op__flt_sq(pp_uniqTok(x), _x)
 #define flt_cb(_x...) __op__flt_cb(pp_uniqTok(x), _x)
 #define flt_hypot(_x, _y...) __op__flt_hypot(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
 
 /*========== Floating-Point Exponential and Logarithm =======================*/
 
-#define flt_exp(_x...) __op__flt_exp(pp_uniqTok(x), _x)
-#define flt_exp2(_x...) __op__flt_exp2(pp_uniqTok(x), _x)
+#define flt_exp(_x...) ____flt_exp(_x)
+#define flt_exp2(_x...) ____flt_exp2(_x)
 #define flt_powI(_x, _y...) __op__flt_powI(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
 #define flt_powF(_x, _y...) __op__flt_powF(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
-#define flt_ln(_x...) __op__flt_ln(pp_uniqTok(x), _x)
-#define flt_log2(_x...) __op__flt_log2(pp_uniqTok(x), _x)
-#define flt_log10(_x...) __op__flt_log10(pp_uniqTok(x), _x)
+#define flt_ln(_x...) ____flt_ln(_x)
+#define flt_log2(_x...) ____flt_log2(_x)
+#define flt_log10(_x...) ____flt_log10(_x)
 
 /*========== Floating-Point Trigonometric Functions =========================*/
 
-#define flt_sin(_x...) __op__flt_sin(pp_uniqTok(x), _x)
-#define flt_cos(_x...) __op__flt_cos(pp_uniqTok(x), _x)
-#define flt_tan(_x...) __op__flt_tan(pp_uniqTok(x), _x)
-#define flt_asin(_x...) __op__flt_asin(pp_uniqTok(x), _x)
-#define flt_acos(_x...) __op__flt_acos(pp_uniqTok(x), _x)
-#define flt_atan(_x...) __op__flt_atan(pp_uniqTok(x), _x)
+#define flt_sin(_x...) ____flt_sin(_x)
+#define flt_cos(_x...) ____flt_cos(_x)
+#define flt_tan(_x...) ____flt_tan(_x)
+#define flt_asin(_x...) ____flt_asin(_x)
+#define flt_acos(_x...) ____flt_acos(_x)
+#define flt_atan(_x...) ____flt_atan(_x)
 #define flt_atan2(_y, _x...) __op__flt_atan2(pp_uniqTok(y), pp_uniqTok(x), _y, _x)
 
 /*========== Floating-Point Hyperbolic Functions ============================*/
 
-#define flt_sinh(_x...) __op__flt_sinh(pp_uniqTok(x), _x)
-#define flt_cosh(_x...) __op__flt_cosh(pp_uniqTok(x), _x)
-#define flt_tanh(_x...) __op__flt_tanh(pp_uniqTok(x), _x)
-#define flt_asinh(_x...) __op__flt_asinh(pp_uniqTok(x), _x)
-#define flt_acosh(_x...) __op__flt_acosh(pp_uniqTok(x), _x)
-#define flt_atanh(_x...) __op__flt_atanh(pp_uniqTok(x), _x)
+#define flt_sinh(_x...) ____flt_sinh(_x)
+#define flt_cosh(_x...) ____flt_cosh(_x)
+#define flt_tanh(_x...) ____flt_tanh(_x)
+#define flt_asinh(_x...) ____flt_asinh(_x)
+#define flt_acosh(_x...) ____flt_acosh(_x)
+#define flt_atanh(_x...) ____flt_atanh(_x)
 
 /*========== Floating-Point IEEE 754 Operations =============================*/
 
 #define flt_copySgn(_x, _y...) __op__flt_copySgn(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
 #define flt_nextAfter(_x, _y...) __op__flt_nextAfter(pp_uniqTok(x), pp_uniqTok(y), _x, _y)
 #define flt_scalb(_x, _n...) __op__flt_scalb(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
-#define flt_ilogb(_x...) __op__flt_ilogb(pp_uniqTok(x), _x)
+#define flt_ilogb(_x...) ____flt_ilogb(_x)
 
 /*===========================================================================*/
 /*                          IMPLEMENTATION SECTION                           */
@@ -504,9 +509,9 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     __has_r&& __same_sgn ? __q + 1 : __q; \
 })
 
-#define __op__flt_divTrunc(_x, _n...) flt_trunc(flt_div(__x, __n))
-#define __op__flt_divRound(_x, _n...) flt_round(flt_div(__x, __n))
-#define __op__flt_divFloor(_x, _n...) flt_floor(flt_div(__x, __n))
+#define __op__flt_divTrunc(_x, _n...) flt_trunc(flt_div(_x, _n))
+#define __op__flt_divRound(_x, _n...) flt_round(flt_div(_x, _n))
+#define __op__flt_divFloor(_x, _n...) flt_floor(flt_div(_x, _n))
 #define __op__flt_divEuclid__step(_x, _n...) __op__flt_divEuclid(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
 #define __op__flt_divEuclid(__x, __n, _x, _n...) ({ \
     typedef TypeOfUnqual(_x) FltType; \
@@ -575,17 +580,16 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     let_(__x, FltType) = _x; \
     let_(__n, FltType) = _n; \
     debug_assert(__n != 0.0); \
-    _Generic( \
-        FltType, \
-        f32: __builtin_fmodf( \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_fmodf( \
             as$(f32)(__x), \
             as$(f32)(__n) \
-        ), \
-        f64: __builtin_fmod( \
+        ))), \
+        T_case$((f64)(__builtin_fmod( \
             as$(f64)(__x), \
             as$(f64)(__n) \
-        ) \
-    ); \
+        ))) \
+    )); \
 })
 #define __op__flt_remRound__step(_x, _n...) __op__flt_remRound(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
 #define __op__flt_remRound(__x, __n, _x, _n...) ({ \
@@ -594,22 +598,20 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     let_(__x, FltType) = _x; \
     let_(__n, FltType) = _n; \
     debug_assert(__n != 0.0); \
-    _Generic( \
-        FltType, \
-        f32: __builtin_remainderf( \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_remainderf( \
             as$(f32)(__x), \
             as$(f32)(__n) \
-        ), \
-        f64: __builtin_remainder( \
+        ))), \
+        T_case$((f64)(__builtin_remainder( \
             as$(f64)(__x), \
             as$(f64)(__n) \
-        ) \
-    ); \
+        ))) \
+    )); \
 })
-#define __op__flt_mod__step(_x, _n...) __op__flt_mod(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
-#define __op__flt_mod(__x, __n, _x, _n...) ({ \
+#define __op__flt_mod__step(_x, _n...) ____flt_mod(pp_uniqTok(x), _x, pp_uniqTok(n), _n)
+#define ____flt_mod(__x, _x, __n, _n...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     let_(__n, FltType) = _n; \
     __x - flt_divFloor(__x, __n) * __n; \
@@ -821,6 +823,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     claim_assert(__lo < _hi); \
     __lo + flt_modEuclid(__x - __lo, __hi - __lo); \
 })
+#define __op__flt_wrap01(_x...) flt_wrap(_x, 0, 1)
 
 #define __op__isBool$(_T...) pp_expand( \
     T_switch$ pp_begin(_T)( \
@@ -1203,13 +1206,16 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     debug_assert(__x != int_limit_min$(IIntType)); \
     as$(IIntType)(-__x); \
 })
-#define __op__iint_abs(_x...) _Generic( \
-    TypeOfUnqual(_x), \
-    i8: as$(i8)(__builtin_abs(as$(i8)(_x))), \
-    i16: as$(i16)(__builtin_abs(as$(i16)(_x))), \
-    i32: __builtin_abs(as$(i32)(_x)), \
-    i64: __builtin_llabs(as$(i64)(_x)), \
-)
+#define __op__iint_abs(_x...) blk({ \
+    typedef TypeOfUnqual(_x) IIntType; \
+    let_(__x, IIntType) = _x; \
+    blk_return_(T_switch$((TypeOf(IIntType))( \
+        T_case$((i8)(__builtin_abs(as$(i8)(_x)))), \
+        T_case$((i16)(__builtin_abs(as$(i16)(_x)))), \
+        T_case$((i32)(__builtin_abs(as$(i32)(_x)))), \
+        T_case$((i64)(__builtin_llabs(as$(i64)(_x)))), \
+    ))); \
+})
 
 /*========== Integer Comparison Implementation ==============================*/
 
@@ -1275,7 +1281,6 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__int_clamp__step(_x, _lo, _hi...) __op__int_clamp(pp_uniqTok(x), pp_uniqTok(lo), pp_uniqTok(hi), _x, _lo, _hi)
 #define __op__int_clamp(__x, __lo, __hi, _x, _lo, _hi...) ({ \
     typedef TypeOfUnqual(_x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
     let_(__x, IntType) = _x; \
     let_(__lo, IntType) = _lo; \
     let_(__hi, IntType) = _hi; \
@@ -1293,7 +1298,6 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 })
 #define __op__int_shl(__x, __n, _x, _n...) blk({ \
     typedef TypeOfUnqual(_x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
     let_(__x, IntType) = _x; \
     let_(__n, u32) = _n; \
     debug_assert(__n < int_bits$(IntType)); \
@@ -1301,7 +1305,6 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 })
 #define __op__int_shr(__x, __n, _x, _n...) blk({ \
     typedef TypeOfUnqual(_x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
     let_(__x, IntType) = _x; \
     let_(__n, u32) = _n; \
     debug_assert(__n < int_bits$(IntType)); \
@@ -1437,7 +1440,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 
 /*========== Integer Exponential and Logarithm Implementation ===================*/
 
-#define __op__int_exp2(_x...) (1ull << _x)
+#define __op__int_exp2(_x...) (1ull << (_x))
 #define __op__int_log2(_x...) (as$(u32)((64u - 1u) - __builtin_clzll(_x)))
 
 /*========== Integer Query Implementation ===================================*/
@@ -1481,28 +1484,24 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__flt_mulAdd__step(_x, _y, _z...) __op__flt_mulAdd(pp_uniqTok(x), pp_uniqTok(y), pp_uniqTok(z), _x, _y, _z)
 #define __op__flt_mulAdd(__x, __y, __z, _x, _y, _z...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     let_(__y, FltType) = _y; \
     let_(__z, FltType) = _z; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_fmaf( \
-                as$(f32)(__x), \
-                as$(f32)(__y), \
-                as$(f32)(__z) \
-            ), \
-            f64: __builtin_fma( \
-                as$(f64)(__x), \
-                as$(f64)(__y), \
-                as$(f64)(__z) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_fmaf( \
+            as$(f32)(__x), \
+            as$(f32)(__y), \
+            as$(f32)(__z) \
+        ))), \
+        T_case$((f64)(__builtin_fma( \
+            as$(f64)(__x), \
+            as$(f64)(__y), \
+            as$(f64)(__z) \
+        ))) \
+    )); \
 })
-#define __op__flt_div__step(_x, _n...) __op__flt_div(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
-#define __op__flt_div(__x, __n, _x, _n...) blk({ \
+#define __step__flt_div(_x, _n...) ____flt_div(pp_uniqTok(x), _x, pp_uniqTok(n), _n)
+#define ____flt_div(__x, _x, __n, _n...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
     claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
@@ -1511,12 +1510,25 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     as$(FltType)(__x / __n); \
 })
 
-#define __op__flt_neg(_x...) (-_x)
-#define __op__flt_abs(_x...) _Generic( \
-    TypeOfUnqual(_x), \
-    f32: __builtin_fabsf(as$(f32)(_x)), \
-    f64: __builtin_fabs(as$(f64)(_x)) \
-)
+#define __step__flt_neg(_x...) ____flt_neg(pp_uniqTok(x), _x)
+#define ____flt_neg(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    blk_return_(as$(FltType)(-__x)); \
+})
+#define ____flt_abs(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_fabsf(as$(f32)(_x)))), \
+    T_case$((f64)(__builtin_fabs(as$(f64)(_x)))) \
+))
+#define ____flt_inv_static(_x...) (as$(TypeOf(_x))(1) / (_x))
+#define __step__flt_inv(_x...) ____flt_inv(pp_uniqTok(x), _x)
+#define ____flt_inv(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__x, FltType) = _x; \
+    blk_return_(flt_inv_static(__x)); \
+})
 
 /*========== Floating-Point Comparison Implementation =======================*/
 
@@ -1567,633 +1579,406 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 
 #define __op__flt_min(__lhs, __rhs, _lhs, _rhs...) blk({ \
     typedef TypeOfUnqual(_lhs) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__lhs, FltType) = _lhs; \
     let_(__rhs, FltType) = _rhs; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_fminf( \
-                as$(f32)(__lhs), \
-                as$(f32)(__rhs) \
-            ), \
-            f64: __builtin_fmin( \
-                as$(f64)(__lhs), \
-                as$(f64)(__rhs) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_fminf( \
+            as$(f32)(__lhs), \
+            as$(f32)(__rhs) \
+        ))), \
+        T_case$((f64)(__builtin_fmin( \
+            as$(f64)(__lhs), \
+            as$(f64)(__rhs) \
+        ))) \
+    )); \
 })
 #define __op__flt_max(__lhs, __rhs, _lhs, _rhs...) blk({ \
     typedef TypeOfUnqual(_lhs) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__lhs, FltType) = _lhs; \
     let_(__rhs, FltType) = _rhs; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_fmaxf( \
-                as$(f32)(__lhs), \
-                as$(f32)(__rhs) \
-            ), \
-            f64: __builtin_fmax( \
-                as$(f64)(__lhs), \
-                as$(f64)(__rhs) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_fmaxf( \
+            as$(f32)(__lhs), \
+            as$(f32)(__rhs) \
+        ))), \
+        T_case$((f64)(__builtin_fmax( \
+            as$(f64)(__lhs), \
+            as$(f64)(__rhs) \
+        ))) \
+    )); \
 })
 #define __op__flt_clamp__step(_x, _lo, _hi...) __op__flt_clamp(pp_uniqTok(x), pp_uniqTok(lo), pp_uniqTok(hi), _x, _lo, _hi)
 #define __op__flt_clamp(__x, __lo, __hi, _x, _lo, _hi...) ({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     let_(__lo, FltType) = _lo; \
     let_(__hi, FltType) = _hi; \
     claim_assert(__lo <= __hi); \
     flt_min(flt_max(__lo, __x), __hi); \
 })
+#define __op__flt_clamp01(_x...) flt_clamp(_x, 0, 1)
 
 /*========== Floating-Point Classification Implementation ===================*/
 
-#define __op__flt_isNan(_x...) __builtin_isnan(_x)
-#define __op__flt_isInf(_x...) __builtin_isinf(_x)
-#define __op__flt_isFinite(_x...) __builtin_isfinite(_x)
-#define __op__flt_isNormal(_x...) __builtin_isnormal(_x)
+#define ____flt_isNan(_x...) __builtin_isnan(_x)
+#define ____flt_isInf(_x...) __builtin_isinf(_x)
+#define ____flt_isFinite(_x...) __builtin_isfinite(_x)
+#define ____flt_isNormal(_x...) __builtin_isnormal(_x)
 
 /*========== Floating-Point Rounding Implementation =========================*/
 
-#define __op__flt_trunc(__x, _x...) blk({ \
+#define __step__flt_trunc(_x...) ____flt_trunc(pp_uniqTok(x), _x)
+#define ____flt_trunc(__x, _x...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_truncf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_trunc( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_truncf( \
+            as$(f32)(__x) \
+        ))), \
+        T_case$((f64)(__builtin_trunc( \
+            as$(f64)(__x) \
+        ))) \
+    )); \
 })
-#define __op__flt_round(__x, _x...) blk({ \
+#define __step__flt_round(_x...) ____flt_round(pp_uniqTok(x), _x)
+#define ____flt_round(__x, _x...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_roundf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_round( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_roundf( \
+            as$(f32)(__x) \
+        ))), \
+        T_case$((f64)(__builtin_round( \
+            as$(f64)(__x) \
+        ))) \
+    )); \
 })
-#define __op__flt_ceil(__x, _x...) blk({ \
+#define __step__flt_ceil(_x...) ____flt_ceil(pp_uniqTok(x), _x)
+#define ____flt_ceil(__x, _x...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_ceilf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_ceil( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_ceilf( \
+            as$(f32)(__x) \
+        ))), \
+        T_case$((f64)(__builtin_ceil( \
+            as$(f64)(__x) \
+        ))) \
+    )); \
 })
-#define __op__flt_floor(__x, _x...) blk({ \
+#define __step__flt_floor(_x...) ____flt_floor(pp_uniqTok(x), _x)
+#define ____flt_floor(__x, _x...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_floorf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_floor( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_floorf( \
+            as$(f32)(__x) \
+        ))), \
+        T_case$((f64)(__builtin_floor( \
+            as$(f64)(__x) \
+        ))) \
+    )); \
 })
 
 /*========== Floating-Point Power and Root Implementation ===================*/
 
-#define __op__flt_sqrt(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_sqrtf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_sqrt( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_cbrt(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_cbrtf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_cbrt( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
+#define ____flt_sqrt(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_sqrtf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_sqrt( \
+        as$(f64)(_x) \
+    ))) \
+))
+#define ____flt_cbrt(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_cbrtf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_cbrt( \
+        as$(f64)(_x) \
+    ))) \
+))
 #define __op__flt_sq(__x, _x...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
     claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     as$(FltType)(__x * __x); \
 })
-
 #define __op__flt_cb(__x, _x...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
     claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     as$(FltType)(__x * __x * __x); \
 })
-
 #define __op__flt_hypot(__x, __y, _x, _y...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     let_(__y, FltType) = _y; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_hypotf( \
-                as$(f32)(__x), \
-                as$(f32)(__y) \
-            ), \
-            f64: __builtin_hypot( \
-                as$(f64)(__x), \
-                as$(f64)(__y) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_hypotf( \
+            as$(f32)(__x), \
+            as$(f32)(__y) \
+        ))), \
+        T_case$((f64)(__builtin_hypot( \
+            as$(f64)(__x), \
+            as$(f64)(__y) \
+        ))) \
+    )); \
 })
 
 /*========== Floating-Point Exponential and Logarithm Implementation ========*/
 
-#define __op__flt_exp(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_expf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_exp( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_exp2(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_exp2f( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_exp2( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_ln(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_logf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_log( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_log2(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_log2f( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_log2( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_log10(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_log10f( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_log10( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
+#define ____flt_exp(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_expf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_exp( \
+        as$(f64)(_x) \
+    ))) \
+))
+#define ____flt_exp2(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_exp2f( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_exp2( \
+        as$(f64)(_x) \
+    ))) \
+))
 #define __op__flt_powI(__x, __y, _x, _y...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     let_(__y, i32) = _y; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_powif( \
-                as$(f32)(__x), \
-                __y \
-            ), \
-            f64: __builtin_powi( \
-                as$(f64)(__x), \
-                __y \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_powif( \
+            as$(f32)(__x), \
+            __y \
+        ))), \
+        T_case$((f64)(__builtin_powi( \
+            as$(f64)(__x), \
+            __y \
+        ))) \
+    )); \
 })
-
 #define __op__flt_powF(__x, __y, _x, _y...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     let_(__y, FltType) = _y; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_powf( \
-                as$(f32)(__x), \
-                as$(f32)(__y) \
-            ), \
-            f64: __builtin_pow( \
-                as$(f64)(__x), \
-                as$(f64)(__y) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_powf( \
+            as$(f32)(__x), \
+            as$(f32)(__y) \
+        ))), \
+        T_case$((f64)(__builtin_pow( \
+            as$(f64)(__x), \
+            as$(f64)(__y) \
+        ))) \
+    )); \
 })
+#define ____flt_ln(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_logf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_log( \
+        as$(f64)(_x) \
+    ))) \
+))
+#define ____flt_log2(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_logf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_log( \
+        as$(f64)(_x) \
+    ))) \
+))
+#define ____flt_log10(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_log10f( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_log10( \
+        as$(f64)(_x) \
+    ))) \
+))
 
 /*========== Floating-Point Trigonometric Implementation ====================*/
 
-#define __op__flt_sin(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_sinf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_sin( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_cos(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_cosf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_cos( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_tan(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_tanf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_tan( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_asin(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_asinf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_asin( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_acos(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_acosf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_acos( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#define __op__flt_atan(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_atanf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_atan( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
+#define ____flt_sin(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_sinf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_sin( \
+        as$(f64)(_x) \
+    ))) \
+))
+#define ____flt_cos(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_cosf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_cos( \
+        as$(f64)(_x) \
+    ))) \
+))
+#define ____flt_tan(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_tanf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_tan( \
+        as$(f64)(_x) \
+    ))) \
+))
+#define ____flt_asin(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_asinf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_asin( \
+        as$(f64)(_x) \
+    ))) \
+))
+#define ____flt_acos(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_acosf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_acos( \
+        as$(f64)(_x) \
+    ))) \
+))
+#define ____flt_atan(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_atanf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_atan( \
+        as$(f64)(_x) \
+    ))) \
+))
 #define __op__flt_atan2(__y, __x, _y, _x...) blk({ \
     typedef TypeOfUnqual(_y) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__y, FltType) = _y; \
     let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_atan2f( \
-                as$(f32)(__y), \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_atan2( \
-                as$(f64)(__y), \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_atan2f( \
+            as$(f32)(__y), \
+            as$(f32)(__x) \
+        ))), \
+        T_case$((f64)(__builtin_atan2( \
+            as$(f64)(__y), \
+            as$(f64)(__x) \
+        ))) \
+    )); \
 })
 
 /*========== Floating-Point Hyperbolic Implementation =======================*/
 
-#define __op__flt_sinh(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_sinhf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_sinh( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
+#define ____flt_sinh(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_sinhf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_sinh( \
+        as$(f64)(_x) \
+    ))) \
+))
 
-#define __op__flt_cosh(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_coshf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_cosh( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
+#define ____flt_cosh(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_coshf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_cosh( \
+        as$(f64)(_x) \
+    ))) \
+))
 
-#define __op__flt_tanh(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_tanhf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_tanh( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
+#define ____flt_tanh(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_tanhf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_tanh( \
+        as$(f64)(_x) \
+    ))) \
+))
 
-#define __op__flt_asinh(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_asinhf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_asinh( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
+#define ____flt_asinh(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_asinhf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_asinh( \
+        as$(f64)(_x) \
+    ))) \
+))
 
-#define __op__flt_acosh(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_acoshf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_acosh( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
+#define ____flt_acosh(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_acoshf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_acosh( \
+        as$(f64)(_x) \
+    ))) \
+))
 
-#define __op__flt_atanh(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_atanhf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_atanh( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
+#define ____flt_atanh(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_atanhf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_atanh( \
+        as$(f64)(_x) \
+    ))) \
+))
 
 /*========== Floating-Point IEEE 754 Implementation =========================*/
 
 #define __op__flt_copySgn(__x, __y, _x, _y...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     let_(__y, FltType) = _y; \
-    as$(FltType)(_Generic(FltType, f32: __builtin_copysignf(as$(f32)(__x), as$(f32)(__y)), f64: __builtin_copysign(as$(f64)(__x), as$(f64)(__y)))); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_copysignf( \
+            as$(f32)(__x), \
+            as$(f32)(__y) \
+        ))), \
+        T_case$((f64)(__builtin_copysign( \
+            as$(f64)(__x), \
+            as$(f64)(__y) \
+        ))) \
+    )); \
 })
 
 #define __op__flt_nextAfter(__x, __y, _x, _y...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     let_(__y, FltType) = _y; \
-    as$(FltType)(_Generic(FltType, f32: __builtin_nextafterf(as$(f32)(__x), as$(f32)(__y)), f64: __builtin_nextafter(as$(f64)(__x), as$(f64)(__y)))); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_nextafterf( \
+            as$(f32)(__x), \
+            as$(f32)(__y) \
+        ))), \
+        T_case$((f64)(__builtin_nextafter( \
+            as$(f64)(__x), \
+            as$(f64)(__y) \
+        ))) \
+    )); \
 })
 
 #define __op__flt_scalb(__x, __n, _x, _n...) blk({ \
     typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
     let_(__x, FltType) = _x; \
     let_(__n, i32) = _n; \
-    as$(FltType)(_Generic(FltType, f32: __builtin_ldexpf(as$(f32)(__x), __n), f64: __builtin_ldexp(as$(f64)(__x), __n))); \
+    T_switch$((TypeOf(FltType))( \
+        T_case$((f32)(__builtin_ldexpf( \
+            as$(f32)(__x), \
+            __n \
+        ))), \
+        T_case$((f64)(__builtin_ldexp( \
+            as$(f64)(__x), \
+            __n \
+        ))) \
+    )); \
 })
 
-#define __op__flt_ilogb(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__x, FltType) = _x; \
-    as$(FltType)( \
-        _Generic( \
-            FltType, \
-            f32: __builtin_ilogbf( \
-                as$(f32)(__x) \
-            ), \
-            f64: __builtin_ilogb( \
-                as$(f64)(__x) \
-            ) \
-        ) \
-    ); \
-})
-
-#if NEXT_UPDATE
-#define let_ignore \
-    __attribute__((unused)) let pp_uniqTok(ignored)
-#define let_ignore \
-    __attribute__((unused)) pp_uniqTok(ignored) = (Void){}; \
-    let_ignore
-#define $ignore_void (void)
-
-#define as$(/*(T)(Expr)*/...) pp_expand(pp_defer(block_inline__as$)(param_expand__as$ __VA_ARGS__))
-#define param_expand__as$(...) __VA_ARGS__, pp_expand
-#define block_inline__as$(_T, _Expr...) ((_T)(_Expr))
-
-#define swap$(/*(T)(p_lhs, p_rhs)*/...) pp_expand(pp_defer(block_inline__swap$)(param_expand__swap$ __VA_ARGS__))
-#define param_expand__swap$(...) __VA_ARGS__, pp_expand
-#define block_inline__swap$(_T, _p_lhs, _p_rhs) ({ \
-    p$(_T) __lhs = (__p_lhs); \
-    p$(_T) __rhs = (__p_rhs); \
-    _T __tmp = *__lhs; \
-    *__lhs = *__rhs; \
-    *__rhs = __tmp; \
-    ({}); \
-})
-
-#define min$(/*(T)(lhs, rhs)*/...) pp_expand(pp_defer(block_inline__min$)(param_expand__min$ __VA_ARGS__))
-#define param_expand__min$(...) __VA_ARGS__, pp_expand
-#define block_inline__min$(_T, _lhs, _rhs) ({ \
-    const _T __lhs = (_lhs); \
-    const _T __rhs = (_rhs); \
-    __rhs < __lhs ? __rhs : __lhs; \
-})
-#define max$(/*(T)(lhs, rhs)*/...) pp_expand(pp_defer(block_inline__max$)(param_expand__max$ __VA_ARGS__))
-#define param_expand__max$(...) __VA_ARGS__, pp_expand
-#define block_inline__max$(_T, _lhs, _rhs) ({ \
-    const _T __lhs = (_lhs); \
-    const _T __rhs = (_rhs); \
-    __rhs > __lhs ? __rhs : __lhs; \
-})
-#endif /* NEXT_UPDATE */
+#define ____flt_ilogb(_x...) T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_ilogbf( \
+        as$(f32)(_x) \
+    ))), \
+    T_case$((f64)(__builtin_ilogb( \
+        as$(f64)(_x) \
+    ))) \
+))
 
 #if defined(__cplusplus)
 } /* extern "C" */

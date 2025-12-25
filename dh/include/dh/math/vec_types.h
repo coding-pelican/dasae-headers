@@ -152,7 +152,7 @@ typedef m_V4f64 m_V4d;
     for (usize _i = 0; _i < _len; ++_i) { \
         __dst.s[_i] = as$(TypeOf(__dst.s[_i]))(__src.s[_i]); \
     } \
-    blk_return __dst; \
+    blk_return_(__dst); \
 })
 
 /* #define m_V2_Match(T) TypeOf(_Generic( \

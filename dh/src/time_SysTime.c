@@ -64,7 +64,7 @@ $static fn_((value(void))(time_SysTime)) {
 #else /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
             clock_gettime(CLOCK_MONOTONIC, &current);
 #endif
-            blk_return current;
+            blk_return_(current);
         })
     };
 };

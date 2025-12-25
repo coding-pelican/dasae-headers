@@ -108,14 +108,14 @@ fn_((sort_mergeTmpRecur(
         temp_cursor += blk({
             let bytes_left = l_end.raw - l_it.raw;
             prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, bytes_left);
-            blk_return bytes_left;
+            blk_return_(bytes_left);
         });
     }
     if (r_it.raw < r_end.raw) {
         temp_cursor += blk({
             let bytes_right = r_end.raw - r_it.raw;
             prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, bytes_right);
-            blk_return bytes_right;
+            blk_return_(bytes_right);
         });
     }
 
@@ -171,14 +171,14 @@ fn_((sort_mergeCtxTmpRecur(
         temp_cursor += blk({
             let bytes_left = l_end.raw - l_it.raw;
             prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, bytes_left);
-            blk_return bytes_left;
+            blk_return_(bytes_left);
         });
     }
     if (r_it.raw < r_end.raw) {
         temp_cursor += blk({
             let bytes_right = r_end.raw - r_it.raw;
             prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, bytes_right);
-            blk_return bytes_right;
+            blk_return_(bytes_right);
         });
     }
 

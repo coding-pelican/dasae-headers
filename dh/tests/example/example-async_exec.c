@@ -64,7 +64,7 @@ async_fn_scope(exec_sleep, {}) {
             $static let fromMs = time_Duration_fromMillis;
             $static let addDur = time_Instant_addDuration;
             $static let now = time_Instant_now;
-            blk_return addDur(now(), fromMs(args->ms));
+            blk_return_(addDur(now(), fromMs(args->ms)));
         });
         asg_lit((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
     });
@@ -113,7 +113,7 @@ async_fn_scope(count, {
         $static let asSecs = time_Duration_asSecs$f64;
         $static let durSince = time_Instant_durationSince;
         $static let now = time_Instant_now;
-        blk_return asSecs(durSince(now(), locals->start));
+        blk_return_(asSecs(durSince(now(), locals->start)));
     });
     report(args->label, u8_l("after loop {:fl}"), locals->total);
     areturn_(locals->total);

@@ -417,7 +417,7 @@ fn_((Thrd__pthread_currentId(void))(Thrd_Id)) {
     pp_case_((plat_type_darwin)(blk({
         u64 tid = 0;
         pthread_threadid_np(null, &tid);
-        blk_return tid;
+        blk_return_(tid);
     }))),
     pp_default_(as$(Thrd_Id)(pthread_self()))
     )); /* clang-format on */

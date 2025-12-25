@@ -360,7 +360,6 @@ extern "C" {
 #endif /* UNUSED_CODE */
 
 #define blk comp_syn__blk
-#define blk_return comp_syn__blk_return
 #define blk_return_(...) comp_syn__blk_return_(__VA_ARGS__)
 
 #define $local_label comp_syn__$local_label
@@ -458,7 +457,6 @@ T:
 #define comp_syn__Generic_fallback_ default:
 
 #define comp_syn__blk /* just comment for compound statement expression ({...}) */
-#define comp_syn__blk_return /* just comment for compound statement expression ({...}) */
 #define comp_syn__blk_return_(...) __VA_ARGS__
 
 #define comp_syn__$local_label __label__

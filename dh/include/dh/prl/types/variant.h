@@ -119,19 +119,19 @@ extern "C" {
     let __addr_variant = var_addr_variant; \
     debug_assert_nonnull(__addr_variant); \
     *__addr_variant = *(T_Variant[1]){ [0] = val_variant }; \
-    blk_return __addr_variant; \
+    blk_return_(__addr_variant); \
 })
 #define comp_op__variant_asg(var_addr_variant, val_variant...) \
     variant_asg$(TypeOf(*var_addr_variant), var_addr_variant, val_variant)
 #define comp_op__variant_as(__addr_variant, _addr_variant, _tag...) blk({ \
     let __addr_variant = _addr_variant; \
     debug_assert(__addr_variant->tag == _tag); \
-    blk_return __addr_variant->payload.pp_join($, tagged, _tag); \
+    blk_return_(__addr_variant->payload.pp_join($, tagged, _tag)); \
 })
 #define comp_op__variant_extract(__var_variant, _var_variant, _tag...) blk({ \
     let __var_variant = _var_variant; \
     debug_assert(__var_variant.tag == _tag); \
-    blk_return __var_variant.payload.pp_join($, tagged, _tag)[0]; \
+    blk_return_(__var_variant.payload.pp_join($, tagged, _tag)[0]); \
 })
 
 // #define match_(_Variant) \
