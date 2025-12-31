@@ -1,5 +1,0 @@
-[engine-stub/VT100Ex]
-path=../engine-stub/VT100Ex
-profile=default
-linking=static
-no-libdh=false
