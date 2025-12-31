@@ -46,17 +46,18 @@ CompileFlags:
   Add:
     - -xc
     - -std=c17
-    - -I/mnt/c/dasae/dev/dasae-headers/dh
-    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
-    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
     - -Ic:/dasae/dev/dasae-headers/dh
     - -Ic:/dasae/dev/dasae-headers/dh/include
     - -Ic:/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
     - -Wall
     - -Wextra
     - -Werror
     - -funsigned-char
     - -fblocks
+    - -fms-extensions
 # ========== C++ Sources ==========
 ---
 If:
@@ -72,17 +73,18 @@ CompileFlags:
   Add:
     - -xc++
     - -std=c++20
-    - -I/mnt/c/dasae/dev/dasae-headers/dh
-    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
-    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
     - -Ic:/dasae/dev/dasae-headers/dh
     - -Ic:/dasae/dev/dasae-headers/dh/include
     - -Ic:/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
+    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
     - -Wall
     - -Wextra
     - -Werror
     - -funsigned-char
     - -fblocks
+    - -fms-extensions
 # ========== Headers ==========
 ---
 If:
