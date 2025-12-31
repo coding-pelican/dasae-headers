@@ -26,26 +26,56 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define Thrd_Mtx__use_pthread __comp_bool__Thrd_Mtx__use_pthread
-#define __comp_bool__Thrd_Mtx__use_pthread pp_expand( \
+#if !defined(Thrd_Mtx_use_pthread)
+#define Thrd_Mtx_use_pthread __comp_bool__Thrd_Mtx_use_pthread
+#endif /* !defined(Thrd_Mtx_use_pthread) */
+#define __comp_bool__Thrd_Mtx_use_pthread Thrd_Mtx__use_pthread_default
+
+#define Thrd_Mtx__use_pthread_default __comp_bool__Thrd_Mtx__use_pthread_default
+#define __comp_bool__Thrd_Mtx__use_pthread_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
         pp_case_((plat_type_windows)(pp_false)), \
-        pp_case_((plat_type_linux)(pp_false)), \
         pp_case_((plat_type_darwin)(pp_false)), \
-        pp_default_(pp_true) \
+        pp_default_(Thrd_use_pthread) \
     ) pp_end \
 )
 
-struct Thrd_Mtx__Impl pp_if_(plat_is_linux)(
-    pp_then_({ var_(state, atom_V$u32); }),
-    pp_else_({ var_(unused_, Void); })
-);
-struct Thrd_Mtx pp_switch_((plat_type)(
-    pp_case_((plat_type_windows)({ var_(impl, SRWLOCK); })),
-    pp_case_((plat_type_linux)({ var_(impl, Thrd_Mtx__Impl); })),
-    pp_case_((plat_type_darwin)({ var_(impl, os_unfair_lock); })),
-    pp_default_({ var_(impl, pthread_mutex_t); })
-));
+#if !defined(Thrd_Mtx_has_specialized)
+#define Thrd_Mtx_has_specialized __comp_bool__Thrd_Mtx_has_specialized
+#endif /* !defined(Thrd_Mtx_has_specialized) */
+#define __comp_bool__Thrd_Mtx_has_specialized Thrd_Mtx__has_specialized_default
+
+#define Thrd_Mtx__has_specialized_default __comp_bool__Thrd_Mtx__has_specialized_default
+#define __comp_bool__Thrd_Mtx__has_specialized_default pp_expand( \
+    pp_switch_ pp_begin(plat_type)( \
+        pp_case_((plat_type_windows)(pp_true)), \
+        pp_case_((plat_type_darwin)(pp_true)), \
+        pp_default_(pp_false) \
+    ) pp_end \
+)
+
+struct Thrd_Mtx__Impl pp_if_(Thrd_Mtx_use_pthread)(
+    pp_then_({
+        var_(unused_, Void);
+    }),
+    pp_else_(pp_if_(Thrd_Mtx_has_specialized)(
+        pp_then_(pp_expand(
+            pp_switch_ pp_begin(plat_type)(
+                pp_case_((plat_type_windows)({
+                    var_(inner, SRWLOCK);
+                })),
+                pp_case_((plat_type_darwin)({
+                    var_(inner, os_unfair_lock);
+                }))
+            ) pp_end
+        )),
+        pp_else_({
+            var_(state, atom_V$u32);
+        })
+    )));
+struct Thrd_Mtx pp_if_(Thrd_Mtx_use_pthread)(
+    pp_then_({ var_(impl, pthread_mutex_t); }),
+    pp_else_({ var_(impl, Thrd_Mtx__Impl); }));
 /// @brief Initializes a mutex
 /// @return A new mutex
 $extern fn_((Thrd_Mtx_init(void))(Thrd_Mtx));

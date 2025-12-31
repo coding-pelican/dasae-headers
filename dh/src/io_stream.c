@@ -5,7 +5,7 @@
 #include "dh/Thrd/Mtx.h"
 
 #if plat_is_windows
-#include "dh/os/windows.h"
+#include "dh/os/windows/console.h"
 #endif /* plat_is_windows */
 #include <locale.h>
 

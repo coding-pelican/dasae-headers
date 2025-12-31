@@ -1,7 +1,7 @@
 #include "dh/core/debug/common.h"
 
 #if plat_is_windows
-#include "dh/os/windows.h"
+#include "dh/os/windows/debug.h"
 fn_((debug_isDebuggerPresent(void))(bool)) {
     return IsDebuggerPresent();
 }
@@ -41,7 +41,7 @@ fn_((debug_isDebuggerPresent(void))(bool)) {
     }
     return false;
 }
-#else  /* other */
+#else /* other */
 /* Fallback for unsupported platforms - assume no debugger */
 fn_((debug_isDebuggerPresent(void))(bool)) {
     return false;

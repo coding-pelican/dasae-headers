@@ -21,15 +21,14 @@ extern "C" {
 #include "cfg.h"
 #include "dh/Thrd/Mtx.h"
 
-/*========== Page Allocator =================================================*/
+/*========== Macros and Declarations ========================================*/
 
 typedef struct heap_ThrdSafe {
     mem_Allocator child_allocator;
-    Thrd_Mtx mutex;
+    Thrd_Mtx mtx;
 } heap_ThrdSafe;
-
 /// Get allocator interface for instance
-extern fn_((heap_ThrdSafe_allocator(heap_ThrdSafe* self))(mem_Allocator));
+$extern fn_((heap_ThrdSafe_allocator(heap_ThrdSafe* self))(mem_Allocator));
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -28,31 +28,30 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define Thrd_RWLock__use_pthread __comp_bool__Thrd_RWLock__use_pthread
-#define __comp_bool__Thrd_RWLock__use_pthread pp_expand( \
+#if !defined(Thrd_RWLock_use_pthread)
+#define Thrd_RWLock_use_pthread __comp_bool__Thrd_RWLock_use_pthread
+#endif /* !defined(Thrd_RWLock_use_pthread) */
+#define __comp_bool__Thrd_RWLock_use_pthread Thrd_RWLock__use_pthread_default
+
+#define Thrd_RWLock__use_pthread_default __comp_bool__Thrd_RWLock__use_pthread_default
+#define __comp_bool__Thrd_RWLock__use_pthread_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
-        pp_case_((plat_type_windows)(pp_false)), \
-        pp_case_((plat_type_linux)(pp_false)), \
-        pp_case_((plat_type_darwin)(pp_false)), \
-        pp_default_(pp_true) \
+        pp_default_(Thrd_use_pthread) \
     ) pp_end \
 )
-struct Thrd_RWLock__Impl pp_if_(pp_not(Thrd_RWLock__use_pthread))(
+
+struct Thrd_RWLock__Impl pp_if_(Thrd_RWLock_use_pthread)(
     pp_then_({
+        var_(unused_, Void);
+    }),
+    pp_else_({
         var_(state, usize);
         var_(mtx, Thrd_Mtx);
         var_(sem, Thrd_Sem);
-    }),
-    pp_else_({
-        var_(unused_, Void);
-    })
-);
-struct Thrd_RWLock pp_switch_((plat_type)(
-    pp_case_((plat_type_windows)({ var_(impl, Thrd_RWLock__Impl); })),
-    pp_case_((plat_type_linux)({ var_(impl, Thrd_RWLock__Impl); })),
-    pp_case_((plat_type_darwin)({ var_(impl, Thrd_RWLock__Impl); })),
-    pp_default_({ var_(impl, pthread_rwlock_t); })
-));
+    }));
+struct Thrd_RWLock pp_if_(Thrd_RWLock_use_pthread)(
+    pp_then_({ var_(impl, pthread_rwlock_t); }),
+    pp_else_({ var_(impl, Thrd_RWLock__Impl); }));
 $extern fn_((Thrd_RWLock_init(void))(Thrd_RWLock));
 $extern fn_((Thrd_RWLock_fini(Thrd_RWLock* self))(void));
 $extern fn_((Thrd_RWLock_lock(Thrd_RWLock* self))(void));

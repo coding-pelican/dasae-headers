@@ -9,6 +9,9 @@
  * - Supports workspace and project creation
  * - Supports build, test, and run commands
  * - Supports various build configurations
+ *
+ * Note:
+ * - Major changes are coming. Please bear with this messy code ;)
  */
 
 #include <stdio.h>
@@ -37,7 +40,7 @@
      * Version number \
      * major.minor.patch-prerelease.minor.patch+build.number \
      */ \
-    "0.1.0-alpha.0.4.7"
+    "0.1.0-alpha.0.4.10"
 
 // Debug level enum
 typedef enum {
@@ -1753,6 +1756,107 @@ void build_project(BuildConfig* config) {
                             (void)fprintf(stderr, "Failed to compile dependencies for library: %s\n", config->sample_library);
                             exit(1);
                         }
+
+                        // Bring dependencies to sample library's lib/deps/ BEFORE compiling the library
+                        char sample_lib_path[1024] = {};
+                        (void)snprintf(sample_lib_path, sizeof(sample_lib_path), "%s%slib", config->sample_library_path, PATH_SEPARATOR);
+                        char sample_deps_path[1024] = {};
+                        (void)snprintf(sample_deps_path, sizeof(sample_deps_path), "%s%sdeps", sample_lib_path, PATH_SEPARATOR);
+
+                        // Move existing lib/deps directory to cache if it exists
+                        (void)move_directory_to_cache(sample_deps_path, sample_lib_path, "deps", config->verbose);
+
+                        if (!dir_exists(sample_deps_path)) {
+                            if (!create_directory_recursive(sample_deps_path)) {
+                                (void)fprintf(stderr, "Could not create sample library deps directory: %s\n", sample_deps_path);
+                                exit(1);
+                            }
+                        }
+
+                        printf("Bring dependencies for '%s':\n", config->sample_library);
+
+                        // Copy each library from its own build/profile/ to sample library's lib/deps/
+                        for (int i = 0; i < config->lib_configs.count; ++i) {
+                            const LibraryConfig* lib = &config->lib_configs.libraries[i];
+                            char lib_dir_part[256] = {};
+                            char lib_name_part[256] = {};
+                            extract_library_dir_and_name(lib->library_name, lib_dir_part, lib_name_part);
+
+                            // Source: library's own build/profile/ directory
+                            char lib_build_path[1024] = {};
+                            (void)snprintf(lib_build_path, sizeof(lib_build_path), "%s%sbuild", lib->library_path, PATH_SEPARATOR);
+
+                            const char* effective_profile = lib->profile;
+                            if (strcmp(lib->profile, "default") == 0) { effective_profile = config->build_config_name; }
+
+                            char lib_profile_path[1024] = {};
+                            (void)snprintf(lib_profile_path, sizeof(lib_profile_path), "%s%s%s", lib_build_path, PATH_SEPARATOR, effective_profile);
+
+                            // Destination: sample library's lib/deps/dir_part/
+                            char dest_dep_dir[1024] = {};
+                            if (strlen(lib_dir_part) > 0) {
+                                (void)snprintf(dest_dep_dir, sizeof(dest_dep_dir), "%s%s%s", sample_deps_path, PATH_SEPARATOR, lib_dir_part);
+                            } else {
+                                (void)snprintf(dest_dep_dir, sizeof(dest_dep_dir), "%s", sample_deps_path);
+                            }
+
+                            // Copy library binary from build/profile/ to lib/deps/
+                            char src_lib_file[1024] = {};
+                            char dest_lib_file[1024] = {};
+#ifdef _WIN32
+                            (void)snprintf(src_lib_file, sizeof(src_lib_file), "%s%s%s.lib", lib_profile_path, PATH_SEPARATOR, lib_name_part);
+                            (void)snprintf(dest_lib_file, sizeof(dest_lib_file), "%s%s%s.lib", dest_dep_dir, PATH_SEPARATOR, lib_name_part);
+#else
+                            (void)snprintf(src_lib_file, sizeof(src_lib_file), "%s%slib%s.a", lib_profile_path, PATH_SEPARATOR, lib_name_part);
+                            (void)snprintf(dest_lib_file, sizeof(dest_lib_file), "%s%slib%s.a", dest_dep_dir, PATH_SEPARATOR, lib_name_part);
+#endif
+
+                            if (file_exists(src_lib_file)) {
+                                if (!dir_exists(dest_dep_dir)) {
+                                    if (!create_directory_recursive(dest_dep_dir)) {
+                                        (void)fprintf(stderr, "Failed to create dependency directory: %s\n", dest_dep_dir);
+                                        exit(1);
+                                    }
+                                }
+
+                                FILE* src_fp = fopen(src_lib_file, "rb");
+                                if (src_fp) {
+                                    FILE* dest_fp = fopen(dest_lib_file, "wb");
+                                    if (dest_fp) {
+                                        char buffer[4096] = {};
+                                        size_t bytes = 0;
+                                        while ((bytes = fread(buffer, 1, sizeof(buffer), src_fp)) > 0) {
+                                            if (fwrite(buffer, 1, bytes, dest_fp) != bytes) {
+                                                (void)fprintf(stderr, "Failed to write to %s\n", dest_lib_file);
+                                                (void)fclose(dest_fp);
+                                                (void)fclose(src_fp);
+                                                exit(1);
+                                            }
+                                        }
+                                        (void)fclose(dest_fp);
+                                    }
+                                    (void)fclose(src_fp);
+                                }
+                            }
+
+                            // Copy library's lib/deps/ (transitive dependencies)
+                            char lib_lib_path_for_deps[1024] = {};
+                            (void)snprintf(lib_lib_path_for_deps, sizeof(lib_lib_path_for_deps), "%s%slib", lib->library_path, PATH_SEPARATOR);
+                            char lib_deps_path[1024] = {};
+                            (void)snprintf(lib_deps_path, sizeof(lib_deps_path), "%s%sdeps", lib_lib_path_for_deps, PATH_SEPARATOR);
+
+                            printf("- '%s' <- '%s'\n", lib->library_name, lib->library_path);
+
+                            if (dir_exists(lib_deps_path)) {
+                                (void)copy_directory_recursive(lib_deps_path, dest_dep_dir, false);
+                            }
+
+                            // Copy library includes to sample library's lib/deps/
+                            if (!copy_library_includes(lib->library_path, sample_lib_path, lib->library_name, false)) {
+                                (void)fprintf(stderr, "Failed to copy includes for library: %s\n", lib->library_name);
+                                exit(1);
+                            }
+                        }
                     }
                 }
 
@@ -2082,24 +2186,23 @@ void build_project(BuildConfig* config) {
 
     // For sample files, add library linking
     if (config->is_single_file && config->is_sample) {
-        // Link the library directory itself (compiled from src/)
-        if (strlen(config->sample_library) > 0) {
-            char project_lib_path[1024] = {};
-            (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
-            char deps_path[1024] = {};
-            (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+        // Link the library directory itself (compiled from src/ to build/profile/)
+        if (strlen(config->sample_library) > 0 && strlen(config->sample_library_path) > 0) {
+            // Sample library is compiled to sample_library_path/build/profile/
+            char library_build_path[1024] = {};
+            (void)snprintf(library_build_path, sizeof(library_build_path), "%s%sbuild%s%s", config->sample_library_path, PATH_SEPARATOR, PATH_SEPARATOR, config->build_config_name);
 
             // Add library search path
             if (config->linked_libraries[0] != '\0') { strcat(config->linked_libraries, " "); }
             strcat(config->linked_libraries, "-L");
-            strcat(config->linked_libraries, deps_path);
+            strcat(config->linked_libraries, library_build_path);
 
             // Add the library file itself
             char lib_file[1024] = {};
 #ifdef _WIN32
-            (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", deps_path, PATH_SEPARATOR, config->sample_library);
+            (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", library_build_path, PATH_SEPARATOR, config->sample_library);
 #else
-            (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", deps_path, PATH_SEPARATOR, config->sample_library);
+            (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", library_build_path, PATH_SEPARATOR, config->sample_library);
 #endif
             strcat(config->linked_libraries, " \"");
             strcat(config->linked_libraries, lib_file);
@@ -2226,7 +2329,9 @@ void build_project_as_library(BuildConfig* config) {
 
     // Only add -funsigned-char -fblocks if not using --no-libdh
     if (!config->no_libdh) { strcat(base_command, " -funsigned-char -fblocks -DBlocksRuntime_STATIC"); }
-
+#ifdef _WIN32
+    strcat(base_command, " -fms-extensions");
+#endif /* _WIN32 */
     // Add debug level flag
     const char* debug_flag = debug_level_to_flag(config->debug_level);
     if (strlen(debug_flag) > 0) {
@@ -4311,6 +4416,9 @@ bool compile_single_library(BuildConfig* config, const LibraryConfig* lib_config
         strcat(command, " -I");
         strcat(command, config->dh_path);
         strcat(command, " -funsigned-char -fblocks -DBlocksRuntime_STATIC");
+#ifdef _WIN32
+        strcat(command, " -fms-extensions");
+#endif /* _WIN32 */
 
         // Add BlocksRuntime include path
         char blocks_include_path[1024];
@@ -4695,16 +4803,19 @@ bool compile_library_directory_as_library(BuildConfig* config, const char* libra
         return true; // Not an error if no sources
     }
 
-    // Create output directory in project's lib/deps/
-    char project_lib_path[1024] = {};
-    (void)snprintf(project_lib_path, sizeof(project_lib_path), "%s%slib", config->project_root, PATH_SEPARATOR);
+    // Create output directory in library's build/profile/ (same as compile_single_library)
+    char library_build_path[1024] = {};
+    (void)snprintf(library_build_path, sizeof(library_build_path), "%s%sbuild", library_path, PATH_SEPARATOR);
 
-    char deps_path[1024] = {};
-    (void)snprintf(deps_path, sizeof(deps_path), "%s%sdeps", project_lib_path, PATH_SEPARATOR);
+    char library_profile_path[1024] = {};
+    (void)snprintf(library_profile_path, sizeof(library_profile_path), "%s%s%s", library_build_path, PATH_SEPARATOR, config->build_config_name);
 
-    if (!dir_exists(deps_path)) {
-        if (!create_directory_recursive(deps_path)) {
-            (void)fprintf(stderr, "Could not create deps directory: %s\n", deps_path);
+    // Move existing library build/profile directory to cache if it exists
+    (void)move_directory_to_cache(library_profile_path, library_build_path, config->build_config_name, config->verbose);
+
+    if (!dir_exists(library_profile_path)) {
+        if (!create_directory_recursive(library_profile_path)) {
+            (void)fprintf(stderr, "Could not create library build directory: %s\n", library_profile_path);
             free_string_array(sources, source_count);
             return false;
         }
@@ -4748,6 +4859,9 @@ bool compile_library_directory_as_library(BuildConfig* config, const char* libra
         strcat(base_command, " -I");
         strcat(base_command, config->dh_path);
         strcat(base_command, " -funsigned-char -fblocks -DBlocksRuntime_STATIC");
+#ifdef _WIN32
+        strcat(base_command, " -fms-extensions");
+#endif /* _WIN32 */
 
         char blocks_include_path[1024] = {};
         (void)snprintf(
@@ -4798,20 +4912,11 @@ bool compile_library_directory_as_library(BuildConfig* config, const char* libra
         }
     }
 
-    // Create object files directory
+    // Create object files directory in build/profile/.obj/
     char obj_dir[1024] = {};
-    (void)snprintf(obj_dir, sizeof(obj_dir), "%s%s.obj%s%s", deps_path, PATH_SEPARATOR, PATH_SEPARATOR, library_name);
+    (void)snprintf(obj_dir, sizeof(obj_dir), "%s%s.obj", library_profile_path, PATH_SEPARATOR);
 
     if (!dir_exists(obj_dir)) {
-        char obj_base_dir[1024] = {};
-        (void)snprintf(obj_base_dir, sizeof(obj_base_dir), "%s%s.obj", deps_path, PATH_SEPARATOR);
-        if (!dir_exists(obj_base_dir)) {
-            if (!create_directory(obj_base_dir)) {
-                (void)fprintf(stderr, "Could not create .obj directory: %s\n", obj_base_dir);
-                free_string_array(sources, source_count);
-                return false;
-            }
-        }
         if (!create_directory(obj_dir)) {
             (void)fprintf(stderr, "Could not create object directory: %s\n", obj_dir);
             free_string_array(sources, source_count);
@@ -4855,12 +4960,12 @@ bool compile_library_directory_as_library(BuildConfig* config, const char* libra
         strcat(obj_files, obj_file);
     }
 
-    // Create static library
+    // Create static library in build/profile/
     char lib_file[1024] = {};
 #ifdef _WIN32
-    (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", deps_path, PATH_SEPARATOR, library_name);
+    (void)snprintf(lib_file, sizeof(lib_file), "%s%s%s.lib", library_profile_path, PATH_SEPARATOR, library_name);
 #else
-    (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", deps_path, PATH_SEPARATOR, library_name);
+    (void)snprintf(lib_file, sizeof(lib_file), "%s%slib%s.a", library_profile_path, PATH_SEPARATOR, library_name);
 #endif
 
     char ar_cmd[8192] = {};
@@ -5082,6 +5187,12 @@ void extract_library_dir_and_name(const char* lib_name, char* dir_part, char* na
         strncpy(dir_part, lib_name, dir_len);
         dir_part[dir_len] = '\0';
         strcpy(name_part, last_slash + 1);
+#ifdef _WIN32
+        // Normalize path separators for Windows
+        for (char* p = dir_part; *p; ++p) {
+            if (*p == '/') { *p = '\\'; }
+        }
+#endif
     } else {
         strcpy(dir_part, "");
         strcpy(name_part, lib_name);

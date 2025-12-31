@@ -1,6 +1,8 @@
 #include "dh/heap/Arena.h"
 #include "dh/mem/common.h"
 
+/*========== Internal Declarations ==========================================*/
+
 T_use$((usize)(ListSgl_Adp));
 T_use$((usize)(
     ListSgl_empty,
@@ -9,14 +11,13 @@ T_use$((usize)(
     ListSgl_Link_dataMut,
     ListSgl_Adp_init
 ));
-// Forward declarations for allocator vtable functions
 $static fn_((heap_Arena__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
 $static fn_((heap_Arena__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
 $static fn_((heap_Arena__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
 $static fn_((heap_Arena__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
-
-// Internal helper functions
 $static fn_((heap_Arena__createLink(heap_Arena* self, usize prev_len, usize minimum_size))(O$P$ListSgl_Link$usize));
+
+/*========== External Definitions ===========================================*/
 
 fn_((heap_Arena_State_default(void))(heap_Arena_State)) {
     return lit$((heap_Arena_State){
@@ -33,7 +34,6 @@ fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Allocator child_allocat
 };
 
 fn_((heap_Arena_allocator(heap_Arena* self))(mem_Allocator)) {
-    claim_assert_nonnull(self);
     // VTable for Arena allocator
     $static const mem_Allocator_VT vt $like_ref = { {
         .alloc = heap_Arena__alloc,
@@ -41,10 +41,10 @@ fn_((heap_Arena_allocator(heap_Arena* self))(mem_Allocator)) {
         .remap = heap_Arena__remap,
         .free = heap_Arena__free,
     } };
-    return (mem_Allocator){
+    return mem_Allocator_ensureValid((mem_Allocator){
         .ctx = self,
-        .vt = vt
-    };
+        .vt = vt,
+    });
 };
 
 fn_((heap_Arena_init(mem_Allocator child_allocator))(heap_Arena)) {
@@ -132,7 +132,7 @@ fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)) {
     return true;
 };
 
-/*========== Allocator Interface Implementation =============================*/
+/*========== Internal Definitions ===========================================*/
 
 fn_((heap_Arena__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     claim_assert_nonnull(ctx);
@@ -230,8 +230,6 @@ fn_((heap_Arena__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
         self->state.end_idx -= buf.len;
     }
 };
-
-/*========== Internal Helper Functions =====================================*/
 
 fn_((heap_Arena__createLink(heap_Arena* self, usize prev_len, usize minimum_size))(O$P$ListSgl_Link$usize) $scope) {
     claim_assert_nonnull(self);

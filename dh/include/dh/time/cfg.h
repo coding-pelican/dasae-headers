@@ -24,7 +24,7 @@ extern "C" {
 
 #include "dh/prl.h"
 #if plat_is_windows
-#include "dh/os/windows/common.h"
+#include "dh/os/windows/sysinfo.h"
 #else /* posix */
 #include <sys/time.h>
 #endif

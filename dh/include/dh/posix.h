@@ -23,16 +23,15 @@ extern "C" {
 
 #include "core.h"
 
-#if plat_type == plat_type_windows
+#if plat_is_windows
 #include "os/windows.h"
-#endif /* plat_type == plat_type_windows */
+#endif /* plat_is_windows */
 
 /*========== Macros and Declarations ========================================*/
 
-typedef pp_if_(pp_Tok_eq(plat_type, plat_type_windows))(
+typedef pp_if_(plat_is_windows)(
     pp_then_(HANDLE),
-    pp_else_(i32)
-) posix_fd_t;
+    pp_else_(i32)) posix_fd_t;
 typedef i32 posix_mode_t;
 
 #define posix_STDIN_FILENO comp_const__posix_STDIN_FILENO

@@ -239,7 +239,6 @@ Macros:
   - "fn_(Expr)=static Expr"
   # - "la_(Expr)=[]Expr"
   - $un_(keyword)=/**/pp_exec_expand
-  - $end(keyword)=/**/
   - $unscoped_(keyword)=/**/
   - $unguarded_(keyword)=/**/
   # - "blk_defer={ do"
@@ -290,8 +289,10 @@ Macros:
   - "else_ok_void=else"
 
   - "match_(Expr)=switch (expr)"
+  - "pattern_(tag)=case tag:"
   - "case_(tag)=case tag:"
   - "default_(Expr)=case Expr otherwise:"
+  - "$end(keyword)=/**/"
 
 AttributeMacros:
   - $attr

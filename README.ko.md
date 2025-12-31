@@ -46,8 +46,16 @@ dasae-headers: Modern, Better safety and productivity to C
 <summary><strong>목차</strong></summary>
 
 - [dasae-headers](#dasae-headers)
+  - [현대적 시스템 프로그래밍 레이어](#현대적-시스템-프로그래밍-레이어)
+    - [기술적 동기 (Technical Motivation)](#기술적-동기-technical-motivation)
+    - [설계 원칙 (Design Principles)](#설계-원칙-design-principles)
+    - [💻 패턴의 변화 (Pattern Migration)](#-패턴의-변화-pattern-migration)
+    - [🎯 프로젝트의 지향점](#-프로젝트의-지향점)
   - [소개](#소개)
     - [왜 dasae-headers인가?](#왜-dasae-headers인가)
+      - [이런 분들을 위한 프로젝트입니다](#이런-분들을-위한-프로젝트입니다)
+      - [C 접근이 어려운 이유](#c-접근이-어려운-이유)
+      - [dasae-headers의 접근](#dasae-headers의-접근)
     - [어떻게 기존의 C 사용과 달라지는가?](#어떻게-기존의-c-사용과-달라지는가)
       - [1. 코드 패턴 및 플랫폼 추상화 (Code Pattern \& Platform Abstraction)](#1-코드-패턴-및-플랫폼-추상화-code-pattern--platform-abstraction)
       - [2. 현대적 자원 관리 및 인자 전달 (Memory \& Argument Patterns)](#2-현대적-자원-관리-및-인자-전달-memory--argument-patterns)
@@ -83,7 +91,91 @@ dasae-headers: Modern, Better safety and productivity to C
 
 </details>
 
+## 현대적 시스템 프로그래밍 레이어
+
+### 기술적 동기 (Technical Motivation)
+
+C언어는 강력하지만, 현대적인 소프트웨어 요구사항을 충족하기 위해
+개발자가 감당해야 하는 '의례적인 코드(Boilerplate)'와 '런타임 위험요소'가 많습니다.
+`dasae-headers`는 이러한 저수준의 복잡성을 시스템의 성능 손실 없이 구조적으로 해결하기 위해 설계되었습니다.
+
+- **파편화된 에러 처리:** `errno`, 반환 값, `out` 파라미터가 섞여 있는 불완전한 패턴을 `ErrorResult(E$)`와 `Optional(O$)` 타입으로 단일화합니다.
+- **수동 리소스 관리:** `goto cleanup`과 같은 고전적인 방식 대신, 스코프 기반의 `defer_` 및 `errdefer_`를 통해 자원 해제 로직을 선언적으로 배치합니다.
+- **타입 안전성 결여:** `void*`에 의존하는 제네릭 대신, 메타 타입 시스템(`u_*`)을 통해 타입 정보를 보존하고 검증합니다.
+
 ---
+
+### 설계 원칙 (Design Principles)
+
+1. **제로 코스트 추상화:** 모든 확장 구문은 최종적으로 표준 C의 제어 흐름(`if`, `switch`, `goto`)으로 정밀하게 변환됩니다. 런타임 오버헤드를 발생시키는 숨겨진 할당이나 복잡한 런타임을 지양합니다.
+2. **명시성(Explicitness):** 암시적인 동작을 배제합니다. 에러가 발생할 수 있는 지점은 `try_`로 명시되어야 하며, 자원의 소유권 변화나 타입 변환은 명확하게 드러나야 합니다.
+
+---
+
+### 💻 패턴의 변화 (Pattern Migration)
+
+기존 C의 관습적인 코드가 `dasae-headers` 환경에서 어떻게 기술적으로 표현되는지 보여줍니다.
+
+**기존의 관습적인 C 패턴 (Legacy Pattern):**
+
+```c
+// 리소스 해제 누락 위험과 에러 처리의 분산
+int process_data(size_t len, int** out_buf) {
+    int* buf = (int*)malloc(sizeof(int) * len);
+    if (!buf) return -1;
+
+    int result = do_step_1(buf);
+    if (result != 0) {
+        free(buf);
+        fprintf(stderr, "error: [%s](%d)\n", "meaningful-error-message-2", result);
+        return result;
+    }
+
+    result = do_step_2(buf);
+    if (result != 0) {
+        free(buf);
+        fprintf(stderr, "error: [%s](%d)\n", "meaningful-error-message-3", result);
+        return result;
+    }
+
+    if (expected_must_not_fail(buf) != 0) {
+        fprintf(stderr, "`expected_must_not_fail` failed\n");
+        abort();
+    }
+
+    *out_buf = buf;
+    return 0;
+}
+
+```
+
+**dasae-headers의 패턴 (Modern Pattern):**
+
+```c
+fn_((processData(usize len, mem_Allocator gpa))(E$S$i32) $scope) {
+    var buf = u_castS$((S$i32)(try_(mem_Allocator_alloc(gpa, typeInfo$(i32), len))));
+    errdefer_(err, {
+      io_stream_eprintln(u8_l("error: {:e}"), err);
+      mem_Allocator_free(gpa, u_anyS(buf));
+    });
+
+    try_(doStep1(buf));
+    try_(doStep2(buf));
+    catch_((expectedMustNotFail(buf))($ignore, claim_unreachable));
+
+    return_ok(buf);
+} $unscoped_(fn);
+```
+
+---
+
+### 🎯 프로젝트의 지향점
+
+`dasae-headers`는 모든 C 코드를 대체하려는 시도가 아닙니다.
+
+* **현대 언어의 철학 이식:** Zig의 에러 처리 모델과 Rust의 표현력을 C 환경에서 경험하고자 하는 엔지니어를 위해 존재합니다.
+* **현실적인 시스템 프로그래밍:** 베어메탈이나 임베디드 등 제한된 환경에서, 언어를 바꾸지 않고도 도구(Tooling)와 레이어의 개선만으로 안전성을 확보하는 방법을 제안합니다.
+* **점진적 개선:** 프로젝트 전체를 다시 쓸 필요 없이, 필요한 모듈부터 부분적으로 현대적인 패턴을 도입할 수 있도록 설계되었습니다.
 
 ## 소개
 
@@ -97,20 +189,57 @@ C언어의 설계 원칙인 간결함을 유지하면서, 메모리 안전성 �
 
 ### 왜 dasae-headers인가?
 
-dasae-headers는 기존 C 환경의 제약을 극복하고 현대적인 개발 경험을 제공하기 위해 아래와 같은 설계 원칙을 고수합니다.
+#### 이런 분들을 위한 프로젝트입니다
+
+- **Zig, Rust, Go 등의 현대 언어 경험자**
+- **안전성을 필요로 하나 시스템/임베디드 영역에서 C를 벗어날 수 환경**
+- **레거시 C 코드베이스를 점진적으로 개선하고 싶은 개발자**
+
+이러한 분들은 저와 같은 생각을 공유하실 겁니다.
+
+Optional/Result 대신 out 파라미터 기반으로 쓰여진 API들,
+defer 같은 패턴 없이 goto를 사용하거나 수동으로 처리해야하는 C가 답답하고,
+2025년에도 여전히 이렇게 작성해야 하는지 의문이 드는 분들.
+
+Freestanding 환경이나 성능 제약 때문에 C를 써야 하지만, 메모리 버그와 에러 처리 실수에 지친 분들.
+
+코드베이스 전체를 다시 작성할 수는 없지만, 새로 작성하는 부분만이라도 현대적으로 하고 싶은 분들.
+
+dasae-headers는 이러한 분들을 위한 프로젝트입니다.
+
+#### C 접근이 어려운 이유
+
+우리 모두가 알고있습니다.
+"반환값, errno, out 파라미터, ..."
+에러 처리 패턴이 파편화되어 있고,
+메모리 관리가 수동적이며,
+무엇보다 기존 C 라이브러리들이 복잡한 매크로 시스템을 요구합니다.
+사용하려면 그 매크로의 내부 동작을 이해해야 하고,
+편의 동작을 사용하기 위해 직접 매크로를 `#define`, `#undef` 해야 합니다.
+이것이 진입 장벽입니다.
+
+#### dasae-headers의 접근
+
+dasae-headers는 Zig와 Rust의 설계 철학을 C 환경에 이식합니다. 단순히 문법을 모방하는 것이 아니라, 해당 언어들이 형성하는 개념적 모델을 공유합니다. "defer는 스코프 끝에서 실행된다", "Result는 성공/실패를 명시적으로 처리해야 한다", "try는 에러를 전파한다"와 같은 기존 경험이 그대로 적용됩니다. 따라서 매크로가 내부적으로 어떻게 확장되는지 알 필요 없이, 이미 익숙한 의미론을 기대하며 사용하면 됩니다.
+
+Zig에서의 `defer`/`errdefer` 기반 스코프 자원 관리, `orelse`/`unwrap` 구문, 슬라이스 기반 경계 안전 데이터 전달, 커스텀 할당자 주입 패턴이 거의 동일한 의미론으로 동작합니다. Rust에서의 `filter`/`map`/`fold`/`reduce` 체이닝, `debug_assert`/`unreachable` 등의 assertion 패턴 또한 마찬가지입니다.
+out 파라미터 대신 반환값으로 결과를 핸들링하며, 타입 시스템 수준에서 에러와 부재 상태를 전파시키거나 핸들링을 하도록 강제 검증하는 방식은 두 언어의 공통된 철학입니다.
+
+이들 언어가 API 내부에서 제공하는 경계 검사, 산술 오버플로우 감지, 수학 함수의 도메인 검증, UB 방지 검사를 C 환경에서 동일하게 제공합니다. 이러한 안전 장치는 C의 정적 분석 도구(`clang-tidy` 등)와 호환되도록 설계되어, 컴파일 전 정적 분석 단계에서 문제를 발견할 수 있습니다.
 
 <details>
 <summary><strong>설계 원칙</strong></summary>
 
-- **기존 C 생태계와의 공존:** 기존 C 라이브러리 및 레거시 코드베이스를 수정하지 않고도 현대적 문법과 안전 장치를 즉시 도입할 수 있는 유연성
-- **제로 코스트 추상화:** 인라인화, 전처리 단계 평가, 상수 폴딩/전파 유도 등의 최적화를 통해 고수준 기능을 제공하면서도 런타임 오버헤드를 이론적 최소치로 수렴시킴
-- **점진적 도입 가능:** 프로젝트 전체를 전환할 필요 없이, 필요한 모듈(에러 처리, 할당자 등)만 선택적으로 연결하여 사용할 수 있는 모듈화된 설계
-- **Freestanding 및 베어메탈 지원:** libc의 사용이 선택적. 임베디드 환경이나 커널 개발 등 프리스텐딩 환경과 같은 시스템의 최저 수준에서도 기능함을 최우선적으로 설계
-- **사용자 정의 매크로 최소화:** 일반적인 활용 및 핵심 비즈니스 로직, 기능 구현을 위해 사용자가 별도의 복잡한 매크로를 작성할 필요가 없음. 필요시 정립된 메타 시스템 기반 제네릭 인스턴스화 패턴/전처리 시스템을 따라 쉬운 인스턴스화 및 확장을 지원
-- **디버깅 친화적 설계:** 매크로가 런타임 디버깅(Call Stack 추적, Step-by-step 실행 등)을 방해하지 않도록 정교하게 디자인됨. 복잡한 추상화 도입 시 발생하는 개발 생산성 저하를 원천적으로 방지
+- **제로 코스트 추상화:** 모든 구문은 `if` / `switch` / `goto`와 같은 정규 C 제어 흐름으로 변환되며, `setjmp/longjmp`, `ucontext`, 런타임 클로저, 숨겨진 동적 할당을 사용하지 않음. 인라인화, 전처리 단계 평가, 상수 폴딩/전파 유도를 통해 런타임 오버헤드를 이론적 최소치로 수렴시킴
+- **매크로 지식 불필요:** 제공되는 편의 구문을 사용하기 위해 매크로의 내부 확장 방식을 이해하거나 별도의 매크로를 정의할 필요가 없음. API는 일반 함수 호출 형태로 사용하며, 필요시 정립된 메타 시스템 기반 패턴을 따라 확장 가능
+- **외부 도구 호환성:** 매크로가 `clang-tidy` 등 정적 분석 도구, 런타임 디버거(Call Stack 추적, Step-by-step 실행), `clang-format` 등 포매터와 충돌하지 않도록 설계됨. 기존 개발 워크플로우를 그대로 유지 가능
+- **기존 C 생태계와의 공존:** 기존 C 라이브러리 및 레거시 코드베이스를 수정하지 않고도 현대적 문법과 안전 장치를 도입할 수 있음. 프로젝트 전체를 전환할 필요 없이 필요한 모듈만 선택적으로 연결하여 사용 가능
+- **Freestanding 및 베어메탈 지원:** libc의 사용이 선택적. 임베디드 환경이나 커널 개발 등 프리스탠딩 환경에서도 기능함을 최우선적으로 설계
 - **일관된 컨벤션:** 엄격하고 일관된 코드 컨벤션과 명명법을 통해 대규모 코드베이스에서도 가독성과 유지보수성을 보장
 
 </details>
+
+dasae-headers는 기존 C 환경의 제약을 극복하고 현대적인 개발 경험을 제공하기 위해 아래와 같은 설계 원칙을 고수합니다.
 
 ---
 

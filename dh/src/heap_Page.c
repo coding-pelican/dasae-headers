@@ -1,6 +1,31 @@
 #include "dh/heap/Page.h"
 #include "dh/mem/common.h"
 
+/*========== Internal Declarations ==========================================*/
+
+$static fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+$static fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+$static fn_((heap_Page__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+$static fn_((heap_Page__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+
+/*========== External Definitions ===========================================*/
+
+fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator)) {
+    // VTable for Page allocator
+    $static const mem_Allocator_VT vt $like_ref = { {
+        .alloc = heap_Page__alloc,
+        .resize = heap_Page__resize,
+        .remap = heap_Page__remap,
+        .free = heap_Page__free,
+    } };
+    return mem_Allocator_ensureValid((mem_Allocator){
+        .ctx = self,
+        .vt = vt,
+    });
+};
+
+/*========== Internal Definitions ===========================================*/
+
 #if plat_is_windows
 #include "dh/os/windows/mem.h"
 #else /* posix */
@@ -8,30 +33,7 @@
 #include <unistd.h>
 #endif
 
-// Forward declarations for allocator vtable functions
-$static fn_((heap_Page_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
-$static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
-$static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
-$static fn_((heap_Page_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
-
-fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator)) {
-    claim_assert_nonnull(self);
-    // VTable for Page allocator
-    $static const mem_Allocator_VT vt $like_ref = { {
-        .alloc = heap_Page_alloc,
-        .resize = heap_Page_resize,
-        .remap = heap_Page_remap,
-        .free = heap_Page_free,
-    } };
-    return (mem_Allocator){
-        .ctx = self,
-        .vt = vt,
-    };
-}
-
-/*========== Allocator Interface Implementation =============================*/
-
-$static fn_((heap_Page_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
+fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     let_ignore = ctx;
     let ptr_align = mem_log2ToAlign(align);
     // Page allocator guarantees page alignment, which is typically larger than most requested alignments
@@ -83,7 +85,7 @@ $static fn_((heap_Page_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $sc
         VirtualFree(reserved_addr, 0, MEM_RELEASE);
 
         let addr = VirtualAlloc(
-            intToPtr$(P$raw, aligned_addr),
+            intToPtr$((P$raw)(aligned_addr)),
             aligned_len,
             MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE
@@ -95,7 +97,7 @@ $static fn_((heap_Page_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $sc
         // In a real-world scenario, consider adding a retry limit.
     }
     return_none();
-#else  /* posix */
+#else /* posix */
     let aligned_len = mem_alignFwd(len, mem_page_size);
     let hint = heap_Page_s_next_mmap_addr_hint;
 
@@ -124,7 +126,7 @@ $static fn_((heap_Page_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $sc
 #endif /* posix */
 } $unscoped_(fn);
 
-$static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
+fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let_ignore = ctx;
     let ptr_align = mem_log2ToAlign(buf_align);
     debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator only guarantees page alignment");
@@ -148,7 +150,7 @@ $static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize ne
             // For shrinking that is not releasing, only
             // decommit the pages not needed anymore.
             VirtualFree(
-                intToPtr$(LPVOID, new_addr_end),
+                intToPtr$((LPVOID)(new_addr_end)),
                 old_addr_end - new_addr_end,
                 MEM_DECOMMIT
             );
@@ -183,9 +185,9 @@ $static fn_((heap_Page_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize ne
     // mremap is not available or failed, larger resize is not supported in this simple page allocator.
     return false;
 #endif /* posix */
-}
+};
 
-$static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
+fn_((heap_Page__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
     let_ignore = ctx;
     let ptr_align = mem_log2ToAlign(buf_align);
     debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator only guarantees page alignment");
@@ -226,7 +228,7 @@ $static fn_((heap_Page_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new
 #endif /* posix */
 } $unscoped_(fn);
 
-$static fn_((heap_Page_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
+fn_((heap_Page__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let_ignore = ctx;
     let ptr_align = mem_log2ToAlign(buf_align);
     debug_assert_fmt(ptr_align <= mem_page_size, "Page allocator only guarantees page alignment");
@@ -235,8 +237,8 @@ $static fn_((heap_Page_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
 
 #if plat_is_windows
     VirtualFree(buf.ptr, 0, MEM_RELEASE);
-#else  /* posix */
+#else /* posix */
     let buf_aligned_len = mem_alignFwd(buf.len, mem_page_size);
     munmap(buf.ptr, buf_aligned_len);
 #endif /* posix */
-}
+};

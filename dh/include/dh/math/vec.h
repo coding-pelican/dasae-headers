@@ -24,7 +24,7 @@
 
 /*========== Macros and Declarations ========================================*/
 
-#define m_V_as$(/*(_T_Dst)(_val_src)*/... /*(_T_Dst)*/) __step__m_V_as$(__VA_ARGS__)
+#define m_V_as$(/*(_T: m_V_Type)(_src)*/... /*(m_V_Type)*/) __step__m_V_as$(__VA_ARGS__)
 
 /* --- Float32 (f32) Vector --- */
 
@@ -1404,13 +1404,13 @@ $static i64 m_V4i64_dot(m_V4i64 lhs, m_V4i64 rhs);
     pp_uniqTok(len), pp_uniqTok(d), pp_uniqTok(s), \
         pp_uniqTok(dst), _T_Dst, pp_uniqTok(src),
 #define __step__m_V_as$__emit(...) ____m_V_as$(__VA_ARGS__)
-#define ____m_V_as$(__len, __d, __s, __dst, _T_Dst, __src, _val_src...) blk({ \
+#define ____m_V_as$(__len, __d, __s, __dst, _T_Dst, __src, _src...) blk({ \
     var_(__dst, _T_Dst) = cleared(); \
-    let_(__src, TypeOf(_val_src)) = _val_src; \
+    let_(__src, TypeOf(_src)) = _src; \
     let_(__len, usize) = A_len$(TypeOf(__dst.s)); \
-    claim_assert_static(_len == A_len$(TypeOf(__src.s))); \
+    claim_assert_static(__len == A_len$(TypeOf(__src.s))); \
     for_(($s(A_ref(__dst.s)), $s(A_ref(__src.s)))(__d, __s) { \
-        *__d = as$(A_InnerT$(_T_Dst))(*__s); \
+        *__d = as$(TypeOf(*__d))(*__s); \
     }); \
     blk_return_(__dst); \
 })

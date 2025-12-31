@@ -1,4 +1,8 @@
 #include "dh/time.h"
+#if plat_is_windows
+#include "dh/os/windows/handle.h"
+#include "dh/os/windows/sync.h"
+#endif /* plat_is_windows */
 
 fn_((time_sleep(time_Duration duration))(void)) {
 #if plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit)
@@ -24,7 +28,7 @@ fn_((time_sleep(time_Duration duration))(void)) {
     }
 
     CloseHandle(timer);
-#else  /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
+#else /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
     struct timespec req = {
         .tv_sec = duration.secs,
         .tv_nsec = duration.nanos

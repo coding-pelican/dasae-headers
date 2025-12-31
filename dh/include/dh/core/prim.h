@@ -145,7 +145,7 @@ typedef struct Void {
 #define prim_mask$(/*(_T: IntType)(_off, _len)*/... /*(_T)*/) __step__prim_mask$(__VA_ARGS__)
 
 #define prim_isZero(_x...) __op__prim_isZero(_x)
-#define prim_isNonZero(_x...) __op__prim_isNonZero(_x)
+#define prim_isNonzero(_x...) __op__prim_isNonzero(_x)
 
 #define prim_eql(_lhs, _rhs... /*(bool)*/) __op__prim_eql(_lhs, _rhs)
 #define prim_neq(_lhs, _rhs... /*(bool)*/) __op__prim_neq(_lhs, _rhs)
@@ -703,7 +703,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 })
 
 #define __op__prim_isZero(_x...) (as$(bool)((_x) == 0))
-#define __op__prim_isNonZero(_x...) (as$(bool)((_x) != 0))
+#define __op__prim_isNonzero(_x...) (as$(bool)((_x) != 0))
 
 #define __op__prim_eql(_lhs, _rhs...) (as$(bool)((_lhs) == (_rhs)))
 #define __op__prim_neq(_lhs, _rhs...) (as$(bool)((_lhs) != (_rhs)))
@@ -1822,7 +1822,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     let_(__y, FltType) = _y; \
     let_(__x, FltType) = _x; \
     /* Domain: Non-Origin */ \
-    claim_assert(prim_isNonZero(__y) || prim_isNonZero(__x)); \
+    claim_assert(prim_isNonzero(__y) || prim_isNonzero(__x)); \
     blk_return_(T_switch$((TypeOf(FltType))( \
         T_case$((f32)(__builtin_atan2f(as$(f32)(__y), as$(f32)(__x)))), \
         T_case$((f64)(__builtin_atan2(as$(f64)(__y), as$(f64)(__x)))) \

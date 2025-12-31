@@ -23,9 +23,9 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let lhs = 1;
     let rhs = 2;
     switch (cmp_ord$(i32)(lhs, rhs)) {
-    case_((cmp_Ord_lt)) io_stream_println(u8_l("lhs < rhs")); break $end(case);
-    case_((cmp_Ord_eq)) io_stream_println(u8_l("lhs == rhs")); break $end(case);
-    case_((cmp_Ord_gt)) io_stream_println(u8_l("lhs > rhs")); break $end(case);
+    case_((cmp_Ord_lt)) io_stream_println(u8_l("lhs < rhs")) $end(case);
+    case_((cmp_Ord_eq)) io_stream_println(u8_l("lhs == rhs")) $end(case);
+    case_((cmp_Ord_gt)) io_stream_println(u8_l("lhs > rhs")) $end(case);
     }
 
     return_ok({});

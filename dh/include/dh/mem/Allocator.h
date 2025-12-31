@@ -28,10 +28,10 @@ extern "C" {
 
 /// Allocator vtable
 typedef struct mem_Allocator_VT {
-    fn_(((*alloc)(P$raw ctx, usize len, mem_Align align))(O$P$u8)) $must_check;
-    fn_(((*resize)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) $must_check;
-    fn_(((*remap)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) $must_check;
-    fn_(((*free)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+    fn_(((*const alloc)(P$raw ctx, usize len, mem_Align align))(O$P$u8)) $must_check;
+    fn_(((*const resize)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) $must_check;
+    fn_(((*const remap)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) $must_check;
+    fn_(((*const free)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 } mem_Allocator_VT;
 
 /// Allocator instance
@@ -42,6 +42,13 @@ typedef struct mem_Allocator {
 T_use_O$(mem_Allocator);
 T_use_E$($set(mem_Err)(u_P$raw));
 T_use_E$($set(mem_Err)(u_S$raw));
+
+$attr($inline_always)
+$static fn_((mem_Allocator_isValid(mem_Allocator self))(bool));
+$attr($inline_always)
+$static fn_((mem_Allocator_assertValid(P$raw ctx, P_const$$(mem_Allocator_VT) vt))(void));
+$attr($inline_always)
+$static fn_((mem_Allocator_ensureValid(mem_Allocator self))(mem_Allocator));
 
 /*========== Common VTable Functions ========================================*/
 
@@ -137,6 +144,28 @@ $extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S$raw src, SrcLoc sr
 #define mem_Allocator_dupe_callDebug(_self, _src, _src_loc) mem_Allocator_dupe_debug(_self, _src, _src_loc)
 
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */
+
+fn_((mem_Allocator_isValid(mem_Allocator self))(bool)) {
+    return self.ctx != null
+        && self.vt != null
+        && self.vt->alloc != null
+        && self.vt->resize != null
+        && self.vt->remap != null
+        && self.vt->free != null;
+};
+
+fn_((mem_Allocator_assertValid(P$raw ctx, P_const$$(mem_Allocator_VT) vt))(void)) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(vt);
+    claim_assert_nonnull(vt->alloc);
+    claim_assert_nonnull(vt->resize);
+    claim_assert_nonnull(vt->remap);
+    claim_assert_nonnull(vt->free);
+};
+
+fn_((mem_Allocator_ensureValid(mem_Allocator self))(mem_Allocator)) {
+    return mem_Allocator_assertValid(self.ctx, self.vt), self;
+};
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -1,24 +1,9 @@
-/**
- * @copyright Copyright 2024-2025. Gyeongtae Kim All rights reserved.
- *
- * @file    TEST.c
- * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
- * @date    2024-12-10 (date of creation)
- * @updated 2025-03-26 (date of last update)
- * @version v0.1-alpha.1
- * @ingroup dasae-headers(dh)
- * @prefix  TEST
- *
- * @brief   Implementation of the test framework
- */
-
 #include "dh/TEST.h"
 #include "dh/heap/Page.h"
 #include "dh/io/common.h"
 #include "dh/fs/File.h"
 #include "dh/io/Writer.h"
-
-#include <stdio.h>
+// #include <stdio.h>
 
 /* ANSI color codes */
 #define TEST_color_reset "\033[0m"

@@ -74,7 +74,7 @@ static const A$$(tetris_Tetrominos_count, u16) tetris_tetrominos = A_init({
     [tetris_Tetrominos_l] = lit_num(0b, 0000, 0010, 0110, 0100), /* L: ..X..XX..X...... */
     [tetris_Tetrominos_s] = lit_num(0b, 0000, 0100, 0110, 0010), /* S: .X...XX...X..... */
     [tetris_Tetrominos_t] = lit_num(0b, 0000, 0100, 0100, 1100), /* T: .X...X...XX..... */
-    [tetris_Tetrominos_z] = lit_num(0b, 0000, 0010, 0110, 0010)  /* Z: ..X...X..XX..... */
+    [tetris_Tetrominos_z] = lit_num(0b, 0000, 0010, 0110, 0010) /* Z: ..X...X..XX..... */
 });
 
 typedef struct tetris_PlayField {
@@ -100,7 +100,7 @@ static fn_((tetris_PlayField_lockPiece(tetris_PlayField* field, i32 piece, i32 r
 use_S$(wchar);
 static HANDLE tetris_Console_output_handle = null;
 static S$wchar tetris_Console_screen_buffer = cleared();
-#else  /* others */
+#else /* others */
 struct termios tetris_Console_original = cleared();
 #endif /* others */
 
@@ -293,7 +293,7 @@ static fn_((tetris_Console_shutdown(void))(void)) {
     var allocator = heap_Page_allocator(create$(heap_Page));
     mem_Allocator_free(allocator, anySli(tetris_Console_screen_buffer));
     CloseHandle(tetris_Console_output_handle);
-#else  /* others */
+#else /* others */
     /* Restore original terminal settings */
     tcsetattr(STDIN_FILENO, TCSANOW, &tetris_Console_original);
 #endif /* others */
@@ -304,7 +304,7 @@ static fn_((tetris_isKeyPressed(i32 key))(bool)) {
     /* 1 = right, 2 = left, 3 = down, 4 = rotate (Z) */
     static const A$$(5, i8) s_key_map = A_init({ 0, VK_LEFT, VK_RIGHT, VK_DOWN, 'Z' });
     return (GetAsyncKeyState(A_getAt(s_key_map, key)) & 0x8000) != 0;
-#else  /* others */
+#else /* others */
     /* Non-blocking read from stdin */
     static bool s_is_initialized = false;
     if (!s_is_initialized) {
@@ -461,13 +461,13 @@ static fn_((tetris_PlayField_drawScreen(const tetris_PlayField* field, i32 curre
     return_ok({});
 } $unscoped_(fn);
 
-static fn_((tetris_rotate(i32 px, i32 py, i32 r))(i32) $scope) {
+$static fn_((tetris_rotate(i32 px, i32 py, i32 r))(i32) $scope) {
     switch (r % 4) {
-        case_(0 /* 0 degrees */, return_(py * 4 + px));
-        case_(1 /* 90 degrees */, return_(12 + py - (px * 4)));
-        case_(2 /* 180 degrees */, return_(15 - (py * 4) - px));
-        case_(3 /* 270 degrees */, return_(3 - py + (px * 4)));
-        default_(claim_unreachable);
+    case (0 /* 0 degrees */):   return_(py * 4 + px);
+    case (1 /* 90 degrees */):  return_(12 + py - (px * 4));
+    case (2 /* 180 degrees */): return_(15 - (py * 4) - px);
+    case (3 /* 270 degrees */): return_(3 - py + (px * 4));
+    default:                    claim_unreachable;
     }
 } $unscoped_(fn);
 

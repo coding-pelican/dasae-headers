@@ -102,7 +102,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     let versicolor_virginica = try_(TreeNode_createDecision(
         gpa,
-        3,     // feature index (petal width)
+        3, // feature index (petal width)
         1.75f, // threshold
         leaf_versicolor,
         leaf_virginica
@@ -110,7 +110,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     let root = try_(TreeNode_createDecision(
         gpa,
-        2,     // feature index (petal length)
+        2, // feature index (petal length)
         2.45f, // threshold
         leaf_setosa,
         versicolor_virginica
@@ -158,7 +158,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     const f32 samples[3][4] = {
         { 5.1f, 3.5f, 1.4f, 0.2f }, // Setosa
         { 6.3f, 3.3f, 4.7f, 1.6f }, // Versicolor
-        { 6.5f, 3.0f, 5.2f, 2.0f }  // Virginica
+        { 6.5f, 3.0f, 5.2f, 2.0f } // Virginica
     };
 
     for (u32 i = 0; i < 3; ++i) {
@@ -199,16 +199,15 @@ fn_((TreeNode_createDecision(mem_Allocator gpa, u32 feature_index, f32 threshold
 fn_((TreeNode_destroyRecur(mem_Allocator gpa, TreeNode* node))(void)) /* NOLINT(misc-no-recursion) */ {
     if (node == null) { return; }
     match_(deref(node)) {
-        pattern_((TreeNode_leaf)($ignore)) break $end(pattern);
-        pattern_((TreeNode_decision)(decision)) {
-            TreeNode_destroyRecur(gpa, decision->left);
-            TreeNode_destroyRecur(gpa, decision->right);
-            break;
-        } $end(pattern);
-        default_() {
-            log_error("Invalid node type encountered during prediction");
-            claim_unreachable;
-        } $end(default);
+    pattern_((TreeNode_leaf)($ignore))      break $end(case);
+    pattern_((TreeNode_decision)(decision)) {
+        TreeNode_destroyRecur(gpa, decision->left);
+        TreeNode_destroyRecur(gpa, decision->right);
+    } $end(pattern);
+    default_() {
+        log_error("Invalid node type encountered during prediction");
+        claim_unreachable;
+    } $end(default);
     } $end(match);
     mem_Allocator_destroy(gpa, u_anyP(node));
 }
@@ -217,26 +216,26 @@ fn_((TreeNode_predict(const TreeNode* node, const f32* features, u32 n_features)
     var current = node;
     while (true) {
         match_(deref(current)) {
-            pattern_((TreeNode_leaf)(leaf)) {
-                return leaf->class_label;
-            } $end(pattern);
-            pattern_((TreeNode_decision)(decision)) {
-                if (decision->feature_index >= n_features) {
-                    log_error("Feature index out of bounds: %u >= %u", decision->feature_index, n_features);
-                    claim_unreachable;
-                }
-
-                if (features[decision->feature_index] <= decision->threshold) {
-                    current = decision->left;
-                } else {
-                    current = decision->right;
-                }
-                continue;
-            } $end(pattern);
-            default_() {
-                log_error("Invalid node type encountered during prediction");
+        pattern_((TreeNode_leaf)(leaf)) {
+            return leaf->class_label;
+        } $end(pattern);
+        pattern_((TreeNode_decision)(decision)) {
+            if (decision->feature_index >= n_features) {
+                log_error("Feature index out of bounds: %u >= %u", decision->feature_index, n_features);
                 claim_unreachable;
-            } $end(default);
+            }
+
+            if (features[decision->feature_index] <= decision->threshold) {
+                current = decision->left;
+            } else {
+                current = decision->right;
+            }
+            continue;
+        } $end(pattern);
+        default_() {
+            log_error("Invalid node type encountered during prediction");
+            claim_unreachable;
+        } $end(default);
         } $end(match);
     }
 }
@@ -251,22 +250,22 @@ fn_((TreeNode_printRecur(const TreeNode* node, u32 depth))(void)) /* NOLINT(misc
     }
 
     match_(*node) {
-        pattern_((TreeNode_leaf)(leaf)) {
-            log_info("%sClass: %d", indent, leaf->class_label);
-            break;
-        } $end(pattern);
-        pattern_((TreeNode_decision)(decision)) {
-            log_info("%sFeature %u <= %.2f", indent, decision->feature_index, decision->threshold);
-            TreeNode_printRecur(decision->left, depth + 1);
+    pattern_((TreeNode_leaf)(leaf)) {
+        log_info("%sClass: %d", indent, leaf->class_label);
+        break;
+    } $end(pattern);
+    pattern_((TreeNode_decision)(decision)) {
+        log_info("%sFeature %u <= %.2f", indent, decision->feature_index, decision->threshold);
+        TreeNode_printRecur(decision->left, depth + 1);
 
-            log_info("%sFeature %u > %.2f", indent, decision->feature_index, decision->threshold);
-            TreeNode_printRecur(decision->right, depth + 1);
-            break;
-        } $end(pattern);
-        default_() {
-            log_error("%sInvalid node type", indent);
-            claim_unreachable;
-        } $end(default);
+        log_info("%sFeature %u > %.2f", indent, decision->feature_index, decision->threshold);
+        TreeNode_printRecur(decision->right, depth + 1);
+        break;
+    } $end(pattern);
+    default_() {
+        log_error("%sInvalid node type", indent);
+        claim_unreachable;
+    } $end(default);
     } $end(match);
 }
 
@@ -277,28 +276,28 @@ fn_((TreeNode_saveToFileRecur(const TreeNode* node, FILE* file))(E$void) $scope)
     }
 
     match_(*node) {
-        pattern_((TreeNode_leaf)(leaf)) {
-            if (fwrite(&leaf->class_label, sizeof(leaf->class_label), 1, file) != 1) {
-                log_error("Failed to write leaf data");
-                return_err(fs_File_Err_WriteFailed());
-            }
-            break;
-        } $end(pattern);
-        pattern_((TreeNode_decision)(decision)) {
-            if (fwrite(&decision->feature_index, sizeof(decision->feature_index), 1, file) != 1
-                || fwrite(&decision->threshold, sizeof(decision->threshold), 1, file) != 1) {
-                log_error("Failed to write decision node data");
-                return_err(fs_File_Err_WriteFailed());
-            }
-            // Recursively save children
-            try_(TreeNode_saveToFileRecur(decision->left, file));
-            try_(TreeNode_saveToFileRecur(decision->right, file));
-            break;
-        } $end(pattern);
-        default_() {
-            log_error("Invalid node type encountered during saving");
-            claim_unreachable;
-        } $end(default);
+    pattern_((TreeNode_leaf)(leaf)) {
+        if (fwrite(&leaf->class_label, sizeof(leaf->class_label), 1, file) != 1) {
+            log_error("Failed to write leaf data");
+            return_err(fs_File_Err_WriteFailed());
+        }
+        break;
+    } $end(pattern);
+    pattern_((TreeNode_decision)(decision)) {
+        if (fwrite(&decision->feature_index, sizeof(decision->feature_index), 1, file) != 1
+            || fwrite(&decision->threshold, sizeof(decision->threshold), 1, file) != 1) {
+            log_error("Failed to write decision node data");
+            return_err(fs_File_Err_WriteFailed());
+        }
+        // Recursively save children
+        try_(TreeNode_saveToFileRecur(decision->left, file));
+        try_(TreeNode_saveToFileRecur(decision->right, file));
+        break;
+    } $end(pattern);
+    default_() {
+        log_error("Invalid node type encountered during saving");
+        claim_unreachable;
+    } $end(default);
     } $end(match);
 
     return_ok({});

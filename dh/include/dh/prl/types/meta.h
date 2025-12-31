@@ -536,7 +536,7 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 // ============================================================================
 
 #define u_ret$ u_retV$
-#define u_retV$(_T) ((u_V$raw){ .inner = &lit0$((_T)), .inner_type = typeInfo$(_T) })
+#define u_retV$(_T) ((u_V$raw){ .inner = ptrCast$((P$raw) & lit0$((_T))), .inner_type = typeInfo$(_T) })
 #define u_retA$(_N, _T) ((u_A$raw){ .inner = ref$A((A$$(_N, _T)){}).as_raw, .inner_type = typeInfo$(FieldType$(A$$(_N, _T), val[0])) })
 #define u_retO$(_T) ((u_O$raw){ .inner = ((O$$(_T)){}).ref_raw, .inner_type = typeInfo$(FieldType$(O$$(_T), payload->some)) })
 #define u_retE$(_T) ((u_E$raw){ .inner = ((E$$(_T)){}).ref_raw, .inner_type = typeInfo$(FieldType$(E$$(_T), payload->ok)) })
@@ -545,20 +545,20 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 // #define u_anyP(_p...) ((u_P$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
 #define u_anyP(_p...) _Generic( \
     TypeOf(*_p), \
-    const TypeOfUnqual(*_p): ((u_P_const$raw){ .raw = (P_const$raw)(_p), .type = typeInfo$(TypeOf(*_p)) }), \
-    TypeOfUnqual(*_p): ((u_P$raw){ .raw = (P$raw)(_p), .type = typeInfo$(TypeOf(*_p)) }) \
+    const TypeOfUnqual(*_p): ((u_P_const$raw){ .raw = ptrCast$((P_const$raw)(_p)), .type = typeInfo$(TypeOf(*_p)) }), \
+    TypeOfUnqual(*_p): ((u_P$raw){ .raw = ptrCast$((P$raw)(_p)), .type = typeInfo$(TypeOf(*_p)) }) \
 )
 // #define u_anyS_const(_s...) ((u_S_const$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
 // #define u_anyS(_s...)       ((u_S$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
 #define u_anyS(_s...) _Generic( \
     TypeOf(&*_s.ptr), \
-    const TypeOfUnqual(*_s.ptr)*: ((u_S_const$raw){ .raw = *(S_const$raw*)(_s.ref_raw), .type = typeInfo$(TypeOf(*_s.ptr)) }), \
-    TypeOfUnqual(*_s.ptr)*: ((u_S$raw){ .raw = *(S$raw*)(_s.ref_raw), .type = typeInfo$(TypeOf(*_s.ptr)) }) \
+    const TypeOfUnqual(*_s.ptr)*: ((u_S_const$raw){ .raw = *ptrCast$((S_const$raw*)(_s.ref_raw)), .type = typeInfo$(TypeOf(*_s.ptr)) }), \
+    TypeOfUnqual(*_s.ptr)*: ((u_S$raw){ .raw = *ptrCast$((S$raw*)(_s.ref_raw)), .type = typeInfo$(TypeOf(*_s.ptr)) }) \
 )
 
 #define u_anyV(_v...) ({ \
     let_(__p_v, TypeOfUnqual(_v)*) = &copy(_v); \
-    lit$((u_V$raw){ .inner = __p_v, .inner_type = typeInfo$(TypeOf(*__p_v)) }); \
+    lit$((u_V$raw){ .inner = ptrCast$((P$raw)(__p_v)), .inner_type = typeInfo$(TypeOf(*__p_v)) }); \
 })
 #define u_anyA(_a...) ({ \
     let_(__p_a, TypeOfUnqual(_a)*) = &copy(_a); \
