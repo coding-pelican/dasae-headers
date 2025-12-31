@@ -25,7 +25,7 @@ extern "C" {
 #include "cfg.h"
 #include "dh/ListSgl.h"
 
-/*========== Arena Allocator ===============================================*/
+/*========== Macros and Declarations ========================================*/
 
 T_use$((usize)(ListSgl_Link, ListSgl));
 typedef struct heap_Arena heap_Arena;

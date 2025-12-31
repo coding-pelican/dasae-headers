@@ -217,30 +217,28 @@ extern "C" {
 
 #define asg(_p_lhs, _rhs, _fields...) pp_overload(__asg, _fields)(_p_lhs, _rhs, _fields)
 #define __asg_0(_p_lhs, _rhs, ...) __op__asg(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
-#define __op__asg(__p_lhs, __rhs, _p_lhs, _rhs, ...) \
-    ({ \
-        let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
-        let_(__rhs, TypeOf(_rhs)) = _rhs; \
-        claim_assert_nonnull(__p_lhs); \
-        claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
-        claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-        claim_assert_static(Type_eq$(TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs))); \
-        *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
-        __p_lhs; \
-    })
+#define __op__asg(__p_lhs, __rhs, _p_lhs, _rhs, ...) ({ \
+    let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
+    let_(__rhs, TypeOf(_rhs)) = _rhs; \
+    claim_assert_nonnull(__p_lhs); \
+    claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
+    claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
+    claim_assert_static(Type_eq$(TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs))); \
+    *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
+    __p_lhs; \
+})
 #define __asg_1(_p_lhs, _rhs, _fields...) __op__asg_compat(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs, __asg_1__expandFields _fields)
 #define __asg_1__expandFields(_fields...) _fields
-#define __op__asg_compat(__p_lhs, __rhs, _p_lhs, _rhs, _fields...) \
-    ({ \
-        let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
-        let_(__rhs, TypeOf(_rhs)) = _rhs; \
-        claim_assert_nonnull(__p_lhs); \
-        claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
-        claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-        pp_foreach(__op__asg_compat__assert, (TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs)), _fields); \
-        *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
-        __p_lhs; \
-    })
+#define __op__asg_compat(__p_lhs, __rhs, _p_lhs, _rhs, _fields...) ({ \
+    let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
+    let_(__rhs, TypeOf(_rhs)) = _rhs; \
+    claim_assert_nonnull(__p_lhs); \
+    claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
+    claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
+    pp_foreach(__op__asg_compat__assert, (TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs)), _fields); \
+    *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
+    __p_lhs; \
+})
 #define __op__asg_compat__assert(...) __op__asg_compat____assert(__op__asg_compat____assert__parse __VA_ARGS__)
 #define __op__asg_compat____assert__parse(...) __VA_ARGS__,
 #define __op__asg_compat____assert(...) __op__asg_compat____assert__emit(__VA_ARGS__)
@@ -250,23 +248,21 @@ extern "C" {
 #define __op__asg_lit(...) __op__asg_lit__emit(__VA_ARGS__)
 #define __op__asg_lit__parsePLhs(_p_lhs...) pp_uniqTok(p_lhs), _p_lhs, __op__asg_lit__expandRhs
 #define __op__asg_lit__expandRhs(_rhs...) _rhs
-#define __op__asg_lit__emit(__p_lhs, _p_lhs, _rhs...) \
-    ({ \
-        let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
-        typedef TypeOf(*__p_lhs) LitType; \
-        claim_assert_nonnull(__p_lhs); \
-        *__p_lhs = make$((LitType)_rhs); \
-        __p_lhs; \
-    })
+#define __op__asg_lit__emit(__p_lhs, _p_lhs, _rhs...) ({ \
+    let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
+    typedef TypeOf(*__p_lhs) LitType; \
+    claim_assert_nonnull(__p_lhs); \
+    *__p_lhs = make$((LitType)_rhs); \
+    __p_lhs; \
+})
 
 #define $init(/*(_T){_initial...}*/... /*(_T)*/) __op__$init(__op__$init__parseT __VA_ARGS__)
 #define __op__$init(...) __op__$init__emit(__VA_ARGS__)
 #define __op__$init__parseT(_T...) _T,
-#define __op__$init__emit(_T, _initial...) \
-    ({ \
-        $maybe_unused typedef _T InitType; \
-        (InitType) _initial; \
-    })
+#define __op__$init__emit(_T, _initial...) ({ \
+    $maybe_unused typedef _T InitType; \
+    (InitType) _initial; \
+})
 
 #define $asg(_val...) , $_asg, (_val)
 #define $field(...) __op__$field(__VA_ARGS__)
@@ -312,13 +308,12 @@ extern "C" {
     { _expr }
 
 #define move(_p_val... /*(TypeOf(*_p_val))*/) ____move(_p_val)
-#define ____move(_p_val...) \
-    ({ \
-        let_(__p_val, TypeOf(_p_val)) = _p_val; \
-        let_(__val, TypeOfUnqual(*__p_val)) = *__p_val; \
-        *__p_val = lit0$((TypeOf(__val))); \
-        __val; \
-    })
+#define ____move(_p_val...) ({ \
+    let_(__p_val, TypeOf(_p_val)) = _p_val; \
+    let_(__val, TypeOfUnqual(*__p_val)) = *__p_val; \
+    *__p_val = lit0$((TypeOf(__val))); \
+    __val; \
+})
 #define copy(_val... /*(TypeOf(_val))*/) ____copy(_val)
 #define ____copy(_val...) (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
 
@@ -333,7 +328,7 @@ extern "C" {
 #define __step__T_case$(...) __T_case$(__VA_ARGS__)
 #define __step__T_case$__parseTCase(_T_Case...) _T_Case,
 #define __T_case$(_T_Case, _expr...) /* clang-format off */ \
-    $P$(const _T_Case): \
+    $P_const$(_T_Case): \
         _expr, \
     $P$(_T_Case): \
         _expr /* clang-format on */

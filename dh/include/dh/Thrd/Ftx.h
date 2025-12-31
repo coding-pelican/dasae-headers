@@ -26,6 +26,18 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#if !defined(Thrd_Ftx_use_pthread)
+#define Thrd_Ftx_use_pthread __comp_bool__Thrd_Ftx_use_pthread
+#endif /* !defined(Thrd_Ftx_use_pthread) */
+#define __comp_bool__Thrd_Ftx_use_pthread Thrd_Ftx__use_pthread_default
+
+#define Thrd_Ftx__use_pthread_default __comp_bool__Thrd_Ftx__use_pthread_default
+#define __comp_bool__Thrd_Ftx__use_pthread_default pp_expand( \
+    pp_switch_ pp_begin(plat_type)( \
+        pp_default_(Thrd_use_pthread) \
+    ) pp_end \
+)
+
 errset_((Thrd_Ftx_Err)(Timeout));
 $extern fn_((Thrd_Ftx_wait(const atom_V$u32* ptr, u32 expect))(void));
 $attr($must_check)

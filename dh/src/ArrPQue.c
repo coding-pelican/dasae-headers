@@ -455,9 +455,9 @@ fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$
     // Restore heap property based on comparison
     let_(no_need_to_restore, Void) = {};
     switch (ArrPQue__ord(self, new_item.ref.as_const, old_elem.ref.as_const)) {
-        case_((cmp_Ord_lt)) siftUp(self, type, idx) $end(case) break;
-        case_((cmp_Ord_gt)) siftDown(self, type, idx) $end(case) break;
-        case_((cmp_Ord_eq)) $ignore_void no_need_to_restore $end(case) break;
+    case_((cmp_Ord_lt)) siftUp(self, type, idx) $end(case);
+    case_((cmp_Ord_gt)) siftDown(self, type, idx) $end(case);
+    case_((cmp_Ord_eq)) $ignore_void no_need_to_restore $end(case);
     }
     return_ok({});
 } $unscoped_(fn);

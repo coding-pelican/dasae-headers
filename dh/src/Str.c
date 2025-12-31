@@ -60,9 +60,9 @@ bool S_const$u8Castable(S_const$u8 self) {
     MEMORY_BASIC_INFORMATION mbi = cleared();
     if (!VirtualQuery(self.ptr, &mbi, sizeOf$(mbi))) { return false; }
     return (mbi.Protect & (PAGE_READWRITE | PAGE_WRITECOPY)) != 0;
-#else  /* posix */
+#else /* posix */
     return !mprotect(
-        intToPtr$(P$raw, ptrToInt(self.ptr) & ~(sysconf(_SC_PAGESIZE) - 1)),
+        intToPtr$((P$raw)(ptrToInt(self.ptr) & ~(sysconf(_SC_PAGESIZE) - 1))),
         1,
         PROT_READ | PROT_WRITE
     );

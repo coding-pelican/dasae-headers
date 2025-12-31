@@ -26,32 +26,53 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define Thrd_Cond__use_pthread __comp_bool__Thrd_use_pthread
-#define __comp_bool__Thrd_Cond__use_pthread pp_expand( \
+#if !defined(Thrd_Cond_use_pthread)
+#define Thrd_Cond_use_pthread __comp_bool__Thrd_Cond_use_pthread
+#endif /* !defined(Thrd_Cond_use_pthread) */
+#define __comp_bool__Thrd_Cond_use_pthread Thrd_Cond__use_pthread_default
+
+#define Thrd_Cond__use_pthread_default __comp_bool__Thrd_Cond__use_pthread_default
+#define __comp_bool__Thrd_Cond__use_pthread_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
         pp_case_((plat_type_windows)(pp_false)), \
-        pp_case_((plat_type_linux)(pp_false)), \
-        pp_case_((plat_type_darwin)(pp_false)), \
-        pp_default_(pp_true) \
+        pp_default_(Thrd_use_pthread) \
+    ) pp_end \
+)
+
+#if !defined(Thrd_Cond_has_specialized)
+#define Thrd_Cond_has_specialized __comp_bool__Thrd_Cond_has_specialized
+#endif /* !defined(Thrd_Cond_has_specialized) */
+#define __comp_bool__Thrd_Cond_has_specialized Thrd_Cond__has_specialized_default
+
+#define Thrd_Cond__has_specialized_default __comp_bool__Thrd_Cond__has_specialized_default
+#define __comp_bool__Thrd_Cond__has_specialized_default pp_expand( \
+    pp_switch_ pp_begin(plat_type)( \
+        pp_case_((plat_type_windows)(pp_true)), \
+        pp_default_(pp_false) \
     ) pp_end \
 )
 
 errset_((Thrd_Cond_Err)(Timeout));
-struct Thrd_Cond__Impl pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+struct Thrd_Cond__Impl pp_if_(Thrd_Cond_use_pthread)(
     pp_then_({
-        var_(state, atom_V$u32);
-        var_(epoch, atom_V$u32);
-    }),
-    pp_else_({
         var_(unused_, Void);
-    })
-);
-struct Thrd_Cond pp_switch_((plat_type)(
-    pp_case_((plat_type_windows)({ var_(impl, CONDITION_VARIABLE); })),
-    pp_case_((plat_type_linux)({ var_(impl, Thrd_Cond__Impl); })),
-    pp_case_((plat_type_darwin)({ var_(impl, Thrd_Cond__Impl); })),
-    pp_default_({ var_(impl, pthread_cond_t); })
-));
+    }),
+    pp_else_(pp_if_(Thrd_Cond_has_specialized)(
+        pp_then_(pp_expand(
+            pp_switch_ pp_begin(plat_type)(
+                pp_case_((plat_type_windows)({
+                    var_(inner, CONDITION_VARIABLE);
+                }))
+            ) pp_end
+        )),
+        pp_else_({
+            var_(state, atom_V$u32);
+            var_(epoch, atom_V$u32);
+        })
+    )));
+struct Thrd_Cond pp_if_(Thrd_Cond_use_pthread)(
+    pp_then_({ var_(impl, pthread_cond_t); }),
+    pp_else_({ var_(impl, Thrd_Cond__Impl); }));
 /// @brief Initializes a condition variable
 /// @return A new condition variable
 $extern fn_((Thrd_Cond_init(void))(Thrd_Cond));

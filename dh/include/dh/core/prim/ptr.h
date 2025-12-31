@@ -27,7 +27,6 @@ extern "C" {
 
 #include "cfg.h"
 #include "null.h"
-
 #include <stddef.h>
 
 /*========== Macros and Definitions =========================================*/
@@ -40,43 +39,15 @@ typedef TypeOf(void*) P$raw;
 #define $P_const$(_T...) TypeOf(const _T*)
 #define $P$(_T...) TypeOf(_T*)
 
-#define ptrCast$(TDestRawptr, var_rawptr) \
-    /** \
-     * @brief Convert P$raw to pointer of type TDestRawptr \
-     */ \
-    comp_op__ptrCast$(TDestRawptr, var_rawptr)
-
-#define intFromPtr(val_rawptr) \
-    /** \
-     * @brief Convert rawptr to int(usize) \
-     */ \
-    comp_op__ptrToInt(val_rawptr)
-#define ptrToInt(val_rawptr) \
-    /** \
-     * @brief Convert rawptr to int(usize) \
-     */ \
-    comp_op__ptrToInt(val_rawptr)
+#define ptrCast$(/*(_T: PtrType)(_val: PtrType)*/... /*(_T)*/) __step__ptrCast$(__VA_ARGS__)
+#define intFromPtr ptrToInt
+#define ptrToInt(_p /*: PtrType*/... /*(usize)*/) ____ptrToInt(_p)
 #define ptrFromInt$ intToPtr$
-#define rawptrFromInt$ intToPtr$
-#define intToPtr$(TDestRawptr, val_int) \
-    /** \
-     * @brief Convert int to rawptr \
-     */ \
-    comp_op__intToPtr$(TDestRawptr, val_int)
+#define intToPtr$(/*(_T: PtrType)(_val: usize)*/... /*(_T)*/) __step__intToPtr$(__VA_ARGS__)
 
-#define ptrIsNull(var_rawptr) \
-    /** \
-     * @brief Check if pointer is null \
-     */ \
-    comp_op__ptrIsNull(var_rawptr)
-
-#define ptrIsNonnull(var_rawptr) \
-    /** \
-     * @brief Check if pointer is non-null \
-     */ \
-    comp_op__ptrIsNonnull(var_rawptr)
-
-#define ensureNonnull(val_ptr...) comp_op__ensureNonnull(pp_uniqTok(ptr), val_ptr)
+#define isNull(_p /*: P(_T)*/... /*(bool)*/) ____isNull(_p)
+#define isNonnull(_p /*: P(_T)*/... /*(bool)*/) ____isNonnull(_p)
+#define ensureNonnull(_p /*: P(_T)*/... /*P(_T)*/) __step__ensureNonnull(_p)
 
 #define rawref(var_src...) comp_op__rawref(var_src)
 #define rawderef(val_ptr...) comp_op__rawderef(val_ptr)
@@ -86,16 +57,22 @@ typedef TypeOf(void*) P$raw;
 
 /*========== Macros Implementation ==========================================*/
 
-#define comp_op__ptrCast$(TDestRawptr, var_rawptr) ((TDestRawptr)(var_rawptr))
-#define comp_op__ptrToInt(val_rawptr) ((usize)(val_rawptr)) // NOLINT
-#define comp_op__intToPtr$(TDestRawptr, val_int) ((TDestRawptr)(val_int)) // NOLINT
+#define __step__ptrCast$(...) __step__ptrCast$__emit(__step__ptrCast$__parse __VA_ARGS__)
+#define __step__ptrCast$__parse(_T...) _T,
+#define __step__ptrCast$__emit(...) ____ptrCast$(__VA_ARGS__)
+#define ____ptrCast$(_T, _val...) ((_T)(_val))
+#define ____ptrToInt(_p...) ((usize)(_p)) /* NOLINT(performance-no-int-to-ptr) */
+#define __step__intToPtr$(...) __step__intToPtr$__emit(__step__intToPtr$__parse __VA_ARGS__)
+#define __step__intToPtr$__parse(_T...) _T,
+#define __step__intToPtr$__emit(...) ____intToPtr$(__VA_ARGS__)
+#define ____intToPtr$(_T, _val...) ((_T)(_val)) /* NOLINT(performance-no-int-to-ptr) */
 
-#define comp_op__ptrIsNull(var_rawptr) ((var_rawptr) == null)
-#define comp_op__ptrIsNonnull(var_rawptr) ((var_rawptr) != null)
-
-#define comp_op__ensureNonnull(__ptr, val_ptr...) blk({ \
-    TypeOf(*val_ptr)* __ptr = val_ptr; \
-    blk_return_(claim_assert_nonnull(__ptr), __ptr); \
+#define ____isNull(_p...) (as$(bool)((_p) == null))
+#define ____isNonnull(_p...) (as$(bool)((_p) != null))
+#define __step__ensureNonnull(_p...) ____ensureNonnull(pp_uniqTok(p), _p)
+#define ____ensureNonnull(__p, _p...) blk({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    blk_return_(claim_assert_nonnull(__p), __p); \
 })
 
 #define comp_op__rawref(var_src...) (&(var_src))

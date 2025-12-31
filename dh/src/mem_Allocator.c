@@ -42,13 +42,12 @@ fn_((
     mem_Allocator_rawAlloc_debug(mem_Allocator self, usize len, mem_Align align, SrcLoc src_loc)
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */
 )(O$P$u8)) {
-    debug_assert_nonnull(self.vt);
-    debug_assert_nonnull(self.vt->alloc);
+    self = mem_Allocator_ensureValid(self);
     // Special case for zero-sized allocations
     if (len == 0) {
         // For zero-sized allocations, return a non-null pointer at max address
         // aligned to the requested alignment
-        let addr = intToPtr$(u8*, usize_limit_max & ~(mem_log2ToAlign(align) - 1));
+        let addr = intToPtr$((u8*)(usize_limit_max & ~(mem_log2ToAlign(align) - 1)));
 #if !on_comptime || (on_comptime && !debug_comp_enabled)
 #else /* on_comptime && (!on_comptime || debug_comp_enabled) */
         mem_Tracker_registerAlloc(addr, len, src_loc);
@@ -70,8 +69,7 @@ fn_((
     mem_Allocator_rawResize_debug(mem_Allocator self, S$u8 buf, u8 buf_align, usize new_len, SrcLoc src_loc)
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */
 )(bool)) {
-    debug_assert_nonnull(self.vt);
-    debug_assert_nonnull(self.vt->resize);
+    self = mem_Allocator_ensureValid(self);
     // Special case for zero-sized allocations
     if (new_len == 0) {
         mem_Allocator_rawFree(self, buf, buf_align);
@@ -100,12 +98,11 @@ fn_((
     mem_Allocator_rawRemap_debug(mem_Allocator self, S$u8 buf, u8 buf_align, usize new_len, SrcLoc src_loc)
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */
 )(O$P$u8)) {
-    debug_assert_nonnull(self.vt);
-    debug_assert_nonnull(self.vt->remap);
+    self = mem_Allocator_ensureValid(self);
     // Special case for zero-sized allocations
     if (new_len == 0) {
         mem_Allocator_rawFree(self, buf, buf_align);
-        let addr = intToPtr$(u8*, usize_limit_max & ~(mem_log2ToAlign(buf_align) - 1));
+        let addr = intToPtr$((u8*)(usize_limit_max & ~(mem_log2ToAlign(buf_align) - 1)));
 #if !on_comptime || (on_comptime && !debug_comp_enabled)
 #else /* on_comptime && (!on_comptime || debug_comp_enabled) */
         mem_Tracker_registerRemap(buf.ptr, addr, new_len, src_loc);
@@ -131,8 +128,7 @@ fn_((
     mem_Allocator_rawFree_debug(mem_Allocator self, S$u8 buf, u8 buf_align, SrcLoc src_loc)
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */
 )(void)) {
-    debug_assert_nonnull(self.vt);
-    debug_assert_nonnull(self.vt->free);
+    self = mem_Allocator_ensureValid(self);
     // Special case for zero-sized allocations
     if (buf.len == 0) { return; }
     // Set memory to undefined before freeing
@@ -152,7 +148,7 @@ fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$u_P$raw) $
     // Special case for zero-sized types
     if (type.size == 0) {
         return_ok({
-            .raw = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(type.align) - 1)),
+            .raw = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(type.align) - 1))),
             .type = type,
         });
     }
@@ -182,7 +178,7 @@ fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Er
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(type.align) - 1))),
             .len = count,
             .type = type,
         });
@@ -232,7 +228,7 @@ fn_((mem_Allocator_remap(mem_Allocator self, u_S$raw old_mem, usize new_len))(O$
     // Special case for zero-sized types
     if (old_mem.type.size == 0) {
         return_some({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = new_len,
             .type = old_mem.type,
         });
@@ -241,7 +237,7 @@ fn_((mem_Allocator_remap(mem_Allocator self, u_S$raw old_mem, usize new_len))(O$
     if (new_len == 0) {
         mem_Allocator_free(self, old_mem);
         return_some({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = 0,
             .type = old_mem.type,
         });
@@ -281,7 +277,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     if (new_len == 0) {
         mem_Allocator_free(self, old_mem);
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = 0,
             .type = old_mem.type,
         });
@@ -289,7 +285,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     // Special case for zero-sized types
     if (old_mem.type.size == 0) {
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = new_len,
             .type = old_mem.type,
         });
@@ -359,7 +355,7 @@ fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_lo
     // Special case for zero-sized types
     if (type.size == 0) {
         return_ok({
-            .raw = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(type.align) - 1)),
+            .raw = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(type.align) - 1))),
             .type = type,
         });
     }
@@ -391,7 +387,7 @@ fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, S
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(type.align) - 1))),
             .len = count,
             .type = type,
         });
@@ -442,7 +438,7 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, u_S$raw old_mem, usize new_le
     // Special case for zero-sized types
     if (old_mem.type.size == 0) {
         return_some({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = new_len,
             .type = old_mem.type,
         });
@@ -451,7 +447,7 @@ fn_((mem_Allocator_remap_debug(mem_Allocator self, u_S$raw old_mem, usize new_le
     if (new_len == 0) {
         mem_Allocator_free_debug(self, old_mem, src_loc);
         return_some({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = 0,
             .type = old_mem.type,
         });
@@ -489,7 +485,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     if (new_len == 0) {
         mem_Allocator_free_debug(self, old_mem, src_loc);
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = 0,
             .type = old_mem.type,
         });
@@ -497,7 +493,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     // Special case for zero-sized types
     if (old_mem.type.size == 0) {
         return_ok({
-            .ptr = intToPtr$(P$raw, usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1)),
+            .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = new_len,
             .type = old_mem.type,
         });

@@ -10,7 +10,6 @@ $static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize 
 $static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
 fn_((heap_Classic_allocator(heap_Classic* self))(mem_Allocator)) {
-    claim_assert_nonnull(self);
     // VTable for Classic allocator
     $static const mem_Allocator_VT vt $like_ref = { {
         .alloc = heap_Classic_alloc,
@@ -18,10 +17,10 @@ fn_((heap_Classic_allocator(heap_Classic* self))(mem_Allocator)) {
         .remap = heap_Classic_remap,
         .free = heap_Classic_free,
     } };
-    return (mem_Allocator){
+    return mem_Allocator_ensureValid((mem_Allocator){
         .ctx = self,
-        .vt = vt
-    };
+        .vt = vt,
+    });
 }
 
 /*========== Allocator Interface Implementation =============================*/
@@ -35,7 +34,7 @@ $static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) 
     if_(let ptr = _aligned_malloc(len, ptr_align), ptr != null) { return_some(ptr); }
 #elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
     if_(var ptr = make$( P$raw), posix_memalign(&ptr, ptr_align, len) == 0) { return_some(ptr); }
-#else  /* other platforms */
+#else /* other platforms */
     // Manual alignment with proper header storage
     // Allocate extra space for the original pointer and alignment padding
     let header_size = sizeOf$(P$raw);
@@ -51,8 +50,8 @@ $static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) 
         let aligned_addr = mem_alignFwd(raw_addr + header_size, ptr_align);
 
         // Store the original pointer just before the aligned address
-        let ptr = intToPtr$(P$raw, aligned_addr);
-        var header_ptr = intToPtr$(P$raw*, aligned_addr - header_size);
+        let ptr = intToPtr$((P$raw)(aligned_addr));
+        var header_ptr = intToPtr$((P$raw*)(aligned_addr - header_size));
         *header_ptr = raw;
         return_some(ptr);
     }
@@ -77,7 +76,7 @@ $static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize
 #if heap_Classic_has_malloc_size
     const usize full_size = heap_Classic_mallocSize(ptr);
     if (new_len <= full_size) { return true; }
-#else  /* !heap_Classic_has_malloc_size */
+#else /* !heap_Classic_has_malloc_size */
     // Without malloc_size, we can only shrink within the original allocation
     const usize original_size = buf.len;
     if (new_len <= original_size) { return true; }
@@ -155,9 +154,9 @@ $static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void))
     _aligned_free(raw_ptr);
 #elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
     free(raw_ptr);
-#else  /* other platforms */
+#else /* other platforms */
     // Manual alignment cleanup - retrieve the original pointer
-    var header_ptr = intToPtr$(P$raw*, ptrToInt(raw_ptr) - sizeOf(P$raw));
+    var header_ptr = intToPtr$((P$raw*)(ptrToInt(raw_ptr) - sizeOf(P$raw)));
     var original_ptr = *header_ptr;
     free(original_ptr);
 #endif /* other platforms */

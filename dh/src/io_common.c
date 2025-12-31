@@ -3,7 +3,7 @@
 
 #include "dh/posix.h"
 #if plat_is_windows
-#include "dh/os/windows.h"
+#include "dh/os/windows/proc.h"
 #endif /* plat_is_windows */
 
 $attr($inline_always)

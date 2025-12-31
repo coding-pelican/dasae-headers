@@ -50,6 +50,95 @@ extern "C" {
 #define mutCast$P(_p /*: P$$(_T)*/... /*(P_const $$(_T))*/) (as$(const TypeOfUnqual(*_p)*)(_p))
 #define constCast$P(_p /*: P_const$$(_T)*/... /*(P$$(_T))*/) /* TODO: Implement */
 
+#define P_slice$(/*(_ST: S(_T))((_p: P(_T))(_range: R))*/... /*(_ST)*/) \
+    __op__P_slice$(__op__P_slice$__parseST __VA_ARGS__)
+#define __op__P_slice$(...) __op__P_slice$__emit(__VA_ARGS__)
+#define __op__P_slice$__parseST(_ST...) _ST, __op__P_slice$__parseP
+#define __op__P_slice$__parseP(_p...) pp_uniqTok(p), _p, pp_uniqTok(range),
+#define __op__P_slice$__emit(_ST, __p, _p, __range, _range...) ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__range, R) = _range; \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
+    /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); */ \
+    lit$((_ST){ .ptr = &__p[__range.begin], .len = len$R(__range) }); \
+})
+#define P_slice(/*(_p: P(_T))(_range: R)*/... /*(S(_T))*/) \
+    __op__P_slice(__op__A_slice__parse __VA_ARGS__)
+#define __op__P_slice(...) __op__P_slice__emit(__VA_ARGS__)
+#define __op__P_slice__parse(_p...) pp_uniqTok(p), _p, pp_uniqTok(range),
+#define __op__P_slice__emit(__p, _p, __range, _range...) ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__range, R) = _range; \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
+    /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); */ \
+    T_switch$((TypeOf(*__p))( \
+        T_qual$((const TypeOfUnqual(*__p))( \
+            lit$((S_const$$(P_InnerT$(TypeOf(__p)))){ .ptr = &__p[__range.begin], .len = len$R(__range) }) \
+        )), \
+        T_qual$((TypeOfUnqual(*__p))( \
+            lit$((S$$(P_InnerT$(TypeOf(__p)))){ .ptr = &__p[__range.begin], .len = len$R(__range) }) \
+        )) \
+    )); \
+})
+
+#define P_prefix$(/*(_ST: S(_T))(_p: P(_T))(_end: usize)*/... /*(_ST)*/) \
+    __op__P_prefix$(__op__P_prefix$__parseST __VA_ARGS__)
+#define __op__P_prefix$(...) __op__P_prefix$__emit(__VA_ARGS__)
+#define __op__P_prefix$__parseST(_ST...) _ST, __op__P_prefix$__parseA
+#define __op__P_prefix$__parseA(_p...) pp_uniqTok(p), _p, pp_uniqTok(end),
+#define __op__P_prefix$__emit(_ST, __p, _p, __end, _end...) ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__end, usize) = _end; \
+    /* claim_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); */ \
+    lit$((_ST){ .ptr = __p, .len = __end }); \
+})
+#define P_prefix(/*(_p: P(_T))(_end: usize)*/... /*(S(_T))*/) \
+    __op__P_prefix(__op__P_prefix__parse __VA_ARGS__)
+#define __op__P_prefix(...) __op__P_prefix__emit(__VA_ARGS__)
+#define __op__P_prefix__parse(_p...) pp_uniqTok(p), _p, pp_uniqTok(end),
+#define __op__P_prefix__emit(__p, _p, __end, _end...) ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__end, usize) = _end; \
+    /* claim_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); */ \
+    T_switch$((TypeOf(*__p))( \
+        T_qual$((const TypeOfUnqual(*__p))( \
+            lit$((S_const$$(P_InnerT$(TypeOf(__p)))){ .ptr = __p, .len = __end }) \
+        )), \
+        T_qual$((TypeOfUnqual(*__p))( \
+            lit$((S$$(P_InnerT$(TypeOf(__p)))){ .ptr = __p, .len = __end }) \
+        )) \
+    )); \
+})
+
+#define P_suffix$(/*(_ST: S(_T))((_p: P(_T))(_begin: usize))*/... /*(_ST)*/) \
+    __op__P_suffix$(__op__P_suffix$__parseST __VA_ARGS__)
+#define __op__P_suffix$(...) __op__P_suffix$__emit(__VA_ARGS__)
+#define __op__P_suffix$__parseST(_ST...) _ST, __op__P_suffix$__parseA
+#define __op__P_suffix$__parseA(_p...) pp_uniqTok(p), _p, pp_uniqTok(begin),
+#define __op__P_suffix$__emit(_ST, __p, _p, __begin, _begin...) ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__begin, usize) = _begin; \
+    /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); */ \
+    lit$((_ST){ .ptr = __p + __begin, .len = usize_limit_max - __begin }); \
+})
+#define P_suffix(/*(_p: P(_T))(_begin: usize)*/... /*(S(_T))*/) \
+    __op__P_suffix(__op__P_suffix__parse __VA_ARGS__)
+#define __op__P_suffix(...) __op__P_suffix__emit(__VA_ARGS__)
+#define __op__P_suffix__parse(_p...) pp_uniqTok(p), _p, pp_uniqTok(begin),
+#define __op__P_suffix__emit(__p, _p, __begin, _begin...) ({ \
+    let_(__p, TypeOf(_p)) = _p; \
+    let_(__begin, usize) = _begin; \
+    /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); */ \
+    T_switch$((TypeOf(*__a))( \
+        T_qual$((const TypeOfUnqual(*__p))( \
+            lit$((S_const$$(P_InnerT$(TypeOf(*__p)))){ .ptr = __p + __begin, .len = usize_limit_max - __begin }) \
+        )), \
+        T_qual$((TypeOfUnqual(*__p))( \
+            lit$((S$$(P_InnerT$(TypeOf(*__p)))){ .ptr = __p + __begin, .len = usize_limit_max - __begin }) \
+        )) \
+    )); \
+})
+
 #define slice$P(/*_p: P$$(_T), $r(_begin:0, _end:1): R*/... /*(S_const$$(_T))*/) __param_expand__slice$P(__VA_ARGS__)
 #define slice$P$(/*(_T)(_p: P$$(_T), $r(_begin:0, _end:1): R)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__slice$P$)(__param_expand__slice$P$ __VA_ARGS__))
 #define prefix$P(/*_p: P$$(_T), _end: usize*/... /*(S_const$$(_T))*/) __param_expand__prefix$P(__VA_ARGS__)

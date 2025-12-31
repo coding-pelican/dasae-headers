@@ -73,6 +73,17 @@ extern "C" {
 #define S_InnerTUnqual$(_T...) TypeOfUnqual(*(as$(_T*)(null))->ptr)
 #define S_isConst$(_T...) Type_eq$(S_InnerT$(_T)*, const S_InnerTUnqual$(_T)*)
 
+#define isNullS(_s /*: S(_T)*/... /*(bool)*/) ____isNullS(_s)
+#define ____isNullS(_s...) (as$(bool)((_s).ptr == null))
+#define isNonnullS(_s /*: S(_T)*/... /*(bool)*/) ____isNonnullS(_s)
+#define ____isNonnullS(_s...) (as$(bool)((_s).ptr != null))
+#define ensureNonnullS(_s /*: S(_T)*/... /*(S(_T))*/) __step__ensureNonnullS(_s)
+#define __step__ensureNonnullS(_s...) ____ensureNonnullS(pp_uniqTok(s), _s)
+#define ____ensureNonnullS(__s, _s...) blk({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    blk_return_(claim_assert_nonnullS(__s), __s); \
+})
+
 /* Slice Operations */
 #define zeroS zero$S
 #define zero$S() init$S(null, 0)

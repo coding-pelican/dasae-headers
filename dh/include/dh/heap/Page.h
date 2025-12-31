@@ -24,20 +24,16 @@ extern "C" {
 
 #include "cfg.h"
 
-/*========== Page Allocator =================================================*/
+/*========== Macros and Declarations ========================================*/
 
-/// Page allocator instance (minimal state, following Zig's pattern)
+/// Page allocator instance (minimal state)
 typedef struct heap_Page {
-    Void unused_[0]; /* Empty struct not allowed in C */
+    Void unused_[0];
 } heap_Page;
-
 /// Get allocator interface for instance
-extern fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator));
-
-/*========== Implementation Details =========================================*/
-
-// Get next virtual memory address hint
-static P$raw heap_Page_s_next_mmap_addr_hint = null;
+$extern fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator));
+/// Get next virtual memory address hint
+$static var_(heap_Page_s_next_mmap_addr_hint, P$raw) = null;
 
 #if defined(__cplusplus)
 } /* extern "C" */

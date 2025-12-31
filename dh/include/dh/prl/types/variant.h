@@ -172,7 +172,8 @@ extern "C" {
 #define case_(_tag...) \
 case __step__case_ _tag: {
 #define __step__case_(...) __VA_ARGS__
-#define $end_case() }
+#define $end_case() \
+} break
 
 #define pattern_(/*(_tag)(_capture)*/...) __step__pattern_(__step__pattern___parseTag __VA_ARGS__)
 #define __step__pattern_(...) __step__pattern___emit(__VA_ARGS__)
@@ -182,10 +183,10 @@ case __step__case_ _tag: {
 case _tag: { \
     let _capture = pp_join($, __vari.payload.tag, _tag);
 #define $end_pattern() \
-}
+} break
 
 #define default_(...) default __VA_ARGS__: {
-#define $end_default() }
+#define $end_default() } break
 /* clang-format on */
 
 #if defined(__cplusplus)
