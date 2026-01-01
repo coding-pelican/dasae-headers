@@ -66,13 +66,13 @@ extern "C" {
      *          value is checked to avoid potential errors or warnings \
      */ \
     comp_attr__$must_check
-#define $no_return \
+#define $return_never \
     /** \
      * @brief Attribute marks a function as not returning a value \
      * @details This attribute can be used to ensure that a function does \
      *          not return a value \
      */ \
-    comp_attr__$no_return
+    comp_attr__$return_never
 
 #define $ignore_void \
     /** \
@@ -384,6 +384,9 @@ extern "C" {
 #define $fastcall __attr__$fastcall
 #define $vectorcall __attr__$vectorcall
 
+#define $packed __attr__$packed
+#define $align(_align...) __attr__$align(_align)
+
 /*========== Macros and Definitions =========================================*/
 
 #define comp_attr__$inline comp_inline
@@ -398,7 +401,7 @@ extern "C" {
 #define comp_attr__$on_exit comp_on_exit
 
 #define comp_attr__$must_check comp_must_use
-#define comp_attr__$no_return comp_noreturn
+#define comp_attr__$return_never comp_return_never
 #define comp_attr__$ignore_void (void)
 #define comp_attr__$ignore \
     $maybe_unused pp_uniqTok(ignored) = (Void){}; \
@@ -474,6 +477,9 @@ T:
 #define __attr__$stdcall plat_stdcall
 #define __attr__$fastcall plat_fastcall
 #define __attr__$vectorcall plat_vectorcall
+
+#define __attr__$packed comp_packed
+#define __attr__$align(_align...) comp_align(_align)
 
 #if defined(__cplusplus)
 } /* extern "C" */

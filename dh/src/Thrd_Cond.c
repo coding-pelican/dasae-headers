@@ -85,9 +85,15 @@ fn_((Thrd_Cond_broadcast(Thrd_Cond* self))(void)) {
 /*========== Pthread ==========*/
 
 #if Thrd_Cond_use_pthread
-fn_((Thrd_Cond__pthread_init(void))(Thrd_Cond)) {
-    return (Thrd_Cond){ .impl = PTHREAD_COND_INITIALIZER };
-};
+fn_((Thrd_Cond__pthread_init(void))(Thrd_Cond) $guard) {
+    Thrd_Cond cond = cleared();
+    pthread_condattr_t attr = 0;
+    pthread_condattr_init(&attr);
+    defer_(pthread_condattr_destroy(&attr));
+    pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
+    pthread_cond_init(&cond.impl, &attr);
+    return_(cond);
+} $unguarded_(fn);
 
 fn_((Thrd_Cond__pthread_fini(Thrd_Cond* self))(void)) {
     pthread_cond_destroy(&self->impl);
@@ -98,13 +104,21 @@ fn_((Thrd_Cond__pthread_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void)) {
 };
 
 fn_((Thrd_Cond__pthread_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_Err$void) $scope) {
-    const struct timespec ts = {
-        .tv_sec = as$(time_t)(duration.secs),
-        .tv_nsec = as$(long)(duration.nanos),
-    };
-    switch ((pthread_cond_timedwait(&self->impl, &mtx->impl, &ts))) {
-    case_((/*SUCCESS*/ 0))          return_ok({}) $end(case);
-    case_((/*TIMEDOUT*/ ETIMEDOUT)) return_err(Thrd_Cond_Err_Timeout()) $end(case);
+    struct timespec abs_ts = cleared();
+    if (clock_gettime(CLOCK_MONOTONIC, &abs_ts) != 0) {
+        return_err(Thrd_Cond_Err_SystemResources());
+    }
+    // Add duration to get absolute deadline
+    abs_ts.tv_sec += as$(time_t)(duration.secs);
+    abs_ts.tv_nsec += as$(long)(duration.nanos);
+    // Normalize: handle nanosecond overflow
+    if (abs_ts.tv_nsec >= as$(long)(time_nanos_per_sec)) {
+        abs_ts.tv_sec += abs_ts.tv_nsec / as$(long)(time_nanos_per_sec);
+        abs_ts.tv_nsec = abs_ts.tv_nsec % as$(long)(time_nanos_per_sec);
+    }
+    switch (pthread_cond_timedwait(&self->impl, &mtx->impl, &abs_ts)) {
+    case_((0 /* SUCCESS */))           return_ok({}) $end(case);
+    case_((ETIMEDOUT /* TIMED OUT */)) return_err(Thrd_Cond_Err_Timeout()) $end(case);
     default_() claim_unreachable $end(default);
     }
 } $unscoped_(fn);
@@ -220,11 +234,11 @@ fn_((Thrd_Cond__common_broadcast(Thrd_Cond* self))(void)) {
 /* --- Default --- */
 
 #if !Thrd_Cond_has_specialized
-#define Thrd_Cond__default_one_waiter 1
-#define Thrd_Cond__default_waiter_mask 0xffff
+#define Thrd_Cond__default_one_waiter (1)
+#define Thrd_Cond__default_waiter_mask (0xffff)
 
-#define Thrd_Cond__default_one_signal 1 << 16
-#define Thrd_Cond__default_signal_mask 0xffff << 16
+#define Thrd_Cond__default_one_signal (1 << 16)
+#define Thrd_Cond__default_signal_mask (0xffff << 16)
 
 $attr($inline_always)
 $static fn_((Thrd_Cond__default_impl_init(void))(Thrd_Cond)) {
