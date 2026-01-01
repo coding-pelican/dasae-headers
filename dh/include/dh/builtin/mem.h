@@ -25,27 +25,23 @@ extern "C" {
 #define bits_per_octlet __comp_int__bits_per_octlet
 #define bits_per_hexlet __comp_int__bits_per_hexlet
 
-#define popcount(_Expr...) \
-    /* \
-    This function counts the number of set bits (1s) in an unsigned integer. \
-    For example, __builtin_popcount(5) would return 2, \
-    as the binary representation of 5 is 101. \
-    */ \
-    __op__popcount(_Expr)
-#define countLeadingZero(_Expr...) \
-    /* \
-    This function returns the number of leading zero bits in an unsigned integer. \
-    For instance, __builtin_clz(16) would return 27 on a 32-bit system, \
-    as the binary representation of 16 is 10000, which has 27 leading zeros. \
-    */ \
-    __op__countLeadingZero(_Expr)
-#define countTrailingZero(_Expr...) \
-    /* \
-    This function counts the number of trailing zero bits in an unsigned integer. \
-    For example, __builtin_ctz(16) would return 4, as the binary representation of 16 is 10000, \
-    which has 4 trailing zeros. \
-    */ \
-    __op__countTrailingZero(_Expr)
+#define raw_popcntSize(_x...) ____raw_popcntSize(_x)
+#define raw_popcnt64(_x...) ____raw_popcnt64(_x)
+#define raw_popcnt32(_x...) ____raw_popcnt32(_x)
+#define raw_popcnt16(_x...) ____raw_popcnt16(_x)
+#define raw_popcnt8(_x...) ____raw_popcnt8(_x)
+
+#define raw_clzSize(_x...) ____raw_clzSize(_x)
+#define raw_clz64(_x...) ____raw_clz64(_x)
+#define raw_clz32(_x...) ____raw_clz32(_x)
+#define raw_clz16(_x...) ____raw_clz16(_x)
+#define raw_clz8(_x...) ____raw_clz8(_x)
+
+#define raw_ctzSize(_x...) ____raw_ctzSize(_x)
+#define raw_ctz64(_x...) ____raw_ctz64(_x)
+#define raw_ctz32(_x...) ____raw_ctz32(_x)
+#define raw_ctz16(_x...) ____raw_ctz16(_x)
+#define raw_ctz8(_x...) ____raw_ctz8(_x)
 
 #undef memcpy
 #define memcpy(_p_dst, _p_src, _len...) __op__memcpy(_p_dst, _p_src, _len)
@@ -73,9 +69,32 @@ extern "C" {
 #define __comp_int__bits_per_octlet 64
 #define __comp_int__bits_per_hexlet 128
 
-#define __op__popcount(_Expr...) __builtin_popcount(_Expr)
-#define __op__countLeadingZero(_Expr...) __builtin_clz(_Expr)
-#define __op__countTrailingZero(_Expr...) __builtin_ctz(_Expr)
+#define ____raw_popcntSize(_x...) pp_if_(arch_bits_is_64bit)( \
+    pp_then_(raw_popcnt64(_x)), \
+    pp_else_(raw_popcnt32(_x)) \
+)
+#define ____raw_popcnt64(_x...) (as$(u32)(__builtin_popcountll(as$(u64)(_x))))
+#define ____raw_popcnt32(_x...) (as$(u32)(__builtin_popcount(as$(u32)(_x))))
+#define ____raw_popcnt16(_x...) (as$(u32)(__builtin_popcount(as$(u32)(as$(u16)(_x)))))
+#define ____raw_popcnt8(_x...) (as$(u32)(__builtin_popcount(as$(u32)(as$(u8)(_x)))))
+
+#define ____raw_clzSize(_x...) pp_if_(arch_bits_is_64bit)( \
+    pp_then_(raw_clz64(_x)), \
+    pp_else_(raw_clz32(_x)) \
+)
+#define ____raw_clz64(_x...) (as$(u32)(__builtin_clzll(as$(u64)(_x))))
+#define ____raw_clz32(_x...) (as$(u32)(__builtin_clz(as$(u32)(_x))))
+#define ____raw_clz16(_x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u16)(_x)))) - 16)
+#define ____raw_clz8(_x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u8)(_x)))) - 24)
+
+#define ____raw_ctzSize(_x...) pp_if_(arch_bits_is_64bit)( \
+    pp_then_(raw_ctz64(_x)), \
+    pp_else_(raw_ctz32(_x)) \
+)
+#define ____raw_ctz64(_x...) (as$(u32)(__builtin_ctzll(as$(u64)(_x))))
+#define ____raw_ctz32(_x...) (as$(u32)(__builtin_ctz(as$(u32)(_x))))
+#define ____raw_ctz16(_x...) (as$(u32)(__builtin_ctz(as$(u32)(as$(u16)(_x)))))
+#define ____raw_ctz8(_x...) (as$(u32)(__builtin_ctz(as$(u32)(as$(u8)(_x)))))
 
 #define __op__memcpy(_p_dst, _p_src, _len...) __builtin_memcpy(_p_dst, _p_src, _len)
 #define ____raw_memcpy(_p_dst, _p_src, _len...) __builtin_memcpy(_p_dst, _p_src, _len)

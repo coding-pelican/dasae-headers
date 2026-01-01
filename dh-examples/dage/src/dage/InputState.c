@@ -53,6 +53,9 @@ fn_((dage_InputState_applyEvent(dage_InputState* self, const dage_Event* event))
     match_(*event) {
     /*=== Keyboard Events ===*/
     pattern_((dage_Event_key_down)(on_key_down)) {
+        if (on_key_down->key == dage_KeyCode_unknown) { return; }
+        claim_assert(dage_KeyCode_unknown < on_key_down->key);
+        claim_assert(on_key_down->key < dage_KeyCode_count);
         let state = A_at((self->keyboard.keys)[on_key_down->key]);
         /* Only set pressed if not already held */
         if (!(*state & dage_ButtonState_held)) {
@@ -63,6 +66,9 @@ fn_((dage_InputState_applyEvent(dage_InputState* self, const dage_Event* event))
     } $end(pattern);
 
     pattern_((dage_Event_key_up)(on_key_up)) {
+        if (on_key_up->key == dage_KeyCode_unknown) { return; }
+        claim_assert(dage_KeyCode_unknown < on_key_up->key);
+        claim_assert(on_key_up->key < dage_KeyCode_count);
         let state = A_at((self->keyboard.keys)[on_key_up->key]);
         *state &= ~dage_ButtonState_held;
         *state |= dage_ButtonState_released;
@@ -75,6 +81,9 @@ fn_((dage_InputState_applyEvent(dage_InputState* self, const dage_Event* event))
 
     /*=== Mouse Button Events ===*/
     pattern_((dage_Event_mouse_down)(on_mouse_down)) {
+        if (on_mouse_down->button == dage_MouseButton_unknown) { return; }
+        claim_assert(dage_MouseButton_unknown < on_mouse_down->button);
+        claim_assert(on_mouse_down->button < dage_MouseButton_count);
         let state = A_at((self->mouse.buttons)[on_mouse_down->button]);
         if (!(*state & dage_ButtonState_held)) {
             *state |= dage_ButtonState_pressed;
@@ -84,6 +93,9 @@ fn_((dage_InputState_applyEvent(dage_InputState* self, const dage_Event* event))
     } $end(pattern);
 
     pattern_((dage_Event_mouse_up)(on_mouse_up)) {
+        if (on_mouse_up->button == dage_MouseButton_unknown) { return; }
+        claim_assert(dage_MouseButton_unknown < on_mouse_up->button);
+        claim_assert(on_mouse_up->button < dage_MouseButton_count);
         let state = A_at((self->mouse.buttons)[on_mouse_up->button]);
         *state &= ~dage_ButtonState_held;
         *state |= dage_ButtonState_released;

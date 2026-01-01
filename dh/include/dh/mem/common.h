@@ -370,15 +370,14 @@ $static fn_((mem_trailingZerosSize(usize x))(u32)) {
     if (x == 0) { return sizeOf$(usize) * 8; }
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_trailingZeros64(x)),
-        pp_else_(mem_countTrailingZeros32(x))
-    );
+        pp_else_(mem_countTrailingZeros32(x)));
 }
 $inline_always
 $static fn_((mem_trailingZeros64(u64 x))(u32)) {
-    if (x == 0) { return sizeOf$(u64) * 8; }
 #if defined(__clang__) || defined(__GNUC__)
-    return as$(u32)(__builtin_ctzll(x));
+    return int_trailingZeros_static(x);
 #else
+    if (x == 0) { return sizeOf$(u64) * 8; }
     // 64-bit De Bruijn Sequence
     static const u8 lookup[64] = {
         0, 1, 56, 2, 57, 49, 28, 3, 61, 58, 42, 50, 38, 29, 17, 4, 62, 47, 59, 36, 45, 43, 51, 22, 53, 39, 33, 30, 24, 18, 12, 5, 63, 55, 48, 27, 60, 41, 37, 16, 46, 35, 44, 21, 52, 32, 23, 11, 54, 26, 40, 15, 34, 20, 31, 10, 25, 14, 19, 9, 13, 8, 7, 6
@@ -390,10 +389,10 @@ $static fn_((mem_trailingZeros64(u64 x))(u32)) {
 }
 $inline_always
 $static fn_((mem_trailingZeros32(u32 x))(u32)) {
-    if (x == 0) { return sizeOf$(u32) * 8; }
 #if defined(__clang__) || defined(__GNUC__)
-    return as$(u32)(__builtin_ctz(x));
+    return int_trailingZeros_static(x);
 #else
+    if (x == 0) { return sizeOf$(u32) * 8; }
     // 32-bit De Bruijn Sequence (moved from your 64-bit impl)
     static const u8 lookup[32] = {
         0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
@@ -404,19 +403,19 @@ $static fn_((mem_trailingZeros32(u32 x))(u32)) {
 }
 $inline_always
 $static fn_((mem_trailingZeros16(u16 x))(u32)) {
-    if (x == 0) { return sizeOf$(u16) * 8; }
 #if defined(__clang__) || defined(__GNUC__)
-    return as$(u32)(__builtin_ctz(as$(u32)(x)));
+    return int_trailingZeros_static(x);
 #else
+    if (x == 0) { return sizeOf$(u16) * 8; }
     return mem_countTrailingZeros32(as$(u32)(x));
 #endif
 }
 $inline_always
 $static fn_((mem_trailingZeros8(u8 x))(u32)) {
-    if (x == 0) { return sizeOf$(u8) * 8; }
 #if defined(__clang__) || defined(__GNUC__)
-    return as$(u32)(__builtin_ctz(as$(u32)(x)));
+    return int_trailingZeros_static(x);
 #else
+    if (x == 0) { return sizeOf$(u8) * 8; }
     return mem_countTrailingZeros32(as$(u32)(x));
 #endif
 }
@@ -425,15 +424,14 @@ $inline_always
 $static fn_((mem_leadingZerosSize(usize x))(u32)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_leadingZeros64(x)),
-        pp_else_(mem_leadingZeros32(x))
-    );
+        pp_else_(mem_leadingZeros32(x)));
 };
 $inline_always
 $static fn_((mem_leadingZeros64(u64 x))(u32)) {
-    if (x == 0) { return sizeOf$(u64) * 8; }
 #if defined(__clang__) || defined(__GNUC__)
-    return as$(u32)(__builtin_clzll(x));
+    return int_leadingZeros_static(x);
 #else
+    if (x == 0) { return sizeOf$(u64) * 8; }
     // Fallback: Smear bits to right to fill with 1s from MSB
     x |= x >> 1;
     x |= x >> 2;
@@ -455,10 +453,10 @@ $static fn_((mem_leadingZeros64(u64 x))(u32)) {
 }
 $inline_always
 $static fn_((mem_leadingZeros32(u32 x))(u32)) {
-    if (x == 0) { return sizeOf$(u32) * 8; }
 #if defined(__clang__) || defined(__GNUC__)
-    return as$(u32)(__builtin_clz(x));
+    return int_leadingZeros_static(x);
 #else
+    if (x == 0) { return sizeOf$(u32) * 8; }
     // Fallback: Smear and Popcount
     x |= x >> 1;
     x |= x >> 2;
@@ -477,25 +475,25 @@ $static fn_((mem_leadingZeros32(u32 x))(u32)) {
 }
 $inline_always
 $static fn_((mem_leadingZeros16(u16 x))(u32)) {
-    if (x == 0) { return sizeOf$(u16) * 8; }
 #if defined(__clang__) || defined(__GNUC__)
+    return int_leadingZeros_static(x);
+#else
+    if (x == 0) { return sizeOf$(u16) * 8; }
     // __builtin_clz works on 32-bit (usually).
     // clz(0x0000FFFF) is 16. We want 0. So subtract 16.
     // clz(0x00000001) is 31. We want 15. So subtract 16.
-    return as$(u32)(__builtin_clz(as$(u32)(x))) - 16;
-#else
     return mem_leadingZeros32(as$(u32)(x)) - 16;
 #endif
 }
 $inline_always
 $static fn_((mem_leadingZeros8(u8 x))(u32)) {
-    if (x == 0) { return sizeOf$(u8) * 8; }
 #if defined(__clang__) || defined(__GNUC__)
+    return int_leadingZeros_static(x);
+#else
+    if (x == 0) { return sizeOf$(u8) * 8; }
     // __builtin_clz works on 32-bit (usually).
     // clz(0x0000FFFF) is 16. We want 0. So subtract 24.
     // clz(0x00000001) is 31. We want 7. So subtract 24.
-    return as$(u32)(__builtin_clz(as$(u32)(x))) - 24;
-#else
     return mem_leadingZeros32(as$(u32)(x)) - 24;
 #endif
 }
@@ -506,8 +504,7 @@ $inline_always
 $static fn_((mem_byteSwapSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_byteSwap64(x)),
-        pp_else_(mem_byteSwap32(x))
-    );
+        pp_else_(mem_byteSwap32(x)));
 }
 $inline_always
 $static fn_((mem_byteSwap64(u64 x))(u64)) {
@@ -550,117 +547,101 @@ $inline_always
 $static fn_((mem_littleToNativeSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_littleToNative64(x)),
-        pp_else_(mem_littleToNative32(x))
-    );
+        pp_else_(mem_littleToNative32(x)));
 }
 $inline_always
 $static fn_((mem_littleToNative64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap64(x))
-    );
+        pp_else_(mem_byteSwap64(x)));
 }
 $inline_always
 $static fn_((mem_littleToNative32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap32(x))
-    );
+        pp_else_(mem_byteSwap32(x)));
 }
 $inline_always
 $static fn_((mem_littleToNative16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap16(x))
-    );
+        pp_else_(mem_byteSwap16(x)));
 }
 
 $inline_always
 $static fn_((mem_bigToNativeSize(usize x))(usize)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwapSize(x))
-    );
+        pp_else_(mem_byteSwapSize(x)));
 }
 $inline_always
 $static fn_((mem_bigToNative64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap64(x))
-    );
+        pp_else_(mem_byteSwap64(x)));
 }
 $inline_always
 $static fn_((mem_bigToNative32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap32(x))
-    );
+        pp_else_(mem_byteSwap32(x)));
 }
 $inline_always
 $static fn_((mem_bigToNative16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap16(x))
-    );
+        pp_else_(mem_byteSwap16(x)));
 }
 
 $inline_always
 $static fn_((mem_nativeToLittleSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_nativeToLittle64(x)),
-        pp_else_(mem_nativeToLittle32(x))
-    );
+        pp_else_(mem_nativeToLittle32(x)));
 }
 $inline_always
 $static fn_((mem_nativeToLittle64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap64(x))
-    );
+        pp_else_(mem_byteSwap64(x)));
 }
 $inline_always
 $static fn_((mem_nativeToLittle32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap32(x))
-    );
+        pp_else_(mem_byteSwap32(x)));
 }
 $inline_always
 $static fn_((mem_nativeToLittle16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap16(x))
-    );
+        pp_else_(mem_byteSwap16(x)));
 }
 
 $inline_always
 $static fn_((mem_nativeToBigSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_nativeToBig64(x)),
-        pp_else_(mem_nativeToBig32(x))
-    );
+        pp_else_(mem_nativeToBig32(x)));
 }
 $inline_always
 $static fn_((mem_nativeToBig64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap64(x))
-    );
+        pp_else_(mem_byteSwap64(x)));
 }
 $inline_always
 $static fn_((mem_nativeToBig32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap32(x))
-    );
+        pp_else_(mem_byteSwap32(x)));
 }
 
 $inline_always
 $static fn_((mem_nativeToBig16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_byteSwap16(x))
-    );
+        pp_else_(mem_byteSwap16(x)));
 }
 
 /* --- Alignment Functions --- */
