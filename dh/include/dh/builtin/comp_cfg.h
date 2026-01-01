@@ -50,6 +50,7 @@ extern "C" {
 
 /* --- Compiler Attributes --- */
 
+#define comp_packed __comp_attr__comp_packed
 #define comp_align(_align...) __comp_attr__comp_align(_align)
 
 #define comp_inline __comp_attr__comp_inline
@@ -68,7 +69,7 @@ extern "C" {
 #define comp_on_load_priority(_priority...) __comp_attr__comp_on_load_priority(_priority)
 #define comp_on_exit_priority(_priority...) __comp_attr__comp_on_exit_priority(_priority)
 
-#define comp_noreturn __comp_attr__comp_noreturn
+#define comp_return_never __comp_attr__comp_return_never
 
 #define comp_fallthrough __comp_attr__comp_fallthrough
 #define comp_branch_hot __comp_attr__comp_branch_hot
@@ -164,6 +165,7 @@ extern "C" {
 /* --- Compiler Attributes --- */
 
 #if comp_type == comp_type_clang || comp_type == comp_type_gcc
+#define __comp_attr__comp_packed __attribute__((packed))
 #define __comp_attr__comp_align(_align...) __attribute__((aligned(_align)))
 
 #define __comp_attr__comp_inline inline
@@ -184,7 +186,7 @@ extern "C" {
 #define __comp_attr__comp_on_load_priority(_priority...) __attribute__((constructor(_priority)))
 #define __comp_attr__comp_on_exit_priority(_priority...) __attribute__((destructor(_priority)))
 
-#define __comp_attr__comp_noreturn __attribute__((noreturn))
+#define __comp_attr__comp_return_never __attribute__((noreturn))
 
 #define __comp_attr__comp_fallthrough __attribute__((fallthrough))
 #define __comp_attr__comp_branch_hot __attribute__((hot))
@@ -200,6 +202,7 @@ extern "C" {
 #define __comp_attr__comp_deprecated_instead(_msg, _replacement...) __attribute__((deprecated(_msg ": Use " #_replacement " instead")))
 
 #elif comp_type == comp_type_msvc
+#define __comp_attr__comp_packed /* TODO: Implement MSVC packed attribute with struct scope */
 #define __comp_attr__comp_align(_align...) __declspec(align(_align))
 
 #define __comp_attr__comp_inline __inline
@@ -224,7 +227,7 @@ extern "C" {
 #define __comp_attr__comp_on_load_priority(_priority...)
 #define __comp_attr__comp_on_exit_priority(_priority...)
 
-#define __comp_attr__comp_noreturn __declspec(noreturn)
+#define __comp_attr__comp_return_never __declspec(noreturn)
 
 #define __comp_attr__comp_fallthrough
 #define __comp_attr__comp_branch_hot
@@ -240,6 +243,7 @@ extern "C" {
 #define __comp_attr__comp_deprecated_instead(_msg, _replacement...) __declspec(deprecated(_msg " Use " #_replacement " instead"))
 
 #else
+#define __comp_attr__comp_packed
 #define __comp_attr__comp_align(_align...)
 
 #define __comp_attr__comp_inline
@@ -258,7 +262,7 @@ extern "C" {
 #define __comp_attr__comp_on_load_priority(_priority...)
 #define __comp_attr__comp_on_exit_priority(_priority...)
 
-#define __comp_attr__comp_noreturn
+#define __comp_attr__comp_return_never
 
 #define __comp_attr__comp_fallthrough
 #define __comp_attr__comp_branch_hot
