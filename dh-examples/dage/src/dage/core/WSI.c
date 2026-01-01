@@ -448,7 +448,7 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
     case WM_MOVE: {
         let move = (dage_Event_Move){
             .old_pos = target->metrics.position,
-            .new_pos = m_V2i32_of(intCast$((i16)(LOWORD(lParam))), intCast$((i16)(HIWORD(lParam)))),
+            .new_pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
         target->metrics.position = move.new_pos;
         WSI__pushEvent(target, union_of$((dage_Event)(dage_Event_move)(move)));
@@ -491,7 +491,7 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         let btn = (dage_Event_MouseButton){
             .button = dage_MouseButton_left,
             .mods = WSI__windows_getKeyMods(),
-            .pos = m_V2i32_of(intCast$((i16)(LOWORD(lParam))), intCast$((i16)(HIWORD(lParam)))),
+            .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
         WSI__pushEvent(target, union_of$((dage_Event)(dage_Event_mouse_down)(btn)));
         SetCapture(hwnd);
@@ -501,7 +501,7 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         let btn = (dage_Event_MouseButton){
             .button = dage_MouseButton_left,
             .mods = WSI__windows_getKeyMods(),
-            .pos = m_V2i32_of(intCast$((i16)(LOWORD(lParam))), intCast$((i16)(HIWORD(lParam)))),
+            .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
         WSI__pushEvent(target, union_of$((dage_Event)(dage_Event_mouse_up)(btn)));
         ReleaseCapture();
@@ -511,7 +511,7 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         let btn = (dage_Event_MouseButton){
             .button = dage_MouseButton_right,
             .mods = WSI__windows_getKeyMods(),
-            .pos = m_V2i32_of(intCast$((i16)(LOWORD(lParam))), intCast$((i16)(HIWORD(lParam)))),
+            .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
         WSI__pushEvent(target, union_of$((dage_Event)(dage_Event_mouse_down)(btn)));
         return 0;
@@ -520,7 +520,7 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         let btn = (dage_Event_MouseButton){
             .button = dage_MouseButton_right,
             .mods = WSI__windows_getKeyMods(),
-            .pos = m_V2i32_of(intCast$((i16)(LOWORD(lParam))), intCast$((i16)(HIWORD(lParam)))),
+            .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
         WSI__pushEvent(target, union_of$((dage_Event)(dage_Event_mouse_up)(btn)));
         return 0;
@@ -529,7 +529,7 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         let btn = (dage_Event_MouseButton){
             .button = dage_MouseButton_middle,
             .mods = WSI__windows_getKeyMods(),
-            .pos = m_V2i32_of(intCast$((i16)(LOWORD(lParam))), intCast$((i16)(HIWORD(lParam)))),
+            .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
         WSI__pushEvent(target, union_of$((dage_Event)(dage_Event_mouse_down)(btn)));
         return 0;
@@ -538,15 +538,15 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         let btn = (dage_Event_MouseButton){
             .button = dage_MouseButton_middle,
             .mods = WSI__windows_getKeyMods(),
-            .pos = m_V2i32_of(intCast$((i16)(LOWORD(lParam))), intCast$((i16)(HIWORD(lParam)))),
+            .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
         WSI__pushEvent(target, union_of$((dage_Event)(dage_Event_mouse_up)(btn)));
         return 0;
     }
     case WM_MOUSEMOVE: {
         $static m_V2i32 s_last = m_V2i32_of_static(0, 0);
-        let x = intCast$((i16)(LOWORD(lParam)));
-        let y = intCast$((i16)(HIWORD(lParam)));
+        let x = bitCast$((i16)(LOWORD(lParam)));
+        let y = bitCast$((i16)(HIWORD(lParam)));
         let move = (dage_Event_MouseMove){
             .pos = m_V2i32_of(x, y),
             .delta = m_V2i32_of(x - s_last.x, y - s_last.y),

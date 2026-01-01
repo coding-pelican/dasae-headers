@@ -222,6 +222,7 @@ typedef struct Void {
 #define flt_inf_ngtv$(_T...) __op__flt_inf_ngtv$(_T)
 #define flt_inf_pstv$(_T...) __op__flt_inf_pstv$(_T)
 
+#define bitCast$(/*(_T)(_val)*/... /*(_T)*/) __step__bitCast$(__VA_ARGS__)
 #define intToBool(_val /*: IntType */... /*(bool)*/) __step__intToBool(_val)
 #define boolToInt(_val /*: bool*/... /*(u8)*/) ____boolToInt(_val)
 #define intCast$(/*(_T: IntType)(_val: IntType)*/... /*(_T)*/) __step__intCast$(__VA_ARGS__)
@@ -282,10 +283,19 @@ typedef struct Void {
 
 /*========== Bit Manipulation Operations ====================================*/
 
-#define int_countOnes(_x...) __op__int_countOnes(pp_uniqTok(x), _x)
-#define int_countZeros(_x...) __op__int_countZeros(pp_uniqTok(x), _x)
-#define int_countLeadingZeros(_x...) __op__int_countLeadingZeros(pp_uniqTok(x), _x)
-#define int_countTrailingZeros(_x...) __op__int_countTrailingZeros(pp_uniqTok(x), _x)
+#define int_countOnes_static(_x /*: IntType */... /*(u32)*/) ____int_countOnes_static(_x)
+#define int_countOnes(_x /*: IntType */... /*(u32)*/) __step__int_countOnes(_x)
+#define int_countZeros_static(_x /*: IntType */... /*(u32)*/) ____int_countZeros_static(_x)
+#define int_countZeros(_x /*: IntType */... /*(u32)*/) __step__int_countZeros(_x)
+#define int_leadingOnes_static(_x /*: IntType */... /*(u32)*/) ____int_leadingOnes_static(_x)
+#define int_leadingOnes(_x /*: IntType */... /*(u32)*/) __step__int_leadingOnes(_x)
+#define int_leadingZeros_static(_x /*: IntType */... /*(u32)*/) ____int_leadingZeros_static(_x)
+#define int_leadingZeros(_x /*: IntType */... /*(u32)*/) __step__int_leadingZeros(_x)
+#define int_trailingOnes_static(_x /*: IntType */... /*(u32)*/) ____int_trailingOnes_static(_x)
+#define int_trailingOnes(_x /*: IntType */... /*(u32)*/) __step__int_trailingOnes(_x)
+#define int_trailingZeros_static(_x /*: IntType */... /*(u32)*/) ____int_trailingZeros_static(_x)
+#define int_trailingZeros(_x /*: IntType */... /*(u32)*/) __step__int_trailingZeros(_x)
+
 #define int_rotateL(_x, _n...) __op__int_rotateL(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
 #define int_rotateR(_x, _n...) __op__int_rotateR(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
 #define int_swapBytes(_x...) __op__int_swapBytes(pp_uniqTok(x), _x)
@@ -1070,6 +1080,26 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     ) pp_end \
 )
 
+#if UNUSED_CODE
+#define __step__bitCast$(...) __step__bitCast$__emit(__step__bitCast$__parse __VA_ARGS__)
+#define __step__bitCast$__parse(_T...) _T, pp_uniqTok(val),
+#define __step__bitCast$__emit(...) ____bitCast$(__VA_ARGS__)
+#define ____bitCast$(_T, __val, _val...) ({ \
+    let_(__val, TypeOf(_val)) = _val; \
+    claim_assert_static(sizeOf$(_T) == sizeOf$(TypeOf(__val))); \
+    *ptrCast$((_T*)(raw_memcpy(&lit0$((_T)), &__val, sizeOf$(TypeOf(__val))))); \
+})
+#endif /* UNUSED_CODE */
+#define __step__bitCast$(...) __step__bitCast$__emit(__step__bitCast$__parse __VA_ARGS__)
+#define __step__bitCast$__parse(_T...) pp_uniqTok(dst), _T, pp_uniqTok(val),
+#define __step__bitCast$__emit(...) ____bitCast$(__VA_ARGS__)
+#define ____bitCast$(__dst, _T, __val, _val...) ({ \
+    var __dst = lit0$((_T)); \
+    let_(__val, TypeOf(_val)) = _val; \
+    claim_assert_static(sizeOf$(_T) == sizeOf$(TypeOf(__val))); \
+    raw_memcpy(&__dst, &__val, sizeOf$(TypeOf(__val))); \
+    __dst; \
+})
 #define __step__intToBool(_val...) ____intToBool(pp_uniqTok(val), _val)
 #define ____intToBool(__val, _val...) ({ \
     typedef TypeOf(_val) IntType; \
@@ -1387,6 +1417,97 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 //         ? as$(IntType)(0) \
 //         : as$(IntType)(as$(IntType)(~0) << (__width - __n)); \
 // })
+
+#define ____int_countOnes_static(_x /*: IntType */... /*(u32)*/) (as$(u32)( \
+    _x == 0 \
+        ? 0 \
+        : T_switch$((TypeOf(_x))( \
+              T_case$((u8)(raw_popcnt8((u8)_x))), \
+              T_case$((u16)(raw_popcnt16((u16)_x))), \
+              T_case$((u32)(raw_popcnt32((u32)_x))), \
+              T_case$((u64)(raw_popcnt64((u64)_x))), \
+              T_case$((i8)(raw_popcnt8((i8)_x))), \
+              T_case$((i16)(raw_popcnt16((i16)_x))), \
+              T_case$((i32)(raw_popcnt32((i32)_x))), \
+              T_case$((i64)(raw_popcnt64((i64)_x))) \
+          )) \
+))
+#define __step__int_countOnes(_x...) ____int_countOnes(pp_uniqTok(x), _x)
+#define ____int_countOnes(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    blk_return_(int_countOnes_static(__x)); \
+})
+
+#define ____int_countZeros_static(_x /*: IntType */... /*(u32)*/) ( \
+    int_bits$(TypeOf(_x)) - int_countOnes_static(_x) \
+)
+#define __step__int_countZeros(_x...) ____int_countZeros(pp_uniqTok(x), _x)
+#define ____int_countZeros(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    blk_return_(int_countZeros_static(__x)); \
+})
+
+#define ____int_trailingOnes_static(_x /*: IntType */... /*(u32)*/) \
+    int_trailingZeros_static(as$(TypeOf(_x))(~(_x)))
+#define __step__int_trailingOnes(_x...) ____int_trailingOnes(pp_uniqTok(x), _x)
+#define ____int_trailingOnes(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    blk_return_(int_trailingOnes_static(__x)); \
+})
+
+#define ____int_trailingZeros_static(_x /*: IntType */... /*(u32)*/) (as$(u32)( \
+    _x == 0 \
+        ? int_bits$(TypeOf(_x)) \
+        : T_switch$((TypeOf(_x))( \
+              T_case$((u8)(raw_ctz8((u8)_x))), \
+              T_case$((u16)(raw_ctz16((u16)_x))), \
+              T_case$((u32)(raw_ctz32((u32)_x))), \
+              T_case$((u64)(raw_ctz64((u64)_x))), \
+              T_case$((i8)(raw_ctz8((i8)_x))), \
+              T_case$((i16)(raw_ctz16((i16)_x))), \
+              T_case$((i32)(raw_ctz32((i32)_x))), \
+              T_case$((i64)(raw_ctz64((i64)_x))) \
+          )) \
+))
+#define __step__int_trailingZeros(_x...) ____int_trailingZeros(pp_uniqTok(x), _x)
+#define ____int_trailingZeros(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    blk_return_(int_trailingZeros_static(__x)); \
+})
+
+#define ____int_leadingOnes_static(_x /*: IntType */... /*(u32)*/) \
+    int_leadingZeros_static(as$(TypeOf(_x))(~(_x)))
+#define __step__int_leadingOnes(_x...) ____int_leadingOnes(pp_uniqTok(x), _x)
+#define ____int_leadingOnes(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    blk_return_(int_leadingOnes_static(__x)); \
+})
+
+#define ____int_leadingZeros_static(_x /*: IntType */... /*(u32)*/) (as$(u32)( \
+    _x == 0 \
+        ? int_bits$(TypeOf(_x)) \
+        : T_switch$((TypeOf(_x))( \
+              T_case$((u8)(raw_clz8((u8)_x))), \
+              T_case$((u16)(raw_clz16((u16)_x))), \
+              T_case$((u32)(raw_clz32((u32)_x))), \
+              T_case$((u64)(raw_clz64((u64)_x))), \
+              T_case$((i8)(raw_clz8((i8)_x))), \
+              T_case$((i16)(raw_clz16((i16)_x))), \
+              T_case$((i32)(raw_clz32((i32)_x))), \
+              T_case$((i64)(raw_clz64((i64)_x))) \
+          )) \
+))
+#define __step__int_leadingZeros(_x...) ____int_leadingZeros(pp_uniqTok(x), _x)
+#define ____int_leadingZeros(__x, _x...) blk({ \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    blk_return_(int_leadingZeros_static(__x)); \
+})
 
 /*========== Bit Manipulation Implementation ================================*/
 
