@@ -621,7 +621,7 @@ fn_((WSI__windows_createTarget(P$dage_core_WSI self, dage_Target_Cfg cfg))(E$dag
     ));
 
     DWORD style = WS_OVERLAPPEDWINDOW;
-    if (!cfg.resizable) { style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX); }
+    if (!cfg.resizable) { style &= ~(as$(DWORD)(WS_THICKFRAME | WS_MAXIMIZEBOX)); }
     if (cfg.borderless) { style = WS_POPUP; }
 
     var rect = (RECT){ .left = 0, .top = 0, .right = as$(LONG)(cfg.width), .bottom = as$(LONG)(cfg.height) };

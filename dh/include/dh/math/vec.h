@@ -132,9 +132,9 @@ $attr($inline_always)
 $static m_V2f32* m_V2f32_modAsg(m_V2f32* lhs, m_V2f32 rhs);
 
 $attr($inline_always)
-$static m_V2f32* m_V2f32_scaleAsg(m_V2f32* v, f32 scalar);
+$static m_V2f32* m_V2f32_scalAsg(m_V2f32* v, f32 scalar);
 $attr($inline_always)
-$static m_V2f32* m_V2f32_scaleInvAsg(m_V2f32* v, f32 scalar);
+$static m_V2f32* m_V2f32_scalInvAsg(m_V2f32* v, f32 scalar);
 
 $attr($inline_always)
 $static m_V2f32* m_V2f32_addScalarAsg(m_V2f32* v, f32 scalar);
@@ -542,9 +542,9 @@ $attr($inline_always)
 $static m_V2f64* m_V2f64_modAsg(m_V2f64* lhs, m_V2f64 rhs);
 
 $attr($inline_always)
-$static m_V2f64* m_V2f64_scaleAsg(m_V2f64* v, f64 scalar);
+$static m_V2f64* m_V2f64_scalAsg(m_V2f64* v, f64 scalar);
 $attr($inline_always)
-$static m_V2f64* m_V2f64_scaleInvAsg(m_V2f64* v, f64 scalar);
+$static m_V2f64* m_V2f64_scalInvAsg(m_V2f64* v, f64 scalar);
 
 $attr($inline_always)
 $static m_V2f64* m_V2f64_addScalarAsg(m_V2f64* lhs, f64 rhs);
@@ -1595,11 +1595,11 @@ $static m_V2f32* m_V2f32_modAsg(m_V2f32* lhs, m_V2f32 rhs) {
     return *lhs = m_V2f32_mod(*lhs, rhs), lhs;
 }
 $attr($inline_always)
-$static m_V2f32* m_V2f32_scaleAsg(m_V2f32* v, f32 scalar) {
+$static m_V2f32* m_V2f32_scalAsg(m_V2f32* v, f32 scalar) {
     return *v = m_V2f32_scal(*v, scalar), v;
 }
 $attr($inline_always)
-$static m_V2f32* m_V2f32_scaleInvAsg(m_V2f32* v, f32 scalar) {
+$static m_V2f32* m_V2f32_scalInvAsg(m_V2f32* v, f32 scalar) {
     return *v = m_V2f32_scalInv(*v, scalar), v;
 }
 
@@ -2458,11 +2458,11 @@ $static m_V2f64* m_V2f64_modAsg(m_V2f64* lhs, m_V2f64 rhs) {
     return *lhs = m_V2f64_mod(*lhs, rhs), lhs;
 }
 $attr($inline_always)
-$static m_V2f64* m_V2f64_scaleAsg(m_V2f64* v, f64 scalar) {
+$static m_V2f64* m_V2f64_scalAsg(m_V2f64* v, f64 scalar) {
     return *v = m_V2f64_scal(*v, scalar), v;
 }
 $attr($inline_always)
-$static m_V2f64* m_V2f64_scaleInvAsg(m_V2f64* v, f64 scalar) {
+$static m_V2f64* m_V2f64_scalInvAsg(m_V2f64* v, f64 scalar) {
     return *v = m_V2f64_scalInv(*v, scalar), v;
 }
 

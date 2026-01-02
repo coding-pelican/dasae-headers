@@ -34,7 +34,7 @@ TEST_fn_("S_deref" $scope) {
     try_(TEST_expect(*S_at((ref_arr)[0]) == 1));
     try_(TEST_expect(*S_at((ref_arr)[9]) == 10));
 
-    var deref_sli = S_deref$((A$10$i32)(ref_arr));
+    var deref_sli = S_deref$((const A$10$i32)(ref_arr));
     try_(TEST_expect(A_ptr(deref_sli) != ref_arr.ptr));
     try_(TEST_expect(A_len(deref_sli) == ref_arr.len));
     try_(TEST_expect(A_ptr(deref_sli) != A_ptr(arr)));

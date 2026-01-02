@@ -186,10 +186,8 @@ typedef union O$Void {
 
 #define __param_expand__orelse_(...) __VA_ARGS__, pp_expand
 #define __block_inline__orelse_(_Expr, _DefaultExpr_OR_Body...) __block_inline1__orelse_(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
-#define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) pragma_guard_( \
-    "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
-    "clang diagnostic pop", \
+#define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) $pragma_guard_( \
+    "clang diagnostic push", "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", "clang diagnostic pop", \
     ({ \
         var __result = _Expr; \
         if (isNone(__result)) { \

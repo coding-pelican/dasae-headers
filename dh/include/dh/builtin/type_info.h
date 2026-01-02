@@ -22,10 +22,10 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 /* Type Size and Alignment */
-#define alignAs$(_align /*: mem_Log2Align*/...) ___alignAs$(_align)
-#define alignOf$(_T... /*(mem_Log2Align)*/) ___alignOf$(_T)
-#define sizeOf$(_T... /*(usize)*/) ___sizeOf$(_T)
-#define countOf$(_T... /*(usize)*/) ___countOf$(_T)
+#define alignAs$(_T...) ____alignAs$(_T)
+#define alignOf$(_T... /*(mem_Log2Align)*/) ____alignOf$(_T)
+#define sizeOf$(_T... /*(usize)*/) ____sizeOf$(_T)
+#define countOf$(_T... /*(usize)*/) ____countOf$(_T)
 
 /* Type Information */
 #define TypeOf(_Expr...) \
@@ -98,54 +98,46 @@ extern "C" {
      */ \
     ____isCompTimeFoldable(_Expr)
 
-/* Type Classification */
-#define isUnsigned(T) \
-    /** \
-     * @brief Check if type is an unsigned integer \
-     * \
-     * @param T Type to check \
-     * @return bool True if unsigned integer type \
-     */ \
-    FUNC__isUnsigned(T)
-#define isSigned(T) \
-    /** \
-     * @brief Check if type is a signed integer \
-     * \
-     * @param T Type to check \
-     * @return bool True if signed integer type \
-     */ \
-    FUNC__isSigned(T)
-#define isInt(T) \
-    /** \
-     * @brief Check if type is any integer type \
-     * \
-     * @param T Type to check \
-     * @return bool True if integer type \
-     */ \
-    FUNC__isInt(T)
-#define isFlt(T) \
-    /** \
-     * @brief Check if type is a floating point type \
-     * \
-     * @param T Type to check \
-     * @return bool True if floating point type \
-     */ \
-    FUNC__isFlt(T)
-#define isBool(T) \
-    /** \
-     * @brief Check if type is a boolean type \
-     * \
-     * @param T Type to check \
-     * @return bool True if boolean type \
-     */ \
-    FUNC__isBool(T)
-
 /*========== Macros and Definitions =========================================*/
 
-#define ___alignAs$(_align...) _Alignas(1ull << (_align))
-#define ___alignOf$(_T...) (as$(u8)((64u - 1u) - __builtin_clzll(_Alignof(_T))))
-#define ___sizeOf$(_T...) (as$(usize)(sizeof(_T)))
-#define ___countOf$(_T...) (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(null))[0])))
+#define ____alignAs$(_T...) _Alignas(1ull << alignOf$(_T))
+#define ____alignOf__expand(...) __VA_ARGS__
+#define ____alignOf$(_T...) $pragma_guard_( \
+    "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
+    (as$(u8)( \
+        (64u - 1u) \
+        - __builtin_clzll(____alignOf__expand( \
+            T_switch$ pp_begin(_T)( \
+                T_case$((void)(0)), \
+                T_default_(_Alignof(_T)) \
+            ) pp_end \
+        )) \
+    )) \
+)
+#if UNUSED_CODE
+#define ____alignAs$(_T...) _Alignas(alignOf$(_T))
+#define ____alignOf__expand(...) __VA_ARGS__
+#define ____alignOf$(_T...) $pragma_guard_( \
+    "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
+    (as$(usize)(____alignOf__expand( \
+        T_switch$ pp_begin(_T)( \
+            T_case$((void)(0)), \
+            T_default_(_Alignof(_T)) \
+        ) pp_end \
+    ))) \
+)
+#endif /* UNUSED_CODE */
+#define ____sizeOf__expand(...) __VA_ARGS__
+#define ____sizeOf$(_T...) $pragma_guard_( \
+    "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
+    (as$(usize)(____sizeOf__expand( \
+        T_switch$ pp_begin(_T)( \
+            T_case$((void)(0)), \
+            T_default_(sizeof(_T)) \
+        ) pp_end \
+    ))) \
+)
+#define ____countOf$(_T...) (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(null))[0])))
 
 #define ____TypeOf(_Expr...) __typeof__(_Expr)
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
@@ -168,12 +160,6 @@ extern "C" {
 #define ____Type_eqUnqual$(_T_Lhs, _T_Rhs...) __builtin_types_compatible_p(TypeOfUnqual(_T_Lhs), TypeOfUnqual(_T_Rhs))
 
 #define ____isCompTimeFoldable(_Expr...) __builtin_constant_p(_Expr)
-
-#define FUNC__isUnsigned(T) _Generic((T){ 0 }, u8: true, u16: true, u32: true, u64: true, default: false)
-#define FUNC__isSigned(T) _Generic((T){ 0 }, i8: true, i16: true, i32: true, i64: true, default: false)
-#define FUNC__isInt(T) (isUnsigned(T) || isSigned(T))
-#define FUNC__isFlt(T) _Generic((T){ 0 }, f32: true, f64: true, default: false)
-#define FUNC__isBool(T) _Generic((T){ 0 }, bool: true, default: false)
 
 #if defined(__cplusplus) || (defined(__STDC_VERSION__) && __STDC_VERSION__ < 202311L)
 #ifndef __cplusplus

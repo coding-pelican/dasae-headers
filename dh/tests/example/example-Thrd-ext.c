@@ -136,7 +136,7 @@ $static var_(g_queue_count, i32) = 0;
 $static var_(g_done, bool) = false;
 
 $static Thrd_fn_(producer, ({ i32 items_to_produce; }, Void), ($ignore, args)$scope) {
-    for_(($r(0, args->items_to_produce))($ignore) {
+    for_(($r(0, intCast$((usize)(args->items_to_produce))))($ignore) {
         time_sleep(time_Duration_fromMillis(50));
 
         Thrd_Mtx_lock(&g_mtx);

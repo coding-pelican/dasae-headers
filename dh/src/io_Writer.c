@@ -32,7 +32,7 @@ fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void) $scope) {
     usize remaining = n;
     while (0 < remaining) {
         let to_write = prim_min(remaining, len$A(bytes));
-        try_(io_Writer_writeBytes(self, slice$A$((const u8)(bytes, $r(0, to_write)))));
+        try_(io_Writer_writeBytes(self, A_slice$((S_const$u8)(bytes)$r(0, to_write))));
         remaining -= to_write;
     }
     return_ok({});
@@ -65,16 +65,13 @@ fn_((io_Writer_printlnVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(E
 fn_((io_Writer_nl(io_Writer self))(E$void) $scope) {
     static let pp_if_(plat_is_windows)(
         pp_then_(s_crlf = u8_l("\r\n")),
-        pp_else_(s_lf = u8_c('\n'))
-    );
+        pp_else_(s_lf = u8_c('\n')));
     static let s_line_feed = pp_if_(plat_is_windows)(
         pp_then_(s_crlf),
-        pp_else_(s_lf)
-    );
+        pp_else_(s_lf));
     static let s_write = pp_if_(plat_is_windows)(
         pp_then_(io_Writer_write),
-        pp_else_(io_Writer_writeByte)
-    );
+        pp_else_(io_Writer_writeByte));
     try_(s_write(self, s_line_feed));
     return_ok({});
 } $unscoped_(fn);

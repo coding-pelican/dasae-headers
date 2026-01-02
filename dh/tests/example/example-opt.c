@@ -5,7 +5,7 @@
 $static fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
     for_(($rf(0), $s(items))(index, item) {
         if (*item == value) {
-            return_some(index); // Return optional with a value
+            return_some(intCast$((i32)(index))); // Return optional with a value
         }
     });
     return_none(); // Return optional with no value
@@ -128,7 +128,7 @@ $static fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
         if (*item != value) { continue; }
         return_some(index); // Return with a value
     });
-    return_none();                // Return with no value
+    return_none(); // Return with no value
 } $unscoped_(fn);
 
 $static fn_((example(void))(void) $scope) {

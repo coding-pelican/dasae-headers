@@ -51,7 +51,7 @@ extern "C" {
 /* --- Compiler Attributes --- */
 
 #define comp_packed __comp_attr__comp_packed
-#define comp_align(_align...) __comp_attr__comp_align(_align)
+#define comp_align(_align) __comp_attr__comp_align(_align)
 
 #define comp_inline __comp_attr__comp_inline
 #define comp_inline_always __comp_attr__comp_inline_always
@@ -66,8 +66,8 @@ extern "C" {
 
 #define comp_on_load __comp_attr__comp_on_load
 #define comp_on_exit __comp_attr__comp_on_exit
-#define comp_on_load_priority(_priority...) __comp_attr__comp_on_load_priority(_priority)
-#define comp_on_exit_priority(_priority...) __comp_attr__comp_on_exit_priority(_priority)
+#define comp_on_load_priority(_priority) __comp_attr__comp_on_load_priority(_priority)
+#define comp_on_exit_priority(_priority) __comp_attr__comp_on_exit_priority(_priority)
 
 #define comp_return_never __comp_attr__comp_return_never
 
@@ -81,8 +81,8 @@ extern "C" {
 #define comp_unreachable __comp_attr__comp_unreachable
 
 #define comp_deprecated __comp_attr__comp_deprecated
-#define comp_deprecated_msg(_msg...) __comp_attr__comp_deprecated_msg(_msg)
-#define comp_deprecated_instead(_msg, _replacement...) __comp_attr__comp_deprecated_instead(_msg, _replacement)
+#define comp_deprecated_msg(_msg) __comp_attr__comp_deprecated_msg(_msg)
+#define comp_deprecated_instead(_msg, _replacement) __comp_attr__comp_deprecated_instead(_msg, _replacement)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -166,7 +166,7 @@ extern "C" {
 
 #if comp_type == comp_type_clang || comp_type == comp_type_gcc
 #define __comp_attr__comp_packed __attribute__((packed))
-#define __comp_attr__comp_align(_align...) __attribute__((aligned(_align)))
+#define __comp_attr__comp_align(_align) __attribute__((aligned(_align)))
 
 #define __comp_attr__comp_inline inline
 #define __comp_attr__comp_inline_always __attribute__((always_inline)) inline
@@ -183,8 +183,8 @@ extern "C" {
 #define __comp_attr__comp_on_load __attribute__((constructor))
 #define __comp_attr__comp_on_exit __attribute__((destructor))
 /* Note: Priority works, but syntax is validated strictly by some parsers */
-#define __comp_attr__comp_on_load_priority(_priority...) __attribute__((constructor(_priority)))
-#define __comp_attr__comp_on_exit_priority(_priority...) __attribute__((destructor(_priority)))
+#define __comp_attr__comp_on_load_priority(_priority) __attribute__((constructor(_priority)))
+#define __comp_attr__comp_on_exit_priority(_priority) __attribute__((destructor(_priority)))
 
 #define __comp_attr__comp_return_never __attribute__((noreturn))
 
@@ -198,12 +198,12 @@ extern "C" {
 #define __comp_attr__comp_unreachable __builtin_unreachable()
 
 #define __comp_attr__comp_deprecated __attribute__((deprecated))
-#define __comp_attr__comp_deprecated_msg(_msg...) __attribute__((deprecated(_msg)))
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement...) __attribute__((deprecated(_msg ": Use " #_replacement " instead")))
+#define __comp_attr__comp_deprecated_msg(_msg) __attribute__((deprecated(_msg)))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __attribute__((deprecated(_msg ": Use " #_replacement " instead")))
 
 #elif comp_type == comp_type_msvc
 #define __comp_attr__comp_packed /* TODO: Implement MSVC packed attribute with struct scope */
-#define __comp_attr__comp_align(_align...) __declspec(align(_align))
+#define __comp_attr__comp_align(_align) __declspec(align(_align))
 
 #define __comp_attr__comp_inline __inline
 #define __comp_attr__comp_inline_always __forceinline
@@ -224,8 +224,8 @@ extern "C" {
    For now, define as nothing to avoid compile errors. */
 #define __comp_attr__comp_on_load
 #define __comp_attr__comp_on_exit
-#define __comp_attr__comp_on_load_priority(_priority...)
-#define __comp_attr__comp_on_exit_priority(_priority...)
+#define __comp_attr__comp_on_load_priority(_priority)
+#define __comp_attr__comp_on_exit_priority(_priority)
 
 #define __comp_attr__comp_return_never __declspec(noreturn)
 
@@ -239,12 +239,12 @@ extern "C" {
 #define __comp_attr__comp_unreachable __assume(0)
 
 #define __comp_attr__comp_deprecated __declspec(deprecated)
-#define __comp_attr__comp_deprecated_msg(_msg...) __declspec(deprecated(_msg))
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement...) __declspec(deprecated(_msg " Use " #_replacement " instead"))
+#define __comp_attr__comp_deprecated_msg(_msg) __declspec(deprecated(_msg))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __declspec(deprecated(_msg " Use " #_replacement " instead"))
 
 #else
 #define __comp_attr__comp_packed
-#define __comp_attr__comp_align(_align...)
+#define __comp_attr__comp_align(_align)
 
 #define __comp_attr__comp_inline
 #define __comp_attr__comp_inline_always
@@ -259,8 +259,8 @@ extern "C" {
 
 #define __comp_attr__comp_on_load
 #define __comp_attr__comp_on_exit
-#define __comp_attr__comp_on_load_priority(_priority...)
-#define __comp_attr__comp_on_exit_priority(_priority...)
+#define __comp_attr__comp_on_load_priority(_priority)
+#define __comp_attr__comp_on_exit_priority(_priority)
 
 #define __comp_attr__comp_return_never
 
@@ -274,8 +274,8 @@ extern "C" {
 #define __comp_attr__comp_unreachable __assume(0)
 
 #define __comp_attr__comp_deprecated
-#define __comp_attr__comp_deprecated_msg(_msg...)
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement...)
+#define __comp_attr__comp_deprecated_msg(_msg)
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement)
 #endif
 
 #if defined(__cplusplus)

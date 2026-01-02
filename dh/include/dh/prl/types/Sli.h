@@ -69,6 +69,8 @@ extern "C" {
     T_decl_S$(_T); \
     T_impl_S$(_T)
 
+#define S_T$(_T...) TypeOf(*(as$(_T*)(null))->ptr)
+#define S_TUnqual$(_T...) TypeOfUnqual(*(as$(_T*)(null))->ptr)
 #define S_InnerT$(_T...) TypeOf(*(as$(_T*)(null))->ptr)
 #define S_InnerTUnqual$(_T...) TypeOfUnqual(*(as$(_T*)(null))->ptr)
 #define S_isConst$(_T...) Type_eq$(S_InnerT$(_T)*, const S_InnerTUnqual$(_T)*)
@@ -341,20 +343,18 @@ extern "C" {
 #define comp_syn__u16_c(_literal...) lit$((u16){ u##_literal })
 #define comp_syn__u32_c(_literal...) lit$((u32){ U##_literal })
 
-#define comp_syn__u8_a(_literal...) pragma_guard_( \
-    "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wunterminated-string-initialization\"", \
-    "clang diagnostic pop", \
-    lit$((A$$(sizeOf$(_literal) - 1, u8)){ .val = { _literal } }) \
+#define comp_syn__u8_a(_literal...) $pragma_guard_( \
+    "clang diagnostic push", "clang diagnostic ignored \"-Wunterminated-string-initialization\"", "clang diagnostic pop", \
+    lit$((A$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } }) \
 )
 #define comp_syn__u8_s(_literal...) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
 #define comp_syn__u8_l(_literal...) lit$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
 
-#define comp_syn__u8_az(_literal...) lit$((A$$(sizeOf$(_literal), u8)){ .val = { _literal } })
+#define comp_syn__u8_az(_literal...) lit$((A$$(sizeOf$(TypeOf(_literal)), u8)){ .val = { _literal } })
 #define comp_syn__u8_sz(_literal...) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) })
 #define comp_syn__u8_lz(_literal...) lit$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) })
 
-#define comp_syn__u8z_a(_literal...) lit$((AZ$$(sizeOf$(_literal) - 1, u8)){ .val = { _literal } })
+#define comp_syn__u8z_a(_literal...) lit$((AZ$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } })
 #define comp_syn__u8z_s(_literal...) lit$((SZ$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
 #define comp_syn__u8z_l(_literal...) lit$((SZ_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
 

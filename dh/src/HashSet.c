@@ -17,7 +17,7 @@
 
 /*========== Definitions ====================================================*/
 
-fn_((HashSet_Sgl_init(u_V$raw key, V$HashSet_Sgl$raw ret_mem))(V$HashSet_Sgl$raw)) {
+$static fn_((HashSet_Sgl_init(u_V$raw key, V$HashSet_Sgl$raw ret_mem))(V$HashSet_Sgl$raw)) {
     debug_only({
         ret_mem->key_ty = key.type;
     });
@@ -91,7 +91,7 @@ fn_((HashSet_Ctx_default(void))(P_const$HashSet_Ctx)) {
 
 $static fn_((HashSet__header(HashSet self))(HashSet_Header*)) {
     let metadata_ptr = unwrap_(self.metadata);
-    return as$(HashSet_Header*)(as$(u8*)(metadata_ptr)-sizeOf$(HashSet_Header));
+    return ptrAlignCast$((HashSet_Header*)((as$(u8*)(metadata_ptr)) - sizeOf$(HashSet_Header)));
 };
 
 $static fn_((HashSet__keys(HashSet self, TypeInfo key_ty))(u_P$raw)) {
@@ -136,7 +136,7 @@ $static fn_((HashSet__alloc(HashSet* self, TypeInfo key_ty, mem_Allocator gpa, u
 
     let slice = u_castS$((S$u8)(try_(mem_Allocator_alloc(gpa, typeInfo$(u8), total_size))));
     let ptr = as$(u8*)(slice.ptr);
-    let hdr = as$(HashSet_Header*)(ptr);
+    let hdr = ptrAlignCast$((HashSet_Header*)(ptr));
     hdr->keys = ptr + keys_start;
     hdr->cap = new_cap;
     debug_only({
@@ -264,9 +264,9 @@ $static fn_((HashSet__idx_simd(HashSet self, u_V$raw key))(O$usize) $scope) {
 $attr($inline_always)
 $static fn_((HashSet__simd_match_fingerprint(const HashMap_Ctrl* group, u8 fingerprint))(u32)) {
     /* Create a vector with the fingerprint in all 16 lanes */
-    let needle = _mm_set1_epi8(as$(i8)(fingerprint | 0x80)); /* Set used bit */
+    let needle = _mm_set1_epi8(as$(char)(as$(i8)(fingerprint | 0x80))); /* Set used bit */
     /* Load 16 control bytes */
-    let haystack = _mm_loadu_si128(as$(const __m128i*)(group));
+    let haystack = _mm_loadu_si128(ptrAlignCast$((const __m128i*)(group)));
     /* Compare for equality - returns 0xFF for matches, 0x00 for non-matches */
     let cmp = _mm_cmpeq_epi8(needle, haystack);
     /* Extract comparison results to bitmask (1 bit per byte) */
@@ -276,7 +276,7 @@ $attr($inline_always)
 $static fn_((HashSet__simd_match_free(const HashMap_Ctrl* group))(u32)) {
     /* Free slots are exactly 0x00 */
     let zero = _mm_setzero_si128();
-    let haystack = _mm_loadu_si128(as$(const __m128i*)(group));
+    let haystack = _mm_loadu_si128(ptrAlignCast$((const __m128i*)(group)));
     let cmp = _mm_cmpeq_epi8(zero, haystack);
     return as$(u32)(_mm_movemask_epi8(cmp));
 };
@@ -665,7 +665,7 @@ fn_((HashSet_removeByPtr(HashSet* self, u_P$raw key_ptr))(void)) {
     claim_assert_nonnull(key_ptr.raw);
     debug_assert_eqBy(self->key_ty, key_ptr.type, TypeInfo_eq);
     let idx = expr_(u32 $scope)(if (key_ptr.type.size > 0) {
-        $break_((intFromPtr(key_ptr.raw) - intFromPtr(HashSet__keys(*self, key_ptr.type).raw)) / key_ptr.type.size);
+        $break_(intCast$((u32)((ptrToInt(key_ptr.raw) - ptrToInt(HashSet__keys(*self, key_ptr.type).raw)) / TypeInfo_size(key_ptr.type))));
     }) expr_(else)({
         $break_(0);
     }) $unscoped_(expr);

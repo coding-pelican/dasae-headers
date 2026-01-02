@@ -25,13 +25,13 @@ extern "C" {
 #include "lang_cfg.h"
 
 #if comp_type == comp_type_clang
-#include "BlocksRuntime/Block.h"
+#include <BlocksRuntime/Block.h>
 #endif /* comp_type == comp_type_clang */
 
 /*========== Macros and Declarations ========================================*/
 
 #define la_(/*(_Params...)(_TReturn) <$ext>*/...) __step__la_(__step__la___parseParams __VA_ARGS__)
-#define $unscoped_la  /* TODO: Implement */
+#define $unscoped_la /* TODO: Implement */
 #define $unguarded_la /* TODO: Implement */
 
 /*========== Macros and Definitions =========================================*/
@@ -47,7 +47,7 @@ extern "C" {
 #if lang_mode == lang_mode_cpp
 /* C++11 */
 #define __step__la___impl(_Params, _TReturn...) __la_(_Params, _TReturn)
-#define __la_(_Parens_Params, T_Return...) [] _Parens_Params -> T_Return
+#define __la_(_Parens_Params, T_Return...) [] _Parens_Params->T_Return
 #elif lang_mode == lang_mode_c
 /* C11 */
 #if comp_type == comp_type_clang

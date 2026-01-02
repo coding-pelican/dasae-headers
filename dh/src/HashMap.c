@@ -17,7 +17,7 @@
 
 /*========== Definitions ====================================================*/
 
-fn_((HashMap_Pair_init(u_V$raw key, u_V$raw val, V$HashMap_Pair$raw ret_mem))(V$HashMap_Pair$raw)) {
+$static fn_((HashMap_Pair_init(u_V$raw key, u_V$raw val, V$HashMap_Pair$raw ret_mem))(V$HashMap_Pair$raw)) {
     debug_only({
         ret_mem->key_ty = key.type;
         ret_mem->val_ty = val.type;
@@ -145,7 +145,7 @@ fn_((HashMap_Ctx_default(void))(P_const$HashMap_Ctx)) {
 
 $static fn_((HashMap__header(HashMap self))(HashMap_Header*)) {
     let metadata_ptr = unwrap_(self.metadata);
-    return as$(HashMap_Header*)(as$(u8*)(metadata_ptr)-sizeOf$(HashMap_Header));
+    return ptrAlignCast$((HashMap_Header*)((as$(u8*)(metadata_ptr)) - sizeOf$(HashMap_Header)));
 };
 
 $static fn_((HashMap__keys(HashMap self, TypeInfo key_ty))(u_P$raw)) {
@@ -204,8 +204,8 @@ $static fn_((HashMap__alloc(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem
     let total_size = mem_alignFwd(vals_end, max_align);
 
     let slice = u_castS$((S$u8)(try_(mem_Allocator_alloc(gpa, typeInfo$(u8), total_size))));
-    let ptr = as$(u8*)(slice.ptr);
-    let hdr = as$(HashMap_Header*)(ptr);
+    let ptr = slice.ptr;
+    let hdr = ptrAlignCast$((HashMap_Header*)(ptr));
     hdr->vals = ptr + vals_start;
     hdr->keys = ptr + keys_start;
     hdr->cap = new_cap;
@@ -338,9 +338,9 @@ $static fn_((HashMap__idx_simd(HashMap self, u_V$raw key))(O$usize) $scope) {
 $attr($inline_always)
 $static fn_((HashMap__simd_match_fingerprint(const HashMap_Ctrl* group, u8 fingerprint))(u32)) {
     /* Create a vector with the fingerprint in all 16 lanes */
-    let needle = _mm_set1_epi8(as$(i8)(fingerprint | 0x80)); /* Set used bit */
+    let needle = _mm_set1_epi8(as$(char)(as$(i8)(fingerprint | 0x80))); /* Set used bit */
     /* Load 16 control bytes */
-    let haystack = _mm_loadu_si128(as$(const __m128i*)(group));
+    let haystack = _mm_loadu_si128(ptrAlignCast$((const __m128i*)(group)));
     /* Compare for equality - returns 0xFF for matches, 0x00 for non-matches */
     let cmp = _mm_cmpeq_epi8(needle, haystack);
     /* Extract comparison results to bitmask (1 bit per byte) */
@@ -350,7 +350,7 @@ $attr($inline_always)
 $static fn_((HashMap__simd_match_free(const HashMap_Ctrl* group))(u32)) {
     /* Free slots are exactly 0x00 */
     let zero = _mm_setzero_si128();
-    let haystack = _mm_loadu_si128(as$(const __m128i*)(group));
+    let haystack = _mm_loadu_si128(ptrAlignCast$((const __m128i*)(group)));
     let cmp = _mm_cmpeq_epi8(zero, haystack);
     return as$(u32)(_mm_movemask_epi8(cmp));
 };
@@ -844,7 +844,8 @@ fn_((HashMap_removeByPtr(HashMap* self, TypeInfo val_ty, u_P$raw key_ptr))(void)
     let_ignore = val_ty;
 
     let idx = expr_(u32 $scope)(if (key_ptr.type.size > 0) {
-        $break_((intFromPtr(key_ptr.raw) - intFromPtr(HashMap__keys(*self, key_ptr.type).raw)) / key_ptr.type.size);
+        $break_(intCast$((u32)((ptrToInt(key_ptr.raw) - ptrToInt(HashMap__keys(*self, key_ptr.type).raw))
+                               / TypeInfo_size(key_ptr.type))));
     }) expr_(else)({
         $break_(0);
     }) $unscoped_(expr);

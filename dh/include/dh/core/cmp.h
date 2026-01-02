@@ -51,7 +51,7 @@ typedef enum_(cmp_Ord $bits(8)) {
     cmp_Ord_eq = 0,
     cmp_Ord_gt = 1,
 } cmp_Ord;
-#define cmp_Ord_inv(_ord /*: cmp_Ord*/... /*(cmp_Ord)*/) (-(_ord))
+#define cmp_Ord_inv(_ord /*: cmp_Ord*/... /*(cmp_Ord)*/) (as$(cmp_Ord)(-(_ord)))
 #define cmp_Ord_isEq(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) == cmp_Ord_eq))
 #define cmp_Ord_isNe(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) != cmp_Ord_eq))
 #define cmp_Ord_isLt(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) < cmp_Ord_eq))

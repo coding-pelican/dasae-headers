@@ -78,7 +78,7 @@ async_fn_scope(exec_sleep, {}) {
 /// \param label The label to report
 /// \param fmt The format string
 /// \param ... The arguments to the format string
-fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
+$static fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
     io_stream_print(u8_l("[ThrdId({:uz}): {:s}] "), Thrd_currentId(), label);
     va_list args = {};
     with_fini_(va_start(args, fmt), va_end(args)) {
@@ -153,7 +153,7 @@ async_fn_scope(runMain, {
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     var task = async_((runMain)(args));
-    io_stream_println(u8_l("run size: {:uz}"), sizeOf$(*task));
+    io_stream_println(u8_l("run size: {:uz}"), sizeOf$(TypeOf(*task)));
     exec_runLoop(false);
     nosuspend_(await_(resume_(task)));
     let total = task->ret->value;

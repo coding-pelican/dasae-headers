@@ -54,6 +54,10 @@ typedef usize TypeInfoPacked;
 /// Convert packed usize to TypeInfo struct
 #define TypeInfo_unpack(_packed /*: TypeInfoPacked*/... /*(TypeInfo)*/) \
     ____TypeInfo_unpack(_packed)
+#define TypeInfo_size(_type_info /*: TypeInfo*/... /*(usize)*/) \
+    ____TypeInfo_size(_type_info)
+#define TypeInfo_align(_type_info /*: TypeInfo*/... /*(mem_Log2Align)*/) \
+    ____TypeInfo_align(_type_info)
 
 /// Get packed type information for meta
 #define packTypeInfo$(_T...) \
@@ -100,6 +104,8 @@ union TypeInfo {
 #define ____typeInfo$(_T...) lit$((TypeInfo){ .size = sizeOf$(_T), .align = alignOf$(_T) })
 #define ____TypeInfo_pack(_type_info...) ((_type_info).packed)
 #define ____TypeInfo_unpack(_type_info...) ((TypeInfo){ .packed = (_type_info) })
+#define ____TypeInfo_size(_type_info...) (as$(usize)((_type_info).size))
+#define ____TypeInfo_align(_type_info...) (as$(u8)((_type_info).align))
 
 #define ____packTypeInfo$(_T...) ( \
     (as$(TypeInfoPacked)(sizeOf$(_T)) & prim_maskLo_static$((TypeInfoPacked)(TypeInfo_size_bits))) \

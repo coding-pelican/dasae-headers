@@ -45,7 +45,7 @@ $static Thrd_fn_(sumValues, ({ ArrForTest values; }, i32), ($ignore, args)$scope
 TEST_fn_("Thrd: Args Synchronization" $scope) {
     ArrForTest values = zero$A();
     for_(($rf(0), $s(ref$A(values)))(i, value) {
-        *value = i;
+        *value = intCast$((i32)(i));
     });
 
     var worker_ctx = Thrd_FnCtx_from$((sumValues)(values));
@@ -70,7 +70,7 @@ TEST_fn_("Thrd: Args Synchronization" $scope) {
 } $unscoped_(Thrd_fn); */
 $static Thrd_fn_(sleepSecsForIdAndSq, ({ i32 id; }, i32), ($ignore, args)$scope) {
     let id = args->id;
-    Thrd_sleep(time_Duration_fromMillis(1000ull * (id % 10)));
+    Thrd_sleep(time_Duration_fromMillis(1000ull * (as$(usize)(id) % 10)));
     return_(id * id);
 } $unscoped_(Thrd_fn);
 
@@ -78,7 +78,7 @@ TEST_fn_("Thrd: Multiple Threads" $scope) {
     A$$(10, O$$(Thrd_FnCtx$(sleepSecsForIdAndSq))) workers = zero$A();
     A$$(10, Thrd) threads = zero$A();
     for_(($rf(0), $s(ref$A(workers)), $s(ref$A(threads)))(i, worker, thread) {
-        asg_lit((worker)(some(Thrd_FnCtx_from$((sleepSecsForIdAndSq)(i)))));
+        asg_lit((worker)(some(Thrd_FnCtx_from$((sleepSecsForIdAndSq)(intCast$((i32)(i)))))));
         *thread = try_(Thrd_spawn(Thrd_SpawnCfg_default, unwrap_(O_asP(worker))->as_raw));
     });
     for_(($s(ref$A(threads)))(thread) {

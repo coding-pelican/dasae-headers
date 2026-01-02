@@ -5,11 +5,11 @@
 
 $attr($inline_always)
 $static fn_((sort__ord(sort_OrdFn ordFn, u_P_const$raw lhs, u_P_const$raw rhs))(cmp_Ord)) {
-    return invoke(ordFn, u_load(u_deref(lhs)), u_load(u_deref(rhs)));
+    return as$(cmp_Ord)(invoke(ordFn, u_load(u_deref(lhs)), u_load(u_deref(rhs))));
 };
 $attr($inline_always)
 $static fn_((sort__ordCtx(sort_OrdCtxFn ordFn, u_P_const$raw lhs, u_P_const$raw rhs, u_P_const$raw ctx))(cmp_Ord)) {
-    return invoke(ordFn, u_load(u_deref(lhs)), u_load(u_deref(rhs)), u_load(u_deref(ctx)));
+    return as$(cmp_Ord)(invoke(ordFn, u_load(u_deref(lhs)), u_load(u_deref(rhs)), u_load(u_deref(ctx))));
 };
 
 $attr($inline_always)
@@ -126,7 +126,7 @@ fn_((sort_mergeTmpRecur(
 } $unscoped_(fn);
 
 // NOLINTNEXTLINE(misc-no-recursion)
-fn_((sort_mergeCtxTmpRecur(
+fn_((sort_mergeTmpCtxRecur(
     S$u8 tmp,
     u_S$raw seq,
     sort_OrdCtxFn ordFn,
@@ -138,8 +138,8 @@ fn_((sort_mergeCtxTmpRecur(
     }
     /* Sort each half recursively */
     let mid_idx = seq.len / 2;
-    try_(sort_mergeCtxTmpRecur(tmp, u_prefixS(seq, mid_idx), ordFn, ctx));
-    try_(sort_mergeCtxTmpRecur(tmp, u_suffixS(seq, mid_idx), ordFn, ctx));
+    try_(sort_mergeTmpCtxRecur(tmp, u_prefixS(seq, mid_idx), ordFn, ctx));
+    try_(sort_mergeTmpCtxRecur(tmp, u_suffixS(seq, mid_idx), ordFn, ctx));
 
     /* Check if merging is necessary */ {
         let l_last = u_atS(seq, mid_idx - 1);
@@ -202,7 +202,7 @@ fn_((sort_stableCtx(mem_Allocator gpa, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_con
     T_use_E$($set(mem_Err)(S$u8));
     let tmp = try_(u_castE$((mem_Err$S$u8)(mem_Allocator_alloc(gpa, typeInfo$(u8), tmp_len_required))));
     defer_(mem_Allocator_free(gpa, u_anyS(tmp)));
-    let_ignore = try_(sort_mergeCtxTmpRecur(tmp, seq, ordFn, ctx));
+    let_ignore = try_(sort_mergeTmpCtxRecur(tmp, seq, ordFn, ctx));
     return_ok({});
 } $unguarded_(fn);
 
@@ -212,8 +212,8 @@ fn_((sort_stableTmp(S$u8 tmp, u_S$raw seq, sort_OrdFn ordFn))(sort_mem_Err$S$u8)
     return_ok(try_(sort_mergeTmpRecur(tmp, seq, ordFn)));
 } $unscoped_(fn);
 
-fn_((sort_stableCtxTmp(S$u8 tmp, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(sort_mem_Err$S$u8) $scope) {
+fn_((sort_stableTmpCtx(S$u8 tmp, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(sort_mem_Err$S$u8) $scope) {
     let tmp_len_required = unwrap_(usize_mulChkd(seq.len, seq.type.size));
     if (tmp.len < tmp_len_required) { return_err(mem_Err_OutOfMemory()); }
-    return_ok(try_(sort_mergeCtxTmpRecur(tmp, seq, ordFn, ctx)));
+    return_ok(try_(sort_mergeTmpCtxRecur(tmp, seq, ordFn, ctx)));
 } $unscoped_(fn);

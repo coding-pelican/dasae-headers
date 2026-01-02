@@ -373,8 +373,6 @@ extern "C" {
 #define $flexible __attr__$flexible
 #define $zero_sized __attr__$zero_sized
 
-#define pragma_guard_(_push, _ctx, _pop, _code...) _Pragma(_push) _Pragma(_ctx) _code _Pragma(_pop)
-
 #define $static static
 #define $extern extern
 #define $Thrd_local _Thread_local
@@ -387,6 +385,53 @@ extern "C" {
 #define $packed __attr__$packed
 #define $align(_align...) __attr__$align(_align)
 
+#define $pragma_guard_(_push, _ctx, _pop, _code...) /* clang-format off */ \
+    _Pragma(_push) \
+    _Pragma(_ctx) \
+    _code \
+    _Pragma(_pop) /* clang-format on */
+#define $supress_cast_qual(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wcast-qual\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+#define $supress_cast_align(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wcast-align\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+#define $supress_pointer_arith(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wpointer-arith\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+#define $supress_switch_enum(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wswitch-enum\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+#define $supress_infinite_recursion(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Winfinite-recursion\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+#define $supress_loop_analysis(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wloop-analysis\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+#define $supress_thread_safety(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wthread-safety\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
 /*========== Macros and Definitions =========================================*/
 
 #define comp_attr__$inline comp_inline

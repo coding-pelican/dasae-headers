@@ -157,7 +157,7 @@ fn_((ActorSystem_spawn(ActorSystem* self, Co_Ctx* coroutine, P$raw initial_state
     free_actor->coroutine = coroutine;
     free_actor->mailbox = (Mailbox){ 0 };
     free_actor->state = initial_state;
-    free_actor->id = self->next_id++;
+    free_actor->id = intCast$((u32)(self->next_id++));
     free_actor->active = true;
     free_actor->has_messages = false;
 

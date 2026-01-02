@@ -20,11 +20,11 @@ fn_((log_init(const char* filename))(fs_File_Err$void) $guard) {
     char dir_path[256] = { 0 };
     if_(let dir_last_slash = strrchr(filename, '/'), dir_last_slash) {
         let dir_len = dir_last_slash - filename;
-        strncpy(dir_path, filename, dir_len);
+        strncpy(dir_path, filename, intCast$((usize)(dir_len)));
         dir_path[dir_len] = '\0';
 
         // Create directory
-        try_(fs_Dir_create(Str_view(as$(const u8*)(dir_path), dir_len)));
+        try_(fs_Dir_create(Str_view(as$(const u8*)(dir_path), intCast$((usize)(dir_len)))));
     }
 
     let file = fopen(filename, "w");

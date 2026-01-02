@@ -417,13 +417,13 @@ fn_((fmt__formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) {
     // Handle sign formatting for positive numbers
     A$$(512, u8) final_buf = A_zero();
     usize final_pos = 0;
-    if (!d.sign && *atA(buf, 0) != u8_c('-')) {
+    if (!d.sign && *A_at((buf)[0]) != u8_c('-')) {
         switch (spec.sign) {
         case fmt_Sign_always:
-            *atA(final_buf, final_pos++) = u8_c('+');
+            *A_at((final_buf)[final_pos++]) = u8_c('+');
             break;
         case fmt_Sign_space:
-            *atA(final_buf, final_pos++) = u8_c(' ');
+            *A_at((final_buf)[final_pos++]) = u8_c(' ');
             break;
         case fmt_Sign_auto:
             break;
@@ -431,14 +431,14 @@ fn_((fmt__formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) {
     }
     // Copy formatted number
     for (usize i = 0; i < pos; ++i) {
-        *atA(final_buf, final_pos++) = *atA(buf, i);
+        *A_at((final_buf)[final_pos++]) = *A_at((buf)[i]);
     }
     // Apply case conversion
     if (use_upper) {
         for (usize i = 0; i < final_pos; ++i) {
-            let ch = *atA(final_buf, i);
+            let ch = *A_at((final_buf)[i]);
             if (ascii_isAlpha(ch)) {
-                *atA(final_buf, i) = ch - u8_c('a') + u8_c('A');
+                *A_at((final_buf)[i]) = ch - u8_c('a') + u8_c('A');
             }
         }
     }

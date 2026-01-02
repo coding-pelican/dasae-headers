@@ -148,7 +148,7 @@ $static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
             .codeToStrZ = pp_join(_, Name, codeToStrZ), \
         } }; \
         return (Name){ \
-            .ctx = self, \
+            .ctx = as$(int)(self), \
             .vt = vt, \
         }; \
     } \

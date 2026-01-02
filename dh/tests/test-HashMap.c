@@ -57,7 +57,7 @@ TEST_fn_("basic usage" $guard) {
     let_(count, u32) = 128;
     var_(total, u32) = 0;
     for_(($r(0, count))(i) {
-        try_(HashMap_put$1usize$2u16(&map_value, gpa, i, i));
+        try_(HashMap_put$1usize$2u16(&map_value, gpa, i, intCast$((u16)(i))));
         total += i;
     });
 

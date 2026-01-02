@@ -11,9 +11,9 @@
  */
 
 #include "dage.h"
-#include "dh/main.h"
-#include "dh/Rand.h"
-#include "dh/heap/Page.h"
+#include <dh/main.h>
+#include <dh/Rand.h>
+#include <dh/heap/Page.h>
 
 /*========== Simple Game State ==========*/
 

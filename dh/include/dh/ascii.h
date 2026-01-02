@@ -136,19 +136,19 @@ $static let ascii_whitespaces = A_from$((u8){ ' ', '\t', '\n', '\r', ascii_CtrlC
 /// Uppercases the character && returns it as-is if already uppercase || not a letter.
 $attr($inline)
 $static fn_((ascii_toUpper(u8 c))(u8)) {
-    let mask = as$(u8)(ascii_isLower(c)) << 5;
+    let mask = int_shl(boolToInt(ascii_isLower(c)), 5);
     return c ^ mask;
 };
 /// Lowercases the character && returns it as-is if already lowercase || not a letter.
 $attr($inline)
 $static fn_((ascii_toLower(u8 c))(u8)) {
-    let mask = as$(u8)(ascii_isUpper(c)) << 5;
+    let mask = int_shl(boolToInt(ascii_isUpper(c)), 5);
     return c | mask;
 };
 /// Toggles the case of the character && returns it as-is if not a letter.
 $attr($inline)
 $static fn_((ascii_toggleCase(u8 c))(u8)) {
-    let mask = as$(u8)(ascii_isAlpha(c)) << 5;
+    let mask = int_shl(boolToInt(ascii_isAlpha(c)), 5);
     return c ^ mask;
 };
 

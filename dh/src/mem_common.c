@@ -80,7 +80,7 @@ fn_((mem_ordBytes(S_const$u8 lhs, S_const$u8 rhs))(cmp_Ord)) {
     claim_assert_nonnullS(rhs);
     let len = int_min(lhs.len, rhs.len);
     let result = u_memordS(u_sliceS(u_anyS(lhs), $r(0, len)), u_sliceS(u_anyS(rhs), $r(0, len)));
-    return result != cmp_Ord_eq ? result : prim_ord(lhs.len, rhs.len);
+    return result != cmp_Ord_eq ? result : as$(cmp_Ord)(prim_ord(lhs.len, rhs.len));
 };
 fn_((mem_eqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
 fn_((mem_neBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
@@ -101,7 +101,7 @@ fn_((mem_ord(u_S_const$raw lhs, u_S_const$raw rhs))(cmp_Ord)) {
         case cmp_Ord_eq: continue;
         }
     });
-    return prim_ord(lhs.len, rhs.len);
+    return as$(cmp_Ord)(prim_ord(lhs.len, rhs.len));
 };
 
 fn_((mem_eq(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, rhs); };
