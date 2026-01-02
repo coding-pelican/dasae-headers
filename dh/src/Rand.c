@@ -15,7 +15,7 @@ $static fn_((Rand__next(Rand* self))(u64));
 /*========== Extern Function Implementations ================================*/
 
 fn_((Rand_init(void))(Rand)) {
-    return Rand_initSeed(time_Instant_toUnixEpoch(time_Instant_now()));
+    return Rand_initSeed(time_Instant_ticks(time_Instant_now()));
 }
 
 fn_((Rand_initSeed(u64 seed))(Rand)) {

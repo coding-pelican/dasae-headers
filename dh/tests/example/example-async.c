@@ -1,5 +1,6 @@
 #include "dh/time/Duration.h"
 #include "dh/time/Instant.h"
+#include "dh/time/SystemTime.h"
 #include "dh/time/common.h"
 
 #if UNUSED_CODE
@@ -78,13 +79,13 @@ static fn_((time_Duration_fmt(time_Duration self, S$u8 buf))(E$S_const$u8) $scop
     return_ok(Str_slice(buf.as_const, 0, written));
 } $unscoped_(fn);
 
-static fn_((time_Instant_fmt(time_Instant self, S$u8 buf))(E$S_const$u8) $scope) {
+static fn_((time_SysTime_fmt(time_SysTime self, S$u8 buf))(E$S_const$u8) $scope) {
     // Get Unix timestamp in seconds
-    let unix_secs = time_Instant_toUnixEpoch(self);
+    let unix_secs = time_SysTime_toUnixEpoch(self);
 
     // Get the duration since Unix epoch to extract sub-second precision
-    let unix_epoch_instant = time_Instant_fromUnixEpoch(unix_secs);
-    let subsec_duration = time_Instant_durationSince(self, unix_epoch_instant);
+    let unix_epoch_time = time_SysTime_fromUnixEpoch(unix_secs);
+    let subsec_duration = time_SysTime_durationSince(self, unix_epoch_time);
     let subsec_nanos = subsec_duration.nanos;
 
     usize written = 0;
