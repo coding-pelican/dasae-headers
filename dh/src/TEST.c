@@ -95,6 +95,7 @@ fn_((TEST_Framework_run(void))(void) $guard) {
 } $unguarded_(fn);
 
 /* Debug versions of test functions */
+#if on_comptime
 fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void) $scope) {
     let_ignore = loc;
     let_ignore = eval_str;
@@ -113,3 +114,4 @@ fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_
     }
     return_ok({});
 } $unscoped_(fn);
+#endif /* on_comptime */

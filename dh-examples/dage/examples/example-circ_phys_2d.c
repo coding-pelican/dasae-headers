@@ -11,11 +11,11 @@
  */
 
 #include "dage.h"
-#include "dh/main.h"
-#include "dh/Rand.h"
-#include "dh/heap/Page.h"
-#include "dh/ArrList.h"
-#include "dh/io/stream.h"
+#include <dh/main.h>
+#include <dh/Rand.h>
+#include <dh/heap/Page.h>
+#include <dh/ArrList.h>
+#include <dh/io/stream.h>
 
 /*========== Circle Collision Geometry ==========*/
 
@@ -150,10 +150,10 @@ $static fn_((BallManager_replaceAllRandomly(BallManager* self, u32 count))(void)
 
     for_(($r(0, count))(i) {
         let center = m_V2f32_of(
-            Rand_rangeFlt(&self->rng, -self->world_half_size.x, self->world_half_size.x),
-            Rand_rangeFlt(&self->rng, -self->world_half_size.y, self->world_half_size.y)
+            (as$(f32)(Rand_rangeFlt(&self->rng, as$(f64)(-self->world_half_size.x), as$(f64)(self->world_half_size.x)))),
+            (as$(f32)(Rand_rangeFlt(&self->rng, as$(f64)(-self->world_half_size.y), as$(f64)(self->world_half_size.y))))
         );
-        let radius = Rand_rangeFlt(&self->rng, 5.0f, 20.0f);
+        let radius = as$(f32)(Rand_rangeFlt(&self->rng, as$(f64)(5.0f), as$(f64)(20.0f)));
         ArrList_appendWithin$Ball(&self->balls, Ball_of(center, radius, i));
     });
 };

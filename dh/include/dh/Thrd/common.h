@@ -232,9 +232,9 @@ Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __passed_ret = &__passed_ctx->ret.as_typed; \
     let pp_Tuple_get1st _Tuple_Captures = __passed_ctx; \
     let pp_Tuple_get2nd _Tuple_Captures = &__passed_args; \
-    let __reserved_return = as$(TypeOf(*__passed_ret)*)( \
-        (u8[sizeOf$(TypeOf(*__passed_ret))]){} \
-    ); \
+    let __reserved_return = ptrAlignCast$((TypeOf(*__passed_ret)*)( \
+        A_ptr((A$$(sizeOf$(TypeOf(*__passed_ret)), u8)){}) \
+    )); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
     if (false) { \
@@ -256,9 +256,9 @@ Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __passed_ret = &__passed_ctx->ret.as_typed; \
     let pp_Tuple_get1st _Tuple_Captures = __passed_ctx; \
     let pp_Tuple_get2nd _Tuple_Captures = &__passed_args; \
-    let __reserved_return = as$(TypeOf(*__passed_ret)*)( \
-        (u8[sizeOf$(TypeOf(*__passed_ret))]){} \
-    ); \
+    let __reserved_return = ptrAlignCast$((TypeOf(*__passed_ret)*)( \
+        A_ptr((A$$(sizeOf$(TypeOf(*__passed_ret)), u8)){}) \
+    )); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
     var __scope_counter   = (struct fn__ScopeCounter){ \

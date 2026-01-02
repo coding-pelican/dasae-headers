@@ -1,36 +1,8 @@
 CompileFlags:
-  Compiler: clang
   Add:
-    - -xc
-    - -std=c17
-    - -Wall
-    - -Wextra
-    - -Werror
-    - -funsigned-char
-    - -fblocks
-    - -fms-extensions
-    - -Ic:/dasae/dev/dasae-headers/dh-examples/dh-ext/os/linux/x11/src
-    - -Ic:/dasae/dev/dasae-headers/dh-examples/dh-ext/os/linux/x11/include
-    - -I/mnt/c/dasae/dev/dasae-headers/dh-examples/dh-ext/os/linux/x11/src
-    - -I/mnt/c/dasae/dev/dasae-headers/dh-examples/dh-ext/os/linux/x11/include
-InlayHints:
-  Enabled: true
-  TypeNameLimit: 24
-  DeducedTypes: true
-  ParameterNames: true
-  Designators: true
-  BlockEnd: false
-Hover:
-  ShowAKA: true
----
-If:
-  PathMatch:
-    - .*\.h
-    - .*\.hh
-    - .*\.hpp
-    - .*\.hxx
-CompileFlags:
-  Add:
-    - -Wno-unused-function
-    - -Wno-unused-variable
-    - -Wno-unused-const-variable
+    - -I./dh-ext/os/linux/x11/src
+    - -I./dh-ext/os/linux/x11/include
+    - -isystem./dh-ext/os/linux/x11/lib/deps
+    - -I./dh-examples/dh-ext/os/linux/x11/src
+    - -I./dh-examples/dh-ext/os/linux/x11/include
+    - -isystem./dh-examples/dh-ext/os/linux/x11/lib/deps

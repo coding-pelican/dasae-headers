@@ -89,12 +89,7 @@ extern "C" {
 // clang-format off
 #define comp_syn__fn_$_scope(_ident_w_Params, _T_Return...) \
 _T_Return _ident_w_Params { \
-    let __reserved_return = as$(_T_Return*)( \
-        (u8[T_switch$((_T_Return)( \
-            T_case$((void)(0)), \
-            T_default_(sizeOf$(_T_Return)) \
-        ))]){} \
-    ); \
+    let __reserved_return = ptrAlignCast$((_T_Return*)(A_ptr((A$$(sizeOf$(_T_Return), u8)){}))); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
     if (false) { __step_return: goto __step_unscope; } \
@@ -107,10 +102,13 @@ _T_Return _ident_w_Params { \
         T_default_(({})) \
     )); \
     if (false) { __step_unscope: \
-        if (T_switch$((ReturnT)( \
-            T_case$((void)(false)), \
-            T_default_(true) \
-        ))) { return reservedReturn(); } \
+        $pragma_guard_( \
+            "clang diagnostic push", "clang diagnostic ignored \"-Wgnu-pointer-arith\"", "clang diagnostic pop", \
+            if (T_switch$((ReturnT)( \
+                T_case$((void)(false)), \
+                T_default_(true) \
+            ))) { return reservedReturn(); } \
+        ); \
     } \
 }
 // clang-format on
@@ -122,12 +120,7 @@ struct fn__ScopeCounter {
 // clang-format off
 #define comp_syn__fn_$_guard(_ident_w_Params, _T_Return...) \
 _T_Return _ident_w_Params { \
-    volatile let __reserved_return = as$(_T_Return*)( \
-        (u8[T_switch$((_T_Return)( \
-            T_case$((void)(0)), \
-            T_default_(sizeOf$(_T_Return)) \
-        ))]){} \
-    ); \
+    volatile let __reserved_return = ptrAlignCast$((_T_Return*)(A_ptr((A$$(sizeOf$(_T_Return), u8)){}))); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
     var __scope_counter   = (struct fn__ScopeCounter){ \
@@ -149,10 +142,13 @@ __step_deferred: switch (__scope_counter.current_line) { \
         T_default_(({})) \
     )); \
     if (false) { __step_unscope: \
-        if (T_switch$((ReturnT)( \
-            T_case$((void)(false)), \
-            T_default_(true) \
-        ))) { return reservedReturn(); } \
+        $pragma_guard_( \
+            "clang diagnostic push", "clang diagnostic ignored \"-Wgnu-pointer-arith\"", "clang diagnostic pop", \
+            if (T_switch$((ReturnT)( \
+                T_case$((void)(false)), \
+                T_default_(true) \
+            ))) { return reservedReturn(); } \
+        ); \
     } \
 }
 // clang-format on
@@ -209,6 +205,7 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 #define comp_syn__defer(_Expr...) comp_syn__defer__op_snapshot(_Expr; goto __step_deferred)
 
 // clang-format off
+#define comp_syn__blk_defer__expand(...) __VA_ARGS__
 #define comp_syn__blk_defer { do { \
     comp_syn__defer__op_snapshot( \
         if (__scope_counter.is_returning) { \
@@ -217,7 +214,7 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
             continue; \
         } \
     ) \
-    do pp_exec_expand
+    do comp_syn__blk_defer__expand
 #define comp_syn__blk_deferral \
     while(false); \
     goto __step_deferred; \
@@ -250,10 +247,7 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 #define __expr__2(_T_Break, _ext...) pp_cat(comp_syn__expr_, _ext)(_T_Break)
 #define comp_syn__expr_$_scope(_T_Break...) ({ \
     $local_label __step_break, __step_unscope; \
-    let __reserved_break = as$(_T_Break*)((u8[T_switch$((_T_Break)( \
-        T_case$((void)(0)), \
-        T_default_(sizeOf$(_T_Break)) \
-    ))]){}); \
+    let __reserved_break = ptrAlignCast$((_T_Break*)(A_ptr((A$$(sizeOf$(_T_Break), u8)){}))); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
     $maybe_unused bool __has_broken = false; /* for integration with `eval_` */ \
@@ -263,18 +257,15 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 #define comp_syn__expr_$unscoped \
     /* while(false) */; \
 __step_unscope: \
-    T_switch$((BreakT)( \
+    $supress_pointer_arith(T_switch$((BreakT)( \
         T_case$((void)({})), \
         T_default_(reservedBreak()) \
-    )); \
+    ))); \
 })
 #define comp_syn__expr_$_guard(_T_Break...) ({ \
     $local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
     if (false) { __step_return_inner: goto __step_return; } \
-    volatile let __reserved_break = as$(_T_Break*)((u8[T_switch$((_T_Break)( \
-        T_case$((void)(0)), \
-        T_default_(sizeOf$(_T_Break)) \
-    ))]){}); \
+    volatile let __reserved_break = ptrAlignCast$((_T_Break*)(A_ptr((A$$(sizeOf$(_T_Break), u8)){}))); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
     var __scope_counter = (struct fn__ScopeCounter){ \
@@ -298,10 +289,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
     } \
     __step_unscope: \
     if (!__has_broken) { goto __step_return_inner; } \
-    T_switch$((BreakT)( \
+    $supress_pointer_arith(T_switch$((BreakT)( \
         T_case$((void)({})), \
         T_default_(reservedBreak()) \
-    )); \
+    ))); \
 })
 // clang-format on
 
@@ -347,10 +338,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define inline__eval_2(_T_Break, _ext...) pp_cat(inline__eval_2, _ext)(_T_Break)
 #define inline__eval_2$_scope(_T_Break...) ({ \
     $local_label __step_break; \
-    let __reserved_break = as$(_T_Break*)((u8[T_switch$((_T_Break)( \
-        T_case$((void)(0)), \
-        T_default_(sizeOf$(_T_Break)) \
-    ))]){}); \
+    let __reserved_break = ptrAlignCast$((_T_Break*)(A_ptr((A$$(sizeOf$(_T_Break), u8)){}))); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
     $maybe_unused bool __has_broken = false;\
@@ -359,10 +347,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define comp_syn__eval_$unscoped \
     /* while(false) */; \
     __step_break: \
-    T_switch$((BreakT)( \
+    $supress_pointer_arith(T_switch$((BreakT)( \
         T_case$((void)({})), \
         T_default_(reservedBreak()) \
-    )); \
+    ))); \
 })
 // clang-format on
 

@@ -99,7 +99,7 @@ errset_((math_Err)(
 #define ____math_fltCast$(_OT, __val, __min, __max, _val...) (expr_(_OT $scope)({ \
     typedef O_InnerT$(_OT) DstType; \
     typedef TypeOf(_val) SrcType; \
-    claim_assert_static(isFlt$(SrcType)); \
+    claim_assert_static(isFlt$$(SrcType)); \
     let_(__val, SrcType) = _val; \
     let_(__min, DstType) = flt_limit_min$(DstType); \
     let_(__max, DstType) = flt_limit_max$(DstType); \
@@ -258,7 +258,7 @@ errset_((math_Err)(
     let __lhs = (val_lhs); \
     let __rhs = (val_rhs); \
     var __ret = cmp_Ord_eq; \
-    if (isFlt(TypeOf(__lhs))) { \
+    if (isFlt$(TypeOf(__lhs))) { \
         if (math_abs((__lhs) - (__rhs)) <= math_eps) { \
             (__ret) = cmp_Ord_eq; \
         } else if ((__lhs) < (__rhs)) { \
@@ -316,7 +316,7 @@ errset_((math_Err)(
     let __rhs = (val_rhs); \
     var __ret = make$((TypeOf(__lhs)){}); \
     if ((__rhs) != 0) { \
-        if (isFlt(TypeOf(__ret))) { \
+        if (isFlt$(TypeOf(__ret))) { \
             (__ret) = as$(TypeOf(__ret))(flt_rem(as$(f64)(__lhs), as$(f64)(__rhs))); \
         } else { \
             (__ret) = as$(TypeOf(__ret))(as$(i64)(__lhs) % as$(i64)(__rhs)); \
@@ -331,7 +331,7 @@ errset_((math_Err)(
     if ((__rhs) == 0) { \
         (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) err(math_Err_err(math_ErrCode_DivisionByZero)))); \
     } else { \
-        if (isFlt(TypeOf(__ret))) { \
+        if (isFlt$(TypeOf(__ret))) { \
             (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) ok(flt_rem(as$(f64)(__lhs), as$(f64)(__rhs))))); \
         } else { \
             (__ret) = as$(P$raw)(&(E$(TypeOf(__lhs)) ok(as$(i64)(__lhs) % as$(i64)(__rhs)))); \
@@ -345,7 +345,7 @@ errset_((math_Err)(
 /* Basic functions */
 #define FUNC_math_abs(_x, val_x) blk({ \
     var _x = (val_x); \
-    if (isFlt(TypeOf(_x))) { \
+    if (isFlt$(TypeOf(_x))) { \
         (_x) = as$(TypeOf(_x))(flt_abs(as$(f64)(_x))); \
     } else { \
         (_x) = (_x) < 0 ? -(_x) : (_x); \

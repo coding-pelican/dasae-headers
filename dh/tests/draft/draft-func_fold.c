@@ -94,7 +94,7 @@ fn_((sumProcedural(S_const$i32 items))(i32)) {
     var_(sum, i32) = -123;
     for_(($s(items))(item) {
         if (!(*item > 0)) { continue; } // filter
-        sum += *item;                   // fold
+        sum += *item; // fold
     });
     return sum;
 };
@@ -132,7 +132,7 @@ typedef enum chain__State : u8 {
 #define __step__chain$__parseS(_s...) pp_uniqTok(s), _s, __step__chain$__parseFnOps
 #define __step__chain$__parseFnOps(_fnOps...) _fnOps
 #define __step__chain$__emit(...) __chain$(__VA_ARGS__)
-#define __chain$(_T, __s, _s, _fnOps...) pragma_guard_( \
+#define __chain$(_T, __s, _s, _fnOps...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
     "clang diagnostic pop", \
@@ -220,7 +220,7 @@ fn_((sumProcedural(S_const$i32 items))(i32)) {
     var_(sum, i32) = -123;
     for_(($s(items))(item) {
         if (!(*item > 0)) { continue; } // filter
-        sum += *item;                   // fold
+        sum += *item; // fold
     });
     return sum;
 };

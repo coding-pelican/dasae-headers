@@ -89,7 +89,8 @@ async_fn_scope(exec_sleep, {}) {
 /// \param label The label to report
 /// \param fmt The format string
 /// \param ... The arguments to the format string
-fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
+$attr($maybe_unused)
+$static fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
     io_stream_print(u8_l("[ThrdId({:uz}): {:s}] "), Thrd_currentId(), label);
     va_list args = {};
     with_fini_(va_start(args, fmt), va_end(args)) {
@@ -98,17 +99,18 @@ fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
     io_stream_nl();
 }
 
-fn_((Terminal_clear(void))(void)) { io_stream_print(u8_l("\x1b[2J\x1b[H")); };
-fn_((Terminal_home(void))(void)) { io_stream_print(u8_l("\x1b[1;1H")); };
-fn_((Terminal_nl(void))(void)) { io_stream_nl(); };
-fn_((Terminal_moveCursor(u32 x, u32 y))(void)) { io_stream_print(u8_l("\x1b[{:u};{:u}H"), y + 1, x + 1); };
-fn_((Terminal_writeTypo(u8 typo))(void)) { io_stream_print(u8_l("{:c}"), typo); };
-fn_((Terminal_writeTypoAt(u32 x, u32 y, u8 typo))(void)) {
+$static fn_((Terminal_clear(void))(void)) { io_stream_print(u8_l("\x1b[2J\x1b[H")); };
+$static fn_((Terminal_home(void))(void)) { io_stream_print(u8_l("\x1b[1;1H")); };
+$static fn_((Terminal_nl(void))(void)) { io_stream_nl(); };
+$static fn_((Terminal_moveCursor(u32 x, u32 y))(void)) { io_stream_print(u8_l("\x1b[{:u};{:u}H"), y + 1, x + 1); };
+$static fn_((Terminal_writeTypo(u8 typo))(void)) { io_stream_print(u8_l("{:c}"), typo); };
+$static fn_((Terminal_writeTypoAt(u32 x, u32 y, u8 typo))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeTypo(typo);
 };
-fn_((Terminal_writeText(S_const$u8 text))(void)) { io_stream_print(u8_l("{:s}"), text); };
-fn_((Terminal_writeTextAt(u32 x, u32 y, S_const$u8 text))(void)) {
+$static fn_((Terminal_writeText(S_const$u8 text))(void)) { io_stream_print(u8_l("{:s}"), text); };
+$attr($maybe_unused)
+$static fn_((Terminal_writeTextAt(u32 x, u32 y, S_const$u8 text))(void)) {
     Terminal_moveCursor(x, y);
     Terminal_writeText(text);
 };
@@ -119,7 +121,7 @@ fn_((Terminal_writeTextAt(u32 x, u32 y, S_const$u8 text))(void)) {
 #include "dh/io/Reader.h"
 
 T_use_A$(1024, u8);
-fn_((Terminal_readBytes(S$u8 mem))(S$u8)) {
+$static fn_((Terminal_readBytes(S$u8 mem))(S$u8)) {
     let stream_in = fs_File_reader(io_getStdIn());
     return S_prefix((mem)(catch_((io_Reader_read(stream_in, mem))($ignore, claim_unreachable))));
 };
@@ -203,7 +205,7 @@ async_fn_scope(typeEffectRealistic, {
         if (args->add_randomness) {
             // Add randomness to make it feel more natural (-30 to +50 ms variation)
             let random_variation = Rand_rangeIInt(&locals->rand, -30, 50);
-            locals->delay_ms = as$(u64)(prim_max(10, as$(i64)((locals->delay_ms) + random_variation)));
+            locals->delay_ms = intCast$((u64)(prim_max(as$(i64)(10), (intCast$((i64)(locals->delay_ms)) + random_variation))));
 
             // Longer pauses after punctuation
             if (current_char == '.' || current_char == '!' || current_char == '?') {
@@ -218,7 +220,7 @@ async_fn_scope(typeEffectRealistic, {
             }
         }
         // Ensure delay is not negative (minimum 10ms)
-        locals->delay_ms = prim_max(10, locals->delay_ms);
+        locals->delay_ms = prim_max(as$(u64)(10), locals->delay_ms);
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(orelse_((args->caller)(ctx->anyraw))), locals->delay_ms));
     }
     areturn_({});

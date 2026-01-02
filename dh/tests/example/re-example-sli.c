@@ -1,9 +1,10 @@
+#if UNUSED_CODE
 #define main_no_args 1
 #include "dh/main.h"
 #include "dh/sli.h"
 
 $static
-fn_((slice_example(void))(void));
+    fn_((slice_example(void))(void));
 fn_((dh_main(void))(E$void) $scope) {
     slice_example();
     return_ok({});
@@ -18,24 +19,24 @@ fn_((slice_example(void))(void)) {
         let slice = Sli_from$(S$i32, numbers, 10);
 
         // Basic operations
-        let third_ptr = Sli_at(slice, 2);    // Get pointer to the third element
-        let value     = Sli_getAt(slice, 3); // Get value of the fourth element
-        Sli_setAt(slice, 4, 50);             // Set the fifth element to 50
-        let length = Sli_len(slice);         // Get the length (10)
+        let third_ptr = Sli_at(slice, 2); // Get pointer to the third element
+        let value = Sli_getAt(slice, 3); // Get value of the fourth element
+        Sli_setAt(slice, 4, 50); // Set the fifth element to 50
+        let length = Sli_len(slice); // Get the length (10)
 
         // Range-based operations
         let middle = Sli_slice(slice, $r(2, 7));
-        for_slice (middle, item) {
+        for_slice(middle, item) {
             printf("%d ", *item);
         }
         printf("\n");
         let first_half = Sli_prefix(slice, 5); // First 5 elements
-        for_slice (first_half, item) {
+        for_slice(first_half, item) {
             printf("%d ", *item);
         }
         printf("\n");
         let second_half = Sli_suffix(slice, 5); // Last 5 elements
-        for_slice (second_half, item) {
+        for_slice(second_half, item) {
             printf("%d ", *item);
         }
         printf("\n");
@@ -64,7 +65,7 @@ fn_((slice_example(void))(void)) {
     u8 str[] = "Hello, world";
     {
         let str_z = SZ_from$(SZ$u8, str);
-        let ch    = SZ_getAt(str_z, 1); // 'e'
+        let ch = SZ_getAt(str_z, 1); // 'e'
         // let hello_sli = SZ_toS$(S$u8, str_z); // Convert to regular slice
         printf("%s\n", str_z.ptr);
         let_ignore = ch;
@@ -73,7 +74,7 @@ fn_((slice_example(void))(void)) {
     // Working with sentinel-terminated slices (SS)
     i32 numbers_with_sentinel[] = { 1, 2, 3, 4, 5, -1, 6, 7 }; // -1 is sentinel
     {
-        let nums_s    = SS_from$(SS$i32, numbers_with_sentinel, -1);
+        let nums_s = SS_from$(SS$i32, numbers_with_sentinel, -1);
         let num_s_len = blk({
             usize len = 0;
             for (var iter = SS_at(nums_s, 0); deref(iter) != nums_s.sentinel; ++iter) { len++; }
@@ -94,3 +95,4 @@ fn_((slice_example(void))(void)) {
     // S$u32 bytes = Sli_castS$(S$u8, slice);  // View as bytes (i32 -> u8)
     // S$i32 ints  = Sli_castL$(S$i32, bytes); // Convert back to ints
 }
+#endif /* UNUSED_CODE */

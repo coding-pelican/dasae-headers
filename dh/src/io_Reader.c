@@ -32,7 +32,7 @@ fn_((io_Reader_skip(io_Reader self, usize n))(E$void) $scope) {
     usize remaining = n;
     while (0 < remaining) {
         let to_read = prim_min(remaining, len$A(discard_buffer));
-        let bytes_read = try_(io_Reader_read(self, slice$A$((u8)(discard_buffer, $r(0, to_read)))));
+        let bytes_read = try_(io_Reader_read(self, A_slice$((S$u8)(discard_buffer)$r(0, to_read))));
         if (bytes_read == 0) {
             return_err(io_Err_UnexpectedEof());
         }

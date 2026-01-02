@@ -136,7 +136,7 @@ fn_((time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_S
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit)
     if ((0 <= lhs.impl.QuadPart) && ticks <= (u64_limit_max - as$(u64)(lhs.impl.QuadPart))) {
-        return_some({ .impl.QuadPart = as$(LONGLONG)(lhs.impl.QuadPart + ticks) });
+        return_some({ .impl.QuadPart = as$(LONGLONG)(intCast$((u64)(lhs.impl.QuadPart)) + ticks) });
     }
 #else /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
     if ((0 <= lhs.impl.tv_sec) && ticks <= (u64_limit_max - as$(u64)(lhs.impl.tv_sec))) {
@@ -155,7 +155,7 @@ fn_((time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_S
     let ticks = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100);
 #if plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit)
     if ((0 <= lhs.impl.QuadPart) && ticks <= (u64_limit_min + as$(u64)(lhs.impl.QuadPart))) {
-        return_some({ .impl.QuadPart = as$(LONGLONG)(lhs.impl.QuadPart - ticks) });
+        return_some({ .impl.QuadPart = as$(LONGLONG)(intCast$((u64)(lhs.impl.QuadPart)) - ticks) });
     }
 #else /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
     if ((0 <= lhs.impl.tv_sec) && ticks <= (u64_limit_max + as$(u64)(lhs.impl.tv_sec))) {
@@ -196,7 +196,7 @@ fn_((time_SysTime_toUnixEpoch(time_SysTime self))(u64)) {
     let diff = self.impl.tv_sec - time_SysTime_unix_epoch.impl.tv_sec;
 #endif
     // Convert the difference to seconds
-    return as$(u64)(diff / time_SysTime_intervals_per_sec);
+    return as$(u64)(intCast$((u64)(diff)) / time_SysTime_intervals_per_sec);
 };
 
 /* --- Comparison --- */

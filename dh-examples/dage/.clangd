@@ -1,42 +1,8 @@
 CompileFlags:
-  Compiler: clang
   Add:
-    - -xc
-    - -std=c17
-    - -Wall
-    - -Wextra
-    - -Werror
-    - -funsigned-char
-    - -fblocks
-    - -fms-extensions
-    - -Ic:/dasae/dev/dasae-headers/dh/include
-    - -Ic:/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
-    - -Ic:/dasae/dev/dasae-headers/dh-examples/dage/src
-    - -Ic:/dasae/dev/dasae-headers/dh-examples/dage/include
-    - -Ic:/dasae/dev/dasae-headers/dh-examples/dage/lib/deps
-    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
-    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
-    - -I/mnt/c/dasae/dev/dasae-headers/dh-examples/dage/src
-    - -I/mnt/c/dasae/dev/dasae-headers/dh-examples/dage/include
-    - -I/mnt/c/dasae/dev/dasae-headers/dh-examples/dage/lib/deps
-InlayHints:
-  Enabled: true
-  TypeNameLimit: 24
-  DeducedTypes: true
-  ParameterNames: true
-  Designators: true
-  BlockEnd: false
-Hover:
-  ShowAKA: true
----
-If:
-  PathMatch:
-    - .*\.h
-    - .*\.hh
-    - .*\.hpp
-    - .*\.hxx
-CompileFlags:
-  Add:
-    - -Wno-unused-function
-    - -Wno-unused-variable
-    - -Wno-unused-const-variable
+    - -I./dage/src
+    - -I./dage/include
+    - -isystem./dage/lib/deps
+    - -I./dh-examples/dage/src
+    - -I./dh-examples/dage/include
+    - -isystem./dh-examples/dage/lib/deps

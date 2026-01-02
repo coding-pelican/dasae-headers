@@ -58,7 +58,7 @@ bool S_const$u8Castable(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
 #if plat_is_windows
     MEMORY_BASIC_INFORMATION mbi = cleared();
-    if (!VirtualQuery(self.ptr, &mbi, sizeOf$(mbi))) { return false; }
+    if (!VirtualQuery(self.ptr, &mbi, sizeOf$(TypeOf(mbi)))) { return false; }
     return (mbi.Protect & (PAGE_READWRITE | PAGE_WRITECOPY)) != 0;
 #else /* posix */
     return !mprotect(
@@ -72,7 +72,7 @@ bool S_const$u8Castable(S_const$u8 self) {
 O$S$u8 S_const$u8Cast(S_const$u8 self) {
     debug_assert_nonnull(self.ptr);
     if (!S_const$u8Castable(self)) { return none$((O$S$u8)); }
-    return some$((O$S$u8)(Str_from(as$(u8*)(self.ptr), self.len)));
+    return $supress_cast_qual(some$((O$S$u8)(Str_from((u8*)(self.ptr), self.len))));
 }
 
 fn_((Str_cat(mem_Allocator allocator, S_const$u8 lhs, S_const$u8 rhs))(E$S$u8) $scope) {

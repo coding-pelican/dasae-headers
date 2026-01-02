@@ -69,7 +69,7 @@ $extern fn_((dh_main(pp_if_(pp_not(main_no_args))(
 
 fn_((main(pp_if_(pp_not(main_no_args))(
     pp_then_(int argc, const char* argv[]),
-    pp_else_(void)
+    pp_else_( void)
 )))(int)) {
 #if main_no_args && main_no_returns_err
     dh_main();
@@ -80,7 +80,7 @@ fn_((main(pp_if_(pp_not(main_no_args))(
         return (debug_break(), 1);
     }));
 #elif !main_no_args && main_no_returns_err
-    let args_buf = as$(S$(const u8)*)(prim_alloca(argc * sizeOf$(S$(const u8))));
+    let args_buf = as$(S_const$(u8)*)(prim_alloca(argc * sizeOf$(S_const$(u8))));
     let args = ({
         for_(($r(0, argc))(i) {
             args_buf[i] = mem_spanZ0$u8(as$(const u8*)(argv[i]));
@@ -89,12 +89,12 @@ fn_((main(pp_if_(pp_not(main_no_args))(
     });
     dh_main(args);
 #else /* !main_no_args && !main_no_returns_err */
-    let args_buf = as$(S$(const u8)*)(prim_alloca(argc * sizeOf$(S$(const u8))));
+    let args_buf = as$(S_const$(u8)*)(prim_alloca(as$(usize)(argc)*sizeOf$(S_const$(u8))));
     let args = ({
-        for_(($r(0, argc))(i) {
+        for_(($r(0, as$(usize)(argc)))(i) {
             args_buf[i] = mem_spanZ0$u8(as$(const u8*)(argv[i]));
         });
-        lit$((S$S_const$u8){ .ptr = args_buf, .len = argc });
+        lit$((S$S_const$u8){ .ptr = args_buf, .len = as$(usize)(argc) });
     });
     catch_((dh_main(args))(err, {
         Err_print(err);
@@ -104,7 +104,7 @@ fn_((main(pp_if_(pp_not(main_no_args))(
 #endif
     return 0;
 }
-#else  /* TEST_comp_enabled */
+#else /* TEST_comp_enabled */
 fn_((main(void))(int)) {
     TEST_Framework_run();
     return 0;

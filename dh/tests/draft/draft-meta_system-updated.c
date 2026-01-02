@@ -78,17 +78,17 @@ struct E$raw {
 /* Base Types ========================================================*/
 
 #define $P_const$(_T...) TypeOf(const _T*)
-#define $P$(_T...)       TypeOf(_T*)
-#define $A$(_N, _T...)   TypeOf(_T[_N])
+#define $P$(_T...) TypeOf(_T*)
+#define $A$(_N, _T...) TypeOf(_T[_N])
 
 /* Pointer Type ======================================================*/
 
 /* Pointer Anonymous */
 #define P_const$$(_T...) $P_const$(_T)
-#define P$$(_T...)       $P$(_T)
+#define P$$(_T...) $P$(_T)
 /* Pointer Alias */
-#define P_const$(_T...)  pp_join($, P_const, _T)
-#define P$(_T...)        pp_join($, P, _T)
+#define P_const$(_T...) pp_join($, P_const, _T)
+#define P$(_T...) pp_join($, P, _T)
 /* Pointer Template */
 #define T_use_P$(_T...) \
     typedef $P_const$(_T) P_const$(_T); \
@@ -119,7 +119,7 @@ struct E$raw {
     }
 /* Slice Alias */
 #define S_const$(_T...) pp_join($, S_const, _T)
-#define S$(_T...)       pp_join($, S, _T)
+#define S$(_T...) pp_join($, S, _T)
 /* Slice Template */
 #define T_use_S$(_T...) \
     typedef union S_const$(_T) { \
@@ -227,52 +227,52 @@ struct E$raw {
 
 /* Operations ========================================================*/
 
-#define zero$A()                                  { .val = { 0 } }
-#define zero$A$(/*(_N,_T)*/... /*(A$(_N,_T))*/)   ((A$ __VA_ARGS__)zero$A())
+#define zero$A() { .val = { 0 } }
+#define zero$A$(/*(_N,_T)*/... /*(A$(_N,_T))*/) ((A$ __VA_ARGS__)zero$A())
 #define zero$A$$(/*(_N,_T)*/... /*(A$$(_N,_T))*/) ((A$$ __VA_ARGS__)zero$A())
-#define zero$S()                                  { .ptr = null, .len = 0 }
-#define zero$S$(/*(_T)*/... /*(S$(_T))*/)         ((S$ __VA_ARGS__)zero$S())
-#define zero$S$$(/*(_T)*/... /*(S$$(_T))*/)       ((S$$ __VA_ARGS__)zero$S())
-#define init$A(_initial...)                       { .val = _initial }
+#define zero$S() { .ptr = null, .len = 0 }
+#define zero$S$(/*(_T)*/... /*(S$(_T))*/) ((S$ __VA_ARGS__)zero$S())
+#define zero$S$$(/*(_T)*/... /*(S$$(_T))*/) ((S$$ __VA_ARGS__)zero$S())
+#define init$A(_initial...) { .val = _initial }
 #define init$A$(/*(_N, _T)(_initial...)*/... /*(A$(_N,_T))*/) \
     __step_inline__init$A$(pp_defer(__emit_inline__init$A$)(__param_parse__init$A$ __VA_ARGS__))
-#define __step_inline__init$A$(...)                 __VA_ARGS__
-#define __param_parse__init$A$(...)                 __VA_ARGS__, __param_next__init$A$
-#define __param_next__init$A$(...)                  __VA_ARGS__
+#define __step_inline__init$A$(...) __VA_ARGS__
+#define __param_parse__init$A$(...) __VA_ARGS__, __param_next__init$A$
+#define __param_next__init$A$(...) __VA_ARGS__
 #define __emit_inline__init$A$(_N, _T, _initial...) ((A$(_N, _T))init$A(_initial))
 #define init$A$$(/*(_N, _T)(_initial...)*/... /*(A$$(_N,_T))*/) \
     __step_inline__init$A$$(pp_defer(__emit_inline__init$A$$)(__param_parse__init$A$$ __VA_ARGS__))
-#define __step_inline__init$A$$(...)                 __VA_ARGS__
-#define __param_parse__init$A$$(...)                 __VA_ARGS__, __param_next__init$A$$
-#define __param_next__init$A$$(...)                  __VA_ARGS__
+#define __step_inline__init$A$$(...) __VA_ARGS__
+#define __param_parse__init$A$$(...) __VA_ARGS__, __param_next__init$A$$
+#define __param_next__init$A$$(...) __VA_ARGS__
 #define __emit_inline__init$A$$(_N, _T, _initial...) ((A$$(_N, _T))init$A(_initial))
-#define init$S(_ptr, _len...)                        { .ptr = _ptr, .len = _len }
+#define init$S(_ptr, _len...) { .ptr = _ptr, .len = _len }
 #define init$S$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S_const$(_T))*/) \
     __step_inline__init$S$(pp_defer(__emit_inline__init$S$)(__param_parse__init$S$ __VA_ARGS__))
-#define __step_inline__init$S$(...)               __VA_ARGS__
-#define __param_parse__init$S$(...)               __VA_ARGS__, __param_next__init$S$
-#define __param_next__init$S$(...)                __VA_ARGS__
+#define __step_inline__init$S$(...) __VA_ARGS__
+#define __param_parse__init$S$(...) __VA_ARGS__, __param_next__init$S$
+#define __param_next__init$S$(...) __VA_ARGS__
 #define __emit_inline__init$S$(_T, _ptr, _len...) ((S_const$(_T))init$S(_ptr, _len))
 #define initMut$S$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S$(_T))*/) \
     __step_inline__initMut$S$(pp_defer(__emit_inline__initMut$S$)(__param_parse__initMut$S$ __VA_ARGS__))
-#define __step_inline__initMut$S$(...)               __VA_ARGS__
-#define __param_parse__initMut$S$(...)               __VA_ARGS__, __param_next__initMut$S$
-#define __param_next__initMut$S$(...)                __VA_ARGS__
+#define __step_inline__initMut$S$(...) __VA_ARGS__
+#define __param_parse__initMut$S$(...) __VA_ARGS__, __param_next__initMut$S$
+#define __param_next__initMut$S$(...) __VA_ARGS__
 #define __emit_inline__initMut$S$(_T, _ptr, _len...) ((S$(_T))init$S(_ptr, _len))
 #define init$S$$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S_const$$(_T))*/) \
     __step_inline__init$S$$(pp_defer(__emit_inline__init$S$$)(__param_parse__init$S$$ __VA_ARGS__))
-#define __step_inline__init$S$$(...)               __VA_ARGS__
-#define __param_parse__init$S$$(...)               __VA_ARGS__, __param_next__init$S$$
-#define __param_next__init$S$$(...)                __VA_ARGS__
+#define __step_inline__init$S$$(...) __VA_ARGS__
+#define __param_parse__init$S$$(...) __VA_ARGS__, __param_next__init$S$$
+#define __param_next__init$S$$(...) __VA_ARGS__
 #define __emit_inline__init$S$$(_T, _ptr, _len...) ((S_const$$(_T))init$S(_ptr, _len))
 #define initMut$S$$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S$$(_T))*/) \
     __step_inline__initMut$S$$(pp_defer(__emit_inline__initMut$S$$)(__param_parse__initMut$S$$ __VA_ARGS__))
-#define __step_inline__init$S$$(...)                  __VA_ARGS__
-#define __param_parse__initMut$S$$(...)               __VA_ARGS__, __param_next__initMut$S$$
-#define __param_next__initMut$S$$(...)                __VA_ARGS__
+#define __step_inline__init$S$$(...) __VA_ARGS__
+#define __param_parse__initMut$S$$(...) __VA_ARGS__, __param_next__initMut$S$$
+#define __param_next__initMut$S$$(...) __VA_ARGS__
 #define __emit_inline__initMut$S$$(_T, _ptr, _len...) ((S$$(_T))init$S(_ptr, _len))
 
-#define ref$V(_v /*: T*/... /*P$$(_T)*/)                  ref(_v)
+#define ref$V(_v /*: T*/... /*P$$(_T)*/) ref(_v)
 #define ref$A(_a /*: A$$(_N,_T)*/... /*(S_const$$(_T))*/) ((S_const$$(TypeOf(*ptr$A(_a)))){ \
     .ptr = ptr$A(_a), \
     .len = len$A(_a), \
@@ -283,18 +283,18 @@ struct E$raw {
 })
 #define ref$A$(/*(_T)(_a: A$$(_N,_T))*/... /*(S_const$(_T))*/) \
     __step_inline__ref$A$(pp_defer(__emit_inline__ref$A$)(__param_parse__ref$A$ __VA_ARGS__))
-#define __step_inline__ref$A$(...)       __VA_ARGS__
-#define __param_parse__ref$A$(...)       __VA_ARGS__, __param_next__ref$A$
-#define __param_next__ref$A$(...)        __VA_ARGS__
+#define __step_inline__ref$A$(...) __VA_ARGS__
+#define __param_parse__ref$A$(...) __VA_ARGS__, __param_next__ref$A$
+#define __param_next__ref$A$(...) __VA_ARGS__
 #define __emit_inline__ref$A$(_T, _a...) ((S_const$(_T)){ \
     .ptr = ptr$A(_a), \
     .len = len$A(_a), \
 })
 #define refMut$A$(/*(_T)(_a: A$$(_N,_T))*/... /*(S$(_T))*/) \
     __step_inline__refMut$A$(pp_defer(__emit_inline__refMut$A$)(__param_parse__refMut$A$ __VA_ARGS__))
-#define __step_inline__refMut$A$(...)       __VA_ARGS__
-#define __param_parse__refMut$A$(...)       __VA_ARGS__, __param_next__refMut$A$
-#define __param_next__refMut$A$(...)        __VA_ARGS__
+#define __step_inline__refMut$A$(...) __VA_ARGS__
+#define __param_parse__refMut$A$(...) __VA_ARGS__, __param_next__refMut$A$
+#define __param_next__refMut$A$(...) __VA_ARGS__
 #define __emit_inline__refMut$A$(_T, _a...) ((S$(_T)){ \
     .ptr = ptr$A(_a), \
     .len = len$A(_a), \
@@ -303,9 +303,9 @@ struct E$raw {
 #define deref$P(_p /*: P$$(_T)*/... /*(_T)*/) deref(_p)
 #define deref$S$(/*(_N, _T)(_s: S$$(_T))*/... /*(A$(_N,_T))*/) \
     __step_inline__deref$S$(pp_defer(__emit_inline__deref$S$)(__param_parse__deref$S$ __VA_ARGS__))
-#define __step_inline__deref$S$(...)                __VA_ARGS__
-#define __param_parse__deref$S$(...)                __VA_ARGS__, __param_next__deref$S$
-#define __param_next__deref$S$(...)                 __VA_ARGS__
+#define __step_inline__deref$S$(...) __VA_ARGS__
+#define __param_parse__deref$S$(...) __VA_ARGS__, __param_next__deref$S$
+#define __param_next__deref$S$(...) __VA_ARGS__
 #define __emit_inline__deref$S$(_N, _T, __s, _s...) (*({ \
     let_(__s, TypeOf(_s)) = _s; \
     debug_assert_fmt(len$S(__s) == _N, "length mismatch: len(%zu) != N(%zu)", len$S(__s), _N); \
@@ -313,30 +313,30 @@ struct E$raw {
 }))
 #define deref$S$$(/*(_N, _T)(_s: S$$(_T))*/... /*(A$$(_N,_T))*/) \
     __step_inline__deref$S$$(pp_defer(__emit_inline__deref$S$$)(__param_parse__deref$S$$ __VA_ARGS__))
-#define __step_inline__deref$S$$(...)            __VA_ARGS__
-#define __param_parse__deref$S$$(...)            __VA_ARGS__, __param_next__deref$S$$
-#define __param_next__deref$S$$(...)             __VA_ARGS__
+#define __step_inline__deref$S$$(...) __VA_ARGS__
+#define __param_parse__deref$S$$(...) __VA_ARGS__, __param_next__deref$S$$
+#define __param_next__deref$S$$(...) __VA_ARGS__
 #define __emit_inline__deref$S$$(_N, _T, __s...) (*({ \
     let_(__s, TypeOf(_s)) = _s; \
     debug_assert_fmt(len$S(__s) == _N, "length mismatch: len(%zu) != N(%zu)", len$S(__s), _N); \
     as$(A$$(_N, _T) (*)(ensureNonnull(ptr$S(__s)))); \
 }))
 
-#define mutCast$P(_p /*: P$$(_T)*/... /*(P_const $$(_T))*/)  as$(const TypeOfUnqual (*_p) (*)(_p))
+#define mutCast$P(_p /*: P$$(_T)*/... /*(P_const $$(_T))*/) as$(const TypeOfUnqual (*_p) (*)(_p))
 #define constCast$P(_p /*: P_const$$(_T)*/... /*(P$$(_T))*/) /* TODO: Implement */
-#define mutCast$S(_s /*: S$$(_T)*/... /*(S_const$$(_T))*/)   (_s.as_const)
+#define mutCast$S(_s /*: S$$(_T)*/... /*(S_const$$(_T))*/) (_s.as_const)
 #define constCast$S(_s /*: S_const$$(_T)*/... /*(S$$(_T))*/) /* TODO: Implement */
 
 #define val$A(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/) ((_a).val)
-#define ptr$A(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/)    (&*val$A(_a))
-#define ptr$S(_s /*: S$$(_T)*/... /*(P$$(_T))*/)       ((_s).ptr)
+#define ptr$A(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/) (&*val$A(_a))
+#define ptr$S(_s /*: S$$(_T)*/... /*(P$$(_T))*/) ((_s).ptr)
 
 #define len$A(_a /*: A$$(_N,_T)*/... /*(usize)*/) countOf$(TypeOf((_a).val))
-#define len$S(_s /*: S$$(_T)*/... /*(usize)*/)    ((_s).len)
+#define len$S(_s /*: S$$(_T)*/... /*(usize)*/) ((_s).len)
 
 #define at$A(_a /*: A$$(_N,_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) \
     pp_expand(pp_defer(block_inline__at$A)(param_expand__at$A(_a, _idx)))
-#define param_expand__at$A(_a, _idx...)             pp_uniqTok(a), pp_uniqTok(idx), _a, _idx
+#define param_expand__at$A(_a, _idx...) pp_uniqTok(a), pp_uniqTok(idx), _a, _idx
 #define block_inline__at$A(__a, __idx, _a, _idx...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__idx, usize) = _idx; \
@@ -346,7 +346,7 @@ struct E$raw {
 })
 #define at$S(_s /*: S$$(_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) \
     pp_expand(pp_defer(block_inline__at$S)(param_expand__at$S(_s, _idx)))
-#define param_expand__at$S(_s, _idx...)             pp_uniqTok(s), pp_uniqTok(idx), _s, _idx
+#define param_expand__at$S(_s, _idx...) pp_uniqTok(s), pp_uniqTok(idx), _s, _idx
 #define block_inline__at$S(__s, __idx, _s, _idx...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__idx, usize) = _idx; \
@@ -355,8 +355,8 @@ struct E$raw {
 })
 
 #define slice$P(/*_p: P$$(_T), $r(_begin:0, _end:1): R*/... /*(S_const$$(_T))*/) __param_expand__slice$P(__VA_ARGS__)
-#define __param_expand__slice$P(_p, _range...)                                   __block_inline__slice$P(pp_uniqTok(p), pp_uniqTok(range), _p, _range)
-#define __block_inline__slice$P(__p, __range, _p, _range...)                     ({ \
+#define __param_expand__slice$P(_p, _range...) __block_inline__slice$P(pp_uniqTok(p), pp_uniqTok(range), _p, _range)
+#define __block_inline__slice$P(__p, __range, _p, _range...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -364,8 +364,8 @@ struct E$raw {
     init$S$$((TypeOf(*__p))(__p, len$R(__range))); \
 })
 #define sliceMut$P(/*_p: P$$(_T), $r(_begin:0, _end:1): R*/... /*(S$(_T))*/) __param_expand__sliceMut$P(__VA_ARGS__)
-#define __param_expand__sliceMut$P(_p, _range...)                            __block_inline__sliceMut$P(pp_uniqTok(p), pp_uniqTok(range), _p, _range)
-#define __block_inline__sliceMut$P(__p, __range, _p, _range...)              ({ \
+#define __param_expand__sliceMut$P(_p, _range...) __block_inline__sliceMut$P(pp_uniqTok(p), pp_uniqTok(range), _p, _range)
+#define __block_inline__sliceMut$P(__p, __range, _p, _range...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -373,9 +373,9 @@ struct E$raw {
     initMut$S$((TypeOf(*__p))(__p, len$R(__range))); \
 })
 #define slice$P$(/*(_T)(_p: P$$(_T), $r(_begin:0, _end:1): R)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__slice$P$)(__param_expand__slice$P$ __VA_ARGS__))
-#define __param_expand__slice$P$(...)                                                  __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(range), __param_next__slice$P$
-#define __param_next__slice$P$(...)                                                    __VA_ARGS__
-#define __block_inline__slice$P$(_T, __p, __range, _p, _range...)                      ({ \
+#define __param_expand__slice$P$(...) __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(range), __param_next__slice$P$
+#define __param_next__slice$P$(...) __VA_ARGS__
+#define __block_inline__slice$P$(_T, __p, __range, _p, _range...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -383,9 +383,9 @@ struct E$raw {
     init$S$((_T)(__p, len$R(__range))); \
 })
 #define sliceMut$P$(/*(_T)(_p: P$$(_T), $r(_begin:0, _end:1): R)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__sliceMut$P$)(__param_expand__sliceMut$P$ __VA_ARGS__))
-#define __param_expand__sliceMut$P$(...)                                            __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(range), __param_next__sliceMut$P$
-#define __param_next__sliceMut$P$(...)                                              __VA_ARGS__
-#define __block_inline__sliceMut$P$(_T, __p, __range, _p, _range...)                ({ \
+#define __param_expand__sliceMut$P$(...) __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(range), __param_next__sliceMut$P$
+#define __param_next__sliceMut$P$(...) __VA_ARGS__
+#define __block_inline__sliceMut$P$(_T, __p, __range, _p, _range...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -393,68 +393,68 @@ struct E$raw {
     initMut$S$((_T)(__p, len$R(__range))); \
 })
 #define prefix$P(/*_p: P$$(_T), _end: usize*/... /*(S_const$$(_T))*/) __param_expand__prefix$P(__VA_ARGS__)
-#define __param_expand__prefix$P(_p, _end...)                         __block_inline__prefix$P(pp_uniqTok(p), pp_uniqTok(end), _p, _end)
-#define __block_inline__prefix$P(__p, __end, _p, _end...)             ({ \
+#define __param_expand__prefix$P(_p, _end...) __block_inline__prefix$P(pp_uniqTok(p), pp_uniqTok(end), _p, _end)
+#define __block_inline__prefix$P(__p, __end, _p, _end...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); \
     init$S$$((TypeOf(*__p))(__p, __end)); \
 })
 #define prefixMut$P(/*_p: P$$(_T), _end: usize*/... /*(S$(_T))*/) __param_expand__prefixMut$P(__VA_ARGS__)
-#define __param_expand__prefixMut$P(_p, _end...)                  __block_inline__prefixMut$P(pp_uniqTok(p), pp_uniqTok(end), _p, _end)
-#define __block_inline__prefixMut$P(__p, __end, _p, _end...)      ({ \
+#define __param_expand__prefixMut$P(_p, _end...) __block_inline__prefixMut$P(pp_uniqTok(p), pp_uniqTok(end), _p, _end)
+#define __block_inline__prefixMut$P(__p, __end, _p, _end...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); \
     initMut$S$$((TypeOf(*__p))(__p, __end)); \
 })
 #define prefix$P$(/*(_T)(_p: P$$(_T), _end: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__prefix$P$)(__param_expand__prefix$P$ __VA_ARGS__))
-#define __param_expand__prefix$P$(...)                                      __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(end), __param_next__prefix$P$
-#define __param_next__prefix$P$(...)                                        __VA_ARGS__
-#define __block_inline__prefix$P$(_T, __p, __end, _p, _end...)              ({ \
+#define __param_expand__prefix$P$(...) __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(end), __param_next__prefix$P$
+#define __param_next__prefix$P$(...) __VA_ARGS__
+#define __block_inline__prefix$P$(_T, __p, __end, _p, _end...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); \
     init$S$((_T)(__p, __end)); \
 })
 #define prefixMut$P$(/*(_T)(_p: P$$(_T), _end: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__prefixMut$P$)(__param_expand__prefixMut$P$ __VA_ARGS__))
-#define __param_expand__prefixMut$P$(...)                                __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(end), __param_next__prefixMut$P$
-#define __param_next__prefixMut$P$(...)                                  __VA_ARGS__
-#define __block_inline__prefixMut$P$(_T, __p, __end, _p, _end...)        ({ \
+#define __param_expand__prefixMut$P$(...) __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(end), __param_next__prefixMut$P$
+#define __param_next__prefixMut$P$(...) __VA_ARGS__
+#define __block_inline__prefixMut$P$(_T, __p, __end, _p, _end...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); \
     initMut$S$((_T)(__p, __end)); \
 })
 #define suffix$P(/*_p: P$$(_T), _begin: usize*/... /*(S_const$$(_T))*/) __param_expand__suffix$P(__VA_ARGS__)
-#define __param_expand__suffix$P(_p, _begin...)                         __block_inline__suffix$P(pp_uniqTok(p), pp_uniqTok(begin), _p, _begin)
-#define __block_inline__suffix$P(__p, __begin, _p, _begin...)           ({ \
+#define __param_expand__suffix$P(_p, _begin...) __block_inline__suffix$P(pp_uniqTok(p), pp_uniqTok(begin), _p, _begin)
+#define __block_inline__suffix$P(__p, __begin, _p, _begin...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); \
     init$S$$((TypeOf(*__p))(__p, __begin)); \
 })
 #define suffixMut$P(/*_p: P$$(_T), _begin: usize*/... /*(S$(_T))*/) __param_expand__suffixMut$P(__VA_ARGS__)
-#define __param_expand__suffixMut$P(_p, _begin...)                  __block_inline__suffixMut$P(pp_uniqTok(p), pp_uniqTok(begin), _p, _begin)
-#define __block_inline__suffixMut$P(__p, __begin, _p, _begin...)    ({ \
+#define __param_expand__suffixMut$P(_p, _begin...) __block_inline__suffixMut$P(pp_uniqTok(p), pp_uniqTok(begin), _p, _begin)
+#define __block_inline__suffixMut$P(__p, __begin, _p, _begin...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); \
     initMut$S$$((TypeOf(*__p))(__p, __begin)); \
 })
 #define suffix$P$(/*(_T)(_p: P$$(_T), _begin: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$P$)(__param_expand__suffix$P$ __VA_ARGS__))
-#define __param_expand__suffix$P$(...)                                        __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(begin), __param_next__suffix$P$
-#define __param_next__suffix$P$(...)                                          __VA_ARGS__
-#define __block_inline__suffix$P$(_T, __p, __begin, _p, _begin...)            ({ \
+#define __param_expand__suffix$P$(...) __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(begin), __param_next__suffix$P$
+#define __param_next__suffix$P$(...) __VA_ARGS__
+#define __block_inline__suffix$P$(_T, __p, __begin, _p, _begin...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); \
     init$S$((_T)(__p, __begin)); \
 })
 #define suffixMut$P$(/*(_T)(_p: P$$(_T), _begin: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__suffixMut$P$)(__param_expand__suffixMut$P$ __VA_ARGS__))
-#define __param_expand__suffixMut$P$(...)                                  __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(begin), __param_next__suffixMut$P$
-#define __param_next__suffixMut$P$(...)                                    __VA_ARGS__
-#define __block_inline__suffixMut$P$(_T, __p, __begin, _p, _begin...)      ({ \
+#define __param_expand__suffixMut$P$(...) __VA_ARGS__, pp_uniqTok(p), pp_uniqTok(begin), __param_next__suffixMut$P$
+#define __param_next__suffixMut$P$(...) __VA_ARGS__
+#define __block_inline__suffixMut$P$(_T, __p, __begin, _p, _begin...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); \
@@ -462,8 +462,8 @@ struct E$raw {
 })
 
 #define slice$A(/*_a: A$$(_N,_T), $r(_begin, _end): R*/... /*(S_const$$(_T))*/) __param_expand__slice$A(__VA_ARGS__)
-#define __param_expand__slice$A(_a, _range...)                                  __block_inline__slice$A(pp_uniqTok(a), pp_uniqTok(range), _a, _range)
-#define __block_inline__slice$A(__a, __range, _a, _range...)                    ({ \
+#define __param_expand__slice$A(_a, _range...) __block_inline__slice$A(pp_uniqTok(a), pp_uniqTok(range), _a, _range)
+#define __block_inline__slice$A(__a, __range, _a, _range...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -471,8 +471,8 @@ struct E$raw {
     init$S$$((TypeOf(*ptr$A(*__a)))(&val$A(*__a)[__range.begin], len$R(__range))); \
 })
 #define sliceMut$A(/*_a: A$$(_N,_T), $r(_begin, _end): R*/... /*(S$(_T))*/) __param_expand__sliceMut$A(__VA_ARGS__)
-#define __param_expand__sliceMut$A(_a, _range...)                           __block_inline__sliceMut$A(pp_uniqTok(a), pp_uniqTok(range), _a, _range)
-#define __block_inline__sliceMut$A(__a, __range, _a, _range...)             ({ \
+#define __param_expand__sliceMut$A(_a, _range...) __block_inline__sliceMut$A(pp_uniqTok(a), pp_uniqTok(range), _a, _range)
+#define __block_inline__sliceMut$A(__a, __range, _a, _range...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -480,9 +480,9 @@ struct E$raw {
     initMut$S$((TypeOf(*ptr$A(*__a)))(&val$A(*__a)[__range.begin], len$R(__range))); \
 })
 #define slice$A$(/*(_T)(_a: A$$(_N,_T), $r(_begin, _end): R)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__slice$A$)(__param_expand__slice$A$ __VA_ARGS__))
-#define __param_expand__slice$A$(...)                                                 __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(range), __param_next__slice$A$
-#define __param_next__slice$A$(...)                                                   __VA_ARGS__
-#define __block_inline__slice$A$(_T, __a, __range, _a, _range...)                     ({ \
+#define __param_expand__slice$A$(...) __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(range), __param_next__slice$A$
+#define __param_next__slice$A$(...) __VA_ARGS__
+#define __block_inline__slice$A$(_T, __a, __range, _a, _range...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -490,9 +490,9 @@ struct E$raw {
     init$S$((_T)(&val$A(*__a)[__range.begin], len$R(__range))); \
 })
 #define sliceMut$A$(/*(_T)(_a: A$$(_N,_T), $r(_begin, _end): R)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__sliceMut$A$)(__param_expand__sliceMut$A$ __VA_ARGS__))
-#define __param_expand__sliceMut$A$(...)                                           __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(range), __param_next__sliceMut$A$
-#define __param_next__sliceMut$A$(...)                                             __VA_ARGS__
-#define __block_inline__sliceMut$A$(_T, __a, __range, _a, _range...)               ({ \
+#define __param_expand__sliceMut$A$(...) __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(range), __param_next__sliceMut$A$
+#define __param_next__sliceMut$A$(...) __VA_ARGS__
+#define __block_inline__sliceMut$A$(_T, __a, __range, _a, _range...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -500,68 +500,68 @@ struct E$raw {
     initMut$S$((_T)(&val$A(*__a)[__range.begin], len$R(__range))); \
 })
 #define prefix$A(/*_a: A$$(_N,_T), _end: usize*/... /*(S_const$$(_T))*/) __param_expand__prefix$A(__VA_ARGS__)
-#define __param_expand__prefix$A(_a, _end...)                            __block_inline__prefix$A(pp_uniqTok(a), pp_uniqTok(end), _a, _end)
-#define __block_inline__prefix$A(__a, __end, _a, _end...)                ({ \
+#define __param_expand__prefix$A(_a, _end...) __block_inline__prefix$A(pp_uniqTok(a), pp_uniqTok(end), _a, _end)
+#define __block_inline__prefix$A(__a, __end, _a, _end...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __end, len$A(*__a)); \
     init$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a), __end)); \
 })
 #define prefixMut$A(/*_a: A$$(_N,_T), _end: usize*/... /*(S$(_T))*/) __param_expand__prefixMut$A(__VA_ARGS__)
-#define __param_expand__prefixMut$A(_a, _end...)                     __block_inline__prefixMut$A(pp_uniqTok(a), pp_uniqTok(end), _a, _end)
-#define __block_inline__prefixMut$A(__a, __end, _a, _end...)         ({ \
+#define __param_expand__prefixMut$A(_a, _end...) __block_inline__prefixMut$A(pp_uniqTok(a), pp_uniqTok(end), _a, _end)
+#define __block_inline__prefixMut$A(__a, __end, _a, _end...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __end, len$A(*__a)); \
     initMut$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a), __end)); \
 })
 #define prefix$A$(/*(_T)(_a: A$$(_N,_T), _end: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__prefix$A$)(__param_expand__prefix$A$ __VA_ARGS__))
-#define __param_expand__prefix$A$(...)                                         __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(end), __param_next__prefix$A$
-#define __param_next__prefix$A$(...)                                           __VA_ARGS__
-#define __block_inline__prefix$A$(_T, __a, __end, _a, _end...)                 ({ \
+#define __param_expand__prefix$A$(...) __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(end), __param_next__prefix$A$
+#define __param_next__prefix$A$(...) __VA_ARGS__
+#define __block_inline__prefix$A$(_T, __a, __end, _a, _end...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __end, len$A(*__a)); \
     init$S$((_T)(ptr$A(*__a), __end)); \
 })
 #define prefixMut$A$(/*(_T)(_a: A$$(_N,_T), _end: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__prefixMut$A$)(__param_expand__prefixMut$A$ __VA_ARGS__))
-#define __param_expand__prefixMut$A$(...)                                   __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(end), __param_next__prefixMut$A$
-#define __param_next__prefixMut$A$(...)                                     __VA_ARGS__
-#define __block_inline__prefixMut$A$(_T, __a, __end, _a, _end...)           ({ \
+#define __param_expand__prefixMut$A$(...) __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(end), __param_next__prefixMut$A$
+#define __param_next__prefixMut$A$(...) __VA_ARGS__
+#define __block_inline__prefixMut$A$(_T, __a, __end, _a, _end...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __end, len$A(*__a)); \
     initMut$S$((_T)(ptr$A(*__a), __end)); \
 })
 #define suffix$A(/*_a: A$$(_N,_T), _begin: usize*/... /*(S_const$$(_T))*/) __param_expand__suffix$A(__VA_ARGS__)
-#define __param_expand__suffix$A(_a, _begin...)                            __block_inline__suffix$A(pp_uniqTok(a), pp_uniqTok(begin), _a, _begin)
-#define __block_inline__suffix$A(__a, __begin, _a, _begin...)              ({ \
+#define __param_expand__suffix$A(_a, _begin...) __block_inline__suffix$A(pp_uniqTok(a), pp_uniqTok(begin), _a, _begin)
+#define __block_inline__suffix$A(__a, __begin, _a, _begin...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$A(*__a)); \
     init$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a) + __begin, len$A(*__a) - __begin)); \
 })
 #define suffixMut$A(/*_a: A$$(_N,_T), _begin: usize*/... /*(S$(_T))*/) __param_expand__suffixMut$A(__VA_ARGS__)
-#define __param_expand__suffixMut$A(_a, _begin...)                     __block_inline__suffixMut$A(pp_uniqTok(a), pp_uniqTok(begin), _a, _begin)
-#define __block_inline__suffixMut$A(__a, __begin, _a, _begin...)       ({ \
+#define __param_expand__suffixMut$A(_a, _begin...) __block_inline__suffixMut$A(pp_uniqTok(a), pp_uniqTok(begin), _a, _begin)
+#define __block_inline__suffixMut$A(__a, __begin, _a, _begin...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$A(*__a)); \
     initMut$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a) + __begin, len$A(*__a) - __begin)); \
 })
 #define suffix$A$(/*(_T)(_a: A$$(_N,_T), _begin: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$A$)(__param_expand__suffix$A$ __VA_ARGS__))
-#define __param_expand__suffix$A$(...)                                           __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(begin), __param_next__suffix$A$
-#define __param_next__suffix$A$(...)                                             __VA_ARGS__
-#define __block_inline__suffix$A$(_T, __a, __begin, _a, _begin...)               ({ \
+#define __param_expand__suffix$A$(...) __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(begin), __param_next__suffix$A$
+#define __param_next__suffix$A$(...) __VA_ARGS__
+#define __block_inline__suffix$A$(_T, __a, __begin, _a, _begin...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$A(*__a)); \
     init$S$((_T)(ptr$A(*__a) + __begin, len$A(*__a) - __begin)); \
 })
 #define suffixMut$A$(/*(_T)(_a: A$$(_N,_T), _begin: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__suffixMut$A$)(__param_expand__suffixMut$A$ __VA_ARGS__))
-#define __param_expand__suffixMut$A$(...)                                     __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(begin), __param_next__suffixMut$A$
-#define __param_next__suffixMut$A$(...)                                       __VA_ARGS__
-#define __block_inline__suffixMut$A$(_T, __a, __begin, _a, _begin...)         ({ \
+#define __param_expand__suffixMut$A$(...) __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(begin), __param_next__suffixMut$A$
+#define __param_next__suffixMut$A$(...) __VA_ARGS__
+#define __block_inline__suffixMut$A$(_T, __a, __begin, _a, _begin...) ({ \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$A(*__a)); \
@@ -569,8 +569,8 @@ struct E$raw {
 })
 
 #define slice$S(/*_s: S$$(_T), $r(_begin, _end): R*/... /*(S$$(_T))*/) __param_expand__slice$S(__VA_ARGS__)
-#define __param_expand__slice$S(_s, _range...)                         __block_inline__slice$S(pp_uniqTok(s), pp_uniqTok(range), _s, _range)
-#define __block_inline__slice$S(__s, __range, _s, _range...)           ({ \
+#define __param_expand__slice$S(_s, _range...) __block_inline__slice$S(pp_uniqTok(s), pp_uniqTok(range), _s, _range)
+#define __block_inline__slice$S(__s, __range, _s, _range...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -578,9 +578,9 @@ struct E$raw {
     (TypeOf(__s)) init$S(&ptr$S(__s)[__range.begin], len$R(__range)); \
 })
 #define slice$S$(/*(_T)(_s: S$$(_T), $r(_begin, _end): R)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__slice$S$)(__param_expand__slice$S$ __VA_ARGS__))
-#define __param_expand__slice$S$(...)                                              __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(range), __param_next__slice$S$
-#define __param_next__slice$S$(...)                                                __VA_ARGS__
-#define __block_inline__slice$S$(_T, __s, __range, _s, _range...)                  ({ \
+#define __param_expand__slice$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(range), __param_next__slice$S$
+#define __param_next__slice$S$(...) __VA_ARGS__
+#define __block_inline__slice$S$(_T, __s, __range, _s, _range...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -588,9 +588,9 @@ struct E$raw {
     init$S$((_T)(&ptr$S(__s)[__range.begin], len$R(__range))); \
 })
 #define sliceMut$S$(/*(_T)(_s: S$$(_T), $r(_begin, _end): R)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__sliceMut$S$)(__param_expand__sliceMut$S$ __VA_ARGS__))
-#define __param_expand__sliceMut$S$(...)                                        __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(range), __param_next__sliceMut$S$
-#define __param_next__sliceMut$S$(...)                                          __VA_ARGS__
-#define __block_inline__sliceMut$S$(_T, __s, __range, _s, _range...)            ({ \
+#define __param_expand__sliceMut$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(range), __param_next__sliceMut$S$
+#define __param_next__sliceMut$S$(...) __VA_ARGS__
+#define __block_inline__sliceMut$S$(_T, __s, __range, _s, _range...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
@@ -598,51 +598,51 @@ struct E$raw {
     initMut$S$((_T)(&ptr$S(__s)[__range.begin], len$R(__range))); \
 })
 #define prefix$S(/*_s: S$$(_T), _end: usize*/... /*(S$$(_T))*/) __param_expand__prefix$S(__VA_ARGS__)
-#define __param_expand__prefix$S(_s, _end...)                   __block_inline__prefix$S(pp_uniqTok(s), pp_uniqTok(end), _s, _end)
-#define __block_inline__prefix$S(__s, __end, _s, _end...)       ({ \
+#define __param_expand__prefix$S(_s, _end...) __block_inline__prefix$S(pp_uniqTok(s), pp_uniqTok(end), _s, _end)
+#define __block_inline__prefix$S(__s, __end, _s, _end...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= len$S(__s), "Invalid slice range: end(%zu) > len(%zu)", __end, len$S(__s)); \
     (TypeOf(__s)) init$S(ptr$S(__s), __end); \
 })
 #define prefix$S$(/*(_T)(_s: S$$(_T), _end: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__prefix$S$)(__param_expand__prefix$S$ __VA_ARGS__))
-#define __param_expand__prefix$S$(...)                                      __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(end), __param_next__prefix$S$
-#define __param_next__prefix$S$(...)                                        __VA_ARGS__
-#define __block_inline__prefix$S$(_T, __s, __end, _s, _end...)              ({ \
+#define __param_expand__prefix$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(end), __param_next__prefix$S$
+#define __param_next__prefix$S$(...) __VA_ARGS__
+#define __block_inline__prefix$S$(_T, __s, __end, _s, _end...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= len$S(__s), "Invalid slice range: end(%zu) > len(%zu)", __end, len$S(__s)); \
     init$S$((_T)(ptr$S(__s), __end)); \
 })
 #define suffixMut$S(/*_s: S$$(_T), _begin: usize*/... /*(S$(_T))*/) __param_expand__suffixMut$S(__VA_ARGS__)
-#define __param_expand__suffixMut$S(_s, _begin...)                  __block_inline__suffixMut$S(pp_uniqTok(s), pp_uniqTok(begin), _s, _begin)
-#define __block_inline__suffixMut$S(__s, __begin, _s, _begin...)    ({ \
+#define __param_expand__suffixMut$S(_s, _begin...) __block_inline__suffixMut$S(pp_uniqTok(s), pp_uniqTok(begin), _s, _begin)
+#define __block_inline__suffixMut$S(__s, __begin, _s, _begin...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$S(__s)); \
     initMut$S$$((TypeOf(*ptr$S(__s)))(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
 #define suffix$S(/*_s: S$$(_T), _begin: usize*/... /*(S$$(_T))*/) __param_expand__suffix$S(__VA_ARGS__)
-#define __param_expand__suffix$S(_s, _begin...)                   __block_inline__suffix$S(pp_uniqTok(s), pp_uniqTok(begin), _s, _begin)
-#define __block_inline__suffix$S(__s, __begin, _s, _begin...)     ({ \
+#define __param_expand__suffix$S(_s, _begin...) __block_inline__suffix$S(pp_uniqTok(s), pp_uniqTok(begin), _s, _begin)
+#define __block_inline__suffix$S(__s, __begin, _s, _begin...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$S(__s)); \
     (TypeOf(__s)) init$S(ptr$S(__s) + __begin, len$S(__s) - __begin); \
 })
 #define suffix$S$(/*(_T)(_s: S$$(_T), _begin: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$S$)(__param_expand__suffix$S$ __VA_ARGS__))
-#define __param_expand__suffix$S$(...)                                        __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(begin), __param_next__suffix$S$
-#define __param_next__suffix$S$(...)                                          __VA_ARGS__
-#define __block_inline__suffix$S$(_T, __s, __begin, _s, _begin...)            ({ \
+#define __param_expand__suffix$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(begin), __param_next__suffix$S$
+#define __param_next__suffix$S$(...) __VA_ARGS__
+#define __block_inline__suffix$S$(_T, __s, __begin, _s, _begin...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$S(__s)); \
     init$S$((_T)(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
 #define suffixMut$S$(/*(_T)(_s: S$$(_T), _begin: usize)*/... /*(S$(_T))*/) pp_expand(pp_defer(__block_inline__suffixMut$S$)(__param_expand__suffixMut$S$ __VA_ARGS__))
-#define __param_expand__suffixMut$S$(...)                                  __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(begin), __param_next__suffixMut$S$
-#define __param_next__suffixMut$S$(...)                                    __VA_ARGS__
-#define __block_inline__suffixMut$S$(_T, __s, __begin, _s, _begin...)      ({ \
+#define __param_expand__suffixMut$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(begin), __param_next__suffixMut$S$
+#define __param_next__suffixMut$S$(...) __VA_ARGS__
+#define __block_inline__suffixMut$S$(_T, __s, __begin, _s, _begin...) ({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$S(__s)); \
@@ -658,24 +658,24 @@ struct E$raw {
     .is_some = true, \
     .payload[0] = { .some = _val }, \
 }
-#define some$(/*(_T)(_val: _T))*/... /*(O$(_T))*/)   pp_expand(pp_defer(__block_inline__some$)(__param_expand__some$ __VA_ARGS__))
-#define __param_expand__some$(...)                   __VA_ARGS__, pp_expand
-#define __block_inline__some$(...)                   __block_inline1__some$(__VA_ARGS__)
-#define __block_inline1__some$(_T, _val...)          ((O$(_T))some(_val))
+#define some$(/*(_T)(_val: _T))*/... /*(O$(_T))*/) pp_expand(pp_defer(__block_inline__some$)(__param_expand__some$ __VA_ARGS__))
+#define __param_expand__some$(...) __VA_ARGS__, pp_expand
+#define __block_inline__some$(...) __block_inline1__some$(__VA_ARGS__)
+#define __block_inline1__some$(_T, _val...) ((O$(_T))some(_val))
 #define some$$(/*(_T)(_val: _T))*/... /*(O$$(_T))*/) pp_expand(pp_defer(__block_inline__some$$)(__param_expand__some$$ __VA_ARGS__))
-#define __param_expand__some$$(...)                  __VA_ARGS__, pp_expand
-#define __block_inline__some$$(...)                  __block_inline1__some$$$(__VA_ARGS__)
-#define __block_inline1__some$$$(_T, _val...)        ((O$$(_T))some(_val))
+#define __param_expand__some$$(...) __VA_ARGS__, pp_expand
+#define __block_inline__some$$(...) __block_inline1__some$$$(__VA_ARGS__)
+#define __block_inline1__some$$$(_T, _val...) ((O$$(_T))some(_val))
 
-#define none()                                    { .is_some = false }
-#define none$(/*(_T)(none())*/... /*(O$(_T))*/)   pp_expand(pp_defer(__block_inline__none$)(__param_expand__none$ __VA_ARGS__))
-#define __param_expand__none$(...)                __VA_ARGS__, pp_expand
-#define __block_inline__none$(...)                __block_inline1__none$(__VA_ARGS__)
-#define __block_inline1__none$(_T, _val...)       ((O$(_T))none())
+#define none() { .is_some = false }
+#define none$(/*(_T)(none())*/... /*(O$(_T))*/) pp_expand(pp_defer(__block_inline__none$)(__param_expand__none$ __VA_ARGS__))
+#define __param_expand__none$(...) __VA_ARGS__, pp_expand
+#define __block_inline__none$(...) __block_inline1__none$(__VA_ARGS__)
+#define __block_inline1__none$(_T, _val...) ((O$(_T))none())
 #define none$$(/*(_T)(none())*/... /*(O$$(_T))*/) pp_expand(pp_defer(__block_inline__none$$)(__param_expand__none$$ __VA_ARGS__))
-#define __param_expand__none$$(...)               __VA_ARGS__, pp_expand
-#define __block_inline__none$$(...)               __block_inline1__none$$$(__VA_ARGS__)
-#define __block_inline1__none$$$(_T, _val...)     ((O$$(_T))none())
+#define __param_expand__none$$(...) __VA_ARGS__, pp_expand
+#define __block_inline__none$$(...) __block_inline1__none$$$(__VA_ARGS__)
+#define __block_inline1__none$$$(_T, _val...) ((O$$(_T))none())
 
 #define isSome(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool)((_o).is_some)
 #define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool)(!(_o).is_some)
@@ -687,9 +687,9 @@ struct E$raw {
 
 #define orelse_(/*(_Expr: O$$(_T))(_DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
     pp_expand(pp_defer(__block_inline__orelse_)(__param_expand__orelse_ __VA_ARGS__))
-#define __param_expand__orelse_(...)                                       __VA_ARGS__, pp_expand
-#define __block_inline__orelse_(_Expr, _DefaultExpr_OR_Body...)            __block_inline1__orelse_(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
-#define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) pragma_guard_( \
+#define __param_expand__orelse_(...) __VA_ARGS__, pp_expand
+#define __block_inline__orelse_(_Expr, _DefaultExpr_OR_Body...) __block_inline1__orelse_(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
+#define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
     "clang diagnostic pop", \
@@ -721,29 +721,29 @@ struct E$raw {
     .is_ok = true, \
     .payload[0] = { .ok = _val }, \
 }
-#define ok$(/*(_T)(_val: _T))*/... /*(E$(_T))*/)   pp_expand(pp_defer(__block_inline__ok$)(__param_expand__ok$ __VA_ARGS__))
-#define __param_expand__ok$(...)                   __VA_ARGS__, pp_expand
-#define __block_inline__ok$(...)                   __block_inline1__ok$(__VA_ARGS__)
-#define __block_inline1__ok$(_T, _val...)          ((E$(_T))ok(_val))
+#define ok$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) pp_expand(pp_defer(__block_inline__ok$)(__param_expand__ok$ __VA_ARGS__))
+#define __param_expand__ok$(...) __VA_ARGS__, pp_expand
+#define __block_inline__ok$(...) __block_inline1__ok$(__VA_ARGS__)
+#define __block_inline1__ok$(_T, _val...) ((E$(_T))ok(_val))
 #define ok$$(/*(_T)(_val: _T))*/... /*(E$$(_T))*/) pp_expand(pp_defer(__block_inline__ok$$)(__param_expand__ok$$ __VA_ARGS__))
-#define __param_expand__ok$$(...)                  __VA_ARGS__, pp_expand
-#define __block_inline__ok$$(...)                  __block_inline1__ok$$$(__VA_ARGS__)
-#define __block_inline1__ok$$$(_T, _val...)        ((E$$(_T))ok(_val))
+#define __param_expand__ok$$(...) __VA_ARGS__, pp_expand
+#define __block_inline__ok$$(...) __block_inline1__ok$$$(__VA_ARGS__)
+#define __block_inline1__ok$$$(_T, _val...) ((E$$(_T))ok(_val))
 
 #define err(_val...) { \
     .is_err = true, \
     .payload[0] = { .err = _val }, \
 }
-#define err$(/*(_T)(_val: _T))*/... /*(E$(_T))*/)   pp_expand(pp_defer(__block_inline__err$)(__param_expand__err$ __VA_ARGS__))
-#define __param_expand__err$(...)                   __VA_ARGS__, pp_expand
-#define __block_inline__err$(...)                   __block_inline1__err$(__VA_ARGS__)
-#define __block_inline1__err$(_T, _val...)          ((E$(_T))err(_val))
+#define err$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) pp_expand(pp_defer(__block_inline__err$)(__param_expand__err$ __VA_ARGS__))
+#define __param_expand__err$(...) __VA_ARGS__, pp_expand
+#define __block_inline__err$(...) __block_inline1__err$(__VA_ARGS__)
+#define __block_inline1__err$(_T, _val...) ((E$(_T))err(_val))
 #define err$$(/*(_T)(_val: _T))*/... /*(E$$(_T))*/) pp_expand(pp_defer(__block_inline__err$$)(__param_expand__err$$ __VA_ARGS__))
-#define __param_expand__err$$(...)                  __VA_ARGS__, pp_expand
-#define __block_inline__err$$(...)                  __block_inline1__err$$$(__VA_ARGS__)
-#define __block_inline1__err$$$(_T, _val...)        ((E$$(_T))err(_val))
+#define __param_expand__err$$(...) __VA_ARGS__, pp_expand
+#define __block_inline__err$$(...) __block_inline1__err$$$(__VA_ARGS__)
+#define __block_inline1__err$$$(_T, _val...) ((E$$(_T))err(_val))
 
-#define isOk(_e /*: E$$(_T)*/... /*(bool)*/)  as$(bool)((_e).is_ok)
+#define isOk(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)((_e).is_ok)
 #define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)(!(_e).is_ok)
 
 #define return_ok(_val...) \
@@ -764,9 +764,9 @@ struct E$raw {
 
 #define catch_(/*(_Expr: E$$(_T))(_Capture|$ignore, _DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
     pp_expand(pp_defer(__block_inline__catch_)(__param_expand__catch_ __VA_ARGS__))
-#define __param_expand__catch_(...)                                                         __VA_ARGS__, pp_expand
-#define __block_inline__catch_(_Expr, _Payload_Capture, _DefaultExpr_OR_Body...)            __block_inline1__catch_(pp_uniqTok(result), _Expr, _Payload_Capture, ({ _DefaultExpr_OR_Body; }))
-#define __block_inline1__catch_(__result, _Expr, _Payload_Capture, _DefaultExpr_OR_Body...) pragma_guard_( \
+#define __param_expand__catch_(...) __VA_ARGS__, pp_expand
+#define __block_inline__catch_(_Expr, _Payload_Capture, _DefaultExpr_OR_Body...) __block_inline1__catch_(pp_uniqTok(result), _Expr, _Payload_Capture, ({ _DefaultExpr_OR_Body; }))
+#define __block_inline1__catch_(__result, _Expr, _Payload_Capture, _DefaultExpr_OR_Body...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
     "clang diagnostic pop", \
@@ -896,10 +896,10 @@ typedef struct meta_E$raw {
     ((meta_S$raw){ .type = __type, .ptr = __ptr, .len = __len }); \
 })
 
-#define meta_ret$V(_T)     ((meta_V$raw){ .inner_type = typeInfo$(_T), .inner = &((_T){}) })
+#define meta_ret$V(_T) ((meta_V$raw){ .inner_type = typeInfo$(_T), .inner = &((_T){}) })
 #define meta_ret$A(_N, _T) ((meta_A$raw){ .inner_type = typeInfo$(FieldType$(A$$(_N, _T), val[0])), .inner = ref$A((A$$(_N, _T)){}) })
-#define meta_ret$O(_T)     ((meta_O$raw){ .inner_type = typeInfo$(FieldType$(O$$(_T), payload->some)), .inner = ((O$$(_T)){}).ref_raw })
-#define meta_ret$E(_T)     ((meta_E$raw){ .inner_type = typeInfo$(FieldType$(E$$(_T), payload->ok)), .inner = ((E$$(_T)){}).ref_raw })
+#define meta_ret$O(_T) ((meta_O$raw){ .inner_type = typeInfo$(FieldType$(O$$(_T), payload->some)), .inner = ((O$$(_T)){}).ref_raw })
+#define meta_ret$E(_T) ((meta_E$raw){ .inner_type = typeInfo$(FieldType$(E$$(_T), payload->ok)), .inner = ((E$$(_T)){}).ref_raw })
 
 #define metaRef$P(_p...) ((meta_P_const$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
 #define metaMut$P(_p...) ((meta_P$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
@@ -929,78 +929,78 @@ typedef struct meta_E$raw {
 
 #define meta_pRef$(/*(_T)(_Expr...)*/... /*(P_const$(_T))*/) \
     __step_inline__meta_pRef$(pp_defer(__emit_inline__meta_pRef$)(__param_parse__meta_pRef$ __VA_ARGS__))
-#define __step_inline__meta_pRef$(...)          __VA_ARGS__
-#define __param_parse__meta_pRef$(...)          __VA_ARGS__, __param_next__meta_pRef$
-#define __param_next__meta_pRef$(...)           __VA_ARGS__
+#define __step_inline__meta_pRef$(...) __VA_ARGS__
+#define __param_parse__meta_pRef$(...) __VA_ARGS__, __param_next__meta_pRef$
+#define __param_next__meta_pRef$(...) __VA_ARGS__
 #define __emit_inline__meta_pRef$(_T, _meta...) (*as$(P_const$(_T) (*)(&__meta.raw)))
 #define meta_pRef$$(/*(_T)(_Expr...)*/... /*(P_const$$(_T))*/) \
     __step_inline__meta_pRef$$(pp_defer(__emit_inline__meta_pRef$$)(__param_parse__meta_pRef$$ __VA_ARGS__))
-#define __step_inline__meta_pRef$$(...)          __VA_ARGS__
-#define __param_parse__meta_pRef$$(...)          __VA_ARGS__, __param_next__meta_pRef$$
-#define __param_next__meta_pRef$$(...)           __VA_ARGS__
+#define __step_inline__meta_pRef$$(...) __VA_ARGS__
+#define __param_parse__meta_pRef$$(...) __VA_ARGS__, __param_next__meta_pRef$$
+#define __param_next__meta_pRef$$(...) __VA_ARGS__
 #define __emit_inline__meta_pRef$$(_T, _meta...) (*as$(P_const$$(_T) (*)(&__meta.raw)))
 
 #define meta_pMut$(/*(_T)(_Expr...)*/... /*(P$(_T))*/) \
     __step_inline__meta_pMut$(pp_defer(__emit_inline__meta_pMut$)(__param_parse__meta_pMut$ __VA_ARGS__))
-#define __param_parse__meta_pMut$(...)          __VA_ARGS__, __param_next__meta_pMut$
-#define __param_next__meta_pMut$(...)           __VA_ARGS__
+#define __param_parse__meta_pMut$(...) __VA_ARGS__, __param_next__meta_pMut$
+#define __param_next__meta_pMut$(...) __VA_ARGS__
 #define __emit_inline__meta_pMut$(_T, _meta...) (*as$(P$(_T) (*)(&__meta.raw)))
 #define meta_pMut$$(/*(_T)(_Expr...)*/... /*(P$$(_T))*/) \
     __step_inline__meta_pMut$$(pp_defer(__emit_inline__meta_pMut$$)(__param_parse__meta_pMut$$ __VA_ARGS__))
-#define __param_parse__meta_pMut$$(...)          __VA_ARGS__, __param_next__meta_pMut$$
-#define __param_next__meta_pMut$$(...)           __VA_ARGS__
+#define __param_parse__meta_pMut$$(...) __VA_ARGS__, __param_next__meta_pMut$$
+#define __param_next__meta_pMut$$(...) __VA_ARGS__
 #define __emit_inline__meta_pMut$$(_T, _meta...) (*as$(P$$(_T) (*)(&__meta.raw)))
 
 #define meta_v$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __step_inline__meta_v$(pp_defer(__emit_inline__meta_v$)(__param_parse__meta_v$ __VA_ARGS__))
-#define __step_inline__meta_v$(...)          __VA_ARGS__
-#define __param_parse__meta_v$(...)          __VA_ARGS__, __param_next__meta_v$
-#define __param_next__meta_v$(...)           __VA_ARGS__
+#define __step_inline__meta_v$(...) __VA_ARGS__
+#define __param_parse__meta_v$(...) __VA_ARGS__, __param_next__meta_v$
+#define __param_next__meta_v$(...) __VA_ARGS__
 #define __emit_inline__meta_v$(_T, _meta...) (*as$(_T*)(_meta.inner))
 
 #define meta_sRef$(/*(_T)(_Expr...)*/... /*(S_const$(_T))*/) \
     __step_inline__meta_sRef$(pp_defer(__emit_inline__meta_sRef$)(__param_parse__meta_sRef$ __VA_ARGS__))
-#define __step_inline__meta_sRef$(...)          __VA_ARGS__
-#define __param_parse__meta_sRef$(...)          __VA_ARGS__, __param_next__meta_sRef$
-#define __param_next__meta_sRef$(...)           __VA_ARGS__
+#define __step_inline__meta_sRef$(...) __VA_ARGS__
+#define __param_parse__meta_sRef$(...) __VA_ARGS__, __param_next__meta_sRef$
+#define __param_next__meta_sRef$(...) __VA_ARGS__
 #define __emit_inline__meta_sRef$(_T, _meta...) (*as$(S_const$(_T) (*)(&__meta.raw)))
 #define meta_sRef$$(/*(_T)(_Expr...)*/... /*(S_const$$(_T))*/) \
     __step_inline__meta_sRef$$(pp_defer(__emit_inline__meta_sRef$$)(__param_parse__meta_sRef$$ __VA_ARGS__))
-#define __step_inline__meta_sRef$$(...)          __VA_ARGS__
-#define __param_parse__meta_sRef$$(...)          __VA_ARGS__, __param_next__meta_sRef$$
-#define __param_next__meta_sRef$$(...)           __VA_ARGS__
+#define __step_inline__meta_sRef$$(...) __VA_ARGS__
+#define __param_parse__meta_sRef$$(...) __VA_ARGS__, __param_next__meta_sRef$$
+#define __param_next__meta_sRef$$(...) __VA_ARGS__
 #define __emit_inline__meta_sRef$$(_T, _meta...) (*as$(S_const$$(_T) (*)(&__meta.raw)))
 
 #define meta_sMut$(/*(_T)(_Expr...)*/... /*(S$(_T))*/) \
     __step_inline__meta_sMut$(pp_defer(__emit_inline__meta_sMut$)(__param_parse__meta_sMut$ __VA_ARGS__))
-#define __step_inline__meta_sMut$(...)          __VA_ARGS__
-#define __param_parse__meta_sMut$(...)          __VA_ARGS__, __param_next__meta_sMut$
-#define __param_next__meta_sMut$(...)           __VA_ARGS__
+#define __step_inline__meta_sMut$(...) __VA_ARGS__
+#define __param_parse__meta_sMut$(...) __VA_ARGS__, __param_next__meta_sMut$
+#define __param_next__meta_sMut$(...) __VA_ARGS__
 #define __emit_inline__meta_sMut$(_T, _meta...) (*as$(S$(_T) (*)(&__meta.raw)))
 #define meta_sMut$$(/*(_T)(_Expr...)*/... /*(S$$(_T))*/) \
     __step_inline__meta_sMut$$(pp_defer(__emit_inline__meta_sMut$$)(__param_parse__meta_sMut$$ __VA_ARGS__))
-#define __step_inline__meta_sMut$$(...)          __VA_ARGS__
-#define __param_parse__meta_sMut$$(...)          __VA_ARGS__, __param_next__meta_sMut$$
-#define __param_next__meta_sMut$$(...)           __VA_ARGS__
+#define __step_inline__meta_sMut$$(...) __VA_ARGS__
+#define __param_parse__meta_sMut$$(...) __VA_ARGS__, __param_next__meta_sMut$$
+#define __param_next__meta_sMut$$(...) __VA_ARGS__
 #define __emit_inline__meta_sMut$$(_T, _meta...) (*as$(S$$(_T) (*)(&__meta.raw)))
 
 #define meta_a$(/*(_N,_T)(_Expr...)*/... /*(A$(_N,_T))*/) \
     __step_inline__meta_a$(pp_defer(__emit_inline__meta_a$)(__param_parse__meta_a$ __VA_ARGS__))
-#define __step_inline__meta_a$(...)              __VA_ARGS__
-#define __param_parse__meta_a$(...)              __VA_ARGS__, __param_next__meta_a$
-#define __param_next__meta_a$(...)               __VA_ARGS__
+#define __step_inline__meta_a$(...) __VA_ARGS__
+#define __param_parse__meta_a$(...) __VA_ARGS__, __param_next__meta_a$
+#define __param_next__meta_a$(...) __VA_ARGS__
 #define __emit_inline__meta_a$(_N, _T, _meta...) (*as$(A$(_N, _T) (*)(__meta.inner)))
 #define meta_a$$(/*(_N,_T)(_Expr...)*/... /*(A$$(_N,_T))*/) \
     __step_inline__meta_a$$(pp_defer(__emit_inline__meta_a$$)(__param_parse__meta_a$$ __VA_ARGS__))
-#define __step_inline__meta_a$$(...)              __VA_ARGS__
-#define __param_parse__meta_a$$(...)              __VA_ARGS__, __param_next__meta_a$$
-#define __param_next__meta_a$$(...)               __VA_ARGS__
+#define __step_inline__meta_a$$(...) __VA_ARGS__
+#define __param_parse__meta_a$$(...) __VA_ARGS__, __param_next__meta_a$$
+#define __param_next__meta_a$$(...) __VA_ARGS__
 #define __emit_inline__meta_a$$(_N, _T, _meta...) (*as$(A$$(_N, _T) (*)(__meta.inner)))
 
 #define meta_o$(/*(_T)(_Expr...)*/... /*(O$(_T))*/) \
     pp_expand(pp_defer(__block_inline__meta_o$)(__param_expand__meta_o$ __VA_ARGS__))
-#define __param_expand__meta_o$(...)                  pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_o$
-#define __param_expand1__meta_o$(...)                 __VA_ARGS__
+#define __param_expand__meta_o$(...) pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_o$
+#define __param_expand1__meta_o$(...) __VA_ARGS__
 #define __block_inline__meta_o$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_some \
@@ -1009,8 +1009,8 @@ typedef struct meta_E$raw {
 })
 #define meta_o$$(/*(_T)(_Expr...)*/... /*(O$$(_T))*/) \
     pp_expand(pp_defer(__block_inline__meta_o$$)(__param_expand__meta_o$$ __VA_ARGS__))
-#define __param_expand__meta_o$$(...)                  pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_o$$
-#define __param_expand1__meta_o$$(...)                 __VA_ARGS__
+#define __param_expand__meta_o$$(...) pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_o$$
+#define __param_expand1__meta_o$$(...) __VA_ARGS__
 #define __block_inline__meta_o$$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_some \
@@ -1020,8 +1020,8 @@ typedef struct meta_E$raw {
 
 #define meta_e$(/*(_T)(_Expr...)*/... /*(E$(_T))*/) \
     pp_expand(pp_defer(__block_inline__meta_e$)(__param_expand__meta_e$ __VA_ARGS__))
-#define __param_expand__meta_e$(...)                  pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_e$
-#define __param_expand1__meta_e$(...)                 __VA_ARGS__
+#define __param_expand__meta_e$(...) pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_e$
+#define __param_expand1__meta_e$(...) __VA_ARGS__
 #define __block_inline__meta_e$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_ok \
@@ -1030,8 +1030,8 @@ typedef struct meta_E$raw {
 })
 #define meta_e$$(/*(_T)(_Expr...)*/... /*(E$$(_T))*/) \
     pp_expand(pp_defer(__block_inline__meta_e$$)(__param_expand__meta_e$$ __VA_ARGS__))
-#define __param_expand__meta_e$$(...)                  pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_e$$
-#define __param_expand1__meta_e$$(...)                 __VA_ARGS__
+#define __param_expand__meta_e$$(...) pp_uniqTok(meta), __VA_ARGS__, __param_expand1__meta_e$$
+#define __param_expand1__meta_e$$(...) __VA_ARGS__
 #define __block_inline__meta_e$$(__meta, _T, _meta...) ({ \
     let __meta = _meta; \
     __meta.is_ok \
@@ -1050,7 +1050,7 @@ T_use_O$(i32);
 T_use_E$(i32);
 fn_((example(void))(void)) {
     A$$(32, i32) array = zero$A();
-    var inferred_slice = ref$A(array);        // anonymous union S_const$$(i32) type
+    var inferred_slice = ref$A(array); // anonymous union S_const$$(i32) type
     var inferred_slice_mut = refMut$A(array); // anonymous union S$$(i32) type
     // inferred_slice = inferred_slice_mut.as_const;           // can't assign between different anonymous unions
     S_const$(i32) slice = ref$A$((i32)(array)); // ref$A$ returns S_const$(i32)

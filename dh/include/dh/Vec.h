@@ -92,7 +92,7 @@ extern "C" {
 #define __op__Vec_fromA$(...) __op__Vec_fromA$__emit(__VA_ARGS__)
 #define __op__Vec_fromA$__parse(_T...) _T,
 #define __op__Vec_fromA$__emit(_T, _a...) \
-    (*as$(_T*)(&_a))
+    (*ptrAlignCast$((_T*)(&copy(_a))))
 #define Vec_fromA(_a...) __op__Vec_fromA(_a)
 #define __op__Vec_fromA(_a...) \
     Vec_fromA$((Vec$$(A_len$(TypeOf(_a)), A_InnerT$(TypeOf(_a))))(_a))
@@ -102,7 +102,7 @@ extern "C" {
 #define __op__Vec_toA$(...) __op__Vec_toA$__emit(__VA_ARGS__)
 #define __op__Vec_toA$__parse(_T...) _T,
 #define __op__Vec_toA$__emit(_T, _vec...) \
-    (*as$(_T*)(&_vec))
+    (*as$(_T*)(&copy(_vec)))
 #define Vec_toA(_vec...) __op__Vec_toA(_vec)
 #define __op__Vec_toA(_vec...) \
     Vec_toA$((A$$(Vec_len$(TypeOf(_vec)), Vec_InnerT$(TypeOf(_vec))))(_vec))

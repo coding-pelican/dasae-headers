@@ -28,22 +28,22 @@ fn_((dage_InputState_clear(dage_InputState* self))(void)) {
 
 /// @brief Update modifier state from key event
 $static fn_((updateModsFromKey(dage_InputState* self, dage_KeyCode key, bool is_down))(void)) {
-    switch (key) {
-    case dage_KeyCode_shift_left:
-    case dage_KeyCode_shift_right:
-        self->current_mods.shift = is_down;
-        break;
-    case dage_KeyCode_ctrl_left:
-    case dage_KeyCode_ctrl_right:
-        self->current_mods.ctrl = is_down;
-        break;
-    case dage_KeyCode_alt_left:
-    case dage_KeyCode_alt_right:
-        self->current_mods.alt = is_down;
-        break;
-    default:
-        break;
-    }
+    $supress_switch_enum(switch (key) {
+        case dage_KeyCode_shift_left:
+        case dage_KeyCode_shift_right:
+            self->current_mods.shift = is_down;
+            break;
+        case dage_KeyCode_ctrl_left:
+        case dage_KeyCode_ctrl_right:
+            self->current_mods.ctrl = is_down;
+            break;
+        case dage_KeyCode_alt_left:
+        case dage_KeyCode_alt_right:
+            self->current_mods.alt = is_down;
+            break;
+        default:
+            break;
+    });
 };
 
 fn_((dage_InputState_applyEvent(dage_InputState* self, const dage_Event* event))(void)) {

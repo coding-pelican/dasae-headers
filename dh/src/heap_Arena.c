@@ -80,7 +80,7 @@ fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)) {
     claim_assert_nonnull(self);
     // Calculate requested capacity based on mode
     let requested_capacity = expr_(usize $scope)(match_(mode) {
-        pattern_((heap_Arena_ResetMode_free_all)($ignore)) $break_(0) $end(pattern);
+        pattern_((heap_Arena_ResetMode_free_all)($ignore))        $break_(0) $end(pattern);
         pattern_((heap_Arena_ResetMode_retain_capacity)($ignore)) $break_(heap_Arena_queryCap(self)) $end(pattern);
         pattern_((heap_Arena_ResetMode_retain_with_limit)(limit)) $break_(prim_min(*limit, heap_Arena_queryCap(self))) $end(pattern);
     } $end(match)) $unscoped_(expr);
@@ -123,7 +123,7 @@ fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)) {
             let new_ptr = orelse_((mem_Allocator_rawAlloc(self->child_allocator, total_size, alignOf$(ListSgl_Adp$usize)))(return false));
             // Free old buffer and update state
             mem_Allocator_rawFree(self->child_allocator, alloc_buf, alignOf$(ListSgl_Adp$usize));
-            let new_adp = as$(ListSgl_Adp$usize*)(new_ptr);
+            let new_adp = ptrAlignCast$((ListSgl_Adp$usize*)(new_ptr));
             *new_adp = ListSgl_Adp_init$usize(total_size);
             asg_lit((&self->state.buf_list.first)(some(&new_adp->link)));
         }
@@ -240,7 +240,7 @@ fn_((heap_Arena__createLink(heap_Arena* self, usize prev_len, usize minimum_size
 
     // Allocate new buffer
     let ptr = orelse_((mem_Allocator_rawAlloc(self->child_allocator, len, alignOf$(ListSgl_Adp$usize)))(return_none()));
-    let adp = as$(ListSgl_Adp$usize*)(ptr);
+    let adp = ptrAlignCast$((ListSgl_Adp$usize*)(ptr));
     *adp = ListSgl_Adp_init$usize(len);
     ListSgl_prepend$usize(&self->state.buf_list, &adp->link);
     self->state.end_idx = 0;

@@ -123,7 +123,7 @@ $static fn_((u_typeInfoRecord(S_const$TypeInfo fields))(TypeInfo)) {
         let align_val = mem_log2ToAlign(field->align);
         let offset = mem_alignFwd(end_offset, align_val);
         end_offset = offset + field->size;
-        max_align = prim_max(max_align, as$(mem_Align)(field->align));
+        max_align = prim_max(max_align, TypeInfo_align(*field));
     });
     return (TypeInfo){
         .size = mem_alignFwd(end_offset, mem_log2ToAlign(max_align)),
@@ -355,7 +355,7 @@ $static fn_((u_fieldSli(u_P_const$raw record, usize n, S_const$TypeInfo fields, 
     claim_assert_nonnull(record.raw);
     let offset = u_offsetToN(n, fields, field_idx);
     return (u_S_const$raw){
-        .ptr = as$(P$raw)(as$(u8*)(record.raw) + offset),
+        .ptr = as$(P_const$raw)(as$(const u8*)(record.raw) + offset),
         .len = n,
         .type = *S_at((fields)[field_idx])
     };

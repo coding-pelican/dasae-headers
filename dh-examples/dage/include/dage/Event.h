@@ -18,7 +18,7 @@ extern "C" {
 #include "dage/common.h"
 #include "dage/KeyCode.h"
 #include "dage/MouseButton.h"
-#include "dh/ArrDeq.h"
+#include <dh/ArrDeq.h>
 
 /*========== Macros and Definitions =========================================*/
 

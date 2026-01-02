@@ -71,7 +71,7 @@ color_RGBA color_RGBA_blendAlpha(color_RGBA src, color_RGBA dst) {
         as$(u8)(out_r + 0.5f),
         as$(u8)(out_g + 0.5f),
         as$(u8)(out_b + 0.5f),
-        as$(u8)(out_a * as$(f32)((color_RGBA_channels_max_value) + 0.5f)));
+        as$(u8)(out_a * as$(f32)(color_RGBA_channels_max_value) + 0.5f));
 }
 
 void dage_Canvas_drawPixel(dage_Canvas* self, i32 x, i32 y, color_RGBA color) {
@@ -664,11 +664,11 @@ void dage_Canvas_blit(dage_Canvas* dst, const dage_Canvas* src, i32 x, i32 y) {
         for (i32 px = start_x; px < src_right; ++px) {
             const i32 src_x = px - x;
             const i32 src_y = py - y;
-            const color_RGBA src_color = src->gird.items.ptr[src_x + (src_y * Grid_width(src->gird))];
-            const color_RGBA dst_color = dst->gird.items.ptr[px + (py * Grid_width(dst->gird))];
+            const color_RGBA src_color = src->gird.items.ptr[as$(usize)(src_x) + (as$(usize)(src_y)*Grid_width(src->gird))];
+            const color_RGBA dst_color = dst->gird.items.ptr[as$(usize)(px) + (as$(usize)(py)*Grid_width(dst->gird))];
 
             // Alpha blending
-            dst->gird.items.ptr[px + (py * Grid_width(dst->gird))] = color_RGBA_blendAlpha(src_color, dst_color);
+            dst->gird.items.ptr[as$(usize)(px) + (as$(usize)(py)*Grid_width(dst->gird))] = color_RGBA_blendAlpha(src_color, dst_color);
         }
     }
 
@@ -706,8 +706,8 @@ void dage_Canvas_blitScaled(dage_Canvas* dst, const dage_Canvas* src, i32 x, i32
     for (i32 dy = start_y; dy < dst_bottom; ++dy) {
         for (i32 dx = start_x; dx < dst_right; ++dx) {
             // Calculate source pixel
-            const i32 src_x = as$(i32)(as$(f32)((dx - x) / scale));
-            const i32 src_y = as$(i32)(as$(f32)((dy - y) / scale));
+            const i32 src_x = as$(i32)(as$(f32)(dx - x) / scale);
+            const i32 src_y = as$(i32)(as$(f32)(dy - y) / scale);
 
             if (as$(i32)(Grid_width(src->gird)) <= src_x || as$(i32)(Grid_height(src->gird)) <= src_y) { continue; }
             const usize src_idx = as$(usize)(src_x) + (as$(usize)(src_y)*Grid_width(src->gird));

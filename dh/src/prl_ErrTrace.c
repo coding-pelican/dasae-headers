@@ -3,6 +3,7 @@
 #include "dh/io/common.h"
 #include "dh/fs/File.h"
 
+#if on_comptime
 $static fn_((ErrTrace__instance(void))(ErrTrace*)) {
     $static $Thrd_local var_(ErrTrace_s_instance, ErrTrace) = { .frames = {}, .len = 0 };
     return &ErrTrace_s_instance;
@@ -38,4 +39,5 @@ fn_((ErrTrace_print_debug(void))(void)) {
         ))($ignore, claim_unreachable));
     });
 }
+#endif /* on_comptime */
 #endif /* ErrTrace_comp_enabled */

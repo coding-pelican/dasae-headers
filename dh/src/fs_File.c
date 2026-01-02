@@ -7,7 +7,7 @@ $static fn_((windows_CloseHandle(HANDLE handle))(void)) {
     CloseHandle(handle);
 }
 $static fn_((windows_ReadFile(HANDLE handle, S$u8 buf))(E$usize) $scope) {
-    if_(DWORD bytes_read = 0, !ReadFile(handle, buf.ptr, buf.len, &bytes_read, null)) {
+    if_(DWORD bytes_read = 0, !ReadFile(handle, buf.ptr, as$(DWORD)(buf.len), &bytes_read, null)) {
         if_(let err = GetLastError(), err != ERROR_HANDLE_EOF && err != ERROR_BROKEN_PIPE) {
             return_err(fs_File_Err_ReadFailed());
         } else {
@@ -20,7 +20,7 @@ $static fn_((windows_ReadFile(HANDLE handle, S$u8 buf))(E$usize) $scope) {
     claim_unreachable;
 } $unscoped_(fn);
 $static fn_((windows_WriteFile(HANDLE handle, S_const$u8 bytes))(E$usize) $scope) {
-    if_(DWORD bytes_written = 0, !WriteFile(handle, bytes.ptr, bytes.len, &bytes_written, null)) {
+    if_(DWORD bytes_written = 0, !WriteFile(handle, bytes.ptr, as$(DWORD)(bytes.len), &bytes_written, null)) {
         return_err(fs_File_Err_WriteFailed());
     } else {
         return_ok(as$(usize)(bytes_written));
@@ -65,7 +65,7 @@ typedef union Reader {
 } Reader;
 
 $static fn_((Reader_VT_read(const P$raw ctx, S$u8 buf))(E$usize)) {
-    let self = as$(FieldType$(Reader, ctx)*)(&ctx);
+    let self = ptrCast$((const FieldType$(Reader, ctx)*)(&ctx));
     return pp_if_(plat_is_windows)(
         pp_then_(windows_ReadFile),
         pp_else_(/* plat_is_posix */ posix_read))(self->handle, buf);
@@ -88,7 +88,7 @@ typedef union Writer {
 } Writer;
 
 $static fn_((Writer_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize)) {
-    let self = as$(FieldType$(Writer, ctx)*)(&ctx);
+    let self = ptrCast$((const FieldType$(Writer, ctx)*)(&ctx));
     return pp_if_(plat_is_windows)(
         pp_then_(windows_WriteFile),
         pp_else_(/* plat_is_posix */ posix_write))(self->handle, bytes);

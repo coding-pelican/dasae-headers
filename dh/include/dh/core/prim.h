@@ -222,13 +222,26 @@ typedef struct Void {
 #define flt_inf_ngtv$(_T...) __op__flt_inf_ngtv$(_T)
 #define flt_inf_pstv$(_T...) __op__flt_inf_pstv$(_T)
 
+#define isValidAlign_static(_align /*: usize*/... /*(bool)*/) ____isValidAlign_static(_align)
+#define isValidAlign(_align /*: usize*/... /*(bool)*/) __step__isValidAlign(_align)
+
+#define isAligned(_addr /* usize|PtrType */, _align /*: usize*/... /*(bool)*/) __step__isAligned(_addr, _align)
+#define isAlignedLog2(_addr /* usize|PtrType */, _log2_align /*: mem_Log2Align*/... /*(bool)*/) __step__isAlignedLog2(_addr, _log2_align)
+
+#define alignToLog2_static(_align /*: usize*/... /*(mem_Log2Align)*/) ____alignToLog2_static(_align)
+#define alignToLog2(_align /*: usize*/... /*(mem_Log2Align)*/) __step__alignToLog2(_align)
+#define log2ToAlign_static(_log2_align /*: mem_Log2Align*/... /*(usize)*/) ____log2ToAlign_static(_log2_align)
+#define log2ToAlign(_log2_align /*: mem_Log2Align*/... /*(usize)*/) __step__log2ToAlign(_log2_align)
+
+#define alignCast(/*(_align: mem_Log2Align)(_ptr: PtrType)*/... /*(_T)*/) __step__alignCast(__VA_ARGS__)
+
 #define bitCast$(/*(_T)(_val)*/... /*(_T)*/) __step__bitCast$(__VA_ARGS__)
 #define intToBool(_val /*: IntType */... /*(bool)*/) __step__intToBool(_val)
 #define boolToInt(_val /*: bool*/... /*(u8)*/) ____boolToInt(_val)
 #define intCast$(/*(_T: IntType)(_val: IntType)*/... /*(_T)*/) __step__intCast$(__VA_ARGS__)
 #define intToFlt$(/*(_T: FltType)(_val: IntType)*/... /*(_T)*/) __step__intToFlt$(__VA_ARGS__)
-#define fltCast$(/*(_T: FltType)(_val: FltType)*/... /*(_T)*/) __step__fltCast$(__VA_ARGS__)
 #define fltToInt$(/*(_T: IntType)(_val: FltType)*/... /*(_T)*/) __step__fltToInt$(__VA_ARGS__)
+#define fltCast$(/*(_T: FltType)(_val: FltType)*/... /*(_T)*/) __step__fltCast$(__VA_ARGS__)
 
 /*========== Integer Arithmetic Operations ==================================*/
 
@@ -726,7 +739,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__prim_ord(__lhs, __rhs, _lhs, _rhs...) ({ \
     let __lhs = _lhs; \
     let __rhs = _rhs; \
-    prim_ord_static(__lhs, __rhs); \
+    as$(cmp_Ord)(prim_ord_static(__lhs, __rhs)); \
 })
 #define __op__prim_eq(_lhs, _rhs...) (as$(bool)((_lhs) == (_rhs)))
 #define __op__prim_ne(_lhs, _rhs...) (as$(bool)((_lhs) != (_rhs)))
@@ -735,7 +748,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __op__prim_le(_lhs, _rhs...) (as$(bool)((_lhs) <= (_rhs)))
 #define __op__prim_ge(_lhs, _rhs...) (as$(bool)((_lhs) >= (_rhs)))
 
-#define __op__prim_min2_static(_lhs, _rhs...) ((_rhs) < (_lhs) ? (_rhs) : (_lhs))
+#define __op__prim_min2_static(_lhs, _rhs...) (as$(TypeOf(_lhs))((_rhs) < (_lhs) ? (_rhs) : (_lhs)))
 #define __op__prim_min2__step(_lhs, _rhs...) __op__prim_min2( \
     pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs \
 )
@@ -778,7 +791,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     }); \
     __best; \
 })
-#define __op__prim_max2_static(_lhs, _rhs...) ((_rhs) > (_lhs) ? (_rhs) : (_lhs))
+#define __op__prim_max2_static(_lhs, _rhs...) (as$(TypeOf(_lhs))((_rhs) > (_lhs) ? (_rhs) : (_lhs)))
 #define __op__prim_max2__step(_lhs, _rhs...) __op__prim_max2( \
     pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs \
 )
@@ -1080,6 +1093,55 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     ) pp_end \
 )
 
+#define ____isValidAlign_static(_align...) as$(bool)(0 < _align && (_align & (_align - 1)) == 0)
+#define __step__isValidAlign(_align...) ____isValidAlign(pp_uniqTok(align), _align)
+#define ____isValidAlign(__align, _align...) ({ \
+    let_(__align, usize) = _align; \
+    as$(bool)(0 < __align && (__align & (__align - 1)) == 0); \
+})
+
+#define __step__isAligned(_addr, _align...) ____isAligned( \
+    pp_uniqTok(addr), _addr, pp_uniqTok(align), _align \
+)
+#define ____isAligned(__addr, _addr, __align, _align...) ({ \
+    let_(__addr, usize) = ptrToInt(_addr); \
+    let_(__align, usize) = _align; \
+    claim_assert(isValidAlign(__align)); \
+    as$(bool)((__addr & (__align - 1)) == 0); \
+})
+#define __step__isAlignedLog2(_addr, _log2_align...) ____isAlignedLog2( \
+    pp_uniqTok(addr), _addr, pp_uniqTok(log2_align), _log2_align \
+)
+#define ____isAlignedLog2(__addr, _addr, __log2_align, _log2_align...) ({ \
+    let_(__addr, usize) = ptrToInt(_addr); \
+    let_(__log2_align, u8) = _log2_align; \
+    as$(bool)(int_trailingZeros(__addr) >= __log2_align); \
+})
+
+#define ____alignToLog2_static(_align...) (as$(u8)(usize_bits - 1u) - as$(u8)(raw_ctz64(as$(u64)(_align))))
+#define __step__alignToLog2(_align...) ____alignToLog2(pp_uniqTok(align), _align)
+#define ____alignToLog2(__align, _align...) ({ \
+    let_(__align, usize) = _align; \
+    claim_assert(isValidAlign(__align)); \
+    intCast$((u8)(usize_bits - 1u)) - intCast$((u8)(raw_ctz64(as$(u64)(__align)))); \
+})
+#define ____log2ToAlign_static(_log2_align...) (as$(usize)(1) << _log2_align)
+#define __step__log2ToAlign(_log2_align...) ____log2ToAlign(pp_uniqTok(log2_align), _log2_align)
+#define ____log2ToAlign(__log2_align, _log2_align...) ({ \
+    let_(__log2_align, u8) = _log2_align; \
+    as$(usize)(1) << __log2_align; \
+})
+
+#define __step__alignCast(...) __step__alignCast__emit(__step__alignCast__parse __VA_ARGS__)
+#define __step__alignCast__parse(_align...) pp_uniqTok(align), _align, pp_uniqTok(ptr),
+#define __step__alignCast__emit(...) ____alignCast(__VA_ARGS__)
+#define ____alignCast(__align, _align, __ptr, _ptr...) ({ \
+    let_(__align, u8) = _align; \
+    let_(__ptr, TypeOf(_ptr)*) = &copy(_ptr); \
+    claim_assert(isAlignedLog2(__ptr, __align)); \
+    *__ptr; \
+})
+
 #if UNUSED_CODE
 #define __step__bitCast$(...) __step__bitCast$__emit(__step__bitCast$__parse __VA_ARGS__)
 #define __step__bitCast$__parse(_T...) _T, pp_uniqTok(val),
@@ -1116,29 +1178,31 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     _T, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max), \
         pp_uniqTok(dst_is_signed), pp_uniqTok(src_is_signed),
 #define __step__intCast$__emit(...) ____intCast$(__VA_ARGS__)
-#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) ({ \
-    typedef _T DstType; \
-    typedef TypeOf(_val) SrcType; \
-    claim_assert_static(isInt$(SrcType)); \
-    let_(__val, SrcType) = _val; \
-    let_(__min, DstType) = int_limit_min$(DstType); \
-    let_(__max, DstType) = int_limit_max$(DstType); \
-    let_(__dst_is_signed, bool) = isIInt$(DstType); \
-    let_(__src_is_signed, bool) = isIInt$(SrcType); \
-    /* Lower bound check: ensure value >= target minimum */ \
-    claim_assert( \
-        __dst_is_signed \
-            ? (!__src_is_signed ? true : as$(i64)(__val) >= as$(i64)(__min)) \
-            : (!__src_is_signed ? true : __val >= 0) \
-    ); \
-    /* Upper bound check: ensure value <= target maximum */ \
-    claim_assert( \
-        (__src_is_signed && __val < 0) \
-            ? true \
-            : as$(u64)(__val) <= as$(u64)(__max) \
-    ); \
-    as$(_T)(__val); \
-})
+#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) $pragma_guard_( \
+    "clang diagnostic push", "clang diagnostic ignored \"-Wimplicit-int-conversion\"", "clang diagnostic pop", ({ \
+        typedef _T DstType; \
+        typedef TypeOf(_val) SrcType; \
+        claim_assert_static(isInt$(SrcType)); \
+        let_(__val, SrcType) = _val; \
+        let_(__min, DstType) = int_limit_min$(DstType); \
+        let_(__max, DstType) = int_limit_max$(DstType); \
+        let_(__dst_is_signed, bool) = isIInt$(DstType); \
+        let_(__src_is_signed, bool) = isIInt$(SrcType); \
+        /* Lower bound check: ensure value >= target minimum */ \
+        claim_assert( \
+            __dst_is_signed \
+                ? (!__src_is_signed ? true : as$(i64)(__val) >= as$(i64)(__min)) \
+                : (!__src_is_signed ? true : __val >= 0) \
+        ); \
+        /* Upper bound check: ensure value <= target maximum */ \
+        claim_assert( \
+            (__src_is_signed && __val < 0) \
+                ? true \
+                : as$(u64)(__val) <= as$(u64)(__max) \
+        ); \
+        as$(_T)(__val); \
+    }) \
+)
 #if UNUSED_CODE
 #define ____intCast$(_T, __val, __min, __max, _val...) ({ \
     typedef TypeOf(_T) DstType; \

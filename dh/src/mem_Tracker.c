@@ -148,9 +148,9 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
             // Find or add to leak sites
             eval_(void $scope)(for_(($s(sites.items))(site) {
                 // Check if it's the same location
-                if (Str_eql(Str_viewZ(as$(u8*)(site->src_loc.file_name)), Str_viewZ(as$(u8*)(curr->src_loc.file_name)))
+                if (Str_eql(Str_viewZ(as$(const u8*)(site->src_loc.file_name)), Str_viewZ(as$(const u8*)(curr->src_loc.file_name)))
                     && site->src_loc.line == curr->src_loc.line
-                    && Str_eql(Str_viewZ(as$(u8*)(site->src_loc.fn_name)), Str_viewZ(as$(u8*)(curr->src_loc.fn_name)))) {
+                    && Str_eql(Str_viewZ(as$(const u8*)(site->src_loc.fn_name)), Str_viewZ(as$(const u8*)(curr->src_loc.fn_name)))) {
 
                     site->count++;
                     site->total_bytes += curr->size;

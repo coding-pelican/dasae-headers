@@ -58,13 +58,11 @@ fn_((os_windows_WaitForSingleObject(HANDLE handle, DWORD milliseconds))(os_windo
 
 typedef pp_if_(pp_eq(os_type, os_type_windows))(
     pp_then_(DWORD),
-    pp_else_(i32)
-) Thrd_Id;
+    pp_else_(i32)) Thrd_Id;
 
 typedef pp_if_(pp_eq(os_type, os_type_windows))(
     pp_then_(HANDLE),
-    pp_else_(i32)
-) Thrd_Handle;
+    pp_else_(i32)) Thrd_Handle;
 
 typedef Atom$$(enum Thrd_CompletionState : u8{
     Thrd_CompletionState_running = 0,
@@ -222,14 +220,14 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ int $128
                     \\ movl $1, % % eax #SYS_exit
                     \\ movl $0, % % ebx
-                    \\ int $128 : : [ptr] "r"(@intFromPtr(self.mapped.ptr)),
+                    \\ int $128 : : [ptr] "r"(@ptrToInt(self.mapped.ptr)),
                                                  [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .x86_64 = > asm volatile(
                     \\ movq $11, % % rax #SYS_munmap
                     \\ syscall
                     \\ movq $60, % % rax #SYS_exit
                     \\ movq $1, % % rdi
-                    \\ syscall : : [ptr] "{rdi}"(@intFromPtr(self.mapped.ptr)),
+                    \\ syscall : : [ptr] "{rdi}"(@ptrToInt(self.mapped.ptr)),
                                                     [len] "{rsi}"(self.mapped.len), ),
                                       .arm, .armeb, .thumb, .thumbeb = > asm volatile(
                     \\ mov r7, #91 // SYS_munmap
@@ -238,7 +236,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ svc 0
                     \\ mov r7, #1 // SYS_exit
                     \\ mov r0, #0
-                    \\ svc 0 : : [ptr] "r"(@intFromPtr(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
+                    \\ svc 0 : : [ptr] "r"(@ptrToInt(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .aarch64, .aarch64_be = > asm volatile(
                     \\ mov x8, #215 // SYS_munmap
                     \\ mov x0, % [ptr]
@@ -246,7 +244,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ svc 0
                     \\ mov x8, #93 // SYS_exit
                     \\ mov x0, #0
-                    \\ svc 0 : : [ptr] "r"(@intFromPtr(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
+                    \\ svc 0 : : [ptr] "r"(@ptrToInt(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .hexagon = > asm volatile(
                     \\ r6 = #215 // SYS_munmap
                     \\ r0 = % [ptr]
@@ -254,7 +252,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ trap0(#1)
                     \\ r6 = #93 // SYS_exit
                     \\ r0 = #0
-                    \\ trap0(#1) : : [ptr] "r"(@intFromPtr(self.mapped.ptr)),
+                    \\ trap0(#1) : : [ptr] "r"(@ptrToInt(self.mapped.ptr)),
                                                      [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       // We set `sp` to the address of the current function as a workaround for a Linux
                                       // kernel bug that caused syscalls to return EFAULT if the stack pointer is invalid.
@@ -268,7 +266,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ syscall
                     \\ li $2, 4001 #SYS_exit
                     \\ li $4, 0
-                    \\ syscall : : [ptr] "r"(@intFromPtr(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
+                    \\ syscall : : [ptr] "r"(@ptrToInt(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .mips64, .mips64el = > asm volatile(
                     \\ li $2, 5011 #SYS_munmap
                     \\ move $4, % [ptr]
@@ -276,7 +274,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ syscall
                     \\ li $2, 5058 #SYS_exit
                     \\ li $4, 0
-                    \\ syscall : : [ptr] "r"(@intFromPtr(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
+                    \\ syscall : : [ptr] "r"(@ptrToInt(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .powerpc, .powerpcle, .powerpc64, .powerpc64le = > asm volatile(
                     \\ li 0, 91 #SYS_munmap
                     \\ mr 3, % [ptr]
@@ -285,7 +283,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ li 0, 1 #SYS_exit
                     \\ li 3, 0
                     \\ sc
-                    \\ blr : : [ptr] "r"(@intFromPtr(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
+                    \\ blr : : [ptr] "r"(@ptrToInt(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .riscv32, .riscv64 = > asm volatile(
                     \\ li a7, 215 #SYS_munmap
                     \\ mv a0, % [ptr]
@@ -293,13 +291,13 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ ecall
                     \\ li a7, 93 #SYS_exit
                     \\ mv a0, zero
-                    \\ ecall : : [ptr] "r"(@intFromPtr(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
+                    \\ ecall : : [ptr] "r"(@ptrToInt(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .s390x = > asm volatile(
                     \\ lgr % % r2, % [ptr]
                     \\ lgr % % r3, % [len]
                     \\ svc 91 #SYS_munmap
                     \\ lghi % % r2, 0
-                    \\ svc 1 #SYS_exit : : [ptr] "r"(@intFromPtr(self.mapped.ptr)),
+                    \\ svc 1 #SYS_exit : : [ptr] "r"(@ptrToInt(self.mapped.ptr)),
                                                    [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .sparc = > asm volatile(
                     \\ #See sparc64 comments below.
@@ -317,7 +315,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ t 0x10
                     \\ mov 1, % % g1 // SYS_exit
                     \\ mov 0, % % o0
-                    \\ t 0x10 : : [ptr] "r"(@intFromPtr(self.mapped.ptr)),
+                    \\ t 0x10 : : [ptr] "r"(@ptrToInt(self.mapped.ptr)),
                                                    [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .sparc64 = > asm volatile(
                     \\ #SPARCs really don't like it when active stack frames
@@ -340,7 +338,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ t 0x6d
                     \\ mov 1, % % g1 // SYS_exit
                     \\ mov 0, % % o0
-                    \\ t 0x6d : : [ptr] "r"(@intFromPtr(self.mapped.ptr)),
+                    \\ t 0x6d : : [ptr] "r"(@ptrToInt(self.mapped.ptr)),
                                                      [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       .loongarch32, .loongarch64 = > asm volatile(
                     \\ or $a0, $zero, % [ptr]
@@ -349,7 +347,7 @@ fn_((Thrd_join(Thrd self))(void)) {
                     \\ syscall 0 #call munmap
                     \\ ori $a0, $zero, 0
                     \\ ori $a7, $zero, 93 #SYS_exit
-                    \\ syscall 0 #call exit : : [ptr] "r"(@intFromPtr(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
+                    \\ syscall 0 #call exit : : [ptr] "r"(@ptrToInt(self.mapped.ptr)), [len] "r"(self.mapped.len), :.{ .memory = true }),
                                       else = > | cpu_arch | @compileError("Unsupported linux arch: " ++@tagName(cpu_arch)),
                                   }
                                   unreachable;
@@ -437,7 +435,7 @@ fn_((Thrd_join(Thrd self))(void)) {
         var tls_ptr = linux.tls.prepareArea(mapped[tls_offset..]);
         var user_desc : if (target.cpu.arch ==.x86) linux.user_desc else void = undefined;
         if (target.cpu.arch ==.x86) {
-            defer tls_ptr = @intFromPtr(&user_desc);
+            defer tls_ptr = @ptrToInt(&user_desc);
             user_desc =.{
                 .entry_number = linux.tls.area_desc.gdt_entry_number,
                 .base_addr = tls_ptr,
@@ -463,9 +461,9 @@ fn_((Thrd_join(Thrd self))(void)) {
 
         switch (linux.E.init(linux.clone(
             Instance.entryFn,
-            @intFromPtr(&mapped[stack_offset]),
+            @ptrToInt(&mapped[stack_offset]),
             flags,
-            @intFromPtr(instance),
+            @ptrToInt(instance),
             &instance.thread.parent_tid,
             tls_ptr,
             &instance.thread.child_tid.raw,

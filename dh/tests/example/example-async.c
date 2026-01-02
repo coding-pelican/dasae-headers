@@ -152,7 +152,7 @@ async_fn_scope(waitForTime, {}) {
     let_ignore = locals;
     io_stream_println(
         u8_l("debug: [waitForTime({:xz})] starting <- [{:s}({:xz})]"),
-        intFromPtr(ctx->base), args->name, intFromPtr(orelse_((args->caller)(ctx->anyraw)))
+        ptrToInt(ctx->base), args->name, ptrToInt(orelse_((args->caller)(ctx->anyraw)))
     );
     suspend_({
         let addDur = time_Instant_addDuration;
@@ -167,12 +167,12 @@ async_fn_scope(waitForTime, {}) {
         );
         io_stream_println(
             u8_l("debug: [waitForTime({:xz})] suspending -> [{:s}({:xz})]"),
-            intFromPtr(ctx->base), args->name, intFromPtr(orelse_((args->caller)(ctx->anyraw)))
+            ptrToInt(ctx->base), args->name, ptrToInt(orelse_((args->caller)(ctx->anyraw)))
         );
     });
     io_stream_println(
         u8_l("debug: [waitForTime({:xz})] returning -> [{:s}({:xz})]"),
-        intFromPtr(ctx->base), args->name, intFromPtr(orelse_((args->caller)(ctx->anyraw)))
+        ptrToInt(ctx->base), args->name, ptrToInt(orelse_((args->caller)(ctx->anyraw)))
     );
     areturn_({});
 } $unscoped_(async_fn);
@@ -186,18 +186,18 @@ async_fn_scope(waitUntilAndPrint, {
     locals->start = time_Instant_now();
     io_stream_println(
         u8_l("debug: [{:s}({:xz})] starting <- [asyncMain]"),
-        args->name, intFromPtr(ctx->base)
+        args->name, ptrToInt(ctx->base)
     );
 
     // locals->wait_ctx = *async_ctx((waitForTime)(orelse_(args->caller, ctx->anyraw), args->name, args->time1));
     // while (resume_(&locals->wait_ctx)->state == Co_State_suspended) {
-    //     suspend_(io_stream_println(u8_l("debug: [{:s}({:xz})] suspending -> [asyncMain]\n"), args->name, intFromPtr(ctx->base)));
+    //     suspend_(io_stream_println(u8_l("debug: [{:s}({:xz})] suspending -> [asyncMain]\n"), args->name, ptrToInt(ctx->base)));
     // }
     callAsync(&locals->wait_ctx, (waitForTime)(some(orelse_((args->caller)(ctx->anyraw))), args->name, args->time1));
     debug_assert(locals->wait_ctx.state == Co_State_ready);
     io_stream_println(
         u8_l("debug: [{:s}({:xz})] suspending until {:uz} ms"),
-        args->name, intFromPtr(ctx->base), args->time1
+        args->name, ptrToInt(ctx->base), args->time1
     );
     {
         let asSecs = time_Duration_asSecs$f64;
@@ -205,7 +205,7 @@ async_fn_scope(waitUntilAndPrint, {
         let now = time_Instant_now;
         io_stream_println(
             u8_l("debug: [{:s}({:xz})] it is now {:uz} ms since start!"),
-            args->name, intFromPtr(ctx->base), as$(u64)((asSecs(durSince(now(), locals->start)) * 1000.0))
+            args->name, ptrToInt(ctx->base), as$(u64)((asSecs(durSince(now(), locals->start)) * 1000.0))
         );
     }
 
@@ -217,7 +217,7 @@ async_fn_scope(waitUntilAndPrint, {
     debug_assert(locals->wait_ctx.state == Co_State_ready);
     io_stream_println(
         u8_l("debug: [{:s}({:xz})] suspending until {:uz} ms"),
-        args->name, intFromPtr(ctx->base), args->time2
+        args->name, ptrToInt(ctx->base), args->time2
     );
     {
         let asSecs = time_Duration_asSecs$f64;
@@ -225,13 +225,13 @@ async_fn_scope(waitUntilAndPrint, {
         let now = time_Instant_now;
         io_stream_println(
             u8_l("debug: [{:s}({:xz})] it is now {:uz} ms since start!"),
-            args->name, intFromPtr(ctx->base), as$(u64)((asSecs(durSince(now(), locals->start)) * 1000.0))
+            args->name, ptrToInt(ctx->base), as$(u64)((asSecs(durSince(now(), locals->start)) * 1000.0))
         );
     }
 
     io_stream_println(
         u8_l("debug: [{:s}({:xz})] returning -> [asyncMain]"),
-        args->name, intFromPtr(ctx->base)
+        args->name, ptrToInt(ctx->base)
     );
     areturn_({});
 } $unscoped_(async_fn);

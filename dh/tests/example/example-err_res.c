@@ -63,7 +63,7 @@ $static fn_((processResult(math_ErrRes result))(void)) {
                 io_stream_println(u8_l("Operation succeeded with value: {:f}"), value);
             };
         } $end(pattern);
-        fallback_(claim_unreachable);
+            fallback_(claim_unreachable);
     } $end(match)) $unscoped_(expr);
     if_some((maybe_err)(err)) {
         io_stream_println(u8_l("Error occurred: [{:s}] {:z}"), Err_domainToStr(err), Err_codeToStrZ(err));
@@ -75,7 +75,7 @@ $static var_(memory, A$$(1024, u8)) = A_zero();
 $attr($must_check)
 $static fn_((performOperation(i32 a, i32 b))(math_Err$i32) $guard) {
     // Allocate resources
-    var fixed = heap_Fixed_init(A_ref$((S$u8)(memory)));
+    var fixed = heap_Fixed_from(A_ref$((S$u8)(memory)));
     var gpa = heap_Fixed_allocator(&fixed);
     var buffer = u_castS$((S$i32)(catch_((mem_Allocator_alloc(gpa, typeInfo$(InnerType), 100))(err, {
         io_stream_eprintln(u8_l("Failed to allocate buffer: {:e}"), err);
@@ -139,7 +139,7 @@ $static fn_((safeDivide(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
     if (rhs == 0) {
         return_err(math_Err_DivisionByZero()); // Return with an error
     }
-    return_ok(lhs / rhs);                      // Return with a value
+    return_ok(lhs / rhs); // Return with a value
 } $unscoped_(fn);
 
 $attr($must_check)

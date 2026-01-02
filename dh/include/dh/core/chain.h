@@ -54,10 +54,8 @@ typedef enum_(chain__State $bits(8)) {
 #define __step__chain$__parseS(_s...) pp_uniqTok(s), _s, __step__chain$__parseFnOps
 #define __step__chain$__parseFnOps(_fnOps...) _fnOps
 #define __step__chain$__emit(...) __chain$(__VA_ARGS__)
-#define __chain$(_T, __s, _s, ...) pragma_guard_( \
-    "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
-    "clang diagnostic pop", \
+#define __chain$(_T, __s, _s, ...) $pragma_guard_( \
+    "clang diagnostic push", "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", "clang diagnostic pop", \
     pp_overload(__chain$, __VA_ARGS__)(_T, __s, _s, __VA_ARGS__) \
 )
 #define __chain$_1(_T, __s, _s, _fnOp1...) ({ \

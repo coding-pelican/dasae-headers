@@ -30,11 +30,11 @@ $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)
     let thrd_count = mp_getThrdCount();
 
     var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = zero$A();
-    let data_list = slice$A(data_list_buf, $r(0, thrd_count));
+    let data_list = A_slice((data_list_buf)$r(0, thrd_count));
     var_(workers_buf, A$$(mp_max_thrd_count, Thrd_FnCtx$(mp_worker))) = zero$A();
-    let workers = slice$A(workers_buf, $r(0, thrd_count));
+    let workers = A_slice((workers_buf)$r(0, thrd_count));
     var_(threads_buf, A$$(mp_max_thrd_count, Thrd)) = zero$A();
-    let threads = slice$A(threads_buf, $r(0, thrd_count));
+    let threads = A_slice((threads_buf)$r(0, thrd_count));
 
     let chunk = (range.end - range.begin + thrd_count - 1) / thrd_count;
     for_(($rf(0), $s(workers), $s(data_list))(t, worker, data) {
@@ -278,7 +278,7 @@ $static fn_((State_rngGaussian(void))(RandGaussian*));
 $static fn_((State_initParticles_worker(R range, u_V$raw params))(void));
 $static fn_((State_initParticles(mp_ThrdPool* pool, S$Particle particles, m_V2f64 center, m_V2f64 radius_a_b))(void));
 $static fn_((State_init(mp_ThrdPool* pool, S$Particle particles, S$Cell grid))(State)) {
-    State_initParticles(pool, particles, m_V2f64_zero, m_V2f64_from(State_boundary_radius, 200.0));
+    State_initParticles(pool, particles, m_V2f64_zero, m_V2f64_of(State_boundary_radius, 200.0));
     return lit$((State){
         .pool = pool,
         .particles = particles,
@@ -350,7 +350,7 @@ $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))
             io_stream_println(
                 u8_l("Frame {:uz}: {:.2fl} ms ({:.1fl} FPS) | Avg: {:.2fl} ms ({:.1fl} FPS)"),
                 frame, time_Duration_asSecs$f64(frame_time) * 1000.0, 1.0 / time_Duration_asSecs$f64(frame_time),
-                (total_time / (frame + 1)) * 1000.0, (frame + 1) / total_time
+                (total_time / intToFlt$((f64)(frame + 1))) * 1000.0, intToFlt$((f64)(frame + 1)) / total_time
             );
         }
     });
@@ -395,7 +395,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         }) expr_(else)({
             $break_(usize_limit_max);
         }) $unscoped_(expr),
-        1, max_cpu_count
+        as$(usize)(1), max_cpu_count
     );
     var page = lit$((heap_Page){});
     var gpa = heap_Page_allocator(&page);
@@ -456,8 +456,7 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
         let seed = Thrd_currentId() ^ range.begin;
         *State_rng() = pp_if_(State_enable_randomization)(
             pp_then_(Rand_initSeed(seed)),
-            pp_else_(Rand_withSeed(Rand_default, seed))
-        );
+            pp_else_(Rand_withSeed(Rand_default, seed)));
         *State_rngGaussian() = RandGaussian_init(*State_rng());
         c_initialized = true;
     }
@@ -479,7 +478,7 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
         var p = m_V2f64_mul(m_V2f64_addScalar(c, r), theta);
         let d = m_V2f64_len(p);
         if (d > r_a) {
-            m_V2f64_scaleAsg(&p, r_a / d);
+            m_V2f64_scalAsg(&p, r_a / d);
         }
         self_i.pos = p;
         self_i.vel = m_V2f64_zero;
@@ -523,8 +522,8 @@ fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void)) {
 fn_((State_hashPosition(m_V2f64 pos))(usize)) {
     let gx_0 = as$(isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size);
     let gy_0 = as$(isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size);
-    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, intCast$((isize)(State_grid_width)) - 1));
-    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, intCast$((isize)(State_grid_height)) - 1));
+    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, intCast$((isize)(State_grid_width))-1));
+    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, intCast$((isize)(State_grid_height))-1));
     return gy_1 * State_grid_width + gx_1;
 }
 
@@ -543,9 +542,9 @@ fn_((State_applyGravity_worker(R range, u_V$raw params))(void)) {
         let d_sq = d * d;
         if (d > 0.1f) {
             let force = State_gravity / d_sq;
-            m_V2f64_addAsg(&self_i.vel, m_V2f64_scale(dp, (1.0 / d) * force * State_delta_time));
+            m_V2f64_addAsg(&self_i.vel, m_V2f64_scal(dp, (1.0 / d) * force * State_delta_time));
         }
-        m_V2f64_scaleAsg(&self_i.vel, State_damping);
+        m_V2f64_scalAsg(&self_i.vel, State_damping);
         *particle = self_i;
     });
 }
@@ -606,9 +605,9 @@ fn_((State_handleCollisions_worker(R range, u_V$raw params))(void)) {
                     if (d_sq < min_d_sq && 0.001f < d_sq) {
                         let d = flt_sqrt(d_sq);
                         let overlap = min_d - d;
-                        let n_norm = m_V2f64_scaleInv(dp_col, d);
+                        let n_norm = m_V2f64_scalInv(dp_col, d);
                         let separation = overlap * 0.5f;
-                        m_V2f64_subAsg(&self->pos, m_V2f64_scale(n_norm, separation));
+                        m_V2f64_subAsg(&self->pos, m_V2f64_scal(n_norm, separation));
                     }
                 }
             });
@@ -637,14 +636,14 @@ fn_((State_updatePositions_worker(R range, u_V$raw params))(void)) {
     let targets = slice$S(particles, range);
     for_(($s(targets))(particle) {
         var self_i = *particle;
-        m_V2f64_addAsg(&self_i.pos, m_V2f64_scale(self_i.vel, State_delta_time));
+        m_V2f64_addAsg(&self_i.pos, m_V2f64_scal(self_i.vel, State_delta_time));
         let d = m_V2f64_len(self_i.pos);
         if (d > State_boundary_radius) {
-            let n = m_V2f64_scaleInv(self_i.pos, d);
-            self_i.pos = m_V2f64_scale(n, State_boundary_radius);
+            let n = m_V2f64_scalInv(self_i.pos, d);
+            self_i.pos = m_V2f64_scal(n, State_boundary_radius);
             let dot = m_V2f64_dot(self_i.vel, n);
-            m_V2f64_subAsg(&self_i.vel, m_V2f64_scale(n, dot * 2.0f));
-            m_V2f64_scaleAsg(&self_i.vel, 0.8);
+            m_V2f64_subAsg(&self_i.vel, m_V2f64_scal(n, dot * 2.0f));
+            m_V2f64_scalAsg(&self_i.vel, 0.8);
         }
         *particle = self_i;
     });

@@ -1,21 +1,8 @@
 CompileFlags:
-  Compiler: clang
   Add:
-    - -xc
-    - -std=c17
-    - -Wall
-    - -Wextra
-    - -Werror
-    - -funsigned-char
-    - -fblocks
-    - -fms-extensions
-    - -Ic:/dasae/dev/dasae-headers/dh/include
-    - -Ic:/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
-    - -Ic:/dasae/dev/dasae-headers/dh-examples/color/src
-    - -Ic:/dasae/dev/dasae-headers/dh-examples/color/include
-    - -Ic:/dasae/dev/dasae-headers/dh-examples/color/lib/deps
-    - -I/mnt/c/dasae/dev/dasae-headers/dh/include
-    - -I/mnt/c/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
-    - -I/mnt/c/dasae/dev/dasae-headers/dh-examples/color/src
-    - -I/mnt/c/dasae/dev/dasae-headers/dh-examples/color/include
-    - -I/mnt/c/dasae/dev/dasae-headers/dh-examples/color/lib/deps
+    - -I./color/src
+    - -I./color/include
+    - -isystem./color/lib/deps
+    - -I./dh-examples/color/src
+    - -I./dh-examples/color/include
+    - -isystem./dh-examples/color/lib/deps

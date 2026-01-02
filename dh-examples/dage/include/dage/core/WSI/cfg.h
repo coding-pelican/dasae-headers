@@ -15,8 +15,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
-#include "dh/prl.h"
+#include <dh/core.h>
+#include <dh/prl.h>
 
 /*========== Platform Configuration =========================================*/
 
@@ -37,10 +37,10 @@ extern "C" {
 /*========== Platform Includes ==============================================*/
 
 #if plat_is_windows
-#include "dh-ext/os/windows/wnd.h"
+#include <dh-ext/os/windows/wnd.h>
 #endif /* plat_is_windows */
 #if dage_core_WSI__use_x11
-#include "dh-ext/os/linux/x11.h"
+#include <dh-ext/os/linux/x11.h>
 #endif /* dage_core_WSI__use_x11 */
 
 /*========== Constants ======================================================*/

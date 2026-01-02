@@ -70,7 +70,7 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
                 }
                 prim_memcpy(out_buf.ptr + written, self->buf.ptr + self->start, copy_len);
                 self->start = i + 1; // Skip delimiter
-                return_ok(slice$S(out_buf, $r(0, written + copy_len)));
+                return_ok(S_slice((out_buf)$r(0, written + copy_len)));
             }
         });
         // Delimiter not found, copy all available data
@@ -158,7 +158,7 @@ $static fn_((Reader_VT_read(const P$raw ctx, S$u8 output))(E$usize) $scope) {
     return_ok(to_copy);
 } $unscoped_(fn);
 
-fn_((io_Buf_Reader_reader(io_Buf_Reader* self))(io_Reader)) {
+fn_((io_Buf_reader(io_Buf_Reader* self))(io_Reader)) {
     return (io_Reader){
         .ctx = as$(P$raw)(self),
         .read = Reader_VT_read,
@@ -206,7 +206,7 @@ $static fn_((Writer_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope
     return_ok(bytes.len);
 } $unscoped_(fn);
 
-fn_((io_Buf_Writer_writer(io_Buf_Writer* self))(io_Writer)) {
+fn_((io_Buf_writer(io_Buf_Writer* self))(io_Writer)) {
     return (io_Writer){
         .ctx = as$(P$raw)(self),
         .write = Writer_VT_write,

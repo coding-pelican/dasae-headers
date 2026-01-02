@@ -2,7 +2,7 @@
 
 $attr($inline_always)
 $static fn_((search__ord(search_OrdFn ordFn, u_P_const$raw val, u_P_const$raw ctx))(cmp_Ord)) {
-    return invoke(ordFn, u_load(u_deref(val)), u_load(u_deref(ctx)));
+    return as$(cmp_Ord)(invoke(ordFn, u_load(u_deref(val)), u_load(u_deref(ctx))));
 };
 
 fn_((search_linearFirst(u_S_const$raw seq, u_V$raw ctx, search_OrdFn ordFn))(O$usize)) {

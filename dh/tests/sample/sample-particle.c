@@ -26,11 +26,11 @@ $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)
     let thrd_count = mp_getThrdCount();
 
     var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = zero$A();
-    let data_list = slice$A(data_list_buf, $r(0, thrd_count));
+    let data_list = A_slice((data_list_buf)$r(0, thrd_count));
     var_(workers_buf, A$$(mp_max_thrd_count, Thrd_FnCtx$(mp_worker))) = zero$A();
-    let workers = slice$A(workers_buf, $r(0, thrd_count));
+    let workers = A_slice((workers_buf)$r(0, thrd_count));
     var_(threads_buf, A$$(mp_max_thrd_count, Thrd)) = zero$A();
-    let threads = slice$A(threads_buf, $r(0, thrd_count));
+    let threads = A_slice((threads_buf)$r(0, thrd_count));
 
     let chunk = (range.end - range.begin + thrd_count - 1) / thrd_count;
     for_(($rf(0), $s(workers), $s(data_list))(t, worker, data) {
@@ -134,10 +134,9 @@ $static fn_((State_initParticles(S$Particle particles, m_V2f64 center, m_V2f64 r
 $static fn_((State_init(S$Particle particles, S$Cell grid))(State)) {
     *State_rng() = pp_if_(State_enable_randomization)(
         pp_then_(Rand_init()),
-        pp_else_(Rand_default)
-    );
+        pp_else_(Rand_default));
     *State_rngGaussian() = RandGaussian_init(*State_rng());
-    State_initParticles(particles, m_V2f64_zero, m_V2f64_from(State_boundary_radius, 200.0));
+    State_initParticles(particles, m_V2f64_zero, m_V2f64_of(State_boundary_radius, 200.0));
     return lit$((State){
         .particles = particles,
         .grid = grid,
@@ -210,7 +209,7 @@ $static fn_((State_simulate(State* self, usize frame_amount))(void)) {
             io_stream_println(
                 u8_l("Frame {:uz}: {:.2fl} ms ({:.1fl} FPS) | Avg: {:.2fl} ms ({:.1fl} FPS)"),
                 frame, time_Duration_asSecs$f64(frame_time) * 1000.0, 1.0 / time_Duration_asSecs$f64(frame_time),
-                (total_time / (frame + 1)) * 1000.0, (frame + 1) / total_time
+                (total_time / intToFlt$((f64)(frame + 1))) * 1000.0, intToFlt$((f64)(frame + 1)) / total_time
             );
         }
     });
@@ -253,7 +252,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         }) expr_(else)({
             $break_(usize_limit_max);
         }) $unscoped_(expr),
-        1, max_cpu_count
+        as$(usize)(1), max_cpu_count
     );
     mp_setThrdCount(cpu_count);
     io_stream_println(u8_l("Using {:uz} threads (MP)"), mp_getThrdCount());
@@ -313,8 +312,7 @@ fn_((State_initParticles_worker(usize i, u_V$raw params))(void)) {
         let seed = Thrd_currentId() ^ i;
         *State_rng() = pp_if_(State_enable_randomization)(
             pp_then_(Rand_initSeed(seed)),
-            pp_else_(Rand_withSeed(Rand_default, seed))
-        );
+            pp_else_(Rand_withSeed(Rand_default, seed)));
         *State_rngGaussian() = RandGaussian_init(*State_rng());
         c_initialized = true;
     }
@@ -334,7 +332,7 @@ fn_((State_initParticles_worker(usize i, u_V$raw params))(void)) {
     var p = m_V2f64_mul(m_V2f64_addScalar(c, r), theta);
     let d = m_V2f64_len(p);
     if (d > r_a) {
-        m_V2f64_scaleAsg(&p, r_a / d);
+        m_V2f64_scalAsg(&p, r_a / d);
     }
     particle.pos = p;
     particle.vel = m_V2f64_zero;
@@ -397,11 +395,11 @@ fn_((State_applyGravity_worker(usize i, u_V$raw params))(void)) {
     let d_sq = d * d;
     if (d > 0.1f) {
         let force = State_gravity / d_sq;
-        m_V2f64_addAsg(&particle.vel, m_V2f64_scale(dp, (1.0 / d) * force * State_delta_time));
+        m_V2f64_addAsg(&particle.vel, m_V2f64_scal(dp, (1.0 / d) * force * State_delta_time));
         // particle->vel.x += (dx / dist) * force * State_delta_time;
         // particle->vel.y += (dy / dist) * force * State_delta_time;
     }
-    m_V2f64_scaleAsg(&particle.vel, State_damping);
+    m_V2f64_scalAsg(&particle.vel, State_damping);
 
     *particle_i = particle;
 }
@@ -461,9 +459,9 @@ fn_((State_handleCollisions_worker(usize i, u_V$raw params))(void)) {
                 if (d_sq < min_d_sq && 0.001f < d_sq) {
                     let d = flt_sqrt(d_sq);
                     let overlap = min_d - d;
-                    let n_norm = m_V2f64_scaleInv(dp_col, d);
+                    let n_norm = m_V2f64_scalInv(dp_col, d);
                     let separation = overlap * 0.5f;
-                    m_V2f64_subAsg(&self->pos, m_V2f64_scale(n_norm, separation));
+                    m_V2f64_subAsg(&self->pos, m_V2f64_scal(n_norm, separation));
                 }
             }
         });
@@ -492,14 +490,14 @@ fn_((State_updatePositions_worker(usize i, u_V$raw params))(void)) {
     let particle_i = S_at((particles)[i]);
     var particle = *particle_i;
 
-    m_V2f64_addAsg(&particle.pos, m_V2f64_scale(particle.vel, State_delta_time));
+    m_V2f64_addAsg(&particle.pos, m_V2f64_scal(particle.vel, State_delta_time));
     let d = m_V2f64_len(particle.pos);
     if (d > State_boundary_radius) {
-        let n = m_V2f64_scaleInv(particle.pos, d);
-        particle.pos = m_V2f64_scale(n, State_boundary_radius);
+        let n = m_V2f64_scalInv(particle.pos, d);
+        particle.pos = m_V2f64_scal(n, State_boundary_radius);
         let dot = m_V2f64_dot(particle.vel, n);
-        m_V2f64_subAsg(&particle.vel, m_V2f64_scale(n, dot * 2.0f));
-        m_V2f64_scaleAsg(&particle.vel, 0.8);
+        m_V2f64_subAsg(&particle.vel, m_V2f64_scal(n, dot * 2.0f));
+        m_V2f64_scalAsg(&particle.vel, 0.8);
     }
 
     *particle_i = particle;

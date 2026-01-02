@@ -93,8 +93,7 @@ fn_((color_RGB_fromHSL(color_HSL hsl))(color_RGB)) {
     return color_RGB_from(
         fltToInt$((u8)(flt_clamp(r * max_val, 0.0, max_val))),
         fltToInt$((u8)(flt_clamp(g * max_val, 0.0, max_val))),
-        fltToInt$((u8)(flt_clamp(b * max_val, 0.0, max_val)))
-    );
+        fltToInt$((u8)(flt_clamp(b * max_val, 0.0, max_val))));
 };
 
 fn_((color_RGB_toHSL(color_RGB self))(color_HSL)) {

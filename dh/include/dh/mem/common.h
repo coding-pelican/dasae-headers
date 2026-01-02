@@ -652,7 +652,7 @@ $static fn_((mem_isValidAlign(usize align))(bool)) {
 }
 $inline_always
 $static fn_((mem_isAligned(usize addr, usize align))(bool)) {
-    return debug_assert(mem_isValidAlign(align)), (addr & (align - 1)) == 0;
+    return claim_assert(mem_isValidAlign(align)), (addr & (align - 1)) == 0;
 }
 $inline_always
 $static fn_((mem_isAlignedLog2(usize addr, mem_Align log2_align))(bool)) {
@@ -660,7 +660,7 @@ $static fn_((mem_isAlignedLog2(usize addr, mem_Align log2_align))(bool)) {
 }
 $inline_always
 $static fn_((mem_alignFwd(usize addr, usize align))(usize)) {
-    return debug_assert(mem_isValidAlign(align)), (addr + (align - 1)) & ~(align - 1);
+    return claim_assert(mem_isValidAlign(align)), (addr + (align - 1)) & ~(align - 1);
 }
 $inline_always
 $static fn_((mem_alignFwdLog2(usize addr, mem_Align log2_align))(usize)) {
@@ -668,7 +668,7 @@ $static fn_((mem_alignFwdLog2(usize addr, mem_Align log2_align))(usize)) {
 }
 $inline_always
 $static fn_((mem_alignBwd(usize addr, usize align))(usize)) {
-    return debug_assert(mem_isValidAlign(align)), addr & ~(align - 1);
+    return claim_assert(mem_isValidAlign(align)), addr & ~(align - 1);
 }
 $inline_always
 $static fn_((mem_alignBwdLog2(usize addr, mem_Align log2_align))(usize)) {
@@ -676,7 +676,8 @@ $static fn_((mem_alignBwdLog2(usize addr, mem_Align log2_align))(usize)) {
 }
 $inline_always
 $static fn_((mem_alignToLog2(usize align))(mem_Align)) {
-    return debug_assert(mem_isValidAlign(align)), as$(mem_Align)(usize_bits - 1u) - (mem_trailingZerosSize(align));
+    return claim_assert(mem_isValidAlign(align)),
+           intCast$((mem_Align)(usize_bits - 1u)) - intCast$((mem_Align)(mem_trailingZerosSize(align)));
 }
 $inline_always
 $static fn_((mem_log2ToAlign(mem_Align log2_align))(usize)) {

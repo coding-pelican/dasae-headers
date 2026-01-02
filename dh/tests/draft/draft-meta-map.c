@@ -166,9 +166,9 @@ typedef struct O$u_S$raw {
     u_prim_memcpyA(u_allocA(__src.len, __src.type), __src); \
 })
 
-#define u_allocV(_type...)            ((u_V$raw)u_allocA(1, _type))
+#define u_allocV(_type...) ((u_V$raw)u_allocA(1, _type))
 #define u_prim_memcpyV(_dst, _src...) ((u_V$raw)u_prim_memcpyA(_dst, _src))
-#define u_copyV(_src...)              ((u_V$raw)u_copyA(_src))
+#define u_copyV(_src...) ((u_V$raw)u_copyA(_src))
 
 #define u_copyO(_src...) \
     __u_copyO__step(_src)
@@ -221,9 +221,9 @@ typedef struct O$u_S$raw {
 #define unwrap_(/*(_Expr: O$$(_T))*/... /*(_T)*/) \
     __unwrap(__VA_ARGS__)
 
-#define __param_expand__orelse_(...)                                       __VA_ARGS__, pp_expand
-#define __block_inline__orelse_(_Expr, _DefaultExpr_OR_Body...)            __block_inline1__orelse_(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
-#define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) pragma_guard_( \
+#define __param_expand__orelse_(...) __VA_ARGS__, pp_expand
+#define __block_inline__orelse_(_Expr, _DefaultExpr_OR_Body...) __block_inline1__orelse_(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
+#define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
     "clang diagnostic pop", \
@@ -246,38 +246,38 @@ typedef struct O$u_S$raw {
 
 #define u_castV$$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __u_castV$$__step(__u_castV$$__parseT __VA_ARGS__)
-#define __u_castV$$__step(...)           __u_castV$$__emit(__VA_ARGS__)
-#define __u_castV$$__parseT(_T...)       _T, __u_castV$$__parseExpr
+#define __u_castV$$__step(...) __u_castV$$__emit(__VA_ARGS__)
+#define __u_castV$$__parseT(_T...) _T, __u_castV$$__parseExpr
 #define __u_castV$$__parseExpr(_Expr...) _Expr
-#define __u_castV$$__emit(_T, _Expr...)  (*as$(_T*)(prim_memcpy(&lit$((_T){}), (_Expr).mem, sizeOf$(_T))))
+#define __u_castV$$__emit(_T, _Expr...) (*as$(_T*)(prim_memcpy(&lit$((_T){}), (_Expr).mem, sizeOf$(_T))))
 
 #define u_castA$$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __u_castA$$__step(__u_castA$$__parseT __VA_ARGS__)
-#define __u_castA$$__step(...)           __u_castA$$__emit(__VA_ARGS__)
-#define __u_castA$$__parseT(_T...)       _T, __u_castA$$__parseExpr
+#define __u_castA$$__step(...) __u_castA$$__emit(__VA_ARGS__)
+#define __u_castA$$__parseT(_T...) _T, __u_castA$$__parseExpr
 #define __u_castA$$__parseExpr(_Expr...) _Expr
-#define __u_castA$$__emit(_T, _Expr...)  (*as$(_T*)(prim_memcpy(&lit$((_T){}), (_Expr).mem, sizeOf$(_T))))
+#define __u_castA$$__emit(_T, _Expr...) (*as$(_T*)(prim_memcpy(&lit$((_T){}), (_Expr).mem, sizeOf$(_T))))
 
 #define u_castP$$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __u_castP$$__step(__u_castP$$__parseT __VA_ARGS__)
-#define __u_castP$$__step(...)           __u_castP$$__emit(__VA_ARGS__)
-#define __u_castP$$__parseT(_T...)       _T, __u_castP$$__parseExpr
+#define __u_castP$$__step(...) __u_castP$$__emit(__VA_ARGS__)
+#define __u_castP$$__parseT(_T...) _T, __u_castP$$__parseExpr
 #define __u_castP$$__parseExpr(_Expr...) _Expr
-#define __u_castP$$__emit(_T, _Expr...)  ({ as$(_T)((_Expr).inner[0]); })
+#define __u_castP$$__emit(_T, _Expr...) ({ as$(_T)((_Expr).inner[0]); })
 
 #define u_castS$$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __u_castS$$__step(__u_castS$$__parseT __VA_ARGS__)
-#define __u_castS$$__step(...)           __u_castS$$__emit(__VA_ARGS__)
-#define __u_castS$$__parseT(_T...)       _T, __u_castS$$__parseExpr
+#define __u_castS$$__step(...) __u_castS$$__emit(__VA_ARGS__)
+#define __u_castS$$__parseT(_T...) _T, __u_castS$$__parseExpr
 #define __u_castS$$__parseExpr(_Expr...) _Expr
-#define __u_castS$$__emit(_T, _Expr...)  ({ *as$(_T*)((_Expr).inner); })
+#define __u_castS$$__emit(_T, _Expr...) ({ *as$(_T*)((_Expr).inner); })
 
 #define u_castO$$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __u_castO$$__step(__u_castO$$__parseT __VA_ARGS__)
-#define __u_castO$$__step(...)           __u_castO$$__emit(__VA_ARGS__)
-#define __u_castO$$__parseT(_T...)       _T, __u_castO$$__parseExpr
+#define __u_castO$$__step(...) __u_castO$$__emit(__VA_ARGS__)
+#define __u_castO$$__parseT(_T...) _T, __u_castO$$__parseExpr
 #define __u_castO$$__parseExpr(_Expr...) _Expr
-#define __u_castO$$__emit(_T, _Expr...)  (*as$(_T*)(prim_memcpy(&lit$((_T){}), (_Expr).inner, sizeOf$(_T))))
+#define __u_castO$$__emit(_T, _Expr...) (*as$(_T*)(prim_memcpy(&lit$((_T){}), (_Expr).inner, sizeOf$(_T))))
 
 #include <stdio.h>
 
@@ -287,10 +287,10 @@ int main(void) {
     var some_foo = unwrap_(o_foo);
 
     u_V$raw ufoo = { .type = typeInfo$(TypeOf(foo)), .untyped = &copy(foo), .len = 1 };
-    var p_ufoo = as$(Foo *) ((ufoo.mem));
+    var p_ufoo = as$(Foo*) ((ufoo.mem));
     O$u_V$raw o_ufoo = { .is_some = true, .payload = { .some = ufoo } };
     var some_ufoo = u_copyV(unwrap_(o_ufoo));
-    var some_p_ufoo = as$(Foo *) ((some_ufoo.mem));
+    var some_p_ufoo = as$(Foo*) ((some_ufoo.mem));
 
     var casted_ufoo = u_castV$$((Foo)(ufoo));
     var casted_some_ufoo = u_castV$$((Foo)(unwrap_(o_ufoo))); // Same as `u_copyV(unwrap_(o_ufoo)); as$(Foo*)(some_ufoo.mem);`

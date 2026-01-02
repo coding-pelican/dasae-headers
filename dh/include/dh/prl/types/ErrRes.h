@@ -207,10 +207,8 @@ typedef union E$Void {
 })
 #define __param_expand__catch_(...) __VA_ARGS__, pp_expand
 #define __block_inline__catch_(_Expr, _Payload_Capture, _DefaultExpr_OR_Body...) __block_inline1__catch_(pp_uniqTok(result), _Expr, _Payload_Capture, ({ _DefaultExpr_OR_Body; }))
-#define __block_inline1__catch_(__result, _Expr, _Payload_Capture, _DefaultExpr_OR_Body...) pragma_guard_( \
-    "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
-    "clang diagnostic pop", \
+#define __block_inline1__catch_(__result, _Expr, _Payload_Capture, _DefaultExpr_OR_Body...) $pragma_guard_( \
+    "clang diagnostic push", "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", "clang diagnostic pop", \
     ({ \
         var __result = _Expr; \
         if (isErr(__result)) { \

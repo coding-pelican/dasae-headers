@@ -34,11 +34,11 @@ $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)
     let thrd_count = mp_getThrdCount();
 
     var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = zero$A();
-    let data_list = slice$A(data_list_buf, $r(0, thrd_count));
+    let data_list = A_slice((data_list_buf)$r(0, thrd_count));
     var_(workers_buf, A$$(mp_max_thrd_count, Thrd_FnCtx$(mp_worker))) = zero$A();
-    let workers = slice$A(workers_buf, $r(0, thrd_count));
+    let workers = A_slice((workers_buf)$r(0, thrd_count));
     var_(threads_buf, A$$(mp_max_thrd_count, Thrd)) = zero$A();
-    let threads = slice$A(threads_buf, $r(0, thrd_count));
+    let threads = A_slice((threads_buf)$r(0, thrd_count));
 
     let chunk = (range.end - range.begin + thrd_count - 1) / thrd_count;
     for_(($rf(0), $s(workers), $s(data_list))(t, worker, data) {
@@ -429,7 +429,7 @@ $static fn_((State_rngGaussian(void))(RandGaussian*));
 $static fn_((State_initParticles_worker(R range, u_V$raw params))(void));
 $static fn_((State_initParticles(mp_ThrdPool* pool, S$Particle particles, m_V2f64 center, m_V2f64 radius_a_b))(void));
 $static fn_((State_init(mp_ThrdPool* pool, S$Particle particles, S$Cell grid))(State)) {
-    State_initParticles(pool, particles, m_V2f64_zero, m_V2f64_from(State_boundary_radius, 200.0));
+    State_initParticles(pool, particles, m_V2f64_zero, m_V2f64_of(State_boundary_radius, 200.0));
     return lit$((State){
         .pool = pool,
         .particles = particles,
@@ -467,7 +467,7 @@ $static fn_((State_handleCollisions(State* self))(void));
 
 #define enable_print_frame_stats 1
 
-fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) {
+$static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) {
     io_stream_println(u8_l("\nStarting simulation for {:uz} frames at {:.1fl} FPS..."), frame_amount, State_target_fps);
     io_stream_println(u8_l("Using {:uz} threads (Pool)"), pool->threads.len);
 
@@ -494,7 +494,7 @@ fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))(void)) 
             pp_if_(enable_print_frame_stats)(pp_then_(io_stream_println), pp_else_(pp_ignore))(
                 u8_l("Frame {:uz}: {:.2fl} ms ({:.1fl} FPS) | Avg: {:.2fl} ms ({:.1fl} FPS)"),
                 frame, time_Duration_asSecs$f64(frame_time) * 1000.0, 1.0 / time_Duration_asSecs$f64(frame_time),
-                (total_time / (frame + 1)) * 1000.0, (frame + 1) / total_time
+                (total_time / intToFlt$((f64)(frame + 1))) * 1000.0, intToFlt$((f64)(frame + 1)) / total_time
             );
         }
     });
@@ -563,7 +563,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         }) expr_(else)({
             $break_(usize_limit_max);
         }) $unscoped_(expr),
-        1, max_cpu_count
+        as$(usize)(1), max_cpu_count
     );
     var gpa = heap_Page_allocator(&(heap_Page){});
     var pool = try_(mp_ThrdPool_init(gpa, cpu_count));
@@ -626,8 +626,7 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
         let seed = Thrd_currentId() ^ range.begin;
         *State_rng() = pp_if_(State_enable_randomization)(
             pp_then_(Rand_initSeed(seed)),
-            pp_else_(Rand_withSeed(Rand_default, seed))
-        );
+            pp_else_(Rand_withSeed(Rand_default, seed)));
         *State_rngGaussian() = RandGaussian_init(*State_rng());
         c_initialized = true;
     }
@@ -649,7 +648,7 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
         var p = m_V2f64_mul(m_V2f64_addScalar(c, r), theta);
         let d = m_V2f64_len(p);
         if (d > r_a) {
-            m_V2f64_scaleAsg(&p, r_a / d);
+            m_V2f64_scalAsg(&p, r_a / d);
         }
         self_i.pos = p;
         self_i.vel = m_V2f64_zero;

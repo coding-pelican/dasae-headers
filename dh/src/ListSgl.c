@@ -93,8 +93,7 @@ fn_((ListSgl_Adp_empty(TypeInfo type, ListSgl_Adp$raw* ret_mem))(ListSgl_Adp$raw
     claim_assert_nonnull(ret_mem);
     ret_mem->link = ListSgl_Link_empty(type);
     mem_set0((u_S$raw){ .ptr = ret_mem->data, .len = 1, .type = type });
-    debug_only(ret_mem -> type = type;)
-    return ret_mem;
+    debug_only(ret_mem->type = type;) return ret_mem;
 };
 
 fn_((ListSgl_Adp_init(u_V$raw data, ListSgl_Adp$raw* ret_mem))(ListSgl_Adp$raw*)) {
@@ -102,8 +101,7 @@ fn_((ListSgl_Adp_init(u_V$raw data, ListSgl_Adp$raw* ret_mem))(ListSgl_Adp$raw*)
     let type = data.inner_type;
     ret_mem->link = ListSgl_Link_empty(type);
     mem_set((u_S$raw){ .ptr = ret_mem->data, .len = 1, .type = type }, data);
-    debug_only(ret_mem -> type = type;)
-    return ret_mem;
+    debug_only(ret_mem->type = type;) return ret_mem;
 };
 
 fn_((ListSgl_Adp_link(const ListSgl_Adp$raw* self))(P_const$ListSgl_Link)) {

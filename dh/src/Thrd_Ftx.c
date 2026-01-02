@@ -153,11 +153,11 @@ fn_((Thrd_Ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration t
     } else_none {
         $break_(u32_limit_max);
     }) $unscoped_(expr);
-    let rc = WaitOnAddress(
+    let rc = $supress_cast_qual(WaitOnAddress(
         (as$(volatile P$raw)(&ptr->raw)),
         &expect, sizeOf$(u32),
         timeout_ms
-    );
+    ));
     if (!rc && GetLastError() == ERROR_TIMEOUT) {
         claim_assert(isSome(timeout));
         return_err(Thrd_Ftx_Err_Timeout());
@@ -166,7 +166,7 @@ fn_((Thrd_Ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration t
 } $unscoped_(fn);
 
 fn_((Thrd_Ftx__windows_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
-    let addr = as$(volatile P$raw)(&ptr->raw);
+    let addr = $supress_cast_qual(as$(volatile P$raw)(&ptr->raw));
     claim_assert(max_waiters != 0);
     if (max_waiters == 1) {
         WakeByAddressSingle(addr);
