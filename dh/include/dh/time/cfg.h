@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2025-02-13 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2026-01-02 (date of last update)
  * @ingroup dasae-headers(dh)/time
  * @prefix  time
  *
@@ -32,10 +31,16 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+/* --- Monotonic Clock Platform Type (for time_Instant) --- */
 typedef pp_if_(plat_is_windows)(
     pp_then_(LARGE_INTEGER),
-    pp_else_(struct timespec)
-) time_SysTime__Impl;
+    pp_else_(struct timespec)) time_Instant__Impl;
+typedef time_Instant__Impl time_InstantPlatform;
+
+/* --- Wall-Clock Platform Type (for time_SysTime) --- */
+typedef pp_if_(plat_is_windows)(
+    pp_then_(FILETIME),
+    pp_else_(struct timespec)) time_SysTime__Impl;
 typedef time_SysTime__Impl time_SysTimePlatform;
 
 #if defined(__cplusplus)

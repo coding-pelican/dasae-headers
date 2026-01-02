@@ -1,21 +1,25 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    SysTime.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2025-02-08 (date of last update)
- * @version v0.1-alpha.2
+ * @updated 2026-01-02 (date of last update)
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_SysTime
  *
- * @brief   System time utilities
- * @details Provides functionality for:
- *          - Time measurement and duration tracking
- *          - High-precision timestamps and intervals
- *          - Time formatting and parsing
- *          - Platform-independent time operations
+ * @brief   Wall-clock time utilities
+ * @details Provides functionality for wall-clock time operations:
+ *          - Current wall-clock time retrieval
+ *          - Unix epoch conversion (to/from)
+ *          - Duration calculations between system times
+ *          - Platform-independent wall-clock operations
+ *
+ * @note    Unlike time_Instant which uses a monotonic clock,
+ *          time_SysTime uses the system's wall clock and can
+ *          go backwards (e.g., due to NTP synchronization).
+ *          Use time_Instant for measuring elapsed time.
  */
 #ifndef time_SysTime__included
 #define time_SysTime__included 1
@@ -40,31 +44,22 @@ T_impl_O$(time_SysTime);
 
 /* --- Constants --- */
 
-#define time_SysTime_nanos_per_sec /* 1ns intervals per second */ __comp_const__time_SysTime_nanos_per_sec
-#define time_SysTime_intervals_per_sec /* 100ns intervals per second */ __comp_const__time_SysTime_intervals_per_sec
+/// Number of 100-nanosecond intervals per second (Windows FILETIME unit).
+#define time_SysTime_intervals_per_sec __comp_const__time_SysTime_intervals_per_sec
+/// Number of 100-nanosecond intervals from Windows epoch (1601) to Unix epoch (1970).
 #define time_SysTime_intervals_to_unix_epoch __comp_const__time_SysTime_intervals_to_unix_epoch
-#define time_SysTime_unix_epoch __comp_const__time_SysTime_unix_epoch
-
-/* --- Accessors --- */
-
-/// Get the frequency of the performance counter in ticks per second.
-$extern fn_((time_SysTime_freq(void))(time_SysTime));
-/// Get the inverse of the performance counter frequency.
-$extern fn_((time_SysTime_freqInv(void))(f64));
-/// Get the offset value of the performance counter (relative time).
-$extern fn_((time_SysTime_offset(void))(time_SysTime));
-/// Get the current system time in high resolution.
-$extern fn_((time_SysTime_value(void))(time_SysTime));
+/// The Unix epoch (January 1, 1970 00:00:00 UTC) as a SysTime.
+#define time_SysTime_UNIX_EPOCH __comp_const__time_SysTime_UNIX_EPOCH
 
 /* --- Operations --- */
 
-/// Get the current time as a system time object.
+/// Get the current wall-clock time.
 $extern fn_((time_SysTime_now(void))(time_SysTime));
-/// Get the elapsed duration from a given time.
+/// Get the elapsed duration from a given time until now.
 $extern fn_((time_SysTime_elapsed(time_SysTime self))(time_Duration));
-/// Get the duration since another time point.
+/// Get the duration between two system times (later - earlier).
 $extern fn_((time_SysTime_durationSince(time_SysTime later, time_SysTime earlier))(time_Duration));
-/// Get the duration since another time point with overflow checking.
+/// Get the duration between two system times with underflow checking.
 $extern fn_((time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration));
 
 /* --- Arithmetic Operations --- */
@@ -72,24 +67,29 @@ $extern fn_((time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime ear
 /// Add a duration to the time.
 $extern op_fn_addWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
 $static op_fn_addWith$(addDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
+/// Add a duration to the time (in-place).
 $extern op_fn_addAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
 $static op_fn_addAsgWith$(addAsgDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
-/// Sub a duration from the time.
+/// Subtract a duration from the time.
 $extern op_fn_subWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
 $static op_fn_subWith$(subDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
+/// Subtract a duration from the time (in-place).
 $extern op_fn_subAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
 $static op_fn_subAsgWith$(subAsgDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
-/// Add a duration to the time with overflow checking.
+/// Add a duration with overflow checking.
 $extern fn_((time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
-/// Sub a duration from the time with underflow checking.
+/// Subtract a duration with underflow checking.
 $extern fn_((time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
 
-/* --- Time Conversion to/from Unix Epoch --- */
+/* --- Unix Epoch Conversion --- */
 
-/// Convert system time to Unix epoch time.
+/// Create a SysTime from Unix epoch seconds.
 $extern fn_((time_SysTime_fromUnixEpoch(u64 secs))(time_SysTime));
-/// Convert system time to Unix epoch seconds (useful for comparisons).
+/// Convert SysTime to Unix epoch seconds.
+/// Returns the number of seconds since January 1, 1970 00:00:00 UTC.
 $extern fn_((time_SysTime_toUnixEpoch(time_SysTime self))(u64));
+/// Get duration since Unix epoch (for sub-second precision).
+$extern fn_((time_SysTime_durationSinceUnixEpoch(time_SysTime self))(time_Duration));
 
 /* --- Comparison --- */
 
@@ -115,20 +115,25 @@ $extern cmp_fn_neqCtx$((time_SysTime)(lhs, rhs, ctx));
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_const__time_SysTime_nanos_per_sec \
-    (lit_n$(u64)(1, 000, 000, 000ull))
+/// 100-nanosecond intervals per second.
 #define __comp_const__time_SysTime_intervals_per_sec \
-    (lit_n$(u64)(time_SysTime_nanos_per_sec / 100ull))
+    (lit_n$(u64)(10, 000, 000ull))
+
+/// Number of 100-nanosecond intervals from 1601-01-01 to 1970-01-01.
+/// = 11644473600 seconds * 10,000,000 intervals/second
 #define __comp_const__time_SysTime_intervals_to_unix_epoch \
-    (lit_n$(u64)(11, 644, 473, 600ull) * time_SysTime_intervals_per_sec)
+    (lit_n$(u64)(116, 444, 736, 000, 000, 000ull))
 
 #if plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit)
-#define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
-    .impl = { .QuadPart = as$(LONGLONG)(time_SysTime_intervals_to_unix_epoch) }, \
+#define __comp_const__time_SysTime_UNIX_EPOCH lit$((time_SysTime){ \
+    .impl = { \
+        .dwLowDateTime = as$(DWORD)(time_SysTime_intervals_to_unix_epoch & 0xFFFFFFFFull), \
+        .dwHighDateTime = as$(DWORD)(time_SysTime_intervals_to_unix_epoch >> 32ull), \
+    }, \
 })
 #else /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
-#define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
-    .impl = { .tv_sec = as$(time_t)(time_SysTime_intervals_to_unix_epoch), .tv_nsec = 0 }, \
+#define __comp_const__time_SysTime_UNIX_EPOCH lit$((time_SysTime){ \
+    .impl = { .tv_sec = 0, .tv_nsec = 0 }, \
 })
 #endif
 

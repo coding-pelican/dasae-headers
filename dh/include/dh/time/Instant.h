@@ -1,21 +1,24 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    Instant.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2024-02-08 (date of last update)
- * @version v0.1-alpha.2
+ * @updated 2026-01-02 (date of last update)
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_Instant
  *
- * @brief   Time instant utilities
- * @details Provides functionality for:
- *          - Time measurement and duration tracking
- *          - High-precision timestamps and intervals
- *          - Time formatting and parsing
- *          - Platform-independent time operations
+ * @brief   Monotonic clock utilities
+ * @details Provides high-precision monotonic timing:
+ *          - Uses QueryPerformanceCounter on Windows
+ *          - Uses clock_gettime(CLOCK_MONOTONIC) on Unix
+ *          - Guaranteed to never go backwards
+ *          - Suitable for measuring elapsed time
+ *
+ * @note    Unlike time_SysTime (wall-clock), time_Instant uses a monotonic
+ *          clock that cannot be converted to/from Unix epoch.
+ *          Use time_SysTime for wall-clock time with Unix epoch support.
  */
 #ifndef time_Instant__included
 #define time_Instant__included 1
@@ -27,26 +30,46 @@ extern "C" {
 
 #include "cfg.h"
 #include "common.h"
-#include "SysTime.h"
+#include "Duration.h"
 
 /*========== Macros and Declarations ========================================*/
 
 /* --- Structures --- */
+
 struct time_Instant {
-    time_SysTime point;
+    time_InstantPlatform impl;
 };
 T_impl_O$(time_Instant);
 
 /* --- Constants --- */
-#define time_Instant_unix_epoch __comp_const__time_Instant_unix_epoch
+
+#define time_Instant_nanos_per_sec __comp_const__time_Instant_nanos_per_sec
+#define time_Instant_intervals_per_sec __comp_const__time_Instant_intervals_per_sec
+
+/* --- Accessors --- */
+
+/// Get the frequency of the performance counter in ticks per second.
+$extern fn_((time_Instant_freq(void))(time_Instant));
+/// Get the inverse of the performance counter frequency.
+$extern fn_((time_Instant_freqInv(void))(f64));
+/// Get the offset value of the performance counter (relative time).
+$extern fn_((time_Instant_offset(void))(time_Instant));
+/// Get the raw tick value as u64 (useful for seeding, hashing, etc.).
+$extern fn_((time_Instant_ticks(time_Instant self))(u64));
 
 /* --- Operations --- */
+
+/// Get the current monotonic time.
 $extern fn_((time_Instant_now(void))(time_Instant));
+/// Get the elapsed duration from a given time.
 $extern fn_((time_Instant_elapsed(time_Instant self))(time_Duration));
+/// Get the duration since another time point.
 $extern fn_((time_Instant_durationSince(time_Instant later, time_Instant earlier))(time_Duration));
+/// Get the duration since another time point with overflow checking.
 $extern fn_((time_Instant_durationSinceChkd(time_Instant later, time_Instant earlier))(O$time_Duration));
 
 /* --- Arithmetic Operations --- */
+
 $extern op_fn_addWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant));
 $static op_fn_addWith$(addDuration, ((time_Instant, time_Duration)(lhs, rhs))(time_Instant));
 $extern op_fn_addAsgWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant*));
@@ -58,11 +81,8 @@ $static op_fn_subAsgWith$(subAsgDuration, ((time_Instant, time_Duration)(lhs, rh
 $extern fn_((time_Instant_addChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant));
 $extern fn_((time_Instant_subChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant));
 
-/* --- Time Conversion to/from Unix Epoch --- */
-$extern fn_((time_Instant_fromUnixEpoch(u64 secs))(time_Instant));
-$extern fn_((time_Instant_toUnixEpoch(time_Instant self))(u64));
-
 /* --- Comparison --- */
+
 $extern cmp_fn_ord$((time_Instant)(lhs, rhs));
 $extern cmp_fn_eq$((time_Instant)(lhs, rhs));
 $extern cmp_fn_ne$((time_Instant)(lhs, rhs));
@@ -85,7 +105,10 @@ $extern cmp_fn_neqCtx$((time_Instant)(lhs, rhs, ctx));
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_const__time_Instant_unix_epoch lit$((time_Instant){ .point = time_SysTime_unix_epoch })
+#define __comp_const__time_Instant_nanos_per_sec \
+    (lit_n$(u64)(1, 000, 000, 000ull))
+#define __comp_const__time_Instant_intervals_per_sec \
+    (lit_n$(u64)(time_Instant_nanos_per_sec / 100ull))
 
 #if defined(__cplusplus)
 } /* extern "C" */
