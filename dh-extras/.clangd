@@ -1,0 +1,237 @@
+# ========== Global ==========
+---
+Index:
+  Background: Build
+  StandardLibrary: true
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
+  ClangTidy:
+    FastCheckFilter: Loose
+    Add:
+      - clang-analyzer-*
+      - bugprone-*
+      - cert-*
+      - llvm-*
+      # - llvmlibc-*
+      - portability-*
+      - performance-*
+      - concurrency-*
+      - readability-*
+      - misc-*
+      - cppcoreguidelines-*
+      - hicpp-*
+    Remove:
+      - bugprone-assignment-in-if-condition
+      - bugprone-easily-swappable-parameters
+      - bugprone-reserved-identifier
+      - cert-dcl37-c
+      - cert-dcl51-cpp
+      - llvm-include-order
+      - readability-avoid-const-params-in-decls
+      - readability-avoid-nested-conditional-operator
+      - readability-braces-around-statements
+      - readability-identifier-length
+      - readability-magic-numbers
+      - readability-math-missing-parentheses
+      - readability-named-parameter
+      - readability-uppercase-literal-suffix
+      - readability-use-concise-preprocessor-directives
+      - readability-function-cognitive-complexity
+      - readability-function-size
+      - misc-misplaced-const
+      - misc-non-private-member-variables-in-classes
+      - cppcoreguidelines-avoid-magic-numbers
+      - cppcoreguidelines-avoid-non-const-global-variables
+      - cppcoreguidelines-macro-to-enum
+      - cppcoreguidelines-macro-usage
+      - hicpp-function-size
+      - hicpp-signed-bitwise
+      - hicpp-uppercase-literal-suffix
+Completion:
+  AllScopes: true
+  ArgumentLists: FullPlaceholders
+  # HeaderInsertion: IWYU
+  # CodePatterns: All
+InlayHints:
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
+  Designators: true
+  BlockEnd: false
+  DefaultArguments: false
+  TypeNameLimit: 24
+Hover:
+  ShowAKA: true
+  # MacroContentsLimit: 2048
+# Documentation:
+#   CommentFormat: Doxygen
+# ========== Suppress: System & Third-party Headers ==========
+---
+If:
+  PathMatch:
+    # [Windows] MSYS2 / MinGW
+    - .*/msys64/.*include/.*
+    - .*/mingw.*/.*include/.*
+    # [Windows] MSVC (Visual Studio)
+    - .*Microsoft Visual Studio.*/include/.*
+    - .*Windows Kits.*/include/.*
+    # [Linux/WSL/macOS] Standard paths
+    - .*/usr/include/.*
+    - .*/usr/local/include/.*
+    # [Compiler Internal] GCC/Clang internal headers (lib/clang, lib/gcc)
+    - .*/lib/clang/.*
+    - .*/lib/gcc/.*
+    # [3rd Party] External libraries
+    - .*/libs/BlocksRuntime/.*
+    - .*/libs/.*
+    - .*/lib/.*
+CompileFlags:
+  Add: [-w] # Inhibit all warnings
+# ========== Excludes ==========
+---
+If:
+  PathExclude:
+    - .*build*/.*
+    - .*temp*/.*
+    - .*draft*/.*
+    - .*backup*/.*
+    - .*archive*/.*
+# ========== C Sources =========
+---
+If:
+  PathMatch: [.*\.c, .*\.h]
+CompileFlags:
+  Compiler: clang
+  Add:
+    - -xc
+    - -std=gnu17
+    # [Relative Paths] use relative paths based on the project root
+    # This configuration file (.clangd) is the reference point.
+    - -isystem./../dh/include
+    - -isystem./../dh/libs/BlocksRuntime/include
+    # [Diagnostic: Common]
+    - -Werror=all
+    - -Werror=extra
+    # [Diagnostic: Explicit Type Safety]
+    - -Werror=conversion # Implicit data loss
+    - -Werror=sign-conversion # Sign mix
+    # - -Werror=double-promotion # `float` implicitly promoted to `double`
+    - -Wfloat-conversion # Floating-point <-> Integer
+    # - -Wfloat-equal # `==` `!=` directly compare warning
+    # [Diagnostic: Pointer & Cast Safety]
+    - -Werror=cast-qual # `const` force removal casting
+    - -Werror=cast-align # Alignment violation casting
+    - -Wpointer-arith # `void*` arithmetic etc. dangerous operations
+    - -Wbad-function-cast # function return value wrong casting
+    - -Wnull-dereference # `null` dereference static detection
+    - -Wwrite-strings # String literal -> `const char*`
+    # [Diagnostic: Control Flow]
+    - -Wswitch-enum # enum switch completeness (default included warning)
+    - -Winfinite-recursion # infinite recursion detection
+    - -Wloop-analysis # loop logic error
+    # - -Wcomma # comma operator misuse
+    # [Diagnostic: Declaration & Definition]
+    - -Werror=strict-prototypes # function declaration with `void` must be explicit
+    - -Werror=missing-prototypes # global function header declaration must be explicit
+    - -Wmissing-variable-declarations # global variable declaration must be explicit
+    # - -Wshadow # variable shadowing detection
+    # - -Wundef # `#if` undefined macro usage forbidden
+    # [Diagnostic: Memory Safety]
+    - -Werror=div-by-zero # division by zero
+    # - -Wconditional-uninitialized # conditional uninitialized
+    # - -Wvla # variable length array forbidden (runtime-sized array)
+    # [Diagnostic: Format String Safety]
+    # - -Wformat=2 # strict format checking
+    # [Diagnostic: Thread Safety] (Clang only)
+    - -Wthread-safety # thread safety annotation analysis
+    # [Compatibility]
+    - -fgnu-keywords # Enable GCC Compatibility
+    - -fms-extensions # Windows Compatibility (Declspec, etc.)
+    - -funsigned-char # Prevent char sign issues in cross-platform
+    - -fblocks # Enable blocks support
+# ========== C++ Sources ==========
+---
+If:
+  PathMatch: [.*\.cc, .*\.cxx, .*\.cpp, .*\.hh, .*\.hxx, .*\.hpp]
+CompileFlags:
+  Compiler: clang++
+  Add:
+    - -xc++
+    - -std=gnu++20
+    # Relative Paths
+    - -isystem./../dh/include
+    - -isystem./../dh/libs/BlocksRuntime/include
+    # Diagnostic: Common
+    - -Werror=all
+    - -Werror=extra
+    # Diagnostic: Explicit Type Safety
+    - -Werror=conversion
+    - -Werror=sign-conversion
+    # - -Werror=double-promotion
+    - -Wfloat-conversion
+    # - -Wfloat-equal
+    # Diagnostic: Pointer & Cast Safety
+    - -Werror=cast-qual
+    - -Werror=cast-align
+    - -Wpointer-arith
+    # - -Wbad-function-cast # (C Only)
+    - -Wnull-dereference
+    - -Wwrite-strings
+    # Diagnostic: Control Flow
+    - -Wswitch-enum
+    - -Winfinite-recursion
+    - -Wloop-analysis
+    # - -Wcomma
+    # Diagnostic: Declaration & Definition
+    # - -Werror=strict-prototypes # (C Only)
+    - -Werror=missing-prototypes
+    - -Wmissing-variable-declarations
+    # - -Wshadow
+    # - -Wundef
+    # Diagnostic: Memory Safety
+    - -Werror=div-by-zero
+    # - -Wconditional-uninitialized
+    # - -Wvla # variable length array forbidden (runtime-sized array)
+    # Diagnostic: Format String Safety
+    # - -Wformat=2
+    # Diagnostic: Thread Safety (Clang only)
+    - -Wthread-safety
+    # Compatibility
+    - -fgnu-keywords
+    - -fms-extensions
+    - -funsigned-char
+    - -fblocks
+# ========== Headers ==========
+---
+If:
+  PathMatch: [.*\.h, .*\.hh, .*\.hxx, .*\.hpp]
+CompileFlags:
+  Add:
+    - -Wno-unused-const-variable
+    - -Wno-unused-variable
+    - -Wno-unused-function
+# ========== C Project ==========
+# ---
+# If:
+#   PathMatch: [.*\.c, .*\.h]
+# CompileFlags:
+#   Add:
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/src
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/include
+#     - -isystemc:/dasae/dev/dh-workspace/hello-world/lib/deps
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/src
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/include
+#     - -isystem/mnt/c/dasae/dev/dh-workspace/hello-world/lib/deps
+# ========== C++ Project ==========
+# ---
+# If:
+#   PathMatch: [.*\.cc, .*\.cxx, .*\.cpp, .*\.hh, .*\.hxx, .*\.hpp]
+# CompileFlags:
+#   Add:
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/src
+#     - -Ic:/dasae/dev/dh-workspace/hello-world/include
+#     - -isystemc:/dasae/dev/dh-workspace/hello-world/lib/deps
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/src
+#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/include
+#     - -isystem/mnt/c/dasae/dev/dh-workspace/hello-world/lib/deps

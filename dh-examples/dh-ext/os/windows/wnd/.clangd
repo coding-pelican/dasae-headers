@@ -1,8 +1,0 @@
-CompileFlags:
-  Add:
-    - -I./dh-ext/os/windows/wnd/src
-    - -I./dh-ext/os/windows/wnd/include
-    - -isystem./dh-ext/os/windows/wnd/lib/deps
-    - -I./dh-examples/dh-ext/os/windows/wnd/src
-    - -I./dh-examples/dh-ext/os/windows/wnd/include
-    - -isystem./dh-examples/dh-ext/os/windows/wnd/lib/deps

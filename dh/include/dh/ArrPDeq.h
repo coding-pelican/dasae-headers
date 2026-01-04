@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    ArrPDeq.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-12-09 (date of creation)
  * @updated 2025-12-09 (date of last update)
- * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  ArrPDeq
  *

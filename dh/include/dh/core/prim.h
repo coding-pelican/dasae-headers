@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    prim.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-28 (date of creation)
- * @updated 2025-01-09 (date of last update)
- * @version v0.1-alpha.3
+ * @updated 2026-01-03 (date of last update)
  * @ingroup dasae-headers(dh)/core/prim
  * @prefix  prim
  *
@@ -68,13 +67,13 @@ typedef struct Void {
 #define u16_n(_literal...) lit$((u16){ _literal })
 #define u32_n(_literal...) lit$((u32){ _literal })
 #define u64_n(_literal...) lit$((u64){ _literal })
-#define usize_n(_literal...) lit$((u128){ _literal })
+#define usize_n(_literal...) lit$((usize){ _literal })
 
 #define i8_n(_literal...) lit$((i8){ _literal })
 #define i16_n(_literal...) lit$((i16){ _literal })
 #define i32_n(_literal...) lit$((i32){ _literal })
 #define i64_n(_literal...) lit$((i64){ _literal })
-#define isize_n(_literal...) lit$((i128){ _literal })
+#define isize_n(_literal...) lit$((isize){ _literal })
 
 #define f32_n(_literal...) lit$((f32){ _literal })
 #define f64_n(_literal...) lit$((f64){ _literal })

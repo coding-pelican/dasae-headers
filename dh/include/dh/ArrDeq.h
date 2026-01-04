@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    ArrDeq.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-09 (date of creation)
- * @updated 2025-12-03 (date of last update)
- * @version v0.1
+ * @updated 2026-01-03 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  ArrDeq
  *
@@ -48,10 +47,11 @@ typedef struct ArrDeq {
 T_use$((ArrDeq)(O, E));
 T_use_E$($set(mem_Err)(ArrDeq));
 
-extern fn_((ArrDeq_empty(TypeInfo type))(ArrDeq));
-extern fn_((ArrDeq_fixed(u_S$raw buf))(ArrDeq));
-extern fn_((ArrDeq_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrDeq)) $must_check;
-extern fn_((ArrDeq_fini(ArrDeq* self, TypeInfo type, mem_Allocator gpa))(void));
+$extern fn_((ArrDeq_empty(TypeInfo type))(ArrDeq));
+$extern fn_((ArrDeq_fixed(u_S$raw buf))(ArrDeq));
+$attr($must_check)
+$extern fn_((ArrDeq_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrDeq));
+$extern fn_((ArrDeq_fini(ArrDeq* self, TypeInfo type, mem_Allocator gpa))(void));
 
 typedef struct ArrDeq_Grip {
     var_(buf, S$raw);
@@ -64,40 +64,47 @@ typedef struct ArrDeq_Grip {
 #define T_decl_ArrDeq_Grip$(_T...) __comp_gen__T_decl_ArrDeq_Grip$(_T)
 #define T_impl_ArrDeq_Grip$(_T...) __comp_gen__T_impl_ArrDeq_Grip$(_T)
 #define T_use_ArrDeq_Grip$(_T...) __comp_gen__T_use_ArrDeq_Grip$(_T)
-extern fn_((ArrDeq_grip(u_S$raw buf, usize* head, usize* len))(ArrDeq_Grip));
-extern fn_((ArrDeq_Grip_release(ArrDeq_Grip* self, TypeInfo type))(void));
+$extern fn_((ArrDeq_grip(u_S$raw buf, usize* head, usize* len))(ArrDeq_Grip));
+$extern fn_((ArrDeq_Grip_release(ArrDeq_Grip* self, TypeInfo type))(void));
 
-extern fn_((ArrDeq_len(ArrDeq self))(usize));
-extern fn_((ArrDeq_cap(ArrDeq self))(usize));
-extern fn_((ArrDeq_isEmpty(ArrDeq self))(bool));
-extern fn_((ArrDeq_isFull(ArrDeq self))(bool));
-extern fn_((ArrDeq_head(ArrDeq self))(usize));
-extern fn_((ArrDeq_tail(ArrDeq self))(usize));
-extern fn_((ArrDeq_at(ArrDeq self, TypeInfo type, usize idx))(u_P_const$raw));
-extern fn_((ArrDeq_atMut(ArrDeq self, TypeInfo type, usize idx))(u_P$raw));
-extern fn_((ArrDeq_front(ArrDeq self, TypeInfo type))(O$u_P_const$raw));
-extern fn_((ArrDeq_frontMut(ArrDeq self, TypeInfo type))(O$u_P$raw));
-extern fn_((ArrDeq_back(ArrDeq self, TypeInfo type))(O$u_P_const$raw));
-extern fn_((ArrDeq_backMut(ArrDeq self, TypeInfo type))(O$u_P$raw));
-extern fn_((ArrDeq_buf(ArrDeq self, TypeInfo type))(u_S_const$raw));
-extern fn_((ArrDeq_bufMut(ArrDeq self, TypeInfo type))(u_S$raw));
+$extern fn_((ArrDeq_len(ArrDeq self))(usize));
+$extern fn_((ArrDeq_cap(ArrDeq self))(usize));
+$extern fn_((ArrDeq_isEmpty(ArrDeq self))(bool));
+$extern fn_((ArrDeq_isFull(ArrDeq self))(bool));
+$extern fn_((ArrDeq_head(ArrDeq self))(usize));
+$extern fn_((ArrDeq_tail(ArrDeq self))(usize));
+$extern fn_((ArrDeq_at(ArrDeq self, TypeInfo type, usize idx))(u_P_const$raw));
+$extern fn_((ArrDeq_atMut(ArrDeq self, TypeInfo type, usize idx))(u_P$raw));
+$extern fn_((ArrDeq_front(ArrDeq self, TypeInfo type))(O$u_P_const$raw));
+$extern fn_((ArrDeq_frontMut(ArrDeq self, TypeInfo type))(O$u_P$raw));
+$extern fn_((ArrDeq_back(ArrDeq self, TypeInfo type))(O$u_P_const$raw));
+$extern fn_((ArrDeq_backMut(ArrDeq self, TypeInfo type))(O$u_P$raw));
+$extern fn_((ArrDeq_buf(ArrDeq self, TypeInfo type))(u_S_const$raw));
+$extern fn_((ArrDeq_bufMut(ArrDeq self, TypeInfo type))(u_S$raw));
 
-extern fn_((ArrDeq_ensureCap(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) $must_check;
-extern fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) $must_check;
-extern fn_((ArrDeq_ensureUnusedCap(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void)) $must_check;
-extern fn_((ArrDeq_clearRetainingCap(ArrDeq* self))(void));
-extern fn_((ArrDeq_clearAndFree(ArrDeq* self, TypeInfo type, mem_Allocator gpa))(void));
+$attr($must_check)
+$extern fn_((ArrDeq_ensureCap(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrDeq_ensureUnusedCap(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void));
+$extern fn_((ArrDeq_clearRetainingCap(ArrDeq* self))(void));
+$extern fn_((ArrDeq_clearAndFree(ArrDeq* self, TypeInfo type, mem_Allocator gpa))(void));
 
-extern fn_((ArrDeq_append(ArrDeq* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrDeq_appendFixed(ArrDeq* self, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrDeq_appendWithin(ArrDeq* self, u_V$raw item))(void));
+$attr($must_check)
+$extern fn_((ArrDeq_append(ArrDeq* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrDeq_appendFixed(ArrDeq* self, u_V$raw item))(mem_Err$void));
+$extern fn_((ArrDeq_appendWithin(ArrDeq* self, u_V$raw item))(void));
 
-extern fn_((ArrDeq_prepend(ArrDeq* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrDeq_prependFixed(ArrDeq* self, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrDeq_prependWithin(ArrDeq* self, u_V$raw item))(void));
+$attr($must_check)
+$extern fn_((ArrDeq_prepend(ArrDeq* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrDeq_prependFixed(ArrDeq* self, u_V$raw item))(mem_Err$void));
+$extern fn_((ArrDeq_prependWithin(ArrDeq* self, u_V$raw item))(void));
 
-extern fn_((ArrDeq_pop(ArrDeq* self, u_V$raw ret_mem))(O$u_V$raw));
-extern fn_((ArrDeq_shift(ArrDeq* self, u_V$raw ret_mem))(O$u_V$raw));
+$extern fn_((ArrDeq_pop(ArrDeq* self, u_V$raw ret_mem))(O$u_V$raw));
+$extern fn_((ArrDeq_shift(ArrDeq* self, u_V$raw ret_mem))(O$u_V$raw));
 
 /* ArrDeq_Iter Anonymous */
 #define ArrDeq_Iter$$(_T...) __comp_anon__ArrDeq_Iter$$(_T)
@@ -114,9 +121,9 @@ typedef struct ArrDeq_Iter {
     var_(idx, usize);
     debug_only(var_(type, TypeInfo);)
 } ArrDeq_Iter;
-extern fn_((ArrDeq_iter(const ArrDeq* self, TypeInfo type))(ArrDeq_Iter));
-extern fn_((ArrDeq_Iter_next(ArrDeq_Iter* self, TypeInfo type))(O$u_P_const$raw));
-extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
+$extern fn_((ArrDeq_iter(const ArrDeq* self, TypeInfo type))(ArrDeq_Iter));
+$extern fn_((ArrDeq_Iter_next(ArrDeq_Iter* self, TypeInfo type))(O$u_P_const$raw));
+$extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
 
 /*========== Macros and Definitions =========================================*/
 

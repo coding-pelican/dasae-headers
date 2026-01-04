@@ -18,13 +18,13 @@ typedef struct FltDecimal {
 /// Convert f32 to u32 bit pattern (no __builtin_bit_cast)
 $attr($inline_always)
 $static fn_((f32ToBits(f32 f))(u32)) {
-    return *mem_bytesAs$(u32*, mem_asBytes(&f));
+    return bitCast$((u32)(f));
 };
 
 /// Convert f64 to u64 bit pattern (no __builtin_bit_cast)
 $attr($inline_always)
 $static fn_((f64ToBits(f64 f))(u64)) {
-    return *mem_bytesAs$(u64*, mem_asBytes(&f));
+    return bitCast$((u64)(f));
 };
 
 /*========== Helper Functions - Decimal Operations =========================*/
@@ -259,7 +259,7 @@ $static fn_((bitsToDecimal64(u64 bits))(FltDecimal)) {
 /// Convert f32 to FltDecimal (convert to f64 first for simplicity)
 $static fn_((bitsToDecimal32(u32 bits))(FltDecimal)) {
     // Convert f32 to f64 for processing
-    let f32_val = *mem_bytesAs$(f32*, mem_asBytes(&bits));
+    let f32_val = bitCast$((f32)(bits));
     let f64_val = as$(f64)(f32_val);
     return bitsToDecimal64(f64ToBits(f64_val));
 };

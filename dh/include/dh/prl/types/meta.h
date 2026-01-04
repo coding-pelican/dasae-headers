@@ -248,7 +248,7 @@ typedef struct u_E$raw {
     )); \
 }))
 #if UNUSED_CODE
-#define __u_atS(__s, __idx, __stride, _s, _idx...) ({ \
+#define __u_atS(__s, __idx, __stride, _s, _idx...) $supress_cast_qual({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__idx, usize) = _idx; \
     claim_assert_fmt(__idx < u_lenS(__s), "Index out of bounds: idx(%zu) >= len(%zu)", __idx, u_lenS(__s)); \
@@ -259,7 +259,7 @@ typedef struct u_E$raw {
             .type = __s.type, \
         }))), \
         T_case$((P$raw)(lit$((u_P$raw){ \
-            .raw = $supress_cast_qual(as$(u8*)(__s.ptr)) + (__idx * __stride), \
+            .raw = as$(u8*)(__s.ptr) + (__idx * __stride), \
             .type = __s.type, \
         }))) \
     )); \
@@ -296,7 +296,7 @@ typedef struct u_E$raw {
             .type = __p.type, \
         }))), \
         T_case$((u_P$raw)(lit$((u_S$raw){ \
-            .ptr = $supress_cast_qual(as$(u8*)(__p.raw)), \
+            .ptr = as$(u8*)(__p.raw), \
             .len = __end, \
             .type = __p.type, \
         }))) \

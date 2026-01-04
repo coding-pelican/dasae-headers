@@ -1,0 +1,8 @@
+CompileFlags:
+  Add:
+    - -I./os/windows/wnd/src
+    - -I./os/windows/wnd/include
+    - -isystem./os/windows/wnd/lib/deps
+    - -I./dh-extras/os/windows/wnd/src
+    - -I./dh-extras/os/windows/wnd/include
+    - -isystem./dh-extras/os/windows/wnd/lib/deps

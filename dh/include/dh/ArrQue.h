@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    ArrQue.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-09 (date of creation)
- * @updated 2025-12-03 (date of last update)
- * @version v0.1
+ * @updated 2026-01-03 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  ArrQue
  *
@@ -48,10 +47,11 @@ typedef struct ArrQue {
 T_use$((ArrQue)(O, E));
 T_use_E$($set(mem_Err)(ArrQue));
 
-extern fn_((ArrQue_empty(TypeInfo type))(ArrQue));
-extern fn_((ArrQue_fixed(u_S$raw buf))(ArrQue));
-extern fn_((ArrQue_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrQue)) $must_check;
-extern fn_((ArrQue_fini(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void));
+$extern fn_((ArrQue_empty(TypeInfo type))(ArrQue));
+$extern fn_((ArrQue_fixed(u_S$raw buf))(ArrQue));
+$attr($must_check)
+$extern fn_((ArrQue_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrQue));
+$extern fn_((ArrQue_fini(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void));
 
 typedef struct ArrQue_Grip {
     var_(buf, S$raw);
@@ -64,35 +64,40 @@ typedef struct ArrQue_Grip {
 #define T_decl_ArrQue_Grip$(_T...) __comp_gen__T_decl_ArrQue_Grip$(_T)
 #define T_impl_ArrQue_Grip$(_T...) __comp_gen__T_impl_ArrQue_Grip$(_T)
 #define T_use_ArrQue_Grip$(_T...) __comp_gen__T_use_ArrQue_Grip$(_T)
-extern fn_((ArrQue_grip(u_S$raw buf, usize* head, usize* len))(ArrQue_Grip));
-extern fn_((ArrQue_Grip_release(ArrQue_Grip* self, TypeInfo type))(void));
+$extern fn_((ArrQue_grip(u_S$raw buf, usize* head, usize* len))(ArrQue_Grip));
+$extern fn_((ArrQue_Grip_release(ArrQue_Grip* self, TypeInfo type))(void));
 
-extern fn_((ArrQue_len(ArrQue self))(usize));
-extern fn_((ArrQue_cap(ArrQue self))(usize));
-extern fn_((ArrQue_isEmpty(ArrQue self))(bool));
-extern fn_((ArrQue_isFull(ArrQue self))(bool));
-extern fn_((ArrQue_head(ArrQue self))(usize));
-extern fn_((ArrQue_tail(ArrQue self))(usize));
-extern fn_((ArrQue_at(ArrQue self, TypeInfo type, usize idx))(u_P_const$raw));
-extern fn_((ArrQue_atMut(ArrQue self, TypeInfo type, usize idx))(u_P$raw));
-extern fn_((ArrQue_front(ArrQue self, TypeInfo type))(O$u_P_const$raw));
-extern fn_((ArrQue_frontMut(ArrQue self, TypeInfo type))(O$u_P$raw));
-extern fn_((ArrQue_back(ArrQue self, TypeInfo type))(O$u_P_const$raw));
-extern fn_((ArrQue_backMut(ArrQue self, TypeInfo type))(O$u_P$raw));
-extern fn_((ArrQue_buf(ArrQue self, TypeInfo type))(u_S_const$raw));
-extern fn_((ArrQue_bufMut(ArrQue self, TypeInfo type))(u_S$raw));
+$extern fn_((ArrQue_len(ArrQue self))(usize));
+$extern fn_((ArrQue_cap(ArrQue self))(usize));
+$extern fn_((ArrQue_isEmpty(ArrQue self))(bool));
+$extern fn_((ArrQue_isFull(ArrQue self))(bool));
+$extern fn_((ArrQue_head(ArrQue self))(usize));
+$extern fn_((ArrQue_tail(ArrQue self))(usize));
+$extern fn_((ArrQue_at(ArrQue self, TypeInfo type, usize idx))(u_P_const$raw));
+$extern fn_((ArrQue_atMut(ArrQue self, TypeInfo type, usize idx))(u_P$raw));
+$extern fn_((ArrQue_front(ArrQue self, TypeInfo type))(O$u_P_const$raw));
+$extern fn_((ArrQue_frontMut(ArrQue self, TypeInfo type))(O$u_P$raw));
+$extern fn_((ArrQue_back(ArrQue self, TypeInfo type))(O$u_P_const$raw));
+$extern fn_((ArrQue_backMut(ArrQue self, TypeInfo type))(O$u_P$raw));
+$extern fn_((ArrQue_buf(ArrQue self, TypeInfo type))(u_S_const$raw));
+$extern fn_((ArrQue_bufMut(ArrQue self, TypeInfo type))(u_S$raw));
 
-extern fn_((ArrQue_ensureCap(ArrQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) $must_check;
-extern fn_((ArrQue_ensureCapPrecise(ArrQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) $must_check;
-extern fn_((ArrQue_ensureUnusedCap(ArrQue* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void)) $must_check;
-extern fn_((ArrQue_clearRetainingCap(ArrQue* self))(void));
-extern fn_((ArrQue_clearAndFree(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void));
+$attr($must_check)
+$extern fn_((ArrQue_ensureCap(ArrQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrQue_ensureCapPrecise(ArrQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrQue_ensureUnusedCap(ArrQue* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void));
+$extern fn_((ArrQue_clearRetainingCap(ArrQue* self))(void));
+$extern fn_((ArrQue_clearAndFree(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void));
 
-extern fn_((ArrQue_enque(ArrQue* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrQue_enqueFixed(ArrQue* self, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrQue_enqueWithin(ArrQue* self, u_V$raw item))(void));
+$attr($must_check)
+$extern fn_((ArrQue_enque(ArrQue* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrQue_enqueFixed(ArrQue* self, u_V$raw item))(mem_Err$void));
+$extern fn_((ArrQue_enqueWithin(ArrQue* self, u_V$raw item))(void));
 
-extern fn_((ArrQue_deque(ArrQue* self, u_V$raw ret_mem))(O$u_V$raw));
+$extern fn_((ArrQue_deque(ArrQue* self, u_V$raw ret_mem))(O$u_V$raw));
 
 /* ArrQue_Iter Anonymous */
 #define ArrQue_Iter$$(_T...) __comp_anon__ArrQue_Iter$$(_T)
@@ -109,9 +114,9 @@ typedef struct ArrQue_Iter {
     var_(idx, usize);
     debug_only(var_(type, TypeInfo);)
 } ArrQue_Iter;
-extern fn_((ArrQue_iter(const ArrQue* self, TypeInfo type))(ArrQue_Iter));
-extern fn_((ArrQue_Iter_next(ArrQue_Iter* self, TypeInfo type))(O$u_P_const$raw));
-extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
+$extern fn_((ArrQue_iter(const ArrQue* self, TypeInfo type))(ArrQue_Iter));
+$extern fn_((ArrQue_Iter_next(ArrQue_Iter* self, TypeInfo type))(O$u_P_const$raw));
+$extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
 
 /*========== Macros and Definitions =========================================*/
 

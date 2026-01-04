@@ -24,8 +24,8 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 typedef struct io_Reader {
-    const P$raw ctx;
-    fn_(((*const read)(const P$raw ctx, S$u8 buf))(E$usize)) $must_check;
+    P$raw ctx;
+    fn_(((*read)(P$raw ctx, S$u8 buf))(E$usize)) $must_check;
 } io_Reader;
 
 $extern fn_((io_Reader_read(io_Reader self, S$u8 buf))(E$usize)) $must_check;

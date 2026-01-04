@@ -5,7 +5,7 @@
  * @file    SysTime.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2026-01-02 (date of last update)
+ * @updated 2026-01-03 (date of last update)
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_SysTime
  *
@@ -49,7 +49,7 @@ T_impl_O$(time_SysTime);
 /// Number of 100-nanosecond intervals from Windows epoch (1601) to Unix epoch (1970).
 #define time_SysTime_intervals_to_unix_epoch __comp_const__time_SysTime_intervals_to_unix_epoch
 /// The Unix epoch (January 1, 1970 00:00:00 UTC) as a SysTime.
-#define time_SysTime_UNIX_EPOCH __comp_const__time_SysTime_UNIX_EPOCH
+#define time_SysTime_unix_epoch __comp_const__time_SysTime_unix_epoch
 
 /* --- Operations --- */
 
@@ -124,15 +124,15 @@ $extern cmp_fn_neqCtx$((time_SysTime)(lhs, rhs, ctx));
 #define __comp_const__time_SysTime_intervals_to_unix_epoch \
     (lit_n$(u64)(116, 444, 736, 000, 000, 000ull))
 
-#if plat_is_windows && (arch_bits_is_32bit || arch_bits_is_64bit)
-#define __comp_const__time_SysTime_UNIX_EPOCH lit$((time_SysTime){ \
+#if plat_is_windows
+#define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
     .impl = { \
         .dwLowDateTime = as$(DWORD)(time_SysTime_intervals_to_unix_epoch & 0xFFFFFFFFull), \
         .dwHighDateTime = as$(DWORD)(time_SysTime_intervals_to_unix_epoch >> 32ull), \
     }, \
 })
-#else /* plat_based_unix && (plat_is_linux || plat_is_darwin) */
-#define __comp_const__time_SysTime_UNIX_EPOCH lit$((time_SysTime){ \
+#else /* plat_based_unix */
+#define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
     .impl = { .tv_sec = 0, .tv_nsec = 0 }, \
 })
 #endif

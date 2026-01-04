@@ -26,7 +26,7 @@ extern "C" {
 
 #include "dage/common.h"
 #include "dage/KeyCode.h"
-#include "dage/MouseButton.h"
+#include "dage/MouseBtn.h"
 #include "dage/Event.h"
 
 /*========== Macros and Declarations ========================================*/
@@ -34,27 +34,27 @@ extern "C" {
 /*========== Key/Button State Flags ==========*/
 
 /// @brief State flags for keys/buttons
-typedef enum_(dage_ButtonState $bits(8)) {
-    dage_ButtonState_none = 0,
-    dage_ButtonState_pressed = (1 << 0), /* Just pressed this frame */
-    dage_ButtonState_held = (1 << 1), /* Currently held down */
-    dage_ButtonState_released = (1 << 2), /* Just released this frame */
-} dage_ButtonState;
+typedef enum_(dage_KeyBtnState $bits(8)) {
+    dage_KeyBtnState_none = 0,
+    dage_KeyBtnState_pressed = (1 << 0), /* Just pressed this frame */
+    dage_KeyBtnState_held = (1 << 1), /* Currently held down */
+    dage_KeyBtnState_released = (1 << 2), /* Just released this frame */
+} dage_KeyBtnState;
 
 /*========== Keyboard State ==========*/
 
 /// @brief Keyboard state snapshot
 typedef struct dage_KeyboardState {
-    A$$(dage_KeyCode_count, dage_ButtonState) keys;
+    A$$(dage_KeyCode_count, dage_KeyBtnState) keys;
 } dage_KeyboardState;
 
 /*========== Mouse State ==========*/
 
 /// @brief Mouse state snapshot
 typedef struct dage_MouseState {
-    A$$(dage_MouseButton_count, dage_ButtonState) buttons;
-    m_V2i32 position; /* Current position (Window-space) */
-    m_V2i32 position_prev; /* Previous frame position */
+    A$$(dage_MouseBtn_count, dage_KeyBtnState) btns;
+    m_V2i32 pos; /* Current position (Window-space) */
+    m_V2i32 pos_prev; /* Previous frame position */
     m_V2f32 scroll; /* Scroll delta this frame */
     bool inside_window; /* Mouse is inside window bounds */
 } dage_MouseState;
@@ -65,7 +65,7 @@ typedef struct dage_MouseState {
 typedef struct dage_InputState {
     dage_KeyboardState keyboard;
     dage_MouseState mouse;
-    dage_KeyMods current_mods; /* Current modifier state */
+    dage_KeyMods curr_mods; /* Current modifier state */
 } dage_InputState;
 
 /*========== Initialization ==========*/
@@ -99,19 +99,19 @@ $attr($inline_always)
 $static fn_((dage_InputState_isKeyReleased(const dage_InputState* self, dage_KeyCode key))(bool));
 /// @brief Get raw key state flags
 $attr($inline_always)
-$static fn_((dage_InputState_getKeyState(const dage_InputState* self, dage_KeyCode key))(dage_ButtonState));
+$static fn_((dage_InputState_getKeyState(const dage_InputState* self, dage_KeyCode key))(dage_KeyBtnState));
 
 /*========== Mouse Button Queries ==========*/
 
 /// @brief Check if mouse button was just pressed
 $attr($inline_always)
-$static fn_((dage_InputState_isMousePressed(const dage_InputState* self, dage_MouseButton button))(bool));
+$static fn_((dage_InputState_isMousePressed(const dage_InputState* self, dage_MouseBtn button))(bool));
 /// @brief Check if mouse button is held
 $attr($inline_always)
-$static fn_((dage_InputState_isMouseHeld(const dage_InputState* self, dage_MouseButton button))(bool));
+$static fn_((dage_InputState_isMouseHeld(const dage_InputState* self, dage_MouseBtn button))(bool));
 /// @brief Check if mouse button was just released
 $attr($inline_always)
-$static fn_((dage_InputState_isMouseReleased(const dage_InputState* self, dage_MouseButton button))(bool));
+$static fn_((dage_InputState_isMouseReleased(const dage_InputState* self, dage_MouseBtn button))(bool));
 
 /*========== Mouse Position/Movement Queries ==========*/
 
@@ -148,53 +148,53 @@ $static fn_((dage_InputState_getMods(const dage_InputState* self))(dage_KeyMods)
 fn_((dage_InputState_isKeyPressed(const dage_InputState* self, dage_KeyCode key))(bool)) {
     debug_assert_nonnull(self);
     debug_assert(key < dage_KeyCode_count);
-    return (*A_at((self->keyboard.keys)[key]) & dage_ButtonState_pressed) != 0;
+    return (*A_at((self->keyboard.keys)[key]) & dage_KeyBtnState_pressed) != 0;
 };
 
 fn_((dage_InputState_isKeyHeld(const dage_InputState* self, dage_KeyCode key))(bool)) {
     debug_assert_nonnull(self);
     debug_assert(key < dage_KeyCode_count);
-    return (*A_at((self->keyboard.keys)[key]) & dage_ButtonState_held) != 0;
+    return (*A_at((self->keyboard.keys)[key]) & dage_KeyBtnState_held) != 0;
 };
 
 fn_((dage_InputState_isKeyReleased(const dage_InputState* self, dage_KeyCode key))(bool)) {
     debug_assert_nonnull(self);
     debug_assert(key < dage_KeyCode_count);
-    return (*A_at((self->keyboard.keys)[key]) & dage_ButtonState_released) != 0;
+    return (*A_at((self->keyboard.keys)[key]) & dage_KeyBtnState_released) != 0;
 };
 
-fn_((dage_InputState_getKeyState(const dage_InputState* self, dage_KeyCode key))(dage_ButtonState)) {
+fn_((dage_InputState_getKeyState(const dage_InputState* self, dage_KeyCode key))(dage_KeyBtnState)) {
     debug_assert_nonnull(self);
     debug_assert(key < dage_KeyCode_count);
     return *A_at((self->keyboard.keys)[key]);
 };
 
-fn_((dage_InputState_isMousePressed(const dage_InputState* self, dage_MouseButton button))(bool)) {
+fn_((dage_InputState_isMousePressed(const dage_InputState* self, dage_MouseBtn button))(bool)) {
     debug_assert_nonnull(self);
-    debug_assert(button < dage_MouseButton_count);
-    return (*A_at((self->mouse.buttons)[button]) & dage_ButtonState_pressed) != 0;
+    debug_assert(button < dage_MouseBtn_count);
+    return (*A_at((self->mouse.btns)[button]) & dage_KeyBtnState_pressed) != 0;
 };
 
-fn_((dage_InputState_isMouseHeld(const dage_InputState* self, dage_MouseButton button))(bool)) {
+fn_((dage_InputState_isMouseHeld(const dage_InputState* self, dage_MouseBtn button))(bool)) {
     debug_assert_nonnull(self);
-    debug_assert(button < dage_MouseButton_count);
-    return (*A_at((self->mouse.buttons)[button]) & dage_ButtonState_held) != 0;
+    debug_assert(button < dage_MouseBtn_count);
+    return (*A_at((self->mouse.btns)[button]) & dage_KeyBtnState_held) != 0;
 };
 
-fn_((dage_InputState_isMouseReleased(const dage_InputState* self, dage_MouseButton button))(bool)) {
+fn_((dage_InputState_isMouseReleased(const dage_InputState* self, dage_MouseBtn button))(bool)) {
     debug_assert_nonnull(self);
-    debug_assert(button < dage_MouseButton_count);
-    return (*A_at((self->mouse.buttons)[button]) & dage_ButtonState_released) != 0;
+    debug_assert(button < dage_MouseBtn_count);
+    return (*A_at((self->mouse.btns)[button]) & dage_KeyBtnState_released) != 0;
 };
 
 fn_((dage_InputState_getMousePos(const dage_InputState* self))(m_V2i32)) {
     debug_assert_nonnull(self);
-    return self->mouse.position;
+    return self->mouse.pos;
 };
 
 fn_((dage_InputState_getMouseDelta(const dage_InputState* self))(m_V2i32)) {
     debug_assert_nonnull(self);
-    return m_V2i32_sub(self->mouse.position, self->mouse.position_prev);
+    return m_V2i32_sub(self->mouse.pos, self->mouse.pos_prev);
 };
 
 fn_((dage_InputState_getScrollDelta(const dage_InputState* self))(m_V2f32)) {
@@ -209,22 +209,22 @@ fn_((dage_InputState_isMouseInWindow(const dage_InputState* self))(bool)) {
 
 fn_((dage_InputState_isShiftHeld(const dage_InputState* self))(bool)) {
     debug_assert_nonnull(self);
-    return self->current_mods.shift;
+    return self->curr_mods.shift;
 };
 
 fn_((dage_InputState_isCtrlHeld(const dage_InputState* self))(bool)) {
     debug_assert_nonnull(self);
-    return self->current_mods.ctrl;
+    return self->curr_mods.ctrl;
 };
 
 fn_((dage_InputState_isAltHeld(const dage_InputState* self))(bool)) {
     debug_assert_nonnull(self);
-    return self->current_mods.alt;
+    return self->curr_mods.alt;
 };
 
 fn_((dage_InputState_getMods(const dage_InputState* self))(dage_KeyMods)) {
     debug_assert_nonnull(self);
-    return self->current_mods;
+    return self->curr_mods;
 };
 
 #if defined(__cplusplus)

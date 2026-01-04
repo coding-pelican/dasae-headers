@@ -17,7 +17,7 @@ extern "C" {
 
 #include "dage/common.h"
 #include "dage/KeyCode.h"
-#include "dage/MouseButton.h"
+#include "dage/MouseBtn.h"
 #include <dh/ArrDeq.h>
 
 /*========== Macros and Definitions =========================================*/
@@ -44,11 +44,11 @@ typedef struct dage_Event_Key {
 } dage_Event_Key;
 
 /// @brief Mouse button event payload
-typedef struct dage_Event_MouseButton {
-    dage_MouseButton button;
+typedef struct dage_Event_MouseBtn {
+    dage_MouseBtn btn;
     dage_KeyMods mods;
     m_V2i32 pos; /* Window-space coordinates */
-} dage_Event_MouseButton;
+} dage_Event_MouseBtn;
 
 /// @brief Mouse movement event payload
 typedef struct dage_Event_MouseMove {
@@ -95,8 +95,8 @@ typedef variant_((dage_Event $bits(8))(
     (dage_Event_key_up, dage_Event_Key), /* Key released */
     (dage_Event_key_repeat, dage_Event_Key), /* Key repeat (held) */
 
-    (dage_Event_mouse_down, dage_Event_MouseButton), /* Mouse button pressed */
-    (dage_Event_mouse_up, dage_Event_MouseButton), /* Mouse button released */
+    (dage_Event_mouse_down, dage_Event_MouseBtn), /* Mouse button pressed */
+    (dage_Event_mouse_up, dage_Event_MouseBtn), /* Mouse button released */
     (dage_Event_mouse_move, dage_Event_MouseMove), /* Mouse moved */
     (dage_Event_mouse_enter, Void), /* Mouse entered window */
     (dage_Event_mouse_leave, Void), /* Mouse left window */

@@ -25,8 +25,8 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 typedef struct io_Writer {
-    const P$raw ctx;
-    fn_(((*const write)(const P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
+    P$raw ctx;
+    fn_(((*write)(P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
 } io_Writer;
 
 $extern fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(E$usize)) $must_check;
