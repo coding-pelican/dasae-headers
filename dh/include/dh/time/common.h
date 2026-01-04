@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-16 (date of creation)
- * @updated 2025-12-10 (date of last update)
- * @version v0.1
+ * @updated 2026-01-03 (date of last update)
  * @ingroup dasae-headers(dh)/time
  * @prefix  time
  *

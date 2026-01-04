@@ -129,9 +129,9 @@ $extern fn_((R__at(R, usize))(usize));
 #endif
 
 $attr($inline_always)
-$static fn_((R_Bound_begin(R_Bound bound, usize point))(usize)) { return point + bound; /* bound == R_Bound_Tag_incl ? point : point + 1 */ }
+$static fn_((R_Bound_begin(R_Bound bound, usize point))(usize)) { return point + as$(usize)(bound); /* bound == R_Bound_Tag_incl ? point : point + 1 */ }
 $attr($inline_always)
-$static fn_((R_Bound_end(R_Bound bound, usize point))(usize)) { return point + (1 - bound); /* bound == R_Bound_Tag_excl ? point : point + 1 */ }
+$static fn_((R_Bound_end(R_Bound bound, usize point))(usize)) { return point + (1 - as$(usize)(bound)); /* bound == R_Bound_Tag_excl ? point : point + 1 */ }
 
 $attr($inline_always)
 $static fn_((R_from(usize begin, usize end))(R)) {

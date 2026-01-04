@@ -60,12 +60,12 @@ typedef union Reader {
     io_Reader base;
     struct {
         fs_File ctx;
-        fn_(((*const read)(const P$raw ctx, S$u8 buf))(E$usize)) $must_check;
+        fn_(((*read)(P$raw ctx, S$u8 buf))(E$usize)) $must_check;
     };
 } Reader;
 
-$static fn_((Reader_VT_read(const P$raw ctx, S$u8 buf))(E$usize)) {
-    let self = ptrCast$((const FieldType$(Reader, ctx)*)(&ctx));
+$static fn_((Reader_VT_read(P$raw ctx, S$u8 buf))(E$usize)) {
+    let self = ptrCast$((FieldType$(Reader, ctx)*)(&ctx));
     return pp_if_(plat_is_windows)(
         pp_then_(windows_ReadFile),
         pp_else_(/* plat_is_posix */ posix_read))(self->handle, buf);
@@ -83,12 +83,12 @@ typedef union Writer {
     io_Writer base;
     struct {
         fs_File ctx;
-        fn_(((*const write)(const P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
+        fn_(((*write)(P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
     };
 } Writer;
 
-$static fn_((Writer_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize)) {
-    let self = ptrCast$((const FieldType$(Writer, ctx)*)(&ctx));
+$static fn_((Writer_VT_write(P$raw ctx, S_const$u8 bytes))(E$usize)) {
+    let self = ptrCast$((FieldType$(Writer, ctx)*)(&ctx));
     return pp_if_(plat_is_windows)(
         pp_then_(windows_WriteFile),
         pp_else_(/* plat_is_posix */ posix_write))(self->handle, bytes);

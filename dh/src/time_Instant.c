@@ -43,7 +43,7 @@ pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
     $static fn_((time_Instant__windows_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord));
 ));
-pp_if_(pp_or(plat_is_linux, plat_is_darwin))(pp_then_(
+pp_if_(plat_based_unix)(pp_then_(
     $attr($inline_always)
     $static fn_((time_Instant__unix_freq(void))(time_Instant));
     $attr($inline_always)
@@ -66,55 +66,55 @@ pp_if_(pp_or(plat_is_linux, plat_is_darwin))(pp_then_(
 
 $static let time_Instant__freq = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_freq),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Instant__unix_freq),
         pp_else_(time_Instant__unsupported_freq)
     )));
 $static let time_Instant__freqInv = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_freqInv),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Instant__unix_freqInv),
         pp_else_(time_Instant__unsupported_freqInv)
     )));
 $static let time_Instant__offset = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_offset),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Instant__unix_offset),
         pp_else_(time_Instant__unsupported_offset)
     )));
 $static let time_Instant__now = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_now),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Instant__unix_now),
         pp_else_(time_Instant__unsupported_now)
     )));
 $static let time_Instant__ticks = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_ticks),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Instant__unix_ticks),
         pp_else_(time_Instant__unsupported_ticks)
     )));
 $static let time_Instant__durationSinceChkd = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_durationSinceChkd),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Instant__unix_durationSinceChkd),
         pp_else_(time_Instant__unsupported_durationSinceChkd)
     )));
 $static let time_Instant__addChkdDuration = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_addChkdDuration),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Instant__unix_addChkdDuration),
         pp_else_(time_Instant__unsupported_addChkdDuration)
     )));
 $static let time_Instant__subChkdDuration = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_subChkdDuration),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Instant__unix_subChkdDuration),
         pp_else_(time_Instant__unsupported_subChkdDuration)
     )));
 $static let time_Instant__ord = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_ord),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Instant__unix_ord),
         pp_else_(time_Instant__unsupported_ord)
     )));
@@ -332,9 +332,9 @@ fn_((time_Instant__windows_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord)) {
 };
 #endif /* plat_is_windows */
 
-/* --- Unix (Linux, Darwin) --- */
+/* --- Unix Based --- */
 
-#if plat_is_linux || plat_is_darwin
+#if plat_based_unix
 $static var_(time_InstantPlatform, s_unix_perf_freq) = cleared();
 $static var_(f64, s_unix_perf_freq_inv) = f64_nan;
 $static var_(time_InstantPlatform, s_unix_offset_value) = cleared();
@@ -431,4 +431,4 @@ fn_((time_Instant__unix_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord)) {
     if (lhs.impl.tv_nsec > rhs.impl.tv_nsec) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
 };
-#endif /* plat_is_linux || plat_is_darwin */
+#endif /* plat_based_unix */

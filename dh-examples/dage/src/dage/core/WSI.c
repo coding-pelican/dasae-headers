@@ -1,6 +1,6 @@
 #include "dage/core/WSI.h"
 #include "dage/KeyCode.h"
-#include "dage/MouseButton.h"
+#include "dage/MouseBtn.h"
 
 /*========== Internal Forward Declarations ==================================*/
 
@@ -488,8 +488,8 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         return 0;
     }
     case WM_LBUTTONDOWN: {
-        let btn = (dage_Event_MouseButton){
-            .button = dage_MouseButton_left,
+        let btn = (dage_Event_MouseBtn){
+            .btn = dage_MouseBtn_left,
             .mods = WSI__windows_getKeyMods(),
             .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
@@ -498,8 +498,8 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         return 0;
     }
     case WM_LBUTTONUP: {
-        let btn = (dage_Event_MouseButton){
-            .button = dage_MouseButton_left,
+        let btn = (dage_Event_MouseBtn){
+            .btn = dage_MouseBtn_left,
             .mods = WSI__windows_getKeyMods(),
             .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
@@ -508,8 +508,8 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         return 0;
     }
     case WM_RBUTTONDOWN: {
-        let btn = (dage_Event_MouseButton){
-            .button = dage_MouseButton_right,
+        let btn = (dage_Event_MouseBtn){
+            .btn = dage_MouseBtn_right,
             .mods = WSI__windows_getKeyMods(),
             .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
@@ -517,8 +517,8 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         return 0;
     }
     case WM_RBUTTONUP: {
-        let btn = (dage_Event_MouseButton){
-            .button = dage_MouseButton_right,
+        let btn = (dage_Event_MouseBtn){
+            .btn = dage_MouseBtn_right,
             .mods = WSI__windows_getKeyMods(),
             .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
@@ -526,8 +526,8 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         return 0;
     }
     case WM_MBUTTONDOWN: {
-        let btn = (dage_Event_MouseButton){
-            .button = dage_MouseButton_middle,
+        let btn = (dage_Event_MouseBtn){
+            .btn = dage_MouseBtn_middle,
             .mods = WSI__windows_getKeyMods(),
             .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
@@ -535,8 +535,8 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
         return 0;
     }
     case WM_MBUTTONUP: {
-        let btn = (dage_Event_MouseButton){
-            .button = dage_MouseButton_middle,
+        let btn = (dage_Event_MouseBtn){
+            .btn = dage_MouseBtn_middle,
             .mods = WSI__windows_getKeyMods(),
             .pos = m_V2i32_of(bitCast$((i16)(LOWORD(lParam))), bitCast$((i16)(HIWORD(lParam)))),
         };
@@ -1039,10 +1039,10 @@ fn_((WSI__x11_pumpEvents(P$dage_core_WSI self, S$dage_RawEvent out))(S$dage_RawE
                     .delta = { { { 0.0f, -1.0f } } },
                 });
             } else {
-                dage_MouseButton btn = dage_MouseButton_left;
-                if (xev.xbutton.button == Button2) btn = dage_MouseButton_middle;
-                if (xev.xbutton.button == Button3) btn = dage_MouseButton_right;
-                event = union_of$((dage_Event)(dage_Event_mouse_down))((dage_Event_MouseButton){
+                dage_MouseBtn btn = dage_MouseBtn_left;
+                if (xev.xbutton.button == Button2) btn = dage_MouseBtn_middle;
+                if (xev.xbutton.button == Button3) btn = dage_MouseBtn_right;
+                event = union_of$((dage_Event)(dage_Event_mouse_down))((dage_Event_MouseBtn){
                     .button = btn,
                     .pos = { { { xev.xbutton.x, xev.xbutton.y } } },
                 });
@@ -1053,10 +1053,10 @@ fn_((WSI__x11_pumpEvents(P$dage_core_WSI self, S$dage_RawEvent out))(S$dage_RawE
             if (xev.xbutton.button == Button4 || xev.xbutton.button == Button5) {
                 has_event = false;
             } else {
-                dage_MouseButton btn = dage_MouseButton_left;
-                if (xev.xbutton.button == Button2) btn = dage_MouseButton_middle;
-                if (xev.xbutton.button == Button3) btn = dage_MouseButton_right;
-                event = union_of$((dage_Event)(dage_Event_mouse_up))((dage_Event_MouseButton){
+                dage_MouseBtn btn = dage_MouseBtn_left;
+                if (xev.xbutton.button == Button2) btn = dage_MouseBtn_middle;
+                if (xev.xbutton.button == Button3) btn = dage_MouseBtn_right;
+                event = union_of$((dage_Event)(dage_Event_mouse_up))((dage_Event_MouseBtn){
                     .button = btn,
                     .pos = { { { xev.xbutton.x, xev.xbutton.y } } },
                 });

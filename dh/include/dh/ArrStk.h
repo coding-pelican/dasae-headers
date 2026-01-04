@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    ArrStk.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-09 (date of creation)
- * @updated 2025-12-03 (date of last update)
- * @version v0.1
+ * @updated 2026-01-03 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  ArrStk
  *
@@ -49,11 +48,13 @@ T_use_E$($set(mem_Err)(ArrStk));
 
 /*========== Function Prototypes ============================================*/
 
-extern fn_((ArrStk_empty(TypeInfo type))(ArrStk));
-extern fn_((ArrStk_fixed(u_S$raw buf))(ArrStk));
-extern fn_((ArrStk_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrStk)) $must_check;
-extern fn_((ArrStk_fini(ArrStk* self, TypeInfo type, mem_Allocator gpa))(void));
-extern fn_((ArrStk_clone(ArrStk self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrStk)) $must_check;
+$extern fn_((ArrStk_empty(TypeInfo type))(ArrStk));
+$extern fn_((ArrStk_fixed(u_S$raw buf))(ArrStk));
+$attr($must_check)
+$extern fn_((ArrStk_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrStk));
+$extern fn_((ArrStk_fini(ArrStk* self, TypeInfo type, mem_Allocator gpa))(void));
+$attr($must_check)
+$extern fn_((ArrStk_clone(ArrStk self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrStk));
 
 typedef struct ArrStk_Grip {
     var_(buf, S$raw);
@@ -65,52 +66,66 @@ typedef struct ArrStk_Grip {
 #define T_decl_ArrStk_Grip$(_T...) __comp_gen__T_use_ArrStk_Grip$(_T)
 #define T_impl_ArrStk_Grip$(_T...) __comp_gen__T_impl_ArrStk_Grip$(_T)
 #define T_use_ArrStk_Grip$(_T...) __comp_gen__T_use_ArrStk_Grip$(_T)
-extern fn_((ArrStk_grip(u_S$raw buf, usize* len))(ArrStk_Grip));
-extern fn_((ArrStk_Grip_release(ArrStk_Grip* self, TypeInfo type))(void));
+$extern fn_((ArrStk_grip(u_S$raw buf, usize* len))(ArrStk_Grip));
+$extern fn_((ArrStk_Grip_release(ArrStk_Grip* self, TypeInfo type))(void));
 
-extern fn_((ArrStk_len(ArrStk self))(usize));
-extern fn_((ArrStk_cap(ArrStk self))(usize));
-extern fn_((ArrStk_isEmpty(ArrStk self))(bool));
-extern fn_((ArrStk_isFull(ArrStk self))(bool));
-extern fn_((ArrStk_at(ArrStk self, TypeInfo type, usize idx))(u_P_const$raw));
-extern fn_((ArrStk_atMut(ArrStk self, TypeInfo type, usize idx))(u_P$raw));
-extern fn_((ArrStk_top(ArrStk self, TypeInfo type))(O$u_P_const$raw));
-extern fn_((ArrStk_topMut(ArrStk self, TypeInfo type))(O$u_P$raw));
-extern fn_((ArrStk_items(ArrStk self, TypeInfo type))(u_S_const$raw));
-extern fn_((ArrStk_itemsMut(ArrStk self, TypeInfo type))(u_S$raw));
-extern fn_((ArrStk_itemsCapped(ArrStk self, TypeInfo type))(u_S_const$raw));
-extern fn_((ArrStk_itemsCappedMut(ArrStk self, TypeInfo type))(u_S$raw));
-extern fn_((ArrStk_itemsUnused(ArrStk self, TypeInfo type))(u_S_const$raw));
-extern fn_((ArrStk_itemsUnusedMut(ArrStk self, TypeInfo type))(u_S$raw));
+$extern fn_((ArrStk_len(ArrStk self))(usize));
+$extern fn_((ArrStk_cap(ArrStk self))(usize));
+$extern fn_((ArrStk_isEmpty(ArrStk self))(bool));
+$extern fn_((ArrStk_isFull(ArrStk self))(bool));
+$extern fn_((ArrStk_at(ArrStk self, TypeInfo type, usize idx))(u_P_const$raw));
+$extern fn_((ArrStk_atMut(ArrStk self, TypeInfo type, usize idx))(u_P$raw));
+$extern fn_((ArrStk_top(ArrStk self, TypeInfo type))(O$u_P_const$raw));
+$extern fn_((ArrStk_topMut(ArrStk self, TypeInfo type))(O$u_P$raw));
+$extern fn_((ArrStk_items(ArrStk self, TypeInfo type))(u_S_const$raw));
+$extern fn_((ArrStk_itemsMut(ArrStk self, TypeInfo type))(u_S$raw));
+$extern fn_((ArrStk_itemsCapped(ArrStk self, TypeInfo type))(u_S_const$raw));
+$extern fn_((ArrStk_itemsCappedMut(ArrStk self, TypeInfo type))(u_S$raw));
+$extern fn_((ArrStk_itemsUnused(ArrStk self, TypeInfo type))(u_S_const$raw));
+$extern fn_((ArrStk_itemsUnusedMut(ArrStk self, TypeInfo type))(u_S$raw));
 
-extern fn_((ArrStk_ensureCap(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_ensureCapPrecise(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_ensureUnusedCap(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_expandToCap(ArrStk* self))(void));
-extern fn_((ArrStk_resize(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_len))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_shrinkRetainingCap(ArrStk* self, usize new_len))(void));
-extern fn_((ArrStk_shrinkAndFree(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_len))(void));
-extern fn_((ArrStk_clearRetainingCap(ArrStk* self))(void));
-extern fn_((ArrStk_clearAndFree(ArrStk* self, TypeInfo type, mem_Allocator gpa))(void));
+$attr($must_check)
+$extern fn_((ArrStk_ensureCap(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrStk_ensureCapPrecise(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrStk_ensureUnusedCap(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void));
+$extern fn_((ArrStk_expandToCap(ArrStk* self))(void));
+$attr($must_check)
+$extern fn_((ArrStk_resize(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_len))(mem_Err$void));
+$extern fn_((ArrStk_shrinkRetainingCap(ArrStk* self, usize new_len))(void));
+$extern fn_((ArrStk_shrinkAndFree(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_len))(void));
+$extern fn_((ArrStk_clearRetainingCap(ArrStk* self))(void));
+$extern fn_((ArrStk_clearAndFree(ArrStk* self, TypeInfo type, mem_Allocator gpa))(void));
 
-extern fn_((ArrStk_add(ArrStk* self, TypeInfo type, mem_Allocator gpa))(mem_Err$u_P$raw)) $must_check;
-extern fn_((ArrStk_addFixed(ArrStk* self, TypeInfo type))(mem_Err$u_P$raw)) $must_check;
-extern fn_((ArrStk_addWithin(ArrStk* self, TypeInfo type))(u_P$raw));
-extern fn_((ArrStk_addN(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize n))(mem_Err$u_S$raw)) $must_check;
-extern fn_((ArrStk_addFixedN(ArrStk* self, TypeInfo type, usize n))(mem_Err$u_S$raw)) $must_check;
-extern fn_((ArrStk_addWithinN(ArrStk* self, TypeInfo type, usize n))(u_S$raw));
+$attr($must_check)
+$extern fn_((ArrStk_add(ArrStk* self, TypeInfo type, mem_Allocator gpa))(mem_Err$u_P$raw));
+$attr($must_check)
+$extern fn_((ArrStk_addFixed(ArrStk* self, TypeInfo type))(mem_Err$u_P$raw));
+$extern fn_((ArrStk_addWithin(ArrStk* self, TypeInfo type))(u_P$raw));
+$attr($must_check)
+$extern fn_((ArrStk_addN(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize n))(mem_Err$u_S$raw));
+$attr($must_check)
+$extern fn_((ArrStk_addNFixed(ArrStk* self, TypeInfo type, usize n))(mem_Err$u_S$raw));
+$extern fn_((ArrStk_addNWithin(ArrStk* self, TypeInfo type, usize n))(u_S$raw));
 
-extern fn_((ArrStk_push(ArrStk* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_pushFixed(ArrStk* self, u_V$raw item))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_pushWithin(ArrStk* self, u_V$raw item))(void));
-extern fn_((ArrStk_pushS(ArrStk* self, mem_Allocator gpa, u_S_const$raw items))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_pushFixedS(ArrStk* self, u_S_const$raw items))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_pushWithinS(ArrStk* self, u_S_const$raw items))(void));
-extern fn_((ArrStk_pushN(ArrStk* self, mem_Allocator gpa, u_V$raw item, usize n))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_pushFixedN(ArrStk* self, u_V$raw item, usize n))(mem_Err$void)) $must_check;
-extern fn_((ArrStk_pushWithinN(ArrStk* self, u_V$raw item, usize n))(void));
+$attr($must_check)
+$extern fn_((ArrStk_push(ArrStk* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrStk_pushFixed(ArrStk* self, u_V$raw item))(mem_Err$void));
+$extern fn_((ArrStk_pushWithin(ArrStk* self, u_V$raw item))(void));
+$attr($must_check)
+$extern fn_((ArrStk_pushS(ArrStk* self, mem_Allocator gpa, u_S_const$raw items))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrStk_pushSFixed(ArrStk* self, u_S_const$raw items))(mem_Err$void));
+$extern fn_((ArrStk_pushSWithin(ArrStk* self, u_S_const$raw items))(void));
+$attr($must_check)
+$extern fn_((ArrStk_pushN(ArrStk* self, mem_Allocator gpa, u_V$raw item, usize n))(mem_Err$void));
+$attr($must_check)
+$extern fn_((ArrStk_pushNFixed(ArrStk* self, u_V$raw item, usize n))(mem_Err$void));
+$extern fn_((ArrStk_pushNWithin(ArrStk* self, u_V$raw item, usize n))(void));
 
-extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
+$extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -349,15 +364,15 @@ extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
     $static fn_((tpl_id(ArrStk_addN, _T)(P$$(ArrStk$(_T)) self, mem_Allocator gpa, usize n))(E$($set(mem_Err)(S$(_T)))) $scope) { \
         return_(u_castE$((ReturnType)(ArrStk_addN(self->as_raw, typeInfo$(_T), gpa, n)))); \
     } $unscoped_(fn)
-#define T_use_ArrStk_addFixedN$(_T...) \
+#define T_use_ArrStk_addNFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_addFixedN, _T)(P$$(ArrStk$(_T)) self, usize n))(E$($set(mem_Err)(S$(_T)))) $scope) { \
-        return_(u_castE$((ReturnType)(ArrStk_addFixedN(self->as_raw, typeInfo$(_T), n)))); \
+    $static fn_((tpl_id(ArrStk_addNFixed, _T)(P$$(ArrStk$(_T)) self, usize n))(E$($set(mem_Err)(S$(_T)))) $scope) { \
+        return_(u_castE$((ReturnType)(ArrStk_addNFixed(self->as_raw, typeInfo$(_T), n)))); \
     } $unscoped_(fn)
-#define T_use_ArrStk_addWithinN$(_T...) \
+#define T_use_ArrStk_addNWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_addWithinN, _T)(P$$(ArrStk$(_T)) self, usize n))(S$(_T))) { \
-        return u_castS$((S$(_T))(ArrStk_addWithinN(self->as_raw, typeInfo$(_T), n))); \
+    $static fn_((tpl_id(ArrStk_addNWithin, _T)(P$$(ArrStk$(_T)) self, usize n))(S$(_T))) { \
+        return u_castS$((S$(_T))(ArrStk_addNWithin(self->as_raw, typeInfo$(_T), n))); \
     }
 
 #define T_use_ArrStk_push$(_T...) \
@@ -380,30 +395,30 @@ extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
     $static fn_((tpl_id(ArrStk_pushS, _T)(P$$(ArrStk$(_T)) self, mem_Allocator gpa, S$(const _T) items))(mem_Err$void)) { \
         return ArrStk_pushS(self->as_raw, gpa, u_anyS(items)); \
     }
-#define T_use_ArrStk_pushFixedS$(_T...) \
+#define T_use_ArrStk_pushSFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_pushFixedS, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(mem_Err$void)) { \
-        return ArrStk_pushFixedS(self->as_raw, u_anyS(items)); \
+    $static fn_((tpl_id(ArrStk_pushSFixed, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(mem_Err$void)) { \
+        return ArrStk_pushSFixed(self->as_raw, u_anyS(items)); \
     }
-#define T_use_ArrStk_pushWithinS$(_T...) \
+#define T_use_ArrStk_pushSWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_pushWithinS, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(void)) { \
-        return ArrStk_pushWithinS(self->as_raw, u_anyS(items)); \
+    $static fn_((tpl_id(ArrStk_pushSWithin, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(void)) { \
+        return ArrStk_pushSWithin(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrStk_pushN$(_T...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl_id(ArrStk_pushN, _T)(P$$(ArrStk$(_T)) self, mem_Allocator gpa, _T item, usize n))(mem_Err$void)) { \
         return ArrStk_pushN(self->as_raw, gpa, u_anyV(item), n); \
     }
-#define T_use_ArrStk_pushFixedN$(_T...) \
+#define T_use_ArrStk_pushNFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_pushFixedN, _T)(P$$(ArrStk$(_T)) self, _T item, usize n))(mem_Err$void)) { \
-        return ArrStk_pushFixedN(self->as_raw, u_anyV(item), n); \
+    $static fn_((tpl_id(ArrStk_pushNFixed, _T)(P$$(ArrStk$(_T)) self, _T item, usize n))(mem_Err$void)) { \
+        return ArrStk_pushNFixed(self->as_raw, u_anyV(item), n); \
     }
-#define T_use_ArrStk_pushWithinN$(_T...) \
+#define T_use_ArrStk_pushNWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_pushWithinN, _T)(P$$(ArrStk$(_T)) self, _T item, usize n))(void)) { \
-        return ArrStk_pushWithinN(self->as_raw, u_anyV(item), n); \
+    $static fn_((tpl_id(ArrStk_pushNWithin, _T)(P$$(ArrStk$(_T)) self, _T item, usize n))(void)) { \
+        return ArrStk_pushNWithin(self->as_raw, u_anyV(item), n); \
     }
 
 #define T_use_ArrStk_pop$(_T...) \

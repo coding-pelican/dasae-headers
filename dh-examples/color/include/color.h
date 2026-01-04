@@ -1,12 +1,13 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim. All rights reserved.
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
  *
  * @file    color.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-21 (date of creation)
  * @updated 2025-12-28 (date of last update)
  * @version v1.0.0
- * @ingroup dasae-headers/examples(dh-examples)
+ * @ingroup dasae-headers-examples(dh-examples)
  * @prefix  color
  */
 #ifndef color__included

@@ -55,7 +55,7 @@ fn_((ArrList_fini(ArrList* self, TypeInfo type, mem_Allocator gpa))(void)) {
 fn_((ArrList_clone(ArrList self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrList) $scope) {
     debug_assert_eqBy(self.type, type, TypeInfo_eq);
     var cloned = try_(ArrList_init(type, gpa, self.cap));
-    ArrList_appendWithinS(&cloned, ArrList_items(self, type));
+    ArrList_appendSWithin(&cloned, ArrList_items(self, type));
     return_ok(cloned);
 } $unscoped_(fn);
 
@@ -282,14 +282,14 @@ fn_((ArrList_addBackN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize n))
     return_ok(u_prefixS(u_suffixS(ArrList_itemsMut(*self, type), prev_len), n));
 } $unscoped_(fn);
 
-fn_((ArrList_addBackFixedN(ArrList* self, TypeInfo type, usize n))(mem_Err$u_S$raw) $scope) {
+fn_((ArrList_addBackNFixed(ArrList* self, TypeInfo type, usize n))(mem_Err$u_S$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     if (usize_sub(self->cap, self->items.len) < n) { return_err(mem_Err_OutOfMemory()); }
-    return_ok(ArrList_addBackWithinN(self, type, n));
+    return_ok(ArrList_addBackNWithin(self, type, n));
 } $unscoped_(fn);
 
-fn_((ArrList_addBackWithinN(ArrList* self, TypeInfo type, usize n))(u_S$raw)) {
+fn_((ArrList_addBackNWithin(ArrList* self, TypeInfo type, usize n))(u_S$raw)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     claim_assert(self->items.len + n <= self->cap);
@@ -303,14 +303,14 @@ fn_((ArrList_addAtN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize idx, 
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let new_len = try_(addOrOom(self->items.len, n));
     if (new_len <= self->cap) {
-        return_ok(ArrList_addAtWithinN(self, type, idx, n));
+        return_ok(ArrList_addAtNWithin(self, type, idx, n));
     }
     let new_cap = growCap(type, self->cap, new_len);
     let old_items = ArrList_itemsCappedMut(*self, type);
     if_some((mem_Allocator_remap(gpa, old_items, new_cap))(new_items)) {
         self->items.ptr = new_items.ptr;
         self->cap = new_items.len;
-        return_ok(ArrList_addAtWithinN(self, type, idx, n));
+        return_ok(ArrList_addAtNWithin(self, type, idx, n));
     }
     let new_items = try_(mem_Allocator_alloc(gpa, type, new_cap));
     let to_move = u_suffixS(ArrList_items(*self, type), idx);
@@ -322,14 +322,14 @@ fn_((ArrList_addAtN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize idx, 
     return_ok(u_prefixS(u_suffixS(new_items, idx), n));
 } $unscoped_(fn);
 
-fn_((ArrList_addAtFixedN(ArrList* self, TypeInfo type, usize idx, usize n))(mem_Err$u_S$raw) $scope) {
+fn_((ArrList_addAtNFixed(ArrList* self, TypeInfo type, usize idx, usize n))(mem_Err$u_S$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     if (usize_sub(self->cap, self->items.len) < n) { return_err(mem_Err_OutOfMemory()); }
-    return_ok(ArrList_addAtWithinN(self, type, idx, n));
+    return_ok(ArrList_addAtNWithin(self, type, idx, n));
 } $unscoped_(fn);
 
-fn_((ArrList_addAtWithinN(ArrList* self, TypeInfo type, usize idx, usize n))(u_S$raw)) {
+fn_((ArrList_addAtNWithin(ArrList* self, TypeInfo type, usize idx, usize n))(u_S$raw)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     let new_len = self->items.len + n;
@@ -350,13 +350,13 @@ fn_((ArrList_addFront(ArrList* self, TypeInfo type, mem_Allocator gpa))(mem_Err$
 fn_((ArrList_addFrontFixed(ArrList* self, TypeInfo type))(mem_Err$u_P$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return_ok(u_atS(try_(ArrList_addAtFixedN(self, type, 0, 1)), 0));
+    return_ok(u_atS(try_(ArrList_addAtNFixed(self, type, 0, 1)), 0));
 } $unscoped_(fn);
 
 fn_((ArrList_addFrontWithin(ArrList* self, TypeInfo type))(u_P$raw)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return u_atS(ArrList_addAtWithinN(self, type, 0, 1), 0);
+    return u_atS(ArrList_addAtNWithin(self, type, 0, 1), 0);
 };
 
 fn_((ArrList_addFrontN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize n))(mem_Err$u_S$raw)) {
@@ -365,16 +365,16 @@ fn_((ArrList_addFrontN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize n)
     return ArrList_addAtN(self, type, gpa, 0, n);
 };
 
-fn_((ArrList_addFrontFixedN(ArrList* self, TypeInfo type, usize n))(mem_Err$u_S$raw)) {
+fn_((ArrList_addFrontNFixed(ArrList* self, TypeInfo type, usize n))(mem_Err$u_S$raw)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return ArrList_addAtFixedN(self, type, 0, n);
+    return ArrList_addAtNFixed(self, type, 0, n);
 };
 
-fn_((ArrList_addFrontWithinN(ArrList* self, TypeInfo type, usize n))(u_S$raw)) {
+fn_((ArrList_addFrontNWithin(ArrList* self, TypeInfo type, usize n))(u_S$raw)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return ArrList_addAtWithinN(self, type, 0, n);
+    return ArrList_addAtNWithin(self, type, 0, n);
 };
 
 fn_((ArrList_append(ArrList* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void) $scope) {
@@ -405,17 +405,17 @@ fn_((ArrList_appendS(ArrList* self, mem_Allocator gpa, u_S_const$raw items))(mem
     let type = items.type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     try_(ArrList_ensureUnusedCap(self, type, gpa, items.len));
-    return_ok_void(ArrList_appendWithinS(self, items));
+    return_ok_void(ArrList_appendSWithin(self, items));
 } $unscoped_(fn);
 
-fn_((ArrList_appendFixedS(ArrList* self, u_S_const$raw items))(mem_Err$void) $scope) {
+fn_((ArrList_appendSFixed(ArrList* self, u_S_const$raw items))(mem_Err$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, items.type, TypeInfo_eq);
     if (usize_sub(self->cap, self->items.len) < items.len) { return_err(mem_Err_OutOfMemory()); }
-    return_ok_void(ArrList_appendWithinS(self, items));
+    return_ok_void(ArrList_appendSWithin(self, items));
 } $unscoped_(fn);
 
-fn_((ArrList_appendWithinS(ArrList* self, u_S_const$raw items))(void)) {
+fn_((ArrList_appendSWithin(ArrList* self, u_S_const$raw items))(void)) {
     claim_assert_nonnull(self);
     let type = items.type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
@@ -436,7 +436,7 @@ fn_((ArrList_appendN(ArrList* self, mem_Allocator gpa, u_V$raw item, usize n))(m
     return_ok({});
 } $unscoped_(fn);
 
-fn_((ArrList_appendFixedN(ArrList* self, u_V$raw item, usize n))(mem_Err$void) $scope) {
+fn_((ArrList_appendNFixed(ArrList* self, u_V$raw item, usize n))(mem_Err$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, item.inner_type, TypeInfo_eq);
     let new_len = self->items.len + n;
@@ -446,7 +446,7 @@ fn_((ArrList_appendFixedN(ArrList* self, u_V$raw item, usize n))(mem_Err$void) $
     return_ok({});
 } $unscoped_(fn);
 
-fn_((ArrList_appendWithinN(ArrList* self, u_V$raw item, usize n))(void)) {
+fn_((ArrList_appendNWithin(ArrList* self, u_V$raw item, usize n))(void)) {
     claim_assert_nonnull(self);
     let type = item.inner_type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
@@ -492,14 +492,14 @@ fn_((ArrList_insertS(ArrList* self, mem_Allocator gpa, usize idx, u_S_const$raw 
     return_ok({});
 } $unscoped_(fn);
 
-fn_((ArrList_insertFixedS(ArrList* self, usize idx, u_S_const$raw items))(mem_Err$void) $scope) {
+fn_((ArrList_insertSFixed(ArrList* self, usize idx, u_S_const$raw items))(mem_Err$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, items.type, TypeInfo_eq);
     if (self->cap - self->items.len < items.len) { return_err(mem_Err_OutOfMemory()); }
-    return_ok_void(ArrList_insertWithinS(self, idx, items));
+    return_ok_void(ArrList_insertSWithin(self, idx, items));
 } $unscoped_(fn);
 
-fn_((ArrList_insertWithinS(ArrList* self, usize idx, u_S_const$raw items))(void)) {
+fn_((ArrList_insertSWithin(ArrList* self, usize idx, u_S_const$raw items))(void)) {
     claim_assert_nonnull(self);
     let type = items.type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
@@ -531,14 +531,14 @@ fn_((ArrList_prependS(ArrList* self, mem_Allocator gpa, u_S_const$raw items))(me
     return ArrList_insertS(self, gpa, 0, items);
 } $unscoped_(fn);
 
-fn_((ArrList_prependFixedS(ArrList* self, u_S_const$raw items))(mem_Err$void) $scope) {
+fn_((ArrList_prependSFixed(ArrList* self, u_S_const$raw items))(mem_Err$void) $scope) {
     claim_assert_nonnull(self);
-    return ArrList_insertFixedS(self, 0, items);
+    return ArrList_insertSFixed(self, 0, items);
 } $unscoped_(fn);
 
-fn_((ArrList_prependWithinS(ArrList* self, u_S_const$raw items))(void)) {
+fn_((ArrList_prependSWithin(ArrList* self, u_S_const$raw items))(void)) {
     claim_assert_nonnull(self);
-    return ArrList_insertWithinS(self, 0, items);
+    return ArrList_insertSWithin(self, 0, items);
 };
 
 fn_((ArrList_prependN(ArrList* self, mem_Allocator gpa, u_V$raw item, usize n))(mem_Err$void) $scope) {
@@ -546,21 +546,21 @@ fn_((ArrList_prependN(ArrList* self, mem_Allocator gpa, u_V$raw item, usize n))(
     let type = item.inner_type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
     try_(ArrList_ensureUnusedCap(self, type, gpa, n));
-    return_ok_void(ArrList_prependWithinN(self, item, n));
+    return_ok_void(ArrList_prependNWithin(self, item, n));
 } $unscoped_(fn);
 
-fn_((ArrList_prependFixedN(ArrList* self, u_V$raw item, usize n))(mem_Err$void) $scope) {
+fn_((ArrList_prependNFixed(ArrList* self, u_V$raw item, usize n))(mem_Err$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, item.inner_type, TypeInfo_eq);
     if (self->cap - self->items.len < n) { return_err(mem_Err_OutOfMemory()); }
-    return_ok_void(ArrList_prependWithinN(self, item, n));
+    return_ok_void(ArrList_prependNWithin(self, item, n));
 } $unscoped_(fn);
 
-fn_((ArrList_prependWithinN(ArrList* self, u_V$raw item, usize n))(void)) {
+fn_((ArrList_prependNWithin(ArrList* self, u_V$raw item, usize n))(void)) {
     claim_assert_nonnull(self);
     let type = item.inner_type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    let slots = ArrList_addAtWithinN(self, type, 0, n);
+    let slots = ArrList_addAtNWithin(self, type, 0, n);
     u_memsetS(slots, item);
 };
 
@@ -599,7 +599,7 @@ fn_((ArrList_replaceWithin(ArrList* self, R range, u_S_const$raw new_items))(voi
         let to_overwrite = u_prefixS(new_items, replacing.len);
         let to_insert = u_suffixS(new_items, replacing.len);
         u_memcpyS(replacing, to_overwrite);
-        ArrList_insertWithinS(self, range.end, to_insert);
+        ArrList_insertSWithin(self, range.end, to_insert);
     } else if (replacing.len > new_items.len) {
         let discard_len = len$R(range) - new_items.len;
         u_memcpyS(u_prefixS(replacing, new_items.len), new_items);

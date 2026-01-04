@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    Duration.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-10 (date of creation)
- * @updated 2025-02-08 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2026-01-03 (date of last update)
  * @ingroup dasae-headers(dh)/time
  * @prefix  time_Duration
  *
@@ -190,7 +189,7 @@ $attr($inline_always)
 $static cmp_fn_ordCtx$((time_Duration)(lhs, rhs, ctx)) {
     let_ignore = ctx;
     return cmp_ord$(time_Duration)(lhs, rhs);
-}
+};
 $attr($inline_always)
 $static cmp_fn_eqCtx_default$((time_Duration)(lhs, rhs, ctx));
 $attr($inline_always)
@@ -207,14 +206,14 @@ $static cmp_fn_geCtx_default$((time_Duration)(lhs, rhs, ctx));
 $attr($inline_always)
 $static cmp_fn_eql$((time_Duration)(lhs, rhs)) {
     return cmp_ord$(time_Duration)(lhs, rhs) == cmp_Ord_eq;
-}
+};
 $attr($inline_always)
 $static cmp_fn_neq_default$((time_Duration)(lhs, rhs));
 $attr($inline_always)
 $static cmp_fn_eqlCtx$((time_Duration)(lhs, rhs, ctx)) {
     let_ignore = ctx;
     return cmp_eql$(time_Duration)(lhs, rhs);
-}
+};
 $attr($inline_always)
 $static cmp_fn_neqCtx_default$((time_Duration)(lhs, rhs, ctx));
 

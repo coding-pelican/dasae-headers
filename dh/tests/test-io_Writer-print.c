@@ -29,7 +29,7 @@ typedef struct test_Buf {
     usize pos;
 } test_Buf;
 $attr($must_check)
-$static fn_((test_Buf_VT_write(const P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
+$static fn_((test_Buf_VT_write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
     let self = as$(test_Buf*)(ctx);
     let remaining = self->data.len - self->pos;
     let to_write = prim_min(bytes.len, remaining);

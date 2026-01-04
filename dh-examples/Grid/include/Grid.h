@@ -1,5 +1,5 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    Grid.h
@@ -7,7 +7,7 @@
  * @date    2025-01-11 (date of creation)
  * @updated 2025-03-15 (date of last update)
  * @version v0.1-alpha
- * @ingroup dasae-headers/examples(dh-examples)
+ * @ingroup dasae-headers-examples(dh-examples)
  * @prefix  Grid
  *
  * @brief   Using one-dimensional slice as two-dimensional grid

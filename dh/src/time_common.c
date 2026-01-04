@@ -2,9 +2,6 @@
 
 /*========== Internal Declarations ==========================================*/
 
-/// 100-nanosecond intervals per second (for Windows waitable timer).
-#define time__intervals_per_sec (lit_n$(u64)(10, 000, 000ull))
-
 pp_if_(pp_true)(pp_then_(
     $attr($inline_always $maybe_unused)
     $static fn_((time__unsupported_sleep(time_Duration duration))(void));
@@ -13,14 +10,14 @@ pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
     $static fn_((time__windows_sleep(time_Duration duration))(void));
 ));
-pp_if_(pp_or(plat_is_linux, plat_is_darwin))(pp_then_(
+pp_if_(plat_based_unix)(pp_then_(
     $attr($inline_always)
     $static fn_((time__unix_sleep(time_Duration duration))(void));
 ));
 
 $static let time__sleep = pp_if_(plat_is_windows)(
     pp_then_(time__windows_sleep),
-    pp_else_(pp_if_(pp_or(plat_is_linux, plat_is_darwin))(
+    pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time__unix_sleep),
         pp_else_(time__unsupported_sleep)
     )));
@@ -61,6 +58,9 @@ fn_((time__unsupported_sleep(time_Duration duration))(void)) {
 #include "dh/os/windows/handle.h"
 #include "dh/os/windows/sync.h"
 
+/// 100-nanosecond intervals per second (for waitable timer)
+#define time__windows_intervals_per_sec (lit_n$(u64)(10, 000, 000ull))
+
 fn_((time__windows_sleep(time_Duration duration))(void) $guard) {
     let timer = CreateWaitableTimerExW(
         null, null,
@@ -77,7 +77,7 @@ fn_((time__windows_sleep(time_Duration duration))(void) $guard) {
 
     // Convert to negative 100-nanosecond intervals for relative time
     LARGE_INTEGER li = cleared();
-    li.QuadPart = -as$(LONGLONG)(duration.secs * time__intervals_per_sec + duration.nanos / 100);
+    li.QuadPart = -as$(LONGLONG)(duration.secs * time__windows_intervals_per_sec + duration.nanos / 100);
 
     if (SetWaitableTimer(timer, &li, 0, null, null, false)) {
         WaitForSingleObject(timer, INFINITE);
@@ -88,9 +88,9 @@ fn_((time__windows_sleep(time_Duration duration))(void) $guard) {
 } $unguarded_(fn);
 #endif /* plat_is_windows */
 
-/* --- Unix (Linux, Darwin) --- */
+/* --- Unix Based --- */
 
-#if plat_is_linux || plat_is_darwin
+#if plat_based_unix
 fn_((time__unix_sleep(time_Duration duration))(void)) {
     struct timespec req = {
         .tv_sec = duration.secs,
@@ -101,4 +101,4 @@ fn_((time__unix_sleep(time_Duration duration))(void)) {
         req = rem;
     }
 };
-#endif /* plat_is_linux || plat_is_darwin */
+#endif /* plat_based_unix */

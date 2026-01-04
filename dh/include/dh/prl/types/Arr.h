@@ -32,6 +32,10 @@ extern "C" {
     T_decl_A$(_N, _T); \
     T_impl_A$(_N, _T)
 
+#define A_n$(_T... /*(usize)*/) A_len$(_T)
+#define A_T$(_T...) TypeOf((as$(_T*)(null))->val[0])
+#define A_TUnqual$(_T...) TypeOfUnqual((as$(_T*)(null))->val[0])
+
 #define A_innerN$(_T...) A_len$(_T)
 #define A_InnerT$(_T...) TypeOf((as$(_T*)(null))->val[0])
 #define A_InnerTUnqual$(_T...) TypeOfUnqual((as$(_T*)(null))->val[0])

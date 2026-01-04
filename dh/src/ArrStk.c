@@ -175,8 +175,8 @@ fn_((ArrStk_addN(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize n))(mem_E
     return ArrList_addBackN(stkAsList(self), type, gpa, n);
 }
 
-fn_((ArrStk_addFixedN(ArrStk* self, TypeInfo type, usize n))(mem_Err$u_S$raw)) {
-    return ArrList_addBackFixedN(stkAsList(self), type, n);
+fn_((ArrStk_addNFixed(ArrStk* self, TypeInfo type, usize n))(mem_Err$u_S$raw)) {
+    return ArrList_addBackNFixed(stkAsList(self), type, n);
 }
 
 fn_((ArrStk_push(ArrStk* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void)) {
@@ -195,24 +195,24 @@ fn_((ArrStk_pushS(ArrStk* self, mem_Allocator gpa, u_S_const$raw items))(mem_Err
     return ArrList_appendS(stkAsList(self), gpa, items);
 }
 
-fn_((ArrStk_pushFixedS(ArrStk* self, u_S_const$raw items))(mem_Err$void)) {
-    return ArrList_appendFixedS(stkAsList(self), items);
+fn_((ArrStk_pushSFixed(ArrStk* self, u_S_const$raw items))(mem_Err$void)) {
+    return ArrList_appendSFixed(stkAsList(self), items);
 }
 
-fn_((ArrStk_pushWithinS(ArrStk* self, u_S_const$raw items))(void)) {
-    return ArrList_appendWithinS(stkAsList(self), items);
+fn_((ArrStk_pushSWithin(ArrStk* self, u_S_const$raw items))(void)) {
+    return ArrList_appendSWithin(stkAsList(self), items);
 }
 
 fn_((ArrStk_pushN(ArrStk* self, mem_Allocator gpa, u_V$raw item, usize n))(mem_Err$void)) {
     return ArrList_appendN(stkAsList(self), gpa, item, n);
 }
 
-fn_((ArrStk_pushFixedN(ArrStk* self, u_V$raw item, usize n))(mem_Err$void)) {
-    return ArrList_appendFixedN(stkAsList(self), item, n);
+fn_((ArrStk_pushNFixed(ArrStk* self, u_V$raw item, usize n))(mem_Err$void)) {
+    return ArrList_appendNFixed(stkAsList(self), item, n);
 }
 
-fn_((ArrStk_pushWithinN(ArrStk* self, u_V$raw item, usize n))(void)) {
-    return ArrList_appendWithinN(stkAsList(self), item, n);
+fn_((ArrStk_pushNWithin(ArrStk* self, u_V$raw item, usize n))(void)) {
+    return ArrList_appendNWithin(stkAsList(self), item, n);
 }
 
 fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw)) {
