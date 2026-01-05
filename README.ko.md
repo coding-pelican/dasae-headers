@@ -511,9 +511,6 @@ fn_((example(mem_Allocator gpa))(E$void) $guard) {
 } $unguarded_(fn);
 ```
 
-<details>
-<summary><strong>더 많은 코드 샘플 보기</strong></summary>
-
 ### Pattern Matching
 
 ```c
@@ -625,6 +622,9 @@ async_fn_(((mainAsync)(S$S_const$u8 args))(Void) $scope({
     areturn_({});
 } $unscoped_(async_fn);
 ```
+
+<details>
+<summary><strong>더 많은 코드 샘플 보기</strong></summary>
 
 ### Atomic Values
 

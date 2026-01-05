@@ -381,9 +381,6 @@ fn_((example(mem_Allocator gpa))(E$void) $guard) {
 } $unguarded_(fn);
 ```
 
-<details>
-<summary><strong>More Code Samples</strong></summary>
-
 ### Pattern Matching
 
 ```c
@@ -495,6 +492,9 @@ async_fn_(((mainAsync)(S$S_const$u8 args))(Void) $scope({
     areturn_({});
 } $unscoped_(async_fn);
 ```
+
+<details>
+<summary><strong>More Code Samples</strong></summary>
 
 ### Atomic Values
 
