@@ -93,8 +93,12 @@ CompileFlags:
 If:
   PathExclude:
     - .*build*/.*
+    - .*tmp*/.*
     - .*temp*/.*
+    - .*cache*/.*
+    - .*mock*/.*
     - .*draft*/.*
+    - .*bak*/.*
     - .*backup*/.*
     - .*archive*/.*
 # ========== C Sources =========
