@@ -165,7 +165,7 @@ typedef struct Void {
 #define prim_min3(_1st, _2nd, _3rd...) __op__prim_min3__step(_1st, _2nd, _3rd)
 #define prim_min4_static(_1st, _2nd, _3rd, _4th...) __op__prim_min4_static(_1st, _2nd, _3rd, _4th)
 #define prim_min4(_1st, _2nd, _3rd, _4th...) __op__prim_min4__step(_1st, _2nd, _3rd, _4th)
-#define prim_findMin(_vals...) __op__prim_findMin(_vals)
+#define prim_findMin(_vals...) __op__prim_findMin__step(_vals)
 #define prim_max_static(_lhs, _rhs...) __op__prim_max2_static(_lhs, _rhs)
 #define prim_max(_lhs, _rhs...) __op__prim_max2__step(_lhs, _rhs)
 #define prim_max2_static(_lhs, _rhs...) __op__prim_max2_static(_lhs, _rhs)
@@ -174,7 +174,7 @@ typedef struct Void {
 #define prim_max3(_1st, _2nd, _3rd...) __op__prim_max3__step(_1st, _2nd, _3rd)
 #define prim_max4_static(_1st, _2nd, _3rd, _4th...) __op__prim_max4_static(_1st, _2nd, _3rd, _4th)
 #define prim_max4(_1st, _2nd, _3rd, _4th...) __op__prim_max3__step(_1st, _2nd, _3rd, _4th)
-#define prim_findMax(_vals...) __op__prim_findMax(_vals)
+#define prim_findMax(_vals...) __op__prim_findMax__step(_vals)
 
 #define prim_clamp_static(_x, _lo /*$incl*/, _hi /*$incl*/...) __op__prim_clamp_static(_x, _lo, _hi)
 #define prim_clamp(_x, _lo /*$incl*/, _hi /*$incl*/...) __op__prim_clamp__step(_x, _lo, _hi)

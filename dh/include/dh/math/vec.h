@@ -20,7 +20,7 @@
 
 #include "common.h"
 #include "vec_types.h"
-#include "dh/Vec.h"
+#include "dh/simd.h"
 
 /*========== Macros and Declarations ========================================*/
 

@@ -1,12 +1,12 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    dh.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
- * @date    2025-11-02 (date of creation)
- * @updated 2025-12-11 (date of last update)
- * @version v0.1
+ * @date    2024-10-21 (date of creation)
+ * @updated 2026-01-08 (date of last update)
+ * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
  */
@@ -22,7 +22,7 @@ extern "C" {
 #include "dh/core.h"
 #include "dh/prl.h"
 #include "dh/atom.h"
-// #include "dh/simd.h"
+#include "dh/simd.h"
 
 #include "dh/cmp.h"
 #include "dh/math.h"
@@ -30,9 +30,12 @@ extern "C" {
 #include "dh/meta.h"
 
 #include "dh/sort.h"
-// #include "dh/search.h"
+#include "dh/search.h"
 #include "dh/ascii.h"
-#include "dh/utf.h"
+#include "dh/utf8.h"
+#include "dh/utf16.h"
+#include "dh/wtf8.h"
+#include "dh/wtf16.h"
 
 #include "dh/ListSgl.h"
 #include "dh/ListDbl.h"
