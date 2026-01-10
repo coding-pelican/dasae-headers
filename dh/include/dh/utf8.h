@@ -76,8 +76,8 @@ $attr($must_check)
 $extern fn_((utf8_decode4(utf8_Decode4Buf bytes))(utf8_Err$u32));
 
 $extern fn_((utf8_isValid(u32 codepoint))(bool));
-$extern fn_((utf8_count(S_const$u8 bytes))(usize));
 $extern fn_((utf8_validate(S_const$u8 bytes))(bool));
+$extern fn_((utf8_count(S_const$u8 bytes))(usize));
 
 typedef struct utf8_View {
     var_(bytes, S_const$u8);
@@ -98,24 +98,6 @@ $extern fn_((utf8_Iter_peek(utf8_Iter* self))(O$u32));
 $extern fn_((utf8_Iter_peekBytes(utf8_Iter* self))(O$S_const$u8));
 $extern fn_((utf8_Iter_peekAt(utf8_Iter* self, usize n))(O$u32));
 $extern fn_((utf8_Iter_peekAtBytes(utf8_Iter* self, usize n))(O$S_const$u8));
-
-T_use_E$($set(utf8_Err)(usize));
-/// Returns the length of the UTF-8 string in UTF-16 code units.
-/// Returns error if the UTF-8 is invalid.
-$attr($must_check)
-$extern fn_((utf8_calcUTF16Len(S_const$u8 utf8))(utf8_Err$usize));
-/// Converts a UTF-8 string to UTF-16 (Host Endian).
-/// `out_utf16` must be large enough (use `calcUTF16Len`).
-/// Returns the number of `u16` code units written.
-$attr($must_check) /* `utf8_Err` + `mem_Err` */
-$extern fn_((utf8_toUTF16(S_const$u8 utf8, S$u16 out_utf16))(E$S$u16));
-T_use_E$($set(utf8_Err)(S$u16));
-$attr($must_check)
-$extern fn_((utf8_toUTF16Within(S_const$u8 utf8, S$u16 out_utf16))(utf8_Err$S$u16));
-typedef E$$($set(mem_Err)(S$u16)) utf8_mem_Err$S$u16;
-/// Allocates a new UTF-16 string from the given UTF-8 string.
-$attr($must_check)
-$extern fn_((utf8_toUTF16Alloc(S_const$u8 utf8, mem_Allocator gpa))(utf8_mem_Err$S$u16));
 
 /*========== Macros and Definitions =========================================*/
 

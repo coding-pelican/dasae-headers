@@ -5,7 +5,7 @@
  * @file    dh.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-21 (date of creation)
- * @updated 2026-01-08 (date of last update)
+ * @updated 2026-01-10 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
@@ -36,6 +36,7 @@ extern "C" {
 #include "dh/utf16.h"
 #include "dh/wtf8.h"
 #include "dh/wtf16.h"
+#include "dh/unicode.h"
 
 #include "dh/ListSgl.h"
 #include "dh/ListDbl.h"

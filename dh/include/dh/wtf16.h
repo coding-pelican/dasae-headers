@@ -36,17 +36,6 @@ $extern fn_((wtf16_iter(S_const$u16 units))(wtf16_Iter));
 /// - If unpaired surrogate: returns the surrogate value itself (U+D800..U+DFFF).
 $extern fn_((wtf16_Iter_next(wtf16_Iter* self))(O$u32));
 
-/// Calculates bytes needed for WTF-8.
-$extern fn_((wtf16_calcWTF8Len(S_const$u16 wtf16))(usize));
-typedef E$$($set(mem_Err)(S$u8)) wtf16_mem_Err$S$u8;
-/// Converts to WTF-8. Cannot fail (unpaired surrogates are valid in WTF-8).
-$attr($must_check)
-$extern fn_((wtf16_toWTF8(S_const$u16 wtf16, S$u8 out_wtf8))(wtf16_mem_Err$S$u8));
-$extern fn_((wtf16_toWTF8Within(S_const$u16 wtf16, S$u8 out_wtf8))(S$u8));
-/// Allocates a new WTF-8 string from the given WTF-16 string.
-$attr($must_check)
-$extern fn_((wtf16_toWTF8Alloc(S_const$u16 wtf16, mem_Allocator gpa))(wtf16_mem_Err$S$u8));
-
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
