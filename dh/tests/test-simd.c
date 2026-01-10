@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "dh/Vec.h"
+#include "dh/simd.h"
 #include "dh/prl/types/Arr.h"
 
 /* Example 1: Basic vector arithmetic */

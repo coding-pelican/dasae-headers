@@ -109,6 +109,8 @@ extern "C" {
 /// Documentation:
 /// https://learn.microsoft.com/en-us/windows/console/console-functions
 #include <consoleapi.h>
+#include <consoleapi2.h>
+#include <consoleapi3.h>
 /// ==================================================================================
 /// Console Constants (winbase.h/wincon.h subset)
 /// ==================================================================================

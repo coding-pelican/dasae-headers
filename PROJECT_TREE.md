@@ -4,9 +4,10 @@
 dasae-headers
 ├─ .clang-format
 ├─ .clangd
-├─ dh
+├─ compile_flags.txt
+├─ dal
 │  ├─ include
-│  │  ├─ dh
+│  │  ├─ dal
 │  │  │  ├─ builtin.h
 │  │  │  ├─ builtin
 │  │  │  │  ├─ pp.h
@@ -108,7 +109,10 @@ dasae-headers
 │  │  │  ├─ sort.h
 │  │  │  ├─ search.h
 │  │  │  ├─ ascii.h
-│  │  │  ├─ utf.h
+│  │  │  ├─ utf8.h
+│  │  │  ├─ utf16.h
+│  │  │  ├─ wtf8.h
+│  │  │  ├─ wtf16.h
 │  │  │  ├─ ListSgl.h
 │  │  │  ├─ ListDbl.h
 │  │  │  ├─ BTree.h
@@ -130,8 +134,24 @@ dasae-headers
 │  │  │  ├─ os
 │  │  │  │  ├─ windows.h
 │  │  │  │  └─ windows
-│  │  │  │     ├─ common.h
-│  │  │  │     └─ mem.h
+│  │  │  │     ├─ cfg.h
+│  │  │  │     ├─ base.h
+│  │  │  │     ├─ handle.h
+│  │  │  │     ├─ debug.h
+│  │  │  │     ├─ nls.h
+│  │  │  │     ├─ sysinfo.h
+│  │  │  │     ├─ mem.h
+│  │  │  │     ├─ file.h
+│  │  │  │     ├─ io.h
+│  │  │  │     ├─ dll.h
+│  │  │  │     ├─ console.h
+│  │  │  │     ├─ proc.h
+│  │  │  │     ├─ thrd.h
+│  │  │  │     ├─ sync.h
+│  │  │  │     ├─ nt.h
+│  │  │  │     ├─ auth.h
+│  │  │  │     ├─ crypt.h
+│  │  │  │     └─ sock.h
 │  │  │  ├─ posix.h
 │  │  │  ├─ Thrd.h
 │  │  │  ├─ Thrd
@@ -188,7 +208,7 @@ dasae-headers
 │  │  │  ├─ TEST
 │  │  │  │  └─ cfg.h
 │  │  │  ├─ main.h
-│  │  └─ dh.h
+│  │  └─ dal.h
 │  ├─ src
 │  │  └─ ...
 │  ├─ libs
@@ -251,84 +271,6 @@ dasae-headers
 │     ├─ test-TEST.c
 │     ├─ test-TEST_sample.c
 │     └─ test-Thrd.c
-├─ dh-examples
-│  ├─ .clangd
-│  ├─ barnes-hut
-│  │  ├─ main
-│  │  │  ├─ .clangd
-│  │  │  ├─ include
-│  │  │  │  ├─ barnes-hut
-│  │  │  │  │  ├─ Body.h
-│  │  │  │  │  ├─ cfg_values.h
-│  │  │  │  │  ├─ QuadTree.h
-│  │  │  │  │  ├─ Simulation.h
-│  │  │  │  │  ├─ utils.h
-│  │  │  │  │  └─ Visualizer.h
-│  │  │  │  └─ barnes-hut.h
-│  │  │  ├─ lib
-│  │  │  └─ src
-│  │  │     └─ barnes-hut
-│  │  │        ├─ barnes-hut.c
-│  │  │        ├─ Body.c
-│  │  │        ├─ QuadTree.c
-│  │  │        ├─ Simulation.c
-│  │  │        ├─ utils.c
-│  │  │        └─ Visualizer.c
-│  ├─ engine
-│  │  ├─ .clangd
-│  │  ├─ include
-│  │  │  ├─ engine
-│  │  │  │  ├─ Backend.h
-│  │  │  │  ├─ Canvas.h
-│  │  │  │  ├─ Color.h
-│  │  │  │  ├─ common.h
-│  │  │  │  ├─ core
-│  │  │  │  │  ├─ Vt100.h
-│  │  │  │  │  └─ VT100Ex.h
-│  │  │  │  ├─ Grid.h
-│  │  │  │  ├─ Input.h
-│  │  │  │  ├─ Keyboard.h
-│  │  │  │  ├─ KeyButtonStates.h
-│  │  │  │  ├─ KeyCode.h
-│  │  │  │  ├─ Mouse.h
-│  │  │  │  ├─ MouseButton.h
-│  │  │  │  ├─ UnicodeCanvas.h
-│  │  │  │  ├─ utils.h
-│  │  │  │  └─ Window.h
-│  │  │  └─ engine.h
-│  │  ├─ lib
-│  │  ├─ samples
-│  │  │  ├─ sample-circle_physics_2d-wip.c
-│  │  ├─ src
-│  │  │  └─ engine
-│  │  │     ├─ Backend.c
-│  │  │     ├─ Backend_Internal.h
-│  │  │     ├─ Canvas.c
-│  │  │     ├─ Color.c
-│  │  │     ├─ core
-│  │  │     │  ├─ Vt100.c
-│  │  │     │  └─ VT100Ex.c
-│  │  │     ├─ Input.c
-│  │  │     ├─ Keyboard.c
-│  │  │     ├─ Mouse.c
-│  │  │     ├─ utils.c
-│  │  │     └─ Window.c
-│  ├─ engine-stub
-│  │  └─ VT100Ex
-│  │     ├─ .clangd
-│  │     ├─ include
-│  │     │  └─ VT100Ex.h
-│  │     ├─ lib
-│  │     └─ src
-│  │        └─ VT100Ex.c
-│  ├─ subframes
-│  │  ├─ .clangd
-│  │  ├─ include
-│  │  │  └─ subframes.h
-│  │  ├─ lib
-│  │  ├─ src
-│  │  │  └─ subframes.c
-│  │  └─ tools
 ├─ dh-c.c
 ├─ install.sh
 ├─ README.md

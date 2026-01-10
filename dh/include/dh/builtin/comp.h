@@ -176,6 +176,14 @@ extern "C" {
 #define __op__lit_num$__parseT(_T...) _T,
 #define __op__lit_num$__emit(_T, _Comma_Sep_Lits...) lit$((_T){ lit_num _Comma_Sep_Lits })
 
+#define make$(/*(_T){_initial...}*/... /*(_T)*/) __step__make$(__VA_ARGS__)
+#define __step__make$(...) __step__make$__emit(__step__make$__parse __VA_ARGS__)
+#define __step__make$__parse(_T...) _T,
+#define __step__make$__emit(...) ____make$(__VA_ARGS__)
+#define ____make$(_T, _initial...) (*lit$((_T[1]){ [0] = _initial }))
+#define create$(/*(_T){_initial...}*/... /*(P$(_T))*/) __step__create$(__VA_ARGS__)
+#define __step__create$(...) (&make$(__VA_ARGS__))
+#if UNUSED_CODE
 #define make$(/*(_T){_initial...}*/... /*(_T)*/) __make$__step(pp_defer(__make$__emit)(__make$__sep __VA_ARGS__))
 #define __make$__step(...) __VA_ARGS__
 #define __make$__sep(_T...) _T,
@@ -189,6 +197,7 @@ extern "C" {
 #define __create$__emit(_T, _initial...) __create$__emitNext(_T, (_initial))
 #define __create$__emitNext(_T, _initial...) (&make$((_T)__create$__expandInitial _initial))
 #define __create$__expandInitial(_initial...) _initial
+#endif /* UNUSED_CODE */
 
 #define type$ typeV$
 

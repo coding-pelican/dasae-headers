@@ -19,6 +19,10 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
+#include "comp.h"
+
 /*========== Macros and Declarations ========================================*/
 
 /* Type Size and Alignment */
@@ -101,6 +105,7 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 #define ____alignAs$(_T...) _Alignas(1ull << alignOf$(_T))
+#if on_comptime
 #define ____alignOf__expand(...) __VA_ARGS__
 #define ____alignOf$(_T...) $pragma_guard_( \
     "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
@@ -114,19 +119,12 @@ extern "C" {
         )) \
     )) \
 )
-#if UNUSED_CODE
-#define ____alignAs$(_T...) _Alignas(alignOf$(_T))
-#define ____alignOf__expand(...) __VA_ARGS__
+#else /* !on_comptime */
 #define ____alignOf$(_T...) $pragma_guard_( \
     "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
-    (as$(usize)(____alignOf__expand( \
-        T_switch$ pp_begin(_T)( \
-            T_case$((void)(0)), \
-            T_default_(_Alignof(_T)) \
-        ) pp_end \
-    ))) \
+    (as$(u8)((64u - 1u) - __builtin_clzll(_Alignof(_T)))) \
 )
-#endif /* UNUSED_CODE */
+#endif
 #define ____sizeOf__expand(...) __VA_ARGS__
 #define ____sizeOf$(_T...) $pragma_guard_( \
     "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \

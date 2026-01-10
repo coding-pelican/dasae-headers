@@ -7,7 +7,7 @@ Diagnostics:
   UnusedIncludes: None
   MissingIncludes: None
   ClangTidy:
-    FastCheckFilter: Loose
+    FastCheckFilter: Strict
     Add:
       - clang-analyzer-*
       - bugprone-*
@@ -198,7 +198,7 @@ CompileFlags:
     # - -Wconditional-uninitialized
     # - -Wvla # variable length array forbidden (runtime-sized array)
     # Diagnostic: Format String Safety
-    - -Wformat=2
+    # - -Wformat=2
     # Diagnostic: Thread Safety (Clang only)
     - -Wthread-safety
     # Compatibility
