@@ -122,7 +122,7 @@ fn_((wtf8_calcWTF16Len(S_const$u8 wtf8))(wtf8_Err$usize) $scope) {
 } $unscoped_(fn);
 
 $attr($must_check)
-$static fn_((wtf8__toWTF16(S_const$u8 wtf8, usize required_len, S$u16 out_wtf16))(wtf8_Err$S$u16) $scope) {
+$static fn_((wtf8__toWTF16(S_const$u8 wtf8, usize required_len, S$u16 out_wtf16))(S$u16)) {
     claim_assert(required_len <= out_wtf16.len);
     var_(out_idx, usize) = 0;
     var it = wtf8_iter(wtf8_viewUnchkd(wtf8));
@@ -138,23 +138,23 @@ $static fn_((wtf8__toWTF16(S_const$u8 wtf8, usize required_len, S$u16 out_wtf16)
             out_idx += 2;
         }
     }
-    return_ok(S_slice((out_wtf16)$r(0, out_idx)));
-} $unscoped_(fn);
+    return S_slice((out_wtf16)$r(0, out_idx));
+};
 
 fn_((wtf8_toWTF16(S_const$u8 wtf8, S$u16 out_wtf16))(E$S$u16) $scope) {
     let required_len = try_(wtf8_calcWTF16Len(wtf8));
     if (required_len > out_wtf16.len) { return_err(mem_Err_OutOfMemory()); }
-    return_ok(try_(wtf8__toWTF16(wtf8, required_len, out_wtf16)));
+    return_ok(wtf8__toWTF16(wtf8, required_len, out_wtf16));
 } $unscoped_(fn);
 
 fn_((wtf8_toWTF16Within(S_const$u8 wtf8, S$u16 out_wtf16))(wtf8_Err$S$u16) $scope) {
-    return_(wtf8__toWTF16(wtf8, try_(wtf8_calcWTF16Len(wtf8)), out_wtf16));
+    return_ok(wtf8__toWTF16(wtf8, try_(wtf8_calcWTF16Len(wtf8)), out_wtf16));
 } $unscoped_(fn);
 
 fn_((wtf8_toWTF16Alloc(S_const$u8 wtf8, mem_Allocator gpa))(wtf8_mem_Err$S$u16) $scope) {
     let required_len = try_(wtf8_calcWTF16Len(wtf8));
     let required_buf = u_castS$((S$u16)try_(mem_Allocator_alloc(gpa, typeInfo$(u16), required_len)));
-    let wtf16 = try_(wtf8__toWTF16(wtf8, required_len, required_buf));
+    let wtf16 = wtf8__toWTF16(wtf8, required_len, required_buf);
     claim_assert(wtf16.len == required_buf.len);
     return_ok(wtf16);
 } $unscoped_(fn);
