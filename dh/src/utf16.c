@@ -1,15 +1,6 @@
 #include "dh/utf16.h"
 #include "dh/utf8.h"
 
-$attr($inline_always)
-$static fn_((utf16__makeContinuationByte(u8 payload))(u8)) {
-    return prim_maskHi_static$((u8)(1)) | (payload & prim_maskLo_static$((u8)(6)));
-};
-$attr($must_check)
-$static fn_((utf16__encodeCodepoint(u32 codepoint, utf8_SeqLen seq_len, S$u8 out))(utf16_Err$S$u8));
-$attr($must_check)
-$static fn_((utf16__toUTF8(S_const$u16 utf16, usize required_len, S$u8 out_utf8))(utf16_Err$S$u8));
-
 fn_((utf16_codeunitSeqLen(u16 first_codeunit))(utf16_Err$utf16_SeqLen) $scope) {
     if (utf16_isHighSurrogate(first_codeunit)) { return_ok(utf16_SeqLen_2); }
     if (utf16_isLowSurrogate(first_codeunit)) { return_err(utf16_Err_InvalidStartCodeUnit()); }
@@ -20,29 +11,43 @@ fn_((utf16_codepointSeqLen(u32 codepoint))(utf16_Err$utf8_SeqLen) $scope) {
     return_ok(try_(utf8_codepointSeqLen(codepoint)));
 } $unscoped_(fn);
 
-fn_((utf16__encodeCodepoint(u32 codepoint, utf8_SeqLen seq_len, S$u8 out))(utf16_Err$S$u8) $scope) {
-    claim_assert(seq_len <= out.len);
-    switch (seq_len) {
-    case utf8_SeqLen_1:
-        *S_at((out)[0]) = intCast$((u8)codepoint);
-        break;
-    case utf8_SeqLen_2:
-        *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_2 | (codepoint >> 6)));
-        *S_at((out)[1]) = utf16__makeContinuationByte(intCast$((u8)codepoint) & prim_maskLo_static$((u8)(6)));
-        break;
-    case utf8_SeqLen_3:
-        *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_3 | (codepoint >> 12)));
-        *S_at((out)[1]) = utf16__makeContinuationByte(intCast$((u8)(codepoint >> 6)) & prim_maskLo_static$((u8)(6)));
-        *S_at((out)[2]) = utf16__makeContinuationByte(intCast$((u8)codepoint) & prim_maskLo_static$((u8)(6)));
-        break;
-    case utf8_SeqLen_4:
-        *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_4 | (codepoint >> 18)));
-        *S_at((out)[1]) = utf16__makeContinuationByte(intCast$((u8)(codepoint >> 12)) & prim_maskLo_static$((u8)(6)));
-        *S_at((out)[2]) = utf16__makeContinuationByte(intCast$((u8)(codepoint >> 6)) & prim_maskLo_static$((u8)(6)));
-        *S_at((out)[3]) = utf16__makeContinuationByte(intCast$((u8)codepoint) & prim_maskLo_static$((u8)(6)));
-        break;
+fn_((utf16_encode(u32 codepoint, S$u16 out))(E$S$u16) $scope) {
+    if (utf16_isSurrogate(codepoint)) { return_err(utf16_Err_CodepointTooLarge()); }
+    let required_len = (codepoint < 0x10000) ? (usize)1 : (usize)2;
+    if (codepoint > 0x10FFFF) { return_err(utf16_Err_CodepointTooLarge()); }
+    if (required_len > out.len) { return_err(mem_Err_OutOfMemory()); }
+    return_ok(try_(utf16_encodeWithin(codepoint, out)));
+} $unscoped_(fn);
+
+fn_((utf16_encodeWithin(u32 codepoint, S$u16 out))(utf16_Err$S$u16) $scope) {
+    if (utf16_isSurrogate(codepoint)) { return_err(utf16_Err_CodepointTooLarge()); }
+    if (codepoint < 0x10000) {
+        claim_assert(1 <= out.len);
+        *S_at((out)[0]) = intCast$((u16)codepoint);
+        return_ok(S_slice((out)$r(0, 1)));
+    } else {
+        if (codepoint > 0x10FFFF) { return_err(utf16_Err_CodepointTooLarge()); }
+        claim_assert(2 <= out.len);
+        let high = intCast$((u16)((codepoint - 0x10000) >> 10) + 0xD800);
+        let low = intCast$((u16)(codepoint & 0x3FF) + 0xDC00);
+        *S_at((out)[0]) = high;
+        *S_at((out)[1]) = low;
+        return_ok(S_slice((out)$r(0, 2)));
     }
-    return_ok(S_slice((out)$r(0, seq_len)));
+} $unscoped_(fn);
+
+fn_((utf16_decode(S_const$u16 codeunits))(utf16_Err$u32) $scope) {
+    if (codeunits.len == 0) { return_err(utf16_Err_InvalidStartCodeUnit()); }
+    let first = *S_at((codeunits)[0]);
+    if (utf16_isHighSurrogate(first)) {
+        if (codeunits.len < 2) { return_err(utf16_Err_DanglingSurrogateHalf()); }
+        let second = *S_at((codeunits)[1]);
+        return_(utf16_decodeSurrogatePair(first, second));
+    } else if (utf16_isLowSurrogate(first)) {
+        return_err(utf16_Err_UnexpectedSecondSurrogateHalf());
+    } else {
+        return_ok((u32)first);
+    }
 } $unscoped_(fn);
 
 fn_((utf16_decodeSurrogatePair(u16 high_codeunit, u16 low_codeunit))(utf16_Err$u32) $scope) {
@@ -51,6 +56,17 @@ fn_((utf16_decodeSurrogatePair(u16 high_codeunit, u16 low_codeunit))(utf16_Err$u
     let high_half = (u32)(high_codeunit & prim_maskLo_static$((u16)(10)));
     let low_half = (u32)(low_codeunit & prim_maskLo_static$((u16)(10)));
     return_ok(0x10000 + (high_half << 10) | low_half);
+} $unscoped_(fn);
+
+fn_((utf16_validate(S_const$u16 codeunits))(bool) $scope) {
+    var_(idx, usize) = 0;
+    while (idx < codeunits.len) {
+        let rest = S_slice((codeunits)$r(idx, codeunits.len));
+        let_ignore = catch_((utf16_decode(rest))($ignore, return_(false)));
+        let seq_len = catch_((utf16_codeunitSeqLen(*S_at((rest)[0])))($ignore, claim_unreachable));
+        idx += seq_len;
+    }
+    return_(true);
 } $unscoped_(fn);
 
 fn_((utf16_count(S_const$u16 codeunits))(usize) $scope) {
@@ -86,44 +102,4 @@ fn_((utf16_Iter_next(utf16_Iter* self))(utf16_Err$O$u32) $scope) {
         self->idx += 1;
         return_ok(some((u32)first));
     }
-} $unscoped_(fn);
-
-fn_((utf16_calcUTF8Len(S_const$u16 utf16))(utf16_Err$usize) $scope) {
-    var_(len8, usize) = 0;
-    var it = utf16_iter(utf16);
-    while_some((try_(utf16_Iter_next(&it))), codepoint) {
-        let seq_len = try_(utf8_codepointSeqLen(codepoint));
-        len8 += seq_len;
-    }
-    return_ok(len8);
-} $unscoped_(fn);
-
-fn_((utf16__toUTF8(S_const$u16 utf16, usize required_len, S$u8 out_utf8))(utf16_Err$S$u8) $scope) {
-    claim_assert(required_len <= out_utf8.len);
-    var_(out_idx, usize) = 0;
-    var it = utf16_iter(utf16);
-    while_some((try_(utf16_Iter_next(&it))), codepoint) {
-        let seq_len = try_(utf8_codepointSeqLen(codepoint));
-        let encoded = try_(utf16__encodeCodepoint(codepoint, seq_len, S_slice((out_utf8)$r(out_idx, out_idx + seq_len))));
-        out_idx += encoded.len;
-    }
-    return_ok(S_slice((out_utf8)$r(0, out_idx)));
-} $unscoped_(fn);
-
-fn_((utf16_toUTF8(S_const$u16 utf16, S$u8 out_utf8))(E$S$u8) $scope) {
-    let required_len = try_(utf16_calcUTF8Len(utf16));
-    if (required_len > out_utf8.len) { return_err(mem_Err_OutOfMemory()); }
-    return_ok(try_(utf16__toUTF8(utf16, required_len, out_utf8)));
-} $unscoped_(fn);
-
-fn_((utf16_toUTF8Within(S_const$u16 utf16, S$u8 out_utf8))(utf16_Err$S$u8) $scope) {
-    return_(utf16__toUTF8(utf16, try_(utf16_calcUTF8Len(utf16)), out_utf8));
-} $unscoped_(fn);
-
-fn_((utf16_toUTF8Alloc(S_const$u16 utf16, mem_Allocator gpa))(utf16_mem_Err$S$u8) $scope) {
-    let required_len = try_(utf16_calcUTF8Len(utf16));
-    let required_buf = u_castS$((S$u8)try_(mem_Allocator_alloc(gpa, typeInfo$(u8), required_len)));
-    let utf8 = try_(utf16__toUTF8(utf16, required_len, required_buf));
-    claim_assert(utf8.len == required_buf.len);
-    return_ok(utf8);
 } $unscoped_(fn);

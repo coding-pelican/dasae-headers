@@ -45,6 +45,8 @@ $attr($must_check)
 $extern fn_((wtf8_decode(S_const$u8 bytes))(wtf8_Err$u32));
 /// Validates if the slice is valid WTF-8.
 $extern fn_((wtf8_validate(S_const$u8 bytes))(bool));
+/// Returns the number of codepoints in the given string.
+$extern fn_((wtf8_count(S_const$u8 bytes))(usize));
 
 typedef struct wtf8_View {
     var_(bytes, S_const$u8);
@@ -62,26 +64,6 @@ $extern fn_((wtf8_iter(wtf8_View view))(wtf8_Iter));
 /// Returns next codepoint. (Surrogates are returned as-is, not errors).
 $extern fn_((wtf8_Iter_next(wtf8_Iter* self))(O$u32));
 $extern fn_((wtf8_Iter_nextBytes(wtf8_Iter* self))(O$S_const$u8));
-
-T_use_E$($set(wtf8_Err)(usize));
-/// Conversion from WTF-8 to WTF-16 is defined here.
-/// Note: WTF-16 is just S$u16 (allows unpaired surrogates).
-$attr($must_check)
-$extern fn_((wtf8_calcWTF16Len(S_const$u8 wtf8))(wtf8_Err$usize));
-/// Converts a WTF-8 string to WTF-16 (Host Endian).
-$attr($must_check) /* `wtf8_Err` + `mem_Err` */
-$extern fn_((wtf8_toWTF16(S_const$u8 wtf8, S$u16 out_wtf16))(E$S$u16));
-T_use_E$($set(wtf8_Err)(S$u16));
-$attr($must_check)
-$extern fn_((wtf8_toWTF16Within(S_const$u8 wtf8, S$u16 out_wtf16))(wtf8_Err$S$u16));
-typedef E$$($set(mem_Err)(S$u16)) wtf8_mem_Err$S$u16;
-/// Allocates a new WTF-16 string from the given WTF-8 string.
-$attr($must_check)
-$extern fn_((wtf8_toWTF16Alloc(S_const$u8 wtf8, mem_Allocator gpa))(wtf8_mem_Err$S$u16));
-typedef E$$($set(mem_Err)(S$u8)) wtf8_mem_Err$S$u8;
-/// Lossy conversion to strict UTF-8 (Replaces ill-formed/surrogates with replacement char).
-$attr($must_check)
-$extern fn_((wtf8_toUTF8LossyAlloc(S_const$u8 wtf8, mem_Allocator gpa))(wtf8_mem_Err$S$u8));
 
 #if defined(__cplusplus)
 } /* extern "C" */

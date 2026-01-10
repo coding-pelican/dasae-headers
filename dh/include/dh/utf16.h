@@ -58,10 +58,22 @@ T_use_E$($set(utf16_Err)(utf8_SeqLen));
 /// Returns bytes length (1-4) if encoded in UTF-8.
 $attr($must_check)
 $extern fn_((utf16_codepointSeqLen(u32 codepoint))(utf16_Err$utf8_SeqLen));
+T_use_E$($set(utf16_Err)(S$u16));
+/// Encodes a single codepoint into UTF-16 code units.
+/// Returns the slice of the written buffer.
+$attr($must_check) /* `utf16_Err` + `mem_Err` */
+$extern fn_((utf16_encode(u32 codepoint, S$u16 out))(E$S$u16));
+$attr($must_check)
+$extern fn_((utf16_encodeWithin(u32 codepoint, S$u16 out))(utf16_Err$S$u16));
 T_use_E$($set(utf16_Err)(u32));
+/// Decodes UTF-16 code units to a codepoint.
+$attr($must_check)
+$extern fn_((utf16_decode(S_const$u16 codeunits))(utf16_Err$u32));
 /// Decodes a surrogate pair (High Codeunit, Low Codeunit) into a codepoint.
 $attr($must_check)
 $extern fn_((utf16_decodeSurrogatePair(u16 high_codeunit, u16 low_codeunit))(utf16_Err$u32));
+/// Validates if the slice is valid UTF-16.
+$extern fn_((utf16_validate(S_const$u16 codeunits))(bool));
 /// Returns the number of code units in the given string.
 $extern fn_((utf16_count(S_const$u16 codeunits))(usize));
 
@@ -74,23 +86,6 @@ T_use_E$($set(utf16_Err)(O$u32));
 /// Returns next codepoint. Fails if invalid surrogate pair found.
 $attr($must_check)
 $extern fn_((utf16_Iter_next(utf16_Iter* self))(utf16_Err$O$u32));
-
-T_use_E$($set(utf16_Err)(usize));
-/// Calculates required buffer size for UTF-8 conversion.
-$attr($must_check)
-$extern fn_((utf16_calcUTF8Len(S_const$u16 utf16))(utf16_Err$usize));
-/// Converts a UTF-16 string to UTF-8 (Host Endian).
-/// `out_utf8` must be large enough (use `calcUTF8Len`).
-/// Returns the number of u8 code units written.
-$attr($must_check) /* `utf16_Err` + `mem_Err` */
-$extern fn_((utf16_toUTF8(S_const$u16 utf16, S$u8 out_utf8))(E$S$u8));
-T_use_E$($set(utf16_Err)(S$u8));
-$attr($must_check)
-$extern fn_((utf16_toUTF8Within(S_const$u16 utf16, S$u8 out_utf8))(utf16_Err$S$u8));
-typedef E$$($set(mem_Err)(S$u8)) utf16_mem_Err$S$u8;
-/// Allocates a new UTF-8 string from the given UTF-16 string.
-$attr($must_check)
-$extern fn_((utf16_toUTF8Alloc(S_const$u16 utf16, mem_Allocator gpa))(utf16_mem_Err$S$u8));
 
 /*========== Macros and Definitions =========================================*/
 
