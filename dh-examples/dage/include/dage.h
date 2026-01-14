@@ -55,7 +55,7 @@ extern "C" {
 
 /* Input types */
 #include "dage/KeyCode.h"
-#include "dage/MouseButton.h"
+#include "dage/MouseBtn.h"
 #include "dage/InputState.h"
 
 /* Core systems */

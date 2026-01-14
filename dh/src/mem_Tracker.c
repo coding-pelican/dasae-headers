@@ -6,7 +6,6 @@
 #include "dh/mem/common.h"
 #include "dh/fs/Dir.h"
 #include "dh/io.h"
-#include "dh/Str.h"
 #include "dh/time.h"
 #include <stdio.h> /* TODO: Remove this dependency */
 #include <stdlib.h> /* TODO: Remove this dependency */
@@ -35,7 +34,7 @@ typedef struct LeakSite {
 
 /*========== Singleton Instance ============================================*/
 
-static mem_Tracker mem_Tracker_s_instance = cleared();
+$static mem_Tracker mem_Tracker_s_instance = cleared();
 
 /// Automatic initialization at program start
 $attr($on_load)
@@ -46,13 +45,13 @@ $static fn_((mem_Tracker__init(void))(void)) {
         ErrTrace_print();
     }));
     let_ignore = atexit(mem_Tracker_finiAndGenerateReport);
-}
+};
 
 /// Automatic finalization at program exit (will call atexit handler)
 $attr($on_exit)
 $static fn_((mem_Tracker__fini(void))(void)) {
     mem_Tracker_finiAndGenerateReport();
-}
+};
 
 /*========== Implementation ================================================*/
 
@@ -62,7 +61,7 @@ fn_((mem_Tracker_initWithPath(S_const$u8 log_path))(E$void) $guard) {
     try_(fs_Dir_create(dir_path));
 
     // Open log file
-    A$$(256, u8) path_str = zero$A();
+    A$$(256, u8) path_str = A_zero();
     mem_copyBytes(A_ref$((S$u8)path_str), log_path);
     *at$A(path_str, log_path.len) = '\0';
 
@@ -147,11 +146,14 @@ fn_((mem_Tracker_finiAndGenerateReport(void))(void) $guard) {
 
             // Find or add to leak sites
             eval_(void $scope)(for_(($s(sites.items))(site) {
+                let site_file_name = mem_spanZ0$u8(ptrCast$((const u8*)(site->src_loc.file_name)));
+                let site_fn_name = mem_spanZ0$u8(ptrCast$((const u8*)(site->src_loc.fn_name)));
+                let curr_file_name = mem_spanZ0$u8(ptrCast$((const u8*)(curr->src_loc.file_name)));
+                let curr_fn_name = mem_spanZ0$u8(ptrCast$((const u8*)(curr->src_loc.fn_name)));
                 // Check if it's the same location
-                if (Str_eql(Str_viewZ(as$(const u8*)(site->src_loc.file_name)), Str_viewZ(as$(const u8*)(curr->src_loc.file_name)))
+                if (mem_eqlBytes(site_file_name, curr_file_name)
                     && site->src_loc.line == curr->src_loc.line
-                    && Str_eql(Str_viewZ(as$(const u8*)(site->src_loc.fn_name)), Str_viewZ(as$(const u8*)(curr->src_loc.fn_name)))) {
-
+                    && mem_eqlBytes(site_fn_name, curr_fn_name)) {
                     site->count++;
                     site->total_bytes += curr->size;
                     $break_void();
@@ -235,7 +237,7 @@ fn_((mem_Tracker_registerAlloc(P$raw ptr, usize size, SrcLoc src_loc))(void)) {
         ptr, size, src_loc.file_name, src_loc.line, src_loc.fn_name, mem_Tracker_s_instance.total_allocated
     );
     // clang-format on
-}
+};
 
 fn_((mem_Tracker_registerRemap(P$raw old_ptr, P$raw new_ptr, usize new_size, SrcLoc src_loc))(void)) {
     if (!mem_Tracker_s_instance.log_file) { return; }
@@ -270,7 +272,7 @@ fn_((mem_Tracker_registerRemap(P$raw old_ptr, P$raw new_ptr, usize new_size, Src
     if (new_ptr) {
         mem_Tracker_registerAlloc(new_ptr, new_size, src_loc);
     }
-}
+};
 
 fn_((mem_Tracker_registerFree(P$raw ptr, SrcLoc src_loc))(bool)) {
     if (!ptr || !mem_Tracker_s_instance.log_file) { return false; }
@@ -321,10 +323,10 @@ fn_((mem_Tracker_registerFree(P$raw ptr, SrcLoc src_loc))(bool)) {
     *curr = to_free->next;
     free(to_free);
     return true;
-}
+};
 
 fn_((mem_Tracker_instance(void))(mem_Tracker*)) {
     return &mem_Tracker_s_instance;
-}
+};
 
 #endif /* defined(MEM_NO_TRACE_ALLOC_AND_FREE) || !debug_comp_enabled */

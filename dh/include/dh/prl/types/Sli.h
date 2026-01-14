@@ -138,7 +138,7 @@ extern "C" {
 #define __op__S_deref$__parseANT(_ANT...) _ANT,
 #define __op__S_deref$__emit(_ANT, _s...) (*blk({ \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(S_len(__s) == A_innerN$(_ANT), "length mismatch: len(%zu) != N(%zu)", S_len(__s), A_innerN$(_ANT)); \
+    claim_assert_fmt(S_len(__s) == A_innerN$(_ANT), "length mismatch: len({:uz}) != N({:uz})", S_len(__s), A_innerN$(_ANT)); \
     as$(_ANT*)(ensureNonnull(S_ptr(__s))); \
 }))
 
@@ -149,14 +149,14 @@ extern "C" {
 #define __op__S_at__emit(__s, __idx, _s, _idx...) ({ \
     let_(__idx, usize) = sizeOf$(TypeOf(u8 _idx)); \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__idx < S_len(__s), "Index out of bounds: idx(%zu) >= len(%zu)", __idx, S_len(__s)); \
+    claim_assert_fmt(__idx < S_len(__s), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, S_len(__s)); \
     S_ptr(__s) + __idx; \
 })
 #if UNUSED_CODE
 #define __op__S_at__emit(__s, __idx, _s, _idx...) ({ \
     let_(__idx, usize) = sizeOf$(TypeOf(u8 _idx)); \
     let_(__s, TypeOf(&(_s))) = &(_s); \
-    claim_assert_fmt(__idx < S_len(*__s), "Index out of bounds: idx(%zu) >= len(%zu)", __idx, S_len(*__s)); \
+    claim_assert_fmt(__idx < S_len(*__s), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, S_len(*__s)); \
     S_ptr(*__s) + __idx; \
 })
 #endif /* UNUSED_CODE */
@@ -167,8 +167,8 @@ extern "C" {
 #define __op__S_slice$__emit(_ST, __s, _s, __range, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= S_len(__s), "Invalid slice range: end(%zu) > len(%zu)", __range.end, S_len(__s)); \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(__range.end <= S_len(__s), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, S_len(__s)); \
     lit$((_ST){ .ptr = &S_ptr(__s)[__range.begin], .len = len$R(__range) }); \
 })
 #define S_slice(/*(_s: S(_T))(_range: R)*/... /*(S(_T))*/) \
@@ -178,8 +178,8 @@ extern "C" {
 #define __op__S_slice__emit(__s, _s, __range, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= S_len(__s), "Invalid slice range: end(%zu) > len(%zu)", __range.end, S_len(__s)); \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(__range.end <= S_len(__s), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, S_len(__s)); \
     lit$((TypeOf(__s)){ .ptr = &S_ptr(__s)[__range.begin], .len = len$R(__range) }); \
 })
 
@@ -191,7 +191,7 @@ extern "C" {
 #define __op__S_prefix$__emit(_ST, __s, _s, __end, _end...) ({ \
     let_(__end, usize) = _end; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__end <= S_len(__s), "Invalid slice range: end(%zu) > len(%zu)", __end, S_len(__s)); \
+    claim_assert_fmt(__end <= S_len(__s), "Invalid slice range: end({:uz}) > len({:uz})", __end, S_len(__s)); \
     lit$((_ST){ .ptr = S_ptr(__s), .len = __end }); \
 })
 #define S_prefix(/*(_s: S(_T))(_end: usize)*/... /*(S(_T))*/) \
@@ -201,7 +201,7 @@ extern "C" {
 #define __op__S_prefix__emit(__s, _s, __end, _end...) ({ \
     let_(__end, usize) = _end; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__end <= S_len(__s), "Invalid slice range: end(%zu) > len(%zu)", __end, S_len(__s)); \
+    claim_assert_fmt(__end <= S_len(__s), "Invalid slice range: end({:uz}) > len({:uz})", __end, S_len(__s)); \
     lit$((TypeOf(__s)){ .ptr = S_ptr(__s), .len = __end }); \
 })
 
@@ -213,7 +213,7 @@ extern "C" {
 #define __op__S_suffix$__emit(_ST, __s, _s, __begin, _begin...) ({ \
     let_(__begin, usize) = _begin; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, S_len(__s)); \
+    claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, S_len(__s)); \
     lit$((_ST){ .ptr = S_ptr(__s) + __begin, .len = S_len(__s) - __begin }); \
 })
 #define S_suffix(/*(_s: S(_T))(_begin: usize)*/... /*(S(_T))*/) \
@@ -223,7 +223,7 @@ extern "C" {
 #define __op__S_suffix__emit(__s, _s, __begin, _begin...) ({ \
     let_(__begin, usize) = _begin; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, S_len(__s)); \
+    claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, S_len(__s)); \
     lit$((TypeOf(__s)){ .ptr = S_ptr(__s) + __begin, .len = S_len(__s) - __begin }); \
 })
 
@@ -266,7 +266,7 @@ extern "C" {
 #define __param_next__deref$S$(...) pp_uniqTok(s), __VA_ARGS__
 #define __emit_inline__deref$S$(_N, _T, __s, _s...) (*({ \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(len$S(__s) == _N, "length mismatch: len(%zu) != N(%zu)", len$S(__s), _N); \
+    claim_assert_fmt(len$S(__s) == _N, "length mismatch: len({:uz}) != N({:uz})", len$S(__s), _N); \
     as$(A$(_N, _T)*)(ensureNonnull(ptr$S(__s))); \
 }))
 
@@ -275,7 +275,7 @@ extern "C" {
 #define __param_next__deref$S$$(...) pp_uniqTok(s), __VA_ARGS__
 #define __emit_inline__deref$S$$(_N, _T, __s, _s...) (*({ \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(len$S(__s) == _N, "length mismatch: len(%zu) != N(%zu)", len$S(__s), _N); \
+    claim_assert_fmt(len$S(__s) == _N, "length mismatch: len({:uz}) != N({:uz})", len$S(__s), _N); \
     as$(A$$(_N, _T)*)(ensureNonnull(ptr$S(__s))); \
 }))
 
@@ -283,7 +283,7 @@ extern "C" {
 #define block_inline__at$S(__s, __idx, _s, _idx...) ({ \
     let_(__idx, usize) = _idx; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__idx < len$S(__s), "Index out of bounds: idx(%zu) >= len(%zu)", __idx, len$S(__s)); \
+    claim_assert_fmt(__idx < len$S(__s), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, len$S(__s)); \
     &ptr$S(__s)[__idx]; \
 })
 
@@ -291,8 +291,8 @@ extern "C" {
 #define __block_inline__slice$S(__s, __range, _s, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= len$S(__s), "Invalid slice range: end(%zu) > len(%zu)", __range.end, len$S(__s)); \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(__range.end <= len$S(__s), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, len$S(__s)); \
     lit$((TypeOf(__s))init$S(&ptr$S(__s)[__range.begin], len$R(__range))); \
 })
 
@@ -301,8 +301,8 @@ extern "C" {
 #define __block_inline__slice$S$(_T, __s, __range, _s, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= len$S(__s), "Invalid slice range: end(%zu) > len(%zu)", __range.end, len$S(__s)); \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(__range.end <= len$S(__s), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, len$S(__s)); \
     init$S$((_T)(&ptr$S(__s)[__range.begin], len$R(__range))); \
 })
 
@@ -310,7 +310,7 @@ extern "C" {
 #define __block_inline__prefix$S(__s, __end, _s, _end...) ({ \
     let_(__end, usize) = _end; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__end <= len$S(__s), "Invalid slice range: end(%zu) > len(%zu)", __end, len$S(__s)); \
+    claim_assert_fmt(__end <= len$S(__s), "Invalid slice range: end({:uz}) > len({:uz})", __end, len$S(__s)); \
     lit$((TypeOf(__s))init$S(ptr$S(__s), __end)); \
 })
 
@@ -319,7 +319,7 @@ extern "C" {
 #define __block_inline__prefix$S$(_T, __s, __end, _s, _end...) ({ \
     let_(__end, usize) = _end; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__end <= len$S(__s), "Invalid slice range: end(%zu) > len(%zu)", __end, len$S(__s)); \
+    claim_assert_fmt(__end <= len$S(__s), "Invalid slice range: end({:uz}) > len({:uz})", __end, len$S(__s)); \
     init$S$((_T)(ptr$S(__s), __end)); \
 })
 
@@ -327,7 +327,7 @@ extern "C" {
 #define __block_inline__suffix$S(__s, __begin, _s, _begin...) ({ \
     let_(__begin, usize) = _begin; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$S(__s)); \
+    claim_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, len$S(__s)); \
     lit$((TypeOf(__s))init$S(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
 
@@ -336,7 +336,7 @@ extern "C" {
 #define __block_inline__suffix$S$(_T, __s, __begin, _s, _begin...) ({ \
     let_(__begin, usize) = _begin; \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$S(__s)); \
+    claim_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, len$S(__s)); \
     init$S$((_T)(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
 

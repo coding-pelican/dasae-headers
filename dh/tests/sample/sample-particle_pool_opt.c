@@ -33,11 +33,11 @@ $attr($maybe_unused)
 $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)) {
     let thrd_count = mp_getThrdCount();
 
-    var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = zero$A();
+    var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = A_zero();
     let data_list = A_slice((data_list_buf)$r(0, thrd_count));
-    var_(workers_buf, A$$(mp_max_thrd_count, Thrd_FnCtx$(mp_worker))) = zero$A();
+    var_(workers_buf, A$$(mp_max_thrd_count, Thrd_FnCtx$(mp_worker))) = A_zero();
     let workers = A_slice((workers_buf)$r(0, thrd_count));
-    var_(threads_buf, A$$(mp_max_thrd_count, Thrd)) = zero$A();
+    var_(threads_buf, A$$(mp_max_thrd_count, Thrd)) = A_zero();
     let threads = A_slice((threads_buf)$r(0, thrd_count));
 
     let chunk = (range.end - range.begin + thrd_count - 1) / thrd_count;
@@ -247,8 +247,8 @@ $static fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdP
         .active_tasks = atom_V_init(0ull),
         .running = atom_V_init(true),
     })));
-    claim_assert_fmt(pool->workers.len == thrd_count, "workers.len(%zu) != thrd_count(%zu)", pool->workers.len, thrd_count);
-    claim_assert_fmt(pool->threads.len == thrd_count, "threads.len(%zu) != thrd_count(%zu)", pool->threads.len, thrd_count);
+    claim_assert_fmt(pool->workers.len == thrd_count, "workers.len({:uz}) != thrd_count({:uz})", pool->workers.len, thrd_count);
+    claim_assert_fmt(pool->threads.len == thrd_count, "threads.len({:uz}) != thrd_count({:uz})", pool->threads.len, thrd_count);
     for_(($s(pool->workers), $s(pool->threads), $r(0, thrd_count))(worker, thread, i) {
         *worker = Thrd_FnCtx_from$((mp_ThrdPool_worker)(pool, i));
         *thread = try_(Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw));

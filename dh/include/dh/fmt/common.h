@@ -1,17 +1,17 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-09 (date of creation)
- * @updated 2025-12-22 (date of last update)
- * @version v0.2-alpha
+ * @updated 2026-01-10 (date of last update)
  * @ingroup dasae-headers(dh)/fmt
  * @prefix  fmt
  *
- * @brief   Comprehensive formatting.
+ * @brief   Comprehensive formatting with exposed APIs for direct type formatting.
  * @details Supports indexed arguments, format specifiers, primitive types, optional, error result, and error.
+ *          This version exposes internal formatting logic as public APIs for composability.
  *
  * FORMAT SPECIFICATION:
  *   `{[index]:[fill][alignment][sign][#][width].[precision][type][size]}`
@@ -100,24 +100,32 @@ extern "C" {
 
 #include "dh/fmt/cfg.h"
 #include "dh/io/Writer.h"
-#include <stdarg.h>
+#include <stdarg.h> /* For va_list, va_start(), va_end() */
 
 /*========== Macros and Declarations ========================================*/
 
 errset_((fmt_Err)(
-    UnexpectedEndOfFormat,
-    InvalidFormatSpecifier,
-    MissingClosingBrace,
-    InvalidIndexFormat,
-    IndexOutOfBounds,
-    InvalidWidthFormat,
-    InvalidPrecisionFormat,
-    InvalidAlignmentFormat,
-    InvalidIntegerFormat,
-    InvalidFloatFormat,
-    InvalidBoolFormat,
-    TooManyArguments,
-    TooFewArguments
+    // 1. Structural errors (format string structure)
+    MissingClosingBrace, // Missing '}' after format spec
+    UnexpectedEndOfFormat, // Format string ends unexpectedly
+
+    // 2. Index/Argument errors (argument indexing)
+    InvalidIdxFormat, // Index format is malformed
+    IdxOutOfBounds, // Index exceeds max_args (0-15)
+    TooFewArgs, // Not enough arguments provided
+    TooManyArgs, // Too many arguments provided
+
+    // 3. Format specifier component errors (parsing order)
+    InvalidAlignFormat, // Invalid alignment character (<, >, ^)
+    InvalidWidthFormat, // Invalid width value
+    InvalidPrecisionFormat, // Invalid precision value
+    InvalidSpecFormat, // General format spec error (catch-all)
+
+    // 4. Type-specific errors (when formatting specific types)
+    InvalidBoolFormat, // Boolean formatting error
+    InvalidIIntFormat, // Signed integer formatting/parsing error
+    InvalidUIntFormat, // Unsigned integer formatting/parsing error
+    InvalidFltFormat, // Floating-point formatting/parsing error
 ));
 
 typedef enum_(fmt_Align $bits(8)) {
@@ -127,7 +135,7 @@ typedef enum_(fmt_Align $bits(8)) {
 } fmt_Align;
 T_use_O$(fmt_Align);
 $static let fmt_Align_default = fmt_Align_left;
-$static let_(fmt_Align_values, A$$(3, u8)) = init$A({
+$static let_(fmt_Align_values, A$$(3, u8)) = A_init({
     [fmt_Align_left] = u8_c('<'),
     [fmt_Align_center] = u8_c('^'),
     [fmt_Align_right] = u8_c('>'),
@@ -139,7 +147,7 @@ typedef enum_(fmt_TypePrefix $bits(8)) {
     fmt_TypePrefix_error_result = 1,
 } fmt_TypePrefix;
 T_use_O$(fmt_TypePrefix);
-$static let_(fmt_TypePrefix_values, A$$(2, u8)) = init$A({
+$static let_(fmt_TypePrefix_values, A$$(2, u8)) = A_init({
     [fmt_TypePrefix_optional] = u8_c('?'),
     [fmt_TypePrefix_error_result] = u8_c('!'),
 });
@@ -230,14 +238,60 @@ typedef struct fmt_Spec {
 /// Maximum number of arguments
 #define fmt_max_args (16ull)
 
-// ==================== Formatting (Output) ====================
+/*========== Formatting (Output) ==========*/
 
 /// Format values to a writer with indexed arguments
 $extern fn_((fmt_format(io_Writer writer, S_const$u8 fmt, ...))(E$void)) $must_check;
 /// Format values using va_list (for wrapper functions)
 $extern fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void)) $must_check;
 
-// ==================== Parsing (Input) - Slice based ====================
+/* --- Direct Type Formatting APIs --- */
+
+/// Format a boolean val with spec
+$extern fn_((fmt_formatBool(io_Writer writer, bool val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$bool(io_Writer writer, bool val, fmt_Spec spec))(E$void)) $must_check;
+
+/// Format unsigned integers with spec
+$extern fn_((fmt_formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$usize(io_Writer writer, usize val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$u64(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$u32(io_Writer writer, u32 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$u16(io_Writer writer, u16 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$u8(io_Writer writer, u8 val, fmt_Spec spec))(E$void)) $must_check;
+
+/// Format signed integers with spec
+$extern fn_((fmt_formatIInt(io_Writer writer, i64 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$isize(io_Writer writer, isize val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$i64(io_Writer writer, i64 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$i32(io_Writer writer, i32 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$i16(io_Writer writer, i16 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$i8(io_Writer writer, i8 val, fmt_Spec spec))(E$void)) $must_check;
+
+/// Format floating point numbers with spec
+$extern fn_((fmt_formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$f64(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$f32(io_Writer writer, f32 val, fmt_Spec spec))(E$void)) $must_check;
+
+/// Format a pointer with spec
+$extern fn_((fmt_formatPtr(io_Writer writer, P_const$raw ptr, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$P$raw(io_Writer writer, P_const$raw ptr, fmt_Spec spec))(E$void)) $must_check;
+/// Format an error val with spec
+$extern fn_((fmt_formatErr(io_Writer writer, Err err, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$Err(io_Writer writer, Err err, fmt_Spec spec))(E$void)) $must_check;
+
+/// Format an ASCII character (u8) with spec
+$extern fn_((fmt_formatASCII(io_Writer writer, u8 code, fmt_Spec spec))(E$void)) $must_check;
+/// Format a UTF-8 codepoint (u32) with spec
+$extern fn_((fmt_formatUTF8(io_Writer writer, u32 codepoint, fmt_Spec spec))(E$void)) $must_check;
+
+/// Format a null-terminated string with spec
+$extern fn_((fmt_formatStrZ(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$P$u8(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) $must_check;
+/// Format a string slice with spec
+$extern fn_((fmt_formatStr(io_Writer writer, S_const$u8 str, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$S$u8(io_Writer writer, S_const$u8 str, fmt_Spec spec))(E$void)) $must_check;
+
+/*========== Parsing (Input) - Slice based ==========*/
 
 $extern fn_((fmt_parseBool(S_const$u8 str))(E$bool)) $must_check;
 $extern fn_((fmt_parse$bool(S_const$u8 str))(E$bool)) $must_check;

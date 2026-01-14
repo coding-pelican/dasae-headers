@@ -61,8 +61,8 @@ extern "C" {
 #define __op__P_slice$__emit(_ST, __p, _p, __range, _range...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__range, R) = _range; \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); */ \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end({:uz}) > 1", __range.end); */ \
     lit$((_ST){ .ptr = &__p[__range.begin], .len = len$R(__range) }); \
 })
 #define P_slice(/*(_p: P(_T))(_range: R)*/... /*(S(_T))*/) \
@@ -72,8 +72,8 @@ extern "C" {
 #define __op__P_slice__emit(__p, _p, __range, _range...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__range, R) = _range; \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); */ \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end({:uz}) > 1", __range.end); */ \
     T_switch$((TypeOf(*__p))( \
         T_qual$((const TypeOfUnqual(*__p))( \
             lit$((S_const$$(P_InnerT$(TypeOf(__p)))){ .ptr = &__p[__range.begin], .len = len$R(__range) }) \
@@ -92,7 +92,7 @@ extern "C" {
 #define __op__P_prefix$__emit(_ST, __p, _p, __end, _end...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__end, usize) = _end; \
-    /* claim_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); */ \
+    /* claim_assert_fmt(__end <= 1, "Invalid slice range: end({:uz}) > 1", __end); */ \
     lit$((_ST){ .ptr = __p, .len = __end }); \
 })
 #define P_prefix(/*(_p: P(_T))(_end: usize)*/... /*(S(_T))*/) \
@@ -102,7 +102,7 @@ extern "C" {
 #define __op__P_prefix__emit(__p, _p, __end, _end...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__end, usize) = _end; \
-    /* claim_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); */ \
+    /* claim_assert_fmt(__end <= 1, "Invalid slice range: end({:uz}) > 1", __end); */ \
     T_switch$((TypeOf(*__p))( \
         T_qual$((const TypeOfUnqual(*__p))( \
             lit$((S_const$$(P_InnerT$(TypeOf(__p)))){ .ptr = __p, .len = __end }) \
@@ -121,7 +121,7 @@ extern "C" {
 #define __op__P_suffix$__emit(_ST, __p, _p, __begin, _begin...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__begin, usize) = _begin; \
-    /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); */ \
+    /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin({:uz}) > 1", __begin); */ \
     lit$((_ST){ .ptr = __p + __begin, .len = usize_limit_max - __begin }); \
 })
 #define P_suffix(/*(_p: P(_T))(_begin: usize)*/... /*(S(_T))*/) \
@@ -131,7 +131,7 @@ extern "C" {
 #define __op__P_suffix__emit(__p, _p, __begin, _begin...) ({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__begin, usize) = _begin; \
-    /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); */ \
+    /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin({:uz}) > 1", __begin); */ \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__p))( \
             lit$((S_const$$(P_InnerT$(TypeOf(*__p)))){ .ptr = __p + __begin, .len = usize_limit_max - __begin }) \
@@ -156,8 +156,8 @@ extern "C" {
     ({ \
         let_(__p, TypeOf(_p)) = _p; \
         let_(__range, R) = _range; \
-        claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-        /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); */ \
+        claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+        /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end({:uz}) > 1", __range.end); */ \
         init$S$$((TypeOf(*__p))(__p, len$R(__range))); \
     })
 
@@ -167,8 +167,8 @@ extern "C" {
     ({ \
         let_(__p, TypeOf(_p)) = _p; \
         let_(__range, R) = _range; \
-        claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-        /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end(%zu) > 1", __range.end); */ \
+        claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+        /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end({:uz}) > 1", __range.end); */ \
         init$S$((_T)(__p, len$R(__range))); \
     })
 
@@ -177,7 +177,7 @@ extern "C" {
     ({ \
         let_(__p, TypeOf(_p)) = _p; \
         let_(__end, usize) = _end; \
-        /* claim_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); */ \
+        /* claim_assert_fmt(__end <= 1, "Invalid slice range: end({:uz}) > 1", __end); */ \
         init$S$$((TypeOf(*__p))(__p, __end)); \
     })
 
@@ -187,7 +187,7 @@ extern "C" {
     ({ \
         let_(__p, TypeOf(_p)) = _p; \
         let_(__end, usize) = _end; \
-        /* claim_assert_fmt(__end <= 1, "Invalid slice range: end(%zu) > 1", __end); */ \
+        /* claim_assert_fmt(__end <= 1, "Invalid slice range: end({:uz}) > 1", __end); */ \
         init$S$((_T)(__p, __end)); \
     })
 
@@ -196,7 +196,7 @@ extern "C" {
     ({ \
         let_(__p, TypeOf(_p)) = _p; \
         let_(__begin, usize) = _begin; \
-        /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); */ \
+        /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin({:uz}) > 1", __begin); */ \
         init$S$$((TypeOf(*__p))(__p, usize_limit_max - __begin)); \
     })
 
@@ -206,7 +206,7 @@ extern "C" {
     ({ \
         let_(__p, TypeOf(_p)) = _p; \
         let_(__begin, usize) = _begin; \
-        /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin(%zu) > 1", __begin); */ \
+        /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin({:uz}) > 1", __begin); */ \
         init$S$((_T)(__p, usize_limit_max - __begin)); \
     })
 

@@ -302,8 +302,8 @@ $static fn_((BallManager_processInput(BallManager* self, dage_Window* win, m_V2f
     let isMousePressed = dage_InputState_isMousePressed;
     let isMouseHeld = dage_InputState_isMouseHeld;
     let isMouseReleased = dage_InputState_isMouseReleased;
-    let Button_left = dage_MouseButton_left;
-    let Button_right = dage_MouseButton_right;
+    let Button_left = dage_MouseBtn_left;
+    let Button_right = dage_MouseBtn_right;
 
     let mouse_pos = dage_Window_getMousePos(win);
     let world_mouse = screenToWorld(mouse_pos, screen_center);

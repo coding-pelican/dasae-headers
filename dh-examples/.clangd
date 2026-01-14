@@ -25,6 +25,7 @@ Diagnostics:
       - bugprone-assignment-in-if-condition
       - bugprone-easily-swappable-parameters
       - bugprone-reserved-identifier
+      - bugprone-signed-char-misuse
       - cert-dcl37-c
       - cert-dcl51-cpp
       - llvm-include-order

@@ -43,7 +43,7 @@ $static fn_((exec_runLoop(bool endless))(void)) {
 /// \return The slot for the task
 $static fn_((exec_findSlot(void))(O$Task*)) {
     let slot = eval_(P$$(O$Task) $scope)(
-        for_(($s(ref$A(exec_s_task_list)))(task) {
+        for_(($s(A_ref(exec_s_task_list)))(task) {
             if_none(*task)
                 $break_(task);
         })

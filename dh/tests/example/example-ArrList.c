@@ -42,7 +42,7 @@ $static fn_((example(void))(mem_Err$void) $guard) {
         [0] = { .x = 30, .y = 40 },
         [1] = { .x = 50, .y = 60 },
     });
-    try_(ArrList_appendS$Point(&points, gpa, ref$A$((Point)(more_points)).as_const));
+    try_(ArrList_appendS$Point(&points, gpa, A_ref$((S$Point)(more_points)).as_const));
     // Print current state
     printPoints(points);
 

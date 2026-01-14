@@ -29,7 +29,7 @@ fn_((dage_Backend_present(dage_Backend self, dage_TargetId id, S_const$u32 pixel
     claim_assert_nonnullS(pixels);
     debug_assert_fmt(
         pixels.len == ((as$(usize)(w)) * h),
-        "Pixel buffer size mismatch: %zu != %u * %u",
+        "Pixel buffer size mismatch: {:uz} != {:u} * {:u}",
         pixels.len, w, h
     );
     self.vt->present(self.ptr, id, pixels, w, h);

@@ -13,7 +13,7 @@ fn_((io_Buf_Reader_init(io_Reader inner, S$u8 buf))(io_Buf_Reader)) {
         .start = 0,
         .end = 0,
     };
-}
+};
 
 fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(E$void) $scope) {
     // Move remaining data to start
@@ -29,7 +29,7 @@ fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(E$void) $scope) {
     // Read more data
     let available_space = self->buf.len - self->end;
     if (available_space > 0) {
-        let read_buf = suffix$S(self->buf, self->end);
+        let read_buf = S_suffix((self->buf)self->end);
         let bytes_read = try_(io_Reader_read(self->inner, read_buf));
         self->end += bytes_read;
     }
@@ -39,18 +39,18 @@ fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(E$void) $scope) {
 fn_((io_Buf_Reader_peekByte(io_Buf_Reader* self))(E$u8) $scope) {
     // HOT PATH: data in buf
     if (self->start < self->end) {
-        return_ok(*at$S(self->buf, self->start));
+        return_ok(*S_at((self->buf)[self->start]));
     }
     // COLD PATH: refill buf
     try_(io_Buf_Reader_fill(self));
     if (self->start >= self->end) {
         return_err(io_Err_UnexpectedEof());
     }
-    return_ok(*at$S(self->buf, self->start));
+    return_ok(*S_at((self->buf)[self->start]));
 } $unscoped_(fn);
 
 fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E$S$u8) $scope) {
-    usize written = 0;
+    var_(written, usize) = 0;
     while (written < out_buf.len) {
         // Ensure data in buf
         if (self->start >= self->end) {
@@ -62,7 +62,7 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
         // Search for delimiter in current buf
         let search_end = self->end;
         for_(($r(self->start, search_end))(i) {
-            if (*at$S(self->buf, i) == delim) {
+            if (*S_at((self->buf)[i]) == delim) {
                 // Found delimiter
                 let copy_len = i - self->start;
                 if (written + copy_len > out_buf.len) {
@@ -96,7 +96,7 @@ fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(E$void) $scope)
         }
         // Search for delimiter in current buf
         for_(($r(self->start, self->end))(i) {
-            if (*at$S(self->buf, i) == delim) {
+            if (*S_at((self->buf)[i]) == delim) {
                 self->start = i + 1; // Skip delimiter
                 return_ok({});
             }
@@ -107,7 +107,7 @@ fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(E$void) $scope)
 } $unscoped_(fn);
 
 fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize n))(E$void) $scope) {
-    usize remaining = n;
+    var_(remaining, usize) = n;
     while (remaining > 0) {
         // Use buffered data first
         if (self->start < self->end) {
@@ -163,7 +163,7 @@ fn_((io_Buf_reader(io_Buf_Reader* self))(io_Reader)) {
         .ctx = as$(P$raw)(self),
         .read = Reader_VT_read,
     };
-}
+};
 
 /* BufWriter ========================*/
 
@@ -173,7 +173,7 @@ fn_((io_Buf_Writer_init(io_Writer inner, S$u8 buf))(io_Buf_Writer)) {
         .buf = buf,
         .used = 0,
     };
-}
+};
 
 fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(E$void) $scope) {
     if (self->used == 0) {
@@ -211,4 +211,4 @@ fn_((io_Buf_writer(io_Buf_Writer* self))(io_Writer)) {
         .ctx = as$(P$raw)(self),
         .write = Writer_VT_write,
     };
-}
+};

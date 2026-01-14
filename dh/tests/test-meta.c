@@ -117,8 +117,8 @@ TEST_fn_("u_offsetTo matches actual struct field offsets" $scope) {
 TEST_fn_("u_offsets matches all actual struct field offsets" $scope) {
     let field_types = typeInfos$(u8, u32, u64);
 
-    var_(offsets, A$$(3, usize)) = {};
-    u_offsets(field_types, ref$A$((usize)(offsets)));
+    var_(offsets, A$$(3, usize)) = A_zero();
+    u_offsets(field_types, A_ref$((S$usize)(offsets)));
 
     usize expected_0 = as$(usize)(offsetTo(Record_u8_u32_u64, field0));
     usize expected_1 = as$(usize)(offsetTo(Record_u8_u32_u64, field1));
@@ -191,7 +191,7 @@ TEST_fn_("u_offsetToN matches actual SoA struct field offsets" $scope) {
 TEST_fn_("u_offsetsN matches all actual SoA struct field offsets" $scope) {
     let field_types = typeInfos$(u8, u32, u64);
 
-    var_(offsets, A$$(3, usize)) = {};
+    var_(offsets, A$$(3, usize)) = A_zero();
     u_offsetsN(10, field_types, A_ref$((S$usize)(offsets)));
 
     usize expected_0 = as$(usize)(offsetTo(RecordN_u8_u32_u64, field0));
@@ -212,7 +212,7 @@ TEST_fn_("u_fieldSlisMut produces correctly positioned slices" $scope) {
     const usize N = 10;
 
     // Use actual SoA struct as reference
-    var_(control, RecordN_u8_u32_u64) = {};
+    var_(control, RecordN_u8_u32_u64) = A_zero();
 
     // Compute using meta module
     let record_ptr = u_anyP(&control);

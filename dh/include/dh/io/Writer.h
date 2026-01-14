@@ -19,12 +19,12 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include <stdarg.h>
+#include <stdarg.h> /* For va_list, va_start(), va_end() */
 
 /*========== Macros and Declarations ========================================*/
 
 typedef struct io_Writer {
-    P$raw ctx;
+    var_(ctx, P$raw);
     fn_(((*write)(P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
 } io_Writer;
 
