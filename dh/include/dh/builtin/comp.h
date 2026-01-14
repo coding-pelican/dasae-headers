@@ -89,6 +89,11 @@ extern "C" {
      * @brief Ignores expression or return value \
      */ \
     comp_attr__let_ignore
+#define $do_nothing \
+    /** \
+     * @brief Does nothing \
+     */ \
+    comp_attr__$do_nothing
 
 #define $used(_Expr... /*void*/) \
     /** \
@@ -461,7 +466,8 @@ extern "C" {
     $maybe_unused pp_uniqTok(ignored) = (Void){}; \
     let_ignore
 #define comp_attr__let_ignore $maybe_unused let pp_uniqTok(ignored)
-
+#define comp_attr__$do_nothing \
+    {}
 
 #define comp_attr__$used(_Expr...) _Expr
 /* begin unused */

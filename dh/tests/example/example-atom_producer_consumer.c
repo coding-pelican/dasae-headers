@@ -20,7 +20,7 @@ $static fn_((SharedBuf_init(void))(SharedBuf)) {
         .write_idx = atom_V_init(0),
         .read_idx = atom_V_init(0),
         .is_active = atom_V_init(true),
-        .data = zero$A(),
+        .data = A_zero(),
     };
 }
 

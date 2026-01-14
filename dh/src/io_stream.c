@@ -24,50 +24,48 @@ $static fn_((io_stream__init(void))(void)) {
 #endif /* plat_is_windows */
     /* NOLINTNEXTLINE(concurrency-mt-unsafe) */
     let_ignore = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
-}
+};
 
 $attr($on_exit)
 $static fn_((io_stream__fini(void))(void)) {
     Thrd_Mtx_Recur_fini(&io_stream__s_out_mtx);
     Thrd_Mtx_Recur_fini(&io_stream__s_err_mtx);
-}
+};
 
 fn_((io_stream_nl(void))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
 
     let stream_out = fs_File_writer(io_getStdOut());
-    catch_((io_Writer_nl(stream_out))($ignore, claim_unreachable));
+    let_ignore = catch_((io_Writer_nl(stream_out))($ignore, $do_nothing));
 } $unguarded_(fn);
 
 fn_((io_stream_print(S_const$u8 fmt, ...))(void)) {
-    va_list va_args = {};
-    with_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    with_(va_list va_args = null) with_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printVaArgs(fmt, va_args);
-    }
-}
+    };
+};
 
 fn_((io_stream_printVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
 
     let stream_out = fs_File_writer(io_getStdOut());
-    catch_((io_Writer_printVaArgs(stream_out, fmt, va_args))($ignore, claim_unreachable));
+    let_ignore = catch_((io_Writer_printVaArgs(stream_out, fmt, va_args))($ignore, $do_nothing));
 } $unguarded_(fn);
 
 fn_((io_stream_println(S_const$u8 fmt, ...))(void)) {
-    va_list va_args = {};
-    with_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    with_(va_list va_args = null) with_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printlnVaArgs(fmt, va_args);
-    }
-}
+    };
+};
 
 fn_((io_stream_printlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
 
     let stream_out = fs_File_writer(io_getStdOut());
-    catch_((io_Writer_printlnVaArgs(stream_out, fmt, va_args))($ignore, claim_unreachable));
+    let_ignore = catch_((io_Writer_printlnVaArgs(stream_out, fmt, va_args))($ignore, $do_nothing));
 } $unguarded_(fn);
 
 fn_((io_stream_enl(void))(void) $guard) {
@@ -75,35 +73,33 @@ fn_((io_stream_enl(void))(void) $guard) {
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
 
     let stream_err = fs_File_writer(io_getStdErr());
-    catch_((io_Writer_nl(stream_err))($ignore, claim_unreachable));
+    let_ignore = catch_((io_Writer_nl(stream_err))($ignore, $do_nothing));
 } $unguarded_(fn);
 
 fn_((io_stream_eprint(S_const$u8 fmt, ...))(void)) {
-    va_list va_args = {};
-    with_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    with_(va_list va_args = null) with_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintVaArgs(fmt, va_args);
-    }
-}
+    };
+};
 
 fn_((io_stream_eprintVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
 
     let stream_err = fs_File_writer(io_getStdErr());
-    catch_((io_Writer_printlnVaArgs(stream_err, fmt, va_args))($ignore, claim_unreachable));
+    let_ignore = catch_((io_Writer_printVaArgs(stream_err, fmt, va_args))($ignore, $do_nothing));
 } $unguarded_(fn);
 
 fn_((io_stream_eprintln(S_const$u8 fmt, ...))(void)) {
-    va_list va_args = {};
-    with_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    with_(va_list va_args = null) with_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintlnVaArgs(fmt, va_args);
-    }
-}
+    };
+};
 
 fn_((io_stream_eprintlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
 
     let stream_err = fs_File_writer(io_getStdErr());
-    catch_((io_Writer_printlnVaArgs(stream_err, fmt, va_args))($ignore, claim_unreachable));
+    let_ignore = catch_((io_Writer_printlnVaArgs(stream_err, fmt, va_args))($ignore, $do_nothing));
 } $unguarded_(fn);

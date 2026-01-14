@@ -68,35 +68,35 @@ extern "C" {
     (!!_Expr) || (({ \
         claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
         claim_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
-        claim_unreachable; \
+        $debug_point $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_msg(_Expr, _ExprStr, _msg...) $ignore_void( \
     (!!_Expr) || (({ \
         claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _msg); \
         claim_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
-        claim_unreachable; \
+        $debug_point $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_fmt(_Expr, _ExprStr, _fmt...) $ignore_void(\
     (!!_Expr) || (({ \
         claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
         claim_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
-        claim_unreachable; \
+        $debug_point $unreachable; \
     }), 0) \
 )
 
 #define __step__claim_assert_trap() $ignore_void(({ \
     claim_assert_failLog("(none)", __func__, __FILE__, __LINE__); \
-    claim_unreachable; \
+    $debug_point $unreachable; \
 }), 0)
 #define __step__claim_assert_trap_msg(_msg...) $ignore_void(({ \
     claim_assert_failLogMsg("(none)", __func__, __FILE__, __LINE__, _msg); \
-    claim_unreachable; \
+    $debug_point $unreachable; \
 }), 0)
 #define __step__claim_assert_trap_fmt(_fmt...) $ignore_void(({ \
     claim_assert_failLogFmt("(none)", __func__, __FILE__, __LINE__, _fmt); \
-    claim_unreachable; \
+    $debug_point $unreachable; \
 }), 0)
 /* clang-format on */
 #else /* !on_comptime */

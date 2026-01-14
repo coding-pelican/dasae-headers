@@ -76,7 +76,7 @@ extern "C" {
 #define __op__A_at__emit(__a, _a, __idx, _idx...) ({ \
     let_(__idx, usize) = sizeOf$(TypeOf(u8 _idx)); \
     let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__idx < A_len(*__a), "Index out of bounds: idx(%zu) >= len(%zu)", __idx, A_len(*__a)); \
+    claim_assert_fmt(__idx < A_len(*__a), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, A_len(*__a)); \
     A_ptr(*__a) + __idx; \
 })
 
@@ -118,8 +118,8 @@ extern "C" {
 #define __op__A_slice$__emit(_ST, __a, _a, __range, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__a, TypeOf(_a)*) = &(_a); \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= A_len(*__a), "Invalid slice range: end(%zu) > len(%zu)", __range.end, A_len(*__a)); \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(__range.end <= A_len(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, A_len(*__a)); \
     lit$((_ST){ .ptr = &A_ptr(*__a)[__range.begin], .len = len$R(__range) }); \
 })
 #define A_slice(/*(_a: A(_N,_T))(_range: R)*/... /*(S(_T))*/) \
@@ -129,8 +129,8 @@ extern "C" {
 #define __op__A_slice__emit(__a, _a, __range, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__a, TypeOf(_a)*) = &(_a); \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= A_len(*__a), "Invalid slice range: end(%zu) > len(%zu)", __range.end, A_len(*__a)); \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(__range.end <= A_len(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, A_len(*__a)); \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__a))( \
             lit$((S_const$$(A_InnerT$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__range.begin], .len = len$R(__range) }) \
@@ -149,7 +149,7 @@ extern "C" {
 #define __op__A_prefix$__emit(_ST, __a, _a, __end, _end...) ({ \
     let_(__end, usize) = _end; \
     let_(__a, TypeOf(_a)*) = &(_a); \
-    claim_assert_fmt(__end <= A_len(*__a), "Invalid slice range: end(%zu) > len(%zu)", __end, A_len(*__a)); \
+    claim_assert_fmt(__end <= A_len(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __end, A_len(*__a)); \
     lit$((_ST){ .ptr = A_ptr(*__a), .len = __end }); \
 })
 #define A_prefix(/*(_a: A(_N,_T))(_end: usize)*/... /*(S(_T))*/) \
@@ -159,7 +159,7 @@ extern "C" {
 #define __op__A_prefix__emit(__a, _a, __end, _end...) ({ \
     let_(__end, usize) = _end; \
     let_(__a, TypeOf(_a)*) = &(_a); \
-    claim_assert_fmt(__end <= A_len(*__a), "Invalid slice range: end(%zu) > len(%zu)", __end, A_len(*__a)); \
+    claim_assert_fmt(__end <= A_len(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __end, A_len(*__a)); \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__a))( \
             lit$((S_const$$(A_InnerT$(TypeOf(*__a)))){ .ptr = A_ptr(*__a), .len = __end }) \
@@ -178,7 +178,7 @@ extern "C" {
 #define __op__A_suffix$__emit(_ST, __a, _a, __begin, _begin...) ({ \
     let_(__begin, usize) = _begin; \
     let_(__a, TypeOf(_a)*) = &(_a); \
-    claim_assert_fmt(__begin <= A_len(*__a), "Invalid slice range: begin(%zu) > len(%zu)", __begin, A_len(*__a)); \
+    claim_assert_fmt(__begin <= A_len(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, A_len(*__a)); \
     lit$((_ST){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }); \
 })
 #define A_suffix(/*(_a: A(_N,_T))(_begin: usize)*/... /*(S(_T))*/) \
@@ -188,7 +188,7 @@ extern "C" {
 #define __op__A_suffix__emit(__a, _a, __begin, _begin...) ({ \
     let_(__begin, usize) = _begin; \
     let_(__a, TypeOf(_a)*) = &(_a); \
-    claim_assert_fmt(__begin <= A_len(*__a), "Invalid slice range: begin(%zu) > len(%zu)", __begin, A_len(*__a)); \
+    claim_assert_fmt(__begin <= A_len(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, A_len(*__a)); \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__a))( \
             lit$((S_const$$(A_InnerT$(TypeOf(*__a)))){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }) \
@@ -253,7 +253,7 @@ extern "C" {
     let_(__idx, usize) = _idx; \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     claim_assert_static_msg(__builtin_constant_p(__idx) ? (__idx < len$A(*__a)) : true, "index out of bounds"); \
-    claim_assert_fmt(__idx < len$A(*__a), "Index out of bounds: idx(%zu) >= len(%zu)", __idx, len$A(*__a)); \
+    claim_assert_fmt(__idx < len$A(*__a), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, len$A(*__a)); \
     &val$A(*__a)[__idx]; \
 })
 
@@ -261,8 +261,8 @@ extern "C" {
 #define __block_inline__slice$A(__a, __range, _a, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __range.end, len$A(*__a)); \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(__range.end <= len$A(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, len$A(*__a)); \
     init$S$$((TypeOf(*ptr$A(*__a)))(&val$A(*__a)[__range.begin], len$R(__range))); \
 })
 
@@ -271,8 +271,8 @@ extern "C" {
 #define __block_inline__slice$A$(_T, __a, __range, _a, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __range.end, len$A(*__a)); \
+    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(__range.end <= len$A(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, len$A(*__a)); \
     init$S$((_T)(&val$A(*__a)[__range.begin], len$R(__range))); \
 })
 
@@ -280,7 +280,7 @@ extern "C" {
 #define __block_inline__prefix$A(__a, __end, _a, _end...) ({ \
     let_(__end, usize) = _end; \
     let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __end, len$A(*__a)); \
+    claim_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __end, len$A(*__a)); \
     init$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a), __end)); \
 })
 
@@ -289,7 +289,7 @@ extern "C" {
 #define __block_inline__prefix$A$(_T, __a, __end, _a, _end...) ({ \
     let_(__end, usize) = _end; \
     let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end(%zu) > len(%zu)", __end, len$A(*__a)); \
+    claim_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __end, len$A(*__a)); \
     init$S$((_T)(ptr$A(*__a), __end)); \
 })
 
@@ -297,7 +297,7 @@ extern "C" {
 #define __block_inline__suffix$A(__a, __begin, _a, _begin...) ({ \
     let_(__begin, usize) = _begin; \
     let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$A(*__a)); \
+    claim_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, len$A(*__a)); \
     init$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a) + __begin, len$A(*__a) - __begin)); \
 })
 
@@ -306,7 +306,7 @@ extern "C" {
 #define __block_inline__suffix$A$(_T, __a, __begin, _a, _begin...) ({ \
     let_(__begin, usize) = _begin; \
     let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$A(*__a)); \
+    claim_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, len$A(*__a)); \
     init$S$((_T)(ptr$A(*__a) + __begin, len$A(*__a) - __begin)); \
 })
 

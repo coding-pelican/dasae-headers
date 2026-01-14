@@ -53,6 +53,7 @@ dasae-headers
 │  │  │  │  │  ├─ cfg.h
 │  │  │  │  │  ├─ assert.h
 │  │  │  │  │  ├─ assert_static.h
+│  │  │  │  │  └─ StkTrace.h
 │  │  │  │  │  └─ common.h
 │  │  │  │  ├─ range.h
 │  │  │  │  ├─ op.h
@@ -113,6 +114,7 @@ dasae-headers
 │  │  │  ├─ utf16.h
 │  │  │  ├─ wtf8.h
 │  │  │  ├─ wtf16.h
+│  │  │  ├─ unicode.h
 │  │  │  ├─ ListSgl.h
 │  │  │  ├─ ListDbl.h
 │  │  │  ├─ BTree.h
@@ -187,6 +189,7 @@ dasae-headers
 │  │  │  ├─ fs.h
 │  │  │  ├─ fs
 │  │  │  │  ├─ common.h
+│  │  │  │  ├─ path.h
 │  │  │  │  ├─ Dir.h
 │  │  │  │  └─ File.h
 │  │  │  ├─ io.h

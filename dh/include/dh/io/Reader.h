@@ -19,12 +19,12 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include <stdarg.h>
+#include <stdarg.h> /* For va_list, va_start(), va_end() */
 
 /*========== Macros and Declarations ========================================*/
 
 typedef struct io_Reader {
-    P$raw ctx;
+    var_(ctx, P$raw);
     fn_(((*read)(P$raw ctx, S$u8 buf))(E$usize)) $must_check;
 } io_Reader;
 

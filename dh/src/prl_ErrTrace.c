@@ -7,12 +7,12 @@
 $static fn_((ErrTrace__instance(void))(ErrTrace*)) {
     $static $Thrd_local var_(ErrTrace_s_instance, ErrTrace) = { .frames = {}, .len = 0 };
     return &ErrTrace_s_instance;
-}
+};
 
 fn_((ErrTrace_reset_debug(void))(void)) {
     let trace = ErrTrace__instance();
     trace->len = 0;
-}
+};
 
 fn_((ErrTrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr))(void)) {
     let trace = ErrTrace__instance();
@@ -22,7 +22,7 @@ fn_((ErrTrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr))(void)) {
             .ret_addr = ret_addr,
         }));
     }
-}
+};
 
 fn_((ErrTrace_print_debug(void))(void)) {
     let trace = ErrTrace__instance();
@@ -38,6 +38,6 @@ fn_((ErrTrace_print_debug(void))(void)) {
             frame->src_loc.file_name, frame->src_loc.line, frame->src_loc.column
         ))($ignore, claim_unreachable));
     });
-}
+};
 #endif /* on_comptime */
 #endif /* ErrTrace_comp_enabled */

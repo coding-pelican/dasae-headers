@@ -146,7 +146,7 @@ extern "C" {
     let_(__self, TypeOf(_self)*) = &_self; \
     typedef TypeOf((*__self)[0]) ScalarType; \
     let_(__idx, usize) = sizeOf$(TypeOf(u8 _idx)); \
-    claim_assert_fmt(__idx < Vec_len(*__self), "Index out of bounds: idx(%zu) >= len(%zu)", __idx, Vec_len(*__self)); \
+    claim_assert_fmt(__idx < Vec_len(*__self), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, Vec_len(*__self)); \
     as$(ScalarType*)(__self) + __idx; \
 })
 

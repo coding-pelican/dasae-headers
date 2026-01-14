@@ -4,7 +4,7 @@
 #include "dh/os/windows/debug.h"
 fn_((debug_isDebuggerPresent(void))(bool)) {
     return IsDebuggerPresent();
-}
+};
 #elif plat_is_linux
 #include <stdio.h> /* TODO: Use io or fs instead of this */
 fn_((debug_isDebuggerPresent(void))(bool)) {
@@ -28,7 +28,7 @@ fn_((debug_isDebuggerPresent(void))(bool)) {
 
     fclose(f);
     return result;
-}
+};
 #elif plat_is_darwin
 #include <sys/sysctl.h>
 #include <unistd.h>
@@ -40,10 +40,10 @@ fn_((debug_isDebuggerPresent(void))(bool)) {
         return (info.kp_proc.p_flag & P_TRACED) != 0;
     }
     return false;
-}
+};
 #else /* other */
 /* Fallback for unsupported platforms - assume no debugger */
 fn_((debug_isDebuggerPresent(void))(bool)) {
     return false;
-}
+};
 #endif /* other */

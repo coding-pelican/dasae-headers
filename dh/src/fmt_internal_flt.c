@@ -390,7 +390,7 @@ $static fn_((formatDecimal(S$u8 buf, FltDecimal f, O$u8 precision))(usize)) {
     return index;
 };
 
-fn_((fmt__formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) {
+fn_((fmt__formatFltImpl(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) {
     // Get formatting options
     let use_upper = (spec.type == fmt_Type_float_upper);
     // Default precision to 6 for C compatibility

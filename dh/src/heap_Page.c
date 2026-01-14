@@ -40,7 +40,7 @@ fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     // Verify requested alignment is not stricter than page alignment
     debug_assert_fmt(
         ptr_align <= mem_page_size,
-        "Page allocator can only guarantee page alignment (requested: %zu, page size: %zu)",
+        "Page allocator can only guarantee page alignment (requested: {:uz}, page size: {:uz})",
         ptr_align, mem_page_size
     );
 
@@ -85,11 +85,7 @@ fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
         VirtualFree(reserved_addr, 0, MEM_RELEASE);
 
         let addr = VirtualAlloc(
-            intToPtr$((P$raw)(aligned_addr)),
-            aligned_len,
-            MEM_COMMIT | MEM_RESERVE,
-            PAGE_READWRITE
-        );
+            intToPtr$((P$raw)(aligned_addr)), aligned_len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
         if (addr != null) {
             return_some(addr);
         }
@@ -142,7 +138,7 @@ fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))
 
 #if plat_is_windows
     if (new_len <= buf.len) {
-        let base_addr = ptrToInt(buf.ptr);
+        let base_addr = ptrToInt( buf.ptr);
         let old_addr_end = base_addr + buf_aligned_len;
         let new_addr_end = base_addr + new_size_aligned;
 
@@ -150,10 +146,7 @@ fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))
             // For shrinking that is not releasing, only
             // decommit the pages not needed anymore.
             VirtualFree(
-                intToPtr$((LPVOID)(new_addr_end)),
-                old_addr_end - new_addr_end,
-                MEM_DECOMMIT
-            );
+                intToPtr$((LPVOID)(new_addr_end)), old_addr_end - new_addr_end, MEM_DECOMMIT);
         }
         return true;
     }

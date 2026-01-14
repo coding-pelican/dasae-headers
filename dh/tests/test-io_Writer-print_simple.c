@@ -20,7 +20,6 @@
 #include "dh/main.h"
 #include "dh/io/Writer.h"
 #include "dh/fmt/common.h"
-#include "dh/Str.h"
 #include <stdio.h>
 
 /*========== Test Helper - Buffer Writer ===================================*/
@@ -64,8 +63,8 @@ $static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
 
 TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
     T_use_A$(64, u8);
-    A$64$u8 mem = zero$A();
-    test_Buf buf = test_Buf_init(ref$A$((u8)(mem)));
+    A$64$u8 mem = A_zero();
+    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test very basic integer
@@ -73,13 +72,13 @@ TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
     let result = test_Buf_view(buf);
 
     printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
-    try_(TEST_expect(Str_eql(result, u8_l("42"))));
+    try_(TEST_expect(mem_eqlBytes(result, u8_l("42"))));
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_simple: Character test" $scope) {
     T_use_A$(64, u8);
-    A$64$u8 mem = zero$A();
-    test_Buf buf = test_Buf_init(ref$A$((u8)(mem)));
+    A$64$u8 mem = A_zero();
+    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test very basic character
@@ -87,13 +86,13 @@ TEST_fn_("io_Writer-print_simple: Character test" $scope) {
     let result = test_Buf_view(buf);
 
     printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
-    try_(TEST_expect(Str_eql(result, u8_l("A"))));
+    try_(TEST_expect(mem_eqlBytes(result, u8_l("A"))));
 } $unscoped_(TEST_fn);
 
 TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
     T_use_A$(64, u8);
-    A$64$u8 mem = zero$A();
-    test_Buf buf = test_Buf_init(ref$A$((u8)(mem)));
+    A$64$u8 mem = A_zero();
+    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test very basic hex
@@ -101,5 +100,5 @@ TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
     let result = test_Buf_view(buf);
 
     printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
-    try_(TEST_expect(Str_eql(result, u8_l("ff"))));
+    try_(TEST_expect(mem_eqlBytes(result, u8_l("ff"))));
 } $unscoped_(TEST_fn);

@@ -3,7 +3,7 @@
 #include "dh/mem/Allocator.h"
 
 TEST_fn_("Basic Allocator Reallocation Usage" $guard) {
-    var_(buffer, A$$(1024, u8)) = zero$A();
+    var_(buffer, A$$(1024, u8)) = A_zero();
     var_(fixed, heap_Fixed) = heap_Fixed_from(A_ref$((S$u8)(buffer)));
 
     let gpa = heap_Fixed_allocator(&fixed);

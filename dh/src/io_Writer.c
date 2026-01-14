@@ -3,13 +3,16 @@
 #include "dh/fmt/common.h"
 
 fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(E$usize)) {
+    claim_assert_nonnull(self.ctx);
+    claim_assert_nonnull(self.write);
+    claim_assert_nonnullS(bytes);
     return self.write(self.ctx, bytes);
-}
+};
 
 fn_((io_Writer_writeBytes(io_Writer self, S_const$u8 bytes))(E$void) $scope) {
-    usize index = 0;
-    while (index != bytes.len) {
-        index += try_(io_Writer_write(self, suffix$S(bytes, index)));
+    var_(idx, usize) = 0;
+    while (idx != bytes.len) {
+        idx += try_(io_Writer_write(self, suffix$S(bytes, idx)));
     }
     return_ok({});
 } $unscoped_(fn);
@@ -22,14 +25,14 @@ fn_((io_Writer_writeBytesN(io_Writer self, S_const$u8 bytes, usize n))(E$void) $
 } $unscoped_(fn);
 
 fn_((io_Writer_writeByte(io_Writer self, u8 byte))(E$void)) {
-    A$$(1, u8) bytes = init$A({ byte });
-    return io_Writer_writeBytes(self, ref$A$((const u8)(bytes)));
+    var_(bytes, A$$(1, u8)) = A_init({ byte });
+    return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
 };
 
 fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void) $scope) {
-    A$$(256, u8) bytes = zero$A();
-    prim_memset(bytes.val, byte, len$A(bytes));
-    usize remaining = n;
+    var_(bytes, A$$(256, u8)) = A_zero();
+    mem_setBytes(A_ref$((S$u8)(bytes)), byte);
+    var_(remaining, usize) = n;
     while (0 < remaining) {
         let to_write = prim_min(remaining, len$A(bytes));
         try_(io_Writer_writeBytes(self, A_slice$((S_const$u8)(bytes)$r(0, to_write))));
@@ -63,13 +66,13 @@ fn_((io_Writer_printlnVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(E
 } $unscoped_(fn);
 
 fn_((io_Writer_nl(io_Writer self))(E$void) $scope) {
-    static let pp_if_(plat_is_windows)(
+    $static let pp_if_(plat_is_windows)(
         pp_then_(s_crlf = u8_l("\r\n")),
         pp_else_(s_lf = u8_c('\n')));
-    static let s_line_feed = pp_if_(plat_is_windows)(
+    $static let s_line_feed = pp_if_(plat_is_windows)(
         pp_then_(s_crlf),
         pp_else_(s_lf));
-    static let s_write = pp_if_(plat_is_windows)(
+    $static let s_write = pp_if_(plat_is_windows)(
         pp_then_(io_Writer_write),
         pp_else_(io_Writer_writeByte));
     try_(s_write(self, s_line_feed));

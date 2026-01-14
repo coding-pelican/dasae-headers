@@ -33,11 +33,11 @@ $attr($maybe_unused)
 $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)) {
     let thrd_count = mp_getThrdCount();
 
-    var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = zero$A();
+    var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = A_zero();
     let data_list = slice$A(data_list_buf, $r(0, thrd_count));
-    var_(workers_buf, A$$(mp_max_thrd_count, Thrd_FnCtx$(mp_worker))) = zero$A();
+    var_(workers_buf, A$$(mp_max_thrd_count, Thrd_FnCtx$(mp_worker))) = A_zero();
     let workers = slice$A(workers_buf, $r(0, thrd_count));
-    var_(threads_buf, A$$(mp_max_thrd_count, Thrd)) = zero$A();
+    var_(threads_buf, A$$(mp_max_thrd_count, Thrd)) = A_zero();
     let threads = slice$A(threads_buf, $r(0, thrd_count));
 
     let chunk = (range.end - range.begin + thrd_count - 1) / thrd_count;
@@ -631,7 +631,7 @@ $static fn_((State_rngGaussian(void))(RandGaussian*));
 $static fn_((State_initParticles_worker(R range, u_V$raw params))(void));
 $static fn_((State_initParticles(mp_ThrdPool* pool, S$Particle particles, m_V2f64 center, m_V2f64 radius_a_b))(void));
 $static fn_((State_init(mp_ThrdPool* pool, S$Particle particles, S$Cell grid))(State)) {
-    State_initParticles(pool, particles, m_V2f64_zero, m_V2f64_from(State_boundary_radius, 200.0));
+    State_initParticles(pool, particles, m_V2f64_zero, m_V2f64_of(State_boundary_radius, 200.0));
     return lit$((State){
         .pool = pool,
         .particles = particles,
@@ -1036,8 +1036,7 @@ fn_((State_initParticles_worker(R range, u_V$raw params))(void)) {
         let seed = Thrd_currentId() ^ range.begin;
         *State_rng() = pp_if_(State_enable_randomization)(
             pp_then_(Rand_initSeed(seed)),
-            pp_else_(Rand_withSeed(Rand_default, seed))
-        );
+            pp_else_(Rand_withSeed(Rand_default, seed)));
         *State_rngGaussian() = RandGaussian_init(*State_rng());
         c_initialized = true;
     }

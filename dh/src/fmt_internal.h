@@ -25,6 +25,7 @@ extern "C" {
 #include "dh/fmt/common.h"
 #include "dh/mem/common.h"
 #include "dh/ascii.h"
+#include "dh/utf8.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -34,7 +35,7 @@ $extern fn_((fmt__writePadded(io_Writer writer, S_const$u8 content, fmt_Spec spe
 
 /// Format f64 as a floating-point number
 $attr($must_check)
-$extern fn_((fmt__formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void));
+$extern fn_((fmt__formatFltImpl(io_Writer writer, f64 val, fmt_Spec spec))(E$void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

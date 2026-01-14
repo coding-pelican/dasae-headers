@@ -140,21 +140,21 @@ $static fn_((R_from(usize begin, usize end))(R)) {
 $attr($inline_always)
 $static fn_((R_slice(R self, R range))(R)) {
     self = R_ensureValid(self);
-    claim_assert_fmt(self.begin <= range.begin, "Invalid slice range: self.begin(%zu) > range.begin(%zu)", self.begin, range.begin);
+    claim_assert_fmt(self.begin <= range.begin, "Invalid slice range: self.begin({:uz}) > range.begin({:uz})", self.begin, range.begin);
     range = R_ensureValid(self);
-    claim_assert_fmt(range.end <= self.end, "Invalid slice range: range.end(%zu) > self.end(%zu)", range.end, self.end);
+    claim_assert_fmt(range.end <= self.end, "Invalid slice range: range.end({:uz}) > self.end({:uz})", range.end, self.end);
     return (R){ .begin = self.begin + range.begin, .end = self.begin + range.end };
 }
 $attr($inline_always)
 $static fn_((R_prefix(R self, usize end))(R)) {
     self = R_ensureValid(self);
-    claim_assert_fmt(self.begin + end <= self.end, "Invalid slice range: self.begin(%zu) + end(%zu) > self.end(%zu)", self.begin, end, self.end);
+    claim_assert_fmt(self.begin + end <= self.end, "Invalid slice range: self.begin({:uz}) + end({:uz}) > self.end({:uz})", self.begin, end, self.end);
     return (R){ .begin = self.begin, .end = self.begin + end };
 }
 $attr($inline_always)
 $static fn_((R_suffix(R self, usize begin))(R)) {
     self = R_ensureValid(self);
-    claim_assert_fmt(self.begin + begin <= self.end, "Invalid slice range: self.begin(%zu) + begin(%zu) > self.end(%zu)", self.begin, begin, self.end);
+    claim_assert_fmt(self.begin + begin <= self.end, "Invalid slice range: self.begin({:uz}) + begin({:uz}) > self.end({:uz})", self.begin, begin, self.end);
     return (R){ .begin = self.begin + begin, .end = self.end };
 }
 $attr($inline_always)
@@ -164,7 +164,7 @@ $static fn_((R_len(R self))(usize)) {
 }
 $attr($inline_always)
 $static fn_((R_at(R self, usize idx))(usize)) {
-    claim_assert_fmt(R_contains(self, self.begin + idx), "Index out of bounds: self.begin(%zu) + idx(%zu) >= self.end(%zu)", self.begin, idx, self.end);
+    claim_assert_fmt(R_contains(self, self.begin + idx), "Index out of bounds: self.begin({:uz}) + idx({:uz}) >= self.end({:uz})", self.begin, idx, self.end);
     return self.begin + idx;
 }
 
@@ -174,7 +174,7 @@ $static fn_((R_isValid(R self))(bool)) {
 };
 $attr($inline_always)
 $static fn_((R_assertValid(usize begin, usize end))(void)) {
-    claim_assert_fmt(begin <= end, "Invalid range: begin(%zu) > end(%zu)", begin, end);
+    claim_assert_fmt(begin <= end, "Invalid range: begin({:uz}) > end({:uz})", begin, end);
 }
 $attr($inline_always)
 $static fn_((R_ensureValid(R self))(R)) {

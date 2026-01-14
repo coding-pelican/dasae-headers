@@ -30,11 +30,11 @@ $static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope
 $static fn_((mp_parallel_for(R range, mp_LoopFn func, u_V$raw user_data))(void)) {
     let thrd_count = mp_getThrdCount();
 
-    var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = zero$A();
+    var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = A_zero();
     let data_list = slice$A(data_list_buf, $r(0, thrd_count));
-    var_(workers_buf, A$$(mp_max_thrd_count, Thrd_FnCtx$(mp_worker))) = zero$A();
+    var_(workers_buf, A$$(mp_max_thrd_count, Thrd_FnCtx$(mp_worker))) = A_zero();
     let workers = slice$A(workers_buf, $r(0, thrd_count));
-    var_(threads_buf, A$$(mp_max_thrd_count, Thrd)) = zero$A();
+    var_(threads_buf, A$$(mp_max_thrd_count, Thrd)) = A_zero();
     let threads = slice$A(threads_buf, $r(0, thrd_count));
 
     let chunk = (range.end - range.begin + thrd_count - 1) / thrd_count;

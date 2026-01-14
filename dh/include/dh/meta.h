@@ -156,7 +156,7 @@ $static fn_((u_alignOfRecord(S_const$TypeInfo fields))(mem_Align)) {
 $attr($inline_always)
 $static fn_((u_offsetTo(TypeInfo record, S_const$TypeInfo fields, usize field_idx))(usize)) {
     claim_assert_nonnull(fields.ptr);
-    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx(%zu) >= len(%zu)", field_idx, fields.len);
+    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
     debug_assert_fmt(TypeInfo_eq(record, u_typeInfoRecord(fields)), "Type mismatch: record type does not match expected type");
     let_ignore = record;
     usize end_offset = 0;
@@ -173,7 +173,7 @@ $attr($inline_always)
 $static fn_((u_offsets(S_const$TypeInfo fields, S$usize out))(S$usize)) {
     claim_assert_nonnull(fields.ptr);
     claim_assert_nonnull(out.ptr);
-    claim_assert_fmt(fields.len <= out.len, "fields(%zu) > out(%zu)", fields.len, out.len);
+    claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
     for_(($s(fields), $s(out))(field, out_offset) {
         let align_val = mem_log2ToAlign(field->align);
@@ -188,7 +188,7 @@ $attr($inline_always)
 $static fn_((u_fieldPtr(u_P_const$raw record, S_const$TypeInfo fields, usize field_idx))(u_P_const$raw)) {
     // claim_assert_nonnull(record.raw);
     claim_assert_nonnull(fields.ptr);
-    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx(%zu) >= len(%zu)", field_idx, fields.len);
+    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
     let offset = u_offsetTo(record.type, fields, field_idx);
     return (u_P_const$raw){
         .raw = as$(P_const$raw)(as$(const u8*)(record.raw) + offset),
@@ -199,7 +199,7 @@ $attr($inline_always)
 $static fn_((u_fieldPtrMut(u_P$raw record, S_const$TypeInfo fields, usize field_idx))(u_P$raw)) {
     // claim_assert_nonnull(record.raw);
     claim_assert_nonnull(fields.ptr);
-    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx(%zu) >= len(%zu)", field_idx, fields.len);
+    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
     let offset = u_offsetTo(record.type, fields, field_idx);
     return (u_P$raw){
         .raw = as$(P$raw)(as$(u8*)(record.raw) + offset),
@@ -210,7 +210,7 @@ $attr($inline_always)
 $static fn_((u_fieldPtrs(u_P_const$raw record, S_const$TypeInfo fields, S$u_P_const$raw out))(S$u_P_const$raw)) {
     claim_assert_nonnull(record.raw);
     claim_assert_nonnull(out.ptr);
-    claim_assert_fmt(fields.len <= out.len, "fields(%zu) > out(%zu)", fields.len, out.len);
+    claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
     for_(($s(fields), $s(out))(field, out_field) {
         let align_val = mem_log2ToAlign(field->align);
@@ -227,7 +227,7 @@ $attr($inline_always)
 $static fn_((u_fieldPtrsMut(u_P$raw record, S_const$TypeInfo fields, S$u_P$raw out))(S$u_P$raw)) {
     claim_assert_nonnull(record.raw);
     claim_assert_nonnull(out.ptr);
-    claim_assert_fmt(fields.len <= out.len, "fields(%zu) > out(%zu)", fields.len, out.len);
+    claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
     for_(($s(fields), $s(out))(field, out_field) {
         let align_val = mem_log2ToAlign(field->align);
@@ -244,7 +244,7 @@ $attr($inline_always)
 $static fn_((u_recordPtr(u_P_const$raw field, S_const$TypeInfo fields, usize field_idx))(u_P_const$raw)) {
     // claim_assert_nonnull(field.raw);
     claim_assert_nonnull(fields.ptr);
-    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx(%zu) >= len(%zu)", field_idx, fields.len);
+    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
     claim_assert_fmt(TypeInfo_eq(field.type, *S_at((fields)[field_idx])), "Type mismatch: field type does not match expected type at index %zu", field_idx);
     let offset = u_offsetTo(field.type, fields, field_idx);
     let record_type = u_typeInfoRecord(fields);
@@ -257,8 +257,8 @@ $attr($inline_always)
 $static fn_((u_recordPtrMut(u_P$raw field, S_const$TypeInfo fields, usize field_idx))(u_P$raw)) {
     // claim_assert_nonnull(field.raw);
     claim_assert_nonnull(fields.ptr);
-    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx(%zu) >= len(%zu)", field_idx, fields.len);
-    claim_assert_fmt(TypeInfo_eq(field.type, *S_at((fields)[field_idx])), "Type mismatch: field type does not match expected type at index %zu", field_idx);
+    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
+    claim_assert_fmt(TypeInfo_eq(field.type, *S_at((fields)[field_idx])), "Type mismatch: field type does not match expected type at index {:uz}", field_idx);
     let offset = u_offsetTo(field.type, fields, field_idx);
     let record_type = u_typeInfoRecord(fields);
     return (u_P$raw){
@@ -324,7 +324,7 @@ $static fn_((u_alignOfRecordN(usize n, S_const$TypeInfo fields))(mem_Align)) {
 $attr($inline_always)
 $static fn_((u_offsetToN(usize n, S_const$TypeInfo fields, usize field_idx))(usize)) {
     claim_assert_nonnull(fields.ptr);
-    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx(%zu) >= len(%zu)", field_idx, fields.len);
+    claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
     usize end_offset = 0;
     for_(($s(fields))(field) {
         let arr_type = u_typeInfoA(n, *field);
@@ -339,7 +339,7 @@ $attr($inline_always)
 $static fn_((u_offsetsN(usize n, S_const$TypeInfo fields, S$usize out))(S$usize)) {
     claim_assert_nonnull(fields.ptr);
     claim_assert_nonnull(out.ptr);
-    claim_assert_fmt(fields.len <= out.len, "fields(%zu) > out(%zu)", fields.len, out.len);
+    claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
     for_(($s(fields), $s(out))(field, out_offset) {
         let arr_type = u_typeInfoA(n, *field);
@@ -374,7 +374,7 @@ $attr($inline_always)
 $static fn_((u_fieldSlis(u_P_const$raw record, usize n, S_const$TypeInfo fields, S$u_S_const$raw out))(S$u_S_const$raw)) {
     claim_assert_nonnull(record.raw);
     claim_assert_nonnull(out.ptr);
-    claim_assert_fmt(fields.len <= out.len, "fields(%zu) > out(%zu)", fields.len, out.len);
+    claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
     for_(($s(fields), $s(out))(field, out_field) {
         let arr_type = u_typeInfoA(n, *field);
@@ -392,7 +392,7 @@ $attr($inline_always)
 $static fn_((u_fieldSlisMut(u_P$raw record, usize n, S_const$TypeInfo fields, S$u_S$raw out))(S$u_S$raw)) {
     claim_assert_nonnull(record.raw);
     claim_assert_nonnull(out.ptr);
-    claim_assert_fmt(fields.len <= out.len, "fields(%zu) > out(%zu)", fields.len, out.len);
+    claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
     for_(($s(fields), $s(out))(field, out_field) {
         let arr_type = u_typeInfoA(n, *field);
@@ -408,7 +408,7 @@ $static fn_((u_fieldSlisMut(u_P$raw record, usize n, S_const$TypeInfo fields, S$
 };
 $static fn_((u_recordNPtr(u_S_const$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P_const$raw)) {
     claim_assert_nonnull(field.ptr);
-    claim_assert_fmt(field.len == n, "Field length mismatch: len(%zu) != n(%zu)", field.len, n);
+    claim_assert_fmt(field.len == n, "Field length mismatch: len({:uz}) != n({:uz})", field.len, n);
     claim_assert_nonnull(fields.ptr);
     let offset = u_offsetToN(n, fields, field_idx);
     return (u_P_const$raw){
@@ -419,7 +419,7 @@ $static fn_((u_recordNPtr(u_S_const$raw field, usize n, S_const$TypeInfo fields,
 $attr($inline_always)
 $static fn_((u_recordNPtrMut(u_S$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P$raw)) {
     claim_assert_nonnull(field.ptr);
-    claim_assert_fmt(field.len == n, "Field length mismatch: len(%zu) != n(%zu)", field.len, n);
+    claim_assert_fmt(field.len == n, "Field length mismatch: len({:uz}) != n({:uz})", field.len, n);
     claim_assert_nonnull(fields.ptr);
     let offset = u_offsetToN(n, fields, field_idx);
     return (u_P$raw){

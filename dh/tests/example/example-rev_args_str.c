@@ -19,7 +19,7 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     });
     io_stream_nl();
 
-    var_(input_mem, A$$(64, u8)) = zero$A();
+    var_(input_mem, A$$(64, u8)) = A_zero();
     let input_buf = A_ref$((S$u8)(input_mem));
     let stream_in = fs_File_reader(io_getStdIn());
 

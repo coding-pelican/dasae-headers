@@ -125,7 +125,7 @@ typedef union Grid$raw {
     const u32 __height = intCast$((u32)(u32_height)); \
     debug_assert_fmt( \
         __sli.len == as$(usize)(__width) * __height, \
-        "width and height mismatch: %zu != %zu * %zu", \
+        "width and height mismatch: {:uz} != {:u} * {:u}", \
         __sli.len, \
         __width, \
         __height \
@@ -145,13 +145,13 @@ typedef union Grid$raw {
     const u32 __y = intCast$((u32)(u32_y)); \
     debug_assert_fmt( \
         __x < __self.width, \
-        "X out of bounds: %zu >= %zu", \
+        "X out of bounds: {:uz} >= {:u}", \
         __x, \
         __self.width \
     ); \
     debug_assert_fmt( \
         __y < __self.height, \
-        "Y out of bounds: %zu >= %zu", \
+        "Y out of bounds: {:uz} >= {:u}", \
         __y, \
         __self.height \
     ); \
