@@ -244,8 +244,8 @@ Macros:
   - $inline_never=__attribute__(());
   - $on_load=__attribute__(());
   - $on_exit=__attribute__(());
-  - $keep_symbol=__attribute__(());
-  - $maybe_unused=__attribute__(());
+  # - $keep_symbol=__attribute__(());
+  # - $maybe_unused=__attribute__(());
 
   - $static=static
   - $extern=extern
