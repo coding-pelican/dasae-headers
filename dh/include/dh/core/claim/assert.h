@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    assert.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-21 (date of creation)
- * @updated 2025-02-02 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2026-01-16 (date of last update)
  * @ingroup dasae-headers(dh)/core/claim
  * @prefix  claim_assert
  *
@@ -24,6 +23,7 @@ extern "C" {
 #include "cfg.h"
 #include "unreachable.h"
 #include "assert_static.h"
+#include "../debug/StkTrace.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -67,36 +67,36 @@ extern "C" {
 #define __step__claim_assert(_Expr, _ExprStr...) $ignore_void(\
     (!!_Expr) || (({ \
         claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
-        claim_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
-        $debug_point $unreachable; \
+        $debug_point claim_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
+        $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_msg(_Expr, _ExprStr, _msg...) $ignore_void( \
     (!!_Expr) || (({ \
         claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _msg); \
-        claim_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
-        $debug_point $unreachable; \
+        $debug_point claim_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
+        $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_fmt(_Expr, _ExprStr, _fmt...) $ignore_void(\
     (!!_Expr) || (({ \
         claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
-        claim_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
-        $debug_point $unreachable; \
+        $debug_point claim_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
+        $unreachable; \
     }), 0) \
 )
 
 #define __step__claim_assert_trap() $ignore_void(({ \
-    claim_assert_failLog("(none)", __func__, __FILE__, __LINE__); \
-    $debug_point $unreachable; \
+    $debug_point claim_assert_failLog("(none)", __func__, __FILE__, __LINE__); \
+    $unreachable; \
 }), 0)
 #define __step__claim_assert_trap_msg(_msg...) $ignore_void(({ \
-    claim_assert_failLogMsg("(none)", __func__, __FILE__, __LINE__, _msg); \
-    $debug_point $unreachable; \
+    $debug_point claim_assert_failLogMsg("(none)", __func__, __FILE__, __LINE__, _msg); \
+    $unreachable; \
 }), 0)
 #define __step__claim_assert_trap_fmt(_fmt...) $ignore_void(({ \
-    claim_assert_failLogFmt("(none)", __func__, __FILE__, __LINE__, _fmt); \
-    $debug_point $unreachable; \
+    $debug_point claim_assert_failLogFmt("(none)", __func__, __FILE__, __LINE__, _fmt); \
+    $unreachable; \
 }), 0)
 /* clang-format on */
 #else /* !on_comptime */

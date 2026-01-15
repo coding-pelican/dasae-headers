@@ -381,6 +381,7 @@ extern "C" {
 #define $branch_unlikely(_expr... /*(bool)*/) __attr__$branch_unlikely(_expr)
 #define $branch_unpredictable(_expr... /*(bool)*/) __attr__$branch_unpredictable(_expr)
 #define $unreachable __attr__$unreachable
+#define $crash __attr__$crash
 
 #define $like_ref __attr__$like_ref
 #define $like_deref __attr__$like_deref
@@ -527,6 +528,7 @@ T:
 #define __attr__$branch_unlikely(_expr... /*(bool)*/) comp_branch_unlikely(_expr)
 #define __attr__$branch_unpredictable(_expr... /*(bool)*/) comp_branch_unpredictable(_expr)
 #define __attr__$unreachable comp_unreachable
+#define __attr__$crash (*(volatile int*)0 = 0)
 
 #define __attr__$like_ref [1]
 #define __attr__$like_deref [0]

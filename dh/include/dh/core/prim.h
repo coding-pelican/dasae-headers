@@ -1262,7 +1262,7 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     claim_assert_static(isFlt$(FltType)); \
     let_(__val, FltType) = _val; \
     claim_assert(flt_isFinite(__val)); \
-    claim_assert(as$(FltType)(int_limit_flt_min_bound_excl$(_T) < __val)); \
+    claim_assert(as$(FltType)(int_limit_flt_min_bound_excl$(_T)) < __val); \
     claim_assert(__val < as$(FltType)(int_limit_flt_max_bound_excl$(_T))); \
     as$(_T)(__val); \
 })

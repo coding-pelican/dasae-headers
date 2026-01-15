@@ -95,10 +95,10 @@ fn_((sort_mergeTmpRecur(
     while (l_it.raw < l_end.raw && r_it.raw < r_end.raw) {
         if (sort__ord(ordFn, l_it.as_const, r_it.as_const) <= cmp_Ord_eq) {
             prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, seq.type.size);
-            l_it.raw += seq.type.size;
+            l_it.raw = as$(u8*)(l_it.raw) + seq.type.size;
         } else {
             prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, seq.type.size);
-            r_it.raw += seq.type.size;
+            r_it.raw = as$(u8*)(r_it.raw) + seq.type.size;
         }
         temp_cursor += seq.type.size;
     }
@@ -106,14 +106,14 @@ fn_((sort_mergeTmpRecur(
     /* Copy remaining elements */
     if (l_it.raw < l_end.raw) {
         temp_cursor += blk({
-            let bytes_left = l_end.raw - l_it.raw;
+            let bytes_left = ptrToInt(l_end.raw) - ptrToInt(l_it.raw);
             prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, bytes_left);
             blk_return_(bytes_left);
         });
     }
     if (r_it.raw < r_end.raw) {
         temp_cursor += blk({
-            let bytes_right = r_end.raw - r_it.raw;
+            let bytes_right = ptrToInt(r_end.raw) - ptrToInt(r_it.raw);
             prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, bytes_right);
             blk_return_(bytes_right);
         });
@@ -158,10 +158,10 @@ fn_((sort_mergeTmpCtxRecur(
     while (l_it.raw < l_end.raw && r_it.raw < r_end.raw) {
         if (sort__ordCtx(ordFn, l_it.as_const, r_it.as_const, ctx) <= cmp_Ord_eq) {
             prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, seq.type.size);
-            l_it.raw += seq.type.size;
+            l_it.raw = as$(u8*)(l_it.raw) + seq.type.size;
         } else {
             prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, seq.type.size);
-            r_it.raw += seq.type.size;
+            r_it.raw = as$(u8*)(r_it.raw) + seq.type.size;
         }
         temp_cursor += seq.type.size;
     }
@@ -169,14 +169,14 @@ fn_((sort_mergeTmpCtxRecur(
     /* Copy remaining elements */
     if (l_it.raw < l_end.raw) {
         temp_cursor += blk({
-            let bytes_left = l_end.raw - l_it.raw;
+            let bytes_left = ptrToInt(l_end.raw) - ptrToInt(l_it.raw);
             prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, bytes_left);
             blk_return_(bytes_left);
         });
     }
     if (r_it.raw < r_end.raw) {
         temp_cursor += blk({
-            let bytes_right = r_end.raw - r_it.raw;
+            let bytes_right = ptrToInt(r_end.raw) - ptrToInt(r_it.raw);
             prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, bytes_right);
             blk_return_(bytes_right);
         });

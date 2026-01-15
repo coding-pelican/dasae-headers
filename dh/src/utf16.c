@@ -13,7 +13,7 @@ fn_((utf16_codepointSeqLen(u32 codepoint))(utf16_Err$utf8_SeqLen) $scope) {
 
 fn_((utf16_encode(u32 codepoint, S$u16 out))(E$S$u16) $scope) {
     if (utf16_isSurrogate(codepoint)) { return_err(utf16_Err_CodepointTooLarge()); }
-    let required_len = (codepoint < 0x10000) ? (usize)1 : (usize)2;
+    let required_len = (codepoint < 0x10000) ? as$(usize)(1) : as$(usize)(2);
     if (codepoint > 0x10FFFF) { return_err(utf16_Err_CodepointTooLarge()); }
     if (required_len > out.len) { return_err(mem_Err_OutOfMemory()); }
     return_ok(try_(utf16_encodeWithin(codepoint, out)));
@@ -46,15 +46,15 @@ fn_((utf16_decode(S_const$u16 codeunits))(utf16_Err$u32) $scope) {
     } else if (utf16_isLowSurrogate(first)) {
         return_err(utf16_Err_UnexpectedSecondSurrogateHalf());
     } else {
-        return_ok((u32)first);
+        return_ok(as$(u32)(first));
     }
 } $unscoped_(fn);
 
 fn_((utf16_decodeSurrogatePair(u16 high_codeunit, u16 low_codeunit))(utf16_Err$u32) $scope) {
     if (!utf16_isHighSurrogate(high_codeunit)) { return_err(utf16_Err_InvalidStartCodeUnit()); }
     if (!utf16_isLowSurrogate(low_codeunit)) { return_err(utf16_Err_ExpectedSecondSurrogateHalf()); }
-    let high_half = (u32)(high_codeunit & prim_maskLo_static$((u16)(10)));
-    let low_half = (u32)(low_codeunit & prim_maskLo_static$((u16)(10)));
+    let high_half = as$(u32)(high_codeunit & prim_maskLo_static$((u16)(10)));
+    let low_half = as$(u32)(low_codeunit & prim_maskLo_static$((u16)(10)));
     return_ok(0x10000 + (high_half << 10) | low_half);
 } $unscoped_(fn);
 

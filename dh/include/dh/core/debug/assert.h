@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    assert.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-22 (date of creation)
- * @updated 2025-02-02 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2026-01-16 (date of last update)
  * @ingroup dasae-headers(dh)/core/debug
  * @prefix  debug_assert
  *
@@ -71,36 +70,36 @@ extern "C" {
 #define __step__debug_assert(_Expr, _ExprStr...) $ignore_void(\
     (!!_Expr) || (({ \
         debug_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
-        debug_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
-        $debug_point $unreachable; \
+        $debug_point debug_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
+        $unreachable; \
     }), 0) \
 )
 #define __step__debug_assert_msg(_Expr, _ExprStr, _msg...) $ignore_void( \
     (!!_Expr) || (({ \
         debug_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _msg); \
-        debug_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
-        $debug_point $unreachable; \
+        $debug_point debug_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
+        $unreachable; \
     }), 0) \
 )
 #define __step__debug_assert_fmt(_Expr, _ExprStr, _fmt...) $ignore_void(\
     (!!_Expr) || (({ \
         debug_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
-        debug_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
-        $debug_point $unreachable; \
+        $debug_point debug_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
+        $unreachable; \
     }), 0) \
 )
 
 #define __step__debug_assert_trap() $ignore_void(({ \
-    debug_assert_failLog("(none)", __func__, __FILE__, __LINE__); \
-    $debug_point $unreachable; \
+    $debug_point debug_assert_failLog("(none)", __func__, __FILE__, __LINE__); \
+    $unreachable; \
 }), 0)
 #define __step__debug_assert_trap_msg(_msg...) $ignore_void(({ \
-    debug_assert_failLogMsg("(none)", __func__, __FILE__, __LINE__, _msg); \
-    $debug_point $unreachable; \
+    $debug_point debug_assert_failLogMsg("(none)", __func__, __FILE__, __LINE__, _msg); \
+    $unreachable; \
 }), 0)
 #define __step__debug_assert_trap_fmt(_fmt...) $ignore_void(({ \
-    debug_assert_failLogFmt("(none)", __func__, __FILE__, __LINE__, _fmt); \
-    $debug_point $unreachable; \
+    $debug_point debug_assert_failLogFmt("(none)", __func__, __FILE__, __LINE__, _fmt); \
+    $unreachable; \
 }), 0)
 /* clang-format on */
 #else /* !on_comptime */

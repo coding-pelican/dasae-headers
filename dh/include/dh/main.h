@@ -71,13 +71,14 @@ fn_((main(pp_if_(pp_not(main_no_args))(
     pp_then_(int argc, const char* argv[]),
     pp_else_( void)
 )))(int)) {
+    debug_StkTrace_setupCrashHandler();
 #if main_no_args && main_no_returns_err
     dh_main();
 #elif main_no_args && !main_no_returns_err
     catch_((dh_main())(err, {
         Err_print(err);
         ErrTrace_print();
-        return (debug_break(), 1);
+        return $debug_point 1;
     }));
 #elif !main_no_args && main_no_returns_err
     let args_buf = as$(S_const$(u8)*)(prim_alloca(argc * sizeOf$(S_const$(u8))));
@@ -99,7 +100,7 @@ fn_((main(pp_if_(pp_not(main_no_args))(
     catch_((dh_main(args))(err, {
         Err_print(err);
         ErrTrace_print();
-        return (debug_break(), 1);
+        return $debug_point 1;
     }));
 #endif
     return 0;
