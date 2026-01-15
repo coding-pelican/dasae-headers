@@ -12,6 +12,10 @@
  *
  * Note:
  * - Major changes are coming. Please bear with this messy code ;)
+ * - This file is deprecated. Instead, use the improved dh-c by running this command:
+ * ```bash
+ * cd dh-c && ./gen-makefile.sh && make -j$(nproc)
+ * ```
  */
 
 #include <stdio.h>
@@ -143,8 +147,8 @@ bool is_c_source_file(const char* filename);
 void detect_build_type(BuildConfig* config, int argc, const char* argv[]);
 void add_dh_includes(BuildConfig* config, char*** includes, int* include_count);
 void add_dh_sources(BuildConfig* config, char*** sources, int* source_count);
-void create_workspace(const char* name, const char* dh_path);
-void create_project(const char* name, const char* dh_path);
+void dal_c_create_workspace(const char* name, const char* dh_path);
+void dal_c_create_project(const char* name, const char* dh_path);
 void write_file(const char* path, const char* content);
 bool create_directory(const char* path);
 bool find_dh_path_from_env(BuildConfig* config);
@@ -2673,7 +2677,7 @@ void write_example_files(const char* project_path) {
 }
 
 // Update create_project function
-void create_project(const char* name, const char* dh_path) {
+void dal_c_create_project(const char* name, const char* dh_path) {
     char project_path[1024] = {};
 
     if (name == NULL || strcmp(name, ".") == 0) {
@@ -2728,7 +2732,7 @@ void create_project(const char* name, const char* dh_path) {
 }
 
 // Update create_workspace function to include DH_HOME in clangd config
-void create_workspace(const char* name, const char* dh_path) {
+void dal_c_create_workspace(const char* name, const char* dh_path) {
     char workspace_path[1024] = {};
 
     if (name == NULL || strcmp(name, ".") == 0) {
@@ -2834,7 +2838,7 @@ void create_workspace(const char* name, const char* dh_path) {
     char example_project_path[1024] = {};
     int result = snprintf(example_project_path, sizeof(example_project_path), "%s%shello-world", workspace_path, PATH_SEPARATOR);
     if (result >= 0 && (size_t)result < sizeof(example_project_path)) {
-        create_project(example_project_path, dh_path);
+        dal_c_create_project(example_project_path, dh_path);
     } else {
         (void)fprintf(stderr, "Warning: Could not create example project (path too long)\n");
     }
@@ -2976,7 +2980,7 @@ int main(int argc, const char* argv[]) {
     // Handle workspace and project commands
     if (strcmp(argv[1], "workspace") == 0) {
         const char* name = (argc > 2) ? argv[2] : ".";
-        create_workspace(name, config.dh_path);
+        dal_c_create_workspace(name, config.dh_path);
         cleanup_build_presets();
         cleanup_templates();
         return 0;
@@ -2984,7 +2988,7 @@ int main(int argc, const char* argv[]) {
 
     if (strcmp(argv[1], "project") == 0) {
         const char* name = (argc > 2) ? argv[2] : ".";
-        create_project(name, config.dh_path);
+        dal_c_create_project(name, config.dh_path);
         cleanup_build_presets();
         cleanup_templates();
         return 0;

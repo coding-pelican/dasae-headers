@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./dh-c/src
+    - -I./dh-c/include
+    - -isystem./dh-c/lib/deps

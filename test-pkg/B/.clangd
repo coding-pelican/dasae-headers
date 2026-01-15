@@ -1,15 +1,8 @@
 CompileFlags:
-  Compiler: clang
   Add:
-    - -xc
-    - -std=c17
-    - -Wall
-    - -Wextra
-    - -Werror
-    - -funsigned-char
-    - -fblocks
-    - -Ic:/dasae/dev/dasae-headers/dh/include
-    - -Ic:/dasae/dev/dasae-headers/dh/libs/BlocksRuntime/include
-    - -Ic:/dasae/dev/dasae-headers/test-pkg/B/src
-    - -Ic:/dasae/dev/dasae-headers/test-pkg/B/include
-    - -Ic:/dasae/dev/dasae-headers/test-pkg/B/lib/deps
+    - -I./B/src
+    - -I./B/include
+    - -isystem./B/lib/deps
+    - -I./test-pkg/B/src
+    - -I./test-pkg/B/include
+    - -isystem./test-pkg/B/lib/deps
