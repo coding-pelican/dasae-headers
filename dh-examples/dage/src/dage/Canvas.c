@@ -694,8 +694,8 @@ void dage_Canvas_blitScaled(dage_Canvas* dst, const dage_Canvas* src, i32 x, i32
     claim_assert_nonnull(src->gird.items.ptr);
     claim_assert(0 < scale);
 
-    const i32 scaled_width = as$(i32)(as$(f32)((Grid_width(src->gird) * scale)));
-    const i32 scaled_height = as$(i32)(as$(f32)((Grid_height(src->gird) * scale)));
+    const i32 scaled_width = as$(i32)(as$(f32)(Grid_width(src->gird)) * scale);
+    const i32 scaled_height = as$(i32)(as$(f32)(Grid_height(src->gird)) * scale);
 
     // Calculate destination bounds
     const i32 dst_right = prim_min(x + scaled_width, as$(i32)(Grid_width(dst->gird)));

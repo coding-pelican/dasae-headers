@@ -59,19 +59,19 @@ fn_((utf8__encode(u32 codepoint, utf8_SeqLen requested_len, S$u8 out))(utf8_Err$
         break;
     case utf8_SeqLen_2:
         *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_2 | (codepoint >> 6)));
-        *S_at((out)[1]) = utf8__makeContinuationByte(intCast$((u8)codepoint)) & prim_maskLo_static$((u8)(6));
+        *S_at((out)[1]) = utf8__makeContinuationByte(intCast$((u8)(codepoint & prim_maskLo_static$((u8)(6)))));
         break;
     case utf8_SeqLen_3:
         if (utf16_isSurrogate(codepoint)) { return_err(utf8_Err_EncodesSurrogateHalf()); }
         *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_3 | (codepoint >> 12)));
-        *S_at((out)[1]) = utf8__makeContinuationByte(intCast$((u8)(codepoint >> 6)) & prim_maskLo_static$((u8)(6)));
-        *S_at((out)[2]) = utf8__makeContinuationByte(intCast$((u8)codepoint) & prim_maskLo_static$((u8)(6)));
+        *S_at((out)[1]) = utf8__makeContinuationByte(intCast$((u8)((codepoint >> 6) & prim_maskLo_static$((u8)(6)))));
+        *S_at((out)[2]) = utf8__makeContinuationByte(intCast$((u8)(codepoint & prim_maskLo_static$((u8)(6)))));
         break;
     case utf8_SeqLen_4:
         *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_4 | (codepoint >> 18)));
-        *S_at((out)[1]) = utf8__makeContinuationByte(intCast$((u8)(codepoint >> 12)) & prim_maskLo_static$((u8)(6)));
-        *S_at((out)[2]) = utf8__makeContinuationByte(intCast$((u8)(codepoint >> 6)) & prim_maskLo_static$((u8)(6)));
-        *S_at((out)[3]) = utf8__makeContinuationByte(intCast$((u8)codepoint) & prim_maskLo_static$((u8)(6)));
+        *S_at((out)[1]) = utf8__makeContinuationByte(intCast$((u8)((codepoint >> 12) & prim_maskLo_static$((u8)(6)))));
+        *S_at((out)[2]) = utf8__makeContinuationByte(intCast$((u8)((codepoint >> 6) & prim_maskLo_static$((u8)(6)))));
+        *S_at((out)[3]) = utf8__makeContinuationByte(intCast$((u8)(codepoint & prim_maskLo_static$((u8)(6)))));
         break;
     }
     return_ok(S_slice((out)$r(0, requested_len)));

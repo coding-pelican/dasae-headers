@@ -6,16 +6,14 @@ claim_assert_static(offsetTo(ArrStk, items) == offsetTo(ArrList, items));
 claim_assert_static(offsetTo(ArrStk, cap) == offsetTo(ArrList, cap));
 debug_assert_static(offsetTo(ArrStk, type) == offsetTo(ArrList, type));
 
-#define stkAsList(_p_stk...) _Generic( \
-    TypeOf(_p_stk), \
-    const ArrStk*: as$(const ArrList*)(_p_stk), \
-    ArrStk*: as$(ArrList*)(_p_stk) \
-)
-#define listAsStk(_p_list...) _Generic( \
-    TypeOf(_p_list), \
-    const ArrList*: as$(const ArrStk*)(_p_list), \
-    ArrList*: as$(ArrStk*)(_p_list) \
-)
+#define stkAsList(_p_stk...) $supress_cast_qual(T_switch$((TypeOf(_p_stk))( \
+    T_qual$((const ArrStk*))(as$(const ArrList*)(_p_stk)), \
+    T_qual$((ArrStk*))(as$(ArrList*)(_p_stk)) \
+)))
+#define listAsStk(_p_list...) $supress_cast_qual(T_switch$((TypeOf(_p_list))( \
+    T_qual$((const ArrList*))(as$(const ArrStk*)(_p_list)), \
+    T_qual$((ArrList*))(as$(ArrStk*)(_p_list)) \
+)))
 $attr($inline_always)
 $static fn_((stkToList(ArrStk self))(ArrList)) { return *stkAsList(&self); }
 $attr($inline_always)
@@ -46,16 +44,14 @@ claim_assert_static(offsetTo(ArrStk_Grip, buf) == offsetTo(ArrList_Grip, buf));
 claim_assert_static(offsetTo(ArrStk_Grip, len) == offsetTo(ArrList_Grip, len));
 claim_assert_static(offsetTo(ArrStk_Grip, ctx) == offsetTo(ArrList_Grip, ctx));
 
-#define listGripAsStkGrip(_p_grip...) _Generic( \
-    TypeOf(_p_grip), \
-    const ArrList_Grip*: as$(const ArrStk_Grip*)(_p_grip), \
-    ArrList_Grip*: as$(ArrStk_Grip*)(_p_grip) \
-)
-#define stkGripAsListGrip(_p_grip...) _Generic( \
-    TypeOf(_p_grip), \
-    const ArrStk_Grip*: as$(const ArrList_Grip*)(_p_grip), \
-    ArrStk_Grip*: as$(ArrList_Grip*)(_p_grip) \
-)
+#define listGripAsStkGrip(_p_grip...) $supress_cast_qual(T_switch$((TypeOf(_p_grip))( \
+    T_qual$((const ArrList_Grip*))(as$(const ArrStk_Grip*)(_p_grip)), \
+    T_qual$((ArrList_Grip*))(as$(ArrStk_Grip*)(_p_grip)) \
+)))
+#define stkGripAsListGrip(_p_grip...) $supress_cast_qual(T_switch$((TypeOf(_p_grip))( \
+    T_qual$((const ArrStk_Grip*))(as$(const ArrList_Grip*)(_p_grip)), \
+    T_qual$((ArrStk_Grip*))(as$(ArrList_Grip*)(_p_grip)) \
+)))
 $attr($inline_always)
 $static fn_((listGripToStkGrip(ArrList_Grip self))(ArrStk_Grip)) { return *listGripAsStkGrip(&self); }
 

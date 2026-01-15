@@ -18,9 +18,9 @@ fn_((wtf16_Iter_next(wtf16_Iter* self))(O$u32) $scope) {
             }
         }
         self->idx += 1;
-        return_some((u32)first);
+        return_some(as$(u32)(first));
     } else {
         self->idx += 1;
-        return_some((u32)first);
+        return_some(as$(u32)(first));
     }
 } $unscoped_(fn);

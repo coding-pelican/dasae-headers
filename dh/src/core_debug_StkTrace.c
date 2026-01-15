@@ -1,37 +1,36 @@
 #include "dh/core/debug/StkTrace.h"
+#if debug_comp_enabled
 #include "dh/io/stream.h"
 #include "dh/Thrd.h"
 
 /*========== Internal Declarations ==========================================*/
 
 $static fn_((debug_StkTrace__printPanicHeader(S_const$u8 reason, usize code))(void));
-$attr($on_load)
-$static fn_((debug_StkTrace__setupCrashHandler(void))(void));
 
 pp_if_(pp_true)(pp_then_(
     $attr($inline_always $maybe_unused)
-    $static fn_((debug_StkTrace__unsupported__setupCrashHandler(void))(void));
+    $static fn_((debug_StkTrace__unsupported_setupCrashHandler(void))(void));
     $attr($inline_always $maybe_unused)
     $static fn_((debug_StkTrace__unsupported_print(void))(void));
 ));
 pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
-    $static fn_((debug_StkTrace__windows__setupCrashHandler(void))(void));
+    $static fn_((debug_StkTrace__windows_setupCrashHandler(void))(void));
     $attr($inline_always)
     $static fn_((debug_StkTrace__windows_print(void))(void));
 ));
 pp_if_(plat_based_unix)(pp_then_(
     $attr($inline_always)
-    $static fn_((debug_StkTrace__unix__setupCrashHandler(void))(void));
+    $static fn_((debug_StkTrace__unix_setupCrashHandler(void))(void));
     $attr($inline_always)
     $static fn_((debug_StkTrace__unix_print(void))(void));
 ));
 
-$static let debug_StkTrace___setupCrashHandler = pp_if_(plat_is_windows)(
-    pp_then_(debug_StkTrace__windows__setupCrashHandler),
+$static let debug_StkTrace__setupCrashHandler = pp_if_(plat_is_windows)(
+    pp_then_(debug_StkTrace__windows_setupCrashHandler),
     pp_else_(pp_if_(plat_based_unix)(
-        pp_then_(debug_StkTrace__unix__setupCrashHandler),
-        pp_else_(debug_StkTrace__unsupported__setupCrashHandler)
+        pp_then_(debug_StkTrace__unix_setupCrashHandler),
+        pp_else_(debug_StkTrace__unsupported_setupCrashHandler)
     )));
 $static let debug_StkTrace__print = pp_if_(plat_is_windows)(
     pp_then_(debug_StkTrace__windows_print),
@@ -44,6 +43,11 @@ $static let debug_StkTrace__print = pp_if_(plat_is_windows)(
 #define debug_StkTrace__max_symbol_len 256
 
 /*========== External Definitions ===========================================*/
+
+fn_((debug_StkTrace_setupCrashHandler(void))(void)) {
+    $static var_(s_setted_up, bool) = false;
+    if (!s_setted_up) { s_setted_up = (debug_StkTrace__setupCrashHandler(), true); }
+};
 
 fn_((debug_StkTrace_print(void))(void)) {
     debug_StkTrace__print();
@@ -61,13 +65,9 @@ fn_((debug_StkTrace__printPanicHeader(S_const$u8 reason, usize code))(void)) {
     }
 };
 
-fn_((debug_StkTrace__setupCrashHandler(void))(void)) {
-    debug_StkTrace___setupCrashHandler();
-};
-
 /* --- Unsupported --- */
 
-fn_((debug_StkTrace__unsupported__setupCrashHandler(void))(void)) $do_nothing;
+fn_((debug_StkTrace__unsupported_setupCrashHandler(void))(void)) $do_nothing;
 fn_((debug_StkTrace__unsupported_print(void))(void)) {
     io_stream_eprintln(u8_l("Stack Trace: Unsupported Platform"));
 };
@@ -101,7 +101,7 @@ $static fn_((debug_StkTrace__windows__handleException(EXCEPTION_POINTERS* Except
     return EXCEPTION_EXECUTE_HANDLER; /* Process termination via OS */
 };
 
-fn_((debug_StkTrace__windows__setupCrashHandler(void))(void)) {
+fn_((debug_StkTrace__windows_setupCrashHandler(void))(void)) {
     SetUnhandledExceptionFilter(debug_StkTrace__windows__handleException);
 };
 
@@ -170,7 +170,7 @@ $static fn_((debug_StkTrace__unix__handleSignal(i32 sig))(void)) {
     _exit(1); /* Syscall exit */
 };
 
-fn_((debug_StkTrace__unix__setupCrashHandler(void))(void)) {
+fn_((debug_StkTrace__unix_setupCrashHandler(void))(void)) {
     struct sigaction sa = {
         .sa_handler = debug_StkTrace__unix__handleSignal,
         .sa_flags = 0,
@@ -209,3 +209,4 @@ fn_((debug_StkTrace__unix_print(void))(void)) {
     });
 };
 #endif /* plat_based_unix */
+#endif /* debug_comp_enabled */

@@ -25,18 +25,18 @@ $static fn_((wtf8__encode(u32 codepoint, utf8_SeqLen requested_len, S$u8 out))(w
         break;
     case utf8_SeqLen_2:
         *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_2 | (codepoint >> 6)));
-        *S_at((out)[1]) = wtf8__makeContinuationByte(intCast$((u8)codepoint) & prim_maskLo_static$((u8)(6)));
+        *S_at((out)[1]) = wtf8__makeContinuationByte(intCast$((u8)(codepoint & prim_maskLo_static$((u8)(6)))));
         break;
     case utf8_SeqLen_3:
         *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_3 | (codepoint >> 12)));
-        *S_at((out)[1]) = wtf8__makeContinuationByte(intCast$((u8)(codepoint >> 6)) & prim_maskLo_static$((u8)(6)));
-        *S_at((out)[2]) = wtf8__makeContinuationByte(intCast$((u8)codepoint) & prim_maskLo_static$((u8)(6)));
+        *S_at((out)[1]) = wtf8__makeContinuationByte(intCast$((u8)((codepoint >> 6) & prim_maskLo_static$((u8)(6)))));
+        *S_at((out)[2]) = wtf8__makeContinuationByte(intCast$((u8)(codepoint & prim_maskLo_static$((u8)(6)))));
         break;
     case utf8_SeqLen_4:
         *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_4 | (codepoint >> 18)));
-        *S_at((out)[1]) = wtf8__makeContinuationByte(intCast$((u8)(codepoint >> 12)) & prim_maskLo_static$((u8)(6)));
-        *S_at((out)[2]) = wtf8__makeContinuationByte(intCast$((u8)(codepoint >> 6)) & prim_maskLo_static$((u8)(6)));
-        *S_at((out)[3]) = wtf8__makeContinuationByte(intCast$((u8)codepoint) & prim_maskLo_static$((u8)(6)));
+        *S_at((out)[1]) = wtf8__makeContinuationByte(intCast$((u8)((codepoint >> 12) & prim_maskLo_static$((u8)(6)))));
+        *S_at((out)[2]) = wtf8__makeContinuationByte(intCast$((u8)((codepoint >> 6) & prim_maskLo_static$((u8)(6)))));
+        *S_at((out)[3]) = wtf8__makeContinuationByte(intCast$((u8)(codepoint & prim_maskLo_static$((u8)(6)))));
         break;
     }
     return_ok(S_slice((out)$r(0, requested_len)));
@@ -56,9 +56,9 @@ $static fn_((wtf8__decode3(utf8_Decode3Buf bytes))(wtf8_Err$u32) $scope) {
     claim_assert((*A_at((bytes)[0]) & prim_maskHi_static$((u8)(4))) == utf8_SeqByte_3);
     var_(val, u32) = *A_at((bytes)[0]) & prim_maskLo_static$((u8)(4));
     if (!wtf8__isContinuation(*A_at((bytes)[1]))) { return_err(wtf8_Err_ExpectedContinuation()); }
-    val = (val << 6) | (u32)(wtf8__continuationPayload(*A_at((bytes)[1])));
+    val = (val << 6) | as$(u32)(wtf8__continuationPayload(*A_at((bytes)[1])));
     if (!wtf8__isContinuation(*A_at((bytes)[2]))) { return_err(wtf8_Err_ExpectedContinuation()); }
-    val = (val << 6) | (u32)(wtf8__continuationPayload(*A_at((bytes)[2])));
+    val = (val << 6) | as$(u32)(wtf8__continuationPayload(*A_at((bytes)[2])));
     if (val < 0x800) { return_err(wtf8_Err_OverlongEncoding()); }
     return_ok(val);
 } $unscoped_(fn);
