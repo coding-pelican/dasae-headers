@@ -7,14 +7,14 @@ claim_assert_static(offsetTo(ArrQue, head) == offsetTo(ArrDeq, head));
 claim_assert_static(offsetTo(ArrQue, len) == offsetTo(ArrDeq, len));
 debug_assert_static(offsetTo(ArrQue, type) == offsetTo(ArrDeq, type));
 
-#define queAsDeq(_p_que...) $supress_cast_qual(T_switch$((TypeOf(_p_que))( \
-    T_qual$((const ArrQue*))(as$(const ArrDeq*)(_p_que)), \
-    T_qual$((ArrQue*))(as$(ArrDeq*)(_p_que)) \
-)))
-#define deqAsQue(_p_deq...) $supress_cast_qual(T_switch$((TypeOf(_p_deq))( \
-    T_qual$((const ArrDeq*))(as$(const ArrQue*)(_p_deq)), \
-    T_qual$((ArrDeq*))(as$(ArrQue*)(_p_deq)) \
-)))
+#define queAsDeq(_p_que...) T_switch$((TypeOf(_p_que))( \
+    T_qual$((const ArrQue*))(ptrQualCast$((const ArrDeq*)(_p_que))), \
+    T_qual$((ArrQue*))(ptrQualCast$((ArrDeq*)(_p_que))) \
+))
+#define deqAsQue(_p_deq...) T_switch$((TypeOf(_p_deq))( \
+    T_qual$((const ArrDeq*))(ptrQualCast$((const ArrQue*)(_p_deq))), \
+    T_qual$((ArrDeq*))(ptrQualCast$((ArrQue*)(_p_deq))) \
+))
 $attr($inline_always)
 $static fn_((queToDeq(ArrQue self))(ArrDeq)) { return *queAsDeq(&self); }
 $attr($inline_always)
@@ -42,14 +42,14 @@ claim_assert_static(offsetTo(ArrQue_Grip, head) == offsetTo(ArrDeq_Grip, head));
 claim_assert_static(offsetTo(ArrQue_Grip, len) == offsetTo(ArrDeq_Grip, len));
 claim_assert_static(offsetTo(ArrQue_Grip, ctx) == offsetTo(ArrDeq_Grip, ctx));
 
-#define deqGripAsQueGrip(_p_grip...) $supress_cast_qual(T_switch$((TypeOf(_p_grip))( \
-    T_qual$((const ArrDeq_Grip*))(as$(const ArrQue_Grip*)(_p_grip)), \
-    T_qual$((ArrDeq_Grip*))(as$(ArrQue_Grip*)(_p_grip)) \
-)))
-#define queGripAsDeqGrip(_p_grip...) $supress_cast_qual(T_switch$((TypeOf(_p_grip))( \
-    T_qual$((const ArrQue_Grip*))(as$(const ArrDeq_Grip*)(_p_grip)), \
-    T_qual$((ArrQue_Grip*))(as$(ArrDeq_Grip*)(_p_grip)) \
-)))
+#define deqGripAsQueGrip(_p_grip...) T_switch$((TypeOf(_p_grip))( \
+    T_qual$((const ArrDeq_Grip*))(ptrQualCast$((const ArrQue_Grip*)(_p_grip))), \
+    T_qual$((ArrDeq_Grip*))(ptrQualCast$((ArrQue_Grip*)(_p_grip))) \
+))
+#define queGripAsDeqGrip(_p_grip...) T_switch$((TypeOf(_p_grip))( \
+    T_qual$((const ArrQue_Grip*))(ptrQualCast$((const ArrDeq_Grip*)(_p_grip))), \
+    T_qual$((ArrQue_Grip*))(ptrQualCast$((ArrDeq_Grip*)(_p_grip))) \
+))
 $attr($inline_always)
 $static fn_((deqGripToQueGrip(ArrDeq_Grip self))(ArrQue_Grip)) { return *deqGripAsQueGrip(&self); }
 
@@ -150,14 +150,14 @@ claim_assert_static(offsetTo(ArrQue_Iter, que) == offsetTo(ArrDeq_Iter, deq));
 claim_assert_static(offsetTo(ArrQue_Iter, idx) == offsetTo(ArrDeq_Iter, idx));
 debug_assert_static(offsetTo(ArrQue_Iter, type) == offsetTo(ArrDeq_Iter, type));
 
-#define queIterAsDeqIter(_p_que_iter...) $supress_cast_qual(T_switch$((TypeOf(_p_que_iter))( \
-    T_qual$((const ArrQue_Iter*))(as$(const ArrDeq_Iter*)(_p_que_iter)), \
-    T_qual$((ArrQue_Iter*))(as$(ArrDeq_Iter*)(_p_que_iter)) \
-)))
-#define deqIterAsQueIter(_p_deq_iter...) $supress_cast_qual(T_switch$((TypeOf(_p_deq_iter))( \
-    T_qual$((const ArrDeq_Iter*))(as$(const ArrQue_Iter*)(_p_deq_iter)), \
-    T_qual$((ArrDeq_Iter*))(as$(ArrQue_Iter*)(_p_deq_iter)) \
-)))
+#define queIterAsDeqIter(_p_que_iter...) T_switch$((TypeOf(_p_que_iter))( \
+    T_qual$((const ArrQue_Iter*))(ptrQualCast$((const ArrDeq_Iter*)(_p_que_iter))), \
+    T_qual$((ArrQue_Iter*))(ptrQualCast$((ArrDeq_Iter*)(_p_que_iter))) \
+))
+#define deqIterAsQueIter(_p_deq_iter...) T_switch$((TypeOf(_p_deq_iter))( \
+    T_qual$((const ArrDeq_Iter*))(ptrQualCast$((const ArrQue_Iter*)(_p_deq_iter))), \
+    T_qual$((ArrDeq_Iter*))(ptrQualCast$((ArrQue_Iter*)(_p_deq_iter))) \
+))
 
 $attr($inline_always)
 $static fn_((deqIterToQueIter(ArrDeq_Iter self))(ArrQue_Iter)) { return *deqIterAsQueIter(&self); }

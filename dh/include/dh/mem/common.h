@@ -709,63 +709,63 @@ $static fn_((mem_spanZ0Mut$u8(u8* p))(S$u8)) {
     return (S$u8){ .ptr = p, .len = mem_lenZ0$u8(p) };
 };
 
-#define ____mem_asBytes(_ptr...) $supress_cast_qual(T_switch$((P_T$(TypeOf(_ptr)))( \
+#define ____mem_asBytes(_ptr...) T_switch$((P_T$(TypeOf(_ptr)))( \
     T_qual$((const P_TUnqual$(TypeOf(_ptr)))(lit$((S_const$u8){ \
-        .ptr = as$(const u8*)(_ptr), \
+        .ptr = ptrQualCast$((const u8*)(_ptr)), \
         .len = sizeOf$(P_T$(TypeOf(_ptr))), \
     }))), \
     T_qual$((P_TUnqual$(TypeOf(_ptr)))(lit$((S$u8){ \
-        .ptr = as$(u8*)(_ptr), \
+        .ptr = ptrQualCast$((u8*)(_ptr)), \
         .len = sizeOf$(P_T$(TypeOf(_ptr))), \
     }))) \
-)))
+))
 #define __step__mem_bytesAs$(...) __step__mem_bytesAs$__emit(__step__mem_bytesAs$__parse __VA_ARGS__)
 #define __step__mem_bytesAs$__parse(_T...) _T,
 #define __step__mem_bytesAs$__emit(...) ____mem_bytesAs$(__VA_ARGS__)
-#define ____mem_bytesAs$(_T, _bytes...) $supress_cast_qual(T_switch$((S_T$(TypeOf(_bytes)))( \
+#define ____mem_bytesAs$(_T, _bytes...) T_switch$((S_T$(TypeOf(_bytes)))( \
     T_qual$((const u8)(T_switch$((P_T$(_T))(/* clang-format off */ \
-        T_qual$((const P_TUnqual$(_T))(ptrAlignCast$((_T)(_bytes.ptr)))), \
+        T_qual$((const P_TUnqual$(_T))(ptrAlignQualCast$((_T)(_bytes.ptr)))), \
         T_qual$((P_TUnqual$(_T))(claim_unreachable)) /* clang-format on */ \
     )))), \
-    T_qual$((u8)(ptrAlignCast$((_T)(_bytes.ptr)))) \
-)))
+    T_qual$((u8)(ptrAlignQualCast$((_T)(_bytes.ptr)))) \
+))
 
 #define __step__mem_toBytes$(...) __step__mem_toBytes$__emit(__step__mem_toBytes$__parse __VA_ARGS__)
 #define __step__mem_toBytes$__parse(_T...) _T,
 #define __step__mem_toBytes$__emit(...) ____mem_toBytes$(__VA_ARGS__)
 #define ____mem_toBytes$(_T, _val...) \
-    $supress_cast_qual(S_deref$((_T)mem_asBytes(&copy(_val))))
+    S_deref$((_T)mem_asBytes(&copy(_val)))
 #define ____mem_toBytes(_val...) \
     mem_toBytes$((A$$(sizeOf$(TypeOf(_val)), u8))_val)
 #define __step__mem_bytesTo$(...) __step__mem_bytesTo$__emit(__step__mem_bytesTo$__parse __VA_ARGS__)
 #define __step__mem_bytesTo$__parse(_T...) _T,
 #define __step__mem_bytesTo$__emit(...) ____mem_bytesTo$(__VA_ARGS__)
-#define ____mem_bytesTo$(_T, _bytes...) $supress_cast_qual(T_switch$((S_T$(TypeOf(_bytes)))( \
-    T_case$((const u8)(*ptrAlignCast$((const _T*)(_bytes.ptr)))), \
-    T_case$((u8)(*ptrAlignCast$((_T*)(_bytes.ptr)))) \
-)))
+#define ____mem_bytesTo$(_T, _bytes...) T_switch$((S_T$(TypeOf(_bytes)))( \
+    T_case$((const u8)(*ptrAlignQualCast$((const _T*)(_bytes.ptr)))), \
+    T_case$((u8)(*ptrAlignQualCast$((_T*)(_bytes.ptr)))) \
+))
 
 #define __step__mem_sAsBytes(_sli...) ____mem_sAsBytes$(pp_uniqTok(sli), _sli)
-#define ____mem_sAsBytes$(__sli, _sli...) $supress_cast_qual(blk({ \
+#define ____mem_sAsBytes$(__sli, _sli...) blk({ \
     let __sli = &copy(_sli); \
     typedef TypeOfUnqual(*__sli) T$mem_sAsBytes$; \
     typedef S_T$(T$mem_sAsBytes$) S_T; \
     typedef TypeOfUnqual(S_T) S_TUnqual; \
     blk_return_(T_switch$((TypeOf(S_T))( \
         T_qual$((const S_TUnqual)(lit$((S_const$u8){ \
-            .ptr = as$(const u8*)(__sli->ptr), \
+            .ptr = ptrQualCast$((const u8*)(__sli->ptr)), \
             .len = __sli->len * sizeOf$(S_T), \
         }))), \
         T_qual$((S_TUnqual)(lit$((S$u8){ \
-            .ptr = as$(u8*)(__sli->ptr), \
+            .ptr = ptrQualCast$((u8*)(__sli->ptr)), \
             .len = __sli->len * sizeOf$(S_T), \
         }))) \
     ))); \
-}))
+})
 #define __step__mem_bytesAsS$(...) __step__mem_bytesAsS$__emit(__step__mem_bytesAsS$__parse __VA_ARGS__)
 #define __step__mem_bytesAsS$__parse(_T...) _T, pp_uniqTok(bytes),
 #define __step__mem_bytesAsS$__emit(...) ____mem_bytesAsS$(__VA_ARGS__)
-#define ____mem_bytesAsS$(_T, __bytes, _bytes...) $supress_cast_qual(blk({ \
+#define ____mem_bytesAsS$(_T, __bytes, _bytes...) blk({ \
     let __bytes = &copy(_bytes); \
     typedef _T T$mem_bytesAsS$; \
     typedef S_T$(T$mem_bytesAsS$) S_T; \
@@ -773,17 +773,17 @@ $static fn_((mem_spanZ0Mut$u8(u8* p))(S$u8)) {
     blk_return_(T_switch$((S_T$(__bytes))( \
         T_case$((const u8)(T_switch$((T$mem_bytesAsS$)(/* clang-format off */ \
             T_case$((const S_TUnqual)(lit$((T$mem_bytesAsS$){ \
-                .ptr = ptrAlignCast$((S_T*)(__bytes.ptr)), \
+                .ptr = ptrAlignQualCast$((S_T*)(__bytes.ptr)), \
                 .len = __bytes->len / sizeOf$(S_T), \
             }))), \
             T_case$((S_TUnqual)(claim_unreachable)) /* clang-format on */ \
         )))), \
         T_case$((u8)(lit$((T$mem_bytesAsS$){ \
-            .ptr = ptrAlignCast$((S_T*)(__bytes.ptr)), \
+            .ptr = ptrAlignQualCast$((S_T*)(__bytes.ptr)), \
             .len = __bytes->len / sizeOf$(S_T), \
         }))) \
     ))); \
-}))
+})
 
 #if defined(__cplusplus)
 } /* extern "C" */

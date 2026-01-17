@@ -56,9 +56,9 @@ extern "C" {
 #define return_(_Expr...) comp_syn__return_(_Expr)
 #define return_void(_Expr...) pp_overload(comp_syn__return_void, _Expr)(_Expr)
 
-#define reservedReturn() (__reserved_return[0])
+#define reservedReturn() $supress_pointer_arith((__reserved_return[0]))
 // #define ReturnType       TypeOf(reservedReturn())
-#define reservedBreak() (__reserved_break[0])
+#define reservedBreak() $supress_pointer_arith((__reserved_break[0]))
 // #define BreakType        TypeOf(reservedBreak())
 
 /*
@@ -257,10 +257,10 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 #define comp_syn__expr_$unscoped \
     /* while(false) */; \
 __step_unscope: \
-    $supress_pointer_arith(T_switch$((BreakT)( \
+    T_switch$((BreakT)( \
         T_case$((void)({})), \
         T_default_(reservedBreak()) \
-    ))); \
+    )); \
 })
 #define comp_syn__expr_$_guard(_T_Break...) ({ \
     $local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
@@ -289,10 +289,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
     } \
     __step_unscope: \
     if (!__has_broken) { goto __step_return_inner; } \
-    $supress_pointer_arith(T_switch$((BreakT)( \
+    T_switch$((BreakT)( \
         T_case$((void)({})), \
         T_default_(reservedBreak()) \
-    ))); \
+    )); \
 })
 // clang-format on
 
@@ -347,10 +347,10 @@ __step_deferred: switch (__scope_counter.current_line) { \
 #define comp_syn__eval_$unscoped \
     /* while(false) */; \
     __step_break: \
-    $supress_pointer_arith(T_switch$((BreakT)( \
+    T_switch$((BreakT)( \
         T_case$((void)({})), \
         T_default_(reservedBreak()) \
-    ))); \
+    )); \
 })
 // clang-format on
 

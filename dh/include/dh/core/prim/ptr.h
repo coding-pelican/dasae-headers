@@ -41,6 +41,8 @@ typedef TypeOf(void*) P$raw;
 
 #define ptrCast$(/*(_T: PtrType)(_val: PtrType)*/... /*(_T)*/) __step__ptrCast$(__VA_ARGS__)
 #define ptrAlignCast$(/*(_T: PtrType)(_val: PtrType)*/... /*(_T)*/) __step__ptrAlignCast$(__VA_ARGS__)
+#define ptrQualCast$(/*(_T: PtrType)(_val: PtrType)*/... /*(_T)*/) __step__ptrQualCast$(__VA_ARGS__)
+#define ptrAlignQualCast$(/*(_T: PtrType)(_val: PtrType)*/... /*(_T)*/) __step__ptrAlignQualCast$(__VA_ARGS__)
 #define ptrToInt(_p /*: PtrType*/... /*(usize)*/) ____ptrToInt(_p)
 #define intToPtr$(/*(_T: PtrType)(_val: usize)*/... /*(_T)*/) __step__intToPtr$(__VA_ARGS__)
 
@@ -67,6 +69,8 @@ typedef TypeOf(void*) P$raw;
     "clang diagnostic push", "clang diagnostic ignored \"-Wcast-align\"", "clang diagnostic pop", \
     (as$(_T)(alignCast((alignOf$(_T))(_val)))) \
 )
+#define __step__ptrQualCast$(...) $supress_cast_qual(ptrCast$(__VA_ARGS__))
+#define __step__ptrAlignQualCast$(...) $supress_cast_align(ptrAlignCast$(__VA_ARGS__))
 #define ____ptrToInt(_p...) ((usize)(_p)) /* NOLINT(performance-no-int-to-ptr) */
 #define __step__intToPtr$(...) __step__intToPtr$__emit(__step__intToPtr$__parse __VA_ARGS__)
 #define __step__intToPtr$__parse(_T...) _T,
