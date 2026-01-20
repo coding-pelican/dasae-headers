@@ -315,8 +315,43 @@ typedef struct Void {
 
 /*========== Integer Exponential and Logarithm Operations ===================*/
 
-#define int_exp2(_x...) __op__int_exp2(_x)
-#define int_log2(_x...) __op__int_log2(_x)
+#define uint_exp10_static$(/*(_T)(_n: UIntType)*/... /*(_T)*/) __step__uint_exp10_static$(__VA_ARGS__)
+#define uint_exp10$(/*(_T)(_n: UIntType)*/... /*(_T)*/) __step__uint_exp10$(__VA_ARGS__)
+#define uint_exp2_static$(/*(_T)(_n: UIntType)*/... /*(_T)*/) __step__uint_exp2_static$(__VA_ARGS__)
+#define uint_exp2$(/*(_T)(_n: UIntType)*/... /*(_T)*/) __step__uint_exp2$(__VA_ARGS__)
+#define uint_log2_static(_n /*: UIntType*/... /*(u32)*/) ____uint_log2_static(_n)
+#define uint_log2(_n /*: UIntType*/... /*(u32)*/) __step__uint_log2(_n)
+#define uint_log10Floor_static(_n /*: UIntType*/... /*(u32)*/) \
+    /* \
+     * calculate floor(log10(_n)) \
+     * \
+     * Range of output for uint64 is only 0 to 19. \
+     * Therefore, direct comparison is more efficient than iterative methods. \
+     * \
+     * if `_n` < 10, return 0 \
+     * if `_n` >= 10^19, return 19 \
+     */ \
+    __step__uint_log10Floor_static(_n)
+#define uint_log10Floor(_n /*: UIntType*/... /*(u32)*/) __step__uint_log10Floor(_n)
+#define uint_log10Ceil_static(_n /*: UIntType*/... /*(u32)*/) \
+    /* \
+     * calculate ceil(log10(_n)) \
+     * \
+     * if `_n` <= 1, return 0 \
+     * if `_n` <= 10, return 1 \
+     * if `_n` <= 100, return 2 \
+     */ \
+    __step__uint_log10Ceil_static(_n)
+#define uint_log10Ceil(_n /*: UIntType*/... /*(u32)*/) __step__uint_log10Ceil(_n)
+#define uint_log10Round_static(_n /*: UIntType*/... /*(u32)*/) \
+    /* \
+     * calculate round(log10(_n)) \
+     * \
+     * Thresholds are at 10^(k.5). \
+     * sqrt(10) ~ 3.16227766 \
+     */ \
+    __step__uint_log10Round_static(_n)
+#define uint_log10Round(_n /*: UIntType*/... /*(u32)*/) __step__uint_log10Round(_n)
 
 /*========== Integer Query Operations =======================================*/
 
@@ -1575,36 +1610,6 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 /*========== Bit Manipulation Implementation ================================*/
 
 #if UNUSED_CODE
-#define __op__int_countOnes(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
-    let_(__x, IntType) = _x; \
-    _Generic(sizeof(IntType), 1: __builtin_popcount((u8)__x), 2: __builtin_popcount((u16)__x), 4: __builtin_popcount((u32)__x), 8: __builtin_popcountll((u64)__x)); \
-})
-
-#define __op__int_countZeros(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
-    let_(__x, IntType) = _x; \
-    (i32)(sizeof(IntType) * 8 - _Generic(sizeof(IntType), 1: __builtin_popcount((u8)__x), 2: __builtin_popcount((u16)__x), 4: __builtin_popcount((u32)__x), 8: __builtin_popcountll((u64)__x))); \
-})
-
-#define __op__int_countLeadingZeros(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
-    let_(__x, IntType) = _x; \
-    claim_assert(__x != 0); \
-    _Generic(sizeof(IntType), 1: __builtin_clz((u32)(u8)__x) - 24, 2: __builtin_clz((u32)(u16)__x) - 16, 4: __builtin_clz((u32)__x), 8: __builtin_clzll((u64)__x)); \
-})
-
-#define __op__int_countTrailingZeros(__x, _x...) blk({ \
-    typedef TypeOfUnqual(_x) IntType; \
-    claim_assert_static(isInt$(IntType)); \
-    let_(__x, IntType) = _x; \
-    claim_assert(__x != 0); \
-    _Generic(sizeof(IntType), 1: __builtin_ctz((u32)(u8)__x), 2: __builtin_ctz((u32)(u16)__x), 4: __builtin_ctz((u32)__x), 8: __builtin_ctzll((u64)__x)); \
-})
-
 #define __op__int_rotateL(__x, __n, _x, _n...) blk({ \
     typedef TypeOfUnqual(_x) IntType; \
     claim_assert_static(isInt$(IntType)); \
@@ -1614,7 +1619,6 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     __n &= __mask; \
     as$(IntType)((__x << __n) | (__x >> ((-__n) & __mask))); \
 })
-
 #define __op__int_rotateR(__x, __n, _x, _n...) blk({ \
     typedef TypeOfUnqual(_x) IntType; \
     claim_assert_static(isInt$(IntType)); \
@@ -1624,14 +1628,12 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     __n &= __mask; \
     as$(IntType)((__x >> __n) | (__x << ((-__n) & __mask))); \
 })
-
 #define __op__int_swapBytes(__x, _x...) blk({ \
     typedef TypeOfUnqual(_x) IntType; \
     claim_assert_static(isInt$(IntType)); \
     let_(__x, IntType) = _x; \
     as$(IntType)(_Generic(sizeof(IntType), 1: __x, 2: __builtin_bswap16((u16)__x), 4: __builtin_bswap32((u32)__x), 8: __builtin_bswap64((u64)__x))); \
 })
-
 #define __op__int_reverseBits(__x, _x...) blk({ \
     typedef TypeOfUnqual(_x) IntType; \
     claim_assert_static(isInt$(IntType)); \
@@ -1642,13 +1644,199 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 
 /*========== Integer Exponential and Logarithm Implementation ===================*/
 
-#define __op__int_exp2(_x...) blk({ \
-    typedef TypeOfUnqual(_x) IntType; \
-    blk_return_(intCast$((IntType)(int_shl(1ull, _x)))); \
+#define __step__uint_exp10_static$(...) __step__uint_exp10_static$__emit(__step__uint_exp10_static$__parse __VA_ARGS__)
+#define __step__uint_exp10_static$__parse(_T...) _T,
+#define __step__uint_exp10_static$__emit(...) ____uint_exp10_static$(__VA_ARGS__)
+/* clang-format off */
+#define ____uint_exp10_static$(_T, _n...) (as$(_T)( \
+    (_n) < 10 ? ____uint_exp10_static$__values0to9(_n) : \
+    (_n) < 20 ? ____uint_exp10_static$__values10to19(_n) : 0u /* Overflow (> 10^19) for u64 */ \
+))
+#define ____uint_exp10_static$__values0to9(_n) ( \
+    (_n) == 0 ? lit_n(1,u) : \
+    (_n) == 1 ? lit_n(10,u) : \
+    (_n) == 2 ? lit_n(100,u) : \
+    (_n) == 3 ? lit_n(1,000,u) : \
+    (_n) == 4 ? lit_n(10,000,u) : \
+    (_n) == 5 ? lit_n(100,000,u) : \
+    (_n) == 6 ? lit_n(1,000,000,u) : \
+    (_n) == 7 ? lit_n(10,000,000,u) : \
+    (_n) == 8 ? lit_n(100,000,000,u) : \
+                lit_n(1,000,000,000,u)/* 9 */ \
+)
+#define ____uint_exp10_static$__values10to19(_n) ( \
+    (_n) == 10 ? lit_n(10,000,000,000,ull) : \
+    (_n) == 11 ? lit_n(100,000,000,000,ull) : \
+    (_n) == 12 ? lit_n(1,000,000,000,000,ull) : \
+    (_n) == 13 ? lit_n(10,000,000,000,000,ull) : \
+    (_n) == 14 ? lit_n(100,000,000,000,000,ull) : \
+    (_n) == 15 ? lit_n(1,000,000,000,000,000,ull) : \
+    (_n) == 16 ? lit_n(10,000,000,000,000,000,ull) : \
+    (_n) == 17 ? lit_n(100,000,000,000,000,000,ull) : \
+    (_n) == 18 ? lit_n(1,000,000,000,000,000,000,ull) : \
+                 lit_n(10,000,000,000,000,000,000,ull) /* 19 (Max for u64) */ \
+)
+/* clang-format on */
+#define __step__uint_exp10$(...) __step__uint_exp10$(__step__uint_exp10$__parse __VA_ARGS__)
+#define __step__uint_exp10$__parse(_T...) _T, pp_uniqTok(n),
+#define __step__uint_exp10$__emit(...) ____uint_exp10$(__VA_ARGS__)
+#define ____uint_exp10$(_T, __n, _n...) blk({ \
+    typedef TypeOfUnqual(_n) UIntType; \
+    claim_assert_static(isUInt$(UIntType)); \
+    let_(__n, UIntType) = _n; \
+    claim_assert(0 < __n); \
+    blk_return_(uint_exp10_static$((_T)(__n))); \
 })
-#define __op__int_log2(_x...) blk({ \
-    typedef TypeOfUnqual(_x) IntType; \
-    blk_return_(intCast$((IntType)((64u - 1u) - __builtin_clzll(as$(u64)(_x))))); \
+
+#define __step__uint_exp2_static$(...) __step__uint_exp2_static$__emit(__step__uint_exp2_static$__parse __VA_ARGS__)
+#define __step__uint_exp2_static$__parse(_T...) _T,
+#define __step__uint_exp2_static$__emit(...) ____uint_exp2_static$(__VA_ARGS__)
+#define ____uint_exp2_static$(_T, _n...) ( \
+    as$(_T)(1) << _n \
+)
+#define __step__uint_exp2$(...) __step__uint_exp2$__emit(__step__uint_exp2$__parse __VA_ARGS__)
+#define __step__uint_exp2$__parse(_T...) _T, pp_uniqTok(n),
+#define __step__uint_exp2$__emit(...) ____uint_exp2$(__VA_ARGS__)
+#define ____uint_exp2$(_T, __n, _n...) blk({ \
+    typedef TypeOfUnqual(_n) UIntType; \
+    claim_assert_static(isUInt$(UIntType)); \
+    let_(__n, UIntType) = _n; \
+    claim_assert(0 <= __n); \
+    blk_return_(int_shl(as$(_T)(1), intCast$((u32)(__n)))); \
+})
+
+#define ____uint_log2_static(_n...) ( \
+    as$(u32)(64u - 1u) - int_leadingZeros_static(as$(u64)(_n)) \
+)
+#define __step__uint_log2(_n...) ____uint_log2(pp_uniqTok(n), _n)
+#define ____uint_log2(__n, _n...) blk({ \
+    typedef TypeOfUnqual(_n) UIntType; \
+    claim_assert_static(isUInt$(UIntType)); \
+    let_(__n, UIntType) = _n; \
+    claim_assert(0 < __n); \
+    blk_return_(uint_log2_static(__n)); \
+})
+
+/* clang-format off */
+#define __step__uint_log10Floor_static(_n...) ( \
+    (_n) < lit_n(10,000,000,000,ull) \
+        ? ____uint_log10Floor_static__small(_n) \
+        : ____uint_log10Floor_static__large(_n) \
+)
+#define ____uint_log10Floor_static__small(_n...) \
+    /* Small value (0 - 10^10-1): 0 to 9 */ ( \
+    (_n) < lit_n(10,u)            ? 0u : \
+    (_n) < lit_n(100,u)           ? 1u : \
+    (_n) < lit_n(1,000,u)         ? 2u : \
+    (_n) < lit_n(10,000,u)        ? 3u : \
+    (_n) < lit_n(100,000,u)       ? 4u : \
+    (_n) < lit_n(1,000,000,u)     ? 5u : \
+    (_n) < lit_n(10,000,000,u)    ? 6u : \
+    (_n) < lit_n(100,000,000,u)   ? 7u : \
+    (_n) < lit_n(1,000,000,000,u) ? 8u : 9u \
+)
+#define ____uint_log10Floor_static__large(_n...) \
+    /* Large value (10^10+): 10 to 19 */ ( \
+    (_n) < lit_n(100,000,000,000,ull)            ? 10u : \
+    (_n) < lit_n(1,000,000,000,000,ull)          ? 11u : \
+    (_n) < lit_n(10,000,000,000,000,ull)         ? 12u : \
+    (_n) < lit_n(100,000,000,000,000,ull)        ? 13u : \
+    (_n) < lit_n(1,000,000,000,000,000,ull)      ? 14u : \
+    (_n) < lit_n(10,000,000,000,000,000,ull)     ? 15u : \
+    (_n) < lit_n(100,000,000,000,000,000,ull)    ? 16u : \
+    (_n) < lit_n(1,000,000,000,000,000,000,ull)  ? 17u : \
+    (_n) < lit_n(10,000,000,000,000,000,000,ull) ? 18u : 19u \
+)
+/* clang-format on */
+#define __step__uint_log10Floor(_n...) ____uint_log10Floor(pp_uniqTok(n), _n)
+#define ____uint_log10Floor(__n, _n...) blk({ \
+    typedef TypeOfUnqual(_n) UIntType; \
+    claim_assert_static(isUInt$(UIntType)); \
+    let_(__n, UIntType) = _n; \
+    claim_assert(0 < __n); \
+    blk_return_(uint_log10Floor_static(__n)); \
+})
+
+/* clang-format off */
+#define __step__uint_log10Ceil_static(_n...) ( \
+    (_n) <= lit_n(10,000,000,000,ull) \
+        ? ____uint_log10Ceil_static__small(_n) \
+        : ____uint_log10Ceil_static__large(_n) \
+)
+#define ____uint_log10Ceil_static__small(_n...) \
+    /* Small value (0 - 10^10) */ ( \
+    (_n) <= lit_n(1,u)              ? 0u : \
+    (_n) <= lit_n(10,u)             ? 1u : \
+    (_n) <= lit_n(100,u)            ? 2u : \
+    (_n) <= lit_n(1,000,u)          ? 3u : \
+    (_n) <= lit_n(10,000,u)         ? 4u : \
+    (_n) <= lit_n(100,000,u)        ? 5u : \
+    (_n) <= lit_n(1,000,000,u)      ? 6u : \
+    (_n) <= lit_n(10,000,000,u)     ? 7u : \
+    (_n) <= lit_n(100,000,000,u)    ? 8u : \
+    (_n) <= lit_n(1,000,000,000,u)  ? 9u : 10u \
+)
+#define ____uint_log10Ceil_static__large(_n...) \
+    /* Large value (10^10+ - max) */ ( \
+    (_n) <= lit_n(100,000,000,000,ull)            ? 11u : \
+    (_n) <= lit_n(1,000,000,000,000,ull)          ? 12u : \
+    (_n) <= lit_n(10,000,000,000,000,ull)         ? 13u : \
+    (_n) <= lit_n(100,000,000,000,000,ull)        ? 14u : \
+    (_n) <= lit_n(1,000,000,000,000,000,ull)      ? 15u : \
+    (_n) <= lit_n(10,000,000,000,000,000,ull)     ? 16u : \
+    (_n) <= lit_n(100,000,000,000,000,000,ull)    ? 17u : \
+    (_n) <= lit_n(1,000,000,000,000,000,000,ull)  ? 18u : \
+    (_n) <= lit_n(10,000,000,000,000,000,000,ull) ? 19u : 20u \
+)
+/* clang-format on */
+#define __step__uint_log10Ceil(_n...) ____uint_log10Ceil(pp_uniqTok(n), _n)
+#define ____uint_log10Ceil(__n, _n...) blk({ \
+    typedef TypeOfUnqual(_n) UIntType; \
+    claim_assert_static(isUInt$(UIntType)); \
+    let_(__n, UIntType) = _n; \
+    claim_assert(0 < __n); \
+    blk_return_(uint_log10Ceil_static(__n)); \
+})
+
+/* clang-format off */
+#define __step__uint_log10Round_static(_n...) ( \
+    (_n) < lit_n(31,622,776,602,ull) \
+        ? ____uint_log10Round_static__small(_n) \
+        : ____uint_log10Round_static__large(_n) \
+)
+#define ____uint_log10Round_static__small(_n...) \
+    /* Small value thresholds */ ( \
+    (_n) < lit_n(4,u)             ? 0u : \
+    (_n) < lit_n(32,u)            ? 1u : \
+    (_n) < lit_n(317,u)           ? 2u : \
+    (_n) < lit_n(3,163,u)         ? 3u : \
+    (_n) < lit_n(31,623,u)        ? 4u : \
+    (_n) < lit_n(316,228,u)       ? 5u : \
+    (_n) < lit_n(3,162,278,u)     ? 6u : \
+    (_n) < lit_n(31,622,777,u)    ? 7u : \
+    (_n) < lit_n(316,227,767,u)   ? 8u : \
+    (_n) < lit_n(3,162,277,661,u) ? 9u : 10u \
+)
+#define ____uint_log10Round_static__large(_n...) \
+    /* Large value thresholds */ ( \
+    (_n) < lit_n(316,227,766,017,ull)           ? 11u : \
+    (_n) < lit_n(3,162,277,660,169,ull)         ? 12u : \
+    (_n) < lit_n(31,622,776,601,684,ull)        ? 13u : \
+    (_n) < lit_n(316,227,766,016,838,ull)       ? 14u : \
+    (_n) < lit_n(3,162,277,660,168,380,ull)     ? 15u : \
+    (_n) < lit_n(31,622,776,601,683,794,ull)    ? 16u : \
+    (_n) < lit_n(316,227,766,016,837,934,ull)   ? 17u : \
+    (_n) < lit_n(3,162,277,660,168,379,332,ull) ? 18u : \
+    19u /* roughly up to max u64 */ \
+)
+/* clang-format on */
+#define __step__uint_log10Round(_n...) ____uint_log10Round(pp_uniqTok(n), _n)
+#define ____uint_log10Round(__n, _n...) blk({ \
+    typedef TypeOfUnqual(_n) UIntType; \
+    claim_assert_static(isUInt$(UIntType)); \
+    let_(__n, UIntType) = _n; \
+    claim_assert(0 < __n); \
+    blk_return_(uint_log10Round_static(__n)); \
 })
 
 /*========== Integer Query Implementation ===================================*/

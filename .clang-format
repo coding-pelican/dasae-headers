@@ -229,6 +229,8 @@ Macros:
   - "intToPtr$(_Expr)=(_Expr)"
   - "ptrCast$(_Expr)=(_Expr)"
   - "ptrAlignCast$(_Expr)=(_Expr)"
+  - "ptrQualCast$(_Expr)=(_Expr)"
+  - "ptrAlignQualCast$(_Expr)=(_Expr)"
   - "alignCast(_Expr)=(_Expr)"
   - "bitCast$(_Expr)=(_Expr)"
   - "intToBool$(_Expr)=(_Expr)"
@@ -239,11 +241,11 @@ Macros:
   - "fltCast$(_Expr)=(_Expr)"
 
   - $attr(Attrs)=(void)Attrs;
-  - $inline=__attribute__(());
-  - $inline_always=__attribute__(());
-  - $inline_never=__attribute__(());
-  - $on_load=__attribute__(());
-  - $on_exit=__attribute__(());
+  # - $inline=__attribute__(());
+  # - $inline_always=__attribute__(());
+  # - $inline_never=__attribute__(());
+  # - $on_load=__attribute__(());
+  # - $on_exit=__attribute__(());
   # - $keep_symbol=__attribute__(());
   # - $maybe_unused=__attribute__(());
 

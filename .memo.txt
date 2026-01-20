@@ -12,6 +12,17 @@ dh/src/*, dh/include/*, dh/test*/*, dh/sample*/*, dh-examples/*
 - search: as\$\(\((.*?)\)\((.*?)\)\)
 - replace: as$$($1)($2)
 
+/*
+__symbol: expand reusable on pp operation (symbols (like any identifiers) as token)
+__const: expand reusable on pp operation (constants (like literal values) as token)
+__step: expand step-by-step (function/operation as parse or format)
+
+__inline: expand determined code (partition) on expansion
+__type: expand determined type
+__val: expand determined value
+__fn: expand determined function
+*/
+
 ---
 
 ################################

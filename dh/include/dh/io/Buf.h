@@ -23,7 +23,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* BufReader ========================*/
+/* --- Buffered Reader ---*/
 
 typedef struct io_Buf_Reader {
     io_Reader inner;
@@ -54,7 +54,7 @@ $extern fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize n))(E$void)) $must_ch
 /// Get io_Reader interface
 $extern fn_((io_Buf_reader(io_Buf_Reader* self))(io_Reader));
 
-/* BufWriter ========================*/
+/* --- Buffered Writer ---*/
 
 typedef struct io_Buf_Writer {
     io_Writer inner;

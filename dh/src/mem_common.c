@@ -155,6 +155,15 @@ fn_((mem_swapTmp(u_S$raw lhs, u_S$raw rhs, u_S$raw tmp))(u_S$raw)) {
     return buf;
 };
 
+fn_((mem_startsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool)) {
+    claim_assert_nonnullS(haystack);
+    claim_assert_nonnullS(needle);
+    return expr_(bool $scope)(if (needle.len > haystack.len) {
+        $break_(false);
+    }) expr_(else)({
+        $break_(mem_eqlBytes(S_prefix((haystack)(needle.len)), needle));
+    }) $unscoped_(expr);
+};
 fn_((mem_startsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {
     claim_assert_nonnullS(haystack);
     claim_assert_nonnullS(needle);
@@ -163,6 +172,15 @@ fn_((mem_startsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {
         $break_(false);
     }) expr_(else)({
         $break_(mem_eql(u_prefixS(haystack, needle.len), needle));
+    }) $unscoped_(expr);
+};
+fn_((mem_endsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool)) {
+    claim_assert_nonnullS(haystack);
+    claim_assert_nonnullS(needle);
+    return expr_(bool $scope)(if (needle.len > haystack.len) {
+        $break_(false);
+    }) expr_(else)({
+        $break_(mem_eqlBytes(S_suffix((haystack)(haystack.len - needle.len)), needle));
     }) $unscoped_(expr);
 };
 fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {

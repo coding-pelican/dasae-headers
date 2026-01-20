@@ -257,11 +257,13 @@ $extern fn_((mem_swapTmp(u_S$raw lhs, u_S$raw rhs, u_S$raw tmp))(u_S$raw));
         return u_castS$((S$(_T))(mem_swapTmp(u_anyS(lhs), u_anyS(rhs), u_anyS(tmp)))); \
     }
 
+$extern fn_((mem_startsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool));
 $extern fn_((mem_startsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
 #define T_use_mem_startsWith$(_T...) \
     $inline_always $static fn_((tpl_id(mem_startsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
         return mem_startsWith(u_anyS(haystack), u_anyS(needle)); \
     }
+$extern fn_((mem_endsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool));
 $extern fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
 #define T_use_mem_endsWith$(_T...) \
     $inline_always $static fn_((tpl_id(mem_endsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \

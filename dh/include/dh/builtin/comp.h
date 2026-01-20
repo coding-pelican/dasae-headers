@@ -113,6 +113,9 @@ extern "C" {
 #define $maybe_unused comp_attr__$maybe_unused
 #define $must_use comp_attr__$must_use
 
+#define $import comp_attr__$import
+#define $export comp_attr__$export
+
 #define as$(_TDest... /*)(_src...) -> (_TDest)(*/) \
     /** \
      * @brief Cast macro for converting a value to a different type \
@@ -157,15 +160,13 @@ extern "C" {
 
 #define comp_const_(_type, _initial...) lit$((_type)_initial)
 
-#define lit_n$(_T) (_T) __op__lit_n$__parseLits
-#define __op__lit_n$__parseLits(...) { lit_num(__VA_ARGS__) }
-
 // lit_num(11,644,473,600u) => 11644473600u
+#define lit_n(_Comma_Sep_Lits...) __op__lit_num(_Comma_Sep_Lits)
 #define lit_num(_Comma_Sep_Lits...) __op__lit_num(_Comma_Sep_Lits)
+#define lit_n$(_T) (_T) __op__lit_n$__parseLits
 #define lit_num$(/*(_T)(_Comma_Sep_Lits...)*/... /*(_T)*/) __op__lit_num$(__op__lit_num$__parseT __VA_ARGS__)
 
 #define __op__lit_num(_Comma_Sep_Lits...) pp_join(__, __op__lit_num, pp_countArg(_Comma_Sep_Lits))(_Comma_Sep_Lits)
-/* Handle different numbers of arguments */
 #define __op__lit_num__1(_Num1) _Num1
 #define __op__lit_num__2(_Num1, _Num2) pp_cat(_Num1, _Num2)
 #define __op__lit_num__3(_Num1, _Num2, _Num3) pp_cat3(_Num1, _Num2, _Num3)
@@ -177,6 +178,7 @@ extern "C" {
 #define __op__lit_num__8(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7, _Num8) \
     pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), pp_cat(_Num6, _Num7)), _Num8)
 
+#define __op__lit_n$__parseLits(...) { lit_num(__VA_ARGS__) }
 #define __op__lit_num$(...) __op__lit_num$__emit(__VA_ARGS__)
 #define __op__lit_num$__parseT(_T...) _T,
 #define __op__lit_num$__emit(_T, _Comma_Sep_Lits...) lit$((_T){ lit_num _Comma_Sep_Lits })
@@ -381,7 +383,6 @@ extern "C" {
 #define $branch_unlikely(_expr... /*(bool)*/) __attr__$branch_unlikely(_expr)
 #define $branch_unpredictable(_expr... /*(bool)*/) __attr__$branch_unpredictable(_expr)
 #define $unreachable __attr__$unreachable
-#define $crash __attr__$crash
 
 #define $like_ref __attr__$like_ref
 #define $like_deref __attr__$like_deref
@@ -510,6 +511,9 @@ extern "C" {
 #define comp_attr__$maybe_unused comp_maybe_unused
 #define comp_attr__$must_use comp_must_use
 
+#define comp_attr__$import comp_import
+#define comp_attr__$export comp_export
+
 #define comp_syn__Generic_match$(T, _Pattern...) _Generic(T, _Pattern)
 #define comp_syn__Generic_pattern$(T) \
 T:
@@ -528,7 +532,6 @@ T:
 #define __attr__$branch_unlikely(_expr... /*(bool)*/) comp_branch_unlikely(_expr)
 #define __attr__$branch_unpredictable(_expr... /*(bool)*/) comp_branch_unpredictable(_expr)
 #define __attr__$unreachable comp_unreachable
-#define __attr__$crash (*(volatile int*)0 = 0)
 
 #define __attr__$like_ref [1]
 #define __attr__$like_deref [0]

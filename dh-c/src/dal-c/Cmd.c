@@ -7,6 +7,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+/* FIXME: single file, test, sample, example command does not work as expected
+ *
+ * dh-c build single_file.c
+ *
+ * dh-c test
+ * dh-c test target_source.c
+ * dh-c test tests/test-something.c
+ * dh-c build --test
+ * dh-c build --test test-something.c
+ *
+ * dh-c build samples/sample-something.c --lib=my-lib
+ * dh-c build --sample
+ * dh-c build --sample sample-something.c
+ * dh-c build examples/example-something.c --lib=my-lib
+ * dh-c build --example
+ * dh-c build --example example-something.c
+ */
 
 // === PRIVATE HELPERS ===
 

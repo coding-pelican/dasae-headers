@@ -1,10 +1,8 @@
 #include "dh/io/Buf.h"
 #include "dh/io/common.h"
-#include "dh/io/Reader.h"
-#include "dh/io/Writer.h"
 #include "dh/mem/common.h"
 
-/* BufReader ========================*/
+/* --- Buffered Reader ---*/
 
 fn_((io_Buf_Reader_init(io_Reader inner, S$u8 buf))(io_Buf_Reader)) {
     return (io_Buf_Reader){
@@ -165,7 +163,7 @@ fn_((io_Buf_reader(io_Buf_Reader* self))(io_Reader)) {
     };
 };
 
-/* BufWriter ========================*/
+/* --- Buffered Writer ---*/
 
 fn_((io_Buf_Writer_init(io_Writer inner, S$u8 buf))(io_Buf_Writer)) {
     return (io_Buf_Writer){

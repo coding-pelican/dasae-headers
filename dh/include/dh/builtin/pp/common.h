@@ -31,7 +31,7 @@ extern "C" {
 #define pp_expand(...) pp_exec_expand(__VA_ARGS__)
 #define pp_defer(...) pp_exec_defer(__VA_ARGS__)
 
-#define pp_stringify(_Tok...) pp_exec_stringify(_Tok)
+#define pp_strfy(_Tok...) pp_exec_strfy(_Tok)
 #define nameOf(_Tok...) __comp_op__nameOf(_Tok, #_Tok)
 
 #define pp_cat(_LhsTok, _RhsTok...) pp_exec_cat(_LhsTok, _RhsTok)
@@ -97,6 +97,23 @@ extern "C" {
 #define ____pp_if__else(...) __VA_ARGS__
 #define pp_then_
 #define pp_else_
+
+#define pp_Tok_cmp$pp__some(_x) _x
+#define pp_Tok_cmp$pp__none(_x) _x
+#define pp_some(_Args...) (pp__some, (_Args))
+#define pp_none() (pp__none, ())
+#define pp_isSome(/*(_tag, _val)*/...) __step__pp_isSome(__VA_ARGS__)
+#define __step__pp_isSome(...) __step__pp_isSome__emit(__step__pp_isSome__parse __VA_ARGS__)
+#define __step__pp_isSome__parse(_tag, _val...) _tag, _val
+#define __step__pp_isSome__emit(...) ____pp_isSome(__VA_ARGS__)
+#define ____pp_isSome(_tag, _val...) pp_if_(pp_Tok_eq(_tag, pp__some))(pp_then_(pp_true), pp_else_(pp_false))
+#define pp_isNone(/*(_tag, _val)*/...) pp_not(pp_isSome(__VA_ARGS__))
+#define pp_orelse_(/*((_tag, _val))(_default_val)*/...) __step__pp_orelse(__VA_ARGS__)
+#define __step__pp_orelse(...) __step__pp_orelse__emit(__step__pp_orelse__parse __VA_ARGS__)
+#define __step__pp_orelse__parse(_pair_tag_val...) __step__pp_orelse__parsePair _pair_tag_val,
+#define __step__pp_orelse__parsePair(_pair_tag_val...) _pair_tag_val
+#define __step__pp_orelse__emit(...) ____pp_orelse(__VA_ARGS__)
+#define ____pp_orelse(_tag, _val, _default_val...) pp_if_(pp_Tok_eq(_tag, pp__some))(pp_then_ _val, pp_else_ _default_val)
 
 #define __call__pp_switch_() __pp_switch_
 #define pp_switch_(/*(_pp_cond)(_pp_cases...)*/...) __step__pp_switch_(__step__pp_switch___parseCond __VA_ARGS__)
@@ -190,7 +207,7 @@ extern "C" {
 #define pp_exec_expand(...) __VA_ARGS__
 #define pp_exec_defer(...) __VA_ARGS__ pp_exec_nothing()
 
-#define pp_exec_stringify(_Tok...) #_Tok
+#define pp_exec_strfy(_Tok...) #_Tok
 #define __comp_op__nameOf(_Tok, _Str...) ((void)(_Tok), #_Str)
 
 #define pp_exec_cat(_LhsTok, _RhsTok...) _LhsTok##_RhsTok
@@ -295,15 +312,15 @@ extern "C" {
 #define pp_Tok_then_(...) __VA_ARGS__
 #define pp_Tok_else_(...) __VA_ARGS__
 
-#define pp_Tok_prim_ord(x, y) pp_isParen(pp_Tok_cmp__##x(pp_Tok_cmp__##y)(()))
-#define pp_Tok_isComparable(x) pp_isParen(pp_cat(pp_Tok_cmp__, x)(()))
+#define pp_Tok_prim_ord(x, y) pp_isParen(pp_Tok_cmp$##x(pp_Tok_cmp$##y)(()))
+#define pp_Tok_isComparable(x) pp_isParen(pp_cat(pp_Tok_cmp$, x)(()))
 #define pp_Tok_ne(x, y) pp_iif(pp_bitand(pp_Tok_isComparable(x))(pp_Tok_isComparable(y)))(pp_Tok_prim_ord, 1 pp_ignore)(x, y)
 #define pp_Tok_eq(x, y) pp_compl(pp_Tok_ne(x, y))
 
 #define pp_comma() ,
 #define pp_comma_if_(_n) pp_Tok_if_(_n)(pp_comma, pp_ignore)()
 
-#define pp_Tok_cmp__const(x) x
+#define pp_Tok_cmp$const(x) x
 #define ignore_and_end(...) ignore_end ignore_end
 #define ignore_after_const const ignore_and_end(
 #define ignore_open (
@@ -316,37 +333,262 @@ extern "C" {
 #define Tok_removeConst$(_const_T...) pp_cat(__Tok_removeConst$__remove_, _const_T)
 #define __Tok_removeConst$__remove_const
 
-#define pp_Tok_cmp__0(_x) _x
-#define pp_Tok_cmp__1(_x) _x
-#define pp_Tok_cmp__2(_x) _x
-#define pp_Tok_cmp__3(_x) _x
-#define pp_Tok_cmp__4(_x) _x
-#define pp_Tok_cmp__5(_x) _x
-#define pp_Tok_cmp__6(_x) _x
-#define pp_Tok_cmp__7(_x) _x
-#define pp_Tok_cmp__8(_x) _x
-#define pp_Tok_cmp__10(_x) _x
-#define pp_Tok_cmp__11(_x) _x
-#define pp_Tok_cmp__12(_x) _x
-#define pp_Tok_cmp__13(_x) _x
-#define pp_Tok_cmp__14(_x) _x
-#define pp_Tok_cmp__15(_x) _x
-#define pp_Tok_cmp__16(_x) _x
-#define pp_Tok_cmp__17(_x) _x
-#define pp_Tok_cmp__18(_x) _x
-#define pp_Tok_cmp__19(_x) _x
-#define pp_Tok_cmp__20(_x) _x
-#define pp_Tok_cmp__21(_x) _x
-#define pp_Tok_cmp__22(_x) _x
-#define pp_Tok_cmp__23(_x) _x
-#define pp_Tok_cmp__24(_x) _x
-#define pp_Tok_cmp__25(_x) _x
-#define pp_Tok_cmp__26(_x) _x
-#define pp_Tok_cmp__27(_x) _x
-#define pp_Tok_cmp__28(_x) _x
-#define pp_Tok_cmp__29(_x) _x
-#define pp_Tok_cmp__30(_x) _x
-#define pp_Tok_cmp__31(_x) _x
+#define pp_Tok_cmp$0(_x) _x
+#define pp_Tok_cmp$1(_x) _x
+#define pp_Tok_cmp$2(_x) _x
+#define pp_Tok_cmp$3(_x) _x
+#define pp_Tok_cmp$4(_x) _x
+#define pp_Tok_cmp$5(_x) _x
+#define pp_Tok_cmp$6(_x) _x
+#define pp_Tok_cmp$7(_x) _x
+#define pp_Tok_cmp$8(_x) _x
+#define pp_Tok_cmp$10(_x) _x
+#define pp_Tok_cmp$11(_x) _x
+#define pp_Tok_cmp$12(_x) _x
+#define pp_Tok_cmp$13(_x) _x
+#define pp_Tok_cmp$14(_x) _x
+#define pp_Tok_cmp$15(_x) _x
+#define pp_Tok_cmp$16(_x) _x
+#define pp_Tok_cmp$17(_x) _x
+#define pp_Tok_cmp$18(_x) _x
+#define pp_Tok_cmp$19(_x) _x
+#define pp_Tok_cmp$20(_x) _x
+#define pp_Tok_cmp$21(_x) _x
+#define pp_Tok_cmp$22(_x) _x
+#define pp_Tok_cmp$23(_x) _x
+#define pp_Tok_cmp$24(_x) _x
+#define pp_Tok_cmp$25(_x) _x
+#define pp_Tok_cmp$26(_x) _x
+#define pp_Tok_cmp$27(_x) _x
+#define pp_Tok_cmp$28(_x) _x
+#define pp_Tok_cmp$29(_x) _x
+#define pp_Tok_cmp$30(_x) _x
+#define pp_Tok_cmp$31(_x) _x
+
+#define pp_Tok_cmp$32(_x) _x
+#define pp_Tok_cmp$33(_x) _x
+#define pp_Tok_cmp$34(_x) _x
+#define pp_Tok_cmp$35(_x) _x
+#define pp_Tok_cmp$36(_x) _x
+#define pp_Tok_cmp$37(_x) _x
+#define pp_Tok_cmp$38(_x) _x
+#define pp_Tok_cmp$39(_x) _x
+#define pp_Tok_cmp$40(_x) _x
+#define pp_Tok_cmp$41(_x) _x
+#define pp_Tok_cmp$42(_x) _x
+#define pp_Tok_cmp$43(_x) _x
+#define pp_Tok_cmp$44(_x) _x
+#define pp_Tok_cmp$45(_x) _x
+#define pp_Tok_cmp$46(_x) _x
+#define pp_Tok_cmp$47(_x) _x
+#define pp_Tok_cmp$48(_x) _x
+#define pp_Tok_cmp$49(_x) _x
+#define pp_Tok_cmp$50(_x) _x
+#define pp_Tok_cmp$51(_x) _x
+#define pp_Tok_cmp$52(_x) _x
+#define pp_Tok_cmp$53(_x) _x
+#define pp_Tok_cmp$54(_x) _x
+#define pp_Tok_cmp$55(_x) _x
+#define pp_Tok_cmp$56(_x) _x
+#define pp_Tok_cmp$57(_x) _x
+#define pp_Tok_cmp$58(_x) _x
+#define pp_Tok_cmp$59(_x) _x
+#define pp_Tok_cmp$60(_x) _x
+#define pp_Tok_cmp$61(_x) _x
+#define pp_Tok_cmp$62(_x) _x
+#define pp_Tok_cmp$63(_x) _x
+#define pp_Tok_cmp$64(_x) _x
+#define pp_Tok_cmp$65(_x) _x
+#define pp_Tok_cmp$66(_x) _x
+#define pp_Tok_cmp$67(_x) _x
+#define pp_Tok_cmp$68(_x) _x
+#define pp_Tok_cmp$69(_x) _x
+#define pp_Tok_cmp$70(_x) _x
+#define pp_Tok_cmp$71(_x) _x
+#define pp_Tok_cmp$72(_x) _x
+#define pp_Tok_cmp$73(_x) _x
+#define pp_Tok_cmp$74(_x) _x
+#define pp_Tok_cmp$75(_x) _x
+#define pp_Tok_cmp$76(_x) _x
+#define pp_Tok_cmp$77(_x) _x
+#define pp_Tok_cmp$78(_x) _x
+#define pp_Tok_cmp$79(_x) _x
+#define pp_Tok_cmp$80(_x) _x
+#define pp_Tok_cmp$81(_x) _x
+#define pp_Tok_cmp$82(_x) _x
+#define pp_Tok_cmp$83(_x) _x
+#define pp_Tok_cmp$84(_x) _x
+#define pp_Tok_cmp$85(_x) _x
+#define pp_Tok_cmp$86(_x) _x
+#define pp_Tok_cmp$87(_x) _x
+#define pp_Tok_cmp$88(_x) _x
+#define pp_Tok_cmp$89(_x) _x
+#define pp_Tok_cmp$90(_x) _x
+#define pp_Tok_cmp$91(_x) _x
+#define pp_Tok_cmp$92(_x) _x
+#define pp_Tok_cmp$93(_x) _x
+#define pp_Tok_cmp$94(_x) _x
+#define pp_Tok_cmp$95(_x) _x
+#define pp_Tok_cmp$96(_x) _x
+#define pp_Tok_cmp$97(_x) _x
+#define pp_Tok_cmp$98(_x) _x
+#define pp_Tok_cmp$99(_x) _x
+#define pp_Tok_cmp$100(_x) _x
+#define pp_Tok_cmp$101(_x) _x
+#define pp_Tok_cmp$102(_x) _x
+#define pp_Tok_cmp$103(_x) _x
+#define pp_Tok_cmp$104(_x) _x
+#define pp_Tok_cmp$105(_x) _x
+#define pp_Tok_cmp$106(_x) _x
+#define pp_Tok_cmp$107(_x) _x
+#define pp_Tok_cmp$108(_x) _x
+#define pp_Tok_cmp$109(_x) _x
+#define pp_Tok_cmp$110(_x) _x
+#define pp_Tok_cmp$111(_x) _x
+#define pp_Tok_cmp$112(_x) _x
+#define pp_Tok_cmp$113(_x) _x
+#define pp_Tok_cmp$114(_x) _x
+#define pp_Tok_cmp$115(_x) _x
+#define pp_Tok_cmp$116(_x) _x
+#define pp_Tok_cmp$117(_x) _x
+#define pp_Tok_cmp$118(_x) _x
+#define pp_Tok_cmp$119(_x) _x
+#define pp_Tok_cmp$120(_x) _x
+#define pp_Tok_cmp$121(_x) _x
+#define pp_Tok_cmp$122(_x) _x
+#define pp_Tok_cmp$123(_x) _x
+#define pp_Tok_cmp$124(_x) _x
+#define pp_Tok_cmp$125(_x) _x
+#define pp_Tok_cmp$126(_x) _x
+#define pp_Tok_cmp$127(_x) _x
+#define pp_Tok_cmp$128(_x) _x
+#define pp_Tok_cmp$129(_x) _x
+#define pp_Tok_cmp$130(_x) _x
+#define pp_Tok_cmp$131(_x) _x
+#define pp_Tok_cmp$132(_x) _x
+#define pp_Tok_cmp$133(_x) _x
+#define pp_Tok_cmp$134(_x) _x
+#define pp_Tok_cmp$135(_x) _x
+#define pp_Tok_cmp$136(_x) _x
+#define pp_Tok_cmp$137(_x) _x
+#define pp_Tok_cmp$138(_x) _x
+#define pp_Tok_cmp$139(_x) _x
+#define pp_Tok_cmp$140(_x) _x
+#define pp_Tok_cmp$141(_x) _x
+#define pp_Tok_cmp$142(_x) _x
+#define pp_Tok_cmp$143(_x) _x
+#define pp_Tok_cmp$144(_x) _x
+#define pp_Tok_cmp$145(_x) _x
+#define pp_Tok_cmp$146(_x) _x
+#define pp_Tok_cmp$147(_x) _x
+#define pp_Tok_cmp$148(_x) _x
+#define pp_Tok_cmp$149(_x) _x
+#define pp_Tok_cmp$150(_x) _x
+#define pp_Tok_cmp$151(_x) _x
+#define pp_Tok_cmp$152(_x) _x
+#define pp_Tok_cmp$153(_x) _x
+#define pp_Tok_cmp$154(_x) _x
+#define pp_Tok_cmp$155(_x) _x
+#define pp_Tok_cmp$156(_x) _x
+#define pp_Tok_cmp$157(_x) _x
+#define pp_Tok_cmp$158(_x) _x
+#define pp_Tok_cmp$159(_x) _x
+#define pp_Tok_cmp$160(_x) _x
+#define pp_Tok_cmp$161(_x) _x
+#define pp_Tok_cmp$162(_x) _x
+#define pp_Tok_cmp$163(_x) _x
+#define pp_Tok_cmp$164(_x) _x
+#define pp_Tok_cmp$165(_x) _x
+#define pp_Tok_cmp$166(_x) _x
+#define pp_Tok_cmp$167(_x) _x
+#define pp_Tok_cmp$168(_x) _x
+#define pp_Tok_cmp$169(_x) _x
+#define pp_Tok_cmp$170(_x) _x
+#define pp_Tok_cmp$171(_x) _x
+#define pp_Tok_cmp$172(_x) _x
+#define pp_Tok_cmp$173(_x) _x
+#define pp_Tok_cmp$174(_x) _x
+#define pp_Tok_cmp$175(_x) _x
+#define pp_Tok_cmp$176(_x) _x
+#define pp_Tok_cmp$177(_x) _x
+#define pp_Tok_cmp$178(_x) _x
+#define pp_Tok_cmp$179(_x) _x
+#define pp_Tok_cmp$180(_x) _x
+#define pp_Tok_cmp$181(_x) _x
+#define pp_Tok_cmp$182(_x) _x
+#define pp_Tok_cmp$183(_x) _x
+#define pp_Tok_cmp$184(_x) _x
+#define pp_Tok_cmp$185(_x) _x
+#define pp_Tok_cmp$186(_x) _x
+#define pp_Tok_cmp$187(_x) _x
+#define pp_Tok_cmp$188(_x) _x
+#define pp_Tok_cmp$189(_x) _x
+#define pp_Tok_cmp$190(_x) _x
+#define pp_Tok_cmp$191(_x) _x
+#define pp_Tok_cmp$192(_x) _x
+#define pp_Tok_cmp$193(_x) _x
+#define pp_Tok_cmp$194(_x) _x
+#define pp_Tok_cmp$195(_x) _x
+#define pp_Tok_cmp$196(_x) _x
+#define pp_Tok_cmp$197(_x) _x
+#define pp_Tok_cmp$198(_x) _x
+#define pp_Tok_cmp$199(_x) _x
+#define pp_Tok_cmp$200(_x) _x
+#define pp_Tok_cmp$201(_x) _x
+#define pp_Tok_cmp$202(_x) _x
+#define pp_Tok_cmp$203(_x) _x
+#define pp_Tok_cmp$204(_x) _x
+#define pp_Tok_cmp$205(_x) _x
+#define pp_Tok_cmp$206(_x) _x
+#define pp_Tok_cmp$207(_x) _x
+#define pp_Tok_cmp$208(_x) _x
+#define pp_Tok_cmp$209(_x) _x
+#define pp_Tok_cmp$210(_x) _x
+#define pp_Tok_cmp$211(_x) _x
+#define pp_Tok_cmp$212(_x) _x
+#define pp_Tok_cmp$213(_x) _x
+#define pp_Tok_cmp$214(_x) _x
+#define pp_Tok_cmp$215(_x) _x
+#define pp_Tok_cmp$216(_x) _x
+#define pp_Tok_cmp$217(_x) _x
+#define pp_Tok_cmp$218(_x) _x
+#define pp_Tok_cmp$219(_x) _x
+#define pp_Tok_cmp$220(_x) _x
+#define pp_Tok_cmp$221(_x) _x
+#define pp_Tok_cmp$222(_x) _x
+#define pp_Tok_cmp$223(_x) _x
+#define pp_Tok_cmp$224(_x) _x
+#define pp_Tok_cmp$225(_x) _x
+#define pp_Tok_cmp$226(_x) _x
+#define pp_Tok_cmp$227(_x) _x
+#define pp_Tok_cmp$228(_x) _x
+#define pp_Tok_cmp$229(_x) _x
+#define pp_Tok_cmp$230(_x) _x
+#define pp_Tok_cmp$231(_x) _x
+#define pp_Tok_cmp$232(_x) _x
+#define pp_Tok_cmp$233(_x) _x
+#define pp_Tok_cmp$234(_x) _x
+#define pp_Tok_cmp$235(_x) _x
+#define pp_Tok_cmp$236(_x) _x
+#define pp_Tok_cmp$237(_x) _x
+#define pp_Tok_cmp$238(_x) _x
+#define pp_Tok_cmp$239(_x) _x
+#define pp_Tok_cmp$240(_x) _x
+#define pp_Tok_cmp$241(_x) _x
+#define pp_Tok_cmp$242(_x) _x
+#define pp_Tok_cmp$243(_x) _x
+#define pp_Tok_cmp$244(_x) _x
+#define pp_Tok_cmp$245(_x) _x
+#define pp_Tok_cmp$246(_x) _x
+#define pp_Tok_cmp$247(_x) _x
+#define pp_Tok_cmp$248(_x) _x
+#define pp_Tok_cmp$249(_x) _x
+#define pp_Tok_cmp$250(_x) _x
+#define pp_Tok_cmp$251(_x) _x
+#define pp_Tok_cmp$252(_x) _x
+#define pp_Tok_cmp$253(_x) _x
+#define pp_Tok_cmp$254(_x) _x
+#define pp_Tok_cmp$255(_x) _x
 
 #if defined(__cplusplus)
 } /* extern "C" */

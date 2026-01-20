@@ -15,6 +15,7 @@
 #else
 #include <unistd.h>
 #endif
+/* FIXME: correct placing binaries path */
 
 // === PRIVATE HELPERS (Core Layer - use asserts) ===
 
