@@ -17,7 +17,10 @@ fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(E$void) $scope) {
     // Move remaining data to start
     if (self->start < self->end) {
         let remaining = self->end - self->start;
-        prim_memmove(self->buf.ptr, self->buf.ptr + self->start, remaining);
+        prim_memmoveS(
+            S_prefix((self->buf)(remaining)),
+            S_slice((self->buf)$r(self->start, self->end)).as_const
+        );
         self->start = 0;
         self->end = remaining;
     } else {
@@ -27,7 +30,7 @@ fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(E$void) $scope) {
     // Read more data
     let available_space = self->buf.len - self->end;
     if (available_space > 0) {
-        let read_buf = S_suffix((self->buf)self->end);
+        let read_buf = S_suffix((self->buf)(self->end));
         let bytes_read = try_(io_Reader_read(self->inner, read_buf));
         self->end += bytes_read;
     }
@@ -41,7 +44,7 @@ fn_((io_Buf_Reader_peekByte(io_Buf_Reader* self))(E$u8) $scope) {
     }
     // COLD PATH: refill buf
     try_(io_Buf_Reader_fill(self));
-    if (self->start >= self->end) {
+    if (self->end <= self->start) {
         return_err(io_Err_UnexpectedEof());
     }
     return_ok(*S_at((self->buf)[self->start]));
@@ -51,9 +54,9 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
     var_(written, usize) = 0;
     while (written < out_buf.len) {
         // Ensure data in buf
-        if (self->start >= self->end) {
+        if (self->end <= self->start) {
             try_(io_Buf_Reader_fill(self));
-            if (self->start >= self->end) {
+            if (self->end <= self->start) {
                 return_err(io_Err_UnexpectedEof());
             }
         }
@@ -63,20 +66,28 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
             if (*S_at((self->buf)[i]) == delim) {
                 // Found delimiter
                 let copy_len = i - self->start;
-                if (written + copy_len > out_buf.len) {
+                let total_len = written + copy_len;
+                if (out_buf.len < total_len) {
                     return_err(io_Err_BufferTooSmall());
                 }
-                prim_memcpy(out_buf.ptr + written, self->buf.ptr + self->start, copy_len);
+                prim_memcpyS(
+                    S_prefix((S_suffix((out_buf)(written)))(copy_len)),
+                    S_prefix((S_suffix((self->buf)(self->start)))(copy_len)).as_const
+                );
                 self->start = i + 1; // Skip delimiter
-                return_ok(S_slice((out_buf)$r(0, written + copy_len)));
+                return_ok(S_slice((out_buf)$r(0, total_len)));
             }
         });
         // Delimiter not found, copy all available data
         let copy_len = self->end - self->start;
-        if (written + copy_len > out_buf.len) {
+        let total_len = written + copy_len;
+        if (out_buf.len < total_len) {
             return_err(io_Err_BufferTooSmall());
         }
-        prim_memcpy(out_buf.ptr + written, self->buf.ptr + self->start, copy_len);
+        prim_memcpyS(
+            S_prefix((S_suffix((out_buf)(written)))(copy_len)),
+            S_prefix((S_suffix((self->buf)(self->start)))(copy_len)).as_const
+        );
         written += copy_len;
         self->start = self->end;
     }
@@ -86,9 +97,9 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
 fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(E$void) $scope) {
     while (true) {
         // Ensure data in buf
-        if (self->start >= self->end) {
+        if (self->end <= self->start) {
             try_(io_Buf_Reader_fill(self));
-            if (self->start >= self->end) {
+            if (self->end <= self->start) {
                 return_err(io_Err_UnexpectedEof());
             }
         }
@@ -122,7 +133,7 @@ fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize n))(E$void) $scope) {
             return_ok({});
         }
         try_(io_Buf_Reader_fill(self));
-        if (self->start >= self->end) {
+        if (self->end <= self->start) {
             return_err(io_Err_UnexpectedEof());
         }
     }
@@ -130,35 +141,41 @@ fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize n))(E$void) $scope) {
 } $unscoped_(fn);
 
 $static fn_((Reader_VT_read(P$raw ctx, S$u8 output))(E$usize) $scope) {
-    let self = as$(io_Buf_Reader*)(ctx);
+    let self = ptrAlignCast$((io_Buf_Reader*)(ctx));
     // HOT PATH: data in buf
     if (self->start < self->end) {
         let available = self->end - self->start;
         let to_copy = prim_min(available, output.len);
-        prim_memcpy(output.ptr, self->buf.ptr + self->start, to_copy);
+        prim_memcpyS(
+            S_prefix((output)(to_copy)),
+            S_prefix((S_suffix((self->buf)(self->start)))(to_copy)).as_const
+        );
         self->start += to_copy;
         return_ok(to_copy);
     }
     // COLD PATH: buf empty
     // If output is larger than buf, read directly
-    if (output.len >= self->buf.len) {
+    if (self->buf.len <= output.len) {
         return io_Reader_read(self->inner, output);
     }
     // Otherwise, refill buf and retry
     try_(io_Buf_Reader_fill(self));
-    if (self->start >= self->end) {
+    if (self->end <= self->start) {
         return_ok(0); // EOF
     }
     let available = self->end - self->start;
     let to_copy = prim_min(available, output.len);
-    prim_memcpy(output.ptr, self->buf.ptr + self->start, to_copy);
+    prim_memcpyS(
+        S_prefix((output)(to_copy)),
+        S_prefix((S_suffix((self->buf)(self->start)))(to_copy)).as_const
+    );
     self->start += to_copy;
     return_ok(to_copy);
 } $unscoped_(fn);
 
 fn_((io_Buf_reader(io_Buf_Reader* self))(io_Reader)) {
     return (io_Reader){
-        .ctx = as$(P$raw)(self),
+        .ctx = ptrCast$((P$raw)(self)),
         .read = Reader_VT_read,
     };
 };
@@ -184,29 +201,29 @@ fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(E$void) $scope) {
 } $unscoped_(fn);
 
 $static fn_((Writer_VT_write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
-    let self = as$(io_Buf_Writer*)(ctx);
+    let self = ptrAlignCast$((io_Buf_Writer*)(ctx));
     // If bytes fit in remaining buf space, just buf them
     let remaining = self->buf.len - self->used;
-    if (bytes.len <= remaining) {
-        prim_memcpy(self->buf.ptr + self->used, bytes.ptr, bytes.len);
+    if (remaining >= bytes.len) {
+        prim_memcpyS(S_prefix((S_suffix((self->buf)(self->used)))(bytes.len)), bytes);
         self->used += bytes.len;
         return_ok(bytes.len);
     }
     // Buffer is full or will be full - flush first
     try_(io_Buf_Writer_flush(self));
     // If bytes are larger than buf, write directly
-    if (bytes.len > self->buf.len) {
+    if (self->buf.len < bytes.len) {
         return io_Writer_write(self->inner, bytes);
     }
     // Otherwise, buf the bytes
-    prim_memcpy(self->buf.ptr, bytes.ptr, bytes.len);
+    prim_memcpyS(S_prefix((self->buf)(bytes.len)), bytes);
     self->used = bytes.len;
     return_ok(bytes.len);
 } $unscoped_(fn);
 
 fn_((io_Buf_writer(io_Buf_Writer* self))(io_Writer)) {
     return (io_Writer){
-        .ctx = as$(P$raw)(self),
+        .ctx = ptrCast$((P$raw)(self)),
         .write = Writer_VT_write,
     };
 };
