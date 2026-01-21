@@ -62,8 +62,9 @@ extern "C" {
 #define __gen__variant___emitUnionPayload(_$ignored, /*_Pair_Enum_Type*/...) __VA_OPT__( \
     var_(pp_join($, tag, pp_Tuple_get1st __VA_ARGS__) $like_ref, pp_Tuple_get2nd __VA_ARGS__); \
 )
-#define __variant__2(...) __gen__variant_raw(__VA_ARGS__)
+#define __variant__2(...) __gen__variant_raw(__gen__variant_raw__parseAlias __VA_ARGS__)
 #define __gen__variant_raw(_Alias, _$T...) struct _Alias
+#define __gen__variant_raw__parseAlias(_Alias...) _Alias
 
 #define union_of(/*(_Enum){ _payload... }*/...) \
     __op__union_of(__op__union_of__parseEnum __VA_ARGS__)

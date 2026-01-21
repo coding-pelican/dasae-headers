@@ -3,9 +3,9 @@
 #include "dh/io/stream.h"
 
 TEST_fn_("SbrkAllocator size variants" $scope) {
-    let small_size = heap_Sbrk_Local_calcSelfSize(union_of$((heap_Sbrk_Local)(heap_Sbrk_Local_small)cleared()));
-    let medium_size = heap_Sbrk_Local_calcSelfSize(union_of$((heap_Sbrk_Local)(heap_Sbrk_Local_medium)cleared()));
-    let large_size = heap_Sbrk_Local_calcSelfSize(union_of$((heap_Sbrk_Local)(heap_Sbrk_Local_large)cleared()));
+    let small_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_small)cleared()));
+    let medium_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_medium)cleared()));
+    let large_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_large)cleared()));
 
     io_stream_nl();
     io_stream_println(u8_l("SbrkAllocator sizes:"));
@@ -40,7 +40,7 @@ TEST_fn_("SbrkAllocator basic allocation" $guard) {
     $static var_(test_ctx, test_heap_Sbrk_TestCtx) = cleared();
     let ctx = test_heap_Sbrk_testCtx(&test_ctx);
     var local = lit0$((heap_Sbrk_LocalMedium));
-    var sbrk = heap_Sbrk_from(union_of$((heap_Sbrk_Local)(heap_Sbrk_Local_medium)(&local)), &ctx);
+    var sbrk = heap_Sbrk_from(heap_Sbrk_LocalMedium_ref(&local), &ctx);
     let gpa = heap_Sbrk_allocator(&sbrk);
 
     let allocation = u_castS$((S$u8)(try_(mem_Allocator_alloc(gpa, typeInfo$(u8), 100))));

@@ -212,7 +212,7 @@ TEST_fn_("u_fieldSlisMut produces correctly positioned slices" $scope) {
     const usize N = 10;
 
     // Use actual SoA struct as reference
-    var_(control, RecordN_u8_u32_u64) = A_zero();
+    var_(control, RecordN_u8_u32_u64) = cleared();
 
     // Compute using meta module
     let record_ptr = u_anyP(&control);
