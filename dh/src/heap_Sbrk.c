@@ -15,7 +15,7 @@ $static fn_((heap_Sbrk__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 $attr($inline_always)
 $static fn_((heap_Sbrk__sizeClassIdx(usize len, mem_Align align))(usize));
 $attr($inline_always)
-$static fn_((heap_Sbrk__slotSize(usize class))(usize));
+$static fn_((heap_Sbrk__slotSize(usize class_idx))(usize));
 $attr($inline_always)
 $static fn_((heap_Sbrk__bigPagesNeeded(heap_Sbrk self, usize byte_count))(usize));
 $attr($inline_always)
@@ -101,16 +101,16 @@ fn_((heap_Sbrk__sizeClassIdx(usize len, mem_Align align))(usize)) {
     let slot_size = uint_exp2$((usize)(actual_len));
     // Precondition: slot_size must be non-zero for uint_log2
     let log_val = uint_log2(slot_size);
-    // Precondition: log_val must be >= heap_Sbrk__min_class
-    claim_assert(log_val >= heap_Sbrk__min_class);
-    return log_val - heap_Sbrk__min_class;
+    // Precondition: log_val must be >= heap_Sbrk__min_size_class
+    claim_assert(log_val >= heap_Sbrk__min_size_class);
+    return log_val - heap_Sbrk__min_size_class;
 };
 
 // Calculate slot size from size class index
-fn_((heap_Sbrk__slotSize(usize class))(usize)) {
-    // Precondition: class must not cause shift overflow
-    claim_assert(class < (sizeOf$(usize) * 8 - heap_Sbrk__min_class));
-    return as$(usize)(1) << (class + heap_Sbrk__min_class);
+fn_((heap_Sbrk__slotSize(usize class_idx))(usize)) {
+    // Precondition: class_idx must not cause shift overflow
+    claim_assert(class_idx < (sizeOf$(usize) * 8 - heap_Sbrk__min_size_class));
+    return as$(usize)(1) << (class_idx + heap_Sbrk__min_size_class);
 };
 
 fn_((heap_Sbrk__bigPagesNeeded(heap_Sbrk self, usize byte_count))(usize)) {
@@ -126,11 +126,11 @@ fn_((heap_Sbrk__allocBigPages(heap_Sbrk* self, usize n))(usize)) {
     let pow2_pages = uint_exp2$((usize)(n));
     let slot_size_bytes = pow2_pages * heap_Sbrk__bigpage_size(*self);
     // Precondition: pow2_pages must be non-zero for uint_log2
-    let class = uint_log2(pow2_pages);
-    let top_free_ptr = *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[class]);
+    let class_idx = uint_log2(pow2_pages);
+    let top_free_ptr = *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[class_idx]);
     if (top_free_ptr != 0) {
         let node = intToPtr$((usize*)(top_free_ptr + (slot_size_bytes - sizeOf$(usize))));
-        *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[class]) = *node;
+        *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[class_idx]) = *node;
         return top_free_ptr;
     }
     return self->ctx->sbrkFn(self->ctx->inner, pow2_pages * heap_Sbrk__pages_per_bigpage(*self) * heap_page_size);
@@ -162,25 +162,25 @@ fn_((heap_Sbrk__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     // VALIDATION: Check if allocation is valid BEFORE calling uint_log2/uint_exp2
     if (!heap_Sbrk__isValidAllocation(*self, len, align)) { return_none(); }
     // NOW SAFE: Use helper function instead of inline calculation
-    let class = heap_Sbrk__sizeClassIdx(len, align);
-    if ($branch_likely(class < heap_Sbrk__size_class_count(*self))) {
-        let slot_size = heap_Sbrk__slotSize(class);
+    let class_idx = heap_Sbrk__sizeClassIdx(len, align);
+    if ($branch_likely(class_idx < heap_Sbrk__size_class_count(*self))) {
+        let slot_size = heap_Sbrk__slotSize(class_idx);
         let addr = expr_(usize $scope)({
-            let top_free_ptr = *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class]);
+            let top_free_ptr = *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]);
             if (top_free_ptr != 0) {
                 let node = intToPtr$((usize*)(top_free_ptr + (slot_size - sizeOf$(usize))));
-                *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class]) = *node;
+                *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]) = *node;
                 $break_(top_free_ptr);
             }
 
-            let next_addr = *S_at((heap_Sbrk_LocalRef_next_addrs(self->local_ref))[class]);
+            let next_addr = *S_at((heap_Sbrk_LocalRef_next_addrs(self->local_ref))[class_idx]);
             if ((next_addr % heap_page_size) == 0) {
                 let addr = heap_Sbrk__allocBigPages(self, 1);
                 if (addr == 0) { $break_(0); }
-                *S_at((heap_Sbrk_LocalRef_next_addrs(self->local_ref))[class]) = addr + slot_size;
+                *S_at((heap_Sbrk_LocalRef_next_addrs(self->local_ref))[class_idx]) = addr + slot_size;
                 $break_(addr);
             } else {
-                *S_at((heap_Sbrk_LocalRef_next_addrs(self->local_ref))[class]) = next_addr + slot_size;
+                *S_at((heap_Sbrk_LocalRef_next_addrs(self->local_ref))[class_idx]) = next_addr + slot_size;
                 $break_(next_addr);
             }
         }) $unscoped_(expr);
@@ -201,12 +201,12 @@ fn_((heap_Sbrk__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
     // VALIDATION: Check both old and new sizes
     if (!heap_Sbrk__isValidAllocation(*self, buf.len, buf_align)) { return false; }
-    let old_class = heap_Sbrk__sizeClassIdx(buf.len, buf_align);
+    let old_class_idx = heap_Sbrk__sizeClassIdx(buf.len, buf_align);
     if (!heap_Sbrk__isValidAllocation(*self, new_len, buf_align)) { return false; }
-    let new_class = heap_Sbrk__sizeClassIdx(new_len, buf_align);
-    return expr_(bool $scope)(if (old_class < heap_Sbrk__size_class_count(*self)) {
+    let new_class_idx = heap_Sbrk__sizeClassIdx(new_len, buf_align);
+    return expr_(bool $scope)(if (old_class_idx < heap_Sbrk__size_class_count(*self)) {
         // Small allocation - compare slot sizes
-        $break_(old_class == new_class);
+        $break_(old_class_idx == new_class_idx);
     } else {
         // Large allocation - compare big page counts
         let old_actual_len = heap_Sbrk__actualLen(buf.len, buf_align);
@@ -233,14 +233,14 @@ fn_((heap_Sbrk__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
     // VALIDATION: Ensure buffer is valid before freeing
     if (!heap_Sbrk__isValidAllocation(*self, buf.len, buf_align)) { return; /* Invalid free */ }
-    let class = heap_Sbrk__sizeClassIdx(buf.len, buf_align);
+    let class_idx = heap_Sbrk__sizeClassIdx(buf.len, buf_align);
     let addr = ptrToInt(buf.ptr);
-    if (class < heap_Sbrk__size_class_count(*self)) {
+    if (class_idx < heap_Sbrk__size_class_count(*self)) {
         // Small allocation - use slot size helper
-        let slot_size = heap_Sbrk__slotSize(class);
+        let slot_size = heap_Sbrk__slotSize(class_idx);
         let node = intToPtr$((usize*)(addr + (slot_size - sizeOf$(usize))));
-        *node = *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class]);
-        *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class]) = addr;
+        *node = *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]);
+        *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]) = addr;
     } else {
         // Large allocation
         let actual_len = heap_Sbrk__actualLen(buf.len, buf_align);
@@ -252,9 +252,9 @@ fn_((heap_Sbrk__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
         let big_slot_size_bytes = pow2_pages * heap_Sbrk__bigpage_size(*self);
         let node = intToPtr$((usize*)(addr + (big_slot_size_bytes - sizeOf$(usize))));
 
-        let big_class = uint_log2(pow2_pages);
-        *node = *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[big_class]);
-        *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[big_class]) = addr;
+        let big_class_idx = uint_log2(pow2_pages);
+        *node = *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[big_class_idx]);
+        *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[big_class_idx]) = addr;
     }
 };
 

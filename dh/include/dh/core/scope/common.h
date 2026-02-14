@@ -1,14 +1,13 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-13 (date of creation)
- * @updated 2025-02-01 (date of last update)
- * @version v0.1-alpha.2
- * @ingroup dasae-headers(dh)/scope
- * @prefix  scope
+ * @updated 2026-01-24 (date of last update)
+ * @ingroup dasae-headers(dh)/core/scope
+ * @prefix  (none)
  *
  * @brief   Common scope management utilities
  * @details Provides macros and functions for scope-based resource management:
@@ -17,8 +16,8 @@
  *          - Conditional scope execution
  *          - Loop constructs with initialization
  */
-#ifndef SCOPE_COMMON_INCLUDED
-#define SCOPE_COMMON_INCLUDED (1)
+#ifndef core_scope_common__included
+#define core_scope_common__included 1
 #if defined(__cplusplus)
 extern "C"
 #endif /* defined(__cplusplus) */
@@ -30,17 +29,15 @@ extern "C"
 
 /*========== Macros and Definitions =========================================*/
 
-/* with: declarations =======================================================*/
-#define with_(_Init...) scope_with(_Init)
-#define with_fini_(_Init, _Fini...) scope_with_fini(_Init, _Fini)
+/* using: declarations ======================================================*/
+#define using_(_Init...) __step__using_(_Init)
+#define using_fini_(_Init, _Fini...) __step__using_fini_(_Init, _Fini)
 
 /* if-else: declarations ====================================================*/
-#define if_(_Init, _Cond) scope_if(_Init, _Cond)
-#define else_(_Init...) scope_else(_Init)
+#define if_(_Init, _Cond) __step__if_(_Init, _Cond)
+#define else_(_Init...) __step__else_(_Init)
 
 /* for: declaration =========================================================*/
-#define $rf(_expr...) $r(_expr, usize_limit_max)
-#define $rt(_expr...) $r(0, _expr)
 #define $a(_a...) ($A, (_a))
 #define $s(_s...) ($S, (_s))
 #define $ua(_a...) ($u_A, (_a))
@@ -87,7 +84,7 @@ extern "C"
          } __state \
          = { .once = false, .range = (_range), .iter = 0 }; \
          !__state.once; __state.once = true) \
-        for (__state.iter = __state.range.begin; __state.iter < __state.range.end; ++__state.iter) with_(let_(_iter, usize) = __state.iter)
+        for (__state.iter = __state.range.begin; __state.iter < __state.range.end; ++__state.iter) using_(let_(_iter, usize) = __state.iter)
 #define __for_$_rev(_range, _iter) \
     for (struct { \
              bool once; \
@@ -96,7 +93,7 @@ extern "C"
          } __state \
          = { .once = false, .range = (_range), .iter = 0 }; \
          !__state.once; __state.once = true) \
-        for (__state.iter = __state.range.end; __state.iter > __state.range.begin; --__state.iter) with_(let_(_iter, usize) = (__state.iter - 1))
+        for (__state.iter = __state.range.end; __state.iter > __state.range.begin; --__state.iter) using_(let_(_iter, usize) = (__state.iter - 1))
 #define __for_$_asc(_range, _iter) __for_$_fwd(_range, _iter)
 #define __for_$_desc(_range, _iter) __for_$_rev(_range, _iter)
 #endif /* UNUSED_CODE */
@@ -111,47 +108,35 @@ extern "C"
 
 /*========== Macros Implementation ==========================================*/
 
-#define scope_with(_Init...) SYN__scope_with(pp_uniqTok(run_once), _Init)
-
-#define scope_with_fini(_Init, _Fini...) SYN__scope_with_fini(pp_uniqTok(run_once), _Init, _Fini)
-
-#define scope_var(_Init...) SYN__scope_var(pp_uniqTok(run_once), _Init)
-
-#define scope_let(_Init...) SYN__scope_let(pp_uniqTok(run_once), _Init)
-
-#define scope_if(_Init, _Cond) SYN__scope_if(pp_uniqTok(run_once), _Init, _Cond)
-
-#define scope_else(_Init...) SYN__scope_else(pp_uniqTok(run_once), _Init)
+#define __step__using_(_Init...) ____using_(pp_uniqTok(run_once), _Init)
+#define __step__using_fini_(_Init, _Fini...) ____using_fini_(pp_uniqTok(run_once), _Init, _Fini)
+#define __step__using_var_(_Init...) ____using_var_(pp_uniqTok(run_once), _Init)
+#define __step__using_let_(_Init...) ____using_let_(pp_uniqTok(run_once), _Init)
+#define __step__if_(_Init, _Cond) ____if_(pp_uniqTok(run_once), _Init, _Cond)
+#define __step__else_(_Init...) ____else_(pp_uniqTok(run_once), _Init)
 
 #define scope_switch(_Init, _Cond, ...) SYN__scope_switch(_Init, _Cond, __VA_ARGS__)
-
 #define scope_while(_Init, _Cond, ...) SYN__scope_while(_Init, _Cond __VA_OPT__(, ) __VA_ARGS__)
-
 #define scope_va_list(_Init) /* TODO: Implement scope_va_list */
 
 /* NOLINTBEGIN */
-#define SYN__scope_with(__run_once, _Init...) \
+#define ____using_(__run_once, _Init...) \
     for (bool __run_once = false; !__run_once;) \
         for (_Init; !__run_once; __run_once = true)
-
-#define SYN__scope_with_fini(__run_once, _Init, _Fini...) \
+#define ____using_fini_(__run_once, _Init, _Fini...) \
     for (bool __run_once = false; !__run_once;) \
         for (_Init; !__run_once; ({ \
                  __run_once = true; \
                  _Fini; \
              }))
-
-#define SYN__scope_var(__run_once, _Init...) \
+#define ____using_var_(__run_once, _Init...) \
     for (bool __run_once = false; !__run_once;) \
         for (var _Init; !__run_once; __run_once = true)
-
-#define SYN__scope_let(__run_once, _Init...) \
+#define ____using_let_(__run_once, _Init...) \
     for (bool __run_once = false; !__run_once;) \
         for (let _Init; !__run_once; __run_once = true)
-
-#define SYN__scope_if(__run_once, _Init, _Cond) SYN__scope_with(__run_once, _Init) if (_Cond)
-
-#define SYN__scope_else(__run_once, _Init...) else SYN__scope_with(__run_once, _Init)
+#define ____if_(__run_once, _Init, _Cond) ____using_(__run_once, _Init) if (_Cond)
+#define ____else_(__run_once, _Init...) else ____using_(__run_once, _Init)
 
 #define SYN__scope_switch(_Init, _Cond, ...) \
     ({ \
@@ -313,8 +298,8 @@ extern "C"
     ({ \
         __for_1__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_1__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = __len; __step > 0; --__step) { \
-            __for_1__captureIters(__step - 1, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        for (usize __step = __len; __step-- > 0;) { \
+            __for_1__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
             __for__expandBlock _block; \
         } \
     })
@@ -325,8 +310,8 @@ extern "C"
     ({ \
         __for_2__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_2__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = __len; __step > 0; --__step) { \
-            __for_2__captureIters(__step - 1, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        for (usize __step = __len; __step-- > 0;) { \
+            __for_2__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
             __for__expandBlock _block; \
         } \
     })
@@ -337,8 +322,8 @@ extern "C"
     ({ \
         __for_3__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_3__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = __len; __step > 0; --__step) { \
-            __for_3__captureIters(__step - 1, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        for (usize __step = __len; __step-- > 0;) { \
+            __for_3__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
             __for__expandBlock _block; \
         } \
     })
@@ -349,8 +334,8 @@ extern "C"
     ({ \
         __for_4__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_4__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = __len; __step > 0; --__step) { \
-            __for_4__captureIters(__step - 1, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        for (usize __step = __len; __step-- > 0;) { \
+            __for_4__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters); \
             __for__expandBlock _block; \
         } \
     })
@@ -358,4 +343,4 @@ extern "C"
 #if defined(__cplusplus)
 /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* SCOPE_COMMON_INCLUDED */
+#endif /* core_scope_common__included */

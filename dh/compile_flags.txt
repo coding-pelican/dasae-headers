@@ -23,5 +23,6 @@
 -Wthread-safety
 -fgnu-keywords
 -fms-extensions
+-Wno-microsoft-anon-tag
 -funsigned-char
 -fblocks

@@ -74,7 +74,7 @@ extern "C" {
 #define __op__Vec_splat$__emit(_T, _val...) ({ \
     var_(__ret, _T) = {}; \
     let __scalar = _val; \
-    for (usize __i = 0; __i < Vec_len$(_T); ++__i) { \
+    for (usize __i = (usize)0; __i < Vec_len$(_T); ++__i) { \
         __ret[__i] = __scalar; \
     } \
     __ret; \
@@ -256,7 +256,7 @@ extern "C" {
 #define __op__Vec_splat$(_VT, _val) ({ \
     var_(__result, _VT); \
     let __scalar = (_val); \
-    for (usize __i = 0; __i < sizeof(_VT) / sizeof(__scalar); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(_VT) / sizeof(__scalar); ++__i) { \
         __result[__i] = __scalar; \
     } \
     __result; \
@@ -301,8 +301,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_remainder(vec[__i], _b[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_remainder(vec[__i], _b[__i]); \
     } \
     result; \
 })
@@ -312,8 +312,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = vec[__i] < 0 ? -1 : (0 < vec[__i] ? 1 : 0); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = vec[__i] < (ScalarType)0 ? (ScalarType) - 1 : ((ScalarType)0 < vec[__i] ? (ScalarType)1 : (ScalarType)0); \
     } \
     result; \
 })
@@ -327,27 +327,27 @@ extern "C" {
     var_(result, VecType); \
     if (Type_eq$(ScalarType, f32)) { \
         if (sizeof(VecType) == 16) { \
-            *((__m128*)&result) = _mm_andnot_ps(_mm_set1_ps(-0.0f), *((__m128*)&(_a))); \
+            *((__m128*)&result) = _mm_andnot_ps(_mm_set1_ps((f32) - 0.0f), *((__m128*)&(_a))); \
         } else if (sizeof(VecType) == 32) { \
-            *((__m256*)&result) = _mm256_andnot_ps(_mm256_set1_ps(-0.0f), *((__m256*)&(_a))); \
+            *((__m256*)&result) = _mm256_andnot_ps(_mm256_set1_ps((f32) - 0.0f), *((__m256*)&(_a))); \
         } else { \
-            result = (_a) < 0 ? -(_a) : (_a); \
+            result = (_a) < (ScalarType)0 ? -(_a) : (_a); \
         } \
     } else if (Type_eq$(ScalarType, f64)) { \
         if (sizeof(VecType) == 16) { \
-            *((__m128d*)&result) = _mm_andnot_pd(_mm_set1_pd(-0.0), *((__m128d*)&(_a))); \
+            *((__m128d*)&result) = _mm_andnot_pd(_mm_set1_pd((f64) - 0.0), *((__m128d*)&(_a))); \
         } else if (sizeof(VecType) == 32) { \
-            *((__m256d*)&result) = _mm256_andnot_pd(_mm256_set1_pd(-0.0), *((__m256d*)&(_a))); \
+            *((__m256d*)&result) = _mm256_andnot_pd(_mm256_set1_pd((f64) - 0.0), *((__m256d*)&(_a))); \
         } else { \
-            result = (_a) < 0 ? -(_a) : (_a); \
+            result = (_a) < (ScalarType)0 ? -(_a) : (_a); \
         } \
     } else { \
-        result = (_a) < 0 ? -(_a) : (_a); \
+        result = (_a) < (ScalarType)0 ? -(_a) : (_a); \
     } \
     result; \
 })
 #else
-#define __op__Vec_abs(_a) ((_a) < 0 ? -(_a) : (_a))
+#define __op__Vec_abs(_a) ((_a) < (TypeOfUnqual((_a)[0]))0 ? -(_a) : (_a))
 #endif
 
 /*---------- Bitwise Operations ---------------------------------------------*/
@@ -375,7 +375,7 @@ extern "C" {
     var_(result, VecType); \
     let vec_a = (_a); \
     let vec_b = (_b); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(vec_a[0]); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(vec_a[0]); ++__i) { \
         result[__i] = vec_a[__i] < vec_b[__i] ? vec_a[__i] : vec_b[__i]; \
     } \
     result; \
@@ -386,7 +386,7 @@ extern "C" {
     var_(result, VecType); \
     let vec_a = (_a); \
     let vec_b = (_b); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(vec_a[0]); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(vec_a[0]); ++__i) { \
         result[__i] = vec_a[__i] > vec_b[__i] ? vec_a[__i] : vec_b[__i]; \
     } \
     result; \
@@ -400,9 +400,9 @@ extern "C" {
 #define __op__Vec_reduceAdd(_vec) ({ \
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
-    var_(__sum, ScalarType) = 0; \
+    var_(__sum, ScalarType) = (ScalarType)0; \
     let __vec = (_vec); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         __sum += __vec[__i]; \
     } \
     __sum; \
@@ -411,9 +411,9 @@ extern "C" {
 #define __op__Vec_reduceMul(_vec) ({ \
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
-    var_(__prod, ScalarType) = 1; \
+    var_(__prod, ScalarType) = (ScalarType)1; \
     let __vec = (_vec); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         __prod *= __vec[__i]; \
     } \
     __prod; \
@@ -423,8 +423,8 @@ extern "C" {
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let __vec = (_vec); \
-    var_(__min_val, ScalarType) = __vec[0]; \
-    for (usize __i = 1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    var_(__min_val, ScalarType) = __vec[(usize)0]; \
+    for (usize __i = (usize)1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         if (__vec[__i] < __min_val) __min_val = __vec[__i]; \
     } \
     __min_val; \
@@ -434,8 +434,8 @@ extern "C" {
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let __vec = (_vec); \
-    var_(__max_val, ScalarType) = __vec[0]; \
-    for (usize __i = 1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    var_(__max_val, ScalarType) = __vec[(usize)0]; \
+    for (usize __i = (usize)1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         if (__vec[__i] > __max_val) __max_val = __vec[__i]; \
     } \
     __max_val; \
@@ -445,8 +445,8 @@ extern "C" {
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let __vec = (_vec); \
-    var_(__result, ScalarType) = __vec[0]; \
-    for (usize __i = 1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    var_(__result, ScalarType) = __vec[(usize)0]; \
+    for (usize __i = (usize)1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         __result &= __vec[__i]; \
     } \
     __result; \
@@ -456,8 +456,8 @@ extern "C" {
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let __vec = (_vec); \
-    var_(__result, ScalarType) = __vec[0]; \
-    for (usize __i = 1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    var_(__result, ScalarType) = __vec[(usize)0]; \
+    for (usize __i = (usize)1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         __result |= __vec[__i]; \
     } \
     __result; \
@@ -467,8 +467,8 @@ extern "C" {
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let __vec = (_vec); \
-    var_(__result, ScalarType) = __vec[0]; \
-    for (usize __i = 1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    var_(__result, ScalarType) = __vec[(usize)0]; \
+    for (usize __i = (usize)1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         __result ^= __vec[__i]; \
     } \
     __result; \
@@ -485,7 +485,7 @@ extern "C" {
     let __m = (_mask); \
     let __vec_a = (_a); \
     let __vec_b = (_b); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(__vec_a[0]); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(__vec_a[0]); ++__i) { \
         __result[__i] = __m[__i] ? __vec_b[__i] : __vec_a[__i]; \
     } \
     __result; \
@@ -505,8 +505,8 @@ extern "C" {
             *((__m256*)&result) = _mm256_sqrt_ps(*((__m256*)&(_a))); \
         } else { \
             let vec = (_a); \
-            for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-                result[__i] = __builtin_sqrtf(vec[__i]); \
+            for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+                result[__i] = (ScalarType)__builtin_sqrtf(vec[__i]); \
             } \
         } \
     } else if (Type_eq$(ScalarType, f64)) { \
@@ -516,14 +516,14 @@ extern "C" {
             *((__m256d*)&result) = _mm256_sqrt_pd(*((__m256d*)&(_a))); \
         } else { \
             let vec = (_a); \
-            for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-                result[__i] = __builtin_sqrt(vec[__i]); \
+            for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+                result[__i] = (ScalarType)__builtin_sqrt(vec[__i]); \
             } \
         } \
     } else { \
         let vec = (_a); \
-        for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-            result[__i] = __builtin_sqrt(vec[__i]); \
+        for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+            result[__i] = (ScalarType)__builtin_sqrt(vec[__i]); \
         } \
     } \
     result; \
@@ -534,11 +534,11 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         if (Type_eq$(ScalarType, f32)) { \
-            result[__i] = __builtin_sqrtf(vec[__i]); \
+            result[__i] = (ScalarType)__builtin_sqrtf(vec[__i]); \
         } else if (Type_eq$(ScalarType, f64)) { \
-            result[__i] = __builtin_sqrt(vec[__i]); \
+            result[__i] = (ScalarType)__builtin_sqrt(vec[__i]); \
         } \
     } \
     result; \
@@ -556,8 +556,8 @@ extern "C" {
         *((__m128d*)&result) = _mm_floor_pd(*((__m128d*)&(_a))); \
     } else { \
         let vec = (_a); \
-        for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-            result[__i] = __builtin_floor(vec[__i]); \
+        for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+            result[__i] = (ScalarType)__builtin_floor(vec[__i]); \
         } \
     } \
     result; \
@@ -568,8 +568,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_floor(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_floor(vec[__i]); \
     } \
     result; \
 })
@@ -580,8 +580,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_ceil(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_ceil(vec[__i]); \
     } \
     result; \
 })
@@ -591,8 +591,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_round(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_round(vec[__i]); \
     } \
     result; \
 })
@@ -602,8 +602,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_trunc(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_trunc(vec[__i]); \
     } \
     result; \
 })
@@ -639,7 +639,7 @@ extern "C" {
     typedef TypeOfUnqual((_vec)[0]) SourceScalar; \
     var_(result, TargetVec); \
     let vec = (_vec); \
-    for (usize __i = 0; __i < sizeof(SourceVec) / sizeof(SourceScalar); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(SourceVec) / sizeof(SourceScalar); ++__i) { \
         result[__i] = (TargetScalar)vec[__i]; \
     } \
     result; \
@@ -661,9 +661,9 @@ extern "C" {
         let vec_a = (_a); \
         let vec_b = (_b); \
         usize len = sizeof(VecType) / sizeof(ScalarType); \
-        for (usize __i = 0; __i < len / 2; ++__i) { \
-            result[__i] = vec_a[2 * __i] + vec_a[2 * __i + 1]; \
-            result[__i + len / 2] = vec_b[2 * __i] + vec_b[2 * __i + 1]; \
+        for (usize __i = (usize)0; __i < len / (usize)2; ++__i) { \
+            result[__i] = vec_a[(usize)2 * __i] + vec_a[(usize)2 * __i + (usize)1]; \
+            result[__i + len / (usize)2] = vec_b[(usize)2 * __i] + vec_b[(usize)2 * __i + (usize)1]; \
         } \
     } \
     result; \
@@ -676,9 +676,9 @@ extern "C" {
     let vec_a = (_a); \
     let vec_b = (_b); \
     usize len = sizeof(VecType) / sizeof(ScalarType); \
-    for (usize __i = 0; __i < len / 2; ++__i) { \
-        result[__i] = vec_a[2 * __i] + vec_a[2 * __i + 1]; \
-        result[__i + len / 2] = vec_b[2 * __i] + vec_b[2 * __i + 1]; \
+    for (usize __i = (usize)0; __i < len / (usize)2; ++__i) { \
+        result[__i] = vec_a[(usize)2 * __i] + vec_a[(usize)2 * __i + (usize)1]; \
+        result[__i + len / (usize)2] = vec_b[(usize)2 * __i] + vec_b[(usize)2 * __i + (usize)1]; \
     } \
     result; \
 })
@@ -691,9 +691,9 @@ extern "C" {
     let vec_a = (_a); \
     let vec_b = (_b); \
     usize len = sizeof(VecType) / sizeof(ScalarType); \
-    for (usize __i = 0; __i < len / 2; ++__i) { \
-        result[__i] = vec_a[2 * __i] + vec_a[2 * __i + 1]; \
-        result[__i + len / 2] = vec_b[2 * __i] + vec_b[2 * __i + 1]; \
+    for (usize __i = (usize)0; __i < len / (usize)2; ++__i) { \
+        result[__i] = vec_a[(usize)2 * __i] + vec_a[(usize)2 * __i + (usize)1]; \
+        result[__i + len / (usize)2] = vec_b[(usize)2 * __i] + vec_b[(usize)2 * __i + (usize)1]; \
     } \
     result; \
 })
@@ -706,9 +706,9 @@ extern "C" {
     let vec_a = (_a); \
     let vec_b = (_b); \
     usize len = sizeof(VecType) / sizeof(ScalarType); \
-    for (usize __i = 0; __i < len / 2; ++__i) { \
-        result[__i] = vec_a[2 * __i] - vec_a[2 * __i + 1]; \
-        result[__i + len / 2] = vec_b[2 * __i] - vec_b[2 * __i + 1]; \
+    for (usize __i = (usize)0; __i < len / (usize)2; ++__i) { \
+        result[__i] = vec_a[(usize)2 * __i] - vec_a[(usize)2 * __i + (usize)1]; \
+        result[__i + len / (usize)2] = vec_b[(usize)2 * __i] - vec_b[(usize)2 * __i + (usize)1]; \
     } \
     result; \
 })
@@ -720,9 +720,9 @@ extern "C" {
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let vec = (_vec); \
     usize len = sizeof(VecType) / sizeof(ScalarType); \
-    var_(mask, usize) = 0; \
-    for (usize __i = 0; __i < len; ++__i) { \
-        if (vec[__i]) mask |= (1ULL << __i); \
+    var_(mask, usize) = (usize)0; \
+    for (usize __i = (usize)0; __i < len; ++__i) { \
+        if (vec[__i]) mask |= ((usize)1 << __i); \
     } \
     mask; \
 })
@@ -732,10 +732,10 @@ extern "C" {
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let vec = (_vec); \
     usize len = sizeof(VecType) / sizeof(ScalarType); \
-    var_(all, bool) = true; \
-    for (usize __i = 0; __i < len; ++__i) { \
+    var_(all, bool) = (bool)true; \
+    for (usize __i = (usize)0; __i < len; ++__i) { \
         if (!vec[__i]) { \
-            all = false; \
+            all = (bool)false; \
             break; \
         } \
     } \
@@ -747,10 +747,10 @@ extern "C" {
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let vec = (_vec); \
     usize len = sizeof(VecType) / sizeof(ScalarType); \
-    var_(any, bool) = false; \
-    for (usize __i = 0; __i < len; ++__i) { \
+    var_(any, bool) = (bool)false; \
+    for (usize __i = (usize)0; __i < len; ++__i) { \
         if (vec[__i]) { \
-            any = true; \
+            any = (bool)true; \
             break; \
         } \
     } \
@@ -1077,15 +1077,15 @@ extern "C" {
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     var_(mask, i32); \
     if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
-        mask = _mm_movemask_ps(*((__m128*)&(_vec))); \
+        mask = (i32)_mm_movemask_ps(*((__m128*)&(_vec))); \
     } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 16) { \
-        mask = _mm_movemask_pd(*((__m128d*)&(_vec))); \
+        mask = (i32)_mm_movemask_pd(*((__m128d*)&(_vec))); \
     } else if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32) { \
-        mask = _mm256_movemask_ps(*((__m256*)&(_vec))); \
+        mask = (i32)_mm256_movemask_ps(*((__m256*)&(_vec))); \
     } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 32) { \
-        mask = _mm256_movemask_pd(*((__m256d*)&(_vec))); \
+        mask = (i32)_mm256_movemask_pd(*((__m256d*)&(_vec))); \
     } else { \
-        mask = Vec_toBitMask(_vec); \
+        mask = (i32)Vec_toBitMask(_vec); \
     } \
     mask; \
 })
@@ -1105,19 +1105,21 @@ extern "C" {
 
 #if arch_is_x86_64 && arch_has_sse4_1
 
-#define __op__Vec_dot$(_VT, _a, _b) ({ \
-    typedef _VT VecType; \
-    typedef TypeOfUnqual((_a)[0]) ScalarType; \
-    var_(result, ScalarType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
-        __m128 temp = _mm_dp_ps(*((__m128*)&(_a)), *((__m128*)&(_b)), 0xF1); \
-        result = _mm_cvtss_f32(temp); \
-    } else { \
-        let prod = Vec_mul(_a, _b); \
-        result = Vec_reduceAdd(prod); \
-    } \
-    result; \
-})
+#define __op__Vec_dot$(_VT, _a, _b) \
+    __builtin_choose_expr( \
+        __builtin_types_compatible_p(TypeOfUnqual((_a)[0]), f32) && sizeof(_VT) == 16, \
+        ({ \
+            __m128 __vec_a_aligned, __vec_b_aligned; \
+            __builtin_memcpy(&__vec_a_aligned, &(_a), sizeof(__m128)); \
+            __builtin_memcpy(&__vec_b_aligned, &(_b), sizeof(__m128)); \
+            __m128 __temp = _mm_dp_ps(__vec_a_aligned, __vec_b_aligned, 0xF1); \
+            _mm_cvtss_f32(__temp); \
+        }), \
+        ({ \
+            let __prod = Vec_mul(_a, _b); \
+            Vec_reduceAdd(__prod); \
+        }) \
+    )
 
 #else
 
@@ -1151,15 +1153,15 @@ extern "C" {
     var_(result, VecType); \
     if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
         __m128 v = *((__m128*)&(_vec)); \
-        __m128 r0 = _mm_mul_ps(*((__m128*)&(_mat)[0]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, 0))); \
-        __m128 r1 = _mm_mul_ps(*((__m128*)&(_mat)[1]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1))); \
-        __m128 r2 = _mm_mul_ps(*((__m128*)&(_mat)[2]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2))); \
-        __m128 r3 = _mm_mul_ps(*((__m128*)&(_mat)[3]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 3, 3, 3))); \
+        __m128 r0 = _mm_mul_ps(*((__m128*)&(_mat)[(usize)0]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, 0))); \
+        __m128 r1 = _mm_mul_ps(*((__m128*)&(_mat)[(usize)1]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1))); \
+        __m128 r2 = _mm_mul_ps(*((__m128*)&(_mat)[(usize)2]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2))); \
+        __m128 r3 = _mm_mul_ps(*((__m128*)&(_mat)[(usize)3]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 3, 3, 3))); \
         *((__m128*)&result) = _mm_add_ps(_mm_add_ps(r0, r1), _mm_add_ps(r2, r3)); \
     } else { \
-        for (usize __i = 0; __i < 4; ++__i) { \
-            result[__i] = 0; \
-            for (usize j = 0; j < 4; ++j) { \
+        for (usize __i = (usize)0; __i < (usize)4; ++__i) { \
+            result[__i] = (ScalarType)0; \
+            for (usize j = (usize)0; j < (usize)4; ++j) { \
                 result[__i] += (_mat)[j][__i] * (_vec)[j]; \
             } \
         } \
@@ -1171,10 +1173,11 @@ extern "C" {
 
 #define __op__Vec_matMul4x4(_mat, _vec) ({ \
     typedef TypeOfUnqual(_vec) VecType; \
+    typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     var_(result, VecType); \
-    for (usize __i = 0; __i < 4; ++__i) { \
-        result[__i] = 0; \
-        for (usize j = 0; j < 4; ++j) { \
+    for (usize __i = (usize)0; __i < (usize)4; ++__i) { \
+        result[__i] = (ScalarType)0; \
+        for (usize j = (usize)0; j < (usize)4; ++j) { \
             result[__i] += (_mat)[j][__i] * (_vec)[j]; \
         } \
     } \
@@ -1400,12 +1403,12 @@ extern "C" {
     typedef TypeOfUnqual(_indices) IndexVec; \
     var_(result, VecType); \
     if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32 && sizeof(IndexVec) == 32) { \
-        *((__m256*)&result) = _mm256_i32gather_ps((f32 const*)(_p_base), *((__m256i*)&(_indices)), sizeof(f32)); \
+        *((__m256*)&result) = _mm256_i32gather_ps((f32 const*)(_p_base), *((__m256i*)&(_indices)), (i32)sizeof(f32)); \
     } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 32 && sizeof(IndexVec) == 16) { \
-        *((__m256d*)&result) = _mm256_i32gather_pd((f64 const*)(_p_base), *((__m128i*)&(_indices)), sizeof(f64)); \
+        *((__m256d*)&result) = _mm256_i32gather_pd((f64 const*)(_p_base), *((__m128i*)&(_indices)), (i32)sizeof(f64)); \
     } else { \
         let idx = (_indices); \
-        for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
             result[__i] = (_p_base)[idx[__i]]; \
         } \
     } \
@@ -1419,7 +1422,7 @@ extern "C" {
     typedef TypeOfUnqual((_p_base)[0]) ScalarType; \
     var_(result, VecType); \
     let idx = (_indices); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         result[__i] = (_p_base)[idx[__i]]; \
     } \
     result; \
@@ -1432,7 +1435,7 @@ extern "C" {
     typedef TypeOfUnqual((_p_base)[0]) ScalarType; \
     let idx = (_indices); \
     let val = (_values); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         (_p_base)[idx[__i]] = val[__i]; \
     } \
 })
@@ -1440,10 +1443,10 @@ extern "C" {
 #define __op__Vec_gatherMask$(_VT, _p_base, _indices, _mask, _default) ({ \
     typedef _VT VecType; \
     typedef TypeOfUnqual((_p_base)[0]) ScalarType; \
-    var_(result, VecType) = _default; \
+    var_(result, VecType) = (_default); \
     let idx = (_indices); \
     let m = (_mask); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         if (m[__i]) result[__i] = (_p_base)[idx[__i]]; \
     } \
     result; \
@@ -1455,7 +1458,7 @@ extern "C" {
     let idx = (_indices); \
     let val = (_values); \
     let m = (_mask); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         if (m[__i]) (_p_base)[idx[__i]] = val[__i]; \
     } \
 })
@@ -1464,9 +1467,9 @@ extern "C" {
 
 #define __op__Vec_loadMask(_p_arr, _mask, _default) ({ \
     typedef TypeOfUnqual(_default) VecType; \
-    var_(result, VecType) = _default; \
+    var_(result, VecType) = (_default); \
     let m = (_mask); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(result[0]); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(result[0]); ++__i) { \
         if (m[__i]) result[__i] = (_p_arr)[__i]; \
     } \
     result; \
@@ -1476,7 +1479,7 @@ extern "C" {
     typedef TypeOfUnqual(_values) VecType; \
     let val = (_values); \
     let m = (_mask); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(val[0]); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(val[0]); ++__i) { \
         if (m[__i]) (_p_arr)[__i] = val[__i]; \
     } \
 })
@@ -1500,8 +1503,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_clz(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_clz((unsigned int)vec[__i]); \
     } \
     result; \
 })
@@ -1511,8 +1514,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_ctz(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_ctz((unsigned int)vec[__i]); \
     } \
     result; \
 })
@@ -1522,8 +1525,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_popcount(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_popcount((unsigned int)vec[__i]); \
     } \
     result; \
 })
@@ -1533,11 +1536,11 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         var_(x, ScalarType) = vec[__i]; \
-        var_(rev, ScalarType) = 0; \
-        for (usize j = 0; j < sizeof(ScalarType) * 8; ++j) { \
-            rev = (rev << 1) | (x & 1); \
+        var_(rev, ScalarType) = (ScalarType)0; \
+        for (usize j = (usize)0; j < sizeof(ScalarType) * (usize)8; ++j) { \
+            rev = (ScalarType)((rev << 1) | (x & (ScalarType)1)); \
             x >>= 1; \
         } \
         result[__i] = rev; \
@@ -1550,13 +1553,13 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         if (sizeof(ScalarType) == 2) { \
-            result[__i] = __builtin_bswap16(vec[__i]); \
+            result[__i] = (ScalarType)__builtin_bswap16((u16)vec[__i]); \
         } else if (sizeof(ScalarType) == 4) { \
-            result[__i] = __builtin_bswap32(vec[__i]); \
+            result[__i] = (ScalarType)__builtin_bswap32((u32)vec[__i]); \
         } else if (sizeof(ScalarType) == 8) { \
-            result[__i] = __builtin_bswap64(vec[__i]); \
+            result[__i] = (ScalarType)__builtin_bswap64((u64)vec[__i]); \
         } \
     } \
     result; \
@@ -1618,8 +1621,8 @@ extern "C" {
     var_(result, VecType); \
     let vec_a = (_a); \
     let vec_b = (_b); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = ((i64)vec_a[__i] * (i64)vec_b[__i]) >> (sizeof(ScalarType) * 8); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)(((i64)vec_a[__i] * (i64)vec_b[__i]) >> (i32)(sizeof(ScalarType) * (usize)8)); \
     } \
     result; \
 })
@@ -1630,9 +1633,9 @@ extern "C" {
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let vec = (_vec); \
-    var_(min_val, ScalarType) = vec[0]; \
-    var_(min_idx, usize) = 0; \
-    for (usize __i = 1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    var_(min_val, ScalarType) = vec[(usize)0]; \
+    var_(min_idx, usize) = (usize)0; \
+    for (usize __i = (usize)1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         if (vec[__i] < min_val) { \
             min_val = vec[__i]; \
             min_idx = __i; \
@@ -1645,9 +1648,9 @@ extern "C" {
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     let vec = (_vec); \
-    var_(max_val, ScalarType) = vec[0]; \
-    var_(max_idx, usize) = 0; \
-    for (usize __i = 1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+    var_(max_val, ScalarType) = vec[(usize)0]; \
+    var_(max_idx, usize) = (usize)0; \
+    for (usize __i = (usize)1; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
         if (vec[__i] > max_val) { \
             max_val = vec[__i]; \
             max_idx = __i; \
@@ -1670,9 +1673,9 @@ extern "C" {
     let vec_a = (_a); \
     let vec_b = (_b); \
     usize len = sizeof(VecType) / sizeof(ScalarType); \
-    for (usize __i = 0; __i < len / 2; ++__i) { \
-        result[2 * __i] = vec_a[__i]; \
-        result[2 * __i + 1] = vec_b[__i]; \
+    for (usize __i = (usize)0; __i < len / (usize)2; ++__i) { \
+        result[(usize)2 * __i] = vec_a[__i]; \
+        result[(usize)2 * __i + (usize)1] = vec_b[__i]; \
     } \
     result; \
 })
@@ -1684,9 +1687,9 @@ extern "C" {
     let vec_a = (_a); \
     let vec_b = (_b); \
     usize len = sizeof(VecType) / sizeof(ScalarType); \
-    for (usize __i = 0; __i < len / 2; ++__i) { \
-        result[2 * __i] = vec_a[len / 2 + __i]; \
-        result[2 * __i + 1] = vec_b[len / 2 + __i]; \
+    for (usize __i = (usize)0; __i < len / (usize)2; ++__i) { \
+        result[(usize)2 * __i] = vec_a[len / (usize)2 + __i]; \
+        result[(usize)2 * __i + (usize)1] = vec_b[len / (usize)2 + __i]; \
     } \
     result; \
 })
@@ -1698,9 +1701,9 @@ extern "C" {
     var_(even, VecType); \
     var_(odd, VecType); \
     usize len = sizeof(VecType) / sizeof(ScalarType); \
-    for (usize __i = 0; __i < len / 2; ++__i) { \
-        even[__i] = v[2 * __i]; \
-        odd[__i] = v[2 * __i + 1]; \
+    for (usize __i = (usize)0; __i < len / (usize)2; ++__i) { \
+        even[__i] = v[(usize)2 * __i]; \
+        odd[__i] = v[(usize)2 * __i + (usize)1]; \
     } \
     *(_p_even) = even; \
     *(_p_odd) = odd; \
@@ -1732,8 +1735,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_exp(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_exp((f64)vec[__i]); \
     } \
     result; \
 })
@@ -1743,8 +1746,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_log(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_log((f64)vec[__i]); \
     } \
     result; \
 })
@@ -1755,8 +1758,8 @@ extern "C" {
     var_(result, VecType); \
     let vec_a = (_a); \
     let vec_b = (_b); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_pow(vec_a[__i], vec_b[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_pow((f64)vec_a[__i], (f64)vec_b[__i]); \
     } \
     result; \
 })
@@ -1766,8 +1769,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_sin(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_sin((f64)vec[__i]); \
     } \
     result; \
 })
@@ -1777,8 +1780,8 @@ extern "C" {
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
     let vec = (_a); \
-    for (usize __i = 0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        result[__i] = __builtin_cos(vec[__i]); \
+    for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
+        result[__i] = (ScalarType)__builtin_cos((f64)vec[__i]); \
     } \
     result; \
 })

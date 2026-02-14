@@ -132,7 +132,7 @@ fn_((
     // Special case for zero-sized allocations
     if (buf.len == 0) { return; }
     // Set memory to undefined before freeing
-    mem_setBytes0(buf);
+    mem_set0Bytes(buf);
 #if !on_comptime || (on_comptime && !debug_comp_enabled)
 #else /* on_comptime && (!on_comptime || debug_comp_enabled) */
     mem_Tracker_registerFree(buf.ptr, src_loc);
@@ -156,7 +156,7 @@ fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$u_P$raw) $
         return_err(mem_Err_OutOfMemory())
     ));
     // Initialize memory to undefined pattern
-    mem_setBytes0(init$S$((u8)(mem, type.size)));
+    mem_set0Bytes(init$S$((u8)(mem, type.size)));
     return_ok({
         .raw = mem,
         .type = type,
@@ -174,6 +174,13 @@ fn_((mem_Allocator_destroy(mem_Allocator self, u_P$raw ptr))(void)) {
     mem_Allocator_rawFree(self, mem, ptr.type.align);
 };
 
+fn_((mem_Allocator_clone(mem_Allocator self, u_P_const$raw src))(mem_Err$u_P$raw) $scope) {
+    // Allocate new memory with same element type and count
+    let new_mem = try_(mem_Allocator_create(self, src.type));
+    // Copy data from source to new memory
+    return_ok(mem_copyP(new_mem, src));
+} $unscoped_(fn);
+
 fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Err$u_S$raw) $scope) {
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
@@ -190,7 +197,7 @@ fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Er
     let mem = orelse_((mem_Allocator_rawAlloc(self, byte_count, type.align))(
         return_err(mem_Err_OutOfMemory())
     ));
-    mem_setBytes0(init$S$((u8)(mem, byte_count)));
+    mem_set0Bytes(init$S$((u8)(mem, byte_count)));
     return_ok({
         .ptr = mem,
         .len = count,
@@ -316,7 +323,7 @@ fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize new_len))(
     let copy_len = prim_min(old_bytes.len, new_byte_count);
     mem_copyBytes(init$S$((u8)(new_mem, copy_len)), old_bytes.as_const);
     // Zero out old memory before freeing
-    mem_setBytes0(old_bytes);
+    mem_set0Bytes(old_bytes);
     mem_Allocator_rawFree(self, old_bytes, old_mem.type.align);
     return_ok({
         .ptr = new_mem,
@@ -336,15 +343,11 @@ fn_((mem_Allocator_free(mem_Allocator self, u_S$raw mem))(void)) {
     mem_Allocator_rawFree(self, bytes, mem.type.align);
 };
 
-fn_((mem_Allocator_dupe(mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw) $scope) {
+fn_((mem_Allocator_dupe(mem_Allocator self, u_S_const$raw src))(mem_Err$u_S$raw) $scope) {
     // Allocate new memory with same element type and count
     let new_mem = try_(mem_Allocator_alloc(self, src.type, src.len));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size * src.len));
-    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size * src.len));
-    mem_copyBytes(dst_bytes, src_bytes.as_const);
-
-    return_ok(new_mem);
+    return_ok(mem_copy(new_mem, src));
 } $unscoped_(fn);
 
 #else /* on_comptime && (!on_comptime || debug_comp_enabled) */
@@ -363,7 +366,7 @@ fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_lo
         return_err(mem_Err_OutOfMemory())
     ));
     // Initialize memory to undefined pattern
-    mem_setBytes0(init$S$((u8)(mem, type.size)));
+    mem_set0Bytes(init$S$((u8)(mem, type.size)));
     return_ok({
         .raw = mem,
         .type = type,
@@ -383,6 +386,13 @@ fn_((mem_Allocator_destroy_debug(mem_Allocator self, u_P$raw ptr, SrcLoc src_loc
     mem_Allocator_rawFree_debug(self, mem, ptr.type.align, src_loc);
 };
 
+fn_((mem_Allocator_clone_debug(mem_Allocator self, u_P_const$raw src, SrcLoc src_loc))(mem_Err$u_P$raw) $scope) {
+    // Allocate new memory with same element type and count
+    let new_mem = try_(mem_Allocator_create_debug(self, src.type, src_loc));
+    // Copy data from source to new memory
+    return_ok(mem_copyP(new_mem, src));
+} $unscoped_(fn);
+
 fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc))(mem_Err$u_S$raw) $scope) {
     // Special case for zero-sized types or zero count
     if (type.size == 0 || count == 0) {
@@ -400,7 +410,7 @@ fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, S
         return_err(mem_Err_OutOfMemory())
     ));
     // Initialize memory to undefined pattern
-    mem_setBytes0(init$S$((u8)(mem, byte_count)));
+    mem_set0Bytes(init$S$((u8)(mem, byte_count)));
     return_ok({
         .ptr = mem,
         .len = count,
@@ -524,7 +534,7 @@ fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_
     let copy_len = prim_min(old_bytes.len, new_byte_count);
     mem_copyBytes(init$S$((u8)(new_mem, copy_len)), old_bytes.as_const);
     // Zero out old memory before freeing
-    mem_setBytes0(old_bytes);
+    mem_set0Bytes(old_bytes);
     mem_Allocator_rawFree_debug(self, old_bytes, old_mem.type.align, src_loc);
     return_ok({
         .ptr = new_mem,
@@ -544,14 +554,11 @@ fn_((mem_Allocator_free_debug(mem_Allocator self, u_S$raw mem, SrcLoc src_loc))(
     mem_Allocator_rawFree_debug(self, bytes, mem.type.align, src_loc);
 };
 
-fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S$raw src, SrcLoc src_loc))(mem_Err$u_S$raw) $scope) {
+fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S_const$raw src, SrcLoc src_loc))(mem_Err$u_S$raw) $scope) {
     // Allocate new memory with same element type and count
     let new_mem = try_(mem_Allocator_alloc_debug(self, src.type, src.len, src_loc));
     // Copy data from source to new memory
-    let src_bytes = init$S$((u8)(as$(u8*)(src.ptr), src.type.size * src.len));
-    let dst_bytes = init$S$((u8)(as$(u8*)(new_mem.ptr), src.type.size * src.len));
-    mem_copyBytes(dst_bytes, src_bytes.as_const);
-    return_ok(new_mem);
+    return_ok(mem_copy(new_mem, src));
 } $unscoped_(fn);
 
 #endif /* on_comptime && (!on_comptime || debug_comp_enabled) */

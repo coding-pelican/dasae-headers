@@ -61,7 +61,7 @@ TEST_fn_("basic usage" $guard) {
         total += i;
     });
 
-    with_(var_(sum, u32) = 0) {
+    using_(var_(sum, u32) = 0) {
         var it = HashMap_iter$1usize$2u16(&map_value);
         while_some(HashMap_Iter_next$1usize$2u16(&it), entry) {
             sum += *HashMap_Entry_key$1usize$2u16(entry);
@@ -69,7 +69,7 @@ TEST_fn_("basic usage" $guard) {
         try_(TEST_expect(sum == total));
     }
 
-    with_(var_(sum, u32) = 0) {
+    using_(var_(sum, u32) = 0) {
         for_(($r(0, count))(i) {
             try_(TEST_expect(HashMap_contains$1usize$2u16(map_value, i)));
             try_(TEST_expect(i == unwrap_(HashMap_by$1usize$2u16(map_value, i))));
@@ -95,7 +95,7 @@ TEST_fn_("basic usage - no templates used" $guard) {
         total += i;
     });
 
-    with_(var_(sum, u32) = 0) {
+    using_(var_(sum, u32) = 0) {
         var it = HashMap_iter(&map_value, typeInfo$(usize), typeInfo$(u16));
         while_some(HashMap_Iter_next(&it, typeInfo$(usize), typeInfo$(u16)), entry) {
             sum += *u_castP$((const usize*)(HashMap_Entry_key(entry, typeInfo$(usize))));
@@ -103,7 +103,7 @@ TEST_fn_("basic usage - no templates used" $guard) {
         try_(TEST_expect(sum == total));
     }
 
-    with_(var_(sum, u32) = 0) {
+    using_(var_(sum, u32) = 0) {
         for_(($r(0, count))(i) {
             try_(TEST_expect(HashMap_contains(map_value, typeInfo$(u16), u_anyV(as$(usize)(i)))));
             try_(TEST_expect(i == unwrap_(u_castO$((O$u16)(HashMap_by(map_value, u_anyV(as$(usize)(i)), u_retV$(u16)))))));

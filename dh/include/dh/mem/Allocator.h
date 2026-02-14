@@ -80,6 +80,8 @@ $extern fn_((mem_Allocator_rawFree(mem_Allocator self, S$u8 buf, mem_Align buf_a
 $extern fn_((mem_Allocator_create(mem_Allocator self, TypeInfo type))(mem_Err$u_P$raw)) $must_check;
 /// Free single-item
 $extern fn_((mem_Allocator_destroy(mem_Allocator self, u_P$raw ptr))(void));
+/// Duplicate single-item
+$extern fn_((mem_Allocator_clone(mem_Allocator self, u_P_const$raw src))(mem_Err$u_P$raw)) $must_check;
 /// Slice allocation
 $extern fn_((mem_Allocator_alloc(mem_Allocator self, TypeInfo type, usize count))(mem_Err$u_S$raw)) $must_check;
 /// Try to resize slice in-place
@@ -91,7 +93,7 @@ $extern fn_((mem_Allocator_realloc(mem_Allocator self, u_S$raw old_mem, usize ne
 /// Free slice
 $extern fn_((mem_Allocator_free(mem_Allocator self, u_S$raw mem))(void));
 /// Duplicate slice
-$extern fn_((mem_Allocator_dupe(mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw)) $must_check;
+$extern fn_((mem_Allocator_dupe(mem_Allocator self, u_S_const$raw src))(mem_Err$u_S$raw)) $must_check;
 
 #else /* on_comptime && (!on_comptime || debug_comp_enabled) */
 
@@ -102,12 +104,13 @@ $extern fn_((mem_Allocator_rawFree_debug(mem_Allocator self, S$u8 buf, mem_Align
 
 $extern fn_((mem_Allocator_create_debug(mem_Allocator self, TypeInfo type, SrcLoc src_loc))(mem_Err$u_P$raw)) $must_check;
 $extern fn_((mem_Allocator_destroy_debug(mem_Allocator self, u_P$raw ptr, SrcLoc src_loc))(void));
+$extern fn_((mem_Allocator_clone_debug(mem_Allocator self, u_P_const$raw src, SrcLoc src_loc))(mem_Err$u_P$raw)) $must_check;
 $extern fn_((mem_Allocator_alloc_debug(mem_Allocator self, TypeInfo type, usize count, SrcLoc src_loc))(mem_Err$u_S$raw)) $must_check;
 $extern fn_((mem_Allocator_resize_debug(mem_Allocator self, u_S$raw old_mem, usize new_len, SrcLoc src_loc))(bool));
 $extern fn_((mem_Allocator_remap_debug(mem_Allocator self, u_S$raw old_mem, usize new_len, SrcLoc src_loc))(O$u_S$raw));
 $extern fn_((mem_Allocator_realloc_debug(mem_Allocator self, u_S$raw old_mem, usize new_len, SrcLoc src_loc))(mem_Err$u_S$raw)) $must_check;
 $extern fn_((mem_Allocator_free_debug(mem_Allocator self, u_S$raw mem, SrcLoc src_loc))(void));
-$extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S$raw src, SrcLoc src_loc))(mem_Err$u_S$raw)) $must_check;
+$extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S_const$raw src, SrcLoc src_loc))(mem_Err$u_S$raw)) $must_check;
 
 /*========== Macros and Declarations ========================================*/
 
@@ -120,6 +123,7 @@ $extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S$raw src, SrcLoc sr
 /* Debug versions of high-level operations */
 #define mem_Allocator_create(_self, _type...) mem_Allocator_create_callDebug((_self), (_type), srcLoc())
 #define mem_Allocator_destroy(_self, _ptr...) mem_Allocator_destroy_callDebug((_self), (_ptr), srcLoc())
+#define mem_Allocator_clone(_self, _src...) mem_Allocator_clone_callDebug((_self), (_src), srcLoc())
 #define mem_Allocator_alloc(_self, _type, _count...) mem_Allocator_alloc_callDebug((_self), (_type), (_count), srcLoc())
 #define mem_Allocator_resize(_self, _old_mem, _new_len...) mem_Allocator_resize_callDebug((_self), (_old_mem), (_new_len), srcLoc())
 #define mem_Allocator_remap(_self, _old_mem, _new_len...) mem_Allocator_remap_callDebug((_self), (_old_mem), (_new_len), srcLoc())
@@ -136,6 +140,7 @@ $extern fn_((mem_Allocator_dupe_debug(mem_Allocator self, u_S$raw src, SrcLoc sr
 
 #define mem_Allocator_create_callDebug(_self, _type, _src_loc) mem_Allocator_create_debug(_self, _type, _src_loc)
 #define mem_Allocator_destroy_callDebug(_self, _ptr, _src_loc) mem_Allocator_destroy_debug(_self, _ptr, _src_loc)
+#define mem_Allocator_clone_callDebug(_self, _src, _src_loc) mem_Allocator_clone_debug(_self, _src, _src_loc)
 #define mem_Allocator_alloc_callDebug(_self, _type, _count, _src_loc) mem_Allocator_alloc_debug(_self, _type, _count, _src_loc)
 #define mem_Allocator_resize_callDebug(_self, _old_mem, _new_len, _src_loc) mem_Allocator_resize_debug(_self, _old_mem, _new_len, _src_loc)
 #define mem_Allocator_remap_callDebug(_self, _old_mem, _new_len, _src_loc) mem_Allocator_remap_debug(_self, _old_mem, _new_len, _src_loc)

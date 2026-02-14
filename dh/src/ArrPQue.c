@@ -17,9 +17,9 @@ $static fn_((calcInitCap(TypeInfo type))(usize)) {
 
 $static fn_((growCap(TypeInfo type, usize current, usize minimum))(usize)) {
     let init_cap = calcInitCap(type);
-    usize new = current;
-    do { new = usize_addSat(new, new / 2 + init_cap); } while (new < minimum);
-    return new;
+    usize grown = current;
+    do { grown = usize_addSat(grown, grown / 2 + init_cap); } while (grown < minimum);
+    return grown;
 };
 
 $attr($inline_always)

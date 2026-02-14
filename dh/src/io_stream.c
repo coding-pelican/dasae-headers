@@ -41,7 +41,7 @@ fn_((io_stream_nl(void))(void) $guard) {
 } $unguarded_(fn);
 
 fn_((io_stream_print(S_const$u8 fmt, ...))(void)) {
-    with_(va_list va_args = null) with_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(va_list va_args = null) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printVaArgs(fmt, va_args);
     };
 };
@@ -55,7 +55,7 @@ fn_((io_stream_printVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
 } $unguarded_(fn);
 
 fn_((io_stream_println(S_const$u8 fmt, ...))(void)) {
-    with_(va_list va_args = null) with_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(va_list va_args = null) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printlnVaArgs(fmt, va_args);
     };
 };
@@ -77,7 +77,7 @@ fn_((io_stream_enl(void))(void) $guard) {
 } $unguarded_(fn);
 
 fn_((io_stream_eprint(S_const$u8 fmt, ...))(void)) {
-    with_(va_list va_args = null) with_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(va_list va_args = null) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintVaArgs(fmt, va_args);
     };
 };
@@ -91,7 +91,7 @@ fn_((io_stream_eprintVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
 } $unguarded_(fn);
 
 fn_((io_stream_eprintln(S_const$u8 fmt, ...))(void)) {
-    with_(va_list va_args = null) with_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(va_list va_args = null) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintlnVaArgs(fmt, va_args);
     };
 };

@@ -178,11 +178,11 @@ $static fn_((heap_Sbrk__pages_per_bigpage(heap_Sbrk self))(usize));
 $attr($inline_always)
 $static fn_((heap_Sbrk__bigpage_count(heap_Sbrk self))(usize));
 
-#define heap_Sbrk__min_class \
+#define heap_Sbrk__min_size_class \
     (uint_log2_static(uint_exp2_static$((usize)(1 + sizeOf$(usize)))))
 
 #define heap_Sbrk__size_class_count_static(_enum_tok...) \
-    (uint_log2_static(heap_Sbrk__bigpage_size_static(_enum_tok)) - heap_Sbrk__min_class)
+    (uint_log2_static(heap_Sbrk__bigpage_size_static(_enum_tok)) - heap_Sbrk__min_size_class)
 $attr($inline_always)
 $static fn_((heap_Sbrk__size_class_count(heap_Sbrk self))(usize));
 

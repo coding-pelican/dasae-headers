@@ -15,7 +15,7 @@ T_use$((Point)(
     ArrList_appendS,
     ArrList_insert,
     ArrList_pop,
-    ArrList_removeOrd
+    ArrList_removeOrdd
 ));
 
 $static fn_((printPoints(ArrList$Point points))(void)) {
@@ -54,7 +54,7 @@ $static fn_((example(void))(mem_Err$void) $guard) {
 
     // Remove from middle
     io_stream_print(u8_l("Removed from index 1: "));
-    let removed = ArrList_removeOrd$Point(&points, 1);
+    let removed = ArrList_removeOrdd$Point(&points, 1);
     io_stream_print(u8_l("({:d}, {:d})\n"), removed.x, removed.y);
     printPoints(points);
 

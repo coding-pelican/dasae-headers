@@ -48,10 +48,11 @@ extern "C" {
 #define P_InnerTUnqual$(_T...) TypeOfUnqual(*as$(_T)(null))
 
 /* Pointer Operations */
-#define deref$P(_p /*: P$$(_T)*/... /*(_T)*/) deref(_p)
+#define deref$P deref
+#define mutCast$P mutCast
+#define constCast$P constCast
 
-#define mutCast$P(_p /*: P$$(_T)*/... /*(P_const $$(_T))*/) (as$(const TypeOfUnqual(*_p)*)(_p))
-#define constCast$P(_p /*: P_const$$(_T)*/... /*(P$$(_T))*/) /* TODO: Implement */
+#define P_at(/*(_p: P(_T))[_idx: usize]*/... /*(P(_T))*/) (&__VA_ARGS__)
 
 #define P_slice$(/*(_ST: S(_T))((_p: P(_T))(_range: R))*/... /*(_ST)*/) \
     __op__P_slice$(__op__P_slice$__parseST __VA_ARGS__)

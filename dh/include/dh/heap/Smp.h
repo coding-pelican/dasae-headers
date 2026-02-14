@@ -31,10 +31,10 @@ extern "C" {
     128
 #define heap_Smp_slab_len \
     prim_max_static(heap_page_size, 64 * 1024)
-#define heap_Smp_min_class /* Because of storing free list pointers, the minimum size class is 3 */ \
+#define heap_Smp_min_size_class /* Because of storing free list pointers, the minimum size class is 3 */ \
     uint_log2_static(sizeOf$(usize))
 #define heap_Smp_size_class_count \
-    (uint_log2_static(heap_Smp_slab_len) - heap_Smp_min_class)
+    (uint_log2_static(heap_Smp_slab_len) - heap_Smp_min_size_class)
 #define heap_Smp_max_alloc_search /* Before mapping a fresh page, `alloc` will rotate this many times */ \
     1
 

@@ -55,7 +55,7 @@ TEST_fn_("basic usage" $guard) {
         total += i;
     });
 
-    with_(var_(sum, u32) = 0) {
+    using_(var_(sum, u32) = 0) {
         var it = HashSet_iter$usize(&set_value);
         while_some(HashSet_Iter_next$usize(&it), entry) {
             sum += *HashSet_Entry_key$usize(entry);
@@ -63,7 +63,7 @@ TEST_fn_("basic usage" $guard) {
         try_(TEST_expect(sum == total));
     }
 
-    with_(var_(sum, u32) = 0) {
+    using_(var_(sum, u32) = 0) {
         for_(($r(0, count))(i) {
             try_(TEST_expect(HashSet_contains$usize(set_value, i)));
             try_(TEST_expect(i == unwrap_(HashSet_for$usize(set_value, i))));
@@ -87,7 +87,7 @@ TEST_fn_("basic usage - no templates used" $guard) {
         total += i;
     });
 
-    with_(var_(sum, u32) = 0) {
+    using_(var_(sum, u32) = 0) {
         var it = HashSet_iter(&set_value, typeInfo$(usize));
         while_some(HashSet_Iter_next(&it, typeInfo$(usize)), entry) {
             sum += *u_castP$((const usize*)(HashSet_Entry_key(entry, typeInfo$(usize))));
@@ -95,7 +95,7 @@ TEST_fn_("basic usage - no templates used" $guard) {
         try_(TEST_expect(sum == total));
     }
 
-    with_(var_(sum, u32) = 0) {
+    using_(var_(sum, u32) = 0) {
         for_(($r(0, count))(i) {
             try_(TEST_expect(HashSet_contains(set_value, u_anyV(as$(usize)(i)))));
             try_(TEST_expect(i == unwrap_(u_castO$((O$usize)(HashSet_for(set_value, u_anyV(as$(usize)(i)), u_retV$(usize)))))));

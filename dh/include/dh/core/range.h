@@ -33,6 +33,8 @@ extern "C" {
 #define $r_end(...) pp_overload(__$r_end, __VA_ARGS__)(__VA_ARGS__)
 #define __$r_end_1(_point...) (_point)
 #define __$r_end_2(_bound_type, _point...) (R_Bound_end(_bound_type, _point))
+#define $rf(_expr...) $r(_expr, usize_limit_max)
+#define $rt(_expr...) $r(0, _expr)
 
 #define from$R R_from
 #define fromR from$R

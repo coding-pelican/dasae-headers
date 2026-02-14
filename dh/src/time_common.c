@@ -61,6 +61,7 @@ fn_((time__unsupported_sleep(time_Duration duration))(void)) {
 /// 100-nanosecond intervals per second (for waitable timer)
 #define time__windows_intervals_per_sec (lit_n$(u64)(10, 000, 000ull))
 
+/* NOTE: should we support low-resolution timer version? */
 fn_((time__windows_sleep(time_Duration duration))(void) $guard) {
     let timer = CreateWaitableTimerExW(
         null, null,

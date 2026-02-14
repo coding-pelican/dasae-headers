@@ -76,7 +76,7 @@ extern "C" {
 // #include "dh/http.h"
 
 #include "dh/TEST.h"
-#include "dh/main.h"
+// #include "dh/main.h" /* main must be included directly. */
 
 #if defined(__cplusplus)
 } /* extern "C" */

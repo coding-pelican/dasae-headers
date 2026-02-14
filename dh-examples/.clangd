@@ -46,6 +46,7 @@ Diagnostics:
       - cppcoreguidelines-avoid-non-const-global-variables
       - cppcoreguidelines-macro-to-enum
       - cppcoreguidelines-macro-usage
+      - hicpp-braces-around-statements
       - hicpp-function-size
       - hicpp-signed-bitwise
       - hicpp-uppercase-literal-suffix
@@ -153,6 +154,7 @@ CompileFlags:
     # [Compatibility]
     - -fgnu-keywords # Enable GCC Compatibility
     - -fms-extensions # Windows Compatibility (Declspec, etc.)
+    - -Wno-microsoft-anon-tag # Microsoft anonymous tag warning
     - -funsigned-char # Prevent char sign issues in cross-platform
     - -fblocks # Enable blocks support
 # ========== C++ Sources ==========
@@ -205,6 +207,7 @@ CompileFlags:
     # Compatibility
     - -fgnu-keywords
     - -fms-extensions
+    - -Wno-microsoft-anon-tag
     - -funsigned-char
     - -fblocks
 # ========== Headers ==========

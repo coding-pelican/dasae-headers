@@ -17,9 +17,9 @@ $static fn_((calcInitCap(TypeInfo type))(usize)) {
 
 $static fn_((growCap(TypeInfo type, usize current, usize minimum))(usize)) {
     let init_cap = calcInitCap(type);
-    usize new = current;
-    do { new = usize_addSat(new, new / 2 + init_cap); } while (new < minimum);
-    return new;
+    usize grown = current;
+    do { grown = usize_addSat(grown, grown / 2 + init_cap); } while (grown < minimum);
+    return grown;
 };
 
 fn_((ArrList_empty(TypeInfo type))(ArrList)) {
@@ -241,6 +241,7 @@ fn_((ArrList_shrinkAndFree(ArrList* self, TypeInfo type, mem_Allocator gpa, usiz
 };
 
 fn_((ArrList_clearRetainingCap(ArrList* self))(void)) {
+    claim_assert_nonnull(self);
     self->items.len = 0;
 };
 
@@ -296,6 +297,21 @@ fn_((ArrList_addBackNWithin(ArrList* self, TypeInfo type, usize n))(u_S$raw)) {
     let prev_len = self->items.len;
     self->items.len += n;
     return u_prefixS(u_suffixS(ArrList_itemsMut(*self, type), prev_len), n);
+};
+
+fn_((ArrList_addAt(ArrList* self, TypeInfo type, mem_Allocator gpa, usize idx))(mem_Err$u_P$raw) $scope) {
+    claim_assert_nonnull(self);
+    return_ok(u_atS(try_(ArrList_addAtN(self, type, gpa, idx, 1)), 0));
+} $unscoped_(fn);
+
+fn_((ArrList_addAtFixed(ArrList* self, TypeInfo type, usize idx))(mem_Err$u_P$raw) $scope) {
+    claim_assert_nonnull(self);
+    return_ok(u_atS(try_(ArrList_addAtNFixed(self, type, idx, 1)), 0));
+} $unscoped_(fn);
+
+fn_((ArrList_addAtWithin(ArrList* self, TypeInfo type, usize idx))(u_P$raw)) {
+    claim_assert_nonnull(self);
+    return u_atS(ArrList_addAtNWithin(self, type, idx, 1), 0);
 };
 
 fn_((ArrList_addAtN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize idx, usize n))(mem_Err$u_S$raw) $scope) {
@@ -623,7 +639,7 @@ fn_((ArrList_pop(ArrList* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     return_some({ .inner = u_memcpy(ret_mem.ref, value.as_const).raw });
 } $unscoped_(fn);
 
-fn_((ArrList_removeOrd(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scope) {
+fn_((ArrList_removeOrdd(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scope) {
     claim_assert_nonnull(self);
     let type = ret_mem.inner_type;
     debug_assert_eqBy(self->type, type, TypeInfo_eq);

@@ -123,7 +123,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     TreeNode_printRecur(root, 0);
 
     // Save the tree to a file
-    with_(var save_file = fopen("decision_tree.bin", "wb")) {
+    using_(var save_file = fopen("decision_tree.bin", "wb")) {
         if (!save_file) {
             log_error("Failed to open file for writing: decision_tree.bin");
             return_err(fs_File_Err_OpenFailed());

@@ -3,9 +3,9 @@
 /*========== Internal Declarations ==========================================*/
 
 $attr($maybe_unused $inline_always)
-$static fn_((heap_Sbrk_Sys__unsupported_ctx(P$raw self))(heap_Sbrk_Ctx));
-$attr($maybe_unused $inline_always)
 $static fn_((heap_Sbrk_Sys__unsupported_sbrk(u_P$raw ctx, usize n))(usize));
+$attr($maybe_unused $inline_always)
+$static fn_((heap_Sbrk_Sys__unsupported_ctx(P$raw self))(heap_Sbrk_Ctx));
 
 /*========== External Definitions ===========================================*/
 

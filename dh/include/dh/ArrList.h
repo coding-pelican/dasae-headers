@@ -47,6 +47,8 @@ T_use_E$($set(mem_Err)(ArrList));
 
 /*========== Function Prototypes ============================================*/
 
+#define ArrList_empty_static(_type /*: TypeInfo*/...) ____ArrList_empty_static(_type)
+#define ArrList_empty_static$(_T...) ____ArrList_empty_static$(_T)
 $extern fn_((ArrList_empty(TypeInfo type))(ArrList));
 $extern fn_((ArrList_fixed(u_S$raw buf))(ArrList));
 $attr($must_check)
@@ -110,6 +112,11 @@ $attr($must_check)
 $extern fn_((ArrList_addBackNFixed(ArrList* self, TypeInfo type, usize n))(mem_Err$u_S$raw));
 $extern fn_((ArrList_addBackNWithin(ArrList* self, TypeInfo type, usize n))(u_S$raw));
 
+$attr($must_check)
+$extern fn_((ArrList_addAt(ArrList* self, TypeInfo type, mem_Allocator gpa, usize idx))(mem_Err$u_P$raw));
+$attr($must_check)
+$extern fn_((ArrList_addAtFixed(ArrList* self, TypeInfo type, usize idx))(mem_Err$u_P$raw));
+$extern fn_((ArrList_addAtWithin(ArrList* self, TypeInfo type, usize idx))(u_P$raw));
 $attr($must_check)
 $extern fn_((ArrList_addAtN(ArrList* self, TypeInfo type, mem_Allocator gpa, usize idx, usize n))(mem_Err$u_S$raw));
 $attr($must_check)
@@ -177,7 +184,7 @@ $extern fn_((ArrList_replaceFixed(ArrList* self, R range, u_S_const$raw new_item
 $extern fn_((ArrList_replaceWithin(ArrList* self, R range, u_S_const$raw new_items))(void));
 
 $extern fn_((ArrList_pop(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
-$extern fn_((ArrList_removeOrd(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw));
+$extern fn_((ArrList_removeOrdd(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw));
 $extern fn_((ArrList_removeSwap(ArrList* self, usize idx, u_V$raw ret_mem))(u_V$raw));
 $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 
@@ -213,6 +220,11 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 #define __comp_gen__T_use_ArrList$(_T...) \
     T_decl_ArrList$(_T); \
     T_impl_ArrList$(_T)
+
+#define ____ArrList_empty_static(_type...) \
+    lit$((ArrList){ .items = cleared(), .cap = 0, debug_only(.type = _type) })
+#define ____ArrList_empty_static$(_T...) \
+    lit$((ArrList$(_T)){ .items = cleared(), .cap = 0, debug_only(.type = typeInfo$(S_T$(FieldType$(ArrList$(_T), items)))) })
 
 /* clang-format off */
 #define T_use_ArrList_empty$(_T...) \
@@ -429,6 +441,21 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
         return u_castS$((S$(_T))(ArrList_addBackNWithin(self->as_raw, typeInfo$(_T), n))); \
     }
 
+#define T_use_ArrList_addAt$(_T...) \
+    $attr($inline_always $must_check) \
+    $static fn_((tpl_id(ArrList_addAt, _T)(P$$(ArrList$(_T)) self, mem_Allocator gpa, usize idx))(E$($set(mem_Err)(P$(_T)))) $scope) { \
+        return_(u_castE$((ReturnType)(ArrList_addAt(self->as_raw, typeInfo$(_T), gpa, idx)))); \
+    } $unscoped_(fn)
+#define T_use_ArrList_addAtFixed$(_T...) \
+    $attr($inline_always $must_check) \
+    $static fn_((tpl_id(ArrList_addAtFixed, _T)(P$$(ArrList$(_T)) self, usize idx))(E$($set(mem_Err)(P$(_T)))) $scope) { \
+        return_(u_castE$((ReturnType)(ArrList_addAtFixed(self->as_raw, typeInfo$(_T), idx)))); \
+    } $unscoped_(fn)
+#define T_use_ArrList_addAtWithin$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrList_addAtWithin, _T)(P$$(ArrList$(_T)) self, usize idx))(_T*)) { \
+        return u_castP$((_T*)(ArrList_addAtWithin(self->as_raw, typeInfo$(_T), idx))); \
+    }
 #define T_use_ArrList_addAtN$(_T...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl_id(ArrList_addAtN, _T)(P$$(ArrList$(_T)) self, mem_Allocator gpa, usize idx, usize n))(E$($set(mem_Err)(S$(_T)))) $scope) { \
@@ -621,10 +648,10 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     $static fn_((tpl_id(ArrList_pop, _T)(P$$(ArrList$(_T)) self))(O$(_T)) $scope) { \
         return_(u_castO$((ReturnType)(ArrList_pop(self->as_raw, u_retV$(_T))))); \
     } $unscoped_(fn)
-#define T_use_ArrList_removeOrd$(_T...) \
+#define T_use_ArrList_removeOrdd$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrList_removeOrd, _T)(P$$(ArrList$(_T)) self, usize idx))(_T)) { \
-        return u_cast((_T)(ArrList_removeOrd(self->as_raw, idx, u_retV$(_T)))); \
+    $static fn_((tpl_id(ArrList_removeOrdd, _T)(P$$(ArrList$(_T)) self, usize idx))(_T)) { \
+        return u_cast((_T)(ArrList_removeOrdd(self->as_raw, idx, u_retV$(_T)))); \
     }
 #define T_use_ArrList_removeSwap$(_T...) \
     $attr($inline_always) \

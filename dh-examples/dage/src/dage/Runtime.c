@@ -14,18 +14,17 @@ T_use$((P$dage_Window)(
 
 fn_((dage_Runtime_init(dage_Runtime_Cfg cfg))(E$dage_Runtime) $scope) {
     cfg.backend = dage_Backend_ensureValid(cfg.backend);
-
     let gpa = mem_Allocator_ensureValid(cfg.gpa);
-    dage_Runtime runtime = cleared();
-    runtime.gpa = gpa;
-    runtime.backend = cfg.backend;
-    runtime.state.is_running = true;
-    runtime.state.should_quit = false;
-    runtime.next_window_id = 1; /* 0 is reserved/invalid */
-    /* Initialize window list */
-    runtime.windows = try_(ArrList_init$P$dage_Window(gpa, dage_Runtime_window_limit));
-
-    return_ok(runtime);
+    return_ok({
+        .gpa = gpa,
+        .backend = cfg.backend,
+        .state = {
+            .is_running = true,
+            .should_quit = false,
+        },
+        .next_window_id = 1, /* 0 is reserved/invalid */
+        .windows = try_(ArrList_init$P$dage_Window(gpa, dage_Runtime_window_limit)),
+    });
 } $unscoped_(fn);
 
 fn_((dage_Runtime_fini(dage_Runtime* self))(void)) {
@@ -64,7 +63,7 @@ fn_((dage_Runtime_createWindow(dage_Runtime* self, dage_Runtime_WindowCfg cfg))(
     errdefer_($ignore, ArrList_pop$P$dage_Window(&self->windows));
 
     /* Create backend target first - error boundary */
-    let target_cfg = (dage_Target_Cfg){
+    let_(target_cfg, dage_Target_Cfg) = {
         .width = cfg.size.x,
         .height = cfg.size.y,
         .scale = cfg.scale == 0.0f ? 1.0f : cfg.scale,

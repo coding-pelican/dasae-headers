@@ -26,7 +26,7 @@ $static fn_((heap_Smp__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new
 $static fn_((heap_Smp__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
 $static fn_((heap_Smp__sizeClassIdx(usize len, mem_Align align))(usize));
-$static fn_((heap_Smp__slotSize(usize class))(usize));
+$static fn_((heap_Smp__slotSize(usize class_idx))(usize));
 
 /*========== External Definitions ===========================================*/
 
@@ -147,11 +147,11 @@ fn_((heap_Smp__updateCache(usize addr, u32 idx))(void)) {
 
 fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $guard) {
     let self = ptrAlignCast$((heap_Smp*)(ctx));
-    let class = heap_Smp__sizeClassIdx(len, align);
-    if ($branch_unlikely(class >= heap_Smp_size_class_count)) {
+    let class_idx = heap_Smp__sizeClassIdx(len, align);
+    if ($branch_unlikely(class_idx >= heap_Smp_size_class_count)) {
         return_some(orelse_((mem_Allocator_rawAlloc(self->backing_allocator, len, align))(return_none())));
     }
-    let slot_size = heap_Smp__slotSize(class);
+    let slot_size = heap_Smp__slotSize(class_idx);
     claim_assert(heap_Smp_slab_len % slot_size == 0);
     var_(search_count, u8) = 0;
     let locked = heap_Smp__lockThrdMeta(self);
@@ -159,19 +159,19 @@ fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $guard) {
     var locked_idx = locked.idx;
 outer:
     while (true) {
-        let top_free_ptr = *A_at((locked_meta->frees)[class]);
+        let top_free_ptr = *A_at((locked_meta->frees)[class_idx]);
         if ($branch_likely(top_free_ptr != 0)) blk_defer({
             defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
             let node = intToPtr$((usize*)(top_free_ptr));
-            *node = *A_at((locked_meta->frees)[class]);
-            *A_at((locked_meta->frees)[class]) = ptrToInt(node);
+            *node = *A_at((locked_meta->frees)[class_idx]);
+            *A_at((locked_meta->frees)[class_idx]) = ptrToInt(node);
             return_some(intToPtr$((u8*)(top_free_ptr)));
         }) blk_deferral;
 
-        let next_addr = *A_at((locked_meta->next_addrs)[class]);
+        let next_addr = *A_at((locked_meta->next_addrs)[class_idx]);
         if ($branch_likely((next_addr % heap_Smp_slab_len) != 0)) blk_defer({
             defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
-            *A_at((locked_meta->next_addrs)[class]) = next_addr + slot_size;
+            *A_at((locked_meta->next_addrs)[class_idx]) = next_addr + slot_size;
             return_some(intToPtr$((u8*)(next_addr)));
         }) blk_deferral;
 
@@ -182,7 +182,7 @@ outer:
                 heap_Smp_slab_len,
                 mem_alignToLog2(heap_Smp_slab_len)
             ))(return_none()));
-            *A_at((locked_meta->next_addrs)[class]) = ptrToInt(ptr) + slot_size;
+            *A_at((locked_meta->next_addrs)[class_idx]) = ptrToInt(ptr) + slot_size;
             return_some(ptr);
         }) blk_deferral;
 
@@ -204,25 +204,25 @@ outer:
 
 fn_((heap_Smp__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let self = ptrAlignCast$((heap_Smp*)(ctx));
-    let class = heap_Smp__sizeClassIdx(buf.len, buf_align);
-    let new_class = heap_Smp__sizeClassIdx(new_len, buf_align);
-    if (heap_Smp_size_class_count <= class) {
-        if (new_class < heap_Smp_size_class_count) { return false; }
+    let old_class_idx = heap_Smp__sizeClassIdx(buf.len, buf_align);
+    let new_class_idx = heap_Smp__sizeClassIdx(new_len, buf_align);
+    if (heap_Smp_size_class_count <= old_class_idx) {
+        if (new_class_idx < heap_Smp_size_class_count) { return false; }
         return mem_Allocator_rawResize(self->backing_allocator, buf, buf_align, new_len);
     }
-    return new_class == class;
+    return old_class_idx == new_class_idx;
 };
 
 fn_((heap_Smp__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
     let self = ptrAlignCast$((heap_Smp*)(ctx));
-    let class = heap_Smp__sizeClassIdx(buf.len, buf_align);
-    let new_class = heap_Smp__sizeClassIdx(new_len, buf_align);
-    if (heap_Smp_size_class_count <= class) {
-        if (new_class < heap_Smp_size_class_count) { return_none(); }
+    let old_class_idx = heap_Smp__sizeClassIdx(buf.len, buf_align);
+    let new_class_idx = heap_Smp__sizeClassIdx(new_len, buf_align);
+    if (heap_Smp_size_class_count <= old_class_idx) {
+        if (new_class_idx < heap_Smp_size_class_count) { return_none(); }
         return mem_Allocator_rawRemap(self->backing_allocator, buf, buf_align, new_len);
     }
     return_(expr_(O$P$u8 $scope)(
-        new_class == class
+        old_class_idx == new_class_idx
             ? $break_(some(buf.ptr))
             : $break_(none())
     ) $unscoped_(expr));
@@ -230,22 +230,22 @@ fn_((heap_Smp__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O
 
 fn_((heap_Smp__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void) $guard) {
     let self = ptrAlignCast$((heap_Smp*)(ctx));
-    let class = heap_Smp__sizeClassIdx(buf.len, buf_align);
-    if ($branch_unlikely(class >= heap_Smp_size_class_count)) {
+    let class_idx = heap_Smp__sizeClassIdx(buf.len, buf_align);
+    if ($branch_unlikely(class_idx >= heap_Smp_size_class_count)) {
         return_void(mem_Allocator_rawFree(self->backing_allocator, buf, buf_align));
     }
     let node = ptrAlignCast$((usize*)(buf.ptr));
     let locked = heap_Smp__lockThrdMeta(self);
     let locked_meta = locked.meta;
     defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
-    *node = *A_at((locked_meta->frees)[class]);
-    *A_at((locked_meta->frees)[class]) = ptrToInt(node);
+    *node = *A_at((locked_meta->frees)[class_idx]);
+    *A_at((locked_meta->frees)[class_idx]) = ptrToInt(node);
 } $unguarded_(fn);
 
 fn_((heap_Smp__sizeClassIdx(usize len, mem_Align align))(usize)) {
-    return int_max(int_max(int_bits$(usize) - int_leadingZeros(len - 1), align), heap_Smp_min_class) - heap_Smp_min_class;
+    return int_max(int_max(int_bits$(usize) - int_leadingZeros(len - 1), align), heap_Smp_min_size_class) - heap_Smp_min_size_class;
 };
 
-fn_((heap_Smp__slotSize(usize class))(usize)) {
-    return as$(usize)(1) << (class + heap_Smp_min_class);
+fn_((heap_Smp__slotSize(usize class_idx))(usize)) {
+    return as$(usize)(1) << (class_idx + heap_Smp_min_size_class);
 };

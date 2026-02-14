@@ -24,19 +24,18 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+typedef struct fs_File fs_File;
 typedef posix_fd_t fs_File_Handle;
 typedef posix_mode_t fs_File_Mode;
-
 /// This is the default mode given to POSIX operating systems for creating
 /// files. `0o666` is "-rw-rw-rw-" which is counter-intuitive at first,
 /// since most people would expect "-rw-r--r--", for example, when using
 /// the `touch` command, which would correspond to `0o644`. However, POSIX
 /// libc implementations use `0666` inside `fopen` and then rely on the
 /// process-scoped "umask" setting to adjust this number for file creation.
-static const fs_File_Mode fs_file_default_mode = pp_if_(plat_is_posix)(
+$static const fs_File_Mode fs_file_default_mode = pp_if_(plat_is_posix)(
     pp_then_(0666),
-    pp_else_(0)
-);
+    pp_else_(0));
 
 typedef enum_(fs_File_OpenMode $bits(8)) {
     fs_File_OpenMode_read_only = 0,
@@ -62,10 +61,10 @@ static const fs_File_OpenFlags fs_File_OpenFlags_default = {
     .lock_nonblocking = false,
     .allow_ctty = false,
 };
-$static $inline_always
-fn_((fs_File_OpenFlags_isRead(fs_File_OpenFlags self))(bool)) { return self.mode != fs_File_OpenMode_write_only; }
-$static $inline_always
-fn_((fs_File_OpenFlags_isWrite(fs_File_OpenFlags self))(bool)) { return self.mode != fs_File_OpenMode_read_only; }
+$attr($inline_always)
+$static fn_((fs_File_OpenFlags_isRead(fs_File_OpenFlags self))(bool)) { return self.mode != fs_File_OpenMode_write_only; };
+$attr($inline_always)
+$static fn_((fs_File_OpenFlags_isWrite(fs_File_OpenFlags self))(bool)) { return self.mode != fs_File_OpenMode_read_only; };
 
 typedef struct fs_File_CreateFlags {
     bool read;
@@ -84,13 +83,19 @@ static const fs_File_CreateFlags fs_File_CreateFlags_default = {
     .mode = fs_file_default_mode,
 };
 
-typedef struct fs_File {
+struct fs_File {
     fs_File_Handle handle;
-} fs_File;
+};
 T_use_E$(fs_File);
-extern fn_((fs_File_close(fs_File file))(void));
-extern fn_((fs_File_reader(fs_File file))(io_Reader));
-extern fn_((fs_File_writer(fs_File file))(io_Writer));
+$attr($inline_always)
+$static fn_((fs_File_handle(fs_File self))(fs_File_Handle)) { return self.handle; };
+
+$extern fn_((fs_File_close(fs_File self))(void));
+$extern fn_((fs_File_reader(fs_File self))(io_Reader));
+$extern fn_((fs_File_writer(fs_File self))(io_Writer));
+
+$attr($inline_always)
+$static fn_((fs_File_Handle_promote(fs_File_Handle self))(fs_File)) { return lit$((fs_File){ .handle = self }); };
 
 #if defined(__cplusplus)
 } /* extern "C" */

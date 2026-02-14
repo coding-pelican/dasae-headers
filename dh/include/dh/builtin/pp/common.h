@@ -312,9 +312,9 @@ extern "C" {
 #define pp_Tok_then_(...) __VA_ARGS__
 #define pp_Tok_else_(...) __VA_ARGS__
 
-#define pp_Tok_prim_ord(x, y) pp_isParen(pp_Tok_cmp$##x(pp_Tok_cmp$##y)(()))
+#define pp_Tok_prim_eql(x, y) pp_isParen(pp_Tok_cmp$##x(pp_Tok_cmp$##y)(()))
 #define pp_Tok_isComparable(x) pp_isParen(pp_cat(pp_Tok_cmp$, x)(()))
-#define pp_Tok_ne(x, y) pp_iif(pp_bitand(pp_Tok_isComparable(x))(pp_Tok_isComparable(y)))(pp_Tok_prim_ord, 1 pp_ignore)(x, y)
+#define pp_Tok_ne(x, y) pp_iif(pp_bitand(pp_Tok_isComparable(x))(pp_Tok_isComparable(y)))(pp_Tok_prim_eql, 1 pp_ignore)(x, y)
 #define pp_Tok_eq(x, y) pp_compl(pp_Tok_ne(x, y))
 
 #define pp_comma() ,
@@ -342,6 +342,7 @@ extern "C" {
 #define pp_Tok_cmp$6(_x) _x
 #define pp_Tok_cmp$7(_x) _x
 #define pp_Tok_cmp$8(_x) _x
+#define pp_Tok_cmp$9(_x) _x
 #define pp_Tok_cmp$10(_x) _x
 #define pp_Tok_cmp$11(_x) _x
 #define pp_Tok_cmp$12(_x) _x

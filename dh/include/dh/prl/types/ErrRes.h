@@ -129,10 +129,14 @@ typedef union E$Void {
 #define isOk(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)((_e).is_ok)
 #define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)(!(_e).is_ok)
 
-#define E_asP$(/*(_E: E(P(T)))(_p_e: P(E(T)))*/... /*(_E)*/) \
+#define E_asP$(/*(_E_P_T: E(P(T)))(_p_e: P(E(T)))*/... /*(_E_P_T)*/) \
     __step__E_asP$(__VA_ARGS__)
 #define E_asP(_p_e /*: P(E(T))*/... /*(E(P(T)))*/) \
     __step__E_asP(_p_e)
+#define E_ref$(/*(_E_P_T: E(P(T)))(_p_e: P(E(T)))*/... /*(_E_P_T)*/)
+#define E_ref(_p_e /*: P(E(T))*/... /*(E(P(T)))*/)
+#define E_deref$(/*(_E_T: E(T))(_e: E(P(T)))*/... /*(_E_T)*/)
+#define E_deref(_e /*: E(P(T))*/... /*(E(T))*/)
 
 /* Returns error result */
 #define return_ok(_val...) \
@@ -142,14 +146,22 @@ typedef union E$Void {
     ($debug_point ErrTrace_captureFrame(), return_(err(_val)))
 
 /* Propagates error (similar to Zig's try_) */
-#define try_(/*(_Expr: E$$(_T))*/... /*(_T)*/) \
-    __try_(pp_uniqTok(result), __VA_ARGS__)
+#define try_(/*(_Expr: E(_T))*/... /*(_T)*/) \
+    __step__try_(__VA_ARGS__)
 /* Handles error (similar to Zig's catch_from) */
-#define catch_(/*(_Expr: E$$(_T))(_Capture|$ignore, _DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
+#define catch_(/*(_Expr: E(_T))(_Capture|$ignore, _DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
     pp_expand(pp_defer(__block_inline__catch_)(__param_expand__catch_ __VA_ARGS__))
+#define catch_some$(/*(_O_T)(_Expr: E(_T))(_some)*/... /*(_O_T)*/) \
+    __step__catch_some$(__VA_ARGS__)
+#define catch_some(/*(_Expr: E(_T))(_some)*/... /*(O(_T))*/) \
+    __step__catch_some(__VA_ARGS__)
+#define catch_none$(/*(_O_T)(_Expr: E(_T))*/... /*(_O_T)*/) \
+    __step__catch_none$(__VA_ARGS__)
+#define catch_none(/*(_Expr: E(_T))*/... /*(O(_T))*/) \
+    __step__catch_none(__VA_ARGS__)
 /* Defers when error */
 #define errdefer_(/*(_O_Capture|$ignore, _Expr_OR_Body...:void)*/... /*(void)*/) \
-    __errdefer_(__VA_ARGS__)
+    ____errdefer_(__VA_ARGS__)
 
 /* Error result payload captures */
 #define if_ok(/*(_Expr)(_capture)*/...) __if_ok__step(pp_defer(__if_ok__emit)(__if_ok__parseExpr __VA_ARGS__))
@@ -198,7 +210,8 @@ typedef union E$Void {
 #define __return_ok_void_0() (return_(ok({})))
 #define __return_ok_void_1(_Expr...) (_Expr, return_(ok({})))
 
-#define __try_(__result, _Expr...) ({ \
+#define __step__try_(...) ____try_(pp_uniqTok(result), __VA_ARGS__)
+#define ____try_(__result, _Expr...) ({ \
     let __result = _Expr; \
     if (isErr(__result)) { \
         return_err(__result.payload.err); \
@@ -228,7 +241,36 @@ typedef union E$Void {
         __result.payload.ok; \
     }) \
 )
-#define __errdefer_(_Payload_Capture, _Expr...) defer_(if (!__reserved_return->is_ok) { \
+#define __step__catch_some$(...) __step__catch_some$__emit(__step__catch_some$__parseOT __VA_ARGS__)
+#define __step__catch_some$__parseOT(_O_T...) _O_T, __step__catch_some$__parseExpr
+#define __step__catch_some$__parseExpr(_expr...) pp_uniqTok(expr), (_expr),
+#define __step__catch_some$__emit(...) ____catch_some$(__VA_ARGS__)
+#define ____catch_some$(_O_T, __expr, _expr, _some...) ({ \
+    typedef _O_T O$Ret$catch_some$; \
+    let __expr = _expr; \
+    __expr.is_ok \
+        ? lit$((O$Ret$catch_some$)some(catch_((__expr)($ignore, claim_unreachable)))) \
+        : (ErrTrace_reset(), lit$((O$Ret$catch_some$)some(_some))); \
+})
+#define __step__catch_some(...) __step__catch_some__emit(__step__catch_some__parseExpr __VA_ARGS__)
+#define __step__catch_some__parseExpr(_expr...) _expr,
+#define __step__catch_some__emit(...) ____catch_some$(__VA_ARGS__)
+#define ____catch_some(_expr, _some...) \
+    catch_some$((O$$(E_InnerT$(TypeOf(_expr))))(_expr)_some)
+#define __step__catch_none$(...) __step__catch_none$__emit(__step__catch_none$__parseOT __VA_ARGS__)
+#define __step__catch_none$__parseOT(_O_T...) _O_T, pp_uniqTok(expr),
+#define __step__catch_none$__emit(...) ____catch_none$(__VA_ARGS__)
+#define ____catch_none$(_O_T, __expr, _expr...) ({ \
+    typedef _O_T O$Ret$catch_none$; \
+    let __expr = _expr; \
+    __expr.is_ok \
+        ? lit$((O$Ret$catch_none$)some(catch_((__expr)($ignore, claim_unreachable)))) \
+        : (ErrTrace_reset(), lit$((O$Ret$catch_none$)none())); \
+})
+#define __step__catch_none(...) ____catch_none(__VA_ARGS__)
+#define ____catch_none(_expr...) \
+    catch_none$((O$$(E_InnerT$(TypeOf(_expr))))(_expr))
+#define ____errdefer_(_Payload_Capture, _Expr...) defer_(if (!__reserved_return->is_ok) { \
     claim_assert(__reserved_return->payload.err.ctx != 0); \
     claim_assert_nonnull(__reserved_return->payload.err.vt); \
     let _Payload_Capture = __reserved_return->payload.err; \
@@ -240,19 +282,19 @@ typedef union E$Void {
 #define __if_ok__parseCapture(_capture...) _capture
 #define __if_ok__emit(_Expr, _capture...) \
     if_(let _result = _Expr, _result.is_ok) \
-        with_(let _capture = _result.payload.ok)
+        using_(let _capture = _result.payload.ok)
 #define comp_syn__if_ok_void(val_result) \
-    scope_if(let _result = (val_result), _result.is_ok)
+    if_(let _result = (val_result), _result.is_ok)
 #define comp_syn__else_err(_Payload_Capture) \
-    scope_else(let _Payload_Capture = _result.payload.err)
+    else_(let _Payload_Capture = _result.payload.err)
 #define __if_err__step(...) __VA_ARGS__
 #define __if_err__parseExpr(_Expr...) (_Expr), __if_err__parseCapture
 #define __if_err__parseCapture(_capture...) _capture
 #define __if_err__emit(_Expr, _capture...) \
     if_(let _result = _Expr, !_result.is_ok) \
-        with_(let _capture = _result.payload.err)
+        using_(let _capture = _result.payload.err)
 #define comp_syn__else_ok(_Payload_Capture) \
-    scope_else(let _Payload_Capture = _result.payload.ok)
+    else_(let _Payload_Capture = _result.payload.ok)
 #define comp_syn__else_ok_void \
     else
 

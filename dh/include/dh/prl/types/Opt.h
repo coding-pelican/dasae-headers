@@ -120,10 +120,18 @@ typedef union O$Void {
 #define return_none(_Expr...) pp_overload(__return_none, _Expr)(_Expr)
 
 /* Unwraps optional value (similar to Zig's orelse and .?) */
-#define orelse_(/*(_Expr: O$$(_T))(_DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
+#define orelse_(/*(_Expr: O(_T))(_DefaultExpr_OR_Body...: _T|void)*/... /*(_T)*/) \
     pp_expand(pp_defer(__block_inline__orelse_)(__param_expand__orelse_ __VA_ARGS__))
-#define unwrap_(/*(_Expr: O$$(_T))*/... /*(_T)*/) \
-    __unwrap(__VA_ARGS__)
+#define orelse_ok$(/*(_E_T)(_Expr: O(_T))(_ok)*/... /*(_E_T)*/) \
+    __step__orelse_ok$(__VA_ARGS__)
+#define orelse_ok(/*(_Expr: O(_T))(_ok)*/... /*(E(_T))*/) \
+    __step__orelse_ok(__VA_ARGS__)
+#define orelse_err$(/*(_E_T)(_Expr: O(_T))(_err)*/... /*(_E_T)*/) \
+    __step__orelse_err$(__VA_ARGS__)
+#define orelse_err(/*(_Expr: O(_T))(_err)*/... /*(E(_T))*/) \
+    __step__orelse_err(__VA_ARGS__)
+#define unwrap_(/*(_Expr: O(_T))*/... /*(_T)*/) \
+    ____unwrap(__VA_ARGS__)
 
 /* Optional value payload capture (similar to Zig's if/while captures) */
 #define if_some(/*(_Expr)(_capture)*/...) __if_some__step(pp_defer(__if_some__emit)(__if_some__parseExpr __VA_ARGS__))
@@ -202,14 +210,46 @@ typedef union O$Void {
         __result.payload.some; \
     }) \
 )
-#define __unwrap(_Expr...) orelse_((_Expr)(claim_unreachable))
+#define __step__orelse_ok$(...) __step__orelse_ok$__emit(__step__orelse_ok$__parseET __VA_ARGS__)
+#define __step__orelse_ok$__parseET(_E_T...) _E_T, __step__orelse_ok$__parseExpr
+#define __step__orelse_ok$__parseExpr(_expr...) pp_uniqTok(expr), (_expr),
+#define __step__orelse_ok$__emit(...) ____orelse_ok$(__VA_ARGS__)
+#define ____orelse_ok$(_E_T, __expr, _expr, _ok...) ({ \
+    typedef _E_T E$Ret$orelse_ok$; \
+    let __expr = _expr; \
+    __expr.is_some \
+        ? lit$((E$Ret$orelse_ok$)ok(unwrap_(__expr))) \
+        : lit$((E$Ret$orelse_ok$)ok(_ok)); \
+})
+#define __step__orelse_ok(...) __step__orelse_ok__emit(__step__orelse_ok__parseExpr __VA_ARGS__)
+#define __step__orelse_ok__parseExpr(_expr...) _expr,
+#define __step__orelse_ok__emit(...) ____orelse_ok(__VA_ARGS__)
+#define ____orelse_ok(_expr, _ok...) \
+    orelse_ok$((E$$(O_InnerT$(TypeOfUnqual(_expr))))(_expr)_ok)
+#define __step__orelse_err$(...) __step__orelse_err$__emit(__step__orelse_err$__parseET __VA_ARGS__)
+#define __step__orelse_err$__parseET(_E_T...) _E_T, __step__orelse_err$__parseExpr
+#define __step__orelse_err$__parseExpr(_expr...) pp_uniqTok(expr), (_expr),
+#define __step__orelse_err$__emit(...) ____orelse_err$(__VA_ARGS__)
+#define ____orelse_err$(_E_T, __expr, _expr, _err...) ({ \
+    typedef _E_T E$Ret$orelse_err$; \
+    let __expr = _expr; \
+    __expr.is_some \
+        ? lit$((E$Ret$orelse_err$)ok(unwrap_(__expr))) \
+        : lit$((E$Ret$orelse_err$)err(_err)); \
+})
+#define __step__orelse_err(...) __step__orelse_err__emit(__step__orelse_err__parseExpr __VA_ARGS__)
+#define __step__orelse_err__parseExpr(_expr...) _expr,
+#define __step__orelse_err__emit(...) ____orelse_err(__VA_ARGS__)
+#define ____orelse_err(_expr, _err...) \
+    orelse_err$((E$$(O_InnerT$(TypeOfUnqual(_expr))))(_expr)_err)
+#define ____unwrap(_Expr...) orelse_((_Expr)(claim_unreachable))
 
 #define __if_some__step(...) __VA_ARGS__
 #define __if_some__parseExpr(_Expr...) (_Expr), __if_some__parseCapture
 #define __if_some__parseCapture(_capture...) _capture
 #define __if_some__emit(_Expr, _capture...) \
     if_(let _result = _Expr, _result.is_some) \
-        with_(let _capture = _result.payload.some)
+        using_(let _capture = _result.payload.some)
 #define __if_some_void__step(...) __VA_ARGS__
 #define __if_some_void__parseExpr(_Expr...) (_Expr), __if_some_void__parseCapture
 #define __if_some_void__parseCapture(_capture...) _capture
@@ -225,7 +265,7 @@ typedef union O$Void {
     else
 #define comp_syn__while_some(val_opt, _Payload_Capture...) \
     for (var _result = (val_opt); _result.is_some; _result = (val_opt)) \
-    with_(let _Payload_Capture = _result.payload.some)
+    using_(let _Payload_Capture = _result.payload.some)
 #define comp_syn__while_none(val_opt...) \
     while_(var _result = (val_opt), !_result.is_some)
 

@@ -106,10 +106,10 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
 
     // Error propagation
     io_stream_println(u8_l("\nCalculating ratios:"));
-    with_(var ratio_result = calculateRatio(10, 2, 6, 3)) {
+    using_(var ratio_result = calculateRatio(10, 2, 6, 3)) {
         processResult(union_of$((math_ErrRes)(math_ErrRes_f32)(ratio_result)));
     }
-    with_(var ratio_result = calculateRatio(10, 0, 6, 3)) {
+    using_(var ratio_result = calculateRatio(10, 0, 6, 3)) {
         processResult(union_of$((math_ErrRes)(math_ErrRes_f32)(ratio_result)));
     }
 

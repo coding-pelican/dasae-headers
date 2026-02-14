@@ -124,7 +124,7 @@ fn_((log_message(log_Level level, const char* file, int line, const char* func, 
     }
 
     // Print the actual message
-    with_(va_list args = null) with_fini_(va_start(args, fmt), va_end(args)) {
+    using_(va_list args = null) using_fini_(va_start(args, fmt), va_end(args)) {
         let_ignore = vfprintf(output, fmt, args);
     }
 

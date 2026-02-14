@@ -87,6 +87,19 @@ extern "C" {
     blk_return_(claim_assert_nonnullS(__s), __s); \
 })
 
+#define mutCastS(_s /*: S(_T)*/... /*(S_const(_T))*/) ____mutCastS(_s)
+#define ____mutCastS(_s...) ((_s).as_const)
+#define constCastS$(/*(_S_T: S(T))(_s: S_const(T))*/... /*(_S_T)*/) __step__constCastS$(__VA_ARGS__)
+#define __step__constCastS$(...) __step__constCastS$__emit(__step__constCastS$__parse __VA_ARGS__)
+#define __step__constCastS$__parse(_S_T...) _S_T, pp_uniqTok(s),
+#define __step__constCastS$__emit(...) ____constCastS$(__VA_ARGS__)
+#define ____constCastS$(_S_T, __s, _s...) blk({ \
+    let_(__s, TypeOf(_s)) = _s; \
+    blk_return_(lit$((_S_T){ .ptr = constCast(__s.ptr), .len = __s.len })); \
+})
+#define constCastS(_s /*: S_const(_T)*/... /*(S(_T))*/) ____constCastS(_s)
+#define ____constCastS(_s...) constCastS$((S$$(S_TUnqual$(TypeOf(_s))))(_s))
+
 /* Slice Operations */
 #define zeroS zero$S
 #define zero$S() init$S(null, 0)
@@ -114,10 +127,8 @@ extern "C" {
 #define deref$S$$(/*(_N, _T)(_s: S$$(_T))*/... /*(A$$(_N,_T))*/) \
     __step_inline__deref$S$$(pp_defer(__emit_inline__deref$S$$)(__param_parse__deref$S$$ __VA_ARGS__))
 
-#define mutCastS mutCast$S
-#define mutCast$S(_s /*: S$$(_T)*/... /*(S_const$$(_T))*/) (_s.as_const)
-#define constCastS constCast$S
-#define constCast$S(_s /*: S_const$$(_T)*/... /*(S$$(_T))*/) /* TODO: Implement */
+#define mutCast$S mutCastS
+#define constCast$S constCastS
 
 #define S_ptr ptr$S
 #define S_len len$S
@@ -237,21 +248,21 @@ extern "C" {
 #define suffix$S(/*_s: S$$(_T), _begin: usize*/... /*(S$$(_T))*/) __param_expand__suffix$S(__VA_ARGS__)
 #define suffix$S$(/*(_T)(_s: S$$(_T), _begin: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$S$)(__param_expand__suffix$S$ __VA_ARGS__))
 
-#define u8_c(_literal...) comp_syn__u8_c(_literal)
-#define u16_c(_literal...) comp_syn__u16_c(_literal)
-#define u32_c(_literal...) comp_syn__u32_c(_literal)
-#define u8_a(_literal...) comp_syn__u8_a(_literal)
-#define u8_s(_literal...) comp_syn__u8_s(_literal)
-#define u8_l(_literal...) comp_syn__u8_l(_literal)
-#define u8_az(_literal...) comp_syn__u8_az(_literal)
-#define u8_sz(_literal...) comp_syn__u8_sz(_literal)
-#define u8_lz(_literal...) comp_syn__u8_lz(_literal)
-#define u8z_a(_literal...) comp_syn__u8z_a(_literal)
-#define u8z_s(_literal...) comp_syn__u8z_s(_literal)
-#define u8z_l(_literal...) comp_syn__u8z_l(_literal)
+#define u8_c(_literal) comp_syn__u8_c(_literal)
+#define u16_c(_literal) comp_syn__u16_c(_literal)
+#define u32_c(_literal) comp_syn__u32_c(_literal)
+#define u8_a(_literal) comp_syn__u8_a(_literal)
+#define u8_s(_literal) comp_syn__u8_s(_literal)
+#define u8_l(_literal) comp_syn__u8_l(_literal)
+#define u8_az(_literal) comp_syn__u8_az(_literal)
+#define u8_sz(_literal) comp_syn__u8_sz(_literal)
+#define u8_lz(_literal) comp_syn__u8_lz(_literal)
+#define u8z_a(_literal) comp_syn__u8z_a(_literal)
+#define u8z_s(_literal) comp_syn__u8z_s(_literal)
+#define u8z_l(_literal) comp_syn__u8z_l(_literal)
 
-#define u8_s0(_literal...) comp_syn__u8_s0(_literal)
-#define u8_l0(_literal...) comp_syn__u8_l0(_literal)
+#define u8_s0(_literal) comp_syn__u8_s0(_literal)
+#define u8_l0(_literal) comp_syn__u8_l0(_literal)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -340,27 +351,27 @@ extern "C" {
     init$S$((_T)(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
 
-#define comp_syn__u8_c(_literal...) lit$((u8){ _literal })
-#define comp_syn__u16_c(_literal...) lit$((u16){ u##_literal })
-#define comp_syn__u32_c(_literal...) lit$((u32){ U##_literal })
+#define comp_syn__u8_c(_literal) lit$((u8){ _literal })
+#define comp_syn__u16_c(_literal) lit$((u16){ u##_literal })
+#define comp_syn__u32_c(_literal) lit$((u32){ U##_literal })
 
 #define comp_syn__u8_a(_literal...) $pragma_guard_( \
     "clang diagnostic push", "clang diagnostic ignored \"-Wunterminated-string-initialization\"", "clang diagnostic pop", \
     lit$((A$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } }) \
 )
-#define comp_syn__u8_s(_literal...) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
-#define comp_syn__u8_l(_literal...) lit$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
+#define comp_syn__u8_s(_literal) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
+#define comp_syn__u8_l(_literal) lit$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
 
-#define comp_syn__u8_az(_literal...) lit$((A$$(sizeOf$(TypeOf(_literal)), u8)){ .val = { _literal } })
-#define comp_syn__u8_sz(_literal...) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) })
-#define comp_syn__u8_lz(_literal...) lit$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) })
+#define comp_syn__u8_az(_literal) lit$((A$$(sizeOf$(TypeOf(_literal)), u8)){ .val = { _literal } })
+#define comp_syn__u8_sz(_literal) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) })
+#define comp_syn__u8_lz(_literal) lit$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) })
 
-#define comp_syn__u8z_a(_literal...) lit$((AZ$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } })
-#define comp_syn__u8z_s(_literal...) lit$((SZ$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
-#define comp_syn__u8z_l(_literal...) lit$((SZ_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
+#define comp_syn__u8z_a(_literal) lit$((AZ$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } })
+#define comp_syn__u8z_s(_literal) lit$((SZ$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
+#define comp_syn__u8z_l(_literal) lit$((SZ_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
 
-#define comp_syn__u8_s0(_literal...) lit$((u8[]){ _literal })
-#define comp_syn__u8_l0(_literal...) as$(const u8*)(_literal)
+#define comp_syn__u8_s0(_literal) lit$((u8[]){ _literal })
+#define comp_syn__u8_l0(_literal) as$(const u8*)(_literal)
 
 #if defined(__cplusplus)
 } /* extern "C" */

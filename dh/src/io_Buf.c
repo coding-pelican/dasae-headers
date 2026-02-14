@@ -194,7 +194,7 @@ fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(E$void) $scope) {
     if (self->used == 0) {
         return_ok({});
     }
-    let data = prefix$S(self->buf, self->used).as_const;
+    let data = S_prefix((self->buf)(self->used)).as_const;
     try_(io_Writer_writeBytes(self->inner, data));
     self->used = 0;
     return_ok({});

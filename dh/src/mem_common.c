@@ -3,8 +3,13 @@
 fn_((mem_copyBytes(S$u8 dst, S_const$u8 src))(S$u8)) {
     claim_assert_nonnullS(dst);
     claim_assert_nonnullS(src);
-    u_memcpyS(u_sliceS(u_anyS(dst), $r(0, src.len)), u_anyS(src));
-    return dst;
+    return u_memcpyS(u_sliceS(u_anyS(dst), $r(0, src.len)), u_anyS(src)), dst;
+};
+fn_((mem_copyP(u_P$raw dst, u_P_const$raw src))(u_P$raw)) {
+    claim_assert_nonnull(dst.raw);
+    claim_assert_nonnull(src.raw);
+    claim_assert(TypeInfo_eq(dst.type, src.type));
+    return u_memcpy(dst, src);
 };
 fn_((mem_copy(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
     claim_assert_nonnullS(dst);
@@ -17,8 +22,13 @@ fn_((mem_copy(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
 fn_((mem_moveBytes(S$u8 dst, S_const$u8 src))(S$u8)) {
     claim_assert_nonnullS(dst);
     claim_assert_nonnullS(src);
-    u_memmoveS(u_sliceS(u_anyS(dst), $r(0, src.len)), u_anyS(src));
-    return dst;
+    return u_memmoveS(u_sliceS(u_anyS(dst), $r(0, src.len)), u_anyS(src)), dst;
+};
+fn_((mem_moveP(u_P$raw dst, u_P_const$raw src))(u_P$raw)) {
+    claim_assert_nonnull(dst.raw);
+    claim_assert_nonnull(src.raw);
+    claim_assert(TypeInfo_eq(dst.type, src.type));
+    return u_memmove(dst, src);
 };
 fn_((mem_move(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
     claim_assert_nonnullS(dst);
@@ -30,8 +40,13 @@ fn_((mem_move(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
 
 fn_((mem_setBytes(S$u8 dst, u8 val))(S$u8)) {
     claim_assert_nonnullS(dst);
-    u_memsetS(u_anyS(dst), u_anyV(val));
-    return dst;
+    return u_memsetS(u_anyS(dst), u_anyV(val)), dst;
+};
+fn_((mem_setP(u_P$raw dst, u_V$raw val))(u_P$raw)) {
+    claim_assert_nonnull(dst.raw);
+    claim_assert_nonnull(val.inner);
+    claim_assert(TypeInfo_eq(dst.type, val.inner_type));
+    return u_memset(dst, val);
 };
 fn_((mem_set(u_S$raw dst, u_V$raw val))(u_S$raw)) {
     claim_assert_nonnullS(dst);
@@ -41,38 +56,47 @@ fn_((mem_set(u_S$raw dst, u_V$raw val))(u_S$raw)) {
     return dst;
 };
 
-fn_((mem_setBytes0(S$u8 dst))(S$u8)) {
+fn_((mem_set0Bytes(S$u8 dst))(S$u8)) {
     claim_assert_nonnullS(dst);
-    u_memset0S(u_anyS(dst));
-    return dst;
+    return u_memset0S(u_anyS(dst)), dst;
+};
+fn_((mem_set0P(u_P$raw dst))(u_P$raw)) {
+    claim_assert_nonnull(dst.raw);
+    return u_memset0(dst);
 };
 fn_((mem_set0(u_S$raw dst))(u_S$raw)) {
     claim_assert_nonnullS(dst);
-    u_memset0S(dst);
-    return dst;
+    return u_memset0S(dst);
 };
 
 fn_((mem_eqlBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) {
     claim_assert_nonnullS(lhs);
     claim_assert_nonnullS(rhs);
-    if (lhs.len != rhs.len) { return false; }
-    if (lhs.len == 0 || lhs.ptr == rhs.ptr) { return true; }
+    if (lhs.len != rhs.len) return false;
+    if (lhs.len == 0 || lhs.ptr == rhs.ptr) return true;
     return u_memeqlS(u_anyS(lhs), u_anyS(rhs));
 };
-fn_((mem_neqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return !mem_eqlBytes(lhs, rhs); };
-
+fn_((mem_eqlP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) {
+    claim_assert_nonnull(lhs.raw);
+    claim_assert_nonnull(rhs.raw);
+    claim_assert(TypeInfo_eq(lhs.type, rhs.type));
+    if (lhs.raw == rhs.raw) return true;
+    return u_memeql(lhs, rhs);
+};
 fn_((mem_eql(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) {
     claim_assert_nonnullS(lhs);
     claim_assert_nonnullS(rhs);
     claim_assert(TypeInfo_eq(lhs.type, rhs.type));
-    if (lhs.len != rhs.len) { return false; }
-    if (lhs.len == 0 || lhs.ptr == rhs.ptr) { return true; }
+    if (lhs.len != rhs.len) return false;
+    if (lhs.len == 0 || lhs.ptr == rhs.ptr) return true;
     for_(($us(lhs), $us(rhs))(l, r) {
-        if (!u_memeql(l, r)) { return false; }
+        if (!u_memeql(l, r)) return false;
     });
     return true;
 };
 
+fn_((mem_neqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return !mem_eqlBytes(lhs, rhs); };
+fn_((mem_neqP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return !mem_eqlP(lhs, rhs); };
 fn_((mem_neq(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return !mem_eql(lhs, rhs); };
 
 fn_((mem_ordBytes(S_const$u8 lhs, S_const$u8 rhs))(cmp_Ord)) {
@@ -82,13 +106,12 @@ fn_((mem_ordBytes(S_const$u8 lhs, S_const$u8 rhs))(cmp_Ord)) {
     let result = u_memordS(u_sliceS(u_anyS(lhs), $r(0, len)), u_sliceS(u_anyS(rhs), $r(0, len)));
     return result != cmp_Ord_eq ? result : as$(cmp_Ord)(prim_ord(lhs.len, rhs.len));
 };
-fn_((mem_eqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
-fn_((mem_neBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
-fn_((mem_ltBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
-fn_((mem_gtBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
-fn_((mem_leBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
-fn_((mem_geBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
-
+fn_((mem_ordP(u_P_const$raw lhs, u_P_const$raw rhs))(cmp_Ord)) {
+    claim_assert_nonnull(lhs.raw);
+    claim_assert_nonnull(rhs.raw);
+    claim_assert(TypeInfo_eq(lhs.type, rhs.type));
+    return u_memord(lhs, rhs);
+};
 fn_((mem_ord(u_S_const$raw lhs, u_S_const$raw rhs))(cmp_Ord)) {
     claim_assert_nonnullS(lhs);
     claim_assert_nonnullS(rhs);
@@ -104,29 +127,31 @@ fn_((mem_ord(u_S_const$raw lhs, u_S_const$raw rhs))(cmp_Ord)) {
     return as$(cmp_Ord)(prim_ord(lhs.len, rhs.len));
 };
 
+fn_((mem_eqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
+fn_((mem_eqP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return mem_ordP(lhs, rhs); };
 fn_((mem_eq(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, rhs); };
+
+fn_((mem_neBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
+fn_((mem_neP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return mem_ordP(lhs, rhs); };
 fn_((mem_ne(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, rhs); };
+
+fn_((mem_ltBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
+fn_((mem_ltP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return mem_ordP(lhs, rhs); };
 fn_((mem_lt(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, rhs); };
+
+fn_((mem_gtBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
+fn_((mem_gtP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return mem_ordP(lhs, rhs); };
 fn_((mem_gt(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, rhs); };
+
+fn_((mem_leBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
+fn_((mem_leP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return mem_ordP(lhs, rhs); };
 fn_((mem_le(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, rhs); };
+
+fn_((mem_geBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return mem_ordBytes(lhs, rhs); };
+fn_((mem_geP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return mem_ordP(lhs, rhs); };
 fn_((mem_ge(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return mem_ord(lhs, rhs); };
 
-fn_((mem_swapBytes(S$u8 lhs, S$u8 rhs))(void)) {
-    claim_assert_nonnullS(lhs);
-    claim_assert_nonnullS(rhs);
-    claim_assert_true(lhs.len == rhs.len);
-    let tmp = u_castS$((S$u8)(u_allocA(lhs.len, typeInfo$(u8)).ref));
-    mem_swapBytesTmp(lhs, rhs, tmp);
-};
-fn_((mem_swap(u_S$raw lhs, u_S$raw rhs))(void)) {
-    claim_assert_nonnullS(lhs);
-    claim_assert_nonnullS(rhs);
-    claim_assert_true(lhs.len == rhs.len);
-    claim_assert(TypeInfo_eq(lhs.type, rhs.type));
-    let tmp = u_allocA(lhs.len, typeInfo$(u8)).ref;
-    mem_swapTmp(lhs, rhs, tmp);
-};
-fn_((mem_swapBytesTmp(S$u8 lhs, S$u8 rhs, S$u8 tmp))(S$u8)) {
+$static fn_((mem__swapTmpBytes(S$u8 lhs, S$u8 rhs, S$u8 tmp))(S$u8)) {
     claim_assert_nonnullS(lhs);
     claim_assert_nonnullS(rhs);
     claim_assert_nonnullS(tmp);
@@ -138,7 +163,18 @@ fn_((mem_swapBytesTmp(S$u8 lhs, S$u8 rhs, S$u8 tmp))(S$u8)) {
     u_memcpyS(u_anyS(rhs), u_anyS(buf).as_const);
     return buf;
 };
-fn_((mem_swapTmp(u_S$raw lhs, u_S$raw rhs, u_S$raw tmp))(u_S$raw)) {
+$static fn_((mem__swapTmpP(u_P$raw lhs, u_P$raw rhs, u_P$raw tmp))(u_P$raw)) {
+    claim_assert_nonnull(lhs.raw);
+    claim_assert_nonnull(rhs.raw);
+    claim_assert_nonnull(tmp.raw);
+    claim_assert(TypeInfo_eq(lhs.type, rhs.type));
+    claim_assert(TypeInfo_eq(rhs.type, tmp.type));
+    u_memcpy(tmp, lhs.as_const);
+    u_memcpy(lhs, rhs.as_const);
+    u_memcpy(rhs, tmp.as_const);
+    return tmp;
+};
+$static fn_((mem__swapTmp(u_S$raw lhs, u_S$raw rhs, u_S$raw tmp))(u_S$raw)) {
     claim_assert_nonnullS(lhs);
     claim_assert_nonnullS(rhs);
     claim_assert_nonnullS(tmp);
@@ -148,11 +184,62 @@ fn_((mem_swapTmp(u_S$raw lhs, u_S$raw rhs, u_S$raw tmp))(u_S$raw)) {
     claim_assert(TypeInfo_eq(rhs.type, tmp.type));
     let buf = u_prefixS(tmp, lhs.len);
     for_(($us(lhs), $us(rhs), $us(buf))(l, r, t) {
+        u_memcpy(t, l.as_const);
         u_memcpy(l, r.as_const);
         u_memcpy(r, t.as_const);
-        u_memcpy(t, l.as_const);
     });
     return buf;
+};
+
+fn_((mem_swapBytes(S$u8 lhs, S$u8 rhs))(void)) {
+    claim_assert_nonnullS(lhs);
+    claim_assert_nonnullS(rhs);
+    claim_assert_true(lhs.len == rhs.len);
+    let tmp = u_castS$((S$u8)(u_allocA(lhs.len, typeInfo$(u8)).ref));
+    mem__swapTmpBytes(lhs, rhs, tmp);
+};
+fn_((mem_swapP(u_P$raw lhs, u_P$raw rhs))(void)) {
+    claim_assert_nonnull(lhs.raw);
+    claim_assert_nonnull(rhs.raw);
+    claim_assert(TypeInfo_eq(lhs.type, rhs.type));
+    let tmp = u_allocV(lhs.type).ref;
+    mem__swapTmpP(lhs, rhs, tmp);
+};
+fn_((mem_swap(u_S$raw lhs, u_S$raw rhs))(void)) {
+    claim_assert_nonnullS(lhs);
+    claim_assert_nonnullS(rhs);
+    claim_assert_true(lhs.len == rhs.len);
+    claim_assert(TypeInfo_eq(lhs.type, rhs.type));
+    let tmp = u_allocA(lhs.len, typeInfo$(u8)).ref;
+    mem__swapTmp(lhs, rhs, tmp);
+};
+fn_((mem_reverseBytes(S$u8 seq))(void)) {
+    claim_assert_nonnullS(seq);
+    let_(l, usize) = 0;
+    let r = seq.len / 2;
+    for_(($r(l, r))(p) {
+        mem_swapP(u_anyP(S_at((seq)[p])), u_anyP(S_at((seq)[seq.len - p - 1])));
+    });
+};
+fn_((mem_reverse(u_S$raw seq))(void)) {
+    claim_assert_nonnullS(seq);
+    let_(l, usize) = 0;
+    let r = seq.len / 2;
+    for_(($r(l, r))(p) {
+        mem_swapP(u_atS(seq, p), u_atS(seq, seq.len - p - 1));
+    });
+};
+fn_((mem_rotateBytes(S$u8 seq, usize amount))(void)) {
+    claim_assert_nonnullS(seq);
+    mem_reverseBytes(S_prefix((seq)(amount)));
+    mem_reverseBytes(S_suffix((seq)(amount)));
+    mem_reverseBytes(seq);
+};
+fn_((mem_rotate(u_S$raw seq, usize amount))(void)) {
+    claim_assert_nonnullS(seq);
+    mem_reverse(u_prefixS(seq, amount));
+    mem_reverse(u_suffixS(seq, amount));
+    mem_reverse(seq);
 };
 
 fn_((mem_startsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool)) {
@@ -284,9 +371,9 @@ fn_((mem_TokenIter_peek(mem_TokenIter$raw* self, TypeInfo type))(O$u_S_const$raw
         }) $unscoped_(expr);
     }
     let begin = self->idx;
-    if (begin == self->buf.len) { return_none(); }
+    if (begin == self->buf.len) return_none();
     var end = begin;
-    while (end < self->buf.len && !mem_TokenIter__isDelim(self, type, end)) { end++; }
+    while (end < self->buf.len && !mem_TokenIter__isDelim(self, type, end)) end++;
     return_some(u_sliceS(mem_TokenIter__buf(self, type), $r(begin, end)));
 } $unscoped_(fn);
 

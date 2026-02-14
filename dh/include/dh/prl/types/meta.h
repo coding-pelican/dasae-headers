@@ -578,22 +578,28 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 
 // #define u_anyP_const(_p...) ((u_P_const$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
 // #define u_anyP(_p...) ((u_P$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
-#define u_anyP(_p...) $supress_cast_qual( \
-    _Generic( \
-        TypeOf(*_p), \
-        const TypeOfUnqual(*_p): ((u_P_const$raw){ .raw = ptrCast$((P_const$raw)(_p)), .type = typeInfo$(TypeOf(*_p)) }), \
-        TypeOfUnqual(*_p): ((u_P$raw){ .raw = ptrCast$((P$raw)(_p)), .type = typeInfo$(TypeOf(*_p)) }) \
-    ) \
-)
+#define u_anyP(_p...) T_switch$((TypeOf(*_p))( \
+    T_qual$((const TypeOfUnqual(*_p))(lit$((u_P_const$raw){ \
+        .raw = ptrQualCast$((P_const$raw)(_p)), \
+        .type = typeInfo$(TypeOf(*_p)), \
+    }))), \
+    T_qual$((TypeOfUnqual(*_p))(lit$((u_P$raw){ \
+        .raw = ptrQualCast$((P$raw)(_p)), \
+        .type = typeInfo$(TypeOf(*_p)), \
+    }))) \
+))
 // #define u_anyS_const(_s...) ((u_S_const$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
 // #define u_anyS(_s...)       ((u_S$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
-#define u_anyS(_s...) $supress_cast_qual( \
-    _Generic( \
-        TypeOf(&*_s.ptr), \
-        const TypeOfUnqual(*_s.ptr)*: ((u_S_const$raw){ .raw = *ptrCast$((S_const$raw*)(_s.ref_raw)), .type = typeInfo$(TypeOf(*_s.ptr)) }), \
-        TypeOfUnqual(*_s.ptr)*: ((u_S$raw){ .raw = *ptrCast$((S$raw*)(_s.ref_raw)), .type = typeInfo$(TypeOf(*_s.ptr)) }) \
-    ) \
-)
+#define u_anyS(_s...) T_switch$((TypeOf(*_s.ptr))( \
+    T_qual$((const TypeOfUnqual(*_s.ptr))(lit$((u_S_const$raw){ \
+        .raw = *ptrQualCast$((S_const$raw*)(_s.ref_raw)), \
+        .type = typeInfo$(TypeOf(*_s.ptr)), \
+    }))), \
+    T_qual$((TypeOfUnqual(*_s.ptr))(lit$((u_S$raw){ \
+        .raw = *ptrQualCast$((S$raw*)(_s.ref_raw)), \
+        .type = typeInfo$(TypeOf(*_s.ptr)), \
+    }))) \
+))
 
 #define u_anyV(_v...) $supress_cast_qual(({ \
     let_(__p_v, TypeOfUnqual(_v)*) = &copy(_v); \

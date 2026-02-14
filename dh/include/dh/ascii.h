@@ -170,11 +170,11 @@ $attr($must_check)
 $extern fn_((ascii_allocToggledCases(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8));
 
 /// Writes an upper case copy of `ascii_str` to `buf`.
-$extern fn_((ascii_makeUppers(S$u8 buf, S_const$u8 ascii_str))(S$u8));
+$extern fn_((ascii_makeUppers(S$u8 out_buf, S_const$u8 ascii_str))(S$u8));
 /// Writes a lower case copy of `ascii_str` to `buf`.
-$extern fn_((ascii_makeLowers(S$u8 buf, S_const$u8 ascii_str))(S$u8));
+$extern fn_((ascii_makeLowers(S$u8 out_buf, S_const$u8 ascii_str))(S$u8));
 /// Writes a toggled case copy of `ascii_str` to `buf`.
-$extern fn_((ascii_makeToggledCases(S$u8 buf, S_const$u8 ascii_str))(S$u8));
+$extern fn_((ascii_makeToggledCases(S$u8 out_buf, S_const$u8 ascii_str))(S$u8));
 
 /// Returns the index of the first occurrence of `ascii_substr` in `ascii_str`, ignoring case.
 $extern fn_((ascii_idxOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr))(O$usize));

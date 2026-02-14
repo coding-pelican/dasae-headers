@@ -163,7 +163,7 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; usize worker_id; }, V
         O$$(P$mp_ThrdPool_Task) maybe_task = none();
 
         let sync_start = time_Instant_now();
-        with_fini_(Thrd_Mtx_lock(&pool->mutex), Thrd_Mtx_unlock(&pool->mutex)) {
+        using_fini_(Thrd_Mtx_lock(&pool->mutex), Thrd_Mtx_unlock(&pool->mutex)) {
             while (atom_V_load(&pool->count, atom_MemOrd_acquire) == 0
                    && atom_V_load(&pool->running, atom_MemOrd_acquire)) {
                 Thrd_Cond_wait(&pool->cond_has_task, &pool->mutex);

@@ -85,7 +85,7 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
     let pool = args->pool;
     while (atom_V_load(&pool->running, atom_MemOrd_acquire)) {
         O$$(P$mp_ThrdPool_Task) maybe_task = none();
-        with_fini_(Thrd_Mtx_lock(&pool->mutex), Thrd_Mtx_unlock(&pool->mutex)) {
+        using_fini_(Thrd_Mtx_lock(&pool->mutex), Thrd_Mtx_unlock(&pool->mutex)) {
             /* clang-format off */
             while (atom_V_load(&pool->count, atom_MemOrd_acquire) == 0
                 && atom_V_load(&pool->running, atom_MemOrd_acquire)) {
@@ -522,8 +522,8 @@ fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void)) {
 fn_((State_hashPosition(m_V2f64 pos))(usize)) {
     let gx_0 = as$(isize)((pos.x + (State_grid_width * State_cell_size) / 2.0f) / State_cell_size);
     let gy_0 = as$(isize)((pos.y + (State_grid_height * State_cell_size) / 2.0f) / State_cell_size);
-    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, intCast$((isize)(State_grid_width))-1));
-    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, intCast$((isize)(State_grid_height))-1));
+    let gx_1 = as$(usize)(prim_clamp(gx_0, 0, intCast$((isize)(State_grid_width))- 1));
+    let gy_1 = as$(usize)(prim_clamp(gy_0, 0, intCast$((isize)(State_grid_height))- 1));
     return gy_1 * State_grid_width + gx_1;
 }
 

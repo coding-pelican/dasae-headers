@@ -136,7 +136,7 @@ extern "C" {
 })
 
 // #define match_(_Variant) \
-//     with_(let __variant = (_Variant)) switch (__variant.tag)
+//     using_(let __variant = (_Variant)) switch (__variant.tag)
 #define comp_syn__match_(_Variant, _Body...) blk({ \
     let __variant = _Variant; \
     switch (__variant.tag) \

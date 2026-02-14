@@ -7,7 +7,7 @@
  * @date    2024-11-03 (date of creation)
  * @updated 2025-03-27 (date of last update)
  * @version v0.1-alpha.4
- * @ingroup dasae-headers(dh)/builtin
+ * @ingroup dal-project/da/builtin
  * @prefix  (none)
  *
  * @brief   Compiler-specific configurations and optimizations
@@ -50,6 +50,9 @@ extern "C" {
 #define $inline comp_attr__$inline
 #define $inline_always comp_attr__$inline_always
 #define $inline_never comp_attr__$inline_never
+
+#define $pure comp_attr__$pure
+#define $view comp_attr__$view
 
 #define $deprecated comp_attr__$deprecated
 #define $deprecated_msg(_Msg) comp_attr__$deprecated_msg(_Msg)
@@ -316,9 +319,16 @@ extern "C" {
     })
 #define __op__$in_field__expand(...) __VA_ARGS__
 
+#define cleared$ lit0$
 #define cleared() ____cleared()
 #define ____cleared() \
     {}
+#define initial$(/*(_T)(_expr...)*/...) __step__initial$(__VA_ARGS__)
+#define __step__initial$(...) __step__initial$__emit(__step__initial$__parse __VA_ARGS__)
+#define __step__initial$__parse(_T...) _T, __step__initial$__parseExpr
+#define __step__initial$__parseExpr(_expr...) _expr
+#define __step__initial$__emit(...) ____initial$(__VA_ARGS__)
+#define ____initial$(_T, _expr...) lit$((_T){ _expr })
 #define initial(/*_expr...*/...) ____initial(__VA_ARGS__)
 #define ____initial(_expr...) \
     { _expr }
@@ -332,6 +342,27 @@ extern "C" {
 })
 #define copy(_val... /*(TypeOf(_val))*/) ____copy(_val)
 #define ____copy(_val...) (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
+
+#define with_(/*(_expr: _T)(_initial...: (_field)(_asg)*/... /*(_T)*/) __step__with_(__VA_ARGS__)
+#define __step__with_(...) __step__with$__emit(__step__with$__parseExpr __VA_ARGS__)
+#define __step__with$__parseExpr(_expr...) pp_uniqTok(expr_copied), _expr, __step__with$__parseInitial
+#define __step__with$__parseInitial(_initial...) _initial
+#define __step__with$__emit(...) \
+    ____with_(__VA_ARGS__)
+#define ____with_(__expr_copied, _expr, _initial...) blk({ \
+    var __expr_copied = _expr; \
+    pp_foreach(____with___each, __expr_copied, _initial); \
+    blk_return_(__expr_copied); \
+})
+#define ____with___each(__expr_copied, /*_initial*/...) __VA_OPT__( \
+    ____with___each__emit(__expr_copied, ____with___each__parseField __VA_ARGS__) \
+)
+#define ____with___each__parseField(_field...) _field, ____with___each__parseAsg
+#define ____with___each__parseAsg(_asg...) _asg
+#define ____with___each__emit(...) \
+    ____with_____each(__VA_ARGS__)
+#define ____with_____each(__expr_copied, _field, _asg...) \
+    asg_lit((&__expr_copied _field)(_asg));
 
 #define T_switch$(/*(_T_Cond)(_T_Cases...)*/...) \
     __step__T_switch$(__step__T_switch$__parseTCond __VA_ARGS__)
@@ -379,6 +410,7 @@ extern "C" {
 #define $branch_hot __attr__$branch_hot
 #define $branch_cold __attr__$branch_cold
 #define $branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __attr__$branch_predict_at(_prob, _expr)
+#define $branch_unpredict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __attr__$branch_predict_at(_prob, _expr)
 #define $branch_likely(_expr... /*(bool)*/) __attr__$branch_likely(_expr)
 #define $branch_unlikely(_expr... /*(bool)*/) __attr__$branch_unlikely(_expr)
 #define $branch_unpredictable(_expr... /*(bool)*/) __attr__$branch_unpredictable(_expr)
@@ -457,6 +489,9 @@ extern "C" {
 #define comp_attr__$deprecated comp_deprecated
 #define comp_attr__$deprecated_msg(_Msg) comp_deprecated_msg(_Msg)
 #define comp_attr__$deprecated_instead(_Msg, _Replacement) comp_deprecated_instead(_Msg, _Replacement)
+
+#define comp_attr__$pure comp_pure
+#define comp_attr__$view comp_view
 
 #define comp_attr__$on_load comp_on_load
 #define comp_attr__$on_exit comp_on_exit

@@ -91,9 +91,12 @@ extern "C" {
 
 #define comp_op__invoke(__callable, _callable, _Args...) blk({ \
     let __callable = _callable; \
-    __callable.wraps_lambda \
-        ? __callable.payload.laBlk(_Args) \
-        : __callable.payload.fnPtr(_Args); \
+    typedef TypeOf(__callable.payload.fnPtr(_Args)) ReturnT; \
+    blk_return_(as$(ReturnT)( \
+        __callable.wraps_lambda \
+            ? __callable.payload.laBlk(_Args) \
+            : __callable.payload.fnPtr(_Args) \
+    )); \
 })
 
 /*========== Example Usage ==================================================*/

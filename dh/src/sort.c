@@ -1,219 +1,691 @@
 #include "dh/sort.h"
+#include "dh/search.h"
 #include "dh/mem/common.h"
 
-/* TODO: Eliminate raw pointer operations */
+/*========== Internal Declarations & Definitions ============================*/
 
 $attr($inline_always)
-$static fn_((sort__ord(sort_OrdFn ordFn, u_P_const$raw lhs, u_P_const$raw rhs))(cmp_Ord)) {
-    return as$(cmp_Ord)(invoke(ordFn, u_load(u_deref(lhs)), u_load(u_deref(rhs))));
+$static fn_((sort__floorPow2(usize n))(usize)) {
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    if (usize_limit_max == 0xFFFFFFFFFFFFFFFF) n |= n >> 32;
+    return n - (n >> 1);
 };
+
 $attr($inline_always)
-$static fn_((sort__ordCtx(sort_OrdCtxFn ordFn, u_P_const$raw lhs, u_P_const$raw rhs, u_P_const$raw ctx))(cmp_Ord)) {
-    return as$(cmp_Ord)(invoke(ordFn, u_load(u_deref(lhs)), u_load(u_deref(rhs)), u_load(u_deref(ctx))));
+$static fn_((sort__ceilPow2(usize n))(usize)) {
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    if (usize_limit_max == 0xFFFFFFFFFFFFFFFF) n |= n >> 32;
+    return n + 1;
 };
 
 $attr($inline_always)
-$static fn_((sort__lt(sort_OrdFn ordFn, u_P_const$raw lhs, u_P_const$raw rhs))(cmp_Ord)) {
-    return cmp_Ord_isLt(sort__ord(ordFn, lhs, rhs));
-};
-$attr($inline_always)
-$static fn_((sort__ltCtx(sort_OrdCtxFn ordFn, u_P_const$raw lhs, u_P_const$raw rhs, u_P_const$raw ctx))(cmp_Ord)) {
-    return cmp_Ord_isLt(sort__ordCtx(ordFn, lhs, rhs, ctx));
+$static fn_((sort__ord(sort_OrdCtxFn ordFn, u_P_const$raw lhs, u_P_const$raw rhs, u_P_const$raw ctx))(cmp_Ord)) {
+    return invoke(ordFn, u_load(u_deref(lhs)), u_load(u_deref(rhs)), u_load(u_deref(ctx)));
 };
 
-fn_((sort_inOrd(u_S_const$raw seq, sort_OrdFn ordFn))(bool)) {
-    for (usize i = 1; i < seq.len; ++i) {
-        if (sort__lt(ordFn, u_atS(seq, i), u_atS(seq, i - 1))) { return false; }
-    }
+typedef struct sort__OrdNoCtxFnAsCtx {
+    sort_OrdFn ordFn;
+} sort__OrdNoCtxFnAsCtx;
+$attr($inline_always)
+$static fn_((sort__ordNoCtx(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(cmp_Ord)) {
+    let no_ctx = u_castV$((sort__OrdNoCtxFnAsCtx)(ctx));
+    return invoke(no_ctx.ordFn, lhs, rhs);
+};
+
+typedef struct sort_IdxCtx__Inner {
+    sort_OrdCtxFn ordFn;
+    u_S$raw seq;
+    u_P_const$raw ctx;
+} sort_IdxCtx__Inner;
+$attr($inline_always)
+$static fn_((sort_IdxCtx__Inner_ord(usize lhs, usize rhs, u_V$raw ctx))(cmp_Ord)) {
+    let inner = u_castV$((sort_IdxCtx__Inner)(ctx));
+    let lhs_ptr = u_atS(inner.seq, lhs).as_const;
+    let rhs_ptr = u_atS(inner.seq, rhs).as_const;
+    return sort__ord(inner.ordFn, lhs_ptr, rhs_ptr, inner.ctx);
+};
+$attr($inline_always)
+$static fn_((sort_IdxCtx__Inner_swap(usize lhs, usize rhs, u_V$raw ctx))(void)) {
+    let inner = u_castV$((sort_IdxCtx__Inner)(ctx));
+    mem_swapP(u_atS(inner.seq, lhs), u_atS(inner.seq, rhs));
+};
+
+/* Context structure to bridge `sort_OrdCtxFn` to `search_OrdFn` */
+typedef struct sort__SearchOrdAdpCtx {
+    sort_OrdCtxFn ordFn; /* user's comparison function */
+    u_P_const$raw val_ptr; /* pivot value being searched for */
+    u_P_const$raw inner; /* user's context */
+} sort__SearchOrdAdpCtx;
+/* Adapter: `search` expects `(item, ctx)`, `sort` provides `(lhs, rhs, ctx)` */
+$attr($inline_always)
+$static fn_((sort__searchOrdAdp(u_V$raw item, u_V$raw ctx))(cmp_Ord)) {
+    let adapter = u_castV$((sort__SearchOrdAdpCtx)(ctx));
+    return sort__ord(adapter.ordFn, item.ref.as_const, adapter.val_ptr, adapter.inner);
+};
+
+/*========== External Definitions: Query ====================================*/
+
+fn_((sort_inOrdd(u_S_const$raw seq, sort_OrdFn ordFn))(bool)) {
+    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    return sort_inOrddCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+};
+
+fn_((sort_inOrddCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(bool)) {
+    if (seq.len <= 1) return true;
+    for_(($r(1, seq.len))(i) {
+        let ord = sort__ord(ordFn, u_atS(seq, i), u_atS(seq, i - 1), ctx);
+        if (cmp_Ord_isLt(ord)) return false;
+    });
     return true;
 };
 
-fn_((sort_inOrdCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(bool)) {
-    for (usize i = 1; i < seq.len; ++i) {
-        if (sort__ltCtx(ordFn, u_atS(seq, i), u_atS(seq, i - 1), ctx)) { return false; }
-    }
-    return true;
-};
+/*========== External Definitions: Insertion Sort ===========================*/
 
 fn_((sort_insert(u_S$raw seq, sort_OrdFn ordFn))(void)) {
-    for (usize unsorted_idx = 1; unsorted_idx < seq.len; ++unsorted_idx) {
-        var curr_ptr = u_atS(seq, unsorted_idx);
-        var sorted_bwd_idx = unsorted_idx;
-        while (0 < sorted_bwd_idx) {
-            let prev_ptr = u_atS(seq, sorted_bwd_idx - 1);
-            if (sort__ord(ordFn, prev_ptr.as_const, curr_ptr.as_const) <= cmp_Ord_eq) { break; }
-            mem_swap(u_prefixP(prev_ptr, 1), u_prefixP(curr_ptr, 1));
-            curr_ptr = prev_ptr;
-            sorted_bwd_idx--;
-        }
-    }
+    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    sort_insertCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
 };
 
 fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void)) {
-    for (usize unsorted_idx = 1; unsorted_idx < seq.len; ++unsorted_idx) {
-        var curr_ptr = u_atS(seq, unsorted_idx);
+    let_(inner, sort_IdxCtx__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
+    let_(idx_ctx, sort_IdxCtx) = {
+        .inner = u_anyP(&inner),
+        .ordFn = wrapFn(sort_IdxCtx__Inner_ord),
+        .swapFn = wrapFn(sort_IdxCtx__Inner_swap)
+    };
+    sort_insertIdx($rt(seq.len), idx_ctx);
+};
+
+fn_((sort_insertIdx(R range, sort_IdxCtx idx_ctx))(void)) {
+    for_(((R_suffix(range, 1)))(unsorted_idx) {
         var sorted_bwd_idx = unsorted_idx;
-        while (0 < sorted_bwd_idx) {
-            let prev_ptr = u_atS(seq, sorted_bwd_idx - 1);
-            if (sort__ordCtx(ordFn, prev_ptr.as_const, curr_ptr.as_const, ctx) <= cmp_Ord_eq) { break; }
-            mem_swap(u_prefixP(prev_ptr, 1), u_prefixP(curr_ptr, 1));
-            curr_ptr = prev_ptr;
+        while (range.begin < sorted_bwd_idx) {
+            let curr = sorted_bwd_idx;
+            let prev = curr - 1;
+            let ord = sort_IdxCtx_ord(idx_ctx, curr, prev);
+            if (!cmp_Ord_isLt(ord)) break;
+            sort_IdxCtx_swap(idx_ctx, curr, prev);
             sorted_bwd_idx--;
+        }
+    });
+};
+
+/*========== External Definitions: Heap Sort ================================*/
+
+fn_((sort_heap(u_S$raw seq, sort_OrdFn ordFn))(void)) {
+    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    sort_heapCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+};
+
+fn_((sort_heapCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void)) {
+    let_(inner, sort_IdxCtx__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
+    let_(idx_ctx, sort_IdxCtx) = {
+        .inner = u_anyP(&inner),
+        .ordFn = wrapFn(sort_IdxCtx__Inner_ord),
+        .swapFn = wrapFn(sort_IdxCtx__Inner_swap)
+    };
+    sort_heapIdx($rt(seq.len), idx_ctx);
+};
+
+$attr($inline_always)
+$static fn_((sort_heap__siftDown(R range, usize target, sort_IdxCtx idx_ctx))(void));
+fn_((sort_heapIdx(R range, sort_IdxCtx idx_ctx))(void)) {
+    let len = R_len(range);
+    if (len <= 1) return;
+    /* heapify */
+    var i = len / 2;
+    while (i-- > 0) {
+        sort_heap__siftDown(range, range.begin + i, idx_ctx);
+    }
+    /* extract */
+    i = len;
+    while (i-- > 0) {
+        sort_IdxCtx_swap(idx_ctx, range.begin, range.begin + i);
+        sort_heap__siftDown(R_prefix(range, i), range.begin, idx_ctx);
+    }
+};
+
+fn_((sort_heap__siftDown(R range, usize target, sort_IdxCtx idx_ctx))(void)) {
+    var curr = target;
+    while (true) {
+        var child = ((curr - range.begin) * 2) + range.begin + 1;
+        if (child >= range.end) break;
+        let next_child = child + 1;
+        if (next_child < range.end) {
+            let ord = sort_IdxCtx_ord(idx_ctx, child, next_child);
+            if (cmp_Ord_isLt(ord)) child = next_child;
+        }
+        let ord = sort_IdxCtx_ord(idx_ctx, child, curr);
+        if (!cmp_Ord_isLt(ord)) {
+            sort_IdxCtx_swap(idx_ctx, child, curr);
+            curr = child;
+        } else {
+            break;
         }
     }
 };
 
-// NOLINTNEXTLINE(misc-no-recursion)
-fn_((sort_mergeTmpRecur(
-    S$u8 tmp,
-    u_S$raw seq,
-    sort_OrdFn ordFn
-))(sort_mem_Err$S$u8) $scope) {
-    if (seq.len <= sort_stable_sort_threshold_merge_to_insert) {
-        sort_insert(seq, ordFn);
-        return_ok({});
-    }
-    /* Sort each half recursively */
-    let mid_idx = seq.len / 2;
-    try_(sort_mergeTmpRecur(tmp, u_prefixS(seq, mid_idx), ordFn));
-    try_(sort_mergeTmpRecur(tmp, u_suffixS(seq, mid_idx), ordFn));
+/*========== External Definitions: PDQ Sort =================================*/
 
-    /* Check if merging is necessary */ {
-        let l_last = u_atS(seq, mid_idx - 1);
-        let r_first = u_atS(seq, mid_idx);
-        if (sort__ord(ordFn, l_last.as_const, r_first.as_const) <= cmp_Ord_eq) {
-            return_ok({}); /* Already ordered, no merge needed */
+/* --- Internal Declarations --- */
+
+/* Break patterns in the slice by shuffling some elements around. */
+$static fn_((sort_pdq__breakPatterns(R range, sort_IdxCtx idx_ctx))(void));
+/* Choose a pivot in `items[begin..end]`. Swaps likely_sorted when slice seems already sorted. */
+$static fn_((sort_pdq__choosePivot(R range, usize* pivot, sort_IdxCtx idx_ctx))(u8));
+/* Sort 3 elements and count swaps performed */
+$attr($inline_always)
+$static fn_((sort_pdq__sort3(usize lo, usize mid, usize hi, usize* swaps, sort_IdxCtx idx_ctx))(void));
+/* Reverse the range in place. */
+$static fn_((sort_pdq__reverseRange(R range, sort_IdxCtx idx_ctx))(void));
+/* Partially sorts a slice by shifting several out-of-order elements around.
+ * Returns `true` if the slice is sorted at the end. This function is O(n) worst-case. */
+$static fn_((sort_pdq__insertPartial(R range, sort_IdxCtx idx_ctx))(bool));
+/* Partitions `items[begin..end]` into elements equal to `items[pivot]`
+ * followed by elements greater than `items[pivot]`.
+ * Assumes `items[begin..end]` does not contain elements smaller than `items[pivot]`. */
+$static fn_((sort_pdq__partEq(R range, usize pivot, sort_IdxCtx idx_ctx))(usize));
+/* Partitions `items[begin..end]` into elements smaller than `items[pivot]`,
+ * followed by elements greater than or equal to `items[pivot]`.
+ * Sets the new pivot. Returns `true` if already partitioned. */
+$static fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool));
+
+/* --- External Definitions --- */
+
+typedef struct sort_pdq__Frame {
+    R range;
+    usize limit;
+} sort_pdq__Frame;
+
+fn_((sort_pdq(u_S$raw seq, sort_OrdFn ordFn))(void)) {
+    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    sort_pdqCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+};
+
+fn_((sort_pdqCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void)) {
+    let_(inner, sort_IdxCtx__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
+    let_(idx_ctx, sort_IdxCtx) = {
+        .inner = u_anyP(&inner),
+        .ordFn = wrapFn(sort_IdxCtx__Inner_ord),
+        .swapFn = wrapFn(sort_IdxCtx__Inner_swap)
+    };
+    sort_pdqIdx($rt(seq.len), idx_ctx);
+};
+
+fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void)) {
+    let_(max_insertion, usize) = sort_threshold_fallback_to_insert_sort;
+    let len = R_len(range);
+    if (len <= 1) return;
+
+    var_(stack, A$$(sort_limit_pdq_stack_frames, sort_pdq__Frame)) = A_zero();
+    var_(depth, usize) = 0;
+
+    let max_limit = sort__floorPow2(len) + 1;
+    var_(frame, sort_pdq__Frame) = { .range = range, .limit = max_limit };
+
+    while (true) {
+        var_(was_balanced, bool) = true;
+        var_(was_partitioned, bool) = true;
+
+        while (true) {
+            let frame_len = R_len(frame.range);
+
+            /* very short slices get sorted using insertion sort */
+            if (frame_len <= max_insertion) {
+                sort_insertIdx(frame.range, idx_ctx);
+                break;
+            }
+
+            /* if too many bad pivot choices were made, fall back to heapsort
+             * in order to guarantee O(n*log(n)) worst-case */
+            if (frame.limit == 0) {
+                sort_heapIdx(frame.range, idx_ctx);
+                break;
+            }
+
+            /* if the last partitioning was imbalanced, try breaking patterns
+             * in the slice by shuffling some elements around */
+            if (!was_balanced) {
+                sort_pdq__breakPatterns(frame.range, idx_ctx);
+                frame.limit--;
+            }
+
+            /* choose a pivot and try guessing whether the slice is already sorted */
+            var_(pivot, usize) = 0;
+            var_(hint, u8) = sort_pdq__choosePivot(frame.range, &pivot, idx_ctx);
+
+            if (hint == 1) { /* decreasing */
+                sort_pdq__reverseRange(frame.range, idx_ctx);
+                pivot = (frame.range.end - 1) - (pivot - frame.range.begin);
+                hint = 0; /* increasing */
+            }
+
+            /* if the last partitioning was decently balanced and didn't shuffle elements,
+             * and if pivot selection predicts the slice is likely already sorted... */
+            if (was_balanced && was_partitioned && hint == 0) {
+                if (sort_pdq__insertPartial(frame.range, idx_ctx)) break;
+            }
+
+            /* if the chosen pivot is equal to the predecessor, then it's the smallest
+             * element in the slice. Partition the slice into elements equal to and
+             * elements greater than the pivot. */
+            let ord = sort_IdxCtx_ord(idx_ctx, frame.range.begin - 1, pivot);
+            if (frame.range.begin > range.begin && !cmp_Ord_isLt(ord)) {
+                frame.range.begin = sort_pdq__partEq(frame.range, pivot, idx_ctx);
+                continue;
+            }
+
+            /* partition the slice */
+            var mid = pivot;
+            was_partitioned = sort_pdq__part(frame.range, &mid, idx_ctx);
+
+            let left_len = mid - frame.range.begin;
+            let right_len = frame.range.end - mid;
+            let_(balance_factor, usize) = 8;
+            let balance_threshold = frame_len / balance_factor;
+
+            if (left_len < right_len) {
+                was_balanced = left_len >= balance_threshold;
+                asg_lit((A_at((stack)[depth++]))({
+                    .range = $r(frame.range.begin, mid),
+                    .limit = frame.limit,
+                }));
+                frame.range.begin = mid + 1;
+            } else {
+                was_balanced = right_len >= balance_threshold;
+                asg_lit((A_at((stack)[depth++]))({
+                    .range = $r(mid + 1, frame.range.end),
+                    .limit = frame.limit,
+                }));
+                frame.range.end = mid;
+            }
         }
+
+        if (depth == 0) break;
+        frame = *A_at((stack)[--depth]);
+    }
+};
+
+/* --- Internal Definitions --- */
+
+fn_((sort_pdq__breakPatterns(R range, sort_IdxCtx idx_ctx))(void)) {
+    let_(min_partition, usize) = 8;
+    let len = R_len(range);
+    if (len < min_partition) return;
+
+    var_(rng, u64) = len;
+    let modulus = sort__ceilPow2(len);
+    let mid_start = range.begin + (len / 4) * 2 - 1;
+    let mid_end = range.begin + (len / 4) * 2 + 1;
+    for_(($r(mid_start, mid_end + 1))(curr) {
+        /* xorshift64 */
+        rng ^= rng << 13;
+        rng ^= rng >> 7;
+        rng ^= rng << 17;
+        var target = (usize)(rng & (modulus - 1));
+        if (target >= len) target -= len;
+        sort_IdxCtx_swap(idx_ctx, curr, range.begin + target);
+    });
+};
+fn_((sort_pdq__choosePivot(R range, usize* pivot, sort_IdxCtx idx_ctx))(u8)) {
+    let_(shortest_ninther, usize) = sort_threshold_pdq_tukey_ninther;
+    let_(max_swaps, usize) = sort_max_swaps_pdq_choose_pivot;
+    let len = R_len(range);
+    let q1 = range.begin + len / 4;
+    let q2 = range.begin + (len / 4) * 2;
+    let q3 = range.begin + (len / 4) * 3;
+    var_(swaps, usize) = 0;
+
+    if (len >= 8) {
+        if (len >= shortest_ninther) {
+            /* find medians in the neighborhoods of q1, q2, q3 */
+            sort_pdq__sort3(q1 - 1, q1, q1 + 1, &swaps, idx_ctx);
+            sort_pdq__sort3(q2 - 1, q2, q2 + 1, &swaps, idx_ctx);
+            sort_pdq__sort3(q3 - 1, q3, q3 + 1, &swaps, idx_ctx);
+        }
+        /* find the median among q1, q2, q3 and store it in q2 */
+        sort_pdq__sort3(q1, q2, q3, &swaps, idx_ctx);
     }
 
-    /* Merge the sorted halves using the temporary buffer */
-    var l_it = u_atS(seq, 0);
-    let l_end = u_atS(seq, mid_idx);
-    var r_it = l_end;
-    let r_end = u_atS(seq, seq.len);
-    var_(temp_cursor, usize) = 0;
-    while (l_it.raw < l_end.raw && r_it.raw < r_end.raw) {
-        if (sort__ord(ordFn, l_it.as_const, r_it.as_const) <= cmp_Ord_eq) {
-            prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, seq.type.size);
-            l_it.raw = as$(u8*)(l_it.raw) + seq.type.size;
+    *pivot = q2;
+    if (swaps == 0) return 0; /* increasing */
+    if (swaps == max_swaps) return 1; /* decreasing */
+    return 2; /* unknown */
+};
+fn_((sort_pdq__sort3(usize lo, usize mid, usize hi, usize* swaps, sort_IdxCtx idx_ctx))(void)) {
+    if (cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, mid, lo))) {
+        sort_IdxCtx_swap(idx_ctx, mid, lo);
+        *swaps += 1;
+    }
+    if (cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, hi, mid))) {
+        sort_IdxCtx_swap(idx_ctx, hi, mid);
+        *swaps += 1;
+    }
+    if (cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, mid, lo))) {
+        sort_IdxCtx_swap(idx_ctx, mid, lo);
+        *swaps += 1;
+    }
+};
+fn_((sort_pdq__reverseRange(R range, sort_IdxCtx idx_ctx))(void)) {
+    var lo = range.begin;
+    var hi = range.end - 1;
+    while (lo < hi) sort_IdxCtx_swap(idx_ctx, lo++, hi--);
+};
+fn_((sort_pdq__insertPartial(R range, sort_IdxCtx idx_ctx))(bool)) {
+    let_(max_steps, usize) = sort_max_steps_pdq_partial_insert_sort;
+    let_(shortest_shifting, usize) = sort_threshold_pdq_partial_insert_sort;
+    var curr = range.begin + 1;
+    for_(($rt(max_steps))($ignore) {
+        /* find the next pair of adjacent out-of-order elements */
+        while (curr < range.end && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, curr, curr - 1))) curr++;
+        if (curr == range.end) return true;
+        /* don't shift elements on short arrays, that has a performance cost */
+        if (R_len(range) < shortest_shifting) return false;
+
+        /* swap the found pair of elements. This puts them in correct order. */
+        sort_IdxCtx_swap(idx_ctx, curr, curr - 1);
+        /* shift the smaller element to the left */
+        if (curr - range.begin >= 2) {
+            var scan = curr - 1;
+            while (scan > range.begin) {
+                scan--;
+                if (!cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, scan, scan - 1))) break;
+                sort_IdxCtx_swap(idx_ctx, scan, scan - 1);
+            }
+        }
+        /* shift the greater element to the right */
+        if (range.end - curr >= 2) {
+            var scan = curr + 1;
+            while (scan < range.end) {
+                if (!cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, scan, scan - 1))) break;
+                sort_IdxCtx_swap(idx_ctx, scan, scan - 1);
+                scan++;
+            }
+        }
+    });
+    return false;
+};
+fn_((sort_pdq__partEq(R range, usize pivot, sort_IdxCtx idx_ctx))(usize)) {
+    sort_IdxCtx_swap(idx_ctx, range.begin, pivot);
+    var lo = range.begin + 1;
+    var hi = range.end - 1;
+    while (true) {
+        while (lo <= hi && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, range.begin, lo))) lo++;
+        while (lo <= hi && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, range.begin, hi))) hi--;
+        if (lo > hi) break;
+        sort_IdxCtx_swap(idx_ctx, lo++, hi--);
+    }
+    return lo;
+};
+fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
+    sort_IdxCtx_swap(idx_ctx, range.begin, *pivot);
+    var lo = range.begin + 1;
+    var hi = range.end - 1;
+
+    while (lo <= hi && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, lo, range.begin))) lo++;
+    while (lo <= hi && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, hi, range.begin))) hi--;
+
+    /* check if items are already partitioned (no item to swap) */
+    if (lo > hi) {
+        sort_IdxCtx_swap(idx_ctx, hi, range.begin);
+        *pivot = hi;
+        return true;
+    }
+
+    sort_IdxCtx_swap(idx_ctx, lo++, hi--);
+
+    while (true) {
+        while (lo <= hi && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, lo, range.begin))) lo++;
+        while (lo <= hi && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, hi, range.begin))) hi--;
+        if (lo > hi) break;
+        sort_IdxCtx_swap(idx_ctx, lo++, hi--);
+    }
+
+    sort_IdxCtx_swap(idx_ctx, hi, range.begin);
+    *pivot = hi;
+    return false;
+};
+
+/*========== External Definitions: Block Sort ===============================*/
+
+/* --- Internal Definitions --- */
+
+typedef struct sort_block__Iter {
+    usize size;
+    usize pow2;
+    usize dec;
+    usize dec_step;
+    usize num;
+    usize num_step;
+    usize denom;
+} sort_block__Iter;
+$attr($inline_always)
+$static fn_((sort_block__Iter_init(usize size2, usize min_level))(sort_block__Iter));
+$attr($inline_always)
+$static fn_((sort_block__Iter_len(sort_block__Iter* self))(usize));
+$attr($inline_always)
+$static fn_((sort_block__Iter_begin(sort_block__Iter* self))(void));
+$attr($inline_always)
+$static fn_((sort_block__Iter_nextRange(sort_block__Iter* self))(R));
+$attr($inline_always)
+$static fn_((sort_block__Iter_nextLevel(sort_block__Iter* self))(bool));
+$attr($inline_always)
+$static fn_((sort_block__Iter_finished(sort_block__Iter* self))(bool));
+
+/* In-place merge fallback via Hwang-Lin rotations */
+$static fn_((sort_block__mergeInPlace(
+    u_S$raw seq, R left, R right,
+    sort_OrdCtxFn ordFn, u_P_const$raw ctx
+))(void));
+/* Buffer-assisted merge: Optimal O(N) memory utilization */
+$static fn_((sort_block__mergeExternal(
+    u_S$raw seq, R left, R right, u_S$raw cache,
+    sort_OrdCtxFn ordFn, u_P_const$raw ctx
+))(void));
+
+/* --- External Definitions --- */
+
+fn_((sort_block(u_S$raw seq, sort_OrdFn ordFn))(void)) {
+    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    sort_blockCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+};
+
+fn_((sort_blockCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void)) {
+    var_(cache_buf, A$$(sort_limit_block_cache_stack_bytes, u8)) $align(16) = A_zero();
+    let cache_cap = (0 < seq.type.size) ? (sort_limit_block_cache_stack_bytes / seq.type.size) : 0;
+    let_(cache, u_S$raw) = u_init$S((seq.type)(A_ptr(cache_buf), cache_cap));
+    $ignore_void sort_blockCtxCache(cache, seq, ordFn, ctx);
+};
+
+fn_((sort_blockCache(u_S$raw cache, u_S$raw seq, sort_OrdFn ordFn))(u_S$raw)) {
+    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    return sort_blockCtxCache(cache, seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+};
+
+fn_((sort_blockCtxCache(u_S$raw cache, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(u_S$raw)) {
+    if (seq.len <= 1) return seq;
+
+    let_(min_level, usize) = sort_threshold_fallback_to_insert_sort;
+    var iter = sort_block__Iter_init(seq.len, min_level);
+    /* O(N) insertion phase for lowest-level runs */
+    while (!sort_block__Iter_finished(&iter)) {
+        let range = sort_block__Iter_nextRange(&iter);
+        sort_insertCtx(u_sliceS(seq, range), ordFn, ctx);
+    }
+    if (!sort_block__Iter_nextLevel(&iter)) return seq;
+
+    /* bottom-up hierarchical merging */
+    while (true) {
+        sort_block__Iter_begin(&iter);
+        while (!sort_block__Iter_finished(&iter)) {
+            let left = sort_block__Iter_nextRange(&iter);
+            let right = sort_block__Iter_nextRange(&iter);
+            if (R_len(right) == 0) continue;
+
+            let already_sorted = cmp_Ord_isLe(sort__ord(
+                ordFn,
+                u_atS(seq, left.end - 1).as_const,
+                u_atS(seq, right.begin).as_const,
+                ctx
+            ));
+            if (already_sorted) continue;
+
+            /* adaptive dispatch: route to fast path if buffer satisfies partial length K */
+            if (cache.len < R_len(left)) {
+                sort_block__mergeInPlace(seq, left, right, ordFn, ctx);
+            } else {
+                sort_block__mergeExternal(seq, left, right, cache, ordFn, ctx);
+            }
+        }
+        if (!sort_block__Iter_nextLevel(&iter)) break;
+    }
+    return seq;
+};
+
+fn_((sort_blockAlloc(mem_Allocator gpa, u_S$raw seq, sort_OrdFn ordFn))(mem_Err$u_S$raw)) {
+    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    return sort_blockCtxAlloc(gpa, seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+};
+
+$static fn_((sort_block__allocCache(mem_Allocator gpa, TypeInfo type, usize len))(mem_Err$u_S$raw));
+fn_((sort_blockCtxAlloc(mem_Allocator gpa, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(mem_Err$u_S$raw) $scope) {
+    let cache = try_(sort_block__allocCache(gpa, seq.type, seq.len));
+    return_ok(sort_blockCtxCache(cache, seq, ordFn, ctx));
+} $unscoped_(fn);
+
+fn_((sort_block__allocCache(mem_Allocator gpa, TypeInfo type, usize len))(mem_Err$u_S$raw) $scope) {
+    if_ok((mem_Allocator_alloc(gpa, type, len))(cover_full)) return_ok(cover_full);
+    if_ok((mem_Allocator_alloc(gpa, type, len / 2))(cover_half)) return_ok(cover_half);
+    return_ok(try_(mem_Allocator_alloc(gpa, type, len / 4)));
+} $unscoped_(fn);
+
+/* --- Internal Definitions --- */
+
+fn_((sort_block__Iter_init(usize size2, usize min_level))(sort_block__Iter)) {
+    let pow2 = sort__floorPow2(size2);
+    let denom = pow2 / min_level;
+    return (sort_block__Iter){
+        .size = size2,
+        .pow2 = pow2,
+        .dec = 0,
+        .dec_step = size2 / denom,
+        .num = 0,
+        .num_step = size2 % denom,
+        .denom = denom,
+    };
+};
+fn_((sort_block__Iter_len(sort_block__Iter* self))(usize)) {
+    return self->dec_step;
+};
+fn_((sort_block__Iter_begin(sort_block__Iter* self))(void)) {
+    self->dec = 0;
+    self->num = 0;
+};
+fn_((sort_block__Iter_nextRange(sort_block__Iter* self))(R)) {
+    let start = self->dec;
+    self->dec += self->dec_step;
+    self->num += self->num_step;
+    if (self->num >= self->denom) {
+        self->num -= self->denom;
+        self->dec += 1;
+    }
+    return $r(start, self->dec);
+};
+fn_((sort_block__Iter_nextLevel(sort_block__Iter* self))(bool)) {
+    self->dec_step += self->dec_step;
+    self->num_step += self->num_step;
+    if (self->num_step >= self->denom) {
+        self->num_step -= self->denom;
+        self->dec_step += 1;
+    }
+    return sort_block__Iter_len(self) < self->size;
+};
+fn_((sort_block__Iter_finished(sort_block__Iter* self))(bool)) {
+    return self->dec >= self->size;
+};
+
+fn_((sort_block__mergeInPlace(
+    u_S$raw seq, R left, R right,
+    sort_OrdCtxFn ordFn, u_P_const$raw ctx
+))(void)) {
+    if (R_len(left) == 0 || R_len(right) == 0) return;
+    while (true) {
+        let pivot_ptr = u_atS(seq.as_const, left.begin);
+        let split_offset = search_lowerBound(
+            u_sliceS(seq, right).as_const,
+            u_anyV(lit$((sort__SearchOrdAdpCtx){
+                .ordFn = ordFn,
+                .val_ptr = pivot_ptr,
+                .inner = ctx,
+            })),
+            wrapFn$(search_OrdFn, sort__searchOrdAdp)
+        );
+        let split_point = split_offset + right.begin;
+
+        let rotate_range = $r(left.begin, split_point);
+        let rotate_amount = R_len(left);
+        mem_rotate(u_sliceS(seq, rotate_range), rotate_amount);
+        if (right.end == split_point) break;
+
+        right.begin = split_point;
+        left = $r(left.begin + (split_point - left.end), right.begin);
+
+        let left_pivot_ptr = u_atS(seq.as_const, left.begin);
+        let skip_offset = search_upperBound(
+            u_sliceS(seq, left).as_const,
+            u_anyV(lit$((sort__SearchOrdAdpCtx){
+                .ordFn = ordFn,
+                .val_ptr = left_pivot_ptr,
+                .inner = ctx,
+            })),
+            wrapFn$(search_OrdFn, sort__searchOrdAdp)
+        );
+        left.begin += skip_offset;
+        if (R_len(left) == 0) break;
+    }
+};
+fn_((sort_block__mergeExternal(
+    u_S$raw seq, R left, R right, u_S$raw cache,
+    sort_OrdCtxFn ordFn, u_P_const$raw ctx
+))(void)) {
+    let left_len = R_len(left);
+    /* cache left run into external memory */
+    u_memcpyS(u_prefixS(cache, left_len), u_sliceS(seq, left).as_const);
+
+    var_(cache_idx, usize) = 0;
+    var_(right_idx, usize) = right.begin;
+    var_(dst_idx, usize) = left.begin;
+
+    while (cache_idx < left_len && right_idx < right.end) {
+        let ord = sort__ord(
+            ordFn,
+            u_atS(seq, right_idx).as_const,
+            u_atS(cache, cache_idx).as_const,
+            ctx
+        );
+        if (cmp_Ord_isLt(ord)) {
+            u_memcpy(u_atS(seq, dst_idx), u_atS(seq, right_idx++).as_const);
         } else {
-            prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, seq.type.size);
-            r_it.raw = as$(u8*)(r_it.raw) + seq.type.size;
+            u_memcpy(u_atS(seq, dst_idx), u_atS(cache, cache_idx++).as_const);
         }
-        temp_cursor += seq.type.size;
+        dst_idx++;
     }
 
-    /* Copy remaining elements */
-    if (l_it.raw < l_end.raw) {
-        temp_cursor += blk({
-            let bytes_left = ptrToInt(l_end.raw) - ptrToInt(l_it.raw);
-            prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, bytes_left);
-            blk_return_(bytes_left);
-        });
+    /* flush remainder of left if right is exhausted */
+    if (cache_idx < left_len) {
+        let remaining = left_len - cache_idx;
+        u_memcpyS(
+            u_sliceS(seq, $r(dst_idx, dst_idx + remaining)),
+            u_sliceS(cache, $rf(cache_idx)).as_const
+        );
     }
-    if (r_it.raw < r_end.raw) {
-        temp_cursor += blk({
-            let bytes_right = ptrToInt(r_end.raw) - ptrToInt(r_it.raw);
-            prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, bytes_right);
-            blk_return_(bytes_right);
-        });
-    }
-
-    /* Copy merged elements back to the original array */
-    let total_bytes = temp_cursor;
-    prim_memcpy(seq.ptr, tmp.ptr, total_bytes);
-    return_ok(prefixS(tmp, total_bytes));
-} $unscoped_(fn);
-
-// NOLINTNEXTLINE(misc-no-recursion)
-fn_((sort_mergeTmpCtxRecur(
-    S$u8 tmp,
-    u_S$raw seq,
-    sort_OrdCtxFn ordFn,
-    u_P_const$raw ctx
-))(sort_mem_Err$S$u8) $scope) {
-    if (seq.len <= sort_stable_sort_threshold_merge_to_insert) {
-        sort_insertCtx(seq, ordFn, ctx);
-        return_ok({});
-    }
-    /* Sort each half recursively */
-    let mid_idx = seq.len / 2;
-    try_(sort_mergeTmpCtxRecur(tmp, u_prefixS(seq, mid_idx), ordFn, ctx));
-    try_(sort_mergeTmpCtxRecur(tmp, u_suffixS(seq, mid_idx), ordFn, ctx));
-
-    /* Check if merging is necessary */ {
-        let l_last = u_atS(seq, mid_idx - 1);
-        let r_first = u_atS(seq, mid_idx);
-        if (sort__ordCtx(ordFn, l_last.as_const, r_first.as_const, ctx) <= cmp_Ord_eq) {
-            return_ok({}); /* Already ordered, no merge needed */
-        }
-    }
-
-    /* Merge the sorted halves using the temporary buffer */
-    var l_it = u_atS(seq, 0);
-    let l_end = u_atS(seq, mid_idx);
-    var r_it = l_end;
-    let r_end = u_atS(seq, seq.len);
-    var_(temp_cursor, usize) = 0;
-    while (l_it.raw < l_end.raw && r_it.raw < r_end.raw) {
-        if (sort__ordCtx(ordFn, l_it.as_const, r_it.as_const, ctx) <= cmp_Ord_eq) {
-            prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, seq.type.size);
-            l_it.raw = as$(u8*)(l_it.raw) + seq.type.size;
-        } else {
-            prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, seq.type.size);
-            r_it.raw = as$(u8*)(r_it.raw) + seq.type.size;
-        }
-        temp_cursor += seq.type.size;
-    }
-
-    /* Copy remaining elements */
-    if (l_it.raw < l_end.raw) {
-        temp_cursor += blk({
-            let bytes_left = ptrToInt(l_end.raw) - ptrToInt(l_it.raw);
-            prim_memcpy(S_at((tmp)[temp_cursor]), l_it.raw, bytes_left);
-            blk_return_(bytes_left);
-        });
-    }
-    if (r_it.raw < r_end.raw) {
-        temp_cursor += blk({
-            let bytes_right = ptrToInt(r_end.raw) - ptrToInt(r_it.raw);
-            prim_memcpy(S_at((tmp)[temp_cursor]), r_it.raw, bytes_right);
-            blk_return_(bytes_right);
-        });
-    }
-
-    /* Copy merged elements back to the original array */
-    let total_bytes = temp_cursor;
-    prim_memcpy(seq.ptr, tmp.ptr, total_bytes);
-    return_ok(prefixS(tmp, total_bytes));
-} $unscoped_(fn);
-
-fn_((sort_stable(mem_Allocator gpa, u_S$raw seq, sort_OrdFn ordFn))(mem_Err$void) $guard) {
-    let tmp_len_required = unwrap_(usize_mulChkd(seq.len, seq.type.size));
-    T_use_E$($set(mem_Err)(S$u8));
-    let tmp = try_(u_castE$((mem_Err$S$u8)(mem_Allocator_alloc(gpa, typeInfo$(u8), tmp_len_required))));
-    defer_(mem_Allocator_free(gpa, u_anyS(tmp)));
-    let_ignore = try_(sort_mergeTmpRecur(tmp, seq, ordFn));
-    return_ok({});
-} $unguarded_(fn);
-
-fn_((sort_stableCtx(mem_Allocator gpa, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(mem_Err$void) $guard) {
-    let tmp_len_required = unwrap_(usize_mulChkd(seq.len, seq.type.size));
-    T_use_E$($set(mem_Err)(S$u8));
-    let tmp = try_(u_castE$((mem_Err$S$u8)(mem_Allocator_alloc(gpa, typeInfo$(u8), tmp_len_required))));
-    defer_(mem_Allocator_free(gpa, u_anyS(tmp)));
-    let_ignore = try_(sort_mergeTmpCtxRecur(tmp, seq, ordFn, ctx));
-    return_ok({});
-} $unguarded_(fn);
-
-fn_((sort_stableTmp(S$u8 tmp, u_S$raw seq, sort_OrdFn ordFn))(sort_mem_Err$S$u8) $scope) {
-    let tmp_len_required = unwrap_(usize_mulChkd(seq.len, seq.type.size));
-    if (tmp.len < tmp_len_required) { return_err(mem_Err_OutOfMemory()); }
-    return_ok(try_(sort_mergeTmpRecur(tmp, seq, ordFn)));
-} $unscoped_(fn);
-
-fn_((sort_stableTmpCtx(S$u8 tmp, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(sort_mem_Err$S$u8) $scope) {
-    let tmp_len_required = unwrap_(usize_mulChkd(seq.len, seq.type.size));
-    if (tmp.len < tmp_len_required) { return_err(mem_Err_OutOfMemory()); }
-    return_ok(try_(sort_mergeTmpCtxRecur(tmp, seq, ordFn, ctx)));
-} $unscoped_(fn);
+};

@@ -166,78 +166,145 @@ $static fn_((mem_spanZ0Mut$u8(u8* p))(S$u8));
 #define mem_bytesAsS$(/*(_T)(_bytes: S(u8))*/... /*(_T)*/) __step__mem_bytesAsS$(__VA_ARGS__)
 
 $extern fn_((mem_copyBytes(S$u8 dst, S_const$u8 src))(S$u8));
+$extern fn_((mem_copyP(u_P$raw dst, u_P_const$raw src))(u_P$raw));
+#define T_use_mem_copyP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_copyP, _T)(P$(_T) dst, P_const$(_T) src))(P$(_T))) { \
+        return u_castP$((P$(_T))(mem_copyP(u_anyP(dst), u_anyP(src)))); \
+    }
 $extern fn_((mem_copy(u_S$raw dst, u_S_const$raw src))(u_S$raw));
 #define T_use_mem_copy$(_T...) \
     $inline_always $static fn_((tpl_id(mem_copy, _T)(S$(_T) dst, S_const$(_T) src))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_copy(u_anyS(dst), u_anyS(src)))); \
     }
 $extern fn_((mem_moveBytes(S$u8 dst, S_const$u8 src))(S$u8));
+$extern fn_((mem_moveP(u_P$raw dst, u_P_const$raw src))(u_P$raw));
+#define T_use_mem_moveP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_moveP, _T)(P$(_T) dst, P_const$(_T) src))(P$(_T))) { \
+        return u_castP$((P$(_T))(mem_moveP(u_anyP(dst), u_anyP(src)))); \
+    }
 $extern fn_((mem_move(u_S$raw dst, u_S_const$raw src))(u_S$raw));
 #define T_use_mem_move$(_T...) \
     $inline_always $static fn_((tpl_id(mem_move, _T)(S$(_T) dst, S_const$(_T) src))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_move(u_anyS(dst), u_anyS(src)))); \
     }
 $extern fn_((mem_setBytes(S$u8 dst, u8 val))(S$u8));
+$extern fn_((mem_setP(u_P$raw dst, u_V$raw val))(u_P$raw));
+#define T_use_mem_setP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_setP, _T)(P$(_T) dst, _T val))(P$(_T))) { \
+        return u_castP$((P$(_T))(mem_setP(u_anyP(dst), u_anyV(val)))); \
+    }
 $extern fn_((mem_set(u_S$raw dst, u_V$raw val))(u_S$raw));
 #define T_use_mem_set$(_T...) \
     $inline_always $static fn_((tpl_id(mem_set, _T)(S$(_T) dst, _T val))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_set(u_anyS(dst), u_anyV(val)))); \
     }
-$extern fn_((mem_setBytes0(S$u8 dst))(S$u8));
+$extern fn_((mem_set0Bytes(S$u8 dst))(S$u8));
+$extern fn_((mem_set0P(u_P$raw dst))(u_P$raw));
+#define T_use_mem_setP0$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_setP0, _T)(P$(_T) dst))(P$(_T))) { \
+        return u_castP$((P$(_T))(mem_set0P(u_anyP(dst)))); \
+    }
 $extern fn_((mem_set0(u_S$raw dst))(u_S$raw));
 #define T_use_mem_set0$(_T...) \
     $inline_always $static fn_((tpl_id(mem_set0, _T)(S$(_T) dst))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_set0(u_anyS(dst)))); \
     }
+
 $extern fn_((mem_eqlBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_eqlP(u_P_const$raw lhs, u_P_const$raw rhs))(bool));
+#define T_use_mem_eqlP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_eqlP, _T)(P_const$(_T) lhs, P_const$(_T) rhs))(bool)) { \
+        return mem_eqlP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_eql(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_eql$(_T...) \
     $inline_always $static fn_((tpl_id(mem_eql, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_eql(u_anyS(lhs), u_anyS(rhs)); \
     }
 $extern fn_((mem_neqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_neqP(u_P_const$raw lhs, u_P_const$raw rhs))(bool));
+#define T_use_mem_neqP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_neqP, _T)(P_const$(_T) lhs, P_const$(_T) rhs))(bool)) { \
+        return mem_neqP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_neq(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_neq$(_T...) \
     $inline_always $static fn_((tpl_id(mem_neq, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_neq(u_anyS(lhs), u_anyS(rhs)); \
     }
+
 $extern fn_((mem_ordBytes(S_const$u8 lhs, S_const$u8 rhs))(cmp_Ord));
+$extern fn_((mem_ordP(u_P_const$raw lhs, u_P_const$raw rhs))(cmp_Ord));
+#define T_use_mem_ordP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_ordP, _T)(P_const$(_T) lhs, P_const$(_T) rhs))(cmp_Ord)) { \
+        return mem_ordP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_ord(u_S_const$raw lhs, u_S_const$raw rhs))(cmp_Ord));
 #define T_use_mem_ord$(_T...) \
     $inline_always $static fn_((tpl_id(mem_ord, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(cmp_Ord)) { \
         return mem_ord(u_anyS(lhs), u_anyS(rhs)); \
     }
 $extern fn_((mem_eqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_eqP(u_P_const$raw lhs, u_P_const$raw rhs))(bool));
+#define T_use_mem_eqP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_eqP, _T)(P_const$(_T) lhs, P_const$(_T) rhs))(bool)) { \
+        return mem_eqP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_eq(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_eq$(_T...) \
     $inline_always $static fn_((tpl_id(mem_eq, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_eq(u_anyS(lhs), u_anyS(rhs)); \
     }
 $extern fn_((mem_neBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_neP(u_P_const$raw lhs, u_P_const$raw rhs))(bool));
+#define T_use_mem_neP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_neP, _T)(P_const$(_T) lhs, P_const$(_T) rhs))(bool)) { \
+        return mem_neP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_ne(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_ne$(_T...) \
     $inline_always $static fn_((tpl_id(mem_ne, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_ne(u_anyS(lhs), u_anyS(rhs)); \
     }
 $extern fn_((mem_ltBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_ltP(u_P_const$raw lhs, u_P_const$raw rhs))(bool));
+#define T_use_mem_ltP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_ltP, _T)(P_const$(_T) lhs, P_const$(_T) rhs))(bool)) { \
+        return mem_ltP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_lt(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_lt$(_T...) \
     $inline_always $static fn_((tpl_id(mem_lt, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_lt(u_anyS(lhs), u_anyS(rhs)); \
     }
 $extern fn_((mem_gtBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_gtP(u_P_const$raw lhs, u_P_const$raw rhs))(bool));
+#define T_use_mem_gtP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_gtP, _T)(P_const$(_T) lhs, P_const$(_T) rhs))(bool)) { \
+        return mem_gtP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_gt(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_gt$(_T...) \
     $inline_always $static fn_((tpl_id(mem_gt, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_gt(u_anyS(lhs), u_anyS(rhs)); \
     }
 $extern fn_((mem_leBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_leP(u_P_const$raw lhs, u_P_const$raw rhs))(bool));
+#define T_use_mem_leP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_leP, _T)(P_const$(_T) lhs, P_const$(_T) rhs))(bool)) { \
+        return mem_leP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_le(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_le$(_T...) \
     $inline_always $static fn_((tpl_id(mem_le, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_le(u_anyS(lhs), u_anyS(rhs)); \
     }
 $extern fn_((mem_geBytes(S_const$u8 lhs, S_const$u8 rhs))(bool));
+$extern fn_((mem_geP(u_P_const$raw lhs, u_P_const$raw rhs))(bool));
+#define T_use_mem_geP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_geP, _T)(P_const$(_T) lhs, P_const$(_T) rhs))(bool)) { \
+        return mem_geP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_ge(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
 #define T_use_mem_ge$(_T...) \
     $inline_always $static fn_((tpl_id(mem_ge, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
@@ -245,16 +312,27 @@ $extern fn_((mem_ge(u_S_const$raw lhs, u_S_const$raw rhs))(bool));
     }
 
 $extern fn_((mem_swapBytes(S$u8 lhs, S$u8 rhs))(void));
+$extern fn_((mem_swapP(u_P$raw lhs, u_P$raw rhs))(void));
+#define T_use_mem_swapP$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_swapP, _T)(P$(_T) lhs, P$(_T) rhs))(void)) { \
+        return mem_swapP(u_anyP(lhs), u_anyP(rhs)); \
+    }
 $extern fn_((mem_swap(u_S$raw lhs, u_S$raw rhs))(void));
 #define T_use_mem_swap$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_swap, _T)(S$(_T) lhs, S$(_T) rhs))(S$(_T))) { \
-        return u_castS$((S$(_T))(mem_swap(u_anyS(lhs), u_anyS(rhs)))); \
+    $inline_always $static fn_((tpl_id(mem_swap, _T)(S$(_T) lhs, S$(_T) rhs))(void)) { \
+        return mem_swap(u_anyS(lhs), u_anyS(rhs)); \
     }
-$extern fn_((mem_swapBytesTmp(S$u8 lhs, S$u8 rhs, S$u8 tmp))(S$u8));
-$extern fn_((mem_swapTmp(u_S$raw lhs, u_S$raw rhs, u_S$raw tmp))(u_S$raw));
-#define T_use_mem_swapTmp$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_swapTmp, _T)(S$(_T) lhs, S$(_T) rhs))(S$(_T))) { \
-        return u_castS$((S$(_T))(mem_swapTmp(u_anyS(lhs), u_anyS(rhs), u_anyS(tmp)))); \
+$extern fn_((mem_reverseBytes(S$u8 seq))(void));
+$extern fn_((mem_reverse(u_S$raw seq))(void));
+#define T_use_mem_reverse$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_reverse, _T)(S$(_T) seq))(void)) { \
+        return mem_reverse(u_anyS(seq)); \
+    }
+$extern fn_((mem_rotateBytes(S$u8 seq, usize amount))(void));
+$extern fn_((mem_rotate(u_S$raw seq, usize amount))(void));
+#define T_use_mem_rotate$(_T...) \
+    $inline_always $static fn_((tpl_id(mem_rotate, _T)(S$(_T) seq, usize amount))(void)) { \
+        return mem_rotate(u_anyS(seq), amount); \
     }
 
 $extern fn_((mem_startsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool));

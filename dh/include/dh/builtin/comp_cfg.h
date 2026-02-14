@@ -1,13 +1,12 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    comp_cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2025-11-27 (date of last update)
- * @version v0.1
- * @ingroup dasae-headers(dh)/foundation
+ * @updated 2026-02-10 (date of last update)
+ * @ingroup dal-project/da/foundation
  * @prefix  comp
  *
  * @brief   Compiler detection and feature configuration
@@ -50,39 +49,51 @@ extern "C" {
 
 /* --- Compiler Attributes --- */
 
+/* Diagnostics & Constraints */
+#define comp_deprecated __comp_attr__comp_deprecated
+#define comp_deprecated_msg(_msg) __comp_attr__comp_deprecated_msg(_msg)
+#define comp_deprecated_instead(_msg, _replacement) __comp_attr__comp_deprecated_instead(_msg, _replacement)
+
+#define comp_must_use __comp_attr__comp_must_use
+#define comp_maybe_unused __comp_attr__comp_maybe_unused
+
+/* Data Layout */
 #define comp_packed __comp_attr__comp_packed
 #define comp_align(_align) __comp_attr__comp_align(_align)
 
+/* Visibility & Linkage */
+#define comp_export __comp_attr__comp_export
+#define comp_import __comp_attr__comp_import
+#define comp_keep_symbol __comp_attr__comp_keep_symbol
+
+/* Semantics & Behavior */
+#define comp_pure __comp_attr__comp_pure
+#define comp_view __comp_attr__comp_view
+#define comp_return_never __comp_attr__comp_return_never
+
+/* Optimization Hints */
 #define comp_inline __comp_attr__comp_inline
 #define comp_inline_always __comp_attr__comp_inline_always
 #define comp_inline_never __comp_attr__comp_inline_never
 
-#define comp_keep_symbol __comp_attr__comp_keep_symbol
-#define comp_maybe_unused __comp_attr__comp_maybe_unused
-#define comp_must_use __comp_attr__comp_must_use
+#define comp_branch_hot __comp_attr__comp_branch_hot
+#define comp_branch_cold __comp_attr__comp_branch_cold
 
-#define comp_import __comp_attr__comp_import
-#define comp_export __comp_attr__comp_export
-
+/* Lifecycle */
 #define comp_on_load __comp_attr__comp_on_load
 #define comp_on_exit __comp_attr__comp_on_exit
 #define comp_on_load_priority(_priority) __comp_attr__comp_on_load_priority(_priority)
 #define comp_on_exit_priority(_priority) __comp_attr__comp_on_exit_priority(_priority)
 
-#define comp_return_never __comp_attr__comp_return_never
-
+/* Control Flow */
 #define comp_fallthrough __comp_attr__comp_fallthrough
-#define comp_branch_hot __comp_attr__comp_branch_hot
-#define comp_branch_cold __comp_attr__comp_branch_cold
-#define comp_branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __comp_attr__comp_branch_predict_at(_prob, _expr)
-#define comp_branch_likely(_expr... /*(bool)*/) __comp_attr__comp_branch_likely(_expr)
-#define comp_branch_unlikely(_expr... /*(bool)*/) __comp_attr__comp_branch_unlikely(_expr)
-#define comp_branch_unpredictable(_expr... /*(bool)*/) __comp_attr__comp_branch_unpredictable(_expr)
 #define comp_unreachable __comp_attr__comp_unreachable
 
-#define comp_deprecated __comp_attr__comp_deprecated
-#define comp_deprecated_msg(_msg) __comp_attr__comp_deprecated_msg(_msg)
-#define comp_deprecated_instead(_msg, _replacement) __comp_attr__comp_deprecated_instead(_msg, _replacement)
+/* Branch Prediction */
+#define comp_branch_likely(_expr... /*(bool)*/) __comp_attr__comp_branch_likely(_expr)
+#define comp_branch_unlikely(_expr... /*(bool)*/) __comp_attr__comp_branch_unlikely(_expr)
+#define comp_branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __comp_attr__comp_branch_predict_at(_prob, _expr)
+#define comp_branch_unpredictable(_expr... /*(bool)*/) __comp_attr__comp_branch_unpredictable(_expr)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -165,20 +176,30 @@ extern "C" {
 /* --- Compiler Attributes --- */
 
 #if comp_type == comp_type_clang || comp_type == comp_type_gcc
+#define __comp_attr__comp_deprecated __attribute__((deprecated))
+#define __comp_attr__comp_deprecated_msg(_msg) __attribute__((deprecated(_msg)))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __attribute__((deprecated(_msg ": Use " #_replacement " instead")))
+
+#define __comp_attr__comp_must_use __attribute__((warn_unused_result))
+#define __comp_attr__comp_maybe_unused __attribute__((unused))
+
 #define __comp_attr__comp_packed __attribute__((packed))
 #define __comp_attr__comp_align(_align) __attribute__((aligned(_align)))
+
+#define __comp_attr__comp_export __attribute__((visibility("default")))
+#define __comp_attr__comp_import
+#define __comp_attr__comp_keep_symbol __attribute__((used))
+
+#define __comp_attr__comp_pure __attribute__((const))
+#define __comp_attr__comp_view __attribute__((pure))
+#define __comp_attr__comp_return_never __attribute__((noreturn))
 
 #define __comp_attr__comp_inline inline
 #define __comp_attr__comp_inline_always __attribute__((always_inline)) inline
 #define __comp_attr__comp_inline_never __attribute__((noinline))
 
-#define __comp_attr__comp_keep_symbol __attribute__((used))
-#define __comp_attr__comp_maybe_unused __attribute__((unused))
-#define __comp_attr__comp_must_use __attribute__((warn_unused_result))
-
-/* Visibility */
-#define __comp_attr__comp_import
-#define __comp_attr__comp_export __attribute__((visibility("default")))
+#define __comp_attr__comp_branch_hot __attribute__((hot))
+#define __comp_attr__comp_branch_cold __attribute__((cold))
 
 #define __comp_attr__comp_on_load __attribute__((constructor))
 #define __comp_attr__comp_on_exit __attribute__((destructor))
@@ -186,38 +207,42 @@ extern "C" {
 #define __comp_attr__comp_on_load_priority(_priority) __attribute__((constructor(_priority)))
 #define __comp_attr__comp_on_exit_priority(_priority) __attribute__((destructor(_priority)))
 
-#define __comp_attr__comp_return_never __attribute__((noreturn))
-
 #define __comp_attr__comp_fallthrough __attribute__((fallthrough))
-#define __comp_attr__comp_branch_hot __attribute__((hot))
-#define __comp_attr__comp_branch_cold __attribute__((cold))
-#define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), _prob)
-#define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
-#define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
-#define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
 #define __comp_attr__comp_unreachable __builtin_unreachable()
 
-#define __comp_attr__comp_deprecated __attribute__((deprecated))
-#define __comp_attr__comp_deprecated_msg(_msg) __attribute__((deprecated(_msg)))
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __attribute__((deprecated(_msg ": Use " #_replacement " instead")))
+#define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
+#define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
+#define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), 1, _prob)
+#define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
 
 #elif comp_type == comp_type_msvc
+#define __comp_attr__comp_deprecated __declspec(deprecated)
+#define __comp_attr__comp_deprecated_msg(_msg) __declspec(deprecated(_msg))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __declspec(deprecated(_msg " Use " #_replacement " instead"))
+
+#define __comp_attr__comp_must_use _Check_return_ /* _Must_inspect_result_ maps to this */
+#define __comp_attr__comp_maybe_unused __pragma(warning(suppress : 4100 4101 4189))
+
 #define __comp_attr__comp_packed /* TODO: Implement MSVC packed attribute with struct scope */
 #define __comp_attr__comp_align(_align) __declspec(align(_align))
+
+/* DLL Import/Export */
+#define __comp_attr__comp_export __declspec(dllexport)
+#define __comp_attr__comp_import __declspec(dllimport)
+/* FIX: MSVC does not strictly support 'used' via declspec. Often ignored or creates warning C4230.
+   Usually relies on linker pragmas, but strictly speaking declspec(noinline) is often enough to keep it. */
+#define __comp_attr__comp_keep_symbol
+
+#define __comp_attr__comp_pure __declspec(const)
+#define __comp_attr__comp_view __declspec(pure)
+#define __comp_attr__comp_return_never __declspec(noreturn)
 
 #define __comp_attr__comp_inline __inline
 #define __comp_attr__comp_inline_always __forceinline
 #define __comp_attr__comp_inline_never __declspec(noinline)
 
-/* FIX: MSVC does not strictly support 'used' via declspec. Often ignored or creates warning C4230.
-   Usually relies on linker pragmas, but strictly speaking declspec(noinline) is often enough to keep it. */
-#define __comp_attr__comp_keep_symbol
-#define __comp_attr__comp_maybe_unused __pragma(warning(suppress : 4100 4101 4189))
-#define __comp_attr__comp_must_use _Check_return_ /* _Must_inspect_result_ maps to this */
-
-/* DLL Import/Export */
-#define __comp_attr__comp_import __declspec(dllimport)
-#define __comp_attr__comp_export __declspec(dllexport)
+#define __comp_attr__comp_branch_hot
+#define __comp_attr__comp_branch_cold
 
 /* FIX: MSVC does NOT support constructor/destructor attributes.
    Implementing this requires .CRT$XCU section hacking.
@@ -227,55 +252,52 @@ extern "C" {
 #define __comp_attr__comp_on_load_priority(_priority)
 #define __comp_attr__comp_on_exit_priority(_priority)
 
-#define __comp_attr__comp_return_never __declspec(noreturn)
-
+#define __comp_attr__comp_unreachable __assume(0)
 #define __comp_attr__comp_fallthrough
-#define __comp_attr__comp_branch_hot
-#define __comp_attr__comp_branch_cold
-#define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), _prob)
+
 #define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
 #define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
+#define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), 1, _prob)
 #define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
-#define __comp_attr__comp_unreachable __assume(0)
-
-#define __comp_attr__comp_deprecated __declspec(deprecated)
-#define __comp_attr__comp_deprecated_msg(_msg) __declspec(deprecated(_msg))
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __declspec(deprecated(_msg " Use " #_replacement " instead"))
 
 #else
+#define __comp_attr__comp_deprecated
+#define __comp_attr__comp_deprecated_msg(_msg)
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement)
+
+#define __comp_attr__comp_must_use
+#define __comp_attr__comp_maybe_unused
+
 #define __comp_attr__comp_packed
 #define __comp_attr__comp_align(_align)
+
+#define __comp_attr__comp_export
+#define __comp_attr__comp_import
+#define __comp_attr__comp_keep_symbol
+
+#define __comp_attr__comp_pure
+#define __comp_attr__comp_view
+#define __comp_attr__comp_return_never
 
 #define __comp_attr__comp_inline
 #define __comp_attr__comp_inline_always
 #define __comp_attr__comp_inline_never
 
-#define __comp_attr__comp_keep_symbol
-#define __comp_attr__comp_maybe_unused
-#define __comp_attr__comp_must_use
-
-#define __comp_attr__comp_import
-#define __comp_attr__comp_export
+#define __comp_attr__comp_branch_hot
+#define __comp_attr__comp_branch_cold
 
 #define __comp_attr__comp_on_load
 #define __comp_attr__comp_on_exit
 #define __comp_attr__comp_on_load_priority(_priority)
 #define __comp_attr__comp_on_exit_priority(_priority)
 
-#define __comp_attr__comp_return_never
-
 #define __comp_attr__comp_fallthrough
-#define __comp_attr__comp_branch_hot
-#define __comp_attr__comp_branch_cold
-#define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), _prob)
-#define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
-#define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
-#define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
 #define __comp_attr__comp_unreachable __assume(0)
 
-#define __comp_attr__comp_deprecated
-#define __comp_attr__comp_deprecated_msg(_msg)
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement)
+#define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
+#define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
+#define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), 1, _prob)
+#define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
 #endif
 
 #if defined(__cplusplus)

@@ -106,34 +106,34 @@ extern "C" {
 
 #define ____alignAs$(_T...) _Alignas(1ull << alignOf$(_T))
 #if on_comptime
-#define ____alignOf__expand(...) __VA_ARGS__
+#define ____alignOf$__expand(...) __VA_ARGS__
 #define ____alignOf$(_T...) $pragma_guard_( \
     "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
     (as$(u8)( \
         (64u - 1u) \
-        - __builtin_clzll(____alignOf__expand( \
+        - as$(u32)(__builtin_clzll(____alignOf$__expand( \
             T_switch$ pp_begin(_T)( \
-                T_case$((void)(0)), \
-                T_default_(_Alignof(_T)) \
+                T_case$((void)(as$(usize)(0))), \
+                T_default_(as$(usize)(_Alignof(_T))) \
             ) pp_end \
-        )) \
+        ))) \
     )) \
 )
 #else /* !on_comptime */
 #define ____alignOf$(_T...) $pragma_guard_( \
     "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
-    (as$(u8)((64u - 1u) - __builtin_clzll(_Alignof(_T)))) \
+    (as$(u8)((64u - 1u) - as$(u32)(__builtin_clzll(as$(usize)(_Alignof(_T)))))) \
 )
 #endif
-#define ____sizeOf__expand(...) __VA_ARGS__
+#define ____sizeOf$__expand(...) __VA_ARGS__
 #define ____sizeOf$(_T...) $pragma_guard_( \
     "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
-    (as$(usize)(____sizeOf__expand( \
+    (____sizeOf$__expand( \
         T_switch$ pp_begin(_T)( \
-            T_case$((void)(0)), \
-            T_default_(sizeof(_T)) \
+            T_case$((void)(as$(usize)(0))), \
+            T_default_(as$(usize)(sizeof(_T))) \
         ) pp_end \
-    ))) \
+    )) \
 )
 #define ____countOf$(_T...) (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(null))[0])))
 
