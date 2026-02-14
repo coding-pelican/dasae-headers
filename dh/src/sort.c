@@ -278,10 +278,12 @@ fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void)) {
             /* if the chosen pivot is equal to the predecessor, then it's the smallest
              * element in the slice. Partition the slice into elements equal to and
              * elements greater than the pivot. */
-            let ord = sort_IdxCtx_ord(idx_ctx, frame.range.begin - 1, pivot);
-            if (frame.range.begin > range.begin && !cmp_Ord_isLt(ord)) {
-                frame.range.begin = sort_pdq__partEq(frame.range, pivot, idx_ctx);
-                continue;
+            if (frame.range.begin > range.begin) {
+                let ord = sort_IdxCtx_ord(idx_ctx, frame.range.begin - 1, pivot);
+                if (!cmp_Ord_isLt(ord)) {
+                    frame.range.begin = sort_pdq__partEq(frame.range, pivot, idx_ctx);
+                    continue;
+                }
             }
 
             /* partition the slice */
