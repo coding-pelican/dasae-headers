@@ -430,30 +430,58 @@ fn_((sort_pdq__partEq(R range, usize pivot, sort_IdxCtx idx_ctx))(usize)) {
 };
 fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
     sort_IdxCtx_swap(idx_ctx, range.begin, *pivot);
-    var lo = range.begin + 1;
-    var hi = range.end - 1;
+    let pivot_idx = range.begin;
 
-    while (lo <= hi && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, lo, range.begin))) lo++;
-    while (lo <= hi && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, hi, range.begin))) hi--;
+    var l = range.begin + 1;
+    var r = range.end - 1;
+    var_(l_offsets, A$$(sort_limit_pdq_offset_blocks, u8)) = A_zero();
+    var_(r_offsets, A$$(sort_limit_pdq_offset_blocks, u8)) = A_zero();
 
-    /* check if items are already partitioned (no item to swap) */
-    if (lo > hi) {
-        sort_IdxCtx_swap(idx_ctx, hi, range.begin);
-        *pivot = hi;
+    let block_size = sort_limit_pdq_offset_blocks;
+    let min_remaining = 2 * block_size;
+    while (l < r && (r - l + 1) >= min_remaining) {
+        var_(l_count, usize) = 0;
+        for_(($rt(block_size))(scan) {
+            let is_ge = cmp_Ord_isGe(sort_IdxCtx_ord(idx_ctx, l + scan, pivot_idx));
+            *A_at((l_offsets)[l_count]) = intCast$((u8)(scan));
+            l_count += as$(usize)(boolToInt(is_ge));
+        });
+
+        var_(r_count, usize) = 0;
+        for_(($rt(block_size))(scan) {
+            let is_lt = cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r - scan, pivot_idx));
+            *A_at((r_offsets)[r_count]) = intCast$((u8)(scan));
+            r_count += as$(usize)(boolToInt(is_lt));
+        });
+
+        let pair_l_r_count = (l_count < r_count) ? l_count : r_count;
+        for_(($rt(pair_l_r_count))(i) {
+            sort_IdxCtx_swap(idx_ctx, l + *A_at((l_offsets)[i]), r - *A_at((r_offsets)[i]));
+        });
+
+        l += block_size;
+        r -= block_size;
+    }
+
+    while (l <= r && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, l, pivot_idx))) l++;
+    while (l <= r && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r, pivot_idx))) r--;
+    if (l > r) {
+        sort_IdxCtx_swap(idx_ctx, r, pivot_idx);
+        *pivot = r;
         return true;
     }
 
-    sort_IdxCtx_swap(idx_ctx, lo++, hi--);
+    sort_IdxCtx_swap(idx_ctx, l++, r--);
 
     while (true) {
-        while (lo <= hi && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, lo, range.begin))) lo++;
-        while (lo <= hi && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, hi, range.begin))) hi--;
-        if (lo > hi) break;
-        sort_IdxCtx_swap(idx_ctx, lo++, hi--);
+        while (l <= r && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, l, pivot_idx))) l++;
+        while (l <= r && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r, pivot_idx))) r--;
+        if (l > r) break;
+        sort_IdxCtx_swap(idx_ctx, l++, r--);
     }
 
-    sort_IdxCtx_swap(idx_ctx, hi, range.begin);
-    *pivot = hi;
+    sort_IdxCtx_swap(idx_ctx, r, pivot_idx);
+    *pivot = r;
     return false;
 };
 

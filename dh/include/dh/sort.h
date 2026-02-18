@@ -34,6 +34,7 @@ extern "C" {
 #define sort_max_swaps_pdq_choose_pivot __const__sort_max_swaps_pdq_choose_pivot
 #define sort_max_steps_pdq_partial_insert_sort __const__sort_max_steps_pdq_partial_insert_sort
 #define sort_threshold_pdq_partial_insert_sort __const__sort_threshold_pdq_partial_insert_sort
+#define sort_limit_pdq_offset_blocks __const__sort_limit_pdq_offset_blocks
 #define sort_limit_block_cache_stack_bytes __const__sort_limit_block_cache_stack_bytes
 
 /// Callable types for pointer-based sorting functions
@@ -119,6 +120,7 @@ $extern fn_((sort_blockCtxAlloc(mem_Allocator gpa, u_S$raw seq, sort_OrdCtxFn or
 #define __const__sort_max_swaps_pdq_choose_pivot 12
 #define __const__sort_max_steps_pdq_partial_insert_sort 5
 #define __const__sort_threshold_pdq_partial_insert_sort 50
+#define __const__sort_limit_pdq_offset_blocks 64
 #define __const__sort_limit_block_cache_stack_bytes pp_if_(arch_bits_is_64bit)(pp_then_(4096), pp_else_(2048))
 
 fn_((sort_IdxCtx_ord(sort_IdxCtx self, usize lhs, usize rhs))(cmp_Ord)) {

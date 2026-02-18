@@ -107,8 +107,7 @@ extern "C" {
 #define ____alignAs$(_T...) _Alignas(1ull << alignOf$(_T))
 #if on_comptime
 #define ____alignOf$__expand(...) __VA_ARGS__
-#define ____alignOf$(_T...) $pragma_guard_( \
-    "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
+#define ____alignOf$(_T...) $supress_pointer_arith( \
     (as$(u8)( \
         (64u - 1u) \
         - as$(u32)(__builtin_clzll(____alignOf$__expand( \
@@ -120,14 +119,12 @@ extern "C" {
     )) \
 )
 #else /* !on_comptime */
-#define ____alignOf$(_T...) $pragma_guard_( \
-    "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
+#define ____alignOf$(_T...) $supress_pointer_arith( \
     (as$(u8)((64u - 1u) - as$(u32)(__builtin_clzll(as$(usize)(_Alignof(_T)))))) \
 )
 #endif
 #define ____sizeOf$__expand(...) __VA_ARGS__
-#define ____sizeOf$(_T...) $pragma_guard_( \
-    "clang diagnostic push", "clang diagnostic ignored \"-Wpointer-arith\"", "clang diagnostic pop", \
+#define ____sizeOf$(_T...) $supress_pointer_arith( \
     (____sizeOf$__expand( \
         T_switch$ pp_begin(_T)( \
             T_case$((void)(as$(usize)(0))), \

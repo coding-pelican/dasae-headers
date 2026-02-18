@@ -1171,9 +1171,9 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define __step__alignCast__emit(...) ____alignCast(__VA_ARGS__)
 #define ____alignCast(__align, _align, __ptr, _ptr...) ({ \
     let_(__align, u8) = _align; \
-    let_(__ptr, TypeOf(_ptr)*) = &copy(_ptr); \
+    let_(__ptr, TypeOf(_ptr)) = copy(_ptr); \
     claim_assert(isAlignedLog2(__ptr, __align)); \
-    *__ptr; \
+    __ptr; \
 })
 
 #if UNUSED_CODE
@@ -1212,8 +1212,8 @@ $static u8 prim__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     _T, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max), \
         pp_uniqTok(dst_is_signed), pp_uniqTok(src_is_signed),
 #define __step__intCast$__emit(...) ____intCast$(__VA_ARGS__)
-#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) $pragma_guard_( \
-    "clang diagnostic push", "clang diagnostic ignored \"-Wimplicit-int-conversion\"", "clang diagnostic pop", ({ \
+#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) $supress_implicit_int_conversion( \
+    ({ \
         typedef _T DstType; \
         typedef TypeOf(_val) SrcType; \
         claim_assert_static(isInt$(SrcType)); \

@@ -355,8 +355,7 @@ extern "C" {
 #define comp_syn__u16_c(_literal) lit$((u16){ u##_literal })
 #define comp_syn__u32_c(_literal) lit$((u32){ U##_literal })
 
-#define comp_syn__u8_a(_literal...) $pragma_guard_( \
-    "clang diagnostic push", "clang diagnostic ignored \"-Wunterminated-string-initialization\"", "clang diagnostic pop", \
+#define comp_syn__u8_a(_literal...) $supress_unterminated_string_initialization( \
     lit$((A$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } }) \
 )
 #define comp_syn__u8_s(_literal) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })

@@ -34,6 +34,10 @@ extern "C" {
 #define comp_type_gcc __comp_enum__comp_type_gcc
 #define comp_type_msvc __comp_enum__comp_type_msvc
 
+#define comp_type_is_clang __comp_bool__comp_type_is_clang
+#define comp_type_is_gcc __comp_bool__comp_type_is_gcc
+#define comp_type_is_msvc __comp_bool__comp_type_is_msvc
+
 #define comp_name __comp_str__comp_name
 #define comp_name_unknown __comp_str__comp_name_unknown
 #define comp_name_clang __comp_str__comp_name_clang
@@ -75,6 +79,7 @@ extern "C" {
 #define comp_inline __comp_attr__comp_inline
 #define comp_inline_always __comp_attr__comp_inline_always
 #define comp_inline_never __comp_attr__comp_inline_never
+#define comp_flatten __comp_attr__comp_flatten
 
 #define comp_branch_hot __comp_attr__comp_branch_hot
 #define comp_branch_cold __comp_attr__comp_branch_cold
@@ -121,6 +126,10 @@ extern "C" {
 #else
 #warning "Unknown compiler detected. Please check your compiler settings."
 #endif
+
+#define __comp_bool__comp_type_is_clang pp_Tok_eq(comp_type, comp_type_clang)
+#define __comp_bool__comp_type_is_gcc pp_Tok_eq(comp_type, comp_type_gcc)
+#define __comp_bool__comp_type_is_msvc pp_Tok_eq(comp_type, comp_type_msvc)
 
 /* Derive name from type */
 #define __comp_str__comp_name pp_expand( \
@@ -197,6 +206,7 @@ extern "C" {
 #define __comp_attr__comp_inline inline
 #define __comp_attr__comp_inline_always __attribute__((always_inline)) inline
 #define __comp_attr__comp_inline_never __attribute__((noinline))
+#define __comp_attr__comp_flatten __attribute__((flatten))
 
 #define __comp_attr__comp_branch_hot __attribute__((hot))
 #define __comp_attr__comp_branch_cold __attribute__((cold))
@@ -240,6 +250,7 @@ extern "C" {
 #define __comp_attr__comp_inline __inline
 #define __comp_attr__comp_inline_always __forceinline
 #define __comp_attr__comp_inline_never __declspec(noinline)
+#define __comp_attr__comp_flatten
 
 #define __comp_attr__comp_branch_hot
 #define __comp_attr__comp_branch_cold
@@ -282,6 +293,7 @@ extern "C" {
 #define __comp_attr__comp_inline
 #define __comp_attr__comp_inline_always
 #define __comp_attr__comp_inline_never
+#define __comp_attr__comp_flatten
 
 #define __comp_attr__comp_branch_hot
 #define __comp_attr__comp_branch_cold

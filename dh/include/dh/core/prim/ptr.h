@@ -89,8 +89,7 @@ typedef TypeOf(void*) P$raw;
 #define __step__ptrAlignCast$(...) __step__ptrAlignCast$__emit(__step__ptrAlignCast$__parse __VA_ARGS__)
 #define __step__ptrAlignCast$__parse(_P_T...) _P_T,
 #define __step__ptrAlignCast$__emit(...) ____ptrAlignCast$(__VA_ARGS__)
-#define ____ptrAlignCast$(_P_T, _val...) $pragma_guard_( \
-    "clang diagnostic push", "clang diagnostic ignored \"-Wcast-align\"", "clang diagnostic pop", \
+#define ____ptrAlignCast$(_P_T, _val...) $supress_cast_align( \
     (as$(_P_T)(alignCast((alignOf$(_P_T))(_val)))) \
 )
 

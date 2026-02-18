@@ -50,6 +50,7 @@ extern "C" {
 #define $inline comp_attr__$inline
 #define $inline_always comp_attr__$inline_always
 #define $inline_never comp_attr__$inline_never
+#define $flatten comp_attr__$flatten
 
 #define $pure comp_attr__$pure
 #define $view comp_attr__$view
@@ -438,6 +439,24 @@ extern "C" {
     _Pragma(_ctx) \
     _code \
     _Pragma(_pop) /* clang-format on */
+#define $supress_compound_token_split_by_macro(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+#define $supress_unterminated_string_initialization(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wunterminated-string-initialization\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+#define $supress_implicit_int_conversion(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wimplicit-int-conversion\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
 #define $supress_cast_qual(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcast-qual\"", \
@@ -485,6 +504,7 @@ extern "C" {
 #define comp_attr__$inline comp_inline
 #define comp_attr__$inline_always comp_inline_always
 #define comp_attr__$inline_never comp_inline_never
+#define comp_attr__$flatten comp_flatten
 
 #define comp_attr__$deprecated comp_deprecated
 #define comp_attr__$deprecated_msg(_Msg) comp_deprecated_msg(_Msg)
