@@ -90,7 +90,7 @@ typedef TypeOf(void*) P$raw;
 #define __step__ptrAlignCast$__parse(_P_T...) _P_T,
 #define __step__ptrAlignCast$__emit(...) ____ptrAlignCast$(__VA_ARGS__)
 #define ____ptrAlignCast$(_P_T, _val...) $supress_cast_align( \
-    (as$(_P_T)(alignCast((alignOf$(_P_T))(_val)))) \
+    (as$(_P_T)(alignCast((alignOf$(DerefType$(_P_T)))(_val)))) \
 )
 
 #define ____ptrQualCast$(...) $supress_cast_qual(ptrCast$(__VA_ARGS__))
