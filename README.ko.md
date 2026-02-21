@@ -102,6 +102,12 @@ dasae-headers: Modern, Better safety and productivity to C
       - [`Thrd` — Threading](#thrd--threading)
       - [`Co` / `async` — Stackless Coroutines](#co--async--stackless-coroutines)
       - [`mp` — Multi-Processing *(planned)*](#mp--multi-processing-planned)
+      - [`ascii` — ASCII character utilities](#ascii--ascii-character-utilities)
+      - [`utf8` — UTF-8 encoding/decoding](#utf8--utf-8-encodingdecoding)
+      - [`utf16` — UTF-16 encoding/decoding](#utf16--utf-16-encodingdecoding)
+      - [`wtf8` — WTF-8 (UTF-8 superset for Windows)](#wtf8--wtf-8-utf-8-superset-for-windows)
+      - [`wtf16` — WTF-16 encoding](#wtf16--wtf-16-encoding)
+      - [`unicode` — Unicode conversion hub](#unicode--unicode-conversion-hub)
       - [`os` — OS-Specific APIs](#os--os-specific-apis)
       - [`posix` — POSIX Compatibility](#posix--posix-compatibility)
       - [`proc` — Process Management *(planned)*](#proc--process-management-planned)
@@ -534,11 +540,11 @@ Core algebraic types: Optional, Error Result, Slice, Array, Variant.
   `types` (`raw`, `Val`, `Ptr`, `Arr`, `Sli`, `Opt`, `ErrRes`, `Err`, `variant`, `meta`),
   `common`, `ErrTrace`, `int`, `flt`
 - **Key Types:**
-  - `O$T` (Optional) — `some(v)`, `none()`, `if_some`, `orelse_`, `unwrap_`
-  - `E$T` (Error Result) — `ok(v)`, `err(e)`, `try_`, `catch_`, `return_ok`, `return_err`
-  - `S$T` (Slice) — `S_at`, `S_slice`, `S_first`, `S_last`
-  - `A$N$T` (Array) — `A_from$`, `A_ref$`
-  - `variant_` — Tagged union (algebraic data type)
+  - `O$(T)` (Optional) — `some(v)`, `none()`, `if_some((opt)(capture))`, `orelse_((opt)(default))`, `unwrap_(opt)`
+  - `E$(T)` (Error Result) — `ok(v)`, `err(e)`, `try_(expr)`, `catch_((expr)(err, block))`, `return_ok`, `return_err`
+  - `S$(T)` (Slice) — `S_deref$`, `S_at`, `S_slice`, `S_prefix`, `S_suffix`, `S_len`
+  - `A$(N, T)` (Array) — `A_zero`, `A_init$`, `A_from$`, `A_ref$`, `A_len`
+  - `variant_` — Tagged union; create with `union_of$`, match with `match_`, `pattern_`
   - `ErrTrace` — Error tracing with call stack information
 - **prl/int, prl/flt:**
   Per-type safe wrappers (e.g. `u8_add`, `u32_div`, `i64_mod`) with debug overflow checks;
@@ -620,28 +626,21 @@ Architecture-independent SIMD operations (AVX, SSE, NEON) using compiler vector 
 #### `math` — Mathematical Functions
 
 - **Submodules:**
-  `common`, `vec`/`vec_types`, `mat`/`mat_types`, `quat`/`quat_types`,
-  `geom`/`geom_types`, `interp`, `ease`
-- **Common:**
-  `math_abs`, `math_min`, `math_max`, `math_clamp`, `math_sign`,
-  `math_floor`, `math_ceil`, `math_round`, `math_sqrt`,
-  `math_pow`, `math_sin`, `math_cos`, `math_tan`
-- **Vectors:**
-  `Vec2`, `Vec3`, `Vec4` —
-  `add`, `sub`, `mul`, `div`, `dot`, `cross`, `normalize`, `length`, `distance`
-- **Matrices:**
-  `Mat2`, `Mat3`, `Mat4` —
-  `identity`, `mul`, `transpose`, `inverse`, `determinant`, `translate`, `rotate`, `scale`
-- **Quaternions:**
-  `Quat` —
-  `identity`, `mul`, `conjugate`, `inverse`, `normalize`, `slerp`, `fromAxisAngle`, `toMat`
-- **Geometry:**
-  `geom_Point`, `geom_Line`, `geom_Ray`, `geom_Plane`, `geom_AABB`, `geom_Sphere`
-  *(types defined)*
-- **Interpolation:**
-  `interp_linear`, `interp_smoothstep`, `interp_bezier`
-- **Easing:**
-  `ease_inQuad`, `ease_outQuad`, `ease_inOutQuad`, `ease_inCubic`, etc.
+  `common`, `vec`/`vec_types`, `mat`/`mat_types`, `quat`/`quat_types`
+- **Common (prefix `math_`):**
+  `math_abs`, `math_min`, `math_max`, `math_clamp`, `math_sign`, `math_wrap`,
+  `math_floor`, `math_ceil`, `math_round`, `math_trunc`, `math_sqrt`, `math_pow`, `math_rsqrt`,
+  `math_sin`, `math_cos`, `math_tan`, `math_asin`, `math_acos`, `math_atan`, `math_atan2`;
+  constants e.g. `math_pi`, `math_f32_pi`, `math_limit_min$`, `math_limit_max$`.
+- **Vectors (types `m_V2f32`, `m_V3f32`, `m_V4f32`, and f64/i32/i64 variants; prefix `m_V*`):**
+  `m_V*_of`, `m_V*_splat`, `m_V*_add`, `m_V*_sub`, `m_V*_mul`, `m_V*_div`, `m_V*_dot`, `m_V*_cross`,
+  `m_V*_norm`, `m_V*_len`, `m_V*_lenSq`, `m_V*_dist`, `m_V*_min`, `m_V*_max`, `m_V*_clamp`, `m_V*_rotate`
+- **Matrices (types `m_M2f32`, `m_M3f32`, `m_M4f32`; prefix `m_M*`):**
+  `m_M*_identity`, `m_M*_ofCols`, `m_M*_ofRows`, `m_M*_mulM`, `m_M*_mulV`, `m_M*_transpose`,
+  `m_M*_det`, `m_M*_inv`, `m_M*_rotate`, `m_M*_scale`, `m_M*_scaleUniform`
+- **Quaternions (type `m_Q4f32`; prefix `m_Q4f32_`):**
+  `m_Q4f32_identity`, `m_Q4f32_of`, `m_Q4f32_mul`, `m_Q4f32_mulQ`, `m_Q4f32_conj`, `m_Q4f32_invQ`,
+  `m_Q4f32_norm`, `m_Q4f32_slerp`, `m_Q4f32_fromAxisAngle`, `m_Q4f32_fromM3`/`fromM4`, `m_Q4f32_toM3`/`toM4`
 
 #### `Rand` — Random Number Generation
 
@@ -859,14 +858,29 @@ Multi-processing utilities for parallel workloads.
 <details>
 <summary><strong>Text & Encoding</strong></summary>
 
-| Module        | Description                        | Key Functions                                                                                            |
-| ------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| **`ascii`**   | ASCII character utilities          | `ascii_isAlpha`, `ascii_isDigit`, `ascii_isSpace`, `ascii_toLower`, `ascii_toUpper`                      |
-| **`utf8`**    | UTF-8 encoding/decoding            | `utf8_encode`, `utf8_decode`, `utf8_isValid`, `utf8_validate`, `utf8_count`, `utf8_view`, `utf8_iter`    |
-| **`utf16`**   | UTF-16 encoding/decoding           | `utf16_encode`, `utf16_decode`, `utf16_codepointSeqLen`, `utf16_isHighSurrogate`, `utf16_isLowSurrogate` |
-| **`wtf8`**    | WTF-8 (UTF-8 superset for Windows) | `wtf8_encode`, `wtf8_decode`, `wtf8_view`, `wtf8_iter`                                                   |
-| **`wtf16`**   | WTF-16 encoding                    | `wtf16_iter`, `wtf16_Iter_next`                                                                          |
-| **`unicode`** | Unicode conversion hub             | `unicode_utf8ToUTF16`, `unicode_utf16ToUTF8`, `unicode_wtf8ToWTF16`, `unicode_wtf16ToWTF8`               |
+#### `ascii` — ASCII character utilities
+
+`ascii_isAlpha`, `ascii_isDigit`, `ascii_isSpace`, `ascii_toLower`, `ascii_toUpper`
+
+#### `utf8` — UTF-8 encoding/decoding
+
+`utf8_encode`, `utf8_decode`, `utf8_isValid`, `utf8_validate`, `utf8_count`, `utf8_view`, `utf8_iter`
+
+#### `utf16` — UTF-16 encoding/decoding
+
+`utf16_encode`, `utf16_decode`, `utf16_codepointSeqLen`, `utf16_isHighSurrogate`, `utf16_isLowSurrogate`
+
+#### `wtf8` — WTF-8 (UTF-8 superset for Windows)
+
+`wtf8_encode`, `wtf8_decode`, `wtf8_view`, `wtf8_iter`
+
+#### `wtf16` — WTF-16 encoding
+
+`wtf16_iter`, `wtf16_Iter_next`
+
+#### `unicode` — Unicode conversion hub
+
+`unicode_utf8ToUTF16`, `unicode_utf16ToUTF8`, `unicode_wtf8ToWTF16`, `unicode_wtf16ToWTF8`
 
 </details>
 
@@ -908,14 +922,21 @@ Process management utilities for cross-platform code.
 
 #### `io` — Input/Output
 
-- **Submodules:** `common`, `stream`, `Reader`, `Writer`
+- **Submodules:** `common`, `stream`, `Reader`, `Writer`, `Fixed`, `Buf`
 - **Stream:**
-  `io_stream_print`, `io_stream_println`, `io_stream_eprint`, `io_stream_eprintln`
+  `io_stream_print`, `io_stream_println`, `io_stream_eprint`, `io_stream_eprintln`, `io_stream_nl`
 - **Reader:**
   `io_Reader_read`, `io_Reader_readExact`, `io_Reader_readByte`, `io_Reader_skip`
 - **Writer:**
   `io_Writer_write`, `io_Writer_writeBytes`, `io_Writer_writeByte`,
   `io_Writer_print`, `io_Writer_println`, `io_Writer_nl`
+- **Fixed (in-memory fixed buffer):**
+  `io_Fixed_reading`, `io_Fixed_writing`, `io_Fixed_written`, `io_Fixed_reset`,
+  `io_Fixed_Reader_init`, `io_Fixed_reader`, `io_Fixed_Writer_init`, `io_Fixed_writer`
+- **Buf (buffered Reader/Writer):**
+  `io_Buf_Reader_init`, `io_Buf_Reader_fill`, `io_Buf_Reader_peekByte`, `io_Buf_Reader_readUntilByte`,
+  `io_Buf_Reader_skipUntilByte`, `io_Buf_Reader_skip`, `io_Buf_reader`,
+  `io_Buf_Writer_init`, `io_Buf_Writer_flush`, `io_Buf_writer`
 
 #### `fmt` — Formatting
 
@@ -1019,8 +1040,8 @@ without knowing the concrete type at compile time.
   - **Conversion:**
     Typed → meta: `u_retV$(_T)` etc. from a type;
     `u_anyP(_p)`, `u_anyS(_s)`, `u_anyV(_v)`, `u_anyA(_a)`, `u_anyO(_o)`, `u_anyE(_e)` from a value.
-    Meta → typed: `u_castP$(_T)(meta)`, `u_castV$(_T)(meta)`, `u_castS$(_T)(meta)`,
-    `u_castA$(_N,_T)(meta)`, `u_castO$(_OT)(meta)`, `u_castE$(_ET)(meta)`.
+    Meta → typed: `u_castP$((_T)(meta))`, `u_castV$((_T)(meta))`, `u_castS$((_T)(meta))`,
+    `u_castA$((_N,_T)(meta))`, `u_castO$((_OT)(meta))`, `u_castE$((_ET)(meta))`.
   - **Generic operations:**
     Slicing/indexing use `TypeInfo` for stride and length
     (`u_atS`, `u_sliceP`, `u_sliceS`, `u_prefixP`, `u_suffixS`, …).
@@ -1160,6 +1181,8 @@ Both rely on `TypeInfo` from `core`/`type_info.h`
 | **Clang**        | 19.1.0+ (권장) / 16.0.0+ (지원) / 9.0.0+ (-std=gnu11 필수)    |
 | **GCC**          | 15.1.0+ (권장) / 13.1.0+ (지원) / N/A (TBU) (-std=gnu11 필수) |
 | **MSVC**         | 지원 예정 (TBD)                                               |
+
+> **참고:** `dh-c` 빌드 도구의 지원 범위는 [사전 요구 사항](#사전-요구-사항)을 참고하세요.
 
 ---
 
