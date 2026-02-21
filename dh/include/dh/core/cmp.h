@@ -59,6 +59,21 @@ typedef enum_(cmp_Ord $bits(8)) {
 #define cmp_Ord_isLe(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) <= cmp_Ord_eq))
 #define cmp_Ord_isGe(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) >= cmp_Ord_eq))
 
+/*
+ * Defining ordering for a type _T (cmp_ord$ / cmp_lt$):
+ *
+ * Case 1 — ord defined: Provide cmp_ord$(_T)(lhs, rhs) -> cmp_Ord (three-way).
+ *   Then cmp_eq$(_T), cmp_ne$(_T), cmp_lt$(_T), cmp_gt$(_T), cmp_le$(_T), cmp_ge$(_T)
+ *   can be defaulted from ord via cmp_fn_eq_default$(_T), cmp_fn_lt_default$(_T), etc.
+ *
+ * Case 2 — lt defined only: Provide cmp_lt$(_T)(lhs, rhs) -> bool (strict less-than).
+ *   Use cmp_fn_ord_default$(_T) to derive ord from lt:
+ *   ord = lt(lhs,rhs) ? cmp_Ord_lt : (lt(rhs,lhs) ? cmp_Ord_gt : cmp_Ord_eq).
+ *   Then eq, ne, lt, gt, le, ge are defaulted from that ord as in Case 1.
+ *
+ * Same pattern for Ctx and Apx variants: ordCtx/ltCtx, ordApx/ltApx.
+ */
+
 /* --- Comparison Operators --- */
 
 #define cmp_ord$(_T /*)(_lhs: _T, _rhs: _T) -> (cmp_Ord)(*/) pp_join(_, _T, ord)
@@ -174,6 +189,10 @@ typedef enum_(cmp_Ord $bits(8)) {
 #define cmp_fn_u_geApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_geApx$(__step__cmp_fn_u_geApx$__parse __VA_ARGS__)
 
 /* --- Function-like Macros Default Implementations --- */
+/*
+ * Ord-related defaults: use cmp_fn_ord_default$ when only cmp_lt$ is defined;
+ * use cmp_fn_eq_default$, cmp_fn_lt_default$, etc. when cmp_ord$ is defined (or derived).
+ */
 
 #define cmp_fn_eql_default$(/*(_T)(_id_lhs, _id_rhs)*/...) \
     /* if `cmp_neq` is implemented */ \

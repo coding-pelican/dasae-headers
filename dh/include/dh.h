@@ -26,11 +26,12 @@ extern "C" {
 
 #include "dh/cmp.h"
 #include "dh/math.h"
+#include "dh/Rand.h"
 #include "dh/mem.h"
 #include "dh/meta.h"
 
-#include "dh/sort.h"
 #include "dh/search.h"
+#include "dh/sort.h"
 #include "dh/ascii.h"
 #include "dh/utf8.h"
 #include "dh/utf16.h"
@@ -60,18 +61,17 @@ extern "C" {
 
 // #include "dh/os.h"
 #include "dh/posix.h"
+// #include "dh/proc.h"
 #include "dh/Thrd.h"
 #include "dh/async.h"
 #include "dh/mp.h"
 #include "dh/heap.h"
 #include "dh/time.h"
-#include "dh/Rand.h"
 
-#include "dh/fs.h"
 #include "dh/io.h"
 #include "dh/fmt.h"
 #include "dh/log.h"
-// #include "dh/proc.h"
+#include "dh/fs.h"
 // #include "dh/net.h"
 // #include "dh/http.h"
 
