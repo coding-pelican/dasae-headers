@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 
 
 #undef tpl$
@@ -59,7 +59,7 @@
     var_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(Type_eq$(TypeOf(val$a(*__p_lhs)), TypeOf(val$a(__rhs)))); \
+    claim_assert_static(eqlType$(TypeOf(val$a(*__p_lhs)), TypeOf(val$a(__rhs)))); \
     *__p_lhs = *as$(TypeOf(__p_lhs) (*)(&__rhs)); \
     __p_lhs; \
 })
@@ -91,7 +91,7 @@
     var_(__rhs, TypeOf(_rhs)) = _rhs; \
     claim_assert_static(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert_static(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(Type_eq$(TypeOf(ptr$s(*__p_lhs)), TypeOf(ptr$s(__rhs)))); \
+    claim_assert_static(eqlType$(TypeOf(ptr$s(*__p_lhs)), TypeOf(ptr$s(__rhs)))); \
     *__p_lhs = *as$(TypeOf(__p_lhs) (*)(&__rhs)); \
     __p_lhs; \
 })
@@ -195,4 +195,5 @@ TEST_fn_("test" $scope) {
     // try_(TEST_expect(s.len == len$a(*a)));
 
     // var c = ~(-3);
-} $unscoped_(TEST_fn);
+}
+$unscoped(TEST_fn);

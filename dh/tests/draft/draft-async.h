@@ -90,11 +90,11 @@ typedef struct Co_Ctx {
 
 #define __exec_async_() __async_
 #define __async_(_fnAsync, _args...) \
-    (as$(Co_Ctx$(_fnAsync)*)(_fnAsync(lit$((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }.base))))
+    (as$(Co_Ctx$(_fnAsync)*)(_fnAsync(l$((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }.base))))
 
 #define __exec_async_ctx() __async_ctx
 #define __async_ctx(_fnAsync, _args...) \
-    (lit$((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }))
+    (l$((Co_Ctx$(_fnAsync)){ .fn = _fnAsync, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }))
 
 #define __exec_async_with() __async_with
 #define __async_with(_ctx, _fnAsync, _args...) \
@@ -113,7 +113,7 @@ typedef struct Co_Ctx {
     } while (false)
 
 #define resume_(_ctx...) comp_syn__resume_(pp_uniqTok(ctx), _ctx)
-#define comp_syn__resume_(__ctx, _ctx...) blk({ \
+#define comp_syn__resume_(__ctx, _ctx...) local_({ \
     let __ctx = ensureNonnull(_ctx); \
     call((__ctx->fn)(as$(Co_Ctx*)(__ctx))); \
 })
@@ -122,10 +122,10 @@ typedef struct Co_Ctx {
 #define comp_syn__await_(_ctx...) \
     while (deref(_ctx).state != Co_State_ready) { suspend_(); }
 
-#define nosuspend_await_(_ctx) comp_syn__nosuspend_await_(pp_uniqTok(ctx), _ctx)
-#define comp_syn__nosuspend_await_(__ctx, _ctx...) blk({ \
+#define no_suspend_await_(_ctx) comp_syn__no_suspend_await_(pp_uniqTok(ctx), _ctx)
+#define comp_syn__no_suspend_await_(__ctx, _ctx...) local_({ \
     let __ctx = ensureNonnull(_ctx); \
     if (__ctx->state != Co_State_ready) { resume_(__ctx); } \
     debug_assert(__ctx->state == Co_State_ready); \
-    blk_return __ctx->ret; \
+    local__return __ctx->ret; \
 })

@@ -119,7 +119,7 @@ typedef union Grid$raw {
         u32 height; \
     };
 
-#define comp_op__Grid_fromS$(__sli, __width, __height, T_Grid, var_sli, u32_width, u32_height...) blk({ \
+#define comp_op__Grid_fromS$(__sli, __width, __height, T_Grid, var_sli, u32_width, u32_height...) local_({ \
     const TypeOf(var_sli) __sli = var_sli; \
     const u32 __width = intCast$((u32)(u32_width)); \
     const u32 __height = intCast$((u32)(u32_height)); \
@@ -130,7 +130,7 @@ typedef union Grid$raw {
         __width, \
         __height \
     ); \
-    blk_return_(lit$((T_Grid){ \
+    local_return_(l$((T_Grid){ \
         .items = __sli, \
         .width = __width, \
         .height = __height, \
@@ -139,7 +139,7 @@ typedef union Grid$raw {
 
 #define comp_op__Grid_width(var_self...) ((var_self).width)
 #define comp_op__Grid_height(var_self...) ((var_self).height)
-#define comp_op__Grid_at(__self, __x, __y, var_self, u32_x, u32_y...) blk({ \
+#define comp_op__Grid_at(__self, __x, __y, var_self, u32_x, u32_y...) local_({ \
     let __self = var_self; \
     const u32 __x = intCast$((u32)(u32_x)); \
     const u32 __y = intCast$((u32)(u32_y)); \
@@ -155,10 +155,10 @@ typedef union Grid$raw {
         __y, \
         __self.height \
     ); \
-    blk_return_(S_at((__self.items)[as$(usize)(__x) + ((as$(usize)(__y)) * __self.width)])); \
+    local_return_(S_at((__self.items)[as$(usize)(__x) + ((as$(usize)(__y)) * __self.width)])); \
 })
 
-#define comp_syn__for_grid_item(_Grid, _Tuple_Item, _Body...) blk({ \
+#define comp_syn__for_grid_item(_Grid, _Tuple_Item, _Body...) local_({ \
     let __grid = _Grid; \
     const u32 __width = Grid_width(__grid); \
     const u32 __height = Grid_height(__grid); \
@@ -169,7 +169,7 @@ typedef union Grid$raw {
         } \
     } \
 })
-#define comp_syn__for_grid_item_w_tuple_x_y(_Grid, _Tuple_Item_w_Tuple_X_Y, _Body...) blk({ \
+#define comp_syn__for_grid_item_w_tuple_x_y(_Grid, _Tuple_Item_w_Tuple_X_Y, _Body...) local_({ \
     let __grid = _Grid; \
     const u32 __width = Grid_width(__grid); \
     const u32 __height = Grid_height(__grid); \
@@ -187,7 +187,7 @@ typedef union Grid$raw {
         } \
     } \
 })
-#define comp_syn__for_grid_item_w_tuple_x_y_idx(_Grid, _Tuple_Item_w_Tuple_X_Y_Idx, _Body...) blk({ \
+#define comp_syn__for_grid_item_w_tuple_x_y_idx(_Grid, _Tuple_Item_w_Tuple_X_Y_Idx, _Body...) local_({ \
     let __grid = _Grid; \
     const u32 __width = Grid_width(__grid); \
     const u32 __height = Grid_height(__grid); \
@@ -208,7 +208,7 @@ typedef union Grid$raw {
         } \
     } \
 })
-#define comp_syn__for_grid_item_w_tuple_x_y_w_tuple_width_height(_Grid, _Tuple_Item_w_Tuple_X_Y_w_Tuple_Width_Height, _Body...) blk({ \
+#define comp_syn__for_grid_item_w_tuple_x_y_w_tuple_width_height(_Grid, _Tuple_Item_w_Tuple_X_Y_w_Tuple_Width_Height, _Body...) local_({ \
     let __grid = _Grid; \
     const u32 __width = Grid_width(__grid); \
     const u32 __height = Grid_height(__grid); \
@@ -232,7 +232,7 @@ typedef union Grid$raw {
         } \
     } \
 })
-#define comp_syn__for_grid_item_w_tuple_x_y_idx_w_tuple_width_height_len(_Grid, _Tuple_Item_w_Tuple_X_Y_Idx_w_Tuple_Width_Height_Len, _Body...) blk({ \
+#define comp_syn__for_grid_item_w_tuple_x_y_idx_w_tuple_width_height_len(_Grid, _Tuple_Item_w_Tuple_X_Y_Idx_w_Tuple_Width_Height_Len, _Body...) local_({ \
     let __grid = _Grid; \
     const u32 __width = Grid_width(__grid); \
     const u32 __height = Grid_height(__grid); \

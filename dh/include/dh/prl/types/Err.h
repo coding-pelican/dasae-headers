@@ -51,21 +51,27 @@ $static fn_((Err_None(void))(Err));
 /*========== Macros and Definitions =========================================*/
 
 $inline
-$static fn_((Err_domainToCStr(Err self))(const char*)) { return as$(const char*)(self.vt->domainToStrZ(self.ctx)); }
+$static
+fn_((Err_domainToCStr(Err self))(const char*)) { return as$(const char*)(self.vt->domainToStrZ(self.ctx)); }
 $inline
-$static fn_((Err_domainToStrZ(Err self))(const u8*)) { return self.vt->domainToStrZ(self.ctx); }
+$static
+fn_((Err_domainToStrZ(Err self))(const u8*)) { return self.vt->domainToStrZ(self.ctx); }
 $inline
-$static fn_((Err_codeToCStr(Err self))(const char*)) { return as$(const char*)(self.vt->codeToStrZ(self.ctx)); }
+$static
+fn_((Err_codeToCStr(Err self))(const char*)) { return as$(const char*)(self.vt->codeToStrZ(self.ctx)); }
 $inline
-$static fn_((Err_codeToStrZ(Err self))(const u8*)) { return self.vt->codeToStrZ(self.ctx); }
+$static
+fn_((Err_codeToStrZ(Err self))(const u8*)) { return self.vt->codeToStrZ(self.ctx); }
 
 $inline
-$static fn_((GeneralErr_domainToStrZ(ErrCode ctx))(const u8*)) {
+$static
+fn_((GeneralErr_domainToStrZ(ErrCode ctx))(const u8*)) {
     let_ignore = ctx;
     return u8_l0("GeneralErr");
 }
 $inline
-$static fn_((GeneralErr_codeToStrZ(ErrCode ctx))(const u8*)) {
+$static
+fn_((GeneralErr_codeToStrZ(ErrCode ctx))(const u8*)) {
     let code = as$(ErrCode)(ctx);
     switch (code) {
     case ErrCode_Unknown:
@@ -87,7 +93,8 @@ $static fn_((GeneralErr_codeToStrZ(ErrCode ctx))(const u8*)) {
     }
 }
 $inline
-$static fn_((GeneralErr_err(ErrCode self))(Err)) {
+$static
+fn_((GeneralErr_err(ErrCode self))(Err)) {
     static const Err_VT vt[1] = { {
         .domainToStrZ = GeneralErr_domainToStrZ,
         .codeToStrZ = GeneralErr_codeToStrZ,
@@ -99,19 +106,26 @@ $static fn_((GeneralErr_err(ErrCode self))(Err)) {
 }
 
 $inline
-$static fn_((Err_Unknown(void))(Err)) { return GeneralErr_err(ErrCode_Unknown); }
+$static
+fn_((Err_Unknown(void))(Err)) { return GeneralErr_err(ErrCode_Unknown); }
 $inline
-$static fn_((Err_Unexpected(void))(Err)) { return GeneralErr_err(ErrCode_Unexpected); }
+$static
+fn_((Err_Unexpected(void))(Err)) { return GeneralErr_err(ErrCode_Unexpected); }
 $inline
-$static fn_((Err_Unspecified(void))(Err)) { return GeneralErr_err(ErrCode_Unspecified); }
+$static
+fn_((Err_Unspecified(void))(Err)) { return GeneralErr_err(ErrCode_Unspecified); }
 $inline
-$static fn_((Err_Unsupported(void))(Err)) { return GeneralErr_err(ErrCode_Unsupported); }
+$static
+fn_((Err_Unsupported(void))(Err)) { return GeneralErr_err(ErrCode_Unsupported); }
 $inline
-$static fn_((Err_NotImplemented(void))(Err)) { return GeneralErr_err(ErrCode_NotImplemented); }
+$static
+fn_((Err_NotImplemented(void))(Err)) { return GeneralErr_err(ErrCode_NotImplemented); }
 $inline
-$static fn_((Err_InvalidArgument(void))(Err)) { return GeneralErr_err(ErrCode_InvalidArgument); }
+$static
+fn_((Err_InvalidArgument(void))(Err)) { return GeneralErr_err(ErrCode_InvalidArgument); }
 $inline
-$static fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
+$static
+fn_((Err_None(void))(Err)) { return GeneralErr_err(ErrCode_None); }
 
 #define GEN__config_ErrSet(Name, ...) \
     typedef enum pp_cat(Name, Code) { \
@@ -227,7 +241,7 @@ errset_((io_ParseErr)(
     UnexpectedTokenValue
 ));
 
-errset_((math_Err)(
+errset_((math_E)(
     DivisionByZero,
     Overflow,
     Underflow

@@ -1,7 +1,7 @@
 #ifndef dal_c_ext_file__included
 #define dal_c_ext_file__included 1
 
-#include "dal-c-ext/base.h"
+#include "base.h"
 #include <errno.h>
 #include <stdio.h>
 #include <time.h>

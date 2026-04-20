@@ -4,8 +4,8 @@ profile=default
 linking=static
 no-libdh=false
 
-[color]
-path=../color
+[dacolor]
+path=../dacolor
 profile=default
 linking=static
 no-libdh=false

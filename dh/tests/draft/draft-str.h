@@ -3,7 +3,7 @@
 #include "dh/Arr.h"
 #include "dh/sli.h"
 #include "dh/err_res.h"
-#include "dh/mem/Allocator.h"
+#include "dh/mem/Alctr.h"
 
 // str - byte-slice operations as strings
 /// @brief Find first occurrence of substring in haystack
@@ -80,13 +80,13 @@ extern fn_((str_split(S_const$u8 bytes, S_const$u8 delim))(S_const$S_const$u8));
 /// @param parts Array of string parts to join
 /// @return Result containing joined string or error
 /// @example
-///   mem_Allocator alloc = heap_getDefaultAllocator();
+///   mem_Alctr alloc = heap_getDefaultAlctr();
 ///   S_const$u8 sep = u8_l(", ");
 ///   S$S_const$u8 parts = /* array of strings */;
 ///   E$S$u8 result = str_join(alloc, sep, parts);
 /// @dependencies mem.h, err_res.h, sli.h
 /// @limitations May fail if memory allocation fails
-extern fn_((str_join(mem_Allocator allocator, S_const$u8 sep, S$S_const$u8 parts))(E$S$u8));
+extern fn_((str_join(mem_Alctr allocator, S_const$u8 sep, S$S_const$u8 parts))(E$S$u8));
 /// @brief Remove pattern from both ends of string
 /// @param bytes The string to trim
 /// @param pattern The pattern to remove from both ends
@@ -127,14 +127,14 @@ extern fn_((str_trimRight(S_const$u8 bytes, S_const$u8 pattern))(S_const$u8));
 /// @param replacement The replacement string
 /// @return Result containing new string with replacements or error
 /// @example
-///   mem_Allocator alloc = heap_getDefaultAllocator();
+///   mem_Alctr alloc = heap_getDefaultAlctr();
 ///   S_const$u8 text = u8_l("Hello World");
 ///   S_const$u8 needle = u8_l("World");
 ///   S_const$u8 replacement = u8_l("Universe");
 ///   E$S$u8 result = str_replace(alloc, text, needle, replacement);
 /// @dependencies mem.h, err_res.h, sli.h
 /// @limitations May fail if memory allocation fails
-extern fn_((str_replace(mem_Allocator allocator, S_const$u8 haystack, S_const$u8 needle, S_const$u8 replacement))(E$S$u8));
+extern fn_((str_replace(mem_Alctr allocator, S_const$u8 haystack, S_const$u8 needle, S_const$u8 replacement))(E$S$u8));
 /// @brief Check if haystack contains needle
 /// @param haystack The string to search in
 /// @param needle The substring to search for
@@ -288,11 +288,11 @@ typedef A$$(4, u8) utf8_A4U8Buf;
 /// @return Result containing number of bytes written or error
 /// @example
 ///   utf8_A4U8Buf buffer;
-///   mem_Allocator alloc = heap_getDefaultAllocator();
+///   mem_Alctr alloc = heap_getDefaultAlctr();
 ///   E$usize result = utf8_encode(alloc, 0x1F600, &buffer); // 😀 emoji
 /// @dependencies mem.h, err_res.h, Arr.h
 /// @limitations Codepoint must be valid Unicode (0-0x10FFFF)
-extern fn_((utf8_encode(mem_Allocator allocator, u32 codepoint, utf8_A4U8Buf* buf))(E$usize));
+extern fn_((utf8_encode(mem_Alctr allocator, u32 codepoint, utf8_A4U8Buf* buf))(E$usize));
 /// @brief Decode UTF-8 sequence into codepoint
 /// @param bytes UTF-8 byte sequence to decode
 /// @return Optional codepoint if valid UTF-8, none if invalid
@@ -379,7 +379,7 @@ extern fn_((utf8_View_iter(utf8_View self))(utf8_Iter));
 
 struct utf8_Iter {
     S_const$u8 bytes;
-    usize      pos;
+    usize pos;
 };
 /// @brief Get next codepoint from iterator
 /// @param self Pointer to UTF-8 iterator (modified)

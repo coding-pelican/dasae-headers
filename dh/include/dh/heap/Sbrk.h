@@ -5,7 +5,7 @@
  * @file    Sbrk.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-01-19 (date of creation)
- * @updated 2026-01-21 (date of last update)
+ * @updated 2026-03-08 (date of last update)
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap_Sbrk
  *
@@ -36,7 +36,7 @@ typedef struct heap_Sbrk_LocalLarge heap_Sbrk_LocalLarge;
 $attr($inline_always)
 $static fn_((heap_Sbrk_LocalLarge_ref(heap_Sbrk_LocalLarge* self))(heap_Sbrk_LocalRef));
 
-variant_((heap_Sbrk_LocalRef $bits(8))(
+variant_((heap_Sbrk_LocalRef $fits($packed))(
     (heap_Sbrk_LocalRef_small, heap_Sbrk_LocalSmall*),
     (heap_Sbrk_LocalRef_medium, heap_Sbrk_LocalMedium*),
     (heap_Sbrk_LocalRef_large, heap_Sbrk_LocalLarge*),
@@ -56,7 +56,7 @@ typedef struct heap_Sbrk_Ctx {
 } heap_Sbrk_Ctx;
 T_use_P$(heap_Sbrk_Ctx);
 
-/// SbrkAllocator with configurable size classes for memory optimization
+/// SbrkAlctr with configurable size classes for memory optimization
 ///
 /// Size variants:
 /// - `heap_Sbrk` + `heap_Sbrk_LocalSmall`:  ~200 bytes (embedded systems, max 1MB pools)
@@ -66,10 +66,10 @@ typedef struct heap_Sbrk {
     var_(local_ref, heap_Sbrk_LocalRef);
     var_(ctx, P_const$heap_Sbrk_Ctx);
 } heap_Sbrk;
-$extern let_(heap_Sbrk_vt_local_small, mem_Allocator_VT);
-$extern let_(heap_Sbrk_vt_local_medium, mem_Allocator_VT);
-$extern let_(heap_Sbrk_vt_local_large, mem_Allocator_VT);
-$extern fn_((heap_Sbrk_allocator(heap_Sbrk* self))(mem_Allocator));
+$extern let_(heap_Sbrk_vtbl_local_small, mem_Alctr_VTbl);
+$extern let_(heap_Sbrk_vtbl_local_medium, mem_Alctr_VTbl);
+$extern let_(heap_Sbrk_vtbl_local_large, mem_Alctr_VTbl);
+$extern fn_((heap_Sbrk_alctr(heap_Sbrk* self))(mem_Alctr));
 $extern fn_((heap_Sbrk_from(heap_Sbrk_LocalRef local_ref, P_const$heap_Sbrk_Ctx ctx))(heap_Sbrk));
 
 #if plat_is_windows
@@ -126,7 +126,7 @@ $extern fn_((heap_Sbrk_Arena_ctx(heap_Sbrk_Arena* self))(heap_Sbrk_Ctx));
 #define heap_Sbrk_LocalRef__pp_enum_medium 1
 #define heap_Sbrk_LocalRef__pp_enum_large 2
 #define ____heap_Sbrk_LocalRef__pp_enum_expand(...) __VA_ARGS__
-#define heap_Sbrk_LocalRef__pp_enum_parse(_enum_tok...) pp_if_(pp_Tok_isComparable(_enum_tok))( \
+#define heap_Sbrk_LocalRef__pp_enum_parse(_enum_tok...) pp_if_(pp_Tok_hasCmp(_enum_tok))( \
     pp_then_(____heap_Sbrk_LocalRef__pp_enum_expand( \
         pp_switch_ pp_begin(_enum_tok)( \
             pp_case_((heap_Sbrk_LocalRef__pp_enum_small)(heap_Sbrk_LocalRef__pp_enum_small)), \
@@ -198,7 +198,7 @@ struct heap_Sbrk_LocalSmall {
 };
 fn_((heap_Sbrk_LocalSmall_ref(heap_Sbrk_LocalSmall* self))(heap_Sbrk_LocalRef) $scope) {
     return_(union_of((heap_Sbrk_LocalRef_small)(self)));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 struct heap_Sbrk_LocalMedium {
     var_(frees, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_medium), usize));
@@ -207,7 +207,7 @@ struct heap_Sbrk_LocalMedium {
 };
 fn_((heap_Sbrk_LocalMedium_ref(heap_Sbrk_LocalMedium* self))(heap_Sbrk_LocalRef) $scope) {
     return_(union_of((heap_Sbrk_LocalRef_medium)(self)));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 struct heap_Sbrk_LocalLarge {
     var_(frees, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_large), usize));
@@ -216,85 +216,93 @@ struct heap_Sbrk_LocalLarge {
 };
 fn_((heap_Sbrk_LocalLarge_ref(heap_Sbrk_LocalLarge* self))(heap_Sbrk_LocalRef) $scope) {
     return_(union_of((heap_Sbrk_LocalRef_large)(self)));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((heap_Sbrk_LocalRef_frees(heap_Sbrk_LocalRef self))(S$usize)) {
-    return expr_(S$usize $scope)(match_(self){
-        pattern_((heap_Sbrk_LocalRef_small)(local))  $break_(A_ref$((S$usize)((*local)->frees))) $end(case);
-        pattern_((heap_Sbrk_LocalRef_medium)(local)) $break_(A_ref$((S$usize)((*local)->frees))) $end(case);
-        pattern_((heap_Sbrk_LocalRef_large)(local)) $break_(A_ref$((S$usize)((*local)->frees))) $end(case);
-    } $end(match)) $unscoped_(expr);
+    return expr_(S$usize $scope)(match_(self) {
+        patterns_((
+            heap_Sbrk_LocalRef_small,
+            heap_Sbrk_LocalRef_medium,
+            heap_Sbrk_LocalRef_large
+        )(local)$break_(A_ref$((S$usize)(local->frees))));
+    } $end(match)) $unscoped(expr);
 };
 
 fn_((heap_Sbrk_LocalRef_big_frees(heap_Sbrk_LocalRef self))(S$usize)) {
-    return expr_(S$usize $scope)(match_(self){
-        pattern_((heap_Sbrk_LocalRef_small)(local))  $break_(A_ref$((S$usize)((*local)->big_frees))) $end(case);
-        pattern_((heap_Sbrk_LocalRef_medium)(local)) $break_(A_ref$((S$usize)((*local)->big_frees))) $end(case);
-        pattern_((heap_Sbrk_LocalRef_large)(local)) $break_(A_ref$((S$usize)((*local)->big_frees))) $end(case);
-    } $end(match)) $unscoped_(expr);
+    return expr_(S$usize $scope)(match_(self) {
+        patterns_((
+            heap_Sbrk_LocalRef_small,
+            heap_Sbrk_LocalRef_medium,
+            heap_Sbrk_LocalRef_large
+        )(local)$break_(A_ref$((S$usize)(local->big_frees))));
+    } $end(match)) $unscoped(expr);
 };
 fn_((heap_Sbrk_LocalRef_next_addrs(heap_Sbrk_LocalRef self))(S$usize)) {
-    return expr_(S$usize $scope)(match_(self){
-        pattern_((heap_Sbrk_LocalRef_small)(local))  $break_(A_ref$((S$usize)((*local)->next_addrs))) $end(case);
-        pattern_((heap_Sbrk_LocalRef_medium)(local)) $break_(A_ref$((S$usize)((*local)->next_addrs))) $end(case);
-        pattern_((heap_Sbrk_LocalRef_large)(local)) $break_(A_ref$((S$usize)((*local)->next_addrs))) $end(case);
-    } $end(match)) $unscoped_(expr);
+    return expr_(S$usize $scope)(match_(self) {
+        patterns_((
+            heap_Sbrk_LocalRef_small,
+            heap_Sbrk_LocalRef_medium,
+            heap_Sbrk_LocalRef_large
+        )(local)$break_(A_ref$((S$usize)(local->next_addrs))));
+    } $end(match)) $unscoped(expr);
 };
 
 fn_((heap_Sbrk_LocalRef_calcSelfSize(heap_Sbrk_LocalRef self))(usize)) {
     return expr_(usize $scope)(match_(self) {
-        case_((heap_Sbrk_LocalRef_small))  $break_(sizeOf$(heap_Sbrk_LocalSmall)) $end(case);
-        case_((heap_Sbrk_LocalRef_medium)) $break_(sizeOf$(heap_Sbrk_LocalMedium)) $end(case);
-        case_((heap_Sbrk_LocalRef_large)) $break_(sizeOf$(heap_Sbrk_LocalLarge)) $end(case);
-    } $end(match)) $unscoped_(expr);
+        patterns_((
+            heap_Sbrk_LocalRef_small,
+            heap_Sbrk_LocalRef_medium,
+            heap_Sbrk_LocalRef_large
+        )($ignore)$break_(sizeOf$(MatchedType)));
+    } $end(match)) $unscoped(expr);
 };
 
 fn_((heap_Sbrk__bigpage_size(heap_Sbrk self))(usize)) {
     return expr_(usize $scope)(match_(self.local_ref) {
-        case_((heap_Sbrk_LocalRef_small))  $break_(heap_Sbrk__bigpage_size_static(heap_Sbrk_LocalRef_small)) $end(case);
+        case_((heap_Sbrk_LocalRef_small)) $break_(heap_Sbrk__bigpage_size_static(heap_Sbrk_LocalRef_small)) $end(case);
         case_((heap_Sbrk_LocalRef_medium)) $break_(heap_Sbrk__bigpage_size_static(heap_Sbrk_LocalRef_medium)) $end(case);
         case_((heap_Sbrk_LocalRef_large)) $break_(heap_Sbrk__bigpage_size_static(heap_Sbrk_LocalRef_large)) $end(case);
-    } $end(match)) $unscoped_(expr);
+    } $end(match)) $unscoped(expr);
 };
 
 fn_((heap_Sbrk__max_pool_size(heap_Sbrk self))(usize)) {
     return expr_(usize $scope)(match_(self.local_ref) {
-        case_((heap_Sbrk_LocalRef_small))  $break_(heap_Sbrk__max_pool_size_static(heap_Sbrk_LocalRef_small)) $end(case);
+        case_((heap_Sbrk_LocalRef_small)) $break_(heap_Sbrk__max_pool_size_static(heap_Sbrk_LocalRef_small)) $end(case);
         case_((heap_Sbrk_LocalRef_medium)) $break_(heap_Sbrk__max_pool_size_static(heap_Sbrk_LocalRef_medium)) $end(case);
         case_((heap_Sbrk_LocalRef_large)) $break_(heap_Sbrk__max_pool_size_static(heap_Sbrk_LocalRef_large)) $end(case);
-    } $end(match)) $unscoped_(expr);
+    } $end(match)) $unscoped(expr);
 };
 
 fn_((heap_Sbrk__pages_per_bigpage(heap_Sbrk self))(usize)) {
     return expr_(usize $scope)(match_(self.local_ref) {
-        case_((heap_Sbrk_LocalRef_small))  $break_(heap_Sbrk__pages_per_bigpage_static(heap_Sbrk_LocalRef_small)) $end(case);
+        case_((heap_Sbrk_LocalRef_small)) $break_(heap_Sbrk__pages_per_bigpage_static(heap_Sbrk_LocalRef_small)) $end(case);
         case_((heap_Sbrk_LocalRef_medium)) $break_(heap_Sbrk__pages_per_bigpage_static(heap_Sbrk_LocalRef_medium)) $end(case);
         case_((heap_Sbrk_LocalRef_large)) $break_(heap_Sbrk__pages_per_bigpage_static(heap_Sbrk_LocalRef_large)) $end(case);
-    } $end(match)) $unscoped_(expr);
+    } $end(match)) $unscoped(expr);
 };
 
 fn_((heap_Sbrk__bigpage_count(heap_Sbrk self))(usize)) {
     return expr_(usize $scope)(match_(self.local_ref) {
-        case_((heap_Sbrk_LocalRef_small))  $break_(heap_Sbrk__bigpage_count_static(heap_Sbrk_LocalRef_small)) $end(case);
+        case_((heap_Sbrk_LocalRef_small)) $break_(heap_Sbrk__bigpage_count_static(heap_Sbrk_LocalRef_small)) $end(case);
         case_((heap_Sbrk_LocalRef_medium)) $break_(heap_Sbrk__bigpage_count_static(heap_Sbrk_LocalRef_medium)) $end(case);
         case_((heap_Sbrk_LocalRef_large)) $break_(heap_Sbrk__bigpage_count_static(heap_Sbrk_LocalRef_large)) $end(case);
-    } $end(match)) $unscoped_(expr);
+    } $end(match)) $unscoped(expr);
 };
 
 fn_((heap_Sbrk__size_class_count(heap_Sbrk self))(usize)) {
     return expr_(usize $scope)(match_(self.local_ref) {
-        case_((heap_Sbrk_LocalRef_small))  $break_(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_small)) $end(case);
+        case_((heap_Sbrk_LocalRef_small)) $break_(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_small)) $end(case);
         case_((heap_Sbrk_LocalRef_medium)) $break_(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_medium)) $end(case);
         case_((heap_Sbrk_LocalRef_large)) $break_(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_large)) $end(case);
-    } $end(match)) $unscoped_(expr);
+    } $end(match)) $unscoped(expr);
 };
 
 fn_((heap_Sbrk__big_size_class_count(heap_Sbrk self))(usize)) {
     return expr_(usize $scope)(match_(self.local_ref) {
-        case_((heap_Sbrk_LocalRef_small))  $break_(heap_Sbrk__big_size_class_count_static(heap_Sbrk_LocalRef_small)) $end(case);
+        case_((heap_Sbrk_LocalRef_small)) $break_(heap_Sbrk__big_size_class_count_static(heap_Sbrk_LocalRef_small)) $end(case);
         case_((heap_Sbrk_LocalRef_medium)) $break_(heap_Sbrk__big_size_class_count_static(heap_Sbrk_LocalRef_medium)) $end(case);
         case_((heap_Sbrk_LocalRef_large)) $break_(heap_Sbrk__big_size_class_count_static(heap_Sbrk_LocalRef_large)) $end(case);
-    } $end(match)) $unscoped_(expr);
+    } $end(match)) $unscoped(expr);
 };
 
 #if defined(__cplusplus)

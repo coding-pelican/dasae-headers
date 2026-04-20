@@ -1,5 +1,4 @@
 #include "dh/core/debug/StkTrace.h"
-#if debug_comp_enabled
 #include "dh/io/stream.h"
 #include "dh/Thrd.h"
 
@@ -26,12 +25,14 @@ pp_if_(plat_based_unix)(pp_then_(
     $static fn_((debug_StkTrace__unix_print(void))(void));
 ));
 
+$attr(pp_if_(pp_not(debug_comp_enabled))(pp_then_($maybe_unused)))
 $static let debug_StkTrace__setupCrashHandler = pp_if_(plat_is_windows)(
     pp_then_(debug_StkTrace__windows_setupCrashHandler),
     pp_else_(pp_if_(plat_based_unix)(
         pp_then_(debug_StkTrace__unix_setupCrashHandler),
         pp_else_(debug_StkTrace__unsupported_setupCrashHandler)
     )));
+$attr(pp_if_(pp_not(debug_comp_enabled))(pp_then_($maybe_unused)))
 $static let debug_StkTrace__print = pp_if_(plat_is_windows)(
     pp_then_(debug_StkTrace__windows_print),
     pp_else_(pp_if_(plat_based_unix)(
@@ -44,14 +45,16 @@ $static let debug_StkTrace__print = pp_if_(plat_is_windows)(
 
 /*========== External Definitions ===========================================*/
 
-fn_((debug_StkTrace_setupCrashHandler(void))(void)) {
+fn_((debug_StkTrace_setupCrashHandler(void))(void)) { debug_only(
     $static var_(s_setted_up, bool) = false;
-    if (!s_setted_up) { s_setted_up = (debug_StkTrace__setupCrashHandler(), true); }
-};
+    if (!s_setted_up) {
+        s_setted_up = (debug_StkTrace__setupCrashHandler(), true);
+    }
+) };
 
-fn_((debug_StkTrace_print(void))(void)) {
+fn_((debug_StkTrace_print(void))(void)) { debug_only(
     debug_StkTrace__print();
-};
+) };
 
 /*========== Internal Definitions ===========================================*/
 
@@ -87,15 +90,15 @@ $attr($stdcall)
 $static fn_((debug_StkTrace__windows__handleException(EXCEPTION_POINTERS* ExceptionInfo))(LONG)) {
     let code = ExceptionInfo->ExceptionRecord->ExceptionCode;
     let reason = expr_(S_const$u8 $scope)(switch (code) {
-        case EXCEPTION_ACCESS_VIOLATION:      $break_(u8_l("access violation"));
+        case EXCEPTION_ACCESS_VIOLATION: $break_(u8_l("access violation"));
         case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: $break_(u8_l("array bounds exceeded"));
         case EXCEPTION_DATATYPE_MISALIGNMENT: $break_(u8_l("datatype misalignment"));
-        case EXCEPTION_FLT_DIVIDE_BY_ZERO:    $break_(u8_l("float divide by zero"));
-        case EXCEPTION_INT_DIVIDE_BY_ZERO:    $break_(u8_l("integer divide by zero"));
-        case EXCEPTION_ILLEGAL_INSTRUCTION:   $break_(u8_l("illegal instruction"));
-        case EXCEPTION_STACK_OVERFLOW:        $break_(u8_l("stack overflow"));
-        default:                              $break_(u8_l("unknown exception"));
-    }) $unscoped_(expr);
+        case EXCEPTION_FLT_DIVIDE_BY_ZERO: $break_(u8_l("float divide by zero"));
+        case EXCEPTION_INT_DIVIDE_BY_ZERO: $break_(u8_l("integer divide by zero"));
+        case EXCEPTION_ILLEGAL_INSTRUCTION: $break_(u8_l("illegal instruction"));
+        case EXCEPTION_STACK_OVERFLOW: $break_(u8_l("stack overflow"));
+        default: $break_(u8_l("unknown exception"));
+    }) $unscoped(expr);
     debug_StkTrace__printPanicHeader(reason, as$(usize)(code));
     debug_StkTrace_print();
     return EXCEPTION_EXECUTE_HANDLER; /* Process termination via OS */
@@ -118,14 +121,14 @@ fn_((debug_StkTrace__windows_print(void))(void) $guard) {
     io_stream_eprintln(u8_l("stack backtrace (tid: {:ul}):"), tid);
 
     /* Buffer for Symbol Info */
-    var_(symbol_buf, A$$(sizeOf$(SYMBOL_INFO) + debug_StkTrace__max_symbol_len, u8)) = A_zero();
+    var_(symbol_buf, A$$(sizeOf$(SYMBOL_INFO) + debug_StkTrace__max_symbol_len, u8) $align(alignOf$(SYMBOL_INFO))) = A_zero();
     let symbol = ptrAlignCast$((SYMBOL_INFO*)(A_ptr(symbol_buf)));
     symbol->SizeOfStruct = sizeOf$(SYMBOL_INFO);
     symbol->MaxNameLen = debug_StkTrace__max_symbol_len;
 
     /* Buffer for Module Info (Standard Info: DLL/EXE name) */
     var_(mod_info, IMAGEHLP_MODULE64) = { .SizeOfStruct = sizeOf$(TypeOf(mod_info)) };
-    for_(($r(0, frames))(frame) {
+    for_(($r(0, frames))(frame)) {
         let addr = ptrToInt(*A_at((stack)[frame]));
         var_(displacement, u64) = 0;
         /* 1. Get Module Name (e.g., KERNEL32, MyApp) */
@@ -144,8 +147,8 @@ fn_((debug_StkTrace__windows_print(void))(void) $guard) {
                 frame, addr, mod_name
             );
         }
-    });
-} $unguarded_(fn);
+    } $end(for);
+} $unguarded(fn);
 #endif /* plat_is_windows */
 
 /* --- Unix --- */
@@ -160,11 +163,11 @@ $static fn_((debug_StkTrace__unix__handleSignal(i32 sig))(void)) {
     let reason = expr_(S_const$u8 $scope)(switch (sig) {
         case SIGSEGV: $break_(u8_l("segmentation fault"));
         case SIGABRT: $break_(u8_l("aborted"));
-        case SIGFPE:  $break_(u8_l("floating point exception"));
-        case SIGILL:  $break_(u8_l("illegal instruction"));
-        case SIGBUS:  $break_(u8_l("bus error"));
-        default:      $break_(u8_l("unknown signal"));
-    }) $unscoped_(expr);
+        case SIGFPE: $break_(u8_l("floating point exception"));
+        case SIGILL: $break_(u8_l("illegal instruction"));
+        case SIGBUS: $break_(u8_l("bus error"));
+        default: $break_(u8_l("unknown signal"));
+    }) $unscoped(expr);
     debug_StkTrace__printPanicHeader(reason, 0); /* Signals usually don't have a code */
     debug_StkTrace_print();
     _exit(1); /* Syscall exit */
@@ -190,7 +193,7 @@ fn_((debug_StkTrace__unix_print(void))(void)) {
 
     io_stream_eprintln(u8_l("stack backtrace (tid: {:ul}):"), tid);
 
-    for_(($r(0, frames))(frame) {
+    for_(($r(0, frames))(frame)) {
         let addr = *A_at((stack)[frame]);
         var_(info, Dl_info) = cleared();
         if (dladdr(addr, &info) && info.dli_sname) {
@@ -206,7 +209,6 @@ fn_((debug_StkTrace__unix_print(void))(void)) {
                 frame, addr, fname
             );
         }
-    });
+    } $end(for);
 };
 #endif /* plat_based_unix */
-#endif /* debug_comp_enabled */

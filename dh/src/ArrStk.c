@@ -1,7 +1,7 @@
 #include "dh/ArrStk.h"
 #include "dh/ArrList.h"
 
-claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrStk), packTypeInfo$(ArrList)));
+claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(ArrStk), packTypeInfo$(ArrList)));
 claim_assert_static(offsetTo(ArrStk, items) == offsetTo(ArrList, items));
 claim_assert_static(offsetTo(ArrStk, cap) == offsetTo(ArrList, cap));
 debug_assert_static(offsetTo(ArrStk, type) == offsetTo(ArrList, type));
@@ -27,19 +27,19 @@ fn_((ArrStk_fixed(u_S$raw buf))(ArrStk)) {
     return listToStk(ArrList_fixed(buf));
 }
 
-fn_((ArrStk_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrStk) $scope) {
+fn_((ArrStk_init(TypeInfo type, mem_Alctr gpa, usize cap))(mem_E$ArrStk) $scope) {
     return_ok(listToStk(try_(ArrList_init(type, gpa, cap))));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrStk_fini(ArrStk* self, TypeInfo type, mem_Allocator gpa))(void)) {
+fn_((ArrStk_fini(ArrStk* self, TypeInfo type, mem_Alctr gpa))(void)) {
     ArrList_fini(stkAsList(self), type, gpa);
 }
 
-fn_((ArrStk_clone(ArrStk self, TypeInfo type, mem_Allocator gpa))(mem_Err$ArrStk) $scope) {
+fn_((ArrStk_clone(ArrStk self, TypeInfo type, mem_Alctr gpa))(mem_E$ArrStk) $scope) {
     return_ok(listToStk(try_(ArrList_clone(stkToList(self), type, gpa))));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrStk_Grip), packTypeInfo$(ArrList_Grip)));
+claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(ArrStk_Grip), packTypeInfo$(ArrList_Grip)));
 claim_assert_static(offsetTo(ArrStk_Grip, buf) == offsetTo(ArrList_Grip, buf));
 claim_assert_static(offsetTo(ArrStk_Grip, len) == offsetTo(ArrList_Grip, len));
 claim_assert_static(offsetTo(ArrStk_Grip, ctx) == offsetTo(ArrList_Grip, ctx));
@@ -119,15 +119,15 @@ fn_((ArrStk_itemsUnusedMut(ArrStk self, TypeInfo type))(u_S$raw)) {
     return ArrList_itemsUnusedMut(stkToList(self), type);
 }
 
-fn_((ArrStk_ensureCap(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) {
+fn_((ArrStk_ensureCap(ArrStk* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void)) {
     return ArrList_ensureCap(stkAsList(self), type, gpa, new_cap);
 }
 
-fn_((ArrStk_ensureCapPrecise(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) {
+fn_((ArrStk_ensureCapPrecise(ArrStk* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void)) {
     return ArrList_ensureCapPrecise(stkAsList(self), type, gpa, new_cap);
 }
 
-fn_((ArrStk_ensureUnusedCap(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void)) {
+fn_((ArrStk_ensureUnusedCap(ArrStk* self, TypeInfo type, mem_Alctr gpa, usize additional))(mem_E$void)) {
     return ArrList_ensureUnusedCap(stkAsList(self), type, gpa, additional);
 }
 
@@ -135,7 +135,7 @@ fn_((ArrStk_expandToCap(ArrStk* self))(void)) {
     return ArrList_expandToCap(stkAsList(self));
 }
 
-fn_((ArrStk_resize(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_len))(mem_Err$void)) {
+fn_((ArrStk_resize(ArrStk* self, TypeInfo type, mem_Alctr gpa, usize new_len))(mem_E$void)) {
     return ArrList_resize(stkAsList(self), type, gpa, new_len);
 }
 
@@ -143,7 +143,7 @@ fn_((ArrStk_shrinkRetainingCap(ArrStk* self, usize new_len))(void)) {
     return ArrList_shrinkRetainingCap(stkAsList(self), new_len);
 }
 
-fn_((ArrStk_shrinkAndFree(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize new_len))(void)) {
+fn_((ArrStk_shrinkAndFree(ArrStk* self, TypeInfo type, mem_Alctr gpa, usize new_len))(void)) {
     return ArrList_shrinkAndFree(stkAsList(self), type, gpa, new_len);
 }
 
@@ -151,15 +151,15 @@ fn_((ArrStk_clearRetainingCap(ArrStk* self))(void)) {
     return ArrList_clearRetainingCap(stkAsList(self));
 }
 
-fn_((ArrStk_clearAndFree(ArrStk* self, TypeInfo type, mem_Allocator gpa))(void)) {
+fn_((ArrStk_clearAndFree(ArrStk* self, TypeInfo type, mem_Alctr gpa))(void)) {
     return ArrList_clearAndFree(stkAsList(self), type, gpa);
 }
 
-fn_((ArrStk_add(ArrStk* self, TypeInfo type, mem_Allocator gpa))(mem_Err$u_P$raw)) {
+fn_((ArrStk_add(ArrStk* self, TypeInfo type, mem_Alctr gpa))(mem_E$u_P$raw)) {
     return ArrList_addBack(stkAsList(self), type, gpa);
 }
 
-fn_((ArrStk_addFixed(ArrStk* self, TypeInfo type))(mem_Err$u_P$raw)) {
+fn_((ArrStk_addFixed(ArrStk* self, TypeInfo type))(mem_E$u_P$raw)) {
     return ArrList_addBackFixed(stkAsList(self), type);
 }
 
@@ -167,19 +167,19 @@ fn_((ArrStk_addWithin(ArrStk* self, TypeInfo type))(u_P$raw)) {
     return ArrList_addBackWithin(stkAsList(self), type);
 }
 
-fn_((ArrStk_addN(ArrStk* self, TypeInfo type, mem_Allocator gpa, usize n))(mem_Err$u_S$raw)) {
+fn_((ArrStk_addN(ArrStk* self, TypeInfo type, mem_Alctr gpa, usize n))(mem_E$u_S$raw)) {
     return ArrList_addBackN(stkAsList(self), type, gpa, n);
 }
 
-fn_((ArrStk_addNFixed(ArrStk* self, TypeInfo type, usize n))(mem_Err$u_S$raw)) {
+fn_((ArrStk_addNFixed(ArrStk* self, TypeInfo type, usize n))(mem_E$u_S$raw)) {
     return ArrList_addBackNFixed(stkAsList(self), type, n);
 }
 
-fn_((ArrStk_push(ArrStk* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void)) {
+fn_((ArrStk_push(ArrStk* self, mem_Alctr gpa, u_V$raw item))(mem_E$void)) {
     return ArrList_append(stkAsList(self), gpa, item);
 }
 
-fn_((ArrStk_pushFixed(ArrStk* self, u_V$raw item))(mem_Err$void)) {
+fn_((ArrStk_pushFixed(ArrStk* self, u_V$raw item))(mem_E$void)) {
     return ArrList_appendFixed(stkAsList(self), item);
 }
 
@@ -187,11 +187,11 @@ fn_((ArrStk_pushWithin(ArrStk* self, u_V$raw item))(void)) {
     return ArrList_appendWithin(stkAsList(self), item);
 }
 
-fn_((ArrStk_pushS(ArrStk* self, mem_Allocator gpa, u_S_const$raw items))(mem_Err$void)) {
+fn_((ArrStk_pushS(ArrStk* self, mem_Alctr gpa, u_S_const$raw items))(mem_E$void)) {
     return ArrList_appendS(stkAsList(self), gpa, items);
 }
 
-fn_((ArrStk_pushSFixed(ArrStk* self, u_S_const$raw items))(mem_Err$void)) {
+fn_((ArrStk_pushSFixed(ArrStk* self, u_S_const$raw items))(mem_E$void)) {
     return ArrList_appendSFixed(stkAsList(self), items);
 }
 
@@ -199,11 +199,11 @@ fn_((ArrStk_pushSWithin(ArrStk* self, u_S_const$raw items))(void)) {
     return ArrList_appendSWithin(stkAsList(self), items);
 }
 
-fn_((ArrStk_pushN(ArrStk* self, mem_Allocator gpa, u_V$raw item, usize n))(mem_Err$void)) {
+fn_((ArrStk_pushN(ArrStk* self, mem_Alctr gpa, u_V$raw item, usize n))(mem_E$void)) {
     return ArrList_appendN(stkAsList(self), gpa, item, n);
 }
 
-fn_((ArrStk_pushNFixed(ArrStk* self, u_V$raw item, usize n))(mem_Err$void)) {
+fn_((ArrStk_pushNFixed(ArrStk* self, u_V$raw item, usize n))(mem_E$void)) {
     return ArrList_appendNFixed(stkAsList(self), item, n);
 }
 

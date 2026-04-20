@@ -50,16 +50,16 @@
 #define pp_then_(...) __VA_ARGS__
 #define pp_else_(...) __VA_ARGS__
 
-#define pp_Tok_prim_ord(x, y) pp_isParen( \
+#define pp_Tok_pri_ord(x, y) pp_isParen( \
     pp_Tok_cmp__##x(pp_Tok_cmp__##y)(()) \
 )
-#define pp_Tok_isComparable(x) pp_isParen(pp_cat(pp_Tok_cmp__, x)(()))
+#define pp_Tok_hasCmp(x) pp_isParen(pp_cat(pp_Tok_cmp__, x)(()))
 #define pp_Tok_ne(x, y) \
-    pp_iif(pp_bitand(pp_Tok_isComparable(x))(pp_Tok_isComparable(y)))( \
-        pp_Tok_prim_ord, \
+    pp_iif(pp_bitand(pp_Tok_hasCmp(x))(pp_Tok_hasCmp(y)))( \
+        pp_Tok_pri_ord, \
         1 pp_ignore \
     )(x, y)
-#define pp_Tok_eq(x, y) pp_compl(pp_Tok_ne(x, y))
+#define pp_Tok_eql(x, y) pp_compl(pp_Tok_ne(x, y))
 
 #define pp_comma() ,
 #define pp_comma_if_(_n) pp_if_(_n)(pp_comma, pp_ignore)()
@@ -75,7 +75,7 @@
 #define __isConstType__exec(...) __VA_ARGS__
 #define __isConstType__unwrap(...) __VA_ARGS__
 #define __isConstType__eval(_T...) \
-    ignore_open pp_defer(pp_Tok_eq)(const, pp_cat(ignore_after_, _T) ignore_end)
+    ignore_open pp_defer(pp_Tok_eql)(const, pp_cat(ignore_after_, _T) ignore_end)
 #define Tok_removeConst$(_const_T...) \
     pp_cat(__Tok_removeConst$__remove_, _const_T)
 #define __Tok_removeConst$__remove_const
@@ -331,7 +331,7 @@ struct E$raw {
 #define __lit_init$A__step(...) __VA_ARGS__
 #define __lit_init$A__parseT(_N, _T...) _N, _T,
 #define __lit_init$A__emit(_AliasFn, _N, _T, _initial...) \
-    lit$((_AliasFn(_N, _T))init$A(_initial))
+    l$((_AliasFn(_N, _T))init$A(_initial))
 #define init$A$(/*(_N, _T){_initial...}*/... /*(A$(_N,_T))*/) \
     __lit_init$A__step(pp_defer(__lit_init$A__emit)(A$, __lit_init$A__parseT __VA_ARGS__))
 #define init$A$$(/*(_N, _T){_initial...}*/... /*(A$$(_N,_T))*/) \
@@ -346,7 +346,7 @@ struct E$raw {
 #define __lit_init$S__parseT(_T...) _T, __lit_init$S__parsePtrLen
 #define __lit_init$S__parsePtrLen(_ptr, _len...) _ptr, _len
 #define __lit_init$S__emit(_AliasFn, _T, _ptr, _len...) \
-    lit$((_AliasFn(_T))init$S(_ptr, _len))
+    l$((_AliasFn(_T))init$S(_ptr, _len))
 #define init$S$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S$(_T))*/) \
     __lit_init$S__step(pp_defer(__lit_init$S__emit)(S$, __lit_init$S__parseT __VA_ARGS__))
 #define init$S$$(/*(_T)(_ptr: P$$(_T), _len: usize)*/... /*(S$$(_T))*/) \
@@ -424,7 +424,7 @@ struct E$raw {
     let_(__range, R) = _range; \
     debug_assert_fmt(isValid$R(__range), "Invalid range: begin(%zu) > end(%zu)", __range.begin, __range.end); \
     debug_assert_fmt(__range.end <= len$S(__s), "Invalid slice range: end(%zu) > len(%zu)", __range.end, len$S(__s)); \
-    lit$((TypeOf(__s))init$S(&ptr$S(__s)[__range.begin], len$R(__range))); \
+    l$((TypeOf(__s))init$S(&ptr$S(__s)[__range.begin], len$R(__range))); \
 })
 #define slice$S$(/*(_T)(_s: S$$(_T), $r(_begin, _end): R)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__slice$S$)(__param_expand__slice$S$ __VA_ARGS__))
 #define __param_expand__slice$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(range), __param_next__slice$S$
@@ -442,7 +442,7 @@ struct E$raw {
     let_(__s, TypeOf(_s)) = _s; \
     let_(__end, usize) = _end; \
     debug_assert_fmt(__end <= len$S(__s), "Invalid slice range: end(%zu) > len(%zu)", __end, len$S(__s)); \
-    lit$((TypeOf(__s))init$S(ptr$S(__s), __end)); \
+    l$((TypeOf(__s))init$S(ptr$S(__s), __end)); \
 })
 #define prefix$S$(/*(_T)(_s: S$$(_T), _end: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__prefix$S$)(__param_expand__prefix$S$ __VA_ARGS__))
 #define __param_expand__prefix$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(end), __param_next__prefix$S$
@@ -459,7 +459,7 @@ struct E$raw {
     let_(__s, TypeOf(_s)) = _s; \
     let_(__begin, usize) = _begin; \
     debug_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin(%zu) > len(%zu)", __begin, len$S(__s)); \
-    lit$((TypeOf(__s))init$S(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
+    l$((TypeOf(__s))init$S(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
 #define suffix$S$(/*(_T)(_s: S$$(_T), _begin: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$S$)(__param_expand__suffix$S$ __VA_ARGS__))
 #define __param_expand__suffix$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(begin), __param_next__suffix$S$
@@ -850,14 +850,14 @@ typedef struct meta_E$raw {
 #define meta_create(_type...) ({ \
     const TypeInfo __type = _type; \
     const P$raw __ptr = alloca(__type.size); \
-    prim_memset(__ptr, 0, __type.size); \
+    pri_memset(__ptr, 0, __type.size); \
     ((meta_P$raw){ .type = __type, .ptr = __ptr }); \
 })
 #define meta_alloc(_type, _len...) ({ \
     const TypeInfo __type = _type; \
     const usize __len = _len; \
     const P$raw __ptr = alloca(__type.size * __len); \
-    prim_memset(__ptr, 0, __type.size * __len); \
+    pri_memset(__ptr, 0, __type.size * __len); \
     ((meta_S$raw){ .type = __type, .ptr = __ptr, .len = __len }); \
 })
 

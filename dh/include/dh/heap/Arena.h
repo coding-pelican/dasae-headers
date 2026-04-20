@@ -33,24 +33,24 @@ typedef struct heap_Arena_State {
     ListSgl$usize buf_list;
     usize end_idx;
 } heap_Arena_State;
-/// Default state of ArenaAllocator
+/// Default state of ArenaAlctr
 $extern fn_((heap_Arena_State_default(void))(heap_Arena_State));
-/// Inner state of ArenaAllocator
-$extern fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Allocator child_allocator))(heap_Arena));
+/// Inner state of ArenaAlctr
+$extern fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Alctr child_alctr))(heap_Arena));
 
 struct heap_Arena {
-    mem_Allocator child_allocator;
+    mem_Alctr child_alctr;
     heap_Arena_State state;
 };
 /// Get allocator interface for instance
-$extern fn_((heap_Arena_allocator(heap_Arena* self))(mem_Allocator));
+$extern fn_((heap_Arena_alctr(heap_Arena* self))(mem_Alctr));
 /// Initialize with child allocator
-$extern fn_((heap_Arena_init(mem_Allocator child_allocator))(heap_Arena));
+$extern fn_((heap_Arena_init(mem_Alctr child_alctr))(heap_Arena));
 /// Finalize and free all memory
-$extern fn_((heap_Arena_fini(heap_Arena self))(void));
+$extern fn_((heap_Arena_fini(heap_Arena* self))(void));
 
 /// Reset mode for arena reset operation
-typedef variant_((heap_Arena_ResetMode $bits(8))(
+typedef variant_((heap_Arena_ResetMode $fits($packed))(
     (heap_Arena_ResetMode_free_all, Void),
     (heap_Arena_ResetMode_retain_capacity, Void),
     (heap_Arena_ResetMode_retain_with_limit, usize)

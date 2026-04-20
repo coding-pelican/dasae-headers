@@ -5,11 +5,11 @@
 #include "draft-async_ex.h"
 use_Co_Ctx$(Void);
 
-#include "dh/mem/Allocator.h"
+#include "dh/mem/Alctr.h"
 #include "dh/heap/Arena.h"
 
 // 메시지 타입
-typedef enum_(MessageType $bits(8)) {
+typedef enum_(MessageType $bits(8)){
     MessageType_none = 0,
     MessageType_increment = 1,
     MessageType_get_value = 2,
@@ -42,29 +42,29 @@ typedef struct Mailbox {
 // Actor 구조
 typedef struct Actor {
     Co_Ctx* coroutine; // 코루틴 컨텍스트
-    Mailbox mailbox;   // 메시지 큐
-    P$raw state;       // Actor 상태 (타입 소거)
-    u32 id;            // Actor ID
+    Mailbox mailbox; // 메시지 큐
+    P$raw state; // Actor 상태 (타입 소거)
+    u32 id; // Actor ID
     bool active       : 1;
     bool has_messages : 1;
 } Actor;
 T_use$((Actor)(P, S, E));
 T_use$((P$Actor)(E));
 T_use$((S$Actor)(E));
-T_use_E$($set(mem_Err)(Actor));
+T_use_E$($set(mem_E)(Actor));
 
 // Actor 시스템 (Arena allocator 사용)
 typedef struct ActorSystem {
-    mem_Allocator allocator;  // 기본 allocator
-    heap_Arena arena_actor;   // Actor 전용 arena
+    mem_Alctr allocator; // 기본 allocator
+    heap_Arena arena_actor; // Actor 전용 arena
     heap_Arena arena_message; // 메시지 전용 arena
-    S$Actor actors;           // Actor 슬라이스
+    S$Actor actors; // Actor 슬라이스
     usize next_id;
 } ActorSystem;
 T_use$((ActorSystem)(E));
 
 // Actor 시스템 초기화
-fn_((ActorSystem_init(mem_Allocator base_allocator, usize max_actors))(E$ActorSystem));
+fn_((ActorSystem_init(mem_Alctr base_alctr, usize max_actors))(E$ActorSystem));
 // Actor 시스템 종료 (모든 Actor/메시지 한번에 해제)
 fn_((ActorSystem_fini(ActorSystem* self))(void));
 // Actor 런타임 실행
@@ -84,16 +84,16 @@ fn_((Actor_tryRecv(ActorSystem* sys, Actor* self))(O$Message));
 #include "dh/io/stream.h"
 
 // Actor 시스템 초기화
-fn_((ActorSystem_init(mem_Allocator base_allocator, usize max_actors))(E$ActorSystem) $scope) {
+fn_((ActorSystem_init(mem_Alctr base_alctr, usize max_actors))(E$ActorSystem) $scope) {
     ActorSystem sys = {
-        .allocator = base_allocator,
-        .arena_actor = heap_Arena_init(base_allocator),
-        .arena_message = heap_Arena_init(base_allocator),
+        .allocator = base_alctr,
+        .arena_actor = heap_Arena_init(base_alctr),
+        .arena_message = heap_Arena_init(base_alctr),
         .next_id = 0,
     };
-    sys.actors = blk({
-        let gpa = heap_Arena_allocator(&sys.arena_actor);
-        let actors = u_castS$((S$Actor)(try_((mem_Allocator_alloc(gpa, typeInfo$(InnerType), max_actors)))));
+    sys.actors = local_({
+        let gpa = heap_Arena_alctr(&sys.arena_actor);
+        let actors = u_castS$((S$Actor)(try_((mem_Alctr_alloc(gpa, typeInfo$(InnerType), max_actors)))));
         for_(($s(actors))(actor) {
             actor->coroutine = null;
             actor->mailbox = (Mailbox){ 0 };
@@ -102,10 +102,10 @@ fn_((ActorSystem_init(mem_Allocator base_allocator, usize max_actors))(E$ActorSy
             actor->active = false;
             actor->has_messages = false;
         });
-        blk_return_(actors);
+        local_return_(actors);
     });
     return_ok(sys);
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // Actor 시스템 종료
 fn_((ActorSystem_fini(ActorSystem* self))(void)) {
@@ -150,8 +150,8 @@ fn_((ActorSystem_spawn(ActorSystem* self, Co_Ctx* coroutine, P$raw initial_state
     let free_actor = expr_(P$Actor $scope)(if (self->next_id < self->actors.len) {
         $break_(at$S(self->actors, self->next_id));
     }) expr_(else)({
-        return_err(mem_Err_OutOfMemory());
-    }) $unscoped_(expr);
+        return_err(mem_E_OutOfMemory());
+    }) $unscoped(expr);
 
     // Actor 초기화
     free_actor->coroutine = coroutine;
@@ -162,13 +162,13 @@ fn_((ActorSystem_spawn(ActorSystem* self, Co_Ctx* coroutine, P$raw initial_state
     free_actor->has_messages = false;
 
     return_ok(free_actor);
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // 메시지 전송 (arena에서 할당)
 fn_((Actor_send(ActorSystem* sys, Actor* self, Message msg))(E$void) $scope) {
-    let gpa = heap_Arena_allocator(&sys->arena_message);
+    let gpa = heap_Arena_alctr(&sys->arena_message);
     // 메시지 복사 (arena에서)
-    let new_msg = u_castP$((P$Message)(try_((mem_Allocator_create(gpa, typeInfo$(InnerType))))));
+    let new_msg = u_castP$((P$Message)(try_((mem_Alctr_create(gpa, typeInfo$(InnerType))))));
     *new_msg = msg;
     new_msg->next = null;
     // 메일박스에 추가
@@ -181,7 +181,7 @@ fn_((Actor_send(ActorSystem* sys, Actor* self, Message msg))(E$void) $scope) {
     self->mailbox.count++;
     self->has_messages = true;
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // 메시지 수신
 fn_((Actor_tryRecv(ActorSystem* sys, Actor* self))(O$Message) $scope) {
@@ -199,7 +199,7 @@ fn_((Actor_tryRecv(ActorSystem* sys, Actor* self))(O$Message) $scope) {
     }
     self->mailbox.count--;
     return_some(msg);
-} $unscoped_(fn);
+} $unscoped(fn);
 
 /* counter_actor.c */
 // Counter 상태
@@ -247,10 +247,10 @@ async_fn_scope(counter_actor, {
         }
     }
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 /* test_million_actors.c */
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/time.h"
 
 // Echo Actor (최소 상태)
@@ -279,7 +279,7 @@ async_fn_scope(echo_actor, {
         state->ping_count++;
     }
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 #include "dh/heap/Page.h"
 
@@ -288,9 +288,9 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
     // Page allocator (OS virtual memory)
     var page = (heap_Page){};
-    let page_gpa = heap_Page_allocator(&page);
+    let page_gpa = heap_Page_alctr(&page);
 
-    let total_actors = lit_n$(usize)(1, 000, 000);
+    let total_actors = n$(usize)(1, 000, 000);
     io_stream_println(u8_l("=== Million Actors Test ===\n"));
 
     // Actor 시스템 초기화
@@ -302,13 +302,13 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     // 100만 개 Actor 생성
     io_stream_println(u8_l("Creating {:uz} actors..."), total_actors);
 
-    let actor_gpa = heap_Arena_allocator(&sys.arena_actor);
+    let actor_gpa = heap_Arena_alctr(&sys.arena_actor);
     // 상태 할당 (arena에서)
-    let states = u_castS$((S$(EchoState))(try_((mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), total_actors)))));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, u_anyS(states)));
+    let states = u_castS$((S$(EchoState))(try_((mem_Alctr_alloc(actor_gpa, typeInfo$(InnerType), total_actors)))));
+    errdefer_($ignore, mem_Alctr_free(actor_gpa, u_anyS(states)));
     // 코루틴 컨텍스트 할당 (arena에서)
-    let ctxs = u_castS$((S$$(Co_CtxFn$(echo_actor)))(try_((mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), total_actors)))));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, u_anyS(ctxs)));
+    let ctxs = u_castS$((S$$(Co_CtxFn$(echo_actor)))(try_((mem_Alctr_alloc(actor_gpa, typeInfo$(InnerType), total_actors)))));
+    errdefer_($ignore, mem_Alctr_free(actor_gpa, u_anyS(ctxs)));
     // Actor 생성
     for_(($rf(0), $s(states), $s(ctxs))(i, state, ctx) {
         state->id = i;
@@ -316,7 +316,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         *ctx = Co_CtxFn_init$(echo_actor);
         ctx->args.sys = &sys;
         ctx->args.self = try_(ActorSystem_spawn(&sys, ctx->anyraw, state));
-        if (i % lit_n$(usize)(100, 000) == 0) {
+        if (i % n$(usize)(100, 000) == 0) {
             io_stream_println(u8_l("  Created {:uz} actors"), i);
         }
     });
@@ -327,8 +327,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let actor_mem = heap_Arena_queryCap(&sys.arena_actor);
     let msg_mem = heap_Arena_queryCap(&sys.arena_message);
     io_stream_println(u8_l("Memory usage:"));
-    io_stream_println(u8_l("  Actors:   {:uz} MB"), actor_mem / (lit_n$(usize)(1024) * 1024));
-    io_stream_println(u8_l("  Messages: {:uz} MB\n"), msg_mem / (lit_n$(usize)(1024) * 1024));
+    io_stream_println(u8_l("  Actors:   {:uz} MB"), actor_mem / (n$(usize)(1024) * 1024));
+    io_stream_println(u8_l("  Messages: {:uz} MB\n"), msg_mem / (n$(usize)(1024) * 1024));
 
     // 정확한 메트릭 추적
     let messages_per_actor = 3; // increment*2 + stop
@@ -354,7 +354,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
     // 메시지 전송 후 메모리 측정
     let msg_mem_peak = heap_Arena_queryCap(&sys.arena_message);
-    io_stream_println(u8_l("Message memory peak: {:uz} MB"), msg_mem_peak / (lit_n$(usize)(1024) * 1024));
+    io_stream_println(u8_l("Message memory peak: {:uz} MB"), msg_mem_peak / (n$(usize)(1024) * 1024));
 
     // Actor 런타임 시작
     io_stream_println(u8_l("Processing..."));
@@ -363,12 +363,12 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let process_time = time_Instant_elapsed(start);
 
     // 실제 처리된 메시지 카운트
-    let actual_processed = blk({
+    let actual_processed = local_({
         usize count = 0;
         for_(($s(states))(state) {
             count += state->ping_count;
         });
-        blk_return_(count);
+        local_return_(count);
     });
 
     // 통계
@@ -381,7 +381,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_println(u8_l("Messages/sec: {:fl}"), as$(f64)(total_messages) / time_Duration_asSecs$f64(process_time));
 
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 
 /*
 PS C:\dasae\dev\dasae-headers\dh\tests> dh-c run dev draft-async_actor.c

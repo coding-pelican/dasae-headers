@@ -1,52 +1,55 @@
+#define pp_expand(...) __VA_ARGS__
+
 // NOLINTBEGIN(bugprone-terminating-continue)
-#define scope_defer        \
+#define scope_defer \
     int _defer_return = 0; \
-    int _defer_curr   = 0; \
-    __deferred:            \
+    int _defer_curr = 0; \
+__deferred: \
     switch (_defer_curr) { \
-    default:               \
-        break;             \
-    case 0:                \
+    default: \
+        break; \
+    case 0: \
         _defer_curr = -1;
 
-#define run__deferred() \
-    goto __deferred;    \
-    }                   \
+#define blk_deferral \
+    goto __deferred; \
+    } \
     while (0)
 
-#define defer__snapshot(A)             \
-    {                                  \
+#define defer__snapshot(A) \
+    { \
         int _defer_prev = _defer_curr; \
-        _defer_curr     = __LINE__;    \
-        if (0) {                       \
-        case __LINE__:                 \
+        _defer_curr = __LINE__; \
+        if (0) { \
+        case __LINE__: \
             _defer_curr = _defer_prev; \
-            A;                         \
-        }                              \
+            A; \
+        } \
     }
 
-#define defer(F) \
+#define defer_(F) \
     defer__snapshot(F; goto __deferred)
 
-#define blk_defer          \
-    do {                     \
-    defer__snapshot(         \
+#define blk_defer_ ____blk_defer_ pp_expand
+#define ____blk_defer_ \
+    do { \
+    defer__snapshot( \
         if (_defer_return) { \
             goto __deferred; \
-        } else {             \
-            continue;        \
-        }                    \
+        } else { \
+            continue; \
+        } \
     )
 
-#define break_defer      \
-    {                    \
+#define break_defer \
+    { \
         goto __deferred; \
     }
 
-#define defer_return       \
-    {                      \
+#define defer_return \
+    { \
         _defer_return = 1; \
-        goto __deferred;   \
+        goto __deferred; \
     }
 // NOLINTEND(bugprone-terminating-continue)
 
@@ -65,13 +68,13 @@ int main(void) {
             printf("3\n");
         }
         printf("4\n");
-        defer({
+        defer_({
             printf("5\n");
-            (void)fclose(log_file); }
-        );
+            (void)fclose(log_file);
+        });
         printf("6\n");
 
-        blk_defer {
+        blk_defer_({
             printf("7\n");
             FILE* info_log_file = fopen("info_log.txt", "w");
             if (!info_log_file) {
@@ -81,7 +84,7 @@ int main(void) {
                 printf("9\n");
             }
             printf("10\n");
-            defer({
+            defer_({
                 printf("11\n");
                 (void)fclose(info_log_file);
             });
@@ -94,13 +97,12 @@ int main(void) {
                 printf("14\n");
             }
             printf("15\n");
-            defer({
+            defer_({
                 printf("16\n");
                 (void)fclose(warning_log_file);
             });
             printf("17\n");
-        }
-        run__deferred();
+        }) blk_deferral;
         printf("18\n");
 
         FILE* error_log_file = fopen("error_log.txt", "w");
@@ -110,22 +112,22 @@ int main(void) {
             defer_return;
             printf("20\n");
         }
-        defer({
+        defer_({
             printf("21\n");
             (void)fclose(error_log_file);
         });
         printf("22\n");
     }
-    run__deferred();
+    blk_deferral;
     printf("23\n");
 
     return result;
 }
 
 /*
-#define blk_defer
+#define blk_defer_
 #define blk_defer_return return
-#define defer
+#define defer_
 
 // output order
 //  0
@@ -136,13 +138,13 @@ int main(void) {
 //  8
 void defer_usage() {
     printf("0\n");
-    blk_defer {
+    blk_defer_ {
         printf("1\n");
-        defer printf("2\n");
+        defer_ printf("2\n");
         printf("3\n");
-        defer {
+        defer_ {
             printf("4\n");
-            defer printf("5\n");
+            defer_ printf("5\n");
             printf("6\n");
         }
         printf("7\n");

@@ -1,7 +1,7 @@
 #ifndef dal_c_ext_str__included
 #define dal_c_ext_str__included 1
 
-#include "dal-c-ext/base.h"
+#include "base.h"
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/builtin/lambda.h"
 #include "dh/io/stream.h"
 #include "dh/mem/common.h"
@@ -7,9 +7,9 @@
 /* example usage ============================================================*/
 
 /* declarations */
-T_use_E$($set(math_Err)(i32));
+T_use_E$($set(math_E)(i32));
 $attr($must_check)
-$static fn_((math_divideSafe(i32 lhs, i32 rhs))(math_Err$i32));
+$static fn_((math_divideSafe(i32 lhs, i32 rhs))(math_E$i32));
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
@@ -28,12 +28,10 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let testLambda = la_((i32 lhs, i32 rhs)(i32)) { return lhs + rhs; };
     io_stream_println(u8_l("testLambda: {:d}"), testLambda(10, 5));
     return_(ok({}));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 /* implementations */
-fn_((math_divideSafe(i32 lhs, i32 rhs))(math_Err$i32) $scope) {
-    if (rhs == 0) {
-        return_(err(math_Err_DivisionByZero()));
-    }
+fn_((math_divideSafe(i32 lhs, i32 rhs))(math_E$i32) $scope) {
+    if (rhs == 0) return_(err(math_E_DivisionByZero()));
     return_ok(lhs / rhs);
-} $unscoped_(fn);
+} $unscoped(fn);

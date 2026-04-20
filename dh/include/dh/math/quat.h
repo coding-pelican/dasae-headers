@@ -165,7 +165,7 @@ $static fn_((m_Q4f32_backward(m_Q4f32 q))(m_V3f32));
 #define __comp_const__m_Q4f32_identity \
     m_Q4f32_of_static(0.0f, 0.0f, 0.0f, 1.0f)
 
-#define ____m_Q4f32_of_static(_x, _y, _z, _w...) lit$((m_Q4f32){ \
+#define ____m_Q4f32_of_static(_x, _y, _z, _w...) l$((m_Q4f32){ \
     .v = m_V4f32_of_static(_x, _y, _z, _w), \
 })
 fn_((m_Q4f32_of(f32 x, f32 y, f32 z, f32 w))(m_Q4f32)) {
@@ -314,19 +314,19 @@ fn_((m_Q4f32_lookRotation(m_V3f32 forward, m_V3f32 up))(m_Q4f32)) {
 };
 
 fn_((m_Q4f32_neg(m_Q4f32 q))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_neg(q.v) });
+    return l$((m_Q4f32){ .v = m_V4f32_neg(q.v) });
 };
 fn_((m_Q4f32_add(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_add(lhs.v, rhs.v) });
+    return l$((m_Q4f32){ .v = m_V4f32_add(lhs.v, rhs.v) });
 };
 fn_((m_Q4f32_sub(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_sub(lhs.v, rhs.v) });
+    return l$((m_Q4f32){ .v = m_V4f32_sub(lhs.v, rhs.v) });
 };
 fn_((m_Q4f32_mul(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_mul(lhs.v, rhs.v) });
+    return l$((m_Q4f32){ .v = m_V4f32_mul(lhs.v, rhs.v) });
 };
 fn_((m_Q4f32_div(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_div(lhs.v, rhs.v) });
+    return l$((m_Q4f32){ .v = m_V4f32_div(lhs.v, rhs.v) });
 };
 
 fn_((m_Q4f32_mulQ(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32)) {
@@ -342,22 +342,22 @@ fn_((m_Q4f32_divQ(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32)) {
 };
 
 fn_((m_Q4f32_scal(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_scal(q.v, scalar) });
+    return l$((m_Q4f32){ .v = m_V4f32_scal(q.v, scalar) });
 };
 fn_((m_Q4f32_scalInv(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
     return m_Q4f32_scal(q, 1.0f / scalar);
 };
 fn_((m_Q4f32_addScalar(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_addScalar(q.v, scalar) });
+    return l$((m_Q4f32){ .v = m_V4f32_addScalar(q.v, scalar) });
 };
 fn_((m_Q4f32_subScalar(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_subScalar(q.v, scalar) });
+    return l$((m_Q4f32){ .v = m_V4f32_subScalar(q.v, scalar) });
 };
 fn_((m_Q4f32_mulScalar(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_mulScalar(q.v, scalar) });
+    return l$((m_Q4f32){ .v = m_V4f32_mulScalar(q.v, scalar) });
 };
 fn_((m_Q4f32_divScalar(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_divScalar(q.v, scalar) });
+    return l$((m_Q4f32){ .v = m_V4f32_divScalar(q.v, scalar) });
 };
 
 fn_((m_Q4f32_conj(m_Q4f32 q))(m_Q4f32)) {
@@ -378,7 +378,7 @@ fn_((m_Q4f32_dot(m_Q4f32 lhs, m_Q4f32 rhs))(f32)) {
     return m_V4f32_dot(lhs.v, rhs.v);
 };
 fn_((m_Q4f32_norm(m_Q4f32 q))(m_Q4f32)) {
-    return lit$((m_Q4f32){ .v = m_V4f32_norm(q.v) });
+    return l$((m_Q4f32){ .v = m_V4f32_norm(q.v) });
 };
 fn_((m_Q4f32_isNorm(m_Q4f32 q))(bool)) {
     let len_sq = m_Q4f32_lenSq(q);
@@ -439,9 +439,9 @@ fn_((m_Q4f32_toAxisAngle(m_Q4f32 q))(m_Q4f32_AxisAngle)) {
     let s = flt_sqrt(1.0f - qn.w * qn.w);
 
     if (s < 1e-6f) {
-        return lit$((m_Q4f32_AxisAngle){ .axis = m_V3f32_right, .angle = angle });
+        return l$((m_Q4f32_AxisAngle){ .axis = m_V3f32_right, .angle = angle });
     }
-    return lit$((m_Q4f32_AxisAngle){ .axis = m_V3f32_of(qn.x / s, qn.y / s, qn.z / s), .angle = angle });
+    return l$((m_Q4f32_AxisAngle){ .axis = m_V3f32_of(qn.x / s, qn.y / s, qn.z / s), .angle = angle });
 };
 fn_((m_Q4f32_toEuler(m_Q4f32 q))(m_V3f32)) {
     let sinr_cosp = 2.0f * (q.w * q.x + q.y * q.z);

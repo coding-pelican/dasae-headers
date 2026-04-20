@@ -14,7 +14,7 @@ typedef struct debug_SrcLoc { /* clang-format off */
         pp_else_(Void))
     );
 } debug_SrcLoc;
-#define debug_srcLoc() lit$((debug_SrcLoc){ \
+#define debug_srcLoc() l$((debug_SrcLoc){ \
     .base = pp_if_(debug_comp_enabled)( \
         pp_then_(srcLoc()), \
         pp_else_({}) \
@@ -33,65 +33,65 @@ typedef struct debug_SrcLoc { /* clang-format off */
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Allocator Interface --- */
+/* --- Alctr Interface --- */
 
-/// Allocator vtable
-typedef struct mem_Allocator_VT {
+/// Alctr vtable
+typedef struct mem_Alctr_VT {
     fn_(((*const alloc)(P$raw ctx, usize len, mem_Align align))(O$P$u8)) $must_check;
     fn_(((*const resize)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) $must_check;
     fn_(((*const remap)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) $must_check;
     fn_(((*const free)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
-} mem_Allocator_VT;
+} mem_Alctr_VT;
 
-/// Allocator instance
-typedef struct mem_Allocator {
+/// Alctr instance
+typedef struct mem_Alctr {
     var_(ctx, P$raw); /**< Context pointer */
-    var_(vt, P_const$$(mem_Allocator_VT)); /**< Virtual table */
-} mem_Allocator;
-T_use_O$(mem_Allocator);
-T_use_E$($set(mem_Err)(u_P$raw));
-T_use_E$($set(mem_Err)(u_S$raw));
+    var_(vt, P_const$$(mem_Alctr_VT)); /**< Virtual table */
+} mem_Alctr;
+T_use_O$(mem_Alctr);
+T_use_E$($set(mem_E)(u_P$raw));
+T_use_E$($set(mem_E)(u_S$raw));
 
 $attr($inline_always)
-$static fn_((mem_Allocator_isValid(mem_Allocator self))(bool));
+$static fn_((mem_Alctr_isValid(mem_Alctr self))(bool));
 $attr($inline_always)
-$static fn_((mem_Allocator_assertValid(P$raw ctx, P_const$$(mem_Allocator_VT) vt))(void));
+$static fn_((mem_Alctr_assertValid(P$raw ctx, P_const$$(mem_Alctr_VT) vt))(void));
 $attr($inline_always)
-$static fn_((mem_Allocator_ensureValid(mem_Allocator self))(mem_Allocator));
+$static fn_((mem_Alctr_ensureValid(mem_Alctr self))(mem_Alctr));
 
-/* --- Core Allocator Functions --- */
+/* --- Core Alctr Functions --- */
 
 /// Raw allocation
-$extern fn_((mem_Allocator_rawAlloc($traced mem_Allocator self, usize len, mem_Align align))(O$P$u8));
+$extern fn_((mem_Alctr_rawAlloc($traced mem_Alctr self, usize len, mem_Align align))(O$P$u8));
 /// Try to resize in-place
-$extern fn_((mem_Allocator_rawResize($traced mem_Allocator self, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+$extern fn_((mem_Alctr_rawResize($traced mem_Alctr self, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
 /// Try to resize, allowing relocation
-$extern fn_((mem_Allocator_rawRemap($traced mem_Allocator self, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+$extern fn_((mem_Alctr_rawRemap($traced mem_Alctr self, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
 /// Free mem
-$extern fn_((mem_Allocator_rawFree($traced mem_Allocator self, S$u8 buf, mem_Align buf_align))(void));
+$extern fn_((mem_Alctr_rawFree($traced mem_Alctr self, S$u8 buf, mem_Align buf_align))(void));
 
-/* --- High-level Allocator Functions --- */
+/* --- High-level Alctr Functions --- */
 
 /// Single-item allocation
-$extern fn_((mem_Allocator_create($traced mem_Allocator self, TypeInfo type))(mem_Err$u_P$raw)) $must_check;
+$extern fn_((mem_Alctr_create($traced mem_Alctr self, TypeInfo type))(mem_E$u_P$raw)) $must_check;
 /// Free single-item
-$extern fn_((mem_Allocator_destroy($traced mem_Allocator self, u_P$raw ptr))(void));
+$extern fn_((mem_Alctr_destroy($traced mem_Alctr self, u_P$raw ptr))(void));
 /// Slice allocation
-$extern fn_((mem_Allocator_alloc($traced mem_Allocator self, TypeInfo type, usize count))(mem_Err$u_S$raw)) $must_check;
+$extern fn_((mem_Alctr_alloc($traced mem_Alctr self, TypeInfo type, usize count))(mem_E$u_S$raw)) $must_check;
 /// Try to resize slice in-place
-$extern fn_((mem_Allocator_resize($traced mem_Allocator self, u_S$raw old_mem, usize new_len))(bool));
+$extern fn_((mem_Alctr_resize($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(bool));
 /// Try to resize slice, allowing relocation
-$extern fn_((mem_Allocator_remap($traced mem_Allocator self, u_S$raw old_mem, usize new_len))(O$u_S$raw));
+$extern fn_((mem_Alctr_remap($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(O$u_S$raw));
 /// Reallocate slice with new size
-$extern fn_((mem_Allocator_realloc($traced mem_Allocator self, u_S$raw old_mem, usize new_len))(mem_Err$u_S$raw)) $must_check;
+$extern fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(mem_E$u_S$raw)) $must_check;
 /// Free slice
-$extern fn_((mem_Allocator_free($traced mem_Allocator self, u_S$raw mem))(void));
+$extern fn_((mem_Alctr_free($traced mem_Alctr self, u_S$raw mem))(void));
 /// Duplicate slice
-$extern fn_((mem_Allocator_dupe($traced mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw)) $must_check;
+$extern fn_((mem_Alctr_dupe($traced mem_Alctr self, u_S$raw src))(mem_E$u_S$raw)) $must_check;
 
 /*========== Macros and Definitions ========================================*/
 
-fn_((mem_Allocator_isValid(mem_Allocator self))(bool)) {
+fn_((mem_Alctr_isValid(mem_Alctr self))(bool)) {
     return self.ctx != null
         && self.vt != null
         && self.vt->alloc != null
@@ -100,7 +100,7 @@ fn_((mem_Allocator_isValid(mem_Allocator self))(bool)) {
         && self.vt->free != null;
 };
 
-fn_((mem_Allocator_assertValid(P$raw ctx, P_const$$(mem_Allocator_VT) vt))(void)) {
+fn_((mem_Alctr_assertValid(P$raw ctx, P_const$$(mem_Alctr_VT) vt))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vt);
     claim_assert_nonnull(vt->alloc);
@@ -109,8 +109,8 @@ fn_((mem_Allocator_assertValid(P$raw ctx, P_const$$(mem_Allocator_VT) vt))(void)
     claim_assert_nonnull(vt->free);
 };
 
-fn_((mem_Allocator_ensureValid(mem_Allocator self))(mem_Allocator)) {
-    return mem_Allocator_assertValid(self.ctx, self.vt), self;
+fn_((mem_Alctr_ensureValid(mem_Alctr self))(mem_Alctr)) {
+    return mem_Alctr_assertValid(self.ctx, self.vt), self;
 };
 
 /*========== Tracing Functions ==============================================*/
@@ -121,8 +121,8 @@ $extern fn_((mem_Tracker_registerFree($traced P$raw ptr))(bool));
 
 /*========== External Definitions ===========================================*/
 
-fn_((mem_Allocator_rawAlloc($traced mem_Allocator self, usize len, mem_Align align))(O$P$u8) $scope) {
-    self = mem_Allocator_ensureValid(self);
+fn_((mem_Alctr_rawAlloc($traced mem_Alctr self, usize len, mem_Align align))(O$P$u8) $scope) {
+    self = mem_Alctr_ensureValid(self);
     if (len == 0) {
         let addr = intToPtr$((u8*)(usize_limit_max & ~(mem_log2ToAlign(align) - 1)));
         mem_Tracker_registerAlloc($tracing addr, len);
@@ -131,12 +131,13 @@ fn_((mem_Allocator_rawAlloc($traced mem_Allocator self, usize len, mem_Align ali
     let result = self.vt->alloc(self.ctx, len, align);
     if_some((result)(addr)) { mem_Tracker_registerAlloc($tracing addr, len); }
     return result;
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
-fn_((mem_Allocator_rawResize($traced mem_Allocator self, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
-    self = mem_Allocator_ensureValid(self);
+fn_((mem_Alctr_rawResize($traced mem_Alctr self, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
+    self = mem_Alctr_ensureValid(self);
     if (new_len == 0) {
-        mem_Allocator_rawFree($trace self, buf, buf_align);
+        mem_Alctr_rawFree($trace self, buf, buf_align);
         mem_Tracker_registerRemap($tracing buf.ptr, buf.ptr, new_len);
         return true;
     }
@@ -148,10 +149,10 @@ fn_((mem_Allocator_rawResize($traced mem_Allocator self, S$u8 buf, mem_Align buf
     return result;
 };
 
-fn_((mem_Allocator_rawRemap($traced mem_Allocator self, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
-    self = mem_Allocator_ensureValid(self);
+fn_((mem_Alctr_rawRemap($traced mem_Alctr self, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
+    self = mem_Alctr_ensureValid(self);
     if (new_len == 0) {
-        mem_Allocator_rawFree($trace self, buf, buf_align);
+        mem_Alctr_rawFree($trace self, buf, buf_align);
         let addr = intToPtr$((u8*)(usize_limit_max & ~(mem_log2ToAlign(buf_align) - 1)));
         mem_Tracker_registerRemap($tracing buf.ptr, addr, new_len);
         return_some(addr);
@@ -162,42 +163,44 @@ fn_((mem_Allocator_rawRemap($traced mem_Allocator self, S$u8 buf, mem_Align buf_
     let result = self.vt->remap(self.ctx, buf, buf_align, new_len);
     if_some((result)(addr)) { mem_Tracker_registerRemap($tracing buf.ptr, addr, new_len); }
     return result;
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
-fn_((mem_Allocator_rawFree($traced mem_Allocator self, S$u8 buf, mem_Align buf_align))(void)) {
-    self = mem_Allocator_ensureValid(self);
+fn_((mem_Alctr_rawFree($traced mem_Alctr self, S$u8 buf, mem_Align buf_align))(void)) {
+    self = mem_Alctr_ensureValid(self);
     if (buf.len == 0) { return; }
     mem_setBytes0(buf);
     mem_Tracker_registerFree($tracing buf.ptr);
     return self.vt->free(self.ctx, buf, buf_align);
 };
 
-fn_((mem_Allocator_create($traced mem_Allocator self, TypeInfo type))(mem_Err$u_P$raw) $scope) {
+fn_((mem_Alctr_create($traced mem_Alctr self, TypeInfo type))(mem_E$u_P$raw) $scope) {
     if (type.size == 0) {
         return_ok({
             .raw = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(type.align) - 1))),
             .type = type,
         });
     }
-    let mem = orelse_((mem_Allocator_rawAlloc($tracing self, type.size, type.align))(
-        return_err(mem_Err_OutOfMemory())
+    let mem = orelse_((mem_Alctr_rawAlloc($tracing self, type.size, type.align))(
+        return_err(mem_E_OutOfMemory())
     ));
     mem_setBytes0(P_prefix$((S$u8)(mem)(type.size)));
     return_ok({
         .raw = mem,
         .type = type,
     });
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
-fn_((mem_Allocator_destroy($traced mem_Allocator self, u_P$raw ptr))(void)) {
+fn_((mem_Alctr_destroy($traced mem_Alctr self, u_P$raw ptr))(void)) {
     if (ptr.type.size == 0) {
         return;
     }
     let mem = P_prefix$((S$u8)(ptr.raw)(ptr.type.size));
-    mem_Allocator_rawFree($tracing self, mem, ptr.type.align);
+    mem_Alctr_rawFree($tracing self, mem, ptr.type.align);
 };
 
-fn_((mem_Allocator_alloc($traced mem_Allocator self, TypeInfo type, usize count))(mem_Err$u_S$raw) $scope) {
+fn_((mem_Alctr_alloc($traced mem_Alctr self, TypeInfo type, usize count))(mem_E$u_S$raw) $scope) {
     if (type.size == 0 || count == 0) {
         return_ok({
             .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(type.align) - 1))),
@@ -206,10 +209,10 @@ fn_((mem_Allocator_alloc($traced mem_Allocator self, TypeInfo type, usize count)
         });
     }
     let byte_count = orelse_((usize_mulChkd(type.size, count))(
-        return_err(mem_Err_OutOfMemory())
+        return_err(mem_E_OutOfMemory())
     ));
-    let mem = orelse_((mem_Allocator_rawAlloc($tracing self, byte_count, type.align))(
-        return_err(mem_Err_OutOfMemory())
+    let mem = orelse_((mem_Alctr_rawAlloc($tracing self, byte_count, type.align))(
+        return_err(mem_E_OutOfMemory())
     ));
     mem_setBytes0(P_prefix$((S$u8)(mem)(byte_count)));
     return_ok({
@@ -217,14 +220,15 @@ fn_((mem_Allocator_alloc($traced mem_Allocator self, TypeInfo type, usize count)
         .len = count,
         .type = type,
     });
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
-fn_((mem_Allocator_resize($traced mem_Allocator self, u_S$raw old_mem, usize new_len))(bool)) {
+fn_((mem_Alctr_resize($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(bool)) {
     if (old_mem.type.size == 0) {
         return true;
     }
     if (new_len == 0) {
-        mem_Allocator_free($tracing self, old_mem);
+        mem_Alctr_free($tracing self, old_mem);
         return true;
     }
     if (old_mem.len == 0) {
@@ -236,10 +240,10 @@ fn_((mem_Allocator_resize($traced mem_Allocator self, u_S$raw old_mem, usize new
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
         return false
     ));
-    return mem_Allocator_rawResize($tracing self, old_bytes, old_mem.type.align, new_byte_count);
+    return mem_Alctr_rawResize($tracing self, old_bytes, old_mem.type.align, new_byte_count);
 };
 
-fn_((mem_Allocator_remap($traced mem_Allocator self, u_S$raw old_mem, usize new_len))(O$u_S$raw) $scope) {
+fn_((mem_Alctr_remap($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(O$u_S$raw) $scope) {
     if (old_mem.type.size == 0) {
         return_some({
             .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
@@ -248,7 +252,7 @@ fn_((mem_Allocator_remap($traced mem_Allocator self, u_S$raw old_mem, usize new_
         });
     }
     if (new_len == 0) {
-        mem_Allocator_free($tracing self, old_mem);
+        mem_Alctr_free($tracing self, old_mem);
         return_some({
             .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = 0,
@@ -264,7 +268,7 @@ fn_((mem_Allocator_remap($traced mem_Allocator self, u_S$raw old_mem, usize new_
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
         return_none()
     ));
-    let new_ptr = orelse_((mem_Allocator_rawRemap($tracing self, old_bytes, old_mem.type.align, new_byte_count))(
+    let new_ptr = orelse_((mem_Alctr_rawRemap($tracing self, old_bytes, old_mem.type.align, new_byte_count))(
         return_none()
     ));
     return_some({
@@ -272,17 +276,18 @@ fn_((mem_Allocator_remap($traced mem_Allocator self, u_S$raw old_mem, usize new_
         .len = new_len,
         .type = old_mem.type,
     });
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
-fn_((mem_Allocator_realloc($traced mem_Allocator self, u_S$raw old_mem, usize new_len))(mem_Err$u_S$raw) $scope) {
+fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(mem_E$u_S$raw) $scope) {
     // Special case for empty old memory
     if (old_mem.len == 0) {
         // This is equivalent to a new allocation
-        return_ok(try_(mem_Allocator_alloc($tracing self, old_mem.type, new_len)));
+        return_ok(try_(mem_Alctr_alloc($tracing self, old_mem.type, new_len)));
     }
     // Special case for zero new length
     if (new_len == 0) {
-        mem_Allocator_free($tracing self, old_mem);
+        mem_Alctr_free($tracing self, old_mem);
         return_ok({
             .ptr = intToPtr$((P$raw)(usize_limit_max & ~(mem_log2ToAlign(old_mem.type.align) - 1))),
             .len = 0,
@@ -301,10 +306,10 @@ fn_((mem_Allocator_realloc($traced mem_Allocator self, u_S$raw old_mem, usize ne
     let old_bytes = P_prefix$((S$u8)(old_mem.ptr)(old_mem.type.size * old_mem.len));
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_err(mem_Err_OutOfMemory())
+        return_err(mem_E_OutOfMemory())
     ));
     // Try to remap first (which may be in-place resize or may relocate)
-    let new_ptr = mem_Allocator_rawRemap($tracing self, old_bytes, old_mem.type.align, new_byte_count);
+    let new_ptr = mem_Alctr_rawRemap($tracing self, old_bytes, old_mem.type.align, new_byte_count);
     if_some((new_ptr)(ptr)) {
         return_ok({
             .ptr = ptr,
@@ -313,37 +318,39 @@ fn_((mem_Allocator_realloc($traced mem_Allocator self, u_S$raw old_mem, usize ne
         });
     }
     // Remap failed, need to allocate new memory and copy
-    let new_mem = orelse_((mem_Allocator_rawAlloc($tracing self, new_byte_count, old_mem.type.align))(
-        return_err(mem_Err_OutOfMemory())
+    let new_mem = orelse_((mem_Alctr_rawAlloc($tracing self, new_byte_count, old_mem.type.align))(
+        return_err(mem_E_OutOfMemory())
     ));
     // Copy the data from old memory to new memory (use smaller of the two sizes)
-    let copy_len = prim_min(old_bytes.len, new_byte_count);
+    let copy_len = pri_min(old_bytes.len, new_byte_count);
     let new_bytes = P_prefix$((S$u8)(new_mem)(copy_len));
     mem_copyBytes(new_bytes, old_bytes.as_const);
     // Zero out old memory before freeing
     mem_setBytes0(old_bytes);
-    mem_Allocator_rawFree($tracing self, old_bytes, old_mem.type.align);
+    mem_Alctr_rawFree($tracing self, old_bytes, old_mem.type.align);
     return_ok({
         .ptr = new_mem,
         .len = new_len,
         .type = old_mem.type,
     });
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
-fn_((mem_Allocator_free($traced mem_Allocator self, u_S$raw mem))(void)) {
+fn_((mem_Alctr_free($traced mem_Alctr self, u_S$raw mem))(void)) {
     // Special case for zero-sized types or empty slices
     if (mem.type.size == 0 || mem.len == 0) { return; }
     // Create byte slice from memory and free it
     let bytes = P_prefix$((S$u8)(mem.ptr)(mem.type.size * mem.len));
-    mem_Allocator_rawFree($tracing self, bytes, mem.type.align);
+    mem_Alctr_rawFree($tracing self, bytes, mem.type.align);
 };
 
-fn_((mem_Allocator_dupe($traced mem_Allocator self, u_S$raw src))(mem_Err$u_S$raw) $scope) {
+fn_((mem_Alctr_dupe($traced mem_Alctr self, u_S$raw src))(mem_E$u_S$raw) $scope) {
     // Allocate new memory with same element type and count
-    let new_mem = try_(mem_Allocator_alloc($tracing self, src.type, src.len));
+    let new_mem = try_(mem_Alctr_alloc($tracing self, src.type, src.len));
     // Copy data from source to new memory
     let src_bytes = P_prefix$((S$u8)(src.ptr)(src.type.size * src.len));
     let dst_bytes = P_prefix$((S$u8)(new_mem.ptr)(src.type.size * src.len));
     mem_copyBytes(dst_bytes, src_bytes.as_const);
     return_ok(new_mem);
-} $unscoped_(fn);
+}
+$unscoped(fn);

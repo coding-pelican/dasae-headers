@@ -117,22 +117,22 @@ $extern cmp_fn_neqCtx$((time_SysTime)(lhs, rhs, ctx));
 
 /// 100-nanosecond intervals per second.
 #define __comp_const__time_SysTime_intervals_per_sec \
-    (lit_n$(u64)(10, 000, 000ull))
+    (n$(u64)(10, 000, 000ull))
 
 /// Number of 100-nanosecond intervals from 1601-01-01 to 1970-01-01.
 /// = 11644473600 seconds * 10,000,000 intervals/second
 #define __comp_const__time_SysTime_intervals_to_unix_epoch \
-    (lit_n$(u64)(116, 444, 736, 000, 000, 000ull))
+    (n$(u64)(116, 444, 736, 000, 000, 000ull))
 
 #if plat_is_windows
-#define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
+#define __comp_const__time_SysTime_unix_epoch l$((time_SysTime){ \
     .impl = { \
         .dwLowDateTime = as$(DWORD)(time_SysTime_intervals_to_unix_epoch & 0xFFFFFFFFull), \
         .dwHighDateTime = as$(DWORD)(time_SysTime_intervals_to_unix_epoch >> 32ull), \
     }, \
 })
 #else /* plat_based_unix */
-#define __comp_const__time_SysTime_unix_epoch lit$((time_SysTime){ \
+#define __comp_const__time_SysTime_unix_epoch l$((time_SysTime){ \
     .impl = { .tv_sec = 0, .tv_nsec = 0 }, \
 })
 #endif

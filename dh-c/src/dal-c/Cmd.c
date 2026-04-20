@@ -2,28 +2,14 @@
 #include "dal-c-ext/ArrStr.h"
 #include "dal-c-ext/path.h"
 #include "dal-c-ext/dir.h"
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
-/* FIXME: single file, test, sample, example command does not work as expected
- *
- * dh-c build single_file.c
- *
- * dh-c test
- * dh-c test target_source.c
- * dh-c test tests/test-something.c
- * dh-c build --test
- * dh-c build --test test-something.c
- *
- * dh-c build samples/sample-something.c --lib=my-lib
- * dh-c build --sample
- * dh-c build --sample sample-something.c
- * dh-c build examples/example-something.c --lib=my-lib
- * dh-c build --example
- * dh-c build --example example-something.c
- */
+#include <assert.h>
+/* Supported: single file build/run/test; --sample/--example/--test with bare filename
+ * (e.g. dh-c build --sample target.c resolves to samples/target.c); dh-c test runs
+ * the "test" executable when no target file is given. */
 
 // === PRIVATE HELPERS ===
 
@@ -224,9 +210,25 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         const char* dir_name = dal_c_SampleDir_format(sample_dir);
         ArrStr* sample_sources = ArrStr_init();
 
-        // If target_file specified, use only that file; otherwise collect all from directory
+        // If target_file specified, resolve under dir (e.g. samples/target.c) or use as-is if it exists
         if (target_file) {
-            ArrStr_push(sample_sources, target_file);
+            char* dir_path = path_join(proj->root, dir_name);
+            char* base = path_basename(target_file);
+            char* candidate = path_join(dir_path, base);
+            free(dir_path);
+            free(base);
+            if (path_isFile(candidate)) {
+                ArrStr_push(sample_sources, candidate);
+                free(candidate);
+            } else if (path_isFile(target_file)) {
+                ArrStr_push(sample_sources, target_file);
+                free(candidate);
+            } else {
+                (void)fprintf(stderr, "Error: File not found: %s (or %s)\n", candidate, target_file);
+                free(candidate);
+                ArrStr_fini(&sample_sources);
+                return 1;
+            }
         } else {
             ArrStr_fini(&sample_sources);
             sample_sources = dal_c__collectDirectoryFiles(proj, dir_name);
@@ -296,8 +298,23 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         return 0;
     }
 
-    // Build main project
-    ArrStr* sources = dal_c__collectSourceFiles(proj, target_file);
+    // Build main project (for test with target, resolve bare name under tests/)
+    const char* effective_target = target_file;
+    char* test_resolved = NULL;
+    if (self->action == dal_c_CmdAction_test && target_file && proj && proj->root && !path_isFile(target_file)) {
+        char* tests_dir = path_join(proj->root, dal_c_dir_tests);
+        char* base = path_basename(target_file);
+        test_resolved = path_join(tests_dir, base);
+        free(tests_dir);
+        free(base);
+        if (path_isFile(test_resolved)) {
+            effective_target = test_resolved;
+        } else {
+            free(test_resolved);
+            test_resolved = NULL;
+        }
+    }
+    ArrStr* sources = dal_c__collectSourceFiles(proj, effective_target);
 
     if (self->action == dal_c_CmdAction_lib && dal_c__isHeaderOnlyBuild(self, proj, sources)) {
         const char* output_name = NULL;
@@ -326,6 +343,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     if (ArrStr_len(sources) == 0) {
         (void)fprintf(stderr, "Error: No source files found\n");
         ArrStr_fini(&sources);
+        free(test_resolved);
         return 1;
     }
 
@@ -346,6 +364,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     } else {
         (void)fprintf(stderr, "Error: Cannot determine output name\n");
         ArrStr_fini(&sources);
+        free(test_resolved);
         return 1;
     }
     assert(output_name != NULL);
@@ -374,6 +393,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         ArrStr_fini(&sources);
         free(build_dir);
         if (output_name_allocated) { free(output_name_allocated); }
+        free(test_resolved);
         return 1;
     }
 
@@ -381,6 +401,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     ArrStr_fini(&sources);
     free(build_dir);
     if (output_name_allocated) { free(output_name_allocated); }
+    free(test_resolved);
     if (result != 0) {
         (void)fprintf(stderr, "Error: Build failed\n");
         return result;
@@ -507,10 +528,10 @@ static const char* dal_c_Cmd__getTargetFile(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
     switch (cmd->action) {
     case dal_c_CmdAction_build: return cmd->payload.build.target_file;
-    case dal_c_CmdAction_lib:   return cmd->payload.lib.target_file;
-    case dal_c_CmdAction_run:   return cmd->payload.run.target_file;
-    case dal_c_CmdAction_test:  return cmd->payload.test.target_file;
-    default:                    return NULL;
+    case dal_c_CmdAction_lib: return cmd->payload.lib.target_file;
+    case dal_c_CmdAction_run: return cmd->payload.run.target_file;
+    case dal_c_CmdAction_test: return cmd->payload.test.target_file;
+    default: return NULL;
     }
 }
 
@@ -518,8 +539,8 @@ static bool dal_c_Cmd__getBuildAll(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
     switch (cmd->action) {
     case dal_c_CmdAction_build: return cmd->payload.build.build_all;
-    case dal_c_CmdAction_test:  return cmd->payload.test.build_all;
-    default:                    return false;
+    case dal_c_CmdAction_test: return cmd->payload.test.build_all;
+    default: return false;
     }
 }
 
@@ -527,17 +548,17 @@ static dal_c_SampleDir dal_c_Cmd__getSampleDir(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
     switch (cmd->action) {
     case dal_c_CmdAction_build: return cmd->payload.build.sample_dir;
-    case dal_c_CmdAction_run:   return cmd->payload.run.sample_dir;
-    default:                    return dal_c_SampleDir_none;
+    case dal_c_CmdAction_run: return cmd->payload.run.sample_dir;
+    default: return dal_c_SampleDir_none;
     }
 }
 
 static bool dal_c_Cmd__getDebugMode(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
     switch (cmd->action) {
-    case dal_c_CmdAction_run:  return cmd->payload.run.debug;
+    case dal_c_CmdAction_run: return cmd->payload.run.debug;
     case dal_c_CmdAction_test: return cmd->payload.test.debug;
-    default:                   return false;
+    default: return false;
     }
 }
 
@@ -766,33 +787,63 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                 cmd->payload.test.build_all = true;
             }
         } else if (dal_c_Cmd__isSourceOrHeader(arg)) {
+            bool allow_bare = (cmd->action == dal_c_CmdAction_build && cmd->payload.build.sample_dir != dal_c_SampleDir_none)
+                           || (cmd->action == dal_c_CmdAction_run && cmd->payload.run.sample_dir != dal_c_SampleDir_none)
+                           || (cmd->action == dal_c_CmdAction_test);
+            bool bare_name = (strchr(arg, '/') == NULL && strchr(arg, '\\') == NULL);
             char* abs_path = path_abs(arg);
-            if (!abs_path) {
-                (void)fprintf(stderr, "Error: File not found: %s\n", arg);
-                return 1;
-            }
-            if (!path_isFile(abs_path)) {
-                (void)fprintf(stderr, "Error: Not a file: %s\n", arg);
-                free(abs_path);
-                return 1;
-            }
-
-            switch (cmd->action) {
-            case dal_c_CmdAction_build:
-                cmd->payload.build.target_file = abs_path;
-                break;
-            case dal_c_CmdAction_lib:
-                cmd->payload.lib.target_file = abs_path;
-                break;
-            case dal_c_CmdAction_run:
-                cmd->payload.run.target_file = abs_path;
-                break;
-            case dal_c_CmdAction_test:
-                cmd->payload.test.target_file = abs_path;
-                break;
-            default:
-                free(abs_path);
-                break;
+            if (!abs_path || !path_isFile(abs_path)) {
+                if (allow_bare && bare_name) {
+                    char* bare = strdup(arg);
+                    if (!bare) {
+                        if (abs_path) { free(abs_path); }
+                        return 1;
+                    }
+                    switch (cmd->action) {
+                    case dal_c_CmdAction_build:
+                        cmd->payload.build.target_file = bare;
+                        break;
+                    case dal_c_CmdAction_lib:
+                        cmd->payload.lib.target_file = bare;
+                        break;
+                    case dal_c_CmdAction_run:
+                        cmd->payload.run.target_file = bare;
+                        break;
+                    case dal_c_CmdAction_test:
+                        cmd->payload.test.target_file = bare;
+                        break;
+                    default:
+                        free(bare);
+                        break;
+                    }
+                    if (abs_path) { free(abs_path); }
+                } else {
+                    if (!abs_path) {
+                        (void)fprintf(stderr, "Error: File not found: %s\n", arg);
+                        return 1;
+                    }
+                    (void)fprintf(stderr, "Error: Not a file: %s\n", arg);
+                    free(abs_path);
+                    return 1;
+                }
+            } else {
+                switch (cmd->action) {
+                case dal_c_CmdAction_build:
+                    cmd->payload.build.target_file = abs_path;
+                    break;
+                case dal_c_CmdAction_lib:
+                    cmd->payload.lib.target_file = abs_path;
+                    break;
+                case dal_c_CmdAction_run:
+                    cmd->payload.run.target_file = abs_path;
+                    break;
+                case dal_c_CmdAction_test:
+                    cmd->payload.test.target_file = abs_path;
+                    break;
+                default:
+                    free(abs_path);
+                    break;
+                }
             }
         } else if (cmd->action == dal_c_CmdAction_workspace || cmd->action == dal_c_CmdAction_project) {
             if (cmd->action == dal_c_CmdAction_workspace) {

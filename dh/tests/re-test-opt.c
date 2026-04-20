@@ -1,27 +1,31 @@
-#define main_no_args        (1)
+#define main_no_args (1)
 #define main_no_returns_err (1)
-#include "dh/main.h"
+#include "dh-main.h"
 
 static fn_(getValueIfPositive(i32 value), O$i32 $scope) {
     if (value <= 0) { return_none(); }
     return_some(value);
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
 static fn_(getCharIfNumeric(u8 value), O$u8 $scope) {
     if ('0' <= value && value <= '9') { return_some(value); }
     return_none();
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
 fn_(dh_main(void), void) {
     if_some(getValueIfPositive(10), value) {
         printf("Value is %d\n", value);
-    } else_none {
+    }
+    else_none {
         printf("Value is not positive\n");
     }
 
     if_some(getCharIfNumeric('a'), value) {
         printf("Value is %c\n", value);
-    } else_none {
+    }
+    else_none {
         printf("Value is not numeric\n");
     }
 

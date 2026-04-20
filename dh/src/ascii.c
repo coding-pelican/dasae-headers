@@ -2,45 +2,45 @@
 
 fn_((ascii_toUppers(S$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(ascii_str.ptr);
-    for_(($s(ascii_str))(c) { *c = ascii_toUpper(*c); });
+    for_(($s(ascii_str))(c)) { *c = ascii_toUpper(*c); } $end(for);
     return ascii_str;
 };
 
 fn_((ascii_toLowers(S$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(ascii_str.ptr);
-    for_(($s(ascii_str))(c) { *c = ascii_toLower(*c); });
+    for_(($s(ascii_str))(c)) { *c = ascii_toLower(*c); } $end(for);
     return ascii_str;
 };
 
 fn_((ascii_toggleCases(S$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(ascii_str.ptr);
-    for_(($s(ascii_str))(c) { *c = ascii_toggleCase(*c); });
+    for_(($s(ascii_str))(c)) { *c = ascii_toggleCase(*c); } $end(for);
     return ascii_str;
 };
 
-fn_((ascii_allocUppers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
+fn_((ascii_allocUppers(mem_Alctr gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
-    let result = try_(mem_Allocator_alloc(gpa, typeInfo$(u8), ascii_str.len));
+    let result = try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), ascii_str.len));
     return_ok(ascii_makeUppers(u_castS$((S$u8)(result)), ascii_str));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ascii_allocLowers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
+fn_((ascii_allocLowers(mem_Alctr gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
-    let result = try_(mem_Allocator_alloc(gpa, typeInfo$(u8), ascii_str.len));
+    let result = try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), ascii_str.len));
     return_ok(ascii_makeLowers(u_castS$((S$u8)(result)), ascii_str));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ascii_allocToggledCases(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
+fn_((ascii_allocToggledCases(mem_Alctr gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
-    let result = try_(mem_Allocator_alloc(gpa, typeInfo$(u8), ascii_str.len));
+    let result = try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), ascii_str.len));
     return_ok(ascii_makeToggledCases(u_castS$((S$u8)(result)), ascii_str));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ascii_makeUppers(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(buf.ptr);
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert(ascii_str.len <= buf.len);
-    for_(($s(buf), $s(ascii_str))(dst, src) { *dst = ascii_toUpper(*src); });
+    for_(($s(buf), $s(ascii_str))(dst, src)) { *dst = ascii_toUpper(*src); } $end(for);
     return slice$S(buf, $r(0, ascii_str.len));
 };
 
@@ -48,7 +48,7 @@ fn_((ascii_makeLowers(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(buf.ptr);
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert(ascii_str.len <= buf.len);
-    for_(($s(buf), $s(ascii_str))(dst, src) { *dst = ascii_toLower(*src); });
+    for_(($s(buf), $s(ascii_str))(dst, src)) { *dst = ascii_toLower(*src); } $end(for);
     return slice$S(buf, $r(0, ascii_str.len));
 };
 
@@ -56,7 +56,7 @@ fn_((ascii_makeToggledCases(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(buf.ptr);
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert(ascii_str.len <= buf.len);
-    for_(($s(buf), $s(ascii_str))(dst, src) { *dst = ascii_toggleCase(*src); });
+    for_(($s(buf), $s(ascii_str))(dst, src)) { *dst = ascii_toggleCase(*src); } $end(for);
     return slice$S(buf, $r(0, ascii_str.len));
 };
 
@@ -76,7 +76,7 @@ fn_((ascii_idxOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr))(O$usi
         if (matches) { return_some(i); }
     }
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ascii_idxFirstOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, usize start_front))(O$usize) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
@@ -89,7 +89,7 @@ fn_((ascii_idxFirstOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, u
         return_some(start_front + idx);
     }
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ascii_idxLastOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, usize start_back))(O$usize) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
@@ -109,7 +109,7 @@ fn_((ascii_idxLastOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, us
         if (matches) { return_some(i); }
     }
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ascii_startsWithIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_prefix))(bool)) {
     debug_assert_nonnull(ascii_str.ptr);
@@ -170,29 +170,29 @@ fn_((ascii_ord(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs, bool ignores_case))(c
 fn_((ascii_ordSenseCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord)) {
     debug_assert_nonnull(ascii_lhs.ptr);
     debug_assert_nonnull(ascii_rhs.ptr);
-    let min_len = prim_min(ascii_lhs.len, ascii_rhs.len);
+    let min_len = pri_min(ascii_lhs.len, ascii_rhs.len);
     for (usize i = 0; i < min_len; ++i) {
-        switch (prim_ord(ascii_lhs.ptr[i], ascii_rhs.ptr[i])) {
+        switch (pri_ord(ascii_lhs.ptr[i], ascii_rhs.ptr[i])) {
         case_((cmp_Ord_lt)) return cmp_Ord_lt $end(case);
         case_((cmp_Ord_gt)) return cmp_Ord_gt $end(case);
         case_((cmp_Ord_eq)) continue $end(case);
         default_() claim_unreachable $end(default);
         }
     }
-    return prim_ord(ascii_lhs.len, ascii_rhs.len);
+    return pri_ord(ascii_lhs.len, ascii_rhs.len);
 };
 
 fn_((ascii_ordIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord)) {
     debug_assert_nonnull(ascii_lhs.ptr);
     debug_assert_nonnull(ascii_rhs.ptr);
-    let min_len = prim_min(ascii_lhs.len, ascii_rhs.len);
+    let min_len = pri_min(ascii_lhs.len, ascii_rhs.len);
     for (usize i = 0; i < min_len; ++i) {
-        switch (prim_ord(ascii_toLower(ascii_lhs.ptr[i]), ascii_toLower(ascii_rhs.ptr[i]))) {
+        switch (pri_ord(ascii_toLower(ascii_lhs.ptr[i]), ascii_toLower(ascii_rhs.ptr[i]))) {
         case_((cmp_Ord_lt)) return cmp_Ord_lt $end(case);
         case_((cmp_Ord_gt)) return cmp_Ord_gt $end(case);
         case_((cmp_Ord_eq)) continue $end(case);
         default_() claim_unreachable $end(default);
         }
     }
-    return prim_ord(ascii_lhs.len, ascii_rhs.len);
+    return pri_ord(ascii_lhs.len, ascii_rhs.len);
 };

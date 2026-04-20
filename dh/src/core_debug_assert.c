@@ -22,7 +22,7 @@ fn_((debug_assert_failLogMsg(const char* expr, const char* func, const char* fil
 };
 
 fn_((debug_assert_failLogFmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...))(void)) {
-    using_(va_list args = null) using_fini_(va_start(args, fmt), va_end(args)) {
+    using_(var args = l0$((va_list))) using_fini_(va_start(args, fmt), va_end(args)) {
         io_stream_eprintVaArgs(mem_spanZ0$u8(as$(const u8*)(fmt)), args);
     }
     io_stream_eprint(u8_l(" "));

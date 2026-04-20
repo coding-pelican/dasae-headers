@@ -9,10 +9,10 @@ trait_((Shape $vt)(
     fn_(((*Shape_perimeter)(u_P_const$raw ctx))(f32)),
 ));
 $static fn_((Shape_area(Shape self, u_P_const$raw ctx))(f32)) /* TODO: make this abstract */ {
-    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eq), self.vt->Shape_area(self.ctx);
+    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eql), self.vt->Shape_area(self.ctx);
 };
 $static fn_((Shape_perimeter(Shape self, u_P_const$raw ctx))(f32)) /* TODO: make this abstract */ {
-    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eq), self.vt->Shape_perimeter(self.ctx);
+    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eql), self.vt->Shape_perimeter(self.ctx);
 };
 
 
@@ -53,7 +53,7 @@ trait_((fmt_Display)(
 ));
 $attr($must_check)
 $static fn_(((fmt_display)(fmt_Display self, u_P_const$raw ctx, io_Writer writer))(E$void)) /* TODO: make this abstract */ {
-    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eq), self.fmt_display(ctx, writer);
+    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eql), self.fmt_display(ctx, writer);
 };
 
 
@@ -75,7 +75,7 @@ $static trait_fn_(((fmt_display $for(Entity))(const Entity* self, io_Writer writ
     try_(io_Writer_println(writer, u8_l("    health: {:d}"), self->health));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(trait_fn);
+} $unscoped(trait_fn);
 /// fmt_Display_for$Entity
 /// fmt_Display_dyn$Entity
 $static trait_impl_((fmt_Display $for(Entity))(fmt_display));
@@ -88,7 +88,7 @@ $static trait_fn_(((fmt_display $for(Circ))(const Circ* self, io_Writer writer))
     try_(io_Writer_println(writer, u8_l("    radius: {:.2f}"), self->radius));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(trait_fn);
+} $unscoped(trait_fn);
 /// fmt_Display_for$Circ
 /// fmt_Display_dyn$Circ
 $static trait_impl_((fmt_Display $for(Circ))(fmt_display));
@@ -102,7 +102,7 @@ $static trait_fn_(((fmt_display $for(Rect))(const Rect* self, io_Writer writer))
     try_(io_Writer_println(writer, u8_l("    height: {:.2f}"), self->height));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(trait_fn);
+} $unscoped(trait_fn);
 /// fmt_Display_for$Rect
 /// fmt_Display_dyn$Rect
 $static trait_impl_((fmt_Display $for(Rect))(fmt_display));
@@ -116,7 +116,7 @@ $static trait_fn_(((fmt_display $for(ShapeDyn))(const ShapeDyn* self, io_Writer 
     try_(io_Writer_println(writer, u8_l("    Perimeter: {:.2f}"), Shape_perimeter(self->trait, self->ctx)));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(trait_fn);
+} $unscoped(trait_fn);
 /// fmt_Display_for$ShapeDyn
 /// fmt_Display_dyn$ShapeDyn
 $static trait_impl_((fmt_Display $for(ShapeDyn))(fmt_display));
@@ -134,11 +134,11 @@ $static var_(shapes_mem, A$$(128, ShapeDyn)) = A_zero();
 $static let shapes_buf = A_ref$((S$ShapeDyn)(shapes_mem));
 $attr($must_check)
 $static fn_((example_usage(void))(E$void) $scope) {
-    let rects = ({ var initial = lit0$((A$$(16, Rect))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
+    let rects = ({ var initial = l0$((A$$(16, Rect))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
         item->width = as$(f32)(idx + 1);
         item->height = as$(f32)(idx + 2);
     }); initial; });
-    let circs = ({ var initial = lit0$((A$$(16, Circ))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
+    let circs = ({ var initial = l0$((A$$(16, Circ))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
         item->radius = as$(f32)(idx + 1);
     }); initial; });
 
@@ -152,11 +152,13 @@ $static fn_((example_usage(void))(E$void) $scope) {
         try_(io_Writer_nl(out));
     });
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
 
-#include "dh/main.h"
+#include "dh-main.h"
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     return_ok(try_(example_usage()));
-} $unscoped_(fn);
+}
+$unscoped(fn);

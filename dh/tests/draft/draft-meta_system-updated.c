@@ -885,14 +885,14 @@ typedef struct meta_E$raw {
 #define meta_create(_type...) ({ \
     const TypeInfo __type = _type; \
     const P$raw __ptr = alloca(__type.size); \
-    prim_memset(__ptr, 0, __type.size); \
+    pri_memset(__ptr, 0, __type.size); \
     ((meta_P$raw){ .type = __type, .ptr = __ptr }); \
 })
 #define meta_alloc(_type, _len...) ({ \
     const TypeInfo __type = _type; \
     const usize __len = _len; \
     const P$raw __ptr = alloca(__type.size * __len); \
-    prim_memset(__ptr, 0, __type.size * __len); \
+    pri_memset(__ptr, 0, __type.size * __len); \
     ((meta_S$raw){ .type = __type, .ptr = __ptr, .len = __len }); \
 })
 

@@ -15,11 +15,11 @@ typedef struct ShapeDyn {
 } ShapeDyn;
 $attr($inline_always $maybe_unused)
 $static fn_((Shape_area(Shape self, u_P_const$raw ctx))(f32)) {
-    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eq), self.vt->Shape_area(ctx.raw);
+    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eql), self.vt->Shape_area(ctx.raw);
 };
 $attr($inline_always $maybe_unused)
 $static fn_((Shape_perimeter(Shape self, u_P_const$raw ctx))(f32)) {
-    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eq), self.vt->Shape_perimeter(ctx.raw);
+    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eql), self.vt->Shape_perimeter(ctx.raw);
 };
 
 typedef struct Circ {
@@ -87,7 +87,7 @@ typedef struct fmt_DisplayDyn {
 } fmt_DisplayDyn;
 $attr($inline_always $must_check)
 $static fn_((fmt_display(fmt_Display self, u_P_const$raw ctx, io_Writer writer))(E$void)) {
-    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eq), self.fmt_display(ctx.raw, writer);
+    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eql), self.fmt_display(ctx.raw, writer);
 };
 
 typedef struct Entity {
@@ -111,7 +111,7 @@ fn_((Entity_fmt_display(const Entity* self, io_Writer writer))(E$void) $scope) {
     try_(io_Writer_println(writer, u8_l("    health: {:d}"), self->health));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 $attr($inline)
 $static fn_((fmt_Display_for$Entity(void))(fmt_Display)) {
     return (fmt_Display){ .fmt_display = fmt_display$Entity, debug_only(.type = typeInfo$(Entity)) };
@@ -131,7 +131,7 @@ fn_((Circ_fmt_display(const Circ* self, io_Writer writer))(E$void) $scope) {
     try_(io_Writer_println(writer, u8_l("    radius: {:.2f}"), self->radius));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 $attr($inline)
 $static fn_((fmt_Display_for$Circ(void))(fmt_Display)) {
     return (fmt_Display){ .fmt_display = fmt_display$Circ, debug_only(.type = typeInfo$(Circ)) };
@@ -152,7 +152,7 @@ fn_((Rect_fmt_display(const Rect* self, io_Writer writer))(E$void) $scope) {
     try_(io_Writer_println(writer, u8_l("    height: {:.2f}"), self->height));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 $attr($inline)
 $static fn_((fmt_Display_for$Rect(void))(fmt_Display)) {
     return (fmt_Display){ .fmt_display = fmt_display$Rect, debug_only(.type = typeInfo$(Rect)) };
@@ -174,7 +174,7 @@ fn_((ShapeDyn_fmt_display(const ShapeDyn* self, io_Writer writer))(E$void) $scop
     try_(io_Writer_println(writer, u8_l("    Perimeter: {:.2f}"), self->trait.vt->Shape_perimeter(self->ctx)));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 $attr($inline)
 $static fn_((fmt_Display_for$ShapeDyn(void))(fmt_Display)) {
     return (fmt_Display){ .fmt_display = fmt_display$ShapeDyn, debug_only(.type = typeInfo$(ShapeDyn)) };
@@ -196,29 +196,29 @@ $static var_(shapes_mem, A$$(128, ShapeDyn)) = A_zero();
 $static let shapes_buf = A_ref$((S$ShapeDyn)(shapes_mem));
 $attr($must_check)
 $static fn_((example_usage(void))(E$void) $scope) {
-    let rects = ({ var initial = lit0$((A$$(16, Rect))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
+    let rects = ({ var initial = l0$((A$$(16, Rect))); for_(($rf(0), $s(A_ref(initial)))(idx, item)) {
         item->width = as$(f32)(idx + 1);
         item->height = as$(f32)(idx + 2);
-    }); initial; });
-    let circs = ({ var initial = lit0$((A$$(16, Circ))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
+    } $end(for); initial; });
+    let circs = ({ var initial = l0$((A$$(16, Circ))); for_(($rf(0), $s(A_ref(initial)))(idx, item)) {
         item->radius = as$(f32)(idx + 1);
-    }); initial; });
+    } $end(for); initial; });
 
     var shapes = ArrList_fixed$ShapeDyn(shapes_buf);
-    for_(($s(A_ref(rects)))(item)try_(ArrList_appendFixed$ShapeDyn(&shapes, Shape_dyn$Rect(item))));
-    for_(($s(A_ref(circs)))(item)try_(ArrList_appendFixed$ShapeDyn(&shapes, Shape_dyn$Circ(item))));
+    for_(($s(A_ref(rects)))(item)) try_(ArrList_appendFixed$ShapeDyn(&shapes, Shape_dyn$Rect(item))) $end(for);
+    for_(($s(A_ref(circs)))(item)) try_(ArrList_appendFixed$ShapeDyn(&shapes, Shape_dyn$Circ(item))) $end(for);
 
     let out = fs_File_writer(io_getStdOut());
-    for_(($s(shapes.items.as_const))(item) {
+    for_(($s(shapes.items.as_const))(item)) {
         try_(fmt_display(fmt_Display_for$ShapeDyn(), u_anyP(item), out));
         try_(io_Writer_nl(out));
-    });
+    } $end(for);
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 
-#include "dh/main.h"
+#include "dh-main.h"
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     return_ok(try_(example_usage()));
-} $unscoped_(fn);
+} $unscoped(fn);

@@ -4,54 +4,17 @@
 
 /*========== Internal Declarations & Definitions ============================*/
 
-$attr($inline_always)
-$static fn_((sort__floorPow2(usize n))(usize)) {
-    n |= n >> 1;
-    n |= n >> 2;
-    n |= n >> 4;
-    n |= n >> 8;
-    n |= n >> 16;
-    if (usize_limit_max == 0xFFFFFFFFFFFFFFFF) n |= n >> 32;
-    return n - (n >> 1);
-};
-
-$attr($inline_always)
-$static fn_((sort__ceilPow2(usize n))(usize)) {
-    n--;
-    n |= n >> 1;
-    n |= n >> 2;
-    n |= n >> 4;
-    n |= n >> 8;
-    n |= n >> 16;
-    if (usize_limit_max == 0xFFFFFFFFFFFFFFFF) n |= n >> 32;
-    return n + 1;
-};
-
-$attr($inline_always)
-$static fn_((sort__ord(sort_OrdCtxFn ordFn, u_P_const$raw lhs, u_P_const$raw rhs, u_P_const$raw ctx))(cmp_Ord)) {
-    return invoke(ordFn, u_load(u_deref(lhs)), u_load(u_deref(rhs)), u_load(u_deref(ctx)));
-};
-
-typedef struct sort__OrdNoCtxFnAsCtx {
-    sort_OrdFn ordFn;
-} sort__OrdNoCtxFnAsCtx;
-$attr($inline_always)
-$static fn_((sort__ordNoCtx(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(cmp_Ord)) {
-    let no_ctx = u_castV$((sort__OrdNoCtxFnAsCtx)(ctx));
-    return invoke(no_ctx.ordFn, lhs, rhs);
-};
-
-typedef struct sort_IdxCtx__Inner {
-    sort_OrdCtxFn ordFn;
-    u_S$raw seq;
-    u_P_const$raw ctx;
-} sort_IdxCtx__Inner;
+T_alias$((sort_IdxCtx__Inner)(struct sort_IdxCtx__Inner {
+    var_(seq, u_S$raw);
+    var_(ctx, u_V$raw);
+    var_(ordFn, sort_OrdCtxFn);
+}));
 $attr($inline_always)
 $static fn_((sort_IdxCtx__Inner_ord(usize lhs, usize rhs, u_V$raw ctx))(cmp_Ord)) {
     let inner = u_castV$((sort_IdxCtx__Inner)(ctx));
     let lhs_ptr = u_atS(inner.seq, lhs).as_const;
     let rhs_ptr = u_atS(inner.seq, rhs).as_const;
-    return sort__ord(inner.ordFn, lhs_ptr, rhs_ptr, inner.ctx);
+    return cmp_ordCtxP(lhs_ptr, rhs_ptr, inner.ctx, inner.ordFn);
 };
 $attr($inline_always)
 $static fn_((sort_IdxCtx__Inner_swap(usize lhs, usize rhs, u_V$raw ctx))(void)) {
@@ -60,53 +23,53 @@ $static fn_((sort_IdxCtx__Inner_swap(usize lhs, usize rhs, u_V$raw ctx))(void)) 
 };
 
 /* Context structure to bridge `sort_OrdCtxFn` to `search_OrdFn` */
-typedef struct sort__SearchOrdAdpCtx {
-    sort_OrdCtxFn ordFn; /* user's comparison function */
-    u_P_const$raw val_ptr; /* pivot value being searched for */
-    u_P_const$raw inner; /* user's context */
-} sort__SearchOrdAdpCtx;
+T_alias$((sort__SearchOrdAdpCtx)(struct sort__SearchOrdAdpCtx {
+    var_(val_ptr, u_P_const$raw); /* pivot value being searched for */
+    var_(inner, u_V$raw); /* user's context */
+    var_(ordFn, sort_OrdCtxFn); /* user's comparison function */
+}));
 /* Adapter: `search` expects `(item, ctx)`, `sort` provides `(lhs, rhs, ctx)` */
 $attr($inline_always)
 $static fn_((sort__searchOrdAdp(u_V$raw item, u_V$raw ctx))(cmp_Ord)) {
     let adapter = u_castV$((sort__SearchOrdAdpCtx)(ctx));
-    return sort__ord(adapter.ordFn, item.ref.as_const, adapter.val_ptr, adapter.inner);
+    return cmp_ordCtxP(item.ref.as_const, adapter.val_ptr, adapter.inner, adapter.ordFn);
 };
 
 /*========== External Definitions: Query ====================================*/
 
 fn_((sort_inOrdd(u_S_const$raw seq, sort_OrdFn ordFn))(bool)) {
-    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
-    return sort_inOrddCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+    let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    return sort_inOrddCtx(seq, cmp_ordNoCtx, u_anyV(no_ctx));
 };
 
-fn_((sort_inOrddCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(bool)) {
+fn_((sort_inOrddCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(bool)) {
     if (seq.len <= 1) return true;
-    for_(($r(1, seq.len))(i) {
-        let ord = sort__ord(ordFn, u_atS(seq, i), u_atS(seq, i - 1), ctx);
+    for_(($r(1, seq.len))(i)) {
+        let ord = cmp_ordCtxP(u_atS(seq, i), u_atS(seq, i - 1), ctx, ordFn);
         if (cmp_Ord_isLt(ord)) return false;
-    });
+    } $end(for);
     return true;
 };
 
 /*========== External Definitions: Insertion Sort ===========================*/
 
 fn_((sort_insert(u_S$raw seq, sort_OrdFn ordFn))(void)) {
-    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
-    sort_insertCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+    let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    sort_insertCtx(seq, cmp_ordNoCtx, u_anyV(no_ctx));
 };
 
-fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void)) {
+fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
     let_(inner, sort_IdxCtx__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
     let_(idx_ctx, sort_IdxCtx) = {
-        .inner = u_anyP(&inner),
-        .ordFn = wrapFn(sort_IdxCtx__Inner_ord),
-        .swapFn = wrapFn(sort_IdxCtx__Inner_swap)
+        .ordFn = sort_IdxCtx__Inner_ord,
+        .swapFn = sort_IdxCtx__Inner_swap,
+        .inner = u_anyV(inner)
     };
     sort_insertIdx($rt(seq.len), idx_ctx);
 };
 
 fn_((sort_insertIdx(R range, sort_IdxCtx idx_ctx))(void)) {
-    for_(((R_suffix(range, 1)))(unsorted_idx) {
+    for_(((R_suffix(range, 1)))(unsorted_idx)) {
         var sorted_bwd_idx = unsorted_idx;
         while (range.begin < sorted_bwd_idx) {
             let curr = sorted_bwd_idx;
@@ -116,22 +79,22 @@ fn_((sort_insertIdx(R range, sort_IdxCtx idx_ctx))(void)) {
             sort_IdxCtx_swap(idx_ctx, curr, prev);
             sorted_bwd_idx--;
         }
-    });
+    } $end(for);
 };
 
 /*========== External Definitions: Heap Sort ================================*/
 
 fn_((sort_heap(u_S$raw seq, sort_OrdFn ordFn))(void)) {
-    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
-    sort_heapCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+    let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    sort_heapCtx(seq, cmp_ordNoCtx, u_anyV(no_ctx));
 };
 
-fn_((sort_heapCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void)) {
+fn_((sort_heapCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
     let_(inner, sort_IdxCtx__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
     let_(idx_ctx, sort_IdxCtx) = {
-        .inner = u_anyP(&inner),
-        .ordFn = wrapFn(sort_IdxCtx__Inner_ord),
-        .swapFn = wrapFn(sort_IdxCtx__Inner_swap)
+        .ordFn = sort_IdxCtx__Inner_ord,
+        .swapFn = sort_IdxCtx__Inner_swap,
+        .inner = u_anyV(inner)
     };
     sort_heapIdx($rt(seq.len), idx_ctx);
 };
@@ -201,22 +164,22 @@ $static fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool));
 
 /* --- External Definitions --- */
 
-typedef struct sort_pdq__Frame {
-    R range;
-    usize limit;
-} sort_pdq__Frame;
+T_alias$((sort_pdq__Frame)(struct sort_pdq__Frame {
+    var_(range, R);
+    var_(limit, usize);
+}));
 
 fn_((sort_pdq(u_S$raw seq, sort_OrdFn ordFn))(void)) {
-    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
-    sort_pdqCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+    let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    sort_pdqCtx(seq, cmp_ordNoCtx, u_anyV(no_ctx));
 };
 
-fn_((sort_pdqCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void)) {
+fn_((sort_pdqCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
     let_(inner, sort_IdxCtx__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
     let_(idx_ctx, sort_IdxCtx) = {
-        .inner = u_anyP(&inner),
-        .ordFn = wrapFn(sort_IdxCtx__Inner_ord),
-        .swapFn = wrapFn(sort_IdxCtx__Inner_swap)
+        .ordFn = sort_IdxCtx__Inner_ord,
+        .swapFn = sort_IdxCtx__Inner_swap,
+        .inner = u_anyV(inner)
     };
     sort_pdqIdx($rt(seq.len), idx_ctx);
 };
@@ -229,7 +192,7 @@ fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void)) {
     var_(stack, A$$(sort_limit_pdq_stack_frames, sort_pdq__Frame)) = A_zero();
     var_(depth, usize) = 0;
 
-    let max_limit = sort__floorPow2(len) + 1;
+    let max_limit = uint_pow2Floor$((usize)(len)) + 1;
     var_(frame, sort_pdq__Frame) = { .range = range, .limit = max_limit };
 
     while (true) {
@@ -297,14 +260,14 @@ fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void)) {
 
             if (left_len < right_len) {
                 was_balanced = left_len >= balance_threshold;
-                asg_lit((A_at((stack)[depth++]))({
+                asg_l((A_at((stack)[depth++]))({
                     .range = $r(frame.range.begin, mid),
                     .limit = frame.limit,
                 }));
                 frame.range.begin = mid + 1;
             } else {
                 was_balanced = right_len >= balance_threshold;
-                asg_lit((A_at((stack)[depth++]))({
+                asg_l((A_at((stack)[depth++]))({
                     .range = $r(mid + 1, frame.range.end),
                     .limit = frame.limit,
                 }));
@@ -325,10 +288,10 @@ fn_((sort_pdq__breakPatterns(R range, sort_IdxCtx idx_ctx))(void)) {
     if (len < min_partition) return;
 
     var_(rng, u64) = len;
-    let modulus = sort__ceilPow2(len);
+    let modulus = uint_pow2Ceil$((usize)len);
     let mid_start = range.begin + (len / 4) * 2 - 1;
     let mid_end = range.begin + (len / 4) * 2 + 1;
-    for_(($r(mid_start, mid_end + 1))(curr) {
+    for_(($r(mid_start, mid_end + 1))(curr)) {
         /* xorshift64 */
         rng ^= rng << 13;
         rng ^= rng >> 7;
@@ -336,7 +299,7 @@ fn_((sort_pdq__breakPatterns(R range, sort_IdxCtx idx_ctx))(void)) {
         var target = (usize)(rng & (modulus - 1));
         if (target >= len) target -= len;
         sort_IdxCtx_swap(idx_ctx, curr, range.begin + target);
-    });
+    } $end(for);
 };
 fn_((sort_pdq__choosePivot(R range, usize* pivot, sort_IdxCtx idx_ctx))(u8)) {
     let_(shortest_ninther, usize) = sort_threshold_pdq_tukey_ninther;
@@ -386,7 +349,7 @@ fn_((sort_pdq__insertPartial(R range, sort_IdxCtx idx_ctx))(bool)) {
     let_(max_steps, usize) = sort_max_steps_pdq_partial_insert_sort;
     let_(shortest_shifting, usize) = sort_threshold_pdq_partial_insert_sort;
     var curr = range.begin + 1;
-    for_(($rt(max_steps))($ignore) {
+    for_(($rt(max_steps))($ignore)) {
         /* find the next pair of adjacent out-of-order elements */
         while (curr < range.end && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, curr, curr - 1))) curr++;
         if (curr == range.end) return true;
@@ -399,9 +362,9 @@ fn_((sort_pdq__insertPartial(R range, sort_IdxCtx idx_ctx))(bool)) {
         if (curr - range.begin >= 2) {
             var scan = curr - 1;
             while (scan > range.begin) {
-                scan--;
                 if (!cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, scan, scan - 1))) break;
                 sort_IdxCtx_swap(idx_ctx, scan, scan - 1);
+                scan--;
             }
         }
         /* shift the greater element to the right */
@@ -413,7 +376,7 @@ fn_((sort_pdq__insertPartial(R range, sort_IdxCtx idx_ctx))(bool)) {
                 scan++;
             }
         }
-    });
+    } $end(for);
     return false;
 };
 fn_((sort_pdq__partEq(R range, usize pivot, sort_IdxCtx idx_ctx))(usize)) {
@@ -436,31 +399,58 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
     var r = range.end - 1;
     var_(l_offsets, A$$(sort_limit_pdq_offset_blocks, u8)) = A_zero();
     var_(r_offsets, A$$(sort_limit_pdq_offset_blocks, u8)) = A_zero();
+    var_(l_count, usize) = 0;
+    var_(r_count, usize) = 0;
+    var_(l_offset_idx, usize) = 0;
+    var_(r_offset_idx, usize) = 0;
+    var_(was_partitioned, bool) = true;
 
     let block_size = sort_limit_pdq_offset_blocks;
     let min_remaining = 2 * block_size;
     while (l < r && (r - l + 1) >= min_remaining) {
-        var_(l_count, usize) = 0;
-        for_(($rt(block_size))(scan) {
-            let is_ge = cmp_Ord_isGe(sort_IdxCtx_ord(idx_ctx, l + scan, pivot_idx));
-            *A_at((l_offsets)[l_count]) = intCast$((u8)(scan));
-            l_count += as$(usize)(boolToInt(is_ge));
-        });
+        if (l_count == 0) {
+            l_offset_idx = 0;
+            for_(($rt(block_size))(scan)) {
+                let is_ge = cmp_Ord_isGe(sort_IdxCtx_ord(idx_ctx, l + scan, pivot_idx));
+                *A_at((l_offsets)[l_count]) = intCast$((u8)(scan));
+                l_count += as$(usize)(boolToInt(is_ge));
+            } $end(for);
+        }
 
-        var_(r_count, usize) = 0;
-        for_(($rt(block_size))(scan) {
-            let is_lt = cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r - scan, pivot_idx));
-            *A_at((r_offsets)[r_count]) = intCast$((u8)(scan));
-            r_count += as$(usize)(boolToInt(is_lt));
-        });
+        if (r_count == 0) {
+            r_offset_idx = 0;
+            for_(($rt(block_size))(scan)) {
+                let is_lt = cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r - scan, pivot_idx));
+                *A_at((r_offsets)[r_count]) = intCast$((u8)(scan));
+                r_count += as$(usize)(boolToInt(is_lt));
+            } $end(for);
+        }
 
-        let pair_l_r_count = (l_count < r_count) ? l_count : r_count;
-        for_(($rt(pair_l_r_count))(i) {
-            sort_IdxCtx_swap(idx_ctx, l + *A_at((l_offsets)[i]), r - *A_at((r_offsets)[i]));
-        });
+        let l_remaining = l_count - l_offset_idx;
+        let r_remaining = r_count - r_offset_idx;
+        let pair_l_r_count = (l_remaining < r_remaining) ? l_remaining : r_remaining;
+        for_(($rt(pair_l_r_count))(i)) {
+            sort_IdxCtx_swap(
+                idx_ctx,
+                l + *A_at((l_offsets)[l_offset_idx + i]),
+                r - *A_at((r_offsets)[r_offset_idx + i])
+            );
+        } $end(for);
+        if (pair_l_r_count > 0) was_partitioned = false;
 
-        l += block_size;
-        r -= block_size;
+        l_offset_idx += pair_l_r_count;
+        r_offset_idx += pair_l_r_count;
+
+        if (l_offset_idx == l_count) {
+            l += block_size;
+            l_count = 0;
+            l_offset_idx = 0;
+        }
+        if (r_offset_idx == r_count) {
+            r -= block_size;
+            r_count = 0;
+            r_offset_idx = 0;
+        }
     }
 
     while (l <= r && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, l, pivot_idx))) l++;
@@ -468,7 +458,7 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
     if (l > r) {
         sort_IdxCtx_swap(idx_ctx, r, pivot_idx);
         *pivot = r;
-        return true;
+        return was_partitioned;
     }
 
     sort_IdxCtx_swap(idx_ctx, l++, r--);
@@ -489,15 +479,15 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
 
 /* --- Internal Definitions --- */
 
-typedef struct sort_block__Iter {
-    usize size;
-    usize pow2;
-    usize dec;
-    usize dec_step;
-    usize num;
-    usize num_step;
-    usize denom;
-} sort_block__Iter;
+T_alias$((sort_block__Iter)(struct sort_block__Iter {
+    var_(size, usize);
+    var_(pow2, usize);
+    var_(dec, usize);
+    var_(dec_step, usize);
+    var_(num, usize);
+    var_(num_step, usize);
+    var_(denom, usize);
+}));
 $attr($inline_always)
 $static fn_((sort_block__Iter_init(usize size2, usize min_level))(sort_block__Iter));
 $attr($inline_always)
@@ -514,34 +504,34 @@ $static fn_((sort_block__Iter_finished(sort_block__Iter* self))(bool));
 /* In-place merge fallback via Hwang-Lin rotations */
 $static fn_((sort_block__mergeInPlace(
     u_S$raw seq, R left, R right,
-    sort_OrdCtxFn ordFn, u_P_const$raw ctx
+    sort_OrdCtxFn ordFn, u_V$raw ctx
 ))(void));
 /* Buffer-assisted merge: Optimal O(N) memory utilization */
 $static fn_((sort_block__mergeExternal(
     u_S$raw seq, R left, R right, u_S$raw cache,
-    sort_OrdCtxFn ordFn, u_P_const$raw ctx
+    sort_OrdCtxFn ordFn, u_V$raw ctx
 ))(void));
 
 /* --- External Definitions --- */
 
 fn_((sort_block(u_S$raw seq, sort_OrdFn ordFn))(void)) {
-    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
-    sort_blockCtx(seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+    let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    sort_blockCtx(seq, cmp_ordNoCtx, u_anyV(no_ctx));
 };
 
-fn_((sort_blockCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(void)) {
-    var_(cache_buf, A$$(sort_limit_block_cache_stack_bytes, u8)) $align(16) = A_zero();
+fn_((sort_blockCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
+    var_(cache_buf, A$$(sort_limit_block_cache_stack_bytes, u8)) = A_zero();
     let cache_cap = (0 < seq.type.size) ? (sort_limit_block_cache_stack_bytes / seq.type.size) : 0;
     let_(cache, u_S$raw) = u_init$S((seq.type)(A_ptr(cache_buf), cache_cap));
     $ignore_void sort_blockCtxCache(cache, seq, ordFn, ctx);
 };
 
 fn_((sort_blockCache(u_S$raw cache, u_S$raw seq, sort_OrdFn ordFn))(u_S$raw)) {
-    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
-    return sort_blockCtxCache(cache, seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+    let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    return sort_blockCtxCache(cache, seq, cmp_ordNoCtx, u_anyV(no_ctx));
 };
 
-fn_((sort_blockCtxCache(u_S$raw cache, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(u_S$raw)) {
+fn_((sort_blockCtxCache(u_S$raw cache, u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(u_S$raw)) {
     if (seq.len <= 1) return seq;
 
     let_(min_level, usize) = sort_threshold_fallback_to_insert_sort;
@@ -561,11 +551,11 @@ fn_((sort_blockCtxCache(u_S$raw cache, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_con
             let right = sort_block__Iter_nextRange(&iter);
             if (R_len(right) == 0) continue;
 
-            let already_sorted = cmp_Ord_isLe(sort__ord(
-                ordFn,
+            let already_sorted = cmp_Ord_isLe(cmp_ordCtxP(
                 u_atS(seq, left.end - 1).as_const,
                 u_atS(seq, right.begin).as_const,
-                ctx
+                ctx,
+                ordFn
             ));
             if (already_sorted) continue;
 
@@ -581,27 +571,27 @@ fn_((sort_blockCtxCache(u_S$raw cache, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_con
     return seq;
 };
 
-fn_((sort_blockAlloc(mem_Allocator gpa, u_S$raw seq, sort_OrdFn ordFn))(mem_Err$u_S$raw)) {
-    let_(no_ctx, sort__OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
-    return sort_blockCtxAlloc(gpa, seq, wrapFn$(sort_OrdCtxFn, sort__ordNoCtx), u_anyP(&no_ctx));
+fn_((sort_blockAlloc(mem_Alctr gpa, u_S$raw seq, sort_OrdFn ordFn))(mem_E$u_S$raw)) {
+    let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
+    return sort_blockCtxAlloc(gpa, seq, cmp_ordNoCtx, u_anyV(no_ctx));
 };
 
-$static fn_((sort_block__allocCache(mem_Allocator gpa, TypeInfo type, usize len))(mem_Err$u_S$raw));
-fn_((sort_blockCtxAlloc(mem_Allocator gpa, u_S$raw seq, sort_OrdCtxFn ordFn, u_P_const$raw ctx))(mem_Err$u_S$raw) $scope) {
+$static fn_((sort_block__allocCache(mem_Alctr gpa, TypeInfo type, usize len))(mem_E$u_S$raw));
+fn_((sort_blockCtxAlloc(mem_Alctr gpa, u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(mem_E$u_S$raw) $scope) {
     let cache = try_(sort_block__allocCache(gpa, seq.type, seq.len));
     return_ok(sort_blockCtxCache(cache, seq, ordFn, ctx));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((sort_block__allocCache(mem_Allocator gpa, TypeInfo type, usize len))(mem_Err$u_S$raw) $scope) {
-    if_ok((mem_Allocator_alloc(gpa, type, len))(cover_full)) return_ok(cover_full);
-    if_ok((mem_Allocator_alloc(gpa, type, len / 2))(cover_half)) return_ok(cover_half);
-    return_ok(try_(mem_Allocator_alloc(gpa, type, len / 4)));
-} $unscoped_(fn);
+fn_((sort_block__allocCache(mem_Alctr gpa, TypeInfo type, usize len))(mem_E$u_S$raw) $scope) {
+    if_ok((mem_Alctr_alloc($trace gpa, type, len))(cover_full)) return_ok(cover_full);
+    if_ok((mem_Alctr_alloc($trace gpa, type, len / 2))(cover_half)) return_ok(cover_half);
+    return_ok(try_(mem_Alctr_alloc($trace gpa, type, len / 4)));
+} $unscoped(fn);
 
 /* --- Internal Definitions --- */
 
 fn_((sort_block__Iter_init(usize size2, usize min_level))(sort_block__Iter)) {
-    let pow2 = sort__floorPow2(size2);
+    let pow2 = uint_pow2Floor$((usize)(size2));
     let denom = pow2 / min_level;
     return (sort_block__Iter){
         .size = size2,
@@ -645,19 +635,19 @@ fn_((sort_block__Iter_finished(sort_block__Iter* self))(bool)) {
 
 fn_((sort_block__mergeInPlace(
     u_S$raw seq, R left, R right,
-    sort_OrdCtxFn ordFn, u_P_const$raw ctx
+    sort_OrdCtxFn ordFn, u_V$raw ctx
 ))(void)) {
     if (R_len(left) == 0 || R_len(right) == 0) return;
     while (true) {
         let pivot_ptr = u_atS(seq.as_const, left.begin);
         let split_offset = search_lowerBound(
             u_sliceS(seq, right).as_const,
-            u_anyV(lit$((sort__SearchOrdAdpCtx){
-                .ordFn = ordFn,
+            u_anyV(l$((sort__SearchOrdAdpCtx){
                 .val_ptr = pivot_ptr,
                 .inner = ctx,
+                .ordFn = ordFn,
             })),
-            wrapFn$(search_OrdFn, sort__searchOrdAdp)
+            sort__searchOrdAdp
         );
         let split_point = split_offset + right.begin;
 
@@ -672,12 +662,12 @@ fn_((sort_block__mergeInPlace(
         let left_pivot_ptr = u_atS(seq.as_const, left.begin);
         let skip_offset = search_upperBound(
             u_sliceS(seq, left).as_const,
-            u_anyV(lit$((sort__SearchOrdAdpCtx){
-                .ordFn = ordFn,
+            u_anyV(l$((sort__SearchOrdAdpCtx){
                 .val_ptr = left_pivot_ptr,
                 .inner = ctx,
+                .ordFn = ordFn,
             })),
-            wrapFn$(search_OrdFn, sort__searchOrdAdp)
+            sort__searchOrdAdp
         );
         left.begin += skip_offset;
         if (R_len(left) == 0) break;
@@ -685,7 +675,7 @@ fn_((sort_block__mergeInPlace(
 };
 fn_((sort_block__mergeExternal(
     u_S$raw seq, R left, R right, u_S$raw cache,
-    sort_OrdCtxFn ordFn, u_P_const$raw ctx
+    sort_OrdCtxFn ordFn, u_V$raw ctx
 ))(void)) {
     let left_len = R_len(left);
     /* cache left run into external memory */
@@ -696,11 +686,11 @@ fn_((sort_block__mergeExternal(
     var_(dst_idx, usize) = left.begin;
 
     while (cache_idx < left_len && right_idx < right.end) {
-        let ord = sort__ord(
-            ordFn,
+        let ord = cmp_ordCtxP(
             u_atS(seq, right_idx).as_const,
             u_atS(cache, cache_idx).as_const,
-            ctx
+            ctx,
+            ordFn
         );
         if (cmp_Ord_isLt(ord)) {
             u_memcpy(u_atS(seq, dst_idx), u_atS(seq, right_idx++).as_const);

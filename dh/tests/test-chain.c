@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/core/chain.h"
 
 /// Test basic fold operation - sum all elements
@@ -11,7 +11,7 @@ TEST_fn_("test_chain_fold_sum" $scope) {
     ));
 
     try_(TEST_expect(sum == 15));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /// Test fold with initial value
 TEST_fn_("test_chain_fold_with_initial" $scope) {
@@ -23,7 +23,7 @@ TEST_fn_("test_chain_fold_with_initial" $scope) {
     ));
 
     try_(TEST_expect(sum == 115));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /// Test reduce operation - no initial value
 TEST_fn_("test_chain_reduce" $scope) {
@@ -36,7 +36,7 @@ TEST_fn_("test_chain_reduce" $scope) {
 
     try_(TEST_expect(isSome(result)));
     try_(TEST_expect(unwrap_(result) == 15));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /// Test reduce on empty slice returns none
 TEST_fn_("test_chain_reduce_empty" $scope) {
@@ -48,7 +48,7 @@ TEST_fn_("test_chain_reduce_empty" $scope) {
     ));
 
     try_(TEST_expect(isNone(result)));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /// Test filter operation
 TEST_fn_("test_chain_filter" $scope) {
@@ -61,7 +61,7 @@ TEST_fn_("test_chain_filter" $scope) {
     ));
 
     try_(TEST_expect(sum == 6)); // 2 + 4 = 6
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /// Test map operation
 TEST_fn_("test_chain_map" $scope) {
@@ -74,7 +74,7 @@ TEST_fn_("test_chain_map" $scope) {
     ));
 
     try_(TEST_expect(sum == 30)); // (1+2+3+4+5)*2 = 30
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /// Test filter + map combination
 TEST_fn_("test_chain_filter_map" $scope) {
@@ -88,7 +88,7 @@ TEST_fn_("test_chain_filter_map" $scope) {
     ));
 
     try_(TEST_expect(result == 20)); // 2^2 + 4^2 = 4 + 16 = 20
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /// Test filter + map + reduce
 TEST_fn_("test_chain_filter_map_reduce" $scope) {
@@ -98,12 +98,12 @@ TEST_fn_("test_chain_filter_map_reduce" $scope) {
     let result = chain$((O$u32)(slice)(
         filter_((item)(*item > 0)),
         map$((u32)(item)(as$(u32)(*item))),
-        reduce_((acc, item)(prim_min(acc, *item)))
+        reduce_((acc, item)(pri_min(acc, *item)))
     ));
 
     try_(TEST_expect(isSome(result)));
     try_(TEST_expect(unwrap_(result) == 1)); // min of 1,2,3,4,5 is 1
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /// Test each operation for side effects
 TEST_fn_("test_chain_each" $scope) {
@@ -117,7 +117,7 @@ TEST_fn_("test_chain_each" $scope) {
     ));
 
     try_(TEST_expect(sum == 15));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /// Test complex chain with multiple operations
 TEST_fn_("test_chain_complex" $scope) {
@@ -132,7 +132,7 @@ TEST_fn_("test_chain_complex" $scope) {
     ));
 
     try_(TEST_expect(result == 120)); // (2 + 4 + 6) * 10 = 120
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /* Rust code for comparison
 /// Test basic fold operation - sum all elements

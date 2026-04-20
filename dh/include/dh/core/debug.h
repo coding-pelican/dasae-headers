@@ -25,6 +25,7 @@ extern "C" {
 #include "debug/common.h"
 #include "debug/assert.h"
 #include "debug/assert_static.h"
+#include "debug/src_loc.h"
 #include "debug/StkTrace.h"
 
 #if defined(__cplusplus)

@@ -67,11 +67,11 @@ typedef union O$Void {
 // #define __asg$O__step(...)                  __VA_ARGS__
 // #define __asg$O__parseLhs(_p_o...)          pp_uniqTok(p_o), _p_o, __asg$O__parseRhs
 // #define __asg$O__parseRhs(_v_o...)          _v_o
-// #define __asg$O__emit(__p_o, _p_o, _v_o...) blk({ \
+// #define __asg$O__emit(__p_o, _p_o, _v_o...) local_({ \
 //     let_(__p_o, TypeOf(_p_o)) = _p_o; \
 //     claim_assert_nonnull(__p_o); \
-//     *__p_o = lit$((TypeOf(*__p_o))_v_o); \
-//     blk_return __p_o; \
+//     *__p_o = l$((TypeOf(*__p_o))_v_o); \
+//     local__return __p_o; \
 // })
 
 #define asgO(_p_o, _v_o...) asgO1(_p_o, _v_o)
@@ -86,7 +86,7 @@ typedef union O$Void {
     .is_some = true, \
     .payload = { .some = _val }, \
 }
-#define some$(/*(_T)(_val: _T))*/... /*(_T)*/) \
+#define some$(/*(_T)_val: _T)*/... /*(_T)*/) \
     pp_expand(pp_defer(__block_inline__some$)(__param_expand__some$ __VA_ARGS__))
 
 #define none() comp_inline__none()
@@ -147,11 +147,11 @@ typedef union O$Void {
 
 #define __param_expand__some$(...) __VA_ARGS__,
 #define __block_inline__some$(...) __block_inline1__some$(__VA_ARGS__)
-#define __block_inline1__some$(_T, _val...) lit$((_T)some(_val))
+#define __block_inline1__some$(_T, _val...) l$((_T)some(_val))
 
 #define __param_expand__none$(...) __VA_ARGS__
 #define __block_inline__none$(...) __block_inline1__none$(__VA_ARGS__)
-#define __block_inline1__none$(_T...) lit$((_T)none())
+#define __block_inline1__none$(_T...) l$((_T)none())
 
 #define __step__O_asP$(...) \
     __step__O_asP$__emit(__step__O_asP$__parseOPT __VA_ARGS__)
@@ -165,8 +165,8 @@ typedef union O$Void {
     let_(__p_o, TypeOf(_p_o)) = _p_o; \
     claim_assert_nonnull(__p_o); \
     __p_o->is_some \
-        ? lit$((O$Ret$O_asP)some(&__p_o->payload.some)) \
-        : lit$((O$Ret$O_asP)none()); \
+        ? l$((O$Ret$O_asP)some(&__p_o->payload.some)) \
+        : l$((O$Ret$O_asP)none()); \
 })
 #define __step__O_asP(_p_o...) \
     O_asP$((O$$(FieldType$(TypeOf(*_p_o), payload.some)*))(_p_o))
@@ -180,8 +180,8 @@ typedef union O$Void {
     typedef _OT O$Ret$O_deref; \
     let_(__o, TypeOf(_o)) = _o; \
     __o.is_some \
-        ? lit$((O$Ret$O_deref)some(*unwrap_(__o))) \
-        : lit$((O$Ret$O_deref)none()); \
+        ? l$((O$Ret$O_deref)some(*unwrap_(__o))) \
+        : l$((O$Ret$O_deref)none()); \
 })
 #define __step__O_deref(_o...) \
     O_deref$((O$$(P_DerefTUnqual$(O_InnerT$(TypeOf(_o)))))(_o))
@@ -201,7 +201,7 @@ typedef union O$Void {
             __result.payload.some = T_switch$((TypeOf(_DefaultExpr_OR_Body))( \
                 T_case$((void)({ \
                     $ignore_void _DefaultExpr_OR_Body; \
-                    lit0$((TypeOf(__result.payload.some))); \
+                    l0$((TypeOf(__result.payload.some))); \
                 })), \
                 T_default_(_DefaultExpr_OR_Body) \
             )); \
@@ -217,8 +217,8 @@ typedef union O$Void {
     typedef _E_T E$Ret$orelse_ok$; \
     let __expr = _expr; \
     __expr.is_some \
-        ? lit$((E$Ret$orelse_ok$)ok(unwrap_(__expr))) \
-        : lit$((E$Ret$orelse_ok$)ok(_ok)); \
+        ? l$((E$Ret$orelse_ok$)ok(unwrap_(__expr))) \
+        : l$((E$Ret$orelse_ok$)ok(_ok)); \
 })
 #define __step__orelse_ok(...) __step__orelse_ok__emit(__step__orelse_ok__parseExpr __VA_ARGS__)
 #define __step__orelse_ok__parseExpr(_expr...) _expr,
@@ -233,8 +233,8 @@ typedef union O$Void {
     typedef _E_T E$Ret$orelse_err$; \
     let __expr = _expr; \
     __expr.is_some \
-        ? lit$((E$Ret$orelse_err$)ok(unwrap_(__expr))) \
-        : lit$((E$Ret$orelse_err$)err(_err)); \
+        ? l$((E$Ret$orelse_err$)ok(unwrap_(__expr))) \
+        : l$((E$Ret$orelse_err$)err(_err)); \
 })
 #define __step__orelse_err(...) __step__orelse_err__emit(__step__orelse_err__parseExpr __VA_ARGS__)
 #define __step__orelse_err__parseExpr(_expr...) _expr,

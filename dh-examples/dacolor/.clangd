@@ -1,0 +1,8 @@
+CompileFlags:
+  Add:
+    - -I./dacolor/src
+    - -I./dacolor/include
+    - -isystem./dacolor/lib/deps
+    - -I./dh-examples/dacolor/src
+    - -I./dh-examples/dacolor/include
+    - -isystem./dh-examples/dacolor/lib/deps

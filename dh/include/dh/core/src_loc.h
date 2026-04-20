@@ -21,7 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "prim.h"
+#include "pri.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -29,9 +29,9 @@ extern "C" {
 typedef struct SrcLoc {
     const char* file_path; /**< Full file path */
     const char* file_name; /**< Just the file name */
-    const char* fn_name;   /**< Function name */
-    u32 line;              /**< Line number */
-    u32 column;            /**< Column number */
+    const char* fn_name; /**< Function name */
+    u32 line; /**< Line number */
+    u32 column; /**< Column number */
 } SrcLoc;
 #define srcLoc() \
     /* Creates a source location at compile time */ \

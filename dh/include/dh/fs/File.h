@@ -37,17 +37,17 @@ $static const fs_File_Mode fs_file_default_mode = pp_if_(plat_is_posix)(
     pp_then_(0666),
     pp_else_(0));
 
-typedef enum_(fs_File_OpenMode $bits(8)) {
+typedef enum_((fs_File_OpenMode $fits($packed))(
     fs_File_OpenMode_read_only = 0,
-    fs_File_OpenMode_write_only,
-    fs_File_OpenMode_read_write,
-} fs_File_OpenMode;
+    fs_File_OpenMode_write_only = 1,
+    fs_File_OpenMode_read_write = 2,
+)) fs_File_OpenMode;
 
-typedef enum_(fs_File_Lock $bits(8)) {
+typedef enum_((fs_File_Lock $fits($packed))(
     fs_File_Lock_none = 0,
-    fs_File_Lock_shared,
-    fs_File_Lock_exclusive,
-} fs_File_Lock;
+    fs_File_Lock_shared = 1,
+    fs_File_Lock_exclusive = 2,
+)) fs_File_Lock;
 
 typedef struct fs_File_OpenFlags {
     fs_File_OpenMode mode;
@@ -95,7 +95,7 @@ $extern fn_((fs_File_reader(fs_File self))(io_Reader));
 $extern fn_((fs_File_writer(fs_File self))(io_Writer));
 
 $attr($inline_always)
-$static fn_((fs_File_Handle_promote(fs_File_Handle self))(fs_File)) { return lit$((fs_File){ .handle = self }); };
+$static fn_((fs_File_Handle_promote(fs_File_Handle self))(fs_File)) { return l$((fs_File){ .handle = self }); };
 
 #if defined(__cplusplus)
 } /* extern "C" */

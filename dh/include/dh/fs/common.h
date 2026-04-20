@@ -31,7 +31,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((fs_File_Err)(
+errset_((fs_File_E)(
     NotFound,
     AccessDenied,
     OpenFailed,

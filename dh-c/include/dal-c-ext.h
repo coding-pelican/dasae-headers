@@ -1,6 +1,9 @@
 #ifndef dal_c_ext__included
 #define dal_c_ext__included 1
 
+#include "dal-c-ext/pp.h"
+#include "dal-c-ext/dsl.h"
+#include "dal-c-ext/base.h"
 #include "dal-c-ext/str.h"
 #include "dal-c-ext/path.h"
 #include "dal-c-ext/file.h"

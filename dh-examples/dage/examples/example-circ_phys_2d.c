@@ -10,8 +10,8 @@
  * @note run with `dh-c run example-circ_phys_2d.c --sample`
  */
 
-#include "dage.h"
-#include <dh/main.h>
+#include <dage.h>
+#include <dh-main.h>
 #include <dh/Rand.h>
 #include <dh/heap/Page.h>
 #include <dh/ArrList.h>
@@ -19,10 +19,10 @@
 
 /*========== Circle Collision Geometry ==========*/
 
-typedef struct Circ2f32 {
+T_alias$((Circ2f32)(struct Circ2f32 {
     var_(center, m_V2f32);
     var_(radius, f32);
-} Circ2f32;
+}));
 
 $attr($inline_always)
 $static fn_((Circ2f32_of(m_V2f32 center, f32 radius))(Circ2f32)) {
@@ -60,13 +60,13 @@ $static let_(Ball_launch_multiplier, f32) = 5.0f;
 
 /*========== Ball Structure ==========*/
 
-typedef struct Ball {
+T_alias$((Ball)(struct Ball {
     var_(xform, Circ2f32);
     var_(vel, m_V2f32);
     var_(acc, m_V2f32);
     var_(mass, f32);
     var_(id, usize);
-} Ball;
+}));
 T_use$((Ball)(P, S));
 T_use$((P$Ball)(O));
 T_use$((Ball)(
@@ -91,10 +91,10 @@ $static fn_((Ball_of(m_V2f32 center, f32 radius, usize id))(Ball)) {
 
 /*========== Collision Pair ==========*/
 
-typedef struct CollisionPair {
-    var_(collider_idx, usize);
-    var_(collidee_idx, usize);
-} CollisionPair;
+T_alias$((CollisionPair)(struct CollisionPair {
+    usize collider_idx;
+    usize collidee_idx;
+}));
 T_use$((CollisionPair)(S));
 T_use$((CollisionPair)(
     ArrList,
@@ -114,18 +114,18 @@ $static fn_((CollisionPair_of(usize collider_idx, usize collidee_idx))(Collision
 
 /*========== Ball Manager ==========*/
 
-typedef struct BallManager {
+T_alias$((BallManager)(struct BallManager {
     var_(balls, ArrList$Ball);
     var_(collision_pairs, ArrList$CollisionPair);
     var_(selected_ball, O$P$Ball);
     var_(rng, Rand);
     var_(world_half_size, m_V2f32);
-    var_(gpa, mem_Allocator);
-} BallManager;
+    var_(gpa, mem_Alctr);
+}));
 T_use_E$(BallManager);
 
 $attr($must_check)
-$static fn_((BallManager_init(mem_Allocator gpa, m_V2f32 world_half_size))(E$BallManager) $guard) {
+$static fn_((BallManager_init(mem_Alctr gpa, m_V2f32 world_half_size))(E$BallManager) $guard) {
     var balls = try_(ArrList_init$Ball(gpa, 32));
     errdefer_($ignore, ArrList_fini$Ball(&balls, gpa));
     var collision_pairs = try_(ArrList_init$CollisionPair(gpa, 64));
@@ -137,7 +137,7 @@ $static fn_((BallManager_init(mem_Allocator gpa, m_V2f32 world_half_size))(E$Bal
         .world_half_size = world_half_size,
         .gpa = gpa,
     });
-} $unguarded_(fn);
+} $unguarded(fn);
 
 $static fn_((BallManager_fini(BallManager* self))(void)) {
     ArrList_fini$CollisionPair(&self->collision_pairs, self->gpa);
@@ -148,18 +148,18 @@ $static fn_((BallManager_replaceAllRandomly(BallManager* self, u32 count))(void)
     ArrList_clearRetainingCap$Ball(&self->balls);
     catch_((ArrList_ensureCap$Ball(&self->balls, self->gpa, count))($ignore, claim_unreachable));
 
-    for_(($r(0, count))(i) {
+    for_(($r(0, count))(i)) {
         let center = m_V2f32_of(
             (as$(f32)(Rand_rangeFlt(&self->rng, as$(f64)(-self->world_half_size.x), as$(f64)(self->world_half_size.x)))),
             (as$(f32)(Rand_rangeFlt(&self->rng, as$(f64)(-self->world_half_size.y), as$(f64)(self->world_half_size.y))))
         );
         let radius = as$(f32)(Rand_rangeFlt(&self->rng, as$(f64)(5.0f), as$(f64)(20.0f)));
         ArrList_appendWithin$Ball(&self->balls, Ball_of(center, radius, i));
-    });
+    } $end(for);
 };
 
 $static fn_((BallManager_updatePhysics(BallManager* self, f32 dt))(void)) {
-    for_(($s(self->balls.items))(ball) {
+    for_(($s(self->balls.items))(ball)) {
         /* Apply drag to simulate rolling friction */
         ball->acc = m_V2f32_scal(m_V2f32_neg(ball->vel), Ball_drag_coefficient);
 
@@ -181,7 +181,7 @@ $static fn_((BallManager_updatePhysics(BallManager* self, f32 dt))(void)) {
         if (m_V2f32_lenSq(ball->vel) < Ball_velocity_tolerance) {
             ball->vel = m_V2f32_zero;
         }
-    });
+    } $end(for);
 };
 
 $static fn_((BallManager_detectAndSeparateCollisions(BallManager* self))(void)) {
@@ -232,7 +232,7 @@ $static fn_((BallManager_detectAndSeparateCollisions(BallManager* self))(void)) 
 
 $static fn_((BallManager_resolveCollisionVelocities(BallManager* self))(void)) {
     /* Process all collision pairs and update velocities */
-    for_(($s(self->collision_pairs.items))(pair) {
+    for_(($s(self->collision_pairs.items))(pair)) {
         let collider = S_at((self->balls.items)[pair->collider_idx]);
         let collidee = S_at((self->balls.items)[pair->collidee_idx]);
 
@@ -270,7 +270,7 @@ $static fn_((BallManager_resolveCollisionVelocities(BallManager* self))(void)) {
             m_V2f32_scal(tangent, dp_tan_collidee),
             m_V2f32_scal(normal, momentum_collidee)
         );
-    });
+    } $end(for);
 };
 
 /*========== Coordinate Conversion ==========*/
@@ -299,28 +299,28 @@ $static fn_((screenToWorld(m_V2i32 screen_pos, m_V2f32 screen_center))(m_V2f32))
 
 $static fn_((BallManager_processInput(BallManager* self, dage_Window* win, m_V2f32 screen_center))(void)) {
     let input = &win->input;
-    let isMousePressed = dage_InputState_isMousePressed;
-    let isMouseHeld = dage_InputState_isMouseHeld;
-    let isMouseReleased = dage_InputState_isMouseReleased;
-    let Button_left = dage_MouseBtn_left;
-    let Button_right = dage_MouseBtn_right;
+    let isMousePressed = dage_Input_isMousePressed;
+    let isMouseHeld = dage_Input_isMouseHeld;
+    let isMouseReleased = dage_Input_isMouseReleased;
+    let Btn_left = dage_MouseBtn_left;
+    let Btn_right = dage_MouseBtn_right;
 
     let mouse_pos = dage_Window_getMousePos(win);
     let world_mouse = screenToWorld(mouse_pos, screen_center);
 
     /* Ball selection on mouse press */
-    if (isMousePressed(input, Button_left) || isMousePressed(input, Button_right)) {
-        asg_lit((&self->selected_ball)(none()));
-        for_(($s(self->balls.items))(ball) {
+    if (isMousePressed(input, Btn_left) || isMousePressed(input, Btn_right)) {
+        asg_l((&self->selected_ball)(none()));
+        for_(($s(self->balls.items))(ball)) {
             if (Circ2f32_containsPoint(ball->xform, world_mouse)) {
-                asg_lit((&self->selected_ball)(some(ball)));
+                asg_l((&self->selected_ball)(some(ball)));
                 break;
             }
-        });
+        } $end(for);
     }
 
     /* Drag ball with left mouse */
-    if (isMouseHeld(input, Button_left)) {
+    if (isMouseHeld(input, Btn_left)) {
         if_some((self->selected_ball)(selected)) {
             selected->xform.center = world_mouse;
             selected->vel = m_V2f32_zero;
@@ -328,16 +328,16 @@ $static fn_((BallManager_processInput(BallManager* self, dage_Window* win, m_V2f
     }
 
     /* Release left mouse - just deselect */
-    if (isMouseReleased(input, Button_left)) {
-        asg_lit((&self->selected_ball)(none()));
+    if (isMouseReleased(input, Btn_left)) {
+        asg_l((&self->selected_ball)(none()));
     }
 
     /* Release right mouse - launch ball */
-    if (isMouseReleased(input, Button_right)) {
+    if (isMouseReleased(input, Btn_right)) {
         if_some((self->selected_ball)(selected)) {
             let launch_dir = m_V2f32_sub(selected->xform.center, world_mouse);
             selected->vel = m_V2f32_scal(launch_dir, Ball_launch_multiplier);
-            asg_lit((&self->selected_ball)(none()));
+            asg_l((&self->selected_ball)(none()));
         }
     }
 };
@@ -346,48 +346,44 @@ $static fn_((BallManager_processInput(BallManager* self, dage_Window* win, m_V2f
 
 $static fn_((BallManager_render(const BallManager* self, dage_Canvas* canvas, m_V2f32 screen_center, m_V2i32 mouse_pos))(void)) {
     /* Draw all balls */
-    for_(($s(self->balls.items))(ball) {
+    for_(($s(self->balls.items))(ball)) {
         let pos = worldToScreen(ball->xform.center, screen_center);
         let radius = as$(i32)(ball->xform.radius);
-        dage_Canvas_drawCircle(canvas, as$(i32)(pos.x), as$(i32)(pos.y), radius, color_RGBA_white);
-    });
+        dage_Canvas_drawCircle(canvas, as$(i32)(pos.x), as$(i32)(pos.y), radius, dacolor_RGBA_white);
+    } $end(for);
 
     /* Draw collision lines */
-    for_(($s(self->collision_pairs.items))(pair) {
+    for_(($s(self->collision_pairs.items))(pair)) {
         let collider = S_at((self->balls.items)[pair->collider_idx]);
         let collidee = S_at((self->balls.items)[pair->collidee_idx]);
         let pos1 = worldToScreen(collider->xform.center, screen_center);
         let pos2 = worldToScreen(collidee->xform.center, screen_center);
-        dage_Canvas_drawLine(canvas, as$(i32)(pos1.x), as$(i32)(pos1.y), as$(i32)(pos2.x), as$(i32)(pos2.y), color_RGBA_red);
-    });
+        dage_Canvas_drawLine(canvas, as$(i32)(pos1.x), as$(i32)(pos1.y), as$(i32)(pos2.x), as$(i32)(pos2.y), dacolor_RGBA_red);
+    } $end(for);
 
     /* Draw cue line for selected ball */
     if_some((self->selected_ball)(selected)) {
         let pos = worldToScreen(selected->xform.center, screen_center);
-        dage_Canvas_drawLine(canvas, as$(i32)(pos.x), as$(i32)(pos.y), mouse_pos.x, mouse_pos.y, color_RGBA_blue);
+        dage_Canvas_drawLine(canvas, as$(i32)(pos.x), as$(i32)(pos.y), mouse_pos.x, mouse_pos.y, dacolor_RGBA_blue);
     }
 };
 
 /*========== Event Handling ==========*/
 
 $static fn_((handleEvents(dage_Window* win, bool* running))(void)) {
-    while_some(dage_Window_pollEvent(win), event) {
-        match_(event) {
-        case_((dage_Event_close_request)) {
+    while_some(dage_Window_pollEvent(win), event) match_(event) {
+    case_((dage_Event_close_request)) {
+        *running = false;
+    } $end(case);
+    pattern_((dage_Event_key_down)(on_key_down)) {
+        if (on_key_down.key == dage_KeyCode_esc) {
             *running = false;
-        } $end(case);
-
-        pattern_((dage_Event_key_down)(on_key_down)) {
-            if (on_key_down->key == dage_KeyCode_esc) {
-                *running = false;
-            }
-        } $end(pattern);
-
-        default_() {
-            /* Ignore other events */
-        } $end(default);
-        } $end(match);
-    };
+        }
+    } $end(pattern);
+    default_() {
+        /* Ignore other events */
+    } $end(default);
+    } $end(match);
 };
 
 /*========== Main ==========*/
@@ -396,53 +392,53 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     /* Setup allocator */
-    var page = (heap_Page){};
-    let gpa = heap_Page_allocator(&page);
+    var page = l0$((heap_Page));
+    let gpa = heap_Page_alctr(&page);
 
     /* Create WSI backend */
-    var wsi = try_(dage_core_WSI_init((dage_core_WSI_Cfg){
+    var wsi = try_(dage_Runtime_WSI_init(l$((dage_Runtime_WSI_Cfg){
         .gpa = gpa,
-    }));
-    defer_(dage_core_WSI_fini(&wsi));
-    let backend = dage_core_WSI_backend(wsi);
+    })));
+    defer_(dage_Runtime_WSI_fini(&wsi));
+    let backend = dage_Runtime_WSI_backend(wsi);
     io_stream_println(u8_l("Backend created"));
 
     /* Create runtime */
-    var runtime = try_(dage_Runtime_init((dage_Runtime_Cfg){
+    var runtime = try_(dage_Runtime_init(l$((dage_Runtime_Cfg){
         .gpa = gpa,
         .backend = backend,
-    }));
+    })));
     defer_(dage_Runtime_fini(&runtime));
     io_stream_println(u8_l("Runtime created"));
 
     /* Create window */
     let win_id = try_(dage_Runtime_createWindow(
         &runtime,
-        (dage_Runtime_WindowCfg){
+        l$((dage_Runtime_WindowCfg){
             .size = { .x = window_width, .y = window_height },
-            .clear_color = some(color_RGBA_black),
+            .clear_color = some(dacolor_RGBA_black),
             .title = some(u8_l("Circle Physics 2D")),
             .scale = 1.0f,
             .resizable = true,
-        }
+        })
     ));
     let win = unwrap_(dage_Runtime_getWindow(&runtime, win_id));
     io_stream_println(u8_l("Window created"));
 
     /* Create game canvas */
-    var canvas = try_(dage_Canvas_init((dage_Canvas_Cfg){
+    var canvas = try_(dage_Canvas_init(l$((dage_Canvas_Cfg){
         .gpa = gpa,
         .width = window_width,
         .height = window_height,
-        .type = dage_CanvasType_rgba,
-    }));
+        .default_color = none(),
+    })));
     defer_(dage_Canvas_fini(&canvas, gpa));
     io_stream_println(u8_l("Canvas created"));
 
     /* Add viewport */
     let_ignore = unwrap_(dage_Window_addViewport(
         win,
-        (dage_Viewport_Cfg){
+        l$((dage_Viewport_Cfg){
             .canvas = &canvas,
             .dst_rect = {
                 .pos = { .x = 0, .y = 0 },
@@ -451,7 +447,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
             .fit = dage_Viewport_Fit_stretch,
             .visible = true,
             .z_order = 0,
-        }
+        })
     ));
     io_stream_println(u8_l("Viewport added"));
 
@@ -470,10 +466,10 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     /* Game loop */
     let target_fps = 60.0f;
     let frame_time = 1.0f / target_fps;
-    bool running = true;
+    var is_running = true;
     var prev_time = time_Instant_now();
     io_stream_println(u8_l("Game loop started"));
-    while (running && !dage_Runtime_shouldQuit(&runtime)) {
+    while (is_running && !dage_Runtime_shouldQuit(&runtime)) {
         /* Calculate delta time */
         let curr_time = time_Instant_now();
         let elapsed = time_Instant_durationSince(curr_time, prev_time);
@@ -482,7 +478,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
         /* Process events */
         dage_Runtime_processEvents(&runtime);
-        handleEvents(win, &running);
+        handleEvents(win, &is_running);
 
         /* Input */
         BallManager_processInput(&manager, win, screen_center);
@@ -493,7 +489,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         BallManager_resolveCollisionVelocities(&manager);
 
         /* Render */
-        dage_Canvas_clear(&canvas, some$((O$color_RGBA)color_RGBA_black));
+        dage_Canvas_clear(&canvas, some$((O$dacolor_RGBA)dacolor_RGBA_black));
         let mouse_pos = dage_Window_getMousePos(win);
         BallManager_render(&manager, &canvas, screen_center, mouse_pos);
 
@@ -503,11 +499,9 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
         /* Frame timing */
         let target_time = time_Duration_fromSecs$f64(as$(f64)(frame_time));
-        if_some((time_Duration_subChkd(target_time, elapsed))(sleep_time)) {
-            time_sleep(sleep_time);
-        }
+        time_sleep(orelse_((time_Duration_subChkd(target_time, elapsed))(time_Duration_zero)));
     }
 
     io_stream_println(u8_l("Circle Physics 2D exited cleanly"));
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);

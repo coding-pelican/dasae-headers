@@ -19,12 +19,12 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "prl.h"
-#include "mem/Allocator.h"
+#include "mem/Alctr.h"
 
 /*========== Macros and Declarations ========================================*/
 
 /// The C0 control codes of the ASCII encoding.
-enum_(ascii_CtrlCode $bits(8)) {
+enum_((ascii_CtrlCode $fits($packed))(
     /// Null.
     ascii_CtrlCode_nul = 0x00,
     /// Start of Heading.
@@ -97,7 +97,7 @@ enum_(ascii_CtrlCode $bits(8)) {
     ascii_CtrlCode_xon = ascii_CtrlCode_dc1,
     /// An alias to `dc3`.
     ascii_CtrlCode_xoff = ascii_CtrlCode_dc3,
-};
+));
 
 /// Returns whether the character is a 7-bit ASCII character.
 $attr($inline)
@@ -161,13 +161,13 @@ $extern fn_((ascii_toggleCases(S$u8 ascii_str))(S$u8));
 
 /// Allocates an upper case copy of `ascii_str`.
 $attr($must_check)
-$extern fn_((ascii_allocUppers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8));
+$extern fn_((ascii_allocUppers(mem_Alctr gpa, S_const$u8 ascii_str))(E$S$u8));
 /// Allocates a lower case copy of `ascii_str`.
 $attr($must_check)
-$extern fn_((ascii_allocLowers(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8));
+$extern fn_((ascii_allocLowers(mem_Alctr gpa, S_const$u8 ascii_str))(E$S$u8));
 /// Allocates a toggled case copy of `ascii_str`.
 $attr($must_check)
-$extern fn_((ascii_allocToggledCases(mem_Allocator gpa, S_const$u8 ascii_str))(E$S$u8));
+$extern fn_((ascii_allocToggledCases(mem_Alctr gpa, S_const$u8 ascii_str))(E$S$u8));
 
 /// Writes an upper case copy of `ascii_str` to `buf`.
 $extern fn_((ascii_makeUppers(S$u8 out_buf, S_const$u8 ascii_str))(S$u8));

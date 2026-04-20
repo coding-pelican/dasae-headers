@@ -233,19 +233,19 @@ fn_((time_Instant__unsupported_durationSinceChkd(time_Instant later, time_Instan
     let_ignore = later;
     let_ignore = earlier;
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_Instant__unsupported_addChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant) $scope) {
     let_ignore = lhs;
     let_ignore = rhs;
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_Instant__unsupported_subChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant) $scope) {
     let_ignore = lhs;
     let_ignore = rhs;
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_Instant__unsupported_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord)) {
     let_ignore = lhs;
@@ -291,7 +291,7 @@ fn_((time_Instant__windows_offset(void))(time_Instant)) {
 
 fn_((time_Instant__windows_now(void))(time_Instant)) {
     time_Instant__windows_ensureInit();
-    var current = lit0$((time_InstantPlatform));
+    var current = l0$((time_InstantPlatform));
     QueryPerformanceCounter(&current);
     return (time_Instant){ .impl = current };
 };
@@ -307,7 +307,7 @@ fn_((time_Instant__windows_durationSinceChkd(time_Instant later, time_Instant ea
     let diff = as$(f64)(later.impl.QuadPart - earlier.impl.QuadPart);
     let nanos = as$(u64)(diff * time_Instant_nanos_per_sec * time_Instant__windows_freqInv());
     return_some(time_Duration_fromNanos(nanos));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_Instant__windows_addChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant) $scope) {
     let ticks = (rhs.secs * time_Instant_intervals_per_sec) + (rhs.nanos / 100);
@@ -315,7 +315,7 @@ fn_((time_Instant__windows_addChkdDuration(time_Instant lhs, time_Duration rhs))
         return_some({ .impl.QuadPart = as$(LONGLONG)(intCast$((u64)(lhs.impl.QuadPart)) + ticks) });
     }
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_Instant__windows_subChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant) $scope) {
     let ticks = (rhs.secs * time_Instant_intervals_per_sec) + (rhs.nanos / 100);
@@ -323,7 +323,7 @@ fn_((time_Instant__windows_subChkdDuration(time_Instant lhs, time_Duration rhs))
         return_some({ .impl.QuadPart = as$(LONGLONG)(intCast$((u64)(lhs.impl.QuadPart)) - ticks) });
     }
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_Instant__windows_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord)) {
     if (lhs.impl.QuadPart < rhs.impl.QuadPart) { return cmp_Ord_lt; }
@@ -343,7 +343,7 @@ $static var_(bool, s_unix_initialized) = false;
 $attr($on_load)
 $static fn_((time_Instant__unix_init(void))(void)) {
     if (s_unix_initialized) { return; }
-    var value = lit0$((time_InstantPlatform));
+    var value = l0$((time_InstantPlatform));
     if (clock_gettime(CLOCK_MONOTONIC, &value) != 0) {
         claim_unreachable_msg("Failed to initialize high-resolution timer");
     }
@@ -373,7 +373,7 @@ fn_((time_Instant__unix_offset(void))(time_Instant)) {
 
 fn_((time_Instant__unix_now(void))(time_Instant)) {
     time_Instant__unix_ensureInit();
-    var current = lit0$((time_InstantPlatform));
+    var current = l0$((time_InstantPlatform));
     clock_gettime(CLOCK_MONOTONIC, &current);
     return (time_Instant){ .impl = current };
 };
@@ -386,7 +386,7 @@ fn_((time_Instant__unix_durationSinceChkd(time_Instant later, time_Instant earli
     if (time_Instant__unix_ord(later, earlier) == cmp_Ord_lt) {
         return_none();
     }
-    var diff = lit0$((time_InstantPlatform));
+    var diff = l0$((time_InstantPlatform));
     diff.tv_sec = later.impl.tv_sec - earlier.impl.tv_sec;
     if (later.impl.tv_nsec < earlier.impl.tv_nsec) {
         diff.tv_sec--;
@@ -396,7 +396,7 @@ fn_((time_Instant__unix_durationSinceChkd(time_Instant later, time_Instant earli
     }
     let nanos = as$(u64)((diff.tv_sec * time_Instant_nanos_per_sec) + diff.tv_nsec);
     return_some(time_Duration_fromNanos(nanos));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_Instant__unix_addChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant) $scope) {
     let ticks = (rhs.secs * time_Instant_intervals_per_sec) + (rhs.nanos / 100);
@@ -409,7 +409,7 @@ fn_((time_Instant__unix_addChkdDuration(time_Instant lhs, time_Duration rhs))(O$
         });
     }
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_Instant__unix_subChkdDuration(time_Instant lhs, time_Duration rhs))(O$time_Instant) $scope) {
     let ticks = (rhs.secs * time_Instant_intervals_per_sec) + (rhs.nanos / 100);
@@ -422,7 +422,7 @@ fn_((time_Instant__unix_subChkdDuration(time_Instant lhs, time_Duration rhs))(O$
         });
     }
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_Instant__unix_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord)) {
     if (lhs.impl.tv_sec < rhs.impl.tv_sec) { return cmp_Ord_lt; }

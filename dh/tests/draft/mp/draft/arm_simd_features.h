@@ -20,12 +20,12 @@
 // ============================================
 
 typedef struct {
-    bool neon;           // 기본 NEON (128-bit, 4x float32)
-    bool neon_fp16;      // FP16 지원 (128-bit, 8x float16)
-    bool sve;            // SVE (Scalable Vector Extension)
-    bool sve2;           // SVE2
-    bool dotprod;        // Dot Product 지원
-    bool crypto;         // 암호화 확장
+    bool neon; // 기본 NEON (128-bit, 4x float32)
+    bool neon_fp16; // FP16 지원 (128-bit, 8x float16)
+    bool sve; // SVE (Scalable Vector Extension)
+    bool sve2; // SVE2
+    bool dotprod; // Dot Product 지원
+    bool crypto; // 암호화 확장
     int sve_vector_bits; // SVE 벡터 길이 (0 if not supported)
 } arm_simd_features_t;
 
@@ -161,7 +161,7 @@ static inline void detect_runtime_features(arm_simd_features_t* features) {
 
 static inline const arm_simd_features_t* arm_detect_features(void) {
     if (!g_features_detected) {
-        prim_memset(&g_arm_features, 0, sizeof(g_arm_features));
+        pri_memset(&g_arm_features, 0, sizeof(g_arm_features));
 
         // 컴파일 타임 감지
         detect_compile_time_features(&g_arm_features);
@@ -251,11 +251,11 @@ static inline float arm_dot_product_accel(const float* a, const float* b, int n)
 
 typedef enum {
     SIMD_WIDTH_NONE = 0,
-    SIMD_WIDTH_128 = 4,   // 4x float32
-    SIMD_WIDTH_256 = 8,   // 8x float16 (FP16) or 8x float32 (future)
-    SIMD_WIDTH_512 = 16,  // SVE (if available)
+    SIMD_WIDTH_128 = 4, // 4x float32
+    SIMD_WIDTH_256 = 8, // 8x float16 (FP16) or 8x float32 (future)
+    SIMD_WIDTH_512 = 16, // SVE (if available)
     SIMD_WIDTH_1024 = 32, // SVE
-    SIMD_WIDTH_2048 = 64  // SVE
+    SIMD_WIDTH_2048 = 64 // SVE
 } simd_width_t;
 
 static inline simd_width_t arm_get_optimal_width(void) {

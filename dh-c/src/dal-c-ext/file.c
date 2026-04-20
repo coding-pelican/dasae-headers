@@ -1,8 +1,8 @@
 #include "dal-c-ext/file.h"
+#include <sys/stat.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <sys/stat.h>
 
 char* file_read(const char* path) {
     if (!path) { return NULL; }

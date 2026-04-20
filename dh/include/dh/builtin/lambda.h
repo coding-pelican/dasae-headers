@@ -1,3 +1,4 @@
+#if DEPRECATED_CODE
 /**
  * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
@@ -66,3 +67,4 @@ extern "C" {
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
 #endif /* builtin_lambda__included  */
+#endif /* DEPRECATED_CODE */

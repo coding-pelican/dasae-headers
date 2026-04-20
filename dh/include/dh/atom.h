@@ -87,9 +87,9 @@ $static fn_((atom_spinLoopHint(void))(void));
 #define __comp_int__atom_cache_line_bytes arch_cache_line_bytes
 
 #define __op__atom_V_zero() cleared()
-#define __op__atom_V_zero$(_VT) lit$((_VT)cleared())
+#define __op__atom_V_zero$(_VT) l$((_VT)cleared())
 #define __op__atom_V_init(_val...) initial(.raw = _val)
-#define __op__atom_V_init$(_VT, _val...) lit$((_VT)atom_V_init(_val))
+#define __op__atom_V_init$(_VT, _val...) l$((_VT)atom_V_init(_val))
 #define __op__atom_V_from(_val...) atom_V_init$(atom_V$$(TypeOf(_val)), _val)
 #define __op__atom_V_load(_p_self, _ord...) atom_load(&(_p_self)->raw, _ord)
 #define __op__atom_V_store(_p_self, _val, _ord...) atom_store(&(_p_self)->raw, _val, _ord)

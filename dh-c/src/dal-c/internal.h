@@ -3,7 +3,6 @@
 
 #include "dal-c.h"
 #include "dal-c-ext/ArrStr.h"
-#include <stdarg.h>
 
 /// === SHARED UTILITIES ===
 

@@ -1,14 +1,14 @@
 #include "dh/core/pp/common.h"
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/ArrList.h"
 #include "dh/heap/Page.h"
 
 #define ArrList_init$(T...) \
-    lam_((mem_Allocator allocator), ArrList$(T)) { \
+    lam_((mem_Alctr allocator), ArrList$(T)) { \
         return type$(ArrList$(T), ArrList_init(typeInfo$(T), allocator)); \
     }
 #define ArrList_append$(T...) \
-    lam_((ArrList$(T) * self, T item), mem_Err$void) { \
+    lam_((ArrList$(T) * self, T item), mem_E$void) { \
         return ArrList_append(self->base, meta_refPtr(&item)); \
     }
 
@@ -17,7 +17,7 @@
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    let page = heap_Page_allocator(create$(heap_Page));
+    let page = heap_Page_alctr(create$(heap_Page));
 
     use_ArrList$(i32);
     var arr_list = ArrList_init$(i32)(page);
@@ -39,14 +39,15 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_print(u8_l("\n"));
 
     return_ok({});
-} $unguarded_(fn);
+}
+$unguarded(fn);
 
 
-#define tpl_id$T(_id, _T)                                        pp_join($, _id, _T)
-#define tpl_id$1T$2U(_id, _T, _U)                                pp_join($, _id, pp_cat(pp_cat($1, _T), pp_cat($2, _U)))
-#define tpl_id$2T$2U$3V(_id, _T, _U, _V)                         pp_join($, _id, pp_cat(pp_cat(pp_cat($1, _T), pp_cat($2, _U)), pp_cat($3, _V)))
-#define tpl_fn$T(_id_w_T_and_Params, _ReturnT...)                fn_((tpl_id$T _id_w_T_and_Params)(_ReturnT))
-#define tpl_fn$1T$2U(_id_w_T_w_U_and_Params, _ReturnT...)        fn_((tpl_id$1T$2U _id_w_T_w_U_and_Params)(_ReturnT))
+#define tpl_id$T(_id, _T) pp_join($, _id, _T)
+#define tpl_id$1T$2U(_id, _T, _U) pp_join($, _id, pp_cat(pp_cat($1, _T), pp_cat($2, _U)))
+#define tpl_id$2T$2U$3V(_id, _T, _U, _V) pp_join($, _id, pp_cat(pp_cat(pp_cat($1, _T), pp_cat($2, _U)), pp_cat($3, _V)))
+#define tpl_fn$T(_id_w_T_and_Params, _ReturnT...) fn_((tpl_id$T _id_w_T_and_Params)(_ReturnT))
+#define tpl_fn$1T$2U(_id_w_T_w_U_and_Params, _ReturnT...) fn_((tpl_id$1T$2U _id_w_T_w_U_and_Params)(_ReturnT))
 #define tpl_fn$2T$2U$3V(_id_w_T_w_U_w_V_and_Params, _ReturnT...) fn_((tpl_id$2T$2U$3V _id_w_T_w_U_w_V_and_Params)(_ReturnT))
 
 #define swap$T(_T) \
@@ -55,9 +56,9 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     }
 static $inline fn_((swap_raw(TypeInfo type, void* lhs, void* rhs))(void)) {
     let tmp = as$(void*)(alloca(type.size));
-    prim_memcpy(tmp, lhs, type.size);
-    prim_memcpy(lhs, rhs, type.size);
-    prim_memcpy(rhs, tmp, type.size);
+    pri_memcpy(tmp, lhs, type.size);
+    pri_memcpy(lhs, rhs, type.size);
+    pri_memcpy(rhs, tmp, type.size);
 }
 
 // #define ArrList_atRo$T(_T) \

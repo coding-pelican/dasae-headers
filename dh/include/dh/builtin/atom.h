@@ -61,39 +61,39 @@ typedef enum atom_MemOrd {
 
 #define __op__atom_fence(_ord...) __atomic_thread_fence(_ord)
 #define __op__atom_load(__ret, _ptr, _ord...) ({ \
-    var __ret = lit0$((TypeOf(*_ptr))); \
+    var __ret = l0$((TypeOf(*_ptr))); \
     __atomic_load(_ptr, &__ret, _ord); \
     __ret; \
 })
 #define __op__atom_store(_ptr, _val, _ord...) \
-    __atomic_store(_ptr, &make$((TypeOf(*_ptr))_val), _ord)
+    __atomic_store(_ptr, &from$((TypeOf(*_ptr))_val), _ord)
 
 #define __op__atom_cmpXchgWeak$(__expected, _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) ({ \
     typedef _OT O$Ret$atom_cmpXchgWeak; \
-    var __expected = lit$((TypeOf(*_ptr))_expected); \
-    __atomic_compare_exchange(_ptr, &__expected, &make$((TypeOf(__expected))_desired), true, _succ_ord, _fail_ord) \
-        ? lit$((O$Ret$atom_cmpXchgWeak)none()) \
-        : lit$((O$Ret$atom_cmpXchgWeak)some(__expected)); \
+    var __expected = l$((TypeOf(*_ptr))_expected); \
+    __atomic_compare_exchange(_ptr, &__expected, &from$((TypeOf(__expected))_desired), true, _succ_ord, _fail_ord) \
+        ? l$((O$Ret$atom_cmpXchgWeak)none()) \
+        : l$((O$Ret$atom_cmpXchgWeak)some(__expected)); \
 })
 #define __op__atom_cmpXchgStrong$(__expected, _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) ({ \
     typedef _OT O$Ret$atom_cmpXchgStrong; \
-    var __expected = lit$((TypeOf(*_ptr))_expected); \
-    __atomic_compare_exchange(_ptr, &__expected, &make$((TypeOf(__expected))_desired), false, _succ_ord, _fail_ord) \
-        ? lit$((O$Ret$atom_cmpXchgStrong)none()) \
-        : lit$((O$Ret$atom_cmpXchgStrong)some(__expected)); \
+    var __expected = l$((TypeOf(*_ptr))_expected); \
+    __atomic_compare_exchange(_ptr, &__expected, &from$((TypeOf(__expected))_desired), false, _succ_ord, _fail_ord) \
+        ? l$((O$Ret$atom_cmpXchgStrong)none()) \
+        : l$((O$Ret$atom_cmpXchgStrong)some(__expected)); \
 })
 
 #define __op__atom_fetchXchg(__ret, _ptr, _val, _ord...) ({ \
-    var __ret = lit0$((TypeOf(*_ptr))); \
-    __atomic_exchange(_ptr, &make$((TypeOf(__ret))_val), &__ret, _ord); \
+    var __ret = l0$((TypeOf(*_ptr))); \
+    __atomic_exchange(_ptr, &from$((TypeOf(__ret))_val), &__ret, _ord); \
     __ret; \
 })
-#define __op__atom_fetchAdd(_ptr, _val, _ord...) __atomic_fetch_add(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchSub(_ptr, _val, _ord...) __atomic_fetch_sub(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchNand(_ptr, _val, _ord...) __atomic_fetch_nand(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchAnd(_ptr, _val, _ord...) __atomic_fetch_and(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchXor(_ptr, _val, _ord...) __atomic_fetch_xor(_ptr, make$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchOr(_ptr, _val, _ord...) __atomic_fetch_or(_ptr, make$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchAdd(_ptr, _val, _ord...) __atomic_fetch_add(_ptr, from$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchSub(_ptr, _val, _ord...) __atomic_fetch_sub(_ptr, from$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchNand(_ptr, _val, _ord...) __atomic_fetch_nand(_ptr, from$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchAnd(_ptr, _val, _ord...) __atomic_fetch_and(_ptr, from$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchXor(_ptr, _val, _ord...) __atomic_fetch_xor(_ptr, from$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchOr(_ptr, _val, _ord...) __atomic_fetch_or(_ptr, from$((TypeOf(*_ptr))_val), _ord)
 
 #if defined(__cplusplus)
 } /* extern "C" */

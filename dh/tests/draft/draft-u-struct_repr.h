@@ -1,6 +1,6 @@
 /**
  * struct_repr.h - Manual struct layout and repr system
- * 
+ *
  * Simulates C struct layout rules using TypeInfo and writes values
  * to byte buffers at computed offsets. Designed for constant folding.
  */
@@ -12,46 +12,46 @@
  * Primitive Types
  * ============================================================================ */
 
-typedef unsigned char      u8;
-typedef signed char        i8;
-typedef unsigned short     u16;
-typedef signed short       i16;
-typedef unsigned int       u32;
-typedef signed int         i32;
+typedef unsigned char u8;
+typedef signed char i8;
+typedef unsigned short u16;
+typedef signed short i16;
+typedef unsigned int u32;
+typedef signed int i32;
 typedef unsigned long long u64;
-typedef signed long long   i64;
-typedef u64                usize;
-typedef i64                isize;
-typedef _Bool              bool;
-typedef float              f32;
-typedef double             f64;
+typedef signed long long i64;
+typedef u64 usize;
+typedef i64 isize;
+typedef _Bool bool;
+typedef float f32;
+typedef double f64;
 
-#define true  ((_Bool)1)
+#define true ((_Bool)1)
 #define false ((_Bool)0)
 
 /* ============================================================================
  * Utility Macros
  * ============================================================================ */
 
-#define as$(_T, _expr...)      ((_T)(_expr))
-#define lit$(_expr...)         (_expr)
+#define as$(_T, _expr...) ((_T)(_expr))
+#define l$(_expr...) (_expr)
 
-#define sizeOf$(_T...)         (as$(usize, sizeof(_T)))
-#define alignOf$(_T...)        (as$(u32, (64u - 1u) - __builtin_clzll(_Alignof(_T))))
+#define sizeOf$(_T...) (as$(usize, sizeof(_T)))
+#define alignOf$(_T...) (as$(u32, (64u - 1u) - __builtin_clzll(_Alignof(_T))))
 
-#define TypeOf(_Expr...)       __typeof__(_Expr)
+#define TypeOf(_Expr...) __typeof__(_Expr)
 
 /* ============================================================================
  * Slice Type
  * ============================================================================ */
 
 typedef struct S_u8 {
-    u8*   ptr;
+    u8* ptr;
     usize len;
 } S$u8;
 
-#define slice$(_arr...)        lit$((S$u8){ .ptr = (_arr), .len = sizeof(_arr) })
-#define sliceFrom$(_ptr, _len) lit$((S$u8){ .ptr = (_ptr), .len = (_len) })
+#define slice$(_arr...) l$((S$u8){ .ptr = (_arr), .len = sizeof(_arr) })
+#define sliceFrom$(_ptr, _len) l$((S$u8){ .ptr = (_ptr), .len = (_len) })
 
 /* ============================================================================
  * TypeInfo - 8 bytes containing size and log2(alignment)
@@ -60,15 +60,15 @@ typedef struct S_u8 {
 typedef union TypeInfo {
     struct {
         u64 size  : 58;
-        u64 align : 6;  /* log2 of alignment */
+        u64 align : 6; /* log2 of alignment */
     };
     u64 packed;
 } TypeInfo;
 
 _Static_assert(sizeof(TypeInfo) == 8, "TypeInfo must be 8 bytes");
 
-#define typeInfo$(_T...)       lit$((TypeInfo){ .size = sizeOf$(_T), .align = alignOf$(_T) })
-#define TypeInfo_eq(_a, _b)    ((_a).packed == (_b).packed)
+#define typeInfo$(_T...) l$((TypeInfo){ .size = sizeOf$(_T), .align = alignOf$(_T) })
+#define TypeInfo_eql(_a, _b) ((_a).packed == (_b).packed)
 
 /* ============================================================================
  * Compile-Time TypeInfo Access (for _Static_assert and constant folding)
@@ -91,7 +91,7 @@ _Static_assert(sizeof(TypeInfo) == 8, "TypeInfo must be 8 bytes");
 /**
  * Extract size from packed TypeInfo (compile-time safe)
  */
-#define TI_SIZE$(_packed)  ((_packed) & 0x03FFFFFFFFFFFFFFull)
+#define TI_SIZE$(_packed) ((_packed) & 0x03FFFFFFFFFFFFFFull)
 
 /**
  * Extract align (log2) from packed TypeInfo (compile-time safe)
@@ -106,7 +106,7 @@ _Static_assert(sizeof(TypeInfo) == 8, "TypeInfo must be 8 bytes");
  * Convert log2 alignment to actual alignment value
  * align=0 -> 1, align=1 -> 2, align=2 -> 4, align=3 -> 8, etc.
  */
-#define alignVal$(_log2)       (1ull << (_log2))
+#define alignVal$(_log2) (1ull << (_log2))
 
 /**
  * Align offset up to the given alignment (alignment must be power of 2)
@@ -130,24 +130,24 @@ _Static_assert(sizeof(TypeInfo) == 8, "TypeInfo must be 8 bytes");
  * StructLayout - tracks current position during layout calculation
  */
 typedef struct StructLayout {
-    usize offset;      /* Current field's offset */
-    usize end;         /* Position after current field */
-    u32   max_align;   /* Maximum alignment seen (log2) */
+    usize offset; /* Current field's offset */
+    usize end; /* Position after current field */
+    u32 max_align; /* Maximum alignment seen (log2) */
 } StructLayout;
 
 #define StructLayout_init() \
-    lit$((StructLayout){ .offset = 0, .end = 0, .max_align = 0 })
+    l$((StructLayout){ .offset = 0, .end = 0, .max_align = 0 })
 
 /**
  * Add a field to the layout, returns new layout with updated positions
  */
 #define StructLayout_addField(_layout, _field_ti) \
-    lit$((StructLayout){ \
-        .offset    = fieldOffset$((_layout).end, (_field_ti)), \
-        .end       = fieldOffset$((_layout).end, (_field_ti)) + (_field_ti).size, \
+    l$((StructLayout){ \
+        .offset = fieldOffset$((_layout).end, (_field_ti)), \
+        .end = fieldOffset$((_layout).end, (_field_ti)) + (_field_ti).size, \
         .max_align = ((_layout).max_align > (_field_ti).align) \
-                         ? (_layout).max_align : (_field_ti).align \
-    })
+                       ? (_layout).max_align \
+                       : (_field_ti).align })
 
 /**
  * Finalize layout - returns total struct size (padded to alignment)
@@ -164,10 +164,11 @@ typedef struct StructLayout {
 /**
  * Write a value of arbitrary type to byte buffer at offset
  */
-#define repr$(_slice, _offset, _value) do { \
-    TypeOf(_value) _tmp_val_ = (_value); \
-    __builtin_memcpy((_slice).ptr + (_offset), &_tmp_val_, sizeof(_tmp_val_)); \
-} while(0)
+#define repr$(_slice, _offset, _value) \
+    do { \
+        TypeOf(_value) _tmp_val_ = (_value); \
+        __builtin_memcpy((_slice).ptr + (_offset), &_tmp_val_, sizeof(_tmp_val_)); \
+    } while (0)
 
 /**
  * Read a value of type T from byte buffer at offset
@@ -181,10 +182,11 @@ typedef struct StructLayout {
 /**
  * repr with explicit type
  */
-#define reprAs$(_slice, _offset, _T, _value) do { \
-    _T _tmp_val_ = as$(_T, _value); \
-    __builtin_memcpy((_slice).ptr + (_offset), &_tmp_val_, sizeof(_T)); \
-} while(0)
+#define reprAs$(_slice, _offset, _T, _value) \
+    do { \
+        _T _tmp_val_ = as$(_T, _value); \
+        __builtin_memcpy((_slice).ptr + (_offset), &_tmp_val_, sizeof(_T)); \
+    } while (0)
 
 /* ============================================================================
  * Combined Layout + Repr Builder
@@ -270,28 +272,25 @@ typedef struct StructLayout {
 
 #define CT_MAX_ALIGN4$(_ti0, _ti1, _ti2, _ti3) \
     ((CT_MAX_ALIGN2$(_ti0, _ti1) > CT_MAX_ALIGN2$(_ti2, _ti3)) \
-        ? CT_MAX_ALIGN2$(_ti0, _ti1) : CT_MAX_ALIGN2$(_ti2, _ti3))
+         ? CT_MAX_ALIGN2$(_ti0, _ti1) \
+         : CT_MAX_ALIGN2$(_ti2, _ti3))
 
 /* Compile-time struct size calculation */
 #define CT_STRUCT_SIZE_1$(_ti0) \
     CT_ALIGN_UP$(CT_FIELD_END$(CT_OFFSET_0$(_ti0), (_ti0)), TI_ALIGN$(_ti0))
 
 #define CT_STRUCT_SIZE_2$(_ti0, _ti1) \
-    CT_ALIGN_UP$(CT_FIELD_END$(CT_OFFSET_1$(_ti0, _ti1), (_ti1)), \
-                 CT_MAX_ALIGN2$(_ti0, _ti1))
+    CT_ALIGN_UP$(CT_FIELD_END$(CT_OFFSET_1$(_ti0, _ti1), (_ti1)), CT_MAX_ALIGN2$(_ti0, _ti1))
 
 #define CT_STRUCT_SIZE_4$(_ti0, _ti1, _ti2, _ti3) \
-    CT_ALIGN_UP$(CT_FIELD_END$(CT_OFFSET_3$(_ti0, _ti1, _ti2, _ti3), (_ti3)), \
-                 CT_MAX_ALIGN4$(_ti0, _ti1, _ti2, _ti3))
+    CT_ALIGN_UP$(CT_FIELD_END$(CT_OFFSET_3$(_ti0, _ti1, _ti2, _ti3), (_ti3)), CT_MAX_ALIGN4$(_ti0, _ti1, _ti2, _ti3))
 
 /* Total struct size calculation */
 #define STRUCT_SIZE_1(_ti0) \
-    alignUp$(fieldEnd$(OFFSET_0(_ti0), (_ti0)), \
-             alignVal$((_ti0).align))
+    alignUp$(fieldEnd$(OFFSET_0(_ti0), (_ti0)), alignVal$((_ti0).align))
 
 #define STRUCT_SIZE_2(_ti0, _ti1) \
-    alignUp$(fieldEnd$(OFFSET_1(_ti0, _ti1), (_ti1)), \
-             alignVal$(((_ti0).align > (_ti1).align) ? (_ti0).align : (_ti1).align))
+    alignUp$(fieldEnd$(OFFSET_1(_ti0, _ti1), (_ti1)), alignVal$(((_ti0).align > (_ti1).align) ? (_ti0).align : (_ti1).align))
 
 #define STRUCT_SIZE_3(_ti0, _ti1, _ti2) ({ \
     u32 _ma = (_ti0).align; \
@@ -312,8 +311,8 @@ typedef struct StructLayout {
  * Max alignment helper (for struct size calculation)
  * ============================================================================ */
 
-#define maxAlign2$(_a, _b)         (((_a) > (_b)) ? (_a) : (_b))
-#define maxAlign3$(_a, _b, _c)     maxAlign2$(maxAlign2$(_a, _b), (_c))
+#define maxAlign2$(_a, _b) (((_a) > (_b)) ? (_a) : (_b))
+#define maxAlign3$(_a, _b, _c) maxAlign2$(maxAlign2$(_a, _b), (_c))
 #define maxAlign4$(_a, _b, _c, _d) maxAlign2$(maxAlign3$(_a, _b, _c), (_d))
 
 #endif /* STRUCT_REPR_H */

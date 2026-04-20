@@ -5,13 +5,6 @@
 #include "dal-c-ext/str.h"
 #include <assert.h>
 
-/// === PREPROCESSOR UTILITIES ===
-
-#define dal_c__comp_expand(...) __VA_ARGS__
-#define dal_c_expand(...) dal_c__comp_expand(__VA_ARGS__)
-#define dal_c__comp_strfy(x...) #x
-#define dal_c_strfy(x...) dal_c__comp_strfy(x)
-
 /// === TOOL METADATA ===
 
 #define dal_c_tool_name "dh-c"
@@ -22,15 +15,11 @@
 
 #define dal_c_ver_major 0
 #define dal_c_ver_minor 2
-#define dal_c_ver_patch 3
+#define dal_c_ver_patch 4
 #define dal_c_ver_sep "."
 #define dal_c_ver_label ""
 
-#define dal_c_ver_str dal_c_expand( \
-    dal_c_strfy(dal_c_ver_major) dal_c_ver_sep \
-        dal_c_strfy(dal_c_ver_minor) dal_c_ver_sep \
-            dal_c_strfy(dal_c_ver_patch) dal_c_ver_label \
-)
+#define dal_c_ver_str dal_c__val__ver_ser
 
 /// === BOOLEAN ===
 
@@ -827,5 +816,13 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
       NULL, 0 },
 };
 #define dal_c_help_cmds_count ((int)(sizeof(dal_c_help_cmds) / sizeof(dal_c_help_cmds[0])))
+
+/*========== Macros and Definitions =========================================*/
+
+#define dal_c__val__ver_ser pp_expand( \
+    pp_strfy(dal_c_ver_major) dal_c_ver_sep \
+        pp_strfy(dal_c_ver_minor) dal_c_ver_sep \
+            pp_strfy(dal_c_ver_patch) dal_c_ver_label \
+)
 
 #endif /* dal_c__included */

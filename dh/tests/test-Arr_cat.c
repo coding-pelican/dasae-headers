@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/prl.h"
 
 TEST_fn_("test A_cat" $scope) {
@@ -28,14 +28,14 @@ TEST_fn_("test A_cat" $scope) {
     for_(($a(res_6_add_2), $rf(0))(item, idx) {
         try_(TEST_expect(*item == as$(i32)(idx)));
     });
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("test A_cat$" $scope) {
     T_use_A$(6, i32);
     T_use_A$(8, i32);
     let arr3_lhs = A_from$((i32){ 0, 1, 2 });
     let arr3_rhs = A_from$((i32){ 3, 4, 5 });
-    let res_3_add_3 = A_cat$((A$(6, i32))( arr3_lhs, arr3_rhs));
+    let res_3_add_3 = A_cat$((A$(6, i32))(arr3_lhs, arr3_rhs));
 
     try_(TEST_expect(A_len(res_3_add_3) == 6));
     for_(($a(res_3_add_3), $rf(0))(item, idx) {
@@ -59,4 +59,4 @@ TEST_fn_("test A_cat$" $scope) {
     for_(($a(res_6_add_2), $rf(0))(item, idx) {
         try_(TEST_expect(*item == as$(i32)(idx)));
     });
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);

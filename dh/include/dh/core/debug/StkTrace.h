@@ -5,7 +5,7 @@
  * @file    StkTrace.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-01-11 (date of creation)
- * @updated 2026-01-16 (date of last update)
+ * @updated 2026-02-24 (date of last update)
  * @ingroup dasae-headers(dh)/core/debug
  * @prefix  debug_StkTrace
  *
@@ -26,8 +26,14 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if debug_comp_enabled
-$attr($keep_symbol $on_load)
+/// @brief Sets up the crash handler for the stack trace.
+///
+/// @details This function sets up the crash handler for the stack trace.
+///          The crash handler is platform-specific and is used to print the stack trace
+///          when a crash occurs.
+///
+/// @note only available when debug mode is enabled.
+/// @note thread-safe (uses thread-safe `io_stream_eprintln`).
 $extern fn_((debug_StkTrace_setupCrashHandler(void))(void));
 /// @brief Prints the current stack trace to stderr.
 ///
@@ -38,13 +44,9 @@ $extern fn_((debug_StkTrace_setupCrashHandler(void))(void));
 ///          - Number of frames
 ///          - For each frame: index, address, symbol name, offset, module name
 ///
-/// @note This function is only available when debug mode is enabled.
-/// @note This function is thread-safe (uses thread-safe `io_stream_eprintln`).
+/// @note only available when debug mode is enabled.
+/// @note thread-safe (uses thread-safe `io_stream_eprintln`).
 $extern fn_((debug_StkTrace_print(void))(void));
-#else
-#define debug_StkTrace_setupCrashHandler() $unused(0)
-#define debug_StkTrace_print() $unused(0)
-#endif
 
 #if defined(__cplusplus)
 } /* extern "C" */

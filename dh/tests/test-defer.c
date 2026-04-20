@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 
 // Test state tracking
 $static struct TestState {
@@ -14,54 +14,54 @@ $static fn_((recordCleanup(i32 value))(void)) {
 
 // Forward declarations of test scope functions
 $must_check
-$static fn_((testBasicDeferScope(void))(E$void));
+    $static fn_((testBasicDeferScope(void))(E$void));
 $static fn_((testMultipleDeferScope(void))(void));
 $static fn_((testDeferWithReturnScope(void))(void));
 $static fn_((testBlockDeferScope(void))(void));
 
 // Test basic defer functionality
 TEST_fn_("test basic defer" $scope) {
-    mem_setBytes0(mem_asBytes(&s_test_state)); // Clear state
+    mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state))); // Clear state
     try_(testBasicDeferScope());
     try_(TEST_expect(s_test_state.counter == 2));
     return_ok({});
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 $static fn_((testBasicDeferScope(void))(E$void) $guard) {
     s_test_state.counter = 1;
     defer_(s_test_state.counter = 2);
     try_(TEST_expect(s_test_state.counter == 1));
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 
 // Test multiple defers (LIFO order)
 TEST_fn_("test multiple defers" $scope) {
-    mem_setBytes0(mem_asBytes(&s_test_state)); // Clear state
+    mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state))); // Clear state
     testMultipleDeferScope();
     // Verify LIFO order: 3, 2, 1
     try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[0]) == 3));
     try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[1]) == 2));
     try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[2]) == 1));
     return_ok({});
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 $static fn_((testMultipleDeferScope(void))(void) $guard) {
     defer_(recordCleanup(1));
     defer_(recordCleanup(2));
     defer_(recordCleanup(3));
     return_void();
-} $unguarded_(fn);
+} $unguarded(fn);
 
 // Test defer with early return
 TEST_fn_("test defer with early return" $scope) {
-    mem_setBytes0(mem_asBytes(&s_test_state)); // Clear state
+    mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state))); // Clear state
     testDeferWithReturnScope();
     // Verify cleanup executed in correct order despite early return
     try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[0]) == 2));
     try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[1]) == 1));
     try_(TEST_expect(s_test_state.cleanup_index == 2));
     return_ok({});
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 $static fn_((testDeferWithReturnScope(void))(void) $guard) {
     defer_(recordCleanup(1));
@@ -71,11 +71,11 @@ $static fn_((testDeferWithReturnScope(void))(void) $guard) {
     }
     recordCleanup(3); // Should not be executed
     return_void();
-} $unguarded_(fn);
+} $unguarded(fn);
 
 // Test block defer
 TEST_fn_("test block defer" $scope) {
-    mem_setBytes0(mem_asBytes(&s_test_state)); // Clear state
+    mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state))); // Clear state
     testBlockDeferScope();
     // Verify block defer behavior
     try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[0]) == 3));
@@ -84,7 +84,7 @@ TEST_fn_("test block defer" $scope) {
     try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[3]) == 1));
     try_(TEST_expect(s_test_state.cleanup_index == 4));
     return_ok({});
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 $static fn_((testBlockDeferScope(void))(void) $guard) {
     defer_(recordCleanup(1));
@@ -100,4 +100,4 @@ $static fn_((testBlockDeferScope(void))(void) $guard) {
 
     defer_(recordCleanup(5));
     return_void();
-} $unguarded_(fn);
+} $unguarded(fn);

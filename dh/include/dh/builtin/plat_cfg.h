@@ -122,10 +122,10 @@ extern "C" {
 )
 #define __comp_bool__plat_is_posix plat_based_unix
 
-#define __comp_bool__plat_is_windows pp_Tok_eq(plat_type, plat_type_windows)
-#define __comp_bool__plat_is_linux pp_Tok_eq(plat_type, plat_type_linux)
-#define __comp_bool__plat_is_darwin pp_Tok_eq(plat_type, plat_type_darwin)
-#define __comp_bool__plat_is_wasi pp_Tok_eq(plat_type, plat_type_wasi)
+#define __comp_bool__plat_is_windows pp_Tok_eql(plat_type, plat_type_windows)
+#define __comp_bool__plat_is_linux pp_Tok_eql(plat_type, plat_type_linux)
+#define __comp_bool__plat_is_darwin pp_Tok_eql(plat_type, plat_type_darwin)
+#define __comp_bool__plat_is_wasi pp_Tok_eql(plat_type, plat_type_wasi)
 
 /* --- Calling Conventions --- */
 

@@ -187,12 +187,12 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
 #define T_use_ListDbl_Adp_empty$(_T...)\
     $attr($inline_always) \
     $static fn_((tpl_id(ListDbl_Adp_empty, _T)(void))(ListDbl_Adp$(_T)*)) { \
-        return *as$(ListDbl_Adp$(_T)*)(ListDbl_Adp_empty(typeInfo$(_T), lit0$((ListDbl_Adp$(_T))).as_raw)); \
+        return *as$(ListDbl_Adp$(_T)*)(ListDbl_Adp_empty(typeInfo$(_T), l0$((ListDbl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListDbl_Adp_init$(_T...)\
     $attr($inline_always) \
     $static fn_((tpl_id(ListDbl_Adp_init, _T)(_T data))(ListDbl_Adp$(_T)*)) { \
-        return *as$(ListDbl_Adp$(_T)*)(ListDbl_Adp_init(u_anyV(data), lit0$((ListDbl_Adp$(_T))).as_raw)); \
+        return *as$(ListDbl_Adp$(_T)*)(ListDbl_Adp_init(u_anyV(data), l0$((ListDbl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListDbl_Adp_link$(_T...)\
     $attr($inline_always) \

@@ -1,19 +1,17 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/stream.h"
 
 // Function that may return an optional i32
 $static fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
-    for_(($rf(0), $s(items))(index, item) {
-        if (*item == value) {
-            return_some(intCast$((i32)(index))); // Return optional with a value
-        }
-    });
+    for_(($s(items), $rf(0))(item, index)) {
+        if (*item == value) return_some(intCast$((i32)(index))); // Return optional with a value
+    } $end(for);
     return_none(); // Return optional with no value
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // Function that uses unwrap and orelse for default values
 $attr($maybe_unused)
-$static fn_((demonstrateUnwrapOrelse(O$i32 opt, i32 default_val))(i32)) {
+$static fn_((demoUnwrapOrelse(O$i32 opt, i32 default_val))(i32)) {
     // unwrap_() will cause an assertion failure if opt is none
     // Only use when you're confident the option has a value
     let value_unsafe = unwrap_(opt);
@@ -30,7 +28,7 @@ $static fn_((demonstrateUnwrapOrelse(O$i32 opt, i32 default_val))(i32)) {
     let_ignore = value_unsafe;
     let_ignore = value_computed;
     return value_safe;
-}
+};
 
 // Function showing if_some and else_none pattern
 $static fn_((processOptionalValue(O$i32 opt))(void)) {
@@ -39,14 +37,12 @@ $static fn_((processOptionalValue(O$i32 opt))(void)) {
         io_stream_println(u8_l("Found value: {:d}"), value);
 
         // You can do complex operations with the value
-        if (10 < value) {
-            io_stream_println(u8_l("Value is greater than 10"));
-        }
+        if (10 < value) io_stream_println(u8_l("Value is greater than 10"));
     } else_none {
         // This block runs if opt is none
         io_stream_println(u8_l("No value found"));
-    }
-}
+    };
+};
 
 // Example of nested optional handling
 $static fn_((processNestedOptionals(O$i32 maybe_outer, O$i32 maybe_inner))(i32) $scope) {
@@ -64,7 +60,7 @@ $static fn_((processNestedOptionals(O$i32 maybe_outer, O$i32 maybe_inner))(i32) 
         }
     }
     claim_unreachable;
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
@@ -74,11 +70,11 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let opt_empty = (O$i32)none();
 
     // Array for demonstration
-    A$$(5, i32) numbers = A_init({ 1, 3, 5, 7, 9 });
+    var_(numbers, A$$(5, i32)) = A_init({ 1, 3, 5, 7, 9 });
 
     // Demonstrate finding values
-    let found_index = findValueIndex(5, A_ref$((S_const$i32)(numbers)));
-    let not_found = findValueIndex(6, A_ref$((S_const$i32)(numbers)));
+    let found_index = findValueIndex(5, A_ref$((S$i32)(numbers)).as_const);
+    let not_found = findValueIndex(6, A_ref$((S$i32)(numbers)).as_const);
 
     io_stream_println(u8_l("---- Optional Value Demonstration ----"));
 
@@ -120,26 +116,25 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     // io_stream_println(u8_l("This would fail: {:d}"), unwrap_(opt_empty));
 
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 #if README_SAMPLE
 $static fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
-    for_(($rf(0), $s(items))(index, item) {
-        if (*item != value) { continue; }
-        return_some(index); // Return with a value
-    });
+    for_(($s(items), $rf(0))(item, index)) {
+        if (*item == value) return_some(intCast$((i32)(index))); // Return with a value
+    } $end(for);
     return_none(); // Return with no value
-} $unscoped_(fn);
+} $unscoped(fn);
 
 $static fn_((example(void))(void) $scope) {
-    A$$(5, i32) nums = A_init({ 10, 20, 30, 40, 50 });
+    var_(nums, A$$(5, i32)) = A_init({ 10, 20, 30, 40, 50 });
 
     // Create optional values
     let opt_value = (O$i32)some(42);
     let opt_empty = (O$i32)none();
 
     // Find a value in array
-    let found = findValueIndex(30, A_ref$((S_const$i32)(nums)));
+    let found = findValueIndex(30, A_ref$((S$i32)(nums)).as_const);
 
     // Check if option has value
     if_some((found)(index)) {
@@ -153,5 +148,5 @@ $static fn_((example(void))(void) $scope) {
 
     // Unsafe extraction (assertion if option might be none)
     let unsafe_value = unwrap_(opt_value);
-} $unscoped_(fn);
+} $unscoped(fn);
 #endif /* README_SAMPLE */

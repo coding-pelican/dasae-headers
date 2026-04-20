@@ -5,8 +5,8 @@
  * @file    Fixed.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-01-18 (date of creation)
- * @updated 2026-01-18 (date of last update)
- * @ingroup dasae-headers(dh)/io
+ * @updated 2026-02-06 (date of last update)
+ * @ingroup dal-project/da/io
  * @prefix  io_Fixed
  */
 #ifndef io_Fixed__included
@@ -17,8 +17,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/io/Reader.h"
-#include "dh/io/Writer.h"
+#include "Reader.h"
+#include "Writer.h"
 
 /*========== Macros and Declarations ========================================*/
 

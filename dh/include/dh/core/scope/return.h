@@ -70,7 +70,7 @@ extern "C" {
 #define comp_syn__ext_unscoped                      \
             goto __returned_scope;                  \
         }                                           \
-        return (blk({ if (!Type_eq$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0]);\
+        return (local_({ if (!eqlType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } }), __reserved_return[0]);\
     }
 /* #define comp_syn__ext_scope(T_ReservedReturn...)            \
     {                                                       \
@@ -127,8 +127,8 @@ __ext_unscoped: \
         goto __deferred; \
     } \
     return ( \
-        blk({ \
-            if (!Type_eq$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
+        local_({ \
+            if (!eqlType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
         }), \
         __reserved_return[0] \
     )
@@ -154,8 +154,8 @@ __returned_scope: \
 
 #define SYN__returnReserved \
     return ( \
-        blk({ \
-            if (!Type_eq$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
+        local_({ \
+            if (!eqlType$(TypeOf(*__reserved_return), void)) { debug_assert_nonnull(__reserved_return); } \
         }), \
         __reserved_return[0] \
     )
@@ -163,13 +163,13 @@ __returned_scope: \
 #define FUNC__getReservedReturn() (__reserved_return)
 
 #define FUNC__setReservedReturn(val_return...) \
-    blk({ \
+    local_({ \
         getReservedReturn() = &val_return; \
-        blk_return getReservedReturn()[0]; \
+        local__return getReservedReturn()[0]; \
     })
-/* #define FUNC__setReservedReturn(val_return...) blk({ \
+/* #define FUNC__setReservedReturn(val_return...) local_({ \
     getReservedReturn()[0] = val_return;              \
-    blk_return getReservedReturn()[0];               \
+    local__return getReservedReturn()[0];               \
 }) */
 #endif // DEPRECATED
 

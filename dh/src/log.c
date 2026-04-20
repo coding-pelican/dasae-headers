@@ -1,6 +1,5 @@
 #include "dh/log.h"
 #include "dh/fs/Dir.h"
-#include <stdarg.h>
 #include <time.h>
 
 // Global state
@@ -13,7 +12,7 @@ $static var_(log__config, log_Config) = {
     .shows_function = true // Show function name by default
 };
 
-fn_((log_init(const char* filename))(fs_File_Err$void) $guard) {
+fn_((log_init(const char* filename))(fs_File_E$void) $guard) {
     // Extract directory path
     var_(dir_path, A$$(256, u8)) = A_zero();
     if_(let dir_last_slash = strrchr(filename, '/'), dir_last_slash) {
@@ -26,7 +25,7 @@ fn_((log_init(const char* filename))(fs_File_Err$void) $guard) {
     }
 
     let file = fopen(filename, "w");
-    if (!file) { return_err(fs_File_Err_OpenFailed()); }
+    if (!file) { return_err(fs_File_E_OpenFailed()); }
     errdefer_($ignore, let_ignore = fclose(file));
 
     if (log__config.output_file && log__config.output_file != stderr) {
@@ -34,7 +33,7 @@ fn_((log_init(const char* filename))(fs_File_Err$void) $guard) {
     }
     log__config.output_file = file;
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((log_initWithFile(FILE* file))(void)) {
     if (log__config.output_file && log__config.output_file != stderr) {
@@ -97,8 +96,8 @@ fn_((log_message(log_Level level, const char* file, int line, const char* func, 
         const char* level_str = "????";
         switch (level) {
         case log_Level_debug: level_str = "DEBUG"; break;
-        case log_Level_info:  level_str = "INFO"; break;
-        case log_Level_warn:  level_str = "WARN"; break;
+        case log_Level_info: level_str = "INFO"; break;
+        case log_Level_warn: level_str = "WARN"; break;
         case log_Level_error: level_str = "ERROR"; break;
         case log_Level_count: claim_unreachable;
         }
@@ -124,7 +123,7 @@ fn_((log_message(log_Level level, const char* file, int line, const char* func, 
     }
 
     // Print the actual message
-    using_(va_list args = null) using_fini_(va_start(args, fmt), va_end(args)) {
+    using_(var args = l0$((va_list))) using_fini_(va_start(args, fmt), va_end(args)) {
         let_ignore = vfprintf(output, fmt, args);
     }
 

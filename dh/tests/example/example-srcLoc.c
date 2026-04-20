@@ -1,5 +1,5 @@
 #define main_no_args 1
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/stream.h"
 
 fn_((main(void))(E$void) $scope) {
@@ -11,4 +11,4 @@ fn_((main(void))(E$void) $scope) {
     io_stream_print(u8_l("column:    {:u}\n"), loc.column);
     io_stream_print(u8_l("{:z}:{:u}:{:u}\n"), loc.file_path, loc.line, loc.column);
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);

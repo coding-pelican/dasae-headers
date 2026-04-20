@@ -76,7 +76,7 @@ $static let Thrd_Ftx__wake = pp_if_(Thrd_Ftx_use_pthread)(
 $attr($branch_cold)
 fn_((Thrd_Ftx_wait(const atom_V$u32* ptr, u32 expect))(void) $scope) {
     return_void(catch_((Thrd_Ftx__wait(ptr, expect, none$((O$time_Duration))))($ignore, claim_unreachable)));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 $attr($branch_cold)
 fn_((Thrd_Ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Duration timeout))(Thrd_Ftx_Err$void) $scope) {
@@ -85,7 +85,7 @@ fn_((Thrd_Ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Duration timeout
         return_err(Thrd_Ftx_Err_Timeout());
     }
     return_(Thrd_Ftx__wait(ptr, expect, some$((O$time_Duration)(timeout))));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 $attr($branch_cold)
 fn_((Thrd_Ftx_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
@@ -94,7 +94,7 @@ fn_((Thrd_Ftx_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 };
 
 fn_((Thrd_Ftx_Deadline_init(O$time_Duration expires))(Thrd_Ftx_Deadline)) {
-    var deadline = lit0$((Thrd_Ftx_Deadline));
+    var deadline = l0$((Thrd_Ftx_Deadline));
     deadline.timeout = expires;
     if (isSome(expires)) { deadline.started = time_Instant_now(); }
     return deadline;
@@ -106,7 +106,7 @@ fn_((Thrd_Ftx_Deadline_wait(Thrd_Ftx_Deadline* self, const atom_V$u32* ptr, u32 
     let elapsed = time_Instant_elapsed(self->started);
     let until_timeout = orelse_((time_Duration_subChkd(timeout, elapsed))(time_Duration_zero));
     return_(Thrd_Ftx_timedWait(ptr, expect, until_timeout));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 /*========== Internal Definitions ===========================================*/
 
@@ -117,7 +117,7 @@ fn_((Thrd_Ftx__unsupported_wait(const atom_V$u32* ptr, u32 expect, O$time_Durati
     let_ignore = expect;
     let_ignore = timeout;
     return_err(Err_Unsupported());
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_Ftx__unsupported_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
     let_ignore = ptr;
@@ -133,7 +133,7 @@ fn_((Thrd_Ftx__pthread_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration t
     let_ignore = expect;
     let_ignore = timeout;
     return_err(Err_Unsupported());
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_Ftx__pthread_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
     /* TODO: Implement */
@@ -146,24 +146,21 @@ fn_((Thrd_Ftx__pthread_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 
 #if plat_is_windows
 fn_((Thrd_Ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_Ftx_Err$void) $scope) {
-    claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(DWORD), packTypeInfo$(u32)));
+    claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(DWORD), packTypeInfo$(u32)));
     let timeout_ms = expr_(u32 $scope)(if_some((timeout)(delay)) {
-        let delay_ms = delay.secs * lit_num(1, 000) + delay.nanos / lit_num(1, 000, 000);
+        let delay_ms = delay.secs * n_(1, 000) + delay.nanos / n_(1, 000, 000);
         $break_(u32_limit_max < delay_ms ? u32_limit_max : as$(u32)(delay_ms));
     } else_none {
         $break_(u32_limit_max);
-    }) $unscoped_(expr);
+    }) $unscoped(expr);
     let rc = WaitOnAddress(
-        ptrQualCast$((volatile P$raw)(&ptr->raw)),
-        &expect, sizeOf$(u32),
-        timeout_ms
-    );
+        ptrQualCast$((volatile P$raw)(&ptr->raw)), &expect, sizeOf$(u32), timeout_ms);
     if (!rc && GetLastError() == ERROR_TIMEOUT) {
         claim_assert(isSome(timeout));
         return_err(Thrd_Ftx_Err_Timeout());
     }
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_Ftx__windows_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
     let addr = ptrQualCast$((volatile P$raw)(&ptr->raw));
@@ -198,7 +195,7 @@ fn_((Thrd_Ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration tim
         return_err(Thrd_Ftx_Err_Timeout());
     }
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_Ftx__linux_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
     claim_assert(max_waiters != 0);
@@ -247,7 +244,7 @@ fn_((Thrd_Ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration ti
 #endif
     }
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_Ftx__darwin_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
     let flags = UL_COMPARE_AND_WAIT | ULF_NO_ERRNO | (max_waiters > 1 ? ULF_WAKE_ALL : 0);
@@ -268,7 +265,7 @@ fn_((Thrd_Ftx__wasi_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration time
     let_ignore = expect;
     let_ignore = timeout;
     return_err(Err_Unsupported());
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_Ftx__wasi_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
     /* TODO: Implement */

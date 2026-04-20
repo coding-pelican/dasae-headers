@@ -48,7 +48,7 @@ $extern fn_((Thrd_WaitGroup_isDoneOn(atom_V$usize* state))(bool));
 $extern fn_((Thrd_WaitGroup_value(Thrd_WaitGroup* self))(usize));
 $extern fn_((Thrd_WaitGroup_valueOn(atom_V$usize* state))(usize));
 /// Spawns a new thread for the task. This is appropriate when the callee delegates all work.
-$extern fn_((Thrd_WaitGroup_spawn(Thrd_WaitGroup* self, mem_Allocator gpa, Thrd_FnCtx* fn_ctx))(void));
+$extern fn_((Thrd_WaitGroup_spawn(Thrd_WaitGroup* self, mem_Alctr gpa, Thrd_FnCtx* fn_ctx))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

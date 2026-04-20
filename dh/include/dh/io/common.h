@@ -1,13 +1,12 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-22 (date of creation)
- * @updated 2025-06-21 (date of last update)
- * @version v0.1-alpha.1
- * @ingroup dasae-headers(dh)/io
+ * @updated 2026-02-06 (date of last update)
+ * @ingroup dal-project/da/io
  * @prefix  io
  *
  * @brief   Common IO utilities
@@ -24,12 +23,12 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/prl.h"
-#include "dh/fs/File.h"
+#include "cfg.h"
+#include "../fs/File.h"
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((io_Err)(
+errset_((io_E)(
     UnexpectedEof,
     BufferTooSmall
 ));

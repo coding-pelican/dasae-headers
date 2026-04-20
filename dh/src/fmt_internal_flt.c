@@ -325,7 +325,7 @@ $static fn_((formatDecimal(S$u8 buf, FltDecimal f, O$u8 precision))(usize)) {
         $break_(roundDecimal(f, false, prec));
     } else_none {
         $break_(f);
-    }) $unscoped_(expr);
+    }) $unscoped(expr);
     u64 mantissa = rounded.mantissa;
     let olen = decimalLen64(mantissa);
 
@@ -400,7 +400,7 @@ fn_((fmt__formatFltImpl(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) {
         $break_(bitsToDecimal32(f32ToBits(as$(f32)(val))));
     } else {
         $break_(bitsToDecimal64(f64ToBits(val)));
-    }) $unscoped_(expr);
+    }) $unscoped(expr);
     // Handle special values
     if (d.exponent == fmt__ryu_special_exponent) {
         if (d.mantissa != 0) {

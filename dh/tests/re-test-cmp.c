@@ -1,8 +1,8 @@
 #include "dh/core/cmp.h"
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/stream.h"
 
-cmp_fn_ord$((i32)(lhs, rhs)) { return prim_ord(lhs, rhs); }
+cmp_fn_ord$((i32)(lhs, rhs)) { return pri_ord(lhs, rhs); }
 cmp_fn_eq_default$((i32)(lhs, rhs));
 cmp_fn_ne_default$((i32)(lhs, rhs));
 cmp_fn_lt_default$((i32)(lhs, rhs));
@@ -29,4 +29,5 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     }
 
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);

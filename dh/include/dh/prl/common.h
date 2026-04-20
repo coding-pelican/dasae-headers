@@ -46,9 +46,14 @@ T_use_prl$(u8); T_use_prl$(u16); T_use_prl$(u32); T_use_prl$(u64); T_use_prl$(us
 T_use_prl$(i8); T_use_prl$(i16); T_use_prl$(i32); T_use_prl$(i64); T_use_prl$(isize);
 T_use_prl$(f32); T_use_prl$(f64);
 T_use_prl$(bool);
+T_use_prl$(P_const$raw); T_use_prl$(S_const$raw);
+T_use_prl$(P$raw); T_use_prl$(S$raw);
+T_use_prl$(V$raw); T_use_prl$(A$raw);
+// T_use_prl$(FnCtx$raw);
 T_use_prl$(u_P_const$raw); T_use_prl$(u_S_const$raw);
 T_use_prl$(u_P$raw); T_use_prl$(u_S$raw);
 T_use_prl$(u_V$raw); T_use_prl$(u_A$raw);
+// T_use_prl$(u_FnCtx$raw);
 // clang-format on
 
 #define ____typeInfos$(_T...) \

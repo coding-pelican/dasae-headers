@@ -5,11 +5,11 @@
 #include "dal-c-ext/proc.h"
 #include "dal-c-ext/env.h"
 #include "dal-c-ext/ArrStr.h"
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
+#include <assert.h>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -22,12 +22,13 @@
 static bool dal_c__copyHeaderFile(const char* src, const char* dst_dir);
 static bool dal_c__copyHeadersRecursive(const char* src_dir, const char* dst_dir);
 static bool dal_c__isHeaderOnlyLibrary(const dal_c_Lib* lib);
-static void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const dal_c_Project* proj, const char* build_dir, dal_c_Target target_type);
+static void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const dal_c_Project* proj, const char* build_dir, dal_c_Target target_type, const char* output_name);
 static void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Project* proj, const char* build_dir);
-static void dal_c__writeMakefileCompilationRules(FILE* fp, ArrStr* sources, bool has_pch);
+static char* dal_c__sourceToObjStem(const char* base, const char* src);
+static void dal_c__writeMakefileCompilationRules(FILE* fp, ArrStr* sources, bool has_pch, const char* base);
 static void dal_c__writeMakefileTargetVar(FILE* fp, dal_c_Target type, const char* target_name, bool is_windows);
 static void dal_c__writeMakefileTargetRule(FILE* fp, dal_c_Target type, bool is_windows);
-static void dal_c__writePlatformLinkerFlags(FILE* fp, bool is_windows, const dal_c_ProfileSpec* profile);
+static void dal_c__writePlatformLinkerFlags(FILE* fp, bool is_windows, const dal_c_ProfileSpec* profile, const char* output_name);
 static char* dal_c__buildParallelFlag(void);
 static ArrStr* dal_c__collectHeaderFiles(const dal_c_Project* proj, const char* target_file);
 static ArrStr* dal_c__collectLibrarySources(const dal_c_Lib* lib);
@@ -388,6 +389,8 @@ int dal_c__runExecutable(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
         } else {
             exe_name = basename;
         }
+    } else if (cmd->action == dal_c_CmdAction_test) {
+        exe_name = "test";
     } else {
         exe_name = proj->name;
     }
@@ -457,6 +460,8 @@ int dal_c__runDebugger(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
         } else {
             exe_name = basename;
         }
+    } else if (cmd->action == dal_c_CmdAction_test) {
+        exe_name = "test";
     } else {
         exe_name = proj->name;
     }
@@ -604,7 +609,7 @@ int dal_c__generateMakefile(
     bool is_windows = dal_c__platformIsWindows();
     bool has_pch = (proj && proj->pch_header != NULL);
 
-    dal_c__writeMakefileVariables(fp, cmd, profile, proj, build_dir, target_type);
+    dal_c__writeMakefileVariables(fp, cmd, profile, proj, build_dir, target_type, output_name);
 
     // Declare default goal before any rules to ensure 'all' is the default target
     (void)fprintf(fp, ".DEFAULT_GOAL := all\n\n");
@@ -618,15 +623,13 @@ int dal_c__generateMakefile(
     }
     (void)fprintf(fp, "\n");
 
+    const char* obj_base = (proj && proj->root) ? proj->root : NULL;
     (void)fprintf(fp, "OBJS =");
     for (int i = 0; i < src_count; ++i) {
         const char* src = ArrStr_at(sources, i);
-        const char* basename = path_basename(src);
-        char* obj_name = strdup(basename);
-        char* dot = strrchr(obj_name, '.');
-        if (dot) { *dot = '\0'; }
-        (void)fprintf(fp, " $(BUILD_DIR)/%s.o", obj_name);
-        free(obj_name);
+        char* obj_stem = dal_c__sourceToObjStem(obj_base, src);
+        (void)fprintf(fp, " $(BUILD_DIR)/%s.o", obj_stem);
+        free(obj_stem);
     }
     (void)fprintf(fp, "\n");
 
@@ -636,7 +639,7 @@ int dal_c__generateMakefile(
     dal_c__writeMakefileTargetVar(fp, target_type, output_name, is_windows);
     (void)fprintf(fp, "all: $(TARGET)\n\n");
 
-    dal_c__writeMakefileCompilationRules(fp, sources, has_pch);
+    dal_c__writeMakefileCompilationRules(fp, sources, has_pch, obj_base);
     dal_c__writeMakefileTargetRule(fp, target_type, is_windows);
 
     (void)fprintf(fp, "clean:\n\trm -rf $(BUILD_DIR)\n\n");
@@ -688,7 +691,7 @@ void dal_c__printVerbose(const dal_c_Cmd* cmd, const char* fmt, ...) {
     assert(fmt != NULL);
 
     if (!cmd->verbose) { return; }
-    va_list args = NULL;
+    va_list args = dsl_l0$((va_list));
     va_start(args, fmt);
     (void)vprintf(fmt, args);
     va_end(args);
@@ -697,7 +700,7 @@ void dal_c__printVerbose(const dal_c_Cmd* cmd, const char* fmt, ...) {
 void dal_c__printError(const char* fmt, ...) {
     assert(fmt != NULL);
 
-    va_list args = NULL;
+    va_list args = dsl_l0$((va_list));
     va_start(args, fmt);
     (void)vfprintf(stderr, fmt, args);
     va_end(args);
@@ -709,19 +712,19 @@ static const char* dal_c__getTargetFile(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
     switch (cmd->action) {
     case dal_c_CmdAction_build: return cmd->payload.build.target_file;
-    case dal_c_CmdAction_lib:   return cmd->payload.lib.target_file;
-    case dal_c_CmdAction_run:   return cmd->payload.run.target_file;
-    case dal_c_CmdAction_test:  return cmd->payload.test.target_file;
-    default:                    return NULL;
+    case dal_c_CmdAction_lib: return cmd->payload.lib.target_file;
+    case dal_c_CmdAction_run: return cmd->payload.run.target_file;
+    case dal_c_CmdAction_test: return cmd->payload.test.target_file;
+    default: return NULL;
     }
 }
 
 static const char* dal_c__getRunArgs(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
     switch (cmd->action) {
-    case dal_c_CmdAction_run:  return cmd->payload.run.run_args;
+    case dal_c_CmdAction_run: return cmd->payload.run.run_args;
     case dal_c_CmdAction_test: return cmd->payload.test.run_args;
-    default:                   return NULL;
+    default: return NULL;
     }
 }
 
@@ -983,22 +986,24 @@ static void dal_c__writePlatformDebugFlags(FILE* fp, bool is_windows, const dal_
     }
 }
 
-static void dal_c__writePlatformLinkerFlags(FILE* fp, bool is_windows, const dal_c_ProfileSpec* profile) {
+static void dal_c__writePlatformLinkerFlags(FILE* fp, bool is_windows, const dal_c_ProfileSpec* profile, const char* output_name) {
     assert(fp != NULL);
     assert(profile != NULL);
     const char* debug_flag = dal_c_DebugLevel_toFlag(profile->debug_level);
     if (is_windows && debug_flag && strlen(debug_flag) > 0) {
-        (void)fprintf(fp, " -fuse-ld=lld -Wl,--pdb=$(BUILD_DIR)/app.pdb");
+        const char* pdb_name = (output_name && output_name[0]) ? output_name : "app";
+        (void)fprintf(fp, " -fuse-ld=lld -Wl,--pdb=$(BUILD_DIR)/%s.pdb", pdb_name);
     }
 }
 
-static void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const dal_c_Project* proj, const char* build_dir, dal_c_Target target_type) {
+static void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const dal_c_Project* proj, const char* build_dir, dal_c_Target target_type, const char* output_name) {
     assert(fp != NULL);
     assert(cmd != NULL);
     assert(profile != NULL);
     assert(build_dir != NULL);
 
     bool is_windows = dal_c__platformIsWindows();
+    if (!output_name) { output_name = "app"; }
     const dal_c_CompilerOpts* opts = &cmd->opts;
 
     if (proj && proj->root) {
@@ -1132,7 +1137,7 @@ static void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const 
     }
     (void)fprintf(fp, "\n");
 
-    if (target_type == dal_c_Target_executable) {
+    if (target_type == dal_c_Target_executable || target_type == dal_c_Target_shared_lib) {
         (void)fprintf(fp, "LDFLAGS =");
         if (proj && proj->root && proj->lib_count > 0) {
             (void)fprintf(fp, " -L$(PROJECT_ROOT)/lib/deps");
@@ -1168,12 +1173,27 @@ static void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const 
         for (int i = 0; i < opts->link_count; ++i) {
             (void)fprintf(fp, " -l%s", opts->link_libs[i]);
         }
-        dal_c__writePlatformLinkerFlags(fp, is_windows, profile);
+        if (target_type == dal_c_Target_executable) {
+            dal_c__writePlatformLinkerFlags(fp, is_windows, profile, output_name);
+        }
         (void)fprintf(fp, "\n");
     } else {
         (void)fprintf(fp, "AR = %s\n", dal_c_tool_ar);
     }
     (void)fprintf(fp, "\n");
+}
+
+static char* dal_c__sourceToObjStem(const char* base, const char* src) {
+    assert(src != NULL);
+    char* work = (base && base[0] != '\0') ? path_relative(base, src) : NULL;
+    if (!work) { work = strdup(src); }
+    if (!work) { return NULL; }
+    for (char* p = work; *p; p++) {
+        if (*p == '/' || *p == '\\') { *p = '_'; }
+    }
+    char* dot = strrchr(work, '.');
+    if (dot) { *dot = '\0'; }
+    return work;
 }
 
 static void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Project* proj, const char* build_dir) {
@@ -1205,23 +1225,20 @@ static void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Project* proj, const c
     free(pch_out);
 }
 
-static void dal_c__writeMakefileCompilationRules(FILE* fp, ArrStr* sources, bool has_pch) {
+static void dal_c__writeMakefileCompilationRules(FILE* fp, ArrStr* sources, bool has_pch, const char* base) {
     assert(fp != NULL);
     assert(sources != NULL);
 
     int src_count = ArrStr_len(sources);
     for (int i = 0; i < src_count; ++i) {
         const char* src = ArrStr_at(sources, i);
-        const char* basename = path_basename(src);
-        char* obj_name = strdup(basename);
-        char* dot = strrchr(obj_name, '.');
-        if (dot) { *dot = '\0'; }
+        char* obj_stem = dal_c__sourceToObjStem(base, src);
 
         // Third-party libs (BlocksRuntime) should compile silently with -w
         bool is_third_party = strstr(src, "libs/") || strstr(src, "libs\\");
         const char* cflags = is_third_party ? "$(CFLAGS_BASE) $(INCLUDES) -w" : "$(CFLAGS)";
 
-        (void)fprintf(fp, "$(BUILD_DIR)/%s.o: %s", obj_name, src);
+        (void)fprintf(fp, "$(BUILD_DIR)/%s.o: %s", obj_stem, src);
         if (has_pch && !is_third_party) {
             (void)fprintf(fp, " $(PCH_OUT)");
         }
@@ -1230,7 +1247,7 @@ static void dal_c__writeMakefileCompilationRules(FILE* fp, ArrStr* sources, bool
         (void)fprintf(fp, "\t@echo \"[CC] %s\"\n", src);
         (void)fprintf(fp, "\t$(CC) %s -MMD -MP -c %s -o $@\n\n", cflags, src);
 
-        free(obj_name);
+        free(obj_stem);
     }
 }
 

@@ -1,5 +1,5 @@
 #include "dh/io/stream.h"
-#include "dh/mem/Allocator.h"
+#include "dh/mem/Alctr.h"
 #include "dh/prl.h"
 
 typedef enum chain__State : u8 {
@@ -30,13 +30,13 @@ typedef enum chain__State : u8 {
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         let __curr = _fnOp1; \
-        asg_lit((&__reserved_acc)(__curr)); \
+        asg_l((&__reserved_acc)(__curr)); \
     } while (false); \
     __chain_state = chain__State_eval; \
     for_(($s(_s))(__curr) { \
         let_(__reserved, TypeOf(__curr)) = __curr; \
         let __curr = _fnOp1; \
-        asg_lit((&__reserved_acc)(__curr)); \
+        asg_l((&__reserved_acc)(__curr)); \
     }); \
     __reserved_acc; \
 })
@@ -52,7 +52,7 @@ typedef enum chain__State : u8 {
         { \
             let_(__reserved, TypeOf(__curr)) = __curr; \
             let __curr = _fnOp2; \
-            asg_lit((&__reserved_acc)(__curr)); \
+            asg_l((&__reserved_acc)(__curr)); \
         }; \
     } while (false); \
     __chain_state = chain__State_eval; \
@@ -62,7 +62,7 @@ typedef enum chain__State : u8 {
         { \
             let_(__reserved, TypeOf(__curr)) = __curr; \
             let __curr = _fnOp2; \
-            asg_lit((&__reserved_acc)(__curr)); \
+            asg_l((&__reserved_acc)(__curr)); \
         }; \
     }); \
     __reserved_acc; \
@@ -82,7 +82,7 @@ typedef enum chain__State : u8 {
             { \
                 let_(__reserved, TypeOf(__curr)) = __curr; \
                 let __curr = _fnOp3; \
-                asg_lit((&__reserved_acc)(__curr)); \
+                asg_l((&__reserved_acc)(__curr)); \
             }; \
         }; \
     } while (false); \
@@ -96,7 +96,7 @@ typedef enum chain__State : u8 {
             { \
                 let_(__reserved, TypeOf(__curr)) = __curr; \
                 let __curr = _fnOp3; \
-                asg_lit((&__reserved_acc)(__curr)); \
+                asg_l((&__reserved_acc)(__curr)); \
             }; \
         }; \
     }); \
@@ -120,7 +120,7 @@ typedef enum chain__State : u8 {
                 { \
                     let_(__reserved, TypeOf(__curr)) = __curr; \
                     let __curr = _fnOp4; \
-                    asg_lit((&__reserved_acc)(__curr)); \
+                    asg_l((&__reserved_acc)(__curr)); \
                 }; \
             }; \
         }; \
@@ -138,7 +138,7 @@ typedef enum chain__State : u8 {
                 { \
                     let_(__reserved, TypeOf(__curr)) = __curr; \
                     let __curr = _fnOp4; \
-                    asg_lit((&__reserved_acc)(__curr)); \
+                    asg_l((&__reserved_acc)(__curr)); \
                 }; \
             }; \
         }; \
@@ -166,7 +166,7 @@ typedef enum chain__State : u8 {
                     { \
                         let_(__reserved, TypeOf(__curr)) = __curr; \
                         let __curr = _fnOp5; \
-                        asg_lit((&__reserved_acc)(__curr)); \
+                        asg_l((&__reserved_acc)(__curr)); \
                     }; \
                 }; \
             }; \
@@ -188,7 +188,7 @@ typedef enum chain__State : u8 {
                     { \
                         let_(__reserved, TypeOf(__curr)) = __curr; \
                         let __curr = _fnOp5; \
-                        asg_lit((&__reserved_acc)(__curr)); \
+                        asg_l((&__reserved_acc)(__curr)); \
                     }; \
                 }; \
             }; \
@@ -220,7 +220,7 @@ typedef enum chain__State : u8 {
                         { \
                             let_(__reserved, TypeOf(__curr)) = __curr; \
                             let __curr = _fnOp6; \
-                            asg_lit((&__reserved_acc)(__curr)); \
+                            asg_l((&__reserved_acc)(__curr)); \
                         }; \
                     }; \
                 }; \
@@ -246,7 +246,7 @@ typedef enum chain__State : u8 {
                         { \
                             let_(__reserved, TypeOf(__curr)) = __curr; \
                             let __curr = _fnOp6; \
-                            asg_lit((&__reserved_acc)(__curr)); \
+                            asg_l((&__reserved_acc)(__curr)); \
                         }; \
                     }; \
                 }; \
@@ -282,7 +282,7 @@ typedef enum chain__State : u8 {
                             { \
                                 let_(__reserved, TypeOf(__curr)) = __curr; \
                                 let __curr = _fnOp7; \
-                                asg_lit((&__reserved_acc)(__curr)); \
+                                asg_l((&__reserved_acc)(__curr)); \
                             }; \
                         }; \
                     }; \
@@ -312,7 +312,7 @@ typedef enum chain__State : u8 {
                             { \
                                 let_(__reserved, TypeOf(__curr)) = __curr; \
                                 let __curr = _fnOp7; \
-                                asg_lit((&__reserved_acc)(__curr)); \
+                                asg_l((&__reserved_acc)(__curr)); \
                             }; \
                         }; \
                     }; \
@@ -352,7 +352,7 @@ typedef enum chain__State : u8 {
                                 { \
                                     let_(__reserved, TypeOf(__curr)) = __curr; \
                                     let __curr = _fnOp8; \
-                                    asg_lit((&__reserved_acc)(__curr)); \
+                                    asg_l((&__reserved_acc)(__curr)); \
                                 }; \
                             }; \
                         }; \
@@ -386,7 +386,7 @@ typedef enum chain__State : u8 {
                                 { \
                                     let_(__reserved, TypeOf(__curr)) = __curr; \
                                     let __curr = _fnOp8; \
-                                    asg_lit((&__reserved_acc)(__curr)); \
+                                    asg_l((&__reserved_acc)(__curr)); \
                                 }; \
                             }; \
                         }; \
@@ -435,16 +435,16 @@ typedef enum chain__State : u8 {
         let _p_e = __reserved; \
         $break_(&copy(_xform)); \
     }; \
-}) $unscoped_(expr)
+}) $unscoped(expr)
 
 // #define collect_(/*(_gpa)*/) __step__collect_(__step__collect___gpa __VA_ARGS__)
 // #define __step__collect_(...) __step__collect$__emit(__VA_ARGS__)
 // #define __step__collect$__emit(...) __collect$(__VA_ARGS__)
 // #define __collect$(_gpa...) ({ \
 //     if (__chain_state == chain__State_none) { \
-//         asg_lit((&__reserved_buf)(ok({}))); \
+//         asg_l((&__reserved_buf)(ok({}))); \
 //     } else if (__chain_state == chain__State_init) { \
-//         __reserved_buf = u_castE$((TypeOf(__reserved_buf))(mem_Allocator_alloc(_gpa, typeInfo$(InnerT), ))); \
+//         __reserved_buf = u_castE$((TypeOf(__reserved_buf))(mem_Alctr_alloc(_gpa, typeInfo$(InnerT), ))); \
 //     } else { \
 //     }; \
 // })
@@ -455,7 +455,7 @@ typedef enum chain__State : u8 {
     if (__chain_state != chain__State_eval) { \
         let_(__out, TypeOf(__reserved_acc)) = _out; \
         __reserved_buf_cap = __out.len; \
-        asg_lit((&__reserved_buf)(ok(.as_raw = sliceS(__out, $r(0, 0)).as_raw))); \
+        asg_l((&__reserved_buf)(ok(.as_raw = sliceS(__out, $r(0, 0)).as_raw))); \
         $break_(sliceS(__out, $r(0, 0))); \
     } else { \
         let __buf = catch_((E_asP(&__reserved_buf))($ignore, claim_unreachable)); \
@@ -464,7 +464,7 @@ typedef enum chain__State : u8 {
         *S_at((*__buf)[__buf->len - 1]) = *__reserved; \
         $break_(sliceS(*__buf, $r(0, __buf->len))); \
     }; \
-}) $unscoped_(expr)
+}) $unscoped(expr)
 
 #define fold_(/*(_default), (_acc, _p_e)_combine*/...) __step__fold_(__VA_ARGS__)
 #define __step__fold_(_default, ...) __step__fold___emit(_default, __step__fold___capt __VA_ARGS__)
@@ -478,7 +478,7 @@ typedef enum chain__State : u8 {
         let _acc = __reserved_acc; \
         $break_(_combine); \
     }; \
-}) $unscoped_(expr)
+}) $unscoped(expr)
 #define reduce_(/*(_acc, _p_e)_combine*/...) __step__reduce_(__VA_ARGS__)
 #define __step__reduce_(...) __step__reduce___emit(__step__reduce___capt __VA_ARGS__)
 #define __step__reduce___capt(_acc, _p_e...) _acc, _p_e,
@@ -495,7 +495,7 @@ typedef enum chain__State : u8 {
         let _acc = orelse_((__reserved_acc)(*__reserved)); \
         $break_(some(_combine)); \
     }; \
-}) $unscoped_(expr)
+}) $unscoped(expr)
 
 
 fn_((sumProcedural(S_const$i32 items))(i32)) {
@@ -537,7 +537,7 @@ fn_((sumFunctionalFilterMapReduce(S_const$i32 items))(O$u32)) {
     return chain$((O$u32)(items)(
         filter_((x)(*x > 0)),
         map$((u32)(x)(as$(u32)(*x))),
-        reduce_((acc, item)(prim_min(acc, *item)))
+        reduce_((acc, item)(pri_min(acc, *item)))
     ));
 };
 
@@ -548,11 +548,11 @@ fn_((sumFunctionalFilterMapReduceInline(S_const$i32 items))(O$u32)) {
             if (!(*item > 0)) { continue; } // filter
             let x = as$(u32)(*item);
             if (isNone(__ret)) {
-                asg_lit((&__ret)(some(x)));
+                asg_l((&__ret)(some(x)));
                 continue;
             };
             let acc = orelse_((__ret)(x));
-            asg_lit((&__ret)(some(prim_min(acc, x))));
+            asg_l((&__ret)(some(pri_min(acc, x))));
         });
         __ret;
     });
@@ -579,11 +579,11 @@ fn_((sumFunctionalFilterMapReduceInlineDetailed(S_const$i32 items))(O$u32)) {
                     let __curr = ({ // reduce
                         let x = __reserved;
                         if (isNone(__ret)) {
-                            asg_lit((&__ret)(some(x)));
+                            asg_l((&__ret)(some(x)));
                             continue;
                         };
                         let acc = orelse_((__ret)(x));
-                        asg_lit((&__ret)(some(prim_min(acc, x))));
+                        asg_l((&__ret)(some(pri_min(acc, x))));
                     });
                 }
             }

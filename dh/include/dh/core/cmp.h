@@ -26,7 +26,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "prim.h"
+#include "pri.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -46,18 +46,28 @@ extern "C" {
 
 /* --- Ordering Operators --- */
 
-typedef enum_(cmp_Ord $bits(8)) {
+typedef enum_((cmp_Sgn $fits($packed))(
+    cmp_Sgn_ngtv = -1,
+    cmp_Sgn_zero = 0,
+    cmp_Sgn_pstv = 1
+)) cmp_Sgn;
+#define cmp_Sgn_inv(_sgn /*: cmp_Sgn*/... /*(cmp_Sgn)*/) (as$(cmp_Sgn)(-(_sgn)))
+#define cmp_Sgn_isNgtv(_sgn /*: cmp_Sgn*/... /*(bool)*/) bool_((_sgn) < cmp_Sgn_zero)
+#define cmp_Sgn_isZero(_sgn /*: cmp_Sgn*/... /*(bool)*/) bool_((_sgn) == cmp_Sgn_zero)
+#define cmp_Sgn_isPstv(_sgn /*: cmp_Sgn*/... /*(bool)*/) bool_((_sgn) > cmp_Sgn_zero)
+
+typedef enum_((cmp_Ord $fits($packed))(
     cmp_Ord_lt = -1,
     cmp_Ord_eq = 0,
     cmp_Ord_gt = 1,
-} cmp_Ord;
+)) cmp_Ord;
 #define cmp_Ord_inv(_ord /*: cmp_Ord*/... /*(cmp_Ord)*/) (as$(cmp_Ord)(-(_ord)))
-#define cmp_Ord_isEq(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) == cmp_Ord_eq))
-#define cmp_Ord_isNe(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) != cmp_Ord_eq))
-#define cmp_Ord_isLt(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) < cmp_Ord_eq))
-#define cmp_Ord_isGt(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) > cmp_Ord_eq))
-#define cmp_Ord_isLe(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) <= cmp_Ord_eq))
-#define cmp_Ord_isGe(_ord /*: cmp_Ord*/... /*(bool)*/) (as$(bool)((_ord) >= cmp_Ord_eq))
+#define cmp_Ord_isEq(_ord /*: cmp_Ord*/... /*(bool)*/) bool_((_ord) == cmp_Ord_eq)
+#define cmp_Ord_isNe(_ord /*: cmp_Ord*/... /*(bool)*/) bool_((_ord) != cmp_Ord_eq)
+#define cmp_Ord_isLt(_ord /*: cmp_Ord*/... /*(bool)*/) bool_((_ord) < cmp_Ord_eq)
+#define cmp_Ord_isGt(_ord /*: cmp_Ord*/... /*(bool)*/) bool_((_ord) > cmp_Ord_eq)
+#define cmp_Ord_isLe(_ord /*: cmp_Ord*/... /*(bool)*/) bool_((_ord) <= cmp_Ord_eq)
+#define cmp_Ord_isGe(_ord /*: cmp_Ord*/... /*(bool)*/) bool_((_ord) >= cmp_Ord_eq)
 
 /*
  * Defining ordering for a type _T (cmp_ord$ / cmp_lt$):
@@ -652,7 +662,7 @@ typedef enum_(cmp_Ord $bits(8)) {
 #define __cmp_fn_ord_default$(_T, _lhs, _rhs...) \
     cmp_fn_(ord)((_T)(_lhs, _rhs)) { \
         return cmp_lt$(_T)(_lhs, _rhs) ? cmp_Ord_lt \
-             : (prim_swap(&_lhs, &_rhs), cmp_lt$(_T)(_lhs, _rhs)) \
+             : (pri_swap(&_lhs, &_rhs), cmp_lt$(_T)(_lhs, _rhs)) \
                  ? cmp_Ord_gt \
                  : cmp_Ord_eq; \
     }
@@ -705,7 +715,7 @@ typedef enum_(cmp_Ord $bits(8)) {
 #define __cmp_fn_ordCtx_default$(_T, _lhs, _rhs, _ctx...) \
     cmp_fn_(ordCtx)((_T)(_lhs, _rhs, _ctx)) { \
         return cmp_ltCtx$(_T)(_lhs, _rhs, _ctx) ? cmp_Ord_lt \
-             : (prim_swap(&_lhs, &_rhs), cmp_ltCtx$(_T)(_lhs, _rhs, _ctx)) \
+             : (pri_swap(&_lhs, &_rhs), cmp_ltCtx$(_T)(_lhs, _rhs, _ctx)) \
                  ? cmp_Ord_gt \
                  : cmp_Ord_eq; \
     }
@@ -758,7 +768,7 @@ typedef enum_(cmp_Ord $bits(8)) {
 #define __cmp_fn_ordApx_default$(_T, _lhs, _rhs, _threshold...) \
     cmp_fn_(ordApx)((_T)(_lhs, _rhs, _threshold)) { \
         return cmp_ltApx$(_T)(_lhs, _rhs, _threshold) ? cmp_Ord_lt \
-             : (prim_swap(&_lhs, &_rhs), cmp_ltApx$(_T)(_lhs, _rhs, _threshold)) \
+             : (pri_swap(&_lhs, &_rhs), cmp_ltApx$(_T)(_lhs, _rhs, _threshold)) \
                  ? cmp_Ord_gt \
                  : cmp_Ord_eq; \
     }

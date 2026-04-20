@@ -22,7 +22,7 @@ fn_((Thrd_ResetEvent_fini(Thrd_ResetEvent* self))(void)) {
 
 fn_((Thrd_ResetEvent_wait(Thrd_ResetEvent* self))(void) $scope) {
     return_void(catch_((Thrd_ResetEvent__wait(self, none$((O$time_Duration))))($ignore, claim_unreachable)));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_ResetEvent_timedWait(Thrd_ResetEvent* self, time_Duration timeout))(Thrd_ResetEvent_Err$void)) {
     return Thrd_ResetEvent__wait(self, some$((O$time_Duration)(timeout)));
@@ -50,7 +50,7 @@ fn_((Thrd_ResetEvent__wait(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd
         $break_(Thrd_ResetEvent__waitUntilSet(self, timeout));
     } else {
         $break_(ok({}));
-    }) $unscoped_(expr);
+    }) $unscoped(expr);
 };
 
 $attr($branch_cold)
@@ -72,4 +72,4 @@ fn_((Thrd_ResetEvent__waitUntilSet(Thrd_ResetEvent* self, O$time_Duration timeou
     }
     claim_assert(state == Thrd_ResetEvent__is_set);
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);

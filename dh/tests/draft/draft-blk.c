@@ -1,14 +1,14 @@
 #if UNUSED_CODE
-#include "dh/main.h"
+#include "dh-main.h"
 
 
 // clang-format off
-/* #define blk_(_label, _BreakType_and_Body...) \
-    pp_overload(__blk, _BreakType_and_Body)(_label, _BreakType_and_Body)
-#define __blk_1(_label, _Body...)                    comp_syn__blk_((_label, Void), _Body)
-#define __blk_2(_label, _RetType, _Body...)          comp_syn__blk_((_label, _RetType), _Body)
-#define comp_syn__blk_(_Label_and_RetType, _Body...) blk({ \
-    $local_label pp_Tuple_get1st _Label_and_RetType; \
+/* #define local__(_label, _BreakType_and_Body...) \
+    pp_overload(__local_, _BreakType_and_Body)(_label, _BreakType_and_Body)
+#define __local__1(_label, _Body...)                    comp_syn__local__((_label, Void), _Body)
+#define __local__2(_label, _RetType, _Body...)          comp_syn__local__((_label, _RetType), _Body)
+#define comp_syn__local__(_Label_and_RetType, _Body...) local_({ \
+    local_label pp_Tuple_get1st _Label_and_RetType; \
     var pp_cat(__reserved_val_, pp_Tuple_get1st _Label_and_RetType) = _Generic( \
         TypeOf(pp_Tuple_get2nd _Label_and_RetType), \
         void: (Void){}, \
@@ -19,14 +19,14 @@
     pp_cat(__reserved_val_, pp_Tuple_get1st _Label_and_RetType); \
 }) */
 
-#define break_(_label, ...) comp_syn__blk_break_(pp_cat(__reserved_val_, _label), _label, __VA_ARGS__)
-#define comp_syn__blk_break_(__reserved_val, _label, ...) \
+#define break_(_label, ...) comp_syn__local__break_(pp_cat(__reserved_val_, _label), _label, __VA_ARGS__)
+#define comp_syn__local__break_(__reserved_val, _label, ...) \
     __reserved_val = *(TypeOf(__reserved_val)[1]){ [0] = __VA_ARGS__ }; \
     goto _label
 
 #define for_(_Begin_to_End, _Iter, _Expr...) \
     comp_syn__for_(pp_uniqTok(range), pp_uniqTok(i), _Begin_to_End, _Iter, _Expr)
-#define comp_syn__for_(__range, __i, _Begin_to_End, _Iter, _Expr...) blk({ \
+#define comp_syn__for_(__range, __i, _Begin_to_End, _Iter, _Expr...) local_({ \
     let_(__range, R) = _Begin_to_End; \
     for (usize __i = __range.begin; __i < __range.end; ++__i) { \
         let _Iter = __i; \
@@ -57,7 +57,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
     {
-        i32 key   = 7;
+        i32 key = 7;
         let value = eval_(i32 $scope)({
             i32 sum = 0;
             while_((i32 i = 0), (i < 10), (i += 1), {
@@ -67,7 +67,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
                 sum += i;
             });
             $break_(sum);
-        }) $unscoped_(expr);
+        }) $unscoped(expr);
         printf("value: %d\n", value);
     }
 
@@ -80,7 +80,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     });
 
     {
-        i32 key   = 23;
+        i32 key = 23;
         let value = expr_(i32 $scope) {
             for_($r(0, 10), (i), {
                 if (i == as$(usize)(key)) {
@@ -98,7 +98,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
                 }
             });
             claim_unreachable;
-        } $unscoped_(expr);
+        } $unscoped(expr);
         printf("value: %d\n", value);
     }
 
@@ -109,7 +109,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     //     printf("value: %d\n", *p);
     // });
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // #define pp_ignore2_expand1_ignores(...) pp_ignore1_expand1_ignores
 // #define pp_ignore1_expand1_ignores(...) pp_expand1_ignores

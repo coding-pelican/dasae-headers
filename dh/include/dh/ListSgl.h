@@ -210,12 +210,12 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
 #define T_use_ListSgl_Adp_empty$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ListSgl_Adp_empty, _T)(void))(ListSgl_Adp$(_T))) { \
-        return *as$(ListSgl_Adp$(_T)*)(ListSgl_Adp_empty(typeInfo$(_T), lit0$((ListSgl_Adp$(_T))).as_raw)); \
+        return *as$(ListSgl_Adp$(_T)*)(ListSgl_Adp_empty(typeInfo$(_T), l0$((ListSgl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListSgl_Adp_init$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ListSgl_Adp_init, _T)(_T data))(ListSgl_Adp$(_T))) { \
-        return *as$(ListSgl_Adp$(_T)*)(ListSgl_Adp_init(u_anyV(data), lit0$((ListSgl_Adp$(_T))).as_raw)); \
+        return *as$(ListSgl_Adp$(_T)*)(ListSgl_Adp_init(u_anyV(data), l0$((ListSgl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListSgl_Adp_data$(_T...) \
     $attr($inline_always) \

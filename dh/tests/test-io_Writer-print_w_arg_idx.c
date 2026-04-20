@@ -17,7 +17,7 @@
 
 /*========== Includes =======================================================*/
 
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/Writer.h"
 #include "dh/fmt/common.h"
 #include <stdio.h>
@@ -33,13 +33,13 @@ $attr($must_check)
 $static fn_((test_Buf_VT_write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
     let self = as$(test_Buf*)(ctx);
     let remaining = self->data.len - self->pos;
-    let to_write = prim_min(bytes.len, remaining);
+    let to_write = pri_min(bytes.len, remaining);
     if (0 < to_write) {
-        prim_memcpyS(prefixS(suffixS(self->data, self->pos), to_write), bytes);
+        pri_memcpyS(prefixS(suffixS(self->data, self->pos), to_write), bytes);
         self->pos += to_write;
     }
     return_ok(to_write);
-} $unscoped_(fn);
+} $unscoped(fn);
 $static fn_((test_Buf_init(S$u8 data))(test_Buf)) {
     return (test_Buf){
         .data = data,
@@ -48,7 +48,7 @@ $static fn_((test_Buf_init(S$u8 data))(test_Buf)) {
 }
 $static fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
     claim_assert_nonnull(self);
-    return lit$((io_Writer){ .ctx = self, .write = test_Buf_VT_write });
+    return l$((io_Writer){ .ctx = self, .write = test_Buf_VT_write });
 }
 $static fn_((test_Buf_clear(test_Buf* self))(void)) {
     claim_assert_nonnull(self);
@@ -83,7 +83,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Basic indexed arguments" $scope) {
         printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("5 + 5 = 10"))));
     }
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with different types" $scope) {
     T_use_A$(256, u8);
@@ -109,7 +109,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with different types" $sc
         printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("15 = 0xf = 0b1111"))));
     }
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments out of order" $scope) {
     T_use_A$(256, u8);
@@ -133,7 +133,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments out of order" $scope) {
         printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("1 3"))));
     }
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with format flags" $scope) {
     T_use_A$(256, u8);
@@ -158,7 +158,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with format flags" $scope
         printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("very long string 0007 very long string"))));
     }
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with 64-bit types" $scope) {
     T_use_A$(256, u8);
@@ -185,7 +185,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with 64-bit types" $scope
         try_(TEST_expect(Str_contains(result, u8_l("-6789"))));
         try_(TEST_expect(Str_contains(result, u8_l("12345"))));
     }
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with pointers and strings" $scope) {
     T_use_A$(256, u8);
@@ -206,7 +206,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Indexed arguments with pointers and strings
         try_(TEST_expect(Str_contains(result, u8_l("cstring")))); // ful c-string
         try_(TEST_expect(Str_contains(result, u8_l("slice")))); // slice string
     }
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Complex indexed argument patterns" $scope) {
     T_use_A$(512, u8);
@@ -235,7 +235,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Complex indexed argument patterns" $scope) 
         printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("Value: 42 (hex: 0x2a, octal: 052, binary: 101010)"))));
     }
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Edge cases with indexed arguments" $scope) {
     T_use_A$(256, u8);
@@ -272,7 +272,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Edge cases with indexed arguments" $scope) 
         printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("{index 5}"))));
     }
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_w_arg_idx: Error handling with indexed arguments" $scope) {
     T_use_A$(256, u8);
@@ -296,7 +296,7 @@ TEST_fn_("io_Writer-print_w_arg_idx: Error handling with indexed arguments" $sco
         printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("{abc:d}"))));
     }
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
@@ -326,4 +326,4 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     }
 
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);

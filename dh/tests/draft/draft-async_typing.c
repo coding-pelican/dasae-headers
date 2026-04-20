@@ -28,10 +28,10 @@ static fn_((exec_runLoop(bool endless))(void)) {
             if (time_Instant_le(task->expires, now)) {
                 // io_stream_println(u8_l("sleep over y'all"));
                 let frame = task->frame;
-                asg_lit((task_remaining)(none()));
+                asg_l((task_remaining)(none()));
                 $break_(some(frame));
             }
-        })) eval_(else)($break_(none())) $unscoped_(eval);
+        })) eval_(else)($break_(none())) $unscoped(eval);
         if_some((frame)(ctx)) {
             resume_(ctx);
         }
@@ -46,8 +46,7 @@ static fn_((exec_findSlot(void))(O$Task*)) {
         for_(($s(ref$A(exec_s_task_list)))(task) {
             if_none(*task)
                 $break_(task);
-        })
-    ) eval_(else)(claim_unreachable) $unscoped_(eval);
+        }) ) eval_(else)(claim_unreachable) $unscoped(eval);
     return slot;
 }
 
@@ -60,18 +59,18 @@ async_fn_scope(exec_sleep, {}) {
     let_ignore = locals;
     suspend_({
         let slot = exec_findSlot();
-        let time = blk({
+        let time = local_({
             static let fromMs = time_Duration_fromMillis;
             static let addDur = time_Instant_addDuration;
             static let now = time_Instant_now;
-            blk_return addDur(now(), fromMs(args->ms));
+            local__return addDur(now(), fromMs(args->ms));
         });
-        asg_lit((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
+        asg_l((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
     });
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/Thrd.h"
 
 /// \brief Report a message
@@ -134,7 +133,7 @@ async_fn_scope(typeEffectWithInterval, {
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(orelse_((args->caller)(ctx->anyraw))), locals->delay_ms));
     }
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 /// \brief Types out a string over a specified total duration
 /// \param caller The caller context
@@ -158,7 +157,7 @@ async_fn_scope(typeEffectOverDuration, {
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(orelse_((args->caller)(ctx->anyraw))), locals->delay_ms));
     }
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 /// \brief Advanced typing effect with realistic variable speeds
 /// \param caller The caller context
@@ -182,7 +181,7 @@ async_fn_scope(typeEffectRealistic, {
         $break_(Rand_init());
     }) expr_(else)({
         $break_(Rand_default);
-    }) $unscoped_(expr);
+    }) $unscoped(expr);
 
     for (locals->iter_typo = 0; locals->iter_typo < args->text.len; ++locals->iter_typo) {
         let current_char = *S_at((args->text)[locals->iter_typo]);
@@ -192,7 +191,7 @@ async_fn_scope(typeEffectRealistic, {
         if (args->add_randomness) {
             // Add randomness to make it feel more natural (-30 to +50 ms variation)
             let random_variation = Rand_rangeIInt(&locals->rand, -30, 50);
-            locals->delay_ms = as$(u64)(prim_max(10, as$(i64)((locals->delay_ms) + random_variation)));
+            locals->delay_ms = as$(u64)(pri_max(10, as$(i64)((locals->delay_ms) + random_variation)));
 
             // Longer pauses after punctuation
             if (current_char == '.' || current_char == '!' || current_char == '?') {
@@ -207,11 +206,11 @@ async_fn_scope(typeEffectRealistic, {
             }
         }
         // Ensure delay is not negative (minimum 10ms)
-        locals->delay_ms = prim_max(10, locals->delay_ms);
+        locals->delay_ms = pri_max(10, locals->delay_ms);
         callAsync(&locals->sleep_ctx, (exec_sleep)(some(orelse_((args->caller)(ctx->anyraw))), locals->delay_ms));
     }
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 #include "dh/mem/common.h"
 #include "dh/fmt/common.h"
@@ -353,14 +352,14 @@ async_fn_scope(runMain, {
     // let_ignore = getchar(); // TODO: use a better way to wait for user input
 
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     var task = async_((runMain)(args));
     exec_runLoop(false);
-    nosuspend_(await_(resume_(task)));
+    no_suspend_(await_(resume_(task)));
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 /*
 public

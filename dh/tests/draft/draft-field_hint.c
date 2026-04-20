@@ -8,7 +8,8 @@
 
 $static var_(mp__thrd_count, usize) = 3;
 $maybe_unused
-$static fn_((mp_setThrdCount(usize thrd_count))(void)) { mp__thrd_count = thrd_count; }
+$static
+fn_((mp_setThrdCount(usize thrd_count))(void)) { mp__thrd_count = thrd_count; }
 $static fn_((mp_getThrdCount(void))(usize)) { return mp__thrd_count; }
 
 typedef fn_(((*)(usize, u_V$raw))(void) $T) mp_LoopFn;
@@ -24,10 +25,12 @@ $static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope
         data.workerFn(i, data.params);
     });
     return_({});
-} $unscoped_(Thrd_fn);
+}
+$unscoped(Thrd_fn);
 
 $maybe_unused
-$static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)) {
+$static
+fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)) {
     let thrd_count = mp_getThrdCount();
 
     var_(data_list_buf, A$$(mp_max_thrd_count, mp_LoopData)) = zero$A();
@@ -95,7 +98,7 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
             /* clang-format on */
             if (atom_V_load(&pool->count, atom_MemOrd_acquire) > 0) {
                 let tail = atom_V_load(&pool->tail, atom_MemOrd_acquire);
-                asg_lit((&maybe_task)(some(atS(pool->tasks, tail % mp_max_task_count))));
+                asg_l((&maybe_task)(some(atS(pool->tasks, tail % mp_max_task_count))));
                 atom_V_store(&pool->tail, tail + 1, atom_MemOrd_release);
                 atom_V_fetchSub(&pool->count, 1, atom_MemOrd_release);
                 atom_V_fetchAdd(&pool->active_tasks, 1, atom_MemOrd_acq_rel);
@@ -112,11 +115,12 @@ $static Thrd_fn_(mp_ThrdPool_worker, ({ mp_ThrdPool* pool; }, Void), ($ignore, a
         }
     }
     return_({});
-} $unscoped_(Thrd_fn);
+}
+$unscoped(Thrd_fn);
 
 $must_check
 $static
-fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
+fn_((mp_ThrdPool_init(mem_Alctr gpa, usize thrd_count))(E$P$mp_ThrdPool) $scope) {
     mp_ThrdPool pool = ({
         typedef mp_ThrdPool InitType;
         (InitType){
@@ -178,25 +182,25 @@ fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $sc
     })
 #define __op__$in_field__expand(...) __VA_ARGS__
 
-    asg_lit((&pool)($init((LitType){
-        $field((workers)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), thrd_count)))))),
+    asg_l((&pool)($init((LitType){
+        $field((workers)$asg(u_castS$((FieldType)(try_(mem_Alctr_alloc(gpa, typeInfo$(InnerType), thrd_count)))))),
         $field((threads)$asg(thrds)),
     })));
 
     let pool = $init((mp_ThrdPool){
-        $field((workers)$asg(u_castS$((FieldType)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), thrd_count)))))),
+        $field((workers)$asg(u_castS$((FieldType)(try_(mem_Alctr_alloc(gpa, typeInfo$(InnerType), thrd_count)))))),
         $field((threads)$asg(thrds)),
     });
 
 
-    // let_(pool, mp_ThrdPool*) = try_(u_castE$((ReturnType)(mem_Allocator_create(gpa, typeInfo$(mp_ThrdPool)))));
-    // let_(workers, TypeOf(pool->workers)) = u_castS$((TypeOf(pool->workers))(try_(mem_Allocator_alloc(
+    // let_(pool, mp_ThrdPool*) = try_(u_castE$((ReturnType)(mem_Alctr_create(gpa, typeInfo$(mp_ThrdPool)))));
+    // let_(workers, TypeOf(pool->workers)) = u_castS$((TypeOf(pool->workers))(try_(mem_Alctr_alloc(
     //     gpa, typeInfo$(union Thrd_FnCtx$(mp_ThrdPool_worker)), mp_max_task_count))));
-    // let_(threads, TypeOf(pool->threads)) = u_castS$((TypeOf(pool->threads))(try_(mem_Allocator_alloc(
+    // let_(threads, TypeOf(pool->threads)) = u_castS$((TypeOf(pool->threads))(try_(mem_Alctr_alloc(
     //     gpa, typeInfo$(Thrd), thrd_count))));
-    // let_(tasks, TypeOf(pool->tasks)) = u_castS$((TypeOf(pool->tasks))(try_(mem_Allocator_alloc(
+    // let_(tasks, TypeOf(pool->tasks)) = u_castS$((TypeOf(pool->tasks))(try_(mem_Alctr_alloc(
     //     gpa, typeInfo$(mp_ThrdPool_Task), mp_max_task_count))));
-    // asg_lit((pool)({
+    // asg_l((pool)({
     //     .workers = workers,
     //     .threads = threads,
     //     .tasks = tasks,
@@ -216,4 +220,5 @@ fn_((mp_ThrdPool_init(mem_Allocator gpa, usize thrd_count))(E$P$mp_ThrdPool) $sc
     //     ))($ignore, claim_unreachable));
     // });
     return_ok(pool);
-} $unscoped_(fn);
+}
+$unscoped(fn);

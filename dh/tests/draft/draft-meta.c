@@ -1,5 +1,5 @@
 #include "dh/Err.h"
-#include "dh/main.h"
+#include "dh-main.h"
 
 
 #define m_Val_from(val) \
@@ -62,9 +62,9 @@ typedef union m_S$Val {
 typedef struct Vec {
     m_S$Val data;
     usize cap;
-    mem_Allocator allocator;
+    mem_Alctr allocator;
 } Vec;
-static fn_((Vec_init(TypeInfo type, mem_Allocator allocator))(Vec));
+static fn_((Vec_init(TypeInfo type, mem_Alctr allocator))(Vec));
 static fn_((Vec_push(Vec* self, m_Val val))(E$void)) $must_check;
 static fn_((Vec_pop(Vec* self, m_Val mem))(m_O$Val));
 static fn_((Vec_fini(Vec* self))(void));
@@ -85,7 +85,7 @@ static fn_((Vec_fini(Vec* self))(void));
      * @param allocator allocator to use \
      * @return initialized vector \
      */ \
-    tpl_fn_(Vec$(T), init(mem_Allocator allocator), Vec$(T)) { \
+    tpl_fn_(Vec$(T), init(mem_Alctr allocator), Vec$(T)) { \
         return (Vec$(T)){ .base = { [0] = Vec_init(typeInfo$(T), allocator) } }; \
     } \
     /** \
@@ -123,7 +123,7 @@ Vec_useT$(i32);
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    let allocator = heap_Page_allocator(&(heap_Page){});
+    let allocator = heap_Page_alctr(&(heap_Page){});
     var vec = Vec$i32_init(allocator);
     defer_(Vec$i32_fini(&vec));
 
@@ -137,21 +137,23 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     printf("done");
 
     return_ok({});
-}$unguarded_(fn);
-// } $unguarded_(TEST_fn);
+}
+$unguarded(fn);
+// } $unguarded(TEST_fn);
 
-static fn_((Vec_init(TypeInfo type, mem_Allocator allocator))(Vec) $scope) {
+static fn_((Vec_init(TypeInfo type, mem_Alctr allocator))(Vec) $scope) {
     let init_len = 8;
-    let data = catch_((mem_Allocator_alloc(allocator, type, init_len))($ignore, claim_unreachable));
+    let data = catch_((mem_Alctr_alloc(allocator, type, init_len))($ignore, claim_unreachable));
     return_({
         .allocator = allocator,
         .data = { .ptr = { .info = data.type, .addr = data.addr }, .len = 0 },
         .cap = init_len,
     });
-} $unscoped_(fn);
+}
+$unscoped(fn);
 static fn_((Vec_push(Vec* self, m_Val val))(E$void) $scope) {
     if (self->data.len < self->cap) {
-        prim_memcpy(
+        pri_memcpy(
             self->data.ptr.addr + (self->data.len * self->data.ptr.info.size),
             val.ref,
             self->data.ptr.info.size
@@ -160,10 +162,11 @@ static fn_((Vec_push(Vec* self, m_Val val))(E$void) $scope) {
         return_ok({});
     }
     return_err(E_Unsupported());
-} $unscoped_(fn);
+}
+$unscoped(fn);
 static fn_((Vec_pop(Vec* self, m_Val mem))(m_O$Val) $scope) {
     if (0 < self->data.len) {
-        prim_memcpy(
+        pri_memcpy(
             mem.ref,
             self->data.ptr.addr + ((self->data.len - 1) * self->data.ptr.info.size),
             self->data.ptr.info.size
@@ -172,8 +175,9 @@ static fn_((Vec_pop(Vec* self, m_Val mem))(m_O$Val) $scope) {
         return_some(mem);
     }
     return_none();
-} $unscoped_(fn);
+}
+$unscoped(fn);
 static fn_((Vec_fini(Vec* self))(void)) {
     let_ignore = self;
-    // mem_Allocator_free(self->allocator, anySli(self->data.ptr.addr));
+    // mem_Alctr_free(self->allocator, anySli(self->data.ptr.addr));
 }

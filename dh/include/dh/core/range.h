@@ -59,10 +59,10 @@ extern "C" {
 #define neR ne$R
 #define ne$R R_ne
 
-typedef enum_(R_Bound_Tag $bits(8)) {
-    R_Bound_incl = 0,
-    R_Bound_excl = 1,
-} R_Bound;
+typedef enum_((R_Bound_Tag $fits($packed))(
+    R_Bound_Tag_incl = 0,
+    R_Bound_Tag_excl = 1,
+)) R_Bound;
 /// default: incl
 $attr($inline_always)
 $static fn_((R_Bound_begin(R_Bound bound, usize point))(usize));

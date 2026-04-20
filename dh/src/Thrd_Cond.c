@@ -93,7 +93,7 @@ fn_((Thrd_Cond__pthread_init(void))(Thrd_Cond) $guard) {
     pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
     pthread_cond_init(&cond.impl, &attr);
     return_(cond);
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((Thrd_Cond__pthread_fini(Thrd_Cond* self))(void)) {
     pthread_cond_destroy(&self->impl);
@@ -117,11 +117,11 @@ fn_((Thrd_Cond__pthread_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration 
         abs_ts.tv_nsec = abs_ts.tv_nsec % as$(long)(time_nanos_per_sec);
     }
     switch (pthread_cond_timedwait(&self->impl, &mtx->impl, &abs_ts)) {
-    case_((0 /* SUCCESS */))           return_ok({}) $end(case);
+    case_((0 /* SUCCESS */)) return_ok({}) $end(case);
     case_((ETIMEDOUT /* TIMED OUT */)) return_err(Thrd_Cond_Err_Timeout()) $end(case);
     default_() claim_unreachable $end(default);
     }
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_Cond__pthread_signal(Thrd_Cond* self))(void)) {
     pthread_cond_signal(&self->impl);
@@ -133,10 +133,10 @@ fn_((Thrd_Cond__pthread_broadcast(Thrd_Cond* self))(void)) {
 
 #else /*========== Common ==========*/
 
-typedef enum_(Thrd_Cond__Notify $bits(8)) {
+typedef enum_((Thrd_Cond__Notify $fits($packed))(
     Thrd_Cond__Notify_one = 0, // wake up only one thread
     Thrd_Cond__Notify_all = 1, // wake up all threads
-} Thrd_Cond__Notify;
+)) Thrd_Cond__Notify;
 
 /* === Declarations === */
 
@@ -215,7 +215,7 @@ fn_((Thrd_Cond__common_fini(Thrd_Cond* self))(void)) {
 
 fn_((Thrd_Cond__common_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void) $scope) {
     return_void(catch_((Thrd_Cond__impl_wait(self, mtx, none$((O$time_Duration))))($ignore, claim_unreachable)));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_Cond__common_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_Err$void)) {
     return Thrd_Cond__impl_wait(self, mtx, some$((O$time_Duration)(duration)));
@@ -304,7 +304,7 @@ fn_((Thrd_Cond__default_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duratio
         }
     }
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((Thrd_Cond__default_impl_wake(Thrd_Cond* self, Thrd_Cond__Notify notify))(void)) {
     var state = atom_V_load(&self->impl.state, atom_MemOrd_monotonic);
@@ -321,7 +321,7 @@ fn_((Thrd_Cond__default_impl_wake(Thrd_Cond* self, Thrd_Cond__Notify notify))(vo
         let to_wake = expr_(u32 $scope)(switch (notify) {
             case_((Thrd_Cond__Notify_one)) $break_(1) $end(case);
             case_((Thrd_Cond__Notify_all)) $break_(wakeable) $end(case);
-        }) $unscoped_(expr);
+        }) $unscoped(expr);
 
         // Reserve the amount of waiters to wake by incrementing the signals count.
         // Release barrier ensures code before the wake() happens before the signal it posted and consumed by the wait() threads.
@@ -358,7 +358,7 @@ fn_((Thrd_Cond__windows_impl_fini(Thrd_Cond* self))(void)) {
 };
 
 fn_((Thrd_Cond__windows_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duration timeout))(Thrd_Cond_Err$void) $scope) {
-    claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(DWORD), packTypeInfo$(u32)));
+    claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(DWORD), packTypeInfo$(u32)));
     var timeout_overflowed = false;
     var timeout_ms = u32_limit_max;
     if_some((timeout)(duration)) {
@@ -385,7 +385,7 @@ fn_((Thrd_Cond__windows_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duratio
         if (!timeout_overflowed) { return_err(Thrd_Cond_Err_Timeout()); }
     }
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((Thrd_Cond__windows_impl_wake(Thrd_Cond* self, Thrd_Cond__Notify notify))(void)) {
     switch (notify) {

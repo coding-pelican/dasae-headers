@@ -29,15 +29,28 @@ extern "C" {
 #define pp_Tuple_len pp_countArg
 #define pp_Tuple_wrap(/* _Elems */...) (__VA_ARGS__)
 #define pp_Tuple_unwrap(/* _Elems */...) __VA_ARGS__
+
 #define pp_Tuple_wrapOpen()  (
 #define pp_Tuple_wrapClose() )
+
 #define pp_Tuple_unwrapClose(/* _Elems */...) (__VA_ARGS__
 #define pp_Tuple_unwrapOpen(/* _Elems */...) __VA_ARGS__)
+
 #define pp_Tuple_unwrapCloseOptComma(/* _Elems */...) (__VA_ARGS__ __VA_OPT__(,)
 #define pp_Tuple_unwrapOpenOptComma(/* _Elems */...) __VA_OPT__(,) __VA_ARGS__)
+
 #define pp_Tuple_unwrapPreComma(/* _Elems */...) , __VA_ARGS__
 #define pp_Tuple_unwrapSufComma(/* _Elems */...) __VA_ARGS__,
-#define pp_Tuple_unwrapSufCommaExpand(/* _Elems */...) __VA_ARGS__, pp_expand
+
+#define pp_Tuple_wrapSufIgnore(/* _Elems */...) (__VA_ARGS__) pp_ignore
+#define pp_Tuple_wrapSufIgnore2(/* _Elems */...) (__VA_ARGS__) pp_ignore pp_ignore
+#define pp_Tuple_unwrapSufIgnore(/* _Elems */...) __VA_ARGS__ pp_ignore
+#define pp_Tuple_unwrapSufIgnore2(/* _Elems */...) __VA_ARGS__ pp_ignore pp_ignore
+#define pp_Tuple_wrapSufCommaIgnore(/* _Elems */...) (__VA_ARGS__), pp_ignore
+#define pp_Tuple_wrapSufCommaIgnore2(/* _Elems */...) (__VA_ARGS__), pp_ignore pp_ignore
+#define pp_Tuple_unwrapSufCommaIgnore(/* _Elems */...) __VA_ARGS__, pp_ignore
+#define pp_Tuple_unwrapSufCommaIgnore2(/* _Elems */...) __VA_ARGS__, pp_ignore pp_ignore
+
 #define pp_Tuple_cat(/* _Elems */...) pp_Tuple_wrapOpen() __VA_ARGS__ pp_Tuple_unwrapOpenOptComma
 
 #define pp_Tuple_get1st(_a, ...) _a

@@ -5,14 +5,14 @@
  *
  * ## Quick Start
  * ```c
- * #include "dage.h"
+ * #include <dage.h>
  *
  * fn_((main(S$S_const$u8 args))(E$void) $guard) {
  *     let_ignore = args;
  *     // 1. Create backend (choose your implementation)
- *     var wsi = try_(dage_core_WSI_init(...));
- *     defer_(dage_core_WSI_fini(&wsi));
- *     let backend = dage_core_WSI_backend(wsi);
+ *     var wsi = try_(dage_Runtime_WSI_init(...));
+ *     defer_(dage_Runtime_WSI_fini(&wsi));
+ *     let backend = dage_Runtime_WSI_backend(wsi);
  *
  *     // 2. Create runtime with backend
  *     let runtime = try_(dage_Runtime_init((dage_Runtime_Cfg){
@@ -38,7 +38,7 @@
  *
  *     // 5. Cleanup
  *     return_ok({});
- * } $unguarded_(fn);
+ * } $unguarded(fn);
  * ```
  */
 #ifndef dage__included
@@ -47,29 +47,16 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-/* Common types and utilities */
-#include "dage/common.h"
+/*========== Includes =======================================================*/
 
-/* Event system */
-#include "dage/Event.h"
-
-/* Input types */
-#include "dage/KeyCode.h"
-#include "dage/MouseBtn.h"
-#include "dage/InputState.h"
-
-/* Core systems */
-#include "dage/Backend.h"
-#include "dage/Canvas.h"
-#include "dage/Viewport.h"
-#include "dage/Window.h"
-#include "dage/Runtime.h"
-
-/* Backend implementations */
-#if UNUSED_CODE
-#include "dage/core/VT100.h"
-#endif /* UNUSED_CODE */
-#include "dage/core/WSI.h"
+/*--- Base Layers ---*/
+#include "dage-base.h"
+/*--- Runtime Layers ---*/
+#include "dage-input.h"
+#include "dage-render.h"
+#include "dage-runtime.h"
+/*--- Context Layers ---*/
+#include "dage-context.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -35,7 +35,7 @@ extern "C" {
 
 #define defer(_Statement...) SYN__defer(_Statement)
 
-#define blk_defer SYN__blk_defer
+#define local__defer SYN__local__defer
 #define blk_deferral SYN__blk_deferral
 #define break_defer SYN__break_defer
 
@@ -47,7 +47,7 @@ extern "C" {
 
 #define defer_(_Statement...) SYN__defer(_Statement)
 
-#define blk_defer SYN__blk_defer
+#define local__defer SYN__local__defer
 #define blk_deferral SYN__blk_deferral
 #define break_defer SYN__break_defer
 
@@ -60,7 +60,7 @@ extern "C" {
 
 #define SYN__defer(_Statement...) defer__snapshot(_Statement; goto __deferred)
 
-#define SYN__blk_defer \
+#define SYN__local__defer \
     do { \
     defer__snapshot(if (__scope_defer.returns) { goto __deferred; } else { continue; })
 
@@ -76,7 +76,7 @@ extern "C" {
     struct { \
         i32 curr; \
         bool returns; \
-    } __scope_defer = {.curr = 0, .returns = false}; \
+    } __scope_defer = { .curr = 0, .returns = false }; \
 __deferred: \
     switch (__scope_defer.curr) { \
     default: \

@@ -25,7 +25,8 @@ $static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope
         data.workerFn(i, data.params);
     });
     return_({});
-} $unscoped_(Thrd_fn);
+}
+$unscoped(Thrd_fn);
 
 $static fn_((mp_parallel_for(R range, mp_LoopFn func, u_V$raw user_data))(void)) {
     let thrd_count = mp_getThrdCount();
@@ -163,7 +164,7 @@ fn_((init_particle_worker(usize i, u_V$raw data))(void)) {
 }
 
 fn_((init_particles(S$Particle particles, f32 center_x, f32 center_y, f32 radius_a, f32 radius_b))(void)) {
-    mp_parallel_for($r(0, num_particles), init_particle_worker, u_anyV(lit$((InitParticleWorkerData){
+    mp_parallel_for($r(0, num_particles), init_particle_worker, u_anyV(l$((InitParticleWorkerData){
                                                                     .particles = particles,
                                                                     .center_x = center_x,
                                                                     .center_y = center_y,
@@ -354,7 +355,7 @@ void simulate(int num_frames) {
 // 메인
 // ============================================
 
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/stream.h"
 #include "dh/fmt/common.h"
 #include "dh/heap/Page.h"
@@ -378,17 +379,17 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         $break_(try_(fmt_parse$usize(*at$S(args, 1), 10)));
     } else {
         $break_(4);
-    } $unscoped_(expr));
+    } $unscoped(expr));
 
     io_stream_print(u8_l("\nAllocating memory...\n"));
-    var page = lit$((heap_Page){});
-    let gpa = heap_Page_allocator(&page);
+    var page = l$((heap_Page){});
+    let gpa = heap_Page_alctr(&page);
     T_use_S$(Particle);
-    let particles = try_(u_castE$((E$$(S$(Particle)))(mem_Allocator_alloc(gpa, typeInfo$(Particle), num_particles))));
-    defer_(mem_Allocator_free(gpa, u_anyS(particles)));
+    let particles = try_(u_castE$((E$$(S$(Particle)))(mem_Alctr_alloc(gpa, typeInfo$(Particle), num_particles))));
+    defer_(mem_Alctr_free(gpa, u_anyS(particles)));
     T_use_S$(Cell);
-    let grid = try_(u_castE$((E$$(S$(Cell)))(mem_Allocator_alloc(gpa, typeInfo$(Cell), GRID_WIDTH * GRID_HEIGHT))));
-    defer_(mem_Allocator_free(gpa, u_anyS(grid)));
+    let grid = try_(u_castE$((E$$(S$(Cell)))(mem_Alctr_alloc(gpa, typeInfo$(Cell), GRID_WIDTH * GRID_HEIGHT))));
+    defer_(mem_Alctr_free(gpa, u_anyS(grid)));
     io_stream_println(u8_l("Memory allocated: {:.2f} MB"), ((usize)num_particles * typeInfo$(Particle).size) / (1024.0 * 1024.0));
 
     Rand_init();
@@ -398,7 +399,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
             $break_(try_(fmt_parse$usize(*at$S(args, 2), 10)));
         } else {
             $break_(100);
-        } $unscoped_(expr));
+        } $unscoped(expr));
 
     io_stream_println(u8_l("\nSample particles:\n"));
     for_(($r(0, 3), $s(particles))(i, particle) {
@@ -406,4 +407,5 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     });
     io_stream_println(u8_l("\n=== Program Complete ===\n"));
     return_ok({});
-} $unguarded_(fn);
+}
+$unguarded(fn);

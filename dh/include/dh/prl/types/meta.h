@@ -51,6 +51,11 @@ typedef union u_V$raw {
     u_P$raw ref;
 } u_V$raw;
 
+// typedef struct u_FnCtx$raw {
+//     FnCtx$raw fn;
+//     u_V$raw inner;
+// } u_FnCtx$raw;
+
 typedef struct u_S_const$raw {
     union {
         struct {
@@ -120,20 +125,25 @@ typedef struct u_E$raw {
     __step__V_meta(__step__V_meta__parse __VA_ARGS__)
 #define __step__V_meta__parse(_type...) _type,
 #define __step__V_meta(...) ____V_meta(__VA_ARGS__)
-#define ____V_meta(_type, _raw...) T_switch$((TypeOf(_raw))( \
-    T_case$((u_V_const$raw)(lit$((u_V_const$raw){ .raw = _raw, .type = _type }))), \
-    T_case$((u_V$raw)(lit$((u_V$raw){ .raw = _raw, .type = _type }))) \
+#define ____V_meta(_type, _raw...) T_switch$((TypeOf(*_raw))( \
+    T_case$((V$raw)(l$((u_V$raw){ .raw = as$(V$raw)(_raw->inner), .type = _type }))) \
 ))
 #define P_meta(/*(_type: TypeInfo)(_raw: P_const$T|P$T)*/... /*(u_P_const$T|u_P$T)*/) \
     __step__P_meta(__step__P_meta__parse __VA_ARGS__)
 #define __step__P_meta__parse(_type...) _type,
 #define __step__P_meta(...) ____P_meta(__VA_ARGS__)
-#define ____P_meta(_type, _raw...) /* TODO: Implement */
+#define ____P_meta(_type, _raw...) T_switch$((TypeOf(_raw))( \
+    T_case$((P_const$raw)(l$((u_P_const$raw){ .raw = ptrQualCast$((P_const$raw)(_raw)), .type = _type }))), \
+    T_case$((P$raw)(l$((u_P$raw){ .raw = ptrQualCast$((P$raw)(_raw)), .type = _type }))) \
+))
 #define S_meta(/*(_type: TypeInfo)(_raw: S_const$T|S$T)*/... /*(u_S_const$T|u_S$T)*/) \
     __step__S_meta(__step__S_meta__parse __VA_ARGS__)
 #define __step__S_meta__parse(_type...) _type,
 #define __step__S_meta(...) ____S_meta(__VA_ARGS__)
-#define ____S_meta(_type, _raw...) /* TODO: Implement */
+#define ____S_meta(_type, _raw...) T_switch$((TypeOf(_raw))( \
+    T_case$((S_const$raw)(l$((u_S_const$raw){ .raw = *ptrQualCast$((S_const$raw*)(&copy(_raw))), .type = _type }))), \
+    T_case$((S$raw)(l$((u_S$raw){ .raw = *ptrQualCast$((S$raw*)(&copy(_raw))), .type = _type }))) \
+))
 
 #define V_raw(_v /*: u_V_const$T|u_V$T*/... /*(u_Inner*)*/) (_v.inner)
 #define P_raw(_p /*: u_P_const$T|u_P$T*/... /*(P_const$T|P$T)*/) (_p.raw)
@@ -141,37 +151,33 @@ typedef struct u_E$raw {
 
 #define u_allocV(_type...) ({ \
     const TypeInfo __type = _type; \
-    const P$raw __ptr = alloca(__type.size); \
-    memset(__ptr, 0, __type.size); \
-    lit$((u_V$raw){ .inner = __ptr, .inner_type = __type }); \
+    const usize __size = TypeInfo_size(__type); \
+    const usize __align = TypeInfo_align(__type); \
+    const P$raw __alloced = raw_alloca(__size + __align - 1); \
+    const P$raw __aligned = intToPtr$((P$raw)((ptrToInt(__alloced) + (__align - 1)) & ~(__align - 1))); \
+    $ignore_void raw_memset0(__aligned, __size); \
+    l$((u_V$raw){ .inner = __aligned, .inner_type = __type }); \
 })
 
 #define u_allocA(_len, _type...) ({ \
     const TypeInfo __type = _type; \
     const usize __len = _len; \
-    const P$raw __ptr = alloca(__len * __type.size); \
-    memset(__ptr, 0, __len * __type.size); \
-    lit$((u_A$raw){ .inner = { .ptr = __ptr, .len = __len }, .inner_type = __type }); \
+    const usize __size = TypeInfo_size(__type); \
+    const usize __align = TypeInfo_align(__type); \
+    const P$raw __alloced = raw_alloca(__len * __size + __align - 1); \
+    const P$raw __aligned = intToPtr$((P$raw)((ptrToInt(__alloced) + (__align - 1)) & ~(__align - 1))); \
+    $ignore_void raw_memset0(__aligned, __len * __size); \
+    l$((u_A$raw){ .inner = { .ptr = __aligned, .len = __len }, .inner_type = __type }); \
 })
 
-#define u_make(_type...) ({ \
-    const TypeInfo __type = _type; \
-    const P$raw __ptr = alloca(__type.size); \
-    memset(__ptr, 0, __type.size); \
-    lit$((u_V$raw){ .inner = __ptr, .inner_type = __type }); \
-})
-#define u_create(_type...) ({ \
-    const TypeInfo __type = _type; \
-    const P$raw __ptr = alloca(__type.size); \
-    memset(__ptr, 0, __type.size); \
-    lit$((u_P$raw){ .inner = __ptr, .type = __type }); \
-})
+#define u_make u_allocV
+#define u_create(_type...) (u_make(_type).ref)
 
 #define u_deref(_p...) $supress_cast_qual((*as$(u_V$raw*)(_p.inner)))
 #define u_load(_v /*: u_V_const$T|u_V$T*/... /*(u_T)*/) $supress_cast_qual(({ \
     const TypeOf(_v) __v = _v; \
     const u_V$raw __b = u_allocV(__v.inner_type); \
-    prim_memcpy(__b.inner, __v.inner, __v.inner_type.size); \
+    $ignore_void raw_memcpy(__b.inner, __v.inner, __v.inner_type.size); \
     __b; \
 }))
 
@@ -189,7 +195,7 @@ typedef struct u_E$raw {
         __u_from$S__parseS
 #define __u_from$S__parseS(_s...) _s
 #define __u_from$S__emit(...) __u_from$S__emitNext(__VA_ARGS__)
-#define __u_from$S__emitNext(_T_u, _type, _s...) lit$((_T_u){ .raw = _s, .type = _type })
+#define __u_from$S__emitNext(_T_u, _type, _s...) l$((_T_u){ .raw = _s, .type = _type })
 
 #define u_init$S(/*(_type: TypeInfo)(_ptr: P$$(_T), _len: usize)*/... /*(u_S$raw)*/) \
     __u_init$S__step(pp_defer(__u_init$S__emit)(__u_init$S__parseType __VA_ARGS__))
@@ -201,8 +207,8 @@ typedef struct u_E$raw {
         pp_then_(__u_init$S__emitRef(Tok_removeConst$(_type), _ptr, _len)), \
         pp_else_(__u_init$S__emitRefMut(_type, _ptr, _len)) \
     )
-#define __u_init$S__emitRef(_type, _ptr, _len...) lit$((u_S_const$raw){ .ptr = _ptr, .len = _len, .type = _type })
-#define __u_init$S__emitRefMut(_type, _ptr, _len...) lit$((u_S$raw){ .ptr = _ptr, .len = _len, .type = _type })
+#define __u_init$S__emitRef(_type, _ptr, _len...) l$((u_S_const$raw){ .ptr = _ptr, .len = _len, .type = _type })
+#define __u_init$S__emitRefMut(_type, _ptr, _len...) l$((u_S$raw){ .ptr = _ptr, .len = _len, .type = _type })
 
 #define len$u_S u_lenS
 #define u_lenS(_s...) ____u_lenS(_s)
@@ -214,14 +220,14 @@ typedef struct u_E$raw {
 #define ____u_ptrS(__s, _s...) $supress_cast_qual(({ \
     let_(__s, TypeOf(_s)) = _s; \
     T_switch$((TypeOf(_s))( \
-        T_case$((u_S_const$raw)(lit$((u_P_const$raw){ .raw = as$(const u8*)(__s.ptr), .type = __s.type }))), \
-        T_case$((u_S$raw)(lit$((u_P$raw){ .raw = as$(u8*)(__s.ptr), .type = __s.type }))) \
+        T_case$((u_S_const$raw)(l$((u_P_const$raw){ .raw = as$(const u8*)(__s.ptr), .type = __s.type }))), \
+        T_case$((u_S$raw)(l$((u_P$raw){ .raw = as$(u8*)(__s.ptr), .type = __s.type }))) \
     )); \
 }))
 
 #define u_stride_static(_type...) ____u_stride_static(_type)
 #define ____u_stride_static(_type...) \
-    (((_type).size + ((1ull << (_type).align) - 1)) & ~((1ull << (_type).align) - 1))
+    (((_type).size + ((1ull << (_type).log2_align) - 1)) & ~((1ull << (_type).log2_align) - 1))
 #define u_stride(_type...) __step__u_stride(_type)
 #define __step__u_stride(_type...) ____u_stride(pp_uniqTok(type), _type)
 #define ____u_stride(__type, _type...) ({ \
@@ -237,11 +243,11 @@ typedef struct u_E$raw {
     claim_assert_fmt(__idx < u_lenS(__s), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, u_lenS(__s)); \
     let_(__stride, usize) = u_stride_static(__s.type); \
     T_switch$((TypeOf(__s))( \
-        T_case$((u_S_const$raw)(lit$((u_P_const$raw){ \
+        T_case$((u_S_const$raw)(l$((u_P_const$raw){ \
             .raw = as$(const u8*)(__s.ptr) + (__idx * __stride), \
             .type = __s.type, \
         }))), \
-        T_case$((u_S$raw)(lit$((u_P$raw){ \
+        T_case$((u_S$raw)(l$((u_P$raw){ \
             .raw = as$(u8*)(__s.ptr) + (__idx * __stride), \
             .type = __s.type, \
         }))) \
@@ -254,11 +260,11 @@ typedef struct u_E$raw {
     claim_assert_fmt(__idx < u_lenS(__s), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, u_lenS(__s)); \
     let_(__stride, usize) = u_stride_static(__s.type); \
     T_switch$((P$$(S_T$(TypeOf(__s))))( \
-        T_case$((P_const$raw)(lit$((u_P_const$raw){ \
+        T_case$((P_const$raw)(l$((u_P_const$raw){ \
             .raw = as$(const u8*)(__s.ptr) + (__idx * __stride), \
             .type = __s.type, \
         }))), \
-        T_case$((P$raw)(lit$((u_P$raw){ \
+        T_case$((P$raw)(l$((u_P$raw){ \
             .raw = as$(u8*)(__s.ptr) + (__idx * __stride), \
             .type = __s.type, \
         }))) \
@@ -273,12 +279,12 @@ typedef struct u_E$raw {
     claim_assert_fmt(isValidR(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
     let_(__stride, usize) = u_stride_static(__p.type); \
     T_switch$((TypeOf(__p))( \
-        T_case$((u_P_const$raw)(lit$((u_S_const$raw){ \
+        T_case$((u_P_const$raw)(l$((u_S_const$raw){ \
             .ptr = as$(const u8*)(__p.raw) + (__range.begin * __stride), \
             .len = lenR(__range), \
             .type = __p.type, \
         }))), \
-        T_case$((u_P$raw)(lit$((u_S$raw){ \
+        T_case$((u_P$raw)(l$((u_S$raw){ \
             .ptr = as$(u8*)(__p.raw) + (__range.begin * __stride), \
             .len = lenR(__range), \
             .type = __p.type, \
@@ -290,12 +296,12 @@ typedef struct u_E$raw {
     let_(__p, TypeOf(_p)) = _p; \
     let_(__end, usize) = _end; \
     T_switch$((TypeOf(__p))( \
-        T_case$((u_P_const$raw)(lit$((u_S_const$raw){ \
+        T_case$((u_P_const$raw)(l$((u_S_const$raw){ \
             .ptr = as$(const u8*)(__p.raw), \
             .len = __end, \
             .type = __p.type, \
         }))), \
-        T_case$((u_P$raw)(lit$((u_S$raw){ \
+        T_case$((u_P$raw)(l$((u_S$raw){ \
             .ptr = as$(u8*)(__p.raw), \
             .len = __end, \
             .type = __p.type, \
@@ -308,12 +314,12 @@ typedef struct u_E$raw {
     let_(__begin, usize) = _begin; \
     let_(__stride, usize) = u_stride_static(__p.type); \
     T_switch$((TypeOf(__p))( \
-        T_case$((u_P_const$raw)(lit$((u_S_const$raw){ \
+        T_case$((u_P_const$raw)(l$((u_S_const$raw){ \
             .ptr = as$(const u8*)(__p.raw) + (__begin * __stride), \
             .len = usize_limit_max - __begin, \
             .type = __p.type, \
         }))), \
-        T_case$((u_P$raw)(lit$((u_S$raw){ \
+        T_case$((u_P$raw)(l$((u_S$raw){ \
             .ptr = as$(u8*)(__p.raw) + (__begin * __stride), \
             .len = usize_limit_max - __begin, \
             .type = __p.type, \
@@ -328,7 +334,7 @@ typedef struct u_E$raw {
     claim_assert_fmt(isValidR(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
     claim_assert_fmt(__range.end <= u_lenS(__s), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, u_lenS(__s)); \
     let_(__stride, usize) = u_stride_static(__s.type); \
-    lit$((TypeOf(__s)){ \
+    l$((TypeOf(__s)){ \
         .ptr = T_switch$((P$$(S_T$(TypeOf(__s))))( \
                    T_case$((P_const$raw)(as$(const u8*)(ptrS(__s)))), \
                    T_case$((P$raw)(as$(u8*)(ptrS(__s)))) \
@@ -343,7 +349,7 @@ typedef struct u_E$raw {
     let_(__s, TypeOf(_s)) = _s; \
     let_(__end, usize) = _end; \
     claim_assert_fmt(__end <= u_lenS(__s), "Invalid slice range: end({:uz}) > len({:uz})", __end, u_lenS(__s)); \
-    lit$((TypeOf(__s)){ \
+    l$((TypeOf(__s)){ \
         .ptr = T_switch$((P$$(S_T$(TypeOf(__s))))( \
             T_case$((P_const$raw)(as$(const u8*)(ptrS(__s)))), \
             T_case$((P$raw)(as$(u8*)(ptrS(__s)))) \
@@ -358,7 +364,7 @@ typedef struct u_E$raw {
     let_(__begin, usize) = _begin; \
     claim_assert_fmt(__begin <= u_lenS(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, u_lenS(__s)); \
     let_(__stride, usize) = u_stride_static(__s.type); \
-    lit$((TypeOf(__s)){ \
+    l$((TypeOf(__s)){ \
         .ptr = T_switch$((P$$(S_T$(TypeOf(__s))))( \
                    T_case$((P_const$raw)(as$(const u8*)(ptrS(__s)))), \
                    T_case$((P$raw)(as$(u8*)(ptrS(__s)))) \
@@ -370,94 +376,211 @@ typedef struct u_E$raw {
 }))
 
 $attr($inline_always)
-$static fn_((u_memcpy(u_P$raw dst, u_P_const$raw src))(u_P$raw)) {
-    claim_assert_fmt(dst.type.size == src.type.size, "Type size mismatch: dst({:uz}) != src({:uz})", dst.type.size, src.type.size);
-    claim_assert_fmt(dst.type.align == src.type.align, "Type alignment mismatch: dst({:uz}) != src({:uz})", dst.type.align, src.type.align);
-    claim_assert_fmt(dst.raw != src.raw, "Pointers must not be the same: dst({:p}) != src({:p})", dst.raw, src.raw);
-    return memcpy(dst.raw, src.raw, src.type.size), dst;
-};
-$attr($inline_always)
-$static fn_((u_memmove(u_P$raw dst, u_P_const$raw src))(u_P$raw)) {
-    claim_assert_fmt(dst.type.size == src.type.size, "Type size mismatch: dst({:uz}) != src({:uz})", dst.type.size, src.type.size);
-    claim_assert_fmt(dst.type.align == src.type.align, "Type alignment mismatch: dst({:uz}) != src({:uz})", dst.type.align, src.type.align);
-    return memmove(dst.raw, src.raw, src.type.size), dst;
-};
-$attr($inline_always)
 $static fn_((u_memset(u_P$raw dst, u_V$raw src))(u_P$raw)) {
-    claim_assert_fmt(dst.type.size == src.inner_type.size, "Type size mismatch: dst({:uz}) != src({:uz})", dst.type.size, src.inner_type.size);
-    claim_assert_fmt(dst.type.align == src.inner_type.align, "Type alignment mismatch: dst({:uz}) != src({:uz})", dst.type.align, src.inner_type.align);
-    claim_assert_fmt(dst.raw != src.inner, "Pointers must not be the same: dst({:p}) != src({:p})", dst.raw, src.inner);
-    return memcpy(dst.raw, src.inner, src.inner_type.size), dst;
+    claim_assert_fmt(
+        dst.type.size == src.inner_type.size,
+        "Type size mismatch: dst({:uz}) != src({:uz})",
+        dst.type.size, src.inner_type.size
+    );
+    claim_assert_fmt(
+        dst.type.log2_align == src.inner_type.log2_align,
+        "Type alignment mismatch: dst({:uz}) != src({:uz})",
+        dst.type.log2_align, src.inner_type.log2_align
+    );
+    claim_assert_fmt(
+        dst.raw != src.inner,
+        "Pointers must not be the same: dst({:p}) != src({:p})",
+        dst.raw, src.inner
+    );
+    return raw_memcpy(dst.raw, src.inner, src.inner_type.size), dst;
 };
 $attr($inline_always)
 $static fn_((u_memset0(u_P$raw dst))(u_P$raw)) {
     claim_assert_nonnull(dst.raw);
-    return memset0(dst.raw, dst.type.size), dst;
+    return raw_memset0(dst.raw, dst.type.size), dst;
+};
+$attr($inline_always)
+$static fn_((u_memcpy(u_P$raw dst, u_P_const$raw src))(u_P$raw)) {
+    claim_assert_fmt(
+        dst.type.size == src.type.size,
+        "Type size mismatch: dst({:uz}) != src({:uz})",
+        dst.type.size, src.type.size
+    );
+    claim_assert_fmt(
+        dst.type.log2_align == src.type.log2_align,
+        "Type alignment mismatch: dst({:uz}) != src({:uz})",
+        dst.type.log2_align, src.type.log2_align
+    );
+    claim_assert_fmt(
+        dst.raw != src.raw,
+        "Pointers must not be the same: dst({:p}) != src({:p})",
+        dst.raw, src.raw
+    );
+    return raw_memcpy(dst.raw, src.raw, src.type.size), dst;
+};
+$attr($inline_always)
+$static fn_((u_memmove(u_P$raw dst, u_P_const$raw src))(u_P$raw)) {
+    claim_assert_fmt(
+        dst.type.size == src.type.size,
+        "Type size mismatch: dst({:uz}) != src({:uz})",
+        dst.type.size, src.type.size
+    );
+    claim_assert_fmt(
+        dst.type.log2_align == src.type.log2_align,
+        "Type alignment mismatch: dst({:uz}) != src({:uz})",
+        dst.type.log2_align, src.type.log2_align
+    );
+    return raw_memmove(dst.raw, src.raw, src.type.size), dst;
 };
 $attr($inline_always)
 $static fn_((u_memeql(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) {
-    claim_assert_fmt(lhs.type.size == rhs.type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.type.size, rhs.type.size);
-    claim_assert_fmt(lhs.type.align == rhs.type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.type.align, rhs.type.align);
-    return memcmp(lhs.raw, rhs.raw, rhs.type.size) == 0;
+    claim_assert_fmt(
+        lhs.type.size == rhs.type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.type.size, rhs.type.size
+    );
+    claim_assert_fmt(
+        lhs.type.log2_align == rhs.type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.type.log2_align, rhs.type.log2_align
+    );
+    return raw_memeql(lhs.raw, rhs.raw, rhs.type.size);
 };
 $attr($inline_always)
 $static fn_((u_memord(u_P_const$raw lhs, u_P_const$raw rhs))(cmp_Ord)) {
-    claim_assert_fmt(lhs.type.size == rhs.type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.type.size, rhs.type.size);
-    claim_assert_fmt(lhs.type.align == rhs.type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.type.align, rhs.type.align);
-    let result = memcmp(lhs.raw, rhs.raw, rhs.type.size);
-    return result < 0 ? cmp_Ord_lt : (0 < result ? cmp_Ord_gt : cmp_Ord_eq);
+    claim_assert_fmt(
+        lhs.type.size == rhs.type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.type.size, rhs.type.size
+    );
+    claim_assert_fmt(
+        lhs.type.log2_align == rhs.type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.type.log2_align, rhs.type.log2_align
+    );
+    return raw_memord(lhs.raw, rhs.raw, rhs.type.size);
 };
 
 $attr($inline_always)
-$static fn_((u_memcpyS(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
-    claim_assert_fmt(dst.type.size == src.type.size, "Type size mismatch: dst({:uz}) != src({:uz})", dst.type.size, src.type.size);
-    claim_assert_fmt(dst.type.align == src.type.align, "Type alignment mismatch: dst({:uz}) != src({:uz})", dst.type.align, src.type.align);
-    claim_assert_fmt(dst.len == src.len, "Length mismatch: dst({:uz}) != src({:uz})", dst.len, src.len);
-    claim_assert_fmt(dst.ptr != src.ptr, "Pointers must not be the same: dst({:p}) != src({:p})", dst.ptr, src.ptr);
-    return memcpy(dst.ptr, src.ptr, src.len * src.type.size), dst;
-};
-$attr($inline_always)
-$static fn_((u_memmoveS(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
-    claim_assert_fmt(dst.type.size == src.type.size, "Type size mismatch: dst({:uz}) != src({:uz})", dst.type.size, src.type.size);
-    claim_assert_fmt(dst.type.align == src.type.align, "Type alignment mismatch: dst({:uz}) != src({:uz})", dst.type.align, src.type.align);
-    claim_assert_fmt(dst.len == src.len, "Length mismatch: dst({:uz}) != src({:uz})", dst.len, src.len);
-    return memmove(dst.ptr, src.ptr, src.len * src.type.size), dst;
-};
-$attr($inline_always)
 $static fn_((u_memsetS(u_S$raw dst, u_V$raw src))(u_S$raw)) {
-    claim_assert_fmt(dst.type.size == src.inner_type.size, "Type size mismatch: dst({:uz}) != src({:uz})", dst.type.size, src.inner_type.size);
-    claim_assert_fmt(dst.type.align == src.inner_type.align, "Type alignment mismatch: dst({:uz}) != src({:uz})", dst.type.align, src.inner_type.align);
-    claim_assert_fmt(dst.ptr != src.inner, "Pointers must not be the same: dst({:p}) != src({:p})", dst.ptr, src.inner);
-    for_(($r(0, dst.len))(i) { u_memcpy(u_atS(dst, i), src.ref.as_const); });
+    claim_assert_fmt(
+        dst.type.size == src.inner_type.size,
+        "Type size mismatch: dst({:uz}) != src({:uz})",
+        dst.type.size, src.inner_type.size
+    );
+    claim_assert_fmt(
+        dst.type.log2_align == src.inner_type.log2_align,
+        "Type alignment mismatch: dst({:uz}) != src({:uz})",
+        dst.type.log2_align, src.inner_type.log2_align
+    );
+    claim_assert_fmt(
+        dst.ptr != src.inner,
+        "Pointers must not be the same: dst({:p}) != src({:p})",
+        dst.ptr, src.inner
+    );
+    for_(($r(0, dst.len))(i)) { u_memcpy(u_atS(dst, i), src.ref.as_const); } $end(for);
     return dst;
 };
 $attr($inline_always)
 $static fn_((u_memset0S(u_S$raw dst))(u_S$raw)) {
     claim_assert_nonnull(dst.ptr);
-    return memset0(dst.ptr, dst.len * dst.type.size), dst;
+    return raw_memset0(dst.ptr, dst.len * dst.type.size), dst;
+};
+$attr($inline_always)
+$static fn_((u_memcpyS(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
+    claim_assert_fmt(
+        dst.type.size == src.type.size,
+        "Type size mismatch: dst({:uz}) != src({:uz})",
+        dst.type.size, src.type.size
+    );
+    claim_assert_fmt(
+        dst.type.log2_align == src.type.log2_align,
+        "Type alignment mismatch: dst({:uz}) != src({:uz})",
+        dst.type.log2_align, src.type.log2_align
+    );
+    claim_assert_fmt(
+        dst.len == src.len,
+        "Length mismatch: dst({:uz}) != src({:uz})",
+        dst.len, src.len
+    );
+    claim_assert_fmt(
+        dst.ptr != src.ptr,
+        "Pointers must not be the same: dst({:p}) != src({:p})",
+        dst.ptr, src.ptr
+    );
+    return raw_memcpy(dst.ptr, src.ptr, src.len * src.type.size), dst;
+};
+$attr($inline_always)
+$static fn_((u_memmoveS(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
+    claim_assert_fmt(
+        dst.type.size == src.type.size,
+        "Type size mismatch: dst({:uz}) != src({:uz})",
+        dst.type.size, src.type.size
+    );
+    claim_assert_fmt(
+        dst.type.log2_align == src.type.log2_align,
+        "Type alignment mismatch: dst({:uz}) != src({:uz})",
+        dst.type.log2_align, src.type.log2_align
+    );
+    claim_assert_fmt(
+        dst.len == src.len,
+        "Length mismatch: dst({:uz}) != src({:uz})",
+        dst.len, src.len
+    );
+    return raw_memmove(dst.ptr, src.ptr, src.len * src.type.size), dst;
 };
 $attr($inline_always)
 $static fn_((u_memeqlS(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) {
-    claim_assert_fmt(lhs.type.size == rhs.type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.type.size, rhs.type.size);
-    claim_assert_fmt(lhs.type.align == rhs.type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.type.align, rhs.type.align);
-    claim_assert_fmt(lhs.len == rhs.len, "Length mismatch: lhs({:uz}) != rhs({:uz})", lhs.len, rhs.len);
-    return memcmp(lhs.ptr, rhs.ptr, rhs.len * rhs.type.size) == 0;
+    claim_assert_fmt(
+        lhs.type.size == rhs.type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.type.size, rhs.type.size
+    );
+    claim_assert_fmt(
+        lhs.type.log2_align == rhs.type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.type.log2_align, rhs.type.log2_align
+    );
+    claim_assert_fmt(
+        lhs.len == rhs.len,
+        "Length mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.len, rhs.len
+    );
+    return raw_memeql(lhs.ptr, rhs.ptr, rhs.len * rhs.type.size);
 };
 $attr($inline_always)
 $static fn_((u_memordS(u_S_const$raw lhs, u_S_const$raw rhs))(cmp_Ord)) {
-    claim_assert_fmt(lhs.type.size == rhs.type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.type.size, rhs.type.size);
-    claim_assert_fmt(lhs.type.align == rhs.type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.type.align, rhs.type.align);
-    claim_assert_fmt(lhs.len == rhs.len, "Length mismatch: lhs({:uz}) != rhs({:uz})", lhs.len, rhs.len);
-    let result = memcmp(lhs.ptr, rhs.ptr, rhs.len * rhs.type.size);
-    return (result < 0) ? cmp_Ord_lt : (0 < result) ? cmp_Ord_gt
-                                                    : cmp_Ord_eq;
+    claim_assert_fmt(
+        lhs.type.size == rhs.type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.type.size, rhs.type.size
+    );
+    claim_assert_fmt(
+        lhs.type.log2_align == rhs.type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.type.log2_align, rhs.type.log2_align
+    );
+    claim_assert_fmt(
+        lhs.len == rhs.len,
+        "Length mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.len, rhs.len
+    );
+    return raw_memord(lhs.ptr, rhs.ptr, rhs.len * rhs.type.size);
 };
 
-typedef fn_(((*)(u_V$raw lhs, u_V$raw rhs))(bool) $T) u_EqlFn;
+T_alias$((u_EqlFn)(fn_(((*)(u_V$raw lhs, u_V$raw rhs))(bool) $T)));
 $attr($inline_always)
 $static fn_((u_eql(u_V$raw lhs, u_V$raw rhs))(bool)) {
-    claim_assert_fmt(lhs.inner_type.size == rhs.inner_type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.size, rhs.inner_type.size);
-    claim_assert_fmt(lhs.inner_type.align == rhs.inner_type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.align, rhs.inner_type.align);
+    claim_assert_fmt(
+        lhs.inner_type.size == rhs.inner_type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.size, rhs.inner_type.size
+    );
+    claim_assert_fmt(
+        lhs.inner_type.log2_align == rhs.inner_type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.log2_align, rhs.inner_type.log2_align
+    );
     let l = u_allocV(lhs.inner_type);
     u_memcpy(l.ref, lhs.ref.as_const);
     let r = u_allocV(rhs.inner_type);
@@ -468,8 +591,16 @@ $attr($inline_always)
 $static fn_((u_neq(u_V$raw lhs, u_V$raw rhs))(bool)) { return !u_eql(lhs, rhs); };
 $attr($inline_always)
 $static fn_((u_eqlBy(u_V$raw lhs, u_V$raw rhs, u_EqlFn eqlFn))(bool)) {
-    claim_assert_fmt(lhs.inner_type.size == rhs.inner_type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.size, rhs.inner_type.size);
-    claim_assert_fmt(lhs.inner_type.align == rhs.inner_type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.align, rhs.inner_type.align);
+    claim_assert_fmt(
+        lhs.inner_type.size == rhs.inner_type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.size, rhs.inner_type.size
+    );
+    claim_assert_fmt(
+        lhs.inner_type.log2_align == rhs.inner_type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.log2_align, rhs.inner_type.log2_align
+    );
     let l = u_allocV(lhs.inner_type);
     u_memcpy(l.ref, lhs.ref.as_const);
     let r = u_allocV(rhs.inner_type);
@@ -478,11 +609,19 @@ $static fn_((u_eqlBy(u_V$raw lhs, u_V$raw rhs, u_EqlFn eqlFn))(bool)) {
 };
 $attr($inline_always)
 $static fn_((u_neqBy(u_V$raw lhs, u_V$raw rhs, u_EqlFn eqlFn))(bool)) { return !u_eqlBy(lhs, rhs, eqlFn); };
-typedef fn_(((*)(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool) $T) u_EqlCtxFn;
+T_alias$((u_EqlCtxFn)(fn_(((*)(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool) $T)));
 $attr($inline_always)
 $static fn_((u_eqlCtx(u_V$raw lhs, u_V$raw rhs, u_EqlCtxFn eqlFn, u_V$raw ctx))(bool)) {
-    claim_assert_fmt(lhs.inner_type.size == rhs.inner_type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.size, rhs.inner_type.size);
-    claim_assert_fmt(lhs.inner_type.align == rhs.inner_type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.align, rhs.inner_type.align);
+    claim_assert_fmt(
+        lhs.inner_type.size == rhs.inner_type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.size, rhs.inner_type.size
+    );
+    claim_assert_fmt(
+        lhs.inner_type.log2_align == rhs.inner_type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.log2_align, rhs.inner_type.log2_align
+    );
     let l = u_allocV(lhs.inner_type);
     u_memcpy(l.ref, lhs.ref.as_const);
     let r = u_allocV(rhs.inner_type);
@@ -494,11 +633,19 @@ $static fn_((u_eqlCtx(u_V$raw lhs, u_V$raw rhs, u_EqlCtxFn eqlFn, u_V$raw ctx))(
 $attr($inline_always)
 $static fn_((u_neqCtx(u_V$raw lhs, u_V$raw rhs, u_EqlCtxFn eqlFn, u_V$raw ctx))(bool)) { return !u_eqlCtx(lhs, rhs, eqlFn, ctx); };
 
-typedef fn_(((*)(u_V$raw lhs, u_V$raw rhs))(cmp_Ord) $T) u_OrdFn;
+T_alias$((u_OrdFn)(fn_(((*)(u_V$raw lhs, u_V$raw rhs))(cmp_Ord) $T)));
 $attr($inline_always)
 $static fn_((u_ord(u_V$raw lhs, u_V$raw rhs))(cmp_Ord)) {
-    claim_assert_fmt(lhs.inner_type.size == rhs.inner_type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.size, rhs.inner_type.size);
-    claim_assert_fmt(lhs.inner_type.align == rhs.inner_type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.align, rhs.inner_type.align);
+    claim_assert_fmt(
+        lhs.inner_type.size == rhs.inner_type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.size, rhs.inner_type.size
+    );
+    claim_assert_fmt(
+        lhs.inner_type.log2_align == rhs.inner_type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.log2_align, rhs.inner_type.log2_align
+    );
     let l = u_allocV(lhs.inner_type);
     u_memcpy(l.ref, lhs.ref.as_const);
     let r = u_allocV(rhs.inner_type);
@@ -507,19 +654,35 @@ $static fn_((u_ord(u_V$raw lhs, u_V$raw rhs))(cmp_Ord)) {
 };
 $attr($inline_always)
 $static fn_((u_ordBy(u_V$raw lhs, u_V$raw rhs, u_OrdFn ordFn))(cmp_Ord)) {
-    claim_assert_fmt(lhs.inner_type.size == rhs.inner_type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.size, rhs.inner_type.size);
-    claim_assert_fmt(lhs.inner_type.align == rhs.inner_type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.align, rhs.inner_type.align);
+    claim_assert_fmt(
+        lhs.inner_type.size == rhs.inner_type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.size, rhs.inner_type.size
+    );
+    claim_assert_fmt(
+        lhs.inner_type.log2_align == rhs.inner_type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.log2_align, rhs.inner_type.log2_align
+    );
     let l = u_allocV(lhs.inner_type);
     u_memcpy(l.ref, lhs.ref.as_const);
     let r = u_allocV(rhs.inner_type);
     u_memcpy(r.ref, rhs.ref.as_const);
     return ordFn(l, r);
 };
-typedef fn_(((*)(u_V$raw lhs, u_V$raw rhs, u_V$raw context))(cmp_Ord) $T) u_OrdCtxFn;
+T_alias$((u_OrdCtxFn)(fn_(((*)(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(cmp_Ord) $T)));
 $attr($inline_always)
 $static fn_((u_ordCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(cmp_Ord)) {
-    claim_assert_fmt(lhs.inner_type.size == rhs.inner_type.size, "Type size mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.size, rhs.inner_type.size);
-    claim_assert_fmt(lhs.inner_type.align == rhs.inner_type.align, "Type alignment mismatch: lhs({:uz}) != rhs({:uz})", lhs.inner_type.align, rhs.inner_type.align);
+    claim_assert_fmt(
+        lhs.inner_type.size == rhs.inner_type.size,
+        "Type size mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.size, rhs.inner_type.size
+    );
+    claim_assert_fmt(
+        lhs.inner_type.log2_align == rhs.inner_type.log2_align,
+        "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
+        lhs.inner_type.log2_align, rhs.inner_type.log2_align
+    );
     let l = u_allocV(lhs.inner_type);
     u_memcpy(l.ref, lhs.ref.as_const);
     let r = u_allocV(rhs.inner_type);
@@ -571,19 +734,19 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 // ============================================================================
 
 #define u_ret$ u_retV$
-#define u_retV$(_T) ((u_V$raw){ .inner = ptrCast$((P$raw) & lit0$((_T))), .inner_type = typeInfo$(_T) })
-#define u_retA$(_N, _T) ((u_A$raw){ .inner = A_ref(lit0$((A$$(_N, _T)))).as_raw, .inner_type = typeInfo$(FieldType$(A$$(_N, _T), val[0])) })
-#define u_retO$(_T) ((u_O$raw){ .inner = lit0$((O$$(_T))).ref_raw, .inner_type = typeInfo$(FieldType$(O$$(_T), payload->some)) })
-#define u_retE$(_T) ((u_E$raw){ .inner = lit0$((E$$(_T))).ref_raw, .inner_type = typeInfo$(FieldType$(E$$(_T), payload->ok)) })
+#define u_retV$(_T) ((u_V$raw){ .inner = ptrCast$((P$raw) & l0$((_T))), .inner_type = typeInfo$(_T) })
+#define u_retA$(_N, _T) ((u_A$raw){ .inner = A_ref(l0$((A$$(_N, _T)))).as_raw, .inner_type = typeInfo$(FieldType$(A$$(_N, _T), val[0])) })
+#define u_retO$(_T) ((u_O$raw){ .inner = l0$((O$$(_T))).ref_raw, .inner_type = typeInfo$(FieldType$(O$$(_T), payload->some)) })
+#define u_retE$(_T) ((u_E$raw){ .inner = l0$((E$$(_T))).ref_raw, .inner_type = typeInfo$(FieldType$(E$$(_T), payload->ok)) })
 
 // #define u_anyP_const(_p...) ((u_P_const$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
 // #define u_anyP(_p...) ((u_P$raw){ .type = typeInfo$(TypeOf(*_p)), .raw = _p })
 #define u_anyP(_p...) T_switch$((TypeOf(*_p))( \
-    T_qual$((const TypeOfUnqual(*_p))(lit$((u_P_const$raw){ \
+    T_qual$((const TypeOfUnqual(*_p))(l$((u_P_const$raw){ \
         .raw = ptrQualCast$((P_const$raw)(_p)), \
         .type = typeInfo$(TypeOf(*_p)), \
     }))), \
-    T_qual$((TypeOfUnqual(*_p))(lit$((u_P$raw){ \
+    T_qual$((TypeOfUnqual(*_p))(l$((u_P$raw){ \
         .raw = ptrQualCast$((P$raw)(_p)), \
         .type = typeInfo$(TypeOf(*_p)), \
     }))) \
@@ -591,11 +754,11 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 // #define u_anyS_const(_s...) ((u_S_const$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
 // #define u_anyS(_s...)       ((u_S$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
 #define u_anyS(_s...) T_switch$((TypeOf(*_s.ptr))( \
-    T_qual$((const TypeOfUnqual(*_s.ptr))(lit$((u_S_const$raw){ \
+    T_qual$((const TypeOfUnqual(*_s.ptr))(l$((u_S_const$raw){ \
         .raw = *ptrQualCast$((S_const$raw*)(_s.ref_raw)), \
         .type = typeInfo$(TypeOf(*_s.ptr)), \
     }))), \
-    T_qual$((TypeOfUnqual(*_s.ptr))(lit$((u_S$raw){ \
+    T_qual$((TypeOfUnqual(*_s.ptr))(l$((u_S$raw){ \
         .raw = *ptrQualCast$((S$raw*)(_s.ref_raw)), \
         .type = typeInfo$(TypeOf(*_s.ptr)), \
     }))) \
@@ -603,11 +766,11 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 
 #define u_anyV(_v...) $supress_cast_qual(({ \
     let_(__p_v, TypeOfUnqual(_v)*) = &copy(_v); \
-    lit$((u_V$raw){ .inner = ptrCast$((P$raw)(__p_v)), .inner_type = typeInfo$(TypeOf(*__p_v)) }); \
+    l$((u_V$raw){ .inner = ptrCast$((P$raw)(__p_v)), .inner_type = typeInfo$(TypeOf(*__p_v)) }); \
 }))
 #define u_anyA(_a...) $supress_cast_qual(({ \
     let_(__p_a, TypeOfUnqual(_a)*) = &copy(_a); \
-    lit$((u_A$raw){ .inner = A_ref(*__p_a).as_raw, .inner_type = typeInfo$(TypeOf(*__p_a->val)) }); \
+    l$((u_A$raw){ .inner = A_ref(*__p_a).as_raw, .inner_type = typeInfo$(TypeOf(*__p_a->val)) }); \
 }))
 #define u_anyO(_o...) $supress_cast_qual(({ \
     let_(__p_o, TypeOfUnqual(_o)*) = &copy(_o); \
@@ -684,8 +847,8 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
     $maybe_unused typedef SomeType InnerType; \
     let_(__meta, TypeOf(_Expr)) = _Expr; \
     __meta.is_some \
-        ? lit$((O$Ret$u_castO$)some(*as$(FieldType$(O$Ret$u_castO$, payload.some)*)(__meta.payload.some.inner))) \
-        : lit$((O$Ret$u_castO$)none()); \
+        ? l$((O$Ret$u_castO$)some(*as$(FieldType$(O$Ret$u_castO$, payload.some)*)(__meta.payload.some.inner))) \
+        : l$((O$Ret$u_castO$)none()); \
 }))
 
 #define u_castE$(/*(_ET)(_Expr...)*/... /*(_ET)*/) \
@@ -700,8 +863,8 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
     $maybe_unused typedef OkType InnerType; \
     let_(__meta, TypeOf(_Expr)) = _Expr; \
     __meta.is_ok \
-        ? lit$((E$Ret$u_castE$)ok(*as$(FieldType$(E$Ret$u_castE$, payload.ok)*)(__meta.payload.ok.inner))) \
-        : lit$((E$Ret$u_castE$)err(__meta.payload.err)); \
+        ? l$((E$Ret$u_castE$)ok(*as$(FieldType$(E$Ret$u_castE$, payload.ok)*)(__meta.payload.ok.inner))) \
+        : l$((E$Ret$u_castE$)err(__meta.payload.err)); \
 }))
 
 #if defined(__cplusplus)

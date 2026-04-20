@@ -1,5 +1,5 @@
 #if UNUSED_CODE
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/Arr.h"
 #include "dh/Str.h"
 
@@ -11,9 +11,7 @@ use_P$(FILE);
 use_S$(P$FILE);
 use_A$(4, P$FILE);
 
-config_ErrSet(LoadFileErr,
-    FailedOpenFile
-);
+config_ErrSet(LoadFileErr, FailedOpenFile);
 
 use_E$(P$FILE);
 static fn_(loadFile(S_const$u8 filename), E$P$FILE) $must_check;
@@ -53,7 +51,7 @@ $unguarded;
 
 fn_(dh_main(S$S_const$u8 args), E$void $scope) {
     let_ignore = args;
-    let files  = try_(loadFiles());
+    let files = try_(loadFiles());
     for_array(files, file) {
         let_ignore = fclose(*file);
     }

@@ -22,7 +22,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/mem/Allocator.h"
+#include "dh/mem/Alctr.h"
 #include "dh/time/common.h"
 
 /*========== Macros and Declarations ========================================*/
@@ -100,7 +100,7 @@ $extern fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void)) $must_check;
 
 // Thread spawn configuration
 typedef struct Thrd_SpawnCfg {
-    var_(allocator, O$mem_Allocator);
+    var_(allocator, O$mem_Alctr);
     var_(stack_size, usize);
 } Thrd_SpawnCfg;
 #define Thrd_SpawnCfg_default_stack_size (16ull * 1024ull * 1024ull)
@@ -163,7 +163,7 @@ typedef struct Thrd_RWLock Thrd_RWLock;
     __step__Thrd_FnCtx_from$__emit(__VA_ARGS__)
 #define __step__Thrd_FnCtx_from$__parseFnName(_fnName...) \
     _fnName,
-#define __step__Thrd_FnCtx_from$__emit(_fnName, _args...) lit$((Thrd_FnCtx$(_fnName)){ \
+#define __step__Thrd_FnCtx_from$__emit(_fnName, _args...) l$((Thrd_FnCtx$(_fnName)){ \
     .fn = _fnName, \
     .args = { .as_typed = { __step__Thrd_FnCtx_from$__expand _args } }, \
     .ret = { .as_typed = {} }, \

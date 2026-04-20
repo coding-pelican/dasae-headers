@@ -2,18 +2,18 @@
 
 /* Current Approach: Interface-based */
 /* config_ErrSet(
-    math_Err,
+    math_E,
     DivisionByZero,
     Overflow,
     Underflow
 ); */
 // enum_err(
-//     math_Err,
+//     math_E,
 //     DivisionByZero,
 //     Overflow,
 //     Underflow
 // );
-/* const char* E_type() { return "math_Err"; }
+/* const char* E_type() { return "math_E"; }
 const char* E_context() { return "Overflow"; } */
 
 /* Approach 1: String Constants Instead of Interfaces  */
@@ -33,36 +33,36 @@ static const Err E_Unknown = {
 };
 
 /* case 2: Based Functions */
-typedef Err math_Err;
+typedef Err math_E;
 
-extern const math_Err* math_E_DivisionByZero(void);
-extern const math_Err* math_E_Overflow(void);
-extern const math_Err* math_E_Underflow(void);
+extern const math_E* math_E_DivisionByZero(void);
+extern const math_E* math_E_Overflow(void);
+extern const math_E* math_E_Underflow(void);
 
-const math_Err* math_E_DivisionByZero(void) {
-    static const math_Err error[1] = { {
-        .type = "math_Err",
+const math_E* math_E_DivisionByZero(void) {
+    static const math_E error[1] = { {
+        .type = "math_E",
         .context = "DivisionByZero",
     } };
     return error;
 }
-const math_Err* math_E_Overflow(void) {
-    static const math_Err error[1] = { {
-        .type = "math_Err",
+const math_E* math_E_Overflow(void) {
+    static const math_E error[1] = { {
+        .type = "math_E",
         .context = "Overflow",
     } };
     return error;
 }
-const math_Err* math_E_Underflow(void) {
-    static const math_Err error[1] = { {
-        .type = "math_Err",
+const math_E* math_E_Underflow(void) {
+    static const math_E error[1] = { {
+        .type = "math_E",
         .context = "Underflow",
     } };
     return error;
 }
 
 /* Approach 2: Use bit flags for ErrSet */
-typedef struct io_Err {
+typedef struct io_E {
     usize NotImplemented            : 1;
     usize Unknown                   : 1;
     usize FileNotFound              : 1;
@@ -85,7 +85,7 @@ typedef struct io_Err {
     usize DiskQuotaExceeded         : 1;
     usize FilesystemNotSupported    : 1;
     usize OperationNotPermitted     : 1;
-} io_Err;
+} io_E;
 
 // 1. 설정된 에러의 정보는 immutable 해야함.
 // 2. 여러 개의 에러를 동시에 처리할 수 있어야 함.
@@ -94,7 +94,7 @@ typedef struct io_Err {
 // 5. 메모리 할당의 결정권은 라이브러리 사용자에게 있으므로 절대 동적할당(malloc 등)을 사용하면 안됨됨.
 
 
-// 5. math_Err, io_Err, thrd_Err, engine_CanvasDrawErr 등 다양한 에러들이 정의되었을 때, 각각의 에러 코드가 서로 다른 범위를 가지도록 설계되어야 함.
+// 5. math_E, io_E, thrd_Err, engine_CanvasDrawErr 등 다양한 에러들이 정의되었을 때, 각각의 에러 코드가 서로 다른 범위를 가지도록 설계되어야 함.
 
 /* E$P$engine_RenderBackend NotepadBackend_create(void) {
     scope_reserveReturn(E$P$engine_RenderBackend) {
@@ -103,7 +103,7 @@ typedef struct io_Err {
             return_err(NotepadBackendE_OutOfMemoryNotepadBacked));
         }
         errdefer(free(backend));
-        prim_memset(backend, 0, sizeof(engine_NotepadBackend));
+        pri_memset(backend, 0, sizeof(engine_NotepadBackend));
 
         let capacity = 160ull * 100ull;
         let buffer   = (wchar*)malloc(capacity * sizeof(wchar));
@@ -111,7 +111,7 @@ typedef struct io_Err {
             return_err(NotepadBackendE_OutOfMemoryNotepadBackendBuffer));
         }
         errdefer(free(buffer));
-        prim_memset(buffer, 0, capacity * sizeof(wchar));
+        pri_memset(buffer, 0, capacity * sizeof(wchar));
 
         backend->buffer          = buffer;
         backend->buffer_capacity = capacity;
@@ -128,12 +128,12 @@ typedef struct io_Err {
         });
 
         // Set up backend interface
-        backend->base = blk({
+        backend->base = local_({
             var vt           = engine_RenderBackend_createNoOp();
             vt.type          = engine_RenderBackendType_custom;
             vt.destroy       = NotepadBackend_destroy;
             vt.presentBuffer = NotepadBackend_presentBuffer;
-            blk_return vt;
+            local__return vt;
         });
         return_ok(&backend->base);
     }

@@ -16,7 +16,7 @@
 #define __pp_switch___eval(_pp_cond, _tag, ...) \
     pp_cat(__pp_switch___eval, _tag)(_pp_cond, __VA_ARGS__)
 #define __pp_switch___eval$_pp_case(_pp_cond, _pp_enum, _pp_expr, ...) \
-    pp_defer(__call__pp_if)()(pp_Tok_eq(_pp_cond, _pp_enum))(_pp_expr, (__call__pp_switch___eval)()(_pp_cond, __VA_ARGS__))
+    pp_defer(__call__pp_if)()(pp_Tok_eql(_pp_cond, _pp_enum))(_pp_expr, (__call__pp_switch___eval)()(_pp_cond, __VA_ARGS__))
 #define __pp_switch___eval$_pp_default(_pp_cond, _pp_expr...) \
     _pp_expr
 
@@ -56,16 +56,16 @@
 // lang_mode, lang_mode_c, lang_version_c, lang_mode_cpp, lang_version_cpp, lang_version_unknown
 // lang_mode, (lang_mode_c)(lang_version_c), (lang_mode_cpp)(lang_version_cpp), lang_version_unknown
 
-// pp_if_(pp_eq(lang_mode, lang_mode_c))
-// pp_if_(pp_eq(lang_mode, lang_mode_cpp))
+// pp_if_(pp_eql(lang_mode, lang_mode_c))
+// pp_if_(pp_eql(lang_mode, lang_mode_cpp))
 // lang_version_unknown
 
-// pp_if_(pp_eq(lang_mode, lang_mode_c))(lang_version_c)
-// pp_if_(pp_eq(lang_mode, lang_mode_cpp))(lang_version_cpp)
+// pp_if_(pp_eql(lang_mode, lang_mode_c))(lang_version_c)
+// pp_if_(pp_eql(lang_mode, lang_mode_cpp))(lang_version_cpp)
 // (lang_version_unknown)
 
 
-// pp_if_(pp_eq(lang_mode, lang_mode_c))(lang_version_c, pp_if_(pp_eq(lang_mode, lang_mode_cpp))(lang_version_cpp, lang_version_unknown))
+// pp_if_(pp_eql(lang_mode, lang_mode_c))(lang_version_c, pp_if_(pp_eql(lang_mode, lang_mode_cpp))(lang_version_cpp, lang_version_unknown))
 // lang_mode, lang_mode_c, (lang_version_c), lang_mode_cpp, (lang_version_cpp), lang_version_unknow
 #define __step__switch_(_cond, _cases...) _cond, _cases
 
@@ -82,7 +82,7 @@
 #define __step__switch___eval(_cond, _tag, ...) \
     pp_cat(__step__switch___eval, _tag)(_cond, __VA_ARGS__)
 #define __step__switch___eval$_pp_case(_cond, _enum, _expr, ...) \
-    pp_defer(__call__pp_if)()(pp_Tok_eq(_cond, _enum))(_expr, (__call__switch___eval)()(_cond, __VA_ARGS__))
+    pp_defer(__call__pp_if)()(pp_Tok_eql(_cond, _enum))(_expr, (__call__switch___eval)()(_cond, __VA_ARGS__))
 #define __step__switch___eval$_pp_default(_cond, _expr...) \
     _expr
 

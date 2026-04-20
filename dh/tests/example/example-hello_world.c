@@ -1,7 +1,7 @@
 // Include the main header that provides program entry point
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/common.h" /* for `io_getStdOut()` */
-#include "dh/fs/File.h"   /* for `fs_File_writer()` */
+#include "dh/fs/File.h" /* for `fs_File_writer()` */
 #include "dh/io/Writer.h" /* for `io_Writer_print()` */
 
 // Define the main function with scope and error handling
@@ -16,4 +16,4 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     try_(io_Writer_print(out, u8_l("Hello, {:?s}!\n"), msg));
     // Return success (void value with no error)
     return_ok({});
-} $unscoped_(fn); // End the scope block
+} $unscoped(fn); // End the scope block

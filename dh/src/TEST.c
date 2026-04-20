@@ -20,7 +20,7 @@ fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
     static heap_Page s_heap_ctx = cleared();
     static bool s_is_initialized = false;
     if (!s_is_initialized) {
-        s_instance.gpa = heap_Page_allocator(&s_heap_ctx);
+        s_instance.gpa = heap_Page_alctr(&s_heap_ctx);
         s_instance.cases $like_deref = catch_((ArrList_init$TEST_Case(s_instance.gpa, 8))($ignore, claim_unreachable));
         s_is_initialized = true;
     }
@@ -60,7 +60,7 @@ fn_((TEST_Framework_run(void))(void) $guard) {
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
 
     // Run each test case
-    for_(($s(cases->items))(test_case) {
+    for_(($s(cases->items))(test_case)) {
         instance->stats.total++;
         catch_((print(
             out, u8_l("Running test: {:s}{:s}{:s}\n"), u8_l(TEST_color_yellow), test_case->name, u8_l(TEST_color_reset)
@@ -81,7 +81,7 @@ fn_((TEST_Framework_run(void))(void) $guard) {
                 out, u8_l("    {:s}\n"), u8_l(TEST_color_green "[PASS]" TEST_color_reset)
             ))($ignore, claim_unreachable));
         }
-    });
+    } $end(for);
 
     // Print summary
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
@@ -92,7 +92,7 @@ fn_((TEST_Framework_run(void))(void) $guard) {
         catch_((print(out, u8_l(TEST_color_red "Failed: {:u}" TEST_color_reset "\n"), instance->stats.failed))($ignore, claim_unreachable));
     }
     catch_((print(out, u8_l("\n")))($ignore, claim_unreachable));
-} $unguarded_(fn);
+} $unguarded(fn);
 
 /* Debug versions of test functions */
 #if on_comptime
@@ -100,18 +100,18 @@ fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void) $scop
     let_ignore = loc;
     let_ignore = eval_str;
     if (!expr) {
-        return_err(TEST_Err_Unexpected());
+        return_err(TEST_E_Unexpected());
     }
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_str))(E$void) $scope) {
     let_ignore = msg;
     let_ignore = loc;
     let_ignore = eval_str;
     if (!expr) {
-        return_err(TEST_Err_Unexpected());
+        return_err(TEST_E_Unexpected());
     }
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 #endif /* on_comptime */

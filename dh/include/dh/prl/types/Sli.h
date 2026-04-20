@@ -71,7 +71,7 @@ extern "C" {
 
 #define S_T$(_T...) TypeOf(*(as$(_T*)(null))->ptr)
 #define S_TUnqual$(_T...) TypeOfUnqual(*(as$(_T*)(null))->ptr)
-#define S_isConst$(_T...) Type_eq$(S_InnerT$(_T)*, const S_InnerTUnqual$(_T)*)
+#define S_isConst$(_T...) eqlType$(S_InnerT$(_T)*, const S_InnerTUnqual$(_T)*)
 
 #define S_InnerT$(_T...) TypeOf(*(as$(_T*)(null))->ptr)
 #define S_InnerTUnqual$(_T...) TypeOfUnqual(*(as$(_T*)(null))->ptr)
@@ -82,9 +82,9 @@ extern "C" {
 #define ____isNonnullS(_s...) (as$(bool)((_s).ptr != null))
 #define ensureNonnullS(_s /*: S(_T)*/... /*(S(_T))*/) __step__ensureNonnullS(_s)
 #define __step__ensureNonnullS(_s...) ____ensureNonnullS(pp_uniqTok(s), _s)
-#define ____ensureNonnullS(__s, _s...) blk({ \
+#define ____ensureNonnullS(__s, _s...) local_({ \
     let_(__s, TypeOf(_s)) = _s; \
-    blk_return_(claim_assert_nonnullS(__s), __s); \
+    local_return_(claim_assert_nonnullS(__s), __s); \
 })
 
 #define mutCastS(_s /*: S(_T)*/... /*(S_const(_T))*/) ____mutCastS(_s)
@@ -93,9 +93,9 @@ extern "C" {
 #define __step__constCastS$(...) __step__constCastS$__emit(__step__constCastS$__parse __VA_ARGS__)
 #define __step__constCastS$__parse(_S_T...) _S_T, pp_uniqTok(s),
 #define __step__constCastS$__emit(...) ____constCastS$(__VA_ARGS__)
-#define ____constCastS$(_S_T, __s, _s...) blk({ \
+#define ____constCastS$(_S_T, __s, _s...) local_({ \
     let_(__s, TypeOf(_s)) = _s; \
-    blk_return_(lit$((_S_T){ .ptr = constCast(__s.ptr), .len = __s.len })); \
+    local_return_(l$((_S_T){ .ptr = constCast(__s.ptr), .len = __s.len })); \
 })
 #define constCastS(_s /*: S_const(_T)*/... /*(S(_T))*/) ____constCastS(_s)
 #define ____constCastS(_s...) constCastS$((S$$(S_TUnqual$(TypeOf(_s))))(_s))
@@ -147,7 +147,7 @@ extern "C" {
     __op__S_deref$(__op__S_deref$__parseANT __VA_ARGS__)
 #define __op__S_deref$(...) __op__S_deref$__emit(__VA_ARGS__)
 #define __op__S_deref$__parseANT(_ANT...) _ANT,
-#define __op__S_deref$__emit(_ANT, _s...) (*blk({ \
+#define __op__S_deref$__emit(_ANT, _s...) (*local_({ \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(S_len(__s) == A_innerN$(_ANT), "length mismatch: len({:uz}) != N({:uz})", S_len(__s), A_innerN$(_ANT)); \
     as$(_ANT*)(ensureNonnull(S_ptr(__s))); \
@@ -180,7 +180,7 @@ extern "C" {
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
     claim_assert_fmt(__range.end <= S_len(__s), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, S_len(__s)); \
-    lit$((_ST){ .ptr = &S_ptr(__s)[__range.begin], .len = len$R(__range) }); \
+    l$((_ST){ .ptr = &S_ptr(__s)[__range.begin], .len = len$R(__range) }); \
 })
 #define S_slice(/*(_s: S(_T))(_range: R)*/... /*(S(_T))*/) \
     __op__S_slice(__op__S_slice__parse __VA_ARGS__)
@@ -191,7 +191,7 @@ extern "C" {
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
     claim_assert_fmt(__range.end <= S_len(__s), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, S_len(__s)); \
-    lit$((TypeOf(__s)){ .ptr = &S_ptr(__s)[__range.begin], .len = len$R(__range) }); \
+    l$((TypeOf(__s)){ .ptr = &S_ptr(__s)[__range.begin], .len = len$R(__range) }); \
 })
 
 #define S_prefix$(/*(_ST: S(_T))(_s: S(_T))(_end: usize)*/... /*(_ST)*/) \
@@ -203,7 +203,7 @@ extern "C" {
     let_(__end, usize) = _end; \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(__end <= S_len(__s), "Invalid slice range: end({:uz}) > len({:uz})", __end, S_len(__s)); \
-    lit$((_ST){ .ptr = S_ptr(__s), .len = __end }); \
+    l$((_ST){ .ptr = S_ptr(__s), .len = __end }); \
 })
 #define S_prefix(/*(_s: S(_T))(_end: usize)*/... /*(S(_T))*/) \
     __op__S_prefix(__op__S_prefix__parse __VA_ARGS__)
@@ -213,7 +213,7 @@ extern "C" {
     let_(__end, usize) = _end; \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(__end <= S_len(__s), "Invalid slice range: end({:uz}) > len({:uz})", __end, S_len(__s)); \
-    lit$((TypeOf(__s)){ .ptr = S_ptr(__s), .len = __end }); \
+    l$((TypeOf(__s)){ .ptr = S_ptr(__s), .len = __end }); \
 })
 
 #define S_suffix$(/*(_ST: S(_T))(_s: S(_T))(_begin: usize)*/... /*(_ST)*/) \
@@ -225,7 +225,7 @@ extern "C" {
     let_(__begin, usize) = _begin; \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, S_len(__s)); \
-    lit$((_ST){ .ptr = S_ptr(__s) + __begin, .len = S_len(__s) - __begin }); \
+    l$((_ST){ .ptr = S_ptr(__s) + __begin, .len = S_len(__s) - __begin }); \
 })
 #define S_suffix(/*(_s: S(_T))(_begin: usize)*/... /*(S(_T))*/) \
     __op__S_suffix(__op__S_suffix__parse __VA_ARGS__)
@@ -235,7 +235,7 @@ extern "C" {
     let_(__begin, usize) = _begin; \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, S_len(__s)); \
-    lit$((TypeOf(__s)){ .ptr = S_ptr(__s) + __begin, .len = S_len(__s) - __begin }); \
+    l$((TypeOf(__s)){ .ptr = S_ptr(__s) + __begin, .len = S_len(__s) - __begin }); \
 })
 
 #define sliceS slice$S
@@ -270,7 +270,7 @@ extern "C" {
 #define __lit_init$S__parseT(_T...) _T, __lit_init$S__parsePtrLen
 #define __lit_init$S__parsePtrLen(_ptr, _len...) _ptr, _len
 #define __lit_init$S__emit(_AliasFn, _T, _ptr, _len...) \
-    lit$((_AliasFn(_T))init$S(_ptr, _len))
+    l$((_AliasFn(_T))init$S(_ptr, _len))
 
 #define __step_inline__deref$S$(...) __VA_ARGS__
 #define __param_parse__deref$S$(...) __VA_ARGS__, __param_next__deref$S$
@@ -304,7 +304,7 @@ extern "C" {
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
     claim_assert_fmt(__range.end <= len$S(__s), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, len$S(__s)); \
-    lit$((TypeOf(__s))init$S(&ptr$S(__s)[__range.begin], len$R(__range))); \
+    l$((TypeOf(__s))init$S(&ptr$S(__s)[__range.begin], len$R(__range))); \
 })
 
 #define __param_expand__slice$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(range), __param_next__slice$S$
@@ -322,7 +322,7 @@ extern "C" {
     let_(__end, usize) = _end; \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(__end <= len$S(__s), "Invalid slice range: end({:uz}) > len({:uz})", __end, len$S(__s)); \
-    lit$((TypeOf(__s))init$S(ptr$S(__s), __end)); \
+    l$((TypeOf(__s))init$S(ptr$S(__s), __end)); \
 })
 
 #define __param_expand__prefix$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(end), __param_next__prefix$S$
@@ -339,7 +339,7 @@ extern "C" {
     let_(__begin, usize) = _begin; \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, len$S(__s)); \
-    lit$((TypeOf(__s))init$S(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
+    l$((TypeOf(__s))init$S(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
 
 #define __param_expand__suffix$S$(...) __VA_ARGS__, pp_uniqTok(s), pp_uniqTok(begin), __param_next__suffix$S$
@@ -351,25 +351,25 @@ extern "C" {
     init$S$((_T)(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
 
-#define comp_syn__u8_c(_literal) lit$((u8){ _literal })
-#define comp_syn__u16_c(_literal) lit$((u16){ u##_literal })
-#define comp_syn__u32_c(_literal) lit$((u32){ U##_literal })
+#define comp_syn__u8_c(_literal) l$((u8){ _literal })
+#define comp_syn__u16_c(_literal) l$((u16){ u##_literal })
+#define comp_syn__u32_c(_literal) l$((u32){ U##_literal })
 
 #define comp_syn__u8_a(_literal...) $supress_unterminated_string_initialization( \
-    lit$((A$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } }) \
+    l$((A$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } }) \
 )
-#define comp_syn__u8_s(_literal) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
-#define comp_syn__u8_l(_literal) lit$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
+#define comp_syn__u8_s(_literal) l$((S$u8){ .ptr = l$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
+#define comp_syn__u8_l(_literal) l$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
 
-#define comp_syn__u8_az(_literal) lit$((A$$(sizeOf$(TypeOf(_literal)), u8)){ .val = { _literal } })
-#define comp_syn__u8_sz(_literal) lit$((S$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) })
-#define comp_syn__u8_lz(_literal) lit$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) })
+#define comp_syn__u8_az(_literal) l$((A$$(sizeOf$(TypeOf(_literal)), u8)){ .val = { _literal } })
+#define comp_syn__u8_sz(_literal) l$((S$u8){ .ptr = l$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) })
+#define comp_syn__u8_lz(_literal) l$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) })
 
-#define comp_syn__u8z_a(_literal) lit$((AZ$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } })
-#define comp_syn__u8z_s(_literal) lit$((SZ$u8){ .ptr = lit$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
-#define comp_syn__u8z_l(_literal) lit$((SZ_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
+#define comp_syn__u8z_a(_literal) l$((AZ$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } })
+#define comp_syn__u8z_s(_literal) l$((SZ$u8){ .ptr = l$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
+#define comp_syn__u8z_l(_literal) l$((SZ_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
 
-#define comp_syn__u8_s0(_literal) lit$((u8[]){ _literal })
+#define comp_syn__u8_s0(_literal) l$((u8[]){ _literal })
 #define comp_syn__u8_l0(_literal) as$(const u8*)(_literal)
 
 #if defined(__cplusplus)

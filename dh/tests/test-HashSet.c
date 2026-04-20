@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/HashSet.h"
 #include "dh/heap/Page.h"
 
@@ -43,17 +43,17 @@ T_use$((usize)(
 
 TEST_fn_("basic usage" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
     var set_value = try_(HashSet_init$usize(ctx, gpa, 256));
     defer_(HashSet_fini$usize(&set_value, gpa));
 
     let_(count, u32) = 128;
     var_(total, u32) = 0;
-    for_(($r(0, count))(i) {
+    for_(($r(0, count))(i)) {
         try_(HashSet_put$usize(&set_value, gpa, i));
         total += i;
-    });
+    } $end(for);
 
     using_(var_(sum, u32) = 0) {
         var it = HashSet_iter$usize(&set_value);
@@ -64,28 +64,28 @@ TEST_fn_("basic usage" $guard) {
     }
 
     using_(var_(sum, u32) = 0) {
-        for_(($r(0, count))(i) {
+        for_(($r(0, count))(i)) {
             try_(TEST_expect(HashSet_contains$usize(set_value, i)));
             try_(TEST_expect(i == unwrap_(HashSet_for$usize(set_value, i))));
             sum += unwrap_(HashSet_for$usize(set_value, i));
-        });
+        } $end(for);
         try_(TEST_expect(sum == total));
     }
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("basic usage - no templates used" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
     var set_value = try_(HashSet_init(typeInfo$(usize), ctx, gpa, 256));
     defer_(HashSet_fini(&set_value, typeInfo$(usize), gpa));
 
     let_(count, u32) = 128;
     var_(total, u32) = 0;
-    for_(($r(0, count))(i) {
+    for_(($r(0, count))(i)) {
         try_(HashSet_put(&set_value, gpa, u_anyV(as$(usize)(i))));
         total += i;
-    });
+    } $end(for);
 
     using_(var_(sum, u32) = 0) {
         var it = HashSet_iter(&set_value, typeInfo$(usize));
@@ -96,18 +96,18 @@ TEST_fn_("basic usage - no templates used" $guard) {
     }
 
     using_(var_(sum, u32) = 0) {
-        for_(($r(0, count))(i) {
+        for_(($r(0, count))(i)) {
             try_(TEST_expect(HashSet_contains(set_value, u_anyV(as$(usize)(i)))));
             try_(TEST_expect(i == unwrap_(u_castO$((O$usize)(HashSet_for(set_value, u_anyV(as$(usize)(i)), u_retV$(usize)))))));
             sum += unwrap_(u_castO$((O$usize)(HashSet_for(set_value, u_anyV(as$(usize)(i)), u_retV$(usize)))));
-        });
+        } $end(for);
         try_(TEST_expect(sum == total));
     }
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("basic hash set usage" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
     var set_value = try_(HashSet_init$usize(ctx, gpa, 256));
     defer_(HashSet_fini$usize(&set_value, gpa));
@@ -152,11 +152,11 @@ TEST_fn_("basic hash set usage" $guard) {
     // Test remove
     try_(TEST_expect(HashSet_remove$usize(&set_value, 3)));
     try_(TEST_expect(!HashSet_remove$usize(&set_value, 3)));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("set operations" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
     // Create set A = {1, 2, 3}
@@ -192,26 +192,26 @@ TEST_fn_("set operations" $guard) {
     try_(HashSet_put$usize(&setE, gpa, 6));
 
     // Test isSubset
-    try_(TEST_expect(HashSet_isSubset$usize(setD, setA)));  // {1} ⊆ {1,2,3}
+    try_(TEST_expect(HashSet_isSubset$usize(setD, setA))); // {1} ⊆ {1,2,3}
     try_(TEST_expect(!HashSet_isSubset$usize(setA, setD))); // {1,2,3} ⊄ {1}
-    try_(TEST_expect(HashSet_isSubset$usize(setA, setC)));  // {1,2,3} ⊆ {1,2,3}
+    try_(TEST_expect(HashSet_isSubset$usize(setA, setC))); // {1,2,3} ⊆ {1,2,3}
     try_(TEST_expect(!HashSet_isSubset$usize(setA, setB))); // {1,2,3} ⊄ {2,3,4}
 
     // Test isSuperset
-    try_(TEST_expect(HashSet_isSuperset$usize(setA, setD)));  // {1,2,3} ⊇ {1}
+    try_(TEST_expect(HashSet_isSuperset$usize(setA, setD))); // {1,2,3} ⊇ {1}
     try_(TEST_expect(!HashSet_isSuperset$usize(setD, setA))); // {1} ⊅ {1,2,3}
-    try_(TEST_expect(HashSet_isSuperset$usize(setA, setC)));  // {1,2,3} ⊇ {1,2,3}
+    try_(TEST_expect(HashSet_isSuperset$usize(setA, setC))); // {1,2,3} ⊇ {1,2,3}
 
     // Test isDisjoint
-    try_(TEST_expect(HashSet_isDisjoint$usize(setA, setE)));  // {1,2,3} ∩ {5,6} = ∅
-    try_(TEST_expect(HashSet_isDisjoint$usize(setE, setA)));  // {5,6} ∩ {1,2,3} = ∅
+    try_(TEST_expect(HashSet_isDisjoint$usize(setA, setE))); // {1,2,3} ∩ {5,6} = ∅
+    try_(TEST_expect(HashSet_isDisjoint$usize(setE, setA))); // {5,6} ∩ {1,2,3} = ∅
     try_(TEST_expect(!HashSet_isDisjoint$usize(setA, setB))); // {1,2,3} ∩ {2,3,4} ≠ ∅
     try_(TEST_expect(!HashSet_isDisjoint$usize(setA, setC))); // {1,2,3} ∩ {1,2,3} ≠ ∅
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("clone and clear operations" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
     var set = try_(HashSet_init$usize(ctx, gpa, 16));
@@ -242,25 +242,25 @@ TEST_fn_("clone and clear operations" $guard) {
     HashSet_clearAndFree$usize(&cloned, gpa);
     try_(TEST_expect(HashSet_count$usize(cloned) == 0));
     try_(TEST_expect(HashSet_cap$usize(cloned) == 0));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("rehash" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
     var set = try_(HashSet_init$usize(ctx, gpa, 64));
     defer_(HashSet_fini$usize(&set, gpa));
 
     // Add and remove elements to create tombstones
-    for_(($r(0, 32))(i) {
+    for_(($r(0, 32))(i)) {
         try_(HashSet_put$usize(&set, gpa, i));
-    });
+    } $end(for);
 
     // Remove half to create tombstones
-    for_(($r(0, 16))(i) {
+    for_(($r(0, 16))(i)) {
         HashSet_remove$usize(&set, i * 2);
-    });
+    } $end(for);
 
     try_(TEST_expect(HashSet_count$usize(set) == 16));
 
@@ -269,17 +269,17 @@ TEST_fn_("rehash" $guard) {
 
     // Verify all expected elements are still present
     try_(TEST_expect(HashSet_count$usize(set) == 16));
-    for_(($r(0, 16))(i) {
+    for_(($r(0, 16))(i)) {
         try_(TEST_expect(HashSet_contains$usize(set, i * 2 + 1)));
-    });
-    for_(($r(0, 16))(i) {
+    } $end(for);
+    for_(($r(0, 16))(i)) {
         try_(TEST_expect(!HashSet_contains$usize(set, i * 2)));
-    });
-} $unguarded_(TEST_fn);
+    } $end(for);
+} $unguarded(TEST_fn);
 
 TEST_fn_("key iterator" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
     var set = try_(HashSet_init$usize(ctx, gpa, 16));
@@ -288,10 +288,10 @@ TEST_fn_("key iterator" $guard) {
     // Add elements
     let_(count, u32) = 10;
     var_(expected_total, u32) = 0;
-    for_(($r(0, count))(i) {
+    for_(($r(0, count))(i)) {
         try_(HashSet_put$usize(&set, gpa, i));
         expected_total += i;
-    });
+    } $end(for);
 
     // Iterate and sum
     var_(actual_total, u32) = 0;
@@ -304,11 +304,11 @@ TEST_fn_("key iterator" $guard) {
 
     try_(TEST_expect(iter_count == count));
     try_(TEST_expect(actual_total == expected_total));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 #if UNUSED_CODE
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 #endif /* UNUSED_CODE */

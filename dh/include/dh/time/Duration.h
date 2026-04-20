@@ -136,31 +136,31 @@ $static cmp_fn_neqCtx$((time_Duration)(lhs, rhs, ctx));
 #define __comp_const__time_Duration_micro time_Duration_fromMicros_static(1)
 #define __comp_const__time_Duration_nano time_Duration_fromNanos_static(1)
 
-#define __comp_fn__time_Duration_from_static(_secs, _nanos) lit$((time_Duration){ \
+#define __comp_fn__time_Duration_from_static(_secs, _nanos) l$((time_Duration){ \
     .secs = (_secs), \
     .nanos = (_nanos), \
 })
-#define __comp_fn__time_Duration_fromSecs_static(_secs) lit$((time_Duration){ \
+#define __comp_fn__time_Duration_fromSecs_static(_secs) l$((time_Duration){ \
     .secs = (_secs) == 0 ? 0 : (_secs), \
     .nanos = 0, \
 })
-#define __comp_fn__time_Duration_fromSecs$f64_static(_secs) lit$((time_Duration){ \
+#define __comp_fn__time_Duration_fromSecs$f64_static(_secs) l$((time_Duration){ \
     .secs = as$(u64)(_secs), \
     .nanos = as$(u32)(((_secs) - as$(f64)(as$(u64)(_secs))) * as$(f64)(time_nanos_per_sec)), \
 })
-#define __comp_fn__time_Duration_fromSecs$f32_static(_secs) lit$((time_Duration){ \
+#define __comp_fn__time_Duration_fromSecs$f32_static(_secs) l$((time_Duration){ \
     .secs = as$(u64)(_secs), \
     .nanos = as$(u32)(((_secs) - as$(f32)(as$(u64)(_secs))) * as$(f32)(time_nanos_per_sec)), \
 })
-#define __comp_fn__time_Duration_fromMillis_static(_millis) lit$((time_Duration){ \
+#define __comp_fn__time_Duration_fromMillis_static(_millis) l$((time_Duration){ \
     .secs = (_millis) == 0 ? 0 : (_millis) / time_millis_per_sec, \
     .nanos = (_millis) == 0 ? 0 : ((_millis) % time_millis_per_sec) * time_nanos_per_milli, \
 })
-#define __comp_fn__time_Duration_fromMicros_static(_micros) lit$((time_Duration){ \
+#define __comp_fn__time_Duration_fromMicros_static(_micros) l$((time_Duration){ \
     .secs = (_micros) == 0 ? 0 : (_micros) / time_micros_per_sec, \
     .nanos = (_micros) == 0 ? 0 : ((_micros) % time_micros_per_sec) * time_nanos_per_micro, \
 })
-#define __comp_fn__time_Duration_fromNanos_static(_nanos) lit$((time_Duration){ \
+#define __comp_fn__time_Duration_fromNanos_static(_nanos) l$((time_Duration){ \
     .secs = (_nanos) == 0 ? 0 : (_nanos) / time_nanos_per_sec, \
     .nanos = (_nanos) == 0 ? 0 : (_nanos) % time_nanos_per_sec, \
 })

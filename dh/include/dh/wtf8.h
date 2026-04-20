@@ -25,7 +25,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 /// WTF-8 specific errors (mostly subset of UTF-8 errors minus surrogate checks)
-errset_((wtf8_Err)(
+errset_((wtf8_E)(
     InvalidStartByte,
     ExpectedContinuation,
     OverlongEncoding,
@@ -34,15 +34,15 @@ errset_((wtf8_Err)(
 
 T_use_E$(utf8_SeqByte);
 /// Encodes a codepoint into WTF-8 (Allows surrogates).
-$attr($must_check) /* `utf8_Err` + `mem_Err` */
+$attr($must_check) /* `utf8_E` + `mem_E` */
 $extern fn_((wtf8_encode(u32 codepoint, S$u8 out))(E$S$u8));
-T_use_E$($set(wtf8_Err)(S$u8));
+T_use_E$($set(wtf8_E)(S$u8));
 $attr($must_check)
-$extern fn_((wtf8_encodeWithin(u32 codepoint, S$u8 out))(wtf8_Err$S$u8));
-T_use_E$($set(wtf8_Err)(u32));
+$extern fn_((wtf8_encodeWithin(u32 codepoint, S$u8 out))(wtf8_E$S$u8));
+T_use_E$($set(wtf8_E)(u32));
 /// Decodes WTF-8 bytes to a codepoint (Allows surrogates).
 $attr($must_check)
-$extern fn_((wtf8_decode(S_const$u8 bytes))(wtf8_Err$u32));
+$extern fn_((wtf8_decode(S_const$u8 bytes))(wtf8_E$u32));
 /// Validates if the slice is valid WTF-8.
 $extern fn_((wtf8_validate(S_const$u8 bytes))(bool));
 /// Returns the number of codepoints in the given string.
@@ -51,9 +51,9 @@ $extern fn_((wtf8_count(S_const$u8 bytes))(usize));
 typedef struct wtf8_View {
     var_(bytes, S_const$u8);
 } wtf8_View;
-T_use_E$($set(wtf8_Err)(wtf8_View));
+T_use_E$($set(wtf8_E)(wtf8_View));
 $attr($must_check)
-$extern fn_((wtf8_view(S_const$u8 bytes))(wtf8_Err$wtf8_View));
+$extern fn_((wtf8_view(S_const$u8 bytes))(wtf8_E$wtf8_View));
 $extern fn_((wtf8_viewUnchkd(S_const$u8 bytes))(wtf8_View));
 
 typedef struct wtf8_Iter {

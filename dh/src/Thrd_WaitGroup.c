@@ -85,34 +85,34 @@ fn_((Thrd_WaitGroup_valueOn(atom_V$usize* state))(usize)) {
 };
 
 $attr($must_check)
-$static fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Allocator gpa, Thrd_FnCtx* inst))(E$Thrd));
+$static fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Alctr gpa, Thrd_FnCtx* inst))(E$Thrd));
 $attr($inline_always)
 $static fn_((Thrd_WaitGroup__runInst(Thrd_FnCtx* fn_ctx))(void));
-fn_((Thrd_WaitGroup_spawn(Thrd_WaitGroup* self, mem_Allocator gpa, Thrd_FnCtx* fn_ctx))(void) $scope) {
+fn_((Thrd_WaitGroup_spawn(Thrd_WaitGroup* self, mem_Alctr gpa, Thrd_FnCtx* fn_ctx))(void) $scope) {
     Thrd_WaitGroup_start(self);
     let instance = catch_((Thrd_WaitGroup__spawnInst(self, gpa, fn_ctx))(
         $ignore, Thrd_WaitGroup__runInst(fn_ctx)
     ));
     Thrd_detach(instance);
-} $unscoped_(fn);
+} $unscoped(fn);
 
-$static Thrd_fn_(Thrd_WaitGroup__entryInst, ({ Thrd_WaitGroup* mgr; mem_Allocator gpa; Thrd_FnCtx* isnt; }, Void));
-fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Allocator gpa, Thrd_FnCtx* fn_ctx))(E$Thrd) $guard) {
-    let thrd_ctx = u_castP$((Thrd_FnCtx$(Thrd_WaitGroup__entryInst)*)(try_((mem_Allocator_create(gpa, typeInfo$(InnerType))))));
-    errdefer_($ignore, mem_Allocator_destroy(gpa, u_anyP(thrd_ctx)));
+$static Thrd_fn_(Thrd_WaitGroup__entryInst, ({ Thrd_WaitGroup* mgr; mem_Alctr gpa; Thrd_FnCtx* isnt; }, Void));
+fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Alctr gpa, Thrd_FnCtx* fn_ctx))(E$Thrd) $guard) {
+    let thrd_ctx = u_castP$((Thrd_FnCtx$(Thrd_WaitGroup__entryInst)*)(try_((mem_Alctr_create($trace gpa, typeInfo$(InnerType))))));
+    errdefer_($ignore, mem_Alctr_destroy($trace gpa, u_anyP(thrd_ctx)));
     *thrd_ctx = Thrd_FnCtx_from$((Thrd_WaitGroup__entryInst)(self, gpa, fn_ctx));
     let thrd = try_(Thrd_spawn(Thrd_SpawnCfg_default, thrd_ctx->as_raw));
     return_ok(thrd);
-} $unguarded_(fn);
+} $unguarded(fn);
 
 Thrd_fn_(Thrd_WaitGroup__entryInst, (self, args)$guard) {
     let mgr = args->mgr;
     defer_(Thrd_WaitGroup_finish(mgr));
     let gpa = args->gpa;
-    defer_(mem_Allocator_destroy(gpa, u_anyP(self)));
+    defer_(mem_Alctr_destroy($trace gpa, u_anyP(self)));
     let inst = args->isnt;
     return_void(Thrd_WaitGroup__runInst(inst));
-} $unguarded_(Thrd_fn);
+} $unguarded(Thrd_fn);
 
 fn_((Thrd_WaitGroup__runInst(Thrd_FnCtx* inst))(void)) {
     let_ignore = inst->fn(inst);

@@ -37,16 +37,16 @@ typedef enum log_Level {
 
 // Log configuration
 typedef struct log_Config {
-    FILE* output_file;    // Output file (null means stderr)
-    log_Level min_level;  // Minimum level to log
+    FILE* output_file; // Output file (null means stderr)
+    log_Level min_level; // Minimum level to log
     bool shows_timestamp; // Whether to show timestamps
-    bool shows_level;     // Whether to show log level
-    bool shows_location;  // Whether to show file and line
-    bool shows_function;  // Whether to show function name
+    bool shows_level; // Whether to show log level
+    bool shows_location; // Whether to show file and line
+    bool shows_function; // Whether to show function name
 } log_Config;
 
 // Initialize logging with a file
-extern fs_File_Err$void log_init(const char* filename) $must_check;
+extern fs_File_E$void log_init(const char* filename) $must_check;
 // Initialize logging with an existing file handle
 extern void log_initWithFile(FILE* file);
 // Close logging

@@ -5,8 +5,7 @@
  * @file    mem.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-01 (date of creation)
- * @updated 2025-01-09 (date of last update)
- * @version v0.1.2
+ * @updated 2026-02-26 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  mem
  *
@@ -23,8 +22,8 @@ extern "C" {
 
 #include "mem/cfg.h"
 #include "mem/common.h"
-#include "mem/Tracker.h"
-#include "mem/Allocator.h"
+#include "mem/Alctr.h"
+#include "mem/AlcTrace.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

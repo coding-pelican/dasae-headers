@@ -1,11 +1,12 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/heap/Page.h"
 #include "dh/ArrList.h"
 #include "dh/io/stream.h"
 
-typedef struct Point {
-    i32 x, y;
-} Point;
+T_alias$((Point)(struct Point {
+    var_(x, i32);
+    var_(y, i32);
+}));
 T_use$((Point)(P, S, O));
 T_use$((Point)(
     ArrList,
@@ -20,15 +21,15 @@ T_use$((Point)(
 
 $static fn_((printPoints(ArrList$Point points))(void)) {
     io_stream_print(u8_l("Points ({:uz} items):\n"), points.items.len);
-    for_(($rf(0), $s(points.items))(index, point) {
+    for_(($rf(0), $s(points.items))(index, point)) {
         io_stream_print(u8_l("  [{:uz}] = ({:d}, {:d})\n"), index, point->x, point->y);
-    });
-}
+    } $end(for);
+};
 
 $attr($must_check)
-$static fn_((example(void))(mem_Err$void) $guard) {
+$static fn_((example(void))(mem_E$void) $guard) {
     // Initialize the allocator
-    let gpa = heap_Page_allocator(&(heap_Page){});
+    let gpa = heap_Page_alctr(&l0$((heap_Page)));
 
     // Initialize the array list
     var points = try_(ArrList_init$Point(gpa, 8));
@@ -36,7 +37,7 @@ $static fn_((example(void))(mem_Err$void) $guard) {
     defer_(ArrList_fini$Point(&points, gpa));
 
     // Append a single item
-    try_(ArrList_append$Point(&points, gpa, (Point){ .x = 10, .y = 20 }));
+    try_(ArrList_append$Point(&points, gpa, l$((Point){ .x = 10, .y = 20 })));
     // Append multiple items at once
     var more_points = A_from$((Point){
         [0] = { .x = 30, .y = 40 },
@@ -47,7 +48,7 @@ $static fn_((example(void))(mem_Err$void) $guard) {
     printPoints(points);
 
     // Insert at specific position
-    Point p4 = { .x = 70, .y = 80 };
+    var_(p4, Point) = { .x = 70, .y = 80 };
     try_(ArrList_insert$Point(&points, gpa, 1, p4));
     io_stream_print(u8_l("After insert at position 1:\n"));
     printPoints(points);
@@ -65,11 +66,11 @@ $static fn_((example(void))(mem_Err$void) $guard) {
     }
 
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     try_(example());
     io_stream_print(u8_l("Hello, world!\n"));
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);

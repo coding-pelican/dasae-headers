@@ -1,142 +1,66 @@
-#ifndef PIPE_INCLUDED
-#define PIPE_INCLUDED
+#ifndef core_pipe__included
+#define core_pipe__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-// Check if argument list is empty
-#define PIPE_HAS_ARGS(...) PIPE_HAS_ARGS_IMPL(__VA_OPT__(, ) __VA_ARGS__, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0) // 드디어 해냈다 ㅜㅜㅜㅜㅜ
-#define PIPE_HAS_ARGS_IMPL(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, N, ...) N
+/*========== Includes =======================================================*/
 
-// Conditional comma macro
-#define PIPE_EMPTY()
-#define PIPE_IGNORE(...)
-#define PIPE_EXPAND(...) __VA_ARGS__
-#define PIPE_DEFER(...) __VA_ARGS__ PIPE_EMPTY()
-#define PIPE_COMMA() ,
+#include "pri.h"
 
-// Helper macros
-#define PAREN_OPEN() (
-#define PAREN_CLOSE() )
+/*========== Macros and Declarations ========================================*/
 
-#define PIPE_EXPAND_WITH_PARENS_WRAPPED(...) (__VA_ARGS__)
-#define PIPE_EXPAND_WITH_PARENS_OPEN(...) (__VA_ARGS__
-#define PIPE_EXPAND_WITH_PARENS_CLOSE(...) __VA_ARGS__)
+#define pipe_(/*(_init)(<(_capt)_expr>...)*/...) __expr__pipe_(__VA_ARGS__)
 
-#define PIPE_IGNORE_OPEN() PIPE_IGNORE(
-#define PIPE_IGNORE_CLOSE() )
-#define PIPE_COMMA_IGNORE_OPEN() , PIPE_IGNORE(
-#define PIPE_COMMA_IGNORE_CLOSE() )
+/*========== Macros and Definitions =========================================*/
 
-#define PIPE_exec(...) pp_join($, __PIPE_exec, __VA_ARGS__)
-#define __PIPE_exec$0comma_ignore_open \
-    , PIPE_DEFER(PIPE_IGNORE)(
-#define __PIPE_exec$0comma_ignore_close \
-    )
-#define __PIPE_exec$0ignore_open \
-    PIPE_DEFER(PIPE_IGNORE)(
-#define __PIPE_exec$0ignore_close \
-    )
-
-#define PIPE_REPLACE_COMMA_AND_IGNORE_IF(...) PIPE_IF((PIPE_HAS_ARGS(__VA_ARGS__)), 0comma_ignore_open, 0ignore_open)
-#define PIPE_IF(_cond, _t, _f) PIPE_IF_IMPL(PIPE_EXPAND _cond, _t, _f)
-#define PIPE_IF_IMPL(_cond, _t, _f) pp_join(_, PIPE_IF, _cond)(_t, _f)
-#define PIPE_IF_1(_t, _f) _t
-#define PIPE_IF_0(_t, _f) _f
-
-// Apply a function with a value and arguments
-#define PIPE_MAP(F, ARG...) F ARG
-#define PIPE_JOIN_VALUE_TO_ARGS(value, args...) \
-    PIPE_EXPAND_WITH_PARENS_OPEN value PIPE_exec(PIPE_REPLACE_COMMA_AND_IGNORE_IF args) PIPE_exec(0comma_ignore_close) PIPE_EXPAND_WITH_PARENS_CLOSE args
-#define PIPE_APPLY(value, func, args...) PIPE_MAP(func, PIPE_JOIN_VALUE_TO_ARGS(value, args))
-
-// Process a single step in the pipe
-#define PIPE_STEP(prev_result_var, step_num, func, args...) \
-    var ret##step_num = T_switch$((TypeOf(PIPE_APPLY((prev_result_var), func, args)))( \
-        T_case$((void)({ \
-            let_ignore = PIPE_APPLY((prev_result_var), func, args); \
-            make$((Void){}); \
-        })), \
-        T_default_(PIPE_APPLY((prev_result_var), func, args)) \
-    ));
-
-// Generate a unique variable name for each step
-#define PIPE_RESULT(step_num) ret##step_num
-
-// Main pipe implementation
-#define pipe_(initial_value...) comp_syn__pipe_(initial_value)
-#define comp_syn__pipe_(initial_value, ...) \
-    ({ \
-        var __pipe_initial = initial_value; \
-        PIPE_IMPL(__pipe_initial, ##__VA_ARGS__); \
+#define __expr__pipe_(...) __inline__pipe___emit(__inline__pipe___parseInit __VA_ARGS__)
+#define __inline__pipe___parseInit(_init...) pp_uniqTok(init), (_init), /*_steps*/
+#define __inline__pipe___emit(...) __inline__pipe_(__VA_ARGS__)
+#define __inline__pipe_(__init, _init, _steps...) local_({ \
+    let __init = _init; \
+    __inline__pipe___steps__expand( \
+        __inline__pipe___steps__emit( \
+            __init, \
+            pp_uniqTok(step), \
+            __inline__pipe___expandSteps _steps \
+        ) \
+    ); \
+})
+#define __inline__pipe___expandSteps(_steps...) _steps
+#define __inline__pipe___steps__emit(...) __inline__pipe___steps(__VA_ARGS__)
+#define __inline__pipe___steps(__curr, __step, _step, /*_next*/...) \
+    __VA_OPT__( \
+        __inline__pipe___stepLoop__emit(__curr, __step, __inline__pipe___expandStep _step); \
+        pp_defer(__inline__pipe___stepsRecur)()(__step, pp_uniqTok(step), __VA_ARGS__) \
+    ) \
+    pp_if_(pp_not(pp_isParen(__VA_OPT__(()))))(pp_then_( \
+        __inline__pipe___stepFinal___emit(__curr, __inline__pipe___expandStep _step) \
+    ))
+#define __inline__pipe___stepsRecur() __inline__pipe___steps
+#define __inline__pipe___expandStep(_capt...) _capt, /*_expr*/
+#define __inline__pipe___stepLoop__emit(...) __inline__pipe___stepLoop(__VA_ARGS__)
+#define __inline__pipe___stepLoop(__prev, __curr, __capt, _expr...) \
+    let __curr = local_({ \
+        let __capt = __prev; \
+        local_return_(__inline__pipe___step__expr(_expr)); \
     })
-
-// Extract function and args from pair
-#define PIPE_GET_FUNC(_func, _args) _func
-#define PIPE_GET_ARGS(_func, _args) _args
-
-// Internal implementation with 1-5 steps (can be extended for more)
-#define PIPE_IMPL(_initial_value, _func_args1, ...) \
-    PIPE_COUNT_ARGS(_func_args1, ##__VA_ARGS__, PIPE5, PIPE4, PIPE3, PIPE2, PIPE1)(_initial_value, _func_args1, ##__VA_ARGS__)
-
-// Counter to determine number of pipe steps
-#define PIPE_COUNT_ARGS(arg1, arg2, arg3, arg4, arg5, _func, ...) _func
-
-// Implementation for different numbers of pipe steps
-#define PIPE1(_initial_value, _func_args1) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
-    PIPE_RESULT(0)
-#define PIPE2(_initial_value, _func_args1, _func_args2) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
-    PIPE_RESULT(1)
-#define PIPE3(_initial_value, _func_args1, _func_args2, _func_args3) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
-    PIPE_RESULT(2)
-#define PIPE4(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
-    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
-    PIPE_RESULT(3)
-#define PIPE5(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4, _func_args5) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
-    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
-    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5) \
-    PIPE_RESULT(4)
-#define PIPE6(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4, _func_args5, _func_args6) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
-    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
-    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5) \
-    PIPE_STEP(PIPE_RESULT(4), 5, PIPE_GET_FUNC _func_args6, PIPE_GET_ARGS _func_args6) \
-    PIPE_RESULT(5)
-#define PIPE7(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4, _func_args5, _func_args6, _func_args7) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
-    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
-    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5) \
-    PIPE_STEP(PIPE_RESULT(4), 5, PIPE_GET_FUNC _func_args6, PIPE_GET_ARGS _func_args6) \
-    PIPE_STEP(PIPE_RESULT(5), 6, PIPE_GET_FUNC _func_args7, PIPE_GET_ARGS _func_args7) \
-    PIPE_RESULT(6)
-#define PIPE8(_initial_value, _func_args1, _func_args2, _func_args3, _func_args4, _func_args5, _func_args6, _func_args7, _func_args8) \
-    PIPE_STEP(_initial_value, 0, PIPE_GET_FUNC _func_args1, PIPE_GET_ARGS _func_args1) \
-    PIPE_STEP(PIPE_RESULT(0), 1, PIPE_GET_FUNC _func_args2, PIPE_GET_ARGS _func_args2) \
-    PIPE_STEP(PIPE_RESULT(1), 2, PIPE_GET_FUNC _func_args3, PIPE_GET_ARGS _func_args3) \
-    PIPE_STEP(PIPE_RESULT(2), 3, PIPE_GET_FUNC _func_args4, PIPE_GET_ARGS _func_args4) \
-    PIPE_STEP(PIPE_RESULT(3), 4, PIPE_GET_FUNC _func_args5, PIPE_GET_ARGS _func_args5) \
-    PIPE_STEP(PIPE_RESULT(4), 5, PIPE_GET_FUNC _func_args6, PIPE_GET_ARGS _func_args6) \
-    PIPE_STEP(PIPE_RESULT(5), 6, PIPE_GET_FUNC _func_args7, PIPE_GET_ARGS _func_args7) \
-    PIPE_STEP(PIPE_RESULT(6), 7, PIPE_GET_FUNC _func_args8, PIPE_GET_ARGS _func_args8) \
-    PIPE_RESULT(7)
+#define __inline__pipe___stepFinal___emit(...) __inline__pipe___stepFinal(__VA_ARGS__)
+#define __inline__pipe___stepFinal(__prev, __capt, _expr...) \
+    let __capt = __prev; \
+    local_return_(__inline__pipe___step__expr(_expr))
+#define __inline__pipe___step__expr(_expr...) T_switch$((TypeOf(_expr))( \
+    T_case$((void)(($ignore_void _expr), l0$((Void)))), \
+    T_default_(_expr) \
+))
+#define __inline__pipe___steps__expand(...) /* evaluate 2^5 */ __inline__pipe___steps__expand5(__VA_ARGS__)
+#define __inline__pipe___steps__expand5(...) __inline__pipe___steps__expand4(__inline__pipe___steps__expand4(__VA_ARGS__))
+#define __inline__pipe___steps__expand4(...) __inline__pipe___steps__expand3(__inline__pipe___steps__expand3(__VA_ARGS__))
+#define __inline__pipe___steps__expand3(...) __inline__pipe___steps__expand2(__inline__pipe___steps__expand2(__VA_ARGS__))
+#define __inline__pipe___steps__expand2(...) __inline__pipe___steps__expand1(__inline__pipe___steps__expand1(__VA_ARGS__))
+#define __inline__pipe___steps__expand1(...) __VA_ARGS__
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* PIPE_INCLUDED */
+#endif /* core_pipe__included */

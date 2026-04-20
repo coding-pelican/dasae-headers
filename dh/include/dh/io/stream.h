@@ -1,13 +1,12 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    stream.h
- * @author  Gyeongtae Kim (@dev-dasae) <codingpelican@gmail.com>
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-08-09 (date of creation)
- * @updated 2025-08-09 (date of last update)
- * @version v0.1-alpha
- * @ingroup dasae-headers(dh)/io
+ * @updated 2026-02-06 (date of last update)
+ * @ingroup dal-project/da/io
  * @prefix  io_stream
  */
 #ifndef io_stream__included
@@ -18,8 +17,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
-#include <stdarg.h> /* For va_list, va_start(), va_end() */
+#include "cfg.h"
 
 /*========== Macros and Declarations ========================================*/
 

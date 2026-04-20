@@ -1,5 +1,4 @@
 #include "dal-c-ext/path.h"
-#include <string.h>
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
@@ -9,10 +8,10 @@
 #else
 #include <unistd.h>
 #include <sys/stat.h>
-#include <limits.h>
 #define PATH_SEP '/'
 #define PATH_SEP_STR "/"
 #endif
+#include <string.h>
 
 char* path_join(const char* base, const char* component) {
     if (!base || !component) { return NULL; }
@@ -107,6 +106,25 @@ char* path_abs(const char* path) {
     char* full_path = realpath(path, NULL);
     return full_path; // NULL if path doesn't exist
 #endif
+}
+
+char* path_relative(const char* base, const char* path) {
+    if (!base || !path) { return NULL; }
+    size_t base_len = strlen(base);
+    size_t path_len = strlen(path);
+    while (base_len > 0 && (base[base_len - 1] == '/' || base[base_len - 1] == '\\')) { base_len--; }
+    if (base_len == 0) { return strdup(path); }
+    if (path_len <= base_len) { return NULL; }
+    int is_sep = (path[base_len] == '/' || path[base_len] == '\\');
+    if (!is_sep && path[base_len] != '\0') { return NULL; }
+    for (size_t i = 0; i < base_len; i++) {
+        char bc = (base[i] == '\\') ? '/' : base[i];
+        char pc = (path[i] == '\\') ? '/' : path[i];
+        if (bc != pc) { return NULL; }
+    }
+    const char* rel = path + base_len;
+    if (*rel == '/' || *rel == '\\') { rel++; }
+    return strdup(rel);
 }
 
 bool path_exists(const char* path) {

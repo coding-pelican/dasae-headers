@@ -38,10 +38,10 @@ fn_((io_stream_nl(void))(void) $guard) {
 
     let stream_out = fs_File_writer(io_getStdOut());
     let_ignore = catch_((io_Writer_nl(stream_out))($ignore, $do_nothing));
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((io_stream_print(S_const$u8 fmt, ...))(void)) {
-    using_(va_list va_args = null) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(var va_args = l0$((va_list))) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printVaArgs(fmt, va_args);
     };
 };
@@ -52,10 +52,10 @@ fn_((io_stream_printVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
 
     let stream_out = fs_File_writer(io_getStdOut());
     let_ignore = catch_((io_Writer_printVaArgs(stream_out, fmt, va_args))($ignore, $do_nothing));
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((io_stream_println(S_const$u8 fmt, ...))(void)) {
-    using_(va_list va_args = null) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(var va_args = l0$((va_list))) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printlnVaArgs(fmt, va_args);
     };
 };
@@ -66,7 +66,7 @@ fn_((io_stream_printlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
 
     let stream_out = fs_File_writer(io_getStdOut());
     let_ignore = catch_((io_Writer_printlnVaArgs(stream_out, fmt, va_args))($ignore, $do_nothing));
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((io_stream_enl(void))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
@@ -74,10 +74,10 @@ fn_((io_stream_enl(void))(void) $guard) {
 
     let stream_err = fs_File_writer(io_getStdErr());
     let_ignore = catch_((io_Writer_nl(stream_err))($ignore, $do_nothing));
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((io_stream_eprint(S_const$u8 fmt, ...))(void)) {
-    using_(va_list va_args = null) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(var va_args = l0$((va_list))) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintVaArgs(fmt, va_args);
     };
 };
@@ -88,10 +88,10 @@ fn_((io_stream_eprintVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
 
     let stream_err = fs_File_writer(io_getStdErr());
     let_ignore = catch_((io_Writer_printVaArgs(stream_err, fmt, va_args))($ignore, $do_nothing));
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((io_stream_eprintln(S_const$u8 fmt, ...))(void)) {
-    using_(va_list va_args = null) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(var va_args = l0$((va_list))) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintlnVaArgs(fmt, va_args);
     };
 };
@@ -102,4 +102,4 @@ fn_((io_stream_eprintlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
 
     let stream_err = fs_File_writer(io_getStdErr());
     let_ignore = catch_((io_Writer_printlnVaArgs(stream_err, fmt, va_args))($ignore, $do_nothing));
-} $unguarded_(fn);
+} $unguarded(fn);

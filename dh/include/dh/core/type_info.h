@@ -26,7 +26,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "prim.h"
+#include "pri.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -54,10 +54,15 @@ typedef usize TypeInfoPacked;
 /// Convert packed usize to TypeInfo struct
 #define TypeInfo_unpack(_packed /*: TypeInfoPacked*/... /*(TypeInfo)*/) \
     ____TypeInfo_unpack(_packed)
+/// Extract size from TypeInfo
 #define TypeInfo_size(_type_info /*: TypeInfo*/... /*(usize)*/) \
     ____TypeInfo_size(_type_info)
-#define TypeInfo_align(_type_info /*: TypeInfo*/... /*(mem_Log2Align)*/) \
+/// Extract alignment from TypeInfo
+#define TypeInfo_align(_type_info /*: TypeInfo*/... /*(usize)*/) \
     ____TypeInfo_align(_type_info)
+/// Extract alignment (log2) from TypeInfo
+#define TypeInfo_log2_align(_type_info /*: TypeInfo*/... /*(u8)*/) \
+    ____TypeInfo_log2_align(_type_info)
 
 /// Get packed type information for meta
 #define packTypeInfo$(_T...) \
@@ -65,16 +70,23 @@ typedef usize TypeInfoPacked;
 /// Extract size from packed TypeInfo (usize)
 #define TypeInfoPacked_size(_packed /*: TypeInfoPacked*/... /*(usize)*/) \
     ____TypeInfoPacked_size(_packed)
-/// Extract align (log2) from packed TypeInfo (usize)
-#define TypeInfoPacked_align(_packed /*: TypeInfoPacked*/... /*(mem_Log2Align)*/) \
+/// Extract alignment from packed TypeInfo
+#define TypeInfoPacked_align(_packed /*: TypeInfoPacked*/... /*(usize)*/) \
     ____TypeInfoPacked_align(_packed)
+/// Extract alignment (log2) from packed TypeInfo
+#define TypeInfoPacked_log2_align(_packed /*: TypeInfoPacked*/... /*(u8)*/) \
+    ____TypeInfoPacked_log2_align(_packed)
 
 /// Compare equality of type information
-#define TypeInfo_eq(_lhs /*: TypeInfo*/, _rhs /*: TypeInfo*/... /*(bool)*/) \
-    ____TypeInfo_eq(_lhs, _rhs)
+#define TypeInfo_eql(_lhs /*: TypeInfo*/, _rhs /*: TypeInfo*/... /*(bool)*/) \
+    ____TypeInfo_eql(_lhs, _rhs)
+#define TypeInfo_neq(_lhs /*: TypeInfo*/, _rhs /*: TypeInfo*/... /*(bool)*/) \
+    ____TypeInfo_neq(_lhs, _rhs)
 /// Compare equality of packed type information
-#define TypeInfoPacked_eq(_lhs /*: TypeInfoPacked*/, _rhs /*: TypeInfoPacked*/... /*(bool)*/) \
-    ____TypeInfoPacked_eq(_lhs, _rhs)
+#define TypeInfoPacked_eql(_lhs /*: TypeInfoPacked*/, _rhs /*: TypeInfoPacked*/... /*(bool)*/) \
+    ____TypeInfoPacked_eql(_lhs, _rhs)
+#define TypeInfoPacked_neq(_lhs /*: TypeInfoPacked*/, _rhs /*: TypeInfoPacked*/... /*(bool)*/) \
+    ____TypeInfoPacked_neq(_lhs, _rhs)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -95,31 +107,32 @@ claim_assert_static(sizeOf$(TypeInfoPacked) == int_bytes$(TypeInfoPacked));
 
 union TypeInfo {
     struct {
-        TypeInfoPacked size  : TypeInfo_size_bits;
-        TypeInfoPacked align : TypeInfo_align_bits; /* same as `mem_Log2Align`,  */
+        TypeInfoPacked size       : TypeInfo_size_bits;
+        TypeInfoPacked log2_align : TypeInfo_align_bits; /* same as `mem_Log2Align`,  */
     };
     TypeInfoPacked packed;
 };
 
-#define ____typeInfo$(_T...) lit$((TypeInfo){ .size = sizeOf$(_T), .align = alignOf$(_T) })
+#define ____typeInfo$(_T...) l$((TypeInfo){ .size = sizeOf$(_T), .log2_align = alignOfLog2$(_T) })
 #define ____TypeInfo_pack(_type_info...) ((_type_info).packed)
-#define ____TypeInfo_unpack(_type_info...) ((TypeInfo){ .packed = (_type_info) })
+#define ____TypeInfo_unpack(_type_info...) l$((TypeInfo){ .packed = (_type_info) })
 #define ____TypeInfo_size(_type_info...) (as$(usize)((_type_info).size))
-#define ____TypeInfo_align(_type_info...) (as$(u8)((_type_info).align))
+#define ____TypeInfo_align(_type_info...) log2ToAlign_static(TypeInfo_log2_align(_type_info))
+#define ____TypeInfo_log2_align(_type_info...) (as$(u8)((_type_info).log2_align))
 
 #define ____packTypeInfo$(_T...) ( \
-    (as$(TypeInfoPacked)(sizeOf$(_T)) & prim_maskLo_static$((TypeInfoPacked)(TypeInfo_size_bits))) \
-    | (as$(TypeInfoPacked)(alignOf$(_T)) << TypeInfo_size_bits) \
+    (as$(TypeInfoPacked)(sizeOf$(_T)) & int_maskLo_static$((TypeInfoPacked)(TypeInfo_size_bits))) \
+    | (as$(TypeInfoPacked)(alignOfLog2$(_T)) << TypeInfo_size_bits) \
 )
 #define ____TypeInfoPacked_size(_packed...) \
-    ((_packed) & prim_maskLo_static$((TypeInfoPacked)(TypeInfo_size_bits)))
+    ((_packed) & int_maskLo_static$((TypeInfoPacked)(TypeInfo_size_bits)))
 #define ____TypeInfoPacked_align(_packed...) \
     (as$(u32)((_packed) >> TypeInfo_size_bits))
 
-#define ____TypeInfo_eq(_lhs, _rhs...) \
-    ((_lhs).packed == (_rhs).packed)
-#define ____TypeInfoPacked_eq(_lhs, _rhs...) \
-    ((_lhs) == (_rhs))
+#define ____TypeInfo_eql(_lhs, _rhs...) TypeInfoPacked_eql((_lhs).packed, (_rhs).packed)
+#define ____TypeInfo_neq(_lhs, _rhs...) TypeInfoPacked_neq((_lhs).packed, (_rhs).packed)
+#define ____TypeInfoPacked_eql(_lhs, _rhs...) pri_eql(_lhs, _rhs)
+#define ____TypeInfoPacked_neq(_lhs, _rhs...) pri_neq(_lhs, _rhs)
 
 claim_assert_static(packTypeInfo$(TypeInfo) == packTypeInfo$(TypeInfoPacked));
 

@@ -45,7 +45,7 @@
 #define m_V2f32_limit_max m_V2f32_of_static(f32_limit_max, f32_limit_max)
 
 /* Construction */
-#define m_V2f32_of_static(_x, _y...) lit$((m_V2f32){ .x = (_x), .y = (_y) })
+#define m_V2f32_of_static(_x, _y...) l$((m_V2f32){ .x = (_x), .y = (_y) })
 $attr($inline_always)
 $static m_V2f32 m_V2f32_of(f32 x, f32 y);
 $attr($inline_always)
@@ -210,7 +210,7 @@ $static m_V2f32 m_V2f32_perp(m_V2f32 v);
 #define m_V3f32_limit_max m_V3f32_of_static(f32_limit_max, f32_limit_max, f32_limit_max)
 
 /* Construction */
-#define m_V3f32_of_static(_x, _y, _z...) lit$((m_V3f32){ .x = (_x), .y = (_y), .z = (_z) })
+#define m_V3f32_of_static(_x, _y, _z...) l$((m_V3f32){ .x = (_x), .y = (_y), .z = (_z) })
 $attr($inline_always)
 $static m_V3f32 m_V3f32_of(f32 x, f32 y, f32 z);
 $attr($inline_always)
@@ -344,7 +344,7 @@ $static m_V3f32 m_V3f32_perp(m_V3f32 v);
 #define m_V4f32_limit_max m_V4f32_of_static(f32_limit_max, f32_limit_max, f32_limit_max, f32_limit_max)
 
 /* Construction */
-#define m_V4f32_of_static(_x, _y, _z, _w...) lit$((m_V4f32){ .x = (_x), .y = (_y), .z = (_z), .w = (_w) })
+#define m_V4f32_of_static(_x, _y, _z, _w...) l$((m_V4f32){ .x = (_x), .y = (_y), .z = (_z), .w = (_w) })
 $attr($inline_always)
 $static m_V4f32 m_V4f32_of(f32 x, f32 y, f32 z, f32 w);
 $attr($inline_always)
@@ -470,7 +470,7 @@ $static m_V4f32 m_V4f32_reflect(m_V4f32 v, m_V4f32 normal);
 #define m_V2f64_limit_max m_V2f64_of_static(f64_limit_max, f64_limit_max)
 
 /* Construction */
-#define m_V2f64_of_static(_x, _y...) lit$((m_V2f64){ .x = (_x), .y = (_y) })
+#define m_V2f64_of_static(_x, _y...) l$((m_V2f64){ .x = (_x), .y = (_y) })
 $attr($inline_always)
 $static m_V2f64 m_V2f64_of(f64 x, f64 y);
 $attr($inline_always)
@@ -618,7 +618,7 @@ $static m_V2f64 m_V2f64_perp(m_V2f64 v);
 #define m_V3f64_inf m_V3f64_of_static(f64_inf, f64_inf, f64_inf)
 
 /* Construction */
-#define m_V3f64_of_static(_x, _y, _z...) lit$((m_V3f64){ .x = (_x), .y = (_y), .z = (_z) })
+#define m_V3f64_of_static(_x, _y, _z...) l$((m_V3f64){ .x = (_x), .y = (_y), .z = (_z) })
 $attr($inline_always)
 $static m_V3f64 m_V3f64_of(f64 x, f64 y, f64 z);
 $attr($inline_always)
@@ -737,7 +737,7 @@ $static m_V3f64 m_V3f64_perp(m_V3f64 v);
 #define m_V4f64_limit_max m_V4f64_of_static(f64_limit_max, f64_limit_max, f64_limit_max, f64_limit_max)
 
 /* Construction */
-#define m_V4f64_of_static(_x, _y, _z, _w...) lit$((m_V4f64){ .x = (_x), .y = (_y), .z = (_z), .w = (_w) })
+#define m_V4f64_of_static(_x, _y, _z, _w...) l$((m_V4f64){ .x = (_x), .y = (_y), .z = (_z), .w = (_w) })
 $attr($inline_always)
 $static m_V4f64 m_V4f64_of(f64 x, f64 y, f64 z, f64 w);
 $attr($inline_always)
@@ -845,7 +845,7 @@ $static m_V4f64 m_V4f64_reflect(m_V4f64 v, m_V4f64 normal);
 #define m_V2i32_limit_max m_V2i32_of_static(i32_limit_max, i32_limit_max)
 
 /* Construction */
-#define m_V2i32_of_static(_x, _y...) lit$((m_V2i32){ .x = (_x), .y = (_y) })
+#define m_V2i32_of_static(_x, _y...) l$((m_V2i32){ .x = (_x), .y = (_y) })
 $attr($inline_always)
 $static m_V2i32 m_V2i32_of(i32 x, i32 y);
 $attr($inline_always)
@@ -943,7 +943,7 @@ $static m_V2i32 m_V2i32_perp(m_V2i32 v);
 #define m_V3i32_limit_max m_V3i32_of_static(i32_limit_max, i32_limit_max, i32_limit_max)
 
 /* Construction */
-#define m_V3i32_of_static(_x, _y, _z...) lit$((m_V3i32){ .x = (_x), .y = (_y), .z = (_z) })
+#define m_V3i32_of_static(_x, _y, _z...) l$((m_V3i32){ .x = (_x), .y = (_y), .z = (_z) })
 $attr($inline_always)
 $static m_V3i32 m_V3i32_of(i32 x, i32 y, i32 z);
 $attr($inline_always)
@@ -1039,7 +1039,7 @@ $static m_V3i32 m_V3i32_perp(m_V3i32 v);
 #define m_V4i32_limit_max m_V4i32_of_static(i32_limit_max, i32_limit_max, i32_limit_max, i32_limit_max)
 
 /* Construction */
-#define m_V4i32_of_static(_x, _y, _z, _w...) lit$((m_V4i32){ .x = (_x), .y = (_y), .z = (_z), .w = (_w) })
+#define m_V4i32_of_static(_x, _y, _z, _w...) l$((m_V4i32){ .x = (_x), .y = (_y), .z = (_z), .w = (_w) })
 $attr($inline_always)
 $static m_V4i32 m_V4i32_of(i32 x, i32 y, i32 z, i32 w);
 $attr($inline_always)
@@ -1129,7 +1129,7 @@ $static i32 m_V4i32_dot(m_V4i32 lhs, m_V4i32 rhs);
 #define m_V2i64_limit_max m_V2i64_of_static(i64_limit_max, i64_limit_max)
 
 /* Construction */
-#define m_V2i64_of_static(_x, _y...) lit$((m_V2i64){ .x = (_x), .y = (_y) })
+#define m_V2i64_of_static(_x, _y...) l$((m_V2i64){ .x = (_x), .y = (_y) })
 $attr($inline_always)
 $static m_V2i64 m_V2i64_of(i64 x, i64 y);
 $attr($inline_always)
@@ -1227,7 +1227,7 @@ $static m_V2i64 m_V2i64_perp(m_V2i64 v);
 #define m_V3i64_limit_max m_V3i64_of_static(i64_limit_max, i64_limit_max, i64_limit_max)
 
 /* Construction */
-#define m_V3i64_of_static(_x, _y, _z...) lit$((m_V3i64){ .x = (_x), .y = (_y), .z = (_z) })
+#define m_V3i64_of_static(_x, _y, _z...) l$((m_V3i64){ .x = (_x), .y = (_y), .z = (_z) })
 $attr($inline_always)
 $static m_V3i64 m_V3i64_of(i64 x, i64 y, i64 z);
 $attr($inline_always)
@@ -1323,7 +1323,7 @@ $static m_V3i64 m_V3i64_perp(m_V3i64 v);
 #define m_V4i64_limit_max m_V4i64_of_static(i64_limit_max, i64_limit_max, i64_limit_max, i64_limit_max)
 
 /* Construction */
-#define m_V4i64_of_static(_x, _y, _z, _w...) lit$((m_V4i64){ .x = (_x), .y = (_y), .z = (_z), .w = (_w) })
+#define m_V4i64_of_static(_x, _y, _z, _w...) l$((m_V4i64){ .x = (_x), .y = (_y), .z = (_z), .w = (_w) })
 $attr($inline_always)
 $static m_V4i64 m_V4i64_of(i64 x, i64 y, i64 z, i64 w);
 $attr($inline_always)
@@ -1404,15 +1404,15 @@ $static i64 m_V4i64_dot(m_V4i64 lhs, m_V4i64 rhs);
     pp_uniqTok(len), pp_uniqTok(d), pp_uniqTok(s), \
         pp_uniqTok(dst), _T_Dst, pp_uniqTok(src),
 #define __step__m_V_as$__emit(...) ____m_V_as$(__VA_ARGS__)
-#define ____m_V_as$(__len, __d, __s, __dst, _T_Dst, __src, _src...) blk({ \
+#define ____m_V_as$(__len, __d, __s, __dst, _T_Dst, __src, _src...) local_({ \
     var_(__dst, _T_Dst) = cleared(); \
     let_(__src, TypeOf(_src)) = _src; \
     let_(__len, usize) = A_len$(TypeOf(__dst.s)); \
     claim_assert_static(__len == A_len$(TypeOf(__src.s))); \
-    for_(($s(A_ref(__dst.s)), $s(A_ref(__src.s)))(__d, __s) { \
+    for_(($s(A_ref(__dst.s)), $s(A_ref(__src.s)))(__d, __s)) { \
         *__d = as$(TypeOf(*__d))(*__s); \
-    }); \
-    blk_return_(__dst); \
+    } $end(for); \
+    local_return_(__dst); \
 })
 
 /* Vec2f functions */
@@ -1421,7 +1421,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_of(f32 x, f32 y) {
 #if arch_simd_use
     let result = Vec_from$((f32){ x, y });
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of_static(x, y);
 }
@@ -1429,7 +1429,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_splat(f32 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(2, f32))scalar);
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of_static(scalar, scalar);
 }
@@ -1445,7 +1445,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_sincos(f32 radians) {
 #if arch_simd_use
     let result = Vec_from$((f32){ flt_cos(radians), flt_sin(radians) });
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(flt_cos(radians), flt_sin(radians));
 }
@@ -1456,10 +1456,10 @@ $static cmp_fn_ord$((m_V2f32)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -1468,7 +1468,7 @@ $static cmp_fn_ordApx$((m_V2f32)(lhs, rhs, threshold)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ordApx for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)), $s(A_ref(threshold.s)))(l, r, t) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)), $s(A_ref(threshold.s)))(l, r, t)) {
         // Calculate absolute difference
         let diff = flt_abs(*l - *r);
         // Check if difference is greater than threshold
@@ -1476,7 +1476,7 @@ $static cmp_fn_ordApx$((m_V2f32)(lhs, rhs, threshold)) {
         // If difference is significant, compare normally
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     // If all components are within threshold, consider equal
     return cmp_Ord_eq;
 }
@@ -1486,7 +1486,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_neg(m_V2f32 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(-v.x, -v.y);
 }
@@ -1501,7 +1501,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_add(m_V2f32 lhs, m_V2f32 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(lhs.x + rhs.x, lhs.y + rhs.y);
 }
@@ -1509,7 +1509,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_sub(m_V2f32 lhs, m_V2f32 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(lhs.x - rhs.x, lhs.y - rhs.y);
 }
@@ -1517,7 +1517,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_mul(m_V2f32 lhs, m_V2f32 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(lhs.x * rhs.x, lhs.y * rhs.y);
 }
@@ -1525,7 +1525,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_div(m_V2f32 lhs, m_V2f32 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
@@ -1540,7 +1540,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_scal(m_V2f32 v, f32 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(2, f32))scalar));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(v.x * scalar, v.y * scalar);
 }
@@ -1548,7 +1548,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_scalInv(m_V2f32 v, f32 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(2, f32))scalar));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(v.x / scalar, v.y / scalar);
 }
@@ -1629,7 +1629,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_min(m_V2f32 lhs, m_V2f32 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(flt_min(lhs.x, rhs.x), flt_min(lhs.y, rhs.y));
 }
@@ -1637,7 +1637,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_max(m_V2f32 lhs, m_V2f32 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_of(flt_max(lhs.x, rhs.x), flt_max(lhs.y, rhs.y));
 }
@@ -1645,7 +1645,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_clamp(m_V2f32 v, m_V2f32 min, m_V2f32 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_min(m_V2f32_max(v, min), max);
 }
@@ -1653,7 +1653,7 @@ $attr($inline_always)
 $static m_V2f32 m_V2f32_clamp01(m_V2f32 v) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(m_V2f32_zero.s), Vec_fromA(m_V2f32_one.s));
-    return lit$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
+    return l$((m_V2f32){ .s = Vec_toA$((FieldType$(m_V2f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f32_clamp(v, m_V2f32_zero, m_V2f32_one);
 }
@@ -1693,7 +1693,7 @@ $attr($inline_always)
 $static f32 m_V2f32_dot(m_V2f32 lhs, m_V2f32 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((f32)(result));
+    return l$((f32)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y;
 }
@@ -1703,7 +1703,7 @@ $static f32 m_V2f32_cross(m_V2f32 lhs, m_V2f32 rhs) {
     let l = Vec_from$((f32){ lhs.x, lhs.y, 0.0f });
     let r = Vec_from$((f32){ rhs.x, rhs.y, 0.0f });
     let result = Vec_cross(l, r);
-    return lit$((m_V3f32){ .s = Vec_toA$((FieldType$(m_V3f32, s))(result)) }).z;
+    return l$((m_V3f32){ .s = Vec_toA$((FieldType$(m_V3f32, s))(result)) }).z;
 #endif /* arch_simd_use */
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
@@ -1746,7 +1746,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_of(f32 x, f32 y, f32 z) {
 #if arch_simd_use
     let result = Vec_from$((f32){ x, y, z });
-    return lit$((m_V3f32){ .s = Vec_toA$((FieldType$(m_V3f32, s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((FieldType$(m_V3f32, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V3f32){ .x = x, .y = y, .z = z };
 }
@@ -1762,7 +1762,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_splat(f32 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(3, f32))scalar);
-    return lit$((m_V3f32){ .s = Vec_toA$((FieldType$(m_V3f32, s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((FieldType$(m_V3f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(scalar, scalar, scalar);
 }
@@ -1773,10 +1773,10 @@ $static cmp_fn_ord$((m_V3f32)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -1785,7 +1785,7 @@ $static cmp_fn_ordApx$((m_V3f32)(lhs, rhs, threshold)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ordApx for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)), $s(A_ref(threshold.s)))(l, r, t) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)), $s(A_ref(threshold.s)))(l, r, t)) {
         // Calculate absolute difference
         let diff = flt_abs(*l - *r);
         // Check if difference is greater than threshold
@@ -1793,7 +1793,7 @@ $static cmp_fn_ordApx$((m_V3f32)(lhs, rhs, threshold)) {
         // If difference is significant, compare normally
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     // If all components are within threshold, consider equal
     return cmp_Ord_eq;
 }
@@ -1803,7 +1803,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_neg(m_V3f32 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(-v.x, -v.y, -v.z);
 }
@@ -1818,7 +1818,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_add(m_V3f32 lhs, m_V3f32 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
@@ -1826,7 +1826,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_sub(m_V3f32 lhs, m_V3f32 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
@@ -1834,7 +1834,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_mul(m_V3f32 lhs, m_V3f32 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
@@ -1842,7 +1842,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_div(m_V3f32 lhs, m_V3f32 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
@@ -1858,7 +1858,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_scal(m_V3f32 v, f32 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(3, f32))scalar));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(v.x * scalar, v.y * scalar, v.z * scalar);
 }
@@ -1866,7 +1866,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_scalInv(m_V3f32 v, f32 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(3, f32))scalar));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(v.x / scalar, v.y / scalar, v.z / scalar);
 }
@@ -1897,7 +1897,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_min(m_V3f32 lhs, m_V3f32 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(
         math_min(lhs.x, rhs.x),
@@ -1909,7 +1909,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_max(m_V3f32 lhs, m_V3f32 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(
         math_max(lhs.x, rhs.x),
@@ -1921,7 +1921,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_clamp(m_V3f32 v, m_V3f32 min, m_V3f32 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_min(m_V3f32_max(v, min), max);
 }
@@ -1929,7 +1929,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_clamp01(m_V3f32 v) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(m_V3f32_zero.s), Vec_fromA(m_V3f32_one.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_clamp(v, m_V3f32_zero, m_V3f32_one);
 }
@@ -1973,7 +1973,7 @@ $attr($inline_always)
 $static f32 m_V3f32_dot(m_V3f32 lhs, m_V3f32 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((f32)(result));
+    return l$((f32)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
@@ -1981,7 +1981,7 @@ $attr($inline_always)
 $static m_V3f32 m_V3f32_cross(m_V3f32 lhs, m_V3f32 rhs) {
 #if arch_simd_use
     let result = Vec_cross(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f32){ .s = Vec_toA$((FieldType$(m_V3f32, s))(result)) });
+    return l$((m_V3f32){ .s = Vec_toA$((FieldType$(m_V3f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f32_of(
         lhs.y * rhs.z - lhs.z * rhs.y,
@@ -2038,7 +2038,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_of(f32 x, f32 y, f32 z, f32 w) {
 #if arch_simd_use
     let result = Vec_from$((f32){ x, y, z, w });
-    return lit$((m_V4f32){ .s = Vec_toA$((FieldType$(m_V4f32, s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((FieldType$(m_V4f32, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V4f32){ .x = x, .y = y, .z = z, .w = w };
 }
@@ -2046,7 +2046,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_splat(f32 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(4, f32))scalar);
-    return lit$((m_V4f32){ .s = Vec_toA$((FieldType$(m_V4f32, s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((FieldType$(m_V4f32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(scalar, scalar, scalar, scalar);
 }
@@ -2065,10 +2065,10 @@ $static cmp_fn_ord$((m_V4f32)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -2077,7 +2077,7 @@ $static cmp_fn_ordApx$((m_V4f32)(lhs, rhs, threshold)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ordApx for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)), $s(A_ref(threshold.s)))(l, r, t) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)), $s(A_ref(threshold.s)))(l, r, t)) {
         // Calculate absolute difference
         let diff = flt_abs(*l - *r);
         // Check if difference is greater than threshold
@@ -2085,7 +2085,7 @@ $static cmp_fn_ordApx$((m_V4f32)(lhs, rhs, threshold)) {
         // If difference is significant, compare normally
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     // If all components are within threshold, consider equal
     return cmp_Ord_eq;
 }
@@ -2095,7 +2095,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_neg(m_V4f32 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(-v.x, -v.y, -v.z, -v.w);
 }
@@ -2110,7 +2110,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_add(m_V4f32 lhs, m_V4f32 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
@@ -2118,7 +2118,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_sub(m_V4f32 lhs, m_V4f32 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
@@ -2126,7 +2126,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_mul(m_V4f32 lhs, m_V4f32 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
@@ -2134,7 +2134,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_div(m_V4f32 lhs, m_V4f32 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
@@ -2155,7 +2155,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_scal(m_V4f32 v, f32 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$(4, f32))scalar));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 }
@@ -2163,7 +2163,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_scalInv(m_V4f32 v, f32 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(4, f32))scalar));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(v.x / scalar, v.y / scalar, v.z / scalar, v.w / scalar);
 }
@@ -2194,7 +2194,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_min(m_V4f32 lhs, m_V4f32 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(
         math_min(lhs.x, rhs.x),
@@ -2207,7 +2207,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_max(m_V4f32 lhs, m_V4f32 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(lhs.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_of(
         math_max(lhs.x, rhs.x),
@@ -2220,7 +2220,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_clamp(m_V4f32 v, m_V4f32 min, m_V4f32 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_min(m_V4f32_max(v, min), max);
 }
@@ -2228,7 +2228,7 @@ $attr($inline_always)
 $static m_V4f32 m_V4f32_clamp01(m_V4f32 v) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(m_V4f32_zero.s), Vec_fromA(m_V4f32_one.s));
-    return lit$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
+    return l$((m_V4f32){ .s = Vec_toA$((TypeOf(v.s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f32_clamp(v, m_V4f32_zero, m_V4f32_one);
 }
@@ -2301,7 +2301,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_of(f64 x, f64 y) {
 #if arch_simd_use
     let result = Vec_from$((f64){ x, y });
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V2f64){ .x = x, .y = y };
 }
@@ -2309,7 +2309,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_splat(f64 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(2, f64))scalar);
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(scalar, scalar);
 }
@@ -2325,7 +2325,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_sincos(f64 radians) {
 #if arch_simd_use
     let result = Vec_from$((f64){ flt_cos(radians), flt_sin(radians) });
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(flt_cos(radians), flt_sin(radians));
 }
@@ -2336,10 +2336,10 @@ $static cmp_fn_ord$((m_V2f64)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -2348,7 +2348,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_neg(m_V2f64 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(-v.x, -v.y);
 }
@@ -2363,7 +2363,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_add(m_V2f64 lhs, m_V2f64 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(lhs.x + rhs.x, lhs.y + rhs.y);
 }
@@ -2371,7 +2371,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_sub(m_V2f64 lhs, m_V2f64 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(lhs.x - rhs.x, lhs.y - rhs.y);
 }
@@ -2379,7 +2379,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_mul(m_V2f64 lhs, m_V2f64 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(lhs.x * rhs.x, lhs.y * rhs.y);
 }
@@ -2387,7 +2387,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_div(m_V2f64 lhs, m_V2f64 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
@@ -2403,7 +2403,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_scal(m_V2f64 v, f64 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(2, f64))scalar));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(v.x * scalar, v.y * scalar);
 }
@@ -2411,7 +2411,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_scalInv(m_V2f64 v, f64 scaler) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(2, f64))scaler));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(v.x / scaler, v.y / scaler);
 }
@@ -2492,7 +2492,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_min(m_V2f64 lhs, m_V2f64 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
 }
@@ -2500,7 +2500,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_max(m_V2f64 lhs, m_V2f64 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_of(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
 }
@@ -2508,7 +2508,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_clamp(m_V2f64 v, m_V2f64 min, m_V2f64 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_min(m_V2f64_max(v, min), max);
 }
@@ -2516,7 +2516,7 @@ $attr($inline_always)
 $static m_V2f64 m_V2f64_clamp01(m_V2f64 v) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(m_V2f64_zero.s), Vec_fromA(m_V2f64_one.s));
-    return lit$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
+    return l$((m_V2f64){ .s = Vec_toA$((FieldType$(m_V2f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2f64_clamp(v, m_V2f64_zero, m_V2f64_one);
 }
@@ -2556,7 +2556,7 @@ $attr($inline_always)
 $static f64 m_V2f64_dot(m_V2f64 lhs, m_V2f64 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((f64)(result));
+    return l$((f64)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y;
 }
@@ -2566,7 +2566,7 @@ $static f64 m_V2f64_cross(m_V2f64 lhs, m_V2f64 rhs) {
     let l = Vec_from$((f64){ lhs.x, lhs.y, 0.0 });
     let r = Vec_from$((f64){ rhs.x, rhs.y, 0.0 });
     let result = Vec_cross(l, r);
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) }).z;
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) }).z;
 #endif /* arch_simd_use */
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
@@ -2612,7 +2612,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_of(f64 x, f64 y, f64 z) {
 #if arch_simd_use
     let result = Vec_from$((f64){ x, y, z });
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V3f64){ .x = x, .y = y, .z = z };
 }
@@ -2620,7 +2620,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_splat(f64 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(3, f64))scalar);
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(scalar, scalar, scalar);
 }
@@ -2639,10 +2639,10 @@ $static cmp_fn_ord$((m_V3f64)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -2651,7 +2651,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_neg(m_V3f64 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(-v.x, -v.y, -v.z);
 }
@@ -2666,7 +2666,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_add(m_V3f64 lhs, m_V3f64 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
@@ -2674,7 +2674,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_sub(m_V3f64 lhs, m_V3f64 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
@@ -2682,7 +2682,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_mul(m_V3f64 lhs, m_V3f64 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
@@ -2690,7 +2690,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_div(m_V3f64 lhs, m_V3f64 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
@@ -2710,7 +2710,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_scal(m_V3f64 v, f64 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(3, f64))scalar));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(v.x * scalar, v.y * scalar, v.z * scalar);
 }
@@ -2718,7 +2718,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_scalInv(m_V3f64 v, f64 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(3, f64))scalar));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(v.x / scalar, v.y / scalar, v.z / scalar);
 }
@@ -2749,7 +2749,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_min(m_V3f64 lhs, m_V3f64 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(
         math_min(lhs.x, rhs.x),
@@ -2761,7 +2761,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_max(m_V3f64 lhs, m_V3f64 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(
         math_max(lhs.x, rhs.x),
@@ -2773,7 +2773,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_clamp(m_V3f64 v, m_V3f64 min, m_V3f64 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_min(m_V3f64_max(v, min), max);
 }
@@ -2781,7 +2781,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_clamp01(m_V3f64 v) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(m_V3f64_zero.s), Vec_fromA(m_V3f64_one.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_clamp(v, m_V3f64_zero, m_V3f64_one);
 }
@@ -2825,7 +2825,7 @@ $attr($inline_always)
 $static f64 m_V3f64_dot(m_V3f64 lhs, m_V3f64 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((f64)(result));
+    return l$((f64)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
@@ -2833,7 +2833,7 @@ $attr($inline_always)
 $static m_V3f64 m_V3f64_cross(m_V3f64 lhs, m_V3f64 rhs) {
 #if arch_simd_use
     let result = Vec_cross(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
+    return l$((m_V3f64){ .s = Vec_toA$((FieldType$(m_V3f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3f64_of(
         lhs.y * rhs.z - lhs.z * rhs.y,
@@ -2893,7 +2893,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_of(f64 x, f64 y, f64 z, f64 w) {
 #if arch_simd_use
     let result = Vec_from$((f64){ x, y, z, w });
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V4f64){ .x = x, .y = y, .z = z, .w = w };
 }
@@ -2901,7 +2901,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_splat(f64 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(4, f64))scalar);
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(scalar, scalar, scalar, scalar);
 }
@@ -2920,10 +2920,10 @@ $static cmp_fn_ord$((m_V4f64)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -2932,7 +2932,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_neg(m_V4f64 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(-v.x, -v.y, -v.z, -v.w);
 }
@@ -2947,7 +2947,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_add(m_V4f64 lhs, m_V4f64 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
@@ -2955,7 +2955,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_sub(m_V4f64 lhs, m_V4f64 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
@@ -2963,7 +2963,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_mul(m_V4f64 lhs, m_V4f64 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
@@ -2971,7 +2971,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_div(m_V4f64 lhs, m_V4f64 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
@@ -2992,7 +2992,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_scal(m_V4f64 v, f64 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(4, f64))scalar));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 }
@@ -3000,7 +3000,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_scalInv(m_V4f64 v, f64 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(4, f64))scalar));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(v.x / scalar, v.y / scalar, v.z / scalar, v.w / scalar);
 }
@@ -3031,7 +3031,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_min(m_V4f64 lhs, m_V4f64 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(
         math_min(lhs.x, rhs.x),
@@ -3044,7 +3044,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_max(m_V4f64 lhs, m_V4f64 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_of(
         math_max(lhs.x, rhs.x),
@@ -3057,7 +3057,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_clamp(m_V4f64 v, m_V4f64 min, m_V4f64 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_min(m_V4f64_max(v, min), max);
 }
@@ -3065,7 +3065,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_clamp01(m_V4f64 v) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(m_V4f64_zero.s), Vec_fromA(m_V4f64_one.s));
-    return lit$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
+    return l$((m_V4f64){ .s = Vec_toA$((FieldType$(m_V4f64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4f64_clamp(v, m_V4f64_zero, m_V4f64_one);
 }
@@ -3110,7 +3110,7 @@ $attr($inline_always)
 $static f64 m_V4f64_dot(m_V4f64 lhs, m_V4f64 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((f64)(result));
+    return l$((f64)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
 }
@@ -3138,7 +3138,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_of(i32 x, i32 y) {
 #if arch_simd_use
     let result = Vec_from$((i32){ x, y });
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V2i32){ .x = x, .y = y };
 }
@@ -3146,7 +3146,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_splat(i32 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(2, i32))scalar);
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(scalar, scalar);
 }
@@ -3165,10 +3165,10 @@ $static cmp_fn_ord$((m_V2i32)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -3177,7 +3177,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_neg(m_V2i32 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(-v.x, -v.y);
 }
@@ -3185,7 +3185,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_add(m_V2i32 lhs, m_V2i32 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(lhs.x + rhs.x, lhs.y + rhs.y);
 }
@@ -3193,7 +3193,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_sub(m_V2i32 lhs, m_V2i32 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(lhs.x - rhs.x, lhs.y - rhs.y);
 }
@@ -3201,7 +3201,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_mul(m_V2i32 lhs, m_V2i32 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(lhs.x * rhs.x, lhs.y * rhs.y);
 }
@@ -3209,7 +3209,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_div(m_V2i32 lhs, m_V2i32 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
@@ -3225,7 +3225,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_scal(m_V2i32 v, i32 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(2, i32))scalar));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(v.x * scalar, v.y * scalar);
 }
@@ -3233,7 +3233,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_scalInv(m_V2i32 v, i32 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(2, i32))scalar));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(v.x / scalar, v.y / scalar);
 }
@@ -3264,7 +3264,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_min(m_V2i32 lhs, m_V2i32 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
 }
@@ -3272,7 +3272,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_max(m_V2i32 lhs, m_V2i32 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_of(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
 }
@@ -3280,7 +3280,7 @@ $attr($inline_always)
 $static m_V2i32 m_V2i32_clamp(m_V2i32 v, m_V2i32 min, m_V2i32 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
+    return l$((m_V2i32){ .s = Vec_toA$((FieldType$(m_V2i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i32_min(m_V2i32_max(v, min), max);
 }
@@ -3308,7 +3308,7 @@ $attr($inline_always)
 $static i32 m_V2i32_dot(m_V2i32 lhs, m_V2i32 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((i32)(result));
+    return l$((i32)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y;
 }
@@ -3318,7 +3318,7 @@ $static i32 m_V2i32_cross(m_V2i32 lhs, m_V2i32 rhs) {
     let l = Vec_from$((i32){ lhs.x, lhs.y, 0 });
     let r = Vec_from$((i32){ rhs.x, rhs.y, 0 });
     let result = Vec_cross(l, r);
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) }).z;
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) }).z;
 #endif /* arch_simd_use */
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
@@ -3336,7 +3336,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_of(i32 x, i32 y, i32 z) {
 #if arch_simd_use
     let result = Vec_from$((i32){ x, y, z });
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V3i32){ .x = x, .y = y, .z = z };
 }
@@ -3352,7 +3352,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_splat(i32 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(3, i32))scalar);
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(scalar, scalar, scalar);
 }
@@ -3363,10 +3363,10 @@ $static cmp_fn_ord$((m_V3i32)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -3375,7 +3375,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_neg(m_V3i32 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(-v.x, -v.y, -v.z);
 }
@@ -3383,7 +3383,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_add(m_V3i32 lhs, m_V3i32 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
@@ -3391,7 +3391,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_sub(m_V3i32 lhs, m_V3i32 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
@@ -3399,7 +3399,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_mul(m_V3i32 lhs, m_V3i32 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
@@ -3407,7 +3407,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_div(m_V3i32 lhs, m_V3i32 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
@@ -3427,7 +3427,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_scal(m_V3i32 v, i32 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(3, i32))scalar));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(v.x * scalar, v.y * scalar, v.z * scalar);
 }
@@ -3435,7 +3435,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_scalInv(m_V3i32 v, i32 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(3, i32))scalar));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(v.x / scalar, v.y / scalar, v.z / scalar);
 }
@@ -3466,7 +3466,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_min(m_V3i32 lhs, m_V3i32 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(
         math_min(lhs.x, rhs.x),
@@ -3478,7 +3478,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_max(m_V3i32 lhs, m_V3i32 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(
         math_max(lhs.x, rhs.x),
@@ -3490,7 +3490,7 @@ $attr($inline_always)
 $static m_V3i32 m_V3i32_clamp(m_V3i32 v, m_V3i32 min, m_V3i32 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_min(m_V3i32_max(v, min), max);
 }
@@ -3519,7 +3519,7 @@ $attr($inline_always)
 $static i32 m_V3i32_dot(m_V3i32 lhs, m_V3i32 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((i32)(result));
+    return l$((i32)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
@@ -3529,7 +3529,7 @@ $static m_V3i32 m_V3i32_cross(m_V3i32 lhs, m_V3i32 rhs) {
     let l = Vec_from$((i32){ lhs.x, lhs.y, 0 });
     let r = Vec_from$((i32){ rhs.x, rhs.y, 0 });
     let result = Vec_cross(l, r);
-    return lit$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
+    return l$((m_V3i32){ .s = Vec_toA$((FieldType$(m_V3i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i32_of(
         lhs.y * rhs.z - lhs.z * rhs.y,
@@ -3553,7 +3553,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_of(i32 x, i32 y, i32 z, i32 w) {
 #if arch_simd_use
     let result = Vec_from$((i32){ x, y, z, w });
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V4i32){ .x = x, .y = y, .z = z, .w = w };
 }
@@ -3561,7 +3561,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_splat(i32 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(4, i32))scalar);
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(scalar, scalar, scalar, scalar);
 }
@@ -3580,10 +3580,10 @@ $static cmp_fn_ord$((m_V4i32)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -3592,7 +3592,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_neg(m_V4i32 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(-v.x, -v.y, -v.z, -v.w);
 }
@@ -3600,7 +3600,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_add(m_V4i32 lhs, m_V4i32 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
@@ -3608,7 +3608,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_sub(m_V4i32 lhs, m_V4i32 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
@@ -3616,7 +3616,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_mul(m_V4i32 lhs, m_V4i32 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
@@ -3624,7 +3624,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_div(m_V4i32 lhs, m_V4i32 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
@@ -3645,7 +3645,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_scal(m_V4i32 v, i32 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(4, i32))scalar));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 }
@@ -3653,7 +3653,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_scalInv(m_V4i32 v, i32 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(4, i32))scalar));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(v.x / scalar, v.y / scalar, v.z / scalar, v.w / scalar);
 }
@@ -3684,7 +3684,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_min(m_V4i32 lhs, m_V4i32 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(
         math_min(lhs.x, rhs.x),
@@ -3697,7 +3697,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_max(m_V4i32 lhs, m_V4i32 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_of(
         math_max(lhs.x, rhs.x),
@@ -3710,7 +3710,7 @@ $attr($inline_always)
 $static m_V4i32 m_V4i32_clamp(m_V4i32 v, m_V4i32 min, m_V4i32 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
+    return l$((m_V4i32){ .s = Vec_toA$((FieldType$(m_V4i32, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i32_min(m_V4i32_max(v, min), max);
 }
@@ -3740,7 +3740,7 @@ $attr($inline_always)
 $static i32 m_V4i32_dot(m_V4i32 lhs, m_V4i32 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((i32)(result));
+    return l$((i32)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
 }
@@ -3751,7 +3751,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_of(i64 x, i64 y) {
 #if arch_simd_use
     let result = Vec_from$((i64){ x, y });
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V2i64){ .x = x, .y = y };
 }
@@ -3759,7 +3759,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_splat(i64 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(2, i64))scalar);
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(scalar, scalar);
 }
@@ -3778,10 +3778,10 @@ $static cmp_fn_ord$((m_V2i64)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -3790,7 +3790,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_neg(m_V2i64 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(-v.x, -v.y);
 }
@@ -3798,7 +3798,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_add(m_V2i64 lhs, m_V2i64 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(lhs.x + rhs.x, lhs.y + rhs.y);
 }
@@ -3806,7 +3806,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_sub(m_V2i64 lhs, m_V2i64 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(lhs.x - rhs.x, lhs.y - rhs.y);
 }
@@ -3814,7 +3814,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_mul(m_V2i64 lhs, m_V2i64 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(lhs.x * rhs.x, lhs.y * rhs.y);
 }
@@ -3822,7 +3822,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_div(m_V2i64 lhs, m_V2i64 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
@@ -3841,7 +3841,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_scal(m_V2i64 v, i64 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(2, i64))scalar));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(v.x * scalar, v.y * scalar);
 }
@@ -3849,7 +3849,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_scalInv(m_V2i64 v, i64 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(2, i64))scalar));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(v.x / scalar, v.y / scalar);
 }
@@ -3880,7 +3880,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_min(m_V2i64 lhs, m_V2i64 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(
         math_min(lhs.x, rhs.x),
@@ -3891,7 +3891,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_max(m_V2i64 lhs, m_V2i64 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_of(
         math_max(lhs.x, rhs.x),
@@ -3902,7 +3902,7 @@ $attr($inline_always)
 $static m_V2i64 m_V2i64_clamp(m_V2i64 v, m_V2i64 min, m_V2i64 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
+    return l$((m_V2i64){ .s = Vec_toA$((FieldType$(m_V2i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V2i64_min(m_V2i64_max(v, min), max);
 }
@@ -3930,7 +3930,7 @@ $attr($inline_always)
 $static i64 m_V2i64_dot(m_V2i64 lhs, m_V2i64 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((i64)(result));
+    return l$((i64)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y;
 }
@@ -3940,7 +3940,7 @@ $static i64 m_V2i64_cross(m_V2i64 lhs, m_V2i64 rhs) {
     let l = Vec_from$((i64){ lhs.x, lhs.y, 0 });
     let r = Vec_from$((i64){ rhs.x, rhs.y, 0 });
     let result = Vec_cross(l, r);
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) }).z;
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) }).z;
 #endif /* arch_simd_use */
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
@@ -3958,7 +3958,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_of(i64 x, i64 y, i64 z) {
 #if arch_simd_use
     let result = Vec_from$((i64){ x, y, z });
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V3i64){ .x = x, .y = y, .z = z };
 }
@@ -3966,7 +3966,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_splat(i64 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(3, i64))scalar);
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(scalar, scalar, scalar);
 }
@@ -3985,10 +3985,10 @@ $static cmp_fn_ord$((m_V3i64)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -3997,7 +3997,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_neg(m_V3i64 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(-v.x, -v.y, -v.z);
 }
@@ -4005,7 +4005,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_add(m_V3i64 lhs, m_V3i64 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
@@ -4013,7 +4013,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_sub(m_V3i64 lhs, m_V3i64 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
@@ -4021,7 +4021,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_mul(m_V3i64 lhs, m_V3i64 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
@@ -4029,7 +4029,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_div(m_V3i64 lhs, m_V3i64 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
@@ -4049,7 +4049,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_scal(m_V3i64 v, i64 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(3, i64))scalar));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(v.x * scalar, v.y * scalar, v.z * scalar);
 }
@@ -4057,7 +4057,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_scalInv(m_V3i64 v, i64 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(3, i64))scalar));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(v.x / scalar, v.y / scalar, v.z / scalar);
 }
@@ -4088,7 +4088,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_min(m_V3i64 lhs, m_V3i64 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(
         math_min(lhs.x, rhs.x),
@@ -4100,7 +4100,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_max(m_V3i64 lhs, m_V3i64 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(
         math_max(lhs.x, rhs.x),
@@ -4112,7 +4112,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_clamp(m_V3i64 v, m_V3i64 min, m_V3i64 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_min(m_V3i64_max(v, min), max);
 }
@@ -4141,7 +4141,7 @@ $attr($inline_always)
 $static i64 m_V3i64_dot(m_V3i64 lhs, m_V3i64 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((i64)(result));
+    return l$((i64)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
@@ -4149,7 +4149,7 @@ $attr($inline_always)
 $static m_V3i64 m_V3i64_cross(m_V3i64 lhs, m_V3i64 rhs) {
 #if arch_simd_use
     let result = Vec_cross(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
+    return l$((m_V3i64){ .s = Vec_toA$((FieldType$(m_V3i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V3i64_of(
         lhs.y * rhs.z - lhs.z * rhs.y,
@@ -4173,7 +4173,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_of(i64 x, i64 y, i64 z, i64 w) {
 #if arch_simd_use
     let result = Vec_from$((i64){ x, y, z, w });
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return (m_V4i64){ .x = x, .y = y, .z = z, .w = w };
 }
@@ -4181,7 +4181,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_splat(i64 scalar) {
 #if arch_simd_use
     let result = Vec_splat$((Vec$$(4, i64))scalar);
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(scalar, scalar, scalar, scalar);
 }
@@ -4200,10 +4200,10 @@ $static cmp_fn_ord$((m_V4i64)(lhs, rhs)) {
 #if arch_simd_use
 /* TODO: Implement Vec_ord for SIMD */
 #endif /* arch_simd_use */
-    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r) {
+    for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
         if (*l > *r) { return cmp_Ord_gt; }
-    });
+    } $end(for);
     return cmp_Ord_eq;
 }
 
@@ -4212,7 +4212,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_neg(m_V4i64 v) {
 #if arch_simd_use
     let result = Vec_neg(Vec_fromA(v.s));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(-v.x, -v.y, -v.z, -v.w);
 }
@@ -4220,7 +4220,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_add(m_V4i64 lhs, m_V4i64 rhs) {
 #if arch_simd_use
     let result = Vec_add(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
@@ -4228,7 +4228,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_sub(m_V4i64 lhs, m_V4i64 rhs) {
 #if arch_simd_use
     let result = Vec_sub(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
@@ -4236,7 +4236,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_mul(m_V4i64 lhs, m_V4i64 rhs) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
@@ -4244,7 +4244,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_div(m_V4i64 lhs, m_V4i64 rhs) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
@@ -4265,7 +4265,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_scal(m_V4i64 v, i64 scalar) {
 #if arch_simd_use
     let result = Vec_mul(Vec_fromA(v.s), Vec_splat$((Vec$$(4, i64))scalar));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 }
@@ -4273,7 +4273,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_scalInv(m_V4i64 v, i64 scalar) {
 #if arch_simd_use
     let result = Vec_div(Vec_fromA(v.s), Vec_splat$((Vec$$(4, i64))scalar));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(v.x / scalar, v.y / scalar, v.z / scalar, v.w / scalar);
 }
@@ -4304,7 +4304,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_min(m_V4i64 lhs, m_V4i64 rhs) {
 #if arch_simd_use
     let result = Vec_min(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(
         math_min(lhs.x, rhs.x),
@@ -4317,7 +4317,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_max(m_V4i64 lhs, m_V4i64 rhs) {
 #if arch_simd_use
     let result = Vec_max(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_of(
         math_max(lhs.x, rhs.x),
@@ -4330,7 +4330,7 @@ $attr($inline_always)
 $static m_V4i64 m_V4i64_clamp(m_V4i64 v, m_V4i64 min, m_V4i64 max) {
 #if arch_simd_use
     let result = Vec_clamp(Vec_fromA(v.s), Vec_fromA(min.s), Vec_fromA(max.s));
-    return lit$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
+    return l$((m_V4i64){ .s = Vec_toA$((FieldType$(m_V4i64, s))(result)) });
 #endif /* arch_simd_use */
     return m_V4i64_min(m_V4i64_max(v, min), max);
 }
@@ -4360,7 +4360,7 @@ $attr($inline_always)
 $static i64 m_V4i64_dot(m_V4i64 lhs, m_V4i64 rhs) {
 #if arch_simd_use
     let result = Vec_dot(Vec_fromA(lhs.s), Vec_fromA(rhs.s));
-    return lit$((i64)(result));
+    return l$((i64)(result));
 #endif /* arch_simd_use */
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
 }

@@ -4,7 +4,7 @@
 #include "dh/sli.h"
 #include "dh/err_res.h"
 #include "dh/mem.h"
-#include "dh/mem/Allocator.h"
+#include "dh/mem/Alctr.h"
 
 #define CASE 1
 #if CASE == 1
@@ -15,13 +15,13 @@
 #undef mem_toBytes$
 #undef mem_toBytes
 
-#define mem_asBytes_const$(_T, /* const T* */ _val... /* S_const$u8 */)  tpl_id(mem_asBytes_const, _T)(_val)
-#define mem_asBytes_const$$(_T, /* const T* */ _val... /* S_const$u8 */) blk({ \
+#define mem_asBytes_const$(_T, /* const T* */ _val... /* S_const$u8 */) tpl_id(mem_asBytes_const, _T)(_val)
+#define mem_asBytes_const$$(_T, /* const T* */ _val... /* S_const$u8 */) local_({ \
     let __val = _val; \
     Sli_from$(S_const$u8, as$(const u8*)(__val), sizeOf(*__val)); \
 })
-#define mem_asBytes$(_T, /* T* */ _val... /* S$u8 */)  tpl_id(mem_asBytes, _T)(_val)
-#define mem_asBytes$$(_T, /* T* */ _val... /* S$u8 */) blk({ \
+#define mem_asBytes$(_T, /* T* */ _val... /* S$u8 */) tpl_id(mem_asBytes, _T)(_val)
+#define mem_asBytes$$(_T, /* T* */ _val... /* S$u8 */) local_({ \
     let __val = _val; \
     Sli_from$(S$u8, as$(u8*)(__val), sizeOf(*__val)); \
 })
@@ -55,7 +55,7 @@
     pp_Tuple_get1st $_T_$_val, \
     pp_Tuple_get2nd $_T_$_val \
 )
-#define comp_inline_eval__mem_toBytes$(__val, _RetT, _mem_asBytes, _T, _val...) blk({ \
+#define comp_inline_eval__mem_toBytes$(__val, _RetT, _mem_asBytes, _T, _val...) local_({ \
     let __val = _val; \
     Sli_deref$(_RetT, mem_asBytes$$(_T, &__val)); \
 })
@@ -110,7 +110,7 @@ static $inline_always fn_((mem_bytes_startsWith(TypeInfo type, S_const$u8 haysta
     if (haystack_bytes < prefix_bytes) { return_none(); }
     if (!mem_eqlBytes(haystack.ptr, prefix.ptr, prefix_bytes)) { return_none(); }
     return_some(prefix.len);
-} $unscoped_(fn);
+} $unscoped(fn);
 static $inline_always fn_((mem_bytes_endsWith(TypeInfo type, S_const$u8 haystack, S_const$u8 suffix))(O$usize) $scope) {
     debug_assert_nonnull(haystack.ptr);
     debug_assert_nonnull(suffix.ptr);
@@ -119,7 +119,7 @@ static $inline_always fn_((mem_bytes_endsWith(TypeInfo type, S_const$u8 haystack
     if (haystack_bytes < suffix_bytes) { return_none(); }
     if (!mem_eqlBytes(haystack.ptr + haystack_bytes - suffix_bytes, suffix.ptr, suffix_bytes)) { return_none(); }
     return_some(haystack.len - suffix.len);
-} $unscoped_(fn);
+} $unscoped(fn);
 #elif CASE == 2
 // PREFIX/SUFFIX OPERATIONS
 //   Returns true if haystack starts with prefix
@@ -136,7 +136,7 @@ static $inline_always fn_((mem_bytes_endsWith(TypeInfo type, S_const$u8 haystack
         } \
         return_some(prefix.len); \
     } \
-    $unscoped_(fn); \
+    $unscoped(fn); \
 //   Returns true if haystack ends with suffix
 #define mem_endsWith$(_T, /* S_const$T */ _haystack, /* S_const$T */ _suffix... /* O$usize */) \
     tpl_id(mem_endsWith, _T)(_haystack, _suffix)
@@ -151,10 +151,10 @@ static $inline_always fn_((mem_bytes_endsWith(TypeInfo type, S_const$u8 haystack
         } \
         return_some(haystack.len - suffix.len); \
     } \
-    $unscoped_(fn);
+    $unscoped(fn);
 #endif // CASE == 1
 
-#include "dh/main.h"
+#include "dh-main.h"
 
 mem_startsWith_useT$(i32);
 TEST_fn_("mem_startsWith: i32" $scope) {
@@ -163,7 +163,7 @@ TEST_fn_("mem_startsWith: i32" $scope) {
     let result = mem_startsWith_i32(haystack.as_const, prefix.as_const);
     try_(TEST_expect(isSome(result)));
     try_(TEST_expect(unwrap(result) == 4));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 mem_endsWith_useT$(i32);
 TEST_fn_("mem_endsWith: i32" $scope) {
@@ -172,4 +172,4 @@ TEST_fn_("mem_endsWith: i32" $scope) {
     let result = mem_endsWith_i32(haystack.as_const, suffix.as_const);
     try_(TEST_expect(isSome(result)));
     try_(TEST_expect(unwrap(result) == 5));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);

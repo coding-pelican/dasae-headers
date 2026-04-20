@@ -25,7 +25,7 @@ extern "C" {
 
 #include "cfg.h"
 
-/*========== Classic C Allocator ============================================*/
+/*========== Classic C Alctr ============================================*/
 
 /// Classic allocator instance (minimal state)
 typedef struct heap_Classic {
@@ -33,7 +33,7 @@ typedef struct heap_Classic {
 } heap_Classic;
 
 /// Get allocator interface for instance
-extern fn_((heap_Classic_allocator(heap_Classic* self))(mem_Allocator));
+extern fn_((heap_Classic_alctr(heap_Classic* self))(mem_Alctr));
 
 /*========== Macros and Declarations ========================================*/
 

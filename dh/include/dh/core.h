@@ -21,9 +21,11 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core/prim.h"
+#include "core/pri.h"
 #include "core/fn.h"
+#if DEPRECATED_CODE
 #include "core/Callable.h"
+#endif /* DEPRECATED_CODE */
 #include "core/claim.h"
 #include "core/debug.h"
 #include "core/range.h"
@@ -31,7 +33,6 @@ extern "C" {
 #include "core/cmp.h"
 #include "core/pipe.h"
 #include "core/chain.h"
-#include "core/blk.h"
 #include "core/scope.h"
 #include "core/src_loc.h"
 #include "core/type_info.h"

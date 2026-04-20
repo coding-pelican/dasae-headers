@@ -1,28 +1,28 @@
 #include "dh/ArrDeq.h"
 
-T_use_E$($set(mem_Err)(usize));
-$static fn_((addOrOom(usize lhs, usize rhs))(mem_Err$usize) $scope) {
+T_use_E$($set(mem_E)(usize));
+$static fn_((ArrDeq__addOrOOM(usize lhs, usize rhs))(mem_E$usize) $scope) {
     if_some((usize_addChkd(lhs, rhs))(result)) {
         return_ok(result);
     } else_none {
-        return_err(mem_Err_OutOfMemory());
+        return_err(mem_E_OutOfMemory());
     }
     claim_unreachable;
-} $unscoped_(fn);
+} $unscoped(fn);
 
 $attr($inline_always)
-$static fn_((calcInitCap(TypeInfo type))(usize)) {
-    return as$(usize)(prim_max(1, arch_cache_line_bytes / type.size));
+$static fn_((ArrDeq__calcInitCap(TypeInfo type))(usize)) {
+    return as$(usize)(pri_max(1, arch_cache_line_bytes / type.size));
 };
 
-$static fn_((growCap(TypeInfo type, usize current, usize minimum))(usize)) {
-    let init_cap = calcInitCap(type);
+$static fn_((ArrDeq__growCap(TypeInfo type, usize current, usize minimum))(usize)) {
+    let init_cap = ArrDeq__calcInitCap(type);
     usize grown = current;
     do { grown = usize_addSat(grown, grown / 2 + init_cap); } while (grown < minimum);
     return grown;
 };
 
-$static fn_((bufIdx(const ArrDeq* self, usize idx))(usize)) {
+$static fn_((ArrDeq__bufIdx(const ArrDeq* self, usize idx))(usize)) {
     let head_len = self->buf.len - self->head;
     return idx < head_len
              ? self->head + idx
@@ -48,16 +48,16 @@ fn_((ArrDeq_fixed(u_S$raw buf))(ArrDeq)) {
     };
 };
 
-fn_((ArrDeq_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrDeq) $scope) {
+fn_((ArrDeq_init(TypeInfo type, mem_Alctr gpa, usize cap))(mem_E$ArrDeq) $scope) {
     var deq = ArrDeq_empty(type);
     try_(ArrDeq_ensureCapPrecise(&deq, type, gpa, cap));
     return_ok(deq);
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrDeq_fini(ArrDeq* self, TypeInfo type, mem_Allocator gpa))(void)) {
+fn_((ArrDeq_fini(ArrDeq* self, TypeInfo type, mem_Alctr gpa))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    mem_Allocator_free(gpa, ArrDeq_bufMut(*self, type));
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    mem_Alctr_free($trace gpa, ArrDeq_bufMut(*self, type));
     *self = ArrDeq_empty(type);
 };
 
@@ -84,7 +84,7 @@ fn_((ArrDeq_Grip_release(ArrDeq_Grip* self, TypeInfo type))(void)) {
     claim_assert(self->buf.len == self->ctx.buf.len);
     claim_assert_nonnull(self->head);
     claim_assert_nonnull(self->len);
-    debug_assert_eqBy(self->ctx.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->ctx.type, type, TypeInfo_eql);
     self->ctx = ArrDeq_empty(type);
     *self->len = self->ctx.len;
     self->len = null;
@@ -114,63 +114,63 @@ fn_((ArrDeq_head(ArrDeq self))(usize)) {
 };
 
 fn_((ArrDeq_tail(ArrDeq self))(usize)) {
-    return bufIdx(&self, self.len - 1);
+    return ArrDeq__bufIdx(&self, self.len - 1);
 };
 
 fn_((ArrDeq_at(ArrDeq self, TypeInfo type, usize idx))(u_P_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_atS(ArrDeq_buf(self, type), bufIdx(&self, idx));
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
+    return u_atS(ArrDeq_buf(self, type), ArrDeq__bufIdx(&self, idx));
 };
 
 fn_((ArrDeq_atMut(ArrDeq self, TypeInfo type, usize idx))(u_P$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    return u_atS(ArrDeq_bufMut(self, type), bufIdx(&self, idx));
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
+    return u_atS(ArrDeq_bufMut(self, type), ArrDeq__bufIdx(&self, idx));
 };
 
 fn_((ArrDeq_front(ArrDeq self, TypeInfo type))(O$u_P_const$raw) $scope) {
     if (self.len == 0) { return_none(); }
-    return_some(u_atS(ArrDeq_buf(self, type), bufIdx(&self, 0)));
-} $unscoped_(fn);
+    return_some(u_atS(ArrDeq_buf(self, type), ArrDeq__bufIdx(&self, 0)));
+} $unscoped(fn);
 
 fn_((ArrDeq_frontMut(ArrDeq self, TypeInfo type))(O$u_P$raw) $scope) {
     if (self.len == 0) { return_none(); }
-    return_some(u_atS(ArrDeq_bufMut(self, type), bufIdx(&self, 0)));
-} $unscoped_(fn);
+    return_some(u_atS(ArrDeq_bufMut(self, type), ArrDeq__bufIdx(&self, 0)));
+} $unscoped(fn);
 
 fn_((ArrDeq_back(ArrDeq self, TypeInfo type))(O$u_P_const$raw) $scope) {
     if (self.len == 0) { return_none(); }
-    return_some(u_atS(ArrDeq_buf(self, type), bufIdx(&self, self.len - 1)));
-} $unscoped_(fn);
+    return_some(u_atS(ArrDeq_buf(self, type), ArrDeq__bufIdx(&self, self.len - 1)));
+} $unscoped(fn);
 
 fn_((ArrDeq_backMut(ArrDeq self, TypeInfo type))(O$u_P$raw) $scope) {
     if (self.len == 0) { return_none(); }
-    return_some(u_atS(ArrDeq_bufMut(self, type), bufIdx(&self, self.len - 1)));
-} $unscoped_(fn);
+    return_some(u_atS(ArrDeq_bufMut(self, type), ArrDeq__bufIdx(&self, self.len - 1)));
+} $unscoped(fn);
 
 fn_((ArrDeq_buf(ArrDeq self, TypeInfo type))(u_S_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_from$S((const type)(self.buf.as_const));
 };
 
 fn_((ArrDeq_bufMut(ArrDeq self, TypeInfo type))(u_S$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_from$S((type)(self.buf));
 };
 
-fn_((ArrDeq_ensureCap(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void) $scope) {
+fn_((ArrDeq_ensureCap(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     if (new_cap <= self->buf.len) { return_ok({}); }
-    return ArrDeq_ensureCapPrecise(self, type, gpa, growCap(type, self->buf.len, new_cap));
-} $unscoped_(fn);
+    return ArrDeq_ensureCapPrecise(self, type, gpa, ArrDeq__growCap(type, self->buf.len, new_cap));
+} $unscoped(fn);
 
-fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void) $scope) {
+fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     if (new_cap <= self->len) { return_ok({}); }
 
     let old_buf = ArrDeq_bufMut(*self, type);
-    if_some((mem_Allocator_remap(gpa, old_buf, new_cap))(new_buf)) {
+    if_some((mem_Alctr_remap($trace gpa, old_buf, new_cap))(new_buf)) {
         if (self->head < old_buf.len - self->len) {
             let head = u_sliceS(new_buf, $r(self->head, old_buf.len));
             let tail = u_sliceS(new_buf, $r(0, self->len - head.len));
@@ -183,7 +183,7 @@ fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usi
         }
         self->buf = new_buf.raw;
     } else_none {
-        let new_buf = try_(mem_Allocator_alloc(gpa, type, new_cap));
+        let new_buf = try_(mem_Alctr_alloc($trace gpa, type, new_cap));
         if (self->head < old_buf.len - self->len) {
             u_memcpyS(u_prefixS(new_buf, self->len), u_prefixS(u_suffixS(old_buf, self->head), self->len).as_const);
         } else {
@@ -194,66 +194,66 @@ fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usi
         }
         self->head = 0;
         self->buf = new_buf.raw;
-        mem_Allocator_free(gpa, old_buf);
+        mem_Alctr_free($trace gpa, old_buf);
     }
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrDeq_ensureUnusedCap(ArrDeq* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void) $scope) {
+fn_((ArrDeq_ensureUnusedCap(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize additional))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return ArrDeq_ensureCap(self, type, gpa, try_(addOrOom(self->len, additional)));
-} $unscoped_(fn);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    return ArrDeq_ensureCap(self, type, gpa, try_(ArrDeq__addOrOOM(self->len, additional)));
+} $unscoped(fn);
 
 fn_((ArrDeq_clearRetainingCap(ArrDeq* self))(void)) {
     self->len = 0;
 };
 
-fn_((ArrDeq_clearAndFree(ArrDeq* self, TypeInfo type, mem_Allocator gpa))(void)) {
+fn_((ArrDeq_clearAndFree(ArrDeq* self, TypeInfo type, mem_Alctr gpa))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    mem_Allocator_free(gpa, ArrDeq_bufMut(*self, type));
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    mem_Alctr_free($trace gpa, ArrDeq_bufMut(*self, type));
     *self = ArrDeq_empty(type);
 };
 
-fn_((ArrDeq_append(ArrDeq* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void) $scope) {
+fn_((ArrDeq_append(ArrDeq* self, mem_Alctr gpa, u_V$raw item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     let type = item.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     try_(ArrDeq_ensureUnusedCap(self, type, gpa, 1));
     return_ok_void(ArrDeq_appendWithin(self, item));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrDeq_appendFixed(ArrDeq* self, u_V$raw item))(mem_Err$void) $scope) {
+fn_((ArrDeq_appendFixed(ArrDeq* self, u_V$raw item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, item.inner_type, TypeInfo_eq);
-    if (usize_sub(self->buf.len, self->len) == 0) { return_err(mem_Err_OutOfMemory()); }
+    debug_assert_eqBy(self->type, item.inner_type, TypeInfo_eql);
+    if (usize_sub(self->buf.len, self->len) == 0) { return_err(mem_E_OutOfMemory()); }
     return_ok_void(ArrDeq_appendWithin(self, item));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ArrDeq_appendWithin(ArrDeq* self, u_V$raw item))(void)) {
     claim_assert_nonnull(self);
     let type = item.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     claim_assert(self->len < self->buf.len);
-    let idx = bufIdx(self, self->len);
+    let idx = ArrDeq__bufIdx(self, self->len);
     u_memcpy(u_atS(ArrDeq_bufMut(*self, type), idx), item.ref.as_const);
     self->len++;
 };
 
-fn_((ArrDeq_prepend(ArrDeq* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void) $scope) {
+fn_((ArrDeq_prepend(ArrDeq* self, mem_Alctr gpa, u_V$raw item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     let type = item.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     try_(ArrDeq_ensureUnusedCap(self, type, gpa, 1));
     return_ok_void(ArrDeq_prependWithin(self, item));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrDeq_prependFixed(ArrDeq* self, u_V$raw item))(mem_Err$void) $scope) {
+fn_((ArrDeq_prependFixed(ArrDeq* self, u_V$raw item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    if (usize_sub(self->buf.len, self->len) == 0) { return_err(mem_Err_OutOfMemory()); }
+    if (usize_sub(self->buf.len, self->len) == 0) { return_err(mem_E_OutOfMemory()); }
     return_ok_void(ArrDeq_prependWithin(self, item));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ArrDeq_prependWithin(ArrDeq* self, u_V$raw item))(void)) {
     claim_assert_nonnull(self);
@@ -269,29 +269,29 @@ fn_((ArrDeq_prependWithin(ArrDeq* self, u_V$raw item))(void)) {
 fn_((ArrDeq_pop(ArrDeq* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     claim_assert_nonnull(self);
     let type = ret_mem.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
 
     if (self->len == 0) { return_none(); }
     self->len--;
-    let value = u_memcpy(u_allocV(type).ref, u_atS(ArrDeq_buf(*self, type), bufIdx(self, self->len)));
+    let value = u_memcpy(u_allocV(type).ref, u_atS(ArrDeq_buf(*self, type), ArrDeq__bufIdx(self, self->len)));
     return_some({ .inner = u_memcpy(ret_mem.ref, value.as_const).raw });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ArrDeq_shift(ArrDeq* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     claim_assert_nonnull(self);
     let type = ret_mem.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
 
     if (self->len == 0) { return_none(); }
     let shift_idx = self->head;
-    self->head = bufIdx(self, 1);
+    self->head = ArrDeq__bufIdx(self, 1);
     self->len--;
     let value = u_memcpy(u_allocV(type).ref, u_atS(ArrDeq_buf(*self, type), shift_idx));
     return_some({ .inner = u_memcpy(ret_mem.ref, value.as_const).raw });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ArrDeq_iter(const ArrDeq* self, TypeInfo type))(ArrDeq_Iter)) {
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     let_ignore = type;
     return (ArrDeq_Iter){
         .deq = self,
@@ -301,19 +301,19 @@ fn_((ArrDeq_iter(const ArrDeq* self, TypeInfo type))(ArrDeq_Iter)) {
 };
 
 fn_((ArrDeq_Iter_next(ArrDeq_Iter* self, TypeInfo type))(O$u_P_const$raw) $scope) {
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     return expr_(ReturnType $scope)(
         self->idx < self->deq->len
-            ? $break_(some(u_atS(ArrDeq_buf(*self->deq, type), bufIdx(self->deq, self->idx++))))
+            ? $break_(some(u_atS(ArrDeq_buf(*self->deq, type), ArrDeq__bufIdx(self->deq, self->idx++))))
             : $break_(none())
-    ) $unscoped_(expr);
-} $unscoped_(fn);
+    ) $unscoped(expr);
+} $unscoped(fn);
 
 fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw) $scope) {
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     return expr_(ReturnType $scope)(
         self->idx < self->deq->len
-            ? $break_(some(u_atS(ArrDeq_bufMut(*self->deq, type), bufIdx(self->deq, self->idx++))))
+            ? $break_(some(u_atS(ArrDeq_bufMut(*self->deq, type), ArrDeq__bufIdx(self->deq, self->idx++))))
             : $break_(none())
-    ) $unscoped_(expr);
-} $unscoped_(fn);
+    ) $unscoped(expr);
+} $unscoped(fn);

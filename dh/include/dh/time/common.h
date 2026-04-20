@@ -59,18 +59,18 @@ $extern fn_((time_sleepNanos(u32 nanos))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_const__time_nanos_per_nano (lit_n$(u32)(1u))
-#define __comp_const__time_nanos_per_micro (lit_n$(u32)(1, 000u))
-#define __comp_const__time_nanos_per_milli (lit_n$(u32)(1, 000, 000))
-#define __comp_const__time_nanos_per_sec (lit_n$(u32)(1, 000, 000, 000u))
-#define __comp_const__time_micros_per_sec (lit_n$(u32)(1, 000, 000u))
-#define __comp_const__time_millis_per_sec (lit_n$(u32)(1, 000u))
+#define __comp_const__time_nanos_per_nano (n$(u32)(1u))
+#define __comp_const__time_nanos_per_micro (n$(u32)(1, 000u))
+#define __comp_const__time_nanos_per_milli (n$(u32)(1, 000, 000))
+#define __comp_const__time_nanos_per_sec (n$(u32)(1, 000, 000, 000u))
+#define __comp_const__time_micros_per_sec (n$(u32)(1, 000, 000u))
+#define __comp_const__time_millis_per_sec (n$(u32)(1, 000u))
 
-#define __comp_const__time_secs_per_sec (lit_n$(u64)(1ull))
-#define __comp_const__time_secs_per_min (lit_n$(u64)(60ull))
-#define __comp_const__time_mins_per_hour (lit_n$(u64)(60ull))
-#define __comp_const__time_hours_per_day (lit_n$(u64)(24ull))
-#define __comp_const__time_days_per_week (lit_n$(u64)(7ull))
+#define __comp_const__time_secs_per_sec (n$(u64)(1ull))
+#define __comp_const__time_secs_per_min (n$(u64)(60ull))
+#define __comp_const__time_mins_per_hour (n$(u64)(60ull))
+#define __comp_const__time_hours_per_day (n$(u64)(24ull))
+#define __comp_const__time_days_per_week (n$(u64)(7ull))
 
 #if defined(__cplusplus)
 } /* extern "C" */

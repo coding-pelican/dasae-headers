@@ -61,7 +61,8 @@ typedef struct fmt_Display {
 $attr($must_check)
 $static fn_((fmt_display(fmt_Display self, io_Writer writer))(E$void) $scope) {
     return_ok(try_(self.fn(self.ctx, writer)));
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
 typedef struct Entity {
     usize id;
@@ -80,7 +81,8 @@ $static fn_((Entity_fmt_display(const Entity* self, io_Writer writer))(E$void) $
     try_(io_Writer_println(writer, u8_l("    health: {:d}"), self->health));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 $static fn_((fmt_Display_trait$Entity(const Entity* self))(fmt_Display)) {
     return (fmt_Display){ .ctx = self, .fn = as$(FieldType$(fmt_Display, fn))(Entity_fmt_display) };
 };
@@ -92,7 +94,8 @@ $static fn_((Circ_fmt_display(const Circ* self, io_Writer writer))(E$void) $scop
     try_(io_Writer_println(writer, u8_l("    radius: {:.2f}"), self->radius));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 $static fn_((fmt_Display_trait$Circ(const Circ* self))(fmt_Display)) {
     return (fmt_Display){ .ctx = self, .fn = as$(FieldType$(fmt_Display, fn))(Circ_fmt_display) };
 };
@@ -104,7 +107,8 @@ $static fn_((Rect_fmt_display(const Rect* self, io_Writer writer))(E$void) $scop
     try_(io_Writer_println(writer, u8_l("    height: {:.2f}"), self->height));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 $static fn_((fmt_Display_trait$Rect(const Rect* self))(fmt_Display)) {
     return (fmt_Display){ .ctx = self, .fn = as$(FieldType$(fmt_Display, fn))(Rect_fmt_display) };
 };
@@ -117,7 +121,8 @@ $static fn_((Shape_fmt_display(const Shape* self, io_Writer writer))(E$void) $sc
     try_(io_Writer_println(writer, u8_l("    Perimeter: {:.2f}"), Shape_perimeter(*self)));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 $static fn_((fmt_Display_trait$Shape(const Shape* self))(fmt_Display)) {
     return (fmt_Display){ .ctx = ptrCast$((P_const$raw)(self)), .fn = as$(FieldType$(fmt_Display, fn))(Shape_fmt_display) };
 };

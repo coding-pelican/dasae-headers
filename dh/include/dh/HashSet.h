@@ -25,7 +25,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/mem/Allocator.h"
+#include "dh/mem/Alctr.h"
 #include "dh/HashMap.h" /* Reuse HashMap_Ctrl, HashMap_Ctx */
 
 /*========== Macros and Declarations ========================================*/
@@ -59,7 +59,7 @@ typedef struct HashSet_Sgl$raw {
 T_use_P$(HashSet_Sgl$raw);
 typedef P$HashSet_Sgl$raw V$HashSet_Sgl$raw;
 T_use_O$(V$HashSet_Sgl$raw);
-T_use_E$($set(mem_Err)(O$V$HashSet_Sgl$raw));
+T_use_E$($set(mem_E)(O$V$HashSet_Sgl$raw));
 $extern fn_((HashSet_Sgl_key(V$HashSet_Sgl$raw self, u_V$raw ret_mem))(u_V$raw));
 
 /* --- HashSet_Entry: Pointer to key in set --- */
@@ -106,7 +106,7 @@ typedef struct HashSet_Ensured {
     var_(found_existing, bool);
     debug_only(var_(key_ty, TypeInfo));
 } HashSet_Ensured;
-T_use_E$($set(mem_Err)(HashSet_Ensured));
+T_use_E$($set(mem_E)(HashSet_Ensured));
 $extern fn_((HashSet_Ensured_key(HashSet_Ensured self, TypeInfo key_ty))(u_P_const$raw));
 $extern fn_((HashSet_Ensured_keyMut(HashSet_Ensured self, TypeInfo key_ty))(u_P$raw));
 $extern fn_((HashSet_Ensured_foundExisting(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_Entry));
@@ -116,10 +116,8 @@ $extern fn_((HashSet_Ensured_foundExistingMut(HashSet_Ensured self, TypeInfo key
 
 typedef HashMap_HashFn HashSet_HashFn;
 $extern fn_((HashSet_HashFn_default(u_V$raw val, u_V$raw ctx))(u64));
-claim_assert_static(Type_eq$(HashSet_HashFn, TypeOf(&HashSet_HashFn_default)));
-typedef u_EqlCtxFn HashSet_EqlFn;
+typedef HashMap_EqlFn HashSet_EqlFn;
 $extern fn_((HashSet_EqlFn_default(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool));
-claim_assert_static(Type_eq$(HashSet_EqlFn, TypeOf(&HashSet_EqlFn_default)));
 
 typedef HashMap_Ctx HashSet_Ctx;
 T_use_P$(HashSet_Ctx);
@@ -145,7 +143,7 @@ typedef struct HashSet {
     debug_only(var_(key_ty, TypeInfo));
 } HashSet;
 T_use$((HashSet)(O, E));
-T_use_E$($set(mem_Err)(HashSet));
+T_use_E$($set(mem_E)(HashSet));
 #define HashSet_default_max_load_ratio HashMap_default_max_load_ratio
 #define HashSet_default_min_cap HashMap_default_min_cap
 
@@ -153,12 +151,12 @@ T_use_E$($set(mem_Err)(HashSet));
 
 $extern fn_((HashSet_empty(TypeInfo key_ty, P_const$HashSet_Ctx ctx))(HashSet));
 $attr($must_check)
-$extern fn_((HashSet_init(TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Allocator gpa, u32 cap))(mem_Err$HashSet));
-$extern fn_((HashSet_fini(HashSet* self, TypeInfo key_ty, mem_Allocator gpa))(void));
+$extern fn_((HashSet_init(TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Alctr gpa, u32 cap))(mem_E$HashSet));
+$extern fn_((HashSet_fini(HashSet* self, TypeInfo key_ty, mem_Alctr gpa))(void));
 $attr($must_check)
-$extern fn_((HashSet_clone(HashSet self, TypeInfo key_ty, mem_Allocator gpa))(mem_Err$HashSet));
+$extern fn_((HashSet_clone(HashSet self, TypeInfo key_ty, mem_Alctr gpa))(mem_E$HashSet));
 $attr($must_check)
-$extern fn_((HashSet_cloneWithCtx(HashSet self, TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Allocator gpa))(mem_Err$HashSet));
+$extern fn_((HashSet_cloneWithCtx(HashSet self, TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Alctr gpa))(mem_E$HashSet));
 
 /* --- Capacity Management --- */
 
@@ -166,11 +164,11 @@ $extern fn_((HashSet_count(HashSet self))(u32));
 $extern fn_((HashSet_cap(HashSet self))(u32));
 
 $attr($must_check)
-$extern fn_((HashSet_ensureCap(HashSet* self, TypeInfo key_ty, mem_Allocator gpa, u32 new_cap))(mem_Err$void));
+$extern fn_((HashSet_ensureCap(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 new_cap))(mem_E$void));
 $attr($must_check)
-$extern fn_((HashSet_ensureUnusedCap(HashSet* self, TypeInfo key_ty, mem_Allocator gpa, u32 additional))(mem_Err$void));
+$extern fn_((HashSet_ensureUnusedCap(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 additional))(mem_E$void));
 $extern fn_((HashSet_clearRetainingCap(HashSet* self))(void));
-$extern fn_((HashSet_clearAndFree(HashSet* self, TypeInfo key_ty, mem_Allocator gpa))(void));
+$extern fn_((HashSet_clearAndFree(HashSet* self, TypeInfo key_ty, mem_Alctr gpa))(void));
 
 /* --- Lookup Operations --- */
 
@@ -187,14 +185,14 @@ $extern fn_((HashSet_contains(HashSet self, u_V$raw key))(bool));
 
 /// Insert only if not present. May allocate.
 $attr($must_check)
-$extern fn_((HashSet_put(HashSet* self, mem_Allocator gpa, u_V$raw key))(mem_Err$void));
+$extern fn_((HashSet_put(HashSet* self, mem_Alctr gpa, u_V$raw key))(mem_E$void));
 /// Insert only if not present. Asserts capacity and key not present.
 $extern fn_((HashSet_putWithin(HashSet* self, u_V$raw key))(void));
 /// Insert or update, returning previous value if it existed. May allocate.
 $attr($must_check)
 $extern fn_((HashSet_fetchPut(
-    HashSet* self, mem_Allocator gpa, u_V$raw key, V$HashSet_Sgl$raw ret_mem
-))(mem_Err$O$V$HashSet_Sgl$raw));
+    HashSet* self, mem_Alctr gpa, u_V$raw key, V$HashSet_Sgl$raw ret_mem
+))(mem_E$O$V$HashSet_Sgl$raw));
 /// Insert or update, returning previous value if it existed. Asserts capacity.
 $extern fn_((HashSet_fetchPutWithin(
     HashSet* self, u_V$raw key, V$HashSet_Sgl$raw ret_mem
@@ -204,7 +202,7 @@ $extern fn_((HashSet_fetchPutWithin(
 
 /// Get existing entry or insert new one. May allocate.
 $attr($must_check)
-$extern fn_((HashSet_ensure(HashSet* self, mem_Allocator gpa, u_V$raw key))(mem_Err$HashSet_Ensured));
+$extern fn_((HashSet_ensure(HashSet* self, mem_Alctr gpa, u_V$raw key))(mem_E$HashSet_Ensured));
 /// Get existing entry or insert new one. Asserts capacity is available.
 $extern fn_((HashSet_ensureWithin(HashSet* self, u_V$raw key))(HashSet_Ensured));
 
@@ -312,7 +310,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 #define __comp_gen__T_decl_HashSet_Sgl$(_K...) \
     $maybe_unused typedef union HashSet_Sgl$(_K) HashSet_Sgl$(_K); \
     T_decl_O$(HashSet_Sgl$(_K)); \
-    T_decl_E$($set(mem_Err)(O$(HashSet_Sgl$(_K))))
+    T_decl_E$($set(mem_E)(O$(HashSet_Sgl$(_K))))
 #define __comp_gen__T_impl_HashSet_Sgl$(_K...) \
     union HashSet_Sgl$(_K) { \
         struct { \
@@ -327,7 +325,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         var_(as_raw, HashSet_Sgl$raw) $like_ref; \
     }; \
     T_impl_O$(HashSet_Sgl$(_K)); \
-    T_impl_E$($set(mem_Err)(O$(HashSet_Sgl$(_K))))
+    T_impl_E$($set(mem_E)(O$(HashSet_Sgl$(_K))))
 #define __comp_gen__T_use_HashSet_Sgl$(_K...) \
     T_decl_HashSet_Sgl$(_K); \
     T_impl_HashSet_Sgl$(_K)
@@ -425,7 +423,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 #define __comp_gen__T_decl_HashSet_Ensured$(_K...) \
     $maybe_unused typedef union HashSet_Ensured$(_K) HashSet_Ensured$(_K); \
     T_decl_O$(HashSet_Ensured$(_K)); \
-    T_decl_E$($set(mem_Err)(HashSet_Ensured$(_K)))
+    T_decl_E$($set(mem_E)(HashSet_Ensured$(_K)))
 #define __comp_gen__T_impl_HashSet_Ensured$(_K...) \
     union HashSet_Ensured$(_K) { \
         struct { \
@@ -436,7 +434,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         var_(as_raw, HashSet_Ensured) $like_ref; \
     }; \
     T_impl_O$(HashSet_Ensured$(_K)); \
-    T_impl_E$($set(mem_Err)(HashSet_Ensured$(_K)))
+    T_impl_E$($set(mem_E)(HashSet_Ensured$(_K)))
 #define __comp_gen__T_use_HashSet_Ensured$(_K...) \
     T_decl_HashSet_Ensured$(_K); \
     T_impl_HashSet_Ensured$(_K)
@@ -486,7 +484,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 #define __comp_alias__HashSet$(_K...) tpl_id$1T(HashSet, _K)
 #define __comp_gen__T_decl_HashSet$(_K...) \
     $maybe_unused typedef union HashSet$(_K) HashSet$(_K); \
-    T_decl_E$($set(mem_Err)(HashSet$(_K)))
+    T_decl_E$($set(mem_E)(HashSet$(_K)))
 #define __comp_gen__T_impl_HashSet$(_K...) \
     union HashSet$(_K) { \
         struct { \
@@ -498,7 +496,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         }; \
         var_(as_raw, HashSet) $like_ref; \
     }; \
-    T_impl_E$($set(mem_Err)(HashSet$(_K)))
+    T_impl_E$($set(mem_E)(HashSet$(_K)))
 #define __comp_gen__T_use_HashSet$(_K...) \
     T_decl_HashSet$(_K); \
     T_impl_HashSet$(_K)
@@ -512,27 +510,27 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 #define T_use_HashSet_init$(_K...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl_id$1T(HashSet_init, _K)( \
-        P_const$HashSet_Ctx ctx, mem_Allocator gpa, u32 cap \
-    ))(E$($set(mem_Err)(HashSet$(_K)))) $scope) { \
+        P_const$HashSet_Ctx ctx, mem_Alctr gpa, u32 cap \
+    ))(E$($set(mem_E)(HashSet$(_K)))) $scope) { \
         return_(typeE$((ReturnT)(HashSet_init(typeInfo$(_K), ctx, gpa, cap)))); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 #define T_use_HashSet_fini$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_fini, _K)(HashSet$(_K)* self, mem_Allocator gpa))(void)) { \
+    $static fn_((tpl_id$1T(HashSet_fini, _K)(HashSet$(_K)* self, mem_Alctr gpa))(void)) { \
         return HashSet_fini(self->as_raw, typeInfo$(_K), gpa); \
     }
 #define T_use_HashSet_clone$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_clone, _K)(HashSet$(_K) self, mem_Allocator gpa))(E$($set(mem_Err)(HashSet$(_K)))) $scope) { \
+    $static fn_((tpl_id$1T(HashSet_clone, _K)(HashSet$(_K) self, mem_Alctr gpa))(E$($set(mem_E)(HashSet$(_K)))) $scope) { \
         return_(typeE$((ReturnT)(HashSet_clone(*self.as_raw, typeInfo$(_K), gpa)))); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 #define T_use_HashSet_cloneWithCtx$(_K...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl_id$1T(HashSet_cloneWithCtx, _K)( \
-        HashSet$(_K) self, P_const$HashSet_Ctx ctx, mem_Allocator gpa \
-    ))(E$($set(mem_Err)(HashSet$(_K)))) $scope) { \
+        HashSet$(_K) self, P_const$HashSet_Ctx ctx, mem_Alctr gpa \
+    ))(E$($set(mem_E)(HashSet$(_K)))) $scope) { \
         return_(typeE$((ReturnT)(HashSet_cloneWithCtx(*self.as_raw, typeInfo$(_K), ctx, gpa)))); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 
 #define T_use_HashSet_count$(_K...) \
     $attr($inline_always) \
@@ -548,15 +546,15 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 #define T_use_HashSet_ensureCap$(_K...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl_id$1T(HashSet_ensureCap, _K)( \
-        HashSet$(_K)* self, mem_Allocator gpa, u32 new_cap \
-    ))(mem_Err$void)) { \
+        HashSet$(_K)* self, mem_Alctr gpa, u32 new_cap \
+    ))(mem_E$void)) { \
         return HashSet_ensureCap(self->as_raw, typeInfo$(_K), gpa, new_cap); \
     }
 #define T_use_HashSet_ensureUnusedCap$(_K...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl_id$1T(HashSet_ensureUnusedCap, _K)( \
-        HashSet$(_K)* self, mem_Allocator gpa, u32 additional \
-    ))(mem_Err$void)) { \
+        HashSet$(_K)* self, mem_Alctr gpa, u32 additional \
+    ))(mem_E$void)) { \
         return HashSet_ensureUnusedCap(self->as_raw, typeInfo$(_K), gpa, additional); \
     }
 #define T_use_HashSet_clearRetainingCap$(_K...) \
@@ -566,7 +564,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     }
 #define T_use_HashSet_clearAndFree$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_clearAndFree, _K)(HashSet$(_K)* self, mem_Allocator gpa))(void)) { \
+    $static fn_((tpl_id$1T(HashSet_clearAndFree, _K)(HashSet$(_K)* self, mem_Alctr gpa))(void)) { \
         return HashSet_clearAndFree(self->as_raw, typeInfo$(_K), gpa); \
     }
 
@@ -605,7 +603,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define T_use_HashSet_put$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_put, _K)(HashSet$(_K)* self, mem_Allocator gpa, _K key))(mem_Err$void)) { \
+    $static fn_((tpl_id$1T(HashSet_put, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(mem_E$void)) { \
         return HashSet_put(self->as_raw, gpa, u_anyV(key)); \
     }
 #define T_use_HashSet_putWithin$(_K...) \
@@ -615,24 +613,24 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     }
 #define T_use_HashSet_fetchPut$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_fetchPut, _K)(HashSet$(_K)* self, mem_Allocator gpa, _K key))(E$($set(mem_Err)(O$(HashSet_Sgl$(_K))))) $scope) { \
-        let opt_sgl = try_(HashSet_fetchPut(self->as_raw, gpa, u_anyV(key), lit0$((HashSet_Sgl$(_K))).as_raw)); \
+    $static fn_((tpl_id$1T(HashSet_fetchPut, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(E$($set(mem_E)(O$(HashSet_Sgl$(_K))))) $scope) { \
+        let opt_sgl = try_(HashSet_fetchPut(self->as_raw, gpa, u_anyV(key), l0$((HashSet_Sgl$(_K))).as_raw)); \
         let sgl = orelse_((opt_sgl)(return_ok(none()))); \
         return_ok(some(*as$(HashSet_Sgl$(_K)*)(sgl))); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 #define T_use_HashSet_fetchPutWithin$(_K...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T(HashSet_fetchPutWithin, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Sgl$(_K))) $scope) { \
-        let opt_sgl = HashSet_fetchPutWithin(self->as_raw, u_anyV(key), lit0$((HashSet_Sgl$(_K))).as_raw); \
+        let opt_sgl = HashSet_fetchPutWithin(self->as_raw, u_anyV(key), l0$((HashSet_Sgl$(_K))).as_raw); \
         let sgl = orelse_((opt_sgl)(return_none())); \
         return_some(*as$(HashSet_Sgl$(_K)*)(sgl)); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 
 #define T_use_HashSet_ensure$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_ensure, _K)(HashSet$(_K)* self, mem_Allocator gpa, _K key))(E$($set(mem_Err)(HashSet_Ensured$(_K)))) $scope) { \
+    $static fn_((tpl_id$1T(HashSet_ensure, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(E$($set(mem_E)(HashSet_Ensured$(_K)))) $scope) { \
         return_(typeE$((ReturnT)(HashSet_ensure(self->as_raw, gpa, u_anyV(key))))); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 #define T_use_HashSet_ensureWithin$(_K...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T(HashSet_ensureWithin, _K)(HashSet$(_K)* self, _K key))(HashSet_Ensured$(_K))) { \
@@ -647,10 +645,10 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 #define T_use_HashSet_fetchRemove$(_K...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T(HashSet_fetchRemove, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Sgl$(_K))) $scope) { \
-        let opt_sgl = HashSet_fetchRemove(self->as_raw, u_anyV(key), lit0$((HashSet_Sgl$(_K))).as_raw); \
+        let opt_sgl = HashSet_fetchRemove(self->as_raw, u_anyV(key), l0$((HashSet_Sgl$(_K))).as_raw); \
         let sgl = orelse_((opt_sgl)(return_none())); \
         return_some(*as$(HashSet_Sgl$(_K)*)(sgl)); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 #define T_use_HashSet_removeByPtr$(_K...) \
     $attr($inline_always) \
     $static fn_((tpl_id$1T(HashSet_removeByPtr, _K)(HashSet$(_K)* self, _K* key))(void)) { \

@@ -21,16 +21,16 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "prim.h"
+#include "pipe.h"
 #include "scope.h"
 
 /*========== Macros and Declarations ========================================*/
 
-typedef enum_(chain__State $bits(8)) {
+typedef enum_((chain__State $fits($packed))(
     chain__State_none = 0,
     chain__State_init = 1,
-    chain__State_eval = 2
-} chain__State;
+    chain__State_eval = 2,
+)) chain__State;
 
 #define chain$(/*(_T)(_s)(_fnOps...)*/...) __step__chain$(__step__chain$__parse __VA_ARGS__)
 
@@ -66,14 +66,14 @@ typedef enum_(chain__State $bits(8)) {
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         let __curr = _fnOp1; \
-        asg_lit((&__reserved_acc)(__curr)); \
+        asg_l((&__reserved_acc)(__curr)); \
     } while (false); \
     __chain_state = chain__State_eval; \
-    for_(($s(_s))(__curr) { \
+    for_(($s(_s))(__curr)) { \
         let_(__reserved, TypeOf(__curr)) = __curr; \
         let __curr = _fnOp1; \
-        asg_lit((&__reserved_acc)(__curr)); \
-    }); \
+        asg_l((&__reserved_acc)(__curr)); \
+    } $end(for); \
     __reserved_acc; \
 })
 #define __chain$_2(_T, __s, _s, _fnOp1, _fnOp2...) ({ \
@@ -88,19 +88,19 @@ typedef enum_(chain__State $bits(8)) {
         { \
             let_(__reserved, TypeOf(__curr)) = __curr; \
             let __curr = _fnOp2; \
-            asg_lit((&__reserved_acc)(__curr)); \
+            asg_l((&__reserved_acc)(__curr)); \
         }; \
     } while (false); \
     __chain_state = chain__State_eval; \
-    for_(($s(_s))(__curr) { \
+    for_(($s(_s))(__curr)) { \
         let_(__reserved, TypeOf(__curr)) = __curr; \
         $maybe_unused let __curr = _fnOp1; \
         { \
             let_(__reserved, TypeOf(__curr)) = __curr; \
             let __curr = _fnOp2; \
-            asg_lit((&__reserved_acc)(__curr)); \
+            asg_l((&__reserved_acc)(__curr)); \
         }; \
-    }); \
+    } $end(for); \
     __reserved_acc; \
 })
 #define __chain$_3(_T, __s, _s, _fnOp1, _fnOp2, _fnOp3...) ({ \
@@ -118,12 +118,12 @@ typedef enum_(chain__State $bits(8)) {
             { \
                 let_(__reserved, TypeOf(__curr)) = __curr; \
                 let __curr = _fnOp3; \
-                asg_lit((&__reserved_acc)(__curr)); \
+                asg_l((&__reserved_acc)(__curr)); \
             }; \
         }; \
     } while (false); \
     __chain_state = chain__State_eval; \
-    for_(($s(_s))(__curr) { \
+    for_(($s(_s))(__curr)) { \
         let_(__reserved, TypeOf(__curr)) = __curr; \
         $maybe_unused let __curr = _fnOp1; \
         { \
@@ -132,10 +132,10 @@ typedef enum_(chain__State $bits(8)) {
             { \
                 let_(__reserved, TypeOf(__curr)) = __curr; \
                 let __curr = _fnOp3; \
-                asg_lit((&__reserved_acc)(__curr)); \
+                asg_l((&__reserved_acc)(__curr)); \
             }; \
         }; \
-    }); \
+    } $end(for); \
     __reserved_acc; \
 })
 #define __chain$_4(_T, __s, _s, _fnOp1, _fnOp2, _fnOp3, _fnOp4...) ({ \
@@ -156,13 +156,13 @@ typedef enum_(chain__State $bits(8)) {
                 { \
                     let_(__reserved, TypeOf(__curr)) = __curr; \
                     let __curr = _fnOp4; \
-                    asg_lit((&__reserved_acc)(__curr)); \
+                    asg_l((&__reserved_acc)(__curr)); \
                 }; \
             }; \
         }; \
     } while (false); \
     __chain_state = chain__State_eval; \
-    for_(($s(_s))(__curr) { \
+    for_(($s(_s))(__curr)) { \
         let_(__reserved, TypeOf(__curr)) = __curr; \
         $maybe_unused let __curr = _fnOp1; \
         { \
@@ -174,11 +174,11 @@ typedef enum_(chain__State $bits(8)) {
                 { \
                     let_(__reserved, TypeOf(__curr)) = __curr; \
                     let __curr = _fnOp4; \
-                    asg_lit((&__reserved_acc)(__curr)); \
+                    asg_l((&__reserved_acc)(__curr)); \
                 }; \
             }; \
         }; \
-    }); \
+    } $end(for); \
     __reserved_acc; \
 })
 #define __chain$_5(_T, __s, _s, _fnOp1, _fnOp2, _fnOp3, _fnOp4, _fnOp5...) ({ \
@@ -202,14 +202,14 @@ typedef enum_(chain__State $bits(8)) {
                     { \
                         let_(__reserved, TypeOf(__curr)) = __curr; \
                         let __curr = _fnOp5; \
-                        asg_lit((&__reserved_acc)(__curr)); \
+                        asg_l((&__reserved_acc)(__curr)); \
                     }; \
                 }; \
             }; \
         }; \
     } while (false); \
     __chain_state = chain__State_eval; \
-    for_(($s(_s))(__curr) { \
+    for_(($s(_s))(__curr)) { \
         let_(__reserved, TypeOf(__curr)) = __curr; \
         $maybe_unused let __curr = _fnOp1; \
         { \
@@ -224,12 +224,12 @@ typedef enum_(chain__State $bits(8)) {
                     { \
                         let_(__reserved, TypeOf(__curr)) = __curr; \
                         let __curr = _fnOp5; \
-                        asg_lit((&__reserved_acc)(__curr)); \
+                        asg_l((&__reserved_acc)(__curr)); \
                     }; \
                 }; \
             }; \
         }; \
-    }); \
+    } $end(for); \
     __reserved_acc; \
 })
 #define __chain$_6(_T, __s, _s, _fnOp1, _fnOp2, _fnOp3, _fnOp4, _fnOp5, _fnOp6...) ({ \
@@ -256,7 +256,7 @@ typedef enum_(chain__State $bits(8)) {
                         { \
                             let_(__reserved, TypeOf(__curr)) = __curr; \
                             let __curr = _fnOp6; \
-                            asg_lit((&__reserved_acc)(__curr)); \
+                            asg_l((&__reserved_acc)(__curr)); \
                         }; \
                     }; \
                 }; \
@@ -264,7 +264,7 @@ typedef enum_(chain__State $bits(8)) {
         }; \
     } while (false); \
     __chain_state = chain__State_eval; \
-    for_(($s(_s))(__curr) { \
+    for_(($s(_s))(__curr)) { \
         let_(__reserved, TypeOf(__curr)) = __curr; \
         $maybe_unused let __curr = _fnOp1; \
         { \
@@ -282,13 +282,13 @@ typedef enum_(chain__State $bits(8)) {
                         { \
                             let_(__reserved, TypeOf(__curr)) = __curr; \
                             let __curr = _fnOp6; \
-                            asg_lit((&__reserved_acc)(__curr)); \
+                            asg_l((&__reserved_acc)(__curr)); \
                         }; \
                     }; \
                 }; \
             }; \
         }; \
-    }); \
+    } $end(for); \
     __reserved_acc; \
 })
 #define __chain$_7(_T, __s, _s, _fnOp1, _fnOp2, _fnOp3, _fnOp4, _fnOp5, _fnOp6, _fnOp7...) ({ \
@@ -318,7 +318,7 @@ typedef enum_(chain__State $bits(8)) {
                             { \
                                 let_(__reserved, TypeOf(__curr)) = __curr; \
                                 let __curr = _fnOp7; \
-                                asg_lit((&__reserved_acc)(__curr)); \
+                                asg_l((&__reserved_acc)(__curr)); \
                             }; \
                         }; \
                     }; \
@@ -327,7 +327,7 @@ typedef enum_(chain__State $bits(8)) {
         }; \
     } while (false); \
     __chain_state = chain__State_eval; \
-    for_(($s(_s))(__curr) { \
+    for_(($s(_s))(__curr)) { \
         let_(__reserved, TypeOf(__curr)) = __curr; \
         $maybe_unused let __curr = _fnOp1; \
         { \
@@ -348,14 +348,14 @@ typedef enum_(chain__State $bits(8)) {
                             { \
                                 let_(__reserved, TypeOf(__curr)) = __curr; \
                                 let __curr = _fnOp7; \
-                                asg_lit((&__reserved_acc)(__curr)); \
+                                asg_l((&__reserved_acc)(__curr)); \
                             }; \
                         }; \
                     }; \
                 }; \
             }; \
         }; \
-    }); \
+    } $end(for); \
     __reserved_acc; \
 })
 #define __chain$_8(_T, __s, _s, _fnOp1, _fnOp2, _fnOp3, _fnOp4, _fnOp5, _fnOp6, _fnOp7, _fnOp8...) ({ \
@@ -388,7 +388,7 @@ typedef enum_(chain__State $bits(8)) {
                                 { \
                                     let_(__reserved, TypeOf(__curr)) = __curr; \
                                     let __curr = _fnOp8; \
-                                    asg_lit((&__reserved_acc)(__curr)); \
+                                    asg_l((&__reserved_acc)(__curr)); \
                                 }; \
                             }; \
                         }; \
@@ -398,7 +398,7 @@ typedef enum_(chain__State $bits(8)) {
         }; \
     } while (false); \
     __chain_state = chain__State_eval; \
-    for_(($s(_s))(__curr) { \
+    for_(($s(_s))(__curr)) { \
         let_(__reserved, TypeOf(__curr)) = __curr; \
         $maybe_unused let __curr = _fnOp1; \
         { \
@@ -422,7 +422,7 @@ typedef enum_(chain__State $bits(8)) {
                                 { \
                                     let_(__reserved, TypeOf(__curr)) = __curr; \
                                     let __curr = _fnOp8; \
-                                    asg_lit((&__reserved_acc)(__curr)); \
+                                    asg_l((&__reserved_acc)(__curr)); \
                                 }; \
                             }; \
                         }; \
@@ -430,7 +430,7 @@ typedef enum_(chain__State $bits(8)) {
                 }; \
             }; \
         }; \
-    }); \
+    } $end(for); \
     __reserved_acc; \
 })
 
@@ -464,25 +464,28 @@ typedef enum_(chain__State $bits(8)) {
 #define __step__map$__emit(...) __map$(__VA_ARGS__)
 #define __map$(_T, _p_e, _xform...) expr_(_T* $scope)({ \
     if (__chain_state != chain__State_eval) { \
-        $break_(&lit0$((_T))); \
+        $break_(&l0$((_T))); \
     } else { \
         let _p_e = __reserved; \
         $break_(&copy(_xform)); \
     }; \
-}) $unscoped_(expr)
+}) $unscoped(expr)
 
-#define __step__fold_(_default, ...) __step__fold___emit(_default, __step__fold___capt __VA_ARGS__)
+#define __step__fold_(_default, ...) __step__fold___emit( \
+    _default, __step__fold___capt __VA_ARGS__ \
+)
+#define __step__fold___default(_default...) _default
 #define __step__fold___capt(_acc, _p_e...) _acc, _p_e,
 #define __step__fold___emit(...) __fold_(__VA_ARGS__)
 #define __fold_(_default, _acc, _p_e, _combine...) expr_(TypeOf(__reserved_acc) $scope)({ \
     if (__chain_state != chain__State_eval) { \
-        $break_(_default); \
+        $break_(__step__fold___default _default); \
     } else { \
         let _p_e = __reserved; \
         var _acc = __reserved_acc; \
         $break_(_combine); \
     }; \
-}) $unscoped_(expr)
+}) $unscoped(expr)
 /* TODO: support tryFold_ */
 
 #define __step__reduce_(...) __step__reduce___emit(__step__reduce___capt __VA_ARGS__)
@@ -500,7 +503,7 @@ typedef enum_(chain__State $bits(8)) {
         var _acc = orelse_((__reserved_acc)(*__reserved)); \
         $break_(some(_combine)); \
     }; \
-}) $unscoped_(expr)
+}) $unscoped(expr)
 /* TODO: support tryReduce_ */
 
 #define __step__all_(...) __step__all___emit(__VA_ARGS__)
@@ -519,9 +522,9 @@ typedef enum_(chain__State $bits(8)) {
 #define __step__collect$__emit(...) __collect$(__VA_ARGS__)
 #define __collect$(_gpa...) ({ \
     if (__chain_state == chain__State_none) { \
-        asg_lit((&__reserved_buf)(ok({}))); \
+        asg_l((&__reserved_buf)(ok({}))); \
     } else if (__chain_state == chain__State_init) { \
-        __reserved_buf = u_castE$((TypeOf(__reserved_buf))(mem_Allocator_alloc(_gpa, typeInfo$(InnerT), ))); \
+        __reserved_buf = u_castE$((TypeOf(__reserved_buf))(mem_Alctr_alloc(_gpa, typeInfo$(InnerT), ))); \
     } else { \
     }; \
 })
@@ -534,7 +537,7 @@ typedef enum_(chain__State $bits(8)) {
     if (__chain_state != chain__State_eval) { \
         let_(__out, TypeOf(__reserved_acc)) = _out; \
         __reserved_buf_cap = __out.len; \
-        asg_lit((&__reserved_buf)(ok(.as_raw = sliceS(__out, $r(0, 0)).as_raw))); \
+        asg_l((&__reserved_buf)(ok(.as_raw = sliceS(__out, $r(0, 0)).as_raw))); \
         $break_(sliceS(__out, $r(0, 0))); \
     } else { \
         let __buf = catch_((E_asP(&__reserved_buf))($ignore, claim_unreachable)); \
@@ -543,7 +546,7 @@ typedef enum_(chain__State $bits(8)) {
         *S_at((*__buf)[__buf->len - 1]) = *__reserved; \
         $break_(sliceS(*__buf, $r(0, __buf->len))); \
     }; \
-}) $unscoped_(expr)
+}) $unscoped(expr)
 #endif /* UNUSED_CODE */
 
 #if defined(__cplusplus)

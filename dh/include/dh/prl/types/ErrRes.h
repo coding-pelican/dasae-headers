@@ -175,19 +175,19 @@ typedef union E$Void {
 
 #define __param_expand__ok$(...) __VA_ARGS__,
 #define __block_inline__ok$(...) __block_inline1__ok$(__VA_ARGS__)
-#define __block_inline1__ok$(_T, _val...) lit$((E$(_T))ok(_val))
+#define __block_inline1__ok$(_T, _val...) l$((E$(_T))ok(_val))
 
 #define __param_expand__ok$$(...) __VA_ARGS__,
 #define __block_inline__ok$$(...) __block_inline1__ok$$$(__VA_ARGS__)
-#define __block_inline1__ok$$$(_T, _val...) lit$((E$$(_T))ok(_val))
+#define __block_inline1__ok$$$(_T, _val...) l$((E$$(_T))ok(_val))
 
 #define __param_expand__err$(...) __VA_ARGS__,
 #define __block_inline__err$(...) __block_inline1__err$(__VA_ARGS__)
-#define __block_inline1__err$(_T, _val...) lit$((E$(_T))err(_val))
+#define __block_inline1__err$(_T, _val...) l$((E$(_T))err(_val))
 
 #define __param_expand__err$$(...) __VA_ARGS__,
 #define __block_inline__err$$(...) __block_inline1__err$$$(__VA_ARGS__)
-#define __block_inline1__err$$$(_T, _val...) lit$((E$$(_T))err(_val))
+#define __block_inline1__err$$$(_T, _val...) l$((E$$(_T))err(_val))
 
 #define __step__E_asP$(...) \
     __step__E_asP$__emit(__step__E_asP$__parseEPT __VA_ARGS__)
@@ -201,8 +201,8 @@ typedef union E$Void {
     let_(__p_e, TypeOf(_p_e)) = _p_e; \
     claim_assert_nonnull(__p_e); \
     __p_e->is_ok \
-        ? lit$((E$Ret$E_asP)ok(&__p_e->payload.ok)) \
-        : lit$((E$Ret$E_asP)err(__p_e->payload.err)); \
+        ? l$((E$Ret$E_asP)ok(&__p_e->payload.ok)) \
+        : l$((E$Ret$E_asP)err(__p_e->payload.err)); \
 })
 #define __step__E_asP(_p_e...) \
     E_asP$((E$$(FieldType$(TypeOf(*_p_e), payload.ok)*))(_p_e))
@@ -231,7 +231,7 @@ typedef union E$Void {
                 TypeOfUnqual(_DefaultExpr_OR_Body), \
                 void: ({ \
                     _DefaultExpr_OR_Body; \
-                    lit0$((TypeOf(__result.payload.ok))); \
+                    l0$((TypeOf(__result.payload.ok))); \
                 }), \
                 default: _DefaultExpr_OR_Body \
             ); \
@@ -248,8 +248,8 @@ typedef union E$Void {
     typedef _O_T O$Ret$catch_some$; \
     let __expr = _expr; \
     __expr.is_ok \
-        ? lit$((O$Ret$catch_some$)some(catch_((__expr)($ignore, claim_unreachable)))) \
-        : (ErrTrace_reset(), lit$((O$Ret$catch_some$)some(_some))); \
+        ? l$((O$Ret$catch_some$)some(catch_((__expr)($ignore, claim_unreachable)))) \
+        : (ErrTrace_reset(), l$((O$Ret$catch_some$)some(_some))); \
 })
 #define __step__catch_some(...) __step__catch_some__emit(__step__catch_some__parseExpr __VA_ARGS__)
 #define __step__catch_some__parseExpr(_expr...) _expr,
@@ -263,8 +263,8 @@ typedef union E$Void {
     typedef _O_T O$Ret$catch_none$; \
     let __expr = _expr; \
     __expr.is_ok \
-        ? lit$((O$Ret$catch_none$)some(catch_((__expr)($ignore, claim_unreachable)))) \
-        : (ErrTrace_reset(), lit$((O$Ret$catch_none$)none())); \
+        ? l$((O$Ret$catch_none$)some(catch_((__expr)($ignore, claim_unreachable)))) \
+        : (ErrTrace_reset(), l$((O$Ret$catch_none$)none())); \
 })
 #define __step__catch_none(...) ____catch_none(__VA_ARGS__)
 #define ____catch_none(_expr...) \
@@ -300,21 +300,21 @@ typedef union E$Void {
 /*========== Example Usage (Disabled to prevent compilation) ================*/
 
 #if EXAMPLE_USAGE
-errset_((math_Err)(
+errset_((math_E)(
     DivisionByZero,
     Overflow,
     Underflow
 ));
-T_use_E$($set(math_Err)(i32)); // or Generally `T_use_E$(i32)`
+T_use_E$($set(math_E)(i32)); // or Generally `T_use_E$(i32)`
 $static fn_((safeDivide(i32 lhs, i32 rhs))(math_E$i32)) $must_check;
 $static fn_((test(void))(E$void)) $must_check;
 
 $static fn_((safeDivide(i32 lhs, i32 rhs))(math_E$i32) $scope) {
     if (rhs == 0) {
-        return_err(math_Err_DivisionByZero());
+        return_err(math_E_DivisionByZero());
     }
     return_ok(lhs / rhs);
-} $unscoped_(fn);
+} $unscoped(fn);
 $static fn_((test(void))(E$void) $scope) {
     let result_invalid = try_(safeDivide(10, 0));
     let result_default = catch_((safeDivide(10, 0))($ignore, 1));
@@ -324,7 +324,7 @@ $static fn_((test(void))(E$void) $scope) {
         return_err(err);
     }));
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)

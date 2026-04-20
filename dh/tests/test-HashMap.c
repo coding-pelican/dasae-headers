@@ -1,5 +1,5 @@
 #include "dh/io/stream.h"
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/HashMap.h"
 #include "dh/heap/Page.h"
 
@@ -49,17 +49,17 @@ T_use$((usize, u16)(
 
 TEST_fn_("basic usage" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
     var map_value = try_(HashMap_init$1usize$2u16(ctx, gpa, 256));
     defer_(HashMap_fini$1usize$2u16(&map_value, gpa));
 
     let_(count, u32) = 128;
     var_(total, u32) = 0;
-    for_(($r(0, count))(i) {
+    for_(($r(0, count))(i)) {
         try_(HashMap_put$1usize$2u16(&map_value, gpa, i, intCast$((u16)(i))));
         total += i;
-    });
+    } $end(for);
 
     using_(var_(sum, u32) = 0) {
         var it = HashMap_iter$1usize$2u16(&map_value);
@@ -70,18 +70,18 @@ TEST_fn_("basic usage" $guard) {
     }
 
     using_(var_(sum, u32) = 0) {
-        for_(($r(0, count))(i) {
+        for_(($r(0, count))(i)) {
             try_(TEST_expect(HashMap_contains$1usize$2u16(map_value, i)));
             try_(TEST_expect(i == unwrap_(HashMap_by$1usize$2u16(map_value, i))));
             sum += unwrap_(HashMap_by$1usize$2u16(map_value, i));
-        });
+        } $end(for);
         try_(TEST_expect(sum == total));
     }
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("basic usage - no templates used" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
     var map_value = try_(HashMap_init(
         typeInfo$(usize), typeInfo$(u16), ctx, gpa, 256
@@ -90,10 +90,10 @@ TEST_fn_("basic usage - no templates used" $guard) {
 
     let_(count, u32) = 128;
     var_(total, u32) = 0;
-    for_(($r(0, count))(i) {
+    for_(($r(0, count))(i)) {
         try_(HashMap_put(&map_value, gpa, u_anyV(as$(usize)(i)), u_anyV(as$(u16)(i))));
         total += i;
-    });
+    } $end(for);
 
     using_(var_(sum, u32) = 0) {
         var it = HashMap_iter(&map_value, typeInfo$(usize), typeInfo$(u16));
@@ -104,18 +104,18 @@ TEST_fn_("basic usage - no templates used" $guard) {
     }
 
     using_(var_(sum, u32) = 0) {
-        for_(($r(0, count))(i) {
+        for_(($r(0, count))(i)) {
             try_(TEST_expect(HashMap_contains(map_value, typeInfo$(u16), u_anyV(as$(usize)(i)))));
             try_(TEST_expect(i == unwrap_(u_castO$((O$u16)(HashMap_by(map_value, u_anyV(as$(usize)(i)), u_retV$(u16)))))));
             sum += unwrap_(u_castO$((O$u16)(HashMap_by(map_value, u_anyV(as$(usize)(i)), u_retV$(u16)))));
-        });
+        } $end(for);
         try_(TEST_expect(sum == total));
     }
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("basic hash map usage" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
     var map_value = try_(HashMap_init$1usize$2u16(ctx, gpa, 256));
     defer_(HashMap_fini$1usize$2u16(&map_value, gpa));
@@ -159,11 +159,11 @@ TEST_fn_("basic hash map usage" $guard) {
     try_(TEST_expect(isNone(HashMap_by$1usize$2u16(map_value, 2))));
 
     try_(TEST_expect(HashMap_remove$1usize$2u16(&map_value, 3)));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("clone and clear operations" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
     var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
@@ -202,25 +202,25 @@ TEST_fn_("clone and clear operations" $guard) {
     HashMap_clearAndFree$1usize$2u16(&cloned, gpa);
     try_(TEST_expect(HashMap_count$1usize$2u16(cloned) == 0));
     try_(TEST_expect(HashMap_cap$1usize$2u16(cloned) == 0));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("rehash" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
     var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 64));
     defer_(HashMap_fini$1usize$2u16(&map, gpa));
 
     // Add elements: keys 0-31, values are key * 10
-    for_(($r(0, 32))(i) {
+    for_(($r(0, 32))(i)) {
         try_(HashMap_put$1usize$2u16(&map, gpa, i, as$(u16)(i * 10)));
-    });
+    } $end(for);
 
     // Remove even keys to create tombstones
-    for_(($r(0, 32 / 2))(i) {
+    for_(($r(0, 32 / 2))(i)) {
         HashMap_remove$1usize$2u16(&map, i * 2);
-    });
+    } $end(for);
 
     try_(TEST_expect(HashMap_count$1usize$2u16(map) == 16));
 
@@ -231,21 +231,21 @@ TEST_fn_("rehash" $guard) {
     try_(TEST_expect(HashMap_count$1usize$2u16(map) == 16));
 
     // Verify odd keys (1, 3, 5, ..., 31) are still present with correct values
-    for_(($r(0, 32 / 2))(i) {
+    for_(($r(0, 32 / 2))(i)) {
         let key = i * 2 + 1;
         try_(TEST_expect(HashMap_contains$1usize$2u16(map, key)));
         try_(TEST_expect(unwrap_(HashMap_by$1usize$2u16(map, key)) == as$(u16)(key * 10)));
-    });
+    } $end(for);
 
     // Verify even keys (0, 2, 4, ..., 30) are removed
-    for_(($r(0, 32 / 2))(i) {
+    for_(($r(0, 32 / 2))(i)) {
         try_(TEST_expect(!HashMap_contains$1usize$2u16(map, i * 2)));
-    });
-} $unguarded_(TEST_fn);
+    } $end(for);
+} $unguarded(TEST_fn);
 
 TEST_fn_("key iterator" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
     var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
@@ -254,10 +254,10 @@ TEST_fn_("key iterator" $guard) {
     // Add elements
     let_(count, u32) = 10;
     var_(expected_key_total, u32) = 0;
-    for_(($r(0, count))(i) {
+    for_(($r(0, count))(i)) {
         try_(HashMap_put$1usize$2u16(&map, gpa, i, as$(u16)(i * 10)));
         expected_key_total += i;
-    });
+    } $end(for);
 
     // Iterate over keys and sum
     var_(actual_key_total, u32) = 0;
@@ -270,11 +270,11 @@ TEST_fn_("key iterator" $guard) {
 
     try_(TEST_expect(iter_count == count));
     try_(TEST_expect(actual_key_total == expected_key_total));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("value iterator" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
     var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
@@ -283,10 +283,10 @@ TEST_fn_("value iterator" $guard) {
     // Add elements: value = key * 10
     let_(count, u32) = 10;
     var_(expected_val_total, u32) = 0;
-    for_(($r(0, count))(i) {
+    for_(($r(0, count))(i)) {
         try_(HashMap_put$1usize$2u16(&map, gpa, i, as$(u16)(i * 10)));
         expected_val_total += i * 10;
-    });
+    } $end(for);
 
     // Iterate over values and sum
     var_(actual_val_total, u32) = 0;
@@ -299,11 +299,11 @@ TEST_fn_("value iterator" $guard) {
 
     try_(TEST_expect(iter_count == count));
     try_(TEST_expect(actual_val_total == expected_val_total));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("entry iterator" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
     var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
@@ -311,9 +311,9 @@ TEST_fn_("entry iterator" $guard) {
 
     // Add elements
     let_(count, u32) = 10;
-    for_(($r(0, count))(i) {
+    for_(($r(0, count))(i)) {
         try_(HashMap_put$1usize$2u16(&map, gpa, i, as$(u16)(i * 10)));
-    });
+    } $end(for);
 
     // Iterate over entries and verify key-value relationship
     var_(iter_count, u32) = 0;
@@ -326,12 +326,12 @@ TEST_fn_("entry iterator" $guard) {
     }
 
     try_(TEST_expect(iter_count == count));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 #define test_HashMap_enable_debug_print 0
 TEST_fn_("stress test with many insertions and deletions" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
     var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
@@ -339,32 +339,32 @@ TEST_fn_("stress test with many insertions and deletions" $guard) {
 
     // Insert many elements
     let_(total_insertions, u32) = 1000;
-    for_(($r(0, total_insertions))(i) {
+    for_(($r(0, total_insertions))(i)) {
         try_(HashMap_put$1usize$2u16(&map, gpa, i, as$(u16)(i % 65536)));
-    });
+    } $end(for);
     try_(TEST_expect(HashMap_count$1usize$2u16(map) == total_insertions));
 
     // Remove every third element
     var_(removed, u32) = 0;
-    for_(($r(0, total_insertions))(i) {
+    for_(($r(0, total_insertions))(i)) {
         let should_remove = (i % 3) == 0;
         if (should_remove && HashMap_remove$1usize$2u16(&map, i)) {
             removed++;
         }
-    });
+    } $end(for);
     try_(TEST_expect(HashMap_count$1usize$2u16(map) == total_insertions - removed));
 
     // Verify remaining elements
-    for_(($r(0, total_insertions))(i) {
+    for_(($r(0, total_insertions))(i)) {
         let should_exist = (i % 3) != 0;
         try_(TEST_expect(HashMap_contains$1usize$2u16(map, i) == should_exist));
-    });
+    } $end(for);
 
     // Rehash and verify again
     HashMap_rehash$1usize$2u16(&map);
     try_(TEST_expect(HashMap_count$1usize$2u16(map) == total_insertions - removed));
 
-    for_(($r(0, total_insertions))(i) {
+    for_(($r(0, total_insertions))(i)) {
         let should_exist = (i % 3) != 0;
         pp_if_(test_HashMap_enable_debug_print)(pp_then_(io_stream_println), pp_else_(pp_ignore))(
             u8_l("i: {:ul}, should_exist: {:B}"), i, should_exist
@@ -376,12 +376,12 @@ TEST_fn_("stress test with many insertions and deletions" $guard) {
             );
             try_(TEST_expect(unwrap_(HashMap_by$1usize$2u16(map, i)) == as$(u16)(i % 65536)));
         }
-    });
-} $unguarded_(TEST_fn);
+    } $end(for);
+} $unguarded(TEST_fn);
 
 #if UNUSED_CODE
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 #endif /* UNUSED_CODE */

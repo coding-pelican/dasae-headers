@@ -5,11 +5,11 @@
 #include "draft-async_ex.h"
 use_Co_Ctx$(Void);
 
-#include "dh/mem/Allocator.h"
+#include "dh/mem/Alctr.h"
 #include "dh/heap/Arena.h"
 
 // 메시지 타입
-typedef enum_(MessageType $bits(8)) {
+typedef enum_(MessageType $bits(8)){
     MessageType_none = 0,
     MessageType_increment = 1,
     MessageType_get_value = 2,
@@ -17,7 +17,7 @@ typedef enum_(MessageType $bits(8)) {
     MessageType_broadcast = 4,
     MessageType_stop = 5,
     BoidMsg_neighbor_info = 100, // 이웃 정보
-    BoidMsg_update = 101,        // 프레임 업데이트
+    BoidMsg_update = 101, // 프레임 업데이트
     BoidMsg_stop = 102,
 } MessageType;
 
@@ -44,9 +44,9 @@ typedef struct Mailbox {
 // Actor 구조
 typedef struct Actor {
     Co_Ctx* coroutine; // 코루틴 컨텍스트
-    Mailbox mailbox;   // 메시지 큐
-    P$raw state;       // Actor 상태 (타입 소거)
-    u32 id;            // Actor ID
+    Mailbox mailbox; // 메시지 큐
+    P$raw state; // Actor 상태 (타입 소거)
+    u32 id; // Actor ID
     bool active       : 1;
     bool has_messages : 1;
 } Actor;
@@ -55,16 +55,16 @@ T_use_E$(P$Actor);
 
 // Actor 시스템 (Arena allocator 사용)
 typedef struct ActorSystem {
-    mem_Allocator allocator;  // 기본 allocator
-    heap_Arena arena_actor;   // Actor 전용 arena
+    mem_Alctr allocator; // 기본 allocator
+    heap_Arena arena_actor; // Actor 전용 arena
     heap_Arena arena_message; // 메시지 전용 arena
-    S$Actor actors;           // Actor 슬라이스
+    S$Actor actors; // Actor 슬라이스
     usize next_id;
 } ActorSystem;
 T_use_E$(ActorSystem);
 
 // Actor 시스템 초기화
-fn_((ActorSystem_init(mem_Allocator base_allocator, usize max_actors))(E$ActorSystem));
+fn_((ActorSystem_init(mem_Alctr base_alctr, usize max_actors))(E$ActorSystem));
 // Actor 시스템 종료 (모든 Actor/메시지 한번에 해제)
 fn_((ActorSystem_fini(ActorSystem* self))(void));
 // Actor 런타임 실행
@@ -83,16 +83,16 @@ fn_((Actor_tryRecv(ActorSystem* sys, Actor* self))(O$Message));
 #include "dh/io/stream.h"
 
 // Actor 시스템 초기화
-fn_((ActorSystem_init(mem_Allocator base_allocator, usize max_actors))(E$ActorSystem) $scope) {
+fn_((ActorSystem_init(mem_Alctr base_alctr, usize max_actors))(E$ActorSystem) $scope) {
     ActorSystem sys = {
-        .allocator = base_allocator,
-        .arena_actor = heap_Arena_init(base_allocator),
-        .arena_message = heap_Arena_init(base_allocator),
+        .allocator = base_alctr,
+        .arena_actor = heap_Arena_init(base_alctr),
+        .arena_message = heap_Arena_init(base_alctr),
         .next_id = 0,
     };
-    sys.actors = blk({
-        let gpa = heap_Arena_allocator(&sys.arena_actor);
-        let actors = u_castS$((S$Actor)(try_(mem_Allocator_alloc(gpa, typeInfo$(InnerType), max_actors))));
+    sys.actors = local_({
+        let gpa = heap_Arena_alctr(&sys.arena_actor);
+        let actors = u_castS$((S$Actor)(try_(mem_Alctr_alloc(gpa, typeInfo$(InnerType), max_actors))));
         for_(($s(actors))(actor) {
             actor->coroutine = null;
             actor->mailbox = (Mailbox){ 0 };
@@ -101,10 +101,10 @@ fn_((ActorSystem_init(mem_Allocator base_allocator, usize max_actors))(E$ActorSy
             actor->active = false;
             actor->has_messages = false;
         });
-        blk_return_(actors);
+        local_return_(actors);
     });
     return_ok(sys);
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // Actor 시스템 종료
 fn_((ActorSystem_fini(ActorSystem* self))(void)) {
@@ -149,8 +149,8 @@ fn_((ActorSystem_spawn(ActorSystem* self, Co_Ctx* coroutine, P$raw initial_state
     let free_actor = expr_(P$Actor $scope)(if (self->next_id < self->actors.len) {
         $break_(at$S(self->actors, self->next_id));
     }) expr_(else)({
-        return_err(mem_Err_OutOfMemory());
-    }) $unscoped_(expr);
+        return_err(mem_E_OutOfMemory());
+    }) $unscoped(expr);
 
     // Actor 초기화
     free_actor->coroutine = coroutine;
@@ -161,13 +161,13 @@ fn_((ActorSystem_spawn(ActorSystem* self, Co_Ctx* coroutine, P$raw initial_state
     free_actor->has_messages = false;
 
     return_ok(free_actor);
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // 메시지 전송 (arena에서 할당)
 fn_((Actor_send(ActorSystem* sys, Actor* self, Message msg))(E$void) $scope) {
-    let gpa = heap_Arena_allocator(&sys->arena_message);
+    let gpa = heap_Arena_alctr(&sys->arena_message);
     // 메시지 복사 (arena에서)
-    let new_msg = u_castP$((P$Message)(try_(mem_Allocator_create(gpa, typeInfo$(InnerType)))));
+    let new_msg = u_castP$((P$Message)(try_(mem_Alctr_create(gpa, typeInfo$(InnerType)))));
     *new_msg = msg;
     new_msg->next = null;
     // 메일박스에 추가
@@ -180,7 +180,7 @@ fn_((Actor_send(ActorSystem* sys, Actor* self, Message msg))(E$void) $scope) {
     self->mailbox.count++;
     self->has_messages = true;
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // 메시지 수신
 fn_((Actor_tryRecv(ActorSystem* sys, Actor* self))(O$Message) $scope) {
@@ -198,10 +198,10 @@ fn_((Actor_tryRecv(ActorSystem* sys, Actor* self))(O$Message) $scope) {
     }
     self->mailbox.count--;
     return_some(msg);
-} $unscoped_(fn);
+} $unscoped(fn);
 
 /* boids_demo.c */
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/time.h"
 #include "dh/math.h"
 
@@ -233,12 +233,12 @@ typedef struct NeighborInfo {
 // Boids 파라미터
 typedef struct BoidsParams {
     f32 separation_radius; // 분리 반경
-    f32 alignment_radius;  // 정렬 반경
-    f32 cohesion_radius;   // 응집 반경
-    f32 separation_force;  // 분리 힘
-    f32 alignment_force;   // 정렬 힘
-    f32 cohesion_force;    // 응집 힘
-    f32 max_speed;         // 최대 속도
+    f32 alignment_radius; // 정렬 반경
+    f32 cohesion_radius; // 응집 반경
+    f32 separation_force; // 분리 힘
+    f32 alignment_force; // 정렬 힘
+    f32 cohesion_force; // 응집 힘
+    f32 max_speed; // 최대 속도
     f32 world_width;
     f32 world_height;
 } BoidsParams;
@@ -261,7 +261,7 @@ fn_((m_V2f32_limit(m_V2f32 self, f32 max))(m_V2f32)) {
 }
 
 // // Spatial Grid 초기화
-// fn_((SpatialGrid_init(mem_Allocator allocator, f32 world_width, f32 world_height, f32 cell_size))(E$SpatialGrid) $scope) {
+// fn_((SpatialGrid_init(mem_Alctr allocator, f32 world_width, f32 world_height, f32 cell_size))(E$SpatialGrid) $scope) {
 //     SpatialGrid grid = {
 //         .width = (u32)(world_width / cell_size) + 1,
 //         .height = (u32)(world_height / cell_size) + 1,
@@ -270,7 +270,7 @@ fn_((m_V2f32_limit(m_V2f32 self, f32 max))(m_V2f32)) {
 
 //     // 그리드 할당
 //     grid.grid = meta_cast$(S$S$P$Actor,
-//         try_(mem_Allocator_alloc(allocator, typeInfo$(S$P$Actor), grid.width * grid.height)));
+//         try_(mem_Alctr_alloc(allocator, typeInfo$(S$P$Actor), grid.width * grid.height)));
 
 //     // 각 셀 초기화
 //     for_(($s(grid.grid))(cell) {
@@ -278,7 +278,7 @@ fn_((m_V2f32_limit(m_V2f32 self, f32 max))(m_V2f32)) {
 //     });
 
 //     return_ok(grid);
-// } $unscoped_(fn);
+// } $unscoped(fn);
 
 // // Boid를 그리드에 추가
 // fn_((SpatialGrid_insert(SpatialGrid* grid, BoidState* boid, P$Actor actor))(void)) {
@@ -389,7 +389,7 @@ async_fn_scope(boid_actor, {
                 .tag = BoidMsg_neighbor_info,
                 .payload = {},
             };
-            prim_memcpy(neighbor_msg.payload.inline_data.val, &my_info, sizeof(NeighborInfo));
+            pri_memcpy(neighbor_msg.payload.inline_data.val, &my_info, sizeof(NeighborInfo));
 
             // 이웃에게만 전송 (거리 체크)
             // 데모에서는 단순화: 모든 boid에게 전송 (느릴 수 있음)
@@ -427,7 +427,7 @@ async_fn_scope(boid_actor, {
     }
 
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 #include "dh/heap/Page.h"
 #include "dh/Rand.h"
@@ -439,7 +439,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
     // Page allocator
     var page = (heap_Page){};
-    let page_gpa = heap_Page_allocator(&page);
+    let page_gpa = heap_Page_alctr(&page);
 
     io_stream_println(u8_l("=== 100K Boids Simulation ===\n"));
 
@@ -457,27 +457,27 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     };
 
     // Actor 시스템 초기화
-    const usize num_boids = lit_num(100);
-    // const usize num_boids = lit_num(100, 000);
+    const usize num_boids = n_(100);
+    // const usize num_boids = n_(100, 000);
     io_stream_println(u8_l("Initializing actor system for {:zu} boids..."), num_boids);
 
     var sys = try_(ActorSystem_init(page_gpa, num_boids));
     defer_(ActorSystem_fini(&sys));
 
-    let actor_gpa = heap_Arena_allocator(&sys.arena_actor);
+    let actor_gpa = heap_Arena_alctr(&sys.arena_actor);
 
     // Boid 상태 할당
     io_stream_println(u8_l("Allocating boid states..."));
-    let states = u_castS$((S$BoidState)(try_(mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), num_boids))));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, u_anyS(states)));
+    let states = u_castS$((S$BoidState)(try_(mem_Alctr_alloc(actor_gpa, typeInfo$(InnerType), num_boids))));
+    errdefer_($ignore, mem_Alctr_free(actor_gpa, u_anyS(states)));
 
     // 코루틴 할당
     io_stream_println(u8_l("Allocating coroutines..."));
-    let ctxs = u_castS$((S$$(Co_CtxFn$(boid_actor)))(try_(mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), num_boids))));
-    errdefer_($ignore, mem_Allocator_free(actor_gpa, u_anyS(ctxs)));
+    let ctxs = u_castS$((S$$(Co_CtxFn$(boid_actor)))(try_(mem_Alctr_alloc(actor_gpa, typeInfo$(InnerType), num_boids))));
+    errdefer_($ignore, mem_Alctr_free(actor_gpa, u_anyS(ctxs)));
 
     // Actors 슬라이스
-    let actors = u_castS$((S$P$Actor)(try_(mem_Allocator_alloc(actor_gpa, typeInfo$(InnerType), num_boids))));
+    let actors = u_castS$((S$P$Actor)(try_(mem_Alctr_alloc(actor_gpa, typeInfo$(InnerType), num_boids))));
 
     // Boids 생성
     io_stream_println(u8_l("Creating {:zu} boid actors..."), num_boids);
@@ -485,12 +485,13 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
     var rng = Rand_default;
     for_(($rf(0), $s(states), $s(ctxs), $s(actors))(i, state, ctx, actor_slot) {
-        *state = lit$((BoidState){
+        *state = l$((BoidState){
             .self = *actor_slot,
             .id = i,
             .pos = m_V2f32_from(
                 as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_width))),
-                as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_height)))),
+                as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_height)))
+            ),
             .vel = m_V2f32_from(
                 (as$(f32)(Rand_next$u32(&rng) % 100) / 50.0f - 1.0f) * params.max_speed,
                 (as$(f32)(Rand_next$u32(&rng) % 100) / 50.0f - 1.0f) * params.max_speed
@@ -502,7 +503,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         state->id = i;
         state->pos = m_V2f32_from(
             as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_width))),
-            as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_height))));
+            as$(f32)(Rand_next$u32(&rng) % as$(u32)((params.world_height)))
+        );
         state->vel = m_V2f32_from(
             (as$(f32)(Rand_next$u32(&rng) % 100) / 50.0f - 1.0f) * params.max_speed,
             (as$(f32)(Rand_next$u32(&rng) % 100) / 50.0f - 1.0f) * params.max_speed
@@ -518,7 +520,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         ctx->args.all_boids = actors; // 모든 boid 참조
         *actor_slot = ctx->args.self;
 
-        if (i % lit_num(10, 000) == 0) {
+        if (i % n_(10, 000) == 0) {
             io_stream_println(u8_l("  Created {:zu} boids"), i);
         }
     });
@@ -534,8 +536,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let actor_mem = heap_Arena_queryCap(&sys.arena_actor);
     let msg_mem = heap_Arena_queryCap(&sys.arena_message);
     io_stream_println(u8_l("Memory usage:"));
-    io_stream_println(u8_l("  Actors:   {:zu} MB"), actor_mem / lit_n$(usize)(1024) * 1024);
-    io_stream_println(u8_l("  Messages: {:zu} MB\n"), msg_mem / lit_n$(usize)(1024) * 1024);
+    io_stream_println(u8_l("  Actors:   {:zu} MB"), actor_mem / n$(usize)(1024) * 1024);
+    io_stream_println(u8_l("  Messages: {:zu} MB\n"), msg_mem / n$(usize)(1024) * 1024);
 
     // 시뮬레이션 실행
     const usize num_frames = 100; // 100 프레임
@@ -588,4 +590,4 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     ActorSystem_runLoop(&sys, false);
 
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);

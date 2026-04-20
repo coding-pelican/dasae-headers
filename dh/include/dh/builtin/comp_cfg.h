@@ -73,7 +73,7 @@ extern "C" {
 /* Semantics & Behavior */
 #define comp_pure __comp_attr__comp_pure
 #define comp_view __comp_attr__comp_view
-#define comp_return_never __comp_attr__comp_return_never
+#define comp_no_return __comp_attr__comp_no_return
 
 /* Optimization Hints */
 #define comp_inline __comp_attr__comp_inline
@@ -127,9 +127,9 @@ extern "C" {
 #warning "Unknown compiler detected. Please check your compiler settings."
 #endif
 
-#define __comp_bool__comp_type_is_clang pp_Tok_eq(comp_type, comp_type_clang)
-#define __comp_bool__comp_type_is_gcc pp_Tok_eq(comp_type, comp_type_gcc)
-#define __comp_bool__comp_type_is_msvc pp_Tok_eq(comp_type, comp_type_msvc)
+#define __comp_bool__comp_type_is_clang pp_Tok_eql(comp_type, comp_type_clang)
+#define __comp_bool__comp_type_is_gcc pp_Tok_eql(comp_type, comp_type_gcc)
+#define __comp_bool__comp_type_is_msvc pp_Tok_eql(comp_type, comp_type_msvc)
 
 /* Derive name from type */
 #define __comp_str__comp_name pp_expand( \
@@ -187,7 +187,7 @@ extern "C" {
 #if comp_type == comp_type_clang || comp_type == comp_type_gcc
 #define __comp_attr__comp_deprecated __attribute__((deprecated))
 #define __comp_attr__comp_deprecated_msg(_msg) __attribute__((deprecated(_msg)))
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __attribute__((deprecated(_msg ": Use " #_replacement " instead")))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __attribute__((deprecated(_msg ": Use `" #_replacement "` instead")))
 
 #define __comp_attr__comp_must_use __attribute__((warn_unused_result))
 #define __comp_attr__comp_maybe_unused __attribute__((unused))
@@ -201,7 +201,7 @@ extern "C" {
 
 #define __comp_attr__comp_pure __attribute__((const))
 #define __comp_attr__comp_view __attribute__((pure))
-#define __comp_attr__comp_return_never __attribute__((noreturn))
+#define __comp_attr__comp_no_return __attribute__((noreturn))
 
 #define __comp_attr__comp_inline inline
 #define __comp_attr__comp_inline_always __attribute__((always_inline)) inline
@@ -228,7 +228,7 @@ extern "C" {
 #elif comp_type == comp_type_msvc
 #define __comp_attr__comp_deprecated __declspec(deprecated)
 #define __comp_attr__comp_deprecated_msg(_msg) __declspec(deprecated(_msg))
-#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __declspec(deprecated(_msg " Use " #_replacement " instead"))
+#define __comp_attr__comp_deprecated_instead(_msg, _replacement) __declspec(deprecated(_msg ": Use `" #_replacement "` instead"))
 
 #define __comp_attr__comp_must_use _Check_return_ /* _Must_inspect_result_ maps to this */
 #define __comp_attr__comp_maybe_unused __pragma(warning(suppress : 4100 4101 4189))
@@ -245,7 +245,7 @@ extern "C" {
 
 #define __comp_attr__comp_pure __declspec(const)
 #define __comp_attr__comp_view __declspec(pure)
-#define __comp_attr__comp_return_never __declspec(noreturn)
+#define __comp_attr__comp_no_return __declspec(noreturn)
 
 #define __comp_attr__comp_inline __inline
 #define __comp_attr__comp_inline_always __forceinline
@@ -288,7 +288,7 @@ extern "C" {
 
 #define __comp_attr__comp_pure
 #define __comp_attr__comp_view
-#define __comp_attr__comp_return_never
+#define __comp_attr__comp_no_return
 
 #define __comp_attr__comp_inline
 #define __comp_attr__comp_inline_always

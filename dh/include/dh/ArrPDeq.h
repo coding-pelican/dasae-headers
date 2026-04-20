@@ -25,19 +25,19 @@ extern "C" {
 
 #include "prl.h"
 #include "cmp.h"
-#include "mem/Allocator.h"
+#include "mem/Alctr.h"
 
 /*========== Macros and Declarations ========================================*/
 
 typedef cmp_OrdCtxFn ArrPDeq_OrdFn;
-$extern fn_((ArrPDeq_OrdFn_default(cmp_MathType type))(ArrPDeq_OrdFn));
+$extern fn_((ArrPDeq_OrdFn_default(cmp_m_T type))(ArrPDeq_OrdFn));
 
 typedef struct ArrPDeq_Ctx {
     var_(inner, u_P_const$raw);
     var_(ordFn, ArrPDeq_OrdFn);
 } ArrPDeq_Ctx;
 T_use_P$(ArrPDeq_Ctx);
-$extern fn_((ArrPDeq_Ctx_default(cmp_MathType type))(ArrPDeq_Ctx));
+$extern fn_((ArrPDeq_Ctx_default(cmp_m_T type))(ArrPDeq_Ctx));
 
 /* ArrPDeq Anonymous */
 #define ArrPDeq$$(_T...) __comp_anon__ArrPDeq$$(_T)
@@ -56,15 +56,15 @@ typedef struct ArrPDeq {
     debug_only(var_(type, TypeInfo);)
 } ArrPDeq;
 T_use$((ArrPDeq)(O, E));
-T_use_E$($set(mem_Err)(ArrPDeq));
+T_use_E$($set(mem_E)(ArrPDeq));
 
 /* --- Function Prototypes --- */
 
 $extern fn_((ArrPDeq_empty(TypeInfo type, P_const$ArrPDeq_Ctx ctx))(ArrPDeq));
 $extern fn_((ArrPDeq_fixed(u_S$raw buf, P_const$ArrPDeq_Ctx ctx))(ArrPDeq));
 $attr($must_check)
-$extern fn_((ArrPDeq_init(TypeInfo type, mem_Allocator gpa, usize cap, P_const$ArrPDeq_Ctx ctx))(mem_Err$ArrPDeq));
-$extern fn_((ArrPDeq_fini(ArrPDeq* self, TypeInfo type, mem_Allocator gpa))(void));
+$extern fn_((ArrPDeq_init(TypeInfo type, mem_Alctr gpa, usize cap, P_const$ArrPDeq_Ctx ctx))(mem_E$ArrPDeq));
+$extern fn_((ArrPDeq_fini(ArrPDeq* self, TypeInfo type, mem_Alctr gpa))(void));
 
 $extern fn_((ArrPDeq_len(ArrPDeq self))(usize));
 $extern fn_((ArrPDeq_cap(ArrPDeq self))(usize));
@@ -84,25 +84,25 @@ $extern fn_((ArrPDeq_itemsUnused(ArrPDeq self, TypeInfo type))(u_S_const$raw));
 $extern fn_((ArrPDeq_itemsUnusedMut(ArrPDeq self, TypeInfo type))(u_S$raw));
 
 $attr($must_check)
-$extern fn_((ArrPDeq_ensureCap(ArrPDeq* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$extern fn_((ArrPDeq_ensureCap(ArrPDeq* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void));
 $attr($must_check)
-$extern fn_((ArrPDeq_ensureCapPrecise(ArrPDeq* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void));
+$extern fn_((ArrPDeq_ensureCapPrecise(ArrPDeq* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void));
 $attr($must_check)
-$extern fn_((ArrPDeq_ensureUnusedCap(ArrPDeq* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void));
+$extern fn_((ArrPDeq_ensureUnusedCap(ArrPDeq* self, TypeInfo type, mem_Alctr gpa, usize additional))(mem_E$void));
 $extern fn_((ArrPDeq_shrinkRetainingCap(ArrPDeq* self, usize new_len))(void));
-$extern fn_((ArrPDeq_shrinkAndFree(ArrPDeq* self, TypeInfo type, mem_Allocator gpa, usize new_len))(void));
+$extern fn_((ArrPDeq_shrinkAndFree(ArrPDeq* self, TypeInfo type, mem_Alctr gpa, usize new_len))(void));
 $extern fn_((ArrPDeq_clearRetainingCap(ArrPDeq* self))(void));
-$extern fn_((ArrPDeq_clearAndFree(ArrPDeq* self, TypeInfo type, mem_Allocator gpa))(void));
+$extern fn_((ArrPDeq_clearAndFree(ArrPDeq* self, TypeInfo type, mem_Alctr gpa))(void));
 
 $attr($must_check)
-$extern fn_((ArrPDeq_enque(ArrPDeq* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void));
+$extern fn_((ArrPDeq_enque(ArrPDeq* self, mem_Alctr gpa, u_V$raw item))(mem_E$void));
 $attr($must_check)
-$extern fn_((ArrPDeq_enqueFixed(ArrPDeq* self, u_V$raw item))(mem_Err$void));
+$extern fn_((ArrPDeq_enqueFixed(ArrPDeq* self, u_V$raw item))(mem_E$void));
 $extern fn_((ArrPDeq_enqueWithin(ArrPDeq* self, u_V$raw item))(void));
 $attr($must_check)
-$extern fn_((ArrPDeq_enqueS(ArrPDeq* self, mem_Allocator gpa, u_S_const$raw items))(mem_Err$void));
+$extern fn_((ArrPDeq_enqueS(ArrPDeq* self, mem_Alctr gpa, u_S_const$raw items))(mem_E$void));
 $attr($must_check)
-$extern fn_((ArrPDeq_enqueSFixed(ArrPDeq* self, u_S_const$raw items))(mem_Err$void));
+$extern fn_((ArrPDeq_enqueSFixed(ArrPDeq* self, u_S_const$raw items))(mem_E$void));
 $extern fn_((ArrPDeq_enqueSWithin(ArrPDeq* self, u_S_const$raw items))(void));
 
 $extern fn_((ArrPDeq_dequeMin(ArrPDeq* self, u_V$raw ret_mem))(O$u_V$raw));
@@ -110,7 +110,7 @@ $extern fn_((ArrPDeq_dequeMax(ArrPDeq* self, u_V$raw ret_mem))(O$u_V$raw));
 $extern fn_((ArrPDeq_removeAt(ArrPDeq* self, usize idx, u_V$raw ret_mem))(u_V$raw));
 
 $attr($must_check)
-$extern fn_((ArrPDeq_update(ArrPDeq* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$void));
+$extern fn_((ArrPDeq_update(ArrPDeq* self, u_V$raw old_item, u_V$raw new_item))(mem_E$void));
 
 /* ArrPDeq_Iter Anonymous */
 #define ArrPDeq_Iter$$(_T...) __comp_anon__ArrPDeq_Iter$$(_T)
@@ -148,7 +148,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
     $maybe_unused typedef union ArrPDeq$(_T) ArrPDeq$(_T); \
     T_decl_O$(ArrPDeq$(_T)); \
     T_decl_E$(ArrPDeq$(_T)); \
-    T_decl_E$($set(mem_Err)(ArrPDeq$(_T)))
+    T_decl_E$($set(mem_E)(ArrPDeq$(_T)))
 #define __comp_gen__T_impl_ArrPDeq$(_T...) \
     union ArrPDeq$(_T) { \
         struct { \
@@ -161,7 +161,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
     }; \
     T_impl_O$(ArrPDeq$(_T)); \
     T_impl_E$(ArrPDeq$(_T)); \
-    T_impl_E$($set(mem_Err)(ArrPDeq$(_T)))
+    T_impl_E$($set(mem_E)(ArrPDeq$(_T)))
 #define __comp_gen__T_use_ArrPDeq$(_T...) \
     T_decl_ArrPDeq$(_T); \
     T_impl_ArrPDeq$(_T)
@@ -179,12 +179,12 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
     }
 #define T_use_ArrPDeq_init$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_init, _T)(mem_Allocator gpa, usize cap, P_const$ArrPDeq_Ctx ctx))(E$($set(mem_Err)(ArrPDeq$(_T)))) $scope) { \
+    $static fn_((tpl_id(ArrPDeq_init, _T)(mem_Alctr gpa, usize cap, P_const$ArrPDeq_Ctx ctx))(E$($set(mem_E)(ArrPDeq$(_T)))) $scope) { \
         return_(typeE$((ReturnType)(ArrPDeq_init(typeInfo$(_T), gpa, cap, ctx)))); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 #define T_use_ArrPDeq_fini$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_fini, _T)(P$$(ArrPDeq$(_T)) self, mem_Allocator gpa))(void)) { \
+    $static fn_((tpl_id(ArrPDeq_fini, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa))(void)) { \
         return ArrPDeq_fini(self->as_raw, typeInfo$(_T), gpa); \
     }
 
@@ -261,17 +261,17 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
 
 #define T_use_ArrPDeq_ensureCap$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_ensureCap, _T)(P$$(ArrPDeq$(_T)) self, mem_Allocator gpa, usize new_cap))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPDeq_ensureCap, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
         return ArrPDeq_ensureCap(self->as_raw, typeInfo$(_T), gpa, new_cap); \
     }
 #define T_use_ArrPDeq_ensureCapPrecise$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_ensureCapPrecise, _T)(P$$(ArrPDeq$(_T)) self, mem_Allocator gpa, usize new_cap))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPDeq_ensureCapPrecise, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
         return ArrPDeq_ensureCapPrecise(self->as_raw, typeInfo$(_T), gpa, new_cap); \
     }
 #define T_use_ArrPDeq_ensureUnusedCap$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_ensureUnusedCap, _T)(P$$(ArrPDeq$(_T)) self, mem_Allocator gpa, usize additional))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPDeq_ensureUnusedCap, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize additional))(mem_E$void)) { \
         return ArrPDeq_ensureUnusedCap(self->as_raw, typeInfo$(_T), gpa, additional); \
     }
 #define T_use_ArrPDeq_shrinkRetainingCap$(_T...) \
@@ -281,7 +281,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
     }
 #define T_use_ArrPDeq_shrinkAndFree$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_shrinkAndFree, _T)(P$$(ArrPDeq$(_T)) self, mem_Allocator gpa, usize new_len))(void)) { \
+    $static fn_((tpl_id(ArrPDeq_shrinkAndFree, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize new_len))(void)) { \
         return ArrPDeq_shrinkAndFree(self->as_raw, typeInfo$(_T), gpa, new_len); \
     }
 #define T_use_ArrPDeq_clearRetainingCap$(_T...) \
@@ -291,18 +291,18 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
     }
 #define T_use_ArrPDeq_clearAndFree$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_clearAndFree, _T)(P$$(ArrPDeq$(_T)) self, mem_Allocator gpa))(void)) { \
+    $static fn_((tpl_id(ArrPDeq_clearAndFree, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa))(void)) { \
         return ArrPDeq_clearAndFree(self->as_raw, typeInfo$(_T), gpa); \
     }
 
 #define T_use_ArrPDeq_enque$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_enque, _T)(P$$(ArrPDeq$(_T)) self, mem_Allocator gpa, _T item))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPDeq_enque, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, _T item))(mem_E$void)) { \
         return ArrPDeq_enque(self->as_raw, gpa, u_anyV(item)); \
     }
 #define T_use_ArrPDeq_enqueFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_enqueFixed, _T)(P$$(ArrPDeq$(_T)) self, _T item))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPDeq_enqueFixed, _T)(P$$(ArrPDeq$(_T)) self, _T item))(mem_E$void)) { \
         return ArrPDeq_enqueFixed(self->as_raw, u_anyV(item)); \
     }
 #define T_use_ArrPDeq_enqueWithin$(_T...) \
@@ -312,12 +312,12 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
     }
 #define T_use_ArrPDeq_enqueS$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_enqueS, _T)(P$$(ArrPDeq$(_T)) self, mem_Allocator gpa, S_const$(_T) items))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPDeq_enqueS, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, S_const$(_T) items))(mem_E$void)) { \
         return ArrPDeq_enqueS(self->as_raw, gpa, u_anyS(items)); \
     }
 #define T_use_ArrPDeq_enqueSFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_enqueSFixed, _T)(P$$(ArrPDeq$(_T)) self, S_const$(_T) items))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPDeq_enqueSFixed, _T)(P$$(ArrPDeq$(_T)) self, S_const$(_T) items))(mem_E$void)) { \
         return ArrPDeq_enqueSFixed(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrPDeq_enqueSWithin$(_T...) \
@@ -330,12 +330,12 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
     $attr($inline_always) \
     $static fn_((tpl_id(ArrPDeq_dequeMin, _T)(P$$(ArrPDeq$(_T)) self))(O$(_T)) $scope) { \
         return_(u_castO$((ReturnType)(ArrPDeq_dequeMin(self->as_raw, u_retV$(_T))))); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 #define T_use_ArrPDeq_dequeMax$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ArrPDeq_dequeMax, _T)(P$$(ArrPDeq$(_T)) self))(O$(_T)) $scope) { \
         return_(u_castO$((ReturnType)(ArrPDeq_dequeMax(self->as_raw, u_retV$(_T))))); \
-    } $unscoped_(fn)
+    } $unscoped(fn)
 #define T_use_ArrPDeq_removeAt$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ArrPDeq_removeAt, _T)(P$$(ArrPDeq$(_T)) self, usize idx))(_T)) { \
@@ -344,7 +344,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
 
 #define T_use_ArrPDeq_update$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_update, _T)(P$$(ArrPDeq$(_T)) self, _T old_item, _T new_item))(mem_Err$void)) { \
+    $static fn_((tpl_id(ArrPDeq_update, _T)(P$$(ArrPDeq$(_T)) self, _T old_item, _T new_item))(mem_E$void)) { \
         return ArrPDeq_update(self->as_raw, u_anyV(old_item), u_anyV(new_item)); \
     }
 /* clang-format on */

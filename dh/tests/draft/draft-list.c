@@ -205,7 +205,7 @@ meta_fn_((spawnItem(O$MVal ret_mem))(O$MVal)$scope) {
     let label = (Label){ .name = "Hello, world!\0", .len = 10 };
     return_some({
         .type = typeInfo$(TypeOf(label)),
-        .inner = lit$((TypeOf(union {
+        .inner = l$((TypeOf(union {
                      struct {
                          var_(data, Label);
                      };
@@ -213,7 +213,7 @@ meta_fn_((spawnItem(O$MVal ret_mem))(O$MVal)$scope) {
                  })){ .data = label })
                     .into_inner,
     });
-} $unscoped_(meta_fn);
+} $unscoped(meta_fn);
 
 #include <stdio.h>
 
@@ -221,7 +221,7 @@ int main(void) {
     i32 origin_i32 = 123;
     MVal origin_copy = {
         .type = typeInfo$(TypeOf(origin_i32)),
-        .inner = lit$((TypeOf(union {
+        .inner = l$((TypeOf(union {
                      struct {
                          var_(data, i32);
                      };
@@ -234,7 +234,7 @@ int main(void) {
     let origin_copy1 = ({
         ((MVal){
             .type = typeInfo$(TypeOf(origin_i32)),
-            .inner = lit$((TypeOf(union {
+            .inner = l$((TypeOf(union {
                          struct {
                              var_(data, TypeOf(origin_i32));
                          };
@@ -247,13 +247,13 @@ int main(void) {
     printf("origin_copy1: %d\n", *as$(i32*)(origin_copy1.inner->untyped));
     printf("shallow_copy(): %d\n", *as$(i32*)(shallow_copy.inner->untyped));
 
-    let item = spawnItem(lit$((O$MVal){ .payload = { .some = { .inner = (void*)&lit$((Label){}) } } }));
+    let item = spawnItem(l$((O$MVal){ .payload = { .some = { .inner = (void*)&l$((Label){}) } } }));
     printf("item: %s\n", (*as$(Label*) ((item.payload.some.inner->untyped))).name);
     return 0;
 }
 #endif /* UNUSED_CODE */
 
-#include "dh/main.h"
+#include "dh-main.h"
 
 T_use_P$(TypeInfo);
 T_use_S$(TypeInfo);
@@ -371,4 +371,4 @@ TEST_fn_("ListSgl: Basic SinglyLinkedList Operations" $guard) {
     // // try_(TEST_expect(unwrap_(unwrap_(list.first)->next)->data == 2));
     try_(TEST_expect(pipe_(list.first, (unwrap_, ()->next), (unwrap_, ()->next), (isNone, ()))));
     // // try_(TEST_expect(isNone(unwrap_(unwrap_(list.first)->next)->next)));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);

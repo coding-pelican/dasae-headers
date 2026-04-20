@@ -9,21 +9,21 @@ $static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize
 $static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
 $static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
-fn_((heap_Classic_allocator(heap_Classic* self))(mem_Allocator)) {
+fn_((heap_Classic_alctr(heap_Classic* self))(mem_Alctr)) {
     // VTable for Classic allocator
-    $static const mem_Allocator_VT vt $like_ref = { {
+    $static const mem_Alctr_VTbl vtbl $like_ref = { {
         .alloc = heap_Classic_alloc,
         .resize = heap_Classic_resize,
         .remap = heap_Classic_remap,
         .free = heap_Classic_free,
     } };
-    return mem_Allocator_ensureValid((mem_Allocator){
+    return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,
-        .vt = vt,
+        .vtbl = vtbl,
     });
 }
 
-/*========== Allocator Interface Implementation =============================*/
+/*========== Alctr Interface Implementation =============================*/
 
 $static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     let_ignore = ctx;
@@ -33,7 +33,7 @@ $static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) 
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
     if_(let ptr = _aligned_malloc(len, ptr_align), ptr != null) { return_some(ptr); }
 #elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-    if_(var ptr = make$( P$raw), posix_memalign(&ptr, ptr_align, len) == 0) { return_some(ptr); }
+    if_(var ptr = from$(P$raw), posix_memalign(&ptr, ptr_align, len) == 0) { return_some(ptr); }
 #else /* other platforms */
     // Manual alignment with proper header storage
     // Allocate extra space for the original pointer and alignment padding
@@ -59,7 +59,7 @@ $static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) 
 
     // Failed to allocate memory
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 $static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let_ignore = ctx;
@@ -142,7 +142,7 @@ $static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize 
     return new_buf;
 #endif
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 $static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let_ignore = ctx;
@@ -156,7 +156,7 @@ $static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void))
     free(raw_ptr);
 #else /* other platforms */
     // Manual alignment cleanup - retrieve the original pointer
-    var header_ptr = intToPtr$((P$raw*)(ptrToInt(raw_ptr) - sizeOf(P$raw)));
+    var header_ptr = intToPtr$((P$raw*)(ptrToInt(raw_ptr) -sizeOf(P$raw)));
     var original_ptr = *header_ptr;
     free(original_ptr);
 #endif /* other platforms */

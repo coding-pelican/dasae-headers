@@ -1,6 +1,6 @@
 #if UNUSED_CODE
 #define main_no_args 1
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/sli.h"
 
 $static
@@ -8,7 +8,7 @@ $static
 fn_((dh_main(void))(E$void) $scope) {
     slice_example();
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((slice_example(void))(void)) {
     decl_S$(u8);
@@ -75,10 +75,10 @@ fn_((slice_example(void))(void)) {
     i32 numbers_with_sentinel[] = { 1, 2, 3, 4, 5, -1, 6, 7 }; // -1 is sentinel
     {
         let nums_s = SS_from$(SS$i32, numbers_with_sentinel, -1);
-        let num_s_len = blk({
+        let num_s_len = local_({
             usize len = 0;
             for (var iter = SS_at(nums_s, 0); deref(iter) != nums_s.sentinel; ++iter) { len++; }
-            blk_return_(len);
+            local_return_(len);
         }); // 5 (up to but not including -1)
         printf("%llu\n", num_s_len);
 

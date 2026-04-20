@@ -44,7 +44,7 @@ extern "C" {
      */ \
     ____FieldTypeUnqual$(_T_Record, _field)
 
-#define FieldType_eq$(_T_Record, _field, _T_Expected...) \
+#define eqlFieldType$(_T_Record, _field, _T_Expected...) \
     /** \
      * @brief Check if a field has the expected type \
      * \
@@ -53,8 +53,8 @@ extern "C" {
      * @param _T_Expected The expected type \
      * @return True if the field has the expected type, false otherwise \
      */ \
-    ____FieldType_eq$(_T_Record, _field, _T_Expected)
-#define FieldType_eqUnqual$(_T_Record, _field, _T_Expected...) \
+    ____eqlFieldType$(_T_Record, _field, _T_Expected)
+#define eqlFieldTypeUnqual$(_T_Record, _field, _T_Expected...) \
     /** \
      * @brief Check if a field has the expected type \
      * \
@@ -63,7 +63,7 @@ extern "C" {
      * @param _T_Expected The expected type \
      * @return True if the field has the expected type, false otherwise \
      */ \
-    ____FieldType_eqUnqual$(_T_Record, _field, _T_Expected)
+    ____eqlFieldTypeUnqual$(_T_Record, _field, _T_Expected)
 
 #define offsetTo(_T_Record, _field...) \
     /** \
@@ -71,7 +71,7 @@ extern "C" {
      * \
      * @param _T_Record The container type \
      * @param _field The field name within the container \
-     * @return usize Byte offset of the field \
+     * @return isize Byte offset of the field \
      */ \
     ____offsetTo(_T_Record, _field)
 #define fieldPtr(_p_record, _field) \
@@ -111,12 +111,12 @@ extern "C" {
 #define ____FieldType$(_T_Record, _field...) TypeOf((as$(_T_Record*)(null))->_field)
 #define ____FieldTypeUnqual$(_T_Record, _field...) TypeOfUnqual((as$(_T_Record*)(null))->_field)
 
-#define ____FieldType_eq$(_T_Record, _field, _T_Expected...) Type_eq$(FieldType$(_T_Record, _field), _T_Expected)
-#define ____FieldType_eqUnqual$(_T_Record, _field, _T_Expected...) Type_eqUnqual$(FieldTypeUnqual$(_T_Record, _field), _T_Expected)
+#define ____eqlFieldType$(_T_Record, _field, _T_Expected...) eqlType$(FieldType$(_T_Record, _field), _T_Expected)
+#define ____eqlFieldTypeUnqual$(_T_Record, _field, _T_Expected...) Type_eqUnqual$(FieldTypeUnqual$(_T_Record, _field), _T_Expected)
 
-#define ____offsetTo(_T_Record, _field...) (as$(isize)(__builtin_offsetof(_T_Record, _field)))
+#define ____offsetTo(_T_Record, _field...) (as$(usize)(__builtin_offsetof(_T_Record, _field)))
 #define ____fieldPtr(_p_record, _field...) (&((_p_record)->_field))
-#define ____recordPtr(_p_field, _T_Record, _field...) (as$(_T_Record*)(as$(u8*)(as$(FieldType$(_T_Record, _field)*)(_p_field)) - offsetTo(_T_Record, _field)))
+#define ____recordPtr(_p_field, _T_Record, _field...) ptrAlignCast$((_T_Record*)(as$(u8*)(as$(FieldType$(_T_Record, _field)*)(_p_field)) - offsetTo(_T_Record, _field)))
 #define ____fieldPadding$(__offset, __align, _T_Record, _field...) ({ \
     const usize __offset = offsetTo(_T_Record, _field); \
     const usize __align = alignOf$(FieldType$(_T_Record, _field)); \
@@ -124,7 +124,7 @@ extern "C" {
 })
 
 // #define ____fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
-//     Type_eq$(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldType$(T_Generic, _Field), (var_anon)._Field)), FieldType$(T_Generic, _Field_))
+//     eqlType$(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldType$(T_Generic, _Field), (var_anon)._Field)), FieldType$(T_Generic, _Field_))
 
 #if defined(__cplusplus)
 } /* extern "C" */

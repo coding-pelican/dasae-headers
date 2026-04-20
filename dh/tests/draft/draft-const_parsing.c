@@ -884,14 +884,14 @@ typedef struct meta_E$raw {
 #define meta_create(_type...) ({ \
     const TypeInfo __type = _type; \
     const P$raw __ptr = alloca(__type.size); \
-    prim_memset(__ptr, 0, __type.size); \
+    pri_memset(__ptr, 0, __type.size); \
     ((meta_P$raw){ .type = __type, .ptr = __ptr }); \
 })
 #define meta_alloc(_type, _len...) ({ \
     const TypeInfo __type = _type; \
     const usize __len = _len; \
     const P$raw __ptr = alloca(__type.size * __len); \
-    prim_memset(__ptr, 0, __type.size * __len); \
+    pri_memset(__ptr, 0, __type.size * __len); \
     ((meta_S$raw){ .type = __type, .ptr = __ptr, .len = __len }); \
 })
 
@@ -1143,16 +1143,16 @@ fn_((example(void))(void)) {
 #define pp_then_(...) __VA_ARGS__
 #define pp_else_(...) __VA_ARGS__
 
-#define pp_Tok_prim_ord(x, y) pp_isParen( \
+#define pp_Tok_pri_ord(x, y) pp_isParen( \
     pp_Tok_cmp__##x(pp_Tok_cmp__##y)(()) \
 )
-#define pp_Tok_isComparable(x) pp_isParen(pp_cat(pp_Tok_cmp__, x)(()))
+#define pp_Tok_hasCmp(x) pp_isParen(pp_cat(pp_Tok_cmp__, x)(()))
 #define pp_Tok_ne(x, y) \
-    pp_iif(pp_bitand(pp_Tok_isComparable(x))(pp_Tok_isComparable(y)))( \
-        pp_Tok_prim_ord, \
+    pp_iif(pp_bitand(pp_Tok_hasCmp(x))(pp_Tok_hasCmp(y)))( \
+        pp_Tok_pri_ord, \
         1 pp_ignore \
     )(x, y)
-#define pp_Tok_eq(x, y) pp_compl(pp_Tok_ne(x, y))
+#define pp_Tok_eql(x, y) pp_compl(pp_Tok_ne(x, y))
 
 #define pp_comma() ,
 #define pp_comma_if_(_n) pp_if_(_n)(pp_comma, pp_ignore)()
@@ -1168,7 +1168,7 @@ fn_((example(void))(void)) {
 #define __isConstType__exec(...) __VA_ARGS__
 #define __isConstType__unwrap(...) __VA_ARGS__
 #define __isConstType__eval(_T...) \
-    ignore_open pp_defer(pp_Tok_eq)(const, pp_cat(ignore_after_, _T) ignore_end)
+    ignore_open pp_defer(pp_Tok_eql)(const, pp_cat(ignore_after_, _T) ignore_end)
 #define Tok_removeConst$(_const_T...) \
     pp_cat(__Tok_removeConst$__remove_, _const_T)
 #define __Tok_removeConst$__remove_const

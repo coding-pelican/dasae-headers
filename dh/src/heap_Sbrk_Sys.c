@@ -45,7 +45,7 @@ fn_((heap_Sbrk_Sys_Windows_init(usize reserve_size))(heap_Sbrk_Sys_Windows)) {
     claim_assert(reserve_size > 0);
     let aligned_size = mem_alignFwd(reserve_size, heap_page_size);
     let base = VirtualAlloc(null, aligned_size, MEM_RESERVE, PAGE_NOACCESS);
-    if (base == null) { return lit0$((heap_Sbrk_Sys_Windows)); }
+    if (base == null) { return l0$((heap_Sbrk_Sys_Windows)); }
     return (heap_Sbrk_Sys_Windows){
         .base_addr = ptrToInt(base),
         .reserved_size = aligned_size,
@@ -60,7 +60,7 @@ fn_((heap_Sbrk_Sys_Windows_fini(heap_Sbrk_Sys_Windows* self))(void)) {
         self->base_addr = 0;
         self->committed_size = 0;
     }
-    asg_lit((self)(cleared()));
+    asg_l((self)(cleared()));
 };
 #endif /* plat_is_windows */
 
@@ -111,7 +111,7 @@ fn_((heap_Sbrk_Sys_Posix_fini(heap_Sbrk_Sys_Posix* self))(void)) {
         self->base_addr = 0;
         self->mapped_size = 0;
     }
-    asg_lit((self)(cleared()));
+    asg_l((self)(cleared()));
 };
 #endif /* plat_is_posix */
 
@@ -134,7 +134,7 @@ fn_((heap_Sbrk_Sys_Wasm_init(void))(heap_Sbrk_Sys_Wasm)) {
 };
 
 fn_((heap_Sbrk_Sys_Wasm_fini(heap_Sbrk_Sys_Wasm* self))(void)) {
-    asg_lit((self)(cleared()));
+    asg_l((self)(cleared()));
 };
 #endif /* plat_is_wasi */
 

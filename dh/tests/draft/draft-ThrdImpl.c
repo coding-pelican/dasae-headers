@@ -93,7 +93,7 @@
 // // Thread spawn configuration
 // typedef struct Thrd_SpawnCfg {
 //     usize             stack_size;
-//     O$mem_Allocator allocator;
+//     O$mem_Alctr allocator;
 // } Thrd_SpawnCfg;
 // #define Thrd_SpawnCfg_default_stack_size (16ull * 1024ull * 1024ull)
 // static const Thrd_SpawnCfg Thrd_SpawnCfg_default = {

@@ -18,11 +18,11 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "prl.h"
-#include "mem/Allocator.h"
+#include "mem/Alctr.h"
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((utf8_Err)(
+errset_((utf8_E)(
     InvalidBytes,
     InvalidStartByte,
     TooLargeCodepoint,
@@ -32,48 +32,48 @@ errset_((utf8_Err)(
 ));
 
 /// Byte sequence length (1-4)
-typedef enum_($packed utf8_SeqByte){
-    utf8_SeqByte_1 = lit_num(0b, 0000, 0000),
-    utf8_SeqByte_2 = lit_num(0b, 1100, 0000),
-    utf8_SeqByte_3 = lit_num(0b, 1110, 0000),
-    utf8_SeqByte_4 = lit_num(0b, 1111, 0000),
-} utf8_SeqByte;
-claim_assert_static(Type_eq$(utf8_SeqByte, u8));
+typedef enum_((utf8_SeqByte $fits($packed))(
+    utf8_SeqByte_1 = n_(0b, 0000, 0000),
+    utf8_SeqByte_2 = n_(0b, 1100, 0000),
+    utf8_SeqByte_3 = n_(0b, 1110, 0000),
+    utf8_SeqByte_4 = n_(0b, 1111, 0000),
+)) utf8_SeqByte;
+claim_assert_static(eqlType$(utf8_SeqByte, u8));
 
 /// Codepoint sequence length (1-4)
-typedef enum_($packed utf8_SeqLen){
+typedef enum_((utf8_SeqLen $fits($packed))(
     utf8_SeqLen_1 = 1,
     utf8_SeqLen_2 = 2,
     utf8_SeqLen_3 = 3,
     utf8_SeqLen_4 = 4,
-} utf8_SeqLen;
-claim_assert_static(Type_eq$(utf8_SeqLen, u8));
+)) utf8_SeqLen;
+claim_assert_static(eqlType$(utf8_SeqLen, u8));
 T_use_E$(utf8_SeqLen);
-T_use_E$($set(utf8_Err)(utf8_SeqLen));
+T_use_E$($set(utf8_E)(utf8_SeqLen));
 
 #define utf8_replacement_ch __comp_int__utf8_replacement_ch
 
 $attr($must_check)
-$extern fn_((utf8_codepointSeqLen(u32 codepoint))(utf8_Err$utf8_SeqLen));
+$extern fn_((utf8_codepointSeqLen(u32 codepoint))(utf8_E$utf8_SeqLen));
 $attr($must_check)
-$extern fn_((utf8_byteSeqLen(u8 first_byte))(utf8_Err$utf8_SeqLen));
-$attr($must_check) /* `utf8_Err` + `mem_Err` */
+$extern fn_((utf8_byteSeqLen(u8 first_byte))(utf8_E$utf8_SeqLen));
+$attr($must_check) /* `utf8_E` + `mem_E` */
 $extern fn_((utf8_encode(u32 codepoint, S$u8 out))(E$S$u8));
-T_use_E$($set(utf8_Err)(S$u8));
-$extern fn_((utf8_encodeWithin(u32 codepoint, S$u8 out))(utf8_Err$S$u8));
+T_use_E$($set(utf8_E)(S$u8));
+$extern fn_((utf8_encodeWithin(u32 codepoint, S$u8 out))(utf8_E$S$u8));
 
-T_use_E$($set(utf8_Err)(u32));
+T_use_E$($set(utf8_E)(u32));
 $attr($must_check)
-$extern fn_((utf8_decode(S_const$u8 bytes))(utf8_Err$u32));
+$extern fn_((utf8_decode(S_const$u8 bytes))(utf8_E$u32));
 typedef A$$(2, u8) utf8_Decode2Buf;
 $attr($must_check)
-$extern fn_((utf8_decode2(utf8_Decode2Buf bytes))(utf8_Err$u32));
+$extern fn_((utf8_decode2(utf8_Decode2Buf bytes))(utf8_E$u32));
 typedef A$$(3, u8) utf8_Decode3Buf;
 $attr($must_check)
-$extern fn_((utf8_decode3(utf8_Decode3Buf bytes))(utf8_Err$u32));
+$extern fn_((utf8_decode3(utf8_Decode3Buf bytes))(utf8_E$u32));
 typedef A$$(4, u8) utf8_Decode4Buf;
 $attr($must_check)
-$extern fn_((utf8_decode4(utf8_Decode4Buf bytes))(utf8_Err$u32));
+$extern fn_((utf8_decode4(utf8_Decode4Buf bytes))(utf8_E$u32));
 
 $extern fn_((utf8_isValid(u32 codepoint))(bool));
 $extern fn_((utf8_validate(S_const$u8 bytes))(bool));
@@ -82,9 +82,9 @@ $extern fn_((utf8_count(S_const$u8 bytes))(usize));
 typedef struct utf8_View {
     var_(bytes, S_const$u8);
 } utf8_View;
-T_use_E$($set(utf8_Err)(utf8_View));
+T_use_E$($set(utf8_E)(utf8_View));
 $attr($must_check)
-$extern fn_((utf8_view(S_const$u8 bytes))(utf8_Err$utf8_View));
+$extern fn_((utf8_view(S_const$u8 bytes))(utf8_E$utf8_View));
 $extern fn_((utf8_viewUnchkd(S_const$u8 bytes))(utf8_View));
 
 typedef struct utf8_Iter {

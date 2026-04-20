@@ -47,20 +47,20 @@ extern "C" {
 
 #define $attr(_Attrs...) _Attrs
 
-#define $inline comp_attr__$inline
-#define $inline_always comp_attr__$inline_always
-#define $inline_never comp_attr__$inline_never
-#define $flatten comp_attr__$flatten
+#define $inline __attr__$inline
+#define $inline_always __attr__$inline_always
+#define $inline_never __attr__$inline_never
+#define $flatten __attr__$flatten
 
-#define $pure comp_attr__$pure
-#define $view comp_attr__$view
+#define $pure __attr__$pure
+#define $view __attr__$view
 
-#define $deprecated comp_attr__$deprecated
-#define $deprecated_msg(_Msg) comp_attr__$deprecated_msg(_Msg)
-#define $deprecated_instead(_Msg, _Replacement) comp_attr__$deprecated_instead(_Msg, _Replacement)
+#define $deprecated __attr__$deprecated
+#define $deprecated_msg(_Msg) __attr__$deprecated_msg(_Msg)
+#define $deprecated_instead(_Msg, _Replacement) __attr__$deprecated_instead(_Msg, _Replacement)
 
-#define $on_load comp_attr__$on_load
-#define $on_exit comp_attr__$on_exit
+#define $on_load __attr__$on_load
+#define $on_exit __attr__$on_exit
 
 #define $must_check \
     /** \
@@ -69,35 +69,35 @@ extern "C" {
      * @details This attribute can be used to ensure that a function's return \
      *          value is checked to avoid potential errors or warnings \
      */ \
-    comp_attr__$must_check
-#define $return_never \
+    __attr__$must_check
+#define $no_return \
     /** \
      * @brief Attribute marks a function as not returning a value \
      * @details This attribute can be used to ensure that a function does \
      *          not return a value \
      */ \
-    comp_attr__$return_never
+    __attr__$no_return
 
 #define $ignore_void \
     /** \
      * @brief Ignores expression or return value \
      */ \
-    comp_attr__$ignore_void
+    __oper__$ignore_void
 #define $ignore \
     /** \
      * @brief Ignores payload capture \
      */ \
-    comp_attr__$ignore
+    __capt__$ignore
 #define let_ignore \
     /** \
      * @brief Ignores expression or return value \
      */ \
-    comp_attr__let_ignore
+    __stmt__let_ignore
 #define $do_nothing \
     /** \
      * @brief Does nothing \
      */ \
-    comp_attr__$do_nothing
+    __stmt__$do_nothing
 
 #define $used(_Expr... /*void*/) \
     /** \
@@ -105,20 +105,20 @@ extern "C" {
      * @details In macro functions, the arguments are marked as used \
      * @param _Expr... Variable number of arguments to be marked as used \
      */ \
-    comp_attr__$used(_Expr)
+    __attr__$used(_Expr)
 #define $unused(_Expr... /*void*/) \
     /** \
      * @brief Marks variables or expressions as unused to suppress compiler warnings \
      * @param _Expr... Variable number of arguments to be marked as unused \
      */ \
-    comp_attr__$unused(_Expr)
+    __attr__$unused(_Expr)
 
-#define $keep_symbol comp_attr__$keep_symbol
-#define $maybe_unused comp_attr__$maybe_unused
-#define $must_use comp_attr__$must_use
+#define $keep_symbol __attr__$keep_symbol
+#define $maybe_unused __attr__$maybe_unused
+#define $must_use __attr__$must_use
 
-#define $import comp_attr__$import
-#define $export comp_attr__$export
+#define $import __attr__$import
+#define $export __attr__$export
 
 #define as$(_TDest... /*)(_src...) -> (_TDest)(*/) \
     /** \
@@ -128,87 +128,51 @@ extern "C" {
      * @param _src The value to cast \
      * @return The casted value \
      */ \
-    __syn__as$(_TDest)
-#define __syn__as$(_TDest...) __syn__as$__emit(_TDest) __syn__as$__paramSrc
-#define __syn__as$__paramSrc(_src...) (_src)
+    __expr__as$(_TDest)
+#define __expr__as$(_TDest...) __expr__as$__emit(_TDest) __expr__as$__paramSrc
+#define __expr__as$__paramSrc(_src...) (_src)
 #if defined(__cplusplus)
-#define __syn__as$__emit(_TDest...) static_cast<_TDest>
+#define __expr__as$__emit(_TDest...) static_cast<_TDest>
 #else
-#define __syn__as$__emit(_TDest...) (_TDest)
+#define __expr__as$__emit(_TDest...) (_TDest)
 #endif
 
-#define lit$(/*(_T){_initial...}*/... /*(_T)*/) __lit$(__VA_ARGS__)
+#define l$(/*(_T){_initial...}*/... /*(_T)*/) __val__l$(__VA_ARGS__)
 #if defined(__cplusplus)
-#define __lit$(...) (__lit$__expandT __VA_ARGS__)
-#define __lit$__expandT(_T...) _T
+#define __val__l$(...) (__val__l$__expandT __VA_ARGS__)
+#define __val__l$__expandT(_T...) _T
 #else
-#define __lit$(...) (__VA_ARGS__)
+#define __val__l$(...) (__VA_ARGS__)
 #endif
 
-#define lit0$(/*(_T)*/... /*(_T)*/) __lit0$(__step__lit0$__parse __VA_ARGS__)
-#define __step__lit0$__parse(_T...) _T
-#define __lit0$(_T...) (lit$((struct { _T val; }){}).val)
+#define l0$(/*(_T)*/... /*(_T)*/) __val__l0$(__step__val__l0$__parse __VA_ARGS__)
+#define __step__val__l0$__parse(_T...) _T
+#define __val__l0$(_T...) (l$((struct { _T val; }){}).val)
 
-#if UNUSED_CODE
-#define lit$(/*(_T){_initial...}*/... /*(_T)*/) __lit$__step(pp_defer(__lit$__emit)(__lit$__sep __VA_ARGS__))
-#define __lit$__step(...) __VA_ARGS__
-#define __lit$__sep(_T...) _T,
-#define __lit$__emit(_T, _initial...) __lit$__emitNext(_T, (_initial))
-#if defined(__cplusplus)
-#define __lit$__emitNext(_T, _initial...) (_T __lit$__expandInitial _initial)
-#else
-#define __lit$__emitNext(_T, _initial...) ((_T)__lit$__expandInitial _initial)
-#endif
-#define __lit$__expandInitial(_initial...) _initial
-#endif /* UNUSED_CODE */
+#define comp_const_(_type, _initial...) l$((_type)_initial)
 
-#define comp_const_(_type, _initial...) lit$((_type)_initial)
+// n_(11,644,473,600u) => 11644473600u
+#define n_(_Comma_Sep_Lits...) __val__n_(_Comma_Sep_Lits)
+#define n$(_T) (_T) __val__n$__parseLits
 
-// lit_num(11,644,473,600u) => 11644473600u
-#define lit_n(_Comma_Sep_Lits...) __op__lit_num(_Comma_Sep_Lits)
-#define lit_num(_Comma_Sep_Lits...) __op__lit_num(_Comma_Sep_Lits)
-#define lit_n$(_T) (_T) __op__lit_n$__parseLits
-#define lit_num$(/*(_T)(_Comma_Sep_Lits...)*/... /*(_T)*/) __op__lit_num$(__op__lit_num$__parseT __VA_ARGS__)
-
-#define __op__lit_num(_Comma_Sep_Lits...) pp_join(__, __op__lit_num, pp_countArg(_Comma_Sep_Lits))(_Comma_Sep_Lits)
-#define __op__lit_num__1(_Num1) _Num1
-#define __op__lit_num__2(_Num1, _Num2) pp_cat(_Num1, _Num2)
-#define __op__lit_num__3(_Num1, _Num2, _Num3) pp_cat3(_Num1, _Num2, _Num3)
-#define __op__lit_num__4(_Num1, _Num2, _Num3, _Num4) pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4)
-#define __op__lit_num__5(_Num1, _Num2, _Num3, _Num4, _Num5) pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4), _Num5)
-#define __op__lit_num__6(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6) pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6)
-#define __op__lit_num__7(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7) \
+#define __val__n_(_Comma_Sep_Lits...) pp_join(_, __val__n_, pp_countArg(_Comma_Sep_Lits))(_Comma_Sep_Lits)
+#define __val__n__1(_Num1) _Num1
+#define __val__n__2(_Num1, _Num2) pp_cat(_Num1, _Num2)
+#define __val__n__3(_Num1, _Num2, _Num3) pp_cat3(_Num1, _Num2, _Num3)
+#define __val__n__4(_Num1, _Num2, _Num3, _Num4) pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4)
+#define __val__n__5(_Num1, _Num2, _Num3, _Num4, _Num5) pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), _Num4), _Num5)
+#define __val__n__6(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6) pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6)
+#define __val__n__7(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7) \
     pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), _Num6), _Num7)
-#define __op__lit_num__8(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7, _Num8) \
+#define __val__n__8(_Num1, _Num2, _Num3, _Num4, _Num5, _Num6, _Num7, _Num8) \
     pp_cat(pp_cat(pp_cat(pp_cat3(_Num1, _Num2, _Num3), pp_cat(_Num4, _Num5)), pp_cat(_Num6, _Num7)), _Num8)
+#define __val__n$__parseLits(...) (n_(__VA_ARGS__))
 
-#define __op__lit_n$__parseLits(...) { lit_num(__VA_ARGS__) }
-#define __op__lit_num$(...) __op__lit_num$__emit(__VA_ARGS__)
-#define __op__lit_num$__parseT(_T...) _T,
-#define __op__lit_num$__emit(_T, _Comma_Sep_Lits...) lit$((_T){ lit_num _Comma_Sep_Lits })
-
-#define make$(/*(_T){_initial...}*/... /*(_T)*/) __step__make$(__VA_ARGS__)
-#define __step__make$(...) __step__make$__emit(__step__make$__parse __VA_ARGS__)
-#define __step__make$__parse(_T...) _T,
-#define __step__make$__emit(...) ____make$(__VA_ARGS__)
-#define ____make$(_T, _initial...) (*lit$((_T[1]){ [0] = _initial }))
-#define create$(/*(_T){_initial...}*/... /*(P$(_T))*/) __step__create$(__VA_ARGS__)
-#define __step__create$(...) (&make$(__VA_ARGS__))
-#if UNUSED_CODE
-#define make$(/*(_T){_initial...}*/... /*(_T)*/) __make$__step(pp_defer(__make$__emit)(__make$__sep __VA_ARGS__))
-#define __make$__step(...) __VA_ARGS__
-#define __make$__sep(_T...) _T,
-#define __make$__emit(_T, _initial...) __make$__emitNext(_T, (_initial))
-#define __make$__emitNext(_T, _initial...) (*lit$((_T[1]){ [0] = __make$__expandInitial _initial }))
-#define __make$__expandInitial(_initial...) _initial
-
-#define create$(/*(_T){_initial...}*/... /*(P$$(_T))*/) __create$__step(pp_defer(__create$__emit)(__create$__sep __VA_ARGS__))
-#define __create$__step(...) __VA_ARGS__
-#define __create$__sep(_T...) _T,
-#define __create$__emit(_T, _initial...) __create$__emitNext(_T, (_initial))
-#define __create$__emitNext(_T, _initial...) (&make$((_T)__create$__expandInitial _initial))
-#define __create$__expandInitial(_initial...) _initial
-#endif /* UNUSED_CODE */
+#define from$(/*(_T){_initial...}*/... /*(_T)*/) __val__from$(__VA_ARGS__)
+#define __val__from$(...) __step__from$__emit(__step__from$__parse __VA_ARGS__)
+#define __step__from$__parse(_T...) _T,
+#define __step__from$__emit(...) ____from$(__VA_ARGS__)
+#define ____from$(_T, _initial...) (*l$((_T[1]){ [0] = _initial }))
 
 #define type$ typeV$
 
@@ -219,21 +183,21 @@ extern "C" {
 #define __typeV$__sep(_T...) _T, __typeV$__sepRaw
 #define __typeV$__sepRaw(_raw...) _raw
 #define __typeV$__emit(_T, _raw...) __typeV$__emitNext(_T, _raw)
-#define __typeV$__emitNext(_T, _raw...) (*(_T*)prim_memcpy(&lit0$((_T)), &copy(_raw), sizeOf$(_T)))
+#define __typeV$__emitNext(_T, _raw...) (*(_T*)raw_memcpy(&l0$((_T)), &copy(_raw), sizeOf$(_T)))
 
 #define typeO$(/*(_T)(_raw...)*/... /*(_T)*/) __typeO$__step(pp_defer(__typeO$__emit)(__typeO$__sep __VA_ARGS__))
 #define __typeO$__step(...) __VA_ARGS__
 #define __typeO$__sep(_O_T...) _O_T, __typeO$__sepRaw
 #define __typeO$__sepRaw(_raw...) _raw
 #define __typeO$__emit(_O_T, _raw...) __typeO$__emitNext(_O_T, _raw)
-#define __typeO$__emitNext(_O_T, _raw...) (*(_O_T*)prim_memcpy(&lit$((_O_T){}), (_raw).as_raw, sizeOf$(_O_T)))
+#define __typeO$__emitNext(_O_T, _raw...) (*(_O_T*)raw_memcpy(&l$((_O_T){}), (_raw).as_raw, sizeOf$(_O_T)))
 
 #define typeE$(/*(_T)(_raw...)*/... /*(_T)*/) __typeE$__step(pp_defer(__typeE$__emit)(__typeE$__sep __VA_ARGS__))
 #define __typeE$__step(...) __VA_ARGS__
 #define __typeE$__sep(_E_T...) _E_T, __typeE$__sepRaw
 #define __typeE$__sepRaw(_raw...) _raw
 #define __typeE$__emit(_E_T, _raw...) __typeE$__emitNext(_E_T, _raw)
-#define __typeE$__emitNext(_E_T, _raw...) (*(_E_T*)prim_memcpy(&lit$((_E_T){}), (_raw).as_raw, sizeOf$(_E_T)))
+#define __typeE$__emitNext(_E_T, _raw...) (*(_E_T*)raw_memcpy(&l$((_E_T){}), (_raw).as_raw, sizeOf$(_E_T)))
 
 #define asg(_p_lhs, _rhs, _fields...) pp_overload(__asg, _fields)(_p_lhs, _rhs, _fields)
 #define __asg_0(_p_lhs, _rhs, ...) __op__asg(pp_uniqTok(p_lhs), pp_uniqTok(rhs), _p_lhs, _rhs)
@@ -243,7 +207,7 @@ extern "C" {
     claim_assert_nonnull(__p_lhs); \
     claim_assert(sizeOf$(TypeOf(*__p_lhs)) == sizeOf$(TypeOf(__rhs))); \
     claim_assert(alignOf$(TypeOf(*__p_lhs)) == alignOf$(TypeOf(__rhs))); \
-    claim_assert_static(Type_eq$(TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs))); \
+    claim_assert_static(eqlType$(TypeOfUnqual(*__p_lhs), TypeOfUnqual(__rhs))); \
     *_p_lhs = *as$(TypeOf(__p_lhs))(&__rhs); \
     __p_lhs; \
 })
@@ -262,17 +226,17 @@ extern "C" {
 #define __op__asg_compat__assert(...) __op__asg_compat____assert(__op__asg_compat____assert__parse __VA_ARGS__)
 #define __op__asg_compat____assert__parse(...) __VA_ARGS__,
 #define __op__asg_compat____assert(...) __op__asg_compat____assert__emit(__VA_ARGS__)
-#define __op__asg_compat____assert__emit(_lhs, _rhs, _field...) claim_assert_static(Type_eq$(FieldType$(_lhs _field), FieldType$(_rhs _field)));
+#define __op__asg_compat____assert__emit(_lhs, _rhs, _field...) claim_assert_static(eqlType$(FieldType$(_lhs _field), FieldType$(_rhs _field)));
 
-#define asg_lit(/*(p_lhs: P(T))(_rhs: T)*/... /*(P(T))*/) __op__asg_lit(__op__asg_lit__parsePLhs __VA_ARGS__)
-#define __op__asg_lit(...) __op__asg_lit__emit(__VA_ARGS__)
-#define __op__asg_lit__parsePLhs(_p_lhs...) pp_uniqTok(p_lhs), _p_lhs, __op__asg_lit__expandRhs
-#define __op__asg_lit__expandRhs(_rhs...) _rhs
-#define __op__asg_lit__emit(__p_lhs, _p_lhs, _rhs...) ({ \
+#define asg_l(/*(p_lhs: P(T))(_rhs: T)*/... /*(P(T))*/) __op__asg_l(__op__asg_l__parsePLhs __VA_ARGS__)
+#define __op__asg_l(...) __op__asg_l__emit(__VA_ARGS__)
+#define __op__asg_l__parsePLhs(_p_lhs...) pp_uniqTok(p_lhs), _p_lhs, __op__asg_l__expandRhs
+#define __op__asg_l__expandRhs(_rhs...) _rhs
+#define __op__asg_l__emit(__p_lhs, _p_lhs, _rhs...) ({ \
     let_(__p_lhs, TypeOf(_p_lhs)) = _p_lhs; \
     typedef TypeOf(*__p_lhs) LitType; \
     claim_assert_nonnull(__p_lhs); \
-    *__p_lhs = make$((LitType)_rhs); \
+    *__p_lhs = from$((LitType)_rhs); \
     __p_lhs; \
 })
 
@@ -320,7 +284,7 @@ extern "C" {
     })
 #define __op__$in_field__expand(...) __VA_ARGS__
 
-#define cleared$ lit0$
+#define cleared$ l0$
 #define cleared() ____cleared()
 #define ____cleared() \
     {}
@@ -329,7 +293,7 @@ extern "C" {
 #define __step__initial$__parse(_T...) _T, __step__initial$__parseExpr
 #define __step__initial$__parseExpr(_expr...) _expr
 #define __step__initial$__emit(...) ____initial$(__VA_ARGS__)
-#define ____initial$(_T, _expr...) lit$((_T){ _expr })
+#define ____initial$(_T, _expr...) l$((_T){ _expr })
 #define initial(/*_expr...*/...) ____initial(__VA_ARGS__)
 #define ____initial(_expr...) \
     { _expr }
@@ -338,7 +302,7 @@ extern "C" {
 #define ____move(_p_val...) ({ \
     let_(__p_val, TypeOf(_p_val)) = _p_val; \
     let_(__val, TypeOfUnqual(*__p_val)) = *__p_val; \
-    *__p_val = lit0$((TypeOf(__val))); \
+    *__p_val = l0$((TypeOf(__val))); \
     __val; \
 })
 #define copy(_val... /*(TypeOf(_val))*/) ____copy(_val)
@@ -350,10 +314,10 @@ extern "C" {
 #define __step__with$__parseInitial(_initial...) _initial
 #define __step__with$__emit(...) \
     ____with_(__VA_ARGS__)
-#define ____with_(__expr_copied, _expr, _initial...) blk({ \
+#define ____with_(__expr_copied, _expr, _initial...) local_({ \
     var __expr_copied = _expr; \
     pp_foreach(____with___each, __expr_copied, _initial); \
-    blk_return_(__expr_copied); \
+    local_return_(__expr_copied); \
 })
 #define ____with___each(__expr_copied, /*_initial*/...) __VA_OPT__( \
     ____with___each__emit(__expr_copied, ____with___each__parseField __VA_ARGS__) \
@@ -363,15 +327,15 @@ extern "C" {
 #define ____with___each__emit(...) \
     ____with_____each(__VA_ARGS__)
 #define ____with_____each(__expr_copied, _field, _asg...) \
-    asg_lit((&__expr_copied _field)(_asg));
+    asg_l((&__expr_copied _field)(_asg));
 
 #define T_switch$(/*(_T_Cond)(_T_Cases...)*/...) \
     __step__T_switch$(__step__T_switch$__parseTCond __VA_ARGS__)
 #define __step__T_switch$(...) __T_switch$(__VA_ARGS__)
 #define __step__T_switch$__parseTCond(_T_Cond...) _T_Cond, __step__T_switch$__parseTCases
 #define __step__T_switch$__parseTCases(_T_Cases...) _T_Cases
-#define __T_switch$(_T_Cond, _T_Cases...) _Generic(as$($P$(_T_Cond))(null), _T_Cases)
-#define T_case$(/*(_T_Case)(_expr...)*/...) \
+#define __T_switch$(_T_Cond, _T_Cases...) _Generic(null$($P$(_T_Cond)), _T_Cases)
+#define T_case$(/*(_T_Case)_expr...*/...) \
     __step__T_case$(__step__T_case$__parseTCase __VA_ARGS__)
 #define __step__T_case$(...) __T_case$(__VA_ARGS__)
 #define __step__T_case$__parseTCase(_T_Case...) _T_Case,
@@ -380,7 +344,7 @@ extern "C" {
         _expr, \
     $P$(_T_Case): \
         _expr /* clang-format on */
-#define T_qual$(/*(_T_Case)(_expr...)*/...) \
+#define T_qual$(/*(_T_Case)_expr...*/...) \
     __step__T_qual$(__step__T_qual$__parseTCase __VA_ARGS__)
 #define __step__T_qual$(...) __T_qual$(__VA_ARGS__)
 #define __step__T_qual$__parseTCase(_T_Case...) _T_Case,
@@ -396,16 +360,9 @@ extern "C" {
 #define T_default_() default
 #endif /* UNUSED_CODE */
 
-#if UNUSED_CODE
-#define Generic_match$(T, _Pattern...) comp_syn__Generic_match$(T, _Pattern)
-#define Generic_pattern$(T) comp_syn__Generic_pattern$(T)
-#define Generic_fallback_ comp_syn__Generic_fallback_
-#endif /* UNUSED_CODE */
-
-#define blk comp_syn__blk
-#define blk_return_(...) comp_syn__blk_return_(__VA_ARGS__)
-
-#define $local_label comp_syn__$local_label
+#define local_ comp_syn__local_
+#define local_label comp_syn__local_label
+#define local_return_(...) comp_syn__local_return_(__VA_ARGS__)
 
 #define $fallthrough __attr__$fallthrough
 #define $branch_hot __attr__$branch_hot
@@ -424,7 +381,7 @@ extern "C" {
 
 #define $static static
 #define $extern extern
-#define $Thrd_local _Thread_local
+#define $thrd_local _Thread_local
 
 #define $cdecl __attr__$cdecl
 #define $stdcall __attr__$stdcall
@@ -432,13 +389,24 @@ extern "C" {
 #define $vectorcall __attr__$vectorcall
 
 #define $packed __attr__$packed
+#define $bits(_width... /*8|16|32|64*/) __attr__$bits(_width)
 #define $align(_align...) __attr__$align(_align)
+
+#define not !
+#define and &&
+#define or ||
 
 #define $pragma_guard_(_push, _ctx, _pop, _code...) /* clang-format off */ \
     _Pragma(_push) \
     _Pragma(_ctx) \
     _code \
     _Pragma(_pop) /* clang-format on */
+#define $supress_microsoft_anon_tag(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wmicrosoft-anon-tag\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
 #define $supress_compound_token_split_by_macro(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
@@ -475,6 +443,12 @@ extern "C" {
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
+#define $supress_return_stack_address(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wreturn-stack-address\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
 #define $supress_switch_enum(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wswitch-enum\"", \
@@ -501,83 +475,77 @@ extern "C" {
 )
 /*========== Macros and Definitions =========================================*/
 
-#define comp_attr__$inline comp_inline
-#define comp_attr__$inline_always comp_inline_always
-#define comp_attr__$inline_never comp_inline_never
-#define comp_attr__$flatten comp_flatten
+#define __attr__$inline comp_inline
+#define __attr__$inline_always comp_inline_always
+#define __attr__$inline_never comp_inline_never
+#define __attr__$flatten comp_flatten
 
-#define comp_attr__$deprecated comp_deprecated
-#define comp_attr__$deprecated_msg(_Msg) comp_deprecated_msg(_Msg)
-#define comp_attr__$deprecated_instead(_Msg, _Replacement) comp_deprecated_instead(_Msg, _Replacement)
+#define __attr__$deprecated comp_deprecated
+#define __attr__$deprecated_msg(_Msg) comp_deprecated_msg(_Msg)
+#define __attr__$deprecated_instead(_Msg, _Replacement) comp_deprecated_instead(_Msg, _Replacement)
 
-#define comp_attr__$pure comp_pure
-#define comp_attr__$view comp_view
+#define __attr__$pure comp_pure
+#define __attr__$view comp_view
 
-#define comp_attr__$on_load comp_on_load
-#define comp_attr__$on_exit comp_on_exit
+#define __attr__$on_load comp_on_load
+#define __attr__$on_exit comp_on_exit
 
-#define comp_attr__$must_check comp_must_use
-#define comp_attr__$return_never comp_return_never
-#define comp_attr__$ignore_void (void)
-#define comp_attr__$ignore \
-    $maybe_unused pp_uniqTok(ignored) = (Void){}; \
+#define __attr__$must_check comp_must_use
+#define __attr__$no_return comp_no_return
+#define __oper__$ignore_void (void)
+#define __capt__$ignore \
+    $maybe_unused pp_uniqTok(ignored) = l0$((Void)); \
     let_ignore
-#define comp_attr__let_ignore $maybe_unused let pp_uniqTok(ignored)
-#define comp_attr__$do_nothing \
+#define __stmt__let_ignore $maybe_unused let pp_uniqTok(ignored)
+#define __stmt__$do_nothing \
     {}
 
-#define comp_attr__$used(_Expr...) _Expr
+#define __attr__$used(_Expr...) _Expr
 /* begin unused */
-#define comp_attr__$unused(_Expr...) comp_attr__$unused__payload(comp_attr__$unused__countArgs(_Expr), _Expr)
-#define comp_attr__$unused__payload(_Count, _Args...) pp_join(__, comp_attr__$unused, _Count)(_Args)
-#define comp_attr__$unused__countArgs(_Args...) comp_attr__$unused__countArgs__select(_Args, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
-#define comp_attr__$unused__countArgs__select(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _N, ...) _N
-#define comp_attr__$unused__1(x1) (void)(x1)
-#define comp_attr__$unused__2(x1, x2) (void)(x1), (void)(x2)
-#define comp_attr__$unused__3(x1, x2, x3) (void)(x1), (void)(x2), (void)(x3)
-#define comp_attr__$unused__4(x1, x2, x3, x4) (void)(x1), (void)(x2), (void)(x3), (void)(x4)
-#define comp_attr__$unused__5(x1, x2, x3, x4, x5) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5)
-#define comp_attr__$unused__6(x1, x2, x3, x4, x5, x6) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6)
-#define comp_attr__$unused__7(x1, x2, x3, x4, x5, x6, x7) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7)
-#define comp_attr__$unused__8(x1, x2, x3, x4, x5, x6, x7, x8) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8)
-#define comp_attr__$unused__9(x1, x2, x3, x4, x5, x6, x7, x8, x9) \
+#define __attr__$unused(_Expr...) __attr__$unused__payload(__attr__$unused__countArgs(_Expr), _Expr)
+#define __attr__$unused__payload(_Count, _Args...) pp_join(__, __attr__$unused, _Count)(_Args)
+#define __attr__$unused__countArgs(_Args...) __attr__$unused__countArgs__select(_Args, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+#define __attr__$unused__countArgs__select(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _N, ...) _N
+#define __attr__$unused__1(x1) (void)(x1)
+#define __attr__$unused__2(x1, x2) (void)(x1), (void)(x2)
+#define __attr__$unused__3(x1, x2, x3) (void)(x1), (void)(x2), (void)(x3)
+#define __attr__$unused__4(x1, x2, x3, x4) (void)(x1), (void)(x2), (void)(x3), (void)(x4)
+#define __attr__$unused__5(x1, x2, x3, x4, x5) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5)
+#define __attr__$unused__6(x1, x2, x3, x4, x5, x6) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6)
+#define __attr__$unused__7(x1, x2, x3, x4, x5, x6, x7) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7)
+#define __attr__$unused__8(x1, x2, x3, x4, x5, x6, x7, x8) (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8)
+#define __attr__$unused__9(x1, x2, x3, x4, x5, x6, x7, x8, x9) \
     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9)
-#define comp_attr__$unused__10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) \
+#define __attr__$unused__10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) \
     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10)
-#define comp_attr__$unused__11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11) \
+#define __attr__$unused__11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11) \
     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11)
-#define comp_attr__$unused__12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12) \
+#define __attr__$unused__12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12) \
     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12)
-#define comp_attr__$unused__13(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13) \
+#define __attr__$unused__13(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13) \
     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), \
         (void)(x13)
-#define comp_attr__$unused__14(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14) \
+#define __attr__$unused__14(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14) \
     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), \
         (void)(x13), (void)(x14)
-#define comp_attr__$unused__15(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15) \
+#define __attr__$unused__15(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15) \
     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), \
         (void)(x13), (void)(x14), (void)(x15)
-#define comp_attr__$unused__16(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16) \
+#define __attr__$unused__16(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16) \
     (void)(x1), (void)(x2), (void)(x3), (void)(x4), (void)(x5), (void)(x6), (void)(x7), (void)(x8), (void)(x9), (void)(x10), (void)(x11), (void)(x12), \
         (void)(x13), (void)(x14), (void)(x15), (void)(x16)
 /* end unused */
 
-#define comp_attr__$keep_symbol comp_keep_symbol
-#define comp_attr__$maybe_unused comp_maybe_unused
-#define comp_attr__$must_use comp_must_use
+#define __attr__$keep_symbol comp_keep_symbol
+#define __attr__$maybe_unused comp_maybe_unused
+#define __attr__$must_use comp_must_use
 
-#define comp_attr__$import comp_import
-#define comp_attr__$export comp_export
+#define __attr__$import comp_import
+#define __attr__$export comp_export
 
-#define comp_syn__Generic_match$(T, _Pattern...) _Generic(T, _Pattern)
-#define comp_syn__Generic_pattern$(T) \
-T:
-#define comp_syn__Generic_fallback_ default:
-
-#define comp_syn__blk /* just comment for compound statement expression ({...}) */
-#define comp_syn__blk_return_(...) __VA_ARGS__
-
-#define comp_syn__$local_label __label__
+#define comp_syn__local_ /* just comment for compound statement expression ({...}) */
+#define comp_syn__local_label __label__
+#define comp_syn__local_return_(...) __VA_ARGS__
 
 #define __attr__$fallthrough comp_fallthrough
 #define __attr__$branch_hot comp_branch_hot
@@ -599,6 +567,20 @@ T:
 #define __attr__$vectorcall plat_vectorcall
 
 #define __attr__$packed comp_packed
+#define __attr__$bits(_width... /*8|16|32|64*/) pp_join(_, __attr__$bits, _width)
+#define __attr__$bits_0 "0 bits is not allowed"
+#define __attr__$bits_8 \
+    /* mode: __QI__ | meaning: Quarter Integer  | size: 1 byte  | corresponding type: "u8, i8"*/ \
+    __attribute__((__mode__(__QI__)))
+#define __attr__$bits_16 \
+    /* mode: __HI__ | meaning: Half Integer     | size: 2 bytes | corresponding type: "u16, i16"*/ \
+    __attribute__((__mode__(__HI__)))
+#define __attr__$bits_32 \
+    /* mode: __SI__ | meaning: Standard Integer | size: 4 bytes | corresponding type: "u32, i32"*/ \
+    __attribute__((__mode__(__SI__)))
+#define __attr__$bits_64 \
+    /* mode: __DI__ | meaning: Double Integer   | size: 8 bytes | corresponding type: "u64, i64"*/ \
+    __attribute__((__mode__(__DI__)))
 #define __attr__$align(_align...) comp_align(_align)
 
 #if defined(__cplusplus)

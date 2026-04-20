@@ -64,7 +64,8 @@ typedef struct fmt_Display {
 $attr($must_check)
 $static fn_((fmt_display(fmt_Display self, io_Writer writer))(E$void) $scope) {
     return_ok(try_(self.fmt_display(self.ctx, writer)));
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
 typedef struct Entity {
     usize id;
@@ -86,7 +87,8 @@ fn_((Entity_fmt_display(const Entity* self, io_Writer writer))(E$void) $scope) {
     try_(io_Writer_println(writer, u8_l("    health: {:d}"), self->health));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 $attr($maybe_unused)
 $static fn_((fmt_Display_for$Entity(const Entity* self))(fmt_Display)) {
     return (fmt_Display){ .ctx = ptrCast$((P_const$raw)(self)), .fmt_display = fmt_display$Entity };
@@ -102,7 +104,8 @@ fn_((Circ_fmt_display(const Circ* self, io_Writer writer))(E$void) $scope) {
     try_(io_Writer_println(writer, u8_l("    radius: {:.2f}"), self->radius));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 $attr($maybe_unused)
 $static fn_((fmt_Display_for$Circ(const Circ* self))(fmt_Display)) {
     return (fmt_Display){ .ctx = ptrCast$((P_const$raw)(self)), .fmt_display = fmt_display$Circ };
@@ -118,7 +121,8 @@ fn_((Rect_fmt_display(const Rect* self, io_Writer writer))(E$void) $scope) {
     try_(io_Writer_println(writer, u8_l("    height: {:.2f}"), self->height));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 $attr($maybe_unused)
 $static fn_((fmt_Display_for$Rect(const Rect* self))(fmt_Display)) {
     return (fmt_Display){ .ctx = ptrCast$((P_const$raw)(self)), .fmt_display = fmt_display$Rect };
@@ -136,7 +140,8 @@ fn_((Shape_fmt_display(const Shape* self, io_Writer writer))(E$void) $scope) {
     try_(io_Writer_println(writer, u8_l("    Perimeter: {:.2f}"), Shape_perimeter(*self)));
     try_(io_Writer_print(writer, u8_l("}")));
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 $attr($maybe_unused)
 $static fn_((fmt_Display_for$Shape(const Shape* self))(fmt_Display)) {
     return (fmt_Display){ .ctx = ptrCast$((P_const$raw)(self)), .fmt_display = fmt_display$Shape };
@@ -154,11 +159,11 @@ $static var_(shapes_mem, A$$(128, Shape)) = A_zero();
 $static let shapes_buf = A_ref$((S$Shape)(shapes_mem));
 $attr($must_check)
 $static fn_((example_usage(void))(E$void) $scope) {
-    let rects = ({ var initial = lit0$((A$$(16, Rect))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
+    let rects = ({ var initial = l0$((A$$(16, Rect))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
         item->width = as$(f32)(idx + 1);
         item->height = as$(f32)(idx + 2);
     }); initial; });
-    let circs = ({ var initial = lit0$((A$$(16, Circ))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
+    let circs = ({ var initial = l0$((A$$(16, Circ))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
         item->radius = as$(f32)(idx + 1);
     }); initial; });
 
@@ -172,11 +177,13 @@ $static fn_((example_usage(void))(E$void) $scope) {
         try_(io_Writer_nl(out));
     });
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);
 
 
-#include "dh/main.h"
+#include "dh-main.h"
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     return_ok(try_(example_usage()));
-} $unscoped_(fn);
+}
+$unscoped(fn);

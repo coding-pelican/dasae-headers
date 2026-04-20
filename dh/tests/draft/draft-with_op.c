@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 
 #define with_(/*(_expr: _T)(_initial...: (_field)(_asg)*/... /*(_T)*/) __step__with_(__VA_ARGS__)
 #define __step__with_(...) __step__with$__emit(__step__with$__parseExpr __VA_ARGS__)
@@ -6,10 +6,10 @@
 #define __step__with$__parseInitial(_initial...) _initial
 #define __step__with$__emit(...) \
     ____with_(__VA_ARGS__)
-#define ____with_(__expr_copied, _expr, _initial...) blk({ \
+#define ____with_(__expr_copied, _expr, _initial...) local_({ \
     var __expr_copied = _expr; \
     pp_foreach(____with___each, __expr_copied, _initial); \
-    blk_return_(__expr_copied); \
+    local_return_(__expr_copied); \
 })
 #define ____with___each(__expr_copied, /*_initial*/...) __VA_OPT__( \
     ____with___each__emit(__expr_copied, ____with___each__parseField __VA_ARGS__) \
@@ -19,7 +19,7 @@
 #define ____with___each__emit(...) \
     ____with_____each(__VA_ARGS__)
 #define ____with_____each(__expr_copied, _field, _asg...) \
-    asg_lit((&__expr_copied _field)(_asg));
+    asg_l((&__expr_copied _field)(_asg));
 
 TEST_fn_("thin struct binding" $scope) {
     typedef struct Foo {
@@ -47,7 +47,7 @@ TEST_fn_("thin struct binding" $scope) {
     try_(TEST_expect(foo2.b == foo0.b));
     try_(TEST_expect(foo2.c == foo0.c));
     return_ok({});
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("nested struct binding" $scope) {
     typedef struct Bar_Id {
@@ -104,4 +104,4 @@ TEST_fn_("nested struct binding" $scope) {
     try_(TEST_expect(bar2.id.num == bar1.id.num));
     try_(TEST_expect(bar2.point.x == bar1.point.x));
     try_(TEST_expect(bar2.point.y == bar1.point.y));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);

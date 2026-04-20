@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/ArrPQue.h"
 #include "dh/heap/Page.h"
 #include "dh/io/stream.h"
@@ -28,18 +28,18 @@ $attr($maybe_unused)
 $static fn_((printHeap(ArrPQue$u32 pq))(void)) {
     let items = ArrPQue_items$u32(pq);
     io_stream_print(u8_l("Heap: ["));
-    for_(($rf(0), $s(items))(i, val) {
+    for_(($rf(0), $s(items))(i, val)) {
         if (i > 0) {
             io_stream_print(u8_l(", "));
         }
         io_stream_print(u8_l("{:u}"), *val);
-    });
+    } $end(for);
     io_stream_println(u8_l("]"));
 };
 
 TEST_fn_("enque and deque min heap" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -55,11 +55,11 @@ TEST_fn_("enque and deque min heap" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 23));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 25));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 54));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("enque and deque same min heap" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -75,19 +75,19 @@ TEST_fn_("enque and deque same min heap" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 1));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 2));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 2));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("deque on empty" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 0, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
     try_(TEST_expect(isNone(ArrPQue_deque$u32(&pq))));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("edge case 3 elements" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 3, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -97,11 +97,11 @@ TEST_fn_("edge case 3 elements" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 2));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 3));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 9));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("peek" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -115,29 +115,29 @@ TEST_fn_("peek" $guard) {
     // Peek should return minimum without removing
     try_(TEST_expect(*unwrap_(ArrPQue_peek$u32(pq)) == 2));
     try_(TEST_expect(*unwrap_(ArrPQue_peek$u32(pq)) == 2)); // Still 2, not removed
-    try_(TEST_expect(ArrPQue_len$u32(pq) == 3));            // Count unchanged
-} $unguarded_(TEST_fn);
+    try_(TEST_expect(ArrPQue_len$u32(pq) == 3)); // Count unchanged
+} $unguarded(TEST_fn);
 
 TEST_fn_("sift up with odd indices" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 32, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
     let items = A_from$((u32){ 15, 7, 21, 14, 13, 22, 12, 6, 7, 25, 5, 24, 11, 16, 15, 24, 2, 1 });
-    for_(($a(items))(item) {
+    for_(($a(items))(item)) {
         ArrPQue_enqueWithin$u32(&pq, *item);
-    });
+    } $end(for);
 
     let sorted_items = A_from$((u32){ 1, 2, 5, 6, 7, 7, 11, 12, 13, 14, 15, 15, 16, 21, 22, 24, 24, 25 });
-    for_(($a(sorted_items))(sorted) {
+    for_(($a(sorted_items))(sorted)) {
         try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == *sorted));
-    });
-} $unguarded_(TEST_fn);
+    } $end(for);
+} $unguarded(TEST_fn);
 
 TEST_fn_("enqueS (addSlice)" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 32, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -145,14 +145,14 @@ TEST_fn_("enqueS (addSlice)" $guard) {
     try_(ArrPQue_enqueS$u32(&pq, gpa, A_ref$((S_const$u32)(items))));
 
     let sorted_items = A_from$((u32){ 1, 2, 5, 6, 7, 7, 11, 12, 13, 14, 15, 15, 16, 21, 22, 24, 24, 25 });
-    for_(($a(sorted_items))(sorted) {
+    for_(($a(sorted_items))(sorted)) {
         try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == *sorted));
-    });
-} $unguarded_(TEST_fn);
+    } $end(for);
+} $unguarded(TEST_fn);
 
 TEST_fn_("enque and deque max heap" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultDesc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultDesc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -168,11 +168,11 @@ TEST_fn_("enque and deque max heap" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 13));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 12));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 7));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("enque and deque same max heap" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultDesc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultDesc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -188,20 +188,20 @@ TEST_fn_("enque and deque same max heap" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 1));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 1));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 1));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("iterator" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
     let items = A_from$((u32){ 54, 12, 7, 23, 25, 13 });
     var_(sum_expected, u32) = 0;
-    for_(($a(items))(item) {
+    for_(($a(items))(item)) {
         ArrPQue_enqueWithin$u32(&pq, *item);
         sum_expected += *item;
-    });
+    } $end(for);
 
     // Iterator should visit all elements (in heap order, not sorted order)
     var_(count, usize) = 0;
@@ -214,28 +214,28 @@ TEST_fn_("iterator" $guard) {
 
     try_(TEST_expect(count == A_len(items)));
     try_(TEST_expect(sum == sum_expected));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("iterator while empty" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
     var it = ArrPQue_iter$u32(&pq);
     try_(TEST_expect(isNone(ArrPQue_Iter_next$u32(&it))));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("remove at index" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
     let items = A_from$((u32){ 2, 1, 8, 9, 3, 4, 5 });
-    for_(($a(items))(item) {
+    for_(($a(items))(item)) {
         ArrPQue_enqueWithin$u32(&pq, *item);
-    });
+    } $end(for);
 
     // Find the index of element 2
     let two_idx = eval_(O$usize $scope)({
@@ -245,7 +245,7 @@ TEST_fn_("remove at index" $guard) {
             if (*elem == 2) { $break_(some(idx_to_find)); }
             idx_to_find++;
         }
-    }) eval_(else)($break_(none())) $unscoped_(eval);
+    }) eval_(else)($break_(none())) $unscoped(eval);
     try_(TEST_expect(isSome(two_idx)));
 
     // Remove element 2
@@ -254,15 +254,15 @@ TEST_fn_("remove at index" $guard) {
 
     // Remaining elements should be sorted correctly
     let sorted_items = A_from$((u32){ 1, 3, 4, 5, 8, 9 });
-    for_(($a(sorted_items))(sorted) {
+    for_(($a(sorted_items))(sorted)) {
         try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == *sorted));
-    });
+    } $end(for);
     try_(TEST_expect(isNone(ArrPQue_deque$u32(&pq))));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("shrinkAndFree" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 0, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -283,11 +283,11 @@ TEST_fn_("shrinkAndFree" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 2));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 3));
     try_(TEST_expect(isNone(ArrPQue_deque$u32(&pq))));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("update min heap" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -300,11 +300,11 @@ TEST_fn_("update min heap" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 1));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 4));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 5));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("update same min heap" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -318,11 +318,11 @@ TEST_fn_("update same min heap" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 2));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 4));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 5));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("update max heap" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultDesc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultDesc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -335,11 +335,11 @@ TEST_fn_("update max heap" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 5));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 4));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 1));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("update same max heap" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultDesc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultDesc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 8, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -353,11 +353,11 @@ TEST_fn_("update same max heap" $guard) {
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 4));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 2));
     try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == 1));
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 
 TEST_fn_("siftUp in remove" $guard) {
-    let gpa = heap_Page_allocator(&(heap_Page){});
-    let ctx = ArrPQue_Ctx_defaultAsc(cmp_MathType_u32);
+    let gpa = heap_Page_alctr(&(heap_Page){});
+    let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
     var pq = try_(ArrPQue_init$u32(gpa, 32, &ctx));
     defer_(ArrPQue_fini$u32(&pq, gpa));
 
@@ -372,7 +372,7 @@ TEST_fn_("siftUp in remove" $guard) {
             if (*elem == 102) { $break_(idx_to_find); }
             idx_to_find++;
         }
-    }) eval_(else)(claim_unreachable) $unscoped_(eval);
+    }) eval_(else)(claim_unreachable) $unscoped(eval);
 
     // Remove 102
     let removed = ArrPQue_removeAt$u32(&pq, target_idx);
@@ -380,7 +380,7 @@ TEST_fn_("siftUp in remove" $guard) {
 
     // Check remaining elements come out sorted
     let sorted_items = A_from$((u32){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 100, 101, 103, 104, 105, 106 });
-    for_(($a(sorted_items))(sorted) {
+    for_(($a(sorted_items))(sorted)) {
         try_(TEST_expect(unwrap_(ArrPQue_deque$u32(&pq)) == *sorted));
-    });
-} $unguarded_(TEST_fn);
+    } $end(for);
+} $unguarded(TEST_fn);

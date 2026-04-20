@@ -66,21 +66,21 @@ extern "C" {
 /* clang-format off */
 #define __step__claim_assert(_Expr, _ExprStr...) $ignore_void(\
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
+        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
         $debug_point claim_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
         $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_msg(_Expr, _ExprStr, _msg...) $ignore_void( \
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _msg); \
+        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _msg); \
         $debug_point claim_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
         $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_fmt(_Expr, _ExprStr, _fmt...) $ignore_void(\
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
+        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
         $debug_point claim_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
         $unreachable; \
     }), 0) \
@@ -103,19 +103,19 @@ extern "C" {
 /* clang-format off */
 #define __step__claim_assert(_Expr, _ExprStr...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
+        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
         $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_msg(_Expr, _ExprStr, _msg...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _msg); \
+        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _msg); \
         $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_fmt(_Expr, _ExprStr, fmt...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isCompTimeFoldable(_Expr) ? _Expr : true, _ExprStr); \
+        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
         $unreachable; \
     }), 0) \
 )
@@ -132,10 +132,11 @@ extern "C" {
     __step__claim_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _Expr1Str " is not equal to " _Expr2Str)
 #define __step__claim_assert_ne(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) \
     __step__claim_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _Expr1Str " is equal to " _Expr2Str)
-#define __step__claim_assert_null(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) == null), _ExprStr " != null", _ExprStr " is nonnull")
-#define __step__claim_assert_nullS(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr).ptr == null), _ExprStr " != null", _ExprStr " is nonnull")
-#define __step__claim_assert_nonnull(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) != null), _ExprStr " == null", _ExprStr " is null")
-#define __step__claim_assert_nonnullS(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr).ptr != null), _ExprStr " == null", _ExprStr " is null")
+#define __step__claim_assert_null(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) == null$(TypeOf(_Expr))), _ExprStr " != null", _ExprStr " is nonnull")
+#define __step__claim_assert_nullS(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _ExprStr " is nonnull")
+#define __step__claim_assert_nullOp(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _ExprStr " is nonnull")
+#define __step__claim_assert_nonnull(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _ExprStr " is null")
+#define __step__claim_assert_nonnullS(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _ExprStr " is null")
 
 #define __step__claim_assert_true_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == true), _ExprStr " != true", _msg)
 #define __step__claim_assert_false_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == false), _ExprStr " != false", _msg)
@@ -143,10 +144,10 @@ extern "C" {
     __step__claim_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _msg)
 #define __step__claim_assert_ne_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) \
     __step__claim_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _msg)
-#define __step__claim_assert_null_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == null), _ExprStr " != null", _msg)
-#define __step__claim_assert_nullS_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr).ptr == null), _ExprStr " != null", _msg)
-#define __step__claim_assert_nonnull_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) != null), _ExprStr " == null", _msg)
-#define __step__claim_assert_nonnullS_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr).ptr != null), _ExprStr " == null", _msg)
+#define __step__claim_assert_null_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == null$(TypeOf(_Expr))), _ExprStr " != null", _msg)
+#define __step__claim_assert_nullS_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _msg)
+#define __step__claim_assert_nonnull_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _msg)
+#define __step__claim_assert_nonnullS_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _msg)
 
 #define __step__claim_assert_true_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == true), _ExprStr " != true", _fmt)
 #define __step__claim_assert_false_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == false), _ExprStr " != false", _fmt)
@@ -154,10 +155,10 @@ extern "C" {
     __step__claim_assert_fmt(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _fmt)
 #define __step__claim_assert_ne_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) \
     __step__claim_assert_fmt(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _fmt)
-#define __step__claim_assert_null_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == null), _ExprStr " != null", _fmt)
-#define __step__claim_assert_nullS_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr).ptr == null), _ExprStr " != null", _fmt)
-#define __step__claim_assert_nonnull_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) != null), _ExprStr " == null", _fmt)
-#define __step__claim_assert_nonnullS_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr).ptr != null), _ExprStr " == null", _fmt)
+#define __step__claim_assert_null_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == null$(TypeOf(_Expr))), _ExprStr " != null", _fmt)
+#define __step__claim_assert_nullS_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _fmt)
+#define __step__claim_assert_nonnull_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _fmt)
+#define __step__claim_assert_nonnullS_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _fmt)
 
 /*========== Extern Function Prototypes =====================================*/
 

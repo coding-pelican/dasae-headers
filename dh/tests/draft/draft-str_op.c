@@ -105,19 +105,19 @@
 //   Splits a slice by a single delimiter from the end
 
 // JOINING AND CONCATENATION
-// pub fn concat(allocator: Allocator, comptime T: type, slices: []const []const T) Allocator.Error![]T
+// pub fn concat(allocator: Alctr, comptime T: type, slices: []const []const T) Alctr.Error![]T
 //   Concatenates slices together
 
-// pub fn concatWithSentinel(allocator: Allocator, comptime T: type, slices: []const []const T, comptime s: T) Allocator.Error![:s]T
+// pub fn concatWithSentinel(allocator: Alctr, comptime T: type, slices: []const []const T, comptime s: T) Alctr.Error![:s]T
 //   Concatenates slices together with a sentinel value
 
-// pub fn concatMaybeSentinel(allocator: Allocator, comptime T: type, slices: []const []const T, comptime s: ?T) Allocator.Error![]T
+// pub fn concatMaybeSentinel(allocator: Alctr, comptime T: type, slices: []const []const T, comptime s: ?T) Alctr.Error![]T
 //   Concatenates slices together with an optional sentinel value
 
-// pub fn join(allocator: Allocator, separator: []const u8, slices: []const []const u8) Allocator.Error![]u8
+// pub fn join(allocator: Alctr, separator: []const u8, slices: []const []const u8) Alctr.Error![]u8
 //   Joins slices with a separator
 
-// pub fn joinZ(allocator: Allocator, separator: []const u8, slices: []const []const u8) Allocator.Error![:0]u8
+// pub fn joinZ(allocator: Alctr, separator: []const u8, slices: []const []const u8) Alctr.Error![:0]u8
 //   Joins slices with a separator and null-terminates the result
 
 // REPLACEMENT OPERATIONS
@@ -131,7 +131,7 @@
 #define mem_replacementSize$(_T, /* S_const$T */ _input, /* S_const$T */ _needle, /* S_const$T */ _replacement... /* usize */)
 #define mem_replacementSize_useT$(_T...)
 //   Replaces all occurrences of needle with replacement, allocating a new slice
-#define mem_replaceOwned$(_T, /* mem_Allocator */ _allocator, /* S_const$T */ _input, /* S_const$T */ _needle, /* S_const$T */ _replacement... /* mem_Alloc_E$S$T */)
+#define mem_replaceOwned$(_T, /* mem_Alctr */ _alctr, /* S_const$T */ _input, /* S_const$T */ _needle, /* S_const$T */ _replacement... /* mem_Alloc_E$S$T */)
 #define mem_replaceOwned_useT$(_T...)
 
 // MEMORY OPERATIONS
@@ -149,13 +149,13 @@
 // pub fn lowerString(output: []u8, ascii_string: []const u8) []u8
 //   Writes a lowercase copy of ascii_string to output
 
-// pub fn allocLowerString(allocator: Allocator, ascii_string: []const u8) ![]u8
+// pub fn allocLowerString(allocator: Alctr, ascii_string: []const u8) ![]u8
 //   Allocates a lowercase copy of ascii_string
 
 // pub fn upperString(output: []u8, ascii_string: []const u8) []u8
 //   Writes an uppercase copy of ascii_string to output
 
-// pub fn allocUpperString(allocator: Allocator, ascii_string: []const u8) ![]u8
+// pub fn allocUpperString(allocator: Alctr, ascii_string: []const u8) ![]u8
 //   Allocates an uppercase copy of ascii_string
 
 // CASE-INSENSITIVE OPERATIONS
@@ -225,19 +225,19 @@
 // pub fn utf16LeToUtf8(utf8: []u8, utf16le: []const u16) Utf16LeToUtf8Error!usize
 //   Converts UTF-16 little-endian to UTF-8
 
-// pub fn utf16LeToUtf8Alloc(allocator: Allocator, utf16le: []const u16) Utf16LeToUtf8AllocError![]u8
+// pub fn utf16LeToUtf8Alloc(allocator: Alctr, utf16le: []const u16) Utf16LeToUtf8AllocError![]u8
 //   Allocates and converts UTF-16 little-endian to UTF-8
 
-// pub fn utf16LeToUtf8AllocZ(allocator: Allocator, utf16le: []const u16) Utf16LeToUtf8AllocError![:0]u8
+// pub fn utf16LeToUtf8AllocZ(allocator: Alctr, utf16le: []const u16) Utf16LeToUtf8AllocError![:0]u8
 //   Allocates and converts UTF-16 little-endian to null-terminated UTF-8
 
 // pub fn utf8ToUtf16Le(utf16le: []u16, utf8: []const u8) error{InvalidUtf8}!usize
 //   Converts UTF-8 to UTF-16 little-endian
 
-// pub fn utf8ToUtf16LeAlloc(allocator: Allocator, utf8: []const u8) error{ InvalidUtf8, OutOfMemory }![]u16
+// pub fn utf8ToUtf16LeAlloc(allocator: Alctr, utf8: []const u8) error{ InvalidUtf8, OutOfMemory }![]u16
 //   Allocates and converts UTF-8 to UTF-16 little-endian
 
-// pub fn utf8ToUtf16LeAllocZ(allocator: Allocator, utf8: []const u8) error{ InvalidUtf8, OutOfMemory }![:0]u16
+// pub fn utf8ToUtf16LeAllocZ(allocator: Alctr, utf8: []const u8) error{ InvalidUtf8, OutOfMemory }![:0]u16
 //   Allocates and converts UTF-8 to null-terminated UTF-16 little-endian
 
 // pub fn calcUtf16LeLen(utf8: []const u8) CalcUtf16LeLenError!usize
@@ -247,10 +247,10 @@
 // pub fn wtf8ToUtf8Lossy(utf8: []u8, wtf8: []const u8) error{InvalidWtf8}!void
 //   Converts WTF-8 to UTF-8 lossily (replacing invalid sequences)
 
-// pub fn wtf8ToUtf8LossyAlloc(allocator: Allocator, wtf8: []const u8) error{ InvalidWtf8, OutOfMemory }![]u8
+// pub fn wtf8ToUtf8LossyAlloc(allocator: Alctr, wtf8: []const u8) error{ InvalidWtf8, OutOfMemory }![]u8
 //   Allocates and converts WTF-8 to UTF-8 lossily
 
-// pub fn wtf8ToUtf8LossyAllocZ(allocator: Allocator, wtf8: []const u8) error{ InvalidWtf8, OutOfMemory }![:0]u8
+// pub fn wtf8ToUtf8LossyAllocZ(allocator: Alctr, wtf8: []const u8) error{ InvalidWtf8, OutOfMemory }![:0]u8
 //   Allocates and converts WTF-8 to null-terminated UTF-8 lossily
 
 // // ==== USAGE EXAMPLES ====

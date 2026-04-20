@@ -1,7 +1,7 @@
 #include "dh/ArrQue.h"
 #include "dh/ArrDeq.h"
 
-claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrQue), packTypeInfo$(ArrDeq)));
+claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(ArrQue), packTypeInfo$(ArrDeq)));
 claim_assert_static(offsetTo(ArrQue, buf) == offsetTo(ArrDeq, buf));
 claim_assert_static(offsetTo(ArrQue, head) == offsetTo(ArrDeq, head));
 claim_assert_static(offsetTo(ArrQue, len) == offsetTo(ArrDeq, len));
@@ -28,15 +28,15 @@ fn_((ArrQue_fixed(u_S$raw buf))(ArrQue)) {
     return deqToQue(ArrDeq_fixed(buf));
 }
 
-fn_((ArrQue_init(TypeInfo type, mem_Allocator gpa, usize cap))(mem_Err$ArrQue) $scope) {
+fn_((ArrQue_init(TypeInfo type, mem_Alctr gpa, usize cap))(mem_E$ArrQue) $scope) {
     return_ok(deqToQue(try_(ArrDeq_init(type, gpa, cap))));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrQue_fini(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void)) {
+fn_((ArrQue_fini(ArrQue* self, TypeInfo type, mem_Alctr gpa))(void)) {
     ArrDeq_fini(queAsDeq(self), type, gpa);
 }
 
-claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrQue_Grip), packTypeInfo$(ArrDeq_Grip)));
+claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(ArrQue_Grip), packTypeInfo$(ArrDeq_Grip)));
 claim_assert_static(offsetTo(ArrQue_Grip, buf) == offsetTo(ArrDeq_Grip, buf));
 claim_assert_static(offsetTo(ArrQue_Grip, head) == offsetTo(ArrDeq_Grip, head));
 claim_assert_static(offsetTo(ArrQue_Grip, len) == offsetTo(ArrDeq_Grip, len));
@@ -109,15 +109,15 @@ fn_((ArrQue_backMut(ArrQue self, TypeInfo type))(O$u_P$raw)) {
     return ArrDeq_backMut(queToDeq(self), type);
 }
 
-fn_((ArrQue_ensureCap(ArrQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) {
+fn_((ArrQue_ensureCap(ArrQue* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void)) {
     return ArrDeq_ensureCap(queAsDeq(self), type, gpa, new_cap);
 }
 
-fn_((ArrQue_ensureCapPrecise(ArrQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void)) {
+fn_((ArrQue_ensureCapPrecise(ArrQue* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void)) {
     return ArrDeq_ensureCapPrecise(queAsDeq(self), type, gpa, new_cap);
 }
 
-fn_((ArrQue_ensureUnusedCap(ArrQue* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void)) {
+fn_((ArrQue_ensureUnusedCap(ArrQue* self, TypeInfo type, mem_Alctr gpa, usize additional))(mem_E$void)) {
     return ArrDeq_ensureUnusedCap(queAsDeq(self), type, gpa, additional);
 }
 
@@ -125,15 +125,15 @@ fn_((ArrQue_clearRetainingCap(ArrQue* self))(void)) {
     return ArrDeq_clearRetainingCap(queAsDeq(self));
 }
 
-fn_((ArrQue_clearAndFree(ArrQue* self, TypeInfo type, mem_Allocator gpa))(void)) {
+fn_((ArrQue_clearAndFree(ArrQue* self, TypeInfo type, mem_Alctr gpa))(void)) {
     return ArrDeq_clearAndFree(queAsDeq(self), type, gpa);
 }
 
-fn_((ArrQue_enque(ArrQue* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void)) {
+fn_((ArrQue_enque(ArrQue* self, mem_Alctr gpa, u_V$raw item))(mem_E$void)) {
     return ArrDeq_append(queAsDeq(self), gpa, item);
 }
 
-fn_((ArrQue_enqueFixed(ArrQue* self, u_V$raw item))(mem_Err$void)) {
+fn_((ArrQue_enqueFixed(ArrQue* self, u_V$raw item))(mem_E$void)) {
     return ArrDeq_appendFixed(queAsDeq(self), item);
 }
 
@@ -145,7 +145,7 @@ fn_((ArrQue_deque(ArrQue* self, u_V$raw ret_mem))(O$u_V$raw)) {
     return ArrDeq_shift(queAsDeq(self), ret_mem);
 }
 
-claim_assert_static(TypeInfoPacked_eq(packTypeInfo$(ArrQue_Iter), packTypeInfo$(ArrDeq_Iter)));
+claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(ArrQue_Iter), packTypeInfo$(ArrDeq_Iter)));
 claim_assert_static(offsetTo(ArrQue_Iter, que) == offsetTo(ArrDeq_Iter, deq));
 claim_assert_static(offsetTo(ArrQue_Iter, idx) == offsetTo(ArrDeq_Iter, idx));
 debug_assert_static(offsetTo(ArrQue_Iter, type) == offsetTo(ArrDeq_Iter, type));

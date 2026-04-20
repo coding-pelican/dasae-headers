@@ -1,3 +1,4 @@
+#if DEPRECATED_CODE
 /**
  * @copyright Copyright (c) 2025. Gyeongtae Kim.
  * @license   MIT License - see LICENSE file for details
@@ -89,10 +90,10 @@ extern "C" {
 #define comp_op__wrapLa$(_T_Callable, _laBlk...) ((_T_Callable)wrapLa(_laBlk))
 #define comp_op__wrapFn$(_T_Callable, _fnPtr...) ((_T_Callable)wrapFn(_fnPtr))
 
-#define comp_op__invoke(__callable, _callable, _Args...) blk({ \
+#define comp_op__invoke(__callable, _callable, _Args...) local_({ \
     let __callable = _callable; \
     typedef TypeOf(__callable.payload.fnPtr(_Args)) ReturnT; \
-    blk_return_(as$(ReturnT)( \
+    local_return_(as$(ReturnT)( \
         __callable.wraps_lambda \
             ? __callable.payload.laBlk(_Args) \
             : __callable.payload.fnPtr(_Args) \
@@ -117,7 +118,7 @@ fn_((sort_insertionSort_compat(meta_S base_sli, sort_CmpFn_compat callable))(voi
 }
 
 #define main_no_args 1
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/stream.h"
 
 // Original function pointer
@@ -160,10 +161,12 @@ fn_((main(void))(E$void) $guard) {
     // operate_fnptr(10, 5, lambda_add); // This would fail!
 
     return_(ok({}));
-} $unguarded_(fn);
+} $unguarded(fn);
 #endif /* EXAMPLE_USAGE */
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
 #endif /* core_Callable__included */
+
+#endif /* DEPRECATED_CODE */

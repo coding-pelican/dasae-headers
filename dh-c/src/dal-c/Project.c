@@ -3,8 +3,8 @@
 #include "dal-c-ext/dir.h"
 #include "dal-c-ext/file.h"
 #include "dal-c-ext/env.h"
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 // === PRIVATE HELPERS ===
@@ -258,7 +258,13 @@ static void dal_c_Project__parseLibDH(const char* path, dal_c_Project* proj) {
             const char* value = str_trim(eq + 1);
 
             if (strncmp(line, "path", key_len) == 0 && key_len == 4) {
-                current_lib->path = strdup(value);
+                bool is_abs = value[0] == '/' || value[0] == '\\'
+                              || (strlen(value) >= 2 && value[1] == ':');
+                if (!is_abs && proj->root) {
+                    current_lib->path = path_join(proj->root, value);
+                } else {
+                    current_lib->path = strdup(value);
+                }
             } else if (strncmp(line, "profile", key_len) == 0 && key_len == 7) {
                 current_lib->opts.profile = dal_c_Profile_parse(value);
             } else if (strncmp(line, dal_c_opt_link, key_len) == 0 && key_len == strlen(dal_c_opt_link)) {

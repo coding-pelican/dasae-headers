@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/mem/common.h"
 
 TEST_fn_("A_ref" $scope) {
@@ -9,7 +9,7 @@ TEST_fn_("A_ref" $scope) {
     try_(TEST_expect(sli.len == A_len(arr)));
     try_(TEST_expect(*A_at((arr)[0]) == 1));
     try_(TEST_expect(*A_at((arr)[9]) == 10));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 #include "dh/io/common.h"
 #include "dh/fs/File.h"
@@ -61,7 +61,7 @@ TEST_fn_("S_deref" $scope) {
     for (usize i = 0; i < sizeOf(i32); ++i) { test_io_printBits(out, A_getAt(to_bytes_const, i)); }
     test_io_feedLine(out);
 #endif /* UNUSED_CODE */
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 #if UNUSED_CODE
 #define mem_asBytes_useT$(_T...) \
@@ -91,5 +91,5 @@ TEST_fn_("mem_asBytes/toBytes_useT$(i32)" $scope) {
     let arr = mem_toBytes_i32(val);
     for (usize i = 0; i < sizeOf(i32); ++i) { test_io_printBits(out, A_getAt(arr, i)); }
     test_io_feedLine(out);
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 #endif /* UNUSED_CODE */

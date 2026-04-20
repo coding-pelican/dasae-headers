@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/stream.h"
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
@@ -19,4 +19,4 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
 
     return_ok({});
     $unused(args, a, b, c, d, e, f);
-} $unscoped_(fn);
+} $unscoped(fn);

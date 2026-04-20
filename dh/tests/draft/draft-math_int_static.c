@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 
 #define int_sq_static(_n...) \
     ((_n) * (_n))
@@ -148,17 +148,17 @@
 #include "dh/io/stream.h"
 
 // Static 변수 초기화
-static const u32 val_small = uint_sqrt_static(100);     // 10
+static const u32 val_small = uint_sqrt_static(100); // 10
 static const u32 val_medium = uint_sqrt_static(150000); // 387 (실제: 387.29)
 static const u32 val_large = uint_sqrt_static(1234567); // 1111 (실제: 1111.11)
-static const u32 val_prime = uint_sqrt_static(30);      // 5 (실제: 5.47 -> 정수버림 5)
+static const u32 val_prie = uint_sqrt_static(30); // 5 (실제: 5.47 -> 정수버림 5)
 static const u32 val_27 = uint_cbrt_static(27);
 
 fn_((someFunc(void))(void)) {
     io_stream_println(u8_l("SQRT(100)     = {:u}"), val_small);
     io_stream_println(u8_l("SQRT(150000)  = {:u}"), val_medium);
     io_stream_println(u8_l("SQRT(1234567) = {:u}"), val_large);
-    io_stream_println(u8_l("SQRT(30)      = {:u}"), val_prime);
+    io_stream_println(u8_l("SQRT(30)      = {:u}"), val_prie);
     io_stream_println(u8_l("CBRT(27)      = {:u}"), val_27);
 
     // 배열 크기 선언

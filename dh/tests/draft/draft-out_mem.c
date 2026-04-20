@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 
 typedef struct m_OutVal {
     TypeInfo info;
@@ -19,8 +19,8 @@ fn_((someNeededSameStackMemFn(m_OutVal* out_val))(m_OutVal*)) {
         TypeInfo info;
         u8* bytes;
     } value = { .info = out_val->info, .bytes = alloca(out_val->info.size) };
-    prim_memset(value.bytes, 0xAA, out_val->info.size);
-    prim_memcpy(out_val->bytes, value.bytes, out_val->info.size);
+    pri_memset(value.bytes, 0xAA, out_val->info.size);
+    pri_memcpy(out_val->bytes, value.bytes, out_val->info.size);
     return out_val;
 }
 
@@ -34,4 +34,5 @@ TEST_fn_("out_mem: test" $scope) {
         as$(TypeOf(typeUnit$(i32)()*)(someNeededSameStackMemFn(type)))->value;
     });
     try_(TEST_expect(a == as$(i32)(0xAAAAAAAA)));
-} $unscoped_(TEST_fn);
+}
+$unscoped(TEST_fn);

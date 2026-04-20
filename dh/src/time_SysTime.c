@@ -199,19 +199,19 @@ fn_((time_SysTime__unsupported_durationSinceChkd(time_SysTime later, time_SysTim
     let_ignore = later;
     let_ignore = earlier;
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_SysTime__unsupported_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
     let_ignore = lhs;
     let_ignore = rhs;
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_SysTime__unsupported_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
     let_ignore = lhs;
     let_ignore = rhs;
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_SysTime__unsupported_fromUnixEpoch(u64 secs))(time_SysTime)) {
     let_ignore = secs;
@@ -247,7 +247,7 @@ $static fn_((time_SysTime__windows_u64ToFiletime(u64 val))(FILETIME)) {
 };
 
 fn_((time_SysTime__windows_now(void))(time_SysTime)) {
-    var ft = lit0$((FILETIME));
+    var ft = l0$((FILETIME));
     GetSystemTimeAsFileTime(&ft);
     return (time_SysTime){ .impl = ft };
 };
@@ -261,7 +261,7 @@ fn_((time_SysTime__windows_durationSinceChkd(time_SysTime later, time_SysTime ea
     let diff_intervals = later_val - earlier_val;
     let nanos = diff_intervals * 100ull;
     return_some(time_Duration_fromNanos(nanos));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_SysTime__windows_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
     let lhs_val = time_SysTime__windows_filetimeToU64(lhs.impl);
@@ -270,7 +270,7 @@ fn_((time_SysTime__windows_addChkdDuration(time_SysTime lhs, time_Duration rhs))
         return_none();
     }
     return_some({ .impl = time_SysTime__windows_u64ToFiletime(lhs_val + intervals) });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_SysTime__windows_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
     let lhs_val = time_SysTime__windows_filetimeToU64(lhs.impl);
@@ -279,7 +279,7 @@ fn_((time_SysTime__windows_subChkdDuration(time_SysTime lhs, time_Duration rhs))
         return_none();
     }
     return_some({ .impl = time_SysTime__windows_u64ToFiletime(lhs_val - intervals) });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_SysTime__windows_fromUnixEpoch(u64 secs))(time_SysTime)) {
     let intervals = time_SysTime_intervals_to_unix_epoch + (secs * time_SysTime_intervals_per_sec);
@@ -306,7 +306,7 @@ fn_((time_SysTime__windows_ord(time_SysTime lhs, time_SysTime rhs))(cmp_Ord)) {
 
 #if plat_based_unix
 fn_((time_SysTime__unix_now(void))(time_SysTime)) {
-    var ts = lit0$((struct timespec));
+    var ts = l0$((struct timespec));
     clock_gettime(CLOCK_REALTIME, &ts);
     return (time_SysTime){ .impl = ts };
 };
@@ -323,7 +323,7 @@ fn_((time_SysTime__unix_durationSinceChkd(time_SysTime later, time_SysTime earli
     }
     let nanos = as$(u64)(diff_sec)*time_nanos_per_sec + as$(u64)(diff_nsec);
     return_some(time_Duration_fromNanos(nanos));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_SysTime__unix_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
     var result = lhs.impl;
@@ -334,7 +334,7 @@ fn_((time_SysTime__unix_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$
         result.tv_nsec -= as$(long)(time_nanos_per_sec);
     }
     return_some({ .impl = result });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_SysTime__unix_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
     var result = lhs.impl;
@@ -348,7 +348,7 @@ fn_((time_SysTime__unix_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$
         return_none();
     }
     return_some({ .impl = result });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((time_SysTime__unix_fromUnixEpoch(u64 secs))(time_SysTime)) {
     return (time_SysTime){

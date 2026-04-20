@@ -27,44 +27,69 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define enum_of$(/*(_Alias)(_value)*/...) \
-    pp_expand(pp_defer(block_inline__enum_of$)(comp_param__enum_of$ _value))
-#define comp_param__enum_of$(_value...) _value, pp_expand
-#define block_inline__enum_of$(_value...) as$(_Alias)(_value)
+#define $maps(...) , $_maps, __VA_ARGS__
 
-#define $fits ,
-#define variant_(/*(_Alias $fits _UnderlyingType)((_Enum)(_Type),...)*/...) \
-    pp_overload(__variant_, __VA_ARGS__)(__VA_ARGS__)
-#define __variant__1(...) \
-    __gen__variant_(__gen__variant___parseAlias __VA_ARGS__)
-#define __gen__variant_(...) __gen__variant___emit(__VA_ARGS__)
-#define __gen__variant___parseAlias(...) pp_overload(__gen__variant___parseAlias, __VA_ARGS__)(__VA_ARGS__)
-#define __gen__variant___parseAlias_0() , , __gen__variant___parsePairEnumTypeList
-#define __gen__variant___parseAlias_1(_Alias...) _Alias, , __gen__variant___parsePairEnumTypeList
-#define __gen__variant___parseAlias_2(_Alias, _UnderlyingType...) _Alias, _UnderlyingType, __gen__variant___parsePairEnumTypeList
-#define __gen__variant___parsePairEnumTypeList(_Pair_Enum_Type...) _Pair_Enum_Type
-#define __gen__variant___emit(_Alias, _EnumUnderlying, _Pair_Enum_Type...) \
+/*((_Alias) $T)*/
+/*((_Alias)(...))*/
+/*((_Alias $fits($packed))(...))*/
+/*((_Alias $fits($bits(8|16|32|64)))(...))*/
+/*((_Alias $maps(_Tag))(...))*/
+#define variant_(/*(_Alias <$fits(...)|$maps(_Tag)>)((_Enum)(_Type),...) <$T>*/...) \
+    __type__variant_(__VA_ARGS__)
+#define __type__variant_(...) \
+    pp_overload(__step__variant_, __VA_ARGS__)(____variant___parseAlias __VA_ARGS__)
+
+#define ____variant___parseAlias(...) __VA_ARGS__,
+#define ____variant___parsePairEnumTypeList(_Pair_Enum_Type...) _Pair_Enum_Type
+
+#define __step__variant__1(...) \
+    __gen__variant_(__VA_ARGS__)
+#define __gen__variant_(...) \
+    pp_overload(__gen__variant_, __VA_ARGS__)(__VA_ARGS__)
+#define __gen__variant__2(_Alias, _Pair_Enum_Type...) \
+    __gen__variant___emit$_fits(_Alias, , ____variant___parsePairEnumTypeList _Pair_Enum_Type)
+#define __gen__variant__4(_Alias, _Attr, _Attr_Ctx, _Pair_Enum_Type...) \
+    pp_cat(__gen__variant___emit, _Attr)(_Alias, _Attr_Ctx, ____variant___parsePairEnumTypeList _Pair_Enum_Type)
+
+#define __gen__variant___emit$_fits(_Alias, _Attr_Ctx, _Pair_Enum_Type...) \
     struct _Alias { \
-        enum _EnumUnderlying { \
+        enum _Attr_Ctx { \
             __gen__variant___emitEnumTags(_Pair_Enum_Type) \
         } tag; \
         union { \
-            __gen__variant___emitUnionPayloads(_Pair_Enum_Type) \
+            __gen__variant___emitUnionPayloads(pp_none(), _Pair_Enum_Type) \
         } payload; \
     }
+#define __gen__variant___emit$_maps(_Alias, _Attr_Ctx, _Pair_Enum_Type...) \
+    struct _Alias { \
+        _Attr_Ctx tag; \
+        union { \
+            __gen__variant___emitUnionPayloads(pp_some(_Attr_Ctx), _Pair_Enum_Type) \
+        } payload; \
+    }
+
 #define __gen__variant___emitEnumTags(_Pair_Enum_Type...) \
+    ____variant___emitEnumTags(_Pair_Enum_Type)
+#define ____variant___emitEnumTags(_Pair_Enum_Type...) \
     pp_foreach(__gen__variant___emitEnumTag, ~, _Pair_Enum_Type)
 #define __gen__variant___emitEnumTag(_$ignored, /*_Pair_Enum_Type*/...) __VA_OPT__( \
     pp_Tuple_get1st __VA_ARGS__, \
 )
-#define __gen__variant___emitUnionPayloads(_Pair_Enum_Type...) \
-    pp_foreach(__gen__variant___emitUnionPayload, ~, _Pair_Enum_Type)
-#define __gen__variant___emitUnionPayload(_$ignored, /*_Pair_Enum_Type*/...) __VA_OPT__( \
-    var_(pp_join($, tag, pp_Tuple_get1st __VA_ARGS__) $like_ref, pp_Tuple_get2nd __VA_ARGS__); \
+
+#define __gen__variant___emitUnionPayloads(_Opt_UnderlayEnum, _Pair_Enum_Type...) \
+    ____variant___emitUnionPayloads(_Opt_UnderlayEnum, _Pair_Enum_Type)
+#define ____variant___emitUnionPayloads(_Opt_UnderlayEnum, _Pair_Enum_Type...) \
+    pp_foreach(__gen__variant___emitUnionPayload, _Opt_UnderlayEnum, _Pair_Enum_Type)
+#define __gen__variant___emitUnionPayload(_Opt_UnderlayEnum, /*_Pair_Enum_Type*/...) __VA_OPT__( \
+    var_(pp_join($, tag, pp_Tuple_get1st __VA_ARGS__), pp_Tuple_get2nd __VA_ARGS__); \
+    claim_assert_static( \
+        pp_Tuple_get1st __VA_ARGS__ \
+        == as$(pp_orelse_((_Opt_UnderlayEnum)(TypeOf(pp_Tuple_get1st __VA_ARGS__))))(pp_Tuple_get1st __VA_ARGS__) \
+    ); /* claim_assert_static(pp_Tuple_get1st __VA_ARGS__ == pp_join($, enum, pp_Tuple_get1st __VA_ARGS__)); */ \
 )
-#define __variant__2(...) __gen__variant_raw(__gen__variant_raw__parseAlias __VA_ARGS__)
+
+#define __step__variant__2(...) __gen__variant_raw(__VA_ARGS__)
 #define __gen__variant_raw(_Alias, _$T...) struct _Alias
-#define __gen__variant_raw__parseAlias(_Alias...) _Alias
 
 #define union_of(/*(_Enum){ _payload... }*/...) \
     __op__union_of(__op__union_of__parseEnum __VA_ARGS__)
@@ -73,122 +98,143 @@ extern "C" {
 #define __op__union_of__emit(_Enum, _payload...) \
     { \
         .tag = _Enum, \
-        .payload = { .pp_join($, tag, _Enum) $like_deref = _payload }, \
+        .payload = { .pp_join($, tag, _Enum) = _payload }, \
     }
 #define union_of$(/*(_Alias)(_Enum){ _payload... }*/...) \
     __op__union_of$(__op__union_of$__parseAlias __VA_ARGS__)
 #define __op__union_of$(...) __op__union_of$__emit(__VA_ARGS__)
 #define __op__union_of$__parseAlias(_Alias...) _Alias,
 #define __op__union_of$__emit(_Alias, _Enum_payload...) \
-    lit$((_Alias)union_of(_Enum_payload))
-
-#define variant_of(_tag, _payload...) \
-    comp_op__variant_of(_tag, _payload)
-#define variant_of$(T_variant, _tag, _payload...) \
-    comp_op__variant_of$(T_variant, _tag, _payload)
-#define variant_asg$(T_Variant, var_addr_variant, val_variant...) \
-    comp_op__variant_asg$(pp_uniqTok(var_addr_variant), T_Variant, var_addr_variant, val_variant)
-#define variant_asg(var_addr_variant, val_variant...) \
-    comp_op__variant_asg(var_addr_variant, val_variant)
-#define variant_as(_addr_variant, _tag...) \
-    comp_op__variant_as(pp_uniqTok(addr_variant), _addr_variant, _tag)
-#define variant_extract(_var_variant, _tag...) \
-    comp_op__variant_extract(pp_uniqTok(var_variant), _var_variant, _tag)
-
-#define match_(_Variant, _Body...) \
-    comp_syn__match_(_Variant, _Body)
-
-#define pattern_(_Tag, _Capture_w_Body...) \
-    pp_overload(__pattern, _Capture_w_Body)(_Tag, _Capture_w_Body)
-#define __pattern_1(_Tag, _Body...) \
-    comp_syn__pattern_1(_Tag, _Body)
-#define __pattern_2(_Tag, _Capture, _Body...) \
-    comp_syn__pattern_2(_Tag, _Capture, _Body)
-
-#define fallback_(_Body...) comp_syn__fallback_(_Body)
-
-/*========== Macros and Definitions =========================================*/
-
-#define comp_op__variant_of(_tag, _payload...) \
-    { \
-        .tag = _tag, \
-        .payload = { .pp_join($, tagged, _tag) = { [0] = _payload } }, \
-    }
-#define comp_op__variant_of$(T_variant, _tag, _payload...) \
-    ((T_variant)variant_of(_tag, _payload))
-#define comp_op__variant_asg$(__addr_variant, T_Variant, var_addr_variant, val_variant...) blk({ \
-    let __addr_variant = var_addr_variant; \
-    debug_assert_nonnull(__addr_variant); \
-    *__addr_variant = *(T_Variant[1]){ [0] = val_variant }; \
-    blk_return_(__addr_variant); \
-})
-#define comp_op__variant_asg(var_addr_variant, val_variant...) \
-    variant_asg$(TypeOf(*var_addr_variant), var_addr_variant, val_variant)
-#define comp_op__variant_as(__addr_variant, _addr_variant, _tag...) blk({ \
-    let __addr_variant = _addr_variant; \
-    debug_assert(__addr_variant->tag == _tag); \
-    blk_return_(__addr_variant->payload.pp_join($, tagged, _tag)); \
-})
-#define comp_op__variant_extract(__var_variant, _var_variant, _tag...) blk({ \
-    let __var_variant = _var_variant; \
-    debug_assert(__var_variant.tag == _tag); \
-    blk_return_(__var_variant.payload.pp_join($, tagged, _tag)[0]); \
+    l$((_Alias)union_of(_Enum_payload))
+#define union_with$(/*(_Alias)(_enum_val)(_payload_val)*/...) \
+    __op__union_with$(__op__union_with$__parseAlias __VA_ARGS__)
+#define __op__union_with$(...) __op__union_with$__emit(__VA_ARGS__)
+#define __op__union_with$__parseAlias(_Alias, ...) _Alias, __op__union_with$__parseEnum __VA_ARGS__
+#define __op__union_with$__parseEnum(_Enum...) _Enum,
+#define __op__union_with$__emit(_Alias, _enum_val, _payload_val...) l$((_Alias){ \
+    .tag = _enum_val, \
+    .payload = as$(FieldType$(_Alias, payload))(_payload_val), \
 })
 
-// #define match_(_Variant) \
-//     using_(let __variant = (_Variant)) switch (__variant.tag)
-#define comp_syn__match_(_Variant, _Body...) blk({ \
-    let __variant = _Variant; \
-    switch (__variant.tag) \
-        _Body \
+#define union_as(/*(_p_tagged)(_Enum)*/...) \
+    __op__union_as(__op__union_as__parsePTagged __VA_ARGS__)
+#define __op__union_as(...) __op__union_as__emit(__VA_ARGS__)
+#define __op__union_as__parsePTagged(_p_tagged...) pp_uniqTok(p_tagged), _p_tagged,
+#define __op__union_as__emit(__p_tagged, _p_tagged, _Enum...) local_({ \
+    let __p_tagged = _p_tagged; \
+    claim_assert(matches(*__p_tagged, _Enum)); \
+    local_return_(&__p_tagged->payload.pp_join($, tag, pp_if_(pp_isParen(_Enum))(pp_then_ _Enum, pp_else_(_Enum)))); \
+})
+#define union_to(/*(_tagged)(_Enum)*/...) \
+    __op__union_to(__op__union_to__parseTagged __VA_ARGS__)
+#define __op__union_to(...) __op__union_to__emit(__VA_ARGS__)
+#define __op__union_to__parseTagged(_tagged...) pp_uniqTok(tagged), _tagged,
+#define __op__union_to__emit(__tagged, _tagged, _Enum...) local_({ \
+    let __tagged = _tagged; \
+    claim_assert(matches(__tagged, _Enum)); \
+    local_return_(__tagged.payload.pp_join($, tag, pp_if_(pp_isParen(_Enum))(pp_then_ _Enum, pp_else_(_Enum)))); \
+})
+#define union_cast$(/*(_T)(_enum_val)(_tagged)*/...) \
+    __op__union_cast$(__op__union_cast$__parseT __VA_ARGS__)
+#define __op__union_cast$(...) __op__union_cast$__emit(__VA_ARGS__)
+#define __op__union_cast$__parseT(_T, ...) _T, __op__union_cast$__parseEnumVal __VA_ARGS__
+#define __op__union_cast$__parseEnumVal(_enum_val...) _enum_val, pp_uniqTok(tagged),
+#define __op__union_cast$__emit(_T, _enum_val, __tagged, _tagged...) local_({ \
+    let __tagged = _tagged; \
+    claim_assert(matches(__tagged, _enum_val)); \
+    local_return_(*ptrCast$((const _T*)(&__tagged.payload))); \
 })
 
-#define comp_syn__pattern_1(_Tag, _Body...) \
-    case _Tag: \
-        _Body
-#define comp_syn__pattern_2(_Tag, _Capture, _Body...) \
-    case _Tag: { \
-        let pp_Tuple_unwrap _Capture = __variant.payload.pp_join($, tag, _Tag); \
-        _Body; \
-    }
-
-#define comp_syn__fallback_(_Body...) \
-    default: \
-        _Body
+#define matches(_tagged, _Enum...) \
+    __expr__matches(_tagged, _Enum)
+#define __expr__matches(_tagged, _Enum...) \
+    pri_eql((_tagged).tag, _Enum)
 
 /* clang-format off */
-#undef match_
-#undef pattern_
-#undef case_
-#undef default_
-
-#define $end(_keyword) ; pp_cat($end_, _keyword)()
-
-#define match_(_vari...) { \
-    let __vari = _vari; \
-    switch (__vari.tag)
-#define $end_match() \
+#define match_(/*<$deref> (_tagged_val)|$ref (_tagged_ptr)*/...) __stmt__match_(__VA_ARGS__)
+#define __stmt__match_(...) pp_overload(__stmt__match_, __VA_ARGS__)(__VA_ARGS__)
+#define __stmt__match__1(_tagged_val...) __step__match_($deref _tagged_val)
+#define __stmt__match__2(_$opt, _tagged...) __step__match_(_$opt, _tagged)
+#define __step__match_(...) ____match_(__VA_ARGS__)
+#define ____match___tagged(_$opt...) pp_cat(____match___tagged, _$opt)
+#define ____match___tagged$_deref(_tagged_val...) &from$((TypeOf(_tagged_val))_tagged_val)
+#define ____match___tagged$_ref(_tagged_ptr...) _tagged_ptr
+#define ____match_(_$opt, _tagged...) { \
+    let __matching_tagged = ____match___tagged(_$opt)(_tagged); \
+    $attr($maybe_unused) \
+    T_alias$((MatchingType)(TypeOfUnqual(*__matching_tagged))); \
+    switch (__matching_tagged->tag)
+#define $end_match \
 }
 
-#define case_(_tag...) \
-case __step__case_ _tag: {
-#define __step__case_(...) __VA_ARGS__
-#define $end_case() \
+#define case_(/*(_Enum)*/...) __stmt__case_(__VA_ARGS__)
+#define __stmt__case_(...) __step__case_(__inline__case___parseEnum __VA_ARGS__)
+#define __inline__case___parseEnum(_Enum...) _Enum
+#define __step__case_(...) __inline__case_(__VA_ARGS__)
+#define __inline__case_(_Enum...) case _Enum: { \
+    $attr($maybe_unused) \
+    $static let __matched_enum = _Enum;
+#define $end_case \
 } break
 
-#define pattern_(/*(_tag)(_capture)*/...) __step__pattern_(__step__pattern___parseTag __VA_ARGS__)
+#define cases_(/*(_Enums...) stmts...*/...) __stmt__cases_(__VA_ARGS__)
+#define __stmt__cases_(...) __step__cases_(__inline__cases___parseEnums __VA_ARGS__)
+#define __inline__cases___parseEnums(_Enums...) (_Enums),
+#define __step__cases_(...) __inline__cases_(__VA_ARGS__)
+#define __inline__cases_(_Enums, ...) \
+    pp_foreach(__cases___stmt__each, (__VA_ARGS__), __cases___expand _Enums)
+#define __cases___stmt__each(_stmts, /*_Enum*/...) __VA_OPT__( \
+    __cases___step__each(__VA_ARGS__, __cases___expand _stmts) \
+)
+#define __cases___step__each(...) __cases___inline__each(__VA_ARGS__)
+#define __cases___inline__each(_Enum, stmts...) \
+    case_((_Enum)) stmts $end(case);
+#define __cases___expand(...) __VA_ARGS__
+#define $end_cases
+
+#define pattern_(/*(_Enum)(_capt)*/...) __step__pattern_(__step__pattern___parseEnum __VA_ARGS__)
 #define __step__pattern_(...) __step__pattern___emit(__VA_ARGS__)
-#define __step__pattern___parseTag(_tag...) _tag, __step__pattern___parseCapture
-#define __step__pattern___parseCapture(_capture...) _capture
-#define __step__pattern___emit(_tag, _capture...) \
-case _tag: { \
-    let _capture = pp_join($, __vari.payload.tag, _tag);
-#define $end_pattern() \
+#define __step__pattern___parseEnum(_Enum...) _Enum, __step__pattern___parseCapt
+#define __step__pattern___parseCapt(_capt...) pp_overload(__step__pattern___parseCapt, _capt)(_capt)
+#define __step__pattern___parseCapt_1(_capt...) $deref _capt
+#define __step__pattern___parseCapt_2(_$opt, _capt...) _$opt, _capt
+#define __step__pattern___capt(_$opt...) pp_cat(__step__pattern___capt, _$opt)
+#define __step__pattern___capt$_ref(_Enum...) union_as((__matching_tagged)(_Enum))
+#define __step__pattern___capt$_deref(_Enum...) union_to((*__matching_tagged)(_Enum))
+#define __step__pattern___emit(_Enum, _$opt, _capt...) case _Enum: { \
+    $attr($maybe_unused) \
+    $static let __matched_enum = _Enum; \
+    $attr($maybe_unused) \
+    T_alias$((MatchedType)(TypeOfUnqual(union_to((*__matching_tagged)(_Enum))))); \
+    let _capt = __step__pattern___capt(_$opt(_Enum));
+#define $end_pattern \
 } break
+
+#define patterns_(/*(_Enums...)(_capt) stmts...*/...) __step__patterns_(__step__patterns___parseEnums __VA_ARGS__)
+#define __step__patterns_(...) __step__patterns___emit(__VA_ARGS__)
+#define __step__patterns___parseEnums(_Enums...) (_Enums), __step__patterns___parseCapt
+#define __step__patterns___parseCapt(_capt...) (pp_overload(__step__patterns___parseCapt, _capt)(_capt)),
+#define __step__patterns___parseCapt_1(_capt...) $deref _capt
+#define __step__patterns___parseCapt_2(_$opt, _capt...) _$opt, _capt
+#define __step__patterns___emit(_Enums, ...) \
+    pp_foreach(__step__patterns___each, (__VA_ARGS__), __patterns___expand _Enums)
+#define __step__patterns___each(_$opt_w_capt_w_stmts, /*_Enum*/...) __VA_OPT__( \
+    __step__patterns___each_emit(__VA_ARGS__, __patterns___expand _$opt_w_capt_w_stmts) \
+)
+#define __step__patterns___each_emit(...) ____patterns___each(__VA_ARGS__)
+#define ____patterns___each(_Enum, _$opt_w_capt, stmts...) \
+    pattern_((_Enum)_$opt_w_capt) stmts $end(pattern);
+#define __patterns___expand(_Enum...) _Enum
+#define $end_patterns
 
 #define default_(...) default __VA_ARGS__: {
-#define $end_default() } break
+#define $end_default \
+} break
 /* clang-format on */
+
+#define matchedEnum() (__matched_enum)
+#define union_matched(/*{ _payload... }*/...) \
+    union_with$((MatchingType)(matchedEnum())from$((MatchedType)__VA_ARGS__))
 
 #if defined(__cplusplus)
 } /* extern "C" */

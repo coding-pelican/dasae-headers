@@ -144,17 +144,17 @@ typedef struct O$u_S$raw {
     const usize __len = _len; \
     const TypeInfo __type = _type; \
     const P$raw __mem = alloca(__len * __type.size); \
-    prim_memset(__mem, 0, __len * __type.size); \
-    lit$((u_A$raw){ .type = __type, .mem = __mem, .len = __len }); \
+    pri_memset(__mem, 0, __len * __type.size); \
+    l$((u_A$raw){ .type = __type, .mem = __mem, .len = __len }); \
 })
-#define u_prim_memcpyA(_dst, _src...) \
-    __u_prim_memcpyA__step(_dst, _src)
-#define __u_prim_memcpyA__step(...) \
-    __u_prim_memcpyA__emit(pp_uniqTok(dst), pp_uniqTok(src), __VA_ARGS__)
-#define __u_prim_memcpyA__emit(__dst, __src, _dst, _src...) ({ \
+#define u_pri_memcpyA(_dst, _src...) \
+    __u_pri_memcpyA__step(_dst, _src)
+#define __u_pri_memcpyA__step(...) \
+    __u_pri_memcpyA__emit(pp_uniqTok(dst), pp_uniqTok(src), __VA_ARGS__)
+#define __u_pri_memcpyA__emit(__dst, __src, _dst, _src...) ({ \
     const u_A$raw __dst = _dst; \
     const u_A$raw __src = _src; \
-    prim_memcpy(__dst.mem, __src.mem, __src.len * __src.type.size); \
+    pri_memcpy(__dst.mem, __src.mem, __src.len * __src.type.size); \
     __dst; \
 })
 #define u_copyA(_src...) \
@@ -163,11 +163,11 @@ typedef struct O$u_S$raw {
     __u_copyA__emit(pp_uniqTok(src), __VA_ARGS__)
 #define __u_copyA__emit(__src, _src...) ({ \
     const u_A$raw __src = _src; \
-    u_prim_memcpyA(u_allocA(__src.len, __src.type), __src); \
+    u_pri_memcpyA(u_allocA(__src.len, __src.type), __src); \
 })
 
 #define u_allocV(_type...) ((u_V$raw)u_allocA(1, _type))
-#define u_prim_memcpyV(_dst, _src...) ((u_V$raw)u_prim_memcpyA(_dst, _src))
+#define u_pri_memcpyV(_dst, _src...) ((u_V$raw)u_pri_memcpyA(_dst, _src))
 #define u_copyV(_src...) ((u_V$raw)u_copyA(_src))
 
 #define u_copyO(_src...) \
@@ -181,7 +181,7 @@ typedef struct O$u_S$raw {
         .payload = { .some = u_allocA(__src.payload.some.len, __src.payload.some.type) }, \
     }; \
     if (__dst.is_some) { \
-        prim_memcpy( \
+        pri_memcpy( \
             __dst.payload.some.mem, \
             __src.payload.some.mem, \
             __src.payload.some.len * __src.payload.some.type.size \
@@ -201,7 +201,7 @@ typedef struct O$u_S$raw {
         .payload = { .ok = u_allocA(__src.payload.ok.len, __src.payload.ok.type) }, \
     }; \
     if (__dst.is_ok) { \
-        prim_memcpy( \
+        pri_memcpy( \
             __dst.payload.ok.mem, \
             __src.payload.ok.mem, \
             __src.payload.ok.len * __src.payload.ok.type.size \
@@ -234,7 +234,7 @@ typedef struct O$u_S$raw {
                 TypeOfUnqual(_DefaultExpr_OR_Body), \
                 void: ({ \
                     $ignore_void _DefaultExpr_OR_Body; \
-                    lit$((TypeOf(__result.payload.some)){}); \
+                    l$((TypeOf(__result.payload.some)){}); \
                 }), \
                 default: _DefaultExpr_OR_Body \
             ); \
@@ -249,14 +249,14 @@ typedef struct O$u_S$raw {
 #define __u_castV$$__step(...) __u_castV$$__emit(__VA_ARGS__)
 #define __u_castV$$__parseT(_T...) _T, __u_castV$$__parseExpr
 #define __u_castV$$__parseExpr(_Expr...) _Expr
-#define __u_castV$$__emit(_T, _Expr...) (*as$(_T*)(prim_memcpy(&lit$((_T){}), (_Expr).mem, sizeOf$(_T))))
+#define __u_castV$$__emit(_T, _Expr...) (*as$(_T*)(pri_memcpy(&l$((_T){}), (_Expr).mem, sizeOf$(_T))))
 
 #define u_castA$$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __u_castA$$__step(__u_castA$$__parseT __VA_ARGS__)
 #define __u_castA$$__step(...) __u_castA$$__emit(__VA_ARGS__)
 #define __u_castA$$__parseT(_T...) _T, __u_castA$$__parseExpr
 #define __u_castA$$__parseExpr(_Expr...) _Expr
-#define __u_castA$$__emit(_T, _Expr...) (*as$(_T*)(prim_memcpy(&lit$((_T){}), (_Expr).mem, sizeOf$(_T))))
+#define __u_castA$$__emit(_T, _Expr...) (*as$(_T*)(pri_memcpy(&l$((_T){}), (_Expr).mem, sizeOf$(_T))))
 
 #define u_castP$$(/*(_T)(_Expr...)*/... /*(_T)*/) \
     __u_castP$$__step(__u_castP$$__parseT __VA_ARGS__)
@@ -277,7 +277,7 @@ typedef struct O$u_S$raw {
 #define __u_castO$$__step(...) __u_castO$$__emit(__VA_ARGS__)
 #define __u_castO$$__parseT(_T...) _T, __u_castO$$__parseExpr
 #define __u_castO$$__parseExpr(_Expr...) _Expr
-#define __u_castO$$__emit(_T, _Expr...) (*as$(_T*)(prim_memcpy(&lit$((_T){}), (_Expr).inner, sizeOf$(_T))))
+#define __u_castO$$__emit(_T, _Expr...) (*as$(_T*)(pri_memcpy(&l$((_T){}), (_Expr).inner, sizeOf$(_T))))
 
 #include <stdio.h>
 
@@ -294,10 +294,10 @@ int main(void) {
 
     var casted_ufoo = u_castV$$((Foo)(ufoo));
     var casted_some_ufoo = u_castV$$((Foo)(unwrap_(o_ufoo))); // Same as `u_copyV(unwrap_(o_ufoo)); as$(Foo*)(some_ufoo.mem);`
-    prim_memcpy(some_foo.name + some_foo.name_len, " It's Foo!", 11);
-    prim_memcpy(some_p_ufoo->name + some_p_ufoo->name_len, " It's meta Foo!", 16);
-    prim_memcpy(casted_ufoo.name + casted_ufoo.name_len, " It's casted Foo!", 18);
-    prim_memcpy(casted_some_ufoo.name + casted_some_ufoo.name_len, " It's casted some Foo!", 23);
+    pri_memcpy(some_foo.name + some_foo.name_len, " It's Foo!", 11);
+    pri_memcpy(some_p_ufoo->name + some_p_ufoo->name_len, " It's meta Foo!", 16);
+    pri_memcpy(casted_ufoo.name + casted_ufoo.name_len, " It's casted Foo!", 18);
+    pri_memcpy(casted_some_ufoo.name + casted_some_ufoo.name_len, " It's casted some Foo!", 23);
 
     u_P$raw u_p_foo = { .type = typeInfo$(TypeOf(foo)), .untyped = &copy(foo), .len = 1 };
     O$u_P$raw o_u_p_foo = { .is_some = true, .payload = { .some = u_p_foo } };
@@ -393,7 +393,7 @@ int main(void) {
     O$uVal o_val = ({
         let p_val = &(Bar){ .num1 = 1, .num2 = 41, .value1 = 3.0f, .value2 = 0.14f };
         let p_o_val = &(O$uVal){ .is_some = true, .payload.some = { .addr = alloca(sizeof(Bar)) } };
-        prim_memcpy(p_o_val->payload.some.addr, p_val, sizeof(Bar));
+        pri_memcpy(p_o_val->payload.some.addr, p_val, sizeof(Bar));
         *p_o_val;
     });
 
@@ -469,7 +469,7 @@ int main(void) {
         };
         u64 packed;
     } TypeInfo;
-    // #define typeInfo$(_T...) lit$((TypeInfo){ .size = sizeOf$(_T), .align = alignOf$(_T) })
+    // #define typeInfo$(_T...) l$((TypeInfo){ .size = sizeOf$(_T), .align = alignOf$(_T) })
 
     typedef struct Bar {
         int num1;

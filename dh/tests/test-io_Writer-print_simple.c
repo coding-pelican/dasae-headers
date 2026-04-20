@@ -17,7 +17,7 @@
 
 /*========== Includes =======================================================*/
 
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/Writer.h"
 #include "dh/fmt/common.h"
 #include <stdio.h>
@@ -32,13 +32,13 @@ $attr($must_check)
 $static fn_((test_Buf_VT_write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
     let self = as$(test_Buf*)(ctx);
     let remaining = self->data.len - self->pos;
-    let to_write = prim_min(bytes.len, remaining);
+    let to_write = pri_min(bytes.len, remaining);
     if (0 < to_write) {
-        prim_memcpyS(prefixS(suffixS(self->data, self->pos), to_write), bytes);
+        pri_memcpyS(prefixS(suffixS(self->data, self->pos), to_write), bytes);
         self->pos += to_write;
     }
     return_ok(to_write);
-} $unscoped_(fn);
+} $unscoped(fn);
 $static fn_((test_Buf_init(S$u8 data))(test_Buf)) {
     return (test_Buf){
         .data = data,
@@ -47,7 +47,7 @@ $static fn_((test_Buf_init(S$u8 data))(test_Buf)) {
 }
 $static fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
     claim_assert_nonnull(self);
-    return lit$((io_Writer){ .ctx = self, .write = test_Buf_VT_write });
+    return l$((io_Writer){ .ctx = self, .write = test_Buf_VT_write });
 }
 $attr($maybe_unused)
 $static fn_((test_Buf_clear(test_Buf* self))(void)) {
@@ -73,7 +73,7 @@ TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
 
     printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
     try_(TEST_expect(mem_eqlBytes(result, u8_l("42"))));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_simple: Character test" $scope) {
     T_use_A$(64, u8);
@@ -87,7 +87,7 @@ TEST_fn_("io_Writer-print_simple: Character test" $scope) {
 
     printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
     try_(TEST_expect(mem_eqlBytes(result, u8_l("A"))));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
     T_use_A$(64, u8);
@@ -101,4 +101,4 @@ TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
 
     printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
     try_(TEST_expect(mem_eqlBytes(result, u8_l("ff"))));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);

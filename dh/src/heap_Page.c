@@ -10,17 +10,17 @@ $static fn_((heap_Page__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
 /*========== External Definitions ===========================================*/
 
-fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator)) {
+fn_((heap_Page_alctr(heap_Page* self))(mem_Alctr)) {
     // VTable for Page allocator
-    $static const mem_Allocator_VT vt $like_ref = { {
+    $static const mem_Alctr_VTbl vtbl $like_ref = { {
         .alloc = heap_Page__alloc,
         .resize = heap_Page__resize,
         .remap = heap_Page__remap,
         .free = heap_Page__free,
     } };
-    return mem_Allocator_ensureValid((mem_Allocator){
+    return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,
-        .vt = vt,
+        .vtbl = vtbl,
     });
 };
 
@@ -48,7 +48,7 @@ fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     if (usize_limit - (mem_page_size - 1) < len) { return_none(); }
 
 #if plat_is_windows
-    // Windows allocation logic similar to zig's PageAllocator
+    // Windows allocation logic similar to zig's PageAlctr
     let addr = VirtualAlloc(
         null,
         len, // VirtualAlloc rounds to page size internally
@@ -120,7 +120,7 @@ fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     );
     return_some(map);
 #endif /* posix */
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let_ignore = ctx;
@@ -151,7 +151,7 @@ fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))
         return true;
     }
 
-    // Windows PageAllocator in zig doesn't support resize larger.
+    // Windows PageAlctr in zig doesn't support resize larger.
     // Returning false to indicate resize failure.
     return false;
 
@@ -195,7 +195,7 @@ fn_((heap_Page__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(
     }
 
 #if plat_is_windows
-    // Windows PageAllocator in zig doesn't support resize larger.
+    // Windows PageAlctr in zig doesn't support resize larger.
     return_none(); // Indicate remap failure, as resize up is not supported.
 
 #else /* posix */
@@ -219,7 +219,7 @@ fn_((heap_Page__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(
     // mremap is not available or failed, larger resize is not supported in this simple page allocator.
     return_none();
 #endif /* posix */
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((heap_Page__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let_ignore = ctx;

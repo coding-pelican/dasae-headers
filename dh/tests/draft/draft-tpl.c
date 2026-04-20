@@ -1,11 +1,11 @@
-#include "dh/main.h"
+#include "dh-main.h"
 
 /* Template Operators ========================================================*/
 
 #define P_ref
 #define P_deref
-#define P_makeRef(expr...)       (&*(TypeOf(expr)[1]){ [0] = expr })
-#define P_makeRef_mut(expr...)   (&*(TypeOfUnqual(expr)[1]){ [0] = expr })
+#define P_makeRef(expr...) (&*(TypeOf(expr)[1]){ [0] = expr })
+#define P_makeRef_mut(expr...) (&*(TypeOfUnqual(expr)[1]){ [0] = expr })
 #define P_makeRef_const(expr...) (&*(const TypeOf(expr)[1]){ [0] = expr })
 
 #define P_constCast
@@ -91,43 +91,43 @@
 
 /* Template Alias ===========================================================*/
 
-#define P_const$(T)  comp_tpl_alias__P_const$(T)
-#define P$(T)        comp_tpl_alias__P$(T)
+#define P_const$(T) comp_tpl_alias__P_const$(T)
+#define P$(T) comp_tpl_alias__P$(T)
 #define PZ_const$(T) comp_tpl_alias__PZ_const$(T)
-#define PZ$(T)       comp_tpl_alias__PZ$(T)
+#define PZ$(T) comp_tpl_alias__PZ$(T)
 
-#define S_const$(T)  comp_tpl_alias__S_const$(T)
-#define S$(T)        comp_tpl_alias__S$(T)
+#define S_const$(T) comp_tpl_alias__S_const$(T)
+#define S$(T) comp_tpl_alias__S$(T)
 #define SZ_const$(T) comp_tpl_alias__SZ_const$(T)
-#define SZ$(T)       comp_tpl_alias__SZ$(T)
+#define SZ$(T) comp_tpl_alias__SZ$(T)
 
 #define E$(T) comp_tpl_alias__E$(T)
 #define O$(T) comp_tpl_alias__O$(T)
 
-#define OP_const$(T)  comp_tpl_alias__OP_const$(T)
-#define OP$(T)        comp_tpl_alias__OP$(T)
+#define OP_const$(T) comp_tpl_alias__OP_const$(T)
+#define OP$(T) comp_tpl_alias__OP$(T)
 #define OPZ_const$(T) comp_tpl_alias__OPZ_const$(T)
-#define OPZ$(T)       comp_tpl_alias__OPZ$(T)
+#define OPZ$(T) comp_tpl_alias__OPZ$(T)
 
-#define OS_const$(T)  comp_tpl_alias__OS_const$(T)
-#define OS$(T)        comp_tpl_alias__OS$(T)
+#define OS_const$(T) comp_tpl_alias__OS_const$(T)
+#define OS$(T) comp_tpl_alias__OS$(T)
 #define OSZ_const$(T) comp_tpl_alias__OSZ_const$(T)
-#define OSZ$(T)       comp_tpl_alias__OSZ$(T)
+#define OSZ$(T) comp_tpl_alias__OSZ$(T)
 
 /* Template Instantiation ===================================================*/
 
-#define T_use_P$(T)  comp_tpl_inst__T_use$_P$(T)
+#define T_use_P$(T) comp_tpl_inst__T_use$_P$(T)
 #define T_use_PZ$(T) comp_tpl_inst__T_use$_PZ$(T)
 
-#define T_use_S$(T)  comp_tpl_inst__T_use$_S$(T)
+#define T_use_S$(T) comp_tpl_inst__T_use$_S$(T)
 #define T_use_SZ$(T) comp_tpl_inst__T_use$_SZ$(T)
 
 #define T_use_E$(T) comp_tpl_inst__T_use$_E$(T)
 #define T_use_O$(T) comp_tpl_inst__T_use$_O$(T)
 
-#define T_use_OP$(T)  comp_tpl_inst__T_use$_OP$(T)
+#define T_use_OP$(T) comp_tpl_inst__T_use$_OP$(T)
 #define T_use_OPZ$(T) comp_tpl_inst__T_use$_OPZ$(T)
-#define T_use_OS$(T)  comp_tpl_inst__T_use$_OS$(T)
+#define T_use_OS$(T) comp_tpl_inst__T_use$_OS$(T)
 #define T_use_OSZ$(T) comp_tpl_inst__T_use$_OSZ$(T)
 
 // usage:
@@ -145,24 +145,24 @@
 
 /* Implementation ===========================================================*/
 
-#define comp_tpl_alias__P_const$(T)   pp_join($, P_const, T)
-#define comp_tpl_alias__P$(T)         pp_join($, P, T)
-#define comp_tpl_alias__PZ_const$(T)  pp_join($, PZ_const, T)
-#define comp_tpl_alias__PZ$(T)        pp_join($, PZ, T)
-#define comp_tpl_alias__S_const$(T)   pp_join($, S_const, T)
-#define comp_tpl_alias__S$(T)         pp_join($, S, T)
-#define comp_tpl_alias__SZ_const$(T)  pp_join($, SZ_const, T)
-#define comp_tpl_alias__SZ$(T)        pp_join($, SZ, T)
-#define comp_tpl_alias__E$(T)         pp_join($, E, T)
-#define comp_tpl_alias__O$(T)         pp_join($, O, T)
-#define comp_tpl_alias__OP_const$(T)  pp_join($, OP_const, T)
-#define comp_tpl_alias__OP$(T)        pp_join($, OP, T)
+#define comp_tpl_alias__P_const$(T) pp_join($, P_const, T)
+#define comp_tpl_alias__P$(T) pp_join($, P, T)
+#define comp_tpl_alias__PZ_const$(T) pp_join($, PZ_const, T)
+#define comp_tpl_alias__PZ$(T) pp_join($, PZ, T)
+#define comp_tpl_alias__S_const$(T) pp_join($, S_const, T)
+#define comp_tpl_alias__S$(T) pp_join($, S, T)
+#define comp_tpl_alias__SZ_const$(T) pp_join($, SZ_const, T)
+#define comp_tpl_alias__SZ$(T) pp_join($, SZ, T)
+#define comp_tpl_alias__E$(T) pp_join($, E, T)
+#define comp_tpl_alias__O$(T) pp_join($, O, T)
+#define comp_tpl_alias__OP_const$(T) pp_join($, OP_const, T)
+#define comp_tpl_alias__OP$(T) pp_join($, OP, T)
 #define comp_tpl_alias__OPZ_const$(T) pp_join($, OPZ_const, T)
-#define comp_tpl_alias__OPZ$(T)       pp_join($, OPZ, T)
-#define comp_tpl_alias__OS_const$(T)  pp_join($, OS_const, T)
-#define comp_tpl_alias__OS$(T)        pp_join($, OS, T)
+#define comp_tpl_alias__OPZ$(T) pp_join($, OPZ, T)
+#define comp_tpl_alias__OS_const$(T) pp_join($, OS_const, T)
+#define comp_tpl_alias__OS$(T) pp_join($, OS, T)
 #define comp_tpl_alias__OSZ_const$(T) pp_join($, OSZ_const, T)
-#define comp_tpl_alias__OSZ$(T)       pp_join($, OSZ, T)
+#define comp_tpl_alias__OSZ$(T) pp_join($, OSZ, T)
 
 #define comp_tpl_inst__T_use$_P$(T) \
     typedef const $P$(T) P_const$(T); \
@@ -252,19 +252,20 @@
     } OSZ$(T)
 
 #define comp_tpl_inst__T_use$(_T, _List_Parenthesized) \
-    pp_foreach (__T_use$__each, _T, __T_use$__unwrap _List_Parenthesized)
+    pp_foreach(__T_use$__each, _T, __T_use$__unwrap _List_Parenthesized)
 // Macro to expand a single suffix with the type
 #define __T_use$__each(_T, _suffix) pp_cat3(T_use_, _suffix, $)(_T);
 // Helper macro to unwrap parenthesized arguments
-#define __T_use$__unwrap(_List...)  _List
+#define __T_use$__unwrap(_List...) _List
 
 /* Example usage ============================================================*/
 T_use$(i32, (P, PZ, S, SZ, E, O, OP, OPZ, OS, OSZ));
 
 fn_((sample(void))(E$i32) $scope) {
-    i32 x      = 123;
+    i32 x = 123;
     let_ignore = P_makeRef(x);
     let_ignore = P_makeRef_mut(x);
     let_ignore = P_makeRef_const(x);
     return_ok(x);
-} $unscoped_(fn);
+}
+$unscoped(fn);

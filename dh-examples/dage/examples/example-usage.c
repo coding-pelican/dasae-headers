@@ -10,19 +10,19 @@
  * @note run with `dh-c run example-usage.c --sample`
  */
 
-#include "dage.h"
-#include <dh/main.h>
+#include <dage.h>
+#include <dh-main.h>
 #include <dh/Rand.h>
 #include <dh/heap/Page.h>
 
 /*========== Simple Game State ==========*/
 
-typedef struct game_State {
-    m_V2f32 player_pos;
-    color_RGBA player_color;
-    bool running;
-    Rand rng;
-} game_State;
+T_alias$((game_State)(struct game_State {
+    var_(player_pos, m_V2f32);
+    var_(player_color, dacolor_RGBA);
+    var_(rng, Rand);
+    var_(is_running, bool);
+}));
 
 /*========== Event Handling ==========*/
 
@@ -32,34 +32,31 @@ $static fn_((game_handleEvent(dage_Window* win, game_State* game))(void)) {
         match_(event) {
         /* Window events */
         pattern_((dage_Event_close_request)($ignore)) {
-            game->running = false;
+            game->is_running = false;
         } $end(pattern);
 
-        pattern_((dage_Event_resize)(on_resize)) {
-            log_info(
-                "Window resized: %ux%u -> %ux%u",
-                on_resize->old_size.x, on_resize->old_size.y,
-                on_resize->new_size.x, on_resize->new_size.y
-            );
-        } $end(pattern);
+        pattern_((dage_Event_resize)(on_resize)) log_info(
+            "Window resized: {:u}x{:u} -> {:u}x{:u}",
+            on_resize.old_size.x, on_resize.old_size.y,
+            on_resize.new_size.x, on_resize.new_size.y
+        ) $end(pattern);
 
-        pattern_((dage_Event_focus)($ignore)) {
+        case_((dage_Event_focus)) {
             log_info("Window focused");
-        } $end(pattern);
-
-        pattern_((dage_Event_blur)($ignore)) {
+        } $end(case);
+        case_((dage_Event_blur)) {
             log_info("Window lost focus");
-        } $end(pattern);
+        } $end(case);
 
         /* Input events (optional - can use state queries instead) */
         pattern_((dage_Event_key_down)(on_key_down)) {
-            if (on_key_down->key == dage_KeyCode_esc) {
-                game->running = false;
+            if (on_key_down.key == dage_KeyCode_esc) {
+                game->is_running = false;
             }
 
             /* Change color on space */
-            if (on_key_down->key == dage_KeyCode_space) {
-                game->player_color = color_RGBA_fromOpaque(
+            if (on_key_down.key == dage_KeyCode_space) {
+                game->player_color = dacolor_RGBA_fromOpaque(
                     int_rem(Rand_next$u8(&game->rng), 255),
                     int_rem(Rand_next$u8(&game->rng), 255),
                     int_rem(Rand_next$u8(&game->rng), 255)
@@ -67,9 +64,7 @@ $static fn_((game_handleEvent(dage_Window* win, game_State* game))(void)) {
             }
         } $end(pattern);
 
-        default_() {
-            /* Ignore other events */
-        } $end(default);
+        default_()/* Ignore other events */ $end(default);
         } $end(match);
     };
 };
@@ -95,15 +90,15 @@ $static fn_((game_update(dage_Window* win, game_State* game, f32 dt))(void)) {
 
     /* Clamp to window bounds */
     let size = dage_Window_getSize(win);
-    game->player_pos.x = prim_clamp(game->player_pos.x, 0.0f, as$(f32)(size.x - 20));
-    game->player_pos.y = prim_clamp(game->player_pos.y, 0.0f, as$(f32)(size.y - 20));
+    game->player_pos.x = pri_clamp(game->player_pos.x, 0.0f, as$(f32)(size.x - 20));
+    game->player_pos.y = pri_clamp(game->player_pos.y, 0.0f, as$(f32)(size.y - 20));
 };
 
 /*========== Rendering ==========*/
 
 $static fn_((game_render(dage_Canvas* canvas, const game_State* game))(void)) {
     /* Clear */
-    dage_Canvas_clear(canvas, some$((O$color_RGBA)color_RGBA_black));
+    dage_Canvas_clear(canvas, some$((O$dacolor_RGBA)dacolor_RGBA_black));
 
     /* Draw player as filled rectangle */
     let x = as$(i32)(game->player_pos.x);
@@ -111,7 +106,7 @@ $static fn_((game_render(dage_Canvas* canvas, const game_State* game))(void)) {
     dage_Canvas_fillRect(canvas, x, y, x + 20, y + 20, game->player_color);
 
     /* Draw border */
-    dage_Canvas_drawRect(canvas, x, y, x + 20, y + 20, color_RGBA_white);
+    dage_Canvas_drawRect(canvas, x, y, x + 20, y + 20, dacolor_RGBA_white);
 };
 
 /*========== Main ==========*/
@@ -121,35 +116,35 @@ $static fn_((game_render(dage_Canvas* canvas, const game_State* game))(void)) {
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
     /* Setup allocator */
-    var page = (heap_Page){};
-    let gpa = heap_Page_allocator(&page);
+    var page = l0$((heap_Page));
+    let gpa = heap_Page_alctr(&page);
 
     /*
      * Step 1: Create Backend
      * User chooses the implementation - engine doesn't know/care
      */
 #if game__use_wsi_backend /* WSI Backend (native window) */
-    var wsi = try_(dage_core_WSI_init((dage_core_WSI_Cfg){
+    var wsi = try_(dage_Runtime_WSI_init(l$((dage_Runtime_WSI_Cfg){
         .gpa = gpa,
-    }));
-    defer_(dage_core_WSI_fini(&wsi));
-    let backend = dage_core_WSI_backend(wsi);
+    })));
+    defer_(dage_Runtime_WSI_fini(&wsi));
+    let backend = dage_Runtime_WSI_backend(wsi);
 #else /* VT100 Backend (terminal) */
-    var vt100 = try_(dage_core_VT100_init((dage_core_VT100_Cfg){
+    var vt100 = try_(dage_Runtime_VT100_init(l$((dage_Runtime_VT100_Cfg){
         .gpa = gpa,
-    }));
-    defer_(dage_core_VT100_fini(&vt100));
-    let backend = dage_core_VT100_backend(vt100);
+    })));
+    defer_(dage_Runtime_VT100_fini(&vt100));
+    let backend = dage_Runtime_VT100_backend(vt100);
 #endif
 
     /*
      * Step 2: Create Runtime with injected Backend
      * Runtime manages windows and coordinates everything
      */
-    var runtime = try_(dage_Runtime_init((dage_Runtime_Cfg){
+    var runtime = try_(dage_Runtime_init(l$((dage_Runtime_Cfg){
         .gpa = gpa,
         .backend = backend,
-    }));
+    })));
     defer_(dage_Runtime_fini(&runtime));
 
     /*
@@ -158,13 +153,13 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
      */
     let win_id = try_(dage_Runtime_createWindow(
         &runtime,
-        (dage_Runtime_WindowCfg){
+        l$((dage_Runtime_WindowCfg){
             .size = { .x = 640, .y = 480 },
-            .clear_color = some(color_RGBA_fromOpaque_static(0x18, 0x18, 0x18)),
+            .clear_color = some(dacolor_RGBA_fromOpaque_static(0x18, 0x18, 0x18)),
             .title = some(u8_l("Game Window")),
             .scale = 1.0f,
             .resizable = true,
-        }
+        })
     ));
 
     /* Get window pointer for convenience */
@@ -173,18 +168,18 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     /*
      * Step 4: Create game canvas and viewport
      */
-    var game_canvas = try_(dage_Canvas_init((dage_Canvas_Cfg){
+    var game_canvas = try_(dage_Canvas_init(l$((dage_Canvas_Cfg){
         .gpa = gpa,
         .width = 640,
         .height = 480,
-        .type = dage_CanvasType_rgba,
-    }));
+        .default_color = none(),
+    })));
     defer_(dage_Canvas_fini(&game_canvas, gpa));
 
     /* Add viewport that shows the game canvas */
     let vp_id = unwrap_(dage_Window_addViewport(
         win,
-        (dage_Viewport_Cfg){
+        l$((dage_Viewport_Cfg){
             .canvas = &game_canvas,
             .dst_rect = {
                 .pos = { .x = 0, .y = 0 },
@@ -193,17 +188,17 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
             .fit = dage_Viewport_Fit_stretch,
             .visible = true,
             .z_order = 0,
-        }
+        })
     ));
     let_ignore = vp_id;
 
     /*
      * Step 5: Initialize game state
      */
-    game_State game = {
+    var_(game, game_State) = {
         .player_pos = { .x = 310.0f, .y = 230.0f },
-        .player_color = color_RGBA_green,
-        .running = true,
+        .player_color = dacolor_RGBA_green,
+        .is_running = true,
         .rng = Rand_init(),
     };
 
@@ -213,7 +208,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let target_fps = 60.0f;
     let frame_time = 1.0f / target_fps;
 
-    while (game.running && !dage_Runtime_shouldQuit(&runtime)) {
+    while (game.is_running && !dage_Runtime_shouldQuit(&runtime)) {
         /*
          * 6a. Process Events
          * - Backend pumps OS events
@@ -255,7 +250,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     log_info("Game exited cleanly");
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 
 /*========== Multi-Window Example ==========*/
 
@@ -264,29 +259,29 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
  * @details Each window has its own input state - no confusion!
  */
 $attr($must_check $maybe_unused)
-$static fn_((example_multi_window(mem_Allocator gpa, dage_Backend backend))(E$void) $guard) {
-    var runtime = try_(dage_Runtime_init((dage_Runtime_Cfg){
+$static fn_((example_multi_window(mem_Alctr gpa, dage_Backend backend))(E$void) $guard) {
+    var runtime = try_(dage_Runtime_init(l$((dage_Runtime_Cfg){
         .gpa = gpa,
         .backend = backend,
-    }));
+    })));
     defer_(dage_Runtime_fini(&runtime));
 
     /* Create two windows */
     let win_a_id = try_(dage_Runtime_createWindow(
         &runtime,
-        (dage_Runtime_WindowCfg){
+        l$((dage_Runtime_WindowCfg){
             .size = { .x = 400, .y = 300 },
             .title = some(u8_l("Window A")),
-        }
+        })
     ));
 
     let win_b_id = try_(dage_Runtime_createWindow(
         &runtime,
-        (dage_Runtime_WindowCfg){
+        l$((dage_Runtime_WindowCfg){
             .size = { .x = 400, .y = 300 },
             .title = some(u8_l("Window B")),
 
-        }
+        })
     ));
 
     while (!dage_Runtime_shouldQuit(&runtime)) {
@@ -312,4 +307,4 @@ $static fn_((example_multi_window(mem_Allocator gpa, dage_Backend backend))(E$vo
     }
 
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);

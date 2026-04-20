@@ -9,7 +9,7 @@ $static fn_((windows_CloseHandle(HANDLE handle))(void)) {
 $static fn_((windows_ReadFile(HANDLE handle, S$u8 buf))(E$usize) $scope) {
     if_(DWORD bytes_read = 0, !ReadFile(handle, buf.ptr, as$(DWORD)(buf.len), &bytes_read, null)) {
         if_(let err = GetLastError(), err != ERROR_HANDLE_EOF && err != ERROR_BROKEN_PIPE) {
-            return_err(fs_File_Err_ReadFailed());
+            return_err(fs_File_E_ReadFailed());
         } else {
             return_ok(0); // EOF
         }
@@ -18,15 +18,15 @@ $static fn_((windows_ReadFile(HANDLE handle, S$u8 buf))(E$usize) $scope) {
         return_ok(as$(usize)(bytes_read));
     }
     claim_unreachable;
-} $unscoped_(fn);
+} $unscoped(fn);
 $static fn_((windows_WriteFile(HANDLE handle, S_const$u8 bytes))(E$usize) $scope) {
     if_(DWORD bytes_written = 0, !WriteFile(handle, bytes.ptr, as$(DWORD)(bytes.len), &bytes_written, null)) {
-        return_err(fs_File_Err_WriteFailed());
+        return_err(fs_File_E_WriteFailed());
     } else {
         return_ok(as$(usize)(bytes_written));
     }
     claim_unreachable;
-} $unscoped_(fn);
+} $unscoped(fn);
 #else /* plat_is_posix */
 #include <unistd.h>
 $static fn_((posix_close(posix_fd_t handle))(void)) {
@@ -34,24 +34,24 @@ $static fn_((posix_close(posix_fd_t handle))(void)) {
 }
 $static fn_((posix_read(posix_fd_t handle, S$u8 buf))(E$usize) $scope) {
     if_(let bytes_read = read(handle, buf.ptr, buf.len), bytes_read == -1) {
-        return_err(fs_File_Err_ReadFailed());
+        return_err(fs_File_E_ReadFailed());
     } else {
         return_ok(as$(usize)(bytes_read));
     }
     claim_unreachable;
-} $unscoped_(fn);
+} $unscoped(fn);
 $static fn_((posix_write(posix_fd_t handle, S_const$u8 bytes))(E$usize) $scope) {
     if_(let bytes_written = write(handle, bytes.ptr, bytes.len), bytes_written == -1) {
-        return_err(fs_File_Err_WriteFailed());
+        return_err(fs_File_E_WriteFailed());
     } else {
         return_ok(as$(usize)(bytes_written));
     }
     claim_unreachable;
-} $unscoped_(fn);
+} $unscoped(fn);
 #endif
 
 fn_((fs_File_close(fs_File file))(void)) {
-    return pp_if_(pp_Tok_eq(plat_type, plat_type_windows))(
+    return pp_if_(pp_Tok_eql(plat_type, plat_type_windows))(
         pp_then_(windows_CloseHandle),
         pp_else_(/* plat_is_posix */ posix_close))(file.handle);
 }

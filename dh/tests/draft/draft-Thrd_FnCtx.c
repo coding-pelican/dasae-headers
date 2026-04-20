@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/time.h"
 #include "dh/time/Duration.h"
 
@@ -21,7 +21,7 @@ typedef union FnCtx$demoThrd {
 } FnCtx$demoThrd;
 
 fn_((demoThrd(Thrd_FnCtx* ctx))(Thrd_FnRet*)) {
-    let self = as$(FnCtx$demoThrd *) ((ctx));
+    let self = as$(FnCtx$demoThrd*) ((ctx));
     let arg = self->arg;
 
     i32 cnt = 0;
@@ -41,4 +41,5 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     printf("direct_run: %d\n", direct_run);
 
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);

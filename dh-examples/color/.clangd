@@ -1,8 +1,0 @@
-CompileFlags:
-  Add:
-    - -I./color/src
-    - -I./color/include
-    - -isystem./color/lib/deps
-    - -I./dh-examples/color/src
-    - -I./dh-examples/color/include
-    - -isystem./dh-examples/color/lib/deps

@@ -25,145 +25,105 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* Type Size and Alignment */
-#define alignAs$(_T...) ____alignAs$(_T)
-#define alignOf$(_T... /*(mem_Log2Align)*/) ____alignOf$(_T)
-#define sizeOf$(_T... /*(usize)*/) ____sizeOf$(_T)
-#define countOf$(_T... /*(usize)*/) ____countOf$(_T)
+#define nameOf(_Tok...) __expr__nameOf(_Tok, #_Tok)
 
-/* Type Information */
-#define TypeOf(_Expr...) \
-    /** \
-     * @brief Get type of an expression at compile time \
-     * \
-     * @param _Expr Value or expression to get type of \
-     * @return Type of the expression \
-     */ \
-    ____TypeOf(_Expr)
-#define TypeOfUnqual(_Expr...) \
-    /** \
-     * @brief Get unqualified type of an expression at compile time \
-     * \
-     * @param _Expr Value or expression to get type of \
-     * @return Unqualified type of the expression \
-     */ \
-    ____TypeOfUnqual(_Expr)
+#define isComptimeExpr(_Expr... /*(bool)*/) __expr__isComptimeExpr(_Expr)
+#define isRuntimeExpr(_Expr... /*(bool)*/) __expr__isRuntimeExpr(_Expr)
 
-#define RefType$(_T_Val...) \
-    /** \
-     * @brief Get reference type of a container type at compile time \
-     * \
-     * @param _T_Val The value type \
-     * @return Reference type of the value \
-     */ \
-    ____RefType$(_T_Val)
-#define DerefType$(_T_Ptr...) \
-    /** \
-     * @brief Get dereference type of a container type at compile time \
-     * \
-     * @param _T_Ptr The pointer type \
-     * @return Dereference type of the container \
-     */ \
-    ____DerefType$(_T_Ptr)
-#define DerefTypeUnqual$(_T_Ptr...) \
-    /** \
-     * @brief Get dereference type of a container type at compile time \
-     * \
-     * @param _T_Ptr The pointer type \
-     * @return Dereference type of the pointer \
-     */ \
-    ____DerefTypeUnqual$(_T_Ptr)
+#define TypeOf(_Expr /*: T*/... /*(T)*/) __type__TypeOf(_Expr)
+#define TypeOfUnqual(_Expr /*: T*/... /*(Unqual(T))*/) __type__TypeOfUnqual(_Expr)
 
-#define Type_eq$(_T_Lhs, _T_Rhs...) \
-    /** \
-     * @brief Compare two types for equality \
-     * \
-     * @param _T_Lhs First type to compare \
-     * @param _T_Rhs Second type to compare \
-     * @return bool True if types are the same \
-     */ \
-    ____Type_eq$(_T_Lhs, _T_Rhs)
-#define Type_eqUnqual$(T_lhs, T_rhs...) \
-    /** \
-     * @brief Compare two types for equality \
-     * \
-     * @param _T_Lhs First type to compare \
-     * @param _T_Rhs Second type to compare \
-     * @return bool True if types are the same \
-     */ \
-    ____Type_eqUnqual$(_T_Lhs, _T_Rhs)
+#define null __val__null
+#define null$(_P_T...) __val__null$(_P_T)
 
-#define isCompTimeFoldable(_Expr...) \
-    /** \
-     * @brief Check if expression is compile-time constant \
-     * \
-     * @param _Expr Expression to check \
-     * @return bool True if constant expression \
-     */ \
-    ____isCompTimeFoldable(_Expr)
+#define $ref __capt__$ref
+#define raw_ref(_v /*: T*/... /*(P(T))*/) __expr__raw_ref(_v)
+#define RefType$(_T /*: T*/... /*(P(T))*/) __type__RefType$(_T)
+#define RefTypeUnqual$(_T /*: T*/... /*(P(Unqual(T)))*/) __type__RefTypeUnqual$(_T)
+
+#define $deref __capt__$deref
+#define raw_deref(_p /*: P(T)*/... /*(T)*/) __expr__raw_deref(_p)
+#define DerefType$(_P_T /*: P(T)*/... /*(T)*/) __type__DerefType$(_P_T)
+#define DerefTypeUnqual$(_P_T /*: P(T)*/... /*(Unqual(T))*/) __type__DerefTypeUnqual$(_P_T)
+
+#define eqlType$(_T_LHS /*: T*/, _T_RHS /*: U*/... /*(bool)*/) __expr__eqlType$(_T_LHS, _T_RHS)
+#define eqlTypeUnqual$(_T_LHS /*: T*/, _T_RHS /*: U*/... /*(bool)*/) __expr__eqlTypeUnqual$(_T_LHS, _T_RHS)
+
+#define neqType$(_T_LHS /*: T*/, _T_RHS /*: U*/... /*(bool)*/) __expr__neqType$(_T_LHS, _T_RHS)
+#define neqTypeUnqual$(_T_LHS /*: T*/, _T_RHS /*: U*/... /*(bool)*/) __expr__neqTypeUnqual$(_T_LHS, _T_RHS)
+
+#define sizeOf$(_T... /*(usize)*/) __expr__sizeOf$(_T)
+#define countOf$(_T... /*(usize)*/) __expr__countOf$(_T)
+
+#define alignOf$(_T... /*(usize)*/) __expr__alignOf$(_T)
+#define alignOfLog2$(_T... /*(u8)*/) __expr__alignOfLog2$(_T)
+
+#define $alignAs(_align /*: usize*/...) __attr__$alignAs(_align)
+#define $alignAsLog2(_log2_align /*: u8*/...) __attr__$alignAsLog2(_log2_align)
 
 /*========== Macros and Definitions =========================================*/
 
-#define ____alignAs$(_T...) _Alignas(1ull << alignOf$(_T))
-#if on_comptime
-#define ____alignOf$__expand(...) __VA_ARGS__
-#define ____alignOf$(_T...) $supress_pointer_arith( \
-    (as$(u8)( \
-        (64u - 1u) \
-        - as$(u32)(__builtin_clzll(____alignOf$__expand( \
-            T_switch$ pp_begin(_T)( \
-                T_case$((void)(as$(usize)(0))), \
-                T_default_(as$(usize)(_Alignof(_T))) \
-            ) pp_end \
-        ))) \
-    )) \
-)
-#else /* !on_comptime */
-#define ____alignOf$(_T...) $supress_pointer_arith( \
-    (as$(u8)((64u - 1u) - as$(u32)(__builtin_clzll(as$(usize)(_Alignof(_T)))))) \
-)
-#endif
-#define ____sizeOf$__expand(...) __VA_ARGS__
-#define ____sizeOf$(_T...) $supress_pointer_arith( \
-    (____sizeOf$__expand( \
-        T_switch$ pp_begin(_T)( \
-            T_case$((void)(as$(usize)(0))), \
-            T_default_(as$(usize)(sizeof(_T))) \
-        ) pp_end \
-    )) \
-)
-#define ____countOf$(_T...) (sizeOf$(_T) / sizeOf$(TypeOf((*as$(_T*)(null))[0])))
+#define __expr__nameOf(_Tok, _Str...) #_Str
 
-#define ____TypeOf(_Expr...) __typeof__(_Expr)
+#define __expr__isComptimeExpr(_expr...) bool_(__builtin_constant_p(_expr))
+#define __expr__isRuntimeExpr(_expr...) pri_not(isComptimeExpr(_expr))
+
+#define __type__TypeOf(_Expr...) __typeof__(_Expr)
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #if defined(__clang__) && __clang_major__ >= 16
 /* Clang >= 16.0 supports `__typeof_unqual__` */
-#define ____TypeOfUnqual(_Expr...) __typeof_unqual__(_Expr)
+#define __type__TypeOfUnqual(_Expr...) __typeof_unqual__(_Expr)
 #elif !defined(__clang__) && GCC_VERSION >= 130100
 /* GCC >= 13.1 supports `__typeof_unqual__` */
-#define ____TypeOfUnqual(_Expr...) __typeof_unqual__(_Expr)
+#define __type__TypeOfUnqual(_Expr...) __typeof_unqual__(_Expr)
 #else
 /* Fallback for no support of `__typeof_unqual__` */
-#define ____TypeOfUnqual(_Expr...) TypeOf((TypeOf(_Expr))(lit0$((TypeOf(_Expr)))))
+#define __type__TypeOfUnqual(_Expr...) TypeOf((TypeOf(_Expr))(l0$((TypeOf(_Expr)))))
 #endif
 
-#define ____RefType$(_T_Val...) TypeOf(_T_Val*)
-#define ____DerefType$(_T_Ptr...) TypeOf(*as$(_T_Ptr)(null))
-#define ____DerefTypeUnqual$(_T_Ptr...) TypeOfUnqual(*as$(_T_Ptr)(null))
+#define __val__null null$(void*)
+#define __val__null$(_P_T...) /* NOLINT(bugprone-casting-through-void) */ ((_P_T)0)
 
-#define ____Type_eq$(_T_Lhs, _T_Rhs...) __builtin_types_compatible_p(_T_Lhs, _T_Rhs)
-#define ____Type_eqUnqual$(_T_Lhs, _T_Rhs...) __builtin_types_compatible_p(TypeOfUnqual(_T_Lhs), TypeOfUnqual(_T_Rhs))
+#define __capt__$ref $_ref,
+#define __expr__raw_ref(_v...) (&(_v))
+#define __type__RefType$(_T...) TypeOf(_T*)
+#define __type__RefTypeUnqual$(_T...) RefType$(TypeOfUnqual(_T))
 
-#define ____isCompTimeFoldable(_Expr...) __builtin_constant_p(_Expr)
+#define __capt__$deref $_deref,
+#define __expr__raw_deref(_p...) (*(_p))
+#define __type__DerefType$(_P_T...) TypeOf(raw_deref(null$(_P_T)))
+#define __type__DerefTypeUnqual$(_P_T...) TypeOfUnqual(raw_deref(null$(_P_T)))
 
-#if defined(__cplusplus) || (defined(__STDC_VERSION__) && __STDC_VERSION__ < 202311L)
-#ifndef __cplusplus
-#define alignas _Alignas
-#define alignof _Alignof
-#endif /* !__cplusplus */
-#define __alignas_is_defined 1
-#define __alignof_is_defined 1
-#endif /* __STDC_VERSION__ */
+#define __expr__eqlType$(_T_LHS, _T_RHS...) __builtin_types_compatible_p(_T_LHS, _T_RHS)
+#define __expr__eqlTypeUnqual$(_T_LHS, _T_RHS...) eqlType$(TypeOfUnqual(_T_LHS), TypeOfUnqual(_T_RHS))
+
+#define __expr__neqType$(_T_LHS, _T_RHS...) (!eqlType$(_T_LHS, _T_RHS))
+#define __expr__neqTypeUnqual$(_T_LHS, _T_RHS...) (!eqlTypeUnqual$(_T_LHS, _T_RHS))
+
+#define __step__sizeOf$__expand(...) __VA_ARGS__
+#define __expr__sizeOf$(_T...) $supress_pointer_arith(__step__sizeOf$__expand( \
+    T_switch$ pp_begin(_T)( \
+        T_case$((void)(usize_(0))), \
+        T_default_(as$(usize)(sizeof(_T))) \
+    ) pp_end \
+))
+#define __expr__countOf$(_T...) ( \
+    !sizeOf$(_T) ? usize_(0) : (sizeOf$(_T) / sizeOf$(TypeOf(raw_deref(null$(RefType$(_T)))[0]))) \
+)
+
+#define __step__alignOf$__expand(...) __VA_ARGS__
+#define __expr__alignOf$(_T...) $supress_pointer_arith(__step__alignOf$__expand( \
+    T_switch$ pp_begin(_T)( \
+        T_case$((void)(usize_(1))), \
+        T_default_(as$(usize)((_Alignof(_T)))) \
+    ) pp_end \
+))
+#define __expr__alignOfLog2$(_T...) $supress_pointer_arith( \
+    (as$(u8)((64u - 1u) - as$(u32)(__builtin_clzll(alignOf$(_T))))) \
+)
+
+#define __attr__$alignAs(_align...) _Alignas(_align)
+#define __attr__$alignAsLog2(_log2_align...) _Alignas(usize_(1) << (_log2_align))
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -30,7 +30,7 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Error codes */
-errset_((TEST_Err)(Unexpected));
+errset_((TEST_E)(Unexpected));
 
 /* Test case function type */
 typedef fn_(((*)(void))(E$void) $T) TEST_CaseFn;
@@ -53,7 +53,7 @@ typedef struct TEST_Framework {
         u32 passed;
         u32 failed;
     } stats;
-    mem_Allocator gpa;
+    mem_Alctr gpa;
 } TEST_Framework;
 
 /// @brief Access test framework singleton instance
@@ -125,14 +125,14 @@ $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
         _ID_binder();
 #define comp_syn__$unscoped_TEST_fn \
         return_ok({});          \
-    } $unscoped
+    } $unscoped_fn
 
 #define comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn...) \
     $static fn_((_ID_caseFn(void))(E$void) $guard) {            \
         _ID_binder();
 #define comp_syn__$unguarded_TEST_fn \
         return_ok({});              \
-    } $unguarded
+    } $unguarded_fn
 // clang-format on
 
 #if on_comptime

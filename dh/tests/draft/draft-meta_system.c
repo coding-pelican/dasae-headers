@@ -346,7 +346,7 @@ struct E$raw {
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType1(__p_lhs, &__rhs); \
-    prim_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
+    pri_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 })
 #define asg$A2(_p_lhs, _rhs...) \
@@ -355,7 +355,7 @@ struct E$raw {
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType2(__p_lhs, &__rhs); \
-    prim_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
+    pri_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 })
 #define asg$A3(_p_lhs, _rhs...) \
@@ -364,7 +364,7 @@ struct E$raw {
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType3(__p_lhs, &__rhs); \
-    prim_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
+    pri_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 })
 #define asg$A4(_p_lhs, _rhs...) \
@@ -373,7 +373,7 @@ struct E$raw {
     let_(__p_lhs, TypeOf(&*_p_lhs)) = &*(_p_lhs); \
     var_(__rhs, TypeOf(_rhs))       = _rhs; \
     a_claim_assert_staticSameType4(__p_lhs, &__rhs); \
-    prim_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
+    pri_memcpy(__p_lhs, &__rhs, sizeOf$(TypeOf(*__p_lhs))); \
     __p_lhs; \
 }) */
 
@@ -883,14 +883,14 @@ typedef struct meta_E$raw {
 #define meta_create(_type...) ({ \
     const TypeInfo __type = _type; \
     const P$raw __ptr = alloca(__type.size); \
-    prim_memset(__ptr, 0, __type.size); \
+    pri_memset(__ptr, 0, __type.size); \
     ((meta_P$raw){ .type = __type, .ptr = __ptr }); \
 })
 #define meta_alloc(_type, _len...) ({ \
     const TypeInfo __type = _type; \
     const usize __len = _len; \
     const P$raw __ptr = alloca(__type.size * __len); \
-    prim_memset(__ptr, 0, __type.size * __len); \
+    pri_memset(__ptr, 0, __type.size * __len); \
     ((meta_S$raw){ .type = __type, .ptr = __ptr, .len = __len }); \
 })
 
@@ -1129,7 +1129,7 @@ int main(void) {
              .range_r = suffix$R(range, 3),
              .idx = 0,
          };
-         __state.idx < prim_min4(__state.sli_u.len, __state.sli_i.len, __state.sli_f.len, len$R(__state.range_r)); ++__state.idx) {
+         __state.idx < pri_min4(__state.sli_u.len, __state.sli_i.len, __state.sli_f.len, len$R(__state.range_r)); ++__state.idx) {
         let item_u = at$S(__state.sli_u, __state.idx);
         let item_i = at$S(__state.sli_i, __state.idx);
         let item_f = at$S(__state.sli_f, __state.idx);
@@ -1153,7 +1153,7 @@ int main(void) {
         const usize __s2_offset = 2;
         let __r3 = suffix$R(range, 3);
         const usize __r3_offset = 3;
-        let __len = prim_min4(len$S(__s0), len$S(__s1), len$S(__s2), len$R(__r3));
+        let __len = pri_min4(len$S(__s0), len$S(__s1), len$S(__s2), len$R(__r3));
         for (usize __i = 0; __i < __len; ++__i) {
             let item_u = at$S(__s0, __i);
             const usize idx_u = __i + __s0_offset;
@@ -1309,7 +1309,7 @@ int main(void) {
     pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
     pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters)
 #define __foreach_2_measureLen(__Names, _Iters...) \
-    prim_min2(pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters))
+    pri_min2(pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters))
 #define __foreach_2_captureIters(__i, __Names, _Iters...) \
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get1st _Iters)(__i, __foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get2nd _Iters)(__i, __foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters)
@@ -1337,7 +1337,7 @@ int main(void) {
     pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters); \
     pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters)
 #define __foreach_3_measureLen(__Names, _Iters...) \
-    prim_min3(pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters))
+    pri_min3(pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters))
 #define __foreach_3_captureIters(__i, __Names, _Iters...) \
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get1st _Iters)(__i, __foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get2nd _Iters)(__i, __foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters); \
@@ -1367,7 +1367,7 @@ int main(void) {
     pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters); \
     pp_overload(__foreach_initIter, __foreach_expandIter pp_Tuple_get4th _Iters)(__foreach_expandName pp_Tuple_get4th __Names, __foreach_expandIter pp_Tuple_get4th _Iters)
 #define __foreach_4_measureLen(__Names, _Iters...) \
-    prim_min4(pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get4th _Iters)(__foreach_expandName pp_Tuple_get4th __Names, __foreach_expandIter pp_Tuple_get4th _Iters))
+    pri_min4(pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get1st _Iters)(__foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get2nd _Iters)(__foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get3rd _Iters)(__foreach_expandName pp_Tuple_get3rd __Names, __foreach_expandIter pp_Tuple_get3rd _Iters), pp_overload(__foreach_lenMethod, __foreach_expandIter pp_Tuple_get4th _Iters)(__foreach_expandName pp_Tuple_get4th __Names, __foreach_expandIter pp_Tuple_get4th _Iters))
 #define __foreach_4_captureIters(__i, __Names, _Iters...) \
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get1st _Iters)(__i, __foreach_expandName pp_Tuple_get1st __Names, __foreach_expandIter pp_Tuple_get1st _Iters); \
     pp_overload(__foreach_captureIters, __foreach_expandIter pp_Tuple_get2nd _Iters)(__i, __foreach_expandName pp_Tuple_get2nd __Names, __foreach_expandIter pp_Tuple_get2nd _Iters); \
@@ -1381,12 +1381,12 @@ int main(void) {
     var_(range, R) = $r(3, 15);
 
     foreach_(($a(arr_u, (item_u))){
-        // try_(TEST_expect(Type_eq$(TypeOf(*item_u), u32)));
+        // try_(TEST_expect(eqlType$(TypeOf(*item_u), u32)));
         // io_stream_println(u8_l("item_u: {:u}\n"), *item_u);
     });
 
     foreach_(((range, (item_r))){
-        // try_(TEST_expect(Type_eq$(TypeOf(item_r), usize)));
+        // try_(TEST_expect(eqlType$(TypeOf(item_r), usize)));
         // io_stream_println(u8_l("item_r: {:zu}\n"), item_r);
     });
 
@@ -1396,13 +1396,13 @@ int main(void) {
         $s(suffix$A(arr_f, 2), (item_f, idx_f, 2)),
         (range, (item_r, idx_r))
     ){
-        // try_(TEST_expect(Type_eq$(TypeOf(*item_u), u32)));
+        // try_(TEST_expect(eqlType$(TypeOf(*item_u), u32)));
         // io_stream_println(u8_l("item_u[{:zu}]: {:u}\n"), idx_u, *item_u);
-        // try_(TEST_expect(Type_eq$(TypeOf(*item_i), i32)));
+        // try_(TEST_expect(eqlType$(TypeOf(*item_i), i32)));
         // io_stream_println(u8_l("item_i[{:zu}]: {:d}\n"), idx_i, *item_i);
-        // try_(TEST_expect(Type_eq$(TypeOf(*item_f), f32)));
+        // try_(TEST_expect(eqlType$(TypeOf(*item_f), f32)));
         // io_stream_println(u8_l("item_f[{:zu}]: {:f}\n"), idx_f, *item_f);
-        // try_(TEST_expect(Type_eq$(TypeOf(item_r), usize)));
+        // try_(TEST_expect(eqlType$(TypeOf(item_r), usize)));
         // io_stream_println(u8_l("item_r[{:zu}]: {:zu}\n"), idx_r, item_r);
     });
 
@@ -1598,7 +1598,7 @@ void better(void) {
     __for__initIter(__iter_id1, _iter1)
 #define __for_2__measureLen(...) __for_2__measureLenNext(__VA_ARGS__)
 #define __for_2__measureLenNext(__iter_id0, __iter_id1, _iter0, _iter1) \
-    prim_min2( \
+    pri_min2( \
         __for__lenIter(_iter0)(__iter_id0), \
         __for__lenIter(_iter1)(__iter_id1) \
     )
@@ -1624,7 +1624,7 @@ void better(void) {
     __for__initIter(__iter_id2, _iter2)
 #define __for_3__measureLen(...) __for_3__measureLenNext(__VA_ARGS__)
 #define __for_3__measureLenNext(__iter_id0, __iter_id1, __iter_id2, _iter0, _iter1, _iter2) \
-    prim_min3( \
+    pri_min3( \
         __for__lenIter(_iter0)(__iter_id0), \
         __for__lenIter(_iter1)(__iter_id1), \
         __for__lenIter(_iter2)(__iter_id2) \
@@ -1653,7 +1653,7 @@ void better(void) {
     __for__initIter(__iter_id3, _iter3)
 #define __for_4__measureLen(...) __for_4__measureLenNext(__VA_ARGS__)
 #define __for_4__measureLenNext(__iter_id0, __iter_id1, __iter_id2, __iter_id3, _iter0, _iter1, _iter2, _iter3) \
-    prim_min4( \
+    pri_min4( \
         __for__lenIter(_iter0)(__iter_id0), \
         __for__lenIter(_iter1)(__iter_id1), \
         __for__lenIter(_iter2)(__iter_id2), \
@@ -1800,25 +1800,25 @@ void better(void) {
     });
 }
 
-#undef lit$
-#define lit$(/*(_T){_initial...}*/... /*(_T)*/) \
-    __lit$__exec(pp_defer(__lit$__emit)(__lit$__sep __VA_ARGS__))
-#define __lit$__exec(...) __VA_ARGS__
-#define __lit$__sep(_T...) _T,
-#define __lit$__emit(_T, _initial...) __lit$__emitNext(_T, (_initial))
-#define __lit$__emitNext(_T, _initial...) \
-    ((_T)__lit$__expandInitial _initial)
-#define __lit$__expandInitial(_initial...) _initial
+#undef l$
+#define l$(/*(_T){_initial...}*/... /*(_T)*/) \
+    __l$__exec(pp_defer(__l$__emit)(__l$__sep __VA_ARGS__))
+#define __l$__exec(...) __VA_ARGS__
+#define __l$__sep(_T...) _T,
+#define __l$__emit(_T, _initial...) __l$__emitNext(_T, (_initial))
+#define __l$__emitNext(_T, _initial...) \
+    ((_T)__l$__expandInitial _initial)
+#define __l$__expandInitial(_initial...) _initial
 
-#undef make$
-#define make$(/*(_T){_initial...}*/... /*(_T)*/) \
-    __make$__exec(pp_defer(__make$__emit)(__make$__sep __VA_ARGS__))
-#define __make$__exec(...) __VA_ARGS__
-#define __make$__sep(_T...) _T,
-#define __make$__emit(_T, _initial...) __make$__emitNext(_T, (_initial))
-#define __make$__emitNext(_T, _initial...) \
-    (*lit$((_T[1]){ [0] = __make$__expandInitial _initial }))
-#define __make$__expandInitial(_initial...) _initial
+#undef from$
+#define from$(/*(_T){_initial...}*/... /*(_T)*/) \
+    __from$__exec(pp_defer(__from$__emit)(__from$__sep __VA_ARGS__))
+#define __from$__exec(...) __VA_ARGS__
+#define __from$__sep(_T...) _T,
+#define __from$__emit(_T, _initial...) __from$__emitNext(_T, (_initial))
+#define __from$__emitNext(_T, _initial...) \
+    (*l$((_T[1]){ [0] = __from$__expandInitial _initial }))
+#define __from$__expandInitial(_initial...) _initial
 
 #undef create$
 #define create$(/*(_T){_initial...}*/... /*(P$$(_T))*/) \
@@ -1827,7 +1827,7 @@ void better(void) {
 #define __create$__sep(_T...) _T,
 #define __create$__emit(_T, _initial...) __create$__emitNext(_T, (_initial))
 #define __create$__emitNext(_T, _initial...) \
-    (&make$((_T)__create$__expandInitial _initial))
+    (&from$((_T)__create$__expandInitial _initial))
 #define __create$__expandInitial(_initial...) _initial
 
 #undef type$
@@ -1838,21 +1838,21 @@ void better(void) {
 #define __type$__sep(_T...) _T, __type$__sepRaw
 #define __type$__sepRaw(_raw...) _raw
 #define __type$__emit(_T, _raw...) __type$__emitNext(_T, _raw)
-#define __type$__emitNext(_T, _raw...) make$((_T){ .as_raw = _raw })
+#define __type$__emitNext(_T, _raw...) from$((_T){ .as_raw = _raw })
 #define type$O$(/*(_T)(_raw...)*/... /*(_T)*/) \
     __type$O$__exec(pp_defer(__type$O$__emit)(__type$O$__sep __VA_ARGS__))
 #define __type$O$__exec(...) __VA_ARGS__
 #define __type$O$__sep(_T...) _T, __type$O$__sepRaw
 #define __type$O$__sepRaw(_raw...) _raw
 #define __type$O$__emit(_T, _raw...) __type$O$__emitNext(_T, _raw)
-#define __type$O$__emitNext(_T, _raw...) make$((O$(_T)){ .as_raw = _raw.as_raw })
+#define __type$O$__emitNext(_T, _raw...) from$((O$(_T)){ .as_raw = _raw.as_raw })
 #define type$E$(/*(_T)(_raw...)*/... /*(_T)*/) \
     __type$E$__exec(pp_defer(__type$E$__emit)(__type$E$__sep __VA_ARGS__))
 #define __type$E$__exec(...) __VA_ARGS__
 #define __type$E$__sep(_T...) _T, __type$E$__sepRaw
 #define __type$E$__sepRaw(_raw...) _raw
 #define __type$E$__emit(_T, _raw...) __type$E$__emitNext(_T, _raw)
-#define __type$E$__emitNext(_T, _raw...) make$((E$(_T)){ .as_raw = _raw.as_raw })
+#define __type$E$__emitNext(_T, _raw...) from$((E$(_T)){ .as_raw = _raw.as_raw })
 
 #undef tpl_id
 #define tpl_id$T(_id, _T) pp_join($, _id, _T)
@@ -1887,7 +1887,7 @@ tpl$S$(Foo);
         return type$((ArrList$(T))(ArrList_empty$raw(typeInfo$(T)))); \
     }
 #define tpl$ArrList_init$(T...) \
-    $static fn_((tpl_id$T(ArrList_init, T)(mem_Allocator allocator, usize cap))(E$(ArrList$(T)))) { \
+    $static fn_((tpl_id$T(ArrList_init, T)(mem_Alctr allocator, usize cap))(E$(ArrList$(T)))) { \
         return type$E$((ArrList$(T))(ArrList_init$raw(typeInfo$(T), allocator, cap))); \
     }
 #define tpl$ArrList_initBuf$(T...) \
@@ -1895,32 +1895,32 @@ tpl$S$(Foo);
         return type$((ArrList$(T))(ArrList_initBuf$raw(typeInfo$(T), metaMut$S(buf)))); \
     }
 #define tpl$ArrList_fini$(T...) \
-    $static fn_((tpl_id$T(ArrList_fini, T)(P$$(ArrList$(T)) self, mem_Allocator allocator))(void)) { \
+    $static fn_((tpl_id$T(ArrList_fini, T)(P$$(ArrList$(T)) self, mem_Alctr allocator))(void)) { \
         return ArrList_fini$raw(&self->as_raw, allocator); \
     }
 
-/* typedef struct mem_Allocator {
-} mem_Allocator;
+/* typedef struct mem_Alctr {
+} mem_Alctr;
 
 $inline_always
 fn_((ArrList_empty$raw(TypeInfo type))(ArrList$raw)) {
-    return make$((ArrList$raw){ .type = type, .items = { .ptr = null, .len = 0 }, .cap = 0 });
+    return from$((ArrList$raw){ .type = type, .items = { .ptr = null, .len = 0 }, .cap = 0 });
 }
 
 $inline_always
-fn_((ArrList_init$raw(TypeInfo type, mem_Allocator allocator, usize cap))(E$ArrList$raw) $scope) {
-    // let items = try_(mem_Allocator_alloc(allocator, type, cap));
+fn_((ArrList_init$raw(TypeInfo type, mem_Alctr allocator, usize cap))(E$ArrList$raw) $scope) {
+    // let items = try_(mem_Alctr_alloc(allocator, type, cap));
     // return_ok({ .type = type, .items = items, .cap = cap });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 $inline_always
 fn_((ArrList_initBuf$raw(TypeInfo type, meta_S$raw buf))(ArrList$raw)) {
-    return make$((ArrList$raw){ .type = type, .items = { .ptr = buf.ptr, .len = 0 }, .cap = buf.len });
+    return from$((ArrList$raw){ .type = type, .items = { .ptr = buf.ptr, .len = 0 }, .cap = buf.len });
 }
 
 $inline_always
-fn_((ArrList_fini$raw(ArrList$raw* self, mem_Allocator allocator))(void)) {
-    // mem_Allocator_free(allocator, meta_any(self->items));
+fn_((ArrList_fini$raw(ArrList$raw* self, mem_Alctr allocator))(void)) {
+    // mem_Alctr_free(allocator, meta_any(self->items));
 }
 
 tpl$ArrList$(Foo);

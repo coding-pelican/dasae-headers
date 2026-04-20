@@ -57,9 +57,11 @@ AlignConsecutiveMacros:
   PadOperators: false
   # PadOperators: true
 AlignConsecutiveShortCaseStatements:
-  Enabled: true
+  Enabled: false
+  # Enabled: true
   AcrossEmptyLines: false
-  AcrossComments: true
+  AcrossComments: false
+  # AcrossComments: true
   AlignCaseArrows: false
   AlignCaseColons: false
 AlignTrailingComments: false
@@ -67,7 +69,7 @@ SpacesBeforeTrailingComments: 1
 AlignEscapedNewlines: DontAlign
 AlignOperands: AlignAfterOperator
 AllowShortBlocksOnASingleLine: Always
-AllowShortIfStatementsOnASingleLine: Always
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLoopsOnASingleLine: true
 AllowShortCaseExpressionOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
@@ -110,6 +112,200 @@ BreakConstructorInitializers: BeforeComma
 
 PointerAlignment: Left
 SortIncludes: Never
+
+Macros:
+  - edittime_only(inner)="[](void) -> (void) inner"
+  - comptime_only(inner)="[](void) -> (void) inner"
+  - runtime_only(inner)="[](void) -> (void) inner"
+  - dev_only(inner)="[](void) -> (void) inner"
+  - debug_only(inner)="[](void) -> (void) inner"
+  - release_only(inner)="[](void) -> (void) inner"
+  - TEST_only(inner)="[](void) -> (void) inner"
+
+  - "pp_then_(Then)=Then"
+  - "pp_else_(Else)=Else"
+
+  - "pp_switch_(Expr)=pp_exec_ignore Expr"
+  - "pp_case_(Expr)=pp_exec_ignore Expr"
+  - "pp_default_(Expr)=pp_exec_ignore Expr"
+
+  - "T_switch$(Expr)=pp_exec_ignore Expr"
+  - "T_decl$(Expr)=pp_exec_ignore Expr"
+  - "T_impl$(Expr)=pp_exec_ignore Expr"
+  - "T_use$(Expr)=pp_exec_ignore Expr"
+
+  # - "let_(ident, T)=T const ident"
+  # - "var_(ident, T)=T ident"
+
+  - "$P_const$(T)=const T*"
+  - "$P$(T)=T*"
+  - "$A$(N,T)=T[N]"
+
+  - "P_const$$(T)=P<const T>"
+  - "P$$(T)=P<T>"
+  - "P_const$(T)=P<const T>"
+  - "P$(T)=P<T>"
+
+  - "S_const$$(T)=S<const T>"
+  - "S$$(T)=S<T>"
+  - "S_const$(T)=S<const T>"
+  - "S$(T)=S<T>"
+
+  - "A$$(N,T)=TypeOf(T[N])"
+  - "A$(N,T)=TypeOf(T[N])"
+
+  - "O$$(T)=O<T>"
+  - "O$(T)=O<T>"
+
+  - "E$$(T)=E<T>"
+  - "E$(T)=E<T>"
+
+  # Operators
+  - "n$(_T)=(_T)"
+  # - "n_"
+  - "l$(_T_Expr)=(_T_Expr)"
+  - "l0$(_T)=(_T)"
+  # - "initial$"
+  # - "initial_"
+  # - "cleared$"
+  # - "cleared_"
+  # - "copy_"
+  # - "move_"
+  # - "asg_"
+  # - "asg_l"
+  - "as$(_T)=(_T)"
+  # - "to$"
+  # - "into$"
+  - "from$(_T_Expr)=(_T_Expr)"
+  - "with_(_Expr)=pp_exec_ignore _Expr"
+
+  # Casting Operators
+  - "ptrToInt(_Expr)=(_Expr)"
+  - "intToPtr$(_Expr)=(_Expr)"
+  - "ptrCast$(_Expr)=(_Expr)"
+  - "ptrAlignCast$(_Expr)=(_Expr)"
+  - "ptrQualCast$(_Expr)=(_Expr)"
+  - "ptrAlignQualCast$(_Expr)=(_Expr)"
+  - "alignCast(_Expr)=(_Expr)"
+  - "bitCast$(_Expr)=(_Expr)"
+  - "intToBool$(_Expr)=(_Expr)"
+  - "boolToInt$(_Expr)=(_Expr)"
+  - "intCast$(_Expr)=(_Expr)"
+  - "intToFlt$(_Expr)=(_Expr)"
+  - "fltToInt$(_Expr)=(_Expr)"
+  - "fltCast$(_Expr)=(_Expr)"
+
+  # Function, Attribute, Scope
+  - "$attr(Attrs)=(void)Attrs;"
+  - "$static=static"
+  - "$extern=extern"
+  - "fn_(Expr)=static Expr"
+  # - "la_(Expr)=[]Expr"
+  - "$un(keyword)=/**/pp_exec_expand"
+  - "$unscoped(keyword)=/**/"
+  - "$unguarded(keyword)=/**/"
+  - "$end(keyword)=/**/"
+  - "$deferral(keyword)=/**/"
+
+  # Switch, Match
+  - "enum_(_Expr)=pp_exec_ignore _Expr"
+  - "variant_(_Expr)=pp_exec_ignore _Expr"
+  - "switch_(init_cond)=switch (init_cond)"
+  - "match_(_Expr)=switch (_Expr)"
+  - "case_(_Enum)=case _Enum:"
+  - "cases_(_Enums)=case _Enum: { pp_exec_expand(_Enums); }"
+  - "pattern_(_Enum)=case _Enum:"
+  - "patterns_(_Enums)=case _Enum: { pp_exec_expand(_Enums); }"
+  - "default_(_Empty)=case _Empty otherwise:"
+
+  # Control flow
+  - "if_(init, cond)=if (init; cond)"
+  - "else_(init)=else if (init; true)"
+  - "while_(cond)=if (cond)"
+  - "for_(_Expr)=if (_Expr)"
+  - "hence_(_keyword)=_keyword"
+  - "loop_labeled(_label, _stmt)_label: _stmt"
+  - "pipe_(_Expr)=pp_exec_ignore _Expr"
+  - "chain$(_Expr)=pp_exec_ignore _Expr"
+
+  # Optional value
+  - "if_some(_Expr)=if (_Expr)"
+  - "if_some_void(_Expr)=if (_Expr)"
+  - "else_none=else"
+  - "if_none(_Expr)=if (_Expr)"
+  - "else_some(_Expr)=else if (_Expr)"
+  - "else_some_void=else"
+  - "while_some(_expr)=if (_expr)"
+  - "while_none(_expr)=if (_expr)"
+
+  # Error result
+  - "errset_(_Expr)=pp_exec_ignore _Expr"
+  - "if_ok(_Expr)=if (_Expr)"
+  - "if_ok_void(_Expr)=if (_Expr)"
+  - "else_err(_Expr)=else if (_Expr)"
+  - "if_err(_Expr)=if (_Expr)"
+  - "else_ok(_Expr)=else if (_Expr)"
+  - "else_ok_void=else"
+  - "while_ok(_expr)=if (_expr)"
+  - "while_err(_expr)=if (_expr)"
+
+  # - "blk_defer={ do"
+  # - "blk_deferral=while(false); }"
+  # - "blk_defer=("
+  # - "blk_deferral=)"
+
+  # - "return_(Expr)=return Expr"
+  # - "return_void(Expr)=return Expr"
+
+  # - "return_some(Expr)=return Expr"
+  # - "return_some_void(Expr)=return Expr"
+  # - "return_none(Expr)=return Expr"
+
+  # - "return_ok(Expr)=return Expr"
+  # - "return_ok_void(Expr)=return Expr"
+  # - "return_err(Expr)=return Expr"
+
+  # - "$break_(Expr)=return Expr"
+  # - "$break_void(Expr)=return Expr"
+
+  # - "$break_some(Expr)=return Expr"
+  # - "$break_some_void(Expr)=return Expr"
+  # - "$break_none(Expr)=return Expr"
+
+  # - "$break_ok(Expr)=return Expr"
+  # - "$break_ok_void(Expr)=return Expr"
+  # - "$break_err(Expr)=return Expr"
+
+AttributeMacros:
+  - $attr
+
+  - $ignore_void
+  - $ignore
+
+  - $nullable
+  - $nonnull
+
+  - $fallthrough
+
+  # - $inline
+  # - $inline_always
+  # - $inline_never
+
+  # - $on_load
+  # - $on_exit
+
+  # - $keep_symbol
+  # - $maybe_unused
+  # - $must_use
+  # - $must_check
+  # - $no_return
+
+  # - $deprecated
+  # - $deprecated_msg
+  # - $deprecated_instead
+
+WhitespaceSensitiveMacros:
+  - pipe
 
 # TypeNames:
 #   # Inference
@@ -167,176 +363,3 @@ SortIncludes: Never
 #   # Legacy types
 #   - anyptr_const
 #   - anyptr
-
-Macros:
-  - edittime_only(inner)="[](void) -> (void) inner"
-  - comptime_only(inner)="[](void) -> (void) inner"
-  - runtime_only(inner)="[](void) -> (void) inner"
-  - dev_only(inner)="[](void) -> (void) inner"
-  - debug_only(inner)="[](void) -> (void) inner"
-  - release_only(inner)="[](void) -> (void) inner"
-  - TEST_only(inner)="[](void) -> (void) inner"
-
-  - "pp_then_(Then)=Then"
-  - "pp_else_(Else)=Else"
-
-  - "pp_switch_(Expr)=pp_exec_ignore Expr"
-  - "pp_case_(Expr)=pp_exec_ignore Expr"
-  - "pp_default_(Expr)=pp_exec_ignore Expr"
-
-  - "T_switch$(Expr)=pp_exec_ignore Expr"
-  - "T_decl$(Expr)=pp_exec_ignore Expr"
-  - "T_impl$(Expr)=pp_exec_ignore Expr"
-  - "T_use$(Expr)=pp_exec_ignore Expr"
-  - "enum_(Expr)=enum"
-  - "errset_(Expr)=pp_exec_ignore Expr"
-  - "variant_(Expr)=pp_exec_ignore Expr"
-  - "chain$(Expr)=pp_exec_ignore Expr"
-
-  # - "let_(ident, T)=T const ident"
-  # - "var_(ident, T)=T ident"
-
-  - "$P_const$(T)=const T*"
-  - "$P$(T)=T*"
-  - "$A$(N,T)=T[N]"
-
-  - "P_const$$(T)=P<const T>"
-  - "P$$(T)=P<T>"
-  - "P_const$(T)=P<const T>"
-  - "P$(T)=P<T>"
-
-  - "S_const$$(T)=S<const T>"
-  - "S$$(T)=S<T>"
-  - "S_const$(T)=S<const T>"
-  - "S$(T)=S<T>"
-
-  - "A$$(N,T)=TypeOf(T[N])"
-  - "A$(N,T)=TypeOf(T[N])"
-
-  - "O$$(T)=O<T>"
-  - "O$(T)=O<T>"
-
-  - "E$$(T)=E<T>"
-  - "E$(T)=E<T>"
-
-  - "as$(T)=(T)"
-  - "lit_n$(T)=(T)"
-  - "lit$(T_Expr)=(T_Expr)"
-  - "make$(T_Expr)=(T_Expr)"
-  - "create$(T_Expr)=(T_Expr)"
-  - "with_(_Expr)=pp_exec_ignore _Expr"
-
-  - "ptrToInt(_Expr)=(_Expr)"
-  - "intToPtr$(_Expr)=(_Expr)"
-  - "ptrCast$(_Expr)=(_Expr)"
-  - "ptrAlignCast$(_Expr)=(_Expr)"
-  - "ptrQualCast$(_Expr)=(_Expr)"
-  - "ptrAlignQualCast$(_Expr)=(_Expr)"
-  - "alignCast(_Expr)=(_Expr)"
-  - "bitCast$(_Expr)=(_Expr)"
-  - "intToBool$(_Expr)=(_Expr)"
-  - "boolToInt$(_Expr)=(_Expr)"
-  - "intCast$(_Expr)=(_Expr)"
-  - "intToFlt$(_Expr)=(_Expr)"
-  - "fltToInt$(_Expr)=(_Expr)"
-  - "fltCast$(_Expr)=(_Expr)"
-
-  - $attr(Attrs)=(void)Attrs;
-  # - $inline=__attribute__(());
-  # - $inline_always=__attribute__(());
-  # - $inline_never=__attribute__(());
-  # - $on_load=__attribute__(());
-  # - $on_exit=__attribute__(());
-  # - $keep_symbol=__attribute__(());
-  # - $maybe_unused=__attribute__(());
-
-  - $static=static
-  - $extern=extern
-  - "fn_(Expr)=static Expr"
-  # - "la_(Expr)=[]Expr"
-  - $un_(keyword)=/**/pp_exec_expand
-  - $unscoped_(keyword)=/**/
-  - $unguarded_(keyword)=/**/
-  # - "blk_defer={ do"
-  # - "blk_deferral=while(false); }"
-  # - "blk_defer=("
-  # - "blk_deferral=)"
-
-  # - "return_(Expr)=return Expr"
-  # - "return_void(Expr)=return Expr"
-
-  # - "return_some(Expr)=return Expr"
-  # - "return_some_void(Expr)=return Expr"
-  # - "return_none(Expr)=return Expr"
-
-  # - "return_ok(Expr)=return Expr"
-  # - "return_ok_void(Expr)=return Expr"
-  # - "return_err(Expr)=return Expr"
-
-  # - "$break_(Expr)=return Expr"
-  # - "$break_void(Expr)=return Expr"
-
-  # - "$break_some(Expr)=return Expr"
-  # - "$break_some_void(Expr)=return Expr"
-  # - "$break_none(Expr)=return Expr"
-
-  # - "$break_ok(Expr)=return Expr"
-  # - "$break_ok_void(Expr)=return Expr"
-  # - "$break_err(Expr)=return Expr"
-
-  # Control flow
-  - "if_(init, cond)=if (init; cond)"
-  - "else_(init)=else if (init; true)"
-  - "switch_(init_cond)=switch (init_cond)"
-  - "while_(init, cond)=while (init; cond)"
-  # Optional value
-  - "if_some(expr)=if (expr)"
-  - "if_some_void(expr)=if (expr)"
-  - "else_none=else"
-  - "if_none(expr)=if (expr)"
-  - "else_some(expr)=else if (expr)"
-  - "else_some_void=else"
-  # # Error result
-  - "if_ok(expr)=if (expr)"
-  - "if_ok_void(expr)=if (expr)"
-  - "else_err(expr)=else if (expr)"
-  - "if_err(expr)=if (expr)"
-  - "else_ok(expr)=else if (expr)"
-  - "else_ok_void=else"
-
-  - "match_(Expr)=switch (expr)"
-  - "pattern_(tag)=case tag:"
-  - "case_(tag)=case tag:"
-  - "default_(Expr)=case Expr otherwise:"
-  - "$end(keyword)=/**/"
-
-AttributeMacros:
-  - $attr
-
-  - $inline
-  - $inline_always
-  - $inline_never
-
-  - $on_load
-  - $on_exit
-
-  - $keep_symbol
-  - $maybe_unused
-  - $must_use
-  - $must_check
-  - $no_return
-
-  - $deprecated
-  - $deprecated_msg
-  - $deprecated_instead
-
-  - $ignore_void
-  - $ignore
-
-  - $nullable
-  - $nonnull
-
-  - $fallthrough
-
-WhitespaceSensitiveMacros:
-  - pipe

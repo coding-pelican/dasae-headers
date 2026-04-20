@@ -262,6 +262,9 @@ CMakeUserPresets.json
 *.temp*
 *.bak*
 *.backup*
+.message.txt
+.commit.txt
+.pull_request.txt
 
 # Temporary directories
 **/.tmp*/

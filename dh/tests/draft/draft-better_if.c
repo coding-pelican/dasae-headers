@@ -1,5 +1,5 @@
 #include "dh/prl.h"
-#include "dh/main.h"
+#include "dh-main.h"
 
 typedef struct Foo {
     i32 a;
@@ -143,4 +143,5 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     $done($some);
 
     return_ok({});
-} $unscoped_(fn);
+}
+$unscoped(fn);

@@ -15,31 +15,31 @@ $static fn_((heap_Fixed__sliContainsSli(S_const$u8 container, S_const$u8 sli))(b
 
 /*========== External Definitions ===========================================*/
 
-fn_((heap_Fixed_allocator(heap_Fixed* self))(mem_Allocator)) {
+fn_((heap_Fixed_alctr(heap_Fixed* self))(mem_Alctr)) {
     // VTable for Fixed buf allocator
-    $static const mem_Allocator_VT vt $like_ref = { {
+    $static const mem_Alctr_VTbl vtbl $like_ref = { {
         .alloc = heap_Fixed__alloc,
         .resize = heap_Fixed__resize,
         .remap = heap_Fixed__remap,
         .free = heap_Fixed__free,
     } };
-    return mem_Allocator_ensureValid((mem_Allocator){
+    return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,
-        .vt = vt,
+        .vtbl = vtbl,
     });
 };
 
-fn_((heap_Fixed_thrdSafeAllocator(heap_Fixed* self))(mem_Allocator)) {
+fn_((heap_Fixed_thrdSafeAlctr(heap_Fixed* self))(mem_Alctr)) {
     /* Thread-safe VTable for FixedBuf allocator */
-    $static const mem_Allocator_VT vt $like_ref = { {
+    $static const mem_Alctr_VTbl vtbl $like_ref = { {
         .alloc = heap_Fixed__thrdSafeAlloc,
-        .resize = mem_Allocator_VT_noResize,
-        .remap = mem_Allocator_VT_noRemap,
-        .free = mem_Allocator_VT_noFree,
+        .resize = mem_Alctr_VTbl_noResize,
+        .remap = mem_Alctr_VTbl_noRemap,
+        .free = mem_Alctr_VTbl_noFree,
     } };
-    return mem_Allocator_ensureValid((mem_Allocator){
+    return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,
-        .vt = vt,
+        .vtbl = vtbl,
     });
 };
 
@@ -95,7 +95,7 @@ fn_((heap_Fixed__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     // Update allocation position
     self->end_idx = new_end_index;
     return_some(intToPtr$((u8*)(aligned_addr)));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((heap_Fixed__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     claim_assert_nonnull(ctx);
@@ -135,7 +135,7 @@ fn_((heap_Fixed__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))
         return_some(buf.ptr);
     }
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((heap_Fixed__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     claim_assert_nonnull(ctx);
@@ -175,7 +175,7 @@ fn_((heap_Fixed__thrdSafeAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $
             atom_MemOrd_seq_cst, atom_MemOrd_seq_cst
         ))(return_some(intToPtr$((u8*)(aligned_addr)))));
     }
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((heap_Fixed__sliContainsPtr(S_const$u8 container, P_const$u8 ptr))(bool)) {
     let container_start = ptrToInt(container.ptr);

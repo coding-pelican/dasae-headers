@@ -23,13 +23,13 @@ fn_((sumFunctionalInlineRaw(S_const$i32 items))(i32)) {
 };
 
 fn_((sumFunctionalPrim(S_const$i32 items))(i32)) {
-    return fold$((i32)($s(items), (0), (acc, item)prim_add(acc, *item)));
+    return fold$((i32)($s(items), (0), (acc, item)pri_add(acc, *item)));
 };
 fn_((sumFunctionalPrimRaw(S_const$i32 items))(i32)) {
     return ({
         i32 acc = 0;
         for_(($s(items))(item) {
-            acc = prim_add(acc, *item);
+            acc = pri_add(acc, *item);
         });
         acc;
     });
@@ -82,7 +82,7 @@ fn_((sumFunctionalPrimRaw(S_const$i32 items))(i32)) {
 #define __step__fold___emit(...) __fold_(__VA_ARGS__)
 #define __fold_(_default, _acc, _p_e, _combine...) ({ \
     if (!__assigned_default) { \
-        asg_lit((&__reserved_acc)_default); \
+        asg_l((&__reserved_acc)_default); \
         __assigned_default = true; \
     } \
     let _acc = __reserved_acc; \
@@ -191,11 +191,11 @@ typedef enum chain__State : u8 {
 #define __step__fold___emit(...) __fold_(__VA_ARGS__)
 #define __fold_(_default, _acc, _p_e, _combine...) ({ \
     if (__chain_state != chain__State_eval) { \
-        asg_lit((&__reserved_acc)(_default)); \
+        asg_l((&__reserved_acc)(_default)); \
     } else { \
         let _acc = __reserved_acc; \
         let _p_e = __it; \
-        asg_lit((&__reserved_acc)_combine); \
+        asg_l((&__reserved_acc)_combine); \
     }; \
 })
 #define reduce_(/*(_acc, _p_e)_combine*/...) __step__reduce_(__VA_ARGS__)
@@ -204,15 +204,15 @@ typedef enum chain__State : u8 {
 #define __step__reduce___emit(...) __reduce_(__VA_ARGS__)
 #define __reduce_(_acc, _p_e, _combine...) ({ \
     if (__chain_state != chain__State_eval) { \
-        asg_lit((&__reserved_acc)(none())); \
+        asg_l((&__reserved_acc)(none())); \
     } else { \
         if (isNone(__reserved_acc)) { \
-            asg_lit((&__reserved_acc)(some(*__it))); \
+            asg_l((&__reserved_acc)(some(*__it))); \
             continue; \
         }; \
         let _acc = orelse_((__reserved_acc)(*__it)); \
         let _p_e = __it; \
-        asg_lit((&__reserved_acc)(some(_combine))); \
+        asg_l((&__reserved_acc)(some(_combine))); \
     }; \
 })
 
@@ -255,7 +255,7 @@ fn_((sumFunctionalFilterMapReduce(S_const$i32 items))(O$u32)) {
     return chain$((O$u32)(items)(
         filter_((x)(*x > 0)),
         map_((x)(as$(u32)(*x))),
-        reduce_((acc, item)(prim_min(acc, *item)))
+        reduce_((acc, item)(pri_min(acc, *item)))
     ));
 };
 
@@ -266,11 +266,11 @@ fn_((sumFunctionalFilterMapReduceInline(S_const$i32 items))(O$u32)) {
             if (!(*item > 0)) { continue; } // filter
             let x = as$(u32)(*item);
             if (isNone(__ret)) {
-                asg_lit((&__ret)(some(x)));
+                asg_l((&__ret)(some(x)));
                 continue;
             };
             let acc = orelse_((__ret)(x));
-            asg_lit((&__ret)(some(prim_min(acc, x))));
+            asg_l((&__ret)(some(pri_min(acc, x))));
         });
         __ret;
     });
@@ -297,11 +297,11 @@ fn_((sumFunctionalFilterMapReduceInline(S_const$i32 items))(O$u32)) {
                     let __curr = ({ // reduce
                         let x = __reserved;
                         if (isNone(__ret)) {
-                            asg_lit((&__ret)(some(x)));
+                            asg_l((&__ret)(some(x)));
                             continue;
                         };
                         let acc = orelse_((__ret)(x));
-                        asg_lit((&__ret)(some(prim_min(acc, x))));
+                        asg_l((&__ret)(some(pri_min(acc, x))));
                     });
                 }
             }

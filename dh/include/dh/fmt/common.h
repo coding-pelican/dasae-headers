@@ -100,7 +100,6 @@ extern "C" {
 
 #include "dh/fmt/cfg.h"
 #include "dh/io/Writer.h"
-#include <stdarg.h> /* For va_list, va_start(), va_end() */
 
 /*========== Macros and Declarations ========================================*/
 
@@ -128,11 +127,11 @@ errset_((fmt_Err)(
     InvalidFltFormat, // Floating-point formatting/parsing error
 ));
 
-typedef enum_(fmt_Align $bits(8)) {
+typedef enum_((fmt_Align $fits($packed))(
     fmt_Align_left = 0,
     fmt_Align_center = 1,
     fmt_Align_right = 2
-} fmt_Align;
+)) fmt_Align;
 T_use_O$(fmt_Align);
 $static let fmt_Align_default = fmt_Align_left;
 $static let_(fmt_Align_values, A$$(3, u8)) = A_init({
@@ -142,10 +141,10 @@ $static let_(fmt_Align_values, A$$(3, u8)) = A_init({
 });
 $extern fn_((fmt_Align_parse(u8 ch))(O$fmt_Align));
 
-typedef enum_(fmt_TypePrefix $bits(8)) {
+typedef enum_((fmt_TypePrefix $fits($packed))(
     fmt_TypePrefix_optional = 0,
     fmt_TypePrefix_error_result = 1,
-} fmt_TypePrefix;
+)) fmt_TypePrefix;
 T_use_O$(fmt_TypePrefix);
 $static let_(fmt_TypePrefix_values, A$$(2, u8)) = A_init({
     [fmt_TypePrefix_optional] = u8_c('?'),
@@ -153,7 +152,7 @@ $static let_(fmt_TypePrefix_values, A$$(2, u8)) = A_init({
 });
 $extern fn_((fmt_TypePrefix_parse(u8 ch))(O$fmt_TypePrefix));
 
-typedef enum_(fmt_Type $bits(8)) {
+typedef enum_((fmt_Type $fits($packed))(
     fmt_Type_hex_lower = 0,
     fmt_Type_hex_upper,
     fmt_Type_octal,
@@ -171,7 +170,7 @@ typedef enum_(fmt_Type $bits(8)) {
     fmt_Type_utf8_codepoint,
     fmt_Type_string_z0,
     fmt_Type_string_s,
-} fmt_Type;
+)) fmt_Type;
 T_use_O$(fmt_Type);
 $static let fmt_Type_values = A_from$((S_const$u8){
     [fmt_Type_hex_lower] = u8_l("x"),
@@ -194,14 +193,14 @@ $static let fmt_Type_values = A_from$((S_const$u8){
 });
 $extern fn_((fmt_Type_parse(S_const$u8 str))(O$fmt_Type));
 
-typedef enum_(fmt_Size $bits(8)) {
+typedef enum_((fmt_Size $fits($packed))(
     fmt_Size_8 = 0,
     fmt_Size_16 = 1,
     fmt_Size_32 = 2,
     fmt_Size_64 = 3,
     fmt_Size_128 = 4,
     fmt_Size_ptr = 5,
-} fmt_Size;
+)) fmt_Size;
 T_use_O$(fmt_Size);
 $static let fmt_Size_default = fmt_Size_32;
 $static let fmt_Size_values_default = u8_l("");
@@ -216,11 +215,11 @@ $static let fmt_Size_values = A_from$((S_const$u8){
 $extern fn_((fmt_Size_parse(S_const$u8 str))(O$fmt_Size));
 
 /// Sign display mode for numeric formatting
-typedef enum_(fmt_Sign $bits(8)) {
+typedef enum_((fmt_Sign $fits($packed))(
     fmt_Sign_auto = 0, // Only show sign for negative numbers (default)
     fmt_Sign_always, // Always show sign (+ or -)
     fmt_Sign_space, // Show space for positive, - for negative
-} fmt_Sign;
+)) fmt_Sign;
 
 typedef struct fmt_Spec {
     O$u8 index;

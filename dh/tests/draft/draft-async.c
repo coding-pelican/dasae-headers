@@ -14,7 +14,7 @@ static fn_((io_writeFmt(S$u8 stream, S_const$u8 format, ...))(E$usize) $guard) {
         as$(const char*)(format.ptr), args);
     if (written < 0) { return_err(E_Unexpected()); }
     return_ok(written);
-} $unguarded_(fn);
+} $unguarded(fn);
 
 static fn_((time_Duration_fmt(time_Duration self, S$u8 buf))(E$S_const$u8)) $must_check;
 static fn_((time_Duration_fmt(time_Duration self, S$u8 buf))(E$S_const$u8) $scope) {
@@ -77,7 +77,7 @@ static fn_((time_Duration_fmt(time_Duration self, S$u8 buf))(E$S_const$u8) $scop
         return_err(E_Unexpected());
     }
     return_ok(Str_slice(buf.as_const, 0, written));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 static fn_((time_SysTime_fmt(time_SysTime self, S$u8 buf))(E$S_const$u8) $scope) {
     // Get Unix timestamp in seconds
@@ -119,7 +119,7 @@ static fn_((time_SysTime_fmt(time_SysTime self, S$u8 buf))(E$S_const$u8) $scope)
         return_err(E_Unexpected());
     }
     return_ok(Str_slice(buf.as_const, 0, written));
-} $unscoped_(fn);
+} $unscoped(fn);
 #endif /* UNUSED_CODE */
 
 #include "dh/ArrPQue.h"
@@ -162,7 +162,7 @@ async_fn_scope(waitForTime, {}) {
 
         catch_((ArrPQue_enqueFixed$Task(
             &timer_queue,
-            lit$((Task){
+            l$((Task){
                 .frame = orelse_((args->caller)(ctx->anyraw)),
                 .expires = addDur(now(), fromMs(args->ms)),
             })
@@ -177,7 +177,7 @@ async_fn_scope(waitForTime, {}) {
         ptrToInt(ctx->base), args->name, ptrToInt(orelse_((args->caller)(ctx->anyraw)))
     );
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 // Coroutine: waitUntilAndPrint
 async_fn_(waitUntilAndPrint, (var_(caller, O$$(Co_Ctx*)); var_(time1, u64); var_(time2, u64); var_(name, S_const$u8);), Void);
@@ -236,9 +236,9 @@ async_fn_scope(waitUntilAndPrint, {
         args->name, ptrToInt(ctx->base)
     );
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/heap/Page.h"
 
 #if UNUSED_CODE
@@ -247,7 +247,7 @@ TEST_fn_("Test time_Duration sort" $guard) {
     T_use_ArrList$(time_Duration);
     var times = typeCast$((ArrList$time_Duration)(ArrList_init(
         typeInfo$(time_Duration),
-        heap_Page_allocator(&(heap_Page){})
+        heap_Page_alctr(&(heap_Page){})
     )));
     defer_(ArrList_fini(times.base));
     {
@@ -284,7 +284,7 @@ TEST_fn_("Test time_Duration sort" $guard) {
         io_stream_print(u8_l("\n"));
     }
     return_ok({});
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);
 #endif /* UNUSED_CODE */
 
 // asyncMain wrapper
@@ -295,7 +295,7 @@ async_fn_scope(asyncMain, {
     var_(iter_await, usize);
 }) {
     let_ignore = args;
-    asg_lit((&locals->tasks)(A_init({
+    asg_l((&locals->tasks)(A_init({
         [0] = *async_ctx((waitUntilAndPrint)(none(), 1000, 1200, u8_l("task-pair a"))),
         [1] = *async_ctx((waitUntilAndPrint)(none(), 500, 1300, u8_l("task-pair b"))),
     })));
@@ -307,7 +307,7 @@ async_fn_scope(asyncMain, {
     }
     io_stream_println(u8_l("debug: [asyncMain] all tasks completed"));
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 
 $static cmp_fn_ord$((Task)(lhs, rhs)) { return cmp_ord$(time_Instant)(lhs.expires, rhs.expires); }
@@ -321,11 +321,11 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     io_stream_print(u8_l("\n"));
 
     timer_queue = try_(ArrPQue_init$Task(
-        heap_Page_allocator(&(heap_Page){}), 32,
+        heap_Page_alctr(&(heap_Page){}), 32,
         Task_u_ordCtx,
         u_anyP(&(const Void){})
     ));
-    defer_(ArrPQue_fini$Task(&timer_queue, heap_Page_allocator(&(heap_Page){})));
+    defer_(ArrPQue_fini$Task(&timer_queue, heap_Page_alctr(&(heap_Page){})));
 
     var main_task = async_((asyncMain)());
     {
@@ -347,6 +347,6 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         resume_(delay.frame);
     }
 
-    nosuspend_(await_(resume_(main_task)));
+    no_suspend_(await_(resume_(main_task)));
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);

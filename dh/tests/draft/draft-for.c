@@ -1,15 +1,15 @@
 #if UNUSED_CODE
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/Arr.h"
 
 // #undef eval_
 // #define expr_(Expr...) ({ \
 //     Expr; \
 // })
-#define for$(T, _Range, _Iter, _Expr, _Else...) blk({ \
-    var_(__ret, T)          = {}; \
+#define for$(T, _Range, _Iter, _Expr, _Else...) local_({ \
+    var_(__ret, T) = {}; \
     var_(__is_broken, bool) = false; \
-    let_(__range, Range)    = Range_from _Range; \
+    let_(__range, Range) = Range_from _Range; \
     for (var_(__i, usize) = __range.begin; __i < __range.end; ++__i) { \
         let_(_Iter, usize) = __i; \
         _Expr; \
@@ -17,20 +17,20 @@
     __is_broken ? __ret : (T)_Else; \
 })
 // #undef break_
-#define break_(Expr...) blk({ \
-    __ret       = (TypeOf(__ret))Expr; \
+#define break_(Expr...) local_({ \
+    __ret = (TypeOf(__ret))Expr; \
     __is_broken = true; \
     break; \
 })
 
-// #define for$(T, _Range, _Iter, _Expr...) blk({                        \
+// #define for$(T, _Range, _Iter, _Expr...) local_({                        \
 //     var_(__ret, T)       = {};                                         \
 //     let_(__range, Range) = Range_from _Range;                          \
 //     for (var_(__i, usize) = __range.begin; __i < __range.end; ++__i) { \
 //         let_(_Iter, usize) = __i;                                      \
 //         _Expr;                                                         \
 //     }                                                                  \
-//     blk_return __ret;                                                 \
+//     local__return __ret;                                                 \
 // })
 
 TEST_fn_("test for" $scope) {
@@ -42,9 +42,9 @@ TEST_fn_("test for" $scope) {
     let res = eval_(i32 $scope)(for_($r(0, 10), i) {
         if (i == 5) { $break_(i); }
         continue;
-    }) eval_(else)({ $break_(0); }) $unscoped_(expr);
+    }) eval_(else)({ $break_(0); }) $unscoped(expr);
     try_(TEST_expect(res == 5));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("test for with break" $scope) {
     for_($r(0, 10), i) {
@@ -54,16 +54,16 @@ TEST_fn_("test for with break" $scope) {
 
     let res = eval_(O$i32 $scope)(for_($r(0, 10), i) {
         if (i == 5) { $break_(some(i)); }
-    }) eval_(else)({ $break_(some(-1)); }) $unscoped_(expr);
+    }) eval_(else)({ $break_(some(-1)); }) $unscoped(expr);
     try_(TEST_expect(unwrap(res) == 5));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /*
 #define __for_s__unwrap(_Tuple...) _Tuple
 #define __for_s__eachSli(_sli)    let pp_cat(__, _sli) = _sli
 #define __for_s__eachIter
 
-#define for_s(_Tuple_Sli, _Tuple_Iter, _Expr) blk({                           \
+#define for_s(_Tuple_Sli, _Tuple_Iter, _Expr) local_({                           \
     let_(__Tuple_sli, S$T) = _Tuple_Sli;                                     \
     let_(__Tuple_iter, T)    = _Tuple_Iter;                                    \
     for (var_(__i, usize) = __Tuple_sli.begin; __i < __Tuple_sli.end; ++__i) { \
@@ -165,7 +165,7 @@ fn_TEST_scope("test for slice") {
     let _s0 = pp_Tuple_get1st _Tuple_Slice; \
     for (usize _i = 0; _i < _s0.len; ++_i) { \
         const usize pp_Tuple_get2nd _Tuple_Capture = _i; \
-        let pp_Tuple_get1st         _Tuple_Capture = (_s0.ptr + pp_Tuple_get2nd _Tuple_Capture); \
+        let pp_Tuple_get1st _Tuple_Capture = (_s0.ptr + pp_Tuple_get2nd _Tuple_Capture); \
         _Expr; \
     } \
 })
@@ -191,8 +191,8 @@ fn_TEST_scope("test for slice") {
     debug_assert(_s0.len == _s1.len); \
     for (usize _i = 0; _i < _s0.len; ++_i) { \
         const usize pp_Tuple_get3rd _Tuple_Capture = _i; \
-        let pp_Tuple_get1st         _Tuple_Capture = (_s0.ptr + pp_Tuple_get3rd _Tuple_Capture); \
-        let pp_Tuple_get2nd         _Tuple_Capture = (_s1.ptr + pp_Tuple_get3rd _Tuple_Capture); \
+        let pp_Tuple_get1st _Tuple_Capture = (_s0.ptr + pp_Tuple_get3rd _Tuple_Capture); \
+        let pp_Tuple_get2nd _Tuple_Capture = (_s1.ptr + pp_Tuple_get3rd _Tuple_Capture); \
         _Expr; \
     } \
 })
@@ -223,9 +223,9 @@ fn_TEST_scope("test for slice") {
     debug_assert(_s1.len == _s2.len); \
     for (usize _i = 0; _i < _s0.len; ++_i) { \
         const usize pp_Tuple_get4th _Tuple_Capture = _i; \
-        let pp_Tuple_get1st         _Tuple_Capture = (_s0.ptr + pp_Tuple_get4th _Tuple_Capture); \
-        let pp_Tuple_get2nd         _Tuple_Capture = (_s1.ptr + pp_Tuple_get4th _Tuple_Capture); \
-        let pp_Tuple_get3rd         _Tuple_Capture = (_s2.ptr + pp_Tuple_get4th _Tuple_Capture); \
+        let pp_Tuple_get1st _Tuple_Capture = (_s0.ptr + pp_Tuple_get4th _Tuple_Capture); \
+        let pp_Tuple_get2nd _Tuple_Capture = (_s1.ptr + pp_Tuple_get4th _Tuple_Capture); \
+        let pp_Tuple_get3rd _Tuple_Capture = (_s2.ptr + pp_Tuple_get4th _Tuple_Capture); \
         _Expr; \
     } \
 })
@@ -281,22 +281,22 @@ TEST_fn_("test for slices" $scope) {
     for_s3i((s1, s2, s3), (e1, e2, e3, i), {
         printf("s1[%llu]: %d, s2[%llu]: %d, s3[%llu]: %d\n", i, *e1, i, *e2, i, *e3);
     });
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 TEST_fn_("test for slice with $ignore" $scope) {
-    A$$(10, i32) arr  = A_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
+    A$$(10, i32) arr = A_init({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 });
     const S$(i32) sli = A_slice$(S$(i32), arr, (0, 10));
     for_s1i((sli), ($ignore, i), {
         printf("%llu\n", i);
     });
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 typedef struct {
 } TypeHint$R;
 typedef struct R {
     TypeHint$R __hint;
-    usize      begin;
-    usize      end;
+    usize begin;
+    usize end;
 } R;
 #define $r(_begin, _end) ((R){ .begin = (_begin), .end = (_end) })
 
@@ -318,9 +318,9 @@ typedef struct R {
 // #define inline__eval_2(T, _keyword...) ({ T __reserved_break; bool __has_broken = false;
 // #define inline__$unscoped_expr() __reserved_break; })
 #define $break_(_Expr...) ({ \
-    prim_memcpy( \
+    pri_memcpy( \
         as$(u8*)(__reserved_break), \
-        as$(u8*)((TypeOf (*__reserved_break)[1]){ [0] = _Expr }), \
+        as$(u8*)((TypeOf(*__reserved_break)[1]){ [0] = _Expr }), \
         sizeOf$(*__reserved_break) \
     ); \
     __has_broken = true; \
@@ -336,7 +336,7 @@ typedef struct R {
 #define inline__eval_1(_keyword...) ; if (__has_broken) { goto __step_break; } _keyword
 #define inline__eval_2(T_Break, _Ext...) pp_cat(inline__eval_2, _Ext)(T_Break)
 #define inline__eval_2$_scope(T_Break...) ({ \
-    $local_label __step_break; \
+    local_label __step_break; \
     let __reserved_break = as$(T_Break*)(((u8[_Generic(T_Break, \
         void: 0, \
         default: sizeOf$(T_Break) \
@@ -354,12 +354,12 @@ typedef struct R {
 })
 // clang-format on
 
-#define $unscoped_(_keyword) \
+#define $unscoped(_keyword) \
     pp_cat(inline__$unscoped_, _keyword)()
-#define inline__$unscoped_fn()      $unscoped
-#define inline__$unscoped_(TEST_fn) () $unscoped_(TEST_fn)
-#define inline__$unscoped_blk()    $unscoped_eval
-#define inline__$unscoped_expr()    $unscoped_expr
+#define inline__$unscoped_fn() $unscoped
+#define inline__$unscoped(TEST_fn) () $unscoped(TEST_fn)
+#define inline__$unscoped_local_() $unscoped_eval
+#define inline__$unscoped_expr() $unscoped_expr
 
 
 #define $if_(_cond, _body...) \
@@ -374,7 +374,7 @@ TEST_fn_("test eval function" $scope) {
         if (i == key) { $break_(u8_l("second")); }
     }) eval_(else) {
         $break_(u8_l("third"));
-    } $unscoped_(expr);
+    } $unscoped(expr);
 
     let value_if = expr_(S_const$u8 $scope) if (false) {
         $break_(u8_l("first"));
@@ -384,8 +384,8 @@ TEST_fn_("test eval function" $scope) {
     }
     else {
         claim_unreachable;
-    } $unscoped_(expr);
+    } $unscoped(expr);
 
     try_(TEST_expect(Str_eql(value_for, value_if)));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 #endif /* UNUSED_CODE */

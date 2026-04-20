@@ -1,6 +1,6 @@
 #define main_no_args 1
 #define main_no_returns_err 1
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/io/stream.h"
 #include "dh/Str.h"
 

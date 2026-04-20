@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/heap/Page.h"
 #include "dh/opt.h"
 
@@ -45,7 +45,7 @@
 #define sync_mpsc_Sender$(T) pp_join($, sync_mpsc_Sender, T)
 #define sync_mpsc_Sender$$(T) \
     struct sync_mpsc_Sender$(T) { \
-        mem_Allocator allocator; \
+        mem_Alctr allocator; \
         P$$(sync_mpmc_Counter$(T)) \
         counter; \
     }
@@ -55,7 +55,7 @@
 #define sync_mpsc_Receiver$(T) pp_join($, sync_mpsc_Receiver, T)
 #define sync_mpsc_Receiver$$(T) \
     struct sync_mpsc_Receiver$(T) { \
-        mem_Allocator allocator; \
+        mem_Alctr allocator; \
         P$$(sync_mpmc_Counter$(T)) \
         counter; \
     }
@@ -78,12 +78,12 @@ typedef enum {
 
 // MPMC channel internal functions
 #define sync_mpmc_Channel_send$(T) pp_join($, sync_mpmc_Channel_send, T)
-#define sync_mpmc_Channel_send$$(T, _allocator, chan, value) ({ \
+#define sync_mpmc_Channel_send$$(T, _alctr, chan, value) ({ \
     sync_mpsc_SendResult result = SYNC_MPSC_SEND_DISCONNECTED; \
     if (!atomic_load(&(chan)->disconnected)) { \
         let new_node = meta_cast$( \
             P$$(sync_mpmc_Node$(T)), \
-            catch_((mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Node$(T))))($ignore, claim_unreachable)) \
+            catch_((mem_Alctr_create(_alctr, typeInfo$(sync_mpmc_Node$(T))))($ignore, claim_unreachable)) \
         ); \
         new_node->data = (value); \
         atomic_store(&new_node->next, null); \
@@ -95,7 +95,7 @@ typedef enum {
             pthread_cond_signal(&(chan)->recv_cond); \
             result = SYNC_MPSC_SEND_OK; \
         } else { \
-            mem_Allocator_destroy(_allocator, anyPtr(new_node)); \
+            mem_Alctr_destroy(_alctr, anyPtr(new_node)); \
         } \
         pthread_mutex_unlock(&(chan)->mutex); \
     } \
@@ -103,7 +103,7 @@ typedef enum {
 })
 
 #define sync_mpmc_Channel_tryRecv$(T) pp_join($, sync_mpmc_Channel_tryRecv, T)
-#define sync_mpmc_Channel_tryRecv$$(T, _allocator, chan) ({ \
+#define sync_mpmc_Channel_tryRecv$$(T, _alctr, chan) ({ \
     O$(T) \
     result = { .has_value = false }; \
 \
@@ -115,7 +115,7 @@ typedef enum {
         result.value = next->data; \
         result.has_value = true; \
         atomic_store(&(chan)->tail, next); \
-        mem_Allocator_destroy(_allocator, anyPtr(tail)); \
+        mem_Alctr_destroy(_alctr, anyPtr(tail)); \
     } \
     pthread_mutex_unlock(&(chan)->mutex); \
 \
@@ -123,7 +123,7 @@ typedef enum {
 })
 
 #define sync_mpmc_Channel_recv$(T) pp_join($, sync_mpmc_Channel_recv, T)
-#define sync_mpmc_Channel_recv$$(T, _allocator, chan) ({ \
+#define sync_mpmc_Channel_recv$$(T, _alctr, chan) ({ \
     O$(T) \
     result; \
 \
@@ -136,7 +136,7 @@ typedef enum {
             result.value = next->data; \
             result.has_value = true; \
             atomic_store(&(chan)->tail, next); \
-            mem_Allocator_destroy(_allocator, anyPtr(tail)); \
+            mem_Alctr_destroy(_alctr, anyPtr(tail)); \
             break; \
         } \
 \
@@ -163,18 +163,18 @@ typedef enum {
 
 // Channel creation function
 #define sync_mpsc_channel$(T) pp_join($, sync_mpsc_channel, T)
-#define sync_mpsc_channel$$(T, _allocator...) ({ \
+#define sync_mpsc_channel$$(T, _alctr...) ({ \
     /* Create dummy node for MPMC queue */ \
     let dummy = meta_cast$( \
         P$$(sync_mpmc_Node$(T)), \
-        catch_((mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Node$(T))))($ignore, claim_unreachable)) \
+        catch_((mem_Alctr_create(_alctr, typeInfo$(sync_mpmc_Node$(T))))($ignore, claim_unreachable)) \
     ); \
     atomic_store(&dummy->next, null); \
 \
     /* Create internal MPMC channel */ \
     let mpmc_chan = meta_cast$( \
         P$$(sync_mpmc_Channel$(T)), \
-        catch_((mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Channel$(T))))($ignore, claim_unreachable)) \
+        catch_((mem_Alctr_create(_alctr, typeInfo$(sync_mpmc_Channel$(T))))($ignore, claim_unreachable)) \
     ); \
     atomic_store(&mpmc_chan->head, dummy); \
     atomic_store(&mpmc_chan->tail, dummy); \
@@ -186,7 +186,7 @@ typedef enum {
     /* Create reference counter */ \
     let counter = meta_cast$( \
         P$$(sync_mpmc_Counter$(T)), \
-        catch_((mem_Allocator_create(_allocator, typeInfo$(sync_mpmc_Counter$(T))))($ignore, claim_unreachable)) \
+        catch_((mem_Alctr_create(_alctr, typeInfo$(sync_mpmc_Counter$(T))))($ignore, claim_unreachable)) \
     ); \
     atomic_store(&counter->senders, 1); \
     atomic_store(&counter->receivers, 1); \
@@ -194,8 +194,8 @@ typedef enum {
     counter->chan = mpmc_chan; \
 \
     sync_mpsc_Channel$(T) ch = { \
-        .sender = { .allocator = _allocator, .counter = counter }, \
-        .receiver = { .allocator = _allocator, .counter = counter } \
+        .sender = { .allocator = _alctr, .counter = counter }, \
+        .receiver = { .allocator = _alctr, .counter = counter } \
     }; \
     ch; \
 })
@@ -206,7 +206,7 @@ typedef enum {
     sync_mpsc_Sender_useT$(T); \
     sync_mpsc_Receiver_useT$(T); \
     sync_mpsc_Channel_useT$(T); \
-    fn_((sync_mpsc_channel$(T)(mem_Allocator allocator))(sync_mpsc_Channel$(T))) { \
+    fn_((sync_mpsc_channel$(T)(mem_Alctr allocator))(sync_mpsc_Channel$(T))) { \
         return sync_mpsc_channel$$(T, allocator); \
     }
 
@@ -261,15 +261,15 @@ typedef enum {
             sync_mpmc_Node$(T)* node = atomic_load(&chan->tail); \
             while (node) { \
                 sync_mpmc_Node$(T)* next = atomic_load(&node->next); \
-                mem_Allocator_destroy((sender).allocator, anyPtr(node)); \
+                mem_Alctr_destroy((sender).allocator, anyPtr(node)); \
                 node = next; \
             } \
 \
             pthread_mutex_destroy(&chan->mutex); \
             pthread_cond_destroy(&chan->recv_cond); \
             pthread_cond_destroy(&chan->send_cond); \
-            mem_Allocator_destroy((sender).allocator, anyPtr(chan)); \
-            mem_Allocator_destroy((sender).allocator, anyPtr((sender).counter)); \
+            mem_Alctr_destroy((sender).allocator, anyPtr(chan)); \
+            mem_Alctr_destroy((sender).allocator, anyPtr((sender).counter)); \
         } \
     } \
 })
@@ -313,15 +313,15 @@ typedef enum {
             sync_mpmc_Node$(T)* node = atomic_load(&chan->tail); \
             while (node) { \
                 sync_mpmc_Node$(T)* next = atomic_load(&node->next); \
-                mem_Allocator_destroy((receiver).allocator, anyPtr(node)); \
+                mem_Alctr_destroy((receiver).allocator, anyPtr(node)); \
                 node = next; \
             } \
 \
             pthread_mutex_destroy(&chan->mutex); \
             pthread_cond_destroy(&chan->recv_cond); \
             pthread_cond_destroy(&chan->send_cond); \
-            mem_Allocator_destroy((receiver).allocator, anyPtr(chan)); \
-            mem_Allocator_destroy((receiver).allocator, anyPtr((receiver).counter)); \
+            mem_Alctr_destroy((receiver).allocator, anyPtr(chan)); \
+            mem_Alctr_destroy((receiver).allocator, anyPtr((receiver).counter)); \
         } \
     } \
 })
@@ -355,7 +355,8 @@ Thrd_fn_(countThrd, ({ sync_mpsc_Sender$i32 sender; }, Void), ($ignore, args)$gu
         Thrd_sleep(time_Duration_fromSecs(1));
     }
     return_({});
-} $unguarded_(Thrd_fn);
+}
+$unguarded(Thrd_fn);
 
 #include "dh/io/common.h"
 #include "dh/fs/File.h"
@@ -363,7 +364,7 @@ Thrd_fn_(countThrd, ({ sync_mpsc_Sender$i32 sender; }, Void), ($ignore, args)$gu
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    let channels = sync_mpsc_channel$i32(heap_Page_allocator(&(heap_Page){}));
+    let channels = sync_mpsc_channel$i32(heap_Page_alctr(&(heap_Page){}));
     defer_(sync_mpsc_Receiver_drop$i32(channels.receiver));
     try_(Thrd_spawn(
         Thrd_SpawnCfg_default,
@@ -376,4 +377,5 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     }
 
     return_ok({});
-} $unguarded_(fn);
+}
+$unguarded(fn);

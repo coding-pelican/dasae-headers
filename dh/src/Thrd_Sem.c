@@ -27,7 +27,7 @@ fn_((Thrd_Sem_wait(Thrd_Sem* self))(void) $guard) {
     if (0 < --self->permits) {
         Thrd_Cond_signal(&self->cond);
     }
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Duration timeout))(Thrd_Sem_Err$void) $guard) {
     let instant = time_Instant_now();
@@ -48,7 +48,7 @@ fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Duration timeout))(Thrd_Sem_Err$voi
         Thrd_Cond_signal(&self->cond);
     }
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 
 fn_((Thrd_Sem_post(Thrd_Sem* self))(void) $guard) {
     Thrd_Mtx_lock(&self->mtx);
@@ -56,4 +56,4 @@ fn_((Thrd_Sem_post(Thrd_Sem* self))(void) $guard) {
 
     self->permits++;
     Thrd_Cond_signal(&self->cond);
-} $unguarded_(fn);
+} $unguarded(fn);

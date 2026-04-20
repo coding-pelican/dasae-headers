@@ -53,9 +53,9 @@
 #define PIPE_STEP(prev_result_var, step_num, func, args...) \
     var ret##step_num = Generic_match$( \
         TypeOf(PIPE_APPLY((prev_result_var), func, args)), \
-        Generic_pattern$(void) blk({ \
+        Generic_pattern$(void) local_({ \
             let_ignore = PIPE_APPLY((prev_result_var), func, args); \
-            blk_return make$(Void); \
+            local__return from$(Void); \
         }), \
         Generic_fallback_ PIPE_APPLY((prev_result_var), func, args) \
     );
@@ -138,7 +138,7 @@
 #endif /* PIPE_INCLUDED */
 #endif /* UNUSED_CODE */
 
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/heap/Page.h"
 #include "dh/io/stream.h"
 
@@ -147,10 +147,10 @@ typedef struct Foo {
     var_(a, i32);
     var_(b, i32);
     var_(value, i32);
-    var_(mem, mem_Allocator);
+    var_(mem, mem_Alctr);
 } Foo;
 use_E$(Foo);
-static fn_((Foo_init(mem_Allocator allocator))(E$P$Foo)) $must_check;
+static fn_((Foo_init(mem_Alctr allocator))(E$P$Foo)) $must_check;
 static fn_((Foo_fini(Foo* const self))(void));
 static fn_((Foo_setA(Foo* const self, i32 a))(Foo*));
 static fn_((Foo_setB(Foo* const self, i32 b))(Foo*));
@@ -158,11 +158,9 @@ static fn_((Foo_eval(Foo* const self))(Foo*));
 static fn_((Foo_merge(Foo* const self, const Foo* other))(Foo*));
 static fn_((Foo_baz(const Foo* const self))(i32));
 
-$maybe_unused
-static $inline
+$maybe_unused static $inline
 fn_((i32_add(i32 lhs, i32 rhs))(i32)) { return lhs + rhs; }
-$maybe_unused
-static $inline
+$maybe_unused static $inline
 fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return deref(lhs) += rhs, lhs; }
 
 /* fn_(enhancePipeExpanding(Foo foo), void) {
@@ -178,7 +176,7 @@ fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return deref(lhs) += rhs, lhs; }
     io_stream_println(u8_l("Enhanced pipe result: {:d}\n"), value);
 } */
 
-/* fn_(resolveIssuePipeExpanding(mem_Allocator allocator), void) {
+/* fn_(resolveIssuePipeExpanding(mem_Alctr allocator), void) {
     // #define try   try_
     // #define catch catch_
 
@@ -187,15 +185,15 @@ fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return deref(lhs) += rhs, lhs; }
 
     //     PIPE_APPLY(ret, catch, (a));
     //     PIPE_STEP(ret, 0, catch, (a));
-    //     var foo = meta_cast$(Foo*, pipe_(pipe_(allocator, (mem_Allocator_create,(typeInfo$(Foo)))), (catch,(a)), (abc,(def))));
-    //     var foo = meta_cast$(Foo*, catch_(mem_Allocator_create(allocator, typeInfo$(Foo)), claim_unreachable));
+    //     var foo = meta_cast$(Foo*, pipe_(pipe_(allocator, (mem_Alctr_create,(typeInfo$(Foo)))), (catch,(a)), (abc,(def))));
+    //     var foo = meta_cast$(Foo*, catch_(mem_Alctr_create(allocator, typeInfo$(Foo)), claim_unreachable));
 
-    // let pipe_ret = pipe_(allocator,(mem_Allocator_create,(typeInfo$(Foo))),(catch_from,(err, ({ let_ignore = err; claim_unreachable;}))));
+    // let pipe_ret = pipe_(allocator,(mem_Alctr_create,(typeInfo$(Foo))),(catch_from,(err, ({ let_ignore = err; claim_unreachable;}))));
     // var foo      = meta_cast$(Foo*, pipe_ret);
     // let_ignore = foo;
 
     let pipe_foo = pipe_(pipe_(meta_cast$(Foo*, pipe_(allocator,
-        (mem_Allocator_create,(typeInfo$(Foo))),(catch_,(claim_unreachable))
+        (mem_Alctr_create,(typeInfo$(Foo))),(catch_,(claim_unreachable))
     )),(deref,())),(ref,()),
         (Foo_setA,(10)),
         (Foo_setB,(20)),
@@ -207,10 +205,10 @@ fn_((i32_addAsg(i32* lhs, i32 rhs))(i32*)) { return deref(lhs) += rhs, lhs; }
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    let allocator = heap_Page_allocator(create$(heap_Page));
+    let allocator = heap_Page_alctr(create$(heap_Page));
 
     // Traditional approach
-    blk_defer {
+    local__defer {
         let bar = try_(Foo_init(allocator));
         {
             Foo_setA(bar, 5);
@@ -232,7 +230,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     blk_deferral;
 
     // Using pipe macro
-    blk_defer {
+    local__defer {
         let bar = pipe_(try_(Foo_init(allocator)), (Foo_setA, (5)), (Foo_setB, (15)), (Foo_eval, ()));
         defer_(Foo_fini(bar));
 
@@ -244,7 +242,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     blk_deferral;
 
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 
 
 
@@ -264,7 +262,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
 
 func_(runPipeExampleUsage(S$S_const$u8 args), E$void $scope, {
     let_ignore = args;
-    let allocator = heap_Page_allocator(create$(heap_Page));
+    let allocator = heap_Page_alctr(create$(heap_Page));
 
     let bar = pipe_(try_(Foo_init(allocator)), (Foo_setA, (5)), (Foo_setB, (15)), (Foo_eval, ()));
     defer_(Foo_fini(bar));
@@ -279,16 +277,16 @@ func_(runPipeExampleUsage(S$S_const$u8 args), E$void $scope, {
 #endif /* UNUSED_CODE */
 
 // Example functions that would typically be used in a chain
-fn_((Foo_init(mem_Allocator allocator))(E$P$Foo) $scope) {
-    let foo = meta_cast$(Foo*, try_(pipe_(allocator, (mem_Allocator_create, (typeInfo$(Foo))))));
+fn_((Foo_init(mem_Alctr allocator))(E$P$Foo) $scope) {
+    let foo = meta_cast$(Foo*, try_(pipe_(allocator, (mem_Alctr_create, (typeInfo$(Foo))))));
     foo->mem = allocator;
     foo->a = 0;
     foo->b = 0;
     foo->value = 0;
     return_ok(foo);
-} $unscoped_(fn);
+} $unscoped(fn);
 fn_((Foo_fini(Foo* const self))(void)) {
-    mem_Allocator_destroy(deref(self).mem, anyPtr(self));
+    mem_Alctr_destroy(deref(self).mem, anyPtr(self));
 }
 fn_((Foo_setA(Foo* const self, i32 a))(Foo*)) {
     return deref(self).a = a, self;

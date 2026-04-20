@@ -65,7 +65,7 @@ extern "C" {
 #define __op__Vec_init$(...) __op__Vec_init$__emit(__VA_ARGS__)
 #define __op__Vec_init$__parse(_T...) _T,
 #define __op__Vec_init$__emit(_T, _initial...) \
-    lit$((_T)_initial)
+    l$((_T)_initial)
 
 /// Initialize vector with all lanes set to same value (splat)
 #define Vec_splat$(/*(_T)(_val)*/... /*(_T)*/) __op__Vec_splat$(__op__Vec_splat$__parse __VA_ARGS__)
@@ -85,14 +85,14 @@ extern "C" {
 #define __op__Vec_from$(...) __op__Vec_from$__emit(__VA_ARGS__)
 #define __op__Vec_from$__parse(_T...) _T,
 #define __op__Vec_from$__emit(_T, _initial...) \
-    lit$((Vec$$(sizeOf$(TypeOf((_T[])_initial)) / sizeOf$(_T), _T)) _initial)
+    l$((Vec$$(sizeOf$(TypeOf((_T[])_initial)) / sizeOf$(_T), _T)) _initial)
 
 /// Initialize vector from array
 #define Vec_fromA$(/*(_T)(_a)*/...) __op__Vec_fromA$(__op__Vec_fromA$__parse __VA_ARGS__)
 #define __op__Vec_fromA$(...) __op__Vec_fromA$__emit(__VA_ARGS__)
 #define __op__Vec_fromA$__parse(_T...) _T,
 #define __op__Vec_fromA$__emit(_T, _a...) \
-    (*ptrAlignCast$((_T*)(&copy(_a))))
+    (*ptrAlignCast$((_T*)(A_val(_a))))
 #define Vec_fromA(_a...) __op__Vec_fromA(_a)
 #define __op__Vec_fromA(_a...) \
     Vec_fromA$((Vec$$(A_len$(TypeOf(_a)), A_InnerT$(TypeOf(_a))))(_a))
@@ -102,7 +102,7 @@ extern "C" {
 #define __op__Vec_toA$(...) __op__Vec_toA$__emit(__VA_ARGS__)
 #define __op__Vec_toA$__parse(_T...) _T,
 #define __op__Vec_toA$__emit(_T, _vec...) \
-    (*as$(_T*)(&copy(_vec)))
+    (*as$(_T*)(A_val(_vec)))
 #define Vec_toA(_vec...) __op__Vec_toA(_vec)
 #define __op__Vec_toA(_vec...) \
     Vec_toA$((A$$(Vec_len$(TypeOf(_vec)), Vec_InnerT$(TypeOf(_vec))))(_vec))
@@ -126,7 +126,7 @@ extern "C" {
         }; \
         var_(catted, _T); \
     } Catting; \
-    lit$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
+    l$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
 })
 #define Vec_cat(_lhs, _rhs...) \
     Vec_cat$((Vec$$(Vec_len(_lhs) + Vec_len(_rhs), TypeOf(_lhs[0])))(_lhs, _rhs))
@@ -325,7 +325,7 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32)) { \
+    if (eqlType$(ScalarType, f32)) { \
         if (sizeof(VecType) == 16) { \
             *((__m128*)&result) = _mm_andnot_ps(_mm_set1_ps((f32) - 0.0f), *((__m128*)&(_a))); \
         } else if (sizeof(VecType) == 32) { \
@@ -333,7 +333,7 @@ extern "C" {
         } else { \
             result = (_a) < (ScalarType)0 ? -(_a) : (_a); \
         } \
-    } else if (Type_eq$(ScalarType, f64)) { \
+    } else if (eqlType$(ScalarType, f64)) { \
         if (sizeof(VecType) == 16) { \
             *((__m128d*)&result) = _mm_andnot_pd(_mm_set1_pd((f64) - 0.0), *((__m128d*)&(_a))); \
         } else if (sizeof(VecType) == 32) { \
@@ -498,7 +498,7 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32)) { \
+    if (eqlType$(ScalarType, f32)) { \
         if (sizeof(VecType) == 16) { \
             *((__m128*)&result) = _mm_sqrt_ps(*((__m128*)&(_a))); \
         } else if (sizeof(VecType) == 32) { \
@@ -509,7 +509,7 @@ extern "C" {
                 result[__i] = (ScalarType)__builtin_sqrtf(vec[__i]); \
             } \
         } \
-    } else if (Type_eq$(ScalarType, f64)) { \
+    } else if (eqlType$(ScalarType, f64)) { \
         if (sizeof(VecType) == 16) { \
             *((__m128d*)&result) = _mm_sqrt_pd(*((__m128d*)&(_a))); \
         } else if (sizeof(VecType) == 32) { \
@@ -535,9 +535,9 @@ extern "C" {
     var_(result, VecType); \
     let vec = (_a); \
     for (usize __i = (usize)0; __i < sizeof(VecType) / sizeof(ScalarType); ++__i) { \
-        if (Type_eq$(ScalarType, f32)) { \
+        if (eqlType$(ScalarType, f32)) { \
             result[__i] = (ScalarType)__builtin_sqrtf(vec[__i]); \
-        } else if (Type_eq$(ScalarType, f64)) { \
+        } else if (eqlType$(ScalarType, f64)) { \
             result[__i] = (ScalarType)__builtin_sqrt(vec[__i]); \
         } \
     } \
@@ -550,9 +550,9 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         *((__m128*)&result) = _mm_floor_ps(*((__m128*)&(_a))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 16) { \
         *((__m128d*)&result) = _mm_floor_pd(*((__m128d*)&(_a))); \
     } else { \
         let vec = (_a); \
@@ -613,13 +613,13 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         *((__m128*)&result) = _mm_fmadd_ps(*((__m128*)&(_a)), *((__m128*)&(_b)), *((__m128*)&(_c))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 16) { \
         *((__m128d*)&result) = _mm_fmadd_pd(*((__m128d*)&(_a)), *((__m128d*)&(_b)), *((__m128d*)&(_c))); \
-    } else if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f32) && sizeof(VecType) == 32) { \
         *((__m256*)&result) = _mm256_fmadd_ps(*((__m256*)&(_a)), *((__m256*)&(_b)), *((__m256*)&(_c))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 32) { \
         *((__m256d*)&result) = _mm256_fmadd_pd(*((__m256d*)&(_a)), *((__m256d*)&(_b)), *((__m256d*)&(_c))); \
     } else { \
         result = (_a) * (_b) + (_c); \
@@ -653,9 +653,9 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         *((__m128*)&result) = _mm_hadd_ps(*((__m128*)&(_a)), *((__m128*)&(_b))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 16) { \
         *((__m128d*)&result) = _mm_hadd_pd(*((__m128d*)&(_a)), *((__m128d*)&(_b))); \
     } else { \
         let vec_a = (_a); \
@@ -884,13 +884,13 @@ extern "C" {
     typedef TypeOfUnqual(*(_p_arr)) ScalarType; \
     typedef TypeOfUnqual((_p_arr)) PtrType; \
     var_(result, TypeOf(*(PtrType)0)); \
-    if (Type_eq$(ScalarType, f32) && sizeof(result) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(result) == 16) { \
         *((__m128*)&result) = _mm_load_ps((f32 const*)(_p_arr)); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(result) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(result) == 16) { \
         *((__m128d*)&result) = _mm_load_pd((f64 const*)(_p_arr)); \
-    } else if (Type_eq$(ScalarType, f32) && sizeof(result) == 32) { \
+    } else if (eqlType$(ScalarType, f32) && sizeof(result) == 32) { \
         *((__m256*)&result) = _mm256_load_ps((f32 const*)(_p_arr)); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(result) == 32) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(result) == 32) { \
         *((__m256d*)&result) = _mm256_load_pd((f64 const*)(_p_arr)); \
     } else { \
         __builtin_memcpy(&result, _p_arr, sizeof(result)); \
@@ -902,13 +902,13 @@ extern "C" {
     typedef TypeOfUnqual(*(_p_arr)) ScalarType; \
     typedef TypeOfUnqual((_p_arr)) PtrType; \
     var_(result, TypeOf(*(PtrType)0)); \
-    if (Type_eq$(ScalarType, f32) && sizeof(result) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(result) == 16) { \
         *((__m128*)&result) = _mm_loadu_ps((f32 const*)(_p_arr)); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(result) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(result) == 16) { \
         *((__m128d*)&result) = _mm_loadu_pd((f64 const*)(_p_arr)); \
-    } else if (Type_eq$(ScalarType, f32) && sizeof(result) == 32) { \
+    } else if (eqlType$(ScalarType, f32) && sizeof(result) == 32) { \
         *((__m256*)&result) = _mm256_loadu_ps((f32 const*)(_p_arr)); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(result) == 32) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(result) == 32) { \
         *((__m256d*)&result) = _mm256_loadu_pd((f64 const*)(_p_arr)); \
     } else { \
         __builtin_memcpy(&result, _p_arr, sizeof(result)); \
@@ -919,13 +919,13 @@ extern "C" {
 #define __op__Vec_storeAligned(_p_arr, _vec) ({ \
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         _mm_store_ps((f32*)(_p_arr), *((__m128*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 16) { \
         _mm_store_pd((f64*)(_p_arr), *((__m128d*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f32) && sizeof(VecType) == 32) { \
         _mm256_store_ps((f32*)(_p_arr), *((__m256*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 32) { \
         _mm256_store_pd((f64*)(_p_arr), *((__m256d*)&(_vec))); \
     } else { \
         __builtin_memcpy(_p_arr, &(_vec), sizeof(_vec)); \
@@ -935,13 +935,13 @@ extern "C" {
 #define __op__Vec_storeUnaligned(_p_arr, _vec) ({ \
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         _mm_storeu_ps((f32*)(_p_arr), *((__m128*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 16) { \
         _mm_storeu_pd((f64*)(_p_arr), *((__m128d*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f32) && sizeof(VecType) == 32) { \
         _mm256_storeu_ps((f32*)(_p_arr), *((__m256*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 32) { \
         _mm256_storeu_pd((f64*)(_p_arr), *((__m256d*)&(_vec))); \
     } else { \
         __builtin_memcpy(_p_arr, &(_vec), sizeof(_vec)); \
@@ -951,13 +951,13 @@ extern "C" {
 #define __op__Vec_storeStream(_p_arr, _vec) ({ \
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         _mm_stream_ps((f32*)(_p_arr), *((__m128*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 16) { \
         _mm_stream_pd((f64*)(_p_arr), *((__m128d*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f32) && sizeof(VecType) == 32) { \
         _mm256_stream_ps((f32*)(_p_arr), *((__m256*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 32) { \
         _mm256_stream_pd((f64*)(_p_arr), *((__m256d*)&(_vec))); \
     } else { \
         __builtin_memcpy(_p_arr, &(_vec), sizeof(_vec)); \
@@ -1008,9 +1008,9 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         *((__m128*)&result) = _mm_rcp_ps(*((__m128*)&(_a))); \
-    } else if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f32) && sizeof(VecType) == 32) { \
         *((__m256*)&result) = _mm256_rcp_ps(*((__m256*)&(_a))); \
     } else { \
         result = Vec_div(Vec_splat$(VecType, 1.0), _a); \
@@ -1022,9 +1022,9 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         *((__m128*)&result) = _mm_rsqrt_ps(*((__m128*)&(_a))); \
-    } else if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f32) && sizeof(VecType) == 32) { \
         *((__m256*)&result) = _mm256_rsqrt_ps(*((__m256*)&(_a))); \
     } else { \
         result = Vec_div(Vec_splat$(VecType, 1.0), Vec_sqrt(_a)); \
@@ -1038,7 +1038,7 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         *((__m128*)&result) = vrecpeq_f32(*((__m128*)&(_a))); \
     } else { \
         result = Vec_div(Vec_splat$(VecType, 1.0), _a); \
@@ -1050,7 +1050,7 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         *((__m128*)&result) = vrsqrteq_f32(*((__m128*)&(_a))); \
     } else { \
         result = Vec_div(Vec_splat$(VecType, 1.0), Vec_sqrt(_a)); \
@@ -1076,13 +1076,13 @@ extern "C" {
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     var_(mask, i32); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         mask = (i32)_mm_movemask_ps(*((__m128*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 16) { \
         mask = (i32)_mm_movemask_pd(*((__m128d*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f32) && sizeof(VecType) == 32) { \
         mask = (i32)_mm256_movemask_ps(*((__m256*)&(_vec))); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 32) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 32) { \
         mask = (i32)_mm256_movemask_pd(*((__m256d*)&(_vec))); \
     } else { \
         mask = (i32)Vec_toBitMask(_vec); \
@@ -1151,7 +1151,7 @@ extern "C" {
     typedef TypeOfUnqual(_vec) VecType; \
     typedef TypeOfUnqual((_vec)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 16) { \
         __m128 v = *((__m128*)&(_vec)); \
         __m128 r0 = _mm_mul_ps(*((__m128*)&(_mat)[(usize)0]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, 0))); \
         __m128 r1 = _mm_mul_ps(*((__m128*)&(_mat)[(usize)1]), _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1))); \
@@ -1402,9 +1402,9 @@ extern "C" {
     typedef TypeOfUnqual((_p_base)[0]) ScalarType; \
     typedef TypeOfUnqual(_indices) IndexVec; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, f32) && sizeof(VecType) == 32 && sizeof(IndexVec) == 32) { \
+    if (eqlType$(ScalarType, f32) && sizeof(VecType) == 32 && sizeof(IndexVec) == 32) { \
         *((__m256*)&result) = _mm256_i32gather_ps((f32 const*)(_p_base), *((__m256i*)&(_indices)), (i32)sizeof(f32)); \
-    } else if (Type_eq$(ScalarType, f64) && sizeof(VecType) == 32 && sizeof(IndexVec) == 16) { \
+    } else if (eqlType$(ScalarType, f64) && sizeof(VecType) == 32 && sizeof(IndexVec) == 16) { \
         *((__m256d*)&result) = _mm256_i32gather_pd((f64 const*)(_p_base), *((__m128i*)&(_indices)), (i32)sizeof(f64)); \
     } else { \
         let idx = (_indices); \
@@ -1573,13 +1573,13 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, i8) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, i8) && sizeof(VecType) == 16) { \
         *((__m128i*)&result) = _mm_adds_epi8(*((__m128i*)&(_a)), *((__m128i*)&(_b))); \
-    } else if (Type_eq$(ScalarType, i16) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, i16) && sizeof(VecType) == 16) { \
         *((__m128i*)&result) = _mm_adds_epi16(*((__m128i*)&(_a)), *((__m128i*)&(_b))); \
-    } else if (Type_eq$(ScalarType, u8) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, u8) && sizeof(VecType) == 16) { \
         *((__m128i*)&result) = _mm_adds_epu8(*((__m128i*)&(_a)), *((__m128i*)&(_b))); \
-    } else if (Type_eq$(ScalarType, u16) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, u16) && sizeof(VecType) == 16) { \
         *((__m128i*)&result) = _mm_adds_epu16(*((__m128i*)&(_a)), *((__m128i*)&(_b))); \
     } else { \
         result = Vec_add(_a, _b); /* Fallback */ \
@@ -1591,13 +1591,13 @@ extern "C" {
     typedef TypeOfUnqual(_a) VecType; \
     typedef TypeOfUnqual((_a)[0]) ScalarType; \
     var_(result, VecType); \
-    if (Type_eq$(ScalarType, i8) && sizeof(VecType) == 16) { \
+    if (eqlType$(ScalarType, i8) && sizeof(VecType) == 16) { \
         *((__m128i*)&result) = _mm_subs_epi8(*((__m128i*)&(_a)), *((__m128i*)&(_b))); \
-    } else if (Type_eq$(ScalarType, i16) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, i16) && sizeof(VecType) == 16) { \
         *((__m128i*)&result) = _mm_subs_epi16(*((__m128i*)&(_a)), *((__m128i*)&(_b))); \
-    } else if (Type_eq$(ScalarType, u8) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, u8) && sizeof(VecType) == 16) { \
         *((__m128i*)&result) = _mm_subs_epu8(*((__m128i*)&(_a)), *((__m128i*)&(_b))); \
-    } else if (Type_eq$(ScalarType, u16) && sizeof(VecType) == 16) { \
+    } else if (eqlType$(ScalarType, u16) && sizeof(VecType) == 16) { \
         *((__m128i*)&result) = _mm_subs_epu16(*((__m128i*)&(_a)), *((__m128i*)&(_b))); \
     } else { \
         result = Vec_sub(_a, _b); /* Fallback */ \

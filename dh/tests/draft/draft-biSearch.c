@@ -1,6 +1,6 @@
 #include "dh/claim/unreachable.h"
 #include "dh/core.h"
-#include "dh/main.h"
+#include "dh-main.h"
 
 #include "dh/fs/File.h"
 #include "dh/io/Writer.h"
@@ -16,7 +16,7 @@
         var_(rhs, usize) = len - 1; \
         while (lhs <= rhs) { \
             let_(mid, usize) = lhs + (rhs - lhs) / 2; \
-            switch (prim_ord(Sli_getAt(sli, mid), val)) { \
+            switch (pri_ord(Sli_getAt(sli, mid), val)) { \
                 case_(cmp_Ord_eq, return_some(mid)); \
                 case_(cmp_Ord_lt, { rhs = mid - 1; } break); \
                 case_(cmp_Ord_gt, { lhs = mid + 1; } break); \
@@ -25,7 +25,7 @@
         } \
         return_none(); \
     } \
-    $unscoped_(fn)
+    $unscoped(fn)
 
 use_biSearch$(i32);
 fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
@@ -45,7 +45,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     }
 
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 
 typedef void untyped;
@@ -93,12 +93,12 @@ typedef enum PrimNum {
 )
 typedef variant_((TypeOrPrimNum $fits u8)(
     (TypeOrPrimNum_type, TypeInfo),
-    (TypeOrPrimNum_prim_num, PrimNum)
+    (TypeOrPrimNum_pri_num, PrimNum)
 )) TypeOrPrimNum;
 
 
 fn_((biSearch_raw(
-    TypeOrPrimNum type_or_prim_num,
+    TypeOrPrimNum type_or_pri_num,
     S_const$untyped sli,
     P_const$untyped val
 ))(O$usize) $scope) {
@@ -107,38 +107,38 @@ fn_((biSearch_raw(
     var_(rhs, usize) = len - 1;
     while (lhs <= rhs) {
         let_(mid, usize) = lhs + (rhs - lhs) / 2;
-        switch (blk_(cmp, cmp_Ord, {
-            match_(type_or_prim_num, {
+        switch (local__(cmp, cmp_Ord, {
+            match_(type_or_pri_num, {
                 pattern_(TypeOrPrimNum_type, (type), {
-                    blk_break_(cmp, prim_memcmp(Sli_at(sli, mid), val, type->size));
+                    local__break_(cmp, pri_memcmp(Sli_at(sli, mid), val, type->size));
                 });
-                pattern_(TypeOrPrimNum_prim_num, (type), switch (*type) {
-                    case_(PrimNum_u8, blk_break_(cmp, prim_ord(*as$(u8*)(Sli_at(sli, mid)), *as$(u8*)(val))));
-                    case_(PrimNum_u16, blk_break_(cmp, prim_ord(*as$(u16*)(Sli_at(sli, mid)), *as$(u16*)(val))));
-                    case_(PrimNum_u32, blk_break_(cmp, prim_ord(*as$(u32*)(Sli_at(sli, mid)), *as$(u32*)(val))));
-                    case_(PrimNum_u64, blk_break_(cmp, prim_ord(*as$(u64*)(Sli_at(sli, mid)), *as$(u64*)(val))));
-                    case_(PrimNum_i8, blk_break_(cmp, prim_ord(*as$(i8*)(Sli_at(sli, mid)), *as$(i8*)(val))));
-                    case_(PrimNum_i16, blk_break_(cmp, prim_ord(*as$(i16*)(Sli_at(sli, mid)), *as$(i16*)(val))));
-                    case_(PrimNum_i32, blk_break_(cmp, prim_ord(*as$(i32*)(Sli_at(sli, mid)), *as$(i32*)(val))));
-                    case_(PrimNum_i64, blk_break_(cmp, prim_ord(*as$(i64*)(Sli_at(sli, mid)), *as$(i64*)(val))));
-                    case_(PrimNum_f32, blk_break_(cmp, prim_ord(*as$(f32*)(Sli_at(sli, mid)), *as$(f32*)(val))));
-                    case_(PrimNum_f64, blk_break_(cmp, prim_ord(*as$(f64*)(Sli_at(sli, mid)), *as$(f64*)(val))));
+                pattern_(TypeOrPrimNum_pri_num, (type), switch (*type) {
+                    case_(PrimNum_u8, local__break_(cmp, pri_ord(*as$(u8*)(Sli_at(sli, mid)), *as$(u8*)(val))));
+                    case_(PrimNum_u16, local__break_(cmp, pri_ord(*as$(u16*)(Sli_at(sli, mid)), *as$(u16*)(val))));
+                    case_(PrimNum_u32, local__break_(cmp, pri_ord(*as$(u32*)(Sli_at(sli, mid)), *as$(u32*)(val))));
+                    case_(PrimNum_u64, local__break_(cmp, pri_ord(*as$(u64*)(Sli_at(sli, mid)), *as$(u64*)(val))));
+                    case_(PrimNum_i8, local__break_(cmp, pri_ord(*as$(i8*)(Sli_at(sli, mid)), *as$(i8*)(val))));
+                    case_(PrimNum_i16, local__break_(cmp, pri_ord(*as$(i16*)(Sli_at(sli, mid)), *as$(i16*)(val))));
+                    case_(PrimNum_i32, local__break_(cmp, pri_ord(*as$(i32*)(Sli_at(sli, mid)), *as$(i32*)(val))));
+                    case_(PrimNum_i64, local__break_(cmp, pri_ord(*as$(i64*)(Sli_at(sli, mid)), *as$(i64*)(val))));
+                    case_(PrimNum_f32, local__break_(cmp, pri_ord(*as$(f32*)(Sli_at(sli, mid)), *as$(f32*)(val))));
+                    case_(PrimNum_f64, local__break_(cmp, pri_ord(*as$(f64*)(Sli_at(sli, mid)), *as$(f64*)(val))));
                     case_(PrimNum_none, $fallthrough);
-                    default_(claim_unreachable);
+                default_(claim_unreachable);
                 });
             });
         })) {
             case_(cmp_Ord_eq, return_some(mid));
             case_(cmp_Ord_lt, { rhs = mid - 1; } continue);
             case_(cmp_Ord_gt, { lhs = mid + 1; } continue);
-            default_(claim_unreachable);
+        default_(claim_unreachable);
         }
     }
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
 #define valueOrDefault$(T, val...) \
-    _Generic(TypeOfUnqual(val), T: val, default: make$(T))
+    _Generic(TypeOfUnqual(val), T: val, default: from$(T))
 
 #define addVoid(lhs, rhs...) ({ \
     (void)lhs; \

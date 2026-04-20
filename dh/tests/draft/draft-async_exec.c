@@ -22,20 +22,18 @@ $static fn_((exec_runLoop(bool endless))(void)) {
     while (true) {
         let now = time_Instant_now();
         var any = false;
-        var frame = eval_(O$P$Co_Ctx $scope)(for_(($s(A_ref(exec_s_task_list)))(task_remaining) {
+        var frame = eval_(O$P$Co_Ctx $scope)(for_(($s(A_ref(exec_s_task_list)))(task_remaining)) {
             let task = orelse_((O_asP(task_remaining))(continue));
             any = true;
             if (time_Instant_le(task->expires, now)) {
                 io_stream_println(u8_l("sleep over y'all"));
                 let frame = task->frame;
-                asg_lit((task_remaining)(none()));
+                asg_l((task_remaining)(none()));
                 $break_(some(frame));
             }
-        })) eval_(else)($break_(none())) $unscoped_(eval);
-        if_some((frame)(ctx)) {
-            resume_(ctx);
-        }
-        if (!(endless || any)) { break; }
+        }) $end(for) eval_(else)($break_(none())) $unscoped(eval);
+        if_some((frame)(ctx)) resume_(ctx);
+        if (!(endless || any)) break;
     }
 }
 
@@ -43,11 +41,10 @@ $static fn_((exec_runLoop(bool endless))(void)) {
 /// \return The slot for the task
 $static fn_((exec_findSlot(void))(O$Task*)) {
     let slot = eval_(P$$(O$Task) $scope)(
-        for_(($s(ref$A(exec_s_task_list)))(task) {
-            if_none(*task)
-                $break_(task);
-        })
-    ) eval_(else)(claim_unreachable) $unscoped_(eval);
+        for_(($s(ref$A(exec_s_task_list)))(task)) {
+        if_none(*task)
+            $break_(task);
+    }) $end(for) eval_(else)(claim_unreachable) $unscoped(eval);
     return slot;
 }
 
@@ -60,18 +57,18 @@ async_fn_scope(exec_sleep, {}) {
     let_ignore = locals;
     suspend_({
         let slot = exec_findSlot();
-        let time = blk({
+        let time = local_({
             $static let fromMs = time_Duration_fromMillis;
             $static let addDur = time_Instant_addDuration;
             $static let now = time_Instant_now;
-            blk_return addDur(now(), fromMs(args->ms));
+            local__return addDur(now(), fromMs(args->ms));
         });
-        asg_lit((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
+        asg_l((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
     });
     areturn_({});
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/Thrd.h"
 
 /// \brief Report a message
@@ -109,15 +106,15 @@ async_fn_scope(count, {
         locals->iter++;
     }
 
-    locals->total = blk({
+    locals->total = local_({
         $static let asSecs = time_Duration_asSecs$f64;
         $static let durSince = time_Instant_durationSince;
         $static let now = time_Instant_now;
-        blk_return asSecs(durSince(now(), locals->start));
+        local__return asSecs(durSince(now(), locals->start));
     });
     report(args->label, u8_l("after loop {:fl}"), locals->total);
     areturn_(locals->total);
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 /// \brief Run the main function
 /// \param args The arguments to the main function
@@ -131,11 +128,12 @@ async_fn_scope(runMain, {
     let_ignore = args;
     io_stream_println(u8_l("begin"));
 
-    asg_lit((&locals->tasks)(A_init({
+    asg_l((&locals->tasks)(A_init({
         [0] = *async_ctx((count)(none(), 2, 1.0, u8_l("task a"))),
         [1] = *async_ctx((count)(none(), 3, 0.6, u8_l("task b"))),
     })));
-    for_(($s(A_ref(locals->tasks)))(task) { resume_(task); });
+    for_(($s(A_ref(locals->tasks)))(task) { resume_(task); })
+        ;
 
     io_stream_println(u8_l("count size: {:uz}"), sizeOf$(A_InnerT$(TypeOf(locals->tasks))));
 
@@ -148,15 +146,15 @@ async_fn_scope(runMain, {
 
     io_stream_println(u8_l("end"));
     areturn_(locals->total);
-} $unscoped_(async_fn);
+} $unscoped(async_fn);
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     var task = async_((runMain)(args));
     io_stream_println(u8_l("run size: {:uz}"), sizeOf$(*task));
     exec_runLoop(false);
-    nosuspend_(await_(resume_(task)));
+    no_suspend_(await_(resume_(task)));
     let total = task->ret->value;
     io_stream_println(u8_l("total: {:fl}"), total);
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);

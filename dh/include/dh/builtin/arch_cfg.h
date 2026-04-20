@@ -175,14 +175,14 @@ extern "C" {
 #define __comp_enum__arch_type_wasm64 7
 #define __comp_enum__arch_type_wasm32 8
 
-#define __comp_bool__arch_is_x86_64 pp_Tok_eq(arch_type, arch_type_x86_64)
-#define __comp_bool__arch_is_x86 pp_Tok_eq(arch_type, arch_type_x86)
-#define __comp_bool__arch_is_aarch64 pp_Tok_eq(arch_type, arch_type_aarch64)
-#define __comp_bool__arch_is_arm pp_Tok_eq(arch_type, arch_type_arm)
-#define __comp_bool__arch_is_riscv64 pp_Tok_eq(arch_type, arch_type_riscv64)
-#define __comp_bool__arch_is_riscv32 pp_Tok_eq(arch_type, arch_type_riscv32)
-#define __comp_bool__arch_is_wasm64 pp_Tok_eq(arch_type, arch_type_wasm64)
-#define __comp_bool__arch_is_wasm32 pp_Tok_eq(arch_type, arch_type_wasm32)
+#define __comp_bool__arch_is_x86_64 pp_Tok_eql(arch_type, arch_type_x86_64)
+#define __comp_bool__arch_is_x86 pp_Tok_eql(arch_type, arch_type_x86)
+#define __comp_bool__arch_is_aarch64 pp_Tok_eql(arch_type, arch_type_aarch64)
+#define __comp_bool__arch_is_arm pp_Tok_eql(arch_type, arch_type_arm)
+#define __comp_bool__arch_is_riscv64 pp_Tok_eql(arch_type, arch_type_riscv64)
+#define __comp_bool__arch_is_riscv32 pp_Tok_eql(arch_type, arch_type_riscv32)
+#define __comp_bool__arch_is_wasm64 pp_Tok_eql(arch_type, arch_type_wasm64)
+#define __comp_bool__arch_is_wasm32 pp_Tok_eql(arch_type, arch_type_wasm32)
 
 /* Detect x86_64 */
 #if defined(__x86_64__) || defined(_M_X64)
@@ -276,10 +276,10 @@ extern "C" {
 #define __comp_enum__arch_family_type_riscv 3
 #define __comp_enum__arch_family_type_wasm 4
 
-#define __comp_bool__arch_is_x86_family pp_Tok_eq(arch_family_type, arch_family_type_x86)
-#define __comp_bool__arch_is_arm_family pp_Tok_eq(arch_family_type, arch_family_type_arm)
-#define __comp_bool__arch_is_riscv_family pp_Tok_eq(arch_family_type, arch_family_type_riscv)
-#define __comp_bool__arch_is_wasm_family pp_Tok_eq(arch_family_type, arch_family_type_wasm)
+#define __comp_bool__arch_is_x86_family pp_Tok_eql(arch_family_type, arch_family_type_x86)
+#define __comp_bool__arch_is_arm_family pp_Tok_eql(arch_family_type, arch_family_type_arm)
+#define __comp_bool__arch_is_riscv_family pp_Tok_eql(arch_family_type, arch_family_type_riscv)
+#define __comp_bool__arch_is_wasm_family pp_Tok_eql(arch_family_type, arch_family_type_wasm)
 
 /* Derive family name from type */
 #define __comp_str__arch_family_name pp_expand( \
@@ -335,8 +335,8 @@ extern "C" {
 #define __comp_int__arch_bits_wide_64bit 64
 #define __comp_int__arch_bits_wide_32bit 32
 
-#define __comp_bool__arch_bits_is_64bit pp_eq(arch_bits_unit, arch_bits_unit_64bit)
-#define __comp_bool__arch_bits_is_32bit pp_eq(arch_bits_unit, arch_bits_unit_32bit)
+#define __comp_bool__arch_bits_is_64bit pp_eql(arch_bits_unit, arch_bits_unit_64bit)
+#define __comp_bool__arch_bits_is_32bit pp_eql(arch_bits_unit, arch_bits_unit_32bit)
 
 /* --- Endianness --- */
 
@@ -344,8 +344,8 @@ extern "C" {
 #define __comp_enum__arch_byte_order arch_byte_order_little_endian
 #define __comp_enum__arch_byte_order_little_endian 0
 #define __comp_enum__arch_byte_order_big_endian 1
-#define __comp_bool__arch_byte_order_is_little_endian pp_eq(arch_byte_order, arch_byte_order_little_endian)
-#define __comp_bool__arch_byte_order_is_big_endian pp_eq(arch_byte_order, arch_byte_order_big_endian)
+#define __comp_bool__arch_byte_order_is_little_endian pp_eql(arch_byte_order, arch_byte_order_little_endian)
+#define __comp_bool__arch_byte_order_is_big_endian pp_eql(arch_byte_order, arch_byte_order_big_endian)
 
 /* Detect byte order */
 #if arch_family_type != arch_family_type_wasm
@@ -482,7 +482,7 @@ extern "C" {
 /* --- SIMD Availability Summary --- */
 
 /* Determine if any SIMD is available */
-#define __comp_bool__arch_simd_use pp_or(arch_has_sse2, pp_or(arch_has_neon, arch_has_rvv))
+#define __comp_bool__arch_simd_use /* pp_or(arch_has_sse2, pp_or(arch_has_neon, arch_has_rvv)) */ pp_false
 /* Determine maximum SIMD width */
 #define __comp_int__arch_simd_width_bits pp_if_(arch_has_avx512f)( \
     pp_then_(512), \

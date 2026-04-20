@@ -1,7 +1,7 @@
 #ifndef dal_c_ext_ArrStr__included
 #define dal_c_ext_ArrStr__included 1
 
-#include "dal-c-ext/base.h"
+#include "base.h"
 
 // Dynamic string array
 typedef struct ArrStr {

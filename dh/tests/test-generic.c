@@ -1,6 +1,6 @@
 #include "dh/prl.h"
 
-let a = u32_n(123);
+let a = u32_(123);
 let a_is_u32 = T_switch$((TypeOf(a))(
     T_case$((u32)(true)),
     T_default_(false)
@@ -13,9 +13,9 @@ let a_is_const = T_switch$((TypeOf(a))(
 claim_assert_static(a_is_const);
 
 typedef struct {
-    enum_(Tag $bits(8)) {
+    enum_((Tag $fits($packed))(
         Tag_A = 0,
-    } tag;
+    )) tag;
     union {
         u8 A;
         u8 B;

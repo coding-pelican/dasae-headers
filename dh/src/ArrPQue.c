@@ -1,22 +1,22 @@
 #include "dh/ArrPQue.h"
 
-T_use_E$($set(mem_Err)(usize));
-$static fn_((addOrOom(usize lhs, usize rhs))(mem_Err$usize) $scope) {
+T_use_E$($set(mem_E)(usize));
+$static fn_((ArrPQue__addOrOOM(usize lhs, usize rhs))(mem_E$usize) $scope) {
     if_some((usize_addChkd(lhs, rhs))(result)) {
         return_ok(result);
     } else_none {
-        return_err(mem_Err_OutOfMemory());
+        return_err(mem_E_OutOfMemory());
     }
     claim_unreachable;
-} $unscoped_(fn);
+} $unscoped(fn);
 
 $attr($inline_always)
-$static fn_((calcInitCap(TypeInfo type))(usize)) {
-    return as$(usize)(prim_max(1, arch_cache_line_bytes / type.size));
+$static fn_((ArrPQue__calcInitCap(TypeInfo type))(usize)) {
+    return as$(usize)(pri_max(1, arch_cache_line_bytes / type.size));
 };
 
-$static fn_((growCap(TypeInfo type, usize current, usize minimum))(usize)) {
-    let init_cap = calcInitCap(type);
+$static fn_((ArrPQue__growCap(TypeInfo type, usize current, usize minimum))(usize)) {
+    let init_cap = ArrPQue__calcInitCap(type);
     usize grown = current;
     do { grown = usize_addSat(grown, grown / 2 + init_cap); } while (grown < minimum);
     return grown;
@@ -120,15 +120,15 @@ $static fn_((heapify(ArrPQue* self, TypeInfo type))(void)) {
 // Core Functions
 // ============================================================================
 
-fn_((ArrPQue_OrdFn_defaultAsc(cmp_MathType type))(ArrPQue_OrdFn)) {
+fn_((ArrPQue_OrdFn_defaultAsc(cmp_m_T type))(ArrPQue_OrdFn)) {
     return cmp_OrdCtxFn_defaultAsc(type);
 };
 
-fn_((ArrPQue_OrdFn_defaultDesc(cmp_MathType type))(ArrPQue_OrdFn)) {
+fn_((ArrPQue_OrdFn_defaultDesc(cmp_m_T type))(ArrPQue_OrdFn)) {
     return cmp_OrdCtxFn_defaultDesc(type);
 };
 
-fn_((ArrPQue_Ctx_defaultAsc(cmp_MathType type))(ArrPQue_Ctx)) {
+fn_((ArrPQue_Ctx_defaultAsc(cmp_m_T type))(ArrPQue_Ctx)) {
     $static let_(inner, Void) = {};
     return (ArrPQue_Ctx){
         .inner = u_anyP(&inner),
@@ -136,7 +136,7 @@ fn_((ArrPQue_Ctx_defaultAsc(cmp_MathType type))(ArrPQue_Ctx)) {
     };
 };
 
-fn_((ArrPQue_Ctx_defaultDesc(cmp_MathType type))(ArrPQue_Ctx)) {
+fn_((ArrPQue_Ctx_defaultDesc(cmp_m_T type))(ArrPQue_Ctx)) {
     $static let_(inner, Void) = {};
     return (ArrPQue_Ctx){
         .inner = u_anyP(&inner),
@@ -165,17 +165,17 @@ fn_((ArrPQue_fixed(u_S$raw buf, P_const$ArrPQue_Ctx ctx))(ArrPQue)) {
     };
 };
 
-fn_((ArrPQue_init(TypeInfo type, mem_Allocator gpa, usize cap, P_const$ArrPQue_Ctx ctx))(mem_Err$ArrPQue) $scope) {
+fn_((ArrPQue_init(TypeInfo type, mem_Alctr gpa, usize cap, P_const$ArrPQue_Ctx ctx))(mem_E$ArrPQue) $scope) {
     claim_assert_nonnull(ctx);
     var pq = ArrPQue_empty(type, ctx);
     try_(ArrPQue_ensureCapPrecise(&pq, type, gpa, cap));
     return_ok(pq);
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrPQue_fini(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void)) {
+fn_((ArrPQue_fini(ArrPQue* self, TypeInfo type, mem_Alctr gpa))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    mem_Allocator_free(gpa, ArrPQue_itemsCappedMut(*self, type));
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    mem_Alctr_free($trace gpa, ArrPQue_itemsCappedMut(*self, type));
     *self = ArrPQue_empty(type, self->ctx);
 };
 
@@ -188,68 +188,67 @@ fn_((ArrPQue_cap(ArrPQue self))(usize)) {
 };
 
 fn_((ArrPQue_peek(ArrPQue self, TypeInfo type))(O$u_P_const$raw) $scope) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     if (self.items.len == 0) { return_none(); }
     return_some(u_atS(ArrPQue_items(self, type), 0));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ArrPQue_peekMut(ArrPQue self, TypeInfo type))(O$u_P$raw) $scope) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     if (self.items.len == 0) { return_none(); }
     return_some(u_atS(ArrPQue_itemsMut(self, type), 0));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ArrPQue_at(ArrPQue self, TypeInfo type, usize idx))(u_P_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_atS(ArrPQue_items(self, type), idx);
 };
 
 fn_((ArrPQue_atMut(ArrPQue self, TypeInfo type, usize idx))(u_P$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_atS(ArrPQue_itemsMut(self, type), idx);
 };
 
 fn_((ArrPQue_items(ArrPQue self, TypeInfo type))(u_S_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_from$S((const type)(self.items.as_const));
 };
 
 fn_((ArrPQue_itemsMut(ArrPQue self, TypeInfo type))(u_S$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
-    ;
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_from$S((type)(self.items));
 };
 
 fn_((ArrPQue_itemsCapped(ArrPQue self, TypeInfo type))(u_S_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_init$S((const type)(ArrPQue_items(self, type).ptr, self.cap));
 };
 
 fn_((ArrPQue_itemsCappedMut(ArrPQue self, TypeInfo type))(u_S$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_init$S((type)(ArrPQue_itemsMut(self, type).ptr, self.cap));
 };
 
 fn_((ArrPQue_itemsUnused(ArrPQue self, TypeInfo type))(u_S_const$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_sliceS(ArrPQue_itemsCapped(self, type), $r(self.items.len, self.cap - self.items.len));
 };
 
 fn_((ArrPQue_itemsUnusedMut(ArrPQue self, TypeInfo type))(u_S$raw)) {
-    debug_assert_eqBy(self.type, type, TypeInfo_eq);
+    debug_assert_eqBy(self.type, type, TypeInfo_eql);
     return u_sliceS(ArrPQue_itemsCappedMut(self, type), $r(self.items.len, self.cap - self.items.len));
 };
 
-fn_((ArrPQue_ensureCap(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void) $scope) {
+fn_((ArrPQue_ensureCap(ArrPQue* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     if (new_cap <= self->cap) { return_ok({}); }
-    return ArrPQue_ensureCapPrecise(self, type, gpa, growCap(type, self->cap, new_cap));
-} $unscoped_(fn);
+    return ArrPQue_ensureCapPrecise(self, type, gpa, ArrPQue__growCap(type, self->cap, new_cap));
+} $unscoped(fn);
 
-fn_((ArrPQue_ensureCapPrecise(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize new_cap))(mem_Err$void) $scope) {
+fn_((ArrPQue_ensureCapPrecise(ArrPQue* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     if (type.size == 0) {
         self->cap = usize_limit_max;
         return_ok({});
@@ -257,24 +256,24 @@ fn_((ArrPQue_ensureCapPrecise(ArrPQue* self, TypeInfo type, mem_Allocator gpa, u
     if (new_cap <= self->cap) { return_ok({}); }
 
     let old_items = ArrPQue_itemsCappedMut(*self, type);
-    if_some((mem_Allocator_remap(gpa, old_items, new_cap))(new_items)) {
+    if_some((mem_Alctr_remap($trace gpa, old_items, new_cap))(new_items)) {
         self->items.ptr = new_items.ptr;
         self->cap = new_items.len;
     } else_none {
-        let new_items = try_(mem_Allocator_alloc(gpa, type, new_cap));
+        let new_items = try_(mem_Alctr_alloc($trace gpa, type, new_cap));
         u_memcpyS(u_prefixS(new_items, self->items.len), ArrPQue_items(*self, type));
-        mem_Allocator_free(gpa, old_items);
+        mem_Alctr_free($trace gpa, old_items);
         self->items.ptr = new_items.ptr;
         self->cap = new_items.len;
     }
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrPQue_ensureUnusedCap(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize additional))(mem_Err$void) $scope) {
+fn_((ArrPQue_ensureUnusedCap(ArrPQue* self, TypeInfo type, mem_Alctr gpa, usize additional))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    return ArrPQue_ensureCap(self, type, gpa, try_(addOrOom(self->items.len, additional)));
-} $unscoped_(fn);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    return ArrPQue_ensureCap(self, type, gpa, try_(ArrPQue__addOrOOM(self->items.len, additional)));
+} $unscoped(fn);
 
 fn_((ArrPQue_shrinkRetainingCap(ArrPQue* self, usize new_len))(void)) {
     claim_assert_nonnull(self);
@@ -282,26 +281,26 @@ fn_((ArrPQue_shrinkRetainingCap(ArrPQue* self, usize new_len))(void)) {
     self->items.len = new_len;
 };
 
-fn_((ArrPQue_shrinkAndFree(ArrPQue* self, TypeInfo type, mem_Allocator gpa, usize new_len))(void)) {
+fn_((ArrPQue_shrinkAndFree(ArrPQue* self, TypeInfo type, mem_Alctr gpa, usize new_len))(void)) {
     claim_assert_nonnull(self);
     claim_assert(new_len <= self->items.len);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     if (new_len == 0) {
         self->items.len = new_len;
         return;
     }
     let old_items = ArrPQue_itemsCappedMut(*self, type);
-    if_some((mem_Allocator_remap(gpa, old_items, new_len))(new_items)) {
+    if_some((mem_Alctr_remap($trace gpa, old_items, new_len))(new_items)) {
         self->cap = new_items.len;
         self->items.ptr = new_items.ptr;
         return;
     }
-    let new_items = catch_((mem_Allocator_alloc(gpa, type, new_len))($ignore, {
+    let new_items = catch_((mem_Alctr_alloc($trace gpa, type, new_len))($ignore, {
         self->items.len = new_len;
         return;
     }));
     u_memcpyS(new_items, u_sliceS(ArrPQue_items(*self, type), $r(0, new_len)));
-    mem_Allocator_free(gpa, old_items);
+    mem_Alctr_free($trace gpa, old_items);
     self->items = new_items.raw;
     self->cap = new_items.len;
 };
@@ -310,10 +309,10 @@ fn_((ArrPQue_clearRetainingCap(ArrPQue* self))(void)) {
     self->items.len = 0;
 };
 
-fn_((ArrPQue_clearAndFree(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void)) {
+fn_((ArrPQue_clearAndFree(ArrPQue* self, TypeInfo type, mem_Alctr gpa))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
-    mem_Allocator_free(gpa, ArrPQue_itemsCappedMut(*self, type));
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    mem_Alctr_free($trace gpa, ArrPQue_itemsCappedMut(*self, type));
     *self = ArrPQue_empty(type, self->ctx);
 };
 
@@ -321,25 +320,25 @@ fn_((ArrPQue_clearAndFree(ArrPQue* self, TypeInfo type, mem_Allocator gpa))(void
 // Enqueue Operations
 // ============================================================================
 
-fn_((ArrPQue_enque(ArrPQue* self, mem_Allocator gpa, u_V$raw item))(mem_Err$void) $scope) {
+fn_((ArrPQue_enque(ArrPQue* self, mem_Alctr gpa, u_V$raw item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     let type = item.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     try_(ArrPQue_ensureUnusedCap(self, type, gpa, 1));
     return_ok_void(ArrPQue_enqueWithin(self, item));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrPQue_enqueFixed(ArrPQue* self, u_V$raw item))(mem_Err$void) $scope) {
+fn_((ArrPQue_enqueFixed(ArrPQue* self, u_V$raw item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, item.inner_type, TypeInfo_eq);
-    if (usize_sub(self->cap, self->items.len) == 0) { return_err(mem_Err_OutOfMemory()); }
+    debug_assert_eqBy(self->type, item.inner_type, TypeInfo_eql);
+    if (usize_sub(self->cap, self->items.len) == 0) { return_err(mem_E_OutOfMemory()); }
     return_ok_void(ArrPQue_enqueWithin(self, item));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ArrPQue_enqueWithin(ArrPQue* self, u_V$raw item))(void)) {
     claim_assert_nonnull(self);
     let type = item.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     claim_assert(self->items.len < self->cap);
     // Add item at the end
     let new_idx = self->items.len;
@@ -349,25 +348,25 @@ fn_((ArrPQue_enqueWithin(ArrPQue* self, u_V$raw item))(void)) {
     siftUp(self, type, new_idx);
 };
 
-fn_((ArrPQue_enqueS(ArrPQue* self, mem_Allocator gpa, u_S_const$raw items))(mem_Err$void) $scope) {
+fn_((ArrPQue_enqueS(ArrPQue* self, mem_Alctr gpa, u_S_const$raw items))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     let type = items.type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     try_(ArrPQue_ensureUnusedCap(self, type, gpa, items.len));
     return_ok_void(ArrPQue_enqueSWithin(self, items));
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((ArrPQue_enqueSFixed(ArrPQue* self, u_S_const$raw items))(mem_Err$void) $scope) {
+fn_((ArrPQue_enqueSFixed(ArrPQue* self, u_S_const$raw items))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, items.type, TypeInfo_eq);
-    if (usize_sub(self->cap, self->items.len) < items.len) { return_err(mem_Err_OutOfMemory()); }
+    debug_assert_eqBy(self->type, items.type, TypeInfo_eql);
+    if (usize_sub(self->cap, self->items.len) < items.len) { return_err(mem_E_OutOfMemory()); }
     return_ok_void(ArrPQue_enqueSWithin(self, items));
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ArrPQue_enqueSWithin(ArrPQue* self, u_S_const$raw items))(void)) {
     claim_assert_nonnull(self);
     let type = items.type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     claim_assert(self->items.len + items.len <= self->cap);
     // Add all items to the end (copy to unused portion of buffer)
     u_memcpyS(u_prefixS(ArrPQue_itemsUnusedMut(*self, type), items.len), items);
@@ -383,7 +382,7 @@ fn_((ArrPQue_enqueSWithin(ArrPQue* self, u_S_const$raw items))(void)) {
 fn_((ArrPQue_deque(ArrPQue* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     claim_assert_nonnull(self);
     let type = ret_mem.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     if (self->items.len == 0) { return_none(); }
     // Copy root to return value
     let value = u_deref(u_memcpy(u_allocV(type).ref, u_atS(ArrPQue_items(*self, type), 0)));
@@ -396,12 +395,12 @@ fn_((ArrPQue_deque(ArrPQue* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
         siftDown(self, type, 0);
     }
     return_some({ .inner = u_memcpy(ret_mem.ref, value.ref.as_const).raw });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((ArrPQue_removeAt(ArrPQue* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scope) {
     claim_assert_nonnull(self);
     let type = ret_mem.inner_type;
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     claim_assert(idx < self->items.len);
     // Copy item to return value
     let value = u_deref(u_memcpy(u_allocV(type).ref, u_atS(ArrPQue_items(*self, type), idx)));
@@ -428,16 +427,16 @@ fn_((ArrPQue_removeAt(ArrPQue* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scop
         }
     }
     return_({ .inner = u_memcpy(ret_mem.ref, value.ref.as_const).raw });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // ============================================================================
 // Update Operation
 // ============================================================================
 
-fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$void) $scope) {
+fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->type, old_item.inner_type, TypeInfo_eq);
-    debug_assert_eqBy(self->type, new_item.inner_type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, old_item.inner_type, TypeInfo_eql);
+    debug_assert_eqBy(self->type, new_item.inner_type, TypeInfo_eql);
     // Find the old item by comparing with ordCtx
     let type = old_item.inner_type;
     usize idx = 0;
@@ -447,7 +446,7 @@ fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$
         idx++;
     }
     if (idx >= self->items.len) {
-        return_err(mem_Err_OutOfMemory()); // Element not found (reuse error for simplicity)
+        return_err(mem_E_OutOfMemory()); // Element not found (reuse error for simplicity)
     }
     // Update the item
     let old_elem = u_deref(u_memcpy(u_allocV(type).ref, u_atS(ArrPQue_items(*self, type), idx)));
@@ -460,14 +459,14 @@ fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_Err$
     case_((cmp_Ord_eq)) $ignore_void no_need_to_restore $end(case);
     }
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 
 // ============================================================================
 // Iterator
 // ============================================================================
 
 fn_((ArrPQue_iter(const ArrPQue* self, TypeInfo type))(ArrPQue_Iter)) {
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     let_ignore = type;
     return (ArrPQue_Iter){
         .que = self,
@@ -477,19 +476,19 @@ fn_((ArrPQue_iter(const ArrPQue* self, TypeInfo type))(ArrPQue_Iter)) {
 };
 
 fn_((ArrPQue_Iter_next(ArrPQue_Iter* self, TypeInfo type))(O$u_P_const$raw) $scope) {
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     return expr_(ReturnType $scope)(
         self->idx < self->que->items.len
             ? $break_(some(u_atS(ArrPQue_items(*self->que, type), self->idx++)))
             : $break_(none())
-    ) $unscoped_(expr);
-} $unscoped_(fn);
+    ) $unscoped(expr);
+} $unscoped(fn);
 
 fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw) $scope) {
-    debug_assert_eqBy(self->type, type, TypeInfo_eq);
+    debug_assert_eqBy(self->type, type, TypeInfo_eql);
     return expr_(ReturnType $scope)(
         self->idx < self->que->items.len
             ? $break_(some(u_atS(ArrPQue_itemsMut(*self->que, type), self->idx++)))
             : $break_(none())
-    ) $unscoped_(expr);
-} $unscoped_(fn);
+    ) $unscoped(expr);
+} $unscoped(fn);

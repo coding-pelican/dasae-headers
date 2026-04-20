@@ -25,7 +25,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/mem/Allocator.h"
+#include "dh/mem/Alctr.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -61,8 +61,8 @@ T_use_P$(HashMap_Ctrl);
 T_use_O$(P_const$HashMap_Ctrl);
 T_use_O$(P$HashMap_Ctrl);
 static const HashMap_Ctrl HashMap_Ctrl_default = { .fingerprint = HashMap_Ctrl_free, .used = 0 };
-#define HashMap_Ctrl_slot_free (lit_n$(HashMap_Ctrl){ .fingerprint = HashMap_Ctrl_free, .used = 0 })
-#define HashMap_Ctrl_slot_tombstone (lit_n$(HashMap_Ctrl){ .fingerprint = HashMap_Ctrl_tombstone, .used = 0 })
+#define HashMap_Ctrl_slot_free (n$(HashMap_Ctrl){ .fingerprint = HashMap_Ctrl_free, .used = 0 })
+#define HashMap_Ctrl_slot_tombstone (n$(HashMap_Ctrl){ .fingerprint = HashMap_Ctrl_tombstone, .used = 0 })
 $attr($inline_always)
 $static fn_((HashMap_Ctrl_isUsed(HashMap_Ctrl ctrl))(bool)) {
     return ctrl.used == 1;
@@ -126,7 +126,7 @@ typedef struct HashMap_Pair$raw {
     var_(data, V$raw);
 } HashMap_Pair$raw;
 T_use_O$(HashMap_Pair$raw);
-T_use_E$($set(mem_Err)(O$HashMap_Pair$raw));
+T_use_E$($set(mem_E)(O$HashMap_Pair$raw));
 $extern fn_((HashMap_Pair_key(HashMap_Pair$raw* self, TypeInfo key_ty, u_V$raw ret_mem))(u_V$raw));
 $extern fn_((HashMap_Pair_val(HashMap_Pair$raw* self, TypeInfo val_ty, u_V$raw ret_mem))(u_V$raw));
 
@@ -188,7 +188,7 @@ typedef struct HashMap_EnsuredEntry {
         var_(val_ty, TypeInfo);
     });
 } HashMap_EnsuredEntry;
-T_use_E$($set(mem_Err)(HashMap_EnsuredEntry));
+T_use_E$($set(mem_E)(HashMap_EnsuredEntry));
 $extern fn_((HashMap_EnsuredEntry_key(HashMap_EnsuredEntry self, TypeInfo key_ty))(u_P_const$raw));
 $extern fn_((HashMap_EnsuredEntry_keyMut(HashMap_EnsuredEntry self, TypeInfo key_ty))(u_P$raw));
 $extern fn_((HashMap_EnsuredEntry_val(HashMap_EnsuredEntry self, TypeInfo val_ty))(u_P_const$raw));
@@ -240,20 +240,20 @@ typedef struct HashMap {
     });
 } HashMap;
 T_use$((HashMap)(O, E));
-T_use_E$($set(mem_Err)(HashMap));
-#define HashMap_default_max_load_ratio (lit_n$(u32)(80))
-#define HashMap_default_min_cap (lit_n$(u32)(8))
+T_use_E$($set(mem_E)(HashMap));
+#define HashMap_default_max_load_ratio (n$(u32)(80))
+#define HashMap_default_min_cap (n$(u32)(8))
 
 /* --- Construction/Destruction --- */
 
 $extern fn_((HashMap_empty(TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx))(HashMap));
 $attr($must_check)
-$extern fn_((HashMap_init(TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx, mem_Allocator gpa, u32 cap))(mem_Err$HashMap));
-$extern fn_((HashMap_fini(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Allocator gpa))(void));
+$extern fn_((HashMap_init(TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx, mem_Alctr gpa, u32 cap))(mem_E$HashMap));
+$extern fn_((HashMap_fini(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa))(void));
 $attr($must_check)
-$extern fn_((HashMap_clone(HashMap self, TypeInfo key_ty, TypeInfo val_ty, mem_Allocator gpa))(mem_Err$HashMap));
+$extern fn_((HashMap_clone(HashMap self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa))(mem_E$HashMap));
 $attr($must_check)
-$extern fn_((HashMap_cloneWithCtx(HashMap self, TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx, mem_Allocator gpa))(mem_Err$HashMap));
+$extern fn_((HashMap_cloneWithCtx(HashMap self, TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx, mem_Alctr gpa))(mem_E$HashMap));
 
 /* --- Capacity Management --- */
 
@@ -261,13 +261,13 @@ $extern fn_((HashMap_count(HashMap self))(u32));
 $extern fn_((HashMap_cap(HashMap self))(u32));
 
 $extern fn_((HashMap_ensureCap(
-    HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Allocator gpa, usize new_cap
-))(mem_Err$void)) $must_check;
+    HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa, usize new_cap
+))(mem_E$void)) $must_check;
 $extern fn_((HashMap_ensureUnusedCap(
-    HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Allocator gpa, usize additional
-))(mem_Err$void)) $must_check;
+    HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa, usize additional
+))(mem_E$void)) $must_check;
 $extern fn_((HashMap_clearRetainingCap(HashMap* self))(void));
-$extern fn_((HashMap_clearAndFree(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Allocator gpa))(void));
+$extern fn_((HashMap_clearAndFree(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa))(void));
 
 /* --- Lookup Operations --- */
 
@@ -287,11 +287,11 @@ $extern fn_((HashMap_contains(HashMap self, u_V$raw key, TypeInfo val_ty))(bool)
 /* --- Insertion Operations --- */
 
 /// Insert or update. May allocate.
-$extern fn_((HashMap_put(HashMap* self, mem_Allocator gpa, u_V$raw key, u_V$raw val))(mem_Err$void)) $must_check;
+$extern fn_((HashMap_put(HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw val))(mem_E$void)) $must_check;
 /// Insert or update. Asserts capacity is available.
 $extern fn_((HashMap_putWithin(HashMap* self, u_V$raw key, u_V$raw val))(void));
 /// Insert only if not present. May allocate.
-$extern fn_((HashMap_putNoClobber(HashMap* self, mem_Allocator gpa, u_V$raw key, u_V$raw val))(mem_Err$void)) $must_check;
+$extern fn_((HashMap_putNoClobber(HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw val))(mem_E$void)) $must_check;
 /// Insert only if not present. Asserts capacity and key not present.
 $extern fn_((HashMap_putNoClobberWithin(HashMap* self, u_V$raw key, u_V$raw val))(void));
 
@@ -299,8 +299,8 @@ $extern fn_((HashMap_putNoClobberWithin(HashMap* self, u_V$raw key, u_V$raw val)
 
 /// Insert or update, returning previous value if it existed. May allocate.
 $extern fn_((HashMap_fetchPut(
-    HashMap* self, mem_Allocator gpa, u_V$raw key, u_V$raw val
-))(mem_Err$O$HashMap_Pair$raw)) $must_check;
+    HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw val
+))(mem_E$O$HashMap_Pair$raw)) $must_check;
 /// Insert or update, returning previous value if it existed. Asserts capacity.
 $extern fn_((HashMap_fetchPutWithin(
     HashMap* self, u_V$raw key, u_V$raw val
@@ -310,8 +310,8 @@ $extern fn_((HashMap_fetchPutWithin(
 
 /// Get existing entry or insert new one. May allocate.
 $extern fn_((HashMap_ensure(
-    HashMap* self, TypeInfo val_ty, mem_Allocator gpa, u_V$raw key
-))(mem_Err$HashMap_EnsuredEntry)) $must_check;
+    HashMap* self, TypeInfo val_ty, mem_Alctr gpa, u_V$raw key
+))(mem_E$HashMap_EnsuredEntry)) $must_check;
 /// Get existing entry or insert new one. Asserts capacity is available.
 $extern fn_((HashMap_ensureWithin(
     HashMap* self, TypeInfo val_ty, u_V$raw key
@@ -319,10 +319,10 @@ $extern fn_((HashMap_ensureWithin(
 /// Get existing entry or insert with default value. May allocate.
 $extern fn_((HashMap_ensureValue(
     HashMap* self,
-    mem_Allocator gpa,
+    mem_Alctr gpa,
     u_V$raw key,
     u_V$raw default_val
-))(mem_Err$HashMap_EnsuredEntry)) $must_check;
+))(mem_E$HashMap_EnsuredEntry)) $must_check;
 
 /* --- Removal Operations --- */
 
@@ -616,7 +616,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 #define __comp_alias__HashMap$(_K, _V...) tpl_id$1T$2U(HashMap, _K, _V)
 #define __comp_gen__T_decl_HashMap$(_K, _V...) \
     $maybe_unused typedef union HashMap$(_K, _V) HashMap$(_K, _V); \
-    T_decl_E$($set(mem_Err)(HashMap$(_K, _V)))
+    T_decl_E$($set(mem_E)(HashMap$(_K, _V)))
 #define __comp_gen__T_impl_HashMap$(_K, _V...) \
     union HashMap$(_K, _V) { \
         struct { \
@@ -631,7 +631,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
         }; \
         var_(as_raw, HashMap) $like_ref; \
     }; \
-    T_impl_E$($set(mem_Err)(HashMap$(_K, _V)))
+    T_impl_E$($set(mem_E)(HashMap$(_K, _V)))
 #define __comp_gen__T_use_HashMap$(_K, _V...) \
     T_decl_HashMap$(_K, _V); \
     T_impl_HashMap$(_K, _V)
@@ -649,8 +649,9 @@ fn_((HashMap_defaultHash(u_V$raw val, u_V$raw ctx))(u64)) {
     var_(hash, u64) = 0xcbf29ce484222325ull; // FNV offset basis
     for_(($s(bytes))(byte) {
         hash ^= *byte;
-        hash *= 0x100000001b3ull; // FNV prime
-    });
+        hash *= 0x100000001b3ull; // FNV prie
+    })
+        ;
     return hash;
 }
 
@@ -670,12 +671,12 @@ fn_((HashMap_empty(TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx))(H
     };
 };
 
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/heap/Page.h"
 
 TEST_fn_("basic usage" $guard) {
     var heap = (heap_Page){};
-    let gpa = heap_Page_allocator(&heap);
+    let gpa = heap_Page_alctr(&heap);
     var map_value = try_(HashMap_init(
         typeInfo$(u32), typeInfo$(u32), &HashMap_default_ctx, gpa, 16
     ));
@@ -686,7 +687,8 @@ TEST_fn_("basic usage" $guard) {
     for_(($r(0, count))(i) {
         try_(HashMap_put(&map_value, gpa, u_anyV(i), u_anyV(i)));
         total += i;
-    });
+    })
+        ;
 
     with_(var_(sum, u32) = 0) {
         var it = HashMap_iter(&map_value, typeInfo$(u32), typeInfo$(u32));
@@ -700,7 +702,8 @@ TEST_fn_("basic usage" $guard) {
         for_(($r(0, count))(i) {
             try_(TEST_expect(i == unwrap_(u_castO$((O$u32)(HashMap_by(map_value, u_anyV(i), u_retV$(u32)))))));
             sum += unwrap_(u_castO$((O$u32)(HashMap_by(map_value, u_anyV(i), u_retV$(u32)))));
-        });
+        })
+            ;
         try_(TEST_expect(sum == total));
     }
-} $unguarded_(TEST_fn);
+} $unguarded(TEST_fn);

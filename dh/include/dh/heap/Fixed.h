@@ -35,9 +35,9 @@ T_use_O$(heap_Fixed);
 T_use_E$(heap_Fixed);
 
 /// Get allocator interface for instance
-$extern fn_((heap_Fixed_allocator(heap_Fixed* self))(mem_Allocator));
+$extern fn_((heap_Fixed_alctr(heap_Fixed* self))(mem_Alctr));
 /// Get thread-safe allocator interface for instance (only allocate is thread-safe)
-$extern fn_((heap_Fixed_thrdSafeAllocator(heap_Fixed* self))(mem_Allocator));
+$extern fn_((heap_Fixed_thrdSafeAlctr(heap_Fixed* self))(mem_Alctr));
 
 /// Initialize with buffer
 $extern fn_((heap_Fixed_from(S$u8 buf))(heap_Fixed));

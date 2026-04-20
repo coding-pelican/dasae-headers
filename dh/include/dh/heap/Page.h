@@ -31,7 +31,7 @@ typedef struct heap_Page {
     Void unused_[0];
 } heap_Page;
 /// Get allocator interface for instance
-$extern fn_((heap_Page_allocator(heap_Page* self))(mem_Allocator));
+$extern fn_((heap_Page_alctr(heap_Page* self))(mem_Alctr));
 /// Get next virtual memory address hint
 $static var_(heap_Page_s_next_mmap_addr_hint, P$raw) = null;
 

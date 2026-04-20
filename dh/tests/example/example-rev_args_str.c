@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/fs/File.h"
 #include "dh/io/common.h"
 #include "dh/io/stream.h"
@@ -7,16 +7,17 @@
 #include "dh/fmt/common.h"
 
 T_use$((u8)(
-    mem_TokenIter,
-    mem_tokenizeValue,
-    mem_TokenIter_next
+    mem_Delim,
+    mem_TokzIter,
+    mem_tokzUnit,
+    mem_TokzIter_next
 ));
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     io_stream_println(u8_l("passed args:"));
-    for_($rev($s(args), $rf(0))(arg, index) {
+    for_($rev($s(args), $rf(0))(arg, index)) {
         io_stream_println(u8_l("  arg {:ul}: {:s}"), index, arg);
-    });
+    } $end(for);
     io_stream_nl();
 
     var_(input_mem, A$$(64, u8)) = A_zero();
@@ -24,20 +25,20 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let stream_in = fs_File_reader(io_getStdIn());
 
     using_(let input = S_prefix((input_buf)try_(io_Reader_read(stream_in, input_buf)))) {
-        var iter = mem_tokenizeValue$u8(input.as_const, u8_c(' '));
-        while_some(mem_TokenIter_next$u8(&iter), token) {
+        var iter = mem_tokzUnit$u8(input.as_const, u8_c(' '));
+        while_some(mem_TokzIter_next$u8(&iter), token) {
             io_stream_println(u8_l("token: {:s}"), token);
         }
         io_stream_nl();
     }
 
     using_(let input = S_prefix((input_buf)try_(io_Reader_read(stream_in, input_buf)))) {
-        var iter = mem_tokenizeValue$u8(input.as_const, u8_c(' '));
-        let a = mem_TokenIter_next$u8(&iter);
+        var iter = mem_tokzUnit$u8(input.as_const, u8_c(' '));
+        let a = mem_TokzIter_next$u8(&iter);
         io_stream_println(u8_l("a: {:?s}"), a);
-        let b = mem_TokenIter_next$u8(&iter);
+        let b = mem_TokzIter_next$u8(&iter);
         io_stream_println(u8_l("b: {:?s}"), b);
-        let c_maybe_none = mem_TokenIter_next$u8(&iter);
+        let c_maybe_none = mem_TokzIter_next$u8(&iter);
         io_stream_println(u8_l("c: {:?s}"), c_maybe_none);
         let parsed_a = try_(fmt_parse$i32(unwrap_(a), 10));
         io_stream_println(u8_l("parsed_a: {:i}"), parsed_a);
@@ -49,4 +50,4 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     }
 
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);

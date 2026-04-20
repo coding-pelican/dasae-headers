@@ -23,7 +23,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/mem/Allocator.h"
+#include "dh/mem/Alctr.h"
 
 /*========== Macros and Declarations ========================================*/
 

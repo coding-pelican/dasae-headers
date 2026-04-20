@@ -118,55 +118,55 @@ $attr($inline_always)
 $static fn_((u_typeInfoRecord(S_const$TypeInfo fields))(TypeInfo)) {
     claim_assert_nonnull(fields.ptr);
     usize end_offset = 0;
-    mem_Align max_align = 0;
-    for_(($s(fields))(field) {
-        let align_val = mem_log2ToAlign(field->align);
+    usize max_align = 0;
+    for_(($s(fields))(field)) {
+        let align_val = TypeInfo_align(*field);
         let offset = mem_alignFwd(end_offset, align_val);
         end_offset = offset + field->size;
-        max_align = prim_max(max_align, TypeInfo_align(*field));
-    });
+        max_align = pri_max(max_align, TypeInfo_align(*field));
+    } $end(for);
     return (TypeInfo){
-        .size = mem_alignFwd(end_offset, mem_log2ToAlign(max_align)),
-        .align = max_align
+        .size = mem_alignFwd(end_offset, max_align),
+        .log2_align = mem_alignToLog2(max_align)
     };
 };
 $attr($inline_always)
 $static fn_((u_sizeOfRecord(S_const$TypeInfo fields))(usize)) {
     claim_assert_nonnull(fields.ptr);
     usize end_offset = 0;
-    mem_Align max_align = 0;
-    for_(($s(fields))(field) {
-        let align_val = mem_log2ToAlign(field->align);
+    usize max_align = 0;
+    for_(($s(fields))(field)) {
+        let align_val = TypeInfo_align(*field);
         let offset = mem_alignFwd(end_offset, align_val);
         end_offset = offset + field->size;
-        max_align = prim_max(max_align, as$(mem_Align)(field->align));
-    });
-    return mem_alignFwd(end_offset, mem_log2ToAlign(max_align));
+        max_align = pri_max(max_align, TypeInfo_align(*field));
+    } $end(for);
+    return mem_alignFwd(end_offset, max_align);
 };
 $attr($inline_always)
 $static fn_((u_alignOfRecord(S_const$TypeInfo fields))(mem_Align)) {
     claim_assert_nonnull(fields.ptr);
-    mem_Align max_align = 0;
-    for_(($s(fields))(field) {
-        max_align = prim_max(max_align, as$(mem_Align)(field->align));
-    });
-    return max_align;
+    usize max_align = 0;
+    for_(($s(fields))(field)) {
+        max_align = pri_max(max_align, TypeInfo_align(*field));
+    } $end(for);
+    return mem_alignToLog2(max_align);
 };
 
 $attr($inline_always)
 $static fn_((u_offsetTo(TypeInfo record, S_const$TypeInfo fields, usize field_idx))(usize)) {
     claim_assert_nonnull(fields.ptr);
     claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
-    debug_assert_fmt(TypeInfo_eq(record, u_typeInfoRecord(fields)), "Type mismatch: record type does not match expected type");
+    debug_assert_fmt(TypeInfo_eql(record, u_typeInfoRecord(fields)), "Type mismatch: record type does not match expected type");
     let_ignore = record;
     usize end_offset = 0;
-    for_(($s(fields))(field) {
-        let align_val = mem_log2ToAlign(field->align);
+    for_(($s(fields))(field)) {
+        let align_val = TypeInfo_align(*field);
         let offset = mem_alignFwd(end_offset, align_val);
         if (field_idx == 0) { return offset; }
         end_offset = offset + field->size;
         field_idx--;
-    });
+    } $end(for);
     return end_offset;
 };
 $attr($inline_always)
@@ -175,12 +175,12 @@ $static fn_((u_offsets(S_const$TypeInfo fields, S$usize out))(S$usize)) {
     claim_assert_nonnull(out.ptr);
     claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
-    for_(($s(fields), $s(out))(field, out_offset) {
-        let align_val = mem_log2ToAlign(field->align);
+    for_(($s(fields), $s(out))(field, out_offset)) {
+        let align_val = TypeInfo_align(*field);
         let offset = mem_alignFwd(end_offset, align_val);
         *out_offset = offset;
         end_offset = offset + field->size;
-    });
+    } $end(for);
     return out;
 };
 
@@ -212,15 +212,15 @@ $static fn_((u_fieldPtrs(u_P_const$raw record, S_const$TypeInfo fields, S$u_P_co
     claim_assert_nonnull(out.ptr);
     claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
-    for_(($s(fields), $s(out))(field, out_field) {
-        let align_val = mem_log2ToAlign(field->align);
+    for_(($s(fields), $s(out))(field, out_field)) {
+        let align_val = TypeInfo_align(*field);
         let offset = mem_alignFwd(end_offset, align_val);
-        *out_field = lit$((u_P_const$raw){
+        *out_field = l$((u_P_const$raw){
             .raw = as$(P_const$raw)(as$(const u8*)(record.raw) + offset),
             .type = *field,
         });
         end_offset = offset + field->size;
-    });
+    } $end(for);
     return out;
 };
 $attr($inline_always)
@@ -229,15 +229,15 @@ $static fn_((u_fieldPtrsMut(u_P$raw record, S_const$TypeInfo fields, S$u_P$raw o
     claim_assert_nonnull(out.ptr);
     claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
-    for_(($s(fields), $s(out))(field, out_field) {
-        let align_val = mem_log2ToAlign(field->align);
+    for_(($s(fields), $s(out))(field, out_field)) {
+        let align_val = TypeInfo_align(*field);
         let offset = mem_alignFwd(end_offset, align_val);
-        *out_field = lit$((u_P$raw){
+        *out_field = l$((u_P$raw){
             .raw = as$(P$raw)(as$(u8*)(record.raw) + offset),
             .type = *field,
         });
         end_offset = offset + field->size;
-    });
+    } $end(for);
     return out;
 };
 $attr($inline_always)
@@ -245,7 +245,7 @@ $static fn_((u_recordPtr(u_P_const$raw field, S_const$TypeInfo fields, usize fie
     // claim_assert_nonnull(field.raw);
     claim_assert_nonnull(fields.ptr);
     claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
-    claim_assert_fmt(TypeInfo_eq(field.type, *S_at((fields)[field_idx])), "Type mismatch: field type does not match expected type at index %zu", field_idx);
+    claim_assert_fmt(TypeInfo_eql(field.type, *S_at((fields)[field_idx])), "Type mismatch: field type does not match expected type at index %zu", field_idx);
     let offset = u_offsetTo(field.type, fields, field_idx);
     let record_type = u_typeInfoRecord(fields);
     return (u_P_const$raw){
@@ -258,7 +258,7 @@ $static fn_((u_recordPtrMut(u_P$raw field, S_const$TypeInfo fields, usize field_
     // claim_assert_nonnull(field.raw);
     claim_assert_nonnull(fields.ptr);
     claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
-    claim_assert_fmt(TypeInfo_eq(field.type, *S_at((fields)[field_idx])), "Type mismatch: field type does not match expected type at index {:uz}", field_idx);
+    claim_assert_fmt(TypeInfo_eql(field.type, *S_at((fields)[field_idx])), "Type mismatch: field type does not match expected type at index {:uz}", field_idx);
     let offset = u_offsetTo(field.type, fields, field_idx);
     let record_type = u_typeInfoRecord(fields);
     return (u_P$raw){
@@ -269,7 +269,7 @@ $static fn_((u_recordPtrMut(u_P$raw field, S_const$TypeInfo fields, usize field_
 
 $attr($inline_always)
 $static fn_((u_typeInfoA(usize n, TypeInfo elem))(TypeInfo)) {
-    return (TypeInfo){ .size = n * elem.size, .align = elem.align };
+    return (TypeInfo){ .size = n * elem.size, .log2_align = elem.log2_align };
 };
 $attr($inline_always)
 $static fn_((u_sizeOfA(usize n, TypeInfo elem))(usize)) {
@@ -278,47 +278,47 @@ $static fn_((u_sizeOfA(usize n, TypeInfo elem))(usize)) {
 $attr($inline_always)
 $static fn_((u_alignOfA(usize n, TypeInfo elem))(mem_Align)) {
     let_ignore = n;
-    return elem.align;
+    return elem.log2_align;
 };
 
 $attr($inline_always)
 $static fn_((u_typeInfoRecordN(usize n, S_const$TypeInfo fields))(TypeInfo)) {
     claim_assert_nonnull(fields.ptr);
     usize end_offset = 0;
-    mem_Align max_align = 0;
-    for_(($s(fields))(field) {
+    usize max_align = 0;
+    for_(($s(fields))(field)) {
         let arr_type = u_typeInfoA(n, *field);
-        let offset = mem_alignFwd(end_offset, mem_log2ToAlign(arr_type.align));
+        let offset = mem_alignFwd(end_offset, TypeInfo_align(arr_type));
         end_offset = offset + arr_type.size;
-        max_align = prim_max(max_align, as$(mem_Align)(arr_type.align));
-    });
+        max_align = pri_max(max_align, TypeInfo_align(arr_type));
+    } $end(for);
     return (TypeInfo){
-        .size = mem_alignFwd(end_offset, mem_log2ToAlign(max_align)),
-        .align = max_align
+        .size = mem_alignFwd(end_offset, max_align),
+        .log2_align = mem_alignToLog2(max_align)
     };
 };
 $attr($inline_always)
 $static fn_((u_sizeOfRecordN(usize n, S_const$TypeInfo fields))(usize)) {
     claim_assert_nonnull(fields.ptr);
     usize end_offset = 0;
-    mem_Align max_align = 0;
-    for_(($s(fields))(field) {
+    usize max_align = 0;
+    for_(($s(fields))(field)) {
         let arr_type = u_typeInfoA(n, *field);
-        let offset = mem_alignFwd(end_offset, mem_log2ToAlign(arr_type.align));
+        let offset = mem_alignFwd(end_offset, TypeInfo_align(arr_type));
         end_offset = offset + arr_type.size;
-        max_align = prim_max(max_align, as$(mem_Align)(arr_type.align));
-    });
-    return mem_alignFwd(end_offset, mem_log2ToAlign(max_align));
+        max_align = pri_max(max_align, TypeInfo_align(arr_type));
+    } $end(for);
+    return mem_alignFwd(end_offset, max_align);
 };
 $attr($inline_always)
 $static fn_((u_alignOfRecordN(usize n, S_const$TypeInfo fields))(mem_Align)) {
     claim_assert_nonnull(fields.ptr);
-    mem_Align max_align = 0;
-    for_(($s(fields))(field) {
+    usize max_align = 0;
+    for_(($s(fields))(field)) {
         let arr_type = u_typeInfoA(n, *field);
-        max_align = prim_max(max_align, as$(mem_Align)(arr_type.align));
-    });
-    return max_align;
+        max_align = pri_max(max_align, TypeInfo_align(arr_type));
+    } $end(for);
+    return mem_alignToLog2(max_align);
 };
 
 $attr($inline_always)
@@ -326,13 +326,13 @@ $static fn_((u_offsetToN(usize n, S_const$TypeInfo fields, usize field_idx))(usi
     claim_assert_nonnull(fields.ptr);
     claim_assert_fmt(field_idx < fields.len, "Field index out of bounds: idx({:uz}) >= len({:uz})", field_idx, fields.len);
     usize end_offset = 0;
-    for_(($s(fields))(field) {
+    for_(($s(fields))(field)) {
         let arr_type = u_typeInfoA(n, *field);
-        let offset = mem_alignFwd(end_offset, mem_log2ToAlign(arr_type.align));
+        let offset = mem_alignFwd(end_offset, TypeInfo_align(arr_type));
         if (field_idx == 0) { return offset; }
         end_offset = offset + arr_type.size;
         field_idx--;
-    });
+    } $end(for);
     return end_offset;
 };
 $attr($inline_always)
@@ -341,12 +341,12 @@ $static fn_((u_offsetsN(usize n, S_const$TypeInfo fields, S$usize out))(S$usize)
     claim_assert_nonnull(out.ptr);
     claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
-    for_(($s(fields), $s(out))(field, out_offset) {
+    for_(($s(fields), $s(out))(field, out_offset)) {
         let arr_type = u_typeInfoA(n, *field);
-        let offset = mem_alignFwd(end_offset, mem_log2ToAlign(arr_type.align));
+        let offset = mem_alignFwd(end_offset, TypeInfo_align(arr_type));
         *out_offset = offset;
         end_offset = offset + arr_type.size;
-    });
+    } $end(for);
     return out;
 };
 
@@ -376,16 +376,16 @@ $static fn_((u_fieldSlis(u_P_const$raw record, usize n, S_const$TypeInfo fields,
     claim_assert_nonnull(out.ptr);
     claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
-    for_(($s(fields), $s(out))(field, out_field) {
+    for_(($s(fields), $s(out))(field, out_field)) {
         let arr_type = u_typeInfoA(n, *field);
-        let offset = mem_alignFwd(end_offset, mem_log2ToAlign(arr_type.align));
-        *out_field = lit$((u_S_const$raw){
+        let offset = mem_alignFwd(end_offset, TypeInfo_align(arr_type));
+        *out_field = l$((u_S_const$raw){
             .ptr = as$(P_const$raw)(as$(const u8*)(record.raw) + offset),
             .len = n,
             .type = *field,
         });
         end_offset = offset + arr_type.size;
-    });
+    } $end(for);
     return out;
 };
 $attr($inline_always)
@@ -394,16 +394,16 @@ $static fn_((u_fieldSlisMut(u_P$raw record, usize n, S_const$TypeInfo fields, S$
     claim_assert_nonnull(out.ptr);
     claim_assert_fmt(fields.len <= out.len, "fields({:uz}) > out({:uz})", fields.len, out.len);
     usize end_offset = 0;
-    for_(($s(fields), $s(out))(field, out_field) {
+    for_(($s(fields), $s(out))(field, out_field)) {
         let arr_type = u_typeInfoA(n, *field);
-        let offset = mem_alignFwd(end_offset, mem_log2ToAlign(arr_type.align));
-        *out_field = lit$((u_S$raw){
+        let offset = mem_alignFwd(end_offset, TypeInfo_align(arr_type));
+        *out_field = l$((u_S$raw){
             .ptr = as$(P$raw)(as$(u8*)(record.raw) + offset),
             .len = n,
             .type = *field,
         });
         end_offset = offset + arr_type.size;
-    });
+    } $end(for);
     return out;
 };
 $static fn_((u_recordNPtr(u_S_const$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P_const$raw)) {

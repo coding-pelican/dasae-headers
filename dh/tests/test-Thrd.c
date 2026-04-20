@@ -1,4 +1,4 @@
-#include "dh/main.h"
+#include "dh-main.h"
 #include "dh/Thrd/common.h"
 #include "dh/time/Duration.h"
 #include "dh/io/stream.h"
@@ -7,12 +7,12 @@
     let input = args->input;
     Thrd_sleep(time_Duration_fromMillis(10));
     return_(input * 2);
-} $unscoped_(Thrd_fn); */
+} $unscoped(Thrd_fn); */
 $static Thrd_fn_(timesTwo, ({ i32 input; }, i32), ($ignore, args)$scope) {
     let input = args->input;
     Thrd_sleep(time_Duration_fromMillis(10));
     return_(input * 2);
-} $unscoped_(Thrd_fn);
+} $unscoped(Thrd_fn);
 
 TEST_fn_("Thrd: Basic Lifetime (Stack Memory)" $scope) {
     var worker_ctx = Thrd_FnCtx_from$((timesTwo)(42));
@@ -23,7 +23,7 @@ TEST_fn_("Thrd: Basic Lifetime (Stack Memory)" $scope) {
     try_(TEST_expect(result == 84));
     try_(TEST_expect(result_ctx == worker_ctx.as_raw));
     io_stream_println(u8_l("Thrd: Basic Lifetime (Stack Memory) passed"));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 typedef A$$(100, i32) ArrForTest;
 
@@ -33,14 +33,14 @@ typedef A$$(100, i32) ArrForTest;
         sum += *value;
     });
     return_(sum);
-} $unscoped_(Thrd_fn); */
+} $unscoped(Thrd_fn); */
 $static Thrd_fn_(sumValues, ({ ArrForTest values; }, i32), ($ignore, args)$scope) {
     i32 sum = 0;
     for_(($a(args->values))(value) {
         sum += *value;
     });
     return_(sum);
-} $unscoped_(Thrd_fn);
+} $unscoped(Thrd_fn);
 
 TEST_fn_("Thrd: Args Synchronization" $scope) {
     ArrForTest values = A_zero();
@@ -57,7 +57,7 @@ TEST_fn_("Thrd: Args Synchronization" $scope) {
     try_(TEST_expect(result == expected_sum));
     try_(TEST_expect(result_ctx == worker_ctx.as_raw));
     io_stream_println(u8_l("Thrd: Args Synchronization passed"));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 // ============================================================================
 // 테스트 4: 여러 스레드 동시 실행
@@ -67,18 +67,18 @@ TEST_fn_("Thrd: Args Synchronization" $scope) {
     let id = args->id;
     Thrd_sleep(time_Duration_fromMillis(1000ull * (id % 10)));
     return_(id * id);
-} $unscoped_(Thrd_fn); */
+} $unscoped(Thrd_fn); */
 $static Thrd_fn_(sleepSecsForIdAndSq, ({ i32 id; }, i32), ($ignore, args)$scope) {
     let id = args->id;
     Thrd_sleep(time_Duration_fromMillis(1000ull * (as$(usize)(id) % 10)));
     return_(id * id);
-} $unscoped_(Thrd_fn);
+} $unscoped(Thrd_fn);
 
 TEST_fn_("Thrd: Multiple Threads" $scope) {
     A$$(10, O$$(Thrd_FnCtx$(sleepSecsForIdAndSq))) workers = A_zero();
     A$$(10, Thrd) threads = A_zero();
     for_(($rf(0), $s(A_ref(workers)), $s(A_ref(threads)))(i, worker, thread) {
-        asg_lit((worker)(some(Thrd_FnCtx_from$((sleepSecsForIdAndSq)(intCast$((i32)(i)))))));
+        asg_l((worker)(some(Thrd_FnCtx_from$((sleepSecsForIdAndSq)(intCast$((i32)(i)))))));
         *thread = try_(Thrd_spawn(Thrd_SpawnCfg_default, unwrap_(O_asP(worker))->as_raw));
     });
     for_(($s(A_ref(threads)))(thread) {
@@ -89,7 +89,7 @@ TEST_fn_("Thrd: Multiple Threads" $scope) {
         try_(TEST_expect(result == as$(i32)(i * i)));
     });
     io_stream_println(u8_l("Thrd: Multiple Threads passed"));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 
 /* // ============================================================================
 // 테스트 5: Compound Literal 생명주기 (실제 패턴 테스트)

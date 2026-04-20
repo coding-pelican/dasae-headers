@@ -1,14 +1,15 @@
 #ifndef CO_INCLUDED
 #define CO_INCLUDED (1)
 
-#include "dh/core.h"
+#include "dh/prl.h"
 
 // Coroutine state
 typedef struct Co_Ctx Co_Ctx;
-typedef fn_((Co_FnWork(Co_Ctx* ctx))(Co_Ctx*));
+typedef fn_(((*Co_FnWork)(Co_Ctx* ctx))(Co_Ctx*));
 typedef u32 Co_Count;
-typedef enum Co_State {
-    Co_State_pending = 0,
+typedef enum $packed Co_State {
+    Co_State_none = 0,
+    Co_State_pending,
     Co_State_suspended,
     Co_State_ready,
 } Co_State;
@@ -16,10 +17,9 @@ typedef struct Co_Ret {
     u8 data[0];
 } Co_Ret;
 typedef struct Co_Ctx {
-    Co_FnWork* fn;
-    bool is_init;
-    Co_Count count;
+    Co_FnWork fn;
     Co_State state;
+    Co_Count count;
     Co_Ret* ret;
 } Co_Ctx;
 
@@ -33,10 +33,9 @@ typedef struct Co_Ctx {
     union Co_Ctx$(T_Return) { \
         Co_Ctx anyraw $like_ref; \
         struct { \
-            Co_FnWork* fn; \
-            bool is_init; \
-            Co_Count count; \
+            Co_FnWork fn; \
             Co_State state; \
+            Co_Count count; \
             union { \
                 Co_Ret base $like_ref; \
                 T_Return value; \
@@ -71,10 +70,9 @@ typedef struct Co_Ctx {
         Co_Ctx anyraw $like_ref; \
         Co_CtxFnBase$(fnName) base $like_ref; \
         struct { \
-            Co_FnWork* fn; \
-            bool is_init; \
-            Co_Count count; \
+            Co_FnWork fn; \
             Co_State state; \
+            Co_Count count; \
             FieldType$(Co_CtxFnBase$(fnName), ret) ret; \
             Co_CtxArgs$(fnName) args; \
             struct Locals locals; \
@@ -82,10 +80,9 @@ typedef struct Co_Ctx {
     }
 
 #define Co_CtxFn_init$(fnName) ((Co_CtxFn$(fnName)){ \
-    .fn = as$(Co_FnWork*)(fnName), \
-    .is_init = true, \
-    .count = 0, \
+    .fn = as$(Co_FnWork)(fnName), \
     .state = Co_State_pending, \
+    .count = 0, \
     .ret = {}, \
     .args = {}, \
     .locals = {}, \
@@ -126,7 +123,7 @@ __step_return: \
         break; \
     } \
     if (false) { \
-__step_suspend: \
+$maybe_unused __step_suspend: \
 __step_unscope: \
         return ctx->base; \
     } \
@@ -134,7 +131,7 @@ __step_unscope: \
 // clang-format on
 
 #define areturn_(_expr...) comp_syn__areturn_(_expr)
-#define comp_syn__areturn_(_expr...) blk({ \
+#define comp_syn__areturn_(_expr...) local_({ \
     debug_assert_nonnull(ctx); \
     *__reserved_return = *(TypeOf(ctx->ret->value)[1]){ [0] = _expr }; \
     goto __step_return; \
@@ -149,15 +146,15 @@ __step_unscope: \
 
 #define __exec_async_() comp_syn__async_
 #define comp_syn__async_(_fnAsync, _args...) \
-    (as$(Co_CtxFn$(_fnAsync)*)(_fnAsync(&lit$((Co_CtxFn$(_fnAsync)){ .fn = as$(Co_FnWork*)(_fnAsync), .is_init = true, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }))))
+    (as$(Co_CtxFn$(_fnAsync)*)(_fnAsync(&l$((Co_CtxFn$(_fnAsync)){ .fn = as$(Co_FnWork)(_fnAsync), .state = Co_State_pending, .count = 0, .args = { pp_Tuple_unwrap _args }, .locals = {} }))))
 
 #define __exec_async_ctx() comp_syn__async_ctx
 #define comp_syn__async_ctx(_fnAsync, _args...) \
-    (&lit$((Co_CtxFn$(_fnAsync)){ .fn = as$(Co_FnWork*)(_fnAsync), .is_init = true, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} }))
+    (&l$((Co_CtxFn$(_fnAsync)){ .fn = as$(Co_FnWork)(_fnAsync), .state = Co_State_pending, .count = 0, .args = { pp_Tuple_unwrap _args }, .locals = {} }))
 
 #define __exec_callAsync() comp_syn__callAsync
 #define comp_syn__callAsync(_ctx_async, _fnAsync, _args...) \
-    *(_ctx_async) = *(&lit$((Co_CtxFn$(_fnAsync)){ .fn = as$(Co_FnWork*)(_fnAsync), .is_init = true, .count = 0, .state = Co_State_pending, .args = { pp_Tuple_unwrap _args }, .locals = {} })); \
+    *(_ctx_async) = *(&l$((Co_CtxFn$(_fnAsync)){ .fn = as$(Co_FnWork)(_fnAsync), .state = Co_State_pending, .count = 0, .args = { pp_Tuple_unwrap _args }, .locals = {} })); \
     while (resume_(_ctx_async)->state == Co_State_suspended) { suspend_(); }
 
 #define await_(_co_ctx...) comp_syn__await_(_co_ctx)
@@ -179,19 +176,19 @@ __step_unscope: \
     } while (false)
 
 #define resume_(_ctx...) comp_syn__resume_(pp_uniqTok(ctx), _ctx)
-#define comp_syn__resume_(__ctx, _ctx...) blk({ \
+#define comp_syn__resume_(__ctx, _ctx...) local_({ \
     let __ctx = ensureNonnull(_ctx); \
-    debug_assert(__ctx->is_init); \
-    __call(as$(Co_FnWork*)(__ctx->fn), as$(Co_Ctx*)(__ctx)); \
+    debug_assert(__ctx->state != Co_State_none); \
+    __call(as$(Co_FnWork)(__ctx->fn), as$(Co_Ctx*)(__ctx)); \
 })
 
-#define nosuspend_(_expr...) comp_syn__nosuspend_(_expr)
-#define comp_syn__nosuspend_(_expr...) blk_(__nosuspend, { \
-    $local_label __step_suspend; \
-    var ctx = (&lit$((Co_Ctx){ .is_init = true, .count = 0, .state = Co_State_pending })); \
+#define no_suspend_(_expr...) comp_syn__no_suspend_(_expr)
+#define comp_syn__no_suspend_(_expr...) local__(__nosuspend, { \
+    local_label __step_suspend; \
+    var ctx = (&l$((Co_Ctx){ .state = Co_State_pending, .count = 0 })); \
     switch (ctx->count) { \
     default: { \
-        blk_break_(__nosuspend, {}); \
+        local__break_(__nosuspend, {}); \
     } break; \
     case 0: { \
         _expr; \
@@ -201,15 +198,14 @@ __step_unscope: \
 __step_suspend: \
         debug_assert(ctx->state != Co_State_suspended); \
     } \
-    blk_break_(__nosuspend, {}); \
+    local__break_(__nosuspend, {}); \
 })
 
 #define Co_Ctx_from(_fnName, _args...) comp_inline__Co_Ctx_from(_fnName, _args)
-#define comp_inline__Co_Ctx_from(_fnName, _args...) lit$((Co_Ctx$(_fnName)){ \
-    .fn = as$(Co_FnWork*)(_fnName), \
-    .is_init = true, \
-    .count = 0, \
+#define comp_inline__Co_Ctx_from(_fnName, _args...) l$((Co_Ctx$(_fnName)){ \
+    .fn = as$(Co_FnWork)(_fnName), \
     .state = Co_State_pending, \
+    .count = 0, \
     .ret = {}, \
     .args = { pp_Tuple_unwrap _args }, \
     .locals = {}, \

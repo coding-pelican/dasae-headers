@@ -40,7 +40,7 @@ extern "C" {
 ///
 /// Process Creation:
 /// - BOOL CreateProcess(LPCSTR lpApplicationName, LPSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCSTR lpCurrentDirectory, LPSTARTUPINFO lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation);
-///   Creates a new process and its primary thread.
+///   Creates a new process and its priary thread.
 ///   @param lpApplicationName Full path to executable (\b NULL to use \b lpCommandLine)
 ///   @param lpCommandLine Command line string (can include application name)
 ///   @param lpProcessAttributes Security attributes for process (\b NULL for default)

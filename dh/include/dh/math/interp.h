@@ -50,43 +50,43 @@
 // #define math_bounceClamped(val_x, val_min, val_max, val_bounces)                        FUNC_math_bounceClamped(val_x, val_min, val_max, val_bounces)
 
 /* Interpolation functions */
-// #define FUNC_math_lerp(val_a, val_b, val_t) blk({\
+// #define FUNC_math_lerp(val_a, val_b, val_t) local_({\
 //     let _a = (val_a);                             \
 //     let _b = (val_b);                             \
 //     let _t = (val_t);                             \
 //     if (_t < 0 || _t > 1) {                       \
-//         blk_return makeCleared(TypeOf(_a));      \
+//         local__return makeCleared(TypeOf(_a));      \
 //     };                                            \
-//     blk_return _a + (_b - _a) * _t;              \
+//     local__return _a + (_b - _a) * _t;              \
 //})
-// #define FUNC_math_lerpSafe(val_a, val_b, val_t) blk({\
+// #define FUNC_math_lerpSafe(val_a, val_b, val_t) local_({\
 //     let _a = (val_a);                                      \
 //     let _b = (val_b);                                      \
 //     let _t = (val_t);                                      \
 //     if (_t < 0 || _t > 1) {                                \
 //         /* Interpolation factor out of range */            \
-//         return_err(math_E_err(math_ErrCode_OutOfRange)); \
+//         return_err(math_E_err(math_ECode_OutOfRange)); \
 //     };                                                     \
 //     return_ok(_a + (_b - _a) * _t);                        \
 //})
-// #define FUNC_math_smoothstep(val_x, val_edge0, val_edge1) blk({\
+// #define FUNC_math_smoothstep(val_x, val_edge0, val_edge1) local_({\
 //     let _x     = (val_x);                                         \
 //     let _edge0 = (val_edge0);                                     \
 //     let _edge1 = (val_edge1);                                     \
 //     if (_edge0 >= _edge1) {                                       \
-//         blk_return makeCleared(TypeOf(_x));                      \
+//         local__return makeCleared(TypeOf(_x));                      \
 //     };                                                            \
 //     let _t = math_clamp((_x - _edge0) / (_edge1 - _edge0), 0, 1); \
-//     blk_return _t * _t * (3 - 2 * _t);                           \
+//     local__return _t * _t * (3 - 2 * _t);                           \
 //})
-// #define FUNC_math_smoothstepSafe(val_x, val_edge0, val_edge1) blk({\
+// #define FUNC_math_smoothstepSafe(val_x, val_edge0, val_edge1) local_({\
 //     let _x     = (val_x);                                           \
 //     let _edge0 = (val_edge0);                                       \
 //     let _edge1 = (val_edge1);                                       \
 //     if (_edge0 >= _edge1) {                                         \
 //         /* Edge values are equal */                                 \
-//         return_err(math_E_err(math_ErrCode_OutOfRange));          \
+//         return_err(math_E_err(math_ECode_OutOfRange));          \
 //     };                                                              \
 //     let _t = math_clamp((_x - _edge0) / (_edge1 - _edge0), 0, 1);   \
-//     blk_return _t * _t * (3 - 2 * _t);                             \
+//     local__return _t * _t * (3 - 2 * _t);                             \
 //})

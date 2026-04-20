@@ -7,7 +7,7 @@
  * @date    2024-11-05 (date of creation)
  * @updated 2025-11-27 (date of last update)
  * @version v0.1
- * @ingroup dasae-headers(dh)/foundation/pp
+ * @ingroup dal-project/da/foundation/pp
  * @prefix  pp
  *
  * @brief   Preprocessor utilities
@@ -26,13 +26,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define pp_begin (
+#define pp_end )
+
 #define pp_nothing(...) pp_exec_nothing(__VA_ARGS__)
 #define pp_ignore(...) pp_exec_ignore(__VA_ARGS__)
 #define pp_expand(...) pp_exec_expand(__VA_ARGS__)
 #define pp_defer(...) pp_exec_defer(__VA_ARGS__)
 
 #define pp_strfy(_Tok...) pp_exec_strfy(_Tok)
-#define nameOf(_Tok...) __comp_op__nameOf(_Tok, #_Tok)
 
 #define pp_cat(_LhsTok, _RhsTok...) pp_exec_cat(_LhsTok, _RhsTok)
 #define pp_cat2(_LhsTok, _RhsTok...) pp_exec_cat2(_LhsTok, _RhsTok)
@@ -47,8 +49,36 @@ extern "C" {
 #define pp_uniqTok(_Tok...) pp_exec_uniqTok(_Tok)
 #define pp_uniqTokByLine(_Tok...) pp_exec_uniqTokByLine(_Tok)
 
-#define pp_begin (
-#define pp_end )
+#define pp_countArg(_Args...) \
+    /** \
+     * @note handles up to 32 arguments \
+     * \
+     * pp_countArg() => 0 \
+     * pp_countArg(a0, a1, a2, ..., a31) => 32 \
+     */ \
+    pp_exec_countArg(_Args)
+#define pp_overload(_Ident, ...) \
+    /** \
+     * @note handles up to 32 arguments \
+     * \
+     * pp_overload(ident): \
+     * => ident_0 \
+     * pp_overload(ident, a0): \
+     * => ident_1 \
+     * pp_overload(ident, a0, a1): \
+     * => ident_2 \
+     */ \
+    pp_exec_overload(_Ident, __VA_ARGS__)
+#define pp_foreach(_Exec, _Iter, ...) \
+    /** \
+     * @note handles up to 32 arguments \
+     * \
+     * pp_foreach(exec, iter, x, y, z): \
+     * => exec(iter, x) exec(iter, y) exec(iter, z) \
+     */ \
+    pp_exec_foreach(_Exec, _Iter, __VA_ARGS__)
+
+/* --- tok --- */
 
 #define pp_true 1
 #define pp_false 0
@@ -75,17 +105,17 @@ extern "C" {
 #define __pp_xor_1_0 1
 #define __pp_xor_1_1 0
 
-#define pp_eq(_Lhs, _Rhs...) pp_join3(_, __pp_eq, _Lhs, _Rhs)
-#define __pp_eq_0_0 1
-#define __pp_eq_0_1 0
-#define __pp_eq_1_0 0
-#define __pp_eq_1_1 1
+#define pp_eql(_Lhs, _Rhs...) pp_join3(_, __pp_eql, _Lhs, _Rhs)
+#define __pp_eql_0_0 1
+#define __pp_eql_0_1 0
+#define __pp_eql_1_0 0
+#define __pp_eql_1_1 1
 
-#define pp_ne(_Lhs, _Rhs...) pp_join3(_, __pp_ne, _Lhs, _Rhs)
-#define __pp_ne_0_0 0
-#define __pp_ne_0_1 1
-#define __pp_ne_1_0 1
-#define __pp_ne_1_1 0
+#define pp_neq(_Lhs, _Rhs...) pp_join3(_, __pp_neq, _Lhs, _Rhs)
+#define __pp_neq_0_0 0
+#define __pp_neq_0_1 1
+#define __pp_neq_1_0 1
+#define __pp_neq_1_1 0
 
 #define __call__pp_if() pp_if_
 #define pp_if_(_Cond...) pp_join(_, ____pp_if, _Cond)
@@ -106,14 +136,14 @@ extern "C" {
 #define __step__pp_isSome(...) __step__pp_isSome__emit(__step__pp_isSome__parse __VA_ARGS__)
 #define __step__pp_isSome__parse(_tag, _val...) _tag, _val
 #define __step__pp_isSome__emit(...) ____pp_isSome(__VA_ARGS__)
-#define ____pp_isSome(_tag, _val...) pp_if_(pp_Tok_eq(_tag, pp__some))(pp_then_(pp_true), pp_else_(pp_false))
+#define ____pp_isSome(_tag, _val...) pp_if_(pp_Tok_eql(_tag, pp__some))(pp_then_(pp_true), pp_else_(pp_false))
 #define pp_isNone(/*(_tag, _val)*/...) pp_not(pp_isSome(__VA_ARGS__))
 #define pp_orelse_(/*((_tag, _val))(_default_val)*/...) __step__pp_orelse(__VA_ARGS__)
 #define __step__pp_orelse(...) __step__pp_orelse__emit(__step__pp_orelse__parse __VA_ARGS__)
 #define __step__pp_orelse__parse(_pair_tag_val...) __step__pp_orelse__parsePair _pair_tag_val,
 #define __step__pp_orelse__parsePair(_pair_tag_val...) _pair_tag_val
 #define __step__pp_orelse__emit(...) ____pp_orelse(__VA_ARGS__)
-#define ____pp_orelse(_tag, _val, _default_val...) pp_if_(pp_Tok_eq(_tag, pp__some))(pp_then_ _val, pp_else_ _default_val)
+#define ____pp_orelse(_tag, _val, _default_val...) pp_if_(pp_Tok_eql(_tag, pp__some))(pp_then_ _val, pp_else_ _default_val)
 
 #define __call__pp_switch_() __pp_switch_
 #define pp_switch_(/*(_pp_cond)(_pp_cases...)*/...) __step__pp_switch_(__step__pp_switch___parseCond __VA_ARGS__)
@@ -131,7 +161,7 @@ extern "C" {
 #define __pp_switch___eval(_pp_cond, _tag, ...) \
     pp_cat(__pp_switch___eval, _tag)(_pp_cond, __VA_ARGS__)
 #define __pp_switch___eval$_pp_case(_pp_cond, _pp_enum, _pp_expr, ...) \
-    pp_defer(__call__pp_if)()(pp_Tok_eq(_pp_cond, _pp_enum))(_pp_expr, (__call__pp_switch___eval)()(_pp_cond, __VA_ARGS__))
+    pp_defer(__call__pp_if)()(pp_Tok_eql(_pp_cond, _pp_enum))(_pp_expr, (__call__pp_switch___eval)()(_pp_cond, __VA_ARGS__))
 #define __pp_switch___eval$_pp_default(_pp_cond, _pp_expr...) \
     _pp_expr
 
@@ -142,64 +172,6 @@ extern "C" {
 #define pp_default_(_pp_expr...) __pp_default_(_pp_expr)
 #define __pp_default_(_pp_expr...) $_pp_default, _pp_expr
 
-#define pp_countArg(_Args...) \
-    /** \
-     * @note handles up to 32 arguments \
-     * \
-     * pp_countArg() => 0 \
-     * pp_countArg(a0, a1, a2, ..., a31) => 32 \
-     */ \
-    pp_exec_countArgs(_Args)
-#define pp_overload(_Name, ...) \
-    /** \
-     * @note handles up to 32 arguments \
-     * \
-     * func_(_Name_With_Params, T_Return, ...) \
-     * => pp_overload(func, __VA_ARGS__)(_Name_With_Params, T_Return, __VA_ARGS__) \
-     * func_0(_Name_With_Params, T_Return, ...): \
-     * => fn_(_Name_With_Params, T_Return) \
-     * func_1(_Name_With_Params, T_Return, _Body...): \
-     * => fn_scope(_Name_With_Params, T_Return) _Body $unscoped \
-     * func_2(_Name_With_Params, T_Return, _Expand_Type, _Body...): \
-     * => pp_cat(fn_scope_, _Expand_Type)(_Name_With_Params, T_Return) \
-    _Body pp_cat(unscoped_, _Expand_Type) \
-     */ \
-    pp_exec_overload(_Name, __VA_ARGS__)
-#define pp_foreach(_Macro, _Name, ...) \
-    /** \
-     * @note handles up to 32 arguments \
-     * \
-     * pp_foreach(macro, name, x, y, z): \
-     * => macro(name, x) macro(name, y) macro(name, z) \
-     */ \
-    pp_exec_foreach_(pp_exec_foreach_NARG(__VA_ARGS__), _Macro, _Name, __VA_ARGS__)
-
-#define tpl_id(_tpl, _T...) pp_join($, _tpl, _T)
-#define tpl_fn_(_tpl_T, _id, _Ret_T...) fn_((tpl_id(_tpl_T, _id))(_Ret_T))
-#define tpl_T(_tpl, _T...) pp_join($, _tpl, _T)
-#define tpl_Ret(_tpl, _T...) tpl_T(Ret, tpl_id(_tpl, _T))
-
-#define tpl_id$T(_tpl, _T...) \
-    pp_join($, _tpl, _T)
-#define tpl_id$1T(_tpl, _T...) \
-    pp_join($, _tpl, _T)
-#define tpl_id$1T$2U(_tpl, _T, _U...) \
-    pp_cat(_tpl, pp_cat2(pp_cat($1, _T), pp_cat($2, _U)))
-#define tpl_id$2T$2U$3V(_tpl, _T, _U, _V...) \
-    pp_cat(_tpl, pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)))
-#define tpl_id$2T$2U$3V$4W(_tpl, _T, _U, _V, _W...) \
-    pp_cat(_tpl, pp_cat4(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V), pp_cat($4, _W)))
-#define tpl_fn$T(_tpl_w_T_and_Params, _Ret_T...) \
-    fn_((tpl_id$T _tpl_w_T_and_Params)(_Ret_T))
-#define tpl_fn$1T(_tpl_w_T_and_Params, _Ret_T...) \
-    fn_((tpl_id$1T _tpl_w_T_and_Params)(_Ret_T))
-#define tpl_fn$1T$2U(_tpl_w_T_w_U_and_Params, _Ret_T...) \
-    fn_((tpl_id$1T$2U _tpl_w_T_w_U_and_Params)(_Ret_T))
-#define tpl_fn$2T$2U$3V(_tpl_w_T_w_U_w_V_and_Params, _Ret_T...) \
-    fn_((tpl_id$2T$2U$3V _tpl_w_T_w_U_w_V_and_Params)(_Ret_T))
-#define tpl_fn$2T$2U$3V$4W(_tpl_w_T_w_U_w_V_w_W_and_Params, _Ret_T...) \
-    fn_((tpl_id$2T$2U$3V$4W _tpl_w_T_w_U_w_V_w_W_and_Params)(_Ret_T))
-
 /*========== Macros and Definitions =========================================*/
 
 #define pp_exec_nothing(...)
@@ -208,90 +180,96 @@ extern "C" {
 #define pp_exec_defer(...) __VA_ARGS__ pp_exec_nothing()
 
 #define pp_exec_strfy(_Tok...) #_Tok
-#define __comp_op__nameOf(_Tok, _Str...) ((void)(_Tok), #_Str)
 
 #define pp_exec_cat(_LhsTok, _RhsTok...) _LhsTok##_RhsTok
 #define pp_exec_cat2(_LhsTok, _RhsTok...) _LhsTok##_RhsTok
-#define pp_exec_cat3(_LhsTok, _MidTok, _RhsTok...) _LhsTok##_MidTok##_RhsTok
-#define pp_exec_cat4(_LhsTok, _LMidTok, _RMidTok, _RhsTok...) _LhsTok##_LMidTok##_RMidTok##_RhsTok
+#define pp_exec_cat3(_LhsTok, _MidTok, _RhsTok...) \
+    _LhsTok##_MidTok##_RhsTok
+#define pp_exec_cat4(_LhsTok, _LMidTok, _RMidTok, _RhsTok...) \
+    _LhsTok##_LMidTok##_RMidTok##_RhsTok
 
 #define pp_exec_join(_SepTok, _LhsTok, _RhsTok...) _LhsTok##_SepTok##_RhsTok
 #define pp_exec_join2(_SepTok, _LhsTok, _RhsTok...) _LhsTok##_SepTok##_RhsTok
-#define pp_exec_join3(_SepTok, _LhsTok, _MidTok, _RhsTok...) _LhsTok##_SepTok##_MidTok##_SepTok##_RhsTok
-#define pp_exec_join4(_SepTok, _LhsTok, _LMidTok, _RMidTok, _RhsTok...) _LhsTok##_SepTok##_LMidTok##_SepTok##_RMidTok##_SepTok##_RhsTok
+#define pp_exec_join3(_SepTok, _LhsTok, _MidTok, _RhsTok...) \
+    _LhsTok##_SepTok##_MidTok##_SepTok##_RhsTok
+#define pp_exec_join4(_SepTok, _LhsTok, _LMidTok, _RMidTok, _RhsTok...) \
+    _LhsTok##_SepTok##_LMidTok##_SepTok##_RMidTok##_SepTok##_RhsTok
 
 #define pp_exec_uniqTok(_Tok...) pp_join(_, pp_join3(_, _, __LINE__, __COUNTER__), _Tok)
 #define pp_exec_uniqTokByLine(_Tok...) pp_join(_, pp_join2(_, _, __LINE__), _Tok)
 
-#define pp_exec_countArgs(...) pp_exec_countArgs__selectArgCountInListRseqN(__VA_OPT__(, ) __VA_ARGS__, pp_exec_countArgs__getListRseqN())
-#define pp_exec_countArgs__selectArgCountInListRseqN(_Args...) pp_exec_countArgs__argN(_Args)
-#define pp_exec_countArgs__getListRseqN() 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-#define pp_exec_countArgs__argN( \
-    _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _N, \
-    ... \
-) \
-    _N
-#define pp_exec_overload(_Name, ...) pp_join(_, _Name, pp_countArg(__VA_ARGS__))
+#define pp_exec_countArg(...) pp_exec_countArg__selectNthInRSeqNList( \
+    __VA_OPT__(, ) __VA_ARGS__, pp_exec_countArg__listRSeqN() \
+)
+#define pp_exec_countArg__selectNthInRSeqNList(_Args...) \
+    pp_exec_countArg__selectNth(_Args)
+#define pp_exec_countArg__listRSeqN() \
+    31, 30, 29, 28, 27, 26, 25, 24, \
+        23, 22, 21, 20, 19, 18, 17, 16, \
+        15, 14, 13, 12, 11, 10, 9, 8, \
+        7, 6, 5, 4, 3, 2, 1, 0
+#define pp_exec_countArg__selectNth( \
+    _0, _1, _2, _3, _4, _5, _6, _7, \
+    _8, _9, _10, _11, _12, _13, _14, _15, \
+    _16, _17, _18, _19, _20, _21, _22, _23, \
+    _24, _25, _26, _27, _28, _29, _30, _31, \
+    _N, ... \
+) _N
 
-// pp_foreach _Macro implementation (handles up to 16 arguments)
-#define pp_exec_foreach_(N, _Macro, _Name, ...) pp_join(__, pp_exec_foreach, N)(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach_NARG(...) pp_exec_foreach_NARG_(__VA_ARGS__, pp_exec_foreach_RSEQ_N())
-#define pp_exec_foreach_NARG_(...) pp_exec_foreach_ARG_N(__VA_ARGS__)
-#define pp_exec_foreach_ARG_N( \
-    _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, _32, _N, \
-    ... \
-) \
-    _N
-#define pp_exec_foreach_RSEQ_N() 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-#define pp_exec_foreach__1(_Macro, _Name, _Arg) _Macro(_Name, _Arg)
-#define pp_exec_foreach__2(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__1(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__3(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__2(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__4(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__3(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__5(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__4(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__6(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__5(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__7(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__6(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__8(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__7(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__9(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__8(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__10(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__9(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__11(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__10(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__12(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__11(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__13(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__12(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__14(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__13(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__15(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__14(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__16(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__15(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__17(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__16(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__18(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__17(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__19(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__18(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__20(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__19(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__21(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__20(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__22(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__21(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__23(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__22(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__24(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__23(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__25(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__24(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__26(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__25(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__27(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__26(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__28(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__27(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__29(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__28(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__30(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__29(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__31(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__30(_Macro, _Name, __VA_ARGS__)
-#define pp_exec_foreach__32(_Macro, _Name, _Arg, ...) _Macro(_Name, _Arg) pp_exec_foreach__31(_Macro, _Name, __VA_ARGS__)
+#define pp_exec_overload(_Ident, ...) \
+    pp_join(_, _Ident, pp_countArg(__VA_ARGS__))
 
-#define pp_compl(_b) pp_cat(__pp_compl_, _b)
-#define __pp_compl_0 1
-#define __pp_compl_1 0
+#define pp_exec_foreach(_Exec, _Iter, ...) \
+    pp_overload(pp_exec_foreach, __VA_ARGS__)(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_0(...)
+#define pp_exec_foreach_1(_Exec, _Iter, _Arg) _Exec(_Iter, _Arg) pp_exec_foreach_0()
+#define pp_exec_foreach_2(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_1(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_3(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_2(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_4(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_3(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_5(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_4(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_6(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_5(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_7(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_6(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_8(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_7(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_9(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_8(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_10(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_9(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_11(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_10(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_12(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_11(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_13(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_12(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_14(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_13(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_15(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_14(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_16(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_15(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_17(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_16(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_18(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_17(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_19(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_18(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_20(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_19(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_21(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_20(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_22(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_21(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_23(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_22(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_24(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_23(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_25(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_24(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_26(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_25(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_27(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_26(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_28(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_27(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_29(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_28(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_30(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_29(_Exec, _Iter, __VA_ARGS__)
+#define pp_exec_foreach_31(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_30(_Exec, _Iter, __VA_ARGS__)
 
-#define pp_bitand(_x) pp_cat(__pp_bitand_, _x)
-#define __pp_bitand_0(_y) 0
-#define __pp_bitand_1(_y) _y
-#define pp_bitor(_x) pp_cat(__pp_bitor_, _x)
-#define __pp_bitor_0(_y) 0
-#define __pp_bitor_1(_y) _y
-#define pp_bitnot(_x) pp_cat(__pp_bitnot_, _x)
-#define __pp_bitnot_0 1
-#define __pp_bitnot_1 0
-#define pp_bitxor(_x) pp_cat(__pp_bitxor_, _x)
-#define __pp_bitxor_0(_y) 0
-#define __pp_bitxor_1(_y) _y
+/* --- tok --- */
+
+#define pp_bitCmpl pp_bitNot
+#define pp_bitNot(_b) pp_cat(__pp_bitNot_, _b)
+#define __pp_bitNot_0 1
+#define __pp_bitNot_1 0
+
+#define pp_bitAnd(_x) pp_cat(__pp_bitAnd_, _x)
+#define __pp_bitAnd_0(_y) 0
+#define __pp_bitAnd_1(_y) _y
+#define pp_bitOr(_x) pp_cat(__pp_bitOr_, _x)
+#define __pp_bitOr_0(_y) 0
+#define __pp_bitOr_1(_y) _y
+#define pp_bitXor(_x) pp_cat(__pp_bitXor_, _x)
+#define __pp_bitXor_0(_y) 0
+#define __pp_bitXor_1(_y) _y
 
 #define __pp_check_n(_x, _n, ...) _n
 #define pp_check(...) __pp_check_n(__VA_ARGS__, 0, )
@@ -303,7 +281,7 @@ extern "C" {
 #define pp_Tok_not(_x) pp_check(pp_cat(__pp_Tok_not_, _x))
 #define __pp_Tok_not_0 pp_probe(~)
 
-#define pp_bool(_x) pp_compl(pp_Tok_not(_x))
+#define pp_bool(_x) pp_bitCmpl(pp_Tok_not(_x))
 
 #define pp_iif(_c) pp_cat(__pp_iif_, _c)
 #define __pp_iif_0(_t, ...) __VA_ARGS__
@@ -312,26 +290,16 @@ extern "C" {
 #define pp_Tok_then_(...) __VA_ARGS__
 #define pp_Tok_else_(...) __VA_ARGS__
 
-#define pp_Tok_prim_eql(x, y) pp_isParen(pp_Tok_cmp$##x(pp_Tok_cmp$##y)(()))
-#define pp_Tok_isComparable(x) pp_isParen(pp_cat(pp_Tok_cmp$, x)(()))
-#define pp_Tok_ne(x, y) pp_iif(pp_bitand(pp_Tok_isComparable(x))(pp_Tok_isComparable(y)))(pp_Tok_prim_eql, 1 pp_ignore)(x, y)
-#define pp_Tok_eq(x, y) pp_compl(pp_Tok_ne(x, y))
+#define pp_Tok_pri_cmp(x, y) pp_isParen(pp_Tok_cmp$##x(pp_Tok_cmp$##y)(()))
+#define pp_Tok_hasCmp(x) pp_isParen(pp_cat(pp_Tok_cmp$, x)(()))
+#define pp_Tok_neq(x, y) pp_iif(pp_bitAnd(pp_Tok_hasCmp(x))(pp_Tok_hasCmp(y)))( \
+    pp_Tok_then_(pp_Tok_pri_cmp), \
+    pp_Tok_else_(1 pp_ignore) \
+)(x, y)
+#define pp_Tok_eql(x, y) pp_bitCmpl(pp_Tok_neq(x, y))
 
 #define pp_comma() ,
 #define pp_comma_if_(_n) pp_Tok_if_(_n)(pp_comma, pp_ignore)()
-
-#define pp_Tok_cmp$const(x) x
-#define ignore_and_end(...) ignore_end ignore_end
-#define ignore_after_const const ignore_and_end(
-#define ignore_open (
-#define ignore_end )
-
-#define Tok_isConst$(_T...) __isConstType__exec(pp_defer(__isConstType__unwrap) __isConstType__eval(_T))
-#define __isConstType__exec(...) __VA_ARGS__
-#define __isConstType__unwrap(...) __VA_ARGS__
-#define __isConstType__eval(_T...) ignore_open pp_defer(pp_Tok_eq)(const, pp_cat(ignore_after_, _T) ignore_end)
-#define Tok_removeConst$(_const_T...) pp_cat(__Tok_removeConst$__remove_, _const_T)
-#define __Tok_removeConst$__remove_const
 
 #define pp_Tok_cmp$0(_x) _x
 #define pp_Tok_cmp$1(_x) _x
@@ -590,6 +558,49 @@ extern "C" {
 #define pp_Tok_cmp$253(_x) _x
 #define pp_Tok_cmp$254(_x) _x
 #define pp_Tok_cmp$255(_x) _x
+
+/* --- const --- */
+
+#define pp_Tok_cmp$const(x) x
+#define ignore_and_end(...) ignore_end ignore_end
+#define ignore_after_const const ignore_and_end(
+#define ignore_open (
+#define ignore_end )
+
+#define Tok_isConst$(_T...) __isConstType__exec(pp_defer(__isConstType__unwrap) __isConstType__eval(_T))
+#define __isConstType__exec(...) __VA_ARGS__
+#define __isConstType__unwrap(...) __VA_ARGS__
+#define __isConstType__eval(_T...) ignore_open pp_defer(pp_Tok_eql)(const, pp_cat(ignore_after_, _T) ignore_end)
+#define Tok_removeConst$(_const_T...) pp_cat(__Tok_removeConst$__remove_, _const_T)
+#define __Tok_removeConst$__remove_const
+
+/* --- tpl --- */
+
+#define tpl_id(_tpl, _T...) pp_join($, _tpl, _T)
+#define tpl_fn_(_tpl_T, _id, _Ret_T...) fn_((tpl_id(_tpl_T, _id))(_Ret_T))
+#define tpl_T(_tpl, _T...) pp_join($, _tpl, _T)
+#define tpl_Ret(_tpl, _T...) tpl_T(Ret, tpl_id(_tpl, _T))
+
+#define tpl_id$T(_tpl, _T...) \
+    pp_join($, _tpl, _T)
+#define tpl_id$1T(_tpl, _T...) \
+    pp_join($, _tpl, _T)
+#define tpl_id$1T$2U(_tpl, _T, _U...) \
+    pp_cat(_tpl, pp_cat2(pp_cat($1, _T), pp_cat($2, _U)))
+#define tpl_id$2T$2U$3V(_tpl, _T, _U, _V...) \
+    pp_cat(_tpl, pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)))
+#define tpl_id$2T$2U$3V$4W(_tpl, _T, _U, _V, _W...) \
+    pp_cat(_tpl, pp_cat4(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V), pp_cat($4, _W)))
+#define tpl_fn$T(_tpl_w_T_and_Params, _Ret_T...) \
+    fn_((tpl_id$T _tpl_w_T_and_Params)(_Ret_T))
+#define tpl_fn$1T(_tpl_w_T_and_Params, _Ret_T...) \
+    fn_((tpl_id$1T _tpl_w_T_and_Params)(_Ret_T))
+#define tpl_fn$1T$2U(_tpl_w_T_w_U_and_Params, _Ret_T...) \
+    fn_((tpl_id$1T$2U _tpl_w_T_w_U_and_Params)(_Ret_T))
+#define tpl_fn$2T$2U$3V(_tpl_w_T_w_U_w_V_and_Params, _Ret_T...) \
+    fn_((tpl_id$2T$2U$3V _tpl_w_T_w_U_w_V_and_Params)(_Ret_T))
+#define tpl_fn$2T$2U$3V$4W(_tpl_w_T_w_U_w_V_w_W_and_Params, _Ret_T...) \
+    fn_((tpl_id$2T$2U$3V$4W _tpl_w_T_w_U_w_V_w_W_and_Params)(_Ret_T))
 
 #if defined(__cplusplus)
 } /* extern "C" */

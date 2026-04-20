@@ -3,10 +3,10 @@
 
 fn_((wtf16_iter(S_const$u16 units))(wtf16_Iter) $scope) {
     return_({ .bytes = units, .idx = 0 });
-} $unscoped_(fn);
+} $unscoped(fn);
 
 fn_((wtf16_Iter_next(wtf16_Iter* self))(O$u32) $scope) {
-    if (self->idx >= self->bytes.len) { return_none(); }
+    if (self->idx >= self->bytes.len) return_none();
     let first = *S_at((self->bytes)[self->idx]);
     if (utf16_isHighSurrogate(first)) {
         if (self->idx + 1 < self->bytes.len) {
@@ -23,4 +23,4 @@ fn_((wtf16_Iter_next(wtf16_Iter* self))(O$u32) $scope) {
         self->idx += 1;
         return_some(as$(u32)(first));
     }
-} $unscoped_(fn);
+} $unscoped(fn);

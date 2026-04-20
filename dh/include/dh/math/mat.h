@@ -240,10 +240,10 @@ $static fn_((m_M4f32_frustum(f32 left, f32 right, f32 bottom, f32 top, f32 proxi
     m_V2f32_unit_y \
 )
 
-#define ____m_M2f32_ofCols_static(_c0, _c1...) lit$((m_M2f32){ \
+#define ____m_M2f32_ofCols_static(_c0, _c1...) l$((m_M2f32){ \
     .cols = A_init({ [0] = (_c0), [1] = (_c1) }), \
 })
-#define ____m_M2f32_ofRows_static(_r0, _r1...) lit$((m_M2f32){ \
+#define ____m_M2f32_ofRows_static(_r0, _r1...) l$((m_M2f32){ \
     .cols = A_init({ \
         [0] = m_V2f32_of_static((_r0).x, (_r0).y), \
         [1] = m_V2f32_of_static((_r1).x, (_r1).y), \
@@ -372,10 +372,10 @@ fn_((m_M2f32_scaleUniform(f32 s))(m_M2f32)) {
     m_V3f32_unit_z \
 )
 
-#define ____m_M3f32_ofCols_static(_c0, _c1, _c2...) lit$((m_M3f32){ \
+#define ____m_M3f32_ofCols_static(_c0, _c1, _c2...) l$((m_M3f32){ \
     .cols = A_init({ [0] = (_c0), [1] = (_c1), [2] = (_c2) }), \
 })
-#define ____m_M3f32_ofRows_static(_r0, _r1, _r2...) lit$((m_M3f32){ \
+#define ____m_M3f32_ofRows_static(_r0, _r1, _r2...) l$((m_M3f32){ \
     .cols = A_init({ \
         [0] = m_V3f32_of_static((_r0).x, (_r1).x, (_r2).x), \
         [1] = m_V3f32_of_static((_r0).y, (_r1).y, (_r2).y), \
@@ -547,10 +547,10 @@ fn_((m_M3f32_scaleUniform2D(f32 s))(m_M3f32)) {
     m_V4f32_unit_w \
 )
 
-#define ____m_M4f32_ofCols_static(_c0, _c1, _c2, _c3...) lit$((m_M4f32){ \
+#define ____m_M4f32_ofCols_static(_c0, _c1, _c2, _c3...) l$((m_M4f32){ \
     .cols = A_init({ [0] = (_c0), [1] = (_c1), [2] = (_c2), [3] = (_c3) }), \
 })
-#define ____m_M4f32_ofRows_static(_r0, _r1, _r2, _r3...) lit$((m_M4f32){ \
+#define ____m_M4f32_ofRows_static(_r0, _r1, _r2, _r3...) l$((m_M4f32){ \
     .cols = A_init({ \
         [0] = m_V4f32_of_static((_r0).x, (_r1).x, (_r2).x, (_r3).x), \
         [1] = m_V4f32_of_static((_r0).y, (_r1).y, (_r2).y, (_r3).y), \
