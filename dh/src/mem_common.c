@@ -218,8 +218,8 @@ fn_((mem_rotate(u_S$raw seq, usize amount))(void)) {
     mem_reverse(seq);
 };
 
-fn_((mem_window(TypeInfo type, u_S_const$raw buf, usize size, usize advance))(mem_WindowIter)) {
-    claim_assert_nonnullS(buf.raw);
+fn_((mem_window(u_S_const$raw buf, usize size, usize advance))(mem_WindowIter)) {
+    claim_assert_nonnullS(buf);
     claim_assert(size > 0);
     claim_assert(advance > 0);
     return (mem_WindowIter){
@@ -231,7 +231,7 @@ fn_((mem_window(TypeInfo type, u_S_const$raw buf, usize size, usize advance))(me
         ) $unscoped(expr),
         .size = size,
         .advance = advance,
-        debug_only(.type = type)
+        debug_only(.type = buf.type)
     };
 };
 fn_((mem_WindowIter_reset(mem_WindowIter* self))(void)) {
@@ -292,19 +292,19 @@ fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {
 
 $static fn_((mem_Delim__unit(mem_Delim$raw* self, TypeInfo type))(u_V$raw)) {
     claim_assert_nonnull(self), claim_assert(self->tag == mem_Delim_unit);
-    let fields = typeInfosFrom(typeInfo$(mem_DelimType), type);
+    let fields = typeInfosFrom(typeInfo$(mem_Delim), type);
     let record = P_meta((u_typeInfoRecord(fields))(as$(P$raw)(self)));
     return u_deref(u_fieldPtrMut(record, fields, 1));
 };
 $static fn_((mem_Delim__seq(mem_Delim$raw* self, TypeInfo type))(u_S$raw)) {
     claim_assert_nonnull(self), claim_assert(self->tag == mem_Delim_seq);
-    let fields = typeInfosFrom(typeInfo$(mem_DelimType), typeInfo$(S$raw));
+    let fields = typeInfosFrom(typeInfo$(mem_Delim), typeInfo$(S$raw));
     let record = P_meta((u_typeInfoRecord(fields))(as$(P$raw)(self)));
     return S_meta((type)(*u_castP$((S$raw*)(u_fieldPtrMut(record, fields, 1)))));
 };
 $static fn_((mem_Delim__any(mem_Delim$raw* self, TypeInfo type))(u_S$raw)) {
     claim_assert_nonnull(self), claim_assert(self->tag == mem_Delim_any);
-    let fields = typeInfosFrom(typeInfo$(mem_DelimType), typeInfo$(S$raw));
+    let fields = typeInfosFrom(typeInfo$(mem_Delim), typeInfo$(S$raw));
     let record = P_meta((u_typeInfoRecord(fields))(as$(P$raw)(self)));
     return S_meta((type)(*u_castP$((S$raw*)(u_fieldPtrMut(record, fields, 1)))));
 };

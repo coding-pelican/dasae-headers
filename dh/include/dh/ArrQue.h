@@ -227,6 +227,16 @@ $extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
     $static fn_((tpl_id(ArrQue_cap, _T)(ArrQue$(_T) self))(usize)) { \
         return ArrQue_cap(*self.as_raw); \
     }
+#define T_use_ArrQue_isEmpty$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrQue_isEmpty, _T)(ArrQue$(_T) self))(bool)) { \
+        return ArrQue_isEmpty(*self.as_raw); \
+    }
+#define T_use_ArrQue_isFull$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrQue_isFull, _T)(ArrQue$(_T) self))(bool)) { \
+        return ArrQue_isFull(*self.as_raw); \
+    }
 #define T_use_ArrQue_head$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ArrQue_head, _T)(ArrQue$(_T) self))(usize)) { \

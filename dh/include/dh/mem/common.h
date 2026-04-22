@@ -279,7 +279,7 @@ T_alias$((mem_WindowIter)(struct mem_WindowIter {
     debug_only(var_(type, TypeInfo);)
 }));
 #define T_use_mem_WindowIter$(_T...) __stmt__T_use_mem_WindowIter$(_T)
-$extern fn_((mem_window(TypeInfo type, u_S_const$raw buf, usize size, usize advance))(mem_WindowIter));
+$extern fn_((mem_window(u_S_const$raw buf, usize size, usize advance))(mem_WindowIter));
 #define T_use_mem_window$(_T...) __stmt__T_use_mem_window$(_T)
 $extern fn_((mem_WindowIter_reset(mem_WindowIter* self))(void));
 #define T_use_mem_WindowIter_reset$(_T...) __stmt__T_use_mem_WindowIter_reset$(_T)
@@ -293,13 +293,17 @@ $extern fn_((mem_endsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool));
 $extern fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
 #define T_use_mem_endsWith$(_T...) __stmt__T_use_mem_endsWith$(_T)
 
+T_alias$((mem_Delim)(enum_((mem_Delim $fits($packed))(
+    mem_Delim_unit,
+    mem_Delim_seq,
+    mem_Delim_any
+))));
 #define mem_Delim$(_T...) __alias__mem_Delim$(_T)
-T_alias$((mem_Delim$raw)(variant_((mem_Delim $fits($packed))(
+T_alias$((mem_Delim$raw)(variant_((mem_Delim$raw $maps(mem_Delim))(
     (mem_Delim_unit, V$raw),
     (mem_Delim_seq, S_const$raw),
     (mem_Delim_any, S_const$raw)
 ))));
-T_alias$((mem_DelimType)(FieldType$(mem_Delim$raw, tag)));
 #define T_use_mem_Delim$(_T...) __stmt__T_use_mem_Delim$(_T)
 
 #define mem_TokzIter$(_T...) __alias__mem_TokzIter$(_T)
@@ -925,8 +929,8 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
     }))
 #define __stmt__T_use_mem_window$(_T...) /* clang-format off */ \
         $attr($inline_always) \
-        $static fn_((tpl_id(mem_window, _T)(TypeInfo type, S_const$(_T) buf, usize size, usize advance))(mem_WindowIter$(_T)) $scope) { \
-            return_({ .as_raw $like_deref = mem_window(typeInfo$(_T), u_anyS(buf), size, advance) }); \
+        $static fn_((tpl_id(mem_window, _T)(S_const$(_T) buf, usize size, usize advance))(mem_WindowIter$(_T)) $scope) { \
+            return_({ .as_raw $like_deref = mem_window(u_anyS(buf), size, advance) }); \
         } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_WindowIter_reset$(_T...) /* clang-format off */ \
         $attr($inline_always) \

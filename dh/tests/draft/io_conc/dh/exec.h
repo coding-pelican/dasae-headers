@@ -7,6 +7,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "exec/Seq.h"
+#include "exec/Coop.h"
+#include "exec/Preem.h"
 #include "exec/Para.h"
 
 #if defined(__cplusplus)

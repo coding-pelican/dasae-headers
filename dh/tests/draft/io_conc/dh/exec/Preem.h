@@ -1,5 +1,5 @@
-#ifndef exec_Para__included
-#define exec_Para__included 1
+#ifndef exec_Preem__included
+#define exec_Preem__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -10,10 +10,14 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* TODO: Implement */
-T_alias$((exec_Para)(struct exec_Para{}));
+T_alias$((exec_Preem)(struct exec_Preem {
+    var_(gpa, mem_Alctr);
+    var_(stack_size, usize);
+}));
+$extern fn_((exec_Preem_init(mem_Alctr gpa))(exec_Preem));
+$extern fn_((exec_Preem_fini(exec_Preem* self))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* exec_Para__included */
+#endif /* exec_Preem__included */

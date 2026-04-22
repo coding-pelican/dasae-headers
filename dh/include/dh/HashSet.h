@@ -44,23 +44,24 @@ typedef struct HashSet_Header {
     debug_only(var_(key_ty, TypeInfo));
 } HashSet_Header;
 
-/* --- HashSet_Sgl: Key single type (1-tuple) */
+/* --- HashSet_Unit: Key single type (1-tuple) */
 
-#define HashSet_Sgl$$(_K...) __comp_anon__HashSet_Sgl$$(_K)
-#define HashSet_Sgl$(_K...) __comp_alias__HashSet_Sgl$(_K)
-#define T_decl_HashSet_Sgl$(_K...) __comp_gen__T_decl_HashSet_Sgl$(_K)
-#define T_impl_HashSet_Sgl$(_K...) __comp_gen__T_impl_HashSet_Sgl$(_K)
-#define T_use_HashSet_Sgl$(_K...) __comp_gen__T_use_HashSet_Sgl$(_K)
+#define HashSet_Unit$$(_K...) __comp_anon__HashSet_Unit$$(_K)
+#define HashSet_Unit$(_K...) __comp_alias__HashSet_Unit$(_K)
+#define T_decl_HashSet_Unit$(_K...) __comp_gen__T_decl_HashSet_Unit$(_K)
+#define T_impl_HashSet_Unit$(_K...) __comp_gen__T_impl_HashSet_Unit$(_K)
+#define T_use_HashSet_Unit$(_K...) __comp_gen__T_use_HashSet_Unit$(_K)
 
-typedef struct HashSet_Sgl$raw {
+typedef struct HashSet_Unit$raw {
     debug_only(var_(key_ty, TypeInfo));
     var_(data, V$raw);
-} HashSet_Sgl$raw;
-T_use_P$(HashSet_Sgl$raw);
-typedef P$HashSet_Sgl$raw V$HashSet_Sgl$raw;
-T_use_O$(V$HashSet_Sgl$raw);
-T_use_E$($set(mem_E)(O$V$HashSet_Sgl$raw));
-$extern fn_((HashSet_Sgl_key(V$HashSet_Sgl$raw self, u_V$raw ret_mem))(u_V$raw));
+} HashSet_Unit$raw;
+T_use_P$(HashSet_Unit$raw);
+typedef P$HashSet_Unit$raw V$HashSet_Unit$raw;
+T_use_O$(V$HashSet_Unit$raw);
+T_use_E$($set(mem_E)(O$V$HashSet_Unit$raw));
+$extern fn_((HashSet_Unit_key(const HashSet_Unit$raw* self, TypeInfo key_ty))(u_P_const$raw));
+$extern fn_((HashSet_Unit_keyMut(HashSet_Unit$raw* self, TypeInfo key_ty))(u_P$raw));
 
 /* --- HashSet_Entry: Pointer to key in set --- */
 
@@ -191,12 +192,12 @@ $extern fn_((HashSet_putWithin(HashSet* self, u_V$raw key))(void));
 /// Insert or update, returning previous value if it existed. May allocate.
 $attr($must_check)
 $extern fn_((HashSet_fetchPut(
-    HashSet* self, mem_Alctr gpa, u_V$raw key, V$HashSet_Sgl$raw ret_mem
-))(mem_E$O$V$HashSet_Sgl$raw));
+    HashSet* self, mem_Alctr gpa, u_V$raw key, V$HashSet_Unit$raw ret_mem
+))(mem_E$O$V$HashSet_Unit$raw));
 /// Insert or update, returning previous value if it existed. Asserts capacity.
 $extern fn_((HashSet_fetchPutWithin(
-    HashSet* self, u_V$raw key, V$HashSet_Sgl$raw ret_mem
-))(O$V$HashSet_Sgl$raw));
+    HashSet* self, u_V$raw key, V$HashSet_Unit$raw ret_mem
+))(O$V$HashSet_Unit$raw));
 
 /* --- Ensure Operations --- */
 
@@ -211,7 +212,7 @@ $extern fn_((HashSet_ensureWithin(HashSet* self, u_V$raw key))(HashSet_Ensured))
 /// Remove element if present, returning true if removed.
 $extern fn_((HashSet_remove(HashSet* self, u_V$raw key))(bool));
 /// Remove element if present, returning the removed key.
-$extern fn_((HashSet_fetchRemove(HashSet* self, u_V$raw key, V$HashSet_Sgl$raw ret_mem))(O$V$HashSet_Sgl$raw));
+$extern fn_((HashSet_fetchRemove(HashSet* self, u_V$raw key, V$HashSet_Unit$raw ret_mem))(O$V$HashSet_Unit$raw));
 /// Remove element by key pointer (must be valid pointer into set).
 $extern fn_((HashSet_removeByPtr(HashSet* self, u_P$raw key_ptr))(void));
 
@@ -292,7 +293,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     T_impl_HashSet_Header$(_K)
 
 
-#define __comp_anon__HashSet_Sgl$$(_K...) \
+#define __comp_anon__HashSet_Unit$$(_K...) \
     union { \
         struct { \
             debug_only(var_(key_ty, TypeInfo)); \
@@ -303,16 +304,16 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
                 var_(key, _K); \
             }; \
         }; \
-        var_(as_raw, HashSet_Sgl$raw) $like_ref; \
+        var_(as_raw, HashSet_Unit$raw) $like_ref; \
     }
-#define __comp_alias__HashSet_Sgl$(_K...) \
-    pp_join($, HashSet_Sgl, _K)
-#define __comp_gen__T_decl_HashSet_Sgl$(_K...) \
-    $maybe_unused typedef union HashSet_Sgl$(_K) HashSet_Sgl$(_K); \
-    T_decl_O$(HashSet_Sgl$(_K)); \
-    T_decl_E$($set(mem_E)(O$(HashSet_Sgl$(_K))))
-#define __comp_gen__T_impl_HashSet_Sgl$(_K...) \
-    union HashSet_Sgl$(_K) { \
+#define __comp_alias__HashSet_Unit$(_K...) \
+    pp_join($, HashSet_Unit, _K)
+#define __comp_gen__T_decl_HashSet_Unit$(_K...) \
+    $maybe_unused typedef union HashSet_Unit$(_K) HashSet_Unit$(_K); \
+    T_decl_O$(HashSet_Unit$(_K)); \
+    T_decl_E$($set(mem_E)(O$(HashSet_Unit$(_K))))
+#define __comp_gen__T_impl_HashSet_Unit$(_K...) \
+    union HashSet_Unit$(_K) { \
         struct { \
             debug_only(var_(key_ty, TypeInfo)); \
             union { \
@@ -322,19 +323,24 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
                 var_(key, _K); \
             }; \
         }; \
-        var_(as_raw, HashSet_Sgl$raw) $like_ref; \
+        var_(as_raw, HashSet_Unit$raw) $like_ref; \
     }; \
-    T_impl_O$(HashSet_Sgl$(_K)); \
-    T_impl_E$($set(mem_E)(O$(HashSet_Sgl$(_K))))
-#define __comp_gen__T_use_HashSet_Sgl$(_K...) \
-    T_decl_HashSet_Sgl$(_K); \
-    T_impl_HashSet_Sgl$(_K)
+    T_impl_O$(HashSet_Unit$(_K)); \
+    T_impl_E$($set(mem_E)(O$(HashSet_Unit$(_K))))
+#define __comp_gen__T_use_HashSet_Unit$(_K...) \
+    T_decl_HashSet_Unit$(_K); \
+    T_impl_HashSet_Unit$(_K)
 
 /* clang-format off */
-#define T_use_HashSet_Sgl_key$(_K...) \
+#define T_use_HashSet_Unit_key$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Sgl_key, _K)(HashSet_Sgl$(_K) self))(_K)) { \
-        return u_castV$((_K)(HashSet_Sgl_key(self.as_raw, u_retV$(_K)))); \
+    $static fn_((tpl_id$1T(HashSet_Unit_key, _K)(const HashSet_Unit$(_K)* self))(const _K*)) { \
+        return u_castP$((const _K*)(HashSet_Unit_key(self->as_raw, typeInfo$(_K)))); \
+    }
+#define T_use_HashSet_Unit_keyMut$(_K...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id$1T(HashSet_Unit_keyMut, _K)(HashSet_Unit$(_K)* self))(_K*)) { \
+        return u_castP$((_K*)(HashSet_Unit_keyMut(self->as_raw, typeInfo$(_K)))); \
     }
 /* clang-format on */
 
@@ -613,17 +619,17 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     }
 #define T_use_HashSet_fetchPut$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_fetchPut, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(E$($set(mem_E)(O$(HashSet_Sgl$(_K))))) $scope) { \
-        let opt_sgl = try_(HashSet_fetchPut(self->as_raw, gpa, u_anyV(key), l0$((HashSet_Sgl$(_K))).as_raw)); \
+    $static fn_((tpl_id$1T(HashSet_fetchPut, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(E$($set(mem_E)(O$(HashSet_Unit$(_K))))) $scope) { \
+        let opt_sgl = try_(HashSet_fetchPut(self->as_raw, gpa, u_anyV(key), l0$((HashSet_Unit$(_K))).as_raw)); \
         let sgl = orelse_((opt_sgl)(return_ok(none()))); \
-        return_ok(some(*as$(HashSet_Sgl$(_K)*)(sgl))); \
+        return_ok(some(*as$(HashSet_Unit$(_K)*)(sgl))); \
     } $unscoped(fn)
 #define T_use_HashSet_fetchPutWithin$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_fetchPutWithin, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Sgl$(_K))) $scope) { \
-        let opt_sgl = HashSet_fetchPutWithin(self->as_raw, u_anyV(key), l0$((HashSet_Sgl$(_K))).as_raw); \
+    $static fn_((tpl_id$1T(HashSet_fetchPutWithin, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Unit$(_K))) $scope) { \
+        let opt_sgl = HashSet_fetchPutWithin(self->as_raw, u_anyV(key), l0$((HashSet_Unit$(_K))).as_raw); \
         let sgl = orelse_((opt_sgl)(return_none())); \
-        return_some(*as$(HashSet_Sgl$(_K)*)(sgl)); \
+        return_some(*as$(HashSet_Unit$(_K)*)(sgl)); \
     } $unscoped(fn)
 
 #define T_use_HashSet_ensure$(_K...) \
@@ -644,10 +650,10 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     }
 #define T_use_HashSet_fetchRemove$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_fetchRemove, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Sgl$(_K))) $scope) { \
-        let opt_sgl = HashSet_fetchRemove(self->as_raw, u_anyV(key), l0$((HashSet_Sgl$(_K))).as_raw); \
+    $static fn_((tpl_id$1T(HashSet_fetchRemove, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Unit$(_K))) $scope) { \
+        let opt_sgl = HashSet_fetchRemove(self->as_raw, u_anyV(key), l0$((HashSet_Unit$(_K))).as_raw); \
         let sgl = orelse_((opt_sgl)(return_none())); \
-        return_some(*as$(HashSet_Sgl$(_K)*)(sgl)); \
+        return_some(*as$(HashSet_Unit$(_K)*)(sgl)); \
     } $unscoped(fn)
 #define T_use_HashSet_removeByPtr$(_K...) \
     $attr($inline_always) \

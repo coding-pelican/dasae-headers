@@ -14,6 +14,9 @@ extern "C" {
 
 /// Stores the cpu state of an inactive fiber.
 T_alias$((Co_Fiber_Context)(struct Co_Fiber_Context));
+typedef fn_(((*Co_Fiber_EntryFn)(void))(void));
+$attr($inline_always)
+$static fn_((Co_Fiber_Context_init(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_EntryFn entry))(void));
 
 /// Context switch struct.
 T_alias$((Co_Fiber)(struct Co_Fiber {
@@ -21,8 +24,10 @@ T_alias$((Co_Fiber)(struct Co_Fiber {
     var_(new, Co_Fiber_Context*);
 }));
 /// Fills `self->old` with the current cpu state, and restores the cpu state stored in `self->new`.
-$attr($inline)
+$attr($inline_always)
 $static fn_((Co_Fiber_contextSwitch(const Co_Fiber* self))(const Co_Fiber*));
+$attr($inline_always)
+$static fn_((Co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw));
 
 /*========== Macro and Definitions ==========================================*/
 
@@ -57,7 +62,30 @@ struct Co_Fiber_Context {
     )));
 };
 
+fn_((Co_Fiber_Context_init(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_EntryFn entry))(void)) {
+    claim_assert_nonnull(self), claim_assert_nonnull(stack_arg), claim_assert_nonnull(entry);
+    asg_l((self)(pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)({
+            .rsp = as$(u64)((ptrToInt(stack_arg)) - sizeOf$(usize)),
+            .rbp = 0,
+            .rip = as$(u64)(ptrToInt(entry)),
+        })),
+        pp_case_((arch_type_aarch64)({
+            .sp = as$(u64)(ptrToInt(stack_arg)),
+            .fp = 0,
+            .pc = as$(u64)(ptrToInt(entry)),
+        })),
+        pp_case_((arch_type_riscv64)({
+            .sp = as$(u64)(ptrToInt(stack_arg)),
+            .fp = 0,
+            .pc = as$(u64)(ptrToInt(entry)),
+        })),
+        pp_default_(cleared())
+    ))));
+};
+
 fn_((Co_Fiber_contextSwitch(const Co_Fiber* self))(const Co_Fiber*)) { /* NOLINTBEGIN(hicpp-no-assembler) */
+    claim_assert_nonnull(self);
     register const Co_Fiber* fiber pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(asm("rsi"))),
         pp_case_((arch_type_aarch64)(asm("x1"))),
@@ -109,6 +137,16 @@ fn_((Co_Fiber_contextSwitch(const Co_Fiber* self))(const Co_Fiber*)) { /* NOLINT
     )))));
     return fiber;
 }; /* NOLINTEND(hicpp-no-assembler) */
+
+fn_((Co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw) $scope) {
+    claim_assert(isValidAlign(align));
+    if (stack.len < size) return_none();
+    let stack_begin = ptrToInt(stack.ptr);
+    let stack_end = stack_begin + stack.len;
+    let arg = alignBwd(stack_end - size, align);
+    if (arg < stack_begin) return_none();
+    return_some(intToPtr$((P$raw)(arg)));
+} $unscoped(fn);
 
 #if defined(__cplusplus)
 } /* extern "C" */

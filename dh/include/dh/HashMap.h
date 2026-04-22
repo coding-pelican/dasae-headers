@@ -129,8 +129,10 @@ T_use_P$(HashMap_Pair$raw);
 typedef P$HashMap_Pair$raw V$HashMap_Pair$raw;
 T_use_O$(V$HashMap_Pair$raw);
 T_use_E$($set(mem_E)(O$V$HashMap_Pair$raw));
-$extern fn_((HashMap_Pair_key(V$HashMap_Pair$raw self, TypeInfo val_ty, u_V$raw ret_mem))(u_V$raw));
-$extern fn_((HashMap_Pair_val(V$HashMap_Pair$raw self, TypeInfo key_ty, u_V$raw ret_mem))(u_V$raw));
+$extern fn_((HashMap_Pair_key(const HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P_const$raw));
+$extern fn_((HashMap_Pair_keyMut(HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P$raw));
+$extern fn_((HashMap_Pair_val(const HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P_const$raw));
+$extern fn_((HashMap_Pair_valMut(HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P$raw));
 
 /* --- HashMap_Entry: Pointers to key and value in map --- */
 
@@ -506,13 +508,23 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 /* clang-format off */
 #define T_use_HashMap_Pair_key$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_Pair_key, _K, _V)(HashMap_Pair$(_K, _V) self))(u_V$raw)) { \
-        return u_castV$((_K)(HashMap_Pair_key(self.as_raw, typeInfo$(_V), u_retV$(_K)))); \
+    $static fn_((tpl_id$1T$2U(HashMap_Pair_key, _K, _V)(const HashMap_Pair$(_K, _V)* self))(const _K*)) { \
+        return u_castP$((const _K*)(HashMap_Pair_key(self->as_raw, typeInfo$(_K), typeInfo$(_V)))); \
+    }
+#define T_use_HashMap_Pair_keyMut$(_K, _V...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id$1T$2U(HashMap_Pair_keyMut, _K, _V)(HashMap_Pair$(_K, _V)* self))(_K*)) { \
+        return u_castP$((_K*)(HashMap_Pair_keyMut(self->as_raw, typeInfo$(_K), typeInfo$(_V)))); \
     }
 #define T_use_HashMap_Pair_val$(_K, _V...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T$2U(HashMap_Pair_val, _K, _V)(HashMap_Pair$(_K, _V) self))(u_V$raw)) { \
-        return u_castV$((_V)(HashMap_Pair_val(self.as_raw, typeInfo$(_K), u_retV$(_V)))); \
+    $static fn_((tpl_id$1T$2U(HashMap_Pair_val, _K, _V)(const HashMap_Pair$(_K, _V)* self))(const _V*)) { \
+        return u_castP$((const _V*)(HashMap_Pair_val(self->as_raw, typeInfo$(_K), typeInfo$(_V)))); \
+    }
+#define T_use_HashMap_Pair_valMut$(_K, _V...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id$1T$2U(HashMap_Pair_valMut, _K, _V)(HashMap_Pair$(_K, _V)* self))(_V*)) { \
+        return u_castP$((_V*)(HashMap_Pair_valMut(self->as_raw, typeInfo$(_K), typeInfo$(_V)))); \
     }
 /* clang-format on */
 

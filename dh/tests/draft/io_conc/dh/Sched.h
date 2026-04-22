@@ -20,65 +20,78 @@ T_use_E$($set(Sched_Cancelable)(P$Future$raw));
 
 T_alias$((Sched)(struct Sched));
 T_alias$((Sched_VTbl)(struct Sched_VTbl {
-    /// If it returns `null` it means `result` has been already populated and
-    /// `await` will be a no-op.
+    /// Split a call from its result storage and use available asynchronous
+    /// progress. If that is unavailable, the implementation may complete the
+    /// call eagerly or defer it to `await`.
     ///
-    /// When this function returns non-null, the implementation guarantees that
-    /// a unit of concurrency has been assigned to the returned task.
-    ///
+    /// If it returns `none`, `result` has already been populated and `await`
+    /// will be a no-op.
     /// Thread-safe.
     fn_(((*asyncFn)(
         /// Corresponds to `Sched.ctx`.
-        O$P$raw ctx,
-        /// The pointer of this slice is an "eager" result value.
-        /// The length is the size in bytes of the result type.
-        /// This pointer's lifetime expires directly after the call to this function.
+        P$raw ctx,
+        /// Points to the caller-owned `Future.result_` field.
+        /// The pointer remains valid for the lifetime of that Future value.
         u_P$raw result,
-        /// Copied and then passed to `entryFn`.
-        u_P_const$raw inner,
-        fn_(((*entryFn)(P_const$raw inner, P$raw result))(void))
+        /// Borrowed closure state. The implementation must not copy it.
+        P$$(Closure$raw) inner
     ))(O$P$Future$raw));
 
+    /// Request a concurrency unit. Failure is reported instead of falling back
+    /// to eager or await-time execution.
     /// Thread-safe.
     $attr($must_check)
     fn_(((*spawnFn)(
-        O$P$raw ctx,
+        P$raw ctx,
         u_P$raw result,
-        u_P_const$raw inner,
-        fn_(((*entryFn)(P_const$raw inner, P$raw result))(void))
+        P$$(Closure$raw) inner
     ))(Sched_ConcE$P$Future$raw));
 
-    /// This function is only called when `async` returns a non-null value.
+    /// This function is only called when `async` or `spawn` returns `some`.
     ///
     /// Thread-safe.
-    fn_(((*awaitFn)(O$P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
+    fn_(((*awaitFn)(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
 
     /// Equivalent to `await` but initiates cancel request.
     ///
-    /// This function is only called when `async` returns a non-null value.
+    /// This function is only called when `async` or `spawn` returns `some`.
     ///
     /// Thread-safe.
-    fn_(((*cancelFn)(O$P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
+    fn_(((*cancelFn)(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
 }));
 struct Sched {
-    var_(ctx, O$P$raw);
+    var_(ctx, P$raw);
     var_(vtbl, P_const$$(Sched_VTbl));
 };
 
-$extern fn_((Sched_async(Sched self, Closure$raw* closure, V$Future$raw ret_mem))(V$Future$raw));
+$extern fn_((Sched_seq(exec_Seq* exec))(Sched));
+$extern fn_((Sched_coop(exec_Coop* exec))(Sched));
+$extern fn_((Sched_preem(exec_Preem* exec))(Sched));
+$extern fn_((Sched_para(exec_Para* exec))(Sched));
+
+$extern fn_((Sched_async(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw));
 #define T_use_Sched_async$(_T...) __stmt__T_use_Sched_async$(_T)
 $attr($must_check)
-$extern fn_((Sched_spawn(Sched self, Closure$raw* closure, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw));
+$extern fn_((Sched_spawn(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw));
 #define T_use_Sched_spawn$(_T...) __stmt__T_use_Sched_spawn$(_T)
 
+/*========== Macro and Definitions ==========================================*/
 
 #define __stmt__T_use_Sched_async$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(Sched_async, _T)(Sched self, Closure$raw* closure))(Future$(_T))) /* clang-format on */
+    $static fn_((tpl_id(Sched_async, _T)(Sched self, Closure$(_T)* closure))(Future$(_T))) { \
+        return *ptrAlignCast$((Future$(_T)*)( \
+            Sched_async(self, closure->as_raw, typeInfo$(_T), l0$((Future$(_T))).as_raw) \
+        )); \
+    } /* clang-format on */
 #define __stmt__T_use_Sched_spawn$(_T...) /* clang-format off */ \
     T_use_E$($set(Sched_ConcE)(Future$(_T))); \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(Sched_spawn, _T)(Sched self, Closure$raw* closure))(E$($set(Sched_ConcE)(Future$(_T))))) /* clang-format on */
+    $static fn_((tpl_id(Sched_spawn, _T)(Sched self, Closure$(_T)* closure))(E$($set(Sched_ConcE)(Future$(_T)))) $scope) { \
+        return_ok(*ptrAlignCast$((Future$(_T)*)( \
+            try_(Sched_spawn(self, closure->as_raw, typeInfo$(_T), l0$((Future$(_T))).as_raw)) \
+        ))); \
+    } $unscoped(fn) /* clang-format on */
 
 #if defined(__cplusplus)
 } /* extern "C" */

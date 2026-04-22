@@ -818,6 +818,35 @@ $inline_always
     as$(bool)(int_trailingZeros(__addr) >= __log2_align); \
 })
 
+#define __step__alignFwd(_addr, _align...) ____alignFwd(pp_uniqTok(addr), _addr, pp_uniqTok(align), _align)
+#define ____alignFwd(__addr, _addr, __align, _align...) ({ \
+    let_(__addr, usize) = ptrToInt(_addr); \
+    let_(__align, usize) = _align; \
+    claim_assert(isValidAlign(__align)); \
+    (__addr + (__align - 1)) & ~(__align - 1); \
+})
+#define __step__alignFwdLog2(_addr, _log2_align...) ____alignFwdLog2(pp_uniqTok(addr), _addr, pp_uniqTok(log2_align), _log2_align)
+#define ____alignFwdLog2(__addr, _addr, __log2_align, _log2_align...) ({ \
+    let_(__addr, usize) = ptrToInt(_addr); \
+    let_(__log2_align, u8) = _log2_align; \
+    claim_assert(isValidAlign(__log2_align)); \
+    (__addr + (__log2_align - 1)) & ~(__log2_align - 1); \
+})
+#define __step__alignBwd(_addr, _align...) ____alignBwd(pp_uniqTok(addr), _addr, pp_uniqTok(align), _align)
+#define ____alignBwd(__addr, _addr, __align, _align...) ({ \
+    let_(__addr, usize) = ptrToInt(_addr); \
+    let_(__align, usize) = _align; \
+    claim_assert(isValidAlign(__align)); \
+    (__addr & ~(__align - 1)); \
+})
+#define __step__alignBwdLog2(_addr, _log2_align...) ____alignBwdLog2(pp_uniqTok(addr), _addr, pp_uniqTok(log2_align), _log2_align)
+#define ____alignBwdLog2(__addr, _addr, __log2_align, _log2_align...) ({ \
+    let_(__addr, usize) = ptrToInt(_addr); \
+    let_(__log2_align, u8) = _log2_align; \
+    claim_assert(isValidAlign(__log2_align)); \
+    (__addr & ~(__log2_align - 1)); \
+})
+
 #define ____alignToLog2_static(_align...) (as$(u8)(usize_bits - 1u) - as$(u8)(raw_trailingZeros64(as$(u64)(_align))))
 #define __step__alignToLog2(_align...) ____alignToLog2(pp_uniqTok(align), _align)
 #define ____alignToLog2(__align, _align...) ({ \
@@ -837,7 +866,7 @@ $inline_always
 #define __step__alignCast__emit(...) ____alignCast(__VA_ARGS__)
 #define ____alignCast(__log2_align, _log2_align, __ptr, _ptr...) local_({ \
     let_(__log2_align, u8) = _log2_align; \
-    let_(__ptr, TypeOf(_ptr)) = _ptr; \
+    let __ptr = _ptr; \
     claim_assert(isAlignedLog2(__ptr, __log2_align)); \
     local_return_(__ptr); \
 })

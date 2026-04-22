@@ -248,14 +248,25 @@ CMakeUserPresets.json
 
 ### Project Specific ###
 
+# Environment variables
+.env*
+!.env.*template
+!.env.*example
+
 # VS Code settings
 **/.vscode/
 
 # Cursor settings
 **/.cursor/
+.cursorrules
 
 # Claude settings
 **/.claude/
+CLAUDE.md
+
+# Agent settings
+**/.agents/
+AGENTS.md
 
 # Temporary files
 *.tmp*
@@ -265,6 +276,7 @@ CMakeUserPresets.json
 .message.txt
 .commit.txt
 .pull_request.txt
+.issue.txt
 
 # Temporary directories
 **/.tmp*/

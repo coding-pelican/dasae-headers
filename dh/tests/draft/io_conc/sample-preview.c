@@ -39,39 +39,36 @@ $static fn_((countFn(Sys sys, usize n, time_Dur interval, S_const$u8 label))(f64
 };
 T_use$((f64)(Closure_Ctx, Closure_Rtn, Closure));
 fn_use_Closure_((countFn)(Sys, usize, time_Dur, S_const$u8)(f64));
-
-T_use$((f64)(Co_Ctx, Co_Rtn, Co_Frame));
-co_fn_(countCo, (Sys sys; usize n; time_Dur interval; S_const$u8 label), f64);
-co_fn_scope(
-    countCo,
+#if UNUSED_CODE
+/* Coroutines enforce the use of closures. (co_use_Closure) is mandatory. */
+$static co_fn_(((countCo)(Sys sys, usize n, time_Dur interval, S_const$u8 label))(f64)$scope(
     co_locals_({
         var_(instant, time_Inst);
+        var_(i, usize);
         var_(elapsed, f64);
     }),
-    co_locals_mut_({
-        var_(i, usize);
-    }),
+    co_locals_mut_({}),
     co_suspended_({
         var_(slept, Void);
     })
-) {
-    co_let_(instant, time_Inst_now($co_arg(sys).time));
+)) {
+    co_let_((instant)(time_Inst_now($co_arg(sys).time)));
     report($co_arg(sys).io, $co_arg(label), u8_l("before loop {:fl}"), $co_arg(interval));
 
-    for (co_var_(i, 0); $co_mut(i) < $co_arg(n); ++$co_mut(i)) {
-        suspend_(slept, catch_((time_sleep($co_arg(sys).time, $co_arg(interval)))($ignore, $do_nothing)));
-        report(
-            $co_arg(sys).io, $co_arg(label),
-            u8_l("slept {:fl} | i: {:uz} < n: {:uz}"),
-            $co_arg(interval), $co_mut(i), $co_arg(n)
-        );
-    };
+    co_for_(($rt($co_arg(n)))(i)) {
+        suspend_((slept)(catch_((time_sleep($co_arg(sys).time, interval))($ignore, $do_nothing))));
+        report($co_arg(sys).io, $co_arg(label), u8_l("slept {:fl} | i: {:uz} < n: {:uz}"), $co_arg(interval), $co(i), $co_arg(n));
+    } $end(co_for);
 
-    co_let_(elapsed, pipe_(($co(instant))((t)(time_Inst_elapsed(t, $co_arg(sys).time)), (t)(time_Dur_asSecs$f64(t)))));
+    co_let_((elapsed)(pipe_(($co(instant))(
+        (t)(time_Inst_elapsed(t, $co_arg(sys).time)),
+        (t)(time_Dur_asSecs$f64(t))
+    ))));
     report($co_arg(sys).io, $co_arg(label), u8_l("after loop {:fl}"), $co(elapsed));
     co_return_($co(elapsed));
 } $unscoped(co_fn);
 co_use_Closure_((countCo)(Sys, usize, time_Dur, S_const$u8)(f64));
+#endif /* UNUSED_CODE */
 
 T_use$((f64)(
     Future,
@@ -95,16 +92,15 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         let async = Sched_async$f64;
         let cancel = Future_cancel$f64;
         let await = Future_await$f64;
-        let countFn = closure_(countFn);
-        let countCo = closure_(countCo);
+        let count = closure_(countFn);
         let intervalSecs = time_Dur_fromSecs$f64;
 
         var total = 0.0;
         blk_defer_({
             io_stream_println(sys.io, u8_l("begin - evented async execution"));
-            var task_a = async(sched, countFn(sys, 2, intervalSecs(1.0), u8_l("task a")).as_base);
+            var task_a = async(sched, count(sys, 2, intervalSecs(1.0), u8_l("task a")).as_base);
             defer_(let_ignore = cancel(&task_a, sched));
-            var task_b = async(sched, countCo(sys, 3, intervalSecs(0.6), u8_l("task b")).as_base);
+            var task_b = async(sched, count(sys, 3, intervalSecs(0.6), u8_l("task b")).as_base);
             defer_(let_ignore = cancel(&task_b, sched));
             total += await(&task_a, sched);
             total += await(&task_b, sched);
@@ -124,18 +120,17 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         let spawn = Sched_spawn$f64;
         let cancel = Future_cancel$f64;
         let await = Future_await$f64;
-        let countFn = closure_(countFn);
-        let countCo = closure_(countCo);
+        let count = closure_(countFn);
         let intervalSecs = time_Dur_fromSecs$f64;
 
         var total = 0.0;
         blk_defer_({
             io_stream_println(sys.io, u8_l("begin - parallel execution"));
-            var task_a = catch_((spawn(sched, countFn(sys, 2, intervalSecs(1.0), u8_l("task a")).as_base))(
+            var task_a = catch_((spawn(sched, count(sys, 2, intervalSecs(1.0), u8_l("task a")).as_base))(
                 $ignore, claim_unreachable
             ));
             defer_(let_ignore = cancel(&task_a, sched));
-            var task_b = catch_((spawn(sched, countCo(sys, 3, intervalSecs(0.6), u8_l("task b")).as_base))(
+            var task_b = catch_((spawn(sched, count(sys, 3, intervalSecs(0.6), u8_l("task b")).as_base))(
                 $ignore, claim_unreachable
             ));
             defer_(let_ignore = cancel(&task_b, sched));

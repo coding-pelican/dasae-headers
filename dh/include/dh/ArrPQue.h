@@ -197,6 +197,16 @@ $extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw)
     $static fn_((tpl_id(ArrPQue_cap, _T)(ArrPQue$(_T) self))(usize)) { \
         return ArrPQue_cap(*self.as_raw); \
     }
+#define T_use_ArrPQue_isEmpty$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrPQue_isEmpty, _T)(ArrPQue$(_T) self))(bool)) { \
+        return ArrPQue_isEmpty(*self.as_raw); \
+    }
+#define T_use_ArrPQue_isFull$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl_id(ArrPQue_isFull, _T)(ArrPQue$(_T) self))(bool)) { \
+        return ArrPQue_isFull(*self.as_raw); \
+    }
 #define T_use_ArrPQue_peek$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl_id(ArrPQue_peek, _T)(ArrPQue$(_T) self))(O$(P_const$(_T)))) { \

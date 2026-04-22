@@ -122,8 +122,8 @@ Macros:
   - release_only(inner)="[](void) -> (void) inner"
   - TEST_only(inner)="[](void) -> (void) inner"
 
-  - "pp_then_(Then)=Then"
-  - "pp_else_(Else)=Else"
+  # - "pp_then_(Then)=Then"
+  # - "pp_else_(Else)=Else"
 
   - "pp_switch_(Expr)=pp_exec_ignore Expr"
   - "pp_case_(Expr)=pp_exec_ignore Expr"
@@ -248,7 +248,6 @@ Macros:
   - "else_ok_void=else"
   - "while_ok(_expr)=if (_expr)"
   - "while_err(_expr)=if (_expr)"
-
   # - "blk_defer={ do"
   # - "blk_deferral=while(false); }"
   # - "blk_defer=("
@@ -286,7 +285,6 @@ AttributeMacros:
   - $nonnull
 
   - $fallthrough
-
   # - $inline
   # - $inline_always
   # - $inline_never

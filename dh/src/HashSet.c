@@ -17,24 +17,31 @@
 
 /*========== Definitions ====================================================*/
 
-$static fn_((HashSet_Sgl__init(u_V$raw key, V$HashSet_Sgl$raw ret_mem))(V$HashSet_Sgl$raw)) {
+$static fn_((HashSet_Unit__init(u_V$raw key, V$HashSet_Unit$raw ret_mem))(V$HashSet_Unit$raw)) {
     debug_only({
         ret_mem->key_ty = key.type;
     });
     let self_type = u_typeInfoRecord(typeInfosFrom(key.type));
-    let p_self = (u_V$raw){ .type = self_type, .inner = ret_mem->data.inner }.ref;
+    let p_self = P_meta((self_type)(as$(P$raw)(ret_mem->data.inner)));
     let p_key = u_fieldPtrMut(p_self, typeInfosFrom(key.type), 0);
     u_memcpy(p_key, key.ref.as_const);
     return ret_mem;
 };
 
-fn_((HashSet_Sgl_key(V$HashSet_Sgl$raw self, u_V$raw ret_mem))(u_V$raw)) {
-    debug_assert_nonnull(ret_mem.inner);
-    debug_assert_eqBy(self->key_ty, ret_mem.type, TypeInfo_eql);
-    let self_type = u_typeInfoRecord(typeInfosFrom(ret_mem.type));
-    let p_self = u_load((u_V$raw){ .type = self_type, .inner = self->data.inner }).ref;
-    let p_key = u_fieldPtr(p_self.as_const, typeInfosFrom(ret_mem.type), 0);
-    return u_deref(u_memcpy(ret_mem.ref, p_key));
+fn_((HashSet_Unit_key(const HashSet_Unit$raw* self, TypeInfo key_ty))(u_P_const$raw)) {
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    let self_type = u_typeInfoRecord(typeInfosFrom(key_ty));
+    let p_self = P_meta((self_type)(as$(P_const$raw)(self->data.inner)));
+    let p_key = u_fieldPtr(p_self, typeInfosFrom(key_ty), 0);
+    return p_key;
+};
+
+fn_((HashSet_Unit_keyMut(HashSet_Unit$raw* self, TypeInfo key_ty))(u_P$raw)) {
+    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    let self_type = u_typeInfoRecord(typeInfosFrom(key_ty));
+    let p_self = P_meta((self_type)(as$(P$raw)(self->data.inner)));
+    let p_key = u_fieldPtrMut(p_self, typeInfosFrom(key_ty), 0);
+    return p_key;
 };
 
 fn_((HashSet_Entry_key(HashSet_Entry self, TypeInfo key_ty))(u_P_const$raw)) {
@@ -539,26 +546,26 @@ fn_((HashSet_putWithin(HashSet* self, u_V$raw key))(void)) {
     self->size++;
 };
 
-fn_((HashSet_fetchPut(HashSet* self, mem_Alctr gpa, u_V$raw key, V$HashSet_Sgl$raw ret_mem))(mem_E$O$V$HashSet_Sgl$raw) $scope) {
+fn_((HashSet_fetchPut(HashSet* self, mem_Alctr gpa, u_V$raw key, V$HashSet_Unit$raw ret_mem))(mem_E$O$V$HashSet_Unit$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
     let ensured = try_(HashSet_ensure(self, gpa, key));
-    let result = expr_(O$V$HashSet_Sgl$raw $scope)(if (ensured.found_existing) {
+    let result = expr_(O$V$HashSet_Unit$raw $scope)(if (ensured.found_existing) {
         let k = HashSet_Ensured_key(ensured, key.type);
-        $break_(some(HashSet_Sgl__init(u_load(u_deref(k)), ret_mem)));
+        $break_(some(HashSet_Unit__init(u_load(u_deref(k)), ret_mem)));
     } else_none {
         $break_(none());
     }) $unscoped(expr);
     return_ok(result);
 } $unscoped(fn);
 
-fn_((HashSet_fetchPutWithin(HashSet* self, u_V$raw key, V$HashSet_Sgl$raw ret_mem))(O$V$HashSet_Sgl$raw) $scope) {
+fn_((HashSet_fetchPutWithin(HashSet* self, u_V$raw key, V$HashSet_Unit$raw ret_mem))(O$V$HashSet_Unit$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
     let ensured = HashSet_ensureWithin(self, key);
-    let result = expr_(O$V$HashSet_Sgl$raw $scope)(if (ensured.found_existing) {
+    let result = expr_(O$V$HashSet_Unit$raw $scope)(if (ensured.found_existing) {
         let k = HashSet_Ensured_key(ensured, key.type);
-        $break_(some(HashSet_Sgl__init(u_load(u_deref(k)), ret_mem)));
+        $break_(some(HashSet_Unit__init(u_load(u_deref(k)), ret_mem)));
     } else_none {
         $break_(none());
     }) $unscoped(expr);
@@ -640,12 +647,12 @@ fn_((HashSet_remove(HashSet* self, u_V$raw key))(bool)) {
     return false;
 };
 
-fn_((HashSet_fetchRemove(HashSet* self, u_V$raw key, V$HashSet_Sgl$raw ret_mem))(O$V$HashSet_Sgl$raw) $scope) {
+fn_((HashSet_fetchRemove(HashSet* self, u_V$raw key, V$HashSet_Unit$raw ret_mem))(O$V$HashSet_Unit$raw) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
     if_some((HashSet__idx(*self, key))(idx)) {
         let old_key = HashSet__keyAt(*self, key.type, idx);
-        let result = HashSet_Sgl__init(u_load(u_deref(old_key)), ret_mem);
+        let result = HashSet_Unit__init(u_load(u_deref(old_key)), ret_mem);
         HashMap_Ctrl_remove(HashSet__metadataAt(*self, idx));
         mem_set0(u_prefixP(old_key, 1));
         self->size--;
