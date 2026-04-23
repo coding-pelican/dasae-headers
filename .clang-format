@@ -200,7 +200,7 @@ Macros:
   - "$static=static"
   - "$extern=extern"
   - "fn_(Expr)=static Expr"
-  # - "la_(Expr)=[]Expr"
+  - "co_fn_(Expr)=static Expr"
   - "$un(keyword)=/**/pp_exec_expand"
   - "$unscoped(keyword)=/**/"
   - "$unguarded(keyword)=/**/"
@@ -227,6 +227,7 @@ Macros:
   - "loop_labeled(_label, _stmt)_label: _stmt"
   - "pipe_(_Expr)=pp_exec_ignore _Expr"
   - "chain$(_Expr)=pp_exec_ignore _Expr"
+  - "suspend_(_Expr)=pp_exec_ignore _Expr"
 
   # Optional value
   - "if_some(_Expr)=if (_Expr)"
@@ -301,63 +302,3 @@ AttributeMacros:
   # - $deprecated
   # - $deprecated_msg
   # - $deprecated_instead
-
-WhitespaceSensitiveMacros:
-  - pipe
-
-# TypeNames:
-#   # Inference
-#   - var
-#   - let
-#   - var_
-#   - let_
-#   - var_const
-#   - let_const
-#   - var_const_
-#   - let_const_
-#   - TypeOf
-#   - TypeOfUnqual
-#   # primitive
-#   - bool
-#   - u8
-#   - u16
-#   - u32
-#   - u64
-#   - usize
-#   - i8
-#   - i16
-#   - i32
-#   - i64
-#   - isize
-#   - f32
-#   - f64
-#   - Void
-#   - $P_const$
-#   - $P$
-#   - $A$
-#   # Raw types
-#   - P_const$raw
-#   - P$raw
-#   - S_const$raw
-#   - S$raw
-#   - A$raw
-#   # Core types
-#   - P_const$$
-#   - P$$
-#   - P_const$
-#   - P$
-#   - S_const$$
-#   - S$$
-#   - S_const$
-#   - S$
-#   - A$$
-#   - A$
-#   - O$$
-#   - O$
-#   - E$$
-#   - E$
-#   - E$Void
-#   - E$void
-#   # Legacy types
-#   - anyptr_const
-#   - anyptr

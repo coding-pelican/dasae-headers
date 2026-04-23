@@ -27,7 +27,7 @@ $static fn_((time_evented__offsetInst(P$raw ctx))(time_Inst));
 $attr($must_check)
 $static fn_((time_evented__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
-T_use$((exec_Coop_Timer)(ArrPQue_enque));
+T_use$((exec_Timer)(ArrPQue_enque));
 
 /*========== External Definitions ===========================================*/
 
@@ -47,7 +47,7 @@ fn_((time_direct(void))(time_Self)) {
     };
 };
 
-fn_((time_evented(exec_Coop* loop))(time_Self)) {
+fn_((time_evented(exec_Coop* coop))(time_Self)) {
     $static let_(vtbl, time_Self_Vtbl) $like_ref = { {
         .nowClockFn = time_evented__nowClock,
         .nowInstFn = time_evented__nowInst,
@@ -57,7 +57,7 @@ fn_((time_evented(exec_Coop* loop))(time_Self)) {
         .sleepFn = time_evented__sleep,
     } };
     return (time_Self){
-        .ctx = loop,
+        .ctx = coop,
         .vtbl = vtbl,
     };
 };
@@ -171,12 +171,12 @@ fn_((time_direct__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) $scope)
 /*========== Evented Definitions ============================================*/
 
 $static fn_((time_evented__now(exec_Coop* self))(time_Inst)) {
-    return self->clock.vtbl->nowInstFn(self->clock.ctx);
+    return self->timed.clock.vtbl->nowInstFn(self->timed.clock.ctx);
 };
 
 fn_((time_evented__nowClock(P$raw ctx))(time_Clock)) {
     let self = as$(exec_Coop*)(ctx);
-    return self->clock.vtbl->nowClockFn(self->clock.ctx);
+    return self->timed.clock.vtbl->nowClockFn(self->timed.clock.ctx);
 };
 
 fn_((time_evented__nowInst(P$raw ctx))(time_Inst)) {
@@ -185,37 +185,39 @@ fn_((time_evented__nowInst(P$raw ctx))(time_Inst)) {
 
 fn_((time_evented__freqInst(P$raw ctx))(time_Inst)) {
     let self = as$(exec_Coop*)(ctx);
-    return self->clock.vtbl->freqInstFn(self->clock.ctx);
+    return self->timed.clock.vtbl->freqInstFn(self->timed.clock.ctx);
 };
 
 fn_((time_evented__freqInstInv(P$raw ctx))(f64)) {
     let self = as$(exec_Coop*)(ctx);
-    return self->clock.vtbl->freqInstInvFn(self->clock.ctx);
+    return self->timed.clock.vtbl->freqInstInvFn(self->timed.clock.ctx);
 };
 
 fn_((time_evented__offsetInst(P$raw ctx))(time_Inst)) {
     let self = as$(exec_Coop*)(ctx);
-    return self->clock.vtbl->offsetInstFn(self->clock.ctx);
+    return self->timed.clock.vtbl->offsetInstFn(self->timed.clock.ctx);
 };
 
 fn_((time_evented__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) $scope) {
     let self = as$(exec_Coop*)(ctx);
+    let timed = &self->timed;
+    let lane = &self->timed.lane;
     let deadline = orelse_((time_Inst_addChkdDur(time_evented__now(self), dur))(
         return_ok({})
     ));
 
-    if_some((self->task_curr)(task)) {
-        task->state = exec_Coop_Task_State_waiting;
-        let_(timer, exec_Coop_Timer) = {
+    if_some((lane->task_curr)(task)) {
+        task->state = exec_Task_State_waiting;
+        let_(timer, exec_Timer) = {
             .deadline = deadline,
             .task = task,
         };
-        let_ignore = catch_((ArrPQue_enque$exec_Coop_Timer(&self->tasks_timer, self->gpa, timer))($ignore, {
-            task->state = exec_Coop_Task_State_canceled;
+        let_ignore = catch_((ArrPQue_enque$exec_Timer(&timed->tasks_timer, lane->gpa, timer))($ignore, {
+            task->state = exec_Task_State_canceled;
             return_err(Sched_Cancelable_Canceled());
         }));
-        return_ok_void(exec_Coop_yield(self));
+        return_ok_void(exec_Lane_yield(lane));
     }
 
-    return_ok_void(exec_Coop_runUntil(self, deadline));
+    return_ok_void(exec_LaneTimed_runUntil(timed, deadline));
 } $unscoped(fn);

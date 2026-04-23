@@ -13,7 +13,9 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 /*--- Closure Related ---*/
+T_alias$((exec_Lane)(struct exec_Lane));
 T_alias$((exec_Seq)(struct exec_Seq));
+T_alias$((exec_LaneTimed)(struct exec_LaneTimed));
 T_alias$((exec_Coop)(struct exec_Coop));
 T_alias$((exec_Preem)(struct exec_Preem));
 T_alias$((exec_Para)(struct exec_Para));
@@ -72,8 +74,8 @@ T_alias$((Closure$raw)(struct Closure$raw {
 // #define co_use_Closure_rtn_(_rtn...) __stmt__co_use_Closure_rtn_(_rtn)
 /*--- Closure ---*/
 #define Closure_(_rtn...) __alias__Closure_(_rtn)
-#define closure_(_rtn...) __alias__closure_(_rtn)
-#define invoke_(_p_closure...) __expr__invoke_(_p_closure)
+#define closure_(_rtn... /*-> (Closure)*/) __alias__closure_(_rtn)
+#define invoke_(_p_closure... /*-> (Closure_Ctx)*/) __expr__invoke_(_p_closure)
 #define fn_use_Closure_(/*(_fn)(_Arg_T...)(_Ret_T)*/...) __stmt__fn_use_Closure_(__VA_ARGS__)
 #define co_use_Closure_(/*(_co)(_Arg_T...)(_Ret_T)*/...) __stmt__co_use_Closure_(__VA_ARGS__)
 
@@ -251,7 +253,9 @@ T_alias$((Closure$raw)(struct Closure$raw {
     fn_((Closure_rtn_(_co)(P$$(Closure_Ctx_(_co)) ctx))(P$$(Closure_Ctx_(_co)))) { \
         let frame = &ctx->data.frame; \
         let_ignore = resume_(frame); \
-        ctx->ret = frame->ctx_->ret; \
+        if (frame->ctx.ctrl.state == Co_State_ready) { \
+            ctx->ret = frame->ctx.ret; \
+        } \
         return ctx; \
     }; \
     T_alias$((Closure_Rtn_(_co))(TypeOf(Closure_rtn_(_co))*)); \

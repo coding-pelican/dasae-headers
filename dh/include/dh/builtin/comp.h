@@ -120,7 +120,7 @@ extern "C" {
 #define $import __attr__$import
 #define $export __attr__$export
 
-#define as$(_TDest... /*)(_src...) -> (_TDest)(*/) \
+#define as$(_TDest... /*)(_src...) -> (_TDest*/) \
     /** \
      * @brief Cast macro for converting a value to a different type \
      * @details This macro is used to cast a value from one type to another \

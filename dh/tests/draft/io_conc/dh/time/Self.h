@@ -26,9 +26,6 @@ T_alias$((time_Self)(struct time_Self {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(time_Self_Vtbl));
 }));
-$extern fn_((time_direct(void))(time_Self));
-$extern fn_((time_evented(exec_Coop* loop))(time_Self));
-
 $attr($must_check)
 $extern fn_((time_sleep(time_Self self, time_Dur dur))(Sched_Cancelable$void));
 $attr($must_check)
@@ -39,6 +36,9 @@ $attr($must_check)
 $extern fn_((time_sleepMicros(time_Self self, u64 micros))(Sched_Cancelable$void));
 $attr($must_check)
 $extern fn_((time_sleepNanos(time_Self self, u32 nanos))(Sched_Cancelable$void));
+
+$extern fn_((time_direct(void))(time_Self));
+$extern fn_((time_evented(exec_Coop* coop))(time_Self));
 
 #if defined(__cplusplus)
 } /* extern "C" */

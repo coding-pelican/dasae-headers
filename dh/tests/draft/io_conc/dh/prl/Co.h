@@ -107,14 +107,14 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
     __stmt__$co_locals(__VA_ARGS__)
 #define co_suspended_(...) \
     __stmt__$co_suspended(__VA_ARGS__)
-#define $co_frame() __expr__$co_frame()
+#define $co_frame(/*void) -> (P(Co_Frame)*/) __expr__$co_frame()
 #define $co_arg(_ident...) __expr__$co_arg(_ident)
 #define $co(_ident...) __expr__$co(_ident)
 #define $co_mut(_ident...) __expr__$co_mut(_ident)
-#define co_let_(_ident, _expr...) __expr__co_let_(_ident, _expr)
-#define co_var_(_ident, _expr...) __expr__co_var_(_ident, _expr)
-#define suspend_(_ident, _expr...) __stmt__suspend_(_ident, _expr)
-#define resume_(_p_frame...) __expr__resume_(_p_frame)
+#define co_let_(_ident, _T...) __stmt__co_let_(_ident, _T)
+#define co_var_(_ident, _T...) __stmt__co_var_(_ident, _T)
+#define suspend_(/*(_ident)(_expr...)*/... /*-> (void)*/) __stmt__suspend_(__VA_ARGS__)
+#define resume_(_p_frame /*: P(Co_Frame)*/... /*-> (P(Co_Frame))*/) __expr__resume_(_p_frame)
 #define co_return_(_expr...) __expr__co_return_(_expr)
 #if UNUSED_CODE
 #define co_returned(...) __expr__co_returned(__VA_ARGS__)
@@ -283,10 +283,16 @@ __step_unscope: \
 #define __expr__$co_arg(_ident...) (__args->_ident)
 #define __expr__$co(_ident...) (__locals->_ident)
 #define __expr__$co_mut(_ident...) (__locals_mut->_ident)
-#define __expr__co_let_(_ident, _expr...) __ctx->data.locals._ident = _expr
-#define __expr__co_var_(_ident, _expr...) __locals_mut->_ident = _expr
+#define __stmt__co_let_(_ident, /*_T*/...) \
+    __VA_OPT__(({ claim_assert_static(eqlType$(TypeOf(__ctx->data.locals._ident), __VA_ARGS__)); }), ) \
+    __ctx->data.locals._ident
+#define __stmt__co_var_(_ident, /*_T*/...) \
+    __VA_OPT__(({ claim_assert_static(eqlType$(TypeOf(__locals_mut->_ident), __VA_ARGS__)); }), ) \
+    __locals_mut->_ident
 
-#define __stmt__suspend_(_ident, _expr...) __inline__suspend_(pp_uniqTok(suspended_data), _ident, _expr)
+#define __stmt__suspend_(...) __step__suspend___emit(__step__suspend___parse __VA_ARGS__)
+#define __step__suspend___parse(_ident...) pp_uniqTok(suspended_data), _ident, /*_expr*/
+#define __step__suspend___emit(...) __inline__suspend_(__VA_ARGS__)
 #define __inline__suspend_(__suspended_data, _ident, _expr...) \
     do { \
         let __suspended_data = &__suspended->_ident; \

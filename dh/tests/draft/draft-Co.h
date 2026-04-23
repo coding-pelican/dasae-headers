@@ -12,10 +12,10 @@
  * @brief   Stackless coroutine primitives
  * @details Duff's device based state machine coroutines.
  *          Pure scheduling-agnostic primitives — no knowledge of Io.
- *          suspend_data field enables communication with external runners.
+ *          suspended_data field enables communication with external runners.
  */
-#ifndef Co__included
-#define Co__included 1
+#ifndef Co_included
+#define Co_included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -69,18 +69,51 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
 #define T_use_Co_Frame$(_T...) __stmt__T_use_Co_Frame$(_T)
 #define T_decl_Co_Frame$(_T...) __stmt__T_decl_Co_Frame$(_T)
 #define T_impl_Co_Frame$(_T...) __stmt__T_impl_Co_Frame$(_T)
+/*--- Coroutine's Field ---*/
+#define Co_Ret_(_rtn...) __alias__Co_Ret_(_rtn)
+// #define co_use_Co_Ret_(_rtn...) __stmt__co_use_Co_Ret_(_rtn)
+#define Co_Args_(_rtn...) __alias__Co_Args_(_rtn)
+// #define co_use_Co_Args_(_rtn...) __stmt__co_use_Co_Args_(_rtn)
+#define Co_Suspended_(_rtn...) __alias__Co_Suspended_(_rtn)
+// #define co_use_Co_Suspended_(_rtn...) __stmt__co_use_Co_Suspended_(_rtn)
+#define Co_Locals_(_rtn...) __alias__Co_Locals_(_rtn)
+// #define co_use_Co_Locals_(_rtn...) __stmt__co_use_Co_Locals_(_rtn)
+#define Co_LocalsMut_(_rtn...) __alias__Co_LocalsMut_(_rtn)
+// #define co_use_Co_LocalsMut_(_rtn...) __stmt__co_use_Co_LocalsMut_(_rtn)
+#define Co_Data_(_rtn...) __alias__Co_Data_(_rtn)
+// #define co_use_Co_Data_(_rtn...) __stmt__co_use_Co_Data_(_rtn)
+#define Co_Ctx_(_rtn...) __alias__Co_Ctx_(_rtn)
+// #define co_use_Co_Ctx_(_rtn...) __stmt__co_use_Co_Ctx_(_rtn)
+#define Co_CtxBase_(_rtn...) __alias__Co_CtxBase_(_rtn)
+// #define co_use_Co_CtxBase_(_rtn...) __stmt__co_use_Co_CtxBase_(_rtn)
+#define Co_Rtn_(_rtn...) __alias__Co_Rtn_(_rtn)
+// #define co_use_Co_Rtn_(_rtn...) __stmt__co_use_Co_Rtn_(_rtn)
+#define Co_rtn_(_rtn...) __alias__Co_rtn_(_rtn)
+// #define co_use_Co_rtn_(_rtn...) __stmt__co_use_Co_rtn_(_rtn)
+#define Co_Frame_(_rtn...) __alias__Co_Frame_(_rtn)
+// #define co_use_Co_Frame_(_rtn...) __stmt__co_use_Co_Frame_(_rtn)
+#define Co_FrameBase_(_rtn...) __alias__Co_FrameBase_(_rtn)
+// #define co_use_Co_FrameBase_(_rtn...) __stmt__co_use_Co_FrameBase_(_rtn)
 /*--- Coroutine ---*/
 #define co_fn_(_fnName, _Args, _Ret_Type...) \
     __stmt__co_fn_(_fnName, _Args, _Ret_Type)
 #define co_fn_scope(_fnName, _Locals, _LocalsMut, _Suspended...) \
     __stmt__co_fn_scope(_fnName, _Locals, _LocalsMut, _Suspended)
+#define $unscoped_co_fn \
+    __stmt__$unscoped_co_fn()
+#define co_locals_mut_(...) \
+    __stmt__$co_locals_mut(__VA_ARGS__)
+#define co_locals_(...) \
+    __stmt__$co_locals(__VA_ARGS__)
+#define co_suspended_(...) \
+    __stmt__$co_suspended(__VA_ARGS__)
 #define $co_frame() __expr__$co_frame()
 #define $co_arg(_ident...) __expr__$co_arg(_ident)
 #define $co(_ident...) __expr__$co(_ident)
 #define $co_mut(_ident...) __expr__$co_mut(_ident)
-#define co_let_(_ident, _expr...) __expr__co_let_(_ident, _expr)
-#define co_var_(_ident, _expr...) __expr__co_var_(_ident, _expr)
-#define suspend_(_ident, _expr...) __stmt__suspend_(_ident, _expr)
+#define co_let_(_ident, _T...) __stmt__co_let_(_ident, _T)
+#define co_var_(_ident, _T...) __stmt__co_var_(_ident, _T)
+#define suspend_(/*(_ident)(_expr...)*/...) __stmt__suspend_(__VA_ARGS__)
 #define resume_(_p_frame...) __expr__resume_(_p_frame)
 #define co_return_(_expr...) __expr__co_return_(_expr)
 #if UNUSED_CODE
@@ -91,105 +124,118 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
 
 /*========== Macros and Definitions =========================================*/
 
-#define Co__Ret_(_rtn...) __alias__Co__Ret_(_rtn)
-#define co_use_Co__Ret_(_rtn...) __stmt__co_use_Co__Ret_(_rtn)
-#define Co__Args_(_rtn...) __alias__Co__Args_(_rtn)
-#define co_use_Co__Args_(_rtn...) __stmt__co_use_Co__Args_(_rtn)
-#define Co__Suspended_(_rtn...) __alias__Co__Suspended_(_rtn)
-#define co_use_Co__Suspended_(_rtn...) __stmt__co_use_Co__Suspended_(_rtn)
-#define Co__Locals_(_rtn...) __alias__Co__Locals_(_rtn)
-#define co_use_Co__Locals_(_rtn...) __stmt__co_use_Co__Locals_(_rtn)
-#define Co__LocalsMut_(_rtn...) __alias__Co__LocalsMut_(_rtn)
-#define co_use_Co__LocalsMut_(_rtn...) __stmt__co_use_Co__LocalsMut_(_rtn)
-#define Co__Data_(_rtn...) __alias__Co__Data_(_rtn)
-#define co_use_Co__Data_(_rtn...) __stmt__co_use_Co__Data_(_rtn)
-#define Co__Ctx_(_rtn...) __alias__Co__Ctx_(_rtn)
-#define co_use_Co__Ctx_(_rtn...) __stmt__co_use_Co__Ctx_(_rtn)
-#define Co__CtxBase_(_rtn...) __alias__Co__CtxBase_(_rtn)
-#define co_use_Co__CtxBase_(_rtn...) __stmt__co_use_Co__CtxBase_(_rtn)
-#define Co__Rtn_(_rtn...) __alias__Co__Rtn_(_rtn)
-#define co_use_Co__Rtn_(_rtn...) __stmt__co_use_Co__Rtn_(_rtn)
-#define Co__rtn_(_rtn...) __alias__Co__rtn_(_rtn)
-#define co_use_Co__rtn_(_rtn...) __stmt__co_use_Co__rtn_(_rtn)
-#define Co__Frame_(_rtn...) __alias__Co__Frame_(_rtn)
-#define co_use_Co__Frame_(_rtn...) __stmt__co_use_Co__Frame_(_rtn)
-#define Co__FrameBase_(_rtn...) __alias__Co__FrameBase_(_rtn)
-#define co_use_Co__FrameBase_(_rtn...) __stmt__co_use_Co__FrameBase_(_rtn)
-
-#define __alias__Co__Ret_(_rtn...) pp_join(_, Co__Ret, _rtn)
-#define __alias__Co__Args_(_rtn...) pp_join(_, Co__Args, _rtn)
-#define __alias__Co__Suspended_(_rtn...) pp_join(_, Co__Suspended, _rtn)
-#define __alias__Co__Locals_(_rtn...) pp_join(_, Co__Locals, _rtn)
-#define __alias__Co__LocalsMut_(_rtn...) pp_join(_, Co__Locals_mut, _rtn)
-#define __alias__Co__Data_(_rtn...) pp_join(_, Co__Data, _rtn)
-#define __alias__Co__Ctx_(_rtn...) pp_join(_, Co__Ctx, _rtn)
-#define __alias__Co__CtxBase_(_rtn...) pp_join(_, Co__CtxBase, _rtn)
-#define __alias__Co__Rtn_(_rtn...) pp_join(_, Co__Rtn, _rtn)
-#define __alias__Co__rtn_(_rtn...) pp_join(_, Co__rtn, _rtn)
-#define __alias__Co__Frame_(_rtn...) pp_join(_, Co__Frame, _rtn)
-#define __alias__Co__FrameBase_(_rtn...) pp_join(_, Co__FrameBase, _rtn)
-
-#define __stmt__co_fn_(_fnName, Args, T_Return...) \
-    T_alias$((Co__FrameBase_(_fnName))(Co_Frame$(T_Return))); \
-    T_alias$((Co__Frame_(_fnName))(union Co__Frame_(_fnName))); \
-    T_alias$((Co__CtxBase_(_fnName))(Co_Ctx$(T_Return))); \
-    T_alias$((Co__Ctx_(_fnName))(union Co__Ctx_(_fnName))); \
-    T_alias$((Co__Rtn_(_fnName))(fn_(((*)(P$$(Co__Ctx_(_fnName)) ctx))(P$$(Co__Ctx_(_fnName)) $T)))); \
-    T_alias$((Co__Ret_(_fnName))(T_Return)); \
-    T_alias$((Co__Args_(_fnName))(struct Co__Args_(_fnName) { \
-        pp_Tuple_unwrap Args; \
-    })); \
-    fn_((_fnName(P$$(Co__Ctx_(_fnName)) ctx))($P$$(Co__Ctx_(_fnName))))
-#define __stmt__co_fn_scope(_fnName, _Locals, _LocalsMut, _Suspended...) \
-    T_alias$((Co__Suspended_(_fnName))(union Co__Suspended_(_fnName) { \
-        pp_Tuple_unwrap _Suspended; \
-    })); \
-    T_alias$((Co__Locals_(_fnName))(struct Co__Locals_(_fnName) { \
-        pp_Tuple_unwrap _Locals; \
-    })); \
-    T_alias$((Co__LocalsMut_(_fnName))(struct Co__LocalsMut_(_fnName) { \
-        pp_Tuple_unwrap _LocalsMut; \
-    })); \
-    T_alias$((Co__Data_(_fnName))(struct Co__Data_(_fnName) { \
-        var_(suspended, Co__Suspended_(_fnName)); \
-        var_(locals, Co__Locals_(_fnName)); \
-        var_(locals_mut, Co__LocalsMut_(_fnName)); \
-    })); \
-    union Co__Ctx_(_fnName) { \
+/*--- Coroutine's Context ---*/
+#define __alias__Co_Ctx$(_T...) tpl_id$T(Co_Ctx, _T)
+#define __stmt__T_use_Co_Ctx$(_T...) \
+    T_decl_Co_Ctx$(_T); \
+    T_impl_Co_Ctx$(_T)
+#define __stmt__T_decl_Co_Ctx$(_T...) \
+    T_alias$((Co_Ctx$(_T))(union Co_Ctx$(_T)))
+#define __stmt__T_impl_Co_Ctx$(_T...) \
+    union Co_Ctx$(_T) { \
         T_embed$(struct { \
             var_(ctrl, Co_Ctrl); \
             var_(suspended_data, P$raw); \
             T_embed$(union { \
-                var_(ret, Co__Ret_(_fnName)); \
-                var_(ret_, Co__Ret_(_fnName)) $like_ref; \
+                var_(ret, _T); \
+                var_(ret_, _T) $like_ref; \
             }); \
-            T_embed$(union { \
-                var_(args, Co__Args_(_fnName)); \
-                var_(args_, Co__Args_(_fnName)) $like_ref; \
-            }); \
-            T_embed$(union { \
-                var_(data, Co__Data_(_fnName)); \
-                var_(data_, Co__Data_(_fnName)) $like_ref; \
-            }); \
+            var_(args_, V$raw) $flexible; \
+            var_(data_, V$raw) $flexible; \
         }); \
         var_(as_raw, Co_Ctx$raw) $flexible; \
-        var_(as_base, Co__CtxBase_(_fnName)) $flexible; \
-    }; \
-    union Co__Frame_(_fnName) { \
+    }
+/*--- Coroutine's Routine ---*/
+#define __alias__Co_Rtn$(_T...) tpl_id$T(Co_Rtn, _T)
+#define __stmt__T_use_Co_Rtn$(_T...) \
+    T_alias$((Co_Rtn$(_T))(fn_(((*)(P$$(Co_Ctx$(_T)) ctx))(P$$(Co_Ctx$(_T)))$T)))
+/*--- Coroutine's Frame ---*/
+#define __alias__Co_Frame$(_T...) tpl_id$T(Co_Frame, _T)
+#define __stmt__T_use_Co_Frame$(_T...) \
+    T_decl_Co_Frame$(_T); \
+    T_impl_Co_Frame$(_T)
+#define __stmt__T_decl_Co_Frame$(_T...) \
+    T_alias$((Co_Frame$(_T))(union Co_Frame$(_T)))
+#define __stmt__T_impl_Co_Frame$(_T...) \
+    union Co_Frame$(_T) { \
         T_embed$(struct { \
-            var_(rtn, Co__Rtn_(_fnName)); \
+            var_(rtn, Co_Rtn$(_T)); \
             T_embed$(union { \
-                var_(ctx, Co__Ctx_(_fnName)); \
-                var_(ctx_, Co__Ctx_(_fnName)) $like_ref; \
+                var_(ctx, Co_Ctx$(_T)); \
+                var_(ctx_, Co_Ctx$(_T)) $like_ref; \
             }); \
         }); \
         var_(as_raw, Co_Frame$raw) $flexible; \
-        var_(as_base, Co__FrameBase_(_fnName)) $flexible; \
+    }
+/*--- Coroutine's Field ---*/
+#define __alias__Co_Ret_(_rtn...) pp_join(_, Co_Ret, _rtn)
+#define __alias__Co_Args_(_rtn...) pp_join(_, Co_Args, _rtn)
+#define __alias__Co_Suspended_(_rtn...) pp_join(_, Co_Suspended, _rtn)
+#define __alias__Co_Locals_(_rtn...) pp_join(_, Co_Locals, _rtn)
+#define __alias__Co_LocalsMut_(_rtn...) pp_join(_, Co_Locals_mut, _rtn)
+#define __alias__Co_Data_(_rtn...) pp_join(_, Co_Data, _rtn)
+#define __alias__Co_Ctx_(_rtn...) pp_join(_, Co_Ctx, _rtn)
+#define __alias__Co_CtxBase_(_rtn...) pp_join(_, Co_CtxBase, _rtn)
+#define __alias__Co_Rtn_(_rtn...) pp_join(_, Co_Rtn, _rtn)
+#define __alias__Co_rtn_(_rtn...) pp_join(_, Co_rtn, _rtn)
+#define __alias__Co_Frame_(_rtn...) pp_join(_, Co_Frame, _rtn)
+#define __alias__Co_FrameBase_(_rtn...) pp_join(_, Co_FrameBase, _rtn)
+/*--- Coroutine ---*/
+#define __stmt__co_fn_(_fnName, Args, Ret_T...) \
+    T_alias$((Co_FrameBase_(_fnName))(Co_Frame$(Ret_T))); \
+    T_alias$((Co_Frame_(_fnName))(union Co_Frame_(_fnName))); \
+    T_alias$((Co_CtxBase_(_fnName))(Co_Ctx$(Ret_T))); \
+    T_alias$((Co_Ctx_(_fnName))(union Co_Ctx_(_fnName))); \
+    T_alias$((Co_Rtn_(_fnName))(fn_(((*)(P$$(Co_Ctx_(_fnName)) ctx))(P$$(Co_Ctx_(_fnName)))$T))); \
+    T_alias$((Co_Ret_(_fnName))(Ret_T)); \
+    T_alias$((Co_Args_(_fnName))(struct Co_Args_(_fnName) { \
+        pp_Tuple_unwrap Args; \
+    })); \
+    $static fn_((_fnName(P$$(Co_Ctx_(_fnName)) ctx))(P$$(Co_Ctx_(_fnName))))
+#define __stmt__co_fn_scope(_fnName, _Locals, _LocalsMut, _Suspended...) \
+    T_alias$((Co_Suspended_(_fnName))(union Co_Suspended_(_fnName) _Suspended)); \
+    T_alias$((Co_Locals_(_fnName))(struct Co_Locals_(_fnName) _Locals)); \
+    T_alias$((Co_LocalsMut_(_fnName))(struct Co_LocalsMut_(_fnName) _LocalsMut)); \
+    T_alias$((Co_Data_(_fnName))(struct Co_Data_(_fnName) { \
+        var_(suspended, Co_Suspended_(_fnName)); \
+        var_(locals, Co_Locals_(_fnName)); \
+        var_(locals_mut, Co_LocalsMut_(_fnName)); \
+    })); \
+    union Co_Ctx_(_fnName) { \
+        T_embed$(struct { \
+            var_(ctrl, Co_Ctrl); \
+            var_(suspended_data, P$raw); \
+            T_embed$(union { \
+                var_(ret, Co_Ret_(_fnName)); \
+                var_(ret_, Co_Ret_(_fnName)) $like_ref; \
+            }); \
+            T_embed$(union { \
+                var_(args, Co_Args_(_fnName)); \
+                var_(args_, Co_Args_(_fnName)) $like_ref; \
+            }); \
+            T_embed$(union { \
+                var_(data, Co_Data_(_fnName)); \
+                var_(data_, Co_Data_(_fnName)) $like_ref; \
+            }); \
+        }); \
+        var_(as_raw, Co_Ctx$raw) $flexible; \
+        var_(as_base, Co_CtxBase_(_fnName)) $flexible; \
     }; \
-    fn_((_fnName($P$(Co__Ctx_(_fnName)) ctx))($P$(Co__Ctx_(_fnName)))) { /* clang-format off */ \
-        let __ctx = _ctx; \
+    union Co_Frame_(_fnName) { \
+        T_embed$(struct { \
+            var_(rtn, Co_Rtn_(_fnName)); \
+            T_embed$(union { \
+                var_(ctx, Co_Ctx_(_fnName)); \
+                var_(ctx_, Co_Ctx_(_fnName)) $like_ref; \
+            }); \
+        }); \
+        var_(as_raw, Co_Frame$raw) $flexible; \
+        var_(as_base, Co_FrameBase_(_fnName)) $flexible; \
+    }; \
+    fn_((_fnName($P$(Co_Ctx_(_fnName)) ctx))($P$(Co_Ctx_(_fnName)))) { /* clang-format off */ \
+        let __ctx = ctx; \
         $attr($maybe_unused) \
-        let __frame = recordPtr(__ctx, Co__FrameBase_(_fnName), ctx); \
+        let __frame = recordPtr(__ctx, Co_FrameBase_(_fnName), ctx); \
         let __reserved_return = &__ctx->ret; \
         $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
         $maybe_unused typedef ReturnType ReturnT; \
@@ -201,7 +247,7 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
         let_const __locals = &__ctx->data.locals; \
         $attr($maybe_unused) \
         let __locals_mut = &__ctx->data.locals_mut; \
-        var_(__scope_counter, fn__ScopeCounter) = { \
+        var_(__scope_counter, struct fn__ScopeCounter) = { \
             .is_returning = __ctx->ctrl.state == Co_State_ready, \
             .current_line = __ctx->ctrl.count \
         }; \
@@ -218,8 +264,8 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
             __scope_counter.current_line--;
 /* clang-format on */
 /* clang-format off */
-#define inline__$unscoped_co_fn() $unscoped_co_fn
-#define $unscoped_co_fn \
+#define inline__$unscoped_co_fn() __stmt__$unscoped_co_fn
+#define __stmt__$unscoped_co_fn \
         break; \
     } \
     if (false) { \
@@ -229,17 +275,24 @@ __step_unscope: \
     } \
 }
 /* clang-format on */
-
-/*========== Return / Suspend / Resume ======================================*/
+#define __stmt__$co_locals_mut(...) __VA_ARGS__
+#define __stmt__$co_locals(...) __VA_ARGS__
+#define __stmt__$co_suspended(...) __VA_ARGS__
 
 #define __expr__$co_frame() (*__frame)
 #define __expr__$co_arg(_ident...) (__args->_ident)
 #define __expr__$co(_ident...) (__locals->_ident)
 #define __expr__$co_mut(_ident...) (__locals_mut->_ident)
-#define __expr__co_let_(_ident, _expr...) __ctx->data.locals._ident = _expr
-#define __expr__co_var_(_ident, _expr...) __locals_mut->_ident = _expr
+#define __stmt__co_let_(_ident, /*_T*/...) \
+    __VA_OPT__(({ claim_assert_static(eqlType$(TypeOf(__ctx->data.locals._ident), __VA_ARGS__)); }), ) \
+    __ctx->data.locals._ident
+#define __stmt__co_var_(_ident, /*_T*/...) \
+    __VA_OPT__(({ claim_assert_static(eqlType$(TypeOf(__locals_mut->_ident), __VA_ARGS__)); }), ) \
+    __locals_mut->_ident
 
-#define __stmt__suspend_(_ident, _expr...) __inline__suspend_(pp_uniqTok(suspended_data), _ident, _expr)
+#define __stmt__suspend_(...) __step__suspend___emit(__step__suspend___parse __VA_ARGS__)
+#define __step__suspend___parse(_ident...) pp_uniqTok(suspended_data), _ident, /*_expr*/
+#define __step__suspend___emit(...) __inline__suspend_(__VA_ARGS__)
 #define __inline__suspend_(__suspended_data, _ident, _expr...) \
     do { \
         let __suspended_data = &__suspended->_ident; \
@@ -256,8 +309,8 @@ __step_unscope: \
 #define __expr__resume_(_p_frame...) __inline__resume_(pp_uniqTok(p_frame), _p_frame)
 #define __inline__resume_(__p_frame, _p_frame...) local_({ \
     let __p_frame = ensureNonnull(_p_frame); \
-    claim_assert(__p_frame->ctx_->ctrl.state != Co_State_none); \
-    local_return_(__p_frame->rtn(__p_frame->ctx_)->suspend_data); \
+    claim_assert(__p_frame->ctx_->ctrl.state != Co_State_undefined); \
+    local_return_(__p_frame->rtn(__p_frame->ctx_)->suspended_data); \
 })
 
 #define __expr__co_return_(_expr...) return_(_expr)
@@ -268,4 +321,4 @@ __step_unscope: \
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Co__included */
+#endif /* Co_included */

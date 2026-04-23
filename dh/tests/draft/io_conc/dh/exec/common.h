@@ -6,46 +6,29 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "../prl.h"
-#include "dh/mem/Alctr.h"
+#include "Fiber.h"
+#include "Task.h"
 
 /*========== Macros and Declarations ========================================*/
 
-T_alias$((exec_Task_Kind)(enum_((exec_Task_Kind $fits($packed))(
-    exec_Task_Kind_stackless = 0,
-    exec_Task_Kind_fiber,
-))));
-claim_assert_static(eqlType$(exec_Task_Kind, u8));
-$attr($inline_always)
-$static fn_((exec_kind(P_const$$(Closure$raw) closure))(exec_Task_Kind));
-$attr($inline_always)
-$static fn_((exec_invokeStep(P$$(Closure$raw) closure, u_P$raw result))(bool));
-$attr($inline_always)
-$static fn_((exec_invokeToCompletion(P$$(Closure$raw) closure, u_P$raw result))(void));
-
-T_alias$((exec_Fiber)(struct exec_Fiber {
-    var_(stk, S$u8);
-    var_(ctx, Co_Fiber_Context);
-}));
-T_use_prl$(exec_Fiber);
-T_use_E$($set(mem_E)(P$exec_Fiber));
-#define exec_Fiber_stk_size (usize_(1) * 1024 * 1024)
-T_alias$((exec_Fiber_WorkFn)(fn_(((*)(P$raw owner, P$raw task))(void) $T)));
-T_alias$((exec_Fiber_Starter)(struct exec_Fiber_Starter {
-    var_(owner, P$raw);
-    var_(task, P$raw);
-    var_(workFn, exec_Fiber_WorkFn);
-}));
-
 $attr($no_return)
 $extern fn_((exec_callFiber(exec_Fiber_Starter* starter, const Co_Fiber* first_switch))(void));
-$attr($must_check)
-$extern fn_((exec_createFiber(mem_Alctr gpa, P$raw owner, P$raw task, exec_Fiber_WorkFn workFn))(mem_E$P$exec_Fiber));
-$extern fn_((exec_destroyFiber(mem_Alctr gpa, exec_Fiber* fiber))(void));
 $extern fn_((exec_switchToFiber(Co_Fiber_Context* sched_ctx, exec_Fiber* fiber))(void));
 $extern fn_((exec_switchFromFiber(Co_Fiber_Context* fiber_ctx, Co_Fiber_Context* sched_ctx))(void));
 
+$attr($inline_always)
+$static fn_((exec_kind(P_const$$(Closure$raw) closure))(exec_Task_Kind));
+#define T_use_exec_kind$(_T...) __stmt__T_use_exec_kind$(_T)
+$attr($inline_always)
+$static fn_((exec_invokeToStep(P$$(Closure$raw) closure, TypeInfo type))(O$u_P_const$raw));
+#define T_use_exec_invokeToStep$(_T...) __stmt__T_use_exec_invokeToStep$(_T)
+$attr($inline_always)
+$static fn_((exec_invokeToCompletion(P$$(Closure$raw) closure, TypeInfo type))(u_P_const$raw));
+#define T_use_exec_invokeToCompletion$(_T...) __stmt__T_use_exec_invokeToCompletion$(_T)
+
 /*========== Macros and Definitions =========================================*/
+
+#include "dh/meta.h"
 
 fn_((exec_kind(P_const$$(Closure$raw) closure))(exec_Task_Kind)) {
     claim_assert_nonnull(closure), claim_assert(closure->kind != Closure_Kind_undefined);
@@ -53,22 +36,47 @@ fn_((exec_kind(P_const$$(Closure$raw) closure))(exec_Task_Kind)) {
              ? exec_Task_Kind_stackless
              : exec_Task_Kind_fiber;
 };
-
-fn_((exec_invokeStep(P$$(Closure$raw) closure, u_P$raw result))(bool)) {
-    claim_assert_nonnull(closure), claim_assert_nonnull(result.raw);
-    let ret = P_meta((result.type)(as$(P$raw)(invoke_(closure)->ret_))).as_const;
+fn_((exec_invokeToStep(P$$(Closure$raw) closure, TypeInfo type))(O$u_P_const$raw) $scope) {
+    claim_assert_nonnull(closure);
+    let ret = P_meta((type)(as$(P$raw)(invoke_(closure)->ret_))).as_const;
     if (exec_kind(closure) == exec_Task_Kind_stackless) {
-        let frame = ptrAlignCast$((Co_Frame$raw*)(closure->ctx_));
-        if (frame->ctx_->ctrl.state != Co_State_ready) return false;
+        let frame = local_({
+            let fields = typeInfosFrom(type, typeInfo$(Co_Frame$raw));
+            let record_type = u_typeInfoRecord(fields);
+            let record = P_meta((record_type)(as$(P$raw)(closure->ctx_))).as_const;
+            local_return_(u_castP$((const Co_Frame$raw*)(u_fieldPtr(record, fields, 1))));
+        });
+        if (frame->ctx_->ctrl.state != Co_State_ready) return_none();
     }
-    u_memcpy(result, ret);
-    return true;
+    return_some(ret);
+} $unscoped(fn);
+fn_((exec_invokeToCompletion(P$$(Closure$raw) closure, TypeInfo type))(u_P_const$raw)) {
+    claim_assert_nonnull(closure);
+    var_(step, O$u_P_const$raw) = none();
+    while_none(step = exec_invokeToStep(closure, type)) $do_nothing;
+    return unwrap_(step);
 };
 
-fn_((exec_invokeToCompletion(P$$(Closure$raw) closure, u_P$raw result))(void)) {
-    claim_assert_nonnull(closure), claim_assert_nonnull(result.raw);
-    while (!exec_invokeStep(closure, result)) $do_nothing;
-};
+#define __stmt__T_use_exec_kind$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl_id$T(exec_kind, _T)(P_const$$(Closure$(_T)) closure))(exec_Task_Kind)) { \
+        return exec_kind(closure->as_raw); \
+    } /* clang-format on */
+#define __stmt__T_use_exec_invokeToStep$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl_id$T(exec_invokeToStep, _T)(P$$(Closure$(_T)) closure))(O$(P_const$(_T))) $scope) { \
+        if_some((exec_invokeToStep(closure->as_raw, typeInfo$(_T)))(ret)) { \
+            return_some(u_castP$((const _T*)(ret))); \
+        } else_none { \
+            return_none(); \
+        } \
+        claim_unreachable; \
+    } /* clang-format on */
+#define __stmt__T_use_exec_invokeToCompletion$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl_id$T(exec_invokeToCompletion, _T)(P$$(Closure$(_T)) closure))(P_const$(_T))) { \
+        return u_castP$((const _T*)(exec_invokeToCompletion(closure->as_raw, typeInfo$(_T)))); \
+    } /* clang-format on */
 
 #if defined(__cplusplus)
 } /* extern "C" */

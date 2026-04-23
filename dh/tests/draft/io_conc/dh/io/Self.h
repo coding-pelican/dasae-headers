@@ -25,7 +25,7 @@ T_alias$((io_Self)(struct io_Self {
     var_(vtbl, P_const$$(io_Self_Vtbl));
 }));
 $extern fn_((io_direct(void))(io_Self));
-$extern fn_((io_evented(exec_Coop* exec))(io_Self));
+$extern fn_((io_evented(exec_Lane* lane))(io_Self));
 
 #if defined(__cplusplus)
 } /* extern "C" */

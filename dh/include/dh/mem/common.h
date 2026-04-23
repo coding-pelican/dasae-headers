@@ -112,7 +112,9 @@ $static fn_((mem_nativeToBig16(u16 x))(u16));
 /* --- Alignment Functions --- */
 
 T_alias$((mem_Log2Align)(u8));
+T_use_O$(mem_Log2Align);
 T_alias$((mem_Align)(mem_Log2Align));
+T_use_O$(mem_Align);
 
 /// Check if alignment is valid (power of 2)
 $attr($inline_always)
@@ -389,7 +391,8 @@ fn_((mem_trailingZerosSize(usize x))(u32)) {
     if (x == 0) { return sizeOf$(usize) * 8; }
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_trailingZeros64(x)),
-        pp_else_(mem_trailingZeros32(x)));
+        pp_else_(mem_trailingZeros32(x))
+    );
 };
 fn_((mem_trailingZeros64(u64 x))(u32)) {
 #if defined(__clang__) || defined(__GNUC__)
@@ -448,7 +451,8 @@ fn_((mem_trailingZeros8(u8 x))(u32)) {
 fn_((mem_leadingZerosSize(usize x))(u32)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_leadingZeros64(x)),
-        pp_else_(mem_leadingZeros32(x)));
+        pp_else_(mem_leadingZeros32(x))
+    );
 };
 fn_((mem_leadingZeros64(u64 x))(u32)) {
 #if defined(__clang__) || defined(__GNUC__)
@@ -523,7 +527,8 @@ fn_((mem_leadingZeros8(u8 x))(u32)) {
 fn_((mem_swapBytesSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_swapBytes64(x)),
-        pp_else_(mem_swapBytes32(x)));
+        pp_else_(mem_swapBytes32(x))
+    );
 };
 fn_((mem_swapBytes64(u64 x))(u64)) {
 #if defined(__GNUC__) || defined(__clang__)
@@ -562,85 +567,101 @@ fn_((mem_swapBytes16(u16 x))(u16)) {
 fn_((mem_littleToNativeSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_littleToNative64(x)),
-        pp_else_(mem_littleToNative32(x)));
+        pp_else_(mem_littleToNative32(x))
+    );
 };
 fn_((mem_littleToNative64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes64(x)));
+        pp_else_(mem_swapBytes64(x))
+    );
 };
 fn_((mem_littleToNative32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes32(x)));
+        pp_else_(mem_swapBytes32(x))
+    );
 };
 fn_((mem_littleToNative16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes16(x)));
+        pp_else_(mem_swapBytes16(x))
+    );
 };
 
 fn_((mem_bigToNativeSize(usize x))(usize)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytesSize(x)));
+        pp_else_(mem_swapBytesSize(x))
+    );
 };
 fn_((mem_bigToNative64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes64(x)));
+        pp_else_(mem_swapBytes64(x))
+    );
 };
 fn_((mem_bigToNative32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes32(x)));
+        pp_else_(mem_swapBytes32(x))
+    );
 };
 fn_((mem_bigToNative16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes16(x)));
+        pp_else_(mem_swapBytes16(x))
+    );
 };
 
 fn_((mem_nativeToLittleSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_nativeToLittle64(x)),
-        pp_else_(mem_nativeToLittle32(x)));
+        pp_else_(mem_nativeToLittle32(x))
+    );
 };
 fn_((mem_nativeToLittle64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes64(x)));
+        pp_else_(mem_swapBytes64(x))
+    );
 };
 fn_((mem_nativeToLittle32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes32(x)));
+        pp_else_(mem_swapBytes32(x))
+    );
 };
 fn_((mem_nativeToLittle16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes16(x)));
+        pp_else_(mem_swapBytes16(x))
+    );
 };
 
 fn_((mem_nativeToBigSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_nativeToBig64(x)),
-        pp_else_(mem_nativeToBig32(x)));
+        pp_else_(mem_nativeToBig32(x))
+    );
 };
 fn_((mem_nativeToBig64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes64(x)));
+        pp_else_(mem_swapBytes64(x))
+    );
 };
 fn_((mem_nativeToBig32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes32(x)));
+        pp_else_(mem_swapBytes32(x))
+    );
 };
 fn_((mem_nativeToBig16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes16(x)));
+        pp_else_(mem_swapBytes16(x))
+    );
 };
 
 /* --- Alignment Functions --- */

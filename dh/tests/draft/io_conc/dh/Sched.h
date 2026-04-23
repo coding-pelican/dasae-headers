@@ -59,21 +59,29 @@ T_alias$((Sched_VTbl)(struct Sched_VTbl {
     /// Thread-safe.
     fn_(((*cancelFn)(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
 }));
+$extern fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$Future$raw));
+$attr($must_check)
+$extern fn_((Sched_VTbl_noSpawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$Future$raw));
+$extern fn_((Sched_VTbl_noAwait(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_noCancel(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
+
 struct Sched {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(Sched_VTbl));
 };
+$extern fn_((Sched_async(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw));
+#define T_use_Sched_async$(_T...) __stmt__T_use_Sched_async$(_T)
+$attr($must_check)
+$extern fn_((Sched_spawn(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw));
+#define T_use_Sched_spawn$(_T...) __stmt__T_use_Sched_spawn$(_T)
 
 $extern fn_((Sched_seq(exec_Seq* exec))(Sched));
 $extern fn_((Sched_coop(exec_Coop* exec))(Sched));
 $extern fn_((Sched_preem(exec_Preem* exec))(Sched));
 $extern fn_((Sched_para(exec_Para* exec))(Sched));
 
-$extern fn_((Sched_async(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw));
-#define T_use_Sched_async$(_T...) __stmt__T_use_Sched_async$(_T)
-$attr($must_check)
-$extern fn_((Sched_spawn(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw));
-#define T_use_Sched_spawn$(_T...) __stmt__T_use_Sched_spawn$(_T)
+T_alias$((Sched_Group)(struct Sched_Group{}));
+T_alias$((Sched_Select)(struct Sched_Select{}));
 
 /*========== Macro and Definitions ==========================================*/
 

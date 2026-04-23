@@ -16,7 +16,7 @@ extern "C" {
 T_alias$((Co_Fiber_Context)(struct Co_Fiber_Context));
 typedef fn_(((*Co_Fiber_EntryFn)(void))(void));
 $attr($inline_always)
-$static fn_((Co_Fiber_Context_init(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_EntryFn entry))(void));
+$static fn_((Co_Fiber_Context_from(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_EntryFn entry))(void));
 
 /// Context switch struct.
 T_alias$((Co_Fiber)(struct Co_Fiber {
@@ -62,7 +62,7 @@ struct Co_Fiber_Context {
     )));
 };
 
-fn_((Co_Fiber_Context_init(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_EntryFn entry))(void)) {
+fn_((Co_Fiber_Context_from(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_EntryFn entry))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(stack_arg), claim_assert_nonnull(entry);
     asg_l((self)(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
