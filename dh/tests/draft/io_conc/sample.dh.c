@@ -13,20 +13,20 @@ $static fn_((report(io_Self io, S_const$u8 label, S_const$u8 fmt, ...))(void)) {
 };
 
 T_alias$((Sys)(struct Sys {
-    var_(time, time_Self);
+    var_(time, time_Awake);
     var_(io, io_Self);
 }));
 $static fn_((countFn(Sys sys, usize n, time_Dur interval, S_const$u8 label))(f64)) {
-    let instant = time_Inst_now(sys.time);
+    let instant = time_Awake_now(sys.time);
     report(sys.io, label, u8_l("before loop {:fl}"), interval);
 
     for_(($rt(n))(i)) {
-        catch_((time_sleep(sys.time, interval))($ignore, $do_nothing));
+        catch_((time_Awake_sleep(sys.time, interval))($ignore, $do_nothing));
         report(sys.io, label, u8_l("slept {:fl} | i: {:uz} < n: {:uz}"), interval, i, n);
     } $end(for);
 
     let elapsed = pipe_((instant)(
-        (t)(time_Inst_elapsed(t, sys.time)),
+        (t)(time_Awake_Inst_elapsed(t, sys.time)),
         (t)(time_Dur_asSecs$f64(t))
     ));
     report(sys.io, label, u8_l("after loop {:fl}"), elapsed);
@@ -39,11 +39,11 @@ fn_use_Closure_((countFn)(Sys, usize, time_Dur, S_const$u8)(f64));
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
     let gpa = heap_Page_alctr(&l0$((heap_Page)));
-    var loop = exec_Coop_init(gpa, time_direct());
+    var loop = exec_Coop_init(gpa, try_(time_Awake_direct()));
     defer_(exec_Coop_fini(&loop));
     let sched = Sched_coop(&loop);
     let_(sys, Sys) = {
-        .time = time_evented(&loop),
+        .time = time_Awake_evented(&loop),
         .io = io_direct(),
     };
     var total = 0.0;

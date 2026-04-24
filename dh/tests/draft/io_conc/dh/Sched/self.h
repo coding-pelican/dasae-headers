@@ -51,16 +51,31 @@ T_alias$((Sched_VTbl)(struct Sched_VTbl {
     /// Thread-safe.
     fn_(((*cancelFn)(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 }));
+$extern let_(Sched_VTbl_noop, Sched_VTbl);
+$extern let_(Sched_VTbl_failing, Sched_VTbl);
+
 $extern fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
 $attr($must_check)
-$extern fn_((Sched_VTbl_noSpawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
+$extern fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
 $extern fn_((Sched_VTbl_noAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_unreachableAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $extern fn_((Sched_VTbl_noCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$extern fn_((Sched_VTbl_unreachableCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 
 struct Sched {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(Sched_VTbl));
 };
+$extern let_(Sched_noop, Sched);
+$extern let_(Sched_failing, Sched);
+
+$attr($inline_always)
+$static fn_((Sched_isValid(Sched self))(bool));
+$attr($inline_always)
+$static fn_((Sched_assertValid(P$raw ctx, P_const$$(Sched_VTbl) vtbl))(void));
+$attr($inline_always)
+$static fn_((Sched_ensureValid(Sched self))(Sched));
+
 $extern fn_((Sched_async(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw));
 #define T_use_Sched_async$(_T...) __stmt__T_use_Sched_async$(_T)
 $attr($must_check)
@@ -76,6 +91,26 @@ T_alias$((Sched_Group)(struct Sched_Group{}));
 T_alias$((Sched_Select)(struct Sched_Select{}));
 
 /*========== Macro and Definitions ==========================================*/
+
+fn_((Sched_isValid(Sched self))(bool)) {
+    return isNonnull(self.ctx)
+        && isNonnull(self.vtbl)
+        && isNonnull(self.vtbl->asyncFn)
+        && isNonnull(self.vtbl->spawnFn)
+        && isNonnull(self.vtbl->awaitFn)
+        && isNonnull(self.vtbl->cancelFn);
+};
+fn_((Sched_assertValid(P$raw ctx, P_const$$(Sched_VTbl) vtbl))(void)) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(vtbl);
+    claim_assert_nonnull(vtbl->asyncFn);
+    claim_assert_nonnull(vtbl->spawnFn);
+    claim_assert_nonnull(vtbl->awaitFn);
+    claim_assert_nonnull(vtbl->cancelFn);
+};
+fn_((Sched_ensureValid(Sched self))(Sched)) {
+    return Sched_assertValid(self.ctx, self.vtbl), self;
+};
 
 #define __stmt__T_use_Sched_async$(_T...) /* clang-format off */ \
     $attr($inline_always) \

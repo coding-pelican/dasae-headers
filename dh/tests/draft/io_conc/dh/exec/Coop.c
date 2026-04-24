@@ -1,6 +1,6 @@
 #include "Coop.h"
 
-fn_((exec_Coop_init(mem_Alctr gpa, time_Self clock))(exec_Coop)) {
+fn_((exec_Coop_init(mem_Alctr gpa, time_Awake clock))(exec_Coop)) {
     return (exec_Coop){
         .timed = exec_LaneTimed_init(gpa, clock),
     };
@@ -27,7 +27,7 @@ fn_((exec_Coop_run(exec_Coop* self))(void)) {
     exec_LaneTimed_run(&self->timed);
 };
 
-fn_((exec_Coop_runUntil(exec_Coop* self, time_Inst deadline))(void)) {
+fn_((exec_Coop_runUntil(exec_Coop* self, time_Awake_Inst deadline))(void)) {
     claim_assert_nonnull(self);
     exec_LaneTimed_runUntil(&self->timed, deadline);
 };

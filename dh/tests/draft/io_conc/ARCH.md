@@ -23,7 +23,7 @@ graph TD
     Preem --> Thrd[Thrd]
     Para --> Workers[worker-local coop loops]
 
-    Time[time_Self evented] --> Coop
+    Time[time_Awake evented] --> Coop
     Io[io_Self direct or serialized] --> Direct[direct stream]
     Fs[fs/dir capability] --> Reactor[OS reactor]
     Net[net capability] --> Reactor
@@ -60,9 +60,10 @@ that want to drive a cooperative loop directly.
 third-party runtimes and future `exec_Para` worker loops can reuse the same
 task progression and timed wakeup machinery.
 
-`time_evented(exec_Coop*)` turns `time_sleep` into evented suspension for both
-stackless and fiber task kinds on the built-in cooperative runtime. The
-built-in timed execution model belongs to `exec_Coop`, not `exec_Seq`.
+`time_eventedAwake(exec_Coop*)` turns `time_Awake_sleep` into evented
+suspension for both stackless and fiber task kinds on the built-in cooperative
+runtime. The built-in timed execution model belongs to `exec_Coop`, not
+`exec_Seq`.
 
 `exec_Preem` is the OS-thread preemptive scheduler. It uses non-draft `Thrd` for
 async progress and explicit spawn. It does not own a cooperative event loop.
@@ -180,7 +181,7 @@ flowchart TD
     Done -->|no| Drive[drive target and ready queue]
     Drive --> Done
 
-    Sleep[time_sleep evented] --> HasTask{current lane task?}
+    Sleep[time_Awake_sleep evented] --> HasTask{current lane task?}
     HasTask -->|yes| Timer[enqueue timer]
     Timer --> IsFiber{fiber task?}
     IsFiber -->|yes| FiberYield[switch back to scheduler fiber]
@@ -203,8 +204,8 @@ backend:
 - `Sched_seq(exec_Seq*)`
 - `Sched_coop(exec_Coop*)`
 - `Sched_preem(exec_Preem*)`
-- `time_direct(void)`
-- `time_evented(exec_Coop*)`
+- `time_directAwake(void)`
+- `time_eventedAwake(exec_Coop*)`
 - `io_direct(void)`
 
 Backend constructors only create backend state, such as
@@ -232,7 +233,7 @@ these rules:
   the general `Sched_async` contract
 - `await` drives the caller lane and may help with ready work until the target
   future is done or canceled
-- `time_sleep` and future serialized IO integrate with worker-local or shared
+- `time_Awake_sleep` and future serialized IO integrate with worker-local or shared
   cooperative queues, not direct blocking per task
 - cancellation is cooperative for queued/suspended tasks and does not require
   unsafe thread termination

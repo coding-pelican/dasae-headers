@@ -23,7 +23,7 @@ $static fn_((io_direct__printVaArgs(P$raw ctx, io_Stream stream, S_const$u8 fmt,
 
 fn_((io_direct(void))(io_Self)) {
     $static var_(ctx, Void) $like_ref = cleared();
-    $static let_(vtbl, io_Self_Vtbl) $like_ref = { {
+    $static let_(vtbl, io_Self_VTbl) $like_ref = { {
         .nlFn = io_direct__nl,
         .printVaArgsFn = io_direct__printVaArgs,
     } };

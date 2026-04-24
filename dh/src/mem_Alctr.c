@@ -2,6 +2,20 @@
 #include "dh/mem/AlcTrace.h"
 #include "dh/mem/common.h"
 
+let_(mem_Alctr_VTbl_noop, mem_Alctr_VTbl) = {
+    .alloc = mem_Alctr_VTbl_noAlloc,
+    .resize = mem_Alctr_VTbl_noResize,
+    .remap = mem_Alctr_VTbl_noRemap,
+    .free = mem_Alctr_VTbl_noFree,
+};
+
+let_(mem_Alctr_VTbl_failing, mem_Alctr_VTbl) = {
+    .alloc = mem_Alctr_VTbl_noAlloc,
+    .resize = mem_Alctr_VTbl_unreachableResize,
+    .remap = mem_Alctr_VTbl_unreachableRemap,
+    .free = mem_Alctr_VTbl_unreachableFree,
+};
+
 fn_((mem_Alctr_VTbl_noAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8)) {
     let_ignore = ctx;
     let_ignore = len;
@@ -17,6 +31,14 @@ fn_((mem_Alctr_VTbl_noResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new
     return false;
 };
 
+fn_((mem_Alctr_VTbl_unreachableResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
+    let_ignore = ctx;
+    let_ignore = buf;
+    let_ignore = buf_align;
+    let_ignore = new_len;
+    claim_unreachable;
+};
+
 fn_((mem_Alctr_VTbl_noRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
     let_ignore = ctx;
     let_ignore = buf;
@@ -25,10 +47,37 @@ fn_((mem_Alctr_VTbl_noRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_
     return none$((O$P$u8));
 };
 
+fn_((mem_Alctr_VTbl_unreachableRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
+    let_ignore = ctx;
+    let_ignore = buf;
+    let_ignore = buf_align;
+    let_ignore = new_len;
+    claim_unreachable;
+};
+
 fn_((mem_Alctr_VTbl_noFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let_ignore = ctx;
     let_ignore = buf;
     let_ignore = buf_align;
+};
+
+fn_((mem_Alctr_VTbl_unreachableFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
+    let_ignore = ctx;
+    let_ignore = buf;
+    let_ignore = buf_align;
+    claim_unreachable;
+};
+
+$static var_(mem_Alctr_noop_ctx, Void) = cleared();
+let_(mem_Alctr_noop, mem_Alctr) = {
+    .ctx = &mem_Alctr_noop_ctx,
+    .vtbl = &mem_Alctr_VTbl_noop,
+};
+
+$static var_(mem_Alctr_failing_ctx, Void) = cleared();
+let_(mem_Alctr_failing, mem_Alctr) = {
+    .ctx = &mem_Alctr_failing_ctx,
+    .vtbl = &mem_Alctr_VTbl_failing,
 };
 
 fn_((mem_Alctr_rawAlloc($traced mem_Alctr self, usize len, mem_Align align))(O$P$u8) $scope) {

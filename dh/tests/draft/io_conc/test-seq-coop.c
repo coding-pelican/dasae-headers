@@ -1,7 +1,7 @@
 #include "dh/TEST.h"
-#include "dh/ArrList.h"
 #include "dh/exec.h"
 #include "dh/time.h"
+#include "dh/ArrList.h"
 #include "dh/heap/Page.h"
 
 T_alias$((Event)(u8));
@@ -33,13 +33,13 @@ $static fn_((EventLog_expect(EventLog* self, S_const$u8 expected))(E$void) $scop
 } $unscoped(fn);
 
 T_alias$((Sys)(struct Sys {
-    var_(time, time_Self);
+    var_(time, time_Awake);
     var_(log, EventLog*);
 }));
 $static fn_((countFn(Sys sys, usize n, time_Dur interval, Event base))(Event)) {
     EventLog_push(sys.log, base);
     for_(($rt(n))(i)) {
-        catch_((time_sleep(sys.time, interval))($ignore, $do_nothing));
+        catch_((time_Awake_sleep(sys.time, interval))($ignore, $do_nothing));
         EventLog_push(sys.log, base + as$(Event)(i + 1));
     } $end(for);
     EventLog_push(sys.log, base + 9);
@@ -62,7 +62,7 @@ co_fn_scope(
 ) {
     EventLog_push($co_arg(sys).log, $co_arg(base));
     for (co_var_(i, usize) = 0; $co_mut(i) < $co_arg(n); ++$co_mut(i)) {
-        suspend_((slept)(catch_((time_sleep($co_arg(sys).time, $co_arg(interval)))($ignore, $do_nothing))));
+        suspend_((slept)(catch_((time_Awake_sleep($co_arg(sys).time, $co_arg(interval)))($ignore, $do_nothing))));
         EventLog_push($co_arg(sys).log, $co_arg(base) + as$(u8)($co_mut(i) + 1));
     };
     EventLog_push($co_arg(sys).log, $co_arg(base) + 9);
@@ -77,7 +77,7 @@ T_use$((Event)(
     Sched_async
 ));
 
-$static fn_((runExpectedOrder(Sched sched, time_Self time, S_const$u8 expected))(E$void) $guard) {
+$static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected))(E$void) $guard) {
     var log = l0$((EventLog));
     let_(sys, Sys) = {
         .time = time,
@@ -105,15 +105,15 @@ TEST_fn_("exec_Seq runs fiber and stackless tasks without timed suspension" $gua
     var exec = exec_Seq_init(gpa);
     defer_(exec_Seq_fini(&exec));
     let expected = A_from$((u8){ 10, 11, 12, 19, 20, 21, 22, 23, 29 });
-    try_(runExpectedOrder(Sched_seq(&exec), time_direct(), A_ref$((S_const$u8)(expected))));
+    try_(runExpectedOrder(Sched_seq(&exec), try_(time_Awake_direct()), A_ref$((S_const$u8)(expected))));
     return_ok({});
 } $unguarded(TEST_fn);
 
 TEST_fn_("exec_Coop runs evented stackless and fiber tasks in deadline order" $guard) {
     let gpa = heap_Page_alctr(&l0$((heap_Page)));
-    var exec = exec_Coop_init(gpa, time_direct());
+    var exec = exec_Coop_init(gpa, try_(time_Awake_direct()));
     defer_(exec_Coop_fini(&exec));
     let expected = A_from$((u8){ 10, 20, 21, 11, 22, 23, 29, 12, 19 });
-    try_(runExpectedOrder(Sched_coop(&exec), time_evented(&exec), A_ref$((S_const$u8)(expected))));
+    try_(runExpectedOrder(Sched_coop(&exec), time_Awake_evented(&exec), A_ref$((S_const$u8)(expected))));
     return_ok({});
 } $unguarded(TEST_fn);

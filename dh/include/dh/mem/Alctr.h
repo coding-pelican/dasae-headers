@@ -33,15 +33,23 @@ typedef struct mem_Alctr_VTbl {
     fn_(((*const remap)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
     fn_(((*const free)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 } mem_Alctr_VTbl;
+$extern let_(mem_Alctr_VTbl_noop, mem_Alctr_VTbl);
+$extern let_(mem_Alctr_VTbl_failing, mem_Alctr_VTbl);
 
 /// Default VTable functions for no-op fallbacks
 $extern fn_((mem_Alctr_VTbl_noAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
 /// Default VTable functions for no-op fallbacks
 $extern fn_((mem_Alctr_VTbl_noResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+/// Default VTable functions for unreachable fallbacks
+$extern fn_((mem_Alctr_VTbl_unreachableResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
 /// Default VTable functions for no-op fallbacks
 $extern fn_((mem_Alctr_VTbl_noRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+/// Default VTable functions for unreachable fallbacks
+$extern fn_((mem_Alctr_VTbl_unreachableRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
 /// Default VTable functions for no-op fallbacks
 $extern fn_((mem_Alctr_VTbl_noFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+/// Default VTable functions for unreachable fallbacks
+$extern fn_((mem_Alctr_VTbl_unreachableFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
 /* --- Interface Instance --- */
 
@@ -53,6 +61,8 @@ typedef struct mem_Alctr {
 T_use_O$(mem_Alctr);
 T_use_E$($set(mem_E)(u_P$raw));
 T_use_E$($set(mem_E)(u_S$raw));
+$extern let_(mem_Alctr_noop, mem_Alctr);
+$extern let_(mem_Alctr_failing, mem_Alctr);
 
 $attr($inline_always)
 $static fn_((mem_Alctr_isValid(mem_Alctr self))(bool));
@@ -110,12 +120,12 @@ $extern fn_((mem_Alctr_dupe($traced mem_Alctr self, u_S_const$raw src))(mem_E$u_
 /*========== Macros and Definitions =========================================*/
 
 fn_((mem_Alctr_isValid(mem_Alctr self))(bool)) {
-    return self.ctx != null
-        && self.vtbl != null
-        && self.vtbl->alloc != null
-        && self.vtbl->resize != null
-        && self.vtbl->remap != null
-        && self.vtbl->free != null;
+    return isNonnull(self.ctx)
+        && isNonnull(self.vtbl)
+        && isNonnull(self.vtbl->alloc)
+        && isNonnull(self.vtbl->resize)
+        && isNonnull(self.vtbl->remap)
+        && isNonnull(self.vtbl->free);
 };
 
 fn_((mem_Alctr_assertValid(P$raw ctx, P_const$$(mem_Alctr_VTbl) vtbl))(void)) {

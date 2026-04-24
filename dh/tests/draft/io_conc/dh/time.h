@@ -10,9 +10,9 @@ extern "C" {
 #include "time/base.h"
 #include "time/common.h"
 
-#include "time/Self.h"
 #include "time/Dur.h"
 #include "time/Inst.h"
+#include "time/self.h"
 #include "time/Clock.h"
 
 #if defined(__cplusplus)
