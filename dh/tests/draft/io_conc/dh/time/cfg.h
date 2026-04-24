@@ -37,7 +37,8 @@ typedef pp_if_(plat_is_windows)(
     pp_else_(pp_if_(plat_based_unix)(
         pp_then_(struct timespec),
         pp_else_(Void)
-    ))) time_Inst__Impl;
+    ))
+) time_Inst__Impl;
 typedef time_Inst__Impl time_InstPlatform;
 
 /* --- Wall-Clock Platform Type (for time_Clock) --- */
@@ -46,7 +47,8 @@ typedef pp_if_(plat_is_windows)(
     pp_else_(pp_if_(plat_based_unix)(
         pp_then_(struct timespec),
         pp_else_(Void)
-    ))) time_Clock__Impl;
+    ))
+) time_Clock__Impl;
 typedef time_Clock__Impl time_ClockPlatform;
 
 #if defined(__cplusplus)

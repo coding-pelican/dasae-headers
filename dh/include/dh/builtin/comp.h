@@ -374,10 +374,10 @@ extern "C" {
 #define $branch_unpredictable(_expr... /*(bool)*/) __attr__$branch_unpredictable(_expr)
 #define $unreachable __attr__$unreachable
 
+#define $zero_sized __attr__$zero_sized
+#define $flexible __attr__$flexible
 #define $like_ref __attr__$like_ref
 #define $like_deref __attr__$like_deref
-#define $flexible __attr__$flexible
-#define $zero_sized __attr__$zero_sized
 
 #define $static static
 #define $extern extern
@@ -556,10 +556,10 @@ extern "C" {
 #define __attr__$branch_unpredictable(_expr... /*(bool)*/) comp_branch_unpredictable(_expr)
 #define __attr__$unreachable comp_unreachable
 
+#define __attr__$zero_sized [0]
+#define __attr__$flexible [0]
 #define __attr__$like_ref [1]
 #define __attr__$like_deref [0]
-#define __attr__$flexible [0]
-#define __attr__$zero_sized [0]
 
 #define __attr__$cdecl plat_cdecl
 #define __attr__$stdcall plat_stdcall

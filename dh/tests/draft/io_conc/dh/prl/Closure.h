@@ -12,18 +12,6 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/*--- Closure Related ---*/
-T_alias$((exec_Lane)(struct exec_Lane));
-T_alias$((exec_Seq)(struct exec_Seq));
-T_alias$((exec_LaneTimed)(struct exec_LaneTimed));
-T_alias$((exec_Coop)(struct exec_Coop));
-T_alias$((exec_Preem)(struct exec_Preem));
-T_alias$((exec_Para)(struct exec_Para));
-T_alias$((Sched)(struct Sched));
-T_alias$((Future$raw)(struct Future$raw));
-T_use_P$(Future$raw);
-T_use_O$(P$Future$raw);
-T_alias$((V$Future$raw)(P$Future$raw));
 /*--- Closure's Context ---*/
 #define Closure_Ctx$(_T...) __alias__Closure_Ctx$(_T)
 T_alias$((Closure_Ctx$raw)(struct Closure_Ctx$raw {

@@ -6,8 +6,9 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "Fiber.h"
-#include "Task.h"
+#include "base.h"
+#include "../Future.h"
+#include "../Sched.h"
 
 /*========== Macros and Declarations ========================================*/
 

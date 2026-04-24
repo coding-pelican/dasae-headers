@@ -1,4 +1,5 @@
 #include "Clock.h"
+#include "Self.h"
 
 #if plat_based_unix
 #include <time.h>

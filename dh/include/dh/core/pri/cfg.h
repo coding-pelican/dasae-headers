@@ -13,6 +13,7 @@
  * @details Defines compile-time options and configuration parameters
  *          for primitive types and functions.
  */
+#include "dh/builtin/comp.h"
 #ifndef CORE_PRIM_CFG_INCLUDED
 #define CORE_PRIM_CFG_INCLUDED (1)
 #if defined(__cplusplus)
@@ -56,11 +57,6 @@ extern "C" {
 #endif /* !defined(__STDC_NO_ATOMICS__) && UNUSED_CODE */
 
 /*========== Macros and Declarations ========================================*/
-
-/*--- Zero-sized type ---*/
-
-typedef struct Void {
-} Void;
 
 /*--- Boolean ---*/
 
@@ -339,6 +335,18 @@ typedef double f64;
 // #define f128_inf            f128_(__builtin_inf())
 // #define f128_inf_ngtv       f128_(-f128_inf)
 // #define f128_inf_pstv       f128_(+f128_inf)
+
+/*--- Zero-sized type ---*/
+
+/// `Void` has the same meaning as the incomplete type `void`,
+// but can be used as a value.
+typedef struct Void {
+    u8 bytes $zero_sized;
+} Void;
+typedef struct Opaq {
+    u8 bytes $flexible;
+} Opaq;
+/// Opaq, AnyOpaq, Any, Raw
 
 /*--- Type Predicates ---*/
 

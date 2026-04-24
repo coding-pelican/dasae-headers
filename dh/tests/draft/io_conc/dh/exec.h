@@ -8,10 +8,13 @@ extern "C" {
 
 #include "exec/Fiber.h"
 #include "exec/Task.h"
+#include "exec/base.h"
 #include "exec/common.h"
+
 #include "exec/Lane.h"
 #include "exec/Timer.h"
 #include "exec/LaneTimed.h"
+
 #include "exec/Seq.h"
 #include "exec/Coop.h"
 #include "exec/Preem.h"

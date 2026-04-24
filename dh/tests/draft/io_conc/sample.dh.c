@@ -1,8 +1,8 @@
 #include "dh-main.h"
 #include "dh/exec.h"
 #include "dh/time.h"
-#include "dh/heap/Page.h"
 #include "dh/io/stream.h"
+#include "dh/heap/Page.h"
 
 $static fn_((report(io_Self io, S_const$u8 label, S_const$u8 fmt, ...))(void)) {
     io_stream_print(io, u8_l("[{:s}] "), label);

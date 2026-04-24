@@ -7,6 +7,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "../prl/Closure.h"
+#include "../Future/base.h"
 #include "Fiber.h"
 #include "dh/ArrList.h"
 #include "dh/ArrQue.h"
@@ -28,11 +29,14 @@ T_alias$((exec_Task_State)(enum_((exec_Task_State $fits($packed))(
     exec_Task_State_canceled,
 ))));
 claim_assert_static(eqlType$(exec_Task_State, u8));
-T_alias$((exec_Task)(struct exec_Task {
-    var_(state, exec_Task_State);
-    var_(result, u_P$raw);
-    var_(inner, P$$(Closure$raw));
-    var_(fiber, O$P$exec_Fiber);
+T_alias$((exec_Task)(union exec_Task {
+    struct {
+        var_(state, exec_Task_State);
+        var_(result, u_P$raw);
+        var_(inner, P$$(Closure$raw));
+        var_(fiber, O$P$exec_Fiber);
+    };
+    var_(as_any, FutureAny) $flexible;
 }));
 T_use_prl$(exec_Task);
 T_use_ArrList$(P$exec_Task);

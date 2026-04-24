@@ -7,7 +7,9 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "time/cfg.h"
+#include "time/base.h"
 #include "time/common.h"
+
 #include "time/Self.h"
 #include "time/Dur.h"
 #include "time/Inst.h"

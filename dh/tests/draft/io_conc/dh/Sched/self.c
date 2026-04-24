@@ -1,53 +1,54 @@
-#include "Sched.h"
-#include "exec/Seq.h"
-#include "exec/Coop.h"
-#include "exec/Preem.h"
-#include "exec/Para.h"
+#include "self.h"
+#include "../Future/self.h"
+#include "../exec/Seq.h"
+#include "../exec/Coop.h"
+#include "../exec/Preem.h"
+#include "../exec/Para.h"
 
 /*========== Internal Declarations ==========================================*/
 
 $attr($inline_always)
-$static fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$Future$raw));
+$static fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
 $attr($inline_always $must_check)
-$static fn_((Sched__spawn(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$Future$raw));
+$static fn_((Sched__spawn(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
 $attr($inline_always)
 $static fn_((Sched__cancel(exec_Lane* ctx, exec_Task* any_future, u_P$raw result))(void));
 
-$static fn_((Sched_seq__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$Future$raw));
+$static fn_((Sched_seq__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
 $attr($must_check)
-$static fn_((Sched_seq__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$Future$raw));
-$static fn_((Sched_seq__await(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
-$static fn_((Sched_seq__cancel(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
+$static fn_((Sched_seq__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
+$static fn_((Sched_seq__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$static fn_((Sched_seq__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 
-$static fn_((Sched_coop__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$Future$raw));
+$static fn_((Sched_coop__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
 $attr($must_check)
-$static fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$Future$raw));
-$static fn_((Sched_coop__await(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
-$static fn_((Sched_coop__cancel(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void));
+$static fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
+$static fn_((Sched_coop__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$static fn_((Sched_coop__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 
 /*========== External Definitions ===========================================*/
 
-fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$Future$raw) $scope) {
+fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
     let_ignore = ctx;
     let_ignore = result;
     let_ignore = inner;
     return_none();
 } $unscoped(fn);
 
-fn_((Sched_VTbl_noSpawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$Future$raw) $scope) {
+fn_((Sched_VTbl_noSpawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     let_ignore = ctx;
     let_ignore = result;
     let_ignore = inner;
     return_err(Sched_ConcE_Unavailable());
 } $unscoped(fn);
 
-fn_((Sched_VTbl_noAwait(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void)) {
+fn_((Sched_VTbl_noAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     let_ignore = ctx;
     let_ignore = any_future;
     let_ignore = result;
 };
 
-fn_((Sched_VTbl_noCancel(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void)) {
+fn_((Sched_VTbl_noCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     let_ignore = ctx;
     let_ignore = any_future;
     let_ignore = result;
@@ -127,20 +128,20 @@ fn_((Sched_para(exec_Para* para))(Sched)) {
 
 /*========== Internal Definitions ===========================================*/
 
-fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$Future$raw) $scope) {
+fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
     claim_assert_nonnull(ctx), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let task = orelse_((exec_Lane_asyncTask(ctx, result, inner))(
         return_none()
     ));
-    return_some(ptrCast$((P$Future$raw)(task)));
+    return_some(task->as_any);
 } $unscoped(fn);
 
-fn_((Sched__spawn(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$Future$raw) $scope) {
+fn_((Sched__spawn(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     claim_assert_nonnull(ctx), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let task = orelse_((exec_Lane_spawnTask(ctx, result, inner))(
         return_err(Sched_ConcE_Unavailable())
     ));
-    return_ok(ptrCast$((P$Future$raw)(task)));
+    return_ok(task->as_any);
 } $unscoped(fn);
 
 fn_((Sched__cancel(exec_Lane* ctx, exec_Task* any_future, u_P$raw result))(void)) {
@@ -152,17 +153,17 @@ fn_((Sched__cancel(exec_Lane* ctx, exec_Task* any_future, u_P$raw result))(void)
     exec_Task_cancel(any_future);
 };
 
-fn_((Sched_seq__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$Future$raw) $scope) {
+fn_((Sched_seq__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
     let self = ptrAlignCast$((exec_Seq*)(ensureNonnull(ctx)));
     return Sched__async(&self->lane, result, inner);
 } $unscoped(fn);
 
-fn_((Sched_seq__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$Future$raw) $scope) {
+fn_((Sched_seq__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     let self = ptrAlignCast$((exec_Seq*)(ensureNonnull(ctx)));
     return Sched__spawn(&self->lane, result, inner);
 } $unscoped(fn);
 
-fn_((Sched_seq__await(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void)) {
+fn_((Sched_seq__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     claim_assert_nonnull(result.raw);
     let self = ptrAlignCast$((exec_Seq*)(ensureNonnull(ctx)));
     let task = ptrAlignCast$((exec_Task*)(ensureNonnull(any_future)));
@@ -170,23 +171,23 @@ fn_((Sched_seq__await(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void)
     if (exec_Task_isDone(task)) exec_Task_copyToResult(task, result);
 };
 
-fn_((Sched_seq__cancel(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void)) {
+fn_((Sched_seq__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     let self = ptrAlignCast$((exec_Seq*)(ensureNonnull(ctx)));
     let task = ptrAlignCast$((exec_Task*)(ensureNonnull(any_future)));
     Sched__cancel(&self->lane, task, result);
 };
 
-fn_((Sched_coop__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$Future$raw) $scope) {
+fn_((Sched_coop__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
     let self = ptrAlignCast$((exec_Coop*)(ensureNonnull(ctx)));
     return Sched__async(&self->timed.lane, result, inner);
 } $unscoped(fn);
 
-fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$Future$raw) $scope) {
+fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     let self = ptrAlignCast$((exec_Coop*)(ensureNonnull(ctx)));
     return Sched__spawn(&self->timed.lane, result, inner);
 } $unscoped(fn);
 
-fn_((Sched_coop__await(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void)) {
+fn_((Sched_coop__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     claim_assert_nonnull(result.raw);
     let self = ptrAlignCast$((exec_Coop*)(ensureNonnull(ctx)));
     let task = ptrAlignCast$((exec_Task*)(ensureNonnull(any_future)));
@@ -205,7 +206,7 @@ fn_((Sched_coop__await(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void
     if (exec_Task_isDone(task)) exec_Task_copyToResult(task, result);
 };
 
-fn_((Sched_coop__cancel(P$raw ctx, P$Future$raw any_future, u_P$raw result))(void)) {
+fn_((Sched_coop__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
     let self = ptrAlignCast$((exec_Coop*)(ensureNonnull(ctx)));
     let task = ptrAlignCast$((exec_Task*)(ensureNonnull(any_future)));
     Sched__cancel(&self->timed.lane, task, result);

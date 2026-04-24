@@ -1,5 +1,5 @@
-#include "Future.h"
-#include "Sched.h"
+#include "self.h"
+#include "../Sched/self.h"
 
 fn_((Future_await(Future$raw* self, Sched sched, u_V$raw ret_mem))(u_V$raw)) {
     let type = ret_mem.type;

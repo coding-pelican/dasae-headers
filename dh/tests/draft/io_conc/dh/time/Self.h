@@ -11,8 +11,6 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef struct exec_Coop exec_Coop;
-
 T_alias$((time_Self_Vtbl)(struct time_Self_Vtbl {
     fn_(((*nowClockFn)(P$raw ctx))(time_Clock));
     fn_(((*nowInstFn)(P$raw ctx))(time_Inst));

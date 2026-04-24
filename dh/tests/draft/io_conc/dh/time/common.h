@@ -24,17 +24,9 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
+#include "base.h"
 
 /*========== Macros and Declarations ========================================*/
-
-/* --- Data Types --- */
-typedef struct time_Dur time_Dur;
-T_decl_O$(time_Dur);
-typedef struct time_Inst time_Inst;
-T_decl_O$(time_Inst);
-typedef struct time_Clock time_Clock;
-T_decl_O$(time_Clock);
 
 /* --- Constants --- */
 #define time_nanos_per_nano __comp_const__time_nanos_per_nano
