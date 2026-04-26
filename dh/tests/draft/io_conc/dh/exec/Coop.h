@@ -15,8 +15,7 @@ T_alias$((exec_Coop)(struct exec_Coop {
     var_(timed, exec_LaneTimed);
     var_(evented, exec_Evented);
 }));
-$extern fn_((exec_Coop_init(mem_Alctr gpa, time_Awake clock))(exec_Coop));
-$extern fn_((exec_Coop_initEvented(mem_Alctr gpa, time_Awake clock, exec_Evented evented))(exec_Coop));
+$extern fn_((exec_Coop_init(mem_Alctr gpa, time_Awake clock, exec_Evented evented))(exec_Coop));
 $extern fn_((exec_Coop_fini(exec_Coop* self))(void));
 
 $extern fn_((exec_Coop_task(exec_Coop* self))(O$P$exec_Task));

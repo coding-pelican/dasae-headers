@@ -36,15 +36,23 @@ extern "C" {
 
 #define pp_strfy(_Tok...) pp_exec_strfy(_Tok)
 
-#define pp_cat(_LhsTok, _RhsTok...) pp_exec_cat(_LhsTok, _RhsTok)
-#define pp_cat2(_LhsTok, _RhsTok...) pp_exec_cat2(_LhsTok, _RhsTok)
-#define pp_cat3(_LhsTok, _MidTok, _RhsTok...) pp_exec_cat3(_LhsTok, _MidTok, _RhsTok)
-#define pp_cat4(_LhsTok, _LMidTok, _RMidTok, _RhsTok...) pp_exec_cat4(_LhsTok, _LMidTok, _RMidTok, _RhsTok)
+#define pp_cat(_LTok, _RTok...) pp_exec_cat(_LTok, _RTok)
+#define pp_cat2(_LTok, _RTok...) pp_exec_cat2(_LTok, _RTok)
+#define pp_cat3(_LTok, _MTok, _RTok...) \
+    pp_exec_cat3(_LTok, _MTok, _RTok)
+#define pp_cat4(_LTok, _LMTok, _RMTok, _RTok...) \
+    pp_exec_cat4(_LTok, _LMTok, _RMTok, _RTok)
+#define pp_cat5(_LTok, _LMTok, _MTok, _RMTok, _RTok...) \
+    pp_exec_cat5(_LTok, _LMTok, _MTok, _RMTok, _RTok)
 
-#define pp_join(_SepTok, _LhsTok, _RhsTok...) pp_exec_join(_SepTok, _LhsTok, _RhsTok)
-#define pp_join2(_SepTok, _LhsTok, _RhsTok...) pp_exec_join2(_SepTok, _LhsTok, _RhsTok)
-#define pp_join3(_SepTok, _LhsTok, _MidTok, _RhsTok...) pp_exec_join3(_SepTok, _LhsTok, _MidTok, _RhsTok)
-#define pp_join4(_SepTok, _LhsTok, _LMidTok, _RMidTok, _RhsTok...) pp_exec_join4(_SepTok, _LhsTok, _LMidTok, _RMidTok, _RhsTok)
+#define pp_join(_SepTok, _LTok, _RTok...) pp_exec_join(_SepTok, _LTok, _RTok)
+#define pp_join2(_SepTok, _LTok, _RTok...) pp_exec_join2(_SepTok, _LTok, _RTok)
+#define pp_join3(_SepTok, _LTok, _MTok, _RTok...) \
+    pp_exec_join3(_SepTok, _LTok, _MTok, _RTok)
+#define pp_join4(_SepTok, _LTok, _LMTok, _RMTok, _RTok...) \
+    pp_exec_join4(_SepTok, _LTok, _LMTok, _RMTok, _RTok)
+#define pp_join5(_SepTok, _LTok, _LMTok, _MTok, _RMTok, _RTok...) \
+    pp_exec_join5(_SepTok, _LTok, _LMTok, _MTok, _RMTok, _RTok)
 
 #define pp_uniqTok(_Tok...) pp_exec_uniqTok(_Tok)
 #define pp_uniqTokByLine(_Tok...) pp_exec_uniqTokByLine(_Tok)
@@ -181,19 +189,23 @@ extern "C" {
 
 #define pp_exec_strfy(_Tok...) #_Tok
 
-#define pp_exec_cat(_LhsTok, _RhsTok...) _LhsTok##_RhsTok
-#define pp_exec_cat2(_LhsTok, _RhsTok...) _LhsTok##_RhsTok
-#define pp_exec_cat3(_LhsTok, _MidTok, _RhsTok...) \
-    _LhsTok##_MidTok##_RhsTok
-#define pp_exec_cat4(_LhsTok, _LMidTok, _RMidTok, _RhsTok...) \
-    _LhsTok##_LMidTok##_RMidTok##_RhsTok
+#define pp_exec_cat(_LTok, _RTok...) _LTok##_RTok
+#define pp_exec_cat2(_LTok, _RTok...) _LTok##_RTok
+#define pp_exec_cat3(_LTok, _MTok, _RTok...) \
+    _LTok##_MTok##_RTok
+#define pp_exec_cat4(_LTok, _LMTok, _RMTok, _RTok...) \
+    _LTok##_LMTok##_RMTok##_RTok
+#define pp_exec_cat5(_LTok, _LMTok, _MTok, _RMTok, _RTok...) \
+    _LTok##_LMTok##_MTok##_RMTok##_RTok
 
-#define pp_exec_join(_SepTok, _LhsTok, _RhsTok...) _LhsTok##_SepTok##_RhsTok
-#define pp_exec_join2(_SepTok, _LhsTok, _RhsTok...) _LhsTok##_SepTok##_RhsTok
-#define pp_exec_join3(_SepTok, _LhsTok, _MidTok, _RhsTok...) \
-    _LhsTok##_SepTok##_MidTok##_SepTok##_RhsTok
-#define pp_exec_join4(_SepTok, _LhsTok, _LMidTok, _RMidTok, _RhsTok...) \
-    _LhsTok##_SepTok##_LMidTok##_SepTok##_RMidTok##_SepTok##_RhsTok
+#define pp_exec_join(_SepTok, _LTok, _RTok...) _LTok##_SepTok##_RTok
+#define pp_exec_join2(_SepTok, _LTok, _RTok...) _LTok##_SepTok##_RTok
+#define pp_exec_join3(_SepTok, _LTok, _MTok, _RTok...) \
+    _LTok##_SepTok##_MTok##_SepTok##_RTok
+#define pp_exec_join4(_SepTok, _LTok, _LMTok, _RMTok, _RTok...) \
+    _LTok##_SepTok##_LMTok##_SepTok##_RMTok##_SepTok##_RTok
+#define pp_exec_join5(_SepTok, _LTok, _LMTok, _MTok, _RMTok, _RTok...) \
+    _LTok##_SepTok##_LMTok##_SepTok##_MTok##_SepTok##_RMTok##_SepTok##_RTok
 
 #define pp_exec_uniqTok(_Tok...) pp_join(_, pp_join3(_, _, __LINE__, __COUNTER__), _Tok)
 #define pp_exec_uniqTokByLine(_Tok...) pp_join(_, pp_join2(_, _, __LINE__), _Tok)
@@ -581,6 +593,17 @@ extern "C" {
 #define __tpl$_2(_tpl, _T, _U...) tpl$1T$2U(_tpl, _T, _U)
 #define __tpl$_3(_tpl, _T, _U, _V...) tpl$2T$2U$3V(_tpl, _T, _U, _V)
 #define __tpl$_4(_tpl, _T, _U, _V, _W...) tpl$2T$2U$3V$4W(_tpl, _T, _U, _V, _W)
+#define __tpl$_5(_tpl, _T, _U, _V, _W, _X...) tpl$2T$2U$3V$4W$5X(_tpl, _T, _U, _V, _W, _X)
+#define __tpl$_6(_tpl, _T, _U, _V, _W, _X, _Y...) \
+    tpl$2T$2U$3V$4W$5X$6Y(_tpl, _T, _U, _V, _W, _X, _Y)
+#define __tpl$_7(_tpl, _T, _U, _V, _W, _X, _Y, _Z...) \
+    tpl$2T$2U$3V$4W$5X$6Y$7Z(_tpl, _T, _U, _V, _W, _X, _Y, _Z)
+#define __tpl$_8(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A...) \
+    tpl$2T$2U$3V$4W$5X$6Y$7Z$8A(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A)
+#define __tpl$_9(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B...) \
+    tpl$2T$2U$3V$4W$5X$6Y$7Z$8A$9B(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B)
+#define __tpl$_10(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C...) \
+    tpl$2T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C)
 
 #define tpl$T(_tpl, _T...) \
     pp_join($, _tpl, _T)
@@ -592,12 +615,69 @@ extern "C" {
     pp_cat(_tpl, pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)))
 #define tpl$2T$2U$3V$4W(_tpl, _T, _U, _V, _W...) \
     pp_cat(_tpl, pp_cat4(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V), pp_cat($4, _W)))
+#define tpl$2T$2U$3V$4W$5X(_tpl, _T, _U, _V, _W, _X...) \
+    pp_cat(_tpl, pp_cat5(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V), pp_cat($4, _W), pp_cat($5, _X)))
+#define tpl$2T$2U$3V$4W$5X$6Y(_tpl, _T, _U, _V, _W, _X, _Y...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat2( \
+            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
+            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)) \
+        ) \
+    )
+#define tpl$2T$2U$3V$4W$5X$6Y$7Z(_tpl, _T, _U, _V, _W, _X, _Y, _Z...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat3( \
+            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
+            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)), \
+            pp_cat($7, _Z) \
+        ) \
+    )
+#define tpl$2T$2U$3V$4W$5X$6Y$7Z$8A(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat3( \
+            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
+            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)), \
+            pp_cat2(pp_cat($7, _Z), pp_cat($8, _A)) \
+        ) \
+    )
+#define tpl$2T$2U$3V$4W$5X$6Y$7Z$8A$9B(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat3( \
+            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
+            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)), \
+            pp_cat3(pp_cat($7, _Z), pp_cat($8, _A), pp_cat($9, _B)) \
+        ) \
+    )
+#define tpl$2T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat3( \
+            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
+            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)), \
+            pp_cat3(pp_cat($7, _Z), pp_cat($8, _A), pp_cat($9, _B)) \
+        ) \
+    )
 
 #define tpl_(_tpl, _T...) pp_overload(__tpl_, _T)(_tpl, _T)
 #define __tpl__1(_tpl, _T...) tpl_1T(_tpl, _T)
 #define __tpl__2(_tpl, _T, _U...) tpl_1T_2U(_tpl, _T, _U)
 #define __tpl__3(_tpl, _T, _U, _V...) tpl_2T_2U_3V(_tpl, _T, _U, _V)
 #define __tpl__4(_tpl, _T, _U, _V, _W...) tpl_2T_2U_3V_4W(_tpl, _T, _U, _V, _W)
+#define __tpl__5(_tpl, _T, _U, _V, _W, _X...) tpl_2T_2U_3V_4W_5X(_tpl, _T, _U, _V, _W, _X)
+#define __tpl__6(_tpl, _T, _U, _V, _W, _X, _Y...) \
+    tpl_2T_2U_3V_4W_5X_6Y(_tpl, _T, _U, _V, _W, _X, _Y)
+#define __tpl__7(_tpl, _T, _U, _V, _W, _X, _Y, _Z...) \
+    tpl_2T_2U_3V_4W_5X_6Y_7Z(_tpl, _T, _U, _V, _W, _X, _Y, _Z)
+#define __tpl__8(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A...) \
+    tpl_2T_2U_3V_4W_5X_6Y_7Z_8A(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A)
+#define __tpl__9(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B...) \
+    tpl_2T_2U_3V_4W_5X_6Y_7Z_8A_9B(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B)
+#define __tpl__10(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C...) \
+    tpl_2T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C)
 
 #define tpl_T(_tpl, _T...) \
     pp_join(_, _tpl, _T)
@@ -609,6 +689,52 @@ extern "C" {
     pp_cat(_tpl, pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)))
 #define tpl_2T_2U_3V_4W(_tpl, _T, _U, _V, _W...) \
     pp_cat(_tpl, pp_cat4(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V), pp_cat(_4, _W)))
+#define tpl_2T_2U_3V_4W_5X(_tpl, _T, _U, _V, _W, _X...) \
+    pp_cat(_tpl, pp_cat5(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V), pp_cat(_4, _W), pp_cat(_5, _X)))
+#define tpl_2T_2U_3V_4W_5X_6Y(_tpl, _T, _U, _V, _W, _X, _Y...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat2( \
+            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
+            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)) \
+        ) \
+    )
+#define tpl_2T_2U_3V_4W_5X_6Y_7Z(_tpl, _T, _U, _V, _W, _X, _Y, _Z...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat3( \
+            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
+            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)), \
+            pp_cat(_7, _Z) \
+        ) \
+    )
+#define tpl_2T_2U_3V_4W_5X_6Y_7Z_8A(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat3( \
+            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
+            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)), \
+            pp_cat2(pp_cat(_7, _Z), pp_cat(_8, _A)) \
+        ) \
+    )
+#define tpl_2T_2U_3V_4W_5X_6Y_7Z_8A_9B(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat3( \
+            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
+            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)), \
+            pp_cat3(pp_cat(_7, _Z), pp_cat(_8, _A), pp_cat(_9, _B)) \
+        ) \
+    )
+#define tpl_2T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C...) \
+    pp_cat( \
+        _tpl, \
+        pp_cat3( \
+            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
+            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)), \
+            pp_cat3(pp_cat(_7, _Z), pp_cat(_8, _A), pp_cat(_9, _B)) \
+        ) \
+    )
 
 #if DEPRECATED_CODE
 #define tpl_fn_(_tpl_T, _id, _Ret_T...) fn_((tpl_id(_tpl_T, _id))(_Ret_T))

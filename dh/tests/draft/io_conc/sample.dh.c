@@ -39,7 +39,7 @@ fn_use_Closure_((countFn)(Sys, usize, time_Dur, S_const$u8)(f64));
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
     let gpa = heap_Page_alctr(&l0$((heap_Page)));
-    var loop = exec_Coop_init(gpa, try_(time_Awake_direct()));
+    var loop = exec_Coop_init(gpa, try_(time_Awake_direct()), exec_Evented_noop);
     defer_(exec_Coop_fini(&loop));
     let sched = Sched_coop(&loop);
     let_(sys, Sys) = {

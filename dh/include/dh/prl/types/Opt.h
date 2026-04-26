@@ -45,16 +45,17 @@ extern "C" {
 #define O_InnerT$(_T...) TypeOf((as$(_T*)(null))->payload.some)
 
 /* Optional void value (special case) */
-typedef union O$Void {
-    struct {
-        var_(is_some, bool);
-        union {
-            var_(none, Void);
-            var_(some, Void);
-        } payload;
-    };
-    var_(as_raw $like_ref, O$raw);
-} O$Void, O$void;
+typedef union O$Void O$Void, O$void;
+// typedef union O$Void {
+//     struct {
+//         var_(is_some, bool);
+//         union {
+//             var_(none, Void);
+//             var_(some, Void);
+//         } payload;
+//     };
+//     var_(as_raw $like_ref, O$raw);
+// } O$Void, O$void;
 
 /* Optional Operations */
 // #define init$O()

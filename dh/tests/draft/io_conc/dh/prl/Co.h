@@ -102,15 +102,16 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
 #define $unscoped_co_fn \
     __stmt__$unscoped_co_fn()
 #define co_locals_mut_(...) \
-    __stmt__$co_locals_mut(__VA_ARGS__)
+    __stmt__co_locals_mut_(__VA_ARGS__)
 #define co_locals_(...) \
-    __stmt__$co_locals(__VA_ARGS__)
+    __stmt__co_locals_(__VA_ARGS__)
 #define co_suspended_(...) \
-    __stmt__$co_suspended(__VA_ARGS__)
+    __stmt__co_suspended_(__VA_ARGS__)
 #define $co_frame(/*void) -> (P(Co_Frame)*/) __expr__$co_frame()
 #define $co_arg(_ident...) __expr__$co_arg(_ident)
 #define $co(_ident...) __expr__$co(_ident)
 #define $co_mut(_ident...) __expr__$co_mut(_ident)
+#define $co_suspended(_ident...) __expr__$co_suspended(_ident)
 #define co_let_(_ident, _T...) __stmt__co_let_(_ident, _T)
 #define co_var_(_ident, _T...) __stmt__co_var_(_ident, _T)
 #define suspend_(/*(_ident)(_expr...)*/... /*-> (void)*/) __stmt__suspend_(__VA_ARGS__)
@@ -275,14 +276,15 @@ __step_unscope: \
     } \
 }
 /* clang-format on */
-#define __stmt__$co_locals_mut(...) __VA_ARGS__
-#define __stmt__$co_locals(...) __VA_ARGS__
-#define __stmt__$co_suspended(...) __VA_ARGS__
+#define __stmt__co_locals_mut_(...) __VA_ARGS__
+#define __stmt__co_locals_(...) __VA_ARGS__
+#define __stmt__co_suspended_(...) __VA_ARGS__
 
 #define __expr__$co_frame() (*__frame)
 #define __expr__$co_arg(_ident...) (__args->_ident)
 #define __expr__$co(_ident...) (__locals->_ident)
 #define __expr__$co_mut(_ident...) (__locals_mut->_ident)
+#define __expr__$co_suspended(_ident...) (__suspended->_ident)
 #define __stmt__co_let_(_ident, /*_T*/...) \
     __VA_OPT__(({ claim_assert_static(eqlType$(TypeOf(__ctx->data.locals._ident), __VA_ARGS__)); }), ) \
     __ctx->data.locals._ident

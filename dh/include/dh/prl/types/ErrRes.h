@@ -83,16 +83,17 @@ extern "C" {
 #define E_InnerT$(_T...) TypeOf((as$(_T*)(null))->payload.ok)
 
 /* Error void result (special case) */
-typedef union E$Void {
-    struct {
-        var_(is_ok, bool);
-        union {
-            var_(err, Err);
-            var_(ok, Void);
-        } payload;
-    };
-    var_(as_raw $like_ref, E$raw);
-} E$Void, E$void;
+typedef union E$Void E$Void, E$void;
+// typedef union E$Void {
+//     struct {
+//         var_(is_ok, bool);
+//         union {
+//             var_(err, Err);
+//             var_(ok, Void);
+//         } payload;
+//     };
+//     var_(as_raw $like_ref, E$raw);
+// } E$Void, E$void;
 
 /* Error Operations */
 // #define init$E()

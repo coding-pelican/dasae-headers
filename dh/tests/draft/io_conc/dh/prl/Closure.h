@@ -42,8 +42,8 @@ T_alias$((Closure$raw)(struct Closure$raw {
     var_(ctx_, Closure_Ctx$raw) $flexible;
 }));
 #define T_use_Closure$(_T...) __stmt__T_use_Closure$(_T)
-#define decl_Closure$(_T...) __stmt__decl_Closure$(_T)
-#define impl_Closure$(_T...) __stmt__impl_Closure$(_T)
+#define T_decl_Closure$(_T...) __stmt__T_decl_Closure$(_T)
+#define T_impl_Closure$(_T...) __stmt__T_impl_Closure$(_T)
 /*--- Closure's Fields ---*/
 #define Closure_Ret_(_rtn...) __alias__Closure_Ret_(_rtn)
 // #define fn_use_Closure_Ret_(_rtn...) __stmt__fn_use_Closure_Ret_(_rtn)
@@ -94,11 +94,11 @@ T_alias$((Closure$raw)(struct Closure$raw {
 /*--- Closure's Base ---*/
 #define __alias__Closure$(_T...) tpl$(Closure, _T)
 #define __stmt__T_use_Closure$(_T...) \
-    decl_Closure$(_T); \
-    impl_Closure$(_T)
-#define __stmt__decl_Closure$(_T...) \
+    T_decl_Closure$(_T); \
+    T_impl_Closure$(_T)
+#define __stmt__T_decl_Closure$(_T...) \
     T_alias$((Closure$(_T))(union Closure$(_T)))
-#define __stmt__impl_Closure$(_T...) \
+#define __stmt__T_impl_Closure$(_T...) \
     union Closure$(_T) { \
         T_embed$(struct { \
             var_(kind, Closure_Kind); \
@@ -196,6 +196,14 @@ T_alias$((Closure$raw)(struct Closure$raw {
     _field_path $0, _field_path $1, _field_path $2
 #define __step__fn_use_Closure___passTupFields4(_field_path...) \
     _field_path $0, _field_path $1, _field_path $2, _field_path $3
+#define __step__fn_use_Closure___passTupFields5(_field_path...) \
+    _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4
+#define __step__fn_use_Closure___passTupFields6(_field_path...) \
+    _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5
+#define __step__fn_use_Closure___passTupFields7(_field_path...) \
+    _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5, _field_path $6
+#define __step__fn_use_Closure___passTupFields8(_field_path...) \
+    _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5, _field_path $6, _field_path $7
 #define __step__fn_use_Closure___tupFieldsToParams(_N_Arg_T, _Arg_T...) \
     pp_cat(__step__fn_use_Closure___tupFieldsToParams, _N_Arg_T) _Arg_T
 #define __step__fn_use_Closure___tupFieldsToParams1(_Arg_T1...) \
@@ -206,6 +214,14 @@ T_alias$((Closure$raw)(struct Closure$raw {
     _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2
 #define __step__fn_use_Closure___tupFieldsToParams4(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4...) \
     _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3
+#define __step__fn_use_Closure___tupFieldsToParams5(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4, _Arg_T5...) \
+    _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3, _Arg_T5 $4
+#define __step__fn_use_Closure___tupFieldsToParams6(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4, _Arg_T5, _Arg_T6...) \
+    _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3, _Arg_T5 $4, _Arg_T6 $5
+#define __step__fn_use_Closure___tupFieldsToParams7(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4, _Arg_T5, _Arg_T6, _Arg_T7...) \
+    _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3, _Arg_T5 $4, _Arg_T6 $5, _Arg_T7 $6
+#define __step__fn_use_Closure___tupFieldsToParams8(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4, _Arg_T5, _Arg_T6, _Arg_T7, _Arg_T8...) \
+    _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3, _Arg_T5 $4, _Arg_T6 $5, _Arg_T7 $6, _Arg_T8 $7
 /* --- Closure of Coroutine --- */
 #define Closure_Co_Frame_(_rtn...) tpl_(Closure_Co_Frame, _rtn)
 // #define co_use_Closure_Co_Frame_(_rtn...) __stmt__co_use_Closure_Co_Frame_(_rtn)
@@ -292,6 +308,14 @@ T_alias$((Closure$raw)(struct Closure$raw {
     _field_path $0, _field_path $1, _field_path $2
 #define __step__co_use_Closure___passTupFields4(_field_path...) \
     _field_path $0, _field_path $1, _field_path $2, _field_path $3
+#define __step__co_use_Closure___passTupFields5(_field_path...) \
+    _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4
+#define __step__co_use_Closure___passTupFields6(_field_path...) \
+    _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5
+#define __step__co_use_Closure___passTupFields7(_field_path...) \
+    _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5, _field_path $6
+#define __step__co_use_Closure___passTupFields8(_field_path...) \
+    _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5, _field_path $6, _field_path $7
 #define __step__co_use_Closure___tupFieldsToParams(_N_Arg_T, _Arg_T...) \
     pp_cat(__step__co_use_Closure___tupFieldsToParams, _N_Arg_T) _Arg_T
 #define __step__co_use_Closure___tupFieldsToParams1(_Arg_T1...) \
@@ -302,6 +326,14 @@ T_alias$((Closure$raw)(struct Closure$raw {
     _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2
 #define __step__co_use_Closure___tupFieldsToParams4(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4...) \
     _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3
+#define __step__co_use_Closure___tupFieldsToParams5(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4, _Arg_T5...) \
+    _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3, _Arg_T5 $4
+#define __step__co_use_Closure___tupFieldsToParams6(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4, _Arg_T5, _Arg_T6...) \
+    _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3, _Arg_T5 $4, _Arg_T6 $5
+#define __step__co_use_Closure___tupFieldsToParams7(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4, _Arg_T5, _Arg_T6, _Arg_T7...) \
+    _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3, _Arg_T5 $4, _Arg_T6 $5, _Arg_T7 $6
+#define __step__co_use_Closure___tupFieldsToParams8(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4, _Arg_T5, _Arg_T6, _Arg_T7, _Arg_T8...) \
+    _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3, _Arg_T5 $4, _Arg_T6 $5, _Arg_T7 $6, _Arg_T8 $7
 
 #if defined(__cplusplus)
 } /* extern "C" */

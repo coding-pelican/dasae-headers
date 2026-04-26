@@ -45,7 +45,7 @@ T_use$((TypeInfo)(P, S));
 T_use_prl$(u8); T_use_prl$(u16); T_use_prl$(u32); T_use_prl$(u64); T_use_prl$(usize);
 T_use_prl$(i8); T_use_prl$(i16); T_use_prl$(i32); T_use_prl$(i64); T_use_prl$(isize);
 T_use_prl$(f32); T_use_prl$(f64);
-T_use_prl$(bool);
+T_use_prl$(bool); T_use_prl$(Void); T_use_prl$(Opaq);
 T_use_prl$(P_const$raw); T_use_prl$(S_const$raw);
 T_use_prl$(P$raw); T_use_prl$(S$raw);
 T_use_prl$(V$raw); T_use_prl$(A$raw);

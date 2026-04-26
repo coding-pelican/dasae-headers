@@ -1,10 +1,6 @@
 #include "Coop.h"
 
-fn_((exec_Coop_init(mem_Alctr gpa, time_Awake clock))(exec_Coop)) {
-    return exec_Coop_initEvented(gpa, clock, exec_Evented_noop);
-};
-
-fn_((exec_Coop_initEvented(mem_Alctr gpa, time_Awake clock, exec_Evented evented))(exec_Coop)) {
+fn_((exec_Coop_init(mem_Alctr gpa, time_Awake clock, exec_Evented evented))(exec_Coop)) {
     return (exec_Coop){
         .timed = exec_LaneTimed_init(gpa, clock),
         .evented = evented,
