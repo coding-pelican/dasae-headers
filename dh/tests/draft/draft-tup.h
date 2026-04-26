@@ -3,10 +3,10 @@
 
 #define Tup$(_Ts...) pp_overload(__Tup$, _Ts)(_Ts)
 #define __Tup$_0(...) claim_assert_static_msg(false, "Tup requires at least one type. Use `Void` instead.")
-#define __Tup$_1(_Ts...) tpl_id$1T(Tup, _Ts)
-#define __Tup$_2(_Ts...) tpl_id$1T$2U(Tup, _Ts)
-#define __Tup$_3(_Ts...) tpl_id$2T$2U$3V(Tup, _Ts)
-#define __Tup$_4(_Ts...) tpl_id$2T$2U$3V$4W(Tup, _Ts)
+#define __Tup$_1(_Ts...) tpl$1T(Tup, _Ts)
+#define __Tup$_2(_Ts...) tpl$1T$2U(Tup, _Ts)
+#define __Tup$_3(_Ts...) tpl$2T$2U$3V(Tup, _Ts)
+#define __Tup$_4(_Ts...) tpl$2T$2U$3V$4W(Tup, _Ts)
 #define Tup$$(_Ts...) \
     struct { \
         pp_overload(__Tup$__impl, _Ts)(_Ts); \

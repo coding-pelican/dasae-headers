@@ -41,7 +41,7 @@ extern "C" {
 /// Vector type construction: Vec$(type, length)
 /// Example: Vec$(4, f32) => __attribute__((vector_size(16))) f32
 #define $Vec$(_N, _T...) TypeOf(_T __attribute__((vector_size(_N * sizeOf$(_T)))))
-#define Vec$(_N, _T...) pp_join3($, Vec, _N, _T)
+#define Vec$(_N, _T...) tpl$(Vec, _N, _T)
 #define Vec$$(_N, _T...) $Vec$(_N, _T)
 
 /// Type declaration helpers

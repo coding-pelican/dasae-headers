@@ -65,16 +65,16 @@ TEST_fn_("S_deref" $scope) {
 
 #if UNUSED_CODE
 #define mem_asBytes_useT$(_T...) \
-    $maybe_unused static fn_((tpl_id(mem_asBytes, _T)(_T * val))(S$u8)) { \
+    $maybe_unused static fn_((tpl$(mem_asBytes, _T)(_T * val))(S$u8)) { \
         return Sli_from$(S$u8, as$(u8*)(val), sizeOf(*val)); \
     } \
-    $maybe_unused static fn_((tpl_id(mem_asBytes_const, _T)(const _T* val))(S_const$u8)) { \
+    $maybe_unused static fn_((tpl$(mem_asBytes_const, _T)(const _T* val))(S_const$u8)) { \
         return Sli_from$(S_const$u8, as$(const u8*)(val), sizeOf(*val)); \
     }
 #define mem_toBytes_useT$(_T...) \
     $maybe_unused typedef A$$(sizeOf(_T), _T) tpl_Ret(mem_toBytes, _T); \
-    $maybe_unused static fn_((tpl_id(mem_toBytes, _T)(_T val))(tpl_Ret(mem_toBytes, _T))) { \
-        return Sli_deref$(tpl_Ret(mem_toBytes, _T), tpl_id(mem_asBytes, _T)(&val)); \
+    $maybe_unused static fn_((tpl$(mem_toBytes, _T)(_T val))(tpl_Ret(mem_toBytes, _T))) { \
+        return Sli_deref$(tpl_Ret(mem_toBytes, _T), tpl$(mem_asBytes, _T)(&val)); \
     }
 
 mem_asBytes_useT$(i32);

@@ -30,16 +30,6 @@ let_(time_Proc_VTbl_failing, time_Proc_VTbl) = {
     .nowFn = time_Proc_VTbl_unreachableNow,
 };
 
-fn_((time_Proc_VTbl_noNow(P$raw ctx))(time_Proc_Inst)) {
-    let_ignore = ctx;
-    return (time_Proc_Inst){ .raw = time_Inst_from(0, 0) };
-};
-
-fn_((time_Proc_VTbl_unreachableNow(P$raw ctx))(time_Proc_Inst)) {
-    let_ignore = ctx;
-    claim_unreachable_msg("Process time source is unavailable");
-};
-
 $static var_(time_Proc_noop_ctx, Void) = cleared();
 let_(time_Proc_noop, time_Proc) = {
     .ctx = &time_Proc_noop_ctx,
@@ -52,7 +42,7 @@ let_(time_Proc_failing, time_Proc) = {
     .vtbl = &time_Proc_VTbl_failing,
 };
 
-fn_((time_Proc_direct(void))(time_E$time_Proc) $scope) {
+fn_((time_Proc_direct(void))(time_direct_E$time_Proc) $scope) {
     pp_if_(time_Proc_direct_supported)(
         pp_then_({
             $static var_(ctx, Void) $like_ref = cleared();
@@ -65,7 +55,7 @@ fn_((time_Proc_direct(void))(time_E$time_Proc) $scope) {
             }));
         }),
         pp_else_({
-            return_err(time_E_Unsupported());
+            return_err(time_direct_E_Unsupported());
         })
     );
 } $unscoped(fn);
@@ -139,6 +129,16 @@ cmp_fn_eqlCtx$((time_Proc_Inst)(lhs, rhs, ctx)) {
     return $ignore_void ctx, cmp_eql$(time_Proc_Inst)(lhs, rhs);
 };
 cmp_fn_neqCtx_default$((time_Proc_Inst)(lhs, rhs, ctx));
+
+fn_((time_Proc_VTbl_noNow(P$raw ctx))(time_Proc_Inst)) {
+    let_ignore = ctx;
+    return (time_Proc_Inst){ .raw = time_Inst_from(0, 0) };
+};
+
+fn_((time_Proc_VTbl_unreachableNow(P$raw ctx))(time_Proc_Inst)) {
+    let_ignore = ctx;
+    claim_unreachable_msg("Process time source is unavailable");
+};
 
 /*========== Direct Source Definitions ======================================*/
 

@@ -27,37 +27,17 @@ extern "C" {
 /* --- Interface VTable --- */
 
 /// Alctr vtable
-typedef struct mem_Alctr_VTbl {
-    fn_(((*const alloc)(P$raw ctx, usize len, mem_Align align))(O$P$u8));
-    fn_(((*const resize)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
-    fn_(((*const remap)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
-    fn_(((*const free)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
-} mem_Alctr_VTbl;
+T_alias$((mem_Alctr_VTbl)(struct mem_Alctr_VTbl));
 $extern let_(mem_Alctr_VTbl_noop, mem_Alctr_VTbl);
 $extern let_(mem_Alctr_VTbl_failing, mem_Alctr_VTbl);
-
-/// Default VTable functions for no-op fallbacks
-$extern fn_((mem_Alctr_VTbl_noAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
-/// Default VTable functions for no-op fallbacks
-$extern fn_((mem_Alctr_VTbl_noResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
-/// Default VTable functions for unreachable fallbacks
-$extern fn_((mem_Alctr_VTbl_unreachableResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
-/// Default VTable functions for no-op fallbacks
-$extern fn_((mem_Alctr_VTbl_noRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
-/// Default VTable functions for unreachable fallbacks
-$extern fn_((mem_Alctr_VTbl_unreachableRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
-/// Default VTable functions for no-op fallbacks
-$extern fn_((mem_Alctr_VTbl_noFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
-/// Default VTable functions for unreachable fallbacks
-$extern fn_((mem_Alctr_VTbl_unreachableFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 
 /* --- Interface Instance --- */
 
 /// Alctr instance
-typedef struct mem_Alctr {
+T_alias$((mem_Alctr)(struct mem_Alctr {
     var_(ctx, P$raw); /**< Context pointer */
     var_(vtbl, P_const$$(mem_Alctr_VTbl)); /**< Virtual table */
-} mem_Alctr;
+}));
 T_use_O$(mem_Alctr);
 T_use_E$($set(mem_E)(u_P$raw));
 T_use_E$($set(mem_E)(u_S$raw));
@@ -117,6 +97,28 @@ $attr($must_check)
 $extern fn_((mem_Alctr_dupe($traced mem_Alctr self, u_S_const$raw src))(mem_E$u_S$raw));
 #define T_use_mem_Alctr_dupe$(_T...) __comp_gen__T_use_mem_Alctr_dupe$(_T)
 
+struct mem_Alctr_VTbl {
+    fn_(((*const alloc)(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+    fn_(((*const resize)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+    fn_(((*const remap)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+    fn_(((*const free)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+};
+
+/// Default VTable functions for no-op fallbacks
+$extern fn_((mem_Alctr_VTbl_noAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+/// Default VTable functions for no-op fallbacks
+$extern fn_((mem_Alctr_VTbl_noResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+/// Default VTable functions for unreachable fallbacks
+$extern fn_((mem_Alctr_VTbl_unreachableResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+/// Default VTable functions for no-op fallbacks
+$extern fn_((mem_Alctr_VTbl_noRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+/// Default VTable functions for unreachable fallbacks
+$extern fn_((mem_Alctr_VTbl_unreachableRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+/// Default VTable functions for no-op fallbacks
+$extern fn_((mem_Alctr_VTbl_noFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+/// Default VTable functions for unreachable fallbacks
+$extern fn_((mem_Alctr_VTbl_unreachableFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+
 /*========== Macros and Definitions =========================================*/
 
 fn_((mem_Alctr_isValid(mem_Alctr self))(bool)) {
@@ -144,47 +146,47 @@ fn_((mem_Alctr_ensureValid(mem_Alctr self))(mem_Alctr)) {
 /* clang-format off */
 #define __comp_gen__T_use_mem_Alctr_create$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(mem_Alctr_create, _T)($traced mem_Alctr self))(E$($set(mem_E)(P$(_T)))) $scope) { \
+    $static fn_((tpl$(mem_Alctr_create, _T)($traced mem_Alctr self))(E$($set(mem_E)(P$(_T)))) $scope) { \
         return u_castE$((ReturnT)(mem_Alctr_create($tracing self, typeInfo$(_T)))); \
     } $unscoped(fn)
 #define __comp_gen__T_use_mem_Alctr_destroy$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_Alctr_destroy, _T)($traced mem_Alctr self, P$(_T) ptr))(void)) { \
+    $static fn_((tpl$(mem_Alctr_destroy, _T)($traced mem_Alctr self, P$(_T) ptr))(void)) { \
         return mem_Alctr_destroy($tracing self, u_anyP(ptr)); \
     }
 #define __comp_gen__T_use_mem_Alctr_clone$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(mem_Alctr_clone, _T)($traced mem_Alctr self, P_const$(_T) ptr))(E$($set(mem_E)(P$(_T)))) $scope) { \
+    $static fn_((tpl$(mem_Alctr_clone, _T)($traced mem_Alctr self, P_const$(_T) ptr))(E$($set(mem_E)(P$(_T)))) $scope) { \
         return u_castE$((ReturnT)(mem_Alctr_clone($tracing self, u_anyP(ptr)))); \
     } $unscoped(fn)
 #define __comp_gen__T_use_mem_Alctr_alloc$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(mem_Alctr_alloc, _T)($traced mem_Alctr self, usize count))(E$($set(mem_E)(S$(_T)))) $scope) { \
+    $static fn_((tpl$(mem_Alctr_alloc, _T)($traced mem_Alctr self, usize count))(E$($set(mem_E)(S$(_T)))) $scope) { \
         return u_castE$((ReturnT)(mem_Alctr_alloc($tracing self, typeInfo$(_T), count))); \
     } $unscoped(fn)
 #define __comp_gen__T_use_mem_Alctr_resize$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_Alctr_resize, _T)($traced mem_Alctr self, S$(_T) old_mem, usize new_len))(bool)) { \
+    $static fn_((tpl$(mem_Alctr_resize, _T)($traced mem_Alctr self, S$(_T) old_mem, usize new_len))(bool)) { \
         return mem_Alctr_resize($tracing self, u_anyS(old_mem), new_len); \
     }
 #define __comp_gen__T_use_mem_Alctr_remap$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_Alctr_remap, _T)($traced mem_Alctr self, S$(_T) old_mem, usize new_len))(O$(S$(_T))) $scope) { \
+    $static fn_((tpl$(mem_Alctr_remap, _T)($traced mem_Alctr self, S$(_T) old_mem, usize new_len))(O$(S$(_T))) $scope) { \
         return u_castO$((ReturnT)(mem_Alctr_remap($tracing self, u_anyS(old_mem), new_len))); \
     } $unscoped(fn)
 #define __comp_gen__T_use_mem_Alctr_realloc$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(mem_Alctr_realloc, _T)($traced mem_Alctr self, S$(_T) old_mem, usize new_len))(E$($set(mem_E)(S$(_T)))) $scope) { \
+    $static fn_((tpl$(mem_Alctr_realloc, _T)($traced mem_Alctr self, S$(_T) old_mem, usize new_len))(E$($set(mem_E)(S$(_T)))) $scope) { \
         return u_castE$((ReturnT)(mem_Alctr_realloc($tracing self, u_anyS(old_mem), new_len))); \
     } $unscoped(fn)
 #define __comp_gen__T_use_mem_Alctr_free$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_Alctr_free, _T)($traced mem_Alctr self, S$(_T) mem))(void)) { \
+    $static fn_((tpl$(mem_Alctr_free, _T)($traced mem_Alctr self, S$(_T) mem))(void)) { \
         return mem_Alctr_free($tracing self, u_anyS(mem)); \
     }
 #define __comp_gen__T_use_mem_Alctr_dupe$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(mem_Alctr_dupe, _T)($traced mem_Alctr self, S_const$(_T) src))(E$($set(mem_E)(S$(_T)))) $scope) { \
+    $static fn_((tpl$(mem_Alctr_dupe, _T)($traced mem_Alctr self, S_const$(_T) src))(E$($set(mem_E)(S$(_T)))) $scope) { \
         return u_castE$((ReturnT)(mem_Alctr_dupe($tracing self, u_anyS(src)))); \
     } $unscoped(fn)
 /* clang-format on */

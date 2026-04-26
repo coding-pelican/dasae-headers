@@ -1,0 +1,79 @@
+/**
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
+ * @license   MIT License - see LICENSE file for details
+ *
+ * @file    Buf.h
+ * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
+ * @date    2025-10-25 (date of creation)
+ * @updated 2026-02-06 (date of last update)
+ * @ingroup dal-project/da/io
+ * @prefix  io_Buf
+ */
+#ifndef io_Buf__included
+#define io_Buf__included 1
+#if defined(__cplusplus)
+extern "C" {
+#endif /* defined(__cplusplus) */
+
+/*========== Includes =======================================================*/
+
+#include "Reader.h"
+#include "Writer.h"
+
+/*========== Macros and Declarations ========================================*/
+
+/* --- Buffered Reader ---*/
+
+typedef struct io_Buf_Reader {
+    io_Reader inner;
+    S$u8 buf;
+    usize start;
+    usize end;
+} io_Buf_Reader;
+/// Initialize buffered reader with external buffer
+$extern fn_((io_Buf_Reader_init(io_Reader inner, S$u8 buf))(io_Buf_Reader));
+/// Fill buffer with more data from inner reader
+$attr($must_check)
+$extern fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(E$void));
+/// Peek at next byte without consuming (look-ahead)
+/// WARNING: Returns raw byte, NOT character or codepoint
+/// Use case: Protocol parsing (e.g., check if next byte is '{' for JSON)
+$attr($must_check)
+$extern fn_((io_Buf_Reader_peekByte(io_Buf_Reader* self))(E$u8));
+/// Read until delimiter byte (delimiter consumed, not included in output)
+/// WARNING: Operates on raw bytes, NOT character-aware
+/// Use case: ASCII protocols (CSV, HTTP headers, etc.)
+/// NOT for: UTF-8 text (may split multibyte characters)
+/// Returns number of bytes written to output
+$attr($must_check)
+$extern fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E$S$u8));
+/// Skip until delimiter byte (delimiter consumed)
+/// WARNING: Operates on raw bytes
+/// Use case: Skip to next section in ASCII protocol
+$attr($must_check)
+$extern fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(E$void));
+/// Skip n bytes
+$attr($must_check)
+$extern fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize n))(E$void));
+/// Get io_Reader interface
+$extern fn_((io_Buf_reader(io_Buf_Reader* self))(io_Reader));
+
+/* --- Buffered Writer ---*/
+
+typedef struct io_Buf_Writer {
+    io_Writer inner;
+    S$u8 buf;
+    usize used;
+} io_Buf_Writer;
+/// Initialize buffered writer with external buffer
+$extern fn_((io_Buf_Writer_init(io_Writer inner, S$u8 buf))(io_Buf_Writer));
+/// Flush buffered data to inner writer
+$attr($must_check)
+$extern fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(E$void));
+/// Get io_Writer interface
+$extern fn_((io_Buf_writer(io_Buf_Writer* self))(io_Writer));
+
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif /* defined(__cplusplus) */
+#endif /* io_Buf__included */

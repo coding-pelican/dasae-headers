@@ -250,14 +250,22 @@ fn_((HashMap_EqlFn_default(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) {
     return u_eql(lhs, rhs);
 };
 
-fn_((HashMap_Ctx_default(void))(P_const$HashMap_Ctx)) {
+fn_((HashMap_LoadRatio_default(void))(HashMap_LoadRatio)) {
+    return HashMap_LoadRatio_limit(HashMap_LoadRatio_default_max);
+};
+
+fn_((HashMap_Ctx_default(void))(HashMap_Ctx)) {
     $static let_(default_ctx_inner, Void) = {};
     $static let_(default_ctx, HashMap_Ctx) = {
         .inner = u_anyP(&default_ctx_inner),
         .hashFn = HashMap_HashFn_default,
         .eqlFn = HashMap_EqlFn_default,
+        .load_ratio = cleared(),
     };
-    return &default_ctx;
+    return HashMap_Ctx_ensureValid(
+        with_((default_ctx)((.load_ratio)(
+            HashMap_LoadRatio_default()
+        ))));
 };
 
 $static fn_((HashMap__header(HashMap self))(HashMap_Header*)) {
@@ -289,8 +297,8 @@ $static fn_((HashMap__metadataAt(HashMap self, usize idx))(HashMap_Ctrl*)) {
 //     return as$(u64)(size) * 100 < as$(u64)(HashMap_default_max_load_ratio) * as$(u64)(cap);
 // };
 
-$static fn_((HashMap__capForSize(u32 size))(u32)) {
-    var_(new_cap, u64) = (as$(u64)(size) * 100) / HashMap_default_max_load_ratio + 1;
+$static fn_((HashMap__capForSize(HashMap_LoadRatio load_ratio, u32 size))(u32)) {
+    var_(new_cap, u64) = (as$(u64)(size) * 100) / HashMap_LoadRatio_max(load_ratio) + 1;
     // Round up to power of 2
     new_cap--;
     new_cap |= new_cap >> 1;
@@ -501,7 +509,7 @@ $static fn_((HashMap__grow(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_
     var_(new_map, HashMap) = HashMap_empty(key_ty, val_ty, self->ctx);
     try_(HashMap__alloc(&new_map, key_ty, val_ty, gpa, new_cap));
     HashMap__initMetadata(&new_map);
-    new_map.available = (new_cap * HashMap_default_max_load_ratio) / 100;
+    new_map.available = (new_cap * HashMap_LoadRatio_max(self->ctx->load_ratio)) / 100;
 
     if (self->size != 0) {
         let old_cap = HashMap_cap(*self);
@@ -522,8 +530,8 @@ $static fn_((HashMap__grow(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_
 
 $static fn_((HashMap__growIfNeeded(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa, u32 new_count))(mem_E$void) $scope) {
     if (new_count > self->available) {
-        let load = (HashMap_cap(*self) * HashMap_default_max_load_ratio) / 100 - self->available;
-        try_(HashMap__grow(self, key_ty, val_ty, gpa, HashMap__capForSize(load + new_count)));
+        let load = (HashMap_cap(*self) * HashMap_LoadRatio_max(self->ctx->load_ratio)) / 100 - self->available;
+        try_(HashMap__grow(self, key_ty, val_ty, gpa, HashMap__capForSize(self->ctx->load_ratio, load + new_count)));
     }
     return_ok({});
 } $unscoped(fn);
@@ -549,10 +557,10 @@ fn_((HashMap_init(
     claim_assert_nonnull(ctx);
     var map = HashMap_empty(key_ty, val_ty, ctx);
     if (cap > 0) {
-        let actual_cap = pri_max(HashMap__capForSize(cap), HashMap_default_min_cap);
+        let actual_cap = pri_max(HashMap__capForSize(ctx->load_ratio, cap), HashMap_default_min_cap);
         try_(HashMap__alloc(&map, key_ty, val_ty, gpa, actual_cap));
         HashMap__initMetadata(&map);
-        map.available = (actual_cap * HashMap_default_max_load_ratio) / 100;
+        map.available = (actual_cap * HashMap_LoadRatio_max(ctx->load_ratio)) / 100;
     }
     return_ok(map);
 } $unscoped(fn);
@@ -583,10 +591,10 @@ fn_((HashMap_cloneWithCtx(
         return_ok(other);
     }
 
-    let new_cap = HashMap__capForSize(self.size);
+    let new_cap = HashMap__capForSize(ctx->load_ratio, self.size);
     try_(HashMap__alloc(&other, key_ty, val_ty, gpa, new_cap));
     HashMap__initMetadata(&other);
-    other.available = (new_cap * HashMap_default_max_load_ratio) / 100;
+    other.available = (new_cap * HashMap_LoadRatio_max(ctx->load_ratio)) / 100;
 
     let cap = HashMap_cap(self);
     for_(($r(0, cap))(i)) {
@@ -637,7 +645,7 @@ fn_((HashMap_clearRetainingCap(HashMap* self))(void)) {
     if_none(self->metadata) { return; }
     HashMap__initMetadata(self);
     self->size = 0;
-    self->available = (HashMap_cap(*self) * HashMap_default_max_load_ratio) / 100;
+    self->available = (HashMap_cap(*self) * HashMap_LoadRatio_max(self->ctx->load_ratio)) / 100;
 };
 
 fn_((HashMap_clearAndFree(

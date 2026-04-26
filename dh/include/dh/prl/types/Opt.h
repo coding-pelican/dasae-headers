@@ -23,7 +23,7 @@ extern "C" {
         var_(as_raw $like_ref, O$raw); \
     })
 /* Optional Alias */
-#define O$(_T...) pp_join($, O, _T)
+#define O$(_T...) tpl$(O, _T)
 /* Optional Template */
 #define T_decl_O$(_T...) \
     $maybe_unused typedef union O$(_T) O$(_T)

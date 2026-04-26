@@ -143,7 +143,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
         }; \
         var_(as_raw, ArrPDeq) $like_ref; \
     }
-#define __comp_alias__ArrPDeq$(_T...) pp_join($, ArrPDeq, _T)
+#define __comp_alias__ArrPDeq$(_T...) tpl$(ArrPDeq, _T)
 #define __comp_gen__T_decl_ArrPDeq$(_T...) \
     $maybe_unused typedef union ArrPDeq$(_T) ArrPDeq$(_T); \
     T_decl_O$(ArrPDeq$(_T)); \
@@ -169,182 +169,182 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
 /* clang-format off */
 #define T_use_ArrPDeq_empty$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_empty, _T)(P_const$ArrPDeq_Ctx ctx))(ArrPDeq$(_T))) { \
+    $static fn_((tpl$(ArrPDeq_empty, _T)(P_const$ArrPDeq_Ctx ctx))(ArrPDeq$(_T))) { \
         return type$((ArrPDeq$(_T))(ArrPDeq_empty(typeInfo$(_T), ctx))); \
     }
 #define T_use_ArrPDeq_fixed$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_fixed, _T)(S$(_T) buf, P_const$ArrPDeq_Ctx ctx))(ArrPDeq$(_T))) { \
+    $static fn_((tpl$(ArrPDeq_fixed, _T)(S$(_T) buf, P_const$ArrPDeq_Ctx ctx))(ArrPDeq$(_T))) { \
         return type$((ArrPDeq$(_T))(ArrPDeq_fixed(u_anyS(buf), ctx))); \
     }
 #define T_use_ArrPDeq_init$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_init, _T)(mem_Alctr gpa, usize cap, P_const$ArrPDeq_Ctx ctx))(E$($set(mem_E)(ArrPDeq$(_T)))) $scope) { \
+    $static fn_((tpl$(ArrPDeq_init, _T)(mem_Alctr gpa, usize cap, P_const$ArrPDeq_Ctx ctx))(E$($set(mem_E)(ArrPDeq$(_T)))) $scope) { \
         return_(typeE$((ReturnType)(ArrPDeq_init(typeInfo$(_T), gpa, cap, ctx)))); \
     } $unscoped(fn)
 #define T_use_ArrPDeq_fini$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_fini, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa))(void)) { \
+    $static fn_((tpl$(ArrPDeq_fini, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa))(void)) { \
         return ArrPDeq_fini(self->as_raw, typeInfo$(_T), gpa); \
     }
 
 #define T_use_ArrPDeq_len$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_len, _T)(ArrPDeq$(_T) self))(usize)) { \
+    $static fn_((tpl$(ArrPDeq_len, _T)(ArrPDeq$(_T) self))(usize)) { \
         return ArrPDeq_len(*self.as_raw); \
     }
 #define T_use_ArrPDeq_cap$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_cap, _T)(ArrPDeq$(_T) self))(usize)) { \
+    $static fn_((tpl$(ArrPDeq_cap, _T)(ArrPDeq$(_T) self))(usize)) { \
         return ArrPDeq_cap(*self.as_raw); \
     }
 #define T_use_ArrPDeq_peekMin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_peekMin, _T)(ArrPDeq$(_T) self))(O$(P_const$(_T)))) { \
+    $static fn_((tpl$(ArrPDeq_peekMin, _T)(ArrPDeq$(_T) self))(O$(P_const$(_T)))) { \
         return u_castO$((O$(P_const$(_T)))(ArrPDeq_peekMin(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_peekMinMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_peekMinMut, _T)(ArrPDeq$(_T) self))(O$(P$(_T)))) { \
+    $static fn_((tpl$(ArrPDeq_peekMinMut, _T)(ArrPDeq$(_T) self))(O$(P$(_T)))) { \
         return u_castO$((O$(P$(_T)))(ArrPDeq_peekMinMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_peekMax$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_peekMax, _T)(ArrPDeq$(_T) self))(O$(P_const$(_T)))) { \
+    $static fn_((tpl$(ArrPDeq_peekMax, _T)(ArrPDeq$(_T) self))(O$(P_const$(_T)))) { \
         return u_castO$((O$(P_const$(_T)))(ArrPDeq_peekMax(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_peekMaxMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_peekMaxMut, _T)(ArrPDeq$(_T) self))(O$(P$(_T)))) { \
+    $static fn_((tpl$(ArrPDeq_peekMaxMut, _T)(ArrPDeq$(_T) self))(O$(P$(_T)))) { \
         return u_castO$((O$(P$(_T)))(ArrPDeq_peekMaxMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_at$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_at, _T)(ArrPDeq$(_T) self, usize idx))(const _T*)) { \
+    $static fn_((tpl$(ArrPDeq_at, _T)(ArrPDeq$(_T) self, usize idx))(const _T*)) { \
         return u_castP$((const _T*)(ArrPDeq_at(*self.as_raw, typeInfo$(_T), idx))); \
     }
 #define T_use_ArrPDeq_atMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_atMut, _T)(ArrPDeq$(_T) self, usize idx))(_T*)) { \
+    $static fn_((tpl$(ArrPDeq_atMut, _T)(ArrPDeq$(_T) self, usize idx))(_T*)) { \
         return u_castP$((_T*)(ArrPDeq_atMut(*self.as_raw, typeInfo$(_T), idx))); \
     }
 #define T_use_ArrPDeq_items$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_items, _T)(ArrPDeq$(_T) self))(S$(const _T))) { \
+    $static fn_((tpl$(ArrPDeq_items, _T)(ArrPDeq$(_T) self))(S$(const _T))) { \
         return u_castS$((S$(const _T))(ArrPDeq_items(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_itemsMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_itemsMut, _T)(ArrPDeq$(_T) self))(S$(_T))) { \
+    $static fn_((tpl$(ArrPDeq_itemsMut, _T)(ArrPDeq$(_T) self))(S$(_T))) { \
         return u_castS$((S$(_T))(ArrPDeq_itemsMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_itemsCapped$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_itemsCapped, _T)(ArrPDeq$(_T) self))(S$(const _T))) { \
+    $static fn_((tpl$(ArrPDeq_itemsCapped, _T)(ArrPDeq$(_T) self))(S$(const _T))) { \
         return u_castS$((S$(const _T))(ArrPDeq_itemsCapped(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_itemsCappedMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_itemsCappedMut, _T)(ArrPDeq$(_T) self))(S$(_T))) { \
+    $static fn_((tpl$(ArrPDeq_itemsCappedMut, _T)(ArrPDeq$(_T) self))(S$(_T))) { \
         return u_castS$((S$(_T))(ArrPDeq_itemsCappedMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_itemsUnused$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_itemsUnused, _T)(ArrPDeq$(_T) self))(S$(const _T))) { \
+    $static fn_((tpl$(ArrPDeq_itemsUnused, _T)(ArrPDeq$(_T) self))(S$(const _T))) { \
         return u_castS$((S$(const _T))(ArrPDeq_itemsUnused(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_itemsUnusedMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_itemsUnusedMut, _T)(ArrPDeq$(_T) self))(S$(_T))) { \
+    $static fn_((tpl$(ArrPDeq_itemsUnusedMut, _T)(ArrPDeq$(_T) self))(S$(_T))) { \
         return u_castS$((S$(_T))(ArrPDeq_itemsUnusedMut(*self.as_raw, typeInfo$(_T)))); \
     }
 
 #define T_use_ArrPDeq_ensureCap$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_ensureCap, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
+    $static fn_((tpl$(ArrPDeq_ensureCap, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
         return ArrPDeq_ensureCap(self->as_raw, typeInfo$(_T), gpa, new_cap); \
     }
 #define T_use_ArrPDeq_ensureCapPrecise$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_ensureCapPrecise, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
+    $static fn_((tpl$(ArrPDeq_ensureCapPrecise, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
         return ArrPDeq_ensureCapPrecise(self->as_raw, typeInfo$(_T), gpa, new_cap); \
     }
 #define T_use_ArrPDeq_ensureUnusedCap$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_ensureUnusedCap, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize additional))(mem_E$void)) { \
+    $static fn_((tpl$(ArrPDeq_ensureUnusedCap, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize additional))(mem_E$void)) { \
         return ArrPDeq_ensureUnusedCap(self->as_raw, typeInfo$(_T), gpa, additional); \
     }
 #define T_use_ArrPDeq_shrinkRetainingCap$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_shrinkRetainingCap, _T)(P$$(ArrPDeq$(_T)) self, usize new_len))(void)) { \
+    $static fn_((tpl$(ArrPDeq_shrinkRetainingCap, _T)(P$$(ArrPDeq$(_T)) self, usize new_len))(void)) { \
         return ArrPDeq_shrinkRetainingCap(self->as_raw, new_len); \
     }
 #define T_use_ArrPDeq_shrinkAndFree$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_shrinkAndFree, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize new_len))(void)) { \
+    $static fn_((tpl$(ArrPDeq_shrinkAndFree, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, usize new_len))(void)) { \
         return ArrPDeq_shrinkAndFree(self->as_raw, typeInfo$(_T), gpa, new_len); \
     }
 #define T_use_ArrPDeq_clearRetainingCap$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_clearRetainingCap, _T)(P$$(ArrPDeq$(_T)) self))(void)) { \
+    $static fn_((tpl$(ArrPDeq_clearRetainingCap, _T)(P$$(ArrPDeq$(_T)) self))(void)) { \
         return ArrPDeq_clearRetainingCap(self->as_raw); \
     }
 #define T_use_ArrPDeq_clearAndFree$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_clearAndFree, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa))(void)) { \
+    $static fn_((tpl$(ArrPDeq_clearAndFree, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa))(void)) { \
         return ArrPDeq_clearAndFree(self->as_raw, typeInfo$(_T), gpa); \
     }
 
 #define T_use_ArrPDeq_enque$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_enque, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, _T item))(mem_E$void)) { \
+    $static fn_((tpl$(ArrPDeq_enque, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, _T item))(mem_E$void)) { \
         return ArrPDeq_enque(self->as_raw, gpa, u_anyV(item)); \
     }
 #define T_use_ArrPDeq_enqueFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_enqueFixed, _T)(P$$(ArrPDeq$(_T)) self, _T item))(mem_E$void)) { \
+    $static fn_((tpl$(ArrPDeq_enqueFixed, _T)(P$$(ArrPDeq$(_T)) self, _T item))(mem_E$void)) { \
         return ArrPDeq_enqueFixed(self->as_raw, u_anyV(item)); \
     }
 #define T_use_ArrPDeq_enqueWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_enqueWithin, _T)(P$$(ArrPDeq$(_T)) self, _T item))(void)) { \
+    $static fn_((tpl$(ArrPDeq_enqueWithin, _T)(P$$(ArrPDeq$(_T)) self, _T item))(void)) { \
         return ArrPDeq_enqueWithin(self->as_raw, u_anyV(item)); \
     }
 #define T_use_ArrPDeq_enqueS$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_enqueS, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, S_const$(_T) items))(mem_E$void)) { \
+    $static fn_((tpl$(ArrPDeq_enqueS, _T)(P$$(ArrPDeq$(_T)) self, mem_Alctr gpa, S_const$(_T) items))(mem_E$void)) { \
         return ArrPDeq_enqueS(self->as_raw, gpa, u_anyS(items)); \
     }
 #define T_use_ArrPDeq_enqueSFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_enqueSFixed, _T)(P$$(ArrPDeq$(_T)) self, S_const$(_T) items))(mem_E$void)) { \
+    $static fn_((tpl$(ArrPDeq_enqueSFixed, _T)(P$$(ArrPDeq$(_T)) self, S_const$(_T) items))(mem_E$void)) { \
         return ArrPDeq_enqueSFixed(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrPDeq_enqueSWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_enqueSWithin, _T)(P$$(ArrPDeq$(_T)) self, S_const$(_T) items))(void)) { \
+    $static fn_((tpl$(ArrPDeq_enqueSWithin, _T)(P$$(ArrPDeq$(_T)) self, S_const$(_T) items))(void)) { \
         return ArrPDeq_enqueSWithin(self->as_raw, u_anyS(items)); \
     }
 
 #define T_use_ArrPDeq_dequeMin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_dequeMin, _T)(P$$(ArrPDeq$(_T)) self))(O$(_T)) $scope) { \
+    $static fn_((tpl$(ArrPDeq_dequeMin, _T)(P$$(ArrPDeq$(_T)) self))(O$(_T)) $scope) { \
         return_(u_castO$((ReturnType)(ArrPDeq_dequeMin(self->as_raw, u_retV$(_T))))); \
     } $unscoped(fn)
 #define T_use_ArrPDeq_dequeMax$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_dequeMax, _T)(P$$(ArrPDeq$(_T)) self))(O$(_T)) $scope) { \
+    $static fn_((tpl$(ArrPDeq_dequeMax, _T)(P$$(ArrPDeq$(_T)) self))(O$(_T)) $scope) { \
         return_(u_castO$((ReturnType)(ArrPDeq_dequeMax(self->as_raw, u_retV$(_T))))); \
     } $unscoped(fn)
 #define T_use_ArrPDeq_removeAt$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_removeAt, _T)(P$$(ArrPDeq$(_T)) self, usize idx))(_T)) { \
+    $static fn_((tpl$(ArrPDeq_removeAt, _T)(P$$(ArrPDeq$(_T)) self, usize idx))(_T)) { \
         return u_cast((_T)(ArrPDeq_removeAt(self->as_raw, idx, u_retV$(_T)))); \
     }
 
 #define T_use_ArrPDeq_update$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrPDeq_update, _T)(P$$(ArrPDeq$(_T)) self, _T old_item, _T new_item))(mem_E$void)) { \
+    $static fn_((tpl$(ArrPDeq_update, _T)(P$$(ArrPDeq$(_T)) self, _T old_item, _T new_item))(mem_E$void)) { \
         return ArrPDeq_update(self->as_raw, u_anyV(old_item), u_anyV(new_item)); \
     }
 /* clang-format on */
@@ -358,7 +358,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
         }; \
         var_(as_raw, ArrPDeq_Iter) $like_ref; \
     }
-#define __comp_alias__ArrPDeq_Iter$(_T...) pp_join($, ArrPDeq_Iter, _T)
+#define __comp_alias__ArrPDeq_Iter$(_T...) tpl$(ArrPDeq_Iter, _T)
 #define __comp_gen__T_decl_ArrPDeq_Iter$(_T...) \
     $maybe_unused typedef union ArrPDeq_Iter$(_T) ArrPDeq_Iter$(_T)
 #define __comp_gen__T_impl_ArrPDeq_Iter$(_T...) \
@@ -377,17 +377,17 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
 /* clang-format off */
 #define T_use_ArrPDeq_iter$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_iter, _T)(P_const$$(ArrPDeq$(_T)) self))(ArrPDeq_Iter$(_T))) { \
+    $static fn_((tpl$(ArrPDeq_iter, _T)(P_const$$(ArrPDeq$(_T)) self))(ArrPDeq_Iter$(_T))) { \
         return type$((ArrPDeq_Iter$(_T))(ArrPDeq_iter(self->as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_Iter_next$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_Iter_next, _T)(P$$(ArrPDeq_Iter$(_T)) self))(O$(P_const$(_T)))) { \
+    $static fn_((tpl$(ArrPDeq_Iter_next, _T)(P$$(ArrPDeq_Iter$(_T)) self))(O$(P_const$(_T)))) { \
         return u_castO$((O$(P_const$(_T)))(ArrPDeq_Iter_next(self->as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrPDeq_Iter_nextMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrPDeq_Iter_nextMut, _T)(P$$(ArrPDeq_Iter$(_T)) self))(O$(P$(_T)))) { \
+    $static fn_((tpl$(ArrPDeq_Iter_nextMut, _T)(P$$(ArrPDeq_Iter$(_T)) self))(O$(P$(_T)))) { \
         return u_castO$((O$(P$(_T)))(ArrPDeq_Iter_nextMut(self->as_raw, typeInfo$(_T)))); \
     }
 /* clang-format on */

@@ -44,7 +44,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let sched = Sched_coop(&loop);
     let_(sys, Sys) = {
         .time = time_Awake_evented(&loop),
-        .io = io_direct(),
+        .io = try_(io_direct()),
     };
     var total = 0.0;
     blk_defer_({

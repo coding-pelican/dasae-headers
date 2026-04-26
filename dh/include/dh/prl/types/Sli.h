@@ -40,8 +40,8 @@ extern "C" {
     pp_Tok_then_(__S_const$(Tok_removeConst$(_T))), \
     pp_Tok_else_(__S$(_T)) \
 )
-#define __S_const$(_T...) pp_join($, S_const, _T)
-#define __S$(_T...) pp_join($, S, _T)
+#define __S_const$(_T...) tpl$(S_const, _T)
+#define __S$(_T...) tpl$(S, _T)
 
 /* Slice Template */
 #define T_decl_S$(_T...) \

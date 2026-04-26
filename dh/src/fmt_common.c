@@ -270,7 +270,7 @@ fn_((fmt_formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) {
         claim_unreachable;
     }
     // Convert to string (reverse order)
-    if (pri_isZero(val)) {
+    if (isZero(val)) {
         *A_at((buf)[pos--]) = u8_c('0');
     } else {
         while (val > 0) { /* NOLINT */
@@ -413,7 +413,7 @@ fn_((fmt_formatPtr(io_Writer writer, P_const$raw ptr, fmt_Spec spec))(E$void)) {
                    : u8_l("0123456789abcdef");
     // Convert pointer to usize and format as hex
     var ptr_val = ptrToInt(ptr);
-    let is_zero = pri_isZero(ptr_val);
+    let is_zero = isZero(ptr_val);
     if (is_zero) {
         *A_at((buf)[pos++]) = u8_c('0');
     } else {

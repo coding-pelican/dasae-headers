@@ -18,7 +18,7 @@ extern "C" {
         var_(ref_raw $like_ref, A$raw); \
     }
 /* Array Alias */
-#define A$(_N, _T...) pp_join3($, A, _N, _T)
+#define A$(_N, _T...) tpl$(A, _N, _T)
 /* Array Template */
 #define T_decl_A$(_N, _T...) \
     $maybe_unused typedef union A$(_N, _T) A$(_N, _T)

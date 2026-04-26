@@ -104,7 +104,7 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
         var_(as_raw, ListSgl_Link) $like_ref; \
     }
 #define __comp_alias__ListSgl_Link$(_T...) \
-    pp_join($, ListSgl_Link, _T)
+    tpl$(ListSgl_Link, _T)
 #define __comp_gen__T_decl_ListSgl_Link$(_T...) \
     $maybe_unused typedef union ListSgl_Link$(_T) ListSgl_Link$(_T); \
     T_use_P$(ListSgl_Link$(_T)); \
@@ -125,53 +125,53 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
 /* clang-format off */
 #define T_use_ListSgl_Link_empty$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_empty, _T)(void))(ListSgl_Link$(_T))) { \
+    $static fn_((tpl$(ListSgl_Link_empty, _T)(void))(ListSgl_Link$(_T))) { \
         return type$((ListSgl_Link$(_T))(ListSgl_Link_empty(typeInfo$(_T)))); \
     }
 #define T_use_ListSgl_Link_insertNext$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_insertNext, _T)(P$(ListSgl_Link$(_T)) self, P$(ListSgl_Link$(_T)) after))(void)) { \
+    $static fn_((tpl$(ListSgl_Link_insertNext, _T)(P$(ListSgl_Link$(_T)) self, P$(ListSgl_Link$(_T)) after))(void)) { \
         return ListSgl_Link_insertNext(self->as_raw, after->as_raw); \
     }
 #define T_use_ListSgl_Link_removeNext$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_removeNext, _T)(P$(ListSgl_Link$(_T)) self))(O$(P$(ListSgl_Link$(_T))))) { \
+    $static fn_((tpl$(ListSgl_Link_removeNext, _T)(P$(ListSgl_Link$(_T)) self))(O$(P$(ListSgl_Link$(_T))))) { \
         return typeO$((O$(P$(ListSgl_Link$(_T))))(ListSgl_Link_removeNext(self->as_raw))); \
     }
 #define T_use_ListSgl_Link_findLast$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_findLast, _T)(P$(ListSgl_Link$(_T)) self))(P$(ListSgl_Link$(_T)))) { \
+    $static fn_((tpl$(ListSgl_Link_findLast, _T)(P$(ListSgl_Link$(_T)) self))(P$(ListSgl_Link$(_T)))) { \
         return as$(P$(ListSgl_Link$(_T)))(ListSgl_Link_findLast(self->as_raw)); \
     }
 #define T_use_ListSgl_Link_countChildren$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_countChildren, _T)(P_const$(ListSgl_Link$(_T)) self))(usize)) { \
+    $static fn_((tpl$(ListSgl_Link_countChildren, _T)(P_const$(ListSgl_Link$(_T)) self))(usize)) { \
         return ListSgl_Link_countChildren(self->as_raw); \
     }
 #define T_use_ListSgl_Link_reverse$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_reverse, _T)(O$(P$(ListSgl_Link$(_T)))* indirect))(void)) { \
+    $static fn_((tpl$(ListSgl_Link_reverse, _T)(O$(P$(ListSgl_Link$(_T)))* indirect))(void)) { \
         return ListSgl_Link_reverse(as$(O$P$ListSgl_Link*)(indirect)); \
     }
 
 #define T_use_ListSgl_Link_adp$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_adp, _T)(P_const$(ListSgl_Link$(_T)) self))(const ListSgl_Adp$(_T)*)) { \
+    $static fn_((tpl$(ListSgl_Link_adp, _T)(P_const$(ListSgl_Link$(_T)) self))(const ListSgl_Adp$(_T)*)) { \
         return as$(const ListSgl_Adp$(_T)*)(ListSgl_Link_adp(self->as_raw)); \
     }
 #define T_use_ListSgl_Link_adpMut$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_adpMut, _T)(P$(ListSgl_Link$(_T)) self))(ListSgl_Adp$(_T)*)) { \
+    $static fn_((tpl$(ListSgl_Link_adpMut, _T)(P$(ListSgl_Link$(_T)) self))(ListSgl_Adp$(_T)*)) { \
         return as$(ListSgl_Adp$(_T)*)(ListSgl_Link_adpMut(self->as_raw)); \
     }
 #define T_use_ListSgl_Link_data$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_data, _T)(P_const$(ListSgl_Link$(_T)) self))(const _T*)) { \
+    $static fn_((tpl$(ListSgl_Link_data, _T)(P_const$(ListSgl_Link$(_T)) self))(const _T*)) { \
         return u_castP$((const _T*)(ListSgl_Link_data(self->as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ListSgl_Link_dataMut$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Link_dataMut, _T)(P$(ListSgl_Link$(_T)) self))(_T*)) { \
+    $static fn_((tpl$(ListSgl_Link_dataMut, _T)(P$(ListSgl_Link$(_T)) self))(_T*)) { \
         return u_castP$((_T*)(ListSgl_Link_dataMut(self->as_raw, typeInfo$(_T)))); \
     }
 /* clang-format on */
@@ -188,7 +188,7 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
         var_(as_raw, ListSgl_Adp$raw) $like_ref; \
     }
 #define __comp_alias__ListSgl_Adp$(_T) \
-    pp_join($, ListSgl_Adp, _T)
+    tpl$(ListSgl_Adp, _T)
 #define __comp_gen__T_decl_ListSgl_Adp$(_T) \
     $maybe_unused typedef union ListSgl_Adp$(_T) ListSgl_Adp$(_T)
 #define __comp_gen__T_impl_ListSgl_Adp$(_T) \
@@ -209,22 +209,22 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
 /* clang-format off */
 #define T_use_ListSgl_Adp_empty$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Adp_empty, _T)(void))(ListSgl_Adp$(_T))) { \
+    $static fn_((tpl$(ListSgl_Adp_empty, _T)(void))(ListSgl_Adp$(_T))) { \
         return *as$(ListSgl_Adp$(_T)*)(ListSgl_Adp_empty(typeInfo$(_T), l0$((ListSgl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListSgl_Adp_init$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Adp_init, _T)(_T data))(ListSgl_Adp$(_T))) { \
+    $static fn_((tpl$(ListSgl_Adp_init, _T)(_T data))(ListSgl_Adp$(_T))) { \
         return *as$(ListSgl_Adp$(_T)*)(ListSgl_Adp_init(u_anyV(data), l0$((ListSgl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListSgl_Adp_data$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Adp_data, _T)(const ListSgl_Adp$(_T)* self))(const _T*)) { \
+    $static fn_((tpl$(ListSgl_Adp_data, _T)(const ListSgl_Adp$(_T)* self))(const _T*)) { \
         return u_castP$((const _T*)(ListSgl_Adp_data(self->as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ListSgl_Adp_dataMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_Adp_dataMut, _T)(ListSgl_Adp$(_T)* self))(_T*)) { \
+    $static fn_((tpl$(ListSgl_Adp_dataMut, _T)(ListSgl_Adp$(_T)* self))(_T*)) { \
         return u_castP$((_T*)(ListSgl_Adp_dataMut(self->as_raw, typeInfo$(_T)))); \
     }
 /* clang-format on */
@@ -238,7 +238,7 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
         var_(as_raw, ListSgl) $like_ref; \
     }
 #define __comp_alias__ListSgl$(_T...) \
-    pp_join($, ListSgl, _T)
+    tpl$(ListSgl, _T)
 #define __comp_gen__T_decl_ListSgl$(_T...) \
     $maybe_unused typedef union ListSgl$(_T) ListSgl$(_T)
 #define __comp_gen__T_impl_ListSgl$(_T) \
@@ -256,27 +256,27 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
 /* clang-format off */
 #define T_use_ListSgl_empty$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_empty, _T)(void))(ListSgl$(_T))) { \
+    $static fn_((tpl$(ListSgl_empty, _T)(void))(ListSgl$(_T))) { \
         return type$((ListSgl$(_T))(ListSgl_empty(typeInfo$(_T)))); \
     }
 #define T_use_ListSgl_prepend$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_prepend, _T)(ListSgl$(_T)* self, P$(ListSgl_Link$(_T)) before))(void)) { \
+    $static fn_((tpl$(ListSgl_prepend, _T)(ListSgl$(_T)* self, P$(ListSgl_Link$(_T)) before))(void)) { \
         return ListSgl_prepend(self->as_raw, before->as_raw); \
     }
 #define T_use_ListSgl_remove$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_remove, _T)(ListSgl$(_T)* self, P$(ListSgl_Link$(_T)) link))(void)) { \
+    $static fn_((tpl$(ListSgl_remove, _T)(ListSgl$(_T)* self, P$(ListSgl_Link$(_T)) link))(void)) { \
         return ListSgl_remove(self->as_raw, link->as_raw); \
     }
 #define T_use_ListSgl_shift$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_shift, _T)(ListSgl$(_T)* self))(O$(P$(ListSgl_Link$(_T))))) { \
+    $static fn_((tpl$(ListSgl_shift, _T)(ListSgl$(_T)* self))(O$(P$(ListSgl_Link$(_T))))) { \
         return typeO$((O$(P$(ListSgl_Link$(_T))))(ListSgl_shift(self->as_raw))); \
     }
 #define T_use_ListSgl_len$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListSgl_len, _T)(const ListSgl$(_T)* self))(usize)) { \
+    $static fn_((tpl$(ListSgl_len, _T)(const ListSgl$(_T)* self))(usize)) { \
         return ListSgl_len(self->as_raw); \
     }
 /* clang-format on */

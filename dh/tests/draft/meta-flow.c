@@ -121,7 +121,7 @@ T_alias$((u_S$T)(union u_S$T {
         }); \
         var_(as_raw, u_T) $like_ref; \
     }
-#define __alias__u_T$(_T$raw...) tpl_id$T(u_T, _T$raw)
+#define __alias__u_T$(_T$raw...) tpl$(u_T, _T$raw)
 #define __stmt__T_decl_u_T$(_T$raw...) \
     T_alias$((u_T$(_T$raw))(union u_T$(_T$raw)))
 #define __stmt__T_impl_u_T$(_T$raw...) \
@@ -144,7 +144,7 @@ T_alias$((u_S$T)(union u_S$T {
         }); \
         var_(as_raw, u_NT) $like_ref; \
     }
-#define __alias__u_NT$(_NT$raw...) tpl_id$T(u_NT, _NT$raw)
+#define __alias__u_NT$(_NT$raw...) tpl$(u_NT, _NT$raw)
 #define __stmt__T_decl_u_NT$(_NT$raw...) \
     T_alias$((u_NT$(_NT$raw))(union u_NT$(_NT$raw)))
 #define __stmt__T_impl_u_NT$(_NT$raw...) \
@@ -357,7 +357,8 @@ fn_((max(u_S_const$raw items, old_cmp_LessFn cmpFn, u_V$T ret))(u_V$T)) {
         if (cmpFn(u_castV$((u_V$T)(item)), u_castV$((u_V$T)(best))) == cmp_Ord_gt) {
             best = item;
         }
-    });
+    })
+        ;
     return u_memcpy(ret.ref, best), ret;
 }
 
@@ -395,6 +396,7 @@ $static fn_((min(u_S_const$T items, cmp_LessFn cmpFn, u_V$T ret))(u_V$T)) {
         if (cmpFn(u_copyT(best), u_loadT(item)) == cmp_Ord_lt) {
             u_storeT(u_refT(best), u_loadT(item));
         }
-    });
+    })
+        ;
     return u_V_store(ret, best);
 };

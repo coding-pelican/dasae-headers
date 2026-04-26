@@ -19,24 +19,15 @@ extern "C" {
 #define __bool__time_Awake_direct_supported pp_false
 #endif
 
-T_alias$((time_Awake_VTbl)(struct time_Awake_VTbl {
-    fn_(((*nowFn)(P$raw ctx))(time_Awake_Inst));
-    $attr($must_check)
-    fn_(((*sleepFn)(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
-}));
+T_alias$((time_Awake_VTbl)(struct time_Awake_VTbl));
 $extern let_(time_Awake_VTbl_noop, time_Awake_VTbl);
 $extern let_(time_Awake_VTbl_failing, time_Awake_VTbl);
-
-$extern fn_((time_Awake_VTbl_noNow(P$raw ctx))(time_Awake_Inst));
-$extern fn_((time_Awake_VTbl_unreachableNow(P$raw ctx))(time_Awake_Inst));
-$attr($must_check)
-$extern fn_((time_Awake_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
 struct time_Awake {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(time_Awake_VTbl));
 };
-T_impl_E$($set(time_E)(time_Awake));
+T_impl_E$($set(time_direct_E)(time_Awake));
 $extern let_(time_Awake_noop, time_Awake);
 $extern let_(time_Awake_failing, time_Awake);
 
@@ -60,7 +51,7 @@ $attr($must_check)
 $extern fn_((time_Awake_sleepNanos(time_Awake self, u32 nanos))(Sched_Cancelable$void));
 
 $attr($must_check)
-$extern fn_((time_Awake_direct(void))(time_E$time_Awake));
+$extern fn_((time_Awake_direct(void))(time_direct_E$time_Awake));
 $extern fn_((time_Awake_evented(exec_Coop* coop))(time_Awake));
 
 struct time_Awake_Inst {
@@ -96,6 +87,16 @@ $extern cmp_fn_eql$((time_Awake_Inst)(lhs, rhs));
 $extern cmp_fn_neq$((time_Awake_Inst)(lhs, rhs));
 $extern cmp_fn_eqlCtx$((time_Awake_Inst)(lhs, rhs, ctx));
 $extern cmp_fn_neqCtx$((time_Awake_Inst)(lhs, rhs, ctx));
+
+struct time_Awake_VTbl {
+    fn_(((*nowFn)(P$raw ctx))(time_Awake_Inst));
+    $attr($must_check)
+    fn_(((*sleepFn)(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
+};
+$extern fn_((time_Awake_VTbl_noNow(P$raw ctx))(time_Awake_Inst));
+$extern fn_((time_Awake_VTbl_unreachableNow(P$raw ctx))(time_Awake_Inst));
+$attr($must_check)
+$extern fn_((time_Awake_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
 /*========== Macros and Definitions =========================================*/
 

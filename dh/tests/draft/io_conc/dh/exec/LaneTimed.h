@@ -8,7 +8,7 @@ extern "C" {
 
 #include "Lane.h"
 #include "Timer.h"
-#include "../time/Self.h"
+#include "../time/self.h"
 
 /*========== Macros and Declarations ========================================*/
 

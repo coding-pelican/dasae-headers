@@ -120,9 +120,21 @@ $extern fn_((HashSet_HashFn_default(u_V$raw val, u_V$raw ctx))(u64));
 typedef HashMap_EqlFn HashSet_EqlFn;
 $extern fn_((HashSet_EqlFn_default(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool));
 
+#define HashSet_LoadRatio_default_max HashMap_LoadRatio_default_max
+typedef HashMap_LoadRatio HashSet_LoadRatio;
+$static let HashSet_LoadRatio_isValid = HashMap_LoadRatio_isValid;
+$static let HashSet_LoadRatio_assertValid = HashMap_LoadRatio_assertValid;
+$static let HashSet_LoadRatio_ensureValid = HashMap_LoadRatio_ensureValid;
+$static let HashSet_LoadRatio_limit = HashMap_LoadRatio_limit;
+$static let HashSet_LoadRatio_max = HashMap_LoadRatio_max;
+$extern fn_((HashSet_LoadRatio_default(void))(HashSet_LoadRatio));
+
 typedef HashMap_Ctx HashSet_Ctx;
 T_use_P$(HashSet_Ctx);
-$extern fn_((HashSet_Ctx_default(void))(P_const$HashSet_Ctx));
+$static let HashSet_Ctx_isValid = HashMap_Ctx_isValid;
+$static let HashSet_Ctx_assertValid = HashMap_Ctx_assertValid;
+$static let HashSet_Ctx_ensureValid = HashMap_Ctx_ensureValid;
+$extern fn_((HashSet_Ctx_default(void))(HashSet_Ctx));
 
 /* --- HashSet: Main hash set structure --- */
 
@@ -145,7 +157,6 @@ typedef struct HashSet {
 } HashSet;
 T_use$((HashSet)(O, E));
 T_use_E$($set(mem_E)(HashSet));
-#define HashSet_default_max_load_ratio HashMap_default_max_load_ratio
 #define HashSet_default_min_cap HashMap_default_min_cap
 
 /* --- Construction/Destruction --- */
@@ -276,7 +287,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         }; \
         var_(as_raw, HashSet_Header) $like_ref; \
     }
-#define __comp_alias__HashSet_Header$(_K...) tpl_id$1T(HashSet_Header, _K)
+#define __comp_alias__HashSet_Header$(_K...) tpl$(HashSet_Header, _K)
 #define __comp_gen__T_decl_HashSet_Header$(_K...) \
     $maybe_unused typedef union HashSet_Header$(_K) HashSet_Header$(_K)
 #define __comp_gen__T_impl_HashSet_Header$(_K...) \
@@ -307,7 +318,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         var_(as_raw, HashSet_Unit$raw) $like_ref; \
     }
 #define __comp_alias__HashSet_Unit$(_K...) \
-    pp_join($, HashSet_Unit, _K)
+    tpl$(HashSet_Unit, _K)
 #define __comp_gen__T_decl_HashSet_Unit$(_K...) \
     $maybe_unused typedef union HashSet_Unit$(_K) HashSet_Unit$(_K); \
     T_decl_O$(HashSet_Unit$(_K)); \
@@ -334,12 +345,12 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 /* clang-format off */
 #define T_use_HashSet_Unit_key$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Unit_key, _K)(const HashSet_Unit$(_K)* self))(const _K*)) { \
+    $static fn_((tpl$(HashSet_Unit_key, _K)(const HashSet_Unit$(_K)* self))(const _K*)) { \
         return u_castP$((const _K*)(HashSet_Unit_key(self->as_raw, typeInfo$(_K)))); \
     }
 #define T_use_HashSet_Unit_keyMut$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Unit_keyMut, _K)(HashSet_Unit$(_K)* self))(_K*)) { \
+    $static fn_((tpl$(HashSet_Unit_keyMut, _K)(HashSet_Unit$(_K)* self))(_K*)) { \
         return u_castP$((_K*)(HashSet_Unit_keyMut(self->as_raw, typeInfo$(_K)))); \
     }
 /* clang-format on */
@@ -352,7 +363,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         }; \
         var_(as_raw, HashSet_Entry) $like_ref; \
     }
-#define __comp_alias__HashSet_Entry$(_K...) tpl_id$1T(HashSet_Entry, _K)
+#define __comp_alias__HashSet_Entry$(_K...) tpl$(HashSet_Entry, _K)
 #define __comp_gen__T_decl_HashSet_Entry$(_K...) \
     $maybe_unused typedef union HashSet_Entry$(_K) HashSet_Entry$(_K); \
     T_decl_O$(HashSet_Entry$(_K))
@@ -372,7 +383,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 /* clang-format off */
 #define T_use_HashSet_Entry_key$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Entry_key, _K)(HashSet_Entry$(_K) self))(const _K*)) { \
+    $static fn_((tpl$(HashSet_Entry_key, _K)(HashSet_Entry$(_K) self))(const _K*)) { \
         return u_castP$((const _K*)(HashSet_Entry_key(*self.as_raw, typeInfo$(_K)))); \
     }
 /* clang-format on */
@@ -388,7 +399,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         }; \
         var_(as_raw, HashSet_EntryMut) $like_ref; \
     }
-#define __comp_alias__HashSet_EntryMut$(_K...) tpl_id$1T(HashSet_EntryMut, _K)
+#define __comp_alias__HashSet_EntryMut$(_K...) tpl$(HashSet_EntryMut, _K)
 #define __comp_gen__T_decl_HashSet_EntryMut$(_K...) \
     $maybe_unused typedef union HashSet_EntryMut$(_K) HashSet_EntryMut$(_K); \
     T_decl_O$(HashSet_EntryMut$(_K))
@@ -411,7 +422,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 /* clang-format off */
 #define T_use_HashSet_EntryMut_key$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_EntryMut_key, _K)(HashSet_EntryMut$(_K) self))(_K*)) { \
+    $static fn_((tpl$(HashSet_EntryMut_key, _K)(HashSet_EntryMut$(_K) self))(_K*)) { \
         return u_castP$((_K*)(HashSet_EntryMut_key(*self.as_raw, typeInfo$(_K)))); \
     }
 /* clang-format on */
@@ -425,7 +436,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         }; \
         var_(as_raw, HashSet_Ensured) $like_ref; \
     }
-#define __comp_alias__HashSet_Ensured$(_K...) tpl_id$1T(HashSet_Ensured, _K)
+#define __comp_alias__HashSet_Ensured$(_K...) tpl$(HashSet_Ensured, _K)
 #define __comp_gen__T_decl_HashSet_Ensured$(_K...) \
     $maybe_unused typedef union HashSet_Ensured$(_K) HashSet_Ensured$(_K); \
     T_decl_O$(HashSet_Ensured$(_K)); \
@@ -448,17 +459,17 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 /* clang-format off */
 #define T_use_HashSet_Ensured_key$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Ensured_key, _K)(HashSet_Ensured$(_K) self))(const _K*)) { \
+    $static fn_((tpl$(HashSet_Ensured_key, _K)(HashSet_Ensured$(_K) self))(const _K*)) { \
         return u_castP$((const _K*)(HashSet_Ensured_key(*self.as_raw, typeInfo$(_K)))); \
     }
 #define T_use_HashSet_Ensured_keyMut$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Ensured_keyMut, _K)(HashSet_Ensured$(_K) self))(_K*)) { \
+    $static fn_((tpl$(HashSet_Ensured_keyMut, _K)(HashSet_Ensured$(_K) self))(_K*)) { \
         return u_castP$((_K*)(HashSet_Ensured_keyMut(*self.as_raw, typeInfo$(_K)))); \
     }
 #define T_use_HashSet_Ensured_foundExisting$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Ensured_foundExisting, _K)( \
+    $static fn_((tpl$(HashSet_Ensured_foundExisting, _K)( \
         HashSet_Ensured$(_K) self \
     ))(O$(HashSet_Entry$(_K)))) { \
         return u_castO$((O$(HashSet_Entry$(_K)))( \
@@ -467,7 +478,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     }
 #define T_use_HashSet_Ensured_foundExistingMut$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Ensured_foundExistingMut, _K)( \
+    $static fn_((tpl$(HashSet_Ensured_foundExistingMut, _K)( \
         HashSet_Ensured$(_K) self \
     ))(O$(HashSet_EntryMut$(_K)))) { \
         return u_castO$((O$(HashSet_EntryMut$(_K)))( \
@@ -487,7 +498,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         }; \
         var_(as_raw, HashSet) $like_ref; \
     }
-#define __comp_alias__HashSet$(_K...) tpl_id$1T(HashSet, _K)
+#define __comp_alias__HashSet$(_K...) tpl$(HashSet, _K)
 #define __comp_gen__T_decl_HashSet$(_K...) \
     $maybe_unused typedef union HashSet$(_K) HashSet$(_K); \
     T_decl_E$($set(mem_E)(HashSet$(_K)))
@@ -510,29 +521,29 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 /* clang-format off */
 #define T_use_HashSet_empty$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_empty, _K)(P_const$HashSet_Ctx ctx))(HashSet$(_K))) { \
+    $static fn_((tpl$(HashSet_empty, _K)(P_const$HashSet_Ctx ctx))(HashSet$(_K))) { \
         return type$((HashSet$(_K))(HashSet_empty(typeInfo$(_K), ctx))); \
     }
 #define T_use_HashSet_init$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_init, _K)( \
+    $static fn_((tpl$(HashSet_init, _K)( \
         P_const$HashSet_Ctx ctx, mem_Alctr gpa, u32 cap \
     ))(E$($set(mem_E)(HashSet$(_K)))) $scope) { \
         return_(typeE$((ReturnT)(HashSet_init(typeInfo$(_K), ctx, gpa, cap)))); \
     } $unscoped(fn)
 #define T_use_HashSet_fini$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_fini, _K)(HashSet$(_K)* self, mem_Alctr gpa))(void)) { \
+    $static fn_((tpl$(HashSet_fini, _K)(HashSet$(_K)* self, mem_Alctr gpa))(void)) { \
         return HashSet_fini(self->as_raw, typeInfo$(_K), gpa); \
     }
 #define T_use_HashSet_clone$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_clone, _K)(HashSet$(_K) self, mem_Alctr gpa))(E$($set(mem_E)(HashSet$(_K)))) $scope) { \
+    $static fn_((tpl$(HashSet_clone, _K)(HashSet$(_K) self, mem_Alctr gpa))(E$($set(mem_E)(HashSet$(_K)))) $scope) { \
         return_(typeE$((ReturnT)(HashSet_clone(*self.as_raw, typeInfo$(_K), gpa)))); \
     } $unscoped(fn)
 #define T_use_HashSet_cloneWithCtx$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_cloneWithCtx, _K)( \
+    $static fn_((tpl$(HashSet_cloneWithCtx, _K)( \
         HashSet$(_K) self, P_const$HashSet_Ctx ctx, mem_Alctr gpa \
     ))(E$($set(mem_E)(HashSet$(_K)))) $scope) { \
         return_(typeE$((ReturnT)(HashSet_cloneWithCtx(*self.as_raw, typeInfo$(_K), ctx, gpa)))); \
@@ -540,93 +551,93 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define T_use_HashSet_count$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_count, _K)(HashSet$(_K) self))(u32)) { \
+    $static fn_((tpl$(HashSet_count, _K)(HashSet$(_K) self))(u32)) { \
         return HashSet_count(*self.as_raw); \
     }
 #define T_use_HashSet_cap$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_cap, _K)(HashSet$(_K) self))(u32)) { \
+    $static fn_((tpl$(HashSet_cap, _K)(HashSet$(_K) self))(u32)) { \
         return HashSet_cap(*self.as_raw); \
     }
 
 #define T_use_HashSet_ensureCap$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_ensureCap, _K)( \
+    $static fn_((tpl$(HashSet_ensureCap, _K)( \
         HashSet$(_K)* self, mem_Alctr gpa, u32 new_cap \
     ))(mem_E$void)) { \
         return HashSet_ensureCap(self->as_raw, typeInfo$(_K), gpa, new_cap); \
     }
 #define T_use_HashSet_ensureUnusedCap$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_ensureUnusedCap, _K)( \
+    $static fn_((tpl$(HashSet_ensureUnusedCap, _K)( \
         HashSet$(_K)* self, mem_Alctr gpa, u32 additional \
     ))(mem_E$void)) { \
         return HashSet_ensureUnusedCap(self->as_raw, typeInfo$(_K), gpa, additional); \
     }
 #define T_use_HashSet_clearRetainingCap$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_clearRetainingCap, _K)(HashSet$(_K)* self))(void)) { \
+    $static fn_((tpl$(HashSet_clearRetainingCap, _K)(HashSet$(_K)* self))(void)) { \
         return HashSet_clearRetainingCap(self->as_raw); \
     }
 #define T_use_HashSet_clearAndFree$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_clearAndFree, _K)(HashSet$(_K)* self, mem_Alctr gpa))(void)) { \
+    $static fn_((tpl$(HashSet_clearAndFree, _K)(HashSet$(_K)* self, mem_Alctr gpa))(void)) { \
         return HashSet_clearAndFree(self->as_raw, typeInfo$(_K), gpa); \
     }
 
 #define T_use_HashSet_for$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_for, _K)(HashSet$(_K) self, _K key))(O$(_K))) { \
+    $static fn_((tpl$(HashSet_for, _K)(HashSet$(_K) self, _K key))(O$(_K))) { \
         return u_castO$((O$(_K))(HashSet_for(*self.as_raw, u_anyV(key), u_retV$(_K)))); \
     }
 #define T_use_HashSet_ptrFor$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_ptrFor, _K)(HashSet$(_K) self, _K key))(O$(P_const$(_K)))) { \
+    $static fn_((tpl$(HashSet_ptrFor, _K)(HashSet$(_K) self, _K key))(O$(P_const$(_K)))) { \
         return u_castO$((O$(P_const$(_K)))(HashSet_ptrFor(*self.as_raw, u_anyV(key)))); \
     }
 #define T_use_HashSet_ptrMutFor$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_ptrMutFor, _K)(HashSet$(_K) self, _K key))(O$(P$(_K)))) { \
+    $static fn_((tpl$(HashSet_ptrMutFor, _K)(HashSet$(_K) self, _K key))(O$(P$(_K)))) { \
         return u_castO$((O$(P$(_K)))(HashSet_ptrMutFor(*self.as_raw, u_anyV(key)))); \
     }
 
 #define T_use_HashSet_entry$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_entry, _K)(HashSet$(_K) self, _K key))(O$(HashSet_Entry$(_K)))) { \
+    $static fn_((tpl$(HashSet_entry, _K)(HashSet$(_K) self, _K key))(O$(HashSet_Entry$(_K)))) { \
         return typeO$((O$(HashSet_Entry$(_K)))(HashSet_entry(*self.as_raw, u_anyV(key)))); \
     }
 #define T_use_HashSet_entryMut$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_entryMut, _K)(HashSet$(_K) self, _K key))(O$(HashSet_EntryMut$(_K)))) { \
+    $static fn_((tpl$(HashSet_entryMut, _K)(HashSet$(_K) self, _K key))(O$(HashSet_EntryMut$(_K)))) { \
         return typeO$((O$(HashSet_EntryMut$(_K)))(HashSet_entryMut(*self.as_raw, u_anyV(key)))); \
     }
 
 #define T_use_HashSet_contains$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_contains, _K)(HashSet$(_K) self, _K key))(bool)) { \
+    $static fn_((tpl$(HashSet_contains, _K)(HashSet$(_K) self, _K key))(bool)) { \
         return HashSet_contains(*self.as_raw, u_anyV(key)); \
     }
 
 #define T_use_HashSet_put$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_put, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(mem_E$void)) { \
+    $static fn_((tpl$(HashSet_put, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(mem_E$void)) { \
         return HashSet_put(self->as_raw, gpa, u_anyV(key)); \
     }
 #define T_use_HashSet_putWithin$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_putWithin, _K)(HashSet$(_K)* self, _K key))(void)) { \
+    $static fn_((tpl$(HashSet_putWithin, _K)(HashSet$(_K)* self, _K key))(void)) { \
         return HashSet_putWithin(self->as_raw, u_anyV(key)); \
     }
 #define T_use_HashSet_fetchPut$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_fetchPut, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(E$($set(mem_E)(O$(HashSet_Unit$(_K))))) $scope) { \
+    $static fn_((tpl$(HashSet_fetchPut, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(E$($set(mem_E)(O$(HashSet_Unit$(_K))))) $scope) { \
         let opt_sgl = try_(HashSet_fetchPut(self->as_raw, gpa, u_anyV(key), l0$((HashSet_Unit$(_K))).as_raw)); \
         let sgl = orelse_((opt_sgl)(return_ok(none()))); \
         return_ok(some(*as$(HashSet_Unit$(_K)*)(sgl))); \
     } $unscoped(fn)
 #define T_use_HashSet_fetchPutWithin$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_fetchPutWithin, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Unit$(_K))) $scope) { \
+    $static fn_((tpl$(HashSet_fetchPutWithin, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Unit$(_K))) $scope) { \
         let opt_sgl = HashSet_fetchPutWithin(self->as_raw, u_anyV(key), l0$((HashSet_Unit$(_K))).as_raw); \
         let sgl = orelse_((opt_sgl)(return_none())); \
         return_some(*as$(HashSet_Unit$(_K)*)(sgl)); \
@@ -634,52 +645,52 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define T_use_HashSet_ensure$(_K...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id$1T(HashSet_ensure, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(E$($set(mem_E)(HashSet_Ensured$(_K)))) $scope) { \
+    $static fn_((tpl$(HashSet_ensure, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(E$($set(mem_E)(HashSet_Ensured$(_K)))) $scope) { \
         return_(typeE$((ReturnT)(HashSet_ensure(self->as_raw, gpa, u_anyV(key))))); \
     } $unscoped(fn)
 #define T_use_HashSet_ensureWithin$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_ensureWithin, _K)(HashSet$(_K)* self, _K key))(HashSet_Ensured$(_K))) { \
+    $static fn_((tpl$(HashSet_ensureWithin, _K)(HashSet$(_K)* self, _K key))(HashSet_Ensured$(_K))) { \
         return type$((HashSet_Ensured$(_K))(HashSet_ensureWithin(self->as_raw, u_anyV(key)))); \
     }
 
 #define T_use_HashSet_remove$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_remove, _K)(HashSet$(_K)* self, _K key))(bool)) { \
+    $static fn_((tpl$(HashSet_remove, _K)(HashSet$(_K)* self, _K key))(bool)) { \
         return HashSet_remove(self->as_raw, u_anyV(key)); \
     }
 #define T_use_HashSet_fetchRemove$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_fetchRemove, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Unit$(_K))) $scope) { \
+    $static fn_((tpl$(HashSet_fetchRemove, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Unit$(_K))) $scope) { \
         let opt_sgl = HashSet_fetchRemove(self->as_raw, u_anyV(key), l0$((HashSet_Unit$(_K))).as_raw); \
         let sgl = orelse_((opt_sgl)(return_none())); \
         return_some(*as$(HashSet_Unit$(_K)*)(sgl)); \
     } $unscoped(fn)
 #define T_use_HashSet_removeByPtr$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_removeByPtr, _K)(HashSet$(_K)* self, _K* key))(void)) { \
+    $static fn_((tpl$(HashSet_removeByPtr, _K)(HashSet$(_K)* self, _K* key))(void)) { \
         return HashSet_removeByPtr(self->as_raw, u_anyP(key)); \
     }
 
 #define T_use_HashSet_rehash$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_rehash, _K)(HashSet$(_K)* self))(void)) { \
+    $static fn_((tpl$(HashSet_rehash, _K)(HashSet$(_K)* self))(void)) { \
         return HashSet_rehash(self->as_raw, typeInfo$(_K)); \
     }
 
 #define T_use_HashSet_isSubset$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_isSubset, _K)(HashSet$(_K) self, HashSet$(_K) other))(bool)) { \
+    $static fn_((tpl$(HashSet_isSubset, _K)(HashSet$(_K) self, HashSet$(_K) other))(bool)) { \
         return HashSet_isSubset(*self.as_raw, typeInfo$(_K), *other.as_raw); \
     }
 #define T_use_HashSet_isSuperset$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_isSuperset, _K)(HashSet$(_K) self, HashSet$(_K) other))(bool)) { \
+    $static fn_((tpl$(HashSet_isSuperset, _K)(HashSet$(_K) self, HashSet$(_K) other))(bool)) { \
         return HashSet_isSuperset(*self.as_raw, typeInfo$(_K), *other.as_raw); \
     }
 #define T_use_HashSet_isDisjoint$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_isDisjoint, _K)(HashSet$(_K) self, HashSet$(_K) other))(bool)) { \
+    $static fn_((tpl$(HashSet_isDisjoint, _K)(HashSet$(_K) self, HashSet$(_K) other))(bool)) { \
         return HashSet_isDisjoint(*self.as_raw, typeInfo$(_K), *other.as_raw); \
     }
 /* clang-format on */
@@ -693,7 +704,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         }; \
         var_(as_raw, HashSet_Iter) $like_ref; \
     }
-#define __comp_alias__HashSet_Iter$(_K...) tpl_id$1T(HashSet_Iter, _K)
+#define __comp_alias__HashSet_Iter$(_K...) tpl$(HashSet_Iter, _K)
 #define __comp_gen__T_decl_HashSet_Iter$(_K...) \
     $maybe_unused typedef union HashSet_Iter$(_K) HashSet_Iter$(_K)
 #define __comp_gen__T_impl_HashSet_Iter$(_K...) \
@@ -712,17 +723,17 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 /* clang-format off */
 #define T_use_HashSet_iter$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_iter, _K)(const HashSet$(_K)* self))(HashSet_Iter$(_K))) { \
+    $static fn_((tpl$(HashSet_iter, _K)(const HashSet$(_K)* self))(HashSet_Iter$(_K))) { \
         return type$((HashSet_Iter$(_K))(HashSet_iter(self->as_raw, typeInfo$(_K)))); \
     }
 #define T_use_HashSet_Iter_next$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Iter_next, _K)(HashSet_Iter$(_K)* self))(O$(HashSet_Entry$(_K)))) { \
+    $static fn_((tpl$(HashSet_Iter_next, _K)(HashSet_Iter$(_K)* self))(O$(HashSet_Entry$(_K)))) { \
         return typeO$((O$(HashSet_Entry$(_K)))(HashSet_Iter_next(self->as_raw, typeInfo$(_K)))); \
     }
 #define T_use_HashSet_Iter_nextMut$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_Iter_nextMut, _K)(HashSet_Iter$(_K)* self))(O$(HashSet_EntryMut$(_K)))) { \
+    $static fn_((tpl$(HashSet_Iter_nextMut, _K)(HashSet_Iter$(_K)* self))(O$(HashSet_EntryMut$(_K)))) { \
         return typeO$((O$(HashSet_EntryMut$(_K)))(HashSet_Iter_nextMut(self->as_raw, typeInfo$(_K)))); \
     }
 /* clang-format on */
@@ -737,7 +748,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         }; \
         var_(as_raw, HashSet_KeyIter) $like_ref; \
     }
-#define __comp_alias__HashSet_KeyIter$(_K...) tpl_id$1T(HashSet_KeyIter, _K)
+#define __comp_alias__HashSet_KeyIter$(_K...) tpl$(HashSet_KeyIter, _K)
 #define __comp_gen__T_decl_HashSet_KeyIter$(_K...) \
     $maybe_unused typedef union HashSet_KeyIter$(_K) HashSet_KeyIter$(_K)
 #define __comp_gen__T_impl_HashSet_KeyIter$(_K...) \
@@ -757,17 +768,17 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 /* clang-format off */
 #define T_use_HashSet_keyIter$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_keyIter, _K)(HashSet$(_K) self))(HashSet_KeyIter$(_K))) { \
+    $static fn_((tpl$(HashSet_keyIter, _K)(HashSet$(_K) self))(HashSet_KeyIter$(_K))) { \
         return type$((HashSet_KeyIter$(_K))(HashSet_keyIter(*self.as_raw, typeInfo$(_K)))); \
     }
 #define T_use_HashSet_KeyIter_next$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_KeyIter_next, _K)(HashSet_KeyIter$(_K)* self))(O$(P_const$(_K)))) { \
+    $static fn_((tpl$(HashSet_KeyIter_next, _K)(HashSet_KeyIter$(_K)* self))(O$(P_const$(_K)))) { \
         return u_castO$((O$(P_const$(_K)))(HashSet_KeyIter_next(self->as_raw, typeInfo$(_K)))); \
     }
 #define T_use_HashSet_KeyIter_nextMut$(_K...) \
     $attr($inline_always) \
-    $static fn_((tpl_id$1T(HashSet_KeyIter_nextMut, _K)(HashSet_KeyIter$(_K)* self))(O$(P$(_K)))) { \
+    $static fn_((tpl$(HashSet_KeyIter_nextMut, _K)(HashSet_KeyIter$(_K)* self))(O$(P$(_K)))) { \
         return u_castO$((O$(P$(_K)))(HashSet_KeyIter_nextMut(self->as_raw, typeInfo$(_K)))); \
     }
 /* clang-format on */

@@ -17,20 +17,15 @@ extern "C" {
 #define __bool__time_Proc_direct_supported pp_false
 #endif
 
-T_alias$((time_Proc_VTbl)(struct time_Proc_VTbl {
-    fn_(((*nowFn)(P$raw ctx))(time_Proc_Inst));
-}));
+T_alias$((time_Proc_VTbl)(struct time_Proc_VTbl));
 $extern let_(time_Proc_VTbl_noop, time_Proc_VTbl);
 $extern let_(time_Proc_VTbl_failing, time_Proc_VTbl);
-
-$extern fn_((time_Proc_VTbl_noNow(P$raw ctx))(time_Proc_Inst));
-$extern fn_((time_Proc_VTbl_unreachableNow(P$raw ctx))(time_Proc_Inst));
 
 struct time_Proc {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(time_Proc_VTbl));
 };
-T_impl_E$($set(time_E)(time_Proc));
+T_impl_E$($set(time_direct_E)(time_Proc));
 $extern let_(time_Proc_noop, time_Proc);
 $extern let_(time_Proc_failing, time_Proc);
 
@@ -43,7 +38,7 @@ $static fn_((time_Proc_ensureValid(time_Proc self))(time_Proc));
 
 $extern fn_((time_Proc_now(time_Proc self))(time_Proc_Inst));
 $attr($must_check)
-$extern fn_((time_Proc_direct(void))(time_E$time_Proc));
+$extern fn_((time_Proc_direct(void))(time_direct_E$time_Proc));
 
 struct time_Proc_Inst {
     var_(raw, time_Inst);
@@ -78,6 +73,12 @@ $extern cmp_fn_eql$((time_Proc_Inst)(lhs, rhs));
 $extern cmp_fn_neq$((time_Proc_Inst)(lhs, rhs));
 $extern cmp_fn_eqlCtx$((time_Proc_Inst)(lhs, rhs, ctx));
 $extern cmp_fn_neqCtx$((time_Proc_Inst)(lhs, rhs, ctx));
+
+struct time_Proc_VTbl {
+    fn_(((*nowFn)(P$raw ctx))(time_Proc_Inst));
+};
+$extern fn_((time_Proc_VTbl_noNow(P$raw ctx))(time_Proc_Inst));
+$extern fn_((time_Proc_VTbl_unreachableNow(P$raw ctx))(time_Proc_Inst));
 
 /*========== Macros and Definitions =========================================*/
 

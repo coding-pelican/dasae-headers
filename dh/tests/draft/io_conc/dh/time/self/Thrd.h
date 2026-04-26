@@ -17,20 +17,15 @@ extern "C" {
 #define __bool__time_Thrd_direct_supported pp_false
 #endif
 
-T_alias$((time_Thrd_VTbl)(struct time_Thrd_VTbl {
-    fn_(((*nowFn)(P$raw ctx))(time_Thrd_Inst));
-}));
+T_alias$((time_Thrd_VTbl)(struct time_Thrd_VTbl));
 $extern let_(time_Thrd_VTbl_noop, time_Thrd_VTbl);
 $extern let_(time_Thrd_VTbl_failing, time_Thrd_VTbl);
-
-$extern fn_((time_Thrd_VTbl_noNow(P$raw ctx))(time_Thrd_Inst));
-$extern fn_((time_Thrd_VTbl_unreachableNow(P$raw ctx))(time_Thrd_Inst));
 
 struct time_Thrd {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(time_Thrd_VTbl));
 };
-T_impl_E$($set(time_E)(time_Thrd));
+T_impl_E$($set(time_direct_E)(time_Thrd));
 $extern let_(time_Thrd_noop, time_Thrd);
 $extern let_(time_Thrd_failing, time_Thrd);
 
@@ -43,7 +38,7 @@ $static fn_((time_Thrd_ensureValid(time_Thrd self))(time_Thrd));
 
 $extern fn_((time_Thrd_now(time_Thrd self))(time_Thrd_Inst));
 $attr($must_check)
-$extern fn_((time_Thrd_direct(void))(time_E$time_Thrd));
+$extern fn_((time_Thrd_direct(void))(time_direct_E$time_Thrd));
 
 struct time_Thrd_Inst {
     var_(raw, time_Inst);
@@ -78,6 +73,12 @@ $extern cmp_fn_eql$((time_Thrd_Inst)(lhs, rhs));
 $extern cmp_fn_neq$((time_Thrd_Inst)(lhs, rhs));
 $extern cmp_fn_eqlCtx$((time_Thrd_Inst)(lhs, rhs, ctx));
 $extern cmp_fn_neqCtx$((time_Thrd_Inst)(lhs, rhs, ctx));
+
+struct time_Thrd_VTbl {
+    fn_(((*nowFn)(P$raw ctx))(time_Thrd_Inst));
+};
+$extern fn_((time_Thrd_VTbl_noNow(P$raw ctx))(time_Thrd_Inst));
+$extern fn_((time_Thrd_VTbl_unreachableNow(P$raw ctx))(time_Thrd_Inst));
 
 /*========== Macros and Definitions =========================================*/
 

@@ -60,12 +60,12 @@ fn_((exec_invokeToCompletion(P$$(Closure$raw) closure, TypeInfo type))(u_P_const
 
 #define __stmt__T_use_exec_kind$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id$T(exec_kind, _T)(P_const$$(Closure$(_T)) closure))(exec_Task_Kind)) { \
+    $static fn_((tpl$(exec_kind, _T)(P_const$$(Closure$(_T)) closure))(exec_Task_Kind)) { \
         return exec_kind(closure->as_raw); \
     } /* clang-format on */
 #define __stmt__T_use_exec_invokeToStep$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id$T(exec_invokeToStep, _T)(P$$(Closure$(_T)) closure))(O$(P_const$(_T))) $scope) { \
+    $static fn_((tpl$(exec_invokeToStep, _T)(P$$(Closure$(_T)) closure))(O$(P_const$(_T))) $scope) { \
         if_some((exec_invokeToStep(closure->as_raw, typeInfo$(_T)))(ret)) { \
             return_some(u_castP$((const _T*)(ret))); \
         } else_none { \
@@ -75,7 +75,7 @@ fn_((exec_invokeToCompletion(P$$(Closure$raw) closure, TypeInfo type))(u_P_const
     } /* clang-format on */
 #define __stmt__T_use_exec_invokeToCompletion$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id$T(exec_invokeToCompletion, _T)(P$$(Closure$(_T)) closure))(P_const$(_T))) { \
+    $static fn_((tpl$(exec_invokeToCompletion, _T)(P$$(Closure$(_T)) closure))(P_const$(_T))) { \
         return u_castP$((const _T*)(exec_invokeToCompletion(closure->as_raw, typeInfo$(_T)))); \
     } /* clang-format on */
 

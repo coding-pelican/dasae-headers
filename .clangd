@@ -32,14 +32,15 @@ Diagnostics:
       - readability-avoid-const-params-in-decls
       - readability-avoid-nested-conditional-operator
       - readability-braces-around-statements
+      - readability-function-cognitive-complexity
+      - readability-function-size
       - readability-identifier-length
+      - readability-implicit-bool-conversion
       - readability-magic-numbers
       - readability-math-missing-parentheses
       - readability-named-parameter
       - readability-uppercase-literal-suffix
       - readability-use-concise-preprocessor-directives
-      - readability-function-cognitive-complexity
-      - readability-function-size
       - misc-misplaced-const
       - misc-non-private-member-variables-in-classes
       - cppcoreguidelines-avoid-magic-numbers

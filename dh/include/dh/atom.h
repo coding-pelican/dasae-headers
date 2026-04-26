@@ -27,7 +27,7 @@ extern "C" {
 
 #define atom_cache_line_bytes __comp_int__atom_cache_line_bytes
 
-#define atom_V$(_T...) pp_join($, atom_V, _T)
+#define atom_V$(_T...) tpl$(atom_V, _T)
 #define atom_V$$(_T...) \
     struct { \
         volatile _T raw; \

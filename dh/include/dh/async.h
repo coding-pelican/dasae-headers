@@ -23,7 +23,7 @@ typedef struct Co_Ctx {
     Co_Ret* ret;
 } Co_Ctx;
 
-#define Co_Ctx$(T_Return) pp_join($, Co_Ctx, T_Return)
+#define Co_Ctx$(T_Return) tpl$(Co_Ctx, T_Return)
 #define use_Co_Ctx$(T_Return) \
     decl_Co_Ctx$(T_Return); \
     impl_Co_Ctx$(T_Return)
@@ -43,7 +43,7 @@ typedef struct Co_Ctx {
         }; \
     }
 
-#define Co_CtxArgs$(fnName) pp_join($, Co_CtxArgs, fnName)
+#define Co_CtxArgs$(fnName) tpl$(Co_CtxArgs, fnName)
 #define use_Co_CtxArgs$(fnName, Args) \
     decl_Co_CtxArgs$(fnName); \
     impl_Co_CtxArgs$(fnName, Args)
@@ -54,11 +54,11 @@ typedef struct Co_Ctx {
         pp_Tuple_unwrap Args \
     }
 
-#define Co_CtxFnBase$(fnName) pp_join($, Co_CtxFnBase, fnName)
+#define Co_CtxFnBase$(fnName) tpl$(Co_CtxFnBase, fnName)
 #define use_Co_CtxFnBase$(fnName, T_Return) \
     typedef Co_Ctx$(T_Return) Co_CtxFnBase$(fnName)
 
-#define Co_CtxFn$(fnName) pp_join($, Co_CtxFn, fnName)
+#define Co_CtxFn$(fnName) tpl$(Co_CtxFn, fnName)
 #define use_Co_CtxFn$(fnName, Args, T_Return, Locals) \
     use_Co_CtxFnBase$(fnName, T_Return); \
     decl_Co_CtxFn$(fnName); \

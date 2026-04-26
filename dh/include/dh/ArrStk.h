@@ -138,7 +138,7 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
         }; \
         var_(as_raw $like_ref, ArrStk); \
     }
-#define __comp_alias__ArrStk$(_T...) pp_join($, ArrStk, _T)
+#define __comp_alias__ArrStk$(_T...) tpl$(ArrStk, _T)
 #define __comp_gen__T_decl_ArrStk$(_T...) \
     $maybe_unused typedef union ArrStk$(_T) ArrStk$(_T); \
     T_decl_O$(ArrStk$(_T)); \
@@ -163,27 +163,27 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
 /* clang-format off */
 #define T_use_ArrStk_empty$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_empty, _T)(void))(ArrStk$(_T))) { \
+    $static fn_((tpl$(ArrStk_empty, _T)(void))(ArrStk$(_T))) { \
         return type$((ArrStk$(_T))(ArrStk_empty(typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_fixed$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_fixed, _T)(S$(_T) buf))(ArrStk$(_T))) { \
+    $static fn_((tpl$(ArrStk_fixed, _T)(S$(_T) buf))(ArrStk$(_T))) { \
         return type$((ArrStk$(_T))(ArrStk_fixed(u_anyS(buf)))); \
     }
 #define T_use_ArrStk_init$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_init, _T)(mem_Alctr gpa, usize cap))(E$($set(mem_E)(ArrStk$(_T)))) $scope) { \
+    $static fn_((tpl$(ArrStk_init, _T)(mem_Alctr gpa, usize cap))(E$($set(mem_E)(ArrStk$(_T)))) $scope) { \
         return_(typeE$((ReturnType)(ArrStk_init(typeInfo$(_T), gpa, cap)))); \
     } $unscoped(fn)
 #define T_use_ArrStk_fini$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_fini, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa))(void)) { \
+    $static fn_((tpl$(ArrStk_fini, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa))(void)) { \
         return ArrStk_fini(self->as_raw, typeInfo$(_T), gpa); \
     }
 #define T_use_ArrStk_clone$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_clone, _T)(ArrStk$(_T) self, mem_Alctr gpa))(E$($set(mem_E)(ArrStk$(_T)))) $scope) { \
+    $static fn_((tpl$(ArrStk_clone, _T)(ArrStk$(_T) self, mem_Alctr gpa))(E$($set(mem_E)(ArrStk$(_T)))) $scope) { \
         return_(typeE$((ReturnType)(ArrStk_clone(*self->as_raw, typeInfo$(_T), gpa)))); \
     } $unscoped(fn)
 /* clang-format on */
@@ -197,7 +197,7 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
         }; \
         var_(as_raw, ArrStk_Grip) $like_ref; \
     }
-#define __comp_alias__ArrStk_Grip$(_T...) pp_join($, ArrStk_Grip, _T)
+#define __comp_alias__ArrStk_Grip$(_T...) tpl$(ArrStk_Grip, _T)
 #define __comp_gen__T_decl_ArrStk_Grip$(_T...) \
     $maybe_unused typedef union ArrStk_Grip$(_T) ArrStk_Grip$(_T)
 #define __comp_gen__T_impl_ArrStk_Grip$(_T...) \
@@ -216,12 +216,12 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
 /* clang-format off */
 #define T_use_ArrStk_grip$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_grip, _T)(S$(_T) buf, usize* len))(ArrStk_Grip$(_T))) { \
+    $static fn_((tpl$(ArrStk_grip, _T)(S$(_T) buf, usize* len))(ArrStk_Grip$(_T))) { \
         return type$((ArrStk_Grip$(_T))(ArrStk_grip(u_anyS(buf), len))); \
     }
 #define T_use_ArrStk_Grip_release$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_Grip_release, _T)(P$$(ArrStk_Grip$(_T)) self))(void)) { \
+    $static fn_((tpl$(ArrStk_Grip_release, _T)(P$$(ArrStk_Grip$(_T)) self))(void)) { \
         return ArrStk_Grip_release(self->as_raw, typeInfo$(_T)); \
     }
 /* clang-format on */
@@ -229,201 +229,201 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
 /* clang-format off */
 #define T_use_ArrStk_len$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_len, _T)(ArrStk$(_T) self))(usize)) { \
+    $static fn_((tpl$(ArrStk_len, _T)(ArrStk$(_T) self))(usize)) { \
         return ArrStk_len(*self.as_raw); \
     }
 #define T_use_ArrStk_cap$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_cap, _T)(ArrStk$(_T) self))(usize)) { \
+    $static fn_((tpl$(ArrStk_cap, _T)(ArrStk$(_T) self))(usize)) { \
         return ArrStk_cap(*self.as_raw); \
     }
 #define T_use_ArrStk_at$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_at, _T)(ArrStk$(_T) self, usize idx))(const _T*)) { \
+    $static fn_((tpl$(ArrStk_at, _T)(ArrStk$(_T) self, usize idx))(const _T*)) { \
         return u_castP$((const _T*)(ArrStk_at(*self.as_raw, typeInfo$(_T), idx))); \
     }
 #define T_use_ArrStk_atMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_atMut, _T)(ArrStk$(_T) self, usize idx))(_T*)) { \
+    $static fn_((tpl$(ArrStk_atMut, _T)(ArrStk$(_T) self, usize idx))(_T*)) { \
         return u_castP$((_T*)(ArrStk_atMut(*self.as_raw, typeInfo$(_T), idx))); \
     }
 #define T_use_ArrStk_top$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_top, _T)(ArrStk$(_T) self))(O$(P_const$(_T)))) { \
+    $static fn_((tpl$(ArrStk_top, _T)(ArrStk$(_T) self))(O$(P_const$(_T)))) { \
         return u_castO$((O$(P_const$(_T)))(ArrStk_top(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_topMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_topMut, _T)(ArrStk$(_T) self))(O$(P$(_T)))) { \
+    $static fn_((tpl$(ArrStk_topMut, _T)(ArrStk$(_T) self))(O$(P$(_T)))) { \
         return u_castO$((O$(P$(_T)))(ArrStk_topMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_bottom$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_bottom, _T)(ArrStk$(_T) self))(O$(P_const$(_T)))) { \
+    $static fn_((tpl$(ArrStk_bottom, _T)(ArrStk$(_T) self))(O$(P_const$(_T)))) { \
         return u_castO$((O$(P_const$(_T)))(ArrStk_bottom(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_bottomMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_bottomMut, _T)(ArrStk$(_T) self))(O$(P$(_T)))) { \
+    $static fn_((tpl$(ArrStk_bottomMut, _T)(ArrStk$(_T) self))(O$(P$(_T)))) { \
         return u_castO$((O$(P$(_T)))(ArrStk_bottomMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_items$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_items, _T)(ArrStk$(_T) self))(S$(const _T))) { \
+    $static fn_((tpl$(ArrStk_items, _T)(ArrStk$(_T) self))(S$(const _T))) { \
         return u_castS$((S$(const _T))(ArrStk_items(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_itemsMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_itemsMut, _T)(ArrStk$(_T) self))(S$(_T))) { \
+    $static fn_((tpl$(ArrStk_itemsMut, _T)(ArrStk$(_T) self))(S$(_T))) { \
         return u_castS$((S$(_T))(ArrStk_itemsMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_itemsCapped$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_itemsCapped, _T)(ArrStk$(_T) self))(S$(const _T))) { \
+    $static fn_((tpl$(ArrStk_itemsCapped, _T)(ArrStk$(_T) self))(S$(const _T))) { \
         return u_castS$((S$(const _T))(ArrStk_itemsCapped(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_itemsCappedMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_itemsCappedMut, _T)(ArrStk$(_T) self))(S$(_T))) { \
+    $static fn_((tpl$(ArrStk_itemsCappedMut, _T)(ArrStk$(_T) self))(S$(_T))) { \
         return u_castS$((S$(_T))(ArrStk_itemsCappedMut(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_itemsUnused$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_itemsUnused, _T)(ArrStk$(_T) self))(S$(const _T))) { \
+    $static fn_((tpl$(ArrStk_itemsUnused, _T)(ArrStk$(_T) self))(S$(const _T))) { \
         return u_castS$((S$(const _T))(ArrStk_itemsUnused(*self.as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_itemsUnusedMut$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_itemsUnusedMut, _T)(ArrStk$(_T) self))(S$(_T))) { \
+    $static fn_((tpl$(ArrStk_itemsUnusedMut, _T)(ArrStk$(_T) self))(S$(_T))) { \
         return u_castS$((S$(_T))(ArrStk_itemsUnusedMut(*self.as_raw, typeInfo$(_T)))); \
     }
 
 #define T_use_ArrStk_ensureCap$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_ensureCap, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_ensureCap, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
         return ArrStk_ensureCap(self->as_raw, typeInfo$(_T), gpa, new_cap); \
     }
 #define T_use_ArrStk_ensureCapPrecise$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_ensureCapPrecise, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_ensureCapPrecise, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize new_cap))(mem_E$void)) { \
         return ArrStk_ensureCapPrecise(self->as_raw, typeInfo$(_T), gpa, new_cap); \
     }
 #define T_use_ArrStk_ensureUnusedCap$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_ensureUnusedCap, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize additional))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_ensureUnusedCap, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize additional))(mem_E$void)) { \
         return ArrStk_ensureUnusedCap(self->as_raw, typeInfo$(_T), gpa, additional); \
     }
 #define T_use_ArrStk_expandToCap$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_expandToCap, _T)(P$$(ArrStk$(_T)) self))(void)) { \
+    $static fn_((tpl$(ArrStk_expandToCap, _T)(P$$(ArrStk$(_T)) self))(void)) { \
         return ArrStk_expandToCap(self->as_raw); \
     }
 #define T_use_ArrStk_resize$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_resize, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize new_len))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_resize, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize new_len))(mem_E$void)) { \
         return ArrStk_resize(self->as_raw, typeInfo$(_T), gpa, new_len); \
     }
 #define T_use_ArrStk_shrinkRetainingCap$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_shrinkRetainingCap, _T)(P$$(ArrStk$(_T)) self, usize new_len))(void)) { \
+    $static fn_((tpl$(ArrStk_shrinkRetainingCap, _T)(P$$(ArrStk$(_T)) self, usize new_len))(void)) { \
         return ArrStk_shrinkRetainingCap(self->as_raw, new_len); \
     }
 #define T_use_ArrStk_shrinkAndFree$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_shrinkAndFree, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize new_len))(void)) { \
+    $static fn_((tpl$(ArrStk_shrinkAndFree, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize new_len))(void)) { \
         return ArrStk_shrinkAndFree(self->as_raw, typeInfo$(_T), gpa, new_len); \
     }
 #define T_use_ArrStk_clearRetainingCap$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_clearRetainingCap, _T)(P$$(ArrStk$(_T)) self))(void)) { \
+    $static fn_((tpl$(ArrStk_clearRetainingCap, _T)(P$$(ArrStk$(_T)) self))(void)) { \
         return ArrStk_clearRetainingCap(self->as_raw); \
     }
 #define T_use_ArrStk_clearAndFree$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_clearAndFree, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa))(void)) { \
+    $static fn_((tpl$(ArrStk_clearAndFree, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa))(void)) { \
         return ArrStk_clearAndFree(self->as_raw, typeInfo$(_T), gpa); \
     }
 
 #define T_use_ArrStk_add$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_add, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa))(E$($set(mem_E)(P$(_T)))) $scope) { \
+    $static fn_((tpl$(ArrStk_add, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa))(E$($set(mem_E)(P$(_T)))) $scope) { \
         return_(u_castE$((ReturnType)(ArrStk_add(self->as_raw, typeInfo$(_T), gpa)))); \
     } $unscoped(fn)
 #define T_use_ArrStk_addFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_addFixed, _T)(P$$(ArrStk$(_T)) self))(E$($set(mem_E)(P$(_T)))) $scope) { \
+    $static fn_((tpl$(ArrStk_addFixed, _T)(P$$(ArrStk$(_T)) self))(E$($set(mem_E)(P$(_T)))) $scope) { \
         return_(u_castE$((ReturnType)(ArrStk_addFixed(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn)
 #define T_use_ArrStk_addWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_addWithin, _T)(P$$(ArrStk$(_T)) self))(_T*)) { \
+    $static fn_((tpl$(ArrStk_addWithin, _T)(P$$(ArrStk$(_T)) self))(_T*)) { \
         return u_castP$((_T*)(ArrStk_addWithin(self->as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrStk_addN$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_addN, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize n))(E$($set(mem_E)(S$(_T)))) $scope) { \
+    $static fn_((tpl$(ArrStk_addN, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, usize n))(E$($set(mem_E)(S$(_T)))) $scope) { \
         return_(u_castE$((ReturnType)(ArrStk_addN(self->as_raw, typeInfo$(_T), gpa, n)))); \
     } $unscoped(fn)
 #define T_use_ArrStk_addNFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_addNFixed, _T)(P$$(ArrStk$(_T)) self, usize n))(E$($set(mem_E)(S$(_T)))) $scope) { \
+    $static fn_((tpl$(ArrStk_addNFixed, _T)(P$$(ArrStk$(_T)) self, usize n))(E$($set(mem_E)(S$(_T)))) $scope) { \
         return_(u_castE$((ReturnType)(ArrStk_addNFixed(self->as_raw, typeInfo$(_T), n)))); \
     } $unscoped(fn)
 #define T_use_ArrStk_addNWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_addNWithin, _T)(P$$(ArrStk$(_T)) self, usize n))(S$(_T))) { \
+    $static fn_((tpl$(ArrStk_addNWithin, _T)(P$$(ArrStk$(_T)) self, usize n))(S$(_T))) { \
         return u_castS$((S$(_T))(ArrStk_addNWithin(self->as_raw, typeInfo$(_T), n))); \
     }
 
 #define T_use_ArrStk_push$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_push, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, _T item))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_push, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, _T item))(mem_E$void)) { \
         return ArrStk_push(self->as_raw, gpa, u_anyV(item)); \
     }
 #define T_use_ArrStk_pushFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_pushFixed, _T)(P$$(ArrStk$(_T)) self, _T item))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_pushFixed, _T)(P$$(ArrStk$(_T)) self, _T item))(mem_E$void)) { \
         return ArrStk_pushFixed(self->as_raw, u_anyV(item)); \
     }
 #define T_use_ArrStk_pushWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_pushWithin, _T)(P$$(ArrStk$(_T)) self, _T item))(void)) { \
+    $static fn_((tpl$(ArrStk_pushWithin, _T)(P$$(ArrStk$(_T)) self, _T item))(void)) { \
         return ArrStk_pushWithin(self->as_raw, u_anyV(item)); \
     }
 #define T_use_ArrStk_pushS$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_pushS, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, S$(const _T) items))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_pushS, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, S$(const _T) items))(mem_E$void)) { \
         return ArrStk_pushS(self->as_raw, gpa, u_anyS(items)); \
     }
 #define T_use_ArrStk_pushSFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_pushSFixed, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_pushSFixed, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(mem_E$void)) { \
         return ArrStk_pushSFixed(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrStk_pushSWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_pushSWithin, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(void)) { \
+    $static fn_((tpl$(ArrStk_pushSWithin, _T)(P$$(ArrStk$(_T)) self, S$(const _T) items))(void)) { \
         return ArrStk_pushSWithin(self->as_raw, u_anyS(items)); \
     }
 #define T_use_ArrStk_pushN$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_pushN, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, _T item, usize n))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_pushN, _T)(P$$(ArrStk$(_T)) self, mem_Alctr gpa, _T item, usize n))(mem_E$void)) { \
         return ArrStk_pushN(self->as_raw, gpa, u_anyV(item), n); \
     }
 #define T_use_ArrStk_pushNFixed$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl_id(ArrStk_pushNFixed, _T)(P$$(ArrStk$(_T)) self, _T item, usize n))(mem_E$void)) { \
+    $static fn_((tpl$(ArrStk_pushNFixed, _T)(P$$(ArrStk$(_T)) self, _T item, usize n))(mem_E$void)) { \
         return ArrStk_pushNFixed(self->as_raw, u_anyV(item), n); \
     }
 #define T_use_ArrStk_pushNWithin$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_pushNWithin, _T)(P$$(ArrStk$(_T)) self, _T item, usize n))(void)) { \
+    $static fn_((tpl$(ArrStk_pushNWithin, _T)(P$$(ArrStk$(_T)) self, _T item, usize n))(void)) { \
         return ArrStk_pushNWithin(self->as_raw, u_anyV(item), n); \
     }
 
 #define T_use_ArrStk_pop$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl_id(ArrStk_pop, _T)(P$$(ArrStk$(_T)) self))(O$(_T)) $scope) { \
+    $static fn_((tpl$(ArrStk_pop, _T)(P$$(ArrStk$(_T)) self))(O$(_T)) $scope) { \
         return_(u_castO$((ReturnType)(ArrStk_pop(self->as_raw, u_retV$(_T))))); \
     } $unscoped(fn)
 /* clang-format on */

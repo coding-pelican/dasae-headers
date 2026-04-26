@@ -25,8 +25,8 @@ extern "C" {
     pp_Tok_then_(__P_const$(Tok_removeConst$(_T))), \
     pp_Tok_else_(__P$(_T)) \
 )
-#define __P_const$(_T...) pp_join($, P_const, _T)
-#define __P$(_T...) pp_join($, P, _T)
+#define __P_const$(_T...) tpl$(P_const, _T)
+#define __P$(_T...) tpl$(P, _T)
 
 /* Pointer Template */
 #define T_decl_P$(_T...) \

@@ -17,20 +17,15 @@ extern "C" {
 #define __bool__time_Real_direct_supported pp_false
 #endif
 
-T_alias$((time_Real_VTbl)(struct time_Real_VTbl {
-    fn_(((*nowFn)(P$raw ctx))(time_Real_Inst));
-}));
+T_alias$((time_Real_VTbl)(struct time_Real_VTbl));
 $extern let_(time_Real_VTbl_noop, time_Real_VTbl);
 $extern let_(time_Real_VTbl_failing, time_Real_VTbl);
-
-$extern fn_((time_Real_VTbl_noNow(P$raw ctx))(time_Real_Inst));
-$extern fn_((time_Real_VTbl_unreachableNow(P$raw ctx))(time_Real_Inst));
 
 struct time_Real {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(time_Real_VTbl));
 };
-T_impl_E$($set(time_E)(time_Real));
+T_impl_E$($set(time_direct_E)(time_Real));
 $extern let_(time_Real_noop, time_Real);
 $extern let_(time_Real_failing, time_Real);
 
@@ -43,7 +38,7 @@ $static fn_((time_Real_ensureValid(time_Real self))(time_Real));
 
 $extern fn_((time_Real_now(time_Real self))(time_Real_Inst));
 $attr($must_check)
-$extern fn_((time_Real_direct(void))(time_E$time_Real));
+$extern fn_((time_Real_direct(void))(time_direct_E$time_Real));
 
 struct time_Real_Inst {
     var_(raw, time_Inst);
@@ -82,6 +77,12 @@ $extern cmp_fn_neqCtx$((time_Real_Inst)(lhs, rhs, ctx));
 $extern fn_((time_Real_Inst_fromUnixEpoch(u64 secs))(time_Real_Inst));
 $extern fn_((time_Real_Inst_toUnixEpoch(time_Real_Inst self))(u64));
 $extern fn_((time_Real_Inst_durSinceUnixEpoch(time_Real_Inst self))(time_Dur));
+
+T_alias$((time_Real_VTbl)(struct time_Real_VTbl {
+    fn_(((*nowFn)(P$raw ctx))(time_Real_Inst));
+}));
+$extern fn_((time_Real_VTbl_noNow(P$raw ctx))(time_Real_Inst));
+$extern fn_((time_Real_VTbl_unreachableNow(P$raw ctx))(time_Real_Inst));
 
 /*========== Macros and Definitions =========================================*/
 

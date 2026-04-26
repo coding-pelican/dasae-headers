@@ -87,8 +87,8 @@ typedef union Grid$raw {
     T_decl_Grid$(T); \
     T_impl_Grid$(T)
 #define comp_gen__decl_Grid$(T) \
-    $maybe_unused typedef struct pp_join($, Grid_const, T) pp_join($, Grid_const, T); \
-    $maybe_unused typedef union pp_join($, Grid, T) pp_join($, Grid, T)
+    $maybe_unused typedef struct tpl$(Grid_const, T) tpl$(Grid_const, T); \
+    $maybe_unused typedef union tpl$(Grid, T) tpl$(Grid, T)
 #define comp_gen__impl_Grid$(T) \
     struct Grid_const$(T) { \
         var_(items, S$(const T)); \
@@ -104,8 +104,8 @@ typedef union Grid$raw {
         Grid_const$(T) as_const; \
     }
 
-#define comp_type_alias__Grid_const$(T) pp_join($, Grid_const, T)
-#define comp_type_alias__Grid$(T) pp_join($, Grid, T)
+#define comp_type_alias__Grid_const$(T) tpl$(Grid_const, T)
+#define comp_type_alias__Grid$(T) tpl$(Grid, T)
 #define comp_type_anon__Grid_const$$(T) \
     struct { \
         var_(items, S$$(const T)); \

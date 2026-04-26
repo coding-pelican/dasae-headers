@@ -29,16 +29,6 @@ let_(time_Real_VTbl_failing, time_Real_VTbl) = {
     .nowFn = time_Real_VTbl_unreachableNow,
 };
 
-fn_((time_Real_VTbl_noNow(P$raw ctx))(time_Real_Inst)) {
-    let_ignore = ctx;
-    return (time_Real_Inst){ .raw = time_Inst_from(0, 0) };
-};
-
-fn_((time_Real_VTbl_unreachableNow(P$raw ctx))(time_Real_Inst)) {
-    let_ignore = ctx;
-    claim_unreachable_msg("Real time source is unavailable");
-};
-
 $static var_(time_Real_noop_ctx, Void) = cleared();
 let_(time_Real_noop, time_Real) = {
     .ctx = &time_Real_noop_ctx,
@@ -51,7 +41,7 @@ let_(time_Real_failing, time_Real) = {
     .vtbl = &time_Real_VTbl_failing,
 };
 
-fn_((time_Real_direct(void))(time_E$time_Real) $scope) {
+fn_((time_Real_direct(void))(time_direct_E$time_Real) $scope) {
     pp_if_(time_Real_direct_supported)(
         pp_then_({
             $static var_(ctx, Void) $like_ref = cleared();
@@ -64,7 +54,7 @@ fn_((time_Real_direct(void))(time_E$time_Real) $scope) {
             }));
         }),
         pp_else_({
-            return_err(time_E_Unsupported());
+            return_err(time_direct_E_Unsupported());
         })
     );
 } $unscoped(fn);
@@ -152,6 +142,16 @@ fn_((time_Real_Inst_durSinceUnixEpoch(time_Real_Inst self))(time_Dur)) {
         .secs = self.raw.secs,
         .nanos = self.raw.nanos,
     };
+};
+
+fn_((time_Real_VTbl_noNow(P$raw ctx))(time_Real_Inst)) {
+    let_ignore = ctx;
+    return (time_Real_Inst){ .raw = time_Inst_from(0, 0) };
+};
+
+fn_((time_Real_VTbl_unreachableNow(P$raw ctx))(time_Real_Inst)) {
+    let_ignore = ctx;
+    claim_unreachable_msg("Real time source is unavailable");
 };
 
 /*========== Direct Source Definitions ======================================*/

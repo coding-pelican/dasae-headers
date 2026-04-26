@@ -391,8 +391,7 @@ fn_((mem_trailingZerosSize(usize x))(u32)) {
     if (x == 0) { return sizeOf$(usize) * 8; }
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_trailingZeros64(x)),
-        pp_else_(mem_trailingZeros32(x))
-    );
+        pp_else_(mem_trailingZeros32(x)));
 };
 fn_((mem_trailingZeros64(u64 x))(u32)) {
 #if defined(__clang__) || defined(__GNUC__)
@@ -451,8 +450,7 @@ fn_((mem_trailingZeros8(u8 x))(u32)) {
 fn_((mem_leadingZerosSize(usize x))(u32)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_leadingZeros64(x)),
-        pp_else_(mem_leadingZeros32(x))
-    );
+        pp_else_(mem_leadingZeros32(x)));
 };
 fn_((mem_leadingZeros64(u64 x))(u32)) {
 #if defined(__clang__) || defined(__GNUC__)
@@ -527,8 +525,7 @@ fn_((mem_leadingZeros8(u8 x))(u32)) {
 fn_((mem_swapBytesSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_swapBytes64(x)),
-        pp_else_(mem_swapBytes32(x))
-    );
+        pp_else_(mem_swapBytes32(x)));
 };
 fn_((mem_swapBytes64(u64 x))(u64)) {
 #if defined(__GNUC__) || defined(__clang__)
@@ -567,101 +564,85 @@ fn_((mem_swapBytes16(u16 x))(u16)) {
 fn_((mem_littleToNativeSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_littleToNative64(x)),
-        pp_else_(mem_littleToNative32(x))
-    );
+        pp_else_(mem_littleToNative32(x)));
 };
 fn_((mem_littleToNative64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes64(x))
-    );
+        pp_else_(mem_swapBytes64(x)));
 };
 fn_((mem_littleToNative32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes32(x))
-    );
+        pp_else_(mem_swapBytes32(x)));
 };
 fn_((mem_littleToNative16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes16(x))
-    );
+        pp_else_(mem_swapBytes16(x)));
 };
 
 fn_((mem_bigToNativeSize(usize x))(usize)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytesSize(x))
-    );
+        pp_else_(mem_swapBytesSize(x)));
 };
 fn_((mem_bigToNative64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes64(x))
-    );
+        pp_else_(mem_swapBytes64(x)));
 };
 fn_((mem_bigToNative32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes32(x))
-    );
+        pp_else_(mem_swapBytes32(x)));
 };
 fn_((mem_bigToNative16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes16(x))
-    );
+        pp_else_(mem_swapBytes16(x)));
 };
 
 fn_((mem_nativeToLittleSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_nativeToLittle64(x)),
-        pp_else_(mem_nativeToLittle32(x))
-    );
+        pp_else_(mem_nativeToLittle32(x)));
 };
 fn_((mem_nativeToLittle64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes64(x))
-    );
+        pp_else_(mem_swapBytes64(x)));
 };
 fn_((mem_nativeToLittle32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes32(x))
-    );
+        pp_else_(mem_swapBytes32(x)));
 };
 fn_((mem_nativeToLittle16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes16(x))
-    );
+        pp_else_(mem_swapBytes16(x)));
 };
 
 fn_((mem_nativeToBigSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
         pp_then_(mem_nativeToBig64(x)),
-        pp_else_(mem_nativeToBig32(x))
-    );
+        pp_else_(mem_nativeToBig32(x)));
 };
 fn_((mem_nativeToBig64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes64(x))
-    );
+        pp_else_(mem_swapBytes64(x)));
 };
 fn_((mem_nativeToBig32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes32(x))
-    );
+        pp_else_(mem_swapBytes32(x)));
 };
 fn_((mem_nativeToBig16(u16 x))(u16)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
-        pp_else_(mem_swapBytes16(x))
-    );
+        pp_else_(mem_swapBytes16(x)));
 };
 
 /* --- Alignment Functions --- */
@@ -782,161 +763,161 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
 /* --- template --- */
 
 #define __stmt__T_use_mem_asBytes$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_asBytes, _T)(P$$(_T) ptr))(S_const$u8)) { \
+    $inline_always $static fn_((tpl$(mem_asBytes, _T)(P$$(_T) ptr))(S_const$u8)) { \
         return mem_asBytes(u_anyP(ptr)); \
     }
 #define __stmt__T_use_mem_asBytesMut$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_asBytesMut, _T)(P$$(_T) ptr))(S$u8)) { \
+    $inline_always $static fn_((tpl$(mem_asBytesMut, _T)(P$$(_T) ptr))(S$u8)) { \
         return mem_asBytesMut(u_anyP(ptr)); \
     }
 #define __stmt__T_use_mem_bytesAs$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_bytesAs, _T)(S_const$u8 bytes))(P_const$$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_bytesAs, _T)(S_const$u8 bytes))(P_const$$(_T))) { \
         return mem_bytesAs(typeInfo$(_T), u_anyS(bytes)); \
     }
 #define __stmt__T_use_mem_bytesAsMut$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_bytesAsMut, _T)(S$u8 bytes))(P$$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_bytesAsMut, _T)(S$u8 bytes))(P$$(_T))) { \
         return mem_bytesAsMut(typeInfo$(_T), u_anyS(bytes)); \
     }
 #define __stmt__T_use_mem_asBytesS$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_asBytesS, _T)(S_const$(_T) sli))(S_const$u8)) { \
+    $inline_always $static fn_((tpl$(mem_asBytesS, _T)(S_const$(_T) sli))(S_const$u8)) { \
         return mem_asBytesS(u_anyS(sli)); \
     }
 #define __stmt__T_use_mem_asBytesMutS$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_asBytesMutS, _T)(S$(_T) sli))(S$u8)) { \
+    $inline_always $static fn_((tpl$(mem_asBytesMutS, _T)(S$(_T) sli))(S$u8)) { \
         return mem_asBytesMutS(u_anyS(sli)); \
     }
-#define __alias__mem_Bytes$(_T...) tpl_id(mem_Bytes, _T)
+#define __alias__mem_Bytes$(_T...) tpl$(mem_Bytes, _T)
 #define __stmt__T_use_mem_Bytes$(_T...) \
     T_alias$((mem_Bytes$(_T))(A$$(sizeOf$(_T), u8)))
 #define __stmt__T_use_mem_toBytes$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_toBytes, _T)(_T val))(mem_Bytes$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_toBytes, _T)(_T val))(mem_Bytes$(_T))) { \
         return S_deref$((mem_Bytes$(_T))(mem_toBytes(u_anyV(val), A_ref$((S$u8)(l0$((mem_Bytes$(_T)))))))); \
     }
 #define __stmt__T_use_mem_bytesTo$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_bytesTo, _T)(mem_Bytes$(_T) bytes))(_T)) { \
+    $inline_always $static fn_((tpl$(mem_bytesTo, _T)(mem_Bytes$(_T) bytes))(_T)) { \
         return u_castV$((_T)(mem_bytesTo(A_ref$((S$u8)(bytes)), u_retV$(_T)))); \
     }
 #define __stmt__T_use_mem_setP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_setP, _T)(P$$(_T) dst, _T val))(P$$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_setP, _T)(P$$(_T) dst, _T val))(P$$(_T))) { \
         return u_castP$((P$$(_T))(mem_setP(u_anyP(dst), u_anyV(val)))); \
     }
 #define __stmt__T_use_mem_set$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_set, _T)(S$(_T) dst, _T val))(S$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_set, _T)(S$(_T) dst, _T val))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_set(u_anyS(dst), u_anyV(val)))); \
     }
 #define __stmt__T_use_mem_setP0$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_setP0, _T)(P$$(_T) dst))(P$$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_setP0, _T)(P$$(_T) dst))(P$$(_T))) { \
         return u_castP$((P$$(_T))(mem_set0P(u_anyP(dst)))); \
     }
 #define __stmt__T_use_mem_set0$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_set0, _T)(S$(_T) dst))(S$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_set0, _T)(S$(_T) dst))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_set0(u_anyS(dst)))); \
     }
 #define __stmt__T_use_mem_copyP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_copyP, _T)(P$$(_T) dst, P_const$$(_T) src))(P$$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_copyP, _T)(P$$(_T) dst, P_const$$(_T) src))(P$$(_T))) { \
         return u_castP$((P$$(_T))(mem_copyP(u_anyP(dst), u_anyP(src)))); \
     }
 #define __stmt__T_use_mem_copy$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_copy, _T)(S$(_T) dst, S_const$(_T) src))(S$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_copy, _T)(S$(_T) dst, S_const$(_T) src))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_copy(u_anyS(dst), u_anyS(src)))); \
     }
 #define __stmt__T_use_mem_moveP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_moveP, _T)(P$$(_T) dst, P_const$$(_T) src))(P$$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_moveP, _T)(P$$(_T) dst, P_const$$(_T) src))(P$$(_T))) { \
         return u_castP$((P$$(_T))(mem_moveP(u_anyP(dst), u_anyP(src)))); \
     }
 #define __stmt__T_use_mem_move$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_move, _T)(S$(_T) dst, S_const$(_T) src))(S$(_T))) { \
+    $inline_always $static fn_((tpl$(mem_move, _T)(S$(_T) dst, S_const$(_T) src))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_move(u_anyS(dst), u_anyS(src)))); \
     }
 #define __stmt__T_use_mem_eqlP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_eqlP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_eqlP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
         return mem_eqlP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_eql$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_eql, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_eql, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_eql(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_neqP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_neqP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_neqP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
         return mem_neqP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_neq$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_neq, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_neq, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_neq(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_ordP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_ordP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(cmp_Ord)) { \
+    $inline_always $static fn_((tpl$(mem_ordP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(cmp_Ord)) { \
         return mem_ordP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_ord$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_ord, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(cmp_Ord)) { \
+    $inline_always $static fn_((tpl$(mem_ord, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(cmp_Ord)) { \
         return mem_ord(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_eqP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_eqP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_eqP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
         return mem_eqP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_eq$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_eq, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_eq, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_eq(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_neP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_neP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_neP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
         return mem_neP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_ne$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_ne, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_ne, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_ne(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_ltP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_ltP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_ltP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
         return mem_ltP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_lt$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_lt, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_lt, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_lt(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_gtP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_gtP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_gtP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
         return mem_gtP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_gt$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_gt, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_gt, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_gt(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_leP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_leP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_leP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
         return mem_leP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_le$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_le, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_le, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_le(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_geP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_geP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_geP, _T)(P_const$$(_T) lhs, P_const$$(_T) rhs))(bool)) { \
         return mem_geP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_ge$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_ge, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_ge, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(bool)) { \
         return mem_ge(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_swapP$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_swapP, _T)(P$$(_T) lhs, P$$(_T) rhs))(void)) { \
+    $inline_always $static fn_((tpl$(mem_swapP, _T)(P$$(_T) lhs, P$$(_T) rhs))(void)) { \
         return mem_swapP(u_anyP(lhs), u_anyP(rhs)); \
     }
 #define __stmt__T_use_mem_swap$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_swap, _T)(S$(_T) lhs, S$(_T) rhs))(void)) { \
+    $inline_always $static fn_((tpl$(mem_swap, _T)(S$(_T) lhs, S$(_T) rhs))(void)) { \
         return mem_swap(u_anyS(lhs), u_anyS(rhs)); \
     }
 #define __stmt__T_use_mem_reverse$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_reverse, _T)(S$(_T) seq))(void)) { \
+    $inline_always $static fn_((tpl$(mem_reverse, _T)(S$(_T) seq))(void)) { \
         return mem_reverse(u_anyS(seq)); \
     }
 #define __stmt__T_use_mem_rotate$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_rotate, _T)(S$(_T) seq, usize amount))(void)) { \
+    $inline_always $static fn_((tpl$(mem_rotate, _T)(S$(_T) seq, usize amount))(void)) { \
         return mem_rotate(u_anyS(seq), amount); \
     }
-#define __alias__mem_WindowIter$(_T...) tpl_id(mem_WindowIter, _T)
+#define __alias__mem_WindowIter$(_T...) tpl$(mem_WindowIter, _T)
 #define __stmt__T_use_mem_WindowIter$(_T...) \
     T_alias$((mem_WindowIter$(_T))(union mem_WindowIter$(_T) { \
         T_embed$(struct { \
@@ -950,28 +931,28 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
     }))
 #define __stmt__T_use_mem_window$(_T...) /* clang-format off */ \
         $attr($inline_always) \
-        $static fn_((tpl_id(mem_window, _T)(S_const$(_T) buf, usize size, usize advance))(mem_WindowIter$(_T)) $scope) { \
+        $static fn_((tpl$(mem_window, _T)(S_const$(_T) buf, usize size, usize advance))(mem_WindowIter$(_T)) $scope) { \
             return_({ .as_raw $like_deref = mem_window(u_anyS(buf), size, advance) }); \
         } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_WindowIter_reset$(_T...) /* clang-format off */ \
         $attr($inline_always) \
-        $static fn_((tpl_id(mem_WindowIter_reset, _T)($P$(mem_WindowIter$(_T)) self))(void)) { \
+        $static fn_((tpl$(mem_WindowIter_reset, _T)($P$(mem_WindowIter$(_T)) self))(void)) { \
             return mem_WindowIter_reset(self->as_raw); \
         } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_WindowIter_next$(_T...) /* clang-format off */ \
         $attr($inline_always) \
-        $static fn_((tpl_id(mem_WindowIter_next, _T)($P$(mem_WindowIter$(_T)) self))(O$(S_const$(_T))) $scope) { \
+        $static fn_((tpl$(mem_WindowIter_next, _T)($P$(mem_WindowIter$(_T)) self))(O$(S_const$(_T))) $scope) { \
             return_(u_castO$((ReturnType)(mem_WindowIter_next(self, typeInfo$(_T))))); \
         } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_startsWith$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_startsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_startsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
         return mem_startsWith(u_anyS(haystack), u_anyS(needle)); \
     }
 #define __stmt__T_use_mem_endsWith$(_T...) \
-    $inline_always $static fn_((tpl_id(mem_endsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
+    $inline_always $static fn_((tpl$(mem_endsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
         return mem_endsWith(u_anyS(haystack), u_anyS(needle)); \
     }
-#define __alias__mem_Delim$(_T...) tpl_id(mem_Delim, _T)
+#define __alias__mem_Delim$(_T...) tpl$(mem_Delim, _T)
 #define __stmt__T_use_mem_Delim$(_T...) \
     T_alias$((mem_Delim$(_T))(union mem_Delim$(_T) { \
         variant_(($maps(mem_DelimType))( \
@@ -981,7 +962,7 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
         )); \
         var_(as_raw, mem_Delim$raw) $like_ref; \
     }))
-#define __alias__mem_TokzIter$(_T...) tpl_id(mem_TokzIter, _T)
+#define __alias__mem_TokzIter$(_T...) tpl$(mem_TokzIter, _T)
 #define __stmt__T_use_mem_TokzIter$(_T...) \
     T_alias$((mem_TokzIter$(_T))(union mem_TokzIter$(_T) { \
         T_embed$(struct { \
@@ -994,40 +975,40 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
     }))
 #define __stmt__T_use_mem_tokzUnit$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_tokzUnit, _T)(S_const$(_T) buf, _T unit))(mem_TokzIter$(_T))) { \
+    $static fn_((tpl$(mem_tokzUnit, _T)(S_const$(_T) buf, _T unit))(mem_TokzIter$(_T))) { \
         return *as$(mem_TokzIter$(_T)*)(mem_tokzUnit(u_anyS(buf), u_anyV(unit), l0$((mem_TokzIter$(_T))).as_raw)); \
     } /* clang-format on */
 #define __stmt__T_use_mem_tokzSeq$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_tokzSeq, _T)(S_const$(_T) buf, S_const$(_T) seq))(mem_TokzIter$(_T))) { \
+    $static fn_((tpl$(mem_tokzSeq, _T)(S_const$(_T) buf, S_const$(_T) seq))(mem_TokzIter$(_T))) { \
         return *as$(mem_TokzIter$(_T)*)(mem_tokzSeq(u_anyS(buf), u_anyS(seq), l0$((mem_TokzIter$(_T))).as_raw)); \
     } /* clang-format on */
 #define __stmt__T_use_mem_tokzAny$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_tokzAny, _T)(S_const$(_T) buf, S_const$(_T) any))(mem_TokzIter$(_T))) { \
+    $static fn_((tpl$(mem_tokzAny, _T)(S_const$(_T) buf, S_const$(_T) any))(mem_TokzIter$(_T))) { \
         return *as$(mem_TokzIter$(_T)*)(mem_tokzAny(u_anyS(buf), u_anyS(any), l0$((mem_TokzIter$(_T))).as_raw)); \
     } /* clang-format on */
 #define __stmt__T_use_mem_TokzIter_reset$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_TokzIter_reset, _T)($P$(mem_TokzIter$(_T)) self))(void)) { \
+    $static fn_((tpl$(mem_TokzIter_reset, _T)($P$(mem_TokzIter$(_T)) self))(void)) { \
         return mem_TokzIter_reset(self->as_raw); \
     } /* clang-format on */
 #define __stmt__T_use_mem_TokzIter_next$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_TokzIter_next, _T)($P$(mem_TokzIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
+    $static fn_((tpl$(mem_TokzIter_next, _T)($P$(mem_TokzIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
         return_(u_castO$((ReturnType)(mem_TokzIter_next(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_TokzIter_peek$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_TokzIter_peek, _T)($P$(mem_TokzIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
+    $static fn_((tpl$(mem_TokzIter_peek, _T)($P$(mem_TokzIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
         return_(u_castO$((ReturnType)(mem_TokzIter_peek(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_TokzIter_rest$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_TokzIter_rest, _T)($P$(mem_TokzIter$(_T)) self))(S_const$(_T))$scope) { \
+    $static fn_((tpl$(mem_TokzIter_rest, _T)($P$(mem_TokzIter$(_T)) self))(S_const$(_T))$scope) { \
         return_(u_castS$((ReturnType)(mem_TokzIter_rest(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
-#define __alias__mem_SplitIter$(_T...) tpl_id(mem_SplitIter, _T)
+#define __alias__mem_SplitIter$(_T...) tpl$(mem_SplitIter, _T)
 #define __stmt__T_use_mem_SplitIter$(_T...) \
     T_alias$((mem_SplitIter$(_T))(union mem_SplitIter$(_T) { \
         T_embed$(struct { \
@@ -1040,42 +1021,42 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
     }))
 #define __stmt__T_use_mem_splitUnit$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_splitUnit, _T)(S_const$(_T) buf, _T unit))(mem_SplitIter$(_T))) { \
+    $static fn_((tpl$(mem_splitUnit, _T)(S_const$(_T) buf, _T unit))(mem_SplitIter$(_T))) { \
         return *as$(mem_SplitIter$(_T)*)(mem_splitUnit(u_anyS(buf), u_anyV(unit), l0$((mem_SplitIter$(_T))).as_raw)); \
     } /* clang-format on */
 #define __stmt__T_use_mem_splitSeq$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_splitSeq, _T)(S_const$(_T) buf, S_const$(_T) seq))(mem_SplitIter$(_T))) { \
+    $static fn_((tpl$(mem_splitSeq, _T)(S_const$(_T) buf, S_const$(_T) seq))(mem_SplitIter$(_T))) { \
         return *as$(mem_SplitIter$(_T)*)(mem_splitSeq(u_anyS(buf), u_anyS(seq), l0$((mem_SplitIter$(_T))).as_raw)); \
     } /* clang-format on */
 #define __stmt__T_use_mem_splitAny$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_splitAny, _T)(S_const$(_T) buf, S_const$(_T) any))(mem_SplitIter$(_T))) { \
+    $static fn_((tpl$(mem_splitAny, _T)(S_const$(_T) buf, S_const$(_T) any))(mem_SplitIter$(_T))) { \
         return *as$(mem_SplitIter$(_T)*)(mem_splitAny(u_anyS(buf), u_anyS(any), l0$((mem_SplitIter$(_T))).as_raw)); \
     } /* clang-format on */
 #define __stmt__T_use_mem_SplitIter_reset$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_SplitIter_reset, _T)($P$(mem_SplitIter$(_T)) self))(void)) { \
+    $static fn_((tpl$(mem_SplitIter_reset, _T)($P$(mem_SplitIter$(_T)) self))(void)) { \
         return mem_SplitIter_reset(self->as_raw); \
     } /* clang-format on */
 #define __stmt__T_use_mem_SplitIter_first$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_SplitIter_first, _T)($P$(mem_SplitIter$(_T)) self))(S_const$(_T))$scope) { \
+    $static fn_((tpl$(mem_SplitIter_first, _T)($P$(mem_SplitIter$(_T)) self))(S_const$(_T))$scope) { \
         return_(u_castS$((ReturnType)(mem_SplitIter_first(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_SplitIter_next$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_SplitIter_next, _T)($P$(mem_SplitIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
+    $static fn_((tpl$(mem_SplitIter_next, _T)($P$(mem_SplitIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
         return_(u_castO$((ReturnType)(mem_SplitIter_next(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_SplitIter_peek$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_SplitIter_peek, _T)($P$(mem_SplitIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
+    $static fn_((tpl$(mem_SplitIter_peek, _T)($P$(mem_SplitIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
         return_(u_castO$((ReturnType)(mem_SplitIter_peek(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_SplitIter_rest$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(mem_SplitIter_rest, _T)($P$(mem_SplitIter$(_T)) self))(S_const$(_T))$scope) { \
+    $static fn_((tpl$(mem_SplitIter_rest, _T)($P$(mem_SplitIter$(_T)) self))(S_const$(_T))$scope) { \
         return_(u_castS$((ReturnType)(mem_SplitIter_rest(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
 

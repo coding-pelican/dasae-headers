@@ -107,7 +107,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
         var_(as_raw, ListDbl_Link) $like_ref; \
     }
 #define __comp_alias__ListDbl_Link$(_T...) \
-    pp_join($, ListDbl_Link, _T)
+    tpl$(ListDbl_Link, _T)
 #define __comp_gen__T_decl_ListDbl_Link$(_T...) \
     $maybe_unused typedef union ListDbl_Link$(_T) ListDbl_Link$(_T); \
     T_use_P$(ListDbl_Link$(_T)); \
@@ -128,27 +128,27 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
 /* clang-format off */
 #define T_use_ListDbl_Link_empty$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Link_empty, _T)(void))(ListDbl_Link$(_T))) { \
+    $static fn_((tpl$(ListDbl_Link_empty, _T)(void))(ListDbl_Link$(_T))) { \
         return type$((ListDbl_Link$(_T))(ListDbl_Link_empty(typeInfo$(_T)))); \
     }
 #define T_use_ListDbl_Link_adp$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Link_adp, _T)(P_const$(ListDbl_Link$(_T)) self))(const ListDbl_Adp$(_T)*)) { \
+    $static fn_((tpl$(ListDbl_Link_adp, _T)(P_const$(ListDbl_Link$(_T)) self))(const ListDbl_Adp$(_T)*)) { \
         return as$(const ListDbl_Adp$(_T)*)(ListDbl_Link_adp(self->as_raw)); \
     }
 #define T_use_ListDbl_Link_adpMut$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Link_adpMut, _T)(P$(ListDbl_Link$(_T)) self))(ListDbl_Adp$(_T)*)) { \
+    $static fn_((tpl$(ListDbl_Link_adpMut, _T)(P$(ListDbl_Link$(_T)) self))(ListDbl_Adp$(_T)*)) { \
         return as$(ListDbl_Adp$(_T)*)(ListDbl_Link_adpMut(self->as_raw)); \
     }
 #define T_use_ListDbl_Link_data$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Link_data, _T)(P_const$(ListDbl_Link$(_T)) self))(const _T*)) { \
+    $static fn_((tpl$(ListDbl_Link_data, _T)(P_const$(ListDbl_Link$(_T)) self))(const _T*)) { \
         return u_castP$((const _T*)(ListDbl_Link_data(self->as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ListDbl_Link_dataMut$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Link_dataMut, _T)(P$(ListDbl_Link$(_T)) self))(_T*)) { \
+    $static fn_((tpl$(ListDbl_Link_dataMut, _T)(P$(ListDbl_Link$(_T)) self))(_T*)) { \
         return u_castP$((_T*)(ListDbl_Link_dataMut(self->as_raw, typeInfo$(_T)))); \
     }
 /* clang-format on */
@@ -165,7 +165,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
         var_(as_raw, ListDbl_Adp$raw) $like_ref; \
     }
 #define __comp_alias__ListDbl_Adp$(_T...) \
-    pp_join($, ListDbl_Adp, _T)
+    tpl$(ListDbl_Adp, _T)
 #define __comp_gen__T_decl_ListDbl_Adp$(_T...) \
     $maybe_unused typedef union ListDbl_Adp$(_T) ListDbl_Adp$(_T)
 #define __comp_gen__T_impl_ListDbl_Adp$(_T...) \
@@ -186,32 +186,32 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
 /* clang-format off */
 #define T_use_ListDbl_Adp_empty$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Adp_empty, _T)(void))(ListDbl_Adp$(_T)*)) { \
+    $static fn_((tpl$(ListDbl_Adp_empty, _T)(void))(ListDbl_Adp$(_T)*)) { \
         return *as$(ListDbl_Adp$(_T)*)(ListDbl_Adp_empty(typeInfo$(_T), l0$((ListDbl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListDbl_Adp_init$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Adp_init, _T)(_T data))(ListDbl_Adp$(_T)*)) { \
+    $static fn_((tpl$(ListDbl_Adp_init, _T)(_T data))(ListDbl_Adp$(_T)*)) { \
         return *as$(ListDbl_Adp$(_T)*)(ListDbl_Adp_init(u_anyV(data), l0$((ListDbl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListDbl_Adp_link$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Adp_link, _T)(const ListDbl_Adp$(_T)* self))(P_const$(ListDbl_Link$(_T)))) { \
+    $static fn_((tpl$(ListDbl_Adp_link, _T)(const ListDbl_Adp$(_T)* self))(P_const$(ListDbl_Link$(_T)))) { \
         return as$(P$(ListDbl_Link$(_T)))(ListDbl_Adp_link(self->as_raw)); \
     }
 #define T_use_ListDbl_Adp_linkMut$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Adp_linkMut, _T)(ListDbl_Adp$(_T)* self))(P$(ListDbl_Link$(_T)))) { \
+    $static fn_((tpl$(ListDbl_Adp_linkMut, _T)(ListDbl_Adp$(_T)* self))(P$(ListDbl_Link$(_T)))) { \
         return as$(P$(ListDbl_Link$(_T)))(ListDbl_Adp_linkMut(self->as_raw)); \
     }
 #define T_use_ListDbl_Adp_data$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Adp_data, _T)(const ListDbl_Adp$(_T)* self))(const _T*)) { \
+    $static fn_((tpl$(ListDbl_Adp_data, _T)(const ListDbl_Adp$(_T)* self))(const _T*)) { \
         return u_castP$((const _T*)(ListDbl_Adp_data(self->as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ListDbl_Adp_dataMut$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_Adp_dataMut, _T)(ListDbl_Adp$(_T)* self))(_T*)) { \
+    $static fn_((tpl$(ListDbl_Adp_dataMut, _T)(ListDbl_Adp$(_T)* self))(_T*)) { \
         return u_castP$((_T*)(ListDbl_Adp_dataMut(self->as_raw, typeInfo$(_T)))); \
     }
 /* clang-format on */
@@ -227,7 +227,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
         var_(as_raw, ListDbl) $like_ref; \
     }
 #define __comp_alias__ListDbl$(_T...) \
-    pp_join($, ListDbl, _T)
+    tpl$(ListDbl, _T)
 #define __comp_gen__T_decl_ListDbl$(_T...) \
     $maybe_unused typedef union ListDbl$(_T) ListDbl$(_T)
 #define __comp_gen__T_impl_ListDbl$(_T...) \
@@ -247,52 +247,52 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
 /* clang-format off */
 #define T_use_ListDbl_empty$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_empty, _T)(void))(ListDbl$(_T))) { \
+    $static fn_((tpl$(ListDbl_empty, _T)(void))(ListDbl$(_T))) { \
         return type$((ListDbl$(_T))(ListDbl_empty(typeInfo$(_T)))); \
     }
 #define T_use_ListDbl_insertNext$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_insertNext, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) link, P$(ListDbl_Link$(_T)) new_link))(void)) { \
+    $static fn_((tpl$(ListDbl_insertNext, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) link, P$(ListDbl_Link$(_T)) new_link))(void)) { \
         return ListDbl_insertNext(self->as_raw, link->as_raw, new_link->as_raw); \
     }
 #define T_use_ListDbl_insertPrev$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_insertPrev, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) link, P$(ListDbl_Link$(_T)) new_link))(void)) { \
+    $static fn_((tpl$(ListDbl_insertPrev, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) link, P$(ListDbl_Link$(_T)) new_link))(void)) { \
         return ListDbl_insertPrev(self->as_raw, link->as_raw, new_link->as_raw); \
     }
 #define T_use_ListDbl_concatByMoving$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_concatByMoving, _T)(ListDbl$(_T)* dst, ListDbl$(_T)* src))(void)) { \
+    $static fn_((tpl$(ListDbl_concatByMoving, _T)(ListDbl$(_T)* dst, ListDbl$(_T)* src))(void)) { \
         return ListDbl_concatByMoving(dst->as_raw, src->as_raw); \
     }
 #define T_use_ListDbl_append$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_append, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) last))(void)) { \
+    $static fn_((tpl$(ListDbl_append, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) last))(void)) { \
         return ListDbl_append(self->as_raw, last->as_raw); \
     }
 #define T_use_ListDbl_prepend$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_prepend, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) first))(void)) { \
+    $static fn_((tpl$(ListDbl_prepend, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) first))(void)) { \
         return ListDbl_prepend(self->as_raw, first->as_raw); \
     }
 #define T_use_ListDbl_remove$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_remove, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) link))(void)) { \
+    $static fn_((tpl$(ListDbl_remove, _T)(ListDbl$(_T)* self, P$(ListDbl_Link$(_T)) link))(void)) { \
         return ListDbl_remove(self->as_raw, link->as_raw); \
     }
 #define T_use_ListDbl_pop$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_pop, _T)(ListDbl$(_T)* self))(O$(P$(ListDbl_Link$(_T))))) { \
+    $static fn_((tpl$(ListDbl_pop, _T)(ListDbl$(_T)* self))(O$(P$(ListDbl_Link$(_T))))) { \
         return typeO$((O$(P$(ListDbl_Link$(_T))))(ListDbl_pop(self->as_raw))); \
     }
 #define T_use_ListDbl_shift$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_shift, _T)(ListDbl$(_T)* self))(O$(P$(ListDbl_Link$(_T))))) { \
+    $static fn_((tpl$(ListDbl_shift, _T)(ListDbl$(_T)* self))(O$(P$(ListDbl_Link$(_T))))) { \
         return typeO$((O$(P$(ListDbl_Link$(_T))))(ListDbl_shift(self->as_raw))); \
     }
 #define T_use_ListDbl_len$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl_id(ListDbl_len, _T)(const ListDbl$(_T)* self))(usize)) { \
+    $static fn_((tpl$(ListDbl_len, _T)(const ListDbl$(_T)* self))(usize)) { \
         return ListDbl_len(self->as_raw); \
     }
 /* clang-format on */

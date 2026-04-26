@@ -83,8 +83,8 @@ extern "C" {
 
 /*========== Arithmetic Operations ==========================================*/
 
-#define pri_isZero(_x...) __op__pri_isZero(_x)
-#define pri_isNonzero(_x...) __op__pri_isNonzero(_x)
+#define isZero(_x...) __op__isZero(_x)
+#define isNonzero(_x...) __op__isNonzero(_x)
 
 #define pri_add(_lhs, _rhs...) __op__pri_add(_lhs, _rhs)
 #define pri_sub(_lhs, _rhs...) __op__pri_sub(_lhs, _rhs)
@@ -649,8 +649,8 @@ $inline_always
     local_return_(pri_sgn_static(__x)); \
 })
 
-#define __op__pri_isZero(_x...) pri_eql(_x, 0)
-#define __op__pri_isNonzero(_x...) pri_neq(_x, 0)
+#define __op__isZero(_x...) pri_eql(_x, 0)
+#define __op__isNonzero(_x...) pri_neq(_x, 0)
 
 #define __op__pri_not(_x...) bool_(!(_x))
 #define __op__pri_and(_x, _y...) bool_((_x) && (_y))
@@ -2076,7 +2076,7 @@ $inline_always
     let_(__y, FltType) = _y; \
     let_(__x, FltType) = _x; \
     /* Domain: Non-Origin */ \
-    claim_assert(pri_isNonzero(__y) || pri_isNonzero(__x)); \
+    claim_assert(isNonzero(__y) || isNonzero(__x)); \
     local_return_(T_switch$((TypeOf(FltType))( \
         T_case$((f32)(__builtin_atan2f(as$(f32)(__y), as$(f32)(__x)))), \
         T_case$((f64)(__builtin_atan2(as$(f64)(__y), as$(f64)(__x)))) \

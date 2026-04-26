@@ -30,16 +30,6 @@ let_(time_Thrd_VTbl_failing, time_Thrd_VTbl) = {
     .nowFn = time_Thrd_VTbl_unreachableNow,
 };
 
-fn_((time_Thrd_VTbl_noNow(P$raw ctx))(time_Thrd_Inst)) {
-    let_ignore = ctx;
-    return (time_Thrd_Inst){ .raw = time_Inst_from(0, 0) };
-};
-
-fn_((time_Thrd_VTbl_unreachableNow(P$raw ctx))(time_Thrd_Inst)) {
-    let_ignore = ctx;
-    claim_unreachable_msg("Thread time source is unavailable");
-};
-
 $static var_(time_Thrd_noop_ctx, Void) = cleared();
 let_(time_Thrd_noop, time_Thrd) = {
     .ctx = &time_Thrd_noop_ctx,
@@ -52,7 +42,7 @@ let_(time_Thrd_failing, time_Thrd) = {
     .vtbl = &time_Thrd_VTbl_failing,
 };
 
-fn_((time_Thrd_direct(void))(time_E$time_Thrd) $scope) {
+fn_((time_Thrd_direct(void))(time_direct_E$time_Thrd) $scope) {
     pp_if_(time_Thrd_direct_supported)(
         pp_then_({
             $static var_(ctx, Void) $like_ref = cleared();
@@ -65,7 +55,7 @@ fn_((time_Thrd_direct(void))(time_E$time_Thrd) $scope) {
             }));
         }),
         pp_else_({
-            return_err(time_E_Unsupported());
+            return_err(time_direct_E_Unsupported());
         })
     );
 } $unscoped(fn);
@@ -139,6 +129,16 @@ cmp_fn_eqlCtx$((time_Thrd_Inst)(lhs, rhs, ctx)) {
     return $ignore_void ctx, cmp_eql$(time_Thrd_Inst)(lhs, rhs);
 };
 cmp_fn_neqCtx_default$((time_Thrd_Inst)(lhs, rhs, ctx));
+
+fn_((time_Thrd_VTbl_noNow(P$raw ctx))(time_Thrd_Inst)) {
+    let_ignore = ctx;
+    return (time_Thrd_Inst){ .raw = time_Inst_from(0, 0) };
+};
+
+fn_((time_Thrd_VTbl_unreachableNow(P$raw ctx))(time_Thrd_Inst)) {
+    let_ignore = ctx;
+    claim_unreachable_msg("Thread time source is unavailable");
+};
 
 /*========== Direct Source Definitions ======================================*/
 

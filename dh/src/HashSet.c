@@ -92,7 +92,11 @@ fn_((HashSet_EqlFn_default(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) {
     return HashMap_EqlFn_default(lhs, rhs, ctx);
 };
 
-fn_((HashSet_Ctx_default(void))(P_const$HashSet_Ctx)) {
+fn_((HashSet_LoadRatio_default(void))(HashSet_LoadRatio)) {
+    return HashSet_LoadRatio_limit(HashSet_LoadRatio_default_max);
+};
+
+fn_((HashSet_Ctx_default(void))(HashSet_Ctx)) {
     return HashMap_Ctx_default();
 };
 
@@ -113,8 +117,8 @@ $static fn_((HashSet__metadataAt(HashSet self, usize idx))(HashMap_Ctrl*)) {
     return unwrap_(self.metadata) + idx;
 };
 
-$static fn_((HashSet__capForSize(u32 size))(u32)) {
-    var_(new_cap, u64) = (as$(u64)(size) * 100) / HashSet_default_max_load_ratio + 1;
+$static fn_((HashSet__capForSize(HashSet_LoadRatio load_ratio, u32 size))(u32)) {
+    var_(new_cap, u64) = (as$(u64)(size) * 100) / HashSet_LoadRatio_max(load_ratio) + 1;
     // Round up to power of 2
     new_cap--;
     new_cap |= new_cap >> 1;
@@ -319,7 +323,7 @@ $static fn_((HashSet__grow(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 ne
     var_(new_set, HashSet) = HashSet_empty(key_ty, self->ctx);
     try_(HashSet__alloc(&new_set, key_ty, gpa, new_cap));
     HashSet__initMetadata(&new_set);
-    new_set.available = (new_cap * HashSet_default_max_load_ratio) / 100;
+    new_set.available = (new_cap * HashSet_LoadRatio_max(self->ctx->load_ratio)) / 100;
 
     if (self->size != 0) {
         let old_cap = HashSet_cap(*self);
@@ -339,8 +343,8 @@ $static fn_((HashSet__grow(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 ne
 
 $static fn_((HashSet__growIfNeeded(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 new_count))(mem_E$void) $scope) {
     if (new_count > self->available) {
-        let load = (HashSet_cap(*self) * HashSet_default_max_load_ratio) / 100 - self->available;
-        try_(HashSet__grow(self, key_ty, gpa, HashSet__capForSize(load + new_count)));
+        let load = (HashSet_cap(*self) * HashSet_LoadRatio_max(self->ctx->load_ratio)) / 100 - self->available;
+        try_(HashSet__grow(self, key_ty, gpa, HashSet__capForSize(self->ctx->load_ratio, load + new_count)));
     }
     return_ok({});
 } $unscoped(fn);
@@ -363,10 +367,10 @@ fn_((HashSet_init(TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Alctr gpa, u32 c
     claim_assert_nonnull(ctx);
     var set = HashSet_empty(key_ty, ctx);
     if (cap > 0) {
-        let actual_cap = pri_max(HashSet__capForSize(cap), HashSet_default_min_cap);
+        let actual_cap = pri_max(HashSet__capForSize(ctx->load_ratio, cap), HashSet_default_min_cap);
         try_(HashSet__alloc(&set, key_ty, gpa, actual_cap));
         HashSet__initMetadata(&set);
-        set.available = (actual_cap * HashSet_default_max_load_ratio) / 100;
+        set.available = (actual_cap * HashSet_LoadRatio_max(ctx->load_ratio)) / 100;
     }
     return_ok(set);
 } $unscoped(fn);
@@ -392,10 +396,10 @@ fn_((HashSet_cloneWithCtx(
         return_ok(other);
     }
 
-    let new_cap = HashSet__capForSize(self.size);
+    let new_cap = HashSet__capForSize(ctx->load_ratio, self.size);
     try_(HashSet__alloc(&other, key_ty, gpa, new_cap));
     HashSet__initMetadata(&other);
-    other.available = (new_cap * HashSet_default_max_load_ratio) / 100;
+    other.available = (new_cap * HashSet_LoadRatio_max(ctx->load_ratio)) / 100;
 
     let cap = HashSet_cap(self);
     for_(($r(0, cap))(i)) {
@@ -439,7 +443,7 @@ fn_((HashSet_clearRetainingCap(HashSet* self))(void)) {
     if_none(self->metadata) { return; }
     HashSet__initMetadata(self);
     self->size = 0;
-    self->available = (HashSet_cap(*self) * HashSet_default_max_load_ratio) / 100;
+    self->available = (HashSet_cap(*self) * HashSet_LoadRatio_max(self->ctx->load_ratio)) / 100;
 };
 
 fn_((HashSet_clearAndFree(HashSet* self, TypeInfo key_ty, mem_Alctr gpa))(void)) {

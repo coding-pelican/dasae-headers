@@ -11,7 +11,7 @@ fn_((time_Inst_from(u64 secs, u32 nanos))(time_Inst)) {
 };
 
 fn_((time_Inst_isZero(time_Inst self))(bool)) {
-    return pri_isZero(self.secs) && pri_isZero(self.nanos);
+    return isZero(self.secs) && isZero(self.nanos);
 };
 
 fn_((time_Inst_ticks(time_Inst self))(u64)) {

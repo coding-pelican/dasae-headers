@@ -12,11 +12,13 @@ extern "C" {
 #include "exec/common.h"
 
 #include "exec/Lane.h"
+#include "exec/Seq.h"
+
 #include "exec/Timer.h"
 #include "exec/LaneTimed.h"
-
-#include "exec/Seq.h"
+#include "exec/Evented.h"
 #include "exec/Coop.h"
+
 #include "exec/Preem.h"
 #include "exec/Para.h"
 

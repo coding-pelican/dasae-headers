@@ -70,7 +70,7 @@ T_alias$((Closure$raw)(struct Closure$raw {
 /*========== Macros and Definitions =========================================*/
 
 /*--- Closure's Context ---*/
-#define __alias__Closure_Ctx$(_T...) tpl_id$T(Closure_Ctx, _T)
+#define __alias__Closure_Ctx$(_T...) tpl$(Closure_Ctx, _T)
 #define __stmt__T_use_Closure_Ctx$(_T...) \
     T_decl_Closure_Ctx$(_T); \
     T_impl_Closure_Ctx$(_T)
@@ -88,11 +88,11 @@ T_alias$((Closure$raw)(struct Closure$raw {
         var_(as_raw, Closure_Ctx$raw) $flexible; \
     }
 /*--- Closure's Routine ---*/
-#define __alias__Closure_Rtn$(_T...) tpl_id$T(Closure_Rtn, _T)
+#define __alias__Closure_Rtn$(_T...) tpl$(Closure_Rtn, _T)
 #define __stmt__T_use_Closure_Rtn$(_T...) \
     T_alias$((Closure_Rtn$(_T))(fn_(((*)(P$$(Closure_Ctx$(_T)) ctx))(P$$(Closure_Ctx$(_T)))$T)))
 /*--- Closure's Base ---*/
-#define __alias__Closure$(_T...) tpl_id$T(Closure, _T)
+#define __alias__Closure$(_T...) tpl$(Closure, _T)
 #define __stmt__T_use_Closure$(_T...) \
     decl_Closure$(_T); \
     impl_Closure$(_T)
@@ -111,14 +111,14 @@ T_alias$((Closure$raw)(struct Closure$raw {
         var_(as_raw, Closure$raw) $flexible; \
     }
 /*--- Closure's Fields ---*/
-#define __alias__Closure_Ret_(_rtn...) pp_join(_, Closure_Ret, _rtn)
-#define __alias__Closure_Data_(_rtn...) pp_join(_, Closure_Data, _rtn)
-#define __alias__Closure_Ctx_(_rtn...) pp_join(_, Closure_Ctx, _rtn)
-#define __alias__Closure_Rtn_(_rtn...) pp_join(_, Closure_Rtn, _rtn)
-#define __alias__Closure_rtn_(_rtn...) pp_join(_, Closure_rtn, _rtn)
+#define __alias__Closure_Ret_(_rtn...) tpl_(Closure_Ret, _rtn)
+#define __alias__Closure_Data_(_rtn...) tpl_(Closure_Data, _rtn)
+#define __alias__Closure_Ctx_(_rtn...) tpl_(Closure_Ctx, _rtn)
+#define __alias__Closure_Rtn_(_rtn...) tpl_(Closure_Rtn, _rtn)
+#define __alias__Closure_rtn_(_rtn...) tpl_(Closure_rtn, _rtn)
 /*--- Closure ---*/
-#define __alias__Closure_(_rtn...) pp_join(_, Closure, _rtn)
-#define __alias__closure_(_rtn...) pp_join(_, closure, _rtn)
+#define __alias__Closure_(_rtn...) tpl_(Closure, _rtn)
+#define __alias__closure_(_rtn...) tpl_(closure, _rtn)
 #define __expr__invoke_(_p_closure...) __inline__invoke_(pp_uniqTok(p_ctx), pp_uniqTok(p_closure), _p_closure)
 #define __inline__invoke_(__p_ctx, __p_closure, _p_closure...) local_({ \
     let __p_closure = _p_closure; \
@@ -129,7 +129,7 @@ T_alias$((Closure$raw)(struct Closure$raw {
     ))); \
 })
 /* --- Closure of Function --- */
-#define Closure_Fn_Args_(_rtn...) pp_join(_, Closure_Fn_Args, _rtn)
+#define Closure_Fn_Args_(_rtn...) tpl_(Closure_Fn_Args, _rtn)
 // #define fn_use_Closure_Fn_Args_(_rtn...) __stmt__fn_use_Closure_Args_(_rtn)
 #define __stmt__fn_use_Closure_(...) __step__fn_use_Closure_(__step__fn_use_Closure___parse0 __VA_ARGS__)
 #define __step__fn_use_Closure___parse0(_fn...) \
@@ -207,7 +207,7 @@ T_alias$((Closure$raw)(struct Closure$raw {
 #define __step__fn_use_Closure___tupFieldsToParams4(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4...) \
     _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3
 /* --- Closure of Coroutine --- */
-#define Closure_Co_Frame_(_rtn...) pp_join(_, Closure_Co_Frame, _rtn)
+#define Closure_Co_Frame_(_rtn...) tpl_(Closure_Co_Frame, _rtn)
 // #define co_use_Closure_Co_Frame_(_rtn...) __stmt__co_use_Closure_Co_Frame_(_rtn)
 #define __stmt__co_use_Closure_(...) __step__co_use_Closure_(__step__co_use_Closure___parse0 __VA_ARGS__)
 #define __step__co_use_Closure___parse0(_co...) \

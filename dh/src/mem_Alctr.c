@@ -16,58 +16,6 @@ let_(mem_Alctr_VTbl_failing, mem_Alctr_VTbl) = {
     .free = mem_Alctr_VTbl_unreachableFree,
 };
 
-fn_((mem_Alctr_VTbl_noAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8)) {
-    let_ignore = ctx;
-    let_ignore = len;
-    let_ignore = align;
-    return none$((O$P$u8));
-};
-
-fn_((mem_Alctr_VTbl_noResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
-    let_ignore = ctx;
-    let_ignore = buf;
-    let_ignore = buf_align;
-    let_ignore = new_len;
-    return false;
-};
-
-fn_((mem_Alctr_VTbl_unreachableResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
-    let_ignore = ctx;
-    let_ignore = buf;
-    let_ignore = buf_align;
-    let_ignore = new_len;
-    claim_unreachable;
-};
-
-fn_((mem_Alctr_VTbl_noRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
-    let_ignore = ctx;
-    let_ignore = buf;
-    let_ignore = buf_align;
-    let_ignore = new_len;
-    return none$((O$P$u8));
-};
-
-fn_((mem_Alctr_VTbl_unreachableRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
-    let_ignore = ctx;
-    let_ignore = buf;
-    let_ignore = buf_align;
-    let_ignore = new_len;
-    claim_unreachable;
-};
-
-fn_((mem_Alctr_VTbl_noFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
-    let_ignore = ctx;
-    let_ignore = buf;
-    let_ignore = buf_align;
-};
-
-fn_((mem_Alctr_VTbl_unreachableFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
-    let_ignore = ctx;
-    let_ignore = buf;
-    let_ignore = buf_align;
-    claim_unreachable;
-};
-
 $static var_(mem_Alctr_noop_ctx, Void) = cleared();
 let_(mem_Alctr_noop, mem_Alctr) = {
     .ctx = &mem_Alctr_noop_ctx,
@@ -284,3 +232,55 @@ fn_((mem_Alctr_dupe($traced mem_Alctr self, u_S_const$raw src))(mem_E$u_S$raw) $
     let new_mem = try_(mem_Alctr_alloc($tracing self, src.type, src.len));
     return_ok(mem_copy(new_mem, src));
 } $unscoped(fn);
+
+fn_((mem_Alctr_VTbl_noAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8)) {
+    let_ignore = ctx;
+    let_ignore = len;
+    let_ignore = align;
+    return none$((O$P$u8));
+};
+
+fn_((mem_Alctr_VTbl_noResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
+    let_ignore = ctx;
+    let_ignore = buf;
+    let_ignore = buf_align;
+    let_ignore = new_len;
+    return false;
+};
+
+fn_((mem_Alctr_VTbl_unreachableResize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
+    let_ignore = ctx;
+    let_ignore = buf;
+    let_ignore = buf_align;
+    let_ignore = new_len;
+    claim_unreachable;
+};
+
+fn_((mem_Alctr_VTbl_noRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
+    let_ignore = ctx;
+    let_ignore = buf;
+    let_ignore = buf_align;
+    let_ignore = new_len;
+    return none$((O$P$u8));
+};
+
+fn_((mem_Alctr_VTbl_unreachableRemap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
+    let_ignore = ctx;
+    let_ignore = buf;
+    let_ignore = buf_align;
+    let_ignore = new_len;
+    claim_unreachable;
+};
+
+fn_((mem_Alctr_VTbl_noFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
+    let_ignore = ctx;
+    let_ignore = buf;
+    let_ignore = buf_align;
+};
+
+fn_((mem_Alctr_VTbl_unreachableFree(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
+    let_ignore = ctx;
+    let_ignore = buf;
+    let_ignore = buf_align;
+    claim_unreachable;
+};

@@ -28,6 +28,13 @@ $static fn_((Sched_coop__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw resul
 
 /*========== External Definitions ===========================================*/
 
+let_(Sched_VTbl_noop, Sched_VTbl) = {
+    .asyncFn = Sched_VTbl_noAsync,
+    .spawnFn = Sched_VTbl_failingSpawn,
+    .awaitFn = Sched_VTbl_noAwait,
+    .cancelFn = Sched_VTbl_noCancel,
+};
+
 let_(Sched_VTbl_failing, Sched_VTbl) = {
     .asyncFn = Sched_VTbl_noAsync,
     .spawnFn = Sched_VTbl_failingSpawn,
@@ -35,44 +42,16 @@ let_(Sched_VTbl_failing, Sched_VTbl) = {
     .cancelFn = Sched_VTbl_unreachableCancel,
 };
 
-fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
-    let_ignore = ctx;
-    let_ignore = result;
-    let_ignore = inner;
-    return_none();
-} $unscoped(fn);
-
-fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
-    let_ignore = ctx;
-    let_ignore = result;
-    let_ignore = inner;
-    return_err(Sched_ConcE_Unavailable());
-} $unscoped(fn);
-
-fn_((Sched_VTbl_noAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
-    let_ignore = ctx;
-    let_ignore = any_future;
-    let_ignore = result;
+$static var_(Sched_noop__ctx, Void) = cleared();
+let_(Sched_noop, Sched) = {
+    .ctx = &Sched_noop__ctx,
+    .vtbl = &Sched_VTbl_noop,
 };
 
-fn_((Sched_VTbl_unreachableAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
-    let_ignore = ctx;
-    let_ignore = any_future;
-    let_ignore = result;
-    claim_unreachable;
-};
-
-fn_((Sched_VTbl_noCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
-    let_ignore = ctx;
-    let_ignore = any_future;
-    let_ignore = result;
-};
-
-fn_((Sched_VTbl_unreachableCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
-    let_ignore = ctx;
-    let_ignore = any_future;
-    let_ignore = result;
-    claim_unreachable;
+$static var_(Sched_failing__ctx, Void) = cleared();
+let_(Sched_failing, Sched) = {
+    .ctx = &Sched_failing__ctx,
+    .vtbl = &Sched_VTbl_failing,
 };
 
 fn_((Sched_async(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw)) {
@@ -92,18 +71,6 @@ fn_((Sched_spawn(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw
     asg_l((&ret_mem->any_future)(some(try_(self.vtbl->spawnFn(self.ctx, result, closure)))));
     return_ok(ret_mem);
 } $unscoped(fn);
-
-$static var_(Sched_noop_ctx, Void) = cleared();
-let_(Sched_noop, Sched) = {
-    .ctx = &Sched_noop_ctx,
-    .vtbl = &Sched_VTbl_noop,
-};
-
-$static var_(Sched_failing_ctx, Void) = cleared();
-let_(Sched_failing, Sched) = {
-    .ctx = &Sched_failing_ctx,
-    .vtbl = &Sched_VTbl_failing,
-};
 
 fn_((Sched_seq(exec_Seq* self))(Sched)) {
     $static let_(vtbl, Sched_VTbl) $like_ref = { {
@@ -157,6 +124,46 @@ fn_((Sched_para(exec_Para* para))(Sched)) {
         .ctx = para,
         .vtbl = vtbl,
     });
+};
+
+fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
+    let_ignore = ctx;
+    let_ignore = result;
+    let_ignore = inner;
+    return_none();
+} $unscoped(fn);
+
+fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
+    let_ignore = ctx;
+    let_ignore = result;
+    let_ignore = inner;
+    return_err(Sched_ConcE_Unavailable());
+} $unscoped(fn);
+
+fn_((Sched_VTbl_noAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+    let_ignore = ctx;
+    let_ignore = any_future;
+    let_ignore = result;
+};
+
+fn_((Sched_VTbl_unreachableAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+    let_ignore = ctx;
+    let_ignore = any_future;
+    let_ignore = result;
+    claim_unreachable;
+};
+
+fn_((Sched_VTbl_noCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+    let_ignore = ctx;
+    let_ignore = any_future;
+    let_ignore = result;
+};
+
+fn_((Sched_VTbl_unreachableCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+    let_ignore = ctx;
+    let_ignore = any_future;
+    let_ignore = result;
+    claim_unreachable;
 };
 
 /*========== Internal Definitions ===========================================*/

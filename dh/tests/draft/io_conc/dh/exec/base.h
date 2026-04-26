@@ -12,10 +12,13 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 T_alias$((exec_Lane)(struct exec_Lane));
+T_alias$((exec_Seq)(struct exec_Seq));
+
 T_alias$((exec_Timer)(struct exec_Timer));
 T_alias$((exec_LaneTimed)(struct exec_LaneTimed));
-T_alias$((exec_Seq)(struct exec_Seq));
+T_alias$((exec_Evented)(struct exec_Evented));
 T_alias$((exec_Coop)(struct exec_Coop));
+
 T_alias$((exec_Preem)(struct exec_Preem));
 T_alias$((exec_Para)(struct exec_Para));
 

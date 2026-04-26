@@ -63,7 +63,7 @@ $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A
         }); \
         var_(as_raw, Future$raw) $flexible; \
     }
-#define __alias__Future$(_T...) tpl_id(Future, _T)
+#define __alias__Future$(_T...) tpl$(Future, _T)
 #define __stmt__T_decl_Future$(_T...) \
     T_alias$((Future$(_T))(union Future$(_T)))
 #define __stmt__T_impl_Future$(_T...) \
@@ -101,23 +101,23 @@ fn_((Future_resultMut(Future$raw* self, TypeInfo type))(u_P$raw)) {
 
 #define __stmt__T_use_Future_result$(_T...) /* clang-format off */  \
     $attr($inline_always) \
-    $static fn_((tpl_id(Future_result, _T)(const Future$(_T)* self))(const _T*)) { \
+    $static fn_((tpl$(Future_result, _T)(const Future$(_T)* self))(const _T*)) { \
         return u_castP$((_T)(Future_result(self->as_raw, typeInfo$(_T)))); \
     } /* clang-format on */
 #define __stmt__T_use_Future_resultMut$(_T...) /* clang-format off */\
     $attr($inline_always) \
-    $static fn_((tpl_id(Future_resultMut, _T)(Future$(_T)* self))(_T*)) { \
+    $static fn_((tpl$(Future_resultMut, _T)(Future$(_T)* self))(_T*)) { \
         return u_castP$((_T)(Future_resultMut(self->as_raw, typeInfo$(_T)))); \
     } /* clang-format on */
 
 #define __stmt__T_use_Future_await$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(Future_await, _T)(Future$(_T)* self, Sched sched))(_T)) { \
+    $static fn_((tpl$(Future_await, _T)(Future$(_T)* self, Sched sched))(_T)) { \
         return u_castV$((_T)(Future_await(self->as_raw, sched, u_retV$(_T)))); \
     }/* clang-format on */
 #define __stmt__T_use_Future_cancel$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl_id(Future_cancel, _T)(Future$(_T)* self, Sched sched))(_T)) { \
+    $static fn_((tpl$(Future_cancel, _T)(Future$(_T)* self, Sched sched))(_T)) { \
         return u_castV$((_T)(Future_cancel(self->as_raw, sched, u_retV$(_T)))); \
     } /* clang-format on */
 

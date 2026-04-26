@@ -16,8 +16,8 @@ extern "C" {
     using_m_V4$(T)
 
 #define using_m_V2$(T) \
-    typedef union pp_join($, m_V2, T) pp_join($, m_V2, T); \
-    union pp_join($, m_V2, T) { \
+    typedef union tpl$(m_V2, T) tpl$(m_V2, T); \
+    union tpl$(m_V2, T) { \
         var_(s, A$$(2, T)); \
         struct { \
             T s0, s1; \
@@ -28,8 +28,8 @@ extern "C" {
     }
 
 #define using_m_V3$(T) \
-    typedef union pp_join($, m_V3, T) pp_join($, m_V3, T); \
-    union pp_join($, m_V3, T) { \
+    typedef union tpl$(m_V3, T) tpl$(m_V3, T); \
+    union tpl$(m_V3, T) { \
         var_(s, A$$(3, T)); \
         struct { \
             T s0, s1, s2; \
@@ -40,8 +40,8 @@ extern "C" {
     }
 
 #define using_m_V4$(T) \
-    typedef union pp_join($, m_V4, T) pp_join($, m_V4, T); \
-    union pp_join($, m_V4, T) { \
+    typedef union tpl$(m_V4, T) tpl$(m_V4, T); \
+    union tpl$(m_V4, T) { \
         var_(s, A$$(4, T)); \
         struct { \
             T s0, s1, s2, s3; \

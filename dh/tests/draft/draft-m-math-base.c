@@ -246,17 +246,17 @@ $static fn_((m_atan2(m_Flt y, m_Flt x))(m_Flt)) {
 #define T_impl_m_V4$(_T...) __stmt__T_impl_m_V4$(_T)
 #define T_use_m_V4$(_T...) __stmt__T_use_m_V4$(_T)
 
-#define __alias__m_V2_A$(_T...) tpl_id$T(m_V2_A, _T)
+#define __alias__m_V2_A$(_T...) tpl$(m_V2_A, _T)
 #define __stmt__T_use_m_V2_A$(_T...) \
     T_alias$((m_V2_A$(_T))(A$$(2, _T)))
-#define __alias__m_V3_A$(_T...) tpl_id$T(m_V3_A, _T)
+#define __alias__m_V3_A$(_T...) tpl$(m_V3_A, _T)
 #define __stmt__T_use_m_V3_A$(_T...) \
     T_alias$((m_V3_A$(_T))(A$$(3, _T)))
-#define __alias__m_V4_A$(_T...) tpl_id$T(m_V4_A, _T)
+#define __alias__m_V4_A$(_T...) tpl$(m_V4_A, _T)
 #define __stmt__T_use_m_V4_A$(_T...) \
     T_alias$((m_V4_A$(_T))(A$$(4, _T)))
 
-#define __alias__m_V2$(_T...) tpl_id$T(m_V2, _T)
+#define __alias__m_V2$(_T...) tpl$(m_V2, _T)
 #define __stmt__T_decl_m_V2$(_T...) \
     T_alias$((m_V2$(_T))(union m_V2$(_T)))
 #define __stmt__T_impl_m_V2$(_T...) \
@@ -270,7 +270,7 @@ $static fn_((m_atan2(m_Flt y, m_Flt x))(m_Flt)) {
 #define __stmt__T_use_m_V2$(_T...) \
     T_decl_m_V2$(_T); \
     T_impl_m_V2$(_T)
-#define __alias__m_V3$(_T...) tpl_id$T(m_V3, _T)
+#define __alias__m_V3$(_T...) tpl$(m_V3, _T)
 #define __stmt__T_decl_m_V3$(_T...) \
     T_alias$((m_V3$(_T))(union m_V3$(_T)))
 #define __stmt__T_impl_m_V3$(_T...) \
@@ -285,7 +285,7 @@ $static fn_((m_atan2(m_Flt y, m_Flt x))(m_Flt)) {
 #define __stmt__T_use_m_V3$(_T...) \
     T_decl_m_V3$(_T); \
     T_impl_m_V3$(_T)
-#define __alias__m_V4$(_T...) tpl_id$T(m_V4, _T)
+#define __alias__m_V4$(_T...) tpl$(m_V4, _T)
 #define __stmt__T_decl_m_V4$(_T...) \
     T_alias$((m_V4$(_T))(union m_V4$(_T)))
 #define __stmt__T_impl_m_V4$(_T...) \

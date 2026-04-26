@@ -18,24 +18,15 @@ extern "C" {
 #define __bool__time_Boot_direct_supported pp_false
 #endif
 
-T_alias$((time_Boot_VTbl)(struct time_Boot_VTbl {
-    fn_(((*nowFn)(P$raw ctx))(time_Boot_Inst));
-    $attr($must_check)
-    fn_(((*sleepFn)(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
-}));
+T_alias$((time_Boot_VTbl)(struct time_Boot_VTbl));
 $extern let_(time_Boot_VTbl_noop, time_Boot_VTbl);
 $extern let_(time_Boot_VTbl_failing, time_Boot_VTbl);
-
-$extern fn_((time_Boot_VTbl_noNow(P$raw ctx))(time_Boot_Inst));
-$extern fn_((time_Boot_VTbl_unreachableNow(P$raw ctx))(time_Boot_Inst));
-$attr($must_check)
-$extern fn_((time_Boot_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
 struct time_Boot {
     var_(ctx, P$raw);
     var_(vtbl, P_const$$(time_Boot_VTbl));
 };
-T_impl_E$($set(time_E)(time_Boot));
+T_impl_E$($set(time_direct_E)(time_Boot));
 $extern let_(time_Boot_noop, time_Boot);
 $extern let_(time_Boot_failing, time_Boot);
 
@@ -59,7 +50,7 @@ $attr($must_check)
 $extern fn_((time_Boot_sleepNanos(time_Boot self, u32 nanos))(Sched_Cancelable$void));
 
 $attr($must_check)
-$extern fn_((time_Boot_direct(void))(time_E$time_Boot));
+$extern fn_((time_Boot_direct(void))(time_direct_E$time_Boot));
 
 struct time_Boot_Inst {
     var_(raw, time_Inst);
@@ -94,6 +85,16 @@ $extern cmp_fn_eql$((time_Boot_Inst)(lhs, rhs));
 $extern cmp_fn_neq$((time_Boot_Inst)(lhs, rhs));
 $extern cmp_fn_eqlCtx$((time_Boot_Inst)(lhs, rhs, ctx));
 $extern cmp_fn_neqCtx$((time_Boot_Inst)(lhs, rhs, ctx));
+
+struct time_Boot_VTbl {
+    fn_(((*nowFn)(P$raw ctx))(time_Boot_Inst));
+    $attr($must_check)
+    fn_(((*sleepFn)(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
+};
+$extern fn_((time_Boot_VTbl_noNow(P$raw ctx))(time_Boot_Inst));
+$extern fn_((time_Boot_VTbl_unreachableNow(P$raw ctx))(time_Boot_Inst));
+$attr($must_check)
+$extern fn_((time_Boot_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
 /*========== Macros and Definitions =========================================*/
 

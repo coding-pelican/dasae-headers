@@ -100,7 +100,7 @@ extern "C" {
         var_(as_arr, A$$(_n, _T)); \
     }
 #define __alias__simd_V$(_n, _T...) \
-    pp_join3($, simd_V, _n, _T)
+    tpl$(simd_V, _n, _T)
 #define __stmt__T_decl_simd_V$(_n, _T...) \
     $maybe_unused typedef union simd_V$(_n, _T) simd_V$(_n, _T)
 #define __stmt__T_impl_simd_V$(_n, _T...) \

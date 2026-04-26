@@ -34,22 +34,6 @@ let_(time_Boot_VTbl_failing, time_Boot_VTbl) = {
     .sleepFn = time_Boot_VTbl_failingSleep,
 };
 
-fn_((time_Boot_VTbl_noNow(P$raw ctx))(time_Boot_Inst)) {
-    let_ignore = ctx;
-    return (time_Boot_Inst){ .raw = time_Inst_from(0, 0) };
-};
-
-fn_((time_Boot_VTbl_unreachableNow(P$raw ctx))(time_Boot_Inst)) {
-    let_ignore = ctx;
-    claim_unreachable_msg("Boot time source is unavailable");
-};
-
-fn_((time_Boot_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) $scope) {
-    let_ignore = ctx;
-    let_ignore = dur;
-    return_err(Sched_Cancelable_Canceled());
-} $unscoped(fn);
-
 $static var_(time_Boot_noop_ctx, Void) = cleared();
 let_(time_Boot_noop, time_Boot) = {
     .ctx = &time_Boot_noop_ctx,
@@ -62,7 +46,7 @@ let_(time_Boot_failing, time_Boot) = {
     .vtbl = &time_Boot_VTbl_failing,
 };
 
-fn_((time_Boot_direct(void))(time_E$time_Boot) $scope) {
+fn_((time_Boot_direct(void))(time_direct_E$time_Boot) $scope) {
     pp_if_(time_Boot_direct_supported)(
         pp_then_({
             $static var_(ctx, Void) $like_ref = cleared();
@@ -76,7 +60,7 @@ fn_((time_Boot_direct(void))(time_E$time_Boot) $scope) {
             }));
         }),
         pp_else_({
-            return_err(time_E_Unsupported());
+            return_err(time_direct_E_Unsupported());
         })
     );
 } $unscoped(fn);
@@ -171,6 +155,22 @@ cmp_fn_eqlCtx$((time_Boot_Inst)(lhs, rhs, ctx)) {
     return $ignore_void ctx, cmp_eql$(time_Boot_Inst)(lhs, rhs);
 };
 cmp_fn_neqCtx_default$((time_Boot_Inst)(lhs, rhs, ctx));
+
+fn_((time_Boot_VTbl_noNow(P$raw ctx))(time_Boot_Inst)) {
+    let_ignore = ctx;
+    return (time_Boot_Inst){ .raw = time_Inst_from(0, 0) };
+};
+
+fn_((time_Boot_VTbl_unreachableNow(P$raw ctx))(time_Boot_Inst)) {
+    let_ignore = ctx;
+    claim_unreachable_msg("Boot time source is unavailable");
+};
+
+fn_((time_Boot_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) $scope) {
+    let_ignore = ctx;
+    let_ignore = dur;
+    return_err(Sched_Cancelable_Canceled());
+} $unscoped(fn);
 
 /*========== Direct Source Definitions ======================================*/
 
