@@ -26,6 +26,12 @@ $static fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner
 $static fn_((Sched_coop__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_coop__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 
+$static fn_((Sched_preem__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
+$attr($must_check)
+$static fn_((Sched_preem__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
+$static fn_((Sched_preem__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+$static fn_((Sched_preem__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
+
 /*========== External Definitions ===========================================*/
 
 let_(Sched_VTbl_noop, Sched_VTbl) = {
@@ -99,12 +105,11 @@ fn_((Sched_coop(exec_Coop* loop))(Sched)) {
 };
 
 fn_((Sched_preem(exec_Preem* preem))(Sched)) {
-    /* TODO: Support */
     $static let_(vtbl, Sched_VTbl) $like_ref = { {
-        .asyncFn = Sched_VTbl_noAsync,
-        .spawnFn = Sched_VTbl_failingSpawn,
-        .awaitFn = Sched_VTbl_unreachableAwait,
-        .cancelFn = Sched_VTbl_unreachableCancel,
+        .asyncFn = Sched_preem__async,
+        .spawnFn = Sched_preem__spawn,
+        .awaitFn = Sched_preem__await,
+        .cancelFn = Sched_preem__cancel,
     } };
     return Sched_ensureValid((Sched){
         .ctx = preem,
@@ -250,4 +255,44 @@ fn_((Sched_coop__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void
     let self = ptrAlignCast$((exec_Coop*)(ensureNonnull(ctx)));
     let task = ptrAlignCast$((exec_Task*)(ensureNonnull(any_future)));
     Sched__cancel(&self->timed.lane, task, result);
+};
+
+fn_((Sched_preem__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
+    claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
+    let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
+    let task = catch_((exec_Preem_createTask(self, result, inner))(
+        $ignore, {
+            u_memcpy(result, Closure_invokeToComplete(inner, result.type));
+            return_none();
+        }
+    ));
+    return_some(task->as_any);
+} $unscoped(fn);
+
+fn_((Sched_preem__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
+    claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
+    let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
+    let task = try_(exec_Preem_createTask(self, result, inner));
+    return_ok(task->as_any);
+} $unscoped(fn);
+
+fn_((Sched_preem__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+    claim_assert_nonnull(result.raw);
+    let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
+    let task = ptrAlignCast$((exec_Preem_Task*)(ensureNonnull(any_future)));
+    let_ignore = result;
+    let_ignore = Thrd_join(task->thrd);
+    exec_Preem_unlinkTask(self, task);
+    exec_Preem_destroyTask(self, task);
+};
+
+fn_((Sched_preem__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
+    claim_assert_nonnull(result.raw);
+    let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
+    let task = ptrAlignCast$((exec_Preem_Task*)(ensureNonnull(any_future)));
+    let_ignore = result;
+    task->state = exec_Task_State_canceled;
+    let_ignore = Thrd_join(task->thrd);
+    exec_Preem_unlinkTask(self, task);
+    exec_Preem_destroyTask(self, task);
 };

@@ -79,3 +79,9 @@ fn_((exec_Evented_cancel(exec_Evented self, exec_Evented_Handle handle, P$raw op
     claim_assert_nonnull(self.vtbl->cancelFn);
     return self.vtbl->cancelFn(self.ctx, handle, op);
 }
+
+fn_((exec_Evented_complete(exec_Evented_Completion completion))(void)) {
+    let op = ptrCast$((exec_Evented_Op*)(ensureNonnull(completion.op)));
+    claim_assert_nonnull(op->completeFn);
+    op->completeFn(op, completion);
+}

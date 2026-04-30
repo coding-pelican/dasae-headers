@@ -12,10 +12,10 @@ $static fn_((exec_Lane__destroyTask(exec_Lane* self, exec_Task* task))(void));
 fn_((exec_Lane__workFiber(P$raw owner, P$raw any_task))(void)) {
     let self = ptrAlignCast$((exec_Lane*)(ensureNonnull(owner)));
     let task = ptrAlignCast$((exec_Task*)(ensureNonnull(any_task)));
-    u_memcpy(task->result, exec_invokeToCompletion(task->inner, task->result.type));
+    u_memcpy(task->result, Closure_invokeToComplete(task->inner, task->result.type));
     if (task->state != exec_Task_State_canceled) task->state = exec_Task_State_done;
     let fiber = orelse_((task->fiber)(claim_unreachable));
-    exec_switchFromFiber(&fiber->ctx, &self->fiber_ctx);
+    exec_switchFromFiber(&fiber->context, &self->fiber_context);
     claim_unreachable;
 };
 
@@ -48,7 +48,7 @@ T_use$((P$exec_Task)(ArrList_empty, ArrQue_empty));
 fn_((exec_Lane_init(mem_Alctr gpa))(exec_Lane)) {
     return (exec_Lane){
         .gpa = mem_Alctr_ensureValid(gpa),
-        .fiber_ctx = {},
+        .fiber_context = {},
         .task_curr = none(),
         .tasks = ArrList_empty$P$exec_Task(),
         .tasks_ready = ArrQue_empty$P$exec_Task(),
@@ -112,7 +112,7 @@ fn_((exec_Lane_createReadyTask(
 fn_((exec_Lane_asyncTask(exec_Lane* self, u_P$raw result, P$$(Closure$raw) inner))(O$P$exec_Task) $scope) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let task = orelse_((exec_Lane_createReadyTask(self, result, inner))({
-        u_memcpy(result, exec_invokeToCompletion(inner, result.type));
+        u_memcpy(result, Closure_invokeToComplete(inner, result.type));
         return_none();
     }));
     return_some(task);
@@ -134,14 +134,14 @@ fn_((exec_Lane_runTask(exec_Lane* self, exec_Task* task))(void)) {
         let prev = self->task_curr;
         asg_l((&self->task_curr)(some(task)));
         let fiber = orelse_((task->fiber)(claim_unreachable));
-        exec_switchToFiber(&self->fiber_ctx, fiber);
+        exec_switchToFiber(&self->fiber_context, fiber);
         asg_l((&self->task_curr)(prev));
         return;
     }
     let prev = self->task_curr;
     asg_l((&self->task_curr)(some(task)));
     task->state = exec_Task_State_running;
-    let ret = exec_invokeToStep(task->inner, task->result.type);
+    let ret = Closure_invokeToStep(task->inner, task->result.type);
     let done = isSome(ret);
     if (done) u_memcpy(task->result, unwrap_(ret));
     if (task->state == exec_Task_State_running) {
@@ -167,5 +167,5 @@ fn_((exec_Lane_yield(exec_Lane* self))(void)) {
     let task = orelse_((self->task_curr)(return));
     if (exec_kind(task->inner) != exec_Task_Kind_fiber) return;
     let fiber = orelse_((task->fiber)(claim_unreachable));
-    exec_switchFromFiber(&fiber->ctx, &self->fiber_ctx);
+    exec_switchFromFiber(&fiber->context, &self->fiber_context);
 };

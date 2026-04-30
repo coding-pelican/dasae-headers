@@ -102,14 +102,13 @@ fn_((Future_resultMut(Future$raw* self, TypeInfo type))(u_P$raw)) {
 #define __stmt__T_use_Future_result$(_T...) /* clang-format off */  \
     $attr($inline_always) \
     $static fn_((tpl$(Future_result, _T)(const Future$(_T)* self))(const _T*)) { \
-        return u_castP$((_T)(Future_result(self->as_raw, typeInfo$(_T)))); \
+        return u_castP$((const _T*)(Future_result(self->as_raw, typeInfo$(_T)))); \
     } /* clang-format on */
 #define __stmt__T_use_Future_resultMut$(_T...) /* clang-format off */\
     $attr($inline_always) \
     $static fn_((tpl$(Future_resultMut, _T)(Future$(_T)* self))(_T*)) { \
-        return u_castP$((_T)(Future_resultMut(self->as_raw, typeInfo$(_T)))); \
+        return u_castP$((_T*)(Future_resultMut(self->as_raw, typeInfo$(_T)))); \
     } /* clang-format on */
-
 #define __stmt__T_use_Future_await$(_T...) /* clang-format off */ \
     $attr($inline_always) \
     $static fn_((tpl$(Future_await, _T)(Future$(_T)* self, Sched sched))(_T)) { \

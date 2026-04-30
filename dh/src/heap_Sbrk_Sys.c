@@ -1,4 +1,5 @@
 #include "dh/heap/Sbrk.h"
+#include "dh/heap/vmem.h"
 
 /*========== Internal Declarations ==========================================*/
 
@@ -10,23 +11,15 @@ $static fn_((heap_Sbrk_Sys__unsupported_ctx(P$raw self))(heap_Sbrk_Ctx));
 /*========== External Definitions ===========================================*/
 
 #if plat_is_windows
-#include "dh/os/windows/mem.h"
-
 fn_((heap_Sbrk_Sys_Windows_sbrk(u_P$raw ctx, usize n))(usize)) {
     let self = u_castP$((heap_Sbrk_Sys_Windows*)(ctx));
-    let aligned_n = mem_alignFwd(n, heap_page_size);
+    let aligned_n = heap_alignPage(n);
     if (self->committed_size + aligned_n > self->reserved_size) {
         return 0; /* Out of reserved space */
     }
 
     let commit_addr = ptrToInt(self->base_addr) + self->committed_size;
-    let result = VirtualAlloc(
-        (intToPtr$((void*)(commit_addr))),
-        aligned_n,
-        MEM_COMMIT,
-        PAGE_READWRITE
-    );
-    if (result == null) { return 0; /* Commit failed */ }
+    if (!heap_vmem_commit(intToPtr$((P$raw)(commit_addr)), aligned_n)) { return 0; /* Commit failed */ }
 
     let old_committed = self->committed_size;
     self->committed_size += aligned_n;
@@ -43,8 +36,8 @@ fn_((heap_Sbrk_Sys_Windows_ctx(heap_Sbrk_Sys_Windows* self))(heap_Sbrk_Ctx)) {
 
 fn_((heap_Sbrk_Sys_Windows_init(usize reserve_size))(heap_Sbrk_Sys_Windows)) {
     claim_assert(reserve_size > 0);
-    let aligned_size = mem_alignFwd(reserve_size, heap_page_size);
-    let base = VirtualAlloc(null, aligned_size, MEM_RESERVE, PAGE_NOACCESS);
+    let aligned_size = heap_alignPage(reserve_size);
+    let base = orelse_((heap_vmem_reserve(null, aligned_size))(null));
     if (base == null) { return l0$((heap_Sbrk_Sys_Windows)); }
     return (heap_Sbrk_Sys_Windows){
         .base_addr = ptrToInt(base),
@@ -56,7 +49,7 @@ fn_((heap_Sbrk_Sys_Windows_init(usize reserve_size))(heap_Sbrk_Sys_Windows)) {
 fn_((heap_Sbrk_Sys_Windows_fini(heap_Sbrk_Sys_Windows* self))(void)) {
     claim_assert_nonnull(self);
     if (self->base_addr != 0) {
-        VirtualFree(intToPtr$((void*)(self->base_addr)), 0, MEM_RELEASE);
+        let_ignore = heap_vmem_release(intToPtr$((P$raw)(self->base_addr)), self->reserved_size);
         self->base_addr = 0;
         self->committed_size = 0;
     }
@@ -65,28 +58,19 @@ fn_((heap_Sbrk_Sys_Windows_fini(heap_Sbrk_Sys_Windows* self))(void)) {
 #endif /* plat_is_windows */
 
 #if plat_is_posix
-#include <sys/mman.h>
-#include <unistd.h>
-
 fn_((heap_Sbrk_Sys_Posix_sbrk(u_P$raw ctx, usize n))(usize)) {
     let self = u_castP$((heap_Sbrk_Sys_Posix*)(ctx));
-    let page_size = as$(usize)(sysconf(_SC_PAGESIZE));
-    let aligned_n = mem_alignFwd(n, page_size);
-    let result = mmap(
-        null,
-        aligned_n,
-        PROT_READ | PROT_WRITE,
-        MAP_PRIVATE | MAP_ANONYMOUS,
-        -1,
-        0
-    );
-    if (result == MAP_FAILED) { return 0; /* mmap failed */ }
+    let aligned_n = heap_alignPage(n);
+    if (self->committed_size + aligned_n > self->reserved_size) {
+        return 0; /* Out of reserved space */
+    }
 
-    let addr = ptrToInt(result);
-    // Track first allocation as base
-    if (self->base_addr == 0) { self->base_addr = addr; }
-    self->mapped_size += aligned_n;
-    return addr;
+    let commit_addr = self->base_addr + self->committed_size;
+    if (!heap_vmem_commit(intToPtr$((P$raw)(commit_addr)), aligned_n)) { return 0; /* Commit failed */ }
+
+    let old_committed = self->committed_size;
+    self->committed_size += aligned_n;
+    return self->base_addr + old_committed;
 };
 
 fn_((heap_Sbrk_Sys_Posix_ctx(heap_Sbrk_Sys_Posix* self))(heap_Sbrk_Ctx)) {
@@ -97,19 +81,24 @@ fn_((heap_Sbrk_Sys_Posix_ctx(heap_Sbrk_Sys_Posix* self))(heap_Sbrk_Ctx)) {
     };
 };
 
-fn_((heap_Sbrk_Sys_Posix_init(void))(heap_Sbrk_Sys_Posix)) {
+fn_((heap_Sbrk_Sys_Posix_init(usize reserve_size))(heap_Sbrk_Sys_Posix)) {
+    claim_assert(reserve_size > 0);
+    let aligned_size = heap_alignPage(reserve_size);
+    let base = orelse_((heap_vmem_reserve(null, aligned_size))(null));
+    if (base == null) { return l0$((heap_Sbrk_Sys_Posix)); }
     return (heap_Sbrk_Sys_Posix){
-        .base_addr = 0,
-        .mapped_size = 0,
+        .base_addr = ptrToInt(base),
+        .reserved_size = aligned_size,
+        .committed_size = 0,
     };
 }
 
 fn_((heap_Sbrk_Sys_Posix_fini(heap_Sbrk_Sys_Posix* self))(void)) {
     claim_assert_nonnull(self);
     if (self->base_addr != 0) {
-        munmap(intToPtr$((void*)(self->base_addr)), self->mapped_size);
+        let_ignore = heap_vmem_release(intToPtr$((P$raw)(self->base_addr)), self->reserved_size);
         self->base_addr = 0;
-        self->mapped_size = 0;
+        self->committed_size = 0;
     }
     asg_l((self)(cleared()));
 };

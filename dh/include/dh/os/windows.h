@@ -25,6 +25,7 @@ extern "C" {
 #include "windows/base.h" /* Types (HANDLE, DWORD...) */
 #include "windows/handle.h" /* Error handling (Win32 Errors) */
 #include "windows/debug.h" /* Debugging (OutputDebugString) */
+#include "windows/except.h" /* Exception Handling (SetUnhandledExceptionFilter) */
 #include "windows/nls.h" /* Unicode Conversion (MultiByteToWideChar) */
 #include "windows/sysinfo.h" /* System Info & Time */
 

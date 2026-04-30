@@ -16,10 +16,10 @@
  *          - Sbrk: Sbrk-based allocation for linear memory growth and reuse (context on OS-dependent)
  *          - Sys: System-dependent allocation (Page/Sbrk)
  *          - Fixed: Fixed-size block allocator for bulk operations
- *          - ThrdSafe: Thread-safe allocator for multi-threaded applications
- *          - Smp: Symmetric-multiprocessing (SMP) memory allocation and reuse
  *          - Arena: Region-based memory allocation for bulk operations
  *          - Pool: Pool-based memory allocation for bulk operations and reuse
+ *          - ThrdSafe: Thread-safe allocator for multi-threaded applications
+ *          - Smp: Symmetric-multiprocessing (SMP) memory allocation and reuse
  *
  * @see `dh-extras/heap/TLSF` for more efficiently reusable memory allocator implementation
  */
@@ -32,17 +32,23 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "heap/cfg.h"
+#include "heap/common.h"
+#include "heap/vmap.h"
+#include "heap/vmem.h"
+
 #if heap_Classic_enabled
 #include "heap/Classic.h"
 #endif /* heap_Classic_enabled */
 #include "heap/Page.h"
 #include "heap/Sbrk.h"
 #include "heap/Sys.h"
+
 #include "heap/Fixed.h"
-#include "heap/ThrdSafe.h"
-#include "heap/Smp.h"
 #include "heap/Arena.h"
 #include "heap/Pool.h"
+
+#include "heap/ThrdSafe.h"
+#include "heap/Smp.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

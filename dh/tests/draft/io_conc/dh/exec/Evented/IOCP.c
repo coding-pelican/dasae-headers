@@ -52,11 +52,19 @@ $static fn_((exec_Evented_IOCP__poll(P$raw ctx, time_Dur timeout))(E$O$exec_Even
         if (err == ERROR_TIMEOUT) return_ok(none());
         return_err(exec_Evented_E_PollFailed());
     }
+    let os_err = ok ? as$(usize)(ERROR_SUCCESS) : as$(usize)(GetLastError());
     return_ok(some((exec_Evented_Completion){
         .key = as$(usize)(key),
         .op = ov,
         .bytes = as$(usize)(bytes),
-        .err = ok ? Err_None() : exec_Evented_E_PollFailed(),
+        .os_err = os_err,
+        .err = ok
+            ? none()
+            : some(as$(Err)(
+                os_err == ERROR_OPERATION_ABORTED
+                    ? exec_Evented_E_Canceled()
+                    : exec_Evented_E_PollFailed()
+            )),
     }));
 #else
     let_ignore = self;

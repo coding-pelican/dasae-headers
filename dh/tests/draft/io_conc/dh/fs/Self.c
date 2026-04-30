@@ -6,6 +6,7 @@
 #if plat_is_windows
 #include "dh/os/windows/handle.h"
 #include "dh/os/windows/file.h"
+#include "dh/os/windows/io.h"
 #endif /* plat_is_windows */
 #if plat_is_posix
 #include <fcntl.h>
@@ -38,6 +39,41 @@ $static fn_((fs_direct__File_readPos(P$raw ctx, fs_File file, S$u8 buf, u64 offs
 $static fn_((fs_direct__File_writePos(P$raw ctx, fs_File file, S_const$u8 buf, u64 offset))(E$usize));
 $static fn_((fs_direct__File_seekBy(P$raw ctx, fs_File file, i64 rel_offset))(E$void));
 $static fn_((fs_direct__File_seekTo(P$raw ctx, fs_File file, u64 abs_offset))(E$void));
+
+#if plat_is_windows
+T_use_O$(Err);
+T_alias$((fs__Evented_FileIOOp)(struct fs__Evented_FileIOOp {
+    var_(base, exec_Evented_Op);
+    var_(coop, exec_Coop*);
+    var_(task, O$P$exec_Task);
+    var_(file, fs_File);
+    var_(offset, u64);
+    var_(update_cursor, bool);
+    var_(is_write, bool);
+    var_(done, bool);
+    var_(bytes, usize);
+    var_(err, O$Err);
+}));
+#endif /* plat_is_windows */
+
+$static fn_((fs_evented__Op_openFile(P$raw ctx, S_const$u8 path, fs_File_OpenFlags flags))(E$fs_File));
+$static fn_((fs_evented__Op_createFile(P$raw ctx, S_const$u8 path, fs_File_CreateFlags flags))(E$fs_File));
+$static fn_((fs_evented__File_read(P$raw ctx, fs_File file, S$u8 buf))(E$usize));
+$static fn_((fs_evented__File_write(P$raw ctx, fs_File file, S_const$u8 bytes))(E$usize));
+$static fn_((fs_evented__File_readPos(P$raw ctx, fs_File file, S$u8 buf, u64 offset))(E$usize));
+$static fn_((fs_evented__File_writePos(P$raw ctx, fs_File file, S_const$u8 buf, u64 offset))(E$usize));
+#if plat_is_windows
+$static fn_((fs__evented_windowsAssociate(exec_Coop* self, fs_File file))(E$void));
+$static fn_((fs__evented_windowsOpenFile(exec_Coop* self, S_const$u8 path, fs_File_OpenFlags flags))(E$fs_File));
+$static fn_((fs__evented_windowsCreateFile(exec_Coop* self, S_const$u8 path, fs_File_CreateFlags flags))(E$fs_File));
+$static fn_((fs__evented_windowsCurrentOffset(fs_File file, u64* out))(bool));
+$static fn_((fs__evented_windowsSetOffset(OVERLAPPED* ov, u64 offset))(void));
+$static fn_((fs__evented_windowsAdvanceCursor(fs_File file, u64 next_offset))(bool));
+$static fn_((fs__evented_windowsAwait(exec_Coop* coop, fs__Evented_FileIOOp* op))(E$usize));
+$static fn_((fs__evented_windowsReadAt(exec_Coop* coop, fs_File file, S$u8 buf, u64 offset, bool update_cursor))(E$usize));
+$static fn_((fs__evented_windowsWriteAt(exec_Coop* coop, fs_File file, S_const$u8 buf, u64 offset, bool update_cursor))(E$usize));
+$static fn_((fs__evented_windowsIOComplete(exec_Evented_Op* self, exec_Evented_Completion completion))(void));
+#endif /* plat_is_windows */
 
 /*========== External Definitions ===========================================*/
 
@@ -287,9 +323,142 @@ fn_((fs_direct(void))(fs_direct_E$fs_Self) $scope) {
 
 fn_((fs_evented(exec_Coop* coop))(fs_Self)) {
     claim_assert_nonnull(coop);
-    let_ignore = exec_Coop_evented(coop);
-    return fs_failing;
+    $static let_(vtbl, fs_Self_VTbl) = {
+        .op = {
+            .cwdFn = fs_direct__Op_cwd,
+            .openDirFn = fs_direct__Op_openDir,
+            .createDirFn = fs_direct__Op_createDir,
+            .deleteDirFn = fs_direct__Op_deleteDir,
+            .openFileFn = fs_evented__Op_openFile,
+            .createFileFn = fs_evented__Op_createFile,
+            .deleteFileFn = fs_direct__Op_deleteFile,
+            .renameFn = fs_direct__Op_rename,
+            .realpathFn = fs_direct__Op_realpath,
+        },
+        .file = {
+            .closeFn = fs_direct__File_close,
+            .readFn = fs_evented__File_read,
+            .writeFn = fs_evented__File_write,
+            .statFn = fs_direct__File_stat,
+            .syncFn = fs_direct__File_sync,
+            .isTtyFn = fs_direct__File_isTty,
+            .setLenFn = fs_direct__File_setLen,
+            .setPermsFn = fs_direct__File_setPerms,
+            .readPosFn = fs_evented__File_readPos,
+            .writePosFn = fs_evented__File_writePos,
+            .seekByFn = fs_direct__File_seekBy,
+            .seekToFn = fs_direct__File_seekTo,
+            .lockFn = fs_VTbl_File_failingLock,
+            .tryLockFn = fs_VTbl_File_failingTryLock,
+            .unlockFn = fs_VTbl_File_noUnlock,
+            .downgradeLockFn = fs_VTbl_File_failingDowngradeLock,
+            .realpathFn = fs_VTbl_File_failingRealpath,
+        },
+        .dir = {
+            .closeFn = fs_direct__Dir_close,
+            .accessFn = fs_VTbl_Dir_failingAccess,
+            .statFn = fs_direct__Dir_stat,
+            .statFileFn = fs_VTbl_Dir_failingStatFile,
+            .renameFn = fs_VTbl_Dir_failingRename,
+            .renamePreserveFn = fs_VTbl_Dir_failingRenamePreserve,
+            .makePathFn = fs_VTbl_Dir_failingMakePath,
+            .makePathStatusFn = fs_VTbl_Dir_failingMakePathStatus,
+            .realpathFn = fs_VTbl_Dir_failingRealpath,
+            .realpathAllocFn = fs_VTbl_Dir_failingRealpathAlloc,
+            .realpathFileFn = fs_VTbl_Dir_failingRealpathFile,
+            .readLinkFn = fs_VTbl_Dir_failingReadLink,
+            .makeDirFn = fs_VTbl_Dir_failingMakeDir,
+            .deleteDirFn = fs_VTbl_Dir_failingDeleteDir,
+            .openDirFn = fs_VTbl_Dir_failingOpenDir,
+            .openPathFn = fs_VTbl_Dir_failingOpenPath,
+            .hardLinkFn = fs_VTbl_Dir_failingHardLink,
+            .symLinkFn = fs_VTbl_Dir_failingSymLink,
+            .createFileFn = fs_VTbl_Dir_failingCreateFile,
+            .openFileFn = fs_VTbl_Dir_failingOpenFile,
+            .deleteFileFn = fs_VTbl_Dir_failingDeleteFile,
+            .readFileFn = fs_VTbl_Dir_failingReadFile,
+            .readFileAllocFn = fs_VTbl_Dir_failingReadFileAlloc,
+        },
+    };
+    let evented = exec_Coop_evented(coop);
+    if (evented.vtbl == exec_Evented_noop.vtbl) return fs_failing;
+    return fs_ensureValid((fs_Self){
+        .ctx = coop,
+        .vtbl = &vtbl,
+    });
 }
+
+fn_((fs_evented__Op_openFile(P$raw ctx, S_const$u8 path, fs_File_OpenFlags flags))(E$fs_File) $scope) {
+#if plat_is_windows
+    return fs__evented_windowsOpenFile(ptrCast$((exec_Coop*)(ensureNonnull(ctx))), path, flags);
+#else
+    let_ignore = ctx;
+    let_ignore = path;
+    let_ignore = flags;
+    return_err(fs_E_Unsupported());
+#endif
+} $unscoped(fn);
+
+fn_((fs_evented__Op_createFile(P$raw ctx, S_const$u8 path, fs_File_CreateFlags flags))(E$fs_File) $scope) {
+#if plat_is_windows
+    return fs__evented_windowsCreateFile(ptrCast$((exec_Coop*)(ensureNonnull(ctx))), path, flags);
+#else
+    let_ignore = ctx;
+    let_ignore = path;
+    let_ignore = flags;
+    return_err(fs_E_Unsupported());
+#endif
+} $unscoped(fn);
+
+fn_((fs_evented__File_read(P$raw ctx, fs_File file, S$u8 buf))(E$usize) $scope) {
+    let coop = ptrCast$((exec_Coop*)(ensureNonnull(ctx)));
+#if plat_is_windows
+    var_(offset, u64) = 0;
+    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(fs_E_ReadFailed());
+    return fs__evented_windowsReadAt(coop, file, buf, offset, true);
+#else
+    let_ignore = file;
+    let_ignore = buf;
+    return_err(fs_E_Unsupported());
+#endif
+} $unscoped(fn);
+
+fn_((fs_evented__File_write(P$raw ctx, fs_File file, S_const$u8 bytes))(E$usize) $scope) {
+    let coop = ptrCast$((exec_Coop*)(ensureNonnull(ctx)));
+#if plat_is_windows
+    var_(offset, u64) = 0;
+    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(fs_E_WriteFailed());
+    return fs__evented_windowsWriteAt(coop, file, bytes, offset, true);
+#else
+    let_ignore = file;
+    let_ignore = bytes;
+    return_err(fs_E_Unsupported());
+#endif
+} $unscoped(fn);
+
+fn_((fs_evented__File_readPos(P$raw ctx, fs_File file, S$u8 buf, u64 offset))(E$usize) $scope) {
+    let coop = ptrCast$((exec_Coop*)(ensureNonnull(ctx)));
+#if plat_is_windows
+    return fs__evented_windowsReadAt(coop, file, buf, offset, false);
+#else
+    let_ignore = file;
+    let_ignore = buf;
+    let_ignore = offset;
+    return_err(fs_E_Unsupported());
+#endif
+} $unscoped(fn);
+
+fn_((fs_evented__File_writePos(P$raw ctx, fs_File file, S_const$u8 buf, u64 offset))(E$usize) $scope) {
+    let coop = ptrCast$((exec_Coop*)(ensureNonnull(ctx)));
+#if plat_is_windows
+    return fs__evented_windowsWriteAt(coop, file, buf, offset, false);
+#else
+    let_ignore = file;
+    let_ignore = buf;
+    let_ignore = offset;
+    return_err(fs_E_Unsupported());
+#endif
+} $unscoped(fn);
 
 /*========== Internal Definitions ===========================================*/
 
@@ -656,6 +825,189 @@ $static fn_((fs__direct_windowsTime(FILETIME ft))(time_Real_Inst)) {
 $static fn_((fs__direct_windowsKind(DWORD attrs))(fs_Kind)) {
     if ((attrs & FILE_ATTRIBUTE_DIRECTORY) != 0) return fs_Kind_directory;
     return fs_Kind_file;
+}
+
+$static fn_((fs__evented_windowsAssociate(exec_Coop* self, fs_File file))(E$void) $scope) {
+    claim_assert_nonnull(self);
+    return exec_Evented_associate(exec_Coop_evented(self), file.handle, 0);
+} $unscoped(fn);
+
+$static fn_((fs__evented_windowsOpenFile(exec_Coop* self, S_const$u8 path, fs_File_OpenFlags flags))(E$fs_File) $scope) {
+    claim_assert_nonnull(self);
+    if (flags.nonblocking) return_err(fs_E_Unsupported());
+    var_(path_z, A$$(32768, u8)) = A_zero();
+    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
+    let handle = CreateFileA(
+        as$(LPCSTR)(ptr$A(path_z)), fs__direct_windowsAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, fs__direct_windowsFlags() | FILE_FLAG_OVERLAPPED, null);
+    if (handle == INVALID_HANDLE_VALUE) return_err(fs_E_OpenFailed());
+    let file = fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = true });
+    if (isErr(fs__evented_windowsAssociate(self, file))) {
+        CloseHandle(handle);
+        return_err(fs_E_OpenFailed());
+    }
+    return_ok(file);
+} $unscoped(fn);
+
+$static fn_((fs__evented_windowsCreateFile(exec_Coop* self, S_const$u8 path, fs_File_CreateFlags flags))(E$fs_File) $scope) {
+    claim_assert_nonnull(self);
+    if (flags.nonblocking) return_err(fs_E_Unsupported());
+    let disposition = flags.exclusive
+                        ? CREATE_NEW
+                        : (flags.truncate ? CREATE_ALWAYS : OPEN_ALWAYS);
+    var_(path_z, A$$(32768, u8)) = A_zero();
+    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
+    let handle = CreateFileA(
+        as$(LPCSTR)(ptr$A(path_z)), fs__direct_windowsCreateAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null,
+        as$(DWORD)(disposition), fs__direct_windowsFlags() | FILE_FLAG_OVERLAPPED, null);
+    if (handle == INVALID_HANDLE_VALUE) return_err(fs_E_OpenFailed());
+    let file = fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = true });
+    if (isErr(fs__evented_windowsAssociate(self, file))) {
+        CloseHandle(handle);
+        return_err(fs_E_OpenFailed());
+    }
+    return_ok(file);
+} $unscoped(fn);
+
+$static fn_((fs__evented_windowsCurrentOffset(fs_File file, u64* out))(bool)) {
+    claim_assert_nonnull(out);
+    var_(distance, LARGE_INTEGER) = { .QuadPart = 0 };
+    var_(current, LARGE_INTEGER) = {};
+    if (!SetFilePointerEx(file.handle, distance, &current, FILE_CURRENT)) return false;
+    *out = as$(u64)(current.QuadPart);
+    return true;
+}
+
+$static fn_((fs__evented_windowsSetOffset(OVERLAPPED* ov, u64 offset))(void)) {
+    claim_assert_nonnull(ov);
+    ov->Offset = as$(DWORD)(offset & 0xffffffffu);
+    ov->OffsetHigh = as$(DWORD)(offset >> 32);
+}
+
+$static fn_((fs__evented_windowsAdvanceCursor(fs_File file, u64 next_offset))(bool)) {
+    var_(distance, LARGE_INTEGER) = { .QuadPart = as$(LONGLONG)(next_offset) };
+    return SetFilePointerEx(file.handle, distance, null, FILE_BEGIN);
+}
+
+$static fn_((fs__evented_windowsAwait(exec_Coop* coop, fs__Evented_FileIOOp* op))(E$usize) $scope) {
+    claim_assert_nonnull(coop);
+    claim_assert_nonnull(op);
+    let task = op->task;
+    if (isSome(task)) {
+        exec_Coop_yield(coop);
+    } else {
+        while (!op->done) {
+            let completion = catch_((exec_Evented_poll(exec_Coop_evented(coop), time_Dur_fromSecs(4294968)))(
+                $ignore, return_err(op->is_write ? fs_E_WriteFailed() : fs_E_ReadFailed())
+            ));
+            if_some((completion)(ready)) exec_Evented_complete(ready);
+        }
+    }
+    if (!op->done) return_err(op->is_write ? fs_E_WriteFailed() : fs_E_ReadFailed());
+    if_some((op->err)(err)) return_err(err);
+    return_ok(op->bytes);
+} $unscoped(fn);
+
+$static fn_((fs__evented_windowsReadAt(exec_Coop* coop, fs_File file, S$u8 buf, u64 offset, bool update_cursor))(E$usize) $scope) {
+    claim_assert_nonnull(coop);
+    let task = exec_Coop_task(coop);
+    if_some((task)(curr_task)) {
+        if (exec_kind(curr_task->inner) != exec_Task_Kind_fiber) return_err(fs_E_Unsupported());
+    }
+
+    var_(op, fs__Evented_FileIOOp) = {
+        .base = {
+            .ov = cleared(),
+            .completeFn = fs__evented_windowsIOComplete,
+        },
+        .coop = coop,
+        .task = task,
+        .file = file,
+        .offset = offset,
+        .update_cursor = update_cursor,
+        .is_write = false,
+        .done = false,
+        .bytes = 0,
+        .err = none(),
+    };
+    fs__evented_windowsSetOffset(&op.base.ov, offset);
+    if_some((task)(curr_task)) curr_task->state = exec_Task_State_waiting;
+    if (!ReadFile(file.handle, buf.ptr, as$(DWORD)(buf.len), null, &op.base.ov)) {
+        let err = GetLastError();
+        if (err != ERROR_IO_PENDING) {
+            if_some((task)(curr_task)) curr_task->state = exec_Task_State_running;
+            if (err == ERROR_HANDLE_EOF || err == ERROR_BROKEN_PIPE) return_ok(0);
+            return_err(fs_E_ReadFailed());
+        }
+    }
+    return fs__evented_windowsAwait(coop, &op);
+} $unscoped(fn);
+
+$static fn_((fs__evented_windowsWriteAt(exec_Coop* coop, fs_File file, S_const$u8 buf, u64 offset, bool update_cursor))(E$usize) $scope) {
+    claim_assert_nonnull(coop);
+    let task = exec_Coop_task(coop);
+    if_some((task)(curr_task)) {
+        if (exec_kind(curr_task->inner) != exec_Task_Kind_fiber) return_err(fs_E_Unsupported());
+    }
+
+    var_(op, fs__Evented_FileIOOp) = {
+        .base = {
+            .ov = cleared(),
+            .completeFn = fs__evented_windowsIOComplete,
+        },
+        .coop = coop,
+        .task = task,
+        .file = file,
+        .offset = offset,
+        .update_cursor = update_cursor,
+        .is_write = true,
+        .done = false,
+        .bytes = 0,
+        .err = none(),
+    };
+    fs__evented_windowsSetOffset(&op.base.ov, offset);
+    if_some((task)(curr_task)) curr_task->state = exec_Task_State_waiting;
+    if (!WriteFile(file.handle, buf.ptr, as$(DWORD)(buf.len), null, &op.base.ov)) {
+        let err = GetLastError();
+        if (err != ERROR_IO_PENDING) {
+            if_some((task)(curr_task)) curr_task->state = exec_Task_State_running;
+            return_err(fs_E_WriteFailed());
+        }
+    }
+    return fs__evented_windowsAwait(coop, &op);
+} $unscoped(fn);
+
+$static fn_((fs__evented_windowsIOComplete(exec_Evented_Op* self, exec_Evented_Completion completion))(void)) {
+    let op = ptrCast$((fs__Evented_FileIOOp*)(ensureNonnull(self)));
+    op->bytes = completion.bytes;
+    if_some((completion.err)(completion_err)) {
+        let_ignore = completion_err;
+        switch (completion.os_err) {
+        case ERROR_HANDLE_EOF:
+        case ERROR_BROKEN_PIPE:
+            op->bytes = 0;
+            op->err = none();
+            break;
+        case ERROR_OPERATION_ABORTED:
+            op->err = some(as$(Err)(exec_Evented_E_Canceled()));
+            break;
+        default:
+            op->err = some(op->is_write ? as$(Err)(fs_E_WriteFailed()) : as$(Err)(fs_E_ReadFailed()));
+            break;
+        }
+    } else {
+        op->err = none();
+    }
+    if (isNone(op->err) && op->update_cursor) {
+        if (!fs__evented_windowsAdvanceCursor(op->file, op->offset + op->bytes)) {
+            op->err = some(op->is_write ? as$(Err)(fs_E_WriteFailed()) : as$(Err)(fs_E_ReadFailed()));
+        }
+    }
+    op->done = true;
+    if_some((op->task)(task)) {
+        if (task->state == exec_Task_State_waiting) {
+            let_ignore = exec_Lane_readyTask(&op->coop->timed.lane, task);
+        }
+    }
 }
 #endif /* plat_is_windows */
 

@@ -47,7 +47,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         .io = try_(io_direct()),
     };
     var total = 0.0;
-    blk_defer_({
+    using_() blk_defer {
         io_stream_println(sys.io, u8_l("begin - evented async execution"));
         var task_a = Sched_async$f64(sched, closure_(countFn)(sys, 2, time_Dur_fromSecs$f64(1.0), u8_l("task a")).as_base);
         defer_(let_ignore = Future_cancel$f64(&task_a, sched));
@@ -56,7 +56,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         total += Future_await$f64(&task_a, sched);
         total += Future_await$f64(&task_b, sched);
         io_stream_println(sys.io, u8_l("end - evented async execution"));
-    }) blk_deferral;
+    } blk_deferral;
     io_stream_println(sys.io, u8_l("total: {:fl}"), total);
     return_ok({});
 } $unguarded(fn);

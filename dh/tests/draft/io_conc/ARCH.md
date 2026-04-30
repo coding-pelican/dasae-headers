@@ -128,6 +128,29 @@ only the projector.
 - buffered adapters such as `io_Buf_Reader` and `io_Buf_Writer` stay layered on
   top of these same interfaces.
 
+### Evented Read Flow
+
+```mermaid
+flowchart TD
+    ReaderRead[io_Reader_read] --> FileReader[fs_File_IO_reader]
+    FileReader --> FileRead[fs file.readFn]
+    FileRead --> EventedFS[fs_evented]
+    EventedFS --> Submit[submit overlapped read]
+    Submit --> Wait[current fiber task = waiting]
+    Wait --> CoopRun[exec_Coop run loop]
+    CoopRun --> Poll[exec_Evented poll]
+    Poll --> Complete[exec_Evented_Op complete callback]
+    Complete --> Ready[task back to ready queue]
+    Ready --> Resume[fiber resumes]
+    Resume --> Return[read returns bytes or error]
+```
+
+For evented filesystem reads, the public `io_Reader_read` surface remains
+completion-oriented. The caller does not receive `WouldBlock` as normal control
+flow. On a cooperative fiber task, the read submits overlapped IO, parks the
+current task, and returns only after `exec_Coop` polls a completion and resumes
+that fiber.
+
 This is the main difference from Zig's `Io` root design. Zig centralizes the
 backend in the `Io` object and routes every operation through that root. In
 this codebase, root dispatch is split by module. `fs_Self` is the filesystem
@@ -431,9 +454,9 @@ atomic or virtual-dispatch policy inside the coroutine frame.
 `invoke_` is the erased closure routine dispatch and executes the selected
 routine once. Completion policy belongs above it:
 
-- `exec_invokeToStep` dispatches once and returns a result pointer only when the
+- `Closure_invokeToStep` dispatches once and returns a result pointer only when the
   closure is complete
-- `exec_invokeToCompletion` repeats step dispatch until a result is available
+- `Closure_invokeToComplete` repeats step dispatch until a result is available
 - schedulers use step dispatch for stackless cooperative tasks and copy the
   returned result into the task-owned result slot
 - fiber and preemptive workers use completion dispatch and then copy the final

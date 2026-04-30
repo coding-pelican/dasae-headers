@@ -1,4 +1,5 @@
 #include "dh/heap/Page.h"
+#include "dh/heap/vmap.h"
 #include "dh/mem/common.h"
 
 /*========== Internal Declarations ==========================================*/
@@ -26,13 +27,6 @@ fn_((heap_Page_alctr(heap_Page* self))(mem_Alctr)) {
 
 /*========== Internal Definitions ===========================================*/
 
-#if plat_is_windows
-#include "dh/os/windows/mem.h"
-#else /* posix */
-#include <sys/mman.h>
-#include <unistd.h>
-#endif
-
 fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     let_ignore = ctx;
     let ptr_align = mem_log2ToAlign(align);
@@ -48,44 +42,35 @@ fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     if (usize_limit - (mem_page_size - 1) < len) { return_none(); }
 
 #if plat_is_windows
-    // Windows allocation logic similar to zig's PageAlctr
-    let addr = VirtualAlloc(
-        null,
-        len, // VirtualAlloc rounds to page size internally
-        MEM_COMMIT | MEM_RESERVE,
-        PAGE_READWRITE
-    );
+    let addr = orelse_((heap_vmap_map(null, len))(
+        null
+    ));
     if (addr != null) {
         // Verify returned address meets alignment requirements
         debug_assert_fmt(mem_isAligned(ptrToInt(addr), ptr_align), "VirtualAlloc returned misaligned address");
         return_some(addr);
     }
 
-    // Fallback: reserve a range of memory large enough to find a
-    // sufficiently aligned address, then free the entire range and
-    // immediately allocate the desired subset. Another thread may have won
-    // the race to map the target range, in which case a retry is needed.
+    // Fallback: map a temporary region, derive a target address from it,
+    // release that region, then immediately map the desired subset there.
+    // Another thread may have won the race to map the target range, in which
+    // case a retry is needed.
 
-    let overalloc_len = len + ptr_align - mem_page_size;
     let aligned_len = mem_alignFwd(len, mem_page_size);
+    let overalloc_len = aligned_len;
 
     $static let retry_limit = 4;
     for (var retry_count = 0; retry_count < retry_limit; ++retry_count) {
-        let reserved_addr = VirtualAlloc(
-            null,
-            overalloc_len,
-            MEM_RESERVE,
-            PAGE_NOACCESS
-        );
-        if (reserved_addr == null) {
+        let overalloc_addr = orelse_((heap_vmap_map(null, overalloc_len))(null));
+        if (overalloc_addr == null) {
             return_none();
         }
 
-        let aligned_addr = mem_alignFwd(ptrToInt(reserved_addr), ptr_align);
-        VirtualFree(reserved_addr, 0, MEM_RELEASE);
+        let aligned_addr = mem_alignFwd(ptrToInt(overalloc_addr), ptr_align);
+        let_ignore = heap_vmap_release(overalloc_addr, overalloc_len);
 
-        let addr = VirtualAlloc(
-            intToPtr$((P$raw)(aligned_addr)), aligned_len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        let addr = orelse_((heap_vmap_map(
+            intToPtr$((P$raw)(aligned_addr)), aligned_len))(null));
         if (addr != null) {
             return_some(addr);
         }
@@ -96,16 +81,8 @@ fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
 #else /* posix */
     let aligned_len = mem_alignFwd(len, mem_page_size);
     let hint = heap_Page_s_next_mmap_addr_hint;
-
-    let map = mmap(
-        hint,
-        aligned_len,
-        PROT_READ | PROT_WRITE,
-        MAP_PRIVATE | MAP_ANONYMOUS,
-        -1,
-        0
-    );
-    if (map == MAP_FAILED) { return_none(); }
+    let map = orelse_((heap_vmap_map(hint, aligned_len))(null));
+    if (map == null) { return_none(); }
     debug_assert_fmt(mem_isAligned(ptrToInt(map), mem_page_size));
     debug_assert_fmt(mem_isAligned(ptrToInt(map), ptr_align), "mmap returned misaligned address");
 
@@ -138,16 +115,6 @@ fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))
 
 #if plat_is_windows
     if (new_len <= buf.len) {
-        let base_addr = ptrToInt( buf.ptr);
-        let old_addr_end = base_addr + buf_aligned_len;
-        let new_addr_end = base_addr + new_size_aligned;
-
-        if (old_addr_end > new_addr_end) {
-            // For shrinking that is not releasing, only
-            // decommit the pages not needed anymore.
-            VirtualFree(
-                intToPtr$((LPVOID)(new_addr_end)), old_addr_end - new_addr_end, MEM_DECOMMIT);
-        }
         return true;
     }
 
@@ -158,22 +125,13 @@ fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))
 #else /* posix */
 
     if (new_size_aligned < buf_aligned_len) {
-        let ptr = as$(u8*)(buf.ptr) + new_size_aligned;
-        munmap(ptr, buf_aligned_len - new_size_aligned);
         return true;
     }
 
-#ifdef MAP_REMAP // Check if mremap is available
-    if (MAP_REMAP != 0) { // MAP_REMAP is defined and not 0, mremap is likely available
-        let new_ptr = mremap(buf.ptr, buf.len, new_len, MREMAP_MAYMOVE);
-        if (new_ptr != MAP_FAILED) {
-            // TODO: if heap_Page_s_next_mmap_addr_hint is within the remapped range, update it if moved.
-            return true; // Assume success for now, further hint update needed if address changes.
-        }
-        // mremap failed, fall back to returning false.
-        return false;
+    if (isSome(heap_vmap_remap(buf.ptr, buf.len, new_len))) {
+        // TODO: if heap_Page_s_next_mmap_addr_hint is within the remapped range, update it if moved.
+        return true; // Assume success for now, further hint update needed if address changes.
     }
-#endif
 
     // mremap is not available or failed, larger resize is not supported in this simple page allocator.
     return false;
@@ -204,17 +162,10 @@ fn_((heap_Page__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(
         return_none(); // Indicate remap failure, shrinking via remap not supported
     }
 
-#ifdef MAP_REMAP // Check if mremap is available
-    if (MAP_REMAP != 0) { // MAP_REMAP is defined and not 0, mremap is likely available
-        let new_ptr = mremap(buf.ptr, buf.len, new_len, MREMAP_MAYMOVE);
-        if (new_ptr != MAP_FAILED) {
-            // TODO: if heap_Page_s_next_mmap_addr_hint is within the remapped range, update it if moved.
-            return_some(new_ptr); // Assume success for now, further hint update needed if address changes.
-        }
-        // mremap failed, fall back to returning none.
-        return_none();
+    if_some((heap_vmap_remap(buf.ptr, buf.len, new_len))(new_ptr)) {
+        // TODO: if heap_Page_s_next_mmap_addr_hint is within the remapped range, update it if moved.
+        return_some(new_ptr); // Assume success for now, further hint update needed if address changes.
     }
-#endif
 
     // mremap is not available or failed, larger resize is not supported in this simple page allocator.
     return_none();
@@ -228,10 +179,5 @@ fn_((heap_Page__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     debug_assert_fmt(mem_isAligned(ptrToInt(buf.ptr), ptr_align), "Buffer address does not match the specified alignment");
     let_ignore = ptr_align;
 
-#if plat_is_windows
-    VirtualFree(buf.ptr, 0, MEM_RELEASE);
-#else /* posix */
-    let buf_aligned_len = mem_alignFwd(buf.len, mem_page_size);
-    munmap(buf.ptr, buf_aligned_len);
-#endif /* posix */
+    let_ignore = heap_vmap_release(buf.ptr, buf.len);
 };

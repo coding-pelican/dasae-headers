@@ -47,10 +47,10 @@ TEST_fn_("ListSgl: Basic SinglyLinkedList Operations" $guard) {
     // Traverse forwards.
     using_(var it = list.first) {
         var_(index, u32) = 1;
-        while_some(it, node) blk_defer_({
+        while_some(it, node) blk_defer {
             defer_(index += 1, it = node->next);
             try_(TEST_expect(*LLink_data(node) == index));
-        }) blk_deferral;
+        } blk_deferral;
     }
 
     let_ignore = L_shift(&list); // {2, 3, 4, 5}

@@ -57,12 +57,12 @@ co_fn_scope(
         var_(i, usize);
     }),
     co_suspended_({
-        var_(slept, Void);
+        var_(sleeping, Void);
     })
 ) {
     EventLog_push($co_arg(sys).log, $co_arg(base));
     for (co_var_(i, usize) = 0; $co_mut(i) < $co_arg(n); ++$co_mut(i)) {
-        suspend_((slept)(catch_((time_Awake_sleep($co_arg(sys).time, $co_arg(interval)))($ignore, $do_nothing))));
+        suspend_((sleeping)(catch_((time_Awake_sleep($co_arg(sys).time, $co_arg(interval)))($ignore, $do_nothing))));
         EventLog_push($co_arg(sys).log, $co_arg(base) + as$(u8)($co_mut(i) + 1));
     };
     EventLog_push($co_arg(sys).log, $co_arg(base) + 9);
@@ -111,7 +111,7 @@ TEST_fn_("exec_Seq runs fiber and stackless tasks without timed suspension" $gua
 
 TEST_fn_("exec_Coop runs evented stackless and fiber tasks in deadline order" $guard) {
     let gpa = heap_Page_alctr(&l0$((heap_Page)));
-    var exec = exec_Coop_init(gpa, try_(time_Awake_direct()));
+    var exec = exec_Coop_init(gpa, try_(time_Awake_direct()), exec_Evented_noop);
     defer_(exec_Coop_fini(&exec));
     let expected = A_from$((u8){ 10, 20, 21, 11, 22, 23, 29, 12, 19 });
     try_(runExpectedOrder(Sched_coop(&exec), time_Awake_evented(&exec), A_ref$((S_const$u8)(expected))));

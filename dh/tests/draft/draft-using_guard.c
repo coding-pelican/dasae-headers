@@ -491,10 +491,11 @@ $static fn_((reportOther(S_const$u8 label, S_const$u8 fmt, ...))(void) $guard) {
     io_stream_print(u8_l("[ThrdId({:uz}): {:s}] "), Thrd_currentId(), label);
     var args = l0$((va_list));
     va_start(args, fmt);
-    blk_defer_({
+    blk_defer {
         defer_(va_end(args));
         io_stream_printVaArgs(fmt, args);
-    }) blk_deferral;
+    }
+    blk_deferral;
     io_stream_nl();
 } $unguarded(fn);
 

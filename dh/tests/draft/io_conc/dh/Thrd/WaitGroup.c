@@ -90,16 +90,14 @@ T_alias$((Thrd_WaitGroup__Inst)(struct Thrd_WaitGroup__Inst {
     var_(closure, Closure$Void*);
 }));
 
-T_use$((Void)(Closure_Rtn));
-T_impl$((Void)(Closure_Ctx, Closure));
-T_use$((Void)(exec_invokeToCompletion));
 $static fn_((Thrd_WaitGroup__entryInst(Thrd_WaitGroup* mgr, mem_Alctr gpa, Closure$raw* self_closure, Thrd_WaitGroup__Inst inst))(Void));
 fn_use_Closure_((Thrd_WaitGroup__entryInst)(Thrd_WaitGroup*, mem_Alctr, Closure$raw*, Thrd_WaitGroup__Inst)(Void));
 
+T_use$((Void)(Closure_invokeToComplete));
 fn_((Thrd_WaitGroup_spawn(Thrd_WaitGroup* self, mem_Alctr gpa, Closure$Void* closure))(void) $scope) {
     Thrd_WaitGroup_start(self);
     let instance = catch_((Thrd_WaitGroup__spawnInst(self, gpa, closure))(
-        $ignore, $ignore_void exec_invokeToCompletion$Void(closure)
+        $ignore, $ignore_void Closure_invokeToComplete$Void(closure)
     ));
     Thrd_detach(instance);
 } $unscoped(fn);
@@ -129,6 +127,6 @@ fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Alctr gpa, Closure$Void
 fn_((Thrd_WaitGroup__entryInst(Thrd_WaitGroup* mgr, mem_Alctr gpa, Closure$raw* self_closure, Thrd_WaitGroup__Inst inst))(Void) $guard) {
     defer_(Thrd_WaitGroup_finish(mgr));
     defer_(mem_Alctr_destroy($trace gpa, u_anyP(self_closure)));
-    exec_invokeToCompletion$Void(inst.closure);
+    Closure_invokeToComplete$Void(inst.closure);
     return_void();
 } $unguarded(fn);

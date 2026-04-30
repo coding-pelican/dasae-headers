@@ -1,5 +1,6 @@
 #include "self.h"
 #include "../time/self/internal.h"
+#include "dh/heap/vmem.h"
 #include "dh/meta.h"
 
 typedef struct Thrd__Start {
@@ -467,7 +468,7 @@ fn_((Thrd__windows_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_t
     let handle = CreateThread(
         null, stack_size,
         Thrd__windows_entry, start,
-        CREATE_SUSPENDED, null
+        CREATE_SUSPENDED | STACK_SIZE_PARAM_IS_A_RESERVATION, null
     );
     if (!handle) {
         Thrd__startFree(start);
@@ -486,7 +487,7 @@ fn_((Thrd__windows_entry(LPVOID lpParameter))(DWORD)) {
     let closure = ensureNonnull(start->closure);
     let ret_type = start->ret_type;
     Thrd__startFree(start);
-    exec_invokeToCompletion(closure, ret_type);
+    Closure_invokeToComplete(closure, ret_type);
     return 0;
 };
 
@@ -651,16 +652,16 @@ fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_typ
     let meta_size = mem_alignFwd(sizeOf$(Thrd__linux_Meta), alignOf$(Thrd__linux_Meta));
     let map_size = page_size + stack_size + meta_size;
 
-    // Map entire region as PROT_NONE first
-    let map_base = mmap(null, map_size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (map_base == MAP_FAILED) {
+    // Reserve entire region as inaccessible first
+    let map_base = orelse_((heap_vmem_reserve(null, map_size))(null));
+    if (map_base == null) {
         return_err(Err_SystemResources());
     }
-    errdefer_(munmap(map_base, map_size));
+    errdefer_(let_ignore = heap_vmem_release(map_base, map_size));
 
-    // Make stack + meta area readable/writable (keep guard page as PROT_NONE)
+    // Commit stack + meta area (keep guard page reserved/inaccessible)
     let stack_start = as$(u8*)(map_base) + page_size;
-    if (mprotect(stack_start, stack_size + meta_size, PROT_READ | PROT_WRITE) != 0) {
+    if (!heap_vmem_commit(stack_start, stack_size + meta_size)) {
         return_err(Err_SystemResources());
     }
 
@@ -730,7 +731,7 @@ fn_((Thrd__linux_detach(Thrd self))(void)) {
     case_((Thrd__linux_Completion_running)) /* Thread still running */
         break $end(case); /* it will self-cleanup */
     case_((Thrd__linux_Completion_completed)) /* Thread already finished */
-        munmap(meta->map.ptr, meta->map.len);
+        let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
         break $end(case); /* self-cleanup (like join but discard result) */
     case_((Thrd__linux_Completion_detached)) $fallthrough;
     default_() claim_unreachable $end(default);
@@ -751,7 +752,7 @@ fn_((Thrd__linux_join(Thrd self))(Closure$raw*)) {
         // Ignore return value - spurious wakeups are fine, we'll check tid again
     }
     // Thread has exited, safe to unmap
-    munmap(meta->map.ptr, meta->map.len);
+    let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
     return ensureNonnull(self.closure);
 };
 

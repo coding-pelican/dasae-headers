@@ -68,7 +68,7 @@ extern "C" {
 
 #define defer_(_Expr...) comp_syn__defer(_Expr)
 
-#define blk_defer_ comp_syn__blk_defer_
+#define blk_defer comp_syn__blk_defer
 #define blk_deferral comp_syn__blk_deferral
 
 #define break_defer comp_syn__break_defer
@@ -83,8 +83,7 @@ extern "C" {
 
 #define comp_syn__fn_(_ident_w_Params, _T_Return...) _T_Return _ident_w_Params
 
-// clang-format off
-#define comp_syn__fn_$_scope(_ident_w_Params, _T_Return...) \
+#define comp_syn__fn_$_scope(_ident_w_Params, _T_Return...) /* clang-format off */ \
 _T_Return _ident_w_Params { \
     $alignAs(alignOf$(_T_Return)) var_(__reserved_buf, A$$(sizeOf$(_T_Return), u8)) = A_zero(); \
     let __reserved_return = ptrCast$((_T_Return*)(A_ptr(__reserved_buf))); \
@@ -108,21 +107,19 @@ _T_Return _ident_w_Params { \
             ))) { return reservedReturn(); } \
         ); \
     } \
-}
-// clang-format on
+} /* clang-format on */
 
 struct fn__ScopeCounter {
     u32 is_returning : 1;
     u32 current_line : 31;
 };
-// clang-format off
-#define comp_syn__fn_$_guard(_ident_w_Params, _T_Return...) \
+#define comp_syn__fn_$_guard(_ident_w_Params, _T_Return...) /* clang-format off */ \
 _T_Return _ident_w_Params { \
     $alignAs(alignOf$(_T_Return)) volatile var_(__reserved_buf, A$$(sizeOf$(_T_Return), u8)) = A_zero(); \
     let __reserved_return = ptrQualCast$((_T_Return*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
-    var __scope_counter   = (struct fn__ScopeCounter){ \
+    var_(__scope_counter, struct fn__ScopeCounter) = { \
         .is_returning = false, .current_line = __LINE__ \
     }; \
     if (false) { __step_return: \
@@ -149,8 +146,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
             ))) { return reservedReturn(); } \
         ); \
     } \
-}
-// clang-format on
+} /* clang-format on */
 
 #if !on_comptime
 #define fn__memset(_dst, _val, _len...) __fn_memset__no_hinting(_dst, _val, _len)
@@ -203,9 +199,8 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 
 #define comp_syn__defer(_Expr...) comp_syn__defer__op_snapshot(_Expr; goto __step_deferred)
 
-// clang-format off
-#define comp_syn__blk_defer__expand(...) __VA_ARGS__
-#define comp_syn__blk_defer__code { do { \
+/* clang-format off */
+#define comp_syn__blk_defer { do { \
     comp_syn__defer__op_snapshot( \
         if (__scope_counter.is_returning) { \
             goto __step_deferred; \
@@ -214,17 +209,11 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
         } \
     ); \
     do
-#define comp_syn__blk_defer_ \
-    comp_syn__blk_defer__code comp_syn__blk_defer__expand
-#define comp_syn__blk_deferral__code \
+#define comp_syn__blk_deferral \
     while (false); \
     goto __step_deferred; \
 } while (false); }
-#define comp_syn__blk_deferral \
-    comp_syn__blk_deferral__code
-#define comp_syn__blk_deferral_ \
-    comp_syn__blk_deferral__code comp_syn__blk_defer__expand
-// clang-format on
+/* clang-format on */
 
 #define comp_syn__break_defer goto __step_deferred
 

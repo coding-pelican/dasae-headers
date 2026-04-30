@@ -159,22 +159,22 @@ fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $guard) {
     var locked_idx = locked.idx;
     loop_labeled(outer, while (true)) {
         let top_free_ptr = *A_at((locked_meta->frees)[class_idx]);
-        if ($branch_likely(top_free_ptr != 0)) blk_defer_({
+        if ($branch_likely(top_free_ptr != 0)) blk_defer {
             defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
             let node = intToPtr$((usize*)(top_free_ptr));
             *node = *A_at((locked_meta->frees)[class_idx]);
             *A_at((locked_meta->frees)[class_idx]) = ptrToInt(node);
             return_some(intToPtr$((u8*)(top_free_ptr)));
-        }) blk_deferral;
+        } blk_deferral;
 
         let next_addr = *A_at((locked_meta->next_addrs)[class_idx]);
-        if ($branch_likely((next_addr % heap_Smp_slab_len) != 0)) blk_defer_({
+        if ($branch_likely((next_addr % heap_Smp_slab_len) != 0)) blk_defer {
             defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
             *A_at((locked_meta->next_addrs)[class_idx]) = next_addr + slot_size;
             return_some(intToPtr$((u8*)(next_addr)));
-        }) blk_deferral;
+        } blk_deferral;
 
-        if ($branch_likely(search_count >= heap_Smp_max_alloc_search)) blk_defer_({
+        if ($branch_likely(search_count >= heap_Smp_max_alloc_search)) blk_defer {
             defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
             let ptr = orelse_((mem_Alctr_rawAlloc(
                 $trace self->backing_alctr,
@@ -183,7 +183,7 @@ fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $guard) {
             ))(return_none()));
             *A_at((locked_meta->next_addrs)[class_idx]) = ptrToInt(ptr) + slot_size;
             return_some(ptr);
-        }) blk_deferral;
+        } blk_deferral;
 
         Thrd_Mtx_unlock(&locked_meta->mtx);
         let cpu_count = heap_Smp__cpuCount(self);

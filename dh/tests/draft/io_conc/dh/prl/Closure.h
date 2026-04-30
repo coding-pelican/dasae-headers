@@ -1,5 +1,5 @@
-#ifndef Closure_included
-#define Closure_included 1
+#ifndef prl_Closure_included
+#define prl_Closure_included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -335,7 +335,11 @@ T_alias$((Closure$raw)(struct Closure$raw {
 #define __step__co_use_Closure___tupFieldsToParams8(_Arg_T1, _Arg_T2, _Arg_T3, _Arg_T4, _Arg_T5, _Arg_T6, _Arg_T7, _Arg_T8...) \
     _Arg_T1 $0, _Arg_T2 $1, _Arg_T3 $2, _Arg_T4 $3, _Arg_T5 $4, _Arg_T6 $5, _Arg_T7 $6, _Arg_T8 $7
 
+T_use_Closure_Ctx$(Void);
+T_use_Closure_Rtn$(Void);
+T_use_Closure$(Void);
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Closure_included */
+#endif /* prl_Closure_included */

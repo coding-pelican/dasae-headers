@@ -9,6 +9,9 @@ extern "C" {
 #include "../base.h"
 #include "../../time/Dur.h"
 #include "dh/posix.h"
+#if plat_is_windows
+#include "dh/os/windows/io.h"
+#endif /* plat_is_windows */
 
 /*========== Macros and Declarations ========================================*/
 
@@ -22,14 +25,26 @@ errset_((exec_Evented_E)(
 ));
 T_decl_E$($set(exec_Evented_E)(exec_Evented));
 
+T_alias$((exec_Evented_Err)(Err));
+T_use_O$(exec_Evented_Err);
 T_alias$((exec_Evented_Completion)(struct exec_Evented_Completion {
     var_(key, usize);
     var_(op, P$raw);
     var_(bytes, usize);
-    var_(err, Err);
+    var_(os_err, usize);
+    var_(err, O$exec_Evented_Err);
 }));
 T_use_O$(exec_Evented_Completion);
 T_use_E$(O$exec_Evented_Completion);
+
+T_alias$((exec_Evented_Op)(struct exec_Evented_Op {
+#if plat_is_windows
+    var_(ov, OVERLAPPED);
+#else
+    var_(raw, Void);
+#endif
+    fn_(((*completeFn)(P$$(struct exec_Evented_Op) self, exec_Evented_Completion completion))(void));
+}));
 
 T_alias$((exec_Evented_Handle)(posix_fd_t));
 T_alias$((exec_Evented_VTbl)(struct exec_Evented_VTbl));
@@ -49,6 +64,7 @@ $attr($must_check)
 $extern fn_((exec_Evented_post(exec_Evented self, exec_Evented_Completion completion))(E$void));
 $attr($must_check)
 $extern fn_((exec_Evented_cancel(exec_Evented self, exec_Evented_Handle handle, P$raw op))(E$void));
+$extern fn_((exec_Evented_complete(exec_Evented_Completion completion))(void));
 
 struct exec_Evented_VTbl {
     fn_(((*finiFn)(P$raw ctx))(void));

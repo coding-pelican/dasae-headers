@@ -13,8 +13,8 @@ $static fn_((recordCleanup(i32 value))(void)) {
 }
 
 // Forward declarations of test scope functions
-$must_check
-    $static fn_((testBasicDeferScope(void))(E$void));
+$attr($must_check)
+$static fn_((testBasicDeferScope(void))(E$void));
 $static fn_((testMultipleDeferScope(void))(void));
 $static fn_((testDeferWithReturnScope(void))(void));
 $static fn_((testBlockDeferScope(void))(void));
@@ -89,14 +89,14 @@ TEST_fn_("test block defer" $scope) {
 $static fn_((testBlockDeferScope(void))(void) $guard) {
     defer_(recordCleanup(1));
 
-    blk_defer_({
+    using_() blk_defer {
         defer_(recordCleanup(2));
         if (true) {
             defer_(recordCleanup(3));
             break_defer;
         }
         recordCleanup(4); // Should not be executed
-    }) blk_deferral;
+    } blk_deferral;
 
     defer_(recordCleanup(5));
     return_void();

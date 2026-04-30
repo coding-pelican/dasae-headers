@@ -89,11 +89,12 @@ $extern fn_((heap_Sbrk_Sys_Windows_fini(heap_Sbrk_Sys_Windows* self))(void));
 /// POSIX mmap or sbrk context
 typedef struct heap_Sbrk_Sys_Posix {
     var_(base_addr, usize);
-    var_(mapped_size, usize);
+    var_(reserved_size, usize);
+    var_(committed_size, usize);
 } heap_Sbrk_Sys_Posix;
 $extern fn_((heap_Sbrk_Sys_Posix_sbrk(u_P$raw ctx, usize n))(usize));
 $extern fn_((heap_Sbrk_Sys_Posix_ctx(heap_Sbrk_Sys_Posix* self))(heap_Sbrk_Ctx));
-$extern fn_((heap_Sbrk_Sys_Posix_init(void))(heap_Sbrk_Sys_Posix));
+$extern fn_((heap_Sbrk_Sys_Posix_init(usize reserve_size))(heap_Sbrk_Sys_Posix));
 $extern fn_((heap_Sbrk_Sys_Posix_fini(heap_Sbrk_Sys_Posix* self))(void));
 #endif /* plat_is_posix */
 

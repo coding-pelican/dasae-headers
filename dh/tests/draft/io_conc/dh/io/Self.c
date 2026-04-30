@@ -61,7 +61,10 @@ fn_((io_direct(void))(io_direct_E$io_Self) $scope) {
 fn_((io_evented(exec_Coop* coop))(io_Self)) {
     claim_assert_nonnull(coop);
     let_ignore = exec_Coop_evented(coop);
-    return io_failing;
+    let direct = catch_((io_direct())(
+        $ignore, return io_failing
+    ));
+    return direct;
 };
 
 fn_((io_VTbl_noNL(P$raw ctx, io_Stream stream))(void)) {

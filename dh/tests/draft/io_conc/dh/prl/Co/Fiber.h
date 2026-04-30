@@ -1,5 +1,5 @@
-#ifndef Co_Fiber__included
-#define Co_Fiber__included 1
+#ifndef prl_Co_Fiber__included
+#define prl_Co_Fiber__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -151,4 +151,4 @@ fn_((Co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw) $scop
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Co_Fiber__included */
+#endif /* prl_Co_Fiber__included */

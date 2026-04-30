@@ -2,12 +2,12 @@
 #include "dh/io/stream.h"
 
 $static fn_((checkFlag(void))(bool)) { return false; }
+$static fn_((append(S$i32* list, i32 val))(void)) { *S_at((*list)[list->len++]) = val; }
 TEST_fn_("test breaking guard" $guard) {
     T_use_A$(10, i32);
     S$i32 deferred_list = { .ptr = l0$((A$(10, i32))).val, .len = 0 };
-    let append = la_((S$i32 * list, i32 val)(void)) { list->ptr[list->len++] = val; };
 
-    blk_defer_({
+    using_() blk_defer {
         defer_({
             io_stream_println(u8_l("defer1"));
             append(&deferred_list, 1);
@@ -16,19 +16,19 @@ TEST_fn_("test breaking guard" $guard) {
         io_stream_println(u8_l("checkFlag: {:s}"), checkFlag() ? u8_l("true") : u8_l("false"));
         io_stream_println(u8_l("before local__defer"));
 
-        if (checkFlag()) blk_defer_({
+        if (checkFlag()) blk_defer {
             defer_({
                 io_stream_println(u8_l("defer2"));
                 append(&deferred_list, 2);
             });
             io_stream_println(u8_l("checkFlag is true"));
-        }) blk_deferral else blk_defer_({
+        } blk_deferral else blk_defer {
             defer_({
                 io_stream_println(u8_l("defer3"));
                 append(&deferred_list, 3);
             });
             io_stream_println(u8_l("checkFlag is false"));
-        }) blk_deferral;
+        } blk_deferral;
         io_stream_println(u8_l("after local__defer"));
 
         defer_({
@@ -44,7 +44,7 @@ TEST_fn_("test breaking guard" $guard) {
             return_ok({});
         }) $unguarded(expr);
         io_stream_println(u8_l("something: {:d}"), something);
-    }) blk_deferral;
+    } blk_deferral;
 
     let expected_list = A_from$((i32){ 3, 5, 4, 1 });
     io_stream_println(u8_l("{:z}: {:d}"), nameOf(S_len(deferred_list)), S_len(deferred_list));
