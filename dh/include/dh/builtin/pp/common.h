@@ -59,7 +59,7 @@ extern "C" {
 
 #define pp_countArg(_Args...) \
     /** \
-     * @note handles up to 32 arguments \
+     * @note handles up to 31 arguments \
      * \
      * pp_countArg() => 0 \
      * pp_countArg(a0, a1, a2, ..., a31) => 32 \
@@ -67,7 +67,7 @@ extern "C" {
     pp_exec_countArg(_Args)
 #define pp_overload(_Ident, ...) \
     /** \
-     * @note handles up to 32 arguments \
+     * @note handles up to 31 arguments \
      * \
      * pp_overload(ident): \
      * => ident_0 \
@@ -79,12 +79,28 @@ extern "C" {
     pp_exec_overload(_Ident, __VA_ARGS__)
 #define pp_foreach(_Exec, _Iter, ...) \
     /** \
-     * @note handles up to 32 arguments \
+     * @note handles up to 31 arguments \
      * \
      * pp_foreach(exec, iter, x, y, z): \
      * => exec(iter, x) exec(iter, y) exec(iter, z) \
      */ \
     pp_exec_foreach(_Exec, _Iter, __VA_ARGS__)
+#define pp_foldl(_Step, _Init, ...) \
+    /** \
+     * @note handles up to 31 arguments \
+     * \
+     * pp_foldl(step, init, a, b, c): \
+     * => step(step(step(init, a), b), c) \
+     */ \
+    pp_exec_foldl(_Step, _Init, __VA_ARGS__)
+#define pp_foldr(_Step, _Init, ...) \
+    /** \
+     * @note handles up to 31 arguments \
+     * \
+     * pp_foldr(step, init, a, b, c): \
+     * => step(a, step(b, step(c, init))) \
+     */ \
+    pp_exec_foldr(_Step, _Init, __VA_ARGS__)
 
 /* --- tok --- */
 
@@ -265,6 +281,76 @@ extern "C" {
 #define pp_exec_foreach_29(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_28(_Exec, _Iter, __VA_ARGS__)
 #define pp_exec_foreach_30(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_29(_Exec, _Iter, __VA_ARGS__)
 #define pp_exec_foreach_31(_Exec, _Iter, _Arg, ...) _Exec(_Iter, _Arg) pp_exec_foreach_30(_Exec, _Iter, __VA_ARGS__)
+
+#define pp_exec_foldl(_Step, _Init, ...) \
+    pp_overload(pp_exec_foldl, __VA_ARGS__)(_Step, _Init, __VA_ARGS__)
+#define pp_exec_foldl_0(_Step, _Init...) _Init
+#define pp_exec_foldl_1(_Step, _Init, _A...) _Step(_Init, _A)
+#define pp_exec_foldl_2(_Step, _Init, _A, _B...) _Step(pp_exec_foldl_1(_Step, _Init, _A), _B)
+#define pp_exec_foldl_3(_Step, _Init, _A, _B, _C...) _Step(pp_exec_foldl_2(_Step, _Init, _A, _B), _C)
+#define pp_exec_foldl_4(_Step, _Init, _A, _B, _C, _D...) _Step(pp_exec_foldl_3(_Step, _Init, _A, _B, _C), _D)
+#define pp_exec_foldl_5(_Step, _Init, _A, _B, _C, _D, _E...) _Step(pp_exec_foldl_4(_Step, _Init, _A, _B, _C, _D), _E)
+#define pp_exec_foldl_6(_Step, _Init, _A, _B, _C, _D, _E, _F...) _Step(pp_exec_foldl_5(_Step, _Init, _A, _B, _C, _D, _E), _F)
+#define pp_exec_foldl_7(_Step, _Init, _A, _B, _C, _D, _E, _F, _G...) _Step(pp_exec_foldl_6(_Step, _Init, _A, _B, _C, _D, _E, _F), _G)
+#define pp_exec_foldl_8(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H...) _Step(pp_exec_foldl_7(_Step, _Init, _A, _B, _C, _D, _E, _F, _G), _H)
+#define pp_exec_foldl_9(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I...) _Step(pp_exec_foldl_8(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H), _I)
+#define pp_exec_foldl_10(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J...) _Step(pp_exec_foldl_9(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I), _J)
+#define pp_exec_foldl_11(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K...) _Step(pp_exec_foldl_10(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J), _K)
+#define pp_exec_foldl_12(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L...) _Step(pp_exec_foldl_11(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K), _L)
+#define pp_exec_foldl_13(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M...) _Step(pp_exec_foldl_12(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L), _M)
+#define pp_exec_foldl_14(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N...) _Step(pp_exec_foldl_13(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M), _N)
+#define pp_exec_foldl_15(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O...) _Step(pp_exec_foldl_14(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N), _O)
+#define pp_exec_foldl_16(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P...) _Step(pp_exec_foldl_15(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O), _P)
+#define pp_exec_foldl_17(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q...) _Step(pp_exec_foldl_16(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P), _Q)
+#define pp_exec_foldl_18(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R...) _Step(pp_exec_foldl_17(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q), _R)
+#define pp_exec_foldl_19(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S...) _Step(pp_exec_foldl_18(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R), _S)
+#define pp_exec_foldl_20(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T...) _Step(pp_exec_foldl_19(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S), _T)
+#define pp_exec_foldl_21(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U...) _Step(pp_exec_foldl_20(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T), _U)
+#define pp_exec_foldl_22(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V...) _Step(pp_exec_foldl_21(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U), _V)
+#define pp_exec_foldl_23(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W...) _Step(pp_exec_foldl_22(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V), _W)
+#define pp_exec_foldl_24(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X...) _Step(pp_exec_foldl_23(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W), _X)
+#define pp_exec_foldl_25(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y...) _Step(pp_exec_foldl_24(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X), _Y)
+#define pp_exec_foldl_26(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z...) _Step(pp_exec_foldl_25(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y), _Z)
+#define pp_exec_foldl_27(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0...) _Step(pp_exec_foldl_26(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z), _A0)
+#define pp_exec_foldl_28(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0...) _Step(pp_exec_foldl_27(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0), _B0)
+#define pp_exec_foldl_29(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0...) _Step(pp_exec_foldl_28(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0), _C0)
+#define pp_exec_foldl_30(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0...) _Step(pp_exec_foldl_29(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0), _D0)
+#define pp_exec_foldl_31(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0, _E0...) _Step(pp_exec_foldl_30(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0), _E0)
+
+#define pp_exec_foldr(_Step, _Init, ...) \
+    pp_overload(pp_exec_foldr, __VA_ARGS__)(_Step, _Init, __VA_ARGS__)
+#define pp_exec_foldr_0(_Step, _Init...) _Init
+#define pp_exec_foldr_1(_Step, _Init, _A...) _Step(_A, _Init)
+#define pp_exec_foldr_2(_Step, _Init, _A, _B...) _Step(_A, pp_exec_foldr_1(_Step, _Init, _B))
+#define pp_exec_foldr_3(_Step, _Init, _A, _B, _C...) _Step(_A, pp_exec_foldr_2(_Step, _Init, _B, _C))
+#define pp_exec_foldr_4(_Step, _Init, _A, _B, _C, _D...) _Step(_A, pp_exec_foldr_3(_Step, _Init, _B, _C, _D))
+#define pp_exec_foldr_5(_Step, _Init, _A, _B, _C, _D, _E...) _Step(_A, pp_exec_foldr_4(_Step, _Init, _B, _C, _D, _E))
+#define pp_exec_foldr_6(_Step, _Init, _A, _B, _C, _D, _E, _F...) _Step(_A, pp_exec_foldr_5(_Step, _Init, _B, _C, _D, _E, _F))
+#define pp_exec_foldr_7(_Step, _Init, _A, _B, _C, _D, _E, _F, _G...) _Step(_A, pp_exec_foldr_6(_Step, _Init, _B, _C, _D, _E, _F, _G))
+#define pp_exec_foldr_8(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H...) _Step(_A, pp_exec_foldr_7(_Step, _Init, _B, _C, _D, _E, _F, _G, _H))
+#define pp_exec_foldr_9(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I...) _Step(_A, pp_exec_foldr_8(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I))
+#define pp_exec_foldr_10(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J...) _Step(_A, pp_exec_foldr_9(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J))
+#define pp_exec_foldr_11(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K...) _Step(_A, pp_exec_foldr_10(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K))
+#define pp_exec_foldr_12(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L...) _Step(_A, pp_exec_foldr_11(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L))
+#define pp_exec_foldr_13(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M...) _Step(_A, pp_exec_foldr_12(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M))
+#define pp_exec_foldr_14(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N...) _Step(_A, pp_exec_foldr_13(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N))
+#define pp_exec_foldr_15(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O...) _Step(_A, pp_exec_foldr_14(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O))
+#define pp_exec_foldr_16(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P...) _Step(_A, pp_exec_foldr_15(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P))
+#define pp_exec_foldr_17(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q...) _Step(_A, pp_exec_foldr_16(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q))
+#define pp_exec_foldr_18(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R...) _Step(_A, pp_exec_foldr_17(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R))
+#define pp_exec_foldr_19(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S...) _Step(_A, pp_exec_foldr_18(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S))
+#define pp_exec_foldr_20(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T...) _Step(_A, pp_exec_foldr_19(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T))
+#define pp_exec_foldr_21(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U...) _Step(_A, pp_exec_foldr_20(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U))
+#define pp_exec_foldr_22(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V...) _Step(_A, pp_exec_foldr_21(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V))
+#define pp_exec_foldr_23(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W...) _Step(_A, pp_exec_foldr_22(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W))
+#define pp_exec_foldr_24(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X...) _Step(_A, pp_exec_foldr_23(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X))
+#define pp_exec_foldr_25(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y...) _Step(_A, pp_exec_foldr_24(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y))
+#define pp_exec_foldr_26(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z...) _Step(_A, pp_exec_foldr_25(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z))
+#define pp_exec_foldr_27(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0...) _Step(_A, pp_exec_foldr_26(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0))
+#define pp_exec_foldr_28(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0...) _Step(_A, pp_exec_foldr_27(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0))
+#define pp_exec_foldr_29(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0...) _Step(_A, pp_exec_foldr_28(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0))
+#define pp_exec_foldr_30(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0...) _Step(_A, pp_exec_foldr_29(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0))
+#define pp_exec_foldr_31(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0, _E0...) _Step(_A, pp_exec_foldr_30(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0, _E0))
 
 /* --- tok --- */
 

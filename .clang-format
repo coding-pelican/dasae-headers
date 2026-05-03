@@ -133,6 +133,9 @@ Macros:
   - "T_decl$(Expr)=pp_exec_ignore Expr"
   - "T_impl$(Expr)=pp_exec_ignore Expr"
   - "T_use$(Expr)=pp_exec_ignore Expr"
+  - "T_declBy$(Expr)=pp_exec_ignore Expr"
+  - "T_implBy$(Expr)=pp_exec_ignore Expr"
+  - "T_useBy$(Expr)=pp_exec_ignore Expr"
 
   # - "let_(ident, T)=T const ident"
   # - "var_(ident, T)=T ident"
@@ -255,8 +258,12 @@ Macros:
   # - "blk_deferral=while(false); }"
   - "blk_defer=/**/"
   - "blk_deferral=/**/"
+  - "loop_defer=/**/"
+  - "loop_deferral=/**/"
   - "co_blk_defer=/**/"
   - "co_blk_deferral=/**/"
+  - "co_loop_defer=/**/"
+  - "co_loop_deferral=/**/"
   # - "return_(Expr)=return Expr"
   # - "return_void(Expr)=return Expr"
 

@@ -30,6 +30,7 @@ typedef struct Thrd_WaitGroup {
     var_(state, atom_V$usize);
     var_(event, Thrd_ResetEvent);
 } Thrd_WaitGroup;
+#define Thrd_WaitGroup_init_static(/*void*/) ____Thrd_WaitGroup_init_static()
 $extern fn_((Thrd_WaitGroup_init(void))(Thrd_WaitGroup));
 $extern fn_((Thrd_WaitGroup_fini(Thrd_WaitGroup* self))(void));
 $extern fn_((Thrd_WaitGroup_start(Thrd_WaitGroup* self))(void));
@@ -47,8 +48,14 @@ $extern fn_((Thrd_WaitGroup_isDoneOn(atom_V$usize* state))(bool));
 $extern fn_((Thrd_WaitGroup_value(Thrd_WaitGroup* self))(usize));
 $extern fn_((Thrd_WaitGroup_valueOn(atom_V$usize* state))(usize));
 /// Spawns a new thread for the closure. This is appropriate when the callee delegates all work.
-T_decl$((Void)(Closure_Ctx, Closure));
 $extern fn_((Thrd_WaitGroup_spawn(Thrd_WaitGroup* self, mem_Alctr gpa, Closure$Void* closure))(void));
+
+/*========== Macros and Definitions =========================================*/
+
+#define ____Thrd_WaitGroup_init_static() l$((Thrd_WaitGroup){ \
+    .state = atom_V_init(0), \
+    .event = Thrd_ResetEvent_init_static(), \
+})
 
 #if defined(__cplusplus)
 } /* extern "C" */

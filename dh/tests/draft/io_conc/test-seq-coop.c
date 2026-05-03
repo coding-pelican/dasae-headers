@@ -5,8 +5,8 @@
 #include "dh/heap/Page.h"
 
 T_alias$((Event)(u8));
-T_use$((Event)(P, S));
 T_use$((Event)(
+    P, S,
     ArrList,
     ArrList_Grip,
     ArrList_grip,
@@ -70,13 +70,7 @@ co_fn_scope(
 } $unscoped(co_fn);
 co_use_Closure_((countCo)(Sys, usize, time_Dur, Event)(Event));
 
-T_use$((Event)(
-    Future,
-    Future_await,
-    Future_cancel,
-    Sched_async
-));
-
+T_use$((Event)(Future, Future_await, Future_cancel, Sched_async));
 $static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected))(E$void) $guard) {
     var log = l0$((EventLog));
     let_(sys, Sys) = {

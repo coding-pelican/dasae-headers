@@ -69,6 +69,31 @@ runtime. The built-in timed execution model belongs to `exec_Coop`, not
 `exec_Preem` is the OS-thread preemptive scheduler. It uses non-draft `Thrd` for
 async progress and explicit spawn. It does not own a cooperative event loop.
 
+`Thrd_Once` is the thread synchronization primitive for one-time process-local
+initialization inside the draft runtime. It owns only an atomic state word. The
+winning caller runs a `Void` closure, publishes completion with release
+ordering, and wakes waiters through `Thrd_ftx`; other callers return after an
+acquire load observes `done`.
+
+`Thrd_OnceLock$T` wraps `Thrd_Once` with owned `T` storage. The winning caller
+completes a `Closure$T` into that storage, publishes the stored value through
+the underlying `Thrd_Once`, and later callers read the owned value after an
+acquire load observes `done`.
+
+`Thrd_LazyLock$T$Init` wraps `Thrd_OnceLock$T` with owned initializer storage.
+It is appropriate when the initializer closure has a stable concrete storage
+type and should be kept with the lazy cell.
+
+```mermaid
+stateDiagram-v2
+    [*] --> uninit
+    uninit --> running: first caller claims
+    uninit --> running: competing caller loses and reloads
+    running --> running: wait on `Thrd_ftx`
+    running --> done: closure returns
+    done --> done: later calls return
+```
+
 `exec_Para` is reserved for a future parallel cooperative scheduler. It is not
 declared until its backend exists.
 

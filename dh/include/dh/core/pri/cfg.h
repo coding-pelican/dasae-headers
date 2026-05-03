@@ -395,23 +395,23 @@ typedef TypeOf(void*) P$raw;
 #define $P_const$(_T...) TypeOf(const _T*)
 #define $P$(_T...) TypeOf(_T*)
 
-#define isNull(_p /*: P(_T)*/... /*(bool)*/) ____isNull(_p)
-#define isNonnull(_p /*: P(_T)*/... /*(bool)*/) ____isNonnull(_p)
-#define ensureNonnull(_p /*: P(_T)*/... /*(P(_T))*/) __step__ensureNonnull(_p)
+#define isNull(_p /*: P(_T)*/... /*(bool)*/) __expr__ptr__isNull(_p)
+#define isNonnull(_p /*: P(_T)*/... /*(bool)*/) __expr__ptr__isNonnull(_p)
+#define ensureNonnull(_p /*: P(_T)*/... /*(P(_T))*/) __expr__ptr__ensureNonnull(_p)
 
-#define ref(_v /*: _T*/... /*(P(_T))*/) ____ref(_v)
-#define deref(_p /*: P(_T)*/... /*(_T)*/) ____deref(_p)
+#define ref(_v /*: _T*/... /*(P(_T))*/) __expr__ptr__ref(_v)
+#define deref(_p /*: P(_T)*/... /*(_T)*/) __expr__ptr__deref(_p)
 
-#define ptrToInt(_p /*: PtrType*/... /*(usize)*/) ____ptrToInt(_p)
-#define intToPtr$(/*(_P_T: PtrType)(_val: usize)*/... /*(_P_T)*/) __step__intToPtr$(__VA_ARGS__)
+#define ptrToInt(_p /*: PtrType*/... /*(usize)*/) __expr__ptrToInt(_p)
+#define intToPtr$(/*(_P_T: PtrType)(_val: usize)*/... /*(_P_T)*/) __expr__intToPtr$(__VA_ARGS__)
 
-#define ptrCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) __step__ptrCast$(__VA_ARGS__)
-#define ptrAlignCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) __step__ptrAlignCast$(__VA_ARGS__)
-#define ptrQualCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) ____ptrQualCast$(__VA_ARGS__)
-#define ptrAlignQualCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) ____ptrAlignQualCast$(__VA_ARGS__)
+#define ptrCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) __expr__ptrCast$(__VA_ARGS__)
+#define ptrAlignCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) __expr__ptrAlignCast$(__VA_ARGS__)
+#define ptrQualCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) __expr__ptrQualCast$(__VA_ARGS__)
+#define ptrAlignQualCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) __expr__ptrAlignQualCast$(__VA_ARGS__)
 
-#define mutCast(_p /*: P(_T)*/... /*(P_const(_T))*/) ____mutCast(_p)
-#define constCast(_p /*: P_const(_T)*/... /*(P(_T))*/) ____constCast(_p)
+#define mutCast(_p /*: P(_T)*/... /*(P_const(_T))*/) __expr__ptr__mutCast(_p)
+#define constCast(_p /*: P_const(_T)*/... /*(P(_T))*/) __expr__ptr__constCast(_p)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -643,42 +643,42 @@ typedef TypeOf(void*) P$raw;
     ) pp_end \
 )
 
-#define ____isNull(_p...) (as$(bool)((_p) == null))
-#define ____isNonnull(_p...) (as$(bool)((_p) != null))
+#define __expr__ptr__isNull(_p...) (as$(bool)((_p) == null))
+#define __expr__ptr__isNonnull(_p...) (as$(bool)((_p) != null))
 
-#define __step__ensureNonnull(_p...) ____ensureNonnull(pp_uniqTok(p), _p)
-#define ____ensureNonnull(__p, _p...) local_({ \
+#define __expr__ptr__ensureNonnull(_p...) __expr__ptr__ensureNonnull__bind(pp_uniqTok(p), _p)
+#define __expr__ptr__ensureNonnull__bind(__p, _p...) local_({ \
     let_(__p, TypeOf(_p)) = _p; \
     local_return_((claim_assert_nonnull(__p), __p)); \
 })
 
-#define ____ref(_v...) (&(_v))
-#define ____deref(_p...) (*ensureNonnull(_p))
+#define __expr__ptr__ref(_v...) (&(_v))
+#define __expr__ptr__deref(_p...) (*ensureNonnull(_p))
 
-#define ____ptrToInt(_p...) /* NOLINT(performance-no-int-to-ptr) */ ((usize)(_p))
+#define __expr__ptrToInt(_p...) /* NOLINT(performance-no-int-to-ptr) */ ((usize)(_p))
 
-#define __step__intToPtr$(...) __step__intToPtr$__emit(__step__intToPtr$__parse __VA_ARGS__)
-#define __step__intToPtr$__parse(_P_T...) _P_T,
-#define __step__intToPtr$__emit(...) ____intToPtr$(__VA_ARGS__)
-#define ____intToPtr$(_P_T, _val...) /* NOLINT(performance-no-int-to-ptr) */ ((_P_T)(_val))
+#define __expr__intToPtr$(...) __expr__intToPtr$__emit(__pp__intToPtr$__parseType __VA_ARGS__)
+#define __pp__intToPtr$__parseType(_P_T...) _P_T,
+#define __expr__intToPtr$__emit(...) __expr__intToPtr$__impl(__VA_ARGS__)
+#define __expr__intToPtr$__impl(_P_T, _val...) /* NOLINT(performance-no-int-to-ptr) */ ((_P_T)(_val))
 
-#define __step__ptrCast$(...) __step__ptrCast$__emit(__step__ptrCast$__parse __VA_ARGS__)
-#define __step__ptrCast$__parse(_P_T...) _P_T,
-#define __step__ptrCast$__emit(...) ____ptrCast$(__VA_ARGS__)
-#define ____ptrCast$(_P_T, _val...) (as$(_P_T)(_val))
+#define __expr__ptrCast$(...) __expr__ptrCast$__emit(__pp__ptrCast$__parseType __VA_ARGS__)
+#define __pp__ptrCast$__parseType(_P_T...) _P_T,
+#define __expr__ptrCast$__emit(...) __expr__ptrCast$__impl(__VA_ARGS__)
+#define __expr__ptrCast$__impl(_P_T, _val...) (as$(_P_T)(_val))
 
-#define __step__ptrAlignCast$(...) __step__ptrAlignCast$__emit(__step__ptrAlignCast$__parse __VA_ARGS__)
-#define __step__ptrAlignCast$__parse(_P_T...) _P_T,
-#define __step__ptrAlignCast$__emit(...) ____ptrAlignCast$(__VA_ARGS__)
-#define ____ptrAlignCast$(_P_T, _val...) $supress_cast_align( \
+#define __expr__ptrAlignCast$(...) __expr__ptrAlignCast$__emit(__pp__ptrAlignCast$__parseType __VA_ARGS__)
+#define __pp__ptrAlignCast$__parseType(_P_T...) _P_T,
+#define __expr__ptrAlignCast$__emit(...) __expr__ptrAlignCast$__impl(__VA_ARGS__)
+#define __expr__ptrAlignCast$__impl(_P_T, _val...) $supress_cast_align( \
     ptrCast$((_P_T)(alignCast((alignOf$(DerefType$(_P_T)))(_val)))) \
 )
 
-#define ____ptrQualCast$(...) $supress_cast_qual(ptrCast$(__VA_ARGS__))
-#define ____ptrAlignQualCast$(...) $supress_cast_align(ptrAlignCast$(__VA_ARGS__))
+#define __expr__ptrQualCast$(...) $supress_cast_qual(ptrCast$(__VA_ARGS__))
+#define __expr__ptrAlignQualCast$(...) $supress_cast_align(ptrAlignCast$(__VA_ARGS__))
 
-#define ____mutCast(_p...) ptrCast$((const TypeOfUnqual(*_p)*)(_p))
-#define ____constCast(_p...) ptrQualCast$((TypeOfUnqual(*_p)*)(_p))
+#define __expr__ptr__mutCast(_p...) ptrCast$((const TypeOfUnqual(*_p)*)(_p))
+#define __expr__ptr__constCast(_p...) ptrQualCast$((TypeOfUnqual(*_p)*)(_p))
 
 
 #if defined(__cplusplus)

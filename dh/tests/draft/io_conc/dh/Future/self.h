@@ -37,8 +37,8 @@ $extern fn_((Future_cancel(Future$raw* self, Sched sched, u_V$raw ret_mem))(u_V$
 
 T_alias$((u_Fields_Idx$Future)(enum_((u_Fields_Idx$Future $fits($packed))(
     u_Fields_Idx_any_future$Future = 0,
-    u_Fields_Idx_type$Future = 1,
-    u_Fields_Idx_result_$Future = 2,
+    u_Fields_Idx_type$Future,
+    u_Fields_Idx_result_$Future,
     count$u_Fields_Idx$Future
 ))));
 $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A_init({
@@ -88,13 +88,17 @@ $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A
 
 fn_((Future_result(const Future$raw* self, TypeInfo type))(u_P_const$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)(u_Fields_type$Future));
+    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$Future)(
+        (.val[u_Fields_Idx_result_$Future])(type)
+    )));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self)));
     return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_result_$Future);
 };
 fn_((Future_resultMut(Future$raw* self, TypeInfo type))(u_P$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)(u_Fields_type$Future));
+    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$Future)(
+        (.val[u_Fields_Idx_result_$Future])(type)
+    )));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_result_$Future);
 };

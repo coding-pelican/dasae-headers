@@ -51,7 +51,7 @@ TEST_fn_("basic usage" $guard) {
     var heap = (heap_Page){};
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
-    var map_value = try_(HashMap_init$1usize$2u16(ctx, gpa, 256));
+    var map_value = try_(HashMap_init$1usize$2u16(&ctx, gpa, 256));
     defer_(HashMap_fini$1usize$2u16(&map_value, gpa));
 
     let_(count, u32) = 128;
@@ -84,7 +84,7 @@ TEST_fn_("basic usage - no templates used" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
     var map_value = try_(HashMap_init(
-        typeInfo$(usize), typeInfo$(u16), ctx, gpa, 256
+        typeInfo$(usize), typeInfo$(u16), &ctx, gpa, 256
     ));
     defer_(HashMap_fini(&map_value, typeInfo$(usize), typeInfo$(u16), gpa));
 
@@ -117,7 +117,7 @@ TEST_fn_("basic hash map usage" $guard) {
     var heap = (heap_Page){};
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
-    var map_value = try_(HashMap_init$1usize$2u16(ctx, gpa, 256));
+    var map_value = try_(HashMap_init$1usize$2u16(&ctx, gpa, 256));
     defer_(HashMap_fini$1usize$2u16(&map_value, gpa));
 
     try_(TEST_expect(isNone(try_(HashMap_fetchPut$1usize$2u16(&map_value, gpa, 1, 11)))));
@@ -166,7 +166,7 @@ TEST_fn_("clone and clear operations" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
-    var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
+    var map = try_(HashMap_init$1usize$2u16(&ctx, gpa, 16));
     defer_(HashMap_fini$1usize$2u16(&map, gpa));
 
     // Add some elements
@@ -209,7 +209,7 @@ TEST_fn_("rehash" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
-    var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 64));
+    var map = try_(HashMap_init$1usize$2u16(&ctx, gpa, 64));
     defer_(HashMap_fini$1usize$2u16(&map, gpa));
 
     // Add elements: keys 0-31, values are key * 10
@@ -248,7 +248,7 @@ TEST_fn_("key iterator" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
-    var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
+    var map = try_(HashMap_init$1usize$2u16(&ctx, gpa, 16));
     defer_(HashMap_fini$1usize$2u16(&map, gpa));
 
     // Add elements
@@ -277,7 +277,7 @@ TEST_fn_("value iterator" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
-    var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
+    var map = try_(HashMap_init$1usize$2u16(&ctx, gpa, 16));
     defer_(HashMap_fini$1usize$2u16(&map, gpa));
 
     // Add elements: value = key * 10
@@ -306,7 +306,7 @@ TEST_fn_("entry iterator" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
-    var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
+    var map = try_(HashMap_init$1usize$2u16(&ctx, gpa, 16));
     defer_(HashMap_fini$1usize$2u16(&map, gpa));
 
     // Add elements
@@ -334,7 +334,7 @@ TEST_fn_("stress test with many insertions and deletions" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashMap_Ctx_default();
 
-    var map = try_(HashMap_init$1usize$2u16(ctx, gpa, 16));
+    var map = try_(HashMap_init$1usize$2u16(&ctx, gpa, 16));
     defer_(HashMap_fini$1usize$2u16(&map, gpa));
 
     // Insert many elements

@@ -28,7 +28,7 @@ extern "C" {
 #include "Thrd/cfg.h"
 #include "Thrd/common.h"
 
-#include "Thrd/Ftx.h"
+#include "Thrd/ftx.h"
 #include "Thrd/Mtx.h"
 #include "Thrd/Sem.h"
 

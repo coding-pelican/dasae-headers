@@ -21,22 +21,29 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "Ftx.h"
+#include "ftx.h"
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((Thrd_ResetEvent_Err)(Timeout));
+errset_((Thrd_ResetEvent_E)(Timeout));
 typedef struct Thrd_ResetEvent {
     var_(state, atom_V$u32);
 } Thrd_ResetEvent;
+#define Thrd_ResetEvent_init_static(/*void*/) ____Thrd_ResetEvent_init_static()
 $extern fn_((Thrd_ResetEvent_init(void))(Thrd_ResetEvent));
 $extern fn_((Thrd_ResetEvent_fini(Thrd_ResetEvent* self))(void));
 $extern fn_((Thrd_ResetEvent_wait(Thrd_ResetEvent* self))(void));
 $attr($must_check)
-$extern fn_((Thrd_ResetEvent_timedWait(Thrd_ResetEvent* self, time_Dur timeout))(Thrd_ResetEvent_Err$void));
+$extern fn_((Thrd_ResetEvent_timedWait(Thrd_ResetEvent* self, time_Dur timeout))(Thrd_ResetEvent_E$void));
 $extern fn_((Thrd_ResetEvent_set(Thrd_ResetEvent* self))(void));
 $extern fn_((Thrd_ResetEvent_reset(Thrd_ResetEvent* self))(void));
 $extern fn_((Thrd_ResetEvent_isSet(const Thrd_ResetEvent* self))(bool));
+
+/*========== Macros and Definitions =========================================*/
+
+#define ____Thrd_ResetEvent_init_static() l$((Thrd_ResetEvent){ \
+    .state = atom_V_init(0u), \
+})
 
 #if defined(__cplusplus)
 } /* extern "C" */

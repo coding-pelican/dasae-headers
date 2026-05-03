@@ -196,7 +196,7 @@ fn_((Thrd_Mtx_Recur_unlock(Thrd_Mtx_Recur* self))(void)) {
 
 #if Thrd_Mtx_use_pthread
 fn_((Thrd_Mtx__pthread_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){ .impl = PTHREAD_MUTEX_INITIALIZER };
+    return (Thrd_Mtx)Thrd_Mtx_init_static();
 };
 
 fn_((Thrd_Mtx__pthread_fini(Thrd_Mtx* self))(void)) {
@@ -219,7 +219,7 @@ fn_((Thrd_Mtx__pthread_unlock(Thrd_Mtx* self))(void)) {
 /* --- Default --- */
 
 #if !Thrd_Mtx_has_specialized
-#include "Ftx.h"
+#include "ftx.h"
 
 #define Thrd_Mtx__default_unlocked (as$(u32)(0b00))
 #define Thrd_Mtx__default_locked (as$(u32)(0b01))
@@ -228,7 +228,7 @@ fn_((Thrd_Mtx__pthread_unlock(Thrd_Mtx* self))(void)) {
 $static fn_((Thrd_Mtx__default_lockSlow(Thrd_Mtx* self))(void));
 
 fn_((Thrd_Mtx__default_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){ .impl.state = atom_V_init(Thrd_Mtx__default_unlocked) };
+    return (Thrd_Mtx)Thrd_Mtx_init_static();
 };
 
 fn_((Thrd_Mtx__default_fini(Thrd_Mtx* self))(void)) {
@@ -278,7 +278,7 @@ fn_((Thrd_Mtx__default_unlock(Thrd_Mtx* self))(void)) {
     let state = atom_V_fetchXchg(&self->state, Thrd_Mtx__default_unlocked, atom_MemOrd_release);
     debug_assert(state != Thrd_Mtx__default_unlocked);
     if (state == Thrd_Mtx__default_contended) {
-        Thrd_Ftx_wake(&self->state, 1);
+        Thrd_ftx_wake(&self->state, 1);
     }
 };
 
@@ -287,7 +287,7 @@ fn_((Thrd_Mtx__default_lockSlow(Thrd_Mtx* self))(void)) {
     // Avoid doing an atomic swap below if we already know the state is contended.
     // An atomic swap unconditionally stores which marks the cache-line as modified unnecessarily.
     if (atom_V_load(&self->state, atom_MemOrd_monotonic) == Thrd_Mtx__default_contended) {
-        Thrd_Ftx_wait(&self->state, Thrd_Mtx__default_contended);
+        Thrd_ftx_wait(&self->state, Thrd_Mtx__default_contended);
     }
     // Try to acquire the lock while also telling the existing lock holder that there are threads waiting.
     //
@@ -299,7 +299,7 @@ fn_((Thrd_Mtx__default_lockSlow(Thrd_Mtx* self))(void)) {
     // Acquire barrier ensures grabbing the lock happens before the critical section
     // and that the previous lock holder's critical section happens before we grab the lock.
     while (atom_V_fetchXchg(&self->state, Thrd_Mtx__default_contended, atom_MemOrd_acquire) != Thrd_Mtx__default_unlocked) {
-        Thrd_Ftx_wait(&self->state, Thrd_Mtx__default_contended);
+        Thrd_ftx_wait(&self->state, Thrd_Mtx__default_contended);
     }
 };
 #endif /* !Thrd_Mtx_has_specialized */
@@ -308,7 +308,7 @@ fn_((Thrd_Mtx__default_lockSlow(Thrd_Mtx* self))(void)) {
 
 #if Thrd_Mtx_has_specialized && plat_is_windows
 fn_((Thrd_Mtx__windows_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){ .impl.inner = SRWLOCK_INIT };
+    return (Thrd_Mtx)Thrd_Mtx_init_static();
 };
 
 fn_((Thrd_Mtx__windows_fini(Thrd_Mtx* self))(void)) {
@@ -332,7 +332,7 @@ fn_((Thrd_Mtx__windows_unlock(Thrd_Mtx* self))(void)) {
 
 #if Thrd_Mtx_has_specialized && plat_is_darwin
 fn_((Thrd_Mtx__darwin_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){ .impl.inner = OS_UNFAIR_LOCK_INIT };
+    return (Thrd_Mtx)Thrd_Mtx_init_static();
 };
 
 fn_((Thrd_Mtx__darwin_fini(Thrd_Mtx* self))(void)) {

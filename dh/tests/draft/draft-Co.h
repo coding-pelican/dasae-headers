@@ -27,7 +27,6 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /*--- Coroutine's Control ---*/
-T_alias$((Co_Count)(u32));
 T_alias$((Co_State)(enum_((Co_State $fits($packed))(
     Co_State_undefined = 0,
     Co_State_pending,
@@ -35,19 +34,23 @@ T_alias$((Co_State)(enum_((Co_State $fits($packed))(
     Co_State_ready
 ))));
 claim_assert_static(eqlType$(Co_State, u8));
-T_alias$((Co_CtrlPacked)(Co_Count));
-T_alias$((Co_Ctrl)(union Co_Ctrl {
+T_alias$((Co_FlowCtrlPacked)(fn__FlowCursorPacked));
+#define Co_FlowCtrl_State_bits 2
+#define Co_FlowCtrl_line_bits (arch_bits_wide - Co_FlowCtrl_State_bits)
+T_alias$((Co_FlowCtrl)(union Co_FlowCtrl {
     T_embed$(struct {
-        var_(state, Co_CtrlPacked) : 2;
-        var_(count, Co_CtrlPacked) : 30;
+        var_(line, Co_FlowCtrlPacked)
+            : Co_FlowCtrl_line_bits;
+        var_(state, Co_FlowCtrlPacked)
+            : Co_FlowCtrl_State_bits;
     });
-    var_(packed, Co_CtrlPacked);
+    var_(packed, Co_FlowCtrlPacked);
 }));
-claim_assert_static(eqlType$(Co_State, u8));
+claim_assert_static((Co_FlowCtrl_line_bits + Co_FlowCtrl_State_bits) == arch_bits_wide);
 /*--- Coroutine's Context ---*/
 #define Co_Ctx$(_T...) __alias__Co_Ctx$(_T)
 T_alias$((Co_Ctx$raw)(struct Co_Ctx$raw {
-    var_(ctrl, Co_Ctrl);
+    var_(ctrl, Co_FlowCtrl);
     var_(suspended_data, P$raw);
     var_(ret_, V$raw) $flexible;
     var_(args_, V$raw) $flexible;
@@ -134,7 +137,7 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
 #define __stmt__T_impl_Co_Ctx$(_T...) \
     union Co_Ctx$(_T) { \
         T_embed$(struct { \
-            var_(ctrl, Co_Ctrl); \
+            var_(ctrl, Co_FlowCtrl); \
             var_(suspended_data, P$raw); \
             T_embed$(union { \
                 var_(ret, _T); \
@@ -203,7 +206,7 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
     })); \
     union Co_Ctx_(_fnName) { \
         T_embed$(struct { \
-            var_(ctrl, Co_Ctrl); \
+            var_(ctrl, Co_FlowCtrl); \
             var_(suspended_data, P$raw); \
             T_embed$(union { \
                 var_(ret, Co_Ret_(_fnName)); \
@@ -247,21 +250,21 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
         let_const __locals = &__ctx->data.locals; \
         $attr($maybe_unused) \
         let __locals_mut = &__ctx->data.locals_mut; \
-        var_(__scope_counter, struct fn__ScopeCounter) = { \
+        var_(__flow_cursor, struct fn__FlowCursor) = { \
             .is_returning = __ctx->ctrl.state == Co_State_ready, \
-            .current_line = __ctx->ctrl.count \
+            .curr_line = __ctx->ctrl.line \
         }; \
         if (false) { __step_return: \
-            __scope_counter.is_returning = true; \
+            __flow_cursor.is_returning = true; \
             __ctx->ctrl.state = Co_State_ready; \
             goto __step_unscope; \
         } \
-        switch (__scope_counter.current_line) { \
+        switch (__flow_cursor.curr_line) { \
         default: { \
             goto __step_unscope; \
         } break; \
         case 0: \
-            __scope_counter.current_line--;
+            __flow_cursor.curr_line--;
 /* clang-format on */
 /* clang-format off */
 #define inline__$unscoped_co_fn() __stmt__$unscoped_co_fn
@@ -299,7 +302,7 @@ __step_unscope: \
         *__suspended_data = _expr; \
         __ctx->suspended_data = __suspended_data; \
         __ctx->ctrl.state = Co_State_suspended; \
-        __ctx->ctrl.count = __LINE__; \
+        __ctx->ctrl.line = __LINE__; \
         goto __step_suspend; \
     case __LINE__:; \
         claim_assert(__ctx->ctrl.state == Co_State_suspended); \

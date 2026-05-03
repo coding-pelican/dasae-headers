@@ -14,7 +14,7 @@ TEST_fn_("test breaking guard" $guard) {
         });
 
         io_stream_println(u8_l("checkFlag: {:s}"), checkFlag() ? u8_l("true") : u8_l("false"));
-        io_stream_println(u8_l("before local__defer"));
+        io_stream_println(u8_l("before blk_defer"));
 
         if (checkFlag()) blk_defer {
             defer_({
@@ -29,7 +29,7 @@ TEST_fn_("test breaking guard" $guard) {
             });
             io_stream_println(u8_l("checkFlag is false"));
         } blk_deferral;
-        io_stream_println(u8_l("after local__defer"));
+        io_stream_println(u8_l("after blk_defer"));
 
         defer_({
             io_stream_println(u8_l("defer4"));
@@ -40,7 +40,7 @@ TEST_fn_("test breaking guard" $guard) {
                 io_stream_println(u8_l("defer5"));
                 append(&deferred_list, 5);
             });
-            if (true) { $break_(123); }
+            if (true) $break_(123);
             return_ok({});
         }) $unguarded(expr);
         io_stream_println(u8_l("something: {:d}"), something);

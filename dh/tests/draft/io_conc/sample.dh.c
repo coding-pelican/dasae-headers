@@ -32,10 +32,10 @@ $static fn_((countFn(Sys sys, usize n, time_Dur interval, S_const$u8 label))(f64
     report(sys.io, label, u8_l("after loop {:fl}"), elapsed);
     return elapsed;
 };
-T_use$((f64)(Closure_Ctx, Closure_Rtn, Closure));
-T_use$((f64)(Future, Future_await, Future_cancel, Sched_async));
+T_use$((f64)(Closure_Ctx, Closure_Rtn, Closure, ));
 fn_use_Closure_((countFn)(Sys, usize, time_Dur, S_const$u8)(f64));
 
+T_use$((f64)(Future, Future_await, Future_cancel, Sched_async));
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
     let gpa = heap_Page_alctr(&l0$((heap_Page)));

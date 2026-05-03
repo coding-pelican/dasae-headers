@@ -285,7 +285,7 @@ T_alias$((Closure$raw)(struct Closure$raw {
                 .ctx = { \
                     .ctrl = { \
                         .state = Co_State_pending, \
-                        .count = 0, \
+                        .line = 0, \
                     }, \
                     .suspended_data = {}, \
                     .args = { __step__co_use_Closure___passTupFields(_N_Arg_T) }, \

@@ -69,7 +69,7 @@ typedef pp_if_(Thrd_use_pthread)(
     )))) Thrd_Handle__Impl;
 #define Thrd_max_name_len __comp_const__Thrd_max_name_len
 #define __comp_const__Thrd_max_name_len (15)
-T_use_atom_V$(u32); /* for Thrd_Ftx, Thrd_Mtx */
+T_use_atom_V$(u32); /* for Thrd_ftx, Thrd_Mtx, Thrd_Once, Thrd_OnceLock */
 typedef struct Thrd_Mtx__Impl Thrd_Mtx__Impl;
 typedef struct Thrd_Cond__Impl Thrd_Cond__Impl;
 typedef struct Thrd_RWLock__Impl Thrd_RWLock__Impl;

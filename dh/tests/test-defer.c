@@ -2,7 +2,7 @@
 
 // Test state tracking
 $static struct TestState {
-    A$$(8, i32) cleanup_orders;
+    A$$(16, i32) cleanup_orders;
     i32 cleanup_index;
     i32 counter;
 } s_test_state = cleared();
@@ -68,7 +68,7 @@ $static fn_((testDeferWithReturnScope(void))(void) $guard) {
     if (true) {
         defer_(recordCleanup(2));
         return_void();
-    }
+    };
     recordCleanup(3); // Should not be executed
     return_void();
 } $unguarded(fn);
@@ -93,7 +93,7 @@ $static fn_((testBlockDeferScope(void))(void) $guard) {
         defer_(recordCleanup(2));
         if (true) {
             defer_(recordCleanup(3));
-            break_defer;
+            break;
         }
         recordCleanup(4); // Should not be executed
     } blk_deferral;
@@ -101,3 +101,52 @@ $static fn_((testBlockDeferScope(void))(void) $guard) {
     defer_(recordCleanup(5));
     return_void();
 } $unguarded(fn);
+
+TEST_fn_("test loop defer" $guard) {
+    mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state)));
+
+    var_(visits, usize) = 0;
+
+    for (usize i = 0; i < 4; ++i) loop_defer {
+        visits += 1;
+        defer_(recordCleanup(as$(i32)(i)));
+        if (i == 1) continue;
+        if (i == 2) break;
+    } loop_deferral;
+
+    try_(TEST_expect(visits == 3));
+    try_(TEST_expect(s_test_state.cleanup_index == 3));
+    try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[0]) == 0));
+    try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[1]) == 1));
+    try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[2]) == 2));
+
+    return_ok({});
+} $unguarded(TEST_fn);
+
+TEST_fn_("test loop defer keeps nested block break local" $guard) {
+    mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state)));
+
+    var_(visits, usize) = 0;
+    var_(after_block, usize) = 0;
+
+    for (usize i = 0; i < 3; ++i) loop_defer {
+        visits += 1;
+        defer_(recordCleanup(as$(i32)(100 + i)));
+        if (i == 0) blk_defer {
+            defer_(recordCleanup(10));
+            break;
+            recordCleanup(99);
+        } blk_deferral;
+        after_block += 1;
+        if (i == 1) break;
+    } loop_deferral;
+
+    try_(TEST_expect(visits == 2));
+    try_(TEST_expect(after_block == 2));
+    try_(TEST_expect(s_test_state.cleanup_index == 3));
+    try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[0]) == 10));
+    try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[1]) == 100));
+    try_(TEST_expect(*A_at((s_test_state.cleanup_orders)[2]) == 101));
+
+    return_ok({});
+} $unguarded(TEST_fn);

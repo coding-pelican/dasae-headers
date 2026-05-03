@@ -226,8 +226,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         let result = Foo_baz(foo);
 
         io_stream_println(u8_l("Traditional result: {:d}\n"), result);
-    }
-    blk_deferral;
+    } blk_deferral;
 
     // Using pipe macro
     local__defer {
@@ -238,8 +237,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         defer_(Foo_fini(foo));
         let result = pipe_(foo, (Foo_setA, (10)), (Foo_setB, (20)), (Foo_eval, ()), (Foo_merge, (bar)), (Foo_baz, ()));
         io_stream_println(u8_l("Pipe result: {:d}\n"), result);
-    }
-    blk_deferral;
+    } blk_deferral;
 
     return_ok({});
 } $unguarded(fn);

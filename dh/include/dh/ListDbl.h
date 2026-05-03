@@ -60,7 +60,7 @@ struct ListDbl_Adp$raw {
         var_(link, ListDbl_Link);
         debug_only(var_(type, TypeInfo);)
     };
-    var_(data, u8) $flexible;
+    var_(data, V$raw) $flexible;
 };
 
 $extern fn_((ListDbl_Adp_empty(TypeInfo type, ListDbl_Adp$raw* ret_mem))(ListDbl_Adp$raw*));
@@ -69,6 +69,18 @@ $extern fn_((ListDbl_Adp_link(const ListDbl_Adp$raw* self))(P_const$ListDbl_Link
 $extern fn_((ListDbl_Adp_linkMut(ListDbl_Adp$raw* self))(P$ListDbl_Link));
 $extern fn_((ListDbl_Adp_data(const ListDbl_Adp$raw* self, TypeInfo type))(u_P_const$raw));
 $extern fn_((ListDbl_Adp_dataMut(ListDbl_Adp$raw* self, TypeInfo type))(u_P$raw));
+
+T_alias$((u_Fields_Idx$ListDbl_Adp)(enum_((u_Fields_Idx$ListDbl_Adp $fits($packed))(
+    u_Fields_Idx_link$ListDbl_Adp = 0,
+    u_Fields_Idx_type$ListDbl_Adp,
+    u_Fields_Idx_data_$ListDbl_Adp,
+    count$u_Fields_Idx$ListDbl_Adp
+))));
+$static let_(u_Fields_type$ListDbl_Adp, A$$(count$u_Fields_Idx$ListDbl_Adp, TypeInfo)) = A_init({
+    [u_Fields_Idx_link$ListDbl_Adp] = typeInfo$(FieldType$(ListDbl_Adp$raw, link)),
+    [u_Fields_Idx_type$ListDbl_Adp] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(ListDbl_Adp$raw, type)), pp_else_(Void))),
+    [u_Fields_Idx_data_$ListDbl_Adp] = typeInfo$(FieldType$(ListDbl_Adp$raw, data)),
+});
 
 
 #define ListDbl$$(_T...) __comp_anon__ListDbl$$(_T)
@@ -120,6 +132,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
             var_(next, O$(P$(ListDbl_Link$(_T)))); \
             debug_only(var_(type, TypeInfo);) \
         }; \
+        var_(as_raw, ListDbl_Link) $like_ref; \
     }
 #define __comp_gen__T_use_ListDbl_Link$(_T...) \
     T_decl_ListDbl_Link$(_T); \
@@ -160,9 +173,12 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
                 var_(link, ListDbl_Link$(_T)); \
                 debug_only(var_(type, TypeInfo);) \
             }; \
-            var_(data, _T); \
+            union { \
+                var_(data, _T); \
+                var_(data_, _T) $like_ref; \
+            }; \
         }; \
-        var_(as_raw, ListDbl_Adp$raw) $like_ref; \
+        var_(as_raw, ListDbl_Adp$raw) $flexible; \
     }
 #define __comp_alias__ListDbl_Adp$(_T...) \
     tpl$(ListDbl_Adp, _T)
@@ -175,9 +191,12 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
                 var_(link, ListDbl_Link$(_T)); \
                 debug_only(var_(type, TypeInfo);) \
             }; \
-            var_(data, _T); \
+            union { \
+                var_(data, _T); \
+                var_(data_, _T) $like_ref; \
+            }; \
         }; \
-        var_(as_raw, ListDbl_Adp$raw) $like_ref; \
+        var_(as_raw, ListDbl_Adp$raw) $flexible; \
     }
 #define __comp_gen__T_use_ListDbl_Adp$(_T...) \
     T_decl_ListDbl_Adp$(_T); \
@@ -186,12 +205,12 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
 /* clang-format off */
 #define T_use_ListDbl_Adp_empty$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl$(ListDbl_Adp_empty, _T)(void))(ListDbl_Adp$(_T)*)) { \
+    $static fn_((tpl$(ListDbl_Adp_empty, _T)(void))(ListDbl_Adp$(_T))) { \
         return *as$(ListDbl_Adp$(_T)*)(ListDbl_Adp_empty(typeInfo$(_T), l0$((ListDbl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListDbl_Adp_init$(_T...)\
     $attr($inline_always) \
-    $static fn_((tpl$(ListDbl_Adp_init, _T)(_T data))(ListDbl_Adp$(_T)*)) { \
+    $static fn_((tpl$(ListDbl_Adp_init, _T)(_T data))(ListDbl_Adp$(_T))) { \
         return *as$(ListDbl_Adp$(_T)*)(ListDbl_Adp_init(u_anyV(data), l0$((ListDbl_Adp$(_T))).as_raw)); \
     }
 #define T_use_ListDbl_Adp_link$(_T...)\

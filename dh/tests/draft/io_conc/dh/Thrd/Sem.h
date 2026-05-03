@@ -32,12 +32,21 @@ typedef struct Thrd_Sem {
     var_(cond, Thrd_Cond);
     var_(permits, usize);
 } Thrd_Sem;
+#define Thrd_Sem_init_static(/*void*/) ____Thrd_Sem_init_static()
 $extern fn_((Thrd_Sem_init(void))(Thrd_Sem));
 $extern fn_((Thrd_Sem_fini(Thrd_Sem* self))(void));
 $extern fn_((Thrd_Sem_wait(Thrd_Sem* self))(void));
 $attr($must_check)
 $extern fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Dur timeout))(Thrd_Sem_E$void));
 $extern fn_((Thrd_Sem_post(Thrd_Sem* self))(void));
+
+/*========== Macros and Definitions =========================================*/
+
+#define ____Thrd_Sem_init_static() l$((Thrd_Sem){ \
+    .mtx = Thrd_Mtx_init_static(), \
+    .cond = Thrd_Cond_init_static(), \
+    .permits = 0, \
+})
 
 #if defined(__cplusplus)
 } /* extern "C" */

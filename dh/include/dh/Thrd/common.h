@@ -261,18 +261,18 @@ Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     )); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
-    var __scope_counter   = (struct fn__ScopeCounter){ \
-        .is_returning = false, .current_line = __LINE__ \
+    var __flow_cursor = (struct fn__FlowCursor){ \
+        .is_returning = false, .curr_line = __LINE__ \
     }; \
     if (false) { \
 __step_return: \
-        __scope_counter.is_returning = true; \
+        __flow_cursor.is_returning = true; \
         goto __step_deferred; \
     } \
 __step_deferred: \
-    switch (__scope_counter.current_line) { \
+    switch (__flow_cursor.curr_line) { \
     default: { goto __step_unscope; } break; \
-    case __LINE__: __scope_counter.current_line = __LINE__ - 1;
+    case __LINE__: __flow_cursor.curr_line = __LINE__ - 1;
 #define comp_syn__$unguarded_Thrd_fn \
 break; \
     } \

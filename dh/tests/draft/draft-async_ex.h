@@ -19,8 +19,8 @@ typedef struct Co_Ret {
 typedef struct Co_Ctx {
     Co_FnWork* fn;
     bool is_init;
-    Co_Count count;
     Co_State state;
+    Co_Count count;
     Co_Ret* ret;
 } Co_Ctx;
 
@@ -36,8 +36,8 @@ typedef struct Co_Ctx {
         struct { \
             Co_FnWork* fn; \
             bool is_init; \
-            Co_Count count; \
             Co_State state; \
+            Co_Count count; \
             union { \
                 Co_Ret base $like_ref; \
                 T_Return value; \
@@ -74,8 +74,8 @@ typedef struct Co_Ctx {
         struct { \
             Co_FnWork* fn; \
             bool is_init; \
-            Co_Count count; \
             Co_State state; \
+            Co_Count count; \
             FieldType$(Co_CtxFnBase$(fnName), ret) ret; \
             Co_CtxArgs$(fnName) args; \
             struct Locals locals; \
@@ -126,22 +126,22 @@ typedef struct Co_Ctx {
         let args = &ctx->args; \
         let locals = &ctx->locals; \
         let __reserved_return = &ctx->ret->value; \
-        var __scope_counter = (struct fn__ScopeCounter){ \
+        var __flow_cursor = (struct fn__FlowCursor){ \
             .is_returning = ctx->state == Co_State_ready, \
-            .current_line = ctx->count \
+            .curr_line = ctx->count \
         }; \
         if (false) { \
 __step_return: \
-            __scope_counter.is_returning = true; \
+            __flow_cursor.is_returning = true; \
             ctx->state = Co_State_ready; \
             goto __step_unscope; \
         } \
-        switch (__scope_counter.current_line) { \
+        switch (__flow_cursor.curr_line) { \
         default: { \
             goto __step_unscope; \
         } break; \
         case 0: \
-            __scope_counter.current_line--;
+            __flow_cursor.curr_line--;
 // clang-format off
 #define $unscoped_async_fn \
         break; \
@@ -210,6 +210,9 @@ __step_unscope: \
 #define comp_syn__no_suspend_(_expr...) local__(__nosuspend, { \
     local_label __step_suspend; \
     var ctx = (&l$((Co_Ctx){ .is_init = true, .count = 0, .state = Co_State_pending })); \
+    var __flow_cursor = (struct fn__FlowCursor){ \
+        .is_returning = false, .curr_line = ctx->count \
+    }; \
     switch (ctx->count) { \
     default: { \
         local__break_(__nosuspend, {}); \

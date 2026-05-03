@@ -4,10 +4,7 @@
 #define Thrd_WaitGroup__one_pending (as$(usize)(1) << 1)
 
 fn_((Thrd_WaitGroup_init(void))(Thrd_WaitGroup)) {
-    return (Thrd_WaitGroup){
-        .state = atom_V_init(0),
-        .event = Thrd_ResetEvent_init(),
-    };
+    return Thrd_WaitGroup_init_static();
 };
 
 fn_((Thrd_WaitGroup_fini(Thrd_WaitGroup* self))(void)) {

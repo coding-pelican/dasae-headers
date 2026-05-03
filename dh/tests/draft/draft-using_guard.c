@@ -413,7 +413,7 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
 #define ____using___emitForExt(_init, _ext, _ext_ctx...) \
     pp_cat(____using___emitForExt, _ext)(_init, _ext_ctx)
 #define ____using___emitForExt$_defer(_init, _$ignored...) \
-    comp_syn__blk_defer__code __stmt__using__1(_init)
+    comp_syn__blk_defer __stmt__using__1(_init)
 #define ____using___emitForExt$_defer_(_init, _ext_ctx...) \
     comp_syn__blk_defer__codeForExt$_defer_( \
         pp_uniqTok(snapshot_reserved), pp_uniqTok(snapshot_deferred), \
@@ -427,7 +427,7 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
         _ext_ctx \
     )
 #define __stmt__$deferral_using \
-    __stmt__$end_using comp_syn__blk_deferral__code
+    __stmt__$end_using comp_syn__blk_deferral
 
 // clang-format off
 #define comp_syn__blk_defer__codeForExt$_defer_( \
@@ -437,7 +437,7 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     comp_syn__defer__op_snapshot( \
         goto __snapshot_reserved; \
     __snapshot_deferred: \
-        if (__scope_counter.is_returning) { \
+        if (__flow_cursor.is_returning) { \
             goto __step_deferred; \
         } else { \
             continue; \
@@ -456,7 +456,7 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     comp_syn__defer__op_snapshot( \
         goto __snapshot_reserved; \
     __snapshot_deferred: \
-        if (__scope_counter.is_returning) { \
+        if (__flow_cursor.is_returning) { \
             goto __step_deferred; \
         } else { \
             continue; \
@@ -491,11 +491,10 @@ $static fn_((reportOther(S_const$u8 label, S_const$u8 fmt, ...))(void) $guard) {
     io_stream_print(u8_l("[ThrdId({:uz}): {:s}] "), Thrd_currentId(), label);
     var args = l0$((va_list));
     va_start(args, fmt);
-    blk_defer {
+    using_((let_ignore = l0$((Void))) $defer) {
         defer_(va_end(args));
         io_stream_printVaArgs(fmt, args);
-    }
-    blk_deferral;
+    } $deferral(using);
     io_stream_nl();
 } $unguarded(fn);
 

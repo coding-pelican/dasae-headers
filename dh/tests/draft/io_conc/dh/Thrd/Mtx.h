@@ -75,6 +75,19 @@ struct Thrd_Mtx__Impl pp_if_(Thrd_Mtx_use_pthread)(
 struct Thrd_Mtx pp_if_(Thrd_Mtx_use_pthread)(
     pp_then_({ var_(impl, pthread_mutex_t); }),
     pp_else_({ var_(impl, Thrd_Mtx__Impl); }));
+#if Thrd_Mtx_use_pthread
+#define Thrd_Mtx_init_static() \
+    { .impl = PTHREAD_MUTEX_INITIALIZER }
+#elif Thrd_Mtx_has_specialized && plat_is_windows
+#define Thrd_Mtx_init_static() \
+    { .impl.inner = SRWLOCK_INIT }
+#elif Thrd_Mtx_has_specialized && plat_is_darwin
+#define Thrd_Mtx_init_static() \
+    { .impl.inner = OS_UNFAIR_LOCK_INIT }
+#else
+#define Thrd_Mtx_init_static() \
+    { .impl.state = atom_V_init(0u) }
+#endif
 /// @brief Initializes a mutex
 /// @return A new mutex
 $extern fn_((Thrd_Mtx_init(void))(Thrd_Mtx));
@@ -97,6 +110,8 @@ struct Thrd_Mtx_Recur {
     var_(thrd_id, Thrd_Id);
     var_(lock_count, usize);
 };
+#define Thrd_Mtx_Recur_init_static() \
+    l$((Thrd_Mtx_Recur){ .inner = Thrd_Mtx_init_static(), .thrd_id = Thrd_invalid_id, .lock_count = 0 })
 $extern fn_((Thrd_Mtx_Recur_init(void))(Thrd_Mtx_Recur));
 $extern fn_((Thrd_Mtx_Recur_fini(Thrd_Mtx_Recur* self))(void));
 $extern fn_((Thrd_Mtx_Recur_lock(Thrd_Mtx_Recur* self))(void));

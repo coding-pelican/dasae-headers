@@ -134,6 +134,20 @@ $extern fn_((HashMap_Pair_keyMut(HashMap_Pair$raw* self, TypeInfo key_ty, TypeIn
 $extern fn_((HashMap_Pair_val(const HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P_const$raw));
 $extern fn_((HashMap_Pair_valMut(HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P$raw));
 
+T_alias$((u_Fields_Idx$HashMap_Pair)(enum_((u_Fields_Idx$HashMap_Pair $fits($packed))(
+    u_Fields_Idx_key_ty$HashMap_Pair = 0,
+    u_Fields_Idx_val_ty$HashMap_Pair,
+    u_Fields_Idx_key_$HashMap_Pair,
+    u_Fields_Idx_val_$HashMap_Pair,
+    count$u_Fields_Idx$HashMap_Pair
+))));
+$static let_(u_Fields_type$HashMap_Pair, A$$(count$u_Fields_Idx$HashMap_Pair, TypeInfo)) = A_init({
+    [u_Fields_Idx_key_ty$HashMap_Pair] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(HashMap_Pair$raw, key_ty)), pp_else_(Void))),
+    [u_Fields_Idx_val_ty$HashMap_Pair] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(HashMap_Pair$raw, val_ty)), pp_else_(Void))),
+    [u_Fields_Idx_key_$HashMap_Pair] = typeInfo$(FieldType$(HashMap_Pair$raw, data)),
+    [u_Fields_Idx_val_$HashMap_Pair] = typeInfo$(FieldType$(HashMap_Pair$raw, data)),
+});
+
 /* --- HashMap_Entry: Pointers to key and value in map --- */
 
 #define HashMap_Entry$$(_K, _V...) __comp_anon__HashMap_Entry$$(_K, _V)

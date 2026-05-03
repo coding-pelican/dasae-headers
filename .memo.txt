@@ -13,14 +13,213 @@ dh/src/*, dh/include/*, dh/test*/*, dh/sample*/*, dh-examples/*
 - replace: as$$($1)($2)
 
 /*
-__symbol: expand reusable on pp operation (symbols (like any identifiers) as token)
-__const: expand reusable on pp operation (constants (like literal values) as token)
-__step: expand step-by-step (function/operation as parse or format)
+################################
+#### Macro Naming Principles ###
+################################
 
-__inline: expand determined code (partition) on expansion
-__type: expand determined type
-__val: expand determined value
-__fn: expand determined function
+Goal:
+- make public macro surface readable as DSL
+- make internal helper ownership and output shape obvious
+- separate preprocessor data from callable expansion logic
+- avoid `____name` or catch-all `__step__name` in new code
+
+The naming system has 3 layers:
+1. public surface
+2. internal callable helpers
+3. compile-time data / token protocol
+
+--------------------------------
+1) Public Surface
+--------------------------------
+
+$name
+- prefix DSL token / modifier / keyword / grammar fragment
+- examples:
+  - `$scope`, `$guard`, `$trace`
+  - `$P$`, `$set`, `$maps`
+  - `$field`, `$in_field`
+
+name$
+- staged macro surface
+- typed, shape-sensitive, curry-like, or multi-phase user-facing macro
+- not limited to "type macro"
+- examples:
+  - `as$`, `E$`, `O$`, `P$`, `S$`, `A$`
+  - `ptrCast$`, `ptrAlignCast$`
+  - `map$`, `chain$`, `T_switch$`
+
+name_
+- grammar/control surface
+- statement, clause, capture, flow-composition, or block-oriented DSL
+- not limited to "statement macro"
+- examples:
+  - `if_`, `using_`, `defer_`
+  - `match_`, `pattern_`, `fold_`
+  - `co_fn_`, `closure_`
+
+name
+- plain public helper / predicate / wrapper / value-like macro
+- examples:
+  - `isNull`, `ensureNonnull`, `debug_srcLoc`
+  - `some`, `none`, `matches`
+
+family__member
+- public family-scoped helper / compile-time utility / static formula
+- use for namespaced helpers that should stay visible
+- examples:
+  - `heap_Sbrk__min_size_class`
+  - `heap_Sbrk__bigpage_size_static`
+
+stem_prop
+- primitive/type family public constants
+- examples:
+  - `u8_bits`, `u8_limit_max`, `f64_eps`
+  - `Co_FlowCtrl_State_bits`
+
+Important:
+- public suffix `$` or `_` tells how the macro participates in syntax
+- semantic domain still belongs to the stem
+- so `as$`, `E$`, `map$` are all valid `name$`, but with different meanings
+
+--------------------------------
+2) Internal Callable Helpers
+--------------------------------
+
+Preferred form:
+- `__<kind>__<family>__<role>`
+- `__<kind>__<family>__<role>__<detail>`
+- `__<kind>__<family>__<role>_<N>`
+
+Where:
+- `kind` says what shape/value the helper expands to
+- `family` says which public macro family owns it
+- `role` says what step/job it performs
+- `_N` is bounded arity specialization only, always at tail
+
+Recommended kinds:
+- `pp`    : preprocessor parse / route / token manipulation
+- `syn`   : declaration / grammar fragment
+- `stmt`  : statement fragment
+- `expr`  : expression fragment
+- `attr`  : attribute fragment
+- `alias` : alias token
+- `ident` : identifier token
+- `type`  : type token
+- `fn`    : function token or function-like declaration fragment
+- `val`   : value token or value expression
+
+Recommended roles:
+- `parse`    : user syntax -> internal argument shape
+- `route`    : dispatch / overload / branch selection
+- `emit`     : final expansion output
+- `impl`     : final semantic implementation body
+- `bind`     : bind temporaries / capture uniq tokens
+- `capt`     : capture payload or variable binding helper
+- `each`     : foreach element worker
+- `case`     : switch / overload / pattern arm
+- `fold`     : ordered accumulation helper
+- `assert`   : compile-time/runtime assertion fragment
+- `fromTok`  : token -> normalized enum/identifier/value
+- `toTok`    : normalized enum/identifier/value -> token
+- `expand`   : explicit tuple/group unwrap helper
+
+Examples of preferred direction:
+- `__expr__ensureNonnull`
+- `__expr__ensureNonnull__bind`
+- `__pp__ptrCast$__parseType`
+- `__expr__ptrCast$__emit`
+- `__syn__trace__param`
+- `__ident__trace__captNamed`
+- `__pp__heap_Sbrk_LocalRef__enum_fromTok`
+
+Avoid in new code:
+- `____name`
+- `__step__name` as a generic bucket for every role
+- helper names that encode only expansion technique (`inline`, `block_inline`,
+  `param_expand`) but not semantic role
+
+Technique names may still exist temporarily during migration, but they are not
+the target naming shape.
+
+--------------------------------
+3) Compile-Time Data / PP Protocol
+--------------------------------
+
+For compile-time scalar data, prefer:
+- `__<domain>_<kind>__<name>`
+
+Examples:
+- `__comp_bool__comp_type_is_clang`
+- `__comp_enum__comp_type`
+- `__comp_str__comp_name`
+
+Recommended `kind` set for compile-time data:
+- `flag` : predefined condition-expanded flag
+- `bool` : pp boolean value (`pp_true`|`1` or `pp_false`|`0`)
+- `opt`  : optional pp value (`pp_some` or `pp_none`)
+- `int`  : integer token
+- `uint` : unsigned integer token
+- `iint` : signed integer token
+- `flt`  : floating-point token
+- `str`  : string token
+- `ch`   : character token
+- `enum` : enum-like token
+- `ident`: identifier token
+- `type` : type token
+- `val`  : general value token
+
+Family-scoped compile-time members may stay public as:
+- `family__member`
+- `family__enum_name`
+- `family__static_formula`
+
+This is especially useful for domain formulas and configuration tables.
+
+--------------------------------
+4) Protocol Exceptions
+--------------------------------
+
+Some names are dictated by an external pp protocol and should not be forcibly
+renamed to fit the local style.
+
+Examples:
+- `pp_Tok_cmp$Foo`
+- other `pp_*` contract hooks expected by the pp layer
+
+Rule:
+- protocol contract beats local aesthetics
+- document these as explicit exceptions
+
+--------------------------------
+5) Practical Decision Rules
+--------------------------------
+
+When adding a new macro, decide in this order:
+
+1. Is it public or internal?
+2. If public:
+   - DSL token/modifier? -> `$name`
+   - staged typed/shape-sensitive surface? -> `name$`
+   - grammar/control clause? -> `name_`
+   - plain helper/predicate? -> `name`
+   - family helper/static formula? -> `family__member`
+3. If internal:
+   - what does it expand to? choose `kind`
+   - who owns it? choose `family`
+   - what is its job? choose `role`
+   - only then add `detail` or `_N`
+
+--------------------------------
+6) Notes / Non-Goals
+--------------------------------
+
+- `name$` does not mean "type only"
+- `name_` does not mean "statement only"
+- public sigils encode syntax participation first, not full semantics
+- semantic category belongs to stem + internal helper kind
+- deprecated legacy surfaces may remain temporarily and do not define the new
+  naming standard
+- deprecated `at${P|S|A}`-style surfaces should not constrain the new rules
 */
 
 ---

@@ -70,8 +70,8 @@ extern "C" {
 
 #define blk_defer comp_syn__blk_defer
 #define blk_deferral comp_syn__blk_deferral
-
-#define break_defer comp_syn__break_defer
+#define loop_defer comp_syn__loop_defer
+#define loop_deferral comp_syn__loop_deferral
 
 /*
 #define errdefer_(_Expr...) comp_syn__errdefer_(_Expr)
@@ -109,26 +109,35 @@ _T_Return _ident_w_Params { \
     } \
 } /* clang-format on */
 
-struct fn__ScopeCounter {
-    u32 is_returning : 1;
-    u32 current_line : 31;
+#define fn__FlowCursor_is_returning_bits 1
+#define fn__FlowCursor_line_bits ((arch_bits_wide / 2) - fn__FlowCursor_is_returning_bits)
+typedef u32 fn__FlowCursorPacked;
+struct fn__FlowCursor {
+    union {
+        struct {
+            fn__FlowCursorPacked curr_line    : fn__FlowCursor_line_bits;
+            fn__FlowCursorPacked is_returning : fn__FlowCursor_is_returning_bits;
+        };
+        fn__FlowCursorPacked packed;
+    };
 };
+claim_assert_static((fn__FlowCursor_line_bits + fn__FlowCursor_is_returning_bits) == (arch_bits_wide / 2));
 #define comp_syn__fn_$_guard(_ident_w_Params, _T_Return...) /* clang-format off */ \
 _T_Return _ident_w_Params { \
     $alignAs(alignOf$(_T_Return)) volatile var_(__reserved_buf, A$$(sizeOf$(_T_Return), u8)) = A_zero(); \
     let __reserved_return = ptrQualCast$((_T_Return*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
-    var_(__scope_counter, struct fn__ScopeCounter) = { \
-        .is_returning = false, .current_line = __LINE__ \
+    var_(__flow_cursor, struct fn__FlowCursor) = { \
+        .is_returning = false, .curr_line = __LINE__ \
     }; \
     if (false) { __step_return: \
-        __scope_counter.is_returning = true; \
+        __flow_cursor.is_returning = true; \
         goto __step_deferred; \
     } \
-__step_deferred: switch (__scope_counter.current_line) { \
+__step_deferred: switch (__flow_cursor.curr_line) { \
     default: { goto __step_unscope; } break; \
-    case __LINE__: __scope_counter.current_line = __LINE__ - 1;
+    case __LINE__: __flow_cursor.curr_line = __LINE__ - 1;
 #define comp_syn__$unguarded_fn \
         break; \
     } \
@@ -199,31 +208,53 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 
 #define comp_syn__defer(_Expr...) comp_syn__defer__op_snapshot(_Expr; goto __step_deferred)
 
-/* clang-format off */
-#define comp_syn__blk_defer { do { \
-    comp_syn__defer__op_snapshot( \
-        if (__scope_counter.is_returning) { \
-            goto __step_deferred; \
-        } else { \
-            continue; \
-        } \
-    ); \
-    do
+/* Block-local defer boundary. A raw break/continue inside the body exits this
+ * synthetic block, so it does not target an outer loop. */
+#define comp_syn__blk_defer /* clang-format off */ { \
+    do { \
+        comp_syn__defer__op_snapshot( \
+            if (__flow_cursor.is_returning) { \
+                goto __step_deferred; \
+            } else { \
+                continue; \
+            } \
+        ); \
+        do
 #define comp_syn__blk_deferral \
-    while (false); \
-    goto __step_deferred; \
-} while (false); }
-/* clang-format on */
+        while (false); \
+        goto __step_deferred; \
+    } while (false); \
+} /* clang-format on */
 
-#define comp_syn__break_defer goto __step_deferred
+/* Loop-iteration defer boundary. Direct raw continue/break in the body run the
+ * iteration defers before continuing or breaking the enclosing loop. If another
+ * synthetic boundary such as blk_defer is nested inside, its break/continue
+ * remains local to that nested boundary. */
+#define comp_syn__loop_defer /* clang-format off */ { \
+    bool __loop_defer_is_breaking = true; \
+    do { \
+        comp_syn__defer__op_snapshot( \
+            if (__flow_cursor.is_returning) { \
+                goto __step_deferred; \
+            } else { \
+                continue; \
+            } \
+        ); \
+        do
+#define comp_syn__loop_deferral \
+        while ((__loop_defer_is_breaking = false), false); \
+        goto __step_deferred; \
+    } while (false); \
+    if (__loop_defer_is_breaking) { break; } \
+} /* clang-format on */
 
 #define comp_syn__defer__op_snapshot(_Expr...) \
     { \
-        const u32 __scope_counter_previous_line = __scope_counter.current_line; \
-        __scope_counter.current_line = __LINE__; \
+        const fn__FlowCursorPacked __flow_cursor_prev_line = __flow_cursor.curr_line; \
+        __flow_cursor.curr_line = __LINE__; \
         if (false) { \
         case __LINE__: \
-            __scope_counter.current_line = __scope_counter_previous_line; \
+            __flow_cursor.curr_line = __flow_cursor_prev_line; \
             _Expr; \
         } \
     }
@@ -264,18 +295,18 @@ __step_unscope: \
     let __reserved_break = ptrQualCast$((_T_Break*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
-    var __scope_counter = (struct fn__ScopeCounter){ \
-        .is_returning = false, .current_line = __LINE__ \
+    var __flow_cursor = (struct fn__FlowCursor){ \
+        .is_returning = false, .curr_line = __LINE__ \
     }; \
     bool __has_broken = false; { \
         local_label __step_return; \
         if (false) { goto __step_return; __step_return: goto __step_break; __step_break: \
-            __scope_counter.is_returning = true; \
+            __flow_cursor.is_returning = true; \
             goto __step_deferred; \
         } \
-__step_deferred: switch (__scope_counter.current_line) { \
+__step_deferred: switch (__flow_cursor.curr_line) { \
         default: { goto __step_unscope; } break; \
-        case __LINE__: __scope_counter.current_line = __LINE__ - 1; \
+        case __LINE__: __flow_cursor.curr_line = __LINE__ - 1; \
             /* do */
 #define $unguarded_expr comp_syn__expr_$unguarded
 #define comp_syn__expr_$unguarded \

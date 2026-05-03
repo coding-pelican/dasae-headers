@@ -65,7 +65,7 @@ struct ListSgl_Adp$raw {
         var_(link, ListSgl_Link);
         debug_only(var_(type, TypeInfo);)
     };
-    var_(data, u8) $flexible;
+    var_(data_, V$raw) $flexible;
 };
 
 $extern fn_((ListSgl_Adp_empty(TypeInfo type, ListSgl_Adp$raw* ret_mem))(ListSgl_Adp$raw*));
@@ -74,6 +74,18 @@ $extern fn_((ListSgl_Adp_link(const ListSgl_Adp$raw* self))(P_const$ListSgl_Link
 $extern fn_((ListSgl_Adp_linkMut(ListSgl_Adp$raw* self))(P$ListSgl_Link));
 $extern fn_((ListSgl_Adp_data(const ListSgl_Adp$raw* self, TypeInfo type))(u_P_const$raw));
 $extern fn_((ListSgl_Adp_dataMut(ListSgl_Adp$raw* self, TypeInfo type))(u_P$raw));
+
+T_alias$((u_Fields_Idx$ListSgl_Adp)(enum_((u_Fields_Idx$ListSgl_Adp $fits($packed))(
+    u_Fields_Idx_link$ListSgl_Adp = 0,
+    u_Fields_Idx_type$ListSgl_Adp,
+    u_Fields_Idx_data_$ListSgl_Adp,
+    count$u_Fields_Idx$ListSgl_Adp
+))));
+$static let_(u_Fields_type$ListSgl_Adp, A$$(count$u_Fields_Idx$ListSgl_Adp, TypeInfo)) = A_init({
+    [u_Fields_Idx_link$ListSgl_Adp] = typeInfo$(FieldType$(ListSgl_Adp$raw, link)),
+    [u_Fields_Idx_type$ListSgl_Adp] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(ListSgl_Adp$raw, type)), pp_else_(Void))),
+    [u_Fields_Idx_data_$ListSgl_Adp] = typeInfo$(FieldType$(ListSgl_Adp$raw, data_)),
+});
 
 
 #define ListSgl$$(_T...) __comp_anon__ListSgl$$(_T)
@@ -183,9 +195,12 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
                 var_(link, ListSgl_Link$(_T)); \
                 debug_only(var_(type, TypeInfo);) \
             }; \
-            var_(data, _T); \
+            union { \
+                var_(data, _T); \
+                var_(data_, _T) $like_ref; \
+            }; \
         }; \
-        var_(as_raw, ListSgl_Adp$raw) $like_ref; \
+        var_(as_raw, ListSgl_Adp$raw) $flexible; \
     }
 #define __comp_alias__ListSgl_Adp$(_T) \
     tpl$(ListSgl_Adp, _T)
@@ -198,9 +213,12 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
                 var_(link, ListSgl_Link$(_T)); \
                 debug_only(var_(type, TypeInfo);) \
             }; \
-            var_(data, _T); \
+            union { \
+                var_(data, _T); \
+                var_(data_, _T) $like_ref; \
+            }; \
         }; \
-        var_(as_raw, ListSgl_Adp$raw) $like_ref; \
+        var_(as_raw, ListSgl_Adp$raw) $flexible; \
     }
 #define __comp_gen__T_use_ListSgl_Adp$(_T) \
     T_decl_ListSgl_Adp$(_T); \

@@ -109,9 +109,8 @@ fn_((typeEffectRealistic(Runtime rt, S_const$u8 text, f64 base_interval_secs, bo
     } $end(for);
 } $unscoped(fn);
 
-pp_if_(Co_Fiber_supported)(
-    pp_then_(
-        $static fn_((runMain(Runtime rt))(Void) $guard) {
+#if Co_Fiber_supported
+$static fn_((runMain(Runtime rt))(Void) $guard) {
     let sample_text = u8_l("Hello, World! This is a typing effect demonstration.");
     var_(read_mem, A$$(1024, u8)) = A_zero();
     var line = as$(u32)(0);
@@ -202,44 +201,43 @@ pp_if_(Co_Fiber_supported)(
         let_ignore = Term_readLine(rt, A_ref$((S$u8)(read_mem)));
     }
     return_void();
-        } $unguarded(fn);
-        fn_use_Closure_((runMain)(Runtime)(Void))
-    ),
-    pp_else_(
-        co_fn_(runCoMain, (Runtime rt;), Void);
-        co_fn_guard(
-            runCoMain,
-            co_locals_({
-                var_(sample_text, S_const$u8);
-            }),
-            co_locals_mut_({
-                var_(read_mem, A$$(1024, u8));
-                var_(line, u32);
-                var_(demo1, Closure_(typeEffectWithInterval));
-                var_(task1, Future$Void);
-                var_(demo2, Closure_(typeEffectOverDuration));
-                var_(task2, Future$Void);
-                var_(demo3, Closure_(typeEffectWithInterval));
-                var_(task3, Future$Void);
-                var_(demo4, Closure_(typeEffectOverDuration));
-                var_(task4, Future$Void);
-                var_(demo5, Closure_(typeEffectWithInterval));
-                var_(task5, Future$Void);
-                var_(demo6, Closure_(typeEffectOverDuration));
-                var_(task6, Future$Void);
-                var_(demo7, Closure_(typeEffectRealistic));
-                var_(task7, Future$Void);
-                var_(interactive_demo, union {
-                    var_(parse_ok, Closure_(typeEffectWithInterval));
-                    var_(parse_err, Closure_(typeEffectRealistic));
-                });
-                var_(interactive_task, Future$Void);
-            }),
-            co_suspended_({
-                var_(awaiting, Void);
-            }),
-            co_deferrable_(10)
-        ) {
+} $unguarded(fn);
+fn_use_Closure_((runMain)(Runtime)(Void));
+#else
+co_fn_(runMain, (Runtime rt), Void);
+co_fn_guard(
+    runMain,
+    co_locals_({
+        var_(sample_text, S_const$u8);
+    }),
+    co_locals_mut_({
+        var_(read_mem, A$$(1024, u8));
+        var_(line, u32);
+        var_(demo1, Closure_(typeEffectWithInterval));
+        var_(task1, Future$Void);
+        var_(demo2, Closure_(typeEffectOverDuration));
+        var_(task2, Future$Void);
+        var_(demo3, Closure_(typeEffectWithInterval));
+        var_(task3, Future$Void);
+        var_(demo4, Closure_(typeEffectOverDuration));
+        var_(task4, Future$Void);
+        var_(demo5, Closure_(typeEffectWithInterval));
+        var_(task5, Future$Void);
+        var_(demo6, Closure_(typeEffectOverDuration));
+        var_(task6, Future$Void);
+        var_(demo7, Closure_(typeEffectRealistic));
+        var_(task7, Future$Void);
+        var_(interactive_demo, union {
+            var_(parse_ok, Closure_(typeEffectWithInterval));
+            var_(parse_err, Closure_(typeEffectRealistic));
+        });
+        var_(interactive_task, Future$Void);
+    }),
+    co_suspended_({
+        var_(awaiting, Void);
+    }),
+    co_deferrable_(10)
+) {
     co_let_(sample_text) = $co_init(sample_text)(u8_l("Hello, World! This is a typing effect demonstration."));
     co_var_(read_mem) = $co_init_mut(read_mem)(A_zero());
     co_var_(line) = $co_init_mut(line)(0);
@@ -329,10 +327,9 @@ pp_if_(Co_Fiber_supported)(
         let_ignore = Term_readLine($co_arg(rt), A_ref$((S$u8)($co_mut(read_mem))));
     }
     co_return_({});
-        } $unguarded(co_fn);
-        co_use_Closure_((runCoMain)(Runtime)(Void))
-    ));
-
+} $unguarded(co_fn);
+co_use_Closure_((runMain)(Runtime)(Void));
+#endif
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;

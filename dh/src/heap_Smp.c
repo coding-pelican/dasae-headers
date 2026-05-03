@@ -199,6 +199,7 @@ fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $guard) {
             }
         }
     } $end(loop_labeled);
+    return_none();
 } $unguarded(fn);
 
 fn_((heap_Smp__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {

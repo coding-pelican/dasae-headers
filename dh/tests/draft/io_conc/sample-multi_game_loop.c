@@ -26,16 +26,18 @@ T_alias$((GameRuntime)(struct GameRuntime {
  * Evented operation surface expected from the eventual WASM/browser backend.
  * The sample uses these as the runtime boundary rather than as direct syscalls.
  */
-$static fn_((sample_wasmEvented(void))(exec_Evented));
-$static fn_((sample_net_accept(net_Svr* server, net_Self net))(net_Stream));
-$static fn_((sample_net_read(net_Stream stream, S$u8 buf))(usize));
-$static fn_((sample_net_write(net_Stream stream, S_const$u8 bytes))(usize));
+$extern fn_((sample_wasmEvented(void))(exec_Evented));
+$extern fn_((sample_net_accept(net_Svr* server, net_Self net))(net_Stream));
+$extern fn_((sample_net_read(net_Stream stream, S$u8 buf))(usize));
+$extern fn_((sample_net_write(net_Stream stream, S_const$u8 bytes))(usize));
 
-T_use$((usize)(Co_Ctx, Co_Rtn, Co_Frame));
-T_use$((usize)(Closure_Ctx, Closure_Rtn, Closure));
-T_use$((usize)(Future, Sched_async, Future_cancel));
+T_use$((usize)(
+    Co_Ctx, Co_Rtn, Co_Frame,
+    Closure_Ctx, Closure_Rtn, Closure,
+    Future, Sched_async, Future_cancel
+));
 
-co_fn_(sample_sessionActor, (P$$(GameRuntime) rt; net_Stream stream;), usize);
+co_fn_(sample_sessionActor, (P$$(GameRuntime) rt; net_Stream stream), usize);
 co_fn_scope(
     sample_sessionActor,
     co_locals_({}),
@@ -57,7 +59,7 @@ co_fn_scope(
 } $unscoped(co_fn);
 co_use_Closure_((sample_sessionActor)(GameRuntime*, net_Stream)(usize));
 
-co_fn_(sample_acceptLoop, (P$$(GameRuntime) rt; P$$(net_Svr) server;), usize);
+co_fn_(sample_acceptLoop, (P$$(GameRuntime) rt; P$$(net_Svr) server), usize);
 co_fn_scope(
     sample_acceptLoop,
     co_locals_({}),
@@ -95,7 +97,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let gpa = heap_Page_alctr(&l0$((heap_Page)));
     let evented = sample_wasmEvented();
 
-    var rt = (GameRuntime){
+    var_(rt, GameRuntime) = {
         .frame_clock = try_(time_Awake_direct()),
         .io_loop = exec_Coop_init(gpa, try_(time_Awake_direct()), evented),
         .io = try_(io_direct()),

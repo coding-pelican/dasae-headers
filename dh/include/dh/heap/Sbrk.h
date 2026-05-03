@@ -123,47 +123,47 @@ $extern fn_((heap_Sbrk_Arena_ctx(heap_Sbrk_Arena* self))(heap_Sbrk_Ctx));
 
 /*========== Macros and Definitions =========================================*/
 
-#define heap_Sbrk_LocalRef__pp_enum_small 0
-#define heap_Sbrk_LocalRef__pp_enum_medium 1
-#define heap_Sbrk_LocalRef__pp_enum_large 2
-#define ____heap_Sbrk_LocalRef__pp_enum_expand(...) __VA_ARGS__
-#define heap_Sbrk_LocalRef__pp_enum_parse(_enum_tok...) pp_if_(pp_Tok_hasCmp(_enum_tok))( \
-    pp_then_(____heap_Sbrk_LocalRef__pp_enum_expand( \
+#define heap_Sbrk_LocalRef__enum_small 0
+#define heap_Sbrk_LocalRef__enum_medium 1
+#define heap_Sbrk_LocalRef__enum_large 2
+#define __pp__heap_Sbrk_LocalRef__expand(...) __VA_ARGS__
+#define __pp__heap_Sbrk_LocalRef__enum_fromTok(_enum_tok...) pp_if_(pp_Tok_hasCmp(_enum_tok))( \
+    pp_then_(__pp__heap_Sbrk_LocalRef__expand( \
         pp_switch_ pp_begin(_enum_tok)( \
-            pp_case_((heap_Sbrk_LocalRef__pp_enum_small)(heap_Sbrk_LocalRef__pp_enum_small)), \
-            pp_case_((heap_Sbrk_LocalRef_small)(heap_Sbrk_LocalRef__pp_enum_small)), \
-            pp_case_((heap_Sbrk_LocalRef__pp_enum_medium)(heap_Sbrk_LocalRef__pp_enum_medium)), \
-            pp_case_((heap_Sbrk_LocalRef_medium)(heap_Sbrk_LocalRef__pp_enum_medium)), \
-            pp_case_((heap_Sbrk_LocalRef__pp_enum_large)(heap_Sbrk_LocalRef__pp_enum_large)), \
-            pp_case_((heap_Sbrk_LocalRef_large)(heap_Sbrk_LocalRef__pp_enum_large)) \
+            pp_case_((heap_Sbrk_LocalRef__enum_small)(heap_Sbrk_LocalRef__enum_small)), \
+            pp_case_((heap_Sbrk_LocalRef_small)(heap_Sbrk_LocalRef__enum_small)), \
+            pp_case_((heap_Sbrk_LocalRef__enum_medium)(heap_Sbrk_LocalRef__enum_medium)), \
+            pp_case_((heap_Sbrk_LocalRef_medium)(heap_Sbrk_LocalRef__enum_medium)), \
+            pp_case_((heap_Sbrk_LocalRef__enum_large)(heap_Sbrk_LocalRef__enum_large)), \
+            pp_case_((heap_Sbrk_LocalRef_large)(heap_Sbrk_LocalRef__enum_large)) \
         ) pp_end \
     )), \
-    pp_else_(pp_join($, ____heap_Sbrk_LocalRef__pp_enum, _enum_tok)) \
+    pp_else_(pp_join($, __pp__heap_Sbrk_LocalRef__enum_fromDirectTok, _enum_tok)) \
 )
-#define ____heap_Sbrk_LocalRef__pp_enum$heap_Sbrk_LocalRef_small heap_Sbrk_LocalRef__pp_enum_small
-#define ____heap_Sbrk_LocalRef__pp_enum$heap_Sbrk_LocalRef_medium heap_Sbrk_LocalRef__pp_enum_medium
-#define ____heap_Sbrk_LocalRef__pp_enum$heap_Sbrk_LocalRef_large heap_Sbrk_LocalRef__pp_enum_large
+#define __pp__heap_Sbrk_LocalRef__enum_fromDirectTok$heap_Sbrk_LocalRef_small heap_Sbrk_LocalRef__enum_small
+#define __pp__heap_Sbrk_LocalRef__enum_fromDirectTok$heap_Sbrk_LocalRef_medium heap_Sbrk_LocalRef__enum_medium
+#define __pp__heap_Sbrk_LocalRef__enum_fromDirectTok$heap_Sbrk_LocalRef_large heap_Sbrk_LocalRef__enum_large
 #define pp_Tok_cmp$heap_Sbrk_LocalRef_small(_x) _x
 #define pp_Tok_cmp$heap_Sbrk_LocalRef_medium(_x) _x
 #define pp_Tok_cmp$heap_Sbrk_LocalRef_large(_x) _x
 
-#define ____heap_Sbrk__bigpage_size_static__expand(...) __VA_ARGS__
-#define heap_Sbrk__bigpage_size_static(_enum_tok...) ____heap_Sbrk__bigpage_size_static__expand( \
-    pp_switch_ pp_begin(heap_Sbrk_LocalRef__pp_enum_parse(_enum_tok))( \
-        pp_case_((heap_Sbrk_LocalRef__pp_enum_small)(16ull * 1024)), \
-        pp_case_((heap_Sbrk_LocalRef__pp_enum_medium)(64ull * 1024)), \
-        pp_case_((heap_Sbrk_LocalRef__pp_enum_large)(64ull * 1024)) \
+#define __pp__heap_Sbrk__bigpage_size_static__expand(...) __VA_ARGS__
+#define heap_Sbrk__bigpage_size_static(_enum_tok...) __pp__heap_Sbrk__bigpage_size_static__expand( \
+    pp_switch_ pp_begin(__pp__heap_Sbrk_LocalRef__enum_fromTok(_enum_tok))( \
+        pp_case_((heap_Sbrk_LocalRef__enum_small)(16ull * 1024)), \
+        pp_case_((heap_Sbrk_LocalRef__enum_medium)(64ull * 1024)), \
+        pp_case_((heap_Sbrk_LocalRef__enum_large)(64ull * 1024)) \
     ) pp_end \
 )
 $attr($inline_always)
 $static fn_((heap_Sbrk__bigpage_size(heap_Sbrk self))(usize));
 
-#define ____heap_Sbrk__max_pool_size_static__expand(...) __VA_ARGS__
-#define heap_Sbrk__max_pool_size_static(_enum_tok...) ____heap_Sbrk__max_pool_size_static__expand( \
-    pp_switch_ pp_begin(heap_Sbrk_LocalRef__pp_enum_parse(_enum_tok))( \
-        pp_case_((heap_Sbrk_LocalRef__pp_enum_small)(1ull * 1024 * 1024)), \
-        pp_case_((heap_Sbrk_LocalRef__pp_enum_medium)(16ull * 1024 * 1024)), \
-        pp_case_((heap_Sbrk_LocalRef__pp_enum_large)(usize_limit_max)) \
+#define __pp__heap_Sbrk__max_pool_size_static__expand(...) __VA_ARGS__
+#define heap_Sbrk__max_pool_size_static(_enum_tok...) __pp__heap_Sbrk__max_pool_size_static__expand( \
+    pp_switch_ pp_begin(__pp__heap_Sbrk_LocalRef__enum_fromTok(_enum_tok))( \
+        pp_case_((heap_Sbrk_LocalRef__enum_small)(1ull * 1024 * 1024)), \
+        pp_case_((heap_Sbrk_LocalRef__enum_medium)(16ull * 1024 * 1024)), \
+        pp_case_((heap_Sbrk_LocalRef__enum_large)(usize_limit_max)) \
     ) pp_end \
 )
 $attr($inline_always)

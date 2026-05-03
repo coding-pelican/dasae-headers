@@ -18,30 +18,27 @@
 /*========== Definitions ====================================================*/
 
 $static fn_((HashSet_Unit__init(u_V$raw key, V$HashSet_Unit$raw ret_mem))(V$HashSet_Unit$raw)) {
-    debug_only({
-        ret_mem->key_ty = key.type;
-    });
-    let self_type = u_typeInfoRecord(typeInfosFrom(key.type));
-    let p_self = P_meta((self_type)(as$(P$raw)(ret_mem->data.inner)));
-    let p_key = u_fieldPtrMut(p_self, typeInfosFrom(key.type), 0);
-    u_memcpy(p_key, key.ref.as_const);
+    debug_only(ret_mem->key_ty = key.type);
+    u_memcpy(HashSet_Unit_keyMut(ret_mem, key.type), key.ref.as_const);
     return ret_mem;
 };
 
 fn_((HashSet_Unit_key(const HashSet_Unit$raw* self, TypeInfo key_ty))(u_P_const$raw)) {
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    let self_type = u_typeInfoRecord(typeInfosFrom(key_ty));
-    let p_self = P_meta((self_type)(as$(P_const$raw)(self->data.inner)));
-    let p_key = u_fieldPtr(p_self, typeInfosFrom(key_ty), 0);
-    return p_key;
+    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$HashSet_Unit)(
+        (.val[u_Fields_Idx_key_$HashSet_Unit])(key_ty)
+    )));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self->data.inner)));
+    return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_key_$HashSet_Unit);
 };
 
 fn_((HashSet_Unit_keyMut(HashSet_Unit$raw* self, TypeInfo key_ty))(u_P$raw)) {
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    let self_type = u_typeInfoRecord(typeInfosFrom(key_ty));
-    let p_self = P_meta((self_type)(as$(P$raw)(self->data.inner)));
-    let p_key = u_fieldPtrMut(p_self, typeInfosFrom(key_ty), 0);
-    return p_key;
+    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$HashSet_Unit)(
+        (.val[u_Fields_Idx_key_$HashSet_Unit])(key_ty)
+    )));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self->data.inner)));
+    return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_key_$HashSet_Unit);
 };
 
 fn_((HashSet_Entry_key(HashSet_Entry self, TypeInfo key_ty))(u_P_const$raw)) {

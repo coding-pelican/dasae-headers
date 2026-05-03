@@ -23,7 +23,7 @@ extern "C" {
 
 #include "cfg.h"
 #include "common.h"
-#include "Ftx.h"
+#include "ftx.h"
 
 /*========== Macros and Declarations ========================================*/
 

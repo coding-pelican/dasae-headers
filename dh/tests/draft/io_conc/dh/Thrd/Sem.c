@@ -2,11 +2,7 @@
 #include "../time/self/Awake.h"
 
 fn_((Thrd_Sem_init(void))(Thrd_Sem)) {
-    return (Thrd_Sem){
-        .mtx = Thrd_Mtx_init(),
-        .cond = Thrd_Cond_init(),
-        .permits = 0,
-    };
+    return Thrd_Sem_init_static();
 };
 
 fn_((Thrd_Sem_fini(Thrd_Sem* self))(void)) {

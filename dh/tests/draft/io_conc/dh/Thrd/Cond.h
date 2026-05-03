@@ -72,6 +72,15 @@ struct Thrd_Cond__Impl pp_if_(Thrd_Cond_use_pthread)(
 struct Thrd_Cond pp_if_(Thrd_Cond_use_pthread)(
     pp_then_({ var_(impl, pthread_cond_t); }),
     pp_else_({ var_(impl, Thrd_Cond__Impl); }));
+#if !Thrd_Cond_use_pthread
+#if Thrd_Cond_has_specialized && plat_is_windows
+#define Thrd_Cond_init_static() \
+    { .impl.inner = CONDITION_VARIABLE_INIT }
+#else
+#define Thrd_Cond_init_static() \
+    { .impl = { .state = atom_V_init(0u), .epoch = atom_V_init(0u) } }
+#endif
+#endif /* !Thrd_Cond_use_pthread */
 /// @brief Initializes a condition variable
 /// @return A new condition variable
 $extern fn_((Thrd_Cond_init(void))(Thrd_Cond));

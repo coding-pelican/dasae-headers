@@ -49,7 +49,7 @@ typedef struct Void {
 
 extern usize Thrd_currentId(void);
 
-struct fn__ScopeCounter {
+struct fn__Ctrl {
     bool is_returning;
     u32 curr_line;
 };
@@ -60,7 +60,7 @@ void report(const char* label, const char* fmt, ...) {
     __auto_type const __reserved_return = ((void*)(((&*((__reserved_buf).val)))));
     __attribute__((unused)) typedef __typeof__(*__reserved_return) ReturnType;
     __attribute__((unused)) typedef ReturnType ReturnT;
-    __auto_type __scope_counter = (struct fn__ScopeCounter){ .is_returning = ((bool)(0)), .curr_line = 315 };
+    __auto_type __scope_counter = (struct fn__Ctrl){ .is_returning = ((bool)(0)), .curr_line = 315 };
     if (((bool)(0))) {
 __step_return:
         __scope_counter.is_returning = ((bool)(1));

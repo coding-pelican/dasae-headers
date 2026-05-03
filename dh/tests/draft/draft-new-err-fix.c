@@ -199,21 +199,21 @@ static inline u32 genHash(const char* str, usize len) {
     return hash ^ (hash >> 16);
 }
 
-// $attr($inline_always)
-// static usize mem_idxZ$u8(u8 sentinel, const u8* ptr) {
-//     usize idx = 0;
-//     while (ptr[idx] != sentinel) ++idx;
-//     return idx;
-// }
-// $attr($inline_always)
-// static usize mem_lenZ0$u8(const u8* ptr) {
-//     return mem_idxZ$u8('\0', ptr);
-// }
+$attr($inline_always)
+static usize mem_idxZ$u8(u8 sentinel, const u8* ptr) {
+    usize idx = 0;
+    while (ptr[idx] != sentinel) ++idx;
+    return idx;
+}
+$attr($inline_always)
+static usize mem_lenZ0$u8(const u8* ptr) {
+    return mem_idxZ$u8('\0', ptr);
+}
 typedef u32 E_HashId;
 typedef i16 E_Code;
 $attr($inline_always)
-static E_HashId E_hasher(const char* str, usize len) {
-    return CompHash_calc((const u8*)str, len);
+static E_HashId E_hasher(const char* str) {
+    return CompHash_calc((const u8*)str, mem_lenZ0$u8((const u8*)str));
 };
 /* General Error - Inner */
 typedef enum $packed E_Tag$General_E {
@@ -224,8 +224,13 @@ typedef enum $packed E_Tag$General_E {
     E_Tag$Any = 0,
     E_Tag$General_E_Any = E_Tag$Any
 } E_Tag$General_E;
-typedef union E_Opaq$General_E {
-    E_HashId hash_id;
+typedef struct E_Inner$General_E {
+    E_Tag$General_E tag;
+    const char* tag_id_z;
+    E_HashId (*hashId)(void);
+} E_Inner$General_E;
+typedef struct E_Opaq$General_E {
+    const E_Inner$General_E* inner;
 } E_Opaq$General_E;
 typedef E_Opaq$General_E E_Type$NotImplemented;
 typedef E_Opaq$General_E E_Type$Unexpected;
@@ -237,60 +242,47 @@ typedef union E_Payload$General_E {
     E_Type$Any Any;
 } E_Payload$General_E;
 /* General Error - Outer */
-typedef struct General_E {
-    union {
-        E_Tag$General_E tag;
-        E_Code code;
-    };
-    union {
-        E_Payload$General_E payload;
-        E_HashId hash_id;
-    };
+typedef union General_E {
+    E_Opaq$General_E opaq;
+    E_Payload$General_E;
 } General_E;
 $attr($inline_always)
+static E_Tag$General_E E_tag$General_E(General_E self) {
+    return self.opaq.inner->tag;
+}
+$attr($inline_always)
 static const char* E_strfy$General_E(General_E self) {
-    switch (self.tag) {
-    case E_Tag$NotImplemented: return "NotImplemented";
-    case E_Tag$Unexpected: return "Unexpected";
-    case E_Tag$Any: __builtin_unreachable();
-    }
+    return self.opaq.inner->tag_id_z;
 }
 /* General Error - Occurrences */
 typedef General_E General_E_NotImplemented;
 $attr($inline_always)
+static E_HashId E_hashId$NotImplemented(void) { return E_hasher("NotImplemented"); }
+$attr($inline_always)
 static General_E_NotImplemented E_cause$NotImplemented(void) {
-    return (General_E_NotImplemented){
+    static const E_Inner$General_E inner = {
         .tag = E_Tag$NotImplemented,
-        .payload = {
-            .NotImplemented = {
-                .hash_id = E_hasher("NotImplemented", sizeof("NotImplemented") - 1),
-            },
-        },
+        .tag_id_z = "NotImplemented",
+        .hashId = E_hashId$NotImplemented,
     };
+    return (General_E_NotImplemented){ .opaq.inner = &inner };
 }
 typedef General_E General_E_Unexpected;
 $attr($inline_always)
+static E_HashId E_hashId$Unexpected(void) { return E_hasher("Unexpected"); }
+$attr($inline_always)
 static General_E_Unexpected E_cause$Unexpected(void) {
-    return (General_E_Unexpected){
+    static const E_Inner$General_E inner = {
         .tag = E_Tag$Unexpected,
-        .payload = {
-            .Unexpected = {
-                .hash_id = E_hasher("Unexpected", sizeof("Unexpected") - 1),
-            },
-        },
+        .tag_id_z = "Unexpected",
+        .hashId = E_hashId$Unexpected,
     };
+    return (General_E_Unexpected){ .opaq.inner = &inner };
 }
 typedef General_E General_E_Any;
 $attr($inline_always)
 static General_E_Any E_cause$Any(General_E* self) {
-    return (General_E_Any){
-        .tag = E_Tag$Any,
-        .payload = {
-            .Any = {
-                .hash_id = self->hash_id,
-            },
-        },
-    };
+    return (General_E_Any){ .opaq.inner = self->opaq.inner };
 }
 typedef struct O$General_E {
     bool is_some;
@@ -307,7 +299,7 @@ static O$General_E E_resolve$General_E(General_E self) {
     };
     const usize errs_len = sizeof(errs) / sizeof(errs[0]);
     for (usize i = 0; i < errs_len; ++i) {
-        if (self.hash_id != errs[i].hash_id) continue;
+        if (self.opaq.inner->hashId() != errs[i].opaq.inner->hashId()) continue;
         return (O$General_E){
             .is_some = true,
             .payload = {
@@ -331,8 +323,13 @@ typedef enum $packed E_Tag$Conc_E {
     E_Tag$ConcUnavailable = 1,
     E_Tag$Conc_E_ConcUnavailable = E_Tag$ConcUnavailable
 } E_Tag$Conc_E;
+typedef struct E_Inner$Conc_E {
+    E_Tag$Conc_E tag;
+    const char* tag_id_z;
+    E_HashId (*hashId)(void);
+} E_Inner$Conc_E;
 typedef union E_Opaq$Conc_E {
-    E_HashId hash_id;
+    const E_Inner$Conc_E* inner;
 } E_Opaq$Conc_E;
 typedef E_Opaq$Conc_E E_Type$ConcUnavailable;
 typedef union E_Payload$Conc_E {
@@ -341,38 +338,31 @@ typedef union E_Payload$Conc_E {
 } E_Payload$Conc_E;
 /* Concurrent Error - Outer */
 typedef union Conc_E {
-    struct {
-        union {
-            E_Tag$Conc_E tag;
-            E_Code code;
-        };
-        union {
-            E_Payload$Conc_E payload;
-            E_HashId hash_id;
-        };
-    };
+    E_Opaq$Conc_E opaq;
+    E_Payload$Conc_E;
     General_E as_general[1];
     General_E General_E;
 } Conc_E;
 $attr($inline_always)
+static E_Tag$Conc_E E_tag$Conc_E(Conc_E self) {
+    return self.opaq.inner->tag;
+}
+$attr($inline_always)
 static const char* E_strfy$Conc_E(Conc_E self) {
-    switch (self.tag) {
-    case E_Tag$ConcUnavailable: return "ConcUnavailable";
-    case E_Tag$Any: __builtin_unreachable();
-    }
+    return self.opaq.inner->tag_id_z;
 }
 /* Concurrent Error - Occurrences */
 typedef Conc_E Conc_E_ConcUnavailable;
 $attr($inline_always)
+static E_HashId E_hashId$ConcUnavailable(void) { return E_hasher("ConcUnavailable"); }
+$attr($inline_always)
 static Conc_E_ConcUnavailable E_cause$ConcUnavailable(void) {
-    return (Conc_E_ConcUnavailable){
+    static const E_Inner$Conc_E inner = {
         .tag = E_Tag$ConcUnavailable,
-        .payload = {
-            .ConcUnavailable = {
-                .hash_id = E_hasher("ConcUnavailable", sizeof("ConcUnavailable") - 1),
-            },
-        },
+        .tag_id_z = "ConcUnavailable",
+        .hashId = E_hashId$ConcUnavailable,
     };
+    return (Conc_E_ConcUnavailable){ .opaq.inner = &inner };
 }
 typedef struct O$Conc_E {
     bool is_some;
@@ -388,7 +378,7 @@ static O$Conc_E E_resolve$Conc_E(Conc_E self) {
     };
     const usize errs_len = sizeof(errs) / sizeof(errs[0]);
     for (usize i = 0; i < errs_len; ++i) {
-        if (self.hash_id != errs[i].hash_id) continue;
+        if (self.opaq.inner->hashId() != errs[i].opaq.inner->hashId()) continue;
         return (O$Conc_E){
             .is_some = true,
             .payload = {
@@ -412,8 +402,13 @@ typedef enum $packed E_Tag$Cancelable {
     E_Tag$Canceled = 1,
     E_Tag$Cancelable_Canceled = E_Tag$Canceled
 } E_Tag$Cancelable;
+typedef struct E_Inner$Cancelable {
+    E_Tag$Cancelable tag;
+    const char* tag_id_z;
+    E_HashId (*hashId)(void);
+} E_Inner$Cancelable;
 typedef union E_Opaq$Cancelable {
-    E_HashId hash_id;
+    const E_Inner$Cancelable* inner;
 } E_Opaq$Cancelable;
 typedef E_Opaq$Cancelable E_Type$Canceled;
 typedef union E_Payload$Cancelable {
@@ -422,38 +417,31 @@ typedef union E_Payload$Cancelable {
 } E_Payload$Cancelable;
 /* Cancelable Error - Outer */
 typedef union Cancelable {
-    struct {
-        union {
-            E_Tag$Cancelable tag;
-            E_Code code;
-        };
-        union {
-            E_Payload$Cancelable payload;
-            E_HashId hash_id;
-        };
-    };
+    E_Opaq$Cancelable opaq;
+    E_Payload$Cancelable;
     General_E as_general[1];
     General_E General_E;
 } Cancelable;
 $attr($inline_always)
+static E_Tag$Cancelable E_tag$Cancelable(Cancelable self) {
+    return self.opaq.inner->tag;
+}
+$attr($inline_always)
 static const char* E_strfy$Cancelable(Cancelable self) {
-    switch (self.tag) {
-    case E_Tag$Canceled: return "Canceled";
-    case E_Tag$Any: __builtin_unreachable();
-    }
+    return self.opaq.inner->tag_id_z;
 }
 /* Cancelable Error - Occurrences */
 typedef Cancelable Cancelable_Canceled;
 $attr($inline_always)
+static E_HashId E_hashId$Canceled(void) { return E_hasher("Canceled"); }
+$attr($inline_always)
 static Cancelable_Canceled E_cause$Canceled(void) {
-    return (Cancelable_Canceled){
+    static const E_Inner$Cancelable inner = {
         .tag = E_Tag$Canceled,
-        .payload = {
-            .Canceled = {
-                .hash_id = E_hasher("Canceled", sizeof("Canceled") - 1),
-            },
-        },
+        .tag_id_z = "Canceled",
+        .hashId = E_hashId$Canceled,
     };
+    return (Cancelable_Canceled){ .opaq.inner = &inner };
 }
 typedef struct O$Cancelable {
     bool is_some;
@@ -469,7 +457,7 @@ static O$Cancelable E_resolve$Cancelable(Cancelable self) {
     };
     const usize errs_len = sizeof(errs) / sizeof(errs[0]);
     for (usize i = 0; i < errs_len; ++i) {
-        if (self.hash_id != errs[i].hash_id) continue;
+        if (self.opaq.inner->hashId() != errs[i].opaq.inner->hashId()) continue;
         return (O$Cancelable){
             .is_some = true,
             .payload = {
@@ -483,10 +471,7 @@ $attr($inline_always)
 static Cancelable E_handle$Cancelable(Cancelable self) {
     O$Cancelable resolved = E_resolve$Cancelable(self);
     if (resolved.is_some) return resolved.payload.some;
-    return (Cancelable){
-        .code = E_Tag$Any,
-        .hash_id = self.hash_id
-    };
+    return (Cancelable)E_cause$Any(self.as_general);
 }
 
 
@@ -496,8 +481,13 @@ typedef enum $packed E_Tag$Timeout_E {
     E_Tag$Timeout = 1,
     E_Tag$Timeout_E_Timeout = E_Tag$Timeout
 } E_Tag$Timeout_E;
+typedef struct E_Inner$Timeout_E {
+    E_Tag$Timeout_E tag;
+    const char* tag_id_z;
+    E_HashId (*hashId)(void);
+} E_Inner$Timeout_E;
 typedef union E_Opaq$Timeout_E {
-    E_HashId hash_id;
+    const E_Inner$Timeout_E* inner;
 } E_Opaq$Timeout_E;
 typedef E_Opaq$Timeout_E E_Type$Timeout;
 typedef union E_Payload$Timeout_E {
@@ -506,38 +496,31 @@ typedef union E_Payload$Timeout_E {
 } E_Payload$Timeout_E;
 /* Timeout Error - Outer */
 typedef union Timeout_E {
-    struct {
-        union {
-            E_Tag$Timeout_E tag;
-            E_Code code;
-        };
-        union {
-            E_Payload$Timeout_E payload;
-            E_HashId hash_id;
-        };
-    };
+    E_Opaq$Timeout_E opaq;
+    E_Payload$Timeout_E;
     General_E as_general[1];
     General_E General_E;
 } Timeout_E;
 $attr($inline_always)
+static E_Tag$Timeout_E E_tag$Timeout_E(Timeout_E self) {
+    return self.opaq.inner->tag;
+}
+$attr($inline_always)
 static const char* E_strfy$Timeout_E(Timeout_E self) {
-    switch (self.tag) {
-    case E_Tag$Timeout: return "Timeout";
-    case E_Tag$Any: __builtin_unreachable();
-    }
+    return self.opaq.inner->tag_id_z;
 }
 /* Timeout Error - Occurrences */
 typedef Timeout_E Timeout_E_Timeout;
 $attr($inline_always)
+static E_HashId E_hashId$Timeout(void) { return E_hasher("Timeout"); }
+$attr($inline_always)
 static Timeout_E_Timeout E_cause$Timeout(void) {
-    return (Timeout_E_Timeout){
+    static const E_Inner$Timeout_E inner = {
         .tag = E_Tag$Timeout,
-        .payload = {
-            .Timeout = {
-                .hash_id = E_hasher("Timeout", sizeof("Timeout") - 1),
-            },
-        },
+        .tag_id_z = "Timeout",
+        .hashId = E_hashId$Timeout,
     };
+    return (Timeout_E_Timeout){ .opaq.inner = &inner };
 }
 typedef struct O$Timeout_E {
     bool is_some;
@@ -553,7 +536,7 @@ static O$Timeout_E E_resolve$Timeout_E(Timeout_E self) {
     };
     const usize errs_len = sizeof(errs) / sizeof(errs[0]);
     for (usize i = 0; i < errs_len; ++i) {
-        if (self.hash_id != errs[i].hash_id) continue;
+        if (self.opaq.inner->hashId() != errs[i].opaq.inner->hashId()) continue;
         return (O$Timeout_E){
             .is_some = true,
             .payload = {
@@ -584,8 +567,13 @@ typedef enum $packed E_Tag$Foo_E {
     E_Tag$FooBaz = 3,
     E_Tag$Foo_E_FooBaz = E_Tag$FooBaz,
 } E_Tag$Foo_E;
+typedef struct E_Inner$Foo_E {
+    E_Tag$Foo_E tag;
+    const char* tag_id_z;
+    E_HashId (*hashId)(void);
+} E_Inner$Foo_E;
 typedef struct E_Opaq$Foo_E {
-    E_HashId hash_id;
+    const E_Inner$Foo_E* inner;
 } E_Opaq$Foo_E;
 typedef E_Opaq$Foo_E E_Type$FooBar;
 typedef E_Opaq$Foo_E E_Type$FooBas;
@@ -598,16 +586,8 @@ typedef union E_Payload$Foo_E {
 } E_Payload$Foo_E;
 /* Allow Only Foo Error - Outer */
 typedef union Foo_E {
-    struct {
-        union {
-            E_Tag$Foo_E tag;
-            E_Code code;
-        };
-        union {
-            E_Payload$Foo_E payload;
-            E_HashId hash_id;
-        };
-    };
+    E_Opaq$Foo_E opaq;
+    E_Payload$Foo_E;
     General_E as_general[1];
     General_E General_E;
     Conc_E Conc_E;
@@ -615,49 +595,44 @@ typedef union Foo_E {
 } Foo_E;
 $attr($inline_always)
 static const char* E_strfy$Foo_E(Foo_E self) {
-    switch (self.tag) {
-    case E_Tag$FooBar: return "FooBar";
-    case E_Tag$FooBas: return "FooBas";
-    case E_Tag$FooBaz: return "FooBaz";
-    case E_Tag$Any: __builtin_unreachable();
-    }
+    return self.opaq.inner->tag_id_z;
 }
 /* Allow Only Foo Error - Occurrences */
 typedef Foo_E Foo_E_FooBar;
 $attr($inline_always)
+static E_HashId E_hashId$FooBar(void) { return E_hasher("FooBar"); }
+$attr($inline_always)
 static Foo_E_FooBar E_cause$FooBar(void) {
-    return (Foo_E_FooBar){
+    static const E_Inner$Foo_E inner = {
         .tag = E_Tag$FooBar,
-        .payload = {
-            .FooBar = {
-                .hash_id = E_hasher("FooBar", sizeof("FooBar") - 1),
-            },
-        },
+        .tag_id_z = "FooBar",
+        .hashId = E_hashId$FooBar,
     };
+    return (Foo_E_FooBar){ .opaq.inner = &inner };
 }
 typedef Foo_E Foo_E_FooBas;
 $attr($inline_always)
+static E_HashId E_hashId$FooBas(void) { return E_hasher("FooBas"); }
+$attr($inline_always)
 static Foo_E_FooBas E_cause$FooBas(void) {
-    return (Foo_E_FooBas){
+    static const E_Inner$Foo_E inner = {
         .tag = E_Tag$FooBas,
-        .payload = {
-            .FooBas = {
-                .hash_id = E_hasher("FooBas", sizeof("FooBas") - 1),
-            },
-        },
+        .tag_id_z = "FooBas",
+        .hashId = E_hashId$FooBas,
     };
+    return (Foo_E_FooBas){ .opaq.inner = &inner };
 }
 typedef Foo_E Foo_E_FooBaz;
 $attr($inline_always)
+static E_HashId E_hashId$FooBaz(void) { return E_hasher("FooBaz"); }
+$attr($inline_always)
 static Foo_E_FooBaz E_cause$FooBaz(void) {
-    return (Foo_E_FooBaz){
+    static const E_Inner$Foo_E inner = {
         .tag = E_Tag$FooBaz,
-        .payload = {
-            .FooBaz = {
-                .hash_id = E_hasher("FooBaz", sizeof("FooBaz") - 1),
-            },
-        },
+        .tag_id_z = "FooBaz",
+        .hashId = E_hashId$FooBaz,
     };
+    return (Foo_E_FooBaz){ .opaq.inner = &inner };
 }
 typedef struct O$Foo_E {
     bool is_some;
@@ -675,7 +650,7 @@ static O$Foo_E E_resolve$Foo_E(Foo_E self) {
     };
     const usize errs_len = sizeof(errs) / sizeof(errs[0]);
     for (usize i = 0; i < errs_len; ++i) {
-        if (self.hash_id != errs[i].hash_id) continue;
+        if (self.opaq.inner->hashId() != errs[i].opaq.inner->hashId()) continue;
         return (O$Foo_E){
             .is_some = true,
             .payload = {
@@ -691,6 +666,12 @@ static Foo_E E_handle$Foo_E(Foo_E self) {
     if (resolved.is_some) return resolved.payload.some;
     return (Foo_E)E_cause$Any(self.as_general);
 }
+$attr($inline_always)
+static E_Tag$Foo_E E_tag$Foo_E(Foo_E self) {
+    O$Foo_E resolved = E_resolve$Foo_E(self);
+    if (resolved.is_some) return resolved.payload.some.opaq.inner->tag;
+    return E_Tag$Foo_E_Any;
+}
 
 
 #define let __auto_type const
@@ -704,28 +685,32 @@ static Foo_E mustFail(void) {
 /// handle$E: If resolve returns none, returns the tag as any while keeping the hash ID.
 int main(void) {
     let my_err = mustFail();
-    switch (E_handle$Foo_E(my_err).tag) {
+    switch (E_tag$Foo_E(E_handle$Foo_E(my_err))) {
+    // case E_Tag$Timeout_E_Timeout: {
+    //     let captured = (__typeof__(E_cause$Timeout()))my_err;
+    //     printf("handler case 1: %s\n", E_strfy$Timeout_E(captured));
+    // } break;
     case E_Tag$FooBar: {
-        let captured = (const __typeof__(E_cause$FooBar())*)&my_err;
-        printf("handler case 1: %s\n", E_strfy$Foo_E(*captured));
+        let captured = (__typeof__(E_cause$FooBar()))my_err;
+        printf("handler case 1: %s\n", E_strfy$Foo_E(captured));
     } break;
     case E_Tag$FooBas: {
-        let captured = (const __typeof__(E_cause$FooBas())*)&my_err;
-        printf("handler case 2: %s\n", E_strfy$Foo_E(*captured));
+        let captured = (__typeof__(E_cause$FooBas()))my_err;
+        printf("handler case 2: %s\n", E_strfy$Foo_E(captured));
     } break;
     case E_Tag$FooBaz: {
-        let captured = (const __typeof__(E_cause$FooBaz())*)&my_err;
-        printf("handler case 3: %s\n", E_strfy$Foo_E(*captured));
+        let captured = (__typeof__(E_cause$FooBaz()))my_err;
+        printf("handler case 3: %s\n", E_strfy$Foo_E(captured));
     } break;
     case E_Tag$Any: {
         let captured = my_err;
         {
             let maybe_conc = E_resolve$Conc_E(captured.Conc_E);
             if (maybe_conc.is_some) {
-                switch (maybe_conc.payload.some.tag) {
+                switch (E_tag$Conc_E(maybe_conc.payload.some)) {
                 case E_Tag$ConcUnavailable: {
-                    let captured = (const __typeof__(E_cause$ConcUnavailable())*)&maybe_conc.payload.some;
-                    printf("handler case 4: %s\n", E_strfy$Conc_E(*captured));
+                    let captured = (__typeof__(E_cause$ConcUnavailable()))maybe_conc.payload.some;
+                    printf("handler case 4: %s\n", E_strfy$Conc_E(captured));
                 } break;
                 case E_Tag$Any: __builtin_unreachable();
                 }
@@ -734,10 +719,10 @@ int main(void) {
         {
             let maybe_cancelable = E_resolve$Cancelable(captured.Cancelable);
             if (maybe_cancelable.is_some) {
-                switch (maybe_cancelable.payload.some.tag) {
+                switch (E_tag$Cancelable(maybe_cancelable.payload.some)) {
                 case E_Tag$Canceled: {
-                    let captured = (const __typeof__(E_cause$Canceled())*)&maybe_cancelable.payload.some;
-                    printf("handler case 5: %s\n", E_strfy$Cancelable(*captured));
+                    let captured = (__typeof__(E_cause$Canceled()))maybe_cancelable.payload.some;
+                    printf("handler case 5: %s\n", E_strfy$Cancelable(captured));
                 } break;
                 case E_Tag$Any: __builtin_unreachable();
                 }

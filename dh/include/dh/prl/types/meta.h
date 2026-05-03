@@ -753,14 +753,14 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 ))
 // #define u_anyS_const(_s...) ((u_S_const$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
 // #define u_anyS(_s...)       ((u_S$raw){ .type = typeInfo$(TypeOf(*_s.ptr)), .raw = _s.as_raw })
-#define u_anyS(_s...) T_switch$((TypeOf(*_s.ptr))( \
-    T_qual$((const TypeOfUnqual(*_s.ptr))(l$((u_S_const$raw){ \
-        .raw = *ptrQualCast$((S_const$raw*)(_s.ref_raw)), \
-        .type = typeInfo$(TypeOf(*_s.ptr)), \
+#define u_anyS(_s...) T_switch$((TypeOf(*(_s).ptr))( \
+    T_qual$((const TypeOfUnqual(*(_s).ptr))(l$((u_S_const$raw){ \
+        .raw = *ptrQualCast$((S_const$raw*)((_s).ref_raw)), \
+        .type = typeInfo$(TypeOf(*(_s).ptr)), \
     }))), \
-    T_qual$((TypeOfUnqual(*_s.ptr))(l$((u_S$raw){ \
-        .raw = *ptrQualCast$((S$raw*)(_s.ref_raw)), \
-        .type = typeInfo$(TypeOf(*_s.ptr)), \
+    T_qual$((TypeOfUnqual(*(_s).ptr))(l$((u_S$raw){ \
+        .raw = *ptrQualCast$((S$raw*)((_s).ref_raw)), \
+        .type = typeInfo$(TypeOf(*(_s).ptr)), \
     }))) \
 ))
 

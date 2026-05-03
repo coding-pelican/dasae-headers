@@ -63,6 +63,16 @@ T_use_E$($set(mem_E)(O$V$HashSet_Unit$raw));
 $extern fn_((HashSet_Unit_key(const HashSet_Unit$raw* self, TypeInfo key_ty))(u_P_const$raw));
 $extern fn_((HashSet_Unit_keyMut(HashSet_Unit$raw* self, TypeInfo key_ty))(u_P$raw));
 
+T_alias$((u_Fields_Idx$HashSet_Unit)(enum_((u_Fields_Idx$HashSet_Unit $fits($packed))(
+    u_Fields_Idx_key_ty$HashSet_Unit = 0,
+    u_Fields_Idx_key_$HashSet_Unit,
+    count$u_Fields_Idx$HashSet_Unit
+))));
+$static let_(u_Fields_type$HashSet_Unit, A$$(count$u_Fields_Idx$HashSet_Unit, TypeInfo)) = A_init({
+    [u_Fields_Idx_key_ty$HashSet_Unit] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(HashSet_Unit$raw, key_ty)), pp_else_(Void))),
+    [u_Fields_Idx_key_$HashSet_Unit] = typeInfo$(FieldType$(HashSet_Unit$raw, data)),
+});
+
 /* --- HashSet_Entry: Pointer to key in set --- */
 
 #define HashSet_Entry$$(_K...) __comp_anon__HashSet_Entry$$(_K)

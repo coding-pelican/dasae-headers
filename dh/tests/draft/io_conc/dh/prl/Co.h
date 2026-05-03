@@ -27,7 +27,6 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 /*--- Coroutine's Control ---*/
-T_alias$((Co_Count)(u32));
 T_alias$((Co_State)(enum_((Co_State $fits($packed))(
     Co_State_undefined = 0,
     Co_State_pending,
@@ -35,19 +34,23 @@ T_alias$((Co_State)(enum_((Co_State $fits($packed))(
     Co_State_ready
 ))));
 claim_assert_static(eqlType$(Co_State, u8));
-T_alias$((Co_CtrlPacked)(Co_Count));
-T_alias$((Co_Ctrl)(union Co_Ctrl {
+T_alias$((Co_FlowCtrlPacked)(fn__FlowCursorPacked));
+#define Co_FlowCtrl_State_bits 2
+#define Co_FlowCtrl_line_bits ((arch_bits_wide / 2) - Co_FlowCtrl_State_bits)
+T_alias$((Co_FlowCtrl)(union Co_FlowCtrl {
     T_embed$(struct {
-        var_(state, Co_CtrlPacked) : 2;
-        var_(count, Co_CtrlPacked) : 30;
+        var_(line, Co_FlowCtrlPacked)
+            : Co_FlowCtrl_line_bits;
+        var_(state, Co_FlowCtrlPacked)
+            : Co_FlowCtrl_State_bits;
     });
-    var_(packed, Co_CtrlPacked);
+    var_(packed, Co_FlowCtrlPacked);
 }));
-claim_assert_static(eqlType$(Co_State, u8));
+claim_assert_static((Co_FlowCtrl_line_bits + Co_FlowCtrl_State_bits) == (arch_bits_wide / 2));
 /*--- Coroutine's Context ---*/
 #define Co_Ctx$(_T...) __alias__Co_Ctx$(_T)
 T_alias$((Co_Ctx$raw)(struct Co_Ctx$raw {
-    var_(ctrl, Co_Ctrl);
+    var_(ctrl, Co_FlowCtrl);
     var_(suspended_data, P$raw);
     var_(ret_, V$raw) $flexible;
     var_(args_, V$raw) $flexible;
@@ -129,6 +132,8 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
 #define co_errdefer_(_capt, _expr...) __stmt__co_errdefer_(_capt, _expr)
 #define co_blk_defer comp_syn__co_blk_defer
 #define co_blk_deferral comp_syn__co_blk_deferral
+#define co_loop_defer comp_syn__co_loop_defer
+#define co_loop_deferral comp_syn__co_loop_deferral
 #if UNUSED_CODE
 #define co_returned(...) __expr__co_returned(__VA_ARGS__)
 #define co_call_(...) __expr__co_call_(__VA_ARGS__)
@@ -147,7 +152,7 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
 #define __stmt__T_impl_Co_Ctx$(_T...) \
     union Co_Ctx$(_T) { \
         T_embed$(struct { \
-            var_(ctrl, Co_Ctrl); \
+            var_(ctrl, Co_FlowCtrl); \
             var_(suspended_data, P$raw); \
             T_embed$(union { \
                 var_(ret, _T); \
@@ -216,7 +221,7 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
     })); \
     union Co_Ctx_(_fnName) { \
         T_embed$(struct { \
-            var_(ctrl, Co_Ctrl); \
+            var_(ctrl, Co_FlowCtrl); \
             var_(suspended_data, P$raw); \
             T_embed$(union { \
                 var_(ret, Co_Ret_(_fnName)); \
@@ -260,18 +265,18 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
         let_const __locals = &__ctx->data.locals; \
         $attr($maybe_unused) \
         let __locals_mut = &__ctx->data.locals_mut; \
-        var_(__scope_counter, struct fn__ScopeCounter) = { \
+        var_(__flow_cursor, struct fn__FlowCursor) = { \
             .is_returning = __ctx->ctrl.state == Co_State_ready, \
-            .current_line = __ctx->ctrl.count \
+            .curr_line = __ctx->ctrl.line \
         }; \
         if (false) { __step_return: \
-            __scope_counter.is_returning = true; \
+            __flow_cursor.is_returning = true; \
             __ctx->ctrl.state = Co_State_ready; \
             goto __step_unscope; \
         } \
-        switch (__scope_counter.current_line) { \
+        switch (__flow_cursor.curr_line) { \
         default: { goto __step_unscope; } break; \
-        case 0: __scope_counter.current_line--; /* clang-format on */
+        case 0: __flow_cursor.curr_line--; /* clang-format on */
 #define inline__$unscoped_co_fn() __stmt__$unscoped_co_fn
 #define __stmt__$unscoped_co_fn /* clang-format off */ \
         break; \
@@ -289,11 +294,12 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
         var_(locals, Co_Locals_(_fnName)); \
         var_(locals_mut, Co_LocalsMut_(_fnName)); \
         var_(deferrable_top, u32); \
-        var_(deferrable_stack, A$$(_Deferrable, u32)); \
+        var_(deferrable_stack, A$$(_Deferrable, fn__FlowCursorPacked)); \
+        var_(deferrable_break_stack, A$$(_Deferrable, bool)); \
     })); \
     union Co_Ctx_(_fnName) { \
         T_embed$(struct { \
-            var_(ctrl, Co_Ctrl); \
+            var_(ctrl, Co_FlowCtrl); \
             var_(suspended_data, P$raw); \
             T_embed$(union { \
                 var_(ret, Co_Ret_(_fnName)); \
@@ -339,18 +345,19 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
         let __locals_mut = &__ctx->data.locals_mut; \
         let __deferrable_top = &__ctx->data.deferrable_top; \
         let __deferrable_stack = A_ref(__ctx->data.deferrable_stack); \
-        var_(__scope_counter, struct fn__ScopeCounter) = { \
+        let __deferrable_break_stack = A_ref(__ctx->data.deferrable_break_stack); \
+        var_(__flow_cursor, struct fn__FlowCursor) = { \
             .is_returning = __ctx->ctrl.state == Co_State_ready, \
-            .current_line = __ctx->ctrl.count \
+            .curr_line = __ctx->ctrl.line \
         }; \
         if (false) { __step_return: \
-            __scope_counter.is_returning = true; \
+            __flow_cursor.is_returning = true; \
             __ctx->ctrl.state = Co_State_ready; \
             goto __step_deferred; \
         } \
-__step_deferred: switch (__scope_counter.current_line) { \
+__step_deferred: switch (__flow_cursor.curr_line) { \
         default: { goto __step_unscope; } break; \
-        case 0: __scope_counter.current_line--; /* clang-format on */
+        case 0: __flow_cursor.curr_line--; /* clang-format on */
 #define inline__$unguarded_co_fn() __stmt__$unguarded_co_fn
 #define __stmt__$unguarded_co_fn /* clang-format off */ \
             break; \
@@ -389,7 +396,7 @@ __step_deferred: switch (__scope_counter.current_line) { \
         *__suspended_data = _expr; \
         __ctx->suspended_data = __suspended_data; \
         __ctx->ctrl.state = Co_State_suspended; \
-        __ctx->ctrl.count = __LINE__; \
+        __ctx->ctrl.line = __LINE__; \
         goto __step_suspend; \
     case __LINE__:; \
         claim_assert(__ctx->ctrl.state == Co_State_suspended); \
@@ -414,9 +421,11 @@ __step_deferred: switch (__scope_counter.current_line) { \
     _expr; \
 })
 /* clang-format off */
+/* Coroutine block-local defer boundary. A raw break/continue inside the body
+ * exits this synthetic block, not an outer loop. */
 #define comp_syn__co_blk_defer { do { \
     comp_syn__co_defer__op_snapshot( \
-        if (__scope_counter.is_returning) { \
+        if (__flow_cursor.is_returning) { \
             goto __step_deferred; \
         } else { \
             continue; \
@@ -427,14 +436,51 @@ __step_deferred: switch (__scope_counter.current_line) { \
     while (false); \
     goto __step_deferred; \
 } while (false); }
+
+/* Coroutine loop-iteration defer boundary. Direct raw continue/break in the
+ * body run iteration defers before continuing or breaking the enclosing loop. */
+#define comp_syn__co_loop_defer { \
+    local_label __co_loop_defer_break; \
+    do { \
+        comp_syn__co_defer__op_snapshot_(true, \
+            if (__flow_cursor.is_returning) { \
+                goto __step_deferred; \
+            } else if (*S_at((__deferrable_break_stack)[*__deferrable_top])) { \
+                goto __co_loop_defer_break; \
+            } else { \
+                continue; \
+            } \
+        ); \
+        do
+#define comp_syn__co_loop_deferral \
+        while (comp_syn__co_loop_defer__mark_continuing(), false); \
+        goto __step_deferred; \
+    } while (false); \
+    continue; \
+__co_loop_defer_break: \
+    break; \
+}
 /* clang-format on */
-#define comp_syn__co_defer__op_snapshot(_expr...) \
+#define comp_syn__co_loop_defer__mark_continuing() ({ \
+    for (usize __co_loop_defer_i = *__deferrable_top; __co_loop_defer_i > 0;) { \
+        __co_loop_defer_i -= 1; \
+        if (*S_at((__deferrable_break_stack)[__co_loop_defer_i])) { \
+            *S_at((__deferrable_break_stack)[__co_loop_defer_i]) = false; \
+            break; \
+        } \
+    } \
+    false; \
+})
+#define comp_syn__co_defer__op_snapshot(_expr...) comp_syn__co_defer__op_snapshot_(false, _expr)
+#define comp_syn__co_defer__op_snapshot_(_is_breaking, _expr...) \
     { \
-        *S_at((__deferrable_stack)[(*__deferrable_top)++]) = __scope_counter.current_line; \
-        __scope_counter.current_line = __LINE__; \
+        let __deferrable_idx = (*__deferrable_top)++; \
+        *S_at((__deferrable_stack)[__deferrable_idx]) = __flow_cursor.curr_line; \
+        *S_at((__deferrable_break_stack)[__deferrable_idx]) = (_is_breaking); \
+        __flow_cursor.curr_line = __LINE__; \
         if (false) { \
         case __LINE__: \
-            __scope_counter.current_line = *S_at((__deferrable_stack)[--(*__deferrable_top)]); \
+            __flow_cursor.curr_line = *S_at((__deferrable_stack)[--(*__deferrable_top)]); \
             _expr; \
         } \
     }

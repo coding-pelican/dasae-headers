@@ -1,6 +1,6 @@
 #include "dh-main.h"
 #include "dh/Thrd/common.h"
-#include "dh/Thrd/Ftx.h"
+#include "dh/Thrd/ftx.h"
 #include "dh/Thrd/Mtx.h"
 #include "dh/Thrd/Sem.h"
 #include "dh/Thrd/Cond.h"
@@ -73,7 +73,8 @@ $static fn_((exampleWaitGroup(void))(void) $guard) {
     for_(($r(1, 5), $s(A_ref(task_ctxs)))(i, task_ctx) {
         *task_ctx = Thrd_FnCtx_from$((waitGroupTask)(as$(i32)(i)));
         Thrd_WaitGroup_spawn(&g_wait_group, gpa, task_ctx->as_raw);
-    });
+    })
+        ;
 
     report(u8_l("example"), u8_l("waiting for all tasks..."));
     Thrd_WaitGroup_wait(&g_wait_group);
@@ -118,7 +119,8 @@ $static fn_((exampleSemaphore(void))(void) $guard) {
     for_(($r(1, 5), $s(A_ref(worker_ctxs)))(i, worker_ctx) {
         *worker_ctx = Thrd_FnCtx_from$((semWorker)(as$(i32)(i)));
         Thrd_WaitGroup_spawn(&wait_group, gpa, worker_ctx->as_raw);
-    });
+    })
+        ;
 
     Thrd_WaitGroup_wait(&wait_group);
     report(u8_l("example"), u8_l("all workers completed!"));
@@ -143,7 +145,8 @@ $static Thrd_fn_(producer, ({ i32 items_to_produce; }, Void), ($ignore, args)$sc
         report(u8_l("producer"), u8_l("produced item, queue size: {:d}"), g_queue_count);
         Thrd_Cond_signal(&g_cond);
         Thrd_Mtx_unlock(&g_mtx);
-    });
+    })
+        ;
 
     Thrd_Mtx_lock(&g_mtx);
     g_done = true;

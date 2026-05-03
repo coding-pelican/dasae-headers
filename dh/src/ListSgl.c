@@ -111,16 +111,20 @@ fn_((ListSgl_Adp_linkMut(ListSgl_Adp$raw* self))(P$ListSgl_Link)) {
 
 fn_((ListSgl_Adp_data(const ListSgl_Adp$raw* self, TypeInfo type))(u_P_const$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
-    let ty_fields = typeInfosFrom(u_anyP(self).type, type);
+    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$ListSgl_Adp)(
+        (.val[u_Fields_Idx_data_$ListSgl_Adp])(type)
+    )));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self)));
-    return u_fieldPtr(u_self, ty_fields, 1);
+    return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_data_$ListSgl_Adp);
 };
 
 fn_((ListSgl_Adp_dataMut(ListSgl_Adp$raw* self, TypeInfo type))(u_P$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
-    let ty_fields = typeInfosFrom(u_anyP(self).type, type);
+    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$ListSgl_Adp)(
+        (.val[u_Fields_Idx_data_$ListSgl_Adp])(type)
+    )));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
-    return u_fieldPtrMut(u_self, ty_fields, 1);
+    return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_data_$ListSgl_Adp);
 };
 
 fn_((ListSgl_empty(TypeInfo type))(ListSgl) $scope) {

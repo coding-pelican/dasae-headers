@@ -2,11 +2,9 @@
 
 /* --- Pthreads --- */
 
-#if Thrd_RWLock__use_pthread
+#if Thrd_RWLock_use_pthread
 fn_((Thrd_RWLock_init(void))(Thrd_RWLock)) {
-    return (Thrd_RWLock){
-        .impl = PTHREAD_RWLOCK_INITIALIZER
-    };
+    return (Thrd_RWLock)Thrd_RWLock_init_static();
 };
 
 fn_((Thrd_RWLock_fini(Thrd_RWLock* self))(void)) {
@@ -58,6 +56,9 @@ fn_((Thrd_RWLock_unlockShared(Thrd_RWLock* self))(void)) {
 #define Thrd_RWLock__reader_mask (Thrd_RWLock__count_max << (1 + Thrd_RWLock__count_bits))
 
 fn_((Thrd_RWLock_init(void))(Thrd_RWLock)) {
+#if !Thrd_Cond_use_pthread
+    return (Thrd_RWLock)Thrd_RWLock_init_static();
+#else
     return (Thrd_RWLock){
         .impl = {
             .state = 0,
@@ -65,6 +66,7 @@ fn_((Thrd_RWLock_init(void))(Thrd_RWLock)) {
             .sem = Thrd_Sem_init(),
         }
     };
+#endif
 };
 
 fn_((Thrd_RWLock_fini(Thrd_RWLock* self))(void)) {

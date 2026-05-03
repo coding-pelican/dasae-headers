@@ -241,12 +241,7 @@ fn_((Thrd_Cond__common_broadcast(Thrd_Cond* self))(void)) {
 
 $attr($inline_always)
 $static fn_((Thrd_Cond__default_impl_init(void))(Thrd_Cond)) {
-    return (Thrd_Cond){
-        .impl = {
-            .state = atom_V_init(0),
-            .epoch = atom_V_init(0),
-        }
-    };
+    return (Thrd_Cond)Thrd_Cond_init_static();
 };
 
 $attr($inline_always)
@@ -274,9 +269,9 @@ fn_((Thrd_Cond__default_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Dur tim
     Thrd_Mtx_unlock(mtx);
     defer_(Thrd_Mtx_lock(mtx));
 
-    var deadline = Thrd_Ftx_Deadline_init(timeout);
+    var deadline = Thrd_ftx_Deadline_init(timeout);
     while (true) {
-        catch_((Thrd_Ftx_Deadline_wait(&deadline, &self->impl.epoch, epoch))(err, {
+        catch_((Thrd_ftx_Deadline_wait(&deadline, &self->impl.epoch, epoch))(err, {
             // On timeout, we must decrement the waiter we added above.
             while (true) {
                 // If there's a signal when we're timing out, consume it and report being woken up instead.
@@ -339,7 +334,7 @@ fn_((Thrd_Cond__default_impl_wake(Thrd_Cond* self, Thrd_Cond__Notify notify))(vo
             // - T2: UPDATE(&state, signal) + FUTEX_WAKE(&epoch)
             // - T1: s & signals == 0 -> FUTEX_WAIT(&epoch, e) (missed both epoch change and state change)
             let_ignore = atom_V_fetchAdd(&self->impl.epoch, 1, atom_MemOrd_release);
-            return Thrd_Ftx_wake(&self->impl.epoch, to_wake);
+            return Thrd_ftx_wake(&self->impl.epoch, to_wake);
         }));
     }
 };
@@ -349,7 +344,7 @@ fn_((Thrd_Cond__default_impl_wake(Thrd_Cond* self, Thrd_Cond__Notify notify))(vo
 
 #if Thrd_Cond_has_specialized && plat_is_windows
 fn_((Thrd_Cond__windows_impl_init(void))(Thrd_Cond)) {
-    return (Thrd_Cond){ .impl.inner = CONDITION_VARIABLE_INIT };
+    return (Thrd_Cond)Thrd_Cond_init_static();
 };
 
 fn_((Thrd_Cond__windows_impl_fini(Thrd_Cond* self))(void)) {

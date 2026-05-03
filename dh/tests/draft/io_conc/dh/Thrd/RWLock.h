@@ -52,6 +52,13 @@ struct Thrd_RWLock__Impl pp_if_(Thrd_RWLock_use_pthread)(
 struct Thrd_RWLock pp_if_(Thrd_RWLock_use_pthread)(
     pp_then_({ var_(impl, pthread_rwlock_t); }),
     pp_else_({ var_(impl, Thrd_RWLock__Impl); }));
+#if Thrd_RWLock_use_pthread
+#define Thrd_RWLock_init_static() \
+    { .impl = PTHREAD_RWLOCK_INITIALIZER }
+#elif !Thrd_Cond_use_pthread
+#define Thrd_RWLock_init_static() \
+    { .impl = { .state = 0, .mtx = Thrd_Mtx_init_static(), .sem = Thrd_Sem_init_static() } }
+#endif
 $extern fn_((Thrd_RWLock_init(void))(Thrd_RWLock));
 $extern fn_((Thrd_RWLock_fini(Thrd_RWLock* self))(void));
 $extern fn_((Thrd_RWLock_lock(Thrd_RWLock* self))(void));

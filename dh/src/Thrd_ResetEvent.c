@@ -33,7 +33,7 @@ fn_((Thrd_ResetEvent_set(Thrd_ResetEvent* self))(void)) {
         return;
     }
     if (atom_V_fetchXchg(&self->state, Thrd_ResetEvent__is_set, atom_MemOrd_release) == Thrd_ResetEvent__waiting) {
-        Thrd_Ftx_wake(&self->state, u32_limit_max);
+        Thrd_ftx_wake(&self->state, u32_limit_max);
     }
 };
 
@@ -62,9 +62,9 @@ fn_((Thrd_ResetEvent__waitUntilSet(Thrd_ResetEvent* self, O$time_Duration timeou
         ))(Thrd_ResetEvent__waiting));
     }
     if (state == Thrd_ResetEvent__waiting) {
-        var deadline = Thrd_Ftx_Deadline_init(timeout);
+        var deadline = Thrd_ftx_Deadline_init(timeout);
         while (true) {
-            let waiting = Thrd_Ftx_Deadline_wait(&deadline, &self->state, Thrd_ResetEvent__waiting);
+            let waiting = Thrd_ftx_Deadline_wait(&deadline, &self->state, Thrd_ResetEvent__waiting);
             state = atom_V_load(&self->state, atom_MemOrd_acquire);
             if (state != Thrd_ResetEvent__waiting) { break; }
             try_(waiting);

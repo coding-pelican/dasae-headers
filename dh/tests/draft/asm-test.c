@@ -49,19 +49,19 @@ typedef struct Void {
 
 extern usize Thrd_currentId(void);
 
-struct fn__ScopeCounter {
+struct fn__Ctrl {
     bool is_returning;
     u32 curr_line;
 };
 static void report(const char* label, const char* fmt, ...) {
-    do {} while (0)
-    _Alignas(_Generic(((__typeof__(void*))0), __typeof__(const void*): (((usize)(1))), __typeof__(void*): (((usize)(1))), default: (usize)((_Alignof(void))))) volatile union {
+    do {
+    } while (0) _Alignas(_Generic(((__typeof__(void*))0), __typeof__(const void*): (((usize)(1))), __typeof__(void*): (((usize)(1))), default: (usize)((_Alignof(void))))) volatile union {
         __typeof__(u8[_Generic(((__typeof__(void*))0), __typeof__(const void*): (((usize)(0))), __typeof__(void*): (((usize)(0))), default: (usize)(sizeof(void)))]) val;
     } __reserved_buf = { .val = {} };
     __auto_type const __reserved_return = ((void*)(((&*((__reserved_buf).val)))));
     __attribute__((unused)) typedef __typeof__(*__reserved_return) ReturnType;
     __attribute__((unused)) typedef ReturnType ReturnT;
-    __auto_type __scope_counter = (struct fn__ScopeCounter){ .is_returning = ((bool)(0)), .curr_line = 315 };
+    __auto_type __scope_counter = (struct fn__Ctrl){ .is_returning = ((bool)(0)), .curr_line = 315 };
     if (((bool)(0))) {
 __step_return:
         __scope_counter.is_returning = ((bool)(1));
@@ -130,7 +130,7 @@ static void reportRaw(const char* label, const char* fmt, ...) {
 };
 
 static void reportFlat(const char* label, const char* fmt, ...) {
-    __attribute__((unused)) struct fn__ScopeCounter __scope_counter = { .is_returning = ((bool)(0)), .curr_line = 320 };
+    __attribute__((unused)) struct fn__Ctrl __scope_counter = { .is_returning = ((bool)(0)), .curr_line = 320 };
 __step_deferred:
     switch (__scope_counter.curr_line) {
     case 0: return;
