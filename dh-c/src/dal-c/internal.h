@@ -22,6 +22,9 @@ typedef struct dal_c_CommandIntent {
 } dal_c_CommandIntent;
 
 void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out);
+void dal_c_BuildDefaults_cleanup(dal_c_BuildDefaults* defaults);
+void dal_c_BuildDefaults_merge(dal_c_BuildDefaults* dst, const dal_c_BuildDefaults* src);
+bool dal_c_BuildDefaults_applyDhFile(dal_c_BuildDefaults* dst, const char* path);
 
 void dal_c__printVerbose(const dal_c_Cmd* cmd, const char* fmt, ...);
 void dal_c__printError(const char* fmt, ...);
@@ -37,7 +40,7 @@ int dal_c__generateMakefile(
     const char* build_dir,
     dal_c_Target target_type
 );
-char* dal_c__resolveOutputPath(const dal_c_Cmd* cmd, const char* build_dir, const char* output_name, dal_c_Target target_type);
+char* dal_c__resolveOutputPath(const dal_c_Project* proj, const dal_c_Cmd* cmd, const char* build_dir, const char* output_name, dal_c_Target target_type);
 char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const dal_c_Cmd* cmd, const char* target_path, dal_c_Target target_type);
 
 int dal_c__executeMake(const char* makefile_path);

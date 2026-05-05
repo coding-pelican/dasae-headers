@@ -1,6 +1,10 @@
+output=contract-c
+build-runs-tests=true
+
 [B]
 path=../B
 profile=default
 linking=static
-no-libdh=false
+no-dsl=false
+test=true
 

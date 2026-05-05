@@ -2,17 +2,17 @@
 path=../B-stub
 profile=default
 linking=static
-no-libdh=false
+no-dsl=false
 
 [A]
 path=../A
 profile=default
 linking=static
-no-libdh=false
+no-dsl=false
 
 [other/AA]
 path=../A/other/AA
 profile=default
 linking=static
-no-libdh=false
+no-dsl=false
 

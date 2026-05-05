@@ -10,7 +10,7 @@ A lightweight, cross-platform build tool for C projects using the DH-C system.
 - Support for multiple build configurations (dev, test, profile, release, performance, embedded, micro)
 - Automatic include/source file discovery
 - IDE integration through `.clangd` and VSCode tasks
-- Option to build without the DH library (`--no-libdh`)
+- Option to build without the DH/DSL library path (`--no-dsl`)
 - Configurable output suffix for build configurations
 - Test mode with automatic cleanup
 
@@ -96,10 +96,10 @@ Build with a specific configuration:
 dh-c build dev file.c
 ```
 
-Build without the DH-C library:
+Build without the DH/DSL library path:
 
 ```sh
-dh-c build file.c --no-libdh
+dh-c build file.c --no-dsl
 ```
 
 Build an entire project:
@@ -202,6 +202,28 @@ my-project/
   ├── .clang-format      (code formatter config)
   └── .vscode/           (IDE config)
 ```
+
+Directory aliases are also supported at the project root:
+
+- `include`, `includes`, `inc`
+- `src`, `source`, `sources`
+- `tests`, `test`
+- `samples`, `sample`
+- `examples`, `example`
+
+Only one alias variant per category may exist at the same level.
+
+## `.dh` Defaults
+
+`project.dh` can define project defaults such as:
+
+```txt
+output=my-project
+build-runs-tests=true
+no-dsl=false
+```
+
+Companion `.dh` files can override `output=`, `build-runs-tests=`, and `no-dsl=` for the owning target. Dependency blocks can additionally set `test=true` to run that dependency's tests during dependency traversal.
 
 ## Test Mode
 

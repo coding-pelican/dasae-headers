@@ -13,13 +13,81 @@
 
 /// === VERSION ===
 
-#define dal_c_ver_major 0
-#define dal_c_ver_minor 2
-#define dal_c_ver_patch 4
-#define dal_c_ver_sep "."
-#define dal_c_ver_label ""
+/// --- Queries ---
 
-#define dal_c_ver_str dal_c__val__ver_ser
+#define dal_c_ver_core_sep dal_c__str__ver_core_sep
+#define dal_c_ver_core_major dal_c__num__ver_core_major
+#define dal_c_ver_core_minor dal_c__num__ver_core_minor
+#define dal_c_ver_core_patch dal_c__num__ver_core_patch
+
+#define dal_c_ver_core_num dal_c__val__ver_core_num
+#define dal_c_ver_core_str dal_c__str__ver_core_str
+
+#define dal_c_ver_label_delim dal_c__str__ver_label_delim
+#define dal_c_ver_label_prefix_as_num dal_c__num__ver_label_prefix_as_num
+#define dal_c_ver_label_prefix_as_str dal_c__str__ver_label_prefix_as_str
+#define dal_c_ver_label_sep dal_c__str__ver_label_sep
+#define dal_c_ver_label_suffix_as_num dal_c__num__ver_label_suffix_as_num
+#define dal_c_ver_label_suffix_as_str dal_c__str__ver_label_suffix_as_str
+
+#define dal_c_ver_build_delim dal_c__str__ver_build_delim
+#define dal_c_ver_build_as_str dal_c__str__ver_build_as_str
+
+#define dal_c_ver_num dal_c__val__ver_num
+#define dal_c_ver_str dal_c__str__ver_str
+#define dal_c_ver_str_with_build dal_c__str__ver_str_with_build
+
+/// --- Defaults ---
+
+#define dal_c_ver_core_calc(_major, _minor, _patch...) \
+    dal_c__val__ver_core_calc(_major, _minor, _patch)
+#define dal_c_ver_core_strfy(_major, _minor, _patch...) \
+    dal_c__str__ver_core_strfy(_major, _minor, _patch)
+
+#define dal_c_ver_calc(_major, _minor, _patch, _label_prefix_as_num, _label_suffix_as_num...) \
+    dal_c__val__ver_calc(_major, _minor, _patch, _label_prefix_as_num, _label_suffix_as_num)
+#define dal_c_ver_strfy(_major, _minor, _patch, _label_prefix_as_str, _label_suffix_as_str...) \
+    dal_c__str__ver_strfy(_major, _minor, _patch, _label_prefix_as_str, _label_suffix_as_str)
+#define dal_c_ver_strfyWithBuild(_major, _minor, _patch, _label_prefix_as_str, _label_suffix_as_str, _build_as_str...) \
+    dal_c__str__ver_strfyWithBuild(_major, _minor, _patch, _label_prefix_as_str, _label_suffix_as_str, _build_as_str)
+
+#define dal_c_ver_core_sep_default dal_c_ver_core_sep_some
+#define dal_c_ver_core_sep_some "."
+#define dal_c_ver_core_major_default dal_c_ver_core_major_none
+#define dal_c_ver_core_major_none 0
+#define dal_c_ver_core_minor_default dal_c_ver_core_minor_none
+#define dal_c_ver_core_minor_none 0
+#define dal_c_ver_core_patch_default dal_c_ver_core_patch_none
+#define dal_c_ver_core_patch_none 0
+
+#define dal_c_ver_label_delim_default dal_c_ver_label_delim_none
+#define dal_c_ver_label_delim_none ""
+#define dal_c_ver_label_delim_some "-"
+#define dal_c_ver_label_prefix_as_num_default dal_c_ver_label_prefix_as_num_none
+#define dal_c_ver_label_prefix_as_num_none dal_c_ver_label_prefix_as_num_release
+#define dal_c_ver_label_prefix_as_num_alpha 0
+#define dal_c_ver_label_prefix_as_num_beta 1
+#define dal_c_ver_label_prefix_as_num_rc 2
+#define dal_c_ver_label_prefix_as_num_release 3
+#define dal_c_ver_label_prefix_as_str_default dal_c_ver_label_prefix_as_str_none
+#define dal_c_ver_label_prefix_as_str_none dal_c_ver_label_prefix_as_str_release
+#define dal_c_ver_label_prefix_as_str_alpha "alpha"
+#define dal_c_ver_label_prefix_as_str_beta "beta"
+#define dal_c_ver_label_prefix_as_str_rc "rc"
+#define dal_c_ver_label_prefix_as_str_release ""
+#define dal_c_ver_label_sep_default dal_c_ver_label_sep_none
+#define dal_c_ver_label_sep_none ""
+#define dal_c_ver_label_sep_some "."
+#define dal_c_ver_label_suffix_as_num_default dal_c_ver_label_suffix_as_num_none
+#define dal_c_ver_label_suffix_as_num_none 0
+#define dal_c_ver_label_suffix_as_str_default dal_c_ver_label_suffix_as_str_none
+#define dal_c_ver_label_suffix_as_str_none ""
+
+#define dal_c_ver_build_delim_default dal_c_ver_build_delim_none
+#define dal_c_ver_build_delim_none ""
+#define dal_c_ver_build_delim_some "+"
+#define dal_c_ver_build_as_str_default dal_c_ver_build_as_str_none
+#define dal_c_ver_build_as_str_none ""
 
 /// === BOOLEAN ===
 
@@ -435,7 +503,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_verbose "verbose"
 #define dal_c_opt_debug "debug"
 #define dal_c_opt_show_commands "show-commands"
-#define dal_c_opt_no_libdh "no-libdh"
+#define dal_c_opt_no_dsl "no-dsl"
 #define dal_c_opt_freestanding "freestanding"
 #define dal_c_opt_loose_errors "loose-errors"
 #define dal_c_opt_static "static"
@@ -491,8 +559,14 @@ typedef struct dal_c_CompilerOpts {
     dal_c_Profile profile;
     bool freestanding; // --freestanding
     bool loose_errors; // --loose-errors
-    bool no_libdh; // --no-libdh
+    bool no_dsl; // --no-dsl
 } dal_c_CompilerOpts;
+
+typedef struct dal_c_BuildDefaults {
+    char* output_name; // default output name when CLI did not provide one
+    bool build_runs_tests;
+    bool build_runs_tests_set;
+} dal_c_BuildDefaults;
 
 /// === ACTION-SPECIFIC PAYLOADS ===
 
@@ -589,6 +663,8 @@ typedef struct dal_c_Lib {
     char* path;
     dal_c_CompilerOpts opts;
     bool is_static;
+    bool test_enabled;
+    bool test_enabled_set;
 } dal_c_Lib;
 
 /// === PROJECT (Detected State) ===
@@ -598,12 +674,18 @@ struct dal_c_Project {
     char* name;
     char* dh_path;
     char* project_dh;
+    char* src_dir_name;
+    char* include_dir_name;
+    char* tests_dir_name;
+    char* samples_dir_name;
+    char* examples_dir_name;
     bool pch_enabled;
     char* pch_header_override;
     char* pch_header;
     char** pch_exclude_headers;
     int pch_exclude_count;
     dal_c_CompilerOpts opts;
+    dal_c_BuildDefaults defaults;
     dal_c_Lib* libraries;
     int lib_count;
 };
@@ -615,6 +697,11 @@ char* dal_c_Project_getBuildDir(const dal_c_Project* proj);
 char* dal_c_Project_getLibDir(const dal_c_Project* proj);
 char* dal_c_Project_getSrcDir(const dal_c_Project* proj);
 char* dal_c_Project_getIncludeDir(const dal_c_Project* proj);
+char* dal_c_Project_getTestsDir(const dal_c_Project* proj);
+char* dal_c_Project_getSamplesDir(const dal_c_Project* proj);
+char* dal_c_Project_getExamplesDir(const dal_c_Project* proj);
+char* dal_c_Project_getCategoryDir(const dal_c_Project* proj, const char* canonical_name);
+const char* dal_c_Project_getCategoryDirName(const dal_c_Project* proj, const char* canonical_name);
 char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 
 /// === DEFAULTS ===
@@ -631,6 +718,7 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_pch_header_da "da.h"
 #define dal_c_project_prop_pch "pch"
 #define dal_c_project_prop_pch_exclude "pch-exclude"
+#define dal_c_project_prop_build_runs_tests "build-runs-tests"
 #define dal_c_pch_value_auto "auto"
 #define dal_c_pch_value_off "off"
 
@@ -645,6 +733,14 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_dir_tests "tests"
 #define dal_c_dir_build "build"
 #define dal_c_dir_cache ".cache"
+
+#define dal_c_dir_include_alias_includes "includes"
+#define dal_c_dir_include_alias_inc "inc"
+#define dal_c_dir_src_alias_source "source"
+#define dal_c_dir_src_alias_sources "sources"
+#define dal_c_dir_tests_alias_test "test"
+#define dal_c_dir_samples_alias_sample "sample"
+#define dal_c_dir_examples_alias_example "example"
 
 /// === FILE NAMES ===
 
@@ -708,7 +804,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_dsl, "Enable DSL mode (`build`: build libdh first, `test`: run unified `dh/tests`)" },
     { dal_c_opt_prefix_long dal_c_opt_recur, "Apply command recursively to descendant `project.dh` projects" },
     { dal_c_opt_all_alias, "Build all source files (alternative to " dal_c_opt_prefix_long dal_c_opt_all ")" },
-    { dal_c_opt_prefix_long dal_c_opt_no_libdh, "Skip DH library" },
+    { dal_c_opt_prefix_long dal_c_opt_no_dsl, "Skip DSL/DH library integration" },
     { dal_c_opt_prefix_long dal_c_opt_show_commands, "Print commands" },
     { dal_c_opt_prefix_long dal_c_opt_verbose, "Verbose output" },
     { dal_c_opt_prefix_long dal_c_opt_dh dal_c_opt_value_sep "<path>", "Override DH path" },
@@ -887,11 +983,11 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
       "[profile] [options]",
       dal_c_help_build_options, dal_c_help_build_options_count,
       dal_c_help_build_dsl_examples, dal_c_help_build_dsl_examples_count },
-      { dal_c_cmd_action_test_dsl,
-        "Build and run `dh/tests` directly",
-        "[profile] [file.c] [options]",
-        dal_c_help_test_options, dal_c_help_test_options_count,
-        dal_c_help_test_dsl_examples, dal_c_help_test_dsl_examples_count },
+    { dal_c_cmd_action_test_dsl,
+      "Build and run `dh/tests` directly",
+      "[profile] [file.c] [options]",
+      dal_c_help_test_options, dal_c_help_test_options_count,
+      dal_c_help_test_dsl_examples, dal_c_help_test_dsl_examples_count },
     { dal_c_cmd_action_clean_dsl,
       "Clean generated artifacts for `dh/{include|src}`",
       "[options]",
@@ -912,10 +1008,70 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
 
 /*========== Macros and Definitions =========================================*/
 
-#define dal_c__val__ver_ser pp_expand( \
-    pp_strfy(dal_c_ver_major) dal_c_ver_sep \
-        pp_strfy(dal_c_ver_minor) dal_c_ver_sep \
-            pp_strfy(dal_c_ver_patch) dal_c_ver_label \
+/// --- Queries ---
+
+#define dal_c__str__ver_core_sep dal_c_ver_core_sep_default
+#define dal_c__num__ver_core_major 0
+#define dal_c__num__ver_core_minor 3
+#define dal_c__num__ver_core_patch 0
+
+#define dal_c__val__ver_core_num \
+    dal_c_ver_core_calc( \
+        dal_c_ver_core_major, dal_c_ver_core_minor, dal_c_ver_core_patch \
+    )
+#define dal_c__str__ver_core_str \
+    dal_c_ver_core_strfy( \
+        dal_c_ver_core_major, dal_c_ver_core_minor, dal_c_ver_core_patch \
+    )
+
+#define dal_c__str__ver_label_delim dal_c_ver_label_delim_default
+#define dal_c__num__ver_label_prefix_as_num dal_c_ver_label_prefix_as_num_default
+#define dal_c__str__ver_label_prefix_as_str dal_c_ver_label_prefix_as_str_default
+#define dal_c__str__ver_label_sep dal_c_ver_label_sep_default
+#define dal_c__num__ver_label_suffix_as_num dal_c_ver_label_suffix_as_num_default
+#define dal_c__str__ver_label_suffix_as_str dal_c_ver_label_suffix_as_str_default
+
+#define dal_c__str__ver_build_delim dal_c_ver_build_delim_default
+#define dal_c__str__ver_build_as_str dal_c_ver_build_as_str_default
+
+#define dal_c__val__ver_num \
+    dal_c_ver_calc( \
+        dal_c_ver_core_major, dal_c_ver_core_minor, dal_c_ver_core_patch, \
+        dal_c_ver_label_prefix_as_num, dal_c_ver_label_suffix_as_num \
+    )
+#define dal_c__str__ver_str \
+    dal_c_ver_strfy( \
+        dal_c_ver_core_major, dal_c_ver_core_minor, dal_c_ver_core_patch, \
+        dal_c_ver_label_prefix_as_str, dal_c_ver_label_suffix_as_str \
+    )
+#define dal_c__str__ver_str_with_build \
+    dal_c_ver_strfyWithBuild( \
+        dal_c_ver_core_major, dal_c_ver_core_minor, dal_c_ver_core_patch, \
+        dal_c_ver_label_prefix_as_str, dal_c_ver_label_suffix_as_str, dal_c_ver_build_as_str \
+    )
+
+/// --- Defaults ---
+
+#define dal_c__val__ver_core_calc(_major, _minor, _patch...) ( \
+    (((_major) & 0xFFu) << 24u) \
+    | (((_minor) & 0xFFu) << 16u) \
+    | (((_patch) & 0xFFu) << 8u) \
+)
+#define dal_c__str__ver_core_strfy(_major, _minor, _patch...) pp_expand( \
+    pp_strfy(_major) dal_c_ver_core_sep pp_strfy(_minor) dal_c_ver_core_sep pp_strfy(_patch) \
+)
+#define dal_c__val__ver_calc(_major, _minor, _patch, _label_prefix_as_num, _label_suffix_as_num...) ( \
+    dal_c__val__ver_core_calc(_major, _minor, _patch) \
+    | (((_label_prefix_as_num) & 0x03u) << 6u) \
+    | (((_label_suffix_as_num) & 0x3Fu) << 0u) \
+)
+#define dal_c__str__ver_strfy(_major, _minor, _patch, _label_prefix_as_str, _label_suffix_as_str...) pp_expand( \
+    dal_c_ver_core_strfy(_major, _minor, _patch) \
+        dal_c_ver_label_delim _label_prefix_as_str dal_c_ver_label_sep _label_suffix_as_str \
+)
+#define dal_c__str__ver_strfyWithBuild(_major, _minor, _patch, _label_prefix_as_str, _label_suffix_as_str, _build_as_str...) pp_expand( \
+    dal_c_ver_strfy(_major, _minor, _patch, _label_prefix_as_str, _label_suffix_as_str) \
+        dal_c_ver_build_delim _build_as_str \
 )
 
 #endif /* dal_c__included */

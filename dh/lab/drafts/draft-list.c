@@ -1,5 +1,5 @@
 #if UNUSED_CODE
-// dh-c build draft-list.c --no-libdh --args="-IC:\dasae\dev\dasae-headers\dh\include -IC:\dasae\dev\dasae-headers\dh\libs\BlocksRuntime\include"
+// dh-c build draft-list.c --no-dsl --args="-IC:\dasae\dev\dasae-headers\dh\include -IC:\dasae\dev\dasae-headers\dh\libs\BlocksRuntime\include"
 
 #include "dh/prl.h"
 #include "dh/meta/common.h"

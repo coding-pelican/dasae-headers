@@ -25,18 +25,22 @@ static char** dal_c_Cmd__outputPathSlot(dal_c_Cmd* cmd);
 static char** dal_c_Cmd__runArgsSlot(dal_c_Cmd* cmd);
 static void dal_c_Cmd__setPrimaryTargetFile(dal_c_Cmd* cmd, const char* path);
 static void dal_c_Cmd__setOutputPath(dal_c_Cmd* cmd, const char* path);
+static const char* dal_c_Cmd__sampleDirCanonical(dal_c_SampleDir sample_dir);
+static const char* dal_c_Cmd__sampleDirName(const dal_c_Project* proj, dal_c_SampleDir sample_dir);
 static ArrStr* dal_c_Cmd__resolveInputs(const dal_c_Project* proj, const dal_c_Cmd* cmd, const char* dir_name, bool fallback_all);
 static char* dal_c_Cmd__basenameNoExt(const char* path);
 static void dal_c_Cmd__collectCompanionDhFiles(ArrStr* dh_files, ArrStr* sources);
-static void dal_c_Cmd__mergeBuildProperties(dal_c_CompilerOpts* opts, const dal_c_Project* proj, ArrStr* sources, const dal_c_Cmd* cmd);
+static void dal_c_Cmd__mergeBuildProperties(dal_c_CompilerOpts* opts, dal_c_BuildDefaults* defaults, const dal_c_Project* proj, ArrStr* sources, const dal_c_Cmd* cmd);
 static int dal_c_Cmd__ensureProjectStaticLibrary(const dal_c_Cmd* self, const dal_c_Project* proj);
+static int dal_c_Cmd__runBuildDefaultTests(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Profile profile);
 static int dal_c_Cmd__buildFromSources(
     const dal_c_Cmd* self,
     const dal_c_Project* proj,
     ArrStr* sources,
     const char* output_name,
     dal_c_Target target_type,
-    const char* extra_compiler_args
+    const char* extra_compiler_args,
+    bool allow_output_defaults
 );
 static bool dal_c_Cmd__hasTestRegistration(const char* path);
 static bool dal_c_Cmd__isStandaloneTestSource(const char* path);
@@ -362,7 +366,8 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             sources,
             output_name,
             dal_c_Target_executable,
-            extra_compiler_args
+            extra_compiler_args,
+            true
         );
         ArrStr_fini(&sources);
         ArrStr_fini(&aggregate_tests);
@@ -370,9 +375,10 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         ArrStr_fini(&tests);
         free(output_name);
     } else if (sample_dir != dal_c_SampleDir_none) {
-        ArrStr* sample_sources = dal_c_Cmd__resolveInputs(proj, self, dal_c_SampleDir_format(sample_dir), !intent.target_file);
+        const char* sample_dir_name = dal_c_Cmd__sampleDirName(proj, sample_dir);
+        ArrStr* sample_sources = dal_c_Cmd__resolveInputs(proj, self, dal_c_Cmd__sampleDirCanonical(sample_dir), !intent.target_file);
         if (ArrStr_len(sample_sources) == 0) {
-            (void)fprintf(stderr, "Error: No source files found in %s/\n", dal_c_SampleDir_format(sample_dir));
+            (void)fprintf(stderr, "Error: No source files found in %s/\n", sample_dir_name);
             ArrStr_fini(&sample_sources);
             return 1;
         }
@@ -400,7 +406,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             output_name = dal_c_Cmd__basenameNoExt(ArrStr_at(sample_sources, 0));
         }
         result = dal_c_Cmd__buildFromSources(
-            self, proj, sources, output_name, dal_c_Target_executable, NULL
+            self, proj, sources, output_name, dal_c_Target_executable, NULL, true
         );
         ArrStr_fini(&sources);
         ArrStr_fini(&sample_sources);
@@ -421,11 +427,20 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         if (self->action == dal_c_CmdAction_lib && dal_c__isHeaderOnlyBuild(self, proj, sources)) {
             const char* output_name = proj->name;
             char* output_name_alloc = NULL;
+            dal_c_CompilerOpts merged_opts = { 0 };
+            dal_c_BuildDefaults defaults = { 0 };
+            merged_opts.profile = dal_c_Profile_invalid;
             if (self->input_count > 0) {
                 output_name_alloc = dal_c_Cmd__basenameNoExt(self->input_files[0]);
                 output_name = output_name_alloc;
             }
+            dal_c_Cmd__mergeBuildProperties(&merged_opts, &defaults, proj, sources, self);
+            if (!intent.output_path && defaults.output_name) {
+                output_name = defaults.output_name;
+            }
             result = dal_c__buildHeaderOnlyLibrary(self, proj, output_name);
+            dal_c_CompilerOpts_cleanup(&merged_opts);
+            dal_c_BuildDefaults_cleanup(&defaults);
             free(output_name_alloc);
             ArrStr_fini(&sources);
             if (result != 0) { return result; }
@@ -465,7 +480,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                 dal_c_Linking linking = self->payload.lib.linking;
                 target_type = (linking == dal_c_Linking_dynamic) ? dal_c_Target_shared_lib : dal_c_Target_static_lib;
             }
-            result = dal_c_Cmd__buildFromSources(self, proj, sources, output_name, target_type, NULL);
+            result = dal_c_Cmd__buildFromSources(self, proj, sources, output_name, target_type, NULL, true);
             free(output_name_alloc);
             ArrStr_fini(&sources);
         }
@@ -697,13 +712,33 @@ static void dal_c_Cmd__setOutputPath(dal_c_Cmd* cmd, const char* path) {
     }
 }
 
+static const char* dal_c_Cmd__sampleDirCanonical(dal_c_SampleDir sample_dir) {
+    switch (sample_dir) {
+    case dal_c_SampleDir_samples:
+        return dal_c_dir_samples;
+    case dal_c_SampleDir_examples:
+        return dal_c_dir_examples;
+    case dal_c_SampleDir_tests:
+        return dal_c_dir_tests;
+    case dal_c_SampleDir_none:
+    default:
+        return NULL;
+    }
+}
+
+static const char* dal_c_Cmd__sampleDirName(const dal_c_Project* proj, dal_c_SampleDir sample_dir) {
+    const char* canonical = dal_c_Cmd__sampleDirCanonical(sample_dir);
+    if (!canonical || !proj) { return canonical; }
+    return dal_c_Project_getCategoryDirName(proj, canonical);
+}
+
 static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
     if (str_startsWith(arg, dal_c_opt_prefix_long)) {
         const char* opt = arg + 2;
         if ((str_eql(opt, dal_c_opt_output) && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_run || action == dal_c_CmdAction_test || action == dal_c_CmdAction_test_dsl))
             || str_eql(opt, dal_c_opt_show_commands)
             || str_eql(opt, dal_c_opt_verbose)
-            || str_eql(opt, dal_c_opt_no_libdh)
+            || str_eql(opt, dal_c_opt_no_dsl)
             || str_eql(opt, dal_c_opt_static)
             || str_eql(opt, dal_c_opt_dynamic)
             || str_eql(opt, dal_c_opt_cache)
@@ -865,8 +900,8 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     dal_c_Cmd__setOutputPath(cmd, argv[++i]);
                 } else if (str_eql(opt, dal_c_opt_verbose)) {
                     cmd->verbose = true;
-                } else if (str_eql(opt, dal_c_opt_no_libdh)) {
-                    cmd->opts.no_libdh = true;
+                } else if (str_eql(opt, dal_c_opt_no_dsl)) {
+                    cmd->opts.no_dsl = true;
                 } else if (str_eql(opt, dal_c_opt_freestanding)) {
                     cmd->opts.freestanding = true;
                 } else if (str_eql(opt, dal_c_opt_loose_errors)) {
@@ -1007,7 +1042,7 @@ static ArrStr* dal_c_Cmd__resolveInputs(const dal_c_Project* proj, const dal_c_C
         return dal_c__collectDirectoryFiles(proj, dir_name);
     }
 
-    char* dir_path = path_join(proj->root, dir_name);
+    char* dir_path = dal_c_Project_getCategoryDir(proj, dir_name);
     for (int i = 0; i < cmd->input_count; ++i) {
         const char* input = cmd->input_files[i];
         char* input_name = path_basename(input);
@@ -1052,27 +1087,37 @@ static void dal_c_Cmd__collectCompanionDhFiles(ArrStr* dh_files, ArrStr* sources
     }
 }
 
-static void dal_c_Cmd__mergeBuildProperties(dal_c_CompilerOpts* opts, const dal_c_Project* proj, ArrStr* sources, const dal_c_Cmd* cmd) {
+static void dal_c_Cmd__mergeBuildProperties(dal_c_CompilerOpts* opts, dal_c_BuildDefaults* defaults, const dal_c_Project* proj, ArrStr* sources, const dal_c_Cmd* cmd) {
     assert(opts != NULL);
     assert(cmd != NULL);
 
     if (proj) {
         dal_c_CompilerOpts_merge(opts, &proj->opts);
+        if (defaults) {
+            dal_c_BuildDefaults_merge(defaults, &proj->defaults);
+        }
     }
 
     ArrStr* dh_files = ArrStr_init();
     dal_c_Cmd__collectCompanionDhFiles(dh_files, sources);
     for (int i = 0; i < ArrStr_len(dh_files); ++i) {
         (void)dal_c_CompilerOpts_applyDhFile(opts, ArrStr_at(dh_files, i));
+        if (defaults) {
+            (void)dal_c_BuildDefaults_applyDhFile(defaults, ArrStr_at(dh_files, i));
+        }
     }
     ArrStr_fini(&dh_files);
 
     for (int i = 0; i < cmd->explicit_dh_count; ++i) {
         (void)dal_c_CompilerOpts_applyDhFile(opts, cmd->explicit_dh_files[i]);
+        if (defaults) {
+            (void)dal_c_BuildDefaults_applyDhFile(defaults, cmd->explicit_dh_files[i]);
+        }
     }
     dal_c_CompilerOpts_merge(opts, &cmd->opts);
 }
 
+/* NOLINTNEXTLINE(misc-no-recursion) */
 static int dal_c_Cmd__ensureProjectStaticLibrary(const dal_c_Cmd* self, const dal_c_Project* proj) {
     assert(self != NULL);
     if (!proj || !proj->root || !proj->name) {
@@ -1095,10 +1140,28 @@ static int dal_c_Cmd__ensureProjectStaticLibrary(const dal_c_Cmd* self, const da
         project_sources,
         proj->name,
         dal_c_Target_static_lib,
-        NULL
+        NULL,
+        false
     );
     ArrStr_fini(&project_sources);
     return result;
+}
+
+/* NOLINTNEXTLINE(misc-no-recursion) */
+static int dal_c_Cmd__runBuildDefaultTests(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Profile profile) {
+    assert(self != NULL);
+    assert(proj != NULL);
+
+    dal_c_Cmd test_cmd = *self;
+    test_cmd.action = dal_c_CmdAction_test;
+    memset(&test_cmd.payload, 0, sizeof(test_cmd.payload));
+    test_cmd.opts.profile = profile;
+    test_cmd.input_files = NULL;
+    test_cmd.input_count = 0;
+    test_cmd.payload.test.dsl_first = self->action == dal_c_CmdAction_build
+        ? self->payload.build.dsl_first
+        : false;
+    return dal_c_Cmd_makeTarget(&test_cmd, proj);
 }
 
 static bool dal_c_Cmd__hasTestRegistration(const char* path) {
@@ -1209,13 +1272,15 @@ static bool dal_c_Cmd__writeFileIfChanged(const char* path, const char* content)
     return file_write(path, content);
 }
 
+/* NOLINTNEXTLINE(misc-no-recursion) */
 static int dal_c_Cmd__buildFromSources(
     const dal_c_Cmd* self,
     const dal_c_Project* proj,
     ArrStr* sources,
     const char* output_name,
     dal_c_Target target_type,
-    const char* extra_compiler_args
+    const char* extra_compiler_args,
+    bool allow_output_defaults
 ) {
     assert(self != NULL);
     assert(proj != NULL);
@@ -1224,10 +1289,11 @@ static int dal_c_Cmd__buildFromSources(
 
     char* compiler_args = dal_c_Cmd__mergeCompilerArgs(self->compiler_args, extra_compiler_args);
     dal_c_Cmd effective = *self;
+    dal_c_BuildDefaults effective_defaults = { 0 };
     effective.compiler_args = compiler_args;
     memset(&effective.opts, 0, sizeof(effective.opts));
     effective.opts.profile = dal_c_Profile_invalid;
-    dal_c_Cmd__mergeBuildProperties(&effective.opts, proj, sources, self);
+    dal_c_Cmd__mergeBuildProperties(&effective.opts, &effective_defaults, proj, sources, self);
     if (effective.opts.profile == dal_c_Profile_invalid) {
         effective.opts.profile = self->opts.profile;
     }
@@ -1241,11 +1307,16 @@ static int dal_c_Cmd__buildFromSources(
 
     dal_c_CommandIntent intent = { 0 };
     dal_c_Cmd_normalizeIntent(self, &intent);
-    char* target_path = dal_c__resolveOutputPath(self, profile_dir, output_name, target_type);
+    const char* resolved_output_name = output_name;
+    if (allow_output_defaults && !intent.output_path && effective_defaults.output_name) {
+        resolved_output_name = effective_defaults.output_name;
+    }
+    char* target_path = dal_c__resolveOutputPath(proj, self, profile_dir, resolved_output_name, target_type);
     char* makefile_path = dal_c__makePlanFilePath(proj, profile, &effective, target_path, target_type);
     if (dal_c__generateMakefile(&effective, proj, profile, sources, target_path, object_dir, target_type) != 0) {
         (void)fprintf(stderr, "Error: Failed to generate Makefile\n");
         dal_c_CompilerOpts_cleanup(&effective.opts);
+        dal_c_BuildDefaults_cleanup(&effective_defaults);
         free(makefile_path);
         free(object_dir);
         free(compiler_args);
@@ -1260,12 +1331,28 @@ static int dal_c_Cmd__buildFromSources(
     free(profile_dir);
     if (result != 0) {
         dal_c_CompilerOpts_cleanup(&effective.opts);
+        dal_c_BuildDefaults_cleanup(&effective_defaults);
         free(compiler_args);
         free(target_path);
         (void)fprintf(stderr, "Error: Build failed\n");
         return result;
     }
     printf("Build successful!\n");
+
+    if (self->action == dal_c_CmdAction_build
+        && target_type == dal_c_Target_executable
+        && intent.sample_dir == dal_c_SampleDir_none
+        && effective_defaults.build_runs_tests_set
+        && effective_defaults.build_runs_tests) {
+        result = dal_c_Cmd__runBuildDefaultTests(self, proj, effective.opts.profile);
+        if (result != 0) {
+            dal_c_CompilerOpts_cleanup(&effective.opts);
+            dal_c_BuildDefaults_cleanup(&effective_defaults);
+            free(compiler_args);
+            free(target_path);
+            return result;
+        }
+    }
 
     if (self->action == dal_c_CmdAction_run || self->action == dal_c_CmdAction_test) {
         dal_c_Cmd runtime_cmd = *self;
@@ -1302,6 +1389,7 @@ static int dal_c_Cmd__buildFromSources(
     }
 
     dal_c_CompilerOpts_cleanup(&effective.opts);
+    dal_c_BuildDefaults_cleanup(&effective_defaults);
     free(compiler_args);
     free(target_path);
     return result;
