@@ -25,18 +25,18 @@ $static fn_((HashSet_Unit__init(u_V$raw key, V$HashSet_Unit$raw ret_mem))(V$Hash
 
 fn_((HashSet_Unit_key(const HashSet_Unit$raw* self, TypeInfo key_ty))(u_P_const$raw)) {
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$HashSet_Unit)(
+    let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashSet_Unit)(
         (.val[u_Fields_Idx_key_$HashSet_Unit])(key_ty)
-    )));
+    ))));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self->data.inner)));
     return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_key_$HashSet_Unit);
 };
 
 fn_((HashSet_Unit_keyMut(HashSet_Unit$raw* self, TypeInfo key_ty))(u_P$raw)) {
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$HashSet_Unit)(
+    let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashSet_Unit)(
         (.val[u_Fields_Idx_key_$HashSet_Unit])(key_ty)
-    )));
+    ))));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self->data.inner)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_key_$HashSet_Unit);
 };

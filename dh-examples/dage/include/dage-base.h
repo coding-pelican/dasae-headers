@@ -31,6 +31,8 @@ T_use_prl$(m_V2usize); T_use_prl$(m_V3usize); T_use_prl$(m_V4usize);
 
 #include <dh/time.h>
 
+errset_((dage_E)(dage_Unsupported));
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

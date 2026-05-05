@@ -671,7 +671,7 @@ typedef TypeOf(void*) P$raw;
 #define __pp__ptrAlignCast$__parseType(_P_T...) _P_T,
 #define __expr__ptrAlignCast$__emit(...) __expr__ptrAlignCast$__impl(__VA_ARGS__)
 #define __expr__ptrAlignCast$__impl(_P_T, _val...) $supress_cast_align( \
-    ptrCast$((_P_T)(alignCast((alignOf$(DerefType$(_P_T)))(_val)))) \
+    ptrCast$((_P_T)(alignCast((alignOfLog2$(DerefType$(_P_T)))(_val)))) \
 )
 
 #define __expr__ptrQualCast$(...) $supress_cast_qual(ptrCast$(__VA_ARGS__))

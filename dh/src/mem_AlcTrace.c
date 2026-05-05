@@ -2,7 +2,7 @@
 
 fn_((mem_AlcTrace_initWithLogPath(S_const$u8 log_path))(E$void) $scope) {
     let_ignore = log_path;
-    return_err(Err_NotImplemented());
+    return_err(E_cause$NotImplemented());
 } $unscoped(fn);
 fn_((mem_AlcTrace_finiAndGenerateReport(void))(void)) $do_nothing;
 
@@ -64,7 +64,7 @@ $static fn_((mem_Tracker__init(void))(void)) {
     catch_((mem_Tracker_initWithPath(mem_Tracker_default_log_file))(err, {
         /* If initialization fails, try to log to stderr */
         printf("ERROR: Failed to initialize memory tracker: [%s] %s\n", Err_domainToCStr(err), Err_codeToCStr(err));
-        ErrTrace_print();
+        ETrace_print();
     }));
     let_ignore = atexit(mem_Tracker_finiAndGenerateReport);
 };

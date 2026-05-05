@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 #include "dh/core/cmp.h"
 #include "dh-main.h"
 #include "dh/io/stream.h"
@@ -29,5 +30,6 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     }
 
     return_ok({});
-}
-$unscoped(fn);
+} $unscoped(fn);
+
+#endif /* UNUSED_CODE */

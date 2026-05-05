@@ -9,7 +9,7 @@ $static fn_((windows_CloseHandle(HANDLE handle))(void)) {
 $static fn_((windows_ReadFile(HANDLE handle, S$u8 buf))(E$usize) $scope) {
     if_(DWORD bytes_read = 0, !ReadFile(handle, buf.ptr, as$(DWORD)(buf.len), &bytes_read, null)) {
         if_(let err = GetLastError(), err != ERROR_HANDLE_EOF && err != ERROR_BROKEN_PIPE) {
-            return_err(fs_File_E_ReadFailed());
+            return_err(E_cause$FSReadFailed());
         } else {
             return_ok(0); // EOF
         }
@@ -21,7 +21,7 @@ $static fn_((windows_ReadFile(HANDLE handle, S$u8 buf))(E$usize) $scope) {
 } $unscoped(fn);
 $static fn_((windows_WriteFile(HANDLE handle, S_const$u8 bytes))(E$usize) $scope) {
     if_(DWORD bytes_written = 0, !WriteFile(handle, bytes.ptr, as$(DWORD)(bytes.len), &bytes_written, null)) {
-        return_err(fs_File_E_WriteFailed());
+        return_err(E_cause$FSWriteFailed());
     } else {
         return_ok(as$(usize)(bytes_written));
     }
@@ -34,7 +34,7 @@ $static fn_((posix_close(posix_fd_t handle))(void)) {
 }
 $static fn_((posix_read(posix_fd_t handle, S$u8 buf))(E$usize) $scope) {
     if_(let bytes_read = read(handle, buf.ptr, buf.len), bytes_read == -1) {
-        return_err(fs_File_E_ReadFailed());
+        return_err(E_cause$FSReadFailed());
     } else {
         return_ok(as$(usize)(bytes_read));
     }
@@ -42,7 +42,7 @@ $static fn_((posix_read(posix_fd_t handle, S$u8 buf))(E$usize) $scope) {
 } $unscoped(fn);
 $static fn_((posix_write(posix_fd_t handle, S_const$u8 bytes))(E$usize) $scope) {
     if_(let bytes_written = write(handle, bytes.ptr, bytes.len), bytes_written == -1) {
-        return_err(fs_File_E_WriteFailed());
+        return_err(E_cause$FSWriteFailed());
     } else {
         return_ok(as$(usize)(bytes_written));
     }

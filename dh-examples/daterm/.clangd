@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./daterm/src
+    - -I./daterm/include
+    - -isystem./daterm/lib/deps

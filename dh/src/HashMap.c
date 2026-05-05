@@ -28,10 +28,10 @@ $static fn_((HashMap_Pair__init(u_V$raw key, u_V$raw val, V$HashMap_Pair$raw ret
 fn_((HashMap_Pair_key(const HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P_const$raw)) {
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
     debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$HashMap_Pair)(
+    let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashMap_Pair)(
         (.val[u_Fields_Idx_key_$HashMap_Pair])(key_ty),
         (.val[u_Fields_Idx_val_$HashMap_Pair])(val_ty)
-    )));
+    ))));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self->data.inner)));
     return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_key_$HashMap_Pair);
 };
@@ -39,10 +39,10 @@ fn_((HashMap_Pair_key(const HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo va
 fn_((HashMap_Pair_keyMut(HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P$raw)) {
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
     debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$HashMap_Pair)(
+    let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashMap_Pair)(
         (.val[u_Fields_Idx_key_$HashMap_Pair])(key_ty),
         (.val[u_Fields_Idx_val_$HashMap_Pair])(val_ty)
-    )));
+    ))));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self->data.inner)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_key_$HashMap_Pair);
 };
@@ -50,10 +50,10 @@ fn_((HashMap_Pair_keyMut(HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_t
 fn_((HashMap_Pair_val(const HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P_const$raw)) {
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
     debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$HashMap_Pair)(
+    let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashMap_Pair)(
         (.val[u_Fields_Idx_key_$HashMap_Pair])(key_ty),
         (.val[u_Fields_Idx_val_$HashMap_Pair])(val_ty)
-    )));
+    ))));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self->data.inner)));
     return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_val_$HashMap_Pair);
 };
@@ -61,10 +61,10 @@ fn_((HashMap_Pair_val(const HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo va
 fn_((HashMap_Pair_valMut(HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P$raw)) {
     debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
     debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$HashMap_Pair)(
+    let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashMap_Pair)(
         (.val[u_Fields_Idx_key_$HashMap_Pair])(key_ty),
         (.val[u_Fields_Idx_val_$HashMap_Pair])(val_ty)
-    )));
+    ))));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self->data.inner)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_val_$HashMap_Pair);
 };

@@ -30,7 +30,7 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Error codes */
-errset_((TEST_E)(Unexpected));
+errset_((TEST_E)());
 
 /* Test case function type */
 typedef fn_(((*)(void))(E$void) $T) TEST_CaseFn;

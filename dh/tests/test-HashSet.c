@@ -3,7 +3,7 @@
 #include "dh/heap/Page.h"
 
 T_use$((usize)(
-    HashSet_Sgl,
+    HashSet_Unit,
     HashSet_Entry,
     HashSet_Entry_key,
     HashSet_Ensured
@@ -45,7 +45,7 @@ TEST_fn_("basic usage" $guard) {
     var heap = (heap_Page){};
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
-    var set_value = try_(HashSet_init$usize(ctx, gpa, 256));
+    var set_value = try_(HashSet_init$usize(&ctx, gpa, 256));
     defer_(HashSet_fini$usize(&set_value, gpa));
 
     let_(count, u32) = 128;
@@ -77,7 +77,7 @@ TEST_fn_("basic usage - no templates used" $guard) {
     var heap = (heap_Page){};
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
-    var set_value = try_(HashSet_init(typeInfo$(usize), ctx, gpa, 256));
+    var set_value = try_(HashSet_init(typeInfo$(usize), &ctx, gpa, 256));
     defer_(HashSet_fini(&set_value, typeInfo$(usize), gpa));
 
     let_(count, u32) = 128;
@@ -109,7 +109,7 @@ TEST_fn_("basic hash set usage" $guard) {
     var heap = (heap_Page){};
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
-    var set_value = try_(HashSet_init$usize(ctx, gpa, 256));
+    var set_value = try_(HashSet_init$usize(&ctx, gpa, 256));
     defer_(HashSet_fini$usize(&set_value, gpa));
 
     // Test fetchPut returns None for new elements
@@ -160,33 +160,33 @@ TEST_fn_("set operations" $guard) {
     let ctx = HashSet_Ctx_default();
 
     // Create set A = {1, 2, 3}
-    var setA = try_(HashSet_init$usize(ctx, gpa, 16));
+    var setA = try_(HashSet_init$usize(&ctx, gpa, 16));
     defer_(HashSet_fini$usize(&setA, gpa));
     try_(HashSet_put$usize(&setA, gpa, 1));
     try_(HashSet_put$usize(&setA, gpa, 2));
     try_(HashSet_put$usize(&setA, gpa, 3));
 
     // Create set B = {2, 3, 4}
-    var setB = try_(HashSet_init$usize(ctx, gpa, 16));
+    var setB = try_(HashSet_init$usize(&ctx, gpa, 16));
     defer_(HashSet_fini$usize(&setB, gpa));
     try_(HashSet_put$usize(&setB, gpa, 2));
     try_(HashSet_put$usize(&setB, gpa, 3));
     try_(HashSet_put$usize(&setB, gpa, 4));
 
     // Create set C = {1, 2, 3} (same as A)
-    var setC = try_(HashSet_init$usize(ctx, gpa, 16));
+    var setC = try_(HashSet_init$usize(&ctx, gpa, 16));
     defer_(HashSet_fini$usize(&setC, gpa));
     try_(HashSet_put$usize(&setC, gpa, 1));
     try_(HashSet_put$usize(&setC, gpa, 2));
     try_(HashSet_put$usize(&setC, gpa, 3));
 
     // Create set D = {1} (subset of A)
-    var setD = try_(HashSet_init$usize(ctx, gpa, 16));
+    var setD = try_(HashSet_init$usize(&ctx, gpa, 16));
     defer_(HashSet_fini$usize(&setD, gpa));
     try_(HashSet_put$usize(&setD, gpa, 1));
 
     // Create set E = {5, 6} (disjoint from A)
-    var setE = try_(HashSet_init$usize(ctx, gpa, 16));
+    var setE = try_(HashSet_init$usize(&ctx, gpa, 16));
     defer_(HashSet_fini$usize(&setE, gpa));
     try_(HashSet_put$usize(&setE, gpa, 5));
     try_(HashSet_put$usize(&setE, gpa, 6));
@@ -214,7 +214,7 @@ TEST_fn_("clone and clear operations" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
-    var set = try_(HashSet_init$usize(ctx, gpa, 16));
+    var set = try_(HashSet_init$usize(&ctx, gpa, 16));
     defer_(HashSet_fini$usize(&set, gpa));
 
     // Add some elements
@@ -249,7 +249,7 @@ TEST_fn_("rehash" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
-    var set = try_(HashSet_init$usize(ctx, gpa, 64));
+    var set = try_(HashSet_init$usize(&ctx, gpa, 64));
     defer_(HashSet_fini$usize(&set, gpa));
 
     // Add and remove elements to create tombstones
@@ -282,7 +282,7 @@ TEST_fn_("key iterator" $guard) {
     let gpa = heap_Page_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
-    var set = try_(HashSet_init$usize(ctx, gpa, 16));
+    var set = try_(HashSet_init$usize(&ctx, gpa, 16));
     defer_(HashSet_fini$usize(&set, gpa));
 
     // Add elements

@@ -28,9 +28,9 @@ fn_((ListDbl_Link_dataMut(P$ListDbl_Link self, TypeInfo type))(u_P$raw)) {
 fn_((ListDbl_Adp_empty(TypeInfo type, ListDbl_Adp$raw* ret_mem))(ListDbl_Adp$raw*)) {
     claim_assert_nonnull(ret_mem);
     {
+        debug_only(ret_mem->type = type);
         ret_mem->link = ListDbl_Link_empty(type);
         mem_set0P(ListDbl_Link_dataMut(&ret_mem->link, type));
-        debug_only(ret_mem->type = type;)
     }
     return ret_mem;
 };
@@ -39,9 +39,9 @@ fn_((ListDbl_Adp_init(u_V$raw data, ListDbl_Adp$raw* ret_mem))(ListDbl_Adp$raw*)
     claim_assert_nonnull(ret_mem);
     let type = data.type;
     {
+        debug_only(ret_mem->type = type);
         ret_mem->link = ListDbl_Link_empty(type);
         mem_setP(ListDbl_Link_dataMut(&ret_mem->link, type), data);
-        debug_only(ret_mem->type = type;)
     }
     return ret_mem;
 };
@@ -56,18 +56,18 @@ fn_((ListDbl_Adp_linkMut(ListDbl_Adp$raw* self))(P$ListDbl_Link)) {
 
 fn_((ListDbl_Adp_data(const ListDbl_Adp$raw* self, TypeInfo type))(u_P_const$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$ListDbl_Adp)(
+    let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$ListDbl_Adp)(
         (.val[u_Fields_Idx_data_$ListDbl_Adp])(type)
-    )));
+    ))));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self)));
     return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_data_$ListDbl_Adp);
 };
 
 fn_((ListDbl_Adp_dataMut(ListDbl_Adp$raw* self, TypeInfo type))(u_P$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
-    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$ListDbl_Adp)(
+    let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$ListDbl_Adp)(
         (.val[u_Fields_Idx_data_$ListDbl_Adp])(type)
-    )));
+    ))));
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_data_$ListDbl_Adp);
 };

@@ -63,13 +63,13 @@ fn_((io_Fixed_Writer_init(io_FixedMut stream))(io_Fixed_Writer)) {
 $static fn_((io_Fixed_Writer__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
     let self = ptrAlignCast$((io_Fixed_Writer*)(ctx));
     if (bytes.len == 0) { return_ok(0); }
-    if (self->stream.buf.len <= self->stream.pos) { return_err(io_E_BufferTooSmall()); }
+    if (self->stream.buf.len <= self->stream.pos) { return_err(E_cause$IOBufferTooSmall()); }
     let available = self->stream.buf.len - self->stream.pos;
     let to_write = pri_min(available, bytes.len);
     let stream = S_suffix((self->stream.buf)(self->stream.pos));
     pri_memcpyS(S_prefix((stream)(to_write)), S_prefix((bytes)(to_write)));
     self->stream.pos += to_write;
-    if (to_write == 0) { return_err(io_E_BufferTooSmall()); }
+    if (to_write == 0) { return_err(E_cause$IOBufferTooSmall()); }
     return_ok(to_write);
 } $unscoped(fn);
 

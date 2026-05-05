@@ -85,7 +85,7 @@ char* path_basename(const char* path) {
     if (len == 0) { return strdup(""); }
 
     // Find last separator
-    size_t last_sep = len;
+    size_t last_sep = 0;
     for (size_t i = len; i > 0; --i) {
         if (path[i - 1] == '/' || path[i - 1] == '\\') {
             last_sep = i;

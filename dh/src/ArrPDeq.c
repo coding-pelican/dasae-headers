@@ -1,26 +1,5 @@
 #include "dh/ArrPDeq.h"
-
-T_use_E$($set(mem_E)(usize));
-$static fn_((ArrPDeq__addOrOOM(usize lhs, usize rhs))(mem_E$usize) $scope) {
-    if_some((usize_addChkd(lhs, rhs))(result)) {
-        return_ok(result);
-    } else_none {
-        return_err(mem_E_OutOfMemory());
-    }
-    claim_unreachable;
-} $unscoped(fn);
-
-$attr($inline_always)
-$static fn_((ArrPDeq__calcInitCap(TypeInfo type))(usize)) {
-    return as$(usize)(pri_max(1, arch_cache_line_bytes / type.size));
-};
-
-$static fn_((ArrPDeq__growCap(TypeInfo type, usize current, usize minimum))(usize)) {
-    let init_cap = ArrPDeq__calcInitCap(type);
-    usize grown = current;
-    do { grown = usize_addSat(grown, grown / 2 + init_cap); } while (grown < minimum);
-    return grown;
-};
+#include "dh/mem/dyn.h"
 
 $attr($inline_always)
 $static fn_((ArrPDeq__ord(ArrPDeq* self, u_P_const$raw lhs, u_P_const$raw rhs))(cmp_Ord)) {
@@ -382,7 +361,7 @@ fn_((ArrPDeq_ensureCap(ArrPDeq* self, TypeInfo type, mem_Alctr gpa, usize new_ca
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eql);
     if (new_cap <= self->cap) { return_ok({}); }
-    return ArrPDeq_ensureCapPrecise(self, type, gpa, ArrPDeq__growCap(type, self->cap, new_cap));
+    return ArrPDeq_ensureCapPrecise(self, type, gpa, mem_dyn_growCap(type, self->cap, new_cap));
 } $unscoped(fn);
 
 fn_((ArrPDeq_ensureCapPrecise(ArrPDeq* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void) $scope) {
@@ -411,7 +390,7 @@ fn_((ArrPDeq_ensureCapPrecise(ArrPDeq* self, TypeInfo type, mem_Alctr gpa, usize
 fn_((ArrPDeq_ensureUnusedCap(ArrPDeq* self, TypeInfo type, mem_Alctr gpa, usize additional))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eql);
-    return ArrPDeq_ensureCap(self, type, gpa, try_(ArrPDeq__addOrOOM(self->items.len, additional)));
+    return ArrPDeq_ensureCap(self, type, gpa, try_(mem_dyn_addOrOOM(self->items.len, additional)));
 } $unscoped(fn);
 
 fn_((ArrPDeq_shrinkRetainingCap(ArrPDeq* self, usize new_len))(void)) {
@@ -470,7 +449,7 @@ fn_((ArrPDeq_enque(ArrPDeq* self, mem_Alctr gpa, u_V$raw item))(mem_E$void) $sco
 fn_((ArrPDeq_enqueFixed(ArrPDeq* self, u_V$raw item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, item.inner_type, TypeInfo_eql);
-    if (usize_sub(self->cap, self->items.len) == 0) { return_err(mem_E_OutOfMemory()); }
+    if (usize_sub(self->cap, self->items.len) == 0) { return_err(E_cause$OutOfMemory()); }
     return_ok_void(ArrPDeq_enqueWithin(self, item));
 } $unscoped(fn);
 
@@ -499,7 +478,7 @@ fn_((ArrPDeq_enqueS(ArrPDeq* self, mem_Alctr gpa, u_S_const$raw items))(mem_E$vo
 fn_((ArrPDeq_enqueSFixed(ArrPDeq* self, u_S_const$raw items))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, items.type, TypeInfo_eql);
-    if (usize_sub(self->cap, self->items.len) < items.len) { return_err(mem_E_OutOfMemory()); }
+    if (usize_sub(self->cap, self->items.len) < items.len) { return_err(E_cause$OutOfMemory()); }
     return_ok_void(ArrPDeq_enqueSWithin(self, items));
 } $unscoped(fn);
 
@@ -572,7 +551,7 @@ fn_((ArrPDeq_update(ArrPDeq* self, u_V$raw old_item, u_V$raw new_item))(mem_E$vo
         idx++;
     }
     if (idx >= self->items.len) {
-        return_err(mem_E_OutOfMemory()); // Element not found (reuse error for simplicity)
+        return_err(E_cause$OutOfMemory()); // Element not found (reuse error for simplicity)
     }
     // Remove old and add new (simpler than in-place update for min-max heap)
     let_ignore = ArrPDeq_removeAt(self, idx, u_allocV(type));

@@ -186,8 +186,7 @@ $static fn_((VT100_initTerminal(engine_core_VT100* self))(E$void) $guard) {
     fflush(stdout);
 
     return_ok({});
-}
-$unguarded(fn);
+} $unguarded(fn);
 
 $static fn_((VT100_finiTerminal(engine_core_VT100* self))(void)) {
     /* Show cursor */
@@ -265,8 +264,7 @@ $static fn_((VT100_initTerminal(engine_core_VT100* self))(E$void) $guard) {
 
     fflush(stdout);
     return_ok({});
-}
-$unguarded(fn);
+} $unguarded(fn);
 
 $static fn_((VT100_finiTerminal(engine_core_VT100* self))(void)) {
     /* Disable mouse tracking */
@@ -344,7 +342,7 @@ $static fn_((VT100_createTarget(
 
     /* VT100 only supports one target */
     if (self->target.active) {
-        return_err(Err_Custom("VT100 only supports one target"));
+        return_err(E_cause$dage_Unsupported());
     }
 
     u32 term_w, term_h;
@@ -377,8 +375,7 @@ $static fn_((VT100_createTarget(
     fflush(stdout);
 
     return_ok(self->target.id);
-}
-$unguarded(fn);
+} $unguarded(fn);
 
 $static fn_((VT100_destroyTarget(
     engine_Backend_Impl* ctx,
@@ -557,8 +554,7 @@ fn_((engine_core_VT100_init(engine_core_VT100_Cfg cfg))(E$engine_core_VT100) $gu
     try_(VT100_initTerminal(self));
 
     return_ok(*self);
-}
-$unguarded(fn);
+} $unguarded(fn);
 
 fn_((engine_core_VT100_fini(engine_core_VT100* self))(void)) {
     claim_assert_nonnull(self);

@@ -28,7 +28,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((Thrd_Sem_Err)(Timeout));
+errset_((Thrd_Sem_E)() $union_errset_(Thrd_TimeoutE));
 typedef struct Thrd_Sem {
     var_(mtx, Thrd_Mtx);
     var_(cond, Thrd_Cond);
@@ -38,7 +38,7 @@ $extern fn_((Thrd_Sem_init(void))(Thrd_Sem));
 $extern fn_((Thrd_Sem_fini(Thrd_Sem* self))(void));
 $extern fn_((Thrd_Sem_wait(Thrd_Sem* self))(void));
 $attr($must_check)
-$extern fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Duration timeout))(Thrd_Sem_Err$void));
+$extern fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Duration timeout))(Thrd_Sem_E$void));
 $extern fn_((Thrd_Sem_post(Thrd_Sem* self))(void));
 
 #if defined(__cplusplus)

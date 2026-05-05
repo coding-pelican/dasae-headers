@@ -3,6 +3,3 @@ CompileFlags:
     - -I./dage/src
     - -I./dage/include
     - -isystem./dage/lib/deps
-    - -I./dh-examples/dage/src
-    - -I./dh-examples/dage/include
-    - -isystem./dh-examples/dage/lib/deps

@@ -34,8 +34,8 @@ DAL_C_SRCS = $(DAL_C_DIR)/build.c \
 
 DAL_C_EXT_SRCS = $(DAL_C_EXT_DIR)/str.c \
                  $(DAL_C_EXT_DIR)/path.c \
-                 $(DAL_C_EXT_DIR)/file.c \
                  $(DAL_C_EXT_DIR)/dir.c \
+                 $(DAL_C_EXT_DIR)/file.c \
                  $(DAL_C_EXT_DIR)/env.c \
                  $(DAL_C_EXT_DIR)/proc.c \
                  $(DAL_C_EXT_DIR)/ArrStr.c

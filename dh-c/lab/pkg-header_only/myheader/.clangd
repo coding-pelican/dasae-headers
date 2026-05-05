@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./pkg-header_only/myheader/src
+    - -I./pkg-header_only/myheader/include
+    - -isystem./pkg-header_only/myheader/lib/deps

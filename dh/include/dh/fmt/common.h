@@ -105,26 +105,26 @@ extern "C" {
 
 errset_((fmt_Err)(
     // 1. Structural errors (format string structure)
-    MissingClosingBrace, // Missing '}' after format spec
-    UnexpectedEndOfFormat, // Format string ends unexpectedly
+    FmtMissingClosingBrace, // Missing '}' after format spec
+    FmtUnexpectedEndOfFormat, // Format string ends unexpectedly
 
     // 2. Index/Argument errors (argument indexing)
-    InvalidIdxFormat, // Index format is malformed
-    IdxOutOfBounds, // Index exceeds max_args (0-15)
-    TooFewArgs, // Not enough arguments provided
-    TooManyArgs, // Too many arguments provided
+    FmtInvalidIdxFormat, // Index format is malformed
+    FmtIdxOutOfBounds, // Index exceeds max_args (0-15)
+    FmtTooFewArgs, // Not enough arguments provided
+    FmtTooManyArgs, // Too many arguments provided
 
     // 3. Format specifier component errors (parsing order)
-    InvalidAlignFormat, // Invalid alignment character (<, >, ^)
-    InvalidWidthFormat, // Invalid width value
-    InvalidPrecisionFormat, // Invalid precision value
-    InvalidSpecFormat, // General format spec error (catch-all)
+    FmtInvalidAlignFormat, // Invalid alignment character (<, >, ^)
+    FmtInvalidWidthFormat, // Invalid width value
+    FmtInvalidPrecisionFormat, // Invalid precision value
+    FmtInvalidSpecFormat, // General format spec error (catch-all)
 
     // 4. Type-specific errors (when formatting specific types)
-    InvalidBoolFormat, // Boolean formatting error
-    InvalidIIntFormat, // Signed integer formatting/parsing error
-    InvalidUIntFormat, // Unsigned integer formatting/parsing error
-    InvalidFltFormat, // Floating-point formatting/parsing error
+    FmtInvalidBoolFormat, // Boolean formatting error
+    FmtInvalidIIntFormat, // Signed integer formatting/parsing error
+    FmtInvalidUIntFormat, // Unsigned integer formatting/parsing error
+    FmtInvalidFltFormat // Floating-point formatting/parsing error
 ));
 
 typedef enum_((fmt_Align $fits($packed))(
@@ -275,8 +275,8 @@ $extern fn_((fmt_format$f32(io_Writer writer, f32 val, fmt_Spec spec))(E$void)) 
 $extern fn_((fmt_formatPtr(io_Writer writer, P_const$raw ptr, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$P$raw(io_Writer writer, P_const$raw ptr, fmt_Spec spec))(E$void)) $must_check;
 /// Format an error val with spec
-$extern fn_((fmt_formatErr(io_Writer writer, Err err, fmt_Spec spec))(E$void)) $must_check;
-$extern fn_((fmt_format$Err(io_Writer writer, Err err, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_formatErr(io_Writer writer, EAny err, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$EAny(io_Writer writer, EAny err, fmt_Spec spec))(E$void)) $must_check;
 
 /// Format an ASCII character (u8) with spec
 $extern fn_((fmt_formatASCII(io_Writer writer, u8 code, fmt_Spec spec))(E$void)) $must_check;

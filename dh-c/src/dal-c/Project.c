@@ -9,12 +9,20 @@
 
 // === PRIVATE HELPERS ===
 
-static const char* dal_c_Project__findRoot(const char* start);
-static const char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd);
-static void dal_c_Project__parseLibDH(const char* path, dal_c_Project* proj);
-static const char* dal_c_Project__detectPCH(const dal_c_Project* proj);
+static char* dal_c_Project__findRoot(const char* start);
+static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd);
+static bool dal_c_Project__isDHRoot(const char* path);
+static void dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj);
+static char* dal_c_Project__detectPCH(const dal_c_Project* proj);
 static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib);
 static void dal_c_Project__addToArray(char*** arr, int* count, const char* value);
+static void dal_c_Project__setString(char** slot, const char* value);
+static bool dal_c_Project__isAbsolutePath(const char* path);
+static bool dal_c_Project__isTrue(const char* value);
+static void dal_c_Project__freeLines(char** lines, int line_count);
+static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const char* key, const char* value);
+static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project* proj, const char* key, const char* value);
+static char* dal_c_Project__resolveProjectPath(const dal_c_Project* proj, const char* value);
 
 // === PUBLIC API ===
 
@@ -28,19 +36,15 @@ dal_c_Project* dal_c_Project_detect(const dal_c_Cmd* cmd) {
 
     if (proj->root) {
         proj->name = path_basename(proj->root);
+        proj->project_dh = path_join(proj->root, dal_c_file_project_dh);
+        proj->pch_enabled = true;
+        if (path_isFile(proj->project_dh)) {
+            dal_c_Project__parseProjectDh(proj->project_dh, proj);
+        }
     }
 
     proj->dh_path = dal_c_Project__findDHInstallation(cmd);
     proj->pch_header = dal_c_Project__detectPCH(proj);
-
-    if (proj->root) {
-        char* lib_dh = path_join(proj->root, dal_c_file_lib_dh);
-        if (path_isFile(lib_dh)) {
-            dal_c_Project__parseLibDH(lib_dh, proj);
-        }
-        free(lib_dh);
-    }
-
     return proj;
 }
 
@@ -50,18 +54,15 @@ dal_c_Project* dal_c_Project_detectAt(const char* lib_path, const char* dh_path)
     dal_c_Project* proj = calloc(1, sizeof(dal_c_Project));
     if (!proj) { return NULL; }
 
-    // Convert to absolute path to avoid issues with relative paths in Makefiles
     proj->root = path_abs(lib_path);
     proj->name = path_basename(proj->root);
-    proj->dh_path = dh_path;
-    proj->pch_header = dal_c_Project__detectPCH(proj);
-
-    char* lib_dh = path_join(proj->root, dal_c_file_lib_dh);
-    if (path_isFile(lib_dh)) {
-        dal_c_Project__parseLibDH(lib_dh, proj);
+    proj->dh_path = dh_path ? strdup(dh_path) : NULL;
+    proj->project_dh = path_join(proj->root, dal_c_file_project_dh);
+    proj->pch_enabled = true;
+    if (proj->project_dh && path_isFile(proj->project_dh)) {
+        dal_c_Project__parseProjectDh(proj->project_dh, proj);
     }
-    free(lib_dh);
-
+    proj->pch_header = dal_c_Project__detectPCH(proj);
     return proj;
 }
 
@@ -69,33 +70,157 @@ void dal_c_Project_cleanup(dal_c_Project** self) {
     if (!self || !*self) { return; }
     dal_c_Project* proj = *self;
 
+    dal_c_CompilerOpts_cleanup(&proj->opts);
     for (int i = 0; i < proj->lib_count; ++i) {
         dal_c_Lib* lib = &proj->libraries[i];
-        for (int j = 0; j < lib->opts.include_count; ++j) {
-            free(lib->opts.include_paths[j]);
-        }
-        free((void*)lib->opts.include_paths);
-        for (int j = 0; j < lib->opts.link_count; ++j) {
-            free(lib->opts.link_libs[j]);
-        }
-        free((void*)lib->opts.link_libs);
-        for (int j = 0; j < lib->opts.define_count; ++j) {
-            free(lib->opts.define_macros[j]);
-        }
-        free((void*)lib->opts.define_macros);
-        for (int j = 0; j < lib->opts.undef_count; ++j) {
-            free(lib->opts.undef_macros[j]);
-        }
-        free((void*)lib->opts.undef_macros);
-        for (int j = 0; j < lib->opts.isystem_count; ++j) {
-            free(lib->opts.isystem_paths[j]);
-        }
-        free((void*)lib->opts.isystem_paths);
+        free(lib->name);
+        free(lib->path);
+        dal_c_CompilerOpts_cleanup(&lib->opts);
     }
     free(proj->libraries);
-
+    free(proj->root);
+    free(proj->name);
+    free(proj->dh_path);
+    free(proj->project_dh);
+    free(proj->pch_header_override);
+    free(proj->pch_header);
+    for (int i = 0; i < proj->pch_exclude_count; ++i) {
+        free(proj->pch_exclude_headers[i]);
+    }
+    free((void*)proj->pch_exclude_headers);
     free(proj);
     *self = NULL;
+}
+
+void dal_c_CompilerOpts_cleanup(dal_c_CompilerOpts* opts) {
+    if (!opts) { return; }
+    free(opts->compiler);
+    free(opts->c_std);
+    free(opts->arch_target);
+    free(opts->sysroot);
+    for (int i = 0; i < opts->define_count; ++i) {
+        free(opts->define_macros[i]);
+    }
+    free((void*)opts->define_macros);
+    for (int i = 0; i < opts->undef_count; ++i) {
+        free(opts->undef_macros[i]);
+    }
+    free((void*)opts->undef_macros);
+    for (int i = 0; i < opts->isystem_count; ++i) {
+        free(opts->isystem_paths[i]);
+    }
+    free((void*)opts->isystem_paths);
+    for (int i = 0; i < opts->include_count; ++i) {
+        free(opts->include_paths[i]);
+    }
+    free((void*)opts->include_paths);
+    for (int i = 0; i < opts->link_count; ++i) {
+        free(opts->link_libs[i]);
+    }
+    free((void*)opts->link_libs);
+    memset(opts, 0, sizeof(*opts));
+}
+
+void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts* src) {
+    assert(dst != NULL);
+    if (!src) { return; }
+
+    if (src->compiler) { dal_c_Project__setString(&dst->compiler, src->compiler); }
+    if (src->c_std) { dal_c_Project__setString(&dst->c_std, src->c_std); }
+    if (src->arch_target) { dal_c_Project__setString(&dst->arch_target, src->arch_target); }
+    if (src->sysroot) { dal_c_Project__setString(&dst->sysroot, src->sysroot); }
+    if (src->profile != dal_c_Profile_invalid) { dst->profile = src->profile; }
+    dst->freestanding = dst->freestanding || src->freestanding;
+    dst->loose_errors = dst->loose_errors || src->loose_errors;
+    dst->no_libdh = dst->no_libdh || src->no_libdh;
+
+    for (int i = 0; i < src->define_count; ++i) {
+        dal_c_Project__addToArray(&dst->define_macros, &dst->define_count, src->define_macros[i]);
+    }
+    for (int i = 0; i < src->undef_count; ++i) {
+        dal_c_Project__addToArray(&dst->undef_macros, &dst->undef_count, src->undef_macros[i]);
+    }
+    for (int i = 0; i < src->isystem_count; ++i) {
+        dal_c_Project__addToArray(&dst->isystem_paths, &dst->isystem_count, src->isystem_paths[i]);
+    }
+    for (int i = 0; i < src->include_count; ++i) {
+        dal_c_Project__addToArray(&dst->include_paths, &dst->include_count, src->include_paths[i]);
+    }
+    for (int i = 0; i < src->link_count; ++i) {
+        dal_c_Project__addToArray(&dst->link_libs, &dst->link_count, src->link_libs[i]);
+    }
+}
+
+bool dal_c_CompilerOpts_applyDhFile(dal_c_CompilerOpts* dst, const char* path) {
+    assert(dst != NULL);
+    if (!path || !path_isFile(path)) { return false; }
+
+    int line_count = 0;
+    char** lines = file_readLines(path, &line_count);
+    if (!lines) { return false; }
+
+    bool applied = false;
+    for (int i = 0; i < line_count; ++i) {
+        char* line = str_trim(lines[i]);
+        if (strlen(line) == 0 || line[0] == '#' || line[0] == ';' || line[0] == '[') {
+            continue;
+        }
+
+        char* eq = strchr(line, '=');
+        if (!eq) { continue; }
+        *eq = '\0';
+        dal_c_Project__applyPropertyLine(dst, str_trim(line), str_trim(eq + 1));
+        applied = true;
+    }
+
+    dal_c_Project__freeLines(lines, line_count);
+    return applied;
+}
+
+ArrStr* dal_c__collectDescendantProjects(const dal_c_Project* proj) {
+    assert(proj != NULL);
+    assert(proj->root != NULL);
+
+    ArrStr* roots = ArrStr_init();
+    int file_count = 0;
+    char** files = dir_listRecur(proj->root, &file_count);
+    if (!files) { return roots; }
+
+    for (int i = 0; i < file_count; ++i) {
+        const char* file = files[i];
+        if (strstr(file, "\\build\\") || strstr(file, "/build/")
+            || strstr(file, "\\.cache\\") || strstr(file, "/.cache/")
+            || strstr(file, "\\lib\\deps\\") || strstr(file, "/lib/deps/")) {
+            free(files[i]);
+            continue;
+        }
+
+        char* base = path_basename(file);
+        bool is_project_dh = base && str_eql(base, dal_c_file_project_dh);
+        free(base);
+        if (!is_project_dh) {
+            free(files[i]);
+            continue;
+        }
+
+        char* root = path_parent(file);
+        if (root && !str_eql(root, proj->root)) {
+            bool seen = false;
+            for (int j = 0; j < ArrStr_len(roots); ++j) {
+                if (str_eql(ArrStr_at(roots, j), root)) {
+                    seen = true;
+                    break;
+                }
+            }
+            if (!seen) {
+                ArrStr_push(roots, root);
+            }
+        }
+        free(root);
+        free(files[i]);
+    }
+    free((void*)files);
+    return roots;
 }
 
 char* dal_c_Project_getBuildDir(const dal_c_Project* proj) {
@@ -133,57 +258,91 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj) {
 
 // === PRIVATE IMPLEMENTATIONS ===
 
-static const char* dal_c_Project__findRoot(const char* start) {
-    const char* current = start;
-
+static char* dal_c_Project__findRoot(const char* start) {
+    char* current = start ? strdup(start) : NULL;
     while (current && strlen(current) > 0) {
-        char* inc = path_join(current, dal_c_dir_include);
-        bool has_include = path_isDir(inc);
-        free(inc);
-
-        if (has_include) {
-            return strdup(current);
+        char* project_dh = path_join(current, dal_c_file_project_dh);
+        bool has_project_dh = path_isFile(project_dh);
+        free(project_dh);
+        if (has_project_dh) {
+            return current;
         }
 
-        const char* parent = path_parent(current);
+        char* parent = path_parent(current);
         if (!parent || str_eql(parent, current)) {
+            free(current);
+            free(parent);
             break;
         }
+        free(current);
         current = parent;
     }
 
     return NULL;
 }
 
-static const char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd) {
-    if (cmd->dh_path_override) {
-        if (path_isDir(cmd->dh_path_override)) {
-            return cmd->dh_path_override;
-        }
-        return NULL;
+static bool dal_c_Project__isDHRoot(const char* path) {
+    if (!path || !path_isDir(path)) { return false; }
+    char* dh_header = path_join(path, "include/dh.h");
+    char* dh_main_header = path_join(path, "include/dh-main.h");
+    char* dh_include_dir = path_join(path, "include/dh");
+    char* blocks_src_dir = path_join(path, "libs/BlocksRuntime/src");
+    bool is_dh_root = path_isFile(dh_header)
+                   && path_isFile(dh_main_header)
+                   && path_isDir(dh_include_dir)
+                   && path_isDir(blocks_src_dir);
+    free(dh_header);
+    free(dh_main_header);
+    free(dh_include_dir);
+    free(blocks_src_dir);
+    return is_dh_root;
+}
+
+static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd) {
+    if (cmd && cmd->dh_path_override) {
+        return dal_c_Project__isDHRoot(cmd->dh_path_override) ? strdup(cmd->dh_path_override) : NULL;
     }
 
-    const char* dh_home = env_get("DH_HOME");
-    if (dh_home && path_isDir(dh_home)) {
-        char* inc = path_join(dh_home, dal_c_dir_include);
-        if (path_isDir(inc)) {
-            free(inc);
-            return dh_home;
+    char* current = env_getCWD();
+    while (current && strlen(current) > 0) {
+        if (dal_c_Project__isDHRoot(current)) {
+            return current;
         }
-        free(inc);
+
+        char* child_dh = path_join(current, "dh");
+        if (dal_c_Project__isDHRoot(child_dh)) {
+            free(current);
+            return child_dh;
+        }
+        free(child_dh);
+
+        char* parent = path_parent(current);
+        if (!parent || str_eql(parent, current)) {
+            free(current);
+            free(parent);
+            break;
+        }
+        free(current);
+        current = parent;
     }
+
+    char* dh_home = env_get("DH_HOME");
+    if (dal_c_Project__isDHRoot(dh_home)) {
+        return dh_home;
+    }
+    free(dh_home);
 
     char* exe_dir = env_getExecutableDir();
-    if (exe_dir) {
-        char* inc = path_join(exe_dir, dal_c_dir_include);
-        if (path_isDir(inc)) {
-            free(inc);
-            return exe_dir;
-        }
-        free(inc);
-        free(exe_dir);
+    if (dal_c_Project__isDHRoot(exe_dir)) {
+        return exe_dir;
     }
-
+    char* exe_child_dh = exe_dir ? path_join(exe_dir, "dh") : NULL;
+    if (dal_c_Project__isDHRoot(exe_child_dh)) {
+        free(exe_dir);
+        return exe_child_dh;
+    }
+    free(exe_child_dh);
+    free(exe_dir);
     return NULL;
 }
 
@@ -200,6 +359,76 @@ static void dal_c_Project__addToArray(char*** arr, int* count, const char* value
     *count = new_count;
 }
 
+static void dal_c_Project__setString(char** slot, const char* value) {
+    assert(slot != NULL);
+    if (*slot) {
+        free(*slot);
+    }
+    *slot = value ? strdup(value) : NULL;
+}
+
+static char* dal_c_Project__resolveProjectPath(const dal_c_Project* proj, const char* value) {
+    assert(value != NULL);
+    if (dal_c_Project__isAbsolutePath(value) || !proj || !proj->root) {
+        return strdup(value);
+    }
+    return path_join(proj->root, value);
+}
+
+static bool dal_c_Project__isAbsolutePath(const char* path) {
+    return path
+        && (path[0] == '/' || path[0] == '\\'
+            || (strlen(path) >= 2 && path[1] == ':'));
+}
+
+static bool dal_c_Project__isTrue(const char* value) {
+    return value && dal_c_boolean_parse(value);
+}
+
+static void dal_c_Project__freeLines(char** lines, int line_count) {
+    if (!lines) { return; }
+    for (int i = 0; i < line_count; ++i) {
+        free(lines[i]);
+    }
+    free((void*)lines);
+}
+
+static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const char* key, const char* value) {
+    assert(opts != NULL);
+    if (!key || !value) { return; }
+
+    if (str_eql(key, dal_c_opt_compiler)) {
+        dal_c_Project__setString(&opts->compiler, value);
+    } else if (str_eql(key, dal_c_opt_std)) {
+        dal_c_Project__setString(&opts->c_std, value);
+    } else if (str_eql(key, dal_c_opt_arch) || str_eql(key, dal_c_opt_target)) {
+        dal_c_Project__setString(&opts->arch_target, value);
+    } else if (str_eql(key, dal_c_opt_sysroot)) {
+        dal_c_Project__setString(&opts->sysroot, value);
+    } else if (str_eql(key, dal_c_opt_include)) {
+        dal_c_Project__addToArray(&opts->include_paths, &opts->include_count, value);
+    } else if (str_eql(key, dal_c_opt_isystem)) {
+        dal_c_Project__addToArray(&opts->isystem_paths, &opts->isystem_count, value);
+    } else if (str_eql(key, dal_c_opt_link)) {
+        dal_c_Project__addToArray(&opts->link_libs, &opts->link_count, value);
+    } else if (str_eql(key, dal_c_opt_define)) {
+        dal_c_Project__addToArray(&opts->define_macros, &opts->define_count, value);
+    } else if (str_eql(key, dal_c_opt_undef)) {
+        dal_c_Project__addToArray(&opts->undef_macros, &opts->undef_count, value);
+    } else if (str_eql(key, "profile")) {
+        dal_c_Profile profile = dal_c_Profile_parse(value);
+        if (profile != dal_c_Profile_invalid) {
+            opts->profile = profile;
+        }
+    } else if (str_eql(key, dal_c_opt_freestanding)) {
+        opts->freestanding = dal_c_Project__isTrue(value);
+    } else if (str_eql(key, dal_c_opt_loose_errors)) {
+        opts->loose_errors = dal_c_Project__isTrue(value);
+    } else if (str_eql(key, dal_c_opt_no_libdh)) {
+        opts->no_libdh = dal_c_Project__isTrue(value);
+    }
+}
+
 static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
     assert(proj != NULL);
     assert(lib != NULL);
@@ -212,96 +441,99 @@ static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
     free(lib);
 }
 
-static void dal_c_Project__parseLibDH(const char* path, dal_c_Project* proj) {
+static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project* proj, const char* key, const char* value) {
+    assert(lib != NULL);
+    if (!key || !value) { return; }
+
+    if (str_eql(key, "path")) {
+        if (!dal_c_Project__isAbsolutePath(value) && proj && proj->root) {
+            lib->path = path_join(proj->root, value);
+        } else {
+            lib->path = strdup(value);
+        }
+    } else if (str_eql(key, "profile")) {
+        dal_c_Profile profile = dal_c_Profile_parse(value);
+        if (profile != dal_c_Profile_invalid) {
+            lib->opts.profile = profile;
+        }
+    } else if (str_eql(key, "linking")) {
+        lib->is_static = !str_eql(value, dal_c_linking_dynamic);
+    } else {
+        dal_c_Project__applyPropertyLine(&lib->opts, key, value);
+    }
+}
+
+static void dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj) {
     int line_count = 0;
     char** lines = file_readLines(path, &line_count);
     if (!lines) { return; }
 
     dal_c_Lib* current_lib = NULL;
+    proj->opts.profile = dal_c_Profile_invalid;
 
     for (int i = 0; i < line_count; ++i) {
         char* line = str_trim(lines[i]);
-
         if (strlen(line) == 0 || line[0] == '#' || line[0] == ';') {
             continue;
         }
 
-        // INI section header: [LibName]
         if (line[0] == '[') {
             if (current_lib) {
                 dal_c_Project__addLibrary(proj, current_lib);
             }
             current_lib = calloc(1, sizeof(dal_c_Lib));
             current_lib->is_static = true;
-            current_lib->opts.profile = dal_c_default_profile;
+            current_lib->opts.profile = dal_c_Profile_invalid;
 
-            // Extract name between [ and ]
             char* end = strchr(line, ']');
             if (end) {
-                size_t len = (size_t)(end - line - 1);
-                char* name = malloc(len + 1);
-                strncpy(name, line + 1, len);
-                name[len] = '\0';
-                current_lib->name = name;
-            } else {
-                current_lib->name = strdup(line + 1);
+                *end = '\0';
             }
+            current_lib->name = strdup(line + 1);
             continue;
         }
 
-        // INI key=value pairs
-        if (current_lib) {
-            char* eq = strchr(line, '=');
-            if (!eq) { continue; }
-
-            size_t key_len = (size_t)(eq - line);
-            const char* value = str_trim(eq + 1);
-
-            if (strncmp(line, "path", key_len) == 0 && key_len == 4) {
-                bool is_abs = value[0] == '/' || value[0] == '\\'
-                              || (strlen(value) >= 2 && value[1] == ':');
-                if (!is_abs && proj->root) {
-                    current_lib->path = path_join(proj->root, value);
-                } else {
-                    current_lib->path = strdup(value);
-                }
-            } else if (strncmp(line, "profile", key_len) == 0 && key_len == 7) {
-                current_lib->opts.profile = dal_c_Profile_parse(value);
-            } else if (strncmp(line, dal_c_opt_link, key_len) == 0 && key_len == strlen(dal_c_opt_link)) {
-                current_lib->is_static = !str_eql(value, dal_c_linking_dynamic);
-            } else if (strncmp(line, dal_c_opt_no_libdh, key_len) == 0 && key_len == strlen(dal_c_opt_no_libdh)) {
-                current_lib->opts.no_libdh = dal_c_boolean_parse(value);
-            } else if (strncmp(line, dal_c_opt_compiler, key_len) == 0 && key_len == strlen(dal_c_opt_compiler)) {
-                current_lib->opts.compiler = strdup(value);
-            } else if (strncmp(line, dal_c_opt_std, key_len) == 0 && key_len == strlen(dal_c_opt_std)) {
-                current_lib->opts.c_std = strdup(value);
-            } else if ((strncmp(line, dal_c_opt_arch, key_len) == 0 && key_len == strlen(dal_c_opt_arch)) || (strncmp(line, dal_c_opt_target, key_len) == 0 && key_len == strlen(dal_c_opt_target))) {
-                current_lib->opts.arch_target = strdup(value);
-            } else if (strncmp(line, dal_c_opt_freestanding, key_len) == 0 && key_len == strlen(dal_c_opt_freestanding)) {
-                current_lib->opts.freestanding = dal_c_boolean_parse(value);
-            } else if (strncmp(line, dal_c_opt_sysroot, key_len) == 0 && key_len == strlen(dal_c_opt_sysroot)) {
-                current_lib->opts.sysroot = strdup(value);
-            } else if (strncmp(line, dal_c_opt_include, key_len) == 0 && key_len == strlen(dal_c_opt_include)) {
-                dal_c_Project__addToArray(&current_lib->opts.include_paths, &current_lib->opts.include_count, value);
-            } else if (strncmp(line, dal_c_opt_define, key_len) == 0 && key_len == strlen(dal_c_opt_define)) {
-                dal_c_Project__addToArray(&current_lib->opts.define_macros, &current_lib->opts.define_count, value);
-            } else if (strncmp(line, dal_c_opt_undef, key_len) == 0 && key_len == strlen(dal_c_opt_undef)) {
-                dal_c_Project__addToArray(&current_lib->opts.undef_macros, &current_lib->opts.undef_count, value);
-            } else if (strncmp(line, dal_c_opt_isystem, key_len) == 0 && key_len == strlen(dal_c_opt_isystem)) {
-                dal_c_Project__addToArray(&current_lib->opts.isystem_paths, &current_lib->opts.isystem_count, value);
-            } else if (strncmp(line, dal_c_opt_loose_errors, key_len) == 0 && key_len == strlen(dal_c_opt_loose_errors)) {
-                current_lib->opts.loose_errors = dal_c_boolean_parse(value);
+        char* eq = strchr(line, '=');
+        if (!eq) { continue; }
+        *eq = '\0';
+        const char* key = str_trim(line);
+        const char* value = str_trim(eq + 1);
+        if (!current_lib && str_eql(key, dal_c_project_prop_pch)) {
+            if (str_eql(value, dal_c_pch_value_off)) {
+                proj->pch_enabled = false;
+                free(proj->pch_header_override);
+                proj->pch_header_override = NULL;
+            } else if (str_eql(value, dal_c_pch_value_auto)) {
+                proj->pch_enabled = true;
+                free(proj->pch_header_override);
+                proj->pch_header_override = NULL;
+            } else {
+                proj->pch_enabled = true;
+                char* pch_path = dal_c_Project__resolveProjectPath(proj, value);
+                dal_c_Project__setString(&proj->pch_header_override, pch_path);
+                free(pch_path);
             }
+        } else if (!current_lib && str_eql(key, dal_c_project_prop_pch_exclude)) {
+            dal_c_Project__addToArray(&proj->pch_exclude_headers, &proj->pch_exclude_count, value);
+        } else if (current_lib) {
+            dal_c_Project__applyLibraryLine(current_lib, proj, key, value);
+        } else {
+            dal_c_Project__applyPropertyLine(&proj->opts, key, value);
         }
     }
 
     if (current_lib) {
         dal_c_Project__addLibrary(proj, current_lib);
     }
+    dal_c_Project__freeLines(lines, line_count);
 }
 
-static const char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
-    if (!proj->root) { return NULL; }
+static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
+    if (!proj->root || !proj->pch_enabled) { return NULL; }
+
+    if (proj->pch_header_override) {
+        return path_isFile(proj->pch_header_override) ? strdup(proj->pch_header_override) : NULL;
+    }
 
     char* inc_dir = path_join(proj->root, dal_c_dir_include);
     if (!path_isDir(inc_dir)) {
@@ -340,13 +572,15 @@ static const char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
     int file_count = 0;
     char** files = dir_listRecur(inc_dir, &file_count);
     free(inc_dir);
-    if (files) {
-        for (int i = 0; i < file_count; ++i) {
-            if (str_endsWith(files[i], ".h")) {
-                return files[i];
-            }
-        }
-    }
+    if (!files) { return NULL; }
 
-    return NULL;
+    char* header_path = NULL;
+    for (int i = 0; i < file_count; ++i) {
+        if (!header_path && str_endsWith(files[i], ".h")) {
+            header_path = strdup(files[i]);
+        }
+        free(files[i]);
+    }
+    free((void*)files);
+    return header_path;
 }

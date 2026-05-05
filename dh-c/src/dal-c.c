@@ -37,10 +37,13 @@ int main(int argc, const char* argv[]) {
         }
         if (!proj->root) {
             // For lib command with target file, allow no project structure
-            bool allow_no_project = (cmd->action == dal_c_CmdAction_lib && cmd->payload.lib.target_file != NULL);
+            bool allow_no_project = (cmd->action == dal_c_CmdAction_lib && cmd->payload.lib.target_file != NULL)
+                                 || cmd->action == dal_c_CmdAction_build_dsl
+                                 || cmd->action == dal_c_CmdAction_test_dsl
+                                 || cmd->action == dal_c_CmdAction_clean_dsl;
             if (!allow_no_project) {
                 (void)fprintf(stderr, "Error: Not in a dh-c project directory\n");
-                (void)fprintf(stderr, "  (Looking for directories: include/ and src/, or include/ for header-only)\n");
+                (void)fprintf(stderr, "  (Looking for nearest ancestor with %s)\n", dal_c_file_project_dh);
                 return dal_c_Project_cleanup(&proj), dal_c_Cmd_cleanup(&cmd), 1;
             }
         }
@@ -70,6 +73,7 @@ void dal_c__printUsage(void) {
             if (str_eql(cmd->name, dal_c_cmd_action_lib)
                 || str_eql(cmd->name, dal_c_cmd_action_run)
                 || str_eql(cmd->name, dal_c_cmd_action_test)
+                || str_eql(cmd->name, dal_c_cmd_action_test_dsl)
                 || str_eql(cmd->name, dal_c_cmd_action_deps)) {
                 printf("      [all %s options...]\n", dal_c_cmd_action_build);
             }
@@ -116,6 +120,9 @@ bool dal_c__needsProject(const dal_c_Cmd* cmd) {
     case dal_c_CmdAction_test:
     case dal_c_CmdAction_deps:
     case dal_c_CmdAction_clean:
+    case dal_c_CmdAction_build_dsl:
+    case dal_c_CmdAction_test_dsl:
+    case dal_c_CmdAction_clean_dsl:
         return true;
     case dal_c_CmdAction_version:
     case dal_c_CmdAction_help:

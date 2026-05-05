@@ -24,10 +24,11 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "io/common.h"
-#include "io/stream.h"
 #include "io/Reader.h"
 #include "io/Writer.h"
 #include "io/Buf.h"
+#include "io/Fixed.h"
+#include "io/stream.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

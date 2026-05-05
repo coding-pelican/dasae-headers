@@ -27,11 +27,11 @@ extern "C" {
 /// Re-using utf8_E for general encoding errors, or define utf16_E if specific needed.
 /// Commonly shared errors: ExpectedSecondSurrogateHalf, DanglingSurrogateHalf
 errset_((utf16_E)(
-    InvalidStartCodeUnit,
-    ExpectedSecondSurrogateHalf,
-    DanglingSurrogateHalf,
-    UnexpectedSecondSurrogateHalf,
-    CodepointTooLarge
+    UTF16InvalidStartCodeUnit,
+    UTF16ExpectedSecondSurrogateHalf,
+    UTF16DanglingSurrogateHalf,
+    UTF16UnexpectedSecondSurrogateHalf,
+    UTF16CodepointTooLarge
 ));
 
 /// Codeunit sequence length (1-2)

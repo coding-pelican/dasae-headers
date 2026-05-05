@@ -67,8 +67,7 @@ T_alias$((Ball)(struct Ball {
     var_(mass, f32);
     var_(id, usize);
 }));
-T_use$((Ball)(P, S));
-T_use$((P$Ball)(O));
+T_use$((Ball)(P, (O, P), S));
 T_use$((Ball)(
     ArrList,
     ArrList_init,
@@ -92,8 +91,8 @@ $static fn_((Ball_of(m_V2f32 center, f32 radius, usize id))(Ball)) {
 /*========== Collision Pair ==========*/
 
 T_alias$((CollisionPair)(struct CollisionPair {
-    usize collider_idx;
-    usize collidee_idx;
+    var_(collider_idx, usize);
+    var_(collidee_idx, usize);
 }));
 T_use$((CollisionPair)(S));
 T_use$((CollisionPair)(
@@ -122,10 +121,10 @@ T_alias$((BallManager)(struct BallManager {
     var_(world_half_size, m_V2f32);
     var_(gpa, mem_Alctr);
 }));
-T_use_E$(BallManager);
+T_use_E$($set(mem_E)(BallManager));
 
 $attr($must_check)
-$static fn_((BallManager_init(mem_Alctr gpa, m_V2f32 world_half_size))(E$BallManager) $guard) {
+$static fn_((BallManager_init(mem_Alctr gpa, m_V2f32 world_half_size))(mem_E$BallManager) $guard) {
     var balls = try_(ArrList_init$Ball(gpa, 32));
     errdefer_($ignore, ArrList_fini$Ball(&balls, gpa));
     var collision_pairs = try_(ArrList_init$CollisionPair(gpa, 64));

@@ -54,16 +54,12 @@ $extern fn_((dh_main(pp_if_(pp_not(main_no_args))(
 
 #ifndef main_root_included
 #define main_root_included 1
-#if TEST_comp_enabled
-fn_((main(void))(int)) {
-    return TEST_Framework_run(), 0;
-};
-#else /* !TEST_comp_enabled */
+#if !TEST_comp_enabled
 fn_((main(pp_if_(pp_not(main_no_args))(
     pp_then_(int argc, const char* argv[]),
     pp_else_(void)
 )))(int)) {
-    debug_StkTrace_setupCrashHandler();
+    debug_StackTrace_setupCrashHandler();
     pp_if_(pp_not(main_no_args))((
         let arg_count = as$(usize)(argc);
         let args = local_({
@@ -79,14 +75,14 @@ fn_((main(pp_if_(pp_not(main_no_args))(
     ) = dh_main(pp_if_(pp_not(main_no_args))(pp_then_(args)));
     pp_if_(pp_not(main_no_returns_err))(
         (catch_((returned)(err, {
-            Err_print(err);
-            ErrTrace_print();
+            E_print(&err);
+            ETrace_print();
             return $debug_point 1;
         })))
     );
     return 0;
 };
-#endif
+#endif /* !TEST_comp_enabled */
 #endif /* da_main__root_included */
 #define main dh_main
 #endif

@@ -27,6 +27,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+errset_((Thrd_E)(ThrdUnsupported, ThrdSystemResources));
+errset_((Thrd_TimeoutE)(ThrdTimeout));
+
 // Thread ID type
 typedef Thrd_Id__Impl Thrd_Id;
 // Thread handle type
@@ -232,19 +235,27 @@ Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __passed_ret = &__passed_ctx->ret.as_typed; \
     let pp_Tuple_get1st _Tuple_Captures = __passed_ctx; \
     let pp_Tuple_get2nd _Tuple_Captures = &__passed_args; \
-    let __reserved_return = ptrAlignCast$((TypeOf(*__passed_ret)*)( \
-        A_ptr((A$$(sizeOf$(TypeOf(*__passed_ret)), u8)){}) \
-    )); \
+    $alignAs(alignOf$(TypeOf(*__passed_ret))) var_(__reserved_buf, A$$(sizeOf$(TypeOf(*__passed_ret)), u8)) = A_zero(); \
+    let __reserved_return = ptrCast$((TypeOf(*__passed_ret)*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
-    if (false) { \
-__step_return: goto __step_unscope; \
-    } \
+    if (false) { __step_return: goto __step_unscope; } \
     do
 #define comp_syn__$unscoped_Thrd_fn \
-while (false); \
-    if (false) { \
-__step_unscope: return *__passed_ret = *__reserved_return, __passed_ctx->as_raw; \
+    while (false); \
+    T_switch$((ReturnT)( \
+        T_case$((void)({ goto __step_return; })), \
+        T_case$((Void)({ goto __step_return; })), \
+        T_default_(({})) \
+    )); \
+    if (false) { __step_unscope: \
+        $pragma_guard_( \
+            "clang diagnostic push", "clang diagnostic ignored \"-Wgnu-pointer-arith\"", "clang diagnostic pop", \
+            if (T_switch$((ReturnT)( \
+                T_case$((void)(false)), \
+                T_default_(true) \
+            ))) { return *__passed_ret = *__reserved_return, __passed_ctx->as_raw; } \
+        ); \
     } \
 }
 
@@ -256,28 +267,36 @@ Thrd_FnCtx* _fnName(Thrd_FnCtx* thrd_ctx) { \
     let __passed_ret = &__passed_ctx->ret.as_typed; \
     let pp_Tuple_get1st _Tuple_Captures = __passed_ctx; \
     let pp_Tuple_get2nd _Tuple_Captures = &__passed_args; \
-    let __reserved_return = ptrAlignCast$((TypeOf(*__passed_ret)*)( \
-        A_ptr((A$$(sizeOf$(TypeOf(*__passed_ret)), u8)){}) \
-    )); \
+    $alignAs(alignOf$(TypeOf(*__passed_ret))) volatile var_(__reserved_buf, A$$(sizeOf$(TypeOf(*__passed_ret)), u8)) = A_zero(); \
+    let __reserved_return = ptrQualCast$((TypeOf(*__passed_ret)*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
-    var __flow_cursor = (struct fn__FlowCursor){ \
+    var_(__flow_cursor, struct fn__FlowCursor) = { \
         .is_returning = false, .curr_line = __LINE__ \
     }; \
-    if (false) { \
-__step_return: \
+    if (false) { __step_return: \
         __flow_cursor.is_returning = true; \
         goto __step_deferred; \
     } \
-__step_deferred: \
-    switch (__flow_cursor.curr_line) { \
+__step_deferred: switch (__flow_cursor.curr_line) { \
     default: { goto __step_unscope; } break; \
     case __LINE__: __flow_cursor.curr_line = __LINE__ - 1;
 #define comp_syn__$unguarded_Thrd_fn \
-break; \
+        break; \
     } \
-    if (false) { \
-__step_unscope: return *__passed_ret = *__reserved_return, __passed_ctx->as_raw; \
+    T_switch$((ReturnT)( \
+        T_case$((void)({ goto __step_return; })), \
+        T_case$((Void)({ goto __step_return; })), \
+        T_default_(({})) \
+    )); \
+    if (false) { __step_unscope: \
+        $pragma_guard_( \
+            "clang diagnostic push", "clang diagnostic ignored \"-Wgnu-pointer-arith\"", "clang diagnostic pop", \
+            if (T_switch$((ReturnT)( \
+                T_case$((void)(false)), \
+                T_default_(true) \
+            ))) { return *__passed_ret = *__reserved_return, __passed_ctx->as_raw; } \
+        ); \
     } \
 }
 

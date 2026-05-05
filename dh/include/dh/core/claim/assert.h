@@ -23,7 +23,7 @@ extern "C" {
 #include "cfg.h"
 #include "unreachable.h"
 #include "assert_static.h"
-#include "../debug/StkTrace.h"
+#include "../debug/StackTrace.h"
 
 /*========== Macros and Declarations ========================================*/
 

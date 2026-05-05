@@ -81,7 +81,7 @@ fn_((mem_Alctr_create($traced mem_Alctr self, TypeInfo type))(mem_E$u_P$raw) $sc
         .type = type,
     });
     let mem = orelse_((mem_Alctr_rawAlloc($tracing self, type.size, type.log2_align))(
-        return_err(mem_E_OutOfMemory())
+        return_err(E_cause$OutOfMemory())
     ));
     mem_set0Bytes(P_prefix$((S$u8)(mem)(type.size)));
     return_ok({
@@ -108,10 +108,10 @@ fn_((mem_Alctr_alloc($traced mem_Alctr self, TypeInfo type, usize count))(mem_E$
         .type = type,
     });
     let byte_count = orelse_((usize_mulChkd(type.size, count))(
-        return_err(mem_E_OutOfMemory())
+        return_err(E_cause$OutOfMemory())
     ));
     let mem = orelse_((mem_Alctr_rawAlloc($tracing self, byte_count, type.log2_align))(
-        return_err(mem_E_OutOfMemory())
+        return_err(E_cause$OutOfMemory())
     ));
     mem_set0Bytes(P_prefix$((S$u8)(mem)(byte_count)));
     return_ok({
@@ -193,7 +193,7 @@ fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(
     let old_bytes = P_prefix$((S$u8)(old_mem.ptr)(old_mem.type.size * old_mem.len));
     // Check for overflow in multiplication
     let new_byte_count = orelse_((usize_mulChkd(old_mem.type.size, new_len))(
-        return_err(mem_E_OutOfMemory())
+        return_err(E_cause$OutOfMemory())
     ));
     // Try to remap first (which may be in-place resize or may relocate)
     let new_ptr = mem_Alctr_rawRemap($tracing self, old_bytes, old_mem.type.log2_align, new_byte_count);
@@ -204,7 +204,7 @@ fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(
     });
     // Remap failed, need to allocate new memory and copy
     let new_mem = orelse_((mem_Alctr_rawAlloc($tracing self, new_byte_count, old_mem.type.log2_align))(
-        return_err(mem_E_OutOfMemory())
+        return_err(E_cause$OutOfMemory())
     ));
     // Copy the data from old memory to new memory (use smaller of the two sizes)
     let copy_len = pri_min(old_bytes.len, new_byte_count);

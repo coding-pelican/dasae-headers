@@ -6,29 +6,29 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
+#include "base.h"
 
 /*========== Macros and Declarations ========================================*/
 
-#if !defined(ErrTrace_comp_enabled)
-#define ErrTrace_comp_enabled (debug_comp_enabled)
-#endif /* !defined(ErrTrace_comp_enabled) */
+#if !defined(ETrace_comp_enabled)
+#define ETrace_comp_enabled (debug_comp_enabled)
+#endif /* !defined(ETrace_comp_enabled) */
 
-#define ErrTrace_max_frames /* Platform-specific stack trace size optimization */ __comp_int__ErrTrace_max_frames
+#define ETrace_max_frames /* Platform-specific stack trace size optimization */ __comp_int__ETrace_max_frames
 /// Stack frame info
-typedef struct ErrTrace_Frame ErrTrace_Frame;
+typedef struct ETrace_Frame ETrace_Frame;
 /// Fixed-size stack trace buffer
-typedef struct ErrTrace ErrTrace;
+typedef struct ETrace ETrace;
 
 #if !on_comptime
-extern void ErrTrace_reset(void);
-extern void ErrTrace_captureFrame(void);
-extern void ErrTrace_print(void);
+extern void ETrace_reset(void);
+extern void ETrace_captureFrame(void);
+extern void ETrace_print(void);
 #endif /* !on_comptime */
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_int__ErrTrace_max_frames pp_expand( \
+#define __comp_int__ETrace_max_frames pp_expand( \
     pp_switch_ pp_begin(arch_bits_unit)( \
         pp_case_((arch_bits_unit_64bit)(pp_expand( \
             pp_switch_ pp_begin(arch_family_type)( \
@@ -50,38 +50,38 @@ extern void ErrTrace_print(void);
     ) pp_end \
 )
 
-struct ErrTrace_Frame {
+struct ETrace_Frame {
     SrcLoc src_loc;
     P$raw ret_addr;
 };
 
-struct ErrTrace {
-    var_(frames, A$$(ErrTrace_max_frames, ErrTrace_Frame));
+struct ETrace {
+    var_(frames, A$$(ETrace_max_frames, ETrace_Frame));
     var_(len, usize);
 };
 
 #if on_comptime
-#if !ErrTrace_comp_enabled
+#if !ETrace_comp_enabled
 
-#define ErrTrace_reset() $unused(0)
-#define ErrTrace_captureFrame() $unused(0)
-#define ErrTrace_print() $unused(0)
+#define ETrace_reset() $unused(0)
+#define ETrace_captureFrame() $unused(0)
+#define ETrace_print() $unused(0)
 
-#else /* ErrTrace_comp_enabled */
+#else /* ETrace_comp_enabled */
 
-#define ErrTrace_reset() ErrTrace_reset_callDebug()
-#define ErrTrace_captureFrame() ErrTrace_captureFrame_callDebug()
-#define ErrTrace_print() ErrTrace_print_callDebug()
+#define ETrace_reset() ETrace_reset_callDebug()
+#define ETrace_captureFrame() ETrace_captureFrame_callDebug()
+#define ETrace_print() ETrace_print_callDebug()
 
-#define ErrTrace_reset_callDebug() ErrTrace_reset_debug()
-#define ErrTrace_captureFrame_callDebug() ErrTrace_captureFrame_debug(srcLoc(), __builtin_return_address(0))
-#define ErrTrace_print_callDebug() ErrTrace_print_debug()
+#define ETrace_reset_callDebug() ETrace_reset_debug()
+#define ETrace_captureFrame_callDebug() ETrace_captureFrame_debug(srcLoc(), __builtin_return_address(0))
+#define ETrace_print_callDebug() ETrace_print_debug()
 
-extern void ErrTrace_reset_debug(void);
-extern void ErrTrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr);
-extern void ErrTrace_print_debug(void);
+extern void ETrace_reset_debug(void);
+extern void ETrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr);
+extern void ETrace_print_debug(void);
 
-#endif /* ErrTrace_comp_enabled */
+#endif /* ETrace_comp_enabled */
 #endif /* on_comptime */
 
 #if defined(__cplusplus)

@@ -245,7 +245,7 @@ fn_((WSI_VT__getTargetMetrics(dage_Backend_Impl* ctx, dage_TargetId id))(dage_Ta
 
 fn_((WSI__unsupported_platformInit(P$dage_Runtime_WSI self))(E$void) $scope) {
     let_ignore = self;
-    return_err(Err_Unsupported());
+    return_err(E_cause$dage_Unsupported());
 } $unscoped(fn);
 
 fn_((WSI__unsupported_platformFini(P$dage_Runtime_WSI self))(void)) {
@@ -255,7 +255,7 @@ fn_((WSI__unsupported_platformFini(P$dage_Runtime_WSI self))(void)) {
 fn_((WSI__unsupported_createTarget(P$dage_Runtime_WSI self, dage_Target_Cfg cfg))(E$dage_TargetId) $scope) {
     let_ignore = self;
     let_ignore = cfg;
-    return_err(Err_Unsupported());
+    return_err(E_cause$dage_Unsupported());
 } $unscoped(fn);
 
 fn_((WSI__unsupported_destroyTarget(P$dage_Runtime_WSI self, dage_TargetId id))(void)) {
@@ -581,7 +581,7 @@ $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 /*----- Platform Implementation -----*/
 
-errset_((WSI_PlatformInitErr)(FailedRegisterWindowClass));
+errset_((dage_WSI_PlatformInitErr)(dage_FailedRegisterWindowClass));
 fn_((WSI__windows_platformInit(P$dage_Runtime_WSI self))(E$void) $scope) {
     self->display = GetModuleHandleW(0);
 
@@ -595,7 +595,7 @@ fn_((WSI__windows_platformInit(P$dage_Runtime_WSI self))(E$void) $scope) {
     };
 
     if (RegisterClassExW(&wc) == 0) {
-        return_err(WSI_PlatformInitErr_FailedRegisterWindowClass());
+        return_err(E_cause$dage_FailedRegisterWindowClass());
     }
 
     self->impl.window_class_registered = true;
@@ -609,13 +609,13 @@ fn_((WSI__windows_platformFini(P$dage_Runtime_WSI self))(void)) {
     }
 };
 
-errset_((WSI_CreateTargetErr)(
-    MaximumTargetsReached,
-    FailedCreateWindow
+errset_((dage_WSI_CreateTargetErr)(
+    dage_MaximumTargetsReached,
+    dage_FailedCreateWindow
 ));
 fn_((WSI__windows_createTarget(P$dage_Runtime_WSI self, dage_Target_Cfg cfg))(E$dage_TargetId) $scope) {
     let target = orelse_((WSI__findFreeSlot(self))(
-        return_err(WSI_CreateTargetErr_MaximumTargetsReached())
+        return_err(E_cause$dage_MaximumTargetsReached())
     ));
 
     DWORD style = WS_OVERLAPPEDWINDOW;
@@ -647,7 +647,7 @@ fn_((WSI__windows_createTarget(P$dage_Runtime_WSI self, dage_Target_Cfg cfg))(E$
         0, 0, self->display, 0
     );
     if (hwnd == 0) {
-        return_err(WSI_CreateTargetErr_FailedCreateWindow());
+        return_err(E_cause$dage_FailedCreateWindow());
     }
 
     SetWindowLongPtrW(hwnd, GWLP_USERDATA, intCast$((LONG_PTR)ptrToInt(self)));
@@ -871,7 +871,7 @@ $static fn_((WSI__x11_findByWindow(P$dage_Runtime_WSI self, u64 window))(O$P$dag
 fn_((WSI__x11_platformInit(P$dage_Runtime_WSI self))(E$void) $guard) {
     Display* dpy = XOpenDisplay(0);
     if (dpy == 0) {
-        return_err(Err_Custom("Failed to open X11 display"));
+        return_err(E_cause$dage_FailedToOpenX11Display());
     }
 
     self->display = (P$raw)dpy;
@@ -891,7 +891,7 @@ fn_((WSI__x11_platformFini(P$dage_Runtime_WSI self))(void)) {
 fn_((WSI__x11_createTarget(P$dage_Runtime_WSI self, dage_Target_Cfg cfg))(E$dage_TargetId) $guard) {
     let target_opt = WSI__findFreeSlot(self);
     if_none(target_opt) {
-        return_err(Err_Custom("Maximum targets reached"));
+        return_err(E_cause$dage_MaximumTargetsReached());
     }
     let target = unwrap_(target_opt);
 
@@ -926,7 +926,7 @@ fn_((WSI__x11_createTarget(P$dage_Runtime_WSI self, dage_Target_Cfg cfg))(E$dage
     if_err(alloc_result) {
         XFreeGC(dpy, gc);
         XDestroyWindow(dpy, window);
-        return_err(Err_Custom("Failed to allocate pixel buffer"));
+        return_err(E_cause$dage_FailedToAllocatePixelBuffer());
     }
     let pixels = u_castS$((S$u32)(unwrap_ok_(alloc_result)));
 
@@ -942,7 +942,7 @@ fn_((WSI__x11_createTarget(P$dage_Runtime_WSI self, dage_Target_Cfg cfg))(E$dage
         mem_Alctr_free(self->gpa, u_anyS(pixels));
         XFreeGC(dpy, gc);
         XDestroyWindow(dpy, window);
-        return_err(Err_Custom("Failed to create XImage"));
+        return_err(E_cause$dage_FailedToCreateXImage());
     }
 
     let id = self->target_count;

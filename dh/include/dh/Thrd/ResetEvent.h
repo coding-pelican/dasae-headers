@@ -27,7 +27,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((Thrd_ResetEvent_Err)(Timeout));
+errset_((Thrd_ResetEvent_Err)() $union_errset_(Thrd_TimeoutE));
 typedef struct Thrd_ResetEvent {
     var_(state, atom_V$u32);
 } Thrd_ResetEvent;

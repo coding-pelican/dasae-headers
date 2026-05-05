@@ -44,7 +44,7 @@ $static fn_((wtf8__encode(u32 codepoint, utf8_SeqLen requested_len, S$u8 out))(w
 
 fn_((wtf8_encode(u32 codepoint, S$u8 out))(E$S$u8) $scope) {
     let requested_len = try_(utf8_codepointSeqLen(codepoint));
-    if (requested_len >= out.len) return_err(mem_E_OutOfMemory());
+    if (requested_len >= out.len) return_err(E_cause$OutOfMemory());
     return_ok(try_(wtf8__encode(codepoint, requested_len, out)));
 } $unscoped(fn);
 
@@ -55,18 +55,18 @@ fn_((wtf8_encodeWithin(u32 codepoint, S$u8 out))(wtf8_E$S$u8) $scope) {
 $static fn_((wtf8__decode3(utf8_Decode3Buf bytes))(wtf8_E$u32) $scope) {
     claim_assert((*A_at((bytes)[0]) & int_maskHi_static$((u8)(4))) == utf8_SeqByte_3);
     var_(val, u32) = *A_at((bytes)[0]) & int_maskLo_static$((u8)(4));
-    if (!wtf8__isContinuation(*A_at((bytes)[1]))) return_err(wtf8_E_ExpectedContinuation());
+    if (!wtf8__isContinuation(*A_at((bytes)[1]))) return_err(E_cause$WTF8ExpectedContinuation());
     val = (val << 6) | as$(u32)(wtf8__continuationPayload(*A_at((bytes)[1])));
-    if (!wtf8__isContinuation(*A_at((bytes)[2]))) return_err(wtf8_E_ExpectedContinuation());
+    if (!wtf8__isContinuation(*A_at((bytes)[2]))) return_err(E_cause$WTF8ExpectedContinuation());
     val = (val << 6) | as$(u32)(wtf8__continuationPayload(*A_at((bytes)[2])));
-    if (val < 0x800) return_err(wtf8_E_OverlongEncoding());
+    if (val < 0x800) return_err(E_cause$WTF8OverlongEncoding());
     return_ok(val);
 } $unscoped(fn);
 
 fn_((wtf8_decode(S_const$u8 bytes))(wtf8_E$u32) $scope) {
-    if (bytes.len == 0) return_err(wtf8_E_InvalidStartByte());
+    if (bytes.len == 0) return_err(E_cause$WTF8InvalidStartByte());
     let seq_len = try_(utf8_byteSeqLen(*S_at((bytes)[0])));
-    if (seq_len > bytes.len) return_err(wtf8_E_InvalidStartByte());
+    if (seq_len > bytes.len) return_err(E_cause$WTF8InvalidStartByte());
     switch (seq_len) {
     case utf8_SeqLen_1: return_ok(*S_at((bytes)[0]));
     case utf8_SeqLen_2: return_ok(try_(utf8_decode2(S_deref$((const utf8_Decode2Buf)S_prefix((bytes)2)))));
@@ -103,7 +103,7 @@ fn_((wtf8_count(S_const$u8 bytes))(usize) $scope) {
 } $unscoped(fn);
 
 fn_((wtf8_view(S_const$u8 bytes))(wtf8_E$wtf8_View) $scope) {
-    if (!wtf8_validate(bytes)) return_err(wtf8_E_InvalidStartByte());
+    if (!wtf8_validate(bytes)) return_err(E_cause$WTF8InvalidStartByte());
     return_ok({ .bytes = bytes });
 } $unscoped(fn);
 

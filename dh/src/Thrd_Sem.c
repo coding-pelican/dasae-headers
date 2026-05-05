@@ -29,7 +29,7 @@ fn_((Thrd_Sem_wait(Thrd_Sem* self))(void) $guard) {
     }
 } $unguarded(fn);
 
-fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Duration timeout))(Thrd_Sem_Err$void) $guard) {
+fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Duration timeout))(Thrd_Sem_E$void) $guard) {
     let instant = time_Instant_now();
 
     Thrd_Mtx_lock(&self->mtx);
@@ -38,7 +38,7 @@ fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Duration timeout))(Thrd_Sem_Err$voi
     while (self->permits == 0) {
         let elapsed = time_Instant_elapsed(instant);
         if (time_Duration_gt(elapsed, timeout)) {
-            return_err(Thrd_Sem_Err_Timeout());
+            return_err(E_cause$ThrdTimeout());
         }
         let remaining = time_Duration_sub(timeout, elapsed);
         try_(Thrd_Cond_timedWait(&self->cond, &self->mtx, remaining));

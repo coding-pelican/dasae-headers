@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 // // build `clang -o test_time -xc -std=c17 test_time.c ../../src/*.c -static -g -IC:\dasae-storage\dev\source\c-cpp-workspace\projects\tests\test_terminal\dh\include`
 
 // #include "dh/time.h"
@@ -47,3 +48,5 @@
 
 //     return 0;
 // }
+
+#endif /* UNUSED_CODE */

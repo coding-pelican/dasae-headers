@@ -14,7 +14,7 @@ pp_if_(Thrd_Cond_use_pthread)(
         $attr($inline_always)
         $static fn_((Thrd_Cond__pthread_wait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx))(void));
         $attr($inline_always $must_check)
-        $static fn_((Thrd_Cond__pthread_timedWait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx, time_Duration duration))(Thrd_Cond_Err$void));
+        $static fn_((Thrd_Cond__pthread_timedWait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx, time_Duration duration))(Thrd_Cond_E$void));
         $attr($inline_always)
         $static fn_((Thrd_Cond__pthread_signal(P$$(Thrd_Cond) self))(void));
         $attr($inline_always)
@@ -28,7 +28,7 @@ pp_if_(Thrd_Cond_use_pthread)(
         $attr($inline_always)
         $static fn_((Thrd_Cond__common_wait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx))(void));
         $attr($inline_always $must_check)
-        $static fn_((Thrd_Cond__common_timedWait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx, time_Duration duration))(Thrd_Cond_Err$void));
+        $static fn_((Thrd_Cond__common_timedWait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx, time_Duration duration))(Thrd_Cond_E$void));
         $attr($inline_always)
         $static fn_((Thrd_Cond__common_signal(P$$(Thrd_Cond) self))(void));
         $attr($inline_always)
@@ -68,7 +68,7 @@ fn_((Thrd_Cond_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void)) {
     Thrd_Cond__wait(self, mtx);
 };
 
-fn_((Thrd_Cond_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_Err$void)) {
+fn_((Thrd_Cond_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_E$void)) {
     return Thrd_Cond__timedWait(self, mtx, duration);
 };
 
@@ -103,10 +103,10 @@ fn_((Thrd_Cond__pthread_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void)) {
     pthread_cond_wait(&self->impl, &mtx->impl);
 };
 
-fn_((Thrd_Cond__pthread_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_Err$void) $scope) {
+fn_((Thrd_Cond__pthread_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_E$void) $scope) {
     struct timespec abs_ts = cleared();
     if (clock_gettime(CLOCK_MONOTONIC, &abs_ts) != 0) {
-        return_err(Thrd_Cond_Err_SystemResources());
+        return_err(E_cause$Thrd_SystemResources());
     }
     // Add duration to get absolute deadline
     abs_ts.tv_sec += as$(time_t)(duration.secs);
@@ -118,7 +118,7 @@ fn_((Thrd_Cond__pthread_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration 
     }
     switch (pthread_cond_timedwait(&self->impl, &mtx->impl, &abs_ts)) {
     case_((0 /* SUCCESS */)) return_ok({}) $end(case);
-    case_((ETIMEDOUT /* TIMED OUT */)) return_err(Thrd_Cond_Err_Timeout()) $end(case);
+    case_((ETIMEDOUT /* TIMED OUT */)) return_err(E_cause$Thrd_Timeout()) $end(case);
     default_() claim_unreachable $end(default);
     }
 } $unscoped(fn);
@@ -149,7 +149,7 @@ pp_if_(Thrd_Cond_has_specialized)(
                 $attr($inline_always)
                 $static fn_((Thrd_Cond__windows_impl_fini(P$$(Thrd_Cond) self))(void));
                 $attr($inline_always $must_check)
-                $static fn_((Thrd_Cond__windows_impl_wait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx, O$time_Duration timeout))(Thrd_Cond_Err$void));
+                $static fn_((Thrd_Cond__windows_impl_wait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx, O$time_Duration timeout))(Thrd_Cond_E$void));
                 $attr($inline_always)
                 $static fn_((Thrd_Cond__windows_impl_wake(P$$(Thrd_Cond) self, Thrd_Cond__Notify notify))(void))
             ))
@@ -161,7 +161,7 @@ pp_if_(Thrd_Cond_has_specialized)(
         $attr($inline_always)
         $static fn_((Thrd_Cond__default_impl_fini(P$$(Thrd_Cond) self))(void));
         $attr($inline_always $must_check)
-        $static fn_((Thrd_Cond__default_impl_wait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx, O$time_Duration timeout))(Thrd_Cond_Err$void));
+        $static fn_((Thrd_Cond__default_impl_wait(P$$(Thrd_Cond) self, P$$(Thrd_Mtx) mtx, O$time_Duration timeout))(Thrd_Cond_E$void));
         $attr($inline_always)
         $static fn_((Thrd_Cond__default_impl_wake(P$$(Thrd_Cond) self, Thrd_Cond__Notify notify))(void))
     ));
@@ -217,7 +217,7 @@ fn_((Thrd_Cond__common_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void) $scope) {
     return_void(catch_((Thrd_Cond__impl_wait(self, mtx, none$((O$time_Duration))))($ignore, claim_unreachable)));
 } $unscoped(fn);
 
-fn_((Thrd_Cond__common_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_Err$void)) {
+fn_((Thrd_Cond__common_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_E$void)) {
     return Thrd_Cond__impl_wait(self, mtx, some$((O$time_Duration)(duration)));
 };
 
@@ -266,7 +266,7 @@ $static fn_((Thrd_Cond__default_impl_fini(Thrd_Cond* self))(void)) {
 // - T1: s & signals == 0 -> FUTEX_WAIT(&epoch, e) (missed the state update + the epoch change)
 //
 // Acquire barrier to ensure the epoch load happens before the state load.
-fn_((Thrd_Cond__default_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duration timeout))(Thrd_Cond_Err$void)) {
+fn_((Thrd_Cond__default_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duration timeout))(Thrd_Cond_E$void)) {
     var epoch = atom_V_load(&self->impl.epoch, atom_MemOrd_acquire);
     var state = atom_V_fetchAdd(&self->impl.state, Thrd_Cond__default_one_waiter, atom_MemOrd_monotonic);
     debug_assert(state & Thrd_Cond__default_waiter_mask != Thrd_Cond__default_waiter_mask);
@@ -357,7 +357,7 @@ fn_((Thrd_Cond__windows_impl_fini(Thrd_Cond* self))(void)) {
     let_ignore = self;
 };
 
-fn_((Thrd_Cond__windows_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duration timeout))(Thrd_Cond_Err$void) $scope) {
+fn_((Thrd_Cond__windows_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duration timeout))(Thrd_Cond_E$void) $scope) {
     claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(DWORD), packTypeInfo$(u32)));
     var timeout_overflowed = false;
     var timeout_ms = u32_limit_max;
@@ -382,7 +382,7 @@ fn_((Thrd_Cond__windows_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duratio
     );
     if (!rc) {
         debug_assert(GetLastError() == ERROR_TIMEOUT);
-        if (!timeout_overflowed) { return_err(Thrd_Cond_Err_Timeout()); }
+        if (!timeout_overflowed) { return_err(E_cause$ThrdTimeout()); }
     }
     return_ok({});
 } $unscoped(fn);

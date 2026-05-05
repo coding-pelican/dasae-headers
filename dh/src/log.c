@@ -25,7 +25,7 @@ fn_((log_init(const char* filename))(fs_File_E$void) $guard) {
     }
 
     let file = fopen(filename, "w");
-    if (!file) { return_err(fs_File_E_OpenFailed()); }
+    if (!file) { return_err(E_cause$FSOpenFailed()); }
     errdefer_($ignore, let_ignore = fclose(file));
 
     if (log__config.output_file && log__config.output_file != stderr) {

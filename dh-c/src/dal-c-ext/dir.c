@@ -3,6 +3,7 @@
 #include "dal-c-ext/str.h"
 #include <stdio.h>
 #include <assert.h>
+#include <ctype.h>
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
@@ -27,14 +28,32 @@ bool dir_create(const char* path) {
 #endif
 }
 
+static bool dir_isRootPath(const char* path) {
+    if (!path) { return false; }
+#ifdef _WIN32
+    size_t const len = strlen(path);
+    if (len == 2 && isalpha((unsigned char)path[0]) && path[1] == ':') {
+        return true;
+    }
+    if (len == 3 && isalpha((unsigned char)path[0]) && path[1] == ':'
+        && (path[2] == '/' || path[2] == '\\')) {
+        return true;
+    }
+    return false;
+#else
+    return str_eql(path, "/");
+#endif
+}
+
 /* NOLINTNEXTLINE(misc-no-recursion) */
 bool dir_createRecur(const char* path) {
     if (!path) { return false; }
+    if (dir_isRootPath(path)) { return true; }
     // Check if already exists
     if (path_isDir(path)) { return true; }
     // Create parent first
     char* const parent = path_parent(path);
-    if (parent && !str_eql(parent, path) && !str_eql(parent, ".")) {
+    if (parent && !str_eql(parent, path) && !str_eql(parent, ".") && !dir_isRootPath(parent)) {
         if (!dir_createRecur(parent)) { return free(parent), false; }
     }
     if (parent) { free(parent); }

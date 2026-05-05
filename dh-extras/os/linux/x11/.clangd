@@ -3,6 +3,3 @@ CompileFlags:
     - -I./os/linux/x11/src
     - -I./os/linux/x11/include
     - -isystem./os/linux/x11/lib/deps
-    - -I./dh-extras/os/linux/x11/src
-    - -I./dh-extras/os/linux/x11/include
-    - -isystem./dh-extras/os/linux/x11/lib/deps

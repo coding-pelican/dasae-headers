@@ -45,7 +45,7 @@ fn_((io_Buf_Reader_peekByte(io_Buf_Reader* self))(E$u8) $scope) {
     // COLD PATH: refill buf
     try_(io_Buf_Reader_fill(self));
     if (self->end <= self->start) {
-        return_err(io_E_UnexpectedEof());
+        return_err(E_cause$IOUnexpectedEof());
     }
     return_ok(*S_at((self->buf)[self->start]));
 } $unscoped(fn);
@@ -57,7 +57,7 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
         if (self->end <= self->start) {
             try_(io_Buf_Reader_fill(self));
             if (self->end <= self->start) {
-                return_err(io_E_UnexpectedEof());
+                return_err(E_cause$IOUnexpectedEof());
             }
         }
         // Search for delimiter in current buf
@@ -68,7 +68,7 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
                 let copy_len = i - self->start;
                 let total_len = written + copy_len;
                 if (out_buf.len < total_len) {
-                    return_err(io_E_BufferTooSmall());
+                    return_err(E_cause$IOBufferTooSmall());
                 }
                 pri_memcpyS(
                     S_prefix((S_suffix((out_buf)(written)))(copy_len)),
@@ -82,7 +82,7 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
         let copy_len = self->end - self->start;
         let total_len = written + copy_len;
         if (out_buf.len < total_len) {
-            return_err(io_E_BufferTooSmall());
+            return_err(E_cause$IOBufferTooSmall());
         }
         pri_memcpyS(
             S_prefix((S_suffix((out_buf)(written)))(copy_len)),
@@ -91,7 +91,7 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
         written += copy_len;
         self->start = self->end;
     }
-    return_err(io_E_BufferTooSmall());
+    return_err(E_cause$IOBufferTooSmall());
 } $unscoped(fn);
 
 fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(E$void) $scope) {
@@ -100,7 +100,7 @@ fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(E$void) $scope)
         if (self->end <= self->start) {
             try_(io_Buf_Reader_fill(self));
             if (self->end <= self->start) {
-                return_err(io_E_UnexpectedEof());
+                return_err(E_cause$IOUnexpectedEof());
             }
         }
         // Search for delimiter in current buf
@@ -134,7 +134,7 @@ fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize n))(E$void) $scope) {
         }
         try_(io_Buf_Reader_fill(self));
         if (self->end <= self->start) {
-            return_err(io_E_UnexpectedEof());
+            return_err(E_cause$IOUnexpectedEof());
         }
     }
     return_ok({});

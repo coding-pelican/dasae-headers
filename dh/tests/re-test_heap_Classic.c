@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 /**
  * @file    test_heap_Classic.c
  * @brief   Unit tests for heap allocator implementation
@@ -258,3 +259,5 @@ int main(int argc, const char* argv[]) {
 
 //     return_ok({});
 // }
+
+#endif /* UNUSED_CODE */

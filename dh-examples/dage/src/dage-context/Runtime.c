@@ -49,8 +49,8 @@ fn_((dage_Runtime_fini(dage_Runtime* self))(void)) {
 /*========== Window Management ==========*/
 
 errset_((dage_Runtime_CreateWindowErr)(
-    WindowLimitReached,
-    FailedToAddWindowToList
+    dage_WindowLimitReached,
+    dage_FailedToAddWindowToList
 ));
 
 fn_((dage_Runtime_createWindow(dage_Runtime* self, dage_Runtime_WindowCfg cfg))(E$dage_WindowId) $guard) {
@@ -58,7 +58,7 @@ fn_((dage_Runtime_createWindow(dage_Runtime* self, dage_Runtime_WindowCfg cfg))(
 
     /* Check window limit */
     let win_ptr = catch_((ArrList_addBackFixed$P$dage_Window(&self->windows))($ignore, {
-        return_err(dage_Runtime_CreateWindowErr_WindowLimitReached());
+        return_err(E_cause$dage_WindowLimitReached());
     }));
     errdefer_($ignore, ArrList_pop$P$dage_Window(&self->windows));
 

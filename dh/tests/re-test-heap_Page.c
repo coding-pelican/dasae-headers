@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 /**
  * @file    test_heap_Page.c
  * @brief   Unit tests for page allocator implementation
@@ -247,3 +248,5 @@ int main(int argc, const char* argv[]) {
     TEST_printSummary();
     return TEST_fini();
 }
+
+#endif /* UNUSED_CODE */

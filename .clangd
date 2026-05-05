@@ -134,7 +134,7 @@ CompileFlags:
     - -Wnull-dereference # `null` dereference static detection
     - -Wwrite-strings # String literal -> `const char*`
     # [Diagnostic: Control Flow]
-    - -Wswitch-enum # enum switch completeness (default included warning)
+    - -Wswitch-enum # enum switch completeness (default included warning, `-Wno-switch-enum` to disable)
     - -Winfinite-recursion # infinite recursion detection
     - -Wloop-analysis # loop logic error
     # - -Wcomma # comma operator misuse
@@ -155,7 +155,7 @@ CompileFlags:
     # [Compatibility]
     - -fgnu-keywords # Enable GCC Compatibility
     - -fms-extensions # Windows Compatibility (Declspec, etc.)
-    - -Wno-microsoft-anon-tag # Microsoft anonymous tag warning
+    - -Wno-microsoft-anon-tag # Microsoft anonymous tag warning (default excluded warning, `-Wmicrosoft-anon-tag` to enable)
     - -funsigned-char # Prevent char sign issues in cross-platform
     - -fblocks # Enable blocks support
 # ========== C++ Sources ==========

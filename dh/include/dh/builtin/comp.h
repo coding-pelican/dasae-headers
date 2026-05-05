@@ -314,11 +314,11 @@ extern "C" {
 #define __step__with$__parseInitial(_initial...) _initial
 #define __step__with$__emit(...) \
     ____with_(__VA_ARGS__)
-#define ____with_(__expr_copied, _expr, _initial...) local_({ \
-    var __expr_copied = _expr; \
+#define ____with_(__expr_copied, _expr, _initial...) (*local_({ \
+    var __expr_copied = &copy(_expr); \
     pp_foreach(____with___each, __expr_copied, _initial); \
     local_return_(__expr_copied); \
-})
+}))
 #define ____with___each(__expr_copied, /*_initial*/...) __VA_OPT__( \
     ____with___each__emit(__expr_copied, ____with___each__parseField __VA_ARGS__) \
 )
@@ -327,7 +327,7 @@ extern "C" {
 #define ____with___each__emit(...) \
     ____with_____each(__VA_ARGS__)
 #define ____with_____each(__expr_copied, _field, _asg...) \
-    asg_l((&__expr_copied _field)(_asg));
+    asg_l((&(*__expr_copied)_field)(_asg));
 
 #define T_switch$(/*(_T_Cond)(_T_Cases...)*/...) \
     __step__T_switch$(__step__T_switch$__parseTCond __VA_ARGS__)

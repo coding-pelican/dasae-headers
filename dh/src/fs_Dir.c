@@ -4,9 +4,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-$inline_always
-    $static
-    fn_((makeDir(S_const$u8 path))(i32)) {
+$attr($inline_always)
+$static fn_((makeDir(S_const$u8 path))(i32)) {
     return mkdir(as$(const char*)(path.ptr)pp_if_(plat_is_windows)(
         pp_then_(pp_ignore))(, 0755));
 }
@@ -16,7 +15,7 @@ fn_((fs_Dir_create(S_const$u8 path))(E$void) $scope) {
     if (exists) {
         // ignore if directory already exists
         if (errno != EEXIST) {
-            return_err(fs_File_E_OpenFailed());
+            return_err(E_cause$FSOpenFailed());
         }
     }
     return_ok({});

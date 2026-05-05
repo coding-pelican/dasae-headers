@@ -3,6 +3,3 @@ CompileFlags:
     - -I./Grid/src
     - -I./Grid/include
     - -isystem./Grid/lib/deps
-    - -I./dh-examples/Grid/src
-    - -I./dh-examples/Grid/include
-    - -isystem./dh-examples/Grid/lib/deps

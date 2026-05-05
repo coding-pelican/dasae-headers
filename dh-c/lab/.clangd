@@ -1,0 +1,6 @@
+CompileFlags:
+  Add:
+    # [Relative Paths] use relative paths based on the project root
+    # This configuration file (.clangd) is the reference point.
+    - -isystem./../../dh/include
+    - -isystem./../../dh/libs/BlocksRuntime/include

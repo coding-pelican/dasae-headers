@@ -955,7 +955,7 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
 #define __alias__mem_Delim$(_T...) tpl$(mem_Delim, _T)
 #define __stmt__T_use_mem_Delim$(_T...) \
     T_alias$((mem_Delim$(_T))(union mem_Delim$(_T) { \
-        variant_(($maps(mem_DelimType))( \
+        variant_(($maps(mem_Delim))( \
             (mem_Delim_unit, _T), \
             (mem_Delim_seq, S_const$(_T)), \
             (mem_Delim_any, S_const$(_T)), \

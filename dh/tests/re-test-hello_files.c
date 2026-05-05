@@ -1,4 +1,5 @@
 #if UNUSED_CODE
+#if UNUSED_CODE
 #include "dh-main.h"
 #include "dh/Arr.h"
 #include "dh/Str.h"
@@ -58,5 +59,7 @@ fn_(dh_main(S$S_const$u8 args), E$void $scope) {
     return_ok({});
 }
 $unscoped;
+
+#endif /* UNUSED_CODE */
 
 #endif /* UNUSED_CODE */

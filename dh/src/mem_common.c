@@ -312,27 +312,30 @@ $static fn_((mem_Delim__any(mem_Delim$raw* self, TypeInfo type))(u_S$raw)) {
 fn_((mem_tokzUnit(u_S_const$raw buf, u_V$raw unit, V$mem_TokzIter$raw ret_mem))(V$mem_TokzIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnull(unit.inner), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, unit.type));
+    debug_only(ret_mem->type = unit.type);
     ret_mem->buf = buf.raw;
     ret_mem->idx = 0;
     ret_mem->delim.tag = mem_Delim_unit;
     u_memcpy(mem_Delim__unit(&ret_mem->delim, unit.type).ref, unit.ref.as_const);
-    debug_only(ret_mem->type = unit.type;) return ret_mem;
+    return ret_mem;
 };
 fn_((mem_tokzSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_TokzIter$raw ret_mem))(V$mem_TokzIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnullS(seq.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, seq.type));
+    debug_only(ret_mem->type = seq.type);
     ret_mem->buf = buf.raw;
     ret_mem->idx = 0;
     asg_l((&ret_mem->delim)(union_of((mem_Delim_seq)(seq.raw))));
-    debug_only(ret_mem->type = seq.type;) return ret_mem;
+    return ret_mem;
 };
 fn_((mem_tokzAny(u_S_const$raw buf, u_S_const$raw set, V$mem_TokzIter$raw ret_mem))(V$mem_TokzIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnullS(set.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, set.type));
+    debug_only(ret_mem->type = set.type);
     ret_mem->buf = buf.raw;
     ret_mem->idx = 0;
     asg_l((&ret_mem->delim)(union_of((mem_Delim_any)(set.raw))));
-    debug_only(ret_mem->type = set.type;) return ret_mem;
+    return ret_mem;
 };
 
 $static fn_((mem_TokzIter__buf(mem_TokzIter$raw* self, TypeInfo type))(u_S_const$raw)) {
@@ -394,25 +397,28 @@ fn_((mem_TokzIter_rest(mem_TokzIter$raw* self, TypeInfo type))(u_S_const$raw) $s
 fn_((mem_splitUnit(u_S_const$raw buf, u_V$raw unit, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, unit.type));
+    debug_only(ret_mem->type = unit.type);
     ret_mem->buf = buf.raw;
     asg_l((&ret_mem->idx)(none()));
     ret_mem->delim.tag = mem_Delim_unit;
     u_memcpy(mem_Delim__unit(&ret_mem->delim, unit.type).ref, unit.ref.as_const);
-    debug_only(ret_mem->type = unit.type;) return ret_mem;
+    return ret_mem;
 };
 fn_((mem_splitSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnullS(seq.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, seq.type));
+    debug_only(ret_mem->type = seq.type);
     ret_mem->buf = buf.raw;
     asg_l((&ret_mem->idx)(none()));
     asg_l((&ret_mem->delim)(union_of((mem_Delim_seq)(seq.raw))));
-    debug_only(ret_mem->type = seq.type;) return ret_mem;
+    return ret_mem;
 };
 fn_((mem_splitAny(u_S_const$raw buf, u_S_const$raw any, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnullS(any.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, any.type));
+    debug_only(ret_mem->type = any.type);
     ret_mem->buf = buf.raw;
     asg_l((&ret_mem->idx)(none()));
     asg_l((&ret_mem->delim)(union_of((mem_Delim_any)(any.raw))));
-    debug_only(ret_mem->type = any.type;) return ret_mem;
+    return ret_mem;
 };

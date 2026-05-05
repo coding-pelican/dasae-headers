@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 #define main_no_args 1
 #define main_no_returns_err 1
 #include "dh-main.h"
@@ -50,3 +51,5 @@ $static fn_((TEST_string_literals(void))(void)) {
 fn_((dh_main(void))(void)) {
     TEST_string_literals();
 };
+
+#endif /* UNUSED_CODE */

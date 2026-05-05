@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./pkg-deps/A/src
+    - -I./pkg-deps/A/include
+    - -isystem./pkg-deps/A/lib/deps

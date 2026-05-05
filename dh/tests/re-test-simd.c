@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 /**
  * @file    Vec_example.c
  * @brief   Example usage of dasae-headers SIMD vector operations
@@ -310,3 +311,5 @@ int main(void) {
     printf("All examples completed successfully!\n\n");
     return 0;
 }
+
+#endif /* UNUSED_CODE */

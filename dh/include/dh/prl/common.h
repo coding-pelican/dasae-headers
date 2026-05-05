@@ -21,40 +21,23 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
-#include "types.h"
+#include "base.h"
+#include "CompHash.h"
+#include "Err.h"
+#include "ErrTrace.h"
 
 /*========== Macros and Declarations ========================================*/
 
 #define T_use_prl$(_T...) \
-    T_use$((_T)(P, S, O, E)); \
-    T_use$((P_const$(_T))(P, S, O, E)); \
-    T_use$((P$(_T))(P, S, O, E)); \
-    T_use$((S_const$(_T))(P, S, O, E)); \
-    T_use$((S$(_T))(P, S, O, E)); \
-    T_use$((O$(_T))(P, S, O, E)); \
-    T_use$((E$(_T))(P, S, O, E))
+    T_use_prl_refs$(_T); \
+    T_use_prl_vals$(_T); \
+    T_use_prl_exts$(_T)
 
 T_use$((TypeInfo)(P, S));
 #define typeInfos$(_T...) ____typeInfos$(_T)
 #define typeInfosFrom(_type_infos...) ____typeInfosFrom(_type_infos)
 
 /*========== Macros and Definitions =========================================*/
-
-// clang-format off
-T_use_prl$(u8); T_use_prl$(u16); T_use_prl$(u32); T_use_prl$(u64); T_use_prl$(usize);
-T_use_prl$(i8); T_use_prl$(i16); T_use_prl$(i32); T_use_prl$(i64); T_use_prl$(isize);
-T_use_prl$(f32); T_use_prl$(f64);
-T_use_prl$(bool); T_use_prl$(Void); T_use_prl$(Opaq);
-T_use_prl$(P_const$raw); T_use_prl$(S_const$raw);
-T_use_prl$(P$raw); T_use_prl$(S$raw);
-T_use_prl$(V$raw); T_use_prl$(A$raw);
-// T_use_prl$(FnCtx$raw);
-T_use_prl$(u_P_const$raw); T_use_prl$(u_S_const$raw);
-T_use_prl$(u_P$raw); T_use_prl$(u_S$raw);
-T_use_prl$(u_V$raw); T_use_prl$(u_A$raw);
-// T_use_prl$(u_FnCtx$raw);
-// clang-format on
 
 #define ____typeInfos$(_T...) \
     A_ref$((S_const$TypeInfo)A_from$((TypeInfo){ pp_foreach(____typeInfos$__each, ~, _T) }))

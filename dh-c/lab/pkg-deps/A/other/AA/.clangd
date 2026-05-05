@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./pkg-deps/A/other/AA/src
+    - -I./pkg-deps/A/other/AA/include
+    - -isystem./pkg-deps/A/other/AA/lib/deps

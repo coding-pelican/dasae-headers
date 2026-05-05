@@ -52,24 +52,50 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
+#include "base.h"
 
 /*========== Macros and Declarations ========================================*/
 
 /// @brief String hash value container structure
-/// @details Holds the calculated 32-bit hash value for a string
+/// @details Holds the calculated usize-bit hash value for a string
 T_alias$((CompHash)(struct CompHash {
+    var_(val, usize); ///< The usize-bit hash value
+}));
+/// @brief String hash value container structure
+/// @details Holds the calculated 64-bit hash value for a string
+T_alias$((CompHash64)(struct CompHash64 {
+    var_(val, u64); ///< The 64-bit hash value
+}));
+/// @brief String hash value container structure
+/// @details Holds the calculated 32-bit hash value for a string
+T_alias$((CompHash32)(struct CompHash32 {
     var_(val, u32); ///< The 32-bit hash value
 }));
 
 /// @brief  Directly calculate hash value from a null-terminated string
 /// @param  raw_str Null-terminated string to hash
-/// @return 32-bit hash value
+/// @return usize-bit hash value
 /// @example
-///   u32 hash = compHash("hello");
-///   // hash now contains the 32-bit hash value for "hello"
+///   usize hash = compHash("hello");
+///   // hash now contains the usize-bit hash value for "hello"
 #define compHash(_raw_str...) \
     ____compHash(_raw_str)
+/// @brief  Directly calculate hash value from a null-terminated string
+/// @param  raw_str Null-terminated string to hash
+/// @return 64-bit hash value
+/// @example
+///   u64 hash = compHash64("hello");
+///   // hash now contains the 64-bit hash value for "hello"
+#define compHash64(_raw_str...) \
+    ____compHash64(_raw_str)
+/// @brief  Directly calculate hash value from a null-terminated string
+/// @param  raw_str Null-terminated string to hash
+/// @return 32-bit hash value
+/// @example
+///   u32 hash = compHash32("hello");
+///   // hash now contains the 32-bit hash value for "hello"
+#define compHash32(_raw_str...) \
+    ____compHash32(_raw_str)
 
 /// @brief  Create a CompHash from a string
 /// @param  str String to hash
@@ -79,25 +105,75 @@ T_alias$((CompHash)(struct CompHash {
 ///   // hash.value now contains the hash for "hello"
 $attr($inline_always)
 $static fn_((CompHash_from(S_const$u8 str))(CompHash));
+/// @brief  Create a CompHash64 from a string
+/// @param  str String to hash
+/// @return CompHash64 structure containing the hash value
+/// @example
+///   CompHash64 hash = CompHash64_from(u8_l("hello"));
+///   // hash.value now contains the hash for "hello"
+$attr($inline_always)
+$static fn_((CompHash64_from(S_const$u8 str))(CompHash64));
+/// @brief  Create a CompHash32 from a string
+/// @param  str String to hash
+/// @return CompHash32 structure containing the hash value
+/// @example
+///   CompHash32 hash = CompHash32_from(u8_l("hello"));
+///   // hash.value now contains the hash for "hello"
+$attr($inline_always)
+$static fn_((CompHash32_from(S_const$u8 str))(CompHash32));
 
 /// @brief  Extract the hash value from a CompHash structure
 /// @param  self CompHash structure
-/// @return 32-bit hash value
+/// @return usize-bit hash value
 /// @example
 ///   CompHash hash = CompHash_from(u8_l("hello"));
-///   u32 value = CompHash_val(hash);
+///   usize value = CompHash_val(hash);
+///   // value now contains the usize-bit hash value
+$attr($inline_always)
+$static fn_((CompHash_val(CompHash self))(usize));
+/// @brief  Extract the hash value from a CompHash64 structure
+/// @param  self CompHash64 structure
+/// @return 64-bit hash value
+/// @example
+///   CompHash64 hash = CompHash64_from(u8_l("hello"));
+///   u64 value = CompHash64_val(hash);
+///   // value now contains the 64-bit hash value
+$attr($inline_always)
+$static fn_((CompHash64_val(CompHash64 self))(u64));
+/// @brief  Extract the hash value from a CompHash32 structure
+/// @param  self CompHash32 structure
+/// @return 32-bit hash value
+/// @example
+///   CompHash32 hash = CompHash32_from(u8_l("hello"));
+///   u32 value = CompHash32_val(hash);
 ///   // value now contains the 32-bit hash value
 $attr($inline_always)
-$static fn_((CompHash_val(CompHash self))(u32));
+$static fn_((CompHash32_val(CompHash32 self))(u32));
 
+/// @brief  Directly calculate hash value from a string
+/// @param  str String to hash
+/// @return usize-bit hash value
+/// @example
+///   usize hash = CompHash_calc(u8_l("hello"));
+///   // hash now contains the 32-bit hash value for "hello"
+$attr($inline_always)
+$static fn_((CompHash_calc(S_const$u8 str))(usize));
+/// @brief  Directly calculate hash value from a string
+/// @param  str String to hash
+/// @return 64-bit hash value
+/// @example
+///   u64 hash = CompHash64_calc(u8_l("hello"));
+///   // hash now contains the 64-bit hash value for "hello"
+$attr($inline_always)
+$static fn_((CompHash64_calc(S_const$u8 str))(u64));
 /// @brief  Directly calculate hash value from a string
 /// @param  str String to hash
 /// @return 32-bit hash value
 /// @example
-///   u32 hash = CompHash_calc(u8_l("hello"));
+///   u32 hash = CompHash32_calc(u8_l("hello"));
 ///   // hash now contains the 32-bit hash value for "hello"
 $attr($inline_always)
-$static fn_((CompHash_calc(S_const$u8 str))(u32));
+$static fn_((CompHash32_calc(S_const$u8 str))(u32));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -105,20 +181,62 @@ $static fn_((CompHash_calc(S_const$u8 str))(u32));
     /** Calculate hash value from a compile-time string literal */ \
     CompHash_calc(u8_l(_raw_str))
 
+#define ____compHash64(_raw_str...) \
+    /** Calculate hash value from a compile-time string literal */ \
+    CompHash64_calc(u8_l(_raw_str))
+
+#define ____compHash32(_raw_str...) \
+    /** Calculate hash value from a compile-time string literal */ \
+    CompHash32_calc(u8_l(_raw_str))
+
 fn_((CompHash_from(S_const$u8 str))(CompHash)) {
     claim_assert_nonnullS(str);
     return (CompHash){ .val = isZero(str.len) ? 0 : CompHash_calc(str) };
 };
 
-fn_((CompHash_val(CompHash self))(u32)) {
+fn_((CompHash64_from(S_const$u8 str))(CompHash64)) {
+    claim_assert_nonnullS(str);
+    return (CompHash64){ .val = isZero(str.len) ? 0 : CompHash64_calc(str) };
+};
+
+fn_((CompHash32_from(S_const$u8 str))(CompHash32)) {
+    claim_assert_nonnullS(str);
+    return (CompHash32){ .val = isZero(str.len) ? 0 : CompHash32_calc(str) };
+};
+
+fn_((CompHash_val(CompHash self))(usize)) {
     return self.val;
 };
 
-fn_((CompHash_calc(S_const$u8 str))(u32)) {
+fn_((CompHash64_val(CompHash64 self))(u64)) {
+    return self.val;
+};
+
+fn_((CompHash32_val(CompHash32 self))(u32)) {
+    return self.val;
+};
+
+fn_((CompHash_calc(S_const$u8 str))(usize)) {
+    claim_assert_nonnullS(str);
+    return pp_if_(arch_bits_is_64bit)(
+        pp_then_(CompHash64_calc(str)),
+        pp_else_(CompHash32_calc(str)));
+};
+
+fn_((CompHash64_calc(S_const$u8 str))(u64)) {
+    claim_assert_nonnullS(str);
+    var_(hash, u64) = 0;
+    for_(($s(str))(ch)) {
+        hash = usize_(1099511628211) * hash + *ch;
+    } $end(for);
+    return hash ^ (hash >> 32);
+};
+
+fn_((CompHash32_calc(S_const$u8 str))(u32)) {
     claim_assert_nonnullS(str);
     var_(hash, u32) = 0;
     for_(($s(str))(ch)) {
-        hash = 65599 * hash + *ch;
+        hash = u32_(65599) * hash + *ch;
     } $end(for);
     return hash ^ (hash >> 16);
 };

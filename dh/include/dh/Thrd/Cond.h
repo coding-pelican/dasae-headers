@@ -52,7 +52,7 @@ extern "C" {
     ) pp_end \
 )
 
-errset_((Thrd_Cond_Err)(Timeout));
+errset_((Thrd_Cond_E)() $union_errset_(Thrd_TimeoutE));
 struct Thrd_Cond__Impl pp_if_(Thrd_Cond_use_pthread)(
     pp_then_({
         var_(unused_, Void);
@@ -89,7 +89,7 @@ $extern fn_((Thrd_Cond_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void));
 /// @param timeout Maximum time to wait
 /// @return Error if the wait timed out
 $attr($must_check)
-$extern fn_((Thrd_Cond_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration timeout))(Thrd_Cond_Err$void));
+$extern fn_((Thrd_Cond_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration timeout))(Thrd_Cond_E$void));
 /// @brief Signals one waiting thread on a condition variable
 /// @param self Pointer to the condition variable to signal
 $extern fn_((Thrd_Cond_signal(Thrd_Cond* self))(void));

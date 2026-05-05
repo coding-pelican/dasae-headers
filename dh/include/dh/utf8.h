@@ -23,12 +23,12 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((utf8_E)(
-    InvalidBytes,
-    InvalidStartByte,
-    TooLargeCodepoint,
-    EncodesSurrogateHalf,
-    ExpectedContinuation,
-    OverlongEncoding
+    UTF8InvalidBytes,
+    UTF8InvalidStartByte,
+    UTF8TooLargeCodepoint,
+    UTF8EncodesSurrogateHalf,
+    UTF8ExpectedContinuation,
+    UTF8OverlongEncoding
 ));
 
 /// Byte sequence length (1-4)

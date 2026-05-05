@@ -123,9 +123,9 @@ TEST_fn_("u_offsets matches all actual struct field offsets" $scope) {
         [2] = offsetTo(Record$1u8$2u32$3u64, field2),
     });
 
-    for_(($s(computed_offsets), $a(expected_offsets))(computed, expected) {
+    for_(($s(computed_offsets), $a(expected_offsets))(computed, expected)) {
         try_(TEST_expect(*computed == *expected));
-    });
+    } $end(for);
 } $unscoped(TEST_fn);
 
 // =============================================================================
@@ -199,9 +199,9 @@ TEST_fn_("u_offsetsN matches all actual SoA struct field offsets" $scope) {
         [2] = offsetTo(Record$10$1u8$2u32$3u64, field2),
     });
 
-    for_(($s(computed_offsets), $a(expected_offsets))(computed, expected) {
+    for_(($s(computed_offsets), $a(expected_offsets))(computed, expected)) {
         try_(TEST_expect(*computed == *expected));
-    });
+    } $end(for);
 } $unscoped(TEST_fn);
 
 // =============================================================================

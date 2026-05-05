@@ -70,11 +70,11 @@ fn_((TEST_Framework_run(void))(void) $guard) {
         if_err((test_case->fn())(err)) {
             instance->stats.failed++;
             catch_((print(
-                out, u8_l("    {:s}: [{:s}] {:s}\n"), u8_l(TEST_color_red "[FAIL]" TEST_color_reset), Err_domainToStr(err), Err_codeToStr(err)
+                out, u8_l("    {:s}: {:s} ({:ih})\n"), u8_l(TEST_color_red "[FAIL]" TEST_color_reset), E_strfy(&err), E_tag(&err)
             ))($ignore, claim_unreachable));
-            Err_print(err);
-            ErrTrace_print();
-            ErrTrace_reset();
+            E_print(&err);
+            ETrace_print();
+            ETrace_reset();
         } else_ok_void {
             instance->stats.passed++;
             catch_((print(
@@ -100,7 +100,7 @@ fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void) $scop
     let_ignore = loc;
     let_ignore = eval_str;
     if (!expr) {
-        return_err(TEST_E_Unexpected());
+        return_err(E_cause$Unexpected());
     }
     return_ok({});
 } $unscoped(fn);
@@ -110,7 +110,7 @@ fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_
     let_ignore = loc;
     let_ignore = eval_str;
     if (!expr) {
-        return_err(TEST_E_Unexpected());
+        return_err(E_cause$Unexpected());
     }
     return_ok({});
 } $unscoped(fn);

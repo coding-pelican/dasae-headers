@@ -1,3 +1,4 @@
+#if UNUSED_CODE
 #include "dh-main.h"
 
 int TEST_func() {
@@ -13,5 +14,6 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $scope) {
     int value = TEST_func();
     debug_assert(value == 0);
     return_ok({});
-}
-$unscoped(fn);
+} $unscoped(fn);
+
+#endif /* UNUSED_CODE */

@@ -32,11 +32,11 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((fs_File_E)(
-    NotFound,
-    AccessDenied,
-    OpenFailed,
-    ReadFailed,
-    WriteFailed
+    FSNotFound,
+    FSAccessDenied,
+    FSOpenFailed,
+    FSReadFailed,
+    FSWriteFailed
 ));
 
 #if defined(__cplusplus)

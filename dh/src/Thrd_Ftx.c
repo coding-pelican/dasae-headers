@@ -5,37 +5,37 @@
 
 pp_if_(pp_true)(pp_then_(
     $attr($inline_always $must_check $maybe_unused)
-    $static fn_((Thrd_ftx__unsupported_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void));
+    $static fn_((Thrd_ftx__unsupported_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void));
     $attr($inline_always $maybe_unused)
     $static fn_((Thrd_ftx__unsupported_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 ));
 pp_if_(Thrd_ftx_use_pthread)(pp_then_(
     $attr($inline_always)
-    $static fn_((Thrd_ftx__pthread_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void));
+    $static fn_((Thrd_ftx__pthread_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void));
     $attr($inline_always)
     $static fn_((Thrd_ftx__pthread_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 ));
 pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always $must_check)
-    $static fn_((Thrd_ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void));
+    $static fn_((Thrd_ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void));
     $attr($inline_always)
     $static fn_((Thrd_ftx__windows_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 ));
 pp_if_(plat_is_linux)(pp_then_(
     $attr($inline_always $must_check)
-    $static fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void));
+    $static fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void));
     $attr($inline_always)
     $static fn_((Thrd_ftx__linux_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 ));
 pp_if_(plat_is_darwin)(pp_then_(
     $attr($inline_always $must_check)
-    $static fn_((Thrd_ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void));
+    $static fn_((Thrd_ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void));
     $attr($inline_always)
     $static fn_((Thrd_ftx__darwin_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 ));
 pp_if_(plat_is_wasi)(pp_then_(
     $attr($inline_always $must_check)
-    $static fn_((Thrd_ftx__wasi_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void));
+    $static fn_((Thrd_ftx__wasi_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void));
     $attr($inline_always)
     $static fn_((Thrd_ftx__wasi_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 ));
@@ -79,10 +79,10 @@ fn_((Thrd_ftx_wait(const atom_V$u32* ptr, u32 expect))(void) $scope) {
 } $unscoped(fn);
 
 $attr($branch_cold)
-fn_((Thrd_ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Duration timeout))(Thrd_ftx_Err$void) $scope) {
+fn_((Thrd_ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Duration timeout))(Thrd_ftx_E$void) $scope) {
     if (time_Duration_isZero(timeout)) {
         if (atom_V_load(ptr, atom_MemOrd_seq_cst) != expect) { return_ok({}); }
-        return_err(Thrd_ftx_Err_Timeout());
+        return_err(E_cause$ThrdTimeout());
     }
     return_(Thrd_ftx__wait(ptr, expect, some$((O$time_Duration)(timeout))));
 } $unscoped(fn);
@@ -101,7 +101,7 @@ fn_((Thrd_ftx_Deadline_init(O$time_Duration expires))(Thrd_ftx_Deadline)) {
 };
 
 $attr($branch_cold)
-fn_((Thrd_ftx_Deadline_wait(Thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 expect))(Thrd_ftx_Err$void) $scope) {
+fn_((Thrd_ftx_Deadline_wait(Thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 expect))(Thrd_ftx_E$void) $scope) {
     let timeout = orelse_((self->timeout)(return_ok_void(Thrd_ftx_wait(ptr, expect))));
     let elapsed = time_Instant_elapsed(self->started);
     let until_timeout = orelse_((time_Duration_subChkd(timeout, elapsed))(time_Duration_zero));
@@ -112,11 +112,11 @@ fn_((Thrd_ftx_Deadline_wait(Thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 
 
 /* --- Unsupported --- */
 
-fn_((Thrd_ftx__unsupported_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void) $scope) {
+fn_((Thrd_ftx__unsupported_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void) $scope) {
     let_ignore = ptr;
     let_ignore = expect;
     let_ignore = timeout;
-    return_err(Err_Unsupported());
+    return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
 fn_((Thrd_ftx__unsupported_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
@@ -127,12 +127,12 @@ fn_((Thrd_ftx__unsupported_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) 
 /* --- Pthreads --- */
 
 #if Thrd_ftx_use_pthread
-fn_((Thrd_ftx__pthread_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void) $scope) {
+fn_((Thrd_ftx__pthread_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void) $scope) {
     /* TODO: Implement */
     let_ignore = ptr;
     let_ignore = expect;
     let_ignore = timeout;
-    return_err(Err_Unsupported());
+    return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
 fn_((Thrd_ftx__pthread_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
@@ -145,7 +145,7 @@ fn_((Thrd_ftx__pthread_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 /* --- Windows --- */
 
 #if plat_is_windows
-fn_((Thrd_ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void) $scope) {
+fn_((Thrd_ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void) $scope) {
     claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(DWORD), packTypeInfo$(u32)));
     let timeout_ms = expr_(u32 $scope)(if_some((timeout)(delay)) {
         let delay_ms = delay.secs * n_(1, 000) + delay.nanos / n_(1, 000, 000);
@@ -157,7 +157,7 @@ fn_((Thrd_ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration t
         ptrQualCast$((volatile P$raw)(&ptr->raw)), &expect, sizeOf$(u32), timeout_ms);
     if (!rc && GetLastError() == ERROR_TIMEOUT) {
         claim_assert(isSome(timeout));
-        return_err(Thrd_ftx_Err_Timeout());
+        return_err(E_cause$ThrdTimeout());
     }
     return_ok({});
 } $unscoped(fn);
@@ -181,7 +181,7 @@ fn_((Thrd_ftx__windows_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 #include <unistd.h>
 #include <errno.h>
 
-fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void) $scope) {
+fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void) $scope) {
     struct timespec ts = { 0 };
     struct timespec* ts_ptr = null;
     if_some((timeout)(delay)) {
@@ -192,7 +192,7 @@ fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration tim
     let rc = syscall(SYS_futex, &ptr->raw, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, expect, ts_ptr, null, 0);
     if (rc == -1 && errno == ETIMEDOUT) {
         claim_assert(isSome(timeout));
-        return_err(Thrd_ftx_Err_Timeout());
+        return_err(E_cause$ThrdTimeout());
     }
     return_ok({});
 } $unscoped(fn);
@@ -215,7 +215,7 @@ $extern fn_((__ulock_wait(u32 operation, P$raw addr, u64 value, u32 timeout_us))
 $extern fn_((__ulock_wait2(u32 operation, P$raw addr, u64 value, u64 timeout_ns, u64 value2))(i32));
 $extern fn_((__ulock_wake(u32 operation, P$raw addr, u64 wake_value))(i32));
 
-fn_((Thrd_ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void) $scope) {
+fn_((Thrd_ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void) $scope) {
     u64 timeout_ns = 0;
     if_some((timeout)(delay)) { timeout_ns = delay.secs * time_nanos_per_sec + delay.nanos; }
     let flags = UL_COMPARE_AND_WAIT | ULF_NO_ERRNO;
@@ -238,9 +238,9 @@ fn_((Thrd_ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration ti
 #endif
     if (status < 0 && (-status) == ETIMEDOUT) {
 #if defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 110001
-        return_err(Thrd_ftx_Err_Timeout());
+        return_err(E_cause$ThrdTimeout());
 #else
-        if (!overflowed) { return_err(Thrd_ftx_Err_Timeout()); }
+        if (!overflowed) { return_err(E_cause$ThrdTimeout()); }
 #endif
     }
     return_ok({});
@@ -259,12 +259,12 @@ fn_((Thrd_ftx__darwin_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 /* --- WASI --- */
 
 #if plat_is_wasi
-fn_((Thrd_ftx__wasi_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_Err$void) $scope) {
+fn_((Thrd_ftx__wasi_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void) $scope) {
     /* TODO: Implement */
     let_ignore = ptr;
     let_ignore = expect;
     let_ignore = timeout;
-    return_err(Err_Unsupported());
+    return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
 fn_((Thrd_ftx__wasi_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {

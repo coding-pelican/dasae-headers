@@ -1,8 +1,0 @@
-CompileFlags:
-  Add:
-    - -I./extra/edition/bar/src
-    - -I./extra/edition/bar/include
-    - -isystem./extra/edition/bar/lib/deps
-    - -I./test-pkg/extra/edition/bar/src
-    - -I./test-pkg/extra/edition/bar/include
-    - -isystem./test-pkg/extra/edition/bar/lib/deps

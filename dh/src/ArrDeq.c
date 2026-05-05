@@ -1,26 +1,5 @@
 #include "dh/ArrDeq.h"
-
-T_use_E$($set(mem_E)(usize));
-$static fn_((ArrDeq__addOrOOM(usize lhs, usize rhs))(mem_E$usize) $scope) {
-    if_some((usize_addChkd(lhs, rhs))(result)) {
-        return_ok(result);
-    } else_none {
-        return_err(mem_E_OutOfMemory());
-    }
-    claim_unreachable;
-} $unscoped(fn);
-
-$attr($inline_always)
-$static fn_((ArrDeq__calcInitCap(TypeInfo type))(usize)) {
-    return as$(usize)(pri_max(1, arch_cache_line_bytes / type.size));
-};
-
-$static fn_((ArrDeq__growCap(TypeInfo type, usize current, usize minimum))(usize)) {
-    let init_cap = ArrDeq__calcInitCap(type);
-    usize grown = current;
-    do { grown = usize_addSat(grown, grown / 2 + init_cap); } while (grown < minimum);
-    return grown;
-};
+#include "dh/mem/dyn.h"
 
 $static fn_((ArrDeq__bufIdx(const ArrDeq* self, usize idx))(usize)) {
     let head_len = self->buf.len - self->head;
@@ -161,7 +140,7 @@ fn_((ArrDeq_ensureCap(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize new_cap)
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eql);
     if (new_cap <= self->buf.len) { return_ok({}); }
-    return ArrDeq_ensureCapPrecise(self, type, gpa, ArrDeq__growCap(type, self->buf.len, new_cap));
+    return ArrDeq_ensureCapPrecise(self, type, gpa, mem_dyn_growCap(type, self->buf.len, new_cap));
 } $unscoped(fn);
 
 fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void) $scope) {
@@ -202,7 +181,7 @@ fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize n
 fn_((ArrDeq_ensureUnusedCap(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize additional))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, type, TypeInfo_eql);
-    return ArrDeq_ensureCap(self, type, gpa, try_(ArrDeq__addOrOOM(self->len, additional)));
+    return ArrDeq_ensureCap(self, type, gpa, try_(mem_dyn_addOrOOM(self->len, additional)));
 } $unscoped(fn);
 
 fn_((ArrDeq_clearRetainingCap(ArrDeq* self))(void)) {
@@ -227,7 +206,7 @@ fn_((ArrDeq_append(ArrDeq* self, mem_Alctr gpa, u_V$raw item))(mem_E$void) $scop
 fn_((ArrDeq_appendFixed(ArrDeq* self, u_V$raw item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, item.inner_type, TypeInfo_eql);
-    if (usize_sub(self->buf.len, self->len) == 0) { return_err(mem_E_OutOfMemory()); }
+    if (usize_sub(self->buf.len, self->len) == 0) { return_err(E_cause$OutOfMemory()); }
     return_ok_void(ArrDeq_appendWithin(self, item));
 } $unscoped(fn);
 
@@ -251,7 +230,7 @@ fn_((ArrDeq_prepend(ArrDeq* self, mem_Alctr gpa, u_V$raw item))(mem_E$void) $sco
 
 fn_((ArrDeq_prependFixed(ArrDeq* self, u_V$raw item))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    if (usize_sub(self->buf.len, self->len) == 0) { return_err(mem_E_OutOfMemory()); }
+    if (usize_sub(self->buf.len, self->len) == 0) { return_err(E_cause$OutOfMemory()); }
     return_ok_void(ArrDeq_prependWithin(self, item));
 } $unscoped(fn);
 

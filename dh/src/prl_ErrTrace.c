@@ -1,22 +1,22 @@
 #include "dh/prl/ErrTrace.h"
-#if ErrTrace_comp_enabled
+#if ETrace_comp_enabled
 #include "dh/io/common.h"
 #include "dh/fs/File.h"
 
 #if on_comptime
-$static fn_((ErrTrace__instance(void))(ErrTrace*)) {
-    $static $thrd_local var_(ErrTrace_s_instance, ErrTrace) = { .frames = {}, .len = 0 };
-    return &ErrTrace_s_instance;
+$static fn_((ETrace__instance(void))(ETrace*)) {
+    $static $thrd_local var_(ETrace_s_instance, ETrace) = { .frames = {}, .len = 0 };
+    return &ETrace_s_instance;
 };
 
-fn_((ErrTrace_reset_debug(void))(void)) {
-    let trace = ErrTrace__instance();
+fn_((ETrace_reset_debug(void))(void)) {
+    let trace = ETrace__instance();
     trace->len = 0;
 };
 
-fn_((ErrTrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr))(void)) {
-    let trace = ErrTrace__instance();
-    if (trace->len < ErrTrace_max_frames) {
+fn_((ETrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr))(void)) {
+    let trace = ETrace__instance();
+    if (trace->len < ETrace_max_frames) {
         asg_l((A_at((trace->frames)[trace->len++]))({
             .src_loc = src_loc,
             .ret_addr = ret_addr,
@@ -24,8 +24,8 @@ fn_((ErrTrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr))(void)) {
     }
 };
 
-fn_((ErrTrace_print_debug(void))(void)) {
-    let trace = ErrTrace__instance();
+fn_((ETrace_print_debug(void))(void)) {
+    let trace = ETrace__instance();
     if (trace->len <= 0) { return; }
 
     let out = fs_File_writer(io_getStdErr());
@@ -40,4 +40,4 @@ fn_((ErrTrace_print_debug(void))(void)) {
     } $end(for);
 };
 #endif /* on_comptime */
-#endif /* ErrTrace_comp_enabled */
+#endif /* ETrace_comp_enabled */

@@ -26,10 +26,10 @@ extern "C" {
 
 /// WTF-8 specific errors (mostly subset of UTF-8 errors minus surrogate checks)
 errset_((wtf8_E)(
-    InvalidStartByte,
-    ExpectedContinuation,
-    OverlongEncoding,
-    CodepointTooLarge
+    WTF8InvalidStartByte,
+    WTF8ExpectedContinuation,
+    WTF8OverlongEncoding,
+    WTF8CodepointTooLarge
 ));
 
 T_use_E$(utf8_SeqByte);
