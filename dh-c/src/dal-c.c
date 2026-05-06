@@ -6,6 +6,7 @@
 static void dal_c__printUsage(void);
 static void dal_c__printVersion(void);
 static bool dal_c__needsProject(const dal_c_Cmd* cmd);
+static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd);
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
@@ -36,12 +37,7 @@ int main(int argc, const char* argv[]) {
             return dal_c_Cmd_cleanup(&cmd), 1;
         }
         if (!proj->root) {
-            // For lib command with target file, allow no project structure
-            bool allow_no_project = (cmd->action == dal_c_CmdAction_lib && cmd->payload.lib.target_file != NULL)
-                                 || cmd->action == dal_c_CmdAction_build_dsl
-                                 || cmd->action == dal_c_CmdAction_test_dsl
-                                 || cmd->action == dal_c_CmdAction_clean_dsl;
-            if (!allow_no_project) {
+            if (!dal_c__allowsNoProject(cmd)) {
                 (void)fprintf(stderr, "Error: Not in a dh-c project directory\n");
                 (void)fprintf(stderr, "  (Looking for nearest ancestor with %s)\n", dal_c_file_project_dh);
                 return dal_c_Project_cleanup(&proj), dal_c_Cmd_cleanup(&cmd), 1;
@@ -94,6 +90,8 @@ void dal_c__printUsage(void) {
         printf("  %-*s %s\n", dal_c_help_opt_width, dal_c_help_global_options[i].name, dal_c_help_global_options[i].description);
     }
     printf("\n");
+    printf("PROJECT.DH CONTRACT:\n");
+    printf("  See `BUILD.md` and `dh-c/docs/project-dh-contract.md` for explicit and implicit `.dh` rules.\n\n");
 
     printf("PROFILES:\n");
     for (int i = 0; i < dal_c_help_profiles_count; ++i) {
@@ -115,15 +113,50 @@ void dal_c__printVersion(void) {
 bool dal_c__needsProject(const dal_c_Cmd* cmd) {
     switch (cmd->action) {
     case dal_c_CmdAction_build:
+        return !cmd->payload.build.self_boundary;
     case dal_c_CmdAction_lib:
     case dal_c_CmdAction_run:
     case dal_c_CmdAction_test:
     case dal_c_CmdAction_deps:
     case dal_c_CmdAction_clean:
+        if (cmd->action == dal_c_CmdAction_clean) {
+            return !cmd->payload.clean.self_boundary;
+        }
+        return true;
     case dal_c_CmdAction_build_dsl:
     case dal_c_CmdAction_test_dsl:
     case dal_c_CmdAction_clean_dsl:
         return true;
+    case dal_c_CmdAction_build_self:
+    case dal_c_CmdAction_clean_self:
+    case dal_c_CmdAction_version:
+    case dal_c_CmdAction_help:
+    case dal_c_CmdAction_workspace:
+    case dal_c_CmdAction_project:
+    case dal_c_CmdAction_invalid:
+    default:
+        return false;
+    }
+}
+
+static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd) {
+    switch (cmd->action) {
+    case dal_c_CmdAction_build:
+        return cmd->payload.build.target_path != NULL && cmd->payload.build.sample_dir == dal_c_SampleDir_none;
+    case dal_c_CmdAction_lib:
+        return cmd->payload.lib.target_path != NULL;
+    case dal_c_CmdAction_run:
+        return cmd->payload.run.target_path != NULL && cmd->payload.run.sample_dir == dal_c_SampleDir_none;
+    case dal_c_CmdAction_test:
+        return cmd->payload.test.target_path != NULL;
+    case dal_c_CmdAction_build_dsl:
+    case dal_c_CmdAction_test_dsl:
+    case dal_c_CmdAction_clean_dsl:
+        return true;
+    case dal_c_CmdAction_build_self:
+    case dal_c_CmdAction_clean_self:
+    case dal_c_CmdAction_deps:
+    case dal_c_CmdAction_clean:
     case dal_c_CmdAction_version:
     case dal_c_CmdAction_help:
     case dal_c_CmdAction_workspace:

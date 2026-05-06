@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./pkg-no_dsl_contract/source
+    - -I./pkg-no_dsl_contract/include
+    - -isystem./pkg-no_dsl_contract/lib/deps

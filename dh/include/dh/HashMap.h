@@ -272,9 +272,9 @@ $static fn_((HashMap_Ctx_assertValid(
     HashMap_EqlFn eqlFn,
     HashMap_LoadRatio load_ratio
 ))(void)) {
-    debug_assert_nonnull(inner.raw);
-    debug_assert_nonnull(hashFn);
-    debug_assert_nonnull(eqlFn);
+    claim_assert_nonnull(inner.raw);
+    claim_assert_nonnull(hashFn);
+    claim_assert_nonnull(eqlFn);
     HashMap_LoadRatio_assertValid(load_ratio.max);
 };
 $attr($inline_always)

@@ -8,20 +8,36 @@
 
 typedef struct dal_c_CommandIntent {
     dal_c_CmdAction action;
-    const char* target_file;
+    const char* target_path;
+    const char* target_root_name_hint;
     const char* output_path;
     const char* run_args;
-    const char* explicit_lib;
-    dal_c_SampleDir sample_dir;
     dal_c_Linking linking;
     bool build_all;
+    bool as_library;
+    bool self_boundary;
     bool recursive;
     bool debug;
     bool dsl_first;
     bool cache_only;
 } dal_c_CommandIntent;
 
+typedef struct dal_c_TargetRequest {
+    const dal_c_TargetRoot* root;
+    const char* raw_target_path;
+    char* resolved_path;
+    char* relative_path;
+    dal_c_Target kind;
+    dal_c_TargetSelection selection;
+    bool link_self;
+    bool resolved_is_dir;
+} dal_c_TargetRequest;
+
 void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out);
+void dal_c_TargetRequest_cleanup(dal_c_TargetRequest* request);
+const dal_c_TargetRoot* dal_c_Project_findTargetRootByName(const dal_c_Project* proj, const char* name);
+const dal_c_TargetRoot* dal_c_Project_findTargetRootByPath(const dal_c_Project* proj, const char* path);
+bool dal_c_TargetRequest_resolve(const dal_c_Project* proj, const dal_c_CommandIntent* intent, dal_c_TargetRequest* out);
 void dal_c_BuildDefaults_cleanup(dal_c_BuildDefaults* defaults);
 void dal_c_BuildDefaults_merge(dal_c_BuildDefaults* dst, const dal_c_BuildDefaults* src);
 bool dal_c_BuildDefaults_applyDhFile(dal_c_BuildDefaults* dst, const char* path);
@@ -48,11 +64,14 @@ int dal_c__executeMakeInDir(const char* directory);
 int dal_c__buildDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__cleanDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__testDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
+int dal_c__buildSelf(const dal_c_Cmd* cmd);
+int dal_c__cleanSelf(const dal_c_Cmd* cmd);
 
 /// === SOURCE COLLECTION ===
 
-ArrStr* dal_c__collectSourceFiles(const dal_c_Project* proj, const char* target_file);
+ArrStr* dal_c__collectSourceFiles(const dal_c_Project* proj, const char* target_path);
 ArrStr* dal_c__collectDirectoryFiles(const dal_c_Project* proj, const char* dir_name);
+bool dal_c__shouldSkipAutoSourcePath(const char* path);
 
 /// === EXECUTABLE RUNNING ===
 

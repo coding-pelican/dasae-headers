@@ -86,7 +86,6 @@ If:
     - .*/lib/clang/.*
     - .*/lib/gcc/.*
     # [3rd Party] External libraries
-    - .*/libs/BlocksRuntime/.*
     - .*/libs/.*
     - .*/lib/.*
 CompileFlags:
@@ -116,7 +115,7 @@ CompileFlags:
     # [Relative Paths] use relative paths based on the project root
     # This configuration file (.clangd) is the reference point.
     - -I./dh/include
-    - -isystem./dh/libs/BlocksRuntime/include
+    - -isystem./dh/lib/deps
     # [Diagnostic: Common]
     - -Werror=all
     - -Werror=extra
@@ -157,7 +156,6 @@ CompileFlags:
     - -fms-extensions # Windows Compatibility (Declspec, etc.)
     - -Wno-microsoft-anon-tag # Microsoft anonymous tag warning (default excluded warning, `-Wmicrosoft-anon-tag` to enable)
     - -funsigned-char # Prevent char sign issues in cross-platform
-    - -fblocks # Enable blocks support
 # ========== C++ Sources ==========
 ---
 If:
@@ -169,7 +167,7 @@ CompileFlags:
     - -std=gnu++20
     # Relative Paths
     - -I./dh/include
-    - -isystem./dh/libs/BlocksRuntime/include
+    - -isystem./dh/lib/deps
     # Diagnostic: Common
     - -Werror=all
     - -Werror=extra
@@ -210,7 +208,6 @@ CompileFlags:
     - -fms-extensions
     - -Wno-microsoft-anon-tag
     - -funsigned-char
-    - -fblocks
 # ========== Headers ==========
 ---
 If:

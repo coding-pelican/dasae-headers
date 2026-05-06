@@ -45,9 +45,8 @@ fn_((dage_Canvas_clear(dage_Canvas* self, O$dacolor_RGBA other_color))(void)) {
     } $end(for);
 };
 
-$inline_always
-    dacolor_RGBA
-    dacolor_RGBA_blendAlpha(dacolor_RGBA src, dacolor_RGBA dst) {
+$attr($inline_always)
+$static fn_((dacolor_RGBA_blendAlpha(dacolor_RGBA src, dacolor_RGBA dst))(dacolor_RGBA)) {
     // Convert [0..255] => [0..1]
     let s_a = as$(f32)(src.a) / as$(f32)(dacolor_RGBA_channels_max_value);
     let d_a = as$(f32)(dst.a) / as$(f32)(dacolor_RGBA_channels_max_value);

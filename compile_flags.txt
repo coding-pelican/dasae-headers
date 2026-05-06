@@ -1,7 +1,7 @@
 -xc
 -std=gnu17
 -I./dh/include
--isystem./dh/libs/BlocksRuntime/include
+-isystem./dh/lib/deps
 -Werror=all
 -Werror=extra
 -Werror=conversion
@@ -25,4 +25,3 @@
 -fms-extensions
 -Wno-microsoft-anon-tag
 -funsigned-char
--fblocks

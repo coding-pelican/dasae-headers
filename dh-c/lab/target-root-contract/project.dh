@@ -1,0 +1,15 @@
+self-root=src
+self-root=pkg
+self-root=internal
+
+[target-root cmd]
+path=cmd
+kind=executable
+selection=dir
+link-self=true
+
+[target-root plugins]
+path=plugins
+kind=shared-lib
+selection=dir
+link-self=true

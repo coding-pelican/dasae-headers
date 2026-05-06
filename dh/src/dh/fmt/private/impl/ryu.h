@@ -2,12 +2,11 @@
  * @copyright Copyright (c) 2025 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
- * @file    fmt_internal_ryu.h
+ * @file    ryu.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-12-22 (date of creation)
  * @updated 2025-12-22 (date of last update)
- * @version v0.1-alpha
- * @ingroup dasae-headers(dh)/fmt/internal
+ * @ingroup dasae-headers(dh)/fmt/private/impl
  * @prefix  fmt__ryu
  *
  * @brief   Ryu algorithm lookup tables for float formatting
@@ -21,8 +20,8 @@
  * @see [Ryu Paper: Ulf Adams (2018), "Ryū: fast float-to-string conversion"](https://dl.acm.org/doi/pdf/10.1145/3360595)
  * @see [Zig Implementation](https://github.com/ziglang/zig/blob/master/lib/std/fmt/float.zig)
  */
-#ifndef fmt_fmt__ryu__included
-#define fmt_fmt__ryu__included 1
+#ifndef fmt_private_impl_ryu__included
+#define fmt_private_impl_ryu__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -272,4 +271,4 @@ $static fn_((fmt__ryu_mulShift64(u64 m, fmt__ryu_TableEntry mul, u32 shift))(u64
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* fmt_fmt__ryu__included */
+#endif /* fmt_private_impl_ryu__included */

@@ -9,10 +9,10 @@ Owner:
 
 Normalized fields:
 - action
-- target file
+- target path
+- target-root hint
 - output path override
 - run args
-- sample/example/test context
 - build-all
 - recursive
 - debug
@@ -30,17 +30,15 @@ Owner:
 
 Rules:
 - profile root remains `build/<profile>/`
-- executable defaults are context-scoped:
-  - `build/<profile>/samples/...`
-  - `build/<profile>/examples/...`
-  - `build/<profile>/tests/...`
-  - `build/<profile>/targets/...`
-- static and shared libraries stay at `build/<profile>/`
+- declared target roots own their own context folder under `build/<profile>/`
+- built-in compatibility roots still map to `samples`, `examples`, and `tests`
+- plain project builds still fall back to `build/<profile>/targets/...`
+- target-root outputs preserve enough relative path structure to avoid sibling collisions
 - explicit output overrides still win
 
 Why:
-- build/run now share the same output-path policy
-- sample/example/test artifacts no longer collide with main executable names
+- build/run now share the same target-root-aware output policy
+- folder targets under the same root no longer collide on basename alone
 
 ## Makefile And Stale-Detection Contract
 Owner:
@@ -67,20 +65,24 @@ Why:
 - switching between `sample`, `example`, `test`, `run`, or dependency builds no longer invalidates unrelated objects
 - repeated `run` reaches `make: Nothing to be done for 'all'.`
 
-## Common Source Reuse Contract
+## Self Reuse Contract
 Owner:
 - `dh-c/src/dal-c/Cmd.c`
 - `dh-c/src/dal-c/build.c`
+- `dh-c/src/dal-c/Project.c`
 
 Rules:
-- sample/example/test targets do not directly append project `src/` into the target plan
-- non-`dh` projects first build a project static library from `src/`
-- sample/example/test targets then link that library plus only their context-specific sources
+- reusable self code is declared by repeated `self-root=<path>`
+- when no `self-root` is declared, the resolved project `src` root remains the default
+- target roots declare whether they `link-self`
+- self-project reuse builds a cached local static library from the self roots
+- target-root plans then compile only target-local sources and link the cached self unit when requested
 - `dh` self-project sample/test paths link `dh.lib` directly and skip a second local-project-lib path
+- third-party dependency staging still belongs only to `lib/deps`
 
 Why:
-- context targets rebuild only their own sources
-- project core code is reused through the cached library artifact
+- sibling targets can share one cached self unit without pretending it is a third-party dependency
+- `lib/deps` no longer mixes self-project reuse with external dependencies
 
 ## PCH Policy
 Owner:
@@ -117,7 +119,7 @@ Owner:
 - `dh-c/src/dal-c/Cmd.c`
 
 Current intended surfaces:
-- `build`: executable build, direct source build, aggregate source build, sample/example/test contexts, `--dsl`, `--recur`
+- `build`: direct source build, project self build, declared target-root build, legacy sample/example/test shorthands, `--dsl`, `--recur`
 - `run`: same artifact policy as `build`, then execute/debug
 - `test`: test runner or standalone test build, then execute/debug
 - `build-dsl`: build `dh` only
@@ -134,3 +136,4 @@ Audited fix:
 - hardcoded `dh-main.h` / `dh-TEST-main.h` no-PCH exceptions in core build logic
 - `Cmd.c` and `build.c` each owning their own cross-module command interpretation
 - sample/example/test plans recompiling project `src/` on every context build
+- self-project reusable code being staged through third-party dependency paths

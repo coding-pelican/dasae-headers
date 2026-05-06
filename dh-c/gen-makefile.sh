@@ -10,7 +10,7 @@ ifeq ($(OS),Windows_NT)
     EXE_EXT = .exe
     RM = del /Q
     MKDIR = mkdir -p
-    RMDIR = rmdir /S /Q
+    RMDIR = rm -rf
 else
     PLATFORM = unix
     CC ?= clang
@@ -50,31 +50,64 @@ OBJS = $(ALL_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 # Target executable
 TARGET = $(BUILD_DIR)/dh-c$(EXE_EXT)
 
+# Self-build profile (matches `dh-c` runtime profile names)
+PROFILE ?= release
+
 # Compiler flags
-CFLAGS = -std=gnu17 \
-         -I$(INCLUDE_DIR) \
-         -Wall -Wextra \
-         -Werror=all -Werror=extra -Werror=conversion \
-         -Werror=sign-conversion -Wfloat-conversion \
-         -Werror=cast-qual -Werror=cast-align \
-         -Wpointer-arith -Wbad-function-cast \
-         -Wnull-dereference -Wwrite-strings \
-         -Wswitch-enum -Winfinite-recursion \
-         -Wloop-analysis -Werror=strict-prototypes \
-         -Werror=missing-prototypes \
-         -Wmissing-variable-declarations \
-         -Werror=div-by-zero -Wthread-safety \
-         -fgnu-keywords -fms-extensions \
-         -funsigned-char -fblocks \
-         -g
+BASE_CFLAGS = -std=gnu17 \
+              -I$(INCLUDE_DIR) \
+              -Wall -Wextra \
+              -Werror=all -Werror=extra -Werror=conversion \
+              -Werror=sign-conversion -Wfloat-conversion \
+              -Werror=cast-qual -Werror=cast-align \
+              -Wpointer-arith -Wbad-function-cast \
+              -Wnull-dereference -Wwrite-strings \
+              -Wno-switch-enum -Winfinite-recursion \
+              -Wloop-analysis -Werror=strict-prototypes \
+              -Werror=missing-prototypes \
+              -Wmissing-variable-declarations \
+              -Werror=div-by-zero -Wthread-safety \
+              -fgnu-keywords -fms-extensions -Wno-microsoft-anon-tag \
+              -funsigned-char \
+              -mllvm -enable-dfa-jump-thread \
+              -static
+
+PROFILE_CFLAGS =
+PROFILE_LDFLAGS =
+
+ifeq ($(PROFILE),dev)
+    PROFILE_CFLAGS += -g3 -Og -fno-omit-frame-pointer
+else ifeq ($(PROFILE),test)
+    PROFILE_CFLAGS += -g -O1 -fno-omit-frame-pointer
+else ifeq ($(PROFILE),profile)
+    PROFILE_CFLAGS += -g -O2 -fno-omit-frame-pointer
+else ifeq ($(PROFILE),stable)
+    PROFILE_CFLAGS += -g1 -O2
+else ifeq ($(PROFILE),release)
+    PROFILE_CFLAGS += -g1 -O3 -flto -ffunction-sections -fdata-sections
+    PROFILE_LDFLAGS += -flto -Wl,--gc-sections
+else ifeq ($(PROFILE),optimize)
+    PROFILE_CFLAGS += -O3 -march=native -flto -ffunction-sections -fdata-sections
+    PROFILE_LDFLAGS += -flto
+else ifeq ($(PROFILE),compact)
+    PROFILE_CFLAGS += -Os -flto -ffunction-sections -fdata-sections
+    PROFILE_LDFLAGS += -flto -Wl,--gc-sections
+else ifeq ($(PROFILE),micro)
+    PROFILE_CFLAGS += -Oz -fno-unroll-loops -flto
+    PROFILE_LDFLAGS += -flto
+else
+    $(error Unsupported PROFILE '$(PROFILE)')
+endif
+
+CFLAGS = $(BASE_CFLAGS) $(PROFILE_CFLAGS)
 
 # Platform-specific flags
 ifeq ($(PLATFORM),windows)
     CFLAGS += -D_WIN32_WINNT=0x0600
-    LDFLAGS = -fuse-ld=lld
+    LDFLAGS = -fuse-ld=lld $(PROFILE_LDFLAGS)
 else
     CFLAGS += -D_POSIX_C_SOURCE=200809L
-    LDFLAGS =
+    LDFLAGS = $(PROFILE_LDFLAGS)
 endif
 
 # Default target
@@ -98,18 +131,15 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 # Clean build artifacts
 clean:
 	@echo "Cleaning..."
-ifeq ($(PLATFORM),windows)
-	@if exist $(BUILD_DIR) $(RMDIR) $(BUILD_DIR)
-else
-	@$(RM) -r $(BUILD_DIR)
-endif
+	@$(RMDIR) $(BUILD_DIR) 2>/dev/null || true
 	@echo "Clean complete"
 
 # Install (copy to system path - optional)
-install: $(TARGET)
 ifeq ($(PLATFORM),windows)
+install: $(TARGET)
 	@echo "Installation not implemented for Windows"
 else
+install: $(TARGET)
 	@echo "Installing dh-c..."
 	@cp $(TARGET) /usr/local/bin/dh-c
 	@chmod +x /usr/local/bin/dh-c

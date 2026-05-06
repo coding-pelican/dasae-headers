@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./target-root-contract/src
+    - -I./target-root-contract/include
+    - -isystem./target-root-contract/lib/deps

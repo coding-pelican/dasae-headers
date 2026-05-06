@@ -1,4 +1,4 @@
-#include "fmt_internal.h"
+#include "private/share.h"
 /* FIXME: correct format specifier parsing logic `[fill][alignment][sign][#][width]` */
 
 /*========== Internal Declarations ==========================================*/

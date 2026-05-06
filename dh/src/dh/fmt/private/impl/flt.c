@@ -1,5 +1,5 @@
-#include "fmt_internal.h"
-#include "fmt_internal_ryu.h"
+#include "../share.h"
+#include "ryu.h"
 
 /*========== Constants ======================================================*/
 

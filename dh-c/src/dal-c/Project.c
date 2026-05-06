@@ -12,9 +12,11 @@
 static char* dal_c_Project__findRoot(const char* start);
 static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd);
 static bool dal_c_Project__isDHRoot(const char* path);
-static void dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj);
+static bool dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj);
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj);
 static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib);
+static void dal_c_Project__addSelfRoot(dal_c_Project* proj, const char* path);
+static void dal_c_Project__addTargetRoot(dal_c_Project* proj, dal_c_TargetRoot* root);
 static void dal_c_Project__addToArray(char*** arr, int* count, const char* value);
 static void dal_c_Project__setString(char** slot, const char* value);
 static bool dal_c_Project__isAbsolutePath(const char* path);
@@ -23,7 +25,13 @@ static void dal_c_Project__freeLines(char** lines, int line_count);
 static void dal_c_Project__applyBuildDefaultsLine(dal_c_BuildDefaults* defaults, const char* key, const char* value);
 static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const char* key, const char* value);
 static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project* proj, const char* key, const char* value);
+static void dal_c_Project__applyTargetRootLine(dal_c_TargetRoot* root, const dal_c_Project* proj, const char* key, const char* value);
 static char* dal_c_Project__resolveProjectPath(const dal_c_Project* proj, const char* value);
+static char* dal_c_Project__pathRelativeTo(const char* root, const char* path);
+static bool dal_c_Project__pathHasPrefix(const char* root, const char* path);
+static bool dal_c_Project__targetRootIsValid(const dal_c_TargetRoot* root);
+static void dal_c_Project__resolveTargetRootExcludePaths(dal_c_TargetRoot* root);
+static void dal_c_Project__ensureBuiltinTargetRoots(dal_c_Project* proj);
 static bool dal_c_Project__resolveCategoryDirs(dal_c_Project* proj);
 static bool dal_c_Project__resolveCategoryDir(dal_c_Project* proj, char** slot, const char* const* aliases);
 
@@ -42,12 +50,16 @@ dal_c_Project* dal_c_Project_detect(const dal_c_Cmd* cmd) {
         proj->project_dh = path_join(proj->root, dal_c_file_project_dh);
         proj->pch_enabled = true;
         if (path_isFile(proj->project_dh)) {
-            dal_c_Project__parseProjectDh(proj->project_dh, proj);
+            if (!dal_c_Project__parseProjectDh(proj->project_dh, proj)) {
+                dal_c_Project_cleanup(&proj);
+                return NULL;
+            }
         }
         if (!dal_c_Project__resolveCategoryDirs(proj)) {
             dal_c_Project_cleanup(&proj);
             return NULL;
         }
+        dal_c_Project__ensureBuiltinTargetRoots(proj);
     }
 
     proj->dh_path = dal_c_Project__findDHInstallation(cmd);
@@ -67,12 +79,16 @@ dal_c_Project* dal_c_Project_detectAt(const char* lib_path, const char* dh_path)
     proj->project_dh = path_join(proj->root, dal_c_file_project_dh);
     proj->pch_enabled = true;
     if (proj->project_dh && path_isFile(proj->project_dh)) {
-        dal_c_Project__parseProjectDh(proj->project_dh, proj);
+        if (!dal_c_Project__parseProjectDh(proj->project_dh, proj)) {
+            dal_c_Project_cleanup(&proj);
+            return NULL;
+        }
     }
     if (!dal_c_Project__resolveCategoryDirs(proj)) {
         dal_c_Project_cleanup(&proj);
         return NULL;
     }
+    dal_c_Project__ensureBuiltinTargetRoots(proj);
     proj->pch_header = dal_c_Project__detectPCH(proj);
     return proj;
 }
@@ -101,6 +117,23 @@ void dal_c_Project_cleanup(dal_c_Project** self) {
     free(proj->pch_header_override);
     free(proj->pch_header);
     dal_c_BuildDefaults_cleanup(&proj->defaults);
+    for (int i = 0; i < proj->self_root_count; ++i) {
+        free(proj->self_roots[i].path);
+    }
+    free(proj->self_roots);
+    for (int i = 0; i < proj->target_root_count; ++i) {
+        free(proj->target_roots[i].name);
+        free(proj->target_roots[i].path);
+        for (int j = 0; j < proj->target_roots[i].exclude_count; ++j) {
+            free(proj->target_roots[i].exclude_paths[j]);
+        }
+        free((void*)proj->target_roots[i].exclude_paths);
+    }
+    free(proj->target_roots);
+    for (int i = 0; i < proj->exclude_count; ++i) {
+        free(proj->exclude_paths[i]);
+    }
+    free((void*)proj->exclude_paths);
     for (int i = 0; i < proj->pch_exclude_count; ++i) {
         free(proj->pch_exclude_headers[i]);
     }
@@ -352,6 +385,119 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj) {
     return deps_dir;
 }
 
+const dal_c_TargetRoot* dal_c_Project_findTargetRootByName(const dal_c_Project* proj, const char* name) {
+    assert(proj != NULL);
+    if (!name) { return NULL; }
+    for (int i = 0; i < proj->target_root_count; ++i) {
+        const dal_c_TargetRoot* root = &proj->target_roots[i];
+        if (root->name && str_eql(root->name, name)) {
+            return root;
+        }
+    }
+    return NULL;
+}
+
+const dal_c_TargetRoot* dal_c_Project_findTargetRootByPath(const dal_c_Project* proj, const char* path) {
+    assert(proj != NULL);
+    if (!path) { return NULL; }
+
+    const dal_c_TargetRoot* best = NULL;
+    size_t best_len = 0;
+    for (int i = 0; i < proj->target_root_count; ++i) {
+        const dal_c_TargetRoot* root = &proj->target_roots[i];
+        if (!root->path || !dal_c_Project__pathHasPrefix(root->path, path)) {
+            continue;
+        }
+        size_t root_len = strlen(root->path);
+        if (!best || root_len > best_len) {
+            best = root;
+            best_len = root_len;
+        }
+    }
+    return best;
+}
+
+void dal_c_TargetRequest_cleanup(dal_c_TargetRequest* request) {
+    if (!request) { return; }
+    free(request->resolved_path);
+    free(request->relative_path);
+    memset(request, 0, sizeof(*request));
+}
+
+bool dal_c_TargetRequest_resolve(const dal_c_Project* proj, const dal_c_CommandIntent* intent, dal_c_TargetRequest* out) {
+    assert(proj != NULL);
+    assert(intent != NULL);
+    assert(out != NULL);
+    memset(out, 0, sizeof(*out));
+    out->raw_target_path = intent->target_path;
+
+    const dal_c_TargetRoot* root = NULL;
+    if (intent->target_root_name_hint) {
+        root = dal_c_Project_findTargetRootByName(proj, intent->target_root_name_hint);
+        if (!root) {
+            (void)fprintf(stderr, "Error: Unknown target root `%s`\n", intent->target_root_name_hint);
+            return false;
+        }
+    }
+
+    char* resolved_path = NULL;
+    if (intent->target_path) {
+        if (dal_c_Project__isAbsolutePath(intent->target_path)) {
+            resolved_path = strdup(intent->target_path);
+        } else if (root && root->path) {
+            resolved_path = path_join(root->path, intent->target_path);
+        } else {
+            resolved_path = path_abs(intent->target_path);
+        }
+    } else if (root && root->path) {
+        resolved_path = strdup(root->path);
+    }
+
+    if (!root && resolved_path) {
+        root = dal_c_Project_findTargetRootByPath(proj, resolved_path);
+    }
+
+    out->root = root;
+    out->kind = root ? root->kind : dal_c_Target_invalid;
+    out->selection = root ? root->selection : dal_c_TargetSelection_invalid;
+    out->link_self = root ? root->link_self : false;
+    out->resolved_path = resolved_path;
+
+    if (!resolved_path || !root) {
+        if (resolved_path) {
+            out->resolved_is_dir = path_isDir(resolved_path);
+        }
+        return true;
+    }
+
+    if (!dal_c_Project__pathHasPrefix(root->path, resolved_path)) {
+        (void)fprintf(stderr, "Error: Target path `%s` is outside target root `%s`\n", resolved_path, root->name);
+        dal_c_TargetRequest_cleanup(out);
+        return false;
+    }
+
+    out->relative_path = dal_c_Project__pathRelativeTo(root->path, resolved_path);
+    out->resolved_is_dir = path_isDir(resolved_path);
+    if (!out->resolved_is_dir && !path_isFile(resolved_path)) {
+        (void)fprintf(stderr, "Error: Target path not found: %s\n", resolved_path);
+        dal_c_TargetRequest_cleanup(out);
+        return false;
+    }
+
+    if (root->selection == dal_c_TargetSelection_file && out->resolved_is_dir) {
+        (void)fprintf(stderr, "Error: Target root `%s` requires file targets\n", root->name);
+        dal_c_TargetRequest_cleanup(out);
+        return false;
+    }
+    if (root->selection == dal_c_TargetSelection_dir && !out->resolved_is_dir) {
+        (void)fprintf(stderr, "Error: Target root `%s` requires directory targets\n", root->name);
+        dal_c_TargetRequest_cleanup(out);
+        return false;
+    }
+
+    return true;
+}
+
 // === PRIVATE IMPLEMENTATIONS ===
 
 static char* dal_c_Project__findRoot(const char* start) {
@@ -382,15 +528,15 @@ static bool dal_c_Project__isDHRoot(const char* path) {
     char* dh_header = path_join(path, "include/dh.h");
     char* dh_main_header = path_join(path, "include/dh-main.h");
     char* dh_include_dir = path_join(path, "include/dh");
-    char* blocks_src_dir = path_join(path, "libs/BlocksRuntime/src");
+    char* dh_src_dir = path_join(path, "src/dh");
     bool is_dh_root = path_isFile(dh_header)
                    && path_isFile(dh_main_header)
                    && path_isDir(dh_include_dir)
-                   && path_isDir(blocks_src_dir);
+                   && path_isDir(dh_src_dir);
     free(dh_header);
     free(dh_main_header);
     free(dh_include_dir);
-    free(blocks_src_dir);
+    free(dh_src_dir);
     return is_dh_root;
 }
 
@@ -471,6 +617,28 @@ static char* dal_c_Project__resolveProjectPath(const dal_c_Project* proj, const 
     return path_join(proj->root, value);
 }
 
+static bool dal_c_Project__pathHasPrefix(const char* root, const char* path) {
+    assert(root != NULL);
+    assert(path != NULL);
+    size_t root_len = strlen(root);
+    if (strncmp(root, path, root_len) != 0) {
+        return false;
+    }
+    char next = path[root_len];
+    return next == '\0' || next == '/' || next == '\\';
+}
+
+static char* dal_c_Project__pathRelativeTo(const char* root, const char* path) {
+    assert(root != NULL);
+    assert(path != NULL);
+    assert(dal_c_Project__pathHasPrefix(root, path));
+    const char* rel = path + strlen(root);
+    while (*rel == '/' || *rel == '\\') {
+        ++rel;
+    }
+    return strdup(rel);
+}
+
 static bool dal_c_Project__isAbsolutePath(const char* path) {
     return path
         && (path[0] == '/' || path[0] == '\\'
@@ -549,6 +717,88 @@ static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
     free(lib);
 }
 
+static void dal_c_Project__addSelfRoot(dal_c_Project* proj, const char* path) {
+    assert(proj != NULL);
+    assert(path != NULL);
+    char* resolved = dal_c_Project__resolveProjectPath(proj, path);
+    assert(resolved != NULL);
+
+    for (int i = 0; i < proj->self_root_count; ++i) {
+        if (str_eql(proj->self_roots[i].path, resolved)) {
+            free(resolved);
+            return;
+        }
+    }
+
+    dal_c_SelfRoot* roots = (dal_c_SelfRoot*)realloc((void*)proj->self_roots, ((size_t)proj->self_root_count + 1) * sizeof(dal_c_SelfRoot));
+    assert(roots != NULL && "Out of memory");
+    proj->self_roots = roots;
+    proj->self_roots[proj->self_root_count].path = resolved;
+    proj->self_root_count++;
+}
+
+static bool dal_c_Project__targetRootIsValid(const dal_c_TargetRoot* root) {
+    assert(root != NULL);
+    if (!root->name || root->name[0] == '\0') {
+        (void)fprintf(stderr, "Error: Target root name is required\n");
+        return false;
+    }
+    if (!root->path || root->path[0] == '\0') {
+        (void)fprintf(stderr, "Error: Target root `%s` is missing path=\n", root->name);
+        return false;
+    }
+    if (root->kind == dal_c_Target_invalid) {
+        (void)fprintf(stderr, "Error: Target root `%s` has invalid kind\n", root->name);
+        return false;
+    }
+    if (root->selection == dal_c_TargetSelection_invalid) {
+        (void)fprintf(stderr, "Error: Target root `%s` has invalid selection\n", root->name);
+        return false;
+    }
+    return true;
+}
+
+static void dal_c_Project__resolveTargetRootExcludePaths(dal_c_TargetRoot* root) {
+    assert(root != NULL);
+    assert(root->path != NULL);
+
+    for (int i = 0; i < root->exclude_count; ++i) {
+        const char* exclude = root->exclude_paths[i];
+        if (!exclude || dal_c_Project__isAbsolutePath(exclude)) {
+            continue;
+        }
+        char* resolved = path_join(root->path, exclude);
+        free(root->exclude_paths[i]);
+        root->exclude_paths[i] = resolved;
+    }
+}
+
+static void dal_c_Project__addTargetRoot(dal_c_Project* proj, dal_c_TargetRoot* root) {
+    assert(proj != NULL);
+    assert(root != NULL);
+    assert(dal_c_Project__targetRootIsValid(root));
+    dal_c_Project__resolveTargetRootExcludePaths(root);
+
+    for (int i = 0; i < proj->target_root_count; ++i) {
+        const dal_c_TargetRoot* existing = &proj->target_roots[i];
+        if (existing->name && str_eql(existing->name, root->name)) {
+            (void)fprintf(stderr, "Error: Duplicate target root name `%s`\n", root->name);
+            assert(false && "duplicate target root name");
+        }
+        if (existing->path && str_eql(existing->path, root->path)) {
+            (void)fprintf(stderr, "Error: Duplicate target root path `%s`\n", root->path);
+            assert(false && "duplicate target root path");
+        }
+    }
+
+    dal_c_TargetRoot* roots = (dal_c_TargetRoot*)realloc((void*)proj->target_roots, ((size_t)proj->target_root_count + 1) * sizeof(dal_c_TargetRoot));
+    assert(roots != NULL && "Out of memory");
+    proj->target_roots = roots;
+    proj->target_roots[proj->target_root_count] = *root;
+    proj->target_root_count++;
+    free(root);
+}
+
 static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project* proj, const char* key, const char* value) {
     assert(lib != NULL);
     if (!key || !value) { return; }
@@ -565,7 +815,7 @@ static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project*
             lib->opts.profile = profile;
         }
     } else if (str_eql(key, "linking")) {
-        lib->is_static = !str_eql(value, dal_c_linking_dynamic);
+        lib->is_static = !str_eql(value, dal_c_linking_shared);
     } else if (str_eql(key, dal_c_opt_test)) {
         lib->test_enabled = dal_c_Project__isTrue(value);
         lib->test_enabled_set = true;
@@ -574,12 +824,50 @@ static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project*
     }
 }
 
-static void dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj) {
+static void dal_c_Project__applyTargetRootLine(dal_c_TargetRoot* root, const dal_c_Project* proj, const char* key, const char* value) {
+    assert(root != NULL);
+    if (!key || !value) { return; }
+
+    if (str_eql(key, "path")) {
+        char* resolved = dal_c_Project__resolveProjectPath(proj, value);
+        dal_c_Project__setString(&root->path, resolved);
+        free(resolved);
+    } else if (str_eql(key, dal_c_project_prop_kind)) {
+        dal_c_Target kind = dal_c_Target_parse(value);
+        if (kind == dal_c_Target_invalid) {
+            (void)fprintf(stderr, "Error: Invalid target-root kind `%s`\n", value);
+            root->kind = dal_c_Target_invalid;
+        } else {
+            root->kind = kind;
+        }
+    } else if (str_eql(key, dal_c_project_prop_selection)) {
+        dal_c_TargetSelection selection = dal_c_TargetSelection_parse(value);
+        if (selection == dal_c_TargetSelection_invalid) {
+            (void)fprintf(stderr, "Error: Invalid target-root selection `%s`\n", value);
+            root->selection = dal_c_TargetSelection_invalid;
+        } else {
+            root->selection = selection;
+        }
+    } else if (str_eql(key, dal_c_project_prop_link_self)) {
+        root->link_self = dal_c_Project__isTrue(value);
+    } else if (str_eql(key, dal_c_project_prop_exclude)) {
+        if (root->path && !dal_c_Project__isAbsolutePath(value)) {
+            char* resolved = path_join(root->path, value);
+            dal_c_Project__addToArray(&root->exclude_paths, &root->exclude_count, resolved);
+            free(resolved);
+        } else {
+            dal_c_Project__addToArray(&root->exclude_paths, &root->exclude_count, value);
+        }
+    }
+}
+
+static bool dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj) {
     int line_count = 0;
     char** lines = file_readLines(path, &line_count);
-    if (!lines) { return; }
+    if (!lines) { return false; }
 
     dal_c_Lib* current_lib = NULL;
+    dal_c_TargetRoot* current_target_root = NULL;
     proj->opts.profile = dal_c_Profile_invalid;
 
     for (int i = 0; i < line_count; ++i) {
@@ -591,16 +879,55 @@ static void dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj)
         if (line[0] == '[') {
             if (current_lib) {
                 dal_c_Project__addLibrary(proj, current_lib);
+                current_lib = NULL;
             }
-            current_lib = calloc(1, sizeof(dal_c_Lib));
-            current_lib->is_static = true;
-            current_lib->opts.profile = dal_c_Profile_invalid;
+            if (current_target_root) {
+                if (!dal_c_Project__targetRootIsValid(current_target_root)) {
+                    free(current_target_root->name);
+                    free(current_target_root->path);
+                    free(current_target_root);
+                    dal_c_Project__freeLines(lines, line_count);
+                    return false;
+                }
+                for (int j = 0; j < proj->target_root_count; ++j) {
+                    const dal_c_TargetRoot* existing = &proj->target_roots[j];
+                    if ((existing->name && str_eql(existing->name, current_target_root->name))
+                        || (existing->path && current_target_root->path && str_eql(existing->path, current_target_root->path))) {
+                        (void)fprintf(stderr, "Error: Duplicate target-root contract `%s`\n", current_target_root->name);
+                        free(current_target_root->name);
+                        free(current_target_root->path);
+                        free(current_target_root);
+                        dal_c_Project__freeLines(lines, line_count);
+                        return false;
+                    }
+                }
+                dal_c_Project__addTargetRoot(proj, current_target_root);
+                current_target_root = NULL;
+            }
 
             char* end = strchr(line, ']');
-            if (end) {
-                *end = '\0';
+            if (!end) {
+                dal_c_Project__freeLines(lines, line_count);
+                return false;
             }
-            current_lib->name = strdup(line + 1);
+            *end = '\0';
+            char* section = str_trim(line + 1);
+            if (str_startsWith(section, dal_c_project_section_target_root " ")) {
+                const char* name = str_trim(section + strlen(dal_c_project_section_target_root));
+                current_target_root = calloc(1, sizeof(dal_c_TargetRoot));
+                assert(current_target_root != NULL);
+                current_target_root->name = strdup(name);
+                current_target_root->kind = dal_c_Target_executable;
+                current_target_root->selection = dal_c_TargetSelection_path;
+                current_target_root->link_self = true;
+                current_target_root->builtin = false;
+            } else {
+                current_lib = calloc(1, sizeof(dal_c_Lib));
+                assert(current_lib != NULL);
+                current_lib->is_static = true;
+                current_lib->opts.profile = dal_c_Profile_invalid;
+                current_lib->name = strdup(section);
+            }
             continue;
         }
 
@@ -609,7 +936,7 @@ static void dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj)
         *eq = '\0';
         const char* key = str_trim(line);
         const char* value = str_trim(eq + 1);
-        if (!current_lib && str_eql(key, dal_c_project_prop_pch)) {
+        if (!current_lib && !current_target_root && str_eql(key, dal_c_project_prop_pch)) {
             if (str_eql(value, dal_c_pch_value_off)) {
                 proj->pch_enabled = false;
                 free(proj->pch_header_override);
@@ -624,8 +951,17 @@ static void dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj)
                 dal_c_Project__setString(&proj->pch_header_override, pch_path);
                 free(pch_path);
             }
-        } else if (!current_lib && str_eql(key, dal_c_project_prop_pch_exclude)) {
+        } else if (!current_lib && !current_target_root && str_eql(key, dal_c_project_prop_pch_exclude)) {
             dal_c_Project__addToArray(&proj->pch_exclude_headers, &proj->pch_exclude_count, value);
+        } else if (!current_lib && !current_target_root && str_eql(key, dal_c_project_prop_self_root)) {
+            proj->has_explicit_self_roots = true;
+            dal_c_Project__addSelfRoot(proj, value);
+        } else if (!current_lib && !current_target_root && str_eql(key, dal_c_project_prop_exclude)) {
+            char* exclude_path = dal_c_Project__resolveProjectPath(proj, value);
+            dal_c_Project__addToArray(&proj->exclude_paths, &proj->exclude_count, exclude_path);
+            free(exclude_path);
+        } else if (current_target_root) {
+            dal_c_Project__applyTargetRootLine(current_target_root, proj, key, value);
         } else if (current_lib) {
             dal_c_Project__applyLibraryLine(current_lib, proj, key, value);
         } else {
@@ -637,7 +973,30 @@ static void dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj)
     if (current_lib) {
         dal_c_Project__addLibrary(proj, current_lib);
     }
+    if (current_target_root) {
+        if (!dal_c_Project__targetRootIsValid(current_target_root)) {
+            free(current_target_root->name);
+            free(current_target_root->path);
+            free(current_target_root);
+            dal_c_Project__freeLines(lines, line_count);
+            return false;
+        }
+        for (int i = 0; i < proj->target_root_count; ++i) {
+            const dal_c_TargetRoot* existing = &proj->target_roots[i];
+            if ((existing->name && str_eql(existing->name, current_target_root->name))
+                || (existing->path && current_target_root->path && str_eql(existing->path, current_target_root->path))) {
+                (void)fprintf(stderr, "Error: Duplicate target-root contract `%s`\n", current_target_root->name);
+                free(current_target_root->name);
+                free(current_target_root->path);
+                free(current_target_root);
+                dal_c_Project__freeLines(lines, line_count);
+                return false;
+            }
+        }
+        dal_c_Project__addTargetRoot(proj, current_target_root);
+    }
     dal_c_Project__freeLines(lines, line_count);
+    return true;
 }
 
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
@@ -695,6 +1054,48 @@ static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
     }
     free((void*)files);
     return header_path;
+}
+
+static void dal_c_Project__ensureBuiltinTargetRoots(dal_c_Project* proj) {
+    assert(proj != NULL);
+    if (!proj->root) { return; }
+    if (!proj->has_explicit_self_roots) {
+        dal_c_Project__addSelfRoot(proj, dal_c_Project_getCategoryDirName(proj, dal_c_dir_src));
+    }
+
+    struct dal_c_BuiltinRootSpec {
+        const char* name;
+        const char* canonical_dir;
+    };
+    static const struct dal_c_BuiltinRootSpec builtin_roots[] = {
+        { dal_c_dir_samples, dal_c_dir_samples },
+        { dal_c_dir_examples, dal_c_dir_examples },
+        { dal_c_dir_tests, dal_c_dir_tests },
+    };
+
+    for (int i = 0; i < (int)(sizeof(builtin_roots) / sizeof(builtin_roots[0])); ++i) {
+        const char* name = builtin_roots[i].name;
+        if (dal_c_Project_findTargetRootByName(proj, name)) {
+            continue;
+        }
+
+        char* dir_path = dal_c_Project_getCategoryDir(proj, builtin_roots[i].canonical_dir);
+        const dal_c_TargetRoot* existing_by_path = dal_c_Project_findTargetRootByPath(proj, dir_path);
+        if (existing_by_path && existing_by_path->path && str_eql(existing_by_path->path, dir_path)) {
+            free(dir_path);
+            continue;
+        }
+
+        dal_c_TargetRoot* root = calloc(1, sizeof(dal_c_TargetRoot));
+        assert(root != NULL);
+        root->name = strdup(name);
+        root->path = dir_path;
+        root->kind = dal_c_Target_executable;
+        root->selection = dal_c_TargetSelection_path;
+        root->link_self = true;
+        root->builtin = true;
+        dal_c_Project__addTargetRoot(proj, root);
+    }
 }
 
 static bool dal_c_Project__resolveCategoryDir(dal_c_Project* proj, char** slot, const char* const* aliases) {

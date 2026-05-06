@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./target-root-compat/src
+    - -I./target-root-compat/include
+    - -isystem./target-root-compat/lib/deps

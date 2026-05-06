@@ -1,4 +1,4 @@
-#include "fmt_internal_ryu.h"
+#include "ryu.h"
 
 #if fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full
 let_(fmt__ryu_table_pow5, fmt__ryu_TablePow5) = A_init({

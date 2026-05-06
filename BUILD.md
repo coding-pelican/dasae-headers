@@ -206,14 +206,34 @@ my-project/
 Directory aliases are also supported at the project root:
 
 - `include`, `includes`, `inc`
-- `src`, `source`, `sources`
+- `source`, `sources`, `src`
 - `tests`, `test`
 - `samples`, `sample`
 - `examples`, `example`
 
 Only one alias variant per category may exist at the same level.
 
-## `.dh` Defaults
+## `project.dh`
+
+`project.dh` is the reusable build-contract layer on top of the CLI.
+
+It is not the only way to use `dh-c`.
+
+- the CLI must remain able to perform builds directly from explicit paths and flags
+- `project.dh` exists to structure, reuse, and automate those CLI-level decisions inside a project
+
+It now covers:
+
+- project-wide defaults such as `output=`, `build-runs-tests=`, `no-dsl=`, and PCH settings
+- reusable self-project source roots through repeated `self-root=`
+- named target roots through `[target-root <name>]` blocks
+
+Detailed explicit-vs-implicit rules live in `dh-c/docs/project-dh-contract.md`.
+
+Example-first CLI sentence rules and the proposed `exclude` contract live in
+`dh-c/docs/cli-syntax-draft.md`.
+
+### Project-wide defaults
 
 `project.dh` can define project defaults such as:
 
@@ -223,7 +243,61 @@ build-runs-tests=true
 no-dsl=false
 ```
 
-Companion `.dh` files can override `output=`, `build-runs-tests=`, and `no-dsl=` for the owning target. Dependency blocks can additionally set `test=true` to run that dependency's tests during dependency traversal.
+### Reusable self roots
+
+Repeated `self-root=` entries declare reusable self-project code that should be built once and reused internally:
+
+```txt
+self-root=src
+self-root=pkg
+self-root=internal
+```
+
+If no `self-root=` is declared, the resolved project `src` root is used implicitly.
+
+### Target roots
+
+Named target roots describe where buildable targets live and what artifact they produce:
+
+```txt
+[target-root cmd]
+path=cmd
+kind=executable
+selection=dir
+link-self=true
+
+[target-root plugins]
+path=plugins
+kind=shared-lib
+selection=dir
+link-self=true
+```
+
+Defaults inside a target-root block:
+
+- `kind=executable`
+- `selection=path`
+- `link-self=true`
+
+### CLI-first behavior
+
+These are first-class CLI features:
+
+- `--sample`
+- `--example`
+- `--test`
+
+They select the project's `samples`, `examples`, and `tests` target families directly.
+
+When `project.dh` does not explicitly declare matching target roots, `dh-c` still resolves those families from the built-in project categories based on the resolved `samples`, `examples`, and `tests` directories.
+
+`project.dh` can make those same behaviors explicit and reusable, but the flags themselves are not deprecated or secondary.
+
+### Companion `.dh`
+
+Companion `.dh` files can override `output=`, `build-runs-tests=`, and `no-dsl=` for the owning target.
+
+Dependency blocks can additionally set `test=true` to run that dependency's tests during dependency traversal.
 
 ## Test Mode
 

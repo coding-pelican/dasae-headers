@@ -110,38 +110,53 @@ typedef enum dal_c_Target {
     dal_c_Target_static_lib = 1, // .a (Unix) or .lib (Windows) output
     dal_c_Target_shared_lib = 2, // .so (Unix) or .dll (Windows) output
 } dal_c_Target;
+static inline const char* dal_c_Target_format(dal_c_Target target) {
+    switch (target) {
+    case dal_c_Target_executable: return "executable";
+    case dal_c_Target_static_lib: return "static-lib";
+    case dal_c_Target_shared_lib: return "shared-lib";
+    case dal_c_Target_invalid:
+    default: return NULL;
+    }
+}
+static inline dal_c_Target dal_c_Target_parse(const char* str) {
+    if (str_eql(str, "executable")) { return dal_c_Target_executable; }
+    if (str_eql(str, "static-lib")) { return dal_c_Target_static_lib; }
+    if (str_eql(str, "shared-lib")) { return dal_c_Target_shared_lib; }
+    return dal_c_Target_invalid;
+}
 
 /// === LINKING ===
 
 typedef enum dal_c_Linking {
     dal_c_Linking_invalid = -1,
     dal_c_Linking_static = 0, // -static (default)
-    dal_c_Linking_dynamic = 1, // -shared
+    dal_c_Linking_shared = 1, // shared library (`-shared`)
 } dal_c_Linking;
 #define dal_c_linking_static "static"
-#define dal_c_linking_dynamic "dynamic"
+#define dal_c_linking_shared "shared"
 static inline dal_c_Linking dal_c_Linking_parse(const char* str) {
     if (str_eql(str, dal_c_linking_static)) { return dal_c_Linking_static; }
-    if (str_eql(str, dal_c_linking_dynamic)) { return dal_c_Linking_dynamic; }
+    if (str_eql(str, dal_c_linking_shared)) { return dal_c_Linking_shared; }
     return dal_c_Linking_invalid;
 }
 static inline const char* dal_c_Linking_format(dal_c_Linking linking) {
     switch (linking) {
     case dal_c_Linking_static: return dal_c_linking_static;
-    case dal_c_Linking_dynamic: return dal_c_linking_dynamic;
+    case dal_c_Linking_shared: return dal_c_linking_shared;
     case dal_c_Linking_invalid:
     default: return NULL;
     }
 }
 static inline dal_c_Linking dal_c_Linking_fromFlag(const char* flag) {
     if (str_eql(flag, "-static")) { return dal_c_Linking_static; }
-    if (str_eql(flag, "-shared")) { return dal_c_Linking_dynamic; }
+    if (str_eql(flag, "-shared")) { return dal_c_Linking_shared; }
     return dal_c_Linking_invalid;
 }
 static inline const char* dal_c_Linking_toFlag(dal_c_Linking linking) {
     switch (linking) {
     case dal_c_Linking_static: return "-static";
-    case dal_c_Linking_dynamic: return "-shared";
+    case dal_c_Linking_shared: return "-shared";
     case dal_c_Linking_invalid:
     default: return NULL;
     }
@@ -335,6 +350,31 @@ static inline const char* dal_c_SampleDir_format(dal_c_SampleDir dir) {
     }
 }
 
+typedef enum dal_c_TargetSelection {
+    dal_c_TargetSelection_invalid = -1,
+    dal_c_TargetSelection_path = 0,
+    dal_c_TargetSelection_file = 1,
+    dal_c_TargetSelection_dir = 2,
+} dal_c_TargetSelection;
+#define dal_c_target_selection_path "path"
+#define dal_c_target_selection_file "file"
+#define dal_c_target_selection_dir "dir"
+static inline dal_c_TargetSelection dal_c_TargetSelection_parse(const char* str) {
+    if (str_eql(str, dal_c_target_selection_path)) { return dal_c_TargetSelection_path; }
+    if (str_eql(str, dal_c_target_selection_file)) { return dal_c_TargetSelection_file; }
+    if (str_eql(str, dal_c_target_selection_dir)) { return dal_c_TargetSelection_dir; }
+    return dal_c_TargetSelection_invalid;
+}
+static inline const char* dal_c_TargetSelection_format(dal_c_TargetSelection selection) {
+    switch (selection) {
+    case dal_c_TargetSelection_path: return dal_c_target_selection_path;
+    case dal_c_TargetSelection_file: return dal_c_target_selection_file;
+    case dal_c_TargetSelection_dir: return dal_c_target_selection_dir;
+    case dal_c_TargetSelection_invalid:
+    default: return NULL;
+    }
+}
+
 /// === PROFILE SPECIFICATION ===
 
 typedef struct dal_c_ProfileSpec {
@@ -425,6 +465,8 @@ typedef enum dal_c_CmdAction {
     dal_c_CmdAction_build_dsl = 10,
     dal_c_CmdAction_test_dsl = 11,
     dal_c_CmdAction_clean_dsl = 12,
+    dal_c_CmdAction_build_self = 13,
+    dal_c_CmdAction_clean_self = 14,
 } dal_c_CmdAction;
 #define dal_c_cmd_action_version "version"
 #define dal_c_cmd_action_help "help"
@@ -439,6 +481,8 @@ typedef enum dal_c_CmdAction {
 #define dal_c_cmd_action_build_dsl "build-dsl"
 #define dal_c_cmd_action_test_dsl "test-dsl"
 #define dal_c_cmd_action_clean_dsl "clean-dsl"
+#define dal_c_cmd_action_build_self "build-self"
+#define dal_c_cmd_action_clean_self "clean-self"
 static inline dal_c_CmdAction dal_c_CmdAction_parse(const char* str) {
     if (str_eql(str, dal_c_cmd_action_build)) { return dal_c_CmdAction_build; }
     if (str_eql(str, dal_c_cmd_action_lib)) { return dal_c_CmdAction_lib; }
@@ -451,6 +495,8 @@ static inline dal_c_CmdAction dal_c_CmdAction_parse(const char* str) {
     if (str_eql(str, dal_c_cmd_action_build_dsl)) { return dal_c_CmdAction_build_dsl; }
     if (str_eql(str, dal_c_cmd_action_test_dsl)) { return dal_c_CmdAction_test_dsl; }
     if (str_eql(str, dal_c_cmd_action_clean_dsl)) { return dal_c_CmdAction_clean_dsl; }
+    if (str_eql(str, dal_c_cmd_action_build_self)) { return dal_c_CmdAction_build_self; }
+    if (str_eql(str, dal_c_cmd_action_clean_self)) { return dal_c_CmdAction_clean_self; }
     if (str_eql(str, dal_c_cmd_action_help)) { return dal_c_CmdAction_help; }
     if (str_eql(str, dal_c_cmd_action_version)) { return dal_c_CmdAction_version; }
     return dal_c_CmdAction_invalid;
@@ -468,6 +514,8 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
     case dal_c_CmdAction_build_dsl: return dal_c_cmd_action_build_dsl;
     case dal_c_CmdAction_test_dsl: return dal_c_cmd_action_test_dsl;
     case dal_c_CmdAction_clean_dsl: return dal_c_cmd_action_clean_dsl;
+    case dal_c_CmdAction_build_self: return dal_c_cmd_action_build_self;
+    case dal_c_CmdAction_clean_self: return dal_c_cmd_action_clean_self;
     case dal_c_CmdAction_help: return dal_c_cmd_action_help;
     case dal_c_CmdAction_version: return dal_c_cmd_action_version;
     case dal_c_CmdAction_invalid:
@@ -506,8 +554,9 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_no_dsl "no-dsl"
 #define dal_c_opt_freestanding "freestanding"
 #define dal_c_opt_loose_errors "loose-errors"
+#define dal_c_opt_self "self"
 #define dal_c_opt_static "static"
-#define dal_c_opt_dynamic "dynamic"
+#define dal_c_opt_shared "shared"
 #define dal_c_opt_cache "cache"
 #define dal_c_opt_recur "recur"
 #define dal_c_opt_dsl "dsl"
@@ -517,6 +566,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_test "test"
 #define dal_c_opt_output "output"
 #define dal_c_opt_file "file"
+#define dal_c_opt_exclude "exclude"
 #define dal_c_opt_dh_file "dh-file"
 #define dal_c_opt_help "help"
 #define dal_c_opt_version "version"
@@ -568,25 +618,43 @@ typedef struct dal_c_BuildDefaults {
     bool build_runs_tests_set;
 } dal_c_BuildDefaults;
 
+typedef struct dal_c_SelfRoot {
+    char* path;
+} dal_c_SelfRoot;
+
+typedef struct dal_c_TargetRoot {
+    char* name;
+    char* path;
+    dal_c_Target kind;
+    dal_c_TargetSelection selection;
+    bool link_self;
+    bool builtin;
+    char** exclude_paths;
+    int exclude_count;
+} dal_c_TargetRoot;
+
 /// === ACTION-SPECIFIC PAYLOADS ===
 
 typedef struct dal_c_BuildOpts {
-    char* target_file;
+    char* target_path;
     char* output_path;
     dal_c_SampleDir sample_dir; // --sample, --example, or --test
     bool build_all; // --all or "." to build all files
     bool recursive; // --recur
+    bool self_boundary; // --self
+    bool as_library; // --lib
+    dal_c_Linking linking; // --static or --shared
     bool dsl_first; // --dsl
 } dal_c_BuildOpts;
 
 typedef struct dal_c_LibOpts {
-    char* target_file;
-    dal_c_Linking linking; // --static or --dynamic (default for libraries)
-    char* explicit_lib; // --lib=<name>
+    char* target_path;
+    char* output_path;
+    dal_c_Linking linking; // --static or --shared (default for libraries)
 } dal_c_LibOpts;
 
 typedef struct dal_c_RunOpts {
-    char* target_file;
+    char* target_path;
     char* output_path;
     char* run_args; // --runtime-args="..."
     dal_c_SampleDir sample_dir; // --sample, --example, or --test
@@ -594,7 +662,7 @@ typedef struct dal_c_RunOpts {
 } dal_c_RunOpts;
 
 typedef struct dal_c_TestOpts {
-    char* target_file;
+    char* target_path;
     char* output_path;
     char* run_args; // --runtime-args="..."
     bool debug;
@@ -606,6 +674,7 @@ typedef struct dal_c_TestOpts {
 typedef struct dal_c_CleanOpts {
     bool cache_only; // --cache
     bool recursive; // --recur
+    bool self_boundary; // --self
     bool dsl_first; // --dsl
 } dal_c_CleanOpts;
 
@@ -635,11 +704,14 @@ typedef struct dal_c_Cmd {
     int input_count;
     char** explicit_dh_files; // explicit .dh property files
     int explicit_dh_count;
+    char** exclude_paths; // explicit exclude paths
+    int exclude_count;
 
     char* compiler_args; // --args="..."
     char* dh_path_override; // --dh=<path>
     bool show_commands; // --show-commands
     bool verbose; // --verbose
+    bool profile_explicit; // profile token was provided explicitly by user
     bool is_help; // --help, -h
     bool is_version; // --version, -v
 } dal_c_Cmd;
@@ -684,6 +756,13 @@ struct dal_c_Project {
     char* pch_header;
     char** pch_exclude_headers;
     int pch_exclude_count;
+    dal_c_SelfRoot* self_roots;
+    int self_root_count;
+    bool has_explicit_self_roots;
+    dal_c_TargetRoot* target_roots;
+    int target_root_count;
+    char** exclude_paths;
+    int exclude_count;
     dal_c_CompilerOpts opts;
     dal_c_BuildDefaults defaults;
     dal_c_Lib* libraries;
@@ -719,6 +798,12 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_project_prop_pch "pch"
 #define dal_c_project_prop_pch_exclude "pch-exclude"
 #define dal_c_project_prop_build_runs_tests "build-runs-tests"
+#define dal_c_project_prop_exclude "exclude"
+#define dal_c_project_prop_self_root "self-root"
+#define dal_c_project_prop_kind "kind"
+#define dal_c_project_prop_selection "selection"
+#define dal_c_project_prop_link_self "link-self"
+#define dal_c_project_section_target_root "target-root"
 #define dal_c_pch_value_auto "auto"
 #define dal_c_pch_value_off "off"
 
@@ -741,6 +826,32 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_dir_tests_alias_test "test"
 #define dal_c_dir_samples_alias_sample "sample"
 #define dal_c_dir_examples_alias_example "example"
+
+/// === SOURCE COLLECTION FILTERS ===
+
+#define dal_c_source_skip_segment_build "build"
+#define dal_c_source_skip_segment_tmp "tmp"
+#define dal_c_source_skip_segment_temp "temp"
+#define dal_c_source_skip_segment_cache "cache"
+#define dal_c_source_skip_segment_mock "mock"
+#define dal_c_source_skip_segment_draft "draft"
+#define dal_c_source_skip_segment_bak "bak"
+#define dal_c_source_skip_segment_backup "backup"
+#define dal_c_source_skip_segment_archive "archive"
+#define dal_c_source_skip_segment_dot_archive ".archive"
+static const char* const dal_c_source_skip_segments[] = {
+    dal_c_source_skip_segment_build,
+    dal_c_source_skip_segment_tmp,
+    dal_c_source_skip_segment_temp,
+    dal_c_source_skip_segment_cache,
+    dal_c_source_skip_segment_mock,
+    dal_c_source_skip_segment_draft,
+    dal_c_source_skip_segment_bak,
+    dal_c_source_skip_segment_backup,
+    dal_c_source_skip_segment_archive,
+    dal_c_source_skip_segment_dot_archive,
+    NULL,
+};
 
 /// === FILE NAMES ===
 
@@ -795,13 +906,18 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_file dal_c_opt_value_sep "<path>", "Add explicit source file (can be repeated)" },
     { dal_c_opt_prefix_long dal_c_opt_output dal_c_opt_value_sep "<path>", "Override output name or exact path" },
     { dal_c_opt_prefix_short dal_c_opt_output_short "<path>", "Override output name or exact path (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_exclude dal_c_opt_value_sep "<path>", "Exclude file or directory subtree (can be repeated)" },
     { dal_c_opt_prefix_long dal_c_opt_dh_file dal_c_opt_value_sep "<path>", "Add explicit `.dh` property file (can be repeated)" },
     { dal_c_opt_prefix_long dal_c_opt_loose_errors, "Convert Werror to warnings" },
-    { dal_c_opt_prefix_long dal_c_opt_sample, "Build sample code (includes project as library)" },
-    { dal_c_opt_prefix_long dal_c_opt_example, "Build example code (includes project as library)" },
-    { dal_c_opt_prefix_long dal_c_opt_test, "Build test code (includes project as library)" },
+    { dal_c_opt_prefix_long dal_c_opt_self, "Apply `build` to the self boundary" },
+    { dal_c_opt_prefix_long dal_c_opt_lib, "Build the target as a library" },
+    { dal_c_opt_prefix_long dal_c_opt_static, "Build static library output" },
+    { dal_c_opt_prefix_long dal_c_opt_shared, "Build shared library output" },
+    { dal_c_opt_prefix_long dal_c_opt_sample, "Build the project `samples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_example, "Build the project `examples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_test, "Build the project `tests` target family" },
     { dal_c_opt_prefix_long dal_c_opt_all, "Build all source files in " dal_c_dir_src "/" },
-    { dal_c_opt_prefix_long dal_c_opt_dsl, "Enable DSL mode (`build`: build libdh first, `test`: run unified `dh/tests`)" },
+    { dal_c_opt_prefix_long dal_c_opt_dsl, "Include the DSL boundary in this command" },
     { dal_c_opt_prefix_long dal_c_opt_recur, "Apply command recursively to descendant `project.dh` projects" },
     { dal_c_opt_all_alias, "Build all source files (alternative to " dal_c_opt_prefix_long dal_c_opt_all ")" },
     { dal_c_opt_prefix_long dal_c_opt_no_dsl, "Skip DSL/DH library integration" },
@@ -814,6 +930,8 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
 static const char* const dal_c_help_build_examples[] = {
     dal_c_cmd_action_build " " dal_c_profile_dev,
     dal_c_cmd_action_build " " dal_c_profile_release " src/main.c",
+    dal_c_cmd_action_build " cmd/runner1",
+    dal_c_cmd_action_build " plugins/render",
     dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_arch dal_c_opt_value_sep "x86_64 " dal_c_opt_prefix_long dal_c_opt_define dal_c_opt_value_sep "DEBUG",
     dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_sample,
     dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_example,
@@ -821,6 +939,8 @@ static const char* const dal_c_help_build_examples[] = {
     dal_c_cmd_action_build " " dal_c_opt_all_alias,
     dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_all,
     dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_dsl,
+    dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_self,
+    dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_lib " " dal_c_opt_prefix_long dal_c_opt_shared " src/mylib.c",
     dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_file dal_c_opt_value_sep "tests/test-a.c " dal_c_opt_prefix_long dal_c_opt_file dal_c_opt_value_sep "tests/test-b.c",
     dal_c_cmd_action_build " " dal_c_opt_prefix_short dal_c_opt_output_short "bundle tests/test-a.c tests/test-b.c",
 };
@@ -829,14 +949,14 @@ static const char* const dal_c_help_build_examples[] = {
 // lib command options
 static const dal_c_HelpOption dal_c_help_lib_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_static, "Build static library (default)" },
-    { dal_c_opt_prefix_long dal_c_opt_dynamic, "Build shared library" },
+    { dal_c_opt_prefix_long dal_c_opt_shared, "Build shared library" },
 };
 #define dal_c_help_lib_options_count ((int)(sizeof(dal_c_help_lib_options) / sizeof(dal_c_help_lib_options[0])))
 
 static const char* const dal_c_help_lib_examples[] = {
-    dal_c_cmd_action_lib " " dal_c_opt_prefix_long dal_c_opt_static,
-    dal_c_cmd_action_lib " " dal_c_profile_release " src/mylib.c " dal_c_opt_prefix_long dal_c_opt_dynamic,
-    dal_c_cmd_action_lib " myheader.h",
+    dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_lib,
+    dal_c_cmd_action_build " " dal_c_profile_release " " dal_c_opt_prefix_long dal_c_opt_lib " src/mylib.c " dal_c_opt_prefix_long dal_c_opt_shared,
+    dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_lib " myheader.h",
 };
 #define dal_c_help_lib_examples_count ((int)(sizeof(dal_c_help_lib_examples) / sizeof(dal_c_help_lib_examples[0])))
 
@@ -850,6 +970,7 @@ static const dal_c_HelpOption dal_c_help_run_options[] = {
 
 static const char* const dal_c_help_run_examples[] = {
     dal_c_cmd_action_run " " dal_c_profile_dev,
+    dal_c_cmd_action_run " cmd/runner1",
     dal_c_cmd_action_run " " dal_c_opt_prefix_long dal_c_opt_debug " " dal_c_opt_prefix_long dal_c_opt_runtime_args dal_c_opt_value_sep "\"arg1 arg2\"",
 };
 #define dal_c_help_run_examples_count ((int)(sizeof(dal_c_help_run_examples) / sizeof(dal_c_help_run_examples[0])))
@@ -864,6 +985,7 @@ static const dal_c_HelpOption dal_c_help_test_options[] = {
 
 static const char* const dal_c_help_test_examples[] = {
     dal_c_cmd_action_test " " dal_c_profile_dev,
+    dal_c_cmd_action_test " tests/test-parser.c",
     dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_debug " sample.c",
     dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_dsl,
     dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_dsl " " dal_c_opt_prefix_long dal_c_opt_recur,
@@ -885,7 +1007,8 @@ static const char* const dal_c_help_deps_examples[] = {
 // clean command options
 static const dal_c_HelpOption dal_c_help_clean_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_cache, "Clean only cache" },
-    { dal_c_opt_prefix_long dal_c_opt_dsl, "Clean DH generated artifacts first" },
+    { dal_c_opt_prefix_long dal_c_opt_self, "Apply `clean` to the self boundary" },
+    { dal_c_opt_prefix_long dal_c_opt_dsl, "Include the DSL boundary in `clean`" },
     { dal_c_opt_prefix_long dal_c_opt_recur, "Recursive clean" },
 };
 #define dal_c_help_clean_options_count ((int)(sizeof(dal_c_help_clean_options) / sizeof(dal_c_help_clean_options[0])))
@@ -897,29 +1020,46 @@ static const dal_c_HelpOption dal_c_help_clean_dsl_options[] = {
 
 static const char* const dal_c_help_clean_examples[] = {
     dal_c_cmd_action_clean,
+    dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_self,
     dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_dsl,
     dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_cache " " dal_c_opt_prefix_long dal_c_opt_recur,
 };
 #define dal_c_help_clean_examples_count ((int)(sizeof(dal_c_help_clean_examples) / sizeof(dal_c_help_clean_examples[0])))
 
 static const char* const dal_c_help_build_dsl_examples[] = {
-    dal_c_cmd_action_build_dsl,
-    dal_c_cmd_action_build_dsl " " dal_c_profile_release,
+    dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_dsl,
+    dal_c_cmd_action_build " " dal_c_profile_release " " dal_c_opt_prefix_long dal_c_opt_dsl,
 };
 #define dal_c_help_build_dsl_examples_count ((int)(sizeof(dal_c_help_build_dsl_examples) / sizeof(dal_c_help_build_dsl_examples[0])))
 
 static const char* const dal_c_help_test_dsl_examples[] = {
-    dal_c_cmd_action_test_dsl,
-    dal_c_cmd_action_test_dsl " test-ListSgl.c",
-    dal_c_cmd_action_test_dsl " " dal_c_opt_prefix_long dal_c_opt_debug " test-meta.c",
+    dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_dsl,
+    dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_dsl " test-ListSgl.c",
+    dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_dsl " " dal_c_opt_prefix_long dal_c_opt_debug " test-meta.c",
 };
 #define dal_c_help_test_dsl_examples_count ((int)(sizeof(dal_c_help_test_dsl_examples) / sizeof(dal_c_help_test_dsl_examples[0])))
 
 static const char* const dal_c_help_clean_dsl_examples[] = {
-    dal_c_cmd_action_clean_dsl,
-    dal_c_cmd_action_clean_dsl " " dal_c_opt_prefix_long dal_c_opt_cache,
+    dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_dsl,
+    dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_dsl " " dal_c_opt_prefix_long dal_c_opt_cache,
 };
 #define dal_c_help_clean_dsl_examples_count ((int)(sizeof(dal_c_help_clean_dsl_examples) / sizeof(dal_c_help_clean_dsl_examples[0])))
+
+static const dal_c_HelpOption dal_c_help_self_options[] = {
+    { dal_c_opt_prefix_long dal_c_opt_show_commands, "Print commands" },
+    { dal_c_opt_prefix_long dal_c_opt_verbose, "Verbose output" },
+};
+#define dal_c_help_self_options_count ((int)(sizeof(dal_c_help_self_options) / sizeof(dal_c_help_self_options[0])))
+
+static const char* const dal_c_help_build_self_examples[] = {
+    dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_self,
+};
+#define dal_c_help_build_self_examples_count ((int)(sizeof(dal_c_help_build_self_examples) / sizeof(dal_c_help_build_self_examples[0])))
+
+static const char* const dal_c_help_clean_self_examples[] = {
+    dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_self,
+};
+#define dal_c_help_clean_self_examples_count ((int)(sizeof(dal_c_help_clean_self_examples) / sizeof(dal_c_help_clean_self_examples[0])))
 
 // Global options
 static const dal_c_HelpOption dal_c_help_global_options[] = {
@@ -949,23 +1089,23 @@ static const dal_c_HelpProfile dal_c_help_profiles[] = {
 // Command table
 static const dal_c_HelpCmd dal_c_help_cmds[] = {
     { dal_c_cmd_action_build,
-      "Build project or single file as executable",
-      "[profile] [file.c] [options]",
+      "Build project, path, library target, or self boundary",
+      "[profile] [path] [options]",
       dal_c_help_build_options, dal_c_help_build_options_count,
       dal_c_help_build_examples, dal_c_help_build_examples_count },
     { dal_c_cmd_action_lib,
-      "Build project or single file as library (supports header-only)",
-      "[profile] [file.c|file.h] [options]",
+      "Compatibility alias for `build --lib`",
+      "[profile] [path] [options]",
       dal_c_help_lib_options, dal_c_help_lib_options_count,
       dal_c_help_lib_examples, dal_c_help_lib_examples_count },
     { dal_c_cmd_action_run,
-      "Build and run executable",
-      "[profile] [file.c] [options]",
+      "Build and run project, file, or declared target-root path",
+      "[profile] [path] [options]",
       dal_c_help_run_options, dal_c_help_run_options_count,
       dal_c_help_run_examples, dal_c_help_run_examples_count },
     { dal_c_cmd_action_test,
       "Build and run tests",
-      "[profile] [file.c] [options]",
+      "[profile] [path] [options]",
       dal_c_help_test_options, dal_c_help_test_options_count,
       dal_c_help_test_examples, dal_c_help_test_examples_count },
     { dal_c_cmd_action_deps,
@@ -979,20 +1119,30 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
       dal_c_help_clean_options, dal_c_help_clean_options_count,
       dal_c_help_clean_examples, dal_c_help_clean_examples_count },
     { dal_c_cmd_action_build_dsl,
-      "Build `dh/{include|src}` only",
+      "Compatibility alias for `build --dsl`",
       "[profile] [options]",
       dal_c_help_build_options, dal_c_help_build_options_count,
       dal_c_help_build_dsl_examples, dal_c_help_build_dsl_examples_count },
     { dal_c_cmd_action_test_dsl,
-      "Build and run `dh/tests` directly",
-      "[profile] [file.c] [options]",
+      "Compatibility alias for `test --dsl`",
+      "[profile] [path] [options]",
       dal_c_help_test_options, dal_c_help_test_options_count,
       dal_c_help_test_dsl_examples, dal_c_help_test_dsl_examples_count },
     { dal_c_cmd_action_clean_dsl,
-      "Clean generated artifacts for `dh/{include|src}`",
+      "Compatibility alias for `clean --dsl`",
       "[options]",
       dal_c_help_clean_dsl_options, dal_c_help_clean_dsl_options_count,
       dal_c_help_clean_dsl_examples, dal_c_help_clean_dsl_examples_count },
+    { dal_c_cmd_action_build_self,
+      "Compatibility alias for `build --self`",
+      "[options]",
+      dal_c_help_self_options, dal_c_help_self_options_count,
+      dal_c_help_build_self_examples, dal_c_help_build_self_examples_count },
+    { dal_c_cmd_action_clean_self,
+      "Compatibility alias for `clean --self`",
+      "[options]",
+      dal_c_help_self_options, dal_c_help_self_options_count,
+      dal_c_help_clean_self_examples, dal_c_help_clean_self_examples_count },
     { dal_c_cmd_action_workspace,
       "Create workspace config",
       "[path]",
