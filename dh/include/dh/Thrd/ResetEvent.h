@@ -27,7 +27,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((Thrd_ResetEvent_Err)() $union_errset_(Thrd_TimeoutE));
+errset_((Thrd_ResetEvent_E)() $union_errset_(Thrd_TimeoutE));
 typedef struct Thrd_ResetEvent {
     var_(state, atom_V$u32);
 } Thrd_ResetEvent;
@@ -35,7 +35,7 @@ $extern fn_((Thrd_ResetEvent_init(void))(Thrd_ResetEvent));
 $extern fn_((Thrd_ResetEvent_fini(Thrd_ResetEvent* self))(void));
 $extern fn_((Thrd_ResetEvent_wait(Thrd_ResetEvent* self))(void));
 $attr($must_check)
-$extern fn_((Thrd_ResetEvent_timedWait(Thrd_ResetEvent* self, time_Duration timeout))(Thrd_ResetEvent_Err$void));
+$extern fn_((Thrd_ResetEvent_timedWait(Thrd_ResetEvent* self, time_Duration timeout))(Thrd_ResetEvent_E$void));
 $extern fn_((Thrd_ResetEvent_set(Thrd_ResetEvent* self))(void));
 $extern fn_((Thrd_ResetEvent_reset(Thrd_ResetEvent* self))(void));
 $extern fn_((Thrd_ResetEvent_isSet(const Thrd_ResetEvent* self))(bool));

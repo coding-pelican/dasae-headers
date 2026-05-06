@@ -149,7 +149,7 @@ extern "C" {
 #define __op__S_deref$__parseANT(_ANT...) _ANT,
 #define __op__S_deref$__emit(_ANT, _s...) (*local_({ \
     let_(__s, TypeOf(_s)) = _s; \
-    claim_assert_fmt(S_len(__s) == A_innerN$(_ANT), "length mismatch: len({:uz}) != N({:uz})", S_len(__s), A_innerN$(_ANT)); \
+    claim_assert_fmt(S_len(__s) == A_n$(_ANT), "length mismatch: len({:uz}) != N({:uz})", S_len(__s), A_n$(_ANT)); \
     as$(_ANT*)(ensureNonnull(S_ptr(__s))); \
 }))
 

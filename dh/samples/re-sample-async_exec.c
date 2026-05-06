@@ -55,16 +55,17 @@ $static fn_((exec_findSlot(void))(O$Task*)) {
 async_fn_(exec_sleep, (var_(caller, O$$(Co_Ctx*)); var_(ms, u64);), Void);
 async_fn_scope(exec_sleep, {}) {
     let_ignore = locals;
-    suspend_({
-        let slot = exec_findSlot();
-        let time = local_({
-            let fromMs = time_Duration_fromMillis;
-            let addDur = time_Instant_addDuration;
-            let now = time_Instant_now;
-            local_return_(addDur(now(), fromMs(args->ms)));
+    suspend_(
+        {
+            let slot = exec_findSlot();
+            let time = local_({
+                let fromMs = time_Duration_fromMillis;
+                let addDur = time_Instant_addDuration;
+                let now = time_Instant_now;
+                local_return_(addDur(now(), fromMs(args->ms)));
+            });
+            asg_l((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
         });
-        asg_l((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
-    });
     areturn_({});
 } $unscoped(async_fn);
 
@@ -133,7 +134,7 @@ async_fn_scope(runMain, {
     })));
     for_(($s(A_ref(locals->tasks)))(task)) { resume_(task); } $end(for);
 
-    io_stream_println(u8_l("count size: {:uz}"), sizeOf$(A_InnerT$(TypeOf(locals->tasks))));
+    io_stream_println(u8_l("count size: {:uz}"), sizeOf$(A_T$(TypeOf(locals->tasks))));
 
     locals->total = 0.0;
     for (locals->await_idx = 0; locals->await_idx < A_len(locals->tasks); ++locals->await_idx) {

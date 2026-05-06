@@ -4,6 +4,38 @@
 #include <stdlib.h>
 #include <assert.h>
 
+static void file__freeLines(char** lines, int count) {
+    if (!lines) { return; }
+    for (int i = 0; i < count; ++i) {
+        free(lines[i]);
+    }
+    free((void*)lines);
+}
+
+static bool file__pushLine(char*** lines, int* count, int* capacity, const char* line) {
+    assert(lines != NULL);
+    assert(count != NULL);
+    assert(capacity != NULL);
+    assert(line != NULL);
+
+    if (*count >= *capacity) {
+        const int new_capacity = (*capacity == 0) ? 16 : (*capacity * 2);
+        char** const grown = (char**)realloc((void*)*lines, (size_t)new_capacity * sizeof(char*));
+        if (!grown) {
+            return false;
+        }
+        *lines = grown;
+        *capacity = new_capacity;
+    }
+
+    (*lines)[*count] = strdup(line);
+    if (!(*lines)[*count]) {
+        return false;
+    }
+    (*count)++;
+    return true;
+}
+
 char* file_read(const char* path) {
     if (!path) { return NULL; }
     FILE* const fp = fopen(path, "rb");
@@ -21,6 +53,10 @@ char* file_read(const char* path) {
 
     // Read file
     const size_t read_size = fread(content, 1, (size_t)size, fp);
+    if (read_size != (size_t)size && ferror(fp) != 0) {
+        free(content);
+        return fclose(fp), NULL;
+    }
     content[read_size] = '\0';
     return fclose(fp), content;
 }
@@ -37,50 +73,81 @@ char** file_readLines(const char* path, int* count) {
         *count = 0;
         return NULL;
     }
-    // Count lines
-    int line_count = 0;
-    int ch = 0;
-    int prev_ch = '\n';
-    while ((ch = fgetc(fp)) != EOF) {
-        if (prev_ch == '\n') { line_count++; }
-        prev_ch = ch;
-    }
-    if (line_count == 0) {
-        (void)fclose(fp);
-        *count = 0;
-        return NULL;
-    }
-    // Allocate array
-    char** const lines = (char**)malloc((size_t)line_count * sizeof(char*));
-    if (!lines) {
-        (void)fclose(fp);
-        *count = 0;
-        return NULL;
-    }
-    // Read lines
-    if (fseek(fp, 0, SEEK_SET) != 0) {
-        (void)fclose(fp);
-        free((void*)lines);
-        *count = 0;
-        return NULL;
-    }
-    int idx = 0;
-    char buffer[4096] = {};
-    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        // Remove trailing newline
-        size_t len = strlen(buffer);
-        if (len > 0 && buffer[len - 1] == '\n') {
-            buffer[len - 1] = '\0';
-            len--;
-        }
-        if (len > 0 && buffer[len - 1] == '\r') {
-            buffer[len - 1] = '\0';
-        }
-        lines[idx] = strdup(buffer);
-        idx++;
-    }
-    (void)fclose(fp);
 
+    char** lines = NULL;
+    int line_count = 0;
+    int line_capacity = 0;
+
+    char* line_buf = NULL;
+    size_t line_len = 0;
+    size_t line_capacity_bytes = 0;
+
+    int ch = 0;
+    while ((ch = fgetc(fp)) != EOF) {
+        if (line_len + 1 >= line_capacity_bytes) {
+            const size_t new_capacity = (line_capacity_bytes == 0) ? 128u : (line_capacity_bytes * 2u);
+            char* const grown = (char*)realloc(line_buf, new_capacity);
+            if (!grown) {
+                free(line_buf);
+                file__freeLines(lines, line_count);
+                (void)fclose(fp);
+                *count = 0;
+                return NULL;
+            }
+            line_buf = grown;
+            line_capacity_bytes = new_capacity;
+        }
+
+        if (ch == '\n') {
+            if (line_len > 0 && line_buf[line_len - 1] == '\r') {
+                line_len--;
+            }
+            line_buf[line_len] = '\0';
+            if (!file__pushLine(&lines, &line_count, &line_capacity, line_buf)) {
+                free(line_buf);
+                file__freeLines(lines, line_count);
+                (void)fclose(fp);
+                *count = 0;
+                return NULL;
+            }
+            line_len = 0;
+            continue;
+        }
+
+        line_buf[line_len++] = (char)ch;
+    }
+
+    if (ferror(fp) != 0) {
+        free(line_buf);
+        file__freeLines(lines, line_count);
+        (void)fclose(fp);
+        *count = 0;
+        return NULL;
+    }
+
+    if (line_len > 0 || line_count == 0) {
+        if (line_len > 0 && line_buf[line_len - 1] == '\r') {
+            line_len--;
+        }
+        if (line_buf) {
+            line_buf[line_len] = '\0';
+        }
+        if (line_len > 0 || line_count == 0) {
+            const char* final_line = line_buf ? line_buf : "";
+            if (!(line_count == 0 && line_len == 0)) {
+                if (!file__pushLine(&lines, &line_count, &line_capacity, final_line)) {
+                    free(line_buf);
+                    file__freeLines(lines, line_count);
+                    (void)fclose(fp);
+                    *count = 0;
+                    return NULL;
+                }
+            }
+        }
+    }
+
+    free(line_buf);
+    (void)fclose(fp);
     *count = line_count;
     return lines;
 }

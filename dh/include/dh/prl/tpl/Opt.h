@@ -42,7 +42,7 @@ extern "C" {
     T_decl_O$(_T); \
     T_impl_O$(_T)
 
-#define O_InnerT$(_T...) TypeOf((as$(_T*)(null))->payload.some)
+#define O_T$(_T...) TypeOf((as$(_T*)(null))->payload.some)
 
 /* Optional void value (special case) */
 typedef union O$Void O$Void, O$void;
@@ -99,8 +99,8 @@ typedef union O$Void O$Void, O$void;
     pp_expand(pp_defer(__block_inline__none$)(__param_expand__none$ __VA_ARGS__))
 
 /* Checks optional value */
-#define isSome(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool)((_o).is_some)
-#define isNone(_o /*: O$$(_T)*/... /*(bool)*/) as$(bool)(!(_o).is_some)
+#define isSome(_o /*: O$$(_T)*/... /*(bool)*/) bool_((_o).is_some)
+#define isNone(_o /*: O$$(_T)*/... /*(bool)*/) bool_(!(_o).is_some)
 
 #define O_asP$(/*(_OPT: O(P(T)))(_p_o: P(O(T)))*/... /*(_OPT)*/) \
     __step__O_asP$(__VA_ARGS__)
@@ -166,8 +166,8 @@ typedef union O$Void O$Void, O$void;
     let_(__p_o, TypeOf(_p_o)) = _p_o; \
     claim_assert_nonnull(__p_o); \
     __p_o->is_some \
-        ? l$((O$Ret$O_asP)some(&__p_o->payload.some)) \
-        : l$((O$Ret$O_asP)none()); \
+        ? some$((O$Ret$O_asP)(&__p_o->payload.some)) \
+        : none$((O$Ret$O_asP)); \
 })
 #define __step__O_asP(_p_o...) \
     O_asP$((O$$(FieldType$(TypeOf(*_p_o), payload.some)*))(_p_o))

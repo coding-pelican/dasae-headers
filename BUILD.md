@@ -1,263 +1,294 @@
-# DH-C Build Tool
+# dh-c Build Guide
 
-A lightweight, cross-platform build tool for C projects using the DH-C system.
+`dh-c` is the build tool for the `dasae-headers` C workspace.
 
-## Features
+It does two different jobs:
 
-- Cargo-like project management (workspace and project commands)
-- Cross-platform support (Windows, macOS, Linux)
-- Auto-detection of the DH-C system
-- Support for multiple build configurations (dev, test, profile, release, performance, embedded, micro)
-- Automatic include/source file discovery
-- IDE integration through `.clangd` and VSCode tasks
-- Option to build without the DH/DSL library path (`--no-dsl`)
-- Configurable output suffix for build configurations
-- Test mode with automatic cleanup
+- build `dh-c` itself
+- use `dh-c` to build C files, C projects, target-root families, tests, and dependency graphs
 
-## Installation
+This guide only documents what is supported now.
 
-### Windows
+`workspace` and `project` are reserved command names. They are intentionally not implemented yet and are not part of the supported flow in this document.
 
-1. Clone or download this repository
-2. Open a PowerShell prompt as Administrator
-3. Navigate to the directory containing the `dh-c.c` file
-4. Run the installation script:
+## What `dh-c` Is For
 
-   ```ps1
-   .\install-dh-c.ps1
-   ```
+`dh-c` is not only a "project generator".
 
-5. Restart your terminal or PowerShell session
+It is a build contract layer over plain C compilation:
 
-### Linux/macOS
+- direct file builds still work
+- project-local defaults can be declared in `project.dh`
+- reusable self code and named target families can be declared in `project.dh`
+- dependency projects can be built and copied into `lib/deps/`
+- tests, sample/example families, and target-root families can all be addressed through one CLI
 
-1. Clone or download this repository
-2. Open a terminal
-3. Navigate to the directory containing the `dh-c.c` file
-4. Make the installation script executable and run it:
+The practical split is:
 
-   ```sh
-   chmod +x install-dh-c.sh
-   ./install-dh-c.sh
-   ```
+- explicit CLI paths are the immediate build target
+- `project.dh` supplies defaults, reusable structure, and dependency contracts
 
-5. Follow the on-screen instructions to complete the installation
+## Current Support
 
-## Usage
+Supported commands:
 
-### Getting Help
+- `build`
+- `lib`
+- `run`
+- `test`
+- `deps`
+- `clean`
+- `build-dsl`
+- `test-dsl`
+- `clean-dsl`
+- `build-self`
+- `clean-self`
+- `--help`
+- `--version`
 
-Display help information:
+Reserved and unsupported commands:
 
-```sh
-dh-c --help
-# or
-dh-c -h
-```
+- `workspace`
+- `project`
 
-Display version information:
+## Prerequisites
 
-```sh
-dh-c --version
-```
+You need these tools in `PATH`:
 
-### Project Management
+- `clang`
+- `make`
 
-Create a new workspace:
+The default self-build flow expects the same warning/extension model used by this repository's Clang configuration.
 
-```sh
-dh-c workspace my-workspace
-```
+## Build `dh-c`
 
-Create a new project:
+From the repository root:
 
 ```sh
-dh-c project my-project
+cd dh-c
+make PROFILE=release
 ```
 
-Initialize the current directory as a workspace or project:
+The built binary is written to:
+
+```txt
+dh-c/build/dh-c.exe     # Windows
+dh-c/build/dh-c         # Unix-like shells
+```
+
+Useful self-build profiles:
+
+- `PROFILE=dev`
+- `PROFILE=test`
+- `PROFILE=release`
+- `PROFILE=optimize`
+- `PROFILE=compact`
+- `PROFILE=micro`
+
+## Verify `dh-c`
+
+From the repository root:
 
 ```sh
-dh-c workspace .
-dh-c project .
+sh dh-c/tests/run-tests.sh
+sh dh-c/tests/run-tests.sh --integration
+sh dh-c/tests/run-tests.sh --address-sanitizer
+sh dh-c/tests/run-tests.sh --integration --address-sanitizer
 ```
 
-### Building and Running
+What these cover:
 
-Build a single file:
+- unit coverage for `dal-c-ext` helpers and `dal-c` contracts
+- CLI help/version/reserved-command behavior
+- project build/run/test scenarios
+- target-root contract scenarios
+- dependency copy scenarios
+- memory checks through AddressSanitizer
+
+On Windows, run these from Git Bash or another `sh` environment rather than PowerShell.
+
+## Quick Start
+
+### 1. Build a Single File
 
 ```sh
-dh-c build file.c
+dh-c build src/main.c
+dh-c run src/main.c
 ```
 
-Build with a specific configuration:
+This path works even outside a `project.dh` project.
 
-```sh
-dh-c build dev file.c
-```
-
-Build without the DH/DSL library path:
-
-```sh
-dh-c build file.c --no-dsl
-```
-
-Build an entire project:
+### 2. Build the Default Project Target
 
 ```sh
 dh-c build
-```
-
-Build and run a file:
-
-```sh
-dh-c run file.c
-```
-
-Build and run tests:
-
-```sh
-dh-c test test-file.c
-```
-
-Run tests for an entire project:
-
-```sh
+dh-c run
 dh-c test
+dh-c clean
 ```
 
-### Build Configurations
+This requires running inside a directory where `dh-c` can detect the nearest ancestor `project.dh`.
 
-DH-C supports several predefined build configurations:
-
-- `dev` - Extended debug info, no optimization, assertions enabled
-- `test` - Standard debug info, basic optimization, assertions enabled
-- `profile` - Standard debug info, balanced optimization, assertions enabled
-- `release` - Minimal debug info, balanced optimization, assertions disabled
-- `performance` - No debug info, aggressive optimization, assertions disabled
-- `embedded` - No debug info, size optimization, assertions disabled
-- `micro` - No debug info, extreme size optimization, assertions disabled
-
-### Additional Options
-
-Specify compiler:
+### 3. Build a Target Family
 
 ```sh
-dh-c build file.c --compiler=gcc
+dh-c build cmd/runner1
+dh-c run cmd/runner1
+dh-c build plugins/render
 ```
 
-Use a specific C standard:
+If the path falls under a declared `[target-root ...]`, the target-root contract decides:
+
+- artifact kind
+- allowed path selection mode
+- whether self code is linked
+
+### 4. Build Compatibility Families
 
 ```sh
-dh-c build file.c --std=c11
+dh-c build --sample
+dh-c build --example
+dh-c build --test
 ```
 
-Pass arguments to the program:
+These are the built-in compatibility selectors for `samples/`, `examples/`, and `tests/`.
 
-```sh
-dh-c run file.c --args="arg1 arg2"
-```
+## Command Model
 
-Show commands being executed:
-
-```sh
-dh-c build file.c --show-commands
-```
-
-Enable output suffix for build configurations:
-
-```sh
-dh-c build dev file.c --use-output-suffix
-```
-
-## VSCode Integration
-
-The DH-C build tool includes a `tasks.json` template that provides VSCode integration with the following tasks:
-
-- `dh>create workspace` - Create a new workspace
-- `dh>create project` - Create a new project
-- `dh>build current file` - Build the current file
-- `dh>build project` - Build the entire project
-- `dh>test current file` - Run tests for the current file
-- `dh>test project` - Run tests for the entire project
-- `dh>run current file` - Build and run the current file
-- `dh>run project` - Build and run the entire project
-- `dh>execute current file` - Run the existing executable for the current file without building
-- `dh>execute project` - Run the existing executable for the project without building
-
-## Environment Variables
-
-- `DH_HOME`: Points to the DH library root directory. Set automatically by the installation scripts, but can be manually configured if needed.
-
-## Project Structure
-
-A typical DH-C project follows this structure:
+`dh-c` reads each command as:
 
 ```txt
-my-project/
-  ├── include/my-project (public headers)
-  ├── src/my-project     (implementation files)
-  ├── lib/               (third-party libraries)
-  ├── .clangd            (language server config)
-  ├── .clang-format      (code formatter config)
-  └── .vscode/           (IDE config)
+dh-c <verb> [profile] [path] [options]
 ```
 
-Directory aliases are also supported at the project root:
+The tokens play different roles:
 
-- `include`, `includes`, `inc`
-- `source`, `sources`, `src`
-- `tests`, `test`
-- `samples`, `sample`
-- `examples`, `example`
+- verb: `build`, `run`, `test`, `clean`, `deps`
+- profile: `dev`, `test`, `profile`, `stable`, `release`, `optimize`, `compact`, `micro`
+- path: explicit file path, directory path, or target-root path
+- modifier: `--lib`, `--shared`, `--self`, `--dsl`, `--recur`, `--debug`, `--verbose`
+- selector: `--sample`, `--example`, `--test`
 
-Only one alias variant per category may exist at the same level.
+### Path Resolution Rules
+
+`dh-c build`
+
+- builds the default project output
+
+`dh-c build file.c`
+
+- builds that file directly
+
+`dh-c run path/to/target`
+
+- if the path matches a declared target root, the target-root contract applies
+- otherwise `dh-c` treats the path as an explicit file or directory selection
+
+`dh-c build .`
+
+- `.` is a compatibility alias for `--all`
+- it means "build all source files in the project `src` family"
+
+## Profiles
+
+The built-in profiles are:
+
+- `dev`: `-g3 -Og`, assertions enabled
+- `test`: `-g -O1`, assertions enabled
+- `profile`: `-g -O2`, assertions enabled
+- `stable`: `-g1 -O2`, assertions disabled
+- `release`: `-g1 -O3`, LTO-oriented release build
+- `optimize`: `-O3 -march=native`, assertions disabled
+- `compact`: `-Os`, size-oriented build
+- `micro`: `-Oz`, smallest-size profile
+
+## Important Options
+
+Shared build options:
+
+- `--compiler=<name>`
+- `--std=<std>`
+- `--arch=<target>`
+- `--target=<triple>`
+- `--freestanding`
+- `--sysroot=<path>`
+- `--include=<path>` or `-I<path>`
+- `--isystem=<path>`
+- `--link=<lib>` or `-l<lib>`
+- `--define=<macro>` or `-D<macro>`
+- `--undef=<macro>` or `-U<macro>`
+- `--compiler-args="..."`
+- `--args="..."`
+- `--file=<path>`
+- `--output=<path>` or `-o<path>`
+- `--exclude=<path>`
+- `--dh-file=<path>`
+- `--loose-errors`
+- `--no-dsl`
+- `--show-commands`
+- `--verbose`
+- `--dh=<path>`
+
+Build-specific modifiers:
+
+- `--lib`
+- `--static`
+- `--shared`
+- `--sample`
+- `--example`
+- `--test`
+- `--all`
+- `--dsl`
+- `--self`
+- `--recur`
+
+Run/test-specific modifiers:
+
+- `--debug`
+- `--runtime-args="..."`
+
+Clean-specific modifiers:
+
+- `--cache`
+- `--self`
+- `--dsl`
+- `--recur`
 
 ## `project.dh`
 
-`project.dh` is the reusable build-contract layer on top of the CLI.
+`project.dh` is the project contract file.
 
-It is not the only way to use `dh-c`.
+It currently supports three layers:
 
-- the CLI must remain able to perform builds directly from explicit paths and flags
-- `project.dh` exists to structure, reuse, and automate those CLI-level decisions inside a project
+- project-wide defaults
+- named target-root blocks
+- dependency blocks
 
-It now covers:
+### Project-Wide Keys
 
-- project-wide defaults such as `output=`, `build-runs-tests=`, `no-dsl=`, and PCH settings
-- reusable self-project source roots through repeated `self-root=`
-- named target roots through `[target-root <name>]` blocks
-
-Detailed explicit-vs-implicit rules live in `dh-c/docs/project-dh-contract.md`.
-
-Example-first CLI sentence rules and the proposed `exclude` contract live in
-`dh-c/docs/cli-syntax-draft.md`.
-
-### Project-wide defaults
-
-`project.dh` can define project defaults such as:
+Supported top-level keys:
 
 ```txt
-output=my-project
-build-runs-tests=true
-no-dsl=false
+output=<name>
+build-runs-tests=<true|false>
+no-dsl=<true|false>
+pch=<auto|off|path>
+pch-exclude=<header>
+self-root=<path>
 ```
 
-### Reusable self roots
+Meaning:
 
-Repeated `self-root=` entries declare reusable self-project code that should be built once and reused internally:
+- `output`: default artifact name when the CLI does not override it
+- `build-runs-tests`: plain `dh-c build` also runs tests afterward
+- `no-dsl`: disables automatic `dh` linking for that project scope
+- `pch`: auto/off/explicit PCH header contract
+- `pch-exclude`: files that must compile without the project PCH
+- repeated `self-root`: reusable project-owned source roots
 
-```txt
-self-root=src
-self-root=pkg
-self-root=internal
-```
+### Named Target Roots
 
-If no `self-root=` is declared, the resolved project `src` root is used implicitly.
-
-### Target roots
-
-Named target roots describe where buildable targets live and what artifact they produce:
+Target roots are declared like this:
 
 ```txt
 [target-root cmd]
@@ -265,44 +296,186 @@ path=cmd
 kind=executable
 selection=dir
 link-self=true
-
-[target-root plugins]
-path=plugins
-kind=shared-lib
-selection=dir
-link-self=true
 ```
 
-Defaults inside a target-root block:
+Supported target-root keys:
 
-- `kind=executable`
-- `selection=path`
-- `link-self=true`
+- `path`
+- `kind`
+- `selection`
+- `link-self`
 
-### CLI-first behavior
+Meaning:
 
-These are first-class CLI features:
+- `path`: root directory for that target family
+- `kind`: `executable`, `static-lib`, or `shared-lib`
+- `selection`: `path`, `file`, or `dir`
+- `link-self`: whether the target links reusable self code
 
-- `--sample`
-- `--example`
-- `--test`
+### Dependency Blocks
 
-They select the project's `samples`, `examples`, and `tests` target families directly.
+Dependency blocks use section names such as:
 
-When `project.dh` does not explicitly declare matching target roots, `dh-c` still resolves those families from the built-in project categories based on the resolved `samples`, `examples`, and `tests` directories.
+```txt
+[B]
+path=../B
+profile=default
+linking=static
+no-dsl=true
+test=true
+```
 
-`project.dh` can make those same behaviors explicit and reusable, but the flags themselves are not deprecated or secondary.
+Supported dependency keys:
 
-### Companion `.dh`
+- `path`
+- `profile`
+- `linking`
+- `no-dsl`
+- `test`
 
-Companion `.dh` files can override `output=`, `build-runs-tests=`, and `no-dsl=` for the owning target.
+Meaning:
 
-Dependency blocks can additionally set `test=true` to run that dependency's tests during dependency traversal.
+- `path`: dependency project root
+- `profile`: dependency build profile or `default`
+- `linking`: static/shared preference for that dependency
+- `no-dsl`: dependency-local DSL suppression
+- `test`: run that dependency's tests during dependency traversal
 
-## Test Mode
+## Directory Layout
 
-When running in test mode with `dh-c test`, a special executable with the `-TEST` suffix is created. This test executable is automatically removed after the test is completed, keeping your build directory clean.
+A typical project layout is:
 
-## Version
+```txt
+my-project/
+  project.dh
+  include/
+  src/
+  tests/
+  samples/
+  examples/
+  lib/
+    deps/
+  build/
+  .cache/
+```
 
-Current version: 0.1.0-alpha.0.1
+Supported built-in directory aliases:
+
+- include: `include`, `includes`, `inc`
+- src: `src`, `source`, `sources`
+- tests: `tests`, `test`
+- samples: `samples`, `sample`
+- examples: `examples`, `example`
+
+Only one alias variant per category should exist at the same project level.
+
+## Generated Directories
+
+`dh-c` writes generated data to three main places:
+
+`build/`
+
+- final artifacts
+- object files
+- generated plan makefiles
+- PCH outputs
+
+`.cache/`
+
+- generated unity sources
+- generated test runner sources
+
+`lib/deps/`
+
+- copied dependency headers
+- copied dependency libraries
+- copied dependency PCH files
+- copied transitive dependency artifacts
+
+## Dependency Flow
+
+`dh-c deps` builds dependency projects first and then copies their consumable outputs into the consumer project's `lib/deps/`.
+
+What is copied:
+
+- public headers
+- built static/shared libraries
+- PCH files when present
+- transitive dependency artifacts
+
+This is why `deps` is the command that prepares a project-local consumable dependency boundary rather than only invoking nested builds.
+
+## Examples
+
+Build the default project output:
+
+```sh
+dh-c build
+```
+
+Build and run a target-root executable:
+
+```sh
+dh-c run cmd/runner1
+```
+
+Build a shared plugin:
+
+```sh
+dh-c build plugins/render
+```
+
+Build a static library from an explicit file:
+
+```sh
+dh-c build --lib --static src/mylib.c
+```
+
+Build all project sources:
+
+```sh
+dh-c build --all
+dh-c build .
+```
+
+Run dependency preparation:
+
+```sh
+dh-c deps --verbose
+```
+
+Run tests recursively:
+
+```sh
+dh-c test --recur
+```
+
+Build the DSL boundary explicitly:
+
+```sh
+dh-c build --dsl
+dh-c build-dsl
+```
+
+Operate on the `dh-c` self boundary:
+
+```sh
+dh-c build --self
+dh-c clean --self
+dh-c build-self
+dh-c clean-self
+```
+
+## Current Non-Goals
+
+These names exist but are not supported commands yet:
+
+- `dh-c workspace`
+- `dh-c project`
+
+Do not build workflows or documentation around them as if they were already implemented.
+
+## Related Documents
+
+- `dh-c/docs/project-dh-contract.md`
+- `dh-c/docs/cli-syntax-draft.md`

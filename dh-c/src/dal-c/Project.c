@@ -47,7 +47,7 @@ dal_c_Project* dal_c_Project_detect(const dal_c_Cmd* cmd) {
 
     if (proj->root) {
         proj->name = path_basename(proj->root);
-        proj->project_dh = path_join(proj->root, dal_c_file_project_dh);
+        proj->project_dh = path_join(proj->root, dal_c_file_detector_project);
         proj->pch_enabled = true;
         if (path_isFile(proj->project_dh)) {
             if (!dal_c_Project__parseProjectDh(proj->project_dh, proj)) {
@@ -76,7 +76,7 @@ dal_c_Project* dal_c_Project_detectAt(const char* lib_path, const char* dh_path)
     proj->root = path_abs(lib_path);
     proj->name = path_basename(proj->root);
     proj->dh_path = dh_path ? strdup(dh_path) : NULL;
-    proj->project_dh = path_join(proj->root, dal_c_file_project_dh);
+    proj->project_dh = path_join(proj->root, dal_c_file_detector_project);
     proj->pch_enabled = true;
     if (proj->project_dh && path_isFile(proj->project_dh)) {
         if (!dal_c_Project__parseProjectDh(proj->project_dh, proj)) {
@@ -290,7 +290,7 @@ ArrStr* dal_c__collectDescendantProjects(const dal_c_Project* proj) {
         }
 
         char* base = path_basename(file);
-        bool is_project_dh = base && str_eql(base, dal_c_file_project_dh);
+        bool is_project_dh = base && str_eql(base, dal_c_file_detector_project);
         free(base);
         if (!is_project_dh) {
             free(files[i]);
@@ -503,7 +503,7 @@ bool dal_c_TargetRequest_resolve(const dal_c_Project* proj, const dal_c_CommandI
 static char* dal_c_Project__findRoot(const char* start) {
     char* current = start ? strdup(start) : NULL;
     while (current && strlen(current) > 0) {
-        char* project_dh = path_join(current, dal_c_file_project_dh);
+        char* project_dh = path_join(current, dal_c_file_detector_project);
         bool has_project_dh = path_isFile(project_dh);
         free(project_dh);
         if (has_project_dh) {
@@ -1013,7 +1013,7 @@ static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
     }
 
     const char* common_names[] = {
-        dal_c_pch_header_dasae_headers,
+        dal_c_pch_header_target_dsl,
         dal_c_pch_header_dh,
         dal_c_pch_header_dal,
         dal_c_pch_header_da,

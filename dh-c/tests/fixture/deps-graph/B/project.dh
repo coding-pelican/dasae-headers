@@ -1,0 +1,6 @@
+no-dsl=true
+output=dep-b
+
+[A]
+path=../A
+no-dsl=true

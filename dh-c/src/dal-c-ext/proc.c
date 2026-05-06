@@ -7,16 +7,15 @@
 #include <sys/wait.h>
 #endif
 
-int proc_run(char** argv, bool show_output) {
-    if (!argv || !argv[0]) { return -1; }
-#ifdef _WIN32
-    // Build command line
+static char* proc__buildCommandLine(char** argv) {
     size_t cmd_len = 0;
     for (int i = 0; argv[i]; ++i) {
-        cmd_len += strlen(argv[i]) + 3; // +3 for quotes and space
+        cmd_len += strlen(argv[i]) + 3;
     }
+
     char* const cmd_line = (char*)malloc(cmd_len + 1);
-    if (!cmd_line) { return -1; }
+    if (!cmd_line) { return NULL; }
+
     cmd_line[0] = '\0';
     for (int i = 0; argv[i]; ++i) {
         if (i > 0) { strcat(cmd_line, " "); }
@@ -24,6 +23,14 @@ int proc_run(char** argv, bool show_output) {
         strcat(cmd_line, argv[i]);
         strcat(cmd_line, "\"");
     }
+    return cmd_line;
+}
+
+int proc_run(char** argv, bool show_output) {
+    if (!argv || !argv[0]) { return -1; }
+#ifdef _WIN32
+    char* const cmd_line = proc__buildCommandLine(argv);
+    if (!cmd_line) { return -1; }
 
     STARTUPINFOA si = { 0 };
     PROCESS_INFORMATION pi = { 0 };
@@ -92,21 +99,11 @@ char* proc_output(char** argv) {
     si.hStdOutput = hWrite;
     si.hStdError = hWrite;
     si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-    // Build command line
-    size_t cmd_len = 0;
-    for (int i = 0; argv[i]; ++i) { cmd_len += strlen(argv[i]) + 3; }
-    char* const cmd_line = (char*)malloc(cmd_len + 1);
+    char* const cmd_line = proc__buildCommandLine(argv);
     if (!cmd_line) {
         CloseHandle(hRead);
         CloseHandle(hWrite);
         return NULL;
-    }
-    cmd_line[0] = '\0';
-    for (int i = 0; argv[i]; ++i) {
-        if (i > 0) { strcat(cmd_line, " "); }
-        strcat(cmd_line, "\"");
-        strcat(cmd_line, argv[i]);
-        strcat(cmd_line, "\"");
     }
     const BOOL success = CreateProcessA(
         NULL,

@@ -20,6 +20,7 @@
 // === PRIVATE HELPERS (Core Layer - use asserts) ===
 
 static void dal_c__freeFileList(char** files, int file_count);
+static void dal_c__freeNullTerminatedList(char** items);
 static ArrStr* dal_c__collectFilesWithExt(const char* dir, const char* ext, bool skip_source_paths);
 static bool dal_c__copyHeaderToPathIfChanged(const char* src, const char* dst);
 static bool dal_c__copyHeaderFile(const char* src, const char* out_dir);
@@ -191,7 +192,7 @@ static char* dal_c__findSelfProjectDirFrom(const char* start_dir) {
             return current;
         }
 
-        char* child = path_join(current, "dh-c");
+        char* child = path_join(current, dal_c_tool_name);
         if (dal_c__isSelfProjectDir(child)) {
             free(current);
             return child;
@@ -230,7 +231,7 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
 
     char* self_dir = dal_c__resolveSelfProjectDir();
     if (!self_dir) {
-        (void)fprintf(stderr, "Error: Failed to locate `dh-c` self-build directory\n");
+        (void)fprintf(stderr, "Error: Failed to locate `" dal_c_tool_name "` self-build directory\n");
         return 1;
     }
 
@@ -262,7 +263,9 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
         (void)printf("\n");
     }
 
-    int result = proc_run(ArrStr_toRaw(argv), true);
+    char** raw_argv = ArrStr_toRaw(argv);
+    int result = proc_run(raw_argv, true);
+    dal_c__freeNullTerminatedList(raw_argv);
     ArrStr_fini(&argv);
     free(self_dir);
     return result;
@@ -744,6 +747,7 @@ int dal_c__runExecutable(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
                 ArrStr_push(argv, split[i]);
             }
         }
+        dal_c__freeFileList(split, count);
     }
 
     if (cmd->show_commands) {
@@ -754,7 +758,9 @@ int dal_c__runExecutable(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
         printf("\n");
     }
 
-    int result = proc_run(ArrStr_toRaw(argv), true);
+    char** raw_argv = ArrStr_toRaw(argv);
+    int result = proc_run(raw_argv, true);
+    dal_c__freeNullTerminatedList(raw_argv);
     ArrStr_fini(&argv);
     if (exe_name_alloc) { free(exe_name_alloc); }
     free(exe_path);
@@ -820,6 +826,7 @@ int dal_c__runDebugger(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
                 ArrStr_push(argv, split[i]);
             }
         }
+        dal_c__freeFileList(split, count);
     }
 
     if (cmd->show_commands) {
@@ -830,7 +837,9 @@ int dal_c__runDebugger(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
         printf("\n");
     }
 
-    int result = proc_run(ArrStr_toRaw(argv), true);
+    char** raw_argv = ArrStr_toRaw(argv);
+    int result = proc_run(raw_argv, true);
+    dal_c__freeNullTerminatedList(raw_argv);
     ArrStr_fini(&argv);
     if (exe_name_alloc) { free(exe_name_alloc); }
     free(exe_path);
@@ -1080,7 +1089,9 @@ int dal_c__executeMake(const char* makefile_path) {
         ArrStr_push(argv, makefile_path);
     }
 
-    int result = proc_run(ArrStr_toRaw(argv), true);
+    char** raw_argv = ArrStr_toRaw(argv);
+    int result = proc_run(raw_argv, true);
+    dal_c__freeNullTerminatedList(raw_argv);
     ArrStr_fini(&argv);
     return result;
 }
@@ -1098,7 +1109,9 @@ int dal_c__executeMakeInDir(const char* directory) {
     ArrStr_push(argv, "-C");
     ArrStr_push(argv, directory);
 
-    int result = proc_run(ArrStr_toRaw(argv), true);
+    char** raw_argv = ArrStr_toRaw(argv);
+    int result = proc_run(raw_argv, true);
+    dal_c__freeNullTerminatedList(raw_argv);
     ArrStr_fini(&argv);
     return result;
 }
@@ -1346,13 +1359,22 @@ static void dal_c__freeFileList(char** files, int file_count) {
     free((void*)files);
 }
 
+static void dal_c__freeNullTerminatedList(char** items) {
+    if (!items) { return; }
+    for (int i = 0; items[i] != NULL; ++i) {
+        free(items[i]);
+    }
+    free((void*)items);
+}
+
 bool dal_c__shouldSkipAutoSourcePath(const char* path) {
     assert(path != NULL);
     if (dal_c__pathHasHiddenSegment(path)) {
         return true;
     }
-    for (int i = 0; dal_c_source_skip_segments[i] != NULL; ++i) {
-        if (dal_c__pathContainsSegment(path, dal_c_source_skip_segments[i])) {
+    const char* const* skip_segments = dal_c_sourceSkipSegments();
+    for (int i = 0; skip_segments[i] != NULL; ++i) {
+        if (dal_c__pathContainsSegment(path, skip_segments[i])) {
             return true;
         }
     }
@@ -1669,7 +1691,7 @@ static void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const 
     (void)fprintf(fp, "\n");
 
     (void)fprintf(fp, "CFLAGS_BASE = $(STD)");
-    (void)fprintf(fp, " -fgnu-keywords -fms-extensions");
+    (void)fprintf(fp, " -fgnu-keywords -fms-extensions -Wno-microsoft-anon-tag");
     (void)fprintf(fp, " -funsigned-char");
     (void)fprintf(fp, " -mllvm -enable-dfa-jump-thread");
 

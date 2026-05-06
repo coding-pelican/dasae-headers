@@ -115,13 +115,13 @@ typedef struct daterm_cursor_Pos {
     var_(col, u16); // 1-indexed
 } daterm_cursor_Pos;
 T_use_prl$(daterm_cursor_Pos);
-errset_((daterm_cursor_Err)(daterm_cursor_InvalidResponse));
-T_use_E$($set(daterm_cursor_Err)(daterm_cursor_Pos));
+errset_((daterm_cursor_E)(daterm_cursor_InvalidResponse));
+T_use_E$($set(daterm_cursor_E)(daterm_cursor_Pos));
 /// Query cursor position from terminal
 /// Requires terminal to be in raw mode or have echo disabled
 /// Reads response from `in` and parses it into `out`
 $attr($must_check)
-$extern fn_((daterm_cursor_queryPos(io_Reader in, io_Writer out))(daterm_cursor_Err$daterm_cursor_Pos));
+$extern fn_((daterm_cursor_queryPos(io_Reader in, io_Writer out))(daterm_cursor_E$daterm_cursor_Pos));
 
 /*========== Macros and Definitions =========================================*/
 

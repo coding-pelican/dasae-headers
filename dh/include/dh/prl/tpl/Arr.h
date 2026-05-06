@@ -36,10 +36,6 @@ extern "C" {
 #define A_T$(_T...) TypeOf(null$(_T*)->val[0])
 #define A_TUnqual$(_T...) TypeOfUnqual(null$(_T*)->val[0])
 
-#define A_innerN$(_T...) A_len$(_T)
-#define A_InnerT$(_T...) TypeOf(null$(_T*)->val[0])
-#define A_InnerTUnqual$(_T...) TypeOfUnqual(null$(_T*)->val[0])
-
 /* Array Operations */
 #define zero$A() init$A({})
 #define zero$A$(/*(_N,_T)*/... /*(A$(_N,_T))*/) init$A$(__VA_ARGS__{})
@@ -133,10 +129,10 @@ extern "C" {
     claim_assert_fmt(__range.end <= A_len(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, A_len(*__a)); \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__a))( \
-            l$((S_const$$(A_InnerT$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__range.begin], .len = len$R(__range) }) \
+            l$((S_const$$(A_T$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__range.begin], .len = len$R(__range) }) \
         )), \
         T_qual$((TypeOfUnqual(*__a))( \
-            l$((S$$(A_InnerT$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__range.begin], .len = len$R(__range) }) \
+            l$((S$$(A_T$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__range.begin], .len = len$R(__range) }) \
         )) \
     )); \
 })
@@ -162,10 +158,10 @@ extern "C" {
     claim_assert_fmt(__end <= A_len(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __end, A_len(*__a)); \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__a))( \
-            l$((S_const$$(A_InnerT$(TypeOf(*__a)))){ .ptr = A_ptr(*__a), .len = __end }) \
+            l$((S_const$$(A_T$(TypeOf(*__a)))){ .ptr = A_ptr(*__a), .len = __end }) \
         )), \
         T_qual$((TypeOfUnqual(*__a))( \
-            l$((S$$(A_InnerT$(TypeOf(*__a)))){ .ptr = A_ptr(*__a), .len = __end }) \
+            l$((S$$(A_T$(TypeOf(*__a)))){ .ptr = A_ptr(*__a), .len = __end }) \
         )) \
     )); \
 })
@@ -191,10 +187,10 @@ extern "C" {
     claim_assert_fmt(__begin <= A_len(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, A_len(*__a)); \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__a))( \
-            l$((S_const$$(A_InnerT$(TypeOf(*__a)))){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }) \
+            l$((S_const$$(A_T$(TypeOf(*__a)))){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }) \
         )), \
         T_qual$((TypeOfUnqual(*__a))( \
-            l$((S$$(A_InnerT$(TypeOf(*__a)))){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }) \
+            l$((S$$(A_T$(TypeOf(*__a)))){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }) \
         )) \
     )); \
 })
@@ -235,7 +231,7 @@ extern "C" {
     l$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
 })
 #define A_cat(_lhs, _rhs...) \
-    A_cat$((A$$(A_innerN$(TypeOf(_lhs)) + A_innerN$(TypeOf(_rhs)), A_InnerT$(TypeOf(_lhs))))(_lhs, _rhs))
+    A_cat$((A$$(A_n$(TypeOf(_lhs)) + A_n$(TypeOf(_rhs)), A_T$(TypeOf(_lhs))))(_lhs, _rhs))
 
 #define __lit_init$A__step(...) __VA_ARGS__
 #define __lit_init$A__parseT(_N, _T...) _N, _T,

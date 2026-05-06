@@ -77,13 +77,13 @@ typedef struct daterm_screen_Size {
     var_(rows, u16); // Height in rows
 } daterm_screen_Size;
 T_use_prl$(daterm_screen_Size);
-errset_((daterm_screen_Err)(daterm_screen_InvalidResponse));
-T_use_E$($set(daterm_screen_Err)(daterm_screen_Size));
+errset_((daterm_screen_E)(daterm_screen_InvalidResponse));
+T_use_E$($set(daterm_screen_E)(daterm_screen_Size));
 /// Query screen size from terminal
 /// Requires terminal to be in raw mode or have echo disabled
 /// Reads response from `in` and parses it into `out`
 $attr($must_check)
-$extern fn_((daterm_screen_querySize(io_Reader in, io_Writer out))(daterm_screen_Err$daterm_screen_Size));
+$extern fn_((daterm_screen_querySize(io_Reader in, io_Writer out))(daterm_screen_E$daterm_screen_Size));
 
 /*========== Macros and Definitions =========================================*/
 

@@ -9,23 +9,16 @@ static bool dal_c__needsProject(const dal_c_Cmd* cmd);
 static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd);
 
 int main(int argc, const char* argv[]) {
-    if (argc < 2) {
-        dal_c__printUsage();
-        return 1;
-    }
+    if (argc < 2) return dal_c__printUsage(), 1;
 
     dal_c_Cmd* cmd = dal_c_Cmd_parse(argc, argv);
     if (!cmd) {
         (void)fprintf(stderr, "Error: Failed to parse command\n");
         return 1;
     }
-    if (cmd->is_version) {
-        dal_c__printVersion();
-    }
-    if (cmd->is_help) {
-        dal_c__printUsage();
-    }
-    if (cmd->is_help || cmd->is_version) {
+    if (cmd->is_version || cmd->is_help) {
+        if (cmd->is_version) dal_c__printVersion();
+        if (cmd->is_help) dal_c__printUsage();
         return dal_c_Cmd_cleanup(&cmd), 0;
     }
 
@@ -38,25 +31,29 @@ int main(int argc, const char* argv[]) {
         }
         if (!proj->root) {
             if (!dal_c__allowsNoProject(cmd)) {
-                (void)fprintf(stderr, "Error: Not in a dh-c project directory\n");
-                (void)fprintf(stderr, "  (Looking for nearest ancestor with %s)\n", dal_c_file_project_dh);
+                (void)fprintf(stderr, "Error: Not in a" dal_c_tool_name "project directory\n");
+                (void)fprintf(stderr, "  (Looking for nearest ancestor with %s)\n", dal_c_file_detector_project);
                 return dal_c_Project_cleanup(&proj), dal_c_Cmd_cleanup(&cmd), 1;
             }
         }
     }
     int result = dal_c_Cmd_execute(cmd, proj);
-    if (proj) { dal_c_Project_cleanup(&proj); }
+    if (proj) dal_c_Project_cleanup(&proj);
     dal_c_Cmd_cleanup(&cmd);
     return result;
 }
 
 void dal_c__printUsage(void) {
+    const int help_cmd_count = dal_c_help_cmds_count;
+    const int global_option_count = dal_c_help_global_options_count;
+    const int help_profile_count = dal_c_help_profiles_count;
+
     printf("Usage: %s <command> [profile] [file.c] [options]\n\n", dal_c_tool_name);
     printf("COMMANDS:\n\n");
 
-    for (int i = 0; i < dal_c_help_cmds_count; ++i) {
+    for (int i = 0; i < help_cmd_count; ++i) {
         const dal_c_HelpCmd* cmd = &dal_c_help_cmds[i];
-        if (!cmd->name) { continue; }
+        if (!cmd->name || !cmd->implemented) { continue; }
         printf("  %s %s\n", cmd->name, cmd->usage);
         printf("    %s\n\n", cmd->description);
 
@@ -65,12 +62,7 @@ void dal_c__printUsage(void) {
             for (int j = 0; j < cmd->option_count; ++j) {
                 printf("      %-*s %s\n", dal_c_help_opt_width, cmd->options[j].name, cmd->options[j].description);
             }
-            // For commands that share build options, indicate that
-            if (str_eql(cmd->name, dal_c_cmd_action_lib)
-                || str_eql(cmd->name, dal_c_cmd_action_run)
-                || str_eql(cmd->name, dal_c_cmd_action_test)
-                || str_eql(cmd->name, dal_c_cmd_action_test_dsl)
-                || str_eql(cmd->name, dal_c_cmd_action_deps)) {
+            if (cmd->extends_build_options) {
                 printf("      [all %s options...]\n", dal_c_cmd_action_build);
             }
             printf("\n");
@@ -85,22 +77,50 @@ void dal_c__printUsage(void) {
         }
     }
 
+    printf("RESERVED COMMANDS:\n");
+    for (int i = 0; i < help_cmd_count; ++i) {
+        const dal_c_HelpCmd* cmd = &dal_c_help_cmds[i];
+        if (!cmd->name || cmd->implemented) continue;
+        printf("  %s %s\n", cmd->name, cmd->usage);
+        printf("    %s\n\n", cmd->description);
+    }
+
     printf("GLOBAL OPTIONS:\n");
-    for (int i = 0; i < dal_c_help_global_options_count; ++i) {
+    for (int i = 0; i < global_option_count; ++i) {
         printf("  %-*s %s\n", dal_c_help_opt_width, dal_c_help_global_options[i].name, dal_c_help_global_options[i].description);
     }
     printf("\n");
-    printf("PROJECT.DH CONTRACT:\n");
-    printf("  See `BUILD.md` and `dh-c/docs/project-dh-contract.md` for explicit and implicit `.dh` rules.\n\n");
+
+    printf("TARGET RESOLUTION:\n");
+    printf("  `" dal_c_tool_name " build` with no explicit path builds the project default output.\n");
+    printf("  Explicit `file.c` inputs build that file directly, even outside a project.\n");
+    printf("  Explicit paths under `[target-root ...]` use the declared target-root contract.\n");
+    printf("  `--sample`, `--example`, and `--test` select the built-in target families.\n");
+    printf("  `.` is a compatibility alias for `--all`.\n");
+    printf("  `build --self` and `clean --self` operate on the " dal_c_tool_name " self boundary only.\n\n");
+
+    printf("PROJECT.DH KEYS:\n");
+    printf("  Project keys: `output`, `build-runs-tests`, `no-dsl`, `pch`, `pch-exclude`, `self-root`\n");
+    printf("  `[target-root <name>]`: `path`, `kind`, `selection`, `link-self`\n");
+    printf("  Dependency blocks: `path`, `profile`, `linking`, `no-dsl`, `test`\n");
+    printf("  See `BUILD.md` and `dh-c/docs/project-dh-contract.md` for the full explicit contract.\n\n");
+
+    printf("GENERATED DIRECTORIES:\n");
+    printf("  `build/` stores artifacts, object files, and generated plan makefiles.\n");
+    printf("  `.cache/` stores generated unity/test helper sources.\n");
+    printf("  `lib/deps/` stores copied dependency headers, static/shared libraries, and PCH files.\n\n");
 
     printf("PROFILES:\n");
-    for (int i = 0; i < dal_c_help_profiles_count; ++i) {
+    for (int i = 0; i < help_profile_count; ++i) {
         printf("  %-*s %s\n", 14, dal_c_help_profiles[i].name, dal_c_help_profiles[i].description);
     }
+    printf("\n");
+    printf("SUPPORT STATUS:\n");
+    printf("  `workspace` and `project` are reserved scaffold commands and are not implemented.\n");
 }
 
 void dal_c__printVersion(void) {
-    printf("%s version %s\n", dal_c_tool_name, dal_c_ver_str);
+    printf("%s version %s\n", dal_c_tool_name, dal_c_ver_str_with_build);
     printf("%s\n", dal_c_tool_description);
     printf("%s\n", dal_c_tool_copyright);
     char* const exe_path = env_getExecutablePath();

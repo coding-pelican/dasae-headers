@@ -3,6 +3,14 @@
 #include <stdlib.h>
 #include <assert.h>
 
+static void ArrStr__freeRawRange(char** items, int count) {
+    if (!items) { return; }
+    for (int i = 0; i < count; ++i) {
+        free(items[i]);
+    }
+    free((void*)items);
+}
+
 ArrStr* ArrStr_init(void) {
     ArrStr* const arr = (ArrStr*)calloc(1, sizeof(ArrStr));
     if (!arr) { return NULL; }
@@ -26,7 +34,13 @@ char** ArrStr_toRaw(const ArrStr* self) {
     // Allocate array with NULL terminator
     char** const result = (char**)malloc((size_t)(self->items_len + 1) * sizeof(char*));
     if (!result) { return NULL; }
-    for (int i = 0; i < self->items_len; ++i) { result[i] = strdup(self->items[i]); }
+    for (int i = 0; i < self->items_len; ++i) {
+        result[i] = strdup(self->items[i]);
+        if (!result[i]) {
+            ArrStr__freeRawRange(result, i);
+            return NULL;
+        }
+    }
     result[self->items_len] = NULL;
     return result;
 }

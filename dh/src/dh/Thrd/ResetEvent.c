@@ -6,9 +6,9 @@
 #define Thrd_ResetEvent__is_set 2u
 
 $attr($must_check)
-$static fn_((Thrd_ResetEvent__wait(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd_ResetEvent_Err$void));
+$static fn_((Thrd_ResetEvent__wait(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd_ResetEvent_E$void));
 $attr($must_check)
-$static fn_((Thrd_ResetEvent__waitUntilSet(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd_ResetEvent_Err$void));
+$static fn_((Thrd_ResetEvent__waitUntilSet(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd_ResetEvent_E$void));
 
 fn_((Thrd_ResetEvent_init(void))(Thrd_ResetEvent)) {
     return (Thrd_ResetEvent){
@@ -24,7 +24,7 @@ fn_((Thrd_ResetEvent_wait(Thrd_ResetEvent* self))(void) $scope) {
     return_void(catch_((Thrd_ResetEvent__wait(self, none$((O$time_Duration))))($ignore, claim_unreachable)));
 } $unscoped(fn);
 
-fn_((Thrd_ResetEvent_timedWait(Thrd_ResetEvent* self, time_Duration timeout))(Thrd_ResetEvent_Err$void)) {
+fn_((Thrd_ResetEvent_timedWait(Thrd_ResetEvent* self, time_Duration timeout))(Thrd_ResetEvent_E$void)) {
     return Thrd_ResetEvent__wait(self, some$((O$time_Duration)(timeout)));
 };
 
@@ -45,8 +45,8 @@ fn_((Thrd_ResetEvent_isSet(const Thrd_ResetEvent* self))(bool)) {
     return atom_V_load(&self->state, atom_MemOrd_acquire) == Thrd_ResetEvent__is_set;
 };
 
-fn_((Thrd_ResetEvent__wait(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd_ResetEvent_Err$void)) {
-    return expr_(Thrd_ResetEvent_Err$void $scope)(if (!Thrd_ResetEvent_isSet(self)) {
+fn_((Thrd_ResetEvent__wait(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd_ResetEvent_E$void)) {
+    return expr_(Thrd_ResetEvent_E$void $scope)(if (!Thrd_ResetEvent_isSet(self)) {
         $break_(Thrd_ResetEvent__waitUntilSet(self, timeout));
     } else {
         $break_(ok({}));
@@ -54,7 +54,7 @@ fn_((Thrd_ResetEvent__wait(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd
 };
 
 $attr($branch_cold)
-fn_((Thrd_ResetEvent__waitUntilSet(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd_ResetEvent_Err$void) $scope) {
+fn_((Thrd_ResetEvent__waitUntilSet(Thrd_ResetEvent* self, O$time_Duration timeout))(Thrd_ResetEvent_E$void) $scope) {
     var state = atom_V_load(&self->state, atom_MemOrd_acquire);
     if (state == Thrd_ResetEvent__unset) {
         state = orelse_((atom_V_cmpXchgStrong$(

@@ -13,28 +13,54 @@
 #endif
 #include <string.h>
 
+static bool path__isSeparator(char ch) {
+    return ch == '/' || ch == '\\';
+}
+
+static char* path__dupRange(const char* src, size_t len) {
+    char* const copy = (char*)malloc(len + 1);
+    if (!copy) { return NULL; }
+    memcpy(copy, src, len);
+    copy[len] = '\0';
+    return copy;
+}
+
+static bool path__isWindowsDriveRoot(const char* path, size_t len) {
+#ifdef _WIN32
+    return (len == 2 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) && path[1] == ':')
+        || (len == 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) && path[1] == ':' && path__isSeparator(path[2]));
+#else
+    (void)path;
+    (void)len;
+    return false;
+#endif
+}
+
 char* path_join(const char* base, const char* component) {
     if (!base || !component) { return NULL; }
 
     size_t base_len = strlen(base);
     size_t comp_len = strlen(component);
     // Remove trailing separator from base
-    while (base_len > 0 && (base[base_len - 1] == '/' || base[base_len - 1] == '\\')) { base_len--; }
+    while (base_len > 0 && path__isSeparator(base[base_len - 1])) { base_len--; }
     // Remove leading separator from component
     size_t comp_start = 0;
-    while (comp_start < comp_len && (component[comp_start] == '/' || component[comp_start] == '\\')) { comp_start++; }
+    while (comp_start < comp_len && path__isSeparator(component[comp_start])) { comp_start++; }
     comp_len -= comp_start;
 
     // Allocate result
     char* const result = (char*)malloc(base_len + comp_len + 2);
     if (!result) { return NULL; }
-    // Copy base
-    strncpy(result, base, base_len);
-    result[base_len] = '\0';
-    // Add separator if needed
-    if (base_len > 0 && comp_len > 0) { strcat(result, PATH_SEP_STR); }
-    // Add component
-    if (comp_len > 0) { strcat(result, component + comp_start); }
+    memcpy(result, base, base_len);
+    size_t out_len = base_len;
+    if (base_len > 0 && comp_len > 0) {
+        result[out_len++] = PATH_SEP;
+    }
+    if (comp_len > 0) {
+        memcpy(result + out_len, component + comp_start, comp_len);
+        out_len += comp_len;
+    }
+    result[out_len] = '\0';
 
     return result;
 }
@@ -45,31 +71,29 @@ char* path_parent(const char* path) {
     size_t len = strlen(path);
     if (len == 0) { return strdup("."); }
     // Remove trailing separators
-    while (len > 0 && (path[len - 1] == '/' || path[len - 1] == '\\')) { len--; }
-    if (len == 0) { return strdup(PATH_SEP_STR); }
+    while (len > 0 && path__isSeparator(path[len - 1]) && !path__isWindowsDriveRoot(path, len)) { len--; }
+    if (len == 0 || path__isWindowsDriveRoot(path, len)) { return path__dupRange(path, len); }
 
     // Find last separator
     size_t last_sep = len;
     for (size_t i = len; i > 0; --i) {
-        if (path[i - 1] == '/' || path[i - 1] == '\\') {
+        if (path__isSeparator(path[i - 1])) {
             last_sep = i - 1;
             break;
         }
     }
     if (last_sep == len) { return strdup("."); } // No separator found
     if (last_sep == 0) {
-        // Root directory
-        char* const result = (char*)malloc(2);
-        if (!result) { return NULL; }
-        result[0] = path[0];
-        result[1] = '\0';
-        return result;
+        return strdup(PATH_SEP_STR);
+    }
+    if (last_sep == 2 && path__isWindowsDriveRoot(path, 3)) {
+        return path__dupRange(path, 3);
     }
 
     // Copy parent path
     char* const result = (char*)malloc(last_sep + 1);
     if (!result) { return NULL; }
-    strncpy(result, path, last_sep);
+    memcpy(result, path, last_sep);
     result[last_sep] = '\0';
 
     return result;
@@ -81,19 +105,20 @@ char* path_basename(const char* path) {
     size_t len = strlen(path);
     if (len == 0) { return strdup(""); }
     // Remove trailing separators
-    while (len > 0 && (path[len - 1] == '/' || path[len - 1] == '\\')) { len--; }
+    while (len > 0 && path__isSeparator(path[len - 1]) && !path__isWindowsDriveRoot(path, len)) { len--; }
     if (len == 0) { return strdup(""); }
+    if (path__isWindowsDriveRoot(path, len)) { return path__dupRange(path, len); }
 
     // Find last separator
     size_t last_sep = 0;
     for (size_t i = len; i > 0; --i) {
-        if (path[i - 1] == '/' || path[i - 1] == '\\') {
+        if (path__isSeparator(path[i - 1])) {
             last_sep = i;
             break;
         }
     }
 
-    return strdup(path + last_sep);
+    return path__dupRange(path + last_sep, len - last_sep);
 }
 
 char* path_abs(const char* path) {

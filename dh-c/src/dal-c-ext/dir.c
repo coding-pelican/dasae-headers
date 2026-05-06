@@ -14,6 +14,49 @@
 #include <dirent.h>
 #endif
 
+static void dir__freePathArray(char** files, int count) {
+    if (!files) { return; }
+    for (int i = 0; i < count; ++i) {
+        free(files[i]);
+    }
+    free((void*)files);
+}
+
+static bool dir__pushPath(char*** files, int* count, int* capacity, char* path) {
+    assert(files != NULL);
+    assert(count != NULL);
+    assert(capacity != NULL);
+    assert(path != NULL);
+
+    if (*count >= *capacity) {
+        const int new_capacity = (*capacity == 0) ? 16 : (*capacity * 2);
+        char** const grown = (char**)realloc((void*)*files, (size_t)new_capacity * sizeof(char*));
+        if (!grown) {
+            return false;
+        }
+        *files = grown;
+        *capacity = new_capacity;
+    }
+
+    (*files)[*count] = path;
+    (*count)++;
+    return true;
+}
+
+static bool dir__appendPaths(char*** dst, int* dst_count, int* dst_capacity, char** src, int src_count) {
+    assert(dst != NULL);
+    assert(dst_count != NULL);
+    assert(dst_capacity != NULL);
+
+    for (int i = 0; i < src_count; ++i) {
+        if (!dir__pushPath(dst, dst_count, dst_capacity, src[i])) {
+            return false;
+        }
+        src[i] = NULL;
+    }
+    return true;
+}
+
 
 bool dir_create(const char* path) {
     if (!path) { return false; }
@@ -128,41 +171,25 @@ char** dir_listRecur(const char* path, int* count) {
                 int sub_count = 0;
                 char** const sub_files = dir_listRecur(full_path, &sub_count);
                 if (sub_files) {
-                    for (int i = 0; i < sub_count; ++i) {
-                        if (*count >= capacity) {
-                            capacity = capacity == 0 ? 16 : capacity * 2;
-                            char** const temp = (char**)realloc((void*)files, (size_t)capacity * sizeof(char*));
-                            if (!temp) {
-                                free((void*)files);
-                                free((void*)sub_files);
-                                free(full_path);
-                                FindClose(hFind);
-                                *count = 0;
-                                return NULL;
-                            }
-                            files = temp;
-                        }
-                        files[*count] = sub_files[i];
-                        (*count)++;
-                    }
-                    free((void*)sub_files);
-                }
-            } else {
-                // Add file
-                if (*count >= capacity) {
-                    capacity = capacity == 0 ? 16 : capacity * 2;
-                    char** const temp = (char**)realloc((void*)files, (size_t)capacity * sizeof(char*));
-                    if (!temp) {
-                        free((void*)files);
+                    if (!dir__appendPaths(&files, count, &capacity, sub_files, sub_count)) {
+                        dir__freePathArray(sub_files, sub_count);
+                        dir__freePathArray(files, *count);
                         free(full_path);
                         FindClose(hFind);
                         *count = 0;
                         return NULL;
                     }
-                    files = temp;
+                    free((void*)sub_files);
                 }
-                files[*count] = full_path;
-                (*count)++;
+            } else {
+                // Add file
+                if (!dir__pushPath(&files, count, &capacity, full_path)) {
+                    free(full_path);
+                    dir__freePathArray(files, *count);
+                    FindClose(hFind);
+                    *count = 0;
+                    return NULL;
+                }
             }
         } while (FindNextFileA(hFind, &find_data));
         FindClose(hFind);
@@ -179,41 +206,25 @@ char** dir_listRecur(const char* path, int* count) {
             int sub_count = 0;
             char** const sub_files = dir_listRecur(full_path, &sub_count);
             if (sub_files) {
-                for (int i = 0; i < sub_count; ++i) {
-                    if (*count >= capacity) {
-                        capacity = capacity == 0 ? 16 : capacity * 2;
-                        char** const temp = (char**)realloc((void*)files, (size_t)capacity * sizeof(char*));
-                        if (!temp) {
-                            free((void*)files);
-                            free((void*)sub_files);
-                            free(full_path);
-                            (void)closedir(dir);
-                            *count = 0;
-                            return NULL;
-                        }
-                        files = temp;
-                    }
-                    files[*count] = sub_files[i];
-                    (*count)++;
-                }
-                free((void*)sub_files);
-            }
-        } else {
-            // Add file
-            if (*count >= capacity) {
-                capacity = capacity == 0 ? 16 : capacity * 2;
-                char** const temp = (char**)realloc((void*)files, (size_t)capacity * sizeof(char*));
-                if (!temp) {
-                    free((void*)files);
+                if (!dir__appendPaths(&files, count, &capacity, sub_files, sub_count)) {
+                    dir__freePathArray(sub_files, sub_count);
+                    dir__freePathArray(files, *count);
                     free(full_path);
                     (void)closedir(dir);
                     *count = 0;
                     return NULL;
                 }
-                files = temp;
+                free((void*)sub_files);
             }
-            files[*count] = full_path;
-            (*count)++;
+        } else {
+            // Add file
+            if (!dir__pushPath(&files, count, &capacity, full_path)) {
+                free(full_path);
+                dir__freePathArray(files, *count);
+                (void)closedir(dir);
+                *count = 0;
+                return NULL;
+            }
         }
     }
     (void)closedir(dir);

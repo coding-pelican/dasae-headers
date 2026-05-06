@@ -93,7 +93,7 @@ T_use$((u8)(
     mem_tokzAny,
     mem_TokzIter_next
 ));
-fn_((daterm_cursor_queryPos(io_Reader in, io_Writer out))(daterm_cursor_Err$daterm_cursor_Pos) $scope) {
+fn_((daterm_cursor_queryPos(io_Reader in, io_Writer out))(daterm_cursor_E$daterm_cursor_Pos) $scope) {
     try_(io_Writer_print(out, u8_l(daterm_utils_formatCSI_static(daterm_utils_cursor_request_pos))));
     var_(buf, A$$(4 + 10, u8)) = A_zero();
     let data = A_prefix$((S$u8)(buf)try_(io_Reader_read(in, A_ref$((S$u8)(buf)))));

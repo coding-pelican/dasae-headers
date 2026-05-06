@@ -43,7 +43,7 @@ fn_((daterm_screen_clearWrite(io_Writer writer))(E$void)) {
     return io_Writer_writeBytes(writer, daterm_screen_clear());
 };
 
-fn_((daterm_screen_querySize(io_Reader in, io_Writer out))(daterm_screen_Err$daterm_screen_Size) $scope) {
+fn_((daterm_screen_querySize(io_Reader in, io_Writer out))(daterm_screen_E$daterm_screen_Size) $scope) {
     try_(daterm_cursor_storePosWrite(out));
     // Move to "infinite" position - terminal will clamp to actual size
     try_(daterm_cursor_moveToWrite(u16_limit_max, u16_limit_max, out));

@@ -73,7 +73,7 @@ errset_((math_E)(
         pp_uniqTok(dst_is_signed), pp_uniqTok(src_is_signed),
 #define __step__math_intCast$__emit(...) ____math_intCast$(__VA_ARGS__)
 #define ____math_intCast$(_OT, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) (expr_(_OT $scope)({ \
-    typedef O_InnerT$(_OT) DstType; \
+    typedef O_T$(_OT) DstType; \
     typedef TypeOf(_val) SrcType; \
     claim_assert_static(isInt$(SrcType)); \
     let_(__val, SrcType) = _val; \
@@ -97,7 +97,7 @@ errset_((math_E)(
 #define __step__math_fltCast$__parse(_OT...) _OT, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max),
 #define __step__math_fltCast$__emit(...) ____math_fltCast$(__VA_ARGS__)
 #define ____math_fltCast$(_OT, __val, __min, __max, _val...) (expr_(_OT $scope)({ \
-    typedef O_InnerT$(_OT) DstType; \
+    typedef O_T$(_OT) DstType; \
     typedef TypeOf(_val) SrcType; \
     claim_assert_static(isFlt$$(SrcType)); \
     let_(__val, SrcType) = _val; \

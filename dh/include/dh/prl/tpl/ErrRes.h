@@ -79,8 +79,8 @@ extern "C" {
     T_decl_E$(_T); \
     T_impl_E$(_T)
 
-#define E_InnerE$(_T...) TypeOf((as$(_T*)(null))->payload.err)
-#define E_InnerT$(_T...) TypeOf((as$(_T*)(null))->payload.ok)
+#define E_T$(_T...) TypeOf((as$(_T*)(null))->payload.ok)
+#define E_E$(_T...) TypeOf((as$(_T*)(null))->payload.err)
 
 /* Error void result (special case) */
 typedef union E$Void E$Void, E$void;
@@ -112,23 +112,19 @@ typedef union E$Void E$Void, E$void;
     .is_ok = true, \
     .payload = { .ok = _val }, \
 }
-#define ok$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) \
+#define ok$(/*(_T)(_val: _T))*/... /*(_T)*/) \
     pp_expand(pp_defer(__block_inline__ok$)(__param_expand__ok$ __VA_ARGS__))
-#define ok$$(/*(_T)(_val: _T))*/... /*(E$$(_T))*/) \
-    pp_expand(pp_defer(__block_inline__ok$$)(__param_expand__ok$$ __VA_ARGS__))
 
 #define err(_val...) { \
     .is_ok = false, \
     .payload = { .err = _val }, \
 }
-#define err$(/*(_T)(_val: _T))*/... /*(E$(_T))*/) \
+#define err$(/*(_T)(_val: _T))*/... /*(_T)*/) \
     pp_expand(pp_defer(__block_inline__err$)(__param_expand__err$ __VA_ARGS__))
-#define err$$(/*(_T)(_val: _T))*/... /*(E$$(_T))*/) \
-    pp_expand(pp_defer(__block_inline__err$$)(__param_expand__err$$ __VA_ARGS__))
 
 /* Checks error result */
-#define isOk(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)((_e).is_ok)
-#define isErr(_e /*: E$$(_T)*/... /*(bool)*/) as$(bool)(!(_e).is_ok)
+#define isOk(_e /*: E$$(_T)*/... /*(bool)*/) bool_((_e).is_ok)
+#define isErr(_e /*: E$$(_T)*/... /*(bool)*/) bool_(!(_e).is_ok)
 
 #define E_asP$(/*(_E_P_T: E(P(T)))(_p_e: P(E(T)))*/... /*(_E_P_T)*/) \
     __step__E_asP$(__VA_ARGS__)
@@ -136,7 +132,7 @@ typedef union E$Void E$Void, E$void;
     __step__E_asP(_p_e)
 #define E_ref$(/*(_E_P_T: E(P(T)))(_p_e: P(E(T)))*/... /*(_E_P_T)*/)
 #define E_ref(_p_e /*: P(E(T))*/... /*(E(P(T)))*/)
-#define E_deref$(/*(_E_T: E(T))(_e: E(P(T)))*/... /*(_E_T)*/)
+#define E_deref$(/*(_Ok: E(T))(_e: E(P(T)))*/... /*(_Ok)*/)
 #define E_deref(_e /*: E(P(T))*/... /*(E(T))*/)
 
 /* Returns error result */
@@ -191,19 +187,11 @@ typedef union E$Void E$Void, E$void;
 
 #define __param_expand__ok$(...) __VA_ARGS__,
 #define __block_inline__ok$(...) __block_inline1__ok$(__VA_ARGS__)
-#define __block_inline1__ok$(_T, _val...) l$((E$(_T))ok(_val))
-
-#define __param_expand__ok$$(...) __VA_ARGS__,
-#define __block_inline__ok$$(...) __block_inline1__ok$$$(__VA_ARGS__)
-#define __block_inline1__ok$$$(_T, _val...) l$((E$$(_T))ok(_val))
+#define __block_inline1__ok$(_T, _val...) l$((_T)ok(_val))
 
 #define __param_expand__err$(...) __VA_ARGS__,
 #define __block_inline__err$(...) __block_inline1__err$(__VA_ARGS__)
-#define __block_inline1__err$(_T, _val...) l$((E$(_T))err(_val))
-
-#define __param_expand__err$$(...) __VA_ARGS__,
-#define __block_inline__err$$(...) __block_inline1__err$$$(__VA_ARGS__)
-#define __block_inline1__err$$$(_T, _val...) l$((E$$(_T))err(_val))
+#define __block_inline1__err$(_T, _val...) l$((_T)err((E_InnerE$(_T))_val))
 
 #define __step__E_asP$(...) \
     __step__E_asP$__emit(__step__E_asP$__parseEPT __VA_ARGS__)
@@ -217,8 +205,8 @@ typedef union E$Void E$Void, E$void;
     let_(__p_e, TypeOf(_p_e)) = _p_e; \
     claim_assert_nonnull(__p_e); \
     __p_e->is_ok \
-        ? l$((E$Ret$E_asP)ok(&__p_e->payload.ok)) \
-        : l$((E$Ret$E_asP)err(__p_e->payload.err)); \
+        ? ok$((E$Ret$E_asP)(&__p_e->payload.ok)) \
+        : err$((E$Ret$E_asP)(__p_e->payload.err)); \
 })
 #define __step__E_asP(_p_e...) \
     E_asP$((E$$(FieldType$(TypeOf(*_p_e), payload.ok)*))(_p_e))

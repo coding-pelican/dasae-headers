@@ -2,6 +2,14 @@
 #include <stdio.h>
 #include <assert.h>
 
+static void str__freeParts(char** parts, int count) {
+    if (!parts) { return; }
+    for (int i = 0; i < count; ++i) {
+        free(parts[i]);
+    }
+    free((void*)parts);
+}
+
 bool str_eql(const char* lhs, const char* rhs) {
     if (!lhs || !rhs) { return lhs == rhs; }
     return strcmp(lhs, rhs) == 0;
@@ -71,13 +79,21 @@ char** str_split(const char* str, const char* delim, int* count) {
         if (next) {
             const size_t len = (size_t)(next - pos);
             result[i] = (char*)malloc(len + 1);
-            if (result[i]) {
-                strncpy(result[i], pos, len);
-                result[i][len] = '\0';
+            if (!result[i]) {
+                str__freeParts(result, i);
+                *count = 0;
+                return NULL;
             }
+            memcpy(result[i], pos, len);
+            result[i][len] = '\0';
             pos = next + delim_len;
         } else {
             result[i] = strdup(pos);
+            if (!result[i]) {
+                str__freeParts(result, i);
+                *count = 0;
+                return NULL;
+            }
         }
     }
     return result;
@@ -97,7 +113,7 @@ char* str_trim(const char* str) {
     const size_t len = (size_t)(end - start + 1);
     char* const result = (char*)malloc(len + 1);
     if (!result) { return NULL; }
-    strncpy(result, start, len);
+    memcpy(result, start, len);
     result[len] = '\0';
     return result;
 }

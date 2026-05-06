@@ -95,7 +95,7 @@ extern "C" {
     (*ptrAlignCast$((_T*)(A_val(_a))))
 #define Vec_fromA(_a...) __op__Vec_fromA(_a)
 #define __op__Vec_fromA(_a...) \
-    Vec_fromA$((Vec$$(A_len$(TypeOf(_a)), A_InnerT$(TypeOf(_a))))(_a))
+    Vec_fromA$((Vec$$(A_len$(TypeOf(_a)), A_T$(TypeOf(_a))))(_a))
 
 /// Store vector to array
 #define Vec_toA$(/*(_T)(_vec)*/...) __op__Vec_toA$(__op__Vec_toA$__parse __VA_ARGS__)
