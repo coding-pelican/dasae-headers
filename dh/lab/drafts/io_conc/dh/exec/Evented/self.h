@@ -17,10 +17,11 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((exec_Evented_E)(
-    OpenFailed,
-    AssociateFailed,
-    PollFailed,
-    PostFailed
+    exec_Evented_Unsupported,
+    exec_Evented_OpenFailed,
+    exec_Evented_AssociateFailed,
+    exec_Evented_PollFailed,
+    exec_Evented_PostFailed
 ) $union_errset_(Sched_Cancelable));
 T_decl_E$($set(exec_Evented_E)(exec_Evented));
 

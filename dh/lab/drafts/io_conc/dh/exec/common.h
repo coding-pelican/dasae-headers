@@ -30,7 +30,7 @@ fn_((exec_kind(P_const$$(Closure$raw) closure))(exec_Task_Kind)) {
     claim_assert_nonnull(closure), claim_assert(closure->kind != Closure_Kind_undefined);
     return closure->kind == Closure_Kind_co
              ? exec_Task_Kind_stackless
-             : exec_Task_Kind_fiber;
+             : exec_Task_Kind_stackful;
 };
 
 

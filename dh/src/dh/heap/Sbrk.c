@@ -19,7 +19,11 @@ $static fn_((heap_Sbrk__slotSize(usize class_idx))(usize));
 $attr($inline_always)
 $static fn_((heap_Sbrk__bigPagesNeeded(heap_Sbrk self, usize byte_count))(usize));
 $attr($inline_always)
+$static fn_((heap_Sbrk__bigSlotPages(usize page_count))(usize));
+$attr($inline_always)
 $static fn_((heap_Sbrk__allocBigPages(heap_Sbrk* self, usize n))(usize));
+$attr($inline_always)
+$static fn_((heap_Sbrk__allocSmall(heap_Sbrk* self, usize class_idx))(usize));
 
 // Validation helpers
 $attr($inline_always)
@@ -98,7 +102,7 @@ fn_((heap_Sbrk__sizeClassIdx(usize len, mem_Align align))(usize)) {
     // Precondition: actual_len must be > 0 and power-of-2-able
     // Caller MUST validate with heap_Sbrk__isValidAllocation first
     claim_assert(actual_len <= (as$(usize)(1) << (sizeOf$(usize) * 8 - 1)));
-    let slot_size = uint_exp2$((usize)(actual_len));
+    let slot_size = uint_pow2Ceil$((usize)(actual_len));
     // Precondition: slot_size must be non-zero for uint_log2
     let log_val = uint_log2(slot_size);
     // Precondition: log_val must be >= heap_Sbrk__min_size_class
@@ -115,17 +119,19 @@ fn_((heap_Sbrk__slotSize(usize class_idx))(usize)) {
 
 fn_((heap_Sbrk__bigPagesNeeded(heap_Sbrk self, usize byte_count))(usize)) {
     let bigpage_size = heap_Sbrk__bigpage_size(self);
-    // Precondition: byte_count + metadata must not overflow
-    claim_assert(byte_count <= (usize_limit_max - sizeOf$(usize)));
-    return (byte_count + (bigpage_size + (sizeOf$(usize) - 1))) / bigpage_size;
+    claim_assert(bigpage_size > 0);
+    return 1 + ((byte_count - 1) / bigpage_size);
+};
+
+fn_((heap_Sbrk__bigSlotPages(usize page_count))(usize)) {
+    claim_assert(page_count > 0);
+    claim_assert(page_count <= (as$(usize)(1) << (sizeOf$(usize) * 8 - 1)));
+    return uint_pow2Ceil$((usize)(page_count));
 };
 
 fn_((heap_Sbrk__allocBigPages(heap_Sbrk* self, usize n))(usize)) {
-    // Precondition: n must be power-of-2-able
-    claim_assert(n <= (as$(usize)(1) << (sizeOf$(usize) * 8 - 1)));
-    let pow2_pages = uint_exp2$((usize)(n));
+    let pow2_pages = heap_Sbrk__bigSlotPages(n);
     let slot_size_bytes = pow2_pages * heap_Sbrk__bigpage_size(*self);
-    // Precondition: pow2_pages must be non-zero for uint_log2
     let class_idx = uint_log2(pow2_pages);
     let top_free_ptr = *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[class_idx]);
     if (top_free_ptr != 0) {
@@ -133,25 +139,53 @@ fn_((heap_Sbrk__allocBigPages(heap_Sbrk* self, usize n))(usize)) {
         *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[class_idx]) = *node;
         return top_free_ptr;
     }
-    return self->ctx->sbrkFn(self->ctx->inner, pow2_pages * heap_Sbrk__pages_per_bigpage(*self) * heap_page_size);
+    return self->ctx->sbrkFn(self->ctx->inner, pow2_pages * heap_Sbrk__bigpage_size(*self));
+};
+
+fn_((heap_Sbrk__allocSmall(heap_Sbrk* self, usize class_idx))(usize)) {
+    let slot_size = heap_Sbrk__slotSize(class_idx);
+    let top_free_ptr = *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]);
+    if (top_free_ptr != 0) {
+        let node = intToPtr$((usize*)(top_free_ptr + (slot_size - sizeOf$(usize))));
+        *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]) = *node;
+        return top_free_ptr;
+    }
+
+    let next_addrs = heap_Sbrk_LocalRef_next_addrs(self->local_ref);
+    let end_addrs = heap_Sbrk_LocalRef_end_addrs(self->local_ref);
+    let next_addr = *S_at((next_addrs)[class_idx]);
+    let end_addr = *S_at((end_addrs)[class_idx]);
+    if (next_addr == 0 || end_addr < next_addr || (end_addr - next_addr) < slot_size) {
+        let addr = heap_Sbrk__allocBigPages(self, 1);
+        if (addr == 0) { return 0; }
+        *S_at((next_addrs)[class_idx]) = addr + slot_size;
+        *S_at((end_addrs)[class_idx]) = addr + heap_Sbrk__bigpage_size(*self);
+        return addr;
+    }
+
+    *S_at((next_addrs)[class_idx]) = next_addr + slot_size;
+    return next_addr;
 };
 
 // Calculate actual allocation length (with metadata + alignment)
 fn_((heap_Sbrk__actualLen(usize len, mem_Align align))(usize)) {
     let buf_align = as$(usize)(1) << align;
-    return int_max(len + sizeOf$(usize), buf_align);
+    let payload_len = orelse_((usize_addChkd(len, sizeOf$(usize)))(0));
+    return payload_len == 0 ? 0 : int_max(payload_len, buf_align);
 };
 
 // Validate if allocation request is within bounds
 fn_((heap_Sbrk__isValidAllocation(heap_Sbrk self, usize len, mem_Align align))(bool)) {
+    if ((sizeOf$(usize) * 8) <= align) { return false; }
+    let buf_align = mem_log2ToAlign(align);
+    if (heap_page_size < buf_align) { return false; }
     let actual_len = heap_Sbrk__actualLen(len, align);
+    if (actual_len == 0) { return false; }
     // Check for overflow in actual_len calculation
     if (actual_len < len) { return false; }
     // Check if actual_len exceeds maximum allocatable size
     let max_pool = heap_Sbrk__max_pool_size(self);
     if (max_pool < actual_len) { return false; }
-    // Check if alignment is reasonable (prevent shift overflow)
-    if ((sizeOf$(usize) * 8) <= align) { return false; }
     return true;
 };
 
@@ -163,27 +197,7 @@ fn_((heap_Sbrk__alloc(heap_Sbrk* self, usize len, mem_Align align))(O$P$u8) $sco
     // NOW SAFE: Use helper function instead of inline calculation
     let class_idx = heap_Sbrk__sizeClassIdx(len, align);
     if ($branch_likely(class_idx < heap_Sbrk__size_class_count(*self))) {
-        let slot_size = heap_Sbrk__slotSize(class_idx);
-        let addr = expr_(usize $scope)({
-            let top_free_ptr = *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]);
-            if (top_free_ptr != 0) {
-                let node = intToPtr$((usize*)(top_free_ptr + (slot_size - sizeOf$(usize))));
-                *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]) = *node;
-                $break_(top_free_ptr);
-            }
-
-            let next_addr = *S_at((heap_Sbrk_LocalRef_next_addrs(self->local_ref))[class_idx]);
-            if ((next_addr % heap_page_size) == 0) {
-                let addr = heap_Sbrk__allocBigPages(self, 1);
-                if (addr == 0) { $break_(0); }
-                *S_at((heap_Sbrk_LocalRef_next_addrs(self->local_ref))[class_idx]) = addr + slot_size;
-                $break_(addr);
-            } else {
-                *S_at((heap_Sbrk_LocalRef_next_addrs(self->local_ref))[class_idx]) = next_addr + slot_size;
-                $break_(next_addr);
-            }
-        }) $unscoped(expr);
-
+        let addr = heap_Sbrk__allocSmall(self, class_idx);
         if (addr == 0) { return_none(); }
         return_some(intToPtr$((u8*)(addr)));
     }
@@ -211,10 +225,9 @@ fn_((heap_Sbrk__resize(heap_Sbrk* self, S$u8 buf, mem_Align buf_align, usize new
         let new_actual_len = heap_Sbrk__actualLen(new_len, buf_align);
         let old_bigpages_needed = heap_Sbrk__bigPagesNeeded(*self, old_actual_len);
         let new_bigpages_needed = heap_Sbrk__bigPagesNeeded(*self, new_actual_len);
-        // Both must be valid for uint_exp2
         if (old_bigpages_needed == 0 || new_bigpages_needed == 0) { $break_(false); }
-        let old_big_slot_pages = uint_exp2$((usize)(old_bigpages_needed));
-        let new_big_slot_pages = uint_exp2$((usize)(new_bigpages_needed));
+        let old_big_slot_pages = heap_Sbrk__bigSlotPages(old_bigpages_needed);
+        let new_big_slot_pages = heap_Sbrk__bigSlotPages(new_bigpages_needed);
         $break_(old_big_slot_pages == new_big_slot_pages);
     }) $unscoped(expr);
 };
@@ -242,10 +255,8 @@ fn_((heap_Sbrk__free(heap_Sbrk* self, S$u8 buf, mem_Align buf_align))(void)) {
         // Large allocation
         let actual_len = heap_Sbrk__actualLen(buf.len, buf_align);
         let bigpages_needed = heap_Sbrk__bigPagesNeeded(*self, actual_len);
-        // Must be valid for uint_exp2/uint_log2
         if (bigpages_needed == 0) { return; }
-
-        let pow2_pages = uint_exp2$((usize)(bigpages_needed));
+        let pow2_pages = heap_Sbrk__bigSlotPages(bigpages_needed);
         let big_slot_size_bytes = pow2_pages * heap_Sbrk__bigpage_size(*self);
         let node = intToPtr$((usize*)(addr + (big_slot_size_bytes - sizeOf$(usize))));
 

@@ -9,6 +9,19 @@ $static fn_((heap_vmem__windowsProtect(heap_vmem_Protect protect))(DWORD));
 $static fn_((heap_vmem__unixProtect(heap_vmem_Protect protect))(i32));
 #endif
 
+fn_((heap_vmem_geom(void))(heap_Geom)) {
+#if plat_is_windows
+    return (heap_Geom){
+        .page_size = mem_page_size,
+        .reserve_align = 64ull * 1024,
+        .commit_align = mem_page_size,
+        .map_align = 64ull * 1024,
+    };
+#else
+    return heap_Geom_from(mem_page_size);
+#endif
+};
+
 #if plat_is_windows
 fn_((heap_vmem__windowsProtect(heap_vmem_Protect protect))(DWORD)) {
     switch (protect) {
@@ -28,7 +41,7 @@ fn_((heap_vmem__unixProtect(heap_vmem_Protect protect))(i32)) {
 #endif
 
 fn_((heap_vmem_reserve(P$raw addr_hint, usize len))(O$P$u8) $scope) {
-    let aligned_len = heap_alignPage(len);
+    let aligned_len = heap_Geom_alignReserveWith(heap_vmem_geom(), len);
 #if plat_is_windows
     let addr = VirtualAlloc(addr_hint, aligned_len, MEM_RESERVE, PAGE_NOACCESS);
     return_(expr_(ReturnType $scope)(
@@ -47,7 +60,7 @@ fn_((heap_vmem_reserve(P$raw addr_hint, usize len))(O$P$u8) $scope) {
 } $unscoped(fn);
 
 fn_((heap_vmem_commit(P$raw addr, usize len))(bool)) {
-    let aligned_len = heap_alignPage(len);
+    let aligned_len = heap_Geom_alignCommitWith(heap_vmem_geom(), len);
 #if plat_is_windows
     return VirtualAlloc(addr, aligned_len, MEM_COMMIT, PAGE_READWRITE) != null;
 #elif plat_based_unix
@@ -60,7 +73,7 @@ fn_((heap_vmem_commit(P$raw addr, usize len))(bool)) {
 };
 
 fn_((heap_vmem_decommit(P$raw addr, usize len))(bool)) {
-    let aligned_len = heap_alignPage(len);
+    let aligned_len = heap_Geom_alignCommitWith(heap_vmem_geom(), len);
 #if plat_is_windows
     return VirtualFree(addr, aligned_len, MEM_DECOMMIT);
 #elif plat_based_unix
@@ -73,7 +86,7 @@ fn_((heap_vmem_decommit(P$raw addr, usize len))(bool)) {
 };
 
 fn_((heap_vmem_protect(P$raw addr, usize len, heap_vmem_Protect protect))(bool)) {
-    let aligned_len = heap_alignPage(len);
+    let aligned_len = heap_Geom_alignCommitWith(heap_vmem_geom(), len);
 #if plat_is_windows
     DWORD old_protect = 0;
     return VirtualProtect(addr, aligned_len, heap_vmem__windowsProtect(protect), &old_protect);
@@ -88,7 +101,7 @@ fn_((heap_vmem_protect(P$raw addr, usize len, heap_vmem_Protect protect))(bool))
 };
 
 fn_((heap_vmem_release(P$raw addr, usize len))(bool)) {
-    let aligned_len = heap_alignPage(len);
+    let aligned_len = heap_Geom_alignReserveWith(heap_vmem_geom(), len);
 #if plat_is_windows
     let_ignore = aligned_len;
     return VirtualFree(addr, 0, MEM_RELEASE);

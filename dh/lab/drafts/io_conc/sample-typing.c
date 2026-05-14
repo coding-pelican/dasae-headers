@@ -4,7 +4,7 @@
 #include "dh/io.h"
 #include "dh/fs.h"
 #include "dh/fmt/common.h"
-#include "dh/heap/Page.h"
+#include "dh/heap/Sys.h"
 #include "dh/Rand.h"
 
 $static fn_((Term_clear(io_Self io))(void)) { io_stream_print(io, u8_l("\x1b[2J\x1b[H")); };
@@ -333,7 +333,9 @@ co_use_Closure_((runMain)(Runtime)(Void));
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    let gpa = heap_Page_alctr(&l0$((heap_Page)));
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     var loop = exec_Coop_init(gpa, try_(time_Awake_direct()), exec_Evented_noop);
     defer_(exec_Coop_fini(&loop));
 

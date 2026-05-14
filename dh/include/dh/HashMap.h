@@ -102,12 +102,10 @@ $static fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
 
 typedef struct HashMap_Header {
     var_(vals, P$raw);
+    var_(val_ty, debug_TypeInfo);
     var_(keys, P$raw);
+    var_(key_ty, debug_TypeInfo);
     var_(cap, u32);
-    debug_only(struct {
-        var_(key_ty, TypeInfo);
-        var_(val_ty, TypeInfo);
-    });
 } HashMap_Header;
 
 /* --- HashMap_Pair: Key-Value pair type (2-tuple) --- */
@@ -119,11 +117,10 @@ typedef struct HashMap_Header {
 #define T_use_HashMap_Pair$(_K, _V...) __comp_gen__T_use_HashMap_Pair$(_K, _V)
 
 typedef struct HashMap_Pair$raw {
-    debug_only(struct {
-        var_(key_ty, TypeInfo);
-        var_(val_ty, TypeInfo);
-    });
-    var_(data, V$raw);
+    var_(key_ty, debug_TypeInfo);
+    var_(val_ty, debug_TypeInfo);
+    var_(key_, V$raw) $flexible;
+    var_(val_, V$raw) $flexible;
 } HashMap_Pair$raw;
 T_use_P$(HashMap_Pair$raw);
 typedef P$HashMap_Pair$raw V$HashMap_Pair$raw;
@@ -142,10 +139,10 @@ T_alias$((u_Fields_Idx$HashMap_Pair)(enum_((u_Fields_Idx$HashMap_Pair $fits($pac
     count$u_Fields_Idx$HashMap_Pair
 ))));
 $static let_(u_Fields_type$HashMap_Pair, A$$(count$u_Fields_Idx$HashMap_Pair, TypeInfo)) = A_init({
-    [u_Fields_Idx_key_ty$HashMap_Pair] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(HashMap_Pair$raw, key_ty)), pp_else_(Void))),
-    [u_Fields_Idx_val_ty$HashMap_Pair] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(HashMap_Pair$raw, val_ty)), pp_else_(Void))),
-    [u_Fields_Idx_key_$HashMap_Pair] = typeInfo$(FieldType$(HashMap_Pair$raw, data)),
-    [u_Fields_Idx_val_$HashMap_Pair] = typeInfo$(FieldType$(HashMap_Pair$raw, data)),
+    [u_Fields_Idx_key_ty$HashMap_Pair] = typeInfo$(FieldType$(HashMap_Pair$raw, key_ty)),
+    [u_Fields_Idx_val_ty$HashMap_Pair] = typeInfo$(FieldType$(HashMap_Pair$raw, val_ty)),
+    [u_Fields_Idx_key_$HashMap_Pair] = typeInfo$(FieldType$(HashMap_Pair$raw, key_)),
+    [u_Fields_Idx_val_$HashMap_Pair] = typeInfo$(FieldType$(HashMap_Pair$raw, val_)),
 });
 
 /* --- HashMap_Entry: Pointers to key and value in map --- */
@@ -158,11 +155,9 @@ $static let_(u_Fields_type$HashMap_Pair, A$$(count$u_Fields_Idx$HashMap_Pair, Ty
 
 typedef struct HashMap_Entry {
     var_(key, P_const$raw);
+    var_(key_ty, debug_TypeInfo);
     var_(val, P_const$raw);
-    debug_only(struct {
-        var_(key_ty, TypeInfo);
-        var_(val_ty, TypeInfo);
-    });
+    var_(val_ty, debug_TypeInfo);
 } HashMap_Entry;
 T_use_O$(HashMap_Entry);
 $extern fn_((HashMap_Entry_key(HashMap_Entry self, TypeInfo key_ty))(u_P_const$raw));
@@ -177,11 +172,9 @@ $extern fn_((HashMap_Entry_val(HashMap_Entry self, TypeInfo val_ty))(u_P_const$r
 typedef union HashMap_EntryMut {
     struct {
         var_(key, P$raw);
+        var_(key_ty, debug_TypeInfo);
         var_(val, P$raw);
-        debug_only(struct {
-            var_(key_ty, TypeInfo);
-            var_(val_ty, TypeInfo);
-        });
+        var_(val_ty, debug_TypeInfo);
     };
     var_(as_const, HashMap_Entry);
 } HashMap_EntryMut;
@@ -199,12 +192,10 @@ $extern fn_((HashMap_EntryMut_val(HashMap_EntryMut self, TypeInfo val_ty))(u_P$r
 
 typedef struct HashMap_Ensured {
     var_(key, P$raw);
+    var_(key_ty, debug_TypeInfo);
     var_(val, P$raw);
+    var_(val_ty, debug_TypeInfo);
     var_(found_existing, bool);
-    debug_only(struct {
-        var_(key_ty, TypeInfo);
-        var_(val_ty, TypeInfo);
-    });
 } HashMap_Ensured;
 T_use_E$($set(mem_E)(HashMap_Ensured));
 $extern fn_((HashMap_Ensured_key(HashMap_Ensured self, TypeInfo key_ty))(u_P_const$raw));
@@ -300,10 +291,8 @@ typedef struct HashMap {
     var_(available, u32);
     /// Context containing hash and equality functions.
     var_(ctx, P_const$HashMap_Ctx);
-    debug_only(struct {
-        var_(key_ty, TypeInfo);
-        var_(val_ty, TypeInfo);
-    });
+    var_(key_ty, debug_TypeInfo);
+    var_(val_ty, debug_TypeInfo);
 } HashMap;
 T_use$((HashMap)(O, E));
 T_use_E$($set(mem_E)(HashMap));
@@ -433,10 +422,8 @@ $extern fn_((HashMap_rehash(HashMap* self, TypeInfo key_ty, TypeInfo val_ty))(vo
 typedef struct HashMap_Iter {
     var_(map, const HashMap*);
     var_(idx, usize);
-    debug_only(struct {
-        var_(key_ty, TypeInfo);
-        var_(val_ty, TypeInfo);
-    });
+    var_(key_ty, debug_TypeInfo);
+    var_(val_ty, debug_TypeInfo);
 } HashMap_Iter;
 $extern fn_((HashMap_iter(const HashMap* self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_Iter));
 $extern fn_((HashMap_Iter_next(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))(O$HashMap_Entry));
@@ -454,7 +441,7 @@ typedef struct HashMap_KeyIter {
     var_(len, u32);
     var_(metadata, P$HashMap_Ctrl);
     var_(keys, P$raw);
-    debug_only(var_(key_ty, TypeInfo));
+    var_(key_ty, debug_TypeInfo);
 } HashMap_KeyIter;
 $extern fn_((HashMap_keyIter(HashMap self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_KeyIter));
 $extern fn_((HashMap_KeyIter_next(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P_const$raw));
@@ -472,7 +459,7 @@ typedef struct HashMap_ValIter {
     var_(len, u32);
     var_(metadata, P$HashMap_Ctrl);
     var_(vals, P$raw);
-    debug_only(var_(val_ty, TypeInfo));
+    var_(val_ty, debug_TypeInfo);
 } HashMap_ValIter;
 $extern fn_((HashMap_valIter(HashMap self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_ValIter));
 $extern fn_((HashMap_ValIter_next(HashMap_ValIter* self, TypeInfo val_ty))(O$u_P_const$raw));
@@ -484,12 +471,10 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     union { \
         struct { \
             var_(vals, P$$(_V)); \
+            var_(val_ty, debug_TypeInfo); \
             var_(keys, P$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(cap, u32); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
         }; \
         var_(as_raw, HashMap_Header) $like_ref; \
     }
@@ -500,12 +485,10 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     union HashMap_Header$(_K, _V) { \
         struct { \
             var_(vals, P$$(_V)); \
+            var_(val_ty, debug_TypeInfo); \
             var_(keys, P$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(cap, u32); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
         }; \
         var_(as_raw, HashMap_Header) $like_ref; \
     }
@@ -520,22 +503,18 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 #define __comp_anon__HashMap_Pair$$(_K, _V...) \
     union { \
         struct { \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
+            var_(key_ty, debug_TypeInfo); \
+            var_(val_ty, debug_TypeInfo); \
             union { \
-                struct { \
-                    var_(key, _K); \
-                    var_(val, _V); \
-                } data; \
-                struct { \
-                    var_(key, _K); \
-                    var_(val, _V); \
-                }; \
+                var_(key, _K); \
+                var_(key_, _K) $like_ref; \
+            }; \
+            union { \
+                var_(val, _V); \
+                var_(val_, _V) $like_ref; \
             }; \
         }; \
-        var_(as_raw, HashMap_Pair$raw) $like_ref; \
+        var_(as_raw, HashMap_Pair$raw) $flexible; \
     }
 #define __comp_alias__HashMap_Pair$(_K, _V...) tpl$(HashMap_Pair, _K, _V)
 #define __comp_gen__T_decl_HashMap_Pair$(_K, _V...) \
@@ -545,22 +524,18 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 #define __comp_gen__T_impl_HashMap_Pair$(_K, _V...) \
     union HashMap_Pair$(_K, _V) { \
         struct { \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
+            var_(key_ty, debug_TypeInfo); \
+            var_(val_ty, debug_TypeInfo); \
             union { \
-                struct { \
-                    var_(key, _K); \
-                    var_(val, _V); \
-                } data; \
-                struct { \
-                    var_(key, _K); \
-                    var_(val, _V); \
-                }; \
+                var_(key, _K); \
+                var_(key_, _K) $like_ref; \
+            }; \
+            union { \
+                var_(val, _V); \
+                var_(val_, _V) $like_ref; \
             }; \
         }; \
-        var_(as_raw, HashMap_Pair$raw) $like_ref; \
+        var_(as_raw, HashMap_Pair$raw) $flexible; \
     }; \
     T_impl_O$(HashMap_Pair$(_K, _V)); \
     T_impl_E$($set(mem_E)(O$(HashMap_Pair$(_K, _V))))
@@ -595,11 +570,9 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     union { \
         struct { \
             var_(key, P_const$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(val, P_const$$(_V)); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
+            var_(val_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap_Entry) $like_ref; \
     }
@@ -611,11 +584,9 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     union HashMap_Entry$(_K, _V) { \
         struct { \
             var_(key, P_const$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(val, P_const$$(_V)); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
+            var_(val_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap_Entry) $like_ref; \
     }; \
@@ -642,11 +613,9 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
         union { \
             struct { \
                 var_(key, P$$(_K)); \
+                var_(key_ty, debug_TypeInfo); \
                 var_(val, P$$(_V)); \
-                debug_only(struct { \
-                    var_(key_ty, TypeInfo); \
-                    var_(val_ty, TypeInfo); \
-                }); \
+                var_(val_ty, debug_TypeInfo); \
             }; \
             var_(as_const, HashMap_Entry$$(_K, _V)); \
         }; \
@@ -661,11 +630,9 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
         union { \
             struct { \
                 var_(key, P$$(_K)); \
+                var_(key_ty, debug_TypeInfo); \
                 var_(val, P$$(_V)); \
-                debug_only(struct { \
-                    var_(key_ty, TypeInfo); \
-                    var_(val_ty, TypeInfo); \
-                }); \
+                var_(val_ty, debug_TypeInfo); \
             }; \
             var_(as_const, HashMap_Entry$(_K, _V)); \
         }; \
@@ -693,12 +660,10 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     union { \
         struct { \
             var_(key, P$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(val, P$$(_V)); \
+            var_(val_ty, debug_TypeInfo); \
             var_(found_existing, bool); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
         }; \
         var_(as_raw, HashMap_Ensured) $like_ref; \
     }
@@ -711,12 +676,10 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     union HashMap_Ensured$(_K, _V) { \
         struct { \
             var_(key, P$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(val, P$$(_V)); \
+            var_(val_ty, debug_TypeInfo); \
             var_(found_existing, bool); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
         }; \
         var_(as_raw, HashMap_Ensured) $like_ref; \
     }; \
@@ -774,10 +737,8 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
             var_(size, u32); \
             var_(available, u32); \
             var_(ctx, P_const$HashMap_Ctx); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
+            var_(key_ty, debug_TypeInfo); \
+            var_(val_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap) $like_ref; \
     }
@@ -792,10 +753,8 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
             var_(size, u32); \
             var_(available, u32); \
             var_(ctx, P_const$HashMap_Ctx); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
+            var_(key_ty, debug_TypeInfo); \
+            var_(val_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap) $like_ref; \
     }; \
@@ -1019,10 +978,8 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
         struct { \
             var_(map, P_const$$(HashMap$(_K, _V))); \
             var_(idx, usize); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
+            var_(key_ty, debug_TypeInfo); \
+            var_(val_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap_Iter) $like_ref; \
     }
@@ -1034,10 +991,8 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
         struct { \
             var_(map, P_const$$(HashMap$(_K, _V))); \
             var_(idx, usize); \
-            debug_only(struct { \
-                var_(key_ty, TypeInfo); \
-                var_(val_ty, TypeInfo); \
-            }); \
+            var_(key_ty, debug_TypeInfo); \
+            var_(val_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap_Iter) $like_ref; \
     }
@@ -1069,7 +1024,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(keys, P$$(_K)); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap_KeyIter) $like_ref; \
     }
@@ -1082,7 +1037,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(keys, P$$(_K)); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap_KeyIter) $like_ref; \
     }
@@ -1115,7 +1070,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(vals, P$$(_V)); \
-            debug_only(var_(val_ty, TypeInfo)); \
+            var_(val_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap_ValIter) $like_ref; \
     }
@@ -1128,7 +1083,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(vals, P$$(_V)); \
-            debug_only(var_(val_ty, TypeInfo)); \
+            var_(val_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashMap_ValIter) $like_ref; \
     }

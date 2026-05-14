@@ -18,94 +18,94 @@
 /*========== Definitions ====================================================*/
 
 $static fn_((HashMap_Pair__init(u_V$raw key, u_V$raw val, V$HashMap_Pair$raw ret_mem))(V$HashMap_Pair$raw)) {
-    debug_only(ret_mem->key_ty = key.type);
+    ret_mem->key_ty = $typing(key.type);
+    ret_mem->val_ty = $typing(val.type);
     u_memcpy(HashMap_Pair_keyMut(ret_mem, key.type, val.type), key.ref.as_const);
-    debug_only(ret_mem->val_ty = val.type);
     u_memcpy(HashMap_Pair_valMut(ret_mem, key.type, val.type), val.ref.as_const);
     return ret_mem;
 };
 
 fn_((HashMap_Pair_key(const HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P_const$raw)) {
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashMap_Pair)(
         (.val[u_Fields_Idx_key_$HashMap_Pair])(key_ty),
         (.val[u_Fields_Idx_val_$HashMap_Pair])(val_ty)
     ))));
-    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self->data.inner)));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self)));
     return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_key_$HashMap_Pair);
 };
 
 fn_((HashMap_Pair_keyMut(HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P$raw)) {
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashMap_Pair)(
         (.val[u_Fields_Idx_key_$HashMap_Pair])(key_ty),
         (.val[u_Fields_Idx_val_$HashMap_Pair])(val_ty)
     ))));
-    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self->data.inner)));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_key_$HashMap_Pair);
 };
 
 fn_((HashMap_Pair_val(const HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P_const$raw)) {
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashMap_Pair)(
         (.val[u_Fields_Idx_key_$HashMap_Pair])(key_ty),
         (.val[u_Fields_Idx_val_$HashMap_Pair])(val_ty)
     ))));
-    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self->data.inner)));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self)));
     return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_val_$HashMap_Pair);
 };
 
 fn_((HashMap_Pair_valMut(HashMap_Pair$raw* self, TypeInfo key_ty, TypeInfo val_ty))(u_P$raw)) {
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashMap_Pair)(
         (.val[u_Fields_Idx_key_$HashMap_Pair])(key_ty),
         (.val[u_Fields_Idx_val_$HashMap_Pair])(val_ty)
     ))));
-    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self->data.inner)));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_val_$HashMap_Pair);
 };
 
 fn_((HashMap_Entry_key(HashMap_Entry self, TypeInfo key_ty))(u_P_const$raw)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     return (u_P_const$raw){ .raw = self.key, .type = key_ty };
 };
 
 fn_((HashMap_Entry_val(HashMap_Entry self, TypeInfo val_ty))(u_P_const$raw)) {
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     return (u_P_const$raw){ .raw = self.val, .type = val_ty };
 };
 
 fn_((HashMap_EntryMut_key(HashMap_EntryMut self, TypeInfo key_ty))(u_P$raw)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     return (u_P$raw){ .raw = self.key, .type = key_ty };
 };
 
 fn_((HashMap_EntryMut_val(HashMap_EntryMut self, TypeInfo val_ty))(u_P$raw)) {
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     return (u_P$raw){ .raw = self.val, .type = val_ty };
 };
 
 fn_((HashMap_Ensured_key(HashMap_Ensured self, TypeInfo key_ty))(u_P_const$raw)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     return (u_P_const$raw){ .raw = self.key, .type = key_ty };
 };
 
 fn_((HashMap_Ensured_keyMut(HashMap_Ensured self, TypeInfo key_ty))(u_P$raw)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     return (u_P$raw){ .raw = self.key, .type = key_ty };
 };
 
 fn_((HashMap_Ensured_val(HashMap_Ensured self, TypeInfo val_ty))(u_P_const$raw)) {
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     return (u_P_const$raw){ .raw = self.val, .type = val_ty };
 };
 
 fn_((HashMap_Ensured_valMut(HashMap_Ensured self, TypeInfo val_ty))(u_P$raw)) {
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     return (u_P$raw){ .raw = self.val, .type = val_ty };
 };
 
@@ -115,7 +115,12 @@ fn_((HashMap_Ensured_foundExisting(
     let_ignore = key_ty;
     let_ignore = val_ty;
     return expr_(O$HashMap_Entry $scope)(if (self.found_existing) {
-        $break_(some({ .key = self.key, .val = self.val, debug_only(.key_ty = key_ty, .val_ty = val_ty) }));
+        $break_(some({
+            .key = self.key,
+            .key_ty = $typing(key_ty),
+            .val = self.val,
+            .val_ty = $typing(val_ty),
+        }));
     }) expr_(else)({
         $break_(none());
     }) $unscoped(expr);
@@ -127,7 +132,12 @@ fn_((HashMap_Ensured_foundExistingMut(
     let_ignore = key_ty;
     let_ignore = val_ty;
     return expr_(O$HashMap_EntryMut $scope)(if (self.found_existing) {
-        $break_(some({ .key = self.key, .val = self.val, debug_only(.key_ty = key_ty, .val_ty = val_ty) }));
+        $break_(some({
+            .key = self.key,
+            .key_ty = $typing(key_ty),
+            .val = self.val,
+            .val_ty = $typing(val_ty),
+        }));
     }) expr_(else)({
         $break_(none());
     }) $unscoped(expr);
@@ -333,13 +343,13 @@ $static fn_((HashMap__alloc(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem
     let slice = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), total_size))));
     let ptr = slice.ptr;
     let hdr = ptrAlignCast$((HashMap_Header*)(ptr));
-    hdr->vals = ptr + vals_start;
-    hdr->keys = ptr + keys_start;
-    hdr->cap = new_cap;
-    debug_only({
-        hdr->key_ty = key_ty;
-        hdr->val_ty = val_ty;
-    });
+    asg_l((hdr)({
+        .vals = ptr + vals_start,
+        .val_ty = $typing(val_ty),
+        .keys = ptr + keys_start,
+        .key_ty = $typing(key_ty),
+        .cap = new_cap,
+    }));
 
     asg_l((&self->metadata)(some(as$(HashMap_Ctrl*)(ptr + sizeOf$(HashMap_Header)))));
     return_ok({});
@@ -549,7 +559,8 @@ fn_((HashMap_empty(
         .size = 0,
         .available = 0,
         .ctx = ctx,
-        debug_only(.key_ty = key_ty, .val_ty = val_ty)
+        .key_ty = $typing(key_ty),
+        .val_ty = $typing(val_ty),
     };
 };
 
@@ -571,8 +582,8 @@ fn_((HashMap_fini(
     HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa
 ))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     HashMap__free(self, key_ty, val_ty, gpa);
     *self = HashMap_empty(key_ty, val_ty, self->ctx);
 };
@@ -586,8 +597,8 @@ fn_((HashMap_clone(
 fn_((HashMap_cloneWithCtx(
     HashMap self, TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx, mem_Alctr gpa
 ))(mem_E$HashMap) $scope) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     var_(other, HashMap) = HashMap_empty(key_ty, val_ty, ctx);
     if (self.size == 0) {
         return_ok(other);
@@ -625,8 +636,8 @@ fn_((HashMap_ensureCap(
     HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa, u32 new_size
 ))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     if (new_size > self->size) {
         try_(HashMap__growIfNeeded(self, key_ty, val_ty, gpa, new_size - self->size));
     }
@@ -637,8 +648,8 @@ fn_((HashMap_ensureUnusedCap(
     HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa, u32 additional
 ))(mem_E$void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     return HashMap_ensureCap(self, key_ty, val_ty, gpa, self->size + additional);
 };
 
@@ -654,16 +665,16 @@ fn_((HashMap_clearAndFree(
     HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa
 ))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     HashMap__free(self, key_ty, val_ty, gpa);
     self->size = 0;
     self->available = 0;
 };
 
 fn_((HashMap_by(HashMap self, u_V$raw key, u_V$raw ret_val))(O$u_V$raw) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, ret_val.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), ret_val.type, TypeInfo_eql);
     if_some((HashMap__idx(self, key))(idx)) {
         return_some({ .inner = u_memcpy(ret_val.ref, HashMap__valAt(self, ret_val.type, idx).as_const).raw });
     }
@@ -671,8 +682,8 @@ fn_((HashMap_by(HashMap self, u_V$raw key, u_V$raw ret_val))(O$u_V$raw) $scope) 
 } $unscoped(fn);
 
 fn_((HashMap_ptrBy(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P_const$raw) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     if_some((HashMap__idx(self, key))(idx)) {
         return_some(HashMap__valAt(self, val_ty, idx).as_const);
     }
@@ -680,8 +691,8 @@ fn_((HashMap_ptrBy(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P_const$raw)
 } $unscoped(fn);
 
 fn_((HashMap_ptrMutBy(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P$raw) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     if_some((HashMap__idx(self, key))(idx)) {
         return_some(HashMap__valAt(self, val_ty, idx));
     }
@@ -689,8 +700,8 @@ fn_((HashMap_ptrMutBy(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P$raw) $s
 } $unscoped(fn);
 
 fn_((HashMap_for(HashMap self, TypeInfo val_ty, u_V$raw key, u_V$raw ret_key))(O$u_V$raw) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     let_ignore = val_ty;
     if_some((HashMap__idx(self, key))(idx)) {
         return_some({ .inner = u_memcpy(ret_key.ref, HashMap__keyAt(self, ret_key.type, idx).as_const).raw });
@@ -699,8 +710,8 @@ fn_((HashMap_for(HashMap self, TypeInfo val_ty, u_V$raw key, u_V$raw ret_key))(O
 } $unscoped(fn);
 
 fn_((HashMap_ptrFor(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P_const$raw) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     let_ignore = val_ty;
     if_some((HashMap__idx(self, key))(idx)) {
         return_some(HashMap__keyAt(self, key.type, idx).as_const);
@@ -709,8 +720,8 @@ fn_((HashMap_ptrFor(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P_const$raw
 } $unscoped(fn);
 
 fn_((HashMap_ptrMutFor(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P$raw) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     let_ignore = val_ty;
     if_some((HashMap__idx(self, key))(idx)) {
         return_some(HashMap__keyAt(self, key.type, idx));
@@ -719,38 +730,48 @@ fn_((HashMap_ptrMutFor(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P$raw) $
 } $unscoped(fn);
 
 fn_((HashMap_entry(HashMap self, TypeInfo val_ty, u_V$raw key))(O$HashMap_Entry) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     if_some((HashMap__idx(self, key))(idx)) {
         let k = HashMap__keyAt(self, key.type, idx).as_const;
         let v = HashMap__valAt(self, val_ty, idx).as_const;
-        return_some({ .key = k.raw, .val = v.raw, debug_only(.key_ty = key.type, .val_ty = val_ty) });
+        return_some({
+            .key = k.raw,
+            .key_ty = $typing(key.type),
+            .val = v.raw,
+            .val_ty = $typing(val_ty),
+        });
     }
     return_none();
 } $unscoped(fn);
 
 fn_((HashMap_entryMut(HashMap self, TypeInfo val_ty, u_V$raw key))(O$HashMap_EntryMut) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     if_some((HashMap__idx(self, key))(idx)) {
         let k = HashMap__keyAt(self, key.type, idx);
         let v = HashMap__valAt(self, val_ty, idx);
-        return_some({ .key = k.raw, .val = v.raw, debug_only(.key_ty = key.type, .val_ty = val_ty) });
+        return_some({
+            .key = k.raw,
+            .key_ty = $typing(key.type),
+            .val = v.raw,
+            .val_ty = $typing(val_ty),
+        });
     }
     return_none();
 } $unscoped(fn);
 
 fn_((HashMap_contains(HashMap self, TypeInfo val_ty, u_V$raw key))(bool)) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     let_ignore = val_ty;
     return isSome(HashMap__idx(self, key));
 };
 
 fn_((HashMap_put(HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw val))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val.type, TypeInfo_eql);
     let ensured = try_(HashMap_ensure(self, val.type, gpa, key));
     u_memcpy(HashMap_Ensured_valMut(ensured, val.type), val.ref.as_const);
     return_ok({});
@@ -758,16 +779,16 @@ fn_((HashMap_put(HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw val))(mem_E$
 
 fn_((HashMap_putWithin(HashMap* self, u_V$raw key, u_V$raw val))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val.type, TypeInfo_eql);
     let ensured = HashMap_ensureWithin(self, val.type, key);
     u_memcpy(HashMap_Ensured_valMut(ensured, val.type), val.ref.as_const);
 };
 
 fn_((HashMap_putNoClobber(HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw val))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val.type, TypeInfo_eql);
     try_(HashMap__growIfNeeded(self, key.type, val.type, gpa, 1));
     HashMap_putNoClobberWithin(self, key, val);
     return_ok({});
@@ -775,8 +796,8 @@ fn_((HashMap_putNoClobber(HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw val
 
 fn_((HashMap_putNoClobberWithin(HashMap* self, u_V$raw key, u_V$raw val))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val.type, TypeInfo_eql);
     claim_assert(!HashMap_contains(*self, val.type, key));
     let ctx = self->ctx;
     let hash = ctx->hashFn(key, u_load(u_deref(ctx->inner)));
@@ -800,8 +821,8 @@ fn_((HashMap_fetchPut(
     HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw val, V$HashMap_Pair$raw ret_mem
 ))(mem_E$O$V$HashMap_Pair$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val.type, TypeInfo_eql);
     let ensured = try_(HashMap_ensure(self, val.type, gpa, key));
     let result = expr_(O$V$HashMap_Pair$raw $scope)(if (ensured.found_existing) {
         let k = HashMap_Ensured_key(ensured, key.type);
@@ -822,8 +843,8 @@ fn_((HashMap_fetchPutWithin(
     HashMap* self, u_V$raw key, u_V$raw val, V$HashMap_Pair$raw ret_mem
 ))(O$V$HashMap_Pair$raw)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val.type, TypeInfo_eql);
     let ensured = HashMap_ensureWithin(self, val.type, key);
     let result = expr_(O$V$HashMap_Pair$raw $scope)(if (ensured.found_existing) {
         let k = HashMap_Ensured_key(ensured, key.type);
@@ -842,17 +863,19 @@ fn_((HashMap_fetchPutWithin(
 
 fn_((HashMap_ensure(HashMap* self, TypeInfo val_ty, mem_Alctr gpa, u_V$raw key))(mem_E$HashMap_Ensured) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     // Try to grow first, but if it fails and key exists, we can still return it
     catch_((HashMap__growIfNeeded(self, key.type, val_ty, gpa, 1))(err, if_some((HashMap__idx(*self, key))(idx)) {
         let k = HashMap__keyAt(*self, key.type, idx);
         let v = HashMap__valAt(*self, val_ty, idx);
-        return_ok((HashMap_Ensured){
+        return_ok({
             .key = k.raw,
+            .key_ty = $typing(key.type),
             .val = v.raw,
+            .val_ty = $typing(val_ty),
             .found_existing = true,
-            debug_only(.key_ty = key.type, .val_ty = val_ty) });
+        });
     } else_none {
         return_err(err);
     }));
@@ -861,8 +884,8 @@ fn_((HashMap_ensure(HashMap* self, TypeInfo val_ty, mem_Alctr gpa, u_V$raw key))
 
 fn_((HashMap_ensureWithin(HashMap* self, TypeInfo val_ty, u_V$raw key))(HashMap_Ensured)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     let ctx = self->ctx;
     let hash = ctx->hashFn(key, u_load(u_deref(ctx->inner)));
     let cap = HashMap_cap(*self);
@@ -881,9 +904,10 @@ fn_((HashMap_ensureWithin(HashMap* self, TypeInfo val_ty, u_V$raw key))(HashMap_
             if (ctx->eqlFn(key, u_load(u_deref(HashMap__keyAt(*self, key.type, idx))), u_load(u_deref(ctx->inner)))) {
                 return (HashMap_Ensured){
                     .key = HashMap__keyAt(*self, key.type, idx).raw,
+                    .key_ty = $typing(key.type),
                     .val = HashMap__valAt(*self, val_ty, idx).raw,
+                    .val_ty = $typing(val_ty),
                     .found_existing = true,
-                    debug_only(.key_ty = key.type, .val_ty = val_ty)
                 };
             }
         } else if (first_tombstone_idx == cap && HashMap_Ctrl_isTombstone(ctrl)) {
@@ -903,16 +927,17 @@ fn_((HashMap_ensureWithin(HashMap* self, TypeInfo val_ty, u_V$raw key))(HashMap_
     self->size++;
     return (HashMap_Ensured){
         .key = HashMap__keyAt(*self, key.type, idx).raw,
+        .key_ty = $typing(key.type),
         .val = HashMap__valAt(*self, val_ty, idx).raw,
+        .val_ty = $typing(val_ty),
         .found_existing = false,
-        debug_only(.key_ty = key.type, .val_ty = val_ty)
     };
 };
 
 fn_((HashMap_ensureValue(HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw default_val))(mem_E$HashMap_Ensured) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, default_val.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), default_val.type, TypeInfo_eql);
     let ensured = try_(HashMap_ensure(self, default_val.type, gpa, key));
     if (!ensured.found_existing) { u_memcpy(HashMap_Ensured_valMut(ensured, default_val.type), default_val.ref.as_const); }
     return_ok(ensured);
@@ -920,8 +945,8 @@ fn_((HashMap_ensureValue(HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw defa
 
 fn_((HashMap_remove(HashMap* self, TypeInfo val_ty, u_V$raw key))(bool)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     let_ignore = val_ty;
     if_some((HashMap__idx(*self, key))(idx)) {
         HashMap_Ctrl_remove(HashMap__metadataAt(*self, idx));
@@ -936,8 +961,8 @@ fn_((HashMap_fetchRemove(
     HashMap* self, TypeInfo val_ty, u_V$raw key, V$HashMap_Pair$raw ret_mem
 ))(O$V$HashMap_Pair$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     if_some((HashMap__idx(*self, key))(idx)) {
         let old_key = HashMap__keyAt(*self, key.type, idx);
         let old_val = HashMap__valAt(*self, val_ty, idx);
@@ -959,8 +984,8 @@ fn_((HashMap_fetchRemove(
 fn_((HashMap_removeByPtr(HashMap* self, TypeInfo val_ty, u_P$raw key_ptr))(void)) {
     claim_assert_nonnull(self);
     claim_assert_nonnull(key_ptr.raw);
-    debug_assert_eqBy(self->key_ty, key_ptr.type, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ptr.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     let_ignore = val_ty;
 
     let idx = expr_(u32 $scope)(if (key_ptr.type.size > 0) {
@@ -976,8 +1001,8 @@ fn_((HashMap_removeByPtr(HashMap* self, TypeInfo val_ty, u_P$raw key_ptr))(void)
 
 fn_((HashMap_rehash(HashMap* self, TypeInfo key_ty, TypeInfo val_ty))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
 
     if_none(self->metadata) { return; }
 
@@ -1059,22 +1084,23 @@ fn_((HashMap_rehash(HashMap* self, TypeInfo key_ty, TypeInfo val_ty))(void)) {
 
 fn_((HashMap_iter(const HashMap* self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_Iter)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     let_ignore = key_ty;
     let_ignore = val_ty;
     return (HashMap_Iter){
         .map = self,
         .idx = 0,
-        debug_only(.key_ty = key_ty, .val_ty = val_ty)
+        .key_ty = $typing(key_ty),
+        .val_ty = $typing(val_ty),
     };
 };
 
 fn_((HashMap_Iter_next(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))(O$HashMap_Entry) $scope) {
     claim_assert_nonnull(self);
     claim_assert_nonnull(self->map);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
 
     if (self->map->size == 0) { return_none(); }
     let cap = HashMap_cap(*self->map);
@@ -1083,10 +1109,12 @@ fn_((HashMap_Iter_next(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))(O$
         if (HashMap_Ctrl_isUsed(ctrl)) {
             return_some(expr_(HashMap_Entry $guard)({
                 defer_(self->idx++);
-                $break_((HashMap_Entry){
+                $break_({
                     .key = HashMap__keyAt(*self->map, key_ty, self->idx).as_const.raw,
                     .val = HashMap__valAt(*self->map, val_ty, self->idx).as_const.raw,
-                    debug_only(.key_ty = key_ty, .val_ty = val_ty) });
+                    .key_ty = $typing(key_ty),
+                    .val_ty = $typing(val_ty),
+                });
             }) $unguarded(expr));
         }
         self->idx++;
@@ -1097,8 +1125,8 @@ fn_((HashMap_Iter_next(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))(O$
 fn_((HashMap_Iter_nextMut(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))(O$HashMap_EntryMut) $scope) {
     claim_assert_nonnull(self);
     claim_assert_nonnull(self->map);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
 
     if (self->map->size == 0) { return_none(); }
     let cap = HashMap_cap(*self->map);
@@ -1107,10 +1135,12 @@ fn_((HashMap_Iter_nextMut(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))
         if (HashMap_Ctrl_isUsed(ctrl)) {
             return_some(expr_(HashMap_EntryMut $guard)({
                 defer_(self->idx++);
-                $break_((HashMap_EntryMut){
+                $break_({
                     .key = HashMap__keyAt(*self->map, key_ty, self->idx).raw,
                     .val = HashMap__valAt(*self->map, val_ty, self->idx).raw,
-                    debug_only(.key_ty = key_ty, .val_ty = val_ty) });
+                    .key_ty = $typing(key_ty),
+                    .val_ty = $typing(val_ty),
+                });
             }) $unguarded(expr));
         }
         self->idx++;
@@ -1119,28 +1149,29 @@ fn_((HashMap_Iter_nextMut(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))
 } $unscoped(fn);
 
 fn_((HashMap_keyIter(HashMap self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_KeyIter) $scope) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     let_ignore = val_ty;
-    return_(expr_(HashMap_KeyIter $scope)(
-        if_some((self.metadata)(metadata)) {
-        $break_((HashMap_KeyIter){
+    return_(expr_(HashMap_KeyIter $scope)(if_some((self.metadata)(metadata)) {
+        $break_({
             .len = HashMap_cap(self),
             .metadata = metadata,
             .keys = HashMap__keys(self, key_ty).raw,
-                debug_only(.key_ty = key_ty) });
+            .key_ty = $typing(key_ty),
+        });
     } else_none {
-        $break_((HashMap_KeyIter){
+        $break_({
             .len = 0,
             .metadata = null,
             .keys = null,
-                debug_only(.key_ty = key_ty) });
+            .key_ty = $typing(key_ty),
+        });
     }) $unscoped(expr));
 } $unscoped(fn);
 
 fn_((HashMap_KeyIter_next(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P_const$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     while (self->len > 0) {
         self->len--;
         let used = HashMap_Ctrl_isUsed(*self->metadata);
@@ -1156,7 +1187,7 @@ fn_((HashMap_KeyIter_next(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P_const$r
 
 fn_((HashMap_KeyIter_nextMut(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     while (self->len > 0) {
         self->len--;
         let used = HashMap_Ctrl_isUsed(*self->metadata);
@@ -1171,28 +1202,29 @@ fn_((HashMap_KeyIter_nextMut(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P$raw)
 } $unscoped(fn);
 
 fn_((HashMap_valIter(HashMap self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_ValIter) $scope) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(self.val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.val_ty), val_ty, TypeInfo_eql);
     let_ignore = key_ty;
-    return_(expr_(HashMap_ValIter $scope)(
-        if_some((self.metadata)(metadata)) {
-        $break_((HashMap_ValIter){
+    return_(expr_(HashMap_ValIter $scope)(if_some((self.metadata)(metadata)) {
+        $break_({
             .len = HashMap_cap(self),
             .metadata = metadata,
             .vals = HashMap__vals(self, val_ty).raw,
-                debug_only(.val_ty = val_ty) });
+            .val_ty = $typing(val_ty),
+        });
     } else_none {
-        $break_((HashMap_ValIter){
+        $break_({
             .len = 0,
             .metadata = null,
             .vals = null,
-                debug_only(.val_ty = val_ty) });
+            .val_ty = $typing(val_ty),
+        });
     }) $unscoped(expr));
 } $unscoped(fn);
 
 fn_((HashMap_ValIter_next(HashMap_ValIter* self, TypeInfo val_ty))(O$u_P_const$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     while (self->len > 0) {
         self->len--;
         let used = HashMap_Ctrl_isUsed(*self->metadata);
@@ -1208,7 +1240,7 @@ fn_((HashMap_ValIter_next(HashMap_ValIter* self, TypeInfo val_ty))(O$u_P_const$r
 
 fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$u_P$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->val_ty, val_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->val_ty), val_ty, TypeInfo_eql);
     while (self->len > 0) {
         self->len--;
         let used = HashMap_Ctrl_isUsed(*self->metadata);

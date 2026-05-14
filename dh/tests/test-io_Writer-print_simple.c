@@ -61,7 +61,7 @@ $static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
 
 /*========== Simple Format Tests ============================================*/
 
-TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
+TEST_fn_("io/Writer: print simple - Integer test" $scope) {
     T_use_A$(64, u8);
     A$64$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -75,7 +75,7 @@ TEST_fn_("io_Writer-print_simple: Integer test" $scope) {
     try_(TEST_expect(mem_eqlBytes(result, u8_l("42"))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print_simple: Character test" $scope) {
+TEST_fn_("io/Writer: print simple - Character test" $scope) {
     T_use_A$(64, u8);
     A$64$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -89,7 +89,7 @@ TEST_fn_("io_Writer-print_simple: Character test" $scope) {
     try_(TEST_expect(mem_eqlBytes(result, u8_l("A"))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print_simple: Hex test" $scope) {
+TEST_fn_("io/Writer: print simple - Hex test" $scope) {
     T_use_A$(64, u8);
     A$64$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));

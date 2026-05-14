@@ -38,7 +38,7 @@ T_use_O$(P$ListDbl_Link);
 struct ListDbl_Link {
     var_(prev, O$P$ListDbl_Link);
     var_(next, O$P$ListDbl_Link);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 };
 
 $extern fn_((ListDbl_Link_empty(TypeInfo type))(ListDbl_Link));
@@ -58,7 +58,7 @@ $extern fn_((ListDbl_Link_dataMut(P$ListDbl_Link self, TypeInfo type))(u_P$raw))
 struct ListDbl_Adp$raw {
     struct {
         var_(link, ListDbl_Link);
-        debug_only(var_(type, TypeInfo);)
+        var_(type, debug_TypeInfo);
     };
     var_(data, V$raw) $flexible;
 };
@@ -78,7 +78,7 @@ T_alias$((u_Fields_Idx$ListDbl_Adp)(enum_((u_Fields_Idx$ListDbl_Adp $fits($packe
 ))));
 $static let_(u_Fields_type$ListDbl_Adp, A$$(count$u_Fields_Idx$ListDbl_Adp, TypeInfo)) = A_init({
     [u_Fields_Idx_link$ListDbl_Adp] = typeInfo$(FieldType$(ListDbl_Adp$raw, link)),
-    [u_Fields_Idx_type$ListDbl_Adp] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(ListDbl_Adp$raw, type)), pp_else_(Void))),
+    [u_Fields_Idx_type$ListDbl_Adp] = typeInfo$(FieldType$(ListDbl_Adp$raw, type)),
     [u_Fields_Idx_data_$ListDbl_Adp] = typeInfo$(FieldType$(ListDbl_Adp$raw, data)),
 });
 
@@ -93,7 +93,7 @@ typedef struct ListDbl {
     var_(first, O$P$ListDbl_Link);
     var_(last, O$P$ListDbl_Link);
     var_(len, usize);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } ListDbl;
 
 $extern fn_((ListDbl_empty(TypeInfo type))(ListDbl));
@@ -114,7 +114,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
         struct { \
             var_(prev, O$$(P$$(ListDbl_Link$(_T)))); \
             var_(next, O$$(P$$(ListDbl_Link$(_T)))); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }; \
         var_(as_raw, ListDbl_Link) $like_ref; \
     }
@@ -130,7 +130,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
         struct { \
             var_(prev, O$(P$(ListDbl_Link$(_T)))); \
             var_(next, O$(P$(ListDbl_Link$(_T)))); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }; \
         var_(as_raw, ListDbl_Link) $like_ref; \
     }
@@ -171,7 +171,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
         struct { \
             struct { \
                 var_(link, ListDbl_Link$(_T)); \
-                debug_only(var_(type, TypeInfo);) \
+                var_(type, debug_TypeInfo); \
             }; \
             union { \
                 var_(data, _T); \
@@ -189,7 +189,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
         struct { \
             struct { \
                 var_(link, ListDbl_Link$(_T)); \
-                debug_only(var_(type, TypeInfo);) \
+                var_(type, debug_TypeInfo); \
             }; \
             union { \
                 var_(data, _T); \
@@ -241,7 +241,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
             var_(first, O$$(P$$(ListDbl_Link$(_T)))); \
             var_(last, O$$(P$$(ListDbl_Link$(_T)))); \
             var_(len, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }; \
         var_(as_raw, ListDbl) $like_ref; \
     }
@@ -255,7 +255,7 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
             var_(first, O$(P$(ListDbl_Link$(_T)))); \
             var_(last, O$(P$(ListDbl_Link$(_T)))); \
             var_(len, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }; \
         var_(as_raw, ListDbl) $like_ref; \
     }

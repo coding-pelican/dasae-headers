@@ -3,7 +3,7 @@
 
 $static fn_((checkFlag(void))(bool)) { return false; }
 $static fn_((append(S$i32* list, i32 val))(void)) { *S_at((*list)[list->len++]) = val; }
-TEST_fn_("test breaking guard" $guard) {
+TEST_fn_("core/fn: breaking guard" $guard) {
     T_use_A$(10, i32);
     S$i32 deferred_list = { .ptr = l0$((A$(10, i32))).val, .len = 0 };
 

@@ -42,11 +42,11 @@ T_alias$((E_Opaq$General_E)(union E_Opaq$General_E {
     var_(any, E_OpaqAny);
     var_(as_any, E_OpaqAny) $like_ref;
 }));
-T_alias$((E_Type$General_E_NotImplemented)(E_Opaq$General_E));
-T_alias$((E_Type$General_E_Unexpected)(E_Opaq$General_E));
+T_alias$((E_Opaq$NotImplemented)(E_Opaq$General_E));
+T_alias$((E_Opaq$Unexpected)(E_Opaq$General_E));
 T_alias$((E_Payload$General_E)(union E_Payload$General_E {
-    var_(NotImplemented, E_Type$General_E_NotImplemented);
-    var_(Unexpected, E_Type$General_E_Unexpected);
+    var_(NotImplemented, E_Opaq$NotImplemented);
+    var_(Unexpected, E_Opaq$Unexpected);
 }));
 T_alias$((General_E)(union General_E {
     T_embed$(E_Payload$General_E);
@@ -67,12 +67,12 @@ T_use_O$(General_E);
 $attr($inline_always)
 $static fn_((E_resolve$General_E(General_E self))(O$General_E));
 
-T_alias$((General_E_NotImplemented)(General_E));
+T_alias$((E_Type$NotImplemented)(General_E));
 $attr($inline_always)
-$static fn_((E_cause$NotImplemented(void))(General_E_NotImplemented));
-T_alias$((General_E_Unexpected)(General_E));
+$static fn_((E_cause$NotImplemented(void))(E_Type$NotImplemented));
+T_alias$((E_Type$Unexpected)(General_E));
 $attr($inline_always)
-$static fn_((E_cause$Unexpected(void))(General_E_Unexpected));
+$static fn_((E_cause$Unexpected(void))(E_Type$Unexpected));
 
 T_alias$((General_E$Void)(union General_E$Void {
     T_embed$(struct {
@@ -146,7 +146,7 @@ fn_((E_resolve$General_E(General_E self))(O$General_E) $scope) {
     return_none();
 } $unscoped(fn);
 
-fn_((E_cause$NotImplemented(void))(General_E_NotImplemented)) {
+fn_((E_cause$NotImplemented(void))(E_Type$NotImplemented)) {
     $static let_(inner, E_Inner$General_E) = {
         .tag = E_Tag$NotImplemented,
         .tag_id = u8_l("NotImplemented"),
@@ -155,7 +155,7 @@ fn_((E_cause$NotImplemented(void))(General_E_NotImplemented)) {
     return (General_E){ .opaq.inner = &inner };
 };
 
-fn_((E_cause$Unexpected(void))(General_E_Unexpected)) {
+fn_((E_cause$Unexpected(void))(E_Type$Unexpected)) {
     $static let_(inner, E_Inner$General_E) = {
         .tag = E_Tag$Unexpected,
         .tag_id = u8_l("Unexpected"),

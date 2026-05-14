@@ -1,6 +1,6 @@
 #include "dh-main.h"
 #include "dh/HashSet.h"
-#include "dh/heap/Page.h"
+#include "dh/heap/Sys.h"
 
 T_use$((usize)(
     HashSet_Unit,
@@ -41,9 +41,10 @@ T_use$((usize)(
     HashSet_KeyIter_next
 ));
 
-TEST_fn_("basic usage" $guard) {
-    var heap = (heap_Page){};
-    let gpa = heap_Page_alctr(&heap);
+TEST_fn_("HashSet: basic usage" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
     var set_value = try_(HashSet_init$usize(&ctx, gpa, 256));
     defer_(HashSet_fini$usize(&set_value, gpa));
@@ -73,9 +74,10 @@ TEST_fn_("basic usage" $guard) {
     }
 } $unguarded(TEST_fn);
 
-TEST_fn_("basic usage - no templates used" $guard) {
-    var heap = (heap_Page){};
-    let gpa = heap_Page_alctr(&heap);
+TEST_fn_("HashSet: basic usage - no templates used" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
     var set_value = try_(HashSet_init(typeInfo$(usize), &ctx, gpa, 256));
     defer_(HashSet_fini(&set_value, typeInfo$(usize), gpa));
@@ -105,9 +107,10 @@ TEST_fn_("basic usage - no templates used" $guard) {
     }
 } $unguarded(TEST_fn);
 
-TEST_fn_("basic hash set usage" $guard) {
-    var heap = (heap_Page){};
-    let gpa = heap_Page_alctr(&heap);
+TEST_fn_("HashSet: basic hash set usage" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
     var set_value = try_(HashSet_init$usize(&ctx, gpa, 256));
     defer_(HashSet_fini$usize(&set_value, gpa));
@@ -154,9 +157,10 @@ TEST_fn_("basic hash set usage" $guard) {
     try_(TEST_expect(!HashSet_remove$usize(&set_value, 3)));
 } $unguarded(TEST_fn);
 
-TEST_fn_("set operations" $guard) {
-    var heap = (heap_Page){};
-    let gpa = heap_Page_alctr(&heap);
+TEST_fn_("HashSet: set operations" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
     // Create set A = {1, 2, 3}
@@ -209,9 +213,10 @@ TEST_fn_("set operations" $guard) {
     try_(TEST_expect(!HashSet_isDisjoint$usize(setA, setC))); // {1,2,3} ∩ {1,2,3} ≠ ∅
 } $unguarded(TEST_fn);
 
-TEST_fn_("clone and clear operations" $guard) {
-    var heap = (heap_Page){};
-    let gpa = heap_Page_alctr(&heap);
+TEST_fn_("HashSet: clone and clear operations" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
     var set = try_(HashSet_init$usize(&ctx, gpa, 16));
@@ -244,9 +249,10 @@ TEST_fn_("clone and clear operations" $guard) {
     try_(TEST_expect(HashSet_cap$usize(cloned) == 0));
 } $unguarded(TEST_fn);
 
-TEST_fn_("rehash" $guard) {
-    var heap = (heap_Page){};
-    let gpa = heap_Page_alctr(&heap);
+TEST_fn_("HashSet: rehash" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
     var set = try_(HashSet_init$usize(&ctx, gpa, 64));
@@ -277,9 +283,10 @@ TEST_fn_("rehash" $guard) {
     } $end(for);
 } $unguarded(TEST_fn);
 
-TEST_fn_("key iterator" $guard) {
-    var heap = (heap_Page){};
-    let gpa = heap_Page_alctr(&heap);
+TEST_fn_("HashSet: key iterator" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
 
     var set = try_(HashSet_init$usize(&ctx, gpa, 16));
@@ -305,10 +312,3 @@ TEST_fn_("key iterator" $guard) {
     try_(TEST_expect(iter_count == count));
     try_(TEST_expect(actual_total == expected_total));
 } $unguarded(TEST_fn);
-
-#if UNUSED_CODE
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
-    let_ignore = args;
-    return_ok({});
-} $unguarded(fn);
-#endif /* UNUSED_CODE */

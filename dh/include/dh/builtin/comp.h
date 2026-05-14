@@ -28,21 +28,6 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define on_comptime__default __comp_flag__on_comptime__default
-#define on_comptime __comp_bool__on_comptime
-#define comptime_comp_enabled __comp_bool__comptime_comp_enabled
-#define comptime_only(_inner...) __comp_syn__comptime_only(_inner)
-
-#define __comp_flag__on_comptime__default 0
-#define __comp_bool__on_comptime on_comptime__default
-#define __comp_bool__comptime_comp_enabled on_comptime
-#define __comp_syn__comptime_only(_inner...) pp_if_(on_comptime)(pp_then_(_inner), pp_else_())
-
-#if defined(COMP)
-#undef __comp_flag__on_comptime__default
-#define __comp_flag__on_comptime__default 1
-#endif /* defined(COMP) */
-
 #define $dispatch_on_comptime /* just comment that dispatches to detailed implementation at compile-time */
 
 #define $attr(_Attrs...) _Attrs
@@ -77,6 +62,12 @@ extern "C" {
      *          not return a value \
      */ \
     __attr__$no_return
+#define $must_tail \
+    /** \
+     * @brief Attribute marks a function as a must tail function \
+     * @details This attribute can be used to ensure that a function is a must tail function \
+     */ \
+    __attr__$must_tail
 
 #define $ignore_void \
     /** \
@@ -116,6 +107,8 @@ extern "C" {
 #define $keep_symbol __attr__$keep_symbol
 #define $maybe_unused __attr__$maybe_unused
 #define $must_use __attr__$must_use
+#define $undefined __attr__$undefined
+#define $undefined_static __attr__$undefined_static
 
 #define $import __attr__$import
 #define $export __attr__$export
@@ -354,6 +347,7 @@ extern "C" {
 #define T_default_(_expr...) \
     default: \
         _expr
+#define T_delim() T_case$((struct {})($unreachable))
 
 #if UNUSED_CODE
 #define T_case$(_T_Case...) $P$(_T_Case)
@@ -396,26 +390,16 @@ extern "C" {
 #define and &&
 #define or ||
 
+#define $listed /* just comment for list expansion */
+
 #define $pragma_guard_(_push, _ctx, _pop, _code...) /* clang-format off */ \
     _Pragma(_push) \
     _Pragma(_ctx) \
     _code \
     _Pragma(_pop) /* clang-format on */
-#define $supress_microsoft_anon_tag(...) $pragma_guard_( \
-    "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wmicrosoft-anon-tag\"", \
-    "clang diagnostic pop", \
-    __VA_ARGS__ \
-)
 #define $supress_compound_token_split_by_macro(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
-    "clang diagnostic pop", \
-    __VA_ARGS__ \
-)
-#define $supress_unterminated_string_initialization(...) $pragma_guard_( \
-    "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wunterminated-string-initialization\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
@@ -425,9 +409,9 @@ extern "C" {
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_cast_qual(...) $pragma_guard_( \
+#define $supress_pointer_arith(...) $pragma_guard_( \
     "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wcast-qual\"", \
+    "clang diagnostic ignored \"-Wpointer-arith\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
@@ -437,9 +421,15 @@ extern "C" {
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_pointer_arith(...) $pragma_guard_( \
+#define $supress_cast_qual(...) $pragma_guard_( \
     "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wpointer-arith\"", \
+    "clang diagnostic ignored \"-Wcast-qual\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+#define $supress_unterminated_string_initialization(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wunterminated-string-initialization\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
@@ -449,9 +439,9 @@ extern "C" {
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_switch_enum(...) $pragma_guard_( \
+#define $supress_frame_larger_than(...) $pragma_guard_( \
     "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wswitch-enum\"", \
+    "clang diagnostic ignored \"-Wframe-larger-than\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
@@ -467,12 +457,25 @@ extern "C" {
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
+#define $supress_switch_enum(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wswitch-enum\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
 #define $supress_thread_safety(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wthread-safety\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
+#define $supress_microsoft_anon_tag(...) $pragma_guard_( \
+    "clang diagnostic push", \
+    "clang diagnostic ignored \"-Wmicrosoft-anon-tag\"", \
+    "clang diagnostic pop", \
+    __VA_ARGS__ \
+)
+
 /*========== Macros and Definitions =========================================*/
 
 #define __attr__$inline comp_inline
@@ -492,6 +495,7 @@ extern "C" {
 
 #define __attr__$must_check comp_must_use
 #define __attr__$no_return comp_no_return
+#define __attr__$must_tail comp_must_tail
 #define __oper__$ignore_void (void)
 #define __capt__$ignore \
     $maybe_unused pp_uniqTok(ignored) = l0$((Void)); \
@@ -539,6 +543,8 @@ extern "C" {
 #define __attr__$keep_symbol comp_keep_symbol
 #define __attr__$maybe_unused comp_maybe_unused
 #define __attr__$must_use comp_must_use
+#define __attr__$undefined comp_undefined
+#define __attr__$undefined_static comp_undefined_static
 
 #define __attr__$import comp_import
 #define __attr__$export comp_export

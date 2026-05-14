@@ -19,7 +19,7 @@
 
 /*========== Unsigned Integer Parsing Tests =================================*/
 
-TEST_fn_("fmt_parse$u64: Basic and different bases" $scope) {
+TEST_fn_("fmt: parse$u64: Basic and different bases" $scope) {
     // Basic decimal
     let res1 = try_(fmt_parse$u64(u8_l("12345"), 10));
     try_(TEST_expect(res1 == 12345ULL));
@@ -45,7 +45,7 @@ TEST_fn_("fmt_parse$u64: Basic and different bases" $scope) {
     try_(TEST_expect(res6 == 42ULL));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt_parse$u64: Edge cases and errors" $scope) {
+TEST_fn_("fmt: parse$u64: Edge cases and errors" $scope) {
     // Max value
     let res_max = try_(fmt_parse$u64(u8_l("18446744073709551615"), 10));
     try_(TEST_expect(res_max == u64_limit_max));
@@ -67,7 +67,7 @@ TEST_fn_("fmt_parse$u64: Edge cases and errors" $scope) {
     try_(TEST_expect(isErr(res_sign)));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt_parse$u32: Edge cases and errors" $scope) {
+TEST_fn_("fmt: parse$u32: Edge cases and errors" $scope) {
     // Max value
     let res_max = try_(fmt_parse$u32(u8_l("4294967295"), 10));
     try_(TEST_expect(res_max == u32_limit_max));
@@ -77,7 +77,7 @@ TEST_fn_("fmt_parse$u32: Edge cases and errors" $scope) {
     try_(TEST_expect(isErr(res_overflow)));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt_parse$usize: Basic test" $scope) {
+TEST_fn_("fmt: parse$usize: Basic test" $scope) {
     // A reasonably large number that should fit in usize
     let res = try_(fmt_parse$usize(u8_l("12345678"), 10));
     try_(TEST_expect(res == 12345678UL));
@@ -85,7 +85,7 @@ TEST_fn_("fmt_parse$usize: Basic test" $scope) {
 
 /*========== Signed Integer Parsing Tests ===================================*/
 
-TEST_fn_("fmt_parse$i64: Basic and signs" $scope) {
+TEST_fn_("fmt: parse$i64: Basic and signs" $scope) {
     // Positive
     let res1 = try_(fmt_parse$i64(u8_l("12345"), 10));
     try_(TEST_expect(res1 == 12345LL));
@@ -99,7 +99,7 @@ TEST_fn_("fmt_parse$i64: Basic and signs" $scope) {
     try_(TEST_expect(res3 == 99LL));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt_parse$i64: Edge cases and errors" $scope) {
+TEST_fn_("fmt: parse$i64: Edge cases and errors" $scope) {
     // Max value
     let res_max = try_(fmt_parse$i64(u8_l("9223372036854775807"), 10));
     try_(TEST_expect(res_max == i64_limit_max));
@@ -117,7 +117,7 @@ TEST_fn_("fmt_parse$i64: Edge cases and errors" $scope) {
     try_(TEST_expect(isErr(res_underflow)));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt_parse$i32: Edge cases and errors" $scope) {
+TEST_fn_("fmt: parse$i32: Edge cases and errors" $scope) {
     // Max value
     let res_max = try_(fmt_parse$i32(u8_l("2147483647"), 10));
     try_(TEST_expect(res_max == i32_limit_max));
@@ -135,7 +135,7 @@ TEST_fn_("fmt_parse$i32: Edge cases and errors" $scope) {
     try_(TEST_expect(isErr(res_underflow)));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt_parse$isize: Basic test" $scope) {
+TEST_fn_("fmt: parse$isize: Basic test" $scope) {
     let res_pos = try_(fmt_parse$isize(u8_l("12345"), 10));
     try_(TEST_expect(res_pos == 12345L));
     let res_neg = try_(fmt_parse$isize(u8_l("-54321"), 10));
@@ -144,7 +144,7 @@ TEST_fn_("fmt_parse$isize: Basic test" $scope) {
 
 /*========== Floating Point Parsing Tests ===================================*/
 
-TEST_fn_("fmt_parse$f64: Basic and scientific notation" $scope) {
+TEST_fn_("fmt: parse$f64: Basic and scientific notation" $scope) {
     let epsilon = 1e-9;
 
     // Integer
@@ -176,7 +176,7 @@ TEST_fn_("fmt_parse$f64: Basic and scientific notation" $scope) {
     try_(TEST_expect(math_abs(res7 - 0.0123) < epsilon));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt_parse$f64: Errors" $scope) {
+TEST_fn_("fmt: parse$f64: Errors" $scope) {
     // Empty
     try_(TEST_expect(isErr(fmt_parse$f64(u8_l("")))));
 
@@ -189,7 +189,7 @@ TEST_fn_("fmt_parse$f64: Errors" $scope) {
     try_(TEST_expect(isErr(fmt_parse$f64(u8_l("1a")))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt_parse$f32: Basic test" $scope) {
+TEST_fn_("fmt: parse$f32: Basic test" $scope) {
     let epsilon = 1e-6f;
     let res = try_(fmt_parse$f32(u8_l("12.34")));
     try_(TEST_expect(math_abs(res - 12.34f) < epsilon));
@@ -197,7 +197,7 @@ TEST_fn_("fmt_parse$f32: Basic test" $scope) {
 
 /*========== Boolean Parsing Tests ==========================================*/
 
-TEST_fn_("fmt_parse$bool: Valid values" $scope) {
+TEST_fn_("fmt: parse$bool: Valid values" $scope) {
     // True values
     try_(TEST_expect(try_(fmt_parse$bool(u8_l("true")))));
     try_(TEST_expect(try_(fmt_parse$bool(u8_l("TRUE")))));
@@ -209,7 +209,7 @@ TEST_fn_("fmt_parse$bool: Valid values" $scope) {
     try_(TEST_expect(!try_(fmt_parse$bool(u8_l("0")))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("fmt_parse$bool: Errors" $scope) {
+TEST_fn_("fmt: parse$bool: Errors" $scope) {
     // Empty
     try_(TEST_expect(isErr(fmt_parse$bool(u8_l("")))));
 

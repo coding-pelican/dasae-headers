@@ -43,6 +43,8 @@ $static fn_((mem_trailingZerosSize(usize x))(u32));
 $attr($inline_always)
 $static fn_((mem_trailingZeros64(u64 x))(u32));
 $attr($inline_always)
+$static fn_((mem_trailingZerosLong(ulong x))(u32));
+$attr($inline_always)
 $static fn_((mem_trailingZeros32(u32 x))(u32));
 $attr($inline_always)
 $static fn_((mem_trailingZeros16(u16 x))(u32));
@@ -53,6 +55,8 @@ $attr($inline_always)
 $static fn_((mem_leadingZerosSize(usize x))(u32));
 $attr($inline_always)
 $static fn_((mem_leadingZeros64(u64 x))(u32));
+$attr($inline_always)
+$static fn_((mem_leadingZerosLong(ulong x))(u32));
 $attr($inline_always)
 $static fn_((mem_leadingZeros32(u32 x))(u32));
 $attr($inline_always)
@@ -67,6 +71,8 @@ $static fn_((mem_swapBytesSize(usize x))(usize));
 $attr($inline_always)
 $static fn_((mem_swapBytes64(u64 x))(u64));
 $attr($inline_always)
+$static fn_((mem_swapBytesLong(ulong x))(ulong));
+$attr($inline_always)
 $static fn_((mem_swapBytes32(u32 x))(u32));
 $attr($inline_always)
 $static fn_((mem_swapBytes16(u16 x))(u16));
@@ -78,6 +84,8 @@ $static fn_((mem_littleToNativeSize(usize x))(usize));
 $attr($inline_always)
 $static fn_((mem_littleToNative64(u64 x))(u64));
 $attr($inline_always)
+$static fn_((mem_littleToNativeLong(ulong x))(ulong));
+$attr($inline_always)
 $static fn_((mem_littleToNative32(u32 x))(u32));
 $attr($inline_always)
 $static fn_((mem_littleToNative16(u16 x))(u16));
@@ -86,6 +94,8 @@ $attr($inline_always)
 $static fn_((mem_bigToNativeSize(usize x))(usize));
 $attr($inline_always)
 $static fn_((mem_bigToNative64(u64 x))(u64));
+$attr($inline_always)
+$static fn_((mem_bigToNativeLong(ulong x))(ulong));
 $attr($inline_always)
 $static fn_((mem_bigToNative32(u32 x))(u32));
 $attr($inline_always)
@@ -96,6 +106,8 @@ $static fn_((mem_nativeToLittleSize(usize x))(usize));
 $attr($inline_always)
 $static fn_((mem_nativeToLittle64(u64 x))(u64));
 $attr($inline_always)
+$static fn_((mem_nativeToLittleLong(ulong x))(ulong));
+$attr($inline_always)
 $static fn_((mem_nativeToLittle32(u32 x))(u32));
 $attr($inline_always)
 $static fn_((mem_nativeToLittle16(u16 x))(u16));
@@ -104,6 +116,8 @@ $attr($inline_always)
 $static fn_((mem_nativeToBigSize(usize x))(usize));
 $attr($inline_always)
 $static fn_((mem_nativeToBig64(u64 x))(u64));
+$attr($inline_always)
+$static fn_((mem_nativeToBigLong(ulong x))(ulong));
 $attr($inline_always)
 $static fn_((mem_nativeToBig32(u32 x))(u32));
 $attr($inline_always)
@@ -192,16 +206,16 @@ $attr($inline_always)
 $static fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw));
 #define T_use_mem_bytesTo$(_T...) __stmt__T_use_mem_bytesTo$(_T)
 
-$extern fn_((mem_setBytes(S$u8 dst, u8 val))(S$u8));
-$extern fn_((mem_setP(u_P$raw dst, u_V$raw val))(u_P$raw));
-#define T_use_mem_setP$(_T...) __stmt__T_use_mem_setP$(_T)
-$extern fn_((mem_set(u_S$raw dst, u_V$raw val))(u_S$raw));
-#define T_use_mem_set$(_T...) __stmt__T_use_mem_set$(_T)
 $extern fn_((mem_set0Bytes(S$u8 dst))(S$u8));
 $extern fn_((mem_set0P(u_P$raw dst))(u_P$raw));
 #define T_use_mem_setP0$(_T...) __stmt__T_use_mem_setP0$(_T)
 $extern fn_((mem_set0(u_S$raw dst))(u_S$raw));
 #define T_use_mem_set0$(_T...) __stmt__T_use_mem_set0$(_T)
+$extern fn_((mem_setBytes(S$u8 dst, u8 val))(S$u8));
+$extern fn_((mem_setP(u_P$raw dst, u_V$raw val))(u_P$raw));
+#define T_use_mem_setP$(_T...) __stmt__T_use_mem_setP$(_T)
+$extern fn_((mem_set(u_S$raw dst, u_V$raw val))(u_S$raw));
+#define T_use_mem_set$(_T...) __stmt__T_use_mem_set$(_T)
 $extern fn_((mem_copyBytes(S$u8 dst, S_const$u8 src))(S$u8));
 $extern fn_((mem_copyP(u_P$raw dst, u_P_const$raw src))(u_P$raw));
 #define T_use_mem_copyP$(_T...) __stmt__T_use_mem_copyP$(_T)
@@ -278,7 +292,7 @@ T_alias$((mem_WindowIter)(struct mem_WindowIter {
     var_(idx, O$usize);
     var_(size, usize);
     var_(advance, usize);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 }));
 #define T_use_mem_WindowIter$(_T...) __stmt__T_use_mem_WindowIter$(_T)
 $extern fn_((mem_window(u_S_const$raw buf, usize size, usize advance))(mem_WindowIter));
@@ -312,7 +326,7 @@ T_alias$((mem_Delim$raw)(variant_((mem_Delim$raw $maps(mem_Delim))(
 T_alias$((mem_TokzIter$raw)(struct mem_TokzIter$raw {
     var_(buf, S_const$raw);
     var_(idx, usize);
-    debug_only(var_(type, TypeInfo));
+    var_(type, debug_TypeInfo);
     var_(delim, mem_Delim$raw);
 }));
 T_use_P$(mem_TokzIter$raw);
@@ -337,7 +351,7 @@ $extern fn_((mem_TokzIter_rest(mem_TokzIter$raw* self, TypeInfo type))(u_S_const
 T_alias$((mem_SplitIter$raw)(struct mem_SplitIter$raw {
     var_(buf, S_const$raw);
     var_(idx, O$usize);
-    debug_only(var_(type, TypeInfo));
+    var_(type, debug_TypeInfo);
     var_(delim, mem_Delim$raw);
 }));
 T_use_P$(mem_SplitIter$raw);
@@ -378,10 +392,10 @@ $extern fn_((mem_SplitIter_rest(mem_SplitIter$raw* self, TypeInfo type))(u_S_con
 
 #define __val__mem_page_size (pp_expand( \
     pp_switch_ pp_begin(arch_type)( \
-        pp_case_((arch_type_wasm64)(as$(usize)(64u) * 1024u)), \
-        pp_case_((arch_type_wasm32)(as$(usize)(64u) * 1024u)), \
-        pp_case_((arch_type_aarch64)(as$(usize)(16u) * 1024u)), \
-        pp_default_(as$(usize)(4u) * 1024u) \
+        pp_case_((arch_type_wasm64)(usize_(64) * 1024)), \
+        pp_case_((arch_type_wasm32)(usize_(64) * 1024)), \
+        pp_case_((arch_type_aarch64)(usize_(16) * 1024)), \
+        pp_default_((usize_(4) * 1024)) \
     ) pp_end \
 ))
 
@@ -409,9 +423,18 @@ fn_((mem_trailingZeros64(u64 x))(u32)) {
         54, 26, 40, 15, 34, 20, 31, 10,
         25, 14, 19,  9, 13,  8,  7,  6
     }; /* clang-format on */
-    const u64 debruijn = 0x03F79D71B4CA8B09ull;
+    const u64 debruijn = u64_(0x03F79D71B4CA8B09ull);
     // (x & -x) isolates the lowest set bit
     return lookup[((x & (0 - x)) * debruijn) >> 58];
+#endif
+};
+fn_((mem_trailingZerosLong(ulong x))(u32)) {
+#if defined(__clang__) || defined(__GNUC__)
+    return int_trailingZeros_static(x);
+#else
+    return pp_if_(plat_long_is_64bit)(
+        pp_then_(mem_trailingZeros64(x)),
+        pp_else_(mem_trailingZeros32(x)));
 #endif
 };
 fn_((mem_trailingZeros32(u32 x))(u32)) {
@@ -426,7 +449,7 @@ fn_((mem_trailingZeros32(u32 x))(u32)) {
         31, 27, 13, 23, 21, 19, 16,  7,
         26, 12, 18,  6, 11,  5, 10,  9
     }; /* clang-format on */
-    const u32 debruijn = 0x077CB531u;
+    const u32 debruijn = u32_(0x077CB531u);
     return lookup[((x & (0 - x)) * debruijn) >> 27];
 #endif
 };
@@ -470,10 +493,19 @@ fn_((mem_leadingZeros64(u64 x))(u32)) {
     // leading_zeros = 64 - popcount(smeared_x)
 
     // Implementation of popcount64 for fallback (SWAR algorithm)
-    x = x - ((x >> 1) & 0x5555555555555555ULL);
-    x = (x & 0x3333333333333333ULL) + ((x >> 2) & 0x3333333333333333ULL);
-    x = (x + (x >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
-    return 64 - (u32)((x * 0x0101010101010101ULL) >> 56);
+    x = x - ((x >> 1) & u64_(0x5555555555555555ull));
+    x = (x & u64_(0x3333333333333333ull)) + ((x >> 2) & u64_(0x3333333333333333ull));
+    x = (x + (x >> 4)) & u64_(0x0F0F0F0F0F0F0F0Full);
+    return 64 - (u32)((x * u64_(0x0101010101010101ull)) >> 56);
+#endif
+};
+fn_((mem_leadingZerosLong(ulong x))(u32)) {
+#if defined(__clang__) || defined(__GNUC__)
+    return int_leadingZeros_static(x);
+#else
+    return pp_if_(plat_long_is_64bit)(
+        pp_then_(mem_leadingZeros64(x)),
+        pp_else_(mem_leadingZeros32(x)));
 #endif
 };
 fn_((mem_leadingZeros32(u32 x))(u32)) {
@@ -529,31 +561,40 @@ fn_((mem_swapBytesSize(usize x))(usize)) {
 };
 fn_((mem_swapBytes64(u64 x))(u64)) {
 #if defined(__GNUC__) || defined(__clang__)
-    return __builtin_bswap64(x);
+    return int_swapBytes_static(x);
 #else
-    return ((x & 0xFF00000000000000ULL) >> 56)
-         | ((x & 0x00FF000000000000ULL) >> 40)
-         | ((x & 0x0000FF0000000000ULL) >> 24)
-         | ((x & 0x000000FF00000000ULL) >> 8)
-         | ((x & 0x00000000FF000000ULL) << 8)
-         | ((x & 0x0000000000FF0000ULL) << 24)
-         | ((x & 0x000000000000FF00ULL) << 40)
-         | ((x & 0x00000000000000FFULL) << 56);
+    return ((x & u64_(0xFF00000000000000ull)) >> 56)
+         | ((x & u64_(0x00FF000000000000ull)) >> 40)
+         | ((x & u64_(0x0000FF0000000000ull)) >> 24)
+         | ((x & u64_(0x000000FF00000000ull)) >> 8)
+         | ((x & u64_(0x00000000FF000000ull)) << 8)
+         | ((x & u64_(0x0000000000FF0000ull)) << 24)
+         | ((x & u64_(0x000000000000FF00ull)) << 40)
+         | ((x & u64_(0x00000000000000FFull)) << 56);
+#endif
+};
+fn_((mem_swapBytesLong(ulong x))(ulong)) {
+#if defined(__GNUC__) || defined(__clang__)
+    return int_swapBytes_static(x);
+#else
+    return pp_if_(plat_long_is_64bit)(
+        pp_then_(mem_swapBytes64(x)),
+        pp_else_(mem_swapBytes32(x)));
 #endif
 };
 fn_((mem_swapBytes32(u32 x))(u32)) {
 #if defined(__GNUC__) || defined(__clang__)
-    return __builtin_bswap32(x);
+    return int_swapBytes_static(x);
 #else
-    return ((x & 0xFF000000) >> 24)
-         | ((x & 0x00FF0000) >> 8)
-         | ((x & 0x0000FF00) << 8)
-         | ((x & 0x000000FF) << 24);
+    return ((x & u32_(0xFF000000u)) >> 24)
+         | ((x & u32_(0x00FF0000u)) >> 8)
+         | ((x & u32_(0x0000FF00u)) << 8)
+         | ((x & u32_(0x000000FFu)) << 24);
 #endif
 };
 fn_((mem_swapBytes16(u16 x))(u16)) {
 #if defined(__GNUC__) || defined(__clang__)
-    return __builtin_bswap16(x);
+    return int_swapBytes_static(x);
 #else
     return (x << 8) | (x >> 8);
 #endif
@@ -562,14 +603,19 @@ fn_((mem_swapBytes16(u16 x))(u16)) {
 /* --- Endian Conversion --- */
 
 fn_((mem_littleToNativeSize(usize x))(usize)) {
-    return pp_if_(arch_bits_is_64bit)(
-        pp_then_(mem_littleToNative64(x)),
-        pp_else_(mem_littleToNative32(x)));
+    return pp_if_(arch_byte_order_is_little_endian)(
+        pp_then_(x),
+        pp_else_(mem_swapBytesSize(x)));
 };
 fn_((mem_littleToNative64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
         pp_else_(mem_swapBytes64(x)));
+};
+fn_((mem_littleToNativeLong(ulong x))(ulong)) {
+    return pp_if_(arch_byte_order_is_little_endian)(
+        pp_then_(x),
+        pp_else_(mem_swapBytesLong(x)));
 };
 fn_((mem_littleToNative32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_little_endian)(
@@ -592,6 +638,11 @@ fn_((mem_bigToNative64(u64 x))(u64)) {
         pp_then_(x),
         pp_else_(mem_swapBytes64(x)));
 };
+fn_((mem_bigToNativeLong(ulong x))(ulong)) {
+    return pp_if_(arch_byte_order_is_big_endian)(
+        pp_then_(x),
+        pp_else_(mem_swapBytesLong(x)));
+};
 fn_((mem_bigToNative32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
@@ -604,14 +655,19 @@ fn_((mem_bigToNative16(u16 x))(u16)) {
 };
 
 fn_((mem_nativeToLittleSize(usize x))(usize)) {
-    return pp_if_(arch_bits_is_64bit)(
-        pp_then_(mem_nativeToLittle64(x)),
-        pp_else_(mem_nativeToLittle32(x)));
+    return pp_if_(arch_byte_order_is_little_endian)(
+        pp_then_(x),
+        pp_else_(mem_swapBytesSize(x)));
 };
 fn_((mem_nativeToLittle64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_little_endian)(
         pp_then_(x),
         pp_else_(mem_swapBytes64(x)));
+};
+fn_((mem_nativeToLittleLong(ulong x))(ulong)) {
+    return pp_if_(arch_byte_order_is_little_endian)(
+        pp_then_(x),
+        pp_else_(mem_swapBytesLong(x)));
 };
 fn_((mem_nativeToLittle32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_little_endian)(
@@ -625,14 +681,19 @@ fn_((mem_nativeToLittle16(u16 x))(u16)) {
 };
 
 fn_((mem_nativeToBigSize(usize x))(usize)) {
-    return pp_if_(arch_bits_is_64bit)(
-        pp_then_(mem_nativeToBig64(x)),
-        pp_else_(mem_nativeToBig32(x)));
+    return pp_if_(arch_byte_order_is_big_endian)(
+        pp_then_(x),
+        pp_else_(mem_swapBytesSize(x)));
 };
 fn_((mem_nativeToBig64(u64 x))(u64)) {
     return pp_if_(arch_byte_order_is_big_endian)(
         pp_then_(x),
         pp_else_(mem_swapBytes64(x)));
+};
+fn_((mem_nativeToBigLong(ulong x))(ulong)) {
+    return pp_if_(arch_byte_order_is_big_endian)(
+        pp_then_(x),
+        pp_else_(mem_swapBytesLong(x)));
 };
 fn_((mem_nativeToBig32(u32 x))(u32)) {
     return pp_if_(arch_byte_order_is_big_endian)(
@@ -679,8 +740,8 @@ fn_((mem_log2ToAlign(mem_Align log2_align))(usize)) {
 
 fn_((mem_idxZ$u8(u8 sentinel, const u8* p))(usize)) {
     claim_assert_nonnull(p);
-    usize idx = 0;
-    while (p[idx] != sentinel) { ++idx; }
+    var_(idx, usize) = 0;
+    while (*P_at((p)[idx]) != sentinel) { ++idx; }
     return idx;
 };
 fn_((mem_lenZ0$u8(const u8* p))(usize)) {
@@ -797,14 +858,6 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
     $inline_always $static fn_((tpl$(mem_bytesTo, _T)(mem_Bytes$(_T) bytes))(_T)) { \
         return u_castV$((_T)(mem_bytesTo(A_ref$((S$u8)(bytes)), u_retV$(_T)))); \
     }
-#define __stmt__T_use_mem_setP$(_T...) \
-    $inline_always $static fn_((tpl$(mem_setP, _T)(P$$(_T) dst, _T val))(P$$(_T))) { \
-        return u_castP$((P$$(_T))(mem_setP(u_anyP(dst), u_anyV(val)))); \
-    }
-#define __stmt__T_use_mem_set$(_T...) \
-    $inline_always $static fn_((tpl$(mem_set, _T)(S$(_T) dst, _T val))(S$(_T))) { \
-        return u_castS$((S$(_T))(mem_set(u_anyS(dst), u_anyV(val)))); \
-    }
 #define __stmt__T_use_mem_setP0$(_T...) \
     $inline_always $static fn_((tpl$(mem_setP0, _T)(P$$(_T) dst))(P$$(_T))) { \
         return u_castP$((P$$(_T))(mem_set0P(u_anyP(dst)))); \
@@ -812,6 +865,14 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
 #define __stmt__T_use_mem_set0$(_T...) \
     $inline_always $static fn_((tpl$(mem_set0, _T)(S$(_T) dst))(S$(_T))) { \
         return u_castS$((S$(_T))(mem_set0(u_anyS(dst)))); \
+    }
+#define __stmt__T_use_mem_setP$(_T...) \
+    $inline_always $static fn_((tpl$(mem_setP, _T)(P$$(_T) dst, _T val))(P$$(_T))) { \
+        return u_castP$((P$$(_T))(mem_setP(u_anyP(dst), u_anyV(val)))); \
+    }
+#define __stmt__T_use_mem_set$(_T...) \
+    $inline_always $static fn_((tpl$(mem_set, _T)(S$(_T) dst, _T val))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_set(u_anyS(dst), u_anyV(val)))); \
     }
 #define __stmt__T_use_mem_copyP$(_T...) \
     $inline_always $static fn_((tpl$(mem_copyP, _T)(P$$(_T) dst, P_const$$(_T) src))(P$$(_T))) { \
@@ -925,7 +986,7 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
             var_(idx, O$usize); \
             var_(size, usize); \
             var_(advance, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, mem_WindowIter) $like_ref; \
     }))
@@ -960,7 +1021,7 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
             (mem_Delim_seq, S_const$(_T)), \
             (mem_Delim_any, S_const$(_T)), \
         )); \
-        var_(as_raw, mem_Delim$raw) $like_ref; \
+        var_(as_raw, mem_Delim$raw) $flexible; \
     }))
 #define __alias__mem_TokzIter$(_T...) tpl$(mem_TokzIter, _T)
 #define __stmt__T_use_mem_TokzIter$(_T...) \
@@ -968,10 +1029,10 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
         T_embed$(struct { \
             var_(buf, S_const$(_T)); \
             var_(idx, usize); \
-            debug_only(var_(type, TypeInfo)); \
+            var_(type, debug_TypeInfo); \
             var_(delim, mem_Delim$(_T)); \
         }); \
-        var_(as_raw, mem_TokzIter$raw) $like_ref; \
+        var_(as_raw, mem_TokzIter$raw) $flexible; \
     }))
 #define __stmt__T_use_mem_tokzUnit$(_T...) /* clang-format off */ \
     $attr($inline_always) \
@@ -1014,10 +1075,10 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
         T_embed$(struct { \
             var_(buf, S_const$(_T)); \
             var_(idx, O$usize); \
-            debug_only(var_(type, TypeInfo)); \
+            var_(type, debug_TypeInfo); \
             var_(delim, mem_Delim$(_T)); \
         }); \
-        var_(as_raw, mem_SplitIter$raw) $like_ref; \
+        var_(as_raw, mem_SplitIter$raw) $flexible; \
     }))
 #define __stmt__T_use_mem_splitUnit$(_T...) /* clang-format off */ \
     $attr($inline_always) \

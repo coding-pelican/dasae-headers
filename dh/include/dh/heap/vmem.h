@@ -31,6 +31,7 @@ T_alias$((heap_vmem_Protect)(enum_((heap_vmem_Protect $fits($packed))(
     heap_vmem_Protect_read_write_guard
 ))));
 
+$extern fn_((heap_vmem_geom(void))(heap_Geom));
 $extern fn_((heap_vmem_reserve(P$raw addr_hint, usize len))(O$P$u8));
 $extern fn_((heap_vmem_commit(P$raw addr, usize len))(bool));
 $extern fn_((heap_vmem_decommit(P$raw addr, usize len))(bool));

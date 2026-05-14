@@ -1,7 +1,7 @@
 #include "dh-main.h"
 #include "dh/mem/common.h"
 
-TEST_fn_("A_ref" $scope) {
+TEST_fn_("prl/tpl/Arr: A_ref" $scope) {
     T_use_A$(10, i32);
     let arr = A_from$((i32){ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
     let sli = A_ref(arr);
@@ -24,7 +24,7 @@ $static fn_((test_io_feedLine(io_Writer out))(void)) {
 }
 #endif /* UNUSED_CODE */
 
-TEST_fn_("S_deref" $scope) {
+TEST_fn_("prl/tpl/Arr: S_deref" $scope) {
     T_use_A$(10, i32);
     let arr = A_from$((i32){ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
 

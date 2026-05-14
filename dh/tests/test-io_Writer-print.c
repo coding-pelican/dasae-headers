@@ -86,7 +86,7 @@ $static fn_((test_Buf_giveAlloc(test_Buf* self, mem_Alctr allocator))(E$S$u8) $s
 
 /*========== Basic Format Type Tests =======================================*/
 
-TEST_fn_("io_Writer-print: Integer formatting - decimal" $scope) {
+TEST_fn_("io/Writer: print - Integer formatting - decimal" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -128,7 +128,7 @@ TEST_fn_("io_Writer-print: Integer formatting - decimal" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Unsigned integer formatting" $scope) {
+TEST_fn_("io/Writer: print - Unsigned integer formatting" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -161,7 +161,7 @@ TEST_fn_("io_Writer-print: Unsigned integer formatting" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Hexadecimal formatting" $scope) {
+TEST_fn_("io/Writer: print - Hexadecimal formatting" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -202,7 +202,7 @@ TEST_fn_("io_Writer-print: Hexadecimal formatting" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Binary and Octal formatting" $scope) {
+TEST_fn_("io/Writer: print - Binary and Octal formatting" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -246,7 +246,7 @@ TEST_fn_("io_Writer-print: Binary and Octal formatting" $scope) {
 
 /*========== Character and String Tests =====================================*/
 
-TEST_fn_("io_Writer-print: Character formatting" $scope) {
+TEST_fn_("io/Writer: print - Character formatting" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -270,7 +270,7 @@ TEST_fn_("io_Writer-print: Character formatting" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: String slice formatting" $scope) {
+TEST_fn_("io/Writer: print - String slice formatting" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -286,7 +286,7 @@ TEST_fn_("io_Writer-print: String slice formatting" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Null-terminated string formatting" $scope) {
+TEST_fn_("io/Writer: print - Null-terminated string formatting" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -302,7 +302,7 @@ TEST_fn_("io_Writer-print: Null-terminated string formatting" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Pointer formatting" $scope) {
+TEST_fn_("io/Writer: print - Pointer formatting" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -351,7 +351,7 @@ TEST_fn_("io_Writer-print: Pointer formatting" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Floating point formatting" $scope) {
+TEST_fn_("io/Writer: print - Floating point formatting" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -403,7 +403,7 @@ TEST_fn_("io_Writer-print: Floating point formatting" $scope) {
 
 /*========== Format Flag Tests ==============================================*/
 
-TEST_fn_("io_Writer-print: Sign flags" $scope) {
+TEST_fn_("io/Writer: print - Sign flags" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -447,7 +447,7 @@ TEST_fn_("io_Writer-print: Sign flags" $scope) {
 
 /*========== Special Cases and Edge Tests ===================================*/
 
-TEST_fn_("io_Writer-print: Brace escaping" $scope) {
+TEST_fn_("io/Writer: print - Brace escaping" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -479,7 +479,7 @@ TEST_fn_("io_Writer-print: Brace escaping" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Multiple arguments" $scope) {
+TEST_fn_("io/Writer: print - Multiple arguments" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -494,7 +494,7 @@ TEST_fn_("io_Writer-print: Multiple arguments" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Malformed format specifiers" $scope) {
+TEST_fn_("io/Writer: print - Malformed format specifiers" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -527,7 +527,7 @@ TEST_fn_("io_Writer-print: Malformed format specifiers" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Empty format string" $scope) {
+TEST_fn_("io/Writer: print - Empty format string" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -538,7 +538,7 @@ TEST_fn_("io_Writer-print: Empty format string" $scope) {
     try_(TEST_expect(test_Buf_view(buf).len == 0));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io_Writer-print: Zero values" $scope) {
+TEST_fn_("io/Writer: print - Zero values" $scope) {
     T_use_A$(256, u8);
     A$256$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
@@ -581,7 +581,7 @@ TEST_fn_("io_Writer-print: Zero values" $scope) {
 /*========== Complex Integration Tests ======================================*/
 
 #if DEPRECATED_CODE
-TEST_fn_("io_Writer-print: Complex format combinations" $scope) {
+TEST_fn_("io/Writer: print - Complex format combinations" $scope) {
     T_use_A$(512, u8);
     A$512$u8 mem = A_zero();
     test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));

@@ -4,7 +4,7 @@ $static fn_((addInt(i32 lhs, i32 rhs))(i32)) {
     return lhs + rhs;
 };
 
-TEST_fn_("Basic Addition Operation" $scope) {
+TEST_fn_("TEST: Basic Addition Operation" $scope) {
     let a = 1;
     let b = 2;
     let c = addInt(a, b);
@@ -16,11 +16,16 @@ TEST_fn_("Basic Addition Operation" $scope) {
     try_(TEST_expect(f != 5));
 } $unscoped(TEST_fn);
 
-TEST_fn_("Always Fails" $scope) {
+TEST_fn_("TEST: Always Fails" $scope) {
     let a = 1;
     let b = 2;
     let c = addInt(a, b);
-    try_(TEST_expect(c != 3)); // This will always fail
+    let result = expr_(TEST_E$void $guard)({
+        ETrace_disable();
+        defer_(ETrace_enable());
+        $break_(TEST_expect(c != 3)); // This will always fail
+    }) $unguarded(expr);
+    try_(TEST_expect(isErr(result)));
 } $unscoped(TEST_fn);
 
 #include "dh-main.h"

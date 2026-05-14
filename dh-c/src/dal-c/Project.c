@@ -148,6 +148,7 @@ void dal_c_CompilerOpts_cleanup(dal_c_CompilerOpts* opts) {
     free(opts->c_std);
     free(opts->arch_target);
     free(opts->sysroot);
+    free(opts->entry_symbol);
     for (int i = 0; i < opts->define_count; ++i) {
         free(opts->define_macros[i]);
     }
@@ -179,10 +180,14 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->c_std) { dal_c_Project__setString(&dst->c_std, src->c_std); }
     if (src->arch_target) { dal_c_Project__setString(&dst->arch_target, src->arch_target); }
     if (src->sysroot) { dal_c_Project__setString(&dst->sysroot, src->sysroot); }
+    if (src->entry_symbol) { dal_c_Project__setString(&dst->entry_symbol, src->entry_symbol); }
     if (src->profile != dal_c_Profile_invalid) { dst->profile = src->profile; }
-    dst->freestanding = dst->freestanding || src->freestanding;
+    if (src->compile_env != dal_c_CompileEnv_auto) { dst->compile_env = src->compile_env; }
+    if (src->libc_linked != dal_c_ToggleState_auto) { dst->libc_linked = src->libc_linked; }
+    if (src->dsl_mode != dal_c_ToggleState_auto) { dst->dsl_mode = src->dsl_mode; }
+    if (src->default_libs_linked != dal_c_ToggleState_auto) { dst->default_libs_linked = src->default_libs_linked; }
+    if (src->start_files_linked != dal_c_ToggleState_auto) { dst->start_files_linked = src->start_files_linked; }
     dst->loose_errors = dst->loose_errors || src->loose_errors;
-    dst->no_dsl = dst->no_dsl || src->no_dsl;
 
     for (int i = 0; i < src->define_count; ++i) {
         dal_c_Project__addToArray(&dst->define_macros, &dst->define_count, src->define_macros[i]);
@@ -649,6 +654,42 @@ static bool dal_c_Project__isTrue(const char* value) {
     return value && dal_c_boolean_parse(value);
 }
 
+static dal_c_ToggleState dal_c_Project__toggleStateFromPositiveBool(const char* value) {
+    return dal_c_Project__isTrue(value)
+             ? dal_c_ToggleState_enabled
+             : dal_c_ToggleState_disabled;
+}
+
+static dal_c_ToggleState dal_c_Project__toggleStateFromNegativeBool(const char* value) {
+    return dal_c_Project__isTrue(value)
+             ? dal_c_ToggleState_disabled
+             : dal_c_ToggleState_enabled;
+}
+
+static dal_c_CompileEnv dal_c_Project__compileEnvFromPositiveBool(const char* value) {
+    return dal_c_Project__isTrue(value)
+             ? dal_c_CompileEnv_hosted
+             : dal_c_CompileEnv_freestanding;
+}
+
+static dal_c_CompileEnv dal_c_Project__compileEnvFromNegativeBool(const char* value) {
+    return dal_c_Project__isTrue(value)
+             ? dal_c_CompileEnv_freestanding
+             : dal_c_CompileEnv_hosted;
+}
+
+static dal_c_ToggleState dal_c_Project__libcLinkedFromPositiveBool(const char* value) {
+    return dal_c_Project__isTrue(value)
+             ? dal_c_ToggleState_enabled
+             : dal_c_ToggleState_disabled;
+}
+
+static dal_c_ToggleState dal_c_Project__libcLinkedFromNegativeBool(const char* value) {
+    return dal_c_Project__isTrue(value)
+             ? dal_c_ToggleState_disabled
+             : dal_c_ToggleState_enabled;
+}
+
 static void dal_c_Project__applyBuildDefaultsLine(dal_c_BuildDefaults* defaults, const char* key, const char* value) {
     assert(defaults != NULL);
     if (!key || !value) { return; }
@@ -681,6 +722,8 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         dal_c_Project__setString(&opts->arch_target, value);
     } else if (str_eql(key, dal_c_opt_sysroot)) {
         dal_c_Project__setString(&opts->sysroot, value);
+    } else if (str_eql(key, dal_c_opt_entry)) {
+        dal_c_Project__setString(&opts->entry_symbol, value);
     } else if (str_eql(key, dal_c_opt_include)) {
         dal_c_Project__addToArray(&opts->include_paths, &opts->include_count, value);
     } else if (str_eql(key, dal_c_opt_isystem)) {
@@ -697,11 +740,39 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
             opts->profile = profile;
         }
     } else if (str_eql(key, dal_c_opt_freestanding)) {
-        opts->freestanding = dal_c_Project__isTrue(value);
+        opts->compile_env = dal_c_Project__compileEnvFromNegativeBool(value);
+    } else if (str_eql(key, dal_c_opt_hosted)) {
+        opts->compile_env = dal_c_Project__compileEnvFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_use_libc)) {
+        opts->libc_linked = dal_c_Project__libcLinkedFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_no_libc)) {
+        opts->libc_linked = dal_c_Project__libcLinkedFromNegativeBool(value);
+    } else if (str_eql(key, dal_c_opt_use_dsl)) {
+        opts->dsl_mode = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_no_dsl)) {
+        opts->dsl_mode = dal_c_Project__toggleStateFromNegativeBool(value);
+    } else if (str_eql(key, dal_c_opt_use_default_libs)) {
+        opts->default_libs_linked = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_no_default_libs)) {
+        opts->default_libs_linked = dal_c_Project__toggleStateFromNegativeBool(value);
+    } else if (str_eql(key, dal_c_opt_use_start_files)) {
+        opts->start_files_linked = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_no_start_files)) {
+        opts->start_files_linked = dal_c_Project__toggleStateFromNegativeBool(value);
+    } else if (str_eql(key, dal_c_opt_use_stdlib)) {
+        dal_c_ToggleState s = dal_c_Project__toggleStateFromPositiveBool(value);
+        opts->default_libs_linked = s;
+        opts->start_files_linked = s;
+    } else if (str_eql(key, dal_c_opt_no_stdlib)) {
+        dal_c_ToggleState s = dal_c_Project__toggleStateFromNegativeBool(value);
+        opts->default_libs_linked = s;
+        opts->start_files_linked = s;
+    } else if (str_eql(key, dal_c_opt_use_crt)) {
+        opts->start_files_linked = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_no_crt)) {
+        opts->start_files_linked = dal_c_Project__toggleStateFromNegativeBool(value);
     } else if (str_eql(key, dal_c_opt_loose_errors)) {
         opts->loose_errors = dal_c_Project__isTrue(value);
-    } else if (str_eql(key, dal_c_opt_no_dsl)) {
-        opts->no_dsl = dal_c_Project__isTrue(value);
     }
 }
 

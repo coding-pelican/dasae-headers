@@ -1,46 +1,97 @@
 #include "dh/heap/Classic.h"
 #include "dh/mem/common.h"
 
+/*========== Internal Declarations ==========================================*/
+
+#if heap_Classic_enabled
+$attr($inline_always)
+$static fn_((heap_Classic__libcAlign(mem_Align align))(usize));
+#define heap_Classic__has_malloc_size __comp_bool__heap_Classic__has_malloc_size
+/// Get underlying malloc_size if available
+$attr($maybe_unused $inline_always)
+$static fn_((heap_Classic__mallocSize(P_const$raw target_ptr))(usize));
+
+$static fn_((heap_Classic__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+$static fn_((heap_Classic__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+$static fn_((heap_Classic__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+$static fn_((heap_Classic__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+#endif /* heap_Classic_enabled */
+
+/*========== External Definitions ===========================================*/
+
+fn_((heap_Classic_alctr(heap_Classic* self))(heap_Classic_E$mem_Alctr) $scope) pp_if_(heap_Classic_enabled)(
+    pp_then_({
+        // VTable for Classic allocator
+        $static let_(vtbl, mem_Alctr_VTbl) = {
+            .alloc = heap_Classic__alloc,
+            .resize = heap_Classic__resize,
+            .remap = heap_Classic__remap,
+            .free = heap_Classic__free,
+        };
+        return_ok(mem_Alctr_ensureValid((mem_Alctr){
+            .ctx = self,
+            .vtbl = &vtbl,
+        }));
+    }),
+    pp_else_({
+        let_ignore = self;
+        return_err(E_cause$heap_Classic_Unsupported());
+    })
+) $unscoped(fn);
+
+/*========== Internal Definitions ===========================================*/
+
+#if heap_Classic_enabled
 #include <stdlib.h>
 
-// Forward declarations for allocator vtable functions
-$static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
-$static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
-$static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
-$static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+fn_((heap_Classic__libcAlign(mem_Align align))(usize)) {
+    return pri_max(mem_log2ToAlign(align), sizeOf$(P$raw));
+};
 
-fn_((heap_Classic_alctr(heap_Classic* self))(mem_Alctr)) {
-    // VTable for Classic allocator
-    $static const mem_Alctr_VTbl vtbl $like_ref = { {
-        .alloc = heap_Classic_alloc,
-        .resize = heap_Classic_resize,
-        .remap = heap_Classic_remap,
-        .free = heap_Classic_free,
-    } };
-    return mem_Alctr_ensureValid((mem_Alctr){
-        .ctx = self,
-        .vtbl = vtbl,
-    });
-}
+#if defined(__GLIBC__) || defined(__APPLE__)
+#define __comp_bool__heap_Classic__has_malloc_size pp_true
+#else /* other platforms */
+#define __comp_bool__heap_Classic__has_malloc_size pp_false
+#endif /* other platforms */
 
-/*========== Alctr Interface Implementation =============================*/
+#if heap_Classic__has_malloc_size
+#if defined(__GLIBC__)
+#include <malloc.h>
+#elif defined(__APPLE__)
+#include <malloc/malloc.h>
+#else /* other platforms */
+#endif /* other platforms */
+#endif /* heap_Classic__has_malloc_size */
 
-$static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
+fn_((heap_Classic__mallocSize(P_const$raw target_ptr))(usize)) {
+#if heap_Classic__has_malloc_size
+#if defined(__GLIBC__)
+    return malloc_usable_size(target_ptr);
+#elif defined(__APPLE__)
+    return malloc_size(target_ptr);
+#else /* other platforms */
+#endif /* other platforms */
+#endif /* heap_Classic__has_malloc_size */
+    return $ignore_void target_ptr, 0;
+};
+
+$static fn_((heap_Classic__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     let_ignore = ctx;
-    let ptr_align = mem_log2ToAlign(align);
+    let ptr_align = heap_Classic__libcAlign(align);
 
     // Allocate aligned memory
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
-    if_(let ptr = _aligned_malloc(len, ptr_align), ptr != null) { return_some(ptr); }
+    if_(let ptr = _aligned_malloc(len, ptr_align), ptr != null) return_some(ptr);
 #elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-    if_(var ptr = from$(P$raw), posix_memalign(&ptr, ptr_align, len) == 0) { return_some(ptr); }
+    if_(var ptr = from$(P$raw), posix_memalign(&ptr, ptr_align, len) == 0) return_some(ptr);
 #else /* other platforms */
     // Manual alignment with proper header storage
     // Allocate extra space for the original pointer and alignment padding
     let header_size = sizeOf$(P$raw);
-    let total_size = len + header_size + ptr_align - 1;
-    // Check for overflow
-    if (total_size < len) { return_none(); } // Overflow occurred
+    let total_size = orelse_((usize_addChkd(
+        orelse_((usize_addChkd(len, header_size))(return_none())),
+        ptr_align - 1
+    ))(return_none()));
 
     // Allocate raw memory
     var raw = malloc(total_size);
@@ -57,94 +108,51 @@ $static fn_((heap_Classic_alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) 
     }
 #endif /* other platforms */
 
-    // Failed to allocate memory
-    return_none();
+    return_none(); // Failed to allocate memory
 } $unscoped(fn);
 
-$static fn_((heap_Classic_resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
+$static fn_((heap_Classic__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let_ignore = ctx;
     let_ignore = buf_align;
+    if (buf.ptr == null) return false;
+    if (new_len == 0) return true;
 
-    // Get current allocation size
-    let ptr = buf.ptr;
-    if (ptr == null) { return false; }
+    let alloced_size = pp_if_(heap_Classic__has_malloc_size)(
+        pp_then_(local_({
+            let full_size = heap_Classic__mallocSize(buf.ptr, buf.len);
+            local_return_(full_size);
+        })),
+        pp_else_(local_({
+            let orig_size = buf.len;
+            local_return_(orig_size);
+        })));
+    if (new_len <= alloced_size) return true;
 
-    // Special cases
-    if (new_len == 0) { return true; }
-
-    // Check if new size fits in current allocation
-#if heap_Classic_has_malloc_size
-    const usize full_size = heap_Classic_mallocSize(ptr);
-    if (new_len <= full_size) { return true; }
-#else /* !heap_Classic_has_malloc_size */
-    // Without malloc_size, we can only shrink within the original allocation
-    const usize original_size = buf.len;
-    if (new_len <= original_size) { return true; }
-#endif /* !heap_Classic_has_malloc_size */
-
-    // Resizing to a larger size is not supported
     return false;
-}
+};
 
-$static fn_((heap_Classic_remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
-    let_ignore = ctx;
-    let ptr_align = mem_log2ToAlign(buf_align);
-
-    // If the buffer is null, treat it as a malloc.
+$static fn_((heap_Classic__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8) $scope) {
     if (buf.ptr == null) {
-        return heap_Classic_alloc(ctx, new_len, buf_align);
+        return heap_Classic__alloc(ctx, new_len, buf_align);
     }
-
-    // If the new length is zero, treat it as a free, and return NULL.
     if (new_len == 0) {
-        heap_Classic_free(ctx, buf, buf_align);
+        heap_Classic__free(ctx, buf, buf_align);
         return_none();
     }
-    // If the new size is smaller or equal to the usable size of the current block try to shrink and return the same pointer.
-    if (heap_Classic_resize(ctx, buf, buf_align, new_len)) {
+    if (heap_Classic__resize(ctx, buf, buf_align, new_len)) {
         return_some(buf.ptr);
     }
 
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
-    // Use _aligned_realloc for MSVC, MinGW.
+    let ptr_align = heap_Classic__libcAlign(buf_align);
     if_(let new_ptr = _aligned_realloc(buf.ptr, new_len, ptr_align), new_ptr != null) {
         return_some(new_ptr);
     }
-#elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-    // Use realloc for POSIX systems. It does not guarantee to maintain alignment.
-    if_(let new_ptr = realloc(buf.ptr, new_len), new_ptr != null) {
-        // we allocated a different block, make sure the alignment is correct.
-        if (mem_isAligned(ptrToInt(new_ptr), ptr_align)) {
-            return_some(new_ptr);
-        } else {
-            // Alignment is lost. The specification does not support this, free the new_ptr, and return none.
-            free(new_ptr);
-            return_none();
-        }
-    }
-#else
-    // Fallback implementation:  Allocate, copy, and free.
-    //   This is necessary because realloc *does not* guarantee alignment.
-
-    // 1. Allocate a new block with the requested size and alignment.
-    O$P$u8 new_buf = heap_Classic_alloc(ctx, new_len, buf_align);
-    if (new_buf.ptr == null) {
-        return_none(); // Allocation failed.
-    }
-
-    // 2. Copy the data from the old block to the new block.
-    usize copy_len = (buf.len < new_len) ? buf.len : new_len; // Copy the smaller of the two sizes.
-    mem_copy(new_buf.ptr, buf.ptr, copy_len);
-    // 3. Free the old block.
-    heap_Classic_free(ctx, buf, buf_align);
-
-    // 4. Return the new block.
-    return new_buf;
-#endif
+#endif /* defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__) */
     return_none();
 } $unscoped(fn);
 
-$static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
+$static fn_((heap_Classic__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let_ignore = ctx;
     let_ignore = buf_align;
 
@@ -156,8 +164,9 @@ $static fn_((heap_Classic_free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void))
     free(raw_ptr);
 #else /* other platforms */
     // Manual alignment cleanup - retrieve the original pointer
-    var header_ptr = intToPtr$((P$raw*)(ptrToInt(raw_ptr) -sizeOf(P$raw)));
+    var header_ptr = intToPtr$((P$raw*)(ptrToInt(raw_ptr) - (sizeOf$(P$raw))));
     var original_ptr = *header_ptr;
     free(original_ptr);
 #endif /* other platforms */
 }
+#endif /* heap_Classic_enabled */

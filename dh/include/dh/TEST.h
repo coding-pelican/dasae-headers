@@ -6,7 +6,6 @@
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-10 (date of creation)
  * @updated 2025-03-26 (date of last update)
- * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)
  * @prefix  TEST
  *
@@ -30,7 +29,7 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Error codes */
-errset_((TEST_E)());
+errset_((TEST_E)(TEST_Skip, TEST_Fail));
 
 /* Test case function type */
 typedef fn_(((*)(void))(E$void) $T) TEST_CaseFn;
@@ -51,6 +50,7 @@ typedef struct TEST_Framework {
     struct {
         u32 total;
         u32 passed;
+        u32 skipped;
         u32 failed;
     } stats;
     mem_Alctr gpa;
@@ -81,14 +81,18 @@ $extern fn_((TEST_Framework_run(void))(void));
 /// @brief Check expression and record result
 /// @brief Same as TEST_expect but with custom message
 $attr($must_check)
-$extern fn_((TEST_expect(bool expr))(E$void));
+$extern fn_((TEST_skip(void))(TEST_E$void));
 $attr($must_check)
-$extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
+$extern fn_((TEST_skipMsg(S_const$u8 msg))(TEST_E$void));
+$attr($must_check)
+$extern fn_((TEST_expect(bool expr))(TEST_E$void));
+$attr($must_check)
+$extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(TEST_E$void));
 #endif /* !on_comptime */
 
 /*========== Implementation Details ========================================*/
 
-#define __comp_syn__TEST_only(_inner...) pp_if_(TEST_comp_enabled)(pp_then_(_inner), pp_else_())
+#define __comp_syn__TEST_only(_inner...) pp_if_(TEST_comp_enabled)(pp_then_(_inner))
 
 #define comp_syn__TEST_fn_$_scope(_ID_binder, _ID_caseFn, _Name...) \
     TEST__binder(_ID_binder, _ID_caseFn, _Name); \
@@ -136,17 +140,25 @@ $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(E$void));
 // clang-format on
 
 #if on_comptime
-$attr($must_check)
-$extern fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(E$void));
-$attr($must_check)
-$extern fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_str))(E$void));
-
+#define TEST_skip() TEST_skip_callTest(srcLoc())
+#define TEST_skipMsg(_msg...) TEST_skipMsg_callTest(_msg, srcLoc())
 #define TEST_expect(_expr...) TEST_expect_callTest(_expr, srcLoc(), u8_l(#_expr))
 #define TEST_expectMsg(_expr, _msg...) TEST_expectMsg_callTest(_expr, _msg, srcLoc(), u8_l(#_expr))
 
+#define TEST_skip_callTest(_loc) TEST_skip_test(_loc)
+#define TEST_skipMsg_callTest(_msg, _loc) TEST_skipMsg_test(_msg, _loc)
 #define TEST_expect_callTest(_expr, _loc, _eval_str) TEST_expect_test(_expr, _loc, _eval_str)
 #define TEST_expectMsg_callTest(_expr, _msg, _loc, _eval_str) TEST_expectMsg_test(_expr, _msg, _loc, _eval_str)
 #endif /* on_comptime */
+
+$attr($must_check)
+$extern fn_((TEST_skip_test(SrcLoc loc))(TEST_E$void));
+$attr($must_check)
+$extern fn_((TEST_skipMsg_test(S_const$u8 msg, SrcLoc loc))(TEST_E$void));
+$attr($must_check)
+$extern fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(TEST_E$void));
+$attr($must_check)
+$extern fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_str))(TEST_E$void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

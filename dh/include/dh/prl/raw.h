@@ -56,6 +56,17 @@ typedef struct O$raw {
     } payload[1];
 } O$raw;
 
+union O$Void {
+    struct {
+        var_(is_some, bool);
+        union {
+            var_(none, Void);
+            var_(some, Void);
+        } payload;
+    };
+    var_(as_raw $like_ref, O$raw);
+};
+
 typedef struct E_OpaqAny {
     var_(inner, const Opaq*);
 } E_OpaqAny;

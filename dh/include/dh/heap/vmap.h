@@ -26,6 +26,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+$extern fn_((heap_vmap_geom(void))(heap_Geom));
 $extern fn_((heap_vmap_map(P$raw addr_hint, usize len))(O$P$u8));
 $extern fn_((heap_vmap_release(P$raw addr, usize len))(bool));
 $extern fn_((heap_vmap_remap(P$raw addr, usize old_len, usize new_len))(O$P$u8));

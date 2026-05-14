@@ -9,8 +9,8 @@
 #endif /* plat_is_windows */
 #include <locale.h>
 
-$static var_(io_stream__s_out_mtx, Thrd_Mtx_Recur) = {};
-$static var_(io_stream__s_err_mtx, Thrd_Mtx_Recur) = {};
+$static var_(io_stream__s_out_mtx, Thrd_Mtx_Recur) = cleared();
+$static var_(io_stream__s_err_mtx, Thrd_Mtx_Recur) = cleared();
 
 $attr($on_load)
 $static fn_((io_stream__init(void))(void)) {

@@ -36,9 +36,7 @@ extern "C" {
 #include "heap/vmap.h"
 #include "heap/vmem.h"
 
-#if heap_Classic_enabled
 #include "heap/Classic.h"
-#endif /* heap_Classic_enabled */
 #include "heap/Page.h"
 #include "heap/Sbrk.h"
 #include "heap/Sys.h"

@@ -45,7 +45,11 @@ extern "C" {
 #else /* !main_no_hijack */
 
 $attr(pp_if_(pp_not(main_no_returns_err))(pp_then_($must_check)))
-$extern fn_((dh_main(pp_if_(pp_not(main_no_args))(
+$attr(pp_if_(TEST_comp_enabled)(
+    pp_then_($maybe_unused $static),
+    pp_else_($extern)
+))
+fn_((dh_main(pp_if_(pp_not(main_no_args))(
     pp_then_(S$S_const$u8 args),
     pp_else_(void)
 )))(pp_if_(pp_not(main_no_returns_err))(pp_then_(E$void), pp_else_(void))));

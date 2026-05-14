@@ -28,44 +28,49 @@ extern "C" {
 #define __pp__errset__emit_4(_Id, _Members, _Imports, _End) \
     __syn__errset__emit(_Id, _Members, __pp__errset__unwrapWrapped _Imports)
 
-#define __syn__errset__emitTagMember(_Id, ...) \
-    __VA_OPT__(pp_cat4(E_Tag$, _Id, _, __VA_ARGS__), )
+#define __syn__errset__emitTagMember(_Id, ...) __VA_OPT__( \
+    pp_cat2(E_Tag$, __VA_ARGS__), \
+    pp_cat4(E_Tag$, _Id, _, __VA_ARGS__) = pp_cat2(E_Tag$, __VA_ARGS__), \
+)
 
-#define __syn__errset__emitTypeAlias(_Id, ...) \
-    __VA_OPT__(typedef pp_cat(E_Opaq$, _Id) pp_cat4(E_Type$, _Id, _, __VA_ARGS__);)
+#define __syn__errset__emitTypeAlias(_Id, ...) __VA_OPT__( \
+    typedef pp_cat(E_Opaq$, _Id) pp_cat(E_Opaq$, __VA_ARGS__); \
+)
 
-#define __syn__errset__emitPayloadMember(_Id, ...) \
-    __VA_OPT__(pp_cat4(E_Type$, _Id, _, __VA_ARGS__) __VA_ARGS__;)
+#define __syn__errset__emitPayloadMember(_Id, ...) __VA_OPT__( \
+    pp_cat(E_Opaq$, __VA_ARGS__) __VA_ARGS__; \
+)
 
-#define __syn__errset__emitImportedField(_Id, ...) \
-    __VA_OPT__(__VA_ARGS__ __VA_ARGS__;)
+#define __syn__errset__emitImportedField(_Id, ...) __VA_OPT__( \
+    __VA_ARGS__ __VA_ARGS__; \
+)
 
-#define __syn__errset__emitOccurrenceAlias(_Id, ...) \
-    __VA_OPT__(typedef _Id pp_cat3(_Id, _, __VA_ARGS__);)
+#define __syn__errset__emitOccurrenceAlias(_Id, ...) __VA_OPT__( \
+    typedef _Id pp_cat(E_Type$, __VA_ARGS__); \
+)
 
-#define __syn__errset__emitHashDecl(_Id, ...) /* clang-format off */ \
-    __VA_OPT__( \
-        $attr($inline_always $maybe_unused) \
-        static E_HashId pp_cat(E__hashId$, __VA_ARGS__)(void) { \
-            return E_hasher(u8_l(#__VA_ARGS__)); \
-        } \
-    ) /* clang-format on */
+#define __syn__errset__emitHashDecl(_Id, ...) /* clang-format off */ __VA_OPT__( \
+    $attr($inline_always $maybe_unused) \
+    static E_HashId pp_cat(E__hashId$, __VA_ARGS__)(void) { \
+        return E_hasher(u8_l(#__VA_ARGS__)); \
+    } \
+) /* clang-format on */
 
-#define __syn__errset__emitCauseDecl(_Id, ...) /* clang-format off */ \
-    __VA_OPT__( \
-        $attr($inline_always $maybe_unused) \
-        static pp_cat3(_Id, _, __VA_ARGS__) pp_cat(E_cause$, __VA_ARGS__)(void) { \
-            static const pp_cat(E_Inner$, _Id) inner = { \
-                .tag = pp_cat4(E_Tag$, _Id, _, __VA_ARGS__), \
-                .tag_id = u8_l(#__VA_ARGS__), \
-                .hashId = pp_cat(E__hashId$, __VA_ARGS__), \
-            }; \
-            return (pp_cat3(_Id, _, __VA_ARGS__)){ .opaq.inner = &inner }; \
-        } \
-    ) /* clang-format on */
+#define __syn__errset__emitCauseDecl(_Id, ...) /* clang-format off */ __VA_OPT__( \
+    $attr($inline_always $maybe_unused) \
+    static pp_cat3(E_Type$, __VA_ARGS__) pp_cat(E_cause$, __VA_ARGS__)(void) { \
+        static const pp_cat(E_Inner$, _Id) inner = { \
+            .tag = pp_cat4(E_Tag$, _Id, _, __VA_ARGS__), \
+            .tag_id = u8_l(#__VA_ARGS__), \
+            .hashId = pp_cat(E__hashId$, __VA_ARGS__), \
+        }; \
+        return (pp_cat(E_Type$, __VA_ARGS__)){ .opaq.inner = &inner }; \
+    } \
+) /* clang-format on */
 
-#define __syn__errset__emitLocalErr(_Id, ...) \
-    __VA_OPT__(pp_cat(E_cause$, __VA_ARGS__)(), )
+#define __syn__errset__emitLocalErr(_Id, ...) __VA_OPT__( \
+    pp_cat(E_cause$, __VA_ARGS__)(), \
+)
 
 #define __syn__errset__emit(_Id, _Members, _Imports...) /* clang-format off */ \
     typedef enum $packed pp_cat(E_Tag$, _Id) { \
@@ -103,8 +108,8 @@ extern "C" {
     static E_HashId pp_cat(E_hashId$, _Id)(_Id self) { \
         return self.opaq.inner->hashId(); \
     } \
-    pp_foreach(__syn__errset__emitOccurrenceAlias, _Id, __pp__errset__unwrap _Members) \
     pp_foreach(__syn__errset__emitHashDecl, _Id, __pp__errset__unwrap _Members) \
+    pp_foreach(__syn__errset__emitOccurrenceAlias, _Id, __pp__errset__unwrap _Members) \
     pp_foreach(__syn__errset__emitCauseDecl, _Id, __pp__errset__unwrap _Members) \
     T_use$((_Id)(O)); \
     $attr($inline_always $maybe_unused) \

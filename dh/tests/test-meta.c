@@ -1,6 +1,6 @@
 #include "dh-main.h"
 #include "dh/meta.h"
-#include "dh/heap/Page.h"
+#include "dh/heap/Sys.h"
 
 // =============================================================================
 // Control structs for u_typeInfoRecord / u_offsets / u_offsetTo tests
@@ -44,7 +44,7 @@ T_alias$((Record$15$1P$raw$2usize)(struct Record$15$1P$raw$2usize {
 // Tests for basic record layout (simulating regular structs)
 // =============================================================================
 
-TEST_fn_("u_typeInfoRecord matches actual struct TypeInfo" $scope) {
+TEST_fn_("meta: u_typeInfoRecord matches actual struct TypeInfo" $scope) {
     /* Test 1: {u8, u32, u64} */ {
         let field_types = typeInfos$(u8, u32, u64);
         let computed = u_typeInfoRecord(field_types);
@@ -73,7 +73,7 @@ TEST_fn_("u_typeInfoRecord matches actual struct TypeInfo" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("u_offsetTo matches actual struct field offsets" $scope) {
+TEST_fn_("meta: u_offsetTo matches actual struct field offsets" $scope) {
     /* Test: {u8, u32, u64} */ {
         let field_types = typeInfos$(u8, u32, u64);
         let record_ti = u_typeInfoRecord(field_types);
@@ -109,7 +109,7 @@ TEST_fn_("u_offsetTo matches actual struct field offsets" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("u_offsets matches all actual struct field offsets" $scope) {
+TEST_fn_("meta: u_offsets matches all actual struct field offsets" $scope) {
     let field_types = typeInfos$(u8, u32, u64);
 
     let computed_offsets = u_offsets(
@@ -132,7 +132,7 @@ TEST_fn_("u_offsets matches all actual struct field offsets" $scope) {
 // Tests for N-replicated record layout (SoA: struct { T0[N]; T1[N]; ... })
 // =============================================================================
 
-TEST_fn_("u_typeInfoRecordN matches actual SoA struct TypeInfo" $scope) {
+TEST_fn_("meta: u_typeInfoRecordN matches actual SoA struct TypeInfo" $scope) {
     /* Test: {u8[10], u32[10], u64[10]} */ {
         let field_types = typeInfos$(u8, u32, u64);
         let computed = u_typeInfoRecordN(10, field_types);
@@ -152,7 +152,7 @@ TEST_fn_("u_typeInfoRecordN matches actual SoA struct TypeInfo" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("u_offsetToN matches actual SoA struct field offsets" $scope) {
+TEST_fn_("meta: u_offsetToN matches actual SoA struct field offsets" $scope) {
     // Test: {u8[10], u32[10], u64[10]}
     {
         let field_types = typeInfos$(u8, u32, u64);
@@ -185,7 +185,7 @@ TEST_fn_("u_offsetToN matches actual SoA struct field offsets" $scope) {
     }
 } $unscoped(TEST_fn);
 
-TEST_fn_("u_offsetsN matches all actual SoA struct field offsets" $scope) {
+TEST_fn_("meta: u_offsetsN matches all actual SoA struct field offsets" $scope) {
     let field_types = typeInfos$(u8, u32, u64);
 
     let computed_offsets = u_offsetsN(
@@ -208,7 +208,7 @@ TEST_fn_("u_offsetsN matches all actual SoA struct field offsets" $scope) {
 // Tests for u_fieldSlisMut (slices into N-replicated record)
 // =============================================================================
 
-TEST_fn_("u_fieldSlisMut produces correctly positioned slices" $scope) {
+TEST_fn_("meta: u_fieldSlisMut produces correctly positioned slices" $scope) {
     let field_types = typeInfos$(u8, u32, u64);
     let_(N, usize) = 10;
 
@@ -239,9 +239,10 @@ TEST_fn_("u_fieldSlisMut produces correctly positioned slices" $scope) {
     try_(TEST_expect(sli_2.len == N));
 } $unscoped(TEST_fn);
 
-TEST_fn_("u_fieldSlisMut with heap allocation" $guard) {
-    var_(heap, heap_Page) = cleared();
-    let gpa = heap_Page_alctr(&heap);
+TEST_fn_("meta: u_fieldSlisMut with heap allocation" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
 
     let field_types = typeInfos$(P$raw, usize);
     let_(N, usize) = 15;

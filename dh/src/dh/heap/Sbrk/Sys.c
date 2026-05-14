@@ -13,7 +13,8 @@ $static fn_((heap_Sbrk_Sys__unsupported_ctx(P$raw self))(heap_Sbrk_Ctx));
 #if plat_is_windows
 fn_((heap_Sbrk_Sys_Windows_sbrk(u_P$raw ctx, usize n))(usize)) {
     let self = u_castP$((heap_Sbrk_Sys_Windows*)(ctx));
-    let aligned_n = heap_alignPage(n);
+    let geometry = heap_vmem_geom();
+    let aligned_n = heap_Geom_alignCommitWith(geometry, n);
     if (self->committed_size + aligned_n > self->reserved_size) {
         return 0; /* Out of reserved space */
     }
@@ -36,7 +37,7 @@ fn_((heap_Sbrk_Sys_Windows_ctx(heap_Sbrk_Sys_Windows* self))(heap_Sbrk_Ctx)) {
 
 fn_((heap_Sbrk_Sys_Windows_init(usize reserve_size))(heap_Sbrk_Sys_Windows)) {
     claim_assert(reserve_size > 0);
-    let aligned_size = heap_alignPage(reserve_size);
+    let aligned_size = heap_Geom_alignReserveWith(heap_vmem_geom(), reserve_size);
     let base = orelse_((heap_vmem_reserve(null, aligned_size))(null));
     if (base == null) { return l0$((heap_Sbrk_Sys_Windows)); }
     return (heap_Sbrk_Sys_Windows){
@@ -60,7 +61,8 @@ fn_((heap_Sbrk_Sys_Windows_fini(heap_Sbrk_Sys_Windows* self))(void)) {
 #if plat_is_posix
 fn_((heap_Sbrk_Sys_Posix_sbrk(u_P$raw ctx, usize n))(usize)) {
     let self = u_castP$((heap_Sbrk_Sys_Posix*)(ctx));
-    let aligned_n = heap_alignPage(n);
+    let geometry = heap_vmem_geom();
+    let aligned_n = heap_Geom_alignCommitWith(geometry, n);
     if (self->committed_size + aligned_n > self->reserved_size) {
         return 0; /* Out of reserved space */
     }
@@ -83,7 +85,7 @@ fn_((heap_Sbrk_Sys_Posix_ctx(heap_Sbrk_Sys_Posix* self))(heap_Sbrk_Ctx)) {
 
 fn_((heap_Sbrk_Sys_Posix_init(usize reserve_size))(heap_Sbrk_Sys_Posix)) {
     claim_assert(reserve_size > 0);
-    let aligned_size = heap_alignPage(reserve_size);
+    let aligned_size = heap_Geom_alignReserveWith(heap_vmem_geom(), reserve_size);
     let base = orelse_((heap_vmem_reserve(null, aligned_size))(null));
     if (base == null) { return l0$((heap_Sbrk_Sys_Posix)); }
     return (heap_Sbrk_Sys_Posix){

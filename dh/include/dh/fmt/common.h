@@ -235,7 +235,7 @@ typedef struct fmt_Spec {
 } fmt_Spec;
 
 /// Maximum number of arguments
-#define fmt_max_args (16ull)
+#define fmt_max_args (usize_(16))
 
 /*========== Formatting (Output) ==========*/
 
@@ -254,6 +254,7 @@ $extern fn_((fmt_format$bool(io_Writer writer, bool val, fmt_Spec spec))(E$void)
 $extern fn_((fmt_formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$usize(io_Writer writer, usize val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$u64(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$ulong(io_Writer writer, ulong val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$u32(io_Writer writer, u32 val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$u16(io_Writer writer, u16 val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$u8(io_Writer writer, u8 val, fmt_Spec spec))(E$void)) $must_check;
@@ -262,6 +263,7 @@ $extern fn_((fmt_format$u8(io_Writer writer, u8 val, fmt_Spec spec))(E$void)) $m
 $extern fn_((fmt_formatIInt(io_Writer writer, i64 val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$isize(io_Writer writer, isize val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$i64(io_Writer writer, i64 val, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_format$ilong(io_Writer writer, ilong val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$i32(io_Writer writer, i32 val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$i16(io_Writer writer, i16 val, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$i8(io_Writer writer, i8 val, fmt_Spec spec))(E$void)) $must_check;
@@ -284,7 +286,7 @@ $extern fn_((fmt_formatASCII(io_Writer writer, u8 code, fmt_Spec spec))(E$void))
 $extern fn_((fmt_formatUTF8(io_Writer writer, u32 codepoint, fmt_Spec spec))(E$void)) $must_check;
 
 /// Format a null-terminated string with spec
-$extern fn_((fmt_formatStrZ(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) $must_check;
+$extern fn_((fmt_formatStrZ0(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$P$u8(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) $must_check;
 /// Format a string slice with spec
 $extern fn_((fmt_formatStr(io_Writer writer, S_const$u8 str, fmt_Spec spec))(E$void)) $must_check;
@@ -298,6 +300,7 @@ $extern fn_((fmt_parse$bool(S_const$u8 str))(E$bool)) $must_check;
 $extern fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64)) $must_check;
 $extern fn_((fmt_parse$usize(S_const$u8 str, u8 base))(E$usize)) $must_check;
 $extern fn_((fmt_parse$u64(S_const$u8 str, u8 base))(E$u64)) $must_check;
+$extern fn_((fmt_parse$ulong(S_const$u8 str, u8 base))(E$ulong)) $must_check;
 $extern fn_((fmt_parse$u32(S_const$u8 str, u8 base))(E$u32)) $must_check;
 $extern fn_((fmt_parse$u16(S_const$u8 str, u8 base))(E$u16)) $must_check;
 $extern fn_((fmt_parse$u8(S_const$u8 str, u8 base))(E$u8)) $must_check;
@@ -305,6 +308,7 @@ $extern fn_((fmt_parse$u8(S_const$u8 str, u8 base))(E$u8)) $must_check;
 $extern fn_((fmt_parseIInt(S_const$u8 str, u8 base))(E$i64)) $must_check;
 $extern fn_((fmt_parse$isize(S_const$u8 str, u8 base))(E$isize)) $must_check;
 $extern fn_((fmt_parse$i64(S_const$u8 str, u8 base))(E$i64)) $must_check;
+$extern fn_((fmt_parse$ilong(S_const$u8 str, u8 base))(E$ilong)) $must_check;
 $extern fn_((fmt_parse$i32(S_const$u8 str, u8 base))(E$i32)) $must_check;
 $extern fn_((fmt_parse$i16(S_const$u8 str, u8 base))(E$i16)) $must_check;
 $extern fn_((fmt_parse$i8(S_const$u8 str, u8 base))(E$i8)) $must_check;

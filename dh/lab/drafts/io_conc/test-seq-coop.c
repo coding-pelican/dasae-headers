@@ -2,7 +2,7 @@
 #include "dh/exec.h"
 #include "dh/time.h"
 #include "dh/ArrList.h"
-#include "dh/heap/Page.h"
+#include "dh/heap/Sys.h"
 
 T_alias$((Event)(u8));
 T_use$((Event)(
@@ -95,7 +95,9 @@ $static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected)
 } $unguarded(fn);
 
 TEST_fn_("exec_Seq runs fiber and stackless tasks without timed suspension" $guard) {
-    let gpa = heap_Page_alctr(&l0$((heap_Page)));
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     var exec = exec_Seq_init(gpa);
     defer_(exec_Seq_fini(&exec));
     let expected = A_from$((u8){ 10, 11, 12, 19, 20, 21, 22, 23, 29 });
@@ -104,7 +106,9 @@ TEST_fn_("exec_Seq runs fiber and stackless tasks without timed suspension" $gua
 } $unguarded(TEST_fn);
 
 TEST_fn_("exec_Coop runs evented stackless and fiber tasks in deadline order" $guard) {
-    let gpa = heap_Page_alctr(&l0$((heap_Page)));
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     var exec = exec_Coop_init(gpa, try_(time_Awake_direct()), exec_Evented_noop);
     defer_(exec_Coop_fini(&exec));
     let expected = A_from$((u8){ 10, 20, 21, 11, 22, 23, 29, 12, 19 });

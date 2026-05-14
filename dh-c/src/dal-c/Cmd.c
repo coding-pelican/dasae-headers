@@ -55,15 +55,23 @@ static int dal_c_Cmd__buildFromSources(
     bool allow_output_defaults,
     bool print_success
 );
-static bool dal_c_Cmd__hasTestRegistration(const char* path);
-static bool dal_c_Cmd__isStandaloneTestSource(const char* path);
-static void dal_c_Cmd__classifyTestSources(ArrStr* aggregate_sources, ArrStr* standalone_sources, ArrStr* tests);
-static void dal_c_Cmd__warnExcludedStandaloneTests(const dal_c_Cmd* cmd, ArrStr* standalone_sources);
 static char* dal_c_Cmd__mergeCompilerArgs(const char* base, const char* extra);
 static bool dal_c_Cmd__writeFileIfChanged(const char* path, const char* content);
 static char* dal_c_Cmd__generatedSourceDir(const dal_c_Project* proj, const dal_c_Cmd* cmd);
 static char* dal_c_Cmd__writeTestMainSource(const dal_c_Project* proj, const dal_c_Cmd* cmd, const char* output_name);
 static char* dal_c_Cmd__writeUnitySource(const dal_c_Project* proj, const dal_c_Cmd* cmd, ArrStr* inputs, const char* output_name);
+static bool dal_c_Cmd__arrHasString(const ArrStr* arr, const char* value);
+static void dal_c_Cmd__appendUniqueString(ArrStr* arr, const char* value);
+static void dal_c_Cmd__appendProjectTestIncludeDirs(const dal_c_Project* proj, ArrStr* include_dirs);
+static void dal_c_Cmd__collectRecursiveTestInputs(
+    const dal_c_Project* proj,
+    const dal_c_Cmd* cmd,
+    bool recurse_dependencies,
+    ArrStr* visited_roots,
+    ArrStr* tests,
+    ArrStr* include_dirs
+);
+static char* dal_c_Cmd__buildIncludeArgs(const ArrStr* include_dirs);
 static int dal_c_Cmd__runRecursiveBuild(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runRecursiveTest(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runRecursiveClean(const dal_c_Cmd* self, const dal_c_Project* proj);
@@ -138,6 +146,7 @@ void dal_c_Cmd_cleanup(dal_c_Cmd** self) {
     }
     free((void*)cmd->exclude_paths);
     free(cmd->compiler_args);
+    free(cmd->link_args);
     free(cmd->dh_path_override);
 
     switch (cmd->action) {
@@ -328,28 +337,21 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     dal_c_Cmd_normalizeIntent(self, &intent);
     const bool builds_library = dal_c_Cmd__buildsLibrary(self);
     const bool build_all = intent.build_all;
-    const bool use_dsl_tests = self->action == dal_c_CmdAction_test && intent.dsl_first;
+    const bool aggregate_recursive_test_chain = self->action == dal_c_CmdAction_test
+                                             && self->input_count == 0
+                                             && !intent.target_path
+                                             && (intent.recursive || intent.dsl_first);
 
-    if (intent.dsl_first) {
+    if (intent.dsl_first && self->action != dal_c_CmdAction_test) {
         int dsl_result = dal_c__buildDSL(self, proj);
         if (dsl_result != 0) { return dsl_result; }
     }
 
     int result = 0;
-    dal_c_Project* dsl_proj = NULL;
     const dal_c_Project* target_proj = proj;
-    if (use_dsl_tests) {
-        dsl_proj = dal_c_Project_detectAt(proj->dh_path, proj->dh_path);
-        if (!dsl_proj) {
-            (void)fprintf(stderr, "Error: Failed to detect DH project for --dsl tests\n");
-            return 1;
-        }
-        target_proj = dsl_proj;
-    }
 
     dal_c_TargetRequest target_request = { 0 };
     if (!dal_c_TargetRequest_resolve(target_proj, &intent, &target_request)) {
-        dal_c_Project_cleanup(&dsl_proj);
         return 1;
     }
     ArrStr* active_excludes = dal_c_Cmd__collectActiveExcludes(target_proj, &target_request, self);
@@ -357,7 +359,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         if (dal_c_Cmd__rejectExcludedPath(target_request.resolved_path, active_excludes) != 0) {
             ArrStr_fini(&active_excludes);
             dal_c_TargetRequest_cleanup(&target_request);
-            dal_c_Project_cleanup(&dsl_proj);
             return 1;
         }
     } else if (self->input_count > 0 && !dal_c_Cmd__inputsNeedCategoryResolution(self)) {
@@ -365,7 +366,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             if (dal_c_Cmd__rejectExcludedPath(self->input_files[i], active_excludes) != 0) {
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
         }
@@ -382,7 +382,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             if (dal_c__buildSingleLibrary(self, target_proj, &target_proj->libraries[i]) != 0) {
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
         }
@@ -394,47 +393,75 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         if (lib_result != 0) {
             ArrStr_fini(&active_excludes);
             dal_c_TargetRequest_cleanup(&target_request);
-            dal_c_Project_cleanup(&dsl_proj);
             return lib_result;
         }
     }
 
     if (is_test_mode) {
-        ArrStr* tests = NULL;
-        if (target_request.root) {
+        ArrStr* tests = ArrStr_init();
+        char* aggregate_compiler_args = NULL;
+        if (aggregate_recursive_test_chain) {
+            ArrStr* include_dirs = ArrStr_init();
+            ArrStr* visited_roots = ArrStr_init();
+            if (intent.dsl_first) {
+                dal_c_Project* dh_proj = dal_c_Project_detectAt(proj->dh_path, proj->dh_path);
+                if (!dh_proj) {
+                    ArrStr_fini(&include_dirs);
+                    ArrStr_fini(&visited_roots);
+                    ArrStr_fini(&tests);
+                    ArrStr_fini(&active_excludes);
+                    dal_c_TargetRequest_cleanup(&target_request);
+                    (void)fprintf(stderr, "Error: Failed to detect DH project for --dsl tests\n");
+                    return 1;
+                }
+                dal_c_Cmd__collectRecursiveTestInputs(dh_proj, self, false, visited_roots, tests, include_dirs);
+                dal_c_Project_cleanup(&dh_proj);
+            }
+            dal_c_Cmd__collectRecursiveTestInputs(target_proj, self, intent.recursive, visited_roots, tests, include_dirs);
+            aggregate_compiler_args = dal_c_Cmd__buildIncludeArgs(include_dirs);
+            ArrStr_fini(&include_dirs);
+            ArrStr_fini(&visited_roots);
+            if (dal_c_Cmd__applyExcludeContract(&tests, active_excludes, false) != 0) {
+                free(aggregate_compiler_args);
+                ArrStr_fini(&tests);
+                ArrStr_fini(&active_excludes);
+                dal_c_TargetRequest_cleanup(&target_request);
+                return 1;
+            }
+        } else if (target_request.root) {
+            ArrStr_fini(&tests);
             tests = dal_c_Cmd__collectTargetSources(&target_request);
             if (dal_c_Cmd__applyExcludeContract(&tests, active_excludes, target_request.raw_target_path != NULL) != 0) {
                 ArrStr_fini(&tests);
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
         } else if (self->input_count > 0 && !dal_c_Cmd__inputsNeedCategoryResolution(self)) {
+            ArrStr_fini(&tests);
             tests = dal_c_Cmd__collectExplicitSources(self);
             if (dal_c_Cmd__applyExcludeContract(&tests, active_excludes, true) != 0) {
                 ArrStr_fini(&tests);
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
         } else {
+            ArrStr_fini(&tests);
             tests = dal_c_Cmd__resolveInputs(target_proj, self, dal_c_dir_tests, true);
             if (dal_c_Cmd__applyExcludeContract(&tests, active_excludes, self->input_count > 0) != 0) {
                 ArrStr_fini(&tests);
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
         }
         if (ArrStr_len(tests) == 0) {
             bool allow_recursive_skip = intent.recursive && self->input_count == 0 && !target_request.raw_target_path;
+            free(aggregate_compiler_args);
             ArrStr_fini(&tests);
             ArrStr_fini(&active_excludes);
             dal_c_TargetRequest_cleanup(&target_request);
-            dal_c_Project_cleanup(&dsl_proj);
             if (allow_recursive_skip) {
                 if (self->action == dal_c_CmdAction_test) {
                     return dal_c_Cmd__runRecursiveTest(self, proj);
@@ -445,28 +472,18 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             return 1;
         }
 
-        ArrStr* aggregate_tests = ArrStr_init();
-        ArrStr* standalone_tests = ArrStr_init();
-        dal_c_Cmd__classifyTestSources(aggregate_tests, standalone_tests, tests);
-
         ArrStr* sources = ArrStr_init();
         char* output_name = NULL;
-        const char* extra_compiler_args = NULL;
-        const bool use_single_test_runner = self->action == dal_c_CmdAction_test
-                                         && ArrStr_len(tests) == 1
-                                         && ArrStr_len(standalone_tests) == 1
-                                         && dal_c_Cmd__hasTestRegistration(ArrStr_at(standalone_tests, 0));
-        if (ArrStr_len(aggregate_tests) > 0 || use_single_test_runner) {
-            if (ArrStr_len(standalone_tests) > 0) {
-                if (!use_single_test_runner) {
-                    dal_c_Cmd__warnExcludedStandaloneTests(self, standalone_tests);
-                }
+        const char* extra_compiler_args = aggregate_compiler_args;
+        int registered_test_count = 0;
+        for (int i = 0; i < ArrStr_len(tests); ++i) {
+            if (dal_c__hasTestRegistration(ArrStr_at(tests, i))) {
+                registered_test_count++;
             }
-
-            const char* primary_test = use_single_test_runner
-                                         ? ArrStr_at(standalone_tests, 0)
-                                         : ArrStr_at(aggregate_tests, 0);
-            if (((use_single_test_runner ? 1 : ArrStr_len(aggregate_tests)) == 1) && ArrStr_len(tests) == 1) {
+        }
+        if (registered_test_count > 0) {
+            const char* primary_test = ArrStr_at(tests, 0);
+            if (ArrStr_len(tests) == 1) {
                 output_name = dal_c_Cmd__basenameNoExt(primary_test);
             } else {
                 output_name = strdup(self->action == dal_c_CmdAction_test ? "test" : "tests");
@@ -474,40 +491,32 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
 
             char* runner_source = dal_c_Cmd__writeTestMainSource(target_proj, self, output_name);
             if (!runner_source) {
+                free(aggregate_compiler_args);
                 ArrStr_fini(&sources);
-                ArrStr_fini(&aggregate_tests);
-                ArrStr_fini(&standalone_tests);
                 ArrStr_fini(&tests);
                 free(output_name);
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
             ArrStr_push(sources, runner_source);
             free(runner_source);
-            if (use_single_test_runner) {
-                ArrStr_push(sources, primary_test);
-            } else {
-                for (int i = 0; i < ArrStr_len(aggregate_tests); ++i) {
-                    ArrStr_push(sources, ArrStr_at(aggregate_tests, i));
-                }
+            for (int i = 0; i < ArrStr_len(tests); ++i) {
+                ArrStr_push(sources, ArrStr_at(tests, i));
             }
-        } else if (ArrStr_len(standalone_tests) == 1) {
-            ArrStr_push(sources, ArrStr_at(standalone_tests, 0));
-            output_name = dal_c_Cmd__basenameNoExt(ArrStr_at(standalone_tests, 0));
+        } else if (ArrStr_len(tests) == 1) {
+            ArrStr_push(sources, ArrStr_at(tests, 0));
+            output_name = dal_c_Cmd__basenameNoExt(ArrStr_at(tests, 0));
         } else {
             (void)fprintf(
                 stderr,
-                "Error: Aggregate test build requires registration-style sources; standalone tests must be built one at a time\n"
+                "Error: Aggregate test build requires at least one registration-style source when multiple test files are selected\n"
             );
+            free(aggregate_compiler_args);
             ArrStr_fini(&sources);
-            ArrStr_fini(&aggregate_tests);
-            ArrStr_fini(&standalone_tests);
             ArrStr_fini(&tests);
             ArrStr_fini(&active_excludes);
             dal_c_TargetRequest_cleanup(&target_request);
-            dal_c_Project_cleanup(&dsl_proj);
             return 1;
         }
         result = dal_c_Cmd__buildFromSources(
@@ -520,9 +529,8 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             true,
             true
         );
+        free(aggregate_compiler_args);
         ArrStr_fini(&sources);
-        ArrStr_fini(&aggregate_tests);
-        ArrStr_fini(&standalone_tests);
         ArrStr_fini(&tests);
         free(output_name);
     } else if (target_request.root) {
@@ -531,7 +539,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             ArrStr_fini(&target_sources);
             ArrStr_fini(&active_excludes);
             dal_c_TargetRequest_cleanup(&target_request);
-            dal_c_Project_cleanup(&dsl_proj);
             return 1;
         }
         if (ArrStr_len(target_sources) == 0) {
@@ -539,7 +546,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             ArrStr_fini(&target_sources);
             ArrStr_fini(&active_excludes);
             dal_c_TargetRequest_cleanup(&target_request);
-            dal_c_Project_cleanup(&dsl_proj);
             return 1;
         }
 
@@ -548,7 +554,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             ArrStr_fini(&target_sources);
             ArrStr_fini(&active_excludes);
             dal_c_TargetRequest_cleanup(&target_request);
-            dal_c_Project_cleanup(&dsl_proj);
             return 1;
         }
 
@@ -584,7 +589,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                 ArrStr_fini(&sources);
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
         } else if (build_all || !intent.target_path) {
@@ -594,7 +598,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                 ArrStr_fini(&sources);
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
         } else {
@@ -603,7 +606,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                 ArrStr_fini(&sources);
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
         }
@@ -630,7 +632,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             if (result != 0) {
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return result;
             }
         } else {
@@ -639,7 +640,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                 ArrStr_fini(&sources);
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
-                dal_c_Project_cleanup(&dsl_proj);
                 return 1;
             }
 
@@ -659,7 +659,6 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                     ArrStr_fini(&sources);
                     ArrStr_fini(&active_excludes);
                     dal_c_TargetRequest_cleanup(&target_request);
-                    dal_c_Project_cleanup(&dsl_proj);
                     return 1;
                 }
                 ArrStr* bundled = ArrStr_init();
@@ -682,10 +681,12 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
 
     ArrStr_fini(&active_excludes);
     dal_c_TargetRequest_cleanup(&target_request);
-    dal_c_Project_cleanup(&dsl_proj);
     if (result != 0) { return result; }
     if (intent.recursive) {
         if (self->action == dal_c_CmdAction_test) {
+            if (aggregate_recursive_test_chain) {
+                return 0;
+            }
             return dal_c_Cmd__runRecursiveTest(self, proj);
         }
         return dal_c_Cmd__runRecursiveBuild(self, proj);
@@ -711,6 +712,7 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     bool cleaned = false;
     bool cache_only = self->payload.clean.cache_only;
     bool recursive = self->payload.clean.recursive;
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(self->opts.profile);
 
     if (self->payload.clean.dsl_first) {
         int dsl_result = dal_c__cleanDSL(self, proj);
@@ -718,17 +720,24 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     }
 
     char* build_dir = dal_c_Project_getBuildDir(proj);
-    if (build_dir && path_isDir(build_dir)) {
+    char* build_target = NULL;
+    if (self->profile_explicit && profile) {
+        build_target = path_join(build_dir, profile->name);
+    } else {
+        build_target = strdup(build_dir);
+    }
+    if (build_target && path_isDir(build_target)) {
         if (self->verbose) {
-            printf("Removing: %s\n", build_dir);
+            printf("Removing: %s\n", build_target);
         }
-        dir_removeRecur(build_dir);
-        printf("Cleaned: %s\n", build_dir);
+        dir_removeRecur(build_target);
+        printf("Cleaned: %s\n", build_target);
         cleaned = true;
     }
+    free(build_target);
     free(build_dir);
 
-    if (!cache_only) {
+    if (!cache_only && !self->profile_explicit) {
         char* deps_dir = dal_c_Project_getDepsDir(proj);
         if (deps_dir && path_isDir(deps_dir)) {
             if (self->verbose) {
@@ -741,15 +750,24 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         free(deps_dir);
     }
 
-    char* cache_dir = path_join(proj->root, dal_c_dir_cache);
-    if (path_isDir(cache_dir)) {
+    char* cache_dir = dal_c__cacheBaseDir(proj);
+    char* cache_target = NULL;
+    if (self->profile_explicit && profile) {
+        char* cache_dh_c = path_join(cache_dir, dal_c_tool_name);
+        cache_target = path_join(cache_dh_c, profile->name);
+        free(cache_dh_c);
+    } else {
+        cache_target = strdup(cache_dir);
+    }
+    if (cache_target && path_isDir(cache_target)) {
         if (self->verbose) {
-            printf("Removing: %s\n", cache_dir);
+            printf("Removing: %s\n", cache_target);
         }
-        dir_removeRecur(cache_dir);
-        printf("Cleaned: %s\n", cache_dir);
+        dir_removeRecur(cache_target);
+        printf("Cleaned: %s\n", cache_target);
         cleaned = true;
     }
+    free(cache_target);
     free(cache_dir);
 
     if (recursive) {
@@ -914,6 +932,17 @@ static void dal_c_Cmd__setOutputPath(dal_c_Cmd* cmd, const char* path) {
     }
 }
 
+static void dal_c_Cmd__setStdlibBundle(dal_c_CompilerOpts* opts, bool linked) {
+    assert(opts != NULL);
+    opts->default_libs_linked = linked ? dal_c_ToggleState_enabled : dal_c_ToggleState_disabled;
+    opts->start_files_linked = linked ? dal_c_ToggleState_enabled : dal_c_ToggleState_disabled;
+}
+
+static void dal_c_Cmd__setCrtStartFiles(dal_c_CompilerOpts* opts, bool linked) {
+    assert(opts != NULL);
+    opts->start_files_linked = linked ? dal_c_ToggleState_enabled : dal_c_ToggleState_disabled;
+}
+
 static const char* dal_c_Cmd__sampleDirCanonical(dal_c_SampleDir sample_dir) {
     switch (sample_dir) {
     case dal_c_SampleDir_samples:
@@ -934,6 +963,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
         if ((str_eql(opt, dal_c_opt_output) && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_lib || action == dal_c_CmdAction_run || action == dal_c_CmdAction_test || action == dal_c_CmdAction_test_dsl))
             || str_eql(opt, dal_c_opt_show_commands)
             || str_eql(opt, dal_c_opt_verbose)
+            || str_eql(opt, dal_c_opt_use_dsl)
             || str_eql(opt, dal_c_opt_no_dsl)
             || (str_eql(opt, dal_c_opt_self) && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_clean))
             || (str_eql(opt, dal_c_opt_lib) && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_lib))
@@ -943,6 +973,17 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_recur)
             || str_eql(opt, dal_c_opt_debug)
             || str_eql(opt, dal_c_opt_freestanding)
+            || str_eql(opt, dal_c_opt_hosted)
+            || str_eql(opt, dal_c_opt_use_libc)
+            || str_eql(opt, dal_c_opt_no_libc)
+            || str_eql(opt, dal_c_opt_use_default_libs)
+            || str_eql(opt, dal_c_opt_no_default_libs)
+            || str_eql(opt, dal_c_opt_use_start_files)
+            || str_eql(opt, dal_c_opt_no_start_files)
+            || str_eql(opt, dal_c_opt_use_stdlib)
+            || str_eql(opt, dal_c_opt_no_stdlib)
+            || str_eql(opt, dal_c_opt_use_crt)
+            || str_eql(opt, dal_c_opt_no_crt)
             || str_eql(opt, dal_c_opt_loose_errors)
             || str_eql(opt, dal_c_opt_sample)
             || str_eql(opt, dal_c_opt_example)
@@ -956,13 +997,15 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_compiler)
             || str_startsWith(opt, dal_c_opt_std)
             || str_startsWith(opt, dal_c_opt_args)
-            || str_startsWith(opt, dal_c_opt_compiler_args)
-            || str_startsWith(opt, dal_c_opt_runtime_args)
+            || str_startsWith(opt, dal_c_opt_comp_args)
+            || str_startsWith(opt, dal_c_opt_link_args)
+            || str_startsWith(opt, dal_c_opt_exec_args)
             || str_startsWith(opt, dal_c_opt_dh)
             || str_startsWith(opt, dal_c_opt_exclude)
             || str_startsWith(opt, dal_c_opt_arch)
             || str_startsWith(opt, dal_c_opt_target)
             || str_startsWith(opt, dal_c_opt_sysroot)
+            || str_startsWith(opt, dal_c_opt_entry)
             || str_startsWith(opt, dal_c_opt_include)
             || str_startsWith(opt, dal_c_opt_link)
             || str_startsWith(opt, dal_c_opt_define)
@@ -1030,6 +1073,8 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     dal_c_Cmd__setOwnedString(&cmd->opts.sysroot, value);
+                } else if (strncmp(opt, dal_c_opt_entry, opt_len) == 0) {
+                    dal_c_Cmd__setOwnedString(&cmd->opts.entry_symbol, value);
                 } else if (strncmp(opt, dal_c_opt_include, opt_len) == 0) {
                     if (!path_exists(value)) {
                         (void)fprintf(stderr, "Error: Path not found: %s\n", value);
@@ -1050,8 +1095,10 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     dal_c_Cmd__setOwnedString(&cmd->dh_path_override, value);
-                } else if (strncmp(opt, dal_c_opt_compiler_args, opt_len) == 0) {
+                } else if (strncmp(opt, dal_c_opt_comp_args, opt_len) == 0) {
                     dal_c_Cmd__setOwnedString(&cmd->compiler_args, value);
+                } else if (strncmp(opt, dal_c_opt_link_args, opt_len) == 0) {
+                    dal_c_Cmd__setOwnedString(&cmd->link_args, value);
                 } else if (strncmp(opt, dal_c_opt_args, opt_len) == 0) {
                     char** run_args_slot = dal_c_Cmd__runArgsSlot(cmd);
                     if (run_args_slot) {
@@ -1059,7 +1106,7 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     } else {
                         dal_c_Cmd__setOwnedString(&cmd->compiler_args, value);
                     }
-                } else if (strncmp(opt, dal_c_opt_runtime_args, opt_len) == 0) {
+                } else if (strncmp(opt, dal_c_opt_exec_args, opt_len) == 0) {
                     char** run_args_slot = dal_c_Cmd__runArgsSlot(cmd);
                     if (run_args_slot) {
                         dal_c_Cmd__setOwnedString(run_args_slot, value);
@@ -1097,6 +1144,18 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     dal_c_Cmd__setOutputPath(cmd, argv[++i]);
+                } else if (str_eql(opt, dal_c_opt_comp_args)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    dal_c_Cmd__setOwnedString(&cmd->compiler_args, argv[++i]);
+                } else if (str_eql(opt, dal_c_opt_link_args)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    dal_c_Cmd__setOwnedString(&cmd->link_args, argv[++i]);
                 } else if (str_eql(opt, dal_c_opt_verbose)) {
                     cmd->verbose = true;
                 } else if (str_eql(opt, dal_c_opt_self)) {
@@ -1117,12 +1176,42 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     if (dal_c_Cmd__pushExcludePath(cmd, argv[++i]) != 0) {
                         return 1;
                     }
+                } else if (str_eql(opt, dal_c_opt_use_dsl)) {
+                    cmd->opts.dsl_mode = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_no_dsl)) {
-                    cmd->opts.no_dsl = true;
+                    cmd->opts.dsl_mode = dal_c_ToggleState_disabled;
                 } else if (str_eql(opt, dal_c_opt_freestanding)) {
-                    cmd->opts.freestanding = true;
+                    cmd->opts.compile_env = dal_c_CompileEnv_freestanding;
+                } else if (str_eql(opt, dal_c_opt_hosted)) {
+                    cmd->opts.compile_env = dal_c_CompileEnv_hosted;
+                } else if (str_eql(opt, dal_c_opt_use_libc)) {
+                    cmd->opts.libc_linked = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_no_libc)) {
+                    cmd->opts.libc_linked = dal_c_ToggleState_disabled;
+                } else if (str_eql(opt, dal_c_opt_use_default_libs)) {
+                    cmd->opts.default_libs_linked = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_no_default_libs)) {
+                    cmd->opts.default_libs_linked = dal_c_ToggleState_disabled;
+                } else if (str_eql(opt, dal_c_opt_use_start_files)) {
+                    cmd->opts.start_files_linked = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_no_start_files)) {
+                    cmd->opts.start_files_linked = dal_c_ToggleState_disabled;
+                } else if (str_eql(opt, dal_c_opt_use_stdlib)) {
+                    dal_c_Cmd__setStdlibBundle(&cmd->opts, true);
+                } else if (str_eql(opt, dal_c_opt_no_stdlib)) {
+                    dal_c_Cmd__setStdlibBundle(&cmd->opts, false);
+                } else if (str_eql(opt, dal_c_opt_use_crt)) {
+                    dal_c_Cmd__setCrtStartFiles(&cmd->opts, true);
+                } else if (str_eql(opt, dal_c_opt_no_crt)) {
+                    dal_c_Cmd__setCrtStartFiles(&cmd->opts, false);
                 } else if (str_eql(opt, dal_c_opt_loose_errors)) {
                     cmd->opts.loose_errors = true;
+                } else if (str_eql(opt, dal_c_opt_entry)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    dal_c_Cmd__setOwnedString(&cmd->opts.entry_symbol, argv[++i]);
                 } else if (str_eql(opt, dal_c_opt_static)) {
                     if (cmd->action == dal_c_CmdAction_lib) {
                         cmd->payload.lib.linking = dal_c_Linking_static;
@@ -1310,13 +1399,20 @@ static ArrStr* dal_c_Cmd__collectPathSources(const char* path, bool resolved_is_
         return files;
     }
     for (int i = 0; i < file_count; ++i) {
-        if (skip_auto_paths && dal_c__shouldSkipAutoSourcePath(entries[i])) {
-            free(entries[i]);
-            continue;
+        char* relative_path = NULL;
+        if (skip_auto_paths) {
+            relative_path = path_relative(path, entries[i]);
+            const char* candidate_path = relative_path ? relative_path : entries[i];
+            if (dal_c__shouldSkipAutoSourcePath(candidate_path)) {
+                free(relative_path);
+                free(entries[i]);
+                continue;
+            }
         }
         if (str_endsWith(entries[i], ".c")) {
             ArrStr_push(files, entries[i]);
         }
+        free(relative_path);
         free(entries[i]);
     }
     free((void*)entries);
@@ -1565,7 +1661,7 @@ static int dal_c_Cmd__runBuildDefaultTests(const dal_c_Cmd* self, const dal_c_Pr
     return dal_c_Cmd_makeTarget(&test_cmd, proj);
 }
 
-static bool dal_c_Cmd__hasTestRegistration(const char* path) {
+bool dal_c__hasTestRegistration(const char* path) {
     assert(path != NULL);
 
     int line_count = 0;
@@ -1587,69 +1683,6 @@ static bool dal_c_Cmd__hasTestRegistration(const char* path) {
     return has_registration;
 }
 
-static bool dal_c_Cmd__isStandaloneTestSource(const char* path) {
-    assert(path != NULL);
-
-    int line_count = 0;
-    char** lines = file_readLines(path, &line_count);
-    if (!lines) { return false; }
-
-    bool is_standalone = false;
-    for (int i = 0; i < line_count; ++i) {
-        const char* line = lines[i];
-        while (*line == ' ' || *line == '\t') { ++line; }
-
-        if (str_startsWith(line, "#define main_no_hijack")
-            || strstr(line, "fn_((main(") != NULL
-            || strstr(line, "fn_(main(") != NULL
-            || strstr(line, "fn_((dh_main(") != NULL
-            || strstr(line, "fn_(dh_main(") != NULL
-            || strstr(line, "int main(") != NULL
-            || strstr(line, "int dh_main(") != NULL) {
-            is_standalone = true;
-            break;
-        }
-    }
-
-    for (int i = 0; i < line_count; ++i) {
-        free(lines[i]);
-    }
-    free((void*)lines);
-    return is_standalone;
-}
-
-static void dal_c_Cmd__classifyTestSources(ArrStr* aggregate_sources, ArrStr* standalone_sources, ArrStr* tests) {
-    assert(aggregate_sources != NULL);
-    assert(standalone_sources != NULL);
-    assert(tests != NULL);
-
-    for (int i = 0; i < ArrStr_len(tests); ++i) {
-        const char* path = ArrStr_at(tests, i);
-        if (dal_c_Cmd__isStandaloneTestSource(path)) {
-            ArrStr_push(standalone_sources, path);
-        } else {
-            ArrStr_push(aggregate_sources, path);
-        }
-    }
-}
-
-static void dal_c_Cmd__warnExcludedStandaloneTests(const dal_c_Cmd* cmd, ArrStr* standalone_sources) {
-    assert(cmd != NULL);
-    assert(standalone_sources != NULL);
-    if (ArrStr_len(standalone_sources) == 0) { return; }
-
-    (void)fprintf(
-        stderr,
-        "Warning: Excluding %d standalone test source(s) from aggregate build\n",
-        ArrStr_len(standalone_sources)
-    );
-    if (!cmd->verbose) { return; }
-
-    for (int i = 0; i < ArrStr_len(standalone_sources); ++i) {
-        (void)fprintf(stderr, "  - %s\n", ArrStr_at(standalone_sources, i));
-    }
-}
-
 static char* dal_c_Cmd__mergeCompilerArgs(const char* base, const char* extra) {
     if (!base || base[0] == '\0') {
         return (!extra || extra[0] == '\0') ? NULL : strdup(extra);
@@ -1658,6 +1691,102 @@ static char* dal_c_Cmd__mergeCompilerArgs(const char* base, const char* extra) {
         return strdup(base);
     }
     return str_format("%s %s", base, extra);
+}
+
+static bool dal_c_Cmd__arrHasString(const ArrStr* arr, const char* value) {
+    assert(arr != NULL);
+    assert(value != NULL);
+
+    for (int i = 0; i < ArrStr_len(arr); ++i) {
+        if (str_eql(ArrStr_at(arr, i), value)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void dal_c_Cmd__appendUniqueString(ArrStr* arr, const char* value) {
+    assert(arr != NULL);
+    if (!value || value[0] == '\0' || dal_c_Cmd__arrHasString(arr, value)) {
+        return;
+    }
+    ArrStr_push(arr, value);
+}
+
+static void dal_c_Cmd__appendProjectTestIncludeDirs(const dal_c_Project* proj, ArrStr* include_dirs) {
+    assert(proj != NULL);
+    assert(include_dirs != NULL);
+
+    if (proj->root && path_isDir(proj->root)) {
+        dal_c_Cmd__appendUniqueString(include_dirs, proj->root);
+    }
+
+    char* include_dir = dal_c_Project_getIncludeDir(proj);
+    if (include_dir && path_isDir(include_dir)) {
+        dal_c_Cmd__appendUniqueString(include_dirs, include_dir);
+    }
+    free(include_dir);
+
+    char* tests_dir = dal_c_Project_getTestsDir(proj);
+    if (tests_dir && path_isDir(tests_dir)) {
+        dal_c_Cmd__appendUniqueString(include_dirs, tests_dir);
+    }
+    free(tests_dir);
+}
+
+static void dal_c_Cmd__collectRecursiveTestInputs(
+    const dal_c_Project* proj,
+    const dal_c_Cmd* cmd,
+    bool recurse_dependencies,
+    ArrStr* visited_roots,
+    ArrStr* tests,
+    ArrStr* include_dirs
+) {
+    assert(proj != NULL);
+    assert(cmd != NULL);
+    assert(visited_roots != NULL);
+    assert(tests != NULL);
+    assert(include_dirs != NULL);
+
+    if (!proj->root || dal_c_Cmd__arrHasString(visited_roots, proj->root)) {
+        return;
+    }
+    ArrStr_push(visited_roots, proj->root);
+
+    if (recurse_dependencies) {
+        for (int i = 0; i < proj->lib_count; ++i) {
+            const dal_c_Lib* lib = &proj->libraries[i];
+            if (!lib->path) {
+                continue;
+            }
+            dal_c_Project* lib_proj = dal_c_Project_detectAt(lib->path, proj->dh_path);
+            if (!lib_proj) {
+                continue;
+            }
+            dal_c_Cmd__collectRecursiveTestInputs(lib_proj, cmd, true, visited_roots, tests, include_dirs);
+            dal_c_Project_cleanup(&lib_proj);
+        }
+    }
+
+    dal_c_Cmd__appendProjectTestIncludeDirs(proj, include_dirs);
+    ArrStr* project_tests = dal_c_Cmd__resolveInputs(proj, cmd, dal_c_dir_tests, true);
+    for (int i = 0; i < ArrStr_len(project_tests); ++i) {
+        dal_c_Cmd__appendUniqueString(tests, ArrStr_at(project_tests, i));
+    }
+    ArrStr_fini(&project_tests);
+}
+
+static char* dal_c_Cmd__buildIncludeArgs(const ArrStr* include_dirs) {
+    assert(include_dirs != NULL);
+
+    char* args = NULL;
+    for (int i = 0; i < ArrStr_len(include_dirs); ++i) {
+        const char* include_dir = ArrStr_at(include_dirs, i);
+        char* next = args ? str_format("%s -I%s", args, include_dir) : str_format("-I%s", include_dir);
+        free(args);
+        args = next;
+    }
+    return args;
 }
 
 static bool dal_c_Cmd__writeFileIfChanged(const char* path, const char* content) {
@@ -1676,15 +1805,7 @@ static bool dal_c_Cmd__writeFileIfChanged(const char* path, const char* content)
 static char* dal_c_Cmd__generatedSourceDir(const dal_c_Project* proj, const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
 
-    char* cache_dir = NULL;
-    if (proj && proj->root) {
-        cache_dir = path_join(proj->root, dal_c_dir_cache);
-    } else {
-        char* cwd = env_getCWD();
-        cache_dir = cwd ? path_join(cwd, dal_c_dir_cache) : strdup(dal_c_dir_cache);
-        free(cwd);
-    }
-
+    char* cache_dir = dal_c__cacheBaseDir(proj);
     char* dsl_dir = path_join(cache_dir, dal_c_tool_name);
     free(cache_dir);
     const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
@@ -1716,6 +1837,9 @@ static int dal_c_Cmd__buildFromSources(
     memset(&effective.opts, 0, sizeof(effective.opts));
     effective.opts.profile = dal_c_Profile_invalid;
     dal_c_Cmd__mergeBuildProperties(&effective.opts, &effective_defaults, proj, sources, self);
+    if (self->action == dal_c_CmdAction_test && self->payload.test.dsl_first) {
+        effective.opts.dsl_mode = dal_c_ToggleState_enabled;
+    }
     if (effective.opts.profile == dal_c_Profile_invalid) {
         effective.opts.profile = self->opts.profile;
     }

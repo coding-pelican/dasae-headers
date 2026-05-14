@@ -48,6 +48,8 @@ $static fn_((heap_Sbrk_LocalRef_big_frees(heap_Sbrk_LocalRef self))(S$usize));
 $attr($inline_always)
 $static fn_((heap_Sbrk_LocalRef_next_addrs(heap_Sbrk_LocalRef self))(S$usize));
 $attr($inline_always)
+$static fn_((heap_Sbrk_LocalRef_end_addrs(heap_Sbrk_LocalRef self))(S$usize));
+$attr($inline_always)
 $static fn_((heap_Sbrk_LocalRef_calcSelfSize(heap_Sbrk_LocalRef self))(usize));
 
 typedef struct heap_Sbrk_Ctx {
@@ -150,9 +152,9 @@ $extern fn_((heap_Sbrk_Arena_ctx(heap_Sbrk_Arena* self))(heap_Sbrk_Ctx));
 #define __pp__heap_Sbrk__bigpage_size_static__expand(...) __VA_ARGS__
 #define heap_Sbrk__bigpage_size_static(_enum_tok...) __pp__heap_Sbrk__bigpage_size_static__expand( \
     pp_switch_ pp_begin(__pp__heap_Sbrk_LocalRef__enum_fromTok(_enum_tok))( \
-        pp_case_((heap_Sbrk_LocalRef__enum_small)(16ull * 1024)), \
-        pp_case_((heap_Sbrk_LocalRef__enum_medium)(64ull * 1024)), \
-        pp_case_((heap_Sbrk_LocalRef__enum_large)(64ull * 1024)) \
+        pp_case_((heap_Sbrk_LocalRef__enum_small)(usize_(16) * 1024)), \
+        pp_case_((heap_Sbrk_LocalRef__enum_medium)(usize_(64) * 1024)), \
+        pp_case_((heap_Sbrk_LocalRef__enum_large)(usize_(64) * 1024)) \
     ) pp_end \
 )
 $attr($inline_always)
@@ -161,8 +163,8 @@ $static fn_((heap_Sbrk__bigpage_size(heap_Sbrk self))(usize));
 #define __pp__heap_Sbrk__max_pool_size_static__expand(...) __VA_ARGS__
 #define heap_Sbrk__max_pool_size_static(_enum_tok...) __pp__heap_Sbrk__max_pool_size_static__expand( \
     pp_switch_ pp_begin(__pp__heap_Sbrk_LocalRef__enum_fromTok(_enum_tok))( \
-        pp_case_((heap_Sbrk_LocalRef__enum_small)(1ull * 1024 * 1024)), \
-        pp_case_((heap_Sbrk_LocalRef__enum_medium)(16ull * 1024 * 1024)), \
+        pp_case_((heap_Sbrk_LocalRef__enum_small)(usize_(1) * 1024 * 1024)), \
+        pp_case_((heap_Sbrk_LocalRef__enum_medium)(usize_(16) * 1024 * 1024)), \
         pp_case_((heap_Sbrk_LocalRef__enum_large)(usize_limit_max)) \
     ) pp_end \
 )
@@ -170,7 +172,7 @@ $attr($inline_always)
 $static fn_((heap_Sbrk__max_pool_size(heap_Sbrk self))(usize));
 
 #define heap_Sbrk__pages_per_bigpage_static(_enum_tok...) \
-    (heap_Sbrk__bigpage_size_static(_enum_tok) / heap_page_size)
+    (heap_Sbrk__bigpage_size_static(_enum_tok) / (heap_page_size))
 $attr($inline_always)
 $static fn_((heap_Sbrk__pages_per_bigpage(heap_Sbrk self))(usize));
 
@@ -180,7 +182,7 @@ $attr($inline_always)
 $static fn_((heap_Sbrk__bigpage_count(heap_Sbrk self))(usize));
 
 #define heap_Sbrk__min_size_class \
-    (uint_log2_static(uint_exp2_static$((usize)(1 + sizeOf$(usize)))))
+    (uint_log2_static(uint_pow2Ceil_static$((usize)(1 + sizeOf$(usize)))))
 
 #define heap_Sbrk__size_class_count_static(_enum_tok...) \
     (uint_log2_static(heap_Sbrk__bigpage_size_static(_enum_tok)) - heap_Sbrk__min_size_class)
@@ -188,7 +190,7 @@ $attr($inline_always)
 $static fn_((heap_Sbrk__size_class_count(heap_Sbrk self))(usize));
 
 #define heap_Sbrk__big_size_class_count_static(_enum_tok...) \
-    (uint_log2_static(heap_Sbrk__bigpage_count_static(_enum_tok)))
+    (uint_log2_static(heap_Sbrk__bigpage_count_static(_enum_tok)) + 1)
 $attr($inline_always)
 $static fn_((heap_Sbrk__big_size_class_count(heap_Sbrk self))(usize));
 
@@ -196,6 +198,7 @@ struct heap_Sbrk_LocalSmall {
     var_(frees, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_small), usize));
     var_(big_frees, A$$(heap_Sbrk__big_size_class_count_static(heap_Sbrk_LocalRef_small), usize));
     var_(next_addrs, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_small), usize));
+    var_(end_addrs, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_small), usize));
 };
 fn_((heap_Sbrk_LocalSmall_ref(heap_Sbrk_LocalSmall* self))(heap_Sbrk_LocalRef) $scope) {
     return_(union_of((heap_Sbrk_LocalRef_small)(self)));
@@ -205,6 +208,7 @@ struct heap_Sbrk_LocalMedium {
     var_(frees, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_medium), usize));
     var_(big_frees, A$$(heap_Sbrk__big_size_class_count_static(heap_Sbrk_LocalRef_medium), usize));
     var_(next_addrs, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_medium), usize));
+    var_(end_addrs, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_medium), usize));
 };
 fn_((heap_Sbrk_LocalMedium_ref(heap_Sbrk_LocalMedium* self))(heap_Sbrk_LocalRef) $scope) {
     return_(union_of((heap_Sbrk_LocalRef_medium)(self)));
@@ -214,6 +218,7 @@ struct heap_Sbrk_LocalLarge {
     var_(frees, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_large), usize));
     var_(big_frees, A$$(heap_Sbrk__big_size_class_count_static(heap_Sbrk_LocalRef_large), usize));
     var_(next_addrs, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_large), usize));
+    var_(end_addrs, A$$(heap_Sbrk__size_class_count_static(heap_Sbrk_LocalRef_large), usize));
 };
 fn_((heap_Sbrk_LocalLarge_ref(heap_Sbrk_LocalLarge* self))(heap_Sbrk_LocalRef) $scope) {
     return_(union_of((heap_Sbrk_LocalRef_large)(self)));
@@ -248,13 +253,21 @@ fn_((heap_Sbrk_LocalRef_next_addrs(heap_Sbrk_LocalRef self))(S$usize)) {
     } $end(match)) $unscoped(expr);
 };
 
-fn_((heap_Sbrk_LocalRef_calcSelfSize(heap_Sbrk_LocalRef self))(usize)) {
-    return expr_(usize $scope)(match_(self) {
+fn_((heap_Sbrk_LocalRef_end_addrs(heap_Sbrk_LocalRef self))(S$usize)) {
+    return expr_(S$usize $scope)(match_(self) {
         patterns_((
             heap_Sbrk_LocalRef_small,
             heap_Sbrk_LocalRef_medium,
             heap_Sbrk_LocalRef_large
-        )($ignore)$break_(sizeOf$(MatchedType)));
+        )(local)$break_(A_ref$((S$usize)(local->end_addrs))));
+    } $end(match)) $unscoped(expr);
+};
+
+fn_((heap_Sbrk_LocalRef_calcSelfSize(heap_Sbrk_LocalRef self))(usize)) {
+    return expr_(usize $scope)(match_(self) {
+        case_((heap_Sbrk_LocalRef_small)) $break_(sizeOf$(heap_Sbrk_LocalSmall)) $end(case);
+        case_((heap_Sbrk_LocalRef_medium)) $break_(sizeOf$(heap_Sbrk_LocalMedium)) $end(case);
+        case_((heap_Sbrk_LocalRef_large)) $break_(sizeOf$(heap_Sbrk_LocalLarge)) $end(case);
     } $end(match)) $unscoped(expr);
 };
 
@@ -275,11 +288,7 @@ fn_((heap_Sbrk__max_pool_size(heap_Sbrk self))(usize)) {
 };
 
 fn_((heap_Sbrk__pages_per_bigpage(heap_Sbrk self))(usize)) {
-    return expr_(usize $scope)(match_(self.local_ref) {
-        case_((heap_Sbrk_LocalRef_small)) $break_(heap_Sbrk__pages_per_bigpage_static(heap_Sbrk_LocalRef_small)) $end(case);
-        case_((heap_Sbrk_LocalRef_medium)) $break_(heap_Sbrk__pages_per_bigpage_static(heap_Sbrk_LocalRef_medium)) $end(case);
-        case_((heap_Sbrk_LocalRef_large)) $break_(heap_Sbrk__pages_per_bigpage_static(heap_Sbrk_LocalRef_large)) $end(case);
-    } $end(match)) $unscoped(expr);
+    return heap_Sbrk__bigpage_size(self) / (heap_page_size);
 };
 
 fn_((heap_Sbrk__bigpage_count(heap_Sbrk self))(usize)) {

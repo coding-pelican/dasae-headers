@@ -9,13 +9,13 @@
 #define $tracing __val__$tracing
 
 typedef struct debug_SrcLoc { /* clang-format off */
-    var_(base, pp_if_(debug_comp_enabled)(
+    var_(impl, pp_if_(debug_comp_enabled)(
         pp_then_(SrcLoc),
         pp_else_(Void))
     );
 } debug_SrcLoc;
 #define debug_srcLoc() l$((debug_SrcLoc){ \
-    .base = pp_if_(debug_comp_enabled)( \
+    .impl = pp_if_(debug_comp_enabled)( \
         pp_then_(srcLoc()), \
         pp_else_({}) \
     ), \

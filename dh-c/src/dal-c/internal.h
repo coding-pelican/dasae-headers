@@ -66,12 +66,14 @@ int dal_c__cleanDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__testDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__buildSelf(const dal_c_Cmd* cmd);
 int dal_c__cleanSelf(const dal_c_Cmd* cmd);
+char* dal_c__cacheBaseDir(const dal_c_Project* proj);
 
 /// === SOURCE COLLECTION ===
 
 ArrStr* dal_c__collectSourceFiles(const dal_c_Project* proj, const char* target_path);
 ArrStr* dal_c__collectDirectoryFiles(const dal_c_Project* proj, const char* dir_name);
 bool dal_c__shouldSkipAutoSourcePath(const char* path);
+bool dal_c__hasTestRegistration(const char* path);
 
 /// === EXECUTABLE RUNNING ===
 

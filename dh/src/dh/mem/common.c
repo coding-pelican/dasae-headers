@@ -1,6 +1,52 @@
 #include "dh/mem/common.h"
 #include "dh/meta.h"
 
+#if comp_env_type_is_freestanding
+fn_((memset(P$raw dst, int val, usize len))(P$raw)) {
+    let out = P_prefix((ptrCast$((u8*)(dst)))(len));
+    for_(($s(out))(byte)) { *byte = intCast$((u8)(val)); } $end(for);
+    return out.ptr;
+};
+fn_((memcpy(P$raw dst, P_const$raw src, usize len))(P$raw)) {
+    let out = P_prefix((ptrCast$((u8*)(dst)))(len));
+    let in = P_prefix((ptrCast$((const u8*)(src)))(len));
+    for_(($s(out), $s(in))(o, i)) { *o = *i; } $end(for);
+    return out.ptr;
+};
+fn_((memmove(P$raw dst, P_const$raw src, usize len))(P$raw)) {
+    let out = P_prefix((ptrCast$((u8*)(dst)))(len));
+    let in = P_prefix((ptrCast$((const u8*)(src)))(len));
+    if (out.ptr == in.ptr || len == 0) return dst;
+    if (out.ptr < in.ptr) {
+        for_(($s(out), $s(in))(o, i)) { *o = *i; } $end(for);
+    } else {
+        for_($rev($s(out), $s(in))(o, i)) { *o = *i; } $end(for);
+    }
+    return out.ptr;
+};
+fn_((memcmp(P_const$raw lhs, P_const$raw rhs, usize len))(int)) {
+    let out = P_prefix((ptrCast$((const u8*)(lhs)))(len));
+    let in = P_prefix((ptrCast$((const u8*)(rhs)))(len));
+    for_(($s(out), $s(in))(o, i)) {
+        if (*o != *i) return intCast$((int)(*o - *i));
+    } $end(for);
+    return 0;
+};
+#endif /* comp_env_type_is_freestanding */
+
+fn_((mem_set0Bytes(S$u8 dst))(S$u8)) {
+    claim_assert_nonnullS(dst);
+    return u_memset0S(u_anyS(dst)), dst;
+};
+fn_((mem_set0P(u_P$raw dst))(u_P$raw)) {
+    claim_assert_nonnull(dst.raw);
+    return u_memset0(dst);
+};
+fn_((mem_set0(u_S$raw dst))(u_S$raw)) {
+    claim_assert_nonnullS(dst);
+    return u_memset0S(dst);
+};
+
 fn_((mem_setBytes(S$u8 dst, u8 val))(S$u8)) {
     claim_assert_nonnullS(dst);
     return u_memsetS(u_anyS(dst), u_anyV(val)), dst;
@@ -15,19 +61,6 @@ fn_((mem_set(u_S$raw dst, u_V$raw val))(u_S$raw)) {
     claim_assert(TypeInfo_eql(dst.type, val.inner_type));
     for_(($us(dst))(elem)) { u_memset(elem, val); } $end(for);
     return dst;
-};
-
-fn_((mem_set0Bytes(S$u8 dst))(S$u8)) {
-    claim_assert_nonnullS(dst);
-    return u_memset0S(u_anyS(dst)), dst;
-};
-fn_((mem_set0P(u_P$raw dst))(u_P$raw)) {
-    claim_assert_nonnull(dst.raw);
-    return u_memset0(dst);
-};
-fn_((mem_set0(u_S$raw dst))(u_S$raw)) {
-    claim_assert_nonnullS(dst);
-    return u_memset0S(dst);
 };
 
 fn_((mem_copyBytes(S$u8 dst, S_const$u8 src))(S$u8)) {
@@ -231,14 +264,14 @@ fn_((mem_window(u_S_const$raw buf, usize size, usize advance))(mem_WindowIter)) 
         ) $unscoped(expr),
         .size = size,
         .advance = advance,
-        debug_only(.type = buf.type)
+        .type = $typing(buf.type),
     };
 };
 fn_((mem_WindowIter_reset(mem_WindowIter* self))(void)) {
     claim_assert_nonnull(self), $ignore_void asg_l((&self->idx)(some(0)));
 };
 fn_((mem_WindowIter_next(mem_WindowIter* self, TypeInfo type))(O$u_S_const$raw) $scope) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let begin = orelse_((self->idx)(return_none()));
     let next_idx = begin + self->advance;
     let end = expr_(usize $scope)(if (begin + self->size < self->buf.len) {
@@ -312,7 +345,7 @@ $static fn_((mem_Delim__any(mem_Delim$raw* self, TypeInfo type))(u_S$raw)) {
 fn_((mem_tokzUnit(u_S_const$raw buf, u_V$raw unit, V$mem_TokzIter$raw ret_mem))(V$mem_TokzIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnull(unit.inner), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, unit.type));
-    debug_only(ret_mem->type = unit.type);
+    ret_mem->type = $typing(unit.type);
     ret_mem->buf = buf.raw;
     ret_mem->idx = 0;
     ret_mem->delim.tag = mem_Delim_unit;
@@ -322,7 +355,7 @@ fn_((mem_tokzUnit(u_S_const$raw buf, u_V$raw unit, V$mem_TokzIter$raw ret_mem))(
 fn_((mem_tokzSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_TokzIter$raw ret_mem))(V$mem_TokzIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnullS(seq.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, seq.type));
-    debug_only(ret_mem->type = seq.type);
+    ret_mem->type = $typing(seq.type);
     ret_mem->buf = buf.raw;
     ret_mem->idx = 0;
     asg_l((&ret_mem->delim)(union_of((mem_Delim_seq)(seq.raw))));
@@ -331,7 +364,7 @@ fn_((mem_tokzSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_TokzIter$raw ret_me
 fn_((mem_tokzAny(u_S_const$raw buf, u_S_const$raw set, V$mem_TokzIter$raw ret_mem))(V$mem_TokzIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnullS(set.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, set.type));
-    debug_only(ret_mem->type = set.type);
+    ret_mem->type = $typing(set.type);
     ret_mem->buf = buf.raw;
     ret_mem->idx = 0;
     asg_l((&ret_mem->delim)(union_of((mem_Delim_any)(set.raw))));
@@ -339,11 +372,11 @@ fn_((mem_tokzAny(u_S_const$raw buf, u_S_const$raw set, V$mem_TokzIter$raw ret_me
 };
 
 $static fn_((mem_TokzIter__buf(mem_TokzIter$raw* self, TypeInfo type))(u_S_const$raw)) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     return S_meta((type)(self->buf));
 };
 $static fn_((mem_TokzIter__isDelim(mem_TokzIter$raw* self, TypeInfo type, usize index))(bool)) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let buf = mem_TokzIter__buf(self, type);
     return expr_(bool $scope)(switch (self->delim.tag) {
         case mem_Delim_unit: $break_(u_memeql(u_atS(buf, index), mem_Delim__unit(&self->delim, type).ref.as_const));
@@ -361,13 +394,13 @@ $static fn_((mem_TokzIter__isDelim(mem_TokzIter$raw* self, TypeInfo type, usize 
 
 fn_((mem_TokzIter_reset(mem_TokzIter$raw* self))(void)) { claim_assert_nonnull(self), self->idx = 0; };
 fn_((mem_TokzIter_next(mem_TokzIter$raw* self, TypeInfo type))(O$u_S_const$raw) $scope) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let token = orelse_((mem_TokzIter_peek(self, type))(return_none()));
     self->idx += token.len;
     return_some(token);
 } $unscoped(fn);
 fn_((mem_TokzIter_peek(mem_TokzIter$raw* self, TypeInfo type))(O$u_S_const$raw) $scope) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     while (self->idx < self->buf.len && mem_TokzIter__isDelim(self, type, self->idx)) {
         self->idx += expr_(usize $scope)(switch (self->delim.tag) {
             case mem_Delim_unit: $break_(1);
@@ -382,7 +415,7 @@ fn_((mem_TokzIter_peek(mem_TokzIter$raw* self, TypeInfo type))(O$u_S_const$raw) 
     return_some(u_sliceS(mem_TokzIter__buf(self, type), $r(begin, end)));
 } $unscoped(fn);
 fn_((mem_TokzIter_rest(mem_TokzIter$raw* self, TypeInfo type))(u_S_const$raw) $scope) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     var idx = self->idx;
     while (idx < self->buf.len && mem_TokzIter__isDelim(self, type, idx)) {
         idx += expr_(usize $scope)(switch (self->delim.tag) {
@@ -397,7 +430,7 @@ fn_((mem_TokzIter_rest(mem_TokzIter$raw* self, TypeInfo type))(u_S_const$raw) $s
 fn_((mem_splitUnit(u_S_const$raw buf, u_V$raw unit, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, unit.type));
-    debug_only(ret_mem->type = unit.type);
+    ret_mem->type = $typing(unit.type);
     ret_mem->buf = buf.raw;
     asg_l((&ret_mem->idx)(none()));
     ret_mem->delim.tag = mem_Delim_unit;
@@ -407,7 +440,7 @@ fn_((mem_splitUnit(u_S_const$raw buf, u_V$raw unit, V$mem_SplitIter$raw ret_mem)
 fn_((mem_splitSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnullS(seq.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, seq.type));
-    debug_only(ret_mem->type = seq.type);
+    ret_mem->type = $typing(seq.type);
     ret_mem->buf = buf.raw;
     asg_l((&ret_mem->idx)(none()));
     asg_l((&ret_mem->delim)(union_of((mem_Delim_seq)(seq.raw))));
@@ -416,7 +449,7 @@ fn_((mem_splitSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_SplitIter$raw ret_
 fn_((mem_splitAny(u_S_const$raw buf, u_S_const$raw any, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnullS(any.raw), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, any.type));
-    debug_only(ret_mem->type = any.type);
+    ret_mem->type = $typing(any.type);
     ret_mem->buf = buf.raw;
     asg_l((&ret_mem->idx)(none()));
     asg_l((&ret_mem->delim)(union_of((mem_Delim_any)(any.raw))));

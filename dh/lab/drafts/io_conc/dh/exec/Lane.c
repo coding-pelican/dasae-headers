@@ -86,10 +86,10 @@ fn_((exec_Lane_createReadyTask(
     P$$(Closure$raw) inner
 ))(O$P$exec_Task) $scope) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
-    let task = catch_((exec_Lane__createTask(self, exec_Task_State_none, result, inner))(
+    let task = catch_((exec_Lane__createTask(self, exec_Task_State_pending, result, inner))(
         $ignore, return_none()
     ));
-    if (exec_kind(inner) == exec_Task_Kind_fiber) {
+    if (exec_kind(inner) == exec_Task_Kind_stackful) {
         let fiber = catch_((exec_Fiber_init(self->gpa, self, task, exec_Lane__workFiber))(
             $ignore, {
                 exec_Lane__destroyTask(self, task);
@@ -129,7 +129,7 @@ fn_((exec_Lane_runTask(exec_Lane* self, exec_Task* task))(void)) {
     if (task->state == exec_Task_State_canceled
         || task->state == exec_Task_State_done
         || task->state == exec_Task_State_waiting) return;
-    if (exec_kind(task->inner) == exec_Task_Kind_fiber) {
+    if (exec_kind(task->inner) == exec_Task_Kind_stackful) {
         task->state = exec_Task_State_running;
         let prev = self->task_curr;
         asg_l((&self->task_curr)(some(task)));
@@ -165,7 +165,7 @@ fn_((exec_Lane_runOneReady(exec_Lane* self))(bool)) {
 fn_((exec_Lane_yield(exec_Lane* self))(void)) {
     claim_assert_nonnull(self);
     let task = orelse_((self->task_curr)(return));
-    if (exec_kind(task->inner) != exec_Task_Kind_fiber) return;
+    if (exec_kind(task->inner) != exec_Task_Kind_stackful) return;
     let fiber = orelse_((task->fiber)(claim_unreachable));
     exec_switchFromFiber(&fiber->context, &self->fiber_context);
 };

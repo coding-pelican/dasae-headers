@@ -106,9 +106,9 @@ $extern cmp_fn_neqCtx$((time_Instant)(lhs, rhs, ctx));
 /*========== Macros and Definitions =========================================*/
 
 #define __comp_const__time_Instant_nanos_per_sec \
-    (n$(u64)(1, 000, 000, 000ull))
+    (u64_(1, 000, 000, 000ull))
 #define __comp_const__time_Instant_intervals_per_sec \
-    (n$(u64)(time_Instant_nanos_per_sec / 100ull))
+    (u64_(time_Instant_nanos_per_sec / 100))
 
 #if defined(__cplusplus)
 } /* extern "C" */

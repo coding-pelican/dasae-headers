@@ -3,7 +3,7 @@
 #include "../../dh/exec.h"
 #include "../../dh/time.h"
 #include "../../dh/io/stream.h"
-#include <dh/heap/Page.h>
+#include <dh/heap/Sys.h>
 
 #include "actor.h"
 
@@ -94,8 +94,9 @@ T_use$((mem_E)(actor_Unit_startE));
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    var page = l0$((heap_Page));
-    let gpa = heap_Page_alctr(&page);
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     var coop = exec_Coop_init(gpa, try_(time_Awake_direct()), exec_Evented_noop);
     defer_(exec_Coop_fini(&coop));
     let io = catch_((io_direct())($ignore, io_noop));

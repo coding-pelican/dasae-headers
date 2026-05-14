@@ -33,10 +33,14 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 // clang-format off
-T_use_prl_refs$(u8); T_use_prl_refs$(u16); T_use_prl_refs$(u32); T_use_prl_refs$(u64); T_use_prl_refs$(usize);
-T_use_prl_refs$(i8); T_use_prl_refs$(i16); T_use_prl_refs$(i32); T_use_prl_refs$(i64); T_use_prl_refs$(isize);
+T_use_prl_refs$(bool);
+T_use_prl_refs$(u8); T_use_prl_refs$(u16); T_use_prl_refs$(u32);
+T_use_prl_refs$(ulong); T_use_prl_refs$(u64); T_use_prl_refs$(usize);
+T_use_prl_refs$(i8); T_use_prl_refs$(i16); T_use_prl_refs$(i32);
+T_use_prl_refs$(ilong); T_use_prl_refs$(i64); T_use_prl_refs$(isize);
 T_use_prl_refs$(f32); T_use_prl_refs$(f64);
-T_use_prl_refs$(bool); T_use_prl_refs$(Void); T_use_prl_refs$(Opaq);
+T_use_prl_refs$(Opaq); T_use_prl_refs$(EAny);
+T_use_prl_refs$(Void);
 T_use_prl_refs$(P_const$raw); T_use_prl_refs$(S_const$raw);
 T_use_prl_refs$(P$raw); T_use_prl_refs$(S$raw);
 T_use_prl_refs$(V$raw); T_use_prl_refs$(A$raw);

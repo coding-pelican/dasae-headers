@@ -20,7 +20,7 @@ $static fn_((testDeferWithReturnScope(void))(void));
 $static fn_((testBlockDeferScope(void))(void));
 
 // Test basic defer functionality
-TEST_fn_("test basic defer" $scope) {
+TEST_fn_("core/fn: basic defer" $scope) {
     mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state))); // Clear state
     try_(testBasicDeferScope());
     try_(TEST_expect(s_test_state.counter == 2));
@@ -35,7 +35,7 @@ $static fn_((testBasicDeferScope(void))(E$void) $guard) {
 } $unguarded(fn);
 
 // Test multiple defers (LIFO order)
-TEST_fn_("test multiple defers" $scope) {
+TEST_fn_("core/fn: multiple defers" $scope) {
     mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state))); // Clear state
     testMultipleDeferScope();
     // Verify LIFO order: 3, 2, 1
@@ -53,7 +53,7 @@ $static fn_((testMultipleDeferScope(void))(void) $guard) {
 } $unguarded(fn);
 
 // Test defer with early return
-TEST_fn_("test defer with early return" $scope) {
+TEST_fn_("core/fn: defer with early return" $scope) {
     mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state))); // Clear state
     testDeferWithReturnScope();
     // Verify cleanup executed in correct order despite early return
@@ -74,7 +74,7 @@ $static fn_((testDeferWithReturnScope(void))(void) $guard) {
 } $unguarded(fn);
 
 // Test block defer
-TEST_fn_("test block defer" $scope) {
+TEST_fn_("core/fn: block defer" $scope) {
     mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state))); // Clear state
     testBlockDeferScope();
     // Verify block defer behavior
@@ -102,7 +102,7 @@ $static fn_((testBlockDeferScope(void))(void) $guard) {
     return_void();
 } $unguarded(fn);
 
-TEST_fn_("test loop defer" $guard) {
+TEST_fn_("core/fn: loop defer" $guard) {
     mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state)));
 
     var_(visits, usize) = 0;
@@ -123,7 +123,7 @@ TEST_fn_("test loop defer" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("test loop defer keeps nested block break local" $guard) {
+TEST_fn_("core/fn: loop defer keeps nested block break local" $guard) {
     mem_set0Bytes(mem_asBytesMut(u_anyP(&s_test_state)));
 
     var_(visits, usize) = 0;

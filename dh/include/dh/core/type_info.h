@@ -32,10 +32,10 @@ extern "C" {
 
 #define TypeInfo_size_bits_on_64bit 58
 #define TypeInfo_align_bits_on_64bit 6
-claim_assert_static((TypeInfo_size_bits_on_64bit + TypeInfo_align_bits_on_64bit) == arch_bits_wide_64bit);
+claim_assert_static((TypeInfo_size_bits_on_64bit + TypeInfo_align_bits_on_64bit) == plat_bits_64);
 #define TypeInfo_size_bits_on_32bit 28
 #define TypeInfo_align_bits_on_32bit 4
-claim_assert_static((TypeInfo_size_bits_on_32bit + TypeInfo_align_bits_on_32bit) == arch_bits_wide_32bit);
+claim_assert_static((TypeInfo_size_bits_on_32bit + TypeInfo_align_bits_on_32bit) == plat_bits_32);
 
 #define TypeInfo_size_bits __comp_int__TypeInfo_size_bits
 #define TypeInfo_align_bits __comp_int__TypeInfo_align_bits
@@ -90,17 +90,27 @@ typedef usize TypeInfoPacked;
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_int__TypeInfo_size_bits pp_if_(arch_bits_is_64bit)( \
-    pp_then_(TypeInfo_size_bits_on_64bit), \
-    pp_else_(TypeInfo_size_bits_on_32bit) \
+#define __comp_int__TypeInfo_size_bits pp_expand( \
+    pp_switch_ pp_begin(plat_ptr_unit)( \
+        pp_case_((plat_bits_unit_32bit)(TypeInfo_size_bits_on_32bit)), \
+        pp_case_((plat_bits_unit_64bit)(TypeInfo_size_bits_on_64bit)), \
+        pp_default_(0) \
+    ) pp_end \
 )
-#define __comp_int__TypeInfo_align_bits pp_if_(arch_bits_is_64bit)( \
-    pp_then_(TypeInfo_align_bits_on_64bit), \
-    pp_else_(TypeInfo_align_bits_on_32bit) \
+#define __comp_int__TypeInfo_align_bits pp_expand( \
+    pp_switch_ pp_begin(plat_ptr_unit)( \
+        pp_case_((plat_bits_unit_32bit)(TypeInfo_align_bits_on_32bit)), \
+        pp_case_((plat_bits_unit_64bit)(TypeInfo_align_bits_on_64bit)), \
+        pp_default_(0) \
+    ) pp_end \
 )
 #define __comp_const__TypeInfo_bits (TypeInfo_size_bits + TypeInfo_align_bits)
 
-claim_assert_static(TypeInfo_bits == arch_bits_wide);
+claim_assert_static_msg(
+    plat_ptr_is_64bit || plat_ptr_is_32bit,
+    "TypeInfoPacked currently supports only 64-bit and 32-bit flat pointer models"
+);
+claim_assert_static(TypeInfo_bits == plat_ptr_bits);
 claim_assert_static(int_bits$(TypeInfoPacked) == TypeInfo_bits);
 claim_assert_static(int_bytes$(TypeInfoPacked) == int_bits$(TypeInfoPacked) / arch_bits_per_byte);
 claim_assert_static(sizeOf$(TypeInfoPacked) == int_bytes$(TypeInfoPacked));

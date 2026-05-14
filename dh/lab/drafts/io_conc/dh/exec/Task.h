@@ -16,11 +16,11 @@ extern "C" {
 
 T_alias$((exec_Task_Kind)(enum_((exec_Task_Kind $fits($packed))(
     exec_Task_Kind_stackless = 0,
-    exec_Task_Kind_fiber,
+    exec_Task_Kind_stackful
 ))));
 claim_assert_static(eqlType$(exec_Task_Kind, u8));
 T_alias$((exec_Task_State)(enum_((exec_Task_State $fits($packed))(
-    exec_Task_State_none = 0,
+    exec_Task_State_pending = 0,
     exec_Task_State_deferred,
     exec_Task_State_ready,
     exec_Task_State_running,

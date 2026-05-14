@@ -18,64 +18,64 @@
 /*========== Definitions ====================================================*/
 
 $static fn_((HashSet_Unit__init(u_V$raw key, V$HashSet_Unit$raw ret_mem))(V$HashSet_Unit$raw)) {
-    debug_only(ret_mem->key_ty = key.type);
+    ret_mem->key_ty = $typing(key.type);
     u_memcpy(HashSet_Unit_keyMut(ret_mem, key.type), key.ref.as_const);
     return ret_mem;
 };
 
 fn_((HashSet_Unit_key(const HashSet_Unit$raw* self, TypeInfo key_ty))(u_P_const$raw)) {
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashSet_Unit)(
         (.val[u_Fields_Idx_key_$HashSet_Unit])(key_ty)
     ))));
-    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self->data.inner)));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self)));
     return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_key_$HashSet_Unit);
 };
 
 fn_((HashSet_Unit_keyMut(HashSet_Unit$raw* self, TypeInfo key_ty))(u_P$raw)) {
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$HashSet_Unit)(
         (.val[u_Fields_Idx_key_$HashSet_Unit])(key_ty)
     ))));
-    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self->data.inner)));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_key_$HashSet_Unit);
 };
 
 fn_((HashSet_Entry_key(HashSet_Entry self, TypeInfo key_ty))(u_P_const$raw)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     return (u_P_const$raw){ .raw = self.key, .type = key_ty };
 };
 
 fn_((HashSet_EntryMut_key(HashSet_EntryMut self, TypeInfo key_ty))(u_P$raw)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     return (u_P$raw){ .raw = self.key, .type = key_ty };
 };
 
 fn_((HashSet_Ensured_key(HashSet_Ensured self, TypeInfo key_ty))(u_P_const$raw)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     return (u_P_const$raw){ .raw = self.key, .type = key_ty };
 };
 
 fn_((HashSet_Ensured_keyMut(HashSet_Ensured self, TypeInfo key_ty))(u_P$raw)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     return (u_P$raw){ .raw = self.key, .type = key_ty };
 };
 
 fn_((HashSet_Ensured_foundExisting(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_Entry)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     let_ignore = key_ty;
     return expr_(O$HashSet_Entry $scope)(if (self.found_existing) {
-        $break_(some({ .key = self.key, debug_only(.key_ty = key_ty) }));
+        $break_(some({ .key = self.key, .key_ty = $typing(key_ty) }));
     }) expr_(else)({
         $break_(none());
     }) $unscoped(expr);
 };
 
 fn_((HashSet_Ensured_foundExistingMut(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_EntryMut)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
     let_ignore = key_ty;
     return expr_(O$HashSet_EntryMut $scope)(if (self.found_existing) {
-        $break_(some({ .key = self.key, debug_only(.key_ty = key_ty) }));
+        $break_(some({ .key = self.key, .key_ty = $typing(key_ty) }));
     }) expr_(else)({
         $break_(none());
     }) $unscoped(expr);
@@ -145,11 +145,11 @@ $static fn_((HashSet__alloc(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 n
     let slice = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), total_size))));
     let ptr = as$(u8*)(slice.ptr);
     let hdr = ptrAlignCast$((HashSet_Header*)(ptr));
-    hdr->keys = ptr + keys_start;
-    hdr->cap = new_cap;
-    debug_only({
-        hdr->key_ty = key_ty;
-    });
+    asg_l((hdr)({
+        .keys = ptr + keys_start,
+        .key_ty = $typing(key_ty),
+        .cap = new_cap,
+    }));
 
     asg_l((&self->metadata)(some(as$(HashMap_Ctrl*)(ptr + sizeOf$(HashSet_Header)))));
     return_ok({});
@@ -356,7 +356,7 @@ fn_((HashSet_empty(TypeInfo key_ty, P_const$HashSet_Ctx ctx))(HashSet)) {
         .size = 0,
         .available = 0,
         .ctx = ctx,
-        debug_only(.key_ty = key_ty)
+        .key_ty = $typing(key_ty),
     };
 };
 
@@ -374,7 +374,7 @@ fn_((HashSet_init(TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Alctr gpa, u32 c
 
 fn_((HashSet_fini(HashSet* self, TypeInfo key_ty, mem_Alctr gpa))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     HashSet__free(self, key_ty, gpa);
     *self = HashSet_empty(key_ty, self->ctx);
 };
@@ -386,7 +386,7 @@ fn_((HashSet_clone(HashSet self, TypeInfo key_ty, mem_Alctr gpa))(mem_E$HashSet)
 fn_((HashSet_cloneWithCtx(
     HashSet self, TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Alctr gpa
 ))(mem_E$HashSet) $scope) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
 
     var_(other, HashSet) = HashSet_empty(key_ty, ctx);
     if (self.size == 0) {
@@ -422,7 +422,7 @@ fn_((HashSet_cap(HashSet self))(u32)) {
 
 fn_((HashSet_ensureCap(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 new_size))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     if (new_size > self->size) {
         try_(HashSet__growIfNeeded(self, key_ty, gpa, new_size - self->size));
     }
@@ -431,7 +431,7 @@ fn_((HashSet_ensureCap(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 new_si
 
 fn_((HashSet_ensureUnusedCap(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 additional))(mem_E$void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     return HashSet_ensureCap(self, key_ty, gpa, self->size + additional);
 };
 
@@ -445,14 +445,14 @@ fn_((HashSet_clearRetainingCap(HashSet* self))(void)) {
 
 fn_((HashSet_clearAndFree(HashSet* self, TypeInfo key_ty, mem_Alctr gpa))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     HashSet__free(self, key_ty, gpa);
     self->size = 0;
     self->available = 0;
 };
 
 fn_((HashSet_for(HashSet self, u_V$raw key, u_V$raw ret_mem))(O$u_V$raw) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
     if_some((HashSet__idx(self, key))(idx)) {
         return_some({ .inner = u_memcpy(ret_mem.ref, HashSet__keyAt(self, key.type, idx).as_const).raw });
     }
@@ -460,7 +460,7 @@ fn_((HashSet_for(HashSet self, u_V$raw key, u_V$raw ret_mem))(O$u_V$raw) $scope)
 } $unscoped(fn);
 
 fn_((HashSet_ptrFor(HashSet self, u_V$raw key))(O$u_P_const$raw) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
     if_some((HashSet__idx(self, key))(idx)) {
         return_some(HashSet__keyAt(self, key.type, idx).as_const);
     }
@@ -468,7 +468,7 @@ fn_((HashSet_ptrFor(HashSet self, u_V$raw key))(O$u_P_const$raw) $scope) {
 } $unscoped(fn);
 
 fn_((HashSet_ptrMutFor(HashSet self, u_V$raw key))(O$u_P$raw) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
     if_some((HashSet__idx(self, key))(idx)) {
         return_some(HashSet__keyAt(self, key.type, idx));
     }
@@ -476,32 +476,32 @@ fn_((HashSet_ptrMutFor(HashSet self, u_V$raw key))(O$u_P$raw) $scope) {
 } $unscoped(fn);
 
 fn_((HashSet_entry(HashSet self, u_V$raw key))(O$HashSet_Entry) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
     if_some((HashSet__idx(self, key))(idx)) {
         let k = HashSet__keyAt(self, key.type, idx).as_const;
-        return_some({ .key = k.raw, debug_only(.key_ty = key.type) });
+        return_some({ .key = k.raw, .key_ty = $typing(key.type) });
     }
     return_none();
 } $unscoped(fn);
 
 fn_((HashSet_entryMut(HashSet self, u_V$raw key))(O$HashSet_EntryMut) $scope) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
     if_some((HashSet__idx(self, key))(idx)) {
         let k = HashSet__keyAt(self, key.type, idx);
-        return_some({ .key = k.raw, debug_only(.key_ty = key.type) });
+        return_some({ .key = k.raw, .key_ty = $typing(key.type) });
     }
     return_none();
 } $unscoped(fn);
 
 fn_((HashSet_contains(HashSet self, u_V$raw key))(bool)) {
-    debug_assert_eqBy(self.key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key.type, TypeInfo_eql);
     return isSome(HashSet__idx(self, key));
 };
 
 #if UNUSED_CODE
 fn_((HashSet_add(HashSet* self, mem_Alctr gpa, u_V$raw key))(mem_E$bool) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     let prev_count = self->size;
     let ensured = try_(HashSet_ensure(self, gpa, key));
     let_ignore = ensured;
@@ -510,7 +510,7 @@ fn_((HashSet_add(HashSet* self, mem_Alctr gpa, u_V$raw key))(mem_E$bool) $scope)
 
 fn_((HashSet_addWithin(HashSet* self, u_V$raw key))(bool)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     let prev_count = self->size;
     let ensured = HashSet_ensureWithin(self, key);
     let_ignore = ensured;
@@ -520,7 +520,7 @@ fn_((HashSet_addWithin(HashSet* self, u_V$raw key))(bool)) {
 
 fn_((HashSet_put(HashSet* self, mem_Alctr gpa, u_V$raw key))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     try_(HashSet__growIfNeeded(self, key.type, gpa, 1));
     HashSet_putWithin(self, key);
     return_ok({});
@@ -528,7 +528,7 @@ fn_((HashSet_put(HashSet* self, mem_Alctr gpa, u_V$raw key))(mem_E$void) $scope)
 
 fn_((HashSet_putWithin(HashSet* self, u_V$raw key))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     claim_assert(!HashSet_contains(*self, key));
     let ctx = self->ctx;
     let hash = ctx->hashFn(key, u_load(u_deref(ctx->inner)));
@@ -549,7 +549,7 @@ fn_((HashSet_putWithin(HashSet* self, u_V$raw key))(void)) {
 
 fn_((HashSet_fetchPut(HashSet* self, mem_Alctr gpa, u_V$raw key, V$HashSet_Unit$raw ret_mem))(mem_E$O$V$HashSet_Unit$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     let ensured = try_(HashSet_ensure(self, gpa, key));
     let result = expr_(O$V$HashSet_Unit$raw $scope)(if (ensured.found_existing) {
         let k = HashSet_Ensured_key(ensured, key.type);
@@ -562,7 +562,7 @@ fn_((HashSet_fetchPut(HashSet* self, mem_Alctr gpa, u_V$raw key, V$HashSet_Unit$
 
 fn_((HashSet_fetchPutWithin(HashSet* self, u_V$raw key, V$HashSet_Unit$raw ret_mem))(O$V$HashSet_Unit$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     let ensured = HashSet_ensureWithin(self, key);
     let result = expr_(O$V$HashSet_Unit$raw $scope)(if (ensured.found_existing) {
         let k = HashSet_Ensured_key(ensured, key.type);
@@ -575,14 +575,15 @@ fn_((HashSet_fetchPutWithin(HashSet* self, u_V$raw key, V$HashSet_Unit$raw ret_m
 
 fn_((HashSet_ensure(HashSet* self, mem_Alctr gpa, u_V$raw key))(mem_E$HashSet_Ensured) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     // Try to grow first, but if it fails and key exists, we can still return it
     catch_((HashSet__growIfNeeded(self, key.type, gpa, 1))(err, if_some((HashSet__idx(*self, key))(idx)) {
         let k = HashSet__keyAt(*self, key.type, idx);
         return_ok((HashSet_Ensured){
             .key = k.raw,
             .found_existing = true,
-            debug_only(.key_ty = key.type) });
+            .key_ty = $typing(key.type),
+        });
     } else_none {
         return_err(err);
     }));
@@ -591,7 +592,7 @@ fn_((HashSet_ensure(HashSet* self, mem_Alctr gpa, u_V$raw key))(mem_E$HashSet_En
 
 fn_((HashSet_ensureWithin(HashSet* self, u_V$raw key))(HashSet_Ensured)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     let ctx = self->ctx;
     let hash = ctx->hashFn(key, u_load(u_deref(ctx->inner)));
     let cap = HashSet_cap(*self);
@@ -611,7 +612,7 @@ fn_((HashSet_ensureWithin(HashSet* self, u_V$raw key))(HashSet_Ensured)) {
                 return (HashSet_Ensured){
                     .key = HashSet__keyAt(*self, key.type, idx).raw,
                     .found_existing = true,
-                    debug_only(.key_ty = key.type)
+                    .key_ty = $typing(key.type),
                 };
             }
         } else if (first_tombstone_idx == cap && HashMap_Ctrl_isTombstone(ctrl)) {
@@ -631,14 +632,14 @@ fn_((HashSet_ensureWithin(HashSet* self, u_V$raw key))(HashSet_Ensured)) {
     self->size++;
     return (HashSet_Ensured){
         .key = HashSet__keyAt(*self, key.type, idx).raw,
+        .key_ty = $typing(key.type),
         .found_existing = false,
-        debug_only(.key_ty = key.type)
     };
 };
 
 fn_((HashSet_remove(HashSet* self, u_V$raw key))(bool)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     if_some((HashSet__idx(*self, key))(idx)) {
         HashMap_Ctrl_remove(HashSet__metadataAt(*self, idx));
         self->size--;
@@ -650,7 +651,7 @@ fn_((HashSet_remove(HashSet* self, u_V$raw key))(bool)) {
 
 fn_((HashSet_fetchRemove(HashSet* self, u_V$raw key, V$HashSet_Unit$raw ret_mem))(O$V$HashSet_Unit$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key.type, TypeInfo_eql);
     if_some((HashSet__idx(*self, key))(idx)) {
         let old_key = HashSet__keyAt(*self, key.type, idx);
         let result = HashSet_Unit__init(u_load(u_deref(old_key)), ret_mem);
@@ -666,7 +667,7 @@ fn_((HashSet_fetchRemove(HashSet* self, u_V$raw key, V$HashSet_Unit$raw ret_mem)
 fn_((HashSet_removeByPtr(HashSet* self, u_P$raw key_ptr))(void)) {
     claim_assert_nonnull(self);
     claim_assert_nonnull(key_ptr.raw);
-    debug_assert_eqBy(self->key_ty, key_ptr.type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ptr.type, TypeInfo_eql);
     let idx = expr_(u32 $scope)(if (key_ptr.type.size > 0) {
         $break_(intCast$((u32)((ptrToInt(key_ptr.raw) - ptrToInt(HashSet__keys(*self, key_ptr.type).raw)) / TypeInfo_size(key_ptr.type))));
     }) expr_(else)({
@@ -679,7 +680,7 @@ fn_((HashSet_removeByPtr(HashSet* self, u_P$raw key_ptr))(void)) {
 
 fn_((HashSet_rehash(HashSet* self, TypeInfo key_ty))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
 
     if_none(self->metadata) { return; }
 
@@ -751,8 +752,8 @@ fn_((HashSet_rehash(HashSet* self, TypeInfo key_ty))(void)) {
 };
 
 fn_((HashSet_isSubset(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(key_ty, other.key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy(key_ty, $typed(other.key_ty), TypeInfo_eql);
     if (self.size > other.size) { return false; }
     if (self.size == 0) { return true; }
 
@@ -770,15 +771,15 @@ fn_((HashSet_isSubset(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
 };
 
 fn_((HashSet_isSuperset(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(key_ty, other.key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy(key_ty, $typed(other.key_ty), TypeInfo_eql);
     pri_swap(&self, &other);
     return HashSet_isSubset(self, key_ty, other);
 };
 
 fn_((HashSet_isDisjoint(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
-    debug_assert_eqBy(key_ty, other.key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
+    debug_assert_eqBy(key_ty, $typed(other.key_ty), TypeInfo_eql);
     // Check the smaller set's elements against the larger set
     let smaller = self.size <= other.size ? self : other;
     let larger = self.size <= other.size ? other : self;
@@ -802,19 +803,19 @@ fn_((HashSet_isDisjoint(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
 
 fn_((HashSet_iter(const HashSet* self, TypeInfo key_ty))(HashSet_Iter)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     let_ignore = key_ty;
     return (HashSet_Iter){
         .set = self,
         .idx = 0,
-        debug_only(.key_ty = key_ty)
+        .key_ty = $typing(key_ty),
     };
 };
 
 fn_((HashSet_Iter_next(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_Entry) $scope) {
     claim_assert_nonnull(self);
     claim_assert_nonnull(self->set);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     if (self->set->size == 0) { return_none(); }
     let cap = HashSet_cap(*self->set);
     while (cap > self->idx) {
@@ -824,7 +825,8 @@ fn_((HashSet_Iter_next(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_Entry) $s
                 defer_(self->idx++);
                 $break_((HashSet_Entry){
                     .key = HashSet__keyAt(*self->set, key_ty, self->idx).as_const.raw,
-                    debug_only(.key_ty = key_ty) });
+                    .key_ty = $typing(key_ty),
+                });
             }) $unguarded(expr));
         }
         self->idx++;
@@ -835,7 +837,7 @@ fn_((HashSet_Iter_next(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_Entry) $s
 fn_((HashSet_Iter_nextMut(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_EntryMut) $scope) {
     claim_assert_nonnull(self);
     claim_assert_nonnull(self->set);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     if (self->set->size == 0) { return_none(); }
     let cap = HashSet_cap(*self->set);
     while (cap > self->idx) {
@@ -845,7 +847,8 @@ fn_((HashSet_Iter_nextMut(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_EntryM
                 defer_(self->idx++);
                 $break_((HashSet_EntryMut){
                     .key = HashSet__keyAt(*self->set, key_ty, self->idx).raw,
-                    debug_only(.key_ty = key_ty) });
+                    .key_ty = $typing(key_ty),
+                });
             }) $unguarded(expr));
         }
         self->idx++;
@@ -854,26 +857,27 @@ fn_((HashSet_Iter_nextMut(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_EntryM
 } $unscoped(fn);
 
 fn_((HashSet_keyIter(HashSet self, TypeInfo key_ty))(HashSet_KeyIter) $scope) {
-    debug_assert_eqBy(self.key_ty, key_ty, TypeInfo_eql);
-    return_(expr_(HashSet_KeyIter $scope)(
-        if_some((self.metadata)(metadata)) {
+    debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
+    return_(expr_(HashSet_KeyIter $scope)(if_some((self.metadata)(metadata)) {
         $break_((HashSet_KeyIter){
             .len = HashSet_cap(self),
             .metadata = metadata,
             .keys = HashSet__keys(self, key_ty).raw,
-                debug_only(.key_ty = key_ty) });
+            .key_ty = $typing(key_ty),
+        });
     } else_none {
         $break_((HashSet_KeyIter){
             .len = 0,
             .metadata = null,
             .keys = null,
-                debug_only(.key_ty = key_ty) });
+            .key_ty = $typing(key_ty),
+        });
     }) $unscoped(expr));
 } $unscoped(fn);
 
 fn_((HashSet_KeyIter_next(HashSet_KeyIter* self, TypeInfo key_ty))(O$u_P_const$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     while (self->len > 0) {
         self->len--;
         let used = HashMap_Ctrl_isUsed(*self->metadata);
@@ -889,7 +893,7 @@ fn_((HashSet_KeyIter_next(HashSet_KeyIter* self, TypeInfo key_ty))(O$u_P_const$r
 
 fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$u_P$raw) $scope) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy(self->key_ty, key_ty, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
     while (self->len > 0) {
         self->len--;
         let used = HashMap_Ctrl_isUsed(*self->metadata);

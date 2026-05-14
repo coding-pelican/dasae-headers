@@ -27,7 +27,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 typedef enum_((chain__State $fits($packed))(
-    chain__State_none = 0,
+    chain__State_undefined = 0,
     chain__State_init = 1,
     chain__State_eval = 2,
 )) chain__State;
@@ -62,7 +62,7 @@ typedef enum_((chain__State $fits($packed))(
     var_(__reserved_acc, _T) = {}; \
     $maybe_unused var_(__reserved_buf, E$$(S$$(_T))) = {}; \
     $maybe_unused var_(__reserved_buf_cap, usize) = 0; \
-    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_none : chain__State_init; \
+    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_undefined : chain__State_init; \
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         let __curr = _fnOp1; \
@@ -81,7 +81,7 @@ typedef enum_((chain__State $fits($packed))(
     var_(__reserved_acc, _T) = {}; \
     $maybe_unused var_(__reserved_buf, E$$(S$$(_T))) = {}; \
     $maybe_unused var_(__reserved_buf_cap, usize) = 0; \
-    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_none : chain__State_init; \
+    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_undefined : chain__State_init; \
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         $maybe_unused let __curr = _fnOp1; \
@@ -108,7 +108,7 @@ typedef enum_((chain__State $fits($packed))(
     var_(__reserved_acc, _T) = {}; \
     $maybe_unused var_(__reserved_buf, E$$(S$$(_T))) = {}; \
     $maybe_unused var_(__reserved_buf_cap, usize) = 0; \
-    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_none : chain__State_init; \
+    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_undefined : chain__State_init; \
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         $maybe_unused let __curr = _fnOp1; \
@@ -143,7 +143,7 @@ typedef enum_((chain__State $fits($packed))(
     var_(__reserved_acc, _T) = {}; \
     $maybe_unused var_(__reserved_buf, E$$(S$$(_T))) = {}; \
     $maybe_unused var_(__reserved_buf_cap, usize) = 0; \
-    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_none : chain__State_init; \
+    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_undefined : chain__State_init; \
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         $maybe_unused let __curr = _fnOp1; \
@@ -186,7 +186,7 @@ typedef enum_((chain__State $fits($packed))(
     var_(__reserved_acc, _T) = {}; \
     $maybe_unused var_(__reserved_buf, E$$(S$$(_T))) = {}; \
     $maybe_unused var_(__reserved_buf_cap, usize) = 0; \
-    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_none : chain__State_init; \
+    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_undefined : chain__State_init; \
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         $maybe_unused let __curr = _fnOp1; \
@@ -237,7 +237,7 @@ typedef enum_((chain__State $fits($packed))(
     var_(__reserved_acc, _T) = {}; \
     $maybe_unused var_(__reserved_buf, E$$(S$$(_T))) = {}; \
     $maybe_unused var_(__reserved_buf_cap, usize) = 0; \
-    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_none : chain__State_init; \
+    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_undefined : chain__State_init; \
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         $maybe_unused let __curr = _fnOp1; \
@@ -296,7 +296,7 @@ typedef enum_((chain__State $fits($packed))(
     var_(__reserved_acc, _T) = {}; \
     $maybe_unused var_(__reserved_buf, E$$(S$$(_T))) = {}; \
     $maybe_unused var_(__reserved_buf_cap, usize) = 0; \
-    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_none : chain__State_init; \
+    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_undefined : chain__State_init; \
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         $maybe_unused let __curr = _fnOp1; \
@@ -363,7 +363,7 @@ typedef enum_((chain__State $fits($packed))(
     var_(__reserved_acc, _T) = {}; \
     $maybe_unused var_(__reserved_buf, E$$(S$$(_T))) = {}; \
     $maybe_unused var_(__reserved_buf_cap, usize) = 0; \
-    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_none : chain__State_init; \
+    var_(__chain_state, chain__State) = __s.len == 0 ? chain__State_undefined : chain__State_init; \
     do { \
         let_(__reserved, TypeOf(__s.ptr)) = __s.ptr; \
         $maybe_unused let __curr = _fnOp1; \
@@ -521,7 +521,7 @@ typedef enum_((chain__State $fits($packed))(
 #define __step__collect_(...) __step__collect$__emit(__VA_ARGS__)
 #define __step__collect$__emit(...) __collect$(__VA_ARGS__)
 #define __collect$(_gpa...) ({ \
-    if (__chain_state == chain__State_none) { \
+    if (__chain_state == chain__State_undefined) { \
         asg_l((&__reserved_buf)(ok({}))); \
     } else if (__chain_state == chain__State_init) { \
         __reserved_buf = u_castE$((TypeOf(__reserved_buf))(mem_Alctr_alloc(_gpa, typeInfo$(InnerT), ))); \

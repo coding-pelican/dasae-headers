@@ -2,7 +2,7 @@
 #include "dh/exec.h"
 #include "dh/time.h"
 #include "dh/io/stream.h"
-#include "dh/heap/Page.h"
+#include "dh/heap/Sys.h"
 
 $static fn_((report(io_Self io, S_const$u8 label, S_const$u8 fmt, ...))(void)) {
     io_stream_print(io, u8_l("[{:s}] "), label);
@@ -32,13 +32,15 @@ $static fn_((countFn(Sys sys, usize n, time_Dur interval, S_const$u8 label))(f64
     report(sys.io, label, u8_l("after loop {:fl}"), elapsed);
     return elapsed;
 };
-T_use$((f64)(Closure_Ctx, Closure_Rtn, Closure, ));
+T_use$((f64)(Closure_Ctx, Closure_Rtn, Closure));
 fn_use_Closure_((countFn)(Sys, usize, time_Dur, S_const$u8)(f64));
 
 T_use$((f64)(Future, Future_await, Future_cancel, Sched_async));
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    let gpa = heap_Page_alctr(&l0$((heap_Page)));
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     var loop = exec_Coop_init(gpa, try_(time_Awake_direct()), exec_Evented_noop);
     defer_(exec_Coop_fini(&loop));
     let sched = Sched_coop(&loop);

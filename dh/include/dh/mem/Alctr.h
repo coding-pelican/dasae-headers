@@ -98,10 +98,10 @@ $extern fn_((mem_Alctr_dupe($traced mem_Alctr self, u_S_const$raw src))(mem_E$u_
 #define T_use_mem_Alctr_dupe$(_T...) __comp_gen__T_use_mem_Alctr_dupe$(_T)
 
 struct mem_Alctr_VTbl {
-    fn_(((*const alloc)(P$raw ctx, usize len, mem_Align align))(O$P$u8));
-    fn_(((*const resize)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
-    fn_(((*const remap)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
-    fn_(((*const free)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+    fn_(((*alloc)(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+    fn_(((*resize)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+    fn_(((*remap)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+    fn_(((*free)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 };
 
 /// Default VTable functions for no-op fallbacks

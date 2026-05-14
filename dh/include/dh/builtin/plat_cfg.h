@@ -50,6 +50,54 @@ extern "C" {
 #define plat_is_darwin __comp_bool__plat_is_darwin
 #define plat_is_wasi __comp_bool__plat_is_wasi
 
+/* --- Data Model --- */
+
+#define plat_data_model __comp_enum__plat_data_model
+#define plat_data_model_unknown __comp_enum__plat_data_model_unknown
+#define plat_data_model_lp64 __comp_enum__plat_data_model_lp64
+#define plat_data_model_lp32 __comp_enum__plat_data_model_lp32
+#define plat_data_model_ilp64 __comp_enum__plat_data_model_ilp64
+#define plat_data_model_ilp32 __comp_enum__plat_data_model_ilp32
+#define plat_data_model_llp64 __comp_enum__plat_data_model_llp64
+/* Alias: for this project, `llp32` is kept as a naming handle for the
+ * int=32, long=32, pointer=32 family that currently maps to `ilp32`. */
+#define plat_data_model_llp32 plat_data_model_ilp32
+
+#define plat_data_model_is_lp64 __comp_bool__plat_data_model_is_lp64
+#define plat_data_model_is_lp32 __comp_bool__plat_data_model_is_lp32
+#define plat_data_model_is_ilp64 __comp_bool__plat_data_model_is_ilp64
+#define plat_data_model_is_ilp32 __comp_bool__plat_data_model_is_ilp32
+#define plat_data_model_is_llp64 __comp_bool__plat_data_model_is_llp64
+#define plat_data_model_is_llp32 plat_data_model_is_ilp32
+
+#define plat_bits_unit_unknown __comp_enum__plat_bits_unit_unknown
+#define plat_bits_unit_64bit __comp_enum__plat_bits_unit_64bit
+#define plat_bits_unit_32bit __comp_enum__plat_bits_unit_32bit
+#define plat_bits_unit_16bit __comp_enum__plat_bits_unit_16bit
+
+#define plat_bits_unknown __comp_int__plat_bits_unknown
+#define plat_bits_64 __comp_int__plat_bits_64
+#define plat_bits_32 __comp_int__plat_bits_32
+#define plat_bits_16 __comp_int__plat_bits_16
+
+#define plat_ptr_unit __comp_enum__plat_ptr_unit
+#define plat_long_unit __comp_enum__plat_long_unit
+#define plat_int_unit __comp_enum__plat_int_unit
+
+#define plat_ptr_bits __comp_int__plat_ptr_bits
+#define plat_long_bits __comp_int__plat_long_bits
+#define plat_int_bits __comp_int__plat_int_bits
+
+#define plat_ptr_is_64bit __comp_bool__plat_ptr_is_64bit
+#define plat_ptr_is_32bit __comp_bool__plat_ptr_is_32bit
+#define plat_long_is_64bit __comp_bool__plat_long_is_64bit
+#define plat_long_is_32bit __comp_bool__plat_long_is_32bit
+#define plat_int_is_64bit __comp_bool__plat_int_is_64bit
+#define plat_int_is_32bit __comp_bool__plat_int_is_32bit
+#define plat_int_is_16bit __comp_bool__plat_int_is_16bit
+
+#define plat_long_needs_distinct_int_cases __comp_bool__plat_long_needs_distinct_int_cases
+
 /* --- Calling Conventions --- */
 
 #define plat_cdecl __comp_attr__plat_cdecl
@@ -126,6 +174,111 @@ extern "C" {
 #define __comp_bool__plat_is_linux pp_Tok_eql(plat_type, plat_type_linux)
 #define __comp_bool__plat_is_darwin pp_Tok_eql(plat_type, plat_type_darwin)
 #define __comp_bool__plat_is_wasi pp_Tok_eql(plat_type, plat_type_wasi)
+
+/* --- Data Model --- */
+
+#define __comp_enum__plat_data_model plat_data_model_unknown
+#define __comp_enum__plat_data_model_unknown 0
+#define __comp_enum__plat_data_model_lp64 1
+#define __comp_enum__plat_data_model_lp32 2
+#define __comp_enum__plat_data_model_ilp64 3
+#define __comp_enum__plat_data_model_ilp32 4
+#define __comp_enum__plat_data_model_llp64 5
+
+#if (__SIZEOF_LONG__ == 8) && (__SIZEOF_POINTER__ == 8)
+#if (__SIZEOF_INT__ == 8)
+#undef __comp_enum__plat_data_model
+#define __comp_enum__plat_data_model plat_data_model_ilp64
+#else
+#undef __comp_enum__plat_data_model
+#define __comp_enum__plat_data_model plat_data_model_lp64
+#endif
+#elif (__SIZEOF_LONG__ == 4) && (__SIZEOF_POINTER__ == 8)
+#undef __comp_enum__plat_data_model
+#define __comp_enum__plat_data_model plat_data_model_llp64
+#elif (__SIZEOF_LONG__ == 4) && (__SIZEOF_POINTER__ == 4)
+#if (__SIZEOF_INT__ == 2)
+#undef __comp_enum__plat_data_model
+#define __comp_enum__plat_data_model plat_data_model_lp32
+#else
+#undef __comp_enum__plat_data_model
+#define __comp_enum__plat_data_model plat_data_model_ilp32
+#endif
+#endif
+
+#define __comp_bool__plat_data_model_is_lp64 pp_Tok_eql(plat_data_model, plat_data_model_lp64)
+#define __comp_bool__plat_data_model_is_lp32 pp_Tok_eql(plat_data_model, plat_data_model_lp32)
+#define __comp_bool__plat_data_model_is_ilp32 pp_Tok_eql(plat_data_model, plat_data_model_ilp32)
+#define __comp_bool__plat_data_model_is_ilp64 pp_Tok_eql(plat_data_model, plat_data_model_ilp64)
+#define __comp_bool__plat_data_model_is_llp64 pp_Tok_eql(plat_data_model, plat_data_model_llp64)
+
+#define __comp_enum__plat_bits_unit_unknown 0
+#define __comp_enum__plat_bits_unit_64bit 1
+#define __comp_enum__plat_bits_unit_32bit 2
+#define __comp_enum__plat_bits_unit_16bit 3
+
+#define __comp_int__plat_bits_unknown 0
+#define __comp_int__plat_bits_64 64
+#define __comp_int__plat_bits_32 32
+#define __comp_int__plat_bits_16 16
+
+#define __comp_enum__plat_ptr_unit pp_expand( \
+    pp_switch_ pp_begin(plat_data_model)( \
+        pp_case_((plat_data_model_lp32)(plat_bits_unit_32bit)), \
+        pp_case_((plat_data_model_ilp32)(plat_bits_unit_32bit)), \
+        pp_default_(plat_bits_unit_64bit) \
+    ) pp_end \
+)
+#define __comp_enum__plat_long_unit pp_expand( \
+    pp_switch_ pp_begin(plat_data_model)( \
+        pp_case_((plat_data_model_lp64)(plat_bits_unit_64bit)), \
+        pp_case_((plat_data_model_ilp64)(plat_bits_unit_64bit)), \
+        pp_default_(plat_bits_unit_32bit) \
+    ) pp_end \
+)
+#define __comp_enum__plat_int_unit pp_expand( \
+    pp_switch_ pp_begin(plat_data_model)( \
+        pp_case_((plat_data_model_lp32)(plat_bits_unit_16bit)), \
+        pp_case_((plat_data_model_ilp64)(plat_bits_unit_64bit)), \
+        pp_default_(plat_bits_unit_32bit) \
+    ) pp_end \
+)
+
+#define __comp_int__plat_ptr_bits pp_expand( \
+    pp_switch_ pp_begin(plat_ptr_unit)( \
+        pp_case_((plat_bits_unit_64bit)(plat_bits_64)), \
+        pp_case_((plat_bits_unit_32bit)(plat_bits_32)), \
+        pp_default_(plat_bits_unknown) \
+    ) pp_end \
+)
+#define __comp_int__plat_long_bits pp_expand( \
+    pp_switch_ pp_begin(plat_long_unit)( \
+        pp_case_((plat_bits_unit_64bit)(plat_bits_64)), \
+        pp_case_((plat_bits_unit_32bit)(plat_bits_32)), \
+        pp_default_(plat_bits_unknown) \
+    ) pp_end \
+)
+#define __comp_int__plat_int_bits pp_expand( \
+    pp_switch_ pp_begin(plat_int_unit)( \
+        pp_case_((plat_bits_unit_64bit)(plat_bits_64)), \
+        pp_case_((plat_bits_unit_32bit)(plat_bits_32)), \
+        pp_case_((plat_bits_unit_16bit)(plat_bits_16)), \
+        pp_default_(plat_bits_unknown) \
+    ) pp_end \
+)
+
+#define __comp_bool__plat_ptr_is_64bit pp_Tok_eql(plat_ptr_unit, plat_bits_unit_64bit)
+#define __comp_bool__plat_ptr_is_32bit pp_Tok_eql(plat_ptr_unit, plat_bits_unit_32bit)
+/* C requires `long` to provide at least 32 bits of range, so this layer only
+ * models `long` as 32-bit or 64-bit and intentionally has no `*_long_is_16bit`. */
+#define __comp_bool__plat_long_is_64bit pp_Tok_eql(plat_long_unit, plat_bits_unit_64bit)
+#define __comp_bool__plat_long_is_32bit pp_Tok_eql(plat_long_unit, plat_bits_unit_32bit)
+#define __comp_bool__plat_int_is_64bit pp_Tok_eql(plat_int_unit, plat_bits_unit_64bit)
+#define __comp_bool__plat_int_is_32bit pp_Tok_eql(plat_int_unit, plat_bits_unit_32bit)
+#define __comp_bool__plat_int_is_16bit pp_Tok_eql(plat_int_unit, plat_bits_unit_16bit)
+
+#define __comp_bool__plat_long_needs_distinct_int_cases \
+    pp_or(plat_data_model_is_llp64, plat_data_model_is_llp32)
 
 /* --- Calling Conventions --- */
 

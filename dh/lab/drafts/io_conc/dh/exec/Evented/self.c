@@ -10,7 +10,7 @@ $static fn_((exec_Evented__noopAssociate(P$raw ctx, exec_Evented_Handle handle, 
     let_ignore = ctx;
     let_ignore = handle;
     let_ignore = key;
-    return_err(exec_Evented_E_Unsupported());
+    return_err(E_cause$exec_Evented_Unsupported());
 } $unscoped(fn);
 
 $static fn_((exec_Evented__noopPoll(P$raw ctx, time_Dur timeout))(E$O$exec_Evented_Completion) $scope) {
@@ -22,17 +22,17 @@ $static fn_((exec_Evented__noopPoll(P$raw ctx, time_Dur timeout))(E$O$exec_Event
 $static fn_((exec_Evented__noopPost(P$raw ctx, exec_Evented_Completion completion))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = completion;
-    return_err(exec_Evented_E_Unsupported());
+    return_err(E_cause$exec_Evented_Unsupported());
 } $unscoped(fn);
 
 $static fn_((exec_Evented__noopCancel(P$raw ctx, exec_Evented_Handle handle, P$raw op))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = handle;
     let_ignore = op;
-    return_err(exec_Evented_E_Unsupported());
+    return_err(E_cause$exec_Evented_Unsupported());
 } $unscoped(fn);
 
-$static var_(exec_Evented__noopCtx, Void) = cleared();
+$static var_(exec_Evented__noopCtx, Void) $undefined_static;
 $static let_(exec_Evented__noopVTbl, exec_Evented_VTbl) = {
     .finiFn = exec_Evented__noopFini,
     .associateFn = exec_Evented__noopAssociate,

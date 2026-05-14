@@ -227,7 +227,7 @@ fn_((CompHash64_calc(S_const$u8 str))(u64)) {
     claim_assert_nonnullS(str);
     var_(hash, u64) = 0;
     for_(($s(str))(ch)) {
-        hash = usize_(1099511628211) * hash + *ch;
+        hash = u64_(1099511628211ull) * hash + *ch;
     } $end(for);
     return hash ^ (hash >> 32);
 };
@@ -236,7 +236,7 @@ fn_((CompHash32_calc(S_const$u8 str))(u32)) {
     claim_assert_nonnullS(str);
     var_(hash, u32) = 0;
     for_(($s(str))(ch)) {
-        hash = u32_(65599) * hash + *ch;
+        hash = u32_(65599u) * hash + *ch;
     } $end(for);
     return hash ^ (hash >> 16);
 };

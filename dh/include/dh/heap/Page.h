@@ -26,14 +26,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/// Page allocator instance (minimal state)
-typedef struct heap_Page {
-    Void unused_[0];
-} heap_Page;
+/// Page allocator instance
+T_alias$((heap_Page)(struct heap_Page {
+    /// Hint for the next address to map
+    /// When first using the allocator, this is must be `null`
+    var_(_next_addr_hint, usize);
+}));
+$static let_(heap_Page_default, heap_Page) = { ._next_addr_hint = ptrToInt(null) };
 /// Get allocator interface for instance
 $extern fn_((heap_Page_alctr(heap_Page* self))(mem_Alctr));
-/// Get next virtual memory address hint
-$static var_(heap_Page_s_next_mmap_addr_hint, P$raw) = null;
 
 #if defined(__cplusplus)
 } /* extern "C" */

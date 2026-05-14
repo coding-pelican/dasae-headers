@@ -167,9 +167,12 @@ typedef struct u_E$raw {
 #define u_make u_allocV
 #define u_create(_type...) (u_make(_type).ref)
 
-#define u_deref(_p...) $supress_cast_qual((*as$(u_V$raw*)(_p.inner)))
+#define u_deref(_p...) $supress_cast_qual(T_switch$((TypeOf(_p))( \
+    T_case$((u_P_const$raw)(*as$(u_V$raw*)((_p).inner))), \
+    T_case$((u_P$raw)(*as$(u_V$raw*)((_p).inner))) \
+)))
 #define u_load(_v /*: u_V_const$T|u_V$T*/... /*(u_T)*/) $supress_cast_qual(({ \
-    const TypeOf(_v) __v = _v; \
+    const u_V$raw __v = _v; \
     const u_V$raw __b = u_allocV(__v.inner_type); \
     $ignore_void raw_memcpy(__b.inner, __v.inner, __v.inner_type.size); \
     __b; \
@@ -221,7 +224,7 @@ typedef struct u_E$raw {
 
 #define u_stride_static(_type...) ____u_stride_static(_type)
 #define ____u_stride_static(_type...) \
-    (((_type).size + ((1ull << (_type).log2_align) - 1)) & ~((1ull << (_type).log2_align) - 1))
+    (((_type).size + ((usize_(1) << (_type).log2_align) - 1)) & ~((usize_(1) << (_type).log2_align) - 1))
 #define u_stride(_type...) __step__u_stride(_type)
 #define __step__u_stride(_type...) ____u_stride(pp_uniqTok(type), _type)
 #define ____u_stride(__type, _type...) ({ \
@@ -370,6 +373,11 @@ typedef struct u_E$raw {
 }))
 
 $attr($inline_always)
+$static fn_((u_memset0(u_P$raw dst))(u_P$raw)) {
+    claim_assert_nonnull(dst.raw);
+    return raw_memset0(dst.raw, dst.type.size), dst;
+};
+$attr($inline_always)
 $static fn_((u_memset(u_P$raw dst, u_V$raw src))(u_P$raw)) {
     claim_assert_fmt(
         dst.type.size == src.inner_type.size,
@@ -387,11 +395,6 @@ $static fn_((u_memset(u_P$raw dst, u_V$raw src))(u_P$raw)) {
         dst.raw, src.inner
     );
     return raw_memcpy(dst.raw, src.inner, src.inner_type.size), dst;
-};
-$attr($inline_always)
-$static fn_((u_memset0(u_P$raw dst))(u_P$raw)) {
-    claim_assert_nonnull(dst.raw);
-    return raw_memset0(dst.raw, dst.type.size), dst;
 };
 $attr($inline_always)
 $static fn_((u_memcpy(u_P$raw dst, u_P_const$raw src))(u_P$raw)) {
@@ -456,6 +459,11 @@ $static fn_((u_memord(u_P_const$raw lhs, u_P_const$raw rhs))(cmp_Ord)) {
 };
 
 $attr($inline_always)
+$static fn_((u_memset0S(u_S$raw dst))(u_S$raw)) {
+    claim_assert_nonnull(dst.ptr);
+    return raw_memset0(dst.ptr, dst.len * dst.type.size), dst;
+};
+$attr($inline_always)
 $static fn_((u_memsetS(u_S$raw dst, u_V$raw src))(u_S$raw)) {
     claim_assert_fmt(
         dst.type.size == src.inner_type.size,
@@ -474,11 +482,6 @@ $static fn_((u_memsetS(u_S$raw dst, u_V$raw src))(u_S$raw)) {
     );
     for_(($r(0, dst.len))(i)) { u_memcpy(u_atS(dst, i), src.ref.as_const); } $end(for);
     return dst;
-};
-$attr($inline_always)
-$static fn_((u_memset0S(u_S$raw dst))(u_S$raw)) {
-    claim_assert_nonnull(dst.ptr);
-    return raw_memset0(dst.ptr, dst.len * dst.type.size), dst;
 };
 $attr($inline_always)
 $static fn_((u_memcpyS(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {

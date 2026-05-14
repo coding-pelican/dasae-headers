@@ -64,10 +64,10 @@ extern "C" {
 
 /*========== Memory Operations ==============================================*/
 
-#define pri_memset(_p_dst, _v_src...) __op__pri_memset(_p_dst, _v_src)
-#define pri_memsetS(_s_dst, _v_src...) __op__pri_memsetS(_s_dst, _v_src)
 #define pri_memset0(_s_dst...) __op__pri_memset0(_s_dst)
 #define pri_memset0S(_s_dst...) __op__pri_memset0S(_s_dst)
+#define pri_memset(_p_dst, _v_src...) __op__pri_memset(_p_dst, _v_src)
+#define pri_memsetS(_s_dst, _v_src...) __op__pri_memsetS(_s_dst, _v_src)
 #define pri_memcpy(_p_dst, _p_src...) __op__pri_memcpy(_p_dst, _p_src)
 #define pri_memcpyS(_s_dst, _s_src...) __op__pri_memcpyS(_s_dst, _s_src)
 #define pri_memmove(_p_dst, _p_src...) __op__pri_memmove(_p_dst, _p_src)
@@ -435,6 +435,8 @@ $inline_always
 }
 #endif /* UNUSED_CODE */
 
+#define __op__pri_memset0(_s_dst...) u_castS$((TypeOf(_s_dst))(u_memset0(u_anyS(_s_dst))))
+#define __op__pri_memset0S(_s_dst...) u_castS$((TypeOf(_s_dst))(u_memset0S(u_anyS(_s_dst))))
 #define __op__pri_memset(_p_dst, _v_src...) u_castP$((TypeOf(_p_dst))(u_memset(u_anyP(_p_dst), u_anyP(from$((TypeOf(*(_p_dst)))_v_src)))))
 #define __op__pri_memsetS(_s_dst, _v_src...) u_castS$((TypeOf(_s_dst))(u_memsetS(u_anyS(_s_dst), u_anyV(from$((TypeOf(*(_s_dst).ptr))_v_src)))))
 #define __op__pri_memcpy(_p_dst, _p_src...) u_castP$((TypeOf(_p_dst))(u_memcpy(u_anyP(_p_dst), u_anyP(from$((TypeOf(*(_p_dst)))_p_src)))))
@@ -1051,10 +1053,13 @@ $inline_always
     let_(__x, IIntType) = _x; \
     claim_assert(__x != int_limit_min$(IIntType)); \
     local_return_(T_switch$((TypeOf(IIntType))( \
-        T_case$((i8)(__builtin_abs(as$(i8)(_x)))), \
-        T_case$((i16)(__builtin_abs(as$(i16)(_x)))), \
-        T_case$((i32)(__builtin_abs(as$(i32)(_x)))), \
-        T_case$((i64)(__builtin_llabs(as$(i64)(_x)))), \
+        T_case$((i8)(__builtin_abs(as$(i8)(__x)))), \
+        T_case$((i16)(__builtin_abs(as$(i16)(__x)))), \
+        T_case$((i32)(__builtin_abs(as$(i32)(__x)))), \
+        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+            T_case$((ilong)(__builtin_labs(as$(ilong)(__x)))), \
+        )) T_delim(), \
+        T_case$((i64)(__builtin_llabs(as$(i64)(__x)))) \
     ))); \
 })
 
@@ -1254,12 +1259,16 @@ $inline_always
         ? 0 \
         : T_switch$((TypeOf(_x))( \
               T_case$((u8)(raw_countOnes8(as$(u8) _x))), \
-              T_case$((u16)(raw_countOnes16(as$(u16) _x))), \
-              T_case$((u32)(raw_countOnes32(as$(u32) _x))), \
-              T_case$((u64)(raw_countOnes64(as$(u64) _x))), \
               T_case$((i8)(raw_countOnes8(as$(i8) _x))), \
               T_case$((i16)(raw_countOnes16(as$(i16) _x))), \
+              T_case$((u16)(raw_countOnes16(as$(u16) _x))), \
+              T_case$((u32)(raw_countOnes32(as$(u32) _x))), \
               T_case$((i32)(raw_countOnes32(as$(i32) _x))), \
+              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+                  T_case$((ulong)(raw_countOnesLong(as$(ulong) _x))), \
+                  T_case$((ilong)(raw_countOnesLong(as$(ilong) _x))), \
+              )) T_delim(), \
+              T_case$((u64)(raw_countOnes64(as$(u64) _x))), \
               T_case$((i64)(raw_countOnes64(as$(i64) _x))) \
           )) \
 ))
@@ -1294,12 +1303,16 @@ $inline_always
         ? int_bits$(TypeOf(_x)) \
         : T_switch$((TypeOf(_x))( \
               T_case$((u8)(raw_trailingZeros8(as$(u8)(_x)))), \
-              T_case$((u16)(raw_trailingZeros16(as$(u16)(_x)))), \
-              T_case$((u32)(raw_trailingZeros32(as$(u32)(_x)))), \
-              T_case$((u64)(raw_trailingZeros64(as$(u64)(_x)))), \
               T_case$((i8)(raw_trailingZeros8(as$(i8)(_x)))), \
+              T_case$((u16)(raw_trailingZeros16(as$(u16)(_x)))), \
               T_case$((i16)(raw_trailingZeros16(as$(i16)(_x)))), \
+              T_case$((u32)(raw_trailingZeros32(as$(u32)(_x)))), \
               T_case$((i32)(raw_trailingZeros32(as$(i32)(_x)))), \
+              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+                  T_case$((ulong)(raw_trailingZerosLong(as$(ulong)(_x)))), \
+                  T_case$((ilong)(raw_trailingZerosLong(as$(ilong)(_x)))), \
+              )) T_delim(), \
+              T_case$((u64)(raw_trailingZeros64(as$(u64)(_x)))), \
               T_case$((i64)(raw_trailingZeros64(as$(i64)(_x)))) \
           )) \
 ))
@@ -1324,12 +1337,16 @@ $inline_always
         ? int_bits$(TypeOf(_x)) \
         : T_switch$((TypeOf(_x))( \
               T_case$((u8)(raw_leadingZeros8(as$(u8)(_x)))), \
-              T_case$((u16)(raw_leadingZeros16(as$(u16)(_x)))), \
-              T_case$((u32)(raw_leadingZeros32(as$(u32)(_x)))), \
-              T_case$((u64)(raw_leadingZeros64(as$(u64)(_x)))), \
               T_case$((i8)(raw_leadingZeros8(as$(i8)(_x)))), \
+              T_case$((u16)(raw_leadingZeros16(as$(u16)(_x)))), \
               T_case$((i16)(raw_leadingZeros16(as$(i16)(_x)))), \
+              T_case$((u32)(raw_leadingZeros32(as$(u32)(_x)))), \
               T_case$((i32)(raw_leadingZeros32(as$(i32)(_x)))), \
+              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+                  T_case$((ulong)(raw_leadingZerosLong(as$(ulong)(_x)))), \
+                  T_case$((ilong)(raw_leadingZerosLong(as$(ilong)(_x)))), \
+              )) T_delim(), \
+              T_case$((u64)(raw_leadingZeros64(as$(u64)(_x)))), \
               T_case$((i64)(raw_leadingZeros64(as$(i64)(_x)))) \
           )) \
 ))
@@ -1345,12 +1362,16 @@ $inline_always
         ? 0 \
         : T_switch$((TypeOf(_x))( \
               T_case$((u8)(raw_rotateLeft8(as$(u8)(_x), as$(u8)(_y)))), \
-              T_case$((u16)(raw_rotateLeft16(as$(u16)(_x), as$(u16)(_y)))), \
-              T_case$((u32)(raw_rotateLeft32(as$(u32)(_x), as$(u32)(_y)))), \
-              T_case$((u64)(raw_rotateLeft64(as$(u64)(_x), as$(u64)(_y)))), \
               T_case$((i8)(raw_rotateLeft8(as$(i8)(_x), as$(i8)(_y)))), \
+              T_case$((u16)(raw_rotateLeft16(as$(u16)(_x), as$(u16)(_y)))), \
               T_case$((i16)(raw_rotateLeft16(as$(i16)(_x), as$(i16)(_y)))), \
+              T_case$((u32)(raw_rotateLeft32(as$(u32)(_x), as$(u32)(_y)))), \
               T_case$((i32)(raw_rotateLeft32(as$(i32)(_x), as$(i32)(_y)))), \
+              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+                  T_case$((ulong)(raw_rotateLeftLong(as$(ulong)(_x), as$(ulong)(_y)))), \
+                  T_case$((ilong)(raw_rotateLeftLong(as$(ilong)(_x), as$(ilong)(_y)))), \
+              )) T_delim(), \
+              T_case$((u64)(raw_rotateLeft64(as$(u64)(_x), as$(u64)(_y)))), \
               T_case$((i64)(raw_rotateLeft64(as$(i64)(_x), as$(i64)(_y)))) \
           )) \
 ))
@@ -1367,12 +1388,16 @@ $inline_always
         ? 0 \
         : T_switch$((TypeOf(_x))( \
               T_case$((u8)(raw_rotateRight8(as$(u8)(_x), as$(u8)(_y)))), \
-              T_case$((u16)(raw_rotateRight16(as$(u16)(_x), as$(u16)(_y)))), \
-              T_case$((u32)(raw_rotateRight32(as$(u32)(_x), as$(u32)(_y)))), \
-              T_case$((u64)(raw_rotateRight64(as$(u64)(_x), as$(u64)(_y)))), \
               T_case$((i8)(raw_rotateRight8(as$(i8)(_x), as$(i8)(_y)))), \
+              T_case$((u16)(raw_rotateRight16(as$(u16)(_x), as$(u16)(_y)))), \
               T_case$((i16)(raw_rotateRight16(as$(i16)(_x), as$(i16)(_y)))), \
+              T_case$((u32)(raw_rotateRight32(as$(u32)(_x), as$(u32)(_y)))), \
               T_case$((i32)(raw_rotateRight32(as$(i32)(_x), as$(i32)(_y)))), \
+              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+                  T_case$((ulong)(raw_rotateRightLong(as$(ulong)(_x), as$(ulong)(_y)))), \
+                  T_case$((ilong)(raw_rotateRightLong(as$(ilong)(_x), as$(ilong)(_y)))), \
+              )) T_delim(), \
+              T_case$((u64)(raw_rotateRight64(as$(u64)(_x), as$(u64)(_y)))), \
               T_case$((i64)(raw_rotateRight64(as$(i64)(_x), as$(i64)(_y)))) \
           )) \
 ))
@@ -1389,12 +1414,16 @@ $inline_always
         ? 0 \
         : T_switch$((TypeOf(_x))( \
               T_case$((u8)(as$(u8)(_x))), \
-              T_case$((u16)(raw_swapBytes16(as$(u16)(_x)))), \
-              T_case$((u32)(raw_swapBytes32(as$(u32)(_x)))), \
-              T_case$((u64)(raw_swapBytes64(as$(u64)(_x)))), \
               T_case$((i8)(as$(i8)(_x))), \
+              T_case$((u16)(raw_swapBytes16(as$(u16)(_x)))), \
               T_case$((i16)(raw_swapBytes16(as$(i16)(_x)))), \
+              T_case$((u32)(raw_swapBytes32(as$(u32)(_x)))), \
               T_case$((i32)(raw_swapBytes32(as$(i32)(_x)))), \
+              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+                  T_case$((ulong)(raw_swapBytesLong(as$(ulong)(_x)))), \
+                  T_case$((ilong)(raw_swapBytesLong(as$(ilong)(_x)))), \
+              )) T_delim(), \
+              T_case$((u64)(raw_swapBytes64(as$(u64)(_x)))), \
               T_case$((i64)(raw_swapBytes64(as$(i64)(_x)))) \
           )) \
 ))
@@ -1410,12 +1439,16 @@ $inline_always
         ? 0 \
         : T_switch$((TypeOf(_x))( \
               T_case$((u8)(raw_reverseBits8(as$(u8)(_x)))), \
-              T_case$((u16)(raw_reverseBits16(as$(u16)(_x)))), \
-              T_case$((u32)(raw_reverseBits32(as$(u32)(_x)))), \
-              T_case$((u64)(raw_reverseBits64(as$(u64)(_x)))), \
               T_case$((i8)(raw_reverseBits8(as$(i8)(_x)))), \
+              T_case$((u16)(raw_reverseBits16(as$(u16)(_x)))), \
               T_case$((i16)(raw_reverseBits16(as$(i16)(_x)))), \
+              T_case$((u32)(raw_reverseBits32(as$(u32)(_x)))), \
               T_case$((i32)(raw_reverseBits32(as$(i32)(_x)))), \
+              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+                  T_case$((ulong)(raw_reverseBitsLong(as$(ulong)(_x)))), \
+                  T_case$((ilong)(raw_reverseBitsLong(as$(ilong)(_x)))), \
+              )) T_delim(), \
+              T_case$((u64)(raw_reverseBits64(as$(u64)(_x)))), \
               T_case$((i64)(raw_reverseBits64(as$(i64)(_x)))) \
           )) \
 ))
@@ -1469,31 +1502,31 @@ $inline_always
 /* clang-format off */
 #define ____uint_exp10_static$(_T, _n...) (as$(_T)( \
     (_n) < 10 ? ____uint_exp10_static$__values0to9(_n) : \
-    (_n) < 20 ? ____uint_exp10_static$__values10to19(_n) : 0u /* Overflow (> 10^19) for u64 */ \
+    (_n) < 20 ? ____uint_exp10_static$__values10to19(_n) : u32_(0) /* Overflow (> 10^19) for u64 */ \
 ))
 #define ____uint_exp10_static$__values0to9(_n) ( \
-    (_n) == 0 ? n_(1,u) : \
-    (_n) == 1 ? n_(10,u) : \
-    (_n) == 2 ? n_(100,u) : \
-    (_n) == 3 ? n_(1,000,u) : \
-    (_n) == 4 ? n_(10,000,u) : \
-    (_n) == 5 ? n_(100,000,u) : \
-    (_n) == 6 ? n_(1,000,000,u) : \
-    (_n) == 7 ? n_(10,000,000,u) : \
-    (_n) == 8 ? n_(100,000,000,u) : \
-                n_(1,000,000,000,u)/* 9 */ \
+    (_n) == 0 ? u32_(1u) : \
+    (_n) == 1 ? u32_(10u) : \
+    (_n) == 2 ? u32_(100u) : \
+    (_n) == 3 ? u32_(1,000u) : \
+    (_n) == 4 ? u32_(10,000u) : \
+    (_n) == 5 ? u32_(100,000u) : \
+    (_n) == 6 ? u32_(1,000,000u) : \
+    (_n) == 7 ? u32_(10,000,000u) : \
+    (_n) == 8 ? u32_(100,000,000u) : \
+                u32_(1,000,000,000u)/* 9 */ \
 )
 #define ____uint_exp10_static$__values10to19(_n) ( \
-    (_n) == 10 ? n_(10,000,000,000,ull) : \
-    (_n) == 11 ? n_(100,000,000,000,ull) : \
-    (_n) == 12 ? n_(1,000,000,000,000,ull) : \
-    (_n) == 13 ? n_(10,000,000,000,000,ull) : \
-    (_n) == 14 ? n_(100,000,000,000,000,ull) : \
-    (_n) == 15 ? n_(1,000,000,000,000,000,ull) : \
-    (_n) == 16 ? n_(10,000,000,000,000,000,ull) : \
-    (_n) == 17 ? n_(100,000,000,000,000,000,ull) : \
-    (_n) == 18 ? n_(1,000,000,000,000,000,000,ull) : \
-                 n_(10,000,000,000,000,000,000,ull) /* 19 (Max for u64) */ \
+    (_n) == 10 ? u64_(10,000,000,000ull) : \
+    (_n) == 11 ? u64_(100,000,000,000ull) : \
+    (_n) == 12 ? u64_(1,000,000,000,000ull) : \
+    (_n) == 13 ? u64_(10,000,000,000,000ull) : \
+    (_n) == 14 ? u64_(100,000,000,000,000ull) : \
+    (_n) == 15 ? u64_(1,000,000,000,000,000ull) : \
+    (_n) == 16 ? u64_(10,000,000,000,000,000ull) : \
+    (_n) == 17 ? u64_(100,000,000,000,000,000ull) : \
+    (_n) == 18 ? u64_(1,000,000,000,000,000,000ull) : \
+                 u64_(10,000,000,000,000,000,000ull) /* 19 (Max for u64) */ \
 )
 /* clang-format on */
 #define __step__uint_exp10$(...) __step__uint_exp10$(__step__uint_exp10$__parse __VA_ARGS__)
@@ -1588,7 +1621,7 @@ $inline_always
 })
 
 #define __step__uint_log2_static(_n...) ( \
-    (u32_(64u) - u32_(1u)) - int_leadingZeros_static(as$(u64)(_n)) \
+    (u32_(64) - u32_(1)) - int_leadingZeros_static(as$(u64)(_n)) \
 )
 #define __step__uint_log2(_n...) ____uint_log2(pp_uniqTok(n), _n)
 #define ____uint_log2(__n, _n...) local_({ \
@@ -1601,34 +1634,34 @@ $inline_always
 
 /* clang-format off */
 #define __step__uint_log10Round_static(_n...) ( \
-    (_n) < n_(31,622,776,602,ull) \
+    (_n) < u64_(31,622,776,602) \
         ? ____uint_log10Round_static__small(_n) \
         : ____uint_log10Round_static__large(_n) \
 )
 #define ____uint_log10Round_static__small(_n...) \
     /* Small value thresholds */ ( \
-    (_n) < n_(4,u)             ? 0u : \
-    (_n) < n_(32,u)            ? 1u : \
-    (_n) < n_(317,u)           ? 2u : \
-    (_n) < n_(3,163,u)         ? 3u : \
-    (_n) < n_(31,623,u)        ? 4u : \
-    (_n) < n_(316,228,u)       ? 5u : \
-    (_n) < n_(3,162,278,u)     ? 6u : \
-    (_n) < n_(31,622,777,u)    ? 7u : \
-    (_n) < n_(316,227,767,u)   ? 8u : \
-    (_n) < n_(3,162,277,661,u) ? 9u : 10u \
+    (_n) < u32_(4u)             ? u32_(0) : \
+    (_n) < u32_(32u)            ? u32_(1) : \
+    (_n) < u32_(317u)           ? u32_(2) : \
+    (_n) < u32_(3,163u)         ? u32_(3) : \
+    (_n) < u32_(31,623u)        ? u32_(4) : \
+    (_n) < u32_(316,228u)       ? u32_(5) : \
+    (_n) < u32_(3,162,278u)     ? u32_(6) : \
+    (_n) < u32_(31,622,777u)    ? u32_(7) : \
+    (_n) < u32_(316,227,767u)   ? u32_(8) : \
+    (_n) < u32_(3,162,277,661u) ? u32_(9) : u32_(10) \
 )
 #define ____uint_log10Round_static__large(_n...) \
     /* Large value thresholds */ ( \
-    (_n) < n_(316,227,766,017,ull)           ? 11u : \
-    (_n) < n_(3,162,277,660,169,ull)         ? 12u : \
-    (_n) < n_(31,622,776,601,684,ull)        ? 13u : \
-    (_n) < n_(316,227,766,016,838,ull)       ? 14u : \
-    (_n) < n_(3,162,277,660,168,380,ull)     ? 15u : \
-    (_n) < n_(31,622,776,601,683,794,ull)    ? 16u : \
-    (_n) < n_(316,227,766,016,837,934,ull)   ? 17u : \
-    (_n) < n_(3,162,277,660,168,379,332,ull) ? 18u : \
-    19u /* roughly up to max u64 */ \
+    (_n) < u64_(316,227,766,017ull)           ? u32_(11) : \
+    (_n) < u64_(3,162,277,660,169ull)         ? u32_(12) : \
+    (_n) < u64_(31,622,776,601,684ull)        ? u32_(13) : \
+    (_n) < u64_(316,227,766,016,838ull)       ? u32_(14) : \
+    (_n) < u64_(3,162,277,660,168,380ull)     ? u32_(15) : \
+    (_n) < u64_(31,622,776,601,683,794ull)    ? u32_(16) : \
+    (_n) < u64_(316,227,766,016,837,934ull)   ? u32_(17) : \
+    (_n) < u64_(3,162,277,660,168,379,332ull) ? u32_(18) : \
+    u32_(19) /* roughly up to max u64 */ \
 )
 /* clang-format on */
 #define __step__uint_log10Round(_n...) ____uint_log10Round(pp_uniqTok(n), _n)
@@ -1642,33 +1675,33 @@ $inline_always
 
 /* clang-format off */
 #define __step__uint_log10Floor_static(_n...) ( \
-    (_n) < n_(10,000,000,000,ull) \
+    (_n) < u64_(10,000,000,000) \
         ? ____uint_log10Floor_static__small(_n) \
         : ____uint_log10Floor_static__large(_n) \
 )
 #define ____uint_log10Floor_static__small(_n...) \
     /* Small value (0 - 10^10-1): 0 to 9 */ ( \
-    (_n) < n_(10,u)            ? 0u : \
-    (_n) < n_(100,u)           ? 1u : \
-    (_n) < n_(1,000,u)         ? 2u : \
-    (_n) < n_(10,000,u)        ? 3u : \
-    (_n) < n_(100,000,u)       ? 4u : \
-    (_n) < n_(1,000,000,u)     ? 5u : \
-    (_n) < n_(10,000,000,u)    ? 6u : \
-    (_n) < n_(100,000,000,u)   ? 7u : \
-    (_n) < n_(1,000,000,000,u) ? 8u : 9u \
+    (_n) < u32_(10u)            ? u32_(0) : \
+    (_n) < u32_(100u)           ? u32_(1) : \
+    (_n) < u32_(1,000u)         ? u32_(2) : \
+    (_n) < u32_(10,000u)        ? u32_(3) : \
+    (_n) < u32_(100,000u)       ? u32_(4) : \
+    (_n) < u32_(1,000,000u)     ? u32_(5) : \
+    (_n) < u32_(10,000,000u)    ? u32_(6) : \
+    (_n) < u32_(100,000,000u)   ? u32_(7) : \
+    (_n) < u32_(1,000,000,000u) ? u32_(8) : u32_(9) \
 )
 #define ____uint_log10Floor_static__large(_n...) \
     /* Large value (10^10+): 10 to 19 */ ( \
-    (_n) < n_(100,000,000,000,ull)            ? 10u : \
-    (_n) < n_(1,000,000,000,000,ull)          ? 11u : \
-    (_n) < n_(10,000,000,000,000,ull)         ? 12u : \
-    (_n) < n_(100,000,000,000,000,ull)        ? 13u : \
-    (_n) < n_(1,000,000,000,000,000,ull)      ? 14u : \
-    (_n) < n_(10,000,000,000,000,000,ull)     ? 15u : \
-    (_n) < n_(100,000,000,000,000,000,ull)    ? 16u : \
-    (_n) < n_(1,000,000,000,000,000,000,ull)  ? 17u : \
-    (_n) < n_(10,000,000,000,000,000,000,ull) ? 18u : 19u \
+    (_n) < u64_(100,000,000,000ull)            ? u32_(10) : \
+    (_n) < u64_(1,000,000,000,000ull)          ? u32_(11) : \
+    (_n) < u64_(10,000,000,000,000ull)         ? u32_(12) : \
+    (_n) < u64_(100,000,000,000,000ull)        ? u32_(13) : \
+    (_n) < u64_(1,000,000,000,000,000ull)      ? u32_(14) : \
+    (_n) < u64_(10,000,000,000,000,000ull)     ? u32_(15) : \
+    (_n) < u64_(100,000,000,000,000,000ull)    ? u32_(16) : \
+    (_n) < u64_(1,000,000,000,000,000,000ull)  ? u32_(17) : \
+    (_n) < u64_(10,000,000,000,000,000,000ull) ? u32_(18) : u32_(19) \
 )
 /* clang-format on */
 #define __step__uint_log10Floor(_n...) ____uint_log10Floor(pp_uniqTok(n), _n)
@@ -1682,34 +1715,34 @@ $inline_always
 
 /* clang-format off */
 #define __step__uint_log10Ceil_static(_n...) ( \
-    (_n) <= n_(10,000,000,000,ull) \
+    (_n) <= u64_(10,000,000,000ull) \
         ? ____uint_log10Ceil_static__small(_n) \
         : ____uint_log10Ceil_static__large(_n) \
 )
 #define ____uint_log10Ceil_static__small(_n...) \
     /* Small value (0 - 10^10) */ ( \
-    (_n) <= n_(1,u)              ? 0u : \
-    (_n) <= n_(10,u)             ? 1u : \
-    (_n) <= n_(100,u)            ? 2u : \
-    (_n) <= n_(1,000,u)          ? 3u : \
-    (_n) <= n_(10,000,u)         ? 4u : \
-    (_n) <= n_(100,000,u)        ? 5u : \
-    (_n) <= n_(1,000,000,u)      ? 6u : \
-    (_n) <= n_(10,000,000,u)     ? 7u : \
-    (_n) <= n_(100,000,000,u)    ? 8u : \
-    (_n) <= n_(1,000,000,000,u)  ? 9u : 10u \
+    (_n) <= u32_(1u)             ? u32_(0) : \
+    (_n) <= u32_(10u)            ? u32_(1) : \
+    (_n) <= u32_(100u)           ? u32_(2) : \
+    (_n) <= u32_(1,000u)         ? u32_(3) : \
+    (_n) <= u32_(10,000u)        ? u32_(4) : \
+    (_n) <= u32_(100,000u)       ? u32_(5) : \
+    (_n) <= u32_(1,000,000u)     ? u32_(6) : \
+    (_n) <= u32_(10,000,000u)    ? u32_(7) : \
+    (_n) <= u32_(100,000,000u)   ? u32_(8) : \
+    (_n) <= u32_(1,000,000,000u) ? u32_(9) : u32_(10) \
 )
 #define ____uint_log10Ceil_static__large(_n...) \
     /* Large value (10^10+ - max) */ ( \
-    (_n) <= n_(100,000,000,000,ull)            ? 11u : \
-    (_n) <= n_(1,000,000,000,000,ull)          ? 12u : \
-    (_n) <= n_(10,000,000,000,000,ull)         ? 13u : \
-    (_n) <= n_(100,000,000,000,000,ull)        ? 14u : \
-    (_n) <= n_(1,000,000,000,000,000,ull)      ? 15u : \
-    (_n) <= n_(10,000,000,000,000,000,ull)     ? 16u : \
-    (_n) <= n_(100,000,000,000,000,000,ull)    ? 17u : \
-    (_n) <= n_(1,000,000,000,000,000,000,ull)  ? 18u : \
-    (_n) <= n_(10,000,000,000,000,000,000,ull) ? 19u : 20u \
+    (_n) <= u64_(100,000,000,000ull)            ? u32_(11) : \
+    (_n) <= u64_(1,000,000,000,000ull)          ? u32_(12) : \
+    (_n) <= u64_(10,000,000,000,000ull)         ? u32_(13) : \
+    (_n) <= u64_(100,000,000,000,000ull)        ? u32_(14) : \
+    (_n) <= u64_(1,000,000,000,000,000ull)      ? u32_(15) : \
+    (_n) <= u64_(10,000,000,000,000,000ull)     ? u32_(16) : \
+    (_n) <= u64_(100,000,000,000,000,000ull)    ? u32_(17) : \
+    (_n) <= u64_(1,000,000,000,000,000,000ull)  ? u32_(18) : \
+    (_n) <= u64_(10,000,000,000,000,000,000ull) ? u32_(19) : u32_(20) \
 )
 /* clang-format on */
 #define __step__uint_log10Ceil(_n...) ____uint_log10Ceil(pp_uniqTok(n), _n)

@@ -1,11 +1,13 @@
 #include "dh-main.h"
-#include "dh/heap/Page.h"
+#include "dh/heap/Sys.h"
 #include "dh/heap/Arena.h"
 
 T_use_E$($set(mem_E)(S$u8));
 T_use$((u8)(mem_Alctr_alloc));
-TEST_fn_("test heap_Arena reset while retaining a buffer" $guard) {
-    var arena = heap_Arena_init(heap_Page_alctr(&l0$((heap_Page))));
+TEST_fn_("heap/Arena: reset while retaining a buffer" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));
     let gpa = heap_Arena_alctr(&arena);
 

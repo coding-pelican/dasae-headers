@@ -18,7 +18,9 @@ done
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 include_dir="$repo_root/dh-c/include"
 internal_dir="$repo_root/dh-c/src"
-temp_root="$repo_root/dh-c-test-tmp"
+scratch_root="$repo_root/dh-c/tests/.scratch"
+bin_root="$scratch_root/bin"
+temp_root="$scratch_root/integration"
 find_bin=${FIND_BIN:-find}
 grep_bin=${GREP_BIN:-grep}
 
@@ -42,8 +44,8 @@ case "$(uname -s)" in
         ;;
 esac
 
-unit_exe="$repo_root/dh-c-unit$exe_ext"
-cli_exe="$repo_root/dh-c-cli-test$exe_ext"
+unit_exe="$bin_root/dh-c-unit$exe_ext"
+cli_exe="$bin_root/dh-c-cli-test$exe_ext"
 
 common_sources='
 '"${repo_root}"'/dh-c/src/dal-c/Cmd.c
@@ -112,6 +114,8 @@ build_binary() {
     output_path=$1
     extra_source=$2
 
+    mkdir -p "$(dirname "$output_path")"
+
     set -- clang \
         -std=gnu17 \
         -Wall \
@@ -159,6 +163,12 @@ reset_temp_root() {
     rm -rf "$temp_root"
     mkdir -p "$temp_root"
 }
+
+cleanup_temp_root() {
+    rm -rf "$scratch_root"
+}
+
+trap cleanup_temp_root EXIT
 
 copy_scenario_project() {
     relative_source=$1
@@ -229,6 +239,11 @@ if [ "$integration" -eq 1 ]; then
     assert_contains "$LAST_OUTPUT" "Build successful!" "Example target build did not succeed"
 
     invoke_external "0" "$target_root_compat" "$cli_exe" clean
+
+    recursive_dsl_project=$(copy_scenario_project "dh-c/tests/fixture/recursive-dsl-project")
+    invoke_external "0" "$recursive_dsl_project" "$cli_exe" test --recur --dsl
+    assert_contains "$LAST_OUTPUT" "TEST: Basic Math Operations" "Recursive DSL test did not include dh tests"
+    assert_contains "$LAST_OUTPUT" "fixture: recursive dsl reaches current project" "Recursive DSL test did not include current project tests"
 
     deps_graph_root=$(copy_scenario_project "dh-c/tests/fixture/deps-graph")
     deps_graph_project="$deps_graph_root/C"

@@ -25,6 +25,11 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define fieldName$(_path, _Tok...) __expr__fieldName( \
+    FieldType$(TypeOf(_path), _Tok), _Tok \
+)
+#define __expr__fieldName(_path, _Tok...) #_Tok
+
 #define FieldType$(_T_Record, _field...) \
     /** \
      * @brief Get the type of a field within a container type \

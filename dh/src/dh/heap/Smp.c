@@ -71,7 +71,7 @@ fn_((heap_Smp_createOnHeap(mem_Alctr backing_alctr, usize thrd_meta_count))(mem_
 fn_((heap_Smp_destroyOnHeap(P$heap_Smp* self))(void)) {
     let thrd_meta_arr_type = u_typeInfoA((*self)->thrd_metas.len, typeInfo$(heap_Smp_ThrdMeta));
     let record_field_types = typeInfosFrom(typeInfo$(heap_Smp), thrd_meta_arr_type);
-    let record = u_recordPtrMut(u_anyP(*self), record_field_types, 0);
+    let record = P_meta((u_typeInfoRecord(record_field_types))(as$(P$raw)(*self)));
     *self = (mem_Alctr_destroy($trace(*self)->backing_alctr, record), null);
 };
 

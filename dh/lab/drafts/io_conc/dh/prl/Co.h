@@ -281,6 +281,7 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
 #define __stmt__$unscoped_co_fn /* clang-format off */ \
         break; \
         } \
+        if (false) goto __step_suspend; \
         if (false) { __step_suspend: __step_unscope: \
             return __ctx; \
         } \
@@ -362,6 +363,7 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 #define __stmt__$unguarded_co_fn /* clang-format off */ \
             break; \
         } \
+        if (false) goto __step_suspend; \
         if (false) { __step_suspend: __step_unscope: \
             return __ctx; \
         } \

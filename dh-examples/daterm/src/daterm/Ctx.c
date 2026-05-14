@@ -143,6 +143,8 @@ fn_((daterm_Ctx_queryScreenSize(const daterm_Ctx* self))(E$daterm_screen_Size)) 
 
 /*========== Internal Definitions ===========================================*/
 
+$attr($maybe_unused $inline_always)
+$static fn_((daterm_Ctx__unsupported__pollImmediately(fs_File_Handle input))(O$daterm_Event));
 pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
     $static fn_((daterm_Ctx__windows__pollImmediately(fs_File_Handle input))(O$daterm_Event));
@@ -154,7 +156,8 @@ pp_if_(plat_is_posix)(pp_then_(
 $static let daterm_Ctx___pollImmediately = pp_if_(plat_is_windows)(
     pp_then_(daterm_Ctx__windows__pollImmediately),
     pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(daterm_Ctx__posix__pollImmediately)
+        pp_then_(daterm_Ctx__posix__pollImmediately),
+        pp_else_(daterm_Ctx__unsupported__pollImmediately)
     )));
 $static fn_((daterm_Ctx__pollImmediate(fs_File_Handle input))(O$daterm_Event)) {
     return daterm_Ctx___pollImmediately(input);
@@ -258,6 +261,11 @@ fn_((daterm_Ctx__unsupported__queryScreenSize(fs_File_Handle input, fs_File_Hand
     let_ignore = input;
     let_ignore = output;
     return_err(E_cause$daterm_Ctx_Unsupported());
+} $unscoped(fn);
+
+fn_((daterm_Ctx__unsupported__pollImmediately(fs_File_Handle input))(O$daterm_Event) $scope) {
+    let_ignore = input;
+    return_none();
 } $unscoped(fn);
 
 /* --- Windows --- */

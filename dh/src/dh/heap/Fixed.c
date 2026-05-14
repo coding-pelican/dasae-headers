@@ -7,6 +7,7 @@ $static fn_((heap_Fixed__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
 $static fn_((heap_Fixed__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
 $static fn_((heap_Fixed__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
 $static fn_((heap_Fixed__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+
 $static fn_((heap_Fixed__thrdSafeAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
 $attr($inline_always)
 $static fn_((heap_Fixed__sliContainsPtr(S_const$u8 container, P_const$u8 ptr))(bool));
@@ -17,29 +18,29 @@ $static fn_((heap_Fixed__sliContainsSli(S_const$u8 container, S_const$u8 sli))(b
 
 fn_((heap_Fixed_alctr(heap_Fixed* self))(mem_Alctr)) {
     // VTable for Fixed buf allocator
-    $static const mem_Alctr_VTbl vtbl $like_ref = { {
+    $static let_(vtbl, mem_Alctr_VTbl) = {
         .alloc = heap_Fixed__alloc,
         .resize = heap_Fixed__resize,
         .remap = heap_Fixed__remap,
         .free = heap_Fixed__free,
-    } };
+    };
     return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,
-        .vtbl = vtbl,
+        .vtbl = &vtbl,
     });
 };
 
 fn_((heap_Fixed_thrdSafeAlctr(heap_Fixed* self))(mem_Alctr)) {
     /* Thread-safe VTable for FixedBuf allocator */
-    $static const mem_Alctr_VTbl vtbl $like_ref = { {
+    $static let_(vtbl, mem_Alctr_VTbl) = {
         .alloc = heap_Fixed__thrdSafeAlloc,
         .resize = mem_Alctr_VTbl_noResize,
         .remap = mem_Alctr_VTbl_noRemap,
         .free = mem_Alctr_VTbl_noFree,
-    } };
+    };
     return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,
-        .vtbl = vtbl,
+        .vtbl = &vtbl,
     });
 };
 
@@ -103,7 +104,7 @@ fn_((heap_Fixed__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len)
     let_ignore = buf_align;
 
     // Verify buf ownership
-    debug_assert_fmt(
+    claim_assert_fmt(
         heap_Fixed_ownsSli(self, buf.as_const),
         "Buffer not owned by this allocator"
     );
@@ -143,7 +144,7 @@ fn_((heap_Fixed__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let_ignore = buf_align;
 
     // Verify buf ownership
-    debug_assert_fmt(
+    claim_assert_fmt(
         heap_Fixed_ownsSli(self, buf.as_const),
         "Buffer not owned by this allocator"
     );
@@ -161,7 +162,7 @@ fn_((heap_Fixed__thrdSafeAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $
     let ptr_align = mem_log2ToAlign(align);
 
     // Use atomic operations for thread safety
-    usize end_idx = atom_load(&self->end_idx, atom_MemOrd_seq_cst);
+    var_(end_idx, usize) = atom_load(&self->end_idx, atom_MemOrd_seq_cst);
     while (true) {
         // Calculate aligned offset
         let ptr_addr = ptrToInt(self->buf.ptr) + end_idx;
@@ -169,7 +170,7 @@ fn_((heap_Fixed__thrdSafeAlloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $
         let adjust_off = aligned_addr - ptr_addr;
         let adjusted_index = end_idx + adjust_off;
         let new_end_index = adjusted_index + len;
-        if (self->buf.len < new_end_index) { return_none(); }
+        if (self->buf.len < new_end_index) return_none();
         end_idx = orelse_((atom_cmpXchgStrong(
             &self->end_idx, end_idx, new_end_index,
             atom_MemOrd_seq_cst, atom_MemOrd_seq_cst

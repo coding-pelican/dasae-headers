@@ -6,8 +6,21 @@
 #include <sys/mman.h>
 #endif
 
+fn_((heap_vmap_geom(void))(heap_Geom)) {
+#if plat_is_windows
+    return (heap_Geom){
+        .page_size = mem_page_size,
+        .reserve_align = 64ull * 1024,
+        .commit_align = mem_page_size,
+        .map_align = 64ull * 1024,
+    };
+#else
+    return heap_Geom_from(mem_page_size);
+#endif
+};
+
 fn_((heap_vmap_map(P$raw addr_hint, usize len))(O$P$u8) $scope) {
-    let aligned_len = heap_alignPage(len);
+    let aligned_len = heap_Geom_alignPageWith(heap_vmap_geom(), len);
 #if plat_is_windows
     let addr = VirtualAlloc(addr_hint, aligned_len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     return_(expr_(ReturnType $scope)(
@@ -26,7 +39,7 @@ fn_((heap_vmap_map(P$raw addr_hint, usize len))(O$P$u8) $scope) {
 } $unscoped(fn);
 
 fn_((heap_vmap_release(P$raw addr, usize len))(bool)) {
-    let aligned_len = heap_alignPage(len);
+    let aligned_len = heap_Geom_alignPageWith(heap_vmap_geom(), len);
 #if plat_is_windows
     let_ignore = aligned_len;
     return VirtualFree(addr, 0, MEM_RELEASE);
@@ -41,7 +54,13 @@ fn_((heap_vmap_release(P$raw addr, usize len))(bool)) {
 
 fn_((heap_vmap_remap(P$raw addr, usize old_len, usize new_len))(O$P$u8) $scope) {
 #if plat_is_linux
-    let new_addr = mremap(addr, heap_alignPage(old_len), heap_alignPage(new_len), MREMAP_MAYMOVE);
+    let geometry = heap_vmap_geom();
+    let new_addr = mremap(
+        addr,
+        heap_Geom_alignPageWith(geometry, old_len),
+        heap_Geom_alignPageWith(geometry, new_len),
+        MREMAP_MAYMOVE
+    );
     return new_addr == MAP_FAILED ? none() : some(new_addr);
 #endif
     let_ignore = addr;

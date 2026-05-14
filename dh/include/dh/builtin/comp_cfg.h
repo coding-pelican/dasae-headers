@@ -51,6 +51,30 @@ extern "C" {
 #define comp_version_minor __comp_int__comp_version_minor
 #define comp_version_patch __comp_int__comp_version_patch
 
+/* --- Comptime Evaluation --- */
+
+#define on_comptime__default __comp_flag__on_comptime__default
+#define on_comptime __comp_bool__on_comptime
+#define comptime_comp_enabled __comp_bool__comptime_comp_enabled
+#define comptime_only(_inner...) __comp_syn__comptime_only(_inner)
+
+/* --- Build Facts --- */
+
+#define comp_env_type __comp_enum__comp_env_type
+#define comp_env_type_unknown __comp_enum__comp_env_type_unknown
+#define comp_env_type_hosted __comp_enum__comp_env_type_hosted
+#define comp_env_type_freestanding __comp_enum__comp_env_type_freestanding
+
+#define comp_env_type_is_hosted __comp_bool__comp_env_type_is_hosted
+#define comp_env_type_is_freestanding __comp_bool__comp_env_type_is_freestanding
+
+#define comp_libc_linked __comp_bool__comp_libc_linked
+#define comp_default_libs_linked __comp_bool__comp_default_libs_linked
+#define comp_start_files_linked __comp_bool__comp_start_files_linked
+/* Derived: `stdlib` = `start_files` + `default_libs` both linked; `crt` = `start_files` alias */
+#define comp_stdlib_linked __comp_bool__comp_stdlib_linked
+#define comp_crt_linked __comp_bool__comp_crt_linked
+
 /* --- Compiler Attributes --- */
 
 /* Diagnostics & Constraints */
@@ -60,6 +84,8 @@ extern "C" {
 
 #define comp_must_use __comp_attr__comp_must_use
 #define comp_maybe_unused __comp_attr__comp_maybe_unused
+#define comp_undefined __comp_attr__comp_undefined
+#define comp_undefined_static __comp_attr__comp_undefined_static
 
 /* Data Layout */
 #define comp_packed __comp_attr__comp_packed
@@ -74,6 +100,7 @@ extern "C" {
 #define comp_pure __comp_attr__comp_pure
 #define comp_view __comp_attr__comp_view
 #define comp_no_return __comp_attr__comp_no_return
+#define comp_must_tail __comp_attr__comp_must_tail
 
 /* Optimization Hints */
 #define comp_inline __comp_attr__comp_inline
@@ -182,6 +209,102 @@ extern "C" {
 #define __comp_int__comp_version_minor (_MSC_VER % 100)
 #endif
 
+/* --- Comptime Evaluation --- */
+
+#define __comp_flag__on_comptime__default 0
+#define __comp_bool__on_comptime on_comptime__default
+#define __comp_bool__comptime_comp_enabled on_comptime
+#define __comp_syn__comptime_only(_inner...) pp_if_(on_comptime)(pp_then_(_inner))
+
+#if defined(COMP)
+#undef __comp_flag__on_comptime__default
+#define __comp_flag__on_comptime__default 1
+#endif /* defined(COMP) */
+
+/* --- Build Facts ---
+ *
+ * Inputs from build tool (`dh-c` emits these; hand-written code may also define them):
+ *   `COMP_FREESTANDING`    — freestanding env (mutually exclusive with `COMP_HOSTED`)
+ *   `COMP_HOSTED`          — hosted env       (mutually exclusive with `COMP_FREESTANDING`)
+ *   `COMP_NO_LIBC`         — libc is NOT linked
+ *   `COMP_NO_DEFAULT_LIBS` — default libs are NOT linked  (`-nodefaultlibs`)
+ *   `COMP_NO_START_FILES`  — startup files are NOT linked (`-nostartfiles`)
+ *
+ * Convenience aliases (hand-written code only; `dh-c` expands these before emitting):
+ *   `COMP_NO_STDLIB` = `COMP_NO_START_FILES` + `COMP_NO_DEFAULT_LIBS`  (`-nostdlib`)
+ *   `COMP_NO_CRT`    = `COMP_NO_START_FILES`                          (`-nostartfiles`)
+ */
+
+#if defined(COMP_HOSTED) && defined(COMP_FREESTANDING)
+#error "`COMP_HOSTED` and `COMP_FREESTANDING` cannot both be defined"
+#endif
+
+/* Expand convenience aliases before any flag evaluation */
+#if defined(COMP_NO_STDLIB)
+#ifndef COMP_NO_DEFAULT_LIBS
+#define COMP_NO_DEFAULT_LIBS
+#endif
+#ifndef COMP_NO_START_FILES
+#define COMP_NO_START_FILES
+#endif
+#endif /* defined(COMP_NO_STDLIB) */
+
+#if defined(COMP_NO_CRT)
+#ifndef COMP_NO_START_FILES
+#define COMP_NO_START_FILES
+#endif
+#endif /* defined(COMP_NO_CRT) */
+
+/* env_type: auto-detect, then allow `COMP_FREESTANDING`/`COMP_HOSTED` to override */
+#define __comp_enum__comp_env_type_unknown 0
+#define __comp_enum__comp_env_type_hosted 1
+#define __comp_enum__comp_env_type_freestanding 2
+
+#if defined(__STDC_HOSTED__) && (__STDC_HOSTED__ + 0) == 0
+#define __comp_enum__comp_env_type comp_env_type_freestanding
+#else
+#define __comp_enum__comp_env_type comp_env_type_hosted
+#endif
+
+#if defined(COMP_FREESTANDING)
+#undef __comp_enum__comp_env_type
+#define __comp_enum__comp_env_type comp_env_type_freestanding
+#elif defined(COMP_HOSTED)
+#undef __comp_enum__comp_env_type
+#define __comp_enum__comp_env_type comp_env_type_hosted
+#endif
+
+/* libc_linked: 0 when freestanding, COMP_NO_LIBC, or COMP_NO_DEFAULT_LIBS (libc is part of default libs) */
+#if defined(COMP_NO_LIBC) || defined(COMP_NO_DEFAULT_LIBS) || (comp_env_type == comp_env_type_freestanding)
+#define __comp_flag__comp_libc_linked 0
+#else
+#define __comp_flag__comp_libc_linked 1
+#endif
+
+/* default_libs_linked: default = 1; `COMP_NO_DEFAULT_LIBS` forces 0 */
+#if defined(COMP_NO_DEFAULT_LIBS)
+#define __comp_flag__comp_default_libs_linked 0
+#else
+#define __comp_flag__comp_default_libs_linked 1
+#endif
+
+/* start_files_linked: default = 1; `COMP_NO_START_FILES` forces 0 */
+#if defined(COMP_NO_START_FILES)
+#define __comp_flag__comp_start_files_linked 0
+#else
+#define __comp_flag__comp_start_files_linked 1
+#endif
+
+#define __comp_bool__comp_env_type_is_hosted pp_Tok_eql(comp_env_type, comp_env_type_hosted)
+#define __comp_bool__comp_env_type_is_freestanding pp_Tok_eql(comp_env_type, comp_env_type_freestanding)
+
+#define __comp_bool__comp_libc_linked __comp_flag__comp_libc_linked
+#define __comp_bool__comp_default_libs_linked __comp_flag__comp_default_libs_linked
+#define __comp_bool__comp_start_files_linked __comp_flag__comp_start_files_linked
+/* Derived: `stdlib` = `start_files` + `default_libs`; `crt` = `start_files` alias */
+#define __comp_bool__comp_stdlib_linked (comp_start_files_linked && comp_default_libs_linked)
+#define __comp_bool__comp_crt_linked comp_start_files_linked
+
 /* --- Compiler Attributes --- */
 
 #if comp_type == comp_type_clang || comp_type == comp_type_gcc
@@ -191,6 +314,8 @@ extern "C" {
 
 #define __comp_attr__comp_must_use __attribute__((warn_unused_result))
 #define __comp_attr__comp_maybe_unused __attribute__((unused))
+#define __comp_attr__comp_undefined __attribute__((uninitialized))
+#define __comp_attr__comp_undefined_static __attribute__((loader_uninitialized))
 
 #define __comp_attr__comp_packed __attribute__((packed))
 #define __comp_attr__comp_align(_align) __attribute__((aligned(_align)))
@@ -202,6 +327,7 @@ extern "C" {
 #define __comp_attr__comp_pure __attribute__((const))
 #define __comp_attr__comp_view __attribute__((pure))
 #define __comp_attr__comp_no_return __attribute__((noreturn))
+#define __comp_attr__comp_must_tail __attribute__((musttail))
 
 #define __comp_attr__comp_inline inline
 #define __comp_attr__comp_inline_always __attribute__((always_inline)) inline
@@ -232,6 +358,8 @@ extern "C" {
 
 #define __comp_attr__comp_must_use _Check_return_ /* _Must_inspect_result_ maps to this */
 #define __comp_attr__comp_maybe_unused __pragma(warning(suppress : 4100 4101 4189))
+#define __comp_attr__comp_undefined
+#define __comp_attr__comp_undefined_static
 
 #define __comp_attr__comp_packed /* TODO: Implement MSVC packed attribute with struct scope */
 #define __comp_attr__comp_align(_align) __declspec(align(_align))
@@ -246,6 +374,7 @@ extern "C" {
 #define __comp_attr__comp_pure __declspec(const)
 #define __comp_attr__comp_view __declspec(pure)
 #define __comp_attr__comp_no_return __declspec(noreturn)
+#define __comp_attr__comp_must_tail __declspec(musttail)
 
 #define __comp_attr__comp_inline __inline
 #define __comp_attr__comp_inline_always __forceinline
@@ -278,6 +407,8 @@ extern "C" {
 
 #define __comp_attr__comp_must_use
 #define __comp_attr__comp_maybe_unused
+#define __comp_attr__comp_undefined
+#define __comp_attr__comp_undefined_static
 
 #define __comp_attr__comp_packed
 #define __comp_attr__comp_align(_align)
@@ -289,6 +420,7 @@ extern "C" {
 #define __comp_attr__comp_pure
 #define __comp_attr__comp_view
 #define __comp_attr__comp_no_return
+#define __comp_attr__comp_must_tail
 
 #define __comp_attr__comp_inline
 #define __comp_attr__comp_inline_always

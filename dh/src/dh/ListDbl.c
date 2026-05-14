@@ -4,7 +4,7 @@
 
 fn_((ListDbl_Link_empty(TypeInfo type))(ListDbl_Link) $scope) {
     let_ignore = type;
-    return_({ .prev = none(), .next = none(), debug_only(.type = type) });
+    return_({ .prev = none(), .next = none(), .type = $typing(type) });
 } $unscoped(fn);
 
 fn_((ListDbl_Link_adp(P_const$ListDbl_Link self))(const ListDbl_Adp$raw*)) {
@@ -16,19 +16,19 @@ fn_((ListDbl_Link_adpMut(P$ListDbl_Link self))(ListDbl_Adp$raw*)) {
 };
 
 fn_((ListDbl_Link_data(P_const$ListDbl_Link self, TypeInfo type))(u_P_const$raw)) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     return ListDbl_Adp_data(ListDbl_Link_adp(self), type);
 };
 
 fn_((ListDbl_Link_dataMut(P$ListDbl_Link self, TypeInfo type))(u_P$raw)) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     return ListDbl_Adp_dataMut(ListDbl_Link_adpMut(self), type);
 };
 
 fn_((ListDbl_Adp_empty(TypeInfo type, ListDbl_Adp$raw* ret_mem))(ListDbl_Adp$raw*)) {
     claim_assert_nonnull(ret_mem);
     {
-        debug_only(ret_mem->type = type);
+        ret_mem->type = $typing(type);
         ret_mem->link = ListDbl_Link_empty(type);
         mem_set0P(ListDbl_Link_dataMut(&ret_mem->link, type));
     }
@@ -39,7 +39,7 @@ fn_((ListDbl_Adp_init(u_V$raw data, ListDbl_Adp$raw* ret_mem))(ListDbl_Adp$raw*)
     claim_assert_nonnull(ret_mem);
     let type = data.type;
     {
-        debug_only(ret_mem->type = type);
+        ret_mem->type = $typing(type);
         ret_mem->link = ListDbl_Link_empty(type);
         mem_setP(ListDbl_Link_dataMut(&ret_mem->link, type), data);
     }
@@ -55,7 +55,7 @@ fn_((ListDbl_Adp_linkMut(ListDbl_Adp$raw* self))(P$ListDbl_Link)) {
 };
 
 fn_((ListDbl_Adp_data(const ListDbl_Adp$raw* self, TypeInfo type))(u_P_const$raw)) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$ListDbl_Adp)(
         (.val[u_Fields_Idx_data_$ListDbl_Adp])(type)
     ))));
@@ -64,7 +64,7 @@ fn_((ListDbl_Adp_data(const ListDbl_Adp$raw* self, TypeInfo type))(u_P_const$raw
 };
 
 fn_((ListDbl_Adp_dataMut(ListDbl_Adp$raw* self, TypeInfo type))(u_P$raw)) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)(with_((u_Fields_type$ListDbl_Adp)(
         (.val[u_Fields_Idx_data_$ListDbl_Adp])(type)
     ))));
@@ -74,13 +74,13 @@ fn_((ListDbl_Adp_dataMut(ListDbl_Adp$raw* self, TypeInfo type))(u_P$raw)) {
 
 fn_((ListDbl_empty(TypeInfo type))(ListDbl) $scope) {
     let_ignore = type;
-    return_({ .first = none(), .last = none(), .len = 0, debug_only(.type = type) });
+    return_({ .first = none(), .last = none(), .len = 0, .type = $typing(type) });
 } $unscoped(fn);
 
 fn_((ListDbl_insertNext(ListDbl* self, P$ListDbl_Link link, P$ListDbl_Link new_link))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(link), claim_assert_nonnull(new_link);
-    debug_assert_eqBy(self->type, link->type, TypeInfo_eql);
-    debug_assert_eqBy(link->type, new_link->type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->type), $typed(link->type), TypeInfo_eql);
+    debug_assert_eqBy($typed(link->type), $typed(new_link->type), TypeInfo_eql);
     asg_l((&new_link->prev)(some(link)));
     new_link->next = link->next;
     if_some((link->next)(next)) {
@@ -94,8 +94,8 @@ fn_((ListDbl_insertNext(ListDbl* self, P$ListDbl_Link link, P$ListDbl_Link new_l
 
 fn_((ListDbl_insertPrev(ListDbl* self, P$ListDbl_Link link, P$ListDbl_Link new_link))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(link), claim_assert_nonnull(new_link);
-    debug_assert_eqBy(self->type, link->type, TypeInfo_eql);
-    debug_assert_eqBy(link->type, new_link->type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->type), $typed(link->type), TypeInfo_eql);
+    debug_assert_eqBy($typed(link->type), $typed(new_link->type), TypeInfo_eql);
     asg_l((&new_link->next)(some(link)));
     new_link->prev = link->prev;
     if_some((link->prev)(prev)) {
@@ -109,7 +109,7 @@ fn_((ListDbl_insertPrev(ListDbl* self, P$ListDbl_Link link, P$ListDbl_Link new_l
 
 fn_((ListDbl_concatByMoving(ListDbl* dst, ListDbl* src))(void)) {
     claim_assert_nonnull(dst), claim_assert_nonnull(src);
-    debug_assert_eqBy(dst->type, src->type, TypeInfo_eql);
+    debug_assert_eqBy($typed(dst->type), $typed(src->type), TypeInfo_eql);
     if_some((dst->last)(last)) {
         if_some((src->first)(first)) {
             last->next = src->first;
@@ -129,7 +129,7 @@ fn_((ListDbl_concatByMoving(ListDbl* dst, ListDbl* src))(void)) {
 
 fn_((ListDbl_append(ListDbl* self, P$ListDbl_Link new_link))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(new_link);
-    debug_assert_eqBy(self->type, new_link->type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->type), $typed(new_link->type), TypeInfo_eql);
     if_some((self->last)(last)) {
         ListDbl_insertNext(self, last, new_link);
     } else {
@@ -143,7 +143,7 @@ fn_((ListDbl_append(ListDbl* self, P$ListDbl_Link new_link))(void)) {
 
 fn_((ListDbl_prepend(ListDbl* self, P$ListDbl_Link new_link))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(new_link);
-    debug_assert_eqBy(self->type, new_link->type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->type), $typed(new_link->type), TypeInfo_eql);
     if_some((self->first)(first)) {
         ListDbl_insertPrev(self, first, new_link);
     } else {
@@ -157,7 +157,7 @@ fn_((ListDbl_prepend(ListDbl* self, P$ListDbl_Link new_link))(void)) {
 
 fn_((ListDbl_remove(ListDbl* self, P$ListDbl_Link link))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(link);
-    debug_assert_eqBy(self->type, link->type, TypeInfo_eql);
+    debug_assert_eqBy($typed(self->type), $typed(link->type), TypeInfo_eql);
     if_some((link->prev)(prev)) {
         prev->next = link->next;
     } else {

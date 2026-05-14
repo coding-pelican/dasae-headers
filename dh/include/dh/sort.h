@@ -121,13 +121,13 @@ $extern fn_((sort_blockCtxAlloc(mem_Alctr gpa, u_S$raw seq, sort_OrdCtxFn ordFn,
 #define __const__sort_max_steps_pdq_partial_insert_sort 5
 #define __const__sort_threshold_pdq_partial_insert_sort 50
 #define __const__sort_limit_pdq_offset_blocks 64
-#define __const__sort_limit_block_cache_stack_bytes pp_if_(arch_bits_is_64bit)(pp_then_(4096), pp_else_(2048))
+#define __const__sort_limit_block_cache_stack_bytes pp_if_(arch_bits_is_64bit)(pp_then_(2048), pp_else_(1024))
 
 fn_((sort_IdxCtx_ord(sort_IdxCtx self, usize lhs, usize rhs))(cmp_Ord)) {
-    return self.ordFn(lhs, rhs, u_load(u_deref(self.inner)));
+    return call((self.ordFn)(lhs, rhs, u_load(self.inner)));
 };
 fn_((sort_IdxCtx_swap(sort_IdxCtx self, usize lhs, usize rhs))(void)) {
-    return self.swapFn(lhs, rhs, u_load(u_deref(self.inner)));
+    return call((self.swapFn)(lhs, rhs, u_load(self.inner)));
 };
 
 #if defined(__cplusplus)

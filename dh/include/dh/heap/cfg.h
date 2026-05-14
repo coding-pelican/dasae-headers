@@ -36,11 +36,11 @@ extern "C" {
     pp_orelse_((heap_page_size_default)(1))
 #define __opt__heap_page_size_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
-        pp_case_((plat_type_windows)(pp_some(4 << 10))), \
-        pp_case_((plat_type_linux)(pp_some(4 << 10))), \
-        pp_case_((plat_type_darwin)(pp_some(4 << 10))), \
+        pp_case_((plat_type_windows)(pp_some((4 << 10)))), \
+        pp_case_((plat_type_linux)(pp_some((4 << 10)))), \
+        pp_case_((plat_type_darwin)(pp_some((4 << 10)))), \
         pp_case_((plat_type_wasi)(pp_if_(arch_is_wasm_family)( \
-            pp_then_(pp_some(64 << 10)), \
+            pp_then_(pp_some((64 << 10))), \
             pp_else_(claim_assert_static(false)) \
         ))), \
         pp_default_(pp_none()) \

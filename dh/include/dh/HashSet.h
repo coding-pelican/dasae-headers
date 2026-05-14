@@ -40,8 +40,8 @@ extern "C" {
 
 typedef struct HashSet_Header {
     var_(keys, P$raw);
+    var_(key_ty, debug_TypeInfo);
     var_(cap, u32);
-    debug_only(var_(key_ty, TypeInfo));
 } HashSet_Header;
 
 /* --- HashSet_Unit: Key single type (1-tuple) */
@@ -53,8 +53,8 @@ typedef struct HashSet_Header {
 #define T_use_HashSet_Unit$(_K...) __comp_gen__T_use_HashSet_Unit$(_K)
 
 typedef struct HashSet_Unit$raw {
-    debug_only(var_(key_ty, TypeInfo));
-    var_(data, V$raw);
+    var_(key_ty, debug_TypeInfo);
+    var_(key_, V$raw) $flexible;
 } HashSet_Unit$raw;
 T_use_P$(HashSet_Unit$raw);
 typedef P$HashSet_Unit$raw V$HashSet_Unit$raw;
@@ -69,8 +69,8 @@ T_alias$((u_Fields_Idx$HashSet_Unit)(enum_((u_Fields_Idx$HashSet_Unit $fits($pac
     count$u_Fields_Idx$HashSet_Unit
 ))));
 $static let_(u_Fields_type$HashSet_Unit, A$$(count$u_Fields_Idx$HashSet_Unit, TypeInfo)) = A_init({
-    [u_Fields_Idx_key_ty$HashSet_Unit] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(HashSet_Unit$raw, key_ty)), pp_else_(Void))),
-    [u_Fields_Idx_key_$HashSet_Unit] = typeInfo$(FieldType$(HashSet_Unit$raw, data)),
+    [u_Fields_Idx_key_ty$HashSet_Unit] = typeInfo$(FieldType$(HashSet_Unit$raw, key_ty)),
+    [u_Fields_Idx_key_$HashSet_Unit] = typeInfo$(FieldType$(HashSet_Unit$raw, key_)),
 });
 
 /* --- HashSet_Entry: Pointer to key in set --- */
@@ -83,7 +83,7 @@ $static let_(u_Fields_type$HashSet_Unit, A$$(count$u_Fields_Idx$HashSet_Unit, Ty
 
 typedef struct HashSet_Entry {
     var_(key, P_const$raw);
-    debug_only(var_(key_ty, TypeInfo));
+    var_(key_ty, debug_TypeInfo);
 } HashSet_Entry;
 T_use_O$(HashSet_Entry);
 $extern fn_((HashSet_Entry_key(HashSet_Entry self, TypeInfo key_ty))(u_P_const$raw));
@@ -97,7 +97,7 @@ $extern fn_((HashSet_Entry_key(HashSet_Entry self, TypeInfo key_ty))(u_P_const$r
 typedef union HashSet_EntryMut {
     struct {
         var_(key, P$raw);
-        debug_only(var_(key_ty, TypeInfo));
+        var_(key_ty, debug_TypeInfo);
     };
     var_(as_const, HashSet_Entry);
 } HashSet_EntryMut;
@@ -114,8 +114,8 @@ $extern fn_((HashSet_EntryMut_key(HashSet_EntryMut self, TypeInfo key_ty))(u_P$r
 
 typedef struct HashSet_Ensured {
     var_(key, P$raw);
+    var_(key_ty, debug_TypeInfo);
     var_(found_existing, bool);
-    debug_only(var_(key_ty, TypeInfo));
 } HashSet_Ensured;
 T_use_E$($set(mem_E)(HashSet_Ensured));
 $extern fn_((HashSet_Ensured_key(HashSet_Ensured self, TypeInfo key_ty))(u_P_const$raw));
@@ -163,7 +163,7 @@ typedef struct HashSet {
     var_(available, u32);
     /// Context containing hash and equality functions.
     var_(ctx, P_const$HashSet_Ctx);
-    debug_only(var_(key_ty, TypeInfo));
+    var_(key_ty, debug_TypeInfo);
 } HashSet;
 T_use$((HashSet)(O, E));
 T_use_E$($set(mem_E)(HashSet));
@@ -262,7 +262,7 @@ $extern fn_((HashSet_isDisjoint(HashSet self, TypeInfo key_ty, HashSet other))(b
 typedef struct HashSet_Iter {
     var_(set, const HashSet*);
     var_(idx, usize);
-    debug_only(var_(key_ty, TypeInfo));
+    var_(key_ty, debug_TypeInfo);
 } HashSet_Iter;
 $extern fn_((HashSet_iter(const HashSet* self, TypeInfo key_ty))(HashSet_Iter));
 $extern fn_((HashSet_Iter_next(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_Entry));
@@ -280,7 +280,7 @@ typedef struct HashSet_KeyIter {
     var_(len, u32);
     var_(metadata, P$HashMap_Ctrl);
     var_(keys, P$raw);
-    debug_only(var_(key_ty, TypeInfo));
+    var_(key_ty, debug_TypeInfo);
 } HashSet_KeyIter;
 $extern fn_((HashSet_keyIter(HashSet self, TypeInfo key_ty))(HashSet_KeyIter));
 $extern fn_((HashSet_KeyIter_next(HashSet_KeyIter* self, TypeInfo key_ty))(O$u_P_const$raw));
@@ -292,8 +292,8 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     union { \
         struct { \
             var_(keys, P$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(cap, u32); \
-            debug_only(var_(key_ty, TypeInfo)); \
         }; \
         var_(as_raw, HashSet_Header) $like_ref; \
     }
@@ -304,8 +304,8 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     union HashSet_Header$(_K) { \
         struct { \
             var_(keys, P$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(cap, u32); \
-            debug_only(var_(key_ty, TypeInfo)); \
         }; \
         var_(as_raw, HashSet_Header) $like_ref; \
     }
@@ -317,15 +317,13 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 #define __comp_anon__HashSet_Unit$$(_K...) \
     union { \
         struct { \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
             union { \
-                struct { \
-                    var_(key, _K); \
-                } data; \
                 var_(key, _K); \
+                var_(key_, _K) $like_ref; \
             }; \
         }; \
-        var_(as_raw, HashSet_Unit$raw) $like_ref; \
+        var_(as_raw, HashSet_Unit$raw) $flexible; \
     }
 #define __comp_alias__HashSet_Unit$(_K...) \
     tpl$(HashSet_Unit, _K)
@@ -336,15 +334,13 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 #define __comp_gen__T_impl_HashSet_Unit$(_K...) \
     union HashSet_Unit$(_K) { \
         struct { \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
             union { \
-                struct { \
-                    var_(key, _K); \
-                } data; \
                 var_(key, _K); \
+                var_(key_, _K) $like_ref; \
             }; \
         }; \
-        var_(as_raw, HashSet_Unit$raw) $like_ref; \
+        var_(as_raw, HashSet_Unit$raw) $flexible; \
     }; \
     T_impl_O$(HashSet_Unit$(_K)); \
     T_impl_E$($set(mem_E)(O$(HashSet_Unit$(_K))))
@@ -369,7 +365,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     union { \
         struct { \
             var_(key, P_const$$(_K)); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashSet_Entry) $like_ref; \
     }
@@ -381,7 +377,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     union HashSet_Entry$(_K) { \
         struct { \
             var_(key, P_const$$(_K)); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashSet_Entry) $like_ref; \
     }; \
@@ -403,7 +399,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         union { \
             struct { \
                 var_(key, P$$(_K)); \
-                debug_only(var_(key_ty, TypeInfo)); \
+                var_(key_ty, debug_TypeInfo); \
             }; \
             var_(as_const, HashSet_Entry$$(_K)); \
         }; \
@@ -418,7 +414,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         union { \
             struct { \
                 var_(key, P$$(_K)); \
-                debug_only(var_(key_ty, TypeInfo)); \
+                var_(key_ty, debug_TypeInfo); \
             }; \
             var_(as_const, HashSet_Entry$(_K)); \
         }; \
@@ -441,8 +437,8 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     union { \
         struct { \
             var_(key, P$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(found_existing, bool); \
-            debug_only(var_(key_ty, TypeInfo)); \
         }; \
         var_(as_raw, HashSet_Ensured) $like_ref; \
     }
@@ -455,8 +451,8 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     union HashSet_Ensured$(_K) { \
         struct { \
             var_(key, P$$(_K)); \
+            var_(key_ty, debug_TypeInfo); \
             var_(found_existing, bool); \
-            debug_only(var_(key_ty, TypeInfo)); \
         }; \
         var_(as_raw, HashSet_Ensured) $like_ref; \
     }; \
@@ -504,7 +500,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
             var_(size, u32); \
             var_(available, u32); \
             var_(ctx, P_const$HashSet_Ctx); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashSet) $like_ref; \
     }
@@ -519,7 +515,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
             var_(size, u32); \
             var_(available, u32); \
             var_(ctx, P_const$HashSet_Ctx); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashSet) $like_ref; \
     }; \
@@ -710,7 +706,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         struct { \
             var_(set, P_const$$(HashSet$(_K))); \
             var_(idx, usize); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashSet_Iter) $like_ref; \
     }
@@ -722,7 +718,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
         struct { \
             var_(set, P_const$$(HashSet$(_K))); \
             var_(idx, usize); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashSet_Iter) $like_ref; \
     }
@@ -754,7 +750,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(keys, P$$(_K)); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashSet_KeyIter) $like_ref; \
     }
@@ -767,7 +763,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(keys, P$$(_K)); \
-            debug_only(var_(key_ty, TypeInfo)); \
+            var_(key_ty, debug_TypeInfo); \
         }; \
         var_(as_raw, HashSet_KeyIter) $like_ref; \
     }

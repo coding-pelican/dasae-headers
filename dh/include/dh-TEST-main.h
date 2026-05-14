@@ -33,6 +33,7 @@ extern "C" {
 
 #if TEST_main_enabled
 fn_((main(void))(int)) {
+    debug_StackTrace_setupCrashHandler();
     return TEST_Framework_run(), 0;
 };
 #endif /* TEST_main_enabled */

@@ -2,6 +2,7 @@
 #include "Dir.h"
 #include "File/self.h"
 #include "../exec/Coop.h"
+#include "dh/fs/common.h"
 
 #if plat_is_windows
 #include "dh/os/windows/handle.h"
@@ -41,7 +42,6 @@ $static fn_((fs_direct__File_seekBy(P$raw ctx, fs_File file, i64 rel_offset))(E$
 $static fn_((fs_direct__File_seekTo(P$raw ctx, fs_File file, u64 abs_offset))(E$void));
 
 #if plat_is_windows
-T_use_O$(Err);
 T_alias$((fs__Evented_FileIOOp)(struct fs__Evented_FileIOOp {
     var_(base, exec_Evented_Op);
     var_(coop, exec_Coop*);
@@ -52,7 +52,7 @@ T_alias$((fs__Evented_FileIOOp)(struct fs__Evented_FileIOOp {
     var_(is_write, bool);
     var_(done, bool);
     var_(bytes, usize);
-    var_(err, O$Err);
+    var_(err, O$EAny);
 }));
 #endif /* plat_is_windows */
 
@@ -237,13 +237,13 @@ fn_((fs_realpath(fs_Self self, S_const$u8 path, S$u8 out_buf))(E$S$u8)) {
     return self.vtbl->op.realpathFn(self.ctx, path, out_buf);
 }
 
-$static var_(fs_noop__ctx, Void) = cleared();
+$static var_(fs_noop__ctx, Void) $undefined_static;
 let_(fs_noop, fs_Self) = {
     .ctx = &fs_noop__ctx,
     .vtbl = &fs_VTbl_noop,
 };
 
-$static var_(fs_failing__ctx, Void) = cleared();
+$static var_(fs_failing__ctx, Void) $undefined_static;
 let_(fs_failing, fs_Self) = {
     .ctx = &fs_failing__ctx,
     .vtbl = &fs_VTbl_failing,
@@ -252,7 +252,7 @@ let_(fs_failing, fs_Self) = {
 fn_((fs_direct(void))(fs_direct_E$fs_Self) $scope) {
     pp_if_(fs_direct_supported)(
         pp_then_({
-            $static var_(ctx, Void) = cleared();
+            $static var_(ctx, Void) $undefined_static;
             $static let_(vtbl, fs_Self_VTbl) = {
                 .op = {
                     .cwdFn = fs_direct__Op_cwd,
@@ -414,7 +414,7 @@ fn_((fs_evented__File_read(P$raw ctx, fs_File file, S$u8 buf))(E$usize) $scope) 
     let coop = ptrCast$((exec_Coop*)(ensureNonnull(ctx)));
 #if plat_is_windows
     var_(offset, u64) = 0;
-    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(fs_E_ReadFailed());
+    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(E_cause$FSReadFailed());
     return fs__evented_windowsReadAt(coop, file, buf, offset, true);
 #else
     let_ignore = file;
@@ -427,7 +427,7 @@ fn_((fs_evented__File_write(P$raw ctx, fs_File file, S_const$u8 bytes))(E$usize)
     let coop = ptrCast$((exec_Coop*)(ensureNonnull(ctx)));
 #if plat_is_windows
     var_(offset, u64) = 0;
-    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(fs_E_WriteFailed());
+    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(E_cause$FSWriteFailed());
     return fs__evented_windowsWriteAt(coop, file, bytes, offset, true);
 #else
     let_ignore = file;
@@ -464,18 +464,18 @@ fn_((fs_evented__File_writePos(P$raw ctx, fs_File file, S_const$u8 buf, u64 offs
 
 fn_((fs_VTbl_Op_failingCWD(P$raw ctx))(E$fs_Dir) $scope) {
     let_ignore = ctx;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingOpenDir(P$raw ctx, S_const$u8 path, fs_Dir_OpenOpts opts))(E$fs_Dir) $scope) {
     let_ignore = ctx;
     let_ignore = path;
     let_ignore = opts;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_E_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingCreateDir(P$raw ctx, S_const$u8 path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_E_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingDeleteDir(P$raw ctx, S_const$u8 path))(E$void) $scope) {
     let_ignore = ctx;

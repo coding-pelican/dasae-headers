@@ -8,6 +8,8 @@ $static fn_((fmt__digitToInt(u8 c))(u8));
 $attr($inline_always)
 $static fn_((fmt__skipWhitespace(S_const$u8 str))(S_const$u8));
 $attr($inline_always)
+$static fn_((fmt__trimWhitespace(S_const$u8 str))(S_const$u8));
+$attr($inline_always)
 $static fn_((fmt__appendIInt(S$u8 buf, usize* pos, i64 val))(void));
 
 $attr($must_check)
@@ -310,6 +312,9 @@ fn_((fmt_format$usize(io_Writer writer, usize val, fmt_Spec spec))(E$void)) {
 fn_((fmt_format$u64(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) {
     return fmt_formatUInt(writer, val, spec);
 };
+fn_((fmt_format$ulong(io_Writer writer, ulong val, fmt_Spec spec))(E$void)) {
+    return fmt_formatUInt(writer, as$(u64)(val), spec);
+};
 fn_((fmt_format$u32(io_Writer writer, u32 val, fmt_Spec spec))(E$void)) {
     return fmt_formatUInt(writer, as$(u64)(val), spec);
 };
@@ -384,6 +389,9 @@ fn_((fmt_format$isize(io_Writer writer, isize val, fmt_Spec spec))(E$void)) {
 fn_((fmt_format$i64(io_Writer writer, i64 val, fmt_Spec spec))(E$void)) {
     return fmt_formatIInt(writer, val, spec);
 };
+fn_((fmt_format$ilong(io_Writer writer, ilong val, fmt_Spec spec))(E$void)) {
+    return fmt_formatIInt(writer, as$(i64)(val), spec);
+};
 fn_((fmt_format$i32(io_Writer writer, i32 val, fmt_Spec spec))(E$void)) {
     return fmt_formatIInt(writer, as$(i64)(val), spec);
 };
@@ -447,7 +455,7 @@ fn_((fmt_formatPtr(io_Writer writer, P_const$raw ptr, fmt_Spec spec))(E$void)) {
         *A_at((buf)[1]) = u8_c('x');
         pos += 2;
     }
-    return fmt__writePadded(writer, A_suffix$((S$u8)(buf)(pos)).as_const, spec);
+    return fmt__writePadded(writer, A_prefix$((S$u8)(buf)(pos)).as_const, spec);
 };
 fn_((fmt_format$P$raw(io_Writer writer, P_const$raw ptr, fmt_Spec spec))(E$void)) {
     return fmt_formatPtr(writer, ptr, spec);
@@ -484,12 +492,12 @@ fn_((fmt_formatUTF8(io_Writer writer, u32 codepoint, fmt_Spec spec))(E$void) $sc
     return fmt_formatStr(writer, try_(utf8_encodeWithin(codepoint, A_ref$((S$u8)buf))).as_const, spec);
 } $unscoped(fn);
 
-fn_((fmt_formatStrZ(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) {
+fn_((fmt_formatStrZ0(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: fmt_formatStrZ ---\n");
     return fmt_formatStr(writer, mem_spanZ0$u8(str), spec);
 };
 fn_((fmt_format$P$u8(io_Writer writer, P_const$u8 str, fmt_Spec spec))(E$void)) {
-    return fmt_formatStrZ(writer, str, spec);
+    return fmt_formatStrZ0(writer, str, spec);
 };
 fn_((fmt_formatStr(io_Writer writer, S_const$u8 str, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: fmt_formatStr ---\n");
@@ -502,9 +510,9 @@ fn_((fmt_format$S$u8(io_Writer writer, S_const$u8 str, fmt_Spec spec))(E$void)) 
 /*========== Parsing (Input) - Slice based ==========*/
 
 fn_((fmt_parseBool(S_const$u8 str))(E$bool) $scope) {
-    str = fmt__skipWhitespace(str);
-    if (mem_eqlBytes(str, mem_asBytes(u_anyP(&u8_c('1')).as_const)) || mem_eqlBytes(str, u8_l("true"))) { return_ok(true); }
-    if (mem_eqlBytes(str, mem_asBytes(u_anyP(&u8_c('0')).as_const)) || mem_eqlBytes(str, u8_l("false"))) { return_ok(false); }
+    str = fmt__trimWhitespace(str);
+    if (mem_eqlBytes(str, u8_l("1")) || ascii_eqlIgnoreCase(str, u8_l("true"))) { return_ok(true); }
+    if (mem_eqlBytes(str, u8_l("0")) || ascii_eqlIgnoreCase(str, u8_l("false"))) { return_ok(false); }
     return_err(E_cause$FmtInvalidBoolFormat());
 } $unscoped(fn);
 fn_((fmt_parse$bool(S_const$u8 str))(E$bool)) {
@@ -513,19 +521,22 @@ fn_((fmt_parse$bool(S_const$u8 str))(E$bool)) {
 
 /* TODO: Refactor this */
 fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64) $scope) {
-    str = fmt__skipWhitespace(str);
+    str = fmt__trimWhitespace(str);
     if (str.len == 0) {
         return_err(E_cause$FmtInvalidUIntFormat());
     }
     if (base < 2 || 36 < base) {
         return_err(E_cause$FmtInvalidUIntFormat());
     }
+    if (str.ptr[0] == u8_c('+')) {
+        str = S_suffix((str)(1));
+        if (str.len == 0) {
+            return_err(E_cause$FmtInvalidUIntFormat());
+        }
+    }
     u64 result = 0;
     for (usize i = 0; i < str.len; ++i) {
         u8 ch = str.ptr[i];
-        if (ascii_isWhitespace(ch)) {
-            break;
-        }
         u8 digit_val = 0;
         if (ascii_isDigit(ch)) {
             digit_val = ch - u8_c('0');
@@ -534,16 +545,10 @@ fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64) $scope) {
         } else if (u8_c('A') <= ch && ch <= u8_c('Z')) {
             digit_val = u8_add(10, ch - u8_c('A'));
         } else {
-            if (i == 0) {
-                return_err(E_cause$FmtInvalidUIntFormat());
-            }
-            break;
+            return_err(E_cause$FmtInvalidUIntFormat());
         }
         if (digit_val >= base) {
-            if (i == 0) {
-                return_err(E_cause$FmtInvalidUIntFormat());
-            }
-            break;
+            return_err(E_cause$FmtInvalidUIntFormat());
         }
         // Check for overflow using checked arithmetic
         let mul_result = u64_mulChkd(result, base);
@@ -563,11 +568,18 @@ fn_((fmt_parse$usize(S_const$u8 str, u8 base))(E$usize) $scope) {
     if (result > usize_limit_max) {
         return_err(E_cause$FmtInvalidUIntFormat());
     }
-    return_ok(as$(usize)(try_(fmt_parseUInt(str, base))));
+    return_ok(as$(usize)(result));
 } $unscoped(fn);
 fn_((fmt_parse$u64(S_const$u8 str, u8 base))(E$u64)) {
     return fmt_parseUInt(str, base);
 };
+fn_((fmt_parse$ulong(S_const$u8 str, u8 base))(E$ulong) $scope) {
+    let result = try_(fmt_parseUInt(str, base));
+    if (result > ulong_limit_max) {
+        return_err(E_cause$FmtInvalidUIntFormat());
+    }
+    return_ok(as$(ulong)(result));
+} $unscoped(fn);
 fn_((fmt_parse$u32(S_const$u8 str, u8 base))(E$u32) $scope) {
     let result = try_(fmt_parseUInt(str, base));
     if (result > u32_limit_max) {
@@ -629,6 +641,13 @@ fn_((fmt_parse$isize(S_const$u8 str, u8 base))(E$isize) $scope) {
 fn_((fmt_parse$i64(S_const$u8 str, u8 base))(E$i64)) {
     return fmt_parseIInt(str, base);
 };
+fn_((fmt_parse$ilong(S_const$u8 str, u8 base))(E$ilong) $scope) {
+    let result = try_(fmt_parseIInt(str, base));
+    if (result < ilong_limit_min || ilong_limit_max < result) {
+        return_err(E_cause$FmtInvalidIIntFormat());
+    }
+    return_ok(as$(ilong)(result));
+} $unscoped(fn);
 fn_((fmt_parse$i32(S_const$u8 str, u8 base))(E$i32) $scope) {
     let result = try_(fmt_parseIInt(str, base));
     if (result < i32_limit_min || i32_limit_max < result) {
@@ -771,6 +790,12 @@ fn_((fmt__digitToInt(u8 c))(u8)) {
 
 fn_((fmt__skipWhitespace(S_const$u8 str))(S_const$u8)) {
     while (0 < str.len && ascii_isWhitespace(*S_at((str)[0]))) { str = S_suffix((str)(1)); }
+    return str;
+};
+
+fn_((fmt__trimWhitespace(S_const$u8 str))(S_const$u8)) {
+    str = fmt__skipWhitespace(str);
+    while (0 < str.len && ascii_isWhitespace(*S_at((str)[str.len - 1]))) { str.len--; }
     return str;
 };
 

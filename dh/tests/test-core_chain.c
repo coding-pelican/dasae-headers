@@ -1,8 +1,7 @@
 #include "dh-main.h"
-#include "dh/core/chain.h"
 
 /// Test basic fold operation - sum all elements
-TEST_fn_("test_chain_fold_sum" $scope) {
+TEST_fn_("core/chain: fold_sum" $scope) {
     let data = A_from$((i32){ 1, 2, 3, 4, 5 });
     let slice = A_ref(data);
 
@@ -14,7 +13,7 @@ TEST_fn_("test_chain_fold_sum" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test fold with initial value
-TEST_fn_("test_chain_fold_with_initial" $scope) {
+TEST_fn_("core/chain: fold_with_initial" $scope) {
     let data = A_from$((i32){ 1, 2, 3, 4, 5 });
     let slice = A_ref(data);
 
@@ -26,7 +25,7 @@ TEST_fn_("test_chain_fold_with_initial" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test reduce operation - no initial value
-TEST_fn_("test_chain_reduce" $scope) {
+TEST_fn_("core/chain: reduce" $scope) {
     let data = A_from$((i32){ 1, 2, 3, 4, 5 });
     let slice = A_ref(data);
 
@@ -39,7 +38,7 @@ TEST_fn_("test_chain_reduce" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test reduce on empty slice returns none
-TEST_fn_("test_chain_reduce_empty" $scope) {
+TEST_fn_("core/chain: reduce_empty" $scope) {
     let data = A_from$((i32){});
     let empty_slice = A_ref(data);
 
@@ -51,7 +50,7 @@ TEST_fn_("test_chain_reduce_empty" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test filter operation
-TEST_fn_("test_chain_filter" $scope) {
+TEST_fn_("core/chain: filter" $scope) {
     let data = A_from$((i32){ 1, 2, 3, 4, 5 });
     let slice = A_ref(data);
 
@@ -64,7 +63,7 @@ TEST_fn_("test_chain_filter" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test map operation
-TEST_fn_("test_chain_map" $scope) {
+TEST_fn_("core/chain: map" $scope) {
     let data = A_from$((i32){ 1, 2, 3, 4, 5 });
     let slice = A_ref(data);
 
@@ -77,7 +76,7 @@ TEST_fn_("test_chain_map" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test filter + map combination
-TEST_fn_("test_chain_filter_map" $scope) {
+TEST_fn_("core/chain: filter_map" $scope) {
     let data = A_from$((i32){ 1, 2, 3, 4, 5 });
     let slice = A_ref(data);
 
@@ -91,7 +90,7 @@ TEST_fn_("test_chain_filter_map" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test filter + map + reduce
-TEST_fn_("test_chain_filter_map_reduce" $scope) {
+TEST_fn_("core/chain: filter_map_reduce" $scope) {
     let data = A_from$((i32){ 1, 2, 3, 4, 5 });
     let slice = A_ref(data);
 
@@ -106,7 +105,7 @@ TEST_fn_("test_chain_filter_map_reduce" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test each operation for side effects
-TEST_fn_("test_chain_each" $scope) {
+TEST_fn_("core/chain: each" $scope) {
     let data = A_from$((i32){ 1, 2, 3, 4, 5 });
     let slice = A_ref(data);
 
@@ -120,7 +119,7 @@ TEST_fn_("test_chain_each" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test complex chain with multiple operations
-TEST_fn_("test_chain_complex" $scope) {
+TEST_fn_("core/chain: complex" $scope) {
     let data = A_from$((i32){ -2, -1, 0, 1, 2, 3, 4, 5, 6 });
     let slice = A_ref(data);
 

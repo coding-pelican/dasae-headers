@@ -31,10 +31,15 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 // clang-format off
-T_use_prl_vals$(u8); T_use_prl_vals$(u16); T_use_prl_vals$(u32); T_use_prl_vals$(u64); T_use_prl_vals$(usize);
-T_use_prl_vals$(i8); T_use_prl_vals$(i16); T_use_prl_vals$(i32); T_use_prl_vals$(i64); T_use_prl_vals$(isize);
+T_use_prl_vals$(bool);
+T_use_prl_vals$(u8); T_use_prl_vals$(u16); T_use_prl_vals$(u32);
+T_use_prl_vals$(ulong); T_use_prl_vals$(u64); T_use_prl_vals$(usize);
+T_use_prl_vals$(i8); T_use_prl_vals$(i16); T_use_prl_vals$(i32);
+T_use_prl_vals$(ilong); T_use_prl_vals$(i64); T_use_prl_vals$(isize);
 T_use_prl_vals$(f32); T_use_prl_vals$(f64);
-T_use_prl_vals$(bool); T_use$((Void)(O)); T_use$((O$(Void))(O, E)); T_use$((E$void)(O, E)); T_use_prl_vals$(Opaq);
+T_use_prl_vals$(Opaq); T_use_prl_vals$(EAny);
+T_use$((O$Void)(O, E)); T_use$((O$void)(O, E));
+T_use$((E$Void)(O, E)); T_use$((E$void)(O, E));
 T_use_prl_vals$(P_const$raw); T_use_prl_vals$(S_const$raw);
 T_use_prl_vals$(P$raw); T_use_prl_vals$(S$raw);
 T_use_prl_vals$(V$raw); T_use_prl_vals$(A$raw);

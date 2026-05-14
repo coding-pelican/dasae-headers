@@ -103,6 +103,50 @@ static inline const char* dal_c_boolean_format(bool value) {
     return value ? dal_c_boolean_true : dal_c_boolean_false;
 }
 
+/// === TOGGLE STATE ===
+
+typedef enum dal_c_ToggleState {
+    dal_c_ToggleState_auto = 0,
+    dal_c_ToggleState_enabled = 1,
+    dal_c_ToggleState_disabled = 2,
+} dal_c_ToggleState;
+static inline bool dal_c_ToggleState_resolve(dal_c_ToggleState state, bool default_enabled) {
+    switch (state) {
+    case dal_c_ToggleState_enabled: return true;
+    case dal_c_ToggleState_disabled: return false;
+    case dal_c_ToggleState_auto:
+    default: return default_enabled;
+    }
+}
+
+/// === COMPILE ENVIRONMENT ===
+
+typedef enum dal_c_CompileEnv {
+    dal_c_CompileEnv_auto = 0,
+    dal_c_CompileEnv_hosted = 1,
+    dal_c_CompileEnv_freestanding = 2,
+} dal_c_CompileEnv;
+#define dal_c_compile_env_auto "auto"
+#define dal_c_compile_env_hosted "hosted"
+#define dal_c_compile_env_freestanding "freestanding"
+static inline dal_c_CompileEnv dal_c_CompileEnv_parse(const char* str) {
+    if (str_eql(str, dal_c_compile_env_auto)) { return dal_c_CompileEnv_auto; }
+    if (str_eql(str, dal_c_compile_env_hosted)) { return dal_c_CompileEnv_hosted; }
+    if (str_eql(str, dal_c_compile_env_freestanding)) { return dal_c_CompileEnv_freestanding; }
+    return dal_c_CompileEnv_auto;
+}
+static inline const char* dal_c_CompileEnv_format(dal_c_CompileEnv compile_env) {
+    switch (compile_env) {
+    case dal_c_CompileEnv_auto: return dal_c_compile_env_auto;
+    case dal_c_CompileEnv_hosted: return dal_c_compile_env_hosted;
+    case dal_c_CompileEnv_freestanding: return dal_c_compile_env_freestanding;
+    default: return NULL;
+    }
+}
+static inline dal_c_CompileEnv dal_c_CompileEnv_resolve(dal_c_CompileEnv compile_env) {
+    return compile_env == dal_c_CompileEnv_auto ? dal_c_CompileEnv_hosted : compile_env;
+}
+
 /// === TARGET ===
 
 typedef enum dal_c_Target {
@@ -548,14 +592,32 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_lib "lib"
 #define dal_c_opt_dh "dh"
 #define dal_c_opt_args "args"
-#define dal_c_opt_compiler_args "compiler-args"
-#define dal_c_opt_runtime_args "runtime-args"
+#define dal_c_opt_comp_args "comp-args"
+#define dal_c_opt_link_args "link-args"
+#define dal_c_opt_exec_args "exec-args"
 
 #define dal_c_opt_verbose "verbose"
 #define dal_c_opt_debug "debug"
 #define dal_c_opt_show_commands "show-commands"
+#define dal_c_opt_use_dsl "use-dsl"
 #define dal_c_opt_no_dsl "no-dsl"
+#define dal_c_opt_hosted "hosted"
 #define dal_c_opt_freestanding "freestanding"
+#define dal_c_opt_use_libc "use-libc"           // COMP_NO_LIBC suppressed
+#define dal_c_opt_no_libc "no-libc"             // COMP_NO_LIBC
+#define dal_c_opt_use_default_libs "use-default-libs" // COMP_NO_DEFAULT_LIBS suppressed
+#define dal_c_opt_no_default_libs "no-default-libs"   // COMP_NO_DEFAULT_LIBS
+#define dal_c_opt_use_start_files "use-start-files"   // COMP_NO_START_FILES suppressed
+#define dal_c_opt_no_start_files "no-start-files"     // COMP_NO_START_FILES
+// Aliases: --use-stdlib = --use-start-files --use-default-libs  |  COMP_NO_START_FILES + COMP_NO_DEFAULT_LIBS suppressed
+// Aliases: --no-stdlib  = --no-start-files  --no-default-libs   |  COMP_NO_START_FILES + COMP_NO_DEFAULT_LIBS
+#define dal_c_opt_use_stdlib "use-stdlib"
+#define dal_c_opt_no_stdlib "no-stdlib"
+// Aliases: --use-crt = --use-start-files  |  COMP_NO_START_FILES suppressed
+// Aliases: --no-crt  = --no-start-files   |  COMP_NO_START_FILES
+#define dal_c_opt_use_crt "use-crt"
+#define dal_c_opt_no_crt "no-crt"
+#define dal_c_opt_entry "entry"
 #define dal_c_opt_loose_errors "loose-errors"
 #define dal_c_opt_self "self"
 #define dal_c_opt_static "static"
@@ -609,10 +671,14 @@ typedef struct dal_c_CompilerOpts {
     int include_count;
     char** link_libs; // --link or -l (array)
     int link_count;
+    char* entry_symbol; // --entry=<symbol>
     dal_c_Profile profile;
-    bool freestanding; // --freestanding
+    dal_c_CompileEnv compile_env; // --hosted / --freestanding
+    dal_c_ToggleState libc_linked; // --no-libc
+    dal_c_ToggleState dsl_mode; // --use-dsl / --no-dsl
+    dal_c_ToggleState default_libs_linked; // --no-default-libs
+    dal_c_ToggleState start_files_linked; // --no-start-files / --no-crt
     bool loose_errors; // --loose-errors
-    bool no_dsl; // --no-dsl
 } dal_c_CompilerOpts;
 
 typedef struct dal_c_BuildDefaults {
@@ -659,7 +725,7 @@ typedef struct dal_c_LibOpts {
 typedef struct dal_c_RunOpts {
     char* target_path;
     char* output_path;
-    char* run_args; // --runtime-args="..."
+    char* run_args; // --exec-args="..."
     dal_c_SampleDir sample_dir; // --sample, --example, or --test
     bool debug; // --debug
 } dal_c_RunOpts;
@@ -667,7 +733,7 @@ typedef struct dal_c_RunOpts {
 typedef struct dal_c_TestOpts {
     char* target_path;
     char* output_path;
-    char* run_args; // --runtime-args="..."
+    char* run_args; // --exec-args="..."
     bool debug;
     bool build_all; // --all or "." to build all files
     bool recursive; // --recur
@@ -710,7 +776,8 @@ typedef struct dal_c_Cmd {
     char** exclude_paths; // explicit exclude paths
     int exclude_count;
 
-    char* compiler_args; // --args="..."
+    char* compiler_args; // --args="..." or --comp-args="..."
+    char* link_args; // --link-args="..."
     char* dh_path_override; // --dh=<path>
     bool show_commands; // --show-commands
     bool verbose; // --verbose
@@ -792,6 +859,14 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_default_c_std "gnu17"
 #define dal_c_default_profile dal_c_Profile_dev
 
+#define dal_c_default_compile_env "hosted"
+// libc_linked default depends on compile_env: hosted -> linked, freestanding -> not linked
+#define dal_c_default_libc_linked_hosted      "linked"
+#define dal_c_default_libc_linked_freestanding "not linked"
+#define dal_c_default_libc_linked             "auto (" dal_c_default_libc_linked_hosted " if hosted, " dal_c_default_libc_linked_freestanding " if freestanding)"
+#define dal_c_default_default_libs_linked "linked"
+#define dal_c_default_start_files_linked  "linked"
+
 /// === PCH HEADER DETECTION NAMES ===
 
 #define dal_c_source_file_ext ".c"
@@ -835,26 +910,8 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 /// === SOURCE COLLECTION FILTERS ===
 
 #define dal_c_source_skip_segment_build "build"
-#define dal_c_source_skip_segment_tmp "tmp"
-#define dal_c_source_skip_segment_temp "temp"
-#define dal_c_source_skip_segment_cache "cache"
-#define dal_c_source_skip_segment_mock "mock"
-#define dal_c_source_skip_segment_draft "draft"
-#define dal_c_source_skip_segment_bak "bak"
-#define dal_c_source_skip_segment_backup "backup"
-#define dal_c_source_skip_segment_archive "archive"
-#define dal_c_source_skip_segment_dot_archive ".archive"
 static const char* const dal_c_source_skip_segments[] = {
     dal_c_source_skip_segment_build,
-    dal_c_source_skip_segment_tmp,
-    dal_c_source_skip_segment_temp,
-    dal_c_source_skip_segment_cache,
-    dal_c_source_skip_segment_mock,
-    dal_c_source_skip_segment_draft,
-    dal_c_source_skip_segment_bak,
-    dal_c_source_skip_segment_backup,
-    dal_c_source_skip_segment_archive,
-    dal_c_source_skip_segment_dot_archive,
     NULL,
 };
 #define dal_c_source_skip_segments_count ((int)(sizeof(dal_c_source_skip_segments) / sizeof(dal_c_source_skip_segments[0])) - 1)
@@ -906,7 +963,21 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_std dal_c_opt_value_sep "<std>", "C standard (default: " dal_c_default_c_std ")" },
     { dal_c_opt_prefix_long dal_c_opt_arch dal_c_opt_value_sep "<target>", "Target architecture" },
     { dal_c_opt_prefix_long dal_c_opt_target dal_c_opt_value_sep "<triple>", "Target triple (alternative to " dal_c_opt_prefix_long dal_c_opt_arch ")" },
-    { dal_c_opt_prefix_long dal_c_opt_freestanding, "Freestanding environment" },
+    { dal_c_opt_prefix_long dal_c_opt_use_dsl, "Enable DSL/DH library integration" },
+    { dal_c_opt_prefix_long dal_c_opt_no_dsl, "Disable DSL/DH library integration" },
+    { dal_c_opt_prefix_long dal_c_opt_hosted, "Use hosted compile semantics" },
+    { dal_c_opt_prefix_long dal_c_opt_freestanding, "Use freestanding compile semantics (`-ffreestanding`)" },
+    { dal_c_opt_prefix_long dal_c_opt_use_libc, "Link libc (default: " dal_c_default_libc_linked ") [-> COMP_NO_LIBC suppressed]" },
+    { dal_c_opt_prefix_long dal_c_opt_no_libc, "Do not link libc [-> COMP_NO_LIBC]" },
+    { dal_c_opt_prefix_long dal_c_opt_use_default_libs, "Link default libraries (default: " dal_c_default_default_libs_linked ") [-> COMP_NO_DEFAULT_LIBS suppressed]" },
+    { dal_c_opt_prefix_long dal_c_opt_no_default_libs, "Do not link default libraries [-> -nodefaultlibs, COMP_NO_DEFAULT_LIBS]" },
+    { dal_c_opt_prefix_long dal_c_opt_use_start_files, "Link startup files / CRT objects (default: " dal_c_default_start_files_linked ") [-> COMP_NO_START_FILES suppressed]" },
+    { dal_c_opt_prefix_long dal_c_opt_no_start_files, "Do not link startup files / CRT objects [-> -nostartfiles, COMP_NO_START_FILES]" },
+    { dal_c_opt_prefix_long dal_c_opt_use_stdlib, "alias: --use-start-files --use-default-libs [-> -nostdlib suppressed]" },
+    { dal_c_opt_prefix_long dal_c_opt_no_stdlib, "alias: --no-start-files --no-default-libs [-> -nostdlib, COMP_NO_START_FILES + COMP_NO_DEFAULT_LIBS]" },
+    { dal_c_opt_prefix_long dal_c_opt_use_crt, "alias: --use-start-files [-> COMP_NO_START_FILES suppressed]" },
+    { dal_c_opt_prefix_long dal_c_opt_no_crt, "alias: --no-start-files [-> -nostartfiles, COMP_NO_START_FILES]" },
+    { dal_c_opt_prefix_long dal_c_opt_entry dal_c_opt_value_sep "<symbol>", "Override linker entry symbol" },
     { dal_c_opt_prefix_long dal_c_opt_sysroot dal_c_opt_value_sep "<path>", "System root directory" },
     { dal_c_opt_prefix_long dal_c_opt_include dal_c_opt_value_sep "<path>", "Add include path (can be repeated)" },
     { dal_c_opt_prefix_short dal_c_opt_include_short "<path>", "Add include path (alternative)" },
@@ -917,7 +988,8 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_short dal_c_opt_define_short "<macro>", "Define macro (alternative)" },
     { dal_c_opt_prefix_long dal_c_opt_undef dal_c_opt_value_sep "<macro>", "Undefine macro (can be repeated)" },
     { dal_c_opt_prefix_short dal_c_opt_undef_short "<macro>", "Undefine macro (alternative)" },
-    { dal_c_opt_prefix_long dal_c_opt_compiler_args dal_c_opt_value_sep "\"...\"", "Additional compiler flags" },
+    { dal_c_opt_prefix_long dal_c_opt_comp_args dal_c_opt_value_sep "\"...\"", "Additional compiler flags" },
+    { dal_c_opt_prefix_long dal_c_opt_link_args dal_c_opt_value_sep "\"...\"", "Additional linker flags" },
     { dal_c_opt_prefix_long dal_c_opt_args dal_c_opt_value_sep "\"...\"", "Additional compiler flags (context-aware)" },
     { dal_c_opt_prefix_long dal_c_opt_file dal_c_opt_value_sep "<path>", "Add explicit source file (can be repeated)" },
     { dal_c_opt_prefix_long dal_c_opt_output dal_c_opt_value_sep "<path>", "Override output name or exact path" },
@@ -936,7 +1008,6 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_dsl, "Include the DSL boundary in this command" },
     { dal_c_opt_prefix_long dal_c_opt_recur, "Apply command recursively to descendant `project.dh` projects" },
     { dal_c_opt_all_alias, "Build all source files (alternative to " dal_c_opt_prefix_long dal_c_opt_all ")" },
-    { dal_c_opt_prefix_long dal_c_opt_no_dsl, "Skip DSL/DH library integration" },
     { dal_c_opt_prefix_long dal_c_opt_show_commands, "Print commands" },
     { dal_c_opt_prefix_long dal_c_opt_verbose, "Verbose output" },
     { dal_c_opt_prefix_long dal_c_opt_dh dal_c_opt_value_sep "<path>", "Override DH path" },
@@ -977,7 +1048,7 @@ static const char* const dal_c_help_lib_examples[] = {
 
 static const dal_c_HelpOption dal_c_help_run_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_debug, "Launch debugger" },
-    { dal_c_opt_prefix_long dal_c_opt_runtime_args dal_c_opt_value_sep "\"...\"", "Runtime arguments" },
+    { dal_c_opt_prefix_long dal_c_opt_exec_args dal_c_opt_value_sep "\"...\"", "Runtime arguments" },
     { dal_c_opt_prefix_long dal_c_opt_args dal_c_opt_value_sep "\"...\"", "Runtime arguments (context-aware)" },
 };
 #define dal_c_help_run_options_count ((int)(sizeof(dal_c_help_run_options) / sizeof(dal_c_help_run_options[0])))
@@ -985,13 +1056,13 @@ static const dal_c_HelpOption dal_c_help_run_options[] = {
 static const char* const dal_c_help_run_examples[] = {
     dal_c_cmd_action_run " " dal_c_profile_dev,
     dal_c_cmd_action_run " cmd/runner1",
-    dal_c_cmd_action_run " " dal_c_opt_prefix_long dal_c_opt_debug " " dal_c_opt_prefix_long dal_c_opt_runtime_args dal_c_opt_value_sep "\"arg1 arg2\"",
+    dal_c_cmd_action_run " " dal_c_opt_prefix_long dal_c_opt_debug " " dal_c_opt_prefix_long dal_c_opt_exec_args dal_c_opt_value_sep "\"arg1 arg2\"",
 };
 #define dal_c_help_run_examples_count ((int)(sizeof(dal_c_help_run_examples) / sizeof(dal_c_help_run_examples[0])))
 
 static const dal_c_HelpOption dal_c_help_test_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_debug, "Launch debugger" },
-    { dal_c_opt_prefix_long dal_c_opt_runtime_args dal_c_opt_value_sep "\"...\"", "Test arguments" },
+    { dal_c_opt_prefix_long dal_c_opt_exec_args dal_c_opt_value_sep "\"...\"", "Test arguments" },
     { dal_c_opt_prefix_long dal_c_opt_args dal_c_opt_value_sep "\"...\"", "Test arguments (context-aware)" },
 };
 #define dal_c_help_test_options_count ((int)(sizeof(dal_c_help_test_options) / sizeof(dal_c_help_test_options[0])))
@@ -1031,6 +1102,7 @@ static const dal_c_HelpOption dal_c_help_clean_dsl_options[] = {
 
 static const char* const dal_c_help_clean_examples[] = {
     dal_c_cmd_action_clean,
+    dal_c_cmd_action_clean " " dal_c_profile_dev,
     dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_self,
     dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_dsl,
     dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_cache " " dal_c_opt_prefix_long dal_c_opt_recur,
@@ -1064,6 +1136,7 @@ static const dal_c_HelpOption dal_c_help_self_options[] = {
 
 static const char* const dal_c_help_build_self_examples[] = {
     dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_self,
+    dal_c_cmd_action_build_self " " dal_c_profile_optimize,
 };
 #define dal_c_help_build_self_examples_count ((int)(sizeof(dal_c_help_build_self_examples) / sizeof(dal_c_help_build_self_examples[0])))
 
@@ -1147,7 +1220,7 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
       false, true },
     { dal_c_cmd_action_build_self,
       "Compatibility alias for `build --self`",
-      "[options]",
+      "[profile] [options]",
       dal_c_help_self_options, dal_c_help_self_options_count,
       dal_c_help_build_self_examples, dal_c_help_build_self_examples_count,
       false, true },
@@ -1177,9 +1250,21 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
 /// --- Queries ---
 
 #define dal_c__str__ver_core_sep dal_c_ver_core_sep_default
-#define dal_c__num__ver_core_major 0
-#define dal_c__num__ver_core_minor 3
-#define dal_c__num__ver_core_patch 0
+#define dal_c__num__ver_core_major dal_c_ver_core_major_default
+#if defined(dal_c__NUM__VER_CORE_MAJOR)
+#undef dal_c__num__ver_core_major
+#define dal_c__num__ver_core_major dal_c__NUM__VER_CORE_MAJOR
+#endif /* defined(dal_c__VER_MAJOR) */
+#define dal_c__num__ver_core_minor dal_c_ver_core_minor_default
+#if defined(dal_c__NUM__VER_CORE_MINOR)
+#undef dal_c__num__ver_core_minor
+#define dal_c__num__ver_core_minor dal_c__NUM__VER_CORE_MINOR
+#endif /* defined(dal_c__VER_MINOR) */
+#define dal_c__num__ver_core_patch dal_c_ver_core_patch_default
+#if defined(dal_c__NUM__VER_CORE_PATCH)
+#undef dal_c__num__ver_core_patch
+#define dal_c__num__ver_core_patch dal_c__NUM__VER_CORE_PATCH
+#endif /* defined(dal_c__VER_PATCH) */
 
 #define dal_c__val__ver_core_num \
     dal_c_ver_core_calc( \
@@ -1193,12 +1278,34 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
 #define dal_c__str__ver_label_delim dal_c_ver_label_delim_default
 #define dal_c__num__ver_label_prefix_as_num dal_c_ver_label_prefix_as_num_default
 #define dal_c__str__ver_label_prefix_as_str dal_c_ver_label_prefix_as_str_default
+#if defined(dal_c__NUM__VER_LABEL_PREFIX) && defined(dal_c__STR__VER_LABEL_PREFIX)
+#undef dal_c__str__ver_label_delim
+#define dal_c__str__ver_label_delim dal_c_ver_label_delim_some
+#undef dal_c__num__ver_label_prefix_as_num
+#define dal_c__num__ver_label_prefix_as_num dal_c__NUM__VER_LABEL_PREFIX
+#undef dal_c__str__ver_label_prefix_as_str
+#define dal_c__str__ver_label_prefix_as_str dal_c__STR__VER_LABEL_PREFIX
+#endif /* defined(dal_c__NUM__VER_LABEL_PREFIX) && defined(dal_c__STR__VER_LABEL_PREFIX) */
 #define dal_c__str__ver_label_sep dal_c_ver_label_sep_default
 #define dal_c__num__ver_label_suffix_as_num dal_c_ver_label_suffix_as_num_default
 #define dal_c__str__ver_label_suffix_as_str dal_c_ver_label_suffix_as_str_default
+#if defined(dal_c__NUM__VER_LABEL_SUFFIX) && defined(dal_c__STR__VER_LABEL_SUFFIX)
+#undef dal_c__str__ver_label_sep
+#define dal_c__str__ver_label_sep dal_c_ver_label_sep_some
+#undef dal_c__num__ver_label_suffix_as_num
+#define dal_c__num__ver_label_suffix_as_num dal_c__NUM__VER_LABEL_SUFFIX
+#undef dal_c__str__ver_label_suffix_as_str
+#define dal_c__str__ver_label_suffix_as_str dal_c__STR__VER_LABEL_SUFFIX
+#endif /* defined(dal_c__NUM__VER_LABEL_SUFFIX) && defined(dal_c__STR__VER_LABEL_SUFFIX) */
 
 #define dal_c__str__ver_build_delim dal_c_ver_build_delim_default
 #define dal_c__str__ver_build_as_str dal_c_ver_build_as_str_default
+#if defined(dal_c__STR__VER_BUILD)
+#undef dal_c__str__ver_build_delim
+#define dal_c__str__ver_build_delim dal_c_ver_build_delim_some
+#undef dal_c__str__ver_build_as_str
+#define dal_c__str__ver_build_as_str dal_c__STR__VER_BUILD
+#endif /* defined(dal_c__VER_BUILD) */
 
 #define dal_c__val__ver_num \
     dal_c_ver_calc( \

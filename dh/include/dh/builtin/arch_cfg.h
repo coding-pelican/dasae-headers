@@ -92,10 +92,10 @@ extern "C" {
 #define arch_bits_unit_64bit __comp_enum__arch_bits_unit_64bit
 #define arch_bits_unit_32bit __comp_enum__arch_bits_unit_32bit
 
-#define arch_bits_per_crumb __comp_int__arch_bits_per_crumb
-#define arch_bits_per_nibble __comp_int__arch_bits_per_nibble
-#define arch_bits_per_byte __comp_int__arch_bits_per_byte
 #define arch_bits_per_word __comp_int__arch_bits_per_word
+#define arch_bits_per_byte __comp_int__arch_bits_per_byte
+#define arch_bits_per_nibble __comp_int__arch_bits_per_nibble
+#define arch_bits_per_crumb __comp_int__arch_bits_per_crumb
 
 #define arch_bits_wide __comp_int__arch_bits_wide
 #define arch_bits_wide_unknown __comp_int__arch_bits_wide_unknown
@@ -318,10 +318,10 @@ extern "C" {
 #define __comp_enum__arch_bits_unit_32bit 2
 
 /* Derive bits per byte from family */
-#define __comp_int__arch_bits_per_crumb 2
-#define __comp_int__arch_bits_per_nibble 4
-#define __comp_int__arch_bits_per_byte 8
 #define __comp_int__arch_bits_per_word arch_bits_wide
+#define __comp_int__arch_bits_per_byte 8
+#define __comp_int__arch_bits_per_nibble 4
+#define __comp_int__arch_bits_per_crumb 2
 
 /* Derive bit width from unit */
 #define __comp_int__arch_bits_wide pp_expand( \
@@ -335,8 +335,8 @@ extern "C" {
 #define __comp_int__arch_bits_wide_64bit 64
 #define __comp_int__arch_bits_wide_32bit 32
 
-#define __comp_bool__arch_bits_is_64bit pp_eql(arch_bits_unit, arch_bits_unit_64bit)
-#define __comp_bool__arch_bits_is_32bit pp_eql(arch_bits_unit, arch_bits_unit_32bit)
+#define __comp_bool__arch_bits_is_64bit pp_Tok_eql(arch_bits_unit, arch_bits_unit_64bit)
+#define __comp_bool__arch_bits_is_32bit pp_Tok_eql(arch_bits_unit, arch_bits_unit_32bit)
 
 /* --- Endianness --- */
 
@@ -344,8 +344,8 @@ extern "C" {
 #define __comp_enum__arch_byte_order arch_byte_order_little_endian
 #define __comp_enum__arch_byte_order_little_endian 0
 #define __comp_enum__arch_byte_order_big_endian 1
-#define __comp_bool__arch_byte_order_is_little_endian pp_eql(arch_byte_order, arch_byte_order_little_endian)
-#define __comp_bool__arch_byte_order_is_big_endian pp_eql(arch_byte_order, arch_byte_order_big_endian)
+#define __comp_bool__arch_byte_order_is_little_endian pp_Tok_eql(arch_byte_order, arch_byte_order_little_endian)
+#define __comp_bool__arch_byte_order_is_big_endian pp_Tok_eql(arch_byte_order, arch_byte_order_big_endian)
 
 /* Detect byte order */
 #if arch_family_type != arch_family_type_wasm

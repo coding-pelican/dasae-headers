@@ -40,7 +40,27 @@ $static let debug_StackTrace__print = pp_if_(plat_is_windows)(
         pp_else_(debug_StackTrace__unsupported_print)
     )));
 
-#define debug_StackTrace__max_frames 64
+#define debug_StackTrace__max_frames pp_expand( \
+    pp_switch_ pp_begin(arch_bits_unit)( \
+        pp_case_((arch_bits_unit_64bit)(pp_expand( \
+            pp_switch_ pp_begin(arch_family_type)( \
+                pp_case_((arch_family_type_x86)(64)), \
+                pp_case_((arch_family_type_arm)(48)), \
+                pp_case_((arch_family_type_riscv)(48)), \
+                pp_default_(32) \
+            ) pp_end \
+        ))), \
+        pp_case_((arch_bits_unit_32bit)(pp_expand( \
+            pp_switch_ pp_begin(arch_family_type)( \
+                pp_case_((arch_family_type_x86)(32)), \
+                pp_case_((arch_family_type_arm)(24)), \
+                pp_case_((arch_family_type_riscv)(24)), \
+                pp_default_(16) \
+            ) pp_end \
+        ))), \
+        pp_default_(16) \
+    ) pp_end \
+)
 #define debug_StackTrace__max_symbol_len 256
 
 /*========== External Definitions ===========================================*/
@@ -113,7 +133,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
     SymInitialize(process, null, true);
     defer_(SymCleanup(process));
 
-    var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) = A_zero();
+    $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) = A_zero();
     let frames = RtlCaptureStackBackTrace(0, debug_StackTrace__max_frames, A_ptr(stack), null);
     let tid = as$(u64)(Thrd_currentId());
 
@@ -121,7 +141,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
     io_stream_eprintln(u8_l("stack backtrace (tid: {:ul}):"), tid);
 
     /* Buffer for Symbol Info */
-    var_(symbol_buf, A$$(sizeOf$(SYMBOL_INFO) + debug_StackTrace__max_symbol_len, u8) $align(alignOf$(SYMBOL_INFO))) = A_zero();
+    $static var_(symbol_buf, A$$(sizeOf$(SYMBOL_INFO) + debug_StackTrace__max_symbol_len, u8) $align(alignOf$(SYMBOL_INFO))) = A_zero();
     let symbol = ptrAlignCast$((SYMBOL_INFO*)(A_ptr(symbol_buf)));
     symbol->SizeOfStruct = sizeOf$(SYMBOL_INFO);
     symbol->MaxNameLen = debug_StackTrace__max_symbol_len;
@@ -187,7 +207,7 @@ fn_((debug_StackTrace__unix_setupCrashHandler(void))(void)) {
 };
 
 fn_((debug_StackTrace__unix_print(void))(void)) {
-    var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) = A_zero();
+    $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) = A_zero();
     let frames = backtrace(A_ptr(stack), debug_StackTrace__max_frames);
     let tid = as$(u64)(Thrd_currentId());
 

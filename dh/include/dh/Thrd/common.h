@@ -106,7 +106,7 @@ typedef struct Thrd_SpawnCfg {
     var_(allocator, O$mem_Alctr);
     var_(stack_size, usize);
 } Thrd_SpawnCfg;
-#define Thrd_SpawnCfg_default_stack_size (16ull * 1024ull * 1024ull)
+#define Thrd_SpawnCfg_default_stack_size (usize_(16) * 1024 * 1024)
 static const Thrd_SpawnCfg Thrd_SpawnCfg_default = {
     .allocator = none(),
     .stack_size = Thrd_SpawnCfg_default_stack_size,

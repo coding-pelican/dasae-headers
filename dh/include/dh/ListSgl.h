@@ -37,7 +37,7 @@ T_use_P$(ListSgl_Link);
 T_use_O$(P$ListSgl_Link);
 struct ListSgl_Link {
     var_(next, O$P$ListSgl_Link);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 };
 
 $extern fn_((ListSgl_Link_empty(TypeInfo type))(ListSgl_Link));
@@ -63,7 +63,7 @@ $extern fn_((ListSgl_Link_dataMut(P$ListSgl_Link self, TypeInfo type))(u_P$raw))
 struct ListSgl_Adp$raw {
     struct {
         var_(link, ListSgl_Link);
-        debug_only(var_(type, TypeInfo);)
+        var_(type, debug_TypeInfo);
     };
     var_(data_, V$raw) $flexible;
 };
@@ -83,7 +83,7 @@ T_alias$((u_Fields_Idx$ListSgl_Adp)(enum_((u_Fields_Idx$ListSgl_Adp $fits($packe
 ))));
 $static let_(u_Fields_type$ListSgl_Adp, A$$(count$u_Fields_Idx$ListSgl_Adp, TypeInfo)) = A_init({
     [u_Fields_Idx_link$ListSgl_Adp] = typeInfo$(FieldType$(ListSgl_Adp$raw, link)),
-    [u_Fields_Idx_type$ListSgl_Adp] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(ListSgl_Adp$raw, type)), pp_else_(Void))),
+    [u_Fields_Idx_type$ListSgl_Adp] = typeInfo$(FieldType$(ListSgl_Adp$raw, type)),
     [u_Fields_Idx_data_$ListSgl_Adp] = typeInfo$(FieldType$(ListSgl_Adp$raw, data_)),
 });
 
@@ -96,7 +96,7 @@ $static let_(u_Fields_type$ListSgl_Adp, A$$(count$u_Fields_Idx$ListSgl_Adp, Type
 
 typedef struct ListSgl {
     var_(first, O$P$ListSgl_Link);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } ListSgl;
 
 $extern fn_((ListSgl_empty(TypeInfo type))(ListSgl));
@@ -111,7 +111,7 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
     union { \
         struct { \
             var_(next, O$$(P$$(ListSgl_Link$(_T)))); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }; \
         var_(as_raw, ListSgl_Link) $like_ref; \
     }
@@ -126,7 +126,7 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
     union ListSgl_Link$(_T) { \
         struct { \
             var_(next, O$(P$(ListSgl_Link$(_T)))); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }; \
         var_(as_raw, ListSgl_Link) $like_ref; \
     }
@@ -193,7 +193,7 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
         struct { \
             struct { \
                 var_(link, ListSgl_Link$(_T)); \
-                debug_only(var_(type, TypeInfo);) \
+                var_(type, debug_TypeInfo); \
             }; \
             union { \
                 var_(data, _T); \
@@ -211,7 +211,7 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
         struct { \
             struct { \
                 var_(link, ListSgl_Link$(_T)); \
-                debug_only(var_(type, TypeInfo);) \
+                var_(type, debug_TypeInfo); \
             }; \
             union { \
                 var_(data, _T); \
@@ -251,7 +251,7 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
     union { \
         struct { \
             var_(first, O$$(P$$(ListSgl_Link$(_T)))); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }; \
         var_(as_raw, ListSgl) $like_ref; \
     }
@@ -263,7 +263,7 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
     union ListSgl$(_T) { \
         struct { \
             var_(first, O$(P$(ListSgl_Link$(_T)))); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }; \
         var_(as_raw, ListSgl) $like_ref; \
     }

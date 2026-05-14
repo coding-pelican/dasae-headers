@@ -25,42 +25,24 @@ extern "C" {
 
 #include "cfg.h"
 
-/*========== Classic C Alctr ============================================*/
-
-/// Classic allocator instance (minimal state)
-typedef struct heap_Classic {
-    Void unused_[0]; /* Empty struct not allowed in C */
-} heap_Classic;
-
-/// Get allocator interface for instance
-extern fn_((heap_Classic_alctr(heap_Classic* self))(mem_Alctr));
-
 /*========== Macros and Declarations ========================================*/
 
-#if defined(__GLIBC__) || defined(__APPLE__)
-#define heap_Classic_has_malloc_size (1)
-#else
-#define heap_Classic_has_malloc_size (0)
-#endif
+#define heap_Classic_enabled __comp_bool__heap_Classic_enabled
+errset_((heap_Classic_E)(heap_Classic_Unsupported));
 
-#if heap_Classic_has_malloc_size
-#if defined(__GLIBC__)
-#elif defined(__APPLE__)
-#include <malloc/malloc.h>
-#else
-#endif
-/// Get underlying malloc_size if available
-$inline_always
-fn_((heap_Classic_mallocSize(P$raw ptr))(usize)) {
-#if defined(__GLIBC__)
-    return malloc_usable_size(ptr);
-#elif defined(__APPLE__)
-    return malloc_size(ptr);
-#else
-    return 0; // Fallback
-#endif
-}
-#endif
+/// Classic allocator instance
+T_alias$((heap_Classic)(struct heap_Classic {
+    var_(unused, Void); /* Empty struct not allowed in C */
+}));
+T_use_E$($set(heap_Classic_E)(mem_Alctr));
+$static let_(heap_Classic_default, heap_Classic) = cleared();
+/// Get allocator interface for instance
+$attr($must_check)
+$extern fn_((heap_Classic_alctr(heap_Classic* self))(heap_Classic_E$mem_Alctr));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __comp_bool__heap_Classic_enabled comp_libc_linked
 
 #if defined(__cplusplus)
 } /* extern "C" */

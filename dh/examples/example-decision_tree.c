@@ -20,7 +20,7 @@
 #include "dh-main.h"
 #include "dh/log.h"
 #include "dh/mem.h"
-#include "dh/heap/Page.h"
+#include "dh/heap/Sys.h"
 #include "dh/fs/common.h"
 #include "dh/fs/File.h"
 #include "dh/io/Buf.h"
@@ -95,7 +95,9 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     log_info("Starting decision tree application");
 
     // Create gpa
-    var gpa = heap_Page_alctr(&l0$((heap_Page)));
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     // Load dataset if a filename was provided, otherwise create a demo tree
     if (args.len > 1) {
         log_info("Loading dataset from {:s}", *S_at((args)[1]));

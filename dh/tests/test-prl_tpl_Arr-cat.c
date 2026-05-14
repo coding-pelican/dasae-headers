@@ -1,7 +1,7 @@
 #include "dh-main.h"
 #include "dh/prl.h"
 
-TEST_fn_("test A_cat" $scope) {
+TEST_fn_("prl/tpl/Arr: A_cat" $scope) {
     let arr3_lhs = A_from$((i32){ 0, 1, 2 });
     let arr3_rhs = A_from$((i32){ 3, 4, 5 });
     let res_3_add_3 = A_cat(arr3_lhs, arr3_rhs);
@@ -30,7 +30,7 @@ TEST_fn_("test A_cat" $scope) {
     } $end(for);
 } $unscoped(TEST_fn);
 
-TEST_fn_("test A_cat$" $scope) {
+TEST_fn_("prl/tpl/Arr: A_cat$" $scope) {
     T_use_A$(6, i32);
     T_use_A$(8, i32);
     let arr3_lhs = A_from$((i32){ 0, 1, 2 });

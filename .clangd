@@ -26,6 +26,7 @@ Diagnostics:
       - bugprone-easily-swappable-parameters
       - bugprone-reserved-identifier
       - bugprone-signed-char-misuse
+      - bugprone-suspicious-include
       - cert-dcl37-c
       - cert-dcl51-cpp
       - llvm-include-order
@@ -125,32 +126,34 @@ CompileFlags:
     # - -Werror=double-promotion # `float` implicitly promoted to `double`
     - -Wfloat-conversion # Floating-point <-> Integer
     # - -Wfloat-equal # `==` `!=` directly compare warning
+    # [Diagnostic: Format String Safety]
+    - -Wformat=2 # strict format checking
     # [Diagnostic: Pointer & Cast Safety]
-    - -Werror=cast-qual # `const` force removal casting
-    - -Werror=cast-align # Alignment violation casting
     - -Wpointer-arith # `void*` arithmetic etc. dangerous operations
-    - -Wbad-function-cast # function return value wrong casting
     - -Wnull-dereference # `null` dereference static detection
     - -Wwrite-strings # String literal -> `const char*`
-    # [Diagnostic: Control Flow]
-    - -Wswitch-enum # enum switch completeness (default included warning, `-Wno-switch-enum` to disable)
-    - -Winfinite-recursion # infinite recursion detection
-    - -Wloop-analysis # loop logic error
-    # - -Wcomma # comma operator misuse
+    - -Werror=cast-align # Alignment violation casting
+    - -Werror=cast-qual # `const` force removal casting
+    - -Wbad-function-cast # (C Only) function return value wrong casting
     # [Diagnostic: Declaration & Definition]
-    - -Werror=strict-prototypes # function declaration with `void` must be explicit
+    - -Werror=strict-prototypes # (C Only) function declaration with `void` must be explicit
     - -Werror=missing-prototypes # global function header declaration must be explicit
-    - -Wmissing-variable-declarations # global variable declaration must be explicit
+    - -Werror=missing-variable-declarations # global variable declaration must be explicit
     # - -Wshadow # variable shadowing detection
     # - -Wundef # `#if` undefined macro usage forbidden
     # [Diagnostic: Memory Safety]
-    - -Werror=div-by-zero # division by zero
+    - -Werror=uninitialized # uninitialized variable usage
     # - -Wconditional-uninitialized # conditional uninitialized
     # - -Wvla # variable length array forbidden (runtime-sized array)
-    # [Diagnostic: Format String Safety]
-    # - -Wformat=2 # strict format checking
-    # [Diagnostic: Thread Safety] (Clang only)
-    - -Wthread-safety # thread safety annotation analysis
+    - -Werror=div-by-zero # division by zero
+    # [Diagnostic: Control Flow]
+    - -Wframe-larger-than=4096 # (Compile-time only) stack frame size limit
+    - -Winfinite-recursion # infinite recursion detection
+    - -Wloop-analysis # loop logic error
+    - -Wswitch-enum # enum switch completeness (default included warning, `-Wno-switch-enum` to disable)
+    # - -Wcomma # comma operator misuse
+    # [Diagnostic: Thread Safety]
+    - -Wthread-safety # (Clang only) thread safety annotation analysis
     # [Compatibility]
     - -fgnu-keywords # Enable GCC Compatibility
     - -fms-extensions # Windows Compatibility (Declspec, etc.)
@@ -165,44 +168,46 @@ CompileFlags:
   Add:
     - -xc++
     - -std=gnu++20
-    # Relative Paths
+    # [Relative Paths]
     - -I./dh/include
     - -isystem./dh/lib/deps
-    # Diagnostic: Common
+    # [Diagnostic: Common]
     - -Werror=all
     - -Werror=extra
-    # Diagnostic: Explicit Type Safety
+    # [Diagnostic: Explicit Type Safety]
     - -Werror=conversion
     - -Werror=sign-conversion
     # - -Werror=double-promotion
     - -Wfloat-conversion
     # - -Wfloat-equal
-    # Diagnostic: Pointer & Cast Safety
-    - -Werror=cast-qual
-    - -Werror=cast-align
+    # [Diagnostic: Format String Safety]
+    - -Wformat=2
+    # [Diagnostic: Pointer & Cast Safety]
     - -Wpointer-arith
-    # - -Wbad-function-cast # (C Only)
     - -Wnull-dereference
     - -Wwrite-strings
-    # Diagnostic: Control Flow
-    - -Wswitch-enum
-    - -Winfinite-recursion
-    - -Wloop-analysis
-    # - -Wcomma
-    # Diagnostic: Declaration & Definition
+    - -Werror=cast-qual
+    - -Werror=cast-align
+    # - -Wbad-function-cast # (C Only)
+    # [Diagnostic: Declaration & Definition]
     # - -Werror=strict-prototypes # (C Only)
     - -Werror=missing-prototypes
-    - -Wmissing-variable-declarations
+    - -Werror=missing-variable-declarations
     # - -Wshadow
     # - -Wundef
-    # Diagnostic: Memory Safety
-    - -Werror=div-by-zero
+    # [Diagnostic: Memory Safety]
+    - -Werror=uninitialized
     # - -Wconditional-uninitialized
-    # - -Wvla # variable length array forbidden (runtime-sized array)
-    # Diagnostic: Format String Safety
-    # - -Wformat=2
-    # Diagnostic: Thread Safety (Clang only)
-    - -Wthread-safety
+    # - -Wvla
+    - -Werror=div-by-zero
+    # [Diagnostic: Control Flow]
+    - -Wframe-larger-than=4096 # (Compile-time only)
+    - -Winfinite-recursion
+    - -Wloop-analysis
+    - -Wswitch-enum
+    # - -Wcomma
+    # [Diagnostic: Thread Safety]
+    - -Wthread-safety # (Clang only)
     # Compatibility
     - -fgnu-keywords
     - -fms-extensions
@@ -218,26 +223,22 @@ CompileFlags:
     - -Wno-unused-variable
     - -Wno-unused-function
 # ========== C Project ==========
-# ---
 # If:
 #   PathMatch: [.*\.c, .*\.h]
 # CompileFlags:
 #   Add:
-#     - -Ic:/dasae/dev/dh-workspace/hello-world/src
-#     - -Ic:/dasae/dev/dh-workspace/hello-world/include
-#     - -isystemc:/dasae/dev/dh-workspace/hello-world/lib/deps
-#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/src
-#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/include
-#     - -isystem/mnt/c/dasae/dev/dh-workspace/hello-world/lib/deps
+#     # [Relative Paths] use relative paths based on the project root
+#     # This configuration file (.clangd) is the reference point.
+#     - -isystem./../dh/include
+#     - -isystem./../dh/lib/deps
+
 # ========== C++ Project ==========
 # ---
 # If:
 #   PathMatch: [.*\.cc, .*\.cxx, .*\.cpp, .*\.hh, .*\.hxx, .*\.hpp]
 # CompileFlags:
 #   Add:
-#     - -Ic:/dasae/dev/dh-workspace/hello-world/src
-#     - -Ic:/dasae/dev/dh-workspace/hello-world/include
-#     - -isystemc:/dasae/dev/dh-workspace/hello-world/lib/deps
-#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/src
-#     - -I/mnt/c/dasae/dev/dh-workspace/hello-world/include
-#     - -isystem/mnt/c/dasae/dev/dh-workspace/hello-world/lib/deps
+#     # [Relative Paths] use relative paths based on the project root
+#     # This configuration file (.clangd) is the reference point.
+#     - -isystem./../dh/include
+#     - -isystem./../dh/lib/deps

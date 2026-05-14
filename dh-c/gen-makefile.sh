@@ -20,10 +20,14 @@ else
     RMDIR = rm -rf
 endif
 
+# Self-build profile (matches `dh-c` runtime profile names)
+PROFILE ?= dev
+
 # Directories
 SRC_DIR = src
 INCLUDE_DIR = include
-BUILD_DIR = build
+BUILD_ROOT = build
+BUILD_DIR = $(BUILD_ROOT)/$(PROFILE)
 DAL_C_DIR = $(SRC_DIR)/dal-c
 DAL_C_EXT_DIR = $(SRC_DIR)/dal-c-ext
 
@@ -49,9 +53,6 @@ OBJS = $(ALL_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 
 # Target executable
 TARGET = $(BUILD_DIR)/dh-c$(EXE_EXT)
-
-# Self-build profile (matches `dh-c` runtime profile names)
-PROFILE ?= release
 
 # Compiler flags
 BASE_CFLAGS = -std=gnu17 \
@@ -130,7 +131,12 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 
 # Clean build artifacts
 clean:
-	@echo "Cleaning..."
+	@echo "Cleaning $(BUILD_ROOT)/ (ignoring PROFILE=$(PROFILE))..."
+	@$(RMDIR) $(BUILD_ROOT) 2>/dev/null || true
+	@echo "Clean complete"
+
+clean-profile:
+	@echo "Cleaning $(BUILD_DIR)/..."
 	@$(RMDIR) $(BUILD_DIR) 2>/dev/null || true
 	@echo "Clean complete"
 
@@ -147,6 +153,6 @@ install: $(TARGET)
 endif
 
 # Phony targets
-.PHONY: all clean install
+.PHONY: all clean clean-profile install
 EOF
 echo "Makefile generated"

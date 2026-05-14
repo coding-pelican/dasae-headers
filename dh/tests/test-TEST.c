@@ -1,7 +1,7 @@
 #include "dh/TEST.h"
 
 /// Basic tests demonstrating the framework's features
-TEST_fn_("Basic Math Operations" $scope) {
+TEST_fn_("TEST: Basic Math Operations" $scope) {
     // Simple boolean condition
     try_(TEST_expect(2 + 2 == 4));
 
@@ -16,7 +16,7 @@ TEST_fn_("Basic Math Operations" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test side effects of increment operators
-TEST_fn_("Increment Operator Side Effects in Type System Operations" $scope) {
+TEST_fn_("TEST: Increment Operator Side Effects in Type System Operations" $scope) {
     var_(cnt, i32) = 123;
 
     let cnt_post_inc = cnt++;
@@ -53,11 +53,16 @@ TEST_fn_("Increment Operator Side Effects in Type System Operations" $scope) {
 } $unscoped(TEST_fn);
 
 /// Test type comparison
-TEST_fn_("Simply Type Comparison with Failing Test" $scope) {
+TEST_fn_("TEST: Simply Type Comparison with Failing Test" $scope) {
     let_(integer, i32) = 10;
     let_(floating, f32) = 10.0f;
     try_(TEST_expect(!eqlType$(TypeOf(integer), TypeOf(floating))));
-    try_(TEST_expect(eqlType$(TypeOf(integer), TypeOf(floating)))); // This will always fail
+    let result = expr_(TEST_E$void $guard)({
+        ETrace_disable();
+        defer_(ETrace_enable());
+        $break_(TEST_expect(eqlType$(TypeOf(integer), TypeOf(floating)))); // This will always fail
+    }) $unguarded(expr);
+    try_(TEST_expect(isErr(result)));
 } $unscoped(TEST_fn);
 
 #include "dh-main.h"

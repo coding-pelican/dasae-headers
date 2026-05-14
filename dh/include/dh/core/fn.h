@@ -261,7 +261,7 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 
 #define call(/*(_ident)(_Args...)*/...) pp_expand(pp_exec_defer(__exec_call)()(pp_Tuple_unwrapSufComma __VA_ARGS__))
 #define __exec_call() __call
-#define __call(_ident, _Args...) (ensureNonnull(_ident)(_Args))
+#define __call(_ident, _Args...) (ensureNonnull(_ident) _Args)
 
 // clang-format off
 /* if-else as expression block */

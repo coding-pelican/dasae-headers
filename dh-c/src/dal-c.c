@@ -107,7 +107,7 @@ void dal_c__printUsage(void) {
 
     printf("GENERATED DIRECTORIES:\n");
     printf("  `build/` stores artifacts, object files, and generated plan makefiles.\n");
-    printf("  `.cache/` stores generated unity/test helper sources.\n");
+    printf("  `build/.cache/` stores generated unity/test helper sources.\n");
     printf("  `lib/deps/` stores copied dependency headers, static/shared libraries, and PCH files.\n\n");
 
     printf("PROFILES:\n");

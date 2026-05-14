@@ -210,21 +210,35 @@ Shared build options:
 - `--std=<std>`
 - `--arch=<target>`
 - `--target=<triple>`
+- `--use-dsl`
+- `--no-dsl`
 - `--freestanding`
+- `--hosted`
+- `--has-libc`
+- `--no-libc`
+- `--has-default-libs`
+- `--no-default-libs`
+- `--has-start-files`
+- `--no-start-files`
+- `--std-lib`
+- `--no-std-lib`
+- `--crt`
+- `--no-crt`
 - `--sysroot=<path>`
 - `--include=<path>` or `-I<path>`
 - `--isystem=<path>`
 - `--link=<lib>` or `-l<lib>`
 - `--define=<macro>` or `-D<macro>`
 - `--undef=<macro>` or `-U<macro>`
+- `--entry=<symbol>`
 - `--compiler-args="..."`
+- `--comp-args="..."`
 - `--args="..."`
 - `--file=<path>`
 - `--output=<path>` or `-o<path>`
 - `--exclude=<path>`
 - `--dh-file=<path>`
 - `--loose-errors`
-- `--no-dsl`
 - `--show-commands`
 - `--verbose`
 - `--dh=<path>`
@@ -245,7 +259,7 @@ Build-specific modifiers:
 Run/test-specific modifiers:
 
 - `--debug`
-- `--runtime-args="..."`
+- `--exec-args="..."`
 
 Clean-specific modifiers:
 

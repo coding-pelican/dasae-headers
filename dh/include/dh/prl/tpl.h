@@ -14,6 +14,7 @@ extern "C" {
 #include "tpl/ErrSet.h"
 #include "tpl/ErrRes.h"
 #include "tpl/variant.h"
+#include "tpl/Tup.h"
 
 /*========== Macros and Declarations ========================================*/
 

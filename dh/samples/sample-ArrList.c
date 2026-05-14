@@ -1,5 +1,5 @@
 #include "dh-main.h"
-#include "dh/heap/Page.h"
+#include "dh/heap/Sys.h"
 #include "dh/ArrList.h"
 #include "dh/io/stream.h"
 
@@ -27,10 +27,7 @@ $static fn_((printPoints(ArrList$Point points))(void)) {
 };
 
 $attr($must_check)
-$static fn_((example(void))(mem_E$void) $guard) {
-    // Initialize the allocator
-    let gpa = heap_Page_alctr(&l0$((heap_Page)));
-
+$static fn_((example(mem_Alctr gpa))(mem_E$void) $guard) {
     // Initialize the array list
     var points = try_(ArrList_init$Point(gpa, 8));
     // ArrList$Point points = { .as_raw[0] =  };
@@ -64,13 +61,15 @@ $static fn_((example(void))(mem_E$void) $guard) {
         io_stream_print(u8_l("Popped last element: ({:d}, {:d})\n"), item_last.x, item_last.y);
         printPoints(points);
     }
-
     return_ok({});
 } $unguarded(fn);
 
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    try_(example());
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
+    try_(example(gpa));
     io_stream_print(u8_l("Hello, world!\n"));
     return_ok({});
-} $unscoped(fn);
+} $unguarded(fn);

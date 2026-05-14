@@ -14,9 +14,7 @@ fn_((heap_Sbrk_Fixed_sbrk(u_P$raw ctx, usize n))(usize)) {
     // Align n to page size
     let aligned_n = mem_alignFwd(n, heap_page_size);
     // Check if we have enough space
-    if (self->end_idx + aligned_n > self->buf.len) {
-        return 0; // Out of memory
-    }
+    if (self->end_idx + aligned_n > self->buf.len) { return 0; /* Out of memory */ }
     let addr = ptrToInt(self->buf.ptr) + self->end_idx;
     self->end_idx += aligned_n;
     return addr;

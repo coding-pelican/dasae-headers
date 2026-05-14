@@ -248,22 +248,6 @@ extern "C" {
 #define suffix$S(/*_s: S$$(_T), _begin: usize*/... /*(S$$(_T))*/) __param_expand__suffix$S(__VA_ARGS__)
 #define suffix$S$(/*(_T)(_s: S$$(_T), _begin: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$S$)(__param_expand__suffix$S$ __VA_ARGS__))
 
-#define u8_c(_literal) comp_syn__u8_c(_literal)
-#define u16_c(_literal) comp_syn__u16_c(_literal)
-#define u32_c(_literal) comp_syn__u32_c(_literal)
-#define u8_a(_literal) comp_syn__u8_a(_literal)
-#define u8_s(_literal) comp_syn__u8_s(_literal)
-#define u8_l(_literal) comp_syn__u8_l(_literal)
-#define u8_az(_literal) comp_syn__u8_az(_literal)
-#define u8_sz(_literal) comp_syn__u8_sz(_literal)
-#define u8_lz(_literal) comp_syn__u8_lz(_literal)
-#define u8z_a(_literal) comp_syn__u8z_a(_literal)
-#define u8z_s(_literal) comp_syn__u8z_s(_literal)
-#define u8z_l(_literal) comp_syn__u8z_l(_literal)
-
-#define u8_s0(_literal) comp_syn__u8_s0(_literal)
-#define u8_l0(_literal) comp_syn__u8_l0(_literal)
-
 /*========== Macros and Definitions =========================================*/
 
 #define __lit_init$S__step(...) __VA_ARGS__
@@ -350,27 +334,6 @@ extern "C" {
     claim_assert_fmt(__begin <= len$S(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, len$S(__s)); \
     init$S$((_T)(ptr$S(__s) + __begin, len$S(__s) - __begin)); \
 })
-
-#define comp_syn__u8_c(_literal) l$((u8){ _literal })
-#define comp_syn__u16_c(_literal) l$((u16){ u##_literal })
-#define comp_syn__u32_c(_literal) l$((u32){ U##_literal })
-
-#define comp_syn__u8_a(_literal...) $supress_unterminated_string_initialization( \
-    l$((A$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } }) \
-)
-#define comp_syn__u8_s(_literal) l$((S$u8){ .ptr = l$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
-#define comp_syn__u8_l(_literal) l$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
-
-#define comp_syn__u8_az(_literal) l$((A$$(sizeOf$(TypeOf(_literal)), u8)){ .val = { _literal } })
-#define comp_syn__u8_sz(_literal) l$((S$u8){ .ptr = l$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) })
-#define comp_syn__u8_lz(_literal) l$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) })
-
-#define comp_syn__u8z_a(_literal) l$((AZ$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } })
-#define comp_syn__u8z_s(_literal) l$((SZ$u8){ .ptr = l$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })
-#define comp_syn__u8z_l(_literal) l$((SZ_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) - 1 })
-
-#define comp_syn__u8_s0(_literal) l$((u8[]){ _literal })
-#define comp_syn__u8_l0(_literal) as$(const u8*)(_literal)
 
 #if defined(__cplusplus)
 } /* extern "C" */

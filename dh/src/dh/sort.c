@@ -63,7 +63,7 @@ fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
     let_(idx_ctx, sort_IdxCtx) = {
         .ordFn = sort_IdxCtx__Inner_ord,
         .swapFn = sort_IdxCtx__Inner_swap,
-        .inner = u_anyV(inner)
+        .inner = u_deref(u_anyP(&inner))
     };
     sort_insertIdx($rt(seq.len), idx_ctx);
 };
@@ -94,7 +94,7 @@ fn_((sort_heapCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
     let_(idx_ctx, sort_IdxCtx) = {
         .ordFn = sort_IdxCtx__Inner_ord,
         .swapFn = sort_IdxCtx__Inner_swap,
-        .inner = u_anyV(inner)
+        .inner = u_deref(u_anyP(&inner))
     };
     sort_heapIdx($rt(seq.len), idx_ctx);
 };
@@ -179,7 +179,7 @@ fn_((sort_pdqCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
     let_(idx_ctx, sort_IdxCtx) = {
         .ordFn = sort_IdxCtx__Inner_ord,
         .swapFn = sort_IdxCtx__Inner_swap,
-        .inner = u_anyV(inner)
+        .inner = u_deref(u_anyP(&inner))
     };
     sort_pdqIdx($rt(seq.len), idx_ctx);
 };

@@ -44,7 +44,7 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_syn__debug_only(_inner...) pp_if_(debug_comp_enabled)(pp_then_(_inner), pp_else_())
+#define __comp_syn__debug_only(_inner...) pp_if_(debug_comp_enabled)(pp_then_(_inner))
 #if !debug_comp_enabled
 #define __comp_inline__debug_break() $unused(0)
 #else /* debug_comp_enabled */
