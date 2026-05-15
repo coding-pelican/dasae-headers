@@ -29,7 +29,7 @@ extern "C" {
 /*========== Definitions ====================================================*/
 
 /* Error codes */
-errset_((TEST_E)(TEST_Skip, TEST_Fail));
+errset_((TEST_E)(TEST_Fail, TEST_Skip));
 
 /* Test case function type */
 typedef fn_(((*)(void))(E$void) $T) TEST_CaseFn;

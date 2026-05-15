@@ -22,6 +22,9 @@ $static fn_((E_strfy(const EAny* err))(S_const$u8));
 $attr($inline_always)
 $static fn_((E_hashId(const EAny* err))(E_HashId));
 
+$extern fn_((E_eql(const EAny* lhs, const EAny* rhs))(bool));
+$extern fn_((E_neq(const EAny* lhs, const EAny* rhs))(bool));
+
 $extern fn_((E_print(const EAny* err))(void));
 
 T_alias$((E_Tag$General_E)(enum_((E_Tag$General_E $fits($packed))(
@@ -98,21 +101,21 @@ $static fn_((E__hashId$Unexpected(void))(E_HashId));
 /*---------- External Definitions -------------------------------------------*/
 
 fn_((E_hasher(S_const$u8 str))(E_HashId)) {
-    return CompHash_calc(str);
+    return CompHash_calc(ensureNonnullS(str));
 };
 
 fn_((E_tag(const EAny* any))(E_Tag)) {
-    let self = ptrAlignCast$((const General_E*)(any));
+    let self = ptrAlignCast$((const General_E*)(ensureNonnull(any)));
     return self->opaq.inner->tag;
 };
 
 fn_((E_strfy(const EAny* any))(S_const$u8)) {
-    let self = ptrAlignCast$((const General_E*)(any));
+    let self = ptrAlignCast$((const General_E*)(ensureNonnull(any)));
     return self->opaq.inner->tag_id;
 };
 
 fn_((E_hashId(const EAny* any))(E_HashId)) {
-    let self = ptrAlignCast$((const General_E*)(any));
+    let self = ptrAlignCast$((const General_E*)(ensureNonnull(any)));
     return self->opaq.inner->hashId();
 };
 
@@ -122,10 +125,12 @@ fn_((E_tag$General_E(General_E self))(E_Tag$General_E)) {
 };
 
 fn_((E_strfy$General_E(General_E self))(S_const$u8)) {
+    debug_assert(E_tag(self.as_any) != E_Tag$Any);
     return self.opaq.inner->tag_id;
 };
 
 fn_((E_hashId$General_E(General_E self))(E_HashId)) {
+    debug_assert(E_tag(self.as_any) != E_Tag$Any);
     return self.opaq.inner->hashId();
 };
 
@@ -140,7 +145,7 @@ fn_((E_resolve$General_E(General_E self))(O$General_E) $scope) {
         E_cause$NotImplemented(),
     });
     for_(($s(A_ref(errs)))(err)) {
-        if (E_hashId$General_E(self) != E_hashId$General_E(*err)) continue;
+        if (!E_eql(self.as_any, err->as_any)) continue;
         return_some(*err);
     } $end(for);
     return_none();

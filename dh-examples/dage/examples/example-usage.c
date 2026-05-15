@@ -10,7 +10,7 @@
  * @note run with `dh-c run example-usage.c --sample`
  */
 
-#include <dage.h>
+#include "dage.h"
 #include <dh-main.h>
 #include <dh/Rand.h>
 #include <dh/heap/Page.h>

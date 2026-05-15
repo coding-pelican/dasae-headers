@@ -362,7 +362,6 @@ extern "C" {
 #define $branch_hot __attr__$branch_hot
 #define $branch_cold __attr__$branch_cold
 #define $branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __attr__$branch_predict_at(_prob, _expr)
-#define $branch_unpredict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __attr__$branch_predict_at(_prob, _expr)
 #define $branch_likely(_expr... /*(bool)*/) __attr__$branch_likely(_expr)
 #define $branch_unlikely(_expr... /*(bool)*/) __attr__$branch_unlikely(_expr)
 #define $branch_unpredictable(_expr... /*(bool)*/) __attr__$branch_unpredictable(_expr)

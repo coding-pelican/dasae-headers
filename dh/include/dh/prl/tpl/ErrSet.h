@@ -102,10 +102,12 @@ extern "C" {
     } _Id; \
     $attr($inline_always $maybe_unused) \
     static S_const$u8 pp_cat(E_strfy$, _Id)(_Id self) { \
+        debug_assert(E_tag(self.as_any) != E_Tag$Any); \
         return self.opaq.inner->tag_id; \
     } \
     $attr($inline_always $maybe_unused) \
     static E_HashId pp_cat(E_hashId$, _Id)(_Id self) { \
+        debug_assert(E_tag(self.as_any) != E_Tag$Any); \
         return self.opaq.inner->hashId(); \
     } \
     pp_foreach(__syn__errset__emitHashDecl, _Id, __pp__errset__unwrap _Members) \
@@ -118,7 +120,7 @@ extern "C" {
             pp_foreach(__syn__errset__emitLocalErr, _Id, __pp__errset__unwrap _Members) \
         }); \
         for_(($s(A_ref(errs)))(err)) { \
-            if (pp_cat(E_hashId$, _Id)(self) != pp_cat(E_hashId$, _Id)(*err)) continue; \
+            if (!E_eql(self.as_any, err->as_any)) continue; \
             return_some(*err); \
         } $end(for); \
         return_none(); \

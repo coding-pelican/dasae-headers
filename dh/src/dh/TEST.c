@@ -100,17 +100,20 @@ fn_((TEST_Framework_run(void))(void) $guard) {
 
 /* Debug versions of test functions */
 fn_((TEST_skip_test(SrcLoc loc))(TEST_E$void) $scope) {
+    /* TODO: Improve this */
     let_ignore = loc;
     return_err(E_cause$TEST_Skip());
 } $unscoped(fn);
 
 fn_((TEST_skipMsg_test(S_const$u8 msg, SrcLoc loc))(TEST_E$void) $scope) {
+    /* TODO: Improve this */
     let_ignore = msg;
     let_ignore = loc;
     return_err(E_cause$TEST_Skip());
 } $unscoped(fn);
 
 fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(TEST_E$void) $scope) {
+    /* TODO: Improve this */
     let_ignore = loc;
     let_ignore = eval_str;
     if (!expr) return_err(E_cause$TEST_Fail());
@@ -118,6 +121,7 @@ fn_((TEST_expect_test(bool expr, SrcLoc loc, S_const$u8 eval_str))(TEST_E$void) 
 } $unscoped(fn);
 
 fn_((TEST_expectMsg_test(bool expr, S_const$u8 msg, SrcLoc loc, S_const$u8 eval_str))(TEST_E$void) $scope) {
+    /* TODO: Improve this */
     let_ignore = msg;
     let_ignore = loc;
     let_ignore = eval_str;
