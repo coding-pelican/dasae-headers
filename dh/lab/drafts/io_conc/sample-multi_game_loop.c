@@ -6,7 +6,7 @@
 #include "dh/heap/Sys.h"
 
 $static fn_((report(io_Self io, S_const$u8 fmt, ...))(void)) {
-    using_(var args = l0$((va_list))) using_fini_(va_start(args, fmt), va_end(args)) {
+    using_(var_(args, va_list) $undefined) using_fini_(va_start(args, fmt), va_end(args)) {
         io_stream_printVaArgs(io, fmt, args);
     }
     io_stream_nl(io);

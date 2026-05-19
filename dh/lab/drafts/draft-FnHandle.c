@@ -98,7 +98,7 @@ typedef struct Closure$raw {
 /// \param ... The arguments to the format string
 $static fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
     io_stream_print(u8_l("[{:s}] "), label);
-    using_(var args = l0$((va_list))) using_fini_(va_start(args, fmt), va_end(args)) {
+    using_(var_(args, va_list) $undefined) using_fini_(va_start(args, fmt), va_end(args)) {
         io_stream_printVaArgs(fmt, args);
     }
     io_stream_nl();

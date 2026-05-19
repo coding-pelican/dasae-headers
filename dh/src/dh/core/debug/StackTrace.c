@@ -150,7 +150,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
     var_(mod_info, IMAGEHLP_MODULE64) = { .SizeOfStruct = sizeOf$(TypeOf(mod_info)) };
     for_(($r(0, frames))(frame)) {
         let addr = ptrToInt(*A_at((stack)[frame]));
-        var_(displacement, u64) = 0;
+        var_(displacement, u64) $undefined;
         /* 1. Get Module Name (e.g., KERNEL32, MyApp) */
         let has_mod = SymGetModuleInfo64(process, addr, &mod_info);
         let mod_name = has_mod ? mod_info.ModuleName : "unknown";
@@ -215,7 +215,7 @@ fn_((debug_StackTrace__unix_print(void))(void)) {
 
     for_(($r(0, frames))(frame)) {
         let addr = *A_at((stack)[frame]);
-        var_(info, Dl_info) = cleared();
+        var_(info, Dl_info) $undefined;
         if (dladdr(addr, &info) && info.dli_sname) {
             let offset = ptrToInt(as$(u8*)(addr) - as$(u8*)(info.dli_saddr));
             io_stream_eprintln(

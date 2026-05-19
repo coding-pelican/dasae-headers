@@ -5,42 +5,65 @@
 fn_((debug_isDebuggerPresent(void))(bool)) {
     return IsDebuggerPresent();
 };
+
 #elif plat_is_linux
-#include <stdio.h> /* TODO: Use io or fs instead of this */
+#include "dh/mem/common.h"
+#include <fcntl.h>
+#include <unistd.h>
 fn_((debug_isDebuggerPresent(void))(bool)) {
-    /* Check /proc/self/status for TracerPid */
-    FILE* f = fopen("/proc/self/status", "r");
-    if (f == null) {
+    let fd = open("/proc/self/status", O_RDONLY);
+    if (fd < 0) {
         return false;
     }
 
-    char line[256];
-    bool result = false;
+    var_(buf, A$$(4096, u8)) = A_zero();
+    let read_len = read(fd, A_ptr(buf), A_len(buf));
+    let_ignore = close(fd);
+    if (read_len <= 0) return false;
 
-    while (fgets(line, sizeof(line), f)) {
-        if (strncmp(line, "TracerPid:", 10) == 0) {
-            i32 pid = 0;
-            sscanf(line + 10, "%d", &pid);
-            result = pid != 0;
+    let bytes = A_slice$((S_const$u8)(buf)$r(0, as$(usize)(read_len)));
+    let marker = u8_l("TracerPid:");
+    var_(result, bool) = false;
+    var_(line_start, usize) = 0;
+    while (line_start < bytes.len) {
+        var_(line_end, usize) = line_start;
+        while (line_end < bytes.len && *S_at((bytes)[line_end]) != u8_c('\n')) {
+            line_end++;
+        }
+        let line = S_slice((bytes)$r(line_start, line_end));
+        if (mem_startsWithBytes(line, marker)) {
+            var_(idx, usize) = marker.len;
+            while (idx < line.len && *S_at((line)[idx]) == u8_c('\t')) idx++;
+            while (idx < line.len && *S_at((line)[idx]) == u8_c(' ')) idx++;
+            while (idx < line.len) {
+                let ch = *S_at((line)[idx]);
+                if (ch < u8_c('0') || ch > u8_c('9')) break;
+                if (ch != u8_c('0')) {
+                    result = true;
+                    break;
+                }
+                idx++;
+            }
             break;
         }
+        line_start = line_end + 1;
     }
-
-    fclose(f);
     return result;
 };
+
 #elif plat_is_darwin
 #include <sys/sysctl.h>
 #include <unistd.h>
 fn_((debug_isDebuggerPresent(void))(bool)) {
-    i32 mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
-    struct kinfo_proc info;
-    usize size = sizeof(info);
-    if (sysctl(mib, 4, &info, &size, null, 0) == 0) {
+    var mib = A_from$((i32){ CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() });
+    var_(info, struct kinfo_proc) $undefined;
+    var_(size, usize) = sizeOf$(TypeOf(info));
+    if (sysctl(A_ptr(mib), A_len(mib), &info, &size, null, 0) == 0) {
         return (info.kp_proc.p_flag & P_TRACED) != 0;
     }
     return false;
 };
+
 #else /* other */
 /* Fallback for unsupported platforms - assume no debugger */
 fn_((debug_isDebuggerPresent(void))(bool)) {

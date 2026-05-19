@@ -1,7 +1,6 @@
 #include "dh/TEST.h"
 #include "dh/heap/Sys.h"
 #include "dh/io/stream.h"
-// #include <stdio.h>
 
 /* ANSI color codes */
 #define TEST_color_reset "\033[0m"

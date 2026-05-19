@@ -23,7 +23,7 @@ fn_((io_stream_nl(io_Self self))(void)) {
 };
 
 fn_((io_stream_print(io_Self self, S_const$u8 fmt, ...))(void)) {
-    using_(var va_args = l0$((va_list))) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(var_(va_args, va_list) $undefined) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printVaArgs(self, fmt, va_args);
     };
 };
@@ -33,7 +33,7 @@ fn_((io_stream_printVaArgs(io_Self self, S_const$u8 fmt, va_list va_args))(void)
 };
 
 fn_((io_stream_println(io_Self self, S_const$u8 fmt, ...))(void)) {
-    using_(var va_args = l0$((va_list))) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(var_(va_args, va_list) $undefined) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_printlnVaArgs(self, fmt, va_args);
     };
 };
@@ -48,7 +48,7 @@ fn_((io_stream_enl(io_Self self))(void)) {
 };
 
 fn_((io_stream_eprint(io_Self self, S_const$u8 fmt, ...))(void)) {
-    using_(var va_args = l0$((va_list))) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(var_(va_args, va_list) $undefined) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintVaArgs(self, fmt, va_args);
     };
 };
@@ -58,7 +58,7 @@ fn_((io_stream_eprintVaArgs(io_Self self, S_const$u8 fmt, va_list va_args))(void
 };
 
 fn_((io_stream_eprintln(io_Self self, S_const$u8 fmt, ...))(void)) {
-    using_(var va_args = l0$((va_list))) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
+    using_(var_(va_args, va_list) $undefined) using_fini_(va_start(va_args, fmt), va_end(va_args)) {
         io_stream_eprintlnVaArgs(self, fmt, va_args);
     };
 };

@@ -1,30 +1,30 @@
 /**
- * @copyright Copyright (c) 2024 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    log.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-03 (date of creation)
- * @updated 2025-01-04 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-05-20 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  log
  *
  * @brief   logging header
  * @details Provides logging functionality with configurable output destination,
- *          log levels, and formatting options. Supports file and stderr output,
- *          timestamps, log levels, source location, and function name display.
+ *          log levels, and formatting options.
  */
 
-#ifndef LOG_INCLUDED
-#define LOG_INCLUDED (1)
+#ifndef log__included
+#define log__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#include "prl.h"
-#include "fs.h"
-#include <stdio.h> /* TODO: Use io or fs instead of this */
+/*========== Includes =======================================================*/
+
+#include "fs/File.h"
+
+/*========== Macros and Declarations ========================================*/
 
 // Log levels
 typedef enum log_Level {
@@ -37,18 +37,20 @@ typedef enum log_Level {
 
 // Log configuration
 typedef struct log_Config {
-    FILE* output_file; // Output file (null means stderr)
-    log_Level min_level; // Minimum level to log
-    bool shows_timestamp; // Whether to show timestamps
-    bool shows_level; // Whether to show log level
-    bool shows_location; // Whether to show file and line
-    bool shows_function; // Whether to show function name
+    fs_File output_file;
+    bool has_output_file;
+    bool owns_output_file;
+    log_Level min_level;
+    bool shows_timestamp;
+    bool shows_level;
+    bool shows_location;
+    bool shows_function;
 } log_Config;
 
 // Initialize logging with a file
-extern fs_File_E$void log_init(const char* filename) $must_check;
+extern E$void log_init(const char* filename) $must_check;
 // Initialize logging with an existing file handle
-extern void log_initWithFile(FILE* file);
+extern void log_initWithFile(fs_File file);
 // Close logging
 extern void log_fini(void);
 
@@ -61,18 +63,13 @@ extern void log_showFunction(bool shows);
 
 // Configuration getters
 extern log_Level log_getLevel(void);
-extern FILE* log_getOutputFile(void);
+extern fs_File log_getOutputFile(void);
 
 // Internal logging function
-#if comp_type == comp_type_clang || comp_type == comp_type_gcc
-#define log__printf_format(_fmt_idx, _arg_idx) __attribute__((format(printf, _fmt_idx, _arg_idx)))
-#else
-#define log__printf_format(_fmt_idx, _arg_idx)
-#endif
-extern void log_message(log_Level /* level */, const char* /* file */, int /* line */, const char* /* func */, const char* /* fmt */, ...) log__printf_format(5, 6);
+extern void log_message(log_Level /* level */, const char* /* file */, int /* line */, const char* /* func */, const char* /* fmt */, ...);
 
 #if !defined(log_comp_disabled_not_debug_comp_enabled)
-#define log_comp_disabled_not_debug_comp_enabled (0)
+#define log_comp_disabled_not_debug_comp_enabled pp_false
 #endif /* !defined(log_comp_disabled_not_debug_comp_enabled) */
 
 // Convenience macros for different log levels
@@ -86,14 +83,14 @@ extern void log_message(log_Level /* level */, const char* /* file */, int /* li
 
 #else
 
-$inline_always
-$static void log_debug(const char* fmt, ...) { let_ignore = fmt; }
-$inline_always
-$static void log_info(const char* fmt, ...) { let_ignore = fmt; }
-$inline_always
-$static void log_warn(const char* fmt, ...) { let_ignore = fmt; }
-$inline_always
-$static void log_error(const char* fmt, ...) { let_ignore = fmt; }
+$attr($inline_always)
+$static void log_debug(const char* fmt, ...) { let_ignore = fmt; };
+$attr($inline_always)
+$static void log_info(const char* fmt, ...) { let_ignore = fmt; };
+$attr($inline_always)
+$static void log_warn(const char* fmt, ...) { let_ignore = fmt; };
+$attr($inline_always)
+$static void log_error(const char* fmt, ...) { let_ignore = fmt; };
 
 #endif
 #else
@@ -108,4 +105,4 @@ $static void log_error(const char* fmt, ...) { let_ignore = fmt; }
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* LOG_INCLUDED */
+#endif /* log__included */

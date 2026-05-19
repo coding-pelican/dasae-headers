@@ -37,6 +37,36 @@ typedef struct fs_Dir {
 T_use_E$(fs_Dir);
 static const fs_File_Mode fs_Dir_default_mode = 0755;
 
+struct fs_Dir_OpenOpts {
+    bool iterate;
+};
+static const fs_Dir_OpenOpts fs_Dir_OpenOpts_default = {
+    .iterate = false,
+};
+
+struct fs_Dir_AccessOpts {
+    bool read;
+    bool write;
+    bool execute;
+};
+static const fs_Dir_AccessOpts fs_Dir_AccessOpts_default = {
+    .read = true,
+    .write = false,
+    .execute = false,
+};
+
+struct fs_Dir_StatFileOpts {
+    bool follow_symlink;
+};
+static const fs_Dir_StatFileOpts fs_Dir_StatFileOpts_default = {
+    .follow_symlink = true,
+};
+
+$attr($inline_always)
+$static fn_((fs_Dir_Handle_promote(fs_Dir_Handle handle))(fs_Dir));
+$attr($inline_always)
+$static fn_((fs_Dir_handle(fs_Dir self))(fs_Dir_Handle));
+
 extern fn_((fs_Dir_create(S_const$u8 path))(E$void)) $must_check;
 
 extern fn_((fs_Dir_close(fs_Dir* self))(void));
@@ -54,6 +84,16 @@ extern fn_((fs_Dir_openFile(fs_Dir self, S_const$u8 sub_path, fs_File_OpenFlags 
 extern fn_((fs_Dir_deleteFile(fs_Dir self, S_const$u8 sub_path))(E$void)) $must_check;
 extern fn_((fs_Dir_readFile(fs_Dir self, S_const$u8 file_path, S$u8 buffer))(E$S$u8)) $must_check;
 extern fn_((fs_Dir_readFileAlloc(fs_Dir self, S_const$u8 file_path, mem_Alctr allocator, usize max_bytes))(E$S$u8)) $must_check;
+
+$attr($inline_always)
+fn_((fs_Dir_Handle_promote(fs_Dir_Handle handle))(fs_Dir)) {
+    return (fs_Dir){ .handle = handle };
+}
+
+$attr($inline_always)
+fn_((fs_Dir_handle(fs_Dir self))(fs_Dir_Handle)) {
+    return self.handle;
+}
 
 #if defined(__cplusplus)
 } /* extern "C" */

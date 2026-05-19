@@ -25,7 +25,8 @@ T_alias$((fs_File_MemMap)(struct fs_File_MemMap {
     var_(file, fs_File);
     var_(offset, u64);
     var_(mem, S$u8);
-    var_(section, P$raw);
+    var_(protection, fs_File_MemMap_Protection);
+    var_(mapping, P$raw);
 }));
 T_use_E$($set(fs_E)(fs_File_MemMap));
 $attr($must_check)

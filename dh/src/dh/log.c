@@ -1,52 +1,76 @@
 #include "dh/log.h"
 #include "dh/fs/Dir.h"
-#include <time.h>
+#include "dh/io/common.h"
+#include "dh/mem/common.h"
+#include "dh/time/SysTime.h"
 
-// Global state
 $static var_(log__config, log_Config) = {
-    .output_file = null, // Default to stderr
-    .min_level = log_Level_info, // Default to Info level
-    .shows_timestamp = true, // Show timestamps by default
-    .shows_level = true, // Show log level by default
-    .shows_location = true, // Show location by default
-    .shows_function = true // Show function name by default
+    .output_file = cleared(),
+    .has_output_file = false,
+    .owns_output_file = false,
+    .min_level = log_Level_info,
+    .shows_timestamp = true,
+    .shows_level = true,
+    .shows_location = true,
+    .shows_function = true,
 };
 
-fn_((log_init(const char* filename))(fs_File_E$void) $guard) {
-    // Extract directory path
-    var_(dir_path, A$$(256, u8)) = A_zero();
-    if_(let dir_last_slash = strrchr(filename, '/'), dir_last_slash) {
-        let dir_len = dir_last_slash - filename;
-        strncpy(ptrCast$((char*)(A_ptr(dir_path))), filename, intCast$((usize)(dir_len)));
-        *A_at((dir_path)[dir_len]) = '\0';
+T_use$((u8)(mem_findLastAny));
 
-        // Create directory
-        try_(fs_Dir_create(A_slice$((S_const$u8)(dir_path)$r(0, as$(usize)(dir_len)))));
+$static fn_((log__closeOwnedOutput(void))(void)) {
+    if (log__config.has_output_file && log__config.owns_output_file) {
+        fs_File_close(log__config.output_file);
+    }
+    asg_l((&log__config.output_file)(cleared()));
+    log__config.has_output_file = false;
+    log__config.owns_output_file = false;
+}
+
+$static fn_((log__levelStr(log_Level level))(S_const$u8)) {
+    switch (level) {
+    case log_Level_debug: return u8_l("DEBUG");
+    case log_Level_info: return u8_l("INFO");
+    case log_Level_warn: return u8_l("WARN");
+    case log_Level_error: return u8_l("ERROR");
+    case log_Level_count: claim_unreachable;
+    }
+    claim_unreachable;
+}
+
+$static fn_((log__writeTimestamp(io_Writer writer))(void)) {
+    let secs = time_SysTime_toUnixEpoch(time_SysTime_now()) % u64_(86, 400ull);
+    let hour = as$(u32)(secs / u64_(3, 600ull));
+    let minute = as$(u32)((secs / u64_(60ull)) % u64_(60ull));
+    let second = as$(u32)(secs % u64_(60ull));
+    let_ignore = catch_((io_Writer_print(writer, u8_l("[{:u}:{:u}:{:u}]"), hour, minute, second))($ignore, $do_nothing));
+}
+
+fn_((log_init(const char* filename))(E$void) $scope) {
+    claim_assert_nonnull(filename);
+    let path = mem_spanZ0$u8(ptrCast$((const u8*)(filename)));
+    if_some((mem_findLastAny$u8(path, u8_l("/\\")))(sep_idx)) {
+        if (sep_idx != 0) {
+            try_(fs_Dir_create(S_prefix((path)(sep_idx))));
+        }
     }
 
-    let file = fopen(filename, "w");
-    if (!file) { return_err(E_cause$FSOpenFailed()); }
-    errdefer_($ignore, let_ignore = fclose(file));
-
-    if (log__config.output_file && log__config.output_file != stderr) {
-        let_ignore = fclose(log__config.output_file);
-    }
+    let file = try_(fs_File_create(path, fs_File_CreateFlags_default));
+    log__closeOwnedOutput();
     log__config.output_file = file;
+    log__config.has_output_file = true;
+    log__config.owns_output_file = true;
     return_ok({});
-} $unguarded(fn);
+} $unscoped(fn);
 
-fn_((log_initWithFile(FILE* file))(void)) {
-    if (log__config.output_file && log__config.output_file != stderr) {
-        let_ignore = fclose(log__config.output_file);
-    }
+fn_((log_initWithFile(fs_File file))(void)) {
+    log__closeOwnedOutput();
     log__config.output_file = file;
+    log__config.has_output_file = true;
+    log__config.owns_output_file = false;
 };
 
 fn_((log_fini(void))(void)) {
-    if (log__config.output_file && log__config.output_file != stderr) {
-        let_ignore = fclose(log__config.output_file);
-        log__config.output_file = stderr;
-    }
+    log__closeOwnedOutput();
 };
 
 fn_((log_setLevel(log_Level level))(void)) {
@@ -73,61 +97,45 @@ fn_((log_getLevel(void))(log_Level)) {
     return log__config.min_level;
 };
 
-fn_((log_getOutputFile(void))(FILE*)) {
-    return log__config.output_file ? log__config.output_file : stderr;
+fn_((log_getOutputFile(void))(fs_File)) {
+    return log__config.has_output_file ? log__config.output_file : io_getStdErr();
 };
 
 fn_((log_message(log_Level level, const char* file, int line, const char* func, const char* fmt, ...))(void)) {
     if (level < log__config.min_level) { return; }
 
-    let output = log_getOutputFile();
+    var output_io = fs_File_io(log_getOutputFile());
+    let writer = fs_File_IO_writer(&output_io);
 
-    // Get current time if needed
     if (log__config.shows_timestamp) {
-        time_t t = time(null);
-        struct tm* lt = localtime(&t);
-        char time_str[16] = cleared();
-        let_ignore = strftime(time_str, sizeof(time_str), "%H:%M:%S", lt);
-        let_ignore = fprintf(output, "[%s]", time_str);
+        log__writeTimestamp(writer);
     }
 
-    // Add level if needed
     if (log__config.shows_level) {
-        const char* level_str = "????";
-        switch (level) {
-        case log_Level_debug: level_str = "DEBUG"; break;
-        case log_Level_info: level_str = "INFO"; break;
-        case log_Level_warn: level_str = "WARN"; break;
-        case log_Level_error: level_str = "ERROR"; break;
-        case log_Level_count: claim_unreachable;
-        }
-        let_ignore = fprintf(output, "[%s]", level_str);
+        let_ignore = catch_((io_Writer_print(writer, u8_l("[{:s}]"), log__levelStr(level)))($ignore, $do_nothing));
     }
 
-    // Add location if needed
     if (log__config.shows_location) {
-        let_ignore = fprintf(output, "[%s:%d]", file, line);
+        let file_s = mem_spanZ0$u8(ptrCast$((const u8*)(file)));
+        let_ignore = catch_((io_Writer_print(writer, u8_l("[{:s}:{:d}]"), file_s, line))($ignore, $do_nothing));
     }
 
-    // Add function name if needed
     if (log__config.shows_function) {
-        let_ignore = fprintf(output, "[%s]", func);
+        let func_s = mem_spanZ0$u8(ptrCast$((const u8*)(func)));
+        let_ignore = catch_((io_Writer_print(writer, u8_l("[{:s}]"), func_s))($ignore, $do_nothing));
     }
 
-    // Add a space before the message if we added any prefixes
     if (log__config.shows_timestamp
         || log__config.shows_level
         || log__config.shows_location
         || log__config.shows_function) {
-        let_ignore = fprintf(output, " ");
+        let_ignore = catch_((io_Writer_writeByte(writer, u8_c(' ')))($ignore, $do_nothing));
     }
 
-    // Print the actual message
-    using_(var args = l0$((va_list))) using_fini_(va_start(args, fmt), va_end(args)) {
-        let_ignore = vfprintf(output, fmt, args);
+    using_(var_(args, va_list) $undefined) using_fini_(va_start(args, fmt), va_end(args)) {
+        let fmt_s = mem_spanZ0$u8(ptrCast$((const u8*)(fmt)));
+        let_ignore = catch_((io_Writer_printVaArgs(writer, fmt_s, args))($ignore, $do_nothing));
     }
 
-    // Add newline and flush
-    let_ignore = fprintf(output, "\n");
-    let_ignore = fflush(output);
+    let_ignore = catch_((io_Writer_nl(writer))($ignore, $do_nothing));
 };
