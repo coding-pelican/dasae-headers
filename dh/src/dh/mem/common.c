@@ -1,4 +1,5 @@
 #include "dh/mem/common.h"
+#include "dh/mem/Alctr.h"
 #include "dh/meta.h"
 
 #if comp_env_type_is_freestanding
@@ -323,6 +324,316 @@ fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {
     }) $unscoped(expr);
 };
 
+$static fn_((mem__byteIn(u8 value, S_const$u8 set))(bool)) {
+    claim_assert_nonnullS(set);
+    for_(($s(set))(item)) {
+        if (*item == value) return true;
+    } $end(for);
+    return false;
+};
+
+fn_((mem_trimStartBytes(S_const$u8 haystack, S_const$u8 values_to_strip))(S_const$u8)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(values_to_strip);
+    for_(($s(haystack), $rf(0))(item, idx)) {
+        if (!mem__byteIn(*item, values_to_strip)) return S_suffix((haystack)(idx));
+    } $end(for);
+    return S_suffix((haystack)(haystack.len));
+};
+fn_((mem_trimStart(u_S_const$raw haystack, u_S_const$raw values_to_strip))(u_S_const$raw)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(values_to_strip);
+    claim_assert(TypeInfo_eql(haystack.type, values_to_strip.type));
+    if_some((mem_findFirstNone(haystack, values_to_strip))(idx)) return u_suffixS(haystack, idx);
+    return u_suffixS(haystack, haystack.len);
+};
+fn_((mem_trimEndBytes(S_const$u8 haystack, S_const$u8 values_to_strip))(S_const$u8)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(values_to_strip);
+    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
+        if (!mem__byteIn(*item, values_to_strip)) return S_prefix((haystack)(idx + 1));
+    } $end(for);
+    return S_prefix((haystack)(0));
+};
+fn_((mem_trimEnd(u_S_const$raw haystack, u_S_const$raw values_to_strip))(u_S_const$raw)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(values_to_strip);
+    claim_assert(TypeInfo_eql(haystack.type, values_to_strip.type));
+    if_some((mem_findLastNone(haystack, values_to_strip))(idx)) return u_prefixS(haystack, idx + 1);
+    return u_prefixS(haystack, 0);
+};
+fn_((mem_trimBytes(S_const$u8 haystack, S_const$u8 values_to_strip))(S_const$u8)) {
+    return mem_trimEndBytes(mem_trimStartBytes(haystack, values_to_strip), values_to_strip);
+};
+fn_((mem_trim(u_S_const$raw haystack, u_S_const$raw values_to_strip))(u_S_const$raw)) {
+    return mem_trimEnd(mem_trimStart(haystack, values_to_strip), values_to_strip);
+};
+
+fn_((mem_catBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$u_S$raw $scope)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs), claim_assert_nonnullS(out);
+    let required_len = orelse_((usize_addChkd(lhs.len, rhs.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    if (required_len > out.len) return_err(E_cause$OutOfMemory());
+    return_ok(mem_catWithinBytes(lhs, rhs, out));
+} $unscoped(fn);
+fn_((mem_cat(u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(mem_E$u_S$raw $scope)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs), claim_assert_nonnullS(out);
+    claim_assert(TypeInfo_eql(lhs.type, rhs.type)), claim_assert(TypeInfo_eql(rhs.type, out.type));
+    let required_len = orelse_((usize_addChkd(lhs.len, rhs.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    if (required_len > out.len) return_err(E_cause$OutOfMemory());
+    return_ok(mem_catWithin(lhs, rhs, out));
+} $unscoped(fn);
+fn_((mem_catWithinBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(u_S$raw)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs), claim_assert_nonnullS(out);
+    let required_len = unwrap_(usize_addChkd(lhs.len, rhs.len));
+    claim_assert(required_len <= out.len);
+    mem_copyBytes(S_prefix((out)(lhs.len)), lhs);
+    mem_copyBytes(S_slice((out)$r(lhs.len, required_len)), rhs);
+    return u_anyS(S_slice((out)$r(0, required_len)));
+};
+fn_((mem_catWithin(u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(u_S$raw)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs), claim_assert_nonnullS(out);
+    claim_assert(TypeInfo_eql(lhs.type, rhs.type)), claim_assert(TypeInfo_eql(rhs.type, out.type));
+    let required_len = unwrap_(usize_addChkd(lhs.len, rhs.len));
+    claim_assert(required_len <= out.len);
+    mem_copy(u_prefixS(out, lhs.len), lhs);
+    mem_copy(u_sliceS(out, $r(lhs.len, required_len)), rhs);
+    return u_prefixS(out, required_len);
+};
+fn_((mem_catAllocBytes(S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$u_S$raw $scope)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
+    let required_len = orelse_((usize_addChkd(lhs.len, rhs.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let out = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), required_len))));
+    return_ok(mem_catWithinBytes(lhs, rhs, out));
+} $unscoped(fn);
+fn_((mem_catAlloc(u_S_const$raw lhs, u_S_const$raw rhs, mem_Alctr gpa))(mem_E$u_S$raw) $scope) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
+    claim_assert(TypeInfo_eql(lhs.type, rhs.type));
+    let required_len = orelse_((usize_addChkd(lhs.len, rhs.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let out = try_(mem_Alctr_alloc($trace gpa, lhs.type, required_len));
+    return_ok(mem_catWithin(lhs, rhs, out));
+} $unscoped(fn);
+
+fn_((mem_joinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$u_S$raw $scope)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(sep), claim_assert_nonnullS(rhs), claim_assert_nonnullS(out);
+    let lhs_sep_len = orelse_((usize_addChkd(lhs.len, sep.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let required_len = orelse_((usize_addChkd(lhs_sep_len, rhs.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    if (required_len > out.len) return_err(E_cause$OutOfMemory());
+    return_ok(mem_joinWithinBytes(sep, lhs, rhs, out));
+} $unscoped(fn);
+fn_((mem_join(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(mem_E$u_S$raw $scope)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(sep), claim_assert_nonnullS(rhs), claim_assert_nonnullS(out);
+    claim_assert(TypeInfo_eql(lhs.type, sep.type)), claim_assert(TypeInfo_eql(sep.type, rhs.type)), claim_assert(TypeInfo_eql(rhs.type, out.type));
+    let required_len = orelse_((usize_addChkd(
+        orelse_((usize_addChkd(lhs.len, sep.len))(
+            return_err(E_cause$OutOfMemory())
+        )),
+        rhs.len
+    ))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    if (required_len > out.len) return_err(E_cause$OutOfMemory());
+    return_ok(mem_joinWithin(sep, lhs, rhs, out));
+} $unscoped(fn);
+fn_((mem_joinWithinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(u_S$raw)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(sep), claim_assert_nonnullS(rhs), claim_assert_nonnullS(out);
+    let required_len = unwrap_(usize_addChkd(unwrap_(usize_addChkd(lhs.len, sep.len)), rhs.len));
+    claim_assert(required_len <= out.len);
+    var_(written, usize) = 0;
+    mem_copyBytes(S_slice((out)$r(written, written + lhs.len)), lhs);
+    written += lhs.len;
+    mem_copyBytes(S_slice((out)$r(written, written + sep.len)), sep);
+    written += sep.len;
+    mem_copyBytes(S_slice((out)$r(written, written + rhs.len)), rhs);
+    return u_anyS(S_slice((out)$r(0, required_len)));
+};
+fn_((mem_joinWithin(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(u_S$raw)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(sep), claim_assert_nonnullS(rhs), claim_assert_nonnullS(out);
+    claim_assert(TypeInfo_eql(lhs.type, sep.type)), claim_assert(TypeInfo_eql(sep.type, rhs.type)), claim_assert(TypeInfo_eql(rhs.type, out.type));
+    let required_len = unwrap_(usize_addChkd(unwrap_(usize_addChkd(lhs.len, sep.len)), rhs.len));
+    claim_assert(required_len <= out.len);
+    var_(written, usize) = 0;
+    mem_copy(u_sliceS(out, $r(written, written + lhs.len)), lhs);
+    written += lhs.len;
+    mem_copy(u_sliceS(out, $r(written, written + sep.len)), sep);
+    written += sep.len;
+    mem_copy(u_sliceS(out, $r(written, written + rhs.len)), rhs);
+    return u_prefixS(out, required_len);
+};
+fn_((mem_joinAllocBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$u_S$raw $scope)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(sep), claim_assert_nonnullS(rhs);
+    let lhs_sep_len = orelse_((usize_addChkd(lhs.len, sep.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let required_len = orelse_((usize_addChkd(lhs_sep_len, rhs.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let out = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), required_len))));
+    return_ok(mem_joinWithinBytes(sep, lhs, rhs, out));
+} $unscoped(fn);
+fn_((mem_joinAlloc(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, mem_Alctr gpa))(mem_E$u_S$raw) $scope) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(sep), claim_assert_nonnullS(rhs);
+    claim_assert(TypeInfo_eql(lhs.type, sep.type)), claim_assert(TypeInfo_eql(sep.type, rhs.type));
+    let lhs_sep_len = orelse_((usize_addChkd(lhs.len, sep.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let required_len = orelse_((usize_addChkd(lhs_sep_len, rhs.len))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let out = try_(mem_Alctr_alloc($trace gpa, lhs.type, required_len));
+    return_ok(mem_joinWithin(sep, lhs, rhs, out));
+} $unscoped(fn);
+
+fn_((mem_findFirstUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnull(needle.inner);
+    claim_assert(TypeInfo_eql(haystack.type, needle.type));
+    for_(($us(haystack), $rf(0))(item, idx)) {
+        if (u_memeql(item, needle.ref.as_const)) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findLastUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnull(needle.inner);
+    claim_assert(TypeInfo_eql(haystack.type, needle.type));
+    for_($rev($us(haystack), $rt(haystack.len))(item, idx)) {
+        if (u_memeql(item, needle.ref.as_const)) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findFirstSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
+    claim_assert(TypeInfo_eql(haystack.type, needle.type));
+    if (needle.len > haystack.len) return_none();
+    let end = haystack.len - needle.len;
+    for_(($rt($incl(end)))(idx)) {
+        if (mem_eql(u_prefixS(u_suffixS(haystack, idx), needle.len), needle)) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
+    claim_assert(TypeInfo_eql(haystack.type, needle.type));
+    if (needle.len > haystack.len) return_none();
+    let end = haystack.len - needle.len;
+    for_($rev($rt($incl(end)))(idx)) {
+        if (mem_eql(u_prefixS(u_suffixS(haystack, idx), needle.len), needle)) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    claim_assert(TypeInfo_eql(haystack.type, needles.type));
+    for_(($us(haystack), $rf(0))(item, idx)) {
+        for_(($us(needles))(needle)) {
+            if (u_memeql(item, needle)) return_some(idx);
+        } $end(for);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    claim_assert(TypeInfo_eql(haystack.type, needles.type));
+    for_($rev($us(haystack), $rt(haystack.len))(item, idx)) {
+        for_(($us(needles))(needle)) {
+            if (u_memeql(item, needle)) return_some(idx);
+        } $end(for);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findFirstNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    claim_assert(TypeInfo_eql(haystack.type, needles.type));
+    loop_labeled(outer, for_(($us(haystack), $rf(0))(item, idx))) {
+        for_(($us(needles))(needle)) {
+            if (u_memeql(item, needle)) loop_continue_(outer);
+        } $end(for);
+        return_some(idx);
+    } $end(loop_labeled) $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findLastNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    claim_assert(TypeInfo_eql(haystack.type, needles.type));
+    loop_labeled(outer, for_($rev($us(haystack), $rt(haystack.len))(item, idx))) {
+        for_(($us(needles))(needle)) {
+            if (u_memeql(item, needle)) loop_continue_(outer);
+        } $end(for);
+        return_some(idx);
+    } $end(loop_labeled) $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findFirstDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize $scope)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
+    claim_assert(TypeInfo_eql(lhs.type, rhs.type));
+    let shortest = pri_min(lhs.len, rhs.len);
+    if (lhs.ptr == rhs.ptr) return expr_(ReturnType $scope)(
+        if (lhs.len == rhs.len) $break_(none());
+        else $break_(some(shortest))
+    ) $unscoped(expr);
+    for_(($rt(shortest))(idx)) {
+        if (!u_memeql(u_atS(lhs, idx), u_atS(rhs, idx))) return_some(idx);
+    } $end(for);
+    return expr_(ReturnType $scope)(
+        if (lhs.len == rhs.len) $break_(none());
+        else $break_(some(shortest))
+    ) $unscoped(expr);
+} $unscoped(fn);
+fn_((mem_findLastDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize $scope)) {
+    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
+    claim_assert(TypeInfo_eql(lhs.type, rhs.type));
+    let shortest = pri_min(lhs.len, rhs.len);
+    if (lhs.ptr == rhs.ptr) return expr_(ReturnType $scope)(
+        if (lhs.len == rhs.len) $break_(none());
+        else $break_(some(shortest))
+    ) $unscoped(expr);
+    for_($rev($rt(shortest))(idx)) {
+        if (!u_memeql(u_atS(lhs, idx), u_atS(rhs, idx))) return_some(idx);
+    } $end(for);
+    return expr_(ReturnType $scope)(
+        if (lhs.len == rhs.len) $break_(none());
+        else $break_(some(shortest))
+    ) $unscoped(expr);
+} $unscoped(fn);
+
+$static fn_((mem__cutAt(u_S_const$raw haystack, usize index, usize needle_len))(O$mem_Cutted $scope)) {
+    return_some({
+        .before = u_prefixS(haystack, index).raw,
+        .after = u_suffixS(haystack, index + needle_len).raw,
+        .type = $typing(haystack.type),
+    });
+} $unscoped(fn);
+fn_((mem_cutFirstUnit(u_S_const$raw haystack, u_V$raw needle))(O$mem_Cutted $scope)) {
+    if_some((mem_findFirstUnit(haystack, needle))(idx)) return_(mem__cutAt(haystack, idx, 1));
+    return_none();
+} $unscoped(fn);
+fn_((mem_cutLastUnit(u_S_const$raw haystack, u_V$raw needle))(O$mem_Cutted $scope)) {
+    if_some((mem_findLastUnit(haystack, needle))(idx)) return_(mem__cutAt(haystack, idx, 1));
+    return_none();
+} $unscoped(fn);
+fn_((mem_cutFirstSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$mem_Cutted $scope)) {
+    if_some((mem_findFirstSeq(haystack, needle))(idx)) return_(mem__cutAt(haystack, idx, needle.len));
+    return_none();
+} $unscoped(fn);
+fn_((mem_cutLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$mem_Cutted $scope)) {
+    if_some((mem_findLastSeq(haystack, needle))(idx)) return_(mem__cutAt(haystack, idx, needle.len));
+    return_none();
+} $unscoped(fn);
+fn_((mem_cutFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$mem_Cutted $scope)) {
+    if_some((mem_findFirstAny(haystack, needles))(idx)) return_(mem__cutAt(haystack, idx, 1));
+    return_none();
+} $unscoped(fn);
+fn_((mem_cutLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$mem_Cutted $scope)) {
+    if_some((mem_findLastAny(haystack, needles))(idx)) return_(mem__cutAt(haystack, idx, 1));
+    return_none();
+} $unscoped(fn);
+
 $static fn_((mem_Delim__unit(mem_Delim$raw* self, TypeInfo type))(u_V$raw)) {
     claim_assert_nonnull(self), claim_assert(self->tag == mem_Delim_unit);
     let fields = typeInfosFrom(typeInfo$(mem_Delim), type);
@@ -428,21 +739,21 @@ fn_((mem_TokzIter_rest(mem_TokzIter$raw* self, TypeInfo type))(u_S_const$raw) $s
 } $unscoped(fn);
 
 fn_((mem_splitUnit(u_S_const$raw buf, u_V$raw unit, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw)) {
-    claim_assert_nonnullS(buf.raw), claim_assert_nonnull(ret_mem);
+    claim_assert_nonnullS(buf.raw), claim_assert_nonnull(unit.inner), claim_assert_nonnull(ret_mem);
     claim_assert(TypeInfo_eql(buf.type, unit.type));
     ret_mem->type = $typing(unit.type);
     ret_mem->buf = buf.raw;
-    asg_l((&ret_mem->idx)(none()));
+    asg_l((&ret_mem->idx)(some(0)));
     ret_mem->delim.tag = mem_Delim_unit;
     u_memcpy(mem_Delim__unit(&ret_mem->delim, unit.type).ref, unit.ref.as_const);
     return ret_mem;
 };
 fn_((mem_splitSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw)) {
     claim_assert_nonnullS(buf.raw), claim_assert_nonnullS(seq.raw), claim_assert_nonnull(ret_mem);
-    claim_assert(TypeInfo_eql(buf.type, seq.type));
+    claim_assert(TypeInfo_eql(buf.type, seq.type)), claim_assert(seq.len > 0);
     ret_mem->type = $typing(seq.type);
     ret_mem->buf = buf.raw;
-    asg_l((&ret_mem->idx)(none()));
+    asg_l((&ret_mem->idx)(some(0)));
     asg_l((&ret_mem->delim)(union_of((mem_Delim_seq)(seq.raw))));
     return ret_mem;
 };
@@ -451,7 +762,78 @@ fn_((mem_splitAny(u_S_const$raw buf, u_S_const$raw any, V$mem_SplitIter$raw ret_
     claim_assert(TypeInfo_eql(buf.type, any.type));
     ret_mem->type = $typing(any.type);
     ret_mem->buf = buf.raw;
-    asg_l((&ret_mem->idx)(none()));
+    asg_l((&ret_mem->idx)(some(0)));
     asg_l((&ret_mem->delim)(union_of((mem_Delim_any)(any.raw))));
     return ret_mem;
 };
+
+$static fn_((mem_SplitIter__buf(mem_SplitIter$raw* self, TypeInfo type))(u_S_const$raw)) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
+    return S_meta((type)(self->buf));
+};
+$static fn_((mem_SplitIter__delimLen(mem_SplitIter$raw* self, TypeInfo type))(usize)) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
+    return expr_(usize $scope)(switch (self->delim.tag) {
+        case mem_Delim_unit: $break_(1);
+        case mem_Delim_seq: $break_(mem_Delim__seq(&self->delim, type).len);
+        case mem_Delim_any: $break_(1);
+    }) $unscoped(expr);
+};
+$static fn_((mem_SplitIter__findDelim(mem_SplitIter$raw* self, TypeInfo type, usize begin))(O$usize $scope)) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
+    let rest = u_suffixS(mem_SplitIter__buf(self, type), begin);
+    return expr_(ReturnType $scope)(switch (self->delim.tag) {
+        case mem_Delim_unit: {
+            if_some((mem_findFirstUnit(rest, mem_Delim__unit(&self->delim, type)))(idx)) {
+                $break_(some(begin + idx));
+            }
+            $break_(none());
+        };
+        case mem_Delim_seq: {
+            if_some((mem_findFirstSeq(rest, mem_Delim__seq(&self->delim, type).as_const))(idx)) {
+                $break_(some(begin + idx));
+            }
+            $break_(none());
+        };
+        case mem_Delim_any: {
+            if_some((mem_findFirstAny(rest, mem_Delim__any(&self->delim, type).as_const))(idx)) {
+                $break_(some(begin + idx));
+            }
+            $break_(none());
+        };
+    }) $unscoped(expr);
+} $unscoped(fn);
+
+fn_((mem_SplitIter_reset(mem_SplitIter$raw* self))(void)) {
+    claim_assert_nonnull(self), $ignore_void asg_l((&self->idx)(some(0)));
+};
+fn_((mem_SplitIter_first(mem_SplitIter$raw* self, TypeInfo type))(u_S_const$raw) $scope) {
+    mem_SplitIter_reset(self);
+    return_(unwrap_(mem_SplitIter_next(self, type)));
+} $unscoped(fn);
+fn_((mem_SplitIter_next(mem_SplitIter$raw* self, TypeInfo type))(O$u_S_const$raw) $scope) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
+    let segment = orelse_((mem_SplitIter_peek(self, type))(return_none()));
+    let begin = unwrap_(self->idx);
+    let end = begin + segment.len;
+    $ignore_void asg_l((&self->idx)(expr_(O$usize $scope)(
+        end < self->buf.len
+            ? $break_(some(end + mem_SplitIter__delimLen(self, type)))
+            : $break_(none())
+    ) $unscoped(expr)));
+    return_some(segment);
+} $unscoped(fn);
+fn_((mem_SplitIter_peek(mem_SplitIter$raw* self, TypeInfo type))(O$u_S_const$raw) $scope) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
+    let begin = orelse_((self->idx)(return_none()));
+    let buf = mem_SplitIter__buf(self, type);
+    claim_assert(begin <= buf.len);
+    let end = orelse_((mem_SplitIter__findDelim(self, type, begin))(buf.len));
+    return_some(u_sliceS(buf, $r(begin, end)));
+} $unscoped(fn);
+fn_((mem_SplitIter_rest(mem_SplitIter$raw* self, TypeInfo type))(u_S_const$raw) $scope) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
+    let buf = mem_SplitIter__buf(self, type);
+    let begin = orelse_((self->idx)(return u_suffixS(buf, buf.len)));
+    return u_suffixS(buf, begin);
+} $unscoped(fn);

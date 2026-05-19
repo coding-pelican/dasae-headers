@@ -1,4 +1,5 @@
 #include "dh/heap/Sbrk.h"
+#include "dh/mem/common.h"
 
 /*========== Internal Declarations ==========================================*/
 

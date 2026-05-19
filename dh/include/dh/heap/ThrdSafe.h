@@ -19,7 +19,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "dh/Thrd/Mtx.h"
+#include "../Thrd/Mtx.h"
 
 /*========== Macros and Declarations ========================================*/
 

@@ -5,7 +5,7 @@
  * @file    Alctr.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-07 (date of creation)
- * @updated 2026-02-09 (date of last update)
+ * @updated 2026-05-19 (date of last update)
  * @ingroup dasae-headers(dh)/mem
  * @prefix  mem_Alctr
  *
@@ -20,7 +20,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
+#include "base.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -34,13 +34,11 @@ $extern let_(mem_Alctr_VTbl_failing, mem_Alctr_VTbl);
 /* --- Interface Instance --- */
 
 /// Alctr instance
-T_alias$((mem_Alctr)(struct mem_Alctr {
+struct mem_Alctr {
     var_(ctx, P$raw); /**< Context pointer */
     var_(vtbl, P_const$$(mem_Alctr_VTbl)); /**< Virtual table */
-}));
-T_use_O$(mem_Alctr);
-T_use_E$($set(mem_E)(u_P$raw));
-T_use_E$($set(mem_E)(u_S$raw));
+};
+T_impl_O$(mem_Alctr);
 $extern let_(mem_Alctr_noop, mem_Alctr);
 $extern let_(mem_Alctr_failing, mem_Alctr);
 

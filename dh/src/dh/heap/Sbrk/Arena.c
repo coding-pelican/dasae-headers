@@ -1,5 +1,6 @@
 #include "dh/heap/Sbrk.h"
 #include "dh/heap/Arena.h"
+#include "dh/mem/common.h"
 
 fn_((heap_Sbrk_Arena_ctx(heap_Sbrk_Arena* self))(heap_Sbrk_Ctx)) {
     claim_assert_nonnull(self);

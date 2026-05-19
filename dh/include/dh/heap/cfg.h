@@ -22,8 +22,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/prl.h"
-#include "dh/mem/Alctr.h"
+#include "../prl.h"
+#include "../mem/Alctr.h"
 
 /*========== Macros and Declarations ========================================*/
 

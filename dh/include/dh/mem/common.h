@@ -26,7 +26,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
+#include "base.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -126,9 +126,9 @@ $static fn_((mem_nativeToBig16(u16 x))(u16));
 /* --- Alignment Functions --- */
 
 T_alias$((mem_Log2Align)(u8));
-T_use_O$(mem_Log2Align);
+T_impl_O$(mem_Log2Align);
 T_alias$((mem_Align)(mem_Log2Align));
-T_use_O$(mem_Align);
+T_impl_O$(mem_Align);
 
 /// Check if alignment is valid (power of 2)
 $attr($inline_always)
@@ -309,6 +309,93 @@ $extern fn_((mem_endsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool));
 $extern fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
 #define T_use_mem_endsWith$(_T...) __stmt__T_use_mem_endsWith$(_T)
 
+$extern fn_((mem_trimStartBytes(S_const$u8 haystack, S_const$u8 values_to_strip))(S_const$u8));
+$extern fn_((mem_trimStart(u_S_const$raw haystack, u_S_const$raw values_to_strip))(u_S_const$raw));
+#define T_use_mem_trimStart$(_T...) __stmt__T_use_mem_trimStart$(_T)
+$extern fn_((mem_trimEndBytes(S_const$u8 haystack, S_const$u8 values_to_strip))(S_const$u8));
+$extern fn_((mem_trimEnd(u_S_const$raw haystack, u_S_const$raw values_to_strip))(u_S_const$raw));
+#define T_use_mem_trimEnd$(_T...) __stmt__T_use_mem_trimEnd$(_T)
+$extern fn_((mem_trimBytes(S_const$u8 haystack, S_const$u8 values_to_strip))(S_const$u8));
+$extern fn_((mem_trim(u_S_const$raw haystack, u_S_const$raw values_to_strip))(u_S_const$raw));
+#define T_use_mem_trim$(_T...) __stmt__T_use_mem_trim$(_T)
+
+$attr($must_check)
+$extern fn_((mem_catBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$u_S$raw));
+$attr($must_check)
+$extern fn_((mem_cat(u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(mem_E$u_S$raw));
+#define T_use_mem_cat$(_T...) __stmt__T_use_mem_cat$(_T)
+$extern fn_((mem_catWithinBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(u_S$raw));
+$extern fn_((mem_catWithin(u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(u_S$raw));
+#define T_use_mem_catWithin$(_T...) __stmt__T_use_mem_catWithin$(_T)
+$attr($must_check)
+$extern fn_((mem_catAllocBytes(S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$u_S$raw));
+$attr($must_check)
+$extern fn_((mem_catAlloc(u_S_const$raw lhs, u_S_const$raw rhs, mem_Alctr gpa))(mem_E$u_S$raw));
+#define T_use_mem_catAlloc$(_T...) __stmt__T_use_mem_catAlloc$(_T)
+
+$attr($must_check)
+$extern fn_((mem_joinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$u_S$raw));
+$attr($must_check)
+$extern fn_((mem_join(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(mem_E$u_S$raw));
+#define T_use_mem_join$(_T...) __stmt__T_use_mem_join$(_T)
+$extern fn_((mem_joinWithinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(u_S$raw));
+$extern fn_((mem_joinWithin(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(u_S$raw));
+#define T_use_mem_joinWithin$(_T...) __stmt__T_use_mem_joinWithin$(_T)
+$attr($must_check)
+$extern fn_((mem_joinAllocBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$u_S$raw));
+$attr($must_check)
+$extern fn_((mem_joinAlloc(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, mem_Alctr gpa))(mem_E$u_S$raw));
+#define T_use_mem_joinAlloc$(_T...) __stmt__T_use_mem_joinAlloc$(_T)
+
+$extern fn_((mem_findFirstUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize));
+#define T_use_mem_findFirstUnit$(_T...) __stmt__T_use_mem_findFirstUnit$(_T)
+$extern fn_((mem_findLastUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize));
+#define T_use_mem_findLastUnit$(_T...) __stmt__T_use_mem_findLastUnit$(_T)
+$extern fn_((mem_findFirstSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize));
+#define T_use_mem_findFirstSeq$(_T...) __stmt__T_use_mem_findFirstSeq$(_T)
+$extern fn_((mem_findLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize));
+#define T_use_mem_findLastSeq$(_T...) __stmt__T_use_mem_findLastSeq$(_T)
+$extern fn_((mem_findFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
+#define T_use_mem_findFirstAny$(_T...) __stmt__T_use_mem_findFirstAny$(_T)
+$extern fn_((mem_findLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
+#define T_use_mem_findLastAny$(_T...) __stmt__T_use_mem_findLastAny$(_T)
+$extern fn_((mem_findFirstNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
+#define T_use_mem_findFirstNone$(_T...) __stmt__T_use_mem_findFirstNone$(_T)
+$extern fn_((mem_findLastNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
+#define T_use_mem_findLastNone$(_T...) __stmt__T_use_mem_findLastNone$(_T)
+$extern fn_((mem_findFirstDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize));
+#define T_use_mem_findFirstDiff$(_T...) __stmt__T_use_mem_findFirstDiff$(_T)
+$extern fn_((mem_findLastDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize));
+#define T_use_mem_findLastDiff$(_T...) __stmt__T_use_mem_findLastDiff$(_T)
+
+#define mem_Cutted$(_T...) __alias__mem_Cutted$(_T)
+T_alias$((mem_Cutted)(struct mem_Cutted {
+    var_(before, S_const$raw);
+    var_(after, S_const$raw);
+    var_(type, debug_TypeInfo);
+}));
+T_use_O$(mem_Cutted);
+#define T_use_mem_Cutted$(_T...) __stmt__T_use_mem_Cutted$(_T)
+$attr($inline_always)
+$static fn_((mem_Cutted_before(mem_Cutted self, TypeInfo type))(u_S_const$raw));
+#define T_use_mem_Cutted_before$(_T...) __stmt__T_use_mem_Cutted_before$(_T)
+$attr($inline_always)
+$static fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw));
+#define T_use_mem_Cutted_after$(_T...) __stmt__T_use_mem_Cutted_after$(_T)
+
+$extern fn_((mem_cutFirstUnit(u_S_const$raw haystack, u_V$raw needle))(O$mem_Cutted));
+#define T_use_mem_cutFirstUnit$(_T...) __stmt__T_use_mem_cutFirstUnit$(_T)
+$extern fn_((mem_cutLastUnit(u_S_const$raw haystack, u_V$raw needle))(O$mem_Cutted));
+#define T_use_mem_cutLastUnit$(_T...) __stmt__T_use_mem_cutLastUnit$(_T)
+$extern fn_((mem_cutFirstSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$mem_Cutted));
+#define T_use_mem_cutFirstSeq$(_T...) __stmt__T_use_mem_cutFirstSeq$(_T)
+$extern fn_((mem_cutLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$mem_Cutted));
+#define T_use_mem_cutLastSeq$(_T...) __stmt__T_use_mem_cutLastSeq$(_T)
+$extern fn_((mem_cutFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$mem_Cutted));
+#define T_use_mem_cutFirstAny$(_T...) __stmt__T_use_mem_cutFirstAny$(_T)
+$extern fn_((mem_cutLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$mem_Cutted));
+#define T_use_mem_cutLastAny$(_T...) __stmt__T_use_mem_cutLastAny$(_T)
+
 T_alias$((mem_Delim)(enum_((mem_Delim $fits($packed))(
     mem_Delim_unit,
     mem_Delim_seq,
@@ -373,18 +460,6 @@ $extern fn_((mem_SplitIter_peek(mem_SplitIter$raw* self, TypeInfo type))(O$u_S_c
 #define T_use_mem_SplitIter_peek$(_T...) __stmt__T_use_mem_SplitIter_peek$(_T)
 $extern fn_((mem_SplitIter_rest(mem_SplitIter$raw* self, TypeInfo type))(u_S_const$raw));
 #define T_use_mem_SplitIter_rest$(_T...) __stmt__T_use_mem_SplitIter_rest$(_T)
-
-#if UNUSED_CODE
-#define mem_asBytes(_ptr /*: _T*/... /*S(u8)*/) ____mem_asBytes(_ptr)
-#define mem_bytesAs$(/*(_T)(_bytes: S(u8))*/... /*(_T)*/) __step__mem_bytesAs$(__VA_ARGS__)
-
-#define mem_toBytes$(/*(A(sizeOf(_T), u8))(_val: _T)*/... /*(A(sizeOf(_T), u8))*/) __step__mem_toBytes$(__VA_ARGS__)
-#define mem_toBytes(_val /*: _T*/... /* (A(sizeOf(_T), u8)) */) ____mem_toBytes(_val)
-#define mem_bytesTo$(/*(_T)(_bytes: S(u8))*/... /*(_T)*/) __step__mem_bytesTo$(__VA_ARGS__)
-
-#define mem_sAsBytes(_sli /*: _T*/... /*(S(u8))*/) __step__mem_sAsBytes(_sli)
-#define mem_bytesAsS$(/*(_T)(_bytes: S(u8))*/... /*(_T)*/) __step__mem_bytesAsS$(__VA_ARGS__)
-#endif /* UNUSED_CODE */
 
 /*========== Macros and Definitions =========================================*/
 
@@ -821,6 +896,17 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
     return u_deref(mem_copyP(ret_val.ref, mem_bytesAs(ret_val.inner_type, bytes.as_const)));
 };
 
+fn_((mem_Cutted_before(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
+    claim_assert_nonnullS(self.before);
+    debug_assert_eqBy($typed(self.type), type, TypeInfo_eql);
+    return S_meta((type)(self.before));
+};
+fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
+    claim_assert_nonnullS(self.after);
+    debug_assert_eqBy($typed(self.type), type, TypeInfo_eql);
+    return S_meta((type)(self.after));
+};
+
 /* --- template --- */
 
 #define __stmt__T_use_mem_asBytes$(_T...) \
@@ -846,6 +932,14 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
 #define __stmt__T_use_mem_asBytesMutS$(_T...) \
     $inline_always $static fn_((tpl$(mem_asBytesMutS, _T)(S$(_T) sli))(S$u8)) { \
         return mem_asBytesMutS(u_anyS(sli)); \
+    }
+#define __stmt__T_use_mem_bytesAsS$(_T...) \
+    $inline_always $static fn_((tpl$(mem_bytesAsS, _T)(S_const$u8 bytes))(S_const$(_T))) { \
+        return u_castS$((S_const$(_T))(mem_bytesAsS(typeInfo$(_T), bytes))); \
+    }
+#define __stmt__T_use_mem_bytesAsMutS$(_T...) \
+    $inline_always $static fn_((tpl$(mem_bytesAsMutS, _T)(S$u8 bytes))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_bytesAsMutS(typeInfo$(_T), bytes))); \
     }
 #define __alias__mem_Bytes$(_T...) tpl$(mem_Bytes, _T)
 #define __stmt__T_use_mem_Bytes$(_T...) \
@@ -990,29 +1084,189 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
         }); \
         var_(as_raw, mem_WindowIter) $like_ref; \
     }))
-#define __stmt__T_use_mem_window$(_T...) /* clang-format off */ \
-        $attr($inline_always) \
-        $static fn_((tpl$(mem_window, _T)(S_const$(_T) buf, usize size, usize advance))(mem_WindowIter$(_T)) $scope) { \
-            return_({ .as_raw $like_deref = mem_window(u_anyS(buf), size, advance) }); \
-        } $unscoped(fn) /* clang-format on */
-#define __stmt__T_use_mem_WindowIter_reset$(_T...) /* clang-format off */ \
-        $attr($inline_always) \
-        $static fn_((tpl$(mem_WindowIter_reset, _T)($P$(mem_WindowIter$(_T)) self))(void)) { \
-            return mem_WindowIter_reset(self->as_raw); \
-        } $unscoped(fn) /* clang-format on */
-#define __stmt__T_use_mem_WindowIter_next$(_T...) /* clang-format off */ \
-        $attr($inline_always) \
-        $static fn_((tpl$(mem_WindowIter_next, _T)($P$(mem_WindowIter$(_T)) self))(O$(S_const$(_T))) $scope) { \
-            return_(u_castO$((ReturnType)(mem_WindowIter_next(self, typeInfo$(_T))))); \
-        } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_window$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_window, _T)(S_const$(_T) buf, usize size, usize advance))(mem_WindowIter$(_T))$scope) { /* clang-format off */\
+        return_({ .as_raw $like_deref = mem_window(u_anyS(buf), size, advance) }); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_WindowIter_reset$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_WindowIter_reset, _T)($P$(mem_WindowIter$(_T)) self))(void)) { /* clang-format off */\
+        return mem_WindowIter_reset(self->as_raw); \
+    } /* clang-format on */
+#define __stmt__T_use_mem_WindowIter_next$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_WindowIter_next, _T)($P$(mem_WindowIter$(_T)) self))(O$(S_const$(_T)))$scope) { /* clang-format off */\
+        return_(u_castO$((ReturnType)(mem_WindowIter_next(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_startsWith$(_T...) \
-    $inline_always $static fn_((tpl$(mem_startsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_startsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
         return mem_startsWith(u_anyS(haystack), u_anyS(needle)); \
     }
 #define __stmt__T_use_mem_endsWith$(_T...) \
-    $inline_always $static fn_((tpl$(mem_endsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_endsWith, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
         return mem_endsWith(u_anyS(haystack), u_anyS(needle)); \
     }
+#define __stmt__T_use_mem_trimStart$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_trimStart, _T)(S_const$(_T) haystack, S_const$(_T) values_to_strip))(S_const$(_T))) { \
+        return u_castS$((S_const$(_T))(mem_trimStart(u_anyS(haystack), u_anyS(values_to_strip)))); \
+    }
+#define __stmt__T_use_mem_trimEnd$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_trimEnd, _T)(S_const$(_T) haystack, S_const$(_T) values_to_strip))(S_const$(_T))) { \
+        return u_castS$((S_const$(_T))(mem_trimEnd(u_anyS(haystack), u_anyS(values_to_strip)))); \
+    }
+#define __stmt__T_use_mem_trim$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_trim, _T)(S_const$(_T) haystack, S_const$(_T) values_to_strip))(S_const$(_T))) { \
+        return u_castS$((S_const$(_T))(mem_trim(u_anyS(haystack), u_anyS(values_to_strip)))); \
+    }
+#define __stmt__T_use_mem_cat$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_cat, _T)(S_const$(_T) lhs, S_const$(_T) rhs, S$(_T) out))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_cat(u_anyS(lhs), u_anyS(rhs), u_anyS(out)))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_catWithin$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_catWithin, _T)(S_const$(_T) lhs, S_const$(_T) rhs, S$(_T) out))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_catWithin(u_anyS(lhs), u_anyS(rhs), u_anyS(out)))); \
+    }
+#define __stmt__T_use_mem_catAlloc$(_T...) \
+    $attr($inline_always $must_check $static) \
+    fn_((tpl$(mem_catAlloc, _T)(S_const$(_T) lhs, S_const$(_T) rhs, mem_Alctr gpa))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_catAlloc(u_anyS(lhs), u_anyS(rhs), gpa))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_join$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_join, _T)( \
+        S_const$(_T) sep, S_const$(_T) lhs, S_const$(_T) rhs, S$(_T) out \
+    ))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_join(u_anyS(sep), u_anyS(lhs), u_anyS(rhs), u_anyS(out)))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_joinWithin$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_joinWithin, _T)( \
+        S_const$(_T) sep, S_const$(_T) lhs, S_const$(_T) rhs, S$(_T) out \
+    ))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_joinWithin(u_anyS(sep), u_anyS(lhs), u_anyS(rhs), u_anyS(out)))); \
+    }
+#define __stmt__T_use_mem_joinAlloc$(_T...) \
+    $attr($inline_always $must_check $static) \
+    fn_((tpl$(mem_joinAlloc, _T)( \
+        S_const$(_T) sep, S_const$(_T) lhs, S_const$(_T) rhs, mem_Alctr gpa \
+    ))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_joinAlloc(u_anyS(sep), u_anyS(lhs), u_anyS(rhs), gpa))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_findFirstUnit$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstUnit, _T)(S_const$(_T) haystack, _T needle))(O$usize)) { \
+        return mem_findFirstUnit(u_anyS(haystack), u_anyV(needle)); \
+    }
+#define __stmt__T_use_mem_findLastUnit$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastUnit, _T)(S_const$(_T) haystack, _T needle))(O$usize)) { \
+        return mem_findLastUnit(u_anyS(haystack), u_anyV(needle)); \
+    }
+#define __stmt__T_use_mem_findFirstSeq$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstSeq, _T)(S_const$(_T) haystack, S_const$(_T) needle))(O$usize)) { \
+        return mem_findFirstSeq(u_anyS(haystack), u_anyS(needle)); \
+    }
+#define __stmt__T_use_mem_findLastSeq$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastSeq, _T)(S_const$(_T) haystack, S_const$(_T) needle))(O$usize)) { \
+        return mem_findLastSeq(u_anyS(haystack), u_anyS(needle)); \
+    }
+#define __stmt__T_use_mem_findFirstAny$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstAny, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
+        return mem_findFirstAny(u_anyS(haystack), u_anyS(needles)); \
+    }
+#define __stmt__T_use_mem_findLastAny$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastAny, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
+        return mem_findLastAny(u_anyS(haystack), u_anyS(needles)); \
+    }
+#define __stmt__T_use_mem_findFirstNone$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstNone, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
+        return mem_findFirstNone(u_anyS(haystack), u_anyS(needles)); \
+    }
+#define __stmt__T_use_mem_findLastNone$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastNone, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
+        return mem_findLastNone(u_anyS(haystack), u_anyS(needles)); \
+    }
+#define __stmt__T_use_mem_findFirstDiff$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstDiff, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(O$usize)) { \
+        return mem_findFirstDiff(u_anyS(lhs), u_anyS(rhs)); \
+    }
+#define __stmt__T_use_mem_findLastDiff$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastDiff, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(O$usize)) { \
+        return mem_findLastDiff(u_anyS(lhs), u_anyS(rhs)); \
+    }
+#define __alias__mem_Cutted$(_T...) tpl$(mem_Cutted, _T)
+#define __stmt__T_use_mem_Cutted$(_T...) \
+    T_alias$((mem_Cutted$(_T))(union mem_Cutted$(_T) { \
+        T_embed$(struct { \
+            var_(before, S_const$(_T)); \
+            var_(after, S_const$(_T)); \
+            var_(type, debug_TypeInfo); \
+        }); \
+        var_(as_raw, mem_Cutted) $like_ref; \
+    })); \
+    T_use_O$(mem_Cutted$(_T))
+#define __stmt__T_use_mem_Cutted_before$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_Cutted_before, _T)(mem_Cutted$(_T) self))(S_const$(_T))$scope) { /* clang-format off */ \
+        return u_castS$((S_const$(_T))(mem_Cutted_before(*self.as_raw, typeInfo$(_T)))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_Cutted_after$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_Cutted_after, _T)(mem_Cutted$(_T) self))(S_const$(_T))$scope) { /* clang-format off */ \
+        return u_castS$((S_const$(_T))(mem_Cutted_after(*self.as_raw, typeInfo$(_T)))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_cutFirstUnit$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_cutFirstUnit, _T)(S_const$(_T) haystack, _T needle))(O$(mem_Cutted$(_T)))$scope) { /* clang-format off */ \
+        if_some((mem_cutFirstUnit(u_anyS(haystack), u_anyV(needle)))(cut)) { return_some({ .as_raw $like_deref = cut }); } \
+        return_none(); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_cutLastUnit$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_cutLastUnit, _T)(S_const$(_T) haystack, _T needle))(O$(mem_Cutted$(_T)))$scope) { /* clang-format off */ \
+        if_some((mem_cutLastUnit(u_anyS(haystack), u_anyV(needle)))(cut)) { return_some({ .as_raw $like_deref = cut }); } \
+        return_none(); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_cutFirstSeq$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_cutFirstSeq, _T)(S_const$(_T) haystack, S_const$(_T) needle))(O$(mem_Cutted$(_T)))$scope) { /* clang-format off */ \
+        if_some((mem_cutFirstSeq(u_anyS(haystack), u_anyS(needle)))(cut)) { return_some({ .as_raw $like_deref = cut }); } \
+        return_none(); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_cutLastSeq$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_cutLastSeq, _T)(S_const$(_T) haystack, S_const$(_T) needle))(O$(mem_Cutted$(_T)))$scope) { /* clang-format off */ \
+        if_some((mem_cutLastSeq(u_anyS(haystack), u_anyS(needle)))(cut)) { return_some({ .as_raw $like_deref = cut }); } \
+        return_none(); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_cutFirstAny$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_cutFirstAny, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$(mem_Cutted$(_T)))$scope) { /* clang-format off */ \
+        if_some((mem_cutFirstAny(u_anyS(haystack), u_anyS(needles)))(cut)) { return_some({ .as_raw $like_deref = cut }); } \
+        return_none(); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_cutLastAny$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_cutLastAny, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$(mem_Cutted$(_T)))$scope) { /* clang-format off */ \
+        if_some((mem_cutLastAny(u_anyS(haystack), u_anyS(needles)))(cut)) { return_some({ .as_raw $like_deref = cut }); } \
+        return_none(); \
+    } $unscoped(fn) /* clang-format on */
 #define __alias__mem_Delim$(_T...) tpl$(mem_Delim, _T)
 #define __stmt__T_use_mem_Delim$(_T...) \
     T_alias$((mem_Delim$(_T))(union mem_Delim$(_T) { \
@@ -1120,84 +1374,6 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
     $static fn_((tpl$(mem_SplitIter_rest, _T)($P$(mem_SplitIter$(_T)) self))(S_const$(_T))$scope) { \
         return_(u_castS$((ReturnType)(mem_SplitIter_rest(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
-
-#if UNUSED_CODE
-#define ____mem_asBytes(_ptr...) T_switch$((P_T$(TypeOf(_ptr)))( \
-    T_qual$((const P_TUnqual$(TypeOf(_ptr)))(l$((S_const$u8){ \
-        .ptr = ptrQualCast$((const u8*)(_ptr)), \
-        .len = sizeOf$(P_T$(TypeOf(_ptr))), \
-    }))), \
-    T_qual$((P_TUnqual$(TypeOf(_ptr)))(l$((S$u8){ \
-        .ptr = ptrQualCast$((u8*)(_ptr)), \
-        .len = sizeOf$(P_T$(TypeOf(_ptr))), \
-    }))) \
-))
-#define __step__mem_bytesAs$(...) __step__mem_bytesAs$__emit(__step__mem_bytesAs$__parse __VA_ARGS__)
-#define __step__mem_bytesAs$__parse(_T...) _T,
-#define __step__mem_bytesAs$__emit(...) ____mem_bytesAs$(__VA_ARGS__)
-#define ____mem_bytesAs$(_T, _bytes...) T_switch$((S_T$(TypeOf(_bytes)))( \
-    T_qual$((const u8)(T_switch$((P_T$(_T))(/* clang-format off */ \
-        T_qual$((const P_TUnqual$(_T))(ptrAlignQualCast$((_T)(_bytes.ptr)))), \
-        T_qual$((P_TUnqual$(_T))(claim_unreachable)) /* clang-format on */ \
-    )))), \
-    T_qual$((u8)(ptrAlignQualCast$((_T)(_bytes.ptr)))) \
-))
-
-#define __step__mem_toBytes$(...) __step__mem_toBytes$__emit(__step__mem_toBytes$__parse __VA_ARGS__)
-#define __step__mem_toBytes$__parse(_T...) _T,
-#define __step__mem_toBytes$__emit(...) ____mem_toBytes$(__VA_ARGS__)
-#define ____mem_toBytes$(_T, _val...) \
-    S_deref$((_T)mem_asBytes(&copy(_val)))
-#define ____mem_toBytes(_val...) \
-    mem_toBytes$((A$$(sizeOf$(TypeOf(_val)), u8))_val)
-#define __step__mem_bytesTo$(...) __step__mem_bytesTo$__emit(__step__mem_bytesTo$__parse __VA_ARGS__)
-#define __step__mem_bytesTo$__parse(_T...) _T,
-#define __step__mem_bytesTo$__emit(...) ____mem_bytesTo$(__VA_ARGS__)
-#define ____mem_bytesTo$(_T, _bytes...) T_switch$((S_T$(TypeOf(_bytes)))( \
-    T_case$((const u8)(*ptrAlignQualCast$((const _T*)(_bytes.ptr)))), \
-    T_case$((u8)(*ptrAlignQualCast$((_T*)(_bytes.ptr)))) \
-))
-
-#define __step__mem_sAsBytes(_sli...) ____mem_sAsBytes$(pp_uniqTok(sli), _sli)
-#define ____mem_sAsBytes$(__sli, _sli...) local_({ \
-    let __sli = &copy(_sli); \
-    typedef TypeOfUnqual(*__sli) T$mem_sAsBytes$; \
-    typedef S_T$(T$mem_sAsBytes$) S_T; \
-    typedef TypeOfUnqual(S_T) S_TUnqual; \
-    local_return_(T_switch$((TypeOf(S_T))( \
-        T_qual$((const S_TUnqual)(l$((S_const$u8){ \
-            .ptr = ptrQualCast$((const u8*)(__sli->ptr)), \
-            .len = __sli->len * sizeOf$(S_T), \
-        }))), \
-        T_qual$((S_TUnqual)(l$((S$u8){ \
-            .ptr = ptrQualCast$((u8*)(__sli->ptr)), \
-            .len = __sli->len * sizeOf$(S_T), \
-        }))) \
-    ))); \
-})
-#define __step__mem_bytesAsS$(...) __step__mem_bytesAsS$__emit(__step__mem_bytesAsS$__parse __VA_ARGS__)
-#define __step__mem_bytesAsS$__parse(_T...) _T, pp_uniqTok(bytes),
-#define __step__mem_bytesAsS$__emit(...) ____mem_bytesAsS$(__VA_ARGS__)
-#define ____mem_bytesAsS$(_T, __bytes, _bytes...) local_({ \
-    let __bytes = &copy(_bytes); \
-    typedef _T T$mem_bytesAsS$; \
-    typedef S_T$(T$mem_bytesAsS$) S_T; \
-    typedef TypeOfUnqual(S_T) S_TUnqual; \
-    local_return_(T_switch$((S_T$(__bytes))( \
-        T_case$((const u8)(T_switch$((T$mem_bytesAsS$)(/* clang-format off */ \
-            T_case$((const S_TUnqual)(l$((T$mem_bytesAsS$){ \
-                .ptr = ptrAlignQualCast$((S_T*)(__bytes.ptr)), \
-                .len = __bytes->len / sizeOf$(S_T), \
-            }))), \
-            T_case$((S_TUnqual)(claim_unreachable)) /* clang-format on */ \
-        )))), \
-        T_case$((u8)(l$((T$mem_bytesAsS$){ \
-            .ptr = ptrAlignQualCast$((S_T*)(__bytes.ptr)), \
-            .len = __bytes->len / sizeOf$(S_T), \
-        }))) \
-    ))); \
-})
-#endif /* UNUSED_CODE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

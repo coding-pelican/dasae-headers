@@ -30,8 +30,6 @@ extern "C" {
 #endif /* !defined(mem_tracing_comp_enabled) */
 #define mem_tracing__comp_enabled_default __comp_flag__mem_tracing__comp_enabled_default
 
-errset_((mem_E)(OutOfMemory));
-
 /*========== Macros and Definitions =========================================*/
 
 #define __comp_bool__mem_tracing_comp_enabled \

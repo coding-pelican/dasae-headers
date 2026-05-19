@@ -7,6 +7,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "dh/mem/common.h"
 
 /*========== Macros and Declarations ========================================*/
 
