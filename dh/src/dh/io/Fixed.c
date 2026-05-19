@@ -40,7 +40,7 @@ $static fn_((io_Fixed_Reader__read(P$raw ctx, S$u8 output))(E$usize) $scope) {
     if (available == 0) { return_ok(0); }
     let to_read = pri_min(available, output.len);
     let stream = S_suffix((self->stream.buf)(self->stream.pos));
-    pri_memcpyS(S_prefix((output)(to_read)), S_prefix((stream)(to_read)));
+    mem_copyBytes(S_prefix((output)(to_read)), S_prefix((stream)(to_read)));
     self->stream.pos += to_read;
     return_ok(to_read);
 } $unscoped(fn);
@@ -67,7 +67,7 @@ $static fn_((io_Fixed_Writer__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scop
     let available = self->stream.buf.len - self->stream.pos;
     let to_write = pri_min(available, bytes.len);
     let stream = S_suffix((self->stream.buf)(self->stream.pos));
-    pri_memcpyS(S_prefix((stream)(to_write)), S_prefix((bytes)(to_write)));
+    mem_copyBytes(S_prefix((stream)(to_write)), S_prefix((bytes)(to_write)));
     self->stream.pos += to_write;
     if (to_write == 0) { return_err(E_cause$IOBufferTooSmall()); }
     return_ok(to_write);
