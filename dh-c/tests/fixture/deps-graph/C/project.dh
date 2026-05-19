@@ -1,6 +1,6 @@
-no-dsl=true
+link-dsl=off
 output=dep-c
 
 [B]
 path=../B
-no-dsl=true
+link-dsl=off

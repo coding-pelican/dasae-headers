@@ -2,17 +2,16 @@
 path=../B-stub
 profile=default
 linking=static
-no-dsl=false
+link-dsl=on
 
 [A]
 path=../A
 profile=default
 linking=static
-no-dsl=false
+link-dsl=on
 
 [other/AA]
 path=../A/other/AA
 profile=default
 linking=static
-no-dsl=false
-
+link-dsl=on

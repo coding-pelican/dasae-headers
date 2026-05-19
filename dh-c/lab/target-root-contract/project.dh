@@ -6,10 +6,10 @@ self-root=internal
 path=cmd
 kind=executable
 selection=dir
-link-self=true
+link-project=on
 
 [target-root plugins]
 path=plugins
 kind=shared-lib
 selection=dir
-link-self=true
+link-project=on

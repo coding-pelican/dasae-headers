@@ -7,8 +7,8 @@
 #include <stdio.h>
 
 // Process execution
-extern int proc_run(char** argv, bool show_output);
+extern int proc_run(const char** argv, bool show_output);
 // Returns: allocated string; caller must `free()`
-extern char* proc_output(char** argv);
+extern char* proc_output(const char** argv);
 
 #endif /* dal_c_ext_proc__included */

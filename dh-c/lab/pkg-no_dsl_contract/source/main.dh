@@ -1,2 +1,2 @@
-no-dsl=false
+link-dsl=on
 output=companion-no-dsl

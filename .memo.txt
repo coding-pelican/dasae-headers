@@ -55,7 +55,7 @@ name_
 - examples:
   - `if_`, `using_`, `defer_`
   - `match_`, `pattern_`, `fold_`
-  - `co_fn_`, `closure_`
+  - `co_fn_`, `clsr_`
 
 name
 - plain public helper / predicate / wrapper / value-like macro

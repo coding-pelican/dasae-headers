@@ -53,6 +53,40 @@ OBJS = $(ALL_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 
 # Target executable
 TARGET = $(BUILD_DIR)/dh-c$(EXE_EXT)
+PROJECT_DH = project.dh
+ifeq ($(origin BUILD_STAMP), undefined)
+BUILD_STAMP := $(shell date +%Y%m%d.%H%M%S)
+endif
+VER_CORE := $(strip $(shell sed -n 's/^[[:space:]]*version-core[[:space:]]*=[[:space:]]*//p' $(PROJECT_DH) 2>/dev/null | tail -n 1))
+VER_PREFIX := $(strip $(shell sed -n 's/^[[:space:]]*version-prefix[[:space:]]*=[[:space:]]*//p' $(PROJECT_DH) 2>/dev/null | tail -n 1))
+VER_SUFFIX := $(strip $(shell sed -n 's/^[[:space:]]*version-suffix[[:space:]]*=[[:space:]]*//p' $(PROJECT_DH) 2>/dev/null | tail -n 1))
+VER_BUILD := $(strip $(shell sed -n 's/^[[:space:]]*version-build[[:space:]]*=[[:space:]]*//p' $(PROJECT_DH) 2>/dev/null | tail -n 1))
+VER_MAJOR := $(word 1,$(subst ., ,$(VER_CORE)))
+VER_MINOR := $(word 2,$(subst ., ,$(VER_CORE)))
+VER_PATCH := $(word 3,$(subst ., ,$(VER_CORE)))
+VERSION_DEFINES =
+ifneq ($(strip $(VER_MAJOR)),)
+    VERSION_DEFINES += -Ddal_c__NUM__VER_CORE_MAJOR=$(VER_MAJOR)
+endif
+ifneq ($(strip $(VER_MINOR)),)
+    VERSION_DEFINES += -Ddal_c__NUM__VER_CORE_MINOR=$(VER_MINOR)
+endif
+ifneq ($(strip $(VER_PATCH)),)
+    VERSION_DEFINES += -Ddal_c__NUM__VER_CORE_PATCH=$(VER_PATCH)
+endif
+ifeq ($(VER_PREFIX),alpha)
+    VERSION_DEFINES += -Ddal_c__NUM__VER_LABEL_PREFIX=0 -Ddal_c__STR__VER_LABEL_PREFIX=\"alpha\"
+else ifeq ($(VER_PREFIX),beta)
+    VERSION_DEFINES += -Ddal_c__NUM__VER_LABEL_PREFIX=1 -Ddal_c__STR__VER_LABEL_PREFIX=\"beta\"
+else ifeq ($(VER_PREFIX),rc)
+    VERSION_DEFINES += -Ddal_c__NUM__VER_LABEL_PREFIX=2 -Ddal_c__STR__VER_LABEL_PREFIX=\"rc\"
+endif
+ifneq ($(strip $(VER_PREFIX)),)
+ifneq ($(strip $(VER_SUFFIX)),)
+    VERSION_DEFINES += -Ddal_c__NUM__VER_LABEL_SUFFIX=$(VER_SUFFIX) -Ddal_c__STR__VER_LABEL_SUFFIX=\"$(VER_SUFFIX)\"
+endif
+endif
+VERSION_BUILD_VALUE = $(if $(strip $(VER_BUILD)),$(VER_BUILD),$(BUILD_STAMP))
 
 # Compiler flags
 BASE_CFLAGS = -std=gnu17 \
@@ -60,9 +94,12 @@ BASE_CFLAGS = -std=gnu17 \
               -Wall -Wextra \
               -Werror=all -Werror=extra -Werror=conversion \
               -Werror=sign-conversion -Wfloat-conversion \
+              -Wformat=2 \
               -Werror=cast-qual -Werror=cast-align \
               -Wpointer-arith -Wbad-function-cast \
               -Wnull-dereference -Wwrite-strings \
+              -Werror=uninitialized \
+              -Wframe-larger-than=4096 \
               -Wno-switch-enum -Winfinite-recursion \
               -Wloop-analysis -Werror=strict-prototypes \
               -Werror=missing-prototypes \
@@ -71,6 +108,8 @@ BASE_CFLAGS = -std=gnu17 \
               -fgnu-keywords -fms-extensions -Wno-microsoft-anon-tag \
               -funsigned-char \
               -mllvm -enable-dfa-jump-thread \
+              $(VERSION_DEFINES) \
+              -Ddal_c__STR__VER_BUILD=\"$(VERSION_BUILD_VALUE)\" \
               -static
 
 PROFILE_CFLAGS =

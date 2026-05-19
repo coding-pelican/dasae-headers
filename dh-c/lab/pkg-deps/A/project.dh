@@ -2,10 +2,10 @@
 path=../extra/foo
 profile=default
 linking=static
-no-dsl=false
+link-dsl=on
 
 [edition/bar]
 path=../extra/edition/bar
 profile=default
 linking=static
-no-dsl=false
+link-dsl=on

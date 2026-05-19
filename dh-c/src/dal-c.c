@@ -89,6 +89,7 @@ void dal_c__printUsage(void) {
     for (int i = 0; i < global_option_count; ++i) {
         printf("  %-*s %s\n", dal_c_help_opt_width, dal_c_help_global_options[i].name, dal_c_help_global_options[i].description);
     }
+    printf("  Toggle options accept `=on|off`, `=yes|no`, `=true|false`, or `=1|0` forms such as `--link-dsl=off` and `--lto=off`.\n");
     printf("\n");
 
     printf("TARGET RESOLUTION:\n");
@@ -100,9 +101,9 @@ void dal_c__printUsage(void) {
     printf("  `build --self` and `clean --self` operate on the " dal_c_tool_name " self boundary only.\n\n");
 
     printf("PROJECT.DH KEYS:\n");
-    printf("  Project keys: `output`, `build-runs-tests`, `no-dsl`, `pch`, `pch-exclude`, `self-root`\n");
-    printf("  `[target-root <name>]`: `path`, `kind`, `selection`, `link-self`\n");
-    printf("  Dependency blocks: `path`, `profile`, `linking`, `no-dsl`, `test`\n");
+    printf("  Project keys: `kind`, `output`, `build-runs-tests`, `link-dsl`, `pch`, `pch-exclude`, `self-root`, `version-core`, `version-prefix`, `version-suffix`, `version-build`\n");
+    printf("  `[target-root <name>]`: `path`, `kind`, `selection`, `link-project`\n");
+    printf("  Dependency blocks: `path`, `profile`, `linking`, `link-dsl`, `test`\n");
     printf("  See `BUILD.md` and `dh-c/docs/project-dh-contract.md` for the full explicit contract.\n\n");
 
     printf("GENERATED DIRECTORIES:\n");

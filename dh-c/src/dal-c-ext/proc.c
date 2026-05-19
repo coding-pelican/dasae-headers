@@ -7,7 +7,7 @@
 #include <sys/wait.h>
 #endif
 
-static char* proc__buildCommandLine(char** argv) {
+static char* proc__buildCommandLine(const char** argv) {
     size_t cmd_len = 0;
     for (int i = 0; argv[i]; ++i) {
         cmd_len += strlen(argv[i]) + 3;
@@ -26,7 +26,7 @@ static char* proc__buildCommandLine(char** argv) {
     return cmd_line;
 }
 
-int proc_run(char** argv, bool show_output) {
+int proc_run(const char** argv, bool show_output) {
     if (!argv || !argv[0]) { return -1; }
 #ifdef _WIN32
     char* const cmd_line = proc__buildCommandLine(argv);
@@ -46,7 +46,7 @@ int proc_run(char** argv, bool show_output) {
         cmd_line,
         NULL,
         NULL,
-        show_output,
+        !show_output,
         0,
         NULL,
         NULL,
@@ -83,7 +83,7 @@ int proc_run(char** argv, bool show_output) {
 #endif
 }
 
-char* proc_output(char** argv) {
+char* proc_output(const char** argv) {
     if (!argv || !argv[0]) { return NULL; }
 #ifdef _WIN32
     // Windows: Use CreateProcess with pipe redirection
@@ -121,7 +121,7 @@ char* proc_output(char** argv) {
     CloseHandle(hWrite);
     if (!success) { return CloseHandle(hRead), NULL; }
     // Read output
-    char buffer[4096] = {};
+    char buffer[2048] = {};
     size_t total_size = 0;
     char* output = NULL;
     DWORD bytes_read = 0;
@@ -166,7 +166,7 @@ char* proc_output(char** argv) {
     } else {
         // Parent process
         close(pipefd[1]);
-        char buffer[4096] = {};
+        char buffer[2048] = {};
         size_t total_size = 0;
         char* output = NULL;
         ssize_t bytes_read = 0;

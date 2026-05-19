@@ -1,4 +1,4 @@
+kind=lib
 pch=dh.h
 pch-exclude=dh-main.h
 pch-exclude=dh-TEST-main.h
-

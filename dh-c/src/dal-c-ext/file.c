@@ -169,7 +169,7 @@ bool file_copy(const char* src, const char* dst) {
     FILE* const dst_fp = fopen(dst, "wb");
     if (!dst_fp) { return fclose(src_fp), false; }
 
-    char buffer[4096] = {};
+    char buffer[2048] = {};
     size_t bytes_read = 0;
     bool success = true;
     while ((bytes_read = fread(buffer, 1, sizeof(buffer), src_fp)) > 0) {

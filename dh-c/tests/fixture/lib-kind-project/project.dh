@@ -1,0 +1,3 @@
+kind=lib
+output=core
+link-dsl=off

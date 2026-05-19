@@ -35,11 +35,15 @@ case "$(uname -s)" in
     MINGW*|MSYS*|CYGWIN*)
         exe_ext=".exe"
         shared_pattern="render*.dll"
+        lib_kind_shared_pattern="core*.dll"
+        lib_kind_static_pattern="core*.lib"
         static_lib_pattern="*.lib"
         ;;
     *)
         exe_ext=""
         shared_pattern="render*.so"
+        lib_kind_shared_pattern="libcore*.so"
+        lib_kind_static_pattern="libcore*.a"
         static_lib_pattern="*.a"
         ;;
 esac
@@ -219,23 +223,23 @@ if [ "$integration" -eq 1 ]; then
     fi
 
     target_root_contract=$(copy_scenario_project "dh-c/lab/target-root-contract")
-    invoke_external "0" "$target_root_contract" "$cli_exe" build cmd/runner1 --no-dsl
+    invoke_external "0" "$target_root_contract" "$cli_exe" build cmd/runner1 --link-dsl=off
     assert_contains "$LAST_OUTPUT" "Build successful!" "Target-root executable build did not succeed"
     assert_build_artifacts_exist "$target_root_contract" "runner1$exe_ext"
 
-    invoke_external "0" "$target_root_contract" "$cli_exe" run cmd/runner1 --no-dsl
+    invoke_external "0" "$target_root_contract" "$cli_exe" run cmd/runner1 --link-dsl=off
 
-    invoke_external "0" "$target_root_contract" "$cli_exe" build plugins/render --no-dsl
+    invoke_external "0" "$target_root_contract" "$cli_exe" build plugins/render --link-dsl=off
     assert_contains "$LAST_OUTPUT" "Build successful!" "Target-root plugin build did not succeed"
     assert_build_artifacts_exist "$target_root_contract" "$shared_pattern"
 
     invoke_external "0" "$target_root_contract" "$cli_exe" clean
 
     target_root_compat=$(copy_scenario_project "dh-c/lab/target-root-compat")
-    invoke_external "0" "$target_root_compat" "$cli_exe" build --sample --no-dsl
+    invoke_external "0" "$target_root_compat" "$cli_exe" build --sample --link-dsl=off
     assert_contains "$LAST_OUTPUT" "Build successful!" "Sample target build did not succeed"
 
-    invoke_external "0" "$target_root_compat" "$cli_exe" build --example --no-dsl
+    invoke_external "0" "$target_root_compat" "$cli_exe" build --example --link-dsl=off
     assert_contains "$LAST_OUTPUT" "Build successful!" "Example target build did not succeed"
 
     invoke_external "0" "$target_root_compat" "$cli_exe" clean
@@ -244,6 +248,11 @@ if [ "$integration" -eq 1 ]; then
     invoke_external "0" "$recursive_dsl_project" "$cli_exe" test --recur --dsl
     assert_contains "$LAST_OUTPUT" "TEST: Basic Math Operations" "Recursive DSL test did not include dh tests"
     assert_contains "$LAST_OUTPUT" "fixture: recursive dsl reaches current project" "Recursive DSL test did not include current project tests"
+
+    lib_kind_project=$(copy_scenario_project "dh-c/tests/fixture/lib-kind-project")
+    invoke_external "0" "$lib_kind_project" "$cli_exe" build
+    assert_contains "$LAST_OUTPUT" "Build successful!" "Project kind=lib build did not succeed"
+    assert_build_artifacts_exist "$lib_kind_project" "$lib_kind_static_pattern" "$lib_kind_shared_pattern"
 
     deps_graph_root=$(copy_scenario_project "dh-c/tests/fixture/deps-graph")
     deps_graph_project="$deps_graph_root/C"

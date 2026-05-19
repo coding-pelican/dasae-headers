@@ -1,2 +1,2 @@
-no-dsl=true
+link-dsl=off
 output=plain-project

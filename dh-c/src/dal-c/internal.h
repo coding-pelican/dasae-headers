@@ -4,6 +4,20 @@
 #include "dal-c.h"
 #include "dal-c-ext/ArrStr.h"
 
+#if defined(__clang__) || defined(__GNUC__)
+#define dal_c__printf_format(_fmt_idx, _args_idx) __attribute__((format(printf, _fmt_idx, _args_idx)))
+#define dal_c__noinline __attribute__((noinline))
+#if defined(__clang__)
+#define dal_c__optnone __attribute__((optnone))
+#else
+#define dal_c__optnone
+#endif
+#else
+#define dal_c__printf_format(_fmt_idx, _args_idx)
+#define dal_c__noinline
+#define dal_c__optnone
+#endif
+
 /// === SHARED UTILITIES ===
 
 typedef struct dal_c_CommandIntent {
@@ -29,7 +43,7 @@ typedef struct dal_c_TargetRequest {
     char* relative_path;
     dal_c_Target kind;
     dal_c_TargetSelection selection;
-    bool link_self;
+    bool link_project;
     bool resolved_is_dir;
 } dal_c_TargetRequest;
 
@@ -41,9 +55,15 @@ bool dal_c_TargetRequest_resolve(const dal_c_Project* proj, const dal_c_CommandI
 void dal_c_BuildDefaults_cleanup(dal_c_BuildDefaults* defaults);
 void dal_c_BuildDefaults_merge(dal_c_BuildDefaults* dst, const dal_c_BuildDefaults* src);
 bool dal_c_BuildDefaults_applyDhFile(dal_c_BuildDefaults* dst, const char* path);
+void dal_c_VersionSpec_cleanup(dal_c_VersionSpec* version);
+void dal_c_VersionSpec_merge(dal_c_VersionSpec* dst, const dal_c_VersionSpec* src);
+bool dal_c_VersionSpec_parseCore(dal_c_VersionSpec* dst, const char* value);
+bool dal_c_VersionSpec_parsePrefix(dal_c_VersionSpec* dst, const char* value);
+bool dal_c_VersionSpec_parseSuffix(dal_c_VersionSpec* dst, const char* value);
+bool dal_c_VersionSpec_parseBuild(dal_c_VersionSpec* dst, const char* value);
 
-void dal_c__printVerbose(const dal_c_Cmd* cmd, const char* fmt, ...);
-void dal_c__printError(const char* fmt, ...);
+void dal_c__printVerbose(const dal_c_Cmd* cmd, const char* fmt, ...) dal_c__printf_format(2, 3);
+void dal_c__printError(const char* fmt, ...) dal_c__printf_format(1, 2);
 
 /// === BUILD HELPERS ===
 

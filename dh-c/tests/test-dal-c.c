@@ -339,10 +339,20 @@ static void test_env_helpers(void) {
 
 static void test_meta_tables(void) {
     TEST_ASSERT(dal_c_boolean_parse("true"));
+    TEST_ASSERT(dal_c_boolean_parse("on"));
     TEST_ASSERT(!dal_c_boolean_parse("false"));
-    TEST_ASSERT(str_eql(dal_c_boolean_format(true), "true"));
+    TEST_ASSERT(!dal_c_boolean_parse("off"));
+    TEST_ASSERT(str_eql(dal_c_boolean_format(true), "on"));
     TEST_ASSERT(dal_c_Target_parse("executable") == dal_c_Target_executable);
+    TEST_ASSERT(dal_c_Target_parse("lib") == dal_c_Target_lib);
+    TEST_ASSERT(dal_c_Target_parse("image") == dal_c_Target_image);
+    TEST_ASSERT(dal_c_Target_parse("preprocessed") == dal_c_Target_preprocessed);
+    TEST_ASSERT(dal_c_Target_parse("assembly") == dal_c_Target_assembly);
+    TEST_ASSERT(str_eql(dal_c_Target_format(dal_c_Target_lib), "lib"));
     TEST_ASSERT(str_eql(dal_c_Target_format(dal_c_Target_shared_lib), "shared-lib"));
+    TEST_ASSERT(str_eql(dal_c_Target_format(dal_c_Target_image), "image"));
+    TEST_ASSERT(str_eql(dal_c_Target_format(dal_c_Target_preprocessed), "preprocessed"));
+    TEST_ASSERT(str_eql(dal_c_Target_format(dal_c_Target_assembly), "assembly"));
     TEST_ASSERT(dal_c_Linking_fromFlag("-shared") == dal_c_Linking_shared);
     TEST_ASSERT(str_eql(dal_c_OptiLevel_toFlag(dal_c_OptiLevel_balanced), "-O2"));
     TEST_ASSERT(dal_c_DebugLevel_fromFlag("-g3") == dal_c_DebugLevel_extended);
@@ -350,10 +360,10 @@ static void test_meta_tables(void) {
     TEST_ASSERT(dal_c_CompileEnv_parse("hosted") == dal_c_CompileEnv_hosted);
     TEST_ASSERT(dal_c_CompileEnv_parse("freestanding") == dal_c_CompileEnv_freestanding);
     TEST_ASSERT(dal_c_CompileEnv_resolve(dal_c_CompileEnv_auto) == dal_c_CompileEnv_hosted);
-    TEST_ASSERT(dal_c_LibcMode_parse("has-libc") == dal_c_LibcMode_has_libc);
-    TEST_ASSERT(dal_c_LibcMode_parse("no-libc") == dal_c_LibcMode_no_libc);
-    TEST_ASSERT(dal_c_LibcMode_resolve(dal_c_LibcMode_auto, dal_c_CompileEnv_freestanding) == dal_c_LibcMode_no_libc);
-    TEST_ASSERT(dal_c_LibcMode_resolve(dal_c_LibcMode_auto, dal_c_CompileEnv_hosted) == dal_c_LibcMode_has_libc);
+    TEST_ASSERT(dal_c_ToggleState_resolve(dal_c_ToggleState_enabled, false) == true);
+    TEST_ASSERT(dal_c_ToggleState_resolve(dal_c_ToggleState_disabled, true) == false);
+    TEST_ASSERT(dal_c_ToggleState_resolve(dal_c_ToggleState_auto, true) == true);
+    TEST_ASSERT(dal_c_ToggleState_resolve(dal_c_ToggleState_auto, false) == false);
     TEST_ASSERT(dal_c_SampleDir_parse("examples") == dal_c_SampleDir_examples);
     TEST_ASSERT(dal_c_TargetSelection_parse("dir") == dal_c_TargetSelection_dir);
 
@@ -368,20 +378,25 @@ static void test_meta_tables(void) {
     TEST_ASSERT(build_cmd->implemented);
     TEST_ASSERT(!build_cmd->extends_build_options);
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_args));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_use_dsl));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_no_dsl));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_dsl));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_hosted));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_has_libc));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_no_libc));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_has_default_libs));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_no_default_libs));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_has_start_files));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_no_start_files));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_std_lib));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_no_std_lib));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_crt));
-    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_no_crt));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_libc));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_default_libs));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_start_files));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_stdlib));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_crt));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_lto));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_entry));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_arch));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_abi));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_script));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_preprocessed));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_asm));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_core));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_prefix));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_suffix));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_build));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_record));
 
     const dal_c_HelpCmd* workspace_cmd = test_find_help_cmd(dal_c_cmd_action_workspace, NULL);
     TEST_ASSERT(workspace_cmd != NULL);
@@ -445,27 +460,29 @@ static void test_cmd_parse(void) {
         const char* argv[] = {
             dal_c_tool_name,
             "build",
-            "--use-dsl",
+            "--link-dsl=off",
             "--freestanding",
-            "--has-libc",
-            "--has-default-libs",
-            "--no-default-libs",
-            "--has-start-files",
-            "--no-start-files",
-            "--std-lib",
-            "--no-std-lib",
-            "--crt",
-            "--no-crt",
+            "--link-libc",
+            "--link-default-libs",
+            "--link-default-libs=off",
+            "--link-start-files",
+            "--link-start-files=off",
+            "--link-stdlib",
+            "--link-stdlib=off",
+            "--link-crt",
+            "--lto=no",
+            "--link-crt=off",
             "--entry=custom_entry",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(14, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(15, argv);
         TEST_ASSERT(cmd != NULL);
-        TEST_ASSERT(cmd->opts.dsl_mode == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->opts.dsl_mode == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.compile_env == dal_c_CompileEnv_freestanding);
-        TEST_ASSERT(cmd->opts.libc_mode == dal_c_LibcMode_has_libc);
-        TEST_ASSERT(cmd->opts.default_libs_mode == dal_c_ToggleState_disabled);
-        TEST_ASSERT(cmd->opts.start_files_mode == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.libc_linked == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->opts.default_libs_linked == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.start_files_linked == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.lto_mode == dal_c_ToggleState_disabled);
         TEST_ASSERT(str_eql(cmd->opts.entry_symbol, "custom_entry"));
         dal_c_Cmd_cleanup(&cmd);
     }
@@ -474,21 +491,60 @@ static void test_cmd_parse(void) {
         const char* argv[] = {
             dal_c_tool_name,
             "build",
-            "--no-dsl",
+            "--link-dsl=on",
             "--hosted",
-            "--no-libc",
-            "--has-default-libs",
-            "--has-start-files",
+            "--link-libc=off",
+            "--link-default-libs=on",
+            "--link-start-files=on",
             NULL
         };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(7, argv);
         TEST_ASSERT(cmd != NULL);
-        TEST_ASSERT(cmd->opts.dsl_mode == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.dsl_mode == dal_c_ToggleState_enabled);
         TEST_ASSERT(cmd->opts.compile_env == dal_c_CompileEnv_hosted);
-        TEST_ASSERT(cmd->opts.libc_mode == dal_c_LibcMode_no_libc);
-        TEST_ASSERT(cmd->opts.default_libs_mode == dal_c_ToggleState_enabled);
-        TEST_ASSERT(cmd->opts.start_files_mode == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->opts.libc_linked == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.default_libs_linked == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->opts.start_files_linked == dal_c_ToggleState_enabled);
         dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = {
+            dal_c_tool_name,
+            "build",
+            "--target-arch=rv32im",
+            "--target-abi=ilp32",
+            "--version-core=1.2.3",
+            "--version-prefix=beta",
+            "--version-suffix=4",
+            "--version-build=20260514.120000",
+            "--version-record=project",
+            "--emit-preprocessed",
+            NULL
+        };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(10, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(str_eql(cmd->opts.target_arch, "rv32im"));
+        TEST_ASSERT(str_eql(cmd->opts.target_abi, "ilp32"));
+        TEST_ASSERT(cmd->opts.version.core_set);
+        TEST_ASSERT(cmd->opts.version.core_major == 1u);
+        TEST_ASSERT(cmd->opts.version.core_minor == 2u);
+        TEST_ASSERT(cmd->opts.version.core_patch == 3u);
+        TEST_ASSERT(cmd->opts.version.label_prefix_set);
+        TEST_ASSERT(str_eql(cmd->opts.version.label_prefix_str, "beta"));
+        TEST_ASSERT(cmd->opts.version.label_suffix_set);
+        TEST_ASSERT(cmd->opts.version.label_suffix_num == 4u);
+        TEST_ASSERT(cmd->opts.version.build_set);
+        TEST_ASSERT(str_eql(cmd->opts.version.build_str, "20260514.120000"));
+        TEST_ASSERT(cmd->version_record_mode == dal_c_VersionRecordMode_project);
+        TEST_ASSERT(cmd->payload.build.emit_preprocessed);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--linker-script=linker.ld", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd == NULL);
     }
 
     {
@@ -563,30 +619,30 @@ static void test_compiler_mode_contracts(void) {
     dal_c_CompilerOpts merged = { 0 };
     dal_c_CompilerOpts override = { 0 };
     merged.compile_env = dal_c_CompileEnv_freestanding;
-    merged.libc_mode = dal_c_LibcMode_no_libc;
+    merged.libc_linked = dal_c_ToggleState_disabled;
     merged.dsl_mode = dal_c_ToggleState_disabled;
-    merged.default_libs_mode = dal_c_ToggleState_disabled;
-    merged.start_files_mode = dal_c_ToggleState_disabled;
+    merged.default_libs_linked = dal_c_ToggleState_disabled;
+    merged.start_files_linked = dal_c_ToggleState_disabled;
     override.compile_env = dal_c_CompileEnv_hosted;
-    override.libc_mode = dal_c_LibcMode_has_libc;
+    override.libc_linked = dal_c_ToggleState_enabled;
     override.dsl_mode = dal_c_ToggleState_enabled;
-    override.default_libs_mode = dal_c_ToggleState_enabled;
-    override.start_files_mode = dal_c_ToggleState_enabled;
+    override.default_libs_linked = dal_c_ToggleState_enabled;
+    override.start_files_linked = dal_c_ToggleState_enabled;
     dal_c_CompilerOpts_merge(&merged, &override);
     TEST_ASSERT(merged.compile_env == dal_c_CompileEnv_hosted);
-    TEST_ASSERT(merged.libc_mode == dal_c_LibcMode_has_libc);
+    TEST_ASSERT(merged.libc_linked == dal_c_ToggleState_enabled);
     TEST_ASSERT(merged.dsl_mode == dal_c_ToggleState_enabled);
-    TEST_ASSERT(merged.default_libs_mode == dal_c_ToggleState_enabled);
-    TEST_ASSERT(merged.start_files_mode == dal_c_ToggleState_enabled);
+    TEST_ASSERT(merged.default_libs_linked == dal_c_ToggleState_enabled);
+    TEST_ASSERT(merged.start_files_linked == dal_c_ToggleState_enabled);
 
     {
         dal_c_CompilerOpts auto_override = { 0 };
         dal_c_CompilerOpts_merge(&merged, &auto_override);
         TEST_ASSERT(merged.compile_env == dal_c_CompileEnv_hosted);
-        TEST_ASSERT(merged.libc_mode == dal_c_LibcMode_has_libc);
+        TEST_ASSERT(merged.libc_linked == dal_c_ToggleState_enabled);
         TEST_ASSERT(merged.dsl_mode == dal_c_ToggleState_enabled);
-        TEST_ASSERT(merged.default_libs_mode == dal_c_ToggleState_enabled);
-        TEST_ASSERT(merged.start_files_mode == dal_c_ToggleState_enabled);
+        TEST_ASSERT(merged.default_libs_linked == dal_c_ToggleState_enabled);
+        TEST_ASSERT(merged.start_files_linked == dal_c_ToggleState_enabled);
     }
 
     test_reset_temp_root();
@@ -598,22 +654,32 @@ static void test_compiler_mode_contracts(void) {
     TEST_ASSERT(dir_createRecur(temp_root));
     TEST_ASSERT(file_write(
         opts_dh,
-        "freestanding=true\n"
-        "has-libc=true\n"
-        "hosted=false\n"
-        "no-libc=false\n"
-        "use-dsl=false\n"
-        "has-default-libs=false\n"
-        "has-start-files=false\n"
-        "std-lib=true\n"
-        "no-crt=true\n"
+        "freestanding=on\n"
+        "link-libc=on\n"
+        "link-dsl=off\n"
+        "link-default-libs=off\n"
+        "link-crt=off\n"
+        "version-core=1.4.2\n"
+        "version-prefix=rc\n"
+        "version-suffix=7\n"
+        "version-build=unit.1\n"
     ));
     TEST_ASSERT(dal_c_CompilerOpts_applyDhFile(&file_opts, opts_dh));
     TEST_ASSERT(file_opts.compile_env == dal_c_CompileEnv_freestanding);
-    TEST_ASSERT(file_opts.libc_mode == dal_c_LibcMode_has_libc);
+    TEST_ASSERT(file_opts.libc_linked == dal_c_ToggleState_enabled);
     TEST_ASSERT(file_opts.dsl_mode == dal_c_ToggleState_disabled);
-    TEST_ASSERT(file_opts.default_libs_mode == dal_c_ToggleState_disabled);
-    TEST_ASSERT(file_opts.start_files_mode == dal_c_ToggleState_disabled);
+    TEST_ASSERT(file_opts.default_libs_linked == dal_c_ToggleState_disabled);
+    TEST_ASSERT(file_opts.start_files_linked == dal_c_ToggleState_disabled);
+    TEST_ASSERT(file_opts.version.core_set);
+    TEST_ASSERT(file_opts.version.core_major == 1u);
+    TEST_ASSERT(file_opts.version.core_minor == 4u);
+    TEST_ASSERT(file_opts.version.core_patch == 2u);
+    TEST_ASSERT(file_opts.version.label_prefix_set);
+    TEST_ASSERT(str_eql(file_opts.version.label_prefix_str, "rc"));
+    TEST_ASSERT(file_opts.version.label_suffix_set);
+    TEST_ASSERT(file_opts.version.label_suffix_num == 7u);
+    TEST_ASSERT(file_opts.version.build_set);
+    TEST_ASSERT(str_eql(file_opts.version.build_str, "unit.1"));
     dal_c_CompilerOpts_cleanup(&file_opts);
     free(opts_dh);
     free(temp_root);
@@ -626,22 +692,34 @@ static void test_makefile_mode_contracts(void) {
     char* project_root = path_join(temp_root, "mode-contract-project");
     char* project_dh = path_join(project_root, "project.dh");
     char* source_dir = path_join(project_root, "source");
+    char* include_dir = path_join(project_root, "include");
+    char* pch_header = path_join(include_dir, "dh.h");
     char* main_source = path_join(source_dir, "main.c");
+    char* crt0_source = path_join(source_dir, "crt0.S");
+    char* linker_script = path_join(project_root, "linker.ld");
     TEST_ASSERT(temp_root != NULL);
     TEST_ASSERT(project_root != NULL);
     TEST_ASSERT(project_dh != NULL);
     TEST_ASSERT(source_dir != NULL);
+    TEST_ASSERT(include_dir != NULL);
+    TEST_ASSERT(pch_header != NULL);
     TEST_ASSERT(main_source != NULL);
+    TEST_ASSERT(crt0_source != NULL);
+    TEST_ASSERT(linker_script != NULL);
     TEST_ASSERT(dir_createRecur(source_dir));
-    TEST_ASSERT(file_write(project_dh, "output=mode-contract\n"));
+    TEST_ASSERT(dir_createRecur(include_dir));
+    TEST_ASSERT(file_write(project_dh, "output=mode-contract\nversion-core=0.9.1\nversion-prefix=alpha\nversion-suffix=3\nversion-build=proj.7\n"));
+    TEST_ASSERT(file_write(pch_header, "#pragma once\n#define FIXTURE_PCH 1\n"));
     TEST_ASSERT(file_write(main_source, "int main(void) { return 0; }\n"));
+    TEST_ASSERT(file_write(crt0_source, ".globl _start\n_start:\n  ret\n"));
+    TEST_ASSERT(file_write(linker_script, "ENTRY(_start)\nSECTIONS { . = 0; .text : { *(.text*) } }\n"));
 
     dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
     TEST_ASSERT(proj != NULL);
 
     ArrStr* sources = dal_c__collectSourceFiles(proj, NULL);
     TEST_ASSERT(sources != NULL);
-    TEST_ASSERT(ArrStr_len(sources) == 1);
+    TEST_ASSERT(ArrStr_len(sources) == 2);
 
     {
         const char* argv[] = {
@@ -649,8 +727,8 @@ static void test_makefile_mode_contracts(void) {
             "build",
             "dev",
             "--freestanding",
-            "--has-libc",
-            "--no-default-libs",
+            "--link-libc",
+            "--link-default-libs=off",
             "--entry=custom_entry",
             NULL
         };
@@ -682,15 +760,23 @@ static void test_makefile_mode_contracts(void) {
         makefile_text = file_read(makefile_path);
         TEST_ASSERT(makefile_text != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_FREESTANDING") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") == NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") == NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_DEFAULT_LIBS") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_DEFAULT_LIBS") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") == NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_START_FILES") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wformat=2") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Werror=uninitialized") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wframe-larger-than=4096") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wno-switch-enum") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wswitch-enum") == NULL);
         TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -ffreestanding") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "$(CC) $(CFLAGS_PCH) -MMD -MP -MF $(PCH_DEP) -x c-header $< -o $@") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "--print-libgcc-file-name") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -nolibc") == NULL);
 #ifdef _WIN32
         TEST_ASSERT(strstr(makefile_text, " -Wl,/entry:custom_entry") != NULL);
 #else
@@ -707,7 +793,7 @@ static void test_makefile_mode_contracts(void) {
     }
 
     {
-        const char* argv[] = { dal_c_tool_name, "build", "dev", "--hosted", "--no-libc", "--std-lib", NULL };
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--hosted", "--link-libc=off", "--link-stdlib=on", NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(6, argv);
         const dal_c_ProfileSpec* profile = NULL;
         char* build_dir = NULL;
@@ -738,14 +824,21 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HOSTED") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_DEFAULT_LIBS") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_DEFAULT_LIBS") == NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_DEFAULT_LIBS") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") == NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_START_FILES") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wformat=2") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Werror=uninitialized") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wframe-larger-than=4096") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wno-switch-enum") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wswitch-enum") == NULL);
         TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -ffreestanding") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -nolibc") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -nostartfiles") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "--print-libgcc-file-name") == NULL);
 
         free(makefile_text);
         free(makefile_path);
@@ -756,12 +849,554 @@ static void test_makefile_mode_contracts(void) {
         dal_c_Cmd_cleanup(&cmd);
     }
 
+    /* Cross-compilation: TARGET_FLAGS must propagate into the --print-libgcc-file-name
+     * shell invocation so the linker receives the cross-target's compiler-rt, not the
+     * host's. Without TARGET_FLAGS, --print-libgcc-file-name returns the host path,
+     * which is wrong-architecture and causes a link error. */
+    {
+        char* fake_compiler_src = path_join(project_root, "fake-compiler-ok.c");
+#ifdef _WIN32
+        char* fake_compiler_exe = path_join(project_root, "fake-compiler-ok.exe");
+#else
+        char* fake_compiler_exe = path_join(project_root, "fake-compiler-ok");
+#endif
+        char* runtime_path = path_join(project_root, "present-builtins.a");
+        char* runtime_literal = strdup(runtime_path);
+        char* fake_compiler_source = NULL;
+        char* compiler_opt = NULL;
+        const char* compile_argv[5] = { dal_c_default_compiler, "-o", fake_compiler_exe, fake_compiler_src, NULL };
+        const char* argv[] = {
+            dal_c_tool_name,
+            "build",
+            "dev",
+            "--freestanding",
+            "--link-stdlib=off",
+            "--target=wasm32-unknown-wasi",
+            NULL,
+            NULL
+        };
+        dal_c_Cmd* cmd = NULL;
+        const dal_c_ProfileSpec* profile = NULL;
+        char* build_dir = NULL;
+        char* profile_dir = NULL;
+        char* object_dir = NULL;
+        char* target_path = NULL;
+        char* makefile_path = NULL;
+        char* makefile_text = NULL;
+        TEST_ASSERT(fake_compiler_src != NULL);
+        TEST_ASSERT(fake_compiler_exe != NULL);
+        TEST_ASSERT(runtime_path != NULL);
+        TEST_ASSERT(runtime_literal != NULL);
+        TEST_ASSERT(file_write(runtime_path, "present\n"));
+        for (char* cursor = runtime_literal; *cursor != '\0'; ++cursor) {
+            if (*cursor == '\\') { *cursor = '/'; }
+        }
+        fake_compiler_source = str_format(
+            "#include <stdio.h>\n"
+            "#include <string.h>\n"
+            "int main(int argc, char** argv) {\n"
+            "    for (int i = 1; i < argc; ++i) {\n"
+            "        if (strcmp(argv[i], \"--print-libgcc-file-name\") == 0) {\n"
+            "            puts(\"%s\");\n"
+            "            return 0;\n"
+            "        }\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n",
+            runtime_literal
+        );
+        TEST_ASSERT(fake_compiler_source != NULL);
+        TEST_ASSERT(file_write(fake_compiler_src, fake_compiler_source));
+        TEST_ASSERT(proc_run(compile_argv, false) == 0);
+        TEST_ASSERT(path_isFile(fake_compiler_exe));
+        compiler_opt = str_format("--compiler=%s", fake_compiler_exe);
+        TEST_ASSERT(compiler_opt != NULL);
+        argv[6] = compiler_opt;
+        cmd = dal_c_Cmd_parse(7, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->opts.arch_target != NULL);
+        TEST_ASSERT(strcmp(cmd->opts.arch_target, "wasm32-unknown-wasi") == 0);
+        dal_c_CompilerOpts_merge(&cmd->opts, &proj->opts);
+
+        profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+        build_dir = dal_c_Project_getBuildDir(proj);
+        profile_dir = path_join(build_dir, profile->name);
+        object_dir = path_join(profile_dir, "obj");
+        TEST_ASSERT(build_dir != NULL);
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+
+        target_path = dal_c__resolveOutputPath(proj, cmd, profile_dir, proj->defaults.output_name, dal_c_Target_executable);
+        TEST_ASSERT(target_path != NULL);
+        makefile_path = dal_c__makePlanFilePath(proj, profile, cmd, target_path, dal_c_Target_executable);
+        TEST_ASSERT(makefile_path != NULL);
+        TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 0);
+        makefile_text = file_read(makefile_path);
+        TEST_ASSERT(makefile_text != NULL);
+        /* -target must not be embedded directly; must go through TARGET_FLAGS so the
+         * same variable is available in the --print-libgcc-file-name shell call. */
+        TEST_ASSERT(strstr(makefile_text, "TARGET_FLAGS = -target wasm32-unknown-wasi") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += $(TARGET_FLAGS)") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -target wasm32-unknown-wasi") == NULL);
+        /* compiler-rt query must use $(TARGET_FLAGS) to get the cross-target library */
+        TEST_ASSERT(strstr(makefile_text, "$(TARGET_FLAGS) --print-libgcc-file-name") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_CORE_MAJOR=0") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_CORE_MINOR=9") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_CORE_PATCH=1") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_LABEL_PREFIX=0") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__STR__VER_LABEL_PREFIX=\\\"alpha\\\"") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_LABEL_SUFFIX=3") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__STR__VER_LABEL_SUFFIX=\\\"3\\\"") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__STR__VER_BUILD=\\\"proj.7\\\"") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -nostdlib") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -nolibc") == NULL);
+
+        free(makefile_text);
+        free(makefile_path);
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c_Cmd_cleanup(&cmd);
+        free(compiler_opt);
+        free(fake_compiler_source);
+        free(runtime_literal);
+        free(runtime_path);
+        free(fake_compiler_exe);
+        free(fake_compiler_src);
+    }
+
+    {
+        char* fake_compiler_src = path_join(project_root, "fake-compiler.c");
+#ifdef _WIN32
+        char* fake_compiler_exe = path_join(project_root, "fake-compiler.exe");
+#else
+        char* fake_compiler_exe = path_join(project_root, "fake-compiler");
+#endif
+        char* missing_runtime_path = path_join(project_root, "missing-builtins.a");
+        char* runtime_literal = strdup(missing_runtime_path);
+        char* fake_compiler_source = NULL;
+        char* compiler_opt = NULL;
+        const char* compile_argv[5] = { dal_c_default_compiler, "-o", fake_compiler_exe, fake_compiler_src, NULL };
+        const char* argv[8] = { NULL };
+        dal_c_Cmd* cmd = NULL;
+        const dal_c_ProfileSpec* profile = NULL;
+        char* build_dir = NULL;
+        char* profile_dir = NULL;
+        char* object_dir = NULL;
+        char* target_path = NULL;
+        int compile_result = 0;
+
+        TEST_ASSERT(fake_compiler_src != NULL);
+        TEST_ASSERT(fake_compiler_exe != NULL);
+        TEST_ASSERT(missing_runtime_path != NULL);
+        TEST_ASSERT(runtime_literal != NULL);
+        for (char* cursor = runtime_literal; *cursor != '\0'; ++cursor) {
+            if (*cursor == '\\') { *cursor = '/'; }
+        }
+
+        fake_compiler_source = str_format(
+            "#include <stdio.h>\n"
+            "#include <string.h>\n"
+            "int main(int argc, char** argv) {\n"
+            "    for (int i = 1; i < argc; ++i) {\n"
+            "        if (strcmp(argv[i], \"--print-libgcc-file-name\") == 0) {\n"
+            "            puts(\"%s\");\n"
+            "            return 0;\n"
+            "        }\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n",
+            runtime_literal
+        );
+        TEST_ASSERT(fake_compiler_source != NULL);
+        TEST_ASSERT(file_write(fake_compiler_src, fake_compiler_source));
+
+        compile_result = proc_run(compile_argv, false);
+        TEST_ASSERT(compile_result == 0);
+        TEST_ASSERT(path_isFile(fake_compiler_exe));
+
+        compiler_opt = str_format("--compiler=%s", fake_compiler_exe);
+        TEST_ASSERT(compiler_opt != NULL);
+        argv[0] = dal_c_tool_name;
+        argv[1] = "build";
+        argv[2] = "dev";
+        argv[3] = "--freestanding";
+        argv[4] = "--link-stdlib=off";
+        argv[5] = "--target=wasm32-unknown-wasi";
+        argv[6] = compiler_opt;
+        cmd = dal_c_Cmd_parse(7, argv);
+        TEST_ASSERT(cmd != NULL);
+
+        profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+        build_dir = dal_c_Project_getBuildDir(proj);
+        profile_dir = path_join(build_dir, profile->name);
+        object_dir = path_join(profile_dir, "obj");
+        TEST_ASSERT(build_dir != NULL);
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+
+        target_path = dal_c__resolveOutputPath(proj, cmd, profile_dir, proj->defaults.output_name, dal_c_Target_executable);
+        TEST_ASSERT(target_path != NULL);
+        TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 1);
+
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c_Cmd_cleanup(&cmd);
+        free(compiler_opt);
+        free(fake_compiler_source);
+        free(runtime_literal);
+        free(missing_runtime_path);
+        free(fake_compiler_exe);
+        free(fake_compiler_src);
+    }
+
+    {
+        char* fake_compiler_src = path_join(project_root, "fake-compiler-image.c");
+#ifdef _WIN32
+        char* fake_compiler_exe = path_join(project_root, "fake-compiler-image.exe");
+#else
+        char* fake_compiler_exe = path_join(project_root, "fake-compiler-image");
+#endif
+        char* runtime_path = path_join(project_root, "present-image-builtins.a");
+        char* runtime_literal = strdup(runtime_path);
+        char* fake_compiler_source = NULL;
+        char* linker_opt = str_format("--link-script=%s", linker_script);
+        char* compiler_opt = NULL;
+        const char* argv[] = {
+            dal_c_tool_name,
+            "build",
+            "dev",
+            "--image",
+            "--freestanding",
+            "--link-stdlib=off",
+            "--target=riscv32-unknown-elf",
+            "--target-arch=rv32im",
+            "--target-abi=ilp32",
+            "--objcopy=llvm-objcopy",
+            "--objcopy-format=binary",
+            NULL,
+            NULL
+        };
+        dal_c_Cmd* cmd = NULL;
+        const dal_c_ProfileSpec* profile = NULL;
+        char* build_dir = NULL;
+        char* profile_dir = NULL;
+        char* object_dir = NULL;
+        char* target_path = NULL;
+        char* makefile_path = NULL;
+        char* makefile_text = NULL;
+        ArrStr* image_sources = ArrStr_init();
+        const char* compile_argv[5] = { dal_c_default_compiler, "-o", fake_compiler_exe, fake_compiler_src, NULL };
+        TEST_ASSERT(fake_compiler_src != NULL);
+        TEST_ASSERT(fake_compiler_exe != NULL);
+        TEST_ASSERT(runtime_path != NULL);
+        TEST_ASSERT(runtime_literal != NULL);
+        TEST_ASSERT(linker_opt != NULL);
+        TEST_ASSERT(image_sources != NULL);
+        TEST_ASSERT(file_write(runtime_path, "present\n"));
+        for (char* cursor = runtime_literal; *cursor != '\0'; ++cursor) {
+            if (*cursor == '\\') { *cursor = '/'; }
+        }
+        fake_compiler_source = str_format(
+            "#include <stdio.h>\n"
+            "#include <string.h>\n"
+            "int main(int argc, char** argv) {\n"
+            "    for (int i = 1; i < argc; ++i) {\n"
+            "        if (strcmp(argv[i], \"--print-libgcc-file-name\") == 0) {\n"
+            "            puts(\"%s\");\n"
+            "            return 0;\n"
+            "        }\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n",
+            runtime_literal
+        );
+        TEST_ASSERT(fake_compiler_source != NULL);
+        TEST_ASSERT(file_write(fake_compiler_src, fake_compiler_source));
+        TEST_ASSERT(proc_run(compile_argv, false) == 0);
+        compiler_opt = str_format("--compiler=%s", fake_compiler_exe);
+        TEST_ASSERT(compiler_opt != NULL);
+        ArrStr_push(image_sources, main_source);
+        ArrStr_push(image_sources, crt0_source);
+        argv[10] = linker_opt;
+        argv[11] = compiler_opt;
+        cmd = dal_c_Cmd_parse(12, argv);
+        TEST_ASSERT(cmd != NULL);
+        cmd->link_args = strdup("-Wl,--gc-sections -fuse-ld=lld");
+        TEST_ASSERT(cmd->link_args != NULL);
+
+        profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+        build_dir = dal_c_Project_getBuildDir(proj);
+        profile_dir = path_join(build_dir, profile->name);
+        object_dir = path_join(profile_dir, "obj");
+        TEST_ASSERT(build_dir != NULL);
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+
+        target_path = dal_c__resolveOutputPath(proj, cmd, profile_dir, "guest", dal_c_Target_image);
+        TEST_ASSERT(target_path != NULL);
+        TEST_ASSERT(strstr(target_path, ".bin") != NULL);
+        makefile_path = dal_c__makePlanFilePath(proj, profile, cmd, target_path, dal_c_Target_image);
+        TEST_ASSERT(makefile_path != NULL);
+        TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, image_sources, target_path, object_dir, dal_c_Target_image) == 0);
+        makefile_text = file_read(makefile_path);
+        TEST_ASSERT(makefile_text != NULL);
+        TEST_ASSERT(strstr(makefile_text, "TARGET_ARCH_FLAGS = -march=rv32im") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "TARGET_ABI_FLAGS = -mabi=ilp32") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += $(TARGET_ARCH_FLAGS)") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += $(TARGET_ABI_FLAGS)") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "LDFLAGS = $(TARGET_FLAGS) $(TARGET_ARCH_FLAGS) $(TARGET_ABI_FLAGS) $(SYSROOT_FLAGS)") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "OBJCOPY = llvm-objcopy") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "OBJCOPY_FORMAT = binary") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "LINK_TARGET = ") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Xlinker -T -Xlinker ") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "--print-libgcc-file-name") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "[AS] ") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "[OBJCOPY] $@") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "$(TARGET): $(LINK_CONTRACT) $(LINK_TARGET)") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "$(LINK_TARGET): $(LINK_CONTRACT) $(OBJS)") != NULL);
+
+        free(makefile_text);
+        free(makefile_path);
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        ArrStr_fini(&image_sources);
+        dal_c_Cmd_cleanup(&cmd);
+        free(compiler_opt);
+        free(fake_compiler_source);
+        free(runtime_literal);
+        free(runtime_path);
+        free(fake_compiler_exe);
+        free(fake_compiler_src);
+        free(linker_opt);
+    }
+
+    {
+        const char* hosted_argv[] = { dal_c_tool_name, "build", "dev", "--link-dsl=off", NULL };
+        const char* guest_argv[] = {
+            dal_c_tool_name,
+            "build",
+            "dev",
+            "--link-dsl=off",
+            "--target=riscv32-unknown-elf",
+            "--target-arch=rv32im",
+            "--target-abi=ilp32",
+            NULL
+        };
+        dal_c_Cmd* hosted_cmd = dal_c_Cmd_parse(4, hosted_argv);
+        dal_c_Cmd* guest_cmd = dal_c_Cmd_parse(7, guest_argv);
+        const dal_c_ProfileSpec* profile = NULL;
+        char* build_dir = NULL;
+        char* profile_dir = NULL;
+        char* object_dir = NULL;
+        char* target_path = NULL;
+        char* hosted_makefile = NULL;
+        char* guest_makefile = NULL;
+        char* hosted_text = NULL;
+        char* guest_text = NULL;
+        char* hosted_pch_out = NULL;
+        char* guest_pch_out = NULL;
+        char* hosted_pch_line = NULL;
+        char* guest_pch_line = NULL;
+        char* hosted_pch_end = NULL;
+        char* guest_pch_end = NULL;
+
+        TEST_ASSERT(hosted_cmd != NULL);
+        TEST_ASSERT(guest_cmd != NULL);
+
+        profile = dal_c_ProfileSpec_by(hosted_cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+        build_dir = dal_c_Project_getBuildDir(proj);
+        profile_dir = path_join(build_dir, profile->name);
+        object_dir = path_join(profile_dir, "obj");
+        TEST_ASSERT(build_dir != NULL);
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+
+        target_path = dal_c__resolveOutputPath(proj, hosted_cmd, profile_dir, "probe", dal_c_Target_executable);
+        TEST_ASSERT(target_path != NULL);
+        hosted_makefile = dal_c__makePlanFilePath(proj, profile, hosted_cmd, target_path, dal_c_Target_executable);
+        TEST_ASSERT(hosted_makefile != NULL);
+        TEST_ASSERT(dal_c__generateMakefile(hosted_cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 0);
+        hosted_text = file_read(hosted_makefile);
+        TEST_ASSERT(hosted_text != NULL);
+        free(target_path);
+
+        target_path = dal_c__resolveOutputPath(proj, guest_cmd, profile_dir, "probe-guest", dal_c_Target_executable);
+        TEST_ASSERT(target_path != NULL);
+        guest_makefile = dal_c__makePlanFilePath(proj, profile, guest_cmd, target_path, dal_c_Target_executable);
+        TEST_ASSERT(guest_makefile != NULL);
+        TEST_ASSERT(dal_c__generateMakefile(guest_cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 0);
+        guest_text = file_read(guest_makefile);
+        TEST_ASSERT(guest_text != NULL);
+
+        hosted_pch_line = strstr(hosted_text, "PCH_OUT = ");
+        guest_pch_line = strstr(guest_text, "PCH_OUT = ");
+        TEST_ASSERT(hosted_pch_line != NULL);
+        TEST_ASSERT(guest_pch_line != NULL);
+        hosted_pch_end = strchr(hosted_pch_line, '\n');
+        guest_pch_end = strchr(guest_pch_line, '\n');
+        TEST_ASSERT(hosted_pch_end != NULL);
+        TEST_ASSERT(guest_pch_end != NULL);
+        hosted_pch_out = strndup(
+            hosted_pch_line + strlen("PCH_OUT = "),
+            (size_t)(hosted_pch_end - (hosted_pch_line + strlen("PCH_OUT = ")))
+        );
+        guest_pch_out = strndup(
+            guest_pch_line + strlen("PCH_OUT = "),
+            (size_t)(guest_pch_end - (guest_pch_line + strlen("PCH_OUT = ")))
+        );
+        TEST_ASSERT(hosted_pch_out != NULL);
+        TEST_ASSERT(guest_pch_out != NULL);
+        TEST_ASSERT(strcmp(hosted_pch_out, guest_pch_out) != 0);
+
+        free(guest_pch_out);
+        free(hosted_pch_out);
+        free(guest_text);
+        free(hosted_text);
+        free(guest_makefile);
+        free(hosted_makefile);
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c_Cmd_cleanup(&guest_cmd);
+        dal_c_Cmd_cleanup(&hosted_cmd);
+    }
+
+    {
+        const char* emit_argv[] = {
+            dal_c_tool_name,
+            "build",
+            "dev",
+            "--emit-preprocessed",
+            "--target-arch=rv32im",
+            "--target-abi=ilp32",
+            NULL
+        };
+        const char* asm_argv[] = {
+            dal_c_tool_name,
+            "build",
+            "release",
+            "--emit-asm",
+            NULL
+        };
+        dal_c_Cmd* emit_cmd = dal_c_Cmd_parse(6, emit_argv);
+        dal_c_Cmd* asm_cmd = dal_c_Cmd_parse(4, asm_argv);
+        char* build_dir = NULL;
+        char* profile_dir = NULL;
+        char* object_dir = NULL;
+        char* target_path = NULL;
+        char* makefile_path = NULL;
+        char* makefile_text = NULL;
+        ArrStr* single_source = ArrStr_init();
+
+        TEST_ASSERT(emit_cmd != NULL);
+        TEST_ASSERT(asm_cmd != NULL);
+        TEST_ASSERT(single_source != NULL);
+        ArrStr_push(single_source, main_source);
+
+        {
+            const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(emit_cmd->opts.profile);
+            TEST_ASSERT(profile != NULL);
+            build_dir = dal_c_Project_getBuildDir(proj);
+            profile_dir = path_join(build_dir, profile->name);
+            object_dir = path_join(profile_dir, "obj");
+            TEST_ASSERT(build_dir != NULL);
+            TEST_ASSERT(profile_dir != NULL);
+            TEST_ASSERT(object_dir != NULL);
+            TEST_ASSERT(dir_createRecur(object_dir));
+
+            target_path = dal_c__resolveOutputPath(proj, emit_cmd, profile_dir, "probe", dal_c_Target_preprocessed);
+            TEST_ASSERT(target_path != NULL);
+            TEST_ASSERT(strstr(target_path, ".i") != NULL);
+            makefile_path = dal_c__makePlanFilePath(proj, profile, emit_cmd, target_path, dal_c_Target_preprocessed);
+            TEST_ASSERT(makefile_path != NULL);
+            TEST_ASSERT(dal_c__generateMakefile(emit_cmd, proj, profile, single_source, target_path, object_dir, dal_c_Target_preprocessed) == 0);
+            makefile_text = file_read(makefile_path);
+            TEST_ASSERT(makefile_text != NULL);
+            TEST_ASSERT(strstr(makefile_text, "TARGET = ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "SRC = ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "[CPP] ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -E $(SRC) -o $@") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "$(TARGET): $(SRC)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "TARGET_ARCH_FLAGS = -march=rv32im") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "TARGET_ABI_FLAGS = -mabi=ilp32") != NULL);
+
+            free(makefile_text);
+            free(makefile_path);
+            free(target_path);
+            free(object_dir);
+            free(profile_dir);
+            free(build_dir);
+            makefile_text = NULL;
+            makefile_path = NULL;
+            target_path = NULL;
+            object_dir = NULL;
+            profile_dir = NULL;
+            build_dir = NULL;
+        }
+
+        {
+            const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(asm_cmd->opts.profile);
+            TEST_ASSERT(profile != NULL);
+            build_dir = dal_c_Project_getBuildDir(proj);
+            profile_dir = path_join(build_dir, profile->name);
+            object_dir = path_join(profile_dir, "obj");
+            TEST_ASSERT(build_dir != NULL);
+            TEST_ASSERT(profile_dir != NULL);
+            TEST_ASSERT(object_dir != NULL);
+            TEST_ASSERT(dir_createRecur(object_dir));
+
+            target_path = dal_c__resolveOutputPath(proj, asm_cmd, profile_dir, "probe", dal_c_Target_assembly);
+            TEST_ASSERT(target_path != NULL);
+            TEST_ASSERT(strstr(target_path, ".s") != NULL);
+            makefile_path = dal_c__makePlanFilePath(proj, profile, asm_cmd, target_path, dal_c_Target_assembly);
+            TEST_ASSERT(makefile_path != NULL);
+            TEST_ASSERT(dal_c__generateMakefile(asm_cmd, proj, profile, single_source, target_path, object_dir, dal_c_Target_assembly) == 0);
+            makefile_text = file_read(makefile_path);
+            TEST_ASSERT(makefile_text != NULL);
+            TEST_ASSERT(strstr(makefile_text, "[ASM] ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -S $(SRC) -o $@") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-flto") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-fno-lto") == NULL);
+
+            free(makefile_text);
+            free(makefile_path);
+            free(target_path);
+            free(object_dir);
+            free(profile_dir);
+            free(build_dir);
+        }
+
+        ArrStr_fini(&single_source);
+        dal_c_Cmd_cleanup(&asm_cmd);
+        dal_c_Cmd_cleanup(&emit_cmd);
+    }
+
     ArrStr_fini(&sources);
     dal_c_Project_cleanup(&proj);
     (void)dir_removeRecur(temp_root);
     TEST_ASSERT(!path_exists(temp_root));
 
     free(main_source);
+    free(crt0_source);
+    free(linker_script);
+    free(pch_header);
+    free(include_dir);
     free(source_dir);
     free(project_dh);
     free(project_root);
@@ -769,6 +1404,26 @@ static void test_makefile_mode_contracts(void) {
 }
 
 static void test_project_detection(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* lib_kind_root = path_join(temp_root, "lib-kind-project");
+    char* lib_kind_project_dh = path_join(lib_kind_root, "project.dh");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(lib_kind_root != NULL);
+    TEST_ASSERT(lib_kind_project_dh != NULL);
+    TEST_ASSERT(dir_createRecur(lib_kind_root));
+    TEST_ASSERT(file_write(lib_kind_project_dh, "kind=lib\noutput=core\n"));
+
+    dal_c_Project* lib_kind_proj = dal_c_Project_detectAt(lib_kind_root, NULL);
+    TEST_ASSERT(lib_kind_proj != NULL);
+    TEST_ASSERT(lib_kind_proj->defaults.target_kind_set);
+    TEST_ASSERT(lib_kind_proj->defaults.target_kind == dal_c_Target_lib);
+    dal_c_Project_cleanup(&lib_kind_proj);
+    free(lib_kind_project_dh);
+    free(lib_kind_root);
+    free(temp_root);
+
     char* pkg_no_dsl = test_repo_path(dal_c_tool_name "/lab/pkg-no_dsl_contract");
     dal_c_Project* proj = dal_c_Project_detectAt(pkg_no_dsl, NULL);
     TEST_ASSERT(proj != NULL);
@@ -812,7 +1467,7 @@ static void test_target_request_resolution(void) {
     TEST_ASSERT(str_eql(request.root->name, "cmd"));
     TEST_ASSERT(request.kind == dal_c_Target_executable);
     TEST_ASSERT(request.selection == dal_c_TargetSelection_dir);
-    TEST_ASSERT(request.link_self);
+    TEST_ASSERT(request.link_project);
     TEST_ASSERT(request.resolved_is_dir);
     TEST_ASSERT(request.relative_path != NULL);
     TEST_ASSERT(str_eql(request.relative_path, "runner1"));
@@ -823,7 +1478,7 @@ static void test_target_request_resolution(void) {
     TEST_ASSERT(dal_c_TargetRequest_resolve(proj, &intent, &request));
     TEST_ASSERT(request.kind == dal_c_Target_shared_lib);
     TEST_ASSERT(request.selection == dal_c_TargetSelection_dir);
-    TEST_ASSERT(request.link_self);
+    TEST_ASSERT(request.link_project);
     dal_c_TargetRequest_cleanup(&request);
 
     dal_c_Project_cleanup(&proj);

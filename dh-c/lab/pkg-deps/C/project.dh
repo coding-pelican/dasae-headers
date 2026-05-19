@@ -1,10 +1,9 @@
 output=contract-c
-build-runs-tests=true
+build-runs-tests=on
 
 [B]
 path=../B
 profile=default
 linking=static
-no-dsl=false
-test=true
-
+link-dsl=on
+test=on

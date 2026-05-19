@@ -2,23 +2,22 @@
 path=../Grid
 profile=default
 linking=static
-no-dsl=false
+link-dsl=on
 
 [dacolor]
 path=../dacolor
 profile=default
 linking=static
-no-dsl=false
+link-dsl=on
 
 [dh-extras/os/windows/wnd]
 path=../../dh-extras/os/windows/wnd
 profile=default
 linking=static
-no-dsl=false
+link-dsl=on
 
 [dh-extras/os/linux/x11]
 path=../../dh-extras/os/linux/x11
 profile=default
 linking=static
-no-dsl=false
-
+link-dsl=on
