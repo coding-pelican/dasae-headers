@@ -38,7 +38,7 @@ extern "C" {
     ) pp_end \
 )
 
-errset_((Thrd_ftx_E)() $union_errset_(Thrd_TimeoutE));
+errset_((Thrd_ftx_E)(UnsupportedFtx) $union_errset_(Thrd_TimeoutE));
 $extern fn_((Thrd_ftx_wait(const atom_V$u32* ptr, u32 expect))(void));
 $attr($must_check)
 $extern fn_((Thrd_ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Duration timeout))(Thrd_ftx_E$void));

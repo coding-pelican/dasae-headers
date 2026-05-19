@@ -1,4 +1,5 @@
 #include "dh/Thrd/Mtx.h"
+#include "dh/Thrd/self.h"
 
 /*========== Internal Declarations ==========================================*/
 
@@ -161,7 +162,7 @@ fn_((Thrd_Mtx_Recur_fini(Thrd_Mtx_Recur* self))(void)) {
 };
 
 fn_((Thrd_Mtx_Recur_lock(Thrd_Mtx_Recur* self))(void)) {
-    let current_id = Thrd_currentId();
+    let current_id = Thrd_currId();
     if (atom_load(&self->thrd_id, atom_MemOrd_unordered) != current_id) {
         Thrd_Mtx_lock(&self->inner);
         debug_assert(self->lock_count == 0);
@@ -171,7 +172,7 @@ fn_((Thrd_Mtx_Recur_lock(Thrd_Mtx_Recur* self))(void)) {
 };
 
 fn_((Thrd_Mtx_Recur_tryLock(Thrd_Mtx_Recur* self))(bool)) {
-    let current_id = Thrd_currentId();
+    let current_id = Thrd_currId();
     if (atom_load(&self->thrd_id, atom_MemOrd_unordered) != current_id) {
         if (!Thrd_Mtx_tryLock(&self->inner)) { return false; }
         debug_assert(self->lock_count == 0);

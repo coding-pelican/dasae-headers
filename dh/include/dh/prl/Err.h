@@ -40,20 +40,20 @@ T_alias$((E_Inner$General_E)(struct E_Inner$General_E {
     var_(tag_id, S_const$u8);
     fn_(((*hashId)(void))(E_HashId));
 }));
-T_alias$((E_Opaq$General_E)(union E_Opaq$General_E {
+T_alias$((E_Ctx$General_E)(union E_Ctx$General_E {
     var_(inner, const E_Inner$General_E*);
-    var_(any, E_OpaqAny);
-    var_(as_any, E_OpaqAny) $like_ref;
+    var_(any, E_CtxAny);
+    var_(as_any, E_CtxAny) $like_ref;
 }));
-T_alias$((E_Opaq$NotImplemented)(E_Opaq$General_E));
-T_alias$((E_Opaq$Unexpected)(E_Opaq$General_E));
+T_alias$((E_Ctx$NotImplemented)(E_Ctx$General_E));
+T_alias$((E_Ctx$Unexpected)(E_Ctx$General_E));
 T_alias$((E_Payload$General_E)(union E_Payload$General_E {
-    var_(NotImplemented, E_Opaq$NotImplemented);
-    var_(Unexpected, E_Opaq$Unexpected);
+    var_(NotImplemented, E_Ctx$NotImplemented);
+    var_(Unexpected, E_Ctx$Unexpected);
 }));
 T_alias$((General_E)(union General_E {
     T_embed$(E_Payload$General_E);
-    var_(opaq, E_Opaq$General_E);
+    var_(ctx, E_Ctx$General_E);
     var_(any, EAny);
     var_(as_any, EAny) $like_ref;
 }));
@@ -106,32 +106,32 @@ fn_((E_hasher(S_const$u8 str))(E_HashId)) {
 
 fn_((E_tag(const EAny* any))(E_Tag)) {
     let self = ptrAlignCast$((const General_E*)(ensureNonnull(any)));
-    return self->opaq.inner->tag;
+    return self->ctx.inner->tag;
 };
 
 fn_((E_strfy(const EAny* any))(S_const$u8)) {
     let self = ptrAlignCast$((const General_E*)(ensureNonnull(any)));
-    return self->opaq.inner->tag_id;
+    return self->ctx.inner->tag_id;
 };
 
 fn_((E_hashId(const EAny* any))(E_HashId)) {
     let self = ptrAlignCast$((const General_E*)(ensureNonnull(any)));
-    return self->opaq.inner->hashId();
+    return self->ctx.inner->hashId();
 };
 
 fn_((E_tag$General_E(General_E self))(E_Tag$General_E)) {
     let resolved = orelse_((E_resolve$General_E(self))(return E_Tag$General_E_Any));
-    return resolved.opaq.inner->tag;
+    return resolved.ctx.inner->tag;
 };
 
 fn_((E_strfy$General_E(General_E self))(S_const$u8)) {
     debug_assert(E_tag(self.as_any) != E_Tag$Any);
-    return self.opaq.inner->tag_id;
+    return self.ctx.inner->tag_id;
 };
 
 fn_((E_hashId$General_E(General_E self))(E_HashId)) {
     debug_assert(E_tag(self.as_any) != E_Tag$Any);
-    return self.opaq.inner->hashId();
+    return self.ctx.inner->hashId();
 };
 
 fn_((E_handle$General_E(General_E self))(General_E)) {
@@ -157,7 +157,7 @@ fn_((E_cause$NotImplemented(void))(E_Type$NotImplemented)) {
         .tag_id = u8_l("NotImplemented"),
         .hashId = E__hashId$NotImplemented,
     };
-    return (General_E){ .opaq.inner = &inner };
+    return (General_E){ .ctx.inner = &inner };
 };
 
 fn_((E_cause$Unexpected(void))(E_Type$Unexpected)) {
@@ -166,7 +166,7 @@ fn_((E_cause$Unexpected(void))(E_Type$Unexpected)) {
         .tag_id = u8_l("Unexpected"),
         .hashId = E__hashId$Unexpected,
     };
-    return (General_E){ .opaq.inner = &inner };
+    return (General_E){ .ctx.inner = &inner };
 };
 
 /*---------- Internal Definitions -------------------------------------------*/

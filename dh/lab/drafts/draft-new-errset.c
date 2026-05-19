@@ -25,7 +25,7 @@
     pp_cat4(E_Tag$, _Id, _, _Member),
 
 #define __syn__errset__emitTypeAlias(_Id, _Member...) \
-    typedef pp_cat(E_Opaq$, _Id) pp_cat4(E_Type$, _Id, _, _Member);
+    typedef pp_cat(E_Ctx$, _Id) pp_cat4(E_Type$, _Id, _, _Member);
 
 #define __syn__errset__emitPayloadMember(_Id, _Member...) \
     pp_cat4(E_Type$, _Id, _, _Member) _Member;
@@ -66,15 +66,15 @@
         const char* tag_id_z; \
         E_HashId (*hashId)(void); \
     } pp_cat(E_Inner$, _Id); \
-    typedef struct pp_cat(E_Opaq$, _Id) { \
+    typedef struct pp_cat(E_Ctx$, _Id) { \
         const pp_cat(E_Inner$, _Id)* inner; \
-    } pp_cat(E_Opaq$, _Id); \
+    } pp_cat(E_Ctx$, _Id); \
     pp_foreach(__syn__errset__emitTypeAlias, _Id, __pp__errset__unwrap _Members) \
     typedef union pp_cat(E_Payload$, _Id) { \
         pp_foreach(__syn__errset__emitPayloadMember, _Id, __pp__errset__unwrap _Members) \
     } pp_cat(E_Payload$, _Id); \
     typedef union _Id { \
-        pp_cat(E_Opaq$, _Id) opaq; \
+        pp_cat(E_Ctx$, _Id) opaq; \
         pp_cat(E_Payload$, _Id) payload; \
         General_E as_general[1]; \
         General_E General_E; \

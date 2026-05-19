@@ -5,7 +5,7 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
+#include "../../core.h"
 
 /*========== Macros and Declarations ========================================*/
 

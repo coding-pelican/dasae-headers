@@ -8,27 +8,27 @@
 /*========== Internal Declarations ==========================================*/
 
 $attr($inline_always)
-$static fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
+$static fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny));
 $attr($inline_always $must_check)
-$static fn_((Sched__spawn(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
+$static fn_((Sched__spawn(exec_Lane* ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
 $attr($inline_always)
 $static fn_((Sched__cancel(exec_Lane* ctx, exec_Task* any_future, u_P$raw result))(void));
 
-$static fn_((Sched_seq__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
+$static fn_((Sched_seq__async(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny));
 $attr($must_check)
-$static fn_((Sched_seq__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
+$static fn_((Sched_seq__spawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
 $static fn_((Sched_seq__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_seq__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 
-$static fn_((Sched_coop__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
+$static fn_((Sched_coop__async(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny));
 $attr($must_check)
-$static fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
+$static fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
 $static fn_((Sched_coop__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_coop__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 
-$static fn_((Sched_preem__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
+$static fn_((Sched_preem__async(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny));
 $attr($must_check)
-$static fn_((Sched_preem__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
+$static fn_((Sched_preem__spawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
 $static fn_((Sched_preem__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_preem__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 
@@ -60,21 +60,21 @@ let_(Sched_failing, Sched) = {
     .vtbl = &Sched_VTbl_failing,
 };
 
-fn_((Sched_async(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw)) {
-    claim_assert_nonnull(closure);
+fn_((Sched_async(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw)) {
+    claim_assert_nonnull(clsr);
     claim_assert_nonnull(ret_mem);
     debug_assert_eqBy(ret_mem->type, ret_ty, TypeInfo_eql);
     let result = Future_resultMut(ret_mem, ret_ty);
-    ret_mem->any_future = self.vtbl->asyncFn(self.ctx, result, closure);
+    ret_mem->any_future = self.vtbl->asyncFn(self.ctx, result, clsr);
     return ret_mem;
 };
 
-fn_((Sched_spawn(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw) $scope) {
-    claim_assert_nonnull(closure);
+fn_((Sched_spawn(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw) $scope) {
+    claim_assert_nonnull(clsr);
     claim_assert_nonnull(ret_mem);
     debug_assert_eqBy(ret_mem->type, ret_ty, TypeInfo_eql);
     let result = Future_resultMut(ret_mem, ret_ty);
-    asg_l((&ret_mem->any_future)(some(try_(self.vtbl->spawnFn(self.ctx, result, closure)))));
+    asg_l((&ret_mem->any_future)(some(try_(self.vtbl->spawnFn(self.ctx, result, clsr)))));
     return_ok(ret_mem);
 } $unscoped(fn);
 
@@ -131,14 +131,14 @@ fn_((Sched_para(exec_Para* para))(Sched)) {
     });
 };
 
-fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
+fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny) $scope) {
     let_ignore = ctx;
     let_ignore = result;
     let_ignore = inner;
     return_none();
 } $unscoped(fn);
 
-fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
+fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     let_ignore = ctx;
     let_ignore = result;
     let_ignore = inner;
@@ -173,7 +173,7 @@ fn_((Sched_VTbl_unreachableCancel(P$raw ctx, P$FutureAny any_future, u_P$raw res
 
 /*========== Internal Definitions ===========================================*/
 
-fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
+fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny) $scope) {
     claim_assert_nonnull(ctx), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let task = orelse_((exec_Lane_asyncTask(ctx, result, inner))(
         return_none()
@@ -181,7 +181,7 @@ fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$F
     return_some(task->as_any);
 } $unscoped(fn);
 
-fn_((Sched__spawn(exec_Lane* ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
+fn_((Sched__spawn(exec_Lane* ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     claim_assert_nonnull(ctx), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let task = orelse_((exec_Lane_spawnTask(ctx, result, inner))(
         return_err(E_cause$UnavailableConc())
@@ -198,12 +198,12 @@ fn_((Sched__cancel(exec_Lane* ctx, exec_Task* any_future, u_P$raw result))(void)
     exec_Task_cancel(any_future);
 };
 
-fn_((Sched_seq__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
+fn_((Sched_seq__async(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny) $scope) {
     let self = ptrAlignCast$((exec_Seq*)(ensureNonnull(ctx)));
     return Sched__async(&self->lane, result, inner);
 } $unscoped(fn);
 
-fn_((Sched_seq__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
+fn_((Sched_seq__spawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     let self = ptrAlignCast$((exec_Seq*)(ensureNonnull(ctx)));
     return Sched__spawn(&self->lane, result, inner);
 } $unscoped(fn);
@@ -222,12 +222,12 @@ fn_((Sched_seq__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)
     Sched__cancel(&self->lane, task, result);
 };
 
-fn_((Sched_coop__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
+fn_((Sched_coop__async(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny) $scope) {
     let self = ptrAlignCast$((exec_Coop*)(ensureNonnull(ctx)));
     return Sched__async(&self->timed.lane, result, inner);
 } $unscoped(fn);
 
-fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
+fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     let self = ptrAlignCast$((exec_Coop*)(ensureNonnull(ctx)));
     return Sched__spawn(&self->timed.lane, result, inner);
 } $unscoped(fn);
@@ -257,19 +257,19 @@ fn_((Sched_coop__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void
     Sched__cancel(&self->timed.lane, task, result);
 };
 
-fn_((Sched_preem__async(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny) $scope) {
+fn_((Sched_preem__async(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny) $scope) {
     claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
     let task = catch_((exec_Preem_createTask(self, result, inner))(
         $ignore, {
-            u_memcpy(result, Closure_invokeToComplete(inner, result.type));
+            u_memcpy(result, Clsr_invokeToComplete(inner, result.type));
             return_none();
         }
     ));
     return_some(task->as_any);
 } $unscoped(fn);
 
-fn_((Sched_preem__spawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
+fn_((Sched_preem__spawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
     let task = try_(exec_Preem_createTask(self, result, inner));

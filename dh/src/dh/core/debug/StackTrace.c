@@ -135,7 +135,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
 
     $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) = A_zero();
     let frames = RtlCaptureStackBackTrace(0, debug_StackTrace__max_frames, A_ptr(stack), null);
-    let tid = as$(u64)(Thrd_currentId());
+    let tid = as$(u64)(Thrd_currId());
 
     /* [Standard Info] Added TID */
     io_stream_eprintln(u8_l("stack backtrace (tid: {:ul}):"), tid);
@@ -209,7 +209,7 @@ fn_((debug_StackTrace__unix_setupCrashHandler(void))(void)) {
 fn_((debug_StackTrace__unix_print(void))(void)) {
     $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) = A_zero();
     let frames = backtrace(A_ptr(stack), debug_StackTrace__max_frames);
-    let tid = as$(u64)(Thrd_currentId());
+    let tid = as$(u64)(Thrd_currId());
 
     io_stream_eprintln(u8_l("stack backtrace (tid: {:ul}):"), tid);
 

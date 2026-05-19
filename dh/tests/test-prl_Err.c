@@ -10,7 +10,7 @@ TEST_fn_("prl/Err: resolve rejects hash-only collision" $scope) {
         .tag_id = u8_l("SyntheticCollision"),
         .hashId = TEST__hashIdCollisionWithNotImplemented,
     };
-    let err = (General_E){ .opaq.inner = &inner };
+    let_(err, General_E) = { .ctx.inner = &inner };
 
     try_(TEST_expect(isNone(E_resolve$General_E(err))));
 } $unscoped(TEST_fn);

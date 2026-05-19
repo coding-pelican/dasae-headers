@@ -52,9 +52,9 @@ co_fn_scope(
         } $end(match);
     }
 } $unscoped(co_fn);
-co_use_Closure_((sample_counterActor)(P$$(actor_Unit), S_const$u8)(Void));
+co_use_Clsr_((sample_counterActor)(P$$(actor_Unit), S_const$u8)(Void));
 
-T_use$((mem_E$Void)(Co_Ctx, Co_Rtn, Co_Frame, Closure_Ctx, Closure_Rtn, Closure));
+T_use$((mem_E$Void)(Co_Ctx, Co_Rtn, Co_Frame, Clsr_Ctx, Clsr_Rtn, Clsr));
 co_fn_(sample_feederActor, (P$$(actor_Unit) self; P$$(actor_Unit) dst; S_const$u8 name), mem_E$Void);
 co_fn_scope(
     sample_feederActor,
@@ -89,7 +89,7 @@ co_fn_scope(
         } $end(match);
     }
 } $unscoped(co_fn);
-co_use_Closure_((sample_feederActor)(P$$(actor_Unit), P$$(actor_Unit), S_const$u8)(mem_E$Void));
+co_use_Clsr_((sample_feederActor)(P$$(actor_Unit), P$$(actor_Unit), S_const$u8)(mem_E$Void));
 T_use$((mem_E)(actor_Unit_startE));
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
@@ -106,12 +106,12 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     var counter = try_(actor_Sys_createUnit(&actors));
     defer_(actor_Sys_destroyUnit(&actors, &counter));
-    actor_Unit_start(counter, closure_(sample_counterActor)(counter, u8_l("counter")).as_base);
+    actor_Unit_start(counter, clsr_(sample_counterActor)(counter, u8_l("counter")).as_base);
     defer_(unwrap_(actor_Unit_exit(counter)));
 
     var feeder = try_(actor_Sys_createUnit(&actors));
     defer_(actor_Sys_destroyUnit(&actors, &feeder));
-    actor_Unit_startE$mem_E(feeder, closure_(sample_feederActor)(feeder, counter, u8_l("feeder")).as_base);
+    actor_Unit_startE$mem_E(feeder, clsr_(sample_feederActor)(feeder, counter, u8_l("feeder")).as_base);
     defer_({
         match_((unwrap_(actor_Unit_exit(feeder)))) {
         pattern_((actor_Exit_normal)($ignore)) $do_nothing $end(pattern);

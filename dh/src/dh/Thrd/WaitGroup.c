@@ -4,10 +4,7 @@
 #define Thrd_WaitGroup__one_pending (as$(usize)(1) << 1)
 
 fn_((Thrd_WaitGroup_init(void))(Thrd_WaitGroup)) {
-    return (Thrd_WaitGroup){
-        .state = atom_V_init(0),
-        .event = Thrd_ResetEvent_init(),
-    };
+    return Thrd_WaitGroup_init_static();
 };
 
 fn_((Thrd_WaitGroup_fini(Thrd_WaitGroup* self))(void)) {
@@ -85,35 +82,54 @@ fn_((Thrd_WaitGroup_valueOn(atom_V$usize* state))(usize)) {
 };
 
 $attr($must_check)
-$static fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Alctr gpa, Thrd_FnCtx* inst))(E$Thrd));
-$attr($inline_always)
-$static fn_((Thrd_WaitGroup__runInst(Thrd_FnCtx* fn_ctx))(void));
-fn_((Thrd_WaitGroup_spawn(Thrd_WaitGroup* self, mem_Alctr gpa, Thrd_FnCtx* fn_ctx))(void) $scope) {
+$static fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Alctr gpa, Clsr$Void* clsr))(Thrd_spawn_E$Thrd));
+$extern fn_((Thrd__spawnOwned(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    u_P$raw owned_clsr
+))(Thrd_spawn_E$Thrd));
+T_alias$((Thrd_WaitGroup__Inst)(struct Thrd_WaitGroup__Inst {
+    var_(clsr, Clsr$Void*);
+}));
+
+$static fn_((Thrd_WaitGroup__entryInst(Thrd_WaitGroup* mgr, Thrd_WaitGroup__Inst inst))(Void));
+fn_use_Clsr_((Thrd_WaitGroup__entryInst)(Thrd_WaitGroup*, Thrd_WaitGroup__Inst)(Void));
+
+T_use$((Void)(Clsr_invokeToComplete));
+fn_((Thrd_WaitGroup_spawn(Thrd_WaitGroup* self, mem_Alctr gpa, Clsr$Void* clsr))(void) $scope) {
     Thrd_WaitGroup_start(self);
-    let instance = catch_((Thrd_WaitGroup__spawnInst(self, gpa, fn_ctx))(
-        $ignore, Thrd_WaitGroup__runInst(fn_ctx)
+    let instance = catch_((Thrd_WaitGroup__spawnInst(self, gpa, clsr))(
+        $ignore, $ignore_void Clsr_invokeToComplete$Void(clsr)
     ));
     Thrd_detach(instance);
 } $unscoped(fn);
 
-$static Thrd_fn_(Thrd_WaitGroup__entryInst, ({ Thrd_WaitGroup* mgr; mem_Alctr gpa; Thrd_FnCtx* isnt; }, Void));
-fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Alctr gpa, Thrd_FnCtx* fn_ctx))(E$Thrd) $guard) {
-    let thrd_ctx = u_castP$((Thrd_FnCtx$(Thrd_WaitGroup__entryInst)*)(try_((mem_Alctr_create($trace gpa, typeInfo$(InnerType))))));
-    errdefer_($ignore, mem_Alctr_destroy($trace gpa, u_anyP(thrd_ctx)));
-    *thrd_ctx = Thrd_FnCtx_from$((Thrd_WaitGroup__entryInst)(self, gpa, fn_ctx));
-    let thrd = try_(Thrd_spawn(Thrd_SpawnCfg_default, thrd_ctx->as_raw));
+fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Alctr gpa, Clsr$Void* clsr))(Thrd_spawn_E$Thrd) $guard) {
+    let thrd_clsr = u_castP$((Clsr_(Thrd_WaitGroup__entryInst)*)(try_((
+        mem_Alctr_create($trace gpa, typeInfo$(Clsr_(Thrd_WaitGroup__entryInst)))
+    ))));
+    errdefer_($ignore, mem_Alctr_destroy($trace gpa, u_anyP(thrd_clsr)));
+    *thrd_clsr = clsr_(Thrd_WaitGroup__entryInst)(
+        self,
+        l$((Thrd_WaitGroup__Inst){
+            .clsr = clsr,
+        })
+    );
+    let thrd = try_(Thrd__spawnOwned(
+        (Thrd_SpawnCfg){
+            .gpa = some$((O$mem_Alctr)(gpa)),
+            .stack_size = Thrd_SpawnCfg_default_stack_size,
+        },
+        thrd_clsr->as_raw,
+        typeInfo$(Void),
+        u_anyP(thrd_clsr)
+    ));
     return_ok(thrd);
 } $unguarded(fn);
 
-Thrd_fn_(Thrd_WaitGroup__entryInst, (self, args)$guard) {
-    let mgr = args->mgr;
+fn_((Thrd_WaitGroup__entryInst(Thrd_WaitGroup* mgr, Thrd_WaitGroup__Inst inst))(Void) $guard) {
     defer_(Thrd_WaitGroup_finish(mgr));
-    let gpa = args->gpa;
-    defer_(mem_Alctr_destroy($trace gpa, u_anyP(self)));
-    let inst = args->isnt;
-    return_void(Thrd_WaitGroup__runInst(inst));
-} $unguarded(Thrd_fn);
-
-fn_((Thrd_WaitGroup__runInst(Thrd_FnCtx* inst))(void)) {
-    let_ignore = inst->fn(inst);
-};
+    Clsr_invokeToComplete$Void(inst.clsr);
+    return_void();
+} $unguarded(fn);

@@ -4,7 +4,7 @@ fn_((exec_Preem_work(exec_Preem_Task* task))(Void)) {
     claim_assert_nonnull(task), claim_assert_nonnull(task->owner);
     claim_assert_nonnull(task->result.raw), claim_assert_nonnull(task->inner);
     task->state = exec_Task_State_running;
-    u_memcpy(task->result, Closure_invokeToComplete(task->inner, task->result.type));
+    u_memcpy(task->result, Clsr_invokeToComplete(task->inner, task->result.type));
     if (task->state != exec_Task_State_canceled) task->state = exec_Task_State_done;
     return (Void){};
 };
@@ -25,7 +25,7 @@ fn_((exec_Preem_fini(exec_Preem* self))(void)) {
     asg_l((self)(cleared()));
 };
 
-fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$exec_Preem_Task) $guard) {
+fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$exec_Preem_Task) $guard) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let gpa = unwrap_(self->spawn_cfg.gpa);
     let task = u_castP$((exec_Preem_Task*)(catch_(
@@ -41,7 +41,7 @@ fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Closure$raw) in
         .result = result,
         .inner = inner,
         .state = exec_Task_State_ready,
-        .runner = closure_(exec_Preem_work)(task),
+        .runner = clsr_(exec_Preem_work)(task),
     }));
     let thrd = catch_((Thrd_spawn(self->spawn_cfg, task->runner.as_raw, typeInfo$(Void)))(
         $ignore, return_err(Sched_ConcE_Unavailable())

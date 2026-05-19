@@ -59,11 +59,11 @@ $static fn_((Term_readLine(Runtime rt, S$u8 mem))(S$u8)) {
 
 T_use$((Void)(Future, Sched_async, Future_await, Future_cancel));
 $static fn_((typeEffectWithInterval(Runtime rt, S_const$u8 text, time_Dur interval, u32 x, u32 y))(Void));
-fn_use_Closure_((typeEffectWithInterval)(Runtime, S_const$u8, time_Dur, u32, u32)(Void));
+fn_use_Clsr_((typeEffectWithInterval)(Runtime, S_const$u8, time_Dur, u32, u32)(Void));
 $static fn_((typeEffectOverDuration(Runtime rt, S_const$u8 text, f64 dur_secs, u32 x, u32 y))(Void));
-fn_use_Closure_((typeEffectOverDuration)(Runtime, S_const$u8, f64, u32, u32)(Void));
+fn_use_Clsr_((typeEffectOverDuration)(Runtime, S_const$u8, f64, u32, u32)(Void));
 $static fn_((typeEffectRealistic(Runtime rt, S_const$u8 text, f64 base_interval_secs, bool add_randomness, u32 x, u32 y))(Void));
-fn_use_Closure_((typeEffectRealistic)(Runtime, S_const$u8, f64, bool, u32, u32)(Void));
+fn_use_Clsr_((typeEffectRealistic)(Runtime, S_const$u8, f64, bool, u32, u32)(Void));
 
 fn_((typeEffectWithInterval(Runtime rt, S_const$u8 text, time_Dur interval, u32 x, u32 y))(Void) $scope) {
     if (text.len == 0) return_void();
@@ -120,13 +120,13 @@ $static fn_((runMain(Runtime rt))(Void) $guard) {
     Term_writeText(rt.io, u8_l("=== Typing Effect Demo ==="));
     Term_nl(rt.io);
 
-    var demo1 = closure_(typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(100), 0, 1);
-    var demo2 = closure_(typeEffectOverDuration)(rt, sample_text, 3.0, 0, 2);
-    var demo3 = closure_(typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(125), 0, 3);
-    var demo4 = closure_(typeEffectOverDuration)(rt, sample_text, 5.0, 0, 4);
-    var demo5 = closure_(typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(75), 0, 5);
-    var demo6 = closure_(typeEffectOverDuration)(rt, sample_text, 4.0, 0, 6);
-    var demo7 = closure_(typeEffectRealistic)(rt, sample_text, 0.08, true, 0, 7);
+    var demo1 = clsr_(typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(100), 0, 1);
+    var demo2 = clsr_(typeEffectOverDuration)(rt, sample_text, 3.0, 0, 2);
+    var demo3 = clsr_(typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(125), 0, 3);
+    var demo4 = clsr_(typeEffectOverDuration)(rt, sample_text, 5.0, 0, 4);
+    var demo5 = clsr_(typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(75), 0, 5);
+    var demo6 = clsr_(typeEffectOverDuration)(rt, sample_text, 4.0, 0, 6);
+    var demo7 = clsr_(typeEffectRealistic)(rt, sample_text, 0.08, true, 0, 7);
 
     var task1 = Sched_async$Void(rt.sched, demo1.as_base);
     defer_(Future_cancel$Void(&task1, rt.sched));
@@ -168,7 +168,7 @@ $static fn_((runMain(Runtime rt))(Void) $guard) {
         if_ok((fmt_parse$f64(interval_text.as_const))(interval_secs)) blk_defer {
             let prompt = u8_l("Typing your text: ");
             Term_writeText(rt.io, prompt);
-            var interactive = closure_(typeEffectWithInterval)(
+            var interactive = clsr_(typeEffectWithInterval)(
                 rt,
                 user_text.as_const,
                 time_Dur_fromMillis(as$(u64)(interval_secs * as$(f64)(time_millis_per_sec))),
@@ -182,7 +182,7 @@ $static fn_((runMain(Runtime rt))(Void) $guard) {
             let_ignore = _err;
             let prompt = u8_l("Using default realistic typing: ");
             Term_writeText(rt.io, prompt);
-            var interactive = closure_(typeEffectRealistic)(
+            var interactive = clsr_(typeEffectRealistic)(
                 rt,
                 user_text.as_const,
                 0.08,
@@ -202,7 +202,7 @@ $static fn_((runMain(Runtime rt))(Void) $guard) {
     }
     return_void();
 } $unguarded(fn);
-fn_use_Closure_((runMain)(Runtime)(Void));
+fn_use_Clsr_((runMain)(Runtime)(Void));
 #else
 co_fn_(runMain, (Runtime rt), Void);
 co_fn_guard(
@@ -213,23 +213,23 @@ co_fn_guard(
     co_locals_mut_({
         var_(read_mem, A$$(1024, u8));
         var_(line, u32);
-        var_(demo1, Closure_(typeEffectWithInterval));
+        var_(demo1, Clsr_(typeEffectWithInterval));
         var_(task1, Future$Void);
-        var_(demo2, Closure_(typeEffectOverDuration));
+        var_(demo2, Clsr_(typeEffectOverDuration));
         var_(task2, Future$Void);
-        var_(demo3, Closure_(typeEffectWithInterval));
+        var_(demo3, Clsr_(typeEffectWithInterval));
         var_(task3, Future$Void);
-        var_(demo4, Closure_(typeEffectOverDuration));
+        var_(demo4, Clsr_(typeEffectOverDuration));
         var_(task4, Future$Void);
-        var_(demo5, Closure_(typeEffectWithInterval));
+        var_(demo5, Clsr_(typeEffectWithInterval));
         var_(task5, Future$Void);
-        var_(demo6, Closure_(typeEffectOverDuration));
+        var_(demo6, Clsr_(typeEffectOverDuration));
         var_(task6, Future$Void);
-        var_(demo7, Closure_(typeEffectRealistic));
+        var_(demo7, Clsr_(typeEffectRealistic));
         var_(task7, Future$Void);
         var_(interactive_demo, union {
-            var_(parse_ok, Closure_(typeEffectWithInterval));
-            var_(parse_err, Closure_(typeEffectRealistic));
+            var_(parse_ok, Clsr_(typeEffectWithInterval));
+            var_(parse_err, Clsr_(typeEffectRealistic));
         });
         var_(interactive_task, Future$Void);
     }),
@@ -247,13 +247,13 @@ co_fn_guard(
     Term_writeText($co_arg(rt).io, u8_l("=== Typing Effect Demo ==="));
     Term_nl($co_arg(rt).io);
 
-    co_var_(demo1) = closure_(typeEffectWithInterval)($co_arg(rt), $co(sample_text), time_Dur_fromMillis(100), 0, 1);
-    co_var_(demo2) = closure_(typeEffectOverDuration)($co_arg(rt), $co(sample_text), 3.0, 0, 2);
-    co_var_(demo3) = closure_(typeEffectWithInterval)($co_arg(rt), $co(sample_text), time_Dur_fromMillis(125), 0, 3);
-    co_var_(demo4) = closure_(typeEffectOverDuration)($co_arg(rt), $co(sample_text), 5.0, 0, 4);
-    co_var_(demo5) = closure_(typeEffectWithInterval)($co_arg(rt), $co(sample_text), time_Dur_fromMillis(75), 0, 5);
-    co_var_(demo6) = closure_(typeEffectOverDuration)($co_arg(rt), $co(sample_text), 4.0, 0, 6);
-    co_var_(demo7) = closure_(typeEffectRealistic)($co_arg(rt), $co(sample_text), 0.08, true, 0, 7);
+    co_var_(demo1) = clsr_(typeEffectWithInterval)($co_arg(rt), $co(sample_text), time_Dur_fromMillis(100), 0, 1);
+    co_var_(demo2) = clsr_(typeEffectOverDuration)($co_arg(rt), $co(sample_text), 3.0, 0, 2);
+    co_var_(demo3) = clsr_(typeEffectWithInterval)($co_arg(rt), $co(sample_text), time_Dur_fromMillis(125), 0, 3);
+    co_var_(demo4) = clsr_(typeEffectOverDuration)($co_arg(rt), $co(sample_text), 5.0, 0, 4);
+    co_var_(demo5) = clsr_(typeEffectWithInterval)($co_arg(rt), $co(sample_text), time_Dur_fromMillis(75), 0, 5);
+    co_var_(demo6) = clsr_(typeEffectOverDuration)($co_arg(rt), $co(sample_text), 4.0, 0, 6);
+    co_var_(demo7) = clsr_(typeEffectRealistic)($co_arg(rt), $co(sample_text), 0.08, true, 0, 7);
 
     co_var_(task1) = Sched_async$Void($co_arg(rt).sched, $co_mut(demo1).as_base);
     co_defer_(Future_cancel$Void(&$co_mut(task1), $co_arg(rt).sched));
@@ -295,7 +295,7 @@ co_fn_guard(
         if_ok((fmt_parse$f64(interval_text.as_const))(interval_secs)) co_blk_defer {
             let prompt = u8_l("Typing your text: ");
             Term_writeText($co_arg(rt).io, prompt);
-            co_var_(interactive_demo) = $co_init_mut(interactive_demo)(closure_(typeEffectWithInterval)(
+            co_var_(interactive_demo) = $co_init_mut(interactive_demo)(clsr_(typeEffectWithInterval)(
                 $co_arg(rt),
                 user_text.as_const,
                 time_Dur_fromMillis(as$(u64)(interval_secs * as$(f64)(time_millis_per_sec))),
@@ -309,7 +309,7 @@ co_fn_guard(
             let_ignore = _err;
             let prompt = u8_l("Using default realistic typing: ");
             Term_writeText($co_arg(rt).io, prompt);
-            co_var_(interactive_demo) = $co_init_mut(interactive_demo)(closure_(typeEffectRealistic)(
+            co_var_(interactive_demo) = $co_init_mut(interactive_demo)(clsr_(typeEffectRealistic)(
                 $co_arg(rt),
                 user_text.as_const,
                 0.08, true,
@@ -328,7 +328,7 @@ co_fn_guard(
     }
     co_return_({});
 } $unguarded(co_fn);
-co_use_Closure_((runMain)(Runtime)(Void));
+co_use_Clsr_((runMain)(Runtime)(Void));
 #endif
 
 fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
@@ -345,7 +345,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         .fs = fs_evented(&loop),
         .sched = Sched_coop(&loop),
     };
-    var main_task = closure_(runMain)(rt);
+    var main_task = clsr_(runMain)(rt);
     var future = Sched_async$Void(rt.sched, main_task.as_base);
     defer_(Future_cancel$Void(&future, rt.sched));
     return_ok(Future_await$Void(&future, rt.sched));

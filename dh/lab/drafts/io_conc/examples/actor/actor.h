@@ -69,7 +69,7 @@ $static fn_((actor_Exit_canceledNow(void))(actor_Exit)) {
 /*--- System ---*/
 
 T_use$((Void)(Future));
-T_use$((E$Void)(Future, Closure_Ctx, Closure_Rtn, Closure));
+T_use$((E$Void)(Future, Clsr_Ctx, Clsr_Rtn, Clsr));
 T_alias$((actor_Unit_Ret)(variant_((actor_Unit_Ret $fits($packed))(
     (actor_Unit_Ret_undefined, Void),
     (actor_Unit_Ret_void, Future$Void),
@@ -96,8 +96,8 @@ struct actor_Unit {
     var_(completion, actor_Unit_Ret);
     var_(id, u32);
 };
-$extern fn_((actor_Unit_start(actor_Unit* self, Closure$Void* worker))(void));
-$extern fn_((actor_Unit_startE(actor_Unit* self, Closure$E$Void* worker))(void));
+$extern fn_((actor_Unit_start(actor_Unit* self, Clsr$Void* worker))(void));
+$extern fn_((actor_Unit_startE(actor_Unit* self, Clsr$E$Void* worker))(void));
 #define T_use_actor_Unit_startE$(_E...) __stmt__T_use_actor_Unit_startE$(_E)
 $extern fn_((actor_Unit_exit(actor_Unit* self))(O$actor_Exit));
 $attr($must_check)
@@ -120,8 +120,8 @@ T_impl_E$($set(mem_E)(actor_Sys));
 
 #define __stmt__T_use_actor_Unit_startE$(_E...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl$(actor_Unit_startE, _E)(actor_Unit* self, Closure$(E$($set(_E)(Void)))* worker))(void)) { \
-        return actor_Unit_startE(self, ptrCast$((Closure$E$Void*)(worker))); \
+    $static fn_((tpl$(actor_Unit_startE, _E)(actor_Unit* self, Clsr$(E$($set(_E)(Void)))* worker))(void)) { \
+        return actor_Unit_startE(self, ptrCast$((Clsr$E$Void*)(worker))); \
     } /* clang-format on */
 
 #endif /* actor__included */

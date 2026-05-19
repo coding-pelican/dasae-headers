@@ -29,10 +29,10 @@ $static fn_((Sched_assertValid(P$raw ctx, P_const$$(Sched_VTbl) vtbl))(void));
 $attr($inline_always)
 $static fn_((Sched_ensureValid(Sched self))(Sched));
 
-$extern fn_((Sched_async(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw));
+$extern fn_((Sched_async(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw));
 #define T_use_Sched_async$(_T...) __stmt__T_use_Sched_async$(_T)
 $attr($must_check)
-$extern fn_((Sched_spawn(Sched self, Closure$raw* closure, TypeInfo ret_ty, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw));
+$extern fn_((Sched_spawn(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw));
 #define T_use_Sched_spawn$(_T...) __stmt__T_use_Sched_spawn$(_T)
 
 $extern fn_((Sched_seq(exec_Seq* self))(Sched));
@@ -54,8 +54,8 @@ struct Sched_VTbl {
         /// Points to the caller-owned `Future.result_` field.
         /// The pointer remains valid for the lifetime of that Future value.
         u_P$raw result,
-        /// Borrowed closure state. The implementation must not copy it.
-        P$$(Closure$raw) inner
+        /// Borrowed clsr state. The implementation must not copy it.
+        P$$(Clsr$raw) inner
     ))(O$P$FutureAny));
 
     /// Request a concurrency unit. Failure is reported instead of falling back
@@ -65,7 +65,7 @@ struct Sched_VTbl {
     fn_(((*spawnFn)(
         P$raw ctx,
         u_P$raw result,
-        P$$(Closure$raw) inner
+        P$$(Clsr$raw) inner
     ))(Sched_ConcE$P$FutureAny));
 
     /// This function is only called when `async` or `spawn` returns `some`.
@@ -80,9 +80,9 @@ struct Sched_VTbl {
     /// Thread-safe.
     fn_(((*cancelFn)(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 };
-$extern fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(O$P$FutureAny));
+$extern fn_((Sched_VTbl_noAsync(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$FutureAny));
 $attr($must_check)
-$extern fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Closure$raw) inner))(Sched_ConcE$P$FutureAny));
+$extern fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny));
 $extern fn_((Sched_VTbl_noAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $extern fn_((Sched_VTbl_unreachableAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $extern fn_((Sched_VTbl_noCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
@@ -112,17 +112,17 @@ fn_((Sched_ensureValid(Sched self))(Sched)) {
 
 #define __stmt__T_use_Sched_async$(_T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl$(Sched_async, _T)(Sched self, Closure$(_T)* closure))(Future$(_T))) { \
+    $static fn_((tpl$(Sched_async, _T)(Sched self, Clsr$(_T)* clsr))(Future$(_T))) { \
         return *ptrAlignCast$((Future$(_T)*)( \
-            Sched_async(self, closure->as_raw, typeInfo$(_T), l0$((Future$(_T))).as_raw) \
+            Sched_async(self, clsr->as_raw, typeInfo$(_T), l0$((Future$(_T))).as_raw) \
         )); \
     } /* clang-format on */
 #define __stmt__T_use_Sched_spawn$(_T...) /* clang-format off */ \
     T_use_E$($set(Sched_ConcE)(Future$(_T))); \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(Sched_spawn, _T)(Sched self, Closure$(_T)* closure))(E$($set(Sched_ConcE)(Future$(_T)))) $scope) { \
+    $static fn_((tpl$(Sched_spawn, _T)(Sched self, Clsr$(_T)* clsr))(E$($set(Sched_ConcE)(Future$(_T)))) $scope) { \
         return_ok(*ptrAlignCast$((Future$(_T)*)( \
-            try_(Sched_spawn(self, closure->as_raw, typeInfo$(_T), l0$((Future$(_T))).as_raw)) \
+            try_(Sched_spawn(self, clsr->as_raw, typeInfo$(_T), l0$((Future$(_T))).as_raw)) \
         ))); \
     } $unscoped(fn) /* clang-format on */
 

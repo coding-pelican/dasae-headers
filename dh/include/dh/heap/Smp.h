@@ -39,7 +39,7 @@ extern "C" {
     1
 
 typedef struct heap_Smp_ThrdMeta {
-    var_(_avoid_false_sharing, Void) $align(arch_cache_line_bytes);
+    var_(avoid_false_sharing_, Void) $align(arch_cache_line_bytes);
     /// Protects the state in this struct (per-thread state).
     /// Threads lock this before accessing their own state in order
     /// to support freelist reclamation.

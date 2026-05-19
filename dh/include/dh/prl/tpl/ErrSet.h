@@ -6,7 +6,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
+#include "../../core.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -34,11 +34,11 @@ extern "C" {
 )
 
 #define __syn__errset__emitTypeAlias(_Id, ...) __VA_OPT__( \
-    typedef pp_cat(E_Opaq$, _Id) pp_cat(E_Opaq$, __VA_ARGS__); \
+    typedef pp_cat(E_Ctx$, _Id) pp_cat(E_Ctx$, __VA_ARGS__); \
 )
 
 #define __syn__errset__emitPayloadMember(_Id, ...) __VA_OPT__( \
-    pp_cat(E_Opaq$, __VA_ARGS__) __VA_ARGS__; \
+    pp_cat(E_Ctx$, __VA_ARGS__) __VA_ARGS__; \
 )
 
 #define __syn__errset__emitImportedField(_Id, ...) __VA_OPT__( \
@@ -64,7 +64,7 @@ extern "C" {
             .tag_id = u8_l(#__VA_ARGS__), \
             .hashId = pp_cat(E__hashId$, __VA_ARGS__), \
         }; \
-        return (pp_cat(E_Type$, __VA_ARGS__)){ .opaq.inner = &inner }; \
+        return (pp_cat(E_Type$, __VA_ARGS__)){ .ctx.inner = &inner }; \
     } \
 ) /* clang-format on */
 
@@ -82,17 +82,17 @@ extern "C" {
         S_const$u8 tag_id; \
         E_HashId (*hashId)(void); \
     } pp_cat(E_Inner$, _Id); \
-    typedef union pp_cat(E_Opaq$, _Id) { \
+    typedef union pp_cat(E_Ctx$, _Id) { \
         const pp_cat(E_Inner$, _Id)* inner; \
-        E_OpaqAny any; \
-        E_OpaqAny as_any $like_ref; \
-    } pp_cat(E_Opaq$, _Id); \
+        E_CtxAny any; \
+        E_CtxAny as_any $like_ref; \
+    } pp_cat(E_Ctx$, _Id); \
     pp_foreach(__syn__errset__emitTypeAlias, _Id, __pp__errset__unwrap _Members) \
     typedef union pp_cat(E_Payload$, _Id) { \
         pp_foreach(__syn__errset__emitPayloadMember, _Id, __pp__errset__unwrap _Members) \
     } pp_cat(E_Payload$, _Id); \
     typedef union _Id { \
-        pp_cat(E_Opaq$, _Id) opaq; \
+        pp_cat(E_Ctx$, _Id) ctx; \
         T_embed$(pp_cat(E_Payload$, _Id)); \
         EAny any; \
         EAny as_any $like_ref; \
@@ -103,12 +103,12 @@ extern "C" {
     $attr($inline_always $maybe_unused) \
     static S_const$u8 pp_cat(E_strfy$, _Id)(_Id self) { \
         debug_assert(E_tag(self.as_any) != E_Tag$Any); \
-        return self.opaq.inner->tag_id; \
+        return self.ctx.inner->tag_id; \
     } \
     $attr($inline_always $maybe_unused) \
     static E_HashId pp_cat(E_hashId$, _Id)(_Id self) { \
         debug_assert(E_tag(self.as_any) != E_Tag$Any); \
-        return self.opaq.inner->hashId(); \
+        return self.ctx.inner->hashId(); \
     } \
     pp_foreach(__syn__errset__emitHashDecl, _Id, __pp__errset__unwrap _Members) \
     pp_foreach(__syn__errset__emitOccurrenceAlias, _Id, __pp__errset__unwrap _Members) \
@@ -133,7 +133,7 @@ extern "C" {
     $attr($inline_always $maybe_unused) \
     static fn_((pp_cat(E_tag$, _Id)(_Id self))(pp_cat(E_Tag$, _Id))) { \
         let resolved = orelse_((pp_cat(E_resolve$, _Id)(self))(return pp_cat3(E_Tag$, _Id, _Any))); \
-        return resolved.opaq.inner->tag; \
+        return resolved.ctx.inner->tag; \
     }; \
     T_use_E$($set(_Id)(Void)); \
     T_alias$((E$($set(_Id)(void)))(E$($set(_Id)(Void)))) /* clang-format on */
@@ -142,26 +142,26 @@ extern "C" {
 
 #if EXAMPLE_USAGE
 errset_((io_File_E)(
-    NotFound,
-    AccessDenied,
-    OpenFailed,
-    ReadFailed,
-    WriteFailed
+    io_File_NotFound,
+    io_File_AccessDenied,
+    io_File_OpenFailed,
+    io_File_ReadFailed,
+    io_File_WriteFailed
 ));
 
 errset_((io_Parse_E)(
-    InvalidArgument,
-    UnexpectedEOF,
-    UnexpectedChar,
-    UnexpectedToken,
-    UnexpectedTokenType,
-    UnexpectedTokenValue
+    io_Parse_InvalidArgument,
+    io_Parse_UnexpectedEOF,
+    io_Parse_UnexpectedChar,
+    io_Parse_UnexpectedToken,
+    io_Parse_UnexpectedTokenType,
+    io_Parse_UnexpectedTokenValue
 ));
 
 errset_((math_E)(
-    DivisionByZero,
-    Overflow,
-    Underflow
+    math_DivisionByZero,
+    math_Overflow,
+    math_Underflow
 ));
 
 errset_((mem_E)(OutOfMemory));

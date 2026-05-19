@@ -1,108 +1,160 @@
-#include "dh/Thrd/common.h"
+#include "dh/Thrd/self.h"
 #include "dh/heap/vmem.h"
-#include "dh/time/Duration.h"
+#include "dh/meta.h"
 
-/*========== Internal Declarations ==========================================*/
+typedef struct Thrd__Start {
+    var_(clsr, Clsr$raw*);
+    var_(ret_type, TypeInfo);
+    var_(gpa, mem_Alctr);
+    var_(destroy_clsr, bool);
+    var_(owned_clsr, u_P$raw);
+} Thrd__Start;
+$attr($must_check)
+$static fn_((Thrd__startAlloc(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    bool destroy_clsr,
+    u_P$raw owned_clsr
+))(mem_E$u_P$raw));
+$attr($must_check)
+$extern fn_((Thrd__spawnOwned(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    u_P$raw owned_clsr
+))(Thrd_spawn_E$Thrd));
+$static fn_((Thrd__startFree(Thrd__Start* start))(void));
 
 pp_if_(pp_true)(pp_then_(
     $attr($inline_always $maybe_unused)
     $static fn_((Thrd__unsupported_handle(Thrd self))(Thrd_Handle));
     $attr($inline_always $must_check $maybe_unused)
-    $static fn_((Thrd__unsupported_yield(void))(E$void));
+    $static fn_((Thrd__unsupported_yield(void))(Thrd_E$void));
     $attr($inline_always $maybe_unused)
-    $static fn_((Thrd__unsupported_currentId(void))(Thrd_Id));
+    $static fn_((Thrd__unsupported_currId(void))(Thrd_Id));
     $attr($inline_always $must_check $maybe_unused)
-    $static fn_((Thrd__unsupported_cpuCount(void))(E$usize));
+    $static fn_((Thrd__unsupported_cpuCount(void))(Thrd_E$usize));
     $attr($inline_always $must_check $maybe_unused)
-    $static fn_((Thrd__unsupported_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8));
+    $static fn_((Thrd__unsupported_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8));
     $attr($inline_always $must_check $maybe_unused)
-    $static fn_((Thrd__unsupported_setName(Thrd self, S_const$u8 name))(E$void));
+    $static fn_((Thrd__unsupported_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check $maybe_unused)
-    $static fn_((Thrd__unsupported_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd));
+    $static fn_((Thrd__unsupported_spawn(
+        Thrd_SpawnCfg cfg,
+        Clsr$raw* clsr,
+        TypeInfo ret_type,
+        bool destroy_clsr,
+        u_P$raw owned_clsr
+    ))(Thrd_spawn_E$Thrd));
     $attr($inline_always $maybe_unused)
     $static fn_((Thrd__unsupported_detach(Thrd self))(void));
     $attr($inline_always $maybe_unused)
-    $static fn_((Thrd__unsupported_join(Thrd self))(Thrd_FnCtx*));
+    $static fn_((Thrd__unsupported_join(Thrd self))(Clsr$raw*));
 ));
 pp_if_(Thrd_use_pthread)(pp_then_(
     $attr($inline_always)
     $static fn_((Thrd__pthread_handle(Thrd self))(Thrd_Handle));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__pthread_yield(void))(E$void));
+    $static fn_((Thrd__pthread_yield(void))(Thrd_E$void));
     $attr($inline_always)
-    $static fn_((Thrd__pthread_currentId(void))(Thrd_Id));
+    $static fn_((Thrd__pthread_currId(void))(Thrd_Id));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__pthread_cpuCount(void))(E$usize));
+    $static fn_((Thrd__pthread_cpuCount(void))(Thrd_E$usize));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__pthread_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8));
+    $static fn_((Thrd__pthread_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__pthread_setName(Thrd self, S_const$u8 name))(E$void));
+    $static fn_((Thrd__pthread_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__pthread_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd));
+    $static fn_((Thrd__pthread_spawn(
+        Thrd_SpawnCfg cfg,
+        Clsr$raw* clsr,
+        TypeInfo ret_type,
+        bool destroy_clsr,
+        u_P$raw owned_clsr
+    ))(Thrd_spawn_E$Thrd));
     $attr($inline_always)
     $static fn_((Thrd__pthread_detach(Thrd self))(void));
     $attr($inline_always)
-    $static fn_((Thrd__pthread_join(Thrd self))(Thrd_FnCtx*));
+    $static fn_((Thrd__pthread_join(Thrd self))(Clsr$raw*));
 ));
 pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
     $static fn_((Thrd__windows_handle(Thrd self))(Thrd_Handle));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__windows_yield(void))(E$void));
+    $static fn_((Thrd__windows_yield(void))(Thrd_E$void));
     $attr($inline_always)
-    $static fn_((Thrd__windows_currentId(void))(Thrd_Id));
+    $static fn_((Thrd__windows_currId(void))(Thrd_Id));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__windows_cpuCount(void))(E$usize));
+    $static fn_((Thrd__windows_cpuCount(void))(Thrd_E$usize));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__windows_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8));
+    $static fn_((Thrd__windows_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__windows_setName(Thrd self, S_const$u8 name))(E$void));
+    $static fn_((Thrd__windows_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__windows_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd));
+    $static fn_((Thrd__windows_spawn(
+        Thrd_SpawnCfg cfg,
+        Clsr$raw* clsr,
+        TypeInfo ret_type,
+        bool destroy_clsr,
+        u_P$raw owned_clsr
+    ))(Thrd_spawn_E$Thrd));
     $attr($inline_always)
     $static fn_((Thrd__windows_detach(Thrd self))(void));
     $attr($inline_always)
-    $static fn_((Thrd__windows_join(Thrd self))(Thrd_FnCtx*));
+    $static fn_((Thrd__windows_join(Thrd self))(Clsr$raw*));
 ));
 pp_if_(plat_is_linux)(pp_then_(
     $attr($inline_always)
     $static fn_((Thrd__linux_handle(Thrd self))(Thrd_Handle));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__linux_yield(void))(E$void));
+    $static fn_((Thrd__linux_yield(void))(Thrd_E$void));
     $attr($inline_always)
-    $static fn_((Thrd__linux_currentId(void))(Thrd_Id));
+    $static fn_((Thrd__linux_currId(void))(Thrd_Id));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__linux_cpuCount(void))(E$usize));
+    $static fn_((Thrd__linux_cpuCount(void))(Thrd_E$usize));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__linux_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8));
+    $static fn_((Thrd__linux_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(E$void));
+    $static fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd));
+    $static fn_((Thrd__linux_spawn(
+        Thrd_SpawnCfg cfg,
+        Clsr$raw* clsr,
+        TypeInfo ret_type,
+        bool destroy_clsr,
+        u_P$raw owned_clsr
+    ))(Thrd_spawn_E$Thrd));
     $attr($inline_always)
     $static fn_((Thrd__linux_detach(Thrd self))(void));
     $attr($inline_always)
-    $static fn_((Thrd__linux_join(Thrd self))(Thrd_FnCtx*));
+    $static fn_((Thrd__linux_join(Thrd self))(Clsr$raw*));
 ));
 pp_if_(plat_is_wasi)(pp_then_(
     $attr($inline_always)
     $static fn_((Thrd__wasi_handle(Thrd self))(Thrd_Handle));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__wasi_yield(void))(E$void));
+    $static fn_((Thrd__wasi_yield(void))(Thrd_E$void));
     $attr($inline_always)
-    $static fn_((Thrd__wasi_currentId(void))(Thrd_Id));
+    $static fn_((Thrd__wasi_currId(void))(Thrd_Id));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__wasi_cpuCount(void))(E$usize));
+    $static fn_((Thrd__wasi_cpuCount(void))(Thrd_E$usize));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__wasi_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8));
+    $static fn_((Thrd__wasi_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__wasi_setName(Thrd self, S_const$u8 name))(E$void));
+    $static fn_((Thrd__wasi_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__wasi_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd));
+    $static fn_((Thrd__wasi_spawn(
+        Thrd_SpawnCfg cfg,
+        Clsr$raw* clsr,
+        TypeInfo ret_type,
+        bool destroy_clsr,
+        u_P$raw owned_clsr
+    ))(Thrd_spawn_E$Thrd));
     $attr($inline_always)
     $static fn_((Thrd__wasi_detach(Thrd self))(void));
     $attr($inline_always)
-    $static fn_((Thrd__wasi_join(Thrd self))(Thrd_FnCtx*));
+    $static fn_((Thrd__wasi_join(Thrd self))(Clsr$raw*));
 ));
 
 $static let Thrd__handle = pp_if_(Thrd_use_pthread)(
@@ -129,15 +181,15 @@ $static let Thrd__yield = pp_if_(Thrd_use_pthread)(
             ))
         ))
     )));
-$static let Thrd__currentId = pp_if_(Thrd_use_pthread)(
-    pp_then_(Thrd__pthread_currentId),
+$static let Thrd__currId = pp_if_(Thrd_use_pthread)(
+    pp_then_(Thrd__pthread_currId),
     pp_else_(pp_if_(plat_is_windows)(
-        pp_then_(Thrd__windows_currentId),
+        pp_then_(Thrd__windows_currId),
         pp_else_(pp_if_(plat_is_linux)(
-            pp_then_(Thrd__linux_currentId),
+            pp_then_(Thrd__linux_currId),
             pp_else_(pp_if_(plat_is_wasi)(
-                pp_then_(Thrd__wasi_currentId),
-                pp_else_(Thrd__unsupported_currentId)
+                pp_then_(Thrd__wasi_currId),
+                pp_else_(Thrd__unsupported_currId)
             ))
         ))
     )));
@@ -214,83 +266,120 @@ $static let Thrd__join = pp_if_(Thrd_use_pthread)(
         ))
     )));
 
-/*========== External Definitions ===========================================*/
+fn_((Thrd_handle(Thrd self))(Thrd_Handle)) {
+    return Thrd__handle(self);
+};
 
 fn_((Thrd_sleep(time_Duration duration))(void)) {
     time_sleep(duration);
 };
 
-fn_((Thrd_handle(Thrd self))(Thrd_Handle)) {
-    return Thrd__handle(self);
-};
-
-fn_((Thrd_yield(void))(E$void)) {
+fn_((Thrd_yield(void))(Thrd_E$void)) {
     return Thrd__yield();
 };
 
-fn_((Thrd_currentId(void))(Thrd_Id)) {
-    return Thrd__currentId();
+fn_((Thrd_currId(void))(Thrd_Id)) {
+    return Thrd__currId();
 };
 
-fn_((Thrd_cpuCount(void))(E$usize)) {
+fn_((Thrd_cpuCount(void))(Thrd_E$usize)) {
     return Thrd__cpuCount();
 };
 
-fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8)) {
+fn_((Thrd_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8)) {
     return Thrd__getName(self, buf_ptr);
 };
 
-fn_((Thrd_setName(Thrd self, S_const$u8 name))(E$void)) {
+fn_((Thrd_setName(Thrd self, S_const$u8 name))(Thrd_E$void)) {
     return Thrd__setName(self, name);
 };
 
-fn_((Thrd_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd)) {
-    return Thrd__spawn(cfg, fn_ctx);
+fn_((Thrd_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd)) {
+    return Thrd__spawn(cfg, clsr, ret_type, false, u_anyP(null));
+};
+
+fn_((Thrd__spawnOwned(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    u_P$raw owned_clsr
+))(Thrd_spawn_E$Thrd)) {
+    return Thrd__spawn(cfg, clsr, ret_type, true, owned_clsr);
 };
 
 fn_((Thrd_detach(Thrd self))(void)) {
     return Thrd__detach(self);
 };
 
-fn_((Thrd_join(Thrd self))(Thrd_FnCtx*)) {
+fn_((Thrd_join(Thrd self))(Clsr$raw*)) {
     return Thrd__join(self);
 };
 
-/*========== Internal Definitions ===========================================*/
+fn_((Thrd__startAlloc(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    bool destroy_clsr,
+    u_P$raw owned_clsr
+))(mem_E$u_P$raw) $scope) {
+    let gpa = orelse_((cfg.gpa)(return_err(E_cause$Unexpected())));
+    let raw = try_(mem_Alctr_create($trace gpa, typeInfo$(Thrd__Start)));
+    let start = u_castP$((Thrd__Start*)(raw));
+    asg_l((start)({
+        .clsr = clsr,
+        .ret_type = ret_type,
+        .gpa = gpa,
+        .destroy_clsr = destroy_clsr,
+        .owned_clsr = owned_clsr,
+    }));
+    return_ok(u_anyP(start));
+} $unscoped(fn);
 
-/* --- Unsupported --- */
-
-fn_((Thrd__unsupported_handle(Thrd self))(Thrd_Handle)) {
-    return ensureNonnull(self.inner)->handle;
+fn_((Thrd__startFree(Thrd__Start* start))(void)) {
+    let gpa = start->gpa;
+    mem_Alctr_destroy($trace gpa, u_anyP(start));
 };
 
-fn_((Thrd__unsupported_yield(void))(E$void) $scope) {
+fn_((Thrd__unsupported_handle(Thrd self))(Thrd_Handle)) {
+    return self.handle;
+};
+
+fn_((Thrd__unsupported_yield(void))(Thrd_E$void) $scope) {
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__unsupported_currentId(void))(Thrd_Id)) {
+fn_((Thrd__unsupported_currId(void))(Thrd_Id)) {
     return 0;
 };
 
-fn_((Thrd__unsupported_cpuCount(void))(E$usize) $scope) {
+fn_((Thrd__unsupported_cpuCount(void))(Thrd_E$usize) $scope) {
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__unsupported_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8) $scope) {
+fn_((Thrd__unsupported_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__unsupported_setName(Thrd self, S_const$u8 name))(E$void) $scope) {
+fn_((Thrd__unsupported_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__unsupported_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
+fn_((Thrd__unsupported_spawn(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    bool destroy_clsr,
+    u_P$raw owned_clsr
+))(Thrd_spawn_E$Thrd) $scope) {
     let_ignore = cfg;
-    let_ignore = fn_ctx;
+    let_ignore = clsr;
+    let_ignore = ret_type;
+    let_ignore = destroy_clsr;
+    let_ignore = owned_clsr;
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
@@ -298,27 +387,23 @@ fn_((Thrd__unsupported_detach(Thrd self))(void)) {
     let_ignore = self;
 };
 
-fn_((Thrd__unsupported_join(Thrd self))(Thrd_FnCtx*)) {
-    return ensureNonnull(self.inner);
+fn_((Thrd__unsupported_join(Thrd self))(Clsr$raw*)) {
+    return ensureNonnull(self.clsr);
 };
-
-/* --- Pthreads --- */
 
 #if Thrd_use_pthread
 fn_((Thrd__pthread_handle(Thrd self))(Thrd_Handle)) {
-    return ensureNonnull(self.inner)->handle;
+    return self.handle;
 };
 
-fn_((Thrd__pthread_yield(void))(E$void) $scope) {
-    if (sched_yield() != 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
-    }
+fn_((Thrd__pthread_yield(void))(Thrd_E$void) $scope) {
+    if (sched_yield() != 0) return_err(E_cause$ThrdSystemResources());
     return_ok({});
 } $unscoped(fn);
 
-fn_((Thrd__pthread_currentId(void))(Thrd_Id)) {
+fn_((Thrd__pthread_currId(void))(Thrd_Id)) {
     return pp_switch_((plat_type)(
-        pp_case_((plat_type_linux)(Thrd__linux_currentId())),
+        pp_case_((plat_type_linux)(Thrd__linux_currId())),
         pp_case_((plat_type_darwin)(local_({
             var_(tid, u64) = 0;
             pthread_threadid_np(null, &tid);
@@ -328,98 +413,111 @@ fn_((Thrd__pthread_currentId(void))(Thrd_Id)) {
     ));
 };
 
-fn_((Thrd__pthread_cpuCount(void))(E$usize) $scope) {
+fn_((Thrd__pthread_cpuCount(void))(Thrd_E$usize) $scope) {
     pp_switch_((plat_type)(
         pp_case_((plat_type_linux)(Thrd__linux_cpuCount())),
         pp_case_((plat_type_darwin)({
             var_(count, i32) = 0;
             var_(len, usize) = sizeOf$(i32);
-            if (sysctlbyname("hw.logicalcpu", &count, &len, null, 0) == 0) {
-                return_ok(as$(usize)(count));
-            }
-            return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+            if (sysctlbyname("hw.logicalcpu", &count, &len, null, 0) == 0) return_ok(as$(usize)(count));
+            return_err(E_cause$ThrdSystemResources());
         })),
         pp_default_({
             let count = sysconf(_SC_NPROCESSORS_ONLN);
-            if (count < 1) {
-                return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
-            }
+            if (count < 1) return_err(E_cause$ThrdSystemResources());
             return_ok(as$(usize)(count));
         })
     ));
 } $unscoped(fn);
-
 
 #if defined(PTHREAD_STACK_MIN)
 #define Thrd__pthread_defined_stack_min pp_true
 #else
 #define Thrd__pthread_defined_stack_min pp_false
 #endif
-#define Thrd__pthread_stack_size_min pp_if_(Thrd__pthread_defined_stack_min)( \
-    pp_then_(PTHREAD_STACK_MIN), \
-    pp_else_(64 * 1024) \
-)
+#define Thrd__pthread_stack_size_min pp_if_(Thrd__pthread_defined_stack_min)(pp_then_(PTHREAD_STACK_MIN), pp_else_(64 * 1024))
 
 $static fn_((Thrd__pthread_entry(P$raw arg))(P$raw));
-fn_((Thrd__pthread_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd) $guard) {
-    claim_assert_nonnull(fn_ctx);
+fn_((Thrd__pthread_spawn(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    bool destroy_clsr,
+    u_P$raw owned_clsr
+))(Thrd_spawn_E$Thrd) $guard) {
+    let start = u_castP$((Thrd__Start*)(try_(Thrd__startAlloc(
+        cfg, clsr, ret_type, destroy_clsr, owned_clsr
+    ))));
     pthread_attr_t attr = 0;
     pthread_attr_init(&attr);
     defer_(pthread_attr_destroy(&attr));
     let stack_size = as$(usize)(pri_max(Thrd__pthread_stack_size_min, cfg.stack_size));
     pthread_attr_setstacksize(&attr, stack_size);
-    if (pthread_create(as$(pthread_t*)(&fn_ctx->handle), &attr, Thrd__pthread_entry, fn_ctx) != 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+    var_(handle, pthread_t) = 0;
+    if (pthread_create(&handle, &attr, Thrd__pthread_entry, start) != 0) {
+        Thrd__startFree(start);
+        return_err(E_cause$ThrdSystemResources());
     }
-    return_ok({ .inner = fn_ctx });
+    return_ok((Thrd){
+        .handle = handle,
+        .clsr = clsr,
+        .inner = null,
+    });
 } $unguarded(fn);
 
 fn_((Thrd__pthread_entry(P$raw arg))(P$raw)) {
-    let ctx = ensureNonnull(as$(Thrd_FnCtx*)(arg));
-    return call((ctx->fn)(ctx));
+    let start = ensureNonnull(as$(Thrd__Start*)(arg));
+    let clsr = ensureNonnull(start->clsr);
+    let ret_type = start->ret_type;
+    let gpa = start->gpa;
+    let destroy_clsr = start->destroy_clsr;
+    let owned_clsr = start->owned_clsr;
+    Thrd__startFree(start);
+    Clsr_invokeToComplete(clsr, ret_type);
+    if (destroy_clsr) {
+        mem_Alctr_destroy($trace gpa, owned_clsr);
+    }
+    return null;
 };
 
 fn_((Thrd__pthread_detach(Thrd self))(void)) {
-    let_ignore = pthread_detach(self.inner->handle);
+    let_ignore = pthread_detach(self.handle);
 };
 
-fn_((Thrd__pthread_join(Thrd self))(Thrd_FnCtx*)) {
+fn_((Thrd__pthread_join(Thrd self))(Clsr$raw*)) {
     var_(ret_val, P$raw) = null;
-    let_ignore = pthread_join(self.inner->handle, &ret_val);
-    claim_assert(as$(Thrd_FnCtx*)(ret_val) == self.inner);
-    return self.inner;
+    let_ignore = pthread_join(self.handle, &ret_val);
+    return ensureNonnull(self.clsr);
 };
-#endif /* Thrd_use_pthread */
-
-/* --- Windows --- */
+#endif
 
 #if plat_is_windows
 fn_((Thrd__windows_handle(Thrd self))(Thrd_Handle)) {
-    return ensureNonnull(self.inner)->handle;
+    return self.handle;
 };
 
-fn_((Thrd__windows_yield(void))(E$void) $scope) {
-    let_ignore = SwitchToThread(); /* TODO: Use NtYieldExecution instead */
+fn_((Thrd__windows_yield(void))(Thrd_E$void) $scope) {
+    let_ignore = SwitchToThread();
     return_ok({});
 } $unscoped(fn);
 
-fn_((Thrd__windows_currentId(void))(Thrd_Id)) {
+fn_((Thrd__windows_currId(void))(Thrd_Id)) {
     return as$(Thrd_Id)(GetCurrentThreadId());
 };
 
-fn_((Thrd__windows_cpuCount(void))(E$usize) $scope) {
+fn_((Thrd__windows_cpuCount(void))(Thrd_E$usize) $scope) {
     SYSTEM_INFO sys_info = cleared();
     GetSystemInfo(&sys_info);
     return_ok(as$(usize)(sys_info.dwNumberOfProcessors));
 } $unscoped(fn);
 
-fn_((Thrd__windows_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8) $scope) {
+fn_((Thrd__windows_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__windows_setName(Thrd self, S_const$u8 name))(E$void) $scope) {
+fn_((Thrd__windows_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
     return_err(E_cause$ThrdUnsupported());
@@ -429,48 +527,67 @@ fn_((Thrd__windows_setName(Thrd self, S_const$u8 name))(E$void) $scope) {
 
 $attr($stdcall)
 $static fn_((Thrd__windows_entry(LPVOID lpParameter))(DWORD));
-fn_((Thrd__windows_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
-    claim_assert_nonnull(fn_ctx);
-    claim_assert_nonnull(fn_ctx->fn);
+fn_((Thrd__windows_spawn(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    bool destroy_clsr,
+    u_P$raw owned_clsr
+))(Thrd_spawn_E$Thrd) $scope) {
+    let start = u_castP$((Thrd__Start*)(try_(Thrd__startAlloc(
+        cfg, clsr, ret_type, destroy_clsr, owned_clsr
+    ))));
     let stack_size = as$(usize)(pri_max(Thrd__windows_stack_size_min, cfg.stack_size));
-    fn_ctx->handle = CreateThread(
+    let handle = CreateThread(
         null, stack_size,
-        Thrd__windows_entry, fn_ctx,
-        CREATE_SUSPENDED, null
+        Thrd__windows_entry, start,
+        CREATE_SUSPENDED | STACK_SIZE_PARAM_IS_A_RESERVATION, null
     );
-    ResumeThread(fn_ctx->handle);
-    if (!fn_ctx->handle) { return_err(E_cause$ThrdSystemResources()); }
-    return_ok({ .inner = fn_ctx });
+    if (!handle) {
+        Thrd__startFree(start);
+        return_err(E_cause$ThrdSystemResources());
+    }
+    ResumeThread(handle);
+    return_ok((Thrd){
+        .handle = handle,
+        .clsr = clsr,
+        .inner = null,
+    });
 } $unscoped(fn);
 
 fn_((Thrd__windows_entry(LPVOID lpParameter))(DWORD)) {
-    let ctx = ensureNonnull(as$(Thrd_FnCtx*)(lpParameter));
-    let_ignore = call((ctx->fn)(ctx));
+    let start = ensureNonnull(as$(Thrd__Start*)(lpParameter));
+    let clsr = ensureNonnull(start->clsr);
+    let ret_type = start->ret_type;
+    let gpa = start->gpa;
+    let destroy_clsr = start->destroy_clsr;
+    let owned_clsr = start->owned_clsr;
+    Thrd__startFree(start);
+    Clsr_invokeToComplete(clsr, ret_type);
+    if (destroy_clsr) {
+        mem_Alctr_destroy($trace gpa, owned_clsr);
+    }
     return 0;
 };
 
 fn_((Thrd__windows_detach(Thrd self))(void)) {
-    let fn_ctx = ensureNonnull(self.inner);
-    let handle = ensureNonnull(fn_ctx->handle);
-    fn_ctx->handle = (claim_assert(CloseHandle(handle)), null);
+    let handle = ensureNonnull(self.handle);
+    claim_assert(CloseHandle(handle));
 };
 
-fn_((Thrd__windows_join(Thrd self))(Thrd_FnCtx*)) {
-    let fn_ctx = ensureNonnull(self.inner);
-    let handle = ensureNonnull(fn_ctx->handle);
+fn_((Thrd__windows_join(Thrd self))(Clsr$raw*)) {
+    let handle = ensureNonnull(self.handle);
     switch (WaitForSingleObject(handle, INFINITE)) {
-    case WAIT_OBJECT_0: break; /* Thread signaled termination */
-    case WAIT_ABANDONED: $fallthrough; /* Mutex only, not for threads */
-    case WAIT_TIMEOUT: $fallthrough; /* with INFINITE delay */
-    case WAIT_FAILED: $fallthrough; /* Invalid handle or logic error */
+    case WAIT_OBJECT_0: break;
+    case WAIT_ABANDONED: $fallthrough;
+    case WAIT_TIMEOUT: $fallthrough;
+    case WAIT_FAILED: $fallthrough;
     default_() claim_unreachable $end(default);
     }
-    fn_ctx->handle = (claim_assert(CloseHandle(handle)), null);
-    return fn_ctx;
+    claim_assert(CloseHandle(handle));
+    return ensureNonnull(self.clsr);
 };
-#endif /* plat_is_windows */
-
-/* --- Linux --- */
+#endif
 
 #if plat_is_linux
 #include <sys/syscall.h>
@@ -488,232 +605,137 @@ typedef enum_((Thrd__linux_Completion $fits($packed))(
 T_use_atom_V$(Thrd__linux_Completion);
 T_use_atom_V$(i32);
 
-/// Linux-specific thread metadata, placed at the top of mmap'd memory.
-///
-/// Memory layout:
-///   [guard page][stack grows down ...][Thrd__linux_Meta]
-///                                      ^-- stack_top points here
-///
-/// This struct is NOT part of Thrd_FnCtx - it's internal to Linux impl.
 typedef struct Thrd__linux_Meta {
-    var_(fn_ctx, Thrd_FnCtx*); // User-provided context (allocated separately)
-    var_(map, S$raw); // mmap'd memory region
-    var_(completion, atom_V$Thrd__linux_Completion); // State machine: running/detached/completed
-    var_(parent_tid, i32); // Set by CLONE_PARENT_SETTID
-    var_(child_tid, atom_V$i32); // Cleared by CLONE_CHILD_CLEARTID, used for futex
+    var_(clsr, Clsr$raw*);
+    var_(ret_type, TypeInfo);
+    var_(map, S$raw);
+    var_(completion, atom_V$Thrd__linux_Completion);
+    var_(parent_tid, i32);
+    var_(child_tid, atom_V$i32);
 } Thrd__linux_Meta;
 
-/// Get thread handle (tid).
-/// Returns `parent_tid` from metadata.
 fn_((Thrd__linux_handle(Thrd self))(Thrd_Handle)) {
-    let meta = ensureNonnull(as$(Thrd__linux_Meta*)(self.inner));
-    return as$(Thrd_Handle)(meta->parent_tid);
+    return self.handle;
 };
 
-fn_((Thrd__linux_yield(void))(E$void) $scope) {
-    if (syscall(SYS_sched_yield) != 0) {
-        return_err(E_cause$ThrdSystemResources());
-    }
+fn_((Thrd__linux_yield(void))(Thrd_E$void) $scope) {
+    if (syscall(SYS_sched_yield) != 0) return_err(E_cause$ThrdSystemResources());
     return_ok({});
 } $unscoped(fn);
 
-fn_((Thrd__linux_currentId(void))(Thrd_Id)) {
+fn_((Thrd__linux_currId(void))(Thrd_Id)) {
     return as$(Thrd_Id)(syscall(SYS_gettid));
 };
 
-fn_((Thrd__linux_cpuCount(void))(E$usize) $scope) {
+fn_((Thrd__linux_cpuCount(void))(Thrd_E$usize) $scope) {
     cpu_set_t cpu_set;
     CPU_ZERO(&cpu_set);
-    if (sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) {
-        return_err(E_cause$ThrdSystemResources());
-    }
+    if (sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) return_err(E_cause$ThrdSystemResources());
     return_ok(as$(usize)(CPU_COUNT(&cpu_set)));
 } $unscoped(fn);
 
-fn_((Thrd__linux_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8) $scope) {
-#if UNUSED_CODE
-    let meta = as$(Thrd__linux_Meta*)(self.inner);
-    // Use /proc/self/task/{tid}/comm
-    char path[64];
-    snprintf(path, sizeOf$(path), "/proc/self/task/%d/comm", meta->parent_tid);
-    let fd = open(path, O_RDONLY);
-    if (fd < 0) {
-        return_err(E_cause$ThrdSystemResources());
-    }
-    defer_(close(fd));
-    let n = read(fd, buf_ptr->buf, Thrd_max_name_len);
-    if (n < 0) {
-        return_err(E_cause$ThrdSystemResources());
-    }
-    // Remove trailing newline
-    if (n > 0 && buf_ptr->buf[n - 1] == '\n') {
-        n--;
-    }
-    buf_ptr->buf[n] = '\0';
-    return_ok(some(S_const$u8, ((S_const$u8){ .ptr = buf_ptr->buf, .len = as$(usize)(n) })));
-#endif /* UNUSED_CODE */
-    /* TODO: Implement */
+fn_((Thrd__linux_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(E$void) $scope) {
-#if UNUSED_CODE
-    let meta = as$(Thrd__linux_Meta*)(self.inner);
-    if (name.len > Thrd_max_name_len) {
-        return_err(E_cause$Unexpected()); // TODO: Replace to specific error
-    }
-    // Use /proc/self/task/{tid}/comm
-    char path[64];
-    snprintf(path, sizeOf$(path), "/proc/self/task/%d/comm", meta->parent_tid);
-    let fd = open(path, O_WRONLY);
-    if (fd < 0) {
-        return_err(E_cause$ThrdSystemResources());
-    }
-    defer_(close(fd));
-    if (write(fd, name.ptr, name.len) < 0) {
-        return_err(E_cause$ThrdSystemResources());
-    }
-    return_ok({});
-#endif /* UNUSED_CODE */
-    /* TODO: Implement */
+fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-#define Thrd__linux_clone_flags \
-    /* Note: CLONE_DETACHED is deprecated and ignored on modern kernels */ \
-    /* clang-format off */ ( \
+#define Thrd__linux_clone_flags ( \
     CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD | CLONE_SYSVSEM \
     | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID \
-) /* clang-format on */
+)
 
-/// Thread entry point.
-///
-/// After user function returns, atomically swap completion state:
-/// - If was 'running', becomes 'completed' -> return normally (join will cleanup)
-/// - If was 'detached', thread must self-cleanup via freeAndExit()
 $static fn_((Thrd__linux_entry(P$raw arg))(i32));
-fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd) $guard) {
-    claim_assert_nonnull(fn_ctx);
-    claim_assert_nonnull(fn_ctx->fn);
+fn_((Thrd__linux_spawn(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    bool destroy_clsr,
+    u_P$raw owned_clsr
+))(Thrd_spawn_E$Thrd) $guard) {
+    claim_assert_nonnull(clsr);
+    let_ignore = destroy_clsr;
+    let_ignore = owned_clsr;
     let page_size = as$(usize)(sysconf(_SC_PAGESIZE));
     let stack_size = mem_alignFwd(pri_max(page_size, cfg.stack_size), page_size);
-
-    /*
-     * Memory layout:
-     *   [guard page][stack area][Thrd__linux_Meta]
-     *   |<- map_base            |<- meta_offset  |<- map_base + map_size
-     *
-     * Stack grows downward from meta_offset.
-     */
     let meta_size = mem_alignFwd(sizeOf$(Thrd__linux_Meta), alignOf$(Thrd__linux_Meta));
     let map_size = page_size + stack_size + meta_size;
-
-    // Reserve entire region as inaccessible first
     let map_base = orelse_((heap_vmem_reserve(null, map_size))(null));
-    if (map_base == null) {
-        return_err(E_cause$ThrdSystemResources());
-    }
+    if (map_base == null) return_err(E_cause$ThrdSystemResources());
     errdefer_(let_ignore = heap_vmem_release(map_base, map_size));
-
-    // Commit stack + meta area (keep guard page reserved/inaccessible)
     let stack_start = as$(u8*)(map_base) + page_size;
-    if (!heap_vmem_commit(stack_start, stack_size + meta_size)) {
-        return_err(E_cause$ThrdSystemResources());
-    }
-
-    // Initialize metadata at the top of mapped region
+    if (!heap_vmem_commit(stack_start, stack_size + meta_size)) return_err(E_cause$ThrdSystemResources());
     let meta = as$(Thrd__linux_Meta*)(as$(u8*)(map_base) + page_size + stack_size);
     *meta = (Thrd__linux_Meta){
-        .fn_ctx = fn_ctx,
-        .map = {
-            .ptr = map_base,
-            .len = map_size,
-        },
+        .clsr = clsr,
+        .ret_type = ret_type,
+        .map = { .ptr = map_base, .len = map_size },
         .completion = atom_V_init(Thrd__linux_Completion_running),
         .parent_tid = 0,
-        .child_tid = atom_V_init(1), // Non-zero initial value
+        .child_tid = atom_V_init(1),
     };
-
-    // Stack top is just below the meta struct
     let stack_top = as$(P$raw)(meta);
-    // Clone the thread
     let tid = clone(
         Thrd__linux_entry, stack_top,
-        Thrd__linux_clone_flags, meta, // arg to entry function
-        &meta->parent_tid, // parent_tid (CLONE_PARENT_SETTID)
-        null, // tls (CLONE_SETTLS) - could add TLS support
-        &meta->child_tid.value // child_tid (CLONE_CHILD_CLEARTID)
+        Thrd__linux_clone_flags, meta,
+        &meta->parent_tid,
+        null,
+        &meta->child_tid.value
     );
-    if (tid == -1) {
-        return_err(E_cause$ThrdSystemResources());
-    }
-
-    // Return Thrd with inner pointing to metadata
-    // Note: This changes the semantics - inner is now Thrd__linux_Meta*, not Thrd_FnCtx*
-    return_ok({ .inner = as$(Thrd_FnCtx*)(meta) });
+    if (tid == -1) return_err(E_cause$ThrdSystemResources());
+    return_ok((Thrd){
+        .handle = as$(Thrd_Handle)(meta->parent_tid),
+        .clsr = clsr,
+        .inner = meta,
+    });
 } $unguarded(fn);
 
 $attr($no_return)
 $static fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void));
 fn_((Thrd__linux_entry(P$raw arg))(i32)) {
     let meta = ensureNonnull(as$(Thrd__linux_Meta*)(arg));
-    let fn_ctx = ensureNonnull(meta->fn_ctx);
-    // Execute user function
-    let_ignore = call((fn_ctx->fn)(fn_ctx));
-    // Atomic state transition
+    Clsr_invokeToComplete(ensureNonnull(meta->clsr), meta->ret_type);
     let prev = atom_V_fetchXchg(&meta->completion, Thrd__linux_Completion_completed, memory_order_seq_cst);
     switch (prev) {
-    case_((Thrd__linux_Completion_running)) /* Normal case */
-        return 0 $end(case); /* join() will handle cleanup */
-    case_((Thrd__linux_Completion_detached)) /* Thread was detached while running */
-        Thrd__linux_freeAndExit(meta) $end(case); /* must self-cleanup, noreturn */
+    case_((Thrd__linux_Completion_running))
+        return 0 $end(case);
+    case_((Thrd__linux_Completion_detached))
+        Thrd__linux_freeAndExit(meta) $end(case);
     case Thrd__linux_Completion_completed: $fallthrough;
     default_() claim_unreachable $end(default);
     }
     return 0;
 };
 
-/// Detach a thread.
-///
-/// Atomically swap completion state to 'detached':
-/// - If was 'running', thread will self-cleanup when done
-/// - If was 'completed', we must cleanup now (same as join)
-///
 fn_((Thrd__linux_detach(Thrd self))(void)) {
     let meta = as$(Thrd__linux_Meta*)(self.inner);
     let prev = atom_V_fetchXchg(&meta->completion, Thrd__linux_Completion_detached, memory_order_seq_cst);
     switch (prev) {
-    case_((Thrd__Completion_running)) /* Thread still running */
-        break $end(case); /* it will self-cleanup */
-    case_((Thrd__Completion_completed)) /* Thread already finished */
+    case_((Thrd__linux_Completion_running))
+        break $end(case);
+    case_((Thrd__linux_Completion_completed))
         let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
-        break $end(case); /* self-cleanup (like join but discard result) */
-    case_((Thrd__Completion_detached)) $fallthrough;
+        break $end(case);
+    case_((Thrd__linux_Completion_detached)) $fallthrough;
     default_() claim_unreachable $end(default);
     }
 };
 
-/// Join a thread (wait for completion and cleanup).
-///
-/// Uses futex to wait for child_tid to become 0 (set by CLONE_CHILD_CLEARTID).
-fn_((Thrd__linux_join(Thrd self))(Thrd_FnCtx*)) {
+fn_((Thrd__linux_join(Thrd self))(Clsr$raw*)) {
     let meta = as$(Thrd__linux_Meta*)(self.inner);
-    let fn_ctx = meta->fn_ctx;
-    /* Wait for thread to exit (child_tid becomes 0) */
     while (true) {
         let tid = atom_V_load(&meta->child_tid, memory_order_seq_cst);
-        if (tid == 0) { break; }
-        // Futex wait - will wake when kernel clears child_tid
+        if (tid == 0) break;
         syscall(SYS_futex, &meta->child_tid.value, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, tid, null, null, 0);
-        // Ignore return value - spurious wakeups are fine, we'll check tid again
     }
-    // Thread has exited, safe to unmap
     let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
-    return fn_ctx;
+    return ensureNonnull(self.clsr);
 };
 
 fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_family_type)(
@@ -722,10 +744,10 @@ fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_fa
             register P$raw map_base asm("rdi") = meta->map.ptr;
             register usize map_size asm("rsi") = meta->map.len;
             __asm__ __volatile__(
-                "movl $11, %%eax\n\t" // SYS_munmap
+                "movl $11, %%eax\n\t"
                 "syscall\n\t"
-                "movl $60, %%eax\n\t" // SYS_exit
-                "xor %%rdi, %%rdi\n\t" // exit code 0
+                "movl $60, %%eax\n\t"
+                "xor %%rdi, %%rdi\n\t"
                 "syscall"
                 :
                 : "r"(map_base), "r"(map_size)
@@ -737,9 +759,9 @@ fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_fa
             register P$raw map_base asm("ebx") = meta->map.ptr;
             register usize map_size asm("ecx") = meta->map.len;
             __asm__ __volatile__(
-                "movl $91, %%eax\n\t" // SYS_munmap
+                "movl $91, %%eax\n\t"
                 "int $0x80\n\t"
-                "movl $1, %%eax\n\t" // SYS_exit
+                "movl $1, %%eax\n\t"
                 "movl $0, %%ebx\n\t"
                 "int $0x80"
                 :
@@ -754,9 +776,9 @@ fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_fa
             register P$raw map_base asm("x0") = meta->map.ptr;
             register usize map_size asm("x1") = meta->map.len;
             __asm__ __volatile__(
-                "mov x8, #215\n\t" // SYS_munmap
+                "mov x8, #215\n\t"
                 "svc 0\n\t"
-                "mov x8, #93\n\t" // SYS_exit
+                "mov x8, #93\n\t"
                 "mov x0, #0\n\t"
                 "svc 0"
                 :
@@ -769,9 +791,9 @@ fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_fa
             register P$raw map_base asm("r0") = meta->map.ptr;
             register usize map_size asm("r1") = meta->map.len;
             __asm__ __volatile__(
-                "mov r7, #91\n\t" // SYS_munmap
+                "mov r7, #91\n\t"
                 "svc 0\n\t"
-                "mov r7, #1\n\t" // SYS_exit
+                "mov r7, #1\n\t"
                 "mov r0, #0\n\t"
                 "svc 0"
                 :
@@ -785,9 +807,9 @@ fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_fa
         register P$raw map_base asm("a0") = meta->map.ptr;
         register usize map_size asm("a1") = meta->map.len;
         __asm__ __volatile__(
-            "li a7, 215\n\t" // SYS_munmap
+            "li a7, 215\n\t"
             "ecall\n\t"
-            "li a7, 93\n\t" // SYS_exit
+            "li a7, 93\n\t"
             "li a0, 0\n\t"
             "ecall"
             :
@@ -797,59 +819,57 @@ fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_fa
         claim_unreachable;
     }))
 ));
-#endif /* plat_is_linux */
-
-/* --- WASI --- */
+#endif
 
 #if plat_is_wasi
 fn_((Thrd__wasi_handle(Thrd self))(Thrd_Handle)) {
-    /* TODO: Implement */
-    return ensureNonnull(self.inner)->handle;
+    return self.handle;
 };
 
-fn_((Thrd__wasi_yield(void))(E$void) $scope) {
-    /* TODO: Implement */
+fn_((Thrd__wasi_yield(void))(Thrd_E$void) $scope) {
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__wasi_currentId(void))(Thrd_Id)) {
-    /* TODO: Implement */
+fn_((Thrd__wasi_currId(void))(Thrd_Id)) {
     return 0;
 };
 
-fn_((Thrd__wasi_cpuCount(void))(E$usize) $scope) {
-    /* TODO: Implement */
+fn_((Thrd__wasi_cpuCount(void))(Thrd_E$usize) $scope) {
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__wasi_getName(Thrd self, Thrd_NameBuf* buf_ptr))(E$O$S_const$u8) $scope) {
-    /* TODO: Implement */
+fn_((Thrd__wasi_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__wasi_setName(Thrd self, S_const$u8 name))(E$void) $scope) {
-    /* TODO: Implement */
+fn_((Thrd__wasi_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
-fn_((Thrd__wasi_spawn(Thrd_SpawnCfg cfg, Thrd_FnCtx* fn_ctx))(E$Thrd) $scope) {
-    /* TODO: Implement */
+fn_((Thrd__wasi_spawn(
+    Thrd_SpawnCfg cfg,
+    Clsr$raw* clsr,
+    TypeInfo ret_type,
+    bool destroy_clsr,
+    u_P$raw owned_clsr
+))(Thrd_spawn_E$Thrd) $scope) {
     let_ignore = cfg;
-    let_ignore = fn_ctx;
+    let_ignore = clsr;
+    let_ignore = ret_type;
+    let_ignore = destroy_clsr;
+    let_ignore = owned_clsr;
     return_err(E_cause$ThrdUnsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_detach(Thrd self))(void)) {
-    /* TODO: Implement */
     let_ignore = self;
 };
 
-fn_((Thrd__wasi_join(Thrd self))(Thrd_FnCtx*)) {
-    /* TODO: Implement */
-    return ensureNonnull(self.inner);
+fn_((Thrd__wasi_join(Thrd self))(Clsr$raw*)) {
+    return ensureNonnull(self.clsr);
 };
-#endif /* plat_is_wasi */
+#endif

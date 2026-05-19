@@ -110,7 +110,7 @@ extern "C"
 // clang-format on
 
 /* while: declaration =======================================================*/
-#define while_(_Init, _Cond, /*_Cont*/...) scope_while(_Init, _Cond, __VA_OPT__(, ) __VA_ARGS__)
+#define while_(_Init, _Cond, /*_Cont*/...) scope_while(_Init, _Cond __VA_OPT__(, __VA_ARGS__))
 
 /* switch: declaration ======================================================*/
 // #define switch_(_Init, _Cond, /*_Body*/...) scope_switch(_Init, _Cond, __VA_ARGS__)

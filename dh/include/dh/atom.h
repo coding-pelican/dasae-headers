@@ -143,8 +143,7 @@ $static fn_((atom_spinLoopHint(void))(void));
     boolToInt(__val & __mask != 0); \
 })
 
-$attr($inline_always)
-$static fn_((atom_spinLoopHint(void))(void)) {
+fn_((atom_spinLoopHint(void))(void)) {
     /* NOLINTBEGIN */
 #if arch_family_type == arch_family_type_x86
     __asm__ volatile("pause");
@@ -179,7 +178,7 @@ $static fn_((atom_spinLoopHint(void))(void)) {
     __asm__ volatile("nop");
 #endif
     /* NOLINTEND */
-}
+};
 
 #if defined(__cplusplus)
 } /* extern "C" */

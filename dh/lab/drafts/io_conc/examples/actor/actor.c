@@ -103,7 +103,7 @@ fn_((actor_Sys_destroyUnit(actor_Sys* self, actor_Unit** unit))(void)) {
 };
 
 T_use$((Void)(Sched_async));
-fn_((actor_Unit_start(actor_Unit* self, Closure$Void* worker))(void)) {
+fn_((actor_Unit_start(actor_Unit* self, Clsr$Void* worker))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(worker);
     claim_assert(isNone(self->task));
     claim_assert(isNone(self->exit));
@@ -122,7 +122,7 @@ fn_((actor_Unit_start(actor_Unit* self, Closure$Void* worker))(void)) {
 };
 
 T_use$((E$Void)(Sched_async));
-fn_((actor_Unit_startE(actor_Unit* self, Closure$E$Void* worker))(void)) {
+fn_((actor_Unit_startE(actor_Unit* self, Clsr$E$Void* worker))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(worker);
     claim_assert(isNone(self->task));
     claim_assert(isNone(self->exit));

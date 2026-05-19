@@ -4,9 +4,9 @@
 
 ```mermaid
 graph TD
-    User[user closure owner] --> Closure[Closure]
-    Closure --> Fn[regular fn context]
-    Closure --> Co[CoCtx coroutine context]
+    User[user closure owner] --> Clsr[Clsr]
+    Clsr --> Fn[regular fn context]
+    Clsr --> Co[CoCtx coroutine context]
 
     Future[Future result storage] --> Sched[Sched capability]
     Sched --> Seq[exec_Seq]
@@ -34,7 +34,7 @@ graph TD
     Evented --> Epoll[epoll]
 ```
 
-`Closure` erases regular function and coroutine invocation. It does not own
+`Clsr` erases regular function and coroutine invocation. It does not own
 result storage or coroutine state. `Future` owns result storage. `CoCtx` owns
 coroutine state. `Sched` decides when a closure receives progress.
 
@@ -76,7 +76,7 @@ ordering, and wakes waiters through `Thrd_ftx`; other callers return after an
 acquire load observes `done`.
 
 `Thrd_OnceLock$T` wraps `Thrd_Once` with owned `T` storage. The winning caller
-completes a `Closure$T` into that storage, publishes the stored value through
+completes a `Clsr$T` into that storage, publishes the stored value through
 the underlying `Thrd_Once`, and later callers read the owned value after an
 acquire load observes `done`.
 
@@ -479,9 +479,9 @@ atomic or virtual-dispatch policy inside the coroutine frame.
 `invoke_` is the erased closure routine dispatch and executes the selected
 routine once. Completion policy belongs above it:
 
-- `Closure_invokeToStep` dispatches once and returns a result pointer only when the
+- `Clsr_invokeToStep` dispatches once and returns a result pointer only when the
   closure is complete
-- `Closure_invokeToComplete` repeats step dispatch until a result is available
+- `Clsr_invokeToComplete` repeats step dispatch until a result is available
 - schedulers use step dispatch for stackless cooperative tasks and copy the
   returned result into the task-owned result slot
 - fiber and preemptive workers use completion dispatch and then copy the final

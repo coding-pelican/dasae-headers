@@ -1,4 +1,5 @@
 #include "dh/heap/Smp.h"
+#include "dh/Thrd/self.h"
 #include "dh/meta.h"
 
 /*========== Internal Declarations ==========================================*/

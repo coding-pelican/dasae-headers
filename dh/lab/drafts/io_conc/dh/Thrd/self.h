@@ -29,7 +29,7 @@ T_useBy$(($spec(E, $set(Thrd_E)))(usize, O$S_const$u8));
 
 struct Thrd {
     var_(handle, Thrd_Handle);
-    var_(closure, Closure$raw*);
+    var_(clsr, Clsr$raw*);
     var_(inner, P$raw);
 };
 $extern fn_((Thrd_handle(Thrd self))(Thrd_Handle));
@@ -57,10 +57,10 @@ static const Thrd_SpawnCfg Thrd_SpawnCfg_default = {
 errset_((Thrd_spawn_E)() $union_errset_(Thrd_E, mem_E));
 T_use_E$($set(Thrd_spawn_E)(Thrd));
 $attr($must_check)
-$extern fn_((Thrd_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
+$extern fn_((Thrd_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
 #define T_use_Thrd_spawn$(_T...) __stmt__T_use_Thrd_spawn$(_T)
 $extern fn_((Thrd_detach(Thrd self))(void));
-$extern fn_((Thrd_join(Thrd self))(Closure$raw*));
+$extern fn_((Thrd_join(Thrd self))(Clsr$raw*));
 #define T_use_Thrd_join$(_T...) __stmt__T_use_Thrd_join$(_T)
 
 #if defined(__cplusplus)

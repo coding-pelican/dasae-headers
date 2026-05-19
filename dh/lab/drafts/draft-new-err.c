@@ -224,14 +224,14 @@ typedef enum $packed E_Tag$General_E {
     E_Tag$Any = 0,
     E_Tag$General_E_Any = E_Tag$Any
 } E_Tag$General_E;
-typedef union E_Opaq$General_E {
+typedef union E_Ctx$General_E {
     E_HashId hash_id;
-} E_Opaq$General_E;
-typedef E_Opaq$General_E E_Type$NotImplemented;
-typedef E_Opaq$General_E E_Type$Unexpected;
-typedef E_Opaq$General_E E_Type$Any;
+} E_Ctx$General_E;
+typedef E_Ctx$General_E E_Type$NotImplemented;
+typedef E_Ctx$General_E E_Type$Unexpected;
+typedef E_Ctx$General_E E_Type$Any;
 typedef union E_Payload$General_E {
-    // E_Opaq$General_E;
+    // E_Ctx$General_E;
     E_Type$NotImplemented NotImplemented;
     E_Type$Unexpected Unexpected;
     E_Type$Any Any;
@@ -331,12 +331,12 @@ typedef enum $packed E_Tag$Conc_E {
     E_Tag$ConcUnavailable = 1,
     E_Tag$Conc_E_ConcUnavailable = E_Tag$ConcUnavailable
 } E_Tag$Conc_E;
-typedef union E_Opaq$Conc_E {
+typedef union E_Ctx$Conc_E {
     E_HashId hash_id;
-} E_Opaq$Conc_E;
-typedef E_Opaq$Conc_E E_Type$ConcUnavailable;
+} E_Ctx$Conc_E;
+typedef E_Ctx$Conc_E E_Type$ConcUnavailable;
 typedef union E_Payload$Conc_E {
-    // E_Opaq$Conc_E;
+    // E_Ctx$Conc_E;
     E_Type$ConcUnavailable ConcUnavailable;
 } E_Payload$Conc_E;
 /* Concurrent Error - Outer */
@@ -412,12 +412,12 @@ typedef enum $packed E_Tag$Cancelable {
     E_Tag$Canceled = 1,
     E_Tag$Cancelable_Canceled = E_Tag$Canceled
 } E_Tag$Cancelable;
-typedef union E_Opaq$Cancelable {
+typedef union E_Ctx$Cancelable {
     E_HashId hash_id;
-} E_Opaq$Cancelable;
-typedef E_Opaq$Cancelable E_Type$Canceled;
+} E_Ctx$Cancelable;
+typedef E_Ctx$Cancelable E_Type$Canceled;
 typedef union E_Payload$Cancelable {
-    // E_Opaq$Cancelable;
+    // E_Ctx$Cancelable;
     E_Type$Canceled Canceled;
 } E_Payload$Cancelable;
 /* Cancelable Error - Outer */
@@ -496,12 +496,12 @@ typedef enum $packed E_Tag$Timeout_E {
     E_Tag$Timeout = 1,
     E_Tag$Timeout_E_Timeout = E_Tag$Timeout
 } E_Tag$Timeout_E;
-typedef union E_Opaq$Timeout_E {
+typedef union E_Ctx$Timeout_E {
     E_HashId hash_id;
-} E_Opaq$Timeout_E;
-typedef E_Opaq$Timeout_E E_Type$Timeout;
+} E_Ctx$Timeout_E;
+typedef E_Ctx$Timeout_E E_Type$Timeout;
 typedef union E_Payload$Timeout_E {
-    // E_Opaq$Timeout_E;
+    // E_Ctx$Timeout_E;
     E_Type$Timeout Timeout;
 } E_Payload$Timeout_E;
 /* Timeout Error - Outer */
@@ -584,14 +584,14 @@ typedef enum $packed E_Tag$Foo_E {
     E_Tag$FooBaz = 3,
     E_Tag$Foo_E_FooBaz = E_Tag$FooBaz,
 } E_Tag$Foo_E;
-typedef struct E_Opaq$Foo_E {
+typedef struct E_Ctx$Foo_E {
     E_HashId hash_id;
-} E_Opaq$Foo_E;
-typedef E_Opaq$Foo_E E_Type$FooBar;
-typedef E_Opaq$Foo_E E_Type$FooBas;
-typedef E_Opaq$Foo_E E_Type$FooBaz;
+} E_Ctx$Foo_E;
+typedef E_Ctx$Foo_E E_Type$FooBar;
+typedef E_Ctx$Foo_E E_Type$FooBas;
+typedef E_Ctx$Foo_E E_Type$FooBaz;
 typedef union E_Payload$Foo_E {
-    // E_Opaq$Foo_E;
+    // E_Ctx$Foo_E;
     E_Type$FooBar FooBar;
     E_Type$FooBas FooBas;
     E_Type$FooBaz FooBaz;

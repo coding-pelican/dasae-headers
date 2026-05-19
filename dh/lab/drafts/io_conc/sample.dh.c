@@ -32,8 +32,8 @@ $static fn_((countFn(Sys sys, usize n, time_Dur interval, S_const$u8 label))(f64
     report(sys.io, label, u8_l("after loop {:fl}"), elapsed);
     return elapsed;
 };
-T_use$((f64)(Closure_Ctx, Closure_Rtn, Closure));
-fn_use_Closure_((countFn)(Sys, usize, time_Dur, S_const$u8)(f64));
+T_use$((f64)(Clsr_Ctx, Clsr_Rtn, Clsr));
+fn_use_Clsr_((countFn)(Sys, usize, time_Dur, S_const$u8)(f64));
 
 T_use$((f64)(Future, Future_await, Future_cancel, Sched_async));
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
@@ -51,9 +51,9 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     var total = 0.0;
     using_() blk_defer {
         io_stream_println(sys.io, u8_l("begin - evented async execution"));
-        var task_a = Sched_async$f64(sched, closure_(countFn)(sys, 2, time_Dur_fromSecs$f64(1.0), u8_l("task a")).as_base);
+        var task_a = Sched_async$f64(sched, clsr_(countFn)(sys, 2, time_Dur_fromSecs$f64(1.0), u8_l("task a")).as_base);
         defer_(let_ignore = Future_cancel$f64(&task_a, sched));
-        var task_b = Sched_async$f64(sched, closure_(countFn)(sys, 3, time_Dur_fromSecs$f64(0.6), u8_l("task b")).as_base);
+        var task_b = Sched_async$f64(sched, clsr_(countFn)(sys, 3, time_Dur_fromSecs$f64(0.6), u8_l("task b")).as_base);
         defer_(let_ignore = Future_cancel$f64(&task_b, sched));
         total += Future_await$f64(&task_a, sched);
         total += Future_await$f64(&task_b, sched);

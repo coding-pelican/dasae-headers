@@ -6,7 +6,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
+#include "../core.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -67,11 +67,11 @@ union O$Void {
     var_(as_raw $like_ref, O$raw);
 };
 
-typedef struct E_OpaqAny {
+typedef struct E_CtxAny {
     var_(inner, const Opaq*);
-} E_OpaqAny;
+} E_CtxAny;
 typedef struct EAny {
-    var_(opaq, E_OpaqAny);
+    var_(ctx, E_CtxAny);
 } EAny;
 
 typedef union E_Payload$raw E_Payload$raw;

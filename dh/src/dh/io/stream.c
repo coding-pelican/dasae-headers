@@ -36,7 +36,8 @@ fn_((io_stream_nl(void))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
 
-    let stream_out = fs_File_writer(io_getStdOut());
+    var stream_out_file = fs_File_io(io_getStdOut());
+    let stream_out = fs_File_IO_writer(&stream_out_file);
     let_ignore = catch_((io_Writer_nl(stream_out))($ignore, $do_nothing));
 } $unguarded(fn);
 
@@ -50,7 +51,8 @@ fn_((io_stream_printVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
 
-    let stream_out = fs_File_writer(io_getStdOut());
+    var stream_out_file = fs_File_io(io_getStdOut());
+    let stream_out = fs_File_IO_writer(&stream_out_file);
     let_ignore = catch_((io_Writer_printVaArgs(stream_out, fmt, va_args))($ignore, $do_nothing));
 } $unguarded(fn);
 
@@ -64,7 +66,8 @@ fn_((io_stream_printlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
 
-    let stream_out = fs_File_writer(io_getStdOut());
+    var stream_out_file = fs_File_io(io_getStdOut());
+    let stream_out = fs_File_IO_writer(&stream_out_file);
     let_ignore = catch_((io_Writer_printlnVaArgs(stream_out, fmt, va_args))($ignore, $do_nothing));
 } $unguarded(fn);
 
@@ -72,7 +75,8 @@ fn_((io_stream_enl(void))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
 
-    let stream_err = fs_File_writer(io_getStdErr());
+    var stream_err_file = fs_File_io(io_getStdErr());
+    let stream_err = fs_File_IO_writer(&stream_err_file);
     let_ignore = catch_((io_Writer_nl(stream_err))($ignore, $do_nothing));
 } $unguarded(fn);
 
@@ -86,7 +90,8 @@ fn_((io_stream_eprintVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
 
-    let stream_err = fs_File_writer(io_getStdErr());
+    var stream_err_file = fs_File_io(io_getStdErr());
+    let stream_err = fs_File_IO_writer(&stream_err_file);
     let_ignore = catch_((io_Writer_printVaArgs(stream_err, fmt, va_args))($ignore, $do_nothing));
 } $unguarded(fn);
 
@@ -100,6 +105,7 @@ fn_((io_stream_eprintlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
     Thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
     defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
 
-    let stream_err = fs_File_writer(io_getStdErr());
+    var stream_err_file = fs_File_io(io_getStdErr());
+    let stream_err = fs_File_IO_writer(&stream_err_file);
     let_ignore = catch_((io_Writer_printlnVaArgs(stream_err, fmt, va_args))($ignore, $do_nothing));
 } $unguarded(fn);

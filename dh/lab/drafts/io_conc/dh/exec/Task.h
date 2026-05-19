@@ -6,7 +6,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "../prl/Closure.h"
+#include "../prl/Clsr.h"
 #include "../Future/base.h"
 #include "Fiber.h"
 #include "dh/ArrList.h"
@@ -33,7 +33,7 @@ T_alias$((exec_Task)(union exec_Task {
     struct {
         var_(state, exec_Task_State);
         var_(result, u_P$raw);
-        var_(inner, P$$(Closure$raw));
+        var_(inner, P$$(Clsr$raw));
         var_(fiber, O$P$exec_Fiber);
     };
     var_(as_any, FutureAny) $flexible;

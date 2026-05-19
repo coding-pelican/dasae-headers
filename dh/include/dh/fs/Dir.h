@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    dir.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-02-23 (date of creation)
- * @updated 2025-06-21 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2026-05-17 (date of last update)
  * @ingroup dasae-headers(dh)/fs
  * @prefix  fs_dir
  *
@@ -26,9 +25,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/fs/common.h"
-#include "dh/fs/File.h"
-#include "dh/mem/Alctr.h"
+#include "common.h"
+#include "../mem/Alctr.h"
 
 /*========== Macros and Declarations ========================================*/
 

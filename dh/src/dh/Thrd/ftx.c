@@ -116,7 +116,7 @@ fn_((Thrd_ftx__unsupported_wait(const atom_V$u32* ptr, u32 expect, O$time_Durati
     let_ignore = ptr;
     let_ignore = expect;
     let_ignore = timeout;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$UnsupportedFtx());
 } $unscoped(fn);
 
 fn_((Thrd_ftx__unsupported_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
@@ -132,7 +132,7 @@ fn_((Thrd_ftx__pthread_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration t
     let_ignore = ptr;
     let_ignore = expect;
     let_ignore = timeout;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$UnsupportedFtx());
 } $unscoped(fn);
 
 fn_((Thrd_ftx__pthread_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
@@ -264,7 +264,7 @@ fn_((Thrd_ftx__wasi_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration time
     let_ignore = ptr;
     let_ignore = expect;
     let_ignore = timeout;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$UnsupportedFtx());
 } $unscoped(fn);
 
 fn_((Thrd_ftx__wasi_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {

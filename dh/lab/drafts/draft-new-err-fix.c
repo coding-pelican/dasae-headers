@@ -229,21 +229,21 @@ typedef struct E_Inner$General_E {
     const char* tag_id_z;
     E_HashId (*hashId)(void);
 } E_Inner$General_E;
-typedef struct E_Opaq$General_E {
+typedef struct E_Ctx$General_E {
     const E_Inner$General_E* inner;
-} E_Opaq$General_E;
-typedef E_Opaq$General_E E_Type$NotImplemented;
-typedef E_Opaq$General_E E_Type$Unexpected;
-typedef E_Opaq$General_E E_Type$Any;
+} E_Ctx$General_E;
+typedef E_Ctx$General_E E_Type$NotImplemented;
+typedef E_Ctx$General_E E_Type$Unexpected;
+typedef E_Ctx$General_E E_Type$Any;
 typedef union E_Payload$General_E {
-    // E_Opaq$General_E;
+    // E_Ctx$General_E;
     E_Type$NotImplemented NotImplemented;
     E_Type$Unexpected Unexpected;
     E_Type$Any Any;
 } E_Payload$General_E;
 /* General Error - Outer */
 typedef union General_E {
-    E_Opaq$General_E opaq;
+    E_Ctx$General_E opaq;
     E_Payload$General_E;
 } General_E;
 $attr($inline_always)
@@ -328,17 +328,17 @@ typedef struct E_Inner$Conc_E {
     const char* tag_id_z;
     E_HashId (*hashId)(void);
 } E_Inner$Conc_E;
-typedef union E_Opaq$Conc_E {
+typedef union E_Ctx$Conc_E {
     const E_Inner$Conc_E* inner;
-} E_Opaq$Conc_E;
-typedef E_Opaq$Conc_E E_Type$ConcUnavailable;
+} E_Ctx$Conc_E;
+typedef E_Ctx$Conc_E E_Type$ConcUnavailable;
 typedef union E_Payload$Conc_E {
-    // E_Opaq$Conc_E;
+    // E_Ctx$Conc_E;
     E_Type$ConcUnavailable ConcUnavailable;
 } E_Payload$Conc_E;
 /* Concurrent Error - Outer */
 typedef union Conc_E {
-    E_Opaq$Conc_E opaq;
+    E_Ctx$Conc_E opaq;
     E_Payload$Conc_E;
     General_E as_general[1];
     General_E General_E;
@@ -407,17 +407,17 @@ typedef struct E_Inner$Cancelable {
     const char* tag_id_z;
     E_HashId (*hashId)(void);
 } E_Inner$Cancelable;
-typedef union E_Opaq$Cancelable {
+typedef union E_Ctx$Cancelable {
     const E_Inner$Cancelable* inner;
-} E_Opaq$Cancelable;
-typedef E_Opaq$Cancelable E_Type$Canceled;
+} E_Ctx$Cancelable;
+typedef E_Ctx$Cancelable E_Type$Canceled;
 typedef union E_Payload$Cancelable {
-    // E_Opaq$Cancelable;
+    // E_Ctx$Cancelable;
     E_Type$Canceled Canceled;
 } E_Payload$Cancelable;
 /* Cancelable Error - Outer */
 typedef union Cancelable {
-    E_Opaq$Cancelable opaq;
+    E_Ctx$Cancelable opaq;
     E_Payload$Cancelable;
     General_E as_general[1];
     General_E General_E;
@@ -486,17 +486,17 @@ typedef struct E_Inner$Timeout_E {
     const char* tag_id_z;
     E_HashId (*hashId)(void);
 } E_Inner$Timeout_E;
-typedef union E_Opaq$Timeout_E {
+typedef union E_Ctx$Timeout_E {
     const E_Inner$Timeout_E* inner;
-} E_Opaq$Timeout_E;
-typedef E_Opaq$Timeout_E E_Type$Timeout;
+} E_Ctx$Timeout_E;
+typedef E_Ctx$Timeout_E E_Type$Timeout;
 typedef union E_Payload$Timeout_E {
-    // E_Opaq$Timeout_E;
+    // E_Ctx$Timeout_E;
     E_Type$Timeout Timeout;
 } E_Payload$Timeout_E;
 /* Timeout Error - Outer */
 typedef union Timeout_E {
-    E_Opaq$Timeout_E opaq;
+    E_Ctx$Timeout_E opaq;
     E_Payload$Timeout_E;
     General_E as_general[1];
     General_E General_E;
@@ -572,21 +572,21 @@ typedef struct E_Inner$Foo_E {
     const char* tag_id_z;
     E_HashId (*hashId)(void);
 } E_Inner$Foo_E;
-typedef struct E_Opaq$Foo_E {
+typedef struct E_Ctx$Foo_E {
     const E_Inner$Foo_E* inner;
-} E_Opaq$Foo_E;
-typedef E_Opaq$Foo_E E_Type$FooBar;
-typedef E_Opaq$Foo_E E_Type$FooBas;
-typedef E_Opaq$Foo_E E_Type$FooBaz;
+} E_Ctx$Foo_E;
+typedef E_Ctx$Foo_E E_Type$FooBar;
+typedef E_Ctx$Foo_E E_Type$FooBas;
+typedef E_Ctx$Foo_E E_Type$FooBaz;
 typedef union E_Payload$Foo_E {
-    // E_Opaq$Foo_E;
+    // E_Ctx$Foo_E;
     E_Type$FooBar FooBar;
     E_Type$FooBas FooBas;
     E_Type$FooBaz FooBaz;
 } E_Payload$Foo_E;
 /* Allow Only Foo Error - Outer */
 typedef union Foo_E {
-    E_Opaq$Foo_E opaq;
+    E_Ctx$Foo_E opaq;
     E_Payload$Foo_E;
     General_E as_general[1];
     General_E General_E;

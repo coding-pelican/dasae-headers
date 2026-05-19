@@ -37,6 +37,7 @@ extern "C" {
 #include "builtin/container_info.h"
 #include "builtin/mem.h"
 #include "builtin/atom.h"
+#include "builtin/prefetch.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

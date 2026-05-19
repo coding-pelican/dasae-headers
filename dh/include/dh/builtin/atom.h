@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    atom.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-11-04 (date of creation)
- * @updated 2025-11-04 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-05-19 (date of last update)
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  atom
  */
@@ -25,7 +24,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef enum atom_MemOrd {
+typedef enum $packed atom_MemOrd {
     atom_MemOrd_unordered = __ATOMIC_RELAXED, ///< No ordering constraints. Only guarantees atomicity.
     atom_MemOrd_monotonic = __ATOMIC_RELAXED, ///< Ensures that previous operations are complete before this operation.
     atom_MemOrd_acquire = __ATOMIC_ACQUIRE, ///< Acquires memory fence from other threads' releases.
@@ -40,13 +39,23 @@ typedef enum atom_MemOrd {
 
 /// Compare-and-Swap
 #define atom_cmpXchgWeak$(_OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) \
-    __op__atom_cmpXchgWeak$(pp_uniqTok(expected), _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord)
+    __op__atom_cmpXchgWeak$( \
+        pp_uniqTok(is_succ), pp_uniqTok(expected), \
+        _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord \
+    )
 #define atom_cmpXchgWeak(_ptr, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgWeak$(O$$(TypeOfUnqual(*_ptr)), _ptr, _expected, _desired, _succ_ord, _fail_ord)
+    atom_cmpXchgWeak$( \
+        O$$(TypeOfUnqual(*_ptr)), _ptr, _expected, _desired, _succ_ord, _fail_ord \
+    )
 #define atom_cmpXchgStrong$(_OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) \
-    __op__atom_cmpXchgStrong$(pp_uniqTok(expected), _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord)
+    __op__atom_cmpXchgStrong$( \
+        pp_uniqTok(is_succ), pp_uniqTok(expected), \
+        _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord \
+    )
 #define atom_cmpXchgStrong(_ptr, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgStrong$(O$$(TypeOfUnqual(*_ptr)), _ptr, _expected, _desired, _succ_ord, _fail_ord)
+    atom_cmpXchgStrong$( \
+        O$$(TypeOfUnqual(*_ptr)), _ptr, _expected, _desired, _succ_ord, _fail_ord \
+    )
 
 /// RMW (Read-Modify-Write) - returns the value before the operation (Fetch-and-Op)
 #define atom_fetchXchg(_ptr, _val, _ord...) __op__atom_fetchXchg(pp_uniqTok(ret), _ptr, _val, _ord)
@@ -60,40 +69,58 @@ typedef enum atom_MemOrd {
 /*========== Macros and Definitions =========================================*/
 
 #define __op__atom_fence(_ord...) __atomic_thread_fence(_ord)
-#define __op__atom_load(__ret, _ptr, _ord...) ({ \
+#define __op__atom_load(__ret, _ptr, _ord...) local_({ \
     var __ret = l0$((TypeOf(*_ptr))); \
-    __atomic_load(_ptr, &__ret, _ord); \
-    __ret; \
+    __atomic_load(_ptr, &__ret, as$(int)(as$(atom_MemOrd)(_ord))); \
+    local_return_(__ret); \
 })
 #define __op__atom_store(_ptr, _val, _ord...) \
-    __atomic_store(_ptr, &from$((TypeOf(*_ptr))_val), _ord)
+    __atomic_store(_ptr, &from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
 
-#define __op__atom_cmpXchgWeak$(__expected, _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) ({ \
+#define __op__atom_cmpXchgWeak$( \
+    __is_succ, __expected, \
+    _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord... \
+) local_({ \
     typedef _OT O$Ret$atom_cmpXchgWeak; \
     var __expected = l$((TypeOf(*_ptr))_expected); \
-    __atomic_compare_exchange(_ptr, &__expected, &from$((TypeOf(__expected))_desired), true, _succ_ord, _fail_ord) \
-        ? l$((O$Ret$atom_cmpXchgWeak)none()) \
-        : l$((O$Ret$atom_cmpXchgWeak)some(__expected)); \
+    let_(__is_success, bool) = __atomic_compare_exchange( \
+        _ptr, &__expected, &from$((TypeOf(__expected))_desired), true, \
+        as$(int)(as$(atom_MemOrd)(_succ_ord)), as$(int)(as$(atom_MemOrd)(_fail_ord)) \
+    ); \
+    __is_success ? local_return_(l$((O$Ret$atom_cmpXchgWeak)none())) \
+                 : local_return_(l$((O$Ret$atom_cmpXchgWeak)some(__expected))); \
 })
-#define __op__atom_cmpXchgStrong$(__expected, _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) ({ \
+#define __op__atom_cmpXchgStrong$( \
+    __is_succ, __expected, \
+    _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord... \
+) local_({ \
     typedef _OT O$Ret$atom_cmpXchgStrong; \
     var __expected = l$((TypeOf(*_ptr))_expected); \
-    __atomic_compare_exchange(_ptr, &__expected, &from$((TypeOf(__expected))_desired), false, _succ_ord, _fail_ord) \
-        ? l$((O$Ret$atom_cmpXchgStrong)none()) \
-        : l$((O$Ret$atom_cmpXchgStrong)some(__expected)); \
+    let_(__is_success, bool) = __atomic_compare_exchange( \
+        _ptr, &__expected, &from$((TypeOf(__expected))_desired), false, \
+        as$(int)(as$(atom_MemOrd)(_succ_ord)), as$(int)(as$(atom_MemOrd)(_fail_ord)) \
+    ); \
+    __is_success ? local_return_(l$((O$Ret$atom_cmpXchgStrong)none())) \
+                 : local_return_(l$((O$Ret$atom_cmpXchgStrong)some(__expected))); \
 })
 
-#define __op__atom_fetchXchg(__ret, _ptr, _val, _ord...) ({ \
+#define __op__atom_fetchXchg(__ret, _ptr, _val, _ord...) local_({ \
     var __ret = l0$((TypeOf(*_ptr))); \
-    __atomic_exchange(_ptr, &from$((TypeOf(__ret))_val), &__ret, _ord); \
-    __ret; \
+    __atomic_exchange(_ptr, &from$((TypeOf(__ret))_val), &__ret, as$(int)(as$(atom_MemOrd)(_ord))); \
+    local_return_(__ret); \
 })
-#define __op__atom_fetchAdd(_ptr, _val, _ord...) __atomic_fetch_add(_ptr, from$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchSub(_ptr, _val, _ord...) __atomic_fetch_sub(_ptr, from$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchNand(_ptr, _val, _ord...) __atomic_fetch_nand(_ptr, from$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchAnd(_ptr, _val, _ord...) __atomic_fetch_and(_ptr, from$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchXor(_ptr, _val, _ord...) __atomic_fetch_xor(_ptr, from$((TypeOf(*_ptr))_val), _ord)
-#define __op__atom_fetchOr(_ptr, _val, _ord...) __atomic_fetch_or(_ptr, from$((TypeOf(*_ptr))_val), _ord)
+#define __op__atom_fetchAdd(_ptr, _val, _ord...) \
+    __atomic_fetch_add(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_fetchSub(_ptr, _val, _ord...) \
+    __atomic_fetch_sub(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_fetchNand(_ptr, _val, _ord...) \
+    __atomic_fetch_nand(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_fetchAnd(_ptr, _val, _ord...) \
+    __atomic_fetch_and(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_fetchXor(_ptr, _val, _ord...) \
+    __atomic_fetch_xor(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_fetchOr(_ptr, _val, _ord...) \
+    __atomic_fetch_or(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
 
 #if defined(__cplusplus)
 } /* extern "C" */

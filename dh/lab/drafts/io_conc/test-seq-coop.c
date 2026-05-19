@@ -45,8 +45,8 @@ $static fn_((countFn(Sys sys, usize n, time_Dur interval, Event base))(Event)) {
     EventLog_push(sys.log, base + 9);
     return base + 9;
 };
-T_use$((Event)(Closure_Ctx, Closure_Rtn, Closure));
-fn_use_Closure_((countFn)(Sys, usize, time_Dur, Event)(Event));
+T_use$((Event)(Clsr_Ctx, Clsr_Rtn, Clsr));
+fn_use_Clsr_((countFn)(Sys, usize, time_Dur, Event)(Event));
 
 T_use$((Event)(Co_Ctx, Co_Rtn, Co_Frame));
 co_fn_(countCo, (Sys sys; usize n; time_Dur interval; Event base), Event);
@@ -68,7 +68,7 @@ co_fn_scope(
     EventLog_push($co_arg(sys).log, $co_arg(base) + 9);
     co_return_($co_arg(base) + 9);
 } $unscoped(co_fn);
-co_use_Closure_((countCo)(Sys, usize, time_Dur, Event)(Event));
+co_use_Clsr_((countCo)(Sys, usize, time_Dur, Event)(Event));
 
 T_use$((Event)(Future, Future_await, Future_cancel, Sched_async));
 $static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected))(E$void) $guard) {
@@ -80,8 +80,8 @@ $static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected)
     let async = Sched_async$Event;
     let cancel = Future_cancel$Event;
     let await = Future_await$Event;
-    let countFn = closure_(countFn);
-    let countCo = closure_(countCo);
+    let countFn = clsr_(countFn);
+    let countCo = clsr_(countCo);
 
     var task_a = async(sched, countFn(sys, 2, time_Dur_fromMillis(100), 10).as_base);
     defer_(let_ignore = cancel(&task_a, sched));

@@ -6,7 +6,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/core.h"
+#include "../../core.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -264,10 +264,10 @@ typedef union O$Void O$Void, O$void;
 #define comp_syn__else_some_void \
     else
 #define comp_syn__while_some(val_opt, _Payload_Capture...) \
-    for (var _result = (val_opt); _result.is_some; _result = (val_opt)) \
-    using_(let _Payload_Capture = _result.payload.some)
+    while_(var _result = (val_opt), _result.is_some, _result = (val_opt)) \
+        using_(let _Payload_Capture = _result.payload.some)
 #define comp_syn__while_none(val_opt...) \
-    while_(var _result = (val_opt), !_result.is_some)
+    while_(var _result = (val_opt), !_result.is_some, _result = (val_opt))
 
 #if defined(__cplusplus)
 } /* extern "C" */

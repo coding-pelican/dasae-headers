@@ -361,6 +361,7 @@ extern "C" {
 #define $fallthrough __attr__$fallthrough
 #define $branch_hot __attr__$branch_hot
 #define $branch_cold __attr__$branch_cold
+#define $branch_predict(_expected /*: bool*/, _expr... /*(bool)*/) __attr__$branch_predict(_expected, _expr)
 #define $branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __attr__$branch_predict_at(_prob, _expr)
 #define $branch_likely(_expr... /*(bool)*/) __attr__$branch_likely(_expr)
 #define $branch_unlikely(_expr... /*(bool)*/) __attr__$branch_unlikely(_expr)
@@ -444,6 +445,12 @@ extern "C" {
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
+#define $begin_supress_frame_larger_than /* clang-format off */ \
+    _Pragma("clang diagnostic push") \
+    _Pragma("clang diagnostic ignored \"-Wframe-larger-than\"")
+#define $end_supress \
+    _Pragma("clang diagnostic pop") /* clang-format on */
+
 #define $supress_infinite_recursion(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Winfinite-recursion\"", \
@@ -555,6 +562,7 @@ extern "C" {
 #define __attr__$fallthrough comp_fallthrough
 #define __attr__$branch_hot comp_branch_hot
 #define __attr__$branch_cold comp_branch_cold
+#define __attr__$branch_predict(_expected /*: bool*/, _expr... /*(bool)*/) comp_branch_predict(_expected, _expr)
 #define __attr__$branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) comp_branch_predict_at(_prob, _expr)
 #define __attr__$branch_likely(_expr... /*(bool)*/) comp_branch_likely(_expr)
 #define __attr__$branch_unlikely(_expr... /*(bool)*/) comp_branch_unlikely(_expr)

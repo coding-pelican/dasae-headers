@@ -22,9 +22,13 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
+#include "fs/base.h"
 #include "fs/common.h"
-#include "fs/File.h"
+
 #include "fs/Dir.h"
+#include "fs/File.h"
+
+#include "fs/path.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

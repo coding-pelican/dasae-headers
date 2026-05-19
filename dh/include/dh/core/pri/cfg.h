@@ -13,8 +13,8 @@
  * @details Defines compile-time options and configuration parameters
  *          for primitive types and functions.
  */
-#ifndef CORE_PRIM_CFG_INCLUDED
-#define CORE_PRIM_CFG_INCLUDED (1)
+#ifndef core_pri_cfg__included
+#define core_pri_cfg__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -473,13 +473,13 @@ typedef double f64;
 /*--- Zero-sized type ---*/
 
 typedef struct Opaq {
-    u8 bytes $flexible;
+    u8 bytes_ $flexible;
 } Opaq;
 /// Opaq, AnyOpaq, Any, Raw
 /// `Void` has the same meaning as the incomplete type `void`,
 // but can be used as a value.
 typedef struct Void {
-    u8 bytes $zero_sized;
+    u8 bytes_ $zero_sized;
 } Void;
 #define Void_(...) (__VA_OPT__(($ignore_void(__VA_ARGS__)), ) l0$((Void)))
 
@@ -834,4 +834,4 @@ typedef TypeOf(void*) P$raw;
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* CORE_PRIM_CFG_INCLUDED */
+#endif /* core_pri_cfg__included */

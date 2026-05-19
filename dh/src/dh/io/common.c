@@ -28,13 +28,13 @@ $static fn_((io__getStdErrHandle(void))(posix_fd_t)) {
 };
 
 fn_((io_getStdIn(void))(fs_File)) {
-    return (fs_File){ .handle = io__getStdInHandle() };
+    return fs_File_Handle_promote(io__getStdInHandle(), fs_File_Flags_default);
 };
 
 fn_((io_getStdOut(void))(fs_File)) {
-    return (fs_File){ .handle = io__getStdOutHandle() };
+    return fs_File_Handle_promote(io__getStdOutHandle(), fs_File_Flags_default);
 };
 
 fn_((io_getStdErr(void))(fs_File)) {
-    return (fs_File){ .handle = io__getStdErrHandle() };
+    return fs_File_Handle_promote(io__getStdErrHandle(), fs_File_Flags_default);
 };

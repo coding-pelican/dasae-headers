@@ -23,6 +23,7 @@ extern "C" {
 #include "dh/prl.h"
 #include "dh/atom.h"
 #include "dh/simd.h"
+#include "dh/Clsr.h"
 
 #include "dh/cmp.h"
 #include "dh/math.h"
@@ -61,10 +62,9 @@ extern "C" {
 
 // #include "dh/os.h"
 #include "dh/posix.h"
-// #include "dh/proc.h"
+#include "dh/proc.h"
+#include "dh/Co.h"
 #include "dh/Thrd.h"
-#include "dh/async.h"
-#include "dh/mp.h"
 #include "dh/heap.h"
 #include "dh/time.h"
 
@@ -72,7 +72,7 @@ extern "C" {
 #include "dh/fmt.h"
 #include "dh/log.h"
 #include "dh/fs.h"
-// #include "dh/net.h"
+#include "dh/net.h"
 // #include "dh/http.h"
 
 #include "dh/TEST.h"

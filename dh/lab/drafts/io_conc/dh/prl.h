@@ -4,6 +4,6 @@
 #include "dh/prl.h"
 #include "prl/Tup.h"
 #include "prl/Co.h"
-#include "prl/Closure.h"
+#include "prl/Clsr.h"
 
 #endif /* dh_draft_prl__included */

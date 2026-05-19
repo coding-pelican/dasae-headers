@@ -64,7 +64,12 @@ extern log_Level log_getLevel(void);
 extern FILE* log_getOutputFile(void);
 
 // Internal logging function
-extern void log_message(log_Level /* level */, const char* /* file */, int /* line */, const char* /* func */, const char* /* fmt */, ...);
+#if comp_type == comp_type_clang || comp_type == comp_type_gcc
+#define log__printf_format(_fmt_idx, _arg_idx) __attribute__((format(printf, _fmt_idx, _arg_idx)))
+#else
+#define log__printf_format(_fmt_idx, _arg_idx)
+#endif
+extern void log_message(log_Level /* level */, const char* /* file */, int /* line */, const char* /* func */, const char* /* fmt */, ...) log__printf_format(5, 6);
 
 #if !defined(log_comp_disabled_not_debug_comp_enabled)
 #define log_comp_disabled_not_debug_comp_enabled (0)

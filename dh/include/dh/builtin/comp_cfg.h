@@ -122,10 +122,14 @@ extern "C" {
 #define comp_unreachable __comp_attr__comp_unreachable
 
 /* Branch Prediction */
+#define comp_branch_predict(_expected /*: bool*/, _expr... /*(bool)*/) __comp_attr__comp_branch_predict(_expected, _expr)
 #define comp_branch_likely(_expr... /*(bool)*/) __comp_attr__comp_branch_likely(_expr)
 #define comp_branch_unlikely(_expr... /*(bool)*/) __comp_attr__comp_branch_unlikely(_expr)
 #define comp_branch_predict_at(_prob /*: FltType*/, _expr... /*(bool)*/) __comp_attr__comp_branch_predict_at(_prob, _expr)
 #define comp_branch_unpredictable(_expr... /*(bool)*/) __comp_attr__comp_branch_unpredictable(_expr)
+
+/* Prefetch */
+#define comp_prefetch(_addr, _rw, _locality...) __comp_attr__comp_prefetch(_addr, _rw, _locality)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -346,10 +350,13 @@ extern "C" {
 #define __comp_attr__comp_fallthrough __attribute__((fallthrough))
 #define __comp_attr__comp_unreachable __builtin_unreachable()
 
+#define __comp_attr__comp_branch_predict(_expected, _expr...) __builtin_expect(!!(_expr), !!(_expected))
 #define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
 #define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
 #define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), 1, _prob)
 #define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
+
+#define __comp_attr__comp_prefetch(_addr, _rw, _locality...) __builtin_prefetch(_addr, _rw, _locality)
 
 #elif comp_type == comp_type_msvc
 #define __comp_attr__comp_deprecated __declspec(deprecated)
@@ -395,10 +402,13 @@ extern "C" {
 #define __comp_attr__comp_unreachable __assume(0)
 #define __comp_attr__comp_fallthrough
 
+#define __comp_attr__comp_branch_predict(_expected, _expr...) __builtin_expect(!!(_expr), !!(_expected))
 #define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
 #define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
 #define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), 1, _prob)
 #define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
+
+#define __comp_attr__comp_prefetch(_addr, _rw, _locality...) __prefetch(_addr, _rw, _locality)
 
 #else
 #define __comp_attr__comp_deprecated
@@ -438,10 +448,13 @@ extern "C" {
 #define __comp_attr__comp_fallthrough
 #define __comp_attr__comp_unreachable __assume(0)
 
+#define __comp_attr__comp_branch_predict(_expected, _expr...) __builtin_expect(!!(_expr), !!(_expected))
 #define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
 #define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
 #define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), 1, _prob)
 #define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
+
+#define __comp_attr__comp_prefetch(_addr, _rw, _locality...) __prefetch(_addr, _rw, _locality)
 #endif
 
 #if defined(__cplusplus)

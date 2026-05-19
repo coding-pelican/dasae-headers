@@ -4,12 +4,12 @@
 #include "dh/meta.h"
 
 typedef struct Thrd__Start {
-    var_(closure, Closure$raw*);
+    var_(clsr, Clsr$raw*);
     var_(ret_type, TypeInfo);
     var_(gpa, mem_Alctr);
 } Thrd__Start;
 $attr($must_check)
-$static fn_((Thrd__startAlloc(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(mem_E$u_P$raw));
+$static fn_((Thrd__startAlloc(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(mem_E$u_P$raw));
 $static fn_((Thrd__startFree(Thrd__Start* start))(void));
 
 /*========== Internal Declarations ==========================================*/
@@ -28,11 +28,11 @@ pp_if_(pp_true)(pp_then_(
     $attr($inline_always $must_check $maybe_unused)
     $static fn_((Thrd__unsupported_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check $maybe_unused)
-    $static fn_((Thrd__unsupported_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
+    $static fn_((Thrd__unsupported_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
     $attr($inline_always $maybe_unused)
     $static fn_((Thrd__unsupported_detach(Thrd self))(void));
     $attr($inline_always $maybe_unused)
-    $static fn_((Thrd__unsupported_join(Thrd self))(Closure$raw*));
+    $static fn_((Thrd__unsupported_join(Thrd self))(Clsr$raw*));
 ));
 pp_if_(Thrd_use_pthread)(pp_then_(
     $attr($inline_always)
@@ -48,11 +48,11 @@ pp_if_(Thrd_use_pthread)(pp_then_(
     $attr($inline_always $must_check)
     $static fn_((Thrd__pthread_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__pthread_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
+    $static fn_((Thrd__pthread_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
     $attr($inline_always)
     $static fn_((Thrd__pthread_detach(Thrd self))(void));
     $attr($inline_always)
-    $static fn_((Thrd__pthread_join(Thrd self))(Closure$raw*));
+    $static fn_((Thrd__pthread_join(Thrd self))(Clsr$raw*));
 ));
 pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
@@ -68,11 +68,11 @@ pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always $must_check)
     $static fn_((Thrd__windows_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__windows_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
+    $static fn_((Thrd__windows_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
     $attr($inline_always)
     $static fn_((Thrd__windows_detach(Thrd self))(void));
     $attr($inline_always)
-    $static fn_((Thrd__windows_join(Thrd self))(Closure$raw*));
+    $static fn_((Thrd__windows_join(Thrd self))(Clsr$raw*));
 ));
 pp_if_(plat_is_linux)(pp_then_(
     $attr($inline_always)
@@ -88,11 +88,11 @@ pp_if_(plat_is_linux)(pp_then_(
     $attr($inline_always $must_check)
     $static fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
+    $static fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
     $attr($inline_always)
     $static fn_((Thrd__linux_detach(Thrd self))(void));
     $attr($inline_always)
-    $static fn_((Thrd__linux_join(Thrd self))(Closure$raw*));
+    $static fn_((Thrd__linux_join(Thrd self))(Clsr$raw*));
 ));
 pp_if_(plat_is_wasi)(pp_then_(
     $attr($inline_always)
@@ -108,11 +108,11 @@ pp_if_(plat_is_wasi)(pp_then_(
     $attr($inline_always $must_check)
     $static fn_((Thrd__wasi_setName(Thrd self, S_const$u8 name))(Thrd_E$void));
     $attr($inline_always $must_check)
-    $static fn_((Thrd__wasi_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
+    $static fn_((Thrd__wasi_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd));
     $attr($inline_always)
     $static fn_((Thrd__wasi_detach(Thrd self))(void));
     $attr($inline_always)
-    $static fn_((Thrd__wasi_join(Thrd self))(Closure$raw*));
+    $static fn_((Thrd__wasi_join(Thrd self))(Clsr$raw*));
 ));
 
 $static let Thrd__handle = pp_if_(Thrd_use_pthread)(
@@ -250,26 +250,26 @@ fn_((Thrd_setName(Thrd self, S_const$u8 name))(Thrd_E$void)) {
     return Thrd__setName(self, name);
 };
 
-fn_((Thrd_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd)) {
-    return Thrd__spawn(cfg, closure, ret_type);
+fn_((Thrd_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd)) {
+    return Thrd__spawn(cfg, clsr, ret_type);
 };
 
 fn_((Thrd_detach(Thrd self))(void)) {
     return Thrd__detach(self);
 };
 
-fn_((Thrd_join(Thrd self))(Closure$raw*)) {
+fn_((Thrd_join(Thrd self))(Clsr$raw*)) {
     return Thrd__join(self);
 };
 
 /*========== Internal Definitions ===========================================*/
 
-fn_((Thrd__startAlloc(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(mem_E$u_P$raw) $scope) {
+fn_((Thrd__startAlloc(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(mem_E$u_P$raw) $scope) {
     let gpa = orelse_((cfg.gpa)(return_err(E_cause$Unexpected())));
     let raw = try_(mem_Alctr_create($trace gpa, typeInfo$(Thrd__Start)));
     let start = u_castP$((Thrd__Start*)(raw));
     asg_l((start)({
-        .closure = closure,
+        .clsr = clsr,
         .ret_type = ret_type,
         .gpa = gpa,
     }));
@@ -311,9 +311,9 @@ fn_((Thrd__unsupported_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope)
     return_err(E_cause$UnsupportedThrd());
 } $unscoped(fn);
 
-fn_((Thrd__unsupported_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $scope) {
+fn_((Thrd__unsupported_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $scope) {
     let_ignore = cfg;
-    let_ignore = closure;
+    let_ignore = clsr;
     let_ignore = ret_type;
     return_err(E_cause$UnsupportedThrd());
 } $unscoped(fn);
@@ -322,8 +322,8 @@ fn_((Thrd__unsupported_detach(Thrd self))(void)) {
     let_ignore = self;
 };
 
-fn_((Thrd__unsupported_join(Thrd self))(Closure$raw*)) {
-    return ensureNonnull(self.closure);
+fn_((Thrd__unsupported_join(Thrd self))(Clsr$raw*)) {
+    return ensureNonnull(self.clsr);
 };
 
 /* --- Pthreads --- */
@@ -385,8 +385,8 @@ fn_((Thrd__pthread_cpuCount(void))(Thrd_E$usize) $scope) {
 )
 
 $static fn_((Thrd__pthread_entry(P$raw arg))(P$raw));
-fn_((Thrd__pthread_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $guard) {
-    let start = u_castP$((Thrd__Start*)(try_(Thrd__startAlloc(cfg, closure, ret_type))));
+fn_((Thrd__pthread_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $guard) {
+    let start = u_castP$((Thrd__Start*)(try_(Thrd__startAlloc(cfg, clsr, ret_type))));
     pthread_attr_t attr = 0;
     pthread_attr_init(&attr);
     defer_(pthread_attr_destroy(&attr));
@@ -399,17 +399,17 @@ fn_((Thrd__pthread_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_t
     }
     return_ok((Thrd){
         .handle = handle,
-        .closure = closure,
+        .clsr = clsr,
         .inner = null,
     });
 } $unguarded(fn);
 
 fn_((Thrd__pthread_entry(P$raw arg))(P$raw)) {
     let start = ensureNonnull(as$(Thrd__Start*)(arg));
-    let closure = ensureNonnull(start->closure);
+    let clsr = ensureNonnull(start->clsr);
     let ret_type = start->ret_type;
     Thrd__startFree(start);
-    Thrd_invokeToCompletion(closure, ret_type);
+    Thrd_invokeToCompletion(clsr, ret_type);
     return null;
 };
 
@@ -417,10 +417,10 @@ fn_((Thrd__pthread_detach(Thrd self))(void)) {
     let_ignore = pthread_detach(self.handle);
 };
 
-fn_((Thrd__pthread_join(Thrd self))(Closure$raw*)) {
+fn_((Thrd__pthread_join(Thrd self))(Clsr$raw*)) {
     var_(ret_val, P$raw) = null;
     let_ignore = pthread_join(self.handle, &ret_val);
-    return ensureNonnull(self.closure);
+    return ensureNonnull(self.clsr);
 };
 #endif /* Thrd_use_pthread */
 
@@ -462,8 +462,8 @@ fn_((Thrd__windows_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
 
 $attr($stdcall)
 $static fn_((Thrd__windows_entry(LPVOID lpParameter))(DWORD));
-fn_((Thrd__windows_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $scope) {
-    let start = u_castP$((Thrd__Start*)(try_(Thrd__startAlloc(cfg, closure, ret_type))));
+fn_((Thrd__windows_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $scope) {
+    let start = u_castP$((Thrd__Start*)(try_(Thrd__startAlloc(cfg, clsr, ret_type))));
     let stack_size = as$(usize)(pri_max(Thrd__windows_stack_size_min, cfg.stack_size));
     let handle = CreateThread(
         null, stack_size,
@@ -477,17 +477,17 @@ fn_((Thrd__windows_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_t
     ResumeThread(handle);
     return_ok((Thrd){
         .handle = handle,
-        .closure = closure,
+        .clsr = clsr,
         .inner = null,
     });
 } $unscoped(fn);
 
 fn_((Thrd__windows_entry(LPVOID lpParameter))(DWORD)) {
     let start = ensureNonnull(as$(Thrd__Start*)(lpParameter));
-    let closure = ensureNonnull(start->closure);
+    let clsr = ensureNonnull(start->clsr);
     let ret_type = start->ret_type;
     Thrd__startFree(start);
-    Closure_invokeToComplete(closure, ret_type);
+    Clsr_invokeToComplete(clsr, ret_type);
     return 0;
 };
 
@@ -496,7 +496,7 @@ fn_((Thrd__windows_detach(Thrd self))(void)) {
     claim_assert(CloseHandle(handle));
 };
 
-fn_((Thrd__windows_join(Thrd self))(Closure$raw*)) {
+fn_((Thrd__windows_join(Thrd self))(Clsr$raw*)) {
     let handle = ensureNonnull(self.handle);
     switch (WaitForSingleObject(handle, INFINITE)) {
     case WAIT_OBJECT_0: break; /* Thread signaled termination */
@@ -506,7 +506,7 @@ fn_((Thrd__windows_join(Thrd self))(Closure$raw*)) {
     default_() claim_unreachable $end(default);
     }
     claim_assert(CloseHandle(handle));
-    return ensureNonnull(self.closure);
+    return ensureNonnull(self.clsr);
 };
 #endif /* plat_is_windows */
 
@@ -536,7 +536,7 @@ T_use_atom_V$(i32);
 ///
 /// This struct is internal to Linux impl.
 typedef struct Thrd__linux_Meta {
-    var_(closure, Closure$raw*);
+    var_(clsr, Clsr$raw*);
     var_(ret_type, TypeInfo);
     var_(map, S$raw); // mmap'd memory region
     var_(completion, atom_V$Thrd__linux_Completion); // State machine: running/detached/completed
@@ -636,8 +636,8 @@ fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
 /// - If was 'running', becomes 'completed' -> return normally (join will cleanup)
 /// - If was 'detached', thread must self-cleanup via freeAndExit()
 $static fn_((Thrd__linux_entry(P$raw arg))(i32));
-fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $guard) {
-    claim_assert_nonnull(closure);
+fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $guard) {
+    claim_assert_nonnull(clsr);
     let_ignore = ret_type;
     let page_size = as$(usize)(sysconf(_SC_PAGESIZE));
     let stack_size = mem_alignFwd(pri_max(page_size, cfg.stack_size), page_size);
@@ -668,7 +668,7 @@ fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_typ
     // Initialize metadata at the top of mapped region
     let meta = as$(Thrd__linux_Meta*)(as$(u8*)(map_base) + page_size + stack_size);
     *meta = (Thrd__linux_Meta){
-        .closure = closure,
+        .clsr = clsr,
         .ret_type = ret_type,
         .map = {
             .ptr = map_base,
@@ -695,7 +695,7 @@ fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_typ
 
     return_ok((Thrd){
         .handle = as$(Thrd_Handle)(meta->parent_tid),
-        .closure = closure,
+        .clsr = clsr,
         .inner = meta,
     });
 } $unguarded(fn);
@@ -704,7 +704,7 @@ $attr($no_return)
 $static fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void));
 fn_((Thrd__linux_entry(P$raw arg))(i32)) {
     let meta = ensureNonnull(as$(Thrd__linux_Meta*)(arg));
-    Thrd_invokeToCompletion(ensureNonnull(meta->closure), meta->ret_type);
+    Thrd_invokeToCompletion(ensureNonnull(meta->clsr), meta->ret_type);
     // Atomic state transition
     let prev = atom_V_fetchXchg(&meta->completion, Thrd__linux_Completion_completed, memory_order_seq_cst);
     switch (prev) {
@@ -741,7 +741,7 @@ fn_((Thrd__linux_detach(Thrd self))(void)) {
 /// Join a thread (wait for completion and cleanup).
 ///
 /// Uses futex to wait for child_tid to become 0 (set by CLONE_CHILD_CLEARTID).
-fn_((Thrd__linux_join(Thrd self))(Closure$raw*)) {
+fn_((Thrd__linux_join(Thrd self))(Clsr$raw*)) {
     let meta = as$(Thrd__linux_Meta*)(self.inner);
     /* Wait for thread to exit (child_tid becomes 0) */
     while (true) {
@@ -753,7 +753,7 @@ fn_((Thrd__linux_join(Thrd self))(Closure$raw*)) {
     }
     // Thread has exited, safe to unmap
     let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
-    return ensureNonnull(self.closure);
+    return ensureNonnull(self.clsr);
 };
 
 fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_family_type)(
@@ -876,10 +876,10 @@ fn_((Thrd__wasi_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     return_err(E_cause$UnsupportedThrd());
 } $unscoped(fn);
 
-fn_((Thrd__wasi_spawn(Thrd_SpawnCfg cfg, Closure$raw* closure, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $scope) {
+fn_((Thrd__wasi_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $scope) {
     /* TODO: Implement */
     let_ignore = cfg;
-    let_ignore = closure;
+    let_ignore = clsr;
     let_ignore = ret_type;
     return_err(E_cause$UnsupportedThrd());
 } $unscoped(fn);
@@ -889,8 +889,8 @@ fn_((Thrd__wasi_detach(Thrd self))(void)) {
     let_ignore = self;
 };
 
-fn_((Thrd__wasi_join(Thrd self))(Closure$raw*)) {
+fn_((Thrd__wasi_join(Thrd self))(Clsr$raw*)) {
     /* TODO: Implement */
-    return ensureNonnull(self.closure);
+    return ensureNonnull(self.clsr);
 };
 #endif /* plat_is_wasi */

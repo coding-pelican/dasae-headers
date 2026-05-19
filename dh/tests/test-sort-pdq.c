@@ -102,6 +102,7 @@ $static fn_((test_sort_pdq_IdxCtx_swap(usize lhs, usize rhs, u_V$raw raw_ctx))(v
     claim_assert(ctx.range.begin <= rhs), claim_assert(rhs < ctx.range.end);
     return pri_swap(P_at((ctx.data)[lhs]), P_at((ctx.data)[rhs]));
 };
+$begin_supress_frame_larger_than
 TEST_fn_("sort: pdqIdx - non-zero range stays in bounds and sorts range" $scope) {
     enum {
         data_len = usize_(2000),
@@ -134,3 +135,4 @@ TEST_fn_("sort: pdqIdx - non-zero range stays in bounds and sorts range" $scope)
         cmp_u_ord$(i32)
     )));
 } $unscoped(TEST_fn);
+$end_supress
