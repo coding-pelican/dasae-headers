@@ -276,7 +276,7 @@ $extern fn_((fmt_format$f32(io_Writer writer, f32 val, fmt_Spec spec))(E$void)) 
 /// Format a pointer with spec
 $extern fn_((fmt_formatPtr(io_Writer writer, P_const$raw ptr, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$P$raw(io_Writer writer, P_const$raw ptr, fmt_Spec spec))(E$void)) $must_check;
-/// Format an error val with spec
+/// Format an error val with spec `"{:s} ({:ih})" <- E_strfy(&err), E_tag(&err)`
 $extern fn_((fmt_formatErr(io_Writer writer, EAny err, fmt_Spec spec))(E$void)) $must_check;
 $extern fn_((fmt_format$EAny(io_Writer writer, EAny err, fmt_Spec spec))(E$void)) $must_check;
 

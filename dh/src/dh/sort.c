@@ -523,15 +523,15 @@ fn_((sort_blockCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
     var_(cache_buf, A$$(sort_limit_block_cache_stack_bytes, u8)) = A_zero();
     let cache_cap = (0 < seq.type.size) ? (sort_limit_block_cache_stack_bytes / seq.type.size) : 0;
     let_(cache, u_S$raw) = u_init$S((seq.type)(A_ptr(cache_buf), cache_cap));
-    $ignore_void sort_blockCtxCache(cache, seq, ordFn, ctx);
+    $ignore_void sort_blockCtxCache(seq, ordFn, ctx, cache);
 };
 
-fn_((sort_blockCache(u_S$raw cache, u_S$raw seq, sort_OrdFn ordFn))(u_S$raw)) {
+fn_((sort_blockCache(u_S$raw seq, sort_OrdFn ordFn, u_S$raw cache))(u_S$raw)) {
     let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
-    return sort_blockCtxCache(cache, seq, cmp_ordNoCtx, u_anyV(no_ctx));
+    return sort_blockCtxCache(seq, cmp_ordNoCtx, u_anyV(no_ctx), cache);
 };
 
-fn_((sort_blockCtxCache(u_S$raw cache, u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(u_S$raw)) {
+fn_((sort_blockCtxCache(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, u_S$raw cache))(u_S$raw)) {
     if (seq.len <= 1) return seq;
 
     let_(min_level, usize) = sort_threshold_fallback_to_insert_sort;
@@ -571,15 +571,15 @@ fn_((sort_blockCtxCache(u_S$raw cache, u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw
     return seq;
 };
 
-fn_((sort_blockAlloc(mem_Alctr gpa, u_S$raw seq, sort_OrdFn ordFn))(mem_E$u_S$raw)) {
+fn_((sort_blockAlloc(u_S$raw seq, sort_OrdFn ordFn, mem_Alctr gpa))(mem_E$u_S$raw)) {
     let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
-    return sort_blockCtxAlloc(gpa, seq, cmp_ordNoCtx, u_anyV(no_ctx));
+    return sort_blockCtxAlloc(seq, cmp_ordNoCtx, u_anyV(no_ctx), gpa);
 };
 
 $static fn_((sort_block__allocCache(mem_Alctr gpa, TypeInfo type, usize len))(mem_E$u_S$raw));
-fn_((sort_blockCtxAlloc(mem_Alctr gpa, u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(mem_E$u_S$raw) $scope) {
+fn_((sort_blockCtxAlloc(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, mem_Alctr gpa))(mem_E$u_S$raw) $scope) {
     let cache = try_(sort_block__allocCache(gpa, seq.type, seq.len));
-    return_ok(sort_blockCtxCache(cache, seq, ordFn, ctx));
+    return_ok(sort_blockCtxCache(seq, ordFn, ctx, cache));
 } $unscoped(fn);
 
 fn_((sort_block__allocCache(mem_Alctr gpa, TypeInfo type, usize len))(mem_E$u_S$raw) $scope) {

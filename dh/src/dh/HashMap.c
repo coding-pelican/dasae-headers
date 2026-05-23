@@ -1,4 +1,5 @@
 #include "dh/HashMap.h"
+#include "dh/hash.h"
 #include "dh/meta.h"
 
 /*========== SIMD Configuration =============================================*/
@@ -143,118 +144,9 @@ fn_((HashMap_Ensured_foundExistingMut(
     }) $unscoped(expr);
 };
 
-/// Wyhash core mixing primitive.
-/// MUM: multiply two 64-bit values, XOR the high and low 128-bit halves.
-$attr($inline_always)
-$static fn_((HashMap__wyhash_mum(u64 a, u64 b))(u64)) {
-#if defined(__SIZEOF_INT128__)
-    /* GCC/Clang: native 128-bit multiply */
-    let r = (unsigned __int128)a * (unsigned __int128)b;
-    return (u64)(r) ^ (u64)(r >> 64);
-#elif defined(_MSC_VER) && defined(_M_X64)
-    /* MSVC x64: _umul128 intrinsic */
-    u64 hi = 0;
-    let lo = _umul128(a, b, &hi);
-    return lo ^ hi;
-#else
-    /* Portable 32-bit fallback: split into 32-bit halves */
-    let al = (u64)(u32)(a);
-    let ah = a >> 32;
-    let bl = (u64)(u32)(b);
-    let bh = b >> 32;
-    let ll = al * bl;
-    let lh = al * bh;
-    let hl = ah * bl;
-    let hh = ah * bh;
-    let mid = (ll >> 32) + (u32)(lh) + (u32)(hl);
-    return (mid << 32) | (u32)(ll) ^ hh + (lh >> 32) + (hl >> 32);
-#endif
-};
-/// Wyhash secret constants (from official wyhash reference).
-#define HashMap__wyhash_s0 0x2d358dccaa6c78a5ull
-#define HashMap__wyhash_s1 0x8bb84b93962eacc9ull
-#define HashMap__wyhash_s2 0x4b33a62ed433d4a3ull
-/// Read an unaligned u64 from a byte pointer.
-$attr($inline_always)
-$static fn_((HashMap__wyhash_read64(P_const$u8 p))(u64)) {
-    let v = *u_castP$((u64*)(u_memcpy(u_anyP(&l0$((u64))), P_meta((typeInfo$(u64))(ptrCast$((P_const$raw)(p)))))));
-    return v;
-};
-$attr($inline_always)
-$static fn_((HashMap__wyhash_read32(P_const$u8 p))(u64)) {
-    let v = *u_castP$((u32*)(u_memcpy(u_anyP(&l0$((u32))), P_meta((typeInfo$(u32))(ptrCast$((P_const$raw)(p)))))));
-    return as$(u64)(v);
-};
-/// Wyhash: production-quality hash for arbitrary byte sequences.
-$static fn_((HashMap__wyhash(S_const$u8 key, u64 seed))(u64)) {
-    seed ^= HashMap__wyhash_mum(seed ^ HashMap__wyhash_s0, HashMap__wyhash_s1);
-
-    var_(a, u64) = 0;
-    var_(b, u64) = 0;
-    if (key.len <= 16) {
-        if (key.len >= 4) {
-            a = (HashMap__wyhash_read32(key.ptr) << 32) | HashMap__wyhash_read32(key.ptr + ((key.len >> 3) << 2));
-            b = (HashMap__wyhash_read32(key.ptr + key.len - 4) << 32) | HashMap__wyhash_read32(key.ptr + key.len - 4 - ((key.len >> 3) << 2));
-        } else if (key.len > 0) {
-            a = ((u64)key.ptr[0] << 16) | ((u64)key.ptr[key.len >> 1] << 8) | key.ptr[key.len - 1];
-            b = 0;
-        }
-    } else {
-        var ptr = key.ptr;
-        var p = key.len;
-        if (p > 48) {
-            var_(s1, u64) = seed;
-            var_(s2, u64) = seed;
-            while (p > 48) {
-                seed = HashMap__wyhash_mum(
-                    HashMap__wyhash_read64(ptr) ^ HashMap__wyhash_s0,
-                    HashMap__wyhash_read64(ptr + 8) ^ seed
-                );
-                s1 = HashMap__wyhash_mum(
-                    HashMap__wyhash_read64(ptr + 16) ^ HashMap__wyhash_s1,
-                    HashMap__wyhash_read64(ptr + 24) ^ s1
-                );
-                s2 = HashMap__wyhash_mum(
-                    HashMap__wyhash_read64(ptr + 32) ^ HashMap__wyhash_s2,
-                    HashMap__wyhash_read64(ptr + 40) ^ s2
-                );
-                ptr += 48;
-                p -= 48;
-            }
-            seed ^= s1 ^ s2;
-        }
-        while (p > 16) {
-            seed = HashMap__wyhash_mum(
-                HashMap__wyhash_read64(ptr) ^ HashMap__wyhash_s0,
-                HashMap__wyhash_read64(ptr + 8) ^ seed
-            );
-            ptr += 16;
-            p -= 16;
-        }
-        a = HashMap__wyhash_read64(ptr + p - 16);
-        b = HashMap__wyhash_read64(ptr + p - 8);
-    }
-
-    return HashMap__wyhash_mum(
-        a ^ HashMap__wyhash_s0 ^ as$(u64)(key.len),
-        b ^ seed
-    );
-};
-$attr($maybe_unused $deprecated_instead("", HashMap__wyhash))
-$static fn_((HashMap__fnv1a(u_V$raw val, u_V$raw ctx))(u64)) {
-    let_ignore = ctx;
-    let bytes = slice$P(as$(const u8*)(val.inner), $r(0, val.type.size));
-    var_(hash, u64) = 0xcbf29ce484222325ull; // FNV offset basis
-    for_(($s(bytes))(byte)) {
-        hash ^= *byte;
-        hash *= 0x100000001b3ull; // FNV prie
-    } $end(for);
-    return hash;
-};
-
 fn_((HashMap_HashFn_default(u_V$raw val, u_V$raw ctx))(u64)) {
     let_ignore = ctx;
-    return HashMap__wyhash(mem_asBytes(val.ref.as_const), 0);
+    return hash_bytes64(mem_asBytes(val.ref.as_const));
 };
 
 fn_((HashMap_EqlFn_default(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(bool)) {
@@ -324,7 +216,7 @@ $static fn_((HashMap__capForSize(HashMap_LoadRatio load_ratio, u32 size))(u32)) 
 };
 
 $static fn_((HashMap__initMetadata(HashMap* self))(void)) {
-    mem_set0(u_anyS(slice$P(unwrap_(self->metadata), $r(0, HashMap_cap(*self)))));
+    mem_set0(u_anyS(P_slice((unwrap_(self->metadata))($r(0, HashMap_cap(*self))))));
 };
 
 $static fn_((HashMap__alloc(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa, u32 new_cap))(mem_E$void) $scope) {
@@ -340,7 +232,7 @@ $static fn_((HashMap__alloc(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem
     let vals_end = vals_start + as$(usize)(new_cap)*val_ty.size;
     let total_size = mem_alignFwd(vals_end, max_align);
 
-    let slice = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), total_size))));
+    let slice = try_(mem_Alctr_allocBytes($trace gpa, total_size));
     let ptr = slice.ptr;
     let hdr = ptrAlignCast$((HashMap_Header*)(ptr));
     asg_l((hdr)({
@@ -372,7 +264,7 @@ $static fn_((HashMap__free(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_
     let total_size = mem_alignFwd(vals_end, max_align);
 
     let ptr = as$(u8*)(HashMap__header(*self));
-    mem_Alctr_free($trace gpa, (u_S$raw){ .ptr = ptr, .len = total_size, .type = typeInfo$(u8) });
+    mem_Alctr_freeBytes($trace gpa, P_prefix$((S$u8)(ptr)(total_size)));
 
     asg_l((&self->metadata)(none()));
     self->available = 0;

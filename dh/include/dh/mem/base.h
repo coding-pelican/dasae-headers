@@ -30,8 +30,12 @@ T_alias$((mem_Align)(mem_Log2Align));
 T_decl_O$(mem_Align);
 
 errset_((mem_E)(OutOfMemory));
-T_use_E$($set(mem_E)(u_P$raw));
-T_use_E$($set(mem_E)(u_S$raw));
+T_useBy$(($spec(E, $set(mem_E)))(
+    P_const$u8, P$u8,
+    S_const$u8, S$u8,
+    u_P_const$raw, u_P$raw,
+    u_S_const$raw, u_S$raw
+));
 
 T_alias$((mem_Alctr)(struct mem_Alctr));
 T_decl_O$(mem_Alctr);

@@ -3,11 +3,11 @@
 
 /*========== Internal Declarations ==========================================*/
 
-// xoroshiro128** (Blackman & Vigna, 2019): advance state, return scrambled output
 $attr($inline_always)
 $static fn_((Rand__next(Rand* self))(u64));
+$attr($inline_always)
+$static fn_((Rand__splitMix64(u64* seed))(u64));
 
-// Lemire's debiased bounded random in [0, range) — no modulo bias
 $attr($inline_always)
 $static fn_((Rand__bounded64(Rand* self, u64 range))(u64));
 $attr($inline_always)
@@ -28,11 +28,23 @@ fn_((Rand_initSeed(u64 seed))(Rand)) {
 };
 
 fn_((Rand_withSeed(Rand self, u64 seed))(Rand)) {
-    return with_((self)((.state)(seed)));
+    var split_seed = seed;
+    self.state = Rand__splitMix64(&split_seed);
+    self.stream = Rand__splitMix64(&split_seed);
+    return self;
 };
 
 fn_((Rand_setSeed(Rand* self, u64 seed))(void)) {
     *self = Rand_withSeed(*self, seed);
+};
+
+fn_((Rand_fillBytes(Rand* self, S$u8 buf))(S$u8)) {
+    for_(($s(buf))(byte)) { *byte = Rand_next$u8(self); } $end(for);
+    return buf;
+};
+
+fn_((Rand_boolean(Rand* self))(bool)) {
+    return (Rand_next$u8(self) & 1u) != 0;
 };
 
 fn_((Rand_nextUInt(Rand* self))(u64)) {
@@ -40,7 +52,6 @@ fn_((Rand_nextUInt(Rand* self))(u64)) {
 };
 
 fn_((Rand_next$usize(Rand* self))(usize)) {
-    // extract high sizeof(usize)*8 bits from 64-bit output
     return as$(usize)(Rand_nextUInt(self) >> (64u - sizeof(usize) * 8u));
 };
 
@@ -49,7 +60,6 @@ fn_((Rand_next$u64(Rand* self))(u64)) {
 };
 
 fn_((Rand_next$ulong(Rand* self))(ulong)) {
-    // extract high sizeof(ulong)*8 bits from 64-bit output
     return as$(ulong)(Rand_nextUInt(self) >> (64u - sizeof(ulong) * 8u));
 };
 
@@ -98,112 +108,394 @@ fn_((Rand_nextFlt(Rand* self))(f64)) {
 };
 
 fn_((Rand_next$f64(Rand* self))(f64)) {
-    // 53 mantissa bits in [0, 2^53-1], divide by 2^53-1 => [0.0, 1.0]
     return as$(f64)(Rand_nextUInt(self) >> 11u) / as$(f64)((1ull << 53) - 1ull);
 };
 
 fn_((Rand_next$f32(Rand* self))(f32)) {
-    // 24 mantissa bits in [0, 2^24-1], divide by 2^24-1 => [0.0f, 1.0f]
     return as$(f32)(Rand_next$u32(self) >> 8u) / as$(f32)((1u << 24) - 1u);
 };
 
-// Unsigned integer [min, max)
-fn_((Rand_rangeUInt(Rand* self, u64 min, u64 max))(u64)) {
-    return min + Rand__bounded64(self, max - min);
+fn_((Rand_lessThanUInt(Rand* self, u64 less_than))(u64)) {
+    return Rand_lessThan$u64(self, less_than);
 };
 
-fn_((Rand_range$usize(Rand* self, usize min, usize max))(usize)) {
-    return min + intCast$((usize)(Rand__bounded64(self, as$(u64)(max) - as$(u64)(min))));
+fn_((Rand_lessThan$usize(Rand* self, usize less_than))(usize)) {
+    claim_assert(0 < less_than);
+    return Rand_range$usize(self, Range_inclExcl$(usize, 0, less_than));
 };
 
-fn_((Rand_range$u64(Rand* self, u64 min, u64 max))(u64)) {
-    return min + Rand__bounded64(self, max - min);
+fn_((Rand_lessThan$u64(Rand* self, u64 less_than))(u64)) {
+    claim_assert(0 < less_than);
+    return Rand_range$u64(self, Range_inclExcl$(u64, 0, less_than));
 };
 
-fn_((Rand_range$ulong(Rand* self, ulong min, ulong max))(ulong)) {
-    return min + intCast$((ulong)(Rand__bounded64(self, as$(u64)(max) - as$(u64)(min))));
+fn_((Rand_lessThan$ulong(Rand* self, ulong less_than))(ulong)) {
+    claim_assert(0 < less_than);
+    return Rand_range$ulong(self, Range_inclExcl$(ulong, 0, less_than));
 };
 
-fn_((Rand_range$u32(Rand* self, u32 min, u32 max))(u32)) {
-    return min + Rand__bounded32(self, max - min);
+fn_((Rand_lessThan$u32(Rand* self, u32 less_than))(u32)) {
+    claim_assert(0 < less_than);
+    return Rand_range$u32(self, Range_inclExcl$(u32, 0, less_than));
 };
 
-fn_((Rand_range$u16(Rand* self, u16 min, u16 max))(u16)) {
-    return min + Rand__bounded16(self, as$(u16)(as$(u32)(max) - as$(u32)(min)));
+fn_((Rand_lessThan$u16(Rand* self, u16 less_than))(u16)) {
+    claim_assert(0 < less_than);
+    return Rand_range$u16(self, Range_inclExcl$(u16, 0, less_than));
 };
 
-fn_((Rand_range$u8(Rand* self, u8 min, u8 max))(u8)) {
-    return min + Rand__bounded8(self, as$(u8)(as$(u32)(max) - as$(u32)(min)));
+fn_((Rand_lessThan$u8(Rand* self, u8 less_than))(u8)) {
+    claim_assert(0 < less_than);
+    return Rand_range$u8(self, Range_inclExcl$(u8, 0, less_than));
 };
 
-// Signed integer [min, max)
-// Range computed as unsigned to handle all edge cases (including INT_MIN to INT_MAX).
-// Result built by unsigned addition then bitcast — avoids signed overflow UB.
-fn_((Rand_rangeIInt(Rand* self, i64 min, i64 max))(i64)) {
-    return bitCast$((i64)(as$(u64)(min) + Rand__bounded64(self, as$(u64)(max) - as$(u64)(min))));
+fn_((Rand_atMostUInt(Rand* self, u64 at_most))(u64)) {
+    return Rand_atMost$u64(self, at_most);
 };
 
-fn_((Rand_range$isize(Rand* self, isize min, isize max))(isize)) {
-    return bitCast$((isize)(intCast$((usize)(as$(u64)(as$(usize)(min))
-                                             + Rand__bounded64(self, as$(u64)(max) - as$(u64)(min))))));
+fn_((Rand_atMost$usize(Rand* self, usize at_most))(usize)) {
+    return Rand_range$usize(self, Range_inclIncl$(usize, 0, at_most));
 };
 
-fn_((Rand_range$i64(Rand* self, i64 min, i64 max))(i64)) {
-    return bitCast$((i64)(as$(u64)(min) + Rand__bounded64(self, as$(u64)(max) - as$(u64)(min))));
+fn_((Rand_atMost$u64(Rand* self, u64 at_most))(u64)) {
+    return Rand_range$u64(self, Range_inclIncl$(u64, 0, at_most));
 };
 
-fn_((Rand_range$ilong(Rand* self, ilong min, ilong max))(ilong)) {
-    return bitCast$((ilong)(intCast$((ulong)(as$(u64)(as$(ulong)(min))
-                                             + Rand__bounded64(self, as$(u64)(max) - as$(u64)(min))))));
+fn_((Rand_atMost$ulong(Rand* self, ulong at_most))(ulong)) {
+    return Rand_range$ulong(self, Range_inclIncl$(ulong, 0, at_most));
 };
 
-fn_((Rand_range$i32(Rand* self, i32 min, i32 max))(i32)) {
-    return bitCast$((i32)(as$(u32)(min) + Rand__bounded32(self, as$(u32)(max) - as$(u32)(min))));
+fn_((Rand_atMost$u32(Rand* self, u32 at_most))(u32)) {
+    return Rand_range$u32(self, Range_inclIncl$(u32, 0, at_most));
 };
 
-fn_((Rand_range$i16(Rand* self, i16 min, i16 max))(i16)) {
-    return bitCast$((i16)(as$(u16)(as$(u16)(min) + Rand__bounded16(self, as$(u16)(as$(u32)(max) - as$(u32)(min))))));
+fn_((Rand_atMost$u16(Rand* self, u16 at_most))(u16)) {
+    return Rand_range$u16(self, Range_inclIncl$(u16, 0, at_most));
 };
 
-fn_((Rand_range$i8(Rand* self, i8 min, i8 max))(i8)) {
-    return bitCast$((i8)(as$(u8)(as$(u8)(min) + Rand__bounded8(self, as$(u8)(as$(u32)(max) - as$(u32)(min))))));
+fn_((Rand_atMost$u8(Rand* self, u8 at_most))(u8)) {
+    return Rand_range$u8(self, Range_inclIncl$(u8, 0, at_most));
 };
 
-// Float [min, max]
-fn_((Rand_rangeFlt(Rand* self, f64 min, f64 max))(f64)) {
-    return min + Rand_nextFlt(self) * (max - min);
+fn_((Rand_rangeUInt(Rand* self, Range$u64 range))(u64)) {
+    return Rand_range$u64(self, range);
 };
 
-fn_((Rand_range$f64(Rand* self, f64 min, f64 max))(f64)) {
-    return min + Rand_next$f64(self) * (max - min);
+fn_((Rand_range$usize(Rand* self, Range$usize range))(usize)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != uint_limit$(usize));
+        lo += 1;
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != 0);
+        hi -= 1;
+    }
+
+    claim_assert(lo <= hi);
+    let width = hi - lo + 1;
+    if (width == 0) return Rand_next$usize(self);
+    return lo + intCast$((usize)(Rand__bounded64(self, as$(u64)(width))));
 };
 
-fn_((Rand_range$f32(Rand* self, f32 min, f32 max))(f32)) {
-    return min + Rand_next$f32(self) * (max - min);
+fn_((Rand_range$u64(Rand* self, Range$u64 range))(u64)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != uint_limit$(u64));
+        lo += 1;
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != 0);
+        hi -= 1;
+    }
+
+    claim_assert(lo <= hi);
+    let width = hi - lo + 1;
+    if (width == 0) return Rand_next$u64(self);
+    return lo + Rand__bounded64(self, width);
+};
+
+fn_((Rand_range$ulong(Rand* self, Range$ulong range))(ulong)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != uint_limit$(ulong));
+        lo += 1;
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != 0);
+        hi -= 1;
+    }
+
+    claim_assert(lo <= hi);
+    let width = hi - lo + 1;
+    if (width == 0) return Rand_next$ulong(self);
+    return lo + intCast$((ulong)(Rand__bounded64(self, as$(u64)(width))));
+};
+
+fn_((Rand_range$u32(Rand* self, Range$u32 range))(u32)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != uint_limit$(u32));
+        lo += 1;
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != 0);
+        hi -= 1;
+    }
+
+    claim_assert(lo <= hi);
+    let width = hi - lo + 1;
+    if (width == 0) return Rand_next$u32(self);
+    return lo + Rand__bounded32(self, width);
+};
+
+fn_((Rand_range$u16(Rand* self, Range$u16 range))(u16)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != uint_limit$(u16));
+        lo = as$(u16)(lo + 1);
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != 0);
+        hi = as$(u16)(hi - 1);
+    }
+
+    claim_assert(lo <= hi);
+    let width = as$(u32)(hi) - as$(u32)(lo) + 1;
+    if (width == as$(u32)(uint_limit$(u16)) + 1) return Rand_next$u16(self);
+    return as$(u16)(lo + Rand__bounded16(self, as$(u16)(width)));
+};
+
+fn_((Rand_range$u8(Rand* self, Range$u8 range))(u8)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != uint_limit$(u8));
+        lo = as$(u8)(lo + 1);
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != 0);
+        hi = as$(u8)(hi - 1);
+    }
+
+    claim_assert(lo <= hi);
+    let width = as$(u16)(hi) - as$(u16)(lo) + 1;
+    if (width == as$(u16)(uint_limit$(u8)) + 1) return Rand_next$u8(self);
+    return as$(u8)(lo + Rand__bounded8(self, as$(u8)(width)));
+};
+
+fn_((Rand_rangeIInt(Rand* self, Range$i64 range))(i64)) {
+    return Rand_range$i64(self, range);
+};
+
+fn_((Rand_range$isize(Rand* self, Range$isize range))(isize)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != int_limit_max$(isize));
+        lo += 1;
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != int_limit_min$(isize));
+        hi -= 1;
+    }
+
+    claim_assert(lo <= hi);
+    if (lo == int_limit_min$(isize) && hi == int_limit_max$(isize)) return Rand_next$isize(self);
+    let lo_raw = bitCast$((usize)(lo));
+    let hi_raw = bitCast$((usize)(hi));
+    let width = hi_raw - lo_raw + 1;
+    if (width == 0) return Rand_next$isize(self);
+    let val = lo_raw + intCast$((usize)(Rand__bounded64(self, as$(u64)(width))));
+    return bitCast$((isize)(val));
+};
+
+fn_((Rand_range$i64(Rand* self, Range$i64 range))(i64)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != int_limit_max$(i64));
+        lo += 1;
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != int_limit_min$(i64));
+        hi -= 1;
+    }
+
+    claim_assert(lo <= hi);
+    if (lo == int_limit_min$(i64) && hi == int_limit_max$(i64)) return Rand_next$i64(self);
+    let lo_raw = bitCast$((u64)(lo));
+    let hi_raw = bitCast$((u64)(hi));
+    let width = hi_raw - lo_raw + 1;
+    if (width == 0) return Rand_next$i64(self);
+    let val = lo_raw + Rand__bounded64(self, width);
+    return bitCast$((i64)(val));
+};
+
+fn_((Rand_range$ilong(Rand* self, Range$ilong range))(ilong)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != int_limit_max$(ilong));
+        lo += 1;
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != int_limit_min$(ilong));
+        hi -= 1;
+    }
+
+    claim_assert(lo <= hi);
+    if (lo == int_limit_min$(ilong) && hi == int_limit_max$(ilong)) return Rand_next$ilong(self);
+    let lo_raw = bitCast$((ulong)(lo));
+    let hi_raw = bitCast$((ulong)(hi));
+    let width = hi_raw - lo_raw + 1;
+    if (width == 0) return Rand_next$ilong(self);
+    let val = lo_raw + intCast$((ulong)(Rand__bounded64(self, as$(u64)(width))));
+    return bitCast$((ilong)(val));
+};
+
+fn_((Rand_range$i32(Rand* self, Range$i32 range))(i32)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != int_limit_max$(i32));
+        lo += 1;
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != int_limit_min$(i32));
+        hi -= 1;
+    }
+
+    claim_assert(lo <= hi);
+    if (lo == int_limit_min$(i32) && hi == int_limit_max$(i32)) return Rand_next$i32(self);
+    let lo_raw = bitCast$((u32)(lo));
+    let hi_raw = bitCast$((u32)(hi));
+    let width = hi_raw - lo_raw + 1;
+    if (width == 0) return Rand_next$i32(self);
+    let val = lo_raw + Rand__bounded32(self, width);
+    return bitCast$((i32)(val));
+};
+
+fn_((Rand_range$i16(Rand* self, Range$i16 range))(i16)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != int_limit_max$(i16));
+        lo = as$(i16)(lo + 1);
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != int_limit_min$(i16));
+        hi = as$(i16)(hi - 1);
+    }
+
+    claim_assert(lo <= hi);
+    let lo_raw = bitCast$((u16)(lo));
+    let hi_raw = bitCast$((u16)(hi));
+    if (lo_raw == u16_(0x8000u) && hi_raw == u16_(0x7fffu)) return Rand_next$i16(self);
+    let width = as$(u16)(hi_raw - lo_raw + 1);
+    if (width == 0) return Rand_next$i16(self);
+    let val = as$(u16)(lo_raw + Rand__bounded16(self, width));
+    return bitCast$((i16)(val));
+};
+
+fn_((Rand_range$i8(Rand* self, Range$i8 range))(i8)) {
+    var lo = range.begin.point;
+    if (range.begin.bound == Limit_Bound_excl) {
+        claim_assert(lo != int_limit_max$(i8));
+        lo = as$(i8)(lo + 1);
+    }
+
+    var hi = range.end.point;
+    if (range.end.bound == Limit_Bound_excl) {
+        claim_assert(hi != int_limit_min$(i8));
+        hi = as$(i8)(hi - 1);
+    }
+
+    claim_assert(lo <= hi);
+    let lo_raw = bitCast$((u8)(lo));
+    let hi_raw = bitCast$((u8)(hi));
+    if (lo_raw == u8_(0x80u) && hi_raw == u8_(0x7fu)) return Rand_next$i8(self);
+    let width = as$(u8)(hi_raw - lo_raw + 1);
+    if (width == 0) return Rand_next$i8(self);
+    let val = as$(u8)(lo_raw + Rand__bounded8(self, width));
+    return bitCast$((i8)(val));
+};
+
+fn_((Rand_rangeFlt(Rand* self, Range$f64 range))(f64)) {
+    return Rand_range$f64(self, range);
+};
+
+fn_((Rand_range$f64(Rand* self, Range$f64 range))(f64)) {
+    var lo = range.begin.point;
+    var hi = range.end.point;
+
+    if (range.begin.bound == Limit_Bound_excl) lo = flt_nextAfter(lo, flt_inf_pstv$(f64));
+    if (range.end.bound == Limit_Bound_excl) hi = flt_nextAfter(hi, flt_inf_ngtv$(f64));
+
+    claim_assert(lo <= hi);
+    if (lo == hi) return lo;
+    return lo + Rand_next$f64(self) * (hi - lo);
+};
+
+fn_((Rand_range$f32(Rand* self, Range$f32 range))(f32)) {
+    var lo = range.begin.point;
+    var hi = range.end.point;
+
+    if (range.begin.bound == Limit_Bound_excl) lo = flt_nextAfter(lo, flt_inf_pstv$(f32));
+    if (range.end.bound == Limit_Bound_excl) hi = flt_nextAfter(hi, flt_inf_ngtv$(f32));
+
+    claim_assert(lo <= hi);
+    if (lo == hi) return lo;
+    return lo + Rand_next$f32(self) * (hi - lo);
 };
 
 /*========== Internal Definitions ===========================================*/
 
-// xoroshiro128** (Blackman & Vigna, 2019)
 fn_((Rand__next(Rand* self))(u64)) {
-    const u64 s0 = self->state;
-    const u64 s1 = self->stream;
-    const u64 result = int_rotateLeft(s0 * 5, as$(u64)(7)) * 9;
-    const u64 s1_xor = s1 ^ s0;
+    let s0 = self->state;
+    let s1 = self->stream;
+    let result = int_rotateLeft(s0 * 5, as$(u64)(7)) * 9;
+    let s1_xor = s1 ^ s0;
+
     self->state = int_rotateLeft(s0, as$(u64)(24)) ^ s1_xor ^ (s1_xor << 16);
     self->stream = int_rotateLeft(s1_xor, as$(u64)(37));
     return result;
 };
 
-// Lemire (2019): multiply-then-reject — expected < 2 iterations for large ranges
+fn_((Rand__splitMix64(u64* seed))(u64)) {
+    *seed += u64_(0x9e3779b97f4a7c15ull);
+    var z = *seed;
+    z = (z ^ (z >> 30)) * u64_(0xbf58476d1ce4e5b9ull);
+    z = (z ^ (z >> 27)) * u64_(0x94d049bb133111ebull);
+    return z ^ (z >> 31);
+};
+
 fn_((Rand__bounded64(Rand* self, u64 range))(u64)) {
+    claim_assert(0 < range);
+
     typedef __uint128_t u128;
-    u128 m = (u128)Rand_nextUInt(self) * (u128)range;
-    u64 l = as$(u64)(m);
+    var m = as$(u128)(Rand_next$u64(self)) * as$(u128)(range);
+    var l = as$(u64)(m);
     if (l < range) {
-        const u64 threshold = as$(u64)(-range) % range;
+        let threshold = as$(u64)(-range) % range;
         while (l < threshold) {
-            m = (u128)Rand_nextUInt(self) * (u128)range;
+            m = as$(u128)(Rand_next$u64(self)) * as$(u128)(range);
             l = as$(u64)(m);
         }
     }
@@ -211,10 +503,12 @@ fn_((Rand__bounded64(Rand* self, u64 range))(u64)) {
 };
 
 fn_((Rand__bounded32(Rand* self, u32 range))(u32)) {
-    u64 m = as$(u64)(Rand_next$u32(self)) * as$(u64)(range);
-    u32 l = as$(u32)(m);
+    claim_assert(0 < range);
+
+    var m = as$(u64)(Rand_next$u32(self)) * as$(u64)(range);
+    var l = as$(u32)(m);
     if (l < range) {
-        const u32 threshold = as$(u32)(-range) % range;
+        let threshold = as$(u32)(-range) % range;
         while (l < threshold) {
             m = as$(u64)(Rand_next$u32(self)) * as$(u64)(range);
             l = as$(u32)(m);
@@ -224,10 +518,12 @@ fn_((Rand__bounded32(Rand* self, u32 range))(u32)) {
 };
 
 fn_((Rand__bounded16(Rand* self, u16 range))(u16)) {
-    u32 m = as$(u32)(Rand_next$u16(self)) * as$(u32)(range);
-    u16 l = as$(u16)(m);
+    claim_assert(0 < range);
+
+    var m = as$(u32)(Rand_next$u16(self)) * as$(u32)(range);
+    var l = as$(u16)(m);
     if (l < range) {
-        const u16 threshold = as$(u16)(-range) % range;
+        let threshold = as$(u16)(-range) % range;
         while (l < threshold) {
             m = as$(u32)(Rand_next$u16(self)) * as$(u32)(range);
             l = as$(u16)(m);
@@ -237,10 +533,12 @@ fn_((Rand__bounded16(Rand* self, u16 range))(u16)) {
 };
 
 fn_((Rand__bounded8(Rand* self, u8 range))(u8)) {
-    u16 m = as$(u16)(as$(u16)(Rand_next$u8(self)) * as$(u16)(range));
-    u8 l = as$(u8)(m);
+    claim_assert(0 < range);
+
+    var m = as$(u16)(as$(u16)(Rand_next$u8(self)) * as$(u16)(range));
+    var l = as$(u8)(m);
     if (l < range) {
-        const u8 threshold = as$(u8)(-range) % range;
+        let threshold = as$(u8)(-range) % range;
         while (l < threshold) {
             m = as$(u16)(as$(u16)(Rand_next$u8(self)) * as$(u16)(range));
             l = as$(u8)(m);

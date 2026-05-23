@@ -5,7 +5,7 @@
  * @file    assert.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-22 (date of creation)
- * @updated 2026-01-16 (date of last update)
+ * @updated 2026-05-22 (date of last update)
  * @ingroup dasae-headers(dh)/core/debug
  * @prefix  debug_assert
  *
@@ -76,35 +76,47 @@ extern "C" {
 #define __step__debug_assert(_Expr, _ExprStr...) $ignore_void(\
     (!!_Expr) || (({ \
         debug_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
-        $debug_point debug_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
+        $debug_point debug_assert_failLog(\
+            _ExprStr, __func__, __FILE__, u32_(__LINE__) \
+        ); \
         $unreachable; \
     }), 0) \
 )
 #define __step__debug_assert_msg(_Expr, _ExprStr, _msg...) $ignore_void( \
     (!!_Expr) || (({ \
         debug_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _msg); \
-        $debug_point debug_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
+        $debug_point debug_assert_failLogMsg( \
+            _ExprStr, __func__, __FILE__, u32_(__LINE__), _msg \
+        ); \
         $unreachable; \
     }), 0) \
 )
 #define __step__debug_assert_fmt(_Expr, _ExprStr, _fmt...) $ignore_void(\
     (!!_Expr) || (({ \
         debug_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
-        $debug_point debug_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
+        $debug_point debug_assert_failLogFmt( \
+            _ExprStr, __func__, __FILE__, u32_(__LINE__), _fmt \
+        ); \
         $unreachable; \
     }), 0) \
 )
 
 #define __step__debug_assert_trap() $ignore_void(({ \
-    $debug_point debug_assert_failLog("(none)", __func__, __FILE__, __LINE__); \
+    $debug_point debug_assert_failLog( \
+        "(none)", __func__, __FILE__, u32_(__LINE__) \
+    ); \
     $unreachable; \
 }), 0)
 #define __step__debug_assert_trap_msg(_msg...) $ignore_void(({ \
-    $debug_point debug_assert_failLogMsg("(none)", __func__, __FILE__, __LINE__, _msg); \
+    $debug_point debug_assert_failLogMsg( \
+        "(none)", __func__, __FILE__, u32_(__LINE__), _msg \
+    ); \
     $unreachable; \
 }), 0)
 #define __step__debug_assert_trap_fmt(_fmt...) $ignore_void(({ \
-    $debug_point debug_assert_failLogFmt("(none)", __func__, __FILE__, __LINE__, _fmt); \
+    $debug_point debug_assert_failLogFmt( \
+        "(none)", __func__, __FILE__, u32_(__LINE__), _fmt \
+    ); \
     $unreachable; \
 }), 0)
 /* clang-format on */
@@ -237,7 +249,7 @@ extern "C" {
  * @param file The file where the assertion failed.
  * @param line The line number where the assertion failed.
  */
-$extern fn_((debug_assert_failLog(const char* expr, const char* func, const char* file, i32 line))(void));
+$extern fn_((debug_assert_failLog(const char* expr, const char* func, const char* file, u32 line))(void));
 /**
  * @brief Logs an assertion failure with the given expression, function, file, line, and message.
  *
@@ -247,7 +259,7 @@ $extern fn_((debug_assert_failLog(const char* expr, const char* func, const char
  * @param line The line number where the assertion failed.
  * @param msg The message to include in the assertion failure.
  */
-$extern fn_((debug_assert_failLogMsg(const char* expr, const char* func, const char* file, i32 line, const char* msg))(void));
+$extern fn_((debug_assert_failLogMsg(const char* expr, const char* func, const char* file, u32 line, const char* msg))(void));
 /**
  * @brief Logs an assertion failure with the given expression, function, file, line, and formatted message.
  *
@@ -258,11 +270,11 @@ $extern fn_((debug_assert_failLogMsg(const char* expr, const char* func, const c
  * @param fmt The formatted message to include in the assertion failure.
  * @param ... The arguments for the formatted message.
  */
-$extern fn_((debug_assert_failLogFmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...))(void));
+$extern fn_((debug_assert_failLogFmt(const char* expr, const char* func, const char* file, u32 line, const char* fmt, ...))(void));
 #else /* !on_comptime */
-$extern fn_((debug_assert_failLog(const char*, const char*, const char*, i32))(void));
-$extern fn_((debug_assert_failLogMsg(const char*, const char*, const char*, i32, const char*))(void));
-$extern fn_((debug_assert_failLogFmt(const char*, const char*, const char*, i32, const char*, ...))(void));
+$extern fn_((debug_assert_failLog(const char*, const char*, const char*, u32))(void));
+$extern fn_((debug_assert_failLogMsg(const char*, const char*, const char*, u32, const char*))(void));
+$extern fn_((debug_assert_failLogFmt(const char*, const char*, const char*, u32, const char*, ...))(void));
 #endif /* on_comptime */
 
 #if defined(__cplusplus)

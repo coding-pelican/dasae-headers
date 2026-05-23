@@ -37,44 +37,39 @@ extern "C" {
 #define A_TUnqual$(_T...) TypeOfUnqual(null$(_T*)->val[0])
 
 /* Array Operations */
-#define zero$A() init$A({})
-#define zero$A$(/*(_N,_T)*/... /*(A$(_N,_T))*/) init$A$(__VA_ARGS__{})
-#define zero$A$$(/*(_N,_T)*/... /*(A$$(_N,_T))*/) init$A$$(__VA_ARGS__{})
-
 #define asgA(_p_a, _v_a...) asgA1(_p_a, _v_a)
 #define asgA1(_p_a, _v_a...) asg(_p_a, _v_a, (val))
 #define asgA2(_p_a, _v_a...) asg(_p_a, _v_a, (val.val))
 #define asgA3(_p_a, _v_a...) asg(_p_a, _v_a, (val.val.val))
 #define asgA4(_p_a, _v_a...) asg(_p_a, _v_a, (val.val.val.val))
 
-#define init$A(_initial...) { .val = _initial }
-#define init$A$(/*(_N, _T){_initial...}*/... /*(A$(_N,_T))*/) \
-    __lit_init$A__step(pp_defer(__lit_init$A__emit)(A$, __lit_init$A__parseT __VA_ARGS__))
-#define init$A$$(/*(_N, _T){_initial...}*/... /*(A$$(_N,_T))*/) \
-    __lit_init$A__step(pp_defer(__lit_init$A__emit)(A$$, __lit_init$A__parseT __VA_ARGS__))
+#define A_zero$(_T...) l$((_T)A_zero())
+#define zeroA$ A_zero$
+#define A_zero() A_init({})
+#define zeroA A_zero
+#define A_init$(/*(_T){ _initial...}*/... /*(_T)*/) \
+    __step_inline__A_init$(pp_defer(__emit_inline__A_init$)(__param_parse__A_init$ __VA_ARGS__))
+#define __step_inline__A_init$(...) __VA_ARGS__
+#define __param_parse__A_init$(...) __VA_ARGS__,
+#define __emit_inline__A_init$(_T, _initial...) l$((_T)A_init(_initial))
+#define initA$ A_init$
+#define A_init(_initial...) { .val = _initial }
+#define initA A_init
+#define A_from$(/*(_T){_initial...}*/...) __A_from__step(pp_defer(__A_from__emit)(__A_from__parseT __VA_ARGS__))
+#define __A_from__step(...) __VA_ARGS__
+#define __A_from__parseT(_T...) _T,
+#define __A_from__emit(_T, _a...) \
+    l$((A$$((sizeOf$(TypeOf((_T[])_a)) / sizeOf$(_T)), _T)){ .val = _a })
+#define fromA$ A_from$
 
-#define ref$A(_a /*: A$$(_N,_T)*/... /*(S$(_T))*/) \
-    init$S$$((TypeOf(*ptr$A(_a)))(ptr$A(_a), len$A(_a)))
-#define ref$A$(/*((_T))(a: A$$(_N,_T))*/... /*((_T))*/) \
-    __ref$A__step(pp_defer(__ref$A__emit)(__ref$A__parseT __VA_ARGS__))
-
-#define A_zero zero$A
-#define A_init init$A
-#define A_val val$A
-#define A_ptr ptr$A
-#define A_len$ len$A$
-#define A_len len$A
-
-#define A_at(/*(_self: A(_N,_T))[_idx: usize]*/... /*(P(_T))*/) \
-    __op__A_at(__op__A_at__parse __VA_ARGS__)
-#define __op__A_at__parse(_a...) pp_uniqTok(a), _a, pp_uniqTok(idx),
-#define __op__A_at(...) __op__A_at__emit(__VA_ARGS__)
-#define __op__A_at__emit(__a, _a, __idx, _idx...) ({ \
-    let_(__idx, usize) = sizeOf$(TypeOf(u8 _idx)); \
-    let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__idx < A_len(*__a), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, A_len(*__a)); \
-    A_ptr(*__a) + __idx; \
-})
+#define A_val(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/) ((_a).val)
+#define valA A_val
+#define A_ptr(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/) (&*A_val(_a))
+#define ptrA A_ptr
+#define A_len$(_T...) A_len(*as$(_T*)(0))
+#define lenA$ A_len$
+#define A_len(_a /*: A$$(_N,_T)*/... /*(usize)*/) countOf$(TypeOf((_a).val))
+#define lenA A_len
 
 #define A_ref$(/*(_ST: S(_T))(_a: A(_N,_T))*/... /*(_ST)*/) \
     __op__A_ref$(__op__A_ref$__parseST __VA_ARGS__)
@@ -91,20 +86,19 @@ extern "C" {
             A_ref$((S$$(A_T$(TypeOf(_a))))(_a)) \
         )) \
     ))
+#define refA A_ref
 
-#define zeroA zero$A
-#define initA init$A
-#define valA val$A
-#define ptrA ptr$A
-#define lenA$ len$A$
-#define lenA len$A
-#define atA at$A
-
-#define val$A(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/) ((_a).val)
-#define ptr$A(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/) (&*val$A(_a))
-#define len$A$(_T...) len$A(*as$(_T*)(0))
-#define len$A(_a /*: A$$(_N,_T)*/... /*(usize)*/) countOf$(TypeOf((_a).val))
-#define at$A(_a /*: A$$(_N,_T)*/, _idx /*: usize*/... /*(P$$(_T))*/) pp_expand(pp_defer(block_inline__at$A)(param_expand__at$A(_a, _idx)))
+#define A_at(/*(_self: A(_N,_T))[_idx: usize]*/... /*(P(_T))*/) \
+    __op__A_at(__op__A_at__parse __VA_ARGS__)
+#define __op__A_at__parse(_a...) pp_uniqTok(a), _a, pp_uniqTok(idx),
+#define __op__A_at(...) __op__A_at__emit(__VA_ARGS__)
+#define __op__A_at__emit(__a, _a, __idx, _idx...) ({ \
+    let_(__idx, usize) = sizeOf$(TypeOf(u8 _idx)); \
+    let_(__a, TypeOf(&(_a))) = &(_a); \
+    claim_assert_fmt(__idx < A_len(*__a), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, A_len(*__a)); \
+    A_ptr(*__a) + __idx; \
+})
+#define atA A_at
 
 #define A_slice$(/*(_ST: S(_T))((_a: A(_N,_T))(_range: R))*/... /*(_ST)*/) \
     __op__A_slice$(__op__A_slice$__parseST __VA_ARGS__)
@@ -114,10 +108,11 @@ extern "C" {
 #define __op__A_slice$__emit(_ST, __a, _a, __range, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__a, TypeOf(_a)*) = &(_a); \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(R_isValid(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
     claim_assert_fmt(__range.end <= A_len(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, A_len(*__a)); \
-    l$((_ST){ .ptr = &A_ptr(*__a)[__range.begin], .len = len$R(__range) }); \
+    l$((_ST){ .ptr = &A_ptr(*__a)[__range.begin], .len = R_len(__range) }); \
 })
+#define sliceA$ A_slice$
 #define A_slice(/*(_a: A(_N,_T))(_range: R)*/... /*(S(_T))*/) \
     __op__A_slice(__op__A_slice__parse __VA_ARGS__)
 #define __op__A_slice(...) __op__A_slice__emit(__VA_ARGS__)
@@ -125,17 +120,18 @@ extern "C" {
 #define __op__A_slice__emit(__a, _a, __range, _range...) ({ \
     let_(__range, R) = _range; \
     let_(__a, TypeOf(_a)*) = &(_a); \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
+    claim_assert_fmt(R_isValid(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
     claim_assert_fmt(__range.end <= A_len(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, A_len(*__a)); \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__a))( \
-            l$((S_const$$(A_T$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__range.begin], .len = len$R(__range) }) \
+            l$((S_const$$(A_T$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__range.begin], .len = R_len(__range) }) \
         )), \
         T_qual$((TypeOfUnqual(*__a))( \
-            l$((S$$(A_T$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__range.begin], .len = len$R(__range) }) \
+            l$((S$$(A_T$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__range.begin], .len = R_len(__range) }) \
         )) \
     )); \
 })
+#define sliceA A_slice
 
 #define A_prefix$(/*(_ST: S(_T))(_a: A(_N,_T))(_end: usize)*/... /*(_ST)*/) \
     __op__A_prefix$(__op__A_prefix$__parseST __VA_ARGS__)
@@ -148,6 +144,7 @@ extern "C" {
     claim_assert_fmt(__end <= A_len(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __end, A_len(*__a)); \
     l$((_ST){ .ptr = A_ptr(*__a), .len = __end }); \
 })
+#define prefixA$ A_prefix$
 #define A_prefix(/*(_a: A(_N,_T))(_end: usize)*/... /*(S(_T))*/) \
     __op__A_prefix(__op__A_prefix__parse __VA_ARGS__)
 #define __op__A_prefix(...) __op__A_prefix__emit(__VA_ARGS__)
@@ -165,6 +162,7 @@ extern "C" {
         )) \
     )); \
 })
+#define prefixA A_prefix
 
 #define A_suffix$(/*(_ST: S(_T))((_a: A(_N,_T))(_begin: usize))*/... /*(_ST)*/) \
     __op__A_suffix$(__op__A_suffix$__parseST __VA_ARGS__)
@@ -177,6 +175,7 @@ extern "C" {
     claim_assert_fmt(__begin <= A_len(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, A_len(*__a)); \
     l$((_ST){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }); \
 })
+#define suffixA$ A_suffix$
 #define A_suffix(/*(_a: A(_N,_T))(_begin: usize)*/... /*(S(_T))*/) \
     __op__A_suffix(__op__A_suffix__parse __VA_ARGS__)
 #define __op__A_suffix(...) __op__A_suffix__emit(__VA_ARGS__)
@@ -194,21 +193,7 @@ extern "C" {
         )) \
     )); \
 })
-
-#define slice$A(/*_a: A$$(_N,_T), $r(_begin, _end): R*/... /*(S_const$$(_T))*/) __param_expand__slice$A(__VA_ARGS__)
-#define slice$A$(/*(_T)(_a: A$$(_N,_T), $r(_begin, _end): R)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__slice$A$)(__param_expand__slice$A$ __VA_ARGS__))
-#define prefix$A(/*_a: A$$(_N,_T), _end: usize*/... /*(S_const$$(_T))*/) __param_expand__prefix$A(__VA_ARGS__)
-#define prefix$A$(/*(_T)(_a: A$$(_N,_T), _end: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__prefix$A$)(__param_expand__prefix$A$ __VA_ARGS__))
-#define suffix$A(/*_a: A$$(_N,_T), _begin: usize*/... /*(S_const$$(_T))*/) __param_expand__suffix$A(__VA_ARGS__)
-#define suffix$A$(/*(_T)(_a: A$$(_N,_T), _begin: usize)*/... /*(S_const$(_T))*/) pp_expand(pp_defer(__block_inline__suffix$A$)(__param_expand__suffix$A$ __VA_ARGS__))
-
-/*========== Macros and Definitions =========================================*/
-
-#define A_from$(/*(_T){_initial...}*/...) __A_from__step(pp_defer(__A_from__emit)(__A_from__parseT __VA_ARGS__))
-#define __A_from__step(...) __VA_ARGS__
-#define __A_from__parseT(_T...) _T,
-#define __A_from__emit(_T, _a...) \
-    l$((A$$((sizeOf$(TypeOf((_T[])_a)) / sizeOf$(_T)), _T)){ .val = _a })
+#define suffixA A_suffix
 
 #define A_cat$(/*(_T)(_lhs, _rhs)*/... /*(_T)*/) \
     __op__A_cat$(__op__A_cat$__parseT __VA_ARGS__)
@@ -230,81 +215,12 @@ extern "C" {
     } Catting; \
     l$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
 })
+#define catA$ A_cat$
 #define A_cat(_lhs, _rhs...) \
     A_cat$((A$$(A_n$(TypeOf(_lhs)) + A_n$(TypeOf(_rhs)), A_T$(TypeOf(_lhs))))(_lhs, _rhs))
+#define catA A_cat
 
-#define __lit_init$A__step(...) __VA_ARGS__
-#define __lit_init$A__parseT(_N, _T...) _N, _T,
-#define __lit_init$A__emit(_AliasFn, _N, _T, _initial...) \
-    l$((_AliasFn(_N, _T))init$A(_initial))
-
-#define __ref$A__step(...) __VA_ARGS__
-#define __ref$A__parseT(_T...) _T, __ref$A__parseA
-#define __ref$A__parseA(_a...) _a
-#define __ref$A__emit(_T, _a...) \
-    init$S$((_T)(ptr$A(_a), len$A(_a)))
-
-#define param_expand__at$A(_a, _idx...) pp_uniqTok(a), pp_uniqTok(idx), _a, _idx
-#define block_inline__at$A(__a, __idx, _a, _idx...) ({ \
-    let_(__idx, usize) = _idx; \
-    let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_static_msg(__builtin_constant_p(__idx) ? (__idx < len$A(*__a)) : true, "index out of bounds"); \
-    claim_assert_fmt(__idx < len$A(*__a), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, len$A(*__a)); \
-    &val$A(*__a)[__idx]; \
-})
-
-#define __param_expand__slice$A(_a, _range...) __block_inline__slice$A(pp_uniqTok(a), pp_uniqTok(range), _a, _range)
-#define __block_inline__slice$A(__a, __range, _a, _range...) ({ \
-    let_(__range, R) = _range; \
-    let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= len$A(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, len$A(*__a)); \
-    init$S$$((TypeOf(*ptr$A(*__a)))(&val$A(*__a)[__range.begin], len$R(__range))); \
-})
-
-#define __param_expand__slice$A$(...) __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(range), __param_next__slice$A$
-#define __param_next__slice$A$(...) __VA_ARGS__
-#define __block_inline__slice$A$(_T, __a, __range, _a, _range...) ({ \
-    let_(__range, R) = _range; \
-    let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(isValid$R(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
-    claim_assert_fmt(__range.end <= len$A(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __range.end, len$A(*__a)); \
-    init$S$((_T)(&val$A(*__a)[__range.begin], len$R(__range))); \
-})
-
-#define __param_expand__prefix$A(_a, _end...) __block_inline__prefix$A(pp_uniqTok(a), pp_uniqTok(end), _a, _end)
-#define __block_inline__prefix$A(__a, __end, _a, _end...) ({ \
-    let_(__end, usize) = _end; \
-    let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __end, len$A(*__a)); \
-    init$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a), __end)); \
-})
-
-#define __param_expand__prefix$A$(...) __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(end), __param_next__prefix$A$
-#define __param_next__prefix$A$(...) __VA_ARGS__
-#define __block_inline__prefix$A$(_T, __a, __end, _a, _end...) ({ \
-    let_(__end, usize) = _end; \
-    let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__end <= len$A(*__a), "Invalid slice range: end({:uz}) > len({:uz})", __end, len$A(*__a)); \
-    init$S$((_T)(ptr$A(*__a), __end)); \
-})
-
-#define __param_expand__suffix$A(_a, _begin...) __block_inline__suffix$A(pp_uniqTok(a), pp_uniqTok(begin), _a, _begin)
-#define __block_inline__suffix$A(__a, __begin, _a, _begin...) ({ \
-    let_(__begin, usize) = _begin; \
-    let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, len$A(*__a)); \
-    init$S$$((TypeOf(*ptr$A(*__a)))(ptr$A(*__a) + __begin, len$A(*__a) - __begin)); \
-})
-
-#define __param_expand__suffix$A$(...) __VA_ARGS__, pp_uniqTok(a), pp_uniqTok(begin), __param_next__suffix$A$
-#define __param_next__suffix$A$(...) __VA_ARGS__
-#define __block_inline__suffix$A$(_T, __a, __begin, _a, _begin...) ({ \
-    let_(__begin, usize) = _begin; \
-    let_(__a, TypeOf(&(_a))) = &(_a); \
-    claim_assert_fmt(__begin <= len$A(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, len$A(*__a)); \
-    init$S$((_T)(ptr$A(*__a) + __begin, len$A(*__a) - __begin)); \
-})
+/*========== Macros and Definitions =========================================*/
 
 #if defined(__cplusplus)
 } /* extern "C" */

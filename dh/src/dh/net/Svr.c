@@ -1,11 +1,11 @@
 #include "dh/net/Svr.h"
-#include "_priv.h"
+#include "private/share.h"
 
 fn_((net_Svr_close(net_Svr* self))(void)) {
     claim_assert_nonnull(self);
     net_Sock_close(self->socket);
     asg_l((self)(cleared()));
-}
+};
 
 fn_((net_Svr_accept(net_Svr* self))(E$net_Stream) $scope) {
     claim_assert_nonnull(self);

@@ -4,7 +4,7 @@
 fn_((ArrList_empty(TypeInfo type))(ArrList)) {
     let_ignore = type;
     return (ArrList){
-        .items = zero$S(),
+        .items = cleared(),
         .cap = 0,
         debug_only(.type = type)
     };
@@ -579,7 +579,7 @@ fn_((ArrList_replaceFixed(ArrList* self, R range, u_S_const$raw new_items))(mem_
     claim_assert_nonnull(self);
     debug_assert_eqBy(self->type, new_items.type, TypeInfo_eql);
 
-    if (self->cap - self->items.len < usize_subSat(new_items.len, len$R(range))) { return_err(E_cause$OutOfMemory()); }
+    if (self->cap - self->items.len < usize_subSat(new_items.len, R_len(range))) { return_err(E_cause$OutOfMemory()); }
     return_ok_void(ArrList_replaceWithin(self, range, new_items));
 } $unscoped(fn);
 
@@ -595,7 +595,7 @@ fn_((ArrList_replaceWithin(ArrList* self, R range, u_S_const$raw new_items))(voi
         u_memcpyS(replacing, to_overwrite);
         ArrList_insertSWithin(self, range.end, to_insert);
     } else if (replacing.len > new_items.len) {
-        let discard_len = len$R(range) - new_items.len;
+        let discard_len = R_len(range) - new_items.len;
         u_memcpyS(u_prefixS(replacing, new_items.len), new_items);
         let src = u_suffixS(ArrList_items(*self, type), range.end);
         u_memmoveS(u_prefixS(u_suffixS(ArrList_itemsMut(*self, type), range.end - discard_len), src.len), src);

@@ -1,17 +1,13 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    posix.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-22 (date of creation)
- * @updated 2025-06-22 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-05-22 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  posix
- *
- * @brief   POSIX constants
- * @details Provides POSIX constants for standard file descriptors.
  */
 #ifndef posix__included
 #define posix__included 1
@@ -21,11 +17,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core.h"
-
-#if plat_is_windows
-#include "os/windows.h"
-#endif /* plat_is_windows */
+#include "os.h"
 
 /*========== Macros and Declarations ========================================*/
 

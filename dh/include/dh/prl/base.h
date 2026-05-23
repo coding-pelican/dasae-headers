@@ -85,7 +85,7 @@ extern "C" {
 #define comp_syn__u8_lZ0(_literal) l$((S_const$u8){ .ptr = as$(const u8*)("" _literal), .len = sizeOf$(TypeOf(_literal)) })
 
 #define comp_syn__u8_pZ0(_literal) l$((u8*){ _literal })
-#define comp_syn__u8_kZ0(_literal) as$(const u8*)(_literal)
+#define comp_syn__u8_kZ0(_literal) (as$(const u8*)(_literal))
 
 #if UNUSED_CODE
 #define comp_syn__u8z_a(_literal) l$((AZ$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } })

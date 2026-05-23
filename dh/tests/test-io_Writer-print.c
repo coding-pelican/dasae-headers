@@ -19,7 +19,6 @@
 #include "dh-main.h"
 #include "dh/io/Writer.h"
 #include "dh/fmt/common.h"
-#include <stdio.h>
 
 /*========== Test Helper - Buffer Writer ===================================*/
 
@@ -56,8 +55,8 @@ $static fn_((test_Buf_clear(test_Buf* self))(void)) {
     self->pos = 0;
 }
 $static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
-    if (self.pos == 0) { return zeroS$((const u8)); }
-    return S_slice((self.data)$r(0, self.pos)).as_const;
+    if (self.pos == 0) { return l$((S_const$u8)cleared()); }
+    return S_slice((self.data)($r(0, self.pos))).as_const;
 }
 $attr($maybe_unused)
 $static fn_((test_Buf_take(test_Buf* self, S_const$u8 data))(bool)) {
@@ -78,7 +77,7 @@ $static fn_((test_Buf_give(test_Buf* self, S$u8 output))(O$S$u8) $scope) {
 $attr($must_check $maybe_unused)
 $static fn_((test_Buf_giveAlloc(test_Buf* self, mem_Alctr allocator))(E$S$u8) $scope) {
     claim_assert_nonnull(self);
-    let out = try_(u_castE$((E$S$u8)(mem_Alctr_alloc($trace allocator, typeInfo$(u8), self->pos))));
+    let out = try_(mem_Alctr_allocBytes($trace allocator, self->pos));
     pri_memcpyS(S_prefix((out)(self->pos)), S_prefix((self->data)(self->pos)).as_const);
     self->pos = 0;
     return_ok(out);
@@ -96,7 +95,6 @@ TEST_fn_("io/Writer: print - Integer formatting - decimal" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d}"), 42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("42"))));
     }
 
@@ -105,7 +103,6 @@ TEST_fn_("io/Writer: print - Integer formatting - decimal" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d}"), -123));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("-123"))));
     }
 
@@ -114,7 +111,6 @@ TEST_fn_("io/Writer: print - Integer formatting - decimal" $scope) {
     try_(io_Writer_print(writer, u8_l("{:dl}"), 9223372036854775807LL));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("9223372036854775807"))));
     }
 
@@ -123,7 +119,6 @@ TEST_fn_("io/Writer: print - Integer formatting - decimal" $scope) {
     try_(io_Writer_print(writer, u8_l("{:dz}"), as$(isize)(12345)));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("12345"))));
     }
 } $unscoped(TEST_fn);
@@ -138,7 +133,6 @@ TEST_fn_("io/Writer: print - Unsigned integer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:u}"), 42U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("42"))));
     }
 
@@ -147,7 +141,6 @@ TEST_fn_("io/Writer: print - Unsigned integer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:u}"), UINT32_MAX));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("4294967295"))));
     }
 
@@ -156,7 +149,6 @@ TEST_fn_("io/Writer: print - Unsigned integer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:ul}"), 18446744073709551615ULL));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("18446744073709551615"))));
     }
 } $unscoped(TEST_fn);
@@ -171,7 +163,6 @@ TEST_fn_("io/Writer: print - Hexadecimal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:x}"), 255U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("ff"))));
     }
 
@@ -180,7 +171,6 @@ TEST_fn_("io/Writer: print - Hexadecimal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:X}"), 255U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("FF"))));
     }
 
@@ -189,7 +179,6 @@ TEST_fn_("io/Writer: print - Hexadecimal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#x}"), 255U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0xff"))));
     }
 
@@ -197,7 +186,6 @@ TEST_fn_("io/Writer: print - Hexadecimal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#X}"), 255U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0xFF")))); // 0x is always lowercase
     }
 } $unscoped(TEST_fn);
@@ -212,7 +200,6 @@ TEST_fn_("io/Writer: print - Binary and Octal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:b}"), 5U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("101"))));
     }
 
@@ -221,7 +208,6 @@ TEST_fn_("io/Writer: print - Binary and Octal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#b}"), 5U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0b101"))));
     }
 
@@ -230,7 +216,6 @@ TEST_fn_("io/Writer: print - Binary and Octal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:o}"), 64U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("100"))));
     }
 
@@ -239,7 +224,6 @@ TEST_fn_("io/Writer: print - Binary and Octal formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#o}"), 64U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0100"))));
     }
 } $unscoped(TEST_fn);
@@ -256,7 +240,6 @@ TEST_fn_("io/Writer: print - Character formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:c}"), 'A'));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("A"))));
     }
 
@@ -265,7 +248,6 @@ TEST_fn_("io/Writer: print - Character formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:c}"), 65));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("A"))));
     }
 } $unscoped(TEST_fn);
@@ -281,7 +263,6 @@ TEST_fn_("io/Writer: print - String slice formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:s}"), test_str));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("Hello, World!"))));
     }
 } $unscoped(TEST_fn);
@@ -293,11 +274,10 @@ TEST_fn_("io/Writer: print - Null-terminated string formatting" $scope) {
     io_Writer writer = test_Buf_writer(&buf);
 
     // Test basic null-terminated string
-    const char* test_str = "Hello, C!";
+    let test_str = u8_kZ0("Hello, C!");
     try_(io_Writer_print(writer, u8_l("{:z}"), test_str));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("Hello, C!"))));
     }
 } $unscoped(TEST_fn);
@@ -312,7 +292,6 @@ TEST_fn_("io/Writer: print - Pointer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:p}"), null));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0"))));
     }
 
@@ -322,11 +301,10 @@ TEST_fn_("io/Writer: print - Pointer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:p}"), &dummy));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(result.len >= 1)); // At least one hex digit
         // Should not have 0x prefix
         if (result.len >= 2) {
-            try_(TEST_expect(!(result.ptr[0] == '0' && result.ptr[1] == 'x')));
+            try_(TEST_expect(!(*S_at((result)[0]) == '0' && *S_at((result)[1]) == 'x')));
         }
     }
 
@@ -335,10 +313,9 @@ TEST_fn_("io/Writer: print - Pointer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#p}"), &dummy));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(result.len >= 3)); // "0x" + at least one digit
-        try_(TEST_expect(result.ptr[0] == '0'));
-        try_(TEST_expect(result.ptr[1] == 'x'));
+        try_(TEST_expect(*S_at((result)[0]) == '0'));
+        try_(TEST_expect(*S_at((result)[1]) == 'x'));
     }
 
     // Test null pointer with alternate form (should add prefix even for zero)
@@ -346,7 +323,6 @@ TEST_fn_("io/Writer: print - Pointer formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#p}"), null));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0x0"))));
     }
 } $unscoped(TEST_fn);
@@ -361,7 +337,6 @@ TEST_fn_("io/Writer: print - Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:fl}"), 123.456));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("123.456000")))); // Default precision is 6
     }
 
@@ -370,7 +345,6 @@ TEST_fn_("io/Writer: print - Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:.2f}"), 123.456));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("123.46")))); // Should round
     }
 
@@ -379,7 +353,6 @@ TEST_fn_("io/Writer: print - Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:f}"), -0.123));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("-0.123000"))));
     }
 
@@ -388,7 +361,6 @@ TEST_fn_("io/Writer: print - Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:f} {:F}"), f32_nan, f32_nan));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("nan NAN"))));
     }
 
@@ -396,7 +368,6 @@ TEST_fn_("io/Writer: print - Floating point formatting" $scope) {
     try_(io_Writer_print(writer, u8_l("{:f} {:F}"), f32_inf, f32_inf));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("inf INF"))));
     }
 } $unscoped(TEST_fn);
@@ -413,7 +384,6 @@ TEST_fn_("io/Writer: print - Sign flags" $scope) {
     try_(io_Writer_print(writer, u8_l("{:+d}"), 42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("+42"))));
     }
 
@@ -422,7 +392,6 @@ TEST_fn_("io/Writer: print - Sign flags" $scope) {
     try_(io_Writer_print(writer, u8_l("{:+d}"), -42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("-42"))));
     }
 
@@ -431,7 +400,6 @@ TEST_fn_("io/Writer: print - Sign flags" $scope) {
     try_(io_Writer_print(writer, u8_l("{: d}"), 42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l(" 42"))));
     }
 
@@ -440,7 +408,6 @@ TEST_fn_("io/Writer: print - Sign flags" $scope) {
     try_(io_Writer_print(writer, u8_l("{: d}"), -42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("-42"))));
     }
 } $unscoped(TEST_fn);
@@ -457,7 +424,6 @@ TEST_fn_("io/Writer: print - Brace escaping" $scope) {
     try_(io_Writer_print(writer, u8_l("{{")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("{"))));
     }
 
@@ -465,7 +431,6 @@ TEST_fn_("io/Writer: print - Brace escaping" $scope) {
     try_(io_Writer_print(writer, u8_l("}}")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("}"))));
     }
 
@@ -474,7 +439,6 @@ TEST_fn_("io/Writer: print - Brace escaping" $scope) {
     try_(io_Writer_print(writer, u8_l("{{value: {:d}}}"), 42));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("{value: 42}"))));
     }
 } $unscoped(TEST_fn);
@@ -489,7 +453,6 @@ TEST_fn_("io/Writer: print - Multiple arguments" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d} {:c} {:x} {:s}"), 42, 'A', 255U, u8_l("test")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("42 A ff test"))));
     }
 } $unscoped(TEST_fn);
@@ -504,7 +467,6 @@ TEST_fn_("io/Writer: print - Malformed format specifiers" $scope) {
     try_(io_Writer_print(writer, u8_l("{")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("{"))));
     }
 
@@ -513,7 +475,6 @@ TEST_fn_("io/Writer: print - Malformed format specifiers" $scope) {
     try_(io_Writer_print(writer, u8_l("}")));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("}"))));
     }
 
@@ -522,7 +483,6 @@ TEST_fn_("io/Writer: print - Malformed format specifiers" $scope) {
     try_(io_Writer_print(writer, u8_l("{:q}"), 42)); // 'q' is not a valid type
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("{:q}")))); // Should write literally
     }
 } $unscoped(TEST_fn);
@@ -548,7 +508,6 @@ TEST_fn_("io/Writer: print - Zero values" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d}"), 0));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0"))));
     }
 
@@ -556,7 +515,6 @@ TEST_fn_("io/Writer: print - Zero values" $scope) {
     try_(io_Writer_print(writer, u8_l("{:x}"), 0U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0"))));
     }
 
@@ -564,7 +522,6 @@ TEST_fn_("io/Writer: print - Zero values" $scope) {
     try_(io_Writer_print(writer, u8_l("{:b}"), 0U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0"))));
     }
 
@@ -573,14 +530,12 @@ TEST_fn_("io/Writer: print - Zero values" $scope) {
     try_(io_Writer_print(writer, u8_l("{:#x}"), 0U));
     {
         let result = test_Buf_view(buf);
-        printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
         try_(TEST_expect(mem_eqlBytes(result, u8_l("0x0"))));
     }
 } $unscoped(TEST_fn);
 
 /*========== Complex Integration Tests ======================================*/
 
-#if DEPRECATED_CODE
 TEST_fn_("io/Writer: print - Complex format combinations" $scope) {
     T_use_A$(512, u8);
     A$512$u8 mem = A_zero();
@@ -600,11 +555,9 @@ TEST_fn_("io/Writer: print - Complex format combinations" $scope) {
     ));
 
     let result = test_Buf_view(buf);
-    printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
-    try_(TEST_expect(Str_contains(result, u8_l("User: Alice"))));
-    try_(TEST_expect(Str_contains(result, u8_l("Age: 25"))));
-    try_(TEST_expect(Str_contains(result, u8_l("ID: 2a3b"))));
-    try_(TEST_expect(Str_contains(result, u8_l("Addr: 0x")))); // Now uses #p to add prefix
-    try_(TEST_expect(Str_contains(result, u8_l("Score: 95.7"))));
+    try_(TEST_expect(isSome(mem_findFirstSeqBytes(result, u8_l("User: Alice")))));
+    try_(TEST_expect(isSome(mem_findFirstSeqBytes(result, u8_l("Age: 25")))));
+    try_(TEST_expect(isSome(mem_findFirstSeqBytes(result, u8_l("ID: 2a3b")))));
+    try_(TEST_expect(isSome(mem_findFirstSeqBytes(result, u8_l("Addr: 0x")))));
+    try_(TEST_expect(isSome(mem_findFirstSeqBytes(result, u8_l("Score: 95.7")))));
 } $unscoped(TEST_fn);
-#endif /* DEPRECATED_CODE */

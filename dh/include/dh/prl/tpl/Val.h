@@ -9,7 +9,8 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define ref$V(_v /*: T*/... /*P$$(_T)*/) ref(_v)
+#define V_ref(_v /*: T*/... /*P$$(_T)*/) ref(_v)
+#define refV V_ref
 
 #if defined(__cplusplus)
 } /* extern "C" */

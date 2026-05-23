@@ -79,7 +79,7 @@ fn_((main(pp_if_(pp_not(main_no_args))(
     ) = dh_main(pp_if_(pp_not(main_no_args))(pp_then_(args)));
     pp_if_(pp_not(main_no_returns_err))(
         (catch_((returned)(err, {
-            E_print(&err);
+            E_printProgramFailed(&err);
             ETrace_print();
             return $debug_point 1;
         })))

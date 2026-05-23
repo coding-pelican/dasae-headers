@@ -5,7 +5,7 @@
  * @file    dh.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-21 (date of creation)
- * @updated 2026-01-10 (date of last update)
+ * @updated 2026-05-22 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
@@ -27,7 +27,11 @@ extern "C" {
 
 #include "dh/cmp.h"
 #include "dh/math.h"
+#include "dh/Limit.h"
+#include "dh/Range.h"
 #include "dh/Rand.h"
+#include "dh/hash.h"
+#include "dh/crypt.h"
 #include "dh/mem.h"
 #include "dh/meta.h"
 
@@ -52,7 +56,6 @@ extern "C" {
 #include "dh/ArrPDeq.h"
 #include "dh/ArrPQue.h"
 
-// #include "dh/Hash.h"
 #include "dh/HashMap.h"
 #include "dh/HashSet.h"
 // #include "dh/HashMapSeq.h"
@@ -60,13 +63,13 @@ extern "C" {
 // #include "dh/BTreeMap.h"
 // #include "dh/BTreeSet.h"
 
-// #include "dh/os.h"
+#include "dh/os.h"
 #include "dh/posix.h"
-#include "dh/proc.h"
-#include "dh/Co.h"
-#include "dh/Thrd.h"
-#include "dh/heap.h"
 #include "dh/time.h"
+#include "dh/heap.h"
+#include "dh/proc.h"
+#include "dh/Thrd.h"
+#include "dh/Co.h"
 
 #include "dh/io.h"
 #include "dh/fmt.h"

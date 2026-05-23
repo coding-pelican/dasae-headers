@@ -1,4 +1,5 @@
 #include "dh-main.h"
+#include "dh/heap/Sys.h"
 #include "dh/Thrd/self.h"
 #include "dh/time/Duration.h"
 #include "dh/time/Instant.h"
@@ -44,16 +45,27 @@ T_use$((i32)(Thrd_spawn, Thrd_join));
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    var thrd = try_(Thrd_spawn$i32(Thrd_SpawnCfg_default, clsr_(demoThrd)(time_Duration_sec).as_base));
-    defer_(report(u8_l("main"), u8_l("ret: {:d}"), Thrd_join$i32(thrd)));
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
+    let spawn_cfg = with_((Thrd_SpawnCfg_default)((.gpa)(some(gpa))));
 
-    var thrd_defer = try_(Thrd_spawn$i32(Thrd_SpawnCfg_default, clsr_(demoThrdDefer)(time_Duration_sec).as_base));
-    defer_(report(u8_l("main"), u8_l("ret: {:d}"), Thrd_join$i32(thrd_defer)));
+    var demo_thrd = clsr_((demoThrd)(time_Duration_sec));
+    let thrd = try_(Thrd_spawn$i32(spawn_cfg, demo_thrd.as_base));
+
+    var demo_thrd_defer = clsr_((demoThrdDefer)(time_Duration_sec));
+    let thrd_defer = try_(Thrd_spawn$i32(spawn_cfg, demo_thrd_defer.as_base));
 
     for_(($r(0, 20))(i)) {
         report(u8_l("main"), u8_l("current: {:uz}"), i);
         time_sleep(time_Duration_fromSecs$f64(0.1));
     } $end(for);
+
+    let joined_defer = Thrd_join$i32(thrd_defer);
+    report(u8_l("main"), u8_l("ret: {:d}"), joined_defer->ctx.ret);
+
+    let joined = Thrd_join$i32(thrd);
+    report(u8_l("main"), u8_l("ret: {:d}"), joined->ctx.ret);
 
     return_ok({});
 } $unguarded(fn);

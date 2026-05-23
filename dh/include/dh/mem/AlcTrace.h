@@ -37,11 +37,13 @@ T_alias$((mem_AlcTrace)(pp_if_(mem_tracing_comp_enabled)(
 $attr($must_check)
 $extern fn_((mem_AlcTrace_initWithLogPath(S_const$u8 log_path))(E$void));
 /// Generate final report and cleanup
-$extern fn_((mem_AlcTrace_finiAndGenerateReport(void))(void));
+$extern fn_((mem_AlcTrace_finiWithGenerateReport(void))(void));
 
 /// Register allocation (e.g., rawAlloc)
 $extern fn_((mem_AlcTrace_registerAlloc($traced P$raw ptr, usize size))(void));
-/// Register memory remapping (e.g., rawResize/rawRemap)
+/// Register resizing (e.g., rawResize)
+$extern fn_((mem_AlcTrace_registerResize($traced P$raw ptr, usize old_size, usize new_size))(void));
+/// Register remapping (e.g., rawRemap)
 $extern fn_((mem_AlcTrace_registerRemap($traced P$raw old_ptr, P$raw new_ptr, usize new_size))(void));
 /// Register deallocation (e.g., rawFree)
 $extern fn_((mem_AlcTrace_registerFree($traced P$raw ptr))(bool));

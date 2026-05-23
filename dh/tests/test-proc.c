@@ -1,6 +1,7 @@
 #include "dh-main.h"
 #include "dh/proc.h"
 #include "dh/fs/File.h"
+#include "dh/fs/Dir.h"
 #include "dh/io/Reader.h"
 #include "dh/fs/path.h"
 
@@ -128,14 +129,16 @@ TEST_fn_("proc: custom environment block is passed to child" $scope) {
     try_(TEST_expect(mem_eqlBytes(out.as_const, u8_l("from-env\r\n"))));
 } $unscoped(TEST_fn);
 
-TEST_fn_("proc: cwd handle is passed to child" $scope) {
-    let dir_z = "build\\dev\\test-proc-cwd";
-    let_ignore = CreateDirectoryA(dir_z, null);
+TEST_fn_("proc: cwd handle is passed to child" $guard) {
+    let dir = fs_path_dirname(u8_l(__FILE__));
+    var_(dir_z, A$$(1024, u8)) = A_zero();
+    mem_copyBytes(S_prefix((A_ref$((S$u8)(dir_z)))(dir.len)), dir);
 
-    var dir = try_(test__openDirZ(as$(P_const$u8)(dir_z)));
+    var dir_handle = try_(test__openDirZ(A_ptr(dir_z)));
+    defer_(fs_Dir_close(&dir_handle));
 
     var_(expected_buf, A$$(512, u8)) = A_zero();
-    let expected = try_(test__fullPathZ(as$(P_const$u8)(dir_z), A_ref$((S$u8)(expected_buf))));
+    let expected = try_(test__fullPathZ(A_ptr(dir_z), A_ref$((S$u8)(expected_buf))));
 
     var_(argv, A$$(3, S_const$u8)) = A_init({
         [0] = u8_l("cmd.exe"),
@@ -145,7 +148,7 @@ TEST_fn_("proc: cwd handle is passed to child" $scope) {
     var child = try_(proc_spawn((proc_Cmd){
         .argv = A_ref$((S$S_const$u8)(argv)),
         .env = { 0 },
-        .cwd = &dir,
+        .cwd = &dir_handle,
         .std_in = proc_StdIO_ignore,
         .std_out = proc_StdIO_pipe,
         .std_err = proc_StdIO_ignore,
@@ -166,10 +169,9 @@ TEST_fn_("proc: cwd handle is passed to child" $scope) {
     expected_line.val[expected.len] = '\r';
     expected_line.val[expected.len + 1] = '\n';
     try_(TEST_expect(mem_eqlBytes(out.as_const, S_slice(((S_const$u8)A_ref$((S_const$u8)(expected_line)))$r(0, expected.len + 2)))));
-    claim_assert(CloseHandle(dir.handle));
-} $unscoped(TEST_fn);
+} $unguarded(TEST_fn);
 
-TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $scope) {
+TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
     var_(comspec_buf, A$$(512, u8)) = A_zero();
     let comspec_len = GetEnvironmentVariableA("ComSpec", as$(LPSTR)(A_ptr(comspec_buf)), as$(DWORD)(A_len(comspec_buf)));
     try_(TEST_expect(comspec_len != 0));
@@ -182,6 +184,7 @@ TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $scope) {
     dir_buf.val[comspec_dir.len] = 0;
 
     var dir = try_(test__openDirZ(A_ptr(dir_buf)));
+    defer_(fs_Dir_close(&dir));
 
     var_(argv, A$$(4, S_const$u8)) = A_init({
         [0] = comspec_base,
@@ -206,6 +209,5 @@ TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $scope) {
 
     let term = try_(proc_Child_wait(&child));
     try_(TEST_expect(term.code == 9));
-    claim_assert(CloseHandle(dir.handle));
-} $unscoped(TEST_fn);
+} $unguarded(TEST_fn);
 #endif

@@ -209,7 +209,7 @@ typedef struct u_E$raw {
 
 #define len$u_S u_lenS
 #define u_lenS(_s...) ____u_lenS(_s)
-#define ____u_lenS(_s...) len$S(_s)
+#define ____u_lenS(_s...) ((_s).len)
 
 #define ptr$u_S u_ptrS
 #define u_ptrS(_s...) __step__u_ptrS(_s)

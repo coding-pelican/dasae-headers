@@ -2,8 +2,6 @@
 #include "dh/heap/Sys.h"
 #include "dh/heap/Arena.h"
 
-T_use_E$($set(mem_E)(S$u8));
-T_use$((u8)(mem_Alctr_alloc));
 TEST_fn_("heap/Arena: reset while retaining a buffer" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
@@ -12,8 +10,8 @@ TEST_fn_("heap/Arena: reset while retaining a buffer" $guard) {
     let gpa = heap_Arena_alctr(&arena);
 
     // Create two internal buffers
-    let_ignore = try_(mem_Alctr_alloc$u8($trace gpa, 1));
-    let_ignore = try_(mem_Alctr_alloc$u8($trace gpa, 1000));
+    let_ignore = try_(mem_Alctr_allocBytes($trace gpa, 1));
+    let_ignore = try_(mem_Alctr_allocBytes($trace gpa, 1000));
 
     // Check that we have at least two buffers
     try_(TEST_expect(isSome(unwrap_(arena.state.buf_list.first)->next)));

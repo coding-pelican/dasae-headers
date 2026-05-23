@@ -83,8 +83,8 @@ fn_((unicode_utf16ToUTF8Within(S_const$u16 utf16, S$u8 out))(unicode_utf16_E$S$u
 
 fn_((unicode_utf16ToUTF8Alloc(S_const$u16 utf16, mem_Alctr gpa))(unicode_mem_E$S$u8) $guard) {
     let required_len = try_(unicode_utf16ToUTF8Len(utf16));
-    let required_buf = u_castS$((S$u8)try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), required_len)));
-    errdefer_($ignore, mem_Alctr_free($trace gpa, u_anyS(required_buf)));
+    let required_buf = try_(mem_Alctr_allocBytes($trace gpa, required_len));
+    errdefer_($ignore, mem_Alctr_freeBytes($trace gpa, required_buf));
     let utf8 = try_(unicode__utf16ToUTF8(utf16, required_len, required_buf));
     claim_assert(utf8.len == required_buf.len);
     return_ok(utf8);
@@ -175,7 +175,7 @@ fn_((unicode_wtf16ToWTF8Within(S_const$u16 wtf16, S$u8 out))(S$u8)) {
 
 fn_((unicode_wtf16ToWTF8Alloc(S_const$u16 wtf16, mem_Alctr gpa))(unicode_mem_E$S$u8) $scope) {
     let required_len = unicode_wtf16ToWTF8Len(wtf16);
-    let required_buf = u_castS$((S$u8)try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), required_len)));
+    let required_buf = try_(mem_Alctr_allocBytes($trace gpa, required_len));
     let wtf8 = unicode__wtf16ToWTF8(wtf16, required_len, required_buf);
     claim_assert(wtf8.len == required_buf.len);
     return_ok(wtf8);
@@ -193,8 +193,8 @@ fn_((unicode_wtf8AsUTF8(wtf8_View wtf))(utf8_E$utf8_View) $scope) {
 fn_((unicode_wtf8ToUTF8LossyAlloc(S_const$u8 wtf8, mem_Alctr gpa))(unicode_mem_E$S$u8) $guard) {
     if (!wtf8_validate(wtf8)) return_err(E_cause$UTF8InvalidBytes());
     let len = wtf8.len;
-    let buf = u_castS$((S$u8)try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), len)));
-    errdefer_($ignore, mem_Alctr_free($trace gpa, u_anyS(buf)));
+    let buf = try_(mem_Alctr_allocBytes($trace gpa, len));
+    errdefer_($ignore, mem_Alctr_freeBytes($trace gpa, buf));
     var_(dst_idx, usize) = 0;
     var it = wtf8_iter(wtf8_viewUnchkd(wtf8));
     while_some((wtf8_Iter_next(&it)), codepoint) {

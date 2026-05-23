@@ -27,26 +27,25 @@ extern "C" {
 
 /// Structure for storing source code location information
 typedef struct SrcLoc {
-    const char* file_path; /**< Full file path */
-    const char* file_name; /**< Just the file name */
-    const char* fn_name; /**< Function name */
-    u32 line; /**< Line number */
-    u32 column; /**< Column number */
+    var_(file_path, const u8*); /**< Full file path */
+    var_(file_name, const u8*); /**< Just the file name */
+    var_(fn_name, const u8*); /**< Function name */
+    var_(line, u32); /**< Line number */
+    var_(column, u32); /**< Column number */
 } SrcLoc;
 #define srcLoc() \
     /* Creates a source location at compile time */ \
-    FUNC__srcLoc()
+    __val__srcLoc()
 
 /*========== Macros and Implementations =====================================*/
 
-#define FUNC__srcLoc() \
-    ((SrcLoc){ \
-        .file_path = src_loc_filePath(), \
-        .file_name = src_loc_fileName(), \
-        .fn_name = src_loc_fnName(), \
-        .line = src_loc_line(), \
-        .column = src_loc_column(), \
-    })
+#define __val__srcLoc() l$((SrcLoc){ \
+    .file_path = src_loc_filePath(), \
+    .file_name = src_loc_fileName(), \
+    .fn_name = src_loc_fnName(), \
+    .line = src_loc_line(), \
+    .column = src_loc_column(), \
+})
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -12,7 +12,7 @@ fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(E$usize)) {
 fn_((io_Writer_writeBytes(io_Writer self, S_const$u8 bytes))(E$void) $scope) {
     var_(idx, usize) = 0;
     while (idx != bytes.len) {
-        idx += try_(io_Writer_write(self, suffix$S(bytes, idx)));
+        idx += try_(io_Writer_write(self, S_suffix((bytes)(idx))));
     }
     return_ok({});
 } $unscoped(fn);
@@ -34,7 +34,7 @@ fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void) $scope) {
     mem_setBytes(A_ref$((S$u8)(bytes)), byte);
     var_(remaining, usize) = n;
     while (0 < remaining) {
-        let to_write = pri_min(remaining, len$A(bytes));
+        let to_write = pri_min(remaining, A_len(bytes));
         try_(io_Writer_writeBytes(self, A_slice$((S_const$u8)(bytes)$r(0, to_write))));
         remaining -= to_write;
     }

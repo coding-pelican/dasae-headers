@@ -7,7 +7,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "Fiber.h"
-#include "../atom.h"
+#include "dh/atom.h"
 
 /*========== Macros and Declarations ========================================*/
 

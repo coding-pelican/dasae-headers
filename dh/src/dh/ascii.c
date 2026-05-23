@@ -1,4 +1,5 @@
 #include "dh/ascii.h"
+#include "dh/mem/common.h"
 
 fn_((ascii_toUppers(S$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(ascii_str.ptr);
@@ -20,20 +21,20 @@ fn_((ascii_toggleCases(S$u8 ascii_str))(S$u8)) {
 
 fn_((ascii_allocUppers(mem_Alctr gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
-    let result = try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), ascii_str.len));
-    return_ok(ascii_makeUppers(u_castS$((S$u8)(result)), ascii_str));
+    let result = try_(mem_Alctr_allocBytes($trace gpa, ascii_str.len));
+    return_ok(ascii_makeUppers(result, ascii_str));
 } $unscoped(fn);
 
 fn_((ascii_allocLowers(mem_Alctr gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
-    let result = try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), ascii_str.len));
-    return_ok(ascii_makeLowers(u_castS$((S$u8)(result)), ascii_str));
+    let result = try_(mem_Alctr_allocBytes($trace gpa, ascii_str.len));
+    return_ok(ascii_makeLowers(result, ascii_str));
 } $unscoped(fn);
 
 fn_((ascii_allocToggledCases(mem_Alctr gpa, S_const$u8 ascii_str))(E$S$u8) $scope) {
     debug_assert_nonnull(ascii_str.ptr);
-    let result = try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), ascii_str.len));
-    return_ok(ascii_makeToggledCases(u_castS$((S$u8)(result)), ascii_str));
+    let result = try_(mem_Alctr_allocBytes($trace gpa, ascii_str.len));
+    return_ok(ascii_makeToggledCases(result, ascii_str));
 } $unscoped(fn);
 
 fn_((ascii_makeUppers(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
@@ -41,7 +42,7 @@ fn_((ascii_makeUppers(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert(ascii_str.len <= buf.len);
     for_(($s(buf), $s(ascii_str))(dst, src)) { *dst = ascii_toUpper(*src); } $end(for);
-    return slice$S(buf, $r(0, ascii_str.len));
+    return S_slice((buf)$r(0, ascii_str.len));
 };
 
 fn_((ascii_makeLowers(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
@@ -49,7 +50,7 @@ fn_((ascii_makeLowers(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert(ascii_str.len <= buf.len);
     for_(($s(buf), $s(ascii_str))(dst, src)) { *dst = ascii_toLower(*src); } $end(for);
-    return slice$S(buf, $r(0, ascii_str.len));
+    return S_slice((buf)$r(0, ascii_str.len));
 };
 
 fn_((ascii_makeToggledCases(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
@@ -57,7 +58,7 @@ fn_((ascii_makeToggledCases(S$u8 buf, S_const$u8 ascii_str))(S$u8)) {
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert(ascii_str.len <= buf.len);
     for_(($s(buf), $s(ascii_str))(dst, src)) { *dst = ascii_toggleCase(*src); } $end(for);
-    return slice$S(buf, $r(0, ascii_str.len));
+    return S_slice((buf)$r(0, ascii_str.len));
 };
 
 fn_((ascii_idxOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr))(O$usize) $scope) {
@@ -66,14 +67,7 @@ fn_((ascii_idxOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr))(O$usi
     if (ascii_substr.len == 0) { return_some(0); }
     if (ascii_str.len < ascii_substr.len) { return_none(); }
     for (usize i = 0; i <= ascii_str.len - ascii_substr.len; ++i) {
-        bool matches = true;
-        for (usize j = 0; j < ascii_substr.len; ++j) {
-            if (ascii_toLower(ascii_str.ptr[i + j]) != ascii_toLower(ascii_substr.ptr[j])) {
-                matches = false;
-                break;
-            }
-        }
-        if (matches) { return_some(i); }
+        if (ascii_eqlIgnoreCase(S_slice((ascii_str)$r(i, i + ascii_substr.len)), ascii_substr)) { return_some(i); }
     }
     return_none();
 } $unscoped(fn);
@@ -84,7 +78,7 @@ fn_((ascii_idxFirstOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, u
     debug_assert(start_front <= ascii_str.len);
     if (ascii_substr.len == 0) { return_some(start_front); }
     if (ascii_str.len < start_front + ascii_substr.len) { return_none(); }
-    let search_slice = slice$S(ascii_str, $r(start_front, ascii_str.len));
+    let search_slice = S_slice((ascii_str)$r(start_front, ascii_str.len));
     if_some((ascii_idxOfIgnoreCase(search_slice, ascii_substr))(idx)) {
         return_some(start_front + idx);
     }
@@ -99,14 +93,7 @@ fn_((ascii_idxLastOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr, us
     if (start_back + 1 < ascii_substr.len) { return_none(); }
     let max_start = start_back + 1 - ascii_substr.len;
     for (usize i = max_start; i != usize_limit_max; --i) {
-        bool matches = true;
-        for (usize j = 0; j < ascii_substr.len; ++j) {
-            if (ascii_toLower(ascii_str.ptr[i + j]) != ascii_toLower(ascii_substr.ptr[j])) {
-                matches = false;
-                break;
-            }
-        }
-        if (matches) { return_some(i); }
+        if (ascii_eqlIgnoreCase(S_slice((ascii_str)$r(i, i + ascii_substr.len)), ascii_substr)) { return_some(i); }
     }
     return_none();
 } $unscoped(fn);
@@ -115,23 +102,14 @@ fn_((ascii_startsWithIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_prefix))(
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert_nonnull(ascii_prefix.ptr);
     if (ascii_str.len < ascii_prefix.len) { return false; }
-    for (usize i = 0; i < ascii_prefix.len; ++i) {
-        if (ascii_toLower(ascii_str.ptr[i]) == ascii_toLower(ascii_prefix.ptr[i])) { continue; }
-        return false;
-    }
-    return true;
+    return ascii_eqlIgnoreCase(S_prefix((ascii_str)(ascii_prefix.len)), ascii_prefix);
 };
 
 fn_((ascii_endsWithIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_suffix))(bool)) {
     debug_assert_nonnull(ascii_str.ptr);
     debug_assert_nonnull(ascii_suffix.ptr);
     if (ascii_str.len < ascii_suffix.len) { return false; }
-    let start_offset = ascii_str.len - ascii_suffix.len;
-    for (usize i = 0; i < ascii_suffix.len; ++i) {
-        if (ascii_toLower(ascii_str.ptr[start_offset + i]) == ascii_toLower(ascii_suffix.ptr[i])) { continue; }
-        return false;
-    }
-    return true;
+    return ascii_eqlIgnoreCase(S_suffix((ascii_str)(ascii_str.len - ascii_suffix.len)), ascii_suffix);
 };
 
 
@@ -143,12 +121,7 @@ fn_((ascii_eql(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs, bool ignores_case))(b
 fn_((ascii_eqlSenseCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(bool)) {
     debug_assert_nonnull(ascii_lhs.ptr);
     debug_assert_nonnull(ascii_rhs.ptr);
-    if (ascii_lhs.len != ascii_rhs.len) { return false; }
-    for (usize i = 0; i < ascii_lhs.len; ++i) {
-        if (ascii_lhs.ptr[i] == ascii_rhs.ptr[i]) { continue; }
-        return false;
-    }
-    return true;
+    return mem_eqlBytes(ascii_lhs, ascii_rhs);
 };
 
 fn_((ascii_eqlIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(bool)) {
@@ -156,7 +129,7 @@ fn_((ascii_eqlIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(bool)) {
     debug_assert_nonnull(ascii_rhs.ptr);
     if (ascii_lhs.len != ascii_rhs.len) { return false; }
     for (usize i = 0; i < ascii_lhs.len; ++i) {
-        if (ascii_toLower(ascii_lhs.ptr[i]) == ascii_toLower(ascii_rhs.ptr[i])) { continue; }
+        if (ascii_toLower(*S_at((ascii_lhs)[i])) == ascii_toLower(*S_at((ascii_rhs)[i]))) { continue; }
         return false;
     }
     return true;
@@ -170,16 +143,7 @@ fn_((ascii_ord(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs, bool ignores_case))(c
 fn_((ascii_ordSenseCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord)) {
     debug_assert_nonnull(ascii_lhs.ptr);
     debug_assert_nonnull(ascii_rhs.ptr);
-    let min_len = pri_min(ascii_lhs.len, ascii_rhs.len);
-    for (usize i = 0; i < min_len; ++i) {
-        switch (pri_ord(ascii_lhs.ptr[i], ascii_rhs.ptr[i])) {
-        case_((cmp_Ord_lt)) return cmp_Ord_lt $end(case);
-        case_((cmp_Ord_gt)) return cmp_Ord_gt $end(case);
-        case_((cmp_Ord_eq)) continue $end(case);
-        default_() claim_unreachable $end(default);
-        }
-    }
-    return pri_ord(ascii_lhs.len, ascii_rhs.len);
+    return mem_ordBytes(ascii_lhs, ascii_rhs);
 };
 
 fn_((ascii_ordIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord)) {
@@ -187,7 +151,7 @@ fn_((ascii_ordIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord)) 
     debug_assert_nonnull(ascii_rhs.ptr);
     let min_len = pri_min(ascii_lhs.len, ascii_rhs.len);
     for (usize i = 0; i < min_len; ++i) {
-        switch (pri_ord(ascii_toLower(ascii_lhs.ptr[i]), ascii_toLower(ascii_rhs.ptr[i]))) {
+        switch (pri_ord(ascii_toLower(*S_at((ascii_lhs)[i])), ascii_toLower(*S_at((ascii_rhs)[i])))) {
         case_((cmp_Ord_lt)) return cmp_Ord_lt $end(case);
         case_((cmp_Ord_gt)) return cmp_Ord_gt $end(case);
         case_((cmp_Ord_eq)) continue $end(case);

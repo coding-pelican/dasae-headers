@@ -39,10 +39,7 @@ fn_((mem_Alctr__emptyAddr(mem_Align align))(u8*)) {
 
 fn_((mem_Alctr__zeroTail(u8* ptr, usize old_len, usize new_len))(void)) {
     if (old_len < new_len) {
-        mem_set0Bytes(l$((S$u8){
-            .ptr = ptr + old_len,
-            .len = new_len - old_len,
-        }));
+        mem_set0Bytes(P_slice$((S$u8)(ptr)($r(old_len, new_len))));
     }
 };
 
@@ -119,12 +116,17 @@ fn_((mem_Alctr_clone($traced mem_Alctr self, u_P_const$raw ptr))(mem_E$u_P$raw) 
     return_ok(mem_copyP(new_mem, ptr));
 } $unscoped(fn);
 
+fn_((mem_Alctr_allocBytes($traced mem_Alctr self, usize bytes_count))(mem_E$S$u8) $scope) {
+    if (bytes_count == 0) return_ok(P_prefix$((S$u8)(mem_Alctr__emptyAddr(alignOfLog2$(u8)))(bytes_count)));
+    let mem = orelse_((mem_Alctr_rawAlloc($tracing self, bytes_count, 0))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    mem_set0Bytes(P_prefix$((S$u8)(mem)(bytes_count)));
+    return_ok(P_prefix$((S$u8)(mem)(bytes_count)));
+} $unscoped(fn);
+
 fn_((mem_Alctr_alloc($traced mem_Alctr self, TypeInfo type, usize count))(mem_E$u_S$raw) $scope) {
-    if (type.size == 0 || count == 0) return_ok({
-        .ptr = u_anyP(mem_Alctr__emptyAddr(type.log2_align)).raw,
-        .len = count,
-        .type = type,
-    });
+    if (type.size == 0 || count == 0) return_ok(u_init$S((type)(u_anyP(mem_Alctr__emptyAddr(type.log2_align)).raw, count)));
     let byte_count = orelse_((usize_mulChkd(type.size, count))(
         return_err(E_cause$OutOfMemory())
     ));
@@ -132,12 +134,19 @@ fn_((mem_Alctr_alloc($traced mem_Alctr self, TypeInfo type, usize count))(mem_E$
         return_err(E_cause$OutOfMemory())
     ));
     mem_set0Bytes(P_prefix$((S$u8)(mem)(byte_count)));
-    return_ok({
-        .ptr = mem,
-        .len = count,
-        .type = type,
-    });
+    return_ok(u_init$S((type)(mem, count)));
 } $unscoped(fn);
+
+fn_((mem_Alctr_resizeBytes($traced mem_Alctr self, S$u8 old_mem, usize new_len))(bool)) {
+    if (new_len == 0) {
+        mem_Alctr_freeBytes($tracing self, old_mem);
+        return true;
+    }
+    if (old_mem.len == 0) return false;
+    let resized = mem_Alctr_rawResize($tracing self, old_mem, alignOfLog2$(u8), new_len);
+    if (resized) { mem_Alctr__zeroTail(old_mem.ptr, old_mem.len, new_len); }
+    return resized;
+};
 
 fn_((mem_Alctr_resize($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(bool)) {
     if (old_mem.type.size == 0) return true;
@@ -157,19 +166,24 @@ fn_((mem_Alctr_resize($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(b
     return resized;
 };
 
+fn_((mem_Alctr_remapBytes($traced mem_Alctr self, S$u8 old_mem, usize new_len))(O$S$u8) $scope) {
+    if (new_len == 0) {
+        mem_Alctr_freeBytes($tracing self, old_mem);
+        return_some(P_prefix$((S$u8)(mem_Alctr__emptyAddr(alignOfLog2$(u8)))(0)));
+    }
+    if (old_mem.len == 0) return_none();
+    let new_ptr = orelse_((mem_Alctr_rawRemap($tracing self, old_mem, alignOfLog2$(u8), new_len))(
+        return_none()
+    ));
+    mem_Alctr__zeroTail(new_ptr, old_mem.len, new_len);
+    return_some(P_prefix$((S$u8)(new_ptr)(new_len)));
+} $unscoped(fn);
+
 fn_((mem_Alctr_remap($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(O$u_S$raw) $scope) {
-    if (old_mem.type.size == 0) return_some({
-        .ptr = u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw,
-        .len = new_len,
-        .type = old_mem.type,
-    });
+    if (old_mem.type.size == 0) return_some(u_init$S((old_mem.type)(u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw, new_len)));
     if (new_len == 0) {
         mem_Alctr_free($tracing self, old_mem);
-        return_some({
-            .ptr = u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw,
-            .len = 0,
-            .type = old_mem.type,
-        });
+        return_some(u_init$S((old_mem.type)(u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw, 0)));
     }
     if (old_mem.len == 0) return_none();
     // Create byte slice from the old memory
@@ -182,11 +196,30 @@ fn_((mem_Alctr_remap($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(O$
         return_none()
     ));
     mem_Alctr__zeroTail(new_ptr, old_bytes.len, new_byte_count);
-    return_some({
-        .ptr = new_ptr,
-        .len = new_len,
-        .type = old_mem.type,
-    });
+    return_some(u_init$S((old_mem.type)(new_ptr, new_len)));
+} $unscoped(fn);
+
+fn_((mem_Alctr_reallocBytes($traced mem_Alctr self, S$u8 old_mem, usize new_len))(mem_E$S$u8) $scope) {
+    if (old_mem.len == 0) {
+        return_ok(try_(mem_Alctr_allocBytes($tracing self, new_len)));
+    }
+    if (new_len == 0) {
+        mem_Alctr_freeBytes($tracing self, old_mem);
+        return_ok(P_prefix$((S$u8)(mem_Alctr__emptyAddr(alignOfLog2$(u8)))(0)));
+    }
+    if_some((mem_Alctr_rawRemap($tracing self, old_mem, alignOfLog2$(u8), new_len))(ptr)) {
+        mem_Alctr__zeroTail(ptr, old_mem.len, new_len);
+        return_ok(P_prefix$((S$u8)(ptr)(new_len)));
+    }
+    let new_ptr = orelse_((mem_Alctr_rawAlloc($tracing self, new_len, alignOfLog2$(u8)))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let copy_len = pri_min(old_mem.len, new_len);
+    mem_copyBytes(P_prefix$((S$u8)(new_ptr)(copy_len)), S_prefix((old_mem.as_const)(copy_len)));
+    mem_Alctr__zeroTail(new_ptr, copy_len, new_len);
+    mem_set0Bytes(old_mem);
+    mem_Alctr_rawFree($tracing self, old_mem, alignOfLog2$(u8));
+    return_ok(P_prefix$((S$u8)(new_ptr)(new_len)));
 } $unscoped(fn);
 
 fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(mem_E$u_S$raw) $scope) {
@@ -198,18 +231,10 @@ fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(
     // Special case for zero new length
     if (new_len == 0) {
         mem_Alctr_free($tracing self, old_mem);
-        return_ok({
-            .ptr = u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw,
-            .len = 0,
-            .type = old_mem.type,
-        });
+        return_ok(u_init$S((old_mem.type)(u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw, 0)));
     }
     // Special case for zero-sized types
-    if (old_mem.type.size == 0) return_ok({
-        .ptr = u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw,
-        .len = new_len,
-        .type = old_mem.type,
-    });
+    if (old_mem.type.size == 0) return_ok(u_init$S((old_mem.type)(u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw, new_len)));
     // Create byte slice from the old memory
     let old_bytes = P_prefix$((S$u8)(old_mem.ptr)(old_mem.type.size * old_mem.len));
     // Check for overflow in multiplication
@@ -220,11 +245,7 @@ fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(
     let new_ptr = mem_Alctr_rawRemap($tracing self, old_bytes, old_mem.type.log2_align, new_byte_count);
     if_some((new_ptr)(ptr)) {
         mem_Alctr__zeroTail(ptr, old_bytes.len, new_byte_count);
-        return_ok({
-            .ptr = ptr,
-            .len = new_len,
-            .type = old_mem.type,
-        });
+        return_ok(u_init$S((old_mem.type)(ptr, new_len)));
     }
     // Remap failed, need to allocate new memory and copy
     let new_mem = orelse_((mem_Alctr_rawAlloc($tracing self, new_byte_count, old_mem.type.log2_align))(
@@ -238,12 +259,13 @@ fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(
     // Zero out old memory before freeing
     mem_set0Bytes(old_bytes);
     mem_Alctr_rawFree($tracing self, old_bytes, old_mem.type.log2_align);
-    return_ok({
-        .ptr = new_mem,
-        .len = new_len,
-        .type = old_mem.type,
-    });
+    return_ok(u_init$S((old_mem.type)(new_mem, new_len)));
 } $unscoped(fn);
+
+fn_((mem_Alctr_freeBytes($traced mem_Alctr self, S$u8 mem))(void)) {
+    if (mem.len == 0) return;
+    mem_Alctr_rawFree($tracing self, mem, alignOfLog2$(u8));
+};
 
 fn_((mem_Alctr_free($traced mem_Alctr self, u_S$raw mem))(void)) {
     // Special case for zero-sized types or empty slices
@@ -252,6 +274,11 @@ fn_((mem_Alctr_free($traced mem_Alctr self, u_S$raw mem))(void)) {
     let bytes = P_prefix$((S$u8)(mem.ptr)(mem.type.size * mem.len));
     mem_Alctr_rawFree($tracing self, bytes, mem.type.log2_align);
 };
+
+fn_((mem_Alctr_dupeBytes($traced mem_Alctr self, S_const$u8 src))(mem_E$S$u8) $scope) {
+    let new_mem = try_(mem_Alctr_allocBytes($tracing self, src.len));
+    return_ok(mem_copyBytes(new_mem, src));
+} $unscoped(fn);
 
 fn_((mem_Alctr_dupe($traced mem_Alctr self, u_S_const$raw src))(mem_E$u_S$raw) $scope) {
     let new_mem = try_(mem_Alctr_alloc($tracing self, src.type, src.len));

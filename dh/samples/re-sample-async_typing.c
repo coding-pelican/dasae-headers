@@ -202,18 +202,18 @@ async_fn_scope(typeEffectRealistic, {
         locals->delay_ms = as$(u64)(args->base_interval * time_millis_per_sec);
         if (args->add_randomness) {
             // Add randomness to make it feel more natural (-30 to +50 ms variation)
-            let random_variation = Rand_rangeIInt(&locals->rand, -30, 50);
+            let random_variation = Rand_rangeIInt(&locals->rand, Range_inclExcl$(i64, -30, 50));
             locals->delay_ms = intCast$((u64)(pri_max(as$(i64)(10), (intCast$((i64)(locals->delay_ms)) + random_variation))));
 
             // Longer pauses after punctuation
             if (current_char == '.' || current_char == '!' || current_char == '?') {
-                let punctuation_delay = Rand_rangeUInt(&locals->rand, 200, 500);
+                let punctuation_delay = Rand_rangeUInt(&locals->rand, Range_inclExcl$(u64, 200, 500));
                 locals->delay_ms += punctuation_delay;
             } else if (current_char == ',' || current_char == ';') {
-                let comma_delay = Rand_rangeUInt(&locals->rand, 100, 200);
+                let comma_delay = Rand_rangeUInt(&locals->rand, Range_inclExcl$(u64, 100, 200));
                 locals->delay_ms += comma_delay;
             } else if (current_char == ' ') {
-                let space_delay = Rand_rangeUInt(&locals->rand, 20, 80);
+                let space_delay = Rand_rangeUInt(&locals->rand, Range_inclExcl$(u64, 20, 80));
                 locals->delay_ms += space_delay;
             }
         }

@@ -15,8 +15,6 @@ $static var_(log__config, log_Config) = {
     .shows_function = true,
 };
 
-T_use$((u8)(mem_findLastAny));
-
 $static fn_((log__closeOwnedOutput(void))(void)) {
     if (log__config.has_output_file && log__config.owns_output_file) {
         fs_File_close(log__config.output_file);
@@ -48,7 +46,7 @@ $static fn_((log__writeTimestamp(io_Writer writer))(void)) {
 fn_((log_init(const char* filename))(E$void) $scope) {
     claim_assert_nonnull(filename);
     let path = mem_spanZ0$u8(ptrCast$((const u8*)(filename)));
-    if_some((mem_findLastAny$u8(path, u8_l("/\\")))(sep_idx)) {
+    if_some((mem_findLastAnyBytes(path, u8_l("/\\")))(sep_idx)) {
         if (sep_idx != 0) {
             try_(fs_Dir_create(S_prefix((path)(sep_idx))));
         }

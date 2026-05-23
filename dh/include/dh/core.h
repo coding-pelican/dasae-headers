@@ -23,9 +23,6 @@ extern "C" {
 
 #include "core/pri.h"
 #include "core/fn.h"
-#if DEPRECATED_CODE
-#include "core/Callable.h"
-#endif /* DEPRECATED_CODE */
 #include "core/claim.h"
 #include "core/debug.h"
 #include "core/range.h"
@@ -36,7 +33,6 @@ extern "C" {
 #include "core/scope.h"
 #include "core/src_loc.h"
 #include "core/type_info.h"
-#include "core/struct_layout.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

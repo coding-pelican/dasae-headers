@@ -110,7 +110,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     /* Initialize random number generator */
-    Rand_init();
+    var rng = Rand_init();
 
     /* Initialize heap allocator */
     var allocator = heap_Page_alctr(create$(heap_Page));
@@ -129,7 +129,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     /* Game state variables */
     bool is_gameover = false;
-    i32 current_piece = as$(i32)(Rand_range$i64(0, tetris_Tetrominos_count - 1));
+    i32 current_piece = as$(i32)(Rand_range$i64(&rng, Range_inclExcl$(i64, 0, tetris_Tetrominos_count)));
     i32 current_rotation = 0;
     i32 current_x = (tetris_field_width / 2) - 2;
     i32 current_y = 0;
@@ -206,7 +206,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
                 current_x = (tetris_field_width / 2) - 2;
                 current_y = 0;
                 current_rotation = 0;
-                current_piece = as$(i32)(Rand_range$i64(0, tetris_Tetrominos_count - 1));
+                current_piece = as$(i32)(Rand_range$i64(&rng, Range_inclExcl$(i64, 0, tetris_Tetrominos_count)));
 
                 /* Check if game over - can't place new piece */
                 is_gameover = !tetris_PlayField_doesPieceFit(&field, current_piece, current_rotation, current_x, current_y);

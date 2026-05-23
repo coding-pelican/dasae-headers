@@ -92,16 +92,16 @@ fn_((typeEffectRealistic(Runtime rt, S_const$u8 text, f64 base_interval_secs, bo
         var delay_ms = as$(u64)(base_interval_secs * as$(f64)(time_millis_per_sec));
         if (add_randomness) {
             let base_i64 = as$(i64)(delay_ms);
-            let jitter = Rand_rangeIInt(&rand, -30, 50);
+            let jitter = Rand_rangeIInt(&rand, Range_inclExcl$(i64, -30, 50));
             let jittered = base_i64 + jitter;
             delay_ms = jittered <= 10 ? 10 : as$(u64)(jittered);
 
             if (typo == as$(u8)('.') || typo == as$(u8)('!') || typo == as$(u8)('?')) {
-                delay_ms += Rand_rangeUInt(&rand, 200, 500);
+                delay_ms += Rand_rangeUInt(&rand, Range_inclExcl$(u64, 200, 500));
             } else if (typo == as$(u8)(',') || typo == as$(u8)(';')) {
-                delay_ms += Rand_rangeUInt(&rand, 100, 200);
+                delay_ms += Rand_rangeUInt(&rand, Range_inclExcl$(u64, 100, 200));
             } else if (typo == as$(u8)(' ')) {
-                delay_ms += Rand_rangeUInt(&rand, 20, 80);
+                delay_ms += Rand_rangeUInt(&rand, Range_inclExcl$(u64, 20, 80));
             }
         }
         if (delay_ms < 10) delay_ms = 10;
@@ -120,13 +120,13 @@ $static fn_((runMain(Runtime rt))(Void) $guard) {
     Term_writeText(rt.io, u8_l("=== Typing Effect Demo ==="));
     Term_nl(rt.io);
 
-    var demo1 = clsr_(typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(100), 0, 1);
-    var demo2 = clsr_(typeEffectOverDuration)(rt, sample_text, 3.0, 0, 2);
-    var demo3 = clsr_(typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(125), 0, 3);
-    var demo4 = clsr_(typeEffectOverDuration)(rt, sample_text, 5.0, 0, 4);
-    var demo5 = clsr_(typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(75), 0, 5);
-    var demo6 = clsr_(typeEffectOverDuration)(rt, sample_text, 4.0, 0, 6);
-    var demo7 = clsr_(typeEffectRealistic)(rt, sample_text, 0.08, true, 0, 7);
+    var demo1 = clsr_((typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(100), 0, 1));
+    var demo2 = clsr_((typeEffectOverDuration)(rt, sample_text, 3.0, 0, 2));
+    var demo3 = clsr_((typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(125), 0, 3));
+    var demo4 = clsr_((typeEffectOverDuration)(rt, sample_text, 5.0, 0, 4));
+    var demo5 = clsr_((typeEffectWithInterval)(rt, sample_text, time_Dur_fromMillis(75), 0, 5));
+    var demo6 = clsr_((typeEffectOverDuration)(rt, sample_text, 4.0, 0, 6));
+    var demo7 = clsr_((typeEffectRealistic)(rt, sample_text, 0.08, true, 0, 7));
 
     var task1 = Sched_async$Void(rt.sched, demo1.as_base);
     defer_(Future_cancel$Void(&task1, rt.sched));
@@ -168,13 +168,13 @@ $static fn_((runMain(Runtime rt))(Void) $guard) {
         if_ok((fmt_parse$f64(interval_text.as_const))(interval_secs)) blk_defer {
             let prompt = u8_l("Typing your text: ");
             Term_writeText(rt.io, prompt);
-            var interactive = clsr_(typeEffectWithInterval)(
+            var interactive = clsr_((typeEffectWithInterval)(
                 rt,
                 user_text.as_const,
                 time_Dur_fromMillis(as$(u64)(interval_secs * as$(f64)(time_millis_per_sec))),
                 (as$(u32)(prompt.len)),
                 line
-            );
+            ));
             var interactive_task = Sched_async$Void(rt.sched, interactive.as_base);
             defer_(Future_cancel$Void(&interactive_task, rt.sched));
             Future_await$Void(&interactive_task, rt.sched);
@@ -182,14 +182,14 @@ $static fn_((runMain(Runtime rt))(Void) $guard) {
             let_ignore = _err;
             let prompt = u8_l("Using default realistic typing: ");
             Term_writeText(rt.io, prompt);
-            var interactive = clsr_(typeEffectRealistic)(
+            var interactive = clsr_((typeEffectRealistic)(
                 rt,
                 user_text.as_const,
                 0.08,
                 true,
                 (as$(u32)(prompt.len)),
                 line
-            );
+            ));
             var interactive_task = Sched_async$Void(rt.sched, interactive.as_base);
             defer_(Future_cancel$Void(&interactive_task, rt.sched));
             Future_await$Void(&interactive_task, rt.sched);
@@ -345,7 +345,7 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         .fs = fs_evented(&loop),
         .sched = Sched_coop(&loop),
     };
-    var main_task = clsr_(runMain)(rt);
+    var main_task = clsr_((runMain)(rt));
     var future = Sched_async$Void(rt.sched, main_task.as_base);
     defer_(Future_cancel$Void(&future, rt.sched));
     return_ok(Future_await$Void(&future, rt.sched));

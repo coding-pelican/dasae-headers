@@ -139,11 +139,10 @@ fn_((time_Duration_mulChkd$u32(time_Duration lhs, u32 rhs))(O$time_Duration) $sc
 
 fn_((time_Duration_divChkd$u32(time_Duration lhs, u32 rhs))(O$time_Duration) $scope) {
     if (rhs == 0) { return_none(); }
-    let secs = lhs.secs / (as$(u64)(rhs));
-    let extra_secs = lhs.secs % (as$(u64)(rhs));
-    var nanos = lhs.nanos / (as$(u32)(rhs));
-    let extra_nanos = lhs.nanos % (as$(u32)(rhs));
-    nanos += nanos + as$(u64)((extra_secs * as$(u64)(time_nanos_per_sec) + as$(u64)(extra_nanos)) / as$(u64)(rhs));
+    let rhs_u64 = as$(u64)(rhs);
+    let secs = lhs.secs / rhs_u64;
+    let rem_secs = lhs.secs % rhs_u64;
+    let nanos = as$(u32)((rem_secs * as$(u64)(time_nanos_per_sec) + as$(u64)(lhs.nanos)) / rhs_u64);
     claim_assert(nanos < time_nanos_per_sec);
     return_some(time_Duration_from(secs, nanos));
 } $unscoped(fn);

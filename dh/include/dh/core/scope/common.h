@@ -176,15 +176,21 @@ extern "C"
 
 #define __for__lenIter(_iter) pp_overload(__for__lenIter, __for__expandIter _iter)(__for__expandIter _iter)
 #define __for__lenIter_1(...) __for__lenIter_1Emit(__VA_ARGS__)
-#define __for__lenIter_1Emit(_iter) len$R
+#define __for__lenIter_1Emit(_iter) R_len
 #define __for__lenIter_2(...) __for__lenIter_2Emit(__VA_ARGS__)
-#define __for__lenIter_2Emit(_tag, _iter) pp_cat(len, _tag)
+#define __for__lenIter_2Emit(_tag, _iter) pp_cat(__for__lenIter, _tag)
+#define __for__lenIter$A(_iter) A_len(_iter)
+#define __for__lenIter$S(_iter) S_len(_iter)
+#define __for__lenIter$u_S(_iter) u_lenS(_iter)
 
 #define __for__atIter(__step, __iter_id, _iter) pp_overload(__for__atIter, __for__expandIter _iter)(__step, __iter_id, __for__expandIter _iter)
 #define __for__atIter_1(...) __for__atIter_1Emit(__VA_ARGS__)
-#define __for__atIter_1Emit(__step, __iter_id, _iter) at$R(__iter_id, __step)
+#define __for__atIter_1Emit(__step, __iter_id, _iter) R_at(__iter_id, __step)
 #define __for__atIter_2(...) __for__atIter_2Emit(__VA_ARGS__)
-#define __for__atIter_2Emit(__step, __iter_id, _tag, _iter) pp_cat(at, _tag)(__iter_id, __step)
+#define __for__atIter_2Emit(__step, __iter_id, _tag, _iter) pp_cat(__for__atIter, _tag)(__iter_id, __step)
+#define __for__atIter$A(__iter_id, __step) A_at((__iter_id)[__step])
+#define __for__atIter$S(__iter_id, __step) S_at((__iter_id)[__step])
+#define __for__atIter$u_S(__iter_id, __step) u_atS(__iter_id, __step)
 
 /* for - emitters (forward) =================================================*/
 #define __emitNext__for_(_iters, _captures...) \

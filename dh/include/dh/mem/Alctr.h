@@ -73,23 +73,39 @@ $extern fn_((mem_Alctr_destroy($traced mem_Alctr self, u_P$raw ptr))(void));
 $attr($must_check)
 $extern fn_((mem_Alctr_clone($traced mem_Alctr self, u_P_const$raw ptr))(mem_E$u_P$raw));
 #define T_use_mem_Alctr_clone$(_T...) __comp_gen__T_use_mem_Alctr_clone$(_T)
+
+/// Bytes allocation
+$attr($must_check)
+$extern fn_((mem_Alctr_allocBytes($traced mem_Alctr self, usize bytes_count))(mem_E$S$u8));
 /// Slice allocation
 $attr($must_check)
 $extern fn_((mem_Alctr_alloc($traced mem_Alctr self, TypeInfo type, usize count))(mem_E$u_S$raw));
 #define T_use_mem_Alctr_alloc$(_T...) __comp_gen__T_use_mem_Alctr_alloc$(_T)
+/// Try to resize bytes in-place
+$extern fn_((mem_Alctr_resizeBytes($traced mem_Alctr self, S$u8 old_mem, usize new_len))(bool));
 /// Try to resize slice in-place
 $extern fn_((mem_Alctr_resize($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(bool));
 #define T_use_mem_Alctr_resize$(_T...) __comp_gen__T_use_mem_Alctr_resize$(_T)
+/// Try to resize bytes, allowing relocation
+$extern fn_((mem_Alctr_remapBytes($traced mem_Alctr self, S$u8 old_mem, usize new_len))(O$S$u8));
 /// Try to resize slice, allowing relocation
 $extern fn_((mem_Alctr_remap($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(O$u_S$raw));
 #define T_use_mem_Alctr_remap$(_T...) __comp_gen__T_use_mem_Alctr_remap$(_T)
+/// Reallocate bytes with new size
+$attr($must_check)
+$extern fn_((mem_Alctr_reallocBytes($traced mem_Alctr self, S$u8 old_mem, usize new_len))(mem_E$S$u8));
 /// Reallocate slice with new size
 $attr($must_check)
 $extern fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(mem_E$u_S$raw));
 #define T_use_mem_Alctr_realloc$(_T...) __comp_gen__T_use_mem_Alctr_realloc$(_T)
+/// Free bytes
+$extern fn_((mem_Alctr_freeBytes($traced mem_Alctr self, S$u8 mem))(void));
 /// Free slice
 $extern fn_((mem_Alctr_free($traced mem_Alctr self, u_S$raw mem))(void));
 #define T_use_mem_Alctr_free$(_T...) __comp_gen__T_use_mem_Alctr_free$(_T)
+/// Duplicate bytes
+$attr($must_check)
+$extern fn_((mem_Alctr_dupeBytes($traced mem_Alctr self, S_const$u8 src))(mem_E$S$u8));
 /// Duplicate slice
 $attr($must_check)
 $extern fn_((mem_Alctr_dupe($traced mem_Alctr self, u_S_const$raw src))(mem_E$u_S$raw));

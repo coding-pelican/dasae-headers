@@ -106,12 +106,12 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     var counter = try_(actor_Sys_createUnit(&actors));
     defer_(actor_Sys_destroyUnit(&actors, &counter));
-    actor_Unit_start(counter, clsr_(sample_counterActor)(counter, u8_l("counter")).as_base);
+    actor_Unit_start(counter, clsr_((sample_counterActor)(counter, u8_l("counter"))).as_base);
     defer_(unwrap_(actor_Unit_exit(counter)));
 
     var feeder = try_(actor_Sys_createUnit(&actors));
     defer_(actor_Sys_destroyUnit(&actors, &feeder));
-    actor_Unit_startE$mem_E(feeder, clsr_(sample_feederActor)(feeder, counter, u8_l("feeder")).as_base);
+    actor_Unit_startE$mem_E(feeder, clsr_((sample_feederActor)(feeder, counter, u8_l("feeder"))).as_base);
     defer_({
         match_((unwrap_(actor_Unit_exit(feeder)))) {
         pattern_((actor_Exit_normal)($ignore)) $do_nothing $end(pattern);

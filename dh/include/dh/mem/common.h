@@ -5,7 +5,7 @@
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-17 (date of creation)
- * @updated 2026-02-26 (date of last update)
+ * @updated 2026-05-20 (date of last update)
  * @ingroup dasae-headers(dh)/mem
  * @prefix  mem
  *
@@ -122,6 +122,70 @@ $attr($inline_always)
 $static fn_((mem_nativeToBig32(u32 x))(u32));
 $attr($inline_always)
 $static fn_((mem_nativeToBig16(u16 x))(u16));
+
+T_alias$((mem_ReadLESizeBuf)(A$$(usize_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readLESize(mem_ReadLESizeBuf bytes))(usize));
+T_alias$((mem_ReadLE64Buf)(A$$(u64_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readLE64(mem_ReadLE64Buf bytes))(u64));
+T_alias$((mem_ReadLELongBuf)(A$$(ulong_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readLELong(mem_ReadLELongBuf bytes))(ulong));
+T_alias$((mem_ReadLE32Buf)(A$$(u32_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readLE32(mem_ReadLE32Buf bytes))(u32));
+T_alias$((mem_ReadLE16Buf)(A$$(u16_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readLE16(mem_ReadLE16Buf bytes))(u16));
+
+T_alias$((mem_ReadBESizeBuf)(A$$(usize_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readBESize(mem_ReadBESizeBuf bytes))(usize));
+T_alias$((mem_ReadBE64Buf)(A$$(u64_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readBE64(mem_ReadBE64Buf bytes))(u64));
+T_alias$((mem_ReadBELongBuf)(A$$(ulong_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readBELong(mem_ReadBELongBuf bytes))(ulong));
+T_alias$((mem_ReadBE32Buf)(A$$(u32_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readBE32(mem_ReadBE32Buf bytes))(u32));
+T_alias$((mem_ReadBE16Buf)(A$$(u16_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_readBE16(mem_ReadBE16Buf bytes))(u16));
+
+T_alias$((mem_WriteLESizeBuf)(A$$(usize_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeLESize(usize val))(mem_WriteLESizeBuf));
+T_alias$((mem_WriteLE64Buf)(A$$(u64_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeLE64(u64 val))(mem_WriteLE64Buf));
+T_alias$((mem_WriteLELongBuf)(A$$(ulong_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeLELong(ulong val))(mem_WriteLELongBuf));
+T_alias$((mem_WriteLE32Buf)(A$$(u32_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeLE32(u32 val))(mem_WriteLE32Buf));
+T_alias$((mem_WriteLE16Buf)(A$$(u16_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeLE16(u16 val))(mem_WriteLE16Buf));
+
+T_alias$((mem_WriteBESizeBuf)(A$$(usize_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeBESize(usize val))(mem_WriteBESizeBuf));
+T_alias$((mem_WriteBE64Buf)(A$$(u64_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeBE64(u64 val))(mem_WriteBE64Buf));
+T_alias$((mem_WriteBELongBuf)(A$$(ulong_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeBELong(ulong val))(mem_WriteBELongBuf));
+T_alias$((mem_WriteBE32Buf)(A$$(u32_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeBE32(u32 val))(mem_WriteBE32Buf));
+T_alias$((mem_WriteBE16Buf)(A$$(u16_bytes, u8)));
+$attr($inline_always)
+$static fn_((mem_writeBE16(u16 val))(mem_WriteBE16Buf));
 
 /* --- Alignment Functions --- */
 
@@ -286,6 +350,12 @@ $extern fn_((mem_rotateBytes(S$u8 seq, usize amount))(void));
 $extern fn_((mem_rotate(u_S$raw seq, usize amount))(void));
 #define T_use_mem_rotate$(_T...) __stmt__T_use_mem_rotate$(_T)
 
+T_alias$((mem_WindowIter_Bytes)(struct mem_WindowIter_Bytes {
+    var_(buf, S_const$u8);
+    var_(idx, O$usize);
+    var_(size, usize);
+    var_(advance, usize);
+}));
 #define mem_WindowIter$(_T...) __alias__mem_WindowIter$(_T)
 T_alias$((mem_WindowIter)(struct mem_WindowIter {
     var_(buf, S_const$raw);
@@ -295,10 +365,13 @@ T_alias$((mem_WindowIter)(struct mem_WindowIter {
     var_(type, debug_TypeInfo);
 }));
 #define T_use_mem_WindowIter$(_T...) __stmt__T_use_mem_WindowIter$(_T)
+$extern fn_((mem_windowBytes(S_const$u8 buf, usize size, usize advance))(mem_WindowIter_Bytes));
 $extern fn_((mem_window(u_S_const$raw buf, usize size, usize advance))(mem_WindowIter));
 #define T_use_mem_window$(_T...) __stmt__T_use_mem_window$(_T)
+$extern fn_((mem_WindowIter_resetBytes(mem_WindowIter_Bytes* self))(void));
 $extern fn_((mem_WindowIter_reset(mem_WindowIter* self))(void));
 #define T_use_mem_WindowIter_reset$(_T...) __stmt__T_use_mem_WindowIter_reset$(_T)
+$extern fn_((mem_WindowIter_nextBytes(mem_WindowIter_Bytes* self))(O$S_const$u8));
 $extern fn_((mem_WindowIter_next(mem_WindowIter* self, TypeInfo type))(O$u_S_const$raw));
 #define T_use_mem_WindowIter_next$(_T...) __stmt__T_use_mem_WindowIter_next$(_T)
 
@@ -320,55 +393,112 @@ $extern fn_((mem_trim(u_S_const$raw haystack, u_S_const$raw values_to_strip))(u_
 #define T_use_mem_trim$(_T...) __stmt__T_use_mem_trim$(_T)
 
 $attr($must_check)
-$extern fn_((mem_catBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$u_S$raw));
+$extern fn_((mem_catBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$S$u8));
 $attr($must_check)
 $extern fn_((mem_cat(u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(mem_E$u_S$raw));
 #define T_use_mem_cat$(_T...) __stmt__T_use_mem_cat$(_T)
-$extern fn_((mem_catWithinBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(u_S$raw));
+$extern fn_((mem_catWithinBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(S$u8));
 $extern fn_((mem_catWithin(u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(u_S$raw));
 #define T_use_mem_catWithin$(_T...) __stmt__T_use_mem_catWithin$(_T)
 $attr($must_check)
-$extern fn_((mem_catAllocBytes(S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$u_S$raw));
+$extern fn_((mem_catAllocBytes(S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$S$u8));
 $attr($must_check)
 $extern fn_((mem_catAlloc(u_S_const$raw lhs, u_S_const$raw rhs, mem_Alctr gpa))(mem_E$u_S$raw));
 #define T_use_mem_catAlloc$(_T...) __stmt__T_use_mem_catAlloc$(_T)
 
 $attr($must_check)
-$extern fn_((mem_joinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$u_S$raw));
+$extern fn_((mem_joinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$S$u8));
 $attr($must_check)
 $extern fn_((mem_join(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(mem_E$u_S$raw));
 #define T_use_mem_join$(_T...) __stmt__T_use_mem_join$(_T)
-$extern fn_((mem_joinWithinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(u_S$raw));
+$extern fn_((mem_joinWithinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(S$u8));
 $extern fn_((mem_joinWithin(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(u_S$raw));
 #define T_use_mem_joinWithin$(_T...) __stmt__T_use_mem_joinWithin$(_T)
 $attr($must_check)
-$extern fn_((mem_joinAllocBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$u_S$raw));
+$extern fn_((mem_joinAllocBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$S$u8));
 $attr($must_check)
 $extern fn_((mem_joinAlloc(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, mem_Alctr gpa))(mem_E$u_S$raw));
 #define T_use_mem_joinAlloc$(_T...) __stmt__T_use_mem_joinAlloc$(_T)
 
+$attr($must_check)
+$extern fn_((mem_padLeftBytes(S_const$u8 src, usize width, u8 fill, S$u8 out))(mem_E$S$u8));
+$attr($must_check)
+$extern fn_((mem_padLeft(u_S_const$raw src, usize width, u_V$raw fill, u_S$raw out))(mem_E$u_S$raw));
+#define T_use_mem_padLeft$(_T...) __stmt__T_use_mem_padLeft$(_T)
+$extern fn_((mem_padLeftWithinBytes(S_const$u8 src, usize width, u8 fill, S$u8 out))(S$u8));
+$extern fn_((mem_padLeftWithin(u_S_const$raw src, usize width, u_V$raw fill, u_S$raw out))(u_S$raw));
+#define T_use_mem_padLeftWithin$(_T...) __stmt__T_use_mem_padLeftWithin$(_T)
+$attr($must_check)
+$extern fn_((mem_padLeftAllocBytes(S_const$u8 src, usize width, u8 fill, mem_Alctr gpa))(mem_E$S$u8));
+$attr($must_check)
+$extern fn_((mem_padLeftAlloc(u_S_const$raw src, usize width, u_V$raw fill, mem_Alctr gpa))(mem_E$u_S$raw));
+#define T_use_mem_padLeftAlloc$(_T...) __stmt__T_use_mem_padLeftAlloc$(_T)
+
+$attr($must_check)
+$extern fn_((mem_padRightBytes(S_const$u8 src, usize width, u8 fill, S$u8 out))(mem_E$S$u8));
+$attr($must_check)
+$extern fn_((mem_padRight(u_S_const$raw src, usize width, u_V$raw fill, u_S$raw out))(mem_E$u_S$raw));
+#define T_use_mem_padRight$(_T...) __stmt__T_use_mem_padRight$(_T)
+$extern fn_((mem_padRightWithinBytes(S_const$u8 src, usize width, u8 fill, S$u8 out))(S$u8));
+$extern fn_((mem_padRightWithin(u_S_const$raw src, usize width, u_V$raw fill, u_S$raw out))(u_S$raw));
+#define T_use_mem_padRightWithin$(_T...) __stmt__T_use_mem_padRightWithin$(_T)
+$attr($must_check)
+$extern fn_((mem_padRightAllocBytes(S_const$u8 src, usize width, u8 fill, mem_Alctr gpa))(mem_E$S$u8));
+$attr($must_check)
+$extern fn_((mem_padRightAlloc(u_S_const$raw src, usize width, u_V$raw fill, mem_Alctr gpa))(mem_E$u_S$raw));
+#define T_use_mem_padRightAlloc$(_T...) __stmt__T_use_mem_padRightAlloc$(_T)
+
+$attr($must_check)
+$extern fn_((mem_padCenterBytes(S_const$u8 src, usize width, u8 fill, S$u8 out))(mem_E$S$u8));
+$attr($must_check)
+$extern fn_((mem_padCenter(u_S_const$raw src, usize width, u_V$raw fill, u_S$raw out))(mem_E$u_S$raw));
+#define T_use_mem_padCenter$(_T...) __stmt__T_use_mem_padCenter$(_T)
+$extern fn_((mem_padCenterWithinBytes(S_const$u8 src, usize width, u8 fill, S$u8 out))(S$u8));
+$extern fn_((mem_padCenterWithin(u_S_const$raw src, usize width, u_V$raw fill, u_S$raw out))(u_S$raw));
+#define T_use_mem_padCenterWithin$(_T...) __stmt__T_use_mem_padCenterWithin$(_T)
+$attr($must_check)
+$extern fn_((mem_padCenterAllocBytes(S_const$u8 src, usize width, u8 fill, mem_Alctr gpa))(mem_E$S$u8));
+$attr($must_check)
+$extern fn_((mem_padCenterAlloc(u_S_const$raw src, usize width, u_V$raw fill, mem_Alctr gpa))(mem_E$u_S$raw));
+#define T_use_mem_padCenterAlloc$(_T...) __stmt__T_use_mem_padCenterAlloc$(_T)
+
+$extern fn_((mem_findFirstUnitBytes(S_const$u8 haystack, u8 needle))(O$usize));
 $extern fn_((mem_findFirstUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize));
 #define T_use_mem_findFirstUnit$(_T...) __stmt__T_use_mem_findFirstUnit$(_T)
+$extern fn_((mem_findLastUnitBytes(S_const$u8 haystack, u8 needle))(O$usize));
 $extern fn_((mem_findLastUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize));
 #define T_use_mem_findLastUnit$(_T...) __stmt__T_use_mem_findLastUnit$(_T)
+$extern fn_((mem_findFirstSeqBytes(S_const$u8 haystack, S_const$u8 needle))(O$usize));
 $extern fn_((mem_findFirstSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize));
 #define T_use_mem_findFirstSeq$(_T...) __stmt__T_use_mem_findFirstSeq$(_T)
+$extern fn_((mem_findLastSeqBytes(S_const$u8 haystack, S_const$u8 needle))(O$usize));
 $extern fn_((mem_findLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize));
 #define T_use_mem_findLastSeq$(_T...) __stmt__T_use_mem_findLastSeq$(_T)
+$extern fn_((mem_findFirstAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
 $extern fn_((mem_findFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findFirstAny$(_T...) __stmt__T_use_mem_findFirstAny$(_T)
+$extern fn_((mem_findLastAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
 $extern fn_((mem_findLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findLastAny$(_T...) __stmt__T_use_mem_findLastAny$(_T)
+$extern fn_((mem_findFirstNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
 $extern fn_((mem_findFirstNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findFirstNone$(_T...) __stmt__T_use_mem_findFirstNone$(_T)
+$extern fn_((mem_findLastNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
 $extern fn_((mem_findLastNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findLastNone$(_T...) __stmt__T_use_mem_findLastNone$(_T)
+$extern fn_((mem_findFirstDiffBytes(S_const$u8 lhs, S_const$u8 rhs))(O$usize));
 $extern fn_((mem_findFirstDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize));
 #define T_use_mem_findFirstDiff$(_T...) __stmt__T_use_mem_findFirstDiff$(_T)
+$extern fn_((mem_findLastDiffBytes(S_const$u8 lhs, S_const$u8 rhs))(O$usize));
 $extern fn_((mem_findLastDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize));
 #define T_use_mem_findLastDiff$(_T...) __stmt__T_use_mem_findLastDiff$(_T)
 
 #define mem_Cutted$(_T...) __alias__mem_Cutted$(_T)
+T_alias$((mem_Cutted_Bytes)(struct mem_Cutted_Bytes {
+    var_(before, S_const$u8);
+    var_(after, S_const$u8);
+}));
+T_use_O$(mem_Cutted_Bytes);
 T_alias$((mem_Cutted)(struct mem_Cutted {
     var_(before, S_const$raw);
     var_(after, S_const$raw);
@@ -377,22 +507,32 @@ T_alias$((mem_Cutted)(struct mem_Cutted {
 T_use_O$(mem_Cutted);
 #define T_use_mem_Cutted$(_T...) __stmt__T_use_mem_Cutted$(_T)
 $attr($inline_always)
+$static fn_((mem_Cutted_beforeBytes(mem_Cutted_Bytes self))(S_const$u8));
+$attr($inline_always)
 $static fn_((mem_Cutted_before(mem_Cutted self, TypeInfo type))(u_S_const$raw));
 #define T_use_mem_Cutted_before$(_T...) __stmt__T_use_mem_Cutted_before$(_T)
+$attr($inline_always)
+$static fn_((mem_Cutted_afterBytes(mem_Cutted_Bytes self))(S_const$u8));
 $attr($inline_always)
 $static fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw));
 #define T_use_mem_Cutted_after$(_T...) __stmt__T_use_mem_Cutted_after$(_T)
 
+$extern fn_((mem_cutFirstUnitBytes(S_const$u8 haystack, u8 needle))(O$mem_Cutted_Bytes));
 $extern fn_((mem_cutFirstUnit(u_S_const$raw haystack, u_V$raw needle))(O$mem_Cutted));
 #define T_use_mem_cutFirstUnit$(_T...) __stmt__T_use_mem_cutFirstUnit$(_T)
+$extern fn_((mem_cutLastUnitBytes(S_const$u8 haystack, u8 needle))(O$mem_Cutted_Bytes));
 $extern fn_((mem_cutLastUnit(u_S_const$raw haystack, u_V$raw needle))(O$mem_Cutted));
 #define T_use_mem_cutLastUnit$(_T...) __stmt__T_use_mem_cutLastUnit$(_T)
+$extern fn_((mem_cutFirstSeqBytes(S_const$u8 haystack, S_const$u8 needle))(O$mem_Cutted_Bytes));
 $extern fn_((mem_cutFirstSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$mem_Cutted));
 #define T_use_mem_cutFirstSeq$(_T...) __stmt__T_use_mem_cutFirstSeq$(_T)
+$extern fn_((mem_cutLastSeqBytes(S_const$u8 haystack, S_const$u8 needle))(O$mem_Cutted_Bytes));
 $extern fn_((mem_cutLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$mem_Cutted));
 #define T_use_mem_cutLastSeq$(_T...) __stmt__T_use_mem_cutLastSeq$(_T)
+$extern fn_((mem_cutFirstAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$mem_Cutted_Bytes));
 $extern fn_((mem_cutFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$mem_Cutted));
 #define T_use_mem_cutFirstAny$(_T...) __stmt__T_use_mem_cutFirstAny$(_T)
+$extern fn_((mem_cutLastAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$mem_Cutted_Bytes));
 $extern fn_((mem_cutLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$mem_Cutted));
 #define T_use_mem_cutLastAny$(_T...) __stmt__T_use_mem_cutLastAny$(_T)
 
@@ -400,6 +540,11 @@ T_alias$((mem_Delim)(enum_((mem_Delim $fits($packed))(
     mem_Delim_unit,
     mem_Delim_seq,
     mem_Delim_any
+))));
+T_alias$((mem_Delim_Bytes)(variant_((mem_Delim_Bytes $maps(mem_Delim))(
+    (mem_Delim_unit, u8),
+    (mem_Delim_seq, S_const$u8),
+    (mem_Delim_any, S_const$u8)
 ))));
 #define mem_Delim$(_T...) __alias__mem_Delim$(_T)
 T_alias$((mem_Delim$raw)(variant_((mem_Delim$raw $maps(mem_Delim))(
@@ -409,55 +554,80 @@ T_alias$((mem_Delim$raw)(variant_((mem_Delim$raw $maps(mem_Delim))(
 ))));
 #define T_use_mem_Delim$(_T...) __stmt__T_use_mem_Delim$(_T)
 
+T_alias$((mem_TokzIter_Bytes)(struct mem_TokzIter_Bytes {
+    var_(buf, S_const$u8);
+    var_(idx, usize);
+    var_(delim, mem_Delim_Bytes);
+}));
 #define mem_TokzIter$(_T...) __alias__mem_TokzIter$(_T)
 T_alias$((mem_TokzIter$raw)(struct mem_TokzIter$raw {
     var_(buf, S_const$raw);
     var_(idx, usize);
     var_(type, debug_TypeInfo);
-    var_(delim, mem_Delim$raw);
+    var_(delim_, mem_Delim$raw) $flexible;
 }));
 T_use_P$(mem_TokzIter$raw);
 T_alias$((V$mem_TokzIter$raw)(P$mem_TokzIter$raw));
 #define T_use_mem_TokzIter$(_T...) __stmt__T_use_mem_TokzIter$(_T)
+$extern fn_((mem_tokzUnitBytes(S_const$u8 buf, u8 unit))(mem_TokzIter_Bytes));
 $extern fn_((mem_tokzUnit(u_S_const$raw buf, u_V$raw unit, V$mem_TokzIter$raw ret_mem))(V$mem_TokzIter$raw));
 #define T_use_mem_tokzUnit$(_T...) __stmt__T_use_mem_tokzUnit$(_T)
+$extern fn_((mem_tokzSeqBytes(S_const$u8 buf, S_const$u8 seq))(mem_TokzIter_Bytes));
 $extern fn_((mem_tokzSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_TokzIter$raw ret_mem))(V$mem_TokzIter$raw));
 #define T_use_mem_tokzSeq$(_T...) __stmt__T_use_mem_tokzSeq$(_T)
+$extern fn_((mem_tokzAnyBytes(S_const$u8 buf, S_const$u8 any))(mem_TokzIter_Bytes));
 $extern fn_((mem_tokzAny(u_S_const$raw buf, u_S_const$raw any, V$mem_TokzIter$raw ret_mem))(V$mem_TokzIter$raw));
 #define T_use_mem_tokzAny$(_T...) __stmt__T_use_mem_tokzAny$(_T)
+$extern fn_((mem_TokzIter_resetBytes(mem_TokzIter_Bytes* self))(void));
 $extern fn_((mem_TokzIter_reset(mem_TokzIter$raw* self))(void));
 #define T_use_mem_TokzIter_reset$(_T...) __stmt__T_use_mem_TokzIter_reset$(_T)
+$extern fn_((mem_TokzIter_nextBytes(mem_TokzIter_Bytes* self))(O$S_const$u8));
 $extern fn_((mem_TokzIter_next(mem_TokzIter$raw* self, TypeInfo type))(O$u_S_const$raw));
 #define T_use_mem_TokzIter_next$(_T...) __stmt__T_use_mem_TokzIter_next$(_T)
+$extern fn_((mem_TokzIter_peekBytes(mem_TokzIter_Bytes* self))(O$S_const$u8));
 $extern fn_((mem_TokzIter_peek(mem_TokzIter$raw* self, TypeInfo type))(O$u_S_const$raw));
 #define T_use_mem_TokzIter_peek$(_T...) __stmt__T_use_mem_TokzIter_peek$(_T)
+$extern fn_((mem_TokzIter_restBytes(mem_TokzIter_Bytes* self))(S_const$u8));
 $extern fn_((mem_TokzIter_rest(mem_TokzIter$raw* self, TypeInfo type))(u_S_const$raw));
 #define T_use_mem_TokzIter_rest$(_T...) __stmt__T_use_mem_TokzIter_rest$(_T)
 
 #define mem_SplitIter$(_T...) __alias__mem_SplitIter$(_T)
+T_alias$((mem_SplitIter_Bytes)(struct mem_SplitIter_Bytes {
+    var_(buf, S_const$u8);
+    var_(idx, O$usize);
+    var_(delim, mem_Delim_Bytes);
+}));
 T_alias$((mem_SplitIter$raw)(struct mem_SplitIter$raw {
     var_(buf, S_const$raw);
     var_(idx, O$usize);
     var_(type, debug_TypeInfo);
-    var_(delim, mem_Delim$raw);
+    var_(delim_, mem_Delim$raw) $flexible;
 }));
 T_use_P$(mem_SplitIter$raw);
 T_alias$((V$mem_SplitIter$raw)(P$mem_SplitIter$raw));
 #define T_use_mem_SplitIter$(_T...) __stmt__T_use_mem_SplitIter$(_T)
+$extern fn_((mem_splitUnitBytes(S_const$u8 buf, u8 unit))(mem_SplitIter_Bytes));
 $extern fn_((mem_splitUnit(u_S_const$raw buf, u_V$raw unit, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw));
 #define T_use_mem_splitUnit$(_T...) __stmt__T_use_mem_splitUnit$(_T)
+$extern fn_((mem_splitSeqBytes(S_const$u8 buf, S_const$u8 seq))(mem_SplitIter_Bytes));
 $extern fn_((mem_splitSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw));
 #define T_use_mem_splitSeq$(_T...) __stmt__T_use_mem_splitSeq$(_T)
+$extern fn_((mem_splitAnyBytes(S_const$u8 buf, S_const$u8 any))(mem_SplitIter_Bytes));
 $extern fn_((mem_splitAny(u_S_const$raw buf, u_S_const$raw any, V$mem_SplitIter$raw ret_mem))(V$mem_SplitIter$raw));
 #define T_use_mem_splitAny$(_T...) __stmt__T_use_mem_splitAny$(_T)
+$extern fn_((mem_SplitIter_resetBytes(mem_SplitIter_Bytes* self))(void));
 $extern fn_((mem_SplitIter_reset(mem_SplitIter$raw* self))(void));
 #define T_use_mem_SplitIter_reset$(_T...) __stmt__T_use_mem_SplitIter_reset$(_T)
+$extern fn_((mem_SplitIter_firstBytes(mem_SplitIter_Bytes* self))(S_const$u8));
 $extern fn_((mem_SplitIter_first(mem_SplitIter$raw* self, TypeInfo type))(u_S_const$raw));
 #define T_use_mem_SplitIter_first$(_T...) __stmt__T_use_mem_SplitIter_first$(_T)
+$extern fn_((mem_SplitIter_nextBytes(mem_SplitIter_Bytes* self))(O$S_const$u8));
 $extern fn_((mem_SplitIter_next(mem_SplitIter$raw* self, TypeInfo type))(O$u_S_const$raw));
 #define T_use_mem_SplitIter_next$(_T...) __stmt__T_use_mem_SplitIter_next$(_T)
+$extern fn_((mem_SplitIter_peekBytes(mem_SplitIter_Bytes* self))(O$S_const$u8));
 $extern fn_((mem_SplitIter_peek(mem_SplitIter$raw* self, TypeInfo type))(O$u_S_const$raw));
 #define T_use_mem_SplitIter_peek$(_T...) __stmt__T_use_mem_SplitIter_peek$(_T)
+$extern fn_((mem_SplitIter_restBytes(mem_SplitIter_Bytes* self))(S_const$u8));
 $extern fn_((mem_SplitIter_rest(mem_SplitIter$raw* self, TypeInfo type))(u_S_const$raw));
 #define T_use_mem_SplitIter_rest$(_T...) __stmt__T_use_mem_SplitIter_rest$(_T)
 
@@ -781,6 +951,70 @@ fn_((mem_nativeToBig16(u16 x))(u16)) {
         pp_else_(mem_swapBytes16(x)));
 };
 
+fn_((mem_readLESize(mem_ReadLESizeBuf bytes))(usize)) {
+    return mem_littleToNativeSize(bitCast$((usize)(bytes)));
+};
+fn_((mem_readLE64(mem_ReadLE64Buf bytes))(u64)) {
+    return mem_littleToNative64(bitCast$((u64)(bytes)));
+};
+fn_((mem_readLELong(mem_ReadLELongBuf bytes))(ulong)) {
+    return mem_littleToNativeLong(bitCast$((ulong)(bytes)));
+};
+fn_((mem_readLE32(mem_ReadLE32Buf bytes))(u32)) {
+    return mem_littleToNative32(bitCast$((u32)(bytes)));
+};
+fn_((mem_readLE16(mem_ReadLE16Buf bytes))(u16)) {
+    return mem_littleToNative16(bitCast$((u16)(bytes)));
+};
+
+fn_((mem_readBESize(mem_ReadBESizeBuf bytes))(usize)) {
+    return mem_bigToNativeSize(bitCast$((usize)(bytes)));
+};
+fn_((mem_readBE64(mem_ReadBE64Buf bytes))(u64)) {
+    return mem_bigToNative64(bitCast$((u64)(bytes)));
+};
+fn_((mem_readBELong(mem_ReadBELongBuf bytes))(ulong)) {
+    return mem_bigToNativeLong(bitCast$((ulong)(bytes)));
+};
+fn_((mem_readBE32(mem_ReadBE32Buf bytes))(u32)) {
+    return mem_bigToNative32(bitCast$((u32)(bytes)));
+};
+fn_((mem_readBE16(mem_ReadBE16Buf bytes))(u16)) {
+    return mem_bigToNative16(bitCast$((u16)(bytes)));
+};
+
+fn_((mem_writeLESize(usize val))(mem_WriteLESizeBuf)) {
+    return bitCast$((mem_WriteLESizeBuf)(mem_nativeToLittleSize(val)));
+};
+fn_((mem_writeLE64(u64 val))(mem_WriteLE64Buf)) {
+    return bitCast$((mem_WriteLE64Buf)(mem_nativeToLittle64(val)));
+};
+fn_((mem_writeLELong(ulong val))(mem_WriteLELongBuf)) {
+    return bitCast$((mem_WriteLELongBuf)(mem_nativeToLittleLong(val)));
+};
+fn_((mem_writeLE32(u32 val))(mem_WriteLE32Buf)) {
+    return bitCast$((mem_WriteLE32Buf)(mem_nativeToLittle32(val)));
+};
+fn_((mem_writeLE16(u16 val))(mem_WriteLE16Buf)) {
+    return bitCast$((mem_WriteLE16Buf)(mem_nativeToLittle16(val)));
+};
+
+fn_((mem_writeBESize(usize val))(mem_WriteBESizeBuf)) {
+    return bitCast$((mem_WriteBESizeBuf)(mem_nativeToBigSize(val)));
+};
+fn_((mem_writeBE64(u64 val))(mem_WriteBE64Buf)) {
+    return bitCast$((mem_WriteBE64Buf)(mem_nativeToBig64(val)));
+};
+fn_((mem_writeBELong(ulong val))(mem_WriteBELongBuf)) {
+    return bitCast$((mem_WriteBELongBuf)(mem_nativeToBigLong(val)));
+};
+fn_((mem_writeBE32(u32 val))(mem_WriteBE32Buf)) {
+    return bitCast$((mem_WriteBE32Buf)(mem_nativeToBig32(val)));
+};
+fn_((mem_writeBE16(u16 val))(mem_WriteBE16Buf)) {
+    return bitCast$((mem_WriteBE16Buf)(mem_nativeToBig16(val)));
+};
+
 /* --- Alignment Functions --- */
 
 fn_((mem_isValidAlign(usize align))(bool)) {
@@ -896,10 +1130,18 @@ fn_((mem_bytesTo(mem_Bytes$raw bytes, u_V$raw ret_val))(u_V$raw)) {
     return u_deref(mem_copyP(ret_val.ref, mem_bytesAs(ret_val.inner_type, bytes.as_const)));
 };
 
+fn_((mem_Cutted_beforeBytes(mem_Cutted_Bytes self))(S_const$u8)) {
+    claim_assert_nonnullS(self.before);
+    return self.before;
+};
 fn_((mem_Cutted_before(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
     claim_assert_nonnullS(self.before);
     debug_assert_eqBy($typed(self.type), type, TypeInfo_eql);
     return S_meta((type)(self.before));
+};
+fn_((mem_Cutted_afterBytes(mem_Cutted_Bytes self))(S_const$u8)) {
+    claim_assert_nonnullS(self.after);
+    return self.after;
 };
 fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
     claim_assert_nonnullS(self.after);
@@ -1160,6 +1402,51 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
     ))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
         return u_castE$((ReturnType)(mem_joinAlloc(u_anyS(sep), u_anyS(lhs), u_anyS(rhs), gpa))); \
     } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_padLeft$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_padLeft, _T)(S_const$(_T) src, usize width, _T fill, S$(_T) out))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_padLeft(u_anyS(src), width, u_anyV(fill), u_anyS(out)))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_padLeftWithin$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_padLeftWithin, _T)(S_const$(_T) src, usize width, _T fill, S$(_T) out))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_padLeftWithin(u_anyS(src), width, u_anyV(fill), u_anyS(out)))); \
+    }
+#define __stmt__T_use_mem_padLeftAlloc$(_T...) \
+    $attr($inline_always $must_check $static) \
+    fn_((tpl$(mem_padLeftAlloc, _T)(S_const$(_T) src, usize width, _T fill, mem_Alctr gpa))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_padLeftAlloc(u_anyS(src), width, u_anyV(fill), gpa))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_padRight$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_padRight, _T)(S_const$(_T) src, usize width, _T fill, S$(_T) out))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_padRight(u_anyS(src), width, u_anyV(fill), u_anyS(out)))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_padRightWithin$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_padRightWithin, _T)(S_const$(_T) src, usize width, _T fill, S$(_T) out))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_padRightWithin(u_anyS(src), width, u_anyV(fill), u_anyS(out)))); \
+    }
+#define __stmt__T_use_mem_padRightAlloc$(_T...) \
+    $attr($inline_always $must_check $static) \
+    fn_((tpl$(mem_padRightAlloc, _T)(S_const$(_T) src, usize width, _T fill, mem_Alctr gpa))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_padRightAlloc(u_anyS(src), width, u_anyV(fill), gpa))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_padCenter$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_padCenter, _T)(S_const$(_T) src, usize width, _T fill, S$(_T) out))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_padCenter(u_anyS(src), width, u_anyV(fill), u_anyS(out)))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_padCenterWithin$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_padCenterWithin, _T)(S_const$(_T) src, usize width, _T fill, S$(_T) out))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_padCenterWithin(u_anyS(src), width, u_anyV(fill), u_anyS(out)))); \
+    }
+#define __stmt__T_use_mem_padCenterAlloc$(_T...) \
+    $attr($inline_always $must_check $static) \
+    fn_((tpl$(mem_padCenterAlloc, _T)(S_const$(_T) src, usize width, _T fill, mem_Alctr gpa))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_padCenterAlloc(u_anyS(src), width, u_anyV(fill), gpa))); \
+    } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_findFirstUnit$(_T...) \
     $attr($inline_always $static) \
     fn_((tpl$(mem_findFirstUnit, _T)(S_const$(_T) haystack, _T needle))(O$usize)) { \
@@ -1285,6 +1572,7 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
             var_(idx, usize); \
             var_(type, debug_TypeInfo); \
             var_(delim, mem_Delim$(_T)); \
+            var_(delim_, mem_Delim$(_T)) $like_ref; \
         }); \
         var_(as_raw, mem_TokzIter$raw) $flexible; \
     }))
@@ -1331,6 +1619,7 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
             var_(idx, O$usize); \
             var_(type, debug_TypeInfo); \
             var_(delim, mem_Delim$(_T)); \
+            var_(delim_, mem_Delim$(_T)) $like_ref; \
         }); \
         var_(as_raw, mem_SplitIter$raw) $flexible; \
     }))

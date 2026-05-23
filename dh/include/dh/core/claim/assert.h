@@ -5,7 +5,7 @@
  * @file    assert.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-21 (date of creation)
- * @updated 2026-01-16 (date of last update)
+ * @updated 2026-05-22 (date of last update)
  * @ingroup dasae-headers(dh)/core/claim
  * @prefix  claim_assert
  *
@@ -183,7 +183,7 @@ extern "C" {
  * @param file The file where the assertion failed.
  * @param line The line number where the assertion failed.
  */
-$extern fn_((claim_assert_failLog(const char* expr, const char* func, const char* file, i32 line))(void));
+$extern fn_((claim_assert_failLog(const char* expr, const char* func, const char* file, u32 line))(void));
 /**
  * @brief Logs an assertion failure with the given expression, function, file, line, and message.
  *
@@ -193,7 +193,7 @@ $extern fn_((claim_assert_failLog(const char* expr, const char* func, const char
  * @param line The line number where the assertion failed.
  * @param msg The message to include in the assertion failure.
  */
-$extern fn_((claim_assert_failLogMsg(const char* expr, const char* func, const char* file, i32 line, const char* msg))(void));
+$extern fn_((claim_assert_failLogMsg(const char* expr, const char* func, const char* file, u32 line, const char* msg))(void));
 /**
  * @brief Logs an assertion failure with the given expression, function, file, line, and formatted message.
  *
@@ -204,11 +204,11 @@ $extern fn_((claim_assert_failLogMsg(const char* expr, const char* func, const c
  * @param fmt The formatted message to include in the assertion failure.
  * @param ... The arguments for the formatted message.
  */
-$extern fn_((claim_assert_failLogFmt(const char* expr, const char* func, const char* file, i32 line, const char* fmt, ...))(void));
+$extern fn_((claim_assert_failLogFmt(const char* expr, const char* func, const char* file, u32 line, const char* fmt, ...))(void));
 #else /* !on_comptime */
-$extern fn_((claim_assert_failLog(const char*, const char*, const char*, i32))(void));
-$extern fn_((claim_assert_failLogMsg(const char*, const char*, const char*, i32, const char*))(void));
-$extern fn_((claim_assert_failLogFmt(const char*, const char*, const char*, i32, const char*, ...))(void));
+$extern fn_((claim_assert_failLog(const char*, const char*, const char*, u32))(void));
+$extern fn_((claim_assert_failLogMsg(const char*, const char*, const char*, u32, const char*))(void));
+$extern fn_((claim_assert_failLogFmt(const char*, const char*, const char*, u32, const char*, ...))(void));
 #endif /* on_comptime */
 #else /* !claim_fail_logging_comp_enabled */
 #define claim_assert_failLog(_expr, _func, _file, _line) $unused(0)

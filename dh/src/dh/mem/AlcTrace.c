@@ -4,7 +4,7 @@ fn_((mem_AlcTrace_initWithLogPath(S_const$u8 log_path))(E$void) $scope) {
     let_ignore = log_path;
     return_err(E_cause$NotImplemented());
 } $unscoped(fn);
-fn_((mem_AlcTrace_finiAndGenerateReport(void))(void)) $do_nothing;
+fn_((mem_AlcTrace_finiWithGenerateReport(void))(void)) $do_nothing;
 
 fn_((mem_AlcTrace_registerAlloc($traced P$raw ptr, usize size))(void)) {
     let_ignore = ptr;

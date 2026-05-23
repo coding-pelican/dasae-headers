@@ -11,7 +11,7 @@ $static fn_((ArrDeq__bufIdx(const ArrDeq* self, usize idx))(usize)) {
 fn_((ArrDeq_empty(TypeInfo type))(ArrDeq)) {
     let_ignore = type;
     return (ArrDeq){
-        .buf = zero$S(),
+        .buf = cleared(),
         .head = 0,
         .len = 0,
         debug_only(.type = type)

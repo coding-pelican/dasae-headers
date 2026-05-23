@@ -70,14 +70,14 @@ $static fn_((writeDecimal(u8* buf, u64* value, usize count))(void)) {
     while (i + 2 < count) {
         let c = as$(u8)(*value % 100);
         *value /= 100;
-        buf[count - i - 1] = *A_at((digits2)[c * 2 + 1]);
-        buf[count - i - 2] = *A_at((digits2)[c * 2]);
+        *P_at((buf)[count - i - 1]) = *A_at((digits2)[c * 2 + 1]);
+        *P_at((buf)[count - i - 2]) = *A_at((digits2)[c * 2]);
         i += 2;
     }
     while (i < count) {
         let c = as$(u8)(*value % 10);
         *value /= 10;
-        buf[count - i - 1] = u8_c('0') + c;
+        *P_at((buf)[count - i - 1]) = u8_c('0') + c;
         i++;
     }
 };
@@ -442,6 +442,6 @@ fn_((fmt__formatFltImpl(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) {
             }
         }
     }
-    S_const$u8 content = { .ptr = ptr$A(final_buf), .len = final_pos };
+    let content = A_prefix$((S_const$u8)(final_buf)(final_pos));
     return fmt__writePadded(writer, content, spec);
 };

@@ -2,17 +2,27 @@
 #include "dh/heap/Sbrk.h"
 #include "dh/io/stream.h"
 
+#define test_heap_Sbrk__enabled_outstream pp_false
+$static fn_((ignorePrintln(S_const$u8 fmt, ...))(void)) { let_ignore = fmt; };
+$static let io_println = pp_if_(test_heap_Sbrk__enabled_outstream)(
+    pp_then_(io_stream_println),
+    pp_else_(ignorePrintln));
+$static fn_((ignoreNL(void))(void)) $do_nothing;
+$static let io_nl = pp_if_(test_heap_Sbrk__enabled_outstream)(
+    pp_then_(io_stream_nl),
+    pp_else_(ignoreNL));
+
 TEST_fn_("heap/Sbrk: size variants" $scope) {
     let small_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_small)cleared()));
     let medium_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_medium)cleared()));
     let large_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_large)cleared()));
 
-    io_stream_nl();
-    io_stream_println(u8_l("SbrkAlctr sizes:"));
-    io_stream_println(u8_l("  .small:  {:uz} bytes"), small_size);
-    io_stream_println(u8_l("  .medium: {:uz} bytes"), medium_size);
-    io_stream_println(u8_l("  .large:  {:uz} bytes"), large_size);
-    io_stream_nl();
+    io_nl();
+    io_println(u8_l("SbrkAlctr sizes:"));
+    io_println(u8_l("  .small:  {:uz} bytes"), small_size);
+    io_println(u8_l("  .medium: {:uz} bytes"), medium_size);
+    io_println(u8_l("  .large:  {:uz} bytes"), large_size);
+    io_nl();
 
     try_(TEST_expect(small_size < medium_size));
     try_(TEST_expect(medium_size < large_size));
@@ -47,8 +57,8 @@ TEST_fn_("heap/Sbrk: basic allocation" $guard) {
     var sbrk = heap_Sbrk_from(heap_Sbrk_LocalMedium_ref(&local), &ctx);
     let gpa = heap_Sbrk_alctr(&sbrk);
 
-    let allocation = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), 100))));
-    defer_(mem_Alctr_free($trace gpa, u_anyS(allocation)));
+    let allocation = try_(mem_Alctr_allocBytes($trace gpa, 100));
+    defer_(mem_Alctr_freeBytes($trace gpa, allocation));
 
     try_(TEST_expect(allocation.len == 100));
 } $unguarded(TEST_fn);
@@ -60,14 +70,14 @@ TEST_fn_("heap/Sbrk: reuses a bigpage before requesting another one" $guard) {
     let gpa = heap_Sbrk_alctr(&sbrk);
     var_(slots, A$$(30, S$u8)) = cleared();
 
-    let first = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), 100))));
-    defer_(mem_Alctr_free($trace gpa, u_anyS(first)));
+    let first = try_(mem_Alctr_allocBytes($trace gpa, 100));
+    defer_(mem_Alctr_freeBytes($trace gpa, first));
 
     for_(($s(A_ref((slots))))(slot)) {
-        *slot = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), 100))));
+        *slot = try_(mem_Alctr_allocBytes($trace gpa, 100));
     } $end(for);
     defer_(for_(($s(A_ref((slots))))(slot)) {
-        mem_Alctr_free($trace gpa, u_anyS(*slot));
+        mem_Alctr_freeBytes($trace gpa, *slot);
     } $end(for));
 
     try_(TEST_expect(

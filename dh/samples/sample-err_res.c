@@ -155,7 +155,7 @@ $static fn_((example(mem_Alctr gpa))(E$void) $scope) {
 
     // Error handling with error payload capture
     let result_handling = catch_((safeDivide(10, 0))(err, {
-        E_print$my_math_E(err); // Print the error
+        E_print(err.as_any); // Print the error
         ETrace_print(); // Print the error trace
         return_err(err); // Return with an error
     }));

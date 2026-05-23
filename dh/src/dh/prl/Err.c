@@ -12,5 +12,8 @@ fn_((E_eql(const EAny* lhs, const EAny* rhs))(bool)) {
 fn_((E_neq(const EAny* lhs, const EAny* rhs))(bool)) { return !E_eql(lhs, rhs); };
 
 fn_((E_print(const EAny* err))(void)) {
+    io_stream_eprintln(u8_l("{:e}"), *ensureNonnull(err));
+};
+fn_((E_printProgramFailed(const EAny* err))(void)) {
     io_stream_eprintln(u8_l("Program failed: {:e}"), *ensureNonnull(err));
 };

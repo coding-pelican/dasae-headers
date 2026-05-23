@@ -22,8 +22,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "../prl.h"
-#include "../atom.h"
+#include "dh/atom.h"
 
 /*========== Macros and Definitions =========================================*/
 

@@ -5,8 +5,7 @@
  * @file    example-decision_tree.c
  * @author  Gyeongtae Kim (@dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-07 (date of creation)
- * @updated 2026-02-21 (date of last update)
- * @version v0.1-alpha.3
+ * @updated 2026-05-22 (date of last update)
  * @ingroup dal-project/examples
  * @prefix  (none)
  *
@@ -72,10 +71,6 @@ T_alias$((Dataset)(struct Dataset {
 T_use$((Dataset)(E));
 // Forward declarations
 $attr($must_check)
-$static fn_((fs_File__openByPath(mem_Alctr gpa, S_const$u8 filename))(E$fs_File));
-$attr($must_check)
-$static fn_((fs_File__openByPathForWrite(mem_Alctr gpa, S_const$u8 filename))(E$fs_File));
-$attr($must_check)
 $static fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_header))(E$Dataset));
 $static fn_((Dataset_destroy(Dataset* dataset))(void));
 
@@ -138,7 +133,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     // Save the tree to a file
     {
-        let save_file = try_(fs_File__openByPathForWrite(gpa, u8_l("decision_tree.bin")));
+        var create_flags = fs_File_CreateFlags_default;
+        let save_file = try_(fs_File_create(u8_l("decision_tree.bin"), create_flags));
         defer_(fs_File_close(save_file));
         let writer = fs_File_writer(save_file);
         try_(TreeNode_saveToFileRecur(root, writer));
@@ -147,7 +143,9 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     // Load the tree from the file
     var loaded_tree = expr_(P$TreeNode $guard)({
-        let load_file = try_(fs_File__openByPath(gpa, u8_l("decision_tree.bin")));
+        var open_flags = fs_File_OpenFlags_default;
+        open_flags.mode = fs_OpenMode_read_only;
+        let load_file = try_(fs_File_open(u8_l("decision_tree.bin"), open_flags));
         defer_(fs_File_close(load_file));
         let reader = fs_File_reader(load_file);
         $break_(try_(TreeNode_loadFromFileRecur(gpa, reader)));
@@ -245,7 +243,7 @@ fn_((TreeNode_printRecur(const TreeNode* target, u32 depth))(void)) /* NOLINT(mi
         }
         *A_at((indent)[n]) = u8_c('\0');
     }
-    let indent_z = ptrCast$((const char*)(A_val(indent)));
+    let indent_z = A_ptr(indent);
 
     match_($ref(target)) {
     pattern_((TreeNode_leaf)($ref leaf)) log_info("{:z}Class: {:d}", indent_z, leaf->class_label) $end(pattern);
@@ -310,70 +308,6 @@ fn_((TreeNode_loadFromFileRecur(mem_Alctr gpa, io_Reader reader))(E$P$TreeNode) 
     }
 } $unscoped(fn);
 
-#if plat_is_windows
-#include "dh/os/windows.h"
-#else
-#include <fcntl.h>
-#include <unistd.h>
-#endif /* plat_is_windows */
-
-T_use_E$($set(mem_E)(S$u8));
-T_use$((u8)(mem_Alctr_alloc, mem_Alctr_free));
-
-$attr($must_check)
-$static fn_((fs_File__openByPath(mem_Alctr gpa, S_const$u8 filename))(E$fs_File) $guard) {
-    let filename_buf = try_(mem_Alctr_alloc$u8($trace gpa, filename.len + 1));
-    defer_(mem_Alctr_free$u8($trace gpa, filename_buf));
-    mem_copyBytes(prefixS(filename_buf, filename.len), filename);
-    *S_at((filename_buf)[filename.len]) = '\0';
-
-    let handle = pp_if_(plat_is_windows)(
-        pp_then_(ptrCast$((fs_File_Handle)(CreateFileA(
-            ptrCast$((LPCSTR)(filename_buf.ptr)),
-            GENERIC_READ,
-            FILE_SHARE_READ,
-            null,
-            OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL,
-            null
-        )))),
-        pp_else_(intCast$((fs_File_Handle)(open(ptrCast$((const char*)(filename_buf.ptr)), O_RDONLY)))));
-    if (pp_if_(plat_is_windows)(
-            pp_then_(handle == ptrCast$((fs_File_Handle)(INVALID_HANDLE_VALUE))),
-            pp_else_(as$(i32)(handle) < 0))) {
-        log_error("Failed to open file: {:s}", filename);
-        return_err(E_cause$FSOpenFailed());
-    }
-    return_ok(fs_File_Handle_promote(handle));
-} $unguarded(fn);
-
-$attr($must_check)
-$static fn_((fs_File__openByPathForWrite(mem_Alctr gpa, S_const$u8 filename))(E$fs_File) $guard) {
-    let filename_buf = try_(mem_Alctr_alloc$u8($trace gpa, filename.len + 1));
-    defer_(mem_Alctr_free$u8($trace gpa, filename_buf));
-    mem_copyBytes(prefixS(filename_buf, filename.len), filename);
-    *S_at((filename_buf)[filename.len]) = '\0';
-
-    let handle = pp_if_(plat_is_windows)(
-        pp_then_(ptrCast$((fs_File_Handle)(CreateFileA(
-            ptrCast$((LPCSTR)(filename_buf.ptr)),
-            GENERIC_WRITE,
-            FILE_SHARE_READ,
-            null,
-            CREATE_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL,
-            null
-        )))),
-        pp_else_(intCast$((fs_File_Handle)(open(ptrCast$((const char*)(filename_buf.ptr)), O_WRONLY | O_CREAT | O_TRUNC, 0666)))));
-    if (pp_if_(plat_is_windows)(
-            pp_then_(handle == ptrCast$((fs_File_Handle)(INVALID_HANDLE_VALUE))),
-            pp_else_(as$(i32)(handle) < 0))) {
-        log_error("Failed to open file for writing: {:s}", filename);
-        return_err(E_cause$FSOpenFailed());
-    }
-    return_ok(fs_File_Handle_promote(handle));
-} $unguarded(fn);
-
 T_use$((u8)(
     mem_Delim,
     mem_TokzIter,
@@ -389,7 +323,9 @@ T_use$((i32)(ArrList_init, ArrList_fini, ArrList_append));
 
 // Implementation of Dataset functions
 fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_header))(E$Dataset) $guard) {
-    let file = try_(fs_File__openByPath(gpa, filename));
+    var flags = fs_File_OpenFlags_default;
+    flags.mode = fs_OpenMode_read_only;
+    let file = try_(fs_File_open(filename, flags));
     defer_(fs_File_close(file));
 
     let unbufd = fs_File_reader(file);
@@ -437,7 +373,7 @@ fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_header))(E
             if (samples_read >= line_count) break;
 
             var col_iter = mem_tokzUnit$u8(line, u8_c(','));
-            u32 col_idx = 0;
+            var_(col_idx, u32) = 0;
             while_some(mem_TokzIter_next$u8(&col_iter), tok) {
                 if (col_idx >= feature_count) { break; }
                 var value = try_(fmt_parse$f32(tok));
@@ -453,7 +389,7 @@ fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_header))(E
         }
         if (samples_read != line_count) log_warn("Expected {:u} samples but read only {:u}", line_count, samples_read);
     }
-    return_ok((Dataset){
+    return_ok({
         .gpa = gpa,
         .features = features,
         .labels = labels,

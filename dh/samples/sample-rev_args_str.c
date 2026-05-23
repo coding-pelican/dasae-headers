@@ -1,15 +1,16 @@
 #include "dh-main.h"
 #include "dh/fs/File.h"
+#include "dh/io/Buf.h"
 #include "dh/io/common.h"
 #include "dh/io/stream.h"
-#include "dh/io/Reader.h"
 #include "dh/mem/common.h"
 #include "dh/fmt/common.h"
+#include "dh/ascii.h"
 
 T_use$((u8)(
     mem_Delim,
     mem_TokzIter,
-    mem_tokzUnit,
+    mem_tokzAny,
     mem_TokzIter_next
 ));
 
@@ -22,18 +23,22 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
 
     var_(input_mem, A$$(64, u8)) = A_zero();
     let input_buf = A_ref$((S$u8)(input_mem));
-    let stream_in = fs_File_reader(io_getStdIn());
+    var_(read_mem, A$$(256, u8)) = A_zero();
+    var stream_in = io_Buf_Reader_init(fs_File_reader(io_getStdIn()), A_ref$((S$u8)(read_mem)));
+    let whitespace = A_ref$((S_const$u8)(ascii_whitespaces));
 
-    using_(let input = S_prefix((input_buf)try_(io_Reader_read(stream_in, input_buf)))) {
-        var iter = mem_tokzUnit$u8(input.as_const, u8_c(' '));
+    io_stream_print(u8_l("tokenizing reading input: "));
+    using_(let input = try_(io_Buf_Reader_readUntilByte(&stream_in, u8_c('\n'), input_buf))) {
+        var iter = mem_tokzAny$u8(input.as_const, whitespace);
         while_some(mem_TokzIter_next$u8(&iter), token) {
             io_stream_println(u8_l("token: {:s}"), token);
         }
         io_stream_nl();
     }
 
-    using_(let input = S_prefix((input_buf)try_(io_Reader_read(stream_in, input_buf)))) {
-        var iter = mem_tokzUnit$u8(input.as_const, u8_c(' '));
+    io_stream_print(u8_l("input i32 '<a> <b> [<c>]': "));
+    using_(let input = try_(io_Buf_Reader_readUntilByte(&stream_in, u8_c('\n'), input_buf))) {
+        var iter = mem_tokzAny$u8(input.as_const, whitespace);
         let a = mem_TokzIter_next$u8(&iter);
         io_stream_println(u8_l("a: {:?s}"), a);
         let b = mem_TokzIter_next$u8(&iter);
@@ -49,5 +54,5 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
         io_stream_nl();
     }
 
-    return_ok({});
+    return_ok_void(io_stream_println(u8_l("done")));
 } $unscoped(fn);

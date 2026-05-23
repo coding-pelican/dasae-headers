@@ -58,9 +58,12 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
 #define Clsr_rtn_(_rtn...) __alias__Clsr_rtn_(_rtn)
 // #define fn_use_Clsr_rtn_(_rtn...) __stmt__fn_use_Clsr_rtn_(_rtn)
 // #define co_use_Clsr_rtn_(_rtn...) __stmt__co_use_Clsr_rtn_(_rtn)
+#define Clsr_from_(_rtn...) __alias__Clsr_from_(_rtn)
+// #define fn_use_Clsr_from_(_rtn...) __stmt__fn_use_Clsr_from_(_rtn)
+// #define co_use_Clsr_from_(_rtn...) __stmt__co_use_Clsr_from_(_rtn)
 /*--- Closure ---*/
 #define Clsr_(_rtn...) __alias__Clsr_(_rtn)
-#define clsr_(_rtn... /*-> (Clsr)*/) __alias__clsr_(_rtn)
+#define clsr_(/*(_rtn)(_args...)*/... /*(Clsr)*/) __expr__clsr_(__VA_ARGS__)
 #define invoke_(_p_clsr... /*-> (Clsr_Ctx)*/) __expr__invoke_(_p_clsr)
 #define fn_use_Clsr_(/*(_fn)(_Arg_T...)(_Ret_T)*/...) __stmt__fn_use_Clsr_(__VA_ARGS__)
 #define co_use_Clsr_(/*(_co)(_Arg_T...)(_Ret_T)*/...) __stmt__co_use_Clsr_(__VA_ARGS__)
@@ -114,9 +117,14 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
 #define __alias__Clsr_Ctx_(_rtn...) tpl_(Clsr_Ctx, _rtn)
 #define __alias__Clsr_Rtn_(_rtn...) tpl_(Clsr_Rtn, _rtn)
 #define __alias__Clsr_rtn_(_rtn...) tpl_(Clsr_rtn, _rtn)
+#define __alias__Clsr_from_(_rtn...) tpl_(Clsr_from, _rtn)
 /*--- Closure ---*/
 #define __alias__Clsr_(_rtn...) tpl_(Clsr, _rtn)
 #define __alias__clsr_(_rtn...) tpl_(clsr, _rtn)
+#define __expr__clsr_(...) __step__clsr___emit(__step__clsr___parseRtn __VA_ARGS__)
+#define __step__clsr___parseRtn(_rtn...) _rtn,
+#define __step__clsr___emit(...) __inline__clsr_(__VA_ARGS__)
+#define __inline__clsr_(_rtn, _args...) copy(Clsr_from_(_rtn) _args)
 #define __expr__invoke_(_p_clsr...) __inline__invoke_(pp_uniqTok(p_ctx), pp_uniqTok(p_clsr), _p_clsr)
 #define __inline__invoke_(__p_ctx, __p_clsr, _p_clsr...) local_({ \
     let __p_clsr = _p_clsr; \
@@ -177,7 +185,7 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
         var_(as_base, Clsr$(_Ret_T)) $flexible; \
     })); \
     $attr($inline_always $static) \
-    fn_((clsr_(_fn)(__step__fn_use_Clsr___tupFieldsToParams(_N_Arg_T, _Arg_T)))(Clsr_(_fn))) { \
+    fn_((Clsr_from_(_fn)(__step__fn_use_Clsr___tupFieldsToParams(_N_Arg_T, _Arg_T)))(Clsr_(_fn))) { \
         return (Clsr_(_fn)){ \
             .kind = Clsr_Kind_fn, \
             .rtn = Clsr_rtn_(_fn), \
@@ -274,7 +282,7 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
         var_(as_base, Clsr$(_Ret_T)) $flexible; \
     })); \
     $attr($inline_always $static) \
-    fn_((clsr_(_co)(__step__co_use_Clsr___tupFieldsToParams(_N_Arg_T, _Arg_T)))(Clsr_(_co))) { \
+    fn_((Clsr_from_(_co)(__step__co_use_Clsr___tupFieldsToParams(_N_Arg_T, _Arg_T)))(Clsr_(_co))) { \
         return (Clsr_(_co)){ \
             .kind = Clsr_Kind_co, \
             .rtn = Clsr_rtn_(_co), \

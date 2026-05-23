@@ -127,7 +127,7 @@ fn_((ArrPQue_empty(TypeInfo type, P_const$ArrPQue_Ctx ctx))(ArrPQue)) {
     claim_assert_nonnull(ctx);
     let_ignore = type;
     return (ArrPQue){
-        .items = zero$S(),
+        .items = cleared(),
         .cap = 0,
         .ctx = ctx,
         debug_only(.type = type)

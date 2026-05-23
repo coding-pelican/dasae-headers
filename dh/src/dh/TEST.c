@@ -72,10 +72,7 @@ fn_((TEST_Framework_run(void))(void) $guard) {
             case E_Tag$TEST_Fail: $fallthrough;
             case_((E_Tag$TEST_E_Any)) {
                 instance->stats.failed++;
-                io_stream_println(
-                    u8_l("    {:s}: {:s} ({:ih})"), u8_l(TEST_color_red "[FAIL]" TEST_color_reset),
-                    E_strfy(&err), E_tag(&err)
-                );
+                io_stream_eprint(u8_l("    {:s}: "), u8_l(TEST_color_red "[FAIL]" TEST_color_reset));
                 E_print(&err);
                 ETrace_print();
             } $end(case);

@@ -2,34 +2,9 @@
 
 #if plat_is_windows
 #include "dh/os/windows/file.h"
-#include <malloc.h>
 #else
-#include <malloc.h>
 #include <sys/mman.h>
 #endif
-
-T_alias$((fs__File_MemMap_Section)(struct fs__File_MemMap_Section {
-    var_(protection, fs_File_MemMap_Protection);
-#if plat_is_windows
-    var_(mapping, HANDLE);
-#endif
-}));
-
-$static fn_((fs__File_MemMap_sectionAlloc(fs_File_MemMap_Protection protection))(fs__File_MemMap_Section*)) {
-    let section = as$(fs__File_MemMap_Section*)(malloc(sizeOf$(fs__File_MemMap_Section)));
-    if (section == null) return null;
-    *section = (fs__File_MemMap_Section){
-        .protection = protection,
-#if plat_is_windows
-        .mapping = null,
-#endif
-    };
-    return section;
-}
-
-$static fn_((fs__File_MemMap_sectionFree(fs__File_MemMap_Section* section))(void)) {
-    if (section != null) free(section);
-}
 
 #if plat_is_windows
 $static fn_((fs__File_MemMap_windowsPageProtect(fs_File_MemMap_Protection protection))(DWORD)) {
@@ -59,20 +34,18 @@ $static fn_((fs__File_MemMap_posixProtect(fs_File_MemMap_Protection protection))
 $static fn_((fs__File_MemMap_unmap(fs_File_MemMap* self))(void)) {
     if (self->mem.ptr == null || self->mem.len == 0) return;
 #if plat_is_windows
-    let section = as$(fs__File_MemMap_Section*)(self->section);
     let_ignore = UnmapViewOfFile(self->mem.ptr);
-    if (section != null && section->mapping != null) {
-        CloseHandle(section->mapping);
-        section->mapping = null;
+    if (self->mapping != null) {
+        CloseHandle(self->mapping);
+        self->mapping = null;
     }
 #else
     let_ignore = munmap(self->mem.ptr, self->mem.len);
 #endif
-    self->mem = (S$u8){ .ptr = null, .len = 0 };
+    self->mem = l$((S$u8)cleared());
 }
 
-$static fn_((fs__File_MemMap_remap(fs_File_MemMap* self, usize len))(fs_E$void) $scope) {
-    let section = as$(fs__File_MemMap_Section*)(ensureNonnull(self->section));
+$static fn_((fs__File_MemMap_remap(fs_File_MemMap* self, usize len))(fs_E$void) $guard) {
     if (len == 0) {
         fs__File_MemMap_unmap(self);
         return_ok({});
@@ -82,39 +55,37 @@ $static fn_((fs__File_MemMap_remap(fs_File_MemMap* self, usize len))(fs_E$void) 
     let mapping = CreateFileMappingA(
         self->file.handle,
         null,
-        fs__File_MemMap_windowsPageProtect(section->protection),
+        fs__File_MemMap_windowsPageProtect(self->protection),
         as$(DWORD)(end >> 32),
         as$(DWORD)(end & 0xFFFFFFFFu),
         null
     );
     if (mapping == null) return_err(E_cause$UnsupportedFS());
+    errdefer_($ignore, CloseHandle(mapping));
     let view = as$(u8*)(MapViewOfFile(
         mapping,
-        fs__File_MemMap_windowsViewAccess(section->protection),
+        fs__File_MemMap_windowsViewAccess(self->protection),
         as$(DWORD)(self->offset >> 32),
         as$(DWORD)(self->offset & 0xFFFFFFFFu),
         len
     ));
-    if (view == null) {
-        CloseHandle(mapping);
-        return_err(E_cause$UnsupportedFS());
-    }
-    section->mapping = mapping;
-    self->mem = (S$u8){ .ptr = view, .len = len };
+    if (view == null) return_err(E_cause$UnsupportedFS());
+    self->mapping = mapping;
+    self->mem = P_prefix$((S$u8)(view)(len));
 #else
     let view = as$(u8*)(mmap(
         null,
         len,
-        fs__File_MemMap_posixProtect(section->protection),
+        fs__File_MemMap_posixProtect(self->protection),
         MAP_SHARED,
         self->file.handle,
         as$(off_t)(self->offset)
     ));
     if (view == MAP_FAILED) return_err(E_cause$UnsupportedFS());
-    self->mem = (S$u8){ .ptr = view, .len = len };
+    self->mem = P_prefix$((S$u8)(view)(len));
 #endif
     return_ok({});
-} $unscoped(fn);
+} $unguarded(fn);
 
 fn_((fs_File_MemMap_init(
     fs_File file,
@@ -129,12 +100,10 @@ fn_((fs_File_MemMap_init(
     var_(self, fs_File_MemMap) = {
         .file = file,
         .offset = offset,
-        .mem = { .ptr = null, .len = 0 },
-        .section = null,
+        .mem = cleared(),
+        .protection = protection,
+        .mapping = null,
     };
-    let section = fs__File_MemMap_sectionAlloc(protection);
-    if (section == null) return_err(E_cause$NoSpaceLeftFS());
-    self.section = section;
 
     if (protection.write && len > 0) {
         let end = offset + len;
@@ -149,8 +118,6 @@ fn_((fs_File_MemMap_init(
 fn_((fs_File_MemMap_fini(fs_File_MemMap* self))(void)) {
     if (!isNonnull(self)) return;
     fs__File_MemMap_unmap(self);
-    fs__File_MemMap_sectionFree(as$(fs__File_MemMap_Section*)(self->section));
-    self->section = null;
 };
 
 fn_((fs_File_MemMap_setLen(fs_File_MemMap* self, usize new_len))(fs_E$void) $scope) {

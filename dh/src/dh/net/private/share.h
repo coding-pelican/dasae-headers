@@ -1,5 +1,5 @@
-#ifndef dh_src_dh_net_priv__included
-#define dh_src_dh_net_priv__included 1
+#ifndef dh_src_dh_net_private_share__included
+#define dh_src_dh_net_private_share__included 1
 
 #include "dh/net.h"
 
@@ -80,4 +80,4 @@ $static fn_((net__finishConnect(net_Handle socket))(E$void) $scope) {
 
 #endif
 
-#endif
+#endif /* dh_src_dh_net_private_share__included */

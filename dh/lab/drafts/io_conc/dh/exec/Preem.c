@@ -41,7 +41,7 @@ fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner
         .result = result,
         .inner = inner,
         .state = exec_Task_State_ready,
-        .runner = clsr_(exec_Preem_work)(task),
+        .runner = clsr_((exec_Preem_work)(task)),
     }));
     let thrd = catch_((Thrd_spawn(self->spawn_cfg, task->runner.as_raw, typeInfo$(Void)))(
         $ignore, return_err(Sched_ConcE_Unavailable())

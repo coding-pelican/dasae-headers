@@ -61,7 +61,7 @@ fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E
             }
         }
         let readable = S_slice((self->buf)$r(self->start, self->end)).as_const;
-        if_some((mem_findFirstUnit(u_anyS(readable), u_anyV(delim)))(delim_idx)) {
+        if_some((mem_findFirstUnitBytes(readable, delim))(delim_idx)) {
             let copy_len = delim_idx;
             let total_len = written + copy_len;
             if (out_buf.len < total_len) {
@@ -100,7 +100,7 @@ fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(E$void) $scope)
             }
         }
         let readable = S_slice((self->buf)$r(self->start, self->end)).as_const;
-        if_some((mem_findFirstUnit(u_anyS(readable), u_anyV(delim)))(delim_idx)) {
+        if_some((mem_findFirstUnitBytes(readable, delim))(delim_idx)) {
             self->start += delim_idx + 1;
             return_ok({});
         }

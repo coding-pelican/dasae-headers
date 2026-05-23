@@ -1,5 +1,6 @@
 #include "dh/fs/File.h"
 #include "dh/mem/common.h"
+#include "../private/share.h"
 
 #if plat_is_windows
 #include "dh/os/windows/handle.h"
@@ -9,15 +10,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
-
-#define fs__path_max (usize_(1024))
-
-$static fn_((fs__pathZ(S_const$u8 path, u8* out, usize out_len))(bool)) {
-    if (path.len + 1 > out_len) return false;
-    mem_copyBytes((S$u8){ .ptr = out, .len = path.len }, path);
-    out[path.len] = 0;
-    return true;
-}
 
 #if plat_is_windows
 $static fn_((fs__windowsOpenAccess(fs_File_OpenFlags flags))(DWORD)) {

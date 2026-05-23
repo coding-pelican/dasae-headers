@@ -104,12 +104,12 @@ fn_((Thrd_WaitGroup__spawnInst(Thrd_WaitGroup* self, mem_Alctr gpa, Clsr$Void* c
         mem_Alctr_create($trace gpa, typeInfo$(Clsr_(Thrd_WaitGroup__entryInst)))
     ))));
     errdefer_($ignore, mem_Alctr_destroy($trace gpa, u_anyP(thrd_clsr)));
-    *thrd_clsr = clsr_(Thrd_WaitGroup__entryInst)(
+    *thrd_clsr = clsr_((Thrd_WaitGroup__entryInst)(
         self, gpa, thrd_clsr->as_raw,
         l$((Thrd_WaitGroup__Inst){
             .clsr = clsr,
         })
-    );
+    ));
     let thrd = try_(Thrd_spawn(
         (Thrd_SpawnCfg){
             .gpa = some$((O$mem_Alctr)(gpa)),

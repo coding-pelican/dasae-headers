@@ -7,15 +7,15 @@ TEST_fn_("heap/Fixed: basic reallocation usage" $guard) {
     var_(fixed, heap_Fixed) = heap_Fixed_from(A_ref$((S$u8)(buffer)));
 
     let gpa = heap_Fixed_alctr(&fixed);
-    var items = try_(u_castE$((E$S$u8)(mem_Alctr_alloc($trace gpa, typeInfo$(u8), 10))));
-    defer_(mem_Alctr_free($trace gpa, u_anyS(items)));
+    var items = try_(mem_Alctr_allocBytes($trace gpa, 10));
+    defer_(mem_Alctr_freeBytes($trace gpa, items));
 
     try_(TEST_expect(items.ptr != null));
     try_(TEST_expect(items.len == 10));
     try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, items.as_const)));
 
     for_(($rf(0), $s(items))(idx, item)) { *item = intCast$((u8)(idx)); } $end(for);
-    let extended = try_(u_castE$((E$S$u8)(mem_Alctr_realloc($trace gpa, u_anyS(items), 20))));
+    let extended = try_(mem_Alctr_reallocBytes($trace gpa, items, 20));
     try_(TEST_expect(extended.ptr != null));
     try_(TEST_expect(extended.len == 20));
     try_(TEST_expect(items.ptr == extended.ptr));
@@ -37,11 +37,11 @@ TEST_fn_("heap/Fixed: basic resize growth zero fills tail" $guard) {
     var_(fixed, heap_Fixed) = heap_Fixed_from(A_ref$((S$u8)(buffer)));
 
     let gpa = heap_Fixed_alctr(&fixed);
-    var items = try_(u_castE$((E$S$u8)(mem_Alctr_alloc($trace gpa, typeInfo$(u8), 8))));
-    defer_(mem_Alctr_free($trace gpa, u_anyS(items)));
+    var items = try_(mem_Alctr_allocBytes($trace gpa, 8));
+    defer_(mem_Alctr_freeBytes($trace gpa, items));
 
     for_(($rf(0), $s(items))(idx, item)) { *item = intCast$((u8)(idx + 1)); } $end(for);
-    try_(TEST_expect(mem_Alctr_resize($trace gpa, u_anyS(items), 16)));
+    try_(TEST_expect(mem_Alctr_resizeBytes($trace gpa, items, 16)));
     items = l$((S$u8){ .ptr = items.ptr, .len = 16 });
 
     for_(($rf(0), $s(S_prefix((items)(8))))(idx, item)) { try_(TEST_expect(*item == (idx + 1))); } $end(for);

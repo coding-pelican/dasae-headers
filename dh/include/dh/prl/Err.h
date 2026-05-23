@@ -26,6 +26,7 @@ $extern fn_((E_eql(const EAny* lhs, const EAny* rhs))(bool));
 $extern fn_((E_neq(const EAny* lhs, const EAny* rhs))(bool));
 
 $extern fn_((E_print(const EAny* err))(void));
+$extern fn_((E_printProgramFailed(const EAny* err))(void));
 
 T_alias$((E_Tag$General_E)(enum_((E_Tag$General_E $fits($packed))(
     E_Tag$NotImplemented = -2,

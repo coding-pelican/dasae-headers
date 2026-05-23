@@ -1,5 +1,5 @@
 #include "dh/net.h"
-#include "_priv.h"
+#include "private/share.h"
 
 #if plat_is_windows
 

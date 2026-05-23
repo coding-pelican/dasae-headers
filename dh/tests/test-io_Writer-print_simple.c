@@ -20,7 +20,6 @@
 #include "dh-main.h"
 #include "dh/io/Writer.h"
 #include "dh/fmt/common.h"
-#include <stdio.h>
 
 /*========== Test Helper - Buffer Writer ===================================*/
 
@@ -34,7 +33,7 @@ $static fn_((test_Buf_VT_write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
     let remaining = self->data.len - self->pos;
     let to_write = pri_min(bytes.len, remaining);
     if (0 < to_write) {
-        pri_memcpyS(prefixS(suffixS(self->data, self->pos), to_write), bytes);
+        pri_memcpyS(S_prefix((S_suffix((self->data)(self->pos)))(to_write)), bytes);
         self->pos += to_write;
     }
     return_ok(to_write);
@@ -55,8 +54,8 @@ $static fn_((test_Buf_clear(test_Buf* self))(void)) {
     self->pos = 0;
 }
 $static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
-    if (self.pos == 0) { return zeroS$((const u8)); }
-    return sliceS(self.data, $r(0, self.pos)).as_const;
+    if (self.pos == 0) { return l$((S_const$u8)cleared()); }
+    return S_slice((self.data)($r(0, self.pos))).as_const;
 }
 
 /*========== Simple Format Tests ============================================*/
@@ -71,7 +70,6 @@ TEST_fn_("io/Writer: print simple - Integer test" $scope) {
     try_(io_Writer_print(writer, u8_l("{:d}"), 42));
     let result = test_Buf_view(buf);
 
-    printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
     try_(TEST_expect(mem_eqlBytes(result, u8_l("42"))));
 } $unscoped(TEST_fn);
 
@@ -85,7 +83,6 @@ TEST_fn_("io/Writer: print simple - Character test" $scope) {
     try_(io_Writer_print(writer, u8_l("{:c}"), 'A'));
     let result = test_Buf_view(buf);
 
-    printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
     try_(TEST_expect(mem_eqlBytes(result, u8_l("A"))));
 } $unscoped(TEST_fn);
 
@@ -99,6 +96,5 @@ TEST_fn_("io/Writer: print simple - Hex test" $scope) {
     try_(io_Writer_print(writer, u8_l("{:x}"), 255U));
     let result = test_Buf_view(buf);
 
-    printf("Result: '%.*s' (len=%zu)\n", as$(i32)(result.len), result.ptr, result.len);
     try_(TEST_expect(mem_eqlBytes(result, u8_l("ff"))));
 } $unscoped(TEST_fn);

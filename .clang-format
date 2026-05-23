@@ -233,6 +233,11 @@ Macros:
   - "loop_labeled(_label, _stmt)_label: _stmt"
   - "pipe_(_Expr)=pp_exec_ignore _Expr"
   - "chain$(_Expr)=pp_exec_ignore _Expr"
+
+  - "call(_Expr)=pp_exec_ignore _Expr"
+  - "clsr_(_Expr)=pp_exec_ignore _Expr"
+  - "invoke_(_Expr)=pp_exec_ignore _Expr"
+  - "resume_(_Expr)=pp_exec_ignore _Expr"
   - "suspend_(_Expr)=pp_exec_ignore _Expr"
 
   # Optional value

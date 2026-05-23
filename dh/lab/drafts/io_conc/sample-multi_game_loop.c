@@ -68,7 +68,7 @@ co_fn_((sample_acceptLoop)(GameRuntime * rt, net_Svr* server)(usize)$scope(
         suspend_((stream)(sample_net_accept($co_arg(server), $co_arg(rt)->net)));
         let_ignore = Sched_async$usize(
             $co_arg(rt)->net_sched,
-            clsr_(sample_sessionActor)($co_arg(rt), ($co_suspended(stream))).as_base
+            clsr_((sample_sessionActor)($co_arg(rt), ($co_suspended(stream)))).as_base
         );
     }
     co_return_(0);
@@ -131,7 +131,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     ));
     defer_(net_Svr_close(&listener, rt.net));
 
-    var accept_loop = Sched_async$usize(rt.net_sched, clsr_(sample_acceptLoop)(&rt, &listener).as_base);
+    var accept_loop = Sched_async$usize(rt.net_sched, clsr_((sample_acceptLoop)(&rt, &listener)).as_base);
     defer_(let_ignore = Future_cancel$usize(&accept_loop, rt.net_sched));
 
     for_(($rt(4))(frame)) {
@@ -178,7 +178,7 @@ co_fn_scope(
         suspend_((stream)(sample_net_accept($co_arg(server), $co_arg(rt)->net)));
         let_ignore = Sched_async$usize(
             $co_arg(rt)->net_sched,
-            clsr_(sample_sessionActor)($co_arg(rt), ($co_suspended(stream))).as_base
+            clsr_((sample_sessionActor)($co_arg(rt), ($co_suspended(stream)))).as_base
         );
     }
     co_return_(0);

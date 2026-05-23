@@ -40,7 +40,7 @@ TEST_fn_("Thrd: spawn and join function closure" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
-    var clsr = clsr_(test__double)(21);
+    var clsr = clsr_((test__double)(21));
     let worker = try_(Thrd_spawn$i32(
         (Thrd_SpawnCfg){
             .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
@@ -60,7 +60,7 @@ TEST_fn_("Thrd: spawn and join coroutine closure" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
-    var clsr = clsr_(test__sumAfterSuspend)(19, 23);
+    var clsr = clsr_((test__sumAfterSuspend)(19, 23));
     let worker = try_(Thrd_spawn$i32(
         (Thrd_SpawnCfg){
             .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
@@ -91,7 +91,7 @@ TEST_fn_("Thrd: WaitGroup spawn detached closure" $guard) {
     defer_(Thrd_WaitGroup_fini(&wg));
 
     var done_count = atom_V_init$(atom_V$usize, 0);
-    var clsr = clsr_(test__markDone)(&done_count);
+    var clsr = clsr_((test__markDone)(&done_count));
 
     Thrd_WaitGroup_spawn(&wg, heap_ThrdSafe_alctr(&thrd_safe_heap), clsr.as_base);
     Thrd_WaitGroup_wait(&wg);

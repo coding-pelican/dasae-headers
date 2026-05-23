@@ -129,7 +129,7 @@ $static fn_((HashSet__capForSize(HashSet_LoadRatio load_ratio, u32 size))(u32)) 
 };
 
 $static fn_((HashSet__initMetadata(HashSet* self))(void)) {
-    mem_set0(u_anyS(slice$P(unwrap_(self->metadata), $r(0, HashSet_cap(*self)))));
+    mem_set0(u_anyS(P_slice((unwrap_(self->metadata))($r(0, HashSet_cap(*self))))));
 };
 
 $static fn_((HashSet__alloc(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 new_cap))(mem_E$void) $scope) {
@@ -142,7 +142,7 @@ $static fn_((HashSet__alloc(HashSet* self, TypeInfo key_ty, mem_Alctr gpa, u32 n
     let keys_end = keys_start + as$(usize)(new_cap)*key_ty.size;
     let total_size = mem_alignFwd(keys_end, max_align);
 
-    let slice = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), total_size))));
+    let slice = try_(mem_Alctr_allocBytes($trace gpa, total_size));
     let ptr = as$(u8*)(slice.ptr);
     let hdr = ptrAlignCast$((HashSet_Header*)(ptr));
     asg_l((hdr)({
@@ -169,7 +169,7 @@ $static fn_((HashSet__free(HashSet* self, TypeInfo key_ty, mem_Alctr gpa))(void)
     let total_size = mem_alignFwd(keys_end, max_align);
 
     let ptr = as$(u8*)(HashSet__header(*self));
-    mem_Alctr_free($trace gpa, (u_S$raw){ .ptr = ptr, .len = total_size, .type = typeInfo$(u8) });
+    mem_Alctr_freeBytes($trace gpa, P_prefix$((S$u8)(ptr)(total_size)));
 
     asg_l((&self->metadata)(none()));
     self->available = 0;

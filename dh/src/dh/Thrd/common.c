@@ -675,7 +675,7 @@ fn_((Thrd__linux_spawn(
     *meta = (Thrd__linux_Meta){
         .clsr = clsr,
         .ret_type = ret_type,
-        .map = { .ptr = map_base, .len = map_size },
+        .map = P_prefix$((S$raw)(map_base)(map_size)),
         .completion = atom_V_init(Thrd__linux_Completion_running),
         .parent_tid = 0,
         .child_tid = atom_V_init(1),

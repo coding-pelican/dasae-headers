@@ -537,14 +537,14 @@ typedef enum_((chain__State $fits($packed))(
     if (__chain_state != chain__State_eval) { \
         let_(__out, TypeOf(__reserved_acc)) = _out; \
         __reserved_buf_cap = __out.len; \
-        asg_l((&__reserved_buf)(ok(.as_raw = sliceS(__out, $r(0, 0)).as_raw))); \
-        $break_(sliceS(__out, $r(0, 0))); \
+        asg_l((&__reserved_buf)(ok(.as_raw = S_slice((__out)($r(0, 0))).as_raw))); \
+        $break_(S_slice((__out)($r(0, 0)))); \
     } else { \
         let __buf = catch_((E_asP(&__reserved_buf))($ignore, claim_unreachable)); \
         claim_assert(__buf->len <= __reserved_buf_cap); \
         __buf->len++; \
         *S_at((*__buf)[__buf->len - 1]) = *__reserved; \
-        $break_(sliceS(*__buf, $r(0, __buf->len))); \
+        $break_(S_slice((*__buf)($r(0, __buf->len)))); \
     }; \
 }) $unscoped(expr)
 #endif /* UNUSED_CODE */

@@ -80,12 +80,10 @@ $static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected)
     let async = Sched_async$Event;
     let cancel = Future_cancel$Event;
     let await = Future_await$Event;
-    let countFn = clsr_(countFn);
-    let countCo = clsr_(countCo);
 
-    var task_a = async(sched, countFn(sys, 2, time_Dur_fromMillis(100), 10).as_base);
+    var task_a = async(sched, clsr_((countFn)(sys, 2, time_Dur_fromMillis(100), 10)).as_base);
     defer_(let_ignore = cancel(&task_a, sched));
-    var task_b = async(sched, countCo(sys, 3, time_Dur_fromMillis(60), 20).as_base);
+    var task_b = async(sched, clsr_((countCo)(sys, 3, time_Dur_fromMillis(60), 20)).as_base);
     defer_(let_ignore = cancel(&task_b, sched));
     try_(TEST_expect(await(&task_a, sched) == 19));
     try_(TEST_expect(await(&task_b, sched) == 29));

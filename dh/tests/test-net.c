@@ -64,9 +64,13 @@ TEST_fn_("net: nonblocking accept returns WouldBlock before peer connects" $scop
     opts.nonblocking = true;
     var server = try_(net_listenIp(&listen_addr, opts));
 
-    let accepted = net_Svr_accept(&server);
-    try_(TEST_expect(!accepted.is_ok));
-    try_(TEST_expect(mem_eqlBytes(E_strfy(&accepted.payload.err), u8_l("WouldBlockNet"))));
+    let accepted_would_block = eval_(bool $scope)(catch_((net_Svr_accept(&server))(err, {
+        try_(TEST_expect(mem_eqlBytes(E_strfy(&err), u8_l("WouldBlockNet"))));
+        $break_(true);
+    }))) eval_(else)({
+        $break_(false);
+    }) $unscoped(eval);
+    try_(TEST_expect(accepted_would_block));
 
     net_Svr_close(&server);
 } $unscoped(TEST_fn);

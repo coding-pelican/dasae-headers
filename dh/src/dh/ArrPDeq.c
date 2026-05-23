@@ -250,7 +250,7 @@ fn_((ArrPDeq_empty(TypeInfo type, P_const$ArrPDeq_Ctx ctx))(ArrPDeq)) {
     claim_assert_nonnull(ctx);
     let_ignore = type;
     return (ArrPDeq){
-        .items = zero$S(),
+        .items = cleared(),
         .cap = 0,
         .ctx = ctx,
         debug_only(.type = type)

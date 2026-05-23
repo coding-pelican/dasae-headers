@@ -519,7 +519,6 @@ fn_((fmt_parse$bool(S_const$u8 str))(E$bool)) {
     return fmt_parseBool(str);
 };
 
-/* TODO: Refactor this */
 fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64) $scope) {
     str = fmt__trimWhitespace(str);
     if (str.len == 0) {
@@ -528,7 +527,7 @@ fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64) $scope) {
     if (base < 2 || 36 < base) {
         return_err(E_cause$FmtInvalidUIntFormat());
     }
-    if (str.ptr[0] == u8_c('+')) {
+    if (*S_at((str)[0]) == u8_c('+')) {
         str = S_suffix((str)(1));
         if (str.len == 0) {
             return_err(E_cause$FmtInvalidUIntFormat());
@@ -536,7 +535,7 @@ fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64) $scope) {
     }
     u64 result = 0;
     for (usize i = 0; i < str.len; ++i) {
-        u8 ch = str.ptr[i];
+        u8 ch = *S_at((str)[i]);
         u8 digit_val = 0;
         if (ascii_isDigit(ch)) {
             digit_val = ch - u8_c('0');
@@ -602,20 +601,17 @@ fn_((fmt_parse$u8(S_const$u8 str, u8 base))(E$u8) $scope) {
     return_ok(as$(u8)(result));
 } $unscoped(fn);
 
-/* TODO: Refactor this */
 fn_((fmt_parseIInt(S_const$u8 str, u8 base))(E$i64) $scope) {
     str = fmt__skipWhitespace(str);
     if (str.len == 0) {
         return_err(E_cause$FmtInvalidIIntFormat());
     }
     bool negative = false;
-    if (str.ptr[0] == u8_c('-')) {
+    if (*S_at((str)[0]) == u8_c('-')) {
         negative = true;
-        str.ptr++;
-        str.len--;
-    } else if (str.ptr[0] == u8_c('+')) {
-        str.ptr++;
-        str.len--;
+        str = S_suffix((str)(1));
+    } else if (*S_at((str)[0]) == u8_c('+')) {
+        str = S_suffix((str)(1));
     }
     let unsigned_result = try_(fmt_parseUInt(str, base));
     return_ok(expr_(i64 $scope)(if (negative) {
@@ -670,7 +666,6 @@ fn_((fmt_parse$i8(S_const$u8 str, u8 base))(E$i8) $scope) {
     return_ok(as$(i8)(result));
 } $unscoped(fn);
 
-/* TODO: Refactor this */
 fn_((fmt_parseFlt(S_const$u8 str))(E$f64) $scope) {
     str = fmt__skipWhitespace(str);
     if (str.len == 0) {
@@ -681,25 +676,25 @@ fn_((fmt_parseFlt(S_const$u8 str))(E$f64) $scope) {
     f64 result = 0.0;
     bool has_int_part = false;
     // Check for sign
-    if (pos < str.len && str.ptr[pos] == u8_c('+')) {
+    if (pos < str.len && *S_at((str)[pos]) == u8_c('+')) {
         pos++;
-    } else if (pos < str.len && str.ptr[pos] == u8_c('-')) {
+    } else if (pos < str.len && *S_at((str)[pos]) == u8_c('-')) {
         sign = -1.0;
         pos++;
     }
     // Parse integer part
-    while (pos < str.len && ascii_isDigit(str.ptr[pos])) {
-        result = (result * 10.0) + (str.ptr[pos] - u8_c('0'));
+    while (pos < str.len && ascii_isDigit(*S_at((str)[pos]))) {
+        result = (result * 10.0) + (*S_at((str)[pos]) - u8_c('0'));
         has_int_part = true;
         pos++;
     }
     // Parse fractional part
-    if (pos < str.len && str.ptr[pos] == u8_c('.')) {
+    if (pos < str.len && *S_at((str)[pos]) == u8_c('.')) {
         pos++;
         f64 power = 0.1;
         bool has_frac_part = false;
-        while (pos < str.len && ascii_isDigit(str.ptr[pos])) {
-            result += (str.ptr[pos] - u8_c('0')) * power;
+        while (pos < str.len && ascii_isDigit(*S_at((str)[pos]))) {
+            result += (*S_at((str)[pos]) - u8_c('0')) * power;
             power *= 0.1;
             has_frac_part = true;
             pos++;
@@ -713,20 +708,20 @@ fn_((fmt_parseFlt(S_const$u8 str))(E$f64) $scope) {
         }
     }
     // Parse exponent part
-    if (pos < str.len && (str.ptr[pos] == u8_c('e') || str.ptr[pos] == u8_c('E'))) {
+    if (pos < str.len && (*S_at((str)[pos]) == u8_c('e') || *S_at((str)[pos]) == u8_c('E'))) {
         pos++;
         f64 exp_sign = 1.0;
         i32 exp_val = 0;
         bool has_exp = false;
 
-        if (pos < str.len && str.ptr[pos] == u8_c('+')) {
+        if (pos < str.len && *S_at((str)[pos]) == u8_c('+')) {
             pos++;
-        } else if (pos < str.len && str.ptr[pos] == u8_c('-')) {
+        } else if (pos < str.len && *S_at((str)[pos]) == u8_c('-')) {
             exp_sign = -1.0;
             pos++;
         }
-        while (pos < str.len && ascii_isDigit(str.ptr[pos])) {
-            exp_val = (exp_val * 10) + (str.ptr[pos] - u8_c('0'));
+        while (pos < str.len && ascii_isDigit(*S_at((str)[pos]))) {
+            exp_val = (exp_val * 10) + (*S_at((str)[pos]) - u8_c('0'));
             has_exp = true;
             pos++;
         }
@@ -876,13 +871,18 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
             if (colon_pos < fmt_str.len) {
                 let colon_pos_ch = *S_at((fmt_str)[colon_pos]);
                 if (colon_pos_ch == u8_c(':')) {
-                    let index_slice = S_prefix((fmt_str)(colon_pos));
-                    let index = try_(fmt__parseU8(index_slice));
+                    usize index = 0;
+                    for_(($s(S_prefix((fmt_str)(colon_pos))))(digit_ch)) {
+                        index = index * usize_(10) + as$(usize)(fmt__digitToInt(*digit_ch));
+                        if (index >= fmt_max_args) {
+                            return_err(E_cause$FmtIdxOutOfBounds());
+                        }
+                    } $end(for);
                     if (index >= fmt_max_args) {
                         return_err(E_cause$FmtIdxOutOfBounds());
                     }
                     fmt_str = S_suffix((fmt_str)(colon_pos + 1)); // Skip index and ':'
-                    $break_(some(index));
+                    $break_(some(intCast$((u8)(index))));
                 }
             }
         }
@@ -891,7 +891,7 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
 
     // Skip optional ':' at format start
     if (0 < fmt_str.len && *S_at((fmt_str)[0]) == u8_c(':')) {
-        fmt_str = suffix$S(fmt_str, 1);
+        fmt_str = S_suffix((fmt_str)(1));
     }
 
     // Parse fill and alignment (more efficient than function call)
@@ -920,8 +920,8 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
         }
         $break_({ .fill = none(), .align = none() });
     }) $unscoped(expr);
-    let fill = fill_w_align.fill;
-    let align = fill_w_align.align;
+    var fill = fill_w_align.fill;
+    var align = fill_w_align.align;
 
     // Parse sign flag (+, -, or space)
     let sign = expr_(fmt_Sign $scope)(if (0 < fmt_str.len) {
@@ -940,6 +940,12 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
         fmt_str = S_suffix((fmt_str)(1));
         $break_(true);
     }) expr_(else)($break_(false)) $unscoped(expr);
+
+    if (isNone(fill) && isNone(align) && 1 < fmt_str.len && *S_at((fmt_str)[0]) == u8_c('0') && ascii_isDigit(*S_at((fmt_str)[1]))) {
+        asg_l((&fill)(some(u8_c('0'))));
+        asg_l((&align)(some(fmt_Align_right)));
+        fmt_str = S_suffix((fmt_str)(1));
+    }
 
     // Parse width
     let width = expr_(O$u8 $scope)(if (0 < fmt_str.len && ascii_isDigit(*S_at((fmt_str)[0]))) {
@@ -1031,7 +1037,7 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
             .type = type,
             .size = size,
         },
-        .remain = suffix$S(fmt_str, 1), // Skip '}'
+        .remain = S_suffix((fmt_str)(1)), // Skip '}'
     });
 } $unscoped(fn);
 
@@ -1578,7 +1584,7 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
     pattern_((fmt__ArgValue_sli_z_u8)(value)) {
         let ptr = value;
         let len = mem_lenZ0$u8(ptr);
-        return fmt_formatStr(writer, l$((S_const$u8){ .ptr = ptr, .len = len }), spec);
+        return fmt_formatStr(writer, P_prefix$((S_const$u8)(ptr)(len)), spec);
     } $end(pattern);
     pattern_((fmt__ArgValue_sli_u8)(value)) {
         return fmt_formatStr(writer, value, spec);
@@ -1631,21 +1637,25 @@ fn_((fmt__parseFormatSpecOnce(S_const$u8 fmt))(E$fmt__ParsedFormatSpec) $scope) 
 
     while (0 < scan_fmt.len) {
         isize offset = scan_fmt.ptr - fmt.ptr;
-        u8 ch = *atS(scan_fmt, 0);
+        u8 ch = *S_at((scan_fmt)[0]);
         if (ch == u8_c('{')) {
             // Handle escaped '{{'
-            if (1 < scan_fmt.len && *atS(scan_fmt, 1) == u8_c('{')) {
-                scan_fmt = suffix$S(scan_fmt, 2);
+            if (1 < scan_fmt.len && *S_at((scan_fmt)[1]) == u8_c('{')) {
+                scan_fmt = S_suffix((scan_fmt)(2));
                 continue;
             }
             // Parse format spec
-            let parsed = catch_((fmt__parseFormat(scan_fmt))($ignore, {
+            let parsed = catch_((fmt__parseFormat(scan_fmt))(err, {
+                let idx_out_of_bounds = E_cause$FmtIdxOutOfBounds();
+                if (E_eql(&err, idx_out_of_bounds.as_any)) {
+                    return_err(err);
+                }
                 // Malformed - skip to closing brace or next char
                 usize close_pos = 1;
-                while (close_pos < scan_fmt.len && *atS(scan_fmt, close_pos) != u8_c('}')) {
+                while (close_pos < scan_fmt.len && *S_at((scan_fmt)[close_pos]) != u8_c('}')) {
                     close_pos++;
                 }
-                scan_fmt = close_pos < scan_fmt.len ? suffix$S(scan_fmt, close_pos + 1) : suffix$S(scan_fmt, 1);
+                scan_fmt = close_pos < scan_fmt.len ? S_suffix((scan_fmt)(close_pos + 1)) : S_suffix((scan_fmt)(1));
                 continue;
             }));
             // printf("After parseFormat: spec.type=%d, spec.size=%d\n", parsed.spec.type, parsed.spec.size);
@@ -1663,26 +1673,25 @@ fn_((fmt__parseFormatSpecOnce(S_const$u8 fmt))(E$fmt__ParsedFormatSpec) $scope) 
             if (arg_index >= fmt_max_args) {
                 return_err(E_cause$FmtIdxOutOfBounds());
             }
-            asg_l((atA(result.occurrences, result.occurrence_count))({
+            asg_l((A_at((result.occurrences)[result.occurrence_count]))({
                 .spec = parsed.spec,
                 .arg_index = arg_index,
                 .literal_start = intCast$((usize)(current_literal_start)),
                 .literal_len = intCast$((usize)(offset - current_literal_start)),
             }));
-            // printf("Stored in occurrence[%zu]: type=%d, size=%d\n", result.occurrence_count, atA(result.occurrences, result.occurrence_count)->spec.type, atA(result.occurrences, result.occurrence_count)->spec.size);
             result.occurrence_count++;
             result.max_arg_index = pri_max(result.max_arg_index, arg_index);
             scan_fmt = parsed.remain;
             current_literal_start = scan_fmt.ptr - fmt.ptr;
         } else if (ch == u8_c('}')) {
             // Handle escaped '}}'
-            if (1 < scan_fmt.len && *atS(scan_fmt, 1) == u8_c('}')) {
-                scan_fmt = suffix$S(scan_fmt, 2);
+            if (1 < scan_fmt.len && *S_at((scan_fmt)[1]) == u8_c('}')) {
+                scan_fmt = S_suffix((scan_fmt)(2));
                 continue;
             }
-            scan_fmt = suffix$S(scan_fmt, 1);
+            scan_fmt = S_suffix((scan_fmt)(1));
         } else {
-            scan_fmt = suffix$S(scan_fmt, 1);
+            scan_fmt = S_suffix((scan_fmt)(1));
         }
     }
     // Store trailing literal info

@@ -21,12 +21,12 @@ TEST_fn_("heap/Smp: with custom parent" $guard) {
     let gpa = heap_Smp_alctr(&smp);
 
     // Test basic allocation
-    let slice1 = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), 100))));
-    defer_(mem_Alctr_free($trace gpa, u_anyS(slice1)));
+    let slice1 = try_(mem_Alctr_allocBytes($trace gpa, 100));
+    defer_(mem_Alctr_freeBytes($trace gpa, slice1));
 
     // Test large allocation (delegates to parent)
-    let slice2 = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), 1024ull * 1024))));
-    defer_(mem_Alctr_free($trace gpa, u_anyS(slice2)));
+    let slice2 = try_(mem_Alctr_allocBytes($trace gpa, 1024ull * 1024));
+    defer_(mem_Alctr_freeBytes($trace gpa, slice2));
 
     try_(TEST_expect(slice1.len == 100));
     try_(TEST_expect(slice2.len == 1024ull * 1024));
@@ -40,8 +40,8 @@ TEST_fn_("heap/Smp: heap allocation" $guard) {
     let gpa = heap_Smp_alctr(smp);
 
     // Test heap allocation for large thread counts
-    let slice = u_castS$((S$u8)(try_(mem_Alctr_alloc($trace gpa, typeInfo$(u8), 100))));
-    defer_(mem_Alctr_free($trace gpa, u_anyS(slice)));
+    let slice = try_(mem_Alctr_allocBytes($trace gpa, 100));
+    defer_(mem_Alctr_freeBytes($trace gpa, slice));
 
     try_(TEST_expect(slice.len == 100));
 } $unguarded(TEST_fn);

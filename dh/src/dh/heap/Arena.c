@@ -58,7 +58,7 @@ fn_((heap_Arena_fini(heap_Arena* self))(void)) {
         // Save next pointer before freeing current node
         let next_it = link->next;
         let alloc_buf_len = *ListSgl_Link_data$usize(link);
-        let alloc_buf = init$S$((u8)(as$(u8*)(link), alloc_buf_len));
+        let alloc_buf = P_prefix$((S$u8)(as$(u8*)(link))(alloc_buf_len));
         mem_Alctr_rawFree($trace self->child_alctr, alloc_buf, alignOf$(ListSgl_Adp$usize));
         it = next_it;
     }
@@ -106,7 +106,7 @@ fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)) {
             $break_(some(link));
         }
         let alloc_buf_len = *ListSgl_Link_data$usize(link);
-        let alloc_buf = init$S$((u8)(as$(u8*)(link), alloc_buf_len));
+        let alloc_buf = P_prefix$((S$u8)(as$(u8*)(link))(alloc_buf_len));
         mem_Alctr_rawFree($trace self->child_alctr, alloc_buf, alignOf$(ListSgl_Adp$usize));
         it = next_it;
     }) eval_(else)($break_(none())) $unscoped(eval);
@@ -121,7 +121,7 @@ fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)) {
             return true;
         }
         // Try to resize the buffer
-        let alloc_buf = init$S$((u8)(as$(u8*)(first_link), alloc_buf_len));
+        let alloc_buf = P_prefix$((S$u8)(as$(u8*)(first_link))(alloc_buf_len));
         if (mem_Alctr_rawResize($trace self->child_alctr, alloc_buf, alignOf$(ListSgl_Adp$usize), total_size)) {
             *ListSgl_Link_dataMut$usize(first_link) = total_size;
         } else {
@@ -170,7 +170,7 @@ fn_((heap_Arena__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
         // Try to resize current buffer
         let bigger_buf_size = sizeOf$(ListSgl_Adp$usize) + new_end_idx;
         let cur_alloc_buf_len = *ListSgl_Link_data$usize(cur_link);
-        let cur_alloc_buf = init$S$((u8)(as$(u8*)(cur_link), cur_alloc_buf_len));
+        let cur_alloc_buf = P_prefix$((S$u8)(as$(u8*)(cur_link))(cur_alloc_buf_len));
 
         if (mem_Alctr_rawResize($trace self->child_alctr, cur_alloc_buf, alignOf$(ListSgl_Adp$usize), bigger_buf_size)) {
             *ListSgl_Link_dataMut$usize(cur_link) = bigger_buf_size;

@@ -101,16 +101,16 @@ $extern fn_((sort_blockCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)
 /// Bypasses internal buffer extraction when partial contiguous memory is provided.
 /// - Time Complexity: O(N log N) with reduced constant factors.
 /// - Space Complexity: O(K) where K <= N.
-$extern fn_((sort_blockCache(u_S$raw cache, u_S$raw seq, sort_OrdFn ordFn))(u_S$raw));
-$extern fn_((sort_blockCtxCache(u_S$raw cache, u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(u_S$raw));
+$extern fn_((sort_blockCache(u_S$raw seq, sort_OrdFn ordFn, u_S$raw cache))(u_S$raw));
+$extern fn_((sort_blockCtxCache(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, u_S$raw cache))(u_S$raw));
 /// Block Sort with Alctr: Optimal for O(K) memory constraints.
 /// Uses provided allocator to allocate temporary buffer.
 /// - Time Complexity: O(N log N) with reduced constant factors.
 /// - Space Complexity: O(K) where K <= N.
 $attr($must_check)
-$extern fn_((sort_blockAlloc(mem_Alctr gpa, u_S$raw seq, sort_OrdFn ordFn))(mem_E$u_S$raw));
+$extern fn_((sort_blockAlloc(u_S$raw seq, sort_OrdFn ordFn, mem_Alctr gpa))(mem_E$u_S$raw));
 $attr($must_check)
-$extern fn_((sort_blockCtxAlloc(mem_Alctr gpa, u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(mem_E$u_S$raw));
+$extern fn_((sort_blockCtxAlloc(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, mem_Alctr gpa))(mem_E$u_S$raw));
 
 /*========== Macros and Definitions =========================================*/
 
