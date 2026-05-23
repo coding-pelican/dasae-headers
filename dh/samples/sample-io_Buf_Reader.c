@@ -10,12 +10,12 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let in_file = io_getStdIn();
     let unbufd = fs_File_reader(in_file);
 
-    var_(buf, A$$(4096, u8)) = A_zero();
+    var_(buf, A$$(4096, u8)) $undefined;
     var bufd = io_Buf_Reader_init(unbufd, A_ref$((S$u8)(buf)));
     let first_byte = try_(io_Buf_Reader_peekByte(&bufd));
     io_stream_print(u8_l("First byte: '{0:dhh}' -> '{0:c}'\n"), first_byte);
 
-    var_(line_buf, A$$(256, u8)) = A_zero();
+    var_(line_buf, A$$(256, u8)) $undefined;
     let line = try_(io_Buf_Reader_readUntilByte(&bufd, u8_c('\n'), A_ref$((S$u8)(line_buf))));
     io_stream_print(u8_l("Line: '{:s}'\n"), line);
 

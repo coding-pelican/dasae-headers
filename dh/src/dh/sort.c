@@ -189,7 +189,7 @@ fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void)) {
     let len = R_len(range);
     if (len <= 1) return;
 
-    var_(stack, A$$(sort_limit_pdq_stack_frames, sort_pdq__Frame)) = A_zero();
+    var_(stack, A$$(sort_limit_pdq_stack_frames, sort_pdq__Frame)) $undefined;
     var_(depth, usize) = 0;
 
     let max_limit = uint_pow2Floor$((usize)(len)) + 1;
@@ -397,8 +397,8 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
 
     var l = range.begin + 1;
     var r = range.end - 1;
-    var_(l_offsets, A$$(sort_limit_pdq_offset_blocks, u8)) = A_zero();
-    var_(r_offsets, A$$(sort_limit_pdq_offset_blocks, u8)) = A_zero();
+    var_(l_offsets, A$$(sort_limit_pdq_offset_blocks, u8)) $undefined;
+    var_(r_offsets, A$$(sort_limit_pdq_offset_blocks, u8)) $undefined;
     var_(l_count, usize) = 0;
     var_(r_count, usize) = 0;
     var_(l_offset_idx, usize) = 0;
@@ -520,7 +520,7 @@ fn_((sort_block(u_S$raw seq, sort_OrdFn ordFn))(void)) {
 };
 
 fn_((sort_blockCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
-    var_(cache_buf, A$$(sort_limit_block_cache_stack_bytes, u8)) = A_zero();
+    var_(cache_buf, A$$(sort_limit_block_cache_stack_bytes, u8)) $undefined;
     let cache_cap = (0 < seq.type.size) ? (sort_limit_block_cache_stack_bytes / seq.type.size) : 0;
     let_(cache, u_S$raw) = u_init$S((seq.type)(A_ptr(cache_buf), cache_cap));
     $ignore_void sort_blockCtxCache(seq, ordFn, ctx, cache);

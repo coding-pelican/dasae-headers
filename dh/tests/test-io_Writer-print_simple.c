@@ -62,9 +62,9 @@ $static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
 
 TEST_fn_("io/Writer: print simple - Integer test" $scope) {
     T_use_A$(64, u8);
-    A$64$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$64$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test very basic integer
     try_(io_Writer_print(writer, u8_l("{:d}"), 42));
@@ -75,9 +75,9 @@ TEST_fn_("io/Writer: print simple - Integer test" $scope) {
 
 TEST_fn_("io/Writer: print simple - Character test" $scope) {
     T_use_A$(64, u8);
-    A$64$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$64$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test very basic character
     try_(io_Writer_print(writer, u8_l("{:c}"), 'A'));
@@ -88,9 +88,9 @@ TEST_fn_("io/Writer: print simple - Character test" $scope) {
 
 TEST_fn_("io/Writer: print simple - Hex test" $scope) {
     T_use_A$(64, u8);
-    A$64$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$64$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test very basic hex
     try_(io_Writer_print(writer, u8_l("{:x}"), 255U));

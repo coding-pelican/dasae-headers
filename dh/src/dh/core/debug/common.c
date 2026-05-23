@@ -16,7 +16,7 @@ fn_((debug_isDebuggerPresent(void))(bool)) {
         return false;
     }
 
-    var_(buf, A$$(4096, u8)) = A_zero();
+    var_(buf, A$$(4096, u8)) $undefined;
     let read_len = read(fd, A_ptr(buf), A_len(buf));
     let_ignore = close(fd);
     if (read_len <= 0) return false;

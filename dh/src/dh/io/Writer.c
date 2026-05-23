@@ -30,7 +30,7 @@ fn_((io_Writer_writeByte(io_Writer self, u8 byte))(E$void)) {
 };
 
 fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void) $scope) {
-    var_(bytes, A$$(256, u8)) = A_zero();
+    var_(bytes, A$$(256, u8)) $undefined;
     mem_setBytes(A_ref$((S$u8)(bytes)), byte);
     var_(remaining, usize) = n;
     while (0 < remaining) {

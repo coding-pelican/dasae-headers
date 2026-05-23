@@ -36,7 +36,7 @@ TEST_fn_("ascii: in-place and within-buffer case conversion" $scope) {
     let toggled = ascii_toggleCases(text);
     try_(TEST_expect(mem_eqlBytes(toggled.as_const, u8_l("HELLO WORLD"))));
 
-    var_(out_mem, A$32$u8) = A_zero();
+    var_(out_mem, A$32$u8) $undefined;
     let out = A_ref$((S$u8)(out_mem));
     try_(TEST_expect(mem_eqlBytes(ascii_makeUppers(out, u8_l("Test123!")).as_const, u8_l("TEST123!"))));
     try_(TEST_expect(mem_eqlBytes(ascii_makeLowers(out, u8_l("Test123!")).as_const, u8_l("test123!"))));

@@ -66,9 +66,9 @@ $static fn_((test_Buf_view(test_Buf self))(S_const$u8)) {
 
 TEST_fn_("io/Writer: print w arg idx - Basic indexed arguments" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test basic indexed access - simple reordering
     try_(io_Writer_print(writer, u8_l("{1:d} {0:d}"), 42, 24));
@@ -88,9 +88,9 @@ TEST_fn_("io/Writer: print w arg idx - Basic indexed arguments" $scope) {
 
 TEST_fn_("io/Writer: print w arg idx - Indexed arguments with different types" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     let test_str = u8_l("Hello");
 
@@ -112,9 +112,9 @@ TEST_fn_("io/Writer: print w arg idx - Indexed arguments with different types" $
 
 TEST_fn_("io/Writer: print w arg idx - Indexed arguments out of order" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test arguments accessed in reverse order
     try_(io_Writer_print(writer, u8_l("{3:c}{2:d}{1:x}{0:s}"), u8_l("end"), 255U, 10, 'A'));
@@ -134,9 +134,9 @@ TEST_fn_("io/Writer: print w arg idx - Indexed arguments out of order" $scope) {
 
 TEST_fn_("io/Writer: print w arg idx - Indexed arguments with format flags" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test indexed access with format flags
     try_(io_Writer_print(writer, u8_l("{0:+d} {1:#x} {0: d}"), 42, 255U));
@@ -157,9 +157,9 @@ TEST_fn_("io/Writer: print w arg idx - Indexed arguments with format flags" $sco
 
 TEST_fn_("io/Writer: print w arg idx - Indexed arguments with 64-bit types" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test indexed access with 64-bit integers
     try_(io_Writer_print(writer, u8_l("{1:dl} {0:ul} {1:xl}"), 18446744073709551615ULL, 9223372036854775807LL));
@@ -182,9 +182,9 @@ TEST_fn_("io/Writer: print w arg idx - Indexed arguments with 64-bit types" $sco
 
 TEST_fn_("io/Writer: print w arg idx - Indexed arguments with pointers and strings" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     let slice_str = u8_l("slice");
     let ptrz0_str = u8_kZ0("cstring");
@@ -202,9 +202,9 @@ TEST_fn_("io/Writer: print w arg idx - Indexed arguments with pointers and strin
 
 TEST_fn_("io/Writer: print w arg idx - Complex indexed argument patterns" $scope) {
     T_use_A$(512, u8);
-    A$512$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$512$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test a realistic use case: logging with indexed arguments for reordering
     let operation = u8_l("READ");
@@ -229,9 +229,9 @@ TEST_fn_("io/Writer: print w arg idx - Complex indexed argument patterns" $scope
 
 TEST_fn_("io/Writer: print w arg idx - Edge cases with indexed arguments" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test index 0 (first argument)
     try_(io_Writer_print(writer, u8_l("{0:d}"), 123));
@@ -261,9 +261,9 @@ TEST_fn_("io/Writer: print w arg idx - Edge cases with indexed arguments" $scope
 
 TEST_fn_("io/Writer: print w arg idx - Error handling with indexed arguments" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     let caught = eval_(bool $scope)(catch_((io_Writer_print(writer, u8_l("{999:d}"), 42))(err, {
         let expected = E_cause$FmtIdxOutOfBounds();

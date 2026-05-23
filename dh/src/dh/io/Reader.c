@@ -22,7 +22,7 @@ fn_((io_Reader_readExact(io_Reader self, S$u8 buf))(E$void) $scope) {
 } $unscoped(fn);
 
 fn_((io_Reader_readByte(io_Reader self))(E$u8) $scope) {
-    var_(buf, A$$(1, u8)) = A_zero();
+    var_(buf, A$$(1, u8)) $undefined;
     let bytes_read = try_(io_Reader_read(self, A_ref$((S$u8)buf)));
     if (bytes_read == 0) {
         return_err(E_cause$IOUnexpectedEof());
@@ -31,7 +31,7 @@ fn_((io_Reader_readByte(io_Reader self))(E$u8) $scope) {
 } $unscoped(fn);
 
 fn_((io_Reader_skip(io_Reader self, usize n))(E$void) $scope) {
-    var_(discard_buf, A$$(256, u8)) = A_zero();
+    var_(discard_buf, A$$(256, u8)) $undefined;
     var_(remaining, usize) = n;
     while (remaining > 0) {
         let to_read = pri_min(remaining, A_len(discard_buf));

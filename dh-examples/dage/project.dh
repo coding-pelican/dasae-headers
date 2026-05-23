@@ -1,3 +1,7 @@
+kind=lib
+pch=dage.h
+link-dsl=on
+
 [Grid]
 path=../Grid
 profile=default

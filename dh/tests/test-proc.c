@@ -31,7 +31,7 @@ $static fn_((test__fullPathZ(P_const$u8 path_z, S$u8 out))(E$S$u8) $scope) {
 #endif
 
 TEST_fn_("proc: current path is available" $scope) {
-    var_(buf, A$$(512, u8)) = A_zero();
+    var_(buf, A$$(512, u8)) $undefined;
     let path = try_(proc_currentPath(A_ref$((S$u8)(buf))));
 
     try_(TEST_expect(path.len != 0));
@@ -85,7 +85,7 @@ TEST_fn_("proc: stdout pipe captures child output" $scope) {
     try_(TEST_expect(term.tag == proc_Term_Tag_exited));
     try_(TEST_expect(term.code == 0));
 
-    var_(buf, A$$(7, u8)) = A_zero();
+    var_(buf, A$$(7, u8)) $undefined;
     let reader = fs_File_reader(child.std_out.file);
     try_(io_Reader_readExact(reader, A_ref$((S$u8)(buf))));
     fs_File_close(child.std_out.file);
@@ -95,7 +95,7 @@ TEST_fn_("proc: stdout pipe captures child output" $scope) {
 
 #if plat_is_windows
 TEST_fn_("proc: custom environment block is passed to child" $scope) {
-    var_(comspec_buf, A$$(512, u8)) = A_zero();
+    var_(comspec_buf, A$$(512, u8)) $undefined;
     let comspec_len = GetEnvironmentVariableA("ComSpec", as$(LPSTR)(A_ptr(comspec_buf)), as$(DWORD)(A_len(comspec_buf)));
     try_(TEST_expect(comspec_len != 0));
 
@@ -123,7 +123,7 @@ TEST_fn_("proc: custom environment block is passed to child" $scope) {
     let term = try_(proc_Child_wait(&child));
     try_(TEST_expect(term.code == 0));
 
-    var_(buf, A$$(64, u8)) = A_zero();
+    var_(buf, A$$(64, u8)) $undefined;
     let out = try_(test__readPipeAll(child.std_out.file, A_ref$((S$u8)(buf))));
     fs_File_close(child.std_out.file);
     try_(TEST_expect(mem_eqlBytes(out.as_const, u8_l("from-env\r\n"))));
@@ -160,11 +160,11 @@ TEST_fn_("proc: cwd handle is passed to child" $guard) {
     let term = try_(proc_Child_wait(&child));
     try_(TEST_expect(term.code == 0));
 
-    var_(buf, A$$(640, u8)) = A_zero();
+    var_(buf, A$$(640, u8)) $undefined;
     let out = try_(test__readPipeAll(child.std_out.file, A_ref$((S$u8)(buf))));
     fs_File_close(child.std_out.file);
 
-    var_(expected_line, A$$(640, u8)) = A_zero();
+    var_(expected_line, A$$(640, u8)) $undefined;
     mem_copyBytes(S_slice(((S$u8)A_ref$((S$u8)(expected_line)))$r(0, expected.len)), expected.as_const);
     expected_line.val[expected.len] = '\r';
     expected_line.val[expected.len + 1] = '\n';
@@ -172,14 +172,14 @@ TEST_fn_("proc: cwd handle is passed to child" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
-    var_(comspec_buf, A$$(512, u8)) = A_zero();
+    var_(comspec_buf, A$$(512, u8)) $undefined;
     let comspec_len = GetEnvironmentVariableA("ComSpec", as$(LPSTR)(A_ptr(comspec_buf)), as$(DWORD)(A_len(comspec_buf)));
     try_(TEST_expect(comspec_len != 0));
     let comspec = S_slice(((S_const$u8)A_ref$((S_const$u8)(comspec_buf)))$r(0, as$(usize)(comspec_len)));
     let comspec_dir = fs_path_dirname(comspec);
     let comspec_base = fs_path_basename(comspec);
 
-    var_(dir_buf, A$$(512, u8)) = A_zero();
+    var_(dir_buf, A$$(512, u8)) $undefined;
     mem_copyBytes(S_slice(((S$u8)A_ref$((S$u8)(dir_buf)))$r(0, comspec_dir.len)), comspec_dir);
     dir_buf.val[comspec_dir.len] = 0;
 

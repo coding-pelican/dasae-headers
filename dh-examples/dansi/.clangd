@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./dansi/src
+    - -I./dansi/include
+    - -isystem./dansi/lib/deps

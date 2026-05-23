@@ -19,12 +19,12 @@ TEST_fn_("net: loopback listen connect accept and exchange bytes" $scope) {
 
     try_(io_Writer_writeBytes(net_Stream_IO_writer(&client_io), u8_l("ping")));
 
-    var_(buf, A$$(4, u8)) = A_zero();
+    var_(buf, A$$(4, u8)) $undefined;
     try_(io_Reader_readExact(net_Stream_IO_reader(&peer_io), A_ref$((S$u8)(buf))));
     try_(TEST_expect(mem_eqlBytes(A_ref$((S_const$u8)(buf)), u8_l("ping"))));
 
     try_(io_Writer_writeBytes(net_Stream_IO_writer(&peer_io), u8_l("pong")));
-    var_(reply, A$$(4, u8)) = A_zero();
+    var_(reply, A$$(4, u8)) $undefined;
     try_(io_Reader_readExact(net_Stream_IO_reader(&client_io), A_ref$((S$u8)(reply))));
     try_(TEST_expect(mem_eqlBytes(A_ref$((S_const$u8)(reply)), u8_l("pong"))));
 
@@ -49,7 +49,7 @@ TEST_fn_("net: ipv6 loopback listen connect accept and exchange bytes" $scope) {
 
     try_(io_Writer_writeBytes(net_Stream_IO_writer(&client_io), u8_l("ip6")));
 
-    var_(buf, A$$(3, u8)) = A_zero();
+    var_(buf, A$$(3, u8)) $undefined;
     try_(io_Reader_readExact(net_Stream_IO_reader(&peer_io), A_ref$((S$u8)(buf))));
     try_(TEST_expect(mem_eqlBytes(A_ref$((S_const$u8)(buf)), u8_l("ip6"))));
 
@@ -89,7 +89,7 @@ TEST_fn_("net: connect accepts nonzero timeout on loopback" $scope) {
     var peer_io = net_Stream_io(peer);
 
     try_(io_Writer_writeBytes(net_Stream_IO_writer(&peer_io), u8_l("ok")));
-    var_(buf, A$$(2, u8)) = A_zero();
+    var_(buf, A$$(2, u8)) $undefined;
     try_(io_Reader_readExact(net_Stream_IO_reader(&client_io), A_ref$((S$u8)(buf))));
     try_(TEST_expect(mem_eqlBytes(A_ref$((S_const$u8)(buf)), u8_l("ok"))));
 

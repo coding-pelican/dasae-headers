@@ -1,0 +1,3 @@
+kind=lib
+pch=dansi.h
+link-dsl=on

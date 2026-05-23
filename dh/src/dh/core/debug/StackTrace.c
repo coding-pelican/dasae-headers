@@ -133,7 +133,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
     SymInitialize(process, null, true);
     defer_(SymCleanup(process));
 
-    $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) = A_zero();
+    $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) $undefined_static;
     let frames = RtlCaptureStackBackTrace(0, debug_StackTrace__max_frames, A_ptr(stack), null);
     let tid = as$(u64)(Thrd_currId());
 
@@ -141,7 +141,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
     io_stream_eprintln(u8_l("stack backtrace (tid: {:ul}):"), tid);
 
     /* Buffer for Symbol Info */
-    $static var_(symbol_buf, A$$(sizeOf$(SYMBOL_INFO) + debug_StackTrace__max_symbol_len, u8) $align(alignOf$(SYMBOL_INFO))) = A_zero();
+    $static var_(symbol_buf, A$$(sizeOf$(SYMBOL_INFO) + debug_StackTrace__max_symbol_len, u8) $align(alignOf$(SYMBOL_INFO))) $undefined_static;
     let symbol = ptrAlignCast$((SYMBOL_INFO*)(A_ptr(symbol_buf)));
     symbol->SizeOfStruct = sizeOf$(SYMBOL_INFO);
     symbol->MaxNameLen = debug_StackTrace__max_symbol_len;
@@ -207,7 +207,7 @@ fn_((debug_StackTrace__unix_setupCrashHandler(void))(void)) {
 };
 
 fn_((debug_StackTrace__unix_print(void))(void)) {
-    $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) = A_zero();
+    $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) $undefined_static;
     let frames = backtrace(A_ptr(stack), debug_StackTrace__max_frames);
     let tid = as$(u64)(Thrd_currId());
 

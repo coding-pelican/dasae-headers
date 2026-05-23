@@ -22,9 +22,9 @@ TEST_fn_("Rand: fillBytes is deterministic for same seed" $scope) {
     var lhs = Rand_initSeed(456);
     var rhs = Rand_initSeed(456);
 
-    var_(lhs_buf, A$$(16, u8)) = A_zero();
-    var_(rhs_buf, A$$(16, u8)) = A_zero();
-    var_(zero_buf, A$$(16, u8)) = A_zero();
+    var_(lhs_buf, A$$(16, u8)) $undefined;
+    var_(rhs_buf, A$$(16, u8)) $undefined;
+    var_(zero_buf, A$$(16, u8)) $undefined;
     let lhs_bytes = Rand_fillBytes(&lhs, A_ref$((S$u8)(lhs_buf)));
     let rhs_bytes = Rand_fillBytes(&rhs, A_ref$((S$u8)(rhs_buf)));
 

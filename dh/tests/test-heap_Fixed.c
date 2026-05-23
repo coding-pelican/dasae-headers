@@ -3,7 +3,7 @@
 #include "dh/mem/Alctr.h"
 
 TEST_fn_("heap/Fixed: basic reallocation usage" $guard) {
-    var_(buffer, A$$(1024, u8)) = A_zero();
+    var_(buffer, A$$(1024, u8)) $undefined;
     var_(fixed, heap_Fixed) = heap_Fixed_from(A_ref$((S$u8)(buffer)));
 
     let gpa = heap_Fixed_alctr(&fixed);
@@ -33,7 +33,7 @@ TEST_fn_("heap/Fixed: basic reallocation usage" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("heap/Fixed: basic resize growth zero fills tail" $guard) {
-    var_(buffer, A$$(1024, u8)) = A_zero();
+    var_(buffer, A$$(1024, u8)) $undefined;
     var_(fixed, heap_Fixed) = heap_Fixed_from(A_ref$((S$u8)(buffer)));
 
     let gpa = heap_Fixed_alctr(&fixed);

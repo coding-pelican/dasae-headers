@@ -87,9 +87,9 @@ $static fn_((test_Buf_giveAlloc(test_Buf* self, mem_Alctr allocator))(E$S$u8) $s
 
 TEST_fn_("io/Writer: print - Integer formatting - decimal" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test basic integers
     try_(io_Writer_print(writer, u8_l("{:d}"), 42));
@@ -125,9 +125,9 @@ TEST_fn_("io/Writer: print - Integer formatting - decimal" $scope) {
 
 TEST_fn_("io/Writer: print - Unsigned integer formatting" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test basic unsigned
     try_(io_Writer_print(writer, u8_l("{:u}"), 42U));
@@ -155,9 +155,9 @@ TEST_fn_("io/Writer: print - Unsigned integer formatting" $scope) {
 
 TEST_fn_("io/Writer: print - Hexadecimal formatting" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test lowercase hex
     try_(io_Writer_print(writer, u8_l("{:x}"), 255U));
@@ -192,9 +192,9 @@ TEST_fn_("io/Writer: print - Hexadecimal formatting" $scope) {
 
 TEST_fn_("io/Writer: print - Binary and Octal formatting" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test binary
     try_(io_Writer_print(writer, u8_l("{:b}"), 5U));
@@ -232,9 +232,9 @@ TEST_fn_("io/Writer: print - Binary and Octal formatting" $scope) {
 
 TEST_fn_("io/Writer: print - Character formatting" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test basic character
     try_(io_Writer_print(writer, u8_l("{:c}"), 'A'));
@@ -254,9 +254,9 @@ TEST_fn_("io/Writer: print - Character formatting" $scope) {
 
 TEST_fn_("io/Writer: print - String slice formatting" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test basic string slice
     let test_str = u8_l("Hello, World!");
@@ -269,9 +269,9 @@ TEST_fn_("io/Writer: print - String slice formatting" $scope) {
 
 TEST_fn_("io/Writer: print - Null-terminated string formatting" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test basic null-terminated string
     let test_str = u8_kZ0("Hello, C!");
@@ -284,9 +284,9 @@ TEST_fn_("io/Writer: print - Null-terminated string formatting" $scope) {
 
 TEST_fn_("io/Writer: print - Pointer formatting" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test null pointer (without prefix)
     try_(io_Writer_print(writer, u8_l("{:p}"), null));
@@ -329,9 +329,9 @@ TEST_fn_("io/Writer: print - Pointer formatting" $scope) {
 
 TEST_fn_("io/Writer: print - Floating point formatting" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Basic float
     try_(io_Writer_print(writer, u8_l("{:fl}"), 123.456));
@@ -376,9 +376,9 @@ TEST_fn_("io/Writer: print - Floating point formatting" $scope) {
 
 TEST_fn_("io/Writer: print - Sign flags" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test + flag for positive numbers
     try_(io_Writer_print(writer, u8_l("{:+d}"), 42));
@@ -416,9 +416,9 @@ TEST_fn_("io/Writer: print - Sign flags" $scope) {
 
 TEST_fn_("io/Writer: print - Brace escaping" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test escaped braces
     try_(io_Writer_print(writer, u8_l("{{")));
@@ -445,9 +445,9 @@ TEST_fn_("io/Writer: print - Brace escaping" $scope) {
 
 TEST_fn_("io/Writer: print - Multiple arguments" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test multiple different types
     try_(io_Writer_print(writer, u8_l("{:d} {:c} {:x} {:s}"), 42, 'A', 255U, u8_l("test")));
@@ -459,9 +459,9 @@ TEST_fn_("io/Writer: print - Multiple arguments" $scope) {
 
 TEST_fn_("io/Writer: print - Malformed format specifiers" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test missing closing brace - should write literally
     try_(io_Writer_print(writer, u8_l("{")));
@@ -489,9 +489,9 @@ TEST_fn_("io/Writer: print - Malformed format specifiers" $scope) {
 
 TEST_fn_("io/Writer: print - Empty format string" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test empty format string
     try_(io_Writer_print(writer, u8_l("")));
@@ -500,9 +500,9 @@ TEST_fn_("io/Writer: print - Empty format string" $scope) {
 
 TEST_fn_("io/Writer: print - Zero values" $scope) {
     T_use_A$(256, u8);
-    A$256$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$256$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test zero in different bases
     try_(io_Writer_print(writer, u8_l("{:d}"), 0));
@@ -538,9 +538,9 @@ TEST_fn_("io/Writer: print - Zero values" $scope) {
 
 TEST_fn_("io/Writer: print - Complex format combinations" $scope) {
     T_use_A$(512, u8);
-    A$512$u8 mem = A_zero();
-    test_Buf buf = test_Buf_init(A_ref$((S$u8)(mem)));
-    io_Writer writer = test_Buf_writer(&buf);
+    var_(mem, A$512$u8) $undefined;
+    var_(buf, test_Buf) = test_Buf_init(A_ref$((S$u8)(mem)));
+    let writer = test_Buf_writer(&buf);
 
     // Test a complex real-world-like format string
     let name = u8_l("Alice");

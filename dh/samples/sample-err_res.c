@@ -65,7 +65,7 @@ $static fn_((processResult(my_math_Res result))(void)) {
 T_use_E$($set(mem_E)(S$i32));
 T_use$((i32)(mem_Alctr_alloc, mem_Alctr_free));
 // Function demonstrating errdefer_
-$static var_(memory, A$$(1024, u8)) = A_zero();
+$static var_(memory, A$$(1024, u8)) $undefined_static;
 $attr($must_check)
 $static fn_((performOperation(i32 a, i32 b))(my_math_E$i32) $guard) {
     // Allocate resources

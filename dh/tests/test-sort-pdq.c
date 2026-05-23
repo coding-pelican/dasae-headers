@@ -39,7 +39,7 @@ TEST_fn_("sort: pdq - regression input from 5823 coordinate compression" $scope)
 } $unscoped(TEST_fn);
 
 TEST_fn_("sort: pdq - partial insertion shift regression with duplicates" $scope) {
-    var_(data, A$$(162, i32)) = A_zero();
+    var_(data, A$$(162, i32)) $undefined;
 
     using_(var_(written, usize) = 0) {
         *A_at((data)[written++]) = 0;
@@ -71,7 +71,7 @@ TEST_fn_("sort: pdq - partial insertion shift regression with duplicates" $scope
 } $unscoped(TEST_fn);
 
 TEST_fn_("sort: pdq - deterministic duplicates and patterned values" $scope) {
-    var_(data, A$$(257, i32)) = A_zero();
+    var_(data, A$$(257, i32)) $undefined;
 
     using_(var state = u32_(0x9E3779B9u)) {
         for_(($s(A_ref(data)), $rf(0))(val, i)) {
@@ -102,14 +102,13 @@ $static fn_((test_sort_pdq_IdxCtx_swap(usize lhs, usize rhs, u_V$raw raw_ctx))(v
     claim_assert(ctx.range.begin <= rhs), claim_assert(rhs < ctx.range.end);
     return pri_swap(P_at((ctx.data)[lhs]), P_at((ctx.data)[rhs]));
 };
-$begin_supress_frame_larger_than
 TEST_fn_("sort: pdqIdx - non-zero range stays in bounds and sorts range" $scope) {
     enum {
         data_len = usize_(2000),
         sort_begin = usize_(1118),
         sort_end = usize_(1764),
     };
-    var_(data, A$$(data_len, i32)) = A_zero();
+    $static var_(data, A$$(data_len, i32)) $undefined_static;
 
     for_(($s(A_ref(data)), $rf(0))(val, i)) {
         *val = intCast$((i32)((i * 1103515245u + 12345u) % 1009u)) - 504;
@@ -135,4 +134,3 @@ TEST_fn_("sort: pdqIdx - non-zero range stays in bounds and sorts range" $scope)
         cmp_u_ord$(i32)
     )));
 } $unscoped(TEST_fn);
-$end_supress

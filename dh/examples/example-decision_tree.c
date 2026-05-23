@@ -234,7 +234,7 @@ fn_((TreeNode_predict(const TreeNode* target, S_const$f32 features))(i32)) {
 
 fn_((TreeNode_printRecur(const TreeNode* target, u32 depth))(void)) /* NOLINT(misc-no-recursion) */ {
     claim_assert_nonnull(target);
-    var_(indent, A$$(64, u8)) = A_zero();
+    var_(indent, A$$(64, u8)) $undefined;
     {
         u32 n = depth <= 31 ? depth * 2 : 62;
         for (u32 i = 0; i < n; i += 2) {
@@ -329,7 +329,7 @@ fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_header))(E
     defer_(fs_File_close(file));
 
     let unbufd = fs_File_reader(file);
-    var_(chunk, A$$(4096, u8)) = A_zero();
+    var_(chunk, A$$(4096, u8)) $undefined;
     var file_bytes = try_(ArrList_init$u8(gpa, as$(usize)(4096)));
     errdefer_($ignore, ArrList_fini$u8(&file_bytes, gpa));
     while (true) {
