@@ -13,9 +13,9 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define exec_Fiber_stack_reserve_size (usize_(1) * 1024 * 1024)
-#define exec_Fiber_stack_commit_size (usize_(256) * 1024)
-#define exec_Fiber_stack_grow_size (usize_(64) * 1024)
-#define exec_Fiber_stack_guard_size mem_page_size
+#define exec_Fiber_stack_commit_size (usize_(1) * mem_page_size)
+#define exec_Fiber_stack_grow_size (usize_(1) * mem_page_size)
+#define exec_Fiber_stack_guard_size (usize_(1) * mem_page_size)
 #define exec_Fiber_stack_size exec_Fiber_stack_reserve_size
 T_alias$((exec_Fiber_StackPolicy)(struct exec_Fiber_StackPolicy {
     var_(reserve_size, usize);

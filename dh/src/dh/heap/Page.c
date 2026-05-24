@@ -40,10 +40,10 @@ $static fn_((heap_Page__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 fn_((heap_Page_alctr(heap_Page* self))(mem_Alctr)) {
     // VTable for Page allocator
     $static let_(vtbl, mem_Alctr_VTbl) = {
-        .alloc = heap_Page__alloc,
-        .resize = heap_Page__resize,
-        .remap = heap_Page__remap,
-        .free = heap_Page__free,
+        .allocFn = heap_Page__alloc,
+        .resizeFn = heap_Page__resize,
+        .remapFn = heap_Page__remap,
+        .freeFn = heap_Page__free,
     };
     return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,

@@ -25,15 +25,15 @@ extern "C" {
 /* --- Fixed Stream ---*/
 
 typedef struct io_Fixed {
-    S_const$u8 buf;
-    usize pos;
+    var_(buf, S_const$u8);
+    var_(pos, usize);
 } io_Fixed;
 typedef union io_FixedMut {
     struct {
-        S$u8 buf;
-        usize pos;
+        var_(buf, S$u8);
+        var_(pos, usize);
     };
-    io_Fixed as_const;
+    var_(as_const, io_Fixed);
 } io_FixedMut;
 /// Initialize fixed buffer for reading
 $extern fn_((io_Fixed_reading(S_const$u8 buf))(io_Fixed));
@@ -47,7 +47,7 @@ $extern fn_((io_Fixed_reset(io_Fixed* self))(void));
 /* --- Fixed Stream Reader ---*/
 
 typedef struct io_Fixed_Reader {
-    io_Fixed stream;
+    var_(stream, io_Fixed);
 } io_Fixed_Reader;
 /// Initialize fixed reader with fixed buffer
 $extern fn_((io_Fixed_Reader_init(io_Fixed stream))(io_Fixed_Reader));
@@ -57,7 +57,7 @@ $extern fn_((io_Fixed_reader(io_Fixed_Reader* self))(io_Reader));
 /* --- Fixed Stream Writer ---*/
 
 typedef struct io_Fixed_Writer {
-    io_FixedMut stream;
+    var_(stream, io_FixedMut);
 } io_Fixed_Writer;
 /// Initialize fixed writer with fixed buffer
 $extern fn_((io_Fixed_Writer_init(io_FixedMut stream))(io_Fixed_Writer));

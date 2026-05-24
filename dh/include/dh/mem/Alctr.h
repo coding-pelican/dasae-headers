@@ -112,10 +112,10 @@ $extern fn_((mem_Alctr_dupe($traced mem_Alctr self, u_S_const$raw src))(mem_E$u_
 #define T_use_mem_Alctr_dupe$(_T...) __comp_gen__T_use_mem_Alctr_dupe$(_T)
 
 struct mem_Alctr_VTbl {
-    fn_(((*alloc)(P$raw ctx, usize len, mem_Align align))(O$P$u8));
-    fn_(((*resize)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
-    fn_(((*remap)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
-    fn_(((*free)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
+    fn_(((*allocFn)(P$raw ctx, usize len, mem_Align align))(O$P$u8));
+    fn_(((*resizeFn)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
+    fn_(((*remapFn)(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8));
+    fn_(((*freeFn)(P$raw ctx, S$u8 buf, mem_Align buf_align))(void));
 };
 
 /// Default VTable functions for no-op fallbacks
@@ -138,19 +138,19 @@ $extern fn_((mem_Alctr_VTbl_unreachableFree(P$raw ctx, S$u8 buf, mem_Align buf_a
 fn_((mem_Alctr_isValid(mem_Alctr self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
-        && isNonnull(self.vtbl->alloc)
-        && isNonnull(self.vtbl->resize)
-        && isNonnull(self.vtbl->remap)
-        && isNonnull(self.vtbl->free);
+        && isNonnull(self.vtbl->allocFn)
+        && isNonnull(self.vtbl->resizeFn)
+        && isNonnull(self.vtbl->remapFn)
+        && isNonnull(self.vtbl->freeFn);
 };
 
 fn_((mem_Alctr_assertValid(P$raw ctx, P_const$$(mem_Alctr_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
-    claim_assert_nonnull(vtbl->alloc);
-    claim_assert_nonnull(vtbl->resize);
-    claim_assert_nonnull(vtbl->remap);
-    claim_assert_nonnull(vtbl->free);
+    claim_assert_nonnull(vtbl->allocFn);
+    claim_assert_nonnull(vtbl->resizeFn);
+    claim_assert_nonnull(vtbl->remapFn);
+    claim_assert_nonnull(vtbl->freeFn);
 };
 
 fn_((mem_Alctr_ensureValid(mem_Alctr self))(mem_Alctr)) {

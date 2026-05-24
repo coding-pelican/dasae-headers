@@ -5,7 +5,7 @@
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-22 (date of creation)
- * @updated 2026-02-06 (date of last update)
+ * @updated 2026-05-24 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io
  *
@@ -23,15 +23,10 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
+#include "base.h"
 #include "../fs/File.h"
 
 /*========== Macros and Declarations ========================================*/
-
-errset_((io_E)(
-    IOUnexpectedEof,
-    IOBufferTooSmall
-));
 
 $extern fn_((io_getStdIn(void))(fs_File));
 $extern fn_((io_getStdOut(void))(fs_File));

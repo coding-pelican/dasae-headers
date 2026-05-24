@@ -211,6 +211,7 @@ Macros:
   - "$unguarded(keyword)=/**/"
   - "$end(keyword)=/**/"
   - "$deferral(keyword)=/**/"
+  - "$suppressed=/**/"
   - "$listed=/**/"
 
   # Switch, Match
@@ -291,20 +292,6 @@ Macros:
   # - "$break_ok(Expr)=return Expr"
   # - "$break_ok_void(Expr)=return Expr"
   # - "$break_err(Expr)=return Expr"
-
-  # - "$supress_compound_token_split_by_macro(_Code)=_Code"
-  # - "$supress_implicit_int_conversion(_Code)=_Code"
-  # - "$supress_pointer_arith(_Code)=_Code"
-  # - "$supress_cast_align(_Code)=_Code"
-  # - "$supress_cast_qual(_Code)=_Code"
-  # - "$supress_unterminated_string_initialization(_Code)=_Code"
-  # - "$supress_return_stack_address(_Code)=_Code"
-  # - "$supress_frame_larger_than(_Code)=_Code"
-  # - "$supress_infinite_recursion(_Code)=_Code"
-  # - "$supress_loop_analysis(_Code)=_Code"
-  # - "$supress_switch_enum(_Code)=_Code"
-  # - "$supress_thread_safety(_Code)=_Code"
-  # - "$supress_microsoft_anon_tag(_Code)=_Code"
 
 AttributeMacros:
   - $attr

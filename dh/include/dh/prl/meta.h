@@ -167,11 +167,11 @@ typedef struct u_E$raw {
 #define u_make u_allocV
 #define u_create(_type...) (u_make(_type).ref)
 
-#define u_deref(_p...) $supress_cast_qual(T_switch$((TypeOf(_p))( \
+#define u_deref(_p...) $suppress_cast_qual(T_switch$((TypeOf(_p))( \
     T_case$((u_P_const$raw)(*as$(u_V$raw*)((_p).inner))), \
     T_case$((u_P$raw)(*as$(u_V$raw*)((_p).inner))) \
 )))
-#define u_load(_v /*: u_V_const$T|u_V$T*/... /*(u_T)*/) $supress_cast_qual(({ \
+#define u_load(_v /*: u_V_const$T|u_V$T*/... /*(u_T)*/) $suppress_cast_qual(({ \
     const u_V$raw __v = _v; \
     const u_V$raw __b = u_allocV(__v.inner_type); \
     $ignore_void raw_memcpy(__b.inner, __v.inner, __v.inner_type.size); \
@@ -214,7 +214,7 @@ typedef struct u_E$raw {
 #define ptr$u_S u_ptrS
 #define u_ptrS(_s...) __step__u_ptrS(_s)
 #define __step__u_ptrS(_s...) ____u_ptrS(pp_uniqTok(s), _s)
-#define ____u_ptrS(__s, _s...) $supress_cast_qual(({ \
+#define ____u_ptrS(__s, _s...) $suppress_cast_qual(({ \
     let_(__s, TypeOf(_s)) = _s; \
     T_switch$((TypeOf(_s))( \
         T_case$((u_S_const$raw)(l$((u_P_const$raw){ .raw = as$(const u8*)(__s.ptr), .type = __s.type }))), \
@@ -234,7 +234,7 @@ typedef struct u_E$raw {
 
 #define at$u_S u_atS
 #define u_atS(_s, _idx...) __u_atS(pp_uniqTok(s), pp_uniqTok(idx), pp_uniqTok(stride), _s, _idx)
-#define __u_atS(__s, __idx, __stride, _s, _idx...) $supress_cast_qual(({ \
+#define __u_atS(__s, __idx, __stride, _s, _idx...) $suppress_cast_qual(({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__idx, usize) = _idx; \
     claim_assert_fmt(__idx < u_lenS(__s), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, u_lenS(__s)); \
@@ -251,7 +251,7 @@ typedef struct u_E$raw {
     )); \
 }))
 #if UNUSED_CODE
-#define __u_atS(__s, __idx, __stride, _s, _idx...) $supress_cast_qual({ \
+#define __u_atS(__s, __idx, __stride, _s, _idx...) $suppress_cast_qual({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__idx, usize) = _idx; \
     claim_assert_fmt(__idx < u_lenS(__s), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, u_lenS(__s)); \
@@ -270,7 +270,7 @@ typedef struct u_E$raw {
 #endif /* UNUSED_CODE */
 
 #define u_sliceP(_p, _range...) __u_sliceP(pp_uniqTok(p), pp_uniqTok(range), pp_uniqTok(stride), _p, _range)
-#define __u_sliceP(__p, __range, __stride, _p, _range...) $supress_cast_qual(({ \
+#define __u_sliceP(__p, __range, __stride, _p, _range...) $suppress_cast_qual(({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__range, R) = _range; \
     claim_assert_fmt(isValidR(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
@@ -289,7 +289,7 @@ typedef struct u_E$raw {
     )); \
 }))
 #define u_prefixP(_p, _end...) __u_prefixP(pp_uniqTok(p), pp_uniqTok(end), _p, _end)
-#define __u_prefixP(__p, __end, _p, _end...) $supress_cast_qual(({ \
+#define __u_prefixP(__p, __end, _p, _end...) $suppress_cast_qual(({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__end, usize) = _end; \
     T_switch$((TypeOf(__p))( \
@@ -306,7 +306,7 @@ typedef struct u_E$raw {
     )); \
 }))
 #define u_suffixP(_p, _begin...) __u_suffixP(pp_uniqTok(p), pp_uniqTok(begin), pp_uniqTok(stride), _p, _begin)
-#define __u_suffixP(__p, __begin, __stride, _p, _begin...) $supress_cast_qual(({ \
+#define __u_suffixP(__p, __begin, __stride, _p, _begin...) $suppress_cast_qual(({ \
     let_(__p, TypeOf(_p)) = _p; \
     let_(__begin, usize) = _begin; \
     let_(__stride, usize) = u_stride_static(__p.type); \
@@ -325,7 +325,7 @@ typedef struct u_E$raw {
 }))
 
 #define u_sliceS(_s, _range...) __u_sliceS(pp_uniqTok(s), pp_uniqTok(range), pp_uniqTok(stride), _s, _range)
-#define __u_sliceS(__s, __range, __stride, _s, _range...) $supress_cast_qual(({ \
+#define __u_sliceS(__s, __range, __stride, _s, _range...) $suppress_cast_qual(({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__range, R) = _range; \
     claim_assert_fmt(isValidR(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
@@ -342,7 +342,7 @@ typedef struct u_E$raw {
     }); \
 }))
 #define u_prefixS(_s, _end) __u_prefixS(pp_uniqTok(s), pp_uniqTok(end), _s, _end)
-#define __u_prefixS(__s, __end, _s, _end...) $supress_cast_qual(({ \
+#define __u_prefixS(__s, __end, _s, _end...) $suppress_cast_qual(({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__end, usize) = _end; \
     claim_assert_fmt(__end <= u_lenS(__s), "Invalid slice range: end({:uz}) > len({:uz})", __end, u_lenS(__s)); \
@@ -356,7 +356,7 @@ typedef struct u_E$raw {
     }); \
 }))
 #define u_suffixS(_s, _begin) __u_suffixS(pp_uniqTok(s), pp_uniqTok(begin), pp_uniqTok(stride), _s, _begin)
-#define __u_suffixS(__s, __begin, __stride, _s, _begin...) $supress_cast_qual(({ \
+#define __u_suffixS(__s, __begin, __stride, _s, _begin...) $suppress_cast_qual(({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__begin, usize) = _begin; \
     claim_assert_fmt(__begin <= u_lenS(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, u_lenS(__s)); \
@@ -761,21 +761,21 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
     }))) \
 ))
 
-#define u_anyV(_v...) $supress_cast_qual(({ \
+#define u_anyV(_v...) $suppress_cast_qual(({ \
     let_(__p_v, TypeOfUnqual(_v)*) = &copy(_v); \
     l$((u_V$raw){ .inner = ptrCast$((P$raw)(__p_v)), .inner_type = typeInfo$(TypeOf(*__p_v)) }); \
 }))
-#define u_anyA(_a...) $supress_cast_qual(({ \
+#define u_anyA(_a...) $suppress_cast_qual(({ \
     let_(__p_a, TypeOfUnqual(_a)*) = &copy(_a); \
     l$((u_A$raw){ .inner = A_ref(*__p_a).as_raw, .inner_type = typeInfo$(TypeOf(*__p_a->val)) }); \
 }))
-#define u_anyO(_o...) $supress_cast_qual(({ \
+#define u_anyO(_o...) $suppress_cast_qual(({ \
     let_(__p_o, TypeOfUnqual(_o)*) = &copy(_o); \
     __p_o->is_some \
         ? (u_O$raw)some(u_anyV(__p_o->payload.some)) \
         : (u_O$raw)none(); \
 }))
-#define u_anyE(_e...) $supress_cast_qual(({ \
+#define u_anyE(_e...) $suppress_cast_qual(({ \
     let_(__p_e, TypeOfUnqual(_e)*) = &copy(_e); \
     __p_e->is_ok \
         ? (u_E$raw)ok(u_anyV(__p_e->payload.ok)) \
@@ -789,9 +789,9 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 #define __step_inline__u_castP$(...) __VA_ARGS__
 #define __param_parse__u_castP$(...) __VA_ARGS__,
 #if UNUSED_CODE
-#define __emit_inline__u_castP$(_PT, _meta...) $supress_cast_qual((*as$(_PT*)(_meta.inner)))
+#define __emit_inline__u_castP$(_PT, _meta...) $suppress_cast_qual((*as$(_PT*)(_meta.inner)))
 #endif /* UNUSED_CODE */
-#define __emit_inline__u_castP$(_PT, _meta...) $supress_cast_qual(({ \
+#define __emit_inline__u_castP$(_PT, _meta...) $suppress_cast_qual(({ \
     typedef _PT CastType; \
     $maybe_unused typedef DerefType$(CastType) DerefType; \
     $maybe_unused typedef DerefType InnerType; \
@@ -806,16 +806,16 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
     __step_inline__u_castV$(pp_defer(__emit_inline__u_castV$)(__param_parse__u_castV$ __VA_ARGS__))
 #define __step_inline__u_castV$(...) __VA_ARGS__
 #define __param_parse__u_castV$(...) __VA_ARGS__,
-#define __emit_inline__u_castV$(_T, _meta...) $supress_cast_qual((*as$(_T*)(_meta.inner)))
+#define __emit_inline__u_castV$(_T, _meta...) $suppress_cast_qual((*as$(_T*)(_meta.inner)))
 
 #define u_castS$(/*(_T)(_Expr...)*/... /*(S_const$(_T))*/) \
     __step_inline__u_castS$(pp_defer(__emit_inline__u_castS$)(__param_parse__u_castS$ __VA_ARGS__))
 #define __step_inline__u_castS$(...) __VA_ARGS__
 #define __param_parse__u_castS$(...) __VA_ARGS__,
 #if UNUSED_CODE
-#define __emit_inline__u_castS$(_ST, _meta...) $supress_cast_qual((*as$(_ST*)(_meta.inner)))
+#define __emit_inline__u_castS$(_ST, _meta...) $suppress_cast_qual((*as$(_ST*)(_meta.inner)))
 #endif /* UNUSED_CODE */
-#define __emit_inline__u_castS$(_ST, _meta...) $supress_cast_qual(({ \
+#define __emit_inline__u_castS$(_ST, _meta...) $suppress_cast_qual(({ \
     typedef _ST CastType; \
     $maybe_unused typedef FieldType$(CastType, ptr) PtrType; \
     $maybe_unused typedef DerefType$(PtrType) DerefType; \
@@ -831,13 +831,13 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
     __step_inline__u_castA$(pp_defer(__emit_inline__u_castA$)(__param_parse__u_castA$ __VA_ARGS__))
 #define __step_inline__u_castA$(...) __VA_ARGS__
 #define __param_parse__u_castA$(...) __VA_ARGS__,
-#define __emit_inline__u_castA$(_ANT, _meta...) $supress_cast_qual((*as$(_ANT*)(_meta.inner)))
+#define __emit_inline__u_castA$(_ANT, _meta...) $suppress_cast_qual((*as$(_ANT*)(_meta.inner)))
 
 #define u_castO$(/*(_OT)(_Expr...)*/... /*(_OT)*/) \
     __step__u_castO$__expand(pp_defer(__step__u_castO$)(__step__u_castO$__parseOT __VA_ARGS__))
 #define __step__u_castO$__expand(...) __VA_ARGS__
 #define __step__u_castO$__parseOT(_OT...) pp_uniqTok(meta), _OT,
-#define __step__u_castO$(__meta, _OT, _Expr...) $supress_cast_qual(({ \
+#define __step__u_castO$(__meta, _OT, _Expr...) $suppress_cast_qual(({ \
     typedef _OT O$Ret$u_castO$; \
     $maybe_unused typedef O$Ret$u_castO$ CastType; \
     $maybe_unused typedef FieldType$(CastType, payload.some) SomeType; \
@@ -852,7 +852,7 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
     __step__u_castE$__expand(pp_defer(__step__u_castE$)(__step__u_castE$__parseET __VA_ARGS__))
 #define __step__u_castE$__expand(...) __VA_ARGS__
 #define __step__u_castE$__parseET(_ET...) pp_uniqTok(meta), _ET,
-#define __step__u_castE$(__meta, _ET, _Expr...) $supress_cast_qual(({ \
+#define __step__u_castE$(__meta, _ET, _Expr...) $suppress_cast_qual(({ \
     typedef _ET E$Ret$u_castE$; \
     $maybe_unused typedef E$Ret$u_castE$ CastType; \
     $maybe_unused typedef FieldType$(CastType, payload.err) ErrType; \

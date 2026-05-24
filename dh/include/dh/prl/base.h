@@ -74,7 +74,7 @@ extern "C" {
 #define comp_syn__u16_c(_literal) l$((u16){ u##_literal })
 #define comp_syn__u32_c(_literal) l$((u32){ U##_literal })
 
-#define comp_syn__u8_a(_literal...) $supress_unterminated_string_initialization( \
+#define comp_syn__u8_a(_literal...) $suppress_unterminated_string_initialization( \
     l$((A$$(sizeOf$(TypeOf(_literal)) - 1, u8)){ .val = { _literal } }) \
 )
 #define comp_syn__u8_s(_literal) l$((S$u8){ .ptr = l$((u8[]){ "" _literal }), .len = sizeOf$(TypeOf(_literal)) - 1 })

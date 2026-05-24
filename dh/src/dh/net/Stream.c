@@ -86,7 +86,7 @@ fn_((net_Stream_IO_reader(net_Stream_IO* self))(io_Reader)) {
     claim_assert_nonnull(self);
     return (io_Reader){
         .ctx = self,
-        .read = net_Stream_IO__read,
+        .readFn = net_Stream_IO__read,
     };
 }
 
@@ -94,6 +94,6 @@ fn_((net_Stream_IO_writer(net_Stream_IO* self))(io_Writer)) {
     claim_assert_nonnull(self);
     return (io_Writer){
         .ctx = self,
-        .write = net_Stream_IO__write,
+        .writeFn = net_Stream_IO__write,
     };
 }

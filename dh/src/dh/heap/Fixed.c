@@ -19,10 +19,10 @@ $static fn_((heap_Fixed__sliContainsSli(S_const$u8 container, S_const$u8 sli))(b
 fn_((heap_Fixed_alctr(heap_Fixed* self))(mem_Alctr)) {
     // VTable for Fixed buf allocator
     $static let_(vtbl, mem_Alctr_VTbl) = {
-        .alloc = heap_Fixed__alloc,
-        .resize = heap_Fixed__resize,
-        .remap = heap_Fixed__remap,
-        .free = heap_Fixed__free,
+        .allocFn = heap_Fixed__alloc,
+        .resizeFn = heap_Fixed__resize,
+        .remapFn = heap_Fixed__remap,
+        .freeFn = heap_Fixed__free,
     };
     return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,
@@ -33,10 +33,10 @@ fn_((heap_Fixed_alctr(heap_Fixed* self))(mem_Alctr)) {
 fn_((heap_Fixed_thrdSafeAlctr(heap_Fixed* self))(mem_Alctr)) {
     /* Thread-safe VTable for FixedBuf allocator */
     $static let_(vtbl, mem_Alctr_VTbl) = {
-        .alloc = heap_Fixed__thrdSafeAlloc,
-        .resize = mem_Alctr_VTbl_noResize,
-        .remap = mem_Alctr_VTbl_noRemap,
-        .free = mem_Alctr_VTbl_noFree,
+        .allocFn = heap_Fixed__thrdSafeAlloc,
+        .resizeFn = mem_Alctr_VTbl_noResize,
+        .remapFn = mem_Alctr_VTbl_noRemap,
+        .freeFn = mem_Alctr_VTbl_noFree,
     };
     return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,

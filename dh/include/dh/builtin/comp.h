@@ -397,90 +397,122 @@ extern "C" {
     _Pragma(_ctx) \
     _code \
     _Pragma(_pop) /* clang-format on */
-#define $supress_compound_token_split_by_macro(...) $pragma_guard_( \
+
+#define $suppress_(_diagnostic...) pp_cat($suppress_, _diagnostic)
+
+#define $suppress_compound_token_split_by_macro(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcompound-token-split-by-macro\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_implicit_int_conversion(...) $pragma_guard_( \
+#define $suppress_implicit_int_conversion(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wimplicit-int-conversion\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_pointer_arith(...) $pragma_guard_( \
+#define $suppress_pointer_arith(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wpointer-arith\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_cast_align(...) $pragma_guard_( \
+#define $suppress_cast_align(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcast-align\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_cast_qual(...) $pragma_guard_( \
+#define $suppress_cast_qual(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wcast-qual\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_unterminated_string_initialization(...) $pragma_guard_( \
+
+#define $suppress_unterminated_string_initialization(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wunterminated-string-initialization\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_return_stack_address(...) $pragma_guard_( \
+#define $suppress_return_stack_address(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wreturn-stack-address\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_frame_larger_than(...) $pragma_guard_( \
+#define $suppress_frame_larger_than(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wframe-larger-than\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $begin_supress_frame_larger_than /* clang-format off */ \
-    _Pragma("clang diagnostic push") \
-    _Pragma("clang diagnostic ignored \"-Wframe-larger-than\"")
-#define $end_supress \
-    _Pragma("clang diagnostic pop") /* clang-format on */
-
-#define $supress_infinite_recursion(...) $pragma_guard_( \
+#define $suppress_infinite_recursion(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Winfinite-recursion\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_loop_analysis(...) $pragma_guard_( \
+#define $suppress_loop_analysis(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wloop-analysis\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_switch_enum(...) $pragma_guard_( \
+#define $suppress_switch_enum(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wswitch-enum\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_thread_safety(...) $pragma_guard_( \
+#define $suppress_thread_safety(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wthread-safety\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
-#define $supress_microsoft_anon_tag(...) $pragma_guard_( \
+#define $suppress_microsoft_anon_tag(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wmicrosoft-anon-tag\"", \
     "clang diagnostic pop", \
     __VA_ARGS__ \
 )
+
+#define $suppressing_(_diagnostic...) /* clang-format off */ \
+    _Pragma("clang diagnostic push") \
+    pp_foreach(__each__$suppressing_, ~, _diagnostic)
+#define __each__$suppressing_(_$ignored, _diagnostic) \
+    pp_cat(__$suppress_, _diagnostic)()
+#define $suppressed \
+    _Pragma("clang diagnostic pop") /* clang-format on */
+#define __$suppress_compound_token_split_by_macro() \
+    _Pragma("clang diagnostic ignored \"-Wcompound-token-split-by-macro\"")
+#define __$suppress_implicit_int_conversion() \
+    _Pragma("clang diagnostic ignored \"-Wimplicit-int-conversion\"")
+#define __$suppress_pointer_arith() \
+    _Pragma("clang diagnostic ignored \"-Wpointer-arith\"")
+#define __$suppress_cast_align() \
+    _Pragma("clang diagnostic ignored \"-Wcast-align\"")
+#define __$suppress_cast_qual() \
+    _Pragma("clang diagnostic ignored \"-Wcast-qual\"")
+#define __$suppress_unterminated_string_initialization() \
+    _Pragma("clang diagnostic ignored \"-Wunterminated-string-initialization\"")
+#define __$suppress_return_stack_address() \
+    _Pragma("clang diagnostic ignored \"-Wreturn-stack-address\"")
+#define __$suppress_frame_larger_than() \
+    _Pragma("clang diagnostic ignored \"-Wframe-larger-than\"")
+#define __$suppress_infinite_recursion() \
+    _Pragma("clang diagnostic ignored \"-Winfinite-recursion\"")
+#define __$suppress_loop_analysis() \
+    _Pragma("clang diagnostic ignored \"-Wloop-analysis\"")
+#define __$suppress_switch_enum() \
+    _Pragma("clang diagnostic ignored \"-Wswitch-enum\"")
+#define __$suppress_thread_safety() \
+    _Pragma("clang diagnostic ignored \"-Wthread-safety\"")
+#define __$suppress_microsoft_anon_tag() \
+    _Pragma("clang diagnostic ignored \"-Wmicrosoft-anon-tag\"")
 
 /*========== Macros and Definitions =========================================*/
 

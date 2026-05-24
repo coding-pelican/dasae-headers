@@ -19,7 +19,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define T_alias$(/*(_Alias)(_T)*/...) __stmt__T_alias$(__VA_ARGS__)
-#define T_embed$(_T...) $supress_microsoft_anon_tag(_T)
+#define T_embed$(_T...) $suppress_microsoft_anon_tag(_T)
 
 #define $spec(_T, _attr...) (_T, _attr)
 #define $via(_Use, _TypeStep...) ((_Use), (_TypeStep))

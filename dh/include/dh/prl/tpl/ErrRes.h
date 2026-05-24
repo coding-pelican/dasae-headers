@@ -224,7 +224,7 @@ typedef union E$Void E$Void, E$void;
 })
 #define __param_expand__catch_(...) __VA_ARGS__, pp_expand
 #define __block_inline__catch_(_Expr, _Payload_Capture, _DefaultExpr_OR_Body...) __block_inline1__catch_(pp_uniqTok(result), _Expr, _Payload_Capture, ({ _DefaultExpr_OR_Body; }))
-#define __block_inline1__catch_(__result, _Expr, _Payload_Capture, _DefaultExpr_OR_Body...) $supress_compound_token_split_by_macro( \
+#define __block_inline1__catch_(__result, _Expr, _Payload_Capture, _DefaultExpr_OR_Body...) $suppress_compound_token_split_by_macro( \
     ({ \
         var __result = _Expr; \
         if (isErr(__result)) { \

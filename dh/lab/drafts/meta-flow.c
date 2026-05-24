@@ -325,7 +325,7 @@ T_alias$((u_S$T)(union u_S$T {
     u_stride_static(__type); \
 })
 #define u_S_at(_s, _idx...) __u_S_at(pp_uniqTok(s), pp_uniqTok(idx), pp_uniqTok(stride), _s, _idx)
-#define __u_S_at(__s, __idx, __stride, _s, _idx...) $supress_cast_qual(({ \
+#define __u_S_at(__s, __idx, __stride, _s, _idx...) $suppress_cast_qual(({ \
     let_(__s, TypeOf(_s)) = _s; \
     let_(__idx, usize) = _idx; \
     claim_assert_fmt(__idx < u_lenS(__s), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, u_lenS(__s)); \

@@ -639,14 +639,14 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     $static fn_((tpl$(HashSet_fetchPut, _K)(HashSet$(_K)* self, mem_Alctr gpa, _K key))(E$($set(mem_E)(O$(HashSet_Unit$(_K))))) $scope) { \
         let opt_sgl = try_(HashSet_fetchPut(self->as_raw, gpa, u_anyV(key), l0$((HashSet_Unit$(_K))).as_raw)); \
         let sgl = orelse_((opt_sgl)(return_ok(none()))); \
-        return_ok(some(*as$(HashSet_Unit$(_K)*)(sgl))); \
+        return_ok(some(*ptrAlignCast$((HashSet_Unit$(_K)*)(sgl)))); \
     } $unscoped(fn)
 #define T_use_HashSet_fetchPutWithin$(_K...) \
     $attr($inline_always) \
     $static fn_((tpl$(HashSet_fetchPutWithin, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Unit$(_K))) $scope) { \
         let opt_sgl = HashSet_fetchPutWithin(self->as_raw, u_anyV(key), l0$((HashSet_Unit$(_K))).as_raw); \
         let sgl = orelse_((opt_sgl)(return_none())); \
-        return_some(*as$(HashSet_Unit$(_K)*)(sgl)); \
+        return_some(*ptrAlignCast$((HashSet_Unit$(_K)*)(sgl))); \
     } $unscoped(fn)
 
 #define T_use_HashSet_ensure$(_K...) \
@@ -670,7 +670,7 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     $static fn_((tpl$(HashSet_fetchRemove, _K)(HashSet$(_K)* self, _K key))(O$(HashSet_Unit$(_K))) $scope) { \
         let opt_sgl = HashSet_fetchRemove(self->as_raw, u_anyV(key), l0$((HashSet_Unit$(_K))).as_raw); \
         let sgl = orelse_((opt_sgl)(return_none())); \
-        return_some(*as$(HashSet_Unit$(_K)*)(sgl)); \
+        return_some(*ptrAlignCast$((HashSet_Unit$(_K)*)(sgl))); \
     } $unscoped(fn)
 #define T_use_HashSet_removeByPtr$(_K...) \
     $attr($inline_always) \

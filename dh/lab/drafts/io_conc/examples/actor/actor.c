@@ -162,14 +162,14 @@ fn_((actor_Unit_send(actor_Unit* self, actor_Msg msg))(mem_E$void) $scope) {
     }
 
     let task = unwrap_(self->task);
-    $supress_switch_enum(switch (task->state) {
-        case exec_Task_State_done:
-        case exec_Task_State_canceled: {
-            return_err(E_cause$Unexpected());
-        } break;
-        default: {
-        } break;
-    });
+    switch ($suppress_(switch_enum)(task->state)) {
+    case exec_Task_State_done:
+    case exec_Task_State_canceled: {
+        return_err(E_cause$Unexpected());
+    } break;
+    default: {
+    } break;
+    };
 
     let node = try_(actor_Sys__takeMsgNode(self->sys));
     *node = ListDbl_Adp_init$actor_Msg(msg);

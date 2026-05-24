@@ -2,6 +2,7 @@
 #include <dansi-core.h>
 #include <dh/io/Fixed.h>
 #include <dh/mem/common.h>
+#include "test-support.h"
 
 TEST_fn_("dansi-core/device: parse status report" $scope) {
     let ok = try_(dansi_device_parseStatusReport(u8_l("\x1b[0n")));
@@ -15,6 +16,19 @@ TEST_fn_("dansi-core/device: receive and parse status report" $scope) {
     var reader = io_Fixed_Reader_init(io_Fixed_reading(u8_l("\x1b[0n")));
     var_(buf, dansi_device_StatusReportBuf) $undefined;
     let report = try_(dansi_device_receiveStatusReport(io_Fixed_reader(&reader), A_ref$((S$u8)(buf))));
+    let status = try_(dansi_device_parseStatusReport(report.as_const));
+    try_(TEST_expect(status == dansi_device_Status_ok));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("dansi-core/device: receive status report split across reads" $scope) {
+    var reader = (dansi_test_ChunkReader){
+        .bytes = u8_l("\x1b[0n"),
+        .pos = 0,
+        .chunk = 1,
+    };
+    var_(buf, dansi_device_StatusReportBuf) $undefined;
+    let report = try_(dansi_device_receiveStatusReport(dansi_test_ChunkReader_reader(&reader), A_ref$((S$u8)(buf))));
     let status = try_(dansi_device_parseStatusReport(report.as_const));
     try_(TEST_expect(status == dansi_device_Status_ok));
     return_ok({});

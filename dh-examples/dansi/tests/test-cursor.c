@@ -1,6 +1,7 @@
 #include <dh-main.h>
 #include <dansi-core.h>
 #include <dh/io/Fixed.h>
+#include "test-support.h"
 
 TEST_fn_("dansi-core/cursor: parse cursor position report" $scope) {
     let pos = try_(dansi_cursor_parsePosReport(u8_l("\x1b[12;34R")));
@@ -16,5 +17,19 @@ TEST_fn_("dansi-core/cursor: read cursor position report from reader" $scope) {
     let pos = try_(dansi_cursor_parsePosReport(report.as_const));
     try_(TEST_expect(pos.row == 7));
     try_(TEST_expect(pos.col == 9));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("dansi-core/cursor: receive report split across reads" $scope) {
+    var reader = (dansi_test_ChunkReader){
+        .bytes = u8_l("\x1b[12;34R"),
+        .pos = 0,
+        .chunk = 1,
+    };
+    var_(buf, dansi_cursor_PosReportBuf) $undefined;
+    let report = try_(dansi_cursor_receivePosReport(dansi_test_ChunkReader_reader(&reader), A_ref$((S$u8)(buf))));
+    let pos = try_(dansi_cursor_parsePosReport(report.as_const));
+    try_(TEST_expect(pos.row == 12));
+    try_(TEST_expect(pos.col == 34));
     return_ok({});
 } $unscoped(TEST_fn);

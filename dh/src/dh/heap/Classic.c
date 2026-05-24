@@ -23,10 +23,10 @@ fn_((heap_Classic_alctr(heap_Classic* self))(heap_Classic_E$mem_Alctr) $scope) p
     pp_then_({
         // VTable for Classic allocator
         $static let_(vtbl, mem_Alctr_VTbl) = {
-            .alloc = heap_Classic__alloc,
-            .resize = heap_Classic__resize,
-            .remap = heap_Classic__remap,
-            .free = heap_Classic__free,
+            .allocFn = heap_Classic__alloc,
+            .resizeFn = heap_Classic__resize,
+            .remapFn = heap_Classic__remap,
+            .freeFn = heap_Classic__free,
         };
         return_ok(mem_Alctr_ensureValid((mem_Alctr){
             .ctx = self,

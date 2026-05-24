@@ -1,9 +1,9 @@
 #include "dansi-core/device.h"
+#include "dansi-core/Seq.h"
 #include <dh/mem/common.h>
 
 $static fn_((dansi_device__receiveReport(io_Reader in, S$u8 buf))(E$S$u8) $scope) {
-    let data = S_prefix((buf)(try_(io_Reader_read(in, buf))));
-    return_ok(data);
+    return dansi_Seq_receiveCSI(in, buf);
 } $unscoped(fn);
 
 $static fn_((dansi_device__parseAttributesReport(

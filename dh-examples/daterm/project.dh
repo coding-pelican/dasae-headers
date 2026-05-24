@@ -1,1 +1,9 @@
+kind=lib
+pch=daterm.h
+link-dsl=on
 
+[dansi]
+path=../dansi
+profile=default
+linking=static
+link-dsl=on

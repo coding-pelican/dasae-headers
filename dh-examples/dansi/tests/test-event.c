@@ -2,7 +2,7 @@
 #include <dansi-core.h>
 
 TEST_fn_("dansi-core/Event: parse printable character" $scope) {
-    let event = try_(dansi_Event_parse(dansi_Seq_text(u8_l("A"))));
+    let event = try_(dansi_Event_parse(dansi_Seq_raw(u8_l("A"))));
     match_(event) {
     pattern_((dansi_Event_key)(key)) {
         try_(TEST_expect(key.code == dansi_Event_KeyCode_char));
@@ -17,7 +17,7 @@ TEST_fn_("dansi-core/Event: parse printable character" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("dansi-core/Event: parse Ctrl-C" $scope) {
-    let event = try_(dansi_Event_parse(dansi_Seq_text(u8_l("\x03"))));
+    let event = try_(dansi_Event_parse(dansi_Seq_raw(u8_l("\x03"))));
     match_(event) {
     pattern_((dansi_Event_key)(key)) {
         try_(TEST_expect(key.code == dansi_Event_KeyCode_char));

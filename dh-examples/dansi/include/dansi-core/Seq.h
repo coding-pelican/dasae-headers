@@ -25,7 +25,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 typedef enum_((dansi_Seq_Kind $fits($packed))(
-    dansi_Seq_Kind_text = 0,
+    dansi_Seq_Kind_raw = 0,
     dansi_Seq_Kind_esc,
     dansi_Seq_Kind_csi,
     dansi_Seq_Kind_ss3,
@@ -51,7 +51,7 @@ T_use_E$($set(dansi_Seq_E)(dansi_Seq));
 $attr($inline_always)
 $static fn_((dansi_Seq_from(dansi_Seq_Kind kind, S_const$u8 bytes))(dansi_Seq));
 $attr($inline_always)
-$static fn_((dansi_Seq_text(S_const$u8 bytes))(dansi_Seq));
+$static fn_((dansi_Seq_raw(S_const$u8 bytes))(dansi_Seq));
 $attr($inline_always)
 $static fn_((dansi_Seq_esc(S_const$u8 bytes))(dansi_Seq));
 $attr($inline_always)
@@ -68,14 +68,16 @@ $static fn_((dansi_Seq_isEmpty(dansi_Seq self))(bool));
 
 $attr($must_check)
 $extern fn_((dansi_Seq_extract(io_Buf_Reader* reader))(dansi_Seq_E$dansi_Seq));
+$attr($must_check)
+$extern fn_((dansi_Seq_receiveCSI(io_Reader in, S$u8 buf))(E$S$u8));
 
 /*========== Macros and Definitions =========================================*/
 
 fn_((dansi_Seq_from(dansi_Seq_Kind kind, S_const$u8 bytes))(dansi_Seq)) {
     return (dansi_Seq){ .kind = kind, .bytes = bytes };
 };
-fn_((dansi_Seq_text(S_const$u8 bytes))(dansi_Seq)) {
-    return dansi_Seq_from(dansi_Seq_Kind_text, bytes);
+fn_((dansi_Seq_raw(S_const$u8 bytes))(dansi_Seq)) {
+    return dansi_Seq_from(dansi_Seq_Kind_raw, bytes);
 };
 fn_((dansi_Seq_esc(S_const$u8 bytes))(dansi_Seq)) {
     return dansi_Seq_from(dansi_Seq_Kind_esc, bytes);

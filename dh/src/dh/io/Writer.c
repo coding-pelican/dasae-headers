@@ -4,9 +4,9 @@
 
 fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(E$usize)) {
     claim_assert_nonnull(self.ctx);
-    claim_assert_nonnull(self.write);
+    claim_assert_nonnull(self.writeFn);
     claim_assert_nonnullS(bytes);
-    return self.write(self.ctx, bytes);
+    return self.writeFn(self.ctx, bytes);
 };
 
 fn_((io_Writer_writeBytes(io_Writer self, S_const$u8 bytes))(E$void) $scope) {

@@ -341,7 +341,7 @@ fn_((fs_File_IO_reader(fs_File_IO* self))(io_Reader)) {
     claim_assert_nonnull(self);
     return (io_Reader){
         .ctx = self,
-        .read = fs_File_IO__read,
+        .readFn = fs_File_IO__read,
     };
 }
 
@@ -349,7 +349,7 @@ fn_((fs_File_IO_writer(fs_File_IO* self))(io_Writer)) {
     claim_assert_nonnull(self);
     return (io_Writer){
         .ctx = self,
-        .write = fs_File_IO__write,
+        .writeFn = fs_File_IO__write,
     };
 }
 
@@ -417,12 +417,12 @@ typedef union Reader {
     io_Reader base;
     struct {
         P$raw ctx;
-        fn_(((*read)(P$raw ctx, S$u8 buf))(E$usize)) $must_check;
+        fn_(((*readFn)(P$raw ctx, S$u8 buf))(E$usize)) $must_check;
     };
 } Reader;
 
 $static fn_((Reader_init(fs_File file))(Reader)) {
-    return (Reader){ .ctx = fs__File_handleToCtx(file.handle), .read = fs_File_handle__read };
+    return (Reader){ .ctx = fs__File_handleToCtx(file.handle), .readFn = fs_File_handle__read };
 }
 
 fn_((fs_File_reader(fs_File file))(io_Reader)) {
@@ -433,12 +433,12 @@ typedef union Writer {
     io_Writer base;
     struct {
         P$raw ctx;
-        fn_(((*write)(P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
+        fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
     };
 } Writer;
 
 $static fn_((Writer_init(fs_File file))(Writer)) {
-    return (Writer){ .ctx = fs__File_handleToCtx(file.handle), .write = fs_File_handle__write };
+    return (Writer){ .ctx = fs__File_handleToCtx(file.handle), .writeFn = fs_File_handle__write };
 }
 
 fn_((fs_File_writer(fs_File file))(io_Writer)) {

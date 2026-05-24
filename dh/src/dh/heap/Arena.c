@@ -36,10 +36,10 @@ fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Alctr child_alctr))(hea
 fn_((heap_Arena_alctr(heap_Arena* self))(mem_Alctr)) {
     // VTable for Arena allocator
     $static let_(vtbl, mem_Alctr_VTbl) = {
-        .alloc = heap_Arena__alloc,
-        .resize = heap_Arena__resize,
-        .remap = heap_Arena__remap,
-        .free = heap_Arena__free,
+        .allocFn = heap_Arena__alloc,
+        .resizeFn = heap_Arena__resize,
+        .remapFn = heap_Arena__remap,
+        .freeFn = heap_Arena__free,
     };
     return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,

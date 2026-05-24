@@ -64,6 +64,22 @@ TEST_fn_("mem: basic - equality compares complete views" $scope) {
     try_(TEST_expect(!mem_eql$u8(u8_l("same"), u8_l("save"))));
 } $unscoped(TEST_fn)
 
+TEST_fn_("mem: basic - log2 alignment helpers match runtime alignment math" $scope) {
+    for_(($r(0, $incl(6)))(step)) {
+        let log2_align = intCast$((u8)(step));
+        let align = log2ToAlign(log2_align);
+
+        try_(TEST_expect(align == mem_log2ToAlign(log2_align)));
+        try_(TEST_expect(alignToLog2(align) == log2_align));
+
+        for_(($r(0, 64))(addr)) {
+            try_(TEST_expect(isAlignedLog2(addr, log2_align) == mem_isAlignedLog2(addr, log2_align)));
+            try_(TEST_expect(alignFwdLog2(addr, log2_align) == mem_alignFwdLog2(addr, log2_align)));
+            try_(TEST_expect(alignBwdLog2(addr, log2_align) == mem_alignBwdLog2(addr, log2_align)));
+        } $end(for);
+    } $end(for);
+} $unscoped(TEST_fn)
+
 TEST_fn_("mem: basic - endian read and write use fixed byte arrays" $scope) {
     let le16 = S_deref$((const mem_ReadLE16Buf)(u8_l("\064\022")));
     let le32 = S_deref$((const mem_ReadLE32Buf)(u8_l("\170\126\064\022")));

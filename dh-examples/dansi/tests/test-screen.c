@@ -1,6 +1,7 @@
 #include <dh-main.h>
 #include <dansi-core.h>
 #include <dh/io/Fixed.h>
+#include "test-support.h"
 
 TEST_fn_("dansi-core/screen: parse text-area size in characters" $scope) {
     let size = try_(dansi_screen_parseTextAreaSizeCharsReport(u8_l("\x1b[8;24;80t")));
@@ -27,6 +28,20 @@ TEST_fn_("dansi-core/screen: receive and parse text-area size report" $scope) {
     var reader = io_Fixed_Reader_init(io_Fixed_reading(u8_l("\x1b[8;30;120t")));
     var_(buf, dansi_screen_SizeReportBuf) $undefined;
     let report = try_(dansi_screen_receiveTextAreaSizeCharsReport(io_Fixed_reader(&reader), A_ref$((S$u8)(buf))));
+    let size = try_(dansi_screen_parseTextAreaSizeCharsReport(report.as_const));
+    try_(TEST_expect(size.rows == 30));
+    try_(TEST_expect(size.cols == 120));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("dansi-core/screen: receive size report split across reads" $scope) {
+    var reader = (dansi_test_ChunkReader){
+        .bytes = u8_l("\x1b[8;30;120t"),
+        .pos = 0,
+        .chunk = 1,
+    };
+    var_(buf, dansi_screen_SizeReportBuf) $undefined;
+    let report = try_(dansi_screen_receiveTextAreaSizeCharsReport(dansi_test_ChunkReader_reader(&reader), A_ref$((S$u8)(buf))));
     let size = try_(dansi_screen_parseTextAreaSizeCharsReport(report.as_const));
     try_(TEST_expect(size.rows == 30));
     try_(TEST_expect(size.cols == 120));

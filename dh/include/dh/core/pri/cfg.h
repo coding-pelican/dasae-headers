@@ -820,12 +820,12 @@ typedef TypeOf(void*) P$raw;
 #define __expr__ptrAlignCast$(...) __expr__ptrAlignCast$__emit(__pp__ptrAlignCast$__parseType __VA_ARGS__)
 #define __pp__ptrAlignCast$__parseType(_P_T...) _P_T,
 #define __expr__ptrAlignCast$__emit(...) __expr__ptrAlignCast$__impl(__VA_ARGS__)
-#define __expr__ptrAlignCast$__impl(_P_T, _val...) $supress_cast_align( \
+#define __expr__ptrAlignCast$__impl(_P_T, _val...) $suppress_cast_align( \
     ptrCast$((_P_T)(alignCast((alignOfLog2$(DerefType$(_P_T)))(_val)))) \
 )
 
-#define __expr__ptrQualCast$(...) $supress_cast_qual(ptrCast$(__VA_ARGS__))
-#define __expr__ptrAlignQualCast$(...) $supress_cast_align(ptrAlignCast$(__VA_ARGS__))
+#define __expr__ptrQualCast$(...) $suppress_cast_qual(ptrCast$(__VA_ARGS__))
+#define __expr__ptrAlignQualCast$(...) $suppress_cast_align(ptrAlignCast$(__VA_ARGS__))
 
 #define __expr__ptr__mutCast(_p...) ptrCast$((const TypeOfUnqual(*_p)*)(_p))
 #define __expr__ptr__constCast(_p...) ptrQualCast$((TypeOfUnqual(*_p)*)(_p))

@@ -54,9 +54,9 @@ extern "C" {
 #define return_(_Expr...) comp_syn__return_(_Expr)
 #define return_void(_Expr...) pp_overload(comp_syn__return_void, _Expr)(_Expr)
 
-#define reservedReturn() $supress_pointer_arith((__reserved_return[0]))
+#define reservedReturn() $suppress_pointer_arith((__reserved_return[0]))
 // #define ReturnType       TypeOf(reservedReturn())
-#define reservedBreak() $supress_pointer_arith((__reserved_break[0]))
+#define reservedBreak() $suppress_pointer_arith((__reserved_break[0]))
 // #define BreakType        TypeOf(reservedBreak())
 
 /*

@@ -39,13 +39,19 @@ extern "C" {
 #define isValidAlign_static(_align /*: usize*/... /*(bool)*/) ____isValidAlign_static(_align)
 #define isValidAlign(_align /*: usize*/... /*(bool)*/) __step__isValidAlign(_align)
 
+#define isAligned_static(_addr /*: usize*/, _align /*: usize*/... /*(bool)*/) ____isAligned_static(_addr, _align)
 #define isAligned(_addr /*: usize|PtrType*/, _align /*: usize*/... /*(bool)*/) __step__isAligned(_addr, _align)
+#define isAlignedLog2_static(_addr /*: usize*/, _log2_align /*: u8*/... /*(bool)*/) ____isAlignedLog2_static(_addr, _log2_align)
 #define isAlignedLog2(_addr /*: usize|PtrType*/, _log2_align /*: u8*/... /*(bool)*/) __step__isAlignedLog2(_addr, _log2_align)
 
+#define alignFwd_static(_addr /*: usize*/, _align /*: usize*/... /*(usize)*/) ____alignFwd_static(_addr, _align)
 #define alignFwd(_addr /*: usize|PtrType*/, _align /*: usize*/... /*(usize)*/) __step__alignFwd(_addr, _align)
-#define alignFwdLog2_(_addr /*: usize|PtrType*/, _log2_align /*: u8*/... /*(usize)*/) __step__alignFwdLog2(_addr, _log2_align)
+#define alignFwdLog2_static(_addr /*: usize*/, _log2_align /*: u8*/... /*(usize)*/) ____alignFwdLog2_static(_addr, _log2_align)
+#define alignFwdLog2(_addr /*: usize|PtrType*/, _log2_align /*: u8*/... /*(usize)*/) __step__alignFwdLog2(_addr, _log2_align)
+#define alignBwd_static(_addr /*: usize*/, _align /*: usize*/... /*(usize)*/) ____alignBwd_static(_addr, _align)
 #define alignBwd(_addr /*: usize|PtrType*/, _align /*: usize*/... /*(usize)*/) __step__alignBwd(_addr, _align)
-#define alignBwdLog2_(_addr /*: usize|PtrType*/, _log2_align /*: u8*/... /*(usize)*/) __step__alignBwdLog2(_addr, _log2_align)
+#define alignBwdLog2_static(_addr /*: usize*/, _log2_align /*: u8*/... /*(usize)*/) ____alignBwdLog2_static(_addr, _log2_align)
+#define alignBwdLog2(_addr /*: usize|PtrType*/, _log2_align /*: u8*/... /*(usize)*/) __step__alignBwdLog2(_addr, _log2_align)
 
 #define alignToLog2_static(_align /*: usize*/... /*(u8)*/) ____alignToLog2_static(_align)
 #define alignToLog2(_align /*: usize*/... /*(u8)*/) __step__alignToLog2(_align)
@@ -795,13 +801,14 @@ $inline_always
 })
 #define __op__flt_wrap01(_x...) flt_wrap(_x, 0, 1)
 
-#define ____isValidAlign_static(_align...) as$(bool)(0 < _align && (_align & (_align - 1)) == 0)
+#define ____isValidAlign_static(_align...) bool_(0 < _align && (_align & (_align - 1)) == 0)
 #define __step__isValidAlign(_align...) ____isValidAlign(pp_uniqTok(align), _align)
 #define ____isValidAlign(__align, _align...) ({ \
     let_(__align, usize) = _align; \
-    as$(bool)(0 < __align && (__align & (__align - 1)) == 0); \
+    isValidAlign_static(__align); \
 })
 
+#define ____isAligned_static(_addr, _align...) bool_((ptrToInt(_addr) & (_align - 1)) == 0)
 #define __step__isAligned(_addr, _align...) ____isAligned( \
     pp_uniqTok(addr), _addr, pp_uniqTok(align), _align \
 )
@@ -809,17 +816,19 @@ $inline_always
     let_(__addr, usize) = ptrToInt(_addr); \
     let_(__align, usize) = _align; \
     claim_assert(isValidAlign(__align)); \
-    as$(bool)((__addr & (__align - 1)) == 0); \
+    bool_((__addr & (__align - 1)) == 0); \
 })
+#define ____isAlignedLog2_static(_addr, _log2_align...) bool_(int_trailingZeros_static(_addr) >= _log2_align)
 #define __step__isAlignedLog2(_addr, _log2_align...) ____isAlignedLog2( \
     pp_uniqTok(addr), _addr, pp_uniqTok(log2_align), _log2_align \
 )
 #define ____isAlignedLog2(__addr, _addr, __log2_align, _log2_align...) ({ \
     let_(__addr, usize) = ptrToInt(_addr); \
     let_(__log2_align, u8) = _log2_align; \
-    as$(bool)(int_trailingZeros(__addr) >= __log2_align); \
+    bool_(int_trailingZeros(__addr) >= __log2_align); \
 })
 
+#define ____alignFwd_static(_addr, _align...) ((ptrToInt(_addr) + (_align - 1)) & ~(_align - 1))
 #define __step__alignFwd(_addr, _align...) ____alignFwd(pp_uniqTok(addr), _addr, pp_uniqTok(align), _align)
 #define ____alignFwd(__addr, _addr, __align, _align...) ({ \
     let_(__addr, usize) = ptrToInt(_addr); \
@@ -827,13 +836,14 @@ $inline_always
     claim_assert(isValidAlign(__align)); \
     (__addr + (__align - 1)) & ~(__align - 1); \
 })
+#define ____alignFwdLog2_static(_addr, _log2_align...) alignFwd_static(_addr, log2ToAlign_static(_log2_align))
 #define __step__alignFwdLog2(_addr, _log2_align...) ____alignFwdLog2(pp_uniqTok(addr), _addr, pp_uniqTok(log2_align), _log2_align)
 #define ____alignFwdLog2(__addr, _addr, __log2_align, _log2_align...) ({ \
     let_(__addr, usize) = ptrToInt(_addr); \
     let_(__log2_align, u8) = _log2_align; \
-    claim_assert(isValidAlign(__log2_align)); \
-    (__addr + (__log2_align - 1)) & ~(__log2_align - 1); \
+    alignFwd(__addr, log2ToAlign(__log2_align)); \
 })
+#define ____alignBwd_static(_addr, _align...) (ptrToInt(_addr) & ~(_align - 1))
 #define __step__alignBwd(_addr, _align...) ____alignBwd(pp_uniqTok(addr), _addr, pp_uniqTok(align), _align)
 #define ____alignBwd(__addr, _addr, __align, _align...) ({ \
     let_(__addr, usize) = ptrToInt(_addr); \
@@ -841,26 +851,26 @@ $inline_always
     claim_assert(isValidAlign(__align)); \
     (__addr & ~(__align - 1)); \
 })
+#define ____alignBwdLog2_static(_addr, _log2_align...) alignBwd_static(_addr, log2ToAlign_static(_log2_align))
 #define __step__alignBwdLog2(_addr, _log2_align...) ____alignBwdLog2(pp_uniqTok(addr), _addr, pp_uniqTok(log2_align), _log2_align)
 #define ____alignBwdLog2(__addr, _addr, __log2_align, _log2_align...) ({ \
     let_(__addr, usize) = ptrToInt(_addr); \
     let_(__log2_align, u8) = _log2_align; \
-    claim_assert(isValidAlign(__log2_align)); \
-    (__addr & ~(__log2_align - 1)); \
+    alignBwd(__addr, log2ToAlign(__log2_align)); \
 })
 
-#define ____alignToLog2_static(_align...) (as$(u8)(usize_bits - 1u) - as$(u8)(raw_trailingZeros64(as$(u64)(_align))))
+#define ____alignToLog2_static(_align...) (as$(u8)(int_trailingZeros_static(_align)))
 #define __step__alignToLog2(_align...) ____alignToLog2(pp_uniqTok(align), _align)
 #define ____alignToLog2(__align, _align...) ({ \
     let_(__align, usize) = _align; \
     claim_assert(isValidAlign(__align)); \
-    intCast$((u8)(usize_bits - 1u)) - intCast$((u8)(raw_trailingZeros64(as$(u64)(__align)))); \
+    intCast$((u8)(int_trailingZeros(__align))); \
 })
 #define ____log2ToAlign_static(_log2_align...) (as$(usize)(1) << _log2_align)
 #define __step__log2ToAlign(_log2_align...) ____log2ToAlign(pp_uniqTok(log2_align), _log2_align)
 #define ____log2ToAlign(__log2_align, _log2_align...) ({ \
     let_(__log2_align, u8) = _log2_align; \
-    as$(usize)(1) << __log2_align; \
+    usize_(1) << __log2_align; \
 })
 
 #define __step__alignCast(...) __step__alignCast__emit(__step__alignCast__parse __VA_ARGS__)
@@ -909,7 +919,7 @@ $inline_always
     _T, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max), \
         pp_uniqTok(dst_is_signed), pp_uniqTok(src_is_signed),
 #define __step__intCast$__emit(...) ____intCast$(__VA_ARGS__)
-#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) $supress_implicit_int_conversion( \
+#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) $suppress_implicit_int_conversion( \
     ({ \
         typedef _T DstType; \
         typedef TypeOf(_val) SrcType; \

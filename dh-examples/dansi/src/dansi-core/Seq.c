@@ -9,9 +9,9 @@ $static fn_((dansi_Seq__readable(io_Buf_Reader* reader))(S_const$u8)) {
 $static fn_((dansi_Seq__ensure(io_Buf_Reader* reader, usize len))(E$void) $scope) {
     while (reader->end - reader->start < len) {
         let old_end = reader->end;
-        catch_((io_Buf_Reader_fill(reader))($ignore, return_err(E_cause$IOUnexpectedEof())));
+        catch_((io_Buf_Reader_fill(reader))($ignore, return_err(E_cause$UnexpectedEOF())));
         if (reader->end == old_end) {
-            return_err(E_cause$IOUnexpectedEof());
+            return_err(E_cause$UnexpectedEOF());
         }
     }
     return_ok({});
@@ -27,7 +27,7 @@ $static fn_((dansi_Seq__extractText(io_Buf_Reader* reader))(dansi_Seq_E$dansi_Se
     let first = *S_at((dansi_Seq__readable(reader))[0]);
     let len = catch_((utf8_byteSeqLen(first))($ignore, 1));
     catch_((dansi_Seq__ensure(reader, len))($ignore, return_err(E_cause$dansi_Seq_Incomplete())));
-    return dansi_Seq__complete(reader, dansi_Seq_Kind_text, len);
+    return dansi_Seq__complete(reader, dansi_Seq_Kind_raw, len);
 } $unscoped(fn);
 
 $static fn_((dansi_Seq__extractString(io_Buf_Reader* reader, dansi_Seq_Kind kind))(dansi_Seq_E$dansi_Seq) $scope) {
@@ -83,4 +83,26 @@ fn_((dansi_Seq_extract(io_Buf_Reader* reader))(dansi_Seq_E$dansi_Seq) $scope) {
     case 'P': return dansi_Seq__extractString(reader, dansi_Seq_Kind_dcs);
     default: return dansi_Seq__complete(reader, dansi_Seq_Kind_esc, 2);
     }
+} $unscoped(fn);
+
+fn_((dansi_Seq_receiveCSI(io_Reader in, S$u8 buf))(E$S$u8) $scope) {
+    claim_assert_nonnullS(buf);
+    var_(written, usize) = 0;
+    while (written < buf.len) {
+        let byte = try_(io_Reader_readByte(in));
+        *S_at((buf)[written]) = byte;
+        written += 1;
+        if (written == 1) {
+            if (byte != 0x1B) { return_err(E_cause$Unexpected()); }
+            continue;
+        }
+        if (written == 2) {
+            if (byte != '[') { return_err(E_cause$Unexpected()); }
+            continue;
+        }
+        if (0x40 <= byte && byte <= 0x7E) {
+            return_ok(S_prefix((buf)(written)));
+        }
+    }
+    return_err(E_cause$TooSmallBuffer());
 } $unscoped(fn);

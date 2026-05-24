@@ -11,7 +11,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #if !defined(ETrace_comp_enabled)
-#define ETrace_comp_enabled (debug_comp_enabled)
+#define ETrace_comp_enabled debug_comp_enabled
 #endif /* !defined(ETrace_comp_enabled) */
 
 #define ETrace_max_frames /* Platform-specific stack trace size optimization */ __comp_int__ETrace_max_frames
@@ -24,6 +24,8 @@ T_alias$((ETrace)(struct ETrace));
 $extern fn_((ETrace_reset(void))(void));
 $extern fn_((ETrace_enable(void))(void));
 $extern fn_((ETrace_disable(void))(void));
+$extern fn_((ETrace_isEnabled(void))(bool));
+$extern fn_((ETrace_depth(void))(usize));
 $extern fn_((ETrace_captureFrame(void))(void));
 $extern fn_((ETrace_print(void))(void));
 #endif /* !on_comptime */
@@ -70,6 +72,8 @@ struct ETrace {
 #define ETrace_reset() $unused(0)
 #define ETrace_enable() $unused(0)
 #define ETrace_disable() $unused(0)
+#define ETrace_isEnabled() (false)
+#define ETrace_depth() (0)
 #define ETrace_captureFrame() $unused(0)
 #define ETrace_print() $unused(0)
 
@@ -78,12 +82,14 @@ struct ETrace {
 #define ETrace_reset() ETrace_reset_callDebug()
 #define ETrace_enable() ETrace_enable_callDebug()
 #define ETrace_disable() ETrace_disable_callDebug()
+#define ETrace_isEnabled() ETrace_isEnabled_callDebug()
 #define ETrace_captureFrame() ETrace_captureFrame_callDebug()
 #define ETrace_print() ETrace_print_callDebug()
 
 #define ETrace_reset_callDebug() ETrace_reset_debug()
 #define ETrace_enable_callDebug() ETrace_enable_debug()
 #define ETrace_disable_callDebug() ETrace_disable_debug()
+#define ETrace_isEnabled_callDebug() ETrace_isEnabled_debug()
 #define ETrace_captureFrame_callDebug() ETrace_captureFrame_debug(srcLoc(), __builtin_return_address(0))
 #define ETrace_print_callDebug() ETrace_print_debug()
 
@@ -91,9 +97,9 @@ struct ETrace {
 #endif /* on_comptime */
 
 $extern fn_((ETrace_reset_debug(void))(void));
-$extern fn_((ETrace_isEnabled_debug(void))(bool));
 $extern fn_((ETrace_enable_debug(void))(void));
 $extern fn_((ETrace_disable_debug(void))(void));
+$extern fn_((ETrace_isEnabled_debug(void))(bool));
 $extern fn_((ETrace_depth_debug(void))(usize));
 $extern fn_((ETrace_captureFrame_debug(SrcLoc src_loc, P$raw ret_addr))(void));
 $extern fn_((ETrace_print_debug(void))(void));

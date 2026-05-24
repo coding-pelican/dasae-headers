@@ -32,10 +32,10 @@ $static fn_((heap_Smp__slotSize(usize class_idx))(usize));
 /*========== External Definitions ===========================================*/
 
 let_(heap_Smp_vtbl, mem_Alctr_VTbl) = {
-    .alloc = heap_Smp__alloc,
-    .resize = heap_Smp__resize,
-    .remap = heap_Smp__remap,
-    .free = heap_Smp__free,
+    .allocFn = heap_Smp__alloc,
+    .resizeFn = heap_Smp__resize,
+    .remapFn = heap_Smp__remap,
+    .freeFn = heap_Smp__free,
 };
 
 fn_((heap_Smp_alctr(heap_Smp* self))(mem_Alctr)) {

@@ -195,7 +195,7 @@ typedef union O$Void O$Void, O$void;
 
 #define __param_expand__orelse_(...) __VA_ARGS__, pp_expand
 #define __block_inline__orelse_(_Expr, _DefaultExpr_OR_Body...) __block_inline1__orelse_(pp_uniqTok(result), _Expr, ({ _DefaultExpr_OR_Body; }))
-#define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) $supress_compound_token_split_by_macro( \
+#define __block_inline1__orelse_(__result, _Expr, _DefaultExpr_OR_Body...) $suppress_compound_token_split_by_macro( \
     ({ \
         var __result = _Expr; \
         if (isNone(__result)) { \

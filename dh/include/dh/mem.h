@@ -21,6 +21,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "mem/cfg.h"
+#include "mem/base.h"
 #include "mem/common.h"
 #include "mem/dyn.h"
 #include "mem/Alctr.h"

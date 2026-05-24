@@ -90,7 +90,7 @@ $extern fn_((dansi_Event_parse(dansi_Seq seq))(dansi_Event_E$dansi_Event));
 $extern fn_((dansi_Event_tryParse(dansi_Seq seq))(O$dansi_Event));
 
 $attr($inline_always)
-$static fn_((dansi_event_matchesChar(dansi_Event event, u32 ch, dansi_Event_KeyMods mods))(bool)) {
+$static fn_((dansi_Event_matchesChar(dansi_Event event, u32 ch, dansi_Event_KeyMods mods))(bool)) {
     match_(event) {
     pattern_((dansi_Event_key)(key)) {
         if (key.code == dansi_Event_KeyCode_char && key.codepoint == ch) {

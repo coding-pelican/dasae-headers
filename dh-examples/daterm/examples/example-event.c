@@ -1,50 +1,68 @@
 #include <dh-main.h>
 #include <dh/io/common.h>
-#include <dh/io/Buf.h>
-#include <dh/fs/File.h>
+#include <dh/heap/Sys.h>
 #include "daterm.h"
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    let in_file = io_getStdIn();
-    let out_file = io_getStdOut();
-    // Enable terminal raw mode, its very recommended when listening for events
-    var term = try_(daterm_Ctx_init(in_file.handle, out_file.handle));
-    defer_(catch_((daterm_Ctx_fini(&term))($ignore, $do_nothing)));
 
-    var_(out_buf, A$$(1024, u8)) = A_zero();
-    var out_bufd = io_Buf_Writer_init(fs_File_writer(out_file), A_ref$((S$u8)(out_buf)));
-    defer_(catch_((io_Buf_Writer_flush(&out_bufd))($ignore, $do_nothing)));
-    let out_writer = io_Buf_writer(&out_bufd);
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap))));
+    defer_(daterm_ANSI_fini(&ansi));
+    try_(daterm_ANSI_enableRawMode(&ansi));
+    defer_(daterm_ANSI_disableRawMode(&ansi));
+    try_(daterm_ANSI_enableMouseTracking(&ansi));
+    defer_(daterm_ANSI_disableMouseTracking(&ansi));
 
-    // To listen mouse events, we need to enable mouse tracking
-    try_(daterm_Ctx_enableMouse(&term, out_writer));
-    defer_(catch_((daterm_Ctx_disableMouse(&term, out_writer))($ignore, $do_nothing)));
+    let term = daterm_ANSI_term(&ansi);
+    let out = daterm_Term_writer(term);
 
-    try_(io_Writer_println(out_writer, u8_l("Press q or Ctrl-C to exit...")));
-    bool running = true;
-    while (running) { /* clang-format off */
-        if_ok((daterm_Ctx_timedWait(&term, time_Duration_fromSecs(1)))(next)) match_(next) {
-            pattern_((daterm_Event_key)(on_key)) switch (on_key.code) {
-                case_((daterm_Event_KeyCode_char)) {
-                    let is_pressed_q = on_key.codepoint == 'q';
-                    let is_pressed_ctrl_c = on_key.mods.ctrl && on_key.codepoint == 'c';
-                    if (is_pressed_q || is_pressed_ctrl_c) { running = false; }
-                    try_(io_Writer_println(out_writer, u8_l("Pressed: {:C}"), on_key.codepoint));
+    try_(io_Writer_println(out, u8_l("Press q or Ctrl-C or ESC to exit...")));
+    try_(io_Writer_println(out, u8_l("Press m to toggle mouse event printing...")));
+    var_(allow_printing_mouse_events, bool) = true;
+    while_(var is_running = true, is_running) {
+        if_some((daterm_Term_poll(term))(event)) {
+            match_(event) {
+            pattern_((daterm_Event_key)(key)) {
+                switch ($suppress_(switch_enum)(key.code)) {
+                case_((dansi_Event_KeyCode_esc)){
+                    try_(io_Writer_println(out, u8_l("ESC pressed, exiting...")));
+                    is_running = false;
                 } $end(case);
-                default_() break $end(default);
+                case_((dansi_Event_KeyCode_char)){
+                    try_(io_Writer_println(
+                        out, u8_l("Key event: codepoint={:C}, mods={:uhh}"),
+                        key.codepoint, key.mods.packed
+                    ));
+                    if (key.codepoint == 'm') {
+                        let captured = allow_printing_mouse_events;
+                        try_(io_Writer_println(
+                            out, u8_l("Mouse event printing {:B} -> {:B}"),
+                            captured, !captured
+                        ));
+                        allow_printing_mouse_events = !captured;
+                    }
+                    let pressed_q = key.codepoint == 'q';
+                    if (pressed_q) try_(io_Writer_println(out, u8_l("q pressed, exiting...")));
+                    let pressed_ctrl_c = key.mods.ctrl && key.codepoint == 'c';
+                    if (pressed_ctrl_c) try_(io_Writer_println(out, u8_l("Ctrl-C pressed, exiting...")));
+                    is_running = !(pressed_q || pressed_ctrl_c);
+                } $end(case);
+                default_() $do_nothing $end(default);
+                }
+            }$end(pattern);
+            pattern_((daterm_Event_mouse)(mouse)) {
+                if (allow_printing_mouse_events) try_(io_Writer_println(
+                    out, u8_l("Mouse event: col={:uh}, row={:uh}, button={:uhh}, action={:uhh}, wheel={:uhh}"),
+                    mouse.col, mouse.row, mouse.button, mouse.action, mouse.wheel
+                ));
             } $end(pattern);
-            pattern_((daterm_Event_mouse)(on_mouse)) {
-                try_(io_Writer_println(out_writer, u8_l("Mouse: {:dhh}"), on_mouse.btn));
-            } $end(pattern);
-            default_() break $end(default);
-        } $end(match) else_err((e)) {
-            let_ignore = e;
-            try_(io_Writer_println(out_writer, u8_l("Timeout.")));
-        };
-        try_(io_Buf_Writer_flush(&out_bufd));
-    } /* clang-format on */
-    try_(io_Writer_println(out_writer, u8_l("Bye bye")));
+            default_() $do_nothing $end(default);
+            } $end(match);
+        }
+        time_sleep(time_Duration_fromMillis(16));
+    }
 
     return_ok({});
 } $unguarded(fn);

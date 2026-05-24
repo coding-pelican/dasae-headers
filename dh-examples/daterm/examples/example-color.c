@@ -1,31 +1,27 @@
 #include <dh-main.h>
 #include <dh/io/common.h>
-#include <dh/fs/File.h>
+#include <dh/heap/Sys.h>
 #include "daterm.h"
+#include <dansi-core/color.h>
+#include <dansi-core/attr.h>
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    let in_file = io_getStdIn();
-    let out_file = io_getStdOut();
-    var term = try_(daterm_Ctx_init(in_file.handle, out_file.handle));
-    defer_(catch_((daterm_Ctx_fini(&term))($ignore, $do_nothing)));
 
-    let in_reader = fs_File_reader(in_file);
-    let out_writer = fs_File_writer(out_file);
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap))));
+    defer_(daterm_ANSI_fini(&ansi));
+    try_(daterm_ANSI_enableRawMode(&ansi));
+    defer_(daterm_ANSI_disableRawMode(&ansi));
 
-    try_(io_Writer_println(
-        out_writer, u8_l("{:s}Warning text"),
-        u8_l(daterm_color_fg4bit_static(daterm_color_fg4bit_staticParse(daterm_Palette4bit_red)))
-    ));
+    let term = daterm_ANSI_term(&ansi);
+    let out = daterm_Term_writer(term);
+    try_(dansi_color_fg24bitWrite(255, 80, 80, out));
+    try_(io_Writer_println(out, u8_l("red text")));
+    try_(dansi_color_fg24bitWrite(80, 140, 255, out));
+    try_(io_Writer_println(out, u8_l("blue text")));
+    try_(dansi_attr_resetWrite(out));
 
-    try_(io_Writer_println(
-        out_writer, u8_l("{:s}Blue text"),
-        daterm_color_fg8bit(daterm_Palette8bit_blue, &l0$((daterm_Color_Palette8bitBuf)))
-    ));
-
-    try_(daterm_color_fg24bitWrite(97, 37, 160, out_writer));
-    try_(io_Writer_println(out_writer, u8_l("Purple text")));
-
-    let_ignore = try_(io_Reader_readByte(in_reader));
     return_ok({});
 } $unguarded(fn);

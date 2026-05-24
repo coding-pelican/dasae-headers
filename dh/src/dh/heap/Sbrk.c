@@ -53,24 +53,24 @@ $static fn_((heap_Sbrk__free_large(P$raw ctx, S$u8 buf, mem_Align buf_align))(vo
 /*========== External Definitions ===========================================*/
 
 let_(heap_Sbrk_vtbl_local_small, mem_Alctr_VTbl) = {
-    .alloc = heap_Sbrk__alloc_small,
-    .resize = heap_Sbrk__resize_small,
-    .remap = heap_Sbrk__remap_small,
-    .free = heap_Sbrk__free_small,
+    .allocFn = heap_Sbrk__alloc_small,
+    .resizeFn = heap_Sbrk__resize_small,
+    .remapFn = heap_Sbrk__remap_small,
+    .freeFn = heap_Sbrk__free_small,
 };
 
 let_(heap_Sbrk_vtbl_local_medium, mem_Alctr_VTbl) = {
-    .alloc = heap_Sbrk__alloc_medium,
-    .resize = heap_Sbrk__resize_medium,
-    .remap = heap_Sbrk__remap_medium,
-    .free = heap_Sbrk__free_medium,
+    .allocFn = heap_Sbrk__alloc_medium,
+    .resizeFn = heap_Sbrk__resize_medium,
+    .remapFn = heap_Sbrk__remap_medium,
+    .freeFn = heap_Sbrk__free_medium,
 };
 
 let_(heap_Sbrk_vtbl_local_large, mem_Alctr_VTbl) = {
-    .alloc = heap_Sbrk__alloc_large,
-    .resize = heap_Sbrk__resize_large,
-    .remap = heap_Sbrk__remap_large,
-    .free = heap_Sbrk__free_large,
+    .allocFn = heap_Sbrk__alloc_large,
+    .resizeFn = heap_Sbrk__resize_large,
+    .remapFn = heap_Sbrk__remap_large,
+    .freeFn = heap_Sbrk__free_large,
 };
 
 fn_((heap_Sbrk_alctr(heap_Sbrk* self))(mem_Alctr)) {

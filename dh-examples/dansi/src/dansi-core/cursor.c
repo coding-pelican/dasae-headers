@@ -1,4 +1,5 @@
 #include "dansi-core/cursor.h"
+#include "dansi-core/Seq.h"
 #include <dh/io/Fixed.h>
 #include <dh/mem/common.h>
 #include <dh/fmt/common.h>
@@ -176,8 +177,7 @@ fn_((dansi_cursor_requestPosWrite(io_Writer out))(E$void)) {
 };
 
 fn_((dansi_cursor_receivePosReport(io_Reader in, S$u8 buf))(E$S$u8) $scope) {
-    let data = S_prefix((buf)(try_(io_Reader_read(in, buf))));
-    return_ok(data);
+    return dansi_Seq_receiveCSI(in, buf);
 } $unscoped(fn);
 
 fn_((dansi_cursor_parsePosReport(S_const$u8 report))(dansi_cursor_E$dansi_cursor_Pos) $scope) {

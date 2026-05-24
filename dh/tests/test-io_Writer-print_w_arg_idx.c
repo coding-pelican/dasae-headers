@@ -51,7 +51,7 @@ $static fn_((test_Buf_init(S$u8 data))(test_Buf)) {
 }
 $static fn_((test_Buf_writer(test_Buf* self))(io_Writer)) {
     claim_assert_nonnull(self);
-    return l$((io_Writer){ .ctx = self, .write = test_Buf_VT_write });
+    return l$((io_Writer){ .ctx = self, .writeFn = test_Buf_VT_write });
 }
 $static fn_((test_Buf_clear(test_Buf* self))(void)) {
     claim_assert_nonnull(self);

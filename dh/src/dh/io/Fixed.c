@@ -1,5 +1,4 @@
 #include "dh/io/Fixed.h"
-#include "dh/io/common.h"
 #include "dh/mem/common.h"
 
 /* --- Fixed Stream ---*/
@@ -48,7 +47,7 @@ $static fn_((io_Fixed_Reader__read(P$raw ctx, S$u8 output))(E$usize) $scope) {
 fn_((io_Fixed_reader(io_Fixed_Reader* self))(io_Reader)) {
     return (io_Reader){
         .ctx = ptrCast$((P$raw)(self)),
-        .read = io_Fixed_Reader__read,
+        .readFn = io_Fixed_Reader__read,
     };
 };
 
@@ -63,19 +62,19 @@ fn_((io_Fixed_Writer_init(io_FixedMut stream))(io_Fixed_Writer)) {
 $static fn_((io_Fixed_Writer__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
     let self = ptrAlignCast$((io_Fixed_Writer*)(ctx));
     if (bytes.len == 0) { return_ok(0); }
-    if (self->stream.buf.len <= self->stream.pos) { return_err(E_cause$IOBufferTooSmall()); }
+    if (self->stream.buf.len <= self->stream.pos) { return_err(E_cause$TooSmallBuffer()); }
     let available = self->stream.buf.len - self->stream.pos;
     let to_write = pri_min(available, bytes.len);
     let stream = S_suffix((self->stream.buf)(self->stream.pos));
     mem_copyBytes(S_prefix((stream)(to_write)), S_prefix((bytes)(to_write)));
     self->stream.pos += to_write;
-    if (to_write == 0) { return_err(E_cause$IOBufferTooSmall()); }
+    if (to_write == 0) { return_err(E_cause$TooSmallBuffer()); }
     return_ok(to_write);
 } $unscoped(fn);
 
 fn_((io_Fixed_writer(io_Fixed_Writer* self))(io_Writer)) {
     return (io_Writer){
         .ctx = ptrCast$((P$raw)(self)),
-        .write = io_Fixed_Writer__write,
+        .writeFn = io_Fixed_Writer__write,
     };
 };

@@ -90,11 +90,11 @@ $static fn_((dansi_Event__parseCSI(dansi_Seq seq))(dansi_Event_E$dansi_Event) $s
 
 fn_((dansi_Event_parse(dansi_Seq seq))(dansi_Event_E$dansi_Event) $scope) {
     switch (seq.kind) {
-    case dansi_Seq_Kind_text: return dansi_Event__parseText(seq);
+    case dansi_Seq_Kind_raw: return dansi_Event__parseText(seq);
     case dansi_Seq_Kind_esc:
         if (seq.bytes.len == 1) { return_ok(dansi_Event__key(dansi_Event_KeyCode_esc)); }
         if (seq.bytes.len == 2) {
-            let nested = (dansi_Seq){ .kind = dansi_Seq_Kind_text, .bytes = S_suffix((seq.bytes)(1)) };
+            let nested = (dansi_Seq){ .kind = dansi_Seq_Kind_raw, .bytes = S_suffix((seq.bytes)(1)) };
             let parsed = try_(dansi_Event__parseText(nested));
             match_(parsed) {
             pattern_((dansi_Event_key)(key)) {

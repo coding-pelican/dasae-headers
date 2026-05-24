@@ -1,4 +1,5 @@
 #include "dage-runtime/Input.h"
+#include <dh/mem/common.h>
 
 /*========== Initialization ==========*/
 
@@ -21,22 +22,22 @@ fn_((dage_Input_clear(dage_Input* self))(void)) {
 
 /// @brief Update modifier state from key event
 $static fn_((updateModsFromKey(dage_Input* self, dage_KeyCode key, bool is_down))(void)) {
-    $supress_switch_enum(switch (key) {
-        case dage_KeyCode_shift_left:
-        case dage_KeyCode_shift_right:
-            A_at((self->mods)[dage_Input_Frame_curr])->shift = is_down;
-            break;
-        case dage_KeyCode_ctrl_left:
-        case dage_KeyCode_ctrl_right:
-            A_at((self->mods)[dage_Input_Frame_curr])->ctrl = is_down;
-            break;
-        case dage_KeyCode_alt_left:
-        case dage_KeyCode_alt_right:
-            A_at((self->mods)[dage_Input_Frame_curr])->alt = is_down;
-            break;
-        default:
-            break;
-    });
+    switch ($suppress_(switch_enum)(key)) {
+    case dage_KeyCode_shift_left:
+    case dage_KeyCode_shift_right:
+        A_at((self->mods)[dage_Input_Frame_curr])->shift = is_down;
+        break;
+    case dage_KeyCode_ctrl_left:
+    case dage_KeyCode_ctrl_right:
+        A_at((self->mods)[dage_Input_Frame_curr])->ctrl = is_down;
+        break;
+    case dage_KeyCode_alt_left:
+    case dage_KeyCode_alt_right:
+        A_at((self->mods)[dage_Input_Frame_curr])->alt = is_down;
+        break;
+    default:
+        break;
+    };
 };
 
 fn_((dage_Input_applyEvent(dage_Input* self, const dage_Event* event))(void)) {

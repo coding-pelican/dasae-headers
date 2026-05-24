@@ -8,17 +8,17 @@ $attr($inline_always)
 $static fn_((mem_Alctr__zeroTail(u8* ptr, usize old_len, usize new_len))(void));
 
 let_(mem_Alctr_VTbl_noop, mem_Alctr_VTbl) = {
-    .alloc = mem_Alctr_VTbl_noAlloc,
-    .resize = mem_Alctr_VTbl_noResize,
-    .remap = mem_Alctr_VTbl_noRemap,
-    .free = mem_Alctr_VTbl_noFree,
+    .allocFn = mem_Alctr_VTbl_noAlloc,
+    .resizeFn = mem_Alctr_VTbl_noResize,
+    .remapFn = mem_Alctr_VTbl_noRemap,
+    .freeFn = mem_Alctr_VTbl_noFree,
 };
 
 let_(mem_Alctr_VTbl_failing, mem_Alctr_VTbl) = {
-    .alloc = mem_Alctr_VTbl_noAlloc,
-    .resize = mem_Alctr_VTbl_unreachableResize,
-    .remap = mem_Alctr_VTbl_unreachableRemap,
-    .free = mem_Alctr_VTbl_unreachableFree,
+    .allocFn = mem_Alctr_VTbl_noAlloc,
+    .resizeFn = mem_Alctr_VTbl_unreachableResize,
+    .remapFn = mem_Alctr_VTbl_unreachableRemap,
+    .freeFn = mem_Alctr_VTbl_unreachableFree,
 };
 
 $static var_(mem_Alctr_noop_ctx, Void) $undefined_static;
@@ -50,7 +50,7 @@ fn_((mem_Alctr_rawAlloc($traced mem_Alctr self, usize len, mem_Align align))(O$P
         mem_AlcTrace_registerAlloc($tracing addr, len);
         return_some(addr);
     }
-    let result = self.vtbl->alloc(self.ctx, len, align);
+    let result = self.vtbl->allocFn(self.ctx, len, align);
     if_some((result)(addr)) mem_AlcTrace_registerAlloc($tracing addr, len);
     return result;
 } $unscoped(fn);
@@ -63,7 +63,7 @@ fn_((mem_Alctr_rawResize($traced mem_Alctr self, S$u8 buf, mem_Align buf_align, 
         return true;
     }
     if (buf.len == 0) return false;
-    let result = self.vtbl->resize(self.ctx, buf, buf_align, new_len);
+    let result = self.vtbl->resizeFn(self.ctx, buf, buf_align, new_len);
     if (result) mem_AlcTrace_registerRemap($tracing buf.ptr, buf.ptr, new_len);
     return result;
 };
@@ -77,7 +77,7 @@ fn_((mem_Alctr_rawRemap($traced mem_Alctr self, S$u8 buf, mem_Align buf_align, u
         return_some(addr);
     }
     if (buf.len == 0) return_none();
-    let result = self.vtbl->remap(self.ctx, buf, buf_align, new_len);
+    let result = self.vtbl->remapFn(self.ctx, buf, buf_align, new_len);
     if_some((result)(addr)) mem_AlcTrace_registerRemap($tracing buf.ptr, addr, new_len);
     return result;
 } $unscoped(fn);
@@ -87,7 +87,7 @@ fn_((mem_Alctr_rawFree($traced mem_Alctr self, S$u8 buf, mem_Align buf_align))(v
     if (buf.len == 0) return;
     mem_set0Bytes(buf);
     mem_AlcTrace_registerFree($tracing buf.ptr);
-    return self.vtbl->free(self.ctx, buf, buf_align);
+    return self.vtbl->freeFn(self.ctx, buf, buf_align);
 };
 
 fn_((mem_Alctr_create($traced mem_Alctr self, TypeInfo type))(mem_E$u_P$raw) $scope) {

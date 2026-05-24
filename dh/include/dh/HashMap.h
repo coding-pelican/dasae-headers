@@ -914,7 +914,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     ))(E$($set(mem_E)(O$(HashMap_Pair$(_K, _V))))) $scope) { \
         let opt_pair = try_(HashMap_fetchPut(self->as_raw, gpa, u_anyV(key), u_anyV(val), l0$((HashMap_Pair$(_K, _V))).as_raw)); \
         let pair = orelse_((opt_pair)(return_ok(none()))); \
-        return_ok(some(*as$(HashMap_Pair$(_K, _V)*)(pair))); \
+        return_ok(some(*ptrAlignCast$((HashMap_Pair$(_K, _V)*)(pair)))); \
     } $unscoped(fn)
 #define T_use_HashMap_fetchPutWithin$(_K, _V...) \
     $attr($inline_always) \
@@ -923,7 +923,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     ))(O$(HashMap_Pair$(_K, _V))) $scope) { \
         let opt_pair = HashMap_fetchPutWithin(self->as_raw, u_anyV(key), u_anyV(val), l0$((HashMap_Pair$(_K, _V))).as_raw); \
         let pair = orelse_((opt_pair)(return_none())); \
-        return_some(*as$(HashMap_Pair$(_K, _V)*)(pair)); \
+        return_some(*ptrAlignCast$((HashMap_Pair$(_K, _V)*)(pair))); \
     } $unscoped(fn)
 
 #define T_use_HashMap_ensure$(_K, _V...) \
@@ -958,7 +958,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     $static fn_((tpl$(HashMap_fetchRemove, _K, _V)(HashMap$(_K, _V)* self, _K key))(O$(HashMap_Pair$(_K, _V))) $scope) { \
         let opt_pair = HashMap_fetchRemove(self->as_raw, typeInfo$(_V), u_anyV(key), l0$((HashMap_Pair$(_K, _V))).as_raw); \
         let pair = orelse_((opt_pair)(return_none())); \
-        return_some(*as$(HashMap_Pair$(_K, _V)*)(pair)); \
+        return_some(*ptrAlignCast$((HashMap_Pair$(_K, _V)*)(pair))); \
     } $unscoped(fn)
 #define T_use_HashMap_removeByPtr$(_K, _V...) \
     $attr($inline_always) \

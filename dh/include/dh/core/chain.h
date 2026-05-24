@@ -54,7 +54,7 @@ typedef enum_((chain__State $fits($packed))(
 #define __step__chain$__parseS(_s...) pp_uniqTok(s), _s, __step__chain$__parseFnOps
 #define __step__chain$__parseFnOps(_fnOps...) _fnOps
 #define __step__chain$__emit(...) __chain$(__VA_ARGS__)
-#define __chain$(_T, __s, _s, ...) $supress_compound_token_split_by_macro( \
+#define __chain$(_T, __s, _s, ...) $suppress_compound_token_split_by_macro( \
     pp_overload(__chain$, __VA_ARGS__)(_T, __s, _s, __VA_ARGS__) \
 )
 #define __chain$_1(_T, __s, _s, _fnOp1...) ({ \

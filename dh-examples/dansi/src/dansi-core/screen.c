@@ -1,5 +1,6 @@
 #include "dansi-core/screen.h"
 #include "dansi-core/cursor.h"
+#include "dansi-core/Seq.h"
 #include <dh/fmt/common.h>
 #include <dh/mem/common.h>
 
@@ -13,8 +14,7 @@ T_use$((u8)(
 ));
 
 $static fn_((dansi_screen__receiveReport(io_Reader in, S$u8 buf))(E$S$u8) $scope) {
-    let data = S_prefix((buf)(try_(io_Reader_read(in, buf))));
-    return_ok(data);
+    return dansi_Seq_receiveCSI(in, buf);
 } $unscoped(fn);
 
 $static fn_((dansi_screen__parsePixelSizeReport(

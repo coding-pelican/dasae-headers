@@ -101,7 +101,7 @@ extern "C" {
 #define __expr__neqTypeUnqual$(_T_LHS, _T_RHS...) (!eqlTypeUnqual$(_T_LHS, _T_RHS))
 
 #define __step__sizeOf$__expand(...) __VA_ARGS__
-#define __expr__sizeOf$(_T...) $supress_pointer_arith(__step__sizeOf$__expand( \
+#define __expr__sizeOf$(_T...) $suppress_pointer_arith(__step__sizeOf$__expand( \
     T_switch$ pp_begin(_T)( \
         T_case$((void)(usize_(0))), \
         T_default_(as$(usize)(sizeof(_T))) \
@@ -112,13 +112,13 @@ extern "C" {
 )
 
 #define __step__alignOf$__expand(...) __VA_ARGS__
-#define __expr__alignOf$(_T...) $supress_pointer_arith(__step__alignOf$__expand( \
+#define __expr__alignOf$(_T...) $suppress_pointer_arith(__step__alignOf$__expand( \
     T_switch$ pp_begin(_T)( \
         T_case$((void)(usize_(1))), \
         T_default_(as$(usize)((_Alignof(_T)))) \
     ) pp_end \
 ))
-#define __expr__alignOfLog2$(_T...) $supress_pointer_arith( \
+#define __expr__alignOfLog2$(_T...) $suppress_pointer_arith( \
     (as$(u8)((64u - 1u) - as$(u32)(__builtin_clzll(alignOf$(_T))))) \
 )
 
