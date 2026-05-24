@@ -32,6 +32,21 @@ errset_((io_E)(
 T_alias$((io_Reader)(struct io_Reader));
 T_alias$((io_Writer)(struct io_Writer));
 
+#define io_nl_native __str__io_nl_native
+#define io_nl_byte __uint__io_nl_byte
+#define io_nl __str__io_nl
+#define io_crlf __str__io_crlf
+
+/*========== Macros and Definitions =========================================*/
+
+#define __str__io_nl_native pp_if_(plat_is_windows)( \
+    pp_then_(io_crlf), \
+    pp_else_(io_nl) \
+)
+#define __uint__io_nl_byte u8_c('\n')
+#define __str__io_nl "\n"
+#define __str__io_crlf "\r\n"
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

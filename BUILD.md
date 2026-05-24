@@ -489,7 +489,7 @@ These names exist but are not supported commands yet:
 
 Do not build workflows or documentation around them as if they were already implemented.
 
-## Related Documents
+## Related Public Documents
 
-- `dh-c/docs/project-dh-contract.md`
-- `dh-c/docs/cli-syntax-draft.md`
+- [`README.md`](./README.md)
+- [`PROJECT_TREE.md`](./PROJECT_TREE.md)

@@ -7,7 +7,9 @@
 #if plat_is_windows
 #include "dh/os/windows/console.h"
 #endif /* plat_is_windows */
+#if io_stream_using_libc
 #include <locale.h>
+#endif /* io_stream_using_libc */
 
 $static var_(io_stream__s_out_mtx, Thrd_Mtx_Recur) = cleared();
 $static var_(io_stream__s_err_mtx, Thrd_Mtx_Recur) = cleared();
@@ -22,8 +24,10 @@ $static fn_((io_stream__init(void))(void)) {
     let_ignore = SetConsoleCP(CP_UTF8);
     let_ignore = SetConsoleOutputCP(CP_UTF8);
 #endif /* plat_is_windows */
+#if io_stream_using_libc
     /* NOLINTNEXTLINE(concurrency-mt-unsafe) */
     let_ignore = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
+#endif /* io_stream_using_libc */
 };
 
 $attr($on_exit)
@@ -39,6 +43,15 @@ fn_((io_stream_nl(void))(void) $guard) {
     var stream_out_file = fs_File_io(io_getStdOut());
     let stream_out = fs_File_IO_writer(&stream_out_file);
     let_ignore = catch_((io_Writer_nl(stream_out))($ignore, $do_nothing));
+} $unguarded(fn);
+
+fn_((io_stream_crlf(void))(void) $guard) {
+    Thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
+    defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
+
+    var stream_out_file = fs_File_io(io_getStdOut());
+    let stream_out = fs_File_IO_writer(&stream_out_file);
+    let_ignore = catch_((io_Writer_crlf(stream_out))($ignore, $do_nothing));
 } $unguarded(fn);
 
 fn_((io_stream_print(S_const$u8 fmt, ...))(void)) {
@@ -78,6 +91,15 @@ fn_((io_stream_enl(void))(void) $guard) {
     var stream_err_file = fs_File_io(io_getStdErr());
     let stream_err = fs_File_IO_writer(&stream_err_file);
     let_ignore = catch_((io_Writer_nl(stream_err))($ignore, $do_nothing));
+} $unguarded(fn);
+
+fn_((io_stream_ecrlf(void))(void) $guard) {
+    Thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
+    defer_(Thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
+
+    var stream_err_file = fs_File_io(io_getStdErr());
+    let stream_err = fs_File_IO_writer(&stream_err_file);
+    let_ignore = catch_((io_Writer_crlf(stream_err))($ignore, $do_nothing));
 } $unguarded(fn);
 
 fn_((io_stream_eprint(S_const$u8 fmt, ...))(void)) {

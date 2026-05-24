@@ -35,7 +35,7 @@ dasae-headers: Modern, Better safety and productivity to C
       <img src="https://img.shields.io/badge/readme-en-red?style=flat-square" alt="Language: English">
     </a>
     <a href="./README.ko.md">
-      <img src="https://img.shields.io/badge/readme-ko-orange?style=flat-square" alt="Language: Korean">
+      <img src="https://img.shields.io/badge/readme-ko%20deprecated-lightgrey?style=flat-square" alt="Korean README deprecated">
     </a>
   </div>
 
@@ -64,7 +64,7 @@ dasae-headers: Modern, Better safety and productivity to C
       - [Step 2: Build the `dh-c` Tool](#step-2-build-the-dh-c-tool)
       - [Step 3: Set Up Environment Variables](#step-3-set-up-environment-variables)
       - [Step 4: Verify Installation](#step-4-verify-installation)
-      - [Step 5: Create a New Project](#step-5-create-a-new-project)
+      - [Step 5: Use a `project.dh` Project](#step-5-use-a-projectdh-project)
       - [Hello, world!](#hello-world)
     - [🔨 Build and Run](#-build-and-run)
   - [Introduction](#introduction)
@@ -100,8 +100,7 @@ dasae-headers: Modern, Better safety and productivity to C
       - [`meta` — Runtime Record/Type Reflection](#meta--runtime-recordtype-reflection)
       - [`atom` — Atomic Operations](#atom--atomic-operations)
       - [`Thrd` — Threading](#thrd--threading)
-      - [`Co` / `async` — Stackless Coroutines](#co--async--stackless-coroutines)
-      - [`mp` — Multi-Processing *(planned)*](#mp--multi-processing-planned)
+      - [`Co` / `Clsr` — Coroutine Closures](#co--clsr--coroutine-closures)
       - [`ascii` — ASCII character utilities](#ascii--ascii-character-utilities)
       - [`utf8` — UTF-8 encoding/decoding](#utf8--utf-8-encodingdecoding)
       - [`utf16` — UTF-16 encoding/decoding](#utf16--utf-16-encodingdecoding)
@@ -110,13 +109,13 @@ dasae-headers: Modern, Better safety and productivity to C
       - [`unicode` — Unicode conversion hub](#unicode--unicode-conversion-hub)
       - [`os` — OS-Specific APIs](#os--os-specific-apis)
       - [`posix` — POSIX Compatibility](#posix--posix-compatibility)
-      - [`proc` — Process Management *(planned)*](#proc--process-management-planned)
+      - [`proc` — Process Management](#proc--process-management)
       - [`time` — Time \& Duration](#time--time--duration)
       - [`io` — Input/Output](#io--inputoutput)
       - [`fmt` — Formatting](#fmt--formatting)
       - [`log` — Logging](#log--logging)
       - [`fs` — File System](#fs--file-system)
-      - [`net` — Networking *(planned)*](#net--networking-planned)
+      - [`net` — Networking](#net--networking)
       - [`http` — HTTP *(planned)*](#http--http-planned)
       - [`TEST` — Testing Framework](#test--testing-framework)
       - [`main` — Entry Point](#main--entry-point)
@@ -173,8 +172,7 @@ cd dasae-headers
 
 ```sh
 cd dh-c
-./gen-makefile.sh
-make
+make PROFILE=release
 ```
 
 This compiles the `dh-c` build tool to `dh-c/build/dh-c`
@@ -226,26 +224,29 @@ dh-c --version
 dh-c --help
 ```
 
-#### Step 5: Create a New Project
+#### Step 5: Use a `project.dh` Project
 
-```sh
-dh-c project myproject
-cd myproject
-dh-c run
-```
+`dh-c` detects the nearest ancestor `project.dh` and uses it as the project
+contract for default builds, tests, and target roots. The `dh-c project` command
+name is reserved but not currently implemented.
+
+For the public `project.dh` contract and supported commands, see [BUILD.md](./BUILD.md).
 
 #### Hello, world!
 
 ```c
-#include <dh/main.h>
-#include <dh/io/stream.h>
+#include "dh-main.h"
+#include "dh/io/common.h"
+#include "dh/fs/File.h"
+#include "dh/io/Writer.h"
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
-    let message = u8_l("Hello");
-    io_stream_println(u8_l("{:s}, world!"), message);
+    let out = fs_File_writer(io_getStdOut());
+    let_(msg, O$S_const$u8) = some(u8_l("world"));
+    try_(io_Writer_print(out, u8_l("Hello, {:?s}!\n"), msg));
     return_ok({});
-} $unscoped_(fn);
+} $unscoped(fn);
 ```
 
 ### 🔨 Build and Run
@@ -332,7 +333,7 @@ of standard C into a single interface.
 | Aspect                      | Traditional C (Standard C)                                  | dasae-headers                                                                       |
 | --------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | **Variables and Functions** | Explicit type declarations and repetitive signatures        | `let` (constant), `var` (mutable) type inference and `fn_` modern syntax            |
-| **Lambda/Closures**         | GCC nested functions or Clang blocks, platform-dependent    | `la_` syntax unifying both compiler extensions, `Callable` type for `fn_` and `la_` |
+| **Lambda/Closures**         | GCC nested functions or Clang blocks, platform-dependent    | `la_` syntax and typed closure adapters through `Clsr`                               |
 | **Platform Support**        | Fragmented branching with `#ifdef`                          | **Unified API** (`{lang/arch/plat/comp}_cfg.h`, `os.h`, `posix.h`) provided         |
 | **Preprocessor Branching**  | Separate `#ifdef` branch definitions even for simple values | Single definition with preprocessor branching via `pp_if_`, `pp_switch_`            |
 
@@ -355,13 +356,14 @@ at the type system level.
 
 Provides ultra-lightweight asynchronous environments capable of handling tens of thousands of tasks
 simultaneously without OS thread overhead.
-Expresses state-machine-based control flow concisely with `async_/await_` patterns.
+Expresses state-machine-based control flow with `Co` coroutine frames that can be
+wrapped and invoked through `Clsr`.
 
 | Aspect              | Traditional C (Standard C)                           | dasae-headers                                                           |
 | ------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
 | **Async Model**     | OS native thread-centric design                      | OS native threads + **State-machine-based Stackless Coroutines**        |
 | **Sync Primitives** | Reliant on primitive `mutex`, `cond`                 | `RWLock`, `ResetEvent`, `WaitGroup`, etc.                               |
-| **Control Flow**    | Callback hell or manually implemented state machines | Coroutine control with `async_`, `await_`, `suspend_`, `resume_` syntax |
+| **Control Flow**    | Callback hell or manually implemented state machines | Coroutine control with `co_fn_`, `suspend_`, `resume_`, `co_return_` syntax |
 
 #### 4. Meta Type & Generic System
 
@@ -391,8 +393,8 @@ All safety features are optimized in release mode to ensure zero runtime overhea
 
 #### 6. Ecosystem & Infrastructure
 
-Manages the entire process from project creation to build and test with built-in tools
-without additional dependencies.
+Manages project-local build and test workflows with built-in tools
+and a `project.dh` contract.
 When errors occur, preserves call stack information beyond simple return values
 to immediately pinpoint the cause.
 
@@ -480,10 +482,10 @@ and standard library designs of Zig and Rust.
   `ok`/`err` keywords, `try_`/`catch_` patterns, error tracing with call stack information
 - **Modern Syntax:**
   Type inference (`let`/`var`), function definition (`fn_`), lambda expressions (`la_`),
-  first-class `Callable` type
+  and typed closure adapters (`Clsr`)
 - **Development Tools:**
-  Built-in testing framework, support for major C compilers (Clang, GCC)
-  and multi-platform environments
+  Built-in testing framework, Clang-centered build tooling,
+  and multi-platform environment support
 
 ---
 
@@ -532,12 +534,13 @@ Primitives, function syntax, assertions, debugging, scoped resource management,
 and safe arithmetic.
 
 - **Submodules:**
-  `prim`, `fn`, `Callable`, `claim`, `debug`, `range`, `op`, `cmp`, `pipe`, `chain`,
-  `blk`, `scope`, `src_loc`, `type_info`, `struct_layout`
+  `claim`, `debug`, `pri`, `scope`, `fn`, `op`, `cmp`, `pipe`, `chain`,
+  `range`, `src_loc`, `type_info`
 - **Primitive types:**
   `bool`, `i8`..`i64`, `u8`..`u64`, `isize`, `usize`, `f32`, `f64`
 - **Syntax:**
-  `fn_`, `la_` — function and lambda; `Callable` — first-class callable
+  `fn_` — function syntax; `la_` — lambda syntax; `Clsr` — typed function and
+  coroutine closure adapter
 - **Assertions:**
   `claim_assert`, `claim_unreachable`; `debug_assert`, `debug_only`
 - **Control/scope:**
@@ -568,8 +571,9 @@ Core algebraic types: Optional, Error Result, Slice, Array, Variant.
 (Safe arithmetic lives in `core`/`prim`.)
 
 - **Submodules:**
-  `types` (`raw`, `Val`, `Ptr`, `Arr`, `Sli`, `Opt`, `ErrRes`, `Err`, `variant`, `meta`),
-  `common`, `ErrTrace`, `int`, `flt`
+  `base`, `common`, `raw`, `Val`, `Ptr`, `Arr`, `Sli`, `Tup`, `Opt`,
+  `ErrSet`, `ErrRes`, `variant`, `meta`, `int`, `flt`, `Clsr`, `Co`,
+  `Err`, `ErrTrace`, `CompHash`, `simd`, `tpl`
 - **Key Types:**
   - `O$(T)` (Optional) — `some(v)`, `none()`, `if_some((opt)(capture))`, `orelse_((opt)(default))`, `unwrap_(opt)`
   - `E$(T)` (Error Result) — `ok(v)`, `err(e)`, `try_(expr)`, `catch_((expr)(err, block))`, `return_ok`, `return_err`
@@ -580,7 +584,7 @@ Core algebraic types: Optional, Error Result, Slice, Array, Variant.
 - **prl/int, prl/flt:**
   Per-type safe wrappers (e.g. `u8_add`, `u32_div`, `i64_mod`) with debug overflow checks;
   see `core`/`prim` for generic `int_add`, `intCast$`, etc.
-- **Zero-cost meta type system** (`prl/types/meta`):
+- **Zero-cost meta type system** (`prl/meta` and `prl/tpl`):
   Type-erased generic layer over PRL types so algorithms can work on values
   without knowing the concrete type at compile time.
   How it works and how it relates to the `meta` module (record/type reflection)
@@ -759,7 +763,7 @@ Optimal stable and unstable sorting functions isolated by auxiliary memory const
 
 | Module           | Description                                             | Key Functions                                                                      |
 | ---------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| **`Hash`**       | Hash utilities *(planned)*                              | —                                                                                  |
+| **`Hash`**       | Hash utilities                                          | —                                                                                  |
 | **`HashMap`**    | Hash map with open addressing                           | `init`, `fini`, `put`, `by`, `ptrBy`, `for`, `entry`, `contains`, `remove`, `iter` |
 | **`HashSet`**    | Hash set with open addressing                           | `init`, `fini`, `put`, `ensure`, `contains`, `remove`, `iter`                      |
 | **`HashMapSeq`** | Ordered hash map preserving insertion order *(planned)* | —                                                                                  |
@@ -774,7 +778,7 @@ Optimal stable and unstable sorting functions isolated by auxiliary memory const
 
 Low-level memory operations with type-safe wrappers.
 
-- **Submodules:** `common`, `Allocator`, `Tracker`
+- **Submodules:** `base`, `common`, `Alctr`, `AlcTrace`, `dyn`
 - **Bit Operations:**
   `mem_trailingZeros{8,16,32,64,Size}`, `mem_leadingZeros{8,16,32,64,Size}`
 - **Byte Swap:**
@@ -790,13 +794,13 @@ Low-level memory operations with type-safe wrappers.
   - `mem_swap`, `mem_reverse`, `mem_rotate` — Manipulation
   - `mem_startsWith`, `mem_endsWith` — Pattern matching
 - **Iterators:**
+  - `mem_WindowIter` — Window iterator over a buffer
   - `mem_TokenIter` — Tokenizer with value/pattern/choice delimiters
-  - `mem_tokenizeValue`, `mem_tokenizePattern`, `mem_tokenizeChoice`
-  - `mem_SplitIter`, `mem_WindowIter` *(planned)*
+  - `mem_SplitIter` — Split iterator over a buffer
 - **Allocator Interface:**
-  `mem_Allocator` — Unified allocator interface
-- **Tracker:**
-  `mem_Tracker` — Memory leak and double-free detection
+  `mem_Alctr` — unified allocator interface used by heap allocators and containers
+- **Allocation tracing:**
+  `AlcTrace` — traced allocation context support
 
 #### `heap` — Heap Allocators
 
@@ -816,7 +820,7 @@ Low-level memory operations with type-safe wrappers.
 
 Record layout and field access from `TypeInfo`, operating on the **meta type system**
 (`u_P$raw`, `u_S$raw`).
-For the relationship between this module and the meta type system (prl/types/meta),
+For the relationship between this module and the meta type system (`prl/meta`),
 see [Meta System](#meta-system).
 Compile-time type info is in `builtin`/`core` (`typeInfo$`, `sizeOf$`, `alignOf$`).
 
@@ -869,20 +873,21 @@ OS thread management and synchronization primitives.
 | **`WaitGroup`**  | Wait for multiple tasks              |
 
 - **Key Functions:**
-  `Thrd_spawn`, `Thrd_join`, `Thrd_detach`, `Thrd_current`, `Thrd_yield`, `Thrd_sleep`
+  `Thrd_spawn`, `Thrd_join`, `Thrd_detach`, `Thrd_currId`, `Thrd_yield`, `Thrd_sleep`
 
-#### `Co` / `async` — Stackless Coroutines
+#### `Co` / `Clsr` — Coroutine Closures
 
-State-machine-based coroutines for ultra-lightweight async processing.
+State-machine-based coroutines for lightweight async control flow.
+`Co` provides coroutine frames and control primitives; `Clsr` wraps either a
+normal function or a coroutine frame behind one typed invocation surface.
 
 - **Syntax:**
-  `async_fn_`, `await_`, `suspend_`, `resume_`, `areturn_`
-- **Context:**
-  `Co_Ctx`, `Co_CtxFn$`
-
-#### `mp` — Multi-Processing *(planned)*
-
-Multi-processing utilities for parallel workloads.
+  `co_fn_`, `co_fn_scope`, `suspend_`, `resume_`, `co_return_`
+- **Closure integration:**
+  `fn_use_Clsr_`, `co_use_Clsr_`, `clsr_`, `Clsr_Kind_fn`, `Clsr_Kind_co`
+- **Thread integration:**
+  `Thrd_spawn` accepts typed closures through `T_use_Thrd_spawn$(_T)`;
+  those closures can represent normal functions or coroutine frames.
 
 </details>
 
@@ -928,7 +933,7 @@ Multi-processing utilities for parallel workloads.
 
 POSIX API compatibility layer for cross-platform code.
 
-#### `proc` — Process Management *(planned)*
+#### `proc` — Process Management
 
 Process management utilities for cross-platform code.
 
@@ -1010,9 +1015,8 @@ String formatting and parsing with a spec system (prefix `fmt_`).
   `fs_Dir_readFile`, `fs_Dir_readFileAlloc`
 - **Path:**
   `fs_path_join`, `fs_path_dirname`, `fs_path_basename`
-  *(partial — `fs_path_extension` planned)*
 
-#### `net` — Networking *(planned)*
+#### `net` — Networking
 
 Networking utilities for cross-platform code.
 
@@ -1050,7 +1054,7 @@ Both use the same `u_` prefix and share `TypeInfo` from `core`/`type_info.h`.
 
 ---
 
-**1. Meta type system** (`prl/types/meta.h`, included via `prl/types.h`)
+**1. Meta type system** (`prl/meta.h`, included through `prl.h`)
 
 A **zero-cost generic layer** over PRL types so algorithms can operate on values
 without knowing the concrete type at compile time.
@@ -1210,7 +1214,7 @@ Both rely on `TypeInfo` from `core`/`type_info.h`
 | **OS**           | Windows, Unix, Linux, macOS                                                            |
 | **Architecture** | x86 (32-bit), x64 (64-bit)                                                             |
 | **Clang**        | 19.1.0+ (Recommended) / 16.0.0+ (Supported) / 9.0.0+ (Minimum, Requires -std=gnu11)    |
-| **GCC**          | 15.1.0+ (Recommended) / 13.1.0+ (Supported) / N/A (TBU) (Minimum, Requires -std=gnu11) |
+| **GCC**          | Planned for the build-tool flow; not part of the current `dh-c` support range          |
 | **MSVC**         | Planned (TBD)                                                                          |
 
 > **Note:** The `dh-c` build tool's support range is [Prerequisites](#prerequisites).
@@ -1242,7 +1246,7 @@ fn_((example(void))(void)) {
 
     let value = orelse_((found)(-1));
     let value_assumed = unwrap_(found);
-}
+};
 ```
 
 ### Error Results & Defer
@@ -1262,10 +1266,10 @@ fn_((safeDivide(i32 num, i32 denom))(math_Err$i32) $scope) {
 } $unscoped_(fn);
 
 $attr($must_check)
-fn_((example(mem_Allocator gpa))(E$void) $guard) {
+fn_((example(mem_Alctr gpa))(E$void) $guard) {
     // Allocate resources
-    var buffer = u_castS$((S$i32)(try_(mem_Allocator_alloc(gpa, typeInfo$(i32), 100))));
-    defer_(mem_Allocator_free(gpa, u_anyS(buffer)));
+    var buffer = try_(mem_Alctr_alloc$i32($trace gpa, 100));
+    defer_(mem_Alctr_free$i32($trace gpa, buffer));
 
     // Only executed when an error occurs and propagates
     errdefer_(err, io_stream_eprintln(u8_l("Occurred error!: {:e}"), err));
@@ -1316,16 +1320,16 @@ T_use$((i32)(
     ArrList,
     ArrList_init,
     ArrList_fini,
-    ArrList_appendWithin
+    ArrList_append
 ));
 
-fn_((collectEvenSq(S_const$i32 items, mem_Allocator gpa))(mem_Err$ArrList$i32) $scope) {
+fn_((collectEvenSq(S_const$i32 items, mem_Alctr gpa))(mem_Err$ArrList$i32) $scope) {
     let init = ArrList_init$i32;
-    let appendWithin = ArrList_appendWithin$i32;
+    let append = ArrList_append$i32;
     return_ok(chain$((ArrList$i32)(items)(
         filter_((x)(int_isEven(*x))),
         map$((i32)(x)(int_sq(*x))),
-        fold_(try_(init(gpa, items.len)), (collect, x)(appendWithin(&collect, *x), collect))
+        fold_(try_(init(gpa, items.len)), (collect, x)(try_(append(&collect, gpa, *x)), collect))
     )));
 } $unscoped_(fn);
 
@@ -1339,8 +1343,9 @@ fn_((reduceSumEvenSq(S_const$i32 items))(O$i32)) {
 
 $attr($must_check)
 fn_((example(void))(E$void) $guard) {
-    var page = (heap_Page){};
-    let gpa = heap_Page_allocator(&page);
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    let gpa = heap_Sys_alctr(&heap);
     let nums = A_ref$((S$i32)(A_from$((i32){ 1, 2, 3, 4, 5, 6, 7, 8 }))).as_const;
 
     let even_sqs = try_(collectEvenSq(nums, gpa));
@@ -1355,40 +1360,47 @@ fn_((example(void))(E$void) $guard) {
 
 ### Threads vs Stackless-Coroutines
 
-In addition to traditional OS threads, state-machine-based coroutines are provided
-for ultra-lightweight asynchronous processing.
+Threads run typed closures. A closure can wrap a normal function or a coroutine
+frame, so `Thrd_spawn` can execute either shape through the same typed closure
+contract.
 
 ```c
-Thrd_fn_(((timesTwoThread)(i32 input))(i32) $scope($ignore, args)) {
+$static fn_((timesTwo(i32 input))(i32)) {
     time_sleep(time_Duration_fromMillis(10));
-    return_(args->input * 2);
-} $unscoped_(Thrd_fn);
+    return input * 2;
+};
+fn_use_Clsr_((timesTwo)(i32)(i32));
 
-fn_((mainThread(S$S_const$u8 args))(E$void) $scope) {
-    let_ignore = args;
-    var task = try_(Thrd_spawn(Thrd_SpawnConfig_default, Thrd_FnCtx_from$((timesTwoThread)(10)).as_raw));
-    let result = Thrd_FnCtx_ret$((timesTwoThread)(Thrd_join(task)));
-    io_stream_println(u8_l("result: {:d}"), result);
+co_fn_(sumAfterSuspend, (i32 lhs; i32 rhs), i32);
+co_fn_scope(
+    sumAfterSuspend,
+    co_locals_({}),
+    co_locals_mut_({}),
+    co_suspended_({ var_(idle, Void); })
+) {
+    suspend_((idle)(Void_()));
+    co_return_($co_arg(lhs) + $co_arg(rhs));
+} $unscoped(co_fn);
+co_use_Clsr_((sumAfterSuspend)(i32, i32)(i32));
+
+T_use$((i32)(Clsr_Ctx, Clsr_Rtn, Clsr));
+T_use$((i32)(Co_Ctx, Co_Rtn, Co_Frame));
+T_use_Thrd_spawn$(i32);
+T_use_Thrd_join$(i32);
+
+fn_((example(void))(E$void) $guard) {
+    var function_clsr = clsr_((timesTwo)(21));
+    let function_thread = try_(Thrd_spawn$i32(Thrd_SpawnCfg_default, function_clsr.as_base));
+    let function_joined = Thrd_join$i32(function_thread);
+
+    var coroutine_clsr = clsr_((sumAfterSuspend)(19, 23));
+    let coroutine_thread = try_(Thrd_spawn$i32(Thrd_SpawnCfg_default, coroutine_clsr.as_base));
+    let coroutine_joined = Thrd_join$i32(coroutine_thread);
+
+    io_stream_println(u8_l("function: {:d}"), function_joined->ctx.ret);
+    io_stream_println(u8_l("coroutine: {:d}"), coroutine_joined->ctx.ret);
     return_ok({});
-} $unscoped_(fn);
-
-async_fn_(((timesTwoAsync)(O$$(Co_Ctx*) caller, i32 input))(i32) $scope({
-    var_(sleep_ctx, Co_CtxFn$(exec_sleep));
-})(self_ctx, args, locals)) {
-    callAsync((locals->sleep_ctx)((exec_sleep)(
-        some(orelse_((caller)(self_ctx->anyraw))), time_Duration_fromMillis(10)
-    )));
-    areturn_(args->input * 2);
-} $unscoped_(async_fn);
-
-async_fn_(((mainAsync)(S$S_const$u8 args))(Void) $scope({
-    var_(task, Co_CtxFn$(timesTwoAsync));
-})($ignore, $ignore, $ignore)) {
-    locals->task = async_ctx((timesTwoAsync)(none(), 10));
-    await_(resume_(locals->task));
-    io_stream_println(u8_l("result: {:d}"), Co_Ctx_returned(task));
-    areturn_({});
-} $unscoped_(async_fn);
+} $unguarded(fn);
 ```
 
 <details>
@@ -1432,8 +1444,8 @@ accepting allocators or memory buffers to fully control memory layout.
 ### Testing
 
 ```c
-#include <dh/main.h>
-#include <dh/TEST.h>
+#include "dh-TEST-main.h"
+#include "dh/TEST.h"
 
 // Define functions to test
 fn_((mathAdd(i32 a, i32 b))(i32)) { return a + b; }
@@ -1463,10 +1475,17 @@ TEST_fn_("Basic Math Operations Test" $scope) {
 
 ## Documentation
 
-> **Note:** Comprehensive documentation is a work in progress. For now, please refer to:
-> - The code samples in this README
-> - Header files in `dh/include/dh/` which contain detailed comments and API declarations
-> - Example projects in the repository
+Public project documents:
+
+| Document | Purpose |
+| --- | --- |
+| [`README.md`](./README.md) | Project overview and entry point. |
+| [`BUILD.md`](./BUILD.md) | Public build guide for `dh-c` and `project.dh` usage. |
+| [`PROJECT_TREE.md`](./PROJECT_TREE.md) | Curated repository structure overview. |
+| [`LICENSE`](./LICENSE) | MIT license. |
+
+For API details, use the public headers under `dh/include/dh/` and the checked
+examples and tests in this repository.
 
 ---
 
@@ -1494,7 +1513,6 @@ dasae-headers aims to achieve, please let us know :D
 ## Contribution and Contact
 
 We welcome issues, feature requests, and pull requests!
-Please refer to the [Contributing Guide](./dh/docs/en/contributing.md) for more details.
 
 - **Author:** Gyeongtae Kim (dev-dasae)
 - **Email:** [codingpelican@gmail.com](mailto:codingpelican@gmail.com)

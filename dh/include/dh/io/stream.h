@@ -21,22 +21,30 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define io_stream_using_libc __comp_bool__io_stream_using_libc
+
 #ifdef UNUSED_CODE
 $extern fn_((io_stream_scan(S_const$u8 fmt, ...))(void));
 $extern fn_((io_stream_scanVaArgs(S_const$u8 fmt, va_list va_args))(void));
 #endif /* UNUSED_CODE */
 
 $extern fn_((io_stream_nl(void))(void));
+$extern fn_((io_stream_crlf(void))(void));
 $extern fn_((io_stream_print(S_const$u8 fmt, ...))(void));
 $extern fn_((io_stream_printVaArgs(S_const$u8 fmt, va_list va_args))(void));
 $extern fn_((io_stream_println(S_const$u8 fmt, ...))(void));
 $extern fn_((io_stream_printlnVaArgs(S_const$u8 fmt, va_list va_args))(void));
 
 $extern fn_((io_stream_enl(void))(void));
+$extern fn_((io_stream_ecrlf(void))(void));
 $extern fn_((io_stream_eprint(S_const$u8 fmt, ...))(void));
 $extern fn_((io_stream_eprintVaArgs(S_const$u8 fmt, va_list va_args))(void));
 $extern fn_((io_stream_eprintln(S_const$u8 fmt, ...))(void));
 $extern fn_((io_stream_eprintlnVaArgs(S_const$u8 fmt, va_list va_args))(void));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __comp_bool__io_stream_using_libc comp_libc_linked
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -18,14 +18,14 @@ fn_((io_Writer_writeBytes(io_Writer self, S_const$u8 bytes))(E$void) $scope) {
 } $unscoped(fn);
 
 fn_((io_Writer_writeBytesN(io_Writer self, S_const$u8 bytes, usize n))(E$void) $scope) {
-    for (usize index = 0; index < n; ++index) {
+    for_(($rt(n))($ignore)) {
         try_(io_Writer_writeBytes(self, bytes));
-    }
+    } $end(for);
     return_ok({});
 } $unscoped(fn);
 
 fn_((io_Writer_writeByte(io_Writer self, u8 byte))(E$void)) {
-    var_(bytes, A$$(1, u8)) = A_init({ byte });
+    var_(bytes, A$$(1, u8)) = A_init({ [0] = byte });
     return io_Writer_writeBytes(self, A_ref$((S_const$u8)(bytes)));
 };
 
@@ -41,8 +41,16 @@ fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void) $scope) {
     return_ok({});
 } $unscoped(fn);
 
+fn_((io_Writer_nl(io_Writer self))(E$void)) {
+    return io_Writer_writeByte(self, io_nl_byte);
+};
+
+fn_((io_Writer_crlf(io_Writer self))(E$void)) {
+    return io_Writer_writeBytes(self, u8_l(io_crlf));
+};
+
 fn_((io_Writer_print(io_Writer self, S_const$u8 fmt, ...))(E$void) $guard) {
-    va_list va_args = {};
+    var_(va_args, va_list) $undefined;
     va_start(va_args, fmt);
     defer_(va_end(va_args));
     return_ok(try_(io_Writer_printVaArgs(self, fmt, va_args)));
@@ -53,7 +61,7 @@ fn_((io_Writer_printVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(E$v
 } $unscoped(fn);
 
 fn_((io_Writer_println(io_Writer self, S_const$u8 fmt, ...))(E$void) $guard) {
-    va_list va_args = {};
+    var_(va_args, va_list) $undefined;
     va_start(va_args, fmt);
     defer_(va_end(va_args));
     return_ok(try_(io_Writer_printlnVaArgs(self, fmt, va_args)));
@@ -62,19 +70,5 @@ fn_((io_Writer_println(io_Writer self, S_const$u8 fmt, ...))(E$void) $guard) {
 fn_((io_Writer_printlnVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(E$void) $scope) {
     try_(fmt_formatVaArgs(self, fmt, va_args));
     try_(io_Writer_nl(self));
-    return_ok({});
-} $unscoped(fn);
-
-fn_((io_Writer_nl(io_Writer self))(E$void) $scope) {
-    $static let pp_if_(plat_is_windows)(
-        pp_then_(s_crlf = u8_l("\r\n")),
-        pp_else_(s_lf = u8_c('\n')));
-    $static let s_line_feed = pp_if_(plat_is_windows)(
-        pp_then_(s_crlf),
-        pp_else_(s_lf));
-    $static let s_write = pp_if_(plat_is_windows)(
-        pp_then_(io_Writer_write),
-        pp_else_(io_Writer_writeByte));
-    try_(s_write(self, s_line_feed));
     return_ok({});
 } $unscoped(fn);

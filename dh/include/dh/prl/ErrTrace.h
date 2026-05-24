@@ -83,6 +83,7 @@ struct ETrace {
 #define ETrace_enable() ETrace_enable_callDebug()
 #define ETrace_disable() ETrace_disable_callDebug()
 #define ETrace_isEnabled() ETrace_isEnabled_callDebug()
+#define ETrace_depth() ETrace_depth_callDebug()
 #define ETrace_captureFrame() ETrace_captureFrame_callDebug()
 #define ETrace_print() ETrace_print_callDebug()
 
@@ -90,6 +91,7 @@ struct ETrace {
 #define ETrace_enable_callDebug() ETrace_enable_debug()
 #define ETrace_disable_callDebug() ETrace_disable_debug()
 #define ETrace_isEnabled_callDebug() ETrace_isEnabled_debug()
+#define ETrace_depth_callDebug() ETrace_depth_debug()
 #define ETrace_captureFrame_callDebug() ETrace_captureFrame_debug(srcLoc(), __builtin_return_address(0))
 #define ETrace_print_callDebug() ETrace_print_debug()
 
