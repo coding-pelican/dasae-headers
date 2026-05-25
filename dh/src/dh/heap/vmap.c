@@ -2,6 +2,9 @@
 
 #if plat_is_windows
 #include "dh/os/windows/mem.h"
+#elif plat_is_linux
+#include "dh/os/linux/syscall.h"
+#include <sys/mman.h>
 #elif plat_based_unix
 #include <sys/mman.h>
 #endif
@@ -55,14 +58,15 @@ fn_((heap_vmap_release(P$raw addr, usize len))(bool)) {
 fn_((heap_vmap_remap(P$raw addr, usize old_len, usize new_len))(O$P$u8) $scope) {
 #if plat_is_linux
     let geometry = heap_vmap_geom();
-    let new_addr = mremap(
+    let new_addr = os_linux_mremap(
         addr,
         heap_Geom_alignPageWith(geometry, old_len),
         heap_Geom_alignPageWith(geometry, new_len),
-        MREMAP_MAYMOVE
+        os_linux_MREMAP_MAYMOVE,
+        null
     );
     return_(expr_(ReturnType $scope)(
-        new_addr == MAP_FAILED ? $break_(none()) : $break_(some(new_addr))
+        os_linux_syscall_isErr(new_addr) ? $break_(none()) : $break_(some(intToPtr$((P$raw)(new_addr))))
     ) $unscoped(expr));
 #endif
     let_ignore = addr;

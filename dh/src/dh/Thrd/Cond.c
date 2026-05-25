@@ -3,6 +3,9 @@
 #include "dh/Thrd/Mtx.h"
 #include "dh/time/Duration.h"
 #include "dh/math/common.h"
+#if plat_is_linux
+#include "dh/os/linux/syscall.h"
+#endif
 
 /*========== Internal Declarations ==========================================*/
 
@@ -106,7 +109,11 @@ fn_((Thrd_Cond__pthread_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void)) {
 
 fn_((Thrd_Cond__pthread_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_E$void) $scope) {
     struct timespec abs_ts = cleared();
+#if plat_is_linux
+    if (os_linux_clock_gettime(os_linux_CLOCK_MONOTONIC, &abs_ts) != 0) {
+#else
     if (clock_gettime(CLOCK_MONOTONIC, &abs_ts) != 0) {
+#endif
         return_err(E_cause$Thrd_SystemResources());
     }
     // Add duration to get absolute deadline
@@ -235,11 +242,11 @@ fn_((Thrd_Cond__common_broadcast(Thrd_Cond* self))(void)) {
 /* --- Default --- */
 
 #if !Thrd_Cond_has_specialized
-#define Thrd_Cond__default_one_waiter (1)
-#define Thrd_Cond__default_waiter_mask (0xffff)
+#define Thrd_Cond__default_one_waiter (1u)
+#define Thrd_Cond__default_waiter_mask (0xffffu)
 
-#define Thrd_Cond__default_one_signal (1 << 16)
-#define Thrd_Cond__default_signal_mask (0xffff << 16)
+#define Thrd_Cond__default_one_signal (1u << 16)
+#define Thrd_Cond__default_signal_mask (0xffffu << 16)
 
 $attr($inline_always)
 $static fn_((Thrd_Cond__default_impl_init(void))(Thrd_Cond)) {
@@ -283,7 +290,7 @@ fn_((Thrd_Cond__default_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duratio
             while (true) {
                 // If there's a signal when we're timing out, consume it and report being woken up instead.
                 // Acquire barrier ensures code before the wake() which added the signal happens before we decrement it and return.
-                while (state & Thrd_Cond__default_signal_mask != 0) {
+                while ((state & Thrd_Cond__default_signal_mask) != 0) {
                     let new_state = state - Thrd_Cond__default_one_waiter - Thrd_Cond__default_one_signal;
                     state = orelse_((atom_V_cmpXchgWeak(&self->impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic))(return_ok({})));
                 }
@@ -299,7 +306,7 @@ fn_((Thrd_Cond__default_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duratio
 
         // Try to wake up by consuming a signal and decremented the waiter we added previously.
         // Acquire barrier ensures code before the wake() which added the signal happens before we decrement it and return.
-        while (state & Thrd_Cond__default_signal_mask != 0) {
+        while ((state & Thrd_Cond__default_signal_mask) != 0) {
             let new_state = state - Thrd_Cond__default_one_waiter - Thrd_Cond__default_one_signal;
             state = orelse_((atom_V_cmpXchgWeak(&self->impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic))(return_ok({})));
         }

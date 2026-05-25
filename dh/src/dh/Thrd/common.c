@@ -1,6 +1,9 @@
 #include "dh/Thrd/self.h"
 #include "dh/heap/vmem.h"
 #include "dh/meta.h"
+#if plat_is_linux
+#include "dh/os/linux/syscall.h"
+#endif
 
 typedef struct Thrd__Start {
     var_(clsr, Clsr$raw*);
@@ -315,6 +318,7 @@ fn_((Thrd_join(Thrd self))(Clsr$raw*)) {
     return Thrd__join(self);
 };
 
+$attr($maybe_unused)
 fn_((Thrd__startAlloc(
     Thrd_SpawnCfg cfg,
     Clsr$raw* clsr,
@@ -335,6 +339,7 @@ fn_((Thrd__startAlloc(
     return_ok(u_anyP(start));
 } $unscoped(fn);
 
+$attr($maybe_unused)
 fn_((Thrd__startFree(Thrd__Start* start))(void)) {
     let gpa = start->gpa;
     mem_Alctr_destroy($trace gpa, u_anyP(start));
@@ -590,12 +595,43 @@ fn_((Thrd__windows_join(Thrd self))(Clsr$raw*)) {
 #endif
 
 #if plat_is_linux
-#include <sys/syscall.h>
-#include <sys/mman.h>
-#include <linux/sched.h>
-#include <linux/futex.h>
-#include <unistd.h>
-#include <errno.h>
+#if comp_libc_linked
+$extern fn_((clone(i32 (*fn)(P$raw), P$raw child_stack, i32 flags, P$raw arg, i32* parent_tid, P$raw tls, i32* child_tid))(i32));
+#endif
+$static fn_((Thrd__linux_clone(i32 (*fn)(P$raw), P$raw child_stack, i32 flags, P$raw arg, i32* parent_tid, P$raw tls, i32* child_tid))(i32));
+
+typedef struct Thrd__linux_CpuSet {
+    usize words[128 / arch_bits_per_word];
+} Thrd__linux_CpuSet;
+
+$static fn_((Thrd__linux_clone(i32 (*fn)(P$raw), P$raw child_stack, i32 flags, P$raw arg, i32* parent_tid, P$raw tls, i32* child_tid))(i32)) {
+#if comp_libc_linked
+    return clone(fn, child_stack, flags, arg, parent_tid, tls, child_tid);
+#else
+    let_ignore = fn;
+    let_ignore = child_stack;
+    let_ignore = flags;
+    let_ignore = arg;
+    let_ignore = parent_tid;
+    let_ignore = tls;
+    let_ignore = child_tid;
+    return -1;
+#endif
+};
+
+$attr($inline_always)
+$static fn_((Thrd__linux_cpuSetZero(Thrd__linux_CpuSet* self))(void)) {
+    *self = (Thrd__linux_CpuSet){ 0 };
+};
+
+$attr($inline_always)
+$static fn_((Thrd__linux_cpuSetCount(const Thrd__linux_CpuSet* self))(usize)) {
+    usize count = 0;
+    for (usize i = 0; i < 128 / arch_bits_per_word; ++i) {
+        count += raw_countOnesSize(self->words[i]);
+    }
+    return count;
+};
 
 typedef enum_((Thrd__linux_Completion $fits($packed))(
     Thrd__linux_Completion_running = 0,
@@ -619,19 +655,19 @@ fn_((Thrd__linux_handle(Thrd self))(Thrd_Handle)) {
 };
 
 fn_((Thrd__linux_yield(void))(Thrd_E$void) $scope) {
-    if (syscall(SYS_sched_yield) != 0) return_err(E_cause$ThrdSystemResources());
+    if (os_linux_sched_yield() != 0) return_err(E_cause$ThrdSystemResources());
     return_ok({});
 } $unscoped(fn);
 
 fn_((Thrd__linux_currId(void))(Thrd_Id)) {
-    return as$(Thrd_Id)(syscall(SYS_gettid));
+    return as$(Thrd_Id)(os_linux_gettid());
 };
 
 fn_((Thrd__linux_cpuCount(void))(Thrd_E$usize) $scope) {
-    cpu_set_t cpu_set;
-    CPU_ZERO(&cpu_set);
-    if (sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) return_err(E_cause$ThrdSystemResources());
-    return_ok(as$(usize)(CPU_COUNT(&cpu_set)));
+    var_(cpu_set, Thrd__linux_CpuSet) = cleared();
+    Thrd__linux_cpuSetZero(&cpu_set);
+    if (os_linux_sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) return_err(E_cause$ThrdSystemResources());
+    return_ok(Thrd__linux_cpuSetCount(&cpu_set));
 } $unscoped(fn);
 
 fn_((Thrd__linux_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
@@ -647,8 +683,9 @@ fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
 } $unscoped(fn);
 
 #define Thrd__linux_clone_flags ( \
-    CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD | CLONE_SYSVSEM \
-    | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID \
+    os_linux_CLONE_VM | os_linux_CLONE_FS | os_linux_CLONE_FILES | os_linux_CLONE_SIGHAND \
+    | os_linux_CLONE_THREAD | os_linux_CLONE_SYSVSEM | os_linux_CLONE_SETTLS \
+    | os_linux_CLONE_PARENT_SETTID | os_linux_CLONE_CHILD_CLEARTID \
 )
 
 $static fn_((Thrd__linux_entry(P$raw arg))(i32));
@@ -662,7 +699,7 @@ fn_((Thrd__linux_spawn(
     claim_assert_nonnull(clsr);
     let_ignore = destroy_clsr;
     let_ignore = owned_clsr;
-    let page_size = as$(usize)(sysconf(_SC_PAGESIZE));
+    let page_size = mem_page_size;
     let stack_size = mem_alignFwd(pri_max(page_size, cfg.stack_size), page_size);
     let meta_size = mem_alignFwd(sizeOf$(Thrd__linux_Meta), alignOf$(Thrd__linux_Meta));
     let map_size = page_size + stack_size + meta_size;
@@ -671,7 +708,7 @@ fn_((Thrd__linux_spawn(
     errdefer_($ignore, heap_vmem_release(map_base, map_size));
     let stack_start = as$(u8*)(map_base) + page_size;
     if (!heap_vmem_commit(stack_start, stack_size + meta_size)) return_err(E_cause$ThrdSystemResources());
-    let meta = as$(Thrd__linux_Meta*)(as$(u8*)(map_base) + page_size + stack_size);
+    let meta = intToPtr$((Thrd__linux_Meta*)(ptrToInt(map_base) + page_size + stack_size));
     *meta = (Thrd__linux_Meta){
         .clsr = clsr,
         .ret_type = ret_type,
@@ -681,12 +718,12 @@ fn_((Thrd__linux_spawn(
         .child_tid = atom_V_init(1),
     };
     let stack_top = as$(P$raw)(meta);
-    let tid = clone(
+    let tid = Thrd__linux_clone(
         Thrd__linux_entry, stack_top,
         Thrd__linux_clone_flags, meta,
         &meta->parent_tid,
         null,
-        &meta->child_tid.value
+        ptrQualCast$((i32*)(&meta->child_tid.raw))
     );
     if (tid == -1) return_err(E_cause$ThrdSystemResources());
     return_ok((Thrd){
@@ -701,13 +738,11 @@ $static fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void));
 fn_((Thrd__linux_entry(P$raw arg))(i32)) {
     let meta = ensureNonnull(as$(Thrd__linux_Meta*)(arg));
     Clsr_invokeToComplete(ensureNonnull(meta->clsr), meta->ret_type);
-    let prev = atom_V_fetchXchg(&meta->completion, Thrd__linux_Completion_completed, memory_order_seq_cst);
+    let prev = atom_V_fetchXchg(&meta->completion, Thrd__linux_Completion_completed, atom_MemOrd_seq_cst);
     switch (prev) {
-    case_((Thrd__linux_Completion_running))
-        return 0 $end(case);
-    case_((Thrd__linux_Completion_detached))
-        Thrd__linux_freeAndExit(meta) $end(case);
-    case Thrd__linux_Completion_completed: $fallthrough;
+    case_((Thrd__linux_Completion_running)) return 0 $end(case);
+    case_((Thrd__linux_Completion_detached)) Thrd__linux_freeAndExit(meta) $end(case);
+    case_((Thrd__linux_Completion_completed)) claim_unreachable $end(case);
     default_() claim_unreachable $end(default);
     }
     return 0;
@@ -715,14 +750,11 @@ fn_((Thrd__linux_entry(P$raw arg))(i32)) {
 
 fn_((Thrd__linux_detach(Thrd self))(void)) {
     let meta = as$(Thrd__linux_Meta*)(self.inner);
-    let prev = atom_V_fetchXchg(&meta->completion, Thrd__linux_Completion_detached, memory_order_seq_cst);
+    let prev = atom_V_fetchXchg(&meta->completion, Thrd__linux_Completion_detached, atom_MemOrd_seq_cst);
     switch (prev) {
-    case_((Thrd__linux_Completion_running))
-        break $end(case);
-    case_((Thrd__linux_Completion_completed))
-        let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
-        break $end(case);
-    case_((Thrd__linux_Completion_detached)) $fallthrough;
+    case_((Thrd__linux_Completion_running)) $do_nothing $end(case);
+    case_((Thrd__linux_Completion_completed)) let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len) $end(case);
+    case_((Thrd__linux_Completion_detached)) claim_unreachable $end(case);
     default_() claim_unreachable $end(default);
     }
 };
@@ -730,9 +762,9 @@ fn_((Thrd__linux_detach(Thrd self))(void)) {
 fn_((Thrd__linux_join(Thrd self))(Clsr$raw*)) {
     let meta = as$(Thrd__linux_Meta*)(self.inner);
     while (true) {
-        let tid = atom_V_load(&meta->child_tid, memory_order_seq_cst);
+        let tid = atom_V_load(&meta->child_tid, atom_MemOrd_seq_cst);
         if (tid == 0) break;
-        syscall(SYS_futex, &meta->child_tid.value, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, tid, null, null, 0);
+        let_ignore = os_linux_futex(ptrQualCast$((P$raw)(&meta->child_tid.raw)), os_linux_FUTEX_WAIT | os_linux_FUTEX_PRIVATE_FLAG, tid, null, null, 0);
     }
     let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
     return ensureNonnull(self.clsr);
@@ -741,23 +773,21 @@ fn_((Thrd__linux_join(Thrd self))(Clsr$raw*)) {
 fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_family_type)(
     pp_case_((arch_family_type_x86)(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
-            register P$raw map_base asm("rdi") = meta->map.ptr;
-            register usize map_size asm("rsi") = meta->map.len;
-            __asm__ __volatile__(
+            asm_var_(map_base, P$raw) $reg(rdi) = meta->map.ptr;
+            asm_var_(map_size, usize) $reg(rsi) = meta->map.len;
+            asm_volatile(
                 "movl $11, %%eax\n\t"
                 "syscall\n\t"
                 "movl $60, %%eax\n\t"
                 "xor %%rdi, %%rdi\n\t"
-                "syscall"
-                :
-                : "r"(map_base), "r"(map_size)
-                : "memory", "rax"
+                "syscall" : : "r"(map_base),
+                "r"(map_size) : "memory", "rax"
             );
             claim_unreachable;
         })),
         pp_case_((arch_type_x86)({
-            register P$raw map_base asm("ebx") = meta->map.ptr;
-            register usize map_size asm("ecx") = meta->map.len;
+            asm_var_(map_base, P$raw) $reg(ebx) = meta->map.ptr;
+            asm_var_(map_size, usize) $reg(ecx) = meta->map.len;
             __asm__ __volatile__(
                 "movl $91, %%eax\n\t"
                 "int $0x80\n\t"
@@ -773,48 +803,42 @@ fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_fa
     )))),
     pp_case_((arch_family_type_arm)(pp_switch_((arch_type)(
         pp_case_((arch_type_aarch64)({
-            register P$raw map_base asm("x0") = meta->map.ptr;
-            register usize map_size asm("x1") = meta->map.len;
-            __asm__ __volatile__(
+            asm_var_(map_base, P$raw) $reg(x0) = meta->map.ptr;
+            asm_var_(map_size, usize) $reg(x1) = meta->map.len;
+            asm_volatile(
                 "mov x8, #215\n\t"
                 "svc 0\n\t"
                 "mov x8, #93\n\t"
                 "mov x0, #0\n\t"
-                "svc 0"
-                :
-                : "r"(map_base), "r"(map_size)
-                : "memory", "x8"
+                "svc 0" : : "r"(map_base),
+                "r"(map_size) : "memory", "x8"
             );
             claim_unreachable;
         })),
         pp_case_((arch_type_arm)({
-            register P$raw map_base asm("r0") = meta->map.ptr;
-            register usize map_size asm("r1") = meta->map.len;
-            __asm__ __volatile__(
+            asm_var_(map_base, P$raw) $reg(r0) = meta->map.ptr;
+            asm_var_(map_size, usize) $reg(r1) = meta->map.len;
+            asm_volatile(
                 "mov r7, #91\n\t"
                 "svc 0\n\t"
                 "mov r7, #1\n\t"
                 "mov r0, #0\n\t"
-                "svc 0"
-                :
-                : "r"(map_base), "r"(map_size)
-                : "memory", "r7"
+                "svc 0" : : "r"(map_base),
+                "r"(map_size) : "memory", "r7"
             );
             claim_unreachable;
         }))
     )))),
     pp_case_((arch_family_type_riscv)({
-        register P$raw map_base asm("a0") = meta->map.ptr;
-        register usize map_size asm("a1") = meta->map.len;
-        __asm__ __volatile__(
+        asm_var_(map_base, P$raw) $reg(a0) = meta->map.ptr;
+        asm_var_(map_size, usize) $reg(a1) = meta->map.len;
+        asm_volatile(
             "li a7, 215\n\t"
             "ecall\n\t"
             "li a7, 93\n\t"
             "li a0, 0\n\t"
-            "ecall"
-            :
-            : "r"(map_base), "r"(map_size)
-            : "memory", "a7"
+            "ecall" : : "r"(map_base),
+            "r"(map_size) : "memory", "a7"
         );
         claim_unreachable;
     }))

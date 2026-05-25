@@ -5,6 +5,11 @@
 #if plat_is_windows
 #include "dh/os/windows/handle.h"
 #include "dh/os/windows/file.h"
+#elif plat_is_linux
+#include "dh/os/linux/syscall.h"
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #else /* plat_based_unix */
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -112,6 +117,10 @@ fn_((fs_File_rename(S_const$u8 old_path, S_const$u8 new_path))(E$void) $scope) {
     if (!MoveFileExA(
             as$(LPCSTR)(A_ptr(old_path_z)),
             as$(LPCSTR)(A_ptr(new_path_z)), MOVEFILE_REPLACE_EXISTING)) return_err(E_cause$WriteFailedFS());
+#elif plat_is_linux
+    if (os_linux_renameat(os_linux_AT_FDCWD, as$(const char*)(A_ptr(old_path_z)), os_linux_AT_FDCWD, as$(const char*)(A_ptr(new_path_z))) != 0) {
+        return_err(E_cause$NotFoundFS());
+    }
 #else /* plat_based_unix */
     if (rename(as$(const char*)(A_ptr(old_path_z)), as$(const char*)(A_ptr(new_path_z))) != 0) {
         return_err(E_cause$NotFoundFS());
@@ -197,7 +206,7 @@ fn_((fs_File_setPerms(fs_File self, fs_File_Mode perms))(E$void) $scope) {
     let_ignore = perms;
     return_err(E_cause$UnsupportedFS());
 #else /* plat_based_unix */
-    if (fchmod(self.handle, perms) != 0) return_err(E_cause$PermissionDeniedFS());
+    if (fchmod(self.handle, as$(mode_t)(perms)) != 0) return_err(E_cause$PermissionDeniedFS());
     return_ok({});
 #endif
 } $unscoped(fn);

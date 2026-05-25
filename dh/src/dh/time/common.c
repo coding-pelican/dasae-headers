@@ -1,4 +1,7 @@
 #include "dh/time.h"
+#if plat_is_linux
+#include "dh/os/linux/syscall.h"
+#endif
 
 /*========== Internal Declarations ==========================================*/
 
@@ -94,12 +97,18 @@ fn_((time__windows_sleep(time_Duration duration))(void) $guard) {
 #if plat_based_unix
 fn_((time__unix_sleep(time_Duration duration))(void)) {
     struct timespec req = {
-        .tv_sec = duration.secs,
-        .tv_nsec = duration.nanos,
+        .tv_sec = as$(time_t)(duration.secs),
+        .tv_nsec = as$(long)(duration.nanos),
     };
     struct timespec rem = cleared();
+#if plat_is_linux
+    while (os_linux_nanosleep(&req, &rem) == -os_linux_EINTR) {
+        req = rem;
+    }
+#else
     while (nanosleep(&req, &rem) == -1) {
         req = rem;
     }
+#endif
 };
 #endif /* plat_based_unix */

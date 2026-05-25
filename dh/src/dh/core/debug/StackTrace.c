@@ -2,8 +2,11 @@
 #include "dh/io/stream.h"
 #include "dh/Thrd.h"
 
+#define debug_StackTrace__unix_enabled pp_and(plat_based_unix, comp_libc_linked)
+
 /*========== Internal Declarations ==========================================*/
 
+$attr($maybe_unused)
 $static fn_((debug_StackTrace__printPanicHeader(S_const$u8 reason, usize code))(void));
 
 pp_if_(pp_true)(pp_then_(
@@ -18,7 +21,7 @@ pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
     $static fn_((debug_StackTrace__windows_print(void))(void));
 ));
-pp_if_(plat_based_unix)(pp_then_(
+pp_if_(debug_StackTrace__unix_enabled)(pp_then_(
     $attr($inline_always)
     $static fn_((debug_StackTrace__unix_setupCrashHandler(void))(void));
     $attr($inline_always)
@@ -28,14 +31,14 @@ pp_if_(plat_based_unix)(pp_then_(
 $attr(pp_if_(pp_not(debug_comp_enabled))(pp_then_($maybe_unused)))
 $static let debug_StackTrace__setupCrashHandler = pp_if_(plat_is_windows)(
     pp_then_(debug_StackTrace__windows_setupCrashHandler),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(debug_StackTrace__unix_enabled)(
         pp_then_(debug_StackTrace__unix_setupCrashHandler),
         pp_else_(debug_StackTrace__unsupported_setupCrashHandler)
     )));
 $attr(pp_if_(pp_not(debug_comp_enabled))(pp_then_($maybe_unused)))
 $static let debug_StackTrace__print = pp_if_(plat_is_windows)(
     pp_then_(debug_StackTrace__windows_print),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(debug_StackTrace__unix_enabled)(
         pp_then_(debug_StackTrace__unix_print),
         pp_else_(debug_StackTrace__unsupported_print)
     )));
@@ -173,7 +176,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
 
 /* --- Unix --- */
 
-#if plat_based_unix
+#if debug_StackTrace__unix_enabled
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <signal.h>
@@ -231,4 +234,4 @@ fn_((debug_StackTrace__unix_print(void))(void)) {
         }
     } $end(for);
 };
-#endif /* plat_based_unix */
+#endif /* debug_StackTrace__unix_enabled */

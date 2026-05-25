@@ -1,4 +1,7 @@
 #include "dh/time/Instant.h"
+#if plat_is_linux
+#include "dh/os/linux/syscall.h"
+#endif
 #include "dh/time/Duration.h"
 
 /*========== Internal Declarations ==========================================*/
@@ -344,9 +347,12 @@ $attr($on_load)
 $static fn_((time_Instant__unix_init(void))(void)) {
     if (s_unix_initialized) { return; }
     var value = l0$((time_InstantPlatform));
-    if (clock_gettime(CLOCK_MONOTONIC, &value) != 0) {
+#if plat_is_linux
+    if (os_linux_clock_gettime(os_linux_CLOCK_MONOTONIC, &value) != 0)
+#else
+    if (clock_gettime(CLOCK_MONOTONIC, &value) != 0)
+#endif
         claim_unreachable_msg("Failed to initialize high-resolution timer");
-    }
     s_unix_perf_freq.tv_sec = 1;
     s_unix_perf_freq.tv_nsec = time_Instant_nanos_per_sec;
     s_unix_perf_freq_inv = 1.0 / as$(f64)(time_Instant_nanos_per_sec);
@@ -374,7 +380,11 @@ fn_((time_Instant__unix_offset(void))(time_Instant)) {
 fn_((time_Instant__unix_now(void))(time_Instant)) {
     time_Instant__unix_ensureInit();
     var current = l0$((time_InstantPlatform));
+#if plat_is_linux
+    let_ignore = os_linux_clock_gettime(os_linux_CLOCK_MONOTONIC, &current);
+#else
     clock_gettime(CLOCK_MONOTONIC, &current);
+#endif
     return (time_Instant){ .impl = current };
 };
 
@@ -390,11 +400,11 @@ fn_((time_Instant__unix_durationSinceChkd(time_Instant later, time_Instant earli
     diff.tv_sec = later.impl.tv_sec - earlier.impl.tv_sec;
     if (later.impl.tv_nsec < earlier.impl.tv_nsec) {
         diff.tv_sec--;
-        diff.tv_nsec = time_Instant_nanos_per_sec + later.impl.tv_nsec - earlier.impl.tv_nsec;
+        diff.tv_nsec = as$(long)(time_Instant_nanos_per_sec) + later.impl.tv_nsec - earlier.impl.tv_nsec;
     } else {
         diff.tv_nsec = later.impl.tv_nsec - earlier.impl.tv_nsec;
     }
-    let nanos = as$(u64)((diff.tv_sec * time_Instant_nanos_per_sec) + diff.tv_nsec);
+    let nanos = as$(u64)(diff.tv_sec) * time_Instant_nanos_per_sec + as$(u64)(diff.tv_nsec);
     return_some(time_Duration_fromNanos(nanos));
 } $unscoped(fn);
 
@@ -403,8 +413,8 @@ fn_((time_Instant__unix_addChkdDuration(time_Instant lhs, time_Duration rhs))(O$
     if ((0 <= lhs.impl.tv_sec) && ticks <= (u64_limit_max - as$(u64)(lhs.impl.tv_sec))) {
         return_some({
             .impl = {
-                .tv_sec = lhs.impl.tv_sec + (ticks / time_Instant_nanos_per_sec),
-                .tv_nsec = lhs.impl.tv_nsec + (ticks % time_Instant_nanos_per_sec),
+                .tv_sec = lhs.impl.tv_sec + as$(time_t)(ticks / time_Instant_nanos_per_sec),
+                .tv_nsec = lhs.impl.tv_nsec + as$(long)(ticks % time_Instant_nanos_per_sec),
             },
         });
     }
@@ -416,8 +426,8 @@ fn_((time_Instant__unix_subChkdDuration(time_Instant lhs, time_Duration rhs))(O$
     if ((0 <= lhs.impl.tv_sec) && ticks <= (u64_limit_max + as$(u64)(lhs.impl.tv_sec))) {
         return_some({
             .impl = {
-                .tv_sec = lhs.impl.tv_sec - (ticks / time_Instant_nanos_per_sec),
-                .tv_nsec = lhs.impl.tv_nsec - (ticks % time_Instant_nanos_per_sec),
+                .tv_sec = lhs.impl.tv_sec - as$(time_t)(ticks / time_Instant_nanos_per_sec),
+                .tv_nsec = lhs.impl.tv_nsec - as$(long)(ticks % time_Instant_nanos_per_sec),
             },
         });
     }

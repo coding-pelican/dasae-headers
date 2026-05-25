@@ -25,10 +25,10 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let input_buf = A_ref$((S$u8)(input_mem));
     var_(read_mem, A$$(256, u8)) $undefined;
     var stream_in = io_Buf_Reader_init(fs_File_reader(io_getStdIn()), A_ref$((S$u8)(read_mem)));
-    let whitespace = A_ref$((S_const$u8)(ascii_whitespaces));
+    let whitespace = A_ref$((S_const$u8)(u8_a(ascii_whitespaces)));
 
     io_stream_print(u8_l("tokenizing reading input: "));
-    using_(let input = try_(io_Buf_Reader_readUntilByte(&stream_in, u8_c('\n'), input_buf))) {
+    using_(let input = try_(io_Buf_Reader_readUntilByte(&stream_in, ascii_lf_byte, input_buf))) {
         var iter = mem_tokzAny$u8(input.as_const, whitespace);
         while_some(mem_TokzIter_next$u8(&iter), token) {
             io_stream_println(u8_l("token: {:s}"), token);
@@ -37,7 +37,7 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     }
 
     io_stream_print(u8_l("input i32 '<a> <b> [<c>]': "));
-    using_(let input = try_(io_Buf_Reader_readUntilByte(&stream_in, u8_c('\n'), input_buf))) {
+    using_(let input = try_(io_Buf_Reader_readUntilByte(&stream_in, ascii_lf_byte, input_buf))) {
         var iter = mem_tokzAny$u8(input.as_const, whitespace);
         let a = mem_TokzIter_next$u8(&iter);
         io_stream_println(u8_l("a: {:?s}"), a);

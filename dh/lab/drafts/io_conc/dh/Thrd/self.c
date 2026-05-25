@@ -759,80 +759,70 @@ fn_((Thrd__linux_join(Thrd self))(Clsr$raw*)) {
 fn_((Thrd__linux_freeAndExit(Thrd__linux_Meta* meta))(void)) pp_switch_((arch_family_type)(
     pp_case_((arch_family_type_x86)(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
-            register P$raw map_base asm("rdi") = meta->map.ptr;
-            register usize map_size asm("rsi") = meta->map.len;
-            __asm__ __volatile__(
+            asm_var_(map_base, P$raw) $reg(rdi) = meta->map.ptr;
+            asm_var_(map_size, usize) $reg(rsi) = meta->map.len;
+            asm_volatile(
                 "movl $11, %%eax\n\t" // SYS_munmap
                 "syscall\n\t"
                 "movl $60, %%eax\n\t" // SYS_exit
                 "xor %%rdi, %%rdi\n\t" // exit code 0
-                "syscall"
-                :
-                : "r"(map_base), "r"(map_size)
-                : "memory", "rax"
+                "syscall" : : "r"(map_base),
+                "r"(map_size) : "memory", "rax"
             );
             claim_unreachable;
         })),
         pp_case_((arch_type_x86)({
-            register P$raw map_base asm("ebx") = meta->map.ptr;
-            register usize map_size asm("ecx") = meta->map.len;
-            __asm__ __volatile__(
+            asm_var_(map_base, P$raw) $reg(ebx) = meta->map.ptr;
+            asm_var_(map_size, usize) $reg(ecx) = meta->map.len;
+            asm_volatile(
                 "movl $91, %%eax\n\t" // SYS_munmap
                 "int $0x80\n\t"
                 "movl $1, %%eax\n\t" // SYS_exit
                 "movl $0, %%ebx\n\t"
-                "int $0x80"
-                :
-                : "r"(map_base), "r"(map_size)
-                : "memory", "eax"
+                "int $0x80" : : "r"(map_base),
+                "r"(map_size) : "memory", "eax"
             );
             claim_unreachable;
         }))
     )))),
     pp_case_((arch_family_type_arm)(pp_switch_((arch_type)(
         pp_case_((arch_type_aarch64)({
-            register P$raw map_base asm("x0") = meta->map.ptr;
-            register usize map_size asm("x1") = meta->map.len;
-            __asm__ __volatile__(
+            asm_var_(map_base, P$raw) $reg(x0) = meta->map.ptr;
+            asm_var_(map_size, usize) $reg(x1) = meta->map.len;
+            asm_volatile(
                 "mov x8, #215\n\t" // SYS_munmap
                 "svc 0\n\t"
                 "mov x8, #93\n\t" // SYS_exit
                 "mov x0, #0\n\t"
-                "svc 0"
-                :
-                : "r"(map_base), "r"(map_size)
-                : "memory", "x8"
+                "svc 0" : : "r"(map_base),
+                "r"(map_size) : "memory", "x8"
             );
             claim_unreachable;
         })),
         pp_case_((arch_type_arm)({
-            register P$raw map_base asm("r0") = meta->map.ptr;
-            register usize map_size asm("r1") = meta->map.len;
-            __asm__ __volatile__(
+            asm_var_(map_base, P$raw) $reg(r0) = meta->map.ptr;
+            asm_var_(map_size, usize) $reg(r1) = meta->map.len;
+            asm_volatile(
                 "mov r7, #91\n\t" // SYS_munmap
                 "svc 0\n\t"
                 "mov r7, #1\n\t" // SYS_exit
                 "mov r0, #0\n\t"
-                "svc 0"
-                :
-                : "r"(map_base), "r"(map_size)
-                : "memory", "r7"
+                "svc 0" : : "r"(map_base),
+                "r"(map_size) : "memory", "r7"
             );
             claim_unreachable;
         }))
     )))),
     pp_case_((arch_family_type_riscv)({
-        register P$raw map_base asm("a0") = meta->map.ptr;
-        register usize map_size asm("a1") = meta->map.len;
-        __asm__ __volatile__(
+        asm_var_(map_base, P$raw) $reg(a0) = meta->map.ptr;
+        asm_var_(map_size, usize) $reg(a1) = meta->map.len;
+        asm_volatile(
             "li a7, 215\n\t" // SYS_munmap
             "ecall\n\t"
             "li a7, 93\n\t" // SYS_exit
             "li a0, 0\n\t"
-            "ecall"
-            :
-            : "r"(map_base), "r"(map_size)
-            : "memory", "a7"
+            "ecall" : : "r"(map_base),
+            "r"(map_size) : "memory", "a7"
         );
         claim_unreachable;
     }))

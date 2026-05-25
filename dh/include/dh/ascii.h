@@ -25,132 +25,111 @@ extern "C" {
 
 /// The C0 control codes of the ASCII encoding.
 enum_((ascii_CtrlCode $fits($packed))(
-    /// Null.
-    ascii_CtrlCode_nul = 0x00,
-    /// Start of Heading.
-    ascii_CtrlCode_soh = 0x01,
-    /// Start of Text.
-    ascii_CtrlCode_stx = 0x02,
-    /// End of Text.
-    ascii_CtrlCode_etx = 0x03,
-    /// End of Transmission.
-    ascii_CtrlCode_eot = 0x04,
-    /// Enquiry.
-    ascii_CtrlCode_enq = 0x05,
-    /// Acknowledge.
-    ascii_CtrlCode_ack = 0x06,
-    /// Bell, Alert.
-    ascii_CtrlCode_bel = 0x07,
-    /// Backspace.
-    ascii_CtrlCode_bs = 0x08,
-    /// Horizontal Tab, Tab ('\t').
-    ascii_CtrlCode_ht = 0x09,
-    /// Line Feed, Newline ('\n').
-    ascii_CtrlCode_lf = 0x0A,
-    /// Vertical Tab.
-    ascii_CtrlCode_vt = 0x0B,
-    /// Form Feed.
-    ascii_CtrlCode_ff = 0x0C,
-    /// Carriage Return ('\r').
-    ascii_CtrlCode_cr = 0x0D,
-    /// Shift Out.
-    ascii_CtrlCode_so = 0x0E,
-    /// Shift In.
-    ascii_CtrlCode_si = 0x0F,
-    /// Data Link Escape.
-    ascii_CtrlCode_dle = 0x10,
-    /// Device Control One (XON).
-    ascii_CtrlCode_dc1 = 0x11,
-    /// Device Control Two.
-    ascii_CtrlCode_dc2 = 0x12,
-    /// Device Control Three (XOFF).
-    ascii_CtrlCode_dc3 = 0x13,
-    /// Device Control Four.
-    ascii_CtrlCode_dc4 = 0x14,
-    /// Negative Acknowledge.
-    ascii_CtrlCode_nak = 0x15,
-    /// Synchronous Idle.
-    ascii_CtrlCode_syn = 0x16,
-    /// End of Transmission Block
-    ascii_CtrlCode_etb = 0x17,
-    /// Cancel.
-    ascii_CtrlCode_can = 0x18,
-    /// End of Medium.
-    ascii_CtrlCode_em = 0x19,
-    /// Substitute.
-    ascii_CtrlCode_sub = 0x1A,
-    /// Escape.
-    ascii_CtrlCode_esc = 0x1B,
-    /// File Separator.
-    ascii_CtrlCode_fs = 0x1C,
-    /// Group Separator.
-    ascii_CtrlCode_gs = 0x1D,
-    /// Record Separator.
-    ascii_CtrlCode_rs = 0x1E,
-    /// Unit Separator.
-    ascii_CtrlCode_us = 0x1F,
+    ascii_CtrlCode_nul = 0x00, ///< Null ('\0').
+    ascii_CtrlCode_soh = 0x01, ///< Start of Heading.
+    ascii_CtrlCode_stx = 0x02, ///< Start of Text.
+    ascii_CtrlCode_etx = 0x03, ///< End of Text.
+    ascii_CtrlCode_eot = 0x04, ///< End of Transmission.
+    ascii_CtrlCode_enq = 0x05, ///< Enquiry.
+    ascii_CtrlCode_ack = 0x06, ///< Acknowledge.
+    ascii_CtrlCode_bel = 0x07, ///< Bell, Alert ('\a').
+    ascii_CtrlCode_bs = 0x08, ///< Backspace ('\b').
+    ascii_CtrlCode_ht = 0x09, ///< Horizontal Tab, Tab ('\t').
+    ascii_CtrlCode_lf = 0x0A, ///< Line Feed, Newline ('\n').
+    ascii_CtrlCode_vt = 0x0B, ///< Vertical Tab ('\v').
+    ascii_CtrlCode_ff = 0x0C, ///< Form Feed ('\f').
+    ascii_CtrlCode_cr = 0x0D, ///< Carriage Return ('\r').
+    ascii_CtrlCode_so = 0x0E, ///< Shift Out.
+    ascii_CtrlCode_si = 0x0F, ///< Shift In.
+    ascii_CtrlCode_dle = 0x10, ///< Data Link Escape.
+    ascii_CtrlCode_dc1 = 0x11, ///< Device Control One (XON, `ascii_CtrlCode_xon`).
+    ascii_CtrlCode_dc2 = 0x12, ///< Device Control Two.
+    ascii_CtrlCode_dc3 = 0x13, ///< Device Control Three (XOFF, `ascii_CtrlCode_xoff`).
+    ascii_CtrlCode_dc4 = 0x14, ///< Device Control Four.
+    ascii_CtrlCode_nak = 0x15, ///< Negative Acknowledge.
+    ascii_CtrlCode_syn = 0x16, ///< Synchronous Idle.
+    ascii_CtrlCode_etb = 0x17, ///< End of Transmission Block
+    ascii_CtrlCode_can = 0x18, ///< Cancel.
+    ascii_CtrlCode_em = 0x19, ///< End of Medium.
+    ascii_CtrlCode_sub = 0x1A, ///< Substitute.
+    ascii_CtrlCode_esc = 0x1B, ///< Escape.
+    ascii_CtrlCode_fs = 0x1C, ///< File Separator.
+    ascii_CtrlCode_gs = 0x1D, ///< Group Separator.
+    ascii_CtrlCode_rs = 0x1E, ///< Record Separator.
+    ascii_CtrlCode_us = 0x1F, ///< Unit Separator.
 
-    /// Delete.
-    ascii_CtrlCode_del = 0x7F,
+    ascii_CtrlCode_del = 0x7F, /// Delete.
 
-    /// An alias to `dc1`.
-    ascii_CtrlCode_xon = ascii_CtrlCode_dc1,
-    /// An alias to `dc3`.
-    ascii_CtrlCode_xoff = ascii_CtrlCode_dc3,
+    ascii_CtrlCode_xon = ascii_CtrlCode_dc1, /// An alias to `dc1`.
+    ascii_CtrlCode_xoff = ascii_CtrlCode_dc3, /// An alias to `dc3`.
 ));
+claim_assert_static(eqlType$(enum ascii_CtrlCode, u8));
+
+#define ascii_nul_byte __uint__ascii_nul_byte
+#define ascii_nul __str__ascii_nul
+#define ascii_bel_byte __uint__ascii_bel_byte
+#define ascii_bel __str__ascii_bel
+#define ascii_bs_byte __uint__ascii_bs_byte
+#define ascii_bs __str__ascii_bs
+#define ascii_ht_byte __uint__ascii_ht_byte
+#define ascii_ht __str__ascii_ht
+#define ascii_lf_byte __uint__ascii_lf_byte
+#define ascii_lf __str__ascii_lf
+#define ascii_vt_byte __uint__ascii_vt_byte
+#define ascii_vt __str__ascii_vt
+#define ascii_ff_byte __uint__ascii_ff_byte
+#define ascii_ff __str__ascii_ff
+#define ascii_cr_byte __uint__ascii_cr_byte
+#define ascii_cr __str__ascii_cr
+#define ascii_sp_byte __uint__ascii_sp_byte
+#define ascii_sp __str__ascii_sp
 
 /// Returns whether the character is a 7-bit ASCII character.
-$attr($inline)
-$static fn_((ascii_isASCII(u8 c))(bool)) { return c < 0x80; };
+$attr($inline_always)
+$static fn_((ascii_isASCII(u8 c))(bool));
 /// Returns whether the character is an uppercase letter: A-Z.
-$attr($inline)
-$static fn_((ascii_isUpper(u8 c))(bool)) { return 'A' <= c && c <= 'Z'; };
+$attr($inline_always)
+$static fn_((ascii_isUpper(u8 c))(bool));
 /// Returns whether the character is a lowercase letter: a-z.
-$attr($inline)
-$static fn_((ascii_isLower(u8 c))(bool)) { return 'a' <= c && c <= 'z'; };
+$attr($inline_always)
+$static fn_((ascii_isLower(u8 c))(bool));
 /// Returns whether the character is alphabetic: A-Z || a-z.
-$attr($inline)
-$static fn_((ascii_isAlpha(u8 c))(bool)) { return ascii_isUpper(c) || ascii_isLower(c); };
+$attr($inline_always)
+$static fn_((ascii_isAlpha(u8 c))(bool));
 /// Returns whether the character is a digit: 0-9.
-$attr($inline)
-$static fn_((ascii_isDigit(u8 c))(bool)) { return '0' <= c && c <= '9'; };
+$attr($inline_always)
+$static fn_((ascii_isDigit(u8 c))(bool));
 /// Returns whether the character is alphanumeric: A-Z, a-z, || 0-9.
-$attr($inline)
-$static fn_((ascii_isAlNum(u8 c))(bool)) { return ascii_isDigit(c) || ascii_isAlpha(c); };
+$attr($inline_always)
+$static fn_((ascii_isAlNum(u8 c))(bool));
 /// Returns whether the character is a hexadecimal digit: A-F, a-f, || 0-9.
-$attr($inline)
-$static fn_((ascii_isHex(u8 c))(bool)) { return ascii_isDigit(c) || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'); };
+$attr($inline_always)
+$static fn_((ascii_isHex(u8 c))(bool));
 /// Returns whether the character is a control character.
-$attr($inline)
-$static fn_((ascii_isCtrl(u8 c))(bool)) { return c <= ascii_CtrlCode_us || c == ascii_CtrlCode_del; };
+$attr($inline_always)
+$static fn_((ascii_isCtrl(u8 c))(bool));
 /// Returns whether the character is a glyph.
-$attr($inline)
-$static fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; };
+$attr($inline_always)
+$static fn_((ascii_isGlyph(u8 c))(bool));
 /// Returns whether the character is a whitespace character.
-$attr($inline)
-$static fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ' ' || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); };
-/// Whitespace for general use.
-/// This may be used with e.g. `mem_trim` to trim whitespace.
-$static let ascii_whitespaces = A_from$((u8){ ' ', '\t', '\n', '\r', ascii_CtrlCode_vt, ascii_CtrlCode_ff });
+$attr($inline_always)
+$static fn_((ascii_isWhitespace(u8 c))(bool));
+#define ascii_whitespaces \
+    /** \
+     * Whitespace for general use. \
+     * This may be used with e.g. `mem_trim` to trim whitespace. \
+     */ \
+    __str__ascii_whitespaces
 
 /// Uppercases the character && returns it as-is if already uppercase || not a letter.
-$attr($inline)
-$static fn_((ascii_toUpper(u8 c))(u8)) {
-    let mask = int_shl(boolToInt(ascii_isLower(c)), 5);
-    return c ^ mask;
-};
+$attr($inline_always)
+$static fn_((ascii_toUpper(u8 c))(u8));
 /// Lowercases the character && returns it as-is if already lowercase || not a letter.
-$attr($inline)
-$static fn_((ascii_toLower(u8 c))(u8)) {
-    let mask = int_shl(boolToInt(ascii_isUpper(c)), 5);
-    return c | mask;
-};
+$attr($inline_always)
+$static fn_((ascii_toLower(u8 c))(u8));
 /// Toggles the case of the character && returns it as-is if not a letter.
-$attr($inline)
-$static fn_((ascii_toggleCase(u8 c))(u8)) {
-    let mask = int_shl(boolToInt(ascii_isAlpha(c)), 5);
-    return c ^ mask;
-};
+$attr($inline_always)
+$static fn_((ascii_toggleCase(u8 c))(u8));
 
 /// Converts the string to uppercase.
 $extern fn_((ascii_toUppers(S$u8 ascii_str))(S$u8));
@@ -201,6 +180,52 @@ $extern fn_((ascii_ord(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs, bool ignores_
 $extern fn_((ascii_ordSenseCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord));
 /// Compares lexicographical order of two ASCII strings, ignoring case.
 $extern fn_((ascii_ordIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cmp_Ord));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __uint__ascii_nul_byte u8_c('\0')
+#define __str__ascii_nul "\0"
+#define __uint__ascii_bel_byte u8_c('\a')
+#define __str__ascii_bel "\a"
+#define __uint__ascii_bs_byte u8_c('\b')
+#define __str__ascii_bs "\b"
+#define __uint__ascii_ht_byte u8_c('\t')
+#define __str__ascii_ht "\t"
+#define __uint__ascii_lf_byte u8_c('\n')
+#define __str__ascii_lf "\n"
+#define __uint__ascii_vt_byte u8_c('\v')
+#define __str__ascii_vt "\v"
+#define __uint__ascii_ff_byte u8_c('\f')
+#define __str__ascii_ff "\f"
+#define __uint__ascii_cr_byte u8_c('\r')
+#define __str__ascii_cr "\r"
+#define __uint__ascii_sp_byte u8_c(' ')
+#define __str__ascii_sp " "
+
+fn_((ascii_isASCII(u8 c))(bool)) { return c < 0x80; };
+fn_((ascii_isUpper(u8 c))(bool)) { return 'A' <= c && c <= 'Z'; };
+fn_((ascii_isLower(u8 c))(bool)) { return 'a' <= c && c <= 'z'; };
+fn_((ascii_isAlpha(u8 c))(bool)) { return ascii_isUpper(c) || ascii_isLower(c); };
+fn_((ascii_isDigit(u8 c))(bool)) { return '0' <= c && c <= '9'; };
+fn_((ascii_isAlNum(u8 c))(bool)) { return ascii_isDigit(c) || ascii_isAlpha(c); };
+fn_((ascii_isHex(u8 c))(bool)) { return ascii_isDigit(c) || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'); };
+fn_((ascii_isCtrl(u8 c))(bool)) { return c <= ascii_CtrlCode_us || c == ascii_CtrlCode_del; };
+fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; };
+fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ascii_sp_byte || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); };
+#define __str__ascii_whitespaces ascii_sp ascii_ht ascii_lf ascii_cr ascii_vt ascii_ff
+
+fn_((ascii_toUpper(u8 c))(u8)) {
+    let mask = int_shl(boolToInt(ascii_isLower(c)), 5);
+    return c ^ mask;
+};
+fn_((ascii_toLower(u8 c))(u8)) {
+    let mask = int_shl(boolToInt(ascii_isUpper(c)), 5);
+    return c | mask;
+};
+fn_((ascii_toggleCase(u8 c))(u8)) {
+    let mask = int_shl(boolToInt(ascii_isAlpha(c)), 5);
+    return c ^ mask;
+};
 
 #if defined(__cplusplus)
 } /* extern "C" */

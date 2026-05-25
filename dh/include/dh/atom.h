@@ -145,20 +145,20 @@ $static fn_((atom_spinLoopHint(void))(void));
 fn_((atom_spinLoopHint(void))(void)) {
     /* NOLINTBEGIN */
 #if arch_family_type == arch_family_type_x86
-    __asm__ volatile("pause");
+    asm_volatile("pause");
 #elif arch_type == arch_type_aarch64
     /*
      * Some code uses 'isb' in spin-wait.
      * Alternatively, "yield" or "wfe" might be used for different strategies.
      */
-    __asm__ volatile("isb");
+    asm_volatile("isb");
 #elif arch_type == arch_type_arm
 #if arch_has_armv6k || arch_has_armv6m
-    __asm__ volatile("yield");
+    asm_volatile("yield");
 #else
     /* On older ARM architectures without yield,
      * consider a simple 'nop' or other fallback. */
-    __asm__ volatile("nop");
+    asm_volatile("nop");
 #endif /* arch_has_armv6k || arch_has_armv6m */
 
 #elif arch_family_type == arch_family_type_riscv
@@ -166,15 +166,15 @@ fn_((atom_spinLoopHint(void))(void)) {
     /* RISC-V Zihintpause extension offers 'pause'
      * (some compilers also accept "__asm__ volatile(\"pause\")").
      */
-    __asm__ volatile("pause");
+    asm_volatile("pause");
 #else
     /* Fallback: 'nop' if no Zihintpause ext. */
-    __asm__ volatile("nop");
+    asm_volatile("nop");
 #endif /* arch_has_zihintpause */
 
 #else
     /* Fallback for unknown or unhandled architectures */
-    __asm__ volatile("nop");
+    asm_volatile("nop");
 #endif
     /* NOLINTEND */
 };

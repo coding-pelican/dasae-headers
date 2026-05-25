@@ -86,12 +86,12 @@ fn_((Co_Fiber_Context_from(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_Ent
 
 fn_((Co_Fiber_contextSwitch(const Co_Fiber* self))(const Co_Fiber*)) { /* NOLINTBEGIN(hicpp-no-assembler) */
     claim_assert_nonnull(self);
-    register const Co_Fiber* fiber pp_switch_((arch_type)(
-        pp_case_((arch_type_x86_64)(asm("rsi"))),
-        pp_case_((arch_type_aarch64)(asm("x1"))),
-        pp_case_((arch_type_riscv64)(asm("a1")))
-    )) = self;
-    pp_if_(Co_Fiber_supported)((__asm__ __volatile__(pp_switch_((arch_type)(
+    asm_var_(fiber, const Co_Fiber*) $reg(pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(rsi)),
+        pp_case_((arch_type_aarch64)(x1)),
+        pp_case_((arch_type_riscv64)(a1))
+    ))) = self;
+    pp_if_(Co_Fiber_supported)((asm_volatile(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(
             "movq 0(%%rsi), %%rax\n\t"
             "movq 8(%%rsi), %%rcx\n\t"

@@ -3,7 +3,7 @@
 
 $attr(__attribute__((naked)))
 $static fn_((exec_Fiber__entry(void))(void)) { /* NOLINTBEGIN(hicpp-no-assembler) */
-    pp_if_(Co_Fiber_supported)((__asm__ __volatile__(pp_switch_((arch_type)(
+    pp_if_(Co_Fiber_supported)((asm_volatile(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(
             "leaq 8(%%rsp), %%rdi\n\t"
             "leaq 8(%%rsp), %%rcx\n\t"

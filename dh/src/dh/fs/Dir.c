@@ -8,6 +8,11 @@
 #if plat_is_windows
 #include "dh/os/windows/file.h"
 #include "dh/os/windows/handle.h"
+#elif plat_is_linux
+#include "dh/os/linux/syscall.h"
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #else
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -96,6 +101,15 @@ fn_((fs_Dir_rename(fs_Dir self, S_const$u8 old_sub_path, S_const$u8 new_sub_path
     let old_resolved = try_(fs_Dir__resolvePath(self, old_sub_path, A_ref$((S$u8)(old_path))));
     let new_resolved = try_(fs_Dir__resolvePath(self, new_sub_path, A_ref$((S$u8)(new_path))));
     return fs_File_rename(old_resolved.as_const, new_resolved.as_const);
+#elif plat_is_linux
+    var_(old_path, A$$(fs__path_max, u8)) = A_zero();
+    var_(new_path, A$$(fs__path_max, u8)) = A_zero();
+    if (!fs__pathZ(old_sub_path, A_ptr(old_path), A_len(old_path))) return_err(E_cause$FileTooBigFS());
+    if (!fs__pathZ(new_sub_path, A_ptr(new_path), A_len(new_path))) return_err(E_cause$FileTooBigFS());
+    if (os_linux_renameat(self.handle, as$(const char*)(A_ptr(old_path)), self.handle, as$(const char*)(A_ptr(new_path))) != 0) {
+        return_err(E_cause$NotFoundFS());
+    }
+    return_ok({});
 #else
     var_(old_path, A$$(fs__path_max, u8)) = A_zero();
     var_(new_path, A$$(fs__path_max, u8)) = A_zero();

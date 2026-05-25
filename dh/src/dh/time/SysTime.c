@@ -1,5 +1,8 @@
 #include "dh/time/SysTime.h"
 #include "dh/time/Duration.h"
+#if plat_is_linux
+#include "dh/os/linux/syscall.h"
+#endif
 
 /*========== Internal Declarations ==========================================*/
 
@@ -307,7 +310,11 @@ fn_((time_SysTime__windows_ord(time_SysTime lhs, time_SysTime rhs))(cmp_Ord)) {
 #if plat_based_unix
 fn_((time_SysTime__unix_now(void))(time_SysTime)) {
     var ts = l0$((struct timespec));
+#if plat_is_linux
+    let_ignore = os_linux_clock_gettime(os_linux_CLOCK_REALTIME, &ts);
+#else
     clock_gettime(CLOCK_REALTIME, &ts);
+#endif
     return (time_SysTime){ .impl = ts };
 };
 

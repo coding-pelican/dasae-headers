@@ -17,11 +17,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "core.h"
-
-#if plat_is_windows
 #include "os/windows.h"
-#endif /* plat_is_windows */
+#include "os/linux/syscall.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

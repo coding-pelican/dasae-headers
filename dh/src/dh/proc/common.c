@@ -8,27 +8,18 @@
 #include "dh/os/windows/proc.h"
 #endif
 
+#if plat_is_windows
 #define proc__path_max (usize_(32768))
 #define proc__path_prefix_len (usize_(4))
 
 $static fn_((proc__heapAlloc(usize len))(u8*)) {
-#if plat_is_windows
     return ptrCast$((u8*)(HeapAlloc(GetProcessHeap(), 0, len)));
-#else
-    let_ignore = len;
-    return null;
-#endif
 }
 
 $static fn_((proc__heapFree(u8* ptr))(void)) {
-#if plat_is_windows
     if (ptr != null) claim_assert(HeapFree(GetProcessHeap(), 0, ptr));
-#else
-    let_ignore = ptr;
-#endif
 }
 
-#if plat_is_windows
 $static fn_((proc__mapWinErr(DWORD err))(proc_E)) {
     switch (err) {
     case ERROR_FILE_NOT_FOUND: $fallthrough;

@@ -176,10 +176,7 @@ fn_((Thrd_ftx__windows_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 /* --- Linux --- */
 
 #if plat_is_linux
-#include <linux/futex.h>
-#include <sys/syscall.h>
-#include <unistd.h>
-#include <errno.h>
+#include "dh/os/linux/syscall.h"
 
 fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void) $scope) {
     struct timespec ts = { 0 };
@@ -189,8 +186,8 @@ fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration tim
         ts.tv_nsec = as$(long)(delay.nanos);
         ts_ptr = &ts;
     }
-    let rc = syscall(SYS_futex, &ptr->raw, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, expect, ts_ptr, null, 0);
-    if (rc == -1 && errno == ETIMEDOUT) {
+    let rc = os_linux_futex(ptrQualCast$((P$raw)(&ptr->raw)), os_linux_FUTEX_WAIT | os_linux_FUTEX_PRIVATE_FLAG, as$(long)(expect), ts_ptr, null, 0);
+    if (rc == -os_linux_ETIMEDOUT) {
         claim_assert(isSome(timeout));
         return_err(E_cause$ThrdTimeout());
     }
@@ -200,7 +197,7 @@ fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration tim
 fn_((Thrd_ftx__linux_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
     claim_assert(max_waiters != 0);
     let waiters = (max_waiters < as$(u32)(i32_limit_max)) ? as$(i32)(max_waiters) : i32_limit_max;
-    let_ignore = syscall(SYS_futex, &ptr->raw, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, waiters, null, null, 0);
+    let_ignore = os_linux_futex(ptrQualCast$((P$raw)(&ptr->raw)), os_linux_FUTEX_WAKE | os_linux_FUTEX_PRIVATE_FLAG, waiters, null, null, 0);
 };
 #endif /* plat_is_linux */
 

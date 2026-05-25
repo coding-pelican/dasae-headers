@@ -31,6 +31,7 @@ extern "C" {
 #include "builtin/src_loc.h"
 #include "builtin/static_assert.h"
 #include "builtin/auto.h"
+#include "builtin/asm.h"
 #include "builtin/type_info.h"
 #include "builtin/container_info.h"
 #include "builtin/mem.h"

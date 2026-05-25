@@ -521,7 +521,7 @@ fn_((sort_block(u_S$raw seq, sort_OrdFn ordFn))(void)) {
 
 fn_((sort_blockCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
     var_(cache_buf, A$$(sort_limit_block_cache_stack_bytes, u8)) $undefined;
-    let cache_cap = (0 < seq.type.size) ? (sort_limit_block_cache_stack_bytes / seq.type.size) : 0;
+    let_(cache_cap, usize) = (0 < seq.type.size) ? (sort_limit_block_cache_stack_bytes / seq.type.size) : 0;
     let_(cache, u_S$raw) = u_init$S((seq.type)(A_ptr(cache_buf), cache_cap));
     $ignore_void sort_blockCtxCache(seq, ordFn, ctx, cache);
 };

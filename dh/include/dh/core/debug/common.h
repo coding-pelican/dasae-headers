@@ -60,13 +60,13 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
 #else /* others */
 
 #if arch_family_type == arch_family_type_x86
-#define ____debug_break__impl() __asm__ volatile("int $0x03")
+#define ____debug_break__impl() asm_volatile("int $0x03")
 #elif arch_type == arch_type_aarch64
-#define ____debug_break__impl() __asm__ volatile("brk \#0")
+#define ____debug_break__impl() asm_volatile("brk #0")
 #elif arch_type == arch_type_arm
-#define ____debug_break__impl() __asm__ volatile("bkpt \#0")
+#define ____debug_break__impl() asm_volatile("bkpt #0")
 #elif arch_family_type == arch_family_type_riscv
-#define ____debug_break__impl() __asm__ volatile("ebreak")
+#define ____debug_break__impl() asm_volatile("ebreak")
 #elif arch_family_type == arch_family_type_wasm
 #include <emscripten.h>
 #define ____debug_break__impl() emscripten_debugger()
