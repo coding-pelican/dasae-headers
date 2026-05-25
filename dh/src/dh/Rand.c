@@ -489,6 +489,7 @@ fn_((Rand__splitMix64(u64* seed))(u64)) {
 fn_((Rand__bounded64(Rand* self, u64 range))(u64)) {
     claim_assert(0 < range);
 
+#if defined(__SIZEOF_INT128__)
     typedef __uint128_t u128;
     var m = as$(u128)(Rand_next$u64(self)) * as$(u128)(range);
     var l = as$(u64)(m);
@@ -500,6 +501,14 @@ fn_((Rand__bounded64(Rand* self, u64 range))(u64)) {
         }
     }
     return as$(u64)(m >> 64u);
+#else
+    let threshold = as$(u64)(-range) % range;
+    var r = Rand_next$u64(self);
+    while (r < threshold) {
+        r = Rand_next$u64(self);
+    }
+    return r % range;
+#endif
 };
 
 fn_((Rand__bounded32(Rand* self, u32 range))(u32)) {

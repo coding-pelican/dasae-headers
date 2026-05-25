@@ -9,7 +9,7 @@ $static fn_((heap_Classic__libcAlign(mem_Align align))(usize));
 #define heap_Classic__has_malloc_size __comp_bool__heap_Classic__has_malloc_size
 /// Get underlying malloc_size if available
 $attr($maybe_unused $inline_always)
-$static fn_((heap_Classic__mallocSize(P_const$raw target_ptr))(usize));
+$static fn_((heap_Classic__mallocSize(P$raw target_ptr))(usize));
 
 $static fn_((heap_Classic__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
 $static fn_((heap_Classic__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
@@ -63,7 +63,7 @@ fn_((heap_Classic__libcAlign(mem_Align align))(usize)) {
 #endif /* other platforms */
 #endif /* heap_Classic__has_malloc_size */
 
-fn_((heap_Classic__mallocSize(P_const$raw target_ptr))(usize)) {
+fn_((heap_Classic__mallocSize(P$raw target_ptr))(usize)) {
 #if heap_Classic__has_malloc_size
 #if defined(__GLIBC__)
     return malloc_usable_size(target_ptr);
@@ -119,7 +119,7 @@ $static fn_((heap_Classic__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usiz
 
     let alloced_size = pp_if_(heap_Classic__has_malloc_size)(
         pp_then_(local_({
-            let full_size = heap_Classic__mallocSize(buf.ptr, buf.len);
+            let full_size = heap_Classic__mallocSize(buf.ptr);
             local_return_(full_size);
         })),
         pp_else_(local_({

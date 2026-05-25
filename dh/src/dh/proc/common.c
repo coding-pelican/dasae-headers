@@ -28,8 +28,8 @@ $static fn_((proc__heapFree(u8* ptr))(void)) {
 #endif
 }
 
-$static fn_((proc__mapWinErr(DWORD err))(proc_E)) {
 #if plat_is_windows
+$static fn_((proc__mapWinErr(DWORD err))(proc_E)) {
     switch (err) {
     case ERROR_FILE_NOT_FOUND: $fallthrough;
     case ERROR_PATH_NOT_FOUND: return E_cause$FileNotFoundProc();
@@ -43,11 +43,8 @@ $static fn_((proc__mapWinErr(DWORD err))(proc_E)) {
     case ERROR_SHARING_BUFFER_EXCEEDED: return E_cause$ResourceLimitReachedProc();
     default_() return E_cause$SystemResourcesProc() $end(default);
     }
-#else
-    let_ignore = err;
-    return E_cause$OperationUnsupportedProc();
-#endif
 }
+#endif
 
 #if plat_is_windows
 $static fn_((proc__dupInheritable(HANDLE src))(E$proc_Handle) $scope) {

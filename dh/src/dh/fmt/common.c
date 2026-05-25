@@ -139,14 +139,18 @@ fn_((fmt_Size_parse(S_const$u8 str))(O$fmt_Size) $scope) {
 
 fn_((fmt_format(io_Writer writer, S_const$u8 fmt, ...))(E$void) $guard) {
     // printf("--- debug print: fmt_format ---\n");
-    va_list va_args = null;
+    var_(va_args, va_list) $undefined;
     va_start(va_args, fmt);
     defer_(va_end(va_args));
     return_ok(try_(fmt_formatVaArgs(writer, fmt, va_args)));
 } $unguarded(fn);
 
 /* TODO: Refactor this */
-fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void) $scope) {
+fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void) $guard) {
+    var_(args, va_list) $undefined;
+    va_copy(args, va_args);
+    defer_(va_end(args));
+
     // Parse format string ONCE
     let parsed = try_(fmt__parseFormatSpecOnce(fmt));
 
@@ -188,11 +192,11 @@ fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void
     var_(collected_args, A$$(fmt_max_args, O$fmt__ArgType)) = A_zero();
     for (u8 i = 0; i <= parsed.max_arg_index && i < fmt_max_args; ++i) {
         if_some((*A_at((arg_collection_info)[i]))(info)) {
-            let arg = fmt__collectArg(&va_args, info.wrapper, info.tag);
+            let arg = fmt__collectArg(&args, info.wrapper, info.tag);
             asg_l((A_at((collected_args)[i]))(some(arg)));
         } else_none {
             // Unused arg index - consume dummy
-            let dummy = va_arg(va_args, Void);
+            let dummy = va_arg(args, Void);
             let_ignore = dummy;
         }
     }
@@ -210,7 +214,7 @@ fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void
 
     try_(fmt__writeLiteralChunk(writer, fmt, parsed.trailing_literal_start, parsed.trailing_literal_len));
     return_ok({});
-} $unscoped(fn);
+} $unguarded(fn);
 
 /* --- Direct Type Formatting APIs --- */
 

@@ -1,4 +1,5 @@
 #include "dh/Thrd/Cond.h"
+#include "dh/Thrd/ftx.h"
 #include "dh/Thrd/Mtx.h"
 #include "dh/time/Duration.h"
 #include "dh/math/common.h"
@@ -266,10 +267,10 @@ $static fn_((Thrd_Cond__default_impl_fini(Thrd_Cond* self))(void)) {
 // - T1: s & signals == 0 -> FUTEX_WAIT(&epoch, e) (missed the state update + the epoch change)
 //
 // Acquire barrier to ensure the epoch load happens before the state load.
-fn_((Thrd_Cond__default_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duration timeout))(Thrd_Cond_E$void)) {
+fn_((Thrd_Cond__default_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duration timeout))(Thrd_Cond_E$void) $guard) {
     var epoch = atom_V_load(&self->impl.epoch, atom_MemOrd_acquire);
     var state = atom_V_fetchAdd(&self->impl.state, Thrd_Cond__default_one_waiter, atom_MemOrd_monotonic);
-    debug_assert(state & Thrd_Cond__default_waiter_mask != Thrd_Cond__default_waiter_mask);
+    debug_assert((state & Thrd_Cond__default_waiter_mask) != Thrd_Cond__default_waiter_mask);
     state += Thrd_Cond__default_one_waiter;
 
     Thrd_Mtx_unlock(mtx);

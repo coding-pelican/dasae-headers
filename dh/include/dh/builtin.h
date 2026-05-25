@@ -5,8 +5,7 @@
  * @file    builtin.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-06 (date of creation)
- * @updated 2025-02-12 (date of last update)
- * @version v0.1-alpha.2
+ * @updated 2026-05-25 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
  *
@@ -32,7 +31,6 @@ extern "C" {
 #include "builtin/src_loc.h"
 #include "builtin/static_assert.h"
 #include "builtin/auto.h"
-#include "builtin/lambda.h"
 #include "builtin/type_info.h"
 #include "builtin/container_info.h"
 #include "builtin/mem.h"

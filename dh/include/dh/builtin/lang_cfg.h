@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    lang_cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2025-01-22 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2026-05-25 (date of last update)
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  lang
  *
@@ -84,6 +83,10 @@ extern "C" {
 #define lang_has_extensions_ms __comp_bool__lang_has_extensions_ms
 
 /*========== Macros and Implementations =====================================*/
+
+#if defined(__linux__) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif /* defined(__linux__) && !defined(_GNU_SOURCE) */
 
 /* Default Values */
 

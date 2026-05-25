@@ -61,7 +61,9 @@ fn_((heap_vmap_remap(P$raw addr, usize old_len, usize new_len))(O$P$u8) $scope) 
         heap_Geom_alignPageWith(geometry, new_len),
         MREMAP_MAYMOVE
     );
-    return new_addr == MAP_FAILED ? none() : some(new_addr);
+    return_(expr_(ReturnType $scope)(
+        new_addr == MAP_FAILED ? $break_(none()) : $break_(some(new_addr))
+    ) $unscoped(expr));
 #endif
     let_ignore = addr;
     let_ignore = old_len;

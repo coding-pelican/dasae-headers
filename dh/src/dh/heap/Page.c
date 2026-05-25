@@ -216,7 +216,7 @@ fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     let hint = heap_Page__hintAddrAsPtr(hint_addr);
     let map = orelse_((heap_vmap_map(hint, aligned_len))(null));
     if (map == null) return_none();
-    claim_assert_fmt(mem_isAligned(ptrToInt(map), geom.page_size));
+    claim_assert(mem_isAligned(ptrToInt(map), geom.page_size));
     claim_assert_fmt(mem_isAligned(ptrToInt(map), ptr_align), "mmap returned misaligned address");
 
     heap_Page__storeHintAddr(self, hint_addr, map, aligned_len);

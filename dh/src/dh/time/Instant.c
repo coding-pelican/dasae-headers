@@ -335,10 +335,10 @@ fn_((time_Instant__windows_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord)) {
 /* --- Unix Based --- */
 
 #if plat_based_unix
-$static var_(time_InstantPlatform, s_unix_perf_freq) = cleared();
-$static var_(f64, s_unix_perf_freq_inv) = f64_nan;
-$static var_(time_InstantPlatform, s_unix_offset_value) = cleared();
-$static var_(bool, s_unix_initialized) = false;
+$static var_(s_unix_perf_freq, time_InstantPlatform) = cleared();
+$static var_(s_unix_perf_freq_inv, f64) = f64_nan;
+$static var_(s_unix_offset_value, time_InstantPlatform) = cleared();
+$static var_(s_unix_initialized, bool) = false;
 
 $attr($on_load)
 $static fn_((time_Instant__unix_init(void))(void)) {

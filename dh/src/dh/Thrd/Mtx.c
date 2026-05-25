@@ -249,7 +249,7 @@ fn_((Thrd_Mtx__default_tryLock(Thrd_Mtx* self))(bool)) {
             // - `lock bts` is smaller instruction-wise which makes it better for inlining
             let locked_bit = mem_trailingZeros32(Thrd_Mtx__default_locked);
             let prev_bit = atom_V_bitSet(
-                &self->state,
+                &self->impl.state,
                 locked_bit,
                 atom_MemOrd_acquire
             );
@@ -259,7 +259,7 @@ fn_((Thrd_Mtx__default_tryLock(Thrd_Mtx* self))(bool)) {
             // Acquire barrier ensures grabbing the lock happens before the critical section
             // and that the previous lock holder's critical section happens before we grab the lock.
             return isNone(atom_V_cmpXchgWeak(
-                &self->state,
+                &self->impl.state,
                 Thrd_Mtx__default_unlocked, Thrd_Mtx__default_locked,
                 atom_MemOrd_acquire, atom_MemOrd_monotonic
             ));
@@ -275,10 +275,10 @@ fn_((Thrd_Mtx__default_unlock(Thrd_Mtx* self))(void)) {
     //
     // Release barrier ensures the critical section happens before we let go of the lock
     // and that our critical section happens before the next lock holder grabs the lock.
-    let state = atom_V_fetchXchg(&self->state, Thrd_Mtx__default_unlocked, atom_MemOrd_release);
+    let state = atom_V_fetchXchg(&self->impl.state, Thrd_Mtx__default_unlocked, atom_MemOrd_release);
     debug_assert(state != Thrd_Mtx__default_unlocked);
     if (state == Thrd_Mtx__default_contended) {
-        Thrd_ftx_wake(&self->state, 1);
+        Thrd_ftx_wake(&self->impl.state, 1);
     }
 };
 
@@ -286,8 +286,8 @@ $attr($branch_cold)
 fn_((Thrd_Mtx__default_lockSlow(Thrd_Mtx* self))(void)) {
     // Avoid doing an atomic swap below if we already know the state is contended.
     // An atomic swap unconditionally stores which marks the cache-line as modified unnecessarily.
-    if (atom_V_load(&self->state, atom_MemOrd_monotonic) == Thrd_Mtx__default_contended) {
-        Thrd_ftx_wait(&self->state, Thrd_Mtx__default_contended);
+    if (atom_V_load(&self->impl.state, atom_MemOrd_monotonic) == Thrd_Mtx__default_contended) {
+        Thrd_ftx_wait(&self->impl.state, Thrd_Mtx__default_contended);
     }
     // Try to acquire the lock while also telling the existing lock holder that there are threads waiting.
     //
@@ -298,8 +298,8 @@ fn_((Thrd_Mtx__default_lockSlow(Thrd_Mtx* self))(void)) {
     //
     // Acquire barrier ensures grabbing the lock happens before the critical section
     // and that the previous lock holder's critical section happens before we grab the lock.
-    while (atom_V_fetchXchg(&self->state, Thrd_Mtx__default_contended, atom_MemOrd_acquire) != Thrd_Mtx__default_unlocked) {
-        Thrd_ftx_wait(&self->state, Thrd_Mtx__default_contended);
+    while (atom_V_fetchXchg(&self->impl.state, Thrd_Mtx__default_contended, atom_MemOrd_acquire) != Thrd_Mtx__default_unlocked) {
+        Thrd_ftx_wait(&self->impl.state, Thrd_Mtx__default_contended);
     }
 };
 #endif /* !Thrd_Mtx_has_specialized */

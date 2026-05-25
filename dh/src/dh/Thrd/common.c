@@ -668,7 +668,7 @@ fn_((Thrd__linux_spawn(
     let map_size = page_size + stack_size + meta_size;
     let map_base = orelse_((heap_vmem_reserve(null, map_size))(null));
     if (map_base == null) return_err(E_cause$ThrdSystemResources());
-    errdefer_(let_ignore = heap_vmem_release(map_base, map_size));
+    errdefer_($ignore, heap_vmem_release(map_base, map_size));
     let stack_start = as$(u8*)(map_base) + page_size;
     if (!heap_vmem_commit(stack_start, stack_size + meta_size)) return_err(E_cause$ThrdSystemResources());
     let meta = as$(Thrd__linux_Meta*)(as$(u8*)(map_base) + page_size + stack_size);

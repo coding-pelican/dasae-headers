@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    atom.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-01-22 (date of creation)
- * @updated 2025-11-04 (date of last update)
- * @version v0.1-alpha.2
+ * @updated 2026-05-25 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  atom
  *
@@ -121,26 +120,26 @@ $static fn_((atom_spinLoopHint(void))(void));
 #define __step__atom_V_bitSet(_p_self, _bit, _ord...) \
     ____atom_V_bitSet(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
 #define ____atom_V_bitSet(__mask, __val, _p_self, _bit, _ord...) ({ \
-    typedef TypeOf(*_p_self) SelfType; \
+    typedef TypeOf((_p_self)->raw) SelfType; \
     let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
     let_(__val, SelfType) = atom_V_fetchOr(_p_self, __mask, _ord); \
-    boolToInt(__val & __mask != 0); \
+    ((__val & __mask) != 0); \
 })
 #define __step__atom_V_bitReset(_p_self, _bit, _ord...) \
     ____atom_V_bitReset(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
 #define ____atom_V_bitReset(__mask, __val, _p_self, _bit, _ord...) ({ \
-    typedef TypeOf(*_p_self) SelfType; \
+    typedef TypeOf((_p_self)->raw) SelfType; \
     let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
     let_(__val, SelfType) = atom_V_fetchAnd(_p_self, ~__mask, _ord); \
-    boolToInt(__val & __mask != 0); \
+    ((__val & __mask) != 0); \
 })
 #define __step__atom_V_bitToggle(_p_self, _bit, _ord...) \
     ____atom_V_bitToggle(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
 #define ____atom_V_bitToggle(__mask, __val, _p_self, _bit, _ord...) ({ \
-    typedef TypeOf(*_p_self) SelfType; \
+    typedef TypeOf((_p_self)->raw) SelfType; \
     let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
     let_(__val, SelfType) = atom_V_fetchXor(_p_self, __mask, _ord); \
-    boolToInt(__val & __mask != 0); \
+    ((__val & __mask) != 0); \
 })
 
 fn_((atom_spinLoopHint(void))(void)) {

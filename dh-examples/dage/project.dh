@@ -2,6 +2,18 @@ kind=lib
 pch=dage.h
 link-dsl=on
 
+[dh-extras/os/windows/wnd]
+path=../../dh-extras/os/windows/wnd
+profile=default
+linking=static
+link-dsl=on
+
+[dh-extras/os/linux/x11]
+path=../../dh-extras/os/linux/x11
+profile=default
+linking=static
+link-dsl=on
+
 [Grid]
 path=../Grid
 profile=default
@@ -14,14 +26,14 @@ profile=default
 linking=static
 link-dsl=on
 
-[dh-extras/os/windows/wnd]
-path=../../dh-extras/os/windows/wnd
+[dansi]
+path=../dansi
 profile=default
 linking=static
 link-dsl=on
 
-[dh-extras/os/linux/x11]
-path=../../dh-extras/os/linux/x11
+[daterm]
+path=../daterm
 profile=default
 linking=static
 link-dsl=on
