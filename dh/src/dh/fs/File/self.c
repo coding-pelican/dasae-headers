@@ -3,14 +3,10 @@
 #include "../private/share.h"
 
 #if plat_is_windows
-#include "dh/os/windows/handle.h"
-#include "dh/os/windows/file.h"
+#include "dh/sys/api/windows/handle.h"
+#include "dh/sys/api/windows/file.h"
 #elif plat_is_linux
-#include "dh/os/linux/syscall.h"
-#else /* plat_based_unix */
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include "dh/sys/call/linux.h"
 #endif
 
 #if plat_is_windows
@@ -30,28 +26,17 @@ $static fn_((fs__windowsKind(DWORD attrs))(fs_Kind)) {
     return fs_Kind_file;
 }
 #elif plat_is_linux
-$static fn_((fs__linuxKind(os_linux_mode_t mode))(fs_Kind)) {
-    switch (mode & os_linux_S_IFMT) {
-    case os_linux_S_IFREG: return fs_Kind_file;
-    case os_linux_S_IFDIR: return fs_Kind_directory;
-    case os_linux_S_IFCHR: return fs_Kind_character_device;
-    case os_linux_S_IFBLK: return fs_Kind_block_device;
-    case os_linux_S_IFIFO: return fs_Kind_named_pipe;
-    case os_linux_S_IFLNK: return fs_Kind_sym_link;
-    case os_linux_S_IFSOCK: return fs_Kind_unix_domain_socket;
+$static fn_((fs__linuxKind(sys_call_linux_mode_t mode))(fs_Kind)) {
+    switch (mode & sys_call_linux_S_IFMT) {
+    case sys_call_linux_S_IFREG: return fs_Kind_file;
+    case sys_call_linux_S_IFDIR: return fs_Kind_directory;
+    case sys_call_linux_S_IFCHR: return fs_Kind_character_device;
+    case sys_call_linux_S_IFBLK: return fs_Kind_block_device;
+    case sys_call_linux_S_IFIFO: return fs_Kind_named_pipe;
+    case sys_call_linux_S_IFLNK: return fs_Kind_sym_link;
+    case sys_call_linux_S_IFSOCK: return fs_Kind_unix_domain_socket;
     default: return fs_Kind_unknown;
     }
-}
-#else /* plat_based_unix */
-$static fn_((fs__posixKind(mode_t mode))(fs_Kind)) {
-    if (S_ISREG(mode)) return fs_Kind_file;
-    if (S_ISDIR(mode)) return fs_Kind_directory;
-    if (S_ISCHR(mode)) return fs_Kind_character_device;
-    if (S_ISBLK(mode)) return fs_Kind_block_device;
-    if (S_ISFIFO(mode)) return fs_Kind_named_pipe;
-    if (S_ISLNK(mode)) return fs_Kind_sym_link;
-    if (S_ISSOCK(mode)) return fs_Kind_unix_domain_socket;
-    return fs_Kind_unknown;
 }
 #endif
 
@@ -65,28 +50,20 @@ fn_((fs_File_open(S_const$u8 path, fs_File_OpenFlags flags))(E$fs_File) $scope) 
     if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$OpenFailedFS());
     return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
 #elif plat_is_linux
-    var_(open_flags, os_linux_word) = 0;
-    if (flags.mode == fs_OpenMode_read_only) open_flags |= os_linux_O_RDONLY;
-    if (flags.mode == fs_OpenMode_write_only) open_flags |= os_linux_O_WRONLY;
-    if (flags.mode == fs_OpenMode_read_write) open_flags |= os_linux_O_RDWR;
-    if (flags.nonblocking) open_flags |= os_linux_O_NONBLOCK;
-    let handle = os_linux_openat(os_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), open_flags, 0);
-    if (os_linux_syscall_isErr(handle)) {
+    var_(open_flags, sys_call_linux_word) = 0;
+    if (flags.mode == fs_OpenMode_read_only) open_flags |= sys_call_linux_O_RDONLY;
+    if (flags.mode == fs_OpenMode_write_only) open_flags |= sys_call_linux_O_WRONLY;
+    if (flags.mode == fs_OpenMode_read_write) open_flags |= sys_call_linux_O_RDWR;
+    if (flags.nonblocking) open_flags |= sys_call_linux_O_NONBLOCK;
+    let handle = sys_call_linux_openat(sys_call_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), open_flags, 0);
+    if (sys_call_linux_syscall_isErr(handle)) {
         return_err(E_cause$OpenFailedFS());
     } else {
         return_ok(fs_File_Handle_promote(as$(fs_File_Handle)(handle), (fs_File_Flags){ .nonblocking = flags.nonblocking }));
     }
-#else /* plat_based_unix */
-    var_(open_flags, i32) = 0;
-    if (flags.mode == fs_OpenMode_read_only) open_flags |= O_RDONLY;
-    if (flags.mode == fs_OpenMode_write_only) open_flags |= O_WRONLY;
-    if (flags.mode == fs_OpenMode_read_write) open_flags |= O_RDWR;
-    if (flags.nonblocking) open_flags |= O_NONBLOCK;
-    if_(let handle = open(as$(const char*)(A_ptr(path_z)), open_flags), handle < 0) {
-        return_err(E_cause$OpenFailedFS());
-    } else {
-        return_ok(fs_File_Handle_promote(as$(fs_File_Handle)(handle), (fs_File_Flags){ .nonblocking = flags.nonblocking }));
-    }
+#else
+    let_ignore = path_z;
+    return_err(E_cause$UnsupportedFS());
 #endif
     claim_unreachable;
 } $unscoped(fn);
@@ -105,28 +82,20 @@ fn_((fs_File_create(S_const$u8 path, fs_File_CreateFlags flags))(E$fs_File) $sco
     if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$OpenFailedFS());
     return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
 #elif plat_is_linux
-    var_(open_flags, os_linux_word) = os_linux_O_CREAT | os_linux_O_WRONLY;
-    if (flags.read) open_flags = os_linux_O_CREAT | os_linux_O_RDWR;
-    if (flags.truncate) open_flags |= os_linux_O_TRUNC;
-    if (flags.exclusive) open_flags |= os_linux_O_EXCL;
-    if (flags.nonblocking) open_flags |= os_linux_O_NONBLOCK;
-    let handle = os_linux_openat(os_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), open_flags, flags.mode);
-    if (os_linux_syscall_isErr(handle)) {
+    var_(open_flags, sys_call_linux_word) = sys_call_linux_O_CREAT | sys_call_linux_O_WRONLY;
+    if (flags.read) open_flags = sys_call_linux_O_CREAT | sys_call_linux_O_RDWR;
+    if (flags.truncate) open_flags |= sys_call_linux_O_TRUNC;
+    if (flags.exclusive) open_flags |= sys_call_linux_O_EXCL;
+    if (flags.nonblocking) open_flags |= sys_call_linux_O_NONBLOCK;
+    let handle = sys_call_linux_openat(sys_call_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), open_flags, flags.mode);
+    if (sys_call_linux_syscall_isErr(handle)) {
         return_err(E_cause$OpenFailedFS());
     } else {
         return_ok(fs_File_Handle_promote(as$(fs_File_Handle)(handle), (fs_File_Flags){ .nonblocking = flags.nonblocking }));
     }
-#else /* plat_based_unix */
-    var_(open_flags, i32) = O_CREAT | O_WRONLY;
-    if (flags.read) open_flags = O_CREAT | O_RDWR;
-    if (flags.truncate) open_flags |= O_TRUNC;
-    if (flags.exclusive) open_flags |= O_EXCL;
-    if (flags.nonblocking) open_flags |= O_NONBLOCK;
-    if_(let handle = open(as$(const char*)(A_ptr(path_z)), open_flags, flags.mode), handle < 0) {
-        return_err(E_cause$OpenFailedFS());
-    } else {
-        return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
-    }
+#else
+    let_ignore = path_z;
+    return_err(E_cause$UnsupportedFS());
 #endif
     claim_unreachable;
 } $unscoped(fn);
@@ -137,9 +106,10 @@ fn_((fs_File_delete(S_const$u8 path))(E$void) $scope) {
 #if plat_is_windows
     if (!DeleteFileA(as$(LPCSTR)(A_ptr(path_z)))) return_err(E_cause$NotFoundFS());
 #elif plat_is_linux
-    if (os_linux_unlinkat(os_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), 0) != 0) return_err(E_cause$NotFoundFS());
-#else /* plat_based_unix */
-    if (unlink(as$(const char*)(A_ptr(path_z))) != 0) return_err(E_cause$NotFoundFS());
+    if (sys_call_linux_unlinkat(sys_call_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), 0) != 0) return_err(E_cause$NotFoundFS());
+#else
+    let_ignore = path_z;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
 } $unscoped(fn);
@@ -154,13 +124,13 @@ fn_((fs_File_rename(S_const$u8 old_path, S_const$u8 new_path))(E$void) $scope) {
             as$(LPCSTR)(A_ptr(old_path_z)),
             as$(LPCSTR)(A_ptr(new_path_z)), MOVEFILE_REPLACE_EXISTING)) return_err(E_cause$WriteFailedFS());
 #elif plat_is_linux
-    if (os_linux_renameat(os_linux_AT_FDCWD, as$(const char*)(A_ptr(old_path_z)), os_linux_AT_FDCWD, as$(const char*)(A_ptr(new_path_z))) != 0) {
+    if (sys_call_linux_renameat(sys_call_linux_AT_FDCWD, as$(const char*)(A_ptr(old_path_z)), sys_call_linux_AT_FDCWD, as$(const char*)(A_ptr(new_path_z))) != 0) {
         return_err(E_cause$NotFoundFS());
     }
-#else /* plat_based_unix */
-    if (rename(as$(const char*)(A_ptr(old_path_z)), as$(const char*)(A_ptr(new_path_z))) != 0) {
-        return_err(E_cause$NotFoundFS());
-    }
+#else
+    let_ignore = old_path_z;
+    let_ignore = new_path_z;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
 } $unscoped(fn);
@@ -169,9 +139,9 @@ fn_((fs_File_close(fs_File self))(void)) {
 #if plat_is_windows
     CloseHandle(self.handle);
 #elif plat_is_linux
-    let_ignore = os_linux_close(self.handle);
-#else /* plat_based_unix */
-    close(self.handle);
+    let_ignore = sys_call_linux_close(self.handle);
+#else
+    let_ignore = self;
 #endif
 }
 
@@ -194,8 +164,8 @@ fn_((fs_File_stat(fs_File self))(fs_E$fs_File_Stat) $scope) {
         .block_size = 4096,
     });
 #elif plat_is_linux
-    var_(st, os_linux_statx) = {};
-    if (os_linux_statx_get(self.handle, "", os_linux_AT_EMPTY_PATH, os_linux_STATX_BASIC_STATS, &st) != 0) return_err(E_cause$ReadFailedFS());
+    var_(st, sys_call_linux_statx) = {};
+    if (sys_call_linux_statx_get(self.handle, "", sys_call_linux_AT_EMPTY_PATH, sys_call_linux_STATX_BASIC_STATS, &st) != 0) return_err(E_cause$ReadFailedFS());
     return_ok((fs_File_Stat){
         .inode = as$(fs_INode)(st.stx_ino),
         .nlink = as$(fs_NLink)(st.stx_nlink),
@@ -207,20 +177,9 @@ fn_((fs_File_stat(fs_File self))(fs_E$fs_File_Stat) $scope) {
         .ctime = time_SysTime_fromUnixEpoch(as$(u64)(st.stx_ctime.tv_sec)),
         .block_size = as$(fs_BlockSize)(st.stx_blksize),
     });
-#else /* plat_based_unix */
-    var_(st, struct stat) = {};
-    if (fstat(self.handle, &st) != 0) return_err(E_cause$ReadFailedFS());
-    return_ok((fs_File_Stat){
-        .inode = as$(fs_INode)(st.st_ino),
-        .nlink = as$(fs_NLink)(st.st_nlink),
-        .size = as$(u64)(st.st_size),
-        .permissions = as$(fs_Mode)(st.st_mode),
-        .kind = fs__posixKind(st.st_mode),
-        .atime = time_SysTime_fromUnixEpoch(as$(u64)(st.st_atime)),
-        .mtime = time_SysTime_fromUnixEpoch(as$(u64)(st.st_mtime)),
-        .ctime = time_SysTime_fromUnixEpoch(as$(u64)(st.st_ctime)),
-        .block_size = as$(fs_BlockSize)(st.st_blksize),
-    });
+#else
+    let_ignore = self;
+    return_err(E_cause$UnsupportedFS());
 #endif
 } $unscoped(fn);
 
@@ -228,9 +187,10 @@ fn_((fs_File_sync(fs_File self))(E$void) $scope) {
 #if plat_is_windows
     if (!FlushFileBuffers(self.handle)) return_err(E_cause$WriteFailedFS());
 #elif plat_is_linux
-    if (os_linux_fsync(self.handle) != 0) return_err(E_cause$WriteFailedFS());
-#else /* plat_based_unix */
-    if (fsync(self.handle) != 0) return_err(E_cause$WriteFailedFS());
+    if (sys_call_linux_fsync(self.handle) != 0) return_err(E_cause$WriteFailedFS());
+#else
+    let_ignore = self;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
 } $unscoped(fn);
@@ -240,9 +200,10 @@ fn_((fs_File_isTty(fs_File self))(E$bool) $scope) {
     return_ok(GetFileType(self.handle) == FILE_TYPE_CHAR);
 #elif plat_is_linux
     var_(termios_buf, A$$(128, u8)) = A_zero();
-    return_ok(os_linux_ioctl(self.handle, os_linux_TCGETS, A_ptr(termios_buf)) == 0);
-#else /* plat_based_unix */
-    return_ok(isatty(self.handle) != 0);
+    return_ok(sys_call_linux_ioctl(self.handle, sys_call_linux_TCGETS, A_ptr(termios_buf)) == 0);
+#else
+    let_ignore = self;
+    return_err(E_cause$UnsupportedFS());
 #endif
 } $unscoped(fn);
 
@@ -252,9 +213,11 @@ fn_((fs_File_setLen(fs_File self, u64 new_len))(E$void) $scope) {
     if (!SetFilePointerEx(self.handle, pos, null, FILE_BEGIN)) return_err(E_cause$WriteFailedFS());
     if (!SetEndOfFile(self.handle)) return_err(E_cause$WriteFailedFS());
 #elif plat_is_linux
-    if (os_linux_ftruncate(self.handle, new_len) != 0) return_err(E_cause$WriteFailedFS());
-#else /* plat_based_unix */
-    if (ftruncate(self.handle, as$(off_t)(new_len)) != 0) return_err(E_cause$WriteFailedFS());
+    if (sys_call_linux_ftruncate(self.handle, new_len) != 0) return_err(E_cause$WriteFailedFS());
+#else
+    let_ignore = self;
+    let_ignore = new_len;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
 } $unscoped(fn);
@@ -265,11 +228,12 @@ fn_((fs_File_setPerms(fs_File self, fs_File_Mode perms))(E$void) $scope) {
     let_ignore = perms;
     return_err(E_cause$UnsupportedFS());
 #elif plat_is_linux
-    if (os_linux_fchmod(self.handle, as$(os_linux_mode_t)(perms)) != 0) return_err(E_cause$PermissionDeniedFS());
+    if (sys_call_linux_fchmod(self.handle, as$(sys_call_linux_mode_t)(perms)) != 0) return_err(E_cause$PermissionDeniedFS());
     return_ok({});
-#else /* plat_based_unix */
-    if (fchmod(self.handle, as$(mode_t)(perms)) != 0) return_err(E_cause$PermissionDeniedFS());
-    return_ok({});
+#else
+    let_ignore = self;
+    let_ignore = perms;
+    return_err(E_cause$UnsupportedFS());
 #endif
 } $unscoped(fn);
 
@@ -285,18 +249,17 @@ fn_((fs_File_readPos(fs_File self, S$u8 buf, u64 offset))(E$usize) $scope) {
     }
     return_ok(as$(usize)(bytes_read));
 #elif plat_is_linux
-    let bytes_read = os_linux_pread(self.handle, buf.ptr, buf.len, offset);
-    if (os_linux_syscall_isErr(bytes_read)) {
+    let bytes_read = sys_call_linux_pread(self.handle, buf.ptr, buf.len, offset);
+    if (sys_call_linux_syscall_isErr(bytes_read)) {
         return_err(E_cause$ReadFailedFS());
     } else {
         return_ok(as$(usize)(bytes_read));
     }
-#else /* plat_based_unix */
-    if_(let bytes_read = pread(self.handle, buf.ptr, buf.len, as$(off_t)(offset)), bytes_read < 0) {
-        return_err(E_cause$ReadFailedFS());
-    } else {
-        return_ok(as$(usize)(bytes_read));
-    }
+#else
+    let_ignore = self;
+    let_ignore = buf;
+    let_ignore = offset;
+    return_err(E_cause$UnsupportedFS());
 #endif
     claim_unreachable;
 } $unscoped(fn);
@@ -311,18 +274,17 @@ fn_((fs_File_writePos(fs_File self, S_const$u8 buf, u64 offset))(E$usize) $scope
     }
     return_ok(as$(usize)(bytes_written));
 #elif plat_is_linux
-    let bytes_written = os_linux_pwrite(self.handle, buf.ptr, buf.len, offset);
-    if (os_linux_syscall_isErr(bytes_written)) {
+    let bytes_written = sys_call_linux_pwrite(self.handle, buf.ptr, buf.len, offset);
+    if (sys_call_linux_syscall_isErr(bytes_written)) {
         return_err(E_cause$WriteFailedFS());
     } else {
         return_ok(as$(usize)(bytes_written));
     }
-#else /* plat_based_unix */
-    if_(let bytes_written = pwrite(self.handle, buf.ptr, buf.len, as$(off_t)(offset)), bytes_written < 0) {
-        return_err(E_cause$WriteFailedFS());
-    } else {
-        return_ok(as$(usize)(bytes_written));
-    }
+#else
+    let_ignore = self;
+    let_ignore = buf;
+    let_ignore = offset;
+    return_err(E_cause$UnsupportedFS());
 #endif
     claim_unreachable;
 } $unscoped(fn);
@@ -332,9 +294,11 @@ fn_((fs_File_seekBy(fs_File self, i64 rel_offset))(E$void) $scope) {
     var_(distance, LARGE_INTEGER) = { .QuadPart = as$(LONGLONG)(rel_offset) };
     if (!SetFilePointerEx(self.handle, distance, null, FILE_CURRENT)) return_err(E_cause$ReadFailedFS());
 #elif plat_is_linux
-    if (os_linux_syscall_isErr(os_linux_lseek(self.handle, rel_offset, os_linux_SEEK_CUR))) return_err(E_cause$ReadFailedFS());
-#else /* plat_based_unix */
-    if (lseek(self.handle, as$(off_t)(rel_offset), SEEK_CUR) < 0) return_err(E_cause$ReadFailedFS());
+    if (sys_call_linux_syscall_isErr(sys_call_linux_lseek(self.handle, rel_offset, sys_call_linux_SEEK_CUR))) return_err(E_cause$ReadFailedFS());
+#else
+    let_ignore = self;
+    let_ignore = rel_offset;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
 } $unscoped(fn);
@@ -344,9 +308,11 @@ fn_((fs_File_seekTo(fs_File self, u64 abs_offset))(E$void) $scope) {
     var_(distance, LARGE_INTEGER) = { .QuadPart = as$(LONGLONG)(abs_offset) };
     if (!SetFilePointerEx(self.handle, distance, null, FILE_BEGIN)) return_err(E_cause$ReadFailedFS());
 #elif plat_is_linux
-    if (os_linux_syscall_isErr(os_linux_lseek(self.handle, as$(i64)(abs_offset), os_linux_SEEK_SET))) return_err(E_cause$ReadFailedFS());
-#else /* plat_based_unix */
-    if (lseek(self.handle, as$(off_t)(abs_offset), SEEK_SET) < 0) return_err(E_cause$ReadFailedFS());
+    if (sys_call_linux_syscall_isErr(sys_call_linux_lseek(self.handle, as$(i64)(abs_offset), sys_call_linux_SEEK_SET))) return_err(E_cause$ReadFailedFS());
+#else
+    let_ignore = self;
+    let_ignore = abs_offset;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
 } $unscoped(fn);
@@ -399,18 +365,16 @@ $static fn_((fs_File_IO__read(P$raw ctx, S$u8 buf))(E$usize) $scope) {
     }
     return_ok(as$(usize)(bytes_read));
 #elif plat_is_linux
-    let bytes_read = os_linux_read(self->file.handle, buf.ptr, buf.len);
-    if (os_linux_syscall_isErr(bytes_read)) {
+    let bytes_read = sys_call_linux_read(self->file.handle, buf.ptr, buf.len);
+    if (sys_call_linux_syscall_isErr(bytes_read)) {
         return_err(E_cause$ReadFailedFS());
     } else {
         return_ok(as$(usize)(bytes_read));
     }
-#else /* plat_based_unix */
-    if_(let bytes_read = read(self->file.handle, buf.ptr, buf.len), bytes_read < 0) {
-        return_err(E_cause$ReadFailedFS());
-    } else {
-        return_ok(as$(usize)(bytes_read));
-    }
+#else
+    let_ignore = self;
+    let_ignore = buf;
+    return_err(E_cause$UnsupportedFS());
 #endif
     claim_unreachable;
 } $unscoped(fn);
@@ -424,18 +388,16 @@ $static fn_((fs_File_IO__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
     }
     return_ok(as$(usize)(bytes_written));
 #elif plat_is_linux
-    let bytes_written = os_linux_write(self->file.handle, bytes.ptr, bytes.len);
-    if (os_linux_syscall_isErr(bytes_written)) {
+    let bytes_written = sys_call_linux_write(self->file.handle, bytes.ptr, bytes.len);
+    if (sys_call_linux_syscall_isErr(bytes_written)) {
         return_err(E_cause$WriteFailedFS());
     } else {
         return_ok(as$(usize)(bytes_written));
     }
-#else /* plat_based_unix */
-    if_(let bytes_written = write(self->file.handle, bytes.ptr, bytes.len), bytes_written < 0) {
-        return_err(E_cause$WriteFailedFS());
-    } else {
-        return_ok(as$(usize)(bytes_written));
-    }
+#else
+    let_ignore = self;
+    let_ignore = bytes;
+    return_err(E_cause$UnsupportedFS());
 #endif
     claim_unreachable;
 } $unscoped(fn);
@@ -459,7 +421,7 @@ fn_((fs_File_IO_writer(fs_File_IO* self))(io_Writer)) {
 $static fn_((fs__File_handleToCtx(fs_File_Handle handle))(P$raw)) {
 #if plat_is_windows
     return ptrCast$((P$raw)(handle));
-#else /* plat_based_unix */
+#else
     return intToPtr$((P$raw)(as$(usize)(handle)));
 #endif
 }
@@ -467,7 +429,7 @@ $static fn_((fs__File_handleToCtx(fs_File_Handle handle))(P$raw)) {
 $static fn_((fs__File_handleFromCtx(P$raw ctx))(fs_File_Handle)) {
 #if plat_is_windows
     return ptrCast$((fs_File_Handle)(ctx));
-#else /* plat_based_unix */
+#else
     return as$(fs_File_Handle)(ptrToInt(ctx));
 #endif
 }
@@ -486,18 +448,16 @@ $static fn_((fs_File_handle__read(P$raw ctx, S$u8 buf))(E$usize) $scope) {
     }
     return_ok(as$(usize)(bytes_read));
 #elif plat_is_linux
-    let bytes_read = os_linux_read(file.handle, buf.ptr, buf.len);
-    if (os_linux_syscall_isErr(bytes_read)) {
+    let bytes_read = sys_call_linux_read(file.handle, buf.ptr, buf.len);
+    if (sys_call_linux_syscall_isErr(bytes_read)) {
         return_err(E_cause$ReadFailedFS());
     } else {
         return_ok(as$(usize)(bytes_read));
     }
-#else /* plat_based_unix */
-    if_(let bytes_read = read(file.handle, buf.ptr, buf.len), bytes_read < 0) {
-        return_err(E_cause$ReadFailedFS());
-    } else {
-        return_ok(as$(usize)(bytes_read));
-    }
+#else
+    let_ignore = file;
+    let_ignore = buf;
+    return_err(E_cause$UnsupportedFS());
 #endif
     claim_unreachable;
 } $unscoped(fn);
@@ -514,18 +474,16 @@ $static fn_((fs_File_handle__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope
     }
     return_ok(as$(usize)(bytes_written));
 #elif plat_is_linux
-    let bytes_written = os_linux_write(file.handle, bytes.ptr, bytes.len);
-    if (os_linux_syscall_isErr(bytes_written)) {
+    let bytes_written = sys_call_linux_write(file.handle, bytes.ptr, bytes.len);
+    if (sys_call_linux_syscall_isErr(bytes_written)) {
         return_err(E_cause$WriteFailedFS());
     } else {
         return_ok(as$(usize)(bytes_written));
     }
-#else /* plat_based_unix */
-    if_(let bytes_written = write(file.handle, bytes.ptr, bytes.len), bytes_written < 0) {
-        return_err(E_cause$WriteFailedFS());
-    } else {
-        return_ok(as$(usize)(bytes_written));
-    }
+#else
+    let_ignore = file;
+    let_ignore = bytes;
+    return_err(E_cause$UnsupportedFS());
 #endif
     claim_unreachable;
 } $unscoped(fn);

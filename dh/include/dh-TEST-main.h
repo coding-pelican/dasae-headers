@@ -5,7 +5,7 @@
  * @file    dh-TEST-main.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-05 (date of creation)
- * @updated 2026-05-05 (date of last update)
+ * @updated 2026-05-27 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  TEST
  *
@@ -22,6 +22,7 @@ extern "C" {
 
 #include "dh/prl.h"
 #include "dh/TEST.h"
+#include "dh/start.h"
 
 /*========== Macros =========================================================*/
 
@@ -32,10 +33,34 @@ extern "C" {
 /*========== Root main ======================================================*/
 
 #if TEST_main_enabled
-fn_((main(void))(int)) {
+
+$static fn_((TEST__runMain(void))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
-    return TEST_Framework_run(), 0;
+    TEST_Framework_run();
+    return 0;
 };
+
+#ifndef main_root_included
+#define main_root_included 1
+
+#if comp_start_files_linked
+fn_((main(void))(int)) {
+    return TEST__runMain();
+};
+#else /* !comp_start_files_linked */
+$attr($no_return $maybe_unused)
+$static fn_((TEST__callMainAndExit(P$raw raw_ctx))(void)) {
+    let_ignore = raw_ctx;
+    start_callInitArray();
+    let code = TEST__runMain();
+    start_callFiniArray();
+    start_exit(code);
+};
+
+start_emitEntry(TEST__callMainAndExit);
+#endif /* comp_start_files_linked */
+
+#endif /* main_root_included */
 #endif /* TEST_main_enabled */
 
 #if defined(__cplusplus)

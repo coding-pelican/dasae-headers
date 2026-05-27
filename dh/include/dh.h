@@ -63,8 +63,7 @@ extern "C" {
 // #include "dh/BTreeMap.h"
 // #include "dh/BTreeSet.h"
 
-#include "dh/os.h"
-#include "dh/posix.h"
+#include "dh/sys.h"
 #include "dh/time.h"
 #include "dh/heap.h"
 #include "dh/proc.h"
@@ -78,6 +77,7 @@ extern "C" {
 #include "dh/net.h"
 // #include "dh/http.h"
 
+#include "dh/start.h"
 #include "dh/TEST.h"
 /* main must be included directly. */
 // #include "dh-TEST-main.h"

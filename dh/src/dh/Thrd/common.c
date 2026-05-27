@@ -2,7 +2,7 @@
 #include "dh/heap/vmem.h"
 #include "dh/meta.h"
 #if plat_is_linux
-#include "dh/os/linux/syscall.h"
+#include "dh/sys/call/linux.h"
 #endif
 
 typedef struct Thrd__Start {
@@ -655,18 +655,18 @@ fn_((Thrd__linux_handle(Thrd self))(Thrd_Handle)) {
 };
 
 fn_((Thrd__linux_yield(void))(Thrd_E$void) $scope) {
-    if (os_linux_sched_yield() != 0) return_err(E_cause$ThrdSystemResources());
+    if (sys_call_linux_sched_yield() != 0) return_err(E_cause$ThrdSystemResources());
     return_ok({});
 } $unscoped(fn);
 
 fn_((Thrd__linux_currId(void))(Thrd_Id)) {
-    return as$(Thrd_Id)(os_linux_gettid());
+    return as$(Thrd_Id)(sys_call_linux_gettid());
 };
 
 fn_((Thrd__linux_cpuCount(void))(Thrd_E$usize) $scope) {
     var_(cpu_set, Thrd__linux_CpuSet) = cleared();
     Thrd__linux_cpuSetZero(&cpu_set);
-    if (os_linux_sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) return_err(E_cause$ThrdSystemResources());
+    if (sys_call_linux_sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) return_err(E_cause$ThrdSystemResources());
     return_ok(Thrd__linux_cpuSetCount(&cpu_set));
 } $unscoped(fn);
 
@@ -683,9 +683,9 @@ fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
 } $unscoped(fn);
 
 #define Thrd__linux_clone_flags ( \
-    os_linux_CLONE_VM | os_linux_CLONE_FS | os_linux_CLONE_FILES | os_linux_CLONE_SIGHAND \
-    | os_linux_CLONE_THREAD | os_linux_CLONE_SYSVSEM | os_linux_CLONE_SETTLS \
-    | os_linux_CLONE_PARENT_SETTID | os_linux_CLONE_CHILD_CLEARTID \
+    sys_call_linux_CLONE_VM | sys_call_linux_CLONE_FS | sys_call_linux_CLONE_FILES | sys_call_linux_CLONE_SIGHAND \
+    | sys_call_linux_CLONE_THREAD | sys_call_linux_CLONE_SYSVSEM | sys_call_linux_CLONE_SETTLS \
+    | sys_call_linux_CLONE_PARENT_SETTID | sys_call_linux_CLONE_CHILD_CLEARTID \
 )
 
 $static fn_((Thrd__linux_entry(P$raw arg))(i32));
@@ -764,7 +764,7 @@ fn_((Thrd__linux_join(Thrd self))(Clsr$raw*)) {
     while (true) {
         let tid = atom_V_load(&meta->child_tid, atom_MemOrd_seq_cst);
         if (tid == 0) break;
-        let_ignore = os_linux_futex(ptrQualCast$((P$raw)(&meta->child_tid.raw)), os_linux_FUTEX_WAIT | os_linux_FUTEX_PRIVATE_FLAG, tid, null, null, 0);
+        let_ignore = sys_call_linux_futex(ptrQualCast$((P$raw)(&meta->child_tid.raw)), sys_call_linux_FUTEX_WAIT | sys_call_linux_FUTEX_PRIVATE_FLAG, tid, null, null, 0);
     }
     let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
     return ensureNonnull(self.clsr);

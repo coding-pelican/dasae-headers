@@ -2,7 +2,13 @@
 #include "dh/mem/Alctr.h"
 #include "dh/meta.h"
 
-#if comp_env_type_is_freestanding
+#if !comp_libc_linked
+$extern fn_((memset(P$raw dst, int val, usize len))(P$raw));
+$extern fn_((memcpy(P$raw dst, P_const$raw src, usize len))(P$raw));
+$extern fn_((memmove(P$raw dst, P_const$raw src, usize len))(P$raw));
+$extern fn_((memcmp(P_const$raw lhs, P_const$raw rhs, usize len))(int));
+$extern fn_((strlen(const char* str))(usize));
+
 fn_((memset(P$raw dst, int val, usize len))(P$raw)) {
     let out = P_prefix((ptrCast$((u8*)(dst)))(len));
     for_(($s(out))(byte)) { *byte = intCast$((u8)(val)); } $end(for);
@@ -33,7 +39,10 @@ fn_((memcmp(P_const$raw lhs, P_const$raw rhs, usize len))(int)) {
     } $end(for);
     return 0;
 };
-#endif /* comp_env_type_is_freestanding */
+fn_((strlen(const char* str))(usize)) {
+    return mem_lenZ0$u8(as$(const u8*)(str));
+};
+#endif /* !comp_libc_linked */
 
 fn_((mem_set0Bytes(S$u8 dst))(S$u8)) {
     claim_assert_nonnullS(dst);

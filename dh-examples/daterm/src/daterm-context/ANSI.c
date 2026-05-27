@@ -23,8 +23,8 @@ $static fn_((daterm_ANSI__queryScreenSize(P$raw ctx))(E$daterm_Size));
 $static fn_((daterm_ANSI__queryCursorPos(P$raw ctx))(E$daterm_Pos));
 
 #if plat_is_windows
-#include <dh/os/windows/console.h>
-#include <dh/os/windows/sync.h>
+#include <dh/sys/api/windows/console.h>
+#include <dh/sys/api/windows/sync.h>
 T_use_E$(DWORD);
 $static fn_((daterm_ANSI__windows_ctrlHandler(DWORD type))(BOOL));
 $static fn_((daterm_ANSI__windows_enableRawMode(HANDLE input))(E$DWORD));
@@ -38,7 +38,7 @@ $static fn_((daterm_ANSI__windows_disableVTerm(HANDLE output, DWORD old_out))(E$
 #include <unistd.h>
 T_alias$((posix_termios)(struct termios));
 T_use_E$(posix_termios);
-    $static fn_((daterm_ANSI__posix_enableRawMode(fs_File_Handle handle, daterm_ANSI_OutputMode output_mode))(E$posix_termios));
+$static fn_((daterm_ANSI__posix_enableRawMode(fs_File_Handle handle, daterm_ANSI_OutputMode output_mode))(E$posix_termios));
 $static fn_((daterm_ANSI__posix_disableRawMode(fs_File_Handle handle, posix_termios old))(E$void));
 #endif /* plat_is_posix */
 

@@ -1,5 +1,0 @@
-CompileFlags:
-  Add:
-    - -I./os/linux/x11/src
-    - -I./os/linux/x11/include
-    - -isystem./os/linux/x11/lib/deps

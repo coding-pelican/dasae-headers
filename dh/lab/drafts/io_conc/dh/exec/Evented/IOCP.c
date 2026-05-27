@@ -1,9 +1,9 @@
 #include "IOCP.h"
 
 #if plat_is_windows
-#include "dh/os/windows/handle.h"
-#include "dh/os/windows/io.h"
-#include "dh/os/windows/sync.h"
+#include "dh/sys/api/windows/handle.h"
+#include "dh/sys/api/windows/io.h"
+#include "dh/sys/api/windows/sync.h"
 #endif /* plat_is_windows */
 
 /*========== Internal Definitions ===========================================*/
@@ -59,12 +59,10 @@ $static fn_((exec_Evented_IOCP__poll(P$raw ctx, time_Dur timeout))(E$O$exec_Even
         .bytes = as$(usize)(bytes),
         .os_err = os_err,
         .err = ok
-            ? none()
-            : some(as$(Err)(
-                os_err == ERROR_OPERATION_ABORTED
-                    ? exec_Evented_E_Canceled()
-                    : exec_Evented_E_PollFailed()
-            )),
+                 ? none()
+                 : some(as$(Err)(os_err == ERROR_OPERATION_ABORTED
+                                  ? exec_Evented_E_Canceled()
+                                  : exec_Evented_E_PollFailed())),
     }));
 #else
     let_ignore = self;

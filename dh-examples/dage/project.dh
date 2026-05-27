@@ -2,14 +2,14 @@ kind=lib
 pch=dage.h
 link-dsl=on
 
-[dh-extras/os/windows/wnd]
-path=../../dh-extras/os/windows/wnd
+[dh-extras/sys/api/windows/wnd]
+path=../../dh-extras/sys/api/windows/wnd
 profile=default
 linking=static
 link-dsl=on
 
-[dh-extras/os/linux/x11]
-path=../../dh-extras/os/linux/x11
+[dh-extras/sys/call/linux/x11]
+path=../../dh-extras/sys/call/linux/x11
 profile=default
 linking=static
 link-dsl=on

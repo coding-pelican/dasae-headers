@@ -1,8 +1,8 @@
 #include "dh/proc/Child.h"
 
 #if plat_is_windows
-#include "dh/os/windows/handle.h"
-#include "dh/os/windows/proc.h"
+#include "dh/sys/api/windows/handle.h"
+#include "dh/sys/api/windows/proc.h"
 #endif
 
 fn_((proc_Child_wait(proc_Child* self))(E$proc_Term) $scope) {

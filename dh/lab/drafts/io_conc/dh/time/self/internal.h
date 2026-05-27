@@ -12,9 +12,9 @@ extern "C" {
 #include "../../Sched.h"
 
 #if plat_is_windows
-#include "dh/os/windows/sync.h"
-#include "dh/os/windows/proc.h"
-#include "dh/os/windows/thrd.h"
+#include "dh/sys/api/windows/sync.h"
+#include "dh/sys/api/windows/proc.h"
+#include "dh/sys/api/windows/thrd.h"
 #endif /* plat_is_windows */
 #if plat_based_unix
 #include <time.h>

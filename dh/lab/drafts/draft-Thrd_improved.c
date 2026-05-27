@@ -24,36 +24,36 @@ typedef enum Atom_MemOrd {
 #define Atom_load(_val, val_order) \
     __atomic_load_n(&(_val).raw, (val_order))
 
-#include "dh/os/windows.h"
+#include "dh/sys/api/windows.h"
 
-fn_((os_windows_GetCurrentThreadId(void))(DWORD)) {
+fn_((sys_api_windows_GetCurrentThreadId(void))(DWORD)) {
     return GetCurrentThreadId();
 }
 
-fn_((os_windows_GetSystemInfo(void))(SYSTEM_INFO)) {
+fn_((sys_api_windows_GetSystemInfo(void))(SYSTEM_INFO)) {
     SYSTEM_INFO sysInfo = {};
     GetSystemInfo(&sysInfo);
     return sysInfo;
 }
 
-errset_((os_windows_WaitForSingleObjectError)(
+errset_((sys_api_windows_WaitForSingleObjectError)(
     WaitAbandoned,
     WaitTimeOut,
     Unexpected
 ));
 
-fn_((os_windows_WaitForSingleObjectEx(HANDLE handle, DWORD milliseconds, bool alertable))(os_windows_WaitForSingleObjectError$void) $scope) {
+fn_((sys_api_windows_WaitForSingleObjectEx(HANDLE handle, DWORD milliseconds, bool alertable))(sys_api_windows_WaitForSingleObjectError$void) $scope) {
     switch (WaitForSingleObjectEx(handle, milliseconds, alertable)) {
-    case_((WAIT_ABANDONED)(return_err(os_windows_WaitForSingleObjectError_WaitAbandoned())));
+    case_((WAIT_ABANDONED)(return_err(sys_api_windows_WaitForSingleObjectError_WaitAbandoned())));
     case_((WAIT_OBJECT_0)(return_ok({})));
-    case_((WAIT_TIMEOUT)(return_err(os_windows_WaitForSingleObjectError_WaitTimeOut())));
-    case_((WAIT_FAILED)(return_err(os_windows_WaitForSingleObjectError_Unexpected())));
+    case_((WAIT_TIMEOUT)(return_err(sys_api_windows_WaitForSingleObjectError_WaitTimeOut())));
+    case_((WAIT_FAILED)(return_err(sys_api_windows_WaitForSingleObjectError_Unexpected())));
     default_((claim_unreachable));
     }
 } $unscoped(fn);
 
-fn_((os_windows_WaitForSingleObject(HANDLE handle, DWORD milliseconds))(os_windows_WaitForSingleObjectError$void)) {
-    return os_windows_WaitForSingleObjectEx(handle, milliseconds, false);
+fn_((sys_api_windows_WaitForSingleObject(HANDLE handle, DWORD milliseconds))(sys_api_windows_WaitForSingleObjectError$void)) {
+    return sys_api_windows_WaitForSingleObjectEx(handle, milliseconds, false);
 }
 
 typedef pp_if_(pp_eql(os_type, os_type_windows))(
@@ -89,11 +89,11 @@ typedef struct Thrd {
 } Thrd;
 
 fn_((Thrd_currentId(void))(Thrd_Id)) {
-    return os_windows_GetCurrentThreadId();
+    return sys_api_windows_GetCurrentThreadId();
 }
 
 fn_((Thrd_cpuCount(void))(usize)) {
-    return as$(usize)(os_windows_GetSystemInfo().dwNumberOfProcessors);
+    return as$(usize)(sys_api_windows_GetSystemInfo().dwNumberOfProcessors);
 }
 
 /* fn_((Thrd_spawn(Thrd_SpawnCfg config, comptime f : anytype, args : anytype))(Thrd)) {
@@ -171,7 +171,7 @@ fn_((Thrd_detach(Thrd self))(void)) {
 }
 
 fn_((Thrd_join(Thrd self))(void)) {
-    catch_((os_windows_WaitForSingleObject(self.inner->handle, INFINITE))($ignore, claim_unreachable));
+    catch_((sys_api_windows_WaitForSingleObject(self.inner->handle, INFINITE))($ignore, claim_unreachable));
     CloseHandle(self.inner->handle);
     claim_assert(Atom_load(self.inner->completion, Atom_MemOrd_seq_cst) == Thrd_CompletionState_completed);
     Thrd_Completion_free(self.inner);

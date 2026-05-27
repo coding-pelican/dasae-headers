@@ -101,13 +101,13 @@ fn_((debug_StackTrace__unsupported_print(void))(void)) {
 /* --- Windows --- */
 
 #if plat_is_windows
-#include "dh/os/windows/base.h"
-#include "dh/os/windows/proc.h"
-#include "dh/os/windows/pp-def/guard.h"
+#include "dh/sys/api/windows/base.h"
+#include "dh/sys/api/windows/proc.h"
+#include "dh/sys/api/windows/pp-def/guard.h"
 #include <winver.h>
 #include <dbghelp.h>
 #pragma comment(lib, "dbghelp.lib")
-#include "dh/os/windows/pp-def/unguarded.h"
+#include "dh/sys/api/windows/pp-def/unguarded.h"
 
 $attr($stdcall)
 $static fn_((debug_StackTrace__windows__handleException(EXCEPTION_POINTERS* ExceptionInfo))(LONG)) {

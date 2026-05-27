@@ -23,6 +23,7 @@ extern "C" {
 
 #include "cfg.h"
 #include "common.h"
+#include "dh/sys/libc/darwin/sync.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -35,7 +36,6 @@ extern "C" {
 #define __comp_bool__Thrd_Mtx__use_pthread_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
         pp_case_((plat_type_windows)(pp_false)), \
-        pp_case_((plat_type_darwin)(pp_false)), \
         pp_default_(Thrd_use_pthread) \
     ) pp_end \
 )
@@ -49,7 +49,7 @@ extern "C" {
 #define __comp_bool__Thrd_Mtx__has_specialized_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
         pp_case_((plat_type_windows)(pp_true)), \
-        pp_case_((plat_type_darwin)(pp_true)), \
+        pp_case_((plat_type_darwin)(sys_libc_darwin_has_unfair_lock)), \
         pp_default_(pp_false) \
     ) pp_end \
 )
@@ -65,7 +65,7 @@ struct Thrd_Mtx__Impl pp_if_(Thrd_Mtx_use_pthread)(
                     var_(inner, SRWLOCK);
                 })),
                 pp_case_((plat_type_darwin)({
-                    var_(inner, os_unfair_lock);
+                    var_(inner, sys_libc_darwin_unfair_lock);
                 }))
             ) pp_end
         )),

@@ -2,7 +2,7 @@
 #include "dh/heap/vmem.h"
 
 #if plat_is_windows
-#include "dh/os/windows/except.h"
+#include "dh/sys/api/windows/except.h"
 #elif plat_based_unix
 #include <signal.h>
 #endif

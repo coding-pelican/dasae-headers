@@ -6,14 +6,10 @@
 #include "private/share.h"
 
 #if plat_is_windows
-#include "dh/os/windows/file.h"
-#include "dh/os/windows/handle.h"
+#include "dh/sys/api/windows/file.h"
+#include "dh/sys/api/windows/handle.h"
 #elif plat_is_linux
-#include "dh/os/linux/syscall.h"
-#else
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include "dh/sys/call/linux.h"
 #endif
 
 #if plat_is_windows
@@ -68,14 +64,13 @@ fn_((fs_Dir_create(S_const$u8 path))(E$void) $scope) {
         let err = GetLastError();
         if (err != ERROR_ALREADY_EXISTS) return_err(E_cause$WriteFailedFS());
     }
-#else
+#elif plat_is_linux
     var_(path_z, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$FileTooBigFS());
-#if plat_is_linux
-    if (os_linux_mkdirat(os_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
+    if (sys_call_linux_mkdirat(sys_call_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
 #else
-    if (mkdir(as$(const char*)(A_ptr(path_z)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
-#endif
+    let_ignore = path;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
 } $unscoped(fn);
@@ -87,14 +82,12 @@ fn_((fs_Dir_close(fs_Dir* self))(void)) {
         let_ignore = CloseHandle(self->handle);
     }
     self->handle = INVALID_HANDLE_VALUE;
-#else
+#elif plat_is_linux
     if (self->handle >= 0) {
-#if plat_is_linux
-        let_ignore = os_linux_close(self->handle);
-#else
-        let_ignore = close(self->handle);
-#endif
+        let_ignore = sys_call_linux_close(self->handle);
     }
+    self->handle = -1;
+#else
     self->handle = -1;
 #endif
 }
@@ -111,31 +104,35 @@ fn_((fs_Dir_rename(fs_Dir self, S_const$u8 old_sub_path, S_const$u8 new_sub_path
     var_(new_path, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(old_sub_path, A_ptr(old_path), A_len(old_path))) return_err(E_cause$FileTooBigFS());
     if (!fs__pathZ(new_sub_path, A_ptr(new_path), A_len(new_path))) return_err(E_cause$FileTooBigFS());
-    if (os_linux_renameat(self.handle, as$(const char*)(A_ptr(old_path)), self.handle, as$(const char*)(A_ptr(new_path))) != 0) {
+    if (sys_call_linux_renameat(self.handle, as$(const char*)(A_ptr(old_path)), self.handle, as$(const char*)(A_ptr(new_path))) != 0) {
         return_err(E_cause$NotFoundFS());
     }
     return_ok({});
 #else
-    var_(old_path, A$$(fs__path_max, u8)) = A_zero();
-    var_(new_path, A$$(fs__path_max, u8)) = A_zero();
-    if (!fs__pathZ(old_sub_path, A_ptr(old_path), A_len(old_path))) return_err(E_cause$FileTooBigFS());
-    if (!fs__pathZ(new_sub_path, A_ptr(new_path), A_len(new_path))) return_err(E_cause$FileTooBigFS());
-    if (renameat(self.handle, as$(const char*)(A_ptr(old_path)), self.handle, as$(const char*)(A_ptr(new_path))) != 0) {
-        return_err(E_cause$NotFoundFS());
-    }
-    return_ok({});
+    let_ignore = self;
+    let_ignore = old_sub_path;
+    let_ignore = new_sub_path;
+    return_err(E_cause$UnsupportedFS());
 #endif
 } $unscoped(fn);
 
 fn_((fs_Dir_makePath(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
+#if plat_is_windows || plat_is_linux
     var_(path, A$$(fs__path_max, u8)) = A_zero();
+#endif
 #if plat_is_windows
     let resolved = try_(fs_Dir__resolvePath(self, sub_path, A_ref$((S$u8)(path))));
-#else
+#elif plat_is_linux
     let_ignore = self;
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$FileTooBigFS());
     let resolved = S_slice((A_ref$((S$u8)(path)))$r(0, sub_path.len));
+#else
+    let_ignore = self;
+    let_ignore = sub_path;
+    return_err(E_cause$UnsupportedFS());
 #endif
+
+#if plat_is_windows || plat_is_linux
     let seps = u8_l("/\\");
     var_(pos, usize) = 0;
     while (pos < resolved.len) {
@@ -155,18 +152,15 @@ fn_((fs_Dir_makePath(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
                 let err = GetLastError();
                 if (err != ERROR_ALREADY_EXISTS) return_err(E_cause$WriteFailedFS());
             }
-#else
-#if plat_is_linux
-            let_ignore = os_linux_mkdirat(os_linux_AT_FDCWD, as$(const char*)(resolved.ptr), fs_Dir_default_mode);
-#else
-            let_ignore = mkdir(as$(const char*)(resolved.ptr), fs_Dir_default_mode);
-#endif
+#elif plat_is_linux
+            let_ignore = sys_call_linux_mkdirat(sys_call_linux_AT_FDCWD, as$(const char*)(resolved.ptr), fs_Dir_default_mode);
 #endif
         }
         if (needs_restore) *S_at((resolved)[seg_end]) = saved;
         pos = seg_end;
     }
     return_ok({});
+#endif
 } $unscoped(fn);
 
 fn_((fs_Dir_realpath(fs_Dir self, S_const$u8 pathname, S$u8 out_buffer))(E$S$u8) $scope) {
@@ -200,16 +194,16 @@ fn_((fs_Dir_makeDir(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     let resolved = try_(fs_Dir__resolvePath(self, sub_path, A_ref$((S$u8)(path))));
     return fs_Dir_create(resolved.as_const);
-#else
+#elif plat_is_linux
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$FileTooBigFS());
-#if plat_is_linux
-    if (os_linux_mkdirat(self.handle, as$(const char*)(A_ptr(path)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
+    if (sys_call_linux_mkdirat(self.handle, as$(const char*)(A_ptr(path)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
 #else
-    if (mkdirat(self.handle, as$(const char*)(A_ptr(path)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
+    let_ignore = self;
+    let_ignore = sub_path;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
-#endif
 } $unscoped(fn);
 
 fn_((fs_Dir_deleteDir(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
@@ -218,16 +212,16 @@ fn_((fs_Dir_deleteDir(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
     let resolved = try_(fs_Dir__resolvePath(self, sub_path, A_ref$((S$u8)(path))));
     if (!RemoveDirectoryA(as$(LPCSTR)(resolved.ptr))) return_err(E_cause$NotFoundFS());
     return_ok({});
-#else
+#elif plat_is_linux
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$FileTooBigFS());
-#if plat_is_linux
-    if (os_linux_unlinkat(self.handle, as$(const char*)(A_ptr(path)), os_linux_AT_REMOVEDIR) != 0) return_err(E_cause$NotFoundFS());
+    if (sys_call_linux_unlinkat(self.handle, as$(const char*)(A_ptr(path)), sys_call_linux_AT_REMOVEDIR) != 0) return_err(E_cause$NotFoundFS());
 #else
-    if (unlinkat(self.handle, as$(const char*)(A_ptr(path)), AT_REMOVEDIR) != 0) return_err(E_cause$NotFoundFS());
+    let_ignore = self;
+    let_ignore = sub_path;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
-#endif
 } $unscoped(fn);
 
 fn_((fs_Dir_openDir(fs_Dir self, S_const$u8 sub_path, fs_File_OpenFlags flags))(E$fs_Dir) $scope) {
@@ -239,18 +233,16 @@ fn_((fs_Dir_openDir(fs_Dir self, S_const$u8 sub_path, fs_File_OpenFlags flags))(
         as$(LPCSTR)(resolved.ptr), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, null);
     if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$OpenFailedFS());
     return_ok(fs_Dir_Handle_promote(handle));
-#else
+#elif plat_is_linux
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$FileTooBigFS());
-#if plat_is_linux
-    let handle = os_linux_openat(self.handle, as$(const char*)(A_ptr(path)), os_linux_O_RDONLY | os_linux_O_DIRECTORY, 0);
-    if (os_linux_syscall_isErr(handle)) return_err(E_cause$OpenFailedFS());
+    let handle = sys_call_linux_openat(self.handle, as$(const char*)(A_ptr(path)), sys_call_linux_O_RDONLY | sys_call_linux_O_DIRECTORY, 0);
+    if (sys_call_linux_syscall_isErr(handle)) return_err(E_cause$OpenFailedFS());
     return_ok(fs_Dir_Handle_promote(as$(fs_Dir_Handle)(handle)));
 #else
-    let handle = openat(self.handle, as$(const char*)(A_ptr(path)), O_RDONLY);
-    if (handle < 0) return_err(E_cause$OpenFailedFS());
-    return_ok(fs_Dir_Handle_promote(handle));
-#endif
+    let_ignore = self;
+    let_ignore = sub_path;
+    return_err(E_cause$UnsupportedFS());
 #endif
 } $unscoped(fn);
 
@@ -259,9 +251,14 @@ fn_((fs_Dir_createFile(fs_Dir self, S_const$u8 sub_path, fs_File_CreateFlags fla
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     let resolved = try_(fs_Dir__resolvePath(self, sub_path, A_ref$((S$u8)(path))));
     return fs_File_create(resolved.as_const, flags);
-#else
+#elif plat_is_linux
     let_ignore = self;
     return fs_File_create(sub_path, flags);
+#else
+    let_ignore = self;
+    let_ignore = sub_path;
+    let_ignore = flags;
+    return_err(E_cause$UnsupportedFS());
 #endif
 } $unscoped(fn);
 
@@ -270,9 +267,14 @@ fn_((fs_Dir_openFile(fs_Dir self, S_const$u8 sub_path, fs_File_OpenFlags flags))
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     let resolved = try_(fs_Dir__resolvePath(self, sub_path, A_ref$((S$u8)(path))));
     return fs_File_open(resolved.as_const, flags);
-#else
+#elif plat_is_linux
     let_ignore = self;
     return fs_File_open(sub_path, flags);
+#else
+    let_ignore = self;
+    let_ignore = sub_path;
+    let_ignore = flags;
+    return_err(E_cause$UnsupportedFS());
 #endif
 } $unscoped(fn);
 
@@ -281,16 +283,16 @@ fn_((fs_Dir_deleteFile(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     let resolved = try_(fs_Dir__resolvePath(self, sub_path, A_ref$((S$u8)(path))));
     return fs_File_delete(resolved.as_const);
-#else
+#elif plat_is_linux
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$FileTooBigFS());
-#if plat_is_linux
-    if (os_linux_unlinkat(self.handle, as$(const char*)(A_ptr(path)), 0) != 0) return_err(E_cause$NotFoundFS());
+    if (sys_call_linux_unlinkat(self.handle, as$(const char*)(A_ptr(path)), 0) != 0) return_err(E_cause$NotFoundFS());
 #else
-    if (unlinkat(self.handle, as$(const char*)(A_ptr(path)), 0) != 0) return_err(E_cause$NotFoundFS());
+    let_ignore = self;
+    let_ignore = sub_path;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
-#endif
 } $unscoped(fn);
 
 fn_((fs_Dir_readFile(fs_Dir self, S_const$u8 file_path, S$u8 buffer))(E$S$u8) $guard) {

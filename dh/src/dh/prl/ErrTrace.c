@@ -4,7 +4,11 @@
 #include "dh/io/stream.h"
 
 $static fn_((ETrace__instance(void))(ETrace*)) {
+#if plat_is_darwin
+    $static var_(instance, ETrace) = {
+#else
     $static $thrd_local var_(instance, ETrace) = {
+#endif
         .rest_frames = cleared(),
         .last_frame = none(),
         .depth = 0,

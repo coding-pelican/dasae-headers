@@ -9,9 +9,9 @@ extern "C" {
 #include "../base.h"
 #include "../../time/Dur.h"
 #include "../../Sched/base.h"
-#include "dh/posix.h"
+#include "dh/sys/posix.h"
 #if plat_is_windows
-#include "dh/os/windows/io.h"
+#include "dh/sys/api/windows/io.h"
 #endif /* plat_is_windows */
 
 /*========== Macros and Declarations ========================================*/
@@ -46,7 +46,7 @@ T_alias$((exec_Evented_Op)(struct exec_Evented_Op {
     fn_(((*completeFn)(P$$(struct exec_Evented_Op) self, exec_Evented_Completion completion))(void));
 }));
 
-T_alias$((exec_Evented_Handle)(posix_fd_t));
+T_alias$((exec_Evented_Handle)(sys_posix_fd_t));
 T_alias$((exec_Evented_VTbl)(struct exec_Evented_VTbl));
 struct exec_Evented {
     var_(ctx, P$raw);

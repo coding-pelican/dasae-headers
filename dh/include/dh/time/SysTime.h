@@ -131,9 +131,13 @@ $extern cmp_fn_neqCtx$((time_SysTime)(lhs, rhs, ctx));
         .dwHighDateTime = as$(DWORD)(time_SysTime_intervals_to_unix_epoch >> u64_(32ull)), \
     }, \
 })
-#else /* plat_based_unix */
+#elif plat_is_linux
 #define __comp_const__time_SysTime_unix_epoch l$((time_SysTime){ \
     .impl = { .tv_sec = 0, .tv_nsec = 0 }, \
+})
+#else
+#define __comp_const__time_SysTime_unix_epoch l$((time_SysTime){ \
+    .impl = {}, \
 })
 #endif
 

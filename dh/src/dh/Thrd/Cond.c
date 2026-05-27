@@ -4,7 +4,7 @@
 #include "dh/time/Duration.h"
 #include "dh/math/common.h"
 #if plat_is_linux
-#include "dh/os/linux/syscall.h"
+#include "dh/sys/call/linux.h"
 #endif
 
 /*========== Internal Declarations ==========================================*/
@@ -110,7 +110,7 @@ fn_((Thrd_Cond__pthread_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void)) {
 fn_((Thrd_Cond__pthread_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Duration duration))(Thrd_Cond_E$void) $scope) {
     struct timespec abs_ts = cleared();
 #if plat_is_linux
-    if (os_linux_clock_gettime(os_linux_CLOCK_MONOTONIC, &abs_ts) != 0) {
+    if (sys_call_linux_clock_gettime(sys_call_linux_CLOCK_MONOTONIC, &abs_ts) != 0) {
 #else
     if (clock_gettime(CLOCK_MONOTONIC, &abs_ts) != 0) {
 #endif

@@ -2,10 +2,10 @@
 #include "dh/mem/common.h"
 
 #if plat_is_windows
-#include "dh/os/windows/file.h"
-#include "dh/os/windows/handle.h"
-#include "dh/os/windows/mem.h"
-#include "dh/os/windows/proc.h"
+#include "dh/sys/api/windows/file.h"
+#include "dh/sys/api/windows/handle.h"
+#include "dh/sys/api/windows/mem.h"
+#include "dh/sys/api/windows/proc.h"
 #endif
 
 #if plat_is_windows
@@ -109,10 +109,7 @@ $static fn_((proc__trimWinNtPrefix(proc__OwnedBuf* self))(void)) {
     if (self->ptr == null || self->len < proc__path_prefix_len) return;
     let path = P_prefix$((S$u8)(self->ptr)(self->len + 1));
     if (
-        *S_at((path)[0]) == u8_c('\\') &&
-        *S_at((path)[1]) == u8_c('\\') &&
-        *S_at((path)[2]) == u8_c('?') &&
-        *S_at((path)[3]) == u8_c('\\')
+        *S_at((path)[0]) == u8_c('\\') && *S_at((path)[1]) == u8_c('\\') && *S_at((path)[2]) == u8_c('?') && *S_at((path)[3]) == u8_c('\\')
     ) {
         mem_moveBytes(
             S_prefix((path)(self->len + 1 - proc__path_prefix_len)),

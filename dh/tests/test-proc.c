@@ -6,8 +6,8 @@
 #include "dh/fs/path.h"
 
 #if plat_is_windows
-#include "dh/os/windows/file.h"
-#include "dh/os/windows/handle.h"
+#include "dh/sys/api/windows/file.h"
+#include "dh/sys/api/windows/handle.h"
 
 $static fn_((test__openDirZ(P_const$u8 path_z))(E$fs_Dir) $scope) {
     let handle = CreateFileA(

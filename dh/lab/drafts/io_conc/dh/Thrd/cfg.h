@@ -46,9 +46,9 @@ extern "C" {
 #include <pthread.h>
 #endif /* Thrd_use_pthread */
 #if plat_is_windows
-#include "dh/os/windows/handle.h"
-#include "dh/os/windows/thrd.h"
-#include "dh/os/windows/sync.h"
+#include "dh/sys/api/windows/handle.h"
+#include "dh/sys/api/windows/thrd.h"
+#include "dh/sys/api/windows/sync.h"
 #endif /* plat_is_windows */
 #if plat_is_darwin
 #include <os/lock.h>

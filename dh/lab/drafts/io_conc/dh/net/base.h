@@ -7,11 +7,11 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/posix.h"
+#include "dh/sys/posix.h"
 
 /*========== Macros and Declarations ========================================*/
 
-T_alias$((net_Handle)(posix_fd_t));
+T_alias$((net_Handle)(sys_posix_fd_t));
 T_alias$((net_Sock)(struct net_Sock));
 T_decl_E$(net_Sock);
 

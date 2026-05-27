@@ -19,14 +19,14 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/posix.h"
+#include "dh/sys/posix.h"
 
 /*========== Macros and Declarations ========================================*/
 
-typedef posix_fd_t fs_Handle;
+typedef sys_posix_fd_t fs_Handle;
 typedef u64 fs_INode;
 typedef u64 fs_NLink;
-typedef posix_mode_t fs_Mode;
+typedef sys_posix_mode_t fs_Mode;
 typedef u32 fs_BlockSize;
 
 typedef struct fs_Dir fs_Dir;

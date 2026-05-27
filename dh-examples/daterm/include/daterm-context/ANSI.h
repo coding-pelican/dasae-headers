@@ -24,7 +24,7 @@ extern "C" {
 #include <dh/time/Instant.h>
 
 #if plat_is_windows
-#include <dh/os/windows/handle.h>
+#include <dh/sys/api/windows/handle.h>
 #endif /* plat_is_windows */
 #if plat_is_posix
 #include <termios.h>

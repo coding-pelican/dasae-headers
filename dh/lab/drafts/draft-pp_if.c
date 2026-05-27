@@ -25,24 +25,24 @@ typedef pp_if_(target_1)(
                 pp_else_(isize)
             ))
         ))
-    ))
-) MyInt;
+    ))) MyInt;
 
-#include "dh/os/windows.h"
+#include "dh/sys/api/windows.h"
 
 #define show_legacy 0
 pp_if_(show_legacy)(
     pp_then_(
 #if plat_is_windows
-        typedef HANDLE posix_fd_t;
+                    typedef HANDLE sys_posix_fd_t;
 #elif plat_based_unix
-        typedef fd_t posix_fd_t;
+                    typedef fd_t sys_posix_fd_t;
 #elif plat_wasi
-        typedef my_fd_t posix_fd_t;
+                    typedef my_fd_t sys_posix_fd_t;
 #else
-        typedef i32 posix_fd_t;
+        typedef i32 sys_posix_fd_t;
 #endif
-    ),
+    )
+                    ,
     pp_else_(
         typedef pp_if_(plat_is_windows)(
             pp_then_(HANDLE),
@@ -53,6 +53,5 @@ pp_if_(show_legacy)(
                     pp_else_(i32)
                 ))
             ))
-        ) posix_fd_t;
-    )
-)
+        ) sys_posix_fd_t;
+    ))

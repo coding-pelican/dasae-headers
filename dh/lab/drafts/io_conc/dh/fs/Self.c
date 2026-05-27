@@ -5,9 +5,9 @@
 #include "dh/fs/common.h"
 
 #if plat_is_windows
-#include "dh/os/windows/handle.h"
-#include "dh/os/windows/file.h"
-#include "dh/os/windows/io.h"
+#include "dh/sys/api/windows/handle.h"
+#include "dh/sys/api/windows/file.h"
+#include "dh/sys/api/windows/io.h"
 #endif /* plat_is_windows */
 #if plat_is_posix
 #include <fcntl.h>

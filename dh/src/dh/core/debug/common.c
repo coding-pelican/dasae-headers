@@ -1,24 +1,24 @@
 #include "dh/core/debug/common.h"
 
 #if plat_is_windows
-#include "dh/os/windows/debug.h"
+#include "dh/sys/api/windows/debug.h"
 fn_((debug_isDebuggerPresent(void))(bool)) {
     return IsDebuggerPresent();
 };
 
 #elif plat_is_linux
 #include "dh/mem/common.h"
-#include "dh/os/linux/syscall.h"
+#include "dh/sys/call/linux.h"
 fn_((debug_isDebuggerPresent(void))(bool)) {
-    let fd = os_linux_openat(os_linux_AT_FDCWD, "/proc/self/status", os_linux_O_RDONLY, 0);
-    if (os_linux_syscall_isErr(fd)) {
+    let fd = sys_call_linux_openat(sys_call_linux_AT_FDCWD, "/proc/self/status", sys_call_linux_O_RDONLY, 0);
+    if (sys_call_linux_syscall_isErr(fd)) {
         return false;
     }
 
     var_(buf, A$$(2048, u8)) $undefined;
-    let read_len = os_linux_read(fd, A_ptr(buf), A_len(buf));
-    let_ignore = os_linux_close(fd);
-    if (os_linux_syscall_isErr(read_len) || read_len == 0) return false;
+    let read_len = sys_call_linux_read(fd, A_ptr(buf), A_len(buf));
+    let_ignore = sys_call_linux_close(fd);
+    if (sys_call_linux_syscall_isErr(read_len) || read_len == 0) return false;
 
     let bytes = A_slice$((S_const$u8)(buf)$r(0, as$(usize)(read_len)));
     let marker = u8_l("TracerPid:");
@@ -50,21 +50,7 @@ fn_((debug_isDebuggerPresent(void))(bool)) {
     return result;
 };
 
-#elif plat_is_darwin
-#include <sys/sysctl.h>
-#include <unistd.h>
-fn_((debug_isDebuggerPresent(void))(bool)) {
-    var mib = A_from$((i32){ CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() });
-    var_(info, struct kinfo_proc) $undefined;
-    var_(size, usize) = sizeOf$(TypeOf(info));
-    if (sysctl(A_ptr(mib), A_len(mib), &info, &size, null, 0) == 0) {
-        return (info.kp_proc.p_flag & P_TRACED) != 0;
-    }
-    return false;
-};
-
 #else /* other */
-/* Fallback for unsupported platforms - assume no debugger */
 fn_((debug_isDebuggerPresent(void))(bool)) {
     return false;
 };

@@ -92,8 +92,13 @@ struct ETrace {
 #define ETrace_disable_callDebug() ETrace_disable_debug()
 #define ETrace_isEnabled_callDebug() ETrace_isEnabled_debug()
 #define ETrace_depth_callDebug() ETrace_depth_debug()
-#define ETrace_captureFrame_callDebug() ETrace_captureFrame_debug(srcLoc(), __builtin_return_address(0))
 #define ETrace_print_callDebug() ETrace_print_debug()
+
+#if arch_is_wasm_family
+#define ETrace_captureFrame_callDebug() ETrace_captureFrame_debug(srcLoc(), null)
+#else
+#define ETrace_captureFrame_callDebug() ETrace_captureFrame_debug(srcLoc(), __builtin_return_address(0))
+#endif
 
 #endif /* ETrace_comp_enabled */
 #endif /* on_comptime */

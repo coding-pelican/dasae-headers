@@ -37,7 +37,7 @@ extern "C" {
     pp_switch_ pp_begin(plat_type)( \
         pp_case_((plat_type_windows)(pp_false)), \
         pp_case_((plat_type_linux)(pp_false)), \
-        pp_case_((plat_type_darwin)(pp_true)), \
+        pp_case_((plat_type_darwin)(pp_false)), \
         pp_case_((plat_type_wasi)(pp_false)), \
         pp_default_(pp_false) \
     ) pp_end \
@@ -47,14 +47,10 @@ extern "C" {
 #include <pthread.h>
 #endif /* Thrd_use_pthread */
 #if plat_is_windows
-#include "dh/os/windows/handle.h"
-#include "dh/os/windows/thrd.h"
-#include "dh/os/windows/sync.h"
+#include "dh/sys/api/windows/handle.h"
+#include "dh/sys/api/windows/thrd.h"
+#include "dh/sys/api/windows/sync.h"
 #endif /* plat_is_windows */
-#if plat_is_darwin
-#include <os/lock.h>
-#endif /* plat_is_darwin */
-
 typedef usize Thrd_Id__Impl;
 #define Thrd_invalid_id __comp_const__Thrd_invalid_id
 #define __comp_const__Thrd_invalid_id usize_limit_max

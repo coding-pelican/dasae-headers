@@ -11,6 +11,7 @@ $attr($inline_always)
 $static fn_((fmt__trimWhitespace(S_const$u8 str))(S_const$u8));
 $attr($inline_always)
 $static fn_((fmt__appendIInt(S$u8 buf, usize* pos, i64 val))(void));
+$static fn_((fmt__pow10I32(i32 exp))(f64));
 
 $attr($must_check)
 $static fn_((fmt__parseU8(S_const$u8 str))(E$u8));
@@ -714,14 +715,14 @@ fn_((fmt_parseFlt(S_const$u8 str))(E$f64) $scope) {
     // Parse exponent part
     if (pos < str.len && (*S_at((str)[pos]) == u8_c('e') || *S_at((str)[pos]) == u8_c('E'))) {
         pos++;
-        f64 exp_sign = 1.0;
+        i32 exp_sign = 1;
         i32 exp_val = 0;
         bool has_exp = false;
 
         if (pos < str.len && *S_at((str)[pos]) == u8_c('+')) {
             pos++;
         } else if (pos < str.len && *S_at((str)[pos]) == u8_c('-')) {
-            exp_sign = -1.0;
+            exp_sign = -1;
             pos++;
         }
         while (pos < str.len && ascii_isDigit(*S_at((str)[pos]))) {
@@ -732,7 +733,7 @@ fn_((fmt_parseFlt(S_const$u8 str))(E$f64) $scope) {
         if (!has_exp) {
             return_err(E_cause$FmtInvalidFltFormat());
         }
-        result *= __builtin_pow(10.0, exp_val * exp_sign);
+        result *= fmt__pow10I32(exp_val * exp_sign);
     }
     // Check that we consumed all input
     if (pos != str.len) {
@@ -796,6 +797,24 @@ fn_((fmt__trimWhitespace(S_const$u8 str))(S_const$u8)) {
     str = fmt__skipWhitespace(str);
     while (0 < str.len && ascii_isWhitespace(*S_at((str)[str.len - 1]))) { str.len--; }
     return str;
+};
+
+fn_((fmt__pow10I32(i32 exp))(f64)) {
+    f64 result = 1.0;
+    if (exp < 0) {
+        i32 count = -exp;
+        while (count > 0) {
+            result *= 0.1;
+            count--;
+        }
+    } else {
+        i32 count = exp;
+        while (count > 0) {
+            result *= 10.0;
+            count--;
+        }
+    }
+    return result;
 };
 
 fn_((fmt__appendIInt(S$u8 buf, usize* pos, i64 val))(void)) {

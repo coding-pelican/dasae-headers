@@ -5,12 +5,11 @@
  * @file    main.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-30 (date of creation)
- * @updated 2026-02-22 (date of last update)
+ * @updated 2026-05-27 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
  *
  * @brief   hijacked main for error handling
- * @details Provides a hijacked main function for error handling.
  */
 #ifndef main__included
 #define main__included 1
@@ -21,8 +20,9 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/TEST.h"
 #include "dh/mem/common.h"
+#include "dh/start.h"
+#include "dh/TEST.h"
 
 /*========== Macros =========================================================*/
 
@@ -58,16 +58,17 @@ fn_((dh_main(pp_if_(pp_not(main_no_args))(
 
 #ifndef main_root_included
 #define main_root_included 1
+
 #if !TEST_comp_enabled
-fn_((main(pp_if_(pp_not(main_no_args))(
-    pp_then_(int argc, const char* argv[]),
+$attr($maybe_unused)
+$static fn_((main__runDHMain(pp_if_(pp_not(main_no_args))(
+    pp_then_(usize argc, const char* argv[]),
     pp_else_(void)
-)))(int)) {
+)))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
     pp_if_(pp_not(main_no_args))((
-        let arg_count = as$(usize)(argc);
         let args = local_({
-            let ref_args_z0 = P_prefix$((S$P_const$u8)(ptrCast$((P_const$u8*)(argv)))(arg_count));
+            let ref_args_z0 = P_prefix$((S$P_const$u8)(ptrCast$((P_const$u8*)(argv)))(argc));
             let buf_args_span = u_castS$((S$S_const$u8)(u_allocA(ref_args_z0.len, typeInfo$(S_const$u8))).ref);
             for_(($s(buf_args_span), $s(ref_args_z0))(span, z0)) { *span = mem_spanZ0$u8(*z0); } $end(for);
             local_return_(buf_args_span);
@@ -86,8 +87,43 @@ fn_((main(pp_if_(pp_not(main_no_args))(
     );
     return 0;
 };
+
+#if comp_start_files_linked
+fn_((main(pp_if_(pp_not(main_no_args))(
+    pp_then_(int argc, const char* argv[]),
+    pp_else_(void)
+)))(int)) {
+    return main__runDHMain(pp_if_(pp_not(main_no_args))(pp_then_(as$(usize)(argc), argv)));
+};
+#else /* !comp_start_files_linked */
+$attr($no_return $maybe_unused)
+$static fn_((main__callMainAndExit(P$raw raw_ctx))(void)) {
+    pp_if_(main_no_args)((let_ignore = raw_ctx;));
+    start_callInitArray();
+    let code = pp_if_(main_no_args)(
+        (main__runDHMain()),
+        (pp_switch_((plat_type)(
+            pp_case_((plat_type_linux)(local_({
+                let argc_argv_ptr = as$(usize*)(raw_ctx);
+                let argc = argc_argv_ptr[0];
+                let argv = as$(const char**)(ptrCast$(argc_argv_ptr + 1));
+                local_return_(main__runDHMain(argc, argv));
+            }))),
+            pp_default_(local_({
+                claim_assert_static_msg(false, "dh-main.h no-start entry with args is only implemented for linux");
+                local_return_(as$(start_ExitCode)(1));
+            }))
+        )))
+    );
+    start_callFiniArray();
+    start_exit(code);
+};
+
+start_emitEntry(main__callMainAndExit);
+#endif /* comp_start_files_linked */
 #endif /* !TEST_comp_enabled */
-#endif /* da_main__root_included */
+
+#endif /* main_root_included */
 #define main dh_main
 #endif
 

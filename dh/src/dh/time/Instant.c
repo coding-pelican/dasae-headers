@@ -1,6 +1,6 @@
 #include "dh/time/Instant.h"
-#if plat_is_linux
-#include "dh/os/linux/syscall.h"
+#if plat_is_posix
+#include "dh/sys/posix.h"
 #endif
 #include "dh/time/Duration.h"
 
@@ -46,7 +46,7 @@ pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
     $static fn_((time_Instant__windows_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord));
 ));
-pp_if_(plat_based_unix)(pp_then_(
+pp_if_(plat_is_posix)(pp_then_(
     $attr($inline_always)
     $static fn_((time_Instant__unix_freq(void))(time_Instant));
     $attr($inline_always)
@@ -69,55 +69,55 @@ pp_if_(plat_based_unix)(pp_then_(
 
 $static let time_Instant__freq = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_freq),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_Instant__unix_freq),
         pp_else_(time_Instant__unsupported_freq)
     )));
 $static let time_Instant__freqInv = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_freqInv),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_Instant__unix_freqInv),
         pp_else_(time_Instant__unsupported_freqInv)
     )));
 $static let time_Instant__offset = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_offset),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_Instant__unix_offset),
         pp_else_(time_Instant__unsupported_offset)
     )));
 $static let time_Instant__now = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_now),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_Instant__unix_now),
         pp_else_(time_Instant__unsupported_now)
     )));
 $static let time_Instant__ticks = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_ticks),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_Instant__unix_ticks),
         pp_else_(time_Instant__unsupported_ticks)
     )));
 $static let time_Instant__durationSinceChkd = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_durationSinceChkd),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_Instant__unix_durationSinceChkd),
         pp_else_(time_Instant__unsupported_durationSinceChkd)
     )));
 $static let time_Instant__addChkdDuration = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_addChkdDuration),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_Instant__unix_addChkdDuration),
         pp_else_(time_Instant__unsupported_addChkdDuration)
     )));
 $static let time_Instant__subChkdDuration = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_subChkdDuration),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_Instant__unix_subChkdDuration),
         pp_else_(time_Instant__unsupported_subChkdDuration)
     )));
 $static let time_Instant__ord = pp_if_(plat_is_windows)(
     pp_then_(time_Instant__windows_ord),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_Instant__unix_ord),
         pp_else_(time_Instant__unsupported_ord)
     )));
@@ -335,9 +335,9 @@ fn_((time_Instant__windows_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord)) {
 };
 #endif /* plat_is_windows */
 
-/* --- Unix Based --- */
+/* --- POSIX --- */
 
-#if plat_based_unix
+#if plat_is_posix
 $static var_(s_unix_perf_freq, time_InstantPlatform) = cleared();
 $static var_(s_unix_perf_freq_inv, f64) = f64_nan;
 $static var_(s_unix_offset_value, time_InstantPlatform) = cleared();
@@ -347,11 +347,7 @@ $attr($on_load)
 $static fn_((time_Instant__unix_init(void))(void)) {
     if (s_unix_initialized) { return; }
     var value = l0$((time_InstantPlatform));
-#if plat_is_linux
-    if (os_linux_clock_gettime(os_linux_CLOCK_MONOTONIC, &value) != 0)
-#else
-    if (clock_gettime(CLOCK_MONOTONIC, &value) != 0)
-#endif
+    if (sys_posix_clock_gettime(sys_posix_CLOCK_MONOTONIC, &value) != 0)
         claim_unreachable_msg("Failed to initialize high-resolution timer");
     s_unix_perf_freq.tv_sec = 1;
     s_unix_perf_freq.tv_nsec = time_Instant_nanos_per_sec;
@@ -380,11 +376,7 @@ fn_((time_Instant__unix_offset(void))(time_Instant)) {
 fn_((time_Instant__unix_now(void))(time_Instant)) {
     time_Instant__unix_ensureInit();
     var current = l0$((time_InstantPlatform));
-#if plat_is_linux
-    let_ignore = os_linux_clock_gettime(os_linux_CLOCK_MONOTONIC, &current);
-#else
-    clock_gettime(CLOCK_MONOTONIC, &current);
-#endif
+    let_ignore = sys_posix_clock_gettime(sys_posix_CLOCK_MONOTONIC, &current);
     return (time_Instant){ .impl = current };
 };
 
@@ -441,4 +433,4 @@ fn_((time_Instant__unix_ord(time_Instant lhs, time_Instant rhs))(cmp_Ord)) {
     if (lhs.impl.tv_nsec > rhs.impl.tv_nsec) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
 };
-#endif /* plat_based_unix */
+#endif /* plat_is_posix */

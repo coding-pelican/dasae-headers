@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./sys/call/linux/x11/src
+    - -I./sys/call/linux/x11/include
+    - -isystem./sys/call/linux/x11/lib/deps

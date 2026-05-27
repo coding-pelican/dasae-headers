@@ -1,11 +1,9 @@
 #include "dh/fs/File/MemMap.h"
 
 #if plat_is_windows
-#include "dh/os/windows/file.h"
+#include "dh/sys/api/windows/file.h"
 #elif plat_is_linux
-#include "dh/os/linux/syscall.h"
-#else
-#include <sys/mman.h>
+#include "dh/sys/call/linux.h"
 #endif
 
 #if plat_is_windows
@@ -24,20 +22,12 @@ $static fn_((fs__File_MemMap_windowsViewAccess(fs_File_MemMap_Protection protect
     return access == 0 ? FILE_MAP_READ : access;
 }
 #elif plat_is_linux
-$static fn_((fs__File_MemMap_linuxProtect(fs_File_MemMap_Protection protection))(os_linux_word)) {
-    os_linux_word prot = 0;
-    if (protection.read) prot |= os_linux_PROT_READ;
-    if (protection.write) prot |= os_linux_PROT_WRITE;
-    if (protection.execute) prot |= os_linux_PROT_EXEC;
-    return prot == 0 ? os_linux_PROT_NONE : prot;
-}
-#else
-$static fn_((fs__File_MemMap_posixProtect(fs_File_MemMap_Protection protection))(i32)) {
-    i32 prot = 0;
-    if (protection.read) prot |= PROT_READ;
-    if (protection.write) prot |= PROT_WRITE;
-    if (protection.execute) prot |= PROT_EXEC;
-    return prot == 0 ? PROT_NONE : prot;
+$static fn_((fs__File_MemMap_linuxProtect(fs_File_MemMap_Protection protection))(sys_call_linux_word)) {
+    sys_call_linux_word prot = 0;
+    if (protection.read) prot |= sys_call_linux_PROT_READ;
+    if (protection.write) prot |= sys_call_linux_PROT_WRITE;
+    if (protection.execute) prot |= sys_call_linux_PROT_EXEC;
+    return prot == 0 ? sys_call_linux_PROT_NONE : prot;
 }
 #endif
 
@@ -50,9 +40,7 @@ $static fn_((fs__File_MemMap_unmap(fs_File_MemMap* self))(void)) {
         self->mapping = null;
     }
 #elif plat_is_linux
-    let_ignore = os_linux_munmap(self->mem.ptr, self->mem.len);
-#else
-    let_ignore = munmap(self->mem.ptr, self->mem.len);
+    let_ignore = sys_call_linux_munmap(self->mem.ptr, self->mem.len);
 #endif
     self->mem = l$((S$u8)cleared());
 }
@@ -85,27 +73,20 @@ $static fn_((fs__File_MemMap_remap(fs_File_MemMap* self, usize len))(fs_E$void) 
     self->mapping = mapping;
     self->mem = P_prefix$((S$u8)(view)(len));
 #elif plat_is_linux
-    let mapped = os_linux_mmap(
+    let mapped = sys_call_linux_mmap(
         null,
         len,
         fs__File_MemMap_linuxProtect(self->protection),
-        os_linux_MAP_SHARED,
+        sys_call_linux_MAP_SHARED,
         self->file.handle,
         self->offset
     );
-    if (os_linux_syscall_isErr(mapped)) return_err(E_cause$UnsupportedFS());
+    if (sys_call_linux_syscall_isErr(mapped)) return_err(E_cause$UnsupportedFS());
     self->mem = P_prefix$((S$u8)(intToPtr$((P$raw)(mapped)))(len));
 #else
-    let view = as$(u8*)(mmap(
-        null,
-        len,
-        fs__File_MemMap_posixProtect(self->protection),
-        MAP_SHARED,
-        self->file.handle,
-        as$(off_t)(self->offset)
-    ));
-    if (view == MAP_FAILED) return_err(E_cause$UnsupportedFS());
-    self->mem = P_prefix$((S$u8)(view)(len));
+    let_ignore = self;
+    let_ignore = len;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
 } $unguarded(fn);
@@ -157,15 +138,14 @@ fn_((fs_File_MemMap_read(fs_File_MemMap* self))(fs_E$void) $scope) {
     return_ok({});
 #elif plat_is_linux
     if (self->mem.ptr != null && self->mem.len > 0) {
-        if (os_linux_msync(self->mem.ptr, self->mem.len, os_linux_MS_INVALIDATE) != 0) return_err(E_cause$ReadFailedFS());
+        if (sys_call_linux_msync(self->mem.ptr, self->mem.len, sys_call_linux_MS_INVALIDATE) != 0) return_err(E_cause$ReadFailedFS());
     }
     return_ok({});
 #else
-    if (self->mem.ptr != null && self->mem.len > 0) {
-        if (msync(self->mem.ptr, self->mem.len, MS_INVALIDATE) != 0) return_err(E_cause$ReadFailedFS());
-    }
-    return_ok({});
+    let_ignore = self;
+    return_err(E_cause$UnsupportedFS());
 #endif
+    return_ok({});
 } $unscoped(fn);
 
 fn_((fs_File_MemMap_write(fs_File_MemMap* self))(fs_E$void) $scope) {
@@ -176,12 +156,11 @@ fn_((fs_File_MemMap_write(fs_File_MemMap* self))(fs_E$void) $scope) {
     }
 #elif plat_is_linux
     if (self->mem.ptr != null && self->mem.len > 0) {
-        if (os_linux_msync(self->mem.ptr, self->mem.len, os_linux_MS_SYNC) != 0) return_err(E_cause$WriteFailedFS());
+        if (sys_call_linux_msync(self->mem.ptr, self->mem.len, sys_call_linux_MS_SYNC) != 0) return_err(E_cause$WriteFailedFS());
     }
 #else
-    if (self->mem.ptr != null && self->mem.len > 0) {
-        if (msync(self->mem.ptr, self->mem.len, MS_SYNC) != 0) return_err(E_cause$WriteFailedFS());
-    }
+    let_ignore = self;
+    return_err(E_cause$UnsupportedFS());
 #endif
     return_ok({});
 } $unscoped(fn);

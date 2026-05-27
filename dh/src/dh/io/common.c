@@ -1,30 +1,30 @@
 #include "dh/io/common.h"
 #include "dh/fs/common.h"
 
-#include "dh/posix.h"
+#include "dh/sys/posix.h"
 #if plat_is_windows
-#include "dh/os/windows/proc.h"
+#include "dh/sys/api/windows/proc.h"
 #endif /* plat_is_windows */
 
 $attr($inline_always)
-$static fn_((io__getStdInHandle(void))(posix_fd_t)) {
+$static fn_((io__getStdInHandle(void))(sys_posix_fd_t)) {
     return pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
-        pp_else_(posix_STDIN_FILENO));
+        pp_else_(sys_posix_STDIN_FILENO));
 };
 
 $attr($inline_always)
-$static fn_((io__getStdOutHandle(void))(posix_fd_t)) {
+$static fn_((io__getStdOutHandle(void))(sys_posix_fd_t)) {
     return pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
-        pp_else_(posix_STDOUT_FILENO));
+        pp_else_(sys_posix_STDOUT_FILENO));
 };
 
 $attr($inline_always)
-$static fn_((io__getStdErrHandle(void))(posix_fd_t)) {
+$static fn_((io__getStdErrHandle(void))(sys_posix_fd_t)) {
     return pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_ERROR_HANDLE)),
-        pp_else_(posix_STDERR_FILENO));
+        pp_else_(sys_posix_STDERR_FILENO));
 };
 
 fn_((io_getStdIn(void))(fs_File)) {

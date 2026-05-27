@@ -1,6 +1,6 @@
 #include "dh/time.h"
 #if plat_is_linux
-#include "dh/os/linux/syscall.h"
+#include "dh/sys/call/linux.h"
 #endif
 
 /*========== Internal Declarations ==========================================*/
@@ -13,15 +13,15 @@ pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
     $static fn_((time__windows_sleep(time_Duration duration))(void));
 ));
-pp_if_(plat_based_unix)(pp_then_(
+pp_if_(plat_is_linux)(pp_then_(
     $attr($inline_always)
-    $static fn_((time__unix_sleep(time_Duration duration))(void));
+    $static fn_((time__linux_sleep(time_Duration duration))(void));
 ));
 
 $static let time__sleep = pp_if_(plat_is_windows)(
     pp_then_(time__windows_sleep),
-    pp_else_(pp_if_(plat_based_unix)(
-        pp_then_(time__unix_sleep),
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(time__linux_sleep),
         pp_else_(time__unsupported_sleep)
     )));
 
@@ -58,8 +58,8 @@ fn_((time__unsupported_sleep(time_Duration duration))(void)) {
 /* --- Windows --- */
 
 #if plat_is_windows
-#include "dh/os/windows/handle.h"
-#include "dh/os/windows/sync.h"
+#include "dh/sys/api/windows/handle.h"
+#include "dh/sys/api/windows/sync.h"
 
 /// 100-nanosecond intervals per second (for waitable timer)
 #define time__windows_intervals_per_sec (n$(u64)(10, 000, 000ull))
@@ -92,22 +92,16 @@ fn_((time__windows_sleep(time_Duration duration))(void) $guard) {
 } $unguarded(fn);
 #endif /* plat_is_windows */
 
-/* --- Unix Based --- */
+/* --- Linux --- */
 
-#if plat_based_unix
-fn_((time__unix_sleep(time_Duration duration))(void)) {
+#if plat_is_linux
+fn_((time__linux_sleep(time_Duration duration))(void)) {
     time_UnixTimespec req = cleared();
     req.tv_sec = as$(TypeOf(req.tv_sec))(duration.secs);
     req.tv_nsec = as$(TypeOf(req.tv_nsec))(duration.nanos);
     time_UnixTimespec rem = cleared();
-#if plat_is_linux
-    while (os_linux_nanosleep(&req, &rem) == -os_linux_EINTR) {
+    while (sys_call_linux_nanosleep(&req, &rem) == -sys_call_linux_EINTR) {
         req = rem;
     }
-#else
-    while (nanosleep(&req, &rem) == -1) {
-        req = rem;
-    }
-#endif
 };
-#endif /* plat_based_unix */
+#endif /* plat_is_linux */

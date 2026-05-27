@@ -1,7 +1,7 @@
 #include "dh/time/SysTime.h"
 #include "dh/time/Duration.h"
-#if plat_is_linux
-#include "dh/os/linux/syscall.h"
+#if plat_is_posix
+#include "dh/sys/posix.h"
 #endif
 
 /*========== Internal Declarations ==========================================*/
@@ -38,7 +38,7 @@ pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
     $static fn_((time_SysTime__windows_ord(time_SysTime lhs, time_SysTime rhs))(cmp_Ord));
 ));
-pp_if_(plat_based_unix)(pp_then_(
+pp_if_(plat_is_posix)(pp_then_(
     $attr($inline_always)
     $static fn_((time_SysTime__unix_now(void))(time_SysTime));
     $attr($inline_always)
@@ -57,43 +57,43 @@ pp_if_(plat_based_unix)(pp_then_(
 
 $static let time_SysTime__now = pp_if_(plat_is_windows)(
     pp_then_(time_SysTime__windows_now),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_SysTime__unix_now),
         pp_else_(time_SysTime__unsupported_now)
     )));
 $static let time_SysTime__durationSinceChkd = pp_if_(plat_is_windows)(
     pp_then_(time_SysTime__windows_durationSinceChkd),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_SysTime__unix_durationSinceChkd),
         pp_else_(time_SysTime__unsupported_durationSinceChkd)
     )));
 $static let time_SysTime__addChkdDuration = pp_if_(plat_is_windows)(
     pp_then_(time_SysTime__windows_addChkdDuration),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_SysTime__unix_addChkdDuration),
         pp_else_(time_SysTime__unsupported_addChkdDuration)
     )));
 $static let time_SysTime__subChkdDuration = pp_if_(plat_is_windows)(
     pp_then_(time_SysTime__windows_subChkdDuration),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_SysTime__unix_subChkdDuration),
         pp_else_(time_SysTime__unsupported_subChkdDuration)
     )));
 $static let time_SysTime__fromUnixEpoch = pp_if_(plat_is_windows)(
     pp_then_(time_SysTime__windows_fromUnixEpoch),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_SysTime__unix_fromUnixEpoch),
         pp_else_(time_SysTime__unsupported_fromUnixEpoch)
     )));
 $static let time_SysTime__toUnixEpoch = pp_if_(plat_is_windows)(
     pp_then_(time_SysTime__windows_toUnixEpoch),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_SysTime__unix_toUnixEpoch),
         pp_else_(time_SysTime__unsupported_toUnixEpoch)
     )));
 $static let time_SysTime__ord = pp_if_(plat_is_windows)(
     pp_then_(time_SysTime__windows_ord),
-    pp_else_(pp_if_(plat_based_unix)(
+    pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_SysTime__unix_ord),
         pp_else_(time_SysTime__unsupported_ord)
     )));
@@ -305,16 +305,12 @@ fn_((time_SysTime__windows_ord(time_SysTime lhs, time_SysTime rhs))(cmp_Ord)) {
 };
 #endif /* plat_is_windows */
 
-/* --- Unix Based --- */
+/* --- POSIX --- */
 
-#if plat_based_unix
+#if plat_is_posix
 fn_((time_SysTime__unix_now(void))(time_SysTime)) {
     var ts = l0$((time_SysTimePlatform));
-#if plat_is_linux
-    let_ignore = os_linux_clock_gettime(os_linux_CLOCK_REALTIME, &ts);
-#else
-    clock_gettime(CLOCK_REALTIME, &ts);
-#endif
+    let_ignore = sys_posix_clock_gettime(sys_posix_CLOCK_REALTIME, &ts);
     return (time_SysTime){ .impl = ts };
 };
 
@@ -375,4 +371,4 @@ fn_((time_SysTime__unix_ord(time_SysTime lhs, time_SysTime rhs))(cmp_Ord)) {
     if (lhs.impl.tv_nsec > rhs.impl.tv_nsec) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
 };
-#endif /* plat_based_unix */
+#endif /* plat_is_posix */

@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./sys/api/windows/wnd/src
+    - -I./sys/api/windows/wnd/include
+    - -isystem./sys/api/windows/wnd/lib/deps

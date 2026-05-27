@@ -83,7 +83,7 @@ $static fn_((heap_Classic__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8)
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
     if_(let ptr = _aligned_malloc(len, ptr_align), ptr != null) return_some(ptr);
 #elif defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-    if_(var ptr = from$(P$raw), posix_memalign(&ptr, ptr_align, len) == 0) return_some(ptr);
+    if_(var ptr = from$(P$raw), sys_posix_memalign(&ptr, ptr_align, len) == 0) return_some(ptr);
 #else /* other platforms */
     // Manual alignment with proper header storage
     // Allocate extra space for the original pointer and alignment padding

@@ -278,7 +278,7 @@ extern "C" {
 #define __comp_bool__plat_int_is_16bit pp_Tok_eql(plat_int_unit, plat_bits_unit_16bit)
 
 #define __comp_bool__plat_long_needs_distinct_int_cases \
-    pp_or(plat_data_model_is_llp64, plat_data_model_is_llp32)
+    pp_or(pp_or(plat_data_model_is_llp64, plat_data_model_is_llp32), plat_is_darwin)
 
 /* --- Calling Conventions --- */
 

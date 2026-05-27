@@ -30,7 +30,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef posix_fd_t fs_Dir_Handle;
+typedef sys_posix_fd_t fs_Dir_Handle;
 typedef struct fs_Dir {
     fs_Dir_Handle handle;
 } fs_Dir;

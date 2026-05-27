@@ -332,7 +332,7 @@ fn_((Thrd_Mtx__windows_unlock(Thrd_Mtx* self))(void)) {
 
 #if Thrd_Mtx_has_specialized && plat_is_darwin
 fn_((Thrd_Mtx__darwin_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){ .impl.inner = OS_UNFAIR_LOCK_INIT };
+    return (Thrd_Mtx){ .impl.inner = sys_libc_darwin_UNFAIR_LOCK_INIT };
 };
 
 fn_((Thrd_Mtx__darwin_fini(Thrd_Mtx* self))(void)) {
@@ -340,14 +340,14 @@ fn_((Thrd_Mtx__darwin_fini(Thrd_Mtx* self))(void)) {
 };
 
 fn_((Thrd_Mtx__darwin_lock(Thrd_Mtx* self))(void)) {
-    os_unfair_lock_lock(&self->impl.inner);
+    sys_libc_darwin_unfair_lock_lock(&self->impl.inner);
 };
 
 fn_((Thrd_Mtx__darwin_tryLock(Thrd_Mtx* self))(bool)) {
-    return os_unfair_lock_trylock(&self->impl.inner);
+    return sys_libc_darwin_unfair_lock_trylock(&self->impl.inner);
 };
 
 fn_((Thrd_Mtx__darwin_unlock(Thrd_Mtx* self))(void)) {
-    os_unfair_lock_unlock(&self->impl.inner);
+    sys_libc_darwin_unfair_lock_unlock(&self->impl.inner);
 };
 #endif /* Thrd_Mtx_has_specialized && plat_is_darwin */

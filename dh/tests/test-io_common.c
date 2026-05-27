@@ -20,9 +20,9 @@
 #include "dh/fs/File.h"
 
 #if plat_is_windows
-#include "dh/os/windows.h"
+#include "dh/sys/api/windows.h"
 #else
-#include "dh/posix.h"
+#include "dh/sys/posix.h"
 #endif
 
 /*========== Tests ==========================================================*/
@@ -31,7 +31,7 @@ TEST_fn_("io/common: Check `io_getStdIn` is valid handle" $scope) {
     let std_in = io_getStdIn();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
-        pp_else_(posix_STDIN_FILENO));
+        pp_else_(sys_posix_STDIN_FILENO));
     try_(TEST_expect(std_in.handle == handle));
 } $unscoped(TEST_fn);
 
@@ -39,7 +39,7 @@ TEST_fn_("io/common: Check `io_getStdOut` is valid handle" $scope) {
     let std_out = io_getStdOut();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
-        pp_else_(posix_STDOUT_FILENO));
+        pp_else_(sys_posix_STDOUT_FILENO));
     try_(TEST_expect(std_out.handle == handle));
 } $unscoped(TEST_fn);
 
@@ -47,6 +47,6 @@ TEST_fn_("io/common: Check `io_getStdErr` is valid handle" $scope) {
     let std_err = io_getStdErr();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_ERROR_HANDLE)),
-        pp_else_(posix_STDERR_FILENO));
+        pp_else_(sys_posix_STDERR_FILENO));
     try_(TEST_expect(std_err.handle == handle));
 } $unscoped(TEST_fn);
