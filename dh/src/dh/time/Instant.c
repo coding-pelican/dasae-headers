@@ -400,7 +400,7 @@ fn_((time_Instant__unix_durationSinceChkd(time_Instant later, time_Instant earli
     diff.tv_sec = later.impl.tv_sec - earlier.impl.tv_sec;
     if (later.impl.tv_nsec < earlier.impl.tv_nsec) {
         diff.tv_sec--;
-        diff.tv_nsec = as$(long)(time_Instant_nanos_per_sec) + later.impl.tv_nsec - earlier.impl.tv_nsec;
+        diff.tv_nsec = as$(TypeOf(diff.tv_nsec))(time_Instant_nanos_per_sec) + later.impl.tv_nsec - earlier.impl.tv_nsec;
     } else {
         diff.tv_nsec = later.impl.tv_nsec - earlier.impl.tv_nsec;
     }
@@ -413,8 +413,8 @@ fn_((time_Instant__unix_addChkdDuration(time_Instant lhs, time_Duration rhs))(O$
     if ((0 <= lhs.impl.tv_sec) && ticks <= (u64_limit_max - as$(u64)(lhs.impl.tv_sec))) {
         return_some({
             .impl = {
-                .tv_sec = lhs.impl.tv_sec + as$(time_t)(ticks / time_Instant_nanos_per_sec),
-                .tv_nsec = lhs.impl.tv_nsec + as$(long)(ticks % time_Instant_nanos_per_sec),
+                .tv_sec = lhs.impl.tv_sec + as$(TypeOf(lhs.impl.tv_sec))(ticks / time_Instant_nanos_per_sec),
+                .tv_nsec = lhs.impl.tv_nsec + as$(TypeOf(lhs.impl.tv_nsec))(ticks % time_Instant_nanos_per_sec),
             },
         });
     }
@@ -426,8 +426,8 @@ fn_((time_Instant__unix_subChkdDuration(time_Instant lhs, time_Duration rhs))(O$
     if ((0 <= lhs.impl.tv_sec) && ticks <= (u64_limit_max + as$(u64)(lhs.impl.tv_sec))) {
         return_some({
             .impl = {
-                .tv_sec = lhs.impl.tv_sec - as$(time_t)(ticks / time_Instant_nanos_per_sec),
-                .tv_nsec = lhs.impl.tv_nsec - as$(long)(ticks % time_Instant_nanos_per_sec),
+                .tv_sec = lhs.impl.tv_sec - as$(TypeOf(lhs.impl.tv_sec))(ticks / time_Instant_nanos_per_sec),
+                .tv_nsec = lhs.impl.tv_nsec - as$(TypeOf(lhs.impl.tv_nsec))(ticks % time_Instant_nanos_per_sec),
             },
         });
     }

@@ -96,11 +96,10 @@ fn_((time__windows_sleep(time_Duration duration))(void) $guard) {
 
 #if plat_based_unix
 fn_((time__unix_sleep(time_Duration duration))(void)) {
-    struct timespec req = {
-        .tv_sec = as$(time_t)(duration.secs),
-        .tv_nsec = as$(long)(duration.nanos),
-    };
-    struct timespec rem = cleared();
+    time_UnixTimespec req = cleared();
+    req.tv_sec = as$(TypeOf(req.tv_sec))(duration.secs);
+    req.tv_nsec = as$(TypeOf(req.tv_nsec))(duration.nanos);
+    time_UnixTimespec rem = cleared();
 #if plat_is_linux
     while (os_linux_nanosleep(&req, &rem) == -os_linux_EINTR) {
         req = rem;

@@ -10,9 +10,6 @@
 #include "dh/os/windows/handle.h"
 #elif plat_is_linux
 #include "dh/os/linux/syscall.h"
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #else
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -74,7 +71,11 @@ fn_((fs_Dir_create(S_const$u8 path))(E$void) $scope) {
 #else
     var_(path_z, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$FileTooBigFS());
+#if plat_is_linux
+    if (os_linux_mkdirat(os_linux_AT_FDCWD, as$(const char*)(A_ptr(path_z)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
+#else
     if (mkdir(as$(const char*)(A_ptr(path_z)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
+#endif
 #endif
     return_ok({});
 } $unscoped(fn);
@@ -88,7 +89,11 @@ fn_((fs_Dir_close(fs_Dir* self))(void)) {
     self->handle = INVALID_HANDLE_VALUE;
 #else
     if (self->handle >= 0) {
+#if plat_is_linux
+        let_ignore = os_linux_close(self->handle);
+#else
         let_ignore = close(self->handle);
+#endif
     }
     self->handle = -1;
 #endif
@@ -151,7 +156,11 @@ fn_((fs_Dir_makePath(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
                 if (err != ERROR_ALREADY_EXISTS) return_err(E_cause$WriteFailedFS());
             }
 #else
+#if plat_is_linux
+            let_ignore = os_linux_mkdirat(os_linux_AT_FDCWD, as$(const char*)(resolved.ptr), fs_Dir_default_mode);
+#else
             let_ignore = mkdir(as$(const char*)(resolved.ptr), fs_Dir_default_mode);
+#endif
 #endif
         }
         if (needs_restore) *S_at((resolved)[seg_end]) = saved;
@@ -194,7 +203,11 @@ fn_((fs_Dir_makeDir(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
 #else
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$FileTooBigFS());
+#if plat_is_linux
+    if (os_linux_mkdirat(self.handle, as$(const char*)(A_ptr(path)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
+#else
     if (mkdirat(self.handle, as$(const char*)(A_ptr(path)), fs_Dir_default_mode) != 0) return_err(E_cause$WriteFailedFS());
+#endif
     return_ok({});
 #endif
 } $unscoped(fn);
@@ -208,7 +221,11 @@ fn_((fs_Dir_deleteDir(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
 #else
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$FileTooBigFS());
+#if plat_is_linux
+    if (os_linux_unlinkat(self.handle, as$(const char*)(A_ptr(path)), os_linux_AT_REMOVEDIR) != 0) return_err(E_cause$NotFoundFS());
+#else
     if (unlinkat(self.handle, as$(const char*)(A_ptr(path)), AT_REMOVEDIR) != 0) return_err(E_cause$NotFoundFS());
+#endif
     return_ok({});
 #endif
 } $unscoped(fn);
@@ -225,9 +242,15 @@ fn_((fs_Dir_openDir(fs_Dir self, S_const$u8 sub_path, fs_File_OpenFlags flags))(
 #else
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$FileTooBigFS());
+#if plat_is_linux
+    let handle = os_linux_openat(self.handle, as$(const char*)(A_ptr(path)), os_linux_O_RDONLY | os_linux_O_DIRECTORY, 0);
+    if (os_linux_syscall_isErr(handle)) return_err(E_cause$OpenFailedFS());
+    return_ok(fs_Dir_Handle_promote(as$(fs_Dir_Handle)(handle)));
+#else
     let handle = openat(self.handle, as$(const char*)(A_ptr(path)), O_RDONLY);
     if (handle < 0) return_err(E_cause$OpenFailedFS());
     return_ok(fs_Dir_Handle_promote(handle));
+#endif
 #endif
 } $unscoped(fn);
 
@@ -261,7 +284,11 @@ fn_((fs_Dir_deleteFile(fs_Dir self, S_const$u8 sub_path))(E$void) $scope) {
 #else
     var_(path, A$$(fs__path_max, u8)) = A_zero();
     if (!fs__pathZ(sub_path, A_ptr(path), A_len(path))) return_err(E_cause$FileTooBigFS());
+#if plat_is_linux
+    if (os_linux_unlinkat(self.handle, as$(const char*)(A_ptr(path)), 0) != 0) return_err(E_cause$NotFoundFS());
+#else
     if (unlinkat(self.handle, as$(const char*)(A_ptr(path)), 0) != 0) return_err(E_cause$NotFoundFS());
+#endif
     return_ok({});
 #endif
 } $unscoped(fn);

@@ -1,6 +1,6 @@
-#include "dh/io/stream.h"
 #include "dh-main.h"
 #include "dh/HashMap.h"
+#include "dh/io/stream.h"
 #include "dh/heap/Sys.h"
 
 T_use$((usize, u16)(

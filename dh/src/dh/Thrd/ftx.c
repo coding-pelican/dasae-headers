@@ -179,14 +179,14 @@ fn_((Thrd_ftx__windows_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 #include "dh/os/linux/syscall.h"
 
 fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration timeout))(Thrd_ftx_E$void) $scope) {
-    struct timespec ts = { 0 };
-    struct timespec* ts_ptr = null;
+    os_linux_timespec ts = cleared();
+    os_linux_timespec* ts_ptr = null;
     if_some((timeout)(delay)) {
-        ts.tv_sec = as$(time_t)(delay.secs);
-        ts.tv_nsec = as$(long)(delay.nanos);
+        ts.tv_sec = as$(TypeOf(ts.tv_sec))(delay.secs);
+        ts.tv_nsec = as$(TypeOf(ts.tv_nsec))(delay.nanos);
         ts_ptr = &ts;
     }
-    let rc = os_linux_futex(ptrQualCast$((P$raw)(&ptr->raw)), os_linux_FUTEX_WAIT | os_linux_FUTEX_PRIVATE_FLAG, as$(long)(expect), ts_ptr, null, 0);
+    let rc = os_linux_futex(ptrQualCast$((P$raw)(&ptr->raw)), os_linux_FUTEX_WAIT | os_linux_FUTEX_PRIVATE_FLAG, as$(os_linux_word)(expect), ts_ptr, null, 0);
     if (rc == -os_linux_ETIMEDOUT) {
         claim_assert(isSome(timeout));
         return_err(E_cause$ThrdTimeout());

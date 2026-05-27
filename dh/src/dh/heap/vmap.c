@@ -4,7 +4,6 @@
 #include "dh/os/windows/mem.h"
 #elif plat_is_linux
 #include "dh/os/linux/syscall.h"
-#include <sys/mman.h>
 #elif plat_based_unix
 #include <sys/mman.h>
 #endif
@@ -29,6 +28,11 @@ fn_((heap_vmap_map(P$raw addr_hint, usize len))(O$P$u8) $scope) {
     return_(expr_(ReturnType $scope)(
         addr == null ? $break_(none()) : $break_(some(addr))
     ) $unscoped(expr));
+#elif plat_is_linux
+    let mapped = os_linux_mmap(addr_hint, aligned_len, os_linux_PROT_READ | os_linux_PROT_WRITE, os_linux_MAP_PRIVATE | os_linux_MAP_ANONYMOUS, -1, 0);
+    return_(expr_(ReturnType $scope)(
+        os_linux_syscall_isErr(mapped) ? $break_(none()) : $break_(some(intToPtr$((P$raw)(mapped))))
+    ) $unscoped(expr));
 #elif plat_based_unix
     let addr = mmap(addr_hint, aligned_len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     return_(expr_(ReturnType $scope)(
@@ -46,6 +50,8 @@ fn_((heap_vmap_release(P$raw addr, usize len))(bool)) {
 #if plat_is_windows
     let_ignore = aligned_len;
     return VirtualFree(addr, 0, MEM_RELEASE);
+#elif plat_is_linux
+    return os_linux_munmap(addr, aligned_len) == 0;
 #elif plat_based_unix
     return munmap(addr, aligned_len) == 0;
 #else

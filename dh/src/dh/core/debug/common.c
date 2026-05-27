@@ -8,18 +8,17 @@ fn_((debug_isDebuggerPresent(void))(bool)) {
 
 #elif plat_is_linux
 #include "dh/mem/common.h"
-#include <fcntl.h>
-#include <unistd.h>
+#include "dh/os/linux/syscall.h"
 fn_((debug_isDebuggerPresent(void))(bool)) {
-    let fd = open("/proc/self/status", O_RDONLY);
-    if (fd < 0) {
+    let fd = os_linux_openat(os_linux_AT_FDCWD, "/proc/self/status", os_linux_O_RDONLY, 0);
+    if (os_linux_syscall_isErr(fd)) {
         return false;
     }
 
-    var_(buf, A$$(4096, u8)) $undefined;
-    let read_len = read(fd, A_ptr(buf), A_len(buf));
-    let_ignore = close(fd);
-    if (read_len <= 0) return false;
+    var_(buf, A$$(2048, u8)) $undefined;
+    let read_len = os_linux_read(fd, A_ptr(buf), A_len(buf));
+    let_ignore = os_linux_close(fd);
+    if (os_linux_syscall_isErr(read_len) || read_len == 0) return false;
 
     let bytes = A_slice$((S_const$u8)(buf)$r(0, as$(usize)(read_len)));
     let marker = u8_l("TracerPid:");

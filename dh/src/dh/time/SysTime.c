@@ -309,7 +309,7 @@ fn_((time_SysTime__windows_ord(time_SysTime lhs, time_SysTime rhs))(cmp_Ord)) {
 
 #if plat_based_unix
 fn_((time_SysTime__unix_now(void))(time_SysTime)) {
-    var ts = l0$((struct timespec));
+    var ts = l0$((time_SysTimePlatform));
 #if plat_is_linux
     let_ignore = os_linux_clock_gettime(os_linux_CLOCK_REALTIME, &ts);
 #else
@@ -334,22 +334,22 @@ fn_((time_SysTime__unix_durationSinceChkd(time_SysTime later, time_SysTime earli
 
 fn_((time_SysTime__unix_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
     var result = lhs.impl;
-    result.tv_sec += as$(time_t)(rhs.secs);
-    result.tv_nsec += as$(long)(rhs.nanos);
-    if (result.tv_nsec >= as$(long)(time_nanos_per_sec)) {
+    result.tv_sec += as$(TypeOf(result.tv_sec))(rhs.secs);
+    result.tv_nsec += as$(TypeOf(result.tv_nsec))(rhs.nanos);
+    if (result.tv_nsec >= as$(TypeOf(result.tv_nsec))(time_nanos_per_sec)) {
         result.tv_sec++;
-        result.tv_nsec -= as$(long)(time_nanos_per_sec);
+        result.tv_nsec -= as$(TypeOf(result.tv_nsec))(time_nanos_per_sec);
     }
     return_some({ .impl = result });
 } $unscoped(fn);
 
 fn_((time_SysTime__unix_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
     var result = lhs.impl;
-    result.tv_sec -= as$(time_t)(rhs.secs);
-    result.tv_nsec -= as$(long)(rhs.nanos);
+    result.tv_sec -= as$(TypeOf(result.tv_sec))(rhs.secs);
+    result.tv_nsec -= as$(TypeOf(result.tv_nsec))(rhs.nanos);
     if (result.tv_nsec < 0) {
         result.tv_sec--;
-        result.tv_nsec += as$(long)(time_nanos_per_sec);
+        result.tv_nsec += as$(TypeOf(result.tv_nsec))(time_nanos_per_sec);
     }
     if (result.tv_sec < 0) {
         return_none();
@@ -358,12 +358,9 @@ fn_((time_SysTime__unix_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$
 } $unscoped(fn);
 
 fn_((time_SysTime__unix_fromUnixEpoch(u64 secs))(time_SysTime)) {
-    return (time_SysTime){
-        .impl = {
-            .tv_sec = as$(time_t)(secs),
-            .tv_nsec = 0,
-        },
-    };
+    var impl = l0$((time_SysTimePlatform));
+    impl.tv_sec = as$(TypeOf(impl.tv_sec))(secs);
+    return (time_SysTime){ .impl = impl };
 };
 
 fn_((time_SysTime__unix_toUnixEpoch(time_SysTime self))(u64)) {
