@@ -29,7 +29,7 @@ extern "C" {
 
 T_alias$((start_ExitCode)(i32));
 T_alias$((start_Fn)(fn_(((*)(void))(void) $T)));
-T_alias$((start_InitFn)(fn_(((*)(void))(void) $T)));
+T_alias$((start_InitFn)(fn_(((*)(void))(i32) $T)));
 
 $attr($no_return)
 $static fn_((start_exit(start_ExitCode status))(void)) {

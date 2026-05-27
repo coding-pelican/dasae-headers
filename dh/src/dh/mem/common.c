@@ -11,7 +11,8 @@ $extern fn_((strlen(const char* str))(usize));
 
 fn_((memset(P$raw dst, int val, usize len))(P$raw)) {
     let out = P_prefix((ptrCast$((u8*)(dst)))(len));
-    for_(($s(out))(byte)) { *byte = intCast$((u8)(val)); } $end(for);
+    let byte_val = as$(u8)(val);
+    for_(($s(out))(byte)) { *byte = byte_val; } $end(for);
     return out.ptr;
 };
 fn_((memcpy(P$raw dst, P_const$raw src, usize len))(P$raw)) {

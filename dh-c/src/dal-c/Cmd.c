@@ -1573,14 +1573,12 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     if (cmd->action == dal_c_CmdAction_lib) {
                         cmd->payload.lib.linking = dal_c_Linking_static;
                     } else if (cmd->action == dal_c_CmdAction_build) {
-                        cmd->payload.build.as_library = true;
                         cmd->payload.build.linking = dal_c_Linking_static;
                     }
                 } else if (str_eql(opt, dal_c_opt_shared)) {
                     if (cmd->action == dal_c_CmdAction_lib) {
                         cmd->payload.lib.linking = dal_c_Linking_shared;
                     } else if (cmd->action == dal_c_CmdAction_build) {
-                        cmd->payload.build.as_library = true;
                         cmd->payload.build.linking = dal_c_Linking_shared;
                     }
                 } else if (str_eql(opt, dal_c_opt_debug)) {
