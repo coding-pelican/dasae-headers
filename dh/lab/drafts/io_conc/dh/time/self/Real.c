@@ -54,7 +54,7 @@ fn_((time_Real_direct(void))(time_direct_E$time_Real) $scope) {
             }));
         }),
         pp_else_({
-            return_err(time_direct_E_Unsupported());
+            return_err(E_cause$time_direct_Unsupported());
         })
     );
 } $unscoped(fn);

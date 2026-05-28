@@ -9,41 +9,41 @@ $static fn_((net_VTbl_failingListenIp(P$raw ctx, const net_IpAddr* addr, net_Lis
     let_ignore = ctx;
     let_ignore = addr;
     let_ignore = opts;
-    return_err(net_E_Unsupported());
+    return_err(E_cause$net_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((net_VTbl_failingAccept(P$raw ctx, net_Svr* server))(E$net_Stream) $scope) {
     let_ignore = ctx;
     let_ignore = server;
-    return_err(net_E_Unsupported());
+    return_err(E_cause$net_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((net_VTbl_failingBindIp(P$raw ctx, const net_IpAddr* addr, net_BindOpts opts))(E$net_Sock) $scope) {
     let_ignore = ctx;
     let_ignore = addr;
     let_ignore = opts;
-    return_err(net_E_Unsupported());
+    return_err(E_cause$net_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((net_VTbl_failingConnectIp(P$raw ctx, const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream) $scope) {
     let_ignore = ctx;
     let_ignore = addr;
     let_ignore = opts;
-    return_err(net_E_Unsupported());
+    return_err(E_cause$net_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((net_VTbl_failingRead(P$raw ctx, net_Stream stream, S$u8 buf))(E$usize) $scope) {
     let_ignore = ctx;
     let_ignore = stream;
     let_ignore = buf;
-    return_err(net_E_Unsupported());
+    return_err(E_cause$net_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((net_VTbl_failingWrite(P$raw ctx, net_Stream stream, S_const$u8 bytes))(E$usize) $scope) {
     let_ignore = ctx;
     let_ignore = stream;
     let_ignore = bytes;
-    return_err(net_E_Unsupported());
+    return_err(E_cause$net_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((net_VTbl_noClose(P$raw ctx, net_Sock socket))(void)) {
@@ -55,7 +55,7 @@ $static fn_((net_VTbl_failingShutdown(P$raw ctx, net_Stream stream, net_Shutdown
     let_ignore = ctx;
     let_ignore = stream;
     let_ignore = how;
-    return_err(net_E_Unsupported());
+    return_err(E_cause$net_direct_Unsupported());
 } $unscoped(fn);
 
 /*========== External Definitions ===========================================*/
@@ -96,7 +96,7 @@ fn_((net_connectIp(net_Self self, const net_IpAddr* addr, net_ConnectOpts opts))
 }
 
 fn_((net_direct(void))(net_direct_E$net_Self) $scope) {
-    return_err(net_direct_E_Unsupported());
+    return_err(E_cause$net_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((net_evented(exec_Coop* coop))(net_Self)) {

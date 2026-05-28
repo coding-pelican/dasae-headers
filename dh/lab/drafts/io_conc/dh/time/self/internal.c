@@ -67,7 +67,7 @@ fn_((time__direct_sleep(time_Dur dur))(Sched_Cancelable$void)) {
 
 fn_((time__direct__unsupported_sleep(time_Dur dur))(Sched_Cancelable$void) $scope) {
     let_ignore = dur;
-    return_err(Sched_Cancelable_Canceled());
+    return_err(E_cause$Sched_Canceled());
 } $unscoped(fn);
 
 pp_if_(plat_is_windows)(pp_then_(

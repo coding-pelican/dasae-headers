@@ -2,13 +2,6 @@
 
 /*========== Internal Definitions ===========================================*/
 
-$static fn_((io_stream__printVaArgs(io_Self self, io_Stream stream, S_const$u8 fmt, va_list va_args))(void)) {
-    claim_assert_nonnull(self.ctx);
-    claim_assert_nonnull(self.vtbl);
-    claim_assert_nonnull(self.vtbl->printVaArgsFn);
-    self.vtbl->printVaArgsFn(self.ctx, stream, fmt, va_args);
-};
-
 $static fn_((io_stream__nl(io_Self self, io_Stream stream))(void)) {
     claim_assert_nonnull(self.ctx);
     claim_assert_nonnull(self.vtbl);
@@ -16,10 +9,28 @@ $static fn_((io_stream__nl(io_Self self, io_Stream stream))(void)) {
     self.vtbl->nlFn(self.ctx, stream);
 };
 
+$static fn_((io_stream__crlf(io_Self self, io_Stream stream))(void)) {
+    claim_assert_nonnull(self.ctx);
+    claim_assert_nonnull(self.vtbl);
+    claim_assert_nonnull(self.vtbl->crlfFn);
+    self.vtbl->crlfFn(self.ctx, stream);
+};
+
+$static fn_((io_stream__printVaArgs(io_Self self, io_Stream stream, S_const$u8 fmt, va_list va_args))(void)) {
+    claim_assert_nonnull(self.ctx);
+    claim_assert_nonnull(self.vtbl);
+    claim_assert_nonnull(self.vtbl->printVaArgsFn);
+    self.vtbl->printVaArgsFn(self.ctx, stream, fmt, va_args);
+};
+
 /*========== External Definitions ===========================================*/
 
 fn_((io_stream_nl(io_Self self))(void)) {
     io_stream__nl(self, io_Stream_out);
+};
+
+fn_((io_stream_crlf(io_Self self))(void)) {
+    io_stream__crlf(self, io_Stream_out);
 };
 
 fn_((io_stream_print(io_Self self, S_const$u8 fmt, ...))(void)) {
@@ -45,6 +56,10 @@ fn_((io_stream_printlnVaArgs(io_Self self, S_const$u8 fmt, va_list va_args))(voi
 
 fn_((io_stream_enl(io_Self self))(void)) {
     io_stream__nl(self, io_Stream_err);
+};
+
+fn_((io_stream_ecrlf(io_Self self))(void)) {
+    io_stream__crlf(self, io_Stream_err);
 };
 
 fn_((io_stream_eprint(io_Self self, S_const$u8 fmt, ...))(void)) {

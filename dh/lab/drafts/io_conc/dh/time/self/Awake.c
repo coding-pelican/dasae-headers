@@ -66,7 +66,7 @@ fn_((time_Awake_direct(void))(time_direct_E$time_Awake) $scope) {
             }));
         }),
         pp_else_({
-            return_err(time_direct_E_Unsupported());
+            return_err(E_cause$time_direct_Unsupported());
         })
     );
 } $unscoped(fn);
@@ -186,7 +186,7 @@ fn_((time_Awake_VTbl_unreachableNow(P$raw ctx))(time_Awake_Inst)) {
 fn_((time_Awake_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) $scope) {
     let_ignore = ctx;
     let_ignore = dur;
-    return_err(Sched_Cancelable_Canceled());
+    return_err(E_cause$Sched_Canceled());
 } $unscoped(fn);
 
 /*========== Source Definitions =============================================*/
@@ -252,7 +252,7 @@ fn_((time_Awake_evented__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) 
         };
         let_ignore = catch_((ArrPQue_enque$exec_Timer(&timed->tasks_timer, lane->gpa, timer))($ignore, {
             task->state = exec_Task_State_canceled;
-            return_err(Sched_Cancelable_Canceled());
+            return_err(E_cause$Sched_Canceled());
         }));
         return_ok_void(exec_Lane_yield(lane));
     }

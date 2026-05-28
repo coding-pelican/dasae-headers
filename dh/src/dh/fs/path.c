@@ -63,21 +63,21 @@ fn_((fs_path_stem(S_const$u8 path))(S_const$u8)) {
 fn_((fs_path_join2(S_const$u8 lhs, S_const$u8 rhs, S$u8 out_buf))(E$S$u8) $scope) {
     if (fs_path_isAbs(rhs)) return fs_path_normalize(rhs, out_buf);
     let_(need_sep, bool) = lhs.len != 0 && rhs.len != 0 && !fs_path__isSep(*S_at((lhs)[lhs.len - 1]));
-    let len = orelse_((fs_path__joinLen(lhs, rhs))(return_err(E_cause$PathBufferTooSmall())));
-    if (out_buf.len < len) return_err(E_cause$PathBufferTooSmall());
+    let len = orelse_((fs_path__joinLen(lhs, rhs))(return_err(E_cause$fs_path_TooSmallBuffer())));
+    if (out_buf.len < len) return_err(E_cause$fs_path_TooSmallBuffer());
     need_sep ? return_ok(mem_joinWithinBytes(fs_path__sepS(), lhs, rhs, out_buf))
              : return_ok(mem_catWithinBytes(lhs, rhs, out_buf));
 } $unscoped(fn);
 
 fn_((fs_path_join2Alloc(S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(E$S$u8) $scope) {
     let len = fs_path_isAbs(rhs) ? rhs.len
-                                 : orelse_((fs_path__joinLen(lhs, rhs))(return_err(E_cause$PathBufferTooSmall())));
+                                 : orelse_((fs_path__joinLen(lhs, rhs))(return_err(E_cause$fs_path_TooSmallBuffer())));
     let buf = try_(mem_Alctr_allocBytes($trace gpa, len));
     return fs_path_join2(lhs, rhs, buf);
 } $unscoped(fn);
 
 fn_((fs_path_normalize(S_const$u8 path, S$u8 out_buf))(E$S$u8) $scope) {
-    if (out_buf.len < path.len) return_err(E_cause$PathBufferTooSmall());
+    if (out_buf.len < path.len) return_err(E_cause$fs_path_TooSmallBuffer());
     var_(pos, usize) = 0;
     var_(prev_sep, bool) = false;
     for_(($s(path))(c)) {
@@ -102,7 +102,7 @@ fn_((fs_path_resolve(S_const$u8 base, S_const$u8 sub_path, S$u8 out_buf))(E$S$u8
 
 fn_((fs_path_resolveAlloc(S_const$u8 base, S_const$u8 sub_path, mem_Alctr gpa))(E$S$u8) $scope) {
     let len = fs_path_isAbs(sub_path) ? sub_path.len
-                                      : orelse_((fs_path__joinLen(base, sub_path))(return_err(E_cause$PathBufferTooSmall())));
+                                      : orelse_((fs_path__joinLen(base, sub_path))(return_err(E_cause$fs_path_TooSmallBuffer())));
     let buf = try_(mem_Alctr_allocBytes($trace gpa, len));
     return fs_path_resolve(base, sub_path, buf);
 } $unscoped(fn);

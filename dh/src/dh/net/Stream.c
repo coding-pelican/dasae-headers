@@ -37,7 +37,7 @@ fn_((net_Stream_shutdown(net_Stream self, net_ShutdownHow how))(E$void) $scope) 
 #else
     let_ignore = self;
     let_ignore = how;
-    return_err(E_cause$SystemResourcesNet());
+    return_err(E_cause$net_SystemResources());
 #endif
 } $unscoped(fn);
 
@@ -50,7 +50,7 @@ fn_((net_Stream_read(net_Stream self, S$u8 buf))(E$usize) $scope) {
 #else
     let_ignore = self;
     let_ignore = buf;
-    return_err(E_cause$SystemResourcesNet());
+    return_err(E_cause$net_SystemResources());
 #endif
 } $unscoped(fn);
 
@@ -62,7 +62,7 @@ fn_((net_Stream_write(net_Stream self, S_const$u8 bytes))(E$usize) $scope) {
 #else
     let_ignore = self;
     let_ignore = bytes;
-    return_err(E_cause$SystemResourcesNet());
+    return_err(E_cause$net_SystemResources());
 #endif
 } $unscoped(fn);
 

@@ -34,7 +34,7 @@ fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Dur timeout))(Thrd_TimeoutE$void) $
     while (self->permits == 0) {
         let elapsed = time_Awake_Inst_elapsed(started, clock);
         if (time_Dur_gt(elapsed, timeout)) {
-            return_err(E_cause$Timeout());
+            return_err(E_cause$Sched_Timeout());
         }
         let remaining = time_Dur_sub(timeout, elapsed);
         try_(Thrd_Cond_timedWait(&self->cond, &self->mtx, remaining));

@@ -42,10 +42,13 @@ $extern fn_((io_evented(exec_Coop* coop))(io_Self));
 
 struct io_Self_VTbl {
     fn_(((*nlFn)(P$raw ctx, io_Stream stream))(void));
+    fn_(((*crlfFn)(P$raw ctx, io_Stream stream))(void));
     fn_(((*printVaArgsFn)(P$raw ctx, io_Stream stream, S_const$u8 fmt, va_list va_args))(void));
 };
 $extern fn_((io_VTbl_noNL(P$raw ctx, io_Stream stream))(void));
 $extern fn_((io_VTbl_unreachableNL(P$raw ctx, io_Stream stream))(void));
+$extern fn_((io_VTbl_noCRLF(P$raw ctx, io_Stream stream))(void));
+$extern fn_((io_VTbl_unreachableCRLF(P$raw ctx, io_Stream stream))(void));
 $extern fn_((io_VTbl_noPrintVaArgs(P$raw ctx, io_Stream stream, S_const$u8 fmt, va_list va_args))(void));
 $extern fn_((io_VTbl_unreachablePrintVaArgs(P$raw ctx, io_Stream stream, S_const$u8 fmt, va_list va_args))(void));
 
@@ -55,12 +58,14 @@ fn_((io_Self_isValid(io_Self self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
         && isNonnull(self.vtbl->nlFn)
+        && isNonnull(self.vtbl->crlfFn)
         && isNonnull(self.vtbl->printVaArgsFn);
 };
 fn_((io_Self_assertValid(P$raw ctx, P_const$$(io_Self_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->nlFn);
+    claim_assert_nonnull(vtbl->crlfFn);
     claim_assert_nonnull(vtbl->printVaArgsFn);
 };
 fn_((io_Self_ensureValid(io_Self self))(io_Self)) {

@@ -5,51 +5,51 @@
 $static fn_((proc_VTbl_failingExecutablePath(P$raw ctx, S$u8 out_buf))(E$S$u8) $scope) {
     let_ignore = ctx;
     let_ignore = out_buf;
-    return_err(E_cause$UnsupportedProc());
+    return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((proc_VTbl_failingCurrentPath(P$raw ctx, S$u8 out_buf))(E$S$u8) $scope) {
     let_ignore = ctx;
     let_ignore = out_buf;
-    return_err(E_cause$UnsupportedProc());
+    return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((proc_VTbl_failingSetCurrentPath(P$raw ctx, S_const$u8 path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = path;
-    return_err(E_cause$UnsupportedProc());
+    return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((proc_VTbl_failingSpawn(P$raw ctx, proc_Cmd cmd))(E$proc_Child) $scope) {
     let_ignore = ctx;
     let_ignore = cmd;
-    return_err(E_cause$UnsupportedProc());
+    return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((proc_VTbl_failingSpawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(E$proc_Child) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = cmd;
-    return_err(E_cause$UnsupportedProc());
+    return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((proc_VTbl_failingReplace(P$raw ctx, proc_Cmd cmd))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = cmd;
-    return_err(E_cause$UnsupportedProc());
+    return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((proc_VTbl_failingReplacePath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = cmd;
-    return_err(E_cause$UnsupportedProc());
+    return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((proc_VTbl_failingWait(P$raw ctx, proc_Child* child))(E$proc_Term) $scope) {
     let_ignore = ctx;
     let_ignore = child;
-    return_err(E_cause$UnsupportedProc());
+    return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);
 
 $static fn_((proc_VTbl_noKill(P$raw ctx, proc_Child* child))(void)) {
@@ -113,5 +113,5 @@ fn_((proc_replacePath(proc_Self self, fs_Dir dir, proc_Cmd cmd))(E$void)) {
 }
 
 fn_((proc_direct(void))(proc_direct_E$proc_Self) $scope) {
-    return_err(E_cause$UnsupportedProc());
+    return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);

@@ -266,7 +266,7 @@ TEST_fn_("io/Writer: print w arg idx - Error handling with indexed arguments" $s
     let writer = test_Buf_writer(&buf);
 
     let caught = eval_(bool $scope)(catch_((io_Writer_print(writer, u8_l("{999:d}"), 42))(err, {
-        let expected = E_cause$FmtIdxOutOfBounds();
+        let expected = E_cause$fmt_IdxOutOfBounds();
         try_(TEST_expect(E_eql(&err, expected.as_any)));
         $break_(true);
     }))) eval_(else)({

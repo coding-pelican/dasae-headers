@@ -27,12 +27,14 @@ $extern fn_((io_stream_scanVaArgs(io_Self self, S_const$u8 fmt, va_list va_args)
 #endif /* UNUSED_CODE */
 
 $extern fn_((io_stream_nl(io_Self self))(void));
+$extern fn_((io_stream_crlf(io_Self self))(void));
 $extern fn_((io_stream_print(io_Self self, S_const$u8 fmt, ...))(void));
 $extern fn_((io_stream_printVaArgs(io_Self self, S_const$u8 fmt, va_list va_args))(void));
 $extern fn_((io_stream_println(io_Self self, S_const$u8 fmt, ...))(void));
 $extern fn_((io_stream_printlnVaArgs(io_Self self, S_const$u8 fmt, va_list va_args))(void));
 
 $extern fn_((io_stream_enl(io_Self self))(void));
+$extern fn_((io_stream_ecrlf(io_Self self))(void));
 $extern fn_((io_stream_eprint(io_Self self, S_const$u8 fmt, ...))(void));
 $extern fn_((io_stream_eprintVaArgs(io_Self self, S_const$u8 fmt, va_list va_args))(void));
 $extern fn_((io_stream_eprintln(io_Self self, S_const$u8 fmt, ...))(void));

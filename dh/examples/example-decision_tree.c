@@ -303,7 +303,7 @@ fn_((TreeNode_loadFromFileRecur(mem_Alctr gpa, io_Reader reader))(E$P$TreeNode) 
     } $end(case);
     default_() {
         log_error("Invalid node tag found in file: {:d}", tag);
-        return_err(E_cause$FSReadFailed());
+        return_err(E_cause$fs_File_ReadFailed());
     } $end(default);
     }
 } $unscoped(fn);

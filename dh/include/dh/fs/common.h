@@ -31,30 +31,30 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((fs_File_E)(
-    FSNotFound,
-    FSAccessDenied,
-    FSOpenFailed,
-    FSReadFailed,
-    FSWriteFailed
+    fs_File_NotFound,
+    fs_File_AccessDenied,
+    fs_File_OpenFailed,
+    fs_File_ReadFailed,
+    fs_File_WriteFailed
 ));
 
 errset_((fs_E)(
-    NotFoundFS,
-    AccessDeniedFS,
-    PermissionDeniedFS,
-    OpenFailedFS,
-    ReadFailedFS,
-    WriteFailedFS,
-    WouldBlockFS,
-    IsDirFS,
-    NotDirFS,
-    PathAlreadyExistsFS,
-    ReadOnlyFileSystemFS,
-    NoSpaceLeftFS,
-    FileTooBigFS,
-    SymLinkLoopFS,
-    BusyFS,
-    UnsupportedFS
+    fs_NotFound,
+    fs_AccessDenied,
+    fs_PermissionDenied,
+    fs_OpenFailed,
+    fs_ReadFailed,
+    fs_WriteFailed,
+    fs_WouldBlock,
+    fs_IsDir,
+    fs_NotDir,
+    fs_PathAlreadyExists,
+    fs_ReadOnlyFileSystem,
+    fs_NoSpaceLeft,
+    fs_FileTooBig,
+    fs_SymLinkLoop,
+    fs_Busy,
+    fs_Unsupported
 ));
 
 typedef fs_Mode fs_Dir_Mode;

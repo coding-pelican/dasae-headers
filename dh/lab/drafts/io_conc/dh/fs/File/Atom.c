@@ -16,11 +16,11 @@ fn_((fs_File_Atom_fini(fs_File_Atom* self, fs_Self fs))(void)) {
 fn_((fs_File_Atom_link(fs_File_Atom* self, fs_Self fs))(E$void) $scope) {
     claim_assert_nonnull(self);
     let_ignore = fs;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_File_Atom_replace(fs_File_Atom* self, fs_Self fs))(E$void) $scope) {
     claim_assert_nonnull(self);
     let_ignore = fs;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);

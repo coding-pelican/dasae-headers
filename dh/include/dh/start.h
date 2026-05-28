@@ -31,7 +31,7 @@ T_alias$((start_ExitCode)(i32));
 T_alias$((start_Fn)(fn_(((*)(void))(void) $T)));
 T_alias$((start_InitFn)(fn_(((*)(void))(i32) $T)));
 
-$attr($no_return)
+$attr($maybe_unused $no_return)
 $static fn_((start_exit(start_ExitCode status))(void)) {
     pp_switch_((plat_type)(
         pp_case_((plat_type_windows)({

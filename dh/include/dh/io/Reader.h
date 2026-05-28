@@ -31,14 +31,14 @@ $attr($must_check)
 $extern fn_((io_Reader_read(io_Reader self, S$u8 out_bytes))(E$usize));
 $attr($must_check)
 $extern fn_((io_Reader_readByte(io_Reader self))(E$u8));
-/// Read until out_bytes is full, or return UnexpectedEOF.
+/// Read until out_bytes is full, or return io_UnexpectedEOF.
 $attr($must_check)
 $extern fn_((io_Reader_readExact(io_Reader self, S$u8 out_bytes))(E$void));
 /// Read until at least_len bytes are read, EOF is reached, or out_bytes is full.
 $attr($must_check)
 $extern fn_((io_Reader_readAtLeast(io_Reader self, S$u8 out_bytes, usize least_len))(E$usize));
 
-/// Skip exactly discard_len bytes, or return UnexpectedEOF.
+/// Skip exactly discard_len bytes, or return io_UnexpectedEOF.
 $attr($must_check)
 $extern fn_((io_Reader_skip(io_Reader self, usize discard_len))(E$void));
 $attr($must_check)
@@ -52,7 +52,7 @@ $attr($must_check)
 $extern fn_((io_Reader_copy(io_Reader self, io_Writer writer))(E$usize));
 $attr($must_check)
 $extern fn_((io_Reader_copyByte(io_Reader self, io_Writer writer))(E$void));
-/// Copy exactly copy_len bytes, or return UnexpectedEOF.
+/// Copy exactly copy_len bytes, or return io_UnexpectedEOF.
 $attr($must_check)
 $extern fn_((io_Reader_copyExact(io_Reader self, io_Writer writer, usize copy_len))(E$void));
 /// Copy until at least_len bytes are copied or EOF is reached.

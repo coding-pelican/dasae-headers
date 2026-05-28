@@ -30,7 +30,7 @@ fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner
     let gpa = unwrap_(self->spawn_cfg.gpa);
     let task = u_castP$((exec_Preem_Task*)(catch_(
         (mem_Alctr_create($trace gpa, typeInfo$(exec_Preem_Task)))(
-            $ignore, return_err(Sched_ConcE_Unavailable())
+            $ignore, return_err(E_cause$Sched_ConcUnavailable())
         )
     )));
     errdefer_($ignore, mem_Alctr_destroy($trace gpa, u_anyP(task)));
@@ -44,7 +44,7 @@ fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner
         .runner = clsr_((exec_Preem_work)(task)),
     }));
     let thrd = catch_((Thrd_spawn(self->spawn_cfg, task->runner.as_raw, typeInfo$(Void)))(
-        $ignore, return_err(Sched_ConcE_Unavailable())
+        $ignore, return_err(E_cause$Sched_ConcUnavailable())
     ));
     task->thrd = thrd;
     exec_Preem_linkTask(self, task);

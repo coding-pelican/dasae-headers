@@ -23,12 +23,12 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((utf8_E)(
-    UTF8InvalidBytes,
-    UTF8InvalidStartByte,
-    UTF8TooLargeCodepoint,
-    UTF8EncodesSurrogateHalf,
-    UTF8ExpectedContinuation,
-    UTF8OverlongEncoding
+    utf8_InvalidBytes,
+    utf8_InvalidStartByte,
+    utf8_ExpectedContinuation,
+    utf8_OverlongEncoding,
+    utf8_TooLargeCodepoint,
+    utf8_EncodesSurrogateHalf
 ));
 
 /// Byte sequence length (1-4)
@@ -57,8 +57,10 @@ $attr($must_check)
 $extern fn_((utf8_codepointSeqLen(u32 codepoint))(utf8_E$utf8_SeqLen));
 $attr($must_check)
 $extern fn_((utf8_byteSeqLen(u8 first_byte))(utf8_E$utf8_SeqLen));
-$attr($must_check) /* `utf8_E` + `mem_E` */
-$extern fn_((utf8_encode(u32 codepoint, S$u8 out))(E$S$u8));
+errset_((utf8_encode_E)() $union_errset_(utf8_E, mem_E));
+T_use_E$($set(utf8_encode_E)(S$u8));
+$attr($must_check)
+$extern fn_((utf8_encode(u32 codepoint, S$u8 out))(utf8_encode_E$S$u8));
 T_use_E$($set(utf8_E)(S$u8));
 $extern fn_((utf8_encodeWithin(u32 codepoint, S$u8 out))(utf8_E$S$u8));
 

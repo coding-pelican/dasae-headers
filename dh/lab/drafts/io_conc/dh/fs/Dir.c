@@ -138,7 +138,7 @@ fn_((fs_Dir_Reader_reset(fs_Dir_Reader* self))(void)) {
 fn_((fs_Dir_Reader_read(fs_Dir_Reader* self, S$fs_Dir_Entry out))(E$usize) $scope) {
     claim_assert_nonnull(self);
     let_ignore = out;
-    return_err(fs_E_Unsupported());
+    return_err(fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_Dir_Iterator_init(fs_Dir self, fs_Dir_Reader_State initial_state))(fs_Dir_Iterator)) {
@@ -160,13 +160,13 @@ fn_((fs_Dir_iterateAssumeFirstIteration(fs_Dir self))(fs_Dir_Iterator)) {
 
 fn_((fs_Dir_Iterator_next(fs_Dir_Iterator* self))(E$O$fs_Dir_Entry) $scope) {
     claim_assert_nonnull(self);
-    return_err(fs_E_Unsupported());
+    return_err(fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_Dir_walkSelectively(fs_Dir self, mem_Alctr gpa))(E$fs_Dir_SelectiveWalker) $scope) {
     let_ignore = dir;
     let_ignore = gpa;
-    return_err(fs_E_Unsupported());
+    return_err(fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_Dir_SelectiveWalker_fini(fs_Dir_SelectiveWalker* self))(void)) {
@@ -175,13 +175,13 @@ fn_((fs_Dir_SelectiveWalker_fini(fs_Dir_SelectiveWalker* self))(void)) {
 
 fn_((fs_Dir_SelectiveWalker_next(fs_Dir_SelectiveWalker* self))(E$O$fs_Dir_Walker_Entry) $scope) {
     let_ignore = self;
-    return_err(fs_E_Unsupported());
+    return_err(fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_Dir_SelectiveWalker_enter(fs_Dir_SelectiveWalker* self, fs_Dir_Walker_Entry entry))(E$void) $scope) {
     let_ignore = self;
     let_ignore = entry;
-    return_err(fs_E_Unsupported());
+    return_err(fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_Dir_SelectiveWalker_leave(fs_Dir_SelectiveWalker* self))(void)) {
@@ -191,7 +191,7 @@ fn_((fs_Dir_SelectiveWalker_leave(fs_Dir_SelectiveWalker* self))(void)) {
 fn_((fs_Dir_walk(fs_Dir self, mem_Alctr gpa))(E$fs_Dir_Walker) $scope) {
     let_ignore = dir;
     let_ignore = gpa;
-    return_err(fs_E_Unsupported());
+    return_err(fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_Dir_Walker_fini(fs_Dir_Walker* self))(void)) {

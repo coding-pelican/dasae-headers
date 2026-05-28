@@ -23,9 +23,9 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((fs_path_E)(
-    PathBufferTooSmall,
-    PathBadSyntax,
-    PathTooLong
+    fs_path_TooSmallBuffer,
+    fs_path_BadSyntax,
+    fs_path_TooLong
 ));
 
 $static const u8 fs_path_sep = u8_c(pp_if_(plat_is_windows)(pp_then_('\\'), pp_else_('/')));

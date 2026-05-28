@@ -19,9 +19,9 @@ static BOOL CALLBACK net__wsaInit(PINIT_ONCE init_once, PVOID param, PVOID* ctx)
 
 $static fn_((net__ensureStarted(void))(E$void) $scope) {
     if (!InitOnceExecuteOnce(&net__wsa_once, net__wsaInit, null, null)) {
-        return_err(E_cause$SystemResourcesNet());
+        return_err(E_cause$net_SystemResources());
     }
-    if (net__wsa_status != ERROR_SUCCESS) return_err(E_cause$SystemResourcesNet());
+    if (net__wsa_status != ERROR_SUCCESS) return_err(E_cause$net_SystemResources());
     return_ok({});
 } $unscoped(fn);
 
@@ -31,7 +31,7 @@ $static fn_((net__sockType(net_Sock_Mode mode))(E$i32) $scope) {
     case net_Sock_Mode_dgram: return_ok(SOCK_DGRAM);
     case net_Sock_Mode_raw: return_ok(SOCK_RAW);
     case net_Sock_Mode_seqpacket: $fallthrough;
-    default_() return_err(E_cause$SocketModeUnsupportedNet()) $end(default);
+    default_() return_err(E_cause$net_SocketModeUnsupported()) $end(default);
     }
 } $unscoped(fn);
 
@@ -40,7 +40,7 @@ $static fn_((net__protocol(net_Prot protocol))(E$i32) $scope) {
     case net_Prot_tcp: return_ok(IPPROTO_TCP);
     case net_Prot_udp: return_ok(IPPROTO_UDP);
     case net_Prot_raw: return_ok(IPPROTO_RAW);
-    default_() return_err(E_cause$ProtocolUnsupportedNet()) $end(default);
+    default_() return_err(E_cause$net_ProtocolUnsupported()) $end(default);
     }
 } $unscoped(fn);
 
@@ -50,7 +50,7 @@ $static fn_((net__family(const net_IpAddr* addr))(E$i32) $scope) {
     case net_Addr_Family_ip4: return_ok(AF_INET);
     case net_Addr_Family_ip6: return_ok(AF_INET6);
     case net_Addr_Family_unix: $fallthrough;
-    default_() return_err(E_cause$AddressFamilyUnsupportedNet()) $end(default);
+    default_() return_err(E_cause$net_AddressFamilyUnsupported()) $end(default);
     }
 } $unscoped(fn);
 
@@ -62,7 +62,7 @@ $static fn_((net__sockaddrFromIp(const net_IpAddr* addr, SOCKADDR_STORAGE* out, 
     switch (addr->family) {
     case net_Addr_Family_ip4: {
         SOCKADDR_IN* ip4 = ptrCast$((SOCKADDR_IN*)(out));
-        *ip4 = (SOCKADDR_IN){0};
+        *ip4 = (SOCKADDR_IN){ 0 };
         ip4->sin_family = AF_INET;
         ip4->sin_port = htons(addr->ip4.port);
         raw_memcpy(&ip4->sin_addr, addr->ip4.bytes.val, 4);
@@ -71,7 +71,7 @@ $static fn_((net__sockaddrFromIp(const net_IpAddr* addr, SOCKADDR_STORAGE* out, 
     }
     case net_Addr_Family_ip6: {
         SOCKADDR_IN6* ip6 = ptrCast$((SOCKADDR_IN6*)(out));
-        *ip6 = (SOCKADDR_IN6){0};
+        *ip6 = (SOCKADDR_IN6){ 0 };
         ip6->sin6_family = AF_INET6;
         ip6->sin6_port = htons(addr->ip6.port);
         ip6->sin6_flowinfo = htonl(addr->ip6.flow);
@@ -81,7 +81,7 @@ $static fn_((net__sockaddrFromIp(const net_IpAddr* addr, SOCKADDR_STORAGE* out, 
         return_ok({});
     }
     case net_Addr_Family_unix: $fallthrough;
-    default_() return_err(E_cause$AddressFamilyUnsupportedNet()) $end(default);
+    default_() return_err(E_cause$net_AddressFamilyUnsupported()) $end(default);
     }
 } $unscoped(fn);
 
@@ -121,21 +121,21 @@ $static fn_((net__timeoutToTimeval(time_Duration timeout))(struct timeval)) {
 }
 
 $static fn_((net__waitWritable(net_Handle socket, time_Duration timeout))(E$void) $scope) {
-    var write_fds = (fd_set){0};
+    var write_fds = (fd_set){ 0 };
     FD_ZERO(&write_fds);
     FD_SET(socket, &write_fds);
 
     var timeout_tv = net__timeoutToTimeval(timeout);
     let selected = select(0, null, &write_fds, null, &timeout_tv);
     if (selected == SOCKET_ERROR) return_err(net__mapWinErr(WSAGetLastError()));
-    if (selected == 0) return_err(E_cause$TimedOutNet());
+    if (selected == 0) return_err(E_cause$net_TimedOut());
     return_(net__finishConnect(socket));
 } $unscoped(fn);
 
 fn_((net_bindIp(const net_IpAddr* addr, net_BindOpts opts))(E$net_Sock) $scope) {
     try_(net__ensureStarted());
     claim_assert_nonnull(addr);
-    if (opts.ip6_only && addr->family != net_Addr_Family_ip6) return_err(E_cause$AddressFamilyUnsupportedNet());
+    if (opts.ip6_only && addr->family != net_Addr_Family_ip6) return_err(E_cause$net_AddressFamilyUnsupported());
 
     let socket = try_(net__newSocket(addr, opts.mode, opts.protocol));
     if (addr->family == net_Addr_Family_ip6) {
@@ -178,8 +178,8 @@ fn_((net_bindIp(const net_IpAddr* addr, net_BindOpts opts))(E$net_Sock) $scope) 
 fn_((net_listenIp(const net_IpAddr* addr, net_ListenOpts opts))(E$net_Svr) $scope) {
     claim_assert_nonnull(addr);
     try_(net__ensureStarted());
-    if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$SocketModeUnsupportedNet());
-    if (opts.protocol != net_Prot_tcp) return_err(E_cause$ProtocolUnsupportedNet());
+    if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$net_SocketModeUnsupported());
+    if (opts.protocol != net_Prot_tcp) return_err(E_cause$net_ProtocolUnsupported());
 
     let socket = try_(net__newSocket(addr, opts.mode, opts.protocol));
     if (addr->family == net_Addr_Family_ip6) {
@@ -232,8 +232,8 @@ fn_((net_listenIp(const net_IpAddr* addr, net_ListenOpts opts))(E$net_Svr) $scop
 fn_((net_connectIp(const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream) $scope) {
     claim_assert_nonnull(addr);
     try_(net__ensureStarted());
-    if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$SocketModeUnsupportedNet());
-    if (opts.protocol != net_Prot_tcp) return_err(E_cause$ProtocolUnsupportedNet());
+    if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$net_SocketModeUnsupported());
+    if (opts.protocol != net_Prot_tcp) return_err(E_cause$net_ProtocolUnsupported());
 
     let socket = try_(net__newSocket(addr, opts.mode, opts.protocol));
     let use_async_connect = opts.nonblocking || !time_Duration_isZero(opts.timeout);
@@ -259,7 +259,7 @@ fn_((net_connectIp(const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream) 
         if (time_Duration_isZero(opts.timeout)) {
             if (!opts.nonblocking) {
                 closesocket(socket);
-                return_err(E_cause$WouldBlockNet());
+                return_err(E_cause$net_WouldBlock());
             }
         } else {
             catch_((net__waitWritable(socket, opts.timeout))(wait_err, {
@@ -286,19 +286,19 @@ fn_((net_connectIp(const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream) 
 fn_((net_bindIp(const net_IpAddr* addr, net_BindOpts opts))(E$net_Sock) $scope) {
     let_ignore = addr;
     let_ignore = opts;
-    return_err(E_cause$SystemResourcesNet());
+    return_err(E_cause$net_SystemResources());
 } $unscoped(fn);
 
 fn_((net_listenIp(const net_IpAddr* addr, net_ListenOpts opts))(E$net_Svr) $scope) {
     let_ignore = addr;
     let_ignore = opts;
-    return_err(E_cause$SystemResourcesNet());
+    return_err(E_cause$net_SystemResources());
 } $unscoped(fn);
 
 fn_((net_connectIp(const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream) $scope) {
     let_ignore = addr;
     let_ignore = opts;
-    return_err(E_cause$SystemResourcesNet());
+    return_err(E_cause$net_SystemResources());
 } $unscoped(fn);
 
 #endif

@@ -24,7 +24,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((Thrd_E)(ThrdUnsupported, ThrdSystemResources));
+errset_((Thrd_E)(Thrd_Unsupported, Thrd_SystemResources));
 T_useBy$(($spec(E, $set(Thrd_E)))(usize, O$S_const$u8));
 
 struct Thrd {

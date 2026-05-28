@@ -26,16 +26,18 @@ extern "C" {
 
 /// WTF-8 specific errors (mostly subset of UTF-8 errors minus surrogate checks)
 errset_((wtf8_E)(
-    WTF8InvalidStartByte,
-    WTF8ExpectedContinuation,
-    WTF8OverlongEncoding,
-    WTF8CodepointTooLarge
+    wtf8_InvalidStartByte,
+    wtf8_ExpectedContinuation,
+    wtf8_OverlongEncoding,
+    wtf8_TooLargeCodepoint
 ));
 
 T_use_E$(utf8_SeqByte);
 /// Encodes a codepoint into WTF-8 (Allows surrogates).
-$attr($must_check) /* `utf8_E` + `mem_E` */
-$extern fn_((wtf8_encode(u32 codepoint, S$u8 out))(E$S$u8));
+errset_((wtf8_encode_E)() $union_errset_(wtf8_E, mem_E));
+T_use_E$($set(wtf8_encode_E)(S$u8));
+$attr($must_check) /* `wtf8_E` + `mem_E` */
+$extern fn_((wtf8_encode(u32 codepoint, S$u8 out))(wtf8_encode_E$S$u8));
 T_use_E$($set(wtf8_E)(S$u8));
 $attr($must_check)
 $extern fn_((wtf8_encodeWithin(u32 codepoint, S$u8 out))(wtf8_E$S$u8));

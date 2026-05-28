@@ -60,7 +60,7 @@ $static fn_((fs__File_MemMap_remap(fs_File_MemMap* self, usize len))(fs_E$void) 
         as$(DWORD)(end & 0xFFFFFFFFu),
         null
     );
-    if (mapping == null) return_err(E_cause$UnsupportedFS());
+    if (mapping == null) return_err(E_cause$fs_Unsupported());
     errdefer_($ignore, CloseHandle(mapping));
     let view = as$(u8*)(MapViewOfFile(
         mapping,
@@ -69,7 +69,7 @@ $static fn_((fs__File_MemMap_remap(fs_File_MemMap* self, usize len))(fs_E$void) 
         as$(DWORD)(self->offset & 0xFFFFFFFFu),
         len
     ));
-    if (view == null) return_err(E_cause$UnsupportedFS());
+    if (view == null) return_err(E_cause$fs_Unsupported());
     self->mapping = mapping;
     self->mem = P_prefix$((S$u8)(view)(len));
 #elif plat_is_linux
@@ -81,12 +81,12 @@ $static fn_((fs__File_MemMap_remap(fs_File_MemMap* self, usize len))(fs_E$void) 
         self->file.handle,
         self->offset
     );
-    if (sys_call_linux_syscall_isErr(mapped)) return_err(E_cause$UnsupportedFS());
+    if (sys_call_linux_syscall_isErr(mapped)) return_err(E_cause$fs_Unsupported());
     self->mem = P_prefix$((S$u8)(intToPtr$((P$raw)(mapped)))(len));
 #else
     let_ignore = self;
     let_ignore = len;
-    return_err(E_cause$UnsupportedFS());
+    return_err(E_cause$fs_Unsupported());
 #endif
     return_ok({});
 } $unguarded(fn);
@@ -138,12 +138,12 @@ fn_((fs_File_MemMap_read(fs_File_MemMap* self))(fs_E$void) $scope) {
     return_ok({});
 #elif plat_is_linux
     if (self->mem.ptr != null && self->mem.len > 0) {
-        if (sys_call_linux_msync(self->mem.ptr, self->mem.len, sys_call_linux_MS_INVALIDATE) != 0) return_err(E_cause$ReadFailedFS());
+        if (sys_call_linux_msync(self->mem.ptr, self->mem.len, sys_call_linux_MS_INVALIDATE) != 0) return_err(E_cause$fs_ReadFailed());
     }
     return_ok({});
 #else
     let_ignore = self;
-    return_err(E_cause$UnsupportedFS());
+    return_err(E_cause$fs_Unsupported());
 #endif
     return_ok({});
 } $unscoped(fn);
@@ -152,15 +152,15 @@ fn_((fs_File_MemMap_write(fs_File_MemMap* self))(fs_E$void) $scope) {
     claim_assert_nonnull(self);
 #if plat_is_windows
     if (self->mem.ptr != null && self->mem.len > 0 && !FlushViewOfFile(self->mem.ptr, self->mem.len)) {
-        return_err(E_cause$WriteFailedFS());
+        return_err(E_cause$fs_WriteFailed());
     }
 #elif plat_is_linux
     if (self->mem.ptr != null && self->mem.len > 0) {
-        if (sys_call_linux_msync(self->mem.ptr, self->mem.len, sys_call_linux_MS_SYNC) != 0) return_err(E_cause$WriteFailedFS());
+        if (sys_call_linux_msync(self->mem.ptr, self->mem.len, sys_call_linux_MS_SYNC) != 0) return_err(E_cause$fs_WriteFailed());
     }
 #else
     let_ignore = self;
-    return_err(E_cause$UnsupportedFS());
+    return_err(E_cause$fs_Unsupported());
 #endif
     return_ok({});
 } $unscoped(fn);

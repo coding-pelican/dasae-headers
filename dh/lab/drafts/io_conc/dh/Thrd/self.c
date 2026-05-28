@@ -288,7 +288,7 @@ fn_((Thrd__unsupported_handle(Thrd self))(Thrd_Handle)) {
 };
 
 fn_((Thrd__unsupported_yield(void))(Thrd_E$void) $scope) {
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_currId(void))(Thrd_Id)) {
@@ -296,26 +296,26 @@ fn_((Thrd__unsupported_currId(void))(Thrd_Id)) {
 };
 
 fn_((Thrd__unsupported_cpuCount(void))(Thrd_E$usize) $scope) {
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $scope) {
     let_ignore = cfg;
     let_ignore = clsr;
     let_ignore = ret_type;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_detach(Thrd self))(void)) {
@@ -335,7 +335,7 @@ fn_((Thrd__pthread_handle(Thrd self))(Thrd_Handle)) {
 
 fn_((Thrd__pthread_yield(void))(Thrd_E$void) $scope) {
     if (sched_yield() != 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     return_ok({});
 } $unscoped(fn);
@@ -361,12 +361,12 @@ fn_((Thrd__pthread_cpuCount(void))(Thrd_E$usize) $scope) {
             if (sysctlbyname("hw.logicalcpu", &count, &len, null, 0) == 0) {
                 return_ok(as$(usize)(count));
             }
-            return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+            return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
         })),
         pp_default_({
             let count = sysconf(_SC_NPROCESSORS_ONLN);
             if (count < 1) {
-                return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+                return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
             }
             return_ok(as$(usize)(count));
         })
@@ -395,7 +395,7 @@ fn_((Thrd__pthread_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(
     var_(handle, pthread_t) = 0;
     if (pthread_create(&handle, &attr, Thrd__pthread_entry, start) != 0) {
         Thrd__startFree(start);
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     return_ok((Thrd){
         .handle = handle,
@@ -449,13 +449,13 @@ fn_((Thrd__windows_cpuCount(void))(Thrd_E$usize) $scope) {
 fn_((Thrd__windows_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__windows_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 #define Thrd__windows_stack_size_min (64 * 1024)
@@ -472,7 +472,7 @@ fn_((Thrd__windows_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(
     );
     if (!handle) {
         Thrd__startFree(start);
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     ResumeThread(handle);
     return_ok((Thrd){
@@ -552,7 +552,7 @@ fn_((Thrd__linux_handle(Thrd self))(Thrd_Handle)) {
 
 fn_((Thrd__linux_yield(void))(Thrd_E$void) $scope) {
     if (syscall(SYS_sched_yield) != 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     return_ok({});
 } $unscoped(fn);
@@ -565,7 +565,7 @@ fn_((Thrd__linux_cpuCount(void))(Thrd_E$usize) $scope) {
     cpu_set_t cpu_set;
     CPU_ZERO(&cpu_set);
     if (sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     return_ok(as$(usize)(CPU_COUNT(&cpu_set)));
 } $unscoped(fn);
@@ -578,12 +578,12 @@ fn_((Thrd__linux_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8)
     snprintf(path, sizeOf$(path), "/proc/self/task/%d/comm", meta->parent_tid);
     let fd = open(path, O_RDONLY);
     if (fd < 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     defer_(close(fd));
     let n = read(fd, buf_ptr->buf, Thrd_max_name_len);
     if (n < 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     // Remove trailing newline
     if (n > 0 && buf_ptr->buf[n - 1] == '\n') {
@@ -595,7 +595,7 @@ fn_((Thrd__linux_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8)
     /* TODO: Implement */
     let_ignore = self;
     let_ignore = buf_ptr;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
@@ -609,18 +609,18 @@ fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     snprintf(path, sizeOf$(path), "/proc/self/task/%d/comm", meta->parent_tid);
     let fd = open(path, O_WRONLY);
     if (fd < 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     defer_(close(fd));
     if (write(fd, name.ptr, name.len) < 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     return_ok({});
 #endif /* UNUSED_CODE */
     /* TODO: Implement */
     let_ignore = self;
     let_ignore = name;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 #define Thrd__linux_clone_flags \
@@ -655,14 +655,14 @@ fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Th
     // Reserve entire region as inaccessible first
     let map_base = orelse_((heap_vmem_reserve(null, map_size))(null));
     if (map_base == null) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     errdefer_(let_ignore = heap_vmem_release(map_base, map_size));
 
     // Commit stack + meta area (keep guard page reserved/inaccessible)
     let stack_start = as$(u8*)(map_base) + page_size;
     if (!heap_vmem_commit(stack_start, stack_size + meta_size)) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
 
     // Initialize metadata at the top of mapped region
@@ -690,7 +690,7 @@ fn_((Thrd__linux_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Th
         &meta->child_tid.value // child_tid (CLONE_CHILD_CLEARTID)
     );
     if (tid == -1) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
 
     return_ok((Thrd){
@@ -839,7 +839,7 @@ fn_((Thrd__wasi_handle(Thrd self))(Thrd_Handle)) {
 
 fn_((Thrd__wasi_yield(void))(Thrd_E$void) $scope) {
     /* TODO: Implement */
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_currId(void))(Thrd_Id)) {
@@ -849,21 +849,21 @@ fn_((Thrd__wasi_currId(void))(Thrd_Id)) {
 
 fn_((Thrd__wasi_cpuCount(void))(Thrd_E$usize) $scope) {
     /* TODO: Implement */
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     /* TODO: Implement */
     let_ignore = self;
     let_ignore = buf_ptr;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     /* TODO: Implement */
     let_ignore = self;
     let_ignore = name;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thrd_spawn_E$Thrd) $scope) {
@@ -871,7 +871,7 @@ fn_((Thrd__wasi_spawn(Thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(Thr
     let_ignore = cfg;
     let_ignore = clsr;
     let_ignore = ret_type;
-    return_err(E_cause$UnsupportedThrd());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_detach(Thrd self))(void)) {

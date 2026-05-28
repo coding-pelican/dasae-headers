@@ -518,7 +518,7 @@ fn_((fmt_parseBool(S_const$u8 str))(E$bool) $scope) {
     str = fmt__trimWhitespace(str);
     if (mem_eqlBytes(str, u8_l("1")) || ascii_eqlIgnoreCase(str, u8_l("true"))) { return_ok(true); }
     if (mem_eqlBytes(str, u8_l("0")) || ascii_eqlIgnoreCase(str, u8_l("false"))) { return_ok(false); }
-    return_err(E_cause$FmtInvalidBoolFormat());
+    return_err(E_cause$fmt_InvalidBool());
 } $unscoped(fn);
 fn_((fmt_parse$bool(S_const$u8 str))(E$bool)) {
     return fmt_parseBool(str);
@@ -527,15 +527,15 @@ fn_((fmt_parse$bool(S_const$u8 str))(E$bool)) {
 fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64) $scope) {
     str = fmt__trimWhitespace(str);
     if (str.len == 0) {
-        return_err(E_cause$FmtInvalidUIntFormat());
+        return_err(E_cause$fmt_InvalidUInt());
     }
     if (base < 2 || 36 < base) {
-        return_err(E_cause$FmtInvalidUIntFormat());
+        return_err(E_cause$fmt_InvalidUInt());
     }
     if (*S_at((str)[0]) == u8_c('+')) {
         str = S_suffix((str)(1));
         if (str.len == 0) {
-            return_err(E_cause$FmtInvalidUIntFormat());
+            return_err(E_cause$fmt_InvalidUInt());
         }
     }
     u64 result = 0;
@@ -549,19 +549,19 @@ fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64) $scope) {
         } else if (u8_c('A') <= ch && ch <= u8_c('Z')) {
             digit_val = u8_add(10, ch - u8_c('A'));
         } else {
-            return_err(E_cause$FmtInvalidUIntFormat());
+            return_err(E_cause$fmt_InvalidUInt());
         }
         if (digit_val >= base) {
-            return_err(E_cause$FmtInvalidUIntFormat());
+            return_err(E_cause$fmt_InvalidUInt());
         }
         // Check for overflow using checked arithmetic
         let mul_result = u64_mulChkd(result, base);
         if (isNone(mul_result)) {
-            return_err(E_cause$FmtInvalidUIntFormat());
+            return_err(E_cause$fmt_InvalidUInt());
         }
         let add_result = u64_addChkd(unwrap_(mul_result), digit_val);
         if (isNone(add_result)) {
-            return_err(E_cause$FmtInvalidUIntFormat());
+            return_err(E_cause$fmt_InvalidUInt());
         }
         result = unwrap_(add_result);
     }
@@ -570,7 +570,7 @@ fn_((fmt_parseUInt(S_const$u8 str, u8 base))(E$u64) $scope) {
 fn_((fmt_parse$usize(S_const$u8 str, u8 base))(E$usize) $scope) {
     let result = try_(fmt_parseUInt(str, base));
     if (result > usize_limit_max) {
-        return_err(E_cause$FmtInvalidUIntFormat());
+        return_err(E_cause$fmt_InvalidUInt());
     }
     return_ok(as$(usize)(result));
 } $unscoped(fn);
@@ -580,28 +580,28 @@ fn_((fmt_parse$u64(S_const$u8 str, u8 base))(E$u64)) {
 fn_((fmt_parse$ulong(S_const$u8 str, u8 base))(E$ulong) $scope) {
     let result = try_(fmt_parseUInt(str, base));
     if (result > ulong_limit_max) {
-        return_err(E_cause$FmtInvalidUIntFormat());
+        return_err(E_cause$fmt_InvalidUInt());
     }
     return_ok(as$(ulong)(result));
 } $unscoped(fn);
 fn_((fmt_parse$u32(S_const$u8 str, u8 base))(E$u32) $scope) {
     let result = try_(fmt_parseUInt(str, base));
     if (result > u32_limit_max) {
-        return_err(E_cause$FmtInvalidUIntFormat());
+        return_err(E_cause$fmt_InvalidUInt());
     }
     return_ok(as$(u32)(result));
 } $unscoped(fn);
 fn_((fmt_parse$u16(S_const$u8 str, u8 base))(E$u16) $scope) {
     let result = try_(fmt_parseUInt(str, base));
     if (result > u16_limit_max) {
-        return_err(E_cause$FmtInvalidUIntFormat());
+        return_err(E_cause$fmt_InvalidUInt());
     }
     return_ok(as$(u16)(result));
 } $unscoped(fn);
 fn_((fmt_parse$u8(S_const$u8 str, u8 base))(E$u8) $scope) {
     let result = try_(fmt_parseUInt(str, base));
     if (result > u8_limit_max) {
-        return_err(E_cause$FmtInvalidUIntFormat());
+        return_err(E_cause$fmt_InvalidUInt());
     }
     return_ok(as$(u8)(result));
 } $unscoped(fn);
@@ -609,7 +609,7 @@ fn_((fmt_parse$u8(S_const$u8 str, u8 base))(E$u8) $scope) {
 fn_((fmt_parseIInt(S_const$u8 str, u8 base))(E$i64) $scope) {
     str = fmt__skipWhitespace(str);
     if (str.len == 0) {
-        return_err(E_cause$FmtInvalidIIntFormat());
+        return_err(E_cause$fmt_InvalidIInt());
     }
     bool negative = false;
     if (*S_at((str)[0]) == u8_c('-')) {
@@ -622,12 +622,12 @@ fn_((fmt_parseIInt(S_const$u8 str, u8 base))(E$i64) $scope) {
     return_ok(expr_(i64 $scope)(if (negative) {
         let max_neg = as$(u64)(i64_limit_max) + 1;
         if (max_neg < unsigned_result) {
-            return_err(E_cause$FmtInvalidIIntFormat());
+            return_err(E_cause$fmt_InvalidIInt());
         }
         $break_(-as$(i64)(unsigned_result));
     } else {
         if (as$(u64)(i64_limit_max) < unsigned_result) {
-            return_err(E_cause$FmtInvalidIIntFormat());
+            return_err(E_cause$fmt_InvalidIInt());
         }
         $break_(as$(i64)(unsigned_result));
     }) $unscoped(expr));
@@ -635,7 +635,7 @@ fn_((fmt_parseIInt(S_const$u8 str, u8 base))(E$i64) $scope) {
 fn_((fmt_parse$isize(S_const$u8 str, u8 base))(E$isize) $scope) {
     let result = try_(fmt_parseIInt(str, base));
     if (result < isize_limit_min || isize_limit_max < result) {
-        return_err(E_cause$FmtInvalidIIntFormat());
+        return_err(E_cause$fmt_InvalidIInt());
     }
     return_ok(as$(isize)(result));
 } $unscoped(fn);
@@ -645,28 +645,28 @@ fn_((fmt_parse$i64(S_const$u8 str, u8 base))(E$i64)) {
 fn_((fmt_parse$ilong(S_const$u8 str, u8 base))(E$ilong) $scope) {
     let result = try_(fmt_parseIInt(str, base));
     if (result < ilong_limit_min || ilong_limit_max < result) {
-        return_err(E_cause$FmtInvalidIIntFormat());
+        return_err(E_cause$fmt_InvalidIInt());
     }
     return_ok(as$(ilong)(result));
 } $unscoped(fn);
 fn_((fmt_parse$i32(S_const$u8 str, u8 base))(E$i32) $scope) {
     let result = try_(fmt_parseIInt(str, base));
     if (result < i32_limit_min || i32_limit_max < result) {
-        return_err(E_cause$FmtInvalidIIntFormat());
+        return_err(E_cause$fmt_InvalidIInt());
     }
     return_ok(as$(i32)(result));
 } $unscoped(fn);
 fn_((fmt_parse$i16(S_const$u8 str, u8 base))(E$i16) $scope) {
     let result = try_(fmt_parseIInt(str, base));
     if (result < i16_limit_min || i16_limit_max < result) {
-        return_err(E_cause$FmtInvalidIIntFormat());
+        return_err(E_cause$fmt_InvalidIInt());
     }
     return_ok(as$(i16)(result));
 } $unscoped(fn);
 fn_((fmt_parse$i8(S_const$u8 str, u8 base))(E$i8) $scope) {
     let result = try_(fmt_parseIInt(str, base));
     if (result < i8_limit_min || i8_limit_max < result) {
-        return_err(E_cause$FmtInvalidIIntFormat());
+        return_err(E_cause$fmt_InvalidIInt());
     }
     return_ok(as$(i8)(result));
 } $unscoped(fn);
@@ -674,7 +674,7 @@ fn_((fmt_parse$i8(S_const$u8 str, u8 base))(E$i8) $scope) {
 fn_((fmt_parseFlt(S_const$u8 str))(E$f64) $scope) {
     str = fmt__skipWhitespace(str);
     if (str.len == 0) {
-        return_err(E_cause$FmtInvalidFltFormat());
+        return_err(E_cause$fmt_InvalidFlt());
     }
     usize pos = 0;
     f64 sign = 1.0;
@@ -705,11 +705,11 @@ fn_((fmt_parseFlt(S_const$u8 str))(E$f64) $scope) {
             pos++;
         }
         if (!has_int_part && !has_frac_part) {
-            return_err(E_cause$FmtInvalidFltFormat());
+            return_err(E_cause$fmt_InvalidFlt());
         }
     } else {
         if (!has_int_part) {
-            return_err(E_cause$FmtInvalidFltFormat());
+            return_err(E_cause$fmt_InvalidFlt());
         }
     }
     // Parse exponent part
@@ -731,13 +731,13 @@ fn_((fmt_parseFlt(S_const$u8 str))(E$f64) $scope) {
             pos++;
         }
         if (!has_exp) {
-            return_err(E_cause$FmtInvalidFltFormat());
+            return_err(E_cause$fmt_InvalidFlt());
         }
         result *= fmt__pow10I32(exp_val * exp_sign);
     }
     // Check that we consumed all input
     if (pos != str.len) {
-        return_err(E_cause$FmtInvalidFltFormat());
+        return_err(E_cause$fmt_InvalidFlt());
     }
     return_ok(result * sign);
 } $unscoped(fn);
@@ -747,7 +747,7 @@ fn_((fmt_parse$f64(S_const$u8 str))(E$f64)) {
 fn_((fmt_parse$f32(S_const$u8 str))(E$f32) $scope) {
     let result = try_(fmt_parseFlt(str));
     if (result < f32_limit_min || f32_limit_max < result) {
-        return_err(E_cause$FmtInvalidFltFormat());
+        return_err(E_cause$fmt_InvalidFlt());
     }
     return_ok(as$(f32)(result));
 } $unscoped(fn);
@@ -841,17 +841,17 @@ fn_((fmt__appendIInt(S$u8 buf, usize* pos, i64 val))(void)) {
 fn_((fmt__parseU8(S_const$u8 str))(E$u8) $scope) {
     // printf("--- debug print: fmt__parseU8 ---\n");
     if (str.len == 0 || !ascii_isDigit(*S_at((str)[0]))) {
-        return_err(E_cause$FmtInvalidUIntFormat());
+        return_err(E_cause$fmt_InvalidUInt());
     }
     var_(result, u8) = 0;
     for_(($s(str))(ch)) {
         if (!ascii_isDigit(*ch)) { break; }
         let digit = fmt__digitToInt(*ch);
         let mul = orelse_((u8_mulChkd(result, 10))(
-            return_err(E_cause$FmtInvalidUIntFormat())
+            return_err(E_cause$fmt_InvalidUInt())
         ));
         let add = orelse_((u8_addChkd(mul, digit))(
-            return_err(E_cause$FmtInvalidUIntFormat())
+            return_err(E_cause$fmt_InvalidUInt())
         ));
         result = add;
     } $end(for);
@@ -864,7 +864,7 @@ fn_((fmt__consumeU8(S_const$u8 str))(E$fmt__ConsumedU8) $scope) {
     usize digit_count = 0;
     while (digit_count < str.len && ascii_isDigit(*S_at((str)[digit_count]))) { digit_count++; }
     if (digit_count == 0) {
-        return_err(E_cause$FmtInvalidUIntFormat());
+        return_err(E_cause$fmt_InvalidUInt());
     }
     let digits = S_prefix((str)(digit_count));
     let value = try_(fmt__parseU8(digits));
@@ -877,7 +877,7 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
     // Skip opening '{'
     fmt_str = S_suffix((fmt_str)(1));
     if (fmt_str.len == 0) {
-        return_err(E_cause$FmtMissingClosingBrace());
+        return_err(E_cause$fmt_MissingClosingBrace());
     }
 
     // Parse optional index (must be followed by ':')
@@ -898,11 +898,11 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
                     for_(($s(S_prefix((fmt_str)(colon_pos))))(digit_ch)) {
                         index = index * usize_(10) + as$(usize)(fmt__digitToInt(*digit_ch));
                         if (index >= fmt_max_args) {
-                            return_err(E_cause$FmtIdxOutOfBounds());
+                            return_err(E_cause$fmt_IdxOutOfBounds());
                         }
                     } $end(for);
                     if (index >= fmt_max_args) {
-                        return_err(E_cause$FmtIdxOutOfBounds());
+                        return_err(E_cause$fmt_IdxOutOfBounds());
                     }
                     fmt_str = S_suffix((fmt_str)(colon_pos + 1)); // Skip index and ':'
                     $break_(some(intCast$((u8)(index))));
@@ -997,7 +997,7 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
         // Parse type character (required if we reach here)
         let type_ch = local_({
             if (fmt_str.len == 0) {
-                return_err(E_cause$FmtInvalidSpecFormat());
+                return_err(E_cause$fmt_InvalidSpec());
             }
             let ch = *S_at((fmt_str)[0]);
             fmt_str = S_suffix((fmt_str)(1));
@@ -1035,7 +1035,7 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
             case u8_c('C'): $break_({ .type = fmt_Type_utf8_codepoint, .size = size });
             case u8_c('z'): $break_({ .type = fmt_Type_string_z0, .size = size });
             case u8_c('s'): $break_({ .type = fmt_Type_string_s, .size = size });
-            default: return_err(E_cause$FmtInvalidSpecFormat());
+            default: return_err(E_cause$fmt_InvalidSpec());
         }
     }) $unscoped(expr);
     /* clang-format on */
@@ -1045,11 +1045,11 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
     // printf("parseFormat: type=%d, size=%d\n", type_w_size.type, type_w_size.size);
     // Expect closing '}'
     if (0 < fmt_str.len && *S_at((fmt_str)[0]) != u8_c('}')) {
-        return_err(E_cause$FmtMissingClosingBrace());
+        return_err(E_cause$fmt_MissingClosingBrace());
     }
     return_ok({
         .spec = {
-            .index = index,
+            .idx = index,
             .fill = fill,
             .align = align,
             .sign = sign,
@@ -1083,7 +1083,7 @@ fn_((fmt__specToArgTag(fmt_Type type, fmt_Size size))(E$fmt__ArgValue_Tag) $scop
         case fmt_Size_32:  return_ok(fmt__ArgValue_u32);
         case fmt_Size_64:  return_ok(fmt__ArgValue_u64);
         case fmt_Size_ptr: return_ok(fmt__ArgValue_usize);
-        default: return_err(E_cause$FmtInvalidSpecFormat());
+        default: return_err(E_cause$fmt_InvalidSpec());
         }
     case fmt_Type_signed:
         switch (size) {
@@ -1092,14 +1092,14 @@ fn_((fmt__specToArgTag(fmt_Type type, fmt_Size size))(E$fmt__ArgValue_Tag) $scop
         case fmt_Size_32:  return_ok(fmt__ArgValue_i32);
         case fmt_Size_64:  return_ok(fmt__ArgValue_i64);
         case fmt_Size_ptr: return_ok(fmt__ArgValue_isize);
-        default: return_err(E_cause$FmtInvalidSpecFormat());
+        default: return_err(E_cause$fmt_InvalidSpec());
         }
     case fmt_Type_float_lower:
     case fmt_Type_float_upper:
         switch (size) {
         case fmt_Size_32: return_ok(fmt__ArgValue_f32);
         case fmt_Size_64: return_ok(fmt__ArgValue_f64);
-        default: return_err(E_cause$FmtInvalidSpecFormat());
+        default: return_err(E_cause$fmt_InvalidSpec());
         }
     case fmt_Type_pointer_lower:
     case fmt_Type_pointer_upper:
@@ -1115,7 +1115,7 @@ fn_((fmt__specToArgTag(fmt_Type type, fmt_Size size))(E$fmt__ArgValue_Tag) $scop
     case fmt_Type_string_s:
         return_ok(fmt__ArgValue_sli_u8);
     default:
-        return_err(E_cause$FmtInvalidSpecFormat());
+        return_err(E_cause$fmt_InvalidSpec());
     }
     /* clang-format on */
 } $unscoped(fn);
@@ -1492,7 +1492,7 @@ fn_((fmt__formatArg(io_Writer writer, fmt__ArgType arg, fmt_Spec spec))(E$void) 
     pattern_((fmt__ArgType_error_result)(error_result)) {
         return fmt__formatArgErrorResult(writer, error_result, spec);
     } $end(pattern);
-    default_() return_err(E_cause$FmtInvalidSpecFormat()) $end(default);
+    default_() return_err(E_cause$fmt_InvalidSpec()) $end(default);
     } $end(match);
 } $unscoped(fn);
 
@@ -1612,7 +1612,7 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
     pattern_((fmt__ArgValue_sli_u8)(value)) {
         return fmt_formatStr(writer, value, spec);
     } $end(pattern);
-    default_() return_err(E_cause$FmtInvalidSpecFormat()) $end(default);
+    default_() return_err(E_cause$fmt_InvalidSpec()) $end(default);
     } $end(match);
 } $unscoped(fn);
 
@@ -1669,7 +1669,7 @@ fn_((fmt__parseFormatSpecOnce(S_const$u8 fmt))(E$fmt__ParsedFormatSpec) $scope) 
             }
             // Parse format spec
             let parsed = catch_((fmt__parseFormat(scan_fmt))(err, {
-                let idx_out_of_bounds = E_cause$FmtIdxOutOfBounds();
+                let idx_out_of_bounds = E_cause$fmt_IdxOutOfBounds();
                 if (E_eql(&err, idx_out_of_bounds.as_any)) {
                     return_err(err);
                 }
@@ -1684,17 +1684,17 @@ fn_((fmt__parseFormatSpecOnce(S_const$u8 fmt))(E$fmt__ParsedFormatSpec) $scope) 
             // printf("After parseFormat: spec.type=%d, spec.size=%d\n", parsed.spec.type, parsed.spec.size);
             // Store this occurrence with its literal prefix
             if (result.occurrence_count >= fmt_max_args) {
-                return_err(E_cause$FmtIdxOutOfBounds());
+                return_err(E_cause$fmt_IdxOutOfBounds());
             }
             // printf("--- next_positional: %d\n", next_positional);
-            let arg_index = expr_(u8 $scope)(if_some((parsed.spec.index)(idx)) {
+            let arg_index = expr_(u8 $scope)(if_some((parsed.spec.idx)(idx)) {
                 next_positional = pri_max(next_positional, idx + 1);
                 $break_(idx);
             } else_none {
                 $break_(next_positional++);
             }) $unscoped(expr);
             if (arg_index >= fmt_max_args) {
-                return_err(E_cause$FmtIdxOutOfBounds());
+                return_err(E_cause$fmt_IdxOutOfBounds());
             }
             asg_l((A_at((result.occurrences)[result.occurrence_count]))({
                 .spec = parsed.spec,

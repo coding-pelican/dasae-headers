@@ -39,14 +39,14 @@ fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(E$void) $scope) {
 fn_((io_Buf_Reader_require(io_Buf_Reader* self, usize min_len))(E$void) $scope) {
     claim_assert_nonnull(self);
     if (self->buf.len < min_len) {
-        return_err(E_cause$TooSmallBuffer());
+        return_err(E_cause$io_TooSmallBuffer());
     }
     while ((self->end - self->start) < min_len) {
         let before = self->end - self->start;
         try_(io_Buf_Reader_fill(self));
         let after = self->end - self->start;
         if (after == before) {
-            return_err(E_cause$UnexpectedEOF());
+            return_err(E_cause$io_UnexpectedEOF());
         }
     }
     return_ok({});
@@ -140,7 +140,7 @@ fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize len))(E$void) $scope) {
         }
         try_(io_Buf_Reader_fill(self));
         if (self->end <= self->start) {
-            return_err(E_cause$UnexpectedEOF());
+            return_err(E_cause$io_UnexpectedEOF());
         }
     }
     return_ok({});
@@ -168,7 +168,7 @@ fn_((io_Buf_Reader_readUntilSeq(io_Buf_Reader* self, S_const$u8 delim, S$u8 out_
     claim_assert_nonnullS(delim);
     claim_assert(delim.len != 0);
     if (self->buf.len < delim.len) {
-        return_err(E_cause$TooSmallBuffer());
+        return_err(E_cause$io_TooSmallBuffer());
     }
 
     var_(written, usize) = 0;
@@ -176,7 +176,7 @@ fn_((io_Buf_Reader_readUntilSeq(io_Buf_Reader* self, S_const$u8 delim, S$u8 out_
         if (self->end <= self->start) {
             try_(io_Buf_Reader_fill(self));
             if (self->end <= self->start) {
-                return_err(E_cause$UnexpectedEOF());
+                return_err(E_cause$io_UnexpectedEOF());
             }
         }
 
@@ -185,7 +185,7 @@ fn_((io_Buf_Reader_readUntilSeq(io_Buf_Reader* self, S_const$u8 delim, S$u8 out_
             let copy_len = delim_idx;
             let total_len = written + copy_len;
             if (out_buf.len < total_len) {
-                return_err(E_cause$TooSmallBuffer());
+                return_err(E_cause$io_TooSmallBuffer());
             }
             mem_copyBytes(
                 S_prefix((S_suffix((out_buf)(written)))(copy_len)),
@@ -202,14 +202,14 @@ fn_((io_Buf_Reader_readUntilSeq(io_Buf_Reader* self, S_const$u8 delim, S$u8 out_
             try_(io_Buf_Reader_fill(self));
             let after = self->end - self->start;
             if (after == before) {
-                return_err(E_cause$UnexpectedEOF());
+                return_err(E_cause$io_UnexpectedEOF());
             }
             continue;
         }
 
         let total_len = written + copy_len;
         if (out_buf.len < total_len) {
-            return_err(E_cause$TooSmallBuffer());
+            return_err(E_cause$io_TooSmallBuffer());
         }
         mem_copyBytes(
             S_prefix((S_suffix((out_buf)(written)))(copy_len)),
@@ -228,7 +228,7 @@ fn_((io_Buf_Reader_readUntilAny(io_Buf_Reader* self, S_const$u8 delims, S$u8 out
         if (self->end <= self->start) {
             try_(io_Buf_Reader_fill(self));
             if (self->end <= self->start) {
-                return_err(E_cause$UnexpectedEOF());
+                return_err(E_cause$io_UnexpectedEOF());
             }
         }
         let readable = S_slice((self->buf)$r(self->start, self->end)).as_const;
@@ -236,7 +236,7 @@ fn_((io_Buf_Reader_readUntilAny(io_Buf_Reader* self, S_const$u8 delims, S$u8 out
             let copy_len = delim_idx;
             let total_len = written + copy_len;
             if (out_buf.len < total_len) {
-                return_err(E_cause$TooSmallBuffer());
+                return_err(E_cause$io_TooSmallBuffer());
             }
             mem_copyBytes(
                 S_prefix((S_suffix((out_buf)(written)))(copy_len)),
@@ -248,7 +248,7 @@ fn_((io_Buf_Reader_readUntilAny(io_Buf_Reader* self, S_const$u8 delims, S$u8 out
         let copy_len = self->end - self->start;
         let total_len = written + copy_len;
         if (out_buf.len < total_len) {
-            return_err(E_cause$TooSmallBuffer());
+            return_err(E_cause$io_TooSmallBuffer());
         }
         mem_copyBytes(
             S_prefix((S_suffix((out_buf)(written)))(copy_len)),
@@ -270,14 +270,14 @@ fn_((io_Buf_Reader_skipUntilSeq(io_Buf_Reader* self, S_const$u8 delim))(E$void) 
     claim_assert_nonnullS(delim);
     claim_assert(delim.len != 0);
     if (self->buf.len < delim.len) {
-        return_err(E_cause$TooSmallBuffer());
+        return_err(E_cause$io_TooSmallBuffer());
     }
 
     while (true) {
         if (self->end <= self->start) {
             try_(io_Buf_Reader_fill(self));
             if (self->end <= self->start) {
-                return_err(E_cause$UnexpectedEOF());
+                return_err(E_cause$io_UnexpectedEOF());
             }
         }
 
@@ -294,7 +294,7 @@ fn_((io_Buf_Reader_skipUntilSeq(io_Buf_Reader* self, S_const$u8 delim))(E$void) 
             try_(io_Buf_Reader_fill(self));
             let after = self->end - self->start;
             if (after == before) {
-                return_err(E_cause$UnexpectedEOF());
+                return_err(E_cause$io_UnexpectedEOF());
             }
             continue;
         }
@@ -309,7 +309,7 @@ fn_((io_Buf_Reader_skipUntilAny(io_Buf_Reader* self, S_const$u8 delims))(E$void)
         if (self->end <= self->start) {
             try_(io_Buf_Reader_fill(self));
             if (self->end <= self->start) {
-                return_err(E_cause$UnexpectedEOF());
+                return_err(E_cause$io_UnexpectedEOF());
             }
         }
         let readable = S_slice((self->buf)$r(self->start, self->end)).as_const;

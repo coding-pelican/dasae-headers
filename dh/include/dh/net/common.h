@@ -12,23 +12,23 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((net_E)(
-    AccessDeniedNet,
-    AddressFamilyUnsupportedNet,
-    AddressInUseNet,
-    AddressUnavailableNet,
-    ConnectionAbortedNet,
-    ConnectionRefusedNet,
-    ConnectionResetByPeerNet,
-    HostUnreachableNet,
-    MessageOversizeNet,
-    NetworkDownNet,
-    NetworkUnreachableNet,
-    NotConnectedNet,
-    ProtocolUnsupportedNet,
-    SocketModeUnsupportedNet,
-    SystemResourcesNet,
-    TimedOutNet,
-    WouldBlockNet
+    net_AccessDenied,
+    net_AddressFamilyUnsupported,
+    net_AddressInUse,
+    net_AddressUnavailable,
+    net_ConnectionAborted,
+    net_ConnectionRefused,
+    net_ConnectionResetByPeer,
+    net_HostUnreachable,
+    net_MessageOversize,
+    net_NetworkDown,
+    net_NetworkUnreachable,
+    net_NotConnected,
+    net_ProtocolUnsupported,
+    net_SocketModeUnsupported,
+    net_SystemResources,
+    net_TimedOut,
+    net_WouldBlock
 ));
 
 T_alias$((net_Prot)(enum_((net_Prot $fits($packed))(
@@ -135,8 +135,7 @@ $static fn_((net_IpAddr_ip6Loopback(u16 port))(net_IpAddr)) {
         .family = net_Addr_Family_ip6,
         .ip6 = {
             .bytes = {
-                .val = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }
-            },
+                .val = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 } },
             .port = port,
             .flow = 0,
             .scope_id = 0,

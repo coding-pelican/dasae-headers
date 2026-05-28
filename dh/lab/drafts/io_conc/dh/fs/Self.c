@@ -42,7 +42,7 @@ $static fn_((fs_direct__File_seekBy(P$raw ctx, fs_File file, i64 rel_offset))(E$
 $static fn_((fs_direct__File_seekTo(P$raw ctx, fs_File file, u64 abs_offset))(E$void));
 
 #if plat_is_windows
-T_alias$((fs__Evented_FileIOOp)(struct fs__Evented_FileIOOp {
+T_alias$((fs__Evented_FileIO_Op)(struct fs__Evented_FileIO_Op {
     var_(base, exec_Evented_Op);
     var_(coop, exec_Coop*);
     var_(task, O$P$exec_Task);
@@ -69,7 +69,7 @@ $static fn_((fs__evented_windowsCreateFile(exec_Coop* self, S_const$u8 path, fs_
 $static fn_((fs__evented_windowsCurrentOffset(fs_File file, u64* out))(bool));
 $static fn_((fs__evented_windowsSetOffset(OVERLAPPED* ov, u64 offset))(void));
 $static fn_((fs__evented_windowsAdvanceCursor(fs_File file, u64 next_offset))(bool));
-$static fn_((fs__evented_windowsAwait(exec_Coop* coop, fs__Evented_FileIOOp* op))(E$usize));
+$static fn_((fs__evented_windowsAwait(exec_Coop* coop, fs__Evented_FileIO_Op* op))(E$usize));
 $static fn_((fs__evented_windowsReadAt(exec_Coop* coop, fs_File file, S$u8 buf, u64 offset, bool update_cursor))(E$usize));
 $static fn_((fs__evented_windowsWriteAt(exec_Coop* coop, fs_File file, S_const$u8 buf, u64 offset, bool update_cursor))(E$usize));
 $static fn_((fs__evented_windowsIOComplete(exec_Evented_Op* self, exec_Evented_Completion completion))(void));
@@ -395,7 +395,7 @@ fn_((fs_evented__Op_openFile(P$raw ctx, S_const$u8 path, fs_File_OpenFlags flags
     let_ignore = ctx;
     let_ignore = path;
     let_ignore = flags;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -406,7 +406,7 @@ fn_((fs_evented__Op_createFile(P$raw ctx, S_const$u8 path, fs_File_CreateFlags f
     let_ignore = ctx;
     let_ignore = path;
     let_ignore = flags;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -414,12 +414,12 @@ fn_((fs_evented__File_read(P$raw ctx, fs_File file, S$u8 buf))(E$usize) $scope) 
     let coop = ptrCast$((exec_Coop*)(ensureNonnull(ctx)));
 #if plat_is_windows
     var_(offset, u64) = 0;
-    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(E_cause$FSReadFailed());
+    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(E_cause$fs_File_ReadFailed());
     return fs__evented_windowsReadAt(coop, file, buf, offset, true);
 #else
     let_ignore = file;
     let_ignore = buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -427,12 +427,12 @@ fn_((fs_evented__File_write(P$raw ctx, fs_File file, S_const$u8 bytes))(E$usize)
     let coop = ptrCast$((exec_Coop*)(ensureNonnull(ctx)));
 #if plat_is_windows
     var_(offset, u64) = 0;
-    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(E_cause$FSWriteFailed());
+    if (!fs__evented_windowsCurrentOffset(file, &offset)) return_err(E_cause$fs_File_WriteFailed());
     return fs__evented_windowsWriteAt(coop, file, bytes, offset, true);
 #else
     let_ignore = file;
     let_ignore = bytes;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -444,7 +444,7 @@ fn_((fs_evented__File_readPos(P$raw ctx, fs_File file, S$u8 buf, u64 offset))(E$
     let_ignore = file;
     let_ignore = buf;
     let_ignore = offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -456,7 +456,7 @@ fn_((fs_evented__File_writePos(P$raw ctx, fs_File file, S_const$u8 buf, u64 offs
     let_ignore = file;
     let_ignore = buf;
     let_ignore = offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -464,52 +464,52 @@ fn_((fs_evented__File_writePos(P$raw ctx, fs_File file, S_const$u8 buf, u64 offs
 
 fn_((fs_VTbl_Op_failingCWD(P$raw ctx))(E$fs_Dir) $scope) {
     let_ignore = ctx;
-    return_err(E_cause$Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingOpenDir(P$raw ctx, S_const$u8 path, fs_Dir_OpenOpts opts))(E$fs_Dir) $scope) {
     let_ignore = ctx;
     let_ignore = path;
     let_ignore = opts;
-    return_err(E_cause$fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingCreateDir(P$raw ctx, S_const$u8 path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = path;
-    return_err(E_cause$fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingDeleteDir(P$raw ctx, S_const$u8 path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingOpenFile(P$raw ctx, S_const$u8 path, fs_File_OpenFlags flags))(E$fs_File) $scope) {
     let_ignore = ctx;
     let_ignore = path;
     let_ignore = flags;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingCreateFile(P$raw ctx, S_const$u8 path, fs_File_CreateFlags flags))(E$fs_File) $scope) {
     let_ignore = ctx;
     let_ignore = path;
     let_ignore = flags;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingDeleteFile(P$raw ctx, S_const$u8 path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingRename(P$raw ctx, S_const$u8 old_path, S_const$u8 new_path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = old_path;
     let_ignore = new_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Op_failingRealpath(P$raw ctx, S_const$u8 path, S$u8 out_buf))(E$S$u8) $scope) {
     let_ignore = ctx;
     let_ignore = path;
     let_ignore = out_buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_VTbl_File_noClose(P$raw ctx, fs_File file))(void)) {
@@ -525,78 +525,78 @@ fn_((fs_VTbl_File_failingRead(P$raw ctx, fs_File file, S$u8 buf))(E$usize) $scop
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingWrite(P$raw ctx, fs_File file, S_const$u8 bytes))(E$usize) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = bytes;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingStat(P$raw ctx, fs_File file))(fs_E$fs_File_Stat) $scope) {
     let_ignore = ctx;
     let_ignore = file;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingSync(P$raw ctx, fs_File file))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = file;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingIsTty(P$raw ctx, fs_File file))(E$bool) $scope) {
     let_ignore = ctx;
     let_ignore = file;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingSetLen(P$raw ctx, fs_File file, u64 new_len))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = new_len;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingSetPerms(P$raw ctx, fs_File file, fs_File_Mode perms))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = perms;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingReadPos(P$raw ctx, fs_File file, S$u8 buf, u64 offset))(E$usize) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = buf;
     let_ignore = offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingWritePos(P$raw ctx, fs_File file, S_const$u8 buf, u64 offset))(E$usize) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = buf;
     let_ignore = offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingSeekBy(P$raw ctx, fs_File file, i64 rel_offset))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = rel_offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingSeekTo(P$raw ctx, fs_File file, u64 abs_offset))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = abs_offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingLock(P$raw ctx, fs_File file, fs_Lock lock))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = lock;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingTryLock(P$raw ctx, fs_File file, fs_Lock lock))(E$bool) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = lock;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_noUnlock(P$raw ctx, fs_File file))(void)) {
     let_ignore = ctx;
@@ -610,13 +610,13 @@ fn_((fs_VTbl_File_unreachableUnlock(P$raw ctx, fs_File file))(void)) {
 fn_((fs_VTbl_File_failingDowngradeLock(P$raw ctx, fs_File file))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = file;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_File_failingRealpath(P$raw ctx, fs_File file, S$u8 out_buf))(E$S$u8) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     let_ignore = out_buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_VTbl_Dir_noClose(P$raw ctx, fs_Dir dir))(void)) {
@@ -633,99 +633,99 @@ fn_((fs_VTbl_Dir_failingAccess(P$raw ctx, fs_Dir dir, S_const$u8 sub_path, fs_Di
     let_ignore = dir;
     let_ignore = sub_path;
     let_ignore = opts;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingStat(P$raw ctx, fs_Dir dir))(fs_E$fs_Dir_Stat) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingStatFile(P$raw ctx, fs_Dir dir, S_const$u8 sub_path, fs_Dir_StatFileOpts opts))(fs_E$fs_File_Stat) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
     let_ignore = opts;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingRename(P$raw ctx, fs_Dir dir, S_const$u8 old_sub_path, S_const$u8 new_sub_path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = old_sub_path;
     let_ignore = new_sub_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingRenamePreserve(P$raw ctx, fs_Dir dir, S_const$u8 old_sub_path, S_const$u8 new_sub_path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = old_sub_path;
     let_ignore = new_sub_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingMakePath(P$raw ctx, fs_Dir dir, S_const$u8 sub_path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingMakePathStatus(P$raw ctx, fs_Dir dir, S_const$u8 sub_path))(E$fs_Dir_CreatePathStatus) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingRealpath(P$raw ctx, fs_Dir dir, S_const$u8 pathname, S$u8 out_buf))(E$S$u8) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = pathname;
     let_ignore = out_buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingRealpathAlloc(P$raw ctx, fs_Dir dir, S_const$u8 pathname, mem_Alctr gpa))(E$S$u8) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = pathname;
     let_ignore = gpa;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingRealpathFile(P$raw ctx, fs_Dir dir, S_const$u8 pathname, S$u8 out_buf))(E$S$u8) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = pathname;
     let_ignore = out_buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingReadLink(P$raw ctx, fs_Dir dir, S_const$u8 sub_path, S$u8 out_buf))(E$S$u8) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
     let_ignore = out_buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingMakeDir(P$raw ctx, fs_Dir dir, S_const$u8 sub_path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingDeleteDir(P$raw ctx, fs_Dir dir, S_const$u8 sub_path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingOpenDir(P$raw ctx, fs_Dir dir, S_const$u8 sub_path, fs_Dir_OpenOpts opts))(E$fs_Dir) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
     let_ignore = opts;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingOpenPath(P$raw ctx, fs_Dir dir, S_const$u8 sub_path, fs_Dir_OpenOpts opts))(E$fs_Dir) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
     let_ignore = opts;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingHardLink(P$raw ctx, fs_Dir dir, S_const$u8 old_sub_path, fs_Dir new_dir, S_const$u8 new_sub_path))(E$void) $scope) {
     let_ignore = ctx;
@@ -733,41 +733,41 @@ fn_((fs_VTbl_Dir_failingHardLink(P$raw ctx, fs_Dir dir, S_const$u8 old_sub_path,
     let_ignore = old_sub_path;
     let_ignore = new_dir;
     let_ignore = new_sub_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingSymLink(P$raw ctx, fs_Dir dir, S_const$u8 target_path, S_const$u8 sub_path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = target_path;
     let_ignore = sub_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingCreateFile(P$raw ctx, fs_Dir dir, S_const$u8 sub_path, fs_Dir_CreateFileOpts flags))(E$fs_File) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
     let_ignore = flags;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingOpenFile(P$raw ctx, fs_Dir dir, S_const$u8 sub_path, fs_Dir_OpenFileOpts flags))(E$fs_File) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
     let_ignore = flags;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingDeleteFile(P$raw ctx, fs_Dir dir, S_const$u8 sub_path))(E$void) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = sub_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingReadFile(P$raw ctx, fs_Dir dir, S_const$u8 file_path, S$u8 buf))(E$S$u8) $scope) {
     let_ignore = ctx;
     let_ignore = dir;
     let_ignore = file_path;
     let_ignore = buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 fn_((fs_VTbl_Dir_failingReadFileAlloc(P$raw ctx, fs_Dir dir, S_const$u8 file_path, mem_Alctr gpa, usize max_bytes))(E$S$u8) $scope) {
     let_ignore = ctx;
@@ -775,7 +775,7 @@ fn_((fs_VTbl_Dir_failingReadFileAlloc(P$raw ctx, fs_Dir dir, S_const$u8 file_pat
     let_ignore = file_path;
     let_ignore = gpa;
     let_ignore = max_bytes;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 
 #if plat_is_posix
@@ -834,36 +834,36 @@ $static fn_((fs__evented_windowsAssociate(exec_Coop* self, fs_File file))(E$void
 
 $static fn_((fs__evented_windowsOpenFile(exec_Coop* self, S_const$u8 path, fs_File_OpenFlags flags))(E$fs_File) $scope) {
     claim_assert_nonnull(self);
-    if (flags.nonblocking) return_err(fs_E_Unsupported());
+    if (flags.nonblocking) return_err(E_cause$fs_direct_Unsupported());
     var_(path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
+    if (!fs__direct_pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
     let handle = CreateFileA(
-        as$(LPCSTR)(ptr$A(path_z)), fs__direct_windowsAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, fs__direct_windowsFlags() | FILE_FLAG_OVERLAPPED, null);
-    if (handle == INVALID_HANDLE_VALUE) return_err(fs_E_OpenFailed());
+        as$(LPCSTR)(A_ptr(path_z)), fs__direct_windowsAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, fs__direct_windowsFlags() | FILE_FLAG_OVERLAPPED, null);
+    if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$fs_OpenFailed());
     let file = fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = true });
     if (isErr(fs__evented_windowsAssociate(self, file))) {
         CloseHandle(handle);
-        return_err(fs_E_OpenFailed());
+        return_err(E_cause$fs_OpenFailed());
     }
     return_ok(file);
 } $unscoped(fn);
 
 $static fn_((fs__evented_windowsCreateFile(exec_Coop* self, S_const$u8 path, fs_File_CreateFlags flags))(E$fs_File) $scope) {
     claim_assert_nonnull(self);
-    if (flags.nonblocking) return_err(fs_E_Unsupported());
+    if (flags.nonblocking) return_err(E_cause$fs_direct_Unsupported());
     let disposition = flags.exclusive
                         ? CREATE_NEW
                         : (flags.truncate ? CREATE_ALWAYS : OPEN_ALWAYS);
     var_(path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
+    if (!fs__direct_pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
     let handle = CreateFileA(
-        as$(LPCSTR)(ptr$A(path_z)), fs__direct_windowsCreateAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null,
+        as$(LPCSTR)(A_ptr(path_z)), fs__direct_windowsCreateAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null,
         as$(DWORD)(disposition), fs__direct_windowsFlags() | FILE_FLAG_OVERLAPPED, null);
-    if (handle == INVALID_HANDLE_VALUE) return_err(fs_E_OpenFailed());
+    if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$fs_OpenFailed());
     let file = fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = true });
     if (isErr(fs__evented_windowsAssociate(self, file))) {
         CloseHandle(handle);
-        return_err(fs_E_OpenFailed());
+        return_err(E_cause$fs_OpenFailed());
     }
     return_ok(file);
 } $unscoped(fn);
@@ -888,7 +888,7 @@ $static fn_((fs__evented_windowsAdvanceCursor(fs_File file, u64 next_offset))(bo
     return SetFilePointerEx(file.handle, distance, null, FILE_BEGIN);
 }
 
-$static fn_((fs__evented_windowsAwait(exec_Coop* coop, fs__Evented_FileIOOp* op))(E$usize) $scope) {
+$static fn_((fs__evented_windowsAwait(exec_Coop* coop, fs__Evented_FileIO_Op* op))(E$usize) $scope) {
     claim_assert_nonnull(coop);
     claim_assert_nonnull(op);
     let task = op->task;
@@ -897,12 +897,12 @@ $static fn_((fs__evented_windowsAwait(exec_Coop* coop, fs__Evented_FileIOOp* op)
     } else {
         while (!op->done) {
             let completion = catch_((exec_Evented_poll(exec_Coop_evented(coop), time_Dur_fromSecs(4294968)))(
-                $ignore, return_err(op->is_write ? fs_E_WriteFailed() : fs_E_ReadFailed())
+                $ignore, return_err(op->is_write ? E_cause$fs_WriteFailed() : E_cause$fs_ReadFailed())
             ));
             if_some((completion)(ready)) exec_Evented_complete(ready);
         }
     }
-    if (!op->done) return_err(op->is_write ? fs_E_WriteFailed() : fs_E_ReadFailed());
+    if (!op->done) return_err(op->is_write ? E_cause$fs_WriteFailed() : E_cause$fs_ReadFailed());
     if_some((op->err)(err)) return_err(err);
     return_ok(op->bytes);
 } $unscoped(fn);
@@ -911,10 +911,10 @@ $static fn_((fs__evented_windowsReadAt(exec_Coop* coop, fs_File file, S$u8 buf, 
     claim_assert_nonnull(coop);
     let task = exec_Coop_task(coop);
     if_some((task)(curr_task)) {
-        if (exec_kind(curr_task->inner) != exec_Task_Kind_fiber) return_err(fs_E_Unsupported());
+        if (exec_kind(curr_task->inner) != exec_Task_Kind_stackful) return_err(E_cause$fs_direct_Unsupported());
     }
 
-    var_(op, fs__Evented_FileIOOp) = {
+    var_(op, fs__Evented_FileIO_Op) = {
         .base = {
             .ov = cleared(),
             .completeFn = fs__evented_windowsIOComplete,
@@ -936,7 +936,7 @@ $static fn_((fs__evented_windowsReadAt(exec_Coop* coop, fs_File file, S$u8 buf, 
         if (err != ERROR_IO_PENDING) {
             if_some((task)(curr_task)) curr_task->state = exec_Task_State_running;
             if (err == ERROR_HANDLE_EOF || err == ERROR_BROKEN_PIPE) return_ok(0);
-            return_err(fs_E_ReadFailed());
+            return_err(E_cause$fs_ReadFailed());
         }
     }
     return fs__evented_windowsAwait(coop, &op);
@@ -946,10 +946,10 @@ $static fn_((fs__evented_windowsWriteAt(exec_Coop* coop, fs_File file, S_const$u
     claim_assert_nonnull(coop);
     let task = exec_Coop_task(coop);
     if_some((task)(curr_task)) {
-        if (exec_kind(curr_task->inner) != exec_Task_Kind_fiber) return_err(fs_E_Unsupported());
+        if (exec_kind(curr_task->inner) != exec_Task_Kind_stackful) return_err(E_cause$fs_direct_Unsupported());
     }
 
-    var_(op, fs__Evented_FileIOOp) = {
+    var_(op, fs__Evented_FileIO_Op) = {
         .base = {
             .ov = cleared(),
             .completeFn = fs__evented_windowsIOComplete,
@@ -970,14 +970,14 @@ $static fn_((fs__evented_windowsWriteAt(exec_Coop* coop, fs_File file, S_const$u
         let err = GetLastError();
         if (err != ERROR_IO_PENDING) {
             if_some((task)(curr_task)) curr_task->state = exec_Task_State_running;
-            return_err(fs_E_WriteFailed());
+            return_err(E_cause$fs_WriteFailed());
         }
     }
     return fs__evented_windowsAwait(coop, &op);
 } $unscoped(fn);
 
 $static fn_((fs__evented_windowsIOComplete(exec_Evented_Op* self, exec_Evented_Completion completion))(void)) {
-    let op = ptrCast$((fs__Evented_FileIOOp*)(ensureNonnull(self)));
+    let op = ptrCast$((fs__Evented_FileIO_Op*)(ensureNonnull(self)));
     op->bytes = completion.bytes;
     if_some((completion.err)(completion_err)) {
         let_ignore = completion_err;
@@ -985,21 +985,21 @@ $static fn_((fs__evented_windowsIOComplete(exec_Evented_Op* self, exec_Evented_C
         case ERROR_HANDLE_EOF:
         case ERROR_BROKEN_PIPE:
             op->bytes = 0;
-            op->err = none();
+            asg_l((&op->err)(none()));
             break;
         case ERROR_OPERATION_ABORTED:
-            op->err = some(as$(Err)(exec_Evented_E_Canceled()));
+            asg_l((&op->err)(some(*E_cause$Sched_Canceled().as_any)));
             break;
         default:
-            op->err = some(op->is_write ? as$(Err)(fs_E_WriteFailed()) : as$(Err)(fs_E_ReadFailed()));
+            asg_l((&op->err)(some(*(op->is_write ? E_cause$fs_WriteFailed() : E_cause$fs_ReadFailed()).as_any)));
             break;
         }
     } else {
-        op->err = none();
+        asg_l((&op->err)(none()));
     }
     if (isNone(op->err) && op->update_cursor) {
         if (!fs__evented_windowsAdvanceCursor(op->file, op->offset + op->bytes)) {
-            op->err = some(op->is_write ? as$(Err)(fs_E_WriteFailed()) : as$(Err)(fs_E_ReadFailed()));
+            asg_l((&op->err)(some(*(op->is_write ? E_cause$fs_WriteFailed() : E_cause$fs_ReadFailed()).as_any)));
         }
     }
     op->done = true;
@@ -1015,7 +1015,7 @@ fn_((fs_direct__Op_cwd(P$raw ctx))(E$fs_Dir) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
     if_(let handle = open(".", O_RDONLY), handle < 0) {
-        return_err(fs_E_OpenFailed());
+        return_err(E_cause$fs_OpenFailed());
     } else {
         return_ok(fs_Dir_Handle_promote(handle));
     }
@@ -1029,10 +1029,10 @@ fn_((fs_direct__Op_cwd(P$raw ctx))(E$fs_Dir) $scope) {
         FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS,
         null
     );
-    if (handle == INVALID_HANDLE_VALUE) return_err(fs_E_OpenFailed());
+    if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$fs_OpenFailed());
     return_ok(fs_Dir_Handle_promote(handle));
 #else
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1041,40 +1041,40 @@ fn_((fs_direct__Op_openDir(P$raw ctx, S_const$u8 path, fs_Dir_OpenOpts opts))(E$
     let_ignore = opts;
 #if plat_is_posix
     if_(let handle = open(as$(const char*)(path.ptr), O_RDONLY), handle < 0) {
-        return_err(fs_E_OpenFailed());
+        return_err(E_cause$fs_OpenFailed());
     } else {
         return_ok(fs_Dir_Handle_promote(handle));
     }
 #elif plat_is_windows
     var_(path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
+    if (!fs__direct_pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
     let handle = CreateFileA(
-        as$(LPCSTR)(ptr$A(path_z)), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, null);
-    if (handle == INVALID_HANDLE_VALUE) return_err(fs_E_OpenFailed());
+        as$(LPCSTR)(A_ptr(path_z)), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, null);
+    if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$fs_OpenFailed());
     return_ok(fs_Dir_Handle_promote(handle));
 #else
     let_ignore = path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
 fn_((fs_direct__Op_createDir(P$raw ctx, S_const$u8 path))(E$void) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
-    if (mkdir(as$(const char*)(path.ptr), fs_Dir_Mode_default) != 0) return_err(fs_E_WriteFailed());
+    if (mkdir(as$(const char*)(path.ptr), fs_Dir_Mode_default) != 0) return_err(E_cause$fs_WriteFailed());
     return_ok({});
 #elif plat_is_windows
     var_(path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
-    if (!CreateDirectoryA(as$(LPCSTR)(ptr$A(path_z)), null)) {
+    if (!fs__direct_pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
+    if (!CreateDirectoryA(as$(LPCSTR)(A_ptr(path_z)), null)) {
         let err = GetLastError();
-        if (err == ERROR_ALREADY_EXISTS) return_err(fs_E_PathAlreadyExists());
-        return_err(fs_E_WriteFailed());
+        if (err == ERROR_ALREADY_EXISTS) return_err(E_cause$fs_PathAlreadyExists());
+        return_err(E_cause$fs_WriteFailed());
     }
     return_ok({});
 #else
     let_ignore = path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1085,12 +1085,12 @@ fn_((fs_direct__Op_deleteDir(P$raw ctx, S_const$u8 path))(E$void) $scope) {
     return_ok({});
 #elif plat_is_windows
     var_(path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
-    if (!RemoveDirectoryA(as$(LPCSTR)(ptr$A(path_z)))) return_err(fs_E_NotFound());
+    if (!fs__direct_pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
+    if (!RemoveDirectoryA(as$(LPCSTR)(A_ptr(path_z)))) return_err(E_cause$fs_NotFound());
     return_ok({});
 #else
     let_ignore = path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1103,24 +1103,24 @@ fn_((fs_direct__Op_openFile(P$raw ctx, S_const$u8 path, fs_File_OpenFlags flags)
     if (flags.mode == fs_OpenMode_read_write) open_flags |= O_RDWR;
     if (flags.nonblocking) open_flags |= O_NONBLOCK;
     if_(let handle = open(as$(const char*)(path.ptr), open_flags), handle < 0) {
-        return_err(fs_E_OpenFailed());
+        return_err(E_cause$fs_OpenFailed());
     } else {
         return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
     }
 #elif plat_is_windows
-    if (flags.nonblocking) return_err(fs_E_Unsupported());
+    if (flags.nonblocking) return_err(E_cause$fs_direct_Unsupported());
     var_(path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
+    if (!fs__direct_pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
     let handle = CreateFileA(
-        as$(LPCSTR)(ptr$A(path_z)), fs__direct_windowsAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, fs__direct_windowsFlags(), null);
+        as$(LPCSTR)(A_ptr(path_z)), fs__direct_windowsAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, fs__direct_windowsFlags(), null);
     if (handle == INVALID_HANDLE_VALUE) {
-        return_err(fs_E_OpenFailed());
+        return_err(E_cause$fs_OpenFailed());
     }
     return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
 #else
     let_ignore = path;
     let_ignore = flags;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1133,63 +1133,63 @@ fn_((fs_direct__Op_createFile(P$raw ctx, S_const$u8 path, fs_File_CreateFlags fl
     if (flags.exclusive) open_flags |= O_EXCL;
     if (flags.nonblocking) open_flags |= O_NONBLOCK;
     if_(let handle = open(as$(const char*)(path.ptr), open_flags, flags.mode), handle < 0) {
-        return_err(fs_E_OpenFailed());
+        return_err(E_cause$fs_OpenFailed());
     } else {
         return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
     }
 #elif plat_is_windows
-    if (flags.nonblocking) return_err(fs_E_Unsupported());
+    if (flags.nonblocking) return_err(E_cause$fs_direct_Unsupported());
     let disposition = flags.exclusive
                         ? CREATE_NEW
                         : (flags.truncate ? CREATE_ALWAYS : OPEN_ALWAYS);
     var_(path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
+    if (!fs__direct_pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
     let handle = CreateFileA(
-        as$(LPCSTR)(ptr$A(path_z)), fs__direct_windowsCreateAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null,
+        as$(LPCSTR)(A_ptr(path_z)), fs__direct_windowsCreateAccess(flags), FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null,
         as$(DWORD)(disposition), fs__direct_windowsFlags(), null);
     if (handle == INVALID_HANDLE_VALUE) {
-        return_err(fs_E_OpenFailed());
+        return_err(E_cause$fs_OpenFailed());
     }
     return_ok(fs_File_Handle_promote(handle, (fs_File_Flags){ .nonblocking = flags.nonblocking }));
 #else
     let_ignore = path;
     let_ignore = flags;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
 fn_((fs_direct__Op_deleteFile(P$raw ctx, S_const$u8 path))(E$void) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
-    if (unlink(as$(const char*)(path.ptr)) != 0) return_err(fs_E_NotFound());
+    if (unlink(as$(const char*)(path.ptr)) != 0) return_err(E_cause$fs_NotFound());
     return_ok({});
 #elif plat_is_windows
     var_(path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
-    if (!DeleteFileA(as$(LPCSTR)(ptr$A(path_z)))) return_err(fs_E_NotFound());
+    if (!fs__direct_pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
+    if (!DeleteFileA(as$(LPCSTR)(A_ptr(path_z)))) return_err(E_cause$fs_NotFound());
     return_ok({});
 #else
     let_ignore = path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
 fn_((fs_direct__Op_rename(P$raw ctx, S_const$u8 old_path, S_const$u8 new_path))(E$void) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
-    if (rename(as$(const char*)(old_path.ptr), as$(const char*)(new_path.ptr)) != 0) return_err(fs_E_NotFound());
+    if (rename(as$(const char*)(old_path.ptr), as$(const char*)(new_path.ptr)) != 0) return_err(E_cause$fs_NotFound());
     return_ok({});
 #elif plat_is_windows
     var_(old_path_z, A$$(32768, u8)) = A_zero();
     var_(new_path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(old_path, ptr$A(old_path_z), len$A(old_path_z))) return_err(fs_E_FileTooBig());
-    if (!fs__direct_pathZ(new_path, ptr$A(new_path_z), len$A(new_path_z))) return_err(fs_E_FileTooBig());
-    if (!MoveFileExA(as$(LPCSTR)(ptr$A(old_path_z)), as$(LPCSTR)(ptr$A(new_path_z)), MOVEFILE_REPLACE_EXISTING)) return_err(fs_E_WriteFailed());
+    if (!fs__direct_pathZ(old_path, A_ptr(old_path_z), A_len(old_path_z))) return_err(E_cause$fs_FileTooBig());
+    if (!fs__direct_pathZ(new_path, A_ptr(new_path_z), A_len(new_path_z))) return_err(E_cause$fs_FileTooBig());
+    if (!MoveFileExA(as$(LPCSTR)(A_ptr(old_path_z)), as$(LPCSTR)(A_ptr(new_path_z)), MOVEFILE_REPLACE_EXISTING)) return_err(E_cause$fs_WriteFailed());
     return_ok({});
 #else
     let_ignore = old_path;
     let_ignore = new_path;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1198,18 +1198,18 @@ fn_((fs_direct__Op_realpath(P$raw ctx, S_const$u8 path, S$u8 out_buf))(E$S$u8) $
 #if plat_is_posix
     let_ignore = path;
     let_ignore = out_buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #elif plat_is_windows
     var_(path_z, A$$(32768, u8)) = A_zero();
-    if (!fs__direct_pathZ(path, ptr$A(path_z), len$A(path_z))) return_err(fs_E_FileTooBig());
-    let len = GetFullPathNameA(as$(LPCSTR)(ptr$A(path_z)), as$(DWORD)(out_buf.len), as$(LPSTR)(out_buf.ptr), null);
-    if (len == 0) return_err(fs_E_NotFound());
-    if (out_buf.len < as$(usize)(len)) return_err(fs_E_FileTooBig());
+    if (!fs__direct_pathZ(path, A_ptr(path_z), A_len(path_z))) return_err(E_cause$fs_FileTooBig());
+    let len = GetFullPathNameA(as$(LPCSTR)(A_ptr(path_z)), as$(DWORD)(out_buf.len), as$(LPSTR)(out_buf.ptr), null);
+    if (len == 0) return_err(E_cause$fs_NotFound());
+    if (out_buf.len < as$(usize)(len)) return_err(E_cause$fs_FileTooBig());
     return_ok(S_slice((out_buf)$r(0, as$(usize)(len))));
 #else
     let_ignore = path;
     let_ignore = out_buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1243,7 +1243,7 @@ fn_((fs_direct__File_read(P$raw ctx, fs_File file, S$u8 buf))(E$usize) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
     if_(let len = read(file.handle, buf.ptr, buf.len), len < 0) {
-        return_err(fs_E_ReadFailed());
+        return_err(E_cause$fs_ReadFailed());
     } else {
         return_ok(as$(usize)(len));
     }
@@ -1252,13 +1252,13 @@ fn_((fs_direct__File_read(P$raw ctx, fs_File file, S$u8 buf))(E$usize) $scope) {
     if (!ReadFile(file.handle, buf.ptr, as$(DWORD)(buf.len), &bytes_read, null)) {
         let err = GetLastError();
         if (err == ERROR_HANDLE_EOF || err == ERROR_BROKEN_PIPE) return_ok(0);
-        return_err(fs_E_ReadFailed());
+        return_err(E_cause$fs_ReadFailed());
     }
     return_ok(as$(usize)(bytes_read));
 #else
     let_ignore = file;
     let_ignore = buf;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1266,20 +1266,20 @@ fn_((fs_direct__File_write(P$raw ctx, fs_File file, S_const$u8 bytes))(E$usize) 
     let_ignore = ctx;
 #if plat_is_posix
     if_(let len = write(file.handle, bytes.ptr, bytes.len), len < 0) {
-        return_err(fs_E_WriteFailed());
+        return_err(E_cause$fs_WriteFailed());
     } else {
         return_ok(as$(usize)(len));
     }
 #elif plat_is_windows
     var_(bytes_written, DWORD) = 0;
     if (!WriteFile(file.handle, bytes.ptr, as$(DWORD)(bytes.len), &bytes_written, null)) {
-        return_err(fs_E_WriteFailed());
+        return_err(E_cause$fs_WriteFailed());
     }
     return_ok(as$(usize)(bytes_written));
 #else
     let_ignore = file;
     let_ignore = bytes;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1287,7 +1287,7 @@ fn_((fs_direct__File_stat(P$raw ctx, fs_File file))(fs_E$fs_File_Stat) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
     var_(st, struct stat) = {};
-    if (fstat(file.handle, &st) != 0) return_err(fs_E_ReadFailed());
+    if (fstat(file.handle, &st) != 0) return_err(E_cause$fs_ReadFailed());
     return_ok((fs_File_Stat){
         .inode = as$(fs_INode)(st.st_ino),
         .nlink = as$(fs_NLink)(st.st_nlink),
@@ -1301,7 +1301,7 @@ fn_((fs_direct__File_stat(P$raw ctx, fs_File file))(fs_E$fs_File_Stat) $scope) {
     });
 #elif plat_is_windows
     var_(info, BY_HANDLE_FILE_INFORMATION) = {};
-    if (!GetFileInformationByHandle(file.handle, &info)) return_err(fs_E_ReadFailed());
+    if (!GetFileInformationByHandle(file.handle, &info)) return_err(E_cause$fs_ReadFailed());
     var_(size, ULARGE_INTEGER) = {};
     size.LowPart = info.nFileSizeLow;
     size.HighPart = info.nFileSizeHigh;
@@ -1318,21 +1318,21 @@ fn_((fs_direct__File_stat(P$raw ctx, fs_File file))(fs_E$fs_File_Stat) $scope) {
     });
 #else
     let_ignore = file;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
 fn_((fs_direct__File_sync(P$raw ctx, fs_File file))(E$void) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
-    if (fsync(file.handle) != 0) return_err(fs_E_WriteFailed());
+    if (fsync(file.handle) != 0) return_err(E_cause$fs_WriteFailed());
     return_ok({});
 #elif plat_is_windows
-    if (!FlushFileBuffers(file.handle)) return_err(fs_E_WriteFailed());
+    if (!FlushFileBuffers(file.handle)) return_err(E_cause$fs_WriteFailed());
     return_ok({});
 #else
     let_ignore = file;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1344,36 +1344,36 @@ fn_((fs_direct__File_isTty(P$raw ctx, fs_File file))(E$bool) $scope) {
     return_ok(GetFileType(file.handle) == FILE_TYPE_CHAR);
 #else
     let_ignore = file;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
 fn_((fs_direct__File_setLen(P$raw ctx, fs_File file, u64 new_len))(E$void) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
-    if (ftruncate(file.handle, as$(off_t)(new_len)) != 0) return_err(fs_E_WriteFailed());
+    if (ftruncate(file.handle, as$(off_t)(new_len)) != 0) return_err(E_cause$fs_WriteFailed());
     return_ok({});
 #elif plat_is_windows
     var_(pos, LARGE_INTEGER) = { .QuadPart = as$(LONGLONG)(new_len) };
-    if (!SetFilePointerEx(file.handle, pos, null, FILE_BEGIN)) return_err(fs_E_WriteFailed());
-    if (!SetEndOfFile(file.handle)) return_err(fs_E_WriteFailed());
+    if (!SetFilePointerEx(file.handle, pos, null, FILE_BEGIN)) return_err(E_cause$fs_WriteFailed());
+    if (!SetEndOfFile(file.handle)) return_err(E_cause$fs_WriteFailed());
     return_ok({});
 #else
     let_ignore = file;
     let_ignore = new_len;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
 fn_((fs_direct__File_setPerms(P$raw ctx, fs_File file, fs_File_Mode perms))(E$void) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
-    if (fchmod(file.handle, perms) != 0) return_err(fs_E_PermissionDenied());
+    if (fchmod(file.handle, perms) != 0) return_err(E_cause$fs_PermissionDenied());
     return_ok({});
 #else
     let_ignore = file;
     let_ignore = perms;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1381,25 +1381,25 @@ fn_((fs_direct__File_readPos(P$raw ctx, fs_File file, S$u8 buf, u64 offset))(E$u
     let_ignore = ctx;
 #if plat_is_posix
     if_(let len = pread(file.handle, buf.ptr, buf.len, as$(off_t)(offset)), len < 0) {
-        return_err(fs_E_ReadFailed());
+        return_err(E_cause$fs_ReadFailed());
     } else {
         return_ok(as$(usize)(len));
     }
 #elif plat_is_windows
     var_(distance, LARGE_INTEGER) = { .QuadPart = as$(LONGLONG)(offset) };
-    if (!SetFilePointerEx(file.handle, distance, null, FILE_BEGIN)) return_err(fs_E_ReadFailed());
+    if (!SetFilePointerEx(file.handle, distance, null, FILE_BEGIN)) return_err(E_cause$fs_ReadFailed());
     var_(bytes_read, DWORD) = 0;
     if (!ReadFile(file.handle, buf.ptr, as$(DWORD)(buf.len), &bytes_read, null)) {
         let err = GetLastError();
         if (err == ERROR_HANDLE_EOF || err == ERROR_BROKEN_PIPE) return_ok(0);
-        return_err(fs_E_ReadFailed());
+        return_err(E_cause$fs_ReadFailed());
     }
     return_ok(as$(usize)(bytes_read));
 #else
     let_ignore = file;
     let_ignore = buf;
     let_ignore = offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -1407,54 +1407,54 @@ fn_((fs_direct__File_writePos(P$raw ctx, fs_File file, S_const$u8 buf, u64 offse
     let_ignore = ctx;
 #if plat_is_posix
     if_(let len = pwrite(file.handle, buf.ptr, buf.len, as$(off_t)(offset)), len < 0) {
-        return_err(fs_E_WriteFailed());
+        return_err(E_cause$fs_WriteFailed());
     } else {
         return_ok(as$(usize)(len));
     }
 #elif plat_is_windows
     var_(distance, LARGE_INTEGER) = { .QuadPart = as$(LONGLONG)(offset) };
-    if (!SetFilePointerEx(file.handle, distance, null, FILE_BEGIN)) return_err(fs_E_WriteFailed());
+    if (!SetFilePointerEx(file.handle, distance, null, FILE_BEGIN)) return_err(E_cause$fs_WriteFailed());
     var_(bytes_written, DWORD) = 0;
     if (!WriteFile(file.handle, buf.ptr, as$(DWORD)(buf.len), &bytes_written, null)) {
-        return_err(fs_E_WriteFailed());
+        return_err(E_cause$fs_WriteFailed());
     }
     return_ok(as$(usize)(bytes_written));
 #else
     let_ignore = file;
     let_ignore = buf;
     let_ignore = offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
 fn_((fs_direct__File_seekBy(P$raw ctx, fs_File file, i64 rel_offset))(E$void) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
-    if (lseek(file.handle, as$(off_t)(rel_offset), SEEK_CUR) < 0) return_err(fs_E_ReadFailed());
+    if (lseek(file.handle, as$(off_t)(rel_offset), SEEK_CUR) < 0) return_err(E_cause$fs_File_ReadFailed());
     return_ok({});
 #elif plat_is_windows
     var_(distance, LARGE_INTEGER) = { .QuadPart = as$(LONGLONG)(rel_offset) };
-    if (!SetFilePointerEx(file.handle, distance, null, FILE_CURRENT)) return_err(fs_E_ReadFailed());
+    if (!SetFilePointerEx(file.handle, distance, null, FILE_CURRENT)) return_err(E_cause$fs_File_ReadFailed());
     return_ok({});
 #else
     let_ignore = file;
     let_ignore = rel_offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);
 
 fn_((fs_direct__File_seekTo(P$raw ctx, fs_File file, u64 abs_offset))(E$void) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
-    if (lseek(file.handle, as$(off_t)(abs_offset), SEEK_SET) < 0) return_err(fs_E_ReadFailed());
+    if (lseek(file.handle, as$(off_t)(abs_offset), SEEK_SET) < 0) return_err(E_cause$fs_File_ReadFailed());
     return_ok({});
 #elif plat_is_windows
     var_(distance, LARGE_INTEGER) = { .QuadPart = as$(LONGLONG)(abs_offset) };
-    if (!SetFilePointerEx(file.handle, distance, null, FILE_BEGIN)) return_err(fs_E_ReadFailed());
+    if (!SetFilePointerEx(file.handle, distance, null, FILE_BEGIN)) return_err(E_cause$fs_ReadFailed());
     return_ok({});
 #else
     let_ignore = file;
     let_ignore = abs_offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 #endif
 } $unscoped(fn);

@@ -350,7 +350,7 @@ fn_((Thrd__unsupported_handle(Thrd self))(Thrd_Handle)) {
 };
 
 fn_((Thrd__unsupported_yield(void))(Thrd_E$void) $scope) {
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_currId(void))(Thrd_Id)) {
@@ -358,19 +358,19 @@ fn_((Thrd__unsupported_currId(void))(Thrd_Id)) {
 };
 
 fn_((Thrd__unsupported_cpuCount(void))(Thrd_E$usize) $scope) {
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_spawn(
@@ -385,7 +385,7 @@ fn_((Thrd__unsupported_spawn(
     let_ignore = ret_type;
     let_ignore = destroy_clsr;
     let_ignore = owned_clsr;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__unsupported_detach(Thrd self))(void)) {
@@ -402,7 +402,7 @@ fn_((Thrd__pthread_handle(Thrd self))(Thrd_Handle)) {
 };
 
 fn_((Thrd__pthread_yield(void))(Thrd_E$void) $scope) {
-    if (sched_yield() != 0) return_err(E_cause$ThrdSystemResources());
+    if (sched_yield() != 0) return_err(E_cause$Thrd_SystemResources());
     return_ok({});
 } $unscoped(fn);
 
@@ -425,11 +425,11 @@ fn_((Thrd__pthread_cpuCount(void))(Thrd_E$usize) $scope) {
             var_(count, i32) = 0;
             var_(len, usize) = sizeOf$(i32);
             if (sysctlbyname("hw.logicalcpu", &count, &len, null, 0) == 0) return_ok(as$(usize)(count));
-            return_err(E_cause$ThrdSystemResources());
+            return_err(E_cause$Thrd_SystemResources());
         })),
         pp_default_({
             let count = sysconf(_SC_NPROCESSORS_ONLN);
-            if (count < 1) return_err(E_cause$ThrdSystemResources());
+            if (count < 1) return_err(E_cause$Thrd_SystemResources());
             return_ok(as$(usize)(count));
         })
     ));
@@ -461,7 +461,7 @@ fn_((Thrd__pthread_spawn(
     var_(handle, pthread_t) = 0;
     if (pthread_create(&handle, &attr, Thrd__pthread_entry, start) != 0) {
         Thrd__startFree(start);
-        return_err(E_cause$ThrdSystemResources());
+        return_err(E_cause$Thrd_SystemResources());
     }
     return_ok((Thrd){
         .handle = handle,
@@ -519,13 +519,13 @@ fn_((Thrd__windows_cpuCount(void))(Thrd_E$usize) $scope) {
 fn_((Thrd__windows_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__windows_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 #define Thrd__windows_stack_size_min (64 * 1024)
@@ -550,7 +550,7 @@ fn_((Thrd__windows_spawn(
     );
     if (!handle) {
         Thrd__startFree(start);
-        return_err(E_cause$ThrdSystemResources());
+        return_err(E_cause$Thrd_SystemResources());
     }
     ResumeThread(handle);
     return_ok((Thrd){
@@ -655,7 +655,7 @@ fn_((Thrd__linux_handle(Thrd self))(Thrd_Handle)) {
 };
 
 fn_((Thrd__linux_yield(void))(Thrd_E$void) $scope) {
-    if (sys_call_linux_sched_yield() != 0) return_err(E_cause$ThrdSystemResources());
+    if (sys_call_linux_sched_yield() != 0) return_err(E_cause$Thrd_SystemResources());
     return_ok({});
 } $unscoped(fn);
 
@@ -666,20 +666,20 @@ fn_((Thrd__linux_currId(void))(Thrd_Id)) {
 fn_((Thrd__linux_cpuCount(void))(Thrd_E$usize) $scope) {
     var_(cpu_set, Thrd__linux_CpuSet) = cleared();
     Thrd__linux_cpuSetZero(&cpu_set);
-    if (sys_call_linux_sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) return_err(E_cause$ThrdSystemResources());
+    if (sys_call_linux_sched_getaffinity(0, sizeOf$(TypeOf(cpu_set)), &cpu_set) != 0) return_err(E_cause$Thrd_SystemResources());
     return_ok(Thrd__linux_cpuSetCount(&cpu_set));
 } $unscoped(fn);
 
 fn_((Thrd__linux_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__linux_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 #define Thrd__linux_clone_flags ( \
@@ -704,10 +704,10 @@ fn_((Thrd__linux_spawn(
     let meta_size = mem_alignFwd(sizeOf$(Thrd__linux_Meta), alignOf$(Thrd__linux_Meta));
     let map_size = page_size + stack_size + meta_size;
     let map_base = orelse_((heap_vmem_reserve(null, map_size))(null));
-    if (map_base == null) return_err(E_cause$ThrdSystemResources());
+    if (map_base == null) return_err(E_cause$Thrd_SystemResources());
     errdefer_($ignore, heap_vmem_release(map_base, map_size));
     let stack_start = as$(u8*)(map_base) + page_size;
-    if (!heap_vmem_commit(stack_start, stack_size + meta_size)) return_err(E_cause$ThrdSystemResources());
+    if (!heap_vmem_commit(stack_start, stack_size + meta_size)) return_err(E_cause$Thrd_SystemResources());
     let meta = intToPtr$((Thrd__linux_Meta*)(ptrToInt(map_base) + page_size + stack_size));
     *meta = (Thrd__linux_Meta){
         .clsr = clsr,
@@ -725,7 +725,7 @@ fn_((Thrd__linux_spawn(
         null,
         ptrQualCast$((i32*)(&meta->child_tid.raw))
     );
-    if (tid == -1) return_err(E_cause$ThrdSystemResources());
+    if (tid == -1) return_err(E_cause$Thrd_SystemResources());
     return_ok((Thrd){
         .handle = as$(Thrd_Handle)(meta->parent_tid),
         .clsr = clsr,
@@ -851,7 +851,7 @@ fn_((Thrd__wasi_handle(Thrd self))(Thrd_Handle)) {
 };
 
 fn_((Thrd__wasi_yield(void))(Thrd_E$void) $scope) {
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_currId(void))(Thrd_Id)) {
@@ -859,19 +859,19 @@ fn_((Thrd__wasi_currId(void))(Thrd_Id)) {
 };
 
 fn_((Thrd__wasi_cpuCount(void))(Thrd_E$usize) $scope) {
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_getName(Thrd self, Thrd_NameBuf* buf_ptr))(Thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_setName(Thrd self, S_const$u8 name))(Thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_spawn(
@@ -886,7 +886,7 @@ fn_((Thrd__wasi_spawn(
     let_ignore = ret_type;
     let_ignore = destroy_clsr;
     let_ignore = owned_clsr;
-    return_err(E_cause$ThrdUnsupported());
+    return_err(E_cause$Thrd_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd__wasi_detach(Thrd self))(void)) {

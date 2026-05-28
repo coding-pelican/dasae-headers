@@ -28,11 +28,6 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((io_E)(
-    UnexpectedEof,
-    BufferTooSmall
-));
-
 $extern fn_((io_getStdIn(void))(fs_File));
 $extern fn_((io_getStdOut(void))(fs_File));
 $extern fn_((io_getStdErr(void))(fs_File));

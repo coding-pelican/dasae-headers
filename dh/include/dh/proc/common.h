@@ -12,16 +12,16 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((proc_E)(
-    AccessDeniedProc,
-    FileNotFoundProc,
-    InvalidExeProc,
-    InvalidNameProc,
-    NotDirProc,
-    OperationUnsupportedProc,
-    PermissionDeniedProc,
-    ProcessAlreadyExitedProc,
-    ResourceLimitReachedProc,
-    SystemResourcesProc
+    proc_AccessDenied,
+    proc_FileNotFound,
+    proc_InvalidExe,
+    proc_InvalidName,
+    proc_NotDir,
+    proc_OperationUnsupported,
+    proc_PermissionDenied,
+    proc_ProcessAlreadyExited,
+    proc_ResourceLimitReached,
+    proc_SystemResources
 ));
 
 T_alias$((proc_ArgExpansion)(enum_((proc_ArgExpansion $fits($packed))(

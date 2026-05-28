@@ -12,7 +12,7 @@
 $static fn_((test__openDirZ(P_const$u8 path_z))(E$fs_Dir) $scope) {
     let handle = CreateFileA(
         as$(LPCSTR)(path_z), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, null);
-    if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$OpenFailedFS());
+    if (handle == INVALID_HANDLE_VALUE) return_err(E_cause$fs_OpenFailed());
     return_ok((fs_Dir){ .handle = handle });
 } $unscoped(fn);
 
@@ -24,8 +24,8 @@ $static fn_((test__readPipeAll(fs_File file, S$u8 out))(E$S$u8) $scope) {
 
 $static fn_((test__fullPathZ(P_const$u8 path_z, S$u8 out))(E$S$u8) $scope) {
     let wrote = GetFullPathNameA(as$(LPCSTR)(path_z), as$(DWORD)(out.len), as$(LPSTR)(out.ptr), null);
-    if (wrote == 0) return_err(E_cause$OpenFailedFS());
-    if (wrote >= out.len) return_err(E_cause$FileTooBigFS());
+    if (wrote == 0) return_err(E_cause$fs_OpenFailed());
+    if (wrote >= out.len) return_err(E_cause$fs_FileTooBig());
     return_ok(S_slice((out)$r(0, as$(usize)(wrote))));
 } $unscoped(fn);
 #endif

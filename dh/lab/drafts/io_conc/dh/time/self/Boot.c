@@ -60,7 +60,7 @@ fn_((time_Boot_direct(void))(time_direct_E$time_Boot) $scope) {
             }));
         }),
         pp_else_({
-            return_err(time_direct_E_Unsupported());
+            return_err(E_cause$time_direct_Unsupported());
         })
     );
 } $unscoped(fn);
@@ -169,7 +169,7 @@ fn_((time_Boot_VTbl_unreachableNow(P$raw ctx))(time_Boot_Inst)) {
 fn_((time_Boot_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) $scope) {
     let_ignore = ctx;
     let_ignore = dur;
-    return_err(Sched_Cancelable_Canceled());
+    return_err(E_cause$Sched_Canceled());
 } $unscoped(fn);
 
 /*========== Direct Source Definitions ======================================*/

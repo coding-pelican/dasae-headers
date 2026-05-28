@@ -8,17 +8,20 @@
 /*========== Internal Declarations ==========================================*/
 
 $static fn_((io_direct__nl(P$raw ctx, io_Stream stream))(void));
+$static fn_((io_direct__crlf(P$raw ctx, io_Stream stream))(void));
 $static fn_((io_direct__printVaArgs(P$raw ctx, io_Stream stream, S_const$u8 fmt, va_list va_args))(void));
 
 /*========== External Definitions ===========================================*/
 
 let_(io_VTbl_noop, io_Self_VTbl) = {
     .nlFn = io_VTbl_noNL,
+    .crlfFn = io_VTbl_noCRLF,
     .printVaArgsFn = io_VTbl_noPrintVaArgs,
 };
 
 let_(io_VTbl_failing, io_Self_VTbl) = {
     .nlFn = io_VTbl_unreachableNL,
+    .crlfFn = io_VTbl_unreachableCRLF,
     .printVaArgsFn = io_VTbl_unreachablePrintVaArgs,
 };
 
@@ -43,6 +46,7 @@ fn_((io_direct(void))(io_direct_E$io_Self) $scope) {
     $static var_(ctx, io_direct__Ctx) = cleared();
     $static let_(vtbl, io_Self_VTbl) $like_ref = { {
         .nlFn = io_direct__nl,
+        .crlfFn = io_direct__crlf,
         .printVaArgsFn = io_direct__printVaArgs,
     } };
     $static var_(is_initialized, bool) = false;
@@ -73,6 +77,17 @@ fn_((io_VTbl_noNL(P$raw ctx, io_Stream stream))(void)) {
 };
 
 fn_((io_VTbl_unreachableNL(P$raw ctx, io_Stream stream))(void)) {
+    let_ignore = ctx;
+    let_ignore = stream;
+    claim_unreachable_msg("");
+};
+
+fn_((io_VTbl_noCRLF(P$raw ctx, io_Stream stream))(void)) {
+    let_ignore = ctx;
+    let_ignore = stream;
+};
+
+fn_((io_VTbl_unreachableCRLF(P$raw ctx, io_Stream stream))(void)) {
     let_ignore = ctx;
     let_ignore = stream;
     claim_unreachable_msg("");
@@ -109,6 +124,14 @@ $static fn_((io_direct__nl(P$raw ctx, io_Stream stream))(void)) {
     let self = ptrCast$((io_direct__Ctx*)(ensureNonnull(ctx)));
     var io = io_direct__fileIO(self, stream);
     catch_((io_Writer_nl(fs_File_IO_writer(&io)))(
+        $ignore, $do_nothing
+    ));
+};
+
+$static fn_((io_direct__crlf(P$raw ctx, io_Stream stream))(void)) {
+    let self = ptrCast$((io_direct__Ctx*)(ensureNonnull(ctx)));
+    var io = io_direct__fileIO(self, stream);
+    catch_((io_Writer_crlf(fs_File_IO_writer(&io)))(
         $ignore, $do_nothing
     ));
 };

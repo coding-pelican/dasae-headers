@@ -17,7 +17,7 @@ T_alias$((fs_NLink)(u64));
 T_alias$((fs_Mode)(sys_posix_mode_t));
 T_alias$((fs_BlockSize)(u32));
 
-errset_((fs_direct_E)(UnsupportedFS));
+errset_((fs_direct_E)(fs_direct_Unsupported));
 T_alias$((fs_Self)(struct fs_Self));
 T_decl_E$($set(fs_direct_E)(fs_Self));
 

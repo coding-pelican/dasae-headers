@@ -28,14 +28,14 @@ $static fn_((exec_Evented_IOCP__associate(P$raw ctx, exec_Evented_Handle handle,
     let self = ptrCast$((exec_Evented_IOCP*)(ensureNonnull(ctx)));
 #if plat_is_windows
     if (CreateIoCompletionPort(handle, self->port, as$(ULONG_PTR)(key), 0) == null) {
-        return_err(exec_Evented_E_AssociateFailed());
+        return_err(E_cause$exec_Evented_AssociateFailed());
     }
     return_ok({});
 #else
     let_ignore = self;
     let_ignore = handle;
     let_ignore = key;
-    return_err(exec_Evented_E_Unsupported());
+    return_err(E_cause$exec_Evented_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -50,7 +50,7 @@ $static fn_((exec_Evented_IOCP__poll(P$raw ctx, time_Dur timeout))(E$O$exec_Even
     if (!ok && ov == null) {
         let err = GetLastError();
         if (err == ERROR_TIMEOUT) return_ok(none());
-        return_err(exec_Evented_E_PollFailed());
+        return_err(E_cause$exec_Evented_PollFailed());
     }
     let os_err = ok ? as$(usize)(ERROR_SUCCESS) : as$(usize)(GetLastError());
     return_ok(some((exec_Evented_Completion){
@@ -58,11 +58,12 @@ $static fn_((exec_Evented_IOCP__poll(P$raw ctx, time_Dur timeout))(E$O$exec_Even
         .op = ov,
         .bytes = as$(usize)(bytes),
         .os_err = os_err,
-        .err = ok
-                 ? none()
-                 : some(as$(Err)(os_err == ERROR_OPERATION_ABORTED
-                                  ? exec_Evented_E_Canceled()
-                                  : exec_Evented_E_PollFailed())),
+        .err = ok ? none$((O$exec_Evented_Err))
+                  : some$((O$exec_Evented_Err)((
+                        os_err == ERROR_OPERATION_ABORTED
+                            ? E_cause$Sched_Canceled().any
+                            : E_cause$exec_Evented_PollFailed().any
+                    ))),
     }));
 #else
     let_ignore = self;
@@ -75,25 +76,25 @@ $static fn_((exec_Evented_IOCP__post(P$raw ctx, exec_Evented_Completion completi
     let self = ptrCast$((exec_Evented_IOCP*)(ensureNonnull(ctx)));
 #if plat_is_windows
     if (!PostQueuedCompletionStatus(self->port, as$(DWORD)(completion.bytes), as$(ULONG_PTR)(completion.key), as$(LPOVERLAPPED)(completion.op))) {
-        return_err(exec_Evented_E_PostFailed());
+        return_err(E_cause$exec_Evented_PostFailed());
     }
     return_ok({});
 #else
     let_ignore = self;
     let_ignore = completion;
-    return_err(exec_Evented_E_Unsupported());
+    return_err(E_cause$exec_Evented_Unsupported());
 #endif
 } $unscoped(fn);
 
 $static fn_((exec_Evented_IOCP__cancel(P$raw ctx, exec_Evented_Handle handle, P$raw op))(E$void) $scope) {
     let_ignore = ctx;
 #if plat_is_windows
-    if (!CancelIoEx(handle, as$(LPOVERLAPPED)(op))) return_err(exec_Evented_E_Canceled());
+    if (!CancelIoEx(handle, as$(LPOVERLAPPED)(op))) return_err(E_cause$Sched_Canceled());
     return_ok({});
 #else
     let_ignore = handle;
     let_ignore = op;
-    return_err(exec_Evented_E_Unsupported());
+    return_err(E_cause$exec_Evented_Unsupported());
 #endif
 } $unscoped(fn);
 
@@ -110,10 +111,10 @@ $static let_(exec_Evented_IOCP__vtbl, exec_Evented_VTbl) = {
 fn_((exec_Evented_IOCP_init(void))(exec_Evented_E$exec_Evented_IOCP) $scope) {
 #if plat_is_windows
     let port = CreateIoCompletionPort(INVALID_HANDLE_VALUE, null, 0, 0);
-    if (port == null) return_err(exec_Evented_E_OpenFailed());
+    if (port == null) return_err(E_cause$exec_Evented_OpenFailed());
     return_ok((exec_Evented_IOCP){ .port = port });
 #else
-    return_err(exec_Evented_E_Unsupported());
+    return_err(E_cause$exec_Evented_Unsupported());
 #endif
 } $unscoped(fn);
 

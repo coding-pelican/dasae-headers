@@ -30,7 +30,7 @@ fn_((utf8_codepointSeqLen(u32 codepoint))(utf8_E$utf8_SeqLen) $scope) {
     if (codepoint < 0x800) return_ok(utf8_SeqLen_2);
     if (codepoint < 0x10000) return_ok(utf8_SeqLen_3);
     if (codepoint < 0x110000) return_ok(utf8_SeqLen_4);
-    return_err(E_cause$UTF8TooLargeCodepoint());
+    return_err(E_cause$utf8_TooLargeCodepoint());
 } $unscoped(fn);
 
 fn_((utf8_byteSeqLen(u8 first_byte))(utf8_E$utf8_SeqLen) $scope) {
@@ -38,10 +38,10 @@ fn_((utf8_byteSeqLen(u8 first_byte))(utf8_E$utf8_SeqLen) $scope) {
     if ((first_byte & int_maskHi_static$((u8)(3))) == utf8_SeqByte_2) return_ok(utf8_SeqLen_2);
     if ((first_byte & int_maskHi_static$((u8)(4))) == utf8_SeqByte_3) return_ok(utf8_SeqLen_3);
     if ((first_byte & int_maskHi_static$((u8)(5))) == utf8_SeqByte_4) return_ok(utf8_SeqLen_4);
-    return_err(E_cause$UTF8InvalidStartByte());
+    return_err(E_cause$utf8_InvalidStartByte());
 } $unscoped(fn);
 
-fn_((utf8_encode(u32 codepoint, S$u8 out))(E$S$u8) $scope) {
+fn_((utf8_encode(u32 codepoint, S$u8 out))(utf8_encode_E$S$u8) $scope) {
     let requested_len = try_(utf8_codepointSeqLen(codepoint));
     if (requested_len >= out.len) return_err(E_cause$OutOfMemory());
     return_ok(try_(utf8__encode(codepoint, requested_len, out)));
@@ -62,7 +62,7 @@ fn_((utf8__encode(u32 codepoint, utf8_SeqLen requested_len, S$u8 out))(utf8_E$S$
         *S_at((out)[1]) = utf8__makeContinuationByte(intCast$((u8)(codepoint & int_maskLo_static$((u8)(6)))));
         break;
     case utf8_SeqLen_3:
-        if (utf16_isSurrogate(codepoint)) return_err(E_cause$UTF8EncodesSurrogateHalf());
+        if (utf16_isSurrogate(codepoint)) return_err(E_cause$utf8_EncodesSurrogateHalf());
         *S_at((out)[0]) = intCast$((u8)(utf8_SeqByte_3 | (codepoint >> 12)));
         *S_at((out)[1]) = utf8__makeContinuationByte(intCast$((u8)((codepoint >> 6) & int_maskLo_static$((u8)(6)))));
         *S_at((out)[2]) = utf8__makeContinuationByte(intCast$((u8)(codepoint & int_maskLo_static$((u8)(6)))));
@@ -78,9 +78,9 @@ fn_((utf8__encode(u32 codepoint, utf8_SeqLen requested_len, S$u8 out))(utf8_E$S$
 } $unscoped(fn);
 
 fn_((utf8_decode(S_const$u8 bytes))(utf8_E$u32) $scope) {
-    if (bytes.len == 0) return_err(E_cause$UTF8InvalidBytes());
+    if (bytes.len == 0) return_err(E_cause$utf8_InvalidBytes());
     let seq_len = try_(utf8_byteSeqLen(*S_at((bytes)[0])));
-    if (seq_len > bytes.len) return_err(E_cause$UTF8InvalidBytes());
+    if (seq_len > bytes.len) return_err(E_cause$utf8_InvalidBytes());
     return_(utf8__decodeSeqLen(bytes, seq_len));
 } $unscoped(fn);
 
@@ -97,35 +97,35 @@ fn_((utf8__decodeSeqLen(S_const$u8 bytes, utf8_SeqLen seq_len))(utf8_E$u32) $sco
 fn_((utf8_decode2(utf8_Decode2Buf bytes))(utf8_E$u32) $scope) {
     claim_assert((*A_at((bytes)[0]) & int_maskHi_static$((u8)(3))) == utf8_SeqByte_2);
     var_(val, u32) = *A_at((bytes)[0]) & int_maskLo_static$((u8)(5));
-    if (!utf8__isContinuation(*A_at((bytes)[1]))) return_err(E_cause$UTF8ExpectedContinuation());
+    if (!utf8__isContinuation(*A_at((bytes)[1]))) return_err(E_cause$utf8_ExpectedContinuation());
     val = (val << 6) | utf8__continuationPayload(*A_at((bytes)[1]));
-    if (val < 0x80) return_err(E_cause$UTF8OverlongEncoding());
+    if (val < 0x80) return_err(E_cause$utf8_OverlongEncoding());
     return_ok(val);
 } $unscoped(fn);
 
 fn_((utf8_decode3(utf8_Decode3Buf bytes))(utf8_E$u32) $scope) {
     claim_assert((*A_at((bytes)[0]) & int_maskHi_static$((u8)(4))) == utf8_SeqByte_3);
     var_(val, u32) = *A_at((bytes)[0]) & int_maskLo_static$((u8)(4));
-    if (!utf8__isContinuation(*A_at((bytes)[1]))) return_err(E_cause$UTF8ExpectedContinuation());
+    if (!utf8__isContinuation(*A_at((bytes)[1]))) return_err(E_cause$utf8_ExpectedContinuation());
     val = (val << 6) | utf8__continuationPayload(*A_at((bytes)[1]));
-    if (!utf8__isContinuation(*A_at((bytes)[2]))) return_err(E_cause$UTF8ExpectedContinuation());
+    if (!utf8__isContinuation(*A_at((bytes)[2]))) return_err(E_cause$utf8_ExpectedContinuation());
     val = (val << 6) | utf8__continuationPayload(*A_at((bytes)[2]));
-    if (val < 0x800) return_err(E_cause$UTF8OverlongEncoding());
-    if (utf16_isSurrogate(val)) return_err(E_cause$UTF8EncodesSurrogateHalf());
+    if (val < 0x800) return_err(E_cause$utf8_OverlongEncoding());
+    if (utf16_isSurrogate(val)) return_err(E_cause$utf8_EncodesSurrogateHalf());
     return_ok(val);
 } $unscoped(fn);
 
 fn_((utf8_decode4(utf8_Decode4Buf bytes))(utf8_E$u32) $scope) {
     claim_assert((*A_at((bytes)[0]) & int_maskHi_static$((u8)(5))) == utf8_SeqByte_4);
     var_(val, u32) = *A_at((bytes)[0]) & int_maskLo_static$((u8)(3));
-    if (!utf8__isContinuation(*A_at((bytes)[1]))) return_err(E_cause$UTF8ExpectedContinuation());
+    if (!utf8__isContinuation(*A_at((bytes)[1]))) return_err(E_cause$utf8_ExpectedContinuation());
     val = (val << 6) | utf8__continuationPayload(*A_at((bytes)[1]));
-    if (!utf8__isContinuation(*A_at((bytes)[2]))) return_err(E_cause$UTF8ExpectedContinuation());
+    if (!utf8__isContinuation(*A_at((bytes)[2]))) return_err(E_cause$utf8_ExpectedContinuation());
     val = (val << 6) | utf8__continuationPayload(*A_at((bytes)[2]));
-    if (!utf8__isContinuation(*A_at((bytes)[3]))) return_err(E_cause$UTF8ExpectedContinuation());
+    if (!utf8__isContinuation(*A_at((bytes)[3]))) return_err(E_cause$utf8_ExpectedContinuation());
     val = (val << 6) | utf8__continuationPayload(*A_at((bytes)[3]));
-    if (val < 0x10000) return_err(E_cause$UTF8OverlongEncoding());
-    if (val > 0x10FFFF) return_err(E_cause$UTF8TooLargeCodepoint());
+    if (val < 0x10000) return_err(E_cause$utf8_OverlongEncoding());
+    if (val > 0x10FFFF) return_err(E_cause$utf8_TooLargeCodepoint());
     return_ok(val);
 } $unscoped(fn);
 
@@ -206,7 +206,7 @@ fn_((utf8_count(S_const$u8 bytes))(usize) $scope) {
 } $unscoped(fn);
 
 fn_((utf8_view(S_const$u8 bytes))(utf8_E$utf8_View) $scope) {
-    if (!utf8_validate(bytes)) return_err(E_cause$UTF8InvalidBytes());
+    if (!utf8_validate(bytes)) return_err(E_cause$utf8_InvalidBytes());
     return_ok({ .bytes = bytes });
 } $unscoped(fn);
 

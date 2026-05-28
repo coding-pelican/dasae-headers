@@ -42,8 +42,16 @@ $static fn_((wtf8__encode(u32 codepoint, utf8_SeqLen requested_len, S$u8 out))(w
     return_ok(S_slice((out)$r(0, requested_len)));
 } $unscoped(fn);
 
-fn_((wtf8_encode(u32 codepoint, S$u8 out))(E$S$u8) $scope) {
-    let requested_len = try_(utf8_codepointSeqLen(codepoint));
+T_use_E$($set(wtf8_E)(utf8_SeqLen));
+$static fn_((wtf8_encode__handleUTF8(utf8_E$utf8_SeqLen result))(wtf8_E$utf8_SeqLen) $scope) {
+    return_ok(catch_((result)(err, switch ($suppress_(switch_enum)(E_tag$utf8_E(err))) {
+        case_((E_Tag$utf8_TooLargeCodepoint)) return_err(E_cause$wtf8_TooLargeCodepoint()) $end(case);
+        default_() claim_unreachable $end(default);
+    })));
+} $unscoped(fn);
+fn_((wtf8_encode(u32 codepoint, S$u8 out))(wtf8_encode_E$S$u8) $scope) {
+    let handleUTF8 = wtf8_encode__handleUTF8;
+    let requested_len = try_(handleUTF8(utf8_codepointSeqLen(codepoint)));
     if (requested_len >= out.len) return_err(E_cause$OutOfMemory());
     return_ok(try_(wtf8__encode(codepoint, requested_len, out)));
 } $unscoped(fn);
@@ -55,23 +63,31 @@ fn_((wtf8_encodeWithin(u32 codepoint, S$u8 out))(wtf8_E$S$u8) $scope) {
 $static fn_((wtf8__decode3(utf8_Decode3Buf bytes))(wtf8_E$u32) $scope) {
     claim_assert((*A_at((bytes)[0]) & int_maskHi_static$((u8)(4))) == utf8_SeqByte_3);
     var_(val, u32) = *A_at((bytes)[0]) & int_maskLo_static$((u8)(4));
-    if (!wtf8__isContinuation(*A_at((bytes)[1]))) return_err(E_cause$WTF8ExpectedContinuation());
+    if (!wtf8__isContinuation(*A_at((bytes)[1]))) return_err(E_cause$wtf8_ExpectedContinuation());
     val = (val << 6) | as$(u32)(wtf8__continuationPayload(*A_at((bytes)[1])));
-    if (!wtf8__isContinuation(*A_at((bytes)[2]))) return_err(E_cause$WTF8ExpectedContinuation());
+    if (!wtf8__isContinuation(*A_at((bytes)[2]))) return_err(E_cause$wtf8_ExpectedContinuation());
     val = (val << 6) | as$(u32)(wtf8__continuationPayload(*A_at((bytes)[2])));
-    if (val < 0x800) return_err(E_cause$WTF8OverlongEncoding());
+    if (val < 0x800) return_err(E_cause$wtf8_OverlongEncoding());
     return_ok(val);
 } $unscoped(fn);
 
+$static fn_((wtf8_decode__handleUTF8(utf8_E$u32 result))(wtf8_E$u32) $scope) {
+    return_ok(catch_((result)(err, switch ($suppress_(switch_enum)(E_tag$utf8_E(err))) {
+        case_((E_Tag$utf8_ExpectedContinuation)) return_err(E_cause$wtf8_ExpectedContinuation()) $end(case);
+        case_((E_Tag$utf8_OverlongEncoding)) return_err(E_cause$wtf8_OverlongEncoding()) $end(case);
+        default_() claim_unreachable $end(default);
+    })));
+} $unscoped(fn);
 fn_((wtf8_decode(S_const$u8 bytes))(wtf8_E$u32) $scope) {
-    if (bytes.len == 0) return_err(E_cause$WTF8InvalidStartByte());
+    let handleUTF8 = wtf8_decode__handleUTF8;
+    if (bytes.len == 0) return_err(E_cause$wtf8_InvalidStartByte());
     let seq_len = try_(utf8_byteSeqLen(*S_at((bytes)[0])));
-    if (seq_len > bytes.len) return_err(E_cause$WTF8InvalidStartByte());
+    if (seq_len > bytes.len) return_err(E_cause$wtf8_InvalidStartByte());
     switch (seq_len) {
     case utf8_SeqLen_1: return_ok(*S_at((bytes)[0]));
-    case utf8_SeqLen_2: return_ok(try_(utf8_decode2(S_deref$((const utf8_Decode2Buf)S_prefix((bytes)2)))));
+    case utf8_SeqLen_2: return_ok(try_(handleUTF8(utf8_decode2(S_deref$((const utf8_Decode2Buf)S_prefix((bytes)2))))));
     case utf8_SeqLen_3: return_ok(try_(wtf8__decode3(S_deref$((const utf8_Decode3Buf)S_prefix((bytes)3)))));
-    case utf8_SeqLen_4: return_ok(try_(utf8_decode4(S_deref$((const utf8_Decode4Buf)S_prefix((bytes)4)))));
+    case utf8_SeqLen_4: return_ok(try_(handleUTF8(utf8_decode4(S_deref$((const utf8_Decode4Buf)S_prefix((bytes)4))))));
     }
 } $unscoped(fn);
 
@@ -103,7 +119,7 @@ fn_((wtf8_count(S_const$u8 bytes))(usize) $scope) {
 } $unscoped(fn);
 
 fn_((wtf8_view(S_const$u8 bytes))(wtf8_E$wtf8_View) $scope) {
-    if (!wtf8_validate(bytes)) return_err(E_cause$WTF8InvalidStartByte());
+    if (!wtf8_validate(bytes)) return_err(E_cause$wtf8_InvalidStartByte());
     return_ok({ .bytes = bytes });
 } $unscoped(fn);
 

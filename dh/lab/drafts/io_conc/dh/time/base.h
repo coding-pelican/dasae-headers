@@ -17,7 +17,7 @@ T_alias$((time_Inst)(struct time_Inst));
 T_decl_O$(time_Inst);
 
 /* --- Error Types --- */
-errset_((time_direct_E)(UnsupportedTime));
+errset_((time_direct_E)(time_direct_Unsupported));
 
 /* --- Self Types --- */
 T_alias$((time_Real)(struct time_Real));

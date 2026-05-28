@@ -390,7 +390,7 @@ fn_((Thrd_Cond__windows_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Duratio
     );
     if (!rc) {
         debug_assert(GetLastError() == ERROR_TIMEOUT);
-        if (!timeout_overflowed) { return_err(E_cause$ThrdTimeout()); }
+        if (!timeout_overflowed) { return_err(E_cause$Thrd_Timeout()); }
     }
     return_ok({});
 } $unscoped(fn);

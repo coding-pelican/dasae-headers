@@ -79,7 +79,7 @@ fn_((fs_File_realpathAlloc(fs_File self, fs_Self fs, mem_Alctr gpa))(E$S$u8) $sc
     let_ignore = self;
     let_ignore = fs;
     let_ignore = gpa;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_File_io(fs_File self, fs_Self fs))(fs_File_IO)) {
@@ -96,7 +96,7 @@ fn_((fs_File_IO_reader(fs_File_IO* self))(io_Reader)) {
     claim_assert_nonnull(self);
     return (io_Reader){
         .ctx = self,
-        .read = fs_File_IO__read,
+        .readFn = fs_File_IO__read,
     };
 };
 
@@ -106,7 +106,7 @@ fn_((fs_File_IO_writer(fs_File_IO* self))(io_Writer)) {
     claim_assert_nonnull(self);
     return (io_Writer){
         .ctx = self,
-        .write = fs_File_IO__write,
+        .writeFn = fs_File_IO__write,
     };
 };
 

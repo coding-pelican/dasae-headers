@@ -83,7 +83,7 @@ $attr($branch_cold)
 fn_((Thrd_ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Duration timeout))(Thrd_ftx_E$void) $scope) {
     if (time_Duration_isZero(timeout)) {
         if (atom_V_load(ptr, atom_MemOrd_seq_cst) != expect) { return_ok({}); }
-        return_err(E_cause$ThrdTimeout());
+        return_err(E_cause$Thrd_Timeout());
     }
     return_(Thrd_ftx__wait(ptr, expect, some$((O$time_Duration)(timeout))));
 } $unscoped(fn);
@@ -117,7 +117,7 @@ fn_((Thrd_ftx__unsupported_wait(const atom_V$u32* ptr, u32 expect, O$time_Durati
     let_ignore = ptr;
     let_ignore = expect;
     let_ignore = timeout;
-    return_err(E_cause$UnsupportedFtx());
+    return_err(E_cause$Thrd_ftx_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd_ftx__unsupported_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
@@ -133,7 +133,7 @@ fn_((Thrd_ftx__pthread_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration t
     let_ignore = ptr;
     let_ignore = expect;
     let_ignore = timeout;
-    return_err(E_cause$UnsupportedFtx());
+    return_err(E_cause$Thrd_ftx_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd_ftx__pthread_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
@@ -158,7 +158,7 @@ fn_((Thrd_ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration t
         ptrQualCast$((volatile P$raw)(&ptr->raw)), &expect, sizeOf$(u32), timeout_ms);
     if (!rc && GetLastError() == ERROR_TIMEOUT) {
         claim_assert(isSome(timeout));
-        return_err(E_cause$ThrdTimeout());
+        return_err(E_cause$Thrd_Timeout());
     }
     return_ok({});
 } $unscoped(fn);
@@ -190,7 +190,7 @@ fn_((Thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration tim
     let rc = sys_call_linux_futex(ptrQualCast$((P$raw)(&ptr->raw)), sys_call_linux_FUTEX_WAIT | sys_call_linux_FUTEX_PRIVATE_FLAG, as$(sys_call_linux_word)(expect), ts_ptr, null, 0);
     if (rc == -sys_call_linux_ETIMEDOUT) {
         claim_assert(isSome(timeout));
-        return_err(E_cause$ThrdTimeout());
+        return_err(E_cause$Thrd_Timeout());
     }
     return_ok({});
 } $unscoped(fn);
@@ -231,9 +231,9 @@ fn_((Thrd_ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration ti
 #endif
     if (status < 0 && (-status) == sys_libc_darwin_ETIMEDOUT) {
 #if sys_libc_darwin_has_ulock_wait2
-        return_err(E_cause$ThrdTimeout());
+        return_err(E_cause$Thrd_Timeout());
 #else
-        if (!overflowed) { return_err(E_cause$ThrdTimeout()); }
+        if (!overflowed) { return_err(E_cause$Thrd_Timeout()); }
 #endif
     }
     return_ok({});
@@ -260,7 +260,7 @@ fn_((Thrd_ftx__wasi_wait(const atom_V$u32* ptr, u32 expect, O$time_Duration time
     let_ignore = ptr;
     let_ignore = expect;
     let_ignore = timeout;
-    return_err(E_cause$UnsupportedFtx());
+    return_err(E_cause$Thrd_ftx_Unsupported());
 } $unscoped(fn);
 
 fn_((Thrd_ftx__wasi_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {

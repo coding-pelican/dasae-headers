@@ -142,7 +142,7 @@ fn_((Sched_VTbl_failingSpawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sc
     let_ignore = ctx;
     let_ignore = result;
     let_ignore = inner;
-    return_err(E_cause$UnavailableConc());
+    return_err(E_cause$Sched_ConcUnavailable());
 } $unscoped(fn);
 
 fn_((Sched_VTbl_noAwait(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)) {
@@ -184,7 +184,7 @@ fn_((Sched__async(exec_Lane* ctx, u_P$raw result, P$$(Clsr$raw) inner))(O$P$Futu
 fn_((Sched__spawn(exec_Lane* ctx, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$FutureAny) $scope) {
     claim_assert_nonnull(ctx), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let task = orelse_((exec_Lane_spawnTask(ctx, result, inner))(
-        return_err(E_cause$UnavailableConc())
+        return_err(E_cause$Sched_ConcUnavailable())
     ));
     return_ok(task->as_any);
 } $unscoped(fn);

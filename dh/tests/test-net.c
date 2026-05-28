@@ -65,7 +65,7 @@ TEST_fn_("net: nonblocking accept returns WouldBlock before peer connects" $scop
     var server = try_(net_listenIp(&listen_addr, opts));
 
     let accepted_would_block = eval_(bool $scope)(catch_((net_Svr_accept(&server))(err, {
-        try_(TEST_expect(mem_eqlBytes(E_strfy(&err), u8_l("WouldBlockNet"))));
+        try_(TEST_expect(mem_eqlBytes(E_strfy(&err), u8_l("net_WouldBlock"))));
         $break_(true);
     }))) eval_(else)({
         $break_(false);

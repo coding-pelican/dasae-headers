@@ -105,26 +105,26 @@ extern "C" {
 
 errset_((fmt_Err)(
     // 1. Structural errors (format string structure)
-    FmtMissingClosingBrace, // Missing '}' after format spec
-    FmtUnexpectedEndOfFormat, // Format string ends unexpectedly
+    fmt_MissingClosingBrace, // Missing '}' after format spec
+    fmt_UnexpectedEndFormat, // Format string ends unexpectedly
 
     // 2. Index/Argument errors (argument indexing)
-    FmtInvalidIdxFormat, // Index format is malformed
-    FmtIdxOutOfBounds, // Index exceeds max_args (0-15)
-    FmtTooFewArgs, // Not enough arguments provided
-    FmtTooManyArgs, // Too many arguments provided
+    fmt_InvalidIdx, // Index format is malformed
+    fmt_IdxOutOfBounds, // Index exceeds max_args (0-15)
+    fmt_TooFewArgs, // Not enough arguments provided
+    fmt_TooManyArgs, // Too many arguments provided
 
     // 3. Format specifier component errors (parsing order)
-    FmtInvalidAlignFormat, // Invalid alignment character (<, >, ^)
-    FmtInvalidWidthFormat, // Invalid width value
-    FmtInvalidPrecisionFormat, // Invalid precision value
-    FmtInvalidSpecFormat, // General format spec error (catch-all)
+    fmt_InvalidAlign, // Invalid alignment character (<, >, ^)
+    fmt_InvalidWidth, // Invalid width value
+    fmt_InvalidPrecision, // Invalid precision value
+    fmt_InvalidSpec, // General format spec error (catch-all)
 
     // 4. Type-specific errors (when formatting specific types)
-    FmtInvalidBoolFormat, // Boolean formatting error
-    FmtInvalidIIntFormat, // Signed integer formatting/parsing error
-    FmtInvalidUIntFormat, // Unsigned integer formatting/parsing error
-    FmtInvalidFltFormat // Floating-point formatting/parsing error
+    fmt_InvalidBool, // Boolean formatting error
+    fmt_InvalidIInt, // Signed integer formatting/parsing error
+    fmt_InvalidUInt, // Unsigned integer formatting/parsing error
+    fmt_InvalidFlt // Floating-point formatting/parsing error
 ));
 
 typedef enum_((fmt_Align $fits($packed))(
@@ -222,16 +222,16 @@ typedef enum_((fmt_Sign $fits($packed))(
 )) fmt_Sign;
 
 typedef struct fmt_Spec {
-    O$u8 index;
-    O$u8 fill;
-    O$fmt_Align align;
-    fmt_Sign sign;
-    bool alt_form;
-    O$u8 width;
-    O$u8 precision;
-    O$fmt_TypePrefix type_prefix;
-    fmt_Type type;
-    fmt_Size size;
+    var_(idx, O$u8);
+    var_(fill, O$u8);
+    var_(align, O$fmt_Align);
+    var_(sign, fmt_Sign);
+    var_(alt_form, bool);
+    var_(width, O$u8);
+    var_(precision, O$u8);
+    var_(type_prefix, O$fmt_TypePrefix);
+    var_(type, fmt_Type);
+    var_(size, fmt_Size);
 } fmt_Spec;
 
 /// Maximum number of arguments

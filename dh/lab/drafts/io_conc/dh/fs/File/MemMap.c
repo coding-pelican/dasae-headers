@@ -17,7 +17,7 @@ fn_((fs_File_MemMap_init(
     let_ignore = undefined_contents;
     let_ignore = populate;
     let_ignore = offset;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_File_MemMap_fini(fs_File_MemMap* self, fs_Self fs))(void)) {
@@ -29,17 +29,17 @@ fn_((fs_File_MemMap_setLen(fs_File_MemMap* self, fs_Self fs, usize new_len))(fs_
     let_ignore = self;
     let_ignore = fs;
     let_ignore = new_len;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_File_MemMap_read(fs_File_MemMap* self, fs_Self fs))(fs_E$void) $scope) {
     let_ignore = self;
     let_ignore = fs;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
 
 fn_((fs_File_MemMap_write(fs_File_MemMap* self, fs_Self fs))(fs_E$void) $scope) {
     let_ignore = self;
     let_ignore = fs;
-    return_err(fs_E_Unsupported());
+    return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);

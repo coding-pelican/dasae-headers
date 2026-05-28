@@ -12,17 +12,17 @@ extern "C" {
 
 T_alias$((Sched)(struct Sched));
 
-errset_((Sched_ConcE)(UnavailableConc));
+errset_((Sched_ConcE)(Sched_ConcUnavailable));
 T_use_E$($set(Sched_ConcE)(P$FutureAny));
 T_use_E$($set(Sched_ConcE)(P$Future$raw));
 T_use_E$($set(Sched_ConcE)(V$Future$raw));
 
-errset_((Sched_Cancelable)(Canceled));
+errset_((Sched_Cancelable)(Sched_Canceled));
 T_use_E$($set(Sched_Cancelable)(P$FutureAny));
 T_use_E$($set(Sched_Cancelable)(P$Future$raw));
 T_use_E$($set(Sched_Cancelable)(V$Future$raw));
 
-errset_((Sched_TimeoutE)(Timeout));
+errset_((Sched_TimeoutE)(Sched_Timeout));
 
 #if defined(__cplusplus)
 } /* extern "C" */

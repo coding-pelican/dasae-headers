@@ -27,13 +27,12 @@ extern "C" {
 /// Re-using utf8_E for general encoding errors, or define utf16_E if specific needed.
 /// Commonly shared errors: ExpectedSecondSurrogateHalf, DanglingSurrogateHalf
 errset_((utf16_E)(
-    UTF16InvalidStartCodeUnit,
-    UTF16ExpectedSecondSurrogateHalf,
-    UTF16DanglingSurrogateHalf,
-    UTF16UnexpectedSecondSurrogateHalf,
-    UTF16CodepointTooLarge
+    utf16_InvalidStartCodeunit,
+    utf16_TooLargeCodepoint,
+    utf16_ExpectedSecondSurrogateHalf,
+    utf16_DanglingSurrogateHalf,
+    utf16_UnexpectedSecondSurrogateHalf
 ));
-
 /// Codeunit sequence length (1-2)
 typedef enum_((utf16_SeqLen $fits($packed))(
     utf16_SeqLen_1 = 1,
@@ -58,11 +57,13 @@ T_use_E$($set(utf16_E)(utf8_SeqLen));
 /// Returns bytes length (1-4) if encoded in UTF-8.
 $attr($must_check)
 $extern fn_((utf16_codepointSeqLen(u32 codepoint))(utf16_E$utf8_SeqLen));
-T_use_E$($set(utf16_E)(S$u16));
+errset_((utf16_encode_E)() $union_errset_(utf16_E, mem_E));
+T_use_E$($set(utf16_encode_E)(S$u16));
 /// Encodes a single codepoint into UTF-16 code units.
 /// Returns the slice of the written buffer.
 $attr($must_check) /* `utf16_E` + `mem_E` */
-$extern fn_((utf16_encode(u32 codepoint, S$u16 out))(E$S$u16));
+$extern fn_((utf16_encode(u32 codepoint, S$u16 out))(utf16_encode_E$S$u16));
+T_use_E$($set(utf16_E)(S$u16));
 $attr($must_check)
 $extern fn_((utf16_encodeWithin(u32 codepoint, S$u16 out))(utf16_E$S$u16));
 T_use_E$($set(utf16_E)(u32));

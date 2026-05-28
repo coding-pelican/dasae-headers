@@ -25,8 +25,8 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 errset_((io_E)(
-    UnexpectedEOF,
-    TooSmallBuffer
+    io_UnexpectedEOF,
+    io_TooSmallBuffer
 ));
 
 T_alias$((io_Reader)(struct io_Reader));

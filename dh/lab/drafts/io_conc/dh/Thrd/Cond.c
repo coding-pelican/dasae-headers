@@ -105,7 +105,7 @@ fn_((Thrd_Cond__pthread_wait(Thrd_Cond* self, Thrd_Mtx* mtx))(void)) {
 fn_((Thrd_Cond__pthread_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Dur duration))(Thrd_TimeoutE$void) $scope) {
     struct timespec abs_ts = cleared();
     if (clock_gettime(CLOCK_MONOTONIC, &abs_ts) != 0) {
-        return_err(E_cause$ThrdSystemResources()); /* TODO: Replace to specific error */
+        return_err(E_cause$Thrd_SystemResources()); /* TODO: Replace to specific error */
     }
     // Add duration to get absolute deadline
     abs_ts.tv_sec += as$(time_t)(duration.secs);
@@ -117,7 +117,7 @@ fn_((Thrd_Cond__pthread_timedWait(Thrd_Cond* self, Thrd_Mtx* mtx, time_Dur durat
     }
     switch (pthread_cond_timedwait(&self->impl, &mtx->impl, &abs_ts)) {
     case_((0 /* SUCCESS */)) return_ok({}) $end(case);
-    case_((ETIMEDOUT /* TIMED OUT */)) return_err(E_cause$Timeout()) $end(case);
+    case_((ETIMEDOUT /* TIMED OUT */)) return_err(E_cause$Sched_Timeout()) $end(case);
     default_() claim_unreachable $end(default);
     }
 } $unscoped(fn);
@@ -376,7 +376,7 @@ fn_((Thrd_Cond__windows_impl_wait(Thrd_Cond* self, Thrd_Mtx* mtx, O$time_Dur tim
     );
     if (!rc) {
         debug_assert(GetLastError() == ERROR_TIMEOUT);
-        if (!timeout_overflowed) { return_err(E_cause$Timeout()); }
+        if (!timeout_overflowed) { return_err(E_cause$Sched_Timeout()); }
     }
     return_ok({});
 } $unscoped(fn);

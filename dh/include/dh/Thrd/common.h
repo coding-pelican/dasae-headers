@@ -26,7 +26,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((Thrd_TimeoutE)(ThrdTimeout));
+errset_((Thrd_TimeoutE)(Thrd_Timeout));
 
 #if defined(__cplusplus)
 } /* extern "C" */

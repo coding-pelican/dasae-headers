@@ -39,8 +39,10 @@ $attr($must_check)
 $extern fn_((unicode_utf8ToUTF16Len(S_const$u8 utf8))(unicode_utf8_E$usize));
 /// Converts UTF-8 to UTF-16.
 /// Returns the slice of the written buffer.
-$attr($must_check) /* `utf8_E` + `unicode_mem_E` */
-$extern fn_((unicode_utf8ToUTF16(S_const$u8 utf8, S$u16 out))(E$S$u16));
+errset_((unicode_utf8ToUTF16_E)() $union_errset_(utf8_E, mem_E));
+T_use_E$($set(unicode_utf8ToUTF16_E)(S$u16));
+$attr($must_check)
+$extern fn_((unicode_utf8ToUTF16(S_const$u8 utf8, S$u16 out))(unicode_utf8ToUTF16_E$S$u16));
 typedef E$$($set(utf8_E)(S$u16)) unicode_utf8_E$S$u16;
 $attr($must_check)
 $extern fn_((unicode_utf8ToUTF16Within(S_const$u8 utf8, S$u16 out))(unicode_utf8_E$S$u16));
@@ -55,8 +57,10 @@ $attr($must_check)
 $extern fn_((unicode_utf16ToUTF8Len(S_const$u16 utf16))(unicode_utf16_E$usize));
 /// Converts UTF-16 to UTF-8.
 /// Returns the slice of the written buffer.
-$attr($must_check) /* utf16_E` + `unicode_mem_E` */
-$extern fn_((unicode_utf16ToUTF8(S_const$u16 utf16, S$u8 out))(E$S$u8));
+errset_((unicode_utf16ToUTF8_E)() $union_errset_(utf16_E, mem_E));
+T_use_E$($set(unicode_utf16ToUTF8_E)(S$u8));
+$attr($must_check)
+$extern fn_((unicode_utf16ToUTF8(S_const$u16 utf16, S$u8 out))(unicode_utf16ToUTF8_E$S$u8));
 typedef E$$($set(utf16_E)(S$u8)) unicode_utf16_E$S$u8;
 $attr($must_check)
 $extern fn_((unicode_utf16ToUTF8Within(S_const$u16 utf16, S$u8 out))(unicode_utf16_E$S$u8));
@@ -73,8 +77,10 @@ $extern fn_((unicode_utf16ToUTF8Alloc(S_const$u16 utf16, mem_Alctr gpa))(unicode
 /// Calculates bytes needed for WTF-8 to WTF-16 conversion.
 $extern fn_((unicode_wtf8ToWTF16Len(S_const$u8 wtf8))(usize));
 /// Converts WTF-8 to WTF-16 (Permissive).
-$attr($must_check) /* `wtf8_E` + `unicode_mem_E` */
-$extern fn_((unicode_wtf8ToWTF16(S_const$u8 wtf8, S$u16 out))(E$S$u16));
+errset_((unicode_wtf8ToWTF16_E)() $union_errset_(wtf8_E, mem_E));
+T_use_E$($set(unicode_wtf8ToWTF16_E)(S$u16));
+$attr($must_check)
+$extern fn_((unicode_wtf8ToWTF16(S_const$u8 wtf8, S$u16 out))(unicode_wtf8ToWTF16_E$S$u16));
 typedef E$$($set(wtf8_E)(S$u16)) unicode_wtf8_E$S$u16;
 $attr($must_check)
 $extern fn_((unicode_wtf8ToWTF16Within(S_const$u8 wtf8, S$u16 out))(unicode_wtf8_E$S$u16));

@@ -1,4 +1,5 @@
 #include "path.h"
+#include "dh/mem/common.h"
 
 $static fn_((fs_path__isSep(u8 c))(bool)) {
     return c == '/' || c == '\\';
@@ -6,7 +7,7 @@ $static fn_((fs_path__isSep(u8 c))(bool)) {
 
 #if UNUSED_CODE
 $static fn_((fs_path__copy(S$u8 out_buf, S_const$u8 src))(E$S$u8) $scope) {
-    if (out_buf.len < src.len) return_err(fs_path_E_BufferTooSmall());
+    if (out_buf.len < src.len) return_err(E_cause$fs_path_TooSmallBuffer());
     mem_copyBytes(S_slice((out_buf)$r(0, src.len)), src);
     return_ok(S_slice((out_buf)$r(0, src.len)));
 } $unscoped(fn);
@@ -63,7 +64,7 @@ fn_((fs_path_join2(S_const$u8 lhs, S_const$u8 rhs, S$u8 out_buf))(E$S$u8) $scope
     if (fs_path_isAbs(rhs)) return fs_path_normalize(rhs, out_buf);
     let need_sep = lhs.len != 0 && rhs.len != 0 && !fs_path__isSep(lhs.ptr[lhs.len - 1]);
     let len = lhs.len + rhs.len + (need_sep ? 1 : 0);
-    if (out_buf.len < len) return_err(fs_path_E_BufferTooSmall());
+    if (out_buf.len < len) return_err(E_cause$fs_path_TooSmallBuffer());
     var_(pos, usize) = 0;
     mem_copyBytes(S_slice((out_buf)$r(pos, pos + lhs.len)), lhs);
     pos += lhs.len;
@@ -82,7 +83,7 @@ fn_((fs_path_join2Alloc(S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(E$S$u8) 
 } $unscoped(fn);
 
 fn_((fs_path_normalize(S_const$u8 path, S$u8 out_buf))(E$S$u8) $scope) {
-    if (out_buf.len < path.len) return_err(fs_path_E_BufferTooSmall());
+    if (out_buf.len < path.len) return_err(E_cause$fs_path_TooSmallBuffer());
     var_(pos, usize) = 0;
     var_(prev_sep, bool) = false;
     for (usize i = 0; i < path.len; i += 1) {

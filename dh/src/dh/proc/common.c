@@ -23,16 +23,16 @@ $static fn_((proc__heapFree(u8* ptr))(void)) {
 $static fn_((proc__mapWinErr(DWORD err))(proc_E)) {
     switch (err) {
     case ERROR_FILE_NOT_FOUND: $fallthrough;
-    case ERROR_PATH_NOT_FOUND: return E_cause$FileNotFoundProc();
-    case ERROR_ACCESS_DENIED: return E_cause$AccessDeniedProc();
-    case ERROR_INVALID_NAME: return E_cause$InvalidNameProc();
-    case ERROR_DIRECTORY: return E_cause$NotDirProc();
+    case ERROR_PATH_NOT_FOUND: return E_cause$proc_FileNotFound();
+    case ERROR_ACCESS_DENIED: return E_cause$proc_AccessDenied();
+    case ERROR_INVALID_NAME: return E_cause$proc_InvalidName();
+    case ERROR_DIRECTORY: return E_cause$proc_NotDir();
     case ERROR_NOT_ENOUGH_MEMORY: $fallthrough;
     case ERROR_OUTOFMEMORY: $fallthrough;
-    case ERROR_NO_SYSTEM_RESOURCES: return E_cause$SystemResourcesProc();
+    case ERROR_NO_SYSTEM_RESOURCES: return E_cause$proc_SystemResources();
     case ERROR_TOO_MANY_OPEN_FILES: $fallthrough;
-    case ERROR_SHARING_BUFFER_EXCEEDED: return E_cause$ResourceLimitReachedProc();
-    default_() return E_cause$SystemResourcesProc() $end(default);
+    case ERROR_SHARING_BUFFER_EXCEEDED: return E_cause$proc_ResourceLimitReached();
+    default_() return E_cause$proc_SystemResources() $end(default);
     }
 }
 #endif
@@ -94,7 +94,7 @@ $static fn_((proc__ownedBuf_free(proc__OwnedBuf* self))(void)) {
 
 $static fn_((proc__dupSliceZ(S_const$u8 src))(E$proc__OwnedBuf) $scope) {
     let buf = proc__heapAlloc(src.len + 1);
-    if (buf == null) return_err(E_cause$SystemResourcesProc());
+    if (buf == null) return_err(E_cause$proc_SystemResources());
     let out = P_prefix$((S$u8)(buf)(src.len + 1));
     mem_copyBytes(S_prefix((out)(src.len)), src);
     *S_at((out)[src.len]) = 0;
@@ -123,7 +123,7 @@ $static fn_((proc__dirPathAlloc(fs_Dir dir))(E$proc__OwnedBuf) $guard) {
     let need = GetFinalPathNameByHandleA(dir.handle, null, 0, 0);
     if (need == 0) return_err(proc__mapWinErr(GetLastError()));
     let buf = proc__heapAlloc(as$(usize)(need) + 1);
-    if (buf == null) return_err(E_cause$SystemResourcesProc());
+    if (buf == null) return_err(E_cause$proc_SystemResources());
     errdefer_($ignore, proc__heapFree(buf));
     let wrote = GetFinalPathNameByHandleA(dir.handle, as$(LPSTR)(buf), need + 1, 0);
     if (wrote == 0) return_err(proc__mapWinErr(GetLastError()));
@@ -137,14 +137,14 @@ $static fn_((proc__dirPathAlloc(fs_Dir dir))(E$proc__OwnedBuf) $guard) {
 
 $static fn_((proc__resolvePathAlloc(S_const$u8 base, S_const$u8 sub_path))(E$proc__OwnedBuf) $guard) {
     if (fs_path_isAbs(sub_path)) return_(proc__dupSliceZ(sub_path));
-    let base_sub_len = orelse_((usize_addChkd(base.len, sub_path.len))(return_err(E_cause$SystemResourcesProc())));
-    let cap = orelse_((usize_addChkd(base_sub_len, usize_(2)))(return_err(E_cause$SystemResourcesProc())));
+    let base_sub_len = orelse_((usize_addChkd(base.len, sub_path.len))(return_err(E_cause$proc_SystemResources())));
+    let cap = orelse_((usize_addChkd(base_sub_len, usize_(2)))(return_err(E_cause$proc_SystemResources())));
     let buf = proc__heapAlloc(cap);
-    if (buf == null) return_err(E_cause$SystemResourcesProc());
+    if (buf == null) return_err(E_cause$proc_SystemResources());
     errdefer_($ignore, proc__heapFree(buf));
     let out = P_prefix$((S$u8)(buf)(cap));
     let joined = catch_((fs_path_join2(base, sub_path, S_prefix((out)(cap - 1))))($ignore, {
-        return_err(E_cause$SystemResourcesProc());
+        return_err(E_cause$proc_SystemResources());
     }));
     *S_at((out)[joined.len]) = 0;
     return_ok((proc__OwnedBuf){
@@ -164,7 +164,7 @@ $static fn_((proc__envBlockAlloc(S$S_const$u8 env))(E$proc__OwnedBuf) $scope) {
     for_(($s(env))(item)) { len += item->len + 1; } $end(for);
 
     let buf = proc__heapAlloc(len);
-    if (buf == null) return_err(E_cause$SystemResourcesProc());
+    if (buf == null) return_err(E_cause$proc_SystemResources());
 
     let out = P_prefix$((S$u8)(buf)(len));
     var_(pos, usize) = 0;
@@ -249,7 +249,7 @@ $static fn_((proc__resolveStdIO(proc_StdIO spec, DWORD std_id))(E$proc__Resolved
             .needs_close_child = true,
         });
     }
-    default_() return_err(E_cause$OperationUnsupportedProc()) $end(default);
+    default_() return_err(E_cause$proc_OperationUnsupported()) $end(default);
     }
 } $unscoped(fn);
 
@@ -291,24 +291,24 @@ $static fn_((proc__commandLine(S$S_const$u8 argv, S$u8 out))(E$S$u8) $scope) {
     var_(used, usize) = 0;
     for_(($rf(0), $s(argv))(i, arg)) {
         if (i != 0) {
-            if (used + 1 > out.len) return_err(E_cause$ResourceLimitReachedProc());
+            if (used + 1 > out.len) return_err(E_cause$proc_ResourceLimitReached());
             *S_at((out)[used++]) = u8_c(' ');
         }
-        used = orelse_((proc__appendQuoted(out, used, *arg))(return_err(E_cause$ResourceLimitReachedProc())));
+        used = orelse_((proc__appendQuoted(out, used, *arg))(return_err(E_cause$proc_ResourceLimitReached())));
     } $end(for);
-    if (used >= out.len) return_err(E_cause$ResourceLimitReachedProc());
+    if (used >= out.len) return_err(E_cause$proc_ResourceLimitReached());
     *S_at((out)[used]) = 0;
     return_ok(S_prefix((out)(used)));
 } $unscoped(fn);
 
 $static fn_((proc__spawnImpl(proc_Cmd cmd, LPCSTR application_name, LPCSTR current_dir))(E$proc_Child) $guard) {
-    if (cmd.argv.len == 0) return_err(E_cause$InvalidNameProc());
+    if (cmd.argv.len == 0) return_err(E_cause$proc_InvalidName());
 
     var_(cmdline_buf, proc__OwnedBuf) = {
         .ptr = proc__heapAlloc(proc__path_max),
         .len = proc__path_max,
     };
-    if (cmdline_buf.ptr == null) return_err(E_cause$SystemResourcesProc());
+    if (cmdline_buf.ptr == null) return_err(E_cause$proc_SystemResources());
     errdefer_($ignore, proc__ownedBuf_free(&cmdline_buf));
     let _cmdline = try_(proc__commandLine(cmd.argv, P_prefix$((S$u8)(cmdline_buf.ptr)(cmdline_buf.len))));
     let_ignore = _cmdline;
@@ -369,14 +369,14 @@ $static fn_((proc__spawnImpl(proc_Cmd cmd, LPCSTR application_name, LPCSTR curre
 
 fn_((proc_executablePath(S$u8 out_buf))(E$S$u8) $scope) {
 #if plat_is_windows
-    if (out_buf.len == 0) return_err(E_cause$ResourceLimitReachedProc());
+    if (out_buf.len == 0) return_err(E_cause$proc_ResourceLimitReached());
     let wrote = GetModuleFileNameA(null, as$(LPSTR)(out_buf.ptr), as$(DWORD)(out_buf.len));
     if (wrote == 0) return_err(proc__mapWinErr(GetLastError()));
-    if (wrote >= out_buf.len) return_err(E_cause$ResourceLimitReachedProc());
+    if (wrote >= out_buf.len) return_err(E_cause$proc_ResourceLimitReached());
     return_ok(S_prefix((out_buf)(as$(usize)(wrote))));
 #else
     let_ignore = out_buf;
-    return_err(E_cause$OperationUnsupportedProc());
+    return_err(E_cause$proc_OperationUnsupported());
 #endif
 } $unscoped(fn);
 
@@ -384,11 +384,11 @@ fn_((proc_currentPath(S$u8 out_buf))(E$S$u8) $scope) {
 #if plat_is_windows
     let wrote = GetCurrentDirectoryA(as$(DWORD)(out_buf.len), as$(LPSTR)(out_buf.ptr));
     if (wrote == 0) return_err(proc__mapWinErr(GetLastError()));
-    if (wrote >= out_buf.len) return_err(E_cause$ResourceLimitReachedProc());
+    if (wrote >= out_buf.len) return_err(E_cause$proc_ResourceLimitReached());
     return_ok(S_prefix((out_buf)(as$(usize)(wrote))));
 #else
     let_ignore = out_buf;
-    return_err(E_cause$OperationUnsupportedProc());
+    return_err(E_cause$proc_OperationUnsupported());
 #endif
 } $unscoped(fn);
 
@@ -402,7 +402,7 @@ fn_((proc_setCurrentPath(S_const$u8 path))(E$void) $guard) {
     return_ok({});
 #else
     let_ignore = path;
-    return_err(E_cause$OperationUnsupportedProc());
+    return_err(E_cause$proc_OperationUnsupported());
 #endif
 } $unguarded(fn);
 
@@ -415,13 +415,13 @@ fn_((proc_spawn(proc_Cmd cmd))(E$proc_Child) $guard) {
     return_ok(child);
 #else
     let_ignore = cmd;
-    return_err(E_cause$OperationUnsupportedProc());
+    return_err(E_cause$proc_OperationUnsupported());
 #endif
 } $unguarded(fn);
 
 fn_((proc_spawnPath(fs_Dir dir, proc_Cmd cmd))(E$proc_Child) $guard) {
 #if plat_is_windows
-    if (cmd.argv.len == 0) return_err(E_cause$InvalidNameProc());
+    if (cmd.argv.len == 0) return_err(E_cause$proc_InvalidName());
     var_(base, proc__OwnedBuf) = try_(proc__dirPathAlloc(dir));
     defer_(proc__ownedBuf_free(&base));
     var_(exe_path, proc__OwnedBuf) = try_(proc__resolvePathAlloc(P_prefix$((S$u8)(base.ptr)(base.len)).as_const, *S_at((cmd.argv)[0])));
@@ -431,17 +431,17 @@ fn_((proc_spawnPath(fs_Dir dir, proc_Cmd cmd))(E$proc_Child) $guard) {
 #else
     let_ignore = dir;
     let_ignore = cmd;
-    return_err(E_cause$OperationUnsupportedProc());
+    return_err(E_cause$proc_OperationUnsupported());
 #endif
 } $unguarded(fn);
 
 fn_((proc_replace(proc_Cmd cmd))(E$void) $scope) {
     let_ignore = cmd;
-    return_err(E_cause$OperationUnsupportedProc());
+    return_err(E_cause$proc_OperationUnsupported());
 } $unscoped(fn);
 
 fn_((proc_replacePath(fs_Dir dir, proc_Cmd cmd))(E$void) $scope) {
     let_ignore = dir;
     let_ignore = cmd;
-    return_err(E_cause$OperationUnsupportedProc());
+    return_err(E_cause$proc_OperationUnsupported());
 } $unscoped(fn);

@@ -15,7 +15,7 @@ T_alias$((net_Handle)(sys_posix_fd_t));
 T_alias$((net_Sock)(struct net_Sock));
 T_decl_E$(net_Sock);
 
-errset_((net_direct_E)(UnsupportedNet));
+errset_((net_direct_E)(net_direct_Unsupported));
 T_alias$((net_Self)(struct net_Self));
 T_decl_E$($set(net_direct_E)(net_Self));
 

@@ -17,15 +17,15 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
+#include "base.h"
 
 /*========== Macros and Declarations ========================================*/
 
-typedef struct io_Writer {
+struct io_Writer {
     var_(ctx, P$raw);
     $attr($must_check)
-    fn_(((*write)(P$raw ctx, S_const$u8 bytes))(E$usize));
-} io_Writer;
+    fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(E$usize));
+};
 
 $attr($must_check)
 $extern fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(E$usize));
@@ -40,6 +40,8 @@ $extern fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void));
 
 $attr($must_check)
 $extern fn_((io_Writer_nl(io_Writer self))(E$void));
+$attr($must_check)
+$extern fn_((io_Writer_crlf(io_Writer self))(E$void));
 $attr($must_check)
 $extern fn_((io_Writer_print(io_Writer self, S_const$u8 fmt, ...))(E$void));
 $attr($must_check)

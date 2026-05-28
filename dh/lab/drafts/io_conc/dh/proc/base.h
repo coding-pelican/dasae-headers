@@ -16,7 +16,7 @@ T_alias$((proc_Handle)(sys_posix_fd_t));
 T_alias$((proc_Child)(struct proc_Child));
 T_decl_E$(proc_Child);
 
-errset_((proc_direct_E)(UnsupportedProc));
+errset_((proc_direct_E)(proc_direct_Unsupported));
 T_alias$((proc_Self)(struct proc_Self));
 T_decl_E$($set(proc_direct_E)(proc_Self));
 

@@ -29,6 +29,6 @@ fn_((net_Svr_accept(net_Svr* self))(E$net_Stream) $scope) {
     });
 #else
     let_ignore = self;
-    return_err(E_cause$SystemResourcesNet());
+    return_err(E_cause$net_SystemResources());
 #endif
 } $unscoped(fn);
