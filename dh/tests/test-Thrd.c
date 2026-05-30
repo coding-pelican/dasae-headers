@@ -12,7 +12,8 @@ T_use_thrd_spawn$(i32);
 T_use_thrd_join$(i32);
 
 $static fn_((test__double(i32 value))(i32)) {
-    catch_((time_sleep(time_Dur_fromMillis(1)))($ignore, $do_nothing));
+    let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
+    catch_((time_Awake_sleepMillis(clock, 1))($ignore, $do_nothing));
     return value * 2;
 };
 fn_use_Clsr_((test__double)(i32)(i32));
@@ -78,7 +79,7 @@ TEST_fn_("thrd: spawn and join coroutine closure" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("thrd: WaitGroup spawn detached closure" $guard) {
+TEST_fn_("thrd/WaitGroup: spawn detached closure" $guard) {
     var sys_heap = heap_Sys_init();
     defer_(heap_Sys_fini(&sys_heap));
 

@@ -63,7 +63,7 @@ let_(Sched_failing, Sched) = {
 fn_((Sched_async(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw)) {
     claim_assert_nonnull(clsr);
     claim_assert_nonnull(ret_mem);
-    debug_assert_eqBy(ret_mem->type, ret_ty, TypeInfo_eql);
+    ret_mem->type = $typing(ret_ty);
     let result = Future_resultMut(ret_mem, ret_ty);
     ret_mem->any_future = self.vtbl->asyncFn(self.ctx, result, clsr);
     return ret_mem;
@@ -72,7 +72,7 @@ fn_((Sched_async(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$raw ret_m
 fn_((Sched_spawn(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw) $scope) {
     claim_assert_nonnull(clsr);
     claim_assert_nonnull(ret_mem);
-    debug_assert_eqBy(ret_mem->type, ret_ty, TypeInfo_eql);
+    ret_mem->type = $typing(ret_ty);
     let result = Future_resultMut(ret_mem, ret_ty);
     asg_l((&ret_mem->any_future)(some(try_(self.vtbl->spawnFn(self.ctx, result, clsr)))));
     return_ok(ret_mem);
@@ -246,8 +246,7 @@ fn_((Sched_coop__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void)
         let deadline = orelse_((exec_LaneTimed_nextTimerDeadline(&self->timed))(break));
         let remaining = exec_LaneTimed_remaining(&self->timed, deadline);
         if (time_Dur_isZero(remaining)) continue;
-        // catch_((self->timed.clock.vtbl->sleepFn(self->timed.clock.ctx, remaining))($ignore, $do_nothing));
-        catch_((time_sleep(remaining))($ignore, $do_nothing));
+        catch_((time_Awake_sleep(self->timed.clock, remaining))($ignore, $do_nothing));
     }
     if (exec_Task_isDone(task)) exec_Task_copyToResult(task, result);
 };
@@ -281,8 +280,8 @@ fn_((Sched_preem__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void
     claim_assert_nonnull(result.raw);
     let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
     let task = ptrAlignCast$((exec_Preem_Task*)(ensureNonnull(any_future)));
-    let_ignore = result;
     let_ignore = thrd_join(task->thrd);
+    if (task->state == exec_Task_State_done) u_memcpy(result, task->result.as_const);
     exec_Preem_unlinkTask(self, task);
     exec_Preem_destroyTask(self, task);
 };
@@ -291,9 +290,12 @@ fn_((Sched_preem__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(voi
     claim_assert_nonnull(result.raw);
     let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
     let task = ptrAlignCast$((exec_Preem_Task*)(ensureNonnull(any_future)));
-    let_ignore = result;
-    task->state = exec_Task_State_canceled;
-    let_ignore = thrd_join(task->thrd);
+    if (task->state == exec_Task_State_done) {
+        u_memcpy(result, task->result.as_const);
+    } else {
+        task->state = exec_Task_State_canceled;
+        let_ignore = thrd_join(task->thrd);
+    }
     exec_Preem_unlinkTask(self, task);
     exec_Preem_destroyTask(self, task);
 };

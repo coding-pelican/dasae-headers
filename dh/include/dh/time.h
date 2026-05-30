@@ -31,7 +31,7 @@ extern "C" {
 #include "time/Dur.h"
 #include "time/Inst.h"
 #include "time/self.h"
-#include "time/SysTime.h"
+#include "time/Clock.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

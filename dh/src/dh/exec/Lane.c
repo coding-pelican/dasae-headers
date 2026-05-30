@@ -8,6 +8,25 @@ $static fn_((exec_Lane__createTask(
     P$$(Clsr$raw) inner
 ))(E$P$exec_Task));
 $static fn_((exec_Lane__destroyTask(exec_Lane* self, exec_Task* task))(void));
+$static fn_((exec_Task__slabBytes(TypeInfo result_ty))(usize));
+$static fn_((exec_Task__resultMut(exec_Task* self, TypeInfo type))(u_P$raw));
+$static fn_((exec_Task__freeSlab(exec_Task* self, mem_Alctr gpa))(void));
+
+fn_((exec_Task__slabBytes(TypeInfo result_ty))(usize)) {
+    return mem_alignFwd(sizeOf$(exec_Task), mem_log2ToAlign(result_ty.log2_align)) + result_ty.size;
+};
+fn_((exec_Task__resultMut(exec_Task* self, TypeInfo type))(u_P$raw)) {
+    claim_assert_nonnull(self);
+    return (u_P$raw){
+        .raw = intToPtr$((u8*)(ptrToInt(self) + mem_alignFwd(sizeOf$(exec_Task), mem_log2ToAlign(type.log2_align)))),
+        .type = type,
+    };
+};
+fn_((exec_Task__freeSlab(exec_Task* self, mem_Alctr gpa))(void)) {
+    claim_assert_nonnull(self);
+    let bytes = exec_Task__slabBytes(self->result.type);
+    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Task));
+};
 
 fn_((exec_Lane__workFiber(P$raw owner, P$raw any_task))(void)) {
     let self = ptrAlignCast$((exec_Lane*)(ensureNonnull(owner)));
@@ -28,11 +47,25 @@ fn_((exec_Lane__createTask(
     P$$(Clsr$raw) inner
 ))(E$P$exec_Task) $guard) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
-    let task = try_(mem_Alctr_create$exec_Task($trace self->gpa));
-    errdefer_($ignore, mem_Alctr_destroy$exec_Task($trace self->gpa, task));
+    if (exec_kind(inner) == exec_Task_Kind_stackful) {
+        let task = try_(mem_Alctr_create$exec_Task($trace self->gpa));
+        return_ok(asg_l((task)({
+            .state = state,
+            .result = cleared(),
+            .inner = inner,
+            .fiber = none(),
+        })));
+    }
+    let bytes = exec_Task__slabBytes(result.type);
+    let mem = orelse_((mem_Alctr_rawAlloc($trace self->gpa, bytes, alignOfLog2$(exec_Task)))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let task = ptrAlignCast$((exec_Task*)(mem));
+    errdefer_($ignore, exec_Task__freeSlab(task, self->gpa));
+    mem_set0Bytes(P_prefix$((S$u8)(mem)(bytes)));
     return_ok(asg_l((task)({
         .state = state,
-        .result = result,
+        .result = exec_Task__resultMut(task, result.type),
         .inner = inner,
         .fiber = none(),
     })));
@@ -40,8 +73,16 @@ fn_((exec_Lane__createTask(
 
 fn_((exec_Lane__destroyTask(exec_Lane* self, exec_Task* task))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(task);
-    if_some((task->fiber)(fiber)) exec_Fiber_fini(fiber, self->gpa);
-    mem_Alctr_destroy($trace self->gpa, u_anyP(task));
+    if_some((task->fiber)(fiber)) {
+        exec_Fiber_fini(fiber, self->gpa);
+        mem_Alctr_destroy$exec_Task($trace self->gpa, task);
+        return;
+    }
+    if (isNonnull(task->result.raw)) {
+        exec_Task__freeSlab(task, self->gpa);
+        return;
+    }
+    mem_Alctr_destroy$exec_Task($trace self->gpa, task);
 };
 
 T_use$((P$exec_Task)(ArrList_empty, ArrQue_empty));
@@ -90,12 +131,13 @@ fn_((exec_Lane_createReadyTask(
         $ignore, return_none()
     ));
     if (exec_kind(inner) == exec_Task_Kind_stackful) {
-        let fiber = catch_((exec_Fiber_init(self->gpa, self, task, exec_Lane__workFiber))(
+        let fiber = catch_((exec_Fiber_init(self->gpa, self, task, exec_Lane__workFiber, result.type))(
             $ignore, {
                 exec_Lane__destroyTask(self, task);
                 return_none();
             }
         ));
+        asg_l((&task->result)(exec_Fiber_resultMut(fiber, result.type)));
         asg_l((&task->fiber)(some(fiber)));
     }
     let slot = catch_((ArrList_addBack$P$exec_Task(&self->tasks, self->gpa))(

@@ -166,6 +166,14 @@ fn_((ArrPQue_cap(ArrPQue self))(usize)) {
     return self.cap;
 };
 
+fn_((ArrPQue_isEmpty(ArrPQue self))(bool)) {
+    return self.items.len == 0;
+};
+
+fn_((ArrPQue_isFull(ArrPQue self))(bool)) {
+    return self.items.len == self.cap;
+};
+
 fn_((ArrPQue_peek(ArrPQue self, TypeInfo type))(O$u_P_const$raw) $scope) {
     debug_assert_eqBy(self.type, type, TypeInfo_eql);
     if (self.items.len == 0) { return_none(); }

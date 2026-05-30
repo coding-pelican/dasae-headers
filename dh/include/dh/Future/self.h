@@ -19,7 +19,7 @@ extern "C" {
 struct Future$raw {
     T_embed$(struct {
         var_(any_future, O$P$FutureAny);
-        debug_only(var_(type, TypeInfo);)
+        var_(type, debug_TypeInfo);
     });
     var_(result_, V$raw) $flexible;
 };
@@ -43,7 +43,7 @@ T_alias$((u_Fields_Idx$Future)(enum_((u_Fields_Idx$Future $fits($packed))(
 ))));
 $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A_init({
     [u_Fields_Idx_any_future$Future] = typeInfo$(FieldType$(Future$raw, any_future)),
-    [u_Fields_Idx_type$Future] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(Future$raw, type)), pp_else_(Void))),
+    [u_Fields_Idx_type$Future] = typeInfo$(FieldType$(Future$raw, type)),
     [u_Fields_Idx_result_$Future] = typeInfo$(FieldType$(Future$raw, result_)),
 });
 
@@ -54,7 +54,7 @@ $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A
         T_embed$(struct { \
             T_embed$(struct { \
                 var_(any_future, O$P$FutureAny); \
-                debug_only(var_(type, TypeInfo);) \
+                var_(type, debug_TypeInfo); \
             }); \
             T_embed$(union { \
                 var_(result, _T); \
@@ -71,7 +71,7 @@ $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A
         T_embed$(struct { \
             T_embed$(struct { \
                 var_(any_future, O$P$FutureAny); \
-                debug_only(var_(type, TypeInfo);) \
+                var_(type, debug_TypeInfo); \
             }); \
             T_embed$(union { \
                 var_(result, _T); \
@@ -87,7 +87,7 @@ $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A
 #include "dh/meta.h"
 
 fn_((Future_result(const Future$raw* self, TypeInfo type))(u_P_const$raw)) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$Future)(
         (.val[u_Fields_Idx_result_$Future])(type)
     )));
@@ -95,7 +95,7 @@ fn_((Future_result(const Future$raw* self, TypeInfo type))(u_P_const$raw)) {
     return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_result_$Future);
 };
 fn_((Future_resultMut(Future$raw* self, TypeInfo type))(u_P$raw)) {
-    claim_assert_nonnull(self), debug_assert_eqBy(self->type, type, TypeInfo_eql);
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$Future)(
         (.val[u_Fields_Idx_result_$Future])(type)
     )));

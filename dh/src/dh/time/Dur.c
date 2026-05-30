@@ -97,31 +97,31 @@ op_fn_divAsgWith$(((time_Dur, u32)(lhs, rhs))(time_Dur*)) {
 };
 
 fn_((time_Dur_addChkd(time_Dur lhs, time_Dur rhs))(O$time_Dur) $scope) {
-    let total_nanos = (lhs.secs * time_nanos_per_sec + lhs.nanos)
-                    + (rhs.secs * time_nanos_per_sec + rhs.nanos);
-    // Check for overflow in nanoseconds
-    if (total_nanos < lhs.nanos || total_nanos < rhs.nanos
-        || (0 < lhs.secs && (u64_limit - lhs.secs) < rhs.secs)) {
-        return_none();
+    let nanos_sum = as$(u64)(lhs.nanos) + as$(u64)(rhs.nanos);
+    let carry = nanos_sum / as$(u64)(time_nanos_per_sec);
+    let nanos = as$(u32)(nanos_sum % as$(u64)(time_nanos_per_sec));
+    if_some((u64_addChkd(lhs.secs, rhs.secs))(secs_without_carry)) {
+        if_some((u64_addChkd(secs_without_carry, carry))(secs)) {
+            return_some(time_Dur_from(secs, nanos));
+        }
     }
-    let secs = total_nanos / time_nanos_per_sec;
-    let nanos = as$(u32)(total_nanos % time_nanos_per_sec);
-    return_some(time_Dur_from(secs, nanos));
+    return_none();
 } $unscoped(fn);
 
 fn_((time_Dur_subChkd(time_Dur lhs, time_Dur rhs))(O$time_Dur) $scope) {
-    let lhs_total_nanos = lhs.secs * time_nanos_per_sec + lhs.nanos;
-    let rhs_total_nanos = rhs.secs * time_nanos_per_sec + rhs.nanos;
-    // Check for underflow
-    if (lhs_total_nanos < rhs_total_nanos) {
+    if (cmp_lt$(time_Dur)(lhs, rhs)) {
         return_none();
     }
-    let diff_nanos = lhs_total_nanos - rhs_total_nanos;
-    let secs = diff_nanos / time_nanos_per_sec;
-    let nanos = as$(u32)(diff_nanos % time_nanos_per_sec);
+    var secs = lhs.secs - rhs.secs;
+    var nanos = u32_limit_min;
+    if (lhs.nanos < rhs.nanos) {
+        secs -= 1;
+        nanos = as$(u32)(time_nanos_per_sec + lhs.nanos - rhs.nanos);
+    } else {
+        nanos = lhs.nanos - rhs.nanos;
+    }
     return_some(time_Dur_from(secs, nanos));
 } $unscoped(fn);
-
 
 fn_((time_Dur_mulChkd$u32(time_Dur lhs, u32 rhs))(O$time_Dur) $scope) {
     let total_nanos = as$(u64)(lhs.nanos) * as$(u64)(rhs);
@@ -129,7 +129,6 @@ fn_((time_Dur_mulChkd$u32(time_Dur lhs, u32 rhs))(O$time_Dur) $scope) {
     let nanos = as$(u32)(total_nanos % as$(u64)(time_nanos_per_sec));
     if_some((u64_mulChkd(lhs.secs, as$(u64)(rhs)))(scaled)) {
         if_some((u64_addChkd(scaled, extra_secs))(secs)) {
-            claim_assert(nanos < time_nanos_per_sec);
             return_some(time_Dur_from(secs, nanos));
         }
     }
@@ -138,16 +137,16 @@ fn_((time_Dur_mulChkd$u32(time_Dur lhs, u32 rhs))(O$time_Dur) $scope) {
 
 fn_((time_Dur_divChkd$u32(time_Dur lhs, u32 rhs))(O$time_Dur) $scope) {
     if (rhs == 0) { return_none(); }
-    let rhs_u64 = as$(u64)(rhs);
-    let secs = lhs.secs / rhs_u64;
-    let rem_secs = lhs.secs % rhs_u64;
-    let nanos = as$(u32)((rem_secs * as$(u64)(time_nanos_per_sec) + as$(u64)(lhs.nanos)) / rhs_u64);
-    claim_assert(nanos < time_nanos_per_sec);
+    let divisor = as$(u64)(rhs);
+    let secs = lhs.secs / divisor;
+    let rem_secs = lhs.secs % divisor;
+    let nanos_total = rem_secs * as$(u64)(time_nanos_per_sec) + as$(u64)(lhs.nanos);
+    let nanos = as$(u32)(nanos_total / divisor);
     return_some(time_Dur_from(secs, nanos));
 } $unscoped(fn);
 
 fn_((time_Dur_addSat(time_Dur lhs, time_Dur rhs))(time_Dur)) {
-    return orelse_((time_Dur_addChkd(lhs, rhs))(time_Dur_from(u64_limit_max, u32_limit_max)));
+    return orelse_((time_Dur_addChkd(lhs, rhs))(time_Dur_from(u64_limit_max, time_nanos_per_sec - 1)));
 };
 
 fn_((time_Dur_subSat(time_Dur lhs, time_Dur rhs))(time_Dur)) {
@@ -155,5 +154,5 @@ fn_((time_Dur_subSat(time_Dur lhs, time_Dur rhs))(time_Dur)) {
 };
 
 fn_((time_Dur_mulSat$u32(time_Dur lhs, u32 rhs))(time_Dur)) {
-    return orelse_((time_Dur_mulChkd$u32(lhs, rhs))(time_Dur_from(u64_limit_max, u32_limit_max)));
+    return orelse_((time_Dur_mulChkd$u32(lhs, rhs))(time_Dur_from(u64_limit_max, time_nanos_per_sec - 1)));
 };

@@ -30,27 +30,14 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef pp_if_(plat_is_posix)(
-    pp_then_(sys_posix_timespec),
-    pp_else_(Void)) time_UnixTimespec;
-
-/* --- Monotonic Clock Platform Type (for time_Inst) --- */
-typedef pp_if_(plat_is_windows)(
-    pp_then_(LARGE_INTEGER),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_UnixTimespec),
-        pp_else_(Void)
-    ))) time_Inst__Impl;
-typedef time_Inst__Impl time_InstPlatform;
-
-/* --- Wall-Clock Platform Type (for time_SysTime) --- */
+/* --- Wall-Clock Platform Type (for time_Clock) --- */
 typedef pp_if_(plat_is_windows)(
     pp_then_(FILETIME),
     pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_UnixTimespec),
+        pp_then_(sys_posix_timespec),
         pp_else_(Void)
-    ))) time_SysTime__Impl;
-typedef time_SysTime__Impl time_SysTimePlatform;
+    ))) time_Clock__Impl;
+typedef time_Clock__Impl time_ClockPlatform;
 
 #if defined(__cplusplus)
 } /* extern "C" */

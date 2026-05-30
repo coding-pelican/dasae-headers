@@ -2,7 +2,7 @@
 #include "dh/fs/Dir.h"
 #include "dh/io/common.h"
 #include "dh/mem/common.h"
-#include "dh/time/SysTime.h"
+#include "dh/time/self/Real.h"
 
 $static var_(log__config, log_Config) = {
     .output_file = cleared(),
@@ -36,7 +36,8 @@ $static fn_((log__levelStr(log_Level level))(S_const$u8)) {
 }
 
 $static fn_((log__writeTimestamp(io_Writer writer))(void)) {
-    let secs = time_SysTime_toUnixEpoch(time_SysTime_now()) % u64_(86, 400ull);
+    let clock = catch_((time_Real_direct())($ignore, time_Real_noop));
+    let secs = time_Real_Inst_toUnixEpoch(time_Real_now(clock)) % u64_(86, 400ull);
     let hour = as$(u32)(secs / u64_(3, 600ull));
     let minute = as$(u32)((secs / u64_(60ull)) % u64_(60ull));
     let second = as$(u32)(secs % u64_(60ull));

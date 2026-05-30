@@ -211,6 +211,7 @@ Macros:
   - "$unguarded(keyword)=/**/"
   - "$end(keyword)=/**/"
   - "$deferral(keyword)=/**/"
+  - "$suppressing_(diagnostic)=/*diagnostic*/"
   - "$suppressed=/**/"
   - "$listed=/**/"
 

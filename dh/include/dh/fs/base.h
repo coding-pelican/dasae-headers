@@ -19,7 +19,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/sys/posix.h"
+#include "../sys/posix.h"
 
 /*========== Macros and Declarations ========================================*/
 

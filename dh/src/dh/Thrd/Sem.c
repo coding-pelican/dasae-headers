@@ -1,5 +1,5 @@
 #include "dh/thrd/Sem.h"
-#include "dh/time/Inst.h"
+#include "dh/time/self/Awake.h"
 
 fn_((thrd_Sem_init(void))(thrd_Sem)) {
     return (thrd_Sem){
@@ -29,13 +29,14 @@ fn_((thrd_Sem_wait(thrd_Sem* self))(void) $guard) {
 } $unguarded(fn);
 
 fn_((thrd_Sem_timedWait(thrd_Sem* self, time_Dur timeout))(Sched_TimeoutE$void) $guard) {
-    let instant = time_Inst_now();
+    let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
+    let started = time_Awake_now(clock);
 
     thrd_Mtx_lock(&self->mtx);
     defer_(thrd_Mtx_unlock(&self->mtx));
 
     while (self->permits == 0) {
-        let elapsed = time_Inst_elapsed(instant);
+        let elapsed = time_Awake_Inst_elapsed(started, clock);
         if (time_Dur_gt(elapsed, timeout)) {
             return_err(E_cause$Sched_Timeout());
         }

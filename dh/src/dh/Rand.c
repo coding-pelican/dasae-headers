@@ -1,5 +1,5 @@
 #include "dh/Rand.h"
-#include "dh/time/Inst.h"
+#include "dh/time/self/Awake.h"
 
 /*========== Internal Declarations ==========================================*/
 
@@ -20,7 +20,8 @@ $static fn_((Rand__bounded8(Rand* self, u8 range))(u8));
 /*========== External Definitions ===========================================*/
 
 fn_((Rand_init(void))(Rand)) {
-    return Rand_initSeed(time_Inst_ticks(time_Inst_now()));
+    let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
+    return Rand_initSeed(time_Inst_ticks(time_Awake_now(clock).raw));
 };
 
 fn_((Rand_initSeed(u64 seed))(Rand)) {

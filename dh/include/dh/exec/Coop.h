@@ -13,13 +13,19 @@ extern "C" {
 T_alias$((exec_Coop)(struct exec_Coop {
     var_(timed, exec_LaneTimed);
 }));
-$extern fn_((exec_Coop_init(mem_Alctr gpa))(exec_Coop));
+/// Initialize a cooperative executor with an explicit awake clock.
+$extern fn_((exec_Coop_init(mem_Alctr gpa, time_Awake clock))(exec_Coop));
+/// Finalize a cooperative executor and release queued timer storage.
 $extern fn_((exec_Coop_fini(exec_Coop* self))(void));
 
+/// Return the currently running task, if the executor is inside a task.
 $extern fn_((exec_Coop_task(exec_Coop* self))(O$P$exec_Task));
+/// Yield from the current cooperative task back to the executor lane.
 $extern fn_((exec_Coop_yield(exec_Coop* self))(void));
+/// Run until no ready or timed tasks remain.
 $extern fn_((exec_Coop_run(exec_Coop* self))(void));
-$extern fn_((exec_Coop_runUntil(exec_Coop* self, time_Inst deadline))(void));
+/// Run until the given awake-clock deadline or until no work remains.
+$extern fn_((exec_Coop_runUntil(exec_Coop* self, time_Awake_Inst deadline))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

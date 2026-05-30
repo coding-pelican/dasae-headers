@@ -59,17 +59,15 @@ typedef pp_if_(plat_is_linux)(
     )) \
 )
 
-#if plat_is_posix
 $attr($inline_always $must_check)
 $static fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32)) {
     return pp_if_(plat_is_linux)(
         pp_then_(as$(i32)(sys_call_linux_clock_gettime(as$(sys_call_linux_word)(clock_id), ts))),
         pp_else_(pp_if_(plat_is_darwin)(
             pp_then_(sys_libc_darwin_clock_gettime(clock_id, ts)),
-            pp_else_(-1)
+            pp_else_($ignore_void clock_id, $ignore_void ts, -1)
         )));
 };
-#endif /* plat_is_posix */
 
 #if defined(__cplusplus)
 } /* extern "C" */

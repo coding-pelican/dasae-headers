@@ -18,7 +18,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "common.h"
-#include "../time/Inst.h"
+#include "../time/self/Awake.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -42,7 +42,7 @@ $extern fn_((thrd_ftx_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 
 typedef struct thrd_ftx_Deadline {
     var_(timeout, O$time_Dur);
-    var_(started, time_Inst);
+    var_(started, time_Awake_Inst);
 } thrd_ftx_Deadline;
 $extern fn_((thrd_ftx_Deadline_init(O$time_Dur expires))(thrd_ftx_Deadline));
 $attr($must_check)

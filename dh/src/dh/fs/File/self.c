@@ -21,6 +21,14 @@ $static fn_((fs__windowsCreateAccess(fs_File_CreateFlags flags))(DWORD)) {
     return GENERIC_WRITE | (flags.read ? GENERIC_READ : 0);
 }
 
+$static fn_((fs__windowsTime(FILETIME ft))(time_Real_Inst)) {
+    var_(raw, ULARGE_INTEGER) = {};
+    raw.LowPart = ft.dwLowDateTime;
+    raw.HighPart = ft.dwHighDateTime;
+    let secs = raw.QuadPart / 10000000;
+    return time_Real_Inst_fromUnixEpoch(secs < 11644473600 ? 0 : secs - 11644473600);
+}
+
 $static fn_((fs__windowsKind(DWORD attrs))(fs_Kind)) {
     if ((attrs & FILE_ATTRIBUTE_DIRECTORY) != 0) return fs_Kind_directory;
     return fs_Kind_file;
@@ -158,9 +166,9 @@ fn_((fs_File_stat(fs_File self))(fs_E$fs_File_Stat) $scope) {
         .size = as$(u64)(size.QuadPart),
         .permissions = (info.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0 ? 0444 : 0666,
         .kind = fs__windowsKind(info.dwFileAttributes),
-        .atime = time_SysTime_fromUnixEpoch(0),
-        .mtime = time_SysTime_fromUnixEpoch(0),
-        .ctime = time_SysTime_fromUnixEpoch(0),
+        .atime = fs__windowsTime(info.ftLastAccessTime),
+        .mtime = fs__windowsTime(info.ftLastWriteTime),
+        .ctime = fs__windowsTime(info.ftCreationTime),
         .block_size = 4096,
     });
 #elif plat_is_linux

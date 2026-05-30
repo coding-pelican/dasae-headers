@@ -1,6 +1,4 @@
 #include "dh/thrd/ftx.h"
-#include "dh/time/Inst.h"
-#include "dh/sys/libc/darwin/sync.h"
 
 /*========== Internal Declarations ==========================================*/
 
@@ -76,13 +74,15 @@ $static let thrd_ftx__wake = pp_if_(thrd_ftx_use_pthread)(
 
 $attr($branch_cold)
 fn_((thrd_ftx_wait(const atom_V$u32* ptr, u32 expect))(void) $scope) {
-    return_void(catch_((thrd_ftx__wait(ptr, expect, none$((O$time_Dur))))($ignore, claim_unreachable)));
+    return_void(catch_((thrd_ftx__wait(ptr, expect, none$((O$time_Dur))))(
+        $ignore, claim_unreachable
+    )));
 } $unscoped(fn);
 
 $attr($branch_cold)
 fn_((thrd_ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Dur timeout))(thrd_ftx_E$void) $scope) {
     if (time_Dur_isZero(timeout)) {
-        if (atom_V_load(ptr, atom_MemOrd_seq_cst) != expect) { return_ok({}); }
+        if (atom_V_load(ptr, atom_MemOrd_seq_cst) != expect) return_ok({});
         return_err(E_cause$Sched_Timeout());
     }
     return_(thrd_ftx__wait(ptr, expect, some$((O$time_Dur)(timeout))));
@@ -95,16 +95,25 @@ fn_((thrd_ftx_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 };
 
 fn_((thrd_ftx_Deadline_init(O$time_Dur expires))(thrd_ftx_Deadline)) {
-    var deadline = l0$((thrd_ftx_Deadline));
-    deadline.timeout = expires;
-    if (isSome(expires)) { deadline.started = time_Inst_now(); }
+    var_(deadline, thrd_ftx_Deadline) = {
+        .timeout = expires,
+        .started = cleared()
+    };
+    if (isSome(expires)) {
+        deadline.started = time_Awake_now(catch_((time_Awake_direct())(
+            $ignore, time_Awake_noop
+        )));
+    }
     return deadline;
 };
 
 $attr($branch_cold)
 fn_((thrd_ftx_Deadline_wait(thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 expect))(thrd_ftx_E$void) $scope) {
     let timeout = orelse_((self->timeout)(return_ok_void(thrd_ftx_wait(ptr, expect))));
-    let elapsed = time_Inst_elapsed(self->started);
+    let elapsed = time_Awake_Inst_elapsed(
+        self->started,
+        catch_((time_Awake_direct())($ignore, time_Awake_noop))
+    );
     let until_timeout = orelse_((time_Dur_subChkd(timeout, elapsed))(time_Dur_zero));
     return_(thrd_ftx_timedWait(ptr, expect, until_timeout));
 } $unscoped(fn);
@@ -177,18 +186,21 @@ fn_((thrd_ftx__windows_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 /* --- Linux --- */
 
 #if plat_is_linux
-#include "dh/sys/call/linux.h"
+#include <linux/futex.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+#include <errno.h>
 
 fn_((thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout))(thrd_ftx_E$void) $scope) {
-    sys_call_linux_timespec ts = cleared();
-    sys_call_linux_timespec* ts_ptr = null;
+    struct timespec ts = { 0 };
+    struct timespec* ts_ptr = null;
     if_some((timeout)(delay)) {
-        ts.tv_sec = as$(TypeOf(ts.tv_sec))(delay.secs);
-        ts.tv_nsec = as$(TypeOf(ts.tv_nsec))(delay.nanos);
+        ts.tv_sec = as$(time_t)(delay.secs);
+        ts.tv_nsec = as$(long)(delay.nanos);
         ts_ptr = &ts;
     }
-    let rc = sys_call_linux_futex(ptrQualCast$((P$raw)(&ptr->raw)), sys_call_linux_FUTEX_WAIT | sys_call_linux_FUTEX_PRIVATE_FLAG, as$(sys_call_linux_word)(expect), ts_ptr, null, 0);
-    if (rc == -sys_call_linux_ETIMEDOUT) {
+    let rc = syscall(SYS_futex, &ptr->raw, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, expect, ts_ptr, null, 0);
+    if (rc == -1 && errno == ETIMEDOUT) {
         claim_assert(isSome(timeout));
         return_err(E_cause$Sched_Timeout());
     }
@@ -198,23 +210,28 @@ fn_((thrd_ftx__linux_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout)
 fn_((thrd_ftx__linux_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
     claim_assert(max_waiters != 0);
     let waiters = (max_waiters < as$(u32)(i32_limit_max)) ? as$(i32)(max_waiters) : i32_limit_max;
-    let_ignore = sys_call_linux_futex(ptrQualCast$((P$raw)(&ptr->raw)), sys_call_linux_FUTEX_WAKE | sys_call_linux_FUTEX_PRIVATE_FLAG, waiters, null, null, 0);
+    let_ignore = syscall(SYS_futex, &ptr->raw, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, waiters, null, null, 0);
 };
 #endif /* plat_is_linux */
 
 /* --- Darwin --- */
 
 #if plat_is_darwin
+#include <errno.h>
+#define UL_COMPARE_AND_WAIT 1
+#define ULF_NO_ERRNO 0x01000000
+#define ULF_WAKE_ALL 0x00000100
+$extern fn_((__ulock_wait(u32 operation, P$raw addr, u64 value, u32 timeout_us))(i32));
+$extern fn_((__ulock_wait2(u32 operation, P$raw addr, u64 value, u64 timeout_ns, u64 value2))(i32));
+$extern fn_((__ulock_wake(u32 operation, P$raw addr, u64 wake_value))(i32));
+
 fn_((thrd_ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout))(thrd_ftx_E$void) $scope) {
     u64 timeout_ns = 0;
     if_some((timeout)(delay)) { timeout_ns = delay.secs * time_nanos_per_sec + delay.nanos; }
-    let flags = sys_libc_darwin_UL_make(
-        sys_libc_darwin_UL_op_compare_and_wait,
-        sys_libc_darwin_ULF_NO_ERRNO
-    );
-    let addr = ptrQualCast$((P$raw)(&ptr->raw));
-#if sys_libc_darwin_has_ulock_wait2
-    let status = sys_libc_darwin_ulock_wait2(flags, addr, as$(u64)(expect), timeout_ns, 0);
+    let flags = UL_COMPARE_AND_WAIT | ULF_NO_ERRNO;
+    let addr = as$(P$raw)(&ptr->raw);
+#if defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 110001
+    let status = __ulock_wait2(flags, addr, as$(u64)(expect), timeout_ns, 0);
 #else
     u32 timeout_us = 0;
     bool overflowed = false;
@@ -227,10 +244,10 @@ fn_((thrd_ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout
             timeout_us = as$(u32)(us64);
         }
     }
-    let status = sys_libc_darwin_ulock_wait(flags, addr, as$(u64)(expect), timeout_us);
+    let status = __ulock_wait(flags, addr, as$(u64)(expect), timeout_us);
 #endif
-    if (status < 0 && (-status) == sys_libc_darwin_ETIMEDOUT) {
-#if sys_libc_darwin_has_ulock_wait2
+    if (status < 0 && (-status) == ETIMEDOUT) {
+#if defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 110001
         return_err(E_cause$Sched_Timeout());
 #else
         if (!overflowed) { return_err(E_cause$Sched_Timeout()); }
@@ -240,14 +257,11 @@ fn_((thrd_ftx__darwin_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout
 } $unscoped(fn);
 
 fn_((thrd_ftx__darwin_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
-    let flags = sys_libc_darwin_UL_make(
-        sys_libc_darwin_UL_op_compare_and_wait,
-        sys_libc_darwin_ULF_NO_ERRNO | (max_waiters > 1 ? sys_libc_darwin_ULF_WAKE_ALL : u32_(0))
-    );
-    let addr = ptrQualCast$((P$raw)(&ptr->raw));
+    let flags = UL_COMPARE_AND_WAIT | ULF_NO_ERRNO | (max_waiters > 1 ? ULF_WAKE_ALL : 0);
+    let addr = as$(P$raw)(&ptr->raw);
     while (true) {
-        let status = sys_libc_darwin_ulock_wake(flags, addr, 0);
-        if (status >= 0 || (-status) != sys_libc_darwin_EINTR) { return; }
+        let status = __ulock_wake(flags, addr, 0);
+        if (status >= 0 || (-status) != EINTR) { return; }
     }
 };
 #endif /* plat_is_darwin */

@@ -26,7 +26,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "base.h"
-#include "../time/SysTime.h"
+#include "../time/self/Real.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -120,9 +120,9 @@ typedef struct fs_Stat {
     u64 size;
     fs_Mode permissions;
     fs_Kind kind;
-    time_SysTime atime;
-    time_SysTime mtime;
-    time_SysTime ctime;
+    time_Real_Inst atime;
+    time_Real_Inst mtime;
+    time_Real_Inst ctime;
     fs_BlockSize block_size;
 } fs_Stat;
 T_use_E$($set(fs_E)(fs_Stat));

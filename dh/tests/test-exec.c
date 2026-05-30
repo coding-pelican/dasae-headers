@@ -3,6 +3,7 @@
 #include "dh/time.h"
 #include "dh/ArrList.h"
 #include "dh/heap/Sys.h"
+#include "dh/heap/Arena.h"
 
 T_alias$((Event)(u8));
 T_use$((Event)(
@@ -92,10 +93,12 @@ $static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected)
     return_ok({});
 } $unguarded(fn);
 
-TEST_fn_("exec_Seq runs fiber and stackless tasks without timed suspension" $guard) {
+TEST_fn_("exec/Seq: runs fiber and stackless tasks without timed suspension" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
-    let gpa = heap_Sys_alctr(&heap);
+    var arena = heap_Arena_init(heap_Sys_alctr(&heap));
+    defer_(heap_Arena_fini(&arena));
+    let gpa = heap_Arena_alctr(&arena);
     var exec = exec_Seq_init(gpa);
     defer_(exec_Seq_fini(&exec));
     let expected = A_from$((u8){ 10, 11, 12, 19, 20, 21, 22, 23, 29 });
@@ -103,11 +106,13 @@ TEST_fn_("exec_Seq runs fiber and stackless tasks without timed suspension" $gua
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("exec_Coop runs evented stackless and fiber tasks in deadline order" $guard) {
+TEST_fn_("exec/Coop: runs evented stackless and fiber tasks in deadline order" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
-    let gpa = heap_Sys_alctr(&heap);
-    var exec = exec_Coop_init(gpa, try_(time_Awake_direct()), exec_Evented_noop);
+    var arena = heap_Arena_init(heap_Sys_alctr(&heap));
+    defer_(heap_Arena_fini(&arena));
+    let gpa = heap_Arena_alctr(&arena);
+    var exec = exec_Coop_init(gpa, try_(time_Awake_direct()));
     defer_(exec_Coop_fini(&exec));
     let expected = A_from$((u8){ 10, 20, 21, 11, 22, 23, 29, 12, 19 });
     try_(runExpectedOrder(Sched_coop(&exec), time_Awake_evented(&exec), A_ref$((S_const$u8)(expected))));

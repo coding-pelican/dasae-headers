@@ -6,24 +6,12 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
-#include "../Sched/base.h"
-
-/*========== Macros and Declarations ========================================*/
-
-errset_((time_sleep_E)() $union_errset_(time_E, Sched_Cancelable));
-
-/* --- Sleep --- */
-$attr($must_check)
-$extern fn_((time_sleep(time_Dur duration))(time_sleep_E$void));
-$attr($must_check)
-$extern fn_((time_sleepSecs(u64 secs))(time_sleep_E$void));
-$attr($must_check)
-$extern fn_((time_sleepMillis(u64 millis))(time_sleep_E$void));
-$attr($must_check)
-$extern fn_((time_sleepMicros(u64 micros))(time_sleep_E$void));
-$attr($must_check)
-$extern fn_((time_sleepNanos(u32 nanos))(time_sleep_E$void));
+/// Clock source interfaces and direct clock implementations.
+#include "self/Real.h"
+#include "self/Awake.h"
+#include "self/Boot.h"
+#include "self/Proc.h"
+#include "self/Thrd.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

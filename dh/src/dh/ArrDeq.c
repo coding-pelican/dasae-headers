@@ -64,10 +64,12 @@ fn_((ArrDeq_Grip_release(ArrDeq_Grip* self, TypeInfo type))(void)) {
     claim_assert_nonnull(self->head);
     claim_assert_nonnull(self->len);
     debug_assert_eqBy(self->ctx.type, type, TypeInfo_eql);
+    let final_head = self->ctx.head;
+    let final_len = self->ctx.len;
     self->ctx = ArrDeq_empty(type);
-    *self->len = self->ctx.len;
+    *self->len = final_len;
     self->len = null;
-    *self->head = self->ctx.head;
+    *self->head = final_head;
     self->head = null;
     self->buf.ptr = null;
 };

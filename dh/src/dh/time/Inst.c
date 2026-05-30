@@ -1,154 +1,19 @@
 #include "dh/time/Inst.h"
-#if plat_is_posix
-#include "dh/sys/posix.h"
-#endif
 
-/*========== Internal Declarations ==========================================*/
-
-pp_if_(pp_true)(pp_then_(
-    $attr($inline_always $maybe_unused)
-    $static fn_((time_Inst__unsupported_freq(void))(time_Inst));
-    $attr($inline_always $maybe_unused)
-    $static fn_((time_Inst__unsupported_freqInv(void))(f64));
-    $attr($inline_always $maybe_unused)
-    $static fn_((time_Inst__unsupported_offset(void))(time_Inst));
-    $attr($inline_always $maybe_unused)
-    $static fn_((time_Inst__unsupported_now(void))(time_Inst));
-    $attr($inline_always $maybe_unused)
-    $static fn_((time_Inst__unsupported_ticks(time_Inst self))(u64));
-    $attr($inline_always $maybe_unused)
-    $static fn_((time_Inst__unsupported_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur));
-    $attr($inline_always $maybe_unused)
-    $static fn_((time_Inst__unsupported_addChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst));
-    $attr($inline_always $maybe_unused)
-    $static fn_((time_Inst__unsupported_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst));
-    $attr($inline_always $maybe_unused)
-    $static fn_((time_Inst__unsupported_ord(time_Inst lhs, time_Inst rhs))(cmp_Ord));
-));
-pp_if_(plat_is_windows)(pp_then_(
-    $attr($inline_always)
-    $static fn_((time_Inst__windows_freq(void))(time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__windows_freqInv(void))(f64));
-    $attr($inline_always)
-    $static fn_((time_Inst__windows_offset(void))(time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__windows_now(void))(time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__windows_ticks(time_Inst self))(u64));
-    $attr($inline_always)
-    $static fn_((time_Inst__windows_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur));
-    $attr($inline_always)
-    $static fn_((time_Inst__windows_addChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__windows_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__windows_ord(time_Inst lhs, time_Inst rhs))(cmp_Ord));
-));
-pp_if_(plat_is_posix)(pp_then_(
-    $attr($inline_always)
-    $static fn_((time_Inst__unix_freq(void))(time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__unix_freqInv(void))(f64));
-    $attr($inline_always)
-    $static fn_((time_Inst__unix_offset(void))(time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__unix_now(void))(time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__unix_ticks(time_Inst self))(u64));
-    $attr($inline_always)
-    $static fn_((time_Inst__unix_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur));
-    $attr($inline_always)
-    $static fn_((time_Inst__unix_addChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__unix_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst));
-    $attr($inline_always)
-    $static fn_((time_Inst__unix_ord(time_Inst lhs, time_Inst rhs))(cmp_Ord));
-));
-
-$static let time_Inst__freq = pp_if_(plat_is_windows)(
-    pp_then_(time_Inst__windows_freq),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_Inst__unix_freq),
-        pp_else_(time_Inst__unsupported_freq)
-    )));
-$static let time_Inst__freqInv = pp_if_(plat_is_windows)(
-    pp_then_(time_Inst__windows_freqInv),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_Inst__unix_freqInv),
-        pp_else_(time_Inst__unsupported_freqInv)
-    )));
-$static let time_Inst__offset = pp_if_(plat_is_windows)(
-    pp_then_(time_Inst__windows_offset),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_Inst__unix_offset),
-        pp_else_(time_Inst__unsupported_offset)
-    )));
-$static let time_Inst__now = pp_if_(plat_is_windows)(
-    pp_then_(time_Inst__windows_now),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_Inst__unix_now),
-        pp_else_(time_Inst__unsupported_now)
-    )));
-$static let time_Inst__ticks = pp_if_(plat_is_windows)(
-    pp_then_(time_Inst__windows_ticks),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_Inst__unix_ticks),
-        pp_else_(time_Inst__unsupported_ticks)
-    )));
-$static let time_Inst__durSinceChkd = pp_if_(plat_is_windows)(
-    pp_then_(time_Inst__windows_durSinceChkd),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_Inst__unix_durSinceChkd),
-        pp_else_(time_Inst__unsupported_durSinceChkd)
-    )));
-$static let time_Inst__addChkdDur = pp_if_(plat_is_windows)(
-    pp_then_(time_Inst__windows_addChkdDur),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_Inst__unix_addChkdDur),
-        pp_else_(time_Inst__unsupported_addChkdDur)
-    )));
-$static let time_Inst__subChkdDur = pp_if_(plat_is_windows)(
-    pp_then_(time_Inst__windows_subChkdDur),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_Inst__unix_subChkdDur),
-        pp_else_(time_Inst__unsupported_subChkdDur)
-    )));
-$static let time_Inst__ord = pp_if_(plat_is_windows)(
-    pp_then_(time_Inst__windows_ord),
-    pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_Inst__unix_ord),
-        pp_else_(time_Inst__unsupported_ord)
-    )));
-
-/*========== External Definitions ===========================================*/
-
-/* --- Accessors --- */
-
-fn_((time_Inst_freq(void))(time_Inst)) { return time_Inst__freq(); };
-fn_((time_Inst_freqInv(void))(f64)) { return time_Inst__freqInv(); };
-fn_((time_Inst_offset(void))(time_Inst)) { return time_Inst__offset(); };
-fn_((time_Inst_ticks(time_Inst self))(u64)) { return time_Inst__ticks(self); };
-
-/* --- Operations --- */
-
-fn_((time_Inst_now(void))(time_Inst)) {
-    return time_Inst__now();
+fn_((time_Inst_from(u64 secs, u32 nanos))(time_Inst)) {
+    return (time_Inst){
+        .secs = secs + nanos / time_nanos_per_sec,
+        .nanos = nanos % time_nanos_per_sec,
+    };
 };
 
-fn_((time_Inst_elapsed(time_Inst self))(time_Dur)) {
-    return time_Inst_durSince(time_Inst_now(), self);
+fn_((time_Inst_isZero(time_Inst self))(bool)) {
+    return isZero(self.secs) && isZero(self.nanos);
 };
 
-fn_((time_Inst_durSince(time_Inst later, time_Inst earlier))(time_Dur)) {
-    return unwrap_(time_Inst_durSinceChkd(later, earlier));
+fn_((time_Inst_ticks(time_Inst self))(u64)) {
+    return self.secs * as$(u64)(time_nanos_per_sec) + self.nanos;
 };
-
-fn_((time_Inst_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur)) {
-    return time_Inst__durSinceChkd(later, earlier);
-};
-
-/* --- Arithmetic Operations --- */
 
 op_fn_addWith$(((time_Inst, time_Dur)(lhs, rhs))(time_Inst)) {
     return unwrap_(time_Inst_addChkdDur(lhs, rhs));
@@ -166,18 +31,47 @@ op_fn_subAsgWith$(((time_Inst, time_Dur)(lhs, rhs))(time_Inst*)) {
     return *lhs = unwrap_(time_Inst_subChkdDur(*lhs, rhs)), lhs;
 };
 
-fn_((time_Inst_addChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst)) {
-    return time_Inst__addChkdDur(lhs, rhs);
+fn_((time_Inst_addChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst) $scope) {
+    let nanos_sum = as$(u64)(lhs.nanos) + as$(u64)(rhs.nanos);
+    let carry = nanos_sum / as$(u64)(time_nanos_per_sec);
+    let nanos = as$(u32)(nanos_sum % as$(u64)(time_nanos_per_sec));
+    if_some((u64_addChkd(lhs.secs, rhs.secs))(secs_without_carry)) {
+        if_some((u64_addChkd(secs_without_carry, carry))(secs)) {
+            return_some((time_Inst){ .secs = secs, .nanos = nanos });
+        }
+    }
+    return_none();
+} $unscoped(fn);
+
+fn_((time_Inst_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst) $scope) {
+    if (cmp_lt$(time_Inst)(lhs, (time_Inst){ .secs = rhs.secs, .nanos = rhs.nanos })) {
+        return_none();
+    }
+    let borrow = lhs.nanos < rhs.nanos ? 1ull : 0ull;
+    let secs = lhs.secs - rhs.secs - borrow;
+    let nanos = lhs.nanos < rhs.nanos
+                  ? lhs.nanos + time_nanos_per_sec - rhs.nanos
+                  : lhs.nanos - rhs.nanos;
+    return_some((time_Inst){ .secs = secs, .nanos = nanos });
+} $unscoped(fn);
+
+fn_((time_Inst_durSince(time_Inst later, time_Inst earlier))(time_Dur)) {
+    return unwrap_(time_Inst_durSinceChkd(later, earlier));
 };
 
-fn_((time_Inst_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst)) {
-    return time_Inst__subChkdDur(lhs, rhs);
-};
-
-/* --- Comparison Operations --- */
+fn_((time_Inst_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur) $scope) {
+    let diff = orelse_((time_Inst_subChkdDur(later, (time_Dur){ .secs = earlier.secs, .nanos = earlier.nanos }))(
+        return_none()
+    ));
+    return_some({ .secs = diff.secs, .nanos = diff.nanos });
+} $unscoped(fn);
 
 cmp_fn_ord$((time_Inst)(lhs, rhs)) {
-    return time_Inst__ord(lhs, rhs);
+    if (lhs.secs < rhs.secs) return cmp_Ord_lt;
+    if (lhs.secs > rhs.secs) return cmp_Ord_gt;
+    if (lhs.nanos < rhs.nanos) return cmp_Ord_lt;
+    if (lhs.nanos > rhs.nanos) return cmp_Ord_gt;
+    return cmp_Ord_eq;
 };
 cmp_fn_eq_default$((time_Inst)(lhs, rhs));
 cmp_fn_ne_default$((time_Inst)(lhs, rhs));
@@ -195,7 +89,6 @@ cmp_fn_ltCtx_default$((time_Inst)(lhs, rhs, ctx));
 cmp_fn_gtCtx_default$((time_Inst)(lhs, rhs, ctx));
 cmp_fn_leCtx_default$((time_Inst)(lhs, rhs, ctx));
 cmp_fn_geCtx_default$((time_Inst)(lhs, rhs, ctx));
-
 cmp_fn_eql$((time_Inst)(lhs, rhs)) {
     return cmp_ord$(time_Inst)(lhs, rhs) == cmp_Ord_eq;
 };
@@ -205,231 +98,3 @@ cmp_fn_eqlCtx$((time_Inst)(lhs, rhs, ctx)) {
     return cmp_eql$(time_Inst)(lhs, rhs);
 };
 cmp_fn_neqCtx_default$((time_Inst)(lhs, rhs, ctx));
-
-/*========== Internal Definitions ===========================================*/
-
-/* --- Unsupported --- */
-
-fn_((time_Inst__unsupported_freq(void))(time_Inst)) {
-    return (time_Inst){ .impl = cleared() };
-};
-
-fn_((time_Inst__unsupported_freqInv(void))(f64)) {
-    return f64_nan;
-};
-
-fn_((time_Inst__unsupported_offset(void))(time_Inst)) {
-    return (time_Inst){ .impl = cleared() };
-};
-
-fn_((time_Inst__unsupported_now(void))(time_Inst)) {
-    return (time_Inst){ .impl = cleared() };
-};
-
-fn_((time_Inst__unsupported_ticks(time_Inst self))(u64)) {
-    let_ignore = self;
-    return 0;
-};
-
-fn_((time_Inst__unsupported_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur) $scope) {
-    let_ignore = later;
-    let_ignore = earlier;
-    return_none();
-} $unscoped(fn);
-
-fn_((time_Inst__unsupported_addChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst) $scope) {
-    let_ignore = lhs;
-    let_ignore = rhs;
-    return_none();
-} $unscoped(fn);
-
-fn_((time_Inst__unsupported_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst) $scope) {
-    let_ignore = lhs;
-    let_ignore = rhs;
-    return_none();
-} $unscoped(fn);
-
-fn_((time_Inst__unsupported_ord(time_Inst lhs, time_Inst rhs))(cmp_Ord)) {
-    let_ignore = lhs;
-    let_ignore = rhs;
-    return cmp_Ord_eq;
-};
-
-/* --- Windows --- */
-
-#if plat_is_windows
-$static var_(s_windows_perf_freq, time_InstPlatform) = cleared();
-$static var_(s_windows_perf_freq_inv, f64) = f64_nan;
-$static var_(s_windows_offset_value, time_InstPlatform) = cleared();
-$static var_(s_windows_initialized, bool) = false;
-
-$attr($on_load)
-$static fn_((time_Inst__windows_init(void))(void)) {
-    if (s_windows_initialized) { return; }
-    if (!QueryPerformanceFrequency(&s_windows_perf_freq)) {
-        claim_unreachable_msg("Failed to query performance frequency");
-    }
-    s_windows_perf_freq_inv = 1.0 / as$(f64)(s_windows_perf_freq.QuadPart);
-    QueryPerformanceCounter(&s_windows_offset_value);
-    s_windows_initialized = true;
-};
-
-$attr($inline_always)
-$static fn_((time_Inst__windows_ensureInit(void))(void)) {
-    return time_Inst__windows_init(), claim_assert_fmt(s_windows_initialized, "time_Inst not initialized");
-};
-
-fn_((time_Inst__windows_freq(void))(time_Inst)) {
-    return time_Inst__windows_ensureInit(), (time_Inst){ .impl = s_windows_perf_freq };
-};
-
-fn_((time_Inst__windows_freqInv(void))(f64)) {
-    return time_Inst__windows_ensureInit(), s_windows_perf_freq_inv;
-};
-
-fn_((time_Inst__windows_offset(void))(time_Inst)) {
-    return time_Inst__windows_ensureInit(), (time_Inst){ .impl = s_windows_offset_value };
-};
-
-fn_((time_Inst__windows_now(void))(time_Inst)) {
-    time_Inst__windows_ensureInit();
-    var current = l0$((time_InstPlatform));
-    QueryPerformanceCounter(&current);
-    return (time_Inst){ .impl = current };
-};
-
-fn_((time_Inst__windows_ticks(time_Inst self))(u64)) {
-    return as$(u64)(self.impl.QuadPart);
-};
-
-fn_((time_Inst__windows_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur) $scope) {
-    if (time_Inst__windows_ord(later, earlier) == cmp_Ord_lt) {
-        return_none();
-    }
-    let diff = as$(f64)(later.impl.QuadPart - earlier.impl.QuadPart);
-    let nanos = as$(u64)(diff * time_Inst_nanos_per_sec * time_Inst__windows_freqInv());
-    return_some(time_Dur_fromNanos(nanos));
-} $unscoped(fn);
-
-fn_((time_Inst__windows_addChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst) $scope) {
-    let ticks = (rhs.secs * time_Inst_intervals_per_sec) + (rhs.nanos / 100);
-    if ((0 <= lhs.impl.QuadPart) && ticks <= (u64_limit_max - as$(u64)(lhs.impl.QuadPart))) {
-        return_some({ .impl.QuadPart = as$(LONGLONG)(intCast$((u64)(lhs.impl.QuadPart)) + ticks) });
-    }
-    return_none();
-} $unscoped(fn);
-
-fn_((time_Inst__windows_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst) $scope) {
-    let ticks = (rhs.secs * time_Inst_intervals_per_sec) + (rhs.nanos / 100);
-    if ((0 <= lhs.impl.QuadPart) && ticks <= (u64_limit_min + as$(u64)(lhs.impl.QuadPart))) {
-        return_some({ .impl.QuadPart = as$(LONGLONG)(intCast$((u64)(lhs.impl.QuadPart)) - ticks) });
-    }
-    return_none();
-} $unscoped(fn);
-
-fn_((time_Inst__windows_ord(time_Inst lhs, time_Inst rhs))(cmp_Ord)) {
-    if (lhs.impl.QuadPart < rhs.impl.QuadPart) { return cmp_Ord_lt; }
-    if (lhs.impl.QuadPart > rhs.impl.QuadPart) { return cmp_Ord_gt; }
-    return cmp_Ord_eq;
-};
-#endif /* plat_is_windows */
-
-/* --- POSIX --- */
-
-#if plat_is_posix
-$static var_(s_unix_perf_freq, time_InstPlatform) = cleared();
-$static var_(s_unix_perf_freq_inv, f64) = f64_nan;
-$static var_(s_unix_offset_value, time_InstPlatform) = cleared();
-$static var_(s_unix_initialized, bool) = false;
-
-$attr($on_load)
-$static fn_((time_Inst__unix_init(void))(void)) {
-    if (s_unix_initialized) { return; }
-    var value = l0$((time_InstPlatform));
-    if (sys_posix_clock_gettime(sys_posix_CLOCK_MONOTONIC, &value) != 0)
-        claim_unreachable_msg("Failed to initialize high-resolution timer");
-    s_unix_perf_freq.tv_sec = 1;
-    s_unix_perf_freq.tv_nsec = time_Inst_nanos_per_sec;
-    s_unix_perf_freq_inv = 1.0 / as$(f64)(time_Inst_nanos_per_sec);
-    s_unix_offset_value = value;
-    s_unix_initialized = true;
-};
-
-$attr($inline_always)
-$static fn_((time_Inst__unix_ensureInit(void))(void)) {
-    return time_Inst__unix_init(), claim_assert_fmt(s_unix_initialized, "time_Inst not initialized");
-};
-
-fn_((time_Inst__unix_freq(void))(time_Inst)) {
-    return time_Inst__unix_ensureInit(), (time_Inst){ .impl = s_unix_perf_freq };
-};
-
-fn_((time_Inst__unix_freqInv(void))(f64)) {
-    return time_Inst__unix_ensureInit(), s_unix_perf_freq_inv;
-};
-
-fn_((time_Inst__unix_offset(void))(time_Inst)) {
-    return time_Inst__unix_ensureInit(), (time_Inst){ .impl = s_unix_offset_value };
-};
-
-fn_((time_Inst__unix_now(void))(time_Inst)) {
-    time_Inst__unix_ensureInit();
-    var current = l0$((time_InstPlatform));
-    let_ignore = sys_posix_clock_gettime(sys_posix_CLOCK_MONOTONIC, &current);
-    return (time_Inst){ .impl = current };
-};
-
-fn_((time_Inst__unix_ticks(time_Inst self))(u64)) {
-    return as$(u64)(self.impl.tv_sec) * time_Inst_nanos_per_sec + as$(u64)(self.impl.tv_nsec);
-};
-
-fn_((time_Inst__unix_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur) $scope) {
-    if (time_Inst__unix_ord(later, earlier) == cmp_Ord_lt) {
-        return_none();
-    }
-    var diff = l0$((time_InstPlatform));
-    diff.tv_sec = later.impl.tv_sec - earlier.impl.tv_sec;
-    if (later.impl.tv_nsec < earlier.impl.tv_nsec) {
-        diff.tv_sec--;
-        diff.tv_nsec = as$(TypeOf(diff.tv_nsec))(time_Inst_nanos_per_sec) + later.impl.tv_nsec - earlier.impl.tv_nsec;
-    } else {
-        diff.tv_nsec = later.impl.tv_nsec - earlier.impl.tv_nsec;
-    }
-    let nanos = as$(u64)(diff.tv_sec) * time_Inst_nanos_per_sec + as$(u64)(diff.tv_nsec);
-    return_some(time_Dur_fromNanos(nanos));
-} $unscoped(fn);
-
-fn_((time_Inst__unix_addChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst) $scope) {
-    let ticks = (rhs.secs * time_Inst_intervals_per_sec) + (rhs.nanos / 100);
-    if ((0 <= lhs.impl.tv_sec) && ticks <= (u64_limit_max - as$(u64)(lhs.impl.tv_sec))) {
-        return_some({
-            .impl = {
-                .tv_sec = lhs.impl.tv_sec + as$(TypeOf(lhs.impl.tv_sec))(ticks / time_Inst_nanos_per_sec),
-                .tv_nsec = lhs.impl.tv_nsec + as$(TypeOf(lhs.impl.tv_nsec))(ticks % time_Inst_nanos_per_sec),
-            },
-        });
-    }
-    return_none();
-} $unscoped(fn);
-
-fn_((time_Inst__unix_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst) $scope) {
-    let ticks = (rhs.secs * time_Inst_intervals_per_sec) + (rhs.nanos / 100);
-    if ((0 <= lhs.impl.tv_sec) && ticks <= (u64_limit_max + as$(u64)(lhs.impl.tv_sec))) {
-        return_some({
-            .impl = {
-                .tv_sec = lhs.impl.tv_sec - as$(TypeOf(lhs.impl.tv_sec))(ticks / time_Inst_nanos_per_sec),
-                .tv_nsec = lhs.impl.tv_nsec - as$(TypeOf(lhs.impl.tv_nsec))(ticks % time_Inst_nanos_per_sec),
-            },
-        });
-    }
-    return_none();
-} $unscoped(fn);
-
-fn_((time_Inst__unix_ord(time_Inst lhs, time_Inst rhs))(cmp_Ord)) {
-    if (lhs.impl.tv_sec < rhs.impl.tv_sec) { return cmp_Ord_lt; }
-    if (lhs.impl.tv_sec > rhs.impl.tv_sec) { return cmp_Ord_gt; }
-    if (lhs.impl.tv_nsec < rhs.impl.tv_nsec) { return cmp_Ord_lt; }
-    if (lhs.impl.tv_nsec > rhs.impl.tv_nsec) { return cmp_Ord_gt; }
-    return cmp_Ord_eq;
-};
-#endif /* plat_is_posix */

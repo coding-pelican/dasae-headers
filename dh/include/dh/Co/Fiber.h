@@ -12,6 +12,15 @@ extern "C" {
 
 #define co_Fiber_supported __bool__co_Fiber_supported
 
+#define __step__co_Fiber_stackArgAlign__expand(...) __VA_ARGS__
+#define __comp_int__co_Fiber_stackArgAlign __step__co_Fiber_stackArgAlign__expand( \
+    pp_switch_ pp_begin(arch_type)( \
+        pp_case_((arch_type_x86_64)(16)), \
+        pp_default_(8) \
+    ) pp_end \
+)
+#define co_Fiber_stackArgAlign __comp_int__co_Fiber_stackArgAlign
+
 /// Stores the cpu state of an inactive fiber.
 T_alias$((co_Fiber_Context)(struct co_Fiber_Context));
 typedef fn_(((*co_Fiber_EntryFn)(void))(void));
@@ -66,7 +75,7 @@ fn_((co_Fiber_Context_from(co_Fiber_Context* self, P$raw stack_arg, co_Fiber_Ent
     claim_assert_nonnull(self), claim_assert_nonnull(stack_arg), claim_assert_nonnull(entry);
     asg_l((self)(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
-            .rsp = as$(u64)((ptrToInt(stack_arg)) - sizeOf$(usize)),
+            .rsp = as$(u64)(alignBwd(ptrToInt(stack_arg), co_Fiber_stackArgAlign) - sizeOf$(usize)),
             .rbp = 0,
             .rip = as$(u64)(ptrToInt(entry)),
         })),

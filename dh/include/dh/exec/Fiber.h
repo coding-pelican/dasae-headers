@@ -13,7 +13,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define exec_Fiber_stack_reserve_size (usize_(1) * 1024 * 1024)
-#define exec_Fiber_stack_commit_size (usize_(1) * mem_page_size)
+#define exec_Fiber_stack_commit_size (usize_(64) * 1024)
 #define exec_Fiber_stack_grow_size (usize_(1) * mem_page_size)
 #define exec_Fiber_stack_guard_size (usize_(1) * mem_page_size)
 #define exec_Fiber_stack_size exec_Fiber_stack_reserve_size
@@ -30,6 +30,7 @@ T_alias$((exec_Fiber)(struct exec_Fiber {
     var_(guard_size, usize);
     var_(is_virtual, bool);
     var_(context, co_Fiber_Context);
+    var_(result_ty, debug_TypeInfo);
 }));
 T_use_P$(exec_Fiber);
 T_use_O$(P$exec_Fiber);
@@ -37,12 +38,17 @@ T_use_E$($set(mem_E)(P$exec_Fiber));
 T_alias$((exec_Fiber_WorkFn)(fn_(((*)(P$raw owner, P$raw task))(void) $T)));
 $attr($inline_always)
 $static fn_((exec_Fiber_defaultStackPolicy(void))(exec_Fiber_StackPolicy));
+$attr($inline_always)
+$static fn_((exec_Fiber_slabBytes(TypeInfo result_ty))(usize));
+$attr($inline_always)
+$static fn_((exec_Fiber_resultMut(exec_Fiber* self, TypeInfo type))(u_P$raw));
 $attr($must_check)
 $extern fn_((exec_Fiber_init(
     mem_Alctr gpa,
     P$raw owner,
     P$raw task,
-    exec_Fiber_WorkFn workFn
+    exec_Fiber_WorkFn workFn,
+    TypeInfo result_ty
 ))(mem_E$P$exec_Fiber));
 $attr($must_check)
 $extern fn_((exec_Fiber_initWithPolicy(
@@ -50,6 +56,7 @@ $extern fn_((exec_Fiber_initWithPolicy(
     P$raw owner,
     P$raw task,
     exec_Fiber_WorkFn workFn,
+    TypeInfo result_ty,
     exec_Fiber_StackPolicy policy
 ))(mem_E$P$exec_Fiber));
 $extern fn_((exec_Fiber_fini(exec_Fiber* self, mem_Alctr gpa))(void));
@@ -70,6 +77,17 @@ fn_((exec_Fiber_defaultStackPolicy(void))(exec_Fiber_StackPolicy)) {
         .initial_commit_size = exec_Fiber_stack_commit_size,
         .grow_commit_size = exec_Fiber_stack_grow_size,
         .guard_size = exec_Fiber_stack_guard_size,
+    };
+};
+
+fn_((exec_Fiber_slabBytes(TypeInfo result_ty))(usize)) {
+    return mem_alignFwd(sizeOf$(exec_Fiber), mem_log2ToAlign(result_ty.log2_align)) + result_ty.size;
+};
+fn_((exec_Fiber_resultMut(exec_Fiber* self, TypeInfo type))(u_P$raw)) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->result_ty), type, TypeInfo_eql);
+    return (u_P$raw){
+        .raw = intToPtr$((u8*)(ptrToInt(self) + mem_alignFwd(sizeOf$(exec_Fiber), mem_log2ToAlign(type.log2_align)))),
+        .type = type,
     };
 };
 

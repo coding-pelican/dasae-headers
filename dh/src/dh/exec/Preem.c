@@ -1,5 +1,25 @@
 #include "dh/exec/Preem.h"
 
+$static fn_((exec_Preem_Task__slabBytes(TypeInfo result_ty))(usize));
+$static fn_((exec_Preem_Task__resultMut(exec_Preem_Task* self, TypeInfo type))(u_P$raw));
+$static fn_((exec_Preem_Task__freeSlab(exec_Preem_Task* self, mem_Alctr gpa))(void));
+
+fn_((exec_Preem_Task__slabBytes(TypeInfo result_ty))(usize)) {
+    return mem_alignFwd(sizeOf$(exec_Preem_Task), mem_log2ToAlign(result_ty.log2_align)) + result_ty.size;
+};
+fn_((exec_Preem_Task__resultMut(exec_Preem_Task* self, TypeInfo type))(u_P$raw)) {
+    claim_assert_nonnull(self);
+    return (u_P$raw){
+        .raw = intToPtr$((u8*)(ptrToInt(self) + mem_alignFwd(sizeOf$(exec_Preem_Task), mem_log2ToAlign(type.log2_align)))),
+        .type = type,
+    };
+};
+fn_((exec_Preem_Task__freeSlab(exec_Preem_Task* self, mem_Alctr gpa))(void)) {
+    claim_assert_nonnull(self);
+    let bytes = exec_Preem_Task__slabBytes(self->result.type);
+    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Preem_Task));
+};
+
 fn_((exec_Preem_work(exec_Preem_Task* task))(Void)) {
     claim_assert_nonnull(task), claim_assert_nonnull(task->owner);
     claim_assert_nonnull(task->result.raw), claim_assert_nonnull(task->inner);
@@ -28,17 +48,18 @@ fn_((exec_Preem_fini(exec_Preem* self))(void)) {
 fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$exec_Preem_Task) $guard) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let gpa = unwrap_(self->spawn_cfg.gpa);
-    let task = u_castP$((exec_Preem_Task*)(catch_(
-        (mem_Alctr_create($trace gpa, typeInfo$(exec_Preem_Task)))(
-            $ignore, return_err(E_cause$Sched_ConcUnavailable())
-        )
-    )));
-    errdefer_($ignore, mem_Alctr_destroy($trace gpa, u_anyP(task)));
+    let bytes = exec_Preem_Task__slabBytes(result.type);
+    let mem = orelse_((mem_Alctr_rawAlloc($trace gpa, bytes, alignOfLog2$(exec_Preem_Task)))(
+        return_err(E_cause$Sched_ConcUnavailable())
+    ));
+    let task = ptrAlignCast$((exec_Preem_Task*)(mem));
+    errdefer_($ignore, exec_Preem_Task__freeSlab(task, gpa));
+    mem_set0Bytes(P_prefix$((S$u8)(mem)(bytes)));
     asg_l((task)({
         .next = none(),
         .owner = self,
         .thrd = cleared(),
-        .result = result,
+        .result = exec_Preem_Task__resultMut(task, result.type),
         .inner = inner,
         .state = exec_Task_State_ready,
         .runner = clsr_((exec_Preem_work)(task)),
@@ -54,7 +75,7 @@ fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner
 fn_((exec_Preem_destroyTask(exec_Preem* self, exec_Preem_Task* task))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(task);
     let gpa = unwrap_(self->spawn_cfg.gpa);
-    mem_Alctr_destroy($trace gpa, u_anyP(task));
+    exec_Preem_Task__freeSlab(task, gpa);
 };
 
 fn_((exec_Preem_linkTask(exec_Preem* self, exec_Preem_Task* task))(void) $guard) {
