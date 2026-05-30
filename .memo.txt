@@ -1,9 +1,13 @@
 # Search inclusion
-dh/src/*, dh/include/*, dh/test*/*, dh/sample*/*, dh-examples/*
+dh/src/*, dh/include/*, dh/test*/*, dh/sample*/*, dh/example*/*, dh-examples/*
 
 # Search exclusion
-**/lib/*, **/libs/*, **/assets/,
-**/.tmp*/, **/.temp*/, **/.bak*/, **/.backup*/, **/.archive*/, **/.draft*/, **/.mock*/, **/tests/note/
+
+**/build*/**, **/.cache*/**, **/.tmp*/**, **/.temp*/**,
+**/mock*/**, **/fake*/**, **/dummy*/**, **/stub*/**, **/shim*/**,
+**/draft*/**, **/*.bak*, **/backup*/**, **/.archive*/**,
+**/lib/deps/**,
+**/libs/**, **/asset*/**, **/note*/**
 
 # extra
 ## `as$` 변경사항 적용
