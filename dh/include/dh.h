@@ -70,6 +70,10 @@ extern "C" {
 #include "dh/thrd.h"
 #include "dh/co.h"
 
+#include "dh/Future.h"
+#include "dh/Sched.h"
+#include "dh/exec.h"
+
 #include "dh/io.h"
 #include "dh/fmt.h"
 #include "dh/log.h"
