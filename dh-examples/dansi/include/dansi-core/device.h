@@ -95,7 +95,7 @@ $extern fn_((dansi_device_fetchTerAttrs(io_Writer out, io_Reader in, S$u8 buf))(
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 #define ____dansi_device_requestStatus_static() \
     dansi_utils_formatCSI_static(dansi_utils_device_request_status)

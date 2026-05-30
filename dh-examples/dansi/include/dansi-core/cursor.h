@@ -200,7 +200,7 @@ $extern fn_((dansi_cursor_fetchPos(io_Writer out, io_Reader in, S$u8 buf))(dansi
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 #define ____dansi_cursor_moveTo_static(_col_tok, _row_tok) \
     dansi_utils_formatCSI_u16x2_static(dansi_utils_cursor_move_pos, _row_tok, _col_tok)

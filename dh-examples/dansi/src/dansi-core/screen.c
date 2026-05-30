@@ -4,45 +4,17 @@
 #include <dh/fmt/common.h>
 #include <dh/mem/common.h>
 
-/*========== External Definitions ===========================================*/
+/*========== Internal Declarations ==========================================*/
 
-T_use$((u8)(
-    mem_Delim,
-    mem_TokzIter,
-    mem_tokzAny,
-    mem_TokzIter_next
-));
-
-$static fn_((dansi_screen__receiveReport(io_Reader in, S$u8 buf))(E$S$u8) $scope) {
-    return dansi_Seq_receiveCSI(in, buf);
-} $unscoped(fn);
-
+$attr($must_check)
+$static fn_((dansi_screen__receiveReport(io_Reader in, S$u8 buf))(E$S$u8));
+$attr($must_check)
 $static fn_((dansi_screen__parsePixelSizeReport(
     S_const$u8 report,
     S_const$u8 expected_kind
-))(dansi_screen_E$dansi_screen_PixelSize) $scope) {
-    if (!mem_startsWithBytes(report, u8_l(dansi_utils_csi))) {
-        return_err(E_cause$dansi_screen_InvalidResponse());
-    }
-    if (report.len <= u8_l(dansi_utils_csi).len || *S_at((report)[report.len - 1]) != 't') {
-        return_err(E_cause$dansi_screen_InvalidResponse());
-    }
+))(dansi_screen_E$dansi_screen_PixelSize));
 
-    var it = mem_tokzAny$u8(
-        S_suffix((report)(u8_l(dansi_utils_csi).len)),
-        u8_l(dansi_utils_sep dansi_utils_screen_response_size)
-    );
-    let kind_str = orelse_((mem_TokzIter_next$u8(&it))(return_err(E_cause$dansi_screen_InvalidResponse())));
-    let height_str = orelse_((mem_TokzIter_next$u8(&it))(return_err(E_cause$dansi_screen_InvalidResponse())));
-    let width_str = orelse_((mem_TokzIter_next$u8(&it))(return_err(E_cause$dansi_screen_InvalidResponse())));
-    if (!mem_eqlBytes(kind_str, expected_kind)) {
-        return_err(E_cause$dansi_screen_InvalidResponse());
-    }
-
-    let height = catch_((fmt_parse$u16(height_str, 10))($ignore, return_err(E_cause$dansi_screen_InvalidResponse())));
-    let width = catch_((fmt_parse$u16(width_str, 10))($ignore, return_err(E_cause$dansi_screen_InvalidResponse())));
-    return_ok({ .width = width, .height = height });
-} $unscoped(fn);
+/*========== External Definitions ===========================================*/
 
 fn_((dansi_screen_enterAlternate(void))(S_const$u8)) {
     return u8_l(dansi_screen_enterAlternate_static());
@@ -164,3 +136,36 @@ fn_((dansi_screen_fetchSizeByCursorPos(io_Writer out, io_Reader in, S$u8 buf))(d
         .rows = pos.row,
     });
 } $unguarded(fn);
+
+/*========== Internal Definitions ===========================================*/
+
+fn_((dansi_screen__receiveReport(io_Reader in, S$u8 buf))(E$S$u8)) {
+    return dansi_Seq_receiveCSI(in, buf);
+};
+
+fn_((dansi_screen__parsePixelSizeReport(
+    S_const$u8 report,
+    S_const$u8 expected_kind
+))(dansi_screen_E$dansi_screen_PixelSize) $scope) {
+    if (!mem_startsWithBytes(report, u8_l(dansi_utils_csi))) {
+        return_err(E_cause$dansi_screen_InvalidResponse());
+    }
+    if (report.len <= u8_l(dansi_utils_csi).len || *S_at((report)[report.len - 1]) != 't') {
+        return_err(E_cause$dansi_screen_InvalidResponse());
+    }
+
+    var it = mem_tokzAnyBytes(
+        S_suffix((report)(u8_l(dansi_utils_csi).len)),
+        u8_l(dansi_utils_sep dansi_utils_screen_response_size)
+    );
+    let kind_str = orelse_((mem_TokzIter_nextBytes(&it))(return_err(E_cause$dansi_screen_InvalidResponse())));
+    let height_str = orelse_((mem_TokzIter_nextBytes(&it))(return_err(E_cause$dansi_screen_InvalidResponse())));
+    let width_str = orelse_((mem_TokzIter_nextBytes(&it))(return_err(E_cause$dansi_screen_InvalidResponse())));
+    if (!mem_eqlBytes(kind_str, expected_kind)) {
+        return_err(E_cause$dansi_screen_InvalidResponse());
+    }
+
+    let height = catch_((fmt_parse$u16(height_str, 10))($ignore, return_err(E_cause$dansi_screen_InvalidResponse())));
+    let width = catch_((fmt_parse$u16(width_str, 10))($ignore, return_err(E_cause$dansi_screen_InvalidResponse())));
+    return_ok({ .width = width, .height = height });
+} $unscoped(fn);

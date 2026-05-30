@@ -91,7 +91,7 @@ $extern fn_((dansi_attr_resetStrikethroughWrite(io_Writer writer))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 #define ____dansi_attr_reset_static() \
     dansi_utils_formatCSI_static(dansi_utils_attr_reset)

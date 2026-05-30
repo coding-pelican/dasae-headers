@@ -162,12 +162,6 @@ fn_((dansi_cursor_clearAllTabStopsWrite(io_Writer writer))(E$void)) {
     return io_Writer_writeBytes(writer, dansi_cursor_clearAllTabStops());
 };
 
-T_use$((u8)(
-    mem_Delim,
-    mem_TokzIter,
-    mem_tokzAny,
-    mem_TokzIter_next
-));
 fn_((dansi_cursor_requestPos(void))(S_const$u8)) {
     return u8_l(dansi_cursor_requestPos_static());
 };
@@ -176,9 +170,9 @@ fn_((dansi_cursor_requestPosWrite(io_Writer out))(E$void)) {
     return io_Writer_writeBytes(out, dansi_cursor_requestPos());
 };
 
-fn_((dansi_cursor_receivePosReport(io_Reader in, S$u8 buf))(E$S$u8) $scope) {
+fn_((dansi_cursor_receivePosReport(io_Reader in, S$u8 buf))(E$S$u8)) {
     return dansi_Seq_receiveCSI(in, buf);
-} $unscoped(fn);
+};
 
 fn_((dansi_cursor_parsePosReport(S_const$u8 report))(dansi_cursor_E$dansi_cursor_Pos) $scope) {
     if (!mem_startsWithBytes(report, u8_l(dansi_utils_csi))) {
@@ -187,12 +181,12 @@ fn_((dansi_cursor_parsePosReport(S_const$u8 report))(dansi_cursor_E$dansi_cursor
     if (report.len <= u8_l(dansi_utils_csi).len || *S_at((report)[report.len - 1]) != 'R') {
         return_err(E_cause$dansi_cursor_InvalidResponse());
     }
-    var it = mem_tokzAny$u8(
+    var it = mem_tokzAnyBytes(
         S_suffix((report)(u8_l(dansi_utils_csi).len)),
         u8_l(dansi_utils_sep dansi_utils_cursor_response_pos)
     );
-    let row_str = orelse_((mem_TokzIter_next$u8(&it))(return_err(E_cause$dansi_cursor_InvalidResponse())));
-    let col_str = orelse_((mem_TokzIter_next$u8(&it))(return_err(E_cause$dansi_cursor_InvalidResponse())));
+    let row_str = orelse_((mem_TokzIter_nextBytes(&it))(return_err(E_cause$dansi_cursor_InvalidResponse())));
+    let col_str = orelse_((mem_TokzIter_nextBytes(&it))(return_err(E_cause$dansi_cursor_InvalidResponse())));
     let row = catch_((fmt_parse$u16(row_str, 10))($ignore, return_err(E_cause$dansi_cursor_InvalidResponse())));
     let col = catch_((fmt_parse$u16(col_str, 10))($ignore, return_err(E_cause$dansi_cursor_InvalidResponse())));
     return_ok({ .row = row, .col = col });

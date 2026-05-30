@@ -6,7 +6,7 @@
  * @file    utils.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-01-08 (date of creation)
- * @updated 2026-01-18 (date of last update)
+ * @updated 2026-05-30 (date of last update)
  * @ingroup dasae-headers-workspace(dh-workspace)/dansi
  * @prefix  dansi_utils
  *
@@ -39,6 +39,138 @@ extern "C" {
 #define dansi_utils_st dansi_utils_esc "\\"
 /// Separator (';')
 #define dansi_utils_sep ";"
+
+/* --- Device Sequences --- */
+
+/// Request device status report
+#define dansi_utils_device_request_status "5n"
+/// Device status OK report
+#define dansi_utils_device_response_status_ok "0n"
+/// Device status malfunction report
+#define dansi_utils_device_response_status_malformed "3n"
+/// Request primary device attributes
+#define dansi_utils_device_request_pri_attrs "c"
+/// Request secondary device attributes
+#define dansi_utils_device_request_sec_attrs ">c"
+/// Request tertiary device attributes
+#define dansi_utils_device_request_ter_attrs "=c"
+/// Device attributes report terminator
+#define dansi_utils_device_response_attrs /*{params}*/ "c"
+
+/* --- Mode Sequences --- */
+
+/// Set mode
+#define dansi_utils_mode_set "h"
+/// Reset mode
+#define dansi_utils_mode_reset "l"
+/// Private mode prefix
+#define dansi_utils_mode_private_prefix "?"
+
+/* --- Title Sequences --- */
+
+/// OSC set icon and window title (ESC ] 0 ; {title} ST)
+#define dansi_utils_osc_title_both "0"
+/// OSC set icon title (ESC ] 1 ; {title} ST)
+#define dansi_utils_osc_title_icon "1"
+/// OSC set window title (ESC ] 2 ; {title} ST)
+#define dansi_utils_osc_title_window "2"
+/// Push title stack (CSI 22 ; {target} t)
+#define dansi_utils_title_stack_push /*{target}*/ "22"
+/// Pop title stack (CSI 23 ; {target} t)
+#define dansi_utils_title_stack_pop /*{target}*/ "23"
+
+/* --- Screen Sequences --- */
+
+/// Enter alternate screen buffer
+#define dansi_utils_screen_enter_alternate "?1049h"
+/// Exit alternate screen buffer
+#define dansi_utils_screen_exit_alternate "?1049l"
+
+/// Clear from cursor to end of screen
+#define dansi_utils_screen_clear_from_cursor "0J"
+/// Clear from start of screen to cursor
+#define dansi_utils_screen_clear_to_cursor "1J"
+/// Clear entire screen
+#define dansi_utils_screen_clear "2J"
+
+/// Request cell size in pixels
+#define dansi_utils_screen_request_cell_size_pixels "16t"
+/// Response cell size in pixels: CSI 6 ; height ; width t
+#define dansi_utils_screen_response_cell_size_pixels "6"
+/// Request text area size in characters
+#define dansi_utils_screen_request_text_area_size_chars "18t"
+/// Response text area size in characters: CSI 8 ; height ; width t
+#define dansi_utils_screen_response_text_area_size_chars "8"
+/// Request text area size in pixels
+#define dansi_utils_screen_request_text_area_size_pixels "14t"
+/// Response text area size in pixels: CSI 4 ; height ; width t
+#define dansi_utils_screen_response_text_area_size_pixels "4"
+#define dansi_utils_screen_response_size /*{kind};{height};{width}*/ "t"
+
+/* --- Scroll Sequences --- */
+
+/// Set scrolling region
+#define dansi_utils_scroll_set_region /*{top};{bottom}*/ "r"
+/// Reset scrolling region
+#define dansi_utils_scroll_reset_region "r"
+
+/* --- Line Sequences --- */
+
+/// Scroll up by n lines
+#define dansi_utils_line_scroll_dir_up /*{n}*/ "S"
+/// Scroll down by n lines
+#define dansi_utils_line_scroll_dir_down /*{n}*/ "T"
+
+/// Clear from cursor to end of line
+#define dansi_utils_line_clear_from_cursor "0K"
+/// Clear from start of line to cursor
+#define dansi_utils_line_clear_to_cursor "1K"
+/// Clear entire line
+#define dansi_utils_line_clear "2K"
+
+/* --- Cursor Sequences --- */
+
+/// Move cursor to position
+#define dansi_utils_cursor_move_pos /*{row};{col}*/ "H"
+/// Move cursor up
+#define dansi_utils_cursor_move_dir_up /*{rows}*/ "A"
+/// Move cursor down
+#define dansi_utils_cursor_move_dir_dn /*{rows}*/ "B"
+/// Move cursor forward (right)
+#define dansi_utils_cursor_move_dir_fwd /*{cols}*/ "C"
+/// Move cursor backward (left)
+#define dansi_utils_cursor_move_dir_bwd /*{cols}*/ "D"
+/// Move cursor to next line
+#define dansi_utils_cursor_move_next_line /*{rows}*/ "E"
+/// Move cursor to previous line
+#define dansi_utils_cursor_move_prev_line /*{rows}*/ "F"
+/// Move cursor to absolute column
+#define dansi_utils_cursor_move_abs_col /*{col}*/ "G"
+/// Move cursor to absolute row
+#define dansi_utils_cursor_move_abs_row /*{row}*/ "d"
+
+/// Hide cursor
+#define dansi_utils_cursor_hide "?25l"
+/// Show cursor
+#define dansi_utils_cursor_show "?25h"
+
+/// Store cursor position
+#define dansi_utils_cursor_store_pos "s"
+/// Restore cursor position
+#define dansi_utils_cursor_restore_pos "u"
+/// Set cursor style
+#define dansi_utils_cursor_style /*{style}*/ " q"
+
+/// Set horizontal tab stop
+#define dansi_utils_cursor_tab_set "H"
+/// Clear horizontal tab stop
+#define dansi_utils_cursor_tab_clear_current "0g"
+/// Clear all horizontal tab stops
+#define dansi_utils_cursor_tab_clear_all "3g"
+
+/// Request cursor position (response: ESC[{row};{col}R)
+#define dansi_utils_cursor_request_pos "6n"
+#define dansi_utils_cursor_response_pos /*{row};{col}*/ "R"
 
 /* --- Attribute Sequences --- */
 
@@ -103,119 +235,6 @@ extern "C" {
 #define dansi_utils_attr_style_strikethrough "9" dansi_utils_attr
 /// Strikethrough off
 #define dansi_utils_attr_style_no_strikethrough "29" dansi_utils_attr
-
-/* --- Screen Sequences --- */
-
-/// Set mode
-#define dansi_utils_mode_set "h"
-/// Reset mode
-#define dansi_utils_mode_reset "l"
-/// Private mode prefix
-#define dansi_utils_mode_private_prefix "?"
-
-/// Enter alternate screen buffer
-#define dansi_utils_screen_enter_alternate "?1049h"
-/// Exit alternate screen buffer
-#define dansi_utils_screen_exit_alternate "?1049l"
-
-/// Clear from cursor to end of screen
-#define dansi_utils_screen_clear_from_cursor "0J"
-/// Clear from start of screen to cursor
-#define dansi_utils_screen_clear_to_cursor "1J"
-/// Clear entire screen
-#define dansi_utils_screen_clear "2J"
-/// Request cell size in pixels
-#define dansi_utils_screen_request_cell_size_pixels "16t"
-/// Response cell size in pixels: CSI 6 ; height ; width t
-#define dansi_utils_screen_response_cell_size_pixels "6"
-/// Request text area size in characters
-#define dansi_utils_screen_request_text_area_size_chars "18t"
-/// Response text area size in characters: CSI 8 ; height ; width t
-#define dansi_utils_screen_response_text_area_size_chars "8"
-/// Request text area size in pixels
-#define dansi_utils_screen_request_text_area_size_pixels "14t"
-/// Response text area size in pixels: CSI 4 ; height ; width t
-#define dansi_utils_screen_response_text_area_size_pixels "4"
-#define dansi_utils_screen_response_size /*{kind};{height};{width}*/ "t"
-
-/* --- Device Sequences --- */
-
-/// Request device status report
-#define dansi_utils_device_request_status "5n"
-/// Device status OK report
-#define dansi_utils_device_response_status_ok "0n"
-/// Device status malfunction report
-#define dansi_utils_device_response_status_malformed "3n"
-/// Request primary device attributes
-#define dansi_utils_device_request_pri_attrs "c"
-/// Request secondary device attributes
-#define dansi_utils_device_request_sec_attrs ">c"
-/// Request tertiary device attributes
-#define dansi_utils_device_request_ter_attrs "=c"
-/// Device attributes report terminator
-#define dansi_utils_device_response_attrs /*{params}*/ "c"
-
-/* --- Line Sequences --- */
-
-/// Set scrolling region
-#define dansi_utils_scroll_set_region /*{top};{bottom}*/ "r"
-/// Reset scrolling region
-#define dansi_utils_scroll_reset_region "r"
-
-/// Scroll up by n lines
-#define dansi_utils_line_scroll_dir_up /*{n}*/ "S"
-/// Scroll down by n lines
-#define dansi_utils_line_scroll_dir_down /*{n}*/ "T"
-
-/// Clear from cursor to end of line
-#define dansi_utils_line_clear_from_cursor "0K"
-/// Clear from start of line to cursor
-#define dansi_utils_line_clear_to_cursor "1K"
-/// Clear entire line
-#define dansi_utils_line_clear "2K"
-
-/* --- Cursor Sequences --- */
-
-/// Move cursor to position
-#define dansi_utils_cursor_move_pos /*{row};{col}*/ "H"
-/// Move cursor up
-#define dansi_utils_cursor_move_dir_up /*{rows}*/ "A"
-/// Move cursor down
-#define dansi_utils_cursor_move_dir_dn /*{rows}*/ "B"
-/// Move cursor forward (right)
-#define dansi_utils_cursor_move_dir_fwd /*{cols}*/ "C"
-/// Move cursor backward (left)
-#define dansi_utils_cursor_move_dir_bwd /*{cols}*/ "D"
-/// Move cursor to next line
-#define dansi_utils_cursor_move_next_line /*{rows}*/ "E"
-/// Move cursor to previous line
-#define dansi_utils_cursor_move_prev_line /*{rows}*/ "F"
-/// Move cursor to absolute column
-#define dansi_utils_cursor_move_abs_col /*{col}*/ "G"
-/// Move cursor to absolute row
-#define dansi_utils_cursor_move_abs_row /*{row}*/ "d"
-
-/// Hide cursor
-#define dansi_utils_cursor_hide "?25l"
-/// Show cursor
-#define dansi_utils_cursor_show "?25h"
-
-/// Store cursor position
-#define dansi_utils_cursor_store_pos "s"
-/// Restore cursor position
-#define dansi_utils_cursor_restore_pos "u"
-/// Set cursor style
-#define dansi_utils_cursor_style /*{style}*/ " q"
-/// Set horizontal tab stop
-#define dansi_utils_cursor_tab_set "H"
-/// Clear horizontal tab stop
-#define dansi_utils_cursor_tab_clear_current "0g"
-/// Clear all horizontal tab stops
-#define dansi_utils_cursor_tab_clear_all "3g"
-
-/// Request cursor position (response: ESC[{row};{col}R)
-#define dansi_utils_cursor_request_pos "6n"
-#define dansi_utils_cursor_response_pos /*{row};{col}*/ "R"
 
 /* --- CSI --- */
 

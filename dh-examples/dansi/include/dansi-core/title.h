@@ -16,7 +16,11 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include <dh/io/common.h>
+
+/*========== Macros and Declarations ========================================*/
 
 typedef enum_((dansi_title_StackTarget $fits($packed))(
     dansi_title_StackTarget_icon = 1,
@@ -60,7 +64,7 @@ $extern fn_((dansi_title_popWrite(dansi_title_StackTarget target, io_Writer writ
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 #define ____dansi_title_StackTarget_staticParse(_target_tok) \
     pp_Tok_if_(pp_Tok_hasCmp(_target_tok))( \
@@ -68,15 +72,15 @@ $extern fn_((dansi_title_popWrite(dansi_title_StackTarget target, io_Writer writ
         pp_Tok_else_(pp_join($, ____dansi_title__pp_StackTarget_str, _target_tok)) \
     )
 #define ____dansi_title_setIcon_static(_title_tok) \
-    dansi_utils_formatOSC_static("1", _title_tok)
+    dansi_utils_formatOSC_static(dansi_utils_osc_title_icon, _title_tok)
 #define ____dansi_title_setWindow_static(_title_tok) \
-    dansi_utils_formatOSC_static("2", _title_tok)
+    dansi_utils_formatOSC_static(dansi_utils_osc_title_window, _title_tok)
 #define ____dansi_title_setBoth_static(_title_tok) \
-    dansi_utils_formatOSC_static("0", _title_tok)
+    dansi_utils_formatOSC_static(dansi_utils_osc_title_both, _title_tok)
 #define ____dansi_title_push_static(_target_tok) \
-    dansi_utils_csi "22" dansi_utils_sep _target_tok "t"
+    dansi_utils_csi dansi_utils_title_stack_push dansi_utils_sep _target_tok dansi_utils_screen_response_size
 #define ____dansi_title_pop_static(_target_tok) \
-    dansi_utils_csi "23" dansi_utils_sep _target_tok "t"
+    dansi_utils_csi dansi_utils_title_stack_pop dansi_utils_sep _target_tok dansi_utils_screen_response_size
 
 #pragma region "pp title stack target str"
 #define ____dansi_title__pp_StackTarget_str$dansi_title_StackTarget_icon "1"

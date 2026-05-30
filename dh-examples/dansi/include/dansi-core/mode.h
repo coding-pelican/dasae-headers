@@ -82,7 +82,7 @@ $extern fn_((dansi_mode_setANSIWrite(u16 mode, bool enabled, io_Writer writer))(
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 #define ____dansi_mode_Private_staticParse(_mode_tok) \
     pp_Tok_if_(pp_Tok_hasCmp(_mode_tok))( \

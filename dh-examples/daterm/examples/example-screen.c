@@ -2,10 +2,6 @@
 #include <dh/io/common.h>
 #include <dh/heap/Sys.h>
 #include "daterm.h"
-#include <dansi-core/screen.h>
-#include <dansi-core/cursor.h>
-#include <dansi-core/attr.h>
-#include <dansi-core/style.h>
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;

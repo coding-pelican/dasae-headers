@@ -301,6 +301,7 @@ extern "C" {
 #define copy(_val... /*(TypeOf(_val))*/) ____copy(_val)
 #define ____copy(_val...) (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
 
+/* TODO: Support bitfield */
 #define with_(/*(_expr: _T)(_initial...: (_field)(_asg)*/... /*(_T)*/) __step__with_(__VA_ARGS__)
 #define __step__with_(...) __step__with$__emit(__step__with$__parseExpr __VA_ARGS__)
 #define __step__with$__parseExpr(_expr...) pp_uniqTok(expr_copied), _expr, __step__with$__parseInitial

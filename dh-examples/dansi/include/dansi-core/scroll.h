@@ -16,7 +16,11 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include <dh/io/common.h>
+
+/*========== Macros and Declarations ========================================*/
 
 typedef A$$(4 + uint_log10Ceil_static(u16_limit_max) * 2, u8) dansi_scroll_RegionBuf;
 
@@ -34,7 +38,7 @@ $extern fn_((dansi_scroll_resetRegionWrite(io_Writer writer))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 #define ____dansi_scroll_setRegion_static(_top_tok, _bottom_tok) \
     dansi_utils_formatCSI_u16x2_static(dansi_utils_scroll_set_region, _top_tok, _bottom_tok)

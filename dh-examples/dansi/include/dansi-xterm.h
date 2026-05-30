@@ -4,6 +4,9 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
+#include "dansi-xterm/utils.h"
 #include "dansi-xterm/mouse.h"
 
 #if defined(__cplusplus)

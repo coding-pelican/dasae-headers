@@ -109,7 +109,7 @@ $extern fn_((dansi_color_bg24bitWrite(u8 r, u8 g, u8 b, io_Writer writer))(E$voi
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 /*========== 4-bit color ==========*/
 

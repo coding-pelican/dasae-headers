@@ -133,7 +133,7 @@ $extern fn_((dansi_screen_fetchSizeByCursorPos(io_Writer out, io_Reader in, S$u8
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 #define ____dansi_screen_enterAlternate_static() \
     dansi_utils_formatCSI_static(dansi_utils_screen_enter_alternate)

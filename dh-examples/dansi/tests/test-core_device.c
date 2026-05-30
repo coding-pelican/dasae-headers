@@ -22,7 +22,7 @@ TEST_fn_("dansi-core/device: receive and parse status report" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("dansi-core/device: receive status report split across reads" $scope) {
-    var reader = (dansi_test_ChunkReader){
+    var_(reader, dansi_test_ChunkReader) = {
         .bytes = u8_l("\x1b[0n"),
         .pos = 0,
         .chunk = 1,

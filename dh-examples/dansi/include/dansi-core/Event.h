@@ -80,8 +80,8 @@ typedef variant_((dansi_Event $fits($packed))(
 T_use_prl$(dansi_Event);
 
 errset_((dansi_Event_E)(
-    dansi_Event_UnknownSequence,
-    dansi_Event_InvalidSequence
+    dansi_Event_UnknownSeq,
+    dansi_Event_InvalidSeq
 ));
 T_use_E$($set(dansi_Event_E)(dansi_Event));
 

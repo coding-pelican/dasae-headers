@@ -35,7 +35,7 @@ TEST_fn_("dansi-core/screen: receive and parse text-area size report" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("dansi-core/screen: receive size report split across reads" $scope) {
-    var reader = (dansi_test_ChunkReader){
+    var_(reader, dansi_test_ChunkReader) = {
         .bytes = u8_l("\x1b[8;30;120t"),
         .pos = 0,
         .chunk = 1,

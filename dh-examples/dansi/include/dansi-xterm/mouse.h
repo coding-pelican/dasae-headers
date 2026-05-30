@@ -22,7 +22,7 @@ extern "C" {
 
 #include "dansi-core/Event.h"
 #include "dansi-core/mode.h"
-#include "dansi-xterm/utils.h"
+#include "utils.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -69,8 +69,8 @@ typedef struct dansi_mouse_Event {
 T_use_prl$(dansi_mouse_Event);
 
 errset_((dansi_mouse_E)(
-    dansi_mouse_NotSGRSequence,
-    dansi_mouse_InvalidSGRSequence
+    dansi_mouse_NotSGRSeq,
+    dansi_mouse_InvalidSGRSeq
 ));
 T_use_E$($set(dansi_mouse_E)(dansi_mouse_Event));
 

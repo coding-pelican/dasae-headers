@@ -21,7 +21,7 @@ TEST_fn_("dansi-core/cursor: read cursor position report from reader" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("dansi-core/cursor: receive report split across reads" $scope) {
-    var reader = (dansi_test_ChunkReader){
+    var_(reader, dansi_test_ChunkReader) = {
         .bytes = u8_l("\x1b[12;34R"),
         .pos = 0,
         .chunk = 1,

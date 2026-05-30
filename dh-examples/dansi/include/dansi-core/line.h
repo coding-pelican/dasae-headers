@@ -73,7 +73,7 @@ $extern fn_((dansi_line_clearWrite(io_Writer writer))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 #define ____dansi_line_scrollUp_static(_lines_tok) \
     dansi_utils_formatCSI_u16_static(dansi_utils_line_scroll_dir_up, _lines_tok)

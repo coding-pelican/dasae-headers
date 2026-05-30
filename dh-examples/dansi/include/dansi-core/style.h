@@ -90,7 +90,7 @@ $extern fn_((dansi_style_strikethroughWrite(bool enabled, io_Writer writer))(E$v
 
 /*========== Macros and Definitions =========================================*/
 
-#include "dansi-core/utils.h"
+#include "utils.h"
 
 #define ____dansi_style_bold_static(_pp_enabled) dansi_utils_formatCSI_static(pp_if_(_pp_enabled)( \
     pp_then_(dansi_utils_attr_style_bold), \

@@ -3,13 +3,6 @@
 #include <dh/io/Fixed.h>
 #include <dh/mem/common.h>
 
-T_use$((u8)(
-    mem_Delim,
-    mem_TokzIter,
-    mem_tokzAny,
-    mem_TokzIter_next
-));
-
 fn_((dansi_mouse_enable(dansi_mouse_Mode mode, dansi_mouse_ModeBuf* buf))(S$u8)) {
     var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_mouse_enableWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
@@ -83,24 +76,24 @@ $static fn_((dansi_mouse__button(u16 code))(dansi_mouse_Button)) {
 
 fn_((dansi_mouse_parseSGR(dansi_Seq raw))(dansi_mouse_E$dansi_mouse_Event) $scope) {
     if (raw.kind != dansi_Seq_Kind_csi || raw.bytes.len < 6) {
-        return_err(E_cause$dansi_mouse_NotSGRSequence());
+        return_err(E_cause$dansi_mouse_NotSGRSeq());
     }
     let payload = S_slice((raw.bytes)$r(2, raw.bytes.len));
     if (*S_at((payload)[0]) != '<') {
-        return_err(E_cause$dansi_mouse_NotSGRSequence());
+        return_err(E_cause$dansi_mouse_NotSGRSeq());
     }
     let final = *S_at((payload)[payload.len - 1]);
     if (final != 'M' && final != 'm') {
-        return_err(E_cause$dansi_mouse_NotSGRSequence());
+        return_err(E_cause$dansi_mouse_NotSGRSeq());
     }
 
-    var it = mem_tokzAny$u8(S_slice((payload)$r(1, payload.len - 1)), u8_l(";"));
-    let code_str = orelse_((mem_TokzIter_next$u8(&it))(return_err(E_cause$dansi_mouse_InvalidSGRSequence())));
-    let x_str = orelse_((mem_TokzIter_next$u8(&it))(return_err(E_cause$dansi_mouse_InvalidSGRSequence())));
-    let y_str = orelse_((mem_TokzIter_next$u8(&it))(return_err(E_cause$dansi_mouse_InvalidSGRSequence())));
-    let code = catch_((fmt_parse$u16(code_str, 10))($ignore, return_err(E_cause$dansi_mouse_InvalidSGRSequence())));
-    let x = catch_((fmt_parse$u16(x_str, 10))($ignore, return_err(E_cause$dansi_mouse_InvalidSGRSequence())));
-    let y = catch_((fmt_parse$u16(y_str, 10))($ignore, return_err(E_cause$dansi_mouse_InvalidSGRSequence())));
+    var it = mem_tokzAnyBytes(S_slice((payload)$r(1, payload.len - 1)), u8_l(";"));
+    let code_str = orelse_((mem_TokzIter_nextBytes(&it))(return_err(E_cause$dansi_mouse_InvalidSGRSeq())));
+    let x_str = orelse_((mem_TokzIter_nextBytes(&it))(return_err(E_cause$dansi_mouse_InvalidSGRSeq())));
+    let y_str = orelse_((mem_TokzIter_nextBytes(&it))(return_err(E_cause$dansi_mouse_InvalidSGRSeq())));
+    let code = catch_((fmt_parse$u16(code_str, 10))($ignore, return_err(E_cause$dansi_mouse_InvalidSGRSeq())));
+    let x = catch_((fmt_parse$u16(x_str, 10))($ignore, return_err(E_cause$dansi_mouse_InvalidSGRSeq())));
+    let y = catch_((fmt_parse$u16(y_str, 10))($ignore, return_err(E_cause$dansi_mouse_InvalidSGRSeq())));
 
     let wheel = expr_(dansi_mouse_Wheel $scope)(if ((code & 64) != 0) {
         $break_((code & 1) != 0 ? dansi_mouse_Wheel_down : dansi_mouse_Wheel_up);
