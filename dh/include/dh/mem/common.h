@@ -32,6 +32,14 @@ extern "C" {
 
 /* --- Memory Constants --- */
 
+#define mem_byte_size (usize_(1))
+#define mem_kb_size (usize_(1) * 1000)
+#define mem_kib_size (usize_(1) * 1024)
+#define mem_mb_size (usize_(1) * 1000 * 1000)
+#define mem_mib_size (usize_(1) * 1024 * 1024)
+#define mem_gb_size (usize_(1) * 1000 * 1000 * 1000)
+#define mem_gib_size (usize_(1) * 1024 * 1024 * 1024)
+
 #define mem_page_size /*: usize*/ /** \
     @brief Fixed page size (may be different per platform) \
  */ __val__mem_page_size

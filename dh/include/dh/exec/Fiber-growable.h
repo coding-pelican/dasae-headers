@@ -8,6 +8,7 @@ extern "C" {
 
 #include "Fiber.h"
 #include "../atom.h"
+#include "../test/cfg.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -18,6 +19,35 @@ $static fn_((exec_Fiber__usableStack(exec_Fiber* self, usize commit_size))(S$u8)
 
 $extern fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPolicy policy))(mem_E$void));
 $extern fn_((exec_Fiber_finiStorage(exec_Fiber* self, mem_Alctr gpa))(void));
+$extern fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))(void));
+
+#if TEST_comp_enabled
+T_alias$((exec_Fiber_EnsureDiag_Stage)(enum exec_Fiber_EnsureDiag_Stage{
+    exec_Fiber_EnsureDiag_Stage_none = 0,
+    exec_Fiber_EnsureDiag_Stage_skip_not_virtual,
+    exec_Fiber_EnsureDiag_Stage_skip_sufficient,
+    exec_Fiber_EnsureDiag_Stage_ok,
+    exec_Fiber_EnsureDiag_Stage_fail_rsp_below_storage,
+    exec_Fiber_EnsureDiag_Stage_fail_rsp_above_storage,
+    exec_Fiber_EnsureDiag_Stage_fail_new_guard_below_storage,
+    exec_Fiber_EnsureDiag_Stage_fail_commit,
+    exec_Fiber_EnsureDiag_Stage_fail_protect_rw,
+    exec_Fiber_EnsureDiag_Stage_fail_protect_guard,
+    exec_Fiber_EnsureDiag_Stage_fail_post_fault,
+}));
+T_alias$((exec_Fiber_EnsureDiag)(struct exec_Fiber_EnsureDiag {
+    var_(stage, exec_Fiber_EnsureDiag_Stage);
+    var_(rsp, usize);
+    var_(storage_begin, usize);
+    var_(storage_end, usize);
+    var_(stack_bottom, usize);
+    var_(target, usize);
+    var_(new_guard_begin, usize);
+    var_(commit_len, usize);
+    var_(fail_addr, usize);
+}));
+$extern fn_((exec_Fiber__ensureDiagLast(void))(exec_Fiber_EnsureDiag));
+#endif /* TEST_comp_enabled */
 
 /*========== Macros and Definitions =========================================*/
 

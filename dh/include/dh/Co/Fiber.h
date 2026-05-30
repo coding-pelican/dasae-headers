@@ -37,6 +37,8 @@ $attr($inline_always)
 $static fn_((co_Fiber_contextSwitch(const co_Fiber* self))(const co_Fiber*));
 $attr($inline_always)
 $static fn_((co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw));
+$attr($inline_always)
+$static fn_((co_Fiber_Context_stackPtr(const co_Fiber_Context* self))(usize));
 
 /*========== Macro and Definitions ==========================================*/
 
@@ -156,6 +158,16 @@ fn_((co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw) $scop
     if (arg < stack_begin) return_none();
     return_some(intToPtr$((P$raw)(arg)));
 } $unscoped(fn);
+
+fn_((co_Fiber_Context_stackPtr(const co_Fiber_Context* self))(usize)) {
+    claim_assert_nonnull(self);
+    return pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(as$(usize)(self->rsp))),
+        pp_case_((arch_type_aarch64)(as$(usize)(self->sp))),
+        pp_case_((arch_type_riscv64)(as$(usize)(self->sp))),
+        pp_default_(claim_unreachable)
+    ));
+};
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -1,4 +1,5 @@
 #include "dh/exec/common.h"
+#include "dh/exec/Fiber-growable.h"
 
 fn_((exec_callFiber(exec_Fiber_Starter* start, const co_Fiber* first_switch))(void)) {
     claim_assert_nonnull(start), claim_assert_nonnull(first_switch);
@@ -10,6 +11,11 @@ fn_((exec_callFiber(exec_Fiber_Starter* start, const co_Fiber* first_switch))(vo
 fn_((exec_switchToFiber(co_Fiber_Context* sched_context, exec_Fiber* fiber))(void)) {
     claim_assert_nonnull(sched_context), claim_assert_nonnull(fiber);
     let prev = exec_Fiber_enter(fiber);
+    exec_Fiber__ensureStackHeadroom(
+        fiber,
+        co_Fiber_Context_stackPtr(&fiber->context),
+        exec_Fiber_stack_switch_headroom
+    );
     let_(switch_to, co_Fiber) = {
         .old = sched_context,
         .new = &fiber->context,
