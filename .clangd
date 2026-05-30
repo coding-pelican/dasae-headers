@@ -1,4 +1,4 @@
-# ========== Global ==========
+#========== Workspace/Project Root (Global) ===================================
 ---
 Index:
   Background: Build
@@ -41,7 +41,7 @@ Diagnostics:
       - readability-math-missing-parentheses
       - readability-named-parameter
       - readability-uppercase-literal-suffix
-      - readability-use-concise-preprocessor-directives
+      # - readability-use-concise-preprocessor-directives
       - misc-misplaced-const
       - misc-non-private-member-variables-in-classes
       - cppcoreguidelines-avoid-magic-numbers
@@ -70,44 +70,61 @@ Hover:
   # MacroContentsLimit: 2048
 # Documentation:
 #   CommentFormat: Doxygen
-# ========== Suppress: System & Third-party Headers ==========
+#========== Excluded Paths ====================================================
 ---
 If:
   PathMatch:
-    # [Windows] MSYS2 / MinGW
-    - .*/msys64/.*include/.*
-    - .*/mingw.*/.*include/.*
-    # [Windows] MSVC (Visual Studio)
-    - .*Microsoft Visual Studio.*/include/.*
-    - .*Windows Kits.*/include/.*
-    # [Linux/WSL/macOS] Standard paths
-    - .*/usr/include/.*
-    - .*/usr/local/include/.*
-    # [Compiler Internal] GCC/Clang internal headers (lib/clang, lib/gcc)
-    - .*/lib/clang/.*
-    - .*/lib/gcc/.*
-    # [3rd Party] External libraries
-    - .*/libs/.*
-    - .*/lib/.*
+    # Hidden paths
+    - (^|.*/)\.[^/]+(/.*)?
+    # Build and cache output
+    - (^|.*/)[Bb]uild([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Cc]ache([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Tt]mp([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Tt]emp([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Test doubles and placeholders
+    - (^|.*/)[Mm]ock([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ff]ake([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Dd]ummy([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ss]tub([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ss]him([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Drafts and backups
+    - (^|.*/)[Dd]raft([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Bb]ak([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Bb]ackup([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Aa]rchive([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Local vendored dependencies
+    - (^|.*/)lib/deps(/.*)?
+Index:
+  Background: Skip
+Diagnostics:
+  Suppress: "*"
 CompileFlags:
   Add: [-w] # Inhibit all warnings
-# ========== Excludes ==========
----
-If:
-  PathExclude:
-    - .*build*/.*
-    - .*tmp*/.*
-    - .*temp*/.*
-    - .*cache*/.*
-    - .*mock*/.*
-    - .*draft*/.*
-    - .*bak*/.*
-    - .*backup*/.*
-    - .*archive*/.*
-# ========== C Sources =========
+#========== C Sources =========================================================
 ---
 If:
   PathMatch: [.*\.c, .*\.h]
+  PathExclude:
+    # Hidden paths
+    - (^|.*/)\.[^/]+(/.*)?
+    # Build and cache output
+    - (^|.*/)[Bb]uild([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Cc]ache([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Tt]mp([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Tt]emp([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Test doubles and placeholders
+    - (^|.*/)[Mm]ock([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ff]ake([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Dd]ummy([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ss]tub([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ss]him([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Drafts and backups
+    - (^|.*/)[Dd]raft([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Bb]ak([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Bb]ackup([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Aa]rchive([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Local vendored dependencies
+    - (^|.*/)lib/deps(/.*)?
 CompileFlags:
   Compiler: clang
   Add:
@@ -159,7 +176,7 @@ CompileFlags:
     - -fms-extensions # Windows Compatibility (Declspec, etc.)
     - -Wno-microsoft-anon-tag # Microsoft anonymous tag warning (default excluded warning, `-Wmicrosoft-anon-tag` to enable)
     - -funsigned-char # Prevent char sign issues in cross-platform
-# ========== C++ Sources ==========
+#========== C++ Sources =======================================================
 ---
 If:
   PathMatch: [.*\.cc, .*\.cxx, .*\.cpp, .*\.hh, .*\.hxx, .*\.hpp]
@@ -213,32 +230,49 @@ CompileFlags:
     - -fms-extensions
     - -Wno-microsoft-anon-tag
     - -funsigned-char
-# ========== Headers ==========
+#========== Headers ===========================================================
 ---
 If:
   PathMatch: [.*\.h, .*\.hh, .*\.hxx, .*\.hpp]
+  PathExclude:
+    # Hidden paths
+    - (^|.*/)\.[^/]+(/.*)?
+    # Build and cache output
+    - (^|.*/)[Bb]uild([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Cc]ache([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Tt]mp([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Tt]emp([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Test doubles and placeholders
+    - (^|.*/)[Mm]ock([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ff]ake([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Dd]ummy([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ss]tub([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ss]him([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Drafts and backups
+    - (^|.*/)[Dd]raft([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Bb]ak([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Bb]ackup([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Aa]rchive([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Local vendored dependencies
+    - (^|.*/)lib/deps(/.*)?
 CompileFlags:
   Add:
     - -Wno-unused-const-variable
     - -Wno-unused-variable
     - -Wno-unused-function
-# ========== C Project ==========
-# If:
-#   PathMatch: [.*\.c, .*\.h]
-# CompileFlags:
-#   Add:
-#     # [Relative Paths] use relative paths based on the project root
-#     # This configuration file (.clangd) is the reference point.
-#     - -isystem./../dh/include
-#     - -isystem./../dh/lib/deps
-
-# ========== C++ Project ==========
+#========== Sub-Workspace (Separated file) ====================================
 # ---
-# If:
-#   PathMatch: [.*\.cc, .*\.cxx, .*\.cpp, .*\.hh, .*\.hxx, .*\.hpp]
 # CompileFlags:
 #   Add:
 #     # [Relative Paths] use relative paths based on the project root
 #     # This configuration file (.clangd) is the reference point.
-#     - -isystem./../dh/include
-#     - -isystem./../dh/lib/deps
+#     - -isystem./../dasae-headers/dh/include
+#     - -isystem./../dasae-headers/dh/include/lib/deps
+#========== Sub-Project (Separated file) ======================================
+# ---
+# CompileFlags:
+#   Add:
+#     # [Relative Paths] use relative paths based on the project root
+#     # This configuration file (.clangd) is the reference point.
+#     - -I./include
+#     - -isystem./lib/deps
