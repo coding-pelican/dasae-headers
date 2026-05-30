@@ -69,18 +69,18 @@ runtime. The built-in timed execution model belongs to `exec_Coop`, not
 `exec_Preem` is the OS-thread preemptive scheduler. It uses non-draft `Thrd` for
 async progress and explicit spawn. It does not own a cooperative event loop.
 
-`Thrd_Once` is the thread synchronization primitive for one-time process-local
+`thrd_Once` is the thread synchronization primitive for one-time process-local
 initialization inside the draft runtime. It owns only an atomic state word. The
 winning caller runs a `Void` closure, publishes completion with release
-ordering, and wakes waiters through `Thrd_ftx`; other callers return after an
+ordering, and wakes waiters through `thrd_ftx`; other callers return after an
 acquire load observes `done`.
 
-`Thrd_OnceLock$T` wraps `Thrd_Once` with owned `T` storage. The winning caller
+`thrd_OnceLock$T` wraps `thrd_Once` with owned `T` storage. The winning caller
 completes a `Clsr$T` into that storage, publishes the stored value through
-the underlying `Thrd_Once`, and later callers read the owned value after an
+the underlying `thrd_Once`, and later callers read the owned value after an
 acquire load observes `done`.
 
-`Thrd_LazyLock$T$Init` wraps `Thrd_OnceLock$T` with owned initializer storage.
+`thrd_LazyLock$T$Init` wraps `thrd_OnceLock$T` with owned initializer storage.
 It is appropriate when the initializer closure has a stable concrete storage
 type and should be kept with the lazy cell.
 
@@ -89,7 +89,7 @@ stateDiagram-v2
     [*] --> uninit
     uninit --> running: first caller claims
     uninit --> running: competing caller loses and reloads
-    running --> running: wait on `Thrd_ftx`
+    running --> running: wait on `thrd_ftx`
     running --> done: closure returns
     done --> done: later calls return
 ```
@@ -479,9 +479,9 @@ atomic or virtual-dispatch policy inside the coroutine frame.
 `invoke_` is the erased closure routine dispatch and executes the selected
 routine once. Completion policy belongs above it:
 
-- `Clsr_invokeToStep` dispatches once and returns a result pointer only when the
+- `clsr_invokeToStep` dispatches once and returns a result pointer only when the
   closure is complete
-- `Clsr_invokeToComplete` repeats step dispatch until a result is available
+- `clsr_invokeToComplete` repeats step dispatch until a result is available
 - schedulers use step dispatch for stackless cooperative tasks and copy the
   returned result into the task-owned result slot
 - fiber and preemptive workers use completion dispatch and then copy the final
@@ -532,8 +532,8 @@ flowchart TD
     IsFiber -->|no| StacklessReturn[return to stackless suspend point]
     HasTask -->|no| DriveUntil[drive loop until deadline]
 
-    Preem[exec_Preem] --> Thread[Thrd_spawn]
-    Thread --> Join[Thrd_join on await or cancel]
+    Preem[exec_Preem] --> Thread[thrd_spawn]
+    Thread --> Join[thrd_join on await or cancel]
 ```
 
 `async` may create concurrency when the selected scheduler can do so. It is not

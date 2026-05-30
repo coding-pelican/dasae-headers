@@ -41,8 +41,8 @@ T_decl_O$(time_Proc_Inst);
 T_decl_E$($set(time_direct_E)(time_Proc));
 
 T_alias$((time_Thrd)(struct time_Thrd));
-T_alias$((time_Thrd_Inst)(struct time_Thrd_Inst));
-T_decl_O$(time_Thrd_Inst);
+T_alias$((time_thrd_Inst)(struct time_thrd_Inst));
+T_decl_O$(time_thrd_Inst);
 T_decl_E$($set(time_direct_E)(time_Thrd));
 
 /* --- Clock Types --- */

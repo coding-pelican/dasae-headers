@@ -7,7 +7,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "base.h"
-#include "../time/Duration.h"
+#include "../time/Dur.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -69,7 +69,7 @@ T_use_E$(net_IpAddr);
 T_alias$((net_ConnectOpts)(struct net_ConnectOpts {
     var_(mode, net_Sock_Mode);
     var_(protocol, net_Prot);
-    var_(timeout, time_Duration);
+    var_(timeout, time_Dur);
     var_(nonblocking, bool);
 }));
 T_alias$((net_ListenOpts)(struct net_ListenOpts {
@@ -95,7 +95,7 @@ T_alias$((net_ShutdownHow)(enum_((net_ShutdownHow $fits($packed))(
 $static let_(net_ConnectOpts_default, net_ConnectOpts) = {
     .mode = net_Sock_Mode_stream,
     .protocol = net_Prot_tcp,
-    .timeout = time_Duration_zero,
+    .timeout = time_Dur_zero,
     .nonblocking = false,
 };
 $static let_(net_ListenOpts_default, net_ListenOpts) = {

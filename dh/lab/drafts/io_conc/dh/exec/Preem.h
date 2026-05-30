@@ -31,8 +31,8 @@ union exec_Preem_Task {
 };
 
 T_alias$((exec_Preem)(struct exec_Preem {
-    var_(spawn_cfg, Thrd_SpawnCfg);
-    var_(tasks_mtx, Thrd_Mtx);
+    var_(spawn_cfg, thrd_SpawnCfg);
+    var_(tasks_mtx, thrd_Mtx);
     var_(tasks, O$P$exec_Preem_Task);
 }));
 $extern fn_((exec_Preem_init(mem_Alctr gpa))(exec_Preem));

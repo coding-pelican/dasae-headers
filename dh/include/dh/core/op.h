@@ -205,19 +205,6 @@ extern "C" {
     let tpl_(_T, _rename) = pp_cat3(op_, _ident, AsgWith$)(_T, _U)
 #endif
 
-#if UNUSED_CODE
-#define op_fn_add$(/*((_T)(_id_lhs, _id_rhs))(_TRet)*/...) __step__op_fn_add$(__step__op_fn_add$__parse __VA_ARGS__)
-#define __step__op_fn_add$(...) __step__op_fn_add$__emit(__VA_ARGS__)
-#define __step__op_fn_add$__parse(...) __step__op_fn_add$__parseNested __VA_ARGS__,
-#define __step__op_fn_add$__parseNested(_T...) _T, __step__op_fn_add$__parseNestedNext
-#define __step__op_fn_add$__parseNestedNext(_lhs, _rhs...) _lhs, _rhs
-#define __step__op_fn_add$__emit(...) __op_fn_add$(__VA_ARGS__)
-#define __op_fn_add$(_T, _lhs, _rhs, _TRet...) \
-    fn_((op_add$(_T)(_T _lhs, _T _rhs))_TRet)
-op_fn_addWith$(((time_Instant, time_Duration)(lhs, rhs))(time_Instant)) {
-}
-#endif /* UNUSED_CODE */
-
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

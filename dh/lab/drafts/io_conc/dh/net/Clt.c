@@ -3,7 +3,7 @@
 fn_((net_Clt_connect(net_Self net, const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Clt) $scope) {
     claim_assert_nonnull(addr);
     let stream = try_(net_connectIp(net, addr, opts));
-    return_ok((net_Clt){
+    return_ok({
         .stream = stream,
         .remote = *addr,
     });

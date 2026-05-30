@@ -6,69 +6,69 @@
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-12-20 (date of creation)
  * @updated 2025-12-20 (date of last update)
- * @version v0.1-alpha
- * @ingroup dasae-headers(dh)/Thrd
- * @prefix  Thrd_RWLock
+ * @ingroup dasae-headers(dh)/thrd
+ * @prefix  thrd_RWLock
  *
  * @brief   Read-Write lock for thread management
  * @details Defines read-write lock for thread management.
  */
-#ifndef Thrd_RWLock__included
-#define Thrd_RWLock__included 1
+#ifndef thrd_RWLock__included
+#define thrd_RWLock__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
-#include "common.h"
-#include "Mtx.h"
 #include "Sem.h"
 
 /*========== Macros and Declarations ========================================*/
 
-#if !defined(Thrd_RWLock_use_pthread)
-#define Thrd_RWLock_use_pthread __comp_bool__Thrd_RWLock_use_pthread
-#endif /* !defined(Thrd_RWLock_use_pthread) */
-#define __comp_bool__Thrd_RWLock_use_pthread Thrd_RWLock__use_pthread_default
+#if !defined(thrd_RWLock_use_pthread)
+#define thrd_RWLock_use_pthread __comp_bool__thrd_RWLock_use_pthread
+#endif /* !defined(thrd_RWLock_use_pthread) */
+#define __comp_bool__thrd_RWLock_use_pthread thrd_RWLock__use_pthread_default
 
-#define Thrd_RWLock__use_pthread_default __comp_bool__Thrd_RWLock__use_pthread_default
-#define __comp_bool__Thrd_RWLock__use_pthread_default pp_expand( \
+#define thrd_RWLock__use_pthread_default __comp_bool__thrd_RWLock__use_pthread_default
+#define __comp_bool__thrd_RWLock__use_pthread_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
-        pp_default_(Thrd_use_pthread) \
+        pp_default_(thrd_use_pthread) \
     ) pp_end \
 )
 
-struct Thrd_RWLock__Impl pp_if_(Thrd_RWLock_use_pthread)(
+struct thrd_RWLock__Impl pp_if_(thrd_RWLock_use_pthread)(
     pp_then_({
         var_(unused_, Void);
     }),
     pp_else_({
         var_(state, usize);
-        var_(mtx, Thrd_Mtx);
-        var_(sem, Thrd_Sem);
+        var_(mtx, thrd_Mtx);
+        var_(sem, thrd_Sem);
     }));
-struct Thrd_RWLock pp_if_(Thrd_RWLock_use_pthread)(
+struct thrd_RWLock pp_if_(thrd_RWLock_use_pthread)(
     pp_then_({ var_(impl, pthread_rwlock_t); }),
-    pp_else_({ var_(impl, Thrd_RWLock__Impl); }));
-#if Thrd_RWLock_use_pthread
-#define Thrd_RWLock_init_static() \
+    pp_else_({ var_(impl, thrd_RWLock__Impl); }));
+#if thrd_RWLock_use_pthread
+#define thrd_RWLock_init_static() \
     { .impl = PTHREAD_RWLOCK_INITIALIZER }
-#elif !Thrd_Cond_use_pthread
-#define Thrd_RWLock_init_static() \
-    { .impl = { .state = 0, .mtx = Thrd_Mtx_init_static(), .sem = Thrd_Sem_init_static() } }
+#elif !thrd_Cond_use_pthread
+#define thrd_RWLock_init_static() \
+    { \
+        .impl = {.state = 0, \
+                 .mtx = thrd_Mtx_init_static(), \
+                 .sem = thrd_Sem_init_static() } \
+    }
 #endif
-$extern fn_((Thrd_RWLock_init(void))(Thrd_RWLock));
-$extern fn_((Thrd_RWLock_fini(Thrd_RWLock* self))(void));
-$extern fn_((Thrd_RWLock_lock(Thrd_RWLock* self))(void));
-$extern fn_((Thrd_RWLock_tryLock(Thrd_RWLock* self))(bool));
-$extern fn_((Thrd_RWLock_unlock(Thrd_RWLock* self))(void));
-$extern fn_((Thrd_RWLock_lockShared(Thrd_RWLock* self))(void));
-$extern fn_((Thrd_RWLock_tryLockShared(Thrd_RWLock* self))(bool));
-$extern fn_((Thrd_RWLock_unlockShared(Thrd_RWLock* self))(void));
+$extern fn_((thrd_RWLock_init(void))(thrd_RWLock));
+$extern fn_((thrd_RWLock_fini(thrd_RWLock* self))(void));
+$extern fn_((thrd_RWLock_lock(thrd_RWLock* self))(void));
+$extern fn_((thrd_RWLock_tryLock(thrd_RWLock* self))(bool));
+$extern fn_((thrd_RWLock_unlock(thrd_RWLock* self))(void));
+$extern fn_((thrd_RWLock_lockShared(thrd_RWLock* self))(void));
+$extern fn_((thrd_RWLock_tryLockShared(thrd_RWLock* self))(bool));
+$extern fn_((thrd_RWLock_unlockShared(thrd_RWLock* self))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Thrd_RWLock__included */
+#endif /* thrd_RWLock__included */

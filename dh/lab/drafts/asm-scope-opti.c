@@ -47,7 +47,7 @@ typedef double f64;
 typedef struct Void {
 } Void;
 
-extern usize Thrd_currentId(void);
+extern usize thrd_currentId(void);
 
 struct fn__Ctrl {
     bool is_returning;
@@ -74,7 +74,7 @@ __step_deferred:
     case 315:
         __scope_counter.curr_line = 315 - 1;
         {
-            printf("[ThrdId(%zu): %s] ", Thrd_currentId(), label);
+            printf("[ThrdId(%zu): %s] ", thrd_currentId(), label);
             {
                 do {
                     {
@@ -120,7 +120,7 @@ __step_unscope:
 };
 
 void reportRaw(const char* label, const char* fmt, ...) {
-    printf("[ThrdId(%zu): %s] ", Thrd_currentId(), label);
+    printf("[ThrdId(%zu): %s] ", thrd_currentId(), label);
     __auto_type args = (((struct { va_list val; }){}).val);
     va_start(args, fmt);
     vprintf(fmt, args);

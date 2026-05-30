@@ -6,12 +6,11 @@
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-04-27 (date of creation)
  * @updated 2026-04-27 (date of last update)
- * @version v0.1-alpha
- * @ingroup dasae-headers(dh)/Thrd
- * @prefix  Thrd
+ * @ingroup dasae-headers(dh)/thrd
+ * @prefix  thrd
  */
-#ifndef Thrd_base__included
-#define Thrd_base__included 1
+#ifndef thrd_base__included
+#define thrd_base__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -22,22 +21,22 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef Thrd_Id__Impl Thrd_Id;
-typedef Thrd_Handle__Impl Thrd_Handle;
+typedef thrd_Id__Impl thrd_Id;
+typedef thrd_Handle__Impl thrd_Handle;
 
-typedef struct Thrd Thrd;
-T_decl_E$(Thrd);
+typedef struct thrd_Self thrd_Self;
+T_decl_E$(thrd_Self);
 
-typedef struct Thrd_Mtx Thrd_Mtx;
-typedef struct Thrd_Mtx_Recur Thrd_Mtx_Recur;
-typedef struct Thrd_Cond Thrd_Cond;
-typedef struct Thrd_RWLock Thrd_RWLock;
+typedef struct thrd_Mtx thrd_Mtx;
+typedef struct thrd_Mtx_Recur thrd_Mtx_Recur;
+typedef struct thrd_Cond thrd_Cond;
+typedef struct thrd_RWLock thrd_RWLock;
 
-typedef A$$(Thrd_max_name_len, u8) Thrd_NameBuf;
-T_use_O$(Thrd_NameBuf);
+typedef A$$(thrd_max_name_len, u8) thrd_NameBuf;
+T_use_O$(thrd_NameBuf);
 T_use_E$(O$S_const$u8);
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Thrd_base__included */
+#endif /* thrd_base__included */

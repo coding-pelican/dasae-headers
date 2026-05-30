@@ -24,7 +24,7 @@ fn_((net_Svr_accept(net_Svr* self))(E$net_Stream) $scope) {
             return_err(err);
         }));
     }
-    return_ok((net_Stream){
+    return_ok({
         .socket = net_Sock_promote(accepted, remote_ip, self->socket.flags),
     });
 #else

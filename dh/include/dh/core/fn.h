@@ -389,7 +389,7 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 #define $unscoped(_keyword) pp_cat(inline__$unscoped_, _keyword)()
 #define inline__$unscoped_fn() $unscoped_fn
 #define inline__$unscoped_TEST_fn() $unscoped_TEST_fn
-#define inline__$unscoped_Thrd_fn() $unscoped_Thrd_fn
+#define inline__$unscoped_thrd_fn() $unscoped_thrd_fn
 #define inline__$unscoped_async_fn() $unscoped_async_fn
 #define inline__$unscoped_la() $unscoped_la
 #define inline__$unscoped_expr() $unscoped_expr
@@ -398,7 +398,7 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 #define $unguarded(_keyword) pp_cat(inline__$unguarded_, _keyword)()
 #define inline__$unguarded_fn() $unguarded_fn
 #define inline__$unguarded_TEST_fn() $unguarded_TEST_fn
-#define inline__$unguarded_Thrd_fn() $unguarded_Thrd_fn
+#define inline__$unguarded_thrd_fn() $unguarded_thrd_fn
 #define inline__$unguarded_async_fn() $unguarded_async_fn
 #define inline__$unguarded_la() $unguarded_la
 #define inline__$unguarded_expr() $unguarded_expr

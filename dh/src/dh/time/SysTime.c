@@ -1,5 +1,4 @@
 #include "dh/time/SysTime.h"
-#include "dh/time/Duration.h"
 #if plat_is_posix
 #include "dh/sys/posix.h"
 #endif
@@ -10,11 +9,11 @@ pp_if_(pp_true)(pp_then_(
     $attr($inline_always $maybe_unused)
     $static fn_((time_SysTime__unsupported_now(void))(time_SysTime));
     $attr($inline_always $maybe_unused)
-    $static fn_((time_SysTime__unsupported_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration));
+    $static fn_((time_SysTime__unsupported_durSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Dur));
     $attr($inline_always $maybe_unused)
-    $static fn_((time_SysTime__unsupported_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
+    $static fn_((time_SysTime__unsupported_addChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime));
     $attr($inline_always $maybe_unused)
-    $static fn_((time_SysTime__unsupported_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
+    $static fn_((time_SysTime__unsupported_subChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime));
     $attr($inline_always $maybe_unused)
     $static fn_((time_SysTime__unsupported_fromUnixEpoch(u64 secs))(time_SysTime));
     $attr($inline_always $maybe_unused)
@@ -26,11 +25,11 @@ pp_if_(plat_is_windows)(pp_then_(
     $attr($inline_always)
     $static fn_((time_SysTime__windows_now(void))(time_SysTime));
     $attr($inline_always)
-    $static fn_((time_SysTime__windows_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration));
+    $static fn_((time_SysTime__windows_durSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Dur));
     $attr($inline_always)
-    $static fn_((time_SysTime__windows_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
+    $static fn_((time_SysTime__windows_addChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime));
     $attr($inline_always)
-    $static fn_((time_SysTime__windows_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
+    $static fn_((time_SysTime__windows_subChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime));
     $attr($inline_always)
     $static fn_((time_SysTime__windows_fromUnixEpoch(u64 secs))(time_SysTime));
     $attr($inline_always)
@@ -42,11 +41,11 @@ pp_if_(plat_is_posix)(pp_then_(
     $attr($inline_always)
     $static fn_((time_SysTime__unix_now(void))(time_SysTime));
     $attr($inline_always)
-    $static fn_((time_SysTime__unix_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration));
+    $static fn_((time_SysTime__unix_durSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Dur));
     $attr($inline_always)
-    $static fn_((time_SysTime__unix_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
+    $static fn_((time_SysTime__unix_addChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime));
     $attr($inline_always)
-    $static fn_((time_SysTime__unix_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
+    $static fn_((time_SysTime__unix_subChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime));
     $attr($inline_always)
     $static fn_((time_SysTime__unix_fromUnixEpoch(u64 secs))(time_SysTime));
     $attr($inline_always)
@@ -61,23 +60,23 @@ $static let time_SysTime__now = pp_if_(plat_is_windows)(
         pp_then_(time_SysTime__unix_now),
         pp_else_(time_SysTime__unsupported_now)
     )));
-$static let time_SysTime__durationSinceChkd = pp_if_(plat_is_windows)(
-    pp_then_(time_SysTime__windows_durationSinceChkd),
+$static let time_SysTime__durSinceChkd = pp_if_(plat_is_windows)(
+    pp_then_(time_SysTime__windows_durSinceChkd),
     pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_SysTime__unix_durationSinceChkd),
-        pp_else_(time_SysTime__unsupported_durationSinceChkd)
+        pp_then_(time_SysTime__unix_durSinceChkd),
+        pp_else_(time_SysTime__unsupported_durSinceChkd)
     )));
-$static let time_SysTime__addChkdDuration = pp_if_(plat_is_windows)(
-    pp_then_(time_SysTime__windows_addChkdDuration),
+$static let time_SysTime__addChkdDur = pp_if_(plat_is_windows)(
+    pp_then_(time_SysTime__windows_addChkdDur),
     pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_SysTime__unix_addChkdDuration),
-        pp_else_(time_SysTime__unsupported_addChkdDuration)
+        pp_then_(time_SysTime__unix_addChkdDur),
+        pp_else_(time_SysTime__unsupported_addChkdDur)
     )));
-$static let time_SysTime__subChkdDuration = pp_if_(plat_is_windows)(
-    pp_then_(time_SysTime__windows_subChkdDuration),
+$static let time_SysTime__subChkdDur = pp_if_(plat_is_windows)(
+    pp_then_(time_SysTime__windows_subChkdDur),
     pp_else_(pp_if_(plat_is_posix)(
-        pp_then_(time_SysTime__unix_subChkdDuration),
-        pp_else_(time_SysTime__unsupported_subChkdDuration)
+        pp_then_(time_SysTime__unix_subChkdDur),
+        pp_else_(time_SysTime__unsupported_subChkdDur)
     )));
 $static let time_SysTime__fromUnixEpoch = pp_if_(plat_is_windows)(
     pp_then_(time_SysTime__windows_fromUnixEpoch),
@@ -106,42 +105,42 @@ fn_((time_SysTime_now(void))(time_SysTime)) {
     return time_SysTime__now();
 };
 
-fn_((time_SysTime_elapsed(time_SysTime self))(time_Duration)) {
-    return time_SysTime_durationSince(time_SysTime_now(), self);
+fn_((time_SysTime_elapsed(time_SysTime self))(time_Dur)) {
+    return time_SysTime_durSince(time_SysTime_now(), self);
 };
 
-fn_((time_SysTime_durationSince(time_SysTime later, time_SysTime earlier))(time_Duration)) {
-    return unwrap_(time_SysTime_durationSinceChkd(later, earlier));
+fn_((time_SysTime_durSince(time_SysTime later, time_SysTime earlier))(time_Dur)) {
+    return unwrap_(time_SysTime_durSinceChkd(later, earlier));
 };
 
-fn_((time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration)) {
-    return time_SysTime__durationSinceChkd(later, earlier);
+fn_((time_SysTime_durSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Dur)) {
+    return time_SysTime__durSinceChkd(later, earlier);
 };
 
 /* --- Arithmetic Operations --- */
 
-op_fn_addWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime)) {
-    return unwrap_(time_SysTime_addChkdDuration(lhs, rhs));
+op_fn_addWith$(((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime)) {
+    return unwrap_(time_SysTime_addChkdDur(lhs, rhs));
 };
 
-op_fn_addAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*)) {
-    return *lhs = unwrap_(time_SysTime_addChkdDuration(*lhs, rhs)), lhs;
+op_fn_addAsgWith$(((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime*)) {
+    return *lhs = unwrap_(time_SysTime_addChkdDur(*lhs, rhs)), lhs;
 };
 
-op_fn_subWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime)) {
-    return unwrap_(time_SysTime_subChkdDuration(lhs, rhs));
+op_fn_subWith$(((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime)) {
+    return unwrap_(time_SysTime_subChkdDur(lhs, rhs));
 };
 
-op_fn_subAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*)) {
-    return *lhs = unwrap_(time_SysTime_subChkdDuration(*lhs, rhs)), lhs;
+op_fn_subAsgWith$(((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime*)) {
+    return *lhs = unwrap_(time_SysTime_subChkdDur(*lhs, rhs)), lhs;
 };
 
-fn_((time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime)) {
-    return time_SysTime__addChkdDuration(lhs, rhs);
+fn_((time_SysTime_addChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime)) {
+    return time_SysTime__addChkdDur(lhs, rhs);
 };
 
-fn_((time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime)) {
-    return time_SysTime__subChkdDuration(lhs, rhs);
+fn_((time_SysTime_subChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime)) {
+    return time_SysTime__subChkdDur(lhs, rhs);
 };
 
 /* --- Unix Epoch Conversion --- */
@@ -154,8 +153,8 @@ fn_((time_SysTime_toUnixEpoch(time_SysTime self))(u64)) {
     return time_SysTime__toUnixEpoch(self);
 };
 
-fn_((time_SysTime_durationSinceUnixEpoch(time_SysTime self))(time_Duration)) {
-    return time_SysTime_durationSince(self, time_SysTime_unix_epoch);
+fn_((time_SysTime_durSinceUnixEpoch(time_SysTime self))(time_Dur)) {
+    return time_SysTime_durSince(self, time_SysTime_unix_epoch);
 };
 
 /* --- Comparison Operations --- */
@@ -198,19 +197,19 @@ fn_((time_SysTime__unsupported_now(void))(time_SysTime)) {
     return (time_SysTime){ .impl = cleared() };
 };
 
-fn_((time_SysTime__unsupported_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration) $scope) {
+fn_((time_SysTime__unsupported_durSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Dur) $scope) {
     let_ignore = later;
     let_ignore = earlier;
     return_none();
 } $unscoped(fn);
 
-fn_((time_SysTime__unsupported_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
+fn_((time_SysTime__unsupported_addChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime) $scope) {
     let_ignore = lhs;
     let_ignore = rhs;
     return_none();
 } $unscoped(fn);
 
-fn_((time_SysTime__unsupported_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
+fn_((time_SysTime__unsupported_subChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime) $scope) {
     let_ignore = lhs;
     let_ignore = rhs;
     return_none();
@@ -255,7 +254,7 @@ fn_((time_SysTime__windows_now(void))(time_SysTime)) {
     return (time_SysTime){ .impl = ft };
 };
 
-fn_((time_SysTime__windows_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration) $scope) {
+fn_((time_SysTime__windows_durSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Dur) $scope) {
     if (time_SysTime__windows_ord(later, earlier) == cmp_Ord_lt) {
         return_none();
     }
@@ -263,10 +262,10 @@ fn_((time_SysTime__windows_durationSinceChkd(time_SysTime later, time_SysTime ea
     let earlier_val = time_SysTime__windows_filetimeToU64(earlier.impl);
     let diff_intervals = later_val - earlier_val;
     let nanos = diff_intervals * 100ull;
-    return_some(time_Duration_fromNanos(nanos));
+    return_some(time_Dur_fromNanos(nanos));
 } $unscoped(fn);
 
-fn_((time_SysTime__windows_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
+fn_((time_SysTime__windows_addChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime) $scope) {
     let lhs_val = time_SysTime__windows_filetimeToU64(lhs.impl);
     let intervals = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100ull);
     if (intervals > (u64_limit_max - lhs_val)) {
@@ -275,7 +274,7 @@ fn_((time_SysTime__windows_addChkdDuration(time_SysTime lhs, time_Duration rhs))
     return_some({ .impl = time_SysTime__windows_u64ToFiletime(lhs_val + intervals) });
 } $unscoped(fn);
 
-fn_((time_SysTime__windows_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
+fn_((time_SysTime__windows_subChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime) $scope) {
     let lhs_val = time_SysTime__windows_filetimeToU64(lhs.impl);
     let intervals = (rhs.secs * time_SysTime_intervals_per_sec) + (rhs.nanos / 100ull);
     if (intervals > lhs_val) {
@@ -314,7 +313,7 @@ fn_((time_SysTime__unix_now(void))(time_SysTime)) {
     return (time_SysTime){ .impl = ts };
 };
 
-fn_((time_SysTime__unix_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration) $scope) {
+fn_((time_SysTime__unix_durSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Dur) $scope) {
     if (time_SysTime__unix_ord(later, earlier) == cmp_Ord_lt) {
         return_none();
     }
@@ -325,10 +324,10 @@ fn_((time_SysTime__unix_durationSinceChkd(time_SysTime later, time_SysTime earli
         diff_nsec += time_nanos_per_sec;
     }
     let nanos = as$(u64)(diff_sec)*time_nanos_per_sec + as$(u64)(diff_nsec);
-    return_some(time_Duration_fromNanos(nanos));
+    return_some(time_Dur_fromNanos(nanos));
 } $unscoped(fn);
 
-fn_((time_SysTime__unix_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
+fn_((time_SysTime__unix_addChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime) $scope) {
     var result = lhs.impl;
     result.tv_sec += as$(TypeOf(result.tv_sec))(rhs.secs);
     result.tv_nsec += as$(TypeOf(result.tv_nsec))(rhs.nanos);
@@ -339,7 +338,7 @@ fn_((time_SysTime__unix_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$
     return_some({ .impl = result });
 } $unscoped(fn);
 
-fn_((time_SysTime__unix_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime) $scope) {
+fn_((time_SysTime__unix_subChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime) $scope) {
     var result = lhs.impl;
     result.tv_sec -= as$(TypeOf(result.tv_sec))(rhs.secs);
     result.tv_nsec -= as$(TypeOf(result.tv_nsec))(rhs.nanos);

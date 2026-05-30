@@ -23,7 +23,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "../Thrd/Mtx.h"
+#include "../thrd/Mtx.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -43,7 +43,7 @@ typedef struct heap_Smp_ThrdMeta {
     /// Protects the state in this struct (per-thread state).
     /// Threads lock this before accessing their own state in order
     /// to support freelist reclamation.
-    var_(mtx, Thrd_Mtx);
+    var_(mtx, thrd_Mtx);
     /// For each size class, tracks the next address to be returned from
     /// `alloc` when the freelist is empty.
     var_(next_addrs, A$$(heap_Smp_size_class_count, usize));

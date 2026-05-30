@@ -24,17 +24,9 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
+#include "base.h"
 
 /*========== Macros and Declarations ========================================*/
-
-/* --- Data Types --- */
-typedef struct time_Duration time_Duration;
-T_decl_O$(time_Duration);
-typedef struct time_Instant time_Instant;
-T_decl_O$(time_Instant);
-typedef struct time_SysTime time_SysTime;
-T_decl_O$(time_SysTime);
 
 /* --- Constants --- */
 #define time_nanos_per_nano __comp_const__time_nanos_per_nano
@@ -49,13 +41,6 @@ T_decl_O$(time_SysTime);
 #define time_mins_per_hour __comp_const__time_mins_per_hour
 #define time_hours_per_day __comp_const__time_hours_per_day
 #define time_days_per_week __comp_const__time_days_per_week
-
-/* --- Sleep --- */
-$extern fn_((time_sleep(time_Duration duration))(void));
-$extern fn_((time_sleepSecs(u64 secs))(void));
-$extern fn_((time_sleepMillis(u64 millis))(void));
-$extern fn_((time_sleepMicros(u64 micros))(void));
-$extern fn_((time_sleepNanos(u32 nanos))(void));
 
 /*========== Macros and Definitions =========================================*/
 

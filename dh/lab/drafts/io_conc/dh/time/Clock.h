@@ -23,7 +23,7 @@ T_alias$((time_Clock_Inst)(variant_((time_Clock_Inst $fits($packed))(
     (time_Clock_Inst_awake, time_Awake_Inst),
     (time_Clock_Inst_boot, time_Boot_Inst),
     (time_Clock_Inst_proc, time_Proc_Inst),
-    (time_Clock_Inst_thrd, time_Thrd_Inst)
+    (time_Clock_Inst_thrd, time_thrd_Inst)
 ))));
 
 #if defined(__cplusplus)

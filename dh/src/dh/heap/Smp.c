@@ -1,5 +1,5 @@
 #include "dh/heap/Smp.h"
-#include "dh/Thrd/self.h"
+#include "dh/thrd/Self.h"
 #include "dh/meta.h"
 
 /*========== Internal Declarations ==========================================*/
@@ -87,7 +87,7 @@ fn_((heap_Smp__cpuCount(heap_Smp* self))(u32)) {
     let cpu_count = atom_load(&self->cpu_count, atom_MemOrd_unordered);
     if (cpu_count != 0) { return cpu_count; }
     let max_count = heap_Smp_max_thrd_count;
-    let n = int_min(intCast$((u32)catch_((Thrd_cpuCount())($ignore, max_count))), max_count);
+    let n = int_min(intCast$((u32)catch_((thrd_cpuCount())($ignore, max_count))), max_count);
     return expr_(u32 $scope)(if_some((atom_cmpXchgStrong(
         &self->cpu_count, 0, n, atom_MemOrd_monotonic, atom_MemOrd_monotonic
     ))(other)) {
@@ -105,7 +105,7 @@ fn_((heap_Smp__lockThrdMeta(heap_Smp* self))(heap_Smp__Locked) $scope) {
             let idx = entry->slot_idx;
             let meta = S_at((self->thrd_metas)[idx]);
             entry->lru_age = 0;
-            if (Thrd_Mtx_tryLock(&meta->mtx)) {
+            if (thrd_Mtx_tryLock(&meta->mtx)) {
                 return_({
                     .meta = meta,
                     .idx = idx,
@@ -120,7 +120,7 @@ fn_((heap_Smp__lockThrdMeta(heap_Smp* self))(heap_Smp__Locked) $scope) {
     let cpu_count = heap_Smp__cpuCount(self);
     while (true) {
         let meta = S_at((self->thrd_metas)[idx]);
-        if (Thrd_Mtx_tryLock(&meta->mtx)) {
+        if (thrd_Mtx_tryLock(&meta->mtx)) {
 #if heap_Smp__use_thrd_cache
             heap_Smp__updateCache(self_addr, idx);
 #endif
@@ -172,7 +172,7 @@ fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $guard) {
     loop_labeled(outer, while (true)) {
         let top_free_ptr = *A_at((locked_meta->frees)[class_idx]);
         if ($branch_likely(top_free_ptr != 0)) blk_defer {
-            defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
+            defer_(thrd_Mtx_unlock(&locked_meta->mtx));
             let node = intToPtr$((usize*)(top_free_ptr));
             *node = *A_at((locked_meta->frees)[class_idx]);
             *A_at((locked_meta->frees)[class_idx]) = ptrToInt(node);
@@ -181,13 +181,13 @@ fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $guard) {
 
         let next_addr = *A_at((locked_meta->next_addrs)[class_idx]);
         if ($branch_likely((next_addr % heap_Smp_slab_len) != 0)) blk_defer {
-            defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
+            defer_(thrd_Mtx_unlock(&locked_meta->mtx));
             *A_at((locked_meta->next_addrs)[class_idx]) = next_addr + slot_size;
             return_some(intToPtr$((u8*)(next_addr)));
         } blk_deferral;
 
         if ($branch_likely(search_count >= heap_Smp_max_alloc_search)) blk_defer {
-            defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
+            defer_(thrd_Mtx_unlock(&locked_meta->mtx));
             let ptr = orelse_((mem_Alctr_rawAlloc(
                 $trace self->backing_alctr,
                 heap_Smp_slab_len,
@@ -197,14 +197,14 @@ fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $guard) {
             return_some(ptr);
         } blk_deferral;
 
-        Thrd_Mtx_unlock(&locked_meta->mtx);
+        thrd_Mtx_unlock(&locked_meta->mtx);
         let cpu_count = heap_Smp__cpuCount(self);
         claim_assert(cpu_count != 0);
         var_(idx, u32) = locked_idx;
         while (true) {
             idx = (idx + 1) % cpu_count;
             locked_meta = S_at((self->thrd_metas)[idx]);
-            if (Thrd_Mtx_tryLock(&locked_meta->mtx)) {
+            if (thrd_Mtx_tryLock(&locked_meta->mtx)) {
                 locked_idx = idx;
                 search_count += 1;
                 loop_continue_(outer);
@@ -249,7 +249,7 @@ fn_((heap_Smp__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void) $guard) {
     let node = ptrAlignCast$((usize*)(buf.ptr));
     let locked = heap_Smp__lockThrdMeta(self);
     let locked_meta = locked.meta;
-    defer_(Thrd_Mtx_unlock(&locked_meta->mtx));
+    defer_(thrd_Mtx_unlock(&locked_meta->mtx));
     *node = *A_at((locked_meta->frees)[class_idx]);
     *A_at((locked_meta->frees)[class_idx]) = ptrToInt(node);
 } $unguarded(fn);

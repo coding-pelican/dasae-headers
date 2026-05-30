@@ -98,7 +98,7 @@ $static fn_((proc__dupSliceZ(S_const$u8 src))(E$proc__OwnedBuf) $scope) {
     let out = P_prefix$((S$u8)(buf)(src.len + 1));
     mem_copyBytes(S_prefix((out)(src.len)), src);
     *S_at((out)[src.len]) = 0;
-    return_ok((proc__OwnedBuf){
+    return_ok({
         .ptr = buf,
         .len = src.len,
     });
@@ -127,7 +127,7 @@ $static fn_((proc__dirPathAlloc(fs_Dir dir))(E$proc__OwnedBuf) $guard) {
     errdefer_($ignore, proc__heapFree(buf));
     let wrote = GetFinalPathNameByHandleA(dir.handle, as$(LPSTR)(buf), need + 1, 0);
     if (wrote == 0) return_err(proc__mapWinErr(GetLastError()));
-    var owned = (proc__OwnedBuf){
+    var_(owned, proc__OwnedBuf) = {
         .ptr = buf,
         .len = as$(usize)(wrote),
     };
@@ -147,7 +147,7 @@ $static fn_((proc__resolvePathAlloc(S_const$u8 base, S_const$u8 sub_path))(E$pro
         return_err(E_cause$proc_SystemResources());
     }));
     *S_at((out)[joined.len]) = 0;
-    return_ok((proc__OwnedBuf){
+    return_ok({
         .ptr = buf,
         .len = joined.len,
     });
@@ -155,7 +155,7 @@ $static fn_((proc__resolvePathAlloc(S_const$u8 base, S_const$u8 sub_path))(E$pro
 
 $static fn_((proc__envBlockAlloc(S$S_const$u8 env))(E$proc__OwnedBuf) $scope) {
     if (env.len == 0) {
-        return_ok((proc__OwnedBuf){
+        return_ok({
             .ptr = null,
             .len = 0,
         });
@@ -175,7 +175,7 @@ $static fn_((proc__envBlockAlloc(S$S_const$u8 env))(E$proc__OwnedBuf) $scope) {
     } $end(for);
     *S_at((out)[pos++]) = 0;
     claim_assert(pos == len);
-    return_ok((proc__OwnedBuf){
+    return_ok({
         .ptr = buf,
         .len = len,
     });
@@ -187,14 +187,14 @@ $static fn_((proc__resolveStdIO(proc_StdIO spec, DWORD std_id))(E$proc__Resolved
     case proc_StdIO_Tag_inherit: {
         let base = GetStdHandle(std_id);
         if (base == null || base == INVALID_HANDLE_VALUE) {
-            return_ok((proc__ResolvedStdIO){
+            return_ok({
                 .child = null,
                 .parent_pipe = { .is_present = false, .file = cleared() },
                 .needs_close_child = false,
             });
         }
         let child = try_(proc__dupInheritable(base));
-        return_ok((proc__ResolvedStdIO){
+        return_ok({
             .child = child,
             .parent_pipe = { .is_present = false, .file = cleared() },
             .needs_close_child = true,
@@ -202,7 +202,7 @@ $static fn_((proc__resolveStdIO(proc_StdIO spec, DWORD std_id))(E$proc__Resolved
     }
     case proc_StdIO_Tag_file: {
         let child = try_(proc__dupInheritable(fs_File_handle(spec.file)));
-        return_ok((proc__ResolvedStdIO){
+        return_ok({
             .child = child,
             .parent_pipe = { .is_present = false, .file = cleared() },
             .needs_close_child = true,
@@ -211,7 +211,7 @@ $static fn_((proc__resolveStdIO(proc_StdIO spec, DWORD std_id))(E$proc__Resolved
     case proc_StdIO_Tag_ignore: $fallthrough;
     case proc_StdIO_Tag_close: {
         let child = try_(proc__stdioNull(for_read));
-        return_ok((proc__ResolvedStdIO){
+        return_ok({
             .child = child,
             .parent_pipe = { .is_present = false, .file = cleared() },
             .needs_close_child = true,
@@ -230,7 +230,7 @@ $static fn_((proc__resolveStdIO(proc_StdIO spec, DWORD std_id))(E$proc__Resolved
         }
         if (for_read) {
             claim_assert(SetHandleInformation(write_end, HANDLE_FLAG_INHERIT, 0));
-            return_ok((proc__ResolvedStdIO){
+            return_ok({
                 .child = read_end,
                 .parent_pipe = {
                     .is_present = true,
@@ -240,7 +240,7 @@ $static fn_((proc__resolveStdIO(proc_StdIO spec, DWORD std_id))(E$proc__Resolved
             });
         }
         claim_assert(SetHandleInformation(read_end, HANDLE_FLAG_INHERIT, 0));
-        return_ok((proc__ResolvedStdIO){
+        return_ok({
             .child = write_end,
             .parent_pipe = {
                 .is_present = true,
@@ -357,7 +357,7 @@ $static fn_((proc__spawnImpl(proc_Cmd cmd, LPCSTR application_name, LPCSTR curre
     if (std_out.needs_close_child && std_out.child != null) claim_assert(CloseHandle(std_out.child));
     if (std_err.needs_close_child && std_err.child != null) claim_assert(CloseHandle(std_err.child));
 
-    return_ok((proc_Child){
+    return_ok({
         .handle = proc_info.hProcess,
         .id = as$(u64)(proc_info.dwProcessId),
         .std_in = std_in.parent_pipe,

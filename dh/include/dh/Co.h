@@ -1,14 +1,14 @@
-#ifndef Co__included
-#define Co__included 1
+#ifndef co__included
+#define co__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "Co/Fiber.h"
+#include "co/Fiber.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Co__included */
+#endif /* co__included */

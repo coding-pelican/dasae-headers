@@ -1,5 +1,5 @@
-#ifndef prl_Co_Fiber__included
-#define prl_Co_Fiber__included 1
+#ifndef co_Fiber__included
+#define co_Fiber__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -10,29 +10,29 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define Co_Fiber_supported __bool__Co_Fiber_supported
+#define co_Fiber_supported __bool__co_Fiber_supported
 
 /// Stores the cpu state of an inactive fiber.
-T_alias$((Co_Fiber_Context)(struct Co_Fiber_Context));
-typedef fn_(((*Co_Fiber_EntryFn)(void))(void));
+T_alias$((co_Fiber_Context)(struct co_Fiber_Context));
+typedef fn_(((*co_Fiber_EntryFn)(void))(void));
 $attr($inline_always)
-$static fn_((Co_Fiber_Context_from(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_EntryFn entry))(void));
+$static fn_((co_Fiber_Context_from(co_Fiber_Context* self, P$raw stack_arg, co_Fiber_EntryFn entry))(void));
 
 /// Context switch struct.
-T_alias$((Co_Fiber)(struct Co_Fiber {
-    var_(old, Co_Fiber_Context*);
-    var_(new, Co_Fiber_Context*);
+T_alias$((co_Fiber)(struct co_Fiber {
+    var_(old, co_Fiber_Context*);
+    var_(new, co_Fiber_Context*);
 }));
 /// Fills `self->old` with the current cpu state, and restores the cpu state stored in `self->new`.
 $attr($inline_always)
-$static fn_((Co_Fiber_contextSwitch(const Co_Fiber* self))(const Co_Fiber*));
+$static fn_((co_Fiber_contextSwitch(const co_Fiber* self))(const co_Fiber*));
 $attr($inline_always)
-$static fn_((Co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw));
+$static fn_((co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw));
 
 /*========== Macro and Definitions ==========================================*/
 
-#define __step__Co_Fiber_supported__expand(...) __VA_ARGS__
-#define __bool__Co_Fiber_supported __step__Co_Fiber_supported__expand( \
+#define __step__co_Fiber_supported__expand(...) __VA_ARGS__
+#define __bool__co_Fiber_supported __step__co_Fiber_supported__expand( \
     pp_switch_ pp_begin(arch_type)( \
         pp_case_((arch_type_x86_64)(pp_true)), \
         pp_case_((arch_type_aarch64)(pp_true)), \
@@ -41,7 +41,7 @@ $static fn_((Co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$ra
     ) pp_end \
 )
 
-struct Co_Fiber_Context {
+struct co_Fiber_Context {
     T_embed$(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(struct {
             var_(rsp, u64);
@@ -62,7 +62,7 @@ struct Co_Fiber_Context {
     )));
 };
 
-fn_((Co_Fiber_Context_from(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_EntryFn entry))(void)) {
+fn_((co_Fiber_Context_from(co_Fiber_Context* self, P$raw stack_arg, co_Fiber_EntryFn entry))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(stack_arg), claim_assert_nonnull(entry);
     asg_l((self)(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
@@ -84,14 +84,14 @@ fn_((Co_Fiber_Context_from(Co_Fiber_Context* self, P$raw stack_arg, Co_Fiber_Ent
     ))));
 };
 
-fn_((Co_Fiber_contextSwitch(const Co_Fiber* self))(const Co_Fiber*)) { /* NOLINTBEGIN(hicpp-no-assembler) */
+fn_((co_Fiber_contextSwitch(const co_Fiber* self))(const co_Fiber*)) { /* NOLINTBEGIN(hicpp-no-assembler) */
     claim_assert_nonnull(self);
-    asm_var_(fiber, const Co_Fiber*) $reg(pp_switch_((arch_type)(
+    asm_var_(fiber, const co_Fiber*) $reg(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(rsi)),
         pp_case_((arch_type_aarch64)(x1)),
         pp_case_((arch_type_riscv64)(a1))
     ))) = self;
-    pp_if_(Co_Fiber_supported)((asm_volatile(pp_switch_((arch_type)(
+    pp_if_(co_Fiber_supported)((asm_volatile(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(
             "movq 0(%%rsi), %%rax\n\t"
             "movq 8(%%rsi), %%rcx\n\t"
@@ -138,7 +138,7 @@ fn_((Co_Fiber_contextSwitch(const Co_Fiber* self))(const Co_Fiber*)) { /* NOLINT
     return fiber;
 }; /* NOLINTEND(hicpp-no-assembler) */
 
-fn_((Co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw) $scope) {
+fn_((co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw) $scope) {
     claim_assert(isValidAlign(align));
     if (stack.len < size) return_none();
     let stack_begin = ptrToInt(stack.ptr);
@@ -151,4 +151,4 @@ fn_((Co_Fiber_stackAllocArg(S$u8 stack, usize size, usize align))(O$P$raw) $scop
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* prl_Co_Fiber__included */
+#endif /* co_Fiber__included */

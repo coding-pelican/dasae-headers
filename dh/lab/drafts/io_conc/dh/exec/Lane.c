@@ -12,7 +12,7 @@ $static fn_((exec_Lane__destroyTask(exec_Lane* self, exec_Task* task))(void));
 fn_((exec_Lane__workFiber(P$raw owner, P$raw any_task))(void)) {
     let self = ptrAlignCast$((exec_Lane*)(ensureNonnull(owner)));
     let task = ptrAlignCast$((exec_Task*)(ensureNonnull(any_task)));
-    u_memcpy(task->result, Clsr_invokeToComplete(task->inner, task->result.type));
+    u_memcpy(task->result, clsr_invokeToComplete(task->inner, task->result.type));
     if (task->state != exec_Task_State_canceled) task->state = exec_Task_State_done;
     let fiber = orelse_((task->fiber)(claim_unreachable));
     exec_switchFromFiber(&fiber->context, &self->fiber_context);
@@ -112,7 +112,7 @@ fn_((exec_Lane_createReadyTask(
 fn_((exec_Lane_asyncTask(exec_Lane* self, u_P$raw result, P$$(Clsr$raw) inner))(O$P$exec_Task) $scope) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let task = orelse_((exec_Lane_createReadyTask(self, result, inner))({
-        u_memcpy(result, Clsr_invokeToComplete(inner, result.type));
+        u_memcpy(result, clsr_invokeToComplete(inner, result.type));
         return_none();
     }));
     return_some(task);
@@ -141,7 +141,7 @@ fn_((exec_Lane_runTask(exec_Lane* self, exec_Task* task))(void)) {
     let prev = self->task_curr;
     asg_l((&self->task_curr)(some(task)));
     task->state = exec_Task_State_running;
-    let ret = Clsr_invokeToStep(task->inner, task->result.type);
+    let ret = clsr_invokeToStep(task->inner, task->result.type);
     let done = isSome(ret);
     if (done) u_memcpy(task->result, unwrap_(ret));
     if (task->state == exec_Task_State_running) {

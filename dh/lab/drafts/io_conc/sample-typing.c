@@ -109,7 +109,7 @@ fn_((typeEffectRealistic(Runtime rt, S_const$u8 text, f64 base_interval_secs, bo
     } $end(for);
 } $unscoped(fn);
 
-#if Co_Fiber_supported
+#if co_Fiber_supported
 $static fn_((runMain(Runtime rt))(Void) $guard) {
     let sample_text = u8_l("Hello, World! This is a typing effect demonstration.");
     var_(read_mem, A$$(1024, u8)) = A_zero();

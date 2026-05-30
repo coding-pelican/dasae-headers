@@ -81,7 +81,7 @@ TEST_fn_("net: connect accepts nonzero timeout on loopback" $scope) {
     var connect_addr = net_IpAddr_ip4Loopback(server.socket.addr.ip4.port);
 
     var opts = net_ConnectOpts_default;
-    opts.timeout = time_Duration_fromMillis(50);
+    opts.timeout = time_Dur_fromMillis(50);
     var client = try_(net_Clt_connect(&connect_addr, opts));
     var peer = try_(net_Svr_accept(&server));
 

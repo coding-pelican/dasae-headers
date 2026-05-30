@@ -873,7 +873,7 @@ OS thread management and synchronization primitives.
 | **`WaitGroup`**  | Wait for multiple tasks              |
 
 - **Key Functions:**
-  `Thrd_spawn`, `Thrd_join`, `Thrd_detach`, `Thrd_currId`, `Thrd_yield`, `Thrd_sleep`
+  `thrd_spawn`, `thrd_join`, `thrd_detach`, `thrd_currId`, `thrd_yield`, `thrd_sleep`
 
 #### `Co` / `Clsr` — Coroutine Closures
 
@@ -886,7 +886,7 @@ normal function or a coroutine frame behind one typed invocation surface.
 - **Closure integration:**
   `fn_use_Clsr_`, `co_use_Clsr_`, `clsr_`, `Clsr_Kind_fn`, `Clsr_Kind_co`
 - **Thread integration:**
-  `Thrd_spawn` accepts typed closures through `T_use_Thrd_spawn$(_T)`;
+  `thrd_spawn` accepts typed closures through `T_use_thrd_spawn$(_T)`;
   those closures can represent normal functions or coroutine frames.
 
 </details>
@@ -942,10 +942,10 @@ Process management utilities for cross-platform code.
 - **Submodules:**
   `cfg`, `common`, `Duration`, `Instant`, `SysTime`
 - **Duration:**
-  `time_Duration_fromSecs`, `time_Duration_fromMillis`, `time_Duration_fromNanos`,
-  `time_Duration_add`, `time_Duration_sub`
+  `time_Dur_fromSecs`, `time_Dur_fromMillis`, `time_Dur_fromNanos`,
+  `time_Dur_add`, `time_Dur_sub`
 - **Instant:**
-  `time_Instant_now`, `time_Instant_elapsed`, `time_Instant_durationSince`
+  `time_Inst_now`, `time_Inst_elapsed`, `time_Inst_durSince`
 - **SysTime:**
   `time_SysTime_now`
 - **Sleep:**
@@ -1361,12 +1361,12 @@ fn_((example(void))(E$void) $guard) {
 ### Threads vs Stackless-Coroutines
 
 Threads run typed closures. A closure can wrap a normal function or a coroutine
-frame, so `Thrd_spawn` can execute either shape through the same typed closure
+frame, so `thrd_spawn` can execute either shape through the same typed closure
 contract.
 
 ```c
 $static fn_((timesTwo(i32 input))(i32)) {
-    time_sleep(time_Duration_fromMillis(10));
+    time_sleep(time_Dur_fromMillis(10));
     return input * 2;
 };
 fn_use_Clsr_((timesTwo)(i32)(i32));
@@ -1385,17 +1385,17 @@ co_use_Clsr_((sumAfterSuspend)(i32, i32)(i32));
 
 T_use$((i32)(Clsr_Ctx, Clsr_Rtn, Clsr));
 T_use$((i32)(Co_Ctx, Co_Rtn, Co_Frame));
-T_use_Thrd_spawn$(i32);
-T_use_Thrd_join$(i32);
+T_use_thrd_spawn$(i32);
+T_use_thrd_join$(i32);
 
 fn_((example(void))(E$void) $guard) {
     var function_clsr = clsr_((timesTwo)(21));
-    let function_thread = try_(Thrd_spawn$i32(Thrd_SpawnCfg_default, function_clsr.as_base));
-    let function_joined = Thrd_join$i32(function_thread);
+    let function_thread = try_(thrd_spawn$i32(thrd_SpawnCfg_default, function_clsr.as_base));
+    let function_joined = thrd_join$i32(function_thread);
 
     var coroutine_clsr = clsr_((sumAfterSuspend)(19, 23));
-    let coroutine_thread = try_(Thrd_spawn$i32(Thrd_SpawnCfg_default, coroutine_clsr.as_base));
-    let coroutine_joined = Thrd_join$i32(coroutine_thread);
+    let coroutine_thread = try_(thrd_spawn$i32(thrd_SpawnCfg_default, coroutine_clsr.as_base));
+    let coroutine_joined = thrd_join$i32(coroutine_thread);
 
     io_stream_println(u8_l("function: {:d}"), function_joined->ctx.ret);
     io_stream_println(u8_l("coroutine: {:d}"), coroutine_joined->ctx.ret);

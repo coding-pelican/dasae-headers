@@ -16,10 +16,10 @@
  *          - Duration calculations between system times
  *          - Platform-independent wall-clock operations
  *
- * @note    Unlike time_Instant which uses a monotonic clock,
+ * @note    Unlike time_Inst which uses a monotonic clock,
  *          time_SysTime uses the system's wall clock and can
  *          go backwards (e.g., due to NTP synchronization).
- *          Use time_Instant for measuring elapsed time.
+ *          Use time_Inst for measuring elapsed time.
  */
 #ifndef time_SysTime__included
 #define time_SysTime__included 1
@@ -29,9 +29,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
-#include "common.h"
-#include "Duration.h"
+#include "Dur.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -56,30 +54,30 @@ T_impl_O$(time_SysTime);
 /// Get the current wall-clock time.
 $extern fn_((time_SysTime_now(void))(time_SysTime));
 /// Get the elapsed duration from a given time until now.
-$extern fn_((time_SysTime_elapsed(time_SysTime self))(time_Duration));
+$extern fn_((time_SysTime_elapsed(time_SysTime self))(time_Dur));
 /// Get the duration between two system times (later - earlier).
-$extern fn_((time_SysTime_durationSince(time_SysTime later, time_SysTime earlier))(time_Duration));
+$extern fn_((time_SysTime_durSince(time_SysTime later, time_SysTime earlier))(time_Dur));
 /// Get the duration between two system times with underflow checking.
-$extern fn_((time_SysTime_durationSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Duration));
+$extern fn_((time_SysTime_durSinceChkd(time_SysTime later, time_SysTime earlier))(O$time_Dur));
 
 /* --- Arithmetic Operations --- */
 
 /// Add a duration to the time.
-$extern op_fn_addWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
-$static op_fn_addWith$(addDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
+$extern op_fn_addWith$(((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime));
+$static op_fn_addWith$(addDuration, ((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime));
 /// Add a duration to the time (in-place).
-$extern op_fn_addAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
-$static op_fn_addAsgWith$(addAsgDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
+$extern op_fn_addAsgWith$(((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime*));
+$static op_fn_addAsgWith$(addAsgDuration, ((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime*));
 /// Subtract a duration from the time.
-$extern op_fn_subWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
-$static op_fn_subWith$(subDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime));
+$extern op_fn_subWith$(((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime));
+$static op_fn_subWith$(subDuration, ((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime));
 /// Subtract a duration from the time (in-place).
-$extern op_fn_subAsgWith$(((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
-$static op_fn_subAsgWith$(subAsgDuration, ((time_SysTime, time_Duration)(lhs, rhs))(time_SysTime*));
+$extern op_fn_subAsgWith$(((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime*));
+$static op_fn_subAsgWith$(subAsgDuration, ((time_SysTime, time_Dur)(lhs, rhs))(time_SysTime*));
 /// Add a duration with overflow checking.
-$extern fn_((time_SysTime_addChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
+$extern fn_((time_SysTime_addChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime));
 /// Subtract a duration with underflow checking.
-$extern fn_((time_SysTime_subChkdDuration(time_SysTime lhs, time_Duration rhs))(O$time_SysTime));
+$extern fn_((time_SysTime_subChkdDur(time_SysTime lhs, time_Dur rhs))(O$time_SysTime));
 
 /* --- Unix Epoch Conversion --- */
 
@@ -89,7 +87,7 @@ $extern fn_((time_SysTime_fromUnixEpoch(u64 secs))(time_SysTime));
 /// Returns the number of seconds since January 1, 1970 00:00:00 UTC.
 $extern fn_((time_SysTime_toUnixEpoch(time_SysTime self))(u64));
 /// Get duration since Unix epoch (for sub-second precision).
-$extern fn_((time_SysTime_durationSinceUnixEpoch(time_SysTime self))(time_Duration));
+$extern fn_((time_SysTime_durSinceUnixEpoch(time_SysTime self))(time_Dur));
 
 /* --- Comparison --- */
 

@@ -1,5 +1,5 @@
 #include "dh/Rand.h"
-#include "dh/time/Instant.h"
+#include "dh/time/Inst.h"
 
 /*========== Internal Declarations ==========================================*/
 
@@ -20,7 +20,7 @@ $static fn_((Rand__bounded8(Rand* self, u8 range))(u8));
 /*========== External Definitions ===========================================*/
 
 fn_((Rand_init(void))(Rand)) {
-    return Rand_initSeed(time_Instant_ticks(time_Instant_now()));
+    return Rand_initSeed(time_Inst_ticks(time_Inst_now()));
 };
 
 fn_((Rand_initSeed(u64 seed))(Rand)) {

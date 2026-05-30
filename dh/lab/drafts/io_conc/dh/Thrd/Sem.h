@@ -8,13 +8,13 @@
  * @updated 2025-12-20 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)/Thrd
- * @prefix  Thrd_Sem
+ * @prefix  thrd_Sem
  *
  * @brief   Semaphore for thread management
  * @details Defines semaphore for thread management.
  */
-#ifndef Thrd_Sem__included
-#define Thrd_Sem__included 1
+#ifndef thrd_Sem__included
+#define thrd_Sem__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -26,28 +26,28 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef struct Thrd_Sem {
-    var_(mtx, Thrd_Mtx);
-    var_(cond, Thrd_Cond);
+typedef struct thrd_Sem {
+    var_(mtx, thrd_Mtx);
+    var_(cond, thrd_Cond);
     var_(permits, usize);
-} Thrd_Sem;
-#define Thrd_Sem_init_static(/*void*/) ____Thrd_Sem_init_static()
-$extern fn_((Thrd_Sem_init(void))(Thrd_Sem));
-$extern fn_((Thrd_Sem_fini(Thrd_Sem* self))(void));
-$extern fn_((Thrd_Sem_wait(Thrd_Sem* self))(void));
+} thrd_Sem;
+#define thrd_Sem_init_static(/*void*/) ____thrd_Sem_init_static()
+$extern fn_((thrd_Sem_init(void))(thrd_Sem));
+$extern fn_((thrd_Sem_fini(thrd_Sem* self))(void));
+$extern fn_((thrd_Sem_wait(thrd_Sem* self))(void));
 $attr($must_check)
-$extern fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Dur timeout))(Thrd_TimeoutE$void));
-$extern fn_((Thrd_Sem_post(Thrd_Sem* self))(void));
+$extern fn_((thrd_Sem_timedWait(thrd_Sem* self, time_Dur timeout))(Sched_TimeoutE$void));
+$extern fn_((thrd_Sem_post(thrd_Sem* self))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#define ____Thrd_Sem_init_static() l$((Thrd_Sem){ \
-    .mtx = Thrd_Mtx_init_static(), \
-    .cond = Thrd_Cond_init_static(), \
+#define ____thrd_Sem_init_static() l$((thrd_Sem){ \
+    .mtx = thrd_Mtx_init_static(), \
+    .cond = thrd_Cond_init_static(), \
     .permits = 0, \
 })
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Thrd_Sem__included */
+#endif /* thrd_Sem__included */

@@ -24,7 +24,7 @@ fn_((proc_Child_wait(proc_Child* self))(E$proc_Term) $scope) {
     }
     claim_assert(CloseHandle(self->handle));
     self->handle = INVALID_HANDLE_VALUE;
-    return_ok((proc_Term){
+    return_ok({
         .tag = proc_Term_Tag_exited,
         .code = as$(u32)(exit_code),
     });

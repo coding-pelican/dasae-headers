@@ -112,7 +112,7 @@ $static fn_((net__setIp6Only(net_Handle socket, bool ip6_only))(E$void) $scope) 
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((net__timeoutToTimeval(time_Duration timeout))(struct timeval)) {
+$static fn_((net__timeoutToTimeval(time_Dur timeout))(struct timeval)) {
     let secs = timeout.secs > as$(u64)(i32_limit_max) ? i32_limit_max : as$(i32)(timeout.secs);
     return (struct timeval){
         .tv_sec = as$(long)(secs),
@@ -120,7 +120,7 @@ $static fn_((net__timeoutToTimeval(time_Duration timeout))(struct timeval)) {
     };
 }
 
-$static fn_((net__waitWritable(net_Handle socket, time_Duration timeout))(E$void) $scope) {
+$static fn_((net__waitWritable(net_Handle socket, time_Dur timeout))(E$void) $scope) {
     var write_fds = (fd_set){ 0 };
     FD_ZERO(&write_fds);
     FD_SET(socket, &write_fds);
@@ -223,7 +223,7 @@ fn_((net_listenIp(const net_IpAddr* addr, net_ListenOpts opts))(E$net_Svr) $scop
         }));
     }
 
-    return_ok((net_Svr){
+    return_ok({
         .socket = net_Sock_promote(socket, local, (net_Sock_Flags){ .nonblocking = opts.nonblocking }),
         .options = opts,
     });
@@ -236,7 +236,7 @@ fn_((net_connectIp(const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream) 
     if (opts.protocol != net_Prot_tcp) return_err(E_cause$net_ProtocolUnsupported());
 
     let socket = try_(net__newSocket(addr, opts.mode, opts.protocol));
-    let use_async_connect = opts.nonblocking || !time_Duration_isZero(opts.timeout);
+    let use_async_connect = opts.nonblocking || !time_Dur_isZero(opts.timeout);
     if (use_async_connect) {
         catch_((net__setNonblocking(socket, true))(err, {
             closesocket(socket);
@@ -256,7 +256,7 @@ fn_((net_connectIp(const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream) 
             closesocket(socket);
             return_err(net__mapWinErr(err));
         }
-        if (time_Duration_isZero(opts.timeout)) {
+        if (time_Dur_isZero(opts.timeout)) {
             if (!opts.nonblocking) {
                 closesocket(socket);
                 return_err(E_cause$net_WouldBlock());
@@ -276,7 +276,7 @@ fn_((net_connectIp(const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream) 
         }));
     }
 
-    return_ok((net_Stream){
+    return_ok({
         .socket = net_Sock_promote(socket, *addr, (net_Sock_Flags){ .nonblocking = opts.nonblocking }),
     });
 } $unscoped(fn);

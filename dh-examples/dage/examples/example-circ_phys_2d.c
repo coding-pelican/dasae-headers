@@ -466,13 +466,13 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let target_fps = 60.0f;
     let frame_time = 1.0f / target_fps;
     var is_running = true;
-    var prev_time = time_Instant_now();
+    var prev_time = time_Inst_now();
     io_stream_println(u8_l("Game loop started"));
     while (is_running && !dage_Runtime_shouldQuit(&runtime)) {
         /* Calculate delta time */
-        let curr_time = time_Instant_now();
-        let elapsed = time_Instant_durationSince(curr_time, prev_time);
-        let dt = time_Duration_asSecs$f32(elapsed);
+        let curr_time = time_Inst_now();
+        let elapsed = time_Inst_durSince(curr_time, prev_time);
+        let dt = time_Dur_asSecs$f32(elapsed);
         prev_time = curr_time;
 
         /* Process events */
@@ -497,8 +497,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         dage_Runtime_endFrame(&runtime);
 
         /* Frame timing */
-        let target_time = time_Duration_fromSecs$f64(as$(f64)(frame_time));
-        time_sleep(orelse_((time_Duration_subChkd(target_time, elapsed))(time_Duration_zero)));
+        let target_time = time_Dur_fromSecs$f64(as$(f64)(frame_time));
+        time_sleep(orelse_((time_Dur_subChkd(target_time, elapsed))(time_Dur_zero)));
     }
 
     io_stream_println(u8_l("Circle Physics 2D exited cleanly"));

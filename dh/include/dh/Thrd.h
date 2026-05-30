@@ -1,14 +1,13 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    Thrd.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-05-23 (date of creation)
- * @updated 2025-12-21 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-05-30 (date of last update)
  * @ingroup dasae-headers(dh)
- * @prefix  Thrd
+ * @prefix  thrd
  *
  * @brief   Thread management utilities
  * @details Provides functionality for:
@@ -17,32 +16,32 @@
  *          - Thread-local storage management
  *          - Thread-specific data handling
  */
-#ifndef Thrd__included
-#define Thrd__included 1
+#ifndef thrd__included
+#define thrd__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "Thrd/cfg.h"
-#include "Thrd/base.h"
-#include "Thrd/common.h"
-#include "Thrd/self.h"
+#include "thrd/cfg.h"
+#include "thrd/base.h"
+#include "thrd/common.h"
+#include "thrd/Self.h"
 
-#include "Thrd/ftx.h"
-#include "Thrd/Mtx.h"
-#include "Thrd/Sem.h"
-#include "Thrd/Cond.h"
+#include "thrd/ftx.h"
+#include "thrd/Mtx.h"
+#include "thrd/Sem.h"
+#include "thrd/Cond.h"
 
-// #include "Thrd/Once.h"
-// #include "Thrd/OnceLock.h"
-// #include "Thrd/LazyLock.h"
-#include "Thrd/RWLock.h"
-#include "Thrd/ResetEvent.h"
-#include "Thrd/WaitGroup.h"
+// #include "thrd/Once.h"
+// #include "thrd/OnceLock.h"
+// #include "thrd/LazyLock.h"
+#include "thrd/RWLock.h"
+#include "thrd/ResetEvent.h"
+#include "thrd/WaitGroup.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Thrd__included */
+#endif /* thrd__included */

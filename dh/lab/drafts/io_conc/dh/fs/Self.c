@@ -1288,7 +1288,7 @@ fn_((fs_direct__File_stat(P$raw ctx, fs_File file))(fs_E$fs_File_Stat) $scope) {
 #if plat_is_posix
     var_(st, struct stat) = {};
     if (fstat(file.handle, &st) != 0) return_err(E_cause$fs_ReadFailed());
-    return_ok((fs_File_Stat){
+    return_ok({
         .inode = as$(fs_INode)(st.st_ino),
         .nlink = as$(fs_NLink)(st.st_nlink),
         .size = as$(u64)(st.st_size),
@@ -1305,7 +1305,7 @@ fn_((fs_direct__File_stat(P$raw ctx, fs_File file))(fs_E$fs_File_Stat) $scope) {
     var_(size, ULARGE_INTEGER) = {};
     size.LowPart = info.nFileSizeLow;
     size.HighPart = info.nFileSizeHigh;
-    return_ok((fs_File_Stat){
+    return_ok({
         .inode = as$(fs_INode)(((u64)info.nFileIndexHigh << 32) | info.nFileIndexLow),
         .nlink = as$(fs_NLink)(info.nNumberOfLinks),
         .size = as$(u64)(size.QuadPart),

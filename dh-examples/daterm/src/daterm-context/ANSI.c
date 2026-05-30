@@ -16,7 +16,7 @@ $static fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event));
 $static fn_((daterm_ANSI__inputReady(daterm_ANSI* self))(bool));
 $static fn_((daterm_ANSI__pollSeq(daterm_ANSI* self))(O$dansi_Seq));
 $static fn_((daterm_ANSI__wait(P$raw ctx))(daterm_Event));
-$static fn_((daterm_ANSI__timedWait(P$raw ctx, time_Duration timeout))(daterm_Term_E$daterm_Event));
+$static fn_((daterm_ANSI__timedWait(P$raw ctx, time_Dur timeout))(daterm_Term_E$daterm_Event));
 $static fn_((daterm_ANSI__reader(P$raw ctx))(io_Reader));
 $static fn_((daterm_ANSI__writer(P$raw ctx))(io_Writer));
 $static fn_((daterm_ANSI__queryScreenSize(P$raw ctx))(E$daterm_Size));
@@ -229,7 +229,7 @@ $static fn_((daterm_ANSI__inputReady(daterm_ANSI* self))(bool)) {
 #endif
 };
 
-fn_((daterm_ANSI_pollBufferedSeq(io_Buf_Reader* input, O$time_Instant* esc_started_at, time_Duration esc_timeout))(O$dansi_Seq) $scope) {
+fn_((daterm_ANSI_pollBufferedSeq(io_Buf_Reader* input, O$time_Inst* esc_started_at, time_Dur esc_timeout))(O$dansi_Seq) $scope) {
     let ready = io_Buf_Reader_ready(*input);
     if (ready.len == 0) { return_none(); }
 
@@ -244,18 +244,18 @@ fn_((daterm_ANSI_pollBufferedSeq(io_Buf_Reader* input, O$time_Instant* esc_start
     }
 
     if (ready.len == 1) {
-        if (time_Duration_isZero(esc_timeout)) {
+        if (time_Dur_isZero(esc_timeout)) {
             let bytes = S_prefix((ready)(1));
             io_Buf_Reader_drop(input, 1);
             asg_l((esc_started_at)(none()));
             return_some(dansi_Seq_esc(bytes));
         }
         if_none((*esc_started_at)) {
-            asg_l((esc_started_at)(some(time_Instant_now())));
+            asg_l((esc_started_at)(some(time_Inst_now())));
             return_none();
         }
-        let elapsed = time_Instant_elapsed(unwrap_(*esc_started_at));
-        if (!time_Duration_gt(elapsed, esc_timeout)) {
+        let elapsed = time_Inst_elapsed(unwrap_(*esc_started_at));
+        if (!time_Dur_gt(elapsed, esc_timeout)) {
             return_none();
         }
         let bytes = S_prefix((ready)(1));
@@ -344,17 +344,17 @@ fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event) $scope) {
 fn_((daterm_ANSI__wait(P$raw ctx))(daterm_Event) $scope) {
     while (true) {
         if_some((daterm_ANSI__poll(ctx))(event)) { return event; }
-        time_sleep(time_Duration_fromMillis(1));
+        time_sleep(time_Dur_fromMillis(1));
     }
 } $unscoped(fn);
 
-fn_((daterm_ANSI__timedWait(P$raw ctx, time_Duration timeout))(daterm_Term_E$daterm_Event) $scope) {
-    let instant = time_Instant_now();
+fn_((daterm_ANSI__timedWait(P$raw ctx, time_Dur timeout))(daterm_Term_E$daterm_Event) $scope) {
+    let instant = time_Inst_now();
     while (true) {
         if_some((daterm_ANSI__poll(ctx))(event)) { return_ok(event); }
-        let elapsed = time_Instant_elapsed(instant);
-        if (time_Duration_gt(elapsed, timeout)) { return_err(E_cause$daterm_Term_Timeout()); }
-        time_sleep(time_Duration_sub(timeout, elapsed));
+        let elapsed = time_Inst_elapsed(instant);
+        if (time_Dur_gt(elapsed, timeout)) { return_err(E_cause$daterm_Term_Timeout()); }
+        time_sleep(time_Dur_sub(timeout, elapsed));
     }
 } $unscoped(fn);
 

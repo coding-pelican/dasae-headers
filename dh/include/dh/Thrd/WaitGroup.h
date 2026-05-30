@@ -1,63 +1,62 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    WaitGroup.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-12-20 (date of creation)
- * @updated 2025-12-23 (date of last update)
- * @version v0.1-alpha
- * @ingroup dasae-headers(dh)/Thrd
- * @prefix  Thrd_WaitGroup
+ * @updated 2026-05-30 (date of last update)
+ * @ingroup dasae-headers(dh)/thrd
+ * @prefix  thrd_WaitGroup
  *
  * @brief   Wait group for thread management
  * @details Defines wait group for thread management.
  */
-#ifndef Thrd_WaitGroup__included
-#define Thrd_WaitGroup__included 1
+#ifndef thrd_WaitGroup__included
+#define thrd_WaitGroup__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "self.h"
+#include "Self.h"
 #include "ResetEvent.h"
 
 /*========== Macros and Declarations ========================================*/
 
-typedef struct Thrd_WaitGroup {
+typedef struct thrd_WaitGroup {
     var_(state, atom_V$usize);
-    var_(event, Thrd_ResetEvent);
-} Thrd_WaitGroup;
-#define Thrd_WaitGroup_init_static(/*void*/) ____Thrd_WaitGroup_init_static()
-$extern fn_((Thrd_WaitGroup_init(void))(Thrd_WaitGroup));
-$extern fn_((Thrd_WaitGroup_fini(Thrd_WaitGroup* self))(void));
-$extern fn_((Thrd_WaitGroup_start(Thrd_WaitGroup* self))(void));
-$extern fn_((Thrd_WaitGroup_startOn(atom_V$usize* state))(void));
-$extern fn_((Thrd_WaitGroup_startN(Thrd_WaitGroup* self, usize n))(void));
-$extern fn_((Thrd_WaitGroup_startNOn(atom_V$usize* state, usize n))(void));
-$extern fn_((Thrd_WaitGroup_finish(Thrd_WaitGroup* self))(void));
-$extern fn_((Thrd_WaitGroup_finishOn(atom_V$usize* state, Thrd_ResetEvent* event))(void));
-$extern fn_((Thrd_WaitGroup_wait(Thrd_WaitGroup* self))(void));
-$extern fn_((Thrd_WaitGroup_waitOn(atom_V$usize* state, Thrd_ResetEvent* event))(void));
-$extern fn_((Thrd_WaitGroup_reset(Thrd_WaitGroup* self))(void));
-$extern fn_((Thrd_WaitGroup_resetOn(atom_V$usize* state, Thrd_ResetEvent* event))(void));
-$extern fn_((Thrd_WaitGroup_isDone(Thrd_WaitGroup* self))(bool));
-$extern fn_((Thrd_WaitGroup_isDoneOn(atom_V$usize* state))(bool));
-$extern fn_((Thrd_WaitGroup_value(Thrd_WaitGroup* self))(usize));
-$extern fn_((Thrd_WaitGroup_valueOn(atom_V$usize* state))(usize));
+    var_(event, thrd_ResetEvent);
+} thrd_WaitGroup;
+#define thrd_WaitGroup_init_static(/*void*/) ____thrd_WaitGroup_init_static()
+$extern fn_((thrd_WaitGroup_init(void))(thrd_WaitGroup));
+$extern fn_((thrd_WaitGroup_fini(thrd_WaitGroup* self))(void));
+$extern fn_((thrd_WaitGroup_start(thrd_WaitGroup* self))(void));
+$extern fn_((thrd_WaitGroup_startOn(atom_V$usize* state))(void));
+$extern fn_((thrd_WaitGroup_startN(thrd_WaitGroup* self, usize n))(void));
+$extern fn_((thrd_WaitGroup_startNOn(atom_V$usize* state, usize n))(void));
+$extern fn_((thrd_WaitGroup_finish(thrd_WaitGroup* self))(void));
+$extern fn_((thrd_WaitGroup_finishOn(atom_V$usize* state, thrd_ResetEvent* event))(void));
+$extern fn_((thrd_WaitGroup_wait(thrd_WaitGroup* self))(void));
+$extern fn_((thrd_WaitGroup_waitOn(atom_V$usize* state, thrd_ResetEvent* event))(void));
+$extern fn_((thrd_WaitGroup_reset(thrd_WaitGroup* self))(void));
+$extern fn_((thrd_WaitGroup_resetOn(atom_V$usize* state, thrd_ResetEvent* event))(void));
+$extern fn_((thrd_WaitGroup_isDone(thrd_WaitGroup* self))(bool));
+$extern fn_((thrd_WaitGroup_isDoneOn(atom_V$usize* state))(bool));
+$extern fn_((thrd_WaitGroup_value(thrd_WaitGroup* self))(usize));
+$extern fn_((thrd_WaitGroup_valueOn(atom_V$usize* state))(usize));
 /// Spawns a new thread for the closure. This is appropriate when the callee delegates all work.
-$extern fn_((Thrd_WaitGroup_spawn(Thrd_WaitGroup* self, mem_Alctr gpa, Clsr$Void* clsr))(void));
+$extern fn_((thrd_WaitGroup_spawn(thrd_WaitGroup* self, mem_Alctr gpa, Clsr$Void* clsr))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#define ____Thrd_WaitGroup_init_static() l$((Thrd_WaitGroup){ \
+#define ____thrd_WaitGroup_init_static() l$((thrd_WaitGroup){ \
     .state = atom_V_init(0), \
-    .event = Thrd_ResetEvent_init_static(), \
+    .event = thrd_ResetEvent_init_static(), \
 })
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Thrd_WaitGroup__included */
+#endif /* thrd_WaitGroup__included */

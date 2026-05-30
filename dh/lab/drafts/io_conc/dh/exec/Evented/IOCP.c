@@ -112,7 +112,7 @@ fn_((exec_Evented_IOCP_init(void))(exec_Evented_E$exec_Evented_IOCP) $scope) {
 #if plat_is_windows
     let port = CreateIoCompletionPort(INVALID_HANDLE_VALUE, null, 0, 0);
     if (port == null) return_err(E_cause$exec_Evented_OpenFailed());
-    return_ok((exec_Evented_IOCP){ .port = port });
+    return_ok({ .port = port });
 #else
     return_err(E_cause$exec_Evented_Unsupported());
 #endif

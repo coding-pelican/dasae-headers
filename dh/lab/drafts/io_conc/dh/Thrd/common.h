@@ -6,15 +6,14 @@
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-05-23 (date of creation)
  * @updated 2025-05-23 (date of last update)
- * @version v0.1-alpha
- * @ingroup dasae-headers(dh)/Thrd
- * @prefix  Thrd
+ * @ingroup dasae-headers(dh)/thrd
+ * @prefix  thrd
  *
  * @brief   Common definitions for thread management
  * @details Defines common definitions for thread management.
  */
-#ifndef Thrd_common__included
-#define Thrd_common__included 1
+#ifndef thrd_common__included
+#define thrd_common__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -25,9 +24,7 @@ extern "C" {
 #include "../Sched/base.h"
 #include "../time/Dur.h"
 
-errset_((Thrd_TimeoutE)() $union_errset_(Sched_TimeoutE));
-
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Thrd_common__included */
+#endif /* thrd_common__included */

@@ -1,5 +1,5 @@
-#ifndef Thrd__included
-#define Thrd__included 1
+#ifndef thrd__included
+#define thrd__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -26,4 +26,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Thrd__included */
+#endif /* thrd__included */

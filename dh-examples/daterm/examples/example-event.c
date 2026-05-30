@@ -61,7 +61,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
             default_() $do_nothing $end(default);
             } $end(match);
         }
-        time_sleep(time_Duration_fromMillis(16));
+        time_sleep(time_Dur_fromMillis(16));
     }
 
     return_ok({});

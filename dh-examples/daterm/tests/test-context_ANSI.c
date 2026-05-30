@@ -35,7 +35,7 @@ TEST_fn_("daterm-context/ANSI: default config keeps processed output" $scope) {
     let cfg = daterm_ANSI_Cfg_default(gpa);
 
     try_(TEST_expect(cfg.output_mode == daterm_ANSI_OutputMode_processed));
-    try_(TEST_expect(time_Duration_eq(cfg.esc_timeout, daterm_ANSI_esc_timeout_default)));
+    try_(TEST_expect(time_Dur_eq(cfg.esc_timeout, daterm_ANSI_esc_timeout_default)));
     return_ok({});
 } $unscoped(TEST_fn);
 
@@ -44,7 +44,7 @@ TEST_fn_("daterm-context/ANSI: buffered raw byte becomes key sequence without re
     var_(mem, A$$(8, u8)) $undefined;
     var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     try_(io_Buf_Reader_fill(&reader));
-    var_(esc_started_at, O$time_Instant) = none();
+    var_(esc_started_at, O$time_Inst) = none();
 
     let seq = unwrap_(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, daterm_ANSI_esc_timeout_default));
 
@@ -63,7 +63,7 @@ TEST_fn_("daterm-context/ANSI: split CSI waits for final byte" $scope) {
     };
     var_(mem, A$$(8, u8)) $undefined;
     var reader = io_Buf_Reader_init(daterm_ANSI_test_ChunkReader_reader(&reader_impl), A_ref$((S$u8)(mem)));
-    var_(esc_started_at, O$time_Instant) = none();
+    var_(esc_started_at, O$time_Inst) = none();
 
     try_(io_Buf_Reader_fill(&reader));
     try_(TEST_expect(isNone(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, daterm_ANSI_esc_timeout_default))));
@@ -83,11 +83,11 @@ TEST_fn_("daterm-context/ANSI: single escape follows timeout policy" $scope) {
     var_(mem, A$$(8, u8)) $undefined;
     var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     try_(io_Buf_Reader_fill(&reader));
-    var_(esc_started_at, O$time_Instant) = none();
+    var_(esc_started_at, O$time_Inst) = none();
 
     try_(TEST_expect(isNone(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, daterm_ANSI_esc_timeout_default))));
     try_(TEST_expect(isSome(esc_started_at)));
-    let seq = unwrap_(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, time_Duration_zero));
+    let seq = unwrap_(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, time_Dur_zero));
 
     try_(TEST_expect(seq.kind == dansi_Seq_Kind_esc));
     try_(TEST_expect(mem_eqlBytes(seq.bytes, u8_l("\x1B"))));

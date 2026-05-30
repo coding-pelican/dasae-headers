@@ -57,7 +57,7 @@ $extern fn_((daterm_Term_wait(daterm_Term self))(daterm_Event));
 /// Returns `Timeout` if timeout expires
 /// Requires terminal to be in raw mode
 $attr($must_check)
-$extern fn_((daterm_Term_timedWait(daterm_Term self, time_Duration timeout))(daterm_Term_E$daterm_Event));
+$extern fn_((daterm_Term_timedWait(daterm_Term self, time_Dur timeout))(daterm_Term_E$daterm_Event));
 
 /* --- IO Contracts --- */
 
@@ -80,7 +80,7 @@ struct daterm_Term_VTbl {
     fn_(((*pollFn)(P$raw ctx))(O$daterm_Event));
     fn_(((*waitFn)(P$raw ctx))(daterm_Event));
     $attr($must_check)
-    fn_(((*timedWaitFn)(P$raw ctx, time_Duration timeout))(daterm_Term_E$daterm_Event));
+    fn_(((*timedWaitFn)(P$raw ctx, time_Dur timeout))(daterm_Term_E$daterm_Event));
     fn_(((*readerFn)(P$raw ctx))(io_Reader));
     fn_(((*writerFn)(P$raw ctx))(io_Writer));
     $attr($must_check)

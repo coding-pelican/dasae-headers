@@ -29,7 +29,7 @@ T_alias$((exec_Fiber)(struct exec_Fiber {
     var_(grow_size, usize);
     var_(guard_size, usize);
     var_(is_virtual, bool);
-    var_(context, Co_Fiber_Context);
+    var_(context, co_Fiber_Context);
 }));
 T_use_P$(exec_Fiber);
 T_use_O$(P$exec_Fiber);

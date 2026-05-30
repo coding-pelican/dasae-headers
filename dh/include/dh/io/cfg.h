@@ -21,7 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "../prl.h"
+#include "dh/prl.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -1,180 +1,180 @@
-#include "dh/Thrd/Mtx.h"
-#include "dh/Thrd/self.h"
+#include "dh/thrd/Mtx.h"
+#include "dh/thrd/Self.h"
 
 /*========== Internal Declarations ==========================================*/
 
-pp_if_(pp_not(Thrd_Mtx_has_specialized))(pp_then_(
+pp_if_(pp_not(thrd_Mtx_has_specialized))(pp_then_(
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__default_init(void))(Thrd_Mtx));
+    $static fn_((thrd_Mtx__default_init(void))(thrd_Mtx));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__default_fini(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__default_fini(P$$(thrd_Mtx) self))(void));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__default_lock(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__default_lock(P$$(thrd_Mtx) self))(void));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__default_tryLock(P$$(Thrd_Mtx) self))(bool));
+    $static fn_((thrd_Mtx__default_tryLock(P$$(thrd_Mtx) self))(bool));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__default_unlock(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__default_unlock(P$$(thrd_Mtx) self))(void));
 ));
-pp_if_(Thrd_Mtx_use_pthread)(pp_then_(
+pp_if_(thrd_Mtx_use_pthread)(pp_then_(
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__pthread_init(void))(Thrd_Mtx));
+    $static fn_((thrd_Mtx__pthread_init(void))(thrd_Mtx));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__pthread_fini(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__pthread_fini(P$$(thrd_Mtx) self))(void));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__pthread_lock(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__pthread_lock(P$$(thrd_Mtx) self))(void));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__pthread_tryLock(P$$(Thrd_Mtx) self))(bool));
+    $static fn_((thrd_Mtx__pthread_tryLock(P$$(thrd_Mtx) self))(bool));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__pthread_unlock(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__pthread_unlock(P$$(thrd_Mtx) self))(void));
 ));
-pp_if_(pp_and(Thrd_Mtx_has_specialized, plat_is_windows))(pp_then_(
+pp_if_(pp_and(thrd_Mtx_has_specialized, plat_is_windows))(pp_then_(
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__windows_init(void))(Thrd_Mtx));
+    $static fn_((thrd_Mtx__windows_init(void))(thrd_Mtx));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__windows_fini(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__windows_fini(P$$(thrd_Mtx) self))(void));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__windows_lock(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__windows_lock(P$$(thrd_Mtx) self))(void));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__windows_tryLock(P$$(Thrd_Mtx) self))(bool));
+    $static fn_((thrd_Mtx__windows_tryLock(P$$(thrd_Mtx) self))(bool));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__windows_unlock(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__windows_unlock(P$$(thrd_Mtx) self))(void));
 ));
-pp_if_(pp_and(Thrd_Mtx_has_specialized, plat_is_darwin))(pp_then_(
+pp_if_(pp_and(thrd_Mtx_has_specialized, plat_is_darwin))(pp_then_(
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__darwin_init(void))(Thrd_Mtx));
+    $static fn_((thrd_Mtx__darwin_init(void))(thrd_Mtx));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__darwin_fini(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__darwin_fini(P$$(thrd_Mtx) self))(void));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__darwin_lock(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__darwin_lock(P$$(thrd_Mtx) self))(void));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__darwin_tryLock(P$$(Thrd_Mtx) self))(bool));
+    $static fn_((thrd_Mtx__darwin_tryLock(P$$(thrd_Mtx) self))(bool));
     $attr($inline_always)
-    $static fn_((Thrd_Mtx__darwin_unlock(P$$(Thrd_Mtx) self))(void));
+    $static fn_((thrd_Mtx__darwin_unlock(P$$(thrd_Mtx) self))(void));
 ));
-$static let Thrd_Mtx__init = pp_if_(Thrd_Mtx_use_pthread)(
-    pp_then_(Thrd_Mtx__pthread_init),
-    pp_else_(pp_if_(Thrd_Mtx_has_specialized)(
+$static let thrd_Mtx__init = pp_if_(thrd_Mtx_use_pthread)(
+    pp_then_(thrd_Mtx__pthread_init),
+    pp_else_(pp_if_(thrd_Mtx_has_specialized)(
         pp_then_(pp_expand(
             pp_switch_ pp_begin(plat_type)(
                 pp_case_((plat_type_windows)(
-                    Thrd_Mtx__windows_init
+                    thrd_Mtx__windows_init
                 )),
                 pp_case_((plat_type_darwin)(
-                    Thrd_Mtx__darwin_init
+                    thrd_Mtx__darwin_init
                 ))
             ) pp_end
         )),
-        pp_else_(Thrd_Mtx__default_init)
+        pp_else_(thrd_Mtx__default_init)
     )));
-$static let Thrd_Mtx__fini = pp_if_(Thrd_Mtx_use_pthread)(
-    pp_then_(Thrd_Mtx__pthread_fini),
-    pp_else_(pp_if_(Thrd_Mtx_has_specialized)(
+$static let thrd_Mtx__fini = pp_if_(thrd_Mtx_use_pthread)(
+    pp_then_(thrd_Mtx__pthread_fini),
+    pp_else_(pp_if_(thrd_Mtx_has_specialized)(
         pp_then_(pp_expand(
             pp_switch_ pp_begin(plat_type)(
                 pp_case_((plat_type_windows)(
-                    Thrd_Mtx__windows_fini
+                    thrd_Mtx__windows_fini
                 )),
                 pp_case_((plat_type_darwin)(
-                    Thrd_Mtx__darwin_fini
+                    thrd_Mtx__darwin_fini
                 ))
             ) pp_end
         )),
-        pp_else_(Thrd_Mtx__default_fini)
+        pp_else_(thrd_Mtx__default_fini)
     )));
-$static let Thrd_Mtx__lock = pp_if_(Thrd_Mtx_use_pthread)(
-    pp_then_(Thrd_Mtx__pthread_lock),
-    pp_else_(pp_if_(Thrd_Mtx_has_specialized)(
+$static let thrd_Mtx__lock = pp_if_(thrd_Mtx_use_pthread)(
+    pp_then_(thrd_Mtx__pthread_lock),
+    pp_else_(pp_if_(thrd_Mtx_has_specialized)(
         pp_then_(pp_expand(
             pp_switch_ pp_begin(plat_type)(
                 pp_case_((plat_type_windows)(
-                    Thrd_Mtx__windows_lock
+                    thrd_Mtx__windows_lock
                 )),
                 pp_case_((plat_type_darwin)(
-                    Thrd_Mtx__darwin_lock
+                    thrd_Mtx__darwin_lock
                 ))
             ) pp_end
         )),
-        pp_else_(Thrd_Mtx__default_lock)
+        pp_else_(thrd_Mtx__default_lock)
     )));
-$static let Thrd_Mtx__tryLock = pp_if_(Thrd_Mtx_use_pthread)(
-    pp_then_(Thrd_Mtx__pthread_tryLock),
-    pp_else_(pp_if_(Thrd_Mtx_has_specialized)(
+$static let thrd_Mtx__tryLock = pp_if_(thrd_Mtx_use_pthread)(
+    pp_then_(thrd_Mtx__pthread_tryLock),
+    pp_else_(pp_if_(thrd_Mtx_has_specialized)(
         pp_then_(pp_expand(
             pp_switch_ pp_begin(plat_type)(
                 pp_case_((plat_type_windows)(
-                    Thrd_Mtx__windows_tryLock
+                    thrd_Mtx__windows_tryLock
                 )),
                 pp_case_((plat_type_darwin)(
-                    Thrd_Mtx__darwin_tryLock
+                    thrd_Mtx__darwin_tryLock
                 ))
             ) pp_end
         )),
-        pp_else_(Thrd_Mtx__default_tryLock)
+        pp_else_(thrd_Mtx__default_tryLock)
     )));
-$static let Thrd_Mtx__unlock = pp_if_(Thrd_Mtx_use_pthread)(
-    pp_then_(Thrd_Mtx__pthread_unlock),
-    pp_else_(pp_if_(Thrd_Mtx_has_specialized)(
+$static let thrd_Mtx__unlock = pp_if_(thrd_Mtx_use_pthread)(
+    pp_then_(thrd_Mtx__pthread_unlock),
+    pp_else_(pp_if_(thrd_Mtx_has_specialized)(
         pp_then_(pp_expand(
             pp_switch_ pp_begin(plat_type)(
                 pp_case_((plat_type_windows)(
-                    Thrd_Mtx__windows_unlock
+                    thrd_Mtx__windows_unlock
                 )),
                 pp_case_((plat_type_darwin)(
-                    Thrd_Mtx__darwin_unlock
+                    thrd_Mtx__darwin_unlock
                 ))
             ) pp_end
         )),
-        pp_else_(Thrd_Mtx__default_unlock)
+        pp_else_(thrd_Mtx__default_unlock)
     )));
 
 /*========== External Definitions ===========================================*/
 
-fn_((Thrd_Mtx_init(void))(Thrd_Mtx)) {
-    return Thrd_Mtx__init();
+fn_((thrd_Mtx_init(void))(thrd_Mtx)) {
+    return thrd_Mtx__init();
 };
 
-fn_((Thrd_Mtx_fini(Thrd_Mtx* self))(void)) {
-    Thrd_Mtx__fini(self);
+fn_((thrd_Mtx_fini(thrd_Mtx* self))(void)) {
+    thrd_Mtx__fini(self);
 };
 
-fn_((Thrd_Mtx_lock(Thrd_Mtx* self))(void)) {
-    Thrd_Mtx__lock(self);
+fn_((thrd_Mtx_lock(thrd_Mtx* self))(void)) {
+    thrd_Mtx__lock(self);
 };
 
-fn_((Thrd_Mtx_tryLock(Thrd_Mtx* self))(bool)) {
-    return Thrd_Mtx__tryLock(self);
+fn_((thrd_Mtx_tryLock(thrd_Mtx* self))(bool)) {
+    return thrd_Mtx__tryLock(self);
 };
 
-fn_((Thrd_Mtx_unlock(Thrd_Mtx* self))(void)) {
-    Thrd_Mtx__unlock(self);
+fn_((thrd_Mtx_unlock(thrd_Mtx* self))(void)) {
+    thrd_Mtx__unlock(self);
 };
 
-fn_((Thrd_Mtx_Recur_init(void))(Thrd_Mtx_Recur)) {
-    return (Thrd_Mtx_Recur){
-        .inner = Thrd_Mtx_init(),
-        .thrd_id = Thrd_invalid_id,
+fn_((thrd_Mtx_Recur_init(void))(thrd_Mtx_Recur)) {
+    return (thrd_Mtx_Recur){
+        .inner = thrd_Mtx_init(),
+        .thrd_id = thrd_invalid_id,
         .lock_count = 0,
     };
 };
 
-fn_((Thrd_Mtx_Recur_fini(Thrd_Mtx_Recur* self))(void)) {
-    Thrd_Mtx_fini(&self->inner);
+fn_((thrd_Mtx_Recur_fini(thrd_Mtx_Recur* self))(void)) {
+    thrd_Mtx_fini(&self->inner);
 };
 
-fn_((Thrd_Mtx_Recur_lock(Thrd_Mtx_Recur* self))(void)) {
-    let current_id = Thrd_currId();
+fn_((thrd_Mtx_Recur_lock(thrd_Mtx_Recur* self))(void)) {
+    let current_id = thrd_currId();
     if (atom_load(&self->thrd_id, atom_MemOrd_unordered) != current_id) {
-        Thrd_Mtx_lock(&self->inner);
+        thrd_Mtx_lock(&self->inner);
         debug_assert(self->lock_count == 0);
         atom_store(&self->thrd_id, current_id, atom_MemOrd_unordered);
     }
     self->lock_count++;
 };
 
-fn_((Thrd_Mtx_Recur_tryLock(Thrd_Mtx_Recur* self))(bool)) {
-    let current_id = Thrd_currId();
+fn_((thrd_Mtx_Recur_tryLock(thrd_Mtx_Recur* self))(bool)) {
+    let current_id = thrd_currId();
     if (atom_load(&self->thrd_id, atom_MemOrd_unordered) != current_id) {
-        if (!Thrd_Mtx_tryLock(&self->inner)) { return false; }
+        if (!thrd_Mtx_tryLock(&self->inner)) { return false; }
         debug_assert(self->lock_count == 0);
         atom_store(&self->thrd_id, current_id, atom_MemOrd_unordered);
     }
@@ -182,11 +182,11 @@ fn_((Thrd_Mtx_Recur_tryLock(Thrd_Mtx_Recur* self))(bool)) {
     return true;
 };
 
-fn_((Thrd_Mtx_Recur_unlock(Thrd_Mtx_Recur* self))(void)) {
+fn_((thrd_Mtx_Recur_unlock(thrd_Mtx_Recur* self))(void)) {
     self->lock_count--;
     if (self->lock_count == 0) {
-        atom_store(&self->thrd_id, Thrd_invalid_id, atom_MemOrd_unordered);
-        Thrd_Mtx_unlock(&self->inner);
+        atom_store(&self->thrd_id, thrd_invalid_id, atom_MemOrd_unordered);
+        thrd_Mtx_unlock(&self->inner);
     }
 };
 
@@ -194,60 +194,60 @@ fn_((Thrd_Mtx_Recur_unlock(Thrd_Mtx_Recur* self))(void)) {
 
 /* --- Pthreads --- */
 
-#if Thrd_Mtx_use_pthread
-fn_((Thrd_Mtx__pthread_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){ .impl = PTHREAD_MUTEX_INITIALIZER };
+#if thrd_Mtx_use_pthread
+fn_((thrd_Mtx__pthread_init(void))(thrd_Mtx)) {
+    return (thrd_Mtx){ .impl = PTHREAD_MUTEX_INITIALIZER };
 };
 
-fn_((Thrd_Mtx__pthread_fini(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__pthread_fini(thrd_Mtx* self))(void)) {
     pthread_mutex_destroy(&self->impl);
 };
 
-fn_((Thrd_Mtx__pthread_lock(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__pthread_lock(thrd_Mtx* self))(void)) {
     pthread_mutex_lock(&self->impl);
 };
 
-fn_((Thrd_Mtx__pthread_tryLock(Thrd_Mtx* self))(bool)) {
+fn_((thrd_Mtx__pthread_tryLock(thrd_Mtx* self))(bool)) {
     return pthread_mutex_trylock(&self->impl) == 0;
 };
 
-fn_((Thrd_Mtx__pthread_unlock(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__pthread_unlock(thrd_Mtx* self))(void)) {
     pthread_mutex_unlock(&self->impl);
 };
-#endif /* Thrd_Mtx_use_pthread */
+#endif /* thrd_Mtx_use_pthread */
 
 /* --- Default --- */
 
-#if !Thrd_Mtx_has_specialized
+#if !thrd_Mtx_has_specialized
 #include "dh/Thrd/ftx.h"
 
-#define Thrd_Mtx__default_unlocked (as$(u32)(0b00))
-#define Thrd_Mtx__default_locked (as$(u32)(0b01))
-#define Thrd_Mtx__default_contended (as$(u32)(0b11)) /* must contain the `locked` bit for x86 optimization below */
+#define thrd_Mtx__default_unlocked (as$(u32)(0b00))
+#define thrd_Mtx__default_locked (as$(u32)(0b01))
+#define thrd_Mtx__default_contended (as$(u32)(0b11)) /* must contain the `locked` bit for x86 optimization below */
 
-$static fn_((Thrd_Mtx__default_lockSlow(Thrd_Mtx* self))(void));
+$static fn_((thrd_Mtx__default_lockSlow(thrd_Mtx* self))(void));
 
-fn_((Thrd_Mtx__default_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){ .impl.state = atom_V_init(Thrd_Mtx__default_unlocked) };
+fn_((thrd_Mtx__default_init(void))(thrd_Mtx)) {
+    return (thrd_Mtx){ .impl.state = atom_V_init(thrd_Mtx__default_unlocked) };
 };
 
-fn_((Thrd_Mtx__default_fini(Thrd_Mtx* self))(void)) {
-    atom_V_store(&self->impl.state, Thrd_Mtx__default_unlocked, atom_MemOrd_monotonic);
+fn_((thrd_Mtx__default_fini(thrd_Mtx* self))(void)) {
+    atom_V_store(&self->impl.state, thrd_Mtx__default_unlocked, atom_MemOrd_monotonic);
 };
 
-fn_((Thrd_Mtx__default_lock(Thrd_Mtx* self))(void)) {
-    if (!Thrd_Mtx_tryLock(self)) {
-        Thrd_Mtx__default_lockSlow(self);
+fn_((thrd_Mtx__default_lock(thrd_Mtx* self))(void)) {
+    if (!thrd_Mtx_tryLock(self)) {
+        thrd_Mtx__default_lockSlow(self);
     }
 };
 
-fn_((Thrd_Mtx__default_tryLock(Thrd_Mtx* self))(bool)) {
+fn_((thrd_Mtx__default_tryLock(thrd_Mtx* self))(bool)) {
     pp_if_(arch_is_x86_family)(
         /*pp_then_*/ (
             // On x86, use `lock bts` instead of `lock cmpxchg` as:
             // - they both seem to mark the cache-line as modified regardless: https://stackoverflow.com/a/63350048
             // - `lock bts` is smaller instruction-wise which makes it better for inlining
-            let locked_bit = mem_trailingZeros32(Thrd_Mtx__default_locked);
+            let locked_bit = mem_trailingZeros32(thrd_Mtx__default_locked);
             let prev_bit = atom_V_bitSet(
                 &self->impl.state,
                 locked_bit,
@@ -260,14 +260,14 @@ fn_((Thrd_Mtx__default_tryLock(Thrd_Mtx* self))(bool)) {
             // and that the previous lock holder's critical section happens before we grab the lock.
             return isNone(atom_V_cmpXchgWeak(
                 &self->impl.state,
-                Thrd_Mtx__default_unlocked, Thrd_Mtx__default_locked,
+                thrd_Mtx__default_unlocked, thrd_Mtx__default_locked,
                 atom_MemOrd_acquire, atom_MemOrd_monotonic
             ));
         )
     );
 };
 
-fn_((Thrd_Mtx__default_unlock(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__default_unlock(thrd_Mtx* self))(void)) {
     // Unlock the mutex and wake up a waiting thread if any.
     //
     // A waiting thread will acquire with `contended` instead of `locked`
@@ -275,19 +275,19 @@ fn_((Thrd_Mtx__default_unlock(Thrd_Mtx* self))(void)) {
     //
     // Release barrier ensures the critical section happens before we let go of the lock
     // and that our critical section happens before the next lock holder grabs the lock.
-    let state = atom_V_fetchXchg(&self->impl.state, Thrd_Mtx__default_unlocked, atom_MemOrd_release);
-    debug_assert(state != Thrd_Mtx__default_unlocked);
-    if (state == Thrd_Mtx__default_contended) {
-        Thrd_ftx_wake(&self->impl.state, 1);
+    let state = atom_V_fetchXchg(&self->impl.state, thrd_Mtx__default_unlocked, atom_MemOrd_release);
+    debug_assert(state != thrd_Mtx__default_unlocked);
+    if (state == thrd_Mtx__default_contended) {
+        thrd_ftx_wake(&self->impl.state, 1);
     }
 };
 
 $attr($branch_cold)
-fn_((Thrd_Mtx__default_lockSlow(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__default_lockSlow(thrd_Mtx* self))(void)) {
     // Avoid doing an atomic swap below if we already know the state is contended.
     // An atomic swap unconditionally stores which marks the cache-line as modified unnecessarily.
-    if (atom_V_load(&self->impl.state, atom_MemOrd_monotonic) == Thrd_Mtx__default_contended) {
-        Thrd_ftx_wait(&self->impl.state, Thrd_Mtx__default_contended);
+    if (atom_V_load(&self->impl.state, atom_MemOrd_monotonic) == thrd_Mtx__default_contended) {
+        thrd_ftx_wait(&self->impl.state, thrd_Mtx__default_contended);
     }
     // Try to acquire the lock while also telling the existing lock holder that there are threads waiting.
     //
@@ -298,56 +298,56 @@ fn_((Thrd_Mtx__default_lockSlow(Thrd_Mtx* self))(void)) {
     //
     // Acquire barrier ensures grabbing the lock happens before the critical section
     // and that the previous lock holder's critical section happens before we grab the lock.
-    while (atom_V_fetchXchg(&self->impl.state, Thrd_Mtx__default_contended, atom_MemOrd_acquire) != Thrd_Mtx__default_unlocked) {
-        Thrd_ftx_wait(&self->impl.state, Thrd_Mtx__default_contended);
+    while (atom_V_fetchXchg(&self->impl.state, thrd_Mtx__default_contended, atom_MemOrd_acquire) != thrd_Mtx__default_unlocked) {
+        thrd_ftx_wait(&self->impl.state, thrd_Mtx__default_contended);
     }
 };
-#endif /* !Thrd_Mtx_has_specialized */
+#endif /* !thrd_Mtx_has_specialized */
 
 /* --- Windows --- */
 
-#if Thrd_Mtx_has_specialized && plat_is_windows
-fn_((Thrd_Mtx__windows_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){ .impl.inner = SRWLOCK_INIT };
+#if thrd_Mtx_has_specialized && plat_is_windows
+fn_((thrd_Mtx__windows_init(void))(thrd_Mtx)) {
+    return (thrd_Mtx){ .impl.inner = SRWLOCK_INIT };
 };
 
-fn_((Thrd_Mtx__windows_fini(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__windows_fini(thrd_Mtx* self))(void)) {
     let_ignore = self;
 };
 
-fn_((Thrd_Mtx__windows_lock(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__windows_lock(thrd_Mtx* self))(void)) {
     AcquireSRWLockExclusive(&self->impl.inner);
 };
 
-fn_((Thrd_Mtx__windows_tryLock(Thrd_Mtx* self))(bool)) {
+fn_((thrd_Mtx__windows_tryLock(thrd_Mtx* self))(bool)) {
     return TryAcquireSRWLockExclusive(&self->impl.inner) != false;
 };
 
-fn_((Thrd_Mtx__windows_unlock(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__windows_unlock(thrd_Mtx* self))(void)) {
     ReleaseSRWLockExclusive(&self->impl.inner);
 };
-#endif /* Thrd_Mtx_has_specialized && plat_is_windows */
+#endif /* thrd_Mtx_has_specialized && plat_is_windows */
 
 /* --- Darwin --- */
 
-#if Thrd_Mtx_has_specialized && plat_is_darwin
-fn_((Thrd_Mtx__darwin_init(void))(Thrd_Mtx)) {
-    return (Thrd_Mtx){ .impl.inner = sys_libc_darwin_UNFAIR_LOCK_INIT };
+#if thrd_Mtx_has_specialized && plat_is_darwin
+fn_((thrd_Mtx__darwin_init(void))(thrd_Mtx)) {
+    return (thrd_Mtx){ .impl.inner = sys_libc_darwin_UNFAIR_LOCK_INIT };
 };
 
-fn_((Thrd_Mtx__darwin_fini(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__darwin_fini(thrd_Mtx* self))(void)) {
     let_ignore = self;
 };
 
-fn_((Thrd_Mtx__darwin_lock(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__darwin_lock(thrd_Mtx* self))(void)) {
     sys_libc_darwin_unfair_lock_lock(&self->impl.inner);
 };
 
-fn_((Thrd_Mtx__darwin_tryLock(Thrd_Mtx* self))(bool)) {
+fn_((thrd_Mtx__darwin_tryLock(thrd_Mtx* self))(bool)) {
     return sys_libc_darwin_unfair_lock_trylock(&self->impl.inner);
 };
 
-fn_((Thrd_Mtx__darwin_unlock(Thrd_Mtx* self))(void)) {
+fn_((thrd_Mtx__darwin_unlock(thrd_Mtx* self))(void)) {
     sys_libc_darwin_unfair_lock_unlock(&self->impl.inner);
 };
-#endif /* Thrd_Mtx_has_specialized && plat_is_darwin */
+#endif /* thrd_Mtx_has_specialized && plat_is_darwin */

@@ -34,14 +34,14 @@ typedef pp_if_(plat_is_posix)(
     pp_then_(sys_posix_timespec),
     pp_else_(Void)) time_UnixTimespec;
 
-/* --- Monotonic Clock Platform Type (for time_Instant) --- */
+/* --- Monotonic Clock Platform Type (for time_Inst) --- */
 typedef pp_if_(plat_is_windows)(
     pp_then_(LARGE_INTEGER),
     pp_else_(pp_if_(plat_is_posix)(
         pp_then_(time_UnixTimespec),
         pp_else_(Void)
-    ))) time_Instant__Impl;
-typedef time_Instant__Impl time_InstantPlatform;
+    ))) time_Inst__Impl;
+typedef time_Inst__Impl time_InstPlatform;
 
 /* --- Wall-Clock Platform Type (for time_SysTime) --- */
 typedef pp_if_(plat_is_windows)(

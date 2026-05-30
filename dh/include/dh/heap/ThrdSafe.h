@@ -19,13 +19,13 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
-#include "../Thrd/Mtx.h"
+#include "../thrd/Mtx.h"
 
 /*========== Macros and Declarations ========================================*/
 
 typedef struct heap_ThrdSafe {
     mem_Alctr child_alctr;
-    Thrd_Mtx mtx;
+    thrd_Mtx mtx;
 } heap_ThrdSafe;
 /// Get allocator interface for instance
 $extern fn_((heap_ThrdSafe_alctr(heap_ThrdSafe* self))(mem_Alctr));

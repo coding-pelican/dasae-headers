@@ -23,7 +23,7 @@ extern "C" {
 #include "dh/prl.h"
 #include "dh/atom.h"
 #include "dh/simd.h"
-#include "dh/Clsr.h"
+#include "dh/clsr.h"
 
 #include "dh/cmp.h"
 #include "dh/math.h"
@@ -67,8 +67,8 @@ extern "C" {
 #include "dh/time.h"
 #include "dh/heap.h"
 #include "dh/proc.h"
-#include "dh/Thrd.h"
-#include "dh/Co.h"
+#include "dh/thrd.h"
+#include "dh/co.h"
 
 #include "dh/io.h"
 #include "dh/fmt.h"

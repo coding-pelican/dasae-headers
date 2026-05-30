@@ -1,47 +1,43 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    Sem.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-12-20 (date of creation)
- * @updated 2025-12-20 (date of last update)
- * @version v0.1-alpha
- * @ingroup dasae-headers(dh)/Thrd
- * @prefix  Thrd_Sem
+ * @updated 2026-05-30 (date of last update)
+ * @ingroup dasae-headers(dh)/thrd
+ * @prefix  thrd_Sem
  *
  * @brief   Semaphore for thread management
  * @details Defines semaphore for thread management.
  */
-#ifndef Thrd_Sem__included
-#define Thrd_Sem__included 1
+#ifndef thrd_Sem__included
+#define thrd_Sem__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
-#include "common.h"
 #include "Mtx.h"
 #include "Cond.h"
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((Thrd_Sem_E)() $union_errset_(Thrd_TimeoutE));
-typedef struct Thrd_Sem {
-    var_(mtx, Thrd_Mtx);
-    var_(cond, Thrd_Cond);
+typedef struct thrd_Sem {
+    var_(mtx, thrd_Mtx);
+    var_(cond, thrd_Cond);
     var_(permits, usize);
-} Thrd_Sem;
-$extern fn_((Thrd_Sem_init(void))(Thrd_Sem));
-$extern fn_((Thrd_Sem_fini(Thrd_Sem* self))(void));
-$extern fn_((Thrd_Sem_wait(Thrd_Sem* self))(void));
+} thrd_Sem;
+$extern fn_((thrd_Sem_init(void))(thrd_Sem));
+$extern fn_((thrd_Sem_fini(thrd_Sem* self))(void));
+$extern fn_((thrd_Sem_wait(thrd_Sem* self))(void));
 $attr($must_check)
-$extern fn_((Thrd_Sem_timedWait(Thrd_Sem* self, time_Duration timeout))(Thrd_Sem_E$void));
-$extern fn_((Thrd_Sem_post(Thrd_Sem* self))(void));
+$extern fn_((thrd_Sem_timedWait(thrd_Sem* self, time_Dur timeout))(Sched_TimeoutE$void));
+$extern fn_((thrd_Sem_post(thrd_Sem* self))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Thrd_Sem__included */
+#endif /* thrd_Sem__included */

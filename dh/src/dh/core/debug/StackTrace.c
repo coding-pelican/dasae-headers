@@ -1,6 +1,6 @@
 #include "dh/core/debug/StackTrace.h"
 #include "dh/io/stream.h"
-#include "dh/Thrd.h"
+#include "dh/thrd.h"
 
 #define debug_StackTrace__unix_enabled pp_and(plat_based_unix, comp_libc_linked)
 
@@ -138,7 +138,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
 
     $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) $undefined_static;
     let frames = RtlCaptureStackBackTrace(0, debug_StackTrace__max_frames, A_ptr(stack), null);
-    let tid = as$(u64)(Thrd_currId());
+    let tid = as$(u64)(thrd_currId());
 
     /* [Standard Info] Added TID */
     io_stream_eprintln(u8_l("stack backtrace (tid: {:ul}):"), tid);
@@ -212,7 +212,7 @@ fn_((debug_StackTrace__unix_setupCrashHandler(void))(void)) {
 fn_((debug_StackTrace__unix_print(void))(void)) {
     $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) $undefined_static;
     let frames = backtrace(A_ptr(stack), debug_StackTrace__max_frames);
-    let tid = as$(u64)(Thrd_currId());
+    let tid = as$(u64)(thrd_currId());
 
     io_stream_eprintln(u8_l("stack backtrace (tid: {:ul}):"), tid);
 

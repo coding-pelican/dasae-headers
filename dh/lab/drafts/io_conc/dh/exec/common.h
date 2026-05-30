@@ -7,16 +7,16 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "base.h"
-#include "dh/Clsr.h"
+#include "dh/clsr.h"
 #include "../Future.h"
 #include "../Sched.h"
 
 /*========== Macros and Declarations ========================================*/
 
 $attr($no_return)
-$extern fn_((exec_callFiber(exec_Fiber_Starter* starter, const Co_Fiber* first_switch))(void));
-$extern fn_((exec_switchToFiber(Co_Fiber_Context* sched_context, exec_Fiber* fiber))(void));
-$extern fn_((exec_switchFromFiber(Co_Fiber_Context* fiber_context, Co_Fiber_Context* sched_context))(void));
+$extern fn_((exec_callFiber(exec_Fiber_Starter* starter, const co_Fiber* first_switch))(void));
+$extern fn_((exec_switchToFiber(co_Fiber_Context* sched_context, exec_Fiber* fiber))(void));
+$extern fn_((exec_switchFromFiber(co_Fiber_Context* fiber_context, co_Fiber_Context* sched_context))(void));
 
 $attr($inline_always)
 $static fn_((exec_kind(P_const$$(Clsr$raw) clsr))(exec_Task_Kind));

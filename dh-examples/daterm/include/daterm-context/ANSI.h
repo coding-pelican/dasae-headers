@@ -47,7 +47,7 @@ T_use_prl$(daterm_ANSI__RawMode);
 
 #define daterm_ANSI_input_buf_cap_default 256
 #define daterm_ANSI_report_buf_cap_default 64
-#define daterm_ANSI_esc_timeout_default time_Duration_fromMillis_static(8)
+#define daterm_ANSI_esc_timeout_default time_Dur_fromMillis_static(8)
 
 typedef enum_((daterm_ANSI_OutputMode $fits($packed))(
     daterm_ANSI_OutputMode_processed,
@@ -64,8 +64,8 @@ typedef struct daterm_ANSI {
     var_(input_buf, struct {
         var_(reader, io_Buf_Reader);
         var_(is_owned, bool);
-        var_(esc_started_at, O$time_Instant);
-        var_(esc_timeout, time_Duration);
+        var_(esc_started_at, O$time_Inst);
+        var_(esc_timeout, time_Dur);
     });
     var_(report_buf, struct {
         var_(mem, S$u8);
@@ -81,7 +81,7 @@ typedef struct daterm_ANSI_Cfg { /* clang-format off */
     var_(input_file, fs_File);
     var_(output_file, fs_File);
     var_(output_mode, daterm_ANSI_OutputMode);
-    var_(esc_timeout, time_Duration);
+    var_(esc_timeout, time_Dur);
     var_(input_buf, variant_(()(
         (daterm_ANSI_Cfg_input_buf_fixed, S$u8),
         (daterm_ANSI_Cfg_input_buf_owned, struct { var_(cap, usize); }),

@@ -6,15 +6,14 @@
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-12-20 (date of creation)
  * @updated 2025-12-21 (date of last update)
- * @version v0.1-alpha
- * @ingroup dasae-headers(dh)/Thrd
- * @prefix  Thrd_ResetEvent
+ * @ingroup dasae-headers(dh)/thrd
+ * @prefix  thrd_ResetEvent
  *
  * @brief   Reset event for thread management
  * @details Defines reset event for thread management.
  */
-#ifndef Thrd_ResetEvent__included
-#define Thrd_ResetEvent__included 1
+#ifndef thrd_ResetEvent__included
+#define thrd_ResetEvent__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -25,27 +24,26 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((Thrd_ResetEvent_E)() $union_errset_(Thrd_ftx_E, Sched_TimeoutE));
-typedef struct Thrd_ResetEvent {
+typedef struct thrd_ResetEvent {
     var_(state, atom_V$u32);
-} Thrd_ResetEvent;
-#define Thrd_ResetEvent_init_static(/*void*/) ____Thrd_ResetEvent_init_static()
-$extern fn_((Thrd_ResetEvent_init(void))(Thrd_ResetEvent));
-$extern fn_((Thrd_ResetEvent_fini(Thrd_ResetEvent* self))(void));
-$extern fn_((Thrd_ResetEvent_wait(Thrd_ResetEvent* self))(void));
+} thrd_ResetEvent;
+#define thrd_ResetEvent_init_static(/*void*/) ____thrd_ResetEvent_init_static()
+$extern fn_((thrd_ResetEvent_init(void))(thrd_ResetEvent));
+$extern fn_((thrd_ResetEvent_fini(thrd_ResetEvent* self))(void));
+$extern fn_((thrd_ResetEvent_wait(thrd_ResetEvent* self))(void));
 $attr($must_check)
-$extern fn_((Thrd_ResetEvent_timedWait(Thrd_ResetEvent* self, time_Dur timeout))(Thrd_ResetEvent_E$void));
-$extern fn_((Thrd_ResetEvent_set(Thrd_ResetEvent* self))(void));
-$extern fn_((Thrd_ResetEvent_reset(Thrd_ResetEvent* self))(void));
-$extern fn_((Thrd_ResetEvent_isSet(const Thrd_ResetEvent* self))(bool));
+$extern fn_((thrd_ResetEvent_timedWait(thrd_ResetEvent* self, time_Dur timeout))(thrd_ftx_E$void));
+$extern fn_((thrd_ResetEvent_set(thrd_ResetEvent* self))(void));
+$extern fn_((thrd_ResetEvent_reset(thrd_ResetEvent* self))(void));
+$extern fn_((thrd_ResetEvent_isSet(const thrd_ResetEvent* self))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-#define ____Thrd_ResetEvent_init_static() l$((Thrd_ResetEvent){ \
+#define ____thrd_ResetEvent_init_static() l$((thrd_ResetEvent){ \
     .state = atom_V_init(0u), \
 })
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* Thrd_ResetEvent__included */
+#endif /* thrd_ResetEvent__included */
