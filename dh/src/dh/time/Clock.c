@@ -9,6 +9,15 @@ fn_((time_Clock_now(time_Clock clock))(time_Clock_Inst) $scope) {
     pattern_((time_Clock_thrd)(time)) return_(union_of((time_Clock_thrd)(time_Thrd_now(time)))) $end(pattern);
     } $end(match);
 } $unscoped(fn);
+fn_((time_Clock_resolution(time_Clock clock))(time_ResolutionE$time_Resolution)) {
+    match_(clock) {
+    pattern_((time_Clock_real)(time)) return time_Real_resolution(time) $end(pattern);
+    pattern_((time_Clock_awake)(time)) return time_Awake_resolution(time) $end(pattern);
+    pattern_((time_Clock_boot)(time)) return time_Boot_resolution(time) $end(pattern);
+    pattern_((time_Clock_proc)(time)) return time_Proc_resolution(time) $end(pattern);
+    pattern_((time_Clock_thrd)(time)) return time_Thrd_resolution(time) $end(pattern);
+    } $end(match);
+};
 fn_((time_Clock_sleep(time_Clock self, time_Dur dur))(Sched_Cancelable$void) $scope) {
     match_(self) {
     pattern_((time_Clock_real)($ignore)) return_err(E_cause$Sched_Canceled()) $end(pattern);

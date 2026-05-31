@@ -5,11 +5,17 @@
 
 $attr($maybe_unused)
 $static fn_((time_Thrd_direct__unsupported_now(P$raw ctx))(time_Thrd_Inst));
+$attr($maybe_unused $must_check)
+$static fn_((time_Thrd_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 pp_if_(plat_is_windows)(pp_then_(
     $static fn_((time_Thrd_direct__windows_now(P$raw ctx))(time_Thrd_Inst));
+    $attr($must_check)
+    $static fn_((time_Thrd_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 ));
 pp_if_(plat_based_unix)(pp_then_(
     $static fn_((time_Thrd_direct__unix_now(P$raw ctx))(time_Thrd_Inst));
+    $attr($must_check)
+    $static fn_((time_Thrd_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 ));
 
 $static let time_Thrd_direct__now = pp_if_(plat_is_windows)(
@@ -17,17 +23,24 @@ $static let time_Thrd_direct__now = pp_if_(plat_is_windows)(
     pp_else_(pp_if_(plat_based_unix)(
         pp_then_(time_Thrd_direct__unix_now),
         pp_else_(time_Thrd_direct__unsupported_now)
-    ))
-);
+    )));
+$static let time_Thrd_direct__resolution = pp_if_(plat_is_windows)(
+    pp_then_(time_Thrd_direct__windows_resolution),
+    pp_else_(pp_if_(plat_based_unix)(
+        pp_then_(time_Thrd_direct__unix_resolution),
+        pp_else_(time_Thrd_direct__unsupported_resolution)
+    )));
 
 /*========== External Definitions ===========================================*/
 
 let_(time_Thrd_VTbl_noop, time_Thrd_VTbl) = {
     .nowFn = time_Thrd_VTbl_noNow,
+    .resolutionFn = time_Thrd_VTbl_failingResolution,
 };
 
 let_(time_Thrd_VTbl_failing, time_Thrd_VTbl) = {
     .nowFn = time_Thrd_VTbl_unreachableNow,
+    .resolutionFn = time_Thrd_VTbl_failingResolution,
 };
 
 $static var_(time_Thrd_noop_ctx, Void) = cleared();
@@ -48,6 +61,7 @@ fn_((time_Thrd_direct(void))(time_direct_E$time_Thrd) $scope) {
             $static var_(ctx, Void) $like_ref = cleared();
             $static let_(vtbl, time_Thrd_VTbl) $like_ref = { {
                 .nowFn = time_Thrd_direct__now,
+                .resolutionFn = time_Thrd_direct__resolution,
             } };
             return_ok(time_Thrd_ensureValid((time_Thrd){
                 .ctx = &ctx,
@@ -63,6 +77,11 @@ fn_((time_Thrd_direct(void))(time_direct_E$time_Thrd) $scope) {
 fn_((time_Thrd_now(time_Thrd self))(time_Thrd_Inst)) {
     self = time_Thrd_ensureValid(self);
     return self.vtbl->nowFn(self.ctx);
+};
+
+fn_((time_Thrd_resolution(time_Thrd self))(time_ResolutionE$time_Resolution)) {
+    self = time_Thrd_ensureValid(self);
+    return self.vtbl->resolutionFn(self.ctx);
 };
 
 fn_((time_Thrd_Inst_elapsed(time_Thrd_Inst self, time_Thrd time))(time_Dur)) {
@@ -140,6 +159,11 @@ fn_((time_Thrd_VTbl_unreachableNow(P$raw ctx))(time_Thrd_Inst)) {
     claim_unreachable_msg("Thread time source is unavailable");
 };
 
+fn_((time_Thrd_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    let_ignore = ctx;
+    return_err(E_cause$time_direct_Unsupported());
+} $unscoped(fn);
+
 /*========== Direct Source Definitions ======================================*/
 
 fn_((time_Thrd_direct__unsupported_now(P$raw ctx))(time_Thrd_Inst)) {
@@ -147,24 +171,34 @@ fn_((time_Thrd_direct__unsupported_now(P$raw ctx))(time_Thrd_Inst)) {
     claim_unreachable_msg("Thread direct time source is unavailable on this platform");
 };
 
-pp_if_(plat_is_windows)(pp_then_(
-fn_((time_Thrd_direct__windows_now(P$raw ctx))(time_Thrd_Inst)) {
-    var_(create_time, FILETIME) = cleared();
-    var_(exit_time, FILETIME) = cleared();
-    var_(kernel_time, FILETIME) = cleared();
-    var_(user_time, FILETIME) = cleared();
+fn_((time_Thrd_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
     let_ignore = ctx;
-    if (!GetThreadTimes(GetCurrentThread(), &create_time, &exit_time, &kernel_time, &user_time)) {
-        claim_unreachable_msg("Failed to query thread cpu time");
-    }
-    let kernel = time__windows_fromFileTime(kernel_time);
-    let user = time__windows_fromFileTime(user_time);
-    return (time_Thrd_Inst){
-        .raw = unwrap_(time_Inst_addChkdDur(
-            kernel, (time_Dur){ .secs = user.secs, .nanos = user.nanos }
-        )),
+    return_err(E_cause$time_direct_Unsupported());
+} $unscoped(fn);
+
+pp_if_(plat_is_windows)(pp_then_(
+    fn_((time_Thrd_direct__windows_now(P$raw ctx))(time_Thrd_Inst)) {
+        var_(create_time, FILETIME) = cleared();
+        var_(exit_time, FILETIME) = cleared();
+        var_(kernel_time, FILETIME) = cleared();
+        var_(user_time, FILETIME) = cleared();
+        let_ignore = ctx;
+        if (!GetThreadTimes(GetCurrentThread(), &create_time, &exit_time, &kernel_time, &user_time)) {
+            claim_unreachable_msg("Failed to query thread cpu time");
+        }
+        let kernel = time__windows_fromFileTime(kernel_time);
+        let user = time__windows_fromFileTime(user_time);
+        return l$((time_Thrd_Inst){
+            .raw = unwrap_(time_Inst_addChkdDur(
+                kernel, (time_Dur){ .secs = user.secs, .nanos = user.nanos }
+            )),
+        });
     };
-};
+
+    fn_((time_Thrd_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+        let_ignore = ctx;
+        return_ok(time_Dur_fromNanos(100));
+    } $unscoped(fn);
 ));
 
 #if plat_based_unix
@@ -173,9 +207,20 @@ fn_((time_Thrd_direct__unix_now(P$raw ctx))(time_Thrd_Inst)) {
     let_ignore = ctx;
 #if defined(CLOCK_THREAD_CPUTIME_ID)
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &now);
-    return (time_Thrd_Inst){ .raw = time__unix_fromTimespec(now) };
+    return l$((time_Thrd_Inst){ .raw = time__unix_fromTimespec(now) });
 #else
     claim_unreachable_msg("Thread cpu time is unavailable on this platform");
 #endif
 };
+
+fn_((time_Thrd_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    var_(res, struct timespec) = cleared();
+    let_ignore = ctx;
+#if defined(CLOCK_THREAD_CPUTIME_ID)
+    clock_getres(CLOCK_THREAD_CPUTIME_ID, &res);
+    return_ok({ .secs = as$(u64)(res.tv_sec), .nanos = as$(u32)(res.tv_nsec) });
+#else
+    return_err(E_cause$time_direct_Unsupported());
+#endif
+} $unscoped(fn);
 #endif /* plat_based_unix */

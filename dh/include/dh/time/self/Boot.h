@@ -34,36 +34,39 @@ $extern let_(time_Boot_noop, time_Boot);
 /// Failing boot clock instance.
 $extern let_(time_Boot_failing, time_Boot);
 
-$attr($inline_always)
 /// Return whether a boot clock has a valid context and vtable.
+$attr($inline_always)
 $static fn_((time_Boot_isValid(time_Boot self))(bool));
-$attr($inline_always)
 /// Assert that a boot clock context and vtable are valid.
-$static fn_((time_Boot_assertValid(P$raw ctx, P_const$$(time_Boot_VTbl) vtbl))(void));
 $attr($inline_always)
+$static fn_((time_Boot_assertValid(P$raw ctx, P_const$$(time_Boot_VTbl) vtbl))(void));
 /// Return a boot clock after validating it.
+$attr($inline_always)
 $static fn_((time_Boot_ensureValid(time_Boot self))(time_Boot));
 
 /// Read the current boot-clock instant.
 $extern fn_((time_Boot_now(time_Boot self))(time_Boot_Inst));
+/// Return the boot-clock resolution.
 $attr($must_check)
+$extern fn_((time_Boot_resolution(time_Boot self))(time_ResolutionE$time_Resolution));
 /// Sleep on the boot clock for a duration.
+$attr($must_check)
 $extern fn_((time_Boot_sleep(time_Boot self, time_Dur dur))(Sched_Cancelable$void));
-$attr($must_check)
 /// Sleep on the boot clock for whole seconds.
+$attr($must_check)
 $extern fn_((time_Boot_sleepSecs(time_Boot self, u64 secs))(Sched_Cancelable$void));
-$attr($must_check)
 /// Sleep on the boot clock for whole milliseconds.
+$attr($must_check)
 $extern fn_((time_Boot_sleepMillis(time_Boot self, u64 millis))(Sched_Cancelable$void));
-$attr($must_check)
 /// Sleep on the boot clock for whole microseconds.
-$extern fn_((time_Boot_sleepMicros(time_Boot self, u64 micros))(Sched_Cancelable$void));
 $attr($must_check)
+$extern fn_((time_Boot_sleepMicros(time_Boot self, u64 micros))(Sched_Cancelable$void));
 /// Sleep on the boot clock for whole nanoseconds.
+$attr($must_check)
 $extern fn_((time_Boot_sleepNanos(time_Boot self, u32 nanos))(Sched_Cancelable$void));
 
-$attr($must_check)
 /// Return the platform direct boot clock.
+$attr($must_check)
 $extern fn_((time_Boot_direct(void))(time_direct_E$time_Boot));
 
 struct time_Boot_Inst {
@@ -108,10 +111,14 @@ $extern cmp_fn_neqCtx$((time_Boot_Inst)(lhs, rhs, ctx));
 struct time_Boot_VTbl {
     fn_(((*nowFn)(P$raw ctx))(time_Boot_Inst));
     $attr($must_check)
+    fn_(((*resolutionFn)(P$raw ctx))(time_ResolutionE$time_Resolution));
+    $attr($must_check)
     fn_(((*sleepFn)(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 };
 $extern fn_((time_Boot_VTbl_noNow(P$raw ctx))(time_Boot_Inst));
 $extern fn_((time_Boot_VTbl_unreachableNow(P$raw ctx))(time_Boot_Inst));
+$attr($must_check)
+$extern fn_((time_Boot_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 $attr($must_check)
 $extern fn_((time_Boot_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
@@ -121,12 +128,14 @@ fn_((time_Boot_isValid(time_Boot self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
         && isNonnull(self.vtbl->nowFn)
+        && isNonnull(self.vtbl->resolutionFn)
         && isNonnull(self.vtbl->sleepFn);
 };
 fn_((time_Boot_assertValid(P$raw ctx, P_const$$(time_Boot_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->nowFn);
+    claim_assert_nonnull(vtbl->resolutionFn);
     claim_assert_nonnull(vtbl->sleepFn);
 };
 fn_((time_Boot_ensureValid(time_Boot self))(time_Boot)) {

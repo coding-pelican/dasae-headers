@@ -35,36 +35,39 @@ $extern let_(time_Awake_noop, time_Awake);
 /// Failing awake clock instance.
 $extern let_(time_Awake_failing, time_Awake);
 
-$attr($inline_always)
 /// Return whether an awake clock has a valid context and vtable.
+$attr($inline_always)
 $static fn_((time_Awake_isValid(time_Awake self))(bool));
-$attr($inline_always)
 /// Assert that an awake clock context and vtable are valid.
-$static fn_((time_Awake_assertValid(P$raw ctx, P_const$$(time_Awake_VTbl) vtbl))(void));
 $attr($inline_always)
+$static fn_((time_Awake_assertValid(P$raw ctx, P_const$$(time_Awake_VTbl) vtbl))(void));
 /// Return an awake clock after validating it.
+$attr($inline_always)
 $static fn_((time_Awake_ensureValid(time_Awake self))(time_Awake));
 
 /// Read the current awake-clock instant.
 $extern fn_((time_Awake_now(time_Awake self))(time_Awake_Inst));
+/// Return the awake-clock resolution.
 $attr($must_check)
+$extern fn_((time_Awake_resolution(time_Awake self))(time_ResolutionE$time_Resolution));
 /// Sleep on the awake clock for a duration.
+$attr($must_check)
 $extern fn_((time_Awake_sleep(time_Awake self, time_Dur dur))(Sched_Cancelable$void));
-$attr($must_check)
 /// Sleep on the awake clock for whole seconds.
+$attr($must_check)
 $extern fn_((time_Awake_sleepSecs(time_Awake self, u64 secs))(Sched_Cancelable$void));
-$attr($must_check)
 /// Sleep on the awake clock for whole milliseconds.
+$attr($must_check)
 $extern fn_((time_Awake_sleepMillis(time_Awake self, u64 millis))(Sched_Cancelable$void));
-$attr($must_check)
 /// Sleep on the awake clock for whole microseconds.
-$extern fn_((time_Awake_sleepMicros(time_Awake self, u64 micros))(Sched_Cancelable$void));
 $attr($must_check)
+$extern fn_((time_Awake_sleepMicros(time_Awake self, u64 micros))(Sched_Cancelable$void));
 /// Sleep on the awake clock for whole nanoseconds.
+$attr($must_check)
 $extern fn_((time_Awake_sleepNanos(time_Awake self, u32 nanos))(Sched_Cancelable$void));
 
-$attr($must_check)
 /// Return the platform direct awake clock.
+$attr($must_check)
 $extern fn_((time_Awake_direct(void))(time_direct_E$time_Awake));
 /// Return a cooperative executor backed awake clock.
 $extern fn_((time_Awake_evented(exec_Coop* coop))(time_Awake));
@@ -111,10 +114,14 @@ $extern cmp_fn_neqCtx$((time_Awake_Inst)(lhs, rhs, ctx));
 struct time_Awake_VTbl {
     fn_(((*nowFn)(P$raw ctx))(time_Awake_Inst));
     $attr($must_check)
+    fn_(((*resolutionFn)(P$raw ctx))(time_ResolutionE$time_Resolution));
+    $attr($must_check)
     fn_(((*sleepFn)(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 };
 $extern fn_((time_Awake_VTbl_noNow(P$raw ctx))(time_Awake_Inst));
 $extern fn_((time_Awake_VTbl_unreachableNow(P$raw ctx))(time_Awake_Inst));
+$attr($must_check)
+$extern fn_((time_Awake_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 $attr($must_check)
 $extern fn_((time_Awake_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
@@ -124,12 +131,14 @@ fn_((time_Awake_isValid(time_Awake self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
         && isNonnull(self.vtbl->nowFn)
+        && isNonnull(self.vtbl->resolutionFn)
         && isNonnull(self.vtbl->sleepFn);
 };
 fn_((time_Awake_assertValid(P$raw ctx, P_const$$(time_Awake_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->nowFn);
+    claim_assert_nonnull(vtbl->resolutionFn);
     claim_assert_nonnull(vtbl->sleepFn);
 };
 fn_((time_Awake_ensureValid(time_Awake self))(time_Awake)) {

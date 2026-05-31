@@ -5,11 +5,17 @@
 
 $attr($maybe_unused)
 $static fn_((time_Proc_direct__unsupported_now(P$raw ctx))(time_Proc_Inst));
+$attr($maybe_unused $must_check)
+$static fn_((time_Proc_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 pp_if_(plat_is_windows)(pp_then_(
     $static fn_((time_Proc_direct__windows_now(P$raw ctx))(time_Proc_Inst));
+    $attr($must_check)
+    $static fn_((time_Proc_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 ));
 pp_if_(plat_based_unix)(pp_then_(
     $static fn_((time_Proc_direct__unix_now(P$raw ctx))(time_Proc_Inst));
+    $attr($must_check)
+    $static fn_((time_Proc_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 ));
 
 $static let time_Proc_direct__now = pp_if_(plat_is_windows)(
@@ -18,15 +24,23 @@ $static let time_Proc_direct__now = pp_if_(plat_is_windows)(
         pp_then_(time_Proc_direct__unix_now),
         pp_else_(time_Proc_direct__unsupported_now)
     )));
+$static let time_Proc_direct__resolution = pp_if_(plat_is_windows)(
+    pp_then_(time_Proc_direct__windows_resolution),
+    pp_else_(pp_if_(plat_based_unix)(
+        pp_then_(time_Proc_direct__unix_resolution),
+        pp_else_(time_Proc_direct__unsupported_resolution)
+    )));
 
 /*========== External Definitions ===========================================*/
 
 let_(time_Proc_VTbl_noop, time_Proc_VTbl) = {
     .nowFn = time_Proc_VTbl_noNow,
+    .resolutionFn = time_Proc_VTbl_failingResolution,
 };
 
 let_(time_Proc_VTbl_failing, time_Proc_VTbl) = {
     .nowFn = time_Proc_VTbl_unreachableNow,
+    .resolutionFn = time_Proc_VTbl_failingResolution,
 };
 
 $static var_(time_Proc_noop_ctx, Void) = cleared();
@@ -47,6 +61,7 @@ fn_((time_Proc_direct(void))(time_direct_E$time_Proc) $scope) {
             $static var_(ctx, Void) $like_ref = cleared();
             $static let_(vtbl, time_Proc_VTbl) $like_ref = { {
                 .nowFn = time_Proc_direct__now,
+                .resolutionFn = time_Proc_direct__resolution,
             } };
             return_ok(time_Proc_ensureValid((time_Proc){
                 .ctx = &ctx,
@@ -62,6 +77,11 @@ fn_((time_Proc_direct(void))(time_direct_E$time_Proc) $scope) {
 fn_((time_Proc_now(time_Proc self))(time_Proc_Inst)) {
     self = time_Proc_ensureValid(self);
     return self.vtbl->nowFn(self.ctx);
+};
+
+fn_((time_Proc_resolution(time_Proc self))(time_ResolutionE$time_Resolution)) {
+    self = time_Proc_ensureValid(self);
+    return self.vtbl->resolutionFn(self.ctx);
 };
 
 fn_((time_Proc_Inst_elapsed(time_Proc_Inst self, time_Proc time))(time_Dur)) {
@@ -139,12 +159,22 @@ fn_((time_Proc_VTbl_unreachableNow(P$raw ctx))(time_Proc_Inst)) {
     claim_unreachable_msg("Process time source is unavailable");
 };
 
+fn_((time_Proc_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    let_ignore = ctx;
+    return_err(E_cause$time_direct_Unsupported());
+} $unscoped(fn);
+
 /*========== Direct Source Definitions ======================================*/
 
 fn_((time_Proc_direct__unsupported_now(P$raw ctx))(time_Proc_Inst)) {
     let_ignore = ctx;
     claim_unreachable_msg("Process direct time source is unavailable on this platform");
 };
+
+fn_((time_Proc_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    let_ignore = ctx;
+    return_err(E_cause$time_direct_Unsupported());
+} $unscoped(fn);
 
 pp_if_(plat_is_windows)(pp_then_(
     fn_((time_Proc_direct__windows_now(P$raw ctx))(time_Proc_Inst)) {
@@ -158,12 +188,17 @@ pp_if_(plat_is_windows)(pp_then_(
         }
         let kernel = time__windows_fromFileTime(kernel_time);
         let user = time__windows_fromFileTime(user_time);
-        return (time_Proc_Inst){
+        return l$((time_Proc_Inst){
             .raw = unwrap_(time_Inst_addChkdDur(
                 kernel, (time_Dur){ .secs = user.secs, .nanos = user.nanos }
             )),
-        };
+        });
     };
+
+    fn_((time_Proc_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+        let_ignore = ctx;
+        return_ok(time_Dur_fromNanos(100));
+    } $unscoped(fn);
 ));
 
 #if plat_based_unix
@@ -172,9 +207,20 @@ fn_((time_Proc_direct__unix_now(P$raw ctx))(time_Proc_Inst)) {
     let_ignore = ctx;
 #if defined(CLOCK_PROCESS_CPUTIME_ID)
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &now);
-    return (time_Proc_Inst){ .raw = time__unix_fromTimespec(now) };
+    return l$((time_Proc_Inst){ .raw = time__unix_fromTimespec(now) });
 #else
     claim_unreachable_msg("Process cpu time is unavailable on this platform");
 #endif
 };
+
+fn_((time_Proc_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    var_(res, struct timespec) = cleared();
+    let_ignore = ctx;
+#if defined(CLOCK_PROCESS_CPUTIME_ID)
+    clock_getres(CLOCK_PROCESS_CPUTIME_ID, &res);
+    return_ok({ .secs = as$(u64)(res.tv_sec), .nanos = as$(u32)(res.tv_nsec) });
+#else
+    return_err(E_cause$time_direct_Unsupported());
+#endif
+} $unscoped(fn);
 #endif /* plat_based_unix */

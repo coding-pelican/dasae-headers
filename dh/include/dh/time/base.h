@@ -18,6 +18,12 @@ T_decl_O$(time_Inst);
 
 /* --- Error Types --- */
 errset_((time_direct_E)(time_direct_Unsupported));
+T_decl_E$($set(time_direct_E)(time_Dur));
+
+/* --- Resolution Types --- */
+T_alias$((time_Resolution)(time_Dur));
+T_alias$((time_direct_E$time_Resolution)(time_direct_E$time_Dur));
+T_alias$((time_ResolutionE$time_Resolution)(time_direct_E$time_Resolution));
 
 /* --- Self Types --- */
 T_alias$((time_Real)(struct time_Real));

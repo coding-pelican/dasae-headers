@@ -8,16 +8,24 @@
 
 $attr($maybe_unused)
 $static fn_((time_Awake_direct__unsupported_now(P$raw ctx))(time_Awake_Inst));
+$attr($maybe_unused $must_check)
+$static fn_((time_Awake_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 pp_if_(plat_is_windows)(pp_then_(
     $static fn_((time_Awake_direct__windows_now(P$raw ctx))(time_Awake_Inst));
+    $attr($must_check)
+    $static fn_((time_Awake_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 ));
 pp_if_(plat_based_unix)(pp_then_(
     $static fn_((time_Awake_direct__unix__clockId(void))(clockid_t));
     $static fn_((time_Awake_direct__unix_now(P$raw ctx))(time_Awake_Inst));
+    $attr($must_check)
+    $static fn_((time_Awake_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 ));
 $attr($must_check)
 $static fn_((time_Awake_direct__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 $static fn_((time_Awake_evented__now(P$raw ctx))(time_Awake_Inst));
+$attr($must_check)
+$static fn_((time_Awake_evented__resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 $attr($must_check)
 $static fn_((time_Awake_evented__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void));
 
@@ -27,6 +35,12 @@ $static let time_Awake_direct__now = pp_if_(plat_is_windows)(
         pp_then_(time_Awake_direct__unix_now),
         pp_else_(time_Awake_direct__unsupported_now)
     )));
+$static let time_Awake_direct__resolution = pp_if_(plat_is_windows)(
+    pp_then_(time_Awake_direct__windows_resolution),
+    pp_else_(pp_if_(plat_based_unix)(
+        pp_then_(time_Awake_direct__unix_resolution),
+        pp_else_(time_Awake_direct__unsupported_resolution)
+    )));
 
 T_use$((exec_Timer)(ArrPQue_enque));
 
@@ -34,11 +48,13 @@ T_use$((exec_Timer)(ArrPQue_enque));
 
 let_(time_Awake_VTbl_noop, time_Awake_VTbl) = {
     .nowFn = time_Awake_VTbl_noNow,
+    .resolutionFn = time_Awake_VTbl_failingResolution,
     .sleepFn = time_Awake_VTbl_failingSleep,
 };
 
 let_(time_Awake_VTbl_failing, time_Awake_VTbl) = {
     .nowFn = time_Awake_VTbl_unreachableNow,
+    .resolutionFn = time_Awake_VTbl_failingResolution,
     .sleepFn = time_Awake_VTbl_failingSleep,
 };
 
@@ -60,6 +76,7 @@ fn_((time_Awake_direct(void))(time_direct_E$time_Awake) $scope) {
             $static var_(ctx, Void) $like_ref = cleared();
             $static let_(vtbl, time_Awake_VTbl) $like_ref = { {
                 .nowFn = time_Awake_direct__now,
+                .resolutionFn = time_Awake_direct__resolution,
                 .sleepFn = time_Awake_direct__sleep,
             } };
             return_ok(time_Awake_ensureValid((time_Awake){
@@ -76,6 +93,7 @@ fn_((time_Awake_direct(void))(time_direct_E$time_Awake) $scope) {
 fn_((time_Awake_evented(exec_Coop* coop))(time_Awake)) {
     $static let_(vtbl, time_Awake_VTbl) $like_ref = { {
         .nowFn = time_Awake_evented__now,
+        .resolutionFn = time_Awake_evented__resolution,
         .sleepFn = time_Awake_evented__sleep,
     } };
     return time_Awake_ensureValid((time_Awake){
@@ -87,6 +105,11 @@ fn_((time_Awake_evented(exec_Coop* coop))(time_Awake)) {
 fn_((time_Awake_now(time_Awake self))(time_Awake_Inst)) {
     self = time_Awake_ensureValid(self);
     return self.vtbl->nowFn(self.ctx);
+};
+
+fn_((time_Awake_resolution(time_Awake self))(time_ResolutionE$time_Resolution)) {
+    self = time_Awake_ensureValid(self);
+    return self.vtbl->resolutionFn(self.ctx);
 };
 
 fn_((time_Awake_sleep(time_Awake self, time_Dur dur))(Sched_Cancelable$void)) {
@@ -140,12 +163,12 @@ op_fn_subAsgWith$(((time_Awake_Inst, time_Dur)(lhs, rhs))(time_Awake_Inst*)) {
 
 fn_((time_Awake_Inst_addChkdDur(time_Awake_Inst lhs, time_Dur rhs))(O$time_Awake_Inst) $scope) {
     let raw = orelse_((time_Inst_addChkdDur(lhs.raw, rhs))(return_none()));
-    return_some((time_Awake_Inst){ .raw = raw });
+    return_some({ .raw = raw });
 } $unscoped(fn);
 
 fn_((time_Awake_Inst_subChkdDur(time_Awake_Inst lhs, time_Dur rhs))(O$time_Awake_Inst) $scope) {
     let raw = orelse_((time_Inst_subChkdDur(lhs.raw, rhs))(return_none()));
-    return_some((time_Awake_Inst){ .raw = raw });
+    return_some({ .raw = raw });
 } $unscoped(fn);
 
 cmp_fn_ord$((time_Awake_Inst)(lhs, rhs)) {
@@ -185,6 +208,11 @@ fn_((time_Awake_VTbl_unreachableNow(P$raw ctx))(time_Awake_Inst)) {
     claim_unreachable_msg("Awake time source is unavailable");
 };
 
+fn_((time_Awake_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    let_ignore = ctx;
+    return_err(E_cause$time_direct_Unsupported());
+} $unscoped(fn);
+
 fn_((time_Awake_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) $scope) {
     let_ignore = ctx;
     let_ignore = dur;
@@ -198,6 +226,11 @@ fn_((time_Awake_direct__unsupported_now(P$raw ctx))(time_Awake_Inst)) {
     claim_unreachable_msg("Awake direct time source is unavailable on this platform");
 };
 
+fn_((time_Awake_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    let_ignore = ctx;
+    return_err(E_cause$time_direct_Unsupported());
+} $unscoped(fn);
+
 pp_if_(plat_is_windows)(pp_then_(
     fn_((time_Awake_direct__windows_now(P$raw ctx))(time_Awake_Inst)) {
         var_(counter, LARGE_INTEGER) = cleared();
@@ -207,8 +240,15 @@ pp_if_(plat_is_windows)(pp_then_(
         let ticks = as$(u64)(counter.QuadPart);
         let secs = ticks / freq;
         let nanos = as$(u32)(((ticks % freq) * as$(u64)(time_nanos_per_sec)) / freq);
-        return (time_Awake_Inst){ .raw = time_Inst_from(secs, nanos) };
+        return l$((time_Awake_Inst){ .raw = time_Inst_from(secs, nanos) });
     };
+
+    fn_((time_Awake_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+        let_ignore = ctx;
+        let freq = time__windows_qpcFreq();
+        let nanos = time_nanos_per_sec / freq;
+        return_ok(time_Dur_fromNanos(as$(u32)(nanos == 0 ? 1 : nanos)));
+    } $unscoped(fn);
 ));
 
 #if plat_based_unix
@@ -224,8 +264,15 @@ fn_((time_Awake_direct__unix_now(P$raw ctx))(time_Awake_Inst)) {
     var_(now, struct timespec) = cleared();
     let_ignore = ctx;
     clock_gettime(time_Awake_direct__unix__clockId(), &now);
-    return (time_Awake_Inst){ .raw = time__unix_fromTimespec(now) };
+    return l$((time_Awake_Inst){ .raw = time__unix_fromTimespec(now) });
 };
+
+fn_((time_Awake_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    var_(res, struct timespec) = cleared();
+    let_ignore = ctx;
+    clock_getres(time_Awake_direct__unix__clockId(), &res);
+    return_ok({ .secs = as$(u64)(res.tv_sec), .nanos = as$(u32)(res.tv_nsec) });
+} $unscoped(fn);
 #endif /* plat_based_unix */
 
 fn_((time_Awake_direct__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void)) {
@@ -236,6 +283,11 @@ fn_((time_Awake_direct__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void)) 
 fn_((time_Awake_evented__now(P$raw ctx))(time_Awake_Inst)) {
     let self = as$(exec_Coop*)(ctx);
     return time_Awake_now(self->timed.clock);
+};
+
+fn_((time_Awake_evented__resolution(P$raw ctx))(time_ResolutionE$time_Resolution)) {
+    let self = as$(exec_Coop*)(ctx);
+    return time_Awake_resolution(self->timed.clock);
 };
 
 fn_((time_Awake_evented__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) $scope) {

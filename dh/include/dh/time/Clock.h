@@ -21,20 +21,23 @@ variant_((time_Clock $fits($packed))(
 T_impl_O$(time_Clock);
 /// Read the current clock instant.
 $extern fn_((time_Clock_now(time_Clock clock))(time_Clock_Inst));
+/// Return the clock resolution.
 $attr($must_check)
+$extern fn_((time_Clock_resolution(time_Clock clock))(time_ResolutionE$time_Resolution));
 /// Sleep on the clock for a duration.
+$attr($must_check)
 $extern fn_((time_Clock_sleep(time_Clock self, time_Dur dur))(Sched_Cancelable$void));
-$attr($must_check)
 /// Sleep on the clock for whole seconds.
+$attr($must_check)
 $extern fn_((time_Clock_sleepSecs(time_Clock self, u64 secs))(Sched_Cancelable$void));
-$attr($must_check)
 /// Sleep on the clock for whole milliseconds.
+$attr($must_check)
 $extern fn_((time_Clock_sleepMillis(time_Clock self, u64 millis))(Sched_Cancelable$void));
-$attr($must_check)
 /// Sleep on the clock for whole microseconds.
-$extern fn_((time_Clock_sleepMicros(time_Clock self, u64 micros))(Sched_Cancelable$void));
 $attr($must_check)
+$extern fn_((time_Clock_sleepMicros(time_Clock self, u64 micros))(Sched_Cancelable$void));
 /// Sleep on the clock for whole nanoseconds.
+$attr($must_check)
 $extern fn_((time_Clock_sleepNanos(time_Clock self, u32 nanos))(Sched_Cancelable$void));
 
 /// Tagged instant value produced by one of the supported clock sources.

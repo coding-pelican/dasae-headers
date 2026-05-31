@@ -34,6 +34,7 @@ struct time_Dur {
     u32 nanos;
 };
 T_impl_O$(time_Dur);
+T_impl_E$($set(time_direct_E)(time_Dur));
 
 /* --- Constants --- */
 #define time_Dur_zero __comp_const__time_Dur_zero

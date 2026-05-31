@@ -33,20 +33,23 @@ $extern let_(time_Proc_noop, time_Proc);
 /// Failing process CPU clock instance.
 $extern let_(time_Proc_failing, time_Proc);
 
-$attr($inline_always)
 /// Return whether a process CPU clock has a valid context and vtable.
+$attr($inline_always)
 $static fn_((time_Proc_isValid(time_Proc self))(bool));
-$attr($inline_always)
 /// Assert that a process CPU clock context and vtable are valid.
-$static fn_((time_Proc_assertValid(P$raw ctx, P_const$$(time_Proc_VTbl) vtbl))(void));
 $attr($inline_always)
+$static fn_((time_Proc_assertValid(P$raw ctx, P_const$$(time_Proc_VTbl) vtbl))(void));
 /// Return a process CPU clock after validating it.
+$attr($inline_always)
 $static fn_((time_Proc_ensureValid(time_Proc self))(time_Proc));
 
 /// Read the current process CPU instant.
 $extern fn_((time_Proc_now(time_Proc self))(time_Proc_Inst));
+/// Return the process CPU clock resolution.
 $attr($must_check)
+$extern fn_((time_Proc_resolution(time_Proc self))(time_ResolutionE$time_Resolution));
 /// Return the platform direct process CPU clock.
+$attr($must_check)
 $extern fn_((time_Proc_direct(void))(time_direct_E$time_Proc));
 
 struct time_Proc_Inst {
@@ -90,21 +93,27 @@ $extern cmp_fn_neqCtx$((time_Proc_Inst)(lhs, rhs, ctx));
 
 struct time_Proc_VTbl {
     fn_(((*nowFn)(P$raw ctx))(time_Proc_Inst));
+    $attr($must_check)
+    fn_(((*resolutionFn)(P$raw ctx))(time_ResolutionE$time_Resolution));
 };
 $extern fn_((time_Proc_VTbl_noNow(P$raw ctx))(time_Proc_Inst));
 $extern fn_((time_Proc_VTbl_unreachableNow(P$raw ctx))(time_Proc_Inst));
+$attr($must_check)
+$extern fn_((time_Proc_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 
 /*========== Macros and Definitions =========================================*/
 
 fn_((time_Proc_isValid(time_Proc self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
-        && isNonnull(self.vtbl->nowFn);
+        && isNonnull(self.vtbl->nowFn)
+        && isNonnull(self.vtbl->resolutionFn);
 };
 fn_((time_Proc_assertValid(P$raw ctx, P_const$$(time_Proc_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->nowFn);
+    claim_assert_nonnull(vtbl->resolutionFn);
 };
 fn_((time_Proc_ensureValid(time_Proc self))(time_Proc)) {
     return time_Proc_assertValid(self.ctx, self.vtbl), self;

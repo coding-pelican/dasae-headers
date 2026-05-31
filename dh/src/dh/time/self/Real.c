@@ -5,11 +5,17 @@
 
 $attr($maybe_unused)
 $static fn_((time_Real_direct__unsupported_now(P$raw ctx))(time_Real_Inst));
+$attr($maybe_unused $must_check)
+$static fn_((time_Real_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 pp_if_(plat_is_windows)(pp_then_(
     $static fn_((time_Real_direct__windows_now(P$raw ctx))(time_Real_Inst));
+    $attr($must_check)
+    $static fn_((time_Real_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 ));
 pp_if_(plat_based_unix)(pp_then_(
     $static fn_((time_Real_direct__unix_now(P$raw ctx))(time_Real_Inst));
+    $attr($must_check)
+    $static fn_((time_Real_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 ));
 
 $static let time_Real_direct__now = pp_if_(plat_is_windows)(
@@ -18,15 +24,23 @@ $static let time_Real_direct__now = pp_if_(plat_is_windows)(
         pp_then_(time_Real_direct__unix_now),
         pp_else_(time_Real_direct__unsupported_now)
     )));
+$static let time_Real_direct__resolution = pp_if_(plat_is_windows)(
+    pp_then_(time_Real_direct__windows_resolution),
+    pp_else_(pp_if_(plat_based_unix)(
+        pp_then_(time_Real_direct__unix_resolution),
+        pp_else_(time_Real_direct__unsupported_resolution)
+    )));
 
 /*========== External Definitions ===========================================*/
 
 let_(time_Real_VTbl_noop, time_Real_VTbl) = {
     .nowFn = time_Real_VTbl_noNow,
+    .resolutionFn = time_Real_VTbl_failingResolution,
 };
 
 let_(time_Real_VTbl_failing, time_Real_VTbl) = {
     .nowFn = time_Real_VTbl_unreachableNow,
+    .resolutionFn = time_Real_VTbl_failingResolution,
 };
 
 $static var_(time_Real_noop_ctx, Void) = cleared();
@@ -47,6 +61,7 @@ fn_((time_Real_direct(void))(time_direct_E$time_Real) $scope) {
             $static var_(ctx, Void) $like_ref = cleared();
             $static let_(vtbl, time_Real_VTbl) $like_ref = { {
                 .nowFn = time_Real_direct__now,
+                .resolutionFn = time_Real_direct__resolution,
             } };
             return_ok(time_Real_ensureValid((time_Real){
                 .ctx = &ctx,
@@ -62,6 +77,11 @@ fn_((time_Real_direct(void))(time_direct_E$time_Real) $scope) {
 fn_((time_Real_now(time_Real self))(time_Real_Inst)) {
     self = time_Real_ensureValid(self);
     return self.vtbl->nowFn(self.ctx);
+};
+
+fn_((time_Real_resolution(time_Real self))(time_ResolutionE$time_Resolution)) {
+    self = time_Real_ensureValid(self);
+    return self.vtbl->resolutionFn(self.ctx);
 };
 
 fn_((time_Real_Inst_elapsed(time_Real_Inst self, time_Real time))(time_Dur)) {
@@ -154,6 +174,11 @@ fn_((time_Real_VTbl_unreachableNow(P$raw ctx))(time_Real_Inst)) {
     claim_unreachable_msg("Real time source is unavailable");
 };
 
+fn_((time_Real_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    let_ignore = ctx;
+    return_err(E_cause$time_direct_Unsupported());
+} $unscoped(fn);
+
 /*========== Direct Source Definitions ======================================*/
 
 fn_((time_Real_direct__unsupported_now(P$raw ctx))(time_Real_Inst)) {
@@ -161,13 +186,23 @@ fn_((time_Real_direct__unsupported_now(P$raw ctx))(time_Real_Inst)) {
     claim_unreachable_msg("Real direct time source is unavailable on this platform");
 };
 
+fn_((time_Real_direct__unsupported_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+    let_ignore = ctx;
+    return_err(E_cause$time_direct_Unsupported());
+} $unscoped(fn);
+
 pp_if_(plat_is_windows)(pp_then_(
     fn_((time_Real_direct__windows_now(P$raw ctx))(time_Real_Inst)) {
         var_(now, FILETIME) = cleared();
         let_ignore = ctx;
         GetSystemTimeAsFileTime(&now);
-        return (time_Real_Inst){ .raw = time__windows_fromUnixFileTime(now) };
+        return l$((time_Real_Inst){ .raw = time__windows_fromUnixFileTime(now) });
     };
+
+    fn_((time_Real_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+        let_ignore = ctx;
+        return_ok(time_Dur_fromNanos(100));
+    } $unscoped(fn);
 ));
 
 pp_if_(plat_based_unix)(pp_then_(
@@ -175,6 +210,13 @@ pp_if_(plat_based_unix)(pp_then_(
         var_(now, struct timespec) = cleared();
         let_ignore = ctx;
         clock_gettime(CLOCK_REALTIME, &now);
-        return (time_Real_Inst){ .raw = time__unix_fromTimespec(now) };
+        return l$((time_Real_Inst){ .raw = time__unix_fromTimespec(now) });
     };
+
+    fn_((time_Real_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
+        var_(res, struct timespec) = cleared();
+        let_ignore = ctx;
+        clock_getres(CLOCK_REALTIME, &res);
+        return_ok({ .secs = as$(u64)(res.tv_sec), .nanos = as$(u32)(res.tv_nsec) });
+    } $unscoped(fn);
 ));
