@@ -100,10 +100,15 @@ extern "C" {
 
 /* --- Calling Conventions --- */
 
-#define plat_cdecl __comp_attr__plat_cdecl
-#define plat_stdcall __comp_attr__plat_stdcall
-#define plat_fastcall __comp_attr__plat_fastcall
-#define plat_vectorcall __comp_attr__plat_vectorcall
+#define plat_callconv_cdecl __comp_attr__plat_callconv_cdecl
+#define plat_callconv_stdcall __comp_attr__plat_callconv_stdcall
+#define plat_callconv_fastcall __comp_attr__plat_callconv_fastcall
+#define plat_callconv_vectorcall __comp_attr__plat_callconv_vectorcall
+/// Fiber entry trampoline; no prologue/epilogue.
+#define plat_callconv_naked __comp_attr__plat_callconv_naked
+/// Fiber yield / context-switch boundary: callee does not preserve platform callee-saved GPRs.
+#define plat_callconv_preserve_none __comp_attr__plat_callconv_preserve_none
+#define plat_callconv_preserve_all __comp_attr__plat_callconv_preserve_all
 
 /*========== Macros and Definitions =========================================*/
 
@@ -283,17 +288,21 @@ extern "C" {
 /* --- Calling Conventions --- */
 
 #if plat_type == plat_type_windows
-#define __comp_attr__plat_cdecl __cdecl
-#define __comp_attr__plat_stdcall __stdcall
-#define __comp_attr__plat_fastcall __fastcall
-#define __comp_attr__plat_vectorcall __vectorcall
+#define __comp_attr__plat_callconv_cdecl __cdecl
+#define __comp_attr__plat_callconv_stdcall __stdcall
+#define __comp_attr__plat_callconv_fastcall __fastcall
+#define __comp_attr__plat_callconv_vectorcall __vectorcall
 #else /* plat_type != plat_type_windows */
 /* Linux/Unix typically ignores these or they are default */
-#define __comp_attr__plat_cdecl
-#define __comp_attr__plat_stdcall
-#define __comp_attr__plat_fastcall
-#define __comp_attr__plat_vectorcall
+#define __comp_attr__plat_callconv_cdecl
+#define __comp_attr__plat_callconv_stdcall
+#define __comp_attr__plat_callconv_fastcall
+#define __comp_attr__plat_callconv_vectorcall
 #endif
+
+#define __comp_attr__plat_callconv_naked comp_naked
+#define __comp_attr__plat_callconv_preserve_none comp_preserve_none
+#define __comp_attr__plat_callconv_preserve_all comp_preserve_all
 
 #if defined(__cplusplus)
 } /* extern "C" */

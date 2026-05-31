@@ -12,7 +12,7 @@ extern "C" {
 
 /* --- Fiber context switch --- */
 
-$attr($no_return)
+$attr($no_return $keep_symbol)
 $extern fn_((exec_callFiber(exec_Fiber_Starter* starter, const co_Fiber* first_switch))(void));
 $extern fn_((exec_switchToFiber(co_Fiber_Context* sched_context, exec_Fiber* fiber))(void));
 $extern fn_((exec_switchFromFiber(co_Fiber_Context* fiber_context, co_Fiber_Context* sched_context))(void));

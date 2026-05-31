@@ -29,7 +29,7 @@ TEST_fn_("exec/Fiber-growable: proactive ensure from saved rsp" $guard) {
         typeInfo$(i32),
         policy
     ));
-    defer_(exec_Fiber_fini(fiber, gpa));
+    defer_(exec_Fiber_fini(fiber, gpa, typeInfo$(i32)));
     let rsp = co_Fiber_Context_stackPtr(&fiber->context);
     let storage_begin = ptrToInt(fiber->storage.ptr);
     let storage_end = storage_begin + fiber->storage.len;

@@ -1,22 +1,22 @@
 #include "Fiber.h"
 #include "FiberGrow.h"
 
-$attr(__attribute__((naked)))
+$attr($callconv_naked)
 $static fn_((exec_Fiber__entry(void))(void)) { /* NOLINTBEGIN(hicpp-no-assembler) */
     pp_if_(co_Fiber_supported)((asm_volatile(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(
             "leaq 8(%%rsp), %%rdi\n\t"
             "leaq 8(%%rsp), %%rcx\n\t"
             "movq %%rsi, %%rdx\n\t"
-            "jmp exec_callFiber\n\t" : : : "memory"
+            "jmp " nameOf(exec_callFiber) "\n\t" : : : "memory"
         )),
         pp_case_((arch_type_aarch64)(
             "mov x0, sp\n\t"
-            "b exec_callFiber\n\t" : : : "memory"
+            "b " nameOf(exec_callFiber) "\n\t" : : : "memory"
         )),
         pp_case_((arch_type_riscv64)(
             "mv a0, sp\n\t"
-            "tail exec_callFiber\n\t" : : : "memory"
+            "tail " nameOf(exec_callFiber) "\n\t" : : : "memory"
         ))
     )))));
 } /* NOLINTEND(hicpp-no-assembler) */

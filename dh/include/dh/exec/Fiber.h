@@ -75,7 +75,7 @@ $extern fn_((exec_Fiber_initWithPolicy(
     exec_Fiber_WorkFn workFn, TypeInfo result_ty,
     exec_Fiber_StackPolicy policy
 ))(exec_Fiber_E$P$exec_Fiber));
-$extern fn_((exec_Fiber_fini(exec_Fiber* self, mem_Alctr gpa))(void));
+$extern fn_((exec_Fiber_fini(exec_Fiber* self, mem_Alctr gpa, TypeInfo result_ty))(void));
 
 /* --- Result access --- */
 

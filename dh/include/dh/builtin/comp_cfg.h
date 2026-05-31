@@ -102,6 +102,13 @@ extern "C" {
 #define comp_no_return __comp_attr__comp_no_return
 #define comp_must_tail __comp_attr__comp_must_tail
 
+/* Calling conventions & ABI boundaries */
+#define comp_naked __comp_attr__comp_naked
+#define comp_preserve_none __comp_attr__comp_preserve_none
+#define comp_preserve_all __comp_attr__comp_preserve_all
+#define comp_ms_abi __comp_attr__comp_ms_abi
+#define comp_sysv_abi __comp_attr__comp_sysv_abi
+
 /* Optimization Hints */
 #define comp_inline __comp_attr__comp_inline
 #define comp_inline_always __comp_attr__comp_inline_always
@@ -358,6 +365,12 @@ extern "C" {
 
 #define __comp_attr__comp_prefetch(_addr, _rw, _locality...) __builtin_prefetch(_addr, _rw, _locality)
 
+#define __comp_attr__comp_naked __attribute__((naked))
+#define __comp_attr__comp_preserve_none __attribute__((preserve_none))
+#define __comp_attr__comp_preserve_all __attribute__((preserve_all))
+#define __comp_attr__comp_ms_abi __attribute__((ms_abi))
+#define __comp_attr__comp_sysv_abi __attribute__((sysv_abi))
+
 #elif comp_type == comp_type_msvc
 #define __comp_attr__comp_deprecated __declspec(deprecated)
 #define __comp_attr__comp_deprecated_msg(_msg) __declspec(deprecated(_msg))
@@ -410,6 +423,12 @@ extern "C" {
 
 #define __comp_attr__comp_prefetch(_addr, _rw, _locality...) __prefetch(_addr, _rw, _locality)
 
+#define __comp_attr__comp_naked __declspec(naked)
+#define __comp_attr__comp_preserve_none __preserve_none
+#define __comp_attr__comp_preserve_all
+#define __comp_attr__comp_ms_abi
+#define __comp_attr__comp_sysv_abi
+
 #else
 #define __comp_attr__comp_deprecated
 #define __comp_attr__comp_deprecated_msg(_msg)
@@ -455,6 +474,12 @@ extern "C" {
 #define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
 
 #define __comp_attr__comp_prefetch(_addr, _rw, _locality...) __prefetch(_addr, _rw, _locality)
+
+#define __comp_attr__comp_naked
+#define __comp_attr__comp_preserve_none
+#define __comp_attr__comp_preserve_all
+#define __comp_attr__comp_ms_abi
+#define __comp_attr__comp_sysv_abi
 #endif
 
 #if defined(__cplusplus)

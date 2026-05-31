@@ -168,7 +168,7 @@ pp_if_(pp_not(comp_start_files_linked))((
     ))(_Entry)
 
 #define start__win32_emitEntry(_Entry...) \
-    T_alias$((start_win32_TLSCallback)(fn_(((plat_stdcall*)(P$raw inst, u32 reason, P$raw reserved))(void) $T))); \
+    T_alias$((start_win32_TLSCallback)(fn_((($callconv_stdcall*)(P$raw inst, u32 reason, P$raw reserved))(void) $T))); \
     T_alias$((start_win32_IMAGE_TLS_DIRECTORY)(struct start_win32_IMAGE_TLS_DIRECTORY { \
         var_(StartAddressOfRawData, P$raw*); \
         var_(EndAddressOfRawData, P$raw*); \
@@ -224,7 +224,7 @@ pp_if_(pp_not(comp_start_files_linked))((
 #define start__linux_emitEntry(_Entry...) \
     $attr($no_return) \
     fn_((_start(void))(void)); \
-    $attr($no_return __attribute__((naked)))\
+    $attr($no_return $callconv_naked)\
     fn_((_start(void))(void)) { \
         pp_switch_((arch_type)( \
             pp_case_((arch_type_x86_64)(asm_volatile( \

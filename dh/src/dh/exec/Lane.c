@@ -191,7 +191,7 @@ fn_((exec_Lane__createTask(
 fn_((exec_Lane__destroyTask(exec_Lane* self, exec_Task* task))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(task);
     if_some((task->fiber)(fiber)) {
-        exec_Fiber_fini(fiber, self->gpa);
+        exec_Fiber_fini(fiber, self->gpa, task->result.type);
         return mem_Alctr_destroy$exec_Task($trace self->gpa, task);
     }
     if (isNonnull(task->result.raw)) {

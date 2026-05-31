@@ -460,7 +460,7 @@ fn_((thrd__windows_setName(thrd_Self self, S_const$u8 name))(thrd_E$void) $scope
 
 #define thrd__windows_stack_size_min (64 * 1024)
 
-$attr($stdcall)
+$attr($callconv_stdcall)
 $static fn_((thrd__windows_entry(LPVOID lpParameter))(DWORD));
 fn_((thrd__windows_spawn(thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(thrd_spawn_E$thrd_Self) $scope) {
     let start = u_castP$((thrd__Start*)(try_(thrd__startAlloc(cfg, clsr, ret_type))));

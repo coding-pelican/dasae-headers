@@ -1,29 +1,24 @@
 #include "dh/exec/Fiber.h"
 #include "dh/exec/Fiber-growable.h"
+#include "dh/exec/common.h"
 
-$static fn_((exec_Fiber__freeSlab(exec_Fiber* self, mem_Alctr gpa))(void));
-fn_((exec_Fiber__freeSlab(exec_Fiber* self, mem_Alctr gpa))(void)) {
-    claim_assert_nonnull(self);
-    let bytes = exec_Fiber_slabBytes($typed(self->result_ty));
-    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Fiber));
-};
-
-$attr(__attribute__((naked)))
+$static fn_((exec_Fiber__freeSlab(exec_Fiber* self, mem_Alctr gpa, TypeInfo result_ty))(void));
+$attr($callconv_naked)
 $static fn_((exec_Fiber__entry(void))(void)) { /* NOLINTBEGIN(hicpp-no-assembler) */
     pp_if_(co_Fiber_supported)((asm_volatile(pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(
             "leaq 8(%%rsp), %%rdi\n\t"
             "leaq 8(%%rsp), %%rcx\n\t"
             "movq %%rsi, %%rdx\n\t"
-            "jmp exec_callFiber\n\t" : : : "memory"
+            "jmp " nameOf(exec_callFiber) "\n\t" : : : "memory"
         )),
         pp_case_((arch_type_aarch64)(
             "mov x0, sp\n\t"
-            "b exec_callFiber\n\t" : : : "memory"
+            "b " nameOf(exec_callFiber) "\n\t" : : : "memory"
         )),
         pp_case_((arch_type_riscv64)(
             "mv a0, sp\n\t"
-            "tail exec_callFiber\n\t" : : : "memory"
+            "tail " nameOf(exec_callFiber) "\n\t" : : : "memory"
         ))
     )))));
 } /* NOLINTEND(hicpp-no-assembler) */
@@ -63,7 +58,7 @@ fn_((exec_Fiber_initWithPolicy(
                 return_err(E_cause$OutOfMemory())
             ));
             let fiber = ptrAlignCast$((exec_Fiber*)(mem));
-            errdefer_($ignore, exec_Fiber__freeSlab(fiber, gpa));
+            errdefer_($ignore, exec_Fiber__freeSlab(fiber, gpa, result_ty));
             mem_set0Bytes(P_prefix$((S$u8)(mem)(bytes)));
             asg_l((fiber)({
                 .storage = cleared(),
@@ -91,8 +86,16 @@ fn_((exec_Fiber_initWithPolicy(
     );
 } $unguarded(fn);
 
-fn_((exec_Fiber_fini(exec_Fiber* self, mem_Alctr gpa))(void)) {
-    claim_assert_nonnull(self);
+fn_((exec_Fiber_fini(exec_Fiber* self, mem_Alctr gpa, TypeInfo result_ty))(void)) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->result_ty), result_ty, TypeInfo_eql);
     exec_Fiber_finiStorage(self, gpa);
-    exec_Fiber__freeSlab(self, gpa);
+    exec_Fiber__freeSlab(self, gpa, result_ty);
+};
+
+/*========== Internal Definitions ===========================================*/
+
+fn_((exec_Fiber__freeSlab(exec_Fiber* self, mem_Alctr gpa, TypeInfo result_ty))(void)) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->result_ty), result_ty, TypeInfo_eql);
+    let bytes = exec_Fiber_slabBytes(result_ty);
+    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Fiber));
 };

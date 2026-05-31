@@ -109,7 +109,7 @@ fn_((debug_StackTrace__unsupported_print(void))(void)) {
 #pragma comment(lib, "dbghelp.lib")
 #include "dh/sys/api/windows/pp-def/unguarded.h"
 
-$attr($stdcall)
+$attr($callconv_stdcall)
 $static fn_((debug_StackTrace__windows__handleException(EXCEPTION_POINTERS* ExceptionInfo))(LONG)) {
     let code = ExceptionInfo->ExceptionRecord->ExceptionCode;
     let reason = expr_(S_const$u8 $scope)(switch (code) {

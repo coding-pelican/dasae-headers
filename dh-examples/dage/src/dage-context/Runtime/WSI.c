@@ -392,7 +392,7 @@ $static fn_((WSI__windows_findByHWND(P$dage_Runtime_WSI self, HWND hwnd))(O$P$da
     return_none();
 } $unscoped(fn);
 
-$attr($stdcall)
+$attr($callconv_stdcall)
 $static fn_((WSI__windows_wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam))(LRESULT)) {
     let self = intToPtr$((P$dage_Runtime_WSI)GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     if (self == null) {

@@ -114,7 +114,14 @@ fn_((co_Fiber_contextSwitch(const co_Fiber* self))(const co_Fiber*)) { /* NOLINT
             "movq 8(%%rcx), %%rbp\n\t"
             "jmpq *16(%%rcx)\n\t"
             "0:" : "+S"(fiber) : : "memory",
-            "cc", "rax", "rbx", "rcx", "rdx", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+            "cc", "rax", "rcx", "rdx", "rbx", "rdi", "r8", "r9", "r10", "r11",
+            "r12", "r13", "r14", "r15",
+            "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7",
+            "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15",
+            "ymm0", "ymm1", "ymm2", "ymm3", "ymm4", "ymm5", "ymm6", "ymm7",
+            "ymm8", "ymm9", "ymm10", "ymm11", "ymm12", "ymm13", "ymm14", "ymm15",
+            "zmm0", "zmm1", "zmm2", "zmm3", "zmm4", "zmm5", "zmm6", "zmm7",
+            "zmm8", "zmm9", "zmm10", "zmm11", "zmm12", "zmm13", "zmm14", "zmm15"
         )),
         pp_case_((arch_type_aarch64)(
             "ldp x0, x2, [x1]\n\t"
@@ -128,7 +135,9 @@ fn_((co_Fiber_contextSwitch(const co_Fiber* self))(const co_Fiber*)) { /* NOLINT
             "br x3\n\t"
             "0:" : "+r"(fiber) : : "memory",
             "cc", "x0", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10", "x11", "x12", "x13", "x14", "x15",
-            "x16", "x17", "x19", "x20", "x21", "x22", "x23", "x24", "x25", "x26", "x27", "x28", "x30"
+            "x16", "x17", "x19", "x20", "x21", "x22", "x23", "x24", "x25", "x26", "x27", "x28", "x30",
+            "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15",
+            "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31"
         )),
         pp_case_((arch_type_riscv64)(
             "ld a0, 0(a1)\n\t"
@@ -142,8 +151,13 @@ fn_((co_Fiber_contextSwitch(const co_Fiber* self))(const co_Fiber*)) { /* NOLINT
             "ld a3, 16(a2)\n\t"
             "jr a3\n\t"
             "0:" : "+r"(fiber) : : "memory",
-            "a0", "a2", "a3", "a4", "a5", "a6", "a7", "t0", "t1", "t2", "t3", "t4", "t5", "t6",
-            "ra", "gp", "tp", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11"
+            "a0", "a2", "a3", "a4", "a5", "a6", "a7",
+            "t0", "t1", "t2", "t3", "t4", "t5", "t6",
+            "ra", "gp", "tp", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11",
+            "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",
+            "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15",
+            "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",
+            "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31"
         ))
     )))));
     return fiber;

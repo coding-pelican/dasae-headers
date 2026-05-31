@@ -378,10 +378,13 @@ extern "C" {
 #define $extern extern
 #define $thrd_local _Thread_local
 
-#define $cdecl __attr__$cdecl
-#define $stdcall __attr__$stdcall
-#define $fastcall __attr__$fastcall
-#define $vectorcall __attr__$vectorcall
+#define $callconv_cdecl __attr__$callconv_cdecl
+#define $callconv_stdcall __attr__$callconv_stdcall
+#define $callconv_fastcall __attr__$callconv_fastcall
+#define $callconv_vectorcall __attr__$callconv_vectorcall
+#define $callconv_naked __attr__$callconv_naked
+#define $callconv_preserve_none __attr__$callconv_preserve_none
+#define $callconv_preserve_all __attr__$callconv_preserve_all
 
 #define $packed __attr__$packed
 #define $bits(_width... /*8|16|32|64*/) __attr__$bits(_width)
@@ -607,10 +610,13 @@ extern "C" {
 #define __attr__$like_ref [1]
 #define __attr__$like_deref [0]
 
-#define __attr__$cdecl plat_cdecl
-#define __attr__$stdcall plat_stdcall
-#define __attr__$fastcall plat_fastcall
-#define __attr__$vectorcall plat_vectorcall
+#define __attr__$callconv_cdecl plat_callconv_cdecl
+#define __attr__$callconv_stdcall plat_callconv_stdcall
+#define __attr__$callconv_fastcall plat_callconv_fastcall
+#define __attr__$callconv_vectorcall plat_callconv_vectorcall
+#define __attr__$callconv_naked plat_callconv_naked
+#define __attr__$callconv_preserve_none plat_callconv_preserve_none
+#define __attr__$callconv_preserve_all plat_callconv_preserve_all
 
 #define __attr__$packed comp_packed
 #define __attr__$bits(_width... /*8|16|32|64*/) pp_join(_, __attr__$bits, _width)
