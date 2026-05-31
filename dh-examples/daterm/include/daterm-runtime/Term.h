@@ -26,7 +26,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-T_use_E$($set(Sched_TimeoutE)(daterm_Event));
+errset_((daterm_Term_WaitE)() $union_errset_(Sched_Cancelable, Sched_TimeoutE));
+T_use_E$($set(Sched_Cancelable)(daterm_Event));
+T_use_E$($set(daterm_Term_WaitE)(daterm_Event));
 
 T_alias$((daterm_Term_VTbl)(struct daterm_Term_VTbl));
 T_alias$((daterm_Term)(struct daterm_Term {
@@ -48,14 +50,18 @@ $static fn_((daterm_Term_ensureValid(daterm_Term self))(daterm_Term));
 /// Returns `none` if no event available
 /// Requires terminal to be in raw mode
 $extern fn_((daterm_Term_poll(daterm_Term self))(O$daterm_Event));
-/// Wait for next event (blocking)
-/// Requires terminal to be in raw mode
-$extern fn_((daterm_Term_wait(daterm_Term self))(daterm_Event));
-/// Parse next event with timeout (blocking up to timeout)
-/// Returns `Timeout` if timeout expires
+/// Wait for next event; may return `Sched_Canceled`.
 /// Requires terminal to be in raw mode
 $attr($must_check)
-$extern fn_((daterm_Term_timedWait(daterm_Term self, time_Dur timeout))(Sched_TimeoutE$daterm_Event));
+$extern fn_((daterm_Term_wait(daterm_Term self))(Sched_Cancelable$daterm_Event));
+/// Wait for next event, cancel, or timeout.
+/// Returns `Sched_Timeout` if timeout expires.
+/// Requires terminal to be in raw mode
+$attr($must_check)
+$extern fn_((daterm_Term_waitTimed(daterm_Term self, time_Dur timeout))(daterm_Term_WaitE$daterm_Event));
+/// Protected wait for next event; does not introduce a cancellation point.
+/// Requires terminal to be in raw mode
+$extern fn_((daterm_Term_waitProtn(daterm_Term self))(daterm_Event));
 
 /* --- IO Contracts --- */
 
@@ -76,9 +82,11 @@ $extern fn_((daterm_Term_queryCursorPos(daterm_Term self))(E$daterm_Pos));
 struct daterm_Term_VTbl {
     $attr($must_check)
     fn_(((*pollFn)(P$raw ctx))(O$daterm_Event));
-    fn_(((*waitFn)(P$raw ctx))(daterm_Event));
     $attr($must_check)
-    fn_(((*timedWaitFn)(P$raw ctx, time_Dur timeout))(Sched_TimeoutE$daterm_Event));
+    fn_(((*waitFn)(P$raw ctx))(Sched_Cancelable$daterm_Event));
+    $attr($must_check)
+    fn_(((*waitTimedFn)(P$raw ctx, time_Dur timeout))(daterm_Term_WaitE$daterm_Event));
+    fn_(((*waitProtnFn)(P$raw ctx))(daterm_Event));
     fn_(((*readerFn)(P$raw ctx))(io_Reader));
     fn_(((*writerFn)(P$raw ctx))(io_Writer));
     $attr($must_check)
@@ -94,7 +102,8 @@ fn_((daterm_Term_isValid(daterm_Term self))(bool)) {
         && isNonnull(self.vtbl)
         && isNonnull(self.vtbl->pollFn)
         && isNonnull(self.vtbl->waitFn)
-        && isNonnull(self.vtbl->timedWaitFn)
+        && isNonnull(self.vtbl->waitTimedFn)
+        && isNonnull(self.vtbl->waitProtnFn)
         && isNonnull(self.vtbl->readerFn)
         && isNonnull(self.vtbl->writerFn)
         && isNonnull(self.vtbl->queryScreenSizeFn)
@@ -105,7 +114,8 @@ fn_((daterm_Term_assertValid(P$raw ctx, P_const$$(daterm_Term_VTbl) vtbl))(void)
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->pollFn);
     claim_assert_nonnull(vtbl->waitFn);
-    claim_assert_nonnull(vtbl->timedWaitFn);
+    claim_assert_nonnull(vtbl->waitTimedFn);
+    claim_assert_nonnull(vtbl->waitProtnFn);
     claim_assert_nonnull(vtbl->readerFn);
     claim_assert_nonnull(vtbl->writerFn);
     claim_assert_nonnull(vtbl->queryScreenSizeFn);

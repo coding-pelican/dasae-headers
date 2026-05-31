@@ -89,6 +89,42 @@ $static let sample_co_exec_sched = pp_if_(sample_co__enable_coop)(
     pp_then_(Sched_coop),
     pp_else_(Sched_seq));
 
+/*
+[ThrdId(0): main] current: 0
+[ThrdId(0): demoThrd] starting
+[ThrdId(0): demoThrdDefer] starting
+[ThrdId(0): demoThrdDeferCheck] starting
+[ThrdId(0): main] current: 1
+[ThrdId(0): main] current: 2
+[ThrdId(0): main] current: 3
+[ThrdId(0): main] current: 4
+[ThrdId(0): main] current: 5
+[ThrdId(0): main] current: 6
+[ThrdId(0): main] current: 7
+[ThrdId(0): main] current: 8
+[ThrdId(0): main] current: 9
+[ThrdId(0): main] current: 10
+[ThrdId(0): demoThrdDeferCheck] canceled
+[ThrdId(0): demoThrdDeferCheck] deferred 1
+[ThrdId(0): demoThrdDeferCheck] deferred 2
+[ThrdId(0): main] received: 34
+[ThrdId(0): main] current: 11
+[ThrdId(0): main] current: 12
+[ThrdId(0): main] current: 13
+[ThrdId(0): main] current: 14
+[ThrdId(0): main] current: 15
+[ThrdId(0): main] current: 16
+[ThrdId(0): main] current: 17
+[ThrdId(0): main] current: 18
+[ThrdId(0): main] current: 19
+[ThrdId(0): main] joined_defer_check ret: 34
+[ThrdId(0): demoThrd] cnt: 978
+[ThrdId(0): demoThrdDefer] cnt: 978
+[ThrdId(0): demoThrdDefer] deferred 1
+[ThrdId(0): demoThrdDefer] deferred 2
+[ThrdId(0): main] joined_defer ret: 978
+[ThrdId(0): main] joined ret: 978
+ */
 T_use$((i32)(Future, Future_await, Future_cancel, Sched_spawn));
 T_use$((Sched_Cancelable$i32)(Future, Future_await, Future_cancel, Sched_spawn));
 fn_((main(S$S_const$u8 args))(E$void) $guard) {

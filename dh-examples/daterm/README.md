@@ -92,7 +92,8 @@ Current runtime operations are:
 - `daterm_Term_writer`
 - `daterm_Term_poll`
 - `daterm_Term_wait`
-- `daterm_Term_timedWait`
+- `daterm_Term_waitTimed`
+- `daterm_Term_waitProtn`
 - screen/cursor query functions currently present in the interface
 
 The query functions are transitional. The preferred direction is to let `dansi`
@@ -161,6 +162,10 @@ screen as an explicit `dansi` protocol operation chosen by the caller.
 
 `daterm_Term_poll` is non-blocking. Backends must not block a frame loop while
 trying to parse input.
+
+`daterm_Term_wait` and `daterm_Term_waitTimed` are cancellation points.
+`daterm_Term_waitProtn` is a protected wait that returns only when an event is
+available.
 
 For ANSI streams this requires:
 

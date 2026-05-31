@@ -218,7 +218,8 @@ TEST_fn_("exec/Coop: cooperative cancel reaches sleep cancel point" $guard) {
         .sched = sched,
         .time = time_Awake_evented(&coop),
     };
-    var task = Sched_async$u32(sched, clsr_((cancelOnSleepCo)(sys)).as_base);
+    var clsr = clsr_((cancelOnSleepCo)(sys));
+    var task = Sched_async$u32(sched, clsr.as_base);
     let child = ptrAlignCast$((exec_Task*)(unwrap_(task.any_future)));
     try_(TEST_expect(!exec_Task_hasCancelRequest(child)));
     try_(TEST_expect(Future_cancel$u32(&task, sched) == 99));

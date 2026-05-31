@@ -5,6 +5,7 @@
 #include <dh/fs/File.h>
 #include <dh/mem/common.h>
 #include <dh/time/Dur.h>
+#include <dh/time/self/Awake.h>
 #include <dh/utf8.h>
 
 /*========== Internal Declarations ==========================================*/
@@ -13,10 +14,9 @@ $static fn_((daterm_ANSI__readerOf(daterm_ANSI* self))(io_Reader));
 $static fn_((daterm_ANSI__writerOf(const daterm_ANSI* self))(io_Writer));
 
 $static fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event));
-$static fn_((daterm_ANSI__inputReady(daterm_ANSI* self))(bool));
-$static fn_((daterm_ANSI__pollSeq(daterm_ANSI* self))(O$dansi_Seq));
-$static fn_((daterm_ANSI__wait(P$raw ctx))(daterm_Event));
-$static fn_((daterm_ANSI__timedWait(P$raw ctx, time_Dur timeout))(Sched_TimeoutE$daterm_Event));
+$static fn_((daterm_ANSI__wait(P$raw ctx))(Sched_Cancelable$daterm_Event));
+$static fn_((daterm_ANSI__waitTimed(P$raw ctx, time_Dur timeout))(daterm_Term_WaitE$daterm_Event));
+$static fn_((daterm_ANSI__waitProtn(P$raw ctx))(daterm_Event));
 $static fn_((daterm_ANSI__reader(P$raw ctx))(io_Reader));
 $static fn_((daterm_ANSI__writer(P$raw ctx))(io_Writer));
 $static fn_((daterm_ANSI__queryScreenSize(P$raw ctx))(E$daterm_Size));
@@ -165,7 +165,8 @@ fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term)) {
     $static let_(vtbl, daterm_Term_VTbl) = {
         .pollFn = daterm_ANSI__poll,
         .waitFn = daterm_ANSI__wait,
-        .timedWaitFn = daterm_ANSI__timedWait,
+        .waitTimedFn = daterm_ANSI__waitTimed,
+        .waitProtnFn = daterm_ANSI__waitProtn,
         .readerFn = daterm_ANSI__reader,
         .writerFn = daterm_ANSI__writer,
         .queryScreenSizeFn = daterm_ANSI__queryScreenSize,
@@ -348,21 +349,31 @@ fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event) $scope) {
     return_some(daterm_ANSI__asMouseEvent(mouse));
 } $unscoped(fn);
 
-fn_((daterm_ANSI__wait(P$raw ctx))(daterm_Event) $scope) {
+fn_((daterm_ANSI__wait(P$raw ctx))(Sched_Cancelable$daterm_Event) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
     while (true) {
-        if_some((daterm_ANSI__poll(self))(event)) { return event; }
-        catch_((time_Clock_sleep(self->clock, time_Dur_fromMillis(1)))($ignore, $do_nothing));
+        if_some((daterm_ANSI__poll(self))(event)) { return_ok(event); }
+        try_(time_Clock_sleep(self->clock, time_Dur_fromMillis(1)));
     }
 } $unscoped(fn);
 
-fn_((daterm_ANSI__timedWait(P$raw ctx, time_Dur timeout))(daterm_Term_E$daterm_Event) $scope) {
-    let instant = time_Inst_now();
+fn_((daterm_ANSI__waitTimed(P$raw ctx, time_Dur timeout))(daterm_Term_WaitE$daterm_Event) $scope) {
+    let self = ptrAlignCast$((daterm_ANSI*)(ctx));
+    let instant = time_Clock_now(self->clock);
     while (true) {
         if_some((daterm_ANSI__poll(ctx))(event)) { return_ok(event); }
-        let elapsed = time_Inst_elapsed(instant);
-        if (time_Dur_gt(elapsed, timeout)) { return_err(E_cause$daterm_Term_Timeout()); }
-        time_sleep(time_Dur_sub(timeout, elapsed));
+        let elapsed = time_Clock_Inst_elapsed(instant, self->clock);
+        if (time_Dur_gt(elapsed, timeout)) return_err(E_cause$Sched_Timeout());
+        try_(time_Clock_sleep(self->clock, time_Dur_sub(timeout, elapsed)));
+    }
+} $unscoped(fn);
+
+fn_((daterm_ANSI__waitProtn(P$raw ctx))(daterm_Event) $scope) {
+    let self = ptrAlignCast$((daterm_ANSI*)(ctx));
+    let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
+    while (true) {
+        if_some((daterm_ANSI__poll(self))(event)) { return event; }
+        catch_((time_Awake_sleep(clock, time_Dur_fromMillis(1)))($ignore, $do_nothing));
     }
 } $unscoped(fn);
 

@@ -1,8 +1,9 @@
 #include <dh-main.h>
-#include <daterm-context/ANSI/private.h>
 #include <dh/heap/Sys.h>
 #include <dh/io/Fixed.h>
 #include <dh/mem/common.h>
+#include "daterm-context/ANSI.h"
+#include "daterm-context/ANSI/private.h"
 
 typedef struct daterm_ANSI_test_ChunkReader {
     var_(bytes, S_const$u8);
@@ -44,9 +45,10 @@ TEST_fn_("daterm-context/ANSI: buffered raw byte becomes key sequence without re
     var_(mem, A$$(8, u8)) $undefined;
     var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     try_(io_Buf_Reader_fill(&reader));
-    var_(esc_started_at, O$time_Inst) = none();
+    let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
+    var_(esc_started_at, O$time_Clock_Inst) = none();
 
-    let seq = unwrap_(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, daterm_ANSI_esc_timeout_default));
+    let seq = unwrap_(daterm_ANSI_pollBufferedSeq(&reader, clock, &esc_started_at, daterm_ANSI_esc_timeout_default));
 
     try_(TEST_expect(seq.kind == dansi_Seq_Kind_raw));
     try_(TEST_expect(mem_eqlBytes(seq.bytes, u8_l("a"))));
@@ -56,21 +58,22 @@ TEST_fn_("daterm-context/ANSI: buffered raw byte becomes key sequence without re
 } $unscoped(TEST_fn);
 
 TEST_fn_("daterm-context/ANSI: split CSI waits for final byte" $scope) {
-    var reader_impl = (daterm_ANSI_test_ChunkReader){
+    var_(reader_impl, daterm_ANSI_test_ChunkReader) = {
         .bytes = u8_l("\x1B[A"),
         .pos = 0,
         .chunk = 2,
     };
     var_(mem, A$$(8, u8)) $undefined;
     var reader = io_Buf_Reader_init(daterm_ANSI_test_ChunkReader_reader(&reader_impl), A_ref$((S$u8)(mem)));
-    var_(esc_started_at, O$time_Inst) = none();
+    let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
+    var_(esc_started_at, O$time_Clock_Inst) = none();
 
     try_(io_Buf_Reader_fill(&reader));
-    try_(TEST_expect(isNone(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, daterm_ANSI_esc_timeout_default))));
+    try_(TEST_expect(isNone(daterm_ANSI_pollBufferedSeq(&reader, clock, &esc_started_at, daterm_ANSI_esc_timeout_default))));
     try_(TEST_expect(mem_eqlBytes(io_Buf_Reader_ready(reader), u8_l("\x1B["))));
 
     try_(io_Buf_Reader_fill(&reader));
-    let seq = unwrap_(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, daterm_ANSI_esc_timeout_default));
+    let seq = unwrap_(daterm_ANSI_pollBufferedSeq(&reader, clock, &esc_started_at, daterm_ANSI_esc_timeout_default));
 
     try_(TEST_expect(seq.kind == dansi_Seq_Kind_csi));
     try_(TEST_expect(mem_eqlBytes(seq.bytes, u8_l("\x1B[A"))));
@@ -83,11 +86,12 @@ TEST_fn_("daterm-context/ANSI: single escape follows timeout policy" $scope) {
     var_(mem, A$$(8, u8)) $undefined;
     var reader = io_Buf_Reader_init(io_Fixed_reader(&reader_impl), A_ref$((S$u8)(mem)));
     try_(io_Buf_Reader_fill(&reader));
-    var_(esc_started_at, O$time_Inst) = none();
+    let_(clock, time_Clock) = union_of((time_Clock_awake)(try_(time_Awake_direct())));
+    var_(esc_started_at, O$time_Clock_Inst) = none();
 
-    try_(TEST_expect(isNone(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, daterm_ANSI_esc_timeout_default))));
+    try_(TEST_expect(isNone(daterm_ANSI_pollBufferedSeq(&reader, clock, &esc_started_at, daterm_ANSI_esc_timeout_default))));
     try_(TEST_expect(isSome(esc_started_at)));
-    let seq = unwrap_(daterm_ANSI_pollBufferedSeq(&reader, &esc_started_at, time_Dur_zero));
+    let seq = unwrap_(daterm_ANSI_pollBufferedSeq(&reader, clock, &esc_started_at, time_Dur_zero));
 
     try_(TEST_expect(seq.kind == dansi_Seq_Kind_esc));
     try_(TEST_expect(mem_eqlBytes(seq.bytes, u8_l("\x1B"))));

@@ -1,6 +1,7 @@
 #include <dh-main.h>
 #include <dh/io/common.h>
 #include <dh/heap/Sys.h>
+#include <dh/time/Dur.h>
 #include "daterm.h"
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
@@ -23,7 +24,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     var_(allow_printing_mouse_events, bool) = true;
     while_(var is_running = true, is_running) {
         if_some((daterm_Term_poll(term))(event)) {
-            match_(event) {
+            $suppress_(switch_enum)(match_(event)) {
             pattern_((daterm_Event_key)(key)) {
                 switch ($suppress_(switch_enum)(key.code)) {
                 case_((dansi_Event_KeyCode_esc)){
@@ -61,7 +62,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
             default_() $do_nothing $end(default);
             } $end(match);
         }
-        time_sleep(time_Dur_fromMillis(16));
+        catch_((time_Clock_sleep(ansi.clock, time_Dur_fromMillis(16)))($ignore, $do_nothing));
     }
 
     return_ok({});

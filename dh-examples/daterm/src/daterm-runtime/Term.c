@@ -4,12 +4,16 @@ fn_((daterm_Term_poll(daterm_Term self))(O$daterm_Event)) {
     return self.vtbl->pollFn(self.ctx);
 };
 
-fn_((daterm_Term_wait(daterm_Term self))(daterm_Event)) {
+fn_((daterm_Term_wait(daterm_Term self))(Sched_Cancelable$daterm_Event)) {
     return self.vtbl->waitFn(self.ctx);
 };
 
-fn_((daterm_Term_timedWait(daterm_Term self, time_Dur timeout))(Sched_TimeoutE$daterm_Event)) {
-    return self.vtbl->timedWaitFn(self.ctx, timeout);
+fn_((daterm_Term_waitTimed(daterm_Term self, time_Dur timeout))(daterm_Term_WaitE$daterm_Event)) {
+    return self.vtbl->waitTimedFn(self.ctx, timeout);
+};
+
+fn_((daterm_Term_waitProtn(daterm_Term self))(daterm_Event)) {
+    return self.vtbl->waitProtnFn(self.ctx);
 };
 
 fn_((daterm_Term_reader(daterm_Term self))(io_Reader)) {
