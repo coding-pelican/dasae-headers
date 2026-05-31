@@ -294,6 +294,8 @@ Macros:
   # - "$break_ok_void(Expr)=return Expr"
   # - "$break_err(Expr)=return Expr"
 
+StatementMacros:
+
 AttributeMacros:
   - $attr
 

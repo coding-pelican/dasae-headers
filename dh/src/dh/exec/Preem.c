@@ -1,24 +1,12 @@
 #include "dh/exec/Preem.h"
 
+/*========== Internal Declarations ==========================================*/
+
 $static fn_((exec_Preem_Task__slabBytes(TypeInfo result_ty))(usize));
 $static fn_((exec_Preem_Task__resultMut(exec_Preem_Task* self, TypeInfo type))(u_P$raw));
 $static fn_((exec_Preem_Task__freeSlab(exec_Preem_Task* self, mem_Alctr gpa))(void));
 
-fn_((exec_Preem_Task__slabBytes(TypeInfo result_ty))(usize)) {
-    return mem_alignFwd(sizeOf$(exec_Preem_Task), mem_log2ToAlign(result_ty.log2_align)) + result_ty.size;
-};
-fn_((exec_Preem_Task__resultMut(exec_Preem_Task* self, TypeInfo type))(u_P$raw)) {
-    claim_assert_nonnull(self);
-    return (u_P$raw){
-        .raw = intToPtr$((u8*)(ptrToInt(self) + mem_alignFwd(sizeOf$(exec_Preem_Task), mem_log2ToAlign(type.log2_align)))),
-        .type = type,
-    };
-};
-fn_((exec_Preem_Task__freeSlab(exec_Preem_Task* self, mem_Alctr gpa))(void)) {
-    claim_assert_nonnull(self);
-    let bytes = exec_Preem_Task__slabBytes(self->result.type);
-    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Preem_Task));
-};
+/*========== External Definitions ===========================================*/
 
 fn_((exec_Preem_work(exec_Preem_Task* task))(Void)) {
     claim_assert_nonnull(task), claim_assert_nonnull(task->owner);
@@ -105,3 +93,21 @@ fn_((exec_Preem_unlinkTask(exec_Preem* self, exec_Preem_Task* task))(void) $guar
         curr = node->next;
     }
 } $unguarded(fn);
+
+/*========== Internal Definitions ===========================================*/
+
+fn_((exec_Preem_Task__slabBytes(TypeInfo result_ty))(usize)) {
+    return mem_alignFwd(sizeOf$(exec_Preem_Task), mem_log2ToAlign(result_ty.log2_align)) + result_ty.size;
+};
+fn_((exec_Preem_Task__resultMut(exec_Preem_Task* self, TypeInfo type))(u_P$raw)) {
+    claim_assert_nonnull(self);
+    return (u_P$raw){
+        .raw = intToPtr$((u8*)(ptrToInt(self) + mem_alignFwd(sizeOf$(exec_Preem_Task), mem_log2ToAlign(type.log2_align)))),
+        .type = type,
+    };
+};
+fn_((exec_Preem_Task__freeSlab(exec_Preem_Task* self, mem_Alctr gpa))(void)) {
+    claim_assert_nonnull(self);
+    let bytes = exec_Preem_Task__slabBytes(self->result.type);
+    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Preem_Task));
+};

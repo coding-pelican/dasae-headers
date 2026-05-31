@@ -2,10 +2,10 @@
 
 #if plat_is_windows
 #include "dh/sys/api/windows/mem.h"
-$static fn_((heap_vmem__windowsProtect(heap_vmem_Protect protect))(DWORD));
+$static fn_((heap_vmem__windowsProtect(heap_vmem_Protn protect))(DWORD));
 #elif plat_is_linux
 #include "dh/sys/call/linux.h"
-$static fn_((heap_vmem__linuxProtect(heap_vmem_Protect protect))(sys_call_linux_word));
+$static fn_((heap_vmem__linuxProtect(heap_vmem_Protn protect))(sys_call_linux_word));
 #endif
 
 fn_((heap_vmem_geom(void))(heap_Geom)) {
@@ -22,19 +22,19 @@ fn_((heap_vmem_geom(void))(heap_Geom)) {
 };
 
 #if plat_is_windows
-fn_((heap_vmem__windowsProtect(heap_vmem_Protect protect))(DWORD)) {
+fn_((heap_vmem__windowsProtect(heap_vmem_Protn protect))(DWORD)) {
     switch (protect) {
-    case heap_vmem_Protect_none: return PAGE_NOACCESS;
-    case heap_vmem_Protect_read_write: return PAGE_READWRITE;
-    case heap_vmem_Protect_read_write_guard: return PAGE_READWRITE | PAGE_GUARD;
+    case heap_vmem_Protn_none: return PAGE_NOACCESS;
+    case heap_vmem_Protn_read_write: return PAGE_READWRITE;
+    case heap_vmem_Protn_read_write_guard: return PAGE_READWRITE | PAGE_GUARD;
     }
 };
 #elif plat_is_linux
-fn_((heap_vmem__linuxProtect(heap_vmem_Protect protect))(sys_call_linux_word)) {
+fn_((heap_vmem__linuxProtect(heap_vmem_Protn protect))(sys_call_linux_word)) {
     switch (protect) {
-    case heap_vmem_Protect_none: return sys_call_linux_PROT_NONE;
-    case heap_vmem_Protect_read_write: return sys_call_linux_PROT_READ | sys_call_linux_PROT_WRITE;
-    case heap_vmem_Protect_read_write_guard: return sys_call_linux_PROT_NONE;
+    case heap_vmem_Protn_none: return sys_call_linux_PROT_NONE;
+    case heap_vmem_Protn_read_write: return sys_call_linux_PROT_READ | sys_call_linux_PROT_WRITE;
+    case heap_vmem_Protn_read_write_guard: return sys_call_linux_PROT_NONE;
     }
 };
 #endif
@@ -84,7 +84,7 @@ fn_((heap_vmem_decommit(P$raw addr, usize len))(bool)) {
 #endif
 };
 
-fn_((heap_vmem_protect(P$raw addr, usize len, heap_vmem_Protect protect))(bool)) {
+fn_((heap_vmem_protect(P$raw addr, usize len, heap_vmem_Protn protect))(bool)) {
     let aligned_len = heap_Geom_alignCommitWith(heap_vmem_geom(), len);
 #if plat_is_windows
     DWORD old_protect = 0;

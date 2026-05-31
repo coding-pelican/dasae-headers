@@ -10,12 +10,12 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-T_alias$((fs_File_MemMap_Protection)(struct fs_File_MemMap_Protection {
+T_alias$((fs_File_MemMap_Protn)(struct fs_File_MemMap_Protn {
     var_(read, bool);
     var_(write, bool);
     var_(execute, bool);
 }));
-$static let_(fs_File_MemMap_Protection_default, fs_File_MemMap_Protection) = {
+$static let_(fs_File_MemMap_Protn_default, fs_File_MemMap_Protn) = {
     .read = true,
     .write = true,
     .execute = false,
@@ -33,7 +33,7 @@ $extern fn_((fs_File_MemMap_init(
     fs_File file,
     fs_Self fs,
     usize len,
-    fs_File_MemMap_Protection protection,
+    fs_File_MemMap_Protn protection,
     bool undefined_contents,
     bool populate,
     u64 offset

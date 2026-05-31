@@ -22,6 +22,12 @@ T_use_E$($set(Sched_Cancelable)(P$FutureAny));
 T_use_E$($set(Sched_Cancelable)(P$Future$raw));
 T_use_E$($set(Sched_Cancelable)(V$Future$raw));
 
+T_alias$((Sched_CancelProtn)(enum_((Sched_CancelProtn $fits($packed))(
+    Sched_CancelProtn_unblocked = 0,
+    Sched_CancelProtn_blocked,
+))));
+claim_assert_static(eqlType$(Sched_CancelProtn, u8));
+
 errset_((Sched_TimeoutE)(Sched_Timeout));
 
 #if defined(__cplusplus)

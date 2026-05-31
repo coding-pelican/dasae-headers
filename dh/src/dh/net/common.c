@@ -35,11 +35,11 @@ $static fn_((net__sockType(net_Sock_Mode mode))(E$i32) $scope) {
     }
 } $unscoped(fn);
 
-$static fn_((net__protocol(net_Prot protocol))(E$i32) $scope) {
+$static fn_((net__protocol(net_Proto protocol))(E$i32) $scope) {
     switch (protocol) {
-    case net_Prot_tcp: return_ok(IPPROTO_TCP);
-    case net_Prot_udp: return_ok(IPPROTO_UDP);
-    case net_Prot_raw: return_ok(IPPROTO_RAW);
+    case net_Proto_tcp: return_ok(IPPROTO_TCP);
+    case net_Proto_udp: return_ok(IPPROTO_UDP);
+    case net_Proto_raw: return_ok(IPPROTO_RAW);
     default_() return_err(E_cause$net_ProtocolUnsupported()) $end(default);
     }
 } $unscoped(fn);
@@ -94,7 +94,7 @@ $static fn_((net__localIp(SOCKET socket))(E$net_IpAddr) $scope) {
     return_(net__sockaddrToIp(ptrCast$((const SOCKADDR*)(&addr)), addr_len));
 } $unscoped(fn);
 
-$static fn_((net__newSocket(const net_IpAddr* addr, net_Sock_Mode mode, net_Prot protocol))(E$net_Handle) $scope) {
+$static fn_((net__newSocket(const net_IpAddr* addr, net_Sock_Mode mode, net_Proto protocol))(E$net_Handle) $scope) {
     claim_assert_nonnull(addr);
     let family = try_(net__family(addr));
     let sock_type = try_(net__sockType(mode));
@@ -179,7 +179,7 @@ fn_((net_listenIp(const net_IpAddr* addr, net_ListenOpts opts))(E$net_Svr) $scop
     claim_assert_nonnull(addr);
     try_(net__ensureStarted());
     if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$net_SocketModeUnsupported());
-    if (opts.protocol != net_Prot_tcp) return_err(E_cause$net_ProtocolUnsupported());
+    if (opts.protocol != net_Proto_tcp) return_err(E_cause$net_ProtocolUnsupported());
 
     let socket = try_(net__newSocket(addr, opts.mode, opts.protocol));
     if (addr->family == net_Addr_Family_ip6) {
@@ -233,7 +233,7 @@ fn_((net_connectIp(const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream) 
     claim_assert_nonnull(addr);
     try_(net__ensureStarted());
     if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$net_SocketModeUnsupported());
-    if (opts.protocol != net_Prot_tcp) return_err(E_cause$net_ProtocolUnsupported());
+    if (opts.protocol != net_Proto_tcp) return_err(E_cause$net_ProtocolUnsupported());
 
     let socket = try_(net__newSocket(addr, opts.mode, opts.protocol));
     let use_async_connect = opts.nonblocking || !time_Dur_isZero(opts.timeout);

@@ -1,4 +1,6 @@
 #include "dh-main.h"
+#include "dh/Future.h"
+#include "dh/Sched.h"
 #include "dh/exec.h"
 #include "dh/time.h"
 #include "dh/ArrList.h"
@@ -34,10 +36,14 @@ $static fn_((EventLog_expect(EventLog* self, S_const$u8 expected))(E$void) $scop
 } $unscoped(fn);
 
 T_alias$((Sys)(struct Sys {
+    var_(sched, Sched);
     var_(time, time_Awake);
+}));
+T_alias$((SysLogged)(struct SysLogged {
+    T_embed$(Sys);
     var_(log, EventLog*);
 }));
-$static fn_((countFn(Sys sys, usize n, time_Dur interval, Event base))(Event)) {
+$static fn_((countFn(SysLogged sys, usize n, time_Dur interval, Event base))(Event)) {
     EventLog_push(sys.log, base);
     for_(($rt(n))(i)) {
         catch_((time_Awake_sleep(sys.time, interval))($ignore, $do_nothing));
@@ -47,10 +53,10 @@ $static fn_((countFn(Sys sys, usize n, time_Dur interval, Event base))(Event)) {
     return base + 9;
 };
 T_use$((Event)(Clsr_Ctx, Clsr_Rtn, Clsr));
-fn_use_Clsr_((countFn)(Sys, usize, time_Dur, Event)(Event));
+fn_use_Clsr_((countFn)(SysLogged, usize, time_Dur, Event)(Event));
 
 T_use$((Event)(Co_Ctx, Co_Rtn, Co_Frame));
-co_fn_(countCo, (Sys sys; usize n; time_Dur interval; Event base), Event);
+co_fn_(countCo, (SysLogged sys; usize n; time_Dur interval; Event base), Event);
 co_fn_scope(
     countCo,
     co_locals_({}),
@@ -69,12 +75,86 @@ co_fn_scope(
     EventLog_push($co_arg(sys).log, $co_arg(base) + 9);
     co_return_($co_arg(base) + 9);
 } $unscoped(co_fn);
-co_use_Clsr_((countCo)(Sys, usize, time_Dur, Event)(Event));
+co_use_Clsr_((countCo)(SysLogged, usize, time_Dur, Event)(Event));
+
+T_use$((u32)(Co_Ctx, Co_Rtn, Co_Frame));
+T_use$((u32)(Clsr_Ctx, Clsr_Rtn, Clsr));
+T_use$((u32)(Future, Future_await, Future_cancel, Sched_async));
+co_fn_(cancelOnSleepCo, (Sys sys), u32);
+co_fn_scope(
+    cancelOnSleepCo,
+    co_locals_({}),
+    co_locals_mut_({}),
+    co_suspended_({
+        var_(sleeping, Void);
+    })
+) {
+    suspend_((sleeping)(catch_((time_Awake_sleep($co_arg(sys).time, time_Dur_fromMillis(5000)))(
+        $ignore, $do_nothing
+    ))));
+    catch_((Sched_idle($co_arg(sys).sched))(err, switch (E_tag$Sched_Cancelable(err)) {
+        case_((E_Tag$Sched_Canceled)) co_return_(99) $end(case);
+        case (E_Tag$Any): claim_unreachable;
+    }));
+    co_return_(77);
+} $unscoped(co_fn);
+co_use_Clsr_((cancelOnSleepCo)(Sys)(u32));
+
+co_fn_(cancelPollSeqCo, (Sys sys), u32);
+co_fn_scope(
+    cancelPollSeqCo,
+    co_locals_({}),
+    co_locals_mut_({
+        var_(i, usize);
+    }),
+    co_suspended_({
+        var_(sleeping, Void);
+    })
+) {
+    for (co_var_(i, usize) = 0; $co_mut(i) < 8; ++$co_mut(i)) {
+        suspend_((sleeping)(catch_((time_Awake_sleep($co_arg(sys).time, time_Dur_fromMillis(50)))(
+            $ignore, $do_nothing
+        ))));
+        catch_((Sched_idle($co_arg(sys).sched))(err, switch (E_tag$Sched_Cancelable(err)) {
+            case_((E_Tag$Sched_Canceled)) co_return_(88) $end(case);
+            case (E_Tag$Any): claim_unreachable;
+        }));
+    }
+    co_return_(44);
+} $unscoped(co_fn);
+co_use_Clsr_((cancelPollSeqCo)(Sys)(u32));
+
+TEST_fn_("exec/Task: idle consumes request; recancel re-arms" $guard) {
+    var_(task, exec_Task) = {
+        .state = exec_Task_State_running,
+        .cancel = exec_Task_Cancel_none,
+        .cancel_protection = Sched_CancelProtn_unblocked,
+        .result = cleared(),
+        .inner = cleared(),
+        .fiber = none(),
+    };
+
+    try_(TEST_expect(!exec_Task_hasCancelRequest(&task)));
+    exec_Task_requestCancel(&task);
+    try_(TEST_expect(exec_Task_hasCancelRequest(&task)));
+    try_(TEST_expect(isErr(exec_Task_idle(&task))));
+    try_(TEST_expect(!exec_Task_hasCancelRequest(&task)));
+    try_(TEST_expect(task.cancel == exec_Task_Cancel_acknowledged));
+    try_(TEST_expect(isOk(exec_Task_idle(&task))));
+    exec_Task_recancel(&task);
+    try_(TEST_expect(exec_Task_hasCancelRequest(&task)));
+    try_(TEST_expect(isErr(exec_Task_idle(&task))));
+    return_ok({});
+} $unguarded(TEST_fn);
 
 T_use$((Event)(Future, Future_await, Future_cancel, Sched_async));
 $static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected))(E$void) $guard) {
-    var log = l0$((EventLog));
-    let_(sys, Sys) = {
+    var_(log, EventLog) = {
+        .items = A_zero(),
+        .len = 0,
+    };
+    let_(sys, SysLogged) = {
+        .sched = sched,
         .time = time,
         .log = &log,
     };
@@ -93,6 +173,25 @@ $static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected)
     return_ok({});
 } $unguarded(fn);
 
+TEST_fn_("exec/Seq: cooperative cancel reaches co step after direct sleep" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    var arena = heap_Arena_init(heap_Sys_alctr(&heap));
+    defer_(heap_Arena_fini(&arena));
+    let gpa = heap_Arena_alctr(&arena);
+    var seq = exec_Seq_init(gpa);
+    defer_(exec_Seq_fini(&seq));
+    let sched = Sched_seq(&seq);
+    let_(sys, Sys) = {
+        .sched = sched,
+        .time = try_(time_Awake_direct()),
+    };
+    var task = Sched_async$u32(sched, clsr_((cancelPollSeqCo)(sys)).as_base);
+    let_ignore = Future_cancel$u32(&task, sched);
+    try_(TEST_expect(Future_await$u32(&task, sched) == 88));
+    return_ok({});
+} $unguarded(TEST_fn);
+
 TEST_fn_("exec/Seq: runs fiber and stackless tasks without timed suspension" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
@@ -103,6 +202,29 @@ TEST_fn_("exec/Seq: runs fiber and stackless tasks without timed suspension" $gu
     defer_(exec_Seq_fini(&exec));
     let expected = A_from$((u8){ 10, 11, 12, 19, 20, 21, 22, 23, 29 });
     try_(runExpectedOrder(Sched_seq(&exec), try_(time_Awake_direct()), A_ref$((S_const$u8)(expected))));
+    return_ok({});
+} $unguarded(TEST_fn);
+
+TEST_fn_("exec/Coop: cooperative cancel reaches sleep cancel point" $guard) {
+    var heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&heap));
+    var arena = heap_Arena_init(heap_Sys_alctr(&heap));
+    defer_(heap_Arena_fini(&arena));
+    let gpa = heap_Arena_alctr(&arena);
+    var coop = exec_Coop_init(gpa, try_(time_Awake_direct()));
+    defer_(exec_Coop_fini(&coop));
+    let sched = Sched_coop(&coop);
+    let_(sys, Sys) = {
+        .sched = sched,
+        .time = time_Awake_evented(&coop),
+    };
+    var task = Sched_async$u32(sched, clsr_((cancelOnSleepCo)(sys)).as_base);
+    let child = ptrAlignCast$((exec_Task*)(unwrap_(task.any_future)));
+    try_(TEST_expect(!exec_Task_hasCancelRequest(child)));
+    try_(TEST_expect(Future_cancel$u32(&task, sched) == 99));
+    try_(TEST_expect(Future_await$u32(&task, sched) == 99));
+    try_(TEST_expect(child->cancel == exec_Task_Cancel_acknowledged));
+    try_(TEST_expect(exec_Task_isDone(child)));
     return_ok({});
 } $unguarded(TEST_fn);
 

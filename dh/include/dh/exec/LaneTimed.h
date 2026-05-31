@@ -12,15 +12,22 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-struct exec_LaneTimed {
+/* --- Types --- */
+
+T_alias$((exec_LaneTimed)(struct exec_LaneTimed {
     var_(lane, exec_Lane);
     var_(clock, time_Awake);
+    /// Non-evented clock for executor pumps (`exec_Coop_awaitUntilDone`); not a cancel point.
+    var_(clock_pump, time_Awake);
     var_(tasks_timer, ArrPQue$exec_Timer);
-};
-/// Initialize a timed lane with the awake clock used for deadlines and sleeps.
+}));
+
+/* --- Lifecycle --- */
+
 $extern fn_((exec_LaneTimed_init(mem_Alctr gpa, time_Awake clock))(exec_LaneTimed));
-/// Finalize the timed lane and release queued timer storage.
 $extern fn_((exec_LaneTimed_fini(exec_LaneTimed* self))(void));
+
+/* --- Timer queue --- */
 
 /// Return the earliest queued timer deadline, if any.
 $extern fn_((exec_LaneTimed_nextTimerDeadline(exec_LaneTimed* self))(O$time_Awake_Inst));
@@ -28,10 +35,18 @@ $extern fn_((exec_LaneTimed_nextTimerDeadline(exec_LaneTimed* self))(O$time_Awak
 $extern fn_((exec_LaneTimed_remaining(exec_LaneTimed* self, time_Awake_Inst deadline))(time_Dur));
 /// Move all due timer tasks back to the ready queue.
 $extern fn_((exec_LaneTimed_wakeDueTimers(exec_LaneTimed* self))(void));
-/// Run ready and timed tasks until a deadline.
-$extern fn_((exec_LaneTimed_runUntil(exec_LaneTimed* self, time_Awake_Inst deadline))(void));
+
+/* --- Run loop --- */
+
 /// Run ready and timed tasks until no timed work remains.
 $extern fn_((exec_LaneTimed_run(exec_LaneTimed* self))(void));
+/// Run ready and timed tasks until a deadline.
+$extern fn_((exec_LaneTimed_runUntil(exec_LaneTimed* self, time_Awake_Inst deadline))(void));
+
+/* --- Cooperative cancel --- */
+
+/// Remove timers for `task` and requeue it when parked in `waiting`.
+$extern fn_((exec_LaneTimed_deliverCancel(exec_LaneTimed* self, exec_Task* task))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

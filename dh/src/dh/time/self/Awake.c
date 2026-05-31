@@ -1,6 +1,8 @@
 #include "dh/time/self/Awake.h"
 #include "private/share.h"
 #include "dh/exec/Coop.h"
+#include "dh/exec/Lane.h"
+#include "dh/exec/Task.h"
 
 /*========== Internal Declarations ==========================================*/
 
@@ -250,11 +252,20 @@ fn_((time_Awake_evented__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void) 
             .deadline = deadline.raw,
             .task = task,
         };
-        let_ignore = catch_((ArrPQue_enque$exec_Timer(&timed->tasks_timer, lane->gpa, timer))($ignore, {
-            task->state = exec_Task_State_canceled;
+        catch_((ArrPQue_enque$exec_Timer(&timed->tasks_timer, lane->gpa, timer))($ignore, {
+            exec_Task_requestCancel(task);
             return_err(E_cause$Sched_Canceled());
         }));
-        return_ok_void(exec_Lane_yield(lane));
+        if (exec_Task_hasCancelRequest(task)) {
+            let_ignore = exec_Lane_readyTask(lane, task);
+            return_err(E_cause$Sched_Canceled());
+        }
+        if (exec_Task_kind(task->inner) == exec_Task_Kind_stackful) {
+            exec_Lane_yield(lane);
+            if (exec_Task_hasCancelRequest(task)) return_err(E_cause$Sched_Canceled());
+            return_ok({});
+        }
+        return_ok({});
     }
 
     return_ok_void(exec_LaneTimed_runUntil(timed, deadline));

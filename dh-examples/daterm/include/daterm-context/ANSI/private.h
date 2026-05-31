@@ -20,7 +20,12 @@ extern "C" {
 #include <dansi-core/Seq.h>
 
 $attr($must_check)
-$extern fn_((daterm_ANSI_pollBufferedSeq(io_Buf_Reader* input, O$time_Inst* esc_started_at, time_Dur esc_timeout))(O$dansi_Seq));
+$extern fn_((daterm_ANSI_pollBufferedSeq(
+    io_Buf_Reader* input,
+    time_Clock time,
+    O$time_Clock_Inst* esc_started_at,
+    time_Dur esc_timeout
+))(O$dansi_Seq));
 
 #if defined(__cplusplus)
 } /* extern "C" */

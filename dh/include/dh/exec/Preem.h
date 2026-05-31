@@ -11,12 +11,16 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+/* --- Types --- */
+
 T_alias$((exec_Preem_Task)(union exec_Preem_Task));
 T_use_P$(exec_Preem_Task);
 T_use_E$($set(Sched_ConcE)(P$exec_Preem_Task));
 T_use_O$(P$exec_Preem_Task);
+
 $extern fn_((exec_Preem_work(exec_Preem_Task* task))(Void));
 fn_use_Clsr_((exec_Preem_work)(exec_Preem_Task*)(Void));
+
 union exec_Preem_Task {
     T_embed$(struct {
         var_(next, O$P$exec_Preem_Task);
@@ -35,8 +39,13 @@ T_alias$((exec_Preem)(struct exec_Preem {
     var_(tasks_mtx, thrd_Mtx);
     var_(tasks, O$P$exec_Preem_Task);
 }));
+
+/* --- Lifecycle --- */
+
 $extern fn_((exec_Preem_init(mem_Alctr gpa))(exec_Preem));
 $extern fn_((exec_Preem_fini(exec_Preem* self))(void));
+
+/* --- Task registry --- */
 
 $attr($must_check)
 $extern fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$exec_Preem_Task));

@@ -4,7 +4,7 @@
 #include <dansi-xterm.h>
 #include <dh/fs/File.h>
 #include <dh/mem/common.h>
-#include <dh/time/Instant.h>
+#include <dh/time/Dur.h>
 #include <dh/utf8.h>
 
 /*========== Internal Declarations ==========================================*/
@@ -16,7 +16,7 @@ $static fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event));
 $static fn_((daterm_ANSI__inputReady(daterm_ANSI* self))(bool));
 $static fn_((daterm_ANSI__pollSeq(daterm_ANSI* self))(O$dansi_Seq));
 $static fn_((daterm_ANSI__wait(P$raw ctx))(daterm_Event));
-$static fn_((daterm_ANSI__timedWait(P$raw ctx, time_Dur timeout))(daterm_Term_E$daterm_Event));
+$static fn_((daterm_ANSI__timedWait(P$raw ctx, time_Dur timeout))(Sched_TimeoutE$daterm_Event));
 $static fn_((daterm_ANSI__reader(P$raw ctx))(io_Reader));
 $static fn_((daterm_ANSI__writer(P$raw ctx))(io_Writer));
 $static fn_((daterm_ANSI__queryScreenSize(P$raw ctx))(E$daterm_Size));
@@ -87,6 +87,7 @@ fn_((daterm_ANSI_init(daterm_ANSI_Cfg cfg))(mem_E$daterm_ANSI) $guard) {
             .is_owned = should_alloc_report_buf,
         },
         .gpa = cfg.gpa,
+        .clock = cfg.clock,
     });
 } $unguarded(fn);
 
@@ -229,7 +230,12 @@ $static fn_((daterm_ANSI__inputReady(daterm_ANSI* self))(bool)) {
 #endif
 };
 
-fn_((daterm_ANSI_pollBufferedSeq(io_Buf_Reader* input, O$time_Inst* esc_started_at, time_Dur esc_timeout))(O$dansi_Seq) $scope) {
+fn_((daterm_ANSI_pollBufferedSeq(
+    io_Buf_Reader* input,
+    time_Clock time,
+    O$time_Clock_Inst* esc_started_at,
+    time_Dur esc_timeout
+))(O$dansi_Seq) $scope) {
     let ready = io_Buf_Reader_ready(*input);
     if (ready.len == 0) { return_none(); }
 
@@ -251,10 +257,10 @@ fn_((daterm_ANSI_pollBufferedSeq(io_Buf_Reader* input, O$time_Inst* esc_started_
             return_some(dansi_Seq_esc(bytes));
         }
         if_none((*esc_started_at)) {
-            asg_l((esc_started_at)(some(time_Inst_now())));
+            asg_l((esc_started_at)(some(time_Clock_now(time))));
             return_none();
         }
-        let elapsed = time_Inst_elapsed(unwrap_(*esc_started_at));
+        let elapsed = time_Clock_Inst_elapsed(unwrap_(*esc_started_at), time);
         if (!time_Dur_gt(elapsed, esc_timeout)) {
             return_none();
         }
@@ -325,6 +331,7 @@ $static fn_((daterm_ANSI__pollSeq(daterm_ANSI* self))(O$dansi_Seq) $scope) {
     }
     return daterm_ANSI_pollBufferedSeq(
         &self->input_buf.reader,
+        self->clock,
         &self->input_buf.esc_started_at,
         self->input_buf.esc_timeout
     );
@@ -342,9 +349,10 @@ fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event) $scope) {
 } $unscoped(fn);
 
 fn_((daterm_ANSI__wait(P$raw ctx))(daterm_Event) $scope) {
+    let self = ptrAlignCast$((daterm_ANSI*)(ctx));
     while (true) {
-        if_some((daterm_ANSI__poll(ctx))(event)) { return event; }
-        time_sleep(time_Dur_fromMillis(1));
+        if_some((daterm_ANSI__poll(self))(event)) { return event; }
+        catch_((time_Clock_sleep(self->clock, time_Dur_fromMillis(1)))($ignore, $do_nothing));
     }
 } $unscoped(fn);
 

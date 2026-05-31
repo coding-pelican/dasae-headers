@@ -2,6 +2,11 @@
 #include "dh/exec/Fiber-growable.h"
 
 $static fn_((exec_Fiber__freeSlab(exec_Fiber* self, mem_Alctr gpa))(void));
+fn_((exec_Fiber__freeSlab(exec_Fiber* self, mem_Alctr gpa))(void)) {
+    claim_assert_nonnull(self);
+    let bytes = exec_Fiber_slabBytes($typed(self->result_ty));
+    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Fiber));
+};
 
 $attr(__attribute__((naked)))
 $static fn_((exec_Fiber__entry(void))(void)) { /* NOLINTBEGIN(hicpp-no-assembler) */
@@ -23,30 +28,24 @@ $static fn_((exec_Fiber__entry(void))(void)) { /* NOLINTBEGIN(hicpp-no-assembler
     )))));
 } /* NOLINTEND(hicpp-no-assembler) */
 
-fn_((exec_Fiber_init(
-    mem_Alctr gpa,
-    P$raw owner,
-    P$raw task,
-    exec_Fiber_WorkFn workFn,
-    TypeInfo result_ty
-))(mem_E$P$exec_Fiber)) {
-    return exec_Fiber_initWithPolicy(gpa, owner, task, workFn, result_ty, exec_Fiber_defaultStackPolicy());
-};
+/*========== External Definitions ===========================================*/
 
-fn_((exec_Fiber__freeSlab(exec_Fiber* self, mem_Alctr gpa))(void)) {
-    claim_assert_nonnull(self);
-    let bytes = exec_Fiber_slabBytes($typed(self->result_ty));
-    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Fiber));
+fn_((exec_Fiber_init(
+    mem_Alctr gpa, P$raw owner,
+    P$raw task, exec_Fiber_WorkFn workFn, TypeInfo result_ty
+))(exec_Fiber_E$P$exec_Fiber)) {
+    return exec_Fiber_initWithPolicy(
+        gpa, owner,
+        task, workFn, result_ty,
+        exec_Fiber_StackPolicy_default()
+    );
 };
 
 fn_((exec_Fiber_initWithPolicy(
-    mem_Alctr gpa,
-    P$raw owner,
-    P$raw task,
-    exec_Fiber_WorkFn workFn,
-    TypeInfo result_ty,
+    mem_Alctr gpa, P$raw owner,
+    P$raw task, exec_Fiber_WorkFn workFn, TypeInfo result_ty,
     exec_Fiber_StackPolicy policy
-))(mem_E$P$exec_Fiber) $guard) {
+))(exec_Fiber_E$P$exec_Fiber) $guard) {
     claim_assert_nonnull(owner), claim_assert_nonnull(task), claim_assert_nonnull(workFn);
     pp_if_(pp_not(co_Fiber_supported))(
         /*pp_then_*/ ({
@@ -56,7 +55,7 @@ fn_((exec_Fiber_initWithPolicy(
             let_ignore = workFn;
             let_ignore = result_ty;
             let_ignore = policy;
-            return_err(E_cause$OutOfMemory());
+            return_err(E_cause$exec_Fiber_Unsupported());
         }),
         /*pp_else_*/ ({
             let bytes = exec_Fiber_slabBytes(result_ty);
@@ -80,9 +79,7 @@ fn_((exec_Fiber_initWithPolicy(
                 fiber->stack,
                 sizeOf$(exec_Fiber_Starter),
                 co_Fiber_stackArgAlign
-            ))(
-                return_err(E_cause$OutOfMemory())
-            ));
+            ))(return_err(E_cause$OutOfMemory())));
             asg_l((as$(exec_Fiber_Starter*)(start))({
                 .owner = owner,
                 .task = task,

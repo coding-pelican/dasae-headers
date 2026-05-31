@@ -8,7 +8,7 @@ fn_((daterm_Term_wait(daterm_Term self))(daterm_Event)) {
     return self.vtbl->waitFn(self.ctx);
 };
 
-fn_((daterm_Term_timedWait(daterm_Term self, time_Dur timeout))(daterm_Term_E$daterm_Event)) {
+fn_((daterm_Term_timedWait(daterm_Term self, time_Dur timeout))(Sched_TimeoutE$daterm_Event)) {
     return self.vtbl->timedWaitFn(self.ctx, timeout);
 };
 

@@ -21,7 +21,7 @@ extern "C" {
 #include <dh/io/Buf.h>
 #include <dh/io/common.h>
 #include <dh/mem/Alctr.h>
-#include <dh/time/Instant.h>
+#include <dh/time/Clock.h>
 
 #if plat_is_windows
 #include <dh/sys/api/windows/handle.h>
@@ -64,7 +64,7 @@ typedef struct daterm_ANSI {
     var_(input_buf, struct {
         var_(reader, io_Buf_Reader);
         var_(is_owned, bool);
-        var_(esc_started_at, O$time_Inst);
+        var_(esc_started_at, O$time_Clock_Inst);
         var_(esc_timeout, time_Dur);
     });
     var_(report_buf, struct {
@@ -72,6 +72,7 @@ typedef struct daterm_ANSI {
         var_(is_owned, bool);
     });
     var_(gpa, O$mem_Alctr);
+    var_(clock, time_Clock);
 } daterm_ANSI;
 T_use_prl$(daterm_ANSI);
 T_use_E$($set(mem_E)(daterm_ANSI));
@@ -90,6 +91,7 @@ typedef struct daterm_ANSI_Cfg { /* clang-format off */
         (daterm_ANSI_Cfg_report_buf_fixed, S$u8),
         (daterm_ANSI_Cfg_report_buf_owned, struct { var_(cap, usize); }),
     )));
+    var_(clock, time_Clock);
 } daterm_ANSI_Cfg; /* clang-format on */
 T_use_prl$(daterm_ANSI_Cfg);
 $attr($inline_always)
@@ -106,6 +108,7 @@ $static fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
         .report_buf = union_of((daterm_ANSI_Cfg_report_buf_owned){
             .cap = daterm_ANSI_report_buf_cap_default,
         }),
+        .clock = union_of((time_Clock_awake)(catch_((time_Awake_direct())($ignore, time_Awake_noop)))),
     };
 };
 

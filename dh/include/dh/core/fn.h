@@ -351,8 +351,19 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
         eqlType$(TypeOf(({ _Expr; })), void) \
         || eqlType$(TypeOf(({ _Expr; })), Void) \
     ); \
-    _Expr; \
+    $ignore_void _Expr; \
     goto __step_break; \
+})
+
+#define $continue_(...) pp_overload(comp_syn__$continue, __VA_ARGS__)(__VA_ARGS__)
+#define comp_syn__$continue_0() continue
+#define comp_syn__$continue_1(_Expr...) local_({ \
+    claim_assert_static( \
+        eqlType$(TypeOf(({ _Expr; })), void) \
+        || eqlType$(TypeOf(({ _Expr; })), Void) \
+    ); \
+    $ignore_void _Expr; \
+    local_return_(continue); \
 })
 // clang-format on
 

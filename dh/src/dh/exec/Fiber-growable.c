@@ -32,10 +32,10 @@ $static fn_((exec_Fiber__faultInFiberStack(exec_Fiber* self, usize fault_addr))(
 static void exec_Fiber__unixHandleSignal(i32 sig, siginfo_t* info, P$raw uctx);
 #endif
 
-#if COMP_TEST
+#if TEST_comp_enabled
 $thrd_local $static var_(exec_Fiber__ensureDiag, exec_Fiber_EnsureDiag);
 
-$static fn_((exec_Fiber__ensureDiagSet(
+$static fn_((exec_Fiber_ensureDiagSet(
     exec_Fiber_EnsureDiag_Stage stage,
     usize rsp,
     usize storage_begin,
@@ -63,9 +63,9 @@ fn_((exec_Fiber__ensureDiagLast(void))(exec_Fiber_EnsureDiag)) {
     return exec_Fiber__ensureDiag;
 };
 #else
-#define exec_Fiber__ensureDiagSet(_stage, _rsp, _storage_begin, _storage_end, _stack_bottom, _target, _new_guard_begin, _commit_len, _fail_addr) \
+#define exec_Fiber_ensureDiagSet(_stage, _rsp, _storage_begin, _storage_end, _stack_bottom, _target, _new_guard_begin, _commit_len, _fail_addr) \
     $do_nothing
-#endif /* COMP_TEST */
+#endif /* TEST_comp_enabled */
 
 #if plat_is_windows || plat_based_unix
 $static fn_((exec_Fiber__faultInFiberStack(exec_Fiber* self, usize fault_addr))(bool)) {
@@ -77,10 +77,10 @@ $static fn_((exec_Fiber__faultInFiberStack(exec_Fiber* self, usize fault_addr))(
     return fault_addr < ptrToInt(self->stack.ptr);
 };
 
-fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))(void)) {
+fn_((exec_Fiber_ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))(void)) {
     claim_assert_nonnull(self);
     if (!self->is_virtual || self->guard_size == 0) {
-        exec_Fiber__ensureDiagSet(
+        exec_Fiber_ensureDiagSet(
             exec_Fiber_EnsureDiag_Stage_skip_not_virtual,
             rsp, 0, 0, 0, 0, 0, 0, 0
         );
@@ -90,7 +90,7 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
     let storage_end = storage_begin + self->storage.len;
     var stack_bottom = ptrToInt(self->stack.ptr);
     if (rsp < storage_begin) {
-        exec_Fiber__ensureDiagSet(
+        exec_Fiber_ensureDiagSet(
             exec_Fiber_EnsureDiag_Stage_fail_rsp_below_storage,
             rsp, storage_begin, storage_end, stack_bottom, 0, 0, 0, 0
         );
@@ -100,7 +100,7 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
         );
     }
     if (rsp > storage_end) {
-        exec_Fiber__ensureDiagSet(
+        exec_Fiber_ensureDiagSet(
             exec_Fiber_EnsureDiag_Stage_fail_rsp_above_storage,
             rsp, storage_begin, storage_end, stack_bottom, 0, 0, 0, 0
         );
@@ -114,7 +114,7 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
     if (target < min_stack_ptr) target = min_stack_ptr;
     target = mem_alignBwd(target, mem_page_size);
     if (target >= stack_bottom) {
-        exec_Fiber__ensureDiagSet(
+        exec_Fiber_ensureDiagSet(
             exec_Fiber_EnsureDiag_Stage_skip_sufficient,
             rsp, storage_begin, storage_end, stack_bottom, target, 0, 0, 0
         );
@@ -123,7 +123,7 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
     let new_stack_bottom = target;
     let new_guard_begin = new_stack_bottom - self->guard_size;
     if (new_guard_begin < storage_begin) {
-        exec_Fiber__ensureDiagSet(
+        exec_Fiber_ensureDiagSet(
             exec_Fiber_EnsureDiag_Stage_fail_new_guard_below_storage,
             rsp, storage_begin, storage_end, stack_bottom, target, new_guard_begin, 0, 0
         );
@@ -134,7 +134,7 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
     }
     let old_guard_begin = stack_bottom - self->guard_size;
     if (new_guard_begin >= old_guard_begin) {
-        exec_Fiber__ensureDiagSet(
+        exec_Fiber_ensureDiagSet(
             exec_Fiber_EnsureDiag_Stage_skip_sufficient,
             rsp, storage_begin, storage_end, stack_bottom, target, new_guard_begin, 0, 0
         );
@@ -145,7 +145,7 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
         let cur_guard_begin = stack_bottom - self->guard_size;
         let available = cur_guard_begin - storage_begin;
         if (available == 0) {
-            exec_Fiber__ensureDiagSet(
+            exec_Fiber_ensureDiagSet(
                 exec_Fiber_EnsureDiag_Stage_fail_new_guard_below_storage,
                 rsp, storage_begin, storage_end, stack_bottom, target, cur_guard_begin, 0, 0
             );
@@ -163,7 +163,7 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
         let commit_len = cur_guard_begin - chunk_guard_begin;
         if (commit_len == 0) break;
         if (!heap_vmem_commit(intToPtr$((P$raw)(chunk_guard_begin)), commit_len)) {
-            exec_Fiber__ensureDiagSet(
+            exec_Fiber_ensureDiagSet(
                 exec_Fiber_EnsureDiag_Stage_fail_commit,
                 rsp, storage_begin, storage_end, stack_bottom, target, chunk_guard_begin, commit_len, 0
             );
@@ -173,11 +173,8 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
             );
         }
         if (!heap_vmem_protect(
-                intToPtr$((P$raw)(cur_guard_begin)),
-                self->guard_size,
-                heap_vmem_Protect_read_write
-            )) {
-            exec_Fiber__ensureDiagSet(
+                intToPtr$((P$raw)(cur_guard_begin)), self->guard_size, heap_vmem_Protn_read_write)) {
+            exec_Fiber_ensureDiagSet(
                 exec_Fiber_EnsureDiag_Stage_fail_protect_rw,
                 rsp, storage_begin, storage_end, stack_bottom, target, chunk_guard_begin, commit_len, cur_guard_begin
             );
@@ -187,15 +184,14 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
             );
         }
         if (!heap_vmem_protect(
-                intToPtr$((P$raw)(chunk_guard_begin)),
-                self->guard_size,
+                intToPtr$((P$raw)(chunk_guard_begin)), self->guard_size,
 #if plat_is_windows
-                heap_vmem_Protect_read_write_guard
+                               heap_vmem_Protn_read_write_guard
 #else
-                heap_vmem_Protect_none
+                               heap_vmem_Protn_none
 #endif
             )) {
-            exec_Fiber__ensureDiagSet(
+            exec_Fiber_ensureDiagSet(
                 exec_Fiber_EnsureDiag_Stage_fail_protect_guard,
                 rsp, storage_begin, storage_end, stack_bottom, target, chunk_guard_begin, commit_len, chunk_guard_begin
             );
@@ -209,7 +205,7 @@ fn_((exec_Fiber__ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))
         self->stack.ptr = intToPtr$((u8*)(stack_bottom));
         self->stack.len += prev_stack_bottom - stack_bottom;
     }
-    exec_Fiber__ensureDiagSet(
+    exec_Fiber_ensureDiagSet(
         exec_Fiber_EnsureDiag_Stage_ok,
         rsp, storage_begin, storage_end, stack_bottom, target, new_guard_begin, 0, 0
     );
@@ -254,7 +250,7 @@ static LONG CALLBACK exec_Fiber__windowsHandleException(EXCEPTION_POINTERS* info
                        ? as$(usize)(info->ExceptionRecord->ExceptionInformation[1])
                        : ptrToInt(info->ExceptionRecord->ExceptionAddress);
     if (!exec_Fiber__faultInFiberStack(fiber, fault_addr)) return EXCEPTION_CONTINUE_SEARCH;
-    exec_Fiber__ensureDiagSet(
+    exec_Fiber_ensureDiagSet(
         exec_Fiber_EnsureDiag_Stage_fail_post_fault,
         0, 0, 0, ptrToInt(fiber->stack.ptr), 0, 0, 0, fault_addr
     );
@@ -329,7 +325,7 @@ static void exec_Fiber__unixHandleSignal(i32 sig, siginfo_t* info, P$raw uctx) {
     if (info != null && fiber != null) {
         let fault_addr = ptrToInt(info->si_addr);
         if (exec_Fiber__faultInFiberStack(fiber, fault_addr)) {
-            exec_Fiber__ensureDiagSet(
+            exec_Fiber_ensureDiagSet(
                 exec_Fiber_EnsureDiag_Stage_fail_post_fault,
                 0, 0, 0, ptrToInt(fiber->stack.ptr), 0, 0, 0, fault_addr
             );
@@ -349,10 +345,10 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
     claim_assert_nonnull(self);
 #if plat_is_windows
     let_ignore = gpa;
-    let reserve_size = exec_Fiber__alignPage(policy.reserve_size);
-    var guard_size = exec_Fiber__alignPage(policy.guard_size);
-    var commit_size = exec_Fiber__alignPage(policy.initial_commit_size);
-    var grow_size = exec_Fiber__alignPage(policy.grow_commit_size);
+    let reserve_size = exec_Fiber_alignPage(policy.reserve_size);
+    var guard_size = exec_Fiber_alignPage(policy.guard_size);
+    var commit_size = exec_Fiber_alignPage(policy.initial_commit_size);
+    var grow_size = exec_Fiber_alignPage(policy.grow_commit_size);
     if (guard_size >= commit_size) commit_size = guard_size + mem_page_size;
     if (reserve_size < commit_size) commit_size = reserve_size;
     let can_grow = grow_size != 0 && guard_size != 0 && commit_size < reserve_size;
@@ -370,21 +366,21 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
         return_err(E_cause$OutOfMemory());
     }
     if (guard_size != 0) {
-        if (!heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protect_read_write_guard)) {
+        if (!heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protn_read_write_guard)) {
             return_err(E_cause$OutOfMemory());
         }
     }
     self->storage = (S$u8){ .ptr = storage_ptr, .len = reserve_size };
     self->guard_size = guard_size;
     self->grow_size = grow_size;
-    self->stack = exec_Fiber__usableStack(self, commit_size);
+    self->stack = exec_Fiber_usableStack(self, commit_size);
     self->is_virtual = true;
     return_ok({});
 #elif plat_based_unix
-    let reserve_size = exec_Fiber__alignPage(policy.reserve_size);
-    var guard_size = exec_Fiber__alignPage(policy.guard_size);
-    var commit_size = exec_Fiber__alignPage(policy.initial_commit_size);
-    var grow_size = exec_Fiber__alignPage(policy.grow_commit_size);
+    let reserve_size = exec_Fiber_alignPage(policy.reserve_size);
+    var guard_size = exec_Fiber_alignPage(policy.guard_size);
+    var commit_size = exec_Fiber_alignPage(policy.initial_commit_size);
+    var grow_size = exec_Fiber_alignPage(policy.grow_commit_size);
     if (guard_size >= commit_size) commit_size = guard_size + mem_page_size;
     if (reserve_size < commit_size) commit_size = reserve_size;
     let can_grow = grow_size != 0 && guard_size != 0 && commit_size < reserve_size;
@@ -401,13 +397,13 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
     if (!heap_vmem_commit(intToPtr$((P$raw)(commit_begin)), commit_size)) {
         return_err(E_cause$OutOfMemory());
     }
-    if (guard_size != 0 && !heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protect_none)) {
+    if (guard_size != 0 && !heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protn_none)) {
         return_err(E_cause$OutOfMemory());
     }
     self->storage = (S$u8){ .ptr = storage_ptr, .len = reserve_size };
     self->guard_size = guard_size;
     self->grow_size = grow_size;
-    self->stack = exec_Fiber__usableStack(self, commit_size);
+    self->stack = exec_Fiber_usableStack(self, commit_size);
     self->is_virtual = true;
     return_ok({});
 #else

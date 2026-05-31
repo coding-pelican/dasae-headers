@@ -31,10 +31,10 @@ errset_((net_E)(
     net_WouldBlock
 ));
 
-T_alias$((net_Prot)(enum_((net_Prot $fits($packed))(
-    net_Prot_tcp = 6,
-    net_Prot_udp = 17,
-    net_Prot_raw = 255,
+T_alias$((net_Proto)(enum_((net_Proto $fits($packed))(
+    net_Proto_tcp = 6,
+    net_Proto_udp = 17,
+    net_Proto_raw = 255,
 ))));
 T_alias$((net_Sock_Mode)(enum_((net_Sock_Mode $fits($packed))(
     net_Sock_Mode_stream = 0,
@@ -68,20 +68,20 @@ T_use_E$(net_IpAddr);
 
 T_alias$((net_ConnectOpts)(struct net_ConnectOpts {
     var_(mode, net_Sock_Mode);
-    var_(protocol, net_Prot);
+    var_(protocol, net_Proto);
     var_(timeout, time_Dur);
     var_(nonblocking, bool);
 }));
 T_alias$((net_ListenOpts)(struct net_ListenOpts {
     var_(mode, net_Sock_Mode);
-    var_(protocol, net_Prot);
+    var_(protocol, net_Proto);
     var_(kernel_backlog, u32);
     var_(reuse_address, bool);
     var_(nonblocking, bool);
 }));
 T_alias$((net_BindOpts)(struct net_BindOpts {
     var_(mode, net_Sock_Mode);
-    var_(protocol, net_Prot);
+    var_(protocol, net_Proto);
     var_(allow_broadcast, bool);
     var_(ip6_only, bool);
     var_(nonblocking, bool);
@@ -94,20 +94,20 @@ T_alias$((net_ShutdownHow)(enum_((net_ShutdownHow $fits($packed))(
 
 $static let_(net_ConnectOpts_default, net_ConnectOpts) = {
     .mode = net_Sock_Mode_stream,
-    .protocol = net_Prot_tcp,
+    .protocol = net_Proto_tcp,
     .timeout = time_Dur_zero,
     .nonblocking = false,
 };
 $static let_(net_ListenOpts_default, net_ListenOpts) = {
     .mode = net_Sock_Mode_stream,
-    .protocol = net_Prot_tcp,
+    .protocol = net_Proto_tcp,
     .kernel_backlog = 16,
     .reuse_address = true,
     .nonblocking = false,
 };
 $static let_(net_BindOpts_default, net_BindOpts) = {
     .mode = net_Sock_Mode_stream,
-    .protocol = net_Prot_tcp,
+    .protocol = net_Proto_tcp,
     .allow_broadcast = false,
     .ip6_only = false,
     .nonblocking = false,

@@ -6,16 +6,16 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
+#include "base.h"
 #include "../time/Inst.h"
 #include "../ArrPQue.h"
 
 /*========== Macros and Declarations ========================================*/
 
-struct exec_Timer {
+T_alias$((exec_Timer)(struct exec_Timer {
     var_(deadline, time_Inst);
     var_(task, P$exec_Task);
-};
+}));
 T_use_prl$(exec_Timer);
 T_use_ArrPQue$(exec_Timer);
 

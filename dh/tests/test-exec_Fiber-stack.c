@@ -1,5 +1,8 @@
 #include "dh-main.h"
+#include "dh/Future.h"
+#include "dh/Sched.h"
 #include "dh/exec/Seq.h"
+#include "dh/exec/Coop.h"
 #include "dh/time/self/Awake.h"
 #include "dh/time/Dur.h"
 #include "dh/heap/Sys.h"
@@ -10,7 +13,7 @@ T_use$((i32)(Clsr_Ctx, Clsr_Rtn, Clsr));
 T_use$((i32)(Future, Future_await, Future_cancel, Sched_spawn, Sched_async));
 
 $static fn_((test_exec_Fiber_Stack_report(S_const$u8 label, i32 cnt))(void)) {
-    io_stream_print(u8_l("[test_exec_Fiber_Stack: {:s}] cnt: {:d}\n"), label, cnt);
+    io_stream_println(u8_l("[test_exec_Fiber_Stack: {:s}] cnt: {:d}"), label, cnt);
 };
 
 $static fn_((test_exec_Fiber_Stack_count(time_Awake time, time_Dur wait))(i32)) {
@@ -59,15 +62,16 @@ TEST_fn_("exec/Fiber - stack: stackful async await with io from fiber stack" $gu
 } $unguarded(TEST_fn);
 
 TEST_fn_("exec/Fiber - stack: stackful spawn await returns task result" $guard) {
+    pp_if_(pp_not(co_Fiber_supported))(pp_then_(try_(TEST_skip())));
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));
     let gpa = heap_Arena_alctr(&arena);
-    var exec = exec_Seq_init(gpa);
-    defer_(exec_Seq_fini(&exec));
-    let sched = Sched_seq(&exec);
-    let clock = try_(time_Awake_direct());
+    var exec = exec_Coop_init(gpa, try_(time_Awake_direct()));
+    defer_(exec_Coop_fini(&exec));
+    let sched = Sched_coop(&exec);
+    let clock = time_Awake_evented(&exec);
 
     var clsr = clsr_((test_exec_Fiber_Stack_count)(clock, time_Dur_fromMillis(50)));
     var task = try_(Sched_spawn$i32(sched, clsr.as_base));
@@ -77,15 +81,16 @@ TEST_fn_("exec/Fiber - stack: stackful spawn await returns task result" $guard) 
 } $unguarded(TEST_fn);
 
 TEST_fn_("exec/Fiber - stack: stackful spawns await with io from fiber stack" $guard) {
+    pp_if_(pp_not(co_Fiber_supported))(pp_then_(try_(TEST_skip())));
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));
     let gpa = heap_Arena_alctr(&arena);
-    var exec = exec_Seq_init(gpa);
-    defer_(exec_Seq_fini(&exec));
-    let sched = Sched_seq(&exec);
-    let clock = try_(time_Awake_direct());
+    var exec = exec_Coop_init(gpa, try_(time_Awake_direct()));
+    defer_(exec_Coop_fini(&exec));
+    let sched = Sched_coop(&exec);
+    let clock = time_Awake_evented(&exec);
     let wait = time_Dur_fromMillis(50);
 
     var clsr_a = clsr_((test_exec_Fiber_Stack_countReport)(u8_l("a"), clock, wait));

@@ -1,89 +1,21 @@
 #include "dh/exec/Lane.h"
+#include "dh/exec/Task.h"
+#include "dh/exec/common.h"
+
+/*========== Internal Declarations ==========================================*/
 
 $static fn_((exec_Lane__workFiber(P$raw owner, P$raw any_task))(void));
 $static fn_((exec_Lane__createTask(
-    exec_Lane* self,
-    exec_Task_State state,
-    u_P$raw result,
-    P$$(Clsr$raw) inner
+    exec_Lane* self, exec_Task_State state,
+    u_P$raw result, P$$(Clsr$raw) inner
 ))(E$P$exec_Task));
 $static fn_((exec_Lane__destroyTask(exec_Lane* self, exec_Task* task))(void));
+
 $static fn_((exec_Task__slabBytes(TypeInfo result_ty))(usize));
 $static fn_((exec_Task__resultMut(exec_Task* self, TypeInfo type))(u_P$raw));
 $static fn_((exec_Task__freeSlab(exec_Task* self, mem_Alctr gpa))(void));
 
-fn_((exec_Task__slabBytes(TypeInfo result_ty))(usize)) {
-    return mem_alignFwd(sizeOf$(exec_Task), mem_log2ToAlign(result_ty.log2_align)) + result_ty.size;
-};
-fn_((exec_Task__resultMut(exec_Task* self, TypeInfo type))(u_P$raw)) {
-    claim_assert_nonnull(self);
-    return (u_P$raw){
-        .raw = intToPtr$((u8*)(ptrToInt(self) + mem_alignFwd(sizeOf$(exec_Task), mem_log2ToAlign(type.log2_align)))),
-        .type = type,
-    };
-};
-fn_((exec_Task__freeSlab(exec_Task* self, mem_Alctr gpa))(void)) {
-    claim_assert_nonnull(self);
-    let bytes = exec_Task__slabBytes(self->result.type);
-    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Task));
-};
-
-fn_((exec_Lane__workFiber(P$raw owner, P$raw any_task))(void)) {
-    let self = ptrAlignCast$((exec_Lane*)(ensureNonnull(owner)));
-    let task = ptrAlignCast$((exec_Task*)(ensureNonnull(any_task)));
-    u_memcpy(task->result, clsr_invokeToComplete(task->inner, task->result.type));
-    if (task->state != exec_Task_State_canceled) task->state = exec_Task_State_done;
-    let fiber = orelse_((task->fiber)(claim_unreachable));
-    exec_switchFromFiber(&fiber->context, &self->fiber_context);
-    claim_unreachable;
-};
-
-T_use_E$($set(mem_E)(P$exec_Task));
-T_use$((exec_Task)(mem_Alctr_create, mem_Alctr_destroy));
-fn_((exec_Lane__createTask(
-    exec_Lane* self,
-    exec_Task_State state,
-    u_P$raw result,
-    P$$(Clsr$raw) inner
-))(E$P$exec_Task) $guard) {
-    claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
-    if (exec_kind(inner) == exec_Task_Kind_stackful) {
-        let task = try_(mem_Alctr_create$exec_Task($trace self->gpa));
-        return_ok(asg_l((task)({
-            .state = state,
-            .result = cleared(),
-            .inner = inner,
-            .fiber = none(),
-        })));
-    }
-    let bytes = exec_Task__slabBytes(result.type);
-    let mem = orelse_((mem_Alctr_rawAlloc($trace self->gpa, bytes, alignOfLog2$(exec_Task)))(
-        return_err(E_cause$OutOfMemory())
-    ));
-    let task = ptrAlignCast$((exec_Task*)(mem));
-    errdefer_($ignore, exec_Task__freeSlab(task, self->gpa));
-    mem_set0Bytes(P_prefix$((S$u8)(mem)(bytes)));
-    return_ok(asg_l((task)({
-        .state = state,
-        .result = exec_Task__resultMut(task, result.type),
-        .inner = inner,
-        .fiber = none(),
-    })));
-} $unguarded(fn);
-
-fn_((exec_Lane__destroyTask(exec_Lane* self, exec_Task* task))(void)) {
-    claim_assert_nonnull(self), claim_assert_nonnull(task);
-    if_some((task->fiber)(fiber)) {
-        exec_Fiber_fini(fiber, self->gpa);
-        mem_Alctr_destroy$exec_Task($trace self->gpa, task);
-        return;
-    }
-    if (isNonnull(task->result.raw)) {
-        exec_Task__freeSlab(task, self->gpa);
-        return;
-    }
-    mem_Alctr_destroy$exec_Task($trace self->gpa, task);
-};
+/*========== External Definitions ===========================================*/
 
 T_use$((P$exec_Task)(ArrList_empty, ArrQue_empty));
 fn_((exec_Lane_init(mem_Alctr gpa))(exec_Lane)) {
@@ -110,75 +42,65 @@ fn_((exec_Lane_task(exec_Lane* self))(O$P$exec_Task)) {
     return self->task_curr;
 };
 
-T_use$((P$exec_Task)(ArrQue_enque));
-fn_((exec_Lane_readyTask(exec_Lane* self, exec_Task* task))(bool)) {
-    claim_assert_nonnull(self), claim_assert_nonnull(task);
-    task->state = exec_Task_State_ready;
-    if (isOk(ArrQue_enque$P$exec_Task(&self->tasks_ready, self->gpa, task))) return true;
-    task->state = exec_Task_State_canceled;
-    return false;
-};
-
 T_use_E$($set(mem_E)(P$P$exec_Task));
 T_use$((P$exec_Task)(ArrList_addBack));
-fn_((exec_Lane_createReadyTask(
-    exec_Lane* self,
-    u_P$raw result,
-    P$$(Clsr$raw) inner
-))(O$P$exec_Task) $scope) {
+fn_((exec_Lane_createReadyTask(exec_Lane* self, u_P$raw result, P$$(Clsr$raw) inner))(O$P$exec_Task) $scope) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
     let task = catch_((exec_Lane__createTask(self, exec_Task_State_pending, result, inner))(
         $ignore, return_none()
     ));
-    if (exec_kind(inner) == exec_Task_Kind_stackful) {
-        let fiber = catch_((exec_Fiber_init(self->gpa, self, task, exec_Lane__workFiber, result.type))(
-            $ignore, {
-                exec_Lane__destroyTask(self, task);
-                return_none();
-            }
-        ));
+    if (exec_Task_kind(inner) == exec_Task_Kind_stackful) {
+        let fiber = catch_((exec_Fiber_init(self->gpa, self, task, exec_Lane__workFiber, result.type))($ignore, {
+            exec_Lane__destroyTask(self, task);
+            return_none();
+        }));
         asg_l((&task->result)(exec_Fiber_resultMut(fiber, result.type)));
         asg_l((&task->fiber)(some(fiber)));
     }
-    let slot = catch_((ArrList_addBack$P$exec_Task(&self->tasks, self->gpa))(
-        $ignore, {
-            exec_Lane__destroyTask(self, task);
-            return_none();
-        }
-    ));
+    let slot = catch_((ArrList_addBack$P$exec_Task(&self->tasks, self->gpa))($ignore, {
+        exec_Lane__destroyTask(self, task);
+        return_none();
+    }));
     *slot = task;
     if (!exec_Lane_readyTask(self, task)) return_none();
     return_some(task);
 } $unscoped(fn);
 
+T_use$((P$exec_Task)(ArrQue_enque));
+fn_((exec_Lane_readyTask(exec_Lane* self, exec_Task* task))(bool)) {
+    claim_assert_nonnull(self), claim_assert_nonnull(task);
+    task->state = exec_Task_State_ready;
+    if (isOk(ArrQue_enque$P$exec_Task(&self->tasks_ready, self->gpa, task))) return true;
+    exec_Task_requestCancel(task);
+    task->cancel = exec_Task_Cancel_acknowledged;
+    task->state = exec_Task_State_done;
+    return false;
+};
+
 fn_((exec_Lane_asyncTask(exec_Lane* self, u_P$raw result, P$$(Clsr$raw) inner))(O$P$exec_Task) $scope) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
-    let task = orelse_((exec_Lane_createReadyTask(self, result, inner))({
-        u_memcpy(result, clsr_invokeToComplete(inner, result.type));
-        return_none();
-    }));
-    return_some(task);
+    if_some((exec_Lane_createReadyTask(self, result, inner))(task)) {
+        return_some(task);
+    }
+    u_memcpy(result, clsr_invokeToComplete(inner, result.type));
+    return_none();
 } $unscoped(fn);
 
 fn_((exec_Lane_spawnTask(exec_Lane* self, u_P$raw result, P$$(Clsr$raw) inner))(O$P$exec_Task) $scope) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
-    let task = orelse_((exec_Lane_createReadyTask(self, result, inner))(return_none()));
-    return_some(task);
+    return exec_Lane_createReadyTask(self, result, inner);
 } $unscoped(fn);
 
 fn_((exec_Lane_runTask(exec_Lane* self, exec_Task* task))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(task);
-    if (task->state == exec_Task_State_canceled
-        || task->state == exec_Task_State_done
-        || task->state == exec_Task_State_waiting) return;
-    if (exec_kind(task->inner) == exec_Task_Kind_stackful) {
+    if (task->state == exec_Task_State_done || task->state == exec_Task_State_waiting) return;
+    if (exec_Task_kind(task->inner) == exec_Task_Kind_stackful) {
         task->state = exec_Task_State_running;
         let prev = self->task_curr;
         asg_l((&self->task_curr)(some(task)));
         let fiber = orelse_((task->fiber)(claim_unreachable));
         exec_switchToFiber(&self->fiber_context, fiber);
-        asg_l((&self->task_curr)(prev));
-        return;
+        return $ignore_void asg_l((&self->task_curr)(prev));
     }
     let prev = self->task_curr;
     asg_l((&self->task_curr)(some(task)));
@@ -207,7 +129,91 @@ fn_((exec_Lane_runOneReady(exec_Lane* self))(bool)) {
 fn_((exec_Lane_yield(exec_Lane* self))(void)) {
     claim_assert_nonnull(self);
     let task = orelse_((self->task_curr)(return));
-    if (exec_kind(task->inner) != exec_Task_Kind_stackful) return;
+    if (exec_Task_kind(task->inner) != exec_Task_Kind_stackful) return;
     let fiber = orelse_((task->fiber)(claim_unreachable));
     exec_switchFromFiber(&fiber->context, &self->fiber_context);
+};
+
+fn_((exec_Lane_deliverCancel(exec_Lane* self, exec_Task* task))(void)) {
+    claim_assert_nonnull(self), claim_assert_nonnull(task);
+    if (task->state == exec_Task_State_waiting) {
+        let_ignore = exec_Lane_readyTask(self, task);
+    }
+};
+
+/*========== Internal Definitions ===========================================*/
+
+fn_((exec_Lane__workFiber(P$raw owner, P$raw any_task))(void)) {
+    let self = ptrAlignCast$((exec_Lane*)(ensureNonnull(owner)));
+    let task = ptrAlignCast$((exec_Task*)(ensureNonnull(any_task)));
+    u_memcpy(task->result, clsr_invokeToComplete(task->inner, task->result.type));
+    if (task->cancel != exec_Task_Cancel_acknowledged) task->state = exec_Task_State_done;
+    let fiber = orelse_((task->fiber)(claim_unreachable));
+    exec_switchFromFiber(&fiber->context, &self->fiber_context);
+    claim_unreachable;
+};
+
+T_use_E$($set(mem_E)(P$exec_Task));
+T_use$((exec_Task)(mem_Alctr_create, mem_Alctr_destroy));
+fn_((exec_Lane__createTask(
+    exec_Lane* self, exec_Task_State state,
+    u_P$raw result, P$$(Clsr$raw) inner
+))(E$P$exec_Task) $guard) {
+    claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
+    if (exec_Task_kind(inner) == exec_Task_Kind_stackful) {
+        let task = try_(mem_Alctr_create$exec_Task($trace self->gpa));
+        return_ok(asg_l((task)({
+            .state = state,
+            .cancel = exec_Task_Cancel_none,
+            .cancel_protection = Sched_CancelProtn_unblocked,
+            .result = cleared(),
+            .inner = inner,
+            .fiber = none(),
+        })));
+    }
+    let bytes = exec_Task__slabBytes(result.type);
+    let mem = orelse_((mem_Alctr_rawAlloc($trace self->gpa, bytes, alignOfLog2$(exec_Task)))(
+        return_err(E_cause$OutOfMemory())
+    ));
+    let task = ptrAlignCast$((exec_Task*)(mem));
+    errdefer_($ignore, exec_Task__freeSlab(task, self->gpa));
+    mem_set0Bytes(P_prefix$((S$u8)(mem)(bytes)));
+    return_ok(asg_l((task)({
+        .state = state,
+        .cancel = exec_Task_Cancel_none,
+        .cancel_protection = Sched_CancelProtn_unblocked,
+        .result = exec_Task__resultMut(task, result.type),
+        .inner = inner,
+        .fiber = none(),
+    })));
+} $unguarded(fn);
+
+fn_((exec_Lane__destroyTask(exec_Lane* self, exec_Task* task))(void)) {
+    claim_assert_nonnull(self), claim_assert_nonnull(task);
+    if_some((task->fiber)(fiber)) {
+        exec_Fiber_fini(fiber, self->gpa);
+        return mem_Alctr_destroy$exec_Task($trace self->gpa, task);
+    }
+    if (isNonnull(task->result.raw)) {
+        return exec_Task__freeSlab(task, self->gpa);
+    }
+    return mem_Alctr_destroy$exec_Task($trace self->gpa, task);
+};
+
+fn_((exec_Task__slabBytes(TypeInfo result_ty))(usize)) {
+    return mem_alignFwd(sizeOf$(exec_Task), mem_log2ToAlign(result_ty.log2_align)) + result_ty.size;
+};
+
+fn_((exec_Task__resultMut(exec_Task* self, TypeInfo type))(u_P$raw)) {
+    claim_assert_nonnull(self);
+    return (u_P$raw){
+        .raw = intToPtr$((u8*)(ptrToInt(self) + mem_alignFwd(sizeOf$(exec_Task), mem_log2ToAlign(type.log2_align)))),
+        .type = type,
+    };
+};
+
+fn_((exec_Task__freeSlab(exec_Task* self, mem_Alctr gpa))(void)) {
+    claim_assert_nonnull(self);
+    let bytes = exec_Task__slabBytes(self->result.type);
+    mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Task));
 };
