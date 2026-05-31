@@ -7,6 +7,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "base.h"
+#include "../Future.h"
+#include "../Sched.h"
 
 /*========== Macros and Declarations ========================================*/
 

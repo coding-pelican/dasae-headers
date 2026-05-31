@@ -63,7 +63,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define __expr__nameOf(_Tok, _Str...) #_Str
+#define __expr__nameOf(_$ignored, _Tok...) _Tok
 
 #define __expr__isComptimeExpr(_expr...) bool_(__builtin_constant_p(_expr))
 #define __expr__isRuntimeExpr(_expr...) pri_not(isComptimeExpr(_expr))
