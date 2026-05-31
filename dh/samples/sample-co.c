@@ -159,23 +159,23 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     defer_(Future_cancel$Sched_Cancelable$i32(&thrd_defer_check, sched));
 
     for_(($r(0, 20))(i)) {
-        report(u8_l("main"), u8_l("current: {:uz}"), i);
+        report(u8_l(nameOf(main)), u8_l("current: {:uz}"), i);
         if (i == 10) {
             let ret = Future_cancel$Sched_Cancelable$i32(&thrd_defer_check, sched);
-            report(u8_l("main"), u8_l("received: {:!d}"), ret);
+            report(u8_l(nameOf(main)), u8_l("received: {:!d}"), ret);
         }
         try_(time_Awake_sleep(clock, time_Dur_fromSecs$f64(0.1)));
     } $end(for);
 
 
     let joined_defer_check = Future_await$Sched_Cancelable$i32(&thrd_defer_check, sched);
-    report(u8_l("main"), u8_l(nameOf(joined_defer_check) " ret: {:!d}"), joined_defer_check);
+    report(u8_l(nameOf(main)), u8_l(nameOf(joined_defer_check) " ret: {:!d}"), joined_defer_check);
 
     let joined_defer = Future_await$i32(&thrd_defer, sched);
-    report(u8_l("main"), u8_l(nameOf(joined_defer) " ret: {:d}"), joined_defer);
+    report(u8_l(nameOf(main)), u8_l(nameOf(joined_defer) " ret: {:d}"), joined_defer);
 
     let joined = Future_await$i32(&thrd, sched);
-    report(u8_l("main"), u8_l(nameOf(joined) " ret: {:d}"), joined);
+    report(u8_l(nameOf(main)), u8_l(nameOf(joined) " ret: {:d}"), joined);
 
     return_ok({});
 } $unguarded(fn);

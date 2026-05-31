@@ -259,7 +259,7 @@ typedef union E$Void E$Void, E$void;
 #define __step__catch_some__parseExpr(_expr...) _expr,
 #define __step__catch_some__emit(...) ____catch_some$(__VA_ARGS__)
 #define ____catch_some(_expr, _some...) \
-    catch_some$((O$$(E_InnerT$(TypeOf(_expr))))(_expr)_some)
+    catch_some$((O$$(E_T$(TypeOf(_expr))))(_expr)_some)
 #define __step__catch_none$(...) __step__catch_none$__emit(__step__catch_none$__parseOT __VA_ARGS__)
 #define __step__catch_none$__parseOT(_O_T...) _O_T, pp_uniqTok(expr),
 #define __step__catch_none$__emit(...) ____catch_none$(__VA_ARGS__)
@@ -272,7 +272,7 @@ typedef union E$Void E$Void, E$void;
 })
 #define __step__catch_none(...) ____catch_none(__VA_ARGS__)
 #define ____catch_none(_expr...) \
-    catch_none$((O$$(E_InnerT$(TypeOf(_expr))))(_expr))
+    catch_none$((O$$(E_T$(TypeOf(_expr))))(_expr))
 #define ____errdefer_(_Payload_Capture, _Expr...) defer_(if (!__reserved_return->is_ok) { \
     /* claim_assert(__reserved_return->payload.err.ctx != 0); */ \
     /* claim_assert_nonnull(__reserved_return->payload.err.vt); */ \
