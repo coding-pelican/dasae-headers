@@ -41,14 +41,14 @@ T_decl_O$(time_Proc_Inst);
 T_decl_E$($set(time_direct_E)(time_Proc));
 
 T_alias$((time_Thrd)(struct time_Thrd));
-T_alias$((time_thrd_Inst)(struct time_thrd_Inst));
-T_decl_O$(time_thrd_Inst);
+T_alias$((time_Thrd_Inst)(struct time_Thrd_Inst));
+T_decl_O$(time_Thrd_Inst);
 T_decl_E$($set(time_direct_E)(time_Thrd));
 
 /* --- Clock Types --- */
-T_alias$((time_Clock)(struct time_Clock));
+T_alias$((time_Clock)(variant_((time_Clock) $T)));
 T_decl_O$(time_Clock);
-T_alias$((time_Clock_Inst)(struct time_Clock_Inst));
+T_alias$((time_Clock_Inst)(variant_((time_Clock_Inst) $T)));
 T_decl_O$(time_Clock_Inst);
 
 #if defined(__cplusplus)
