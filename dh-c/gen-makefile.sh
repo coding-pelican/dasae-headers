@@ -128,13 +128,13 @@ else ifeq ($(PROFILE),release)
     PROFILE_LDFLAGS += -flto -Wl,--gc-sections
 else ifeq ($(PROFILE),optimize)
     PROFILE_CFLAGS += -O3 -march=native -flto -ffunction-sections -fdata-sections
-    PROFILE_LDFLAGS += -flto
+    PROFILE_LDFLAGS += -flto -Wl,--gc-sections
 else ifeq ($(PROFILE),compact)
     PROFILE_CFLAGS += -Os -flto -ffunction-sections -fdata-sections
     PROFILE_LDFLAGS += -flto -Wl,--gc-sections
 else ifeq ($(PROFILE),micro)
-    PROFILE_CFLAGS += -Oz -fno-unroll-loops -flto
-    PROFILE_LDFLAGS += -flto
+    PROFILE_CFLAGS += -Oz -fno-unroll-loops -flto -ffunction-sections -fdata-sections
+    PROFILE_LDFLAGS += -flto -Wl,--gc-sections
 else
     $(error Unsupported PROFILE '$(PROFILE)')
 endif

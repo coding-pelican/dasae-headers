@@ -484,7 +484,7 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_aggressive,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .extra_flags = { "-march=native", "-flto", "-fdata-sections", "-ffunction-sections", NULL },
+        .extra_flags = { "-march=native", "-flto", "-ffunction-sections", "-fdata-sections", "-Wl,--gc-sections", NULL },
     },
     [dal_c_Profile_compact] = {
         .name = dal_c_profile_compact,
@@ -498,7 +498,7 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_minimal,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .extra_flags = { "-fno-unroll-loops", "-flto", NULL },
+        .extra_flags = { "-fno-unroll-loops", "-flto", "-ffunction-sections", "-fdata-sections", "-Wl,--gc-sections", NULL },
     },
 };
 #define dal_c_profile_specs_count ((int)(sizeof(dal_c_profile_specs) / sizeof(dal_c_profile_specs[0])))

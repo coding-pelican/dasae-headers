@@ -62,6 +62,7 @@ static void test_reset_temp_root(void);
 static void test_free_str_array(char** items, int count);
 static const dal_c_HelpCmd* test_find_help_cmd(const char* name, int* count_out);
 static bool test_help_has_option(const dal_c_HelpCmd* cmd, const char* option_name);
+static bool test_profile_has_flag(const dal_c_ProfileSpec* profile, const char* flag);
 
 int main(void) {
     RUN_TEST(test_str_helpers);
@@ -133,6 +134,19 @@ static bool test_help_has_option(const dal_c_HelpCmd* cmd, const char* option_na
 
     for (int i = 0; i < cmd->option_count; ++i) {
         if (strstr(cmd->options[i].name, option_name) != NULL) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool test_profile_has_flag(const dal_c_ProfileSpec* profile, const char* flag) {
+    if (!profile || !flag) {
+        return false;
+    }
+
+    for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
+        if (str_eql(profile->extra_flags[i], flag)) {
             return true;
         }
     }
@@ -371,6 +385,18 @@ static void test_meta_tables(void) {
     TEST_ASSERT(release_spec != NULL);
     TEST_ASSERT(str_eql(release_spec->name, dal_c_profile_release));
     TEST_ASSERT(release_spec->opti_level == dal_c_OptiLevel_aggressive);
+
+    const dal_c_ProfileSpec* optimize_spec = dal_c_ProfileSpec_by(dal_c_Profile_optimize);
+    TEST_ASSERT(optimize_spec != NULL);
+    TEST_ASSERT(test_profile_has_flag(optimize_spec, "-ffunction-sections"));
+    TEST_ASSERT(test_profile_has_flag(optimize_spec, "-fdata-sections"));
+    TEST_ASSERT(test_profile_has_flag(optimize_spec, "-Wl,--gc-sections"));
+
+    const dal_c_ProfileSpec* micro_spec = dal_c_ProfileSpec_by(dal_c_Profile_micro);
+    TEST_ASSERT(micro_spec != NULL);
+    TEST_ASSERT(test_profile_has_flag(micro_spec, "-ffunction-sections"));
+    TEST_ASSERT(test_profile_has_flag(micro_spec, "-fdata-sections"));
+    TEST_ASSERT(test_profile_has_flag(micro_spec, "-Wl,--gc-sections"));
 
     int cmd_count = 0;
     const dal_c_HelpCmd* build_cmd = test_find_help_cmd(dal_c_cmd_action_build, &cmd_count);
