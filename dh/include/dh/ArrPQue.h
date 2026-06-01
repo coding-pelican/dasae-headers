@@ -333,7 +333,7 @@ $extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw)
 #define T_use_ArrPQue_removeAt$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(ArrPQue_removeAt, _T)(P$$(ArrPQue$(_T)) self, usize idx))(_T)) { \
-        return u_cast((_T)(ArrPQue_removeAt(self->as_raw, idx, u_retV$(_T)))); \
+        return u_cast$((_T)(ArrPQue_removeAt(self->as_raw, idx, u_retV$(_T)))); \
     }
 
 #define T_use_ArrPQue_update$(_T...) \

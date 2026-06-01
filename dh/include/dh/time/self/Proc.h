@@ -64,9 +64,13 @@ $extern fn_((time_Proc_Inst_durSince(time_Proc_Inst later, time_Proc_Inst earlie
 $extern fn_((time_Proc_Inst_durSinceChkd(time_Proc_Inst later, time_Proc_Inst earlier))(O$time_Dur));
 
 $extern op_fn_addWith$(((time_Proc_Inst, time_Dur)(lhs, rhs))(time_Proc_Inst));
+$static op_fn_addWith$(addDur, ((time_Proc_Inst, time_Dur)(lhs, rhs))(time_Proc_Inst));
 $extern op_fn_addAsgWith$(((time_Proc_Inst, time_Dur)(lhs, rhs))(time_Proc_Inst*));
+$static op_fn_addAsgWith$(addAsgDur, ((time_Proc_Inst, time_Dur)(lhs, rhs))(time_Proc_Inst*));
 $extern op_fn_subWith$(((time_Proc_Inst, time_Dur)(lhs, rhs))(time_Proc_Inst));
+$static op_fn_subWith$(subDur, ((time_Proc_Inst, time_Dur)(lhs, rhs))(time_Proc_Inst));
 $extern op_fn_subAsgWith$(((time_Proc_Inst, time_Dur)(lhs, rhs))(time_Proc_Inst*));
+$static op_fn_subAsgWith$(subAsgDur, ((time_Proc_Inst, time_Dur)(lhs, rhs))(time_Proc_Inst*));
 /// Add a duration to a process CPU instant, returning none on overflow.
 $extern fn_((time_Proc_Inst_addChkdDur(time_Proc_Inst lhs, time_Dur rhs))(O$time_Proc_Inst));
 /// Subtract a duration from a process CPU instant, returning none on underflow.

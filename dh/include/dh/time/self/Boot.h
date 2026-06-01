@@ -81,9 +81,13 @@ $extern fn_((time_Boot_Inst_durSince(time_Boot_Inst later, time_Boot_Inst earlie
 $extern fn_((time_Boot_Inst_durSinceChkd(time_Boot_Inst later, time_Boot_Inst earlier))(O$time_Dur));
 
 $extern op_fn_addWith$(((time_Boot_Inst, time_Dur)(lhs, rhs))(time_Boot_Inst));
+$static op_fn_addWith$(addDur, ((time_Boot_Inst, time_Dur)(lhs, rhs))(time_Boot_Inst));
 $extern op_fn_addAsgWith$(((time_Boot_Inst, time_Dur)(lhs, rhs))(time_Boot_Inst*));
+$static op_fn_addAsgWith$(addAsgDur, ((time_Boot_Inst, time_Dur)(lhs, rhs))(time_Boot_Inst*));
 $extern op_fn_subWith$(((time_Boot_Inst, time_Dur)(lhs, rhs))(time_Boot_Inst));
+$static op_fn_subWith$(subDur, ((time_Boot_Inst, time_Dur)(lhs, rhs))(time_Boot_Inst));
 $extern op_fn_subAsgWith$(((time_Boot_Inst, time_Dur)(lhs, rhs))(time_Boot_Inst*));
+$static op_fn_subAsgWith$(subAsgDur, ((time_Boot_Inst, time_Dur)(lhs, rhs))(time_Boot_Inst*));
 /// Add a duration to a boot instant, returning none on overflow.
 $extern fn_((time_Boot_Inst_addChkdDur(time_Boot_Inst lhs, time_Dur rhs))(O$time_Boot_Inst));
 /// Subtract a duration from a boot instant, returning none on underflow.

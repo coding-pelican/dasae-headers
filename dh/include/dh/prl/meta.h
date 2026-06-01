@@ -782,7 +782,7 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
         : (u_E$raw)err(__p_e->payload.err); \
 }))
 
-#define u_cast u_castV$
+#define u_cast$ u_castV$
 
 #define u_castP$(/*(_T)(_Expr...)*/... /*(P_const$(_T))*/) \
     __step_inline__u_castP$(pp_defer(__emit_inline__u_castP$)(__param_parse__u_castP$ __VA_ARGS__))

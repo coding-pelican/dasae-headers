@@ -84,9 +84,13 @@ $extern fn_((time_Awake_Inst_durSince(time_Awake_Inst later, time_Awake_Inst ear
 $extern fn_((time_Awake_Inst_durSinceChkd(time_Awake_Inst later, time_Awake_Inst earlier))(O$time_Dur));
 
 $extern op_fn_addWith$(((time_Awake_Inst, time_Dur)(lhs, rhs))(time_Awake_Inst));
+$static op_fn_addWith$(addDur, ((time_Awake_Inst, time_Dur)(lhs, rhs))(time_Awake_Inst));
 $extern op_fn_addAsgWith$(((time_Awake_Inst, time_Dur)(lhs, rhs))(time_Awake_Inst*));
+$static op_fn_addAsgWith$(addAsgDur, ((time_Awake_Inst, time_Dur)(lhs, rhs))(time_Awake_Inst*));
 $extern op_fn_subWith$(((time_Awake_Inst, time_Dur)(lhs, rhs))(time_Awake_Inst));
+$static op_fn_subWith$(subDur, ((time_Awake_Inst, time_Dur)(lhs, rhs))(time_Awake_Inst));
 $extern op_fn_subAsgWith$(((time_Awake_Inst, time_Dur)(lhs, rhs))(time_Awake_Inst*));
+$static op_fn_subAsgWith$(subAsgDur, ((time_Awake_Inst, time_Dur)(lhs, rhs))(time_Awake_Inst*));
 /// Add a duration to an awake instant, returning none on overflow.
 $extern fn_((time_Awake_Inst_addChkdDur(time_Awake_Inst lhs, time_Dur rhs))(O$time_Awake_Inst));
 /// Subtract a duration from an awake instant, returning none on underflow.

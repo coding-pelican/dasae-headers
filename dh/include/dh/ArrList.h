@@ -651,12 +651,12 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 #define T_use_ArrList_removeOrdd$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(ArrList_removeOrdd, _T)(P$$(ArrList$(_T)) self, usize idx))(_T)) { \
-        return u_cast((_T)(ArrList_removeOrdd(self->as_raw, idx, u_retV$(_T)))); \
+        return u_cast$((_T)(ArrList_removeOrdd(self->as_raw, idx, u_retV$(_T)))); \
     }
 #define T_use_ArrList_removeSwap$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(ArrList_removeSwap, _T)(P$$(ArrList$(_T)) self, usize idx))(_T)) { \
-        return u_cast((_T)(ArrList_removeSwap(self->as_raw, idx, u_retV$(_T)))); \
+        return u_cast$((_T)(ArrList_removeSwap(self->as_raw, idx, u_retV$(_T)))); \
     }
 #define T_use_ArrList_shift$(_T...) \
     $attr($inline_always) \

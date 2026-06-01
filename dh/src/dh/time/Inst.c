@@ -15,6 +15,17 @@ fn_((time_Inst_ticks(time_Inst self))(u64)) {
     return self.secs * as$(u64)(time_nanos_per_sec) + self.nanos;
 };
 
+fn_((time_Inst_durSince(time_Inst later, time_Inst earlier))(time_Dur)) {
+    return unwrap_(time_Inst_durSinceChkd(later, earlier));
+};
+
+fn_((time_Inst_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur) $scope) {
+    let diff = orelse_((time_Inst_subChkdDur(later, (time_Dur){ .secs = earlier.secs, .nanos = earlier.nanos }))(
+        return_none()
+    ));
+    return_some({ .secs = diff.secs, .nanos = diff.nanos });
+} $unscoped(fn);
+
 op_fn_addWith$(((time_Inst, time_Dur)(lhs, rhs))(time_Inst)) {
     return unwrap_(time_Inst_addChkdDur(lhs, rhs));
 };
@@ -53,17 +64,6 @@ fn_((time_Inst_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst) $scope) {
                   ? lhs.nanos + time_nanos_per_sec - rhs.nanos
                   : lhs.nanos - rhs.nanos;
     return_some((time_Inst){ .secs = secs, .nanos = nanos });
-} $unscoped(fn);
-
-fn_((time_Inst_durSince(time_Inst later, time_Inst earlier))(time_Dur)) {
-    return unwrap_(time_Inst_durSinceChkd(later, earlier));
-};
-
-fn_((time_Inst_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur) $scope) {
-    let diff = orelse_((time_Inst_subChkdDur(later, (time_Dur){ .secs = earlier.secs, .nanos = earlier.nanos }))(
-        return_none()
-    ));
-    return_some({ .secs = diff.secs, .nanos = diff.nanos });
 } $unscoped(fn);
 
 cmp_fn_ord$((time_Inst)(lhs, rhs)) {

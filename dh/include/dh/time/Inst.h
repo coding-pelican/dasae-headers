@@ -22,6 +22,11 @@ $extern fn_((time_Inst_isZero(time_Inst self))(bool));
 /// Return the instant as total nanosecond ticks, truncating on u64 overflow.
 $extern fn_((time_Inst_ticks(time_Inst self))(u64));
 
+/// Return the duration from an earlier instant to a later instant.
+$extern fn_((time_Inst_durSince(time_Inst later, time_Inst earlier))(time_Dur));
+/// Return the duration from an earlier instant to a later instant, or none if ordered backwards.
+$extern fn_((time_Inst_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur));
+
 /// Add a duration to an instant, asserting that the result is representable.
 $extern op_fn_addWith$(((time_Inst, time_Dur)(lhs, rhs))(time_Inst));
 $static op_fn_addWith$(addDur, ((time_Inst, time_Dur)(lhs, rhs))(time_Inst));
@@ -38,10 +43,6 @@ $static op_fn_subAsgWith$(subAsgDur, ((time_Inst, time_Dur)(lhs, rhs))(time_Inst
 $extern fn_((time_Inst_addChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst));
 /// Subtract a duration from an instant, returning none if the result underflows.
 $extern fn_((time_Inst_subChkdDur(time_Inst lhs, time_Dur rhs))(O$time_Inst));
-/// Return the duration from an earlier instant to a later instant.
-$extern fn_((time_Inst_durSince(time_Inst later, time_Inst earlier))(time_Dur));
-/// Return the duration from an earlier instant to a later instant, or none if ordered backwards.
-$extern fn_((time_Inst_durSinceChkd(time_Inst later, time_Inst earlier))(O$time_Dur));
 
 /// Compare two instant values by seconds, then nanoseconds.
 $extern cmp_fn_ord$((time_Inst)(lhs, rhs));

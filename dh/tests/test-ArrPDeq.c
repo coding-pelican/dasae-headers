@@ -455,8 +455,8 @@ T_use$((usize)(
 
 $static fn_((test_ascCtx(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(cmp_Ord)) {
     let c = u_castV$((S_const$u32)(ctx));
-    let l = u_cast((usize)(lhs));
-    let r = u_cast((usize)(rhs));
+    let l = u_cast$((usize)(lhs));
+    let r = u_cast$((usize)(rhs));
     return pri_ord(*S_at((c)[l]), *S_at((c)[r]));
 };
 

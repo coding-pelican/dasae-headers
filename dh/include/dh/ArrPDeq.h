@@ -339,7 +339,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
 #define T_use_ArrPDeq_removeAt$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(ArrPDeq_removeAt, _T)(P$$(ArrPDeq$(_T)) self, usize idx))(_T)) { \
-        return u_cast((_T)(ArrPDeq_removeAt(self->as_raw, idx, u_retV$(_T)))); \
+        return u_cast$((_T)(ArrPDeq_removeAt(self->as_raw, idx, u_retV$(_T)))); \
     }
 
 #define T_use_ArrPDeq_update$(_T...) \

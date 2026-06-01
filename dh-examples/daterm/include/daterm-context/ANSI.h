@@ -83,11 +83,11 @@ typedef struct daterm_ANSI_Cfg { /* clang-format off */
     var_(output_file, fs_File);
     var_(output_mode, daterm_ANSI_OutputMode);
     var_(esc_timeout, time_Dur);
-    var_(input_buf, variant_(()(
+    var_(input_buf, variant_(($fits($packed))(
         (daterm_ANSI_Cfg_input_buf_fixed, S$u8),
         (daterm_ANSI_Cfg_input_buf_owned, struct { var_(cap, usize); }),
     )));
-    var_(report_buf, variant_(()(
+    var_(report_buf, variant_(($fits($packed))(
         (daterm_ANSI_Cfg_report_buf_fixed, S$u8),
         (daterm_ANSI_Cfg_report_buf_owned, struct { var_(cap, usize); }),
     )));

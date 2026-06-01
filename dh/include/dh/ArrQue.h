@@ -207,7 +207,7 @@ $extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
 #define T_use_ArrQue_grip$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(ArrQue_grip, _T)(S$(_T) buf, usize* head, usize* len))(ArrQue_Grip$(_T))) { \
-        return type$((ArrDeq_Grip$(_T))(ArrDeq_grip(u_anyS(buf), head, len))); \
+        return type$((ArrQue_Grip$(_T))(ArrQue_grip(u_anyS(buf), head, len))); \
     }
 #define T_use_ArrQue_Grip_release$(_T...) \
     $attr($inline_always) \
@@ -364,7 +364,7 @@ $extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
 #define T_use_ArrQue_iter$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(ArrQue_iter, _T)(P_const$$(ArrQue$(_T)) self))(ArrQue_Iter$(_T))) { \
-        return ArrQue_iter(self->as_raw, typeInfo$(_T)); \
+        return type$((ArrQue_Iter$(_T))(ArrQue_iter(self->as_raw, typeInfo$(_T)))); \
     }
 #define T_use_ArrQue_Iter_next$(_T...) \
     $attr($inline_always) \

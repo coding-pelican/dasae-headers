@@ -57,9 +57,13 @@ $extern fn_((time_Clock_Inst_durSince(time_Clock_Inst later, time_Clock_Inst ear
 $extern fn_((time_Clock_Inst_durSinceChkd(time_Clock_Inst later, time_Clock_Inst earlier))(O$time_Dur));
 
 $extern op_fn_addWith$(((time_Clock_Inst, time_Dur)(lhs, rhs))(time_Clock_Inst));
+$static op_fn_addWith$(addDur, ((time_Clock_Inst, time_Dur)(lhs, rhs))(time_Clock_Inst));
 $extern op_fn_addAsgWith$(((time_Clock_Inst, time_Dur)(lhs, rhs))(time_Clock_Inst*));
+$static op_fn_addAsgWith$(addAsgDur, ((time_Clock_Inst, time_Dur)(lhs, rhs))(time_Clock_Inst*));
 $extern op_fn_subWith$(((time_Clock_Inst, time_Dur)(lhs, rhs))(time_Clock_Inst));
+$static op_fn_subWith$(subDur, ((time_Clock_Inst, time_Dur)(lhs, rhs))(time_Clock_Inst));
 $extern op_fn_subAsgWith$(((time_Clock_Inst, time_Dur)(lhs, rhs))(time_Clock_Inst*));
+$static op_fn_subAsgWith$(subAsgDur, ((time_Clock_Inst, time_Dur)(lhs, rhs))(time_Clock_Inst*));
 /// Add a duration to an instant, returning none on overflow.
 $extern fn_((time_Clock_Inst_addChkdDur(time_Clock_Inst lhs, time_Dur rhs))(O$time_Clock_Inst));
 /// Subtract a duration from an instant, returning none on underflow.
