@@ -424,12 +424,27 @@ static void test_meta_tables(void) {
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_async_unwind_tables));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_strip));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_icf));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_merge_all_constants));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_stack_protector));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_entry));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_arch));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_abi));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_script));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_preprocessed));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_asm));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_map));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_linked_asm));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_disasm));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_ir));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_debug_info));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_disasm_demangle));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_disasm_source));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_disasm_line_numbers));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_disasm_symbolize_operands));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_disasm_raw_insn));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_save_temps));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_print_link_gc));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_analysis_artifacts));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_core));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_prefix));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_suffix));
@@ -519,11 +534,25 @@ static void test_cmd_parse(void) {
             "--async-unwind-tables=off",
             "--strip",
             "--icf=all",
+            "--merge-all-constants",
+            "--stack-protector=off",
+            "--emit-map=build/app.map",
+            "--emit-linked-asm",
+            "--emit-disasm=build/app.disasm.s",
+            "--emit-ir=build/app.ll",
+            "--emit-debug-info=build/app.debug.txt",
+            "--disasm-demangle=on",
+            "--disasm-source=off",
+            "--disasm-line-numbers=on",
+            "--disasm-symbolize-operands=on",
+            "--disasm-raw-insn=off",
+            "--save-temps=obj",
+            "--analysis-artifacts",
             "--link-crt=off",
             "--entry=custom_entry",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(25, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(39, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(cmd->opts.dsl_mode == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.compile_env == dal_c_CompileEnv_freestanding);
@@ -541,8 +570,33 @@ static void test_cmd_parse(void) {
         TEST_ASSERT(cmd->opts.async_unwind_tables == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.strip_mode == dal_c_ToggleState_enabled);
         TEST_ASSERT(cmd->opts.icf_mode == dal_c_IcfMode_all);
+        TEST_ASSERT(cmd->opts.merge_all_constants == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->opts.stack_protector == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->payload.build.emit_map);
+        TEST_ASSERT(str_eql(cmd->payload.build.emit_map_path, "build/app.map"));
+        TEST_ASSERT(cmd->payload.build.emit_linked_asm);
+        TEST_ASSERT(cmd->payload.build.emit_linked_asm_path == NULL);
+        TEST_ASSERT(cmd->payload.build.emit_disasm);
+        TEST_ASSERT(str_eql(cmd->payload.build.emit_disasm_path, "build/app.disasm.s"));
+        TEST_ASSERT(cmd->payload.build.emit_ir);
+        TEST_ASSERT(str_eql(cmd->payload.build.emit_ir_path, "build/app.ll"));
+        TEST_ASSERT(cmd->payload.build.emit_debug_info);
+        TEST_ASSERT(str_eql(cmd->payload.build.emit_debug_info_path, "build/app.debug.txt"));
+        TEST_ASSERT(cmd->payload.build.disasm_demangle == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->payload.build.disasm_source == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->payload.build.disasm_line_numbers == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->payload.build.disasm_symbolize_operands == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->payload.build.disasm_raw_insn == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->payload.build.save_temps == dal_c_SaveTempsMode_obj);
+        TEST_ASSERT(cmd->payload.build.analysis_artifacts);
         TEST_ASSERT(str_eql(cmd->opts.entry_symbol, "custom_entry"));
         dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "run", "optimize", "sample.c", "--emit-asm", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(5, argv);
+        TEST_ASSERT(cmd == NULL);
     }
 
     {
@@ -795,10 +849,14 @@ static void test_makefile_mode_contracts(void) {
             "--async-unwind-tables=off",
             "--strip",
             "--icf=all",
+            "--merge-all-constants",
+            "--stack-protector=off",
+            "--emit-map=build/mode-contract.map",
+            "--save-temps=obj",
             "--entry=custom_entry",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(15, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(19, argv);
         const dal_c_ProfileSpec* profile = NULL;
         char* build_dir = NULL;
         char* profile_dir = NULL;
@@ -841,6 +899,9 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, " -fdata-sections") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -fno-unwind-tables") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -fno-asynchronous-unwind-tables") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -fmerge-all-constants") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -fno-stack-protector") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -save-temps=obj") != NULL);
         TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -ffreestanding") != NULL);
         TEST_ASSERT(strstr(makefile_text, "$(CC) $(CFLAGS_PCH) -MMD -MP -MF $(PCH_DEP) -x c-header $< -o $@") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") != NULL);
@@ -850,6 +911,7 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, " -Wl,--whole-archive") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wl,--no-whole-archive") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wl,--gc-sections") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wl,-Map=build/mode-contract.map") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wl,--strip-all") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wl,--icf=all") != NULL);
 #ifdef _WIN32
@@ -1369,8 +1431,26 @@ static void test_makefile_mode_contracts(void) {
             "--emit-asm",
             NULL
         };
+        const char* analysis_argv[] = {
+            dal_c_tool_name,
+            "build",
+            "release",
+            "--icf=safe",
+            "--emit-map",
+            "--emit-linked-asm",
+            "--emit-disasm",
+            "--emit-ir",
+            "--emit-debug-info",
+            "--disasm-demangle=on",
+            "--disasm-source=off",
+            "--disasm-line-numbers=on",
+            "--disasm-symbolize-operands=on",
+            "--disasm-raw-insn=off",
+            NULL
+        };
         dal_c_Cmd* emit_cmd = dal_c_Cmd_parse(6, emit_argv);
         dal_c_Cmd* asm_cmd = dal_c_Cmd_parse(4, asm_argv);
+        dal_c_Cmd* analysis_cmd = dal_c_Cmd_parse(14, analysis_argv);
         char* build_dir = NULL;
         char* profile_dir = NULL;
         char* object_dir = NULL;
@@ -1381,6 +1461,7 @@ static void test_makefile_mode_contracts(void) {
 
         TEST_ASSERT(emit_cmd != NULL);
         TEST_ASSERT(asm_cmd != NULL);
+        TEST_ASSERT(analysis_cmd != NULL);
         TEST_ASSERT(single_source != NULL);
         ArrStr_push(single_source, main_source);
 
@@ -1410,6 +1491,66 @@ static void test_makefile_mode_contracts(void) {
             TEST_ASSERT(strstr(makefile_text, "$(TARGET): $(SRC)") != NULL);
             TEST_ASSERT(strstr(makefile_text, "TARGET_ARCH_FLAGS = -march=rv32im") != NULL);
             TEST_ASSERT(strstr(makefile_text, "TARGET_ABI_FLAGS = -mabi=ilp32") != NULL);
+
+            free(makefile_text);
+            free(makefile_path);
+            free(target_path);
+            free(object_dir);
+            free(profile_dir);
+            free(build_dir);
+            makefile_text = NULL;
+            makefile_path = NULL;
+            target_path = NULL;
+            object_dir = NULL;
+            profile_dir = NULL;
+            build_dir = NULL;
+        }
+
+        {
+            const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(analysis_cmd->opts.profile);
+            TEST_ASSERT(profile != NULL);
+            build_dir = dal_c_Project_getBuildDir(proj);
+            profile_dir = path_join(build_dir, profile->name);
+            object_dir = path_join(profile_dir, "obj");
+            TEST_ASSERT(build_dir != NULL);
+            TEST_ASSERT(profile_dir != NULL);
+            TEST_ASSERT(object_dir != NULL);
+            TEST_ASSERT(dir_createRecur(object_dir));
+
+            target_path = dal_c__resolveOutputPath(proj, analysis_cmd, profile_dir, "probe", dal_c_Target_executable);
+            TEST_ASSERT(target_path != NULL);
+            makefile_path = dal_c__makePlanFilePath(proj, profile, analysis_cmd, target_path, dal_c_Target_executable);
+            TEST_ASSERT(makefile_path != NULL);
+            TEST_ASSERT(dal_c__generateMakefile(analysis_cmd, proj, profile, single_source, target_path, object_dir, dal_c_Target_executable) == 0);
+            makefile_text = file_read(makefile_path);
+            TEST_ASSERT(makefile_text != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -Wl,-Map=") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "LINKED_ASM = ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "DISASM = ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "DISASM_TARGET = ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "DISASM_INPUT = $(DISASM_TARGET)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "OBJS_SHELL = $(subst \\,/,$(OBJS))") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "LDFLAGS_SHELL = $(subst \\,/,$(LDFLAGS))") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "COMMA = ,") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "LDFLAGS_DISASM = $(filter-out -Wl$(COMMA)--strip-all,$(LDFLAGS))") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "LDFLAGS_DISASM_SHELL = $(subst \\,/,$(LDFLAGS_DISASM))") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "IR = ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "DEBUG_INFO = ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(LINKED_ASM)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(DISASM_TARGET)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(DISASM)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(IR)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(DEBUG_INFO)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -Wl,--lto-emit-asm") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "$(CC) $(OBJS_SHELL) -o \"$(subst \\,/,$@)\" $(LDFLAGS_DISASM_SHELL)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "llvm-objdump -d --demangle --line-numbers --symbolize-operands --no-show-raw-insn \"$(subst \\,/,$(DISASM_INPUT))\" > \"$(subst \\,/,$@)\"") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -S -emit-llvm $(firstword $(SRCS)) -o \"$(subst \\,/,$@)\"") != NULL);
+#ifdef _WIN32
+            TEST_ASSERT(strstr(makefile_text, "PDB = ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "llvm-pdbutil dump -symbols -globals -publics \"$(subst \\,/,$(PDB))\" > \"$(subst \\,/,$@)\"") != NULL);
+#else
+            TEST_ASSERT(strstr(makefile_text, "llvm-dwarfdump --debug-info --debug-line \"$(subst \\,/,$(TARGET))\" > \"$(subst \\,/,$@)\"") != NULL);
+#endif
 
             free(makefile_text);
             free(makefile_path);
@@ -1458,6 +1599,7 @@ static void test_makefile_mode_contracts(void) {
         }
 
         ArrStr_fini(&single_source);
+        dal_c_Cmd_cleanup(&analysis_cmd);
         dal_c_Cmd_cleanup(&asm_cmd);
         dal_c_Cmd_cleanup(&emit_cmd);
     }

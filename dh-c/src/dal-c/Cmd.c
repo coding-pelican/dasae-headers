@@ -173,6 +173,11 @@ void dal_c_Cmd_cleanup(dal_c_Cmd** self) {
     case dal_c_CmdAction_build:
         free(cmd->payload.build.target_path);
         free(cmd->payload.build.output_path);
+        free(cmd->payload.build.emit_map_path);
+        free(cmd->payload.build.emit_linked_asm_path);
+        free(cmd->payload.build.emit_disasm_path);
+        free(cmd->payload.build.emit_ir_path);
+        free(cmd->payload.build.emit_debug_info_path);
         break;
     case dal_c_CmdAction_lib:
         free(cmd->payload.lib.target_path);
@@ -306,6 +311,21 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_strip)) {
         if (!has_toggle) { *handled = false; }
         else { cmd->opts.strip_mode = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_demangle)) {
+        if (!has_toggle) { *handled = false; }
+        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_demangle = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_source)) {
+        if (!has_toggle) { *handled = false; }
+        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_source = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_line_numbers)) {
+        if (!has_toggle) { *handled = false; }
+        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_line_numbers = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_symbolize_operands)) {
+        if (!has_toggle) { *handled = false; }
+        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_symbolize_operands = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_raw_insn)) {
+        if (!has_toggle) { *handled = false; }
+        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_raw_insn = toggle; }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_freestanding)) {
         if (!has_bool) { *handled = false; }
         else {
@@ -347,6 +367,24 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
     }
 #undef dal_c_Cmd__OPT_IS
     return 0;
+}
+
+static void dal_c_Cmd__setArtifactPath(char** slot, bool* enabled, const char* value) {
+    assert(slot != NULL);
+    assert(enabled != NULL);
+    *enabled = true;
+    if (value && value[0] != '\0') {
+        dal_c_Cmd__setOwnedString(slot, value);
+    }
+}
+
+static void dal_c_Cmd__enableAnalysisArtifacts(dal_c_Cmd* cmd) {
+    assert(cmd != NULL);
+    if (cmd->action != dal_c_CmdAction_build) { return; }
+    cmd->payload.build.analysis_artifacts = true;
+    cmd->payload.build.emit_map = true;
+    cmd->payload.build.emit_linked_asm = true;
+    cmd->payload.build.emit_disasm = true;
 }
 
 static dal_c_Target dal_c_Cmd__resolveBuildTargetType(const dal_c_Cmd* cmd, dal_c_Linking linking, bool builds_library) {
@@ -393,6 +431,16 @@ static int dal_c_Cmd__validateCanonicalModifiers(const dal_c_Cmd* cmd) {
     }
     if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_preprocessed && cmd->payload.build.emit_asm) {
         (void)fprintf(stderr, "Error: `build` cannot combine `--emit-preprocessed` and `--emit-asm`\n");
+        return 1;
+    }
+    if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_preprocessed
+        && (cmd->payload.build.emit_map || cmd->payload.build.emit_linked_asm || cmd->payload.build.emit_disasm)) {
+        (void)fprintf(stderr, "Error: `build` cannot combine `--emit-preprocessed` with linked artifact outputs\n");
+        return 1;
+    }
+    if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_asm
+        && (cmd->payload.build.emit_map || cmd->payload.build.emit_linked_asm || cmd->payload.build.emit_disasm)) {
+        (void)fprintf(stderr, "Error: `build` cannot combine `--emit-asm` with linked artifact outputs\n");
         return 1;
     }
     if (cmd->action == dal_c_CmdAction_build
@@ -1256,10 +1304,20 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_async_unwind_tables)
             || str_eql(opt, dal_c_opt_strip)
             || str_eql(opt, dal_c_opt_icf)
+            || str_eql(opt, dal_c_opt_merge_all_constants)
+            || str_eql(opt, dal_c_opt_stack_protector)
             || str_eql(opt, dal_c_opt_loose_errors)
             || (str_eql(opt, dal_c_opt_image) && action == dal_c_CmdAction_build)
             || (str_eql(opt, dal_c_opt_emit_preprocessed) && action == dal_c_CmdAction_build)
             || (str_eql(opt, dal_c_opt_emit_asm) && action == dal_c_CmdAction_build)
+            || (str_eql(opt, dal_c_opt_emit_map) && action == dal_c_CmdAction_build)
+            || (str_eql(opt, dal_c_opt_emit_linked_asm) && action == dal_c_CmdAction_build)
+            || (str_eql(opt, dal_c_opt_emit_disasm) && action == dal_c_CmdAction_build)
+            || (str_eql(opt, dal_c_opt_emit_ir) && action == dal_c_CmdAction_build)
+            || (str_eql(opt, dal_c_opt_emit_debug_info) && action == dal_c_CmdAction_build)
+            || (str_eql(opt, dal_c_opt_save_temps) && action == dal_c_CmdAction_build)
+            || (str_eql(opt, dal_c_opt_print_link_gc) && action == dal_c_CmdAction_build)
+            || (str_eql(opt, dal_c_opt_analysis_artifacts) && action == dal_c_CmdAction_build)
             || str_eql(opt, dal_c_opt_version_core)
             || str_eql(opt, dal_c_opt_version_prefix)
             || str_eql(opt, dal_c_opt_version_suffix)
@@ -1293,10 +1351,25 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_async_unwind_tables)
             || str_startsWith(opt, dal_c_opt_strip)
             || str_startsWith(opt, dal_c_opt_icf)
+            || str_startsWith(opt, dal_c_opt_merge_all_constants)
+            || str_startsWith(opt, dal_c_opt_stack_protector)
             || str_startsWith(opt, dal_c_opt_loose_errors)
-            || str_startsWith(opt, dal_c_opt_image)
-            || str_startsWith(opt, dal_c_opt_emit_preprocessed)
-            || str_startsWith(opt, dal_c_opt_emit_asm)
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_image))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_preprocessed))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_asm))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_map))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_linked_asm))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_disasm))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_ir))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_debug_info))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_demangle))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_source))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_line_numbers))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_symbolize_operands))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_raw_insn))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_save_temps))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_print_link_gc))
+            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_analysis_artifacts))
             || str_startsWith(opt, dal_c_opt_version_core)
             || str_startsWith(opt, dal_c_opt_version_prefix)
             || str_startsWith(opt, dal_c_opt_version_suffix)
@@ -1470,6 +1543,94 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     cmd->opts.icf_mode = mode;
+                } else if (strncmp(opt, dal_c_opt_merge_all_constants, opt_len) == 0) {
+                    dal_c_ToggleState toggle = dal_c_ToggleState_parse(value);
+                    if (toggle == dal_c_ToggleState_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_merge_all_constants, value);
+                        return 1;
+                    }
+                    cmd->opts.merge_all_constants = toggle;
+                } else if (strncmp(opt, dal_c_opt_stack_protector, opt_len) == 0) {
+                    dal_c_ToggleState toggle = dal_c_ToggleState_parse(value);
+                    if (toggle == dal_c_ToggleState_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_stack_protector, value);
+                        return 1;
+                    }
+                    cmd->opts.stack_protector = toggle;
+                } else if (strncmp(opt, dal_c_opt_emit_map, opt_len) == 0) {
+                    dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_map_path, &cmd->payload.build.emit_map, value);
+                } else if (strncmp(opt, dal_c_opt_emit_linked_asm, opt_len) == 0) {
+                    dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_linked_asm_path, &cmd->payload.build.emit_linked_asm, value);
+                } else if (strncmp(opt, dal_c_opt_emit_disasm, opt_len) == 0) {
+                    dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_disasm_path, &cmd->payload.build.emit_disasm, value);
+                } else if (strncmp(opt, dal_c_opt_emit_ir, opt_len) == 0) {
+                    dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_ir_path, &cmd->payload.build.emit_ir, value);
+                } else if (strncmp(opt, dal_c_opt_emit_debug_info, opt_len) == 0) {
+                    dal_c_Cmd__setArtifactPath(
+                        &cmd->payload.build.emit_debug_info_path,
+                        &cmd->payload.build.emit_debug_info,
+                        value
+                    );
+                } else if (strncmp(opt, dal_c_opt_disasm_demangle, opt_len) == 0) {
+                    dal_c_ToggleState toggle = dal_c_ToggleState_parse(value);
+                    if (toggle == dal_c_ToggleState_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_disasm_demangle, value);
+                        return 1;
+                    }
+                    cmd->payload.build.disasm_demangle = toggle;
+                } else if (strncmp(opt, dal_c_opt_disasm_source, opt_len) == 0) {
+                    dal_c_ToggleState toggle = dal_c_ToggleState_parse(value);
+                    if (toggle == dal_c_ToggleState_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_disasm_source, value);
+                        return 1;
+                    }
+                    cmd->payload.build.disasm_source = toggle;
+                } else if (strncmp(opt, dal_c_opt_disasm_line_numbers, opt_len) == 0) {
+                    dal_c_ToggleState toggle = dal_c_ToggleState_parse(value);
+                    if (toggle == dal_c_ToggleState_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_disasm_line_numbers, value);
+                        return 1;
+                    }
+                    cmd->payload.build.disasm_line_numbers = toggle;
+                } else if (strncmp(opt, dal_c_opt_disasm_symbolize_operands, opt_len) == 0) {
+                    dal_c_ToggleState toggle = dal_c_ToggleState_parse(value);
+                    if (toggle == dal_c_ToggleState_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_disasm_symbolize_operands, value);
+                        return 1;
+                    }
+                    cmd->payload.build.disasm_symbolize_operands = toggle;
+                } else if (strncmp(opt, dal_c_opt_disasm_raw_insn, opt_len) == 0) {
+                    dal_c_ToggleState toggle = dal_c_ToggleState_parse(value);
+                    if (toggle == dal_c_ToggleState_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_disasm_raw_insn, value);
+                        return 1;
+                    }
+                    cmd->payload.build.disasm_raw_insn = toggle;
+                } else if (strncmp(opt, dal_c_opt_save_temps, opt_len) == 0) {
+                    dal_c_SaveTempsMode mode = dal_c_SaveTempsMode_parse(value);
+                    if (!str_eql(value, dal_c_save_temps_off) && mode == dal_c_SaveTempsMode_off) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_save_temps, value);
+                        return 1;
+                    }
+                    cmd->payload.build.save_temps = mode;
+                } else if (strncmp(opt, dal_c_opt_print_link_gc, opt_len) == 0) {
+                    bool enabled = false;
+                    if (!dal_c_Cmd__tryParseBoolValue(value, &enabled)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_print_link_gc, value);
+                        return 1;
+                    }
+                    cmd->payload.build.print_link_gc = enabled;
+                } else if (strncmp(opt, dal_c_opt_analysis_artifacts, opt_len) == 0) {
+                    bool enabled = false;
+                    if (!dal_c_Cmd__tryParseBoolValue(value, &enabled)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_analysis_artifacts, value);
+                        return 1;
+                    }
+                    if (enabled) {
+                        dal_c_Cmd__enableAnalysisArtifacts(cmd);
+                    } else {
+                        cmd->payload.build.analysis_artifacts = false;
+                    }
                 } else if (strncmp(opt, dal_c_opt_args, opt_len) == 0) {
                     char** run_args_slot = dal_c_Cmd__runArgsSlot(cmd);
                     if (run_args_slot) {
@@ -1628,6 +1789,36 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     if (cmd->action == dal_c_CmdAction_build) {
                         cmd->payload.build.emit_asm = true;
                     }
+                } else if (str_eql(opt, dal_c_opt_emit_map)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_map_path, &cmd->payload.build.emit_map, NULL);
+                    }
+                } else if (str_eql(opt, dal_c_opt_emit_linked_asm)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_linked_asm_path, &cmd->payload.build.emit_linked_asm, NULL);
+                    }
+                } else if (str_eql(opt, dal_c_opt_emit_disasm)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_disasm_path, &cmd->payload.build.emit_disasm, NULL);
+                    }
+                } else if (str_eql(opt, dal_c_opt_emit_ir)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_ir_path, &cmd->payload.build.emit_ir, NULL);
+                    }
+                } else if (str_eql(opt, dal_c_opt_emit_debug_info)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        dal_c_Cmd__setArtifactPath(
+                            &cmd->payload.build.emit_debug_info_path,
+                            &cmd->payload.build.emit_debug_info,
+                            NULL
+                        );
+                    }
+                } else if (str_eql(opt, dal_c_opt_print_link_gc)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        cmd->payload.build.print_link_gc = true;
+                    }
+                } else if (str_eql(opt, dal_c_opt_analysis_artifacts)) {
+                    dal_c_Cmd__enableAnalysisArtifacts(cmd);
                 } else if (str_eql(opt, dal_c_opt_exclude)) {
                     if (i + 1 >= argc) {
                         (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
@@ -1674,6 +1865,42 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     cmd->opts.strip_mode = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_icf)) {
                     cmd->opts.icf_mode = dal_c_IcfMode_all;
+                } else if (str_eql(opt, dal_c_opt_merge_all_constants)) {
+                    cmd->opts.merge_all_constants = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_stack_protector)) {
+                    cmd->opts.stack_protector = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_disasm_demangle)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        cmd->payload.build.disasm_demangle = dal_c_ToggleState_enabled;
+                    }
+                } else if (str_eql(opt, dal_c_opt_disasm_source)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        cmd->payload.build.disasm_source = dal_c_ToggleState_enabled;
+                    }
+                } else if (str_eql(opt, dal_c_opt_disasm_line_numbers)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        cmd->payload.build.disasm_line_numbers = dal_c_ToggleState_enabled;
+                    }
+                } else if (str_eql(opt, dal_c_opt_disasm_symbolize_operands)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        cmd->payload.build.disasm_symbolize_operands = dal_c_ToggleState_enabled;
+                    }
+                } else if (str_eql(opt, dal_c_opt_disasm_raw_insn)) {
+                    if (cmd->action == dal_c_CmdAction_build) {
+                        cmd->payload.build.disasm_raw_insn = dal_c_ToggleState_enabled;
+                    }
+                } else if (str_eql(opt, dal_c_opt_save_temps)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    dal_c_SaveTempsMode mode = dal_c_SaveTempsMode_parse(argv[i + 1]);
+                    if (!str_eql(argv[i + 1], dal_c_save_temps_off) && mode == dal_c_SaveTempsMode_off) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_save_temps, argv[i + 1]);
+                        return 1;
+                    }
+                    cmd->payload.build.save_temps = mode;
+                    ++i;
                 } else if (str_eql(opt, dal_c_opt_loose_errors)) {
                     cmd->opts.loose_errors = true;
                 } else if (str_eql(opt, dal_c_opt_entry)) {

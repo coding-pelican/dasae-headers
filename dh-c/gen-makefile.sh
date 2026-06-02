@@ -39,6 +39,11 @@ UNWIND_TABLES ?= profile
 ASYNC_UNWIND_TABLES ?= profile
 STRIP ?= profile
 ICF ?= profile
+MERGE_ALL_CONSTANTS ?= auto
+STACK_PROTECTOR ?= auto
+SAVE_TEMPS ?= off
+EMIT_MAP ?= off
+MAP_PATH ?=
 EXTRA_LIBS ?=
 
 # Directories
@@ -299,6 +304,33 @@ else ifneq ($(RESOLVED_ASYNC_UNWIND_TABLES),auto)
     $(error Unsupported ASYNC_UNWIND_TABLES '$(ASYNC_UNWIND_TABLES)')
 endif
 
+ifeq ($(MERGE_ALL_CONSTANTS),on)
+    PROFILE_CFLAGS += -fmerge-all-constants
+else ifeq ($(MERGE_ALL_CONSTANTS),off)
+    PROFILE_CFLAGS += -fno-merge-all-constants
+else ifeq ($(MERGE_ALL_CONSTANTS),auto)
+else
+    $(error Unsupported MERGE_ALL_CONSTANTS '$(MERGE_ALL_CONSTANTS)')
+endif
+
+ifeq ($(STACK_PROTECTOR),on)
+    PROFILE_CFLAGS += -fstack-protector-strong
+else ifeq ($(STACK_PROTECTOR),off)
+    PROFILE_CFLAGS += -fno-stack-protector
+else ifeq ($(STACK_PROTECTOR),auto)
+else
+    $(error Unsupported STACK_PROTECTOR '$(STACK_PROTECTOR)')
+endif
+
+ifeq ($(SAVE_TEMPS),cwd)
+    PROFILE_CFLAGS += -save-temps=cwd
+else ifeq ($(SAVE_TEMPS),obj)
+    PROFILE_CFLAGS += -save-temps=obj
+else ifeq ($(SAVE_TEMPS),off)
+else
+    $(error Unsupported SAVE_TEMPS '$(SAVE_TEMPS)')
+endif
+
 ifeq ($(RESOLVED_STRIP),on)
     PROFILE_LDFLAGS += -Wl,--strip-all
 else ifeq ($(RESOLVED_STRIP),off)
@@ -315,6 +347,13 @@ else ifeq ($(RESOLVED_ICF),off)
 else ifeq ($(RESOLVED_ICF),auto)
 else
     $(error Unsupported ICF '$(ICF)')
+endif
+
+ifeq ($(EMIT_MAP),on)
+    PROFILE_LDFLAGS += -Wl,-Map=$(if $(strip $(MAP_PATH)),$(MAP_PATH),$(BUILD_DIR)/dh-c.map)
+else ifeq ($(EMIT_MAP),off)
+else
+    $(error Unsupported EMIT_MAP '$(EMIT_MAP)')
 endif
 
 LINK_LIBS = $(EXTRA_LIBS)

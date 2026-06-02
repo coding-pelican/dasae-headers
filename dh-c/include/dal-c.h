@@ -168,6 +168,29 @@ static inline const char* dal_c_IcfMode_format(dal_c_IcfMode mode) {
     }
 }
 
+typedef enum dal_c_SaveTempsMode {
+    dal_c_SaveTempsMode_off = 0,
+    dal_c_SaveTempsMode_cwd = 1,
+    dal_c_SaveTempsMode_obj = 2,
+} dal_c_SaveTempsMode;
+#define dal_c_save_temps_off "off"
+#define dal_c_save_temps_cwd "cwd"
+#define dal_c_save_temps_obj "obj"
+static inline dal_c_SaveTempsMode dal_c_SaveTempsMode_parse(const char* str) {
+    if (str_eql(str, dal_c_save_temps_off) || str_eql(str, dal_c_boolean_false) || str_eql(str, "no") || str_eql(str, "0")) { return dal_c_SaveTempsMode_off; }
+    if (str_eql(str, dal_c_save_temps_cwd) || str_eql(str, dal_c_boolean_true) || str_eql(str, dal_c_boolean_on) || str_eql(str, "1")) { return dal_c_SaveTempsMode_cwd; }
+    if (str_eql(str, dal_c_save_temps_obj)) { return dal_c_SaveTempsMode_obj; }
+    return dal_c_SaveTempsMode_off;
+}
+static inline const char* dal_c_SaveTempsMode_format(dal_c_SaveTempsMode mode) {
+    switch (mode) {
+    case dal_c_SaveTempsMode_off: return dal_c_save_temps_off;
+    case dal_c_SaveTempsMode_cwd: return dal_c_save_temps_cwd;
+    case dal_c_SaveTempsMode_obj: return dal_c_save_temps_obj;
+    default: return NULL;
+    }
+}
+
 /// === COMPILE ENVIRONMENT ===
 
 typedef enum dal_c_CompileEnv {
@@ -727,6 +750,21 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_async_unwind_tables "async-unwind-tables"
 #define dal_c_opt_strip "strip"
 #define dal_c_opt_icf "icf"
+#define dal_c_opt_merge_all_constants "merge-all-constants"
+#define dal_c_opt_stack_protector "stack-protector"
+#define dal_c_opt_emit_map "emit-map"
+#define dal_c_opt_emit_linked_asm "emit-linked-asm"
+#define dal_c_opt_emit_disasm "emit-disasm"
+#define dal_c_opt_emit_ir "emit-ir"
+#define dal_c_opt_emit_debug_info "emit-debug-info"
+#define dal_c_opt_disasm_demangle "disasm-demangle"
+#define dal_c_opt_disasm_source "disasm-source"
+#define dal_c_opt_disasm_line_numbers "disasm-line-numbers"
+#define dal_c_opt_disasm_symbolize_operands "disasm-symbolize-operands"
+#define dal_c_opt_disasm_raw_insn "disasm-raw-insn"
+#define dal_c_opt_save_temps "save-temps"
+#define dal_c_opt_print_link_gc "print-link-gc"
+#define dal_c_opt_analysis_artifacts "analysis-artifacts"
 #define dal_c_opt_entry "entry"
 #define dal_c_opt_image "image"
 #define dal_c_opt_emit_preprocessed "emit-preprocessed"
@@ -854,6 +892,8 @@ typedef struct dal_c_CompilerOpts {
     dal_c_ToggleState async_unwind_tables; // --async-unwind-tables=<auto|on|off>
     dal_c_ToggleState strip_mode; // --strip=<auto|on|off>
     dal_c_IcfMode icf_mode; // --icf=<off|safe|all>
+    dal_c_ToggleState merge_all_constants; // --merge-all-constants=<auto|on|off>
+    dal_c_ToggleState stack_protector; // --stack-protector=<auto|on|off>
     bool loose_errors; // --loose-errors
     dal_c_VersionSpec version; // project/file/CLI version contract
 } dal_c_CompilerOpts;
@@ -894,6 +934,24 @@ typedef struct dal_c_BuildOpts {
     bool as_image; // --image
     bool emit_preprocessed; // --emit-preprocessed
     bool emit_asm; // --emit-asm
+    bool emit_map; // --emit-map[=<path>]
+    bool emit_linked_asm; // --emit-linked-asm[=<path>]
+    bool emit_disasm; // --emit-disasm[=<path>]
+    bool emit_ir; // --emit-ir[=<path>]
+    bool emit_debug_info; // --emit-debug-info[=<path>]
+    bool print_link_gc; // --print-link-gc
+    bool analysis_artifacts; // --analysis-artifacts
+    char* emit_map_path;
+    char* emit_linked_asm_path;
+    char* emit_disasm_path;
+    char* emit_ir_path;
+    char* emit_debug_info_path;
+    dal_c_ToggleState disasm_demangle; // --disasm-demangle=<auto|on|off>
+    dal_c_ToggleState disasm_source; // --disasm-source=<auto|on|off>
+    dal_c_ToggleState disasm_line_numbers; // --disasm-line-numbers=<auto|on|off>
+    dal_c_ToggleState disasm_symbolize_operands; // --disasm-symbolize-operands=<auto|on|off>
+    dal_c_ToggleState disasm_raw_insn; // --disasm-raw-insn=<auto|on|off>
+    dal_c_SaveTempsMode save_temps; // --save-temps=<off|cwd|obj>
     dal_c_Linking linking; // --static or --shared
     bool dsl_first; // --dsl
 } dal_c_BuildOpts;
@@ -1175,6 +1233,8 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_async_unwind_tables dal_c_opt_value_sep "<auto|on|off>", "Override asynchronous unwind table emission (`-fno-asynchronous-unwind-tables` when off)" },
     { dal_c_opt_prefix_long dal_c_opt_strip dal_c_opt_value_sep "<auto|on|off>", "Strip linked binary symbols (`-Wl,--strip-all` when on)" },
     { dal_c_opt_prefix_long dal_c_opt_icf dal_c_opt_value_sep "<auto|off|safe|all>", "Enable linker identical code folding (`-Wl,--icf=<mode>`)" },
+    { dal_c_opt_prefix_long dal_c_opt_merge_all_constants dal_c_opt_value_sep "<auto|on|off>", "Emit or omit Clang constant merging flags" },
+    { dal_c_opt_prefix_long dal_c_opt_stack_protector dal_c_opt_value_sep "<auto|on|off>", "Emit stack protector flags (`-fstack-protector-strong` or `-fno-stack-protector`)" },
     { dal_c_opt_prefix_long dal_c_opt_entry dal_c_opt_value_sep "<symbol>", "Override linker entry symbol" },
     { dal_c_opt_prefix_long dal_c_opt_target_arch dal_c_opt_value_sep "<arch>", "Target architecture sub-variant passed to compiler and linker (for example `rv32im`)" },
     { dal_c_opt_prefix_long dal_c_opt_target_abi dal_c_opt_value_sep "<abi>", "Target ABI passed to compiler and linker (for example `ilp32`)" },
@@ -1210,6 +1270,19 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_image, "Build the target as a freestanding image and emit a raw binary via objcopy" },
     { dal_c_opt_prefix_long dal_c_opt_emit_preprocessed, "Emit the selected translation unit as a preprocessed `.i` file instead of linking" },
     { dal_c_opt_prefix_long dal_c_opt_emit_asm, "Emit the selected translation unit as `.s`; with `-flto`, clang emits LLVM IR instead of post-LTO machine assembly" },
+    { dal_c_opt_prefix_long dal_c_opt_emit_map "[=<path>]", "Emit a linker map file for linked outputs" },
+    { dal_c_opt_prefix_long dal_c_opt_emit_linked_asm "[=<path>]", "Emit post-LTO linked assembly via the linker" },
+    { dal_c_opt_prefix_long dal_c_opt_emit_disasm "[=<path>]", "Emit an objdump disassembly file after linking" },
+    { dal_c_opt_prefix_long dal_c_opt_emit_ir "[=<path>]", "Emit LLVM IR for the selected translation unit" },
+    { dal_c_opt_prefix_long dal_c_opt_emit_debug_info "[=<path>]", "Emit debug-info metadata useful when reading disassembly" },
+    { dal_c_opt_prefix_long dal_c_opt_disasm_demangle dal_c_opt_value_sep "<auto|on|off>", "Control demangling for emitted disassembly" },
+    { dal_c_opt_prefix_long dal_c_opt_disasm_source dal_c_opt_value_sep "<auto|on|off>", "Control source interleaving for emitted disassembly" },
+    { dal_c_opt_prefix_long dal_c_opt_disasm_line_numbers dal_c_opt_value_sep "<auto|on|off>", "Control line numbers for emitted disassembly" },
+    { dal_c_opt_prefix_long dal_c_opt_disasm_symbolize_operands dal_c_opt_value_sep "<auto|on|off>", "Control operand symbolization for emitted disassembly" },
+    { dal_c_opt_prefix_long dal_c_opt_disasm_raw_insn dal_c_opt_value_sep "<auto|on|off>", "Control raw instruction bytes for emitted disassembly" },
+    { dal_c_opt_prefix_long dal_c_opt_save_temps dal_c_opt_value_sep "<off|cwd|obj>", "Ask Clang to preserve intermediate compilation files" },
+    { dal_c_opt_prefix_long dal_c_opt_print_link_gc, "Ask the linker to print removed sections when supported" },
+    { dal_c_opt_prefix_long dal_c_opt_analysis_artifacts, "Emit the standard linked analysis artifact bundle" },
     { dal_c_opt_prefix_long dal_c_opt_static, "Select static library kind when used with --lib" },
     { dal_c_opt_prefix_long dal_c_opt_shared, "Select shared library kind when used with --lib" },
     { dal_c_opt_prefix_long dal_c_opt_sample, "Build the project `samples` target family" },

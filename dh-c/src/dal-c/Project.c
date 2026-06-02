@@ -206,6 +206,8 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->async_unwind_tables != dal_c_ToggleState_auto) { dst->async_unwind_tables = src->async_unwind_tables; }
     if (src->strip_mode != dal_c_ToggleState_auto) { dst->strip_mode = src->strip_mode; }
     if (src->icf_mode != dal_c_IcfMode_auto) { dst->icf_mode = src->icf_mode; }
+    if (src->merge_all_constants != dal_c_ToggleState_auto) { dst->merge_all_constants = src->merge_all_constants; }
+    if (src->stack_protector != dal_c_ToggleState_auto) { dst->stack_protector = src->stack_protector; }
     dst->loose_errors = dst->loose_errors || src->loose_errors;
     dal_c_VersionSpec_merge(&dst->version, &src->version);
 
@@ -988,6 +990,10 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         opts->strip_mode = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_icf)) {
         opts->icf_mode = dal_c_IcfMode_parse(value);
+    } else if (str_eql(key, dal_c_opt_merge_all_constants)) {
+        opts->merge_all_constants = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_stack_protector)) {
+        opts->stack_protector = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_loose_errors)) {
         opts->loose_errors = dal_c_Project__isTrue(value);
     }
