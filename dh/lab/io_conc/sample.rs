@@ -31,8 +31,9 @@ async fn count(
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
-    println!("begin");
+    let run_start = Instant::now();
 
+    println!("begin");
     let (started_a_tx, started_a_rx) = oneshot::channel();
     let (started_b_tx, started_b_rx) = oneshot::channel();
 
@@ -52,8 +53,10 @@ async fn main() {
     ));
     let _ = started_b_rx.await;
 
-    let total = task_a.await.unwrap() + task_b.await.unwrap();
-
+    let task_elapsed_sum = task_a.await.unwrap() + task_b.await.unwrap();
     println!("end");
-    println!("total: {:.1}", total);
+
+    let wall_elapsed = start.elapsed().as_secs_f64();
+    println!("task elapsed sum: {:.1}", task_elapsed_sum);
+    println!("wall elapsed: {:.1}", wall_elapsed);
 }

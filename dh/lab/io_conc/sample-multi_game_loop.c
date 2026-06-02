@@ -37,7 +37,8 @@ T_use$((usize)(
     Future, Sched_async, Future_cancel
 ));
 
-co_fn_((sample_sessionActor)(GameRuntime * rt, net_Stream stream)(usize)$scope(
+#if UNUSED_CODE
+$static co_fn_((sample_sessionActor)(P$$(GameRuntime) rt, net_Stream stream)(usize)$scope(
     co_locals_({}),
     co_locals_mut_({
         var_(buf, A$$(512, u8 ));
@@ -55,15 +56,58 @@ co_fn_((sample_sessionActor)(GameRuntime * rt, net_Stream stream)(usize)$scope(
         )));
     }
 } $unscoped(co_fn);
+#endif /* UNUSED_CODE */
+$static co_fn_(sample_sessionActor, (P$$(GameRuntime) rt; net_Stream stream), usize);
+co_fn_frame_scope(
+    sample_sessionActor,
+    co_locals_({}),
+    co_locals_mut_({
+        var_(buf, A$$(512, u8));
+    }),
+    co_suspended_({
+        var_(n, usize);
+    })
+);
+co_fn_scope(sample_sessionActor) {
+    while (true) {
+        suspend_((n)(sample_net_read($co_arg(stream), A_ref$((S$u8)($co_mut(buf))))));
+        if ($co_suspended(n) == 0) co_return_(0);
+        suspend_((n)(sample_net_write(
+            $co_arg(stream),
+            A_prefix$((S_const$u8)(($co_mut(buf)))($co_suspended(n)))
+        )));
+    }
+} $unscoped(co_fn);
 co_use_Clsr_((sample_sessionActor)(GameRuntime*, net_Stream)(usize));
 
-co_fn_((sample_acceptLoop)(GameRuntime * rt, net_Svr* server)(usize)$scope(
+#if UNUSED_CODE
+$static co_fn_((sample_acceptLoop)(P$$(GameRuntime) rt, P$$(net_Svr) server)(usize)$scope(
     co_locals_({}),
     co_locals_mut_({}),
     co_suspended_({
         var_(stream, net_Stream);
     })
 )) {
+    while (true) {
+        suspend_((stream)(sample_net_accept($co_arg(server), $co_arg(rt)->net)));
+        let_ignore = Sched_async$usize(
+            $co_arg(rt)->net_sched,
+            clsr_((sample_sessionActor)($co_arg(rt), ($co_suspended(stream)))).as_base
+        );
+    }
+    co_return_(0);
+} $unscoped(co_fn);
+#endif /* UNUSED_CODE */
+$static co_fn_(sample_acceptLoop, (P$$(GameRuntime) rt; P$$(net_Svr) server), usize);
+co_fn_frame_scope(
+    sample_acceptLoop,
+    co_locals_({}),
+    co_locals_mut_({}),
+    co_suspended_({
+        var_(stream, net_Stream);
+    })
+);
+co_fn_scope(sample_acceptLoop) {
     while (true) {
         suspend_((stream)(sample_net_accept($co_arg(server), $co_arg(rt)->net)));
         let_ignore = Sched_async$usize(
@@ -142,45 +186,3 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     return_ok({});
 } $unguarded(fn);
-
-/* co_fn_(sample_sessionActor, (P$$(GameRuntime) rt; net_Stream stream), usize);
-co_fn_scope(
-    sample_sessionActor,
-    co_locals_({}),
-    co_locals_mut_({
-        var_(buf, A$$(512, u8));
-    }),
-    co_suspended_({
-        var_(n, usize);
-    })
-) {
-    while (true) {
-        suspend_((n)(sample_net_read($co_arg(stream), A_ref$((S$u8)($co_mut(buf))))));
-        if ($co_suspended(n) == 0) co_return_(0);
-        suspend_((n)(sample_net_write(
-            $co_arg(stream),
-            A_prefix$((S_const$u8)(($co_mut(buf)))($co_suspended(n)))
-        )));
-    }
-} $unscoped(co_fn);
-co_use_Clsr_((sample_sessionActor)(GameRuntime*, net_Stream)(usize));
-
-co_fn_(sample_acceptLoop, (P$$(GameRuntime) rt; P$$(net_Svr) server), usize);
-co_fn_scope(
-    sample_acceptLoop,
-    co_locals_({}),
-    co_locals_mut_({}),
-    co_suspended_({
-        var_(stream, net_Stream);
-    })
-) {
-    while (true) {
-        suspend_((stream)(sample_net_accept($co_arg(server), $co_arg(rt)->net)));
-        let_ignore = Sched_async$usize(
-            $co_arg(rt)->net_sched,
-            clsr_((sample_sessionActor)($co_arg(rt), ($co_suspended(stream)))).as_base
-        );
-    }
-    co_return_(0);
-} $unscoped(co_fn);
-co_use_Clsr_((sample_acceptLoop)(GameRuntime*, net_Svr*)(usize)); */

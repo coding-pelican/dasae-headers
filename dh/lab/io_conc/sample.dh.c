@@ -16,24 +16,24 @@ T_alias$((Sys)(struct Sys {
     var_(time, time_Awake);
     var_(io, io_Self);
 }));
-$static fn_((countFn(Sys sys, usize n, time_Dur interval, S_const$u8 label))(f64)) {
+$static fn_((countFn(Sys sys, usize n, f64 interval_secs, S_const$u8 label))(f64)) {
     let instant = time_Awake_now(sys.time);
-    report(sys.io, label, u8_l("before loop {:fl}"), interval);
+    report(sys.io, label, u8_l("before loop {:.1fl}"), interval_secs);
 
     for_(($rt(n))(i)) {
-        catch_((time_Awake_sleep(sys.time, interval))($ignore, $do_nothing));
-        report(sys.io, label, u8_l("slept {:fl} | i: {:uz} < n: {:uz}"), interval, i, n);
+        catch_((time_Awake_sleep(sys.time, time_Dur_fromSecs$f64(interval_secs)))($ignore, $do_nothing));
+        report(sys.io, label, u8_l("slept {:.1fl} | i: {:uz} < n: {:uz}"), interval_secs, i, n);
     } $end(for);
 
     let elapsed = pipe_((instant)(
         (t)(time_Awake_Inst_elapsed(t, sys.time)),
         (t)(time_Dur_asSecs$f64(t))
     ));
-    report(sys.io, label, u8_l("after loop {:fl}"), elapsed);
+    report(sys.io, label, u8_l("after loop {:.1fl}"), elapsed);
     return elapsed;
 };
 T_use$((f64)(Clsr_Ctx, Clsr_Rtn, Clsr));
-fn_use_Clsr_((countFn)(Sys, usize, time_Dur, S_const$u8)(f64));
+fn_use_Clsr_((countFn)(Sys, usize, f64, S_const$u8)(f64));
 
 T_use$((f64)(Future, Future_await, Future_cancel, Sched_async));
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
@@ -48,18 +48,24 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         .time = time_Awake_evented(&loop),
         .io = try_(io_direct()),
     };
-    var total = 0.0;
+    var task_elapsed_sum = 0.0;
+    let run_start = time_Awake_now(sys.time);
     using_() blk_defer {
         io_stream_println(sys.io, u8_l("begin - evented async execution"));
-        var task_a = Sched_async$f64(sched, clsr_((countFn)(sys, 2, time_Dur_fromSecs$f64(1.0), u8_l("task a"))).as_base);
+        var task_a = Sched_async$f64(sched, clsr_((countFn)(sys, 2, 1.0, u8_l("task a"))).as_base);
         defer_(let_ignore = Future_cancel$f64(&task_a, sched));
-        var task_b = Sched_async$f64(sched, clsr_((countFn)(sys, 3, time_Dur_fromSecs$f64(0.6), u8_l("task b"))).as_base);
+        var task_b = Sched_async$f64(sched, clsr_((countFn)(sys, 3, 0.6, u8_l("task b"))).as_base);
         defer_(let_ignore = Future_cancel$f64(&task_b, sched));
-        total += Future_await$f64(&task_a, sched);
-        total += Future_await$f64(&task_b, sched);
+        task_elapsed_sum += Future_await$f64(&task_a, sched);
+        task_elapsed_sum += Future_await$f64(&task_b, sched);
         io_stream_println(sys.io, u8_l("end - evented async execution"));
     } blk_deferral;
-    io_stream_println(sys.io, u8_l("total: {:fl}"), total);
+    let wall_elapsed_secs = pipe_((run_start)(
+        (t)(time_Awake_Inst_elapsed(t, sys.time)),
+        (t)(time_Dur_asSecs$f64(t))
+    ));
+    io_stream_println(sys.io, u8_l("task elapsed sum: {:.1fl}"), task_elapsed_sum);
+    io_stream_println(sys.io, u8_l("wall elapsed: {:.1fl}"), wall_elapsed_secs);
     return_ok({});
 } $unguarded(fn);
 
@@ -75,5 +81,6 @@ begin
 [task a] slept 1.0 | i: 1 < n: 2
 [task a] after loop 2.0
 end
-total: 3.8
+task elapsed sum: 3.8
+wall elapsed: 2.0
 */

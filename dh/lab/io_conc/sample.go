@@ -30,8 +30,9 @@ func count(n int, interval time.Duration, label string, started chan<- struct{})
 }
 
 func main() {
-	fmt.Println("begin")
+	runStart := time.Now()
 
+	fmt.Println("begin")
 	taskA := make(chan float64, 1)
 	taskB := make(chan float64, 1)
 	startedA := make(chan struct{})
@@ -42,8 +43,10 @@ func main() {
 	go func() { taskB <- count(3, 600*time.Millisecond, "task b", startedB) }()
 	<-startedB
 
-	total := <-taskA + <-taskB
-
+	taskElapsedSum := <-taskA + <-taskB
 	fmt.Println("end")
-	fmt.Printf("total: %.1f\n", total)
+
+	wallElapsed := time.Since(runStart).Seconds()
+	fmt.Printf("task elapsed sum: %.1f\n", taskElapsedSum)
+	fmt.Printf("wall elapsed: %.1f\n", wallElapsed)
 }

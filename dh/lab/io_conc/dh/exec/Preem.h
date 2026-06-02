@@ -7,7 +7,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "common.h"
-#include "../Thrd.h"
+#include "../thrd.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -21,7 +21,7 @@ union exec_Preem_Task {
     T_embed$(struct {
         var_(next, O$P$exec_Preem_Task);
         var_(owner, exec_Preem*);
-        var_(thrd, Thrd);
+        var_(thrd, thrd_Self);
         var_(result, u_P$raw);
         var_(inner, P$$(Clsr$raw));
         var_(state, exec_Task_State);

@@ -7,8 +7,8 @@
 
 #include "actor.h"
 
-co_fn_(sample_counterActor, (P$$(actor_Unit) self; S_const$u8 name), Void);
-co_fn_scope(
+$static co_fn_(sample_counterActor, (P$$(actor_Unit) self; S_const$u8 name), Void);
+co_fn_frame_scope(
     sample_counterActor,
     co_locals_({}),
     co_locals_mut_({
@@ -18,7 +18,8 @@ co_fn_scope(
     co_suspended_({
         var_(idle, Void);
     })
-) {
+);
+co_fn_scope(sample_counterActor) {
     while (true) {
         if_none(actor_Unit_tryRecv($co_arg(self))) {
             suspend_((idle)((Void){}));
@@ -55,8 +56,8 @@ co_fn_scope(
 co_use_Clsr_((sample_counterActor)(P$$(actor_Unit), S_const$u8)(Void));
 
 T_use$((mem_E$Void)(Co_Ctx, Co_Rtn, Co_Frame, Clsr_Ctx, Clsr_Rtn, Clsr));
-co_fn_(sample_feederActor, (P$$(actor_Unit) self; P$$(actor_Unit) dst; S_const$u8 name), mem_E$Void);
-co_fn_scope(
+$static co_fn_(sample_feederActor, (P$$(actor_Unit) self; P$$(actor_Unit) dst; S_const$u8 name), mem_E$Void);
+co_fn_frame_scope(
     sample_feederActor,
     co_locals_({}),
     co_locals_mut_({
@@ -65,7 +66,8 @@ co_fn_scope(
     co_suspended_({
         var_(idle, Void);
     })
-) {
+);
+co_fn_scope(sample_feederActor) {
     while (true) {
         if_none(actor_Unit_tryRecv($co_arg(self))) {
             suspend_((idle)((Void){}));

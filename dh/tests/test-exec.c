@@ -56,8 +56,8 @@ T_use$((Event)(Clsr_Ctx, Clsr_Rtn, Clsr));
 fn_use_Clsr_((countFn)(SysLogged, usize, time_Dur, Event)(Event));
 
 T_use$((Event)(Co_Ctx, Co_Rtn, Co_Frame));
-co_fn_(countCo, (SysLogged sys; usize n; time_Dur interval; Event base), Event);
-co_fn_scope(
+$static co_fn_(countCo, (SysLogged sys; usize n; time_Dur interval; Event base), Event);
+co_fn_frame_scope(
     countCo,
     co_locals_({}),
     co_locals_mut_({
@@ -66,7 +66,8 @@ co_fn_scope(
     co_suspended_({
         var_(sleeping, Void);
     })
-) {
+);
+co_fn_scope(countCo) {
     EventLog_push($co_arg(sys).log, $co_arg(base));
     for (co_var_(i, usize) = 0; $co_mut(i) < $co_arg(n); ++$co_mut(i)) {
         suspend_((sleeping)(catch_((time_Awake_sleep($co_arg(sys).time, $co_arg(interval)))($ignore, $do_nothing))));
@@ -80,15 +81,16 @@ co_use_Clsr_((countCo)(SysLogged, usize, time_Dur, Event)(Event));
 T_use$((u32)(Co_Ctx, Co_Rtn, Co_Frame));
 T_use$((u32)(Clsr_Ctx, Clsr_Rtn, Clsr));
 T_use$((u32)(Future, Future_await, Future_cancel, Sched_async));
-co_fn_(cancelOnSleepCo, (Sys sys), u32);
-co_fn_scope(
+$static co_fn_(cancelOnSleepCo, (Sys sys), u32);
+co_fn_frame_scope(
     cancelOnSleepCo,
     co_locals_({}),
     co_locals_mut_({}),
     co_suspended_({
         var_(sleeping, Void);
     })
-) {
+);
+co_fn_scope(cancelOnSleepCo) {
     suspend_((sleeping)(catch_((time_Awake_sleep($co_arg(sys).time, time_Dur_fromMillis(5000)))(
         $ignore, $do_nothing
     ))));
@@ -100,8 +102,8 @@ co_fn_scope(
 } $unscoped(co_fn);
 co_use_Clsr_((cancelOnSleepCo)(Sys)(u32));
 
-co_fn_(cancelPollSeqCo, (Sys sys), u32);
-co_fn_scope(
+$static co_fn_(cancelPollSeqCo, (Sys sys), u32);
+co_fn_frame_scope(
     cancelPollSeqCo,
     co_locals_({}),
     co_locals_mut_({
@@ -110,7 +112,8 @@ co_fn_scope(
     co_suspended_({
         var_(sleeping, Void);
     })
-) {
+);
+co_fn_scope(cancelPollSeqCo) {
     for (co_var_(i, usize) = 0; $co_mut(i) < 8; ++$co_mut(i)) {
         suspend_((sleeping)(catch_((time_Awake_sleep($co_arg(sys).time, time_Dur_fromMillis(50)))(
             $ignore, $do_nothing

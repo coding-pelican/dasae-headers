@@ -38,16 +38,18 @@ pub fn main() !void {
     const io = threaded.io();
     const sys: Sys = .{ .io = io };
 
+    var task_elapsed_sum: f64 = 0;
+    const run_start = Io.Timestamp.now(io, .awake);
     std.debug.print("begin\n", .{});
     var task_a = Io.async(io, count, .{ sys, 2, Io.Duration.fromSeconds(1), "task a" });
     defer Io.cancel(io, task_a) catch {};
     var task_b = Io.async(io, count, .{ sys, 3, Io.Duration.fromMilliseconds(600), "task b" });
     defer Io.cancel(io, task_b) catch {};
-
-    var total: f64 = 0;
-    total += task_a.await(io);
-    total += task_b.await(io);
-
+    task_elapsed_sum += task_a.await(io);
+    task_elapsed_sum += task_b.await(io);
     std.debug.print("end\n", .{});
-    std.debug.print("total: {d:.1}\n", .{total});
+
+    const wall_elapsed = run_start.durationTo(Io.Timestamp.now(io, .awake));
+    std.debug.print("task elapsed sum: {d:.1}\n", .{task_elapsed_sum});
+    std.debug.print("wall elapsed: {d:.1}\n", .{secs(wall_elapsed)});
 }

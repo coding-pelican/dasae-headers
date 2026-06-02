@@ -204,8 +204,8 @@ $static fn_((runMain(Runtime rt))(Void) $guard) {
 } $unguarded(fn);
 fn_use_Clsr_((runMain)(Runtime)(Void));
 #else
-co_fn_(runMain, (Runtime rt), Void);
-co_fn_guard(
+$static co_fn_(runMain, (P$$(Runtime) rt), Void);
+co_fn_frame_guard(
     runMain,
     co_locals_({
         var_(sample_text, S_const$u8);
@@ -237,7 +237,8 @@ co_fn_guard(
         var_(awaiting, Void);
     }),
     co_deferrable_(10)
-) {
+);
+co_fn_guard(runMain) {
     co_let_(sample_text) = $co_init(sample_text)(u8_l("Hello, World! This is a typing effect demonstration."));
     co_var_(read_mem) = $co_init_mut(read_mem)(A_zero());
     co_var_(line) = $co_init_mut(line)(0);
@@ -345,8 +346,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
         .fs = fs_evented(&loop),
         .sched = Sched_coop(&loop),
     };
-    var main_task = clsr_((runMain)(rt));
-    var future = Sched_async$Void(rt.sched, main_task.as_base);
-    defer_(Future_cancel$Void(&future, rt.sched));
-    return_ok(Future_await$Void(&future, rt.sched));
+    var main_clsr = clsr_((runMain)(rt));
+    var main_future = Sched_async$Void(rt.sched, main_clsr.as_base);
+    defer_(Future_cancel$Void(&main_future, rt.sched));
+    return_ok(Future_await$Void(&main_future, rt.sched));
 } $unguarded(fn);

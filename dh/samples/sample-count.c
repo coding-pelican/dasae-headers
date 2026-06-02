@@ -41,8 +41,8 @@ T_use$((f64)(Clsr_Ctx, Clsr_Rtn, Clsr));
 fn_use_Clsr_((countFn)(Sys, usize, f64, S_const$u8)(f64));
 
 T_use$((f64)(Co_Ctx, Co_Rtn, Co_Frame));
-co_fn_(countCo, (Sys sys; usize n; f64 interval_secs; S_const$u8 label), f64);
-co_fn_scope(
+$static co_fn_(countCo, (Sys sys; usize n; f64 interval_secs; S_const$u8 label), f64);
+co_fn_frame_scope(
     countCo,
     co_locals_({
         var_(instant, time_Awake_Inst);
@@ -54,7 +54,8 @@ co_fn_scope(
     co_suspended_({
         var_(sleeping, Void);
     })
-) {
+);
+co_fn_scope(countCo) {
     co_let_(instant) = time_Awake_now($co_arg(sys).time);
     report($co_arg(label), u8_l("before loop {:.1fl}"), $co_arg(interval_secs));
 

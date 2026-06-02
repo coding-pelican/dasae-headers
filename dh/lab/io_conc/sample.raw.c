@@ -79,14 +79,13 @@ int main(void) {
     puts("begin");
     task_step(&task_a, now);
     task_step(&task_b, now);
-
     while (!task_is_done(&task_a) || !task_is_done(&task_b)) {
         now = next_wake_at(&task_a, &task_b);
         task_step(&task_a, now);
         task_step(&task_b, now);
     }
-
     puts("end");
-    printf("total: %.1f\n", task_a.result + task_b.result);
+    printf("task elapsed sum: %.1f\n", task_a.result + task_b.result);
+    printf("wall elapsed: %.1f\n", now);
     return 0;
 }

@@ -6,27 +6,29 @@ T_use$((i32)(Co_Ctx, Co_Rtn, Co_Frame));
 T_use_clsr_invokeToComplete$(i32);
 T_use_clsr_invokeToStep$(i32);
 
-co_fn_(test__sumNoSuspend, (i32 lhs; i32 rhs), i32);
+$static co_fn_(test__sumNoSuspend, (i32 lhs; i32 rhs), i32);
 /* NOLINTNEXTLINE(hicpp-multiway-paths-covered) */
-co_fn_scope(
+co_fn_frame_scope(
     test__sumNoSuspend,
     co_locals_({}),
     co_locals_mut_({}),
     co_suspended_({})
-) {
+);
+co_fn_scope(test__sumNoSuspend) {
     co_return_($co_arg(lhs) + $co_arg(rhs));
 } $unscoped(co_fn);
 co_use_Clsr_((test__sumNoSuspend)(i32, i32)(i32));
 
-co_fn_(test__sumAfterSuspend, (i32 lhs; i32 rhs), i32);
-co_fn_scope(
+$static co_fn_(test__sumAfterSuspend, (i32 lhs; i32 rhs), i32);
+co_fn_frame_scope(
     test__sumAfterSuspend,
     co_locals_({}),
     co_locals_mut_({}),
     co_suspended_({
         var_(idle, Void);
     })
-) {
+);
+co_fn_scope(test__sumAfterSuspend) {
     suspend_((idle)(Void_()));
     co_return_($co_arg(lhs) + $co_arg(rhs));
 } $unscoped(co_fn);

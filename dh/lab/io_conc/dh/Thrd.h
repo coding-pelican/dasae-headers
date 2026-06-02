@@ -6,22 +6,22 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "Thrd/cfg.h"
-#include "Thrd/base.h"
-#include "Thrd/common.h"
-#include "Thrd/self.h"
+#include "thrd/cfg.h"
+#include "thrd/base.h"
+#include "thrd/common.h"
+#include "thrd/Self.h"
 
-#include "Thrd/ftx.h"
-#include "Thrd/Mtx.h"
-#include "Thrd/Sem.h"
-#include "Thrd/Cond.h"
+#include "thrd/ftx.h"
+#include "thrd/Mtx.h"
+#include "thrd/Sem.h"
+#include "thrd/Cond.h"
 
-// #include "Thrd/Once.h"
-// #include "Thrd/OnceLock.h"
-// #include "Thrd/LazyLock.h"
-#include "Thrd/RWLock.h"
-#include "Thrd/ResetEvent.h"
-#include "Thrd/WaitGroup.h"
+// #include "thrd/Once.h"
+// #include "thrd/OnceLock.h"
+// #include "thrd/LazyLock.h"
+#include "thrd/RWLock.h"
+#include "thrd/ResetEvent.h"
+#include "thrd/WaitGroup.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

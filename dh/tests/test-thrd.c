@@ -24,15 +24,16 @@ $static fn_((test__markDone(atom_V$usize* counter))(Void) $scope) {
 } $unscoped(fn);
 fn_use_Clsr_((test__markDone)(atom_V$usize*)(Void));
 
-co_fn_(test__sumAfterSuspend, (i32 lhs; i32 rhs), i32);
-co_fn_scope(
+$static co_fn_(test__sumAfterSuspend, (i32 lhs; i32 rhs), i32);
+co_fn_frame_scope(
     test__sumAfterSuspend,
     co_locals_({}),
     co_locals_mut_({}),
     co_suspended_({
         var_(idle, Void);
     })
-) {
+);
+co_fn_scope(test__sumAfterSuspend) {
     suspend_((idle)(Void_()));
     co_return_($co_arg(lhs) + $co_arg(rhs));
 } $unscoped(co_fn);
