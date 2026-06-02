@@ -21,6 +21,7 @@ static void dal_c_Cmd__setOwnedString(char** slot, const char* value);
 static bool dal_c_Cmd__isSourceOrHeader(const char* name);
 static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action);
 static bool dal_c_Cmd__tryParseBoolValue(const char* value, bool* out);
+static bool dal_c_Cmd__tryParseToggleValue(const char* value, dal_c_ToggleState* out);
 static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt, size_t opt_len, const char* value, bool* handled);
 static dal_c_Target dal_c_Cmd__resolveBuildTargetType(const dal_c_Cmd* cmd, dal_c_Linking linking, bool builds_library);
 static void dal_c_Cmd__setStdlibBundle(dal_c_CompilerOpts* opts, bool linked);
@@ -229,6 +230,16 @@ static bool dal_c_Cmd__tryParseBoolValue(const char* value, bool* out) {
     return false;
 }
 
+static bool dal_c_Cmd__tryParseToggleValue(const char* value, dal_c_ToggleState* out) {
+    assert(out != NULL);
+    dal_c_ToggleState state = dal_c_ToggleState_parse(value);
+    if (state == dal_c_ToggleState_invalid) {
+        return false;
+    }
+    *out = state;
+    return true;
+}
+
 static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt, size_t opt_len, const char* value, bool* handled) {
     assert(cmd != NULL);
     assert(opt != NULL);
@@ -239,42 +250,97 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
 
     *handled = false;
     bool enabled = false;
-    if (!dal_c_Cmd__tryParseBoolValue(value, &enabled)) {
-        return 0;
-    }
+    bool has_bool = dal_c_Cmd__tryParseBoolValue(value, &enabled);
+    dal_c_ToggleState toggle = dal_c_ToggleState_auto;
+    bool has_toggle = dal_c_Cmd__tryParseToggleValue(value, &toggle);
 
     *handled = true;
     if (dal_c_Cmd__OPT_IS(dal_c_opt_link_dsl)) {
-        cmd->opts.dsl_mode = enabled ? dal_c_ToggleState_enabled : dal_c_ToggleState_disabled;
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.dsl_mode = toggle; }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_libc)) {
-        cmd->opts.libc_linked = enabled ? dal_c_ToggleState_enabled : dal_c_ToggleState_disabled;
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.libc_linked = toggle; }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_default_libs)) {
-        cmd->opts.default_libs_linked = enabled ? dal_c_ToggleState_enabled : dal_c_ToggleState_disabled;
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.default_libs_linked = toggle; }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_start_files)) {
-        cmd->opts.start_files_linked = enabled ? dal_c_ToggleState_enabled : dal_c_ToggleState_disabled;
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.start_files_linked = toggle; }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_stdlib)) {
-        dal_c_Cmd__setStdlibBundle(&cmd->opts, enabled);
+        if (!has_toggle) { *handled = false; }
+        else {
+            cmd->opts.default_libs_linked = toggle;
+            cmd->opts.start_files_linked = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_crt)) {
-        dal_c_Cmd__setCrtStartFiles(&cmd->opts, enabled);
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.start_files_linked = toggle; }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_lto)) {
-        cmd->opts.lto_mode = enabled ? dal_c_ToggleState_enabled : dal_c_ToggleState_disabled;
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.lto_mode = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_omit_frame_pointer)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.omit_frame_pointer = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_function_sections)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.function_sections = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_data_sections)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.data_sections = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_gc_sections)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.gc_sections = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_whole_archive)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.whole_archive = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_unroll_loops)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.unroll_loops = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_unwind_tables)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.unwind_tables = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_async_unwind_tables)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.async_unwind_tables = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_strip)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.strip_mode = toggle; }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_freestanding)) {
+        if (!has_bool) { *handled = false; }
+        else {
         cmd->opts.compile_env = enabled ? dal_c_CompileEnv_freestanding : dal_c_CompileEnv_hosted;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_hosted)) {
+        if (!has_bool) { *handled = false; }
+        else {
         cmd->opts.compile_env = enabled ? dal_c_CompileEnv_hosted : dal_c_CompileEnv_freestanding;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_loose_errors)) {
+        if (!has_bool) { *handled = false; }
+        else {
         cmd->opts.loose_errors = enabled;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_image)) {
+        if (!has_bool) { *handled = false; }
+        else {
         if (cmd->action == dal_c_CmdAction_build) {
             cmd->payload.build.as_image = enabled;
         }
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_emit_preprocessed)) {
+        if (!has_bool) { *handled = false; }
+        else {
         if (cmd->action == dal_c_CmdAction_build) {
             cmd->payload.build.emit_preprocessed = enabled;
         }
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_emit_asm)) {
+        if (!has_bool) { *handled = false; }
+        else {
         if (cmd->action == dal_c_CmdAction_build) {
             cmd->payload.build.emit_asm = enabled;
+        }
         }
     } else {
         *handled = false;
@@ -1180,6 +1246,16 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_link_stdlib)
             || str_eql(opt, dal_c_opt_link_crt)
             || str_eql(opt, dal_c_opt_lto)
+            || str_eql(opt, dal_c_opt_omit_frame_pointer)
+            || str_eql(opt, dal_c_opt_function_sections)
+            || str_eql(opt, dal_c_opt_data_sections)
+            || str_eql(opt, dal_c_opt_gc_sections)
+            || str_eql(opt, dal_c_opt_whole_archive)
+            || str_eql(opt, dal_c_opt_unroll_loops)
+            || str_eql(opt, dal_c_opt_unwind_tables)
+            || str_eql(opt, dal_c_opt_async_unwind_tables)
+            || str_eql(opt, dal_c_opt_strip)
+            || str_eql(opt, dal_c_opt_icf)
             || str_eql(opt, dal_c_opt_loose_errors)
             || (str_eql(opt, dal_c_opt_image) && action == dal_c_CmdAction_build)
             || (str_eql(opt, dal_c_opt_emit_preprocessed) && action == dal_c_CmdAction_build)
@@ -1207,6 +1283,16 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_link_stdlib)
             || str_startsWith(opt, dal_c_opt_link_crt)
             || str_startsWith(opt, dal_c_opt_lto)
+            || str_startsWith(opt, dal_c_opt_omit_frame_pointer)
+            || str_startsWith(opt, dal_c_opt_function_sections)
+            || str_startsWith(opt, dal_c_opt_data_sections)
+            || str_startsWith(opt, dal_c_opt_gc_sections)
+            || str_startsWith(opt, dal_c_opt_whole_archive)
+            || str_startsWith(opt, dal_c_opt_unroll_loops)
+            || str_startsWith(opt, dal_c_opt_unwind_tables)
+            || str_startsWith(opt, dal_c_opt_async_unwind_tables)
+            || str_startsWith(opt, dal_c_opt_strip)
+            || str_startsWith(opt, dal_c_opt_icf)
             || str_startsWith(opt, dal_c_opt_loose_errors)
             || str_startsWith(opt, dal_c_opt_image)
             || str_startsWith(opt, dal_c_opt_emit_preprocessed)
@@ -1377,6 +1463,13 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     cmd->version_record_mode = mode;
+                } else if (strncmp(opt, dal_c_opt_icf, opt_len) == 0) {
+                    dal_c_IcfMode mode = dal_c_IcfMode_parse(value);
+                    if (mode == dal_c_IcfMode_auto && !str_eql(value, dal_c_icf_mode_auto)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_icf, value);
+                        return 1;
+                    }
+                    cmd->opts.icf_mode = mode;
                 } else if (strncmp(opt, dal_c_opt_args, opt_len) == 0) {
                     char** run_args_slot = dal_c_Cmd__runArgsSlot(cmd);
                     if (run_args_slot) {
@@ -1561,6 +1654,26 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     dal_c_Cmd__setCrtStartFiles(&cmd->opts, true);
                 } else if (str_eql(opt, dal_c_opt_lto)) {
                     cmd->opts.lto_mode = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_omit_frame_pointer)) {
+                    cmd->opts.omit_frame_pointer = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_function_sections)) {
+                    cmd->opts.function_sections = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_data_sections)) {
+                    cmd->opts.data_sections = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_gc_sections)) {
+                    cmd->opts.gc_sections = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_whole_archive)) {
+                    cmd->opts.whole_archive = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_unroll_loops)) {
+                    cmd->opts.unroll_loops = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_unwind_tables)) {
+                    cmd->opts.unwind_tables = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_async_unwind_tables)) {
+                    cmd->opts.async_unwind_tables = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_strip)) {
+                    cmd->opts.strip_mode = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_icf)) {
+                    cmd->opts.icf_mode = dal_c_IcfMode_all;
                 } else if (str_eql(opt, dal_c_opt_loose_errors)) {
                     cmd->opts.loose_errors = true;
                 } else if (str_eql(opt, dal_c_opt_entry)) {

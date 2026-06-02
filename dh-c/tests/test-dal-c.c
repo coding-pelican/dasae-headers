@@ -62,7 +62,6 @@ static void test_reset_temp_root(void);
 static void test_free_str_array(char** items, int count);
 static const dal_c_HelpCmd* test_find_help_cmd(const char* name, int* count_out);
 static bool test_help_has_option(const dal_c_HelpCmd* cmd, const char* option_name);
-static bool test_profile_has_flag(const dal_c_ProfileSpec* profile, const char* flag);
 
 int main(void) {
     RUN_TEST(test_str_helpers);
@@ -134,19 +133,6 @@ static bool test_help_has_option(const dal_c_HelpCmd* cmd, const char* option_na
 
     for (int i = 0; i < cmd->option_count; ++i) {
         if (strstr(cmd->options[i].name, option_name) != NULL) {
-            return true;
-        }
-    }
-    return false;
-}
-
-static bool test_profile_has_flag(const dal_c_ProfileSpec* profile, const char* flag) {
-    if (!profile || !flag) {
-        return false;
-    }
-
-    for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
-        if (str_eql(profile->extra_flags[i], flag)) {
             return true;
         }
     }
@@ -388,15 +374,31 @@ static void test_meta_tables(void) {
 
     const dal_c_ProfileSpec* optimize_spec = dal_c_ProfileSpec_by(dal_c_Profile_optimize);
     TEST_ASSERT(optimize_spec != NULL);
-    TEST_ASSERT(test_profile_has_flag(optimize_spec, "-ffunction-sections"));
-    TEST_ASSERT(test_profile_has_flag(optimize_spec, "-fdata-sections"));
-    TEST_ASSERT(test_profile_has_flag(optimize_spec, "-Wl,--gc-sections"));
+    TEST_ASSERT(optimize_spec->lto_mode == dal_c_ToggleState_enabled);
+    TEST_ASSERT(optimize_spec->function_sections == dal_c_ToggleState_enabled);
+    TEST_ASSERT(optimize_spec->data_sections == dal_c_ToggleState_enabled);
+    TEST_ASSERT(optimize_spec->gc_sections == dal_c_ToggleState_enabled);
+    TEST_ASSERT(optimize_spec->whole_archive == dal_c_ToggleState_auto);
+    TEST_ASSERT(optimize_spec->omit_frame_pointer == dal_c_ToggleState_enabled);
+    TEST_ASSERT(optimize_spec->unwind_tables == dal_c_ToggleState_disabled);
+    TEST_ASSERT(optimize_spec->async_unwind_tables == dal_c_ToggleState_disabled);
+    TEST_ASSERT(optimize_spec->strip_mode == dal_c_ToggleState_enabled);
+    TEST_ASSERT(optimize_spec->icf_mode == dal_c_IcfMode_all);
+    TEST_ASSERT(str_eql(optimize_spec->target_arch, "native"));
 
     const dal_c_ProfileSpec* micro_spec = dal_c_ProfileSpec_by(dal_c_Profile_micro);
     TEST_ASSERT(micro_spec != NULL);
-    TEST_ASSERT(test_profile_has_flag(micro_spec, "-ffunction-sections"));
-    TEST_ASSERT(test_profile_has_flag(micro_spec, "-fdata-sections"));
-    TEST_ASSERT(test_profile_has_flag(micro_spec, "-Wl,--gc-sections"));
+    TEST_ASSERT(micro_spec->lto_mode == dal_c_ToggleState_enabled);
+    TEST_ASSERT(micro_spec->function_sections == dal_c_ToggleState_enabled);
+    TEST_ASSERT(micro_spec->data_sections == dal_c_ToggleState_enabled);
+    TEST_ASSERT(micro_spec->gc_sections == dal_c_ToggleState_enabled);
+    TEST_ASSERT(micro_spec->whole_archive == dal_c_ToggleState_auto);
+    TEST_ASSERT(micro_spec->unroll_loops == dal_c_ToggleState_disabled);
+    TEST_ASSERT(micro_spec->omit_frame_pointer == dal_c_ToggleState_enabled);
+    TEST_ASSERT(micro_spec->unwind_tables == dal_c_ToggleState_disabled);
+    TEST_ASSERT(micro_spec->async_unwind_tables == dal_c_ToggleState_disabled);
+    TEST_ASSERT(micro_spec->strip_mode == dal_c_ToggleState_enabled);
+    TEST_ASSERT(micro_spec->icf_mode == dal_c_IcfMode_all);
 
     int cmd_count = 0;
     const dal_c_HelpCmd* build_cmd = test_find_help_cmd(dal_c_cmd_action_build, &cmd_count);
@@ -412,6 +414,16 @@ static void test_meta_tables(void) {
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_stdlib));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_crt));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_lto));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_omit_frame_pointer));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_function_sections));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_data_sections));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_gc_sections));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_whole_archive));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_unroll_loops));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_unwind_tables));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_async_unwind_tables));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_strip));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_icf));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_entry));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_arch));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_abi));
@@ -497,11 +509,21 @@ static void test_cmd_parse(void) {
             "--link-stdlib=off",
             "--link-crt",
             "--lto=no",
+            "--omit-frame-pointer=off",
+            "--function-sections=off",
+            "--data-sections=off",
+            "--gc-sections=off",
+            "--whole-archive",
+            "--unroll-loops=off",
+            "--unwind-tables=off",
+            "--async-unwind-tables=off",
+            "--strip",
+            "--icf=all",
             "--link-crt=off",
             "--entry=custom_entry",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(15, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(25, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(cmd->opts.dsl_mode == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.compile_env == dal_c_CompileEnv_freestanding);
@@ -509,6 +531,16 @@ static void test_cmd_parse(void) {
         TEST_ASSERT(cmd->opts.default_libs_linked == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.start_files_linked == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.lto_mode == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.omit_frame_pointer == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.function_sections == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.data_sections == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.gc_sections == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.whole_archive == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->opts.unroll_loops == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.unwind_tables == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.async_unwind_tables == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.strip_mode == dal_c_ToggleState_enabled);
+        TEST_ASSERT(cmd->opts.icf_mode == dal_c_IcfMode_all);
         TEST_ASSERT(str_eql(cmd->opts.entry_symbol, "custom_entry"));
         dal_c_Cmd_cleanup(&cmd);
     }
@@ -755,10 +787,18 @@ static void test_makefile_mode_contracts(void) {
             "--freestanding",
             "--link-libc",
             "--link-default-libs=off",
+            "--function-sections",
+            "--data-sections",
+            "--gc-sections",
+            "--whole-archive",
+            "--unwind-tables=off",
+            "--async-unwind-tables=off",
+            "--strip",
+            "--icf=all",
             "--entry=custom_entry",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(7, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(15, argv);
         const dal_c_ProfileSpec* profile = NULL;
         char* build_dir = NULL;
         char* profile_dir = NULL;
@@ -797,12 +837,21 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, " -Wframe-larger-than=4096") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wno-switch-enum") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wswitch-enum") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -ffunction-sections") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -fdata-sections") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -fno-unwind-tables") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -fno-asynchronous-unwind-tables") != NULL);
         TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -ffreestanding") != NULL);
         TEST_ASSERT(strstr(makefile_text, "$(CC) $(CFLAGS_PCH) -MMD -MP -MF $(PCH_DEP) -x c-header $< -o $@") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") != NULL);
         TEST_ASSERT(strstr(makefile_text, "--print-libgcc-file-name") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -nolibc") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wl,--whole-archive") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wl,--no-whole-archive") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wl,--gc-sections") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wl,--strip-all") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Wl,--icf=all") != NULL);
 #ifdef _WIN32
         TEST_ASSERT(strstr(makefile_text, " -Wl,/entry:custom_entry") != NULL);
 #else

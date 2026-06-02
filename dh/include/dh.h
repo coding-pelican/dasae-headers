@@ -64,6 +64,8 @@ extern "C" {
 // #include "dh/BTreeSet.h"
 
 #include "dh/sys.h"
+#include "dh/c.h"
+
 #include "dh/time.h"
 #include "dh/heap.h"
 #include "dh/proc.h"

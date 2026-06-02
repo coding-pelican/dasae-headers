@@ -196,6 +196,16 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->default_libs_linked != dal_c_ToggleState_auto) { dst->default_libs_linked = src->default_libs_linked; }
     if (src->start_files_linked != dal_c_ToggleState_auto) { dst->start_files_linked = src->start_files_linked; }
     if (src->lto_mode != dal_c_ToggleState_auto) { dst->lto_mode = src->lto_mode; }
+    if (src->omit_frame_pointer != dal_c_ToggleState_auto) { dst->omit_frame_pointer = src->omit_frame_pointer; }
+    if (src->function_sections != dal_c_ToggleState_auto) { dst->function_sections = src->function_sections; }
+    if (src->data_sections != dal_c_ToggleState_auto) { dst->data_sections = src->data_sections; }
+    if (src->gc_sections != dal_c_ToggleState_auto) { dst->gc_sections = src->gc_sections; }
+    if (src->whole_archive != dal_c_ToggleState_auto) { dst->whole_archive = src->whole_archive; }
+    if (src->unroll_loops != dal_c_ToggleState_auto) { dst->unroll_loops = src->unroll_loops; }
+    if (src->unwind_tables != dal_c_ToggleState_auto) { dst->unwind_tables = src->unwind_tables; }
+    if (src->async_unwind_tables != dal_c_ToggleState_auto) { dst->async_unwind_tables = src->async_unwind_tables; }
+    if (src->strip_mode != dal_c_ToggleState_auto) { dst->strip_mode = src->strip_mode; }
+    if (src->icf_mode != dal_c_IcfMode_auto) { dst->icf_mode = src->icf_mode; }
     dst->loose_errors = dst->loose_errors || src->loose_errors;
     dal_c_VersionSpec_merge(&dst->version, &src->version);
 
@@ -787,6 +797,10 @@ static bool dal_c_Project__isTrue(const char* value) {
 }
 
 static dal_c_ToggleState dal_c_Project__toggleStateFromPositiveBool(const char* value) {
+    dal_c_ToggleState state = dal_c_ToggleState_parse(value);
+    if (state != dal_c_ToggleState_invalid) {
+        return state;
+    }
     return dal_c_Project__isTrue(value)
              ? dal_c_ToggleState_enabled
              : dal_c_ToggleState_disabled;
@@ -954,6 +968,26 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         opts->start_files_linked = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_lto)) {
         opts->lto_mode = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_omit_frame_pointer)) {
+        opts->omit_frame_pointer = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_function_sections)) {
+        opts->function_sections = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_data_sections)) {
+        opts->data_sections = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_gc_sections)) {
+        opts->gc_sections = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_whole_archive)) {
+        opts->whole_archive = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_unroll_loops)) {
+        opts->unroll_loops = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_unwind_tables)) {
+        opts->unwind_tables = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_async_unwind_tables)) {
+        opts->async_unwind_tables = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_strip)) {
+        opts->strip_mode = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_icf)) {
+        opts->icf_mode = dal_c_IcfMode_parse(value);
     } else if (str_eql(key, dal_c_opt_loose_errors)) {
         opts->loose_errors = dal_c_Project__isTrue(value);
     }

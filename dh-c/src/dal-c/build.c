@@ -276,6 +276,24 @@ static char* dal_c__resolveSelfProjectDir(void) {
     return resolved;
 }
 
+static void dal_c__pushSelfMakeKeyValue(ArrStr* argv, const char* key, const char* value) {
+    assert(argv != NULL);
+    assert(key != NULL);
+    if (!value || value[0] == '\0') {
+        return;
+    }
+    char* arg = str_format("%s=%s", key, value);
+    ArrStr_push(argv, arg);
+    free(arg);
+}
+
+static void dal_c__pushSelfMakeToggle(ArrStr* argv, const char* key, dal_c_ToggleState state) {
+    if (state == dal_c_ToggleState_auto) {
+        return;
+    }
+    dal_c__pushSelfMakeKeyValue(argv, key, dal_c_ToggleState_format(state));
+}
+
 static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     assert(cmd != NULL);
 
@@ -298,6 +316,25 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
         char* profile_arg = str_format("PROFILE=%s", profile_name);
         ArrStr_push(argv, profile_arg);
         free(profile_arg);
+    }
+    dal_c__pushSelfMakeKeyValue(argv, "CC", cmd->opts.compiler);
+    dal_c__pushSelfMakeKeyValue(argv, "C_STD", cmd->opts.c_std);
+    dal_c__pushSelfMakeKeyValue(argv, "ARCH_TARGET", cmd->opts.arch_target);
+    dal_c__pushSelfMakeKeyValue(argv, "TARGET_ARCH", cmd->opts.target_arch);
+    dal_c__pushSelfMakeKeyValue(argv, "TARGET_ABI", cmd->opts.target_abi);
+    dal_c__pushSelfMakeKeyValue(argv, "SYSROOT", cmd->opts.sysroot);
+    dal_c__pushSelfMakeToggle(argv, "LTO", cmd->opts.lto_mode);
+    dal_c__pushSelfMakeToggle(argv, "OMIT_FRAME_POINTER", cmd->opts.omit_frame_pointer);
+    dal_c__pushSelfMakeToggle(argv, "FUNCTION_SECTIONS", cmd->opts.function_sections);
+    dal_c__pushSelfMakeToggle(argv, "DATA_SECTIONS", cmd->opts.data_sections);
+    dal_c__pushSelfMakeToggle(argv, "GC_SECTIONS", cmd->opts.gc_sections);
+    dal_c__pushSelfMakeToggle(argv, "WHOLE_ARCHIVE", cmd->opts.whole_archive);
+    dal_c__pushSelfMakeToggle(argv, "UNROLL_LOOPS", cmd->opts.unroll_loops);
+    dal_c__pushSelfMakeToggle(argv, "UNWIND_TABLES", cmd->opts.unwind_tables);
+    dal_c__pushSelfMakeToggle(argv, "ASYNC_UNWIND_TABLES", cmd->opts.async_unwind_tables);
+    dal_c__pushSelfMakeToggle(argv, "STRIP", cmd->opts.strip_mode);
+    if (cmd->opts.icf_mode != dal_c_IcfMode_auto) {
+        dal_c__pushSelfMakeKeyValue(argv, "ICF", dal_c_IcfMode_format(cmd->opts.icf_mode));
     }
     if (target) {
         ArrStr_push(argv, target);
@@ -1855,17 +1892,91 @@ static bool dal_c__resolvedDslMode(const dal_c_CompilerOpts* opts) {
     return dal_c__resolvedToggle(opts->dsl_mode, true);
 }
 
-static bool dal_c__resolvedLtoMode(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+static dal_c_ToggleState dal_c__resolvedProfileToggleState(dal_c_ToggleState override, dal_c_ToggleState profile_default) {
+    return override != dal_c_ToggleState_auto ? override : profile_default;
+}
+
+static bool dal_c__resolvedProfileToggleEnabled(dal_c_ToggleState override, dal_c_ToggleState profile_default) {
+    return dal_c__resolvedProfileToggleState(override, profile_default) == dal_c_ToggleState_enabled;
+}
+
+static dal_c_ToggleState dal_c__resolvedLtoState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
     assert(opts != NULL);
     assert(profile != NULL);
-    bool profile_enables_lto = false;
-    for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
-        if (str_eql(profile->extra_flags[i], "-flto")) {
-            profile_enables_lto = true;
-            break;
-        }
+    return dal_c__resolvedProfileToggleState(opts->lto_mode, profile->lto_mode);
+}
+
+static bool dal_c__resolvedLtoMode(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    return dal_c__resolvedLtoState(opts, profile) == dal_c_ToggleState_enabled;
+}
+
+static dal_c_ToggleState dal_c__resolvedOmitFramePointerState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleState(opts->omit_frame_pointer, profile->omit_frame_pointer);
+}
+
+static bool dal_c__resolvedFunctionSections(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleEnabled(opts->function_sections, profile->function_sections);
+}
+
+static bool dal_c__resolvedDataSections(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleEnabled(opts->data_sections, profile->data_sections);
+}
+
+static bool dal_c__resolvedGcSections(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleEnabled(opts->gc_sections, profile->gc_sections);
+}
+
+static bool dal_c__resolvedWholeArchive(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleEnabled(opts->whole_archive, profile->whole_archive);
+}
+
+static dal_c_ToggleState dal_c__resolvedUnrollLoopsState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleState(opts->unroll_loops, profile->unroll_loops);
+}
+
+static dal_c_ToggleState dal_c__resolvedUnwindTablesState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleState(opts->unwind_tables, profile->unwind_tables);
+}
+
+static dal_c_ToggleState dal_c__resolvedAsyncUnwindTablesState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleState(opts->async_unwind_tables, profile->async_unwind_tables);
+}
+
+static bool dal_c__resolvedStripMode(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleEnabled(opts->strip_mode, profile->strip_mode);
+}
+
+static dal_c_IcfMode dal_c__resolvedIcfMode(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return opts->icf_mode != dal_c_IcfMode_auto ? opts->icf_mode : profile->icf_mode;
+}
+
+static const char* dal_c__resolvedTargetArch(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    if (opts->target_arch && opts->target_arch[0] != '\0') {
+        return str_eql(opts->target_arch, "auto") ? NULL : opts->target_arch;
     }
-    return dal_c__resolvedToggle(opts->lto_mode, profile_enables_lto);
+    return profile->target_arch;
 }
 
 static bool dal_c__isLtoFlag(const char* flag) {
@@ -2246,7 +2357,8 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, " %s", opt_flag);
     }
 
-    bool lto_enabled = dal_c__resolvedLtoMode(opts, profile);
+    dal_c_ToggleState lto_state = dal_c__resolvedLtoState(opts, profile);
+    bool lto_enabled = lto_state == dal_c_ToggleState_enabled;
     for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
         const char* flag = profile->extra_flags[i];
         if (dal_c__isLtoFlag(flag)) {
@@ -2256,8 +2368,38 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             (void)fprintf(fp, " %s", flag);
         }
     }
-    if (opts->lto_mode != dal_c_ToggleState_auto || lto_enabled) {
+    if (lto_state != dal_c_ToggleState_auto) {
         (void)fprintf(fp, lto_enabled ? " -flto" : " -fno-lto");
+    }
+    dal_c_ToggleState omit_frame_pointer = dal_c__resolvedOmitFramePointerState(opts, profile);
+    if (omit_frame_pointer == dal_c_ToggleState_enabled) {
+        (void)fprintf(fp, " -fomit-frame-pointer");
+    } else if (omit_frame_pointer == dal_c_ToggleState_disabled) {
+        (void)fprintf(fp, " -fno-omit-frame-pointer");
+    }
+    if (dal_c__resolvedFunctionSections(opts, profile)) {
+        (void)fprintf(fp, " -ffunction-sections");
+    }
+    if (dal_c__resolvedDataSections(opts, profile)) {
+        (void)fprintf(fp, " -fdata-sections");
+    }
+    dal_c_ToggleState unroll_loops = dal_c__resolvedUnrollLoopsState(opts, profile);
+    if (unroll_loops == dal_c_ToggleState_enabled) {
+        (void)fprintf(fp, " -funroll-loops");
+    } else if (unroll_loops == dal_c_ToggleState_disabled) {
+        (void)fprintf(fp, " -fno-unroll-loops");
+    }
+    dal_c_ToggleState unwind_tables = dal_c__resolvedUnwindTablesState(opts, profile);
+    if (unwind_tables == dal_c_ToggleState_enabled) {
+        (void)fprintf(fp, " -funwind-tables");
+    } else if (unwind_tables == dal_c_ToggleState_disabled) {
+        (void)fprintf(fp, " -fno-unwind-tables");
+    }
+    dal_c_ToggleState async_unwind_tables = dal_c__resolvedAsyncUnwindTablesState(opts, profile);
+    if (async_unwind_tables == dal_c_ToggleState_enabled) {
+        (void)fprintf(fp, " -fasynchronous-unwind-tables");
+    } else if (async_unwind_tables == dal_c_ToggleState_disabled) {
+        (void)fprintf(fp, " -fno-asynchronous-unwind-tables");
     }
 
     if (opts->loose_errors) {
@@ -2299,8 +2441,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, "TARGET_FLAGS = -target %s\n", opts->arch_target);
         (void)fprintf(fp, "CFLAGS_BASE += $(TARGET_FLAGS)\n");
     }
-    if (opts->target_arch) {
-        (void)fprintf(fp, "TARGET_ARCH_FLAGS = -march=%s\n", opts->target_arch);
+    const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
+    if (target_arch) {
+        (void)fprintf(fp, "TARGET_ARCH_FLAGS = -march=%s\n", target_arch);
         (void)fprintf(fp, "CFLAGS_BASE += $(TARGET_ARCH_FLAGS)\n");
     }
     if (opts->target_abi) {
@@ -2371,6 +2514,10 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         }
         (void)fprintf(fp, "LDFLAGS = $(TARGET_FLAGS) $(TARGET_ARCH_FLAGS) $(TARGET_ABI_FLAGS) $(SYSROOT_FLAGS)");
         dal_c__writeLinkModelFlags(fp, is_windows, opts, target_type);
+        bool whole_archive_enabled = dal_c__resolvedWholeArchive(opts, profile);
+        if (whole_archive_enabled) {
+            (void)fprintf(fp, " -Wl,--whole-archive");
+        }
         char* project_lib_name = NULL;
         char* project_lib_path = NULL;
         dal_c_TargetRequest request = { 0 };
@@ -2431,6 +2578,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         for (int i = 0; i < opts->link_count; ++i) {
             (void)fprintf(fp, " -l%s", opts->link_libs[i]);
         }
+        if (whole_archive_enabled) {
+            (void)fprintf(fp, " -Wl,--no-whole-archive");
+        }
         for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
             const char* flag = profile->extra_flags[i];
             if (dal_c__isLtoFlag(flag)) {
@@ -2440,8 +2590,18 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
                 (void)fprintf(fp, " %s", flag);
             }
         }
-        if (opts->lto_mode != dal_c_ToggleState_auto || lto_enabled) {
+        if (lto_state != dal_c_ToggleState_auto) {
             (void)fprintf(fp, lto_enabled ? " -flto" : " -fno-lto");
+        }
+        if (dal_c__resolvedGcSections(opts, profile)) {
+            (void)fprintf(fp, " -Wl,--gc-sections");
+        }
+        if (dal_c__resolvedStripMode(opts, profile)) {
+            (void)fprintf(fp, " -Wl,--strip-all");
+        }
+        dal_c_IcfMode icf_mode = dal_c__resolvedIcfMode(opts, profile);
+        if (icf_mode == dal_c_IcfMode_safe || icf_mode == dal_c_IcfMode_all) {
+            (void)fprintf(fp, " -Wl,--icf=%s", dal_c_IcfMode_format(icf_mode));
         }
         if (cmd->linker_script) {
             (void)fprintf(fp, " -Xlinker -T -Xlinker %s", cmd->linker_script);
@@ -2558,12 +2718,15 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
     bool start_files_linked = dal_c__resolvedStartFilesLinked(opts);
     bool lto_enabled = dal_c__resolvedLtoMode(opts, profile);
+    const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
+    dal_c_ToggleState unwind_tables = dal_c__resolvedUnwindTablesState(opts, profile);
+    dal_c_ToggleState async_unwind_tables = dal_c__resolvedAsyncUnwindTablesState(opts, profile);
     uint64_t hash = 1469598103934665603ULL;
     hash = dal_c__hashString(hash, profile->name);
     hash = dal_c__hashString(hash, opts->compiler);
     hash = dal_c__hashString(hash, opts->c_std);
     hash = dal_c__hashString(hash, opts->arch_target);
-    hash = dal_c__hashString(hash, opts->target_arch);
+    hash = dal_c__hashString(hash, target_arch);
     hash = dal_c__hashString(hash, opts->target_abi);
     hash = dal_c__hashString(hash, opts->sysroot);
     hash = dal_c__hashString(hash, cmd->compiler_args);
@@ -2574,6 +2737,20 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     hash = dal_c__hashBool(hash, dal_c__resolvedDslMode(opts));
     hash = dal_c__hashBytes(hash, &opts->lto_mode, sizeof(opts->lto_mode));
     hash = dal_c__hashBool(hash, lto_enabled);
+    hash = dal_c__hashBytes(hash, &opts->omit_frame_pointer, sizeof(opts->omit_frame_pointer));
+    hash = dal_c__hashBytes(hash, &profile->omit_frame_pointer, sizeof(profile->omit_frame_pointer));
+    hash = dal_c__hashBytes(hash, &opts->unroll_loops, sizeof(opts->unroll_loops));
+    hash = dal_c__hashBytes(hash, &profile->unroll_loops, sizeof(profile->unroll_loops));
+    hash = dal_c__hashBytes(hash, &opts->function_sections, sizeof(opts->function_sections));
+    hash = dal_c__hashBool(hash, dal_c__resolvedFunctionSections(opts, profile));
+    hash = dal_c__hashBytes(hash, &opts->data_sections, sizeof(opts->data_sections));
+    hash = dal_c__hashBool(hash, dal_c__resolvedDataSections(opts, profile));
+    hash = dal_c__hashBytes(hash, &opts->unwind_tables, sizeof(opts->unwind_tables));
+    hash = dal_c__hashBytes(hash, &profile->unwind_tables, sizeof(profile->unwind_tables));
+    hash = dal_c__hashBytes(hash, &unwind_tables, sizeof(unwind_tables));
+    hash = dal_c__hashBytes(hash, &opts->async_unwind_tables, sizeof(opts->async_unwind_tables));
+    hash = dal_c__hashBytes(hash, &profile->async_unwind_tables, sizeof(profile->async_unwind_tables));
+    hash = dal_c__hashBytes(hash, &async_unwind_tables, sizeof(async_unwind_tables));
     hash = dal_c__hashBool(hash, opts->loose_errors);
     hash = dal_c__hashVersionSpec(hash, &opts->version);
     hash = dal_c__hashBool(hash, use_pch);
@@ -2603,6 +2780,8 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
     bool start_files_linked = dal_c__resolvedStartFilesLinked(opts);
     bool lto_enabled = dal_c__resolvedLtoMode(opts, profile);
+    const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
+    dal_c_IcfMode icf_mode = dal_c__resolvedIcfMode(opts, profile);
     uint64_t hash = 1469598103934665603ULL;
     hash = dal_c__hashString(hash, profile->name);
     hash = dal_c__hashString(hash, cmd->link_args);
@@ -2612,7 +2791,7 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     hash = dal_c__hashBytes(hash, &target_type, sizeof(target_type));
     hash = dal_c__hashString(hash, opts->entry_symbol);
     hash = dal_c__hashString(hash, opts->arch_target);
-    hash = dal_c__hashString(hash, opts->target_arch);
+    hash = dal_c__hashString(hash, target_arch);
     hash = dal_c__hashString(hash, opts->target_abi);
     hash = dal_c__hashString(hash, opts->sysroot);
     hash = dal_c__hashVersionSpec(hash, &opts->version);
@@ -2620,6 +2799,16 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     hash = dal_c__hashBool(hash, start_files_linked);
     hash = dal_c__hashBytes(hash, &opts->lto_mode, sizeof(opts->lto_mode));
     hash = dal_c__hashBool(hash, lto_enabled);
+    hash = dal_c__hashBytes(hash, &opts->gc_sections, sizeof(opts->gc_sections));
+    hash = dal_c__hashBool(hash, dal_c__resolvedGcSections(opts, profile));
+    hash = dal_c__hashBytes(hash, &opts->whole_archive, sizeof(opts->whole_archive));
+    hash = dal_c__hashBool(hash, dal_c__resolvedWholeArchive(opts, profile));
+    hash = dal_c__hashBytes(hash, &opts->strip_mode, sizeof(opts->strip_mode));
+    hash = dal_c__hashBytes(hash, &profile->strip_mode, sizeof(profile->strip_mode));
+    hash = dal_c__hashBool(hash, dal_c__resolvedStripMode(opts, profile));
+    hash = dal_c__hashBytes(hash, &opts->icf_mode, sizeof(opts->icf_mode));
+    hash = dal_c__hashBytes(hash, &profile->icf_mode, sizeof(profile->icf_mode));
+    hash = dal_c__hashBytes(hash, &icf_mode, sizeof(icf_mode));
 
     for (int i = 0; i < opts->link_count; ++i) {
         hash = dal_c__hashString(hash, opts->link_libs[i]);

@@ -108,16 +108,63 @@ static inline const char* dal_c_boolean_format(bool value) {
 /// === TOGGLE STATE ===
 
 typedef enum dal_c_ToggleState {
+    dal_c_ToggleState_invalid = -1,
     dal_c_ToggleState_auto = 0,
     dal_c_ToggleState_enabled = 1,
     dal_c_ToggleState_disabled = 2,
 } dal_c_ToggleState;
+static inline dal_c_ToggleState dal_c_ToggleState_parse(const char* str) {
+    if (str_eql(str, "auto")) { return dal_c_ToggleState_auto; }
+    if (str_eql(str, dal_c_boolean_true) || str_eql(str, dal_c_boolean_on) || str_eql(str, "yes") || str_eql(str, "1")) {
+        return dal_c_ToggleState_enabled;
+    }
+    if (str_eql(str, dal_c_boolean_false) || str_eql(str, dal_c_boolean_off) || str_eql(str, "no") || str_eql(str, "0")) {
+        return dal_c_ToggleState_disabled;
+    }
+    return dal_c_ToggleState_invalid;
+}
+static inline const char* dal_c_ToggleState_format(dal_c_ToggleState state) {
+    switch (state) {
+    case dal_c_ToggleState_auto: return "auto";
+    case dal_c_ToggleState_enabled: return dal_c_boolean_on;
+    case dal_c_ToggleState_disabled: return dal_c_boolean_off;
+    case dal_c_ToggleState_invalid:
+    default: return NULL;
+    }
+}
 static inline bool dal_c_ToggleState_resolve(dal_c_ToggleState state, bool default_enabled) {
     switch (state) {
     case dal_c_ToggleState_enabled: return true;
     case dal_c_ToggleState_disabled: return false;
     case dal_c_ToggleState_auto:
     default: return default_enabled;
+    }
+}
+
+typedef enum dal_c_IcfMode {
+    dal_c_IcfMode_auto = 0,
+    dal_c_IcfMode_off = 1,
+    dal_c_IcfMode_safe = 2,
+    dal_c_IcfMode_all = 3,
+} dal_c_IcfMode;
+#define dal_c_icf_mode_auto "auto"
+#define dal_c_icf_mode_off "off"
+#define dal_c_icf_mode_safe "safe"
+#define dal_c_icf_mode_all "all"
+static inline dal_c_IcfMode dal_c_IcfMode_parse(const char* str) {
+    if (str_eql(str, dal_c_icf_mode_auto)) { return dal_c_IcfMode_auto; }
+    if (str_eql(str, dal_c_icf_mode_off) || str_eql(str, dal_c_boolean_false) || str_eql(str, "no") || str_eql(str, "0")) { return dal_c_IcfMode_off; }
+    if (str_eql(str, dal_c_icf_mode_safe)) { return dal_c_IcfMode_safe; }
+    if (str_eql(str, dal_c_icf_mode_all) || str_eql(str, dal_c_boolean_true) || str_eql(str, dal_c_boolean_on) || str_eql(str, "1")) { return dal_c_IcfMode_all; }
+    return dal_c_IcfMode_auto;
+}
+static inline const char* dal_c_IcfMode_format(dal_c_IcfMode mode) {
+    switch (mode) {
+    case dal_c_IcfMode_auto: return dal_c_icf_mode_auto;
+    case dal_c_IcfMode_off: return dal_c_icf_mode_off;
+    case dal_c_IcfMode_safe: return dal_c_icf_mode_safe;
+    case dal_c_IcfMode_all: return dal_c_icf_mode_all;
+    default: return NULL;
     }
 }
 
@@ -441,6 +488,18 @@ typedef struct dal_c_ProfileSpec {
     dal_c_OptiLevel opti_level;
     dal_c_DebugLevel debug_level;
     bool debug_assertions;
+    dal_c_ToggleState lto_mode;
+    dal_c_ToggleState omit_frame_pointer;
+    dal_c_ToggleState function_sections;
+    dal_c_ToggleState data_sections;
+    dal_c_ToggleState gc_sections;
+    dal_c_ToggleState whole_archive;
+    dal_c_ToggleState unroll_loops;
+    dal_c_ToggleState unwind_tables;
+    dal_c_ToggleState async_unwind_tables;
+    dal_c_ToggleState strip_mode;
+    dal_c_IcfMode icf_mode;
+    const char* target_arch;
     const char* extra_flags[8];
 } dal_c_ProfileSpec;
 static const dal_c_ProfileSpec dal_c_profile_specs[] = {
@@ -449,21 +508,21 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_debug,
         .debug_level = dal_c_DebugLevel_extended,
         .debug_assertions = true,
-        .extra_flags = { "-fno-omit-frame-pointer", NULL },
+        .omit_frame_pointer = dal_c_ToggleState_disabled,
     },
     [dal_c_Profile_test] = {
         .name = dal_c_profile_test,
         .opti_level = dal_c_OptiLevel_basic,
         .debug_level = dal_c_DebugLevel_standard,
         .debug_assertions = true,
-        .extra_flags = { "-fno-omit-frame-pointer", NULL },
+        .omit_frame_pointer = dal_c_ToggleState_disabled,
     },
     [dal_c_Profile_profile] = {
         .name = dal_c_profile_profile,
         .opti_level = dal_c_OptiLevel_balanced,
         .debug_level = dal_c_DebugLevel_standard,
         .debug_assertions = true,
-        .extra_flags = { "-fno-omit-frame-pointer", NULL },
+        .omit_frame_pointer = dal_c_ToggleState_disabled,
     },
     [dal_c_Profile_stable] = {
         .name = dal_c_profile_stable,
@@ -477,28 +536,62 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_aggressive,
         .debug_level = dal_c_DebugLevel_minimal,
         .debug_assertions = false,
-        .extra_flags = { "-flto", "-ffunction-sections", "-fdata-sections", "-Wl,--gc-sections", NULL },
+        .lto_mode = dal_c_ToggleState_enabled,
+        .omit_frame_pointer = dal_c_ToggleState_enabled,
+        .function_sections = dal_c_ToggleState_enabled,
+        .data_sections = dal_c_ToggleState_enabled,
+        .gc_sections = dal_c_ToggleState_enabled,
+        .unwind_tables = dal_c_ToggleState_disabled,
+        .async_unwind_tables = dal_c_ToggleState_disabled,
+        .strip_mode = dal_c_ToggleState_enabled,
+        .icf_mode = dal_c_IcfMode_all,
     },
     [dal_c_Profile_optimize] = {
         .name = dal_c_profile_optimize,
         .opti_level = dal_c_OptiLevel_aggressive,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .extra_flags = { "-march=native", "-flto", "-ffunction-sections", "-fdata-sections", "-Wl,--gc-sections", NULL },
+        .lto_mode = dal_c_ToggleState_enabled,
+        .omit_frame_pointer = dal_c_ToggleState_enabled,
+        .function_sections = dal_c_ToggleState_enabled,
+        .data_sections = dal_c_ToggleState_enabled,
+        .gc_sections = dal_c_ToggleState_enabled,
+        .unwind_tables = dal_c_ToggleState_disabled,
+        .async_unwind_tables = dal_c_ToggleState_disabled,
+        .strip_mode = dal_c_ToggleState_enabled,
+        .icf_mode = dal_c_IcfMode_all,
+        .target_arch = "native",
     },
     [dal_c_Profile_compact] = {
         .name = dal_c_profile_compact,
         .opti_level = dal_c_OptiLevel_compact,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .extra_flags = { "-flto", "-ffunction-sections", "-fdata-sections", "-Wl,--gc-sections", NULL },
+        .lto_mode = dal_c_ToggleState_enabled,
+        .omit_frame_pointer = dal_c_ToggleState_enabled,
+        .function_sections = dal_c_ToggleState_enabled,
+        .data_sections = dal_c_ToggleState_enabled,
+        .gc_sections = dal_c_ToggleState_enabled,
+        .unwind_tables = dal_c_ToggleState_disabled,
+        .async_unwind_tables = dal_c_ToggleState_disabled,
+        .strip_mode = dal_c_ToggleState_enabled,
+        .icf_mode = dal_c_IcfMode_all,
     },
     [dal_c_Profile_micro] = {
         .name = dal_c_profile_micro,
         .opti_level = dal_c_OptiLevel_minimal,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .extra_flags = { "-fno-unroll-loops", "-flto", "-ffunction-sections", "-fdata-sections", "-Wl,--gc-sections", NULL },
+        .lto_mode = dal_c_ToggleState_enabled,
+        .omit_frame_pointer = dal_c_ToggleState_enabled,
+        .function_sections = dal_c_ToggleState_enabled,
+        .data_sections = dal_c_ToggleState_enabled,
+        .gc_sections = dal_c_ToggleState_enabled,
+        .unroll_loops = dal_c_ToggleState_disabled,
+        .unwind_tables = dal_c_ToggleState_disabled,
+        .async_unwind_tables = dal_c_ToggleState_disabled,
+        .strip_mode = dal_c_ToggleState_enabled,
+        .icf_mode = dal_c_IcfMode_all,
     },
 };
 #define dal_c_profile_specs_count ((int)(sizeof(dal_c_profile_specs) / sizeof(dal_c_profile_specs[0])))
@@ -624,6 +717,16 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_link_stdlib "link-stdlib" // start-files + default-libs bundle
 #define dal_c_opt_link_crt "link-crt" // start-files bundle
 #define dal_c_opt_lto "lto"
+#define dal_c_opt_omit_frame_pointer "omit-frame-pointer"
+#define dal_c_opt_function_sections "function-sections"
+#define dal_c_opt_data_sections "data-sections"
+#define dal_c_opt_gc_sections "gc-sections"
+#define dal_c_opt_whole_archive "whole-archive"
+#define dal_c_opt_unroll_loops "unroll-loops"
+#define dal_c_opt_unwind_tables "unwind-tables"
+#define dal_c_opt_async_unwind_tables "async-unwind-tables"
+#define dal_c_opt_strip "strip"
+#define dal_c_opt_icf "icf"
 #define dal_c_opt_entry "entry"
 #define dal_c_opt_image "image"
 #define dal_c_opt_emit_preprocessed "emit-preprocessed"
@@ -736,11 +839,21 @@ typedef struct dal_c_CompilerOpts {
     char* entry_symbol; // --entry=<symbol>
     dal_c_Profile profile;
     dal_c_CompileEnv compile_env; // --hosted / --freestanding
-    dal_c_ToggleState libc_linked; // --link-libc=<bool>
-    dal_c_ToggleState dsl_mode; // --link-dsl=<bool>
-    dal_c_ToggleState default_libs_linked; // --link-default-libs=<bool>
-    dal_c_ToggleState start_files_linked; // --link-start-files=<bool> / --link-crt=<bool>
-    dal_c_ToggleState lto_mode; // --lto=<bool>
+    dal_c_ToggleState libc_linked; // --link-libc=<auto|on|off>
+    dal_c_ToggleState dsl_mode; // --link-dsl=<auto|on|off>
+    dal_c_ToggleState default_libs_linked; // --link-default-libs=<auto|on|off>
+    dal_c_ToggleState start_files_linked; // --link-start-files=<auto|on|off> / --link-crt=<auto|on|off>
+    dal_c_ToggleState lto_mode; // --lto=<auto|on|off>
+    dal_c_ToggleState omit_frame_pointer; // --omit-frame-pointer=<auto|on|off>
+    dal_c_ToggleState function_sections; // --function-sections=<auto|on|off>
+    dal_c_ToggleState data_sections; // --data-sections=<auto|on|off>
+    dal_c_ToggleState gc_sections; // --gc-sections=<auto|on|off>
+    dal_c_ToggleState whole_archive; // --whole-archive=<auto|on|off>
+    dal_c_ToggleState unroll_loops; // --unroll-loops=<auto|on|off>
+    dal_c_ToggleState unwind_tables; // --unwind-tables=<auto|on|off>
+    dal_c_ToggleState async_unwind_tables; // --async-unwind-tables=<auto|on|off>
+    dal_c_ToggleState strip_mode; // --strip=<auto|on|off>
+    dal_c_IcfMode icf_mode; // --icf=<off|safe|all>
     bool loose_errors; // --loose-errors
     dal_c_VersionSpec version; // project/file/CLI version contract
 } dal_c_CompilerOpts;
@@ -1051,7 +1164,17 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_link_start_files dal_c_opt_value_sep "<on|off>", "Link or omit startup files / CRT objects (default: " dal_c_default_start_files_linked ")" },
     { dal_c_opt_prefix_long dal_c_opt_link_stdlib dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` + `link-default-libs` bundle together" },
     { dal_c_opt_prefix_long dal_c_opt_link_crt dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` bundle" },
-    { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<on|off>", "Override profile LTO policy for compile and link flags" },
+    { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|on|off>", "Override profile LTO policy for compile and link flags" },
+    { dal_c_opt_prefix_long dal_c_opt_omit_frame_pointer dal_c_opt_value_sep "<auto|on|off>", "Emit or omit frame-pointer omission flags" },
+    { dal_c_opt_prefix_long dal_c_opt_function_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile function section splitting (`-ffunction-sections`)" },
+    { dal_c_opt_prefix_long dal_c_opt_data_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile data section splitting (`-fdata-sections`)" },
+    { dal_c_opt_prefix_long dal_c_opt_gc_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile linker section garbage collection (`-Wl,--gc-sections`)" },
+    { dal_c_opt_prefix_long dal_c_opt_whole_archive dal_c_opt_value_sep "<auto|on|off>", "Wrap explicit static archive inputs in linker whole-archive mode" },
+    { dal_c_opt_prefix_long dal_c_opt_unroll_loops dal_c_opt_value_sep "<auto|on|off>", "Emit or omit loop unrolling flags" },
+    { dal_c_opt_prefix_long dal_c_opt_unwind_tables dal_c_opt_value_sep "<auto|on|off>", "Override unwind table emission (`-fno-unwind-tables` when off)" },
+    { dal_c_opt_prefix_long dal_c_opt_async_unwind_tables dal_c_opt_value_sep "<auto|on|off>", "Override asynchronous unwind table emission (`-fno-asynchronous-unwind-tables` when off)" },
+    { dal_c_opt_prefix_long dal_c_opt_strip dal_c_opt_value_sep "<auto|on|off>", "Strip linked binary symbols (`-Wl,--strip-all` when on)" },
+    { dal_c_opt_prefix_long dal_c_opt_icf dal_c_opt_value_sep "<auto|off|safe|all>", "Enable linker identical code folding (`-Wl,--icf=<mode>`)" },
     { dal_c_opt_prefix_long dal_c_opt_entry dal_c_opt_value_sep "<symbol>", "Override linker entry symbol" },
     { dal_c_opt_prefix_long dal_c_opt_target_arch dal_c_opt_value_sep "<arch>", "Target architecture sub-variant passed to compiler and linker (for example `rv32im`)" },
     { dal_c_opt_prefix_long dal_c_opt_target_abi dal_c_opt_value_sep "<abi>", "Target ABI passed to compiler and linker (for example `ilp32`)" },
