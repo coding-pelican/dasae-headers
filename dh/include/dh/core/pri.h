@@ -5,9 +5,9 @@
  * @file    pri.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-28 (date of creation)
- * @updated 2026-01-03 (date of last update)
+ * @updated 2026-06-03 (date of last update)
  * @ingroup dasae-headers(dh)/core/pri
- * @prefix  (pri)
+ * @prefix  (none)
  *
  * @brief   Primitive types and operations
  * @details Provides comprehensive primitive operations using zero-cost abstractions:
@@ -356,10 +356,13 @@ extern "C" {
 
 /*========== Floating-Point Classification ==================================*/
 
-#define flt_isNan(_x...) ____flt_isNan(_x)
+#define flt_isNaN(_x...) ____flt_isNaN(_x)
 #define flt_isInf(_x...) ____flt_isInf(_x)
 #define flt_isFinite(_x...) ____flt_isFinite(_x)
 #define flt_isNormal(_x...) ____flt_isNormal(_x)
+#define flt_isSubnormal(_x...) ____flt_isSubnormal(_x)
+#define flt_isZero(_x...) ____flt_isZero(_x)
+#define flt_signBit(_x...) ____flt_signBit(_x)
 
 /*========== Floating-Point Rounding Operations =============================*/
 
@@ -1921,10 +1924,19 @@ $inline_always
 
 /*========== Floating-Point Classification Implementation ===================*/
 
-#define ____flt_isNan(_x...) __builtin_isnan(_x)
-#define ____flt_isInf(_x...) __builtin_isinf(_x)
-#define ____flt_isFinite(_x...) __builtin_isfinite(_x)
-#define ____flt_isNormal(_x...) __builtin_isnormal(_x)
+#define ____flt_isNaN(_x...) bool_(__builtin_isnan(_x))
+#define ____flt_isInf(_x...) bool_(__builtin_isinf(_x))
+#define ____flt_isFinite(_x...) bool_(__builtin_isfinite(_x))
+#define ____flt_isNormal(_x...) bool_(__builtin_isnormal(_x))
+#define ____flt_isSubnormal(_x...) bool_(/* TODO: Implement */)
+#define ____flt_isZero(_x...) bool_(T_switch$((TypeOf(_x))( \
+    T_case$((f32)(as$(f32)(_x) == 0.0f)), \
+    T_case$((f64)(as$(f64)(_x) == 0.0)) \
+)))
+#define ____flt_signBit(_x...) bool_(T_switch$((TypeOf(_x))( \
+    T_case$((f32)(__builtin_signbitf(as$(f32)(_x)))), \
+    T_case$((f64)(__builtin_signbit(as$(f64)(_x)))) \
+)))
 
 /*========== Floating-Point Rounding Implementation =========================*/
 

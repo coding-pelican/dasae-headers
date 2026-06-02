@@ -417,8 +417,8 @@ typedef float f32;
 #define f32_limit_min_pstv f32_(+FLT_MIN)
 #define f32_limit_max_pstv f32_(+FLT_MAX)
 #define f32_eps f32_(FLT_EPSILON)
-#define f32_nan f32_(__builtin_nan(""))
-#define f32_inf f32_(__builtin_inf())
+#define f32_nan f32_(__builtin_nanf(""))
+#define f32_inf f32_(__builtin_inff())
 #define f32_inf_ngtv f32_(-f32_inf)
 #define f32_inf_pstv f32_(+f32_inf)
 
