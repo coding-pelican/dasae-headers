@@ -30,7 +30,7 @@ static bool dal_c__copyHeaderRelativeTo(const char* src, const char* src_root, c
 static bool dal_c__copyHeadersRecursive(const char* src_dir, const char* dst_dir);
 static char* dal_c__resolveDepsTargetDir(const char* deps_dir, const char* lib_name);
 static dal_c__noinline void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const dal_c_Project* proj, const char* build_dir, dal_c_Target target_type, const char* target_path, const char* link_contract_path);
-static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* build_dir);
+static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* build_dir, dal_c_Target target_type);
 static dal_c__noinline int dal_c__writeEmitOnlyMakefile(
     FILE* fp,
     const dal_c_Cmd* cmd,
@@ -62,17 +62,17 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
 static char* dal_c__sourceToObjStem(const char* base, const char* src);
 static bool dal_c__sourceNeedsTestMode(const dal_c_Project* proj, const char* src);
 static bool dal_c__sourceUsesPchExcludedHeader(const dal_c_Project* proj, const char* src);
-static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, bool use_pch, bool test_mode);
+static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, bool use_pch, bool test_mode);
 static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static char* dal_c__makeLinkContractPath(const char* build_dir, const char* target_path);
 static bool dal_c__writeLinkContractFile(const char* path, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
-static char* dal_c__makeObjectPath(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const char* object_dir, const char* base, const char* src, bool use_pch, bool test_mode);
+static char* dal_c__makeObjectPath(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, const char* object_dir, const char* base, const char* src, bool use_pch, bool test_mode);
 static bool dal_c__sourceIsAssembly(const char* src);
 static char* dal_c__makeImageLinkPath(const char* target_path);
 static uint64_t dal_c__hashVersionSpec(uint64_t hash, const dal_c_VersionSpec* version);
 static void dal_c__writeVersionDefines(FILE* fp, const dal_c_VersionSpec* version);
 static bool dal_c__targetIsEmitOnly(dal_c_Target target_type);
-static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, ArrStr* sources, bool has_pch, const char* object_dir, const char* base);
+static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, ArrStr* sources, bool has_pch, const char* object_dir, const char* base, dal_c_Target target_type);
 static void dal_c__writeMakefileTargetVar(FILE* fp, const char* target_path);
 static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target type, bool is_windows, const char* target_path, const char* link_contract_path);
 static char* dal_c__artifactPath(const char* target_path, const char* override_path, const char* ext);
@@ -102,7 +102,10 @@ static bool dal_c__usesDhLibrary(const dal_c_Project* proj, const dal_c_Compiler
 static dal_c__noinline dal_c__optnone bool dal_c__validateLinkToolchain(const dal_c_CompilerOpts* opts, dal_c_Target target_type);
 static bool dal_c__validateBuildArtifacts(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, ArrStr* sources, dal_c_Target target_type);
 static bool dal_c__targetUsesImplicitCompilerRt(dal_c_Target target_type);
+static bool dal_c__resolvedDefaultLibsLinked(const dal_c_CompilerOpts* opts);
 static dal_c__noinline dal_c__optnone char* dal_c__queryCompilerRtPath(const dal_c_CompilerOpts* opts);
+static ArrStr* dal_c__queryToolchainLinkTokens(const dal_c_CompilerOpts* opts);
+static void dal_c__printToolchainCategory(const char* title, ArrStr* link_tokens, const char* compiler_rt_path, dal_c_ToolchainQuery query);
 
 // === PLATFORM ===
 
@@ -330,6 +333,10 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     dal_c__pushSelfMakeToggle(argv, "FUNCTION_SECTIONS", cmd->opts.function_sections);
     dal_c__pushSelfMakeToggle(argv, "DATA_SECTIONS", cmd->opts.data_sections);
     dal_c__pushSelfMakeToggle(argv, "GC_SECTIONS", cmd->opts.gc_sections);
+    dal_c__pushSelfMakeToggle(argv, "LINK_LIBC", cmd->opts.libc_linked);
+    dal_c__pushSelfMakeToggle(argv, "LINK_DEFAULT_LIBS", cmd->opts.default_libs_linked);
+    dal_c__pushSelfMakeToggle(argv, "LINK_START_FILES", cmd->opts.start_files_linked);
+    dal_c__pushSelfMakeToggle(argv, "LINK_COMPILER_RT", cmd->opts.compiler_rt_linked);
     dal_c__pushSelfMakeToggle(argv, "WHOLE_ARCHIVE", cmd->opts.whole_archive);
     dal_c__pushSelfMakeToggle(argv, "UNROLL_LOOPS", cmd->opts.unroll_loops);
     dal_c__pushSelfMakeToggle(argv, "UNWIND_TABLES", cmd->opts.unwind_tables);
@@ -997,7 +1004,7 @@ int dal_c__runDebugger(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
 }
 
 /* NOLINTNEXTLINE(misc-no-recursion) */
-static int dal_c__ensureLibDH(const dal_c_Project* proj, const dal_c_ProfileSpec* profile) {
+static int dal_c__ensureLibDH(const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const dal_c_CompilerOpts* parent_opts) {
     if (!proj || !proj->dh_path) { return 0; }
     dal_c_Project* dh_proj = dal_c_Project_detectAt(proj->dh_path, NULL);
     if (!dh_proj) {
@@ -1033,6 +1040,9 @@ static int dal_c__ensureLibDH(const dal_c_Project* proj, const dal_c_ProfileSpec
     cmd.payload.lib.linking = dal_c_Linking_static;
     cmd.opts.profile = dal_c_Profile_invalid;
     dal_c_CompilerOpts_merge(&cmd.opts, &dh_proj->opts);
+    if (parent_opts) {
+        dal_c_CompilerOpts_merge(&cmd.opts, parent_opts);
+    }
     cmd.opts.dsl_mode = dal_c_ToggleState_disabled;
     if (cmd.opts.profile == dal_c_Profile_invalid) {
         cmd.opts.profile = dal_c_Profile_parse(profile->name);
@@ -1075,7 +1085,7 @@ int dal_c__buildDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     if (cmd->verbose) {
         printf("Building DSL at %s\n", proj->dh_path);
     }
-    return dal_c__ensureLibDH(&dh_proj, profile);
+    return dal_c__ensureLibDH(&dh_proj, profile, &cmd->opts);
 }
 
 int dal_c__buildSelf(const dal_c_Cmd* cmd) {
@@ -1181,7 +1191,7 @@ dal_c__noinline dal_c__optnone int dal_c__generateMakefile(
 
     // Auto-build libdh if needed and not disabled
     if (dal_c__usesDhLibrary(proj, &cmd->opts)) {
-        if (dal_c__ensureLibDH(proj, profile) != 0) {
+        if (dal_c__ensureLibDH(proj, profile, &cmd->opts) != 0) {
             (void)fprintf(stderr, "Error: Failed to build libdh\n");
             return 1;
         }
@@ -1231,7 +1241,7 @@ dal_c__noinline dal_c__optnone int dal_c__generateMakefile(
     // Declare default goal before any rules to ensure 'all' is the default target
     (void)fprintf(fp, ".DEFAULT_GOAL := all\n\n");
 
-    dal_c__writeMakefilePCH(fp, cmd, proj, profile, build_dir);
+    dal_c__writeMakefilePCH(fp, cmd, proj, profile, build_dir, target_type);
 
     if (dal_c__targetIsEmitOnly(target_type)) {
         return dal_c__writeEmitOnlyMakefile(
@@ -1998,10 +2008,38 @@ static bool dal_c__isLtoFlag(const char* flag) {
     return flag && (str_eql(flag, "-flto") || str_eql(flag, "-fno-lto"));
 }
 
-static bool dal_c__resolvedLibcLinked(const dal_c_CompilerOpts* opts) {
+static bool dal_c__targetSupportsNoLibcFlag(const dal_c_CompilerOpts* opts) {
+    assert(opts != NULL);
+    const char* target = opts->arch_target;
+    if (target && target[0] != '\0') {
+        return strstr(target, "windows") == NULL
+            && strstr(target, "mingw") == NULL
+            && strstr(target, "msvc") == NULL;
+    }
+#ifdef _WIN32
+    return false;
+#else
+    return true;
+#endif
+}
+
+static bool dal_c__requestedLibcLinked(const dal_c_CompilerOpts* opts) {
     assert(opts != NULL);
     bool default_linked = dal_c__resolvedCompileEnv(opts) != dal_c_CompileEnv_freestanding;
     return dal_c__resolvedToggle(opts->libc_linked, default_linked);
+}
+
+static bool dal_c__resolvedLibcLinked(const dal_c_CompilerOpts* opts) {
+    assert(opts != NULL);
+    bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
+    if (!default_libs_linked) {
+        return false;
+    }
+    bool requested_linked = dal_c__requestedLibcLinked(opts);
+    if (requested_linked) {
+        return true;
+    }
+    return !dal_c__targetSupportsNoLibcFlag(opts);
 }
 
 static bool dal_c__resolvedDefaultLibsLinked(const dal_c_CompilerOpts* opts) {
@@ -2014,9 +2052,21 @@ static bool dal_c__resolvedStartFilesLinked(const dal_c_CompilerOpts* opts) {
     return dal_c__resolvedToggle(opts->start_files_linked, true);
 }
 
-static bool dal_c__linkNeedsCompilerRt(const dal_c_CompilerOpts* opts) {
+static bool dal_c__resolvedCompilerRtLinked(const dal_c_CompilerOpts* opts, dal_c_Target target_type) {
     assert(opts != NULL);
-    return !dal_c__resolvedDefaultLibsLinked(opts);
+    if (!dal_c__targetUsesImplicitCompilerRt(target_type)) {
+        return false;
+    }
+    if (dal_c__resolvedDefaultLibsLinked(opts)) {
+        return true;
+    }
+    return dal_c__resolvedToggle(opts->compiler_rt_linked, true);
+}
+
+static bool dal_c__linkNeedsCompilerRt(const dal_c_CompilerOpts* opts, dal_c_Target target_type) {
+    assert(opts != NULL);
+    return !dal_c__resolvedDefaultLibsLinked(opts)
+        && dal_c__resolvedCompilerRtLinked(opts, target_type);
 }
 
 static bool dal_c__targetUsesImplicitCompilerRt(dal_c_Target target_type) {
@@ -2134,6 +2184,312 @@ static dal_c__noinline dal_c__optnone char* dal_c__queryCompilerRtPath(const dal
     return trimmed;
 }
 
+static bool dal_c__tokenEndsWith(const char* token, const char* suffix) {
+    assert(token != NULL);
+    assert(suffix != NULL);
+    size_t token_len = strlen(token);
+    size_t suffix_len = strlen(suffix);
+    return suffix_len <= token_len && strcmp(token + token_len - suffix_len, suffix) == 0;
+}
+
+static const char* dal_c__tokenBasename(const char* token) {
+    assert(token != NULL);
+    const char* slash = strrchr(token, '/');
+    const char* backslash = strrchr(token, '\\');
+    const char* sep = slash > backslash ? slash : backslash;
+    return sep ? sep + 1 : token;
+}
+
+static bool dal_c__toolchainTokenIsStartFile(const char* token) {
+    const char* base = dal_c__tokenBasename(token);
+    return str_eql(base, "crt1.o")
+        || str_eql(base, "crt2.o")
+        || str_eql(base, "Scrt1.o")
+        || str_eql(base, "gcrt1.o")
+        || str_eql(base, "crti.o")
+        || str_eql(base, "crtn.o")
+        || str_startsWith(base, "crtbegin")
+        || str_startsWith(base, "crtend");
+}
+
+static bool dal_c__toolchainTokenIsCompilerRt(const char* token, const char* compiler_rt_path) {
+    return (compiler_rt_path && compiler_rt_path[0] != '\0' && str_eql(token, compiler_rt_path))
+        || strstr(token, "libclang_rt") != NULL
+        || strstr(token, "libgcc") != NULL;
+}
+
+static bool dal_c__toolchainTokenIsLib(const char* token) {
+    return str_startsWith(token, "-l")
+        || dal_c__tokenEndsWith(token, ".a")
+        || dal_c__tokenEndsWith(token, ".lib");
+}
+
+static bool dal_c__toolchainTokenIsLinkInput(const char* token) {
+    if (!token || token[0] == '\0') {
+        return false;
+    }
+    if (str_startsWith(token, "-L")
+        || str_eql(token, "-o")
+        || str_eql(token, "-m")
+        || str_eql(token, "-Bdynamic")
+        || str_eql(token, "-Bstatic")
+        || str_eql(token, "-shared")) {
+        return false;
+    }
+    return dal_c__toolchainTokenIsStartFile(token)
+        || dal_c__toolchainTokenIsLib(token);
+}
+
+static bool dal_c__toolchainTokenIsLibc(const char* token) {
+    return str_eql(token, "-lc")
+        || str_eql(token, "-lmsvcrt")
+        || str_eql(token, "-lucrt")
+        || str_eql(token, "-lcrtdll");
+}
+
+static bool dal_c__toolchainTokenIsCrt(const char* token) {
+    return dal_c__toolchainTokenIsStartFile(token)
+        || str_eql(token, "-lmingw32")
+        || str_eql(token, "-lmingwex")
+        || str_eql(token, "-lmoldname")
+        || dal_c__toolchainTokenIsLibc(token);
+}
+
+static ArrStr* dal_c__parseQuotedTokens(const char* line) {
+    assert(line != NULL);
+    ArrStr* tokens = ArrStr_init();
+    if (!tokens) {
+        return NULL;
+    }
+    const char* cursor = line;
+    while ((cursor = strchr(cursor, '"')) != NULL) {
+        ++cursor;
+        const char* end = strchr(cursor, '"');
+        if (!end) {
+            break;
+        }
+        size_t len = (size_t)(end - cursor);
+        char* token = (char*)malloc(len + 1);
+        if (!token) {
+            ArrStr_fini(&tokens);
+            return NULL;
+        }
+        memcpy(token, cursor, len);
+        token[len] = '\0';
+        ArrStr_push(tokens, token);
+        free(token);
+        cursor = end + 1;
+    }
+    return tokens;
+}
+
+static bool dal_c__tokensLookLikeLinkerInvocation(const ArrStr* tokens) {
+    if (!tokens || ArrStr_len(tokens) == 0) {
+        return false;
+    }
+    const char* linker = dal_c__tokenBasename(ArrStr_at(tokens, 0));
+    return str_startsWith(linker, "ld")
+        || strstr(linker, "ld.") != NULL
+        || strstr(linker, "lld") != NULL;
+}
+
+static ArrStr* dal_c__queryToolchainLinkTokens(const dal_c_CompilerOpts* opts) {
+    assert(opts != NULL);
+
+    const char* compiler = opts->compiler ? opts->compiler : dal_c_default_compiler;
+    const char* probe_input =
+#ifdef _WIN32
+        "NUL";
+#else
+        "/dev/null";
+#endif
+    char* sysroot_flag = NULL;
+    char* target_flag = NULL;
+    char* target_value = NULL;
+    char* target_arch_flag = NULL;
+    char* target_abi_flag = NULL;
+    const char* argv[16] = { NULL };
+    int argc = 0;
+    argv[argc++] = compiler;
+    if (opts->arch_target && opts->arch_target[0] != '\0') {
+        target_flag = strdup("-target");
+        target_value = strdup(opts->arch_target);
+        if (!target_flag || !target_value) { goto fail; }
+        argv[argc++] = target_flag;
+        argv[argc++] = target_value;
+    }
+    if (opts->target_arch && opts->target_arch[0] != '\0') {
+        target_arch_flag = str_format("-march=%s", opts->target_arch);
+        if (!target_arch_flag) { goto fail; }
+        argv[argc++] = target_arch_flag;
+    }
+    if (opts->target_abi && opts->target_abi[0] != '\0') {
+        target_abi_flag = str_format("-mabi=%s", opts->target_abi);
+        if (!target_abi_flag) { goto fail; }
+        argv[argc++] = target_abi_flag;
+    }
+    if (opts->sysroot && opts->sysroot[0] != '\0') {
+        sysroot_flag = str_format("--sysroot=%s", opts->sysroot);
+        if (!sysroot_flag) { goto fail; }
+        argv[argc++] = sysroot_flag;
+    }
+    argv[argc++] = "-###";
+    argv[argc++] = "-x";
+    argv[argc++] = "c";
+    argv[argc++] = probe_input;
+    argv[argc++] = "-o";
+    argv[argc++] = "dh-c-toolchain-probe";
+    argv[argc] = NULL;
+
+    char* output = proc_output(argv);
+    free(sysroot_flag);
+    free(target_abi_flag);
+    free(target_arch_flag);
+    free(target_value);
+    free(target_flag);
+    if (!output) {
+        return NULL;
+    }
+
+    ArrStr* link_tokens = NULL;
+    char* cursor = output;
+    while (cursor && *cursor != '\0') {
+        char* next = strchr(cursor, '\n');
+        if (next) {
+            *next = '\0';
+        }
+        ArrStr* tokens = dal_c__parseQuotedTokens(cursor);
+        if (tokens && dal_c__tokensLookLikeLinkerInvocation(tokens)) {
+            ArrStr_fini(&link_tokens);
+            link_tokens = tokens;
+        } else {
+            ArrStr_fini(&tokens);
+        }
+        cursor = next ? next + 1 : NULL;
+    }
+    free(output);
+    return link_tokens ? link_tokens : ArrStr_init();
+
+fail:
+    free(sysroot_flag);
+    free(target_abi_flag);
+    free(target_arch_flag);
+    free(target_value);
+    free(target_flag);
+    return NULL;
+}
+
+static bool dal_c__toolchainTokenMatchesQuery(const char* token, const char* compiler_rt_path, dal_c_ToolchainQuery query) {
+    bool compiler_rt = dal_c__toolchainTokenIsCompilerRt(token, compiler_rt_path);
+    bool start_file = dal_c__toolchainTokenIsStartFile(token);
+    switch (query) {
+    case dal_c_ToolchainQuery_start_files:
+        return start_file;
+    case dal_c_ToolchainQuery_compiler_rt:
+        return compiler_rt;
+    case dal_c_ToolchainQuery_default_libs:
+        return !compiler_rt && !start_file && dal_c__toolchainTokenIsLib(token);
+    case dal_c_ToolchainQuery_crt:
+        return !compiler_rt && dal_c__toolchainTokenIsCrt(token);
+    case dal_c_ToolchainQuery_stdlib:
+        return !compiler_rt && (start_file || dal_c__toolchainTokenIsLib(token));
+    case dal_c_ToolchainQuery_libc:
+        return !compiler_rt && dal_c__toolchainTokenIsLibc(token);
+    case dal_c_ToolchainQuery_raw_link:
+        return true;
+    case dal_c_ToolchainQuery_all:
+    case dal_c_ToolchainQuery_invalid:
+    default:
+        return false;
+    }
+}
+
+static bool dal_c__toolchainPrintedContains(ArrStr* printed, const char* token) {
+    assert(printed != NULL);
+    assert(token != NULL);
+    for (int i = 0; i < ArrStr_len(printed); ++i) {
+        if (str_eql(ArrStr_at(printed, i), token)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void dal_c__printToolchainToken(ArrStr* printed, const char* token, int* count) {
+    assert(printed != NULL);
+    assert(token != NULL);
+    assert(count != NULL);
+    if (dal_c__toolchainPrintedContains(printed, token)) {
+        return;
+    }
+    ArrStr_push(printed, token);
+    printf("  %s\n", token);
+    *count += 1;
+}
+
+static void dal_c__printToolchainCategory(const char* title, ArrStr* link_tokens, const char* compiler_rt_path, dal_c_ToolchainQuery query) {
+    assert(title != NULL);
+    assert(link_tokens != NULL);
+    printf("%s:\n", title);
+    int count = 0;
+    ArrStr* printed = ArrStr_init();
+    if (!printed) {
+        printf("  (error: out of memory)\n");
+        return;
+    }
+    if (query == dal_c_ToolchainQuery_compiler_rt && compiler_rt_path && compiler_rt_path[0] != '\0') {
+        dal_c__printToolchainToken(printed, compiler_rt_path, &count);
+    }
+    for (int i = 0; i < ArrStr_len(link_tokens); ++i) {
+        const char* token = ArrStr_at(link_tokens, i);
+        if (query != dal_c_ToolchainQuery_raw_link && !dal_c__toolchainTokenIsLinkInput(token)) {
+            continue;
+        }
+        if (!dal_c__toolchainTokenMatchesQuery(token, compiler_rt_path, query)) {
+            continue;
+        }
+        if (query == dal_c_ToolchainQuery_compiler_rt && compiler_rt_path && str_eql(token, compiler_rt_path)) {
+            continue;
+        }
+        dal_c__printToolchainToken(printed, token, &count);
+    }
+    if (count == 0) {
+        printf("  (none)\n");
+    }
+    ArrStr_fini(&printed);
+}
+
+int dal_c__queryToolchain(const dal_c_Cmd* cmd) {
+    assert(cmd != NULL);
+    dal_c_ToolchainQuery query = cmd->payload.toolchain.query;
+    if (query == dal_c_ToolchainQuery_invalid) {
+        query = dal_c_ToolchainQuery_all;
+    }
+    ArrStr* link_tokens = dal_c__queryToolchainLinkTokens(&cmd->opts);
+    char* compiler_rt_path = dal_c__queryCompilerRtPath(&cmd->opts);
+    if (!link_tokens) {
+        free(compiler_rt_path);
+        (void)fprintf(stderr, "Error: Failed to query compiler driver link line\n");
+        return 1;
+    }
+
+    if (query == dal_c_ToolchainQuery_all) {
+        dal_c__printToolchainCategory(dal_c_toolchain_query_start_files, link_tokens, compiler_rt_path, dal_c_ToolchainQuery_start_files);
+        dal_c__printToolchainCategory(dal_c_toolchain_query_compiler_rt, link_tokens, compiler_rt_path, dal_c_ToolchainQuery_compiler_rt);
+        dal_c__printToolchainCategory(dal_c_toolchain_query_default_libs, link_tokens, compiler_rt_path, dal_c_ToolchainQuery_default_libs);
+        dal_c__printToolchainCategory(dal_c_toolchain_query_crt, link_tokens, compiler_rt_path, dal_c_ToolchainQuery_crt);
+        dal_c__printToolchainCategory(dal_c_toolchain_query_stdlib, link_tokens, compiler_rt_path, dal_c_ToolchainQuery_stdlib);
+        dal_c__printToolchainCategory(dal_c_toolchain_query_libc, link_tokens, compiler_rt_path, dal_c_ToolchainQuery_libc);
+    } else {
+        const char* title = dal_c_ToolchainQuery_format(query);
+        dal_c__printToolchainCategory(title ? title : "toolchain", link_tokens, compiler_rt_path, query);
+    }
+
+    free(compiler_rt_path);
+    ArrStr_fini(&link_tokens);
+    return 0;
+}
+
 static bool dal_c__validateBuildArtifacts(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, ArrStr* sources, dal_c_Target target_type) {
     assert(cmd != NULL);
     assert(profile != NULL);
@@ -2195,7 +2551,21 @@ static dal_c__noinline dal_c__optnone bool dal_c__validateLinkToolchain(const da
     if (target_type != dal_c_Target_executable && target_type != dal_c_Target_shared_lib && target_type != dal_c_Target_image) {
         return true;
     }
-    if (!dal_c__targetUsesImplicitCompilerRt(target_type) || !dal_c__linkNeedsCompilerRt(opts)) {
+
+    bool requested_libc_linked = dal_c__requestedLibcLinked(opts);
+    bool effective_libc_linked = dal_c__resolvedLibcLinked(opts);
+    if (!requested_libc_linked && effective_libc_linked && dal_c__resolvedDefaultLibsLinked(opts)) {
+        const char* target = (opts->arch_target && opts->arch_target[0] != '\0') ? opts->arch_target : "host";
+        (void)fprintf(
+            stderr,
+            "Warning: `--%s=off` cannot be represented for `%s` while `--%s` remains enabled; libc is still treated as linked. Use `--%s=off` and provide the remaining libraries explicitly for a true no-libc link.\n",
+            dal_c_opt_link_libc,
+            target,
+            dal_c_opt_link_default_libs,
+            dal_c_opt_link_default_libs
+        );
+    }
+    if (!dal_c__targetUsesImplicitCompilerRt(target_type) || !dal_c__linkNeedsCompilerRt(opts, target_type)) {
         return true;
     }
 
@@ -2257,8 +2627,9 @@ static void dal_c__writeLinkModelFlags(FILE* fp, bool is_windows, const dal_c_Co
     bool start_files_linked = dal_c__resolvedStartFilesLinked(opts);
     bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
     bool libc_linked = dal_c__resolvedLibcLinked(opts);
+    bool compiler_rt_linked = dal_c__resolvedCompilerRtLinked(opts, target_type);
 
-    bool restore_compiler_rt = dal_c__targetUsesImplicitCompilerRt(target_type) && !default_libs_linked;
+    bool restore_compiler_rt = !default_libs_linked && compiler_rt_linked;
 
     if (!start_files_linked && !default_libs_linked) {
         /* -nostdlib removes startup files + all default libs (incl. compiler-rt).
@@ -2369,6 +2740,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     bool libc_linked = dal_c__resolvedLibcLinked(opts);
     bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
     bool start_files_linked = dal_c__resolvedStartFilesLinked(opts);
+    bool compiler_rt_linked = dal_c__resolvedCompilerRtLinked(opts, target_type);
+    bool stdlib_linked = start_files_linked && default_libs_linked;
+    bool crt_linked = start_files_linked;
     dal_c_CommandIntent intent = { 0 };
     dal_c_Cmd_normalizeIntent(cmd, &intent);
 
@@ -2401,16 +2775,12 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     } else {
         (void)fprintf(fp, " -DCOMP_HOSTED");
     }
-    if (!libc_linked) {
-        (void)fprintf(fp, " -DCOMP_NO_LIBC");
-    }
-    if (!default_libs_linked) {
-        (void)fprintf(fp, " -DCOMP_NO_DEFAULT_LIBS");
-    }
-    if (!start_files_linked) {
-        (void)fprintf(fp, " -DCOMP_NO_START_FILES");
-    }
-
+    (void)fprintf(fp, start_files_linked ? " -DCOMP_HAS_START_FILES" : " -DCOMP_NO_START_FILES");
+    (void)fprintf(fp, crt_linked ? " -DCOMP_HAS_CRT" : " -DCOMP_NO_CRT");
+    (void)fprintf(fp, default_libs_linked ? " -DCOMP_HAS_DEFAULT_LIBS" : " -DCOMP_NO_DEFAULT_LIBS");
+    (void)fprintf(fp, compiler_rt_linked ? " -DCOMP_HAS_COMPILER_RT" : " -DCOMP_NO_COMPILER_RT");
+    (void)fprintf(fp, libc_linked ? " -DCOMP_HAS_LIBC" : " -DCOMP_NO_LIBC");
+    (void)fprintf(fp, stdlib_linked ? " -DCOMP_HAS_STDLIB" : " -DCOMP_NO_STDLIB");
     if (!profile->debug_assertions) {
         (void)fprintf(fp, " -DNDEBUG");
     }
@@ -2825,7 +3195,7 @@ static bool dal_c__sourceUsesPchExcludedHeader(const dal_c_Project* proj, const 
     return excluded;
 }
 
-static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, bool use_pch, bool test_mode) {
+static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, bool use_pch, bool test_mode) {
     assert(cmd != NULL);
     assert(profile != NULL);
 
@@ -2834,6 +3204,9 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     bool libc_linked = dal_c__resolvedLibcLinked(opts);
     bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
     bool start_files_linked = dal_c__resolvedStartFilesLinked(opts);
+    bool compiler_rt_linked = dal_c__resolvedCompilerRtLinked(opts, target_type);
+    bool stdlib_linked = start_files_linked && default_libs_linked;
+    bool crt_linked = start_files_linked;
     bool lto_enabled = dal_c__resolvedLtoMode(opts, profile);
     const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
     dal_c_ToggleState unwind_tables = dal_c__resolvedUnwindTablesState(opts, profile);
@@ -2848,9 +3221,13 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     hash = dal_c__hashString(hash, opts->sysroot);
     hash = dal_c__hashString(hash, cmd->compiler_args);
     hash = dal_c__hashBytes(hash, &compile_env, sizeof(compile_env));
+    hash = dal_c__hashBytes(hash, &target_type, sizeof(target_type));
     hash = dal_c__hashBool(hash, libc_linked);
     hash = dal_c__hashBool(hash, default_libs_linked);
     hash = dal_c__hashBool(hash, start_files_linked);
+    hash = dal_c__hashBool(hash, compiler_rt_linked);
+    hash = dal_c__hashBool(hash, stdlib_linked);
+    hash = dal_c__hashBool(hash, crt_linked);
     hash = dal_c__hashBool(hash, dal_c__resolvedDslMode(opts));
     hash = dal_c__hashBytes(hash, &opts->lto_mode, sizeof(opts->lto_mode));
     hash = dal_c__hashBool(hash, lto_enabled);
@@ -2901,6 +3278,7 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     const dal_c_CompilerOpts* opts = &cmd->opts;
     bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
     bool start_files_linked = dal_c__resolvedStartFilesLinked(opts);
+    bool compiler_rt_linked = dal_c__resolvedCompilerRtLinked(opts, target_type);
     bool lto_enabled = dal_c__resolvedLtoMode(opts, profile);
     const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
     dal_c_IcfMode icf_mode = dal_c__resolvedIcfMode(opts, profile);
@@ -2919,6 +3297,7 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     hash = dal_c__hashVersionSpec(hash, &opts->version);
     hash = dal_c__hashBool(hash, default_libs_linked);
     hash = dal_c__hashBool(hash, start_files_linked);
+    hash = dal_c__hashBool(hash, compiler_rt_linked);
     hash = dal_c__hashBytes(hash, &opts->lto_mode, sizeof(opts->lto_mode));
     hash = dal_c__hashBool(hash, lto_enabled);
     hash = dal_c__hashBytes(hash, &opts->gc_sections, sizeof(opts->gc_sections));
@@ -3000,13 +3379,13 @@ static bool dal_c__writeLinkContractFile(const char* path, const dal_c_Cmd* cmd,
     return success;
 }
 
-static char* dal_c__makeObjectPath(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const char* object_dir, const char* base, const char* src, bool use_pch, bool test_mode) {
+static char* dal_c__makeObjectPath(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, const char* object_dir, const char* base, const char* src, bool use_pch, bool test_mode) {
     assert(cmd != NULL);
     assert(profile != NULL);
     assert(object_dir != NULL);
     assert(src != NULL);
 
-    char* contract_key = dal_c__makeCompileContractKey(cmd, profile, use_pch, test_mode);
+    char* contract_key = dal_c__makeCompileContractKey(cmd, profile, target_type, use_pch, test_mode);
     char* contract_dir = path_join(object_dir, contract_key);
     char* obj_stem = dal_c__sourceToObjStem(base, src);
     char* obj_name = str_format("%s.o", obj_stem);
@@ -3135,7 +3514,7 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
         const char* src = ArrStr_at(sources, i);
         bool use_pch = has_pch && !dal_c__sourceIsAssembly(src) && !dal_c__sourceUsesPchExcludedHeader(proj, src);
         bool test_mode = dal_c__sourceNeedsTestMode(proj, src);
-        char* obj_path = dal_c__makeObjectPath(cmd, profile, build_dir, obj_base, src, use_pch, test_mode);
+        char* obj_path = dal_c__makeObjectPath(cmd, profile, target_type, build_dir, obj_base, src, use_pch, test_mode);
         (void)fprintf(fp, " %s", obj_path);
         free(obj_path);
     }
@@ -3197,7 +3576,7 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     (void)fprintf(fp, "\n");
     (void)fprintf(fp, "all: $(TARGET) $(EXTRA_TARGETS)\n\n");
 
-    dal_c__writeMakefileCompilationRules(fp, cmd, proj, profile, sources, has_pch, build_dir, obj_base);
+    dal_c__writeMakefileCompilationRules(fp, cmd, proj, profile, sources, has_pch, build_dir, obj_base, target_type);
     dal_c__writeMakefileTargetRule(fp, cmd, profile, target_type, is_windows, target_path, link_contract_path);
 
     (void)fprintf(fp, "clean:\n\trm -f $(TARGET) $(EXTRA_TARGETS)\n\n");
@@ -3224,7 +3603,7 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     return 0;
 }
 
-static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* build_dir) {
+static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* build_dir, dal_c_Target target_type) {
     assert(fp != NULL);
     assert(cmd != NULL);
     assert(profile != NULL);
@@ -3236,7 +3615,7 @@ static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* c
     }
 
     const char* pch_basename = path_basename(proj->pch_header);
-    char* pch_contract_key = dal_c__makeCompileContractKey(cmd, profile, true, false);
+    char* pch_contract_key = dal_c__makeCompileContractKey(cmd, profile, target_type, true, false);
     char* pch_out = str_format("%s/%s_%s.pch", build_dir, pch_contract_key, pch_basename);
 
     (void)fprintf(fp, "PCH_SRC = %s\n", proj->pch_header);
@@ -3258,7 +3637,7 @@ static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* c
     free(pch_out);
 }
 
-static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, ArrStr* sources, bool has_pch, const char* object_dir, const char* base) {
+static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, ArrStr* sources, bool has_pch, const char* object_dir, const char* base, dal_c_Target target_type) {
     assert(fp != NULL);
     assert(cmd != NULL);
     assert(profile != NULL);
@@ -3272,7 +3651,7 @@ static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const
         bool is_assembly = dal_c__sourceIsAssembly(src);
         bool use_pch = !is_assembly && has_pch && !dal_c__sourceUsesPchExcludedHeader(proj, src);
         bool test_mode = dal_c__sourceNeedsTestMode(proj, src);
-        char* obj_path = dal_c__makeObjectPath(cmd, profile, object_dir, base, src, use_pch, test_mode);
+        char* obj_path = dal_c__makeObjectPath(cmd, profile, target_type, object_dir, base, src, use_pch, test_mode);
 
         const char* cflags_base = use_pch ? "$(CFLAGS)" : "$(CFLAGS_NO_PCH)";
         char* cflags = test_mode ? str_format("%s -DCOMP_TEST", cflags_base) : strdup(cflags_base);
@@ -3411,3 +3790,4 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
     }
     (void)fprintf(fp, "\n");
 }
+

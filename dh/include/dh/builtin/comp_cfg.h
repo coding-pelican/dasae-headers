@@ -68,12 +68,14 @@ extern "C" {
 #define comp_env_type_is_hosted __comp_bool__comp_env_type_is_hosted
 #define comp_env_type_is_freestanding __comp_bool__comp_env_type_is_freestanding
 
-#define comp_libc_linked __comp_bool__comp_libc_linked
-#define comp_default_libs_linked __comp_bool__comp_default_libs_linked
 #define comp_start_files_linked __comp_bool__comp_start_files_linked
-/* Derived: `stdlib` = `start_files` + `default_libs` both linked; `crt` = `start_files` alias */
-#define comp_stdlib_linked __comp_bool__comp_stdlib_linked
+/* Derived from start-files unless explicitly provided by `COMP_HAS_CRT` / `COMP_NO_CRT`. */
 #define comp_crt_linked __comp_bool__comp_crt_linked
+#define comp_default_libs_linked __comp_bool__comp_default_libs_linked
+#define comp_compiler_rt_linked __comp_bool__comp_compiler_rt_linked
+#define comp_libc_linked __comp_bool__comp_libc_linked
+/* Derived from start-files + default-libs unless explicitly provided by `COMP_HAS_STDLIB` / `COMP_NO_STDLIB`. */
+#define comp_stdlib_linked __comp_bool__comp_stdlib_linked
 
 /* --- Compiler Attributes --- */
 
@@ -237,13 +239,18 @@ extern "C" {
  * Inputs from build tool (`dh-c` emits these; hand-written code may also define them):
  *   `COMP_FREESTANDING`    — freestanding env (mutually exclusive with `COMP_HOSTED`)
  *   `COMP_HOSTED`          — hosted env       (mutually exclusive with `COMP_FREESTANDING`)
- *   `COMP_NO_LIBC`         — libc is NOT linked
- *   `COMP_NO_DEFAULT_LIBS` — default libs are NOT linked  (`-nodefaultlibs`)
- *   `COMP_NO_START_FILES`  — startup files are NOT linked (`-nostartfiles`)
+ *   `COMP_HAS_START_FILES` / `COMP_NO_START_FILES`
+ *   `COMP_HAS_CRT` / `COMP_NO_CRT`
+ *   `COMP_HAS_DEFAULT_LIBS` / `COMP_NO_DEFAULT_LIBS`
+ *   `COMP_HAS_COMPILER_RT` / `COMP_NO_COMPILER_RT`
+ *   `COMP_HAS_LIBC` / `COMP_NO_LIBC`
+ *   `COMP_HAS_STDLIB` / `COMP_NO_STDLIB`
  *
- * Convenience aliases (hand-written code only; `dh-c` expands these before emitting):
- *   `COMP_NO_STDLIB` = `COMP_NO_START_FILES` + `COMP_NO_DEFAULT_LIBS`  (`-nostdlib`)
- *   `COMP_NO_CRT`    = `COMP_NO_START_FILES`                          (`-nostartfiles`)
+ * Compatibility aliases:
+ *   `COMP_NO_STDLIB` implies `COMP_NO_START_FILES` + `COMP_NO_DEFAULT_LIBS`
+ *   only when explicit `COMP_HAS_START_FILES` / `COMP_HAS_DEFAULT_LIBS` were not provided.
+ *   `COMP_NO_CRT` implies `COMP_NO_START_FILES` only when explicit `COMP_HAS_START_FILES`
+ *   was not provided.
  */
 
 #if defined(COMP_HOSTED) && defined(COMP_FREESTANDING)
@@ -252,19 +259,38 @@ extern "C" {
 
 /* Expand convenience aliases before any flag evaluation */
 #if defined(COMP_NO_STDLIB)
-#ifndef COMP_NO_DEFAULT_LIBS
+#if !defined(COMP_HAS_DEFAULT_LIBS) && !defined(COMP_NO_DEFAULT_LIBS)
 #define COMP_NO_DEFAULT_LIBS
 #endif
-#ifndef COMP_NO_START_FILES
+#if !defined(COMP_HAS_START_FILES) && !defined(COMP_NO_START_FILES)
 #define COMP_NO_START_FILES
 #endif
 #endif /* defined(COMP_NO_STDLIB) */
 
 #if defined(COMP_NO_CRT)
-#ifndef COMP_NO_START_FILES
+#if !defined(COMP_HAS_START_FILES) && !defined(COMP_NO_START_FILES)
 #define COMP_NO_START_FILES
 #endif
 #endif /* defined(COMP_NO_CRT) */
+
+#if defined(COMP_HAS_START_FILES) && defined(COMP_NO_START_FILES)
+#error "`COMP_HAS_START_FILES` and `COMP_NO_START_FILES` cannot both be defined"
+#endif
+#if defined(COMP_HAS_CRT) && defined(COMP_NO_CRT)
+#error "`COMP_HAS_CRT` and `COMP_NO_CRT` cannot both be defined"
+#endif
+#if defined(COMP_HAS_DEFAULT_LIBS) && defined(COMP_NO_DEFAULT_LIBS)
+#error "`COMP_HAS_DEFAULT_LIBS` and `COMP_NO_DEFAULT_LIBS` cannot both be defined"
+#endif
+#if defined(COMP_HAS_COMPILER_RT) && defined(COMP_NO_COMPILER_RT)
+#error "`COMP_HAS_COMPILER_RT` and `COMP_NO_COMPILER_RT` cannot both be defined"
+#endif
+#if defined(COMP_HAS_LIBC) && defined(COMP_NO_LIBC)
+#error "`COMP_HAS_LIBC` and `COMP_NO_LIBC` cannot both be defined"
+#endif
+#if defined(COMP_HAS_STDLIB) && defined(COMP_NO_STDLIB)
+#error "`COMP_HAS_STDLIB` and `COMP_NO_STDLIB` cannot both be defined"
+#endif
 
 /* env_type: auto-detect, then allow `COMP_FREESTANDING`/`COMP_HOSTED` to override */
 #define __comp_enum__comp_env_type_unknown 0
@@ -285,36 +311,69 @@ extern "C" {
 #define __comp_enum__comp_env_type comp_env_type_hosted
 #endif
 
-/* libc_linked: 0 when freestanding, COMP_NO_LIBC, or COMP_NO_DEFAULT_LIBS (libc is part of default libs) */
-#if defined(COMP_NO_LIBC) || defined(COMP_NO_DEFAULT_LIBS) || (comp_env_type == comp_env_type_freestanding)
-#define __comp_flag__comp_libc_linked 0
-#else
-#define __comp_flag__comp_libc_linked 1
-#endif
-
-/* default_libs_linked: default = 1; `COMP_NO_DEFAULT_LIBS` forces 0 */
-#if defined(COMP_NO_DEFAULT_LIBS)
-#define __comp_flag__comp_default_libs_linked 0
-#else
-#define __comp_flag__comp_default_libs_linked 1
-#endif
-
-/* start_files_linked: default = 1; `COMP_NO_START_FILES` forces 0 */
-#if defined(COMP_NO_START_FILES)
+/* start_files_linked: explicit fact wins; default = 1. */
+#if defined(COMP_HAS_START_FILES)
+#define __comp_flag__comp_start_files_linked 1
+#elif defined(COMP_NO_START_FILES)
 #define __comp_flag__comp_start_files_linked 0
 #else
 #define __comp_flag__comp_start_files_linked 1
 #endif
 
+/* crt_linked: explicit fact wins; otherwise follows start files. */
+#if defined(COMP_HAS_CRT)
+#define __comp_flag__comp_crt_linked 1
+#elif defined(COMP_NO_CRT)
+#define __comp_flag__comp_crt_linked 0
+#else
+#define __comp_flag__comp_crt_linked comp_start_files_linked
+#endif
+
+/* default_libs_linked: explicit fact wins; default = 1. */
+#if defined(COMP_HAS_DEFAULT_LIBS)
+#define __comp_flag__comp_default_libs_linked 1
+#elif defined(COMP_NO_DEFAULT_LIBS)
+#define __comp_flag__comp_default_libs_linked 0
+#else
+#define __comp_flag__comp_default_libs_linked 1
+#endif
+
+/* compiler_rt_linked: explicit fact wins; otherwise compiler default libs imply it. */
+#if defined(COMP_HAS_COMPILER_RT)
+#define __comp_flag__comp_compiler_rt_linked 1
+#elif defined(COMP_NO_COMPILER_RT) || defined(COMP_NO_DEFAULT_LIBS)
+#define __comp_flag__comp_compiler_rt_linked 0
+#else
+#define __comp_flag__comp_compiler_rt_linked 1
+#endif
+
+/* libc_linked: explicit fact wins; otherwise 0 when freestanding or default libs are absent. */
+#if defined(COMP_HAS_LIBC)
+#define __comp_flag__comp_libc_linked 1
+#elif defined(COMP_NO_LIBC) || defined(COMP_NO_DEFAULT_LIBS) || (comp_env_type == comp_env_type_freestanding)
+#define __comp_flag__comp_libc_linked 0
+#else
+#define __comp_flag__comp_libc_linked 1
+#endif
+
+/* stdlib_linked: explicit fact wins; otherwise follows start files + default libs. */
+#if defined(COMP_HAS_STDLIB)
+#define __comp_flag__comp_stdlib_linked 1
+#elif defined(COMP_NO_STDLIB)
+#define __comp_flag__comp_stdlib_linked 0
+#else
+#define __comp_flag__comp_stdlib_linked (comp_start_files_linked && comp_default_libs_linked)
+#endif
+
 #define __comp_bool__comp_env_type_is_hosted pp_Tok_eql(comp_env_type, comp_env_type_hosted)
 #define __comp_bool__comp_env_type_is_freestanding pp_Tok_eql(comp_env_type, comp_env_type_freestanding)
 
-#define __comp_bool__comp_libc_linked __comp_flag__comp_libc_linked
-#define __comp_bool__comp_default_libs_linked __comp_flag__comp_default_libs_linked
 #define __comp_bool__comp_start_files_linked __comp_flag__comp_start_files_linked
-/* Derived: `stdlib` = `start_files` + `default_libs`; `crt` = `start_files` alias */
-#define __comp_bool__comp_stdlib_linked (comp_start_files_linked && comp_default_libs_linked)
-#define __comp_bool__comp_crt_linked comp_start_files_linked
+#define __comp_bool__comp_crt_linked __comp_flag__comp_crt_linked
+#define __comp_bool__comp_default_libs_linked __comp_flag__comp_default_libs_linked
+#define __comp_bool__comp_compiler_rt_linked __comp_flag__comp_compiler_rt_linked
+#define __comp_bool__comp_libc_linked __comp_flag__comp_libc_linked
+#define __comp_bool__comp_stdlib_linked __comp_flag__comp_stdlib_linked
 
 /* --- Compiler Attributes --- */
 

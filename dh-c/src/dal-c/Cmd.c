@@ -197,6 +197,7 @@ void dal_c_Cmd_cleanup(dal_c_Cmd** self) {
     case dal_c_CmdAction_clean:
     case dal_c_CmdAction_clean_dsl:
     case dal_c_CmdAction_deps:
+    case dal_c_CmdAction_toolchain:
     case dal_c_CmdAction_workspace:
     case dal_c_CmdAction_project:
     case dal_c_CmdAction_build_dsl:
@@ -272,6 +273,9 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_start_files)) {
         if (!has_toggle) { *handled = false; }
         else { cmd->opts.start_files_linked = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_compiler_rt)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.compiler_rt_linked = toggle; }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_stdlib)) {
         if (!has_toggle) { *handled = false; }
         else {
@@ -410,6 +414,16 @@ static dal_c_Target dal_c_Cmd__resolveBuildTargetType(const dal_c_Cmd* cmd, dal_
 static int dal_c_Cmd__validateCanonicalModifiers(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
 
+    if (cmd->opts.compiler_rt_linked == dal_c_ToggleState_disabled
+        && cmd->opts.default_libs_linked != dal_c_ToggleState_disabled) {
+        (void)fprintf(
+            stderr,
+            "Warning: `--%s=off` does not suppress compiler-rt while `--%s` remains enabled; clang may inject it through default libraries.\n",
+            dal_c_opt_link_compiler_rt,
+            dal_c_opt_link_default_libs
+        );
+    }
+
     if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.self_boundary) {
         if (cmd->input_count > 0
             || cmd->payload.build.output_path != NULL
@@ -520,6 +534,7 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
         out->dsl_first = cmd->payload.clean.dsl_first;
         break;
     case dal_c_CmdAction_deps:
+    case dal_c_CmdAction_toolchain:
     case dal_c_CmdAction_workspace:
     case dal_c_CmdAction_project:
     case dal_c_CmdAction_help:
@@ -546,6 +561,8 @@ int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
         return dal_c_Cmd_makeTarget(self, proj);
     case dal_c_CmdAction_deps:
         return dal_c_Cmd_compileDeps(self, proj);
+    case dal_c_CmdAction_toolchain:
+        return dal_c_Cmd_queryToolchain(self);
     case dal_c_CmdAction_clean:
         if (self->payload.clean.self_boundary) {
             return dal_c__cleanSelf(self);
@@ -572,6 +589,11 @@ int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
         (void)fprintf(stderr, "Error: Unknown command\n");
         return 1;
     }
+}
+
+int dal_c_Cmd_queryToolchain(const dal_c_Cmd* self) {
+    assert(self != NULL);
+    return dal_c__queryToolchain(self);
 }
 
 /* NOLINTNEXTLINE(misc-no-recursion) */
@@ -1172,6 +1194,7 @@ static char** dal_c_Cmd__targetPathSlot(dal_c_Cmd* cmd) {
     case dal_c_CmdAction_clean:
     case dal_c_CmdAction_clean_dsl:
     case dal_c_CmdAction_deps:
+    case dal_c_CmdAction_toolchain:
     case dal_c_CmdAction_workspace:
     case dal_c_CmdAction_project:
     case dal_c_CmdAction_build_dsl:
@@ -1195,6 +1218,7 @@ static char** dal_c_Cmd__outputPathSlot(dal_c_Cmd* cmd) {
     case dal_c_CmdAction_clean:
     case dal_c_CmdAction_clean_dsl:
     case dal_c_CmdAction_deps:
+    case dal_c_CmdAction_toolchain:
     case dal_c_CmdAction_workspace:
     case dal_c_CmdAction_project:
     case dal_c_CmdAction_build_dsl:
@@ -1218,6 +1242,7 @@ static char** dal_c_Cmd__runArgsSlot(dal_c_Cmd* cmd) {
     case dal_c_CmdAction_clean:
     case dal_c_CmdAction_clean_dsl:
     case dal_c_CmdAction_deps:
+    case dal_c_CmdAction_toolchain:
     case dal_c_CmdAction_workspace:
     case dal_c_CmdAction_project:
     case dal_c_CmdAction_build_dsl:
@@ -1291,6 +1316,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_link_libc)
             || str_eql(opt, dal_c_opt_link_default_libs)
             || str_eql(opt, dal_c_opt_link_start_files)
+            || str_eql(opt, dal_c_opt_link_compiler_rt)
             || str_eql(opt, dal_c_opt_link_stdlib)
             || str_eql(opt, dal_c_opt_link_crt)
             || str_eql(opt, dal_c_opt_lto)
@@ -1338,6 +1364,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_link_libc)
             || str_startsWith(opt, dal_c_opt_link_default_libs)
             || str_startsWith(opt, dal_c_opt_link_start_files)
+            || str_startsWith(opt, dal_c_opt_link_compiler_rt)
             || str_startsWith(opt, dal_c_opt_link_stdlib)
             || str_startsWith(opt, dal_c_opt_link_crt)
             || str_startsWith(opt, dal_c_opt_lto)
@@ -1839,6 +1866,8 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     cmd->opts.default_libs_linked = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_link_start_files)) {
                     cmd->opts.start_files_linked = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_link_compiler_rt)) {
+                    cmd->opts.compiler_rt_linked = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_link_stdlib)) {
                     dal_c_Cmd__setStdlibBundle(&cmd->opts, true);
                 } else if (str_eql(opt, dal_c_opt_link_crt)) {
@@ -2024,6 +2053,13 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                 dal_c_Cmd__pushOwnedString(&cmd->input_files, &cmd->input_count, abs_path);
                 dal_c_Cmd__setPrimaryTargetPath(cmd, abs_path);
             }
+        } else if (cmd->action == dal_c_CmdAction_toolchain) {
+            dal_c_ToolchainQuery query = dal_c_ToolchainQuery_parse(arg);
+            if (query == dal_c_ToolchainQuery_invalid) {
+                (void)fprintf(stderr, "Error: Unknown toolchain query: %s\n", arg);
+                return 1;
+            }
+            cmd->payload.toolchain.query = query;
         } else if (cmd->action == dal_c_CmdAction_workspace || cmd->action == dal_c_CmdAction_project) {
             if (cmd->action == dal_c_CmdAction_workspace) {
                 cmd->payload.workspace.name = arg;
@@ -2869,6 +2905,7 @@ static int dal_c_Cmd__buildFromSources(
             break;
         case dal_c_CmdAction_lib:
         case dal_c_CmdAction_deps:
+        case dal_c_CmdAction_toolchain:
         case dal_c_CmdAction_clean:
         case dal_c_CmdAction_build_dsl:
         case dal_c_CmdAction_clean_dsl:

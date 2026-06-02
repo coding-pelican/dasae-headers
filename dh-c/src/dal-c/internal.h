@@ -86,6 +86,7 @@ int dal_c__cleanDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__testDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__buildSelf(const dal_c_Cmd* cmd);
 int dal_c__cleanSelf(const dal_c_Cmd* cmd);
+int dal_c__queryToolchain(const dal_c_Cmd* cmd);
 char* dal_c__cacheBaseDir(const dal_c_Project* proj);
 
 /// === SOURCE COLLECTION ===

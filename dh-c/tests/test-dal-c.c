@@ -885,11 +885,17 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(makefile_text != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_FREESTANDING") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_DEFAULT_LIBS") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_DEFAULT_LIBS") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_START_FILES") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_COMPILER_RT") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_COMPILER_RT") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_STDLIB") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_STDLIB") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_CRT") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_CRT") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wformat=2") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Werror=uninitialized") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wframe-larger-than=4096") != NULL);
@@ -959,19 +965,34 @@ static void test_makefile_mode_contracts(void) {
         makefile_text = file_read(makefile_path);
         TEST_ASSERT(makefile_text != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HOSTED") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_DEFAULT_LIBS") == NULL);
+        if (dal_c__platformIsWindows()) {
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") == NULL);
+        } else {
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") == NULL);
+        }
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_DEFAULT_LIBS") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_DEFAULT_LIBS") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_START_FILES") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_COMPILER_RT") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_COMPILER_RT") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_STDLIB") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_STDLIB") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_CRT") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_CRT") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wformat=2") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Werror=uninitialized") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wframe-larger-than=4096") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wno-switch-enum") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wswitch-enum") == NULL);
         TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -ffreestanding") == NULL);
-        TEST_ASSERT(strstr(makefile_text, " -nolibc") != NULL);
+        if (dal_c__platformIsWindows()) {
+            TEST_ASSERT(strstr(makefile_text, " -nolibc") == NULL);
+        } else {
+            TEST_ASSERT(strstr(makefile_text, " -nolibc") != NULL);
+        }
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -nostartfiles") == NULL);

@@ -150,6 +150,7 @@ bool dal_c__needsProject(const dal_c_Cmd* cmd) {
         return true;
     case dal_c_CmdAction_build_self:
     case dal_c_CmdAction_clean_self:
+    case dal_c_CmdAction_toolchain:
     case dal_c_CmdAction_version:
     case dal_c_CmdAction_help:
     case dal_c_CmdAction_workspace:
@@ -176,6 +177,7 @@ static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd) {
         return true;
     case dal_c_CmdAction_build_self:
     case dal_c_CmdAction_clean_self:
+    case dal_c_CmdAction_toolchain:
     case dal_c_CmdAction_deps:
     case dal_c_CmdAction_clean:
     case dal_c_CmdAction_version:

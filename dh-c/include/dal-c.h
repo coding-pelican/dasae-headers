@@ -644,6 +644,7 @@ typedef enum dal_c_CmdAction {
     dal_c_CmdAction_clean_dsl = 12,
     dal_c_CmdAction_build_self = 13,
     dal_c_CmdAction_clean_self = 14,
+    dal_c_CmdAction_toolchain = 15,
 } dal_c_CmdAction;
 #define dal_c_cmd_action_version "version"
 #define dal_c_cmd_action_help "help"
@@ -660,6 +661,7 @@ typedef enum dal_c_CmdAction {
 #define dal_c_cmd_action_clean_dsl "clean-dsl"
 #define dal_c_cmd_action_build_self "build-self"
 #define dal_c_cmd_action_clean_self "clean-self"
+#define dal_c_cmd_action_toolchain "toolchain"
 static inline dal_c_CmdAction dal_c_CmdAction_parse(const char* str) {
     if (str_eql(str, dal_c_cmd_action_build)) { return dal_c_CmdAction_build; }
     if (str_eql(str, dal_c_cmd_action_lib)) { return dal_c_CmdAction_lib; }
@@ -674,6 +676,7 @@ static inline dal_c_CmdAction dal_c_CmdAction_parse(const char* str) {
     if (str_eql(str, dal_c_cmd_action_clean_dsl)) { return dal_c_CmdAction_clean_dsl; }
     if (str_eql(str, dal_c_cmd_action_build_self)) { return dal_c_CmdAction_build_self; }
     if (str_eql(str, dal_c_cmd_action_clean_self)) { return dal_c_CmdAction_clean_self; }
+    if (str_eql(str, dal_c_cmd_action_toolchain)) { return dal_c_CmdAction_toolchain; }
     if (str_eql(str, dal_c_cmd_action_help)) { return dal_c_CmdAction_help; }
     if (str_eql(str, dal_c_cmd_action_version)) { return dal_c_CmdAction_version; }
     return dal_c_CmdAction_invalid;
@@ -693,6 +696,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
     case dal_c_CmdAction_clean_dsl: return dal_c_cmd_action_clean_dsl;
     case dal_c_CmdAction_build_self: return dal_c_cmd_action_build_self;
     case dal_c_CmdAction_clean_self: return dal_c_cmd_action_clean_self;
+    case dal_c_CmdAction_toolchain: return dal_c_cmd_action_toolchain;
     case dal_c_CmdAction_help: return dal_c_cmd_action_help;
     case dal_c_CmdAction_version: return dal_c_cmd_action_version;
     case dal_c_CmdAction_invalid:
@@ -734,9 +738,10 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_link_dsl "link-dsl"
 #define dal_c_opt_hosted "hosted"
 #define dal_c_opt_freestanding "freestanding"
-#define dal_c_opt_link_libc "link-libc" // COMP_NO_LIBC suppressed when false
+#define dal_c_opt_link_libc "link-libc" // libc link fact when the target can represent it
 #define dal_c_opt_link_default_libs "link-default-libs" // COMP_NO_DEFAULT_LIBS when false
 #define dal_c_opt_link_start_files "link-start-files" // COMP_NO_START_FILES when false
+#define dal_c_opt_link_compiler_rt "link-compiler-rt" // explicit compiler runtime restore when default libs are off
 #define dal_c_opt_link_stdlib "link-stdlib" // start-files + default-libs bundle
 #define dal_c_opt_link_crt "link-crt" // start-files bundle
 #define dal_c_opt_lto "lto"
@@ -881,6 +886,7 @@ typedef struct dal_c_CompilerOpts {
     dal_c_ToggleState dsl_mode; // --link-dsl=<auto|on|off>
     dal_c_ToggleState default_libs_linked; // --link-default-libs=<auto|on|off>
     dal_c_ToggleState start_files_linked; // --link-start-files=<auto|on|off> / --link-crt=<auto|on|off>
+    dal_c_ToggleState compiler_rt_linked; // --link-compiler-rt=<auto|on|off>
     dal_c_ToggleState lto_mode; // --lto=<auto|on|off>
     dal_c_ToggleState omit_frame_pointer; // --omit-frame-pointer=<auto|on|off>
     dal_c_ToggleState function_sections; // --function-sections=<auto|on|off>
@@ -991,6 +997,55 @@ typedef struct dal_c_ScaffoldOpts {
     const char* name;
 } dal_c_ScaffoldOpts;
 
+typedef enum dal_c_ToolchainQuery {
+    dal_c_ToolchainQuery_invalid = -1,
+    dal_c_ToolchainQuery_all = 0,
+    dal_c_ToolchainQuery_start_files = 1,
+    dal_c_ToolchainQuery_compiler_rt = 2,
+    dal_c_ToolchainQuery_default_libs = 3,
+    dal_c_ToolchainQuery_crt = 4,
+    dal_c_ToolchainQuery_stdlib = 5,
+    dal_c_ToolchainQuery_libc = 6,
+    dal_c_ToolchainQuery_raw_link = 7,
+} dal_c_ToolchainQuery;
+#define dal_c_toolchain_query_all "all"
+#define dal_c_toolchain_query_start_files "start-files"
+#define dal_c_toolchain_query_compiler_rt "compiler-rt"
+#define dal_c_toolchain_query_default_libs "default-libs"
+#define dal_c_toolchain_query_crt "crt"
+#define dal_c_toolchain_query_stdlib "stdlib"
+#define dal_c_toolchain_query_libc "libc"
+#define dal_c_toolchain_query_raw_link "raw-link"
+static inline dal_c_ToolchainQuery dal_c_ToolchainQuery_parse(const char* str) {
+    if (!str || str_eql(str, dal_c_toolchain_query_all)) { return dal_c_ToolchainQuery_all; }
+    if (str_eql(str, dal_c_toolchain_query_start_files)) { return dal_c_ToolchainQuery_start_files; }
+    if (str_eql(str, dal_c_toolchain_query_compiler_rt)) { return dal_c_ToolchainQuery_compiler_rt; }
+    if (str_eql(str, dal_c_toolchain_query_default_libs)) { return dal_c_ToolchainQuery_default_libs; }
+    if (str_eql(str, dal_c_toolchain_query_crt)) { return dal_c_ToolchainQuery_crt; }
+    if (str_eql(str, dal_c_toolchain_query_stdlib)) { return dal_c_ToolchainQuery_stdlib; }
+    if (str_eql(str, dal_c_toolchain_query_libc)) { return dal_c_ToolchainQuery_libc; }
+    if (str_eql(str, dal_c_toolchain_query_raw_link)) { return dal_c_ToolchainQuery_raw_link; }
+    return dal_c_ToolchainQuery_invalid;
+}
+static inline const char* dal_c_ToolchainQuery_format(dal_c_ToolchainQuery query) {
+    switch (query) {
+    case dal_c_ToolchainQuery_all: return dal_c_toolchain_query_all;
+    case dal_c_ToolchainQuery_start_files: return dal_c_toolchain_query_start_files;
+    case dal_c_ToolchainQuery_compiler_rt: return dal_c_toolchain_query_compiler_rt;
+    case dal_c_ToolchainQuery_default_libs: return dal_c_toolchain_query_default_libs;
+    case dal_c_ToolchainQuery_crt: return dal_c_toolchain_query_crt;
+    case dal_c_ToolchainQuery_stdlib: return dal_c_toolchain_query_stdlib;
+    case dal_c_ToolchainQuery_libc: return dal_c_toolchain_query_libc;
+    case dal_c_ToolchainQuery_raw_link: return dal_c_toolchain_query_raw_link;
+    case dal_c_ToolchainQuery_invalid:
+    default: return NULL;
+    }
+}
+
+typedef struct dal_c_ToolchainOpts {
+    dal_c_ToolchainQuery query;
+} dal_c_ToolchainOpts;
+
 /// === COMMAND PAYLOAD (TaggedUnion) ===
 
 typedef union dal_c_CmdPayload {
@@ -1001,6 +1056,7 @@ typedef union dal_c_CmdPayload {
     dal_c_CleanOpts clean;
     dal_c_ScaffoldOpts workspace;
     dal_c_ScaffoldOpts project;
+    dal_c_ToolchainOpts toolchain;
 } dal_c_CmdPayload;
 
 /// === COMMAND (User Intent) ===
@@ -1041,6 +1097,7 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_compileDeps(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_createWorkspace(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_createProject(const dal_c_Cmd* self, const dal_c_Project* proj);
+int dal_c_Cmd_queryToolchain(const dal_c_Cmd* self);
 
 /// === LIBRARY (Dependency) ===
 
@@ -1217,9 +1274,10 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_link_dsl dal_c_opt_value_sep "<on|off>", "Enable or disable automatic DSL/DH library integration (default: " dal_c_default_dsl_mode ")" },
     { dal_c_opt_prefix_long dal_c_opt_hosted, "Use hosted compile semantics (default: " dal_c_default_compile_env ")" },
     { dal_c_opt_prefix_long dal_c_opt_freestanding, "Use freestanding compile semantics (`-ffreestanding`)" },
-    { dal_c_opt_prefix_long dal_c_opt_link_libc dal_c_opt_value_sep "<on|off>", "Link or omit libc (default: " dal_c_default_libc_linked ")" },
+    { dal_c_opt_prefix_long dal_c_opt_link_libc dal_c_opt_value_sep "<on|off>", "Link libc, or omit it when the target can represent libc-only suppression (default: " dal_c_default_libc_linked ")" },
     { dal_c_opt_prefix_long dal_c_opt_link_default_libs dal_c_opt_value_sep "<on|off>", "Link or omit compiler default libraries (default: " dal_c_default_default_libs_linked ")" },
     { dal_c_opt_prefix_long dal_c_opt_link_start_files dal_c_opt_value_sep "<on|off>", "Link or omit startup files / CRT objects (default: " dal_c_default_start_files_linked ")" },
+    { dal_c_opt_prefix_long dal_c_opt_link_compiler_rt dal_c_opt_value_sep "<auto|on|off>", "Explicitly restore or omit compiler runtime when default libraries are disabled" },
     { dal_c_opt_prefix_long dal_c_opt_link_stdlib dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` + `link-default-libs` bundle together" },
     { dal_c_opt_prefix_long dal_c_opt_link_crt dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` bundle" },
     { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|on|off>", "Override profile LTO policy for compile and link flags" },
@@ -1372,6 +1430,24 @@ static const char* const dal_c_help_deps_examples[] = {
 };
 #define dal_c_help_deps_examples_count ((int)(sizeof(dal_c_help_deps_examples) / sizeof(dal_c_help_deps_examples[0])))
 
+static const dal_c_HelpOption dal_c_help_toolchain_options[] = {
+    { dal_c_opt_prefix_long dal_c_opt_compiler dal_c_opt_value_sep "<name>", "Compiler to query (default: " dal_c_default_compiler ")" },
+    { dal_c_opt_prefix_long dal_c_opt_target dal_c_opt_value_sep "<triple>", "Target triple used for the query" },
+    { dal_c_opt_prefix_long dal_c_opt_sysroot dal_c_opt_value_sep "<path>", "System root used for the query" },
+    { dal_c_opt_prefix_long dal_c_opt_target_arch dal_c_opt_value_sep "<arch>", "Target architecture sub-variant used for the query" },
+    { dal_c_opt_prefix_long dal_c_opt_target_abi dal_c_opt_value_sep "<abi>", "Target ABI used for the query" },
+};
+#define dal_c_help_toolchain_options_count ((int)(sizeof(dal_c_help_toolchain_options) / sizeof(dal_c_help_toolchain_options[0])))
+
+static const char* const dal_c_help_toolchain_examples[] = {
+    dal_c_cmd_action_toolchain,
+    dal_c_cmd_action_toolchain " " dal_c_toolchain_query_start_files,
+    dal_c_cmd_action_toolchain " " dal_c_toolchain_query_compiler_rt,
+    dal_c_cmd_action_toolchain " " dal_c_toolchain_query_default_libs,
+    dal_c_cmd_action_toolchain " " dal_c_toolchain_query_raw_link,
+};
+#define dal_c_help_toolchain_examples_count ((int)(sizeof(dal_c_help_toolchain_examples) / sizeof(dal_c_help_toolchain_examples[0])))
+
 static const dal_c_HelpOption dal_c_help_clean_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_cache, "Clean only cache" },
     { dal_c_opt_prefix_long dal_c_opt_self, "Apply `clean` to the self boundary" },
@@ -1479,6 +1555,12 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
       dal_c_help_deps_options, dal_c_help_deps_options_count,
       dal_c_help_deps_examples, dal_c_help_deps_examples_count,
       true, true },
+    { dal_c_cmd_action_toolchain,
+      "Query compiler driver start files, runtime archive, and default link libraries",
+      "[" dal_c_toolchain_query_all "|" dal_c_toolchain_query_start_files "|" dal_c_toolchain_query_compiler_rt "|" dal_c_toolchain_query_default_libs "|" dal_c_toolchain_query_crt "|" dal_c_toolchain_query_stdlib "|" dal_c_toolchain_query_libc "|" dal_c_toolchain_query_raw_link "] [options]",
+      dal_c_help_toolchain_options, dal_c_help_toolchain_options_count,
+      dal_c_help_toolchain_examples, dal_c_help_toolchain_examples_count,
+      false, true },
     { dal_c_cmd_action_clean,
       "Clean build artifacts",
       "[options]",

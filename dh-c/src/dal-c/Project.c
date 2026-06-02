@@ -195,6 +195,7 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->dsl_mode != dal_c_ToggleState_auto) { dst->dsl_mode = src->dsl_mode; }
     if (src->default_libs_linked != dal_c_ToggleState_auto) { dst->default_libs_linked = src->default_libs_linked; }
     if (src->start_files_linked != dal_c_ToggleState_auto) { dst->start_files_linked = src->start_files_linked; }
+    if (src->compiler_rt_linked != dal_c_ToggleState_auto) { dst->compiler_rt_linked = src->compiler_rt_linked; }
     if (src->lto_mode != dal_c_ToggleState_auto) { dst->lto_mode = src->lto_mode; }
     if (src->omit_frame_pointer != dal_c_ToggleState_auto) { dst->omit_frame_pointer = src->omit_frame_pointer; }
     if (src->function_sections != dal_c_ToggleState_auto) { dst->function_sections = src->function_sections; }
@@ -962,6 +963,8 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         opts->default_libs_linked = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_link_start_files)) {
         opts->start_files_linked = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_link_compiler_rt)) {
+        opts->compiler_rt_linked = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_link_stdlib)) {
         dal_c_ToggleState s = dal_c_Project__toggleStateFromPositiveBool(value);
         opts->default_libs_linked = s;

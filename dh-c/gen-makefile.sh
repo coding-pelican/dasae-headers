@@ -33,6 +33,11 @@ OMIT_FRAME_POINTER ?= profile
 FUNCTION_SECTIONS ?= profile
 DATA_SECTIONS ?= profile
 GC_SECTIONS ?= profile
+HOST_IS_WINDOWS := $(if $(filter Windows_NT,$(OS)),on,off)
+LINK_LIBC ?= auto
+LINK_DEFAULT_LIBS ?= auto
+LINK_START_FILES ?= auto
+LINK_COMPILER_RT ?= auto
 WHOLE_ARCHIVE ?= profile
 UNROLL_LOOPS ?= profile
 UNWIND_TABLES ?= profile
@@ -216,6 +221,10 @@ RESOLVED_OMIT_FRAME_POINTER = $(if $(filter profile,$(OMIT_FRAME_POINTER)),$(PRO
 RESOLVED_FUNCTION_SECTIONS = $(if $(filter profile,$(FUNCTION_SECTIONS)),$(PROFILE_FUNCTION_SECTIONS),$(FUNCTION_SECTIONS))
 RESOLVED_DATA_SECTIONS = $(if $(filter profile,$(DATA_SECTIONS)),$(PROFILE_DATA_SECTIONS),$(DATA_SECTIONS))
 RESOLVED_GC_SECTIONS = $(if $(filter profile,$(GC_SECTIONS)),$(PROFILE_GC_SECTIONS),$(GC_SECTIONS))
+RESOLVED_LINK_LIBC = $(if $(filter auto,$(LINK_LIBC)),on,$(LINK_LIBC))
+RESOLVED_LINK_DEFAULT_LIBS = $(if $(filter auto,$(LINK_DEFAULT_LIBS)),on,$(LINK_DEFAULT_LIBS))
+RESOLVED_LINK_START_FILES = $(if $(filter auto,$(LINK_START_FILES)),on,$(LINK_START_FILES))
+RESOLVED_LINK_COMPILER_RT = $(if $(filter auto,$(LINK_COMPILER_RT)),on,$(LINK_COMPILER_RT))
 RESOLVED_WHOLE_ARCHIVE = $(if $(filter profile,$(WHOLE_ARCHIVE)),$(PROFILE_WHOLE_ARCHIVE),$(WHOLE_ARCHIVE))
 RESOLVED_UNROLL_LOOPS = $(if $(filter profile,$(UNROLL_LOOPS)),$(PROFILE_UNROLL_LOOPS),$(UNROLL_LOOPS))
 RESOLVED_UNWIND_TABLES = $(if $(filter profile,$(UNWIND_TABLES)),$(PROFILE_UNWIND_TABLES),$(UNWIND_TABLES))
@@ -286,6 +295,41 @@ ifneq ($(TARGET_ABI),auto)
 endif
 ifneq ($(SYSROOT),auto)
     TARGET_FLAGS += --sysroot=$(SYSROOT)
+endif
+
+ifeq ($(RESOLVED_LINK_DEFAULT_LIBS),on)
+else ifeq ($(RESOLVED_LINK_DEFAULT_LIBS),off)
+else
+    $(error Unsupported LINK_DEFAULT_LIBS '$(LINK_DEFAULT_LIBS)')
+endif
+
+ifeq ($(RESOLVED_LINK_START_FILES),off)
+    ifeq ($(RESOLVED_LINK_DEFAULT_LIBS),off)
+        PROFILE_LDFLAGS += -nostdlib
+        ifneq ($(RESOLVED_LINK_COMPILER_RT),off)
+            PROFILE_LDFLAGS += $(shell $(CC) $(TARGET_FLAGS) --print-libgcc-file-name)
+        endif
+    else
+        PROFILE_LDFLAGS += -nostartfiles
+    endif
+else ifeq ($(RESOLVED_LINK_START_FILES),on)
+    ifeq ($(RESOLVED_LINK_DEFAULT_LIBS),off)
+        PROFILE_LDFLAGS += -nodefaultlibs
+        ifneq ($(RESOLVED_LINK_COMPILER_RT),off)
+            PROFILE_LDFLAGS += $(shell $(CC) $(TARGET_FLAGS) --print-libgcc-file-name)
+        endif
+    else ifeq ($(RESOLVED_LINK_LIBC),off)
+        ifeq ($(HOST_IS_WINDOWS),on)
+            $(warning LINK_LIBC=off cannot be represented on this host while LINK_DEFAULT_LIBS remains enabled; libc is still treated as linked)
+        else
+            PROFILE_LDFLAGS += -nolibc
+        endif
+    else ifeq ($(RESOLVED_LINK_LIBC),on)
+    else
+        $(error Unsupported LINK_LIBC '$(LINK_LIBC)')
+    endif
+else
+    $(error Unsupported LINK_START_FILES '$(LINK_START_FILES)')
 endif
 
 ifeq ($(RESOLVED_UNWIND_TABLES),off)
