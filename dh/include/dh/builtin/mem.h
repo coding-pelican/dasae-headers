@@ -15,6 +15,10 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
+#include "comp.h"
+
 /*========== Macros and Declarations ========================================*/
 
 #define bits_per_bit __comp_int__bits_per_bit

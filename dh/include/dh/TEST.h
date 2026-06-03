@@ -65,8 +65,6 @@ $extern fn_((TEST_Framework_run(void))(void));
 
 /*========== Test Macros ====================================================*/
 
-#define TEST_only(_inner...) __comp_syn__TEST_only(_inner)
-
 #define TEST_fn_(_Name, _Extension...) \
     pp_overload(__TEST_fn _Extension)(_Name _Extension)
 #define __TEST_fn_0(_Name, _Extension...) \
@@ -91,8 +89,6 @@ $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(TEST_E$void));
 #endif /* !on_comptime */
 
 /*========== Implementation Details ========================================*/
-
-#define __comp_syn__TEST_only(_inner...) pp_if_(TEST_comp_enabled)(pp_then_(_inner))
 
 #define comp_syn__TEST_fn_$_scope(_ID_binder, _ID_caseFn, _Name...) \
     TEST__binder(_ID_binder, _ID_caseFn, _Name); \

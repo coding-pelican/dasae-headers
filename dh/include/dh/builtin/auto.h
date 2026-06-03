@@ -1,12 +1,12 @@
-#ifndef builtin_auto__included
-#define builtin_auto__included 1
+#ifndef builtin_comp_auto__included
+#define builtin_comp_auto__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "comp_cfg.h"
+#include "cfg/comp.h"
 
 /*========== Macros and Definitions =========================================*/
 
@@ -69,4 +69,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* builtin_auto__included */
+#endif /* builtin_comp_auto__included */

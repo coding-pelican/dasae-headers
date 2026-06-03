@@ -19,6 +19,10 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
+#include "comp.h"
+
 /*========== Macros and Definitions =========================================*/
 
 #define src_loc_filePath(/*void) -> (PZ0_const(u8)*/) __comp_inline__src_loc_filePath()

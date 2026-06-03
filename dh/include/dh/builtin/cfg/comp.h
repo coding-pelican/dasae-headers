@@ -2,11 +2,11 @@
  * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
- * @file    comp_cfg.h
+ * @file    comp.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2026-02-10 (date of last update)
- * @ingroup dal-project/da/foundation
+ * @updated 2026-06-03 (date of last update)
+ * @ingroup dal-project/da/foundation/cfg
  * @prefix  comp
  *
  * @brief   Compiler detection and feature configuration
@@ -14,15 +14,15 @@
  *          features, extensions, and attributes.
  *          Primary support: Clang, then GCC. MSVC planned for future.
  */
-#ifndef foundation_comp_cfg__included
-#define foundation_comp_cfg__included 1
+#ifndef foundation_cfg_comp__included
+#define foundation_cfg_comp__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "pp.h"
+#include "../pp.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -50,13 +50,6 @@ extern "C" {
 #define comp_version_major __comp_int__comp_version_major
 #define comp_version_minor __comp_int__comp_version_minor
 #define comp_version_patch __comp_int__comp_version_patch
-
-/* --- Comptime Evaluation --- */
-
-#define on_comptime__default __comp_flag__on_comptime__default
-#define on_comptime __comp_bool__on_comptime
-#define comptime_comp_enabled __comp_bool__comptime_comp_enabled
-#define comptime_only(_inner...) __comp_syn__comptime_only(_inner)
 
 /* --- Build Facts --- */
 
@@ -221,18 +214,6 @@ extern "C" {
 #undef __comp_int__comp_version_minor
 #define __comp_int__comp_version_minor (_MSC_VER % 100)
 #endif
-
-/* --- Comptime Evaluation --- */
-
-#define __comp_flag__on_comptime__default 0
-#define __comp_bool__on_comptime on_comptime__default
-#define __comp_bool__comptime_comp_enabled on_comptime
-#define __comp_syn__comptime_only(_inner...) pp_if_(on_comptime)(pp_then_(_inner))
-
-#if defined(COMP)
-#undef __comp_flag__on_comptime__default
-#define __comp_flag__on_comptime__default 1
-#endif /* defined(COMP) */
 
 /* --- Build Facts ---
  *
@@ -544,4 +525,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* foundation_comp_cfg__included */
+#endif /* foundation_cfg_comp__included */

@@ -23,7 +23,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/builtin/pp.h"
-#include "dh/builtin/plat_cfg.h"
+#include "dh/builtin/cfg/plat.h"
 
 /*========== Macros and Declarations ========================================*/
 

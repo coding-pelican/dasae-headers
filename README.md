@@ -43,7 +43,7 @@ dasae-headers: Modern, Better safety and productivity to C
     <a href="https://en.wikipedia.org/wiki/C17_(C_standard_revision)">
       <img src="https://img.shields.io/badge/language-C17-blue?style=flat-square" alt="Language: C17">
     </a>
-    <a href="./dh/include/dh/builtin/plat_cfg.h">
+    <a href="./dh/include/dh/builtin/cfg/plat.h">
       <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-brightgreen?style=flat-square"
            alt="Platform: Windows | Linux | macOS">
     </a>

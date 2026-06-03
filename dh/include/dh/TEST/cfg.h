@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-26 (date of creation)
- * @updated 2025-03-26 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-06-03 (date of last update)
  * @ingroup dasae-headers(dh)/TEST
  * @prefix  TEST
  *
@@ -19,6 +18,10 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
+#include "dh/builtin/pp.h"
+
 /*========== Macros and Declarations ========================================*/
 
 #if !defined(TEST_comp_enabled)
@@ -26,6 +29,7 @@ extern "C" {
 #endif /* !defined(TEST_comp_enabled) */
 #define TEST__comp_enabled_default __comp_flag__TEST__comp_enabled_default
 
+#define TEST_only(_inner...) __comp_syn__TEST_only(_inner)
 /*========== Macros and Definitions =========================================*/
 
 /* Default values */
@@ -41,6 +45,8 @@ extern "C" {
 #undef __comp_flag__TEST__comp_enabled_default
 #define __comp_flag__TEST__comp_enabled_default pp_true
 #endif /* defined(COMP_TEST) */
+
+#define __comp_syn__TEST_only(_inner...) pp_if_(TEST_comp_enabled)(pp_then_(_inner))
 
 #if defined(__cplusplus)
 } /* extern "C" */

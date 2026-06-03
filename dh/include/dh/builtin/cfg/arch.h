@@ -1,13 +1,12 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
- * @file    arch_cfg.h
+ * @file    arch.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2025-11-27 (date of last update)
- * @version v0.1
- * @ingroup dasae-headers(dh)/foundation
+ * @updated 2026-06-03 (date of last update)
+ * @ingroup dal-project/da/foundation/cfg
  * @prefix  arch
  *
  * @brief   Architecture detection and configuration
@@ -15,15 +14,15 @@
  *          Focus: x86_64, x86, aarch64, ARM, RISC-V, wasm64, wasm32.
  *          Single source of truth: all properties derived from arch_type.
  */
-#ifndef foundation_arch_cfg__included
-#define foundation_arch_cfg__included 1
+#ifndef foundation_cfg_arch__included
+#define foundation_cfg_arch__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "pp.h"
+#include "../pp.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -512,4 +511,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* foundation_arch_cfg__included */
+#endif /* foundation_cfg_arch__included */

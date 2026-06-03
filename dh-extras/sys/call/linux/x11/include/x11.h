@@ -24,7 +24,7 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
-#include <dh/builtin/plat_cfg.h>
+#include <dh/builtin/cfg/plat.h>
 #if plat_is_linux
 
 #include <X11/Xlib.h>

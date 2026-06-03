@@ -57,26 +57,29 @@ pp_if_(pp_not(comp_start_files_linked))((
         $extern var_(__xt_z, start_Fn);
         $extern var_(__CTOR_LIST__, start_Fn)[];
         $extern var_(__DTOR_LIST__, start_Fn)[];
+        $attr($maybe_unused)
         $static fn_((start__win32_callInitFns(start_InitFn * first, start_InitFn* last))(void)) {
             for (var it = first + 1; it != last; ++it) {
                 let fn = *it;
                 if (fn == null) continue;
-                let code = fn();
+                let code = call((fn)());
                 if (code != 0) start_exit(code);
             };
         };
+        $attr($maybe_unused)
         $static fn_((start__win32_callFnsForward(start_Fn * first, start_Fn* last))(void)) {
             for (var it = first + 1; it != last; ++it) {
                 let fn = *it;
-                if (fn != null) fn();
+                if (fn != null) call((fn)());
             };
         };
+        $attr($maybe_unused)
         $static fn_((start__win32_callCtorList(void))(void)) {
             let count_or_marker = as$(usize)(__CTOR_LIST__[0]);
             if (count_or_marker != usize_limit_max) {
                 for (var i = count_or_marker; i != 0; --i) {
                     let fn = __CTOR_LIST__[i];
-                    if (fn != null) fn();
+                    if (fn != null) call((fn)());
                 };
                 return;
             };
@@ -84,22 +87,23 @@ pp_if_(pp_not(comp_start_files_linked))((
             while (__CTOR_LIST__[count + 1] != null) ++count;
             while (count != 0) {
                 let fn = __CTOR_LIST__[count];
-                if (fn != null) fn();
+                if (fn != null) call((fn)());
                 --count;
             };
         };
+        $attr($maybe_unused)
         $static fn_((start__win32_callDtorList(void))(void)) {
             let count_or_marker = as$(usize)(__DTOR_LIST__[0]);
             if (count_or_marker != usize_limit_max) {
                 for (var_(i, usize) = 1; i <= count_or_marker; ++i) {
                     let fn = __DTOR_LIST__[i];
-                    if (fn != null) fn();
+                    if (fn != null) call((fn)());
                 };
                 return;
             };
             for (var_(i, usize) = 1; __DTOR_LIST__[i] != null; ++i) {
                 let fn = __DTOR_LIST__[i];
-                if (fn != null) fn();
+                if (fn != null) call((fn)());
             };
         };
     ));
@@ -111,23 +115,27 @@ pp_if_(pp_not(comp_start_files_linked))((
         $extern var_(__init_array_end, start_Fn)[];
         $extern var_(__fini_array_start, start_Fn)[];
         $extern var_(__fini_array_end, start_Fn)[];
+        $attr($maybe_unused)
         $static fn_((start__linux_callPreinitArray(void))(void)) {
             for (var it = __preinit_array_start; it != __preinit_array_end; ++it) {
-                (*it)();
+                call((*it)());
             };
         };
+        $attr($maybe_unused)
         $static fn_((start__linux_callInitArray(void))(void)) {
             for (var it = __init_array_start; it != __init_array_end; ++it) {
-                (*it)();
+                call((*it)());
             };
         };
+        $attr($maybe_unused)
         $static fn_((start__linux_callFiniArray(void))(void)) {
             for (var it = __fini_array_end; it-- != __fini_array_start;) {
-                (*it)();
+                call((*it)());
             };
         };
     ));
 
+    $attr($maybe_unused)
     $static fn_((start_callInitArray(void))(void)) {
         pp_switch_((plat_type)(
             pp_case_((plat_type_windows)({
@@ -142,6 +150,7 @@ pp_if_(pp_not(comp_start_files_linked))((
             pp_default_({})
         ));
     };
+    $attr($maybe_unused)
     $static fn_((start_callFiniArray(void))(void)) {
         pp_switch_((plat_type)(
             pp_case_((plat_type_windows)({

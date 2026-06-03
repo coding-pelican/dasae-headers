@@ -15,7 +15,7 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 #include "dh/builtin/pp.h"
-#include "dh/builtin/plat_cfg.h"
+#include "dh/builtin/cfg/plat.h"
 
 #if plat_is_darwin
 #if !defined(sys_libc_darwin_pref_target_ver)

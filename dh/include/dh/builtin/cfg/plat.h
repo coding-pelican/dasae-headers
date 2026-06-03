@@ -1,28 +1,27 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
- * @file    plat_cfg.h
+ * @file    plat.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2025-11-27 (date of last update)
- * @version v0.1
- * @ingroup dasae-headers(dh)/foundation
+ * @updated 2026-06-03 (date of last update)
+ * @ingroup dal-project/da/foundation/cfg
  * @prefix  plat
  *
  * @brief   Platform detection and configuration
  * @details Detects operating system and platform-specific features.
  *          Focus: Windows, Linux, Darwin, and WASI.
  */
-#ifndef foundation_plat_cfg__included
-#define foundation_plat_cfg__included 1
+#ifndef foundation_cfg_plat__included
+#define foundation_cfg_plat__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "pp.h"
+#include "../pp.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -307,4 +306,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* foundation_plat_cfg__included */
+#endif /* foundation_cfg_plat__included */

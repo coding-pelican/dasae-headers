@@ -9,7 +9,7 @@
  * @ingroup dasae-headers(dh)/sys/api/windows/pp-def
  * @prefix  (none)
  */
-#include "dh/builtin/plat_cfg.h"
+#include "dh/builtin/cfg/plat.h"
 #if plat_is_windows
 #undef auto
 #undef var

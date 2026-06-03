@@ -25,6 +25,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
+#include "cfg.h"
 #include "../fn.h"
 
 /*========== Macros and Declarations ========================================*/
@@ -32,9 +33,6 @@ extern "C" {
 /// Function to detect if debugger is attached
 $extern fn_((debug_isDebuggerPresent(void))(bool));
 
-#define debug_only(_inner...) \
-    /* Used only when `debug_comp_enabled`. */ \
-    __comp_syn__debug_only(_inner)
 #define debug_break() \
     /* Breakpoint. trigger debug break if debugger is attached. */ \
     __comp_inline__debug_break()
@@ -44,7 +42,6 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_syn__debug_only(_inner...) pp_if_(debug_comp_enabled)(pp_then_(_inner))
 #if !debug_comp_enabled
 #define __comp_inline__debug_break() $unused(0)
 #else /* debug_comp_enabled */

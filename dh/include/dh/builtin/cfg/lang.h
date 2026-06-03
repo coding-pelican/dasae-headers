@@ -2,26 +2,26 @@
  * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
- * @file    lang_cfg.h
+ * @file    lang.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2026-05-25 (date of last update)
- * @ingroup dasae-headers(dh)/builtin
+ * @updated 2026-06-03 (date of last update)
+ * @ingroup dal-project/da/foundation/cfg
  * @prefix  lang
  *
  * @brief   Language standards detection configuration
  * @details Detects C/C++ language standards, features, and compilation modes.
  *          Includes standard versions, language extensions, and dialect support.
  */
-#ifndef builtin_lang_cfg__included
-#define builtin_lang_cfg__included 1
+#ifndef foundation_cfg_lang__included
+#define foundation_cfg_lang__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "pp.h"
+#include "../pp.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -239,4 +239,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* builtin_lang_cfg__included */
+#endif /* builtin_cfg_lang__included */

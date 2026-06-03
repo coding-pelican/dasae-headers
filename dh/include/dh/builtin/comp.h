@@ -21,12 +21,16 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "lang_cfg.h"
-#include "arch_cfg.h"
-#include "plat_cfg.h"
-#include "comp_cfg.h"
+#include "cfg.h"
 
 /*========== Macros and Declarations ========================================*/
+
+#define on_comptime eval_on_comptime
+#define comptime_comp_enabled eval_comptime_comp_enabled
+#define comptime_only eval_comptime_only
+#define on_runtime eval_on_runtime
+#define runtime_comp_enabled eval_runtime_comp_enabled
+#define runtime_only eval_runtime_only
 
 #define $dispatch_on_comptime /* just comment that dispatches to detailed implementation at compile-time */
 

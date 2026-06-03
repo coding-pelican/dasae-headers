@@ -23,20 +23,20 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "builtin/pp.h"
-#include "builtin/lang_cfg.h"
-#include "builtin/arch_cfg.h"
-#include "builtin/comp_cfg.h"
-#include "builtin/plat_cfg.h"
-#include "builtin/comp.h"
-#include "builtin/src_loc.h"
-#include "builtin/static_assert.h"
-#include "builtin/auto.h"
+#include "builtin/cfg.h"
+
+#include "builtin/auto.h" /* no prefix */
+#include "builtin/comp.h" /* no prefix */
+#include "builtin/type_info.h" /* no prefix */
+#include "builtin/container_info.h" /* no prefix */
+
 #include "builtin/asm.h"
-#include "builtin/type_info.h"
-#include "builtin/container_info.h"
-#include "builtin/mem.h"
+#include "builtin/mem.h" /* no prefix */
 #include "builtin/atom.h"
 #include "builtin/prefetch.h"
+
+#include "builtin/src_loc.h"
+#include "builtin/static_assert.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

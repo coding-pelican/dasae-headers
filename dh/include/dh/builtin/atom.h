@@ -17,9 +17,6 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "pp.h"
-#include "auto.h"
-#include "comp.h"
 #include "type_info.h"
 
 /*========== Macros and Declarations ========================================*/
