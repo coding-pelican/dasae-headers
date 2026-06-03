@@ -34,7 +34,7 @@ typedef struct debug_TypeInfo debug_TypeInfo;
 /*========== Macros and Definitions =========================================*/
 
 struct debug_TypeInfo { /* clang-format off */
-    var_(impl, pp_if_(debug_comp_enabled)(
+    var_(impl, pp_if_(debug_enabled)(
         pp_then_(struct {
             var_(is_bound, bool);
             var_(inner, TypeInfo);
@@ -45,14 +45,14 @@ struct debug_TypeInfo { /* clang-format off */
     ));
 }; /* clang-format on */
 #define __val__debug_typeInfo$(_T...) l$((debug_TypeInfo){ \
-    .impl = pp_if_(debug_comp_enabled)( \
+    .impl = pp_if_(debug_enabled)( \
         pp_then_({ .is_bound = true, .inner = typeInfo$(_T) }), \
         pp_else_({ .inner = Void_({}) }) \
     ), \
 })
 
 #define __val__$typing(_type...) l$((debug_TypeInfo){ \
-    .impl = pp_if_(debug_comp_enabled)( \
+    .impl = pp_if_(debug_enabled)( \
         pp_then_({ .is_bound = true, .inner = _type }), \
         pp_else_({ .inner = Void_(_type) }) \
     ), \

@@ -37,13 +37,13 @@ typedef struct debug_SrcLoc debug_SrcLoc;
 /*========== Macros and Definitions =========================================*/
 
 struct debug_SrcLoc { /* clang-format off */
-    var_(impl, pp_if_(debug_comp_enabled)(
+    var_(impl, pp_if_(debug_enabled)(
         pp_then_(SrcLoc),
         pp_else_(Void)
     ));
 };
 #define __val__debug_srcLoc() l$((debug_SrcLoc){ \
-    .impl = pp_if_(debug_comp_enabled)( \
+    .impl = pp_if_(debug_enabled)( \
         pp_then_(srcLoc()), \
         pp_else_({}) \
     ), \

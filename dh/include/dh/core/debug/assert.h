@@ -70,7 +70,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#if debug_comp_enabled
+#if debug_enabled
 #if on_comptime
 /* clang-format off */
 #define __step__debug_assert(_Expr, _ExprStr...) $ignore_void(\
@@ -191,7 +191,7 @@ extern "C" {
 #define __step__debug_assert_nonnull_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _fmt)
 #define __step__debug_assert_nonnullS_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _fmt)
 
-#else /* !debug_comp_enabled */
+#else /* !debug_enabled */
 
 #define __step__debug_assert(_Expr, _ExprStr...) $unused(0)
 #define __step__debug_assert_msg(_Expr, _ExprStr, _msg...) $unused(0)
@@ -236,7 +236,7 @@ extern "C" {
 #define __step__debug_assert_nullS_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
 #define __step__debug_assert_nonnull_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
 #define __step__debug_assert_nonnullS_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
-#endif /* debug_comp_enabled */
+#endif /* debug_enabled */
 
 /*========== Extern Function Prototypes =====================================*/
 

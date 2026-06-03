@@ -11,7 +11,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #if !defined(ETrace_comp_enabled)
-#define ETrace_comp_enabled debug_comp_enabled
+#define ETrace_comp_enabled debug_enabled
 #endif /* !defined(ETrace_comp_enabled) */
 
 #define ETrace_max_frames /* Platform-specific stack trace size optimization */ __comp_int__ETrace_max_frames

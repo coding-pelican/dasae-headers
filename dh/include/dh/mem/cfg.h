@@ -25,17 +25,17 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if !defined(mem_tracing_comp_enabled)
-#define mem_tracing_comp_enabled __comp_bool__mem_tracing_comp_enabled
-#endif /* !defined(mem_tracing_comp_enabled) */
-#define mem_tracing__comp_enabled_default __comp_flag__mem_tracing__comp_enabled_default
+#if !defined(mem_tracing_enabled)
+#define mem_tracing_enabled __comp_bool__mem_tracing_enabled
+#endif /* !defined(mem_tracing_enabled) */
+#define mem_tracing__enabled_default __comp_flag__mem_tracing__enabled_default
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_bool__mem_tracing_comp_enabled \
-    mem_tracing__comp_enabled_default
-#define __comp_flag__mem_tracing__comp_enabled_default \
-    debug_comp_enabled
+#define __comp_bool__mem_tracing_enabled \
+    mem_tracing__enabled_default
+#define __comp_flag__mem_tracing__enabled_default \
+    debug_enabled
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -236,7 +236,7 @@ fn_((fmt_formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) {
     var_(pos, usize) = A_len(buf) - 1;
 
     // Determine base
-    let base_w_digits = expr_(struct { u32 base; S_const$u8 digits; } $scope)({
+    let base_w_digits = $suppress_(switch_enum)(expr_(struct { u32 base; S_const$u8 digits; } $scope)({
         // printf("  switch on spec.type=%d\n", spec.type);
         switch (spec.type) {
         case fmt_Type_hex_lower:
@@ -252,7 +252,7 @@ fn_((fmt_formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) {
         default:
             claim_unreachable;
         }
-    }) $unscoped(expr);
+    }) $unscoped(expr));
     let base = base_w_digits.base;
     let digits = base_w_digits.digits;
     // printf("  base=%u\n", base);
@@ -289,7 +289,7 @@ fn_((fmt_formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) {
     }
     // Add alternate form prefix if requested
     if (spec.alt_form) {
-        switch (spec.type) {
+        switch ($suppress_(switch_enum)(spec.type)) {
         case fmt_Type_hex_lower:
         case fmt_Type_hex_upper:
             // Always use lowercase 0x for hex
@@ -407,9 +407,16 @@ fn_((fmt_format$i8(io_Writer writer, i8 val, fmt_Spec spec))(E$void)) {
     return fmt_formatIInt(writer, as$(i64)(val), spec);
 };
 
-fn_((fmt_formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) {
+fn_((fmt_formatFlt(io_Writer writer, f64 val, fmt_Spec spec))(E$void) $scope) {
+#if fmt_flt_enabled
     return fmt__formatFltImpl(writer, val, spec);
-};
+#else /* fmt_flt_enabled */
+    let_ignore = writer;
+    let_ignore = val;
+    let_ignore = spec;
+    return_err(E_cause$fmt_FltDisabled());
+#endif /* fmt_flt_enabled */
+} $unscoped(fn);
 fn_((fmt_format$f64(io_Writer writer, f64 val, fmt_Spec spec))(E$void)) {
     return fmt_formatFlt(writer, val, spec);
 };
@@ -997,7 +1004,7 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
         // Parse type character (required if we reach here)
         let type_ch = local_({
             if (fmt_str.len == 0) {
-                return_err(E_cause$fmt_InvalidSpec());
+                return_err(E_cause$fmt_UnexpectedEndFormat());
             }
             let ch = *S_at((fmt_str)[0]);
             fmt_str = S_suffix((fmt_str)(1));
@@ -1035,7 +1042,7 @@ fn_((fmt__parseFormat(S_const$u8 fmt_str))(E$fmt__ParsedFormat) $scope) {
             case u8_c('C'): $break_({ .type = fmt_Type_utf8_codepoint, .size = size });
             case u8_c('z'): $break_({ .type = fmt_Type_string_z0, .size = size });
             case u8_c('s'): $break_({ .type = fmt_Type_string_s, .size = size });
-            default: return_err(E_cause$fmt_InvalidSpec());
+            default: return_err(E_cause$fmt_InvalidTypeSpec());
         }
     }) $unscoped(expr);
     /* clang-format on */
@@ -1077,30 +1084,35 @@ fn_((fmt__specToArgTag(fmt_Type type, fmt_Size size))(E$fmt__ArgValue_Tag) $scop
     case fmt_Type_hex_upper:
     case fmt_Type_octal:
     case fmt_Type_binary:
-        switch (size) {
+        switch ($suppress_(switch_enum)(size)) {
         case fmt_Size_8:   return_ok(fmt__ArgValue_u8);
         case fmt_Size_16:  return_ok(fmt__ArgValue_u16);
         case fmt_Size_32:  return_ok(fmt__ArgValue_u32);
         case fmt_Size_64:  return_ok(fmt__ArgValue_u64);
         case fmt_Size_ptr: return_ok(fmt__ArgValue_usize);
-        default: return_err(E_cause$fmt_InvalidSpec());
+        default: return_err(E_cause$fmt_InvalidSizeSpec());
         }
     case fmt_Type_signed:
-        switch (size) {
+        switch ($suppress_(switch_enum)(size)) {
         case fmt_Size_8:   return_ok(fmt__ArgValue_i8);
         case fmt_Size_16:  return_ok(fmt__ArgValue_i16);
         case fmt_Size_32:  return_ok(fmt__ArgValue_i32);
         case fmt_Size_64:  return_ok(fmt__ArgValue_i64);
         case fmt_Size_ptr: return_ok(fmt__ArgValue_isize);
-        default: return_err(E_cause$fmt_InvalidSpec());
+        default: return_err(E_cause$fmt_InvalidSizeSpec());
         }
     case fmt_Type_float_lower:
     case fmt_Type_float_upper:
-        switch (size) {
+#if fmt_flt_enabled
+        switch ($suppress_(switch_enum)(size)) {
         case fmt_Size_32: return_ok(fmt__ArgValue_f32);
         case fmt_Size_64: return_ok(fmt__ArgValue_f64);
-        default: return_err(E_cause$fmt_InvalidSpec());
+        default: return_err(E_cause$fmt_InvalidSizeSpec());
         }
+#else /* fmt_flt_enabled */
+        let_ignore = size;
+        return_err(E_cause$fmt_FltDisabled());
+#endif /* fmt_flt_enabled */
     case fmt_Type_pointer_lower:
     case fmt_Type_pointer_upper:
         return_ok(fmt__ArgValue_ptr);
@@ -1115,7 +1127,7 @@ fn_((fmt__specToArgTag(fmt_Type type, fmt_Size size))(E$fmt__ArgValue_Tag) $scop
     case fmt_Type_string_s:
         return_ok(fmt__ArgValue_sli_u8);
     default:
-        return_err(E_cause$fmt_InvalidSpec());
+        return_err(E_cause$fmt_InvalidTypeSpec());
     }
     /* clang-format on */
 } $unscoped(fn);
@@ -1492,7 +1504,7 @@ fn_((fmt__formatArg(io_Writer writer, fmt__ArgType arg, fmt_Spec spec))(E$void) 
     pattern_((fmt__ArgType_error_result)(error_result)) {
         return fmt__formatArgErrorResult(writer, error_result, spec);
     } $end(pattern);
-    default_() return_err(E_cause$fmt_InvalidSpec()) $end(default);
+    default_() return_err(E_cause$fmt_InvalidTypeSpec()) $end(default);
     } $end(match);
 } $unscoped(fn);
 
@@ -1593,10 +1605,24 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
         return fmt_formatIInt(writer, value, spec);
     } $end(pattern);
     pattern_((fmt__ArgValue_f32)(value)) {
+#if fmt_flt_enabled
         return fmt_formatFlt(writer, value, spec);
+#else /* fmt_flt_enabled */
+        let_ignore = writer;
+        let_ignore = value;
+        let_ignore = spec;
+        return_err(E_cause$fmt_FltDisabled());
+#endif /* fmt_flt_enabled */
     } $end(pattern);
     pattern_((fmt__ArgValue_f64)(value)) {
+#if fmt_flt_enabled
         return fmt_formatFlt(writer, value, spec);
+#else /* fmt_flt_enabled */
+        let_ignore = writer;
+        let_ignore = value;
+        let_ignore = spec;
+        return_err(E_cause$fmt_FltDisabled());
+#endif /* fmt_flt_enabled */
     } $end(pattern);
     pattern_((fmt__ArgValue_ptr)(value)) {
         return fmt_formatPtr(writer, value, spec);
@@ -1612,7 +1638,7 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
     pattern_((fmt__ArgValue_sli_u8)(value)) {
         return fmt_formatStr(writer, value, spec);
     } $end(pattern);
-    default_() return_err(E_cause$fmt_InvalidSpec()) $end(default);
+    default_() return_err(E_cause$fmt_InvalidTypeSpec()) $end(default);
     } $end(match);
 } $unscoped(fn);
 
@@ -1750,7 +1776,7 @@ fn_((fmt__ArgValue_Tag_isInt(fmt__ArgValue_Tag tag))(bool)) {
 };
 
 fn_((fmt__ArgValue_Tag_getIntSize(fmt__ArgValue_Tag tag))(u8)) {
-    switch (tag) {
+    switch ($suppress_(switch_enum)(tag)) {
     case fmt__ArgValue_u8:
     case fmt__ArgValue_i8:
         return 8;

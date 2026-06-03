@@ -32,7 +32,7 @@ $static fn_((exec_Fiber__faultInFiberStack(exec_Fiber* self, usize fault_addr))(
 static void exec_Fiber__unixHandleSignal(i32 sig, siginfo_t* info, P$raw uctx);
 #endif
 
-#if TEST_comp_enabled
+#if TEST_enabled
 $thrd_local $static var_(exec_Fiber__ensureDiag, exec_Fiber_EnsureDiag);
 
 $static fn_((exec_Fiber_ensureDiagSet(
@@ -65,7 +65,7 @@ fn_((exec_Fiber__ensureDiagLast(void))(exec_Fiber_EnsureDiag)) {
 #else
 #define exec_Fiber_ensureDiagSet(_stage, _rsp, _storage_begin, _storage_end, _stack_bottom, _target, _new_guard_begin, _commit_len, _fail_addr) \
     $do_nothing
-#endif /* TEST_comp_enabled */
+#endif /* TEST_enabled */
 
 #if plat_is_windows || plat_based_unix
 $static fn_((exec_Fiber__faultInFiberStack(exec_Fiber* self, usize fault_addr))(bool)) {

@@ -38,7 +38,7 @@ extern "C" {
 #define fmt__ryu_special_exponent (0x7fffffff)
 
 #if fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full \
-    || fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+    || fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_less
 /// Direct lookup table size for pow5
 #define fmt__ryu_table_pow5_size (326)
 /// Direct lookup table size for pow5_inv
@@ -56,7 +56,7 @@ extern "C" {
 /// Offset table size for pow5_inv corrections
 #define fmt__ryu_table_pow5_inv_offsets_size (19)
 
-#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_less
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
 #endif /* fmt_flt_ryu_table_type */
 
@@ -76,7 +76,7 @@ typedef A$$(fmt__ryu_table_pow5_inv_split_size, fmt__ryu_TableEntry) fmt__ryu_Ta
 typedef A$$(fmt__ryu_table_pow5_offsets_size, u32) fmt__ryu_TablePow5Offsets;
 typedef A$$(fmt__ryu_table_pow5_inv_offsets_size, u32) fmt__ryu_TablePow5InvOffsets;
 
-#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_less
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
 #endif /* fmt_flt_ryu_table_type */
 
@@ -114,7 +114,7 @@ $extern let_(fmt__ryu_table_pow5_offsets, fmt__ryu_TablePow5Offsets);
 ///          Size: 19 entries × 4 bytes = 76 bytes
 $extern let_(fmt__ryu_table_pow5_inv_offsets, fmt__ryu_TablePow5InvOffsets);
 
-#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_less
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
 #endif /* fmt_flt_ryu_table_type */
 
@@ -223,7 +223,7 @@ $static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
     return (fmt__ryu_TableEntry)A_init({ shifted_low, shifted_high });
 };
 
-#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_less
 #define fmt__ryu_bigint_limb_count (16)
 typedef A$$(fmt__ryu_bigint_limb_count, u64) fmt__ryu_BigInt;
 $attr($inline_always)

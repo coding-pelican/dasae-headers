@@ -1,5 +1,5 @@
 #include "dh/core/claim/assert.h"
-#if claim_fail_logging_comp_enabled
+#if claim_fail_printing_enabled
 #include "dh/mem/common.h"
 #include "dh/io/stream.h"
 
@@ -29,4 +29,4 @@ fn_((claim_assert_failLogFmt(const char* expr, const char* func, const char* fil
     io_stream_eprintln(claim_assert__fmt_expr, expr);
     io_stream_eprintln(claim_assert__fmt_loc, func, file, line);
 };
-#endif /* claim_fail_logging_comp_enabled */
+#endif /* claim_fail_printing_enabled */

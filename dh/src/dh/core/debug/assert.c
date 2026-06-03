@@ -1,5 +1,5 @@
 #include "dh/core/debug/assert.h"
-#if debug_comp_enabled
+#if debug_enabled
 #include "dh/mem/common.h"
 #include "dh/io/stream.h"
 
@@ -29,4 +29,4 @@ fn_((debug_assert_failLogFmt(const char* expr, const char* func, const char* fil
     io_stream_eprintln(debug_assert__fmt_expr, expr);
     io_stream_eprintln(debug_assert__fmt_loc, func, file, line);
 };
-#endif /* debug_comp_enabled */
+#endif /* debug_enabled */

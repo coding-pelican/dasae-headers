@@ -739,6 +739,6 @@ let_(fmt__ryu_table_pow5_inv_offsets, fmt__ryu_TablePow5InvOffsets) = A_init({
 });
 /* clang-format on */
 
-#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_less
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
 #endif /* fmt_flt_ryu_table_type */

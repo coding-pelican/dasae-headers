@@ -29,7 +29,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 /// Memory Tracer
-T_alias$((mem_AlcTrace)(pp_if_(mem_tracing_comp_enabled)(
+T_alias$((mem_AlcTrace)(pp_if_(mem_tracing_enabled)(
     pp_then_(struct mem_AlcTrace),
     pp_else_(Void))));
 
@@ -50,7 +50,7 @@ $extern fn_((mem_AlcTrace_registerFree($traced P$raw ptr))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-pp_if_(mem_tracing_comp_enabled)((
+pp_if_(mem_tracing_enabled)((
     T_alias$((mem_AlcTrace_Unit)(struct mem_AlcTrace_Unit));
     T_use$((mem_AlcTrace_Unit)(ListSgl_Link, ListSgl));
     struct mem_AlcTrace {

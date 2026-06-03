@@ -43,7 +43,7 @@ T_alias$((u_Fields_Idx$Future)(enum_((u_Fields_Idx$Future $fits($packed))(
 ))));
 $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A_init({
     [u_Fields_Idx_any_future$Future] = typeInfo$(FieldType$(Future$raw, any_future)),
-    [u_Fields_Idx_type$Future] = typeInfo$(pp_if_(debug_comp_enabled)(pp_then_(FieldType$(Future$raw, type)), pp_else_(Void))),
+    [u_Fields_Idx_type$Future] = typeInfo$(pp_if_(debug_enabled)(pp_then_(FieldType$(Future$raw, type)), pp_else_(Void))),
     [u_Fields_Idx_result_$Future] = typeInfo$(FieldType$(Future$raw, result_)),
 });
 

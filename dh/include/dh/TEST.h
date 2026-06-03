@@ -111,13 +111,13 @@ $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(TEST_E$void));
             s_is_bound = true; \
         } \
     }
-#if TEST_comp_enabled
+#if TEST_enabled
 #define comp_fn_gen__TEST__binder__sgn(_ID_binder) $on_load fn_((_ID_binder(void))(void))
 #define comp_fn_gen__TEST__binder__isEnabled() (true)
-#else /* !TEST_comp_enabled */
+#else /* !TEST_enabled */
 #define comp_fn_gen__TEST__binder__sgn(_ID_binder) fn_((_ID_binder(void))(void))
 #define comp_fn_gen__TEST__binder__isEnabled() (false)
-#endif /* !TEST_comp_enabled */
+#endif /* !TEST_enabled */
 // clang-format off
 #define comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn...)      \
     /* TODO: Add case check if it has been run before $on_exit */ \

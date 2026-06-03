@@ -24,30 +24,30 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if !defined(debug_comp_enabled)
-#define debug_comp_enabled __comp_bool__debug_comp_enabled
-#endif /* !defined(debug_comp_enabled) */
-#define debug__comp_enabled_default __comp_flag__debug__default_enabled
+#if !defined(debug_enabled)
+#define debug_enabled __comp_bool__debug_enabled
+#endif /* !defined(debug_enabled) */
+#define debug__enabled_default __comp_flag__debug__enabled_default
 
 #define debug_only(_inner...) \
-    /* Used only when `debug_comp_enabled`. */ \
+    /* Used only when `debug_enabled`. */ \
     __comp_syn__debug_only(_inner)
 
 /*========== Macros and Definitions =========================================*/
 
 /* Default values */
 
-#define __comp_bool__debug_comp_enabled debug__comp_enabled_default
-#define __comp_flag__debug__default_enabled pp_true
+#define __comp_bool__debug_enabled debug__enabled_default
+#define __comp_flag__debug__enabled_default pp_true
 
 /* Override values */
 
 #if defined(NDEBUG)
-#undef __comp_flag__debug__default_enabled
-#define __comp_flag__debug__default_enabled pp_false
+#undef __comp_flag__debug__enabled_default
+#define __comp_flag__debug__enabled_default pp_false
 #endif /* !defined(NDEBUG) */
 
-#define __comp_syn__debug_only(_inner...) pp_if_(debug_comp_enabled)(pp_then_(_inner))
+#define __comp_syn__debug_only(_inner...) pp_if_(debug_enabled)(pp_then_(_inner))
 
 #if defined(__cplusplus)
 } /* extern "C" */

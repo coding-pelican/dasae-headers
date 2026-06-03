@@ -24,16 +24,25 @@ extern "C" {
 #include "dh/TEST.h"
 #include "dh/start.h"
 
-/*========== Macros =========================================================*/
+/*========== Macros and Declarations ========================================*/
+
+/*---------- Configuration Flags --------------------------------------------*/
 
 #if !defined(TEST_main_enabled)
-#define TEST_main_enabled 0
+#define TEST_main_enabled __comp_bool__TEST_main_enabled
 #endif /* !defined(TEST_main_enabled) */
+#define TEST_main__enabled_default __comp_flag__TEST_main__enabled_default
 
-/*========== Root main ======================================================*/
+/*========== Macros and Definitions =========================================*/
+
+/*---------- Configuration Flags --------------------------------------------*/
+
+#define __comp_bool__TEST_main_enabled TEST_main__enabled_default
+#define __comp_flag__TEST_main__enabled_default pp_false
+
+/*---------- Root main ------------------------------------------------------*/
 
 #if TEST_main_enabled
-
 $static fn_((TEST__runMain(void))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
     TEST_Framework_run();
@@ -47,6 +56,7 @@ $static fn_((TEST__runMain(void))(start_ExitCode)) {
 fn_((main(void))(int)) {
     return TEST__runMain();
 };
+
 #else /* !comp_start_files_linked */
 $attr($no_return $maybe_unused)
 $static fn_((TEST__callMainAndExit(P$raw raw_ctx))(void)) {
@@ -58,7 +68,7 @@ $static fn_((TEST__callMainAndExit(P$raw raw_ctx))(void)) {
 };
 
 start_emitEntry(TEST__callMainAndExit);
-#endif /* comp_start_files_linked */
+#endif /* comp_start_files_linked || !comp_start_files_linked */
 
 #endif /* main_root_included */
 #endif /* TEST_main_enabled */

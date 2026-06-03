@@ -24,29 +24,30 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if !defined(TEST_comp_enabled)
-#define TEST_comp_enabled __comp_bool__TEST_comp_enabled
-#endif /* !defined(TEST_comp_enabled) */
-#define TEST__comp_enabled_default __comp_flag__TEST__comp_enabled_default
+#if !defined(TEST_enabled)
+#define TEST_enabled __comp_bool__TEST_enabled
+#endif /* !defined(TEST_enabled) */
+#define TEST__enabled_default __comp_flag__TEST__enabled_default
 
 #define TEST_only(_inner...) __comp_syn__TEST_only(_inner)
+
 /*========== Macros and Definitions =========================================*/
 
 /* Default values */
 
 /* TODO: Add edittime decision */
-// #define __comp_flag__TEST__comp_enabled_default pp_not(on_comptime)
-#define __comp_bool__TEST_comp_enabled TEST__comp_enabled_default
-#define __comp_flag__TEST__comp_enabled_default pp_false
+// #define __comp_flag__TEST__enabled_default pp_not(on_comptime)
+#define __comp_bool__TEST_enabled TEST__enabled_default
+#define __comp_flag__TEST__enabled_default pp_false
 
 /* Override values */
 
 #if defined(COMP_TEST)
-#undef __comp_flag__TEST__comp_enabled_default
-#define __comp_flag__TEST__comp_enabled_default pp_true
+#undef __comp_flag__TEST__enabled_default
+#define __comp_flag__TEST__enabled_default pp_true
 #endif /* defined(COMP_TEST) */
 
-#define __comp_syn__TEST_only(_inner...) pp_if_(TEST_comp_enabled)(pp_then_(_inner))
+#define __comp_syn__TEST_only(_inner...) pp_if_(TEST_enabled)(pp_then_(_inner))
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-21 (date of creation)
- * @updated 2024-11-21 (date of last update)
- * @version v1.0.0
+ * @updated 2026-06-03 (date of last update)
  * @ingroup dasae-headers(dh)/core/claim
  * @prefix  claim
  *
@@ -19,28 +18,34 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
+#include "dh/builtin/pp.h"
+
 /*========== Macros and Declarations ========================================*/
 
-#define claim__fail_logging_default_enabled __comp_flag__claim__fail_logging_default_enabled
-#define claim_fail_logging_comp_enabled __comp_bool__claim_fail_logging_comp_enabled
+#if !defined(claim_fail_printing_enabled)
+#define claim_fail_printing_enabled __comp_bool__claim_fail_printing_enabled
+#endif /* !defined(claim_fail_printing_enabled) */
+#define claim_fail_printing__enabled_default __comp_flag__claim_fail_printing__enabled_default
 
 /*========== Macros and Definitions =========================================*/
 
 /* Default values */
 
-#define __comp_flag__claim__fail_logging_default_enabled 1
-#define __comp_bool__claim_fail_logging_comp_enabled claim__fail_logging_default_enabled
+#define __comp_bool__claim_fail_printing_enabled claim_fail_printing__enabled_default
+#define __comp_flag__claim_fail_printing__enabled_default pp_true
 
 /* Override values */
 
 // #if defined(NDEBUG) && defined(NCLAIM_FAIL_LOGGING)
-// #undef __comp_flag__claim__fail_logging_default_enabled
-// #define __comp_flag__claim__fail_logging_default_enabled 0
+// #undef __comp_flag__claim_fail_printing__enabled_default
+// #define __comp_flag__claim_fail_printing__enabled_default 0
 // #endif /* defined(NDEBUG) && defined(NCLAIM_FAIL_LOGGING) */
 
 #if defined(NDEBUG)
-#undef __comp_flag__claim__fail_logging_default_enabled
-#define __comp_flag__claim__fail_logging_default_enabled 0
+#undef __comp_flag__claim_fail_printing__enabled_default
+#define __comp_flag__claim_fail_printing__enabled_default pp_false
 #endif /* defined(NDEBUG) */
 
 #if defined(__cplusplus)

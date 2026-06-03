@@ -103,28 +103,39 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((fmt_Err)(
-    // 1. Structural errors (format string structure)
+// Structural errors (format string structure)
+errset_((fmt_StructE)(
     fmt_MissingClosingBrace, // Missing '}' after format spec
     fmt_UnexpectedEndFormat, // Format string ends unexpectedly
-
-    // 2. Index/Argument errors (argument indexing)
+));
+// Index/Argument errors (argument indexing)
+errset_((fmt_IdxArgE)(
     fmt_InvalidIdx, // Index format is malformed
     fmt_IdxOutOfBounds, // Index exceeds max_args (0-15)
     fmt_TooFewArgs, // Not enough arguments provided
     fmt_TooManyArgs, // Too many arguments provided
-
-    // 3. Format specifier component errors (parsing order)
-    fmt_InvalidAlign, // Invalid alignment character (<, >, ^)
-    fmt_InvalidWidth, // Invalid width value
-    fmt_InvalidPrecision, // Invalid precision value
-    fmt_InvalidSpec, // General format spec error (catch-all)
-
-    // 4. Type-specific errors (when formatting specific types)
+));
+// Format specifier component errors (parsing order)
+errset_((fmt_SpecE)(
+    fmt_InvalidAlignSpec, // Invalid alignment character (<, >, ^)
+    fmt_InvalidWidthSpec, // Invalid width value
+    fmt_InvalidTypeSpec, // Invalid or unsupported type specifier
+    fmt_InvalidSizeSpec, // Invalid size modifier for the requested type
+));
+/// Type-specific errors (when formatting specific types)
+errset_((fmt_BoolE)(
     fmt_InvalidBool, // Boolean formatting error
+));
+errset_((fmt_IIntE)(
     fmt_InvalidIInt, // Signed integer formatting/parsing error
+));
+errset_((fmt_UIntE)(
     fmt_InvalidUInt, // Unsigned integer formatting/parsing error
-    fmt_InvalidFlt // Floating-point formatting/parsing error
+));
+errset_((fmt_FltE)(
+    fmt_InvalidPrecisionSpec, // Invalid specifier precision value
+    fmt_InvalidFlt, // Floating-point formatting/parsing error
+    fmt_FltDisabled, // Floating-point formatting is disabled at compile time
 ));
 
 typedef enum_((fmt_Align $fits($packed))(
@@ -239,6 +250,10 @@ typedef struct fmt_Spec {
 
 /*========== Formatting (Output) ==========*/
 
+// errset_((fmt_format_E)() $union_errsets(
+//     fmt_StructE, fmt_IdxArgE, fmt_SpecE,
+//     fmt_BoolE, fmt_IIntE, fmt_UIntE, fmt_FltE
+// ));
 /// Format values to a writer with indexed arguments
 $extern fn_((fmt_format(io_Writer writer, S_const$u8 fmt, ...))(E$void)) $must_check;
 /// Format values using va_list (for wrapper functions)

@@ -26,13 +26,13 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if debug_comp_enabled
+#if debug_enabled
 #define debug_assert_static(_Expr) __step__static_assert(_Expr)
 #define debug_assert_static_msg(_Expr, _msg) __step__static_assert_msg(_Expr, _msg)
-#else /* !debug_comp_enabled */
+#else /* !debug_enabled */
 #define debug_assert_static(_Expr)
 #define debug_assert_static_msg(_Expr, _msg)
-#endif /* debug_comp_enabled */
+#endif /* debug_enabled */
 
 #if defined(__cplusplus)
 } /* extern "C" */

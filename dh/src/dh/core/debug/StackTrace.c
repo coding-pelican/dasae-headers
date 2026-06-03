@@ -28,14 +28,14 @@ pp_if_(debug_StackTrace__unix_enabled)(pp_then_(
     $static fn_((debug_StackTrace__unix_print(void))(void));
 ));
 
-$attr(pp_if_(pp_not(debug_comp_enabled))(pp_then_($maybe_unused)))
+$attr(pp_if_(pp_not(debug_enabled))(pp_then_($maybe_unused)))
 $static let debug_StackTrace__setupCrashHandler = pp_if_(plat_is_windows)(
     pp_then_(debug_StackTrace__windows_setupCrashHandler),
     pp_else_(pp_if_(debug_StackTrace__unix_enabled)(
         pp_then_(debug_StackTrace__unix_setupCrashHandler),
         pp_else_(debug_StackTrace__unsupported_setupCrashHandler)
     )));
-$attr(pp_if_(pp_not(debug_comp_enabled))(pp_then_($maybe_unused)))
+$attr(pp_if_(pp_not(debug_enabled))(pp_then_($maybe_unused)))
 $static let debug_StackTrace__print = pp_if_(plat_is_windows)(
     pp_then_(debug_StackTrace__windows_print),
     pp_else_(pp_if_(debug_StackTrace__unix_enabled)(

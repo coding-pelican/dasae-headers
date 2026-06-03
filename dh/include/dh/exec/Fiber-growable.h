@@ -28,7 +28,7 @@ $static fn_((exec_Fiber_usableStack(exec_Fiber* self, usize commit_size))(S$u8))
 $extern fn_((exec_Fiber_enter(exec_Fiber* self))(O$P$exec_Fiber));
 $extern fn_((exec_Fiber_restore(O$P$exec_Fiber prev))(void));
 
-#if TEST_comp_enabled
+#if TEST_enabled
 /* --- Diagnostics --- */
 
 T_alias$((exec_Fiber_EnsureDiag_Stage)(enum exec_Fiber_EnsureDiag_Stage{
@@ -56,7 +56,7 @@ T_alias$((exec_Fiber_EnsureDiag)(struct exec_Fiber_EnsureDiag {
     var_(fail_addr, usize);
 }));
 $extern fn_((exec_Fiber_ensureDiagLast(void))(exec_Fiber_EnsureDiag));
-#endif /* TEST_comp_enabled */
+#endif /* TEST_enabled */
 
 /*========== Macros and Definitions =========================================*/
 

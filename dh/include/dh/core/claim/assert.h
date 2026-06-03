@@ -173,7 +173,7 @@ extern "C" {
 
 /*========== Extern Function Prototypes =====================================*/
 
-#if claim_fail_logging_comp_enabled
+#if claim_fail_printing_enabled
 #if on_comptime
 /**
  * @brief Logs an assertion failure with the given expression, function, file, and line.
@@ -210,11 +210,11 @@ $extern fn_((claim_assert_failLog(const char*, const char*, const char*, u32))(v
 $extern fn_((claim_assert_failLogMsg(const char*, const char*, const char*, u32, const char*))(void));
 $extern fn_((claim_assert_failLogFmt(const char*, const char*, const char*, u32, const char*, ...))(void));
 #endif /* on_comptime */
-#else /* !claim_fail_logging_comp_enabled */
+#else /* !claim_fail_printing_enabled */
 #define claim_assert_failLog(_expr, _func, _file, _line) $unused(0)
 #define claim_assert_failLogMsg(_expr, _func, _file, _line, _msg) $unused(0)
 #define claim_assert_failLogFmt(_expr, _func, _file, _line, _fmt, ...) $unused(0)
-#endif /* claim_fail_logging_comp_enabled */
+#endif /* claim_fail_printing_enabled */
 
 #if defined(__cplusplus)
 } /* extern "C" */

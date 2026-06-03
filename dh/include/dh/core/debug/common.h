@@ -42,9 +42,9 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-#if !debug_comp_enabled
+#if !debug_enabled
 #define __comp_inline__debug_break() $unused(0)
-#else /* debug_comp_enabled */
+#else /* debug_enabled */
 
 #define __comp_inline__debug_break() ({ \
     if (debug_isDebuggerPresent()) { ____debug_break__impl(); } \
@@ -74,7 +74,7 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
 
 #endif
 
-#endif /* debug_comp_enabled */
+#endif /* debug_enabled */
 
 #define __comp_attr__$debug_point debug_break(),
 
