@@ -37,6 +37,7 @@ static void dal_c_Cmd__setOutputPath(dal_c_Cmd* cmd, const char* path);
 static const char* dal_c_Cmd__sampleDirCanonical(dal_c_SampleDir sample_dir);
 static ArrStr* dal_c_Cmd__resolveInputs(const dal_c_Project* proj, const dal_c_Cmd* cmd, const char* dir_name, bool fallback_all);
 static bool dal_c_Cmd__inputsNeedCategoryResolution(const dal_c_Cmd* cmd);
+static bool dal_c_Cmd__hasSingleExplicitFileInput(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectPathSources(const char* path, bool resolved_is_dir, bool skip_auto_paths);
 static ArrStr* dal_c_Cmd__collectExplicitSources(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_TargetRequest* request);
@@ -341,10 +342,12 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
         cmd->opts.compile_env = enabled ? dal_c_CompileEnv_hosted : dal_c_CompileEnv_freestanding;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_loose_errors)) {
-        if (!has_bool) { *handled = false; }
-        else {
-        cmd->opts.loose_errors = enabled;
+        dal_c_LooseErrorsMode mode = dal_c_LooseErrorsMode_parse(value);
+        if (mode == dal_c_LooseErrorsMode_invalid) {
+            (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_loose_errors, value);
+            return 1;
         }
+        cmd->opts.loose_errors = mode;
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_image)) {
         if (!has_bool) { *handled = false; }
         else {
@@ -488,14 +491,14 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
     assert(out != NULL);
     memset(out, 0, sizeof(*out));
     out->action = cmd->action;
-    out->linking = dal_c_Linking_static;
+    out->linking = dal_c_LinkMode_toLibraryLinking(cmd->opts.link_mode, dal_c_Linking_static);
 
     switch (cmd->action) {
     case dal_c_CmdAction_build:
         out->target_path = cmd->payload.build.target_path;
         out->target_root_name_hint = dal_c_Cmd__sampleDirCanonical(cmd->payload.build.sample_dir);
         out->output_path = cmd->payload.build.output_path;
-        out->linking = cmd->payload.build.linking;
+        out->linking = dal_c_LinkMode_toLibraryLinking(cmd->opts.link_mode, cmd->payload.build.linking);
         out->build_all = cmd->payload.build.build_all;
         out->as_library = cmd->payload.build.as_library;
         out->self_boundary = cmd->payload.build.self_boundary;
@@ -505,7 +508,7 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
     case dal_c_CmdAction_lib:
         out->target_path = cmd->payload.lib.target_path;
         out->output_path = cmd->payload.lib.output_path;
-        out->linking = cmd->payload.lib.linking;
+        out->linking = dal_c_LinkMode_toLibraryLinking(cmd->opts.link_mode, cmd->payload.lib.linking);
         out->as_library = true;
         break;
     case dal_c_CmdAction_run:
@@ -546,6 +549,9 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
     default:
         break;
     }
+    out->target_path_is_explicit_file = out->target_root_name_hint == NULL
+                                     && out->target_path != NULL
+                                     && dal_c_Cmd__hasSingleExplicitFileInput(cmd);
 }
 
 int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
@@ -621,7 +627,9 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     if (!dal_c_TargetRequest_resolve(target_proj, &intent, &target_request)) {
         return 1;
     }
-    ArrStr* active_excludes = dal_c_Cmd__collectActiveExcludes(target_proj, &target_request, self);
+    ArrStr* active_excludes = intent.target_path_is_explicit_file
+                            ? ArrStr_init()
+                            : dal_c_Cmd__collectActiveExcludes(target_proj, &target_request, self);
     if (target_request.root && target_request.raw_target_path && target_request.resolved_path) {
         if (dal_c_Cmd__rejectExcludedPath(target_request.resolved_path, active_excludes) != 0) {
             ArrStr_fini(&active_excludes);
@@ -641,7 +649,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                            || self->action == dal_c_CmdAction_test_dsl
                            || (target_request.root && target_request.root->name && str_eql(target_request.root->name, dal_c_dir_tests));
 
-    if (target_proj->lib_count > 0) {
+    if (!intent.target_path_is_explicit_file && target_proj->lib_count > 0) {
         if (self->verbose) {
             printf("Building %d libraries...\n", target_proj->lib_count);
         }
@@ -654,7 +662,8 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         }
     }
 
-    bool needs_project_static_lib = (target_request.root && target_request.link_project) || is_test_mode;
+    bool needs_project_static_lib = !intent.target_path_is_explicit_file
+                                  && ((target_request.root && target_request.link_project) || is_test_mode);
     if (needs_project_static_lib) {
         int lib_result = dal_c_Cmd__ensureProjectStaticLibrary(self, target_proj);
         if (lib_result != 0) {
@@ -925,6 +934,27 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                 return 1;
             }
 
+            dal_c_Project* file_proj = NULL;
+            const dal_c_Project* build_proj = proj;
+            if (intent.target_path_is_explicit_file) {
+                char* parent = path_parent(self->input_files[0]);
+                if (!parent) {
+                    ArrStr_fini(&sources);
+                    ArrStr_fini(&active_excludes);
+                    dal_c_TargetRequest_cleanup(&target_request);
+                    return 1;
+                }
+                file_proj = dal_c_Project_detectAt(parent, proj->dh_path);
+                free(parent);
+                if (!file_proj) {
+                    ArrStr_fini(&sources);
+                    ArrStr_fini(&active_excludes);
+                    dal_c_TargetRequest_cleanup(&target_request);
+                    return 1;
+                }
+                build_proj = file_proj;
+            }
+
             const char* output_name = proj->name;
             char* output_name_alloc = NULL;
             if (self->input_count > 0) {
@@ -935,7 +965,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             dal_c_CompilerOpts effective_opts = { 0 };
             dal_c_BuildDefaults effective_defaults = { 0 };
             effective_opts.profile = dal_c_Profile_invalid;
-            dal_c_Cmd__mergeBuildProperties(&effective_opts, &effective_defaults, proj, sources, self);
+            dal_c_Cmd__mergeBuildProperties(&effective_opts, &effective_defaults, build_proj, sources, self);
 
             dal_c_Target target_type = dal_c_Cmd__resolveBuildTargetType(self, intent.linking, builds_library);
             if (self->action == dal_c_CmdAction_build
@@ -956,6 +986,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                 );
                 dal_c_BuildDefaults_cleanup(&effective_defaults);
                 dal_c_CompilerOpts_cleanup(&effective_opts);
+                dal_c_Project_cleanup(&file_proj);
                 free(output_name_alloc);
                 ArrStr_fini(&sources);
                 ArrStr_fini(&active_excludes);
@@ -981,6 +1012,7 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                 if (!unity_source) {
                     dal_c_BuildDefaults_cleanup(&effective_defaults);
                     dal_c_CompilerOpts_cleanup(&effective_opts);
+                    dal_c_Project_cleanup(&file_proj);
                     free(output_name_alloc);
                     ArrStr_fini(&sources);
                     ArrStr_fini(&active_excludes);
@@ -995,12 +1027,28 @@ int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
             }
 
             if (target_type == dal_c_Target_lib) {
-                result = dal_c_Cmd__buildLibrarySetFromSources(self, proj, sources, output_name, true);
+                result = dal_c_Cmd__buildLibrarySetFromSources(
+                    self,
+                    build_proj,
+                    sources,
+                    output_name,
+                    !intent.target_path_is_explicit_file
+                );
             } else {
-                result = dal_c_Cmd__buildFromSources(self, proj, sources, output_name, target_type, NULL, true, true);
+                result = dal_c_Cmd__buildFromSources(
+                    self,
+                    build_proj,
+                    sources,
+                    output_name,
+                    target_type,
+                    NULL,
+                    !intent.target_path_is_explicit_file,
+                    true
+                );
             }
             dal_c_BuildDefaults_cleanup(&effective_defaults);
             dal_c_CompilerOpts_cleanup(&effective_opts);
+            dal_c_Project_cleanup(&file_proj);
             free(output_name_alloc);
             ArrStr_fini(&sources);
         }
@@ -1307,7 +1355,9 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || (str_eql(opt, dal_c_opt_self) && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_clean))
             || (str_eql(opt, dal_c_opt_lib) && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_lib))
             || ((str_eql(opt, dal_c_opt_static) || str_eql(opt, dal_c_opt_shared))
-                && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_lib))
+                && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_lib
+                    || action == dal_c_CmdAction_run || action == dal_c_CmdAction_test
+                    || action == dal_c_CmdAction_test_dsl))
             || str_eql(opt, dal_c_opt_cache)
             || str_eql(opt, dal_c_opt_recur)
             || str_eql(opt, dal_c_opt_debug)
@@ -1319,6 +1369,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_link_compiler_rt)
             || str_eql(opt, dal_c_opt_link_stdlib)
             || str_eql(opt, dal_c_opt_link_crt)
+            || str_eql(opt, dal_c_opt_link_mode)
             || str_eql(opt, dal_c_opt_lto)
             || str_eql(opt, dal_c_opt_omit_frame_pointer)
             || str_eql(opt, dal_c_opt_function_sections)
@@ -1367,6 +1418,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_link_compiler_rt)
             || str_startsWith(opt, dal_c_opt_link_stdlib)
             || str_startsWith(opt, dal_c_opt_link_crt)
+            || str_startsWith(opt, dal_c_opt_link_mode)
             || str_startsWith(opt, dal_c_opt_lto)
             || str_startsWith(opt, dal_c_opt_omit_frame_pointer)
             || str_startsWith(opt, dal_c_opt_function_sections)
@@ -1563,6 +1615,13 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     cmd->version_record_mode = mode;
+                } else if (strncmp(opt, dal_c_opt_link_mode, opt_len) == 0) {
+                    dal_c_LinkMode mode = dal_c_LinkMode_parse(value);
+                    if (mode == dal_c_LinkMode_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_link_mode, value);
+                        return 1;
+                    }
+                    cmd->opts.link_mode = mode;
                 } else if (strncmp(opt, dal_c_opt_icf, opt_len) == 0) {
                     dal_c_IcfMode mode = dal_c_IcfMode_parse(value);
                     if (mode == dal_c_IcfMode_auto && !str_eql(value, dal_c_icf_mode_auto)) {
@@ -1872,6 +1931,18 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     dal_c_Cmd__setStdlibBundle(&cmd->opts, true);
                 } else if (str_eql(opt, dal_c_opt_link_crt)) {
                     dal_c_Cmd__setCrtStartFiles(&cmd->opts, true);
+                } else if (str_eql(opt, dal_c_opt_link_mode)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    dal_c_LinkMode mode = dal_c_LinkMode_parse(argv[i + 1]);
+                    if (mode == dal_c_LinkMode_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_link_mode, argv[i + 1]);
+                        return 1;
+                    }
+                    cmd->opts.link_mode = mode;
+                    ++i;
                 } else if (str_eql(opt, dal_c_opt_lto)) {
                     cmd->opts.lto_mode = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_omit_frame_pointer)) {
@@ -1931,7 +2002,7 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     cmd->payload.build.save_temps = mode;
                     ++i;
                 } else if (str_eql(opt, dal_c_opt_loose_errors)) {
-                    cmd->opts.loose_errors = true;
+                    cmd->opts.loose_errors = dal_c_LooseErrorsMode_warn;
                 } else if (str_eql(opt, dal_c_opt_entry)) {
                     if (i + 1 >= argc) {
                         (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
@@ -1939,12 +2010,14 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     }
                     dal_c_Cmd__setOwnedString(&cmd->opts.entry_symbol, argv[++i]);
                 } else if (str_eql(opt, dal_c_opt_static)) {
+                    cmd->opts.link_mode = dal_c_LinkMode_static;
                     if (cmd->action == dal_c_CmdAction_lib) {
                         cmd->payload.lib.linking = dal_c_Linking_static;
                     } else if (cmd->action == dal_c_CmdAction_build) {
                         cmd->payload.build.linking = dal_c_Linking_static;
                     }
                 } else if (str_eql(opt, dal_c_opt_shared)) {
+                    cmd->opts.link_mode = dal_c_LinkMode_shared;
                     if (cmd->action == dal_c_CmdAction_lib) {
                         cmd->payload.lib.linking = dal_c_Linking_shared;
                     } else if (cmd->action == dal_c_CmdAction_build) {
@@ -2110,6 +2183,11 @@ static bool dal_c_Cmd__inputsNeedCategoryResolution(const dal_c_Cmd* cmd) {
         }
     }
     return false;
+}
+
+static bool dal_c_Cmd__hasSingleExplicitFileInput(const dal_c_Cmd* cmd) {
+    assert(cmd != NULL);
+    return cmd->input_count == 1 && path_isFile(cmd->input_files[0]);
 }
 
 static ArrStr* dal_c_Cmd__collectPathSources(const char* path, bool resolved_is_dir, bool skip_auto_paths) {

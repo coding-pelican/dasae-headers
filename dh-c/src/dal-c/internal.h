@@ -34,6 +34,7 @@ typedef struct dal_c_CommandIntent {
     bool debug;
     bool dsl_first;
     bool cache_only;
+    bool target_path_is_explicit_file;
 } dal_c_CommandIntent;
 
 typedef struct dal_c_TargetRequest {

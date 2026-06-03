@@ -337,6 +337,9 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     dal_c__pushSelfMakeToggle(argv, "LINK_DEFAULT_LIBS", cmd->opts.default_libs_linked);
     dal_c__pushSelfMakeToggle(argv, "LINK_START_FILES", cmd->opts.start_files_linked);
     dal_c__pushSelfMakeToggle(argv, "LINK_COMPILER_RT", cmd->opts.compiler_rt_linked);
+    if (cmd->opts.link_mode != dal_c_LinkMode_auto) {
+        dal_c__pushSelfMakeKeyValue(argv, "LINK_MODE", dal_c_LinkMode_format(cmd->opts.link_mode));
+    }
     dal_c__pushSelfMakeToggle(argv, "WHOLE_ARCHIVE", cmd->opts.whole_archive);
     dal_c__pushSelfMakeToggle(argv, "UNROLL_LOOPS", cmd->opts.unroll_loops);
     dal_c__pushSelfMakeToggle(argv, "UNWIND_TABLES", cmd->opts.unwind_tables);
@@ -2631,6 +2634,10 @@ static void dal_c__writeLinkModelFlags(FILE* fp, bool is_windows, const dal_c_Co
 
     bool restore_compiler_rt = !default_libs_linked && compiler_rt_linked;
 
+    if (target_type == dal_c_Target_executable && opts->link_mode == dal_c_LinkMode_static) {
+        (void)fprintf(fp, " -static");
+    }
+
     if (!start_files_linked && !default_libs_linked) {
         /* -nostdlib removes startup files + all default libs (incl. compiler-rt).
          * Restore compiler-rt so arithmetic helpers and exception tables remain available.
@@ -2857,7 +2864,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, " -save-temps=%s", dal_c_SaveTempsMode_format(cmd->payload.build.save_temps));
     }
 
-    if (opts->loose_errors) {
+    if (opts->loose_errors == dal_c_LooseErrorsMode_suppress) {
+        (void)fprintf(fp, " -w");
+    } else if (opts->loose_errors == dal_c_LooseErrorsMode_warn) {
         (void)fprintf(fp, " -Wall -Wextra -Wconversion");
         (void)fprintf(fp, " -Wsign-conversion -Wfloat-conversion");
         (void)fprintf(fp, " -Wformat=2");
@@ -3082,6 +3091,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     (void)fprintf(fp, "\n");
 }
 
+
 static char* dal_c__sourceToObjStem(const char* base, const char* src) {
     assert(src != NULL);
     char* work = (base && base[0] != '\0') ? path_relative(base, src) : NULL;
@@ -3250,7 +3260,7 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     if (cmd->action == dal_c_CmdAction_build) {
         hash = dal_c__hashBytes(hash, &cmd->payload.build.save_temps, sizeof(cmd->payload.build.save_temps));
     }
-    hash = dal_c__hashBool(hash, opts->loose_errors);
+    hash = dal_c__hashBytes(hash, &opts->loose_errors, sizeof(opts->loose_errors));
     hash = dal_c__hashVersionSpec(hash, &opts->version);
     hash = dal_c__hashBool(hash, use_pch);
     hash = dal_c__hashBool(hash, test_mode);
@@ -3290,6 +3300,7 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     hash = dal_c__hashString(hash, cmd->objcopy_format);
     hash = dal_c__hashBytes(hash, &target_type, sizeof(target_type));
     hash = dal_c__hashString(hash, opts->entry_symbol);
+    hash = dal_c__hashBytes(hash, &opts->link_mode, sizeof(opts->link_mode));
     hash = dal_c__hashString(hash, opts->arch_target);
     hash = dal_c__hashString(hash, target_arch);
     hash = dal_c__hashString(hash, opts->target_abi);
@@ -3790,4 +3801,3 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
     }
     (void)fprintf(fp, "\n");
 }
-

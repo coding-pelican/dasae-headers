@@ -259,8 +259,8 @@ static inline dal_c_Target dal_c_Target_parse(const char* str) {
 
 typedef enum dal_c_Linking {
     dal_c_Linking_invalid = -1,
-    dal_c_Linking_static = 0, // -static (default)
-    dal_c_Linking_shared = 1, // shared library (`-shared`)
+    dal_c_Linking_static = 0, // static library artifact
+    dal_c_Linking_shared = 1, // shared library artifact
 } dal_c_Linking;
 #define dal_c_linking_static "static"
 #define dal_c_linking_shared "shared"
@@ -288,6 +288,40 @@ static inline const char* dal_c_Linking_toFlag(dal_c_Linking linking) {
     case dal_c_Linking_shared: return "-shared";
     case dal_c_Linking_invalid:
     default: return NULL;
+    }
+}
+
+typedef enum dal_c_LinkMode {
+    dal_c_LinkMode_invalid = -1,
+    dal_c_LinkMode_auto = 0, // use the compiler/linker default
+    dal_c_LinkMode_static = 1, // static library artifact or `-static` executable link
+    dal_c_LinkMode_shared = 2, // shared library artifact or default/shared executable link
+} dal_c_LinkMode;
+#define dal_c_link_mode_auto "auto"
+#define dal_c_link_mode_static dal_c_linking_static
+#define dal_c_link_mode_shared dal_c_linking_shared
+static inline dal_c_LinkMode dal_c_LinkMode_parse(const char* str) {
+    if (str_eql(str, dal_c_link_mode_auto)) { return dal_c_LinkMode_auto; }
+    if (str_eql(str, dal_c_link_mode_static)) { return dal_c_LinkMode_static; }
+    if (str_eql(str, dal_c_link_mode_shared)) { return dal_c_LinkMode_shared; }
+    return dal_c_LinkMode_invalid;
+}
+static inline const char* dal_c_LinkMode_format(dal_c_LinkMode mode) {
+    switch (mode) {
+    case dal_c_LinkMode_auto: return dal_c_link_mode_auto;
+    case dal_c_LinkMode_static: return dal_c_link_mode_static;
+    case dal_c_LinkMode_shared: return dal_c_link_mode_shared;
+    case dal_c_LinkMode_invalid:
+    default: return NULL;
+    }
+}
+static inline dal_c_Linking dal_c_LinkMode_toLibraryLinking(dal_c_LinkMode mode, dal_c_Linking default_linking) {
+    switch (mode) {
+    case dal_c_LinkMode_static: return dal_c_Linking_static;
+    case dal_c_LinkMode_shared: return dal_c_Linking_shared;
+    case dal_c_LinkMode_auto: return default_linking;
+    case dal_c_LinkMode_invalid:
+    default: return default_linking;
     }
 }
 
@@ -744,6 +778,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_link_compiler_rt "link-compiler-rt" // explicit compiler runtime restore when default libs are off
 #define dal_c_opt_link_stdlib "link-stdlib" // start-files + default-libs bundle
 #define dal_c_opt_link_crt "link-crt" // start-files bundle
+#define dal_c_opt_link_mode "link-mode"
 #define dal_c_opt_lto "lto"
 #define dal_c_opt_omit_frame_pointer "omit-frame-pointer"
 #define dal_c_opt_function_sections "function-sections"
@@ -845,6 +880,37 @@ static inline const char* dal_c_VersionRecordMode_format(dal_c_VersionRecordMode
     }
 }
 
+typedef enum dal_c_LooseErrorsMode {
+    dal_c_LooseErrorsMode_invalid = -1,
+    dal_c_LooseErrorsMode_strict = 0,
+    dal_c_LooseErrorsMode_warn = 1,
+    dal_c_LooseErrorsMode_suppress = 2,
+} dal_c_LooseErrorsMode;
+#define dal_c_loose_errors_strict "strict"
+#define dal_c_loose_errors_off "off"
+#define dal_c_loose_errors_warn "warn"
+#define dal_c_loose_errors_suppress "suppress"
+static inline dal_c_LooseErrorsMode dal_c_LooseErrorsMode_parse(const char* str) {
+    if (str_eql(str, dal_c_loose_errors_strict) || str_eql(str, dal_c_loose_errors_off)
+        || str_eql(str, "no") || str_eql(str, "false")) {
+        return dal_c_LooseErrorsMode_strict;
+    }
+    if (str_eql(str, dal_c_loose_errors_warn) || str_eql(str, "on") || str_eql(str, "yes") || str_eql(str, "true")) {
+        return dal_c_LooseErrorsMode_warn;
+    }
+    if (str_eql(str, dal_c_loose_errors_suppress)) { return dal_c_LooseErrorsMode_suppress; }
+    return dal_c_LooseErrorsMode_invalid;
+}
+static inline const char* dal_c_LooseErrorsMode_format(dal_c_LooseErrorsMode mode) {
+    switch (mode) {
+    case dal_c_LooseErrorsMode_strict: return dal_c_loose_errors_strict;
+    case dal_c_LooseErrorsMode_warn: return dal_c_loose_errors_warn;
+    case dal_c_LooseErrorsMode_suppress: return dal_c_loose_errors_suppress;
+    case dal_c_LooseErrorsMode_invalid:
+    default: return NULL;
+    }
+}
+
 typedef struct dal_c_VersionSpec {
     unsigned core_major;
     unsigned core_minor;
@@ -887,6 +953,7 @@ typedef struct dal_c_CompilerOpts {
     dal_c_ToggleState default_libs_linked; // --link-default-libs=<auto|on|off>
     dal_c_ToggleState start_files_linked; // --link-start-files=<auto|on|off> / --link-crt=<auto|on|off>
     dal_c_ToggleState compiler_rt_linked; // --link-compiler-rt=<auto|on|off>
+    dal_c_LinkMode link_mode; // --link-mode=<auto|static|shared>
     dal_c_ToggleState lto_mode; // --lto=<auto|on|off>
     dal_c_ToggleState omit_frame_pointer; // --omit-frame-pointer=<auto|on|off>
     dal_c_ToggleState function_sections; // --function-sections=<auto|on|off>
@@ -900,7 +967,7 @@ typedef struct dal_c_CompilerOpts {
     dal_c_IcfMode icf_mode; // --icf=<off|safe|all>
     dal_c_ToggleState merge_all_constants; // --merge-all-constants=<auto|on|off>
     dal_c_ToggleState stack_protector; // --stack-protector=<auto|on|off>
-    bool loose_errors; // --loose-errors
+    dal_c_LooseErrorsMode loose_errors; // --loose-errors=<strict|warn|suppress>
     dal_c_VersionSpec version; // project/file/CLI version contract
 } dal_c_CompilerOpts;
 
@@ -1170,6 +1237,7 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_default_start_files_linked "linked"
 #define dal_c_default_dsl_mode "auto (enabled if dh library detected)"
 #define dal_c_default_linking dal_c_linking_static
+#define dal_c_default_link_mode dal_c_link_mode_auto
 
 /// === PCH HEADER DETECTION NAMES ===
 
@@ -1280,6 +1348,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_link_compiler_rt dal_c_opt_value_sep "<auto|on|off>", "Explicitly restore or omit compiler runtime when default libraries are disabled" },
     { dal_c_opt_prefix_long dal_c_opt_link_stdlib dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` + `link-default-libs` bundle together" },
     { dal_c_opt_prefix_long dal_c_opt_link_crt dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` bundle" },
+    { dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep "<auto|static|shared>", "Select link mode for executable dependencies or library artifact kind (default: " dal_c_default_link_mode ")" },
     { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|on|off>", "Override profile LTO policy for compile and link flags" },
     { dal_c_opt_prefix_long dal_c_opt_omit_frame_pointer dal_c_opt_value_sep "<auto|on|off>", "Emit or omit frame-pointer omission flags" },
     { dal_c_opt_prefix_long dal_c_opt_function_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile function section splitting (`-ffunction-sections`)" },
@@ -1322,7 +1391,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_short dal_c_opt_output_short "<path>", "Override output name or exact path (alternative)" },
     { dal_c_opt_prefix_long dal_c_opt_exclude dal_c_opt_value_sep "<path>", "Exclude file or directory subtree (can be repeated)" },
     { dal_c_opt_prefix_long dal_c_opt_dh_file dal_c_opt_value_sep "<path>", "Add explicit `.dh` property file (can be repeated)" },
-    { dal_c_opt_prefix_long dal_c_opt_loose_errors, "Convert Werror to warnings" },
+    { dal_c_opt_prefix_long dal_c_opt_loose_errors dal_c_opt_value_sep "<warn|suppress>", "Relax warning policy: warn converts Werror diagnostics to warnings; suppress disables warning diagnostics" },
     { dal_c_opt_prefix_long dal_c_opt_self, "Apply `build` to the self boundary" },
     { dal_c_opt_prefix_long dal_c_opt_lib, "Build the target as a library" },
     { dal_c_opt_prefix_long dal_c_opt_image, "Build the target as a freestanding image and emit a raw binary via objcopy" },
@@ -1341,8 +1410,8 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_save_temps dal_c_opt_value_sep "<off|cwd|obj>", "Ask Clang to preserve intermediate compilation files" },
     { dal_c_opt_prefix_long dal_c_opt_print_link_gc, "Ask the linker to print removed sections when supported" },
     { dal_c_opt_prefix_long dal_c_opt_analysis_artifacts, "Emit the standard linked analysis artifact bundle" },
-    { dal_c_opt_prefix_long dal_c_opt_static, "Select static library kind when used with --lib" },
-    { dal_c_opt_prefix_long dal_c_opt_shared, "Select shared library kind when used with --lib" },
+    { dal_c_opt_prefix_long dal_c_opt_static, "Alias for `" dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep dal_c_link_mode_static "`" },
+    { dal_c_opt_prefix_long dal_c_opt_shared, "Alias for `" dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep dal_c_link_mode_shared "`" },
     { dal_c_opt_prefix_long dal_c_opt_sample, "Build the project `samples` target family" },
     { dal_c_opt_prefix_long dal_c_opt_example, "Build the project `examples` target family" },
     { dal_c_opt_prefix_long dal_c_opt_test, "Build the project `tests` target family" },
@@ -1377,8 +1446,9 @@ static const char* const dal_c_help_build_examples[] = {
 #define dal_c_help_build_examples_count ((int)(sizeof(dal_c_help_build_examples) / sizeof(dal_c_help_build_examples[0])))
 
 static const dal_c_HelpOption dal_c_help_lib_options[] = {
-    { dal_c_opt_prefix_long dal_c_opt_static, "Build static library (default: " dal_c_default_linking ")" },
-    { dal_c_opt_prefix_long dal_c_opt_shared, "Build shared library" },
+    { dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep "<auto|static|shared>", "Select library artifact kind (default: " dal_c_default_linking ")" },
+    { dal_c_opt_prefix_long dal_c_opt_static, "Alias for `" dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep dal_c_link_mode_static "`" },
+    { dal_c_opt_prefix_long dal_c_opt_shared, "Alias for `" dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep dal_c_link_mode_shared "`" },
 };
 #define dal_c_help_lib_options_count ((int)(sizeof(dal_c_help_lib_options) / sizeof(dal_c_help_lib_options[0])))
 

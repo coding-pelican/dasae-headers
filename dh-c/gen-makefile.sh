@@ -38,6 +38,7 @@ LINK_LIBC ?= auto
 LINK_DEFAULT_LIBS ?= auto
 LINK_START_FILES ?= auto
 LINK_COMPILER_RT ?= auto
+LINK_MODE ?= auto
 WHOLE_ARCHIVE ?= profile
 UNROLL_LOOPS ?= profile
 UNWIND_TABLES ?= profile
@@ -137,8 +138,7 @@ BASE_CFLAGS = -std=$(C_STD) \
               -funsigned-char \
               -mllvm -enable-dfa-jump-thread \
               $(VERSION_DEFINES) \
-              -Ddal_c__STR__VER_BUILD=\"$(VERSION_BUILD_VALUE)\" \
-              -static
+              -Ddal_c__STR__VER_BUILD=\"$(VERSION_BUILD_VALUE)\"
 
 PROFILE_CFLAGS =
 PROFILE_LDFLAGS =
@@ -225,6 +225,7 @@ RESOLVED_LINK_LIBC = $(if $(filter auto,$(LINK_LIBC)),on,$(LINK_LIBC))
 RESOLVED_LINK_DEFAULT_LIBS = $(if $(filter auto,$(LINK_DEFAULT_LIBS)),on,$(LINK_DEFAULT_LIBS))
 RESOLVED_LINK_START_FILES = $(if $(filter auto,$(LINK_START_FILES)),on,$(LINK_START_FILES))
 RESOLVED_LINK_COMPILER_RT = $(if $(filter auto,$(LINK_COMPILER_RT)),on,$(LINK_COMPILER_RT))
+RESOLVED_LINK_MODE = $(LINK_MODE)
 RESOLVED_WHOLE_ARCHIVE = $(if $(filter profile,$(WHOLE_ARCHIVE)),$(PROFILE_WHOLE_ARCHIVE),$(WHOLE_ARCHIVE))
 RESOLVED_UNROLL_LOOPS = $(if $(filter profile,$(UNROLL_LOOPS)),$(PROFILE_UNROLL_LOOPS),$(UNROLL_LOOPS))
 RESOLVED_UNWIND_TABLES = $(if $(filter profile,$(UNWIND_TABLES)),$(PROFILE_UNWIND_TABLES),$(UNWIND_TABLES))
@@ -295,6 +296,14 @@ ifneq ($(TARGET_ABI),auto)
 endif
 ifneq ($(SYSROOT),auto)
     TARGET_FLAGS += --sysroot=$(SYSROOT)
+endif
+
+ifeq ($(RESOLVED_LINK_MODE),static)
+    PROFILE_LDFLAGS += -static
+else ifeq ($(RESOLVED_LINK_MODE),shared)
+else ifeq ($(RESOLVED_LINK_MODE),auto)
+else
+    $(error Unsupported LINK_MODE '$(LINK_MODE)')
 endif
 
 ifeq ($(RESOLVED_LINK_DEFAULT_LIBS),on)

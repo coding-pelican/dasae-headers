@@ -52,6 +52,7 @@ static void test_compiler_mode_contracts(void);
 static void test_makefile_mode_contracts(void);
 static void test_project_detection(void);
 static void test_target_request_resolution(void);
+static void test_explicit_file_build_uses_file_project(void);
 static void test_skip_source_filters(void);
 static void test_test_source_classification(void);
 static void test_source_collection_ignores_hidden_ancestors(void);
@@ -75,6 +76,7 @@ int main(void) {
     RUN_TEST(test_makefile_mode_contracts);
     RUN_TEST(test_project_detection);
     RUN_TEST(test_target_request_resolution);
+    RUN_TEST(test_explicit_file_build_uses_file_project);
     RUN_TEST(test_skip_source_filters);
     RUN_TEST(test_test_source_classification);
     RUN_TEST(test_source_collection_ignores_hidden_ancestors);
@@ -354,6 +356,11 @@ static void test_meta_tables(void) {
     TEST_ASSERT(str_eql(dal_c_Target_format(dal_c_Target_preprocessed), "preprocessed"));
     TEST_ASSERT(str_eql(dal_c_Target_format(dal_c_Target_assembly), "assembly"));
     TEST_ASSERT(dal_c_Linking_fromFlag("-shared") == dal_c_Linking_shared);
+    TEST_ASSERT(dal_c_LinkMode_parse("auto") == dal_c_LinkMode_auto);
+    TEST_ASSERT(dal_c_LinkMode_parse("static") == dal_c_LinkMode_static);
+    TEST_ASSERT(dal_c_LinkMode_parse("shared") == dal_c_LinkMode_shared);
+    TEST_ASSERT(dal_c_LinkMode_toLibraryLinking(dal_c_LinkMode_auto, dal_c_Linking_static) == dal_c_Linking_static);
+    TEST_ASSERT(dal_c_LinkMode_toLibraryLinking(dal_c_LinkMode_shared, dal_c_Linking_static) == dal_c_Linking_shared);
     TEST_ASSERT(str_eql(dal_c_OptiLevel_toFlag(dal_c_OptiLevel_balanced), "-O2"));
     TEST_ASSERT(dal_c_DebugLevel_fromFlag("-g3") == dal_c_DebugLevel_extended);
     TEST_ASSERT(dal_c_Profile_parse("release") == dal_c_Profile_release);
@@ -366,6 +373,9 @@ static void test_meta_tables(void) {
     TEST_ASSERT(dal_c_ToggleState_resolve(dal_c_ToggleState_auto, false) == false);
     TEST_ASSERT(dal_c_SampleDir_parse("examples") == dal_c_SampleDir_examples);
     TEST_ASSERT(dal_c_TargetSelection_parse("dir") == dal_c_TargetSelection_dir);
+    TEST_ASSERT(dal_c_LooseErrorsMode_parse("warn") == dal_c_LooseErrorsMode_warn);
+    TEST_ASSERT(dal_c_LooseErrorsMode_parse("suppress") == dal_c_LooseErrorsMode_suppress);
+    TEST_ASSERT(dal_c_LooseErrorsMode_parse("off") == dal_c_LooseErrorsMode_strict);
 
     const dal_c_ProfileSpec* release_spec = dal_c_ProfileSpec_by(dal_c_Profile_release);
     TEST_ASSERT(release_spec != NULL);
@@ -450,6 +460,7 @@ static void test_meta_tables(void) {
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_suffix));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_build));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_record));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_loose_errors));
 
     const dal_c_HelpCmd* workspace_cmd = test_find_help_cmd(dal_c_cmd_action_workspace, NULL);
     TEST_ASSERT(workspace_cmd != NULL);
@@ -550,9 +561,10 @@ static void test_cmd_parse(void) {
             "--analysis-artifacts",
             "--link-crt=off",
             "--entry=custom_entry",
+            "--loose-errors=suppress",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(39, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(40, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(cmd->opts.dsl_mode == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.compile_env == dal_c_CompileEnv_freestanding);
@@ -590,6 +602,15 @@ static void test_cmd_parse(void) {
         TEST_ASSERT(cmd->payload.build.save_temps == dal_c_SaveTempsMode_obj);
         TEST_ASSERT(cmd->payload.build.analysis_artifacts);
         TEST_ASSERT(str_eql(cmd->opts.entry_symbol, "custom_entry"));
+        TEST_ASSERT(cmd->opts.loose_errors == dal_c_LooseErrorsMode_suppress);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--loose-errors", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->opts.loose_errors == dal_c_LooseErrorsMode_warn);
         dal_c_Cmd_cleanup(&cmd);
     }
 
@@ -740,12 +761,14 @@ static void test_compiler_mode_contracts(void) {
     override.dsl_mode = dal_c_ToggleState_enabled;
     override.default_libs_linked = dal_c_ToggleState_enabled;
     override.start_files_linked = dal_c_ToggleState_enabled;
+    override.loose_errors = dal_c_LooseErrorsMode_warn;
     dal_c_CompilerOpts_merge(&merged, &override);
     TEST_ASSERT(merged.compile_env == dal_c_CompileEnv_hosted);
     TEST_ASSERT(merged.libc_linked == dal_c_ToggleState_enabled);
     TEST_ASSERT(merged.dsl_mode == dal_c_ToggleState_enabled);
     TEST_ASSERT(merged.default_libs_linked == dal_c_ToggleState_enabled);
     TEST_ASSERT(merged.start_files_linked == dal_c_ToggleState_enabled);
+    TEST_ASSERT(merged.loose_errors == dal_c_LooseErrorsMode_warn);
 
     {
         dal_c_CompilerOpts auto_override = { 0 };
@@ -755,6 +778,7 @@ static void test_compiler_mode_contracts(void) {
         TEST_ASSERT(merged.dsl_mode == dal_c_ToggleState_enabled);
         TEST_ASSERT(merged.default_libs_linked == dal_c_ToggleState_enabled);
         TEST_ASSERT(merged.start_files_linked == dal_c_ToggleState_enabled);
+        TEST_ASSERT(merged.loose_errors == dal_c_LooseErrorsMode_warn);
     }
 
     test_reset_temp_root();
@@ -775,6 +799,7 @@ static void test_compiler_mode_contracts(void) {
         "version-prefix=rc\n"
         "version-suffix=7\n"
         "version-build=unit.1\n"
+        "loose-errors=suppress\n"
     ));
     TEST_ASSERT(dal_c_CompilerOpts_applyDhFile(&file_opts, opts_dh));
     TEST_ASSERT(file_opts.compile_env == dal_c_CompileEnv_freestanding);
@@ -792,6 +817,7 @@ static void test_compiler_mode_contracts(void) {
     TEST_ASSERT(file_opts.version.label_suffix_num == 7u);
     TEST_ASSERT(file_opts.version.build_set);
     TEST_ASSERT(str_eql(file_opts.version.build_str, "unit.1"));
+    TEST_ASSERT(file_opts.loose_errors == dal_c_LooseErrorsMode_suppress);
     dal_c_CompilerOpts_cleanup(&file_opts);
     free(opts_dh);
     free(temp_root);
@@ -925,6 +951,48 @@ static void test_makefile_mode_contracts(void) {
 #else
         TEST_ASSERT(strstr(makefile_text, " -Wl,-e,custom_entry") != NULL);
 #endif
+
+        free(makefile_text);
+        free(makefile_path);
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--loose-errors=suppress", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        const dal_c_ProfileSpec* profile = NULL;
+        char* build_dir = NULL;
+        char* profile_dir = NULL;
+        char* object_dir = NULL;
+        char* target_path = NULL;
+        char* makefile_path = NULL;
+        char* makefile_text = NULL;
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->opts.loose_errors == dal_c_LooseErrorsMode_suppress);
+
+        profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+        build_dir = dal_c_Project_getBuildDir(proj);
+        profile_dir = path_join(build_dir, profile->name);
+        object_dir = path_join(profile_dir, "obj");
+        TEST_ASSERT(build_dir != NULL);
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+
+        target_path = dal_c__resolveOutputPath(proj, cmd, profile_dir, proj->defaults.output_name, dal_c_Target_executable);
+        TEST_ASSERT(target_path != NULL);
+        makefile_path = dal_c__makePlanFilePath(proj, profile, cmd, target_path, dal_c_Target_executable);
+        TEST_ASSERT(makefile_path != NULL);
+        TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 0);
+        makefile_text = file_read(makefile_path);
+        TEST_ASSERT(makefile_text != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -w") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -Werror") == NULL);
 
         free(makefile_text);
         free(makefile_path);
@@ -1721,6 +1789,138 @@ static void test_target_request_resolution(void) {
 
     dal_c_Project_cleanup(&proj);
     free(root_path);
+}
+
+static void test_explicit_file_build_uses_file_project(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "tic-tac-toe");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* archive_dir = path_join(project_root, "archive");
+    char* source = path_join(archive_dir, "ttt-origin.c");
+    char* samples_dir = path_join(project_root, "samples");
+    char* examples_dir = path_join(project_root, "examples");
+    char* tests_dir = path_join(project_root, "tests");
+    char* sample_source = path_join(samples_dir, "sample-main.c");
+    char* example_source = path_join(examples_dir, "example-main.c");
+    char* test_source = path_join(tests_dir, "test-main.c");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(archive_dir != NULL);
+    TEST_ASSERT(source != NULL);
+    TEST_ASSERT(samples_dir != NULL);
+    TEST_ASSERT(examples_dir != NULL);
+    TEST_ASSERT(tests_dir != NULL);
+    TEST_ASSERT(sample_source != NULL);
+    TEST_ASSERT(example_source != NULL);
+    TEST_ASSERT(test_source != NULL);
+    TEST_ASSERT(dir_createRecur(archive_dir));
+    TEST_ASSERT(dir_createRecur(samples_dir));
+    TEST_ASSERT(dir_createRecur(examples_dir));
+    TEST_ASSERT(dir_createRecur(tests_dir));
+    TEST_ASSERT(file_write(project_dh, "output=tic-tac-toe\n"));
+    TEST_ASSERT(file_write(source, "int main(void) { return 0; }\n"));
+    TEST_ASSERT(file_write(sample_source, "int main(void) { return 0; }\n"));
+    TEST_ASSERT(file_write(example_source, "int main(void) { return 0; }\n"));
+    TEST_ASSERT(file_write(test_source, "int main(void) { return 0; }\n"));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(proj != NULL);
+
+    const char* argv[] = { dal_c_tool_name, "build", "dev", source, NULL };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+    TEST_ASSERT(cmd != NULL);
+
+    dal_c_CommandIntent intent = { 0 };
+    dal_c_Cmd_normalizeIntent(cmd, &intent);
+    TEST_ASSERT(intent.target_path_is_explicit_file);
+
+    dal_c_TargetRequest request = { 0 };
+    TEST_ASSERT(dal_c_TargetRequest_resolve(proj, &intent, &request));
+    TEST_ASSERT(request.root == NULL);
+    dal_c_TargetRequest_cleanup(&request);
+
+    {
+        const char* sample_argv[] = { dal_c_tool_name, "build", "--sample", sample_source, NULL };
+        dal_c_Cmd* sample_cmd = dal_c_Cmd_parse(4, sample_argv);
+        TEST_ASSERT(sample_cmd != NULL);
+        dal_c_Cmd_normalizeIntent(sample_cmd, &intent);
+        TEST_ASSERT(!intent.target_path_is_explicit_file);
+        TEST_ASSERT(dal_c_TargetRequest_resolve(proj, &intent, &request));
+        TEST_ASSERT(request.root != NULL);
+        TEST_ASSERT(str_eql(request.root->name, dal_c_dir_samples));
+        dal_c_TargetRequest_cleanup(&request);
+        dal_c_Cmd_cleanup(&sample_cmd);
+    }
+
+    {
+        const char* example_argv[] = { dal_c_tool_name, "build", "--example", example_source, NULL };
+        dal_c_Cmd* example_cmd = dal_c_Cmd_parse(4, example_argv);
+        TEST_ASSERT(example_cmd != NULL);
+        dal_c_Cmd_normalizeIntent(example_cmd, &intent);
+        TEST_ASSERT(!intent.target_path_is_explicit_file);
+        TEST_ASSERT(dal_c_TargetRequest_resolve(proj, &intent, &request));
+        TEST_ASSERT(request.root != NULL);
+        TEST_ASSERT(str_eql(request.root->name, dal_c_dir_examples));
+        dal_c_TargetRequest_cleanup(&request);
+        dal_c_Cmd_cleanup(&example_cmd);
+    }
+
+    {
+        const char* test_argv[] = { dal_c_tool_name, "build", "--test", test_source, NULL };
+        dal_c_Cmd* test_cmd = dal_c_Cmd_parse(4, test_argv);
+        TEST_ASSERT(test_cmd != NULL);
+        dal_c_Cmd_normalizeIntent(test_cmd, &intent);
+        TEST_ASSERT(!intent.target_path_is_explicit_file);
+        TEST_ASSERT(dal_c_TargetRequest_resolve(proj, &intent, &request));
+        TEST_ASSERT(request.root != NULL);
+        TEST_ASSERT(str_eql(request.root->name, dal_c_dir_tests));
+        dal_c_TargetRequest_cleanup(&request);
+        dal_c_Cmd_cleanup(&test_cmd);
+    }
+
+    dal_c_Project* file_proj = dal_c_Project_detectAt(archive_dir, proj->dh_path);
+    TEST_ASSERT(file_proj != NULL);
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    TEST_ASSERT(profile != NULL);
+    char* build_dir = dal_c_Project_getBuildDir(file_proj);
+    char* profile_dir = path_join(build_dir, profile->name);
+    char* target_path = dal_c__resolveOutputPath(file_proj, cmd, profile_dir, "ttt-origin", dal_c_Target_executable);
+    char* target_parent = path_parent(target_path);
+    char* target_name = path_basename(target_path);
+    TEST_ASSERT(build_dir != NULL);
+    TEST_ASSERT(profile_dir != NULL);
+    TEST_ASSERT(target_path != NULL);
+    TEST_ASSERT(target_parent != NULL);
+    TEST_ASSERT(target_name != NULL);
+    TEST_ASSERT(str_eql(target_parent, profile_dir));
+#ifdef _WIN32
+    TEST_ASSERT(str_eql(target_name, "ttt-origin.exe"));
+#else
+    TEST_ASSERT(str_eql(target_name, "ttt-origin"));
+#endif
+
+    free(target_name);
+    free(target_parent);
+    free(target_path);
+    free(profile_dir);
+    free(build_dir);
+    dal_c_Project_cleanup(&file_proj);
+    dal_c_Cmd_cleanup(&cmd);
+    dal_c_Project_cleanup(&proj);
+    free(test_source);
+    free(example_source);
+    free(sample_source);
+    free(tests_dir);
+    free(examples_dir);
+    free(samples_dir);
+    free(source);
+    free(archive_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
 }
 
 static void test_skip_source_filters(void) {

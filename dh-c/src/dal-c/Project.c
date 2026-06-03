@@ -196,6 +196,7 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->default_libs_linked != dal_c_ToggleState_auto) { dst->default_libs_linked = src->default_libs_linked; }
     if (src->start_files_linked != dal_c_ToggleState_auto) { dst->start_files_linked = src->start_files_linked; }
     if (src->compiler_rt_linked != dal_c_ToggleState_auto) { dst->compiler_rt_linked = src->compiler_rt_linked; }
+    if (src->link_mode != dal_c_LinkMode_auto) { dst->link_mode = src->link_mode; }
     if (src->lto_mode != dal_c_ToggleState_auto) { dst->lto_mode = src->lto_mode; }
     if (src->omit_frame_pointer != dal_c_ToggleState_auto) { dst->omit_frame_pointer = src->omit_frame_pointer; }
     if (src->function_sections != dal_c_ToggleState_auto) { dst->function_sections = src->function_sections; }
@@ -209,7 +210,7 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->icf_mode != dal_c_IcfMode_auto) { dst->icf_mode = src->icf_mode; }
     if (src->merge_all_constants != dal_c_ToggleState_auto) { dst->merge_all_constants = src->merge_all_constants; }
     if (src->stack_protector != dal_c_ToggleState_auto) { dst->stack_protector = src->stack_protector; }
-    dst->loose_errors = dst->loose_errors || src->loose_errors;
+    if (src->loose_errors != dal_c_LooseErrorsMode_strict) { dst->loose_errors = src->loose_errors; }
     dal_c_VersionSpec_merge(&dst->version, &src->version);
 
     for (int i = 0; i < src->define_count; ++i) {
@@ -603,7 +604,7 @@ bool dal_c_TargetRequest_resolve(const dal_c_Project* proj, const dal_c_CommandI
         resolved_path = strdup(root->path);
     }
 
-    if (!root && resolved_path) {
+    if (!root && resolved_path && !intent->target_path_is_explicit_file) {
         root = dal_c_Project_findTargetRootByPath(proj, resolved_path);
     }
 
@@ -971,6 +972,13 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         opts->start_files_linked = s;
     } else if (str_eql(key, dal_c_opt_link_crt)) {
         opts->start_files_linked = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_link_mode)) {
+        dal_c_LinkMode mode = dal_c_LinkMode_parse(value);
+        if (mode == dal_c_LinkMode_invalid) {
+            (void)fprintf(stderr, "Error: Invalid `%s` value `%s`\n", dal_c_opt_link_mode, value);
+        } else {
+            opts->link_mode = mode;
+        }
     } else if (str_eql(key, dal_c_opt_lto)) {
         opts->lto_mode = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_omit_frame_pointer)) {
@@ -998,7 +1006,7 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
     } else if (str_eql(key, dal_c_opt_stack_protector)) {
         opts->stack_protector = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_loose_errors)) {
-        opts->loose_errors = dal_c_Project__isTrue(value);
+        opts->loose_errors = dal_c_LooseErrorsMode_parse(value);
     }
 }
 
