@@ -5,7 +5,7 @@
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-09 (date of creation)
- * @updated 2026-01-10 (date of last update)
+ * @updated 2026-06-03 (date of last update)
  * @ingroup dasae-headers(dh)/fmt
  * @prefix  fmt
  *

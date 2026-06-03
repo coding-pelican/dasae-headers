@@ -675,7 +675,7 @@ let_(fmt__ryu_table_pow5_inv, fmt__ryu_TablePow5Inv) = A_init({
     A_init({ 673562245690857633ull, 1345193707530136767ull }), // Entry 341
 });
 
-#else /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small */
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small
 /* clang-format off */
 let_(fmt__ryu_table_pow5, fmt__ryu_TablePow5Base) = A_init({
     1ull, 5ull, 25ull, 125ull,
@@ -738,4 +738,7 @@ let_(fmt__ryu_table_pow5_inv_offsets, fmt__ryu_TablePow5InvOffsets) = A_init({
     0x51515411u, 0x05555554u, 0x00000000u,
 });
 /* clang-format on */
-#endif /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full / fmt_flt_ryu_table_type_small */
+
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
+#endif /* fmt_flt_ryu_table_type */

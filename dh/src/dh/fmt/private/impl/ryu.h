@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    ryu.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-12-22 (date of creation)
- * @updated 2025-12-22 (date of last update)
+ * @updated 2026-06-03 (date of last update)
  * @ingroup dasae-headers(dh)/fmt/private/impl
  * @prefix  fmt__ryu
  *
@@ -35,14 +35,16 @@ extern "C" {
 /* --- Constants --- */
 
 #define fmt__ryu_bit_count (125)
+#define fmt__ryu_special_exponent (0x7fffffff)
 
-#if fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full
+#if fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full \
+    || fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
 /// Direct lookup table size for pow5
 #define fmt__ryu_table_pow5_size (326)
 /// Direct lookup table size for pow5_inv
 #define fmt__ryu_table_pow5_inv_size (342)
-#else /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small */
 
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small
 /// Base table size (powers 5^0 through 5^25)
 #define fmt__ryu_table_pow5_base_size (26)
 /// Split table size for pow5 (powers of 5^(i*26))
@@ -53,7 +55,10 @@ extern "C" {
 #define fmt__ryu_table_pow5_offsets_size (21)
 /// Offset table size for pow5_inv corrections
 #define fmt__ryu_table_pow5_inv_offsets_size (19)
-#endif /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full / fmt_flt_ryu_table_type_small */
+
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
+#endif /* fmt_flt_ryu_table_type */
 
 /* --- Types --- */
 
@@ -64,13 +69,16 @@ typedef A$$(2, u64) fmt__ryu_TableEntry;
 typedef A$$(fmt__ryu_table_pow5_size, fmt__ryu_TableEntry) fmt__ryu_TablePow5;
 typedef A$$(fmt__ryu_table_pow5_inv_size, fmt__ryu_TableEntry) fmt__ryu_TablePow5Inv;
 
-#else /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small */
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small
 typedef A$$(fmt__ryu_table_pow5_base_size, u64) fmt__ryu_TablePow5Base;
 typedef A$$(fmt__ryu_table_pow5_split_size, fmt__ryu_TableEntry) fmt__ryu_TablePow5Split;
 typedef A$$(fmt__ryu_table_pow5_inv_split_size, fmt__ryu_TableEntry) fmt__ryu_TablePow5InvSplit;
 typedef A$$(fmt__ryu_table_pow5_offsets_size, u32) fmt__ryu_TablePow5Offsets;
 typedef A$$(fmt__ryu_table_pow5_inv_offsets_size, u32) fmt__ryu_TablePow5InvOffsets;
-#endif /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full / fmt_flt_ryu_table_type_small */
+
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
+#endif /* fmt_flt_ryu_table_type */
 
 /* --- Tables --- */
 
@@ -84,7 +92,7 @@ $extern let_(fmt__ryu_table_pow5, fmt__ryu_TablePow5);
 ///          Size: 342 entries × 16 bytes = 5,472 bytes
 $extern let_(fmt__ryu_table_pow5_inv, fmt__ryu_TablePow5Inv);
 
-#else /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small */
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small
 /// @brief Base power of 5 table
 /// @details Contains 5^i for i ∈ [0, 25]
 ///          Size: 26 entries × 8 bytes = 208 bytes
@@ -105,7 +113,10 @@ $extern let_(fmt__ryu_table_pow5_offsets, fmt__ryu_TablePow5Offsets);
 /// @details Each entry contains 16 packed 2-bit correction values
 ///          Size: 19 entries × 4 bytes = 76 bytes
 $extern let_(fmt__ryu_table_pow5_inv_offsets, fmt__ryu_TablePow5InvOffsets);
-#endif /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full / fmt_flt_ryu_table_type_small */
+
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
+#endif /* fmt_flt_ryu_table_type */
 
 /* --- Helper Functions --- */
 
@@ -124,7 +135,6 @@ $static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
     claim_assert(i < fmt__ryu_table_pow5_size);
     return *A_at((fmt__ryu_table_pow5)[i]);
 };
-
 /// Get inverse power of 5 approximation (full version - direct lookup)
 $attr($inline_always)
 $static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
@@ -132,7 +142,7 @@ $static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
     return *A_at((fmt__ryu_table_pow5_inv)[i]);
 };
 
-#else /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small */
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small
 /// Compute 5^i using split tables and offsets
 $attr($inline_always)
 $static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
@@ -172,7 +182,6 @@ $static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
 
     return (fmt__ryu_TableEntry)A_init({ shifted_low, shifted_high });
 };
-
 /// Compute 5^(-i) using split tables and offsets
 $attr($inline_always)
 $static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
@@ -213,7 +222,149 @@ $static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
 
     return (fmt__ryu_TableEntry)A_init({ shifted_low, shifted_high });
 };
-#endif /* fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full / fmt_flt_ryu_table_type_small */
+
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_tableless
+#define fmt__ryu_bigint_limb_count (16)
+typedef A$$(fmt__ryu_bigint_limb_count, u64) fmt__ryu_BigInt;
+$attr($inline_always)
+$static fn_((fmt__ryu_limbMul5Add(u64* limb, u64 carry))(u64)) {
+    let value = *limb;
+    var lo = value << 2;
+    var hi = value >> 62;
+
+    let add_value = lo + value;
+    hi += add_value < lo ? 1 : 0;
+    lo = add_value;
+
+    let add_carry = lo + carry;
+    hi += add_carry < lo ? 1 : 0;
+    *limb = add_carry;
+    return hi;
+};
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintPow5(u32 e))(fmt__ryu_BigInt)) {
+    var out = (fmt__ryu_BigInt)cleared();
+    *A_at((out)[0]) = 1;
+    for_(($r(0, e))(step)) {
+        let_ignore = step;
+        var carry = u64_(0);
+        for_(($s(A_ref(out)))(limb)) {
+            carry = fmt__ryu_limbMul5Add(limb, carry);
+        } $end(for);
+        claim_assert(carry == 0);
+    } $end(for);
+    return out;
+};
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintShr128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_TableEntry)) {
+    let limb_idx = shift / 64;
+    let bit_idx = shift % 64;
+    let lo0 = limb_idx < fmt__ryu_bigint_limb_count ? *A_at((value)[limb_idx]) : 0;
+    let lo1 = limb_idx + 1 < fmt__ryu_bigint_limb_count ? *A_at((value)[limb_idx + 1]) : 0;
+    let lo2 = limb_idx + 2 < fmt__ryu_bigint_limb_count ? *A_at((value)[limb_idx + 2]) : 0;
+    if (bit_idx == 0) {
+        return (fmt__ryu_TableEntry)A_init({ lo0, lo1 });
+    }
+    return (fmt__ryu_TableEntry)A_init({
+        (lo0 >> bit_idx) | (lo1 << (64 - bit_idx)),
+        (lo1 >> bit_idx) | (lo2 << (64 - bit_idx)),
+    });
+};
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintShl128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_TableEntry)) {
+    claim_assert(shift < 128);
+    let limb_shift = shift / 64;
+    let bit_shift = shift % 64;
+    var_(lo, u64) = 0;
+    var_(hi, u64) = 0;
+    if (limb_shift == 0) {
+        lo = *A_at((value)[0]) << bit_shift;
+        hi = *A_at((value)[1]) << bit_shift;
+        if (bit_shift != 0) {
+            hi |= *A_at((value)[0]) >> (64 - bit_shift);
+        }
+    } else if (limb_shift == 1) {
+        hi = *A_at((value)[0]) << bit_shift;
+    }
+    return (fmt__ryu_TableEntry)A_init({ lo, hi });
+};
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintCompare(fmt__ryu_BigInt lhs, fmt__ryu_BigInt rhs))(i32)) {
+    for_($rev($a(lhs), $a(rhs))(l, r)) {
+        if (*l < *r) return -1;
+        if (*l > *r) return 1;
+    } $end(for);
+    return 0;
+};
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintSub(fmt__ryu_BigInt* lhs, fmt__ryu_BigInt rhs))(void)) {
+    var borrow = u64_(0);
+    for_(($s(A_ref(*lhs)), $a(rhs))(l_limb, r_limb)) {
+        let l = *l_limb;
+        let r = *r_limb;
+        let next = l - r - borrow;
+        borrow = borrow ? (l <= r) : (l < r);
+        *l_limb = next;
+    } $end(for);
+    claim_assert(borrow == 0);
+};
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintShl1(fmt__ryu_BigInt* self))(void)) {
+    var carry = u64_(0);
+    for_(($s(A_ref(*self)))(limb)) {
+        let next_carry = *limb >> 63;
+        *limb = (*limb << 1) | carry;
+        carry = next_carry;
+    } $end(for);
+    claim_assert(carry == 0);
+};
+$attr($inline_always)
+$static fn_((fmt__ryu_tableEntryAdd1(fmt__ryu_TableEntry value))(fmt__ryu_TableEntry)) {
+    var lo = *A_at((value)[0]) + 1;
+    var hi = *A_at((value)[1]);
+    if (lo == 0) hi += 1;
+    return (fmt__ryu_TableEntry)A_init({ lo, hi });
+};
+$attr($inline_always)
+$static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
+    claim_assert(i < fmt__ryu_table_pow5_size);
+    let pow5 = fmt__ryu_bigintPow5(i);
+    let bits = fmt__ryu_pow5Bits(i);
+    if (bits <= fmt__ryu_bit_count) {
+        return fmt__ryu_bigintShl128(pow5, fmt__ryu_bit_count - bits);
+    }
+    return fmt__ryu_bigintShr128(pow5, bits - fmt__ryu_bit_count);
+};
+$attr($inline_always)
+$static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
+    claim_assert(i < fmt__ryu_table_pow5_inv_size);
+    let divisor = fmt__ryu_bigintPow5(i);
+    let numerator_bit = fmt__ryu_pow5Bits(i) - 1 + fmt__ryu_bit_count;
+    var remainder = (fmt__ryu_BigInt)cleared();
+    var quotient = (fmt__ryu_TableEntry)cleared();
+
+    for_(($r(0, numerator_bit + 1))(offset)) {
+        let bit = numerator_bit - offset;
+        fmt__ryu_bigintShl1(&remainder);
+        if (bit == numerator_bit) {
+            *A_at((remainder)[0]) = 1;
+        }
+        if (fmt__ryu_bigintCompare(remainder, divisor) >= 0) {
+            fmt__ryu_bigintSub(&remainder, divisor);
+            claim_assert(bit < 128);
+            if (bit < 64) {
+                *A_at((quotient)[0]) |= 1ull << bit;
+            } else {
+                *A_at((quotient)[1]) |= 1ull << (bit - 64);
+            }
+        }
+    } $end(for);
+
+    return fmt__ryu_tableEntryAdd1(quotient);
+};
+
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
+#endif /* fmt_flt_ryu_table_type */
 
 /* --- 64-bit Arithmetic --- */
 
@@ -256,7 +407,7 @@ $static fn_((fmt__ryu_mulShift64(u64 m, fmt__ryu_TableEntry mul, u32 shift))(u64
     const u64 b2_lo = m * mul_hi;
     const u64 b2_hi = mul64_high(m, mul_hi);
 
-    // sum = (b0_high as u128) + b2
+    // sum = b0_high + b2 as a 128-bit pair
     // sum_lo = b0_high + b2_lo, with carry to sum_hi
     const u64 sum_lo = b0_high + b2_lo;
     const u64 carry = (sum_lo < b0_high) ? 1 : 0;

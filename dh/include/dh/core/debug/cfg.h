@@ -21,21 +21,23 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define debug__comp_enabled_default __comp_flag__debug__default_enabled
+#if !defined(debug_comp_enabled)
 #define debug_comp_enabled __comp_bool__debug_comp_enabled
+#endif /* !defined(debug_comp_enabled) */
+#define debug__comp_enabled_default __comp_flag__debug__default_enabled
 
 /*========== Macros and Definitions =========================================*/
 
 /* Default values */
 
-#define __comp_flag__debug__default_enabled 1
 #define __comp_bool__debug_comp_enabled debug__comp_enabled_default
+#define __comp_flag__debug__default_enabled pp_true
 
 /* Override values */
 
 #if defined(NDEBUG)
 #undef __comp_flag__debug__default_enabled
-#define __comp_flag__debug__default_enabled 0
+#define __comp_flag__debug__default_enabled pp_false
 #endif /* !defined(NDEBUG) */
 
 #if defined(__cplusplus)
