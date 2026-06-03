@@ -97,10 +97,6 @@ extern "C" {
 #undef __comp_flag__fmt_flt__enabled_default
 #define __comp_flag__fmt_flt__enabled_default pp_false
 #endif /* defined(FMT_NO_FLT) */
-#if defined(FMT_USE_FLT)
-#undef __comp_flag__fmt_flt__enabled_default
-#define __comp_flag__fmt_flt__enabled_default pp_true
-#endif /* defined(FMT_USE_FLT) */
 #if defined(FMT_USE_FLT_RYU_TABLELESS)
 #undef __comp_flag__fmt_flt__enabled_ryu_tableless_default
 #define __comp_flag__fmt_flt__enabled_ryu_tableless_default pp_true

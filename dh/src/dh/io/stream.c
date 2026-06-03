@@ -11,13 +11,18 @@
 #include <locale.h>
 #endif /* io_stream_using_libc */
 
+#if io_locked_out_enabled
 $static var_(io_stream__s_out_mtx, thrd_Mtx_Recur) = cleared();
 $static var_(io_stream__s_err_mtx, thrd_Mtx_Recur) = cleared();
+#endif /* io_locked_out_enabled */
 
 $attr($on_load)
 $static fn_((io_stream__init(void))(void)) {
+#if io_locked_out_enabled
     io_stream__s_out_mtx = thrd_Mtx_Recur_init();
     io_stream__s_err_mtx = thrd_Mtx_Recur_init();
+#endif /* io_locked_out_enabled */
+#if io_pre_ensured_utf8_env_enabled
 #if plat_is_windows
     // [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     // chcp 65001
@@ -28,17 +33,22 @@ $static fn_((io_stream__init(void))(void)) {
     /* NOLINTNEXTLINE(concurrency-mt-unsafe) */
     let_ignore = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
 #endif /* io_stream_using_libc */
+#endif /* io_pre_ensured_utf8_env_enabled */
 };
 
 $attr($on_exit)
 $static fn_((io_stream__fini(void))(void)) {
+#if io_locked_out_enabled
     thrd_Mtx_Recur_fini(&io_stream__s_out_mtx);
     thrd_Mtx_Recur_fini(&io_stream__s_err_mtx);
+#endif /* io_locked_out_enabled */
 };
 
 fn_((io_stream_nl(void))(void) $guard) {
+#if io_locked_out_enabled
     thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
+#endif /* io_locked_out_enabled */
 
     var stream_out_file = fs_File_io(io_getStdOut());
     let stream_out = fs_File_IO_writer(&stream_out_file);
@@ -46,8 +56,10 @@ fn_((io_stream_nl(void))(void) $guard) {
 } $unguarded(fn);
 
 fn_((io_stream_crlf(void))(void) $guard) {
+#if io_locked_out_enabled
     thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
+#endif /* io_locked_out_enabled */
 
     var stream_out_file = fs_File_io(io_getStdOut());
     let stream_out = fs_File_IO_writer(&stream_out_file);
@@ -61,8 +73,10 @@ fn_((io_stream_print(S_const$u8 fmt, ...))(void)) {
 };
 
 fn_((io_stream_printVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
+#if io_locked_out_enabled
     thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
+#endif /* io_locked_out_enabled */
 
     var stream_out_file = fs_File_io(io_getStdOut());
     let stream_out = fs_File_IO_writer(&stream_out_file);
@@ -76,8 +90,10 @@ fn_((io_stream_println(S_const$u8 fmt, ...))(void)) {
 };
 
 fn_((io_stream_printlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
+#if io_locked_out_enabled
     thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
     defer_(thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
+#endif /* io_locked_out_enabled */
 
     var stream_out_file = fs_File_io(io_getStdOut());
     let stream_out = fs_File_IO_writer(&stream_out_file);
@@ -85,8 +101,10 @@ fn_((io_stream_printlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
 } $unguarded(fn);
 
 fn_((io_stream_enl(void))(void) $guard) {
+#if io_locked_out_enabled
     thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
     defer_(thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
+#endif /* io_locked_out_enabled */
 
     var stream_err_file = fs_File_io(io_getStdErr());
     let stream_err = fs_File_IO_writer(&stream_err_file);
@@ -94,8 +112,10 @@ fn_((io_stream_enl(void))(void) $guard) {
 } $unguarded(fn);
 
 fn_((io_stream_ecrlf(void))(void) $guard) {
+#if io_locked_out_enabled
     thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
     defer_(thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
+#endif /* io_locked_out_enabled */
 
     var stream_err_file = fs_File_io(io_getStdErr());
     let stream_err = fs_File_IO_writer(&stream_err_file);
@@ -109,8 +129,10 @@ fn_((io_stream_eprint(S_const$u8 fmt, ...))(void)) {
 };
 
 fn_((io_stream_eprintVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
+#if io_locked_out_enabled
     thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
     defer_(thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
+#endif /* io_locked_out_enabled */
 
     var stream_err_file = fs_File_io(io_getStdErr());
     let stream_err = fs_File_IO_writer(&stream_err_file);
@@ -124,8 +146,10 @@ fn_((io_stream_eprintln(S_const$u8 fmt, ...))(void)) {
 };
 
 fn_((io_stream_eprintlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
+#if io_locked_out_enabled
     thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
     defer_(thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
+#endif /* io_locked_out_enabled */
 
     var stream_err_file = fs_File_io(io_getStdErr());
     let stream_err = fs_File_IO_writer(&stream_err_file);

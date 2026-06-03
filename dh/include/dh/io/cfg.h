@@ -5,7 +5,7 @@
  * @file    cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-02-06 (date of creation)
- * @updated 2026-02-06 (date of last update)
+ * @updated 2026-06-03 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io
  *
@@ -22,6 +22,38 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
+
+/*========== Macros and Declarations ========================================*/
+
+/*---------- Configuration Flags --------------------------------------------*/
+
+#if !defined(io_locked_out_enabled)
+#define io_locked_out_enabled __comp_bool__io_locked_out_enabled
+#endif /* !defined(io_locked_out_enabled) */
+#define io_locked_out__enabled_default __comp_flag__io_locked_out__enabled_default
+
+#if !defined(io_pre_ensured_utf8_env_enabled)
+#define io_pre_ensured_utf8_env_enabled __comp_bool__io_pre_ensured_utf8_env_enabled
+#endif /* !defined(io_pre_ensured_utf8_env_enabled) */
+#define io_pre_ensured_utf8_env__enabled_default __comp_flag__io_pre_ensured_utf8_env__enabled_default
+
+/*========== Macros and Definitions =========================================*/
+
+/*---------- Configuration Flags --------------------------------------------*/
+
+#define __comp_bool__io_locked_out_enabled io_locked_out__enabled_default
+#define __comp_flag__io_locked_out__enabled_default pp_true
+#if defined(IO_NO_LOCKED_OUT)
+#undef __comp_flag__io_locked_out__enabled_default
+#define __comp_flag__io_locked_out__enabled_default pp_false
+#endif /* defined(IO_NO_LOCKED_OUT) */
+
+#define __comp_bool__io_pre_ensured_utf8_env_enabled io_pre_ensured_utf8_env__enabled_default
+#define __comp_flag__io_pre_ensured_utf8_env__enabled_default pp_true
+#if defined(IO_NO_PRE_ENSURED_UTF8_ENV)
+#undef __comp_flag__io_pre_ensured_utf8_env__enabled_default
+#define __comp_flag__io_pre_ensured_utf8_env__enabled_default pp_false
+#endif /* defined(IO_NO_PRE_ENSURED_UTF8_ENV) */
 
 #if defined(__cplusplus)
 } /* extern "C" */
