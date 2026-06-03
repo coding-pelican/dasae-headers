@@ -43,7 +43,7 @@ extern "C" {
 /*---------- Root main ------------------------------------------------------*/
 
 #if TEST_main_enabled
-$static fn_((TEST__runMain(void))(start_ExitCode)) {
+$static fn_((TEST_main__runTESTMain(void))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
     TEST_Framework_run();
     return 0;
@@ -54,20 +54,20 @@ $static fn_((TEST__runMain(void))(start_ExitCode)) {
 
 #if comp_start_files_linked
 fn_((main(void))(int)) {
-    return TEST__runMain();
+    return TEST_main__runTESTMain();
 };
 
 #else /* !comp_start_files_linked */
 $attr($no_return $maybe_unused)
-$static fn_((TEST__callMainAndExit(P$raw raw_ctx))(void)) {
+$static fn_((TEST_main__callTESTMainAndExit(P$raw raw_ctx))(void)) {
     let_ignore = raw_ctx;
     start_callInitArray();
-    let code = TEST__runMain();
+    let code = TEST_main__runTESTMain();
     start_callFiniArray();
     start_exit(code);
 };
 
-start_emitEntry(TEST__callMainAndExit);
+start_emitEntry(TEST_main__callTESTMainAndExit);
 #endif /* comp_start_files_linked || !comp_start_files_linked */
 
 #endif /* main_root_included */

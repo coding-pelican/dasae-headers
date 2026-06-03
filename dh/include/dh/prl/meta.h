@@ -762,21 +762,21 @@ $static fn_((u_geCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(b
 ))
 
 #define u_anyV(_v...) $suppress_cast_qual(({ \
-    let_(__p_v, TypeOfUnqual(_v)*) = &copy(_v); \
+    let __p_v = &copy(_v); \
     l$((u_V$raw){ .inner = ptrCast$((P$raw)(__p_v)), .inner_type = typeInfo$(TypeOf(*__p_v)) }); \
 }))
 #define u_anyA(_a...) $suppress_cast_qual(({ \
-    let_(__p_a, TypeOfUnqual(_a)*) = &copy(_a); \
+    let __p_a = &copy(_a); \
     l$((u_A$raw){ .inner = A_ref(*__p_a).as_raw, .inner_type = typeInfo$(TypeOf(*__p_a->val)) }); \
 }))
 #define u_anyO(_o...) $suppress_cast_qual(({ \
-    let_(__p_o, TypeOfUnqual(_o)*) = &copy(_o); \
+    let __p_o = &copy(_o); \
     __p_o->is_some \
         ? (u_O$raw)some(u_anyV(__p_o->payload.some)) \
         : (u_O$raw)none(); \
 }))
 #define u_anyE(_e...) $suppress_cast_qual(({ \
-    let_(__p_e, TypeOfUnqual(_e)*) = &copy(_e); \
+    let __p_e = &copy(_e); \
     __p_e->is_ok \
         ? (u_E$raw)ok(u_anyV(__p_e->payload.ok)) \
         : (u_E$raw)err(__p_e->payload.err); \

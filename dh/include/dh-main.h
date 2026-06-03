@@ -137,7 +137,7 @@ $static fn_((main__runDHMainFromArgv(usize argc, const char* argv[]))(start_Exit
 
 pp_if_(plat_is_windows)(pp_then_(
     $attr($maybe_unused)
-    $static fn_((main__runDHMainFromWin32CommandLine(void))(start_ExitCode)) {
+    $static fn_((main__runDHMainFromWin32CmdLine(void))(start_ExitCode)) {
         let cmd_z = ptrCast$((const u8*)(GetCommandLineA()));
         let cmd_len = mem_lenZ0$u8(cmd_z);
         let cmd_buf = u_castS$((S$u8)(u_allocA(cmd_len + 1, typeInfo$(u8))).ref);
@@ -204,7 +204,7 @@ fn_((main(pp_if_(pp_not(main_no_args))(
 
 #else /* !comp_start_files_linked */
 $attr($no_return $maybe_unused)
-$static fn_((main__callMainAndExit(P$raw raw_ctx))(void)) {
+$static fn_((main__callDHMainAndExit(P$raw raw_ctx))(void)) {
     let_ignore = raw_ctx;
     start_callInitArray();
     let code = pp_if_(main_no_args)(
@@ -217,7 +217,7 @@ $static fn_((main__callMainAndExit(P$raw raw_ctx))(void)) {
                 local_return_(main__runDHMainFromArgv(argc, argv));
             }))),
             pp_case_((plat_type_windows)(local_({
-                local_return_(main__runDHMainFromWin32CommandLine());
+                local_return_(main__runDHMainFromWin32CmdLine());
             }))),
             pp_default_(local_({
                 claim_assert_static_msg(false, "dh-main.h no-start entry with args is not implemented for target");
@@ -229,7 +229,7 @@ $static fn_((main__callMainAndExit(P$raw raw_ctx))(void)) {
     start_exit(code);
 };
 
-start_emitEntry(main__callMainAndExit);
+start_emitEntry(main__callDHMainAndExit);
 #endif /* comp_start_files_linked || !comp_start_files_linked */
 #endif /* !TEST_enabled || !TEST_enabled */
 

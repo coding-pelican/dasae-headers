@@ -296,14 +296,27 @@ extern "C" {
     { _expr }
 
 #define move(_p_val... /*(TypeOf(*_p_val))*/) ____move(_p_val)
-#define ____move(_p_val...) ({ \
+#define ____move(_p_val...) local_({ \
     let_(__p_val, TypeOf(_p_val)) = _p_val; \
     let_(__val, TypeOfUnqual(*__p_val)) = *__p_val; \
     *__p_val = l0$((TypeOf(__val))); \
-    __val; \
+    local_return_(__val); \
 })
 #define copy(_val... /*(TypeOf(_val))*/) ____copy(_val)
+#if UNUSED_CODE
 #define ____copy(_val...) (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
+#endif /* UNUSED_CODE */
+#define ____copy(_val...) ( \
+    *(TypeOfUnqual(_val)*)raw_memcpy( \
+        &l0$((TypeOfUnqual(_val))), \
+        local_({ \
+            let __val = _val; \
+            typedef TypeOfUnqual(__val) CopyType; \
+            local_return_((struct { CopyType val[1]; }){ .val = { [0] = __val } }); \
+        }).val, \
+        sizeOf$(TypeOfUnqual(_val)) \
+    ) \
+)
 
 /* TODO: Support bitfield */
 #define with_(/*(_expr: _T)(_initial...: (_field)(_asg)*/... /*(_T)*/) __step__with_(__VA_ARGS__)
