@@ -237,6 +237,12 @@ RESOLVED_TARGET_ARCH = $(if $(filter profile,$(TARGET_ARCH)),$(PROFILE_TARGET_AR
 ifeq ($(RESOLVED_LTO),on)
     PROFILE_CFLAGS += -flto
     PROFILE_LDFLAGS += -flto
+else ifeq ($(RESOLVED_LTO),full)
+    PROFILE_CFLAGS += -flto=full
+    PROFILE_LDFLAGS += -flto=full
+else ifeq ($(RESOLVED_LTO),thin)
+    PROFILE_CFLAGS += -flto=thin
+    PROFILE_LDFLAGS += -flto=thin
 else ifeq ($(RESOLVED_LTO),off)
     PROFILE_CFLAGS += -fno-lto
     PROFILE_LDFLAGS += -fno-lto
@@ -451,7 +457,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 
 # Clean build artifacts
 clean:
-	@echo "Cleaning $(BUILD_ROOT)/ (ignoring PROFILE=$(PROFILE))..."
+	@echo "Cleaning all profiles under $(BUILD_ROOT)/..."
 	@$(RMDIR) $(BUILD_ROOT) 2>/dev/null || true
 	@echo "Clean complete"
 

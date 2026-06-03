@@ -168,6 +168,53 @@ static inline const char* dal_c_IcfMode_format(dal_c_IcfMode mode) {
     }
 }
 
+typedef enum dal_c_LtoMode {
+    dal_c_LtoMode_invalid = -1,
+    dal_c_LtoMode_auto = 0,
+    dal_c_LtoMode_off = 1,
+    dal_c_LtoMode_on = 2,
+    dal_c_LtoMode_full = 3,
+    dal_c_LtoMode_thin = 4,
+} dal_c_LtoMode;
+#define dal_c_lto_mode_auto "auto"
+#define dal_c_lto_mode_off "off"
+#define dal_c_lto_mode_on "on"
+#define dal_c_lto_mode_full "full"
+#define dal_c_lto_mode_thin "thin"
+static inline dal_c_LtoMode dal_c_LtoMode_parse(const char* str) {
+    if (str_eql(str, dal_c_lto_mode_auto)) { return dal_c_LtoMode_auto; }
+    if (str_eql(str, dal_c_lto_mode_off) || str_eql(str, "no") || str_eql(str, "false") || str_eql(str, "0")) { return dal_c_LtoMode_off; }
+    if (str_eql(str, dal_c_lto_mode_on) || str_eql(str, "yes") || str_eql(str, "true") || str_eql(str, "1")) { return dal_c_LtoMode_on; }
+    if (str_eql(str, dal_c_lto_mode_full)) { return dal_c_LtoMode_full; }
+    if (str_eql(str, dal_c_lto_mode_thin)) { return dal_c_LtoMode_thin; }
+    return dal_c_LtoMode_invalid;
+}
+static inline const char* dal_c_LtoMode_format(dal_c_LtoMode mode) {
+    switch (mode) {
+    case dal_c_LtoMode_auto: return dal_c_lto_mode_auto;
+    case dal_c_LtoMode_off: return dal_c_lto_mode_off;
+    case dal_c_LtoMode_on: return dal_c_lto_mode_on;
+    case dal_c_LtoMode_full: return dal_c_lto_mode_full;
+    case dal_c_LtoMode_thin: return dal_c_lto_mode_thin;
+    case dal_c_LtoMode_invalid:
+    default: return NULL;
+    }
+}
+static inline bool dal_c_LtoMode_isEnabled(dal_c_LtoMode mode) {
+    return mode == dal_c_LtoMode_on || mode == dal_c_LtoMode_full || mode == dal_c_LtoMode_thin;
+}
+static inline const char* dal_c_LtoMode_toFlag(dal_c_LtoMode mode) {
+    switch (mode) {
+    case dal_c_LtoMode_off: return "-fno-lto";
+    case dal_c_LtoMode_on: return "-flto";
+    case dal_c_LtoMode_full: return "-flto=full";
+    case dal_c_LtoMode_thin: return "-flto=thin";
+    case dal_c_LtoMode_auto:
+    case dal_c_LtoMode_invalid:
+    default: return NULL;
+    }
+}
+
 typedef enum dal_c_SaveTempsMode {
     dal_c_SaveTempsMode_off = 0,
     dal_c_SaveTempsMode_cwd = 1,
@@ -545,7 +592,7 @@ typedef struct dal_c_ProfileSpec {
     dal_c_OptiLevel opti_level;
     dal_c_DebugLevel debug_level;
     bool debug_assertions;
-    dal_c_ToggleState lto_mode;
+    dal_c_LtoMode lto_mode;
     dal_c_ToggleState omit_frame_pointer;
     dal_c_ToggleState function_sections;
     dal_c_ToggleState data_sections;
@@ -593,7 +640,7 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_aggressive,
         .debug_level = dal_c_DebugLevel_minimal,
         .debug_assertions = false,
-        .lto_mode = dal_c_ToggleState_enabled,
+        .lto_mode = dal_c_LtoMode_on,
         .omit_frame_pointer = dal_c_ToggleState_enabled,
         .function_sections = dal_c_ToggleState_enabled,
         .data_sections = dal_c_ToggleState_enabled,
@@ -608,7 +655,7 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_aggressive,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .lto_mode = dal_c_ToggleState_enabled,
+        .lto_mode = dal_c_LtoMode_on,
         .omit_frame_pointer = dal_c_ToggleState_enabled,
         .function_sections = dal_c_ToggleState_enabled,
         .data_sections = dal_c_ToggleState_enabled,
@@ -624,7 +671,7 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_compact,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .lto_mode = dal_c_ToggleState_enabled,
+        .lto_mode = dal_c_LtoMode_on,
         .omit_frame_pointer = dal_c_ToggleState_enabled,
         .function_sections = dal_c_ToggleState_enabled,
         .data_sections = dal_c_ToggleState_enabled,
@@ -639,7 +686,7 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_minimal,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .lto_mode = dal_c_ToggleState_enabled,
+        .lto_mode = dal_c_LtoMode_on,
         .omit_frame_pointer = dal_c_ToggleState_enabled,
         .function_sections = dal_c_ToggleState_enabled,
         .data_sections = dal_c_ToggleState_enabled,
@@ -802,6 +849,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_disasm_line_numbers "disasm-line-numbers"
 #define dal_c_opt_disasm_symbolize_operands "disasm-symbolize-operands"
 #define dal_c_opt_disasm_raw_insn "disasm-raw-insn"
+#define dal_c_opt_disasm_section_contents "disasm-section-contents"
 #define dal_c_opt_save_temps "save-temps"
 #define dal_c_opt_print_link_gc "print-link-gc"
 #define dal_c_opt_analysis_artifacts "analysis-artifacts"
@@ -882,18 +930,23 @@ static inline const char* dal_c_VersionRecordMode_format(dal_c_VersionRecordMode
 
 typedef enum dal_c_LooseErrorsMode {
     dal_c_LooseErrorsMode_invalid = -1,
-    dal_c_LooseErrorsMode_strict = 0,
-    dal_c_LooseErrorsMode_warn = 1,
-    dal_c_LooseErrorsMode_suppress = 2,
+    dal_c_LooseErrorsMode_auto = 0,
+    dal_c_LooseErrorsMode_never = 1,
+    dal_c_LooseErrorsMode_strict = dal_c_LooseErrorsMode_never,
+    dal_c_LooseErrorsMode_warn = 2,
+    dal_c_LooseErrorsMode_suppress = 3,
 } dal_c_LooseErrorsMode;
-#define dal_c_loose_errors_strict "strict"
+#define dal_c_loose_errors_auto "auto"
+#define dal_c_loose_errors_never "never"
+#define dal_c_loose_errors_strict dal_c_loose_errors_never
 #define dal_c_loose_errors_off "off"
 #define dal_c_loose_errors_warn "warn"
 #define dal_c_loose_errors_suppress "suppress"
 static inline dal_c_LooseErrorsMode dal_c_LooseErrorsMode_parse(const char* str) {
-    if (str_eql(str, dal_c_loose_errors_strict) || str_eql(str, dal_c_loose_errors_off)
+    if (str_eql(str, dal_c_loose_errors_auto)) { return dal_c_LooseErrorsMode_auto; }
+    if (str_eql(str, dal_c_loose_errors_never) || str_eql(str, dal_c_loose_errors_strict) || str_eql(str, dal_c_loose_errors_off)
         || str_eql(str, "no") || str_eql(str, "false")) {
-        return dal_c_LooseErrorsMode_strict;
+        return dal_c_LooseErrorsMode_never;
     }
     if (str_eql(str, dal_c_loose_errors_warn) || str_eql(str, "on") || str_eql(str, "yes") || str_eql(str, "true")) {
         return dal_c_LooseErrorsMode_warn;
@@ -903,7 +956,8 @@ static inline dal_c_LooseErrorsMode dal_c_LooseErrorsMode_parse(const char* str)
 }
 static inline const char* dal_c_LooseErrorsMode_format(dal_c_LooseErrorsMode mode) {
     switch (mode) {
-    case dal_c_LooseErrorsMode_strict: return dal_c_loose_errors_strict;
+    case dal_c_LooseErrorsMode_auto: return dal_c_loose_errors_auto;
+    case dal_c_LooseErrorsMode_never: return dal_c_loose_errors_never;
     case dal_c_LooseErrorsMode_warn: return dal_c_loose_errors_warn;
     case dal_c_LooseErrorsMode_suppress: return dal_c_loose_errors_suppress;
     case dal_c_LooseErrorsMode_invalid:
@@ -954,7 +1008,7 @@ typedef struct dal_c_CompilerOpts {
     dal_c_ToggleState start_files_linked; // --link-start-files=<auto|on|off> / --link-crt=<auto|on|off>
     dal_c_ToggleState compiler_rt_linked; // --link-compiler-rt=<auto|on|off>
     dal_c_LinkMode link_mode; // --link-mode=<auto|static|shared>
-    dal_c_ToggleState lto_mode; // --lto=<auto|on|off>
+    dal_c_LtoMode lto_mode; // --lto=<auto|off|on|full|thin>
     dal_c_ToggleState omit_frame_pointer; // --omit-frame-pointer=<auto|on|off>
     dal_c_ToggleState function_sections; // --function-sections=<auto|on|off>
     dal_c_ToggleState data_sections; // --data-sections=<auto|on|off>
@@ -967,7 +1021,7 @@ typedef struct dal_c_CompilerOpts {
     dal_c_IcfMode icf_mode; // --icf=<off|safe|all>
     dal_c_ToggleState merge_all_constants; // --merge-all-constants=<auto|on|off>
     dal_c_ToggleState stack_protector; // --stack-protector=<auto|on|off>
-    dal_c_LooseErrorsMode loose_errors; // --loose-errors=<strict|warn|suppress>
+    dal_c_LooseErrorsMode loose_errors; // --loose-errors=<auto|never|warn|suppress>
     dal_c_VersionSpec version; // project/file/CLI version contract
 } dal_c_CompilerOpts;
 
@@ -1024,6 +1078,7 @@ typedef struct dal_c_BuildOpts {
     dal_c_ToggleState disasm_line_numbers; // --disasm-line-numbers=<auto|on|off>
     dal_c_ToggleState disasm_symbolize_operands; // --disasm-symbolize-operands=<auto|on|off>
     dal_c_ToggleState disasm_raw_insn; // --disasm-raw-insn=<auto|on|off>
+    dal_c_ToggleState disasm_section_contents; // --disasm-section-contents=<auto|on|off>
     dal_c_SaveTempsMode save_temps; // --save-temps=<off|cwd|obj>
     dal_c_Linking linking; // --static or --shared
     bool dsl_first; // --dsl
@@ -1349,7 +1404,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_link_stdlib dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` + `link-default-libs` bundle together" },
     { dal_c_opt_prefix_long dal_c_opt_link_crt dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` bundle" },
     { dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep "<auto|static|shared>", "Select link mode for executable dependencies or library artifact kind (default: " dal_c_default_link_mode ")" },
-    { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|on|off>", "Override profile LTO policy for compile and link flags" },
+    { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|off|on|full|thin>", "Override profile LTO policy for compile and link flags" },
     { dal_c_opt_prefix_long dal_c_opt_omit_frame_pointer dal_c_opt_value_sep "<auto|on|off>", "Emit or omit frame-pointer omission flags" },
     { dal_c_opt_prefix_long dal_c_opt_function_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile function section splitting (`-ffunction-sections`)" },
     { dal_c_opt_prefix_long dal_c_opt_data_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile data section splitting (`-fdata-sections`)" },
@@ -1391,7 +1446,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_short dal_c_opt_output_short "<path>", "Override output name or exact path (alternative)" },
     { dal_c_opt_prefix_long dal_c_opt_exclude dal_c_opt_value_sep "<path>", "Exclude file or directory subtree (can be repeated)" },
     { dal_c_opt_prefix_long dal_c_opt_dh_file dal_c_opt_value_sep "<path>", "Add explicit `.dh` property file (can be repeated)" },
-    { dal_c_opt_prefix_long dal_c_opt_loose_errors dal_c_opt_value_sep "<warn|suppress>", "Relax warning policy: warn converts Werror diagnostics to warnings; suppress disables warning diagnostics" },
+    { dal_c_opt_prefix_long dal_c_opt_loose_errors dal_c_opt_value_sep "<auto|never|warn|suppress>", "Relax warning policy: never preserves strict Werror diagnostics; warn downgrades them; suppress disables warnings" },
     { dal_c_opt_prefix_long dal_c_opt_self, "Apply `build` to the self boundary" },
     { dal_c_opt_prefix_long dal_c_opt_lib, "Build the target as a library" },
     { dal_c_opt_prefix_long dal_c_opt_image, "Build the target as a freestanding image and emit a raw binary via objcopy" },
@@ -1407,6 +1462,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_disasm_line_numbers dal_c_opt_value_sep "<auto|on|off>", "Control line numbers for emitted disassembly" },
     { dal_c_opt_prefix_long dal_c_opt_disasm_symbolize_operands dal_c_opt_value_sep "<auto|on|off>", "Control operand symbolization for emitted disassembly" },
     { dal_c_opt_prefix_long dal_c_opt_disasm_raw_insn dal_c_opt_value_sep "<auto|on|off>", "Control raw instruction bytes for emitted disassembly" },
+    { dal_c_opt_prefix_long dal_c_opt_disasm_section_contents dal_c_opt_value_sep "<auto|on|off>", "Include section contents in emitted disassembly (`llvm-objdump -s` when on)" },
     { dal_c_opt_prefix_long dal_c_opt_save_temps dal_c_opt_value_sep "<off|cwd|obj>", "Ask Clang to preserve intermediate compilation files" },
     { dal_c_opt_prefix_long dal_c_opt_print_link_gc, "Ask the linker to print removed sections when supported" },
     { dal_c_opt_prefix_long dal_c_opt_analysis_artifacts, "Emit the standard linked analysis artifact bundle" },

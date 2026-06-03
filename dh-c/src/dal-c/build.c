@@ -328,7 +328,9 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     dal_c__pushSelfMakeKeyValue(argv, "TARGET_ARCH", cmd->opts.target_arch);
     dal_c__pushSelfMakeKeyValue(argv, "TARGET_ABI", cmd->opts.target_abi);
     dal_c__pushSelfMakeKeyValue(argv, "SYSROOT", cmd->opts.sysroot);
-    dal_c__pushSelfMakeToggle(argv, "LTO", cmd->opts.lto_mode);
+    if (cmd->opts.lto_mode != dal_c_LtoMode_auto) {
+        dal_c__pushSelfMakeKeyValue(argv, "LTO", dal_c_LtoMode_format(cmd->opts.lto_mode));
+    }
     dal_c__pushSelfMakeToggle(argv, "OMIT_FRAME_POINTER", cmd->opts.omit_frame_pointer);
     dal_c__pushSelfMakeToggle(argv, "FUNCTION_SECTIONS", cmd->opts.function_sections);
     dal_c__pushSelfMakeToggle(argv, "DATA_SECTIONS", cmd->opts.data_sections);
@@ -1918,14 +1920,18 @@ static bool dal_c__resolvedProfileToggleEnabled(dal_c_ToggleState override, dal_
     return dal_c__resolvedProfileToggleState(override, profile_default) == dal_c_ToggleState_enabled;
 }
 
-static dal_c_ToggleState dal_c__resolvedLtoState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+static dal_c_LtoMode dal_c__resolvedProfileLtoMode(dal_c_LtoMode override, dal_c_LtoMode profile_default) {
+    return override != dal_c_LtoMode_auto ? override : profile_default;
+}
+
+static dal_c_LtoMode dal_c__resolvedLtoState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
     assert(opts != NULL);
     assert(profile != NULL);
-    return dal_c__resolvedProfileToggleState(opts->lto_mode, profile->lto_mode);
+    return dal_c__resolvedProfileLtoMode(opts->lto_mode, profile->lto_mode);
 }
 
 static bool dal_c__resolvedLtoMode(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
-    return dal_c__resolvedLtoState(opts, profile) == dal_c_ToggleState_enabled;
+    return dal_c_LtoMode_isEnabled(dal_c__resolvedLtoState(opts, profile));
 }
 
 static dal_c_ToggleState dal_c__resolvedOmitFramePointerState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
@@ -2008,7 +2014,7 @@ static const char* dal_c__resolvedTargetArch(const dal_c_CompilerOpts* opts, con
 }
 
 static bool dal_c__isLtoFlag(const char* flag) {
-    return flag && (str_eql(flag, "-flto") || str_eql(flag, "-fno-lto"));
+    return flag && (str_eql(flag, "-flto") || str_eql(flag, "-fno-lto") || str_startsWith(flag, "-flto="));
 }
 
 static bool dal_c__targetSupportsNoLibcFlag(const dal_c_CompilerOpts* opts) {
@@ -2804,8 +2810,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, " %s", opt_flag);
     }
 
-    dal_c_ToggleState lto_state = dal_c__resolvedLtoState(opts, profile);
-    bool lto_enabled = lto_state == dal_c_ToggleState_enabled;
+    dal_c_LtoMode lto_state = dal_c__resolvedLtoState(opts, profile);
     for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
         const char* flag = profile->extra_flags[i];
         if (dal_c__isLtoFlag(flag)) {
@@ -2815,8 +2820,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             (void)fprintf(fp, " %s", flag);
         }
     }
-    if (lto_state != dal_c_ToggleState_auto) {
-        (void)fprintf(fp, lto_enabled ? " -flto" : " -fno-lto");
+    const char* lto_flag = dal_c_LtoMode_toFlag(lto_state);
+    if (lto_flag) {
+        (void)fprintf(fp, " %s", lto_flag);
     }
     dal_c_ToggleState omit_frame_pointer = dal_c__resolvedOmitFramePointerState(opts, profile);
     if (omit_frame_pointer == dal_c_ToggleState_enabled) {
@@ -3054,8 +3060,8 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
                 (void)fprintf(fp, " %s", flag);
             }
         }
-        if (lto_state != dal_c_ToggleState_auto) {
-            (void)fprintf(fp, lto_enabled ? " -flto" : " -fno-lto");
+        if (lto_flag) {
+            (void)fprintf(fp, " %s", lto_flag);
         }
         if (dal_c__resolvedGcSections(opts, profile)) {
             (void)fprintf(fp, " -Wl,--gc-sections");
@@ -3341,6 +3347,7 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
             sizeof(cmd->payload.build.disasm_symbolize_operands)
         );
         hash = dal_c__hashBytes(hash, &cmd->payload.build.disasm_raw_insn, sizeof(cmd->payload.build.disasm_raw_insn));
+        hash = dal_c__hashBytes(hash, &cmd->payload.build.disasm_section_contents, sizeof(cmd->payload.build.disasm_section_contents));
         hash = dal_c__hashBool(hash, cmd->payload.build.print_link_gc);
         hash = dal_c__hashBool(hash, cmd->payload.build.analysis_artifacts);
     }
@@ -3747,6 +3754,9 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
             }
             if (cmd->payload.build.disasm_raw_insn == dal_c_ToggleState_disabled) {
                 (void)fprintf(fp, " --no-show-raw-insn");
+            }
+            if (cmd->payload.build.disasm_section_contents == dal_c_ToggleState_enabled) {
+                (void)fprintf(fp, " -s");
             }
             (void)fprintf(fp, " \"$(subst \\,/,$(DISASM_INPUT))\" > \"$(subst \\,/,$@)\"\n");
         }

@@ -373,8 +373,14 @@ static void test_meta_tables(void) {
     TEST_ASSERT(dal_c_ToggleState_resolve(dal_c_ToggleState_auto, false) == false);
     TEST_ASSERT(dal_c_SampleDir_parse("examples") == dal_c_SampleDir_examples);
     TEST_ASSERT(dal_c_TargetSelection_parse("dir") == dal_c_TargetSelection_dir);
+    TEST_ASSERT(dal_c_LtoMode_parse("on") == dal_c_LtoMode_on);
+    TEST_ASSERT(dal_c_LtoMode_parse("full") == dal_c_LtoMode_full);
+    TEST_ASSERT(dal_c_LtoMode_parse("thin") == dal_c_LtoMode_thin);
+    TEST_ASSERT(str_eql(dal_c_LtoMode_toFlag(dal_c_LtoMode_full), "-flto=full"));
     TEST_ASSERT(dal_c_LooseErrorsMode_parse("warn") == dal_c_LooseErrorsMode_warn);
     TEST_ASSERT(dal_c_LooseErrorsMode_parse("suppress") == dal_c_LooseErrorsMode_suppress);
+    TEST_ASSERT(dal_c_LooseErrorsMode_parse("auto") == dal_c_LooseErrorsMode_auto);
+    TEST_ASSERT(dal_c_LooseErrorsMode_parse("never") == dal_c_LooseErrorsMode_never);
     TEST_ASSERT(dal_c_LooseErrorsMode_parse("off") == dal_c_LooseErrorsMode_strict);
 
     const dal_c_ProfileSpec* release_spec = dal_c_ProfileSpec_by(dal_c_Profile_release);
@@ -384,7 +390,7 @@ static void test_meta_tables(void) {
 
     const dal_c_ProfileSpec* optimize_spec = dal_c_ProfileSpec_by(dal_c_Profile_optimize);
     TEST_ASSERT(optimize_spec != NULL);
-    TEST_ASSERT(optimize_spec->lto_mode == dal_c_ToggleState_enabled);
+    TEST_ASSERT(optimize_spec->lto_mode == dal_c_LtoMode_on);
     TEST_ASSERT(optimize_spec->function_sections == dal_c_ToggleState_enabled);
     TEST_ASSERT(optimize_spec->data_sections == dal_c_ToggleState_enabled);
     TEST_ASSERT(optimize_spec->gc_sections == dal_c_ToggleState_enabled);
@@ -398,7 +404,7 @@ static void test_meta_tables(void) {
 
     const dal_c_ProfileSpec* micro_spec = dal_c_ProfileSpec_by(dal_c_Profile_micro);
     TEST_ASSERT(micro_spec != NULL);
-    TEST_ASSERT(micro_spec->lto_mode == dal_c_ToggleState_enabled);
+    TEST_ASSERT(micro_spec->lto_mode == dal_c_LtoMode_on);
     TEST_ASSERT(micro_spec->function_sections == dal_c_ToggleState_enabled);
     TEST_ASSERT(micro_spec->data_sections == dal_c_ToggleState_enabled);
     TEST_ASSERT(micro_spec->gc_sections == dal_c_ToggleState_enabled);
@@ -452,6 +458,7 @@ static void test_meta_tables(void) {
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_disasm_line_numbers));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_disasm_symbolize_operands));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_disasm_raw_insn));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_disasm_section_contents));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_save_temps));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_print_link_gc));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_analysis_artifacts));
@@ -557,6 +564,7 @@ static void test_cmd_parse(void) {
             "--disasm-line-numbers=on",
             "--disasm-symbolize-operands=on",
             "--disasm-raw-insn=off",
+            "--disasm-section-contents=on",
             "--save-temps=obj",
             "--analysis-artifacts",
             "--link-crt=off",
@@ -564,14 +572,14 @@ static void test_cmd_parse(void) {
             "--loose-errors=suppress",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(40, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(41, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(cmd->opts.dsl_mode == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.compile_env == dal_c_CompileEnv_freestanding);
         TEST_ASSERT(cmd->opts.libc_linked == dal_c_ToggleState_enabled);
         TEST_ASSERT(cmd->opts.default_libs_linked == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.start_files_linked == dal_c_ToggleState_disabled);
-        TEST_ASSERT(cmd->opts.lto_mode == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->opts.lto_mode == dal_c_LtoMode_off);
         TEST_ASSERT(cmd->opts.omit_frame_pointer == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.function_sections == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.data_sections == dal_c_ToggleState_disabled);
@@ -599,6 +607,7 @@ static void test_cmd_parse(void) {
         TEST_ASSERT(cmd->payload.build.disasm_line_numbers == dal_c_ToggleState_enabled);
         TEST_ASSERT(cmd->payload.build.disasm_symbolize_operands == dal_c_ToggleState_enabled);
         TEST_ASSERT(cmd->payload.build.disasm_raw_insn == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->payload.build.disasm_section_contents == dal_c_ToggleState_enabled);
         TEST_ASSERT(cmd->payload.build.save_temps == dal_c_SaveTempsMode_obj);
         TEST_ASSERT(cmd->payload.build.analysis_artifacts);
         TEST_ASSERT(str_eql(cmd->opts.entry_symbol, "custom_entry"));
@@ -1535,11 +1544,12 @@ static void test_makefile_mode_contracts(void) {
             "--disasm-line-numbers=on",
             "--disasm-symbolize-operands=on",
             "--disasm-raw-insn=off",
+            "--disasm-section-contents=on",
             NULL
         };
         dal_c_Cmd* emit_cmd = dal_c_Cmd_parse(6, emit_argv);
         dal_c_Cmd* asm_cmd = dal_c_Cmd_parse(4, asm_argv);
-        dal_c_Cmd* analysis_cmd = dal_c_Cmd_parse(14, analysis_argv);
+        dal_c_Cmd* analysis_cmd = dal_c_Cmd_parse(15, analysis_argv);
         char* build_dir = NULL;
         char* profile_dir = NULL;
         char* object_dir = NULL;
@@ -1632,7 +1642,7 @@ static void test_makefile_mode_contracts(void) {
             TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(DEBUG_INFO)") != NULL);
             TEST_ASSERT(strstr(makefile_text, " -Wl,--lto-emit-asm") != NULL);
             TEST_ASSERT(strstr(makefile_text, "$(CC) $(OBJS_SHELL) -o \"$(subst \\,/,$@)\" $(LDFLAGS_DISASM_SHELL)") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "llvm-objdump -d --demangle --line-numbers --symbolize-operands --no-show-raw-insn \"$(subst \\,/,$(DISASM_INPUT))\" > \"$(subst \\,/,$@)\"") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "llvm-objdump -d --demangle --line-numbers --symbolize-operands --no-show-raw-insn -s \"$(subst \\,/,$(DISASM_INPUT))\" > \"$(subst \\,/,$@)\"") != NULL);
             TEST_ASSERT(strstr(makefile_text, " -S -emit-llvm $(firstword $(SRCS)) -o \"$(subst \\,/,$@)\"") != NULL);
 #ifdef _WIN32
             TEST_ASSERT(strstr(makefile_text, "PDB = ") != NULL);

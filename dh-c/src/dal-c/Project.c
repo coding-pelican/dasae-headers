@@ -197,7 +197,7 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->start_files_linked != dal_c_ToggleState_auto) { dst->start_files_linked = src->start_files_linked; }
     if (src->compiler_rt_linked != dal_c_ToggleState_auto) { dst->compiler_rt_linked = src->compiler_rt_linked; }
     if (src->link_mode != dal_c_LinkMode_auto) { dst->link_mode = src->link_mode; }
-    if (src->lto_mode != dal_c_ToggleState_auto) { dst->lto_mode = src->lto_mode; }
+    if (src->lto_mode != dal_c_LtoMode_auto) { dst->lto_mode = src->lto_mode; }
     if (src->omit_frame_pointer != dal_c_ToggleState_auto) { dst->omit_frame_pointer = src->omit_frame_pointer; }
     if (src->function_sections != dal_c_ToggleState_auto) { dst->function_sections = src->function_sections; }
     if (src->data_sections != dal_c_ToggleState_auto) { dst->data_sections = src->data_sections; }
@@ -210,7 +210,7 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->icf_mode != dal_c_IcfMode_auto) { dst->icf_mode = src->icf_mode; }
     if (src->merge_all_constants != dal_c_ToggleState_auto) { dst->merge_all_constants = src->merge_all_constants; }
     if (src->stack_protector != dal_c_ToggleState_auto) { dst->stack_protector = src->stack_protector; }
-    if (src->loose_errors != dal_c_LooseErrorsMode_strict) { dst->loose_errors = src->loose_errors; }
+    if (src->loose_errors != dal_c_LooseErrorsMode_auto) { dst->loose_errors = src->loose_errors; }
     dal_c_VersionSpec_merge(&dst->version, &src->version);
 
     for (int i = 0; i < src->define_count; ++i) {
@@ -980,7 +980,12 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
             opts->link_mode = mode;
         }
     } else if (str_eql(key, dal_c_opt_lto)) {
-        opts->lto_mode = dal_c_Project__toggleStateFromPositiveBool(value);
+        dal_c_LtoMode mode = dal_c_LtoMode_parse(value);
+        if (mode == dal_c_LtoMode_invalid) {
+            (void)fprintf(stderr, "Error: Invalid `%s` value `%s`\n", dal_c_opt_lto, value);
+        } else {
+            opts->lto_mode = mode;
+        }
     } else if (str_eql(key, dal_c_opt_omit_frame_pointer)) {
         opts->omit_frame_pointer = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_function_sections)) {
