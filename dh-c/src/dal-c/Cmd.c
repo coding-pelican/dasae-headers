@@ -1094,7 +1094,12 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         if (dsl_result != 0) { return dsl_result; }
     }
 
-    char* build_dir = dal_c_Project_getBuildDir(proj);
+    char* build_dir = proj->root ? dal_c_Project_getBuildDir(proj) : NULL;
+    if (!build_dir) {
+        char* cwd = env_getCWD();
+        build_dir = cwd ? path_join(cwd, dal_c_dir_build) : strdup(dal_c_dir_build);
+        free(cwd);
+    }
     char* build_target = NULL;
     if (self->profile_explicit && profile) {
         build_target = path_join(build_dir, profile->name);
@@ -1112,7 +1117,7 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     free(build_target);
     free(build_dir);
 
-    if (!cache_only && !self->profile_explicit) {
+    if (proj->root && !cache_only && !self->profile_explicit) {
         char* deps_dir = dal_c_Project_getDepsDir(proj);
         if (deps_dir && path_isDir(deps_dir)) {
             if (self->verbose) {
@@ -1145,7 +1150,7 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     free(cache_target);
     free(cache_dir);
 
-    if (recursive) {
+    if (proj->root && recursive) {
         if (proj->lib_count > 0) {
             for (int i = 0; i < proj->lib_count; ++i) {
                 const dal_c_Lib* lib = &proj->libraries[i];

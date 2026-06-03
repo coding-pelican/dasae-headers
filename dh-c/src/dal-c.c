@@ -180,6 +180,7 @@ static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd) {
     case dal_c_CmdAction_toolchain:
     case dal_c_CmdAction_deps:
     case dal_c_CmdAction_clean:
+        return cmd->action == dal_c_CmdAction_clean;
     case dal_c_CmdAction_version:
     case dal_c_CmdAction_help:
     case dal_c_CmdAction_workspace:

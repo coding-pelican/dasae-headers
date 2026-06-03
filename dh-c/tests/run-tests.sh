@@ -202,6 +202,16 @@ assert_contains "$LAST_OUTPUT" "Not implemented: workspace" "Reserved workspace 
 invoke_external "1" "$repo_root" "$cli_exe" project demo
 assert_contains "$LAST_OUTPUT" "Not implemented: project" "Reserved project command did not report current status"
 
+no_project_clean=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-no-project-clean.XXXXXX")
+mkdir -p "$no_project_clean/build/dev"
+printf 'stale\n' >"$no_project_clean/build/dev/stale.txt"
+invoke_external "0" "$no_project_clean" "$cli_exe" clean dev
+if [ -e "$no_project_clean/build/dev" ]; then
+    printf 'No-project clean did not remove build/dev directory\n' >&2
+    exit 1
+fi
+rm -rf "$no_project_clean"
+
 if [ "$integration" -eq 1 ]; then
     reset_temp_root
 
