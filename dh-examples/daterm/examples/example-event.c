@@ -26,7 +26,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         if_some((daterm_Term_poll(term))(event)) {
             $suppress_(switch_enum)(match_(event)) {
             pattern_((daterm_Event_key)(key)) {
-                switch ($suppress_(switch_enum)(key.code)) {
+                $suppress_(switch_enum)(switch (key.code)) {
                 case_((dansi_Event_KeyCode_esc)){
                     try_(io_Writer_println(out, u8_l("ESC pressed, exiting...")));
                     is_running = false;

@@ -44,7 +44,7 @@ $static fn_((wtf8__encode(u32 codepoint, utf8_SeqLen requested_len, S$u8 out))(w
 
 T_use_E$($set(wtf8_E)(utf8_SeqLen));
 $static fn_((wtf8_encode__handleUTF8(utf8_E$utf8_SeqLen result))(wtf8_E$utf8_SeqLen) $scope) {
-    return_ok(catch_((result)(err, switch ($suppress_(switch_enum)(E_tag$utf8_E(err))) {
+    return_ok(catch_((result)(err, $suppress_(switch_enum)(switch (E_tag$utf8_E(err))) {
         case_((E_Tag$utf8_TooLargeCodepoint)) return_err(E_cause$wtf8_TooLargeCodepoint()) $end(case);
         default_() claim_unreachable $end(default);
     })));
@@ -72,7 +72,7 @@ $static fn_((wtf8__decode3(utf8_Decode3Buf bytes))(wtf8_E$u32) $scope) {
 } $unscoped(fn);
 
 $static fn_((wtf8_decode__handleUTF8(utf8_E$u32 result))(wtf8_E$u32) $scope) {
-    return_ok(catch_((result)(err, switch ($suppress_(switch_enum)(E_tag$utf8_E(err))) {
+    return_ok(catch_((result)(err, $suppress_(switch_enum)(switch (E_tag$utf8_E(err))) {
         case_((E_Tag$utf8_ExpectedContinuation)) return_err(E_cause$wtf8_ExpectedContinuation()) $end(case);
         case_((E_Tag$utf8_OverlongEncoding)) return_err(E_cause$wtf8_OverlongEncoding()) $end(case);
         default_() claim_unreachable $end(default);

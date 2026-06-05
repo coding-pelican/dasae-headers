@@ -14,7 +14,7 @@ $static fn_((dansi_Event__parseSS3(dansi_Seq seq))(dansi_Event_E$dansi_Event));
 /*========== External Definitions ===========================================*/
 
 fn_((dansi_Event_parse(dansi_Seq seq))(dansi_Event_E$dansi_Event) $scope) {
-    switch ($suppress_(switch_enum)(seq.kind)) {
+    $suppress_(switch_enum)(switch (seq.kind)) {
     case_((dansi_Seq_Kind_raw)) return dansi_Event__parseRaw(seq) $end(case);
     case_((dansi_Seq_Kind_esc)) return dansi_Event__parseEsc(seq) $end(case);
     case_((dansi_Seq_Kind_csi)) return dansi_Event__parseCSI(seq) $end(case);

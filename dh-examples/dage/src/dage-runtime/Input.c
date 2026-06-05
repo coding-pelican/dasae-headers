@@ -22,7 +22,7 @@ fn_((dage_Input_clear(dage_Input* self))(void)) {
 
 /// @brief Update modifier state from key event
 $static fn_((updateModsFromKey(dage_Input* self, dage_KeyCode key, bool is_down))(void)) {
-    switch ($suppress_(switch_enum)(key)) {
+    $suppress_(switch_enum)(switch (key)) {
     case dage_KeyCode_shift_left:
     case dage_KeyCode_shift_right:
         A_at((self->mods)[dage_Input_Frame_curr])->shift = is_down;

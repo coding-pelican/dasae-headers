@@ -162,7 +162,7 @@ fn_((actor_Unit_send(actor_Unit* self, actor_Msg msg))(mem_E$void) $scope) {
     }
 
     let task = unwrap_(self->task);
-    switch ($suppress_(switch_enum)(task->state)) {
+    $suppress_(switch_enum)(switch (task->state)) {
     case exec_Task_State_done:
     case exec_Task_State_canceled: {
         return_err(E_cause$Unexpected());

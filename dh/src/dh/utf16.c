@@ -7,7 +7,7 @@ fn_((utf16_codeunitSeqLen(u16 first_codeunit))(utf16_E$utf16_SeqLen) $scope) {
 } $unscoped(fn);
 
 $static fn_((utf16_codepointSeqLen__handleUTF8(utf8_E$utf8_SeqLen result))(utf16_E$utf8_SeqLen) $scope) {
-    return_ok(catch_((result)(err, switch ($suppress_(switch_enum)(E_tag$utf8_E(err))) {
+    return_ok(catch_((result)(err, $suppress_(switch_enum)(switch (E_tag$utf8_E(err))) {
         case_((E_Tag$utf8_TooLargeCodepoint)) return_err(E_cause$utf16_TooLargeCodepoint()) $end(case);
         default_() claim_unreachable $end(default);
     })));

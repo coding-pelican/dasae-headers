@@ -289,7 +289,7 @@ fn_((fmt_formatUInt(io_Writer writer, u64 val, fmt_Spec spec))(E$void)) {
     }
     // Add alternate form prefix if requested
     if (spec.alt_form) {
-        switch ($suppress_(switch_enum)(spec.type)) {
+        $suppress_(switch_enum)(switch (spec.type)) {
         case fmt_Type_hex_lower:
         case fmt_Type_hex_upper:
             // Always use lowercase 0x for hex
@@ -1084,7 +1084,7 @@ fn_((fmt__specToArgTag(fmt_Type type, fmt_Size size))(E$fmt__ArgValue_Tag) $scop
     case fmt_Type_hex_upper:
     case fmt_Type_octal:
     case fmt_Type_binary:
-        switch ($suppress_(switch_enum)(size)) {
+        $suppress_(switch_enum)(switch (size)) {
         case fmt_Size_8:   return_ok(fmt__ArgValue_u8);
         case fmt_Size_16:  return_ok(fmt__ArgValue_u16);
         case fmt_Size_32:  return_ok(fmt__ArgValue_u32);
@@ -1093,7 +1093,7 @@ fn_((fmt__specToArgTag(fmt_Type type, fmt_Size size))(E$fmt__ArgValue_Tag) $scop
         default: return_err(E_cause$fmt_InvalidSizeSpec());
         }
     case fmt_Type_signed:
-        switch ($suppress_(switch_enum)(size)) {
+        $suppress_(switch_enum)(switch (size)) {
         case fmt_Size_8:   return_ok(fmt__ArgValue_i8);
         case fmt_Size_16:  return_ok(fmt__ArgValue_i16);
         case fmt_Size_32:  return_ok(fmt__ArgValue_i32);
@@ -1104,7 +1104,7 @@ fn_((fmt__specToArgTag(fmt_Type type, fmt_Size size))(E$fmt__ArgValue_Tag) $scop
     case fmt_Type_float_lower:
     case fmt_Type_float_upper:
 #if fmt_flt_enabled
-        switch ($suppress_(switch_enum)(size)) {
+        $suppress_(switch_enum)(switch (size)) {
         case fmt_Size_32: return_ok(fmt__ArgValue_f32);
         case fmt_Size_64: return_ok(fmt__ArgValue_f64);
         default: return_err(E_cause$fmt_InvalidSizeSpec());
@@ -1776,7 +1776,7 @@ fn_((fmt__ArgValue_Tag_isInt(fmt__ArgValue_Tag tag))(bool)) {
 };
 
 fn_((fmt__ArgValue_Tag_getIntSize(fmt__ArgValue_Tag tag))(u8)) {
-    switch ($suppress_(switch_enum)(tag)) {
+    $suppress_(switch_enum)(switch (tag)) {
     case fmt__ArgValue_u8:
     case fmt__ArgValue_i8:
         return 8;
