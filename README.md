@@ -851,8 +851,8 @@ C11 atomics and type-safe atomic value wrappers (prefix `atom_`).
 - **Operations:**
   `atom_fence`, `atom_load`, `atom_store`, `atom_fetchXchg`,
   `atom_cmpXchgWeak$`, `atom_cmpXchgStrong$`,
-  `atom_fetchAdd`, `atom_fetchSub`, `atom_fetchAnd`, `atom_fetchOr`,
-  `atom_fetchXor`, `atom_fetchNand`
+  `atom_pri_fetchAdd`, `atom_pri_fetchSub`, `atom_int_fetchAnd`, `atom_int_fetchOr`,
+  `atom_int_fetchXor`, `atom_int_fetchNand`
 - **Atomic value wrapper:**
   `atom_V$(_T)`, `atom_V_zero$`, `atom_V_init$`, `atom_V_from`
   — generic atomic variable type

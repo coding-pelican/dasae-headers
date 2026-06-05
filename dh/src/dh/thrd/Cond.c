@@ -275,7 +275,7 @@ $static fn_((thrd_Cond__default_impl_fini(thrd_Cond* self))(void)) {
 // Acquire barrier to ensure the epoch load happens before the state load.
 fn_((thrd_Cond__default_impl_wait(thrd_Cond* self, thrd_Mtx* mtx, O$time_Dur timeout))(Sched_TimeoutE$void) $guard) {
     var epoch = atom_V_load(&self->impl.epoch, atom_MemOrd_acquire);
-    var state = atom_V_fetchAdd(&self->impl.state, thrd_Cond__default_one_waiter, atom_MemOrd_monotonic);
+    var state = atom_V_pri_fetchAdd(&self->impl.state, thrd_Cond__default_one_waiter, atom_MemOrd_monotonic);
     debug_assert((state & thrd_Cond__default_waiter_mask) != thrd_Cond__default_waiter_mask);
     state += thrd_Cond__default_one_waiter;
 
@@ -346,7 +346,7 @@ fn_((thrd_Cond__default_impl_wake(thrd_Cond* self, thrd_Cond__Notify notify))(vo
             // - T1: s = LOAD(&state)
             // - T2: UPDATE(&state, signal) + FUTEX_WAKE(&epoch)
             // - T1: s & signals == 0 -> FUTEX_WAIT(&epoch, e) (missed both epoch change and state change)
-            let_ignore = atom_V_fetchAdd(&self->impl.epoch, 1, atom_MemOrd_release);
+            let_ignore = atom_V_pri_fetchAdd(&self->impl.epoch, 1, atom_MemOrd_release);
             return thrd_ftx_wake(&self->impl.epoch, to_wake);
         }));
     }

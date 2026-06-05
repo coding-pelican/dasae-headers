@@ -56,12 +56,12 @@ typedef enum $packed atom_MemOrd {
 
 /// RMW (Read-Modify-Write) - returns the value before the operation (Fetch-and-Op)
 #define atom_fetchXchg(_ptr, _val, _ord...) __op__atom_fetchXchg(pp_uniqTok(ret), _ptr, _val, _ord)
-#define atom_fetchAdd(_ptr, _val, _ord...) __op__atom_fetchAdd(_ptr, _val, _ord)
-#define atom_fetchSub(_ptr, _val, _ord...) __op__atom_fetchSub(_ptr, _val, _ord)
-#define atom_fetchNand(_ptr, _val, _ord...) __op__atom_fetchNand(_ptr, _val, _ord)
-#define atom_fetchAnd(_ptr, _val, _ord...) __op__atom_fetchAnd(_ptr, _val, _ord)
-#define atom_fetchXor(_ptr, _val, _ord...) __op__atom_fetchXor(_ptr, _val, _ord)
-#define atom_fetchOr(_ptr, _val, _ord...) __op__atom_fetchOr(_ptr, _val, _ord)
+#define atom_pri_fetchAdd(_ptr, _val, _ord...) __op__atom_pri_fetchAdd(_ptr, _val, _ord)
+#define atom_pri_fetchSub(_ptr, _val, _ord...) __op__atom_pri_fetchSub(_ptr, _val, _ord)
+#define atom_int_fetchNand(_ptr, _val, _ord...) __op__atom_int_fetchNand(_ptr, _val, _ord)
+#define atom_int_fetchAnd(_ptr, _val, _ord...) __op__atom_int_fetchAnd(_ptr, _val, _ord)
+#define atom_int_fetchXor(_ptr, _val, _ord...) __op__atom_int_fetchXor(_ptr, _val, _ord)
+#define atom_int_fetchOr(_ptr, _val, _ord...) __op__atom_int_fetchOr(_ptr, _val, _ord)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -106,17 +106,17 @@ typedef enum $packed atom_MemOrd {
     __atomic_exchange(_ptr, &from$((TypeOf(__ret))_val), &__ret, as$(int)(as$(atom_MemOrd)(_ord))); \
     local_return_(__ret); \
 })
-#define __op__atom_fetchAdd(_ptr, _val, _ord...) \
+#define __op__atom_pri_fetchAdd(_ptr, _val, _ord...) \
     __atomic_fetch_add(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_fetchSub(_ptr, _val, _ord...) \
+#define __op__atom_pri_fetchSub(_ptr, _val, _ord...) \
     __atomic_fetch_sub(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_fetchNand(_ptr, _val, _ord...) \
+#define __op__atom_int_fetchNand(_ptr, _val, _ord...) \
     __atomic_fetch_nand(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_fetchAnd(_ptr, _val, _ord...) \
+#define __op__atom_int_fetchAnd(_ptr, _val, _ord...) \
     __atomic_fetch_and(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_fetchXor(_ptr, _val, _ord...) \
+#define __op__atom_int_fetchXor(_ptr, _val, _ord...) \
     __atomic_fetch_xor(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_fetchOr(_ptr, _val, _ord...) \
+#define __op__atom_int_fetchOr(_ptr, _val, _ord...) \
     __atomic_fetch_or(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
 
 #if defined(__cplusplus)

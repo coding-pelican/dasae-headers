@@ -59,16 +59,16 @@ extern "C" {
     __op__atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord)
 
 #define atom_V_fetchXchg(_p_self, _val, _ord...) __op__atom_V_fetchXchg(_p_self, _val, _ord)
-#define atom_V_fetchAdd(_p_self, _val, _ord...) __op__atom_V_fetchAdd(_p_self, _val, _ord)
-#define atom_V_fetchSub(_p_self, _val, _ord...) __op__atom_V_fetchSub(_p_self, _val, _ord)
-#define atom_V_fetchNand(_p_self, _val, _ord...) __op__atom_V_fetchNand(_p_self, _val, _ord)
-#define atom_V_fetchAnd(_p_self, _val, _ord...) __op__atom_V_fetchAnd(_p_self, _val, _ord)
-#define atom_V_fetchXor(_p_self, _val, _ord...) __op__atom_V_fetchXor(_p_self, _val, _ord)
-#define atom_V_fetchOr(_p_self, _val, _ord...) __op__atom_V_fetchOr(_p_self, _val, _ord)
+#define atom_V_pri_fetchAdd(_p_self, _val, _ord...) __op__atom_V_pri_fetchAdd(_p_self, _val, _ord)
+#define atom_V_pri_fetchSub(_p_self, _val, _ord...) __op__atom_V_pri_fetchSub(_p_self, _val, _ord)
+#define atom_V_int_fetchNand(_p_self, _val, _ord...) __op__atom_V_int_fetchNand(_p_self, _val, _ord)
+#define atom_V_int_fetchAnd(_p_self, _val, _ord...) __op__atom_V_int_fetchAnd(_p_self, _val, _ord)
+#define atom_V_int_fetchXor(_p_self, _val, _ord...) __op__atom_V_int_fetchXor(_p_self, _val, _ord)
+#define atom_V_int_fetchOr(_p_self, _val, _ord...) __op__atom_V_int_fetchOr(_p_self, _val, _ord)
 
-#define atom_V_bitSet(_p_self, _bit, _ord...) __step__atom_V_bitSet(_p_self, _bit, _ord)
-#define atom_V_bitReset(_p_self, _bit, _ord...) __step__atom_V_bitReset(_p_self, _bit, _ord)
-#define atom_V_bitToggle(_p_self, _bit, _ord...) __step__atom_V_bitToggle(_p_self, _bit, _ord)
+#define atom_V_int_setBit(_p_self, _bit, _ord...) __step__atom_V_int_setBit(_p_self, _bit, _ord)
+#define atom_V_int_resetBit(_p_self, _bit, _ord...) __step__atom_V_int_resetBit(_p_self, _bit, _ord)
+#define atom_V_int_toggleBit(_p_self, _bit, _ord...) __step__atom_V_int_toggleBit(_p_self, _bit, _ord)
 
 /// spinLoopHint: Platform-specific CPU hints for spin-loops
 ///
@@ -104,41 +104,41 @@ $static fn_((atom_spinLoopHint(void))(void));
 
 #define __op__atom_V_fetchXchg(_p_self, _val, _ord...) \
     atom_fetchXchg(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchAdd(_p_self, _val, _ord...) \
-    atom_fetchAdd(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchSub(_p_self, _val, _ord...) \
-    atom_fetchSub(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchNand(_p_self, _val, _ord...) \
-    atom_fetchNand(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchAnd(_p_self, _val, _ord...) \
-    atom_fetchAnd(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchXor(_p_self, _val, _ord...) \
-    atom_fetchXor(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_fetchOr(_p_self, _val, _ord...) \
-    atom_fetchOr(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_pri_fetchAdd(_p_self, _val, _ord...) \
+    atom_pri_fetchAdd(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_pri_fetchSub(_p_self, _val, _ord...) \
+    atom_pri_fetchSub(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_int_fetchNand(_p_self, _val, _ord...) \
+    atom_int_fetchNand(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_int_fetchAnd(_p_self, _val, _ord...) \
+    atom_int_fetchAnd(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_int_fetchXor(_p_self, _val, _ord...) \
+    atom_int_fetchXor(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_int_fetchOr(_p_self, _val, _ord...) \
+    atom_int_fetchOr(&(_p_self)->raw, _val, _ord)
 
-#define __step__atom_V_bitSet(_p_self, _bit, _ord...) \
-    ____atom_V_bitSet(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
-#define ____atom_V_bitSet(__mask, __val, _p_self, _bit, _ord...) ({ \
+#define __step__atom_V_int_setBit(_p_self, _bit, _ord...) \
+    ____atom_V_int_setBit(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
+#define ____atom_V_int_setBit(__mask, __val, _p_self, _bit, _ord...) ({ \
     typedef TypeOf((_p_self)->raw) SelfType; \
     let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
-    let_(__val, SelfType) = atom_V_fetchOr(_p_self, __mask, _ord); \
+    let_(__val, SelfType) = atom_V_int_fetchOr(_p_self, __mask, _ord); \
     ((__val & __mask) != 0); \
 })
-#define __step__atom_V_bitReset(_p_self, _bit, _ord...) \
-    ____atom_V_bitReset(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
-#define ____atom_V_bitReset(__mask, __val, _p_self, _bit, _ord...) ({ \
+#define __step__atom_V_int_resetBit(_p_self, _bit, _ord...) \
+    ____atom_V_int_resetBit(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
+#define ____atom_V_int_resetBit(__mask, __val, _p_self, _bit, _ord...) ({ \
     typedef TypeOf((_p_self)->raw) SelfType; \
     let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
-    let_(__val, SelfType) = atom_V_fetchAnd(_p_self, ~__mask, _ord); \
+    let_(__val, SelfType) = atom_V_int_fetchAnd(_p_self, ~__mask, _ord); \
     ((__val & __mask) != 0); \
 })
-#define __step__atom_V_bitToggle(_p_self, _bit, _ord...) \
-    ____atom_V_bitToggle(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
-#define ____atom_V_bitToggle(__mask, __val, _p_self, _bit, _ord...) ({ \
+#define __step__atom_V_int_toggleBit(_p_self, _bit, _ord...) \
+    ____atom_V_int_toggleBit(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
+#define ____atom_V_int_toggleBit(__mask, __val, _p_self, _bit, _ord...) ({ \
     typedef TypeOf((_p_self)->raw) SelfType; \
     let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
-    let_(__val, SelfType) = atom_V_fetchXor(_p_self, __mask, _ord); \
+    let_(__val, SelfType) = atom_V_int_fetchXor(_p_self, __mask, _ord); \
     ((__val & __mask) != 0); \
 })
 

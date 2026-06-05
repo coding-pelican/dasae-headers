@@ -74,11 +74,11 @@ fn_((thrd_RWLock_fini(thrd_RWLock* self))(void)) {
 };
 
 fn_((thrd_RWLock_lock(thrd_RWLock* self))(void)) {
-    let_ignore = atom_fetchAdd(&self->impl.state, thrd_RWLock__writer, atom_MemOrd_seq_cst);
+    let_ignore = atom_pri_fetchAdd(&self->impl.state, thrd_RWLock__writer, atom_MemOrd_seq_cst);
     thrd_Mtx_lock(&self->impl.mtx);
     // Add IS_WRITING and subtract WRITER atomically: IS_WRITING - WRITER
     // Note: This uses wrapping subtraction semantics
-    let state = atom_fetchAdd(
+    let state = atom_pri_fetchAdd(
         &self->impl.state,
         thrd_RWLock__is_writing - thrd_RWLock__writer,
         atom_MemOrd_seq_cst
@@ -92,7 +92,7 @@ fn_((thrd_RWLock_tryLock(thrd_RWLock* self))(bool)) {
     if (thrd_Mtx_tryLock(&self->impl.mtx)) {
         let state = atom_load(&self->impl.state, atom_MemOrd_seq_cst);
         if ((state & thrd_RWLock__reader_mask) == 0) {
-            let_ignore = atom_fetchOr(&self->impl.state, thrd_RWLock__is_writing, atom_MemOrd_seq_cst);
+            let_ignore = atom_int_fetchOr(&self->impl.state, thrd_RWLock__is_writing, atom_MemOrd_seq_cst);
             return true;
         }
         thrd_Mtx_unlock(&self->impl.mtx);
@@ -101,7 +101,7 @@ fn_((thrd_RWLock_tryLock(thrd_RWLock* self))(bool)) {
 };
 
 fn_((thrd_RWLock_unlock(thrd_RWLock* self))(void)) {
-    let_ignore = atom_fetchAnd(&self->impl.state, ~thrd_RWLock__is_writing, atom_MemOrd_seq_cst);
+    let_ignore = atom_int_fetchAnd(&self->impl.state, ~thrd_RWLock__is_writing, atom_MemOrd_seq_cst);
     thrd_Mtx_unlock(&self->impl.mtx);
 };
 
@@ -123,7 +123,7 @@ fn_((thrd_RWLock_lockShared(thrd_RWLock* self))(void)) {
     }
     // Slow path: acquire mutex to add reader (waits for writer to finish)
     thrd_Mtx_lock(&self->impl.mtx);
-    let_ignore = atom_fetchAdd(&self->impl.state, thrd_RWLock__reader, atom_MemOrd_seq_cst);
+    let_ignore = atom_pri_fetchAdd(&self->impl.state, thrd_RWLock__reader, atom_MemOrd_seq_cst);
     thrd_Mtx_unlock(&self->impl.mtx);
 };
 
@@ -144,7 +144,7 @@ fn_((thrd_RWLock_tryLockShared(thrd_RWLock* self))(bool)) {
     }
     // Slow path: acquire mutex to add reader
     if (thrd_Mtx_tryLock(&self->impl.mtx)) {
-        let_ignore = atom_fetchAdd(&self->impl.state, thrd_RWLock__reader, atom_MemOrd_seq_cst);
+        let_ignore = atom_pri_fetchAdd(&self->impl.state, thrd_RWLock__reader, atom_MemOrd_seq_cst);
         thrd_Mtx_unlock(&self->impl.mtx);
         return true;
     }
@@ -152,7 +152,7 @@ fn_((thrd_RWLock_tryLockShared(thrd_RWLock* self))(bool)) {
 };
 
 fn_((thrd_RWLock_unlockShared(thrd_RWLock* self))(void)) {
-    let state = atom_fetchSub(&self->impl.state, thrd_RWLock__reader, atom_MemOrd_seq_cst);
+    let state = atom_pri_fetchSub(&self->impl.state, thrd_RWLock__reader, atom_MemOrd_seq_cst);
     // If we were the last reader and a writer is waiting, signal the semaphore
     let was_last_reader = (state & thrd_RWLock__reader_mask) == thrd_RWLock__reader;
     let writer_is_waiting = (state & thrd_RWLock__is_writing) != 0;

@@ -17,7 +17,7 @@ fn_((thrd_WaitGroup_start(thrd_WaitGroup* self))(void)) {
 };
 
 fn_((thrd_WaitGroup_startOn(atom_V$usize* state))(void)) {
-    let prev_state = atom_V_fetchAdd(state, thrd_WaitGroup__one_pending, atom_MemOrd_monotonic);
+    let prev_state = atom_V_pri_fetchAdd(state, thrd_WaitGroup__one_pending, atom_MemOrd_monotonic);
     claim_assert((prev_state / thrd_WaitGroup__one_pending) < (usize_limit_max / thrd_WaitGroup__one_pending));
 };
 
@@ -26,7 +26,7 @@ fn_((thrd_WaitGroup_startN(thrd_WaitGroup* self, usize n))(void)) {
 };
 
 fn_((thrd_WaitGroup_startNOn(atom_V$usize* state, usize n))(void)) {
-    let prev_state = atom_V_fetchAdd(state, thrd_WaitGroup__one_pending * n, atom_MemOrd_monotonic);
+    let prev_state = atom_V_pri_fetchAdd(state, thrd_WaitGroup__one_pending * n, atom_MemOrd_monotonic);
     claim_assert((prev_state / thrd_WaitGroup__one_pending) < (usize_limit_max / thrd_WaitGroup__one_pending));
 };
 
@@ -35,7 +35,7 @@ fn_((thrd_WaitGroup_finish(thrd_WaitGroup* self))(void)) {
 };
 
 fn_((thrd_WaitGroup_finishOn(atom_V$usize* state, thrd_ResetEvent* event))(void)) {
-    let prev_state = atom_V_fetchSub(state, thrd_WaitGroup__one_pending, atom_MemOrd_acq_rel);
+    let prev_state = atom_V_pri_fetchSub(state, thrd_WaitGroup__one_pending, atom_MemOrd_acq_rel);
     claim_assert((prev_state / thrd_WaitGroup__one_pending) > 0);
     if (prev_state == (thrd_WaitGroup__one_pending | thrd_WaitGroup__is_waiting)) {
         thrd_ResetEvent_set(event);
@@ -47,7 +47,7 @@ fn_((thrd_WaitGroup_wait(thrd_WaitGroup* self))(void)) {
 };
 
 fn_((thrd_WaitGroup_waitOn(atom_V$usize* state, thrd_ResetEvent* event))(void)) {
-    let prev_state = atom_V_fetchAdd(state, thrd_WaitGroup__is_waiting, atom_MemOrd_acquire);
+    let prev_state = atom_V_pri_fetchAdd(state, thrd_WaitGroup__is_waiting, atom_MemOrd_acquire);
     claim_assert((prev_state & thrd_WaitGroup__is_waiting) == 0);
     if ((prev_state / thrd_WaitGroup__one_pending) > 0) {
         thrd_ResetEvent_wait(event);

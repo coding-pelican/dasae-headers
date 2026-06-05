@@ -19,7 +19,7 @@ $static fn_((test__double(i32 value))(i32)) {
 fn_use_Clsr_((test__double)(i32)(i32));
 
 $static fn_((test__markDone(atom_V$usize* counter))(Void) $scope) {
-    let_ignore = atom_V_fetchAdd(counter, 1, atom_MemOrd_acq_rel);
+    let_ignore = atom_V_pri_fetchAdd(counter, 1, atom_MemOrd_acq_rel);
     return_void();
 } $unscoped(fn);
 fn_use_Clsr_((test__markDone)(atom_V$usize*)(Void));

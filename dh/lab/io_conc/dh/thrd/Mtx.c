@@ -248,7 +248,7 @@ fn_((thrd_Mtx__default_tryLock(thrd_Mtx* self))(bool)) {
             // - they both seem to mark the cache-line as modified regardless: https://stackoverflow.com/a/63350048
             // - `lock bts` is smaller instruction-wise which makes it better for inlining
             let locked_bit = mem_trailingZeros32(thrd_Mtx__default_locked);
-            let prev_bit = atom_V_bitSet(
+            let prev_bit = atom_V_int_setBit(
                 &self->state,
                 locked_bit,
                 atom_MemOrd_acquire
