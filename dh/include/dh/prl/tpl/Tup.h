@@ -12,7 +12,7 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 #define Tup$(_Ts...) pp_overload(__Tup$, _Ts)(_Ts)
-#define __Tup$_0(...) claim_assert_static_msg(false, "Tup requires at least one type. Use `Void` instead.")
+#define __Tup$_0(...) tpl$0(Tup)
 #define __Tup$_1(_Ts...) tpl$1T(Tup, _Ts)
 #define __Tup$_2(_Ts...) tpl$1T$2U(Tup, _Ts)
 #define __Tup$_3(_Ts...) tpl$1T$2U$3V(Tup, _Ts)
@@ -28,6 +28,8 @@ extern "C" {
 #define T_use_Tup$(_Ts...) T_alias$((Tup$(_Ts))(struct Tup$(_Ts)) { \
     pp_overload(__Tup$__impl, _Ts)(_Ts); \
 })
+#define __Tup$__impl_0(...) \
+    T_embed$(Void)
 #define __Tup$__impl_1(_T...) \
     _T $0
 #define __Tup$__impl_2(_T, _U...) \
@@ -75,6 +77,8 @@ extern "C" {
 
 #define tie_(_vals... /*: (_val)*/) pp_overload(__tie_, _vals)(_vals)
 #define __tie___expand(...) __VA_ARGS__
+#define __tie__0(...) \
+    {}
 #define __tie__1(_val0...) { \
     .$0 = __tie___expand _val0, \
 }
@@ -135,6 +139,7 @@ extern "C" {
 
 
 #define $tup(_fields...) l$((Tup$$(pp_overload(__$tup__impl, _fields)(_fields)))tie_(_fields))
+#define __$tup__impl_0(...)
 #define __$tup__impl_1(_field0...) \
     TypeOf _field0
 #define __$tup__impl_2(_field0, _field1...) \
@@ -162,6 +167,7 @@ extern "C" {
 #define ____untie___expandBinds(_binds...) _binds
 #define ____untie___each_emit(...) ____untie___each(__VA_ARGS__)
 #define ____untie___each(__tup, _binds...) pp_overload(____untie___each, _binds)(__tup, _binds)
+#define ____untie___each_0(__tup...)
 #define ____untie___each_1(__tup, _bind0...) \
     _bind0 = __tup.$0;
 #define ____untie___each_2(__tup, _bind0, _bind1...) \
