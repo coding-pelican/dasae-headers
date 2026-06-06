@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2025-03-28 (date of last update)
- * @version v0.1-alpha.1
+ * @updated 2026-06-06 (date of last update)
  * @ingroup dasae-headers(dh)/core/debug
  * @prefix  debug
  *
@@ -42,13 +41,14 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-#if !debug_enabled
-#define __comp_inline__debug_break() $unused(0)
-#else /* debug_enabled */
+#define __comp_inline__debug_break() pp_if_(debug_break_enabled)( \
+    pp_then_(local_({ \
+        local_return_(if (debug_isDebuggerPresent()) ____debug_break__impl()); \
+    })), \
+    pp_else_($unused(0)) \
+)
 
-#define __comp_inline__debug_break() ({ \
-    if (debug_isDebuggerPresent()) { ____debug_break__impl(); } \
-})
+#define __comp_attr__$debug_point debug_break(),
 
 #if comp_type == comp_type_clang
 #define ____debug_break__impl() __builtin_debugtrap()
@@ -70,13 +70,15 @@ $extern fn_((debug_isDebuggerPresent(void))(bool));
 #else
 #include <signal.h>
 #define ____debug_break__impl() raise(SIGTRAP)
-#endif
-
-#endif
-
-#endif /* debug_enabled */
-
-#define __comp_attr__$debug_point debug_break(),
+#endif /* arch_family_type == arch_family_type_x86 \
+|| arch_type == arch_type_aarch64 \
+|| arch_type == arch_type_arm \
+|| arch_family_type == arch_family_type_riscv \
+|| arch_family_type == arch_family_type_wasm \
+|| others */
+#endif /* comp_type == comp_type_clang \
+|| comp_type == comp_type_msvc \
+|| others */
 
 #if defined(__cplusplus)
 } /* extern "C" */

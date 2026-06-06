@@ -29,6 +29,11 @@ extern "C" {
 #endif /* !defined(debug_enabled) */
 #define debug__enabled_default __comp_flag__debug__enabled_default
 
+#if !defined(debug_break_enabled)
+#define debug_break_enabled __comp_bool__debug_break_enabled
+#endif /* !defined(debug_break_enabled) */
+#define debug_break__enabled_default __comp_flag__debug_break__enabled_default
+
 #define debug_only(_inner...) \
     /* Used only when `debug_enabled`. */ \
     __comp_syn__debug_only(_inner)
@@ -40,12 +45,20 @@ extern "C" {
 #define __comp_bool__debug_enabled debug__enabled_default
 #define __comp_flag__debug__enabled_default pp_true
 
+#define __comp_bool__debug_break_enabled debug_break__enabled_default
+#define __comp_flag__debug_break__enabled_default pp_true
+
 /* Override values */
 
 #if defined(NDEBUG)
 #undef __comp_flag__debug__enabled_default
 #define __comp_flag__debug__enabled_default pp_false
-#endif /* !defined(NDEBUG) */
+#endif /* defined(NDEBUG) */
+
+#if defined(NDEBUG) || defined(NDEBUG_BREAK)
+#undef __comp_flag__debug_break__enabled_default
+#define __comp_flag__debug_break__enabled_default pp_false
+#endif /* defined(NDEBUG) || defined(NDEBUG_BREAK) */
 
 #define __comp_syn__debug_only(_inner...) pp_if_(debug_enabled)(pp_then_(_inner))
 
