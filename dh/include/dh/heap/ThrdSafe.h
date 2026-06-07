@@ -24,8 +24,8 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 typedef struct heap_ThrdSafe {
-    mem_Alctr child_alctr;
-    thrd_Mtx mtx;
+    var_(child_alctr, mem_Alctr);
+    var_(mtx, thrd_Mtx);
 } heap_ThrdSafe;
 /// Get allocator interface for instance
 $extern fn_((heap_ThrdSafe_alctr(heap_ThrdSafe* self))(mem_Alctr));

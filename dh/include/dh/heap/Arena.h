@@ -30,8 +30,8 @@ extern "C" {
 T_use$((usize)(ListSgl_Link, ListSgl));
 typedef struct heap_Arena heap_Arena;
 typedef struct heap_Arena_State {
-    ListSgl$usize buf_list;
-    usize end_idx;
+    var_(buf_list, ListSgl$usize);
+    var_(end_idx, usize);
 } heap_Arena_State;
 /// Default state of ArenaAlctr
 $extern fn_((heap_Arena_State_default(void))(heap_Arena_State));
@@ -39,8 +39,8 @@ $extern fn_((heap_Arena_State_default(void))(heap_Arena_State));
 $extern fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Alctr child_alctr))(heap_Arena));
 
 struct heap_Arena {
-    mem_Alctr child_alctr;
-    heap_Arena_State state;
+    var_(child_alctr, mem_Alctr);
+    var_(state, heap_Arena_State);
 };
 /// Get allocator interface for instance
 $extern fn_((heap_Arena_alctr(heap_Arena* self))(mem_Alctr));

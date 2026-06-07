@@ -78,7 +78,11 @@ $static fn_((demoThrdDeferCheck(time_Awake time, time_Dur wait))(Sched_Cancelabl
 } $unguarded(fn);
 fn_use_Clsr_((demoThrdDeferCheck)(time_Awake, time_Dur)(Sched_Cancelable$i32));
 
+#if defined(ENABLE_COOP)
 #define sample_co__enable_coop pp_true
+#else
+#define sample_co__enable_coop pp_false
+#endif
 $static let sample_co_exec_init = pp_if_(sample_co__enable_coop)(
     pp_then_(exec_Coop_init),
     pp_else_(exec_Seq_init));

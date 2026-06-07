@@ -50,3 +50,43 @@ TEST_fn_("heap/Fixed: basic resize growth zero fills tail" $guard) {
         try_(TEST_expect(*item == 0));
     } $end(for);
 } $unguarded(TEST_fn);
+
+TEST_fn_("heap/Fixed: thread-safe allocator supports reallocation" $guard) {
+    var_(buffer, A$$(1024, u8)) $undefined;
+    var_(fixed, heap_Fixed) = heap_Fixed_from(A_ref$((S$u8)(buffer)));
+
+    let gpa = heap_Fixed_thrdSafeAlctr(&fixed);
+    var items = try_(mem_Alctr_allocBytes($trace gpa, 10));
+    defer_(mem_Alctr_freeBytes($trace gpa, items));
+
+    for_(($rf(0), $s(items))(idx, item)) { *item = intCast$((u8)(idx)); } $end(for);
+
+    let extended = try_(mem_Alctr_reallocBytes($trace gpa, items, 20));
+    try_(TEST_expect(extended.ptr == items.ptr));
+    try_(TEST_expect(extended.len == 20));
+    try_(TEST_expect(heap_Fixed_isLastAllocation(&fixed, extended.as_const)));
+
+    items = extended;
+    for_(($rf(0), $s(S_prefix((items)(10))))(idx, item)) { try_(TEST_expect(*item == idx)); } $end(for);
+    for_(($rf(10), $s(S_prefix((S_suffix((items)(10)))(10))))($ignore, item)) {
+        try_(TEST_expect(*item == 0));
+    } $end(for);
+} $unguarded(TEST_fn);
+
+TEST_fn_("heap/Fixed: thread-safe allocator reclaims last allocation" $guard) {
+    var_(buffer, A$$(16, u8)) $undefined;
+    var_(fixed, heap_Fixed) = heap_Fixed_from(A_ref$((S$u8)(buffer)));
+
+    let gpa = heap_Fixed_thrdSafeAlctr(&fixed);
+    let first = try_(mem_Alctr_allocBytes($trace gpa, 8));
+    let second = try_(mem_Alctr_allocBytes($trace gpa, 8));
+
+    try_(TEST_expect(isNone(mem_Alctr_rawAlloc($trace gpa, 1, alignOfLog2$(u8)))));
+    mem_Alctr_freeBytes($trace gpa, second);
+
+    let reused = try_(mem_Alctr_allocBytes($trace gpa, 8));
+    try_(TEST_expect(reused.ptr == second.ptr));
+
+    mem_Alctr_freeBytes($trace gpa, reused);
+    mem_Alctr_freeBytes($trace gpa, first);
+} $unguarded(TEST_fn);

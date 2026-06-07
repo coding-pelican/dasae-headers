@@ -28,15 +28,15 @@ extern "C" {
 
 /// Fixed buffer allocator instance
 typedef struct heap_Fixed {
-    S$u8 buf; ///< Underlying buffer to allocate from
-    usize end_idx; ///< Current allocation position
+    var_(buf, S$u8); ///< Underlying buffer to allocate from
+    var_(end_idx, usize); ///< Current allocation position
 } heap_Fixed;
 T_use_O$(heap_Fixed);
 T_use_E$(heap_Fixed);
 
 /// Get allocator interface for instance
 $extern fn_((heap_Fixed_alctr(heap_Fixed* self))(mem_Alctr));
-/// Get thread-safe allocator interface for instance (only allocate is thread-safe)
+/// Get thread-safe allocator interface for instance
 $extern fn_((heap_Fixed_thrdSafeAlctr(heap_Fixed* self))(mem_Alctr));
 
 /// Initialize with buffer
