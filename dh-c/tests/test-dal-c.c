@@ -1628,11 +1628,11 @@ static void test_makefile_mode_contracts(void) {
             TEST_ASSERT(strstr(makefile_text, "DISASM = ") != NULL);
             TEST_ASSERT(strstr(makefile_text, "DISASM_TARGET = ") != NULL);
             TEST_ASSERT(strstr(makefile_text, "DISASM_INPUT = $(DISASM_TARGET)") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "OBJS_SHELL = $(subst \\,/,$(OBJS))") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "LDFLAGS_SHELL = $(subst \\,/,$(LDFLAGS))") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "OBJS_SHELL = ") == NULL);
+            TEST_ASSERT(strstr(makefile_text, "LDFLAGS_SHELL = ") == NULL);
             TEST_ASSERT(strstr(makefile_text, "COMMA = ,") != NULL);
             TEST_ASSERT(strstr(makefile_text, "LDFLAGS_DISASM = $(filter-out -Wl$(COMMA)--strip-all,$(LDFLAGS))") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "LDFLAGS_DISASM_SHELL = $(subst \\,/,$(LDFLAGS_DISASM))") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "LDFLAGS_DISASM_SHELL = ") == NULL);
             TEST_ASSERT(strstr(makefile_text, "IR = ") != NULL);
             TEST_ASSERT(strstr(makefile_text, "DEBUG_INFO = ") != NULL);
             TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(LINKED_ASM)") != NULL);
@@ -1641,14 +1641,15 @@ static void test_makefile_mode_contracts(void) {
             TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(IR)") != NULL);
             TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(DEBUG_INFO)") != NULL);
             TEST_ASSERT(strstr(makefile_text, " -Wl,--lto-emit-asm") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "$(CC) $(OBJS_SHELL) -o \"$(subst \\,/,$@)\" $(LDFLAGS_DISASM_SHELL)") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "llvm-objdump -d --demangle --line-numbers --symbolize-operands --no-show-raw-insn -s \"$(subst \\,/,$(DISASM_INPUT))\" > \"$(subst \\,/,$@)\"") != NULL);
-            TEST_ASSERT(strstr(makefile_text, " -S -emit-llvm $(firstword $(SRCS)) -o \"$(subst \\,/,$@)\"") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "$(CC) $(OBJS) -o \"$@\" $(LDFLAGS) -Wl,--lto-emit-asm") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "$(CC) $(OBJS) -o \"$@\" $(LDFLAGS_DISASM)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "llvm-objdump -d --demangle --line-numbers --symbolize-operands --no-show-raw-insn -s \"$(DISASM_INPUT)\" > \"$@\"") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -S -emit-llvm \"$(firstword $(SRCS))\" -o \"$@\"") != NULL);
 #ifdef _WIN32
             TEST_ASSERT(strstr(makefile_text, "PDB = ") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "llvm-pdbutil dump -symbols -globals -publics \"$(subst \\,/,$(PDB))\" > \"$(subst \\,/,$@)\"") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "llvm-pdbutil dump -symbols -globals -publics \"$(PDB)\" > \"$@\"") != NULL);
 #else
-            TEST_ASSERT(strstr(makefile_text, "llvm-dwarfdump --debug-info --debug-line \"$(subst \\,/,$(TARGET))\" > \"$(subst \\,/,$@)\"") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "llvm-dwarfdump --debug-info --debug-line \"$(TARGET)\" > \"$@\"") != NULL);
 #endif
 
             free(makefile_text);

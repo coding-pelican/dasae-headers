@@ -29,6 +29,8 @@ static bool dal_c__copyHeaderFile(const char* src, const char* out_dir);
 static bool dal_c__copyHeaderRelativeTo(const char* src, const char* src_root, const char* dst_dir);
 static bool dal_c__copyHeadersRecursive(const char* src_dir, const char* dst_dir);
 static char* dal_c__resolveDepsTargetDir(const char* deps_dir, const char* lib_name);
+static char* dal_c__makeMakePath(const char* path);
+static void dal_c__fprintMakePath(FILE* fp, const char* path);
 static dal_c__noinline void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const dal_c_Project* proj, const char* build_dir, dal_c_Target target_type, const char* target_path, const char* link_contract_path);
 static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* build_dir, dal_c_Target target_type);
 static dal_c__noinline int dal_c__writeEmitOnlyMakefile(
@@ -83,6 +85,17 @@ static bool dal_c__writeFileIfChanged(const char* path, const char* content);
 static const char* dal_c__planContextDir(const dal_c_Project* proj, const dal_c_CommandIntent* intent, dal_c_Target target_type);
 static ArrStr* dal_c__collectLibrarySources(const dal_c_Lib* lib, const dal_c_Project* lib_proj);
 static int dal_c__runDependencyTests(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_CompilerOpts* opts);
+static bool dal_c__copyLibraryArtifacts(
+    const dal_c_Project* consumer_proj,
+    const dal_c_Project* lib_proj,
+    const dal_c_Lib* lib,
+    const char* lib_abs_path,
+    const char* lib_build_dir,
+    const dal_c_Cmd* build_cmd,
+    const dal_c_ProfileSpec* build_profile,
+    dal_c_Target build_target_type,
+    bool is_windows
+);
 static char* dal_c__sanitizePathFragment(const char* value);
 static bool dal_c__pathHasSeparator(const char* path);
 static bool dal_c__pathIsAbsolute(const char* path);
@@ -115,6 +128,28 @@ bool dal_c__platformIsWindows(void) {
 #else
     return false;
 #endif
+}
+
+static char* dal_c__makeMakePath(const char* path) {
+    assert(path != NULL);
+    char* result = strdup(path);
+    if (!result) {
+        return NULL;
+    }
+    for (char* it = result; *it != '\0'; ++it) {
+        if (*it == '\\') {
+            *it = '/';
+        }
+    }
+    return result;
+}
+
+static void dal_c__fprintMakePath(FILE* fp, const char* path) {
+    assert(fp != NULL);
+    assert(path != NULL);
+    char* make_path = dal_c__makeMakePath(path);
+    (void)fprintf(fp, "%s", make_path ? make_path : path);
+    free(make_path);
 }
 
 static char* dal_c__buildBaseDir(const dal_c_Project* proj) {
@@ -577,7 +612,6 @@ int dal_c__buildHeaderOnlyLibrary(const dal_c_Cmd* cmd, const dal_c_Project* pro
     return 0;
 }
 
-static bool dal_c__copyLibraryArtifacts(const dal_c_Project* consumer_proj, const dal_c_Project* lib_proj, const dal_c_Lib* lib, const char* lib_abs_path, const char* lib_build_dir, bool is_windows);
 static bool dal_c__projectHasTestSources(const dal_c_Project* proj);
 /* NOLINTNEXTLINE(misc-no-recursion) */
 int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_Lib* lib) {
@@ -794,7 +828,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
 
     // 5. Copy artifacts (headers, libs, PCH) to consumer's lib/deps/
     bool is_windows = dal_c__platformIsWindows();
-    if (!dal_c__copyLibraryArtifacts(proj, lib_proj, lib, lib_abs_path, lib_build_profile, is_windows)) {
+    if (!dal_c__copyLibraryArtifacts(proj, lib_proj, lib, lib_abs_path, lib_build_profile, &merged, lib_profile, lib_target_type, is_windows)) {
         (void)fprintf(stderr, "Warning: Failed to copy some artifacts for %s\n", lib->name);
     }
 
@@ -1756,11 +1790,23 @@ static char* dal_c__resolveDepsTargetDir(const char* deps_dir, const char* lib_n
     return target_dir;
 }
 
-static bool dal_c__copyLibraryArtifacts(const dal_c_Project* consumer_proj, const dal_c_Project* lib_proj, const dal_c_Lib* lib, const char* lib_abs_path, const char* lib_build_dir, bool is_windows) {
+static bool dal_c__copyLibraryArtifacts(
+    const dal_c_Project* consumer_proj,
+    const dal_c_Project* lib_proj,
+    const dal_c_Lib* lib,
+    const char* lib_abs_path,
+    const char* lib_build_dir,
+    const dal_c_Cmd* build_cmd,
+    const dal_c_ProfileSpec* build_profile,
+    dal_c_Target build_target_type,
+    bool is_windows
+) {
     assert(consumer_proj != NULL);
     assert(lib != NULL);
     assert(lib_abs_path != NULL);
     assert(lib_build_dir != NULL);
+    assert(build_cmd != NULL);
+    assert(build_profile != NULL);
 
     char* deps_dir = dal_c_Project_getDepsDir(consumer_proj);
     dir_createRecur(deps_dir);
@@ -1824,21 +1870,25 @@ static bool dal_c__copyLibraryArtifacts(const dal_c_Project* consumer_proj, cons
     free(lib_src_path);
     free(lib_dst_path);
 
-    // 3. Copy PCH files if present: lib/build/<profile>/*.pch -> consumer/lib/deps/<subdir>/
-    int file_count = 0;
-    char** files = dir_listRecur(lib_build_dir, &file_count);
-    if (files) {
-        for (int i = 0; i < file_count; ++i) {
-            if (str_endsWith(files[i], ".pch")) {
-                const char* pch_name = path_basename(files[i]);
-                char* pch_dst = path_join(target_dir, pch_name);
-                if (!dal_c__copyHeaderToPathIfChanged(files[i], pch_dst)) {
-                    success = false;
-                }
-                free(pch_dst);
-            }
+    // 3. Copy current PCH artifact if present.
+    if (lib_proj && lib_proj->pch_header) {
+        char* pch_basename = path_basename(lib_proj->pch_header);
+        char* pch_contract_key = dal_c__makeCompileContractKey(build_cmd, build_profile, build_target_type, true, false);
+        char* pch_src_name = str_format("%s_%s.pch", pch_contract_key, pch_basename);
+        char* pch_obj_dir = path_join(lib_build_dir, "obj");
+        char* pch_src_path = path_join(pch_obj_dir, pch_src_name);
+        char* pch_dst_name = str_format("%s.pch", pch_basename);
+        char* pch_dst_path = path_join(target_dir, pch_dst_name);
+        if (path_isFile(pch_src_path) && !dal_c__copyHeaderToPathIfChanged(pch_src_path, pch_dst_path)) {
+            success = false;
         }
-        dal_c__freeFileList(files, file_count);
+        free(pch_dst_path);
+        free(pch_dst_name);
+        free(pch_src_path);
+        free(pch_obj_dir);
+        free(pch_src_name);
+        free(pch_contract_key);
+        free(pch_basename);
     }
 
     // 4. Copy transitive dependencies: lib/lib/deps/*.lib -> consumer/lib/deps/
@@ -2688,7 +2738,8 @@ static void dal_c__writePlatformLinkerFlags(FILE* fp, bool is_windows, const dal
     const char* debug_flag = dal_c_DebugLevel_toFlag(profile->debug_level);
     if (is_windows && debug_flag && strlen(debug_flag) > 0 && target_path != NULL) {
         char* pdb_path = dal_c__makePdbPath(target_path);
-        (void)fprintf(fp, " -fuse-ld=lld -Wl,--pdb=%s", pdb_path);
+        (void)fprintf(fp, " -fuse-ld=lld -Wl,--pdb=");
+        dal_c__fprintMakePath(fp, pdb_path);
         free(pdb_path);
     }
 }
@@ -2760,10 +2811,14 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     dal_c_Cmd_normalizeIntent(cmd, &intent);
 
     if (proj && proj->root) {
-        (void)fprintf(fp, "PROJECT_ROOT ?= %s\n", proj->root);
+        (void)fprintf(fp, "PROJECT_ROOT ?= ");
+        dal_c__fprintMakePath(fp, proj->root);
+        (void)fprintf(fp, "\n");
     }
     if (proj && proj->dh_path) {
-        (void)fprintf(fp, "DH_PATH ?= %s\n", proj->dh_path);
+        (void)fprintf(fp, "DH_PATH ?= ");
+        dal_c__fprintMakePath(fp, proj->dh_path);
+        (void)fprintf(fp, "\n");
     }
     (void)fprintf(fp, "\n");
 
@@ -2773,7 +2828,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     const char* c_std = opts->c_std ? opts->c_std : dal_c_default_c_std;
     (void)fprintf(fp, "STD = -std=%s\n", c_std);
 
-    (void)fprintf(fp, "BUILD_DIR = %s\n", build_dir);
+    (void)fprintf(fp, "BUILD_DIR = ");
+    dal_c__fprintMakePath(fp, build_dir);
+    (void)fprintf(fp, "\n");
     (void)fprintf(fp, "\n");
 
     (void)fprintf(fp, "CFLAGS_BASE = $(STD)");
@@ -2924,7 +2981,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, "CFLAGS_BASE += -ffreestanding\n");
     }
     if (opts->sysroot) {
-        (void)fprintf(fp, "SYSROOT_FLAGS = --sysroot=%s\n", opts->sysroot);
+        (void)fprintf(fp, "SYSROOT_FLAGS = --sysroot=");
+        dal_c__fprintMakePath(fp, opts->sysroot);
+        (void)fprintf(fp, "\n");
         (void)fprintf(fp, "CFLAGS_BASE += $(SYSROOT_FLAGS)\n");
     }
     (void)fprintf(fp, "\n");
@@ -2942,10 +3001,12 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, " -I$(PROJECT_ROOT)/lib/deps");
     }
     for (int i = 0; i < opts->include_count; ++i) {
-        (void)fprintf(fp, " -I%s", opts->include_paths[i]);
+        (void)fprintf(fp, " -I");
+        dal_c__fprintMakePath(fp, opts->include_paths[i]);
     }
     for (int i = 0; i < opts->isystem_count; ++i) {
-        (void)fprintf(fp, " -isystem %s", opts->isystem_paths[i]);
+        (void)fprintf(fp, " -isystem ");
+        dal_c__fprintMakePath(fp, opts->isystem_paths[i]);
     }
     (void)fprintf(fp, "\n");
 
@@ -2971,7 +3032,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
 
     if (target_type == dal_c_Target_executable || target_type == dal_c_Target_shared_lib || target_type == dal_c_Target_image) {
         if (link_contract_path) {
-            (void)fprintf(fp, "LINK_CONTRACT = %s\n", link_contract_path);
+            (void)fprintf(fp, "LINK_CONTRACT = ");
+            dal_c__fprintMakePath(fp, link_contract_path);
+            (void)fprintf(fp, "\n");
         }
         if (target_type == dal_c_Target_image) {
             const char* objcopy = cmd->objcopy ? cmd->objcopy : dal_c_default_objcopy;
@@ -2979,7 +3042,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             char* link_target = dal_c__makeImageLinkPath(target_path);
             (void)fprintf(fp, "OBJCOPY = %s\n", objcopy);
             (void)fprintf(fp, "OBJCOPY_FORMAT = %s\n", objcopy_format);
-            (void)fprintf(fp, "LINK_TARGET = %s\n", link_target);
+            (void)fprintf(fp, "LINK_TARGET = ");
+            dal_c__fprintMakePath(fp, link_target);
+            (void)fprintf(fp, "\n");
             free(link_target);
         }
         (void)fprintf(fp, "LDFLAGS = $(TARGET_FLAGS) $(TARGET_ARCH_FLAGS) $(TARGET_ABI_FLAGS) $(SYSROOT_FLAGS)");
@@ -3037,7 +3102,8 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
                     const char* lib_ext = is_windows ? ".lib" : ".a";
                     for (int i = 0; i < lib_count; ++i) {
                         if (str_endsWith(lib_files[i], lib_ext)) {
-                            (void)fprintf(fp, " %s", lib_files[i]);
+                            (void)fprintf(fp, " ");
+                            dal_c__fprintMakePath(fp, lib_files[i]);
                         }
                     }
                     dal_c__freeFileList(lib_files, lib_count);
@@ -3071,7 +3137,8 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         }
         if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_map) {
             char* map_path = dal_c__artifactPath(target_path, cmd->payload.build.emit_map_path, ".map");
-            (void)fprintf(fp, " -Wl,-Map=%s", map_path);
+            (void)fprintf(fp, " -Wl,-Map=");
+            dal_c__fprintMakePath(fp, map_path);
             free(map_path);
         }
         if (dal_c__resolvedStripMode(opts, profile)) {
@@ -3082,7 +3149,8 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             (void)fprintf(fp, " -Wl,--icf=%s", dal_c_IcfMode_format(icf_mode));
         }
         if (cmd->linker_script) {
-            (void)fprintf(fp, " -Xlinker -T -Xlinker %s", cmd->linker_script);
+            (void)fprintf(fp, " -Xlinker -T -Xlinker ");
+            dal_c__fprintMakePath(fp, cmd->linker_script);
         }
         if (cmd->link_args) {
             (void)fprintf(fp, " %s", cmd->link_args);
@@ -3467,7 +3535,9 @@ static dal_c__noinline int dal_c__writeEmitOnlyMakefile(
     }
 
     dal_c__writeMakefileTargetVar(fp, target_path);
-    (void)fprintf(fp, "SRC = %s\n\n", src);
+    (void)fprintf(fp, "SRC = ");
+    dal_c__fprintMakePath(fp, src);
+    (void)fprintf(fp, "\n\n");
     (void)fprintf(fp, "all: $(TARGET)\n\n");
     (void)fprintf(fp, "$(TARGET): $(SRC)");
     if (use_pch) {
@@ -3523,7 +3593,8 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
 
     (void)fprintf(fp, "SRCS =");
     for (int i = 0; i < src_count; ++i) {
-        (void)fprintf(fp, " %s", ArrStr_at(sources, i));
+        (void)fprintf(fp, " ");
+        dal_c__fprintMakePath(fp, ArrStr_at(sources, i));
     }
     (void)fprintf(fp, "\n");
 
@@ -3533,7 +3604,8 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
         bool use_pch = has_pch && !dal_c__sourceIsAssembly(src) && !dal_c__sourceUsesPchExcludedHeader(proj, src);
         bool test_mode = dal_c__sourceNeedsTestMode(proj, src);
         char* obj_path = dal_c__makeObjectPath(cmd, profile, target_type, build_dir, obj_base, src, use_pch, test_mode);
-        (void)fprintf(fp, " %s", obj_path);
+        (void)fprintf(fp, " ");
+        dal_c__fprintMakePath(fp, obj_path);
         free(obj_path);
     }
     (void)fprintf(fp, "\n");
@@ -3541,31 +3613,36 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     (void)fprintf(fp, "DEPS = $(OBJS:.o=.d)\n\n");
     dal_c__writeMakefileTargetVar(fp, target_path);
     (void)fprintf(fp, "EXTRA_TARGETS =\n");
-    (void)fprintf(fp, "OBJS_SHELL = $(subst \\,/,$(OBJS))\n");
-    (void)fprintf(fp, "LDFLAGS_SHELL = $(subst \\,/,$(LDFLAGS))\n");
     bool emits_disasm = cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_disasm;
     bool disasm_needs_unstripped_target = emits_disasm && dal_c__resolvedStripMode(&cmd->opts, profile);
     if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_linked_asm) {
         char* linked_asm_path = dal_c__artifactPath(target_path, cmd->payload.build.emit_linked_asm_path, ".linked.s");
-        (void)fprintf(fp, "LINKED_ASM = %s\n", linked_asm_path);
+        (void)fprintf(fp, "LINKED_ASM = ");
+        dal_c__fprintMakePath(fp, linked_asm_path);
+        (void)fprintf(fp, "\n");
         (void)fprintf(fp, "EXTRA_TARGETS += $(LINKED_ASM)\n");
         free(linked_asm_path);
     }
     if (emits_disasm) {
         char* disasm_path = dal_c__artifactPath(target_path, cmd->payload.build.emit_disasm_path, ".disasm.s");
-        (void)fprintf(fp, "DISASM = %s\n", disasm_path);
+        (void)fprintf(fp, "DISASM = ");
+        dal_c__fprintMakePath(fp, disasm_path);
+        (void)fprintf(fp, "\n");
         if (disasm_needs_unstripped_target) {
             char* disasm_target_path = dal_c__artifactPath(target_path, NULL, is_windows ? ".disasm.exe" : ".disasm.out");
-            (void)fprintf(fp, "DISASM_TARGET = %s\n", disasm_target_path);
+            (void)fprintf(fp, "DISASM_TARGET = ");
+            dal_c__fprintMakePath(fp, disasm_target_path);
+            (void)fprintf(fp, "\n");
             if (is_windows && profile->debug_level != dal_c_DebugLevel_none) {
                 char* disasm_pdb_path = dal_c__makePdbPath(disasm_target_path);
-                (void)fprintf(fp, "DISASM_PDB = %s\n", disasm_pdb_path);
+                (void)fprintf(fp, "DISASM_PDB = ");
+                dal_c__fprintMakePath(fp, disasm_pdb_path);
+                (void)fprintf(fp, "\n");
                 free(disasm_pdb_path);
             }
             (void)fprintf(fp, "DISASM_INPUT = $(DISASM_TARGET)\n");
             (void)fprintf(fp, "COMMA = ,\n");
             (void)fprintf(fp, "LDFLAGS_DISASM = $(filter-out -Wl$(COMMA)--strip-all,$(LDFLAGS))\n");
-            (void)fprintf(fp, "LDFLAGS_DISASM_SHELL = $(subst \\,/,$(LDFLAGS_DISASM))\n");
             (void)fprintf(fp, "EXTRA_TARGETS += $(DISASM_TARGET)\n");
             free(disasm_target_path);
         } else {
@@ -3576,16 +3653,22 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     }
     if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_ir) {
         char* ir_path = dal_c__artifactPath(target_path, cmd->payload.build.emit_ir_path, ".ll");
-        (void)fprintf(fp, "IR = %s\n", ir_path);
+        (void)fprintf(fp, "IR = ");
+        dal_c__fprintMakePath(fp, ir_path);
+        (void)fprintf(fp, "\n");
         (void)fprintf(fp, "EXTRA_TARGETS += $(IR)\n");
         free(ir_path);
     }
     if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_debug_info) {
         char* debug_info_path = dal_c__artifactPath(target_path, cmd->payload.build.emit_debug_info_path, ".debug.txt");
-        (void)fprintf(fp, "DEBUG_INFO = %s\n", debug_info_path);
+        (void)fprintf(fp, "DEBUG_INFO = ");
+        dal_c__fprintMakePath(fp, debug_info_path);
+        (void)fprintf(fp, "\n");
         if (is_windows) {
             char* pdb_path = dal_c__makePdbPath(target_path);
-            (void)fprintf(fp, "PDB = %s\n", pdb_path);
+            (void)fprintf(fp, "PDB = ");
+            dal_c__fprintMakePath(fp, pdb_path);
+            (void)fprintf(fp, "\n");
             free(pdb_path);
         }
         (void)fprintf(fp, "EXTRA_TARGETS += $(DEBUG_INFO)\n");
@@ -3636,13 +3719,19 @@ static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* c
     char* pch_contract_key = dal_c__makeCompileContractKey(cmd, profile, target_type, true, false);
     char* pch_out = str_format("%s/%s_%s.pch", build_dir, pch_contract_key, pch_basename);
 
-    (void)fprintf(fp, "PCH_SRC = %s\n", proj->pch_header);
-    (void)fprintf(fp, "PCH_OUT = %s\n", pch_out);
+    (void)fprintf(fp, "PCH_SRC = ");
+    dal_c__fprintMakePath(fp, proj->pch_header);
+    (void)fprintf(fp, "\n");
+    (void)fprintf(fp, "PCH_OUT = ");
+    dal_c__fprintMakePath(fp, pch_out);
+    (void)fprintf(fp, "\n");
     (void)fprintf(fp, "CFLAGS = $(CFLAGS_PCH) -include-pch $(PCH_OUT)\n\n");
 
     // PCH dependency file tracks all headers included by PCH_SRC
     char* pch_dep = str_format("%s/%s_%s.d", build_dir, pch_contract_key, pch_basename);
-    (void)fprintf(fp, "PCH_DEP = %s\n", pch_dep);
+    (void)fprintf(fp, "PCH_DEP = ");
+    dal_c__fprintMakePath(fp, pch_dep);
+    (void)fprintf(fp, "\n");
     (void)fprintf(fp, "-include $(PCH_DEP)\n\n");
     free(pch_dep);
 
@@ -3674,14 +3763,18 @@ static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const
         const char* cflags_base = use_pch ? "$(CFLAGS)" : "$(CFLAGS_NO_PCH)";
         char* cflags = test_mode ? str_format("%s -DCOMP_TEST", cflags_base) : strdup(cflags_base);
 
-        (void)fprintf(fp, "%s: %s", obj_path, src);
+        dal_c__fprintMakePath(fp, obj_path);
+        (void)fprintf(fp, ": ");
+        dal_c__fprintMakePath(fp, src);
         if (use_pch) {
             (void)fprintf(fp, " $(PCH_OUT)");
         }
         (void)fprintf(fp, "\n");
         (void)fprintf(fp, "\t@mkdir -p $(dir $@)\n");
         (void)fprintf(fp, "\t@echo \"[%s] %s\"\n", is_assembly ? "AS" : "CC", src);
-        (void)fprintf(fp, "\t$(CC) %s -MMD -MP -c %s -o $@\n\n", cflags, src);
+        (void)fprintf(fp, "\t$(CC) %s -MMD -MP -c ", cflags);
+        dal_c__fprintMakePath(fp, src);
+        (void)fprintf(fp, " -o $@\n\n");
 
         free(cflags);
         free(obj_path);
@@ -3691,7 +3784,9 @@ static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const
 static void dal_c__writeMakefileTargetVar(FILE* fp, const char* target_path) {
     assert(fp != NULL);
     assert(target_path != NULL);
-    (void)fprintf(fp, "TARGET = %s\n\n", target_path);
+    (void)fprintf(fp, "TARGET = ");
+    dal_c__fprintMakePath(fp, target_path);
+    (void)fprintf(fp, "\n\n");
 }
 
 static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target type, bool is_windows, const char* target_path, const char* link_contract_path) {
@@ -3719,7 +3814,7 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
             }
             (void)fprintf(fp, "\t@mkdir -p $(dir $@)\n");
             (void)fprintf(fp, "\t@echo \"[LTO-ASM] $@\"\n");
-            (void)fprintf(fp, "\t$(CC) $(OBJS_SHELL) -o \"$(subst \\,/,$@)\" $(LDFLAGS_SHELL) -Wl,--lto-emit-asm\n");
+            (void)fprintf(fp, "\t$(CC) $(OBJS) -o \"$@\" $(LDFLAGS) -Wl,--lto-emit-asm\n");
         }
         if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_disasm) {
             if (dal_c__resolvedStripMode(&cmd->opts, profile)) {
@@ -3730,9 +3825,9 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
                 }
                 (void)fprintf(fp, "\t@mkdir -p $(dir $@)\n");
                 (void)fprintf(fp, "\t@echo \"[LD-DISASM] $@\"\n");
-                (void)fprintf(fp, "\t$(CC) $(OBJS_SHELL) -o \"$(subst \\,/,$@)\" $(LDFLAGS_DISASM_SHELL)");
+                (void)fprintf(fp, "\t$(CC) $(OBJS) -o \"$@\" $(LDFLAGS_DISASM)");
                 if (is_windows && profile->debug_level != dal_c_DebugLevel_none) {
-                    (void)fprintf(fp, " -Wl,--pdb=$(subst \\,/,$(DISASM_PDB))");
+                    (void)fprintf(fp, " -Wl,--pdb=$(DISASM_PDB)");
                 }
                 (void)fprintf(fp, "\n");
             }
@@ -3758,17 +3853,17 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
             if (cmd->payload.build.disasm_section_contents == dal_c_ToggleState_enabled) {
                 (void)fprintf(fp, " -s");
             }
-            (void)fprintf(fp, " \"$(subst \\,/,$(DISASM_INPUT))\" > \"$(subst \\,/,$@)\"\n");
+            (void)fprintf(fp, " \"$(DISASM_INPUT)\" > \"$@\"\n");
         }
         if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_debug_info) {
             (void)fprintf(fp, "\n$(DEBUG_INFO): $(TARGET)\n");
             (void)fprintf(fp, "\t@mkdir -p $(dir $@)\n");
             if (is_windows) {
                 (void)fprintf(fp, "\t@echo \"[PDB] $@\"\n");
-                (void)fprintf(fp, "\tllvm-pdbutil dump -symbols -globals -publics \"$(subst \\,/,$(PDB))\" > \"$(subst \\,/,$@)\"\n");
+                (void)fprintf(fp, "\tllvm-pdbutil dump -symbols -globals -publics \"$(PDB)\" > \"$@\"\n");
             } else {
                 (void)fprintf(fp, "\t@echo \"[DWARF] $@\"\n");
-                (void)fprintf(fp, "\tllvm-dwarfdump --debug-info --debug-line \"$(subst \\,/,$(TARGET))\" > \"$(subst \\,/,$@)\"\n");
+                (void)fprintf(fp, "\tllvm-dwarfdump --debug-info --debug-line \"$(TARGET)\" > \"$@\"\n");
             }
         }
     } else if (type == dal_c_Target_static_lib) {
@@ -3807,7 +3902,7 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
         (void)fprintf(fp, "\n$(IR): $(SRCS)\n");
         (void)fprintf(fp, "\t@mkdir -p $(dir $@)\n");
         (void)fprintf(fp, "\t@echo \"[IR] $@\"\n");
-        (void)fprintf(fp, "\t$(CC) $(CFLAGS_NO_PCH) -S -emit-llvm $(firstword $(SRCS)) -o \"$(subst \\,/,$@)\"\n");
+        (void)fprintf(fp, "\t$(CC) $(CFLAGS_NO_PCH) -S -emit-llvm \"$(firstword $(SRCS))\" -o \"$@\"\n");
     }
     (void)fprintf(fp, "\n");
 }

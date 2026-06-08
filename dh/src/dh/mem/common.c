@@ -45,143 +45,6 @@ fn_((strlen(const char* str))(usize)) {
 };
 #endif /* !comp_libc_linked */
 
-fn_((mem_set0Bytes(S$u8 dst))(S$u8)) {
-    claim_assert_nonnullS(dst);
-    return u_memset0S(u_anyS(dst)), dst;
-};
-fn_((mem_set0P(u_P$raw dst))(u_P$raw)) {
-    claim_assert_nonnull(dst.raw);
-    return u_memset0(dst);
-};
-fn_((mem_set0(u_S$raw dst))(u_S$raw)) {
-    claim_assert_nonnullS(dst);
-    return u_memset0S(dst);
-};
-
-fn_((mem_setBytes(S$u8 dst, u8 val))(S$u8)) {
-    claim_assert_nonnullS(dst);
-    return u_memsetS(u_anyS(dst), u_anyV(val)), dst;
-};
-fn_((mem_setP(u_P$raw dst, u_V$raw val))(u_P$raw)) {
-    claim_assert_nonnull(dst.raw), claim_assert_nonnull(val.inner);
-    claim_assert(TypeInfo_eql(dst.type, val.inner_type));
-    return u_memset(dst, val);
-};
-fn_((mem_set(u_S$raw dst, u_V$raw val))(u_S$raw)) {
-    claim_assert_nonnullS(dst), claim_assert_nonnull(val.inner);
-    claim_assert(TypeInfo_eql(dst.type, val.inner_type));
-    for_(($us(dst))(elem)) { u_memset(elem, val); } $end(for);
-    return dst;
-};
-
-fn_((mem_copyBytes(S$u8 dst, S_const$u8 src))(S$u8)) {
-    claim_assert_nonnullS(dst), claim_assert_nonnullS(src);
-    return u_memcpyS(u_sliceS(u_anyS(dst), $r(0, src.len)), u_anyS(src)), dst;
-};
-fn_((mem_copyP(u_P$raw dst, u_P_const$raw src))(u_P$raw)) {
-    claim_assert_nonnull(dst.raw), claim_assert_nonnull(src.raw);
-    claim_assert(TypeInfo_eql(dst.type, src.type));
-    return u_memcpy(dst, src);
-};
-fn_((mem_copy(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
-    claim_assert_nonnullS(dst), claim_assert_nonnullS(src);
-    claim_assert(TypeInfo_eql(dst.type, src.type));
-    for_(($us(u_sliceS(dst, $r(0, src.len))), $us(src))(d, s)) { u_memcpy(d, s); } $end(for);
-    return dst;
-};
-
-fn_((mem_moveBytes(S$u8 dst, S_const$u8 src))(S$u8)) {
-    claim_assert_nonnullS(dst), claim_assert_nonnullS(src);
-    return u_memmoveS(u_sliceS(u_anyS(dst), $r(0, src.len)), u_anyS(src)), dst;
-};
-fn_((mem_moveP(u_P$raw dst, u_P_const$raw src))(u_P$raw)) {
-    claim_assert_nonnull(dst.raw), claim_assert_nonnull(src.raw);
-    claim_assert(TypeInfo_eql(dst.type, src.type));
-    return u_memmove(dst, src);
-};
-fn_((mem_move(u_S$raw dst, u_S_const$raw src))(u_S$raw)) {
-    claim_assert_nonnullS(dst), claim_assert_nonnullS(src);
-    claim_assert(TypeInfo_eql(dst.type, src.type));
-    for_(($us(u_sliceS(dst, $r(0, src.len))), $us(src))(d, s)) { u_memmove(d, s); } $end(for);
-    return dst;
-};
-
-fn_((mem_eqlBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) {
-    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
-    if (lhs.len != rhs.len) return false;
-    if (lhs.len == 0 || lhs.ptr == rhs.ptr) return true;
-    return u_memeqlS(u_anyS(lhs), u_anyS(rhs));
-};
-fn_((mem_eqlP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) {
-    claim_assert_nonnull(lhs.raw), claim_assert_nonnull(rhs.raw);
-    claim_assert(TypeInfo_eql(lhs.type, rhs.type));
-    if (lhs.raw == rhs.raw) return true;
-    return u_memeql(lhs, rhs);
-};
-fn_((mem_eql(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) {
-    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
-    claim_assert(TypeInfo_eql(lhs.type, rhs.type));
-    if (lhs.len != rhs.len) return false;
-    if (lhs.len == 0 || lhs.ptr == rhs.ptr) return true;
-    for_(($us(lhs), $us(rhs))(l, r)) {
-        if (!u_memeql(l, r)) return false;
-    } $end(for);
-    return true;
-};
-
-fn_((mem_neqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return !mem_eqlBytes(lhs, rhs); };
-fn_((mem_neqP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return !mem_eqlP(lhs, rhs); };
-fn_((mem_neq(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return !mem_eql(lhs, rhs); };
-
-fn_((mem_ordBytes(S_const$u8 lhs, S_const$u8 rhs))(cmp_Ord)) {
-    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
-    let len = int_min(lhs.len, rhs.len);
-    let result = u_memordS(u_sliceS(u_anyS(lhs), $r(0, len)), u_sliceS(u_anyS(rhs), $r(0, len)));
-    return result != cmp_Ord_eq ? result : pri_ord(lhs.len, rhs.len);
-};
-fn_((mem_ordP(u_P_const$raw lhs, u_P_const$raw rhs))(cmp_Ord)) {
-    claim_assert_nonnull(lhs.raw), claim_assert_nonnull(rhs.raw);
-    claim_assert(TypeInfo_eql(lhs.type, rhs.type));
-    return u_memord(lhs, rhs);
-};
-fn_((mem_ord(u_S_const$raw lhs, u_S_const$raw rhs))(cmp_Ord)) {
-    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
-    claim_assert(TypeInfo_eql(lhs.type, rhs.type));
-    let len = int_min(lhs.len, rhs.len);
-    for_(($us(u_sliceS(lhs, $r(0, len))), $us(u_sliceS(rhs, $r(0, len))))(l, r)) {
-        switch (u_memord(l, r)) {
-        case cmp_Ord_lt: return cmp_Ord_lt;
-        case cmp_Ord_gt: return cmp_Ord_gt;
-        case cmp_Ord_eq: continue;
-        }
-    } $end(for);
-    return pri_ord(lhs.len, rhs.len);
-};
-
-fn_((mem_eqBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return cmp_Ord_isEq(mem_ordBytes(lhs, rhs)); };
-fn_((mem_eqP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return cmp_Ord_isEq(mem_ordP(lhs, rhs)); };
-fn_((mem_eq(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return cmp_Ord_isEq(mem_ord(lhs, rhs)); };
-
-fn_((mem_neBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return cmp_Ord_isNe(mem_ordBytes(lhs, rhs)); };
-fn_((mem_neP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return cmp_Ord_isNe(mem_ordP(lhs, rhs)); };
-fn_((mem_ne(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return cmp_Ord_isNe(mem_ord(lhs, rhs)); };
-
-fn_((mem_ltBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return cmp_Ord_isLt(mem_ordBytes(lhs, rhs)); };
-fn_((mem_ltP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return cmp_Ord_isLt(mem_ordP(lhs, rhs)); };
-fn_((mem_lt(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return cmp_Ord_isLt(mem_ord(lhs, rhs)); };
-
-fn_((mem_gtBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return cmp_Ord_isGt(mem_ordBytes(lhs, rhs)); };
-fn_((mem_gtP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return cmp_Ord_isGt(mem_ordP(lhs, rhs)); };
-fn_((mem_gt(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return cmp_Ord_isGt(mem_ord(lhs, rhs)); };
-
-fn_((mem_leBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return cmp_Ord_isLe(mem_ordBytes(lhs, rhs)); };
-fn_((mem_leP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return cmp_Ord_isLe(mem_ordP(lhs, rhs)); };
-fn_((mem_le(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return cmp_Ord_isLe(mem_ord(lhs, rhs)); };
-
-fn_((mem_geBytes(S_const$u8 lhs, S_const$u8 rhs))(bool)) { return cmp_Ord_isGe(mem_ordBytes(lhs, rhs)); };
-fn_((mem_geP(u_P_const$raw lhs, u_P_const$raw rhs))(bool)) { return cmp_Ord_isGe(mem_ordP(lhs, rhs)); };
-fn_((mem_ge(u_S_const$raw lhs, u_S_const$raw rhs))(bool)) { return cmp_Ord_isGe(mem_ord(lhs, rhs)); };
-
 $static fn_((mem__swapTmpBytes(S$u8 lhs, S$u8 rhs, S$u8 tmp))(S$u8)) {
     claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs), claim_assert_nonnullS(tmp);
     claim_assert(lhs.len == rhs.len);
@@ -233,34 +96,43 @@ fn_((mem_swap(u_S$raw lhs, u_S$raw rhs))(void)) {
     let tmp = u_allocA(lhs.len, typeInfo$(u8)).ref;
     mem__swapTmp(lhs, rhs, tmp);
 };
-fn_((mem_reverseBytes(S$u8 seq))(void)) {
-    claim_assert_nonnullS(seq);
-    let_(l, usize) = 0;
-    let r = seq.len / 2;
-    for_(($r(l, r))(p)) {
-        mem_swapP(u_anyP(S_at((seq)[p])), u_anyP(S_at((seq)[seq.len - p - 1])));
+
+$static fn_((mem__byteIn(u8 value, S_const$u8 set))(bool)) {
+    claim_assert_nonnullS(set);
+    for_(($s(set))(item)) {
+        if (*item == value) return true;
     } $end(for);
+    return false;
 };
-fn_((mem_reverse(u_S$raw seq))(void)) {
-    claim_assert_nonnullS(seq);
-    let_(l, usize) = 0;
-    let r = seq.len / 2;
-    for_(($r(l, r))(p)) {
-        mem_swapP(u_atS(seq, p), u_atS(seq, seq.len - p - 1));
+
+fn_((mem_findFirstAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    for_(($s(haystack), $rf(0))(item, idx)) {
+        if (mem__byteIn(*item, needles)) return_some(idx);
     } $end(for);
-};
-fn_((mem_rotateBytes(S$u8 seq, usize amount))(void)) {
-    claim_assert_nonnullS(seq);
-    mem_reverseBytes(S_prefix((seq)(amount)));
-    mem_reverseBytes(S_suffix((seq)(amount)));
-    mem_reverseBytes(seq);
-};
-fn_((mem_rotate(u_S$raw seq, usize amount))(void)) {
-    claim_assert_nonnullS(seq);
-    mem_reverse(u_prefixS(seq, amount));
-    mem_reverse(u_suffixS(seq, amount));
-    mem_reverse(seq);
-};
+    return_none();
+} $unscoped(fn);
+fn_((mem_findLastAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
+        if (mem__byteIn(*item, needles)) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findFirstNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    for_(($s(haystack), $rf(0))(item, idx)) {
+        if (!mem__byteIn(*item, needles)) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findLastNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
+        if (!mem__byteIn(*item, needles)) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
 
 fn_((mem_windowBytes(S_const$u8 buf, usize size, usize advance))(mem_WindowIter_Bytes)) {
     claim_assert_nonnullS(buf);
@@ -333,49 +205,6 @@ fn_((mem_WindowIter_next(mem_WindowIter* self, TypeInfo type))(O$u_S_const$raw) 
     }) $unscoped(expr);
     return_some(u_sliceS(S_meta((type)(self->buf)), $r(begin, end)));
 } $unscoped(fn);
-
-fn_((mem_startsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
-    return expr_(bool $scope)(if (needle.len > haystack.len) {
-        $break_(false);
-    }) expr_(else)({
-        $break_(mem_eqlBytes(S_prefix((haystack)(needle.len)), needle));
-    }) $unscoped(expr);
-};
-fn_((mem_startsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
-    claim_assert(TypeInfo_eql(haystack.type, needle.type));
-    return expr_(bool $scope)(if (needle.len > haystack.len) {
-        $break_(false);
-    }) expr_(else)({
-        $break_(mem_eql(u_prefixS(haystack, needle.len), needle));
-    }) $unscoped(expr);
-};
-fn_((mem_endsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
-    return expr_(bool $scope)(if (needle.len > haystack.len) {
-        $break_(false);
-    }) expr_(else)({
-        $break_(mem_eqlBytes(S_suffix((haystack)(haystack.len - needle.len)), needle));
-    }) $unscoped(expr);
-};
-fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
-    claim_assert(TypeInfo_eql(haystack.type, needle.type));
-    return expr_(bool $scope)(if (needle.len > haystack.len) {
-        $break_(false);
-    }) expr_(else)({
-        $break_(mem_eql(u_suffixS(haystack, haystack.len - needle.len), needle));
-    }) $unscoped(expr);
-};
-
-$static fn_((mem__byteIn(u8 value, S_const$u8 set))(bool)) {
-    claim_assert_nonnullS(set);
-    for_(($s(set))(item)) {
-        if (*item == value) return true;
-    } $end(for);
-    return false;
-};
 
 fn_((mem_trimStartBytes(S_const$u8 haystack, S_const$u8 values_to_strip))(S_const$u8)) {
     claim_assert_nonnullS(haystack), claim_assert_nonnullS(values_to_strip);
@@ -676,207 +505,6 @@ fn_((mem_padCenterAlloc(u_S_const$raw src, usize width, u_V$raw fill, mem_Alctr 
     let required_len = pri_max(src.len, width);
     let out = try_(mem_Alctr_alloc($trace gpa, src.type, required_len));
     return_ok(mem_padCenterWithin(src, width, fill, out));
-} $unscoped(fn);
-
-fn_((mem_findFirstUnitBytes(S_const$u8 haystack, u8 needle))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack);
-    for_(($s(haystack), $rf(0))(item, idx)) {
-        if (*item == needle) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findFirstUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnull(needle.inner);
-    claim_assert(TypeInfo_eql(haystack.type, needle.type));
-    for_(($us(haystack), $rf(0))(item, idx)) {
-        if (u_memeql(item, needle.ref.as_const)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastUnitBytes(S_const$u8 haystack, u8 needle))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack);
-    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
-        if (*item == needle) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnull(needle.inner);
-    claim_assert(TypeInfo_eql(haystack.type, needle.type));
-    for_($rev($us(haystack), $rt(haystack.len))(item, idx)) {
-        if (u_memeql(item, needle.ref.as_const)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findFirstSeqBytes(S_const$u8 haystack, S_const$u8 needle))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
-    if (needle.len > haystack.len) return_none();
-    let end = haystack.len - needle.len;
-    for_(($rt($incl(end)))(idx)) {
-        if (mem_eqlBytes(S_prefix((S_suffix((haystack)(idx)))(needle.len)), needle)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findFirstSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
-    claim_assert(TypeInfo_eql(haystack.type, needle.type));
-    if (needle.len > haystack.len) return_none();
-    let end = haystack.len - needle.len;
-    for_(($rt($incl(end)))(idx)) {
-        if (mem_eql(u_prefixS(u_suffixS(haystack, idx), needle.len), needle)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastSeqBytes(S_const$u8 haystack, S_const$u8 needle))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
-    if (needle.len > haystack.len) return_none();
-    let end = haystack.len - needle.len;
-    for_($rev($rt($incl(end)))(idx)) {
-        if (mem_eqlBytes(S_prefix((S_suffix((haystack)(idx)))(needle.len)), needle)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
-    claim_assert(TypeInfo_eql(haystack.type, needle.type));
-    if (needle.len > haystack.len) return_none();
-    let end = haystack.len - needle.len;
-    for_($rev($rt($incl(end)))(idx)) {
-        if (mem_eql(u_prefixS(u_suffixS(haystack, idx), needle.len), needle)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findFirstAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    for_(($s(haystack), $rf(0))(item, idx)) {
-        if (mem__byteIn(*item, needles)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    claim_assert(TypeInfo_eql(haystack.type, needles.type));
-    for_(($us(haystack), $rf(0))(item, idx)) {
-        for_(($us(needles))(needle)) {
-            if (u_memeql(item, needle)) return_some(idx);
-        } $end(for);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
-        if (mem__byteIn(*item, needles)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    claim_assert(TypeInfo_eql(haystack.type, needles.type));
-    for_($rev($us(haystack), $rt(haystack.len))(item, idx)) {
-        for_(($us(needles))(needle)) {
-            if (u_memeql(item, needle)) return_some(idx);
-        } $end(for);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findFirstNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    for_(($s(haystack), $rf(0))(item, idx)) {
-        if (!mem__byteIn(*item, needles)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findFirstNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    claim_assert(TypeInfo_eql(haystack.type, needles.type));
-    loop_labeled(outer, for_(($us(haystack), $rf(0))(item, idx))) {
-        for_(($us(needles))(needle)) {
-            if (u_memeql(item, needle)) loop_continue_(outer);
-        } $end(for);
-        return_some(idx);
-    } $end(loop_labeled) $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
-        if (!mem__byteIn(*item, needles)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    claim_assert(TypeInfo_eql(haystack.type, needles.type));
-    loop_labeled(outer, for_($rev($us(haystack), $rt(haystack.len))(item, idx))) {
-        for_(($us(needles))(needle)) {
-            if (u_memeql(item, needle)) loop_continue_(outer);
-        } $end(for);
-        return_some(idx);
-    } $end(loop_labeled) $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findFirstDiffBytes(S_const$u8 lhs, S_const$u8 rhs))(O$usize $scope)) {
-    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
-    let shortest = pri_min(lhs.len, rhs.len);
-    if (lhs.ptr == rhs.ptr) return expr_(ReturnType $scope)(
-        if (lhs.len == rhs.len) $break_(none());
-        else $break_(some(shortest))
-    ) $unscoped(expr);
-    for_(($rt(shortest))(idx)) {
-        if (*S_at((lhs)[idx]) != *S_at((rhs)[idx])) return_some(idx);
-    } $end(for);
-    return expr_(ReturnType $scope)(
-        if (lhs.len == rhs.len) $break_(none());
-        else $break_(some(shortest))
-    ) $unscoped(expr);
-} $unscoped(fn);
-fn_((mem_findFirstDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize $scope)) {
-    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
-    claim_assert(TypeInfo_eql(lhs.type, rhs.type));
-    let shortest = pri_min(lhs.len, rhs.len);
-    if (lhs.ptr == rhs.ptr) return expr_(ReturnType $scope)(
-        if (lhs.len == rhs.len) $break_(none());
-        else $break_(some(shortest))
-    ) $unscoped(expr);
-    for_(($rt(shortest))(idx)) {
-        if (!u_memeql(u_atS(lhs, idx), u_atS(rhs, idx))) return_some(idx);
-    } $end(for);
-    return expr_(ReturnType $scope)(
-        if (lhs.len == rhs.len) $break_(none());
-        else $break_(some(shortest))
-    ) $unscoped(expr);
-} $unscoped(fn);
-fn_((mem_findLastDiffBytes(S_const$u8 lhs, S_const$u8 rhs))(O$usize $scope)) {
-    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
-    let shortest = pri_min(lhs.len, rhs.len);
-    if (lhs.ptr == rhs.ptr) return expr_(ReturnType $scope)(
-        if (lhs.len == rhs.len) $break_(none());
-        else $break_(some(shortest))
-    ) $unscoped(expr);
-    for_($rev($rt(shortest))(idx)) {
-        if (*S_at((lhs)[idx]) != *S_at((rhs)[idx])) return_some(idx);
-    } $end(for);
-    return expr_(ReturnType $scope)(
-        if (lhs.len == rhs.len) $break_(none());
-        else $break_(some(shortest))
-    ) $unscoped(expr);
-} $unscoped(fn);
-fn_((mem_findLastDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize $scope)) {
-    claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs);
-    claim_assert(TypeInfo_eql(lhs.type, rhs.type));
-    let shortest = pri_min(lhs.len, rhs.len);
-    if (lhs.ptr == rhs.ptr) return expr_(ReturnType $scope)(
-        if (lhs.len == rhs.len) $break_(none());
-        else $break_(some(shortest))
-    ) $unscoped(expr);
-    for_($rev($rt(shortest))(idx)) {
-        if (!u_memeql(u_atS(lhs, idx), u_atS(rhs, idx))) return_some(idx);
-    } $end(for);
-    return expr_(ReturnType $scope)(
-        if (lhs.len == rhs.len) $break_(none());
-        else $break_(some(shortest))
-    ) $unscoped(expr);
 } $unscoped(fn);
 
 $static fn_((mem__cutAtBytes(S_const$u8 haystack, usize index, usize needle_len))(O$mem_Cutted_Bytes $scope)) {
