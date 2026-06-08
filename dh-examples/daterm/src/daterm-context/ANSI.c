@@ -27,6 +27,7 @@ $static fn_((daterm_ANSI__queryCursorPos(P$raw ctx))(E$daterm_Pos));
 #include <dh/sys/api/windows/sync.h>
 T_use_E$(DWORD);
 $static fn_((daterm_ANSI__windows_ctrlHandler(DWORD type))(BOOL));
+$static fn_((daterm_ANSI__windows_inputReady(HANDLE input))(bool));
 $static fn_((daterm_ANSI__windows_enableRawMode(HANDLE input))(E$DWORD));
 $static fn_((daterm_ANSI__windows_disableRawMode(HANDLE input, DWORD old_in))(E$void));
 $static fn_((daterm_ANSI__windows_enableVTerm(HANDLE output))(E$DWORD));
@@ -221,7 +222,7 @@ $static fn_((daterm_ANSI__asMouseEvent(dansi_mouse_Event event))(daterm_Event)) 
 
 $static fn_((daterm_ANSI__inputReady(daterm_ANSI* self))(bool)) {
 #if plat_is_windows
-    return WaitForSingleObject(self->input_file.handle, 0) == WAIT_OBJECT_0;
+    return daterm_ANSI__windows_inputReady(self->input_file.handle);
 #elif plat_is_posix
     struct pollfd pfd = { .fd = as$(i32)(self->input_file.handle), .events = POLLIN, .revents = 0 };
     return poll(&pfd, 1, 0) > 0 && (pfd.revents & POLLIN) != 0;
@@ -437,6 +438,25 @@ fn_((daterm_ANSI__windows_ctrlHandler(DWORD type))(BOOL)) {
     default:
         return FALSE;
     }
+};
+
+fn_((daterm_ANSI__windows_inputReady(HANDLE input))(bool)) {
+    while (WaitForSingleObject(input, 0) == WAIT_OBJECT_0) {
+        var_(record, INPUT_RECORD) $undefined;
+        var_(read_count, DWORD) = 0;
+        if (!PeekConsoleInputA(input, &record, 1, &read_count) || read_count == 0) {
+            return false;
+        }
+
+        if (record.EventType == KEY_EVENT || record.EventType == MOUSE_EVENT) {
+            return true;
+        }
+
+        if (!ReadConsoleInputA(input, &record, 1, &read_count) || read_count == 0) {
+            return false;
+        }
+    }
+    return false;
 };
 
 fn_((daterm_ANSI__windows_enableRawMode(HANDLE input))(E$DWORD) $scope) {
