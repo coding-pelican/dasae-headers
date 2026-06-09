@@ -411,7 +411,8 @@ extern "C" {
 #define and &&
 #define or ||
 
-#define $listed /* just comment for list expansion */
+#define $listed /* just formatting comment for list expansion */
+#define $str /* just formatting comment for string literal */
 
 #define $pragma_guard_(_push, _ctx, _pop, _code...) /* clang-format off */ \
     _Pragma(_push) \

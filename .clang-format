@@ -216,6 +216,7 @@ Macros:
   - "$suppressing_(diagnostic)=/*diagnostic*/"
   - "$suppressed=/**/"
   - "$listed=/**/"
+  - "$str=,"
 
   # Switch, Match
   - "enum_(_Expr)=pp_exec_ignore _Expr"
