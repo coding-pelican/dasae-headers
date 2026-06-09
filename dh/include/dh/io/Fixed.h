@@ -29,10 +29,10 @@ typedef struct io_Fixed {
     var_(pos, usize);
 } io_Fixed;
 typedef union io_FixedMut {
-    struct {
+    T_embed$(struct {
         var_(buf, S$u8);
         var_(pos, usize);
-    };
+    });
     var_(as_const, io_Fixed);
 } io_FixedMut;
 /// Initialize fixed buffer for reading

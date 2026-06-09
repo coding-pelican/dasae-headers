@@ -41,14 +41,14 @@ T_alias$((exec_Task_Cancel)(enum_((exec_Task_Cancel $fits($packed))(
 claim_assert_static(eqlType$(exec_Task_Cancel, u8));
 
 T_alias$((exec_Task)(union exec_Task {
-    struct {
+    T_embed$(struct {
         var_(state, exec_Task_State);
         var_(cancel, exec_Task_Cancel);
         var_(cancel_protection, Sched_CancelProtn);
         var_(result, u_P$raw);
         var_(inner, P$$(Clsr$raw));
         var_(fiber, O$P$exec_Fiber);
-    };
+    });
     var_(as_any, FutureAny) $flexible;
 }));
 T_use_prl$(exec_Task);

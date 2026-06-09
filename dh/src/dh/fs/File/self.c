@@ -498,10 +498,10 @@ $static fn_((fs_File_handle__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope
 
 typedef union Reader {
     io_Reader base;
-    struct {
+    T_embed$(struct {
         P$raw ctx;
         fn_(((*readFn)(P$raw ctx, S$u8 buf))(E$usize)) $must_check;
-    };
+    });
 } Reader;
 
 $static fn_((Reader_init(fs_File file))(Reader)) {
@@ -514,10 +514,10 @@ fn_((fs_File_reader(fs_File file))(io_Reader)) {
 
 typedef union Writer {
     io_Writer base;
-    struct {
+    T_embed$(struct {
         P$raw ctx;
         fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
-    };
+    });
 } Writer;
 
 $static fn_((Writer_init(fs_File file))(Writer)) {

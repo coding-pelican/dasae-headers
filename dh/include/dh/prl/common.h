@@ -24,6 +24,7 @@ extern "C" {
 #include "base.h"
 #include "Co.h"
 #include "Clsr.h"
+#include "va.h"
 #include "CompHash.h"
 #include "Err.h"
 #include "ErrTrace.h"

@@ -189,7 +189,7 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
         return (Clsr_(_fn)){ \
             .kind = Clsr_Kind_fn, \
             .rtn = Clsr_rtn_(_fn), \
-            .ctx.data.args = { __step__fn_use_Clsr___passTupFields(_N_Arg_T) }, \
+            .ctx.data.args = tie_(__step__fn_use_Clsr___passTupFieldVals(_N_Arg_T)), \
         }; \
     }
 #define __step__fn_use_Clsr___passTupFields(_N_Arg_T, _field_path...) \
@@ -210,6 +210,24 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
     _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5, _field_path $6
 #define __step__fn_use_Clsr___passTupFields8(_field_path...) \
     _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5, _field_path $6, _field_path $7
+#define __step__fn_use_Clsr___passTupFieldVals(_N_Arg_T, _field_path...) \
+    pp_cat(__step__fn_use_Clsr___passTupFieldVals, _N_Arg_T)(_field_path)
+#define __step__fn_use_Clsr___passTupFieldVals1(_field_path...) \
+    (_field_path $0)
+#define __step__fn_use_Clsr___passTupFieldVals2(_field_path...) \
+    (_field_path $0), (_field_path $1)
+#define __step__fn_use_Clsr___passTupFieldVals3(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2)
+#define __step__fn_use_Clsr___passTupFieldVals4(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3)
+#define __step__fn_use_Clsr___passTupFieldVals5(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3), (_field_path $4)
+#define __step__fn_use_Clsr___passTupFieldVals6(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3), (_field_path $4), (_field_path $5)
+#define __step__fn_use_Clsr___passTupFieldVals7(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3), (_field_path $4), (_field_path $5), (_field_path $6)
+#define __step__fn_use_Clsr___passTupFieldVals8(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3), (_field_path $4), (_field_path $5), (_field_path $6), (_field_path $7)
 #define __step__fn_use_Clsr___tupFieldsToParams(_N_Arg_T, _Arg_T...) \
     pp_cat(__step__fn_use_Clsr___tupFieldsToParams, _N_Arg_T) _Arg_T
 #define __step__fn_use_Clsr___tupFieldsToParams1(_Arg_T1...) \
@@ -294,7 +312,7 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
                         .line = 0, \
                     }, \
                     .suspended_data = {}, \
-                    .args = { __step__co_use_Clsr___passTupFields(_N_Arg_T) }, \
+                    .args = tie_(__step__co_use_Clsr___passTupFieldVals(_N_Arg_T)), \
                     .data = { \
                         .suspended = {}, \
                         .locals = {}, \
@@ -322,6 +340,24 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
     _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5, _field_path $6
 #define __step__co_use_Clsr___passTupFields8(_field_path...) \
     _field_path $0, _field_path $1, _field_path $2, _field_path $3, _field_path $4, _field_path $5, _field_path $6, _field_path $7
+#define __step__co_use_Clsr___passTupFieldVals(_N_Arg_T, _field_path...) \
+    pp_cat(__step__co_use_Clsr___passTupFieldVals, _N_Arg_T)(_field_path)
+#define __step__co_use_Clsr___passTupFieldVals1(_field_path...) \
+    (_field_path $0)
+#define __step__co_use_Clsr___passTupFieldVals2(_field_path...) \
+    (_field_path $0), (_field_path $1)
+#define __step__co_use_Clsr___passTupFieldVals3(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2)
+#define __step__co_use_Clsr___passTupFieldVals4(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3)
+#define __step__co_use_Clsr___passTupFieldVals5(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3), (_field_path $4)
+#define __step__co_use_Clsr___passTupFieldVals6(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3), (_field_path $4), (_field_path $5)
+#define __step__co_use_Clsr___passTupFieldVals7(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3), (_field_path $4), (_field_path $5), (_field_path $6)
+#define __step__co_use_Clsr___passTupFieldVals8(_field_path...) \
+    (_field_path $0), (_field_path $1), (_field_path $2), (_field_path $3), (_field_path $4), (_field_path $5), (_field_path $6), (_field_path $7)
 #define __step__co_use_Clsr___tupFieldsToParams(_N_Arg_T, _Arg_T...) \
     pp_cat(__step__co_use_Clsr___tupFieldsToParams, _N_Arg_T) _Arg_T
 #define __step__co_use_Clsr___tupFieldsToParams1(_Arg_T1...) \

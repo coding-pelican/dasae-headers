@@ -19,10 +19,10 @@ typedef m_V2f32 m_M2f32_RowV;
 typedef union m_M2f32 {
     var_(cols, A$$(m_M2f32_cols, m_M2f32_V));
     var_(s, A$$(m_M2f32_cols, A$$(m_M2f32_rows, m_M2f32_S)));
-    struct { /* s{row}_{col} */
+    T_embed$(struct {
         m_M2f32_S s0_0, s1_0;
         m_M2f32_S s0_1, s1_1;
-    };
+    }); /* s{row}_{col} */
 } m_M2f32;
 
 typedef f32 m_M3f32_S;
@@ -34,11 +34,11 @@ typedef m_V3f32 m_M3f32_RowV;
 typedef union m_M3f32 {
     var_(cols, A$$(m_M3f32_cols, m_M3f32_V));
     var_(s, A$$(m_M3f32_cols, A$$(m_M3f32_rows, m_M3f32_S)));
-    struct { /* s{row}_{col} */
+    T_embed$(struct {
         m_M3f32_S s0_0, s1_0, s2_0;
         m_M3f32_S s0_1, s1_1, s2_1;
         m_M3f32_S s0_2, s1_2, s2_2;
-    };
+    }); /* s{row}_{col} */
 } m_M3f32;
 
 typedef f32 m_M4f32_S;
@@ -50,12 +50,12 @@ typedef m_V4f32 m_M4f32_RowV;
 typedef union m_M4f32 {
     var_(cols, A$$(m_M4f32_cols, m_M4f32_V));
     var_(s, A$$(m_M4f32_cols, A$$(m_M4f32_rows, m_M4f32_S)));
-    struct { /* s{row}_{col} */
+    T_embed$(struct {
         m_M4f32_S s0_0, s1_0, s2_0, s3_0;
         m_M4f32_S s0_1, s1_1, s2_1, s3_1;
         m_M4f32_S s0_2, s1_2, s2_2, s3_2;
         m_M4f32_S s0_3, s1_3, s2_3, s3_3;
-    };
+    }); /* s{row}_{col} */
 } m_M4f32;
 
 #if defined(__cplusplus)

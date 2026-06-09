@@ -17,18 +17,18 @@ extern "C" {
     pp_Tok_else_(__S$$(_T)) \
 )
 #define __S_const$$(_T...) TypeOf(union { \
-    struct { \
+    T_embed$(struct { \
         var_(ptr, $P$(const _T)); \
         var_(len, usize); \
-    }; \
+    }); \
     var_(as_raw, S_const$raw); \
     var_(ref_raw $like_ref, S_const$raw); \
 })
 #define __S$$(_T...) TypeOf(union { \
-    struct { \
+    T_embed$(struct { \
         var_(ptr, $P$(_T)); \
         var_(len, usize); \
-    }; \
+    }); \
     var_(as_raw, S$raw); \
     var_(ref_raw $like_ref, S$raw); \
     var_(as_const, __S_const$$(_T)); \
@@ -49,18 +49,18 @@ extern "C" {
     $maybe_unused typedef union S$(_T) S$(_T)
 #define T_impl_S$(_T...) \
     union S$(const _T) { \
-        struct { \
+        T_embed$(struct { \
             var_(ptr, $P$(const _T)); \
             var_(len, usize); \
-        }; \
+        }); \
         var_(as_raw, S$(const raw)); \
         var_(ref_raw $like_ref, S$(const raw)); \
     }; \
     union S$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(ptr, $P$(_T)); \
             var_(len, usize); \
-        }; \
+        }); \
         var_(as_raw, S$raw); \
         var_(ref_raw $like_ref, S$raw); \
         var_(as_const, S$(const _T)); \

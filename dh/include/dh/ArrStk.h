@@ -131,11 +131,11 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
 
 #define __comp_anon__ArrStk$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(items, S$$(_T)); \
             var_(cap, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw $like_ref, ArrStk); \
     }
 #define __comp_alias__ArrStk$(_T...) tpl$(ArrStk, _T)
@@ -146,11 +146,11 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
     T_decl_E$($set(mem_E)(ArrStk$(_T)))
 #define __comp_gen__T_impl_ArrStk$(_T...) \
     union ArrStk$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(items, S$(_T)); \
             var_(cap, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw $like_ref, ArrStk); \
     }; \
     T_impl_O$(ArrStk$(_T)); \
@@ -190,11 +190,11 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
 
 #define __comp_anon__ArrStk_Grip$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(buf, S$$(_T)); \
             var_(len, usize*); \
             var_(ctx, ArrStk$$(_T)); \
-        }; \
+        }); \
         var_(as_raw, ArrStk_Grip) $like_ref; \
     }
 #define __comp_alias__ArrStk_Grip$(_T...) tpl$(ArrStk_Grip, _T)
@@ -202,11 +202,11 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
     $maybe_unused typedef union ArrStk_Grip$(_T) ArrStk_Grip$(_T)
 #define __comp_gen__T_impl_ArrStk_Grip$(_T...) \
     union ArrStk_Grip$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(buf, S$(_T)); \
             var_(len, usize*); \
             var_(ctx, ArrStk$(_T)); \
-        }; \
+        }); \
         var_(as_raw, ArrStk_Grip) $like_ref; \
     }
 #define __comp_gen__T_use_ArrStk_Grip$(_T...) \

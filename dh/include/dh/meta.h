@@ -118,7 +118,7 @@ $attr($inline_always)
 $static fn_((u_typeInfoRecord(S_const$TypeInfo fields))(TypeInfo)) {
     claim_assert_nonnull(fields.ptr);
     usize end_offset = 0;
-    usize max_align = 0;
+    usize max_align = alignOf$(Void);
     for_(($s(fields))(field)) {
         let align_val = TypeInfo_align(*field);
         let offset = mem_alignFwd(end_offset, align_val);
@@ -134,7 +134,7 @@ $attr($inline_always)
 $static fn_((u_sizeOfRecord(S_const$TypeInfo fields))(usize)) {
     claim_assert_nonnull(fields.ptr);
     usize end_offset = 0;
-    usize max_align = 0;
+    usize max_align = alignOf$(Void);
     for_(($s(fields))(field)) {
         let align_val = TypeInfo_align(*field);
         let offset = mem_alignFwd(end_offset, align_val);
@@ -146,7 +146,7 @@ $static fn_((u_sizeOfRecord(S_const$TypeInfo fields))(usize)) {
 $attr($inline_always)
 $static fn_((u_alignOfRecord(S_const$TypeInfo fields))(mem_Align)) {
     claim_assert_nonnull(fields.ptr);
-    usize max_align = 0;
+    usize max_align = alignOf$(Void);
     for_(($s(fields))(field)) {
         max_align = pri_max(max_align, TypeInfo_align(*field));
     } $end(for);
@@ -285,7 +285,7 @@ $attr($inline_always)
 $static fn_((u_typeInfoRecordN(usize n, S_const$TypeInfo fields))(TypeInfo)) {
     claim_assert_nonnull(fields.ptr);
     usize end_offset = 0;
-    usize max_align = 0;
+    usize max_align = alignOf$(Void);
     for_(($s(fields))(field)) {
         let arr_type = u_typeInfoA(n, *field);
         let offset = mem_alignFwd(end_offset, TypeInfo_align(arr_type));
@@ -301,7 +301,7 @@ $attr($inline_always)
 $static fn_((u_sizeOfRecordN(usize n, S_const$TypeInfo fields))(usize)) {
     claim_assert_nonnull(fields.ptr);
     usize end_offset = 0;
-    usize max_align = 0;
+    usize max_align = alignOf$(Void);
     for_(($s(fields))(field)) {
         let arr_type = u_typeInfoA(n, *field);
         let offset = mem_alignFwd(end_offset, TypeInfo_align(arr_type));
@@ -313,7 +313,7 @@ $static fn_((u_sizeOfRecordN(usize n, S_const$TypeInfo fields))(usize)) {
 $attr($inline_always)
 $static fn_((u_alignOfRecordN(usize n, S_const$TypeInfo fields))(mem_Align)) {
     claim_assert_nonnull(fields.ptr);
-    usize max_align = 0;
+    usize max_align = alignOf$(Void);
     for_(($s(fields))(field)) {
         let arr_type = u_typeInfoA(n, *field);
         max_align = pri_max(max_align, TypeInfo_align(arr_type));

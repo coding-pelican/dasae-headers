@@ -19,36 +19,36 @@ extern "C" {
     typedef union tpl$(m_V2, T) tpl$(m_V2, T); \
     union tpl$(m_V2, T) { \
         var_(s, A$$(2, T)); \
-        struct { \
+        T_embed$(struct { \
             T s0, s1; \
-        }; \
-        struct { \
+        }); \
+        T_embed$(struct { \
             T x, y; \
-        }; \
+        }); \
     }
 
 #define using_m_V3$(T) \
     typedef union tpl$(m_V3, T) tpl$(m_V3, T); \
     union tpl$(m_V3, T) { \
         var_(s, A$$(3, T)); \
-        struct { \
+        T_embed$(struct { \
             T s0, s1, s2; \
-        }; \
-        struct { \
+        }); \
+        T_embed$(struct { \
             T x, y, z; \
-        }; \
+        }); \
     }
 
 #define using_m_V4$(T) \
     typedef union tpl$(m_V4, T) tpl$(m_V4, T); \
     union tpl$(m_V4, T) { \
         var_(s, A$$(4, T)); \
-        struct { \
+        T_embed$(struct { \
             T s0, s1, s2, s3; \
-        }; \
-        struct { \
+        }); \
+        T_embed$(struct { \
             T x, y, z, w; \
-        }; \
+        }); \
     }
 
 using_m_V$(u8);

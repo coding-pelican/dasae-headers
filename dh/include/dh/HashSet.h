@@ -95,10 +95,10 @@ $extern fn_((HashSet_Entry_key(HashSet_Entry self, TypeInfo key_ty))(u_P_const$r
 #define T_use_HashSet_EntryMut$(_K...) __comp_gen__T_use_HashSet_EntryMut$(_K)
 
 typedef union HashSet_EntryMut {
-    struct {
+    T_embed$(struct {
         var_(key, P$raw);
         var_(key_ty, debug_TypeInfo);
-    };
+    });
     var_(as_const, HashSet_Entry);
 } HashSet_EntryMut;
 T_use_O$(HashSet_EntryMut);
@@ -290,11 +290,11 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define __comp_anon__HashSet_Header$$(_K...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(keys, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(cap, u32); \
-        }; \
+        }); \
         var_(as_raw, HashSet_Header) $like_ref; \
     }
 #define __comp_alias__HashSet_Header$(_K...) tpl$(HashSet_Header, _K)
@@ -302,11 +302,11 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     $maybe_unused typedef union HashSet_Header$(_K) HashSet_Header$(_K)
 #define __comp_gen__T_impl_HashSet_Header$(_K...) \
     union HashSet_Header$(_K) { \
-        struct { \
+        T_embed$(struct { \
             var_(keys, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(cap, u32); \
-        }; \
+        }); \
         var_(as_raw, HashSet_Header) $like_ref; \
     }
 #define __comp_gen__T_use_HashSet_Header$(_K...) \
@@ -316,13 +316,13 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define __comp_anon__HashSet_Unit$$(_K...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(key_ty, debug_TypeInfo); \
-            union { \
+            T_embed$(union { \
                 var_(key, _K); \
                 var_(key_, _K) $like_ref; \
-            }; \
-        }; \
+            }); \
+        }); \
         var_(as_raw, HashSet_Unit$raw) $flexible; \
     }
 #define __comp_alias__HashSet_Unit$(_K...) \
@@ -333,13 +333,13 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     T_decl_E$($set(mem_E)(O$(HashSet_Unit$(_K))))
 #define __comp_gen__T_impl_HashSet_Unit$(_K...) \
     union HashSet_Unit$(_K) { \
-        struct { \
+        T_embed$(struct { \
             var_(key_ty, debug_TypeInfo); \
-            union { \
+            T_embed$(union { \
                 var_(key, _K); \
                 var_(key_, _K) $like_ref; \
-            }; \
-        }; \
+            }); \
+        }); \
         var_(as_raw, HashSet_Unit$raw) $flexible; \
     }; \
     T_impl_O$(HashSet_Unit$(_K)); \
@@ -363,10 +363,10 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define __comp_anon__HashSet_Entry$$(_K...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(key, P_const$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashSet_Entry) $like_ref; \
     }
 #define __comp_alias__HashSet_Entry$(_K...) tpl$(HashSet_Entry, _K)
@@ -375,10 +375,10 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     T_decl_O$(HashSet_Entry$(_K))
 #define __comp_gen__T_impl_HashSet_Entry$(_K...) \
     union HashSet_Entry$(_K) { \
-        struct { \
+        T_embed$(struct { \
             var_(key, P_const$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashSet_Entry) $like_ref; \
     }; \
     T_impl_O$(HashSet_Entry$(_K))
@@ -396,13 +396,13 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define __comp_anon__HashSet_EntryMut$$(_K...) \
     union { \
-        union { \
-            struct { \
+        T_embed$(union { \
+            T_embed$(struct { \
                 var_(key, P$$(_K)); \
                 var_(key_ty, debug_TypeInfo); \
-            }; \
+            }); \
             var_(as_const, HashSet_Entry$$(_K)); \
-        }; \
+        }); \
         var_(as_raw, HashSet_EntryMut) $like_ref; \
     }
 #define __comp_alias__HashSet_EntryMut$(_K...) tpl$(HashSet_EntryMut, _K)
@@ -411,13 +411,13 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     T_decl_O$(HashSet_EntryMut$(_K))
 #define __comp_gen__T_impl_HashSet_EntryMut$(_K...) \
     union HashSet_EntryMut$(_K) { \
-        union { \
-            struct { \
+        T_embed$(union { \
+            T_embed$(struct { \
                 var_(key, P$$(_K)); \
                 var_(key_ty, debug_TypeInfo); \
-            }; \
+            }); \
             var_(as_const, HashSet_Entry$(_K)); \
-        }; \
+        }); \
         var_(as_raw, HashSet_EntryMut) $like_ref; \
     }; \
     T_impl_O$(HashSet_EntryMut$(_K))
@@ -435,11 +435,11 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define __comp_anon__HashSet_Ensured$$(_K...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(key, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(found_existing, bool); \
-        }; \
+        }); \
         var_(as_raw, HashSet_Ensured) $like_ref; \
     }
 #define __comp_alias__HashSet_Ensured$(_K...) tpl$(HashSet_Ensured, _K)
@@ -449,11 +449,11 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     T_decl_E$($set(mem_E)(HashSet_Ensured$(_K)))
 #define __comp_gen__T_impl_HashSet_Ensured$(_K...) \
     union HashSet_Ensured$(_K) { \
-        struct { \
+        T_embed$(struct { \
             var_(key, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(found_existing, bool); \
-        }; \
+        }); \
         var_(as_raw, HashSet_Ensured) $like_ref; \
     }; \
     T_impl_O$(HashSet_Ensured$(_K)); \
@@ -495,13 +495,13 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define __comp_anon__HashSet$$(_K...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(metadata, O$P$HashMap_Ctrl); \
             var_(size, u32); \
             var_(available, u32); \
             var_(ctx, P_const$HashSet_Ctx); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashSet) $like_ref; \
     }
 #define __comp_alias__HashSet$(_K...) tpl$(HashSet, _K)
@@ -510,13 +510,13 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     T_decl_E$($set(mem_E)(HashSet$(_K)))
 #define __comp_gen__T_impl_HashSet$(_K...) \
     union HashSet$(_K) { \
-        struct { \
+        T_embed$(struct { \
             var_(metadata, O$P$HashMap_Ctrl); \
             var_(size, u32); \
             var_(available, u32); \
             var_(ctx, P_const$HashSet_Ctx); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashSet) $like_ref; \
     }; \
     T_impl_E$($set(mem_E)(HashSet$(_K)))
@@ -703,11 +703,11 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define __comp_anon__HashSet_Iter$$(_K...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(set, P_const$$(HashSet$(_K))); \
             var_(idx, usize); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashSet_Iter) $like_ref; \
     }
 #define __comp_alias__HashSet_Iter$(_K...) tpl$(HashSet_Iter, _K)
@@ -715,11 +715,11 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     $maybe_unused typedef union HashSet_Iter$(_K) HashSet_Iter$(_K)
 #define __comp_gen__T_impl_HashSet_Iter$(_K...) \
     union HashSet_Iter$(_K) { \
-        struct { \
+        T_embed$(struct { \
             var_(set, P_const$$(HashSet$(_K))); \
             var_(idx, usize); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashSet_Iter) $like_ref; \
     }
 #define __comp_gen__T_use_HashSet_Iter$(_K...) \
@@ -746,12 +746,12 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
 
 #define __comp_anon__HashSet_KeyIter$$(_K...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(keys, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashSet_KeyIter) $like_ref; \
     }
 #define __comp_alias__HashSet_KeyIter$(_K...) tpl$(HashSet_KeyIter, _K)
@@ -759,12 +759,12 @@ $extern fn_((HashSet_KeyIter_nextMut(HashSet_KeyIter* self, TypeInfo key_ty))(O$
     $maybe_unused typedef union HashSet_KeyIter$(_K) HashSet_KeyIter$(_K)
 #define __comp_gen__T_impl_HashSet_KeyIter$(_K...) \
     union HashSet_KeyIter$(_K) { \
-        struct { \
+        T_embed$(struct { \
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(keys, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashSet_KeyIter) $like_ref; \
     }
 #define __comp_gen__T_use_HashSet_KeyIter$(_K...) \

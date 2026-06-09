@@ -21,12 +21,6 @@ typedef union V$raw {
     u8 inner $flexible;
 } V$raw;
 
-// typedef fn_(((*Fn$raw)(V$raw* ctx))(V$raw*));
-// typedef struct FnCtx$raw {
-//     Fn$raw fn;
-//     V$raw* inner;
-// } FnCtx$raw;
-
 typedef struct S_const$raw {
     P_const$raw ptr;
     usize len;
@@ -100,6 +94,10 @@ union E$Void {
     };
     var_(as_raw $like_ref, E$raw);
 };
+
+typedef struct Tup$raw {
+    u8 inner $flexible;
+} Tup$raw;
 
 #if defined(__cplusplus)
 } /* extern "C" */

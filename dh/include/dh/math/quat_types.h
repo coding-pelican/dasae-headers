@@ -16,9 +16,9 @@ typedef m_V3f32 m_Q4f32_Axis;
 typedef union m_Q4f32 {
     var_(a, A$$(4, m_Q4f32_S));
     m_Q4f32_S s[4];
-    struct {
+    T_embed$(struct {
         m_Q4f32_S x, y, z, w;
-    };
+    });
     m_Q4f32_V v;
 } m_Q4f32;
 typedef struct m_Q4f32_AxisAngle {

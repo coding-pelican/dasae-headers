@@ -192,11 +192,11 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 
 #define __comp_anon__ArrList$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(items, S$$(_T)); \
             var_(cap, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrList) $like_ref; \
     }
 #define __comp_alias__ArrList$(_T...) tpl$(ArrList, _T)
@@ -207,11 +207,11 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     T_decl_E$($set(mem_E)(ArrList$(_T)))
 #define __comp_gen__T_impl_ArrList$(_T...) \
     union ArrList$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(items, S$(_T)); \
             var_(cap, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrList) $like_ref; \
     }; \
     T_impl_O$(ArrList$(_T)); \
@@ -256,11 +256,11 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 
 #define __comp_anon__ArrList_Grip$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(buf, S$$(_T)); \
             var_(len, usize*); \
             var_(ctx, ArrList$$(_T)); \
-        }; \
+        }); \
         var_(as_raw, ArrList_Grip) $like_ref; \
     }
 #define __comp_alias__ArrList_Grip$(_T...) tpl$(ArrList_Grip, _T)
@@ -268,11 +268,11 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     $maybe_unused typedef union ArrList_Grip$(_T) ArrList_Grip$(_T)
 #define __comp_gen__T_impl_ArrList_Grip$(_T...) \
     union ArrList_Grip$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(buf, S$(_T)); \
             var_(len, usize*); \
             var_(ctx, ArrList$(_T)); \
-        }; \
+        }); \
         var_(as_raw, ArrList_Grip) $like_ref; \
     }
 #define __comp_gen__T_use_ArrList_Grip$(_T...) \

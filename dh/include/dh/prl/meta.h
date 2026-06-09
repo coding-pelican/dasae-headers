@@ -14,34 +14,34 @@ extern "C" {
 // ============================================================================
 
 typedef struct u_P_const$raw {
-    union {
+    T_embed$(union {
         P_const$raw raw;
         P_const$raw inner $like_ref;
-    };
+    });
     TypeInfo type;
 } u_P_const$raw;
 typedef union u_P$raw {
-    struct {
-        union {
+    T_embed$(struct {
+        T_embed$(union {
             P$raw raw;
             P$raw inner $like_ref;
-        };
+        });
         TypeInfo type;
-    };
+    });
     u_P_const$raw as_const;
 } u_P$raw;
 
 typedef union u_V$raw {
-    struct {
-        union {
+    T_embed$(struct {
+        T_embed$(union {
             V$raw raw;
             P$raw inner;
-        };
-        union {
+        });
+        T_embed$(union {
             TypeInfo inner_type;
             TypeInfo type;
-        };
-    };
+        });
+    });
     u_P$raw ref;
 } u_V$raw;
 
@@ -51,31 +51,31 @@ typedef union u_V$raw {
 // } u_FnCtx$raw;
 
 typedef struct u_S_const$raw {
-    union {
-        struct {
+    T_embed$(union {
+        T_embed$(struct {
             P_const$raw ptr;
             usize len;
-        };
+        });
         S_const$raw raw;
         S_const$raw inner $like_ref;
-    };
+    });
     TypeInfo type;
     struct {
         u_P_const$raw ptr $zero_sized;
     } __type_hint $zero_sized;
 } u_S_const$raw;
 typedef union u_S$raw {
-    struct {
-        union {
-            struct {
+    T_embed$(struct {
+        T_embed$(union {
+            T_embed$(struct {
                 P$raw ptr;
                 usize len;
-            };
+            });
             S$raw raw;
             S$raw inner $like_ref;
-        };
+        });
         TypeInfo type;
-    };
+    });
     u_S_const$raw as_const;
     struct {
         u_P$raw ptr $zero_sized;
@@ -83,36 +83,36 @@ typedef union u_S$raw {
 } u_S$raw;
 
 typedef union u_A$raw {
-    struct {
+    T_embed$(struct {
         S$raw inner;
-        union {
+        T_embed$(union {
             TypeInfo inner_type;
             TypeInfo type;
-        };
-    };
+        });
+    });
     u_S$raw ref;
 } u_A$raw;
 
 typedef struct u_O$raw {
     bool is_some;
-    union {
+    T_embed$(union {
         union {
             Void none;
             u_V$raw some;
         } payload;
         u_V$raw inner;
-    };
+    });
 } u_O$raw;
 
 typedef struct u_E$raw {
     bool is_ok;
-    union {
+    T_embed$(union {
         union {
             EAny err;
             u_V$raw ok;
         } payload;
         u_V$raw inner;
-    };
+    });
 } u_E$raw;
 
 #define V_meta(/*(_type: TypeInfo)(_raw: u_Inner*)*/... /*(u_V_const$T|u_V$T)*/) \

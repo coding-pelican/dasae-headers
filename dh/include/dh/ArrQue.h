@@ -122,12 +122,12 @@ $extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
 
 #define __comp_anon__ArrQue$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(buf, S$$(_T)); \
             var_(head, usize); \
             var_(len, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrQue) $like_ref; \
     }
 #define __comp_alias__ArrQue$(_T...) tpl$(ArrQue, _T)
@@ -138,12 +138,12 @@ $extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
     T_decl_E$($set(mem_E)(ArrQue$(_T)))
 #define __comp_gen__T_impl_ArrQue$(_T...) \
     union ArrQue$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(buf, S$(_T)); \
             var_(head, usize); \
             var_(len, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrQue) $like_ref; \
     }; \
     T_impl_O$(ArrQue$(_T)); \
@@ -178,12 +178,12 @@ $extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
 
 #define __comp_anon__ArrQue_Grip$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(buf, S$$(_T)); \
             var_(head, usize*); \
             var_(len, usize*); \
             var_(ctx, ArrQue$$(_T)); \
-        }; \
+        }); \
         var_(as_raw, ArrQue_Grip) $like_ref; \
     }
 #define __comp_alias__ArrQue_Grip$(_T...) tpl$(ArrQue_Grip, _T)
@@ -191,12 +191,12 @@ $extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
     $maybe_unused typedef union ArrQue_Grip$(_T) ArrQue_Grip$(_T)
 #define __comp_gen__T_impl_ArrQue_Grip$(_T...) \
     union ArrQue_Grip$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(buf, S$(_T)); \
             var_(head, usize*); \
             var_(len, usize*); \
             var_(ctx, ArrQue$(_T)); \
-        }; \
+        }); \
         var_(as_raw, ArrQue_Grip) $like_ref; \
     }
 #define __comp_gen__T_use_ArrQue_Grip$(_T...) \
@@ -338,11 +338,11 @@ $extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
 
 #define __comp_anon__ArrQue_Iter$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(que, P_const$$(ArrQue$$(_T))); \
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrQue_Iter) $like_ref; \
     }
 #define __comp_alias__ArrQue_Iter$(_T...) tpl$(ArrQue_Iter, _T)
@@ -350,11 +350,11 @@ $extern fn_((ArrQue_Iter_nextMut(ArrQue_Iter* self, TypeInfo type))(O$u_P$raw));
     $maybe_unused typedef union ArrQue_Iter$(_T) ArrQue_Iter$(_T)
 #define __comp_gen__T_impl_ArrQue_Iter$(_T...) \
     union ArrQue_Iter$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(que, P_const$$(ArrQue$(_T))); \
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrQue_Iter) $like_ref; \
     }
 #define __comp_gen__T_use_ArrQue_Iter$(_T...) \

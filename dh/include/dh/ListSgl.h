@@ -61,10 +61,10 @@ $extern fn_((ListSgl_Link_dataMut(P$ListSgl_Link self, TypeInfo type))(u_P$raw))
 #define T_use_ListSgl_Adp$(_T...) __comp_gen__T_use_ListSgl_Adp$(_T)
 
 struct ListSgl_Adp$raw {
-    struct {
+    T_embed$(struct {
         var_(link, ListSgl_Link);
         var_(type, debug_TypeInfo);
-    };
+    });
     var_(data_, V$raw) $flexible;
 };
 
@@ -109,10 +109,10 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
 
 #define __comp_anon__ListSgl_Link$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(next, O$$(P$$(ListSgl_Link$(_T)))); \
             var_(type, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, ListSgl_Link) $like_ref; \
     }
 #define __comp_alias__ListSgl_Link$(_T...) \
@@ -124,10 +124,10 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
 #define __comp_gen__T_impl_ListSgl_Link$(_T...) \
     T_impl_O$(P$(ListSgl_Link$(_T))); \
     union ListSgl_Link$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(next, O$(P$(ListSgl_Link$(_T)))); \
             var_(type, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, ListSgl_Link) $like_ref; \
     }
 #define __comp_gen__T_use_ListSgl_Link$(_T...) \
@@ -190,16 +190,16 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
 
 #define __comp_anon__ListSgl_Adp$$(_T...) \
     union { \
-        struct { \
-            struct { \
+        T_embed$(struct { \
+            T_embed$(struct { \
                 var_(link, ListSgl_Link$(_T)); \
                 var_(type, debug_TypeInfo); \
-            }; \
-            union { \
+            }); \
+            T_embed$(union { \
                 var_(data, _T); \
                 var_(data_, _T) $like_ref; \
-            }; \
-        }; \
+            }); \
+        }); \
         var_(as_raw, ListSgl_Adp$raw) $flexible; \
     }
 #define __comp_alias__ListSgl_Adp$(_T) \
@@ -208,16 +208,16 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
     $maybe_unused typedef union ListSgl_Adp$(_T) ListSgl_Adp$(_T)
 #define __comp_gen__T_impl_ListSgl_Adp$(_T) \
     union ListSgl_Adp$(_T) { \
-        struct { \
-            struct { \
+        T_embed$(struct { \
+            T_embed$(struct { \
                 var_(link, ListSgl_Link$(_T)); \
                 var_(type, debug_TypeInfo); \
-            }; \
-            union { \
+            }); \
+            T_embed$(union { \
                 var_(data, _T); \
                 var_(data_, _T) $like_ref; \
-            }; \
-        }; \
+            }); \
+        }); \
         var_(as_raw, ListSgl_Adp$raw) $flexible; \
     }
 #define __comp_gen__T_use_ListSgl_Adp$(_T) \
@@ -249,10 +249,10 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
 
 #define __comp_anon__ListSgl$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(first, O$$(P$$(ListSgl_Link$(_T)))); \
             var_(type, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, ListSgl) $like_ref; \
     }
 #define __comp_alias__ListSgl$(_T...) \
@@ -261,10 +261,10 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
     $maybe_unused typedef union ListSgl$(_T) ListSgl$(_T)
 #define __comp_gen__T_impl_ListSgl$(_T) \
     union ListSgl$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(first, O$(P$(ListSgl_Link$(_T)))); \
             var_(type, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, ListSgl) $like_ref; \
     }
 #define __comp_gen__T_use_ListSgl$(_T...) \

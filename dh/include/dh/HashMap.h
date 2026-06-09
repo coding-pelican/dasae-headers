@@ -51,10 +51,10 @@ T_alias$((u_HashCtxFn)(fn_(((*)(u_V$raw val, u_V$raw ctx))(u64) $T)));
 /// the entries array, likely avoiding a cache miss and a potentially
 /// costly function call.
 typedef union HashMap_Ctrl {
-    struct {
+    T_embed$(struct {
         u8 fingerprint : 7;
         u8 used        : 1;
-    };
+    });
     u8 bits;
 } HashMap_Ctrl;
 T_use_P$(HashMap_Ctrl);
@@ -170,12 +170,12 @@ $extern fn_((HashMap_Entry_val(HashMap_Entry self, TypeInfo val_ty))(u_P_const$r
 #define T_use_HashMap_EntryMut$(_K, _V...) __comp_gen__T_use_HashMap_EntryMut$(_K, _V)
 
 typedef union HashMap_EntryMut {
-    struct {
+    T_embed$(struct {
         var_(key, P$raw);
         var_(key_ty, debug_TypeInfo);
         var_(val, P$raw);
         var_(val_ty, debug_TypeInfo);
-    };
+    });
     var_(as_const, HashMap_Entry);
 } HashMap_EntryMut;
 T_use_O$(HashMap_EntryMut);
@@ -469,13 +469,13 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 #define __comp_anon__HashMap_Header$$(_K, _V...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(vals, P$$(_V)); \
             var_(val_ty, debug_TypeInfo); \
             var_(keys, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(cap, u32); \
-        }; \
+        }); \
         var_(as_raw, HashMap_Header) $like_ref; \
     }
 #define __comp_alias__HashMap_Header$(_K, _V...) tpl$(HashMap_Header, _K, _V)
@@ -483,13 +483,13 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     $maybe_unused typedef union HashMap_Header$(_K, _V) HashMap_Header$(_K, _V)
 #define __comp_gen__T_impl_HashMap_Header$(_K, _V...) \
     union HashMap_Header$(_K, _V) { \
-        struct { \
+        T_embed$(struct { \
             var_(vals, P$$(_V)); \
             var_(val_ty, debug_TypeInfo); \
             var_(keys, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(cap, u32); \
-        }; \
+        }); \
         var_(as_raw, HashMap_Header) $like_ref; \
     }
 #define __comp_gen__T_use_HashMap_Header$(_K, _V...) \
@@ -502,18 +502,18 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 #define __comp_anon__HashMap_Pair$$(_K, _V...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(key_ty, debug_TypeInfo); \
             var_(val_ty, debug_TypeInfo); \
-            union { \
+            T_embed$(union { \
                 var_(key, _K); \
                 var_(key_, _K) $like_ref; \
-            }; \
-            union { \
+            }); \
+            T_embed$(union { \
                 var_(val, _V); \
                 var_(val_, _V) $like_ref; \
-            }; \
-        }; \
+            }); \
+        }); \
         var_(as_raw, HashMap_Pair$raw) $flexible; \
     }
 #define __comp_alias__HashMap_Pair$(_K, _V...) tpl$(HashMap_Pair, _K, _V)
@@ -523,18 +523,18 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     T_decl_E$($set(mem_E)(O$(HashMap_Pair$(_K, _V))))
 #define __comp_gen__T_impl_HashMap_Pair$(_K, _V...) \
     union HashMap_Pair$(_K, _V) { \
-        struct { \
+        T_embed$(struct { \
             var_(key_ty, debug_TypeInfo); \
             var_(val_ty, debug_TypeInfo); \
-            union { \
+            T_embed$(union { \
                 var_(key, _K); \
                 var_(key_, _K) $like_ref; \
-            }; \
-            union { \
+            }); \
+            T_embed$(union { \
                 var_(val, _V); \
                 var_(val_, _V) $like_ref; \
-            }; \
-        }; \
+            }); \
+        }); \
         var_(as_raw, HashMap_Pair$raw) $flexible; \
     }; \
     T_impl_O$(HashMap_Pair$(_K, _V)); \
@@ -568,12 +568,12 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 #define __comp_anon__HashMap_Entry$$(_K, _V...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(key, P_const$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(val, P_const$$(_V)); \
             var_(val_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap_Entry) $like_ref; \
     }
 #define __comp_alias__HashMap_Entry$(_K, _V...) tpl$(HashMap_Entry, _K, _V)
@@ -582,12 +582,12 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     T_decl_O$(HashMap_Entry$(_K, _V))
 #define __comp_gen__T_impl_HashMap_Entry$(_K, _V...) \
     union HashMap_Entry$(_K, _V) { \
-        struct { \
+        T_embed$(struct { \
             var_(key, P_const$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(val, P_const$$(_V)); \
             var_(val_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap_Entry) $like_ref; \
     }; \
     T_impl_O$(HashMap_Entry$(_K, _V))
@@ -610,15 +610,15 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 #define __comp_anon__HashMap_EntryMut$$(_K, _V...) \
     union { \
-        union { \
-            struct { \
+        T_embed$(union { \
+            T_embed$(struct { \
                 var_(key, P$$(_K)); \
                 var_(key_ty, debug_TypeInfo); \
                 var_(val, P$$(_V)); \
                 var_(val_ty, debug_TypeInfo); \
-            }; \
+            }); \
             var_(as_const, HashMap_Entry$$(_K, _V)); \
-        }; \
+        }); \
         var_(as_raw, HashMap_EntryMut) $like_ref; \
     }
 #define __comp_alias__HashMap_EntryMut$(_K, _V...) tpl$(HashMap_EntryMut, _K, _V)
@@ -627,15 +627,15 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     T_decl_O$(HashMap_EntryMut$(_K, _V))
 #define __comp_gen__T_impl_HashMap_EntryMut$(_K, _V...) \
     union HashMap_EntryMut$(_K, _V) { \
-        union { \
-            struct { \
+        T_embed$(union { \
+            T_embed$(struct { \
                 var_(key, P$$(_K)); \
                 var_(key_ty, debug_TypeInfo); \
                 var_(val, P$$(_V)); \
                 var_(val_ty, debug_TypeInfo); \
-            }; \
+            }); \
             var_(as_const, HashMap_Entry$(_K, _V)); \
-        }; \
+        }); \
         var_(as_raw, HashMap_EntryMut) $like_ref; \
     }; \
     T_impl_O$(HashMap_EntryMut$(_K, _V))
@@ -658,13 +658,13 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 #define __comp_anon__HashMap_Ensured$$(_K, _V...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(key, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(val, P$$(_V)); \
             var_(val_ty, debug_TypeInfo); \
             var_(found_existing, bool); \
-        }; \
+        }); \
         var_(as_raw, HashMap_Ensured) $like_ref; \
     }
 #define __comp_alias__HashMap_Ensured$(_K, _V...) tpl$(HashMap_Ensured, _K, _V)
@@ -674,13 +674,13 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     T_decl_E$($set(mem_E)(HashMap_Ensured$(_K, _V)))
 #define __comp_gen__T_impl_HashMap_Ensured$(_K, _V...) \
     union HashMap_Ensured$(_K, _V) { \
-        struct { \
+        T_embed$(struct { \
             var_(key, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
             var_(val, P$$(_V)); \
             var_(val_ty, debug_TypeInfo); \
             var_(found_existing, bool); \
-        }; \
+        }); \
         var_(as_raw, HashMap_Ensured) $like_ref; \
     }; \
     T_impl_O$(HashMap_Ensured$(_K, _V)); \
@@ -732,14 +732,14 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 #define __comp_anon__HashMap$$(_K, _V...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(metadata, O$P$HashMap_Ctrl); \
             var_(size, u32); \
             var_(available, u32); \
             var_(ctx, P_const$HashMap_Ctx); \
             var_(key_ty, debug_TypeInfo); \
             var_(val_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap) $like_ref; \
     }
 #define __comp_alias__HashMap$(_K, _V...) tpl$(HashMap, _K, _V)
@@ -748,14 +748,14 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     T_decl_E$($set(mem_E)(HashMap$(_K, _V)))
 #define __comp_gen__T_impl_HashMap$(_K, _V...) \
     union HashMap$(_K, _V) { \
-        struct { \
+        T_embed$(struct { \
             var_(metadata, O$P$HashMap_Ctrl); \
             var_(size, u32); \
             var_(available, u32); \
             var_(ctx, P_const$HashMap_Ctx); \
             var_(key_ty, debug_TypeInfo); \
             var_(val_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap) $like_ref; \
     }; \
     T_impl_E$($set(mem_E)(HashMap$(_K, _V)))
@@ -975,12 +975,12 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 #define __comp_anon__HashMap_Iter$$(_K, _V...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(map, P_const$$(HashMap$(_K, _V))); \
             var_(idx, usize); \
             var_(key_ty, debug_TypeInfo); \
             var_(val_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap_Iter) $like_ref; \
     }
 #define __comp_alias__HashMap_Iter$(_K, _V...) tpl$(HashMap_Iter, _K, _V)
@@ -988,12 +988,12 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     $maybe_unused typedef union HashMap_Iter$(_K, _V) HashMap_Iter$(_K, _V)
 #define __comp_gen__T_impl_HashMap_Iter$(_K, _V...) \
     union HashMap_Iter$(_K, _V) { \
-        struct { \
+        T_embed$(struct { \
             var_(map, P_const$$(HashMap$(_K, _V))); \
             var_(idx, usize); \
             var_(key_ty, debug_TypeInfo); \
             var_(val_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap_Iter) $like_ref; \
     }
 #define __comp_gen__T_use_HashMap_Iter$(_K, _V...) \
@@ -1020,12 +1020,12 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 #define __comp_anon__HashMap_KeyIter$$(_K, _V...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(keys, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap_KeyIter) $like_ref; \
     }
 #define __comp_alias__HashMap_KeyIter$(_K, _V...) tpl$(HashMap_KeyIter, _K, _V)
@@ -1033,12 +1033,12 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     $maybe_unused typedef union HashMap_KeyIter$(_K, _V) HashMap_KeyIter$(_K, _V)
 #define __comp_gen__T_impl_HashMap_KeyIter$(_K, _V...) \
     union HashMap_KeyIter$(_K, _V) { \
-        struct { \
+        T_embed$(struct { \
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(keys, P$$(_K)); \
             var_(key_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap_KeyIter) $like_ref; \
     }
 #define __comp_gen__T_use_HashMap_KeyIter$(_K, _V...) \
@@ -1066,12 +1066,12 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 /* clang-format off */
 #define __comp_anon__HashMap_ValIter$$(_K, _V...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(vals, P$$(_V)); \
             var_(val_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap_ValIter) $like_ref; \
     }
 #define __comp_alias__HashMap_ValIter$(_K, _V...) tpl$(HashMap_ValIter, _K, _V)
@@ -1079,12 +1079,12 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
     $maybe_unused typedef union HashMap_ValIter$(_K, _V) HashMap_ValIter$(_K, _V)
 #define __comp_gen__T_impl_HashMap_ValIter$(_K, _V...) \
     union HashMap_ValIter$(_K, _V) { \
-        struct { \
+        T_embed$(struct { \
             var_(len, u32); \
             var_(metadata, P$HashMap_Ctrl); \
             var_(vals, P$$(_V)); \
             var_(val_ty, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, HashMap_ValIter) $like_ref; \
     }
 #define __comp_gen__T_use_HashMap_ValIter$(_K, _V...) \

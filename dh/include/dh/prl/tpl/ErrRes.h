@@ -13,13 +13,13 @@ extern "C" {
 /* Result Anonymous */
 #define E$$(...) pp_overload(__E$$, __VA_ARGS__)(__VA_ARGS__)
 #define __E$$_1(_T...) TypeOf(union { \
-    struct { \
+    T_embed$(struct { \
         var_(is_ok, bool); \
-        union { \
+        var_(payload, union { \
             var_(err, EAny); \
             var_(ok, _T); \
-        } payload; \
-    }; \
+        }); \
+    }); \
     var_(as_raw $like_ref, E$raw); \
 })
 #define __E$$_2(_tag, _ESet_T...) pp_join(_, __E$$, _tag)(__E$$__expandESet _ESet_T)
@@ -27,13 +27,13 @@ extern "C" {
 #define __E$$__expandT(_T...) _T
 #define __E$$_$_set(...) __E$$__withESet(__VA_ARGS__)
 #define __E$$__withESet(_E, _T...) TypeOf(union { \
-    struct { \
+    T_embed$(struct { \
         var_(is_ok, bool); \
-        union { \
+        var_(payload, union { \
             var_(err, _E); \
             var_(ok, _T); \
-        } payload; \
-    }; \
+        }); \
+    }); \
     var_(as_raw $like_ref, E$raw); \
 })
 /* Result Alias */
@@ -50,13 +50,13 @@ extern "C" {
 #define T_impl_E$(...) pp_overload(__T_impl_E$, __VA_ARGS__)(__VA_ARGS__)
 #define __T_impl_E$_1(_T...) \
     union E$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(is_ok, bool); \
-            union { \
+            var_(payload, union { \
                 var_(err, EAny); \
                 var_(ok, _T); \
-            } payload; \
-        }; \
+            }); \
+        }); \
         var_(as_raw $like_ref, E$raw); \
     }
 #define __T_impl_E$_2(_tag, _ESet_T...) \
@@ -66,13 +66,13 @@ extern "C" {
 #define __T_impl_E$_$_set(...) __T_impl_E$__withESet(__VA_ARGS__)
 #define __T_impl_E$__withESet(_E, _T...) \
     union E$($set(_E)(_T)) { \
-        struct { \
+        T_embed$(struct { \
             var_(is_ok, bool); \
-            union { \
+            var_(payload, union { \
                 var_(err, _E); \
                 var_(ok, _T); \
-            } payload; \
-        }; \
+            }); \
+        }); \
         var_(as_raw $like_ref, E$raw); \
     }
 #define T_use_E$(_T...) \
@@ -85,13 +85,13 @@ extern "C" {
 /* Error void result (special case) */
 typedef union E$Void E$Void, E$void;
 // typedef union E$Void {
-//     struct {
+//     T_embed$(struct {
 //         var_(is_ok, bool);
-//         union {
+//         var_(payload, union {
 //             var_(err, EAny);
 //             var_(ok, Void);
-//         } payload;
-//     };
+//         });
+//     });
 //     var_(as_raw $like_ref, E$raw);
 // } E$Void, E$void;
 

@@ -1,5 +1,7 @@
+#define main_no_args pp_true
 #include "dh-main.h"
 #include "dh/meta.h"
+#include "dh/prl/va.h"
 #include <stdio.h>
 
 #define draft_fmt__max_args usize_(3)
@@ -53,67 +55,19 @@ $attr($inline_always)
 $static fn_((draft_fmt__writeF64(S$u8 mem, draft_fmt__ArgTag tag, f64 arg))(usize));
 $attr($inline_always)
 $static fn_((draft_fmt__writeSliU8(S$u8 mem, draft_fmt__ArgTag tag, S_const$u8 arg))(usize));
-#define draft_fmt__arg(_arg...) _arg
 
-#define draft_fmt__formatTuple(_args...) \
-    pp_overload(__draft_fmt__formatTuple, _args)(_args)
-
-#define __draft_fmt__formatTuple_2(_mem, _fmt) ({ \
-    let __mem = _mem; \
-    let __fmt = _fmt; \
-    let __tuple = $tup(); \
-    let __ty_fields = typeInfos$(Void); \
-    let __tuple_ref = P_meta((u_typeInfoRecord(__ty_fields))(as$(P_const$raw)(&__tuple))); \
-    draft_fmt__formatRuntime(__mem, __fmt, __ty_fields, __tuple_ref); \
-})
-
-#define __draft_fmt__formatTuple_3(_mem, _fmt, _arg0...) ({ \
-    let __mem = _mem; \
-    let __fmt = _fmt; \
-    let __arg0 = draft_fmt__arg _arg0; \
-    let __tuple = $tup((__arg0)); \
-    let __ty_fields = typeInfos$(TypeOf(__tuple.$0)); \
-    let __tuple_ref = P_meta((u_typeInfoRecord(__ty_fields))(as$(P_const$raw)(&__tuple))); \
-    draft_fmt__formatRuntime(__mem, __fmt, __ty_fields, __tuple_ref); \
-})
-
-#define __draft_fmt__formatTuple_4(_mem, _fmt, _arg0, _arg1...) ({ \
-    let __mem = _mem; \
-    let __fmt = _fmt; \
-    let __arg0 = draft_fmt__arg _arg0; \
-    let __arg1 = draft_fmt__arg _arg1; \
-    let __tuple = $tup((__arg0), (__arg1)); \
-    let __ty_fields = typeInfos$(TypeOf(__tuple.$0), TypeOf(__tuple.$1)); \
-    let __tuple_ref = P_meta((u_typeInfoRecord(__ty_fields))(as$(P_const$raw)(&__tuple))); \
-    draft_fmt__formatRuntime(__mem, __fmt, __ty_fields, __tuple_ref); \
-})
-
-#define __draft_fmt__formatTuple_5(_mem, _fmt, _arg0, _arg1, _arg2...) ({ \
-    let __mem = _mem; \
-    let __fmt = _fmt; \
-    let __arg0 = draft_fmt__arg _arg0; \
-    let __arg1 = draft_fmt__arg _arg1; \
-    let __arg2 = draft_fmt__arg _arg2; \
-    let __tuple = $tup((__arg0), (__arg1), (__arg2)); \
-    let __ty_fields = typeInfos$(TypeOf(__tuple.$0), TypeOf(__tuple.$1), TypeOf(__tuple.$2)); \
-    let __tuple_ref = P_meta((u_typeInfoRecord(__ty_fields))(as$(P_const$raw)(&__tuple))); \
-    draft_fmt__formatRuntime(__mem, __fmt, __ty_fields, __tuple_ref); \
-})
-
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
-    let_ignore = args;
-
+fn_((main(void))(E$void) $scope) {
     var_(mem0, A$$(64, u8)) = A_zero();
     var_(mem1, A$$(64, u8)) = A_zero();
     var_(mem2, A$$(64, u8)) = A_zero();
     var_(mem3, A$$(64, u8)) = A_zero();
     var_(mem4, A$$(64, u8)) = A_zero();
 
-    let s0 = try_(draft_fmt__formatTuple(A_ref$((S$u8)mem0), u8_l("case0: literal")));
-    let s1 = try_(draft_fmt__formatTuple(A_ref$((S$u8)mem1), u8_l("case1: {i}"), (123)));
-    let s2 = try_(draft_fmt__formatTuple(A_ref$((S$u8)mem2), u8_l("case2: {s} {i}"), (u8_l("world")), (123)));
-    let s3 = try_(draft_fmt__formatTuple(A_ref$((S$u8)mem3), u8_l("case3: {s} {u} {i}"), (u8_l("world")), (u32_(7)), (-5)));
-    let s4 = try_(draft_fmt__formatTuple(A_ref$((S$u8)mem4), u8_l("case4: {1:i}{0:s}{0:s}{1:i}"), (u8_l("456")), (123)));
+    let s0 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem0), u8_l("case0: literal"))()));
+    let s1 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem1), u8_l("case1: {i}"))(123)));
+    let s2 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem2), u8_l("case2: {s} {i}"))(u8_l("world"), 123)));
+    let s3 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem3), u8_l("case3: {s} {u} {i}"))(u8_l("world"), u32_(7), -5)));
+    let s4 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem4), u8_l("case4: {1:i}{0:s}{0:s}{1:i}"))(u8_l("456"), 123)));
 
     puts(as$(const char*)(s0.ptr));
     puts(as$(const char*)(s1.ptr));

@@ -135,12 +135,12 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
 
 #define __comp_anon__ArrPDeq$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(items, S$$(_T)); \
             var_(cap, usize); \
             var_(ctx, P_const$ArrPDeq_Ctx); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrPDeq) $like_ref; \
     }
 #define __comp_alias__ArrPDeq$(_T...) tpl$(ArrPDeq, _T)
@@ -151,12 +151,12 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
     T_decl_E$($set(mem_E)(ArrPDeq$(_T)))
 #define __comp_gen__T_impl_ArrPDeq$(_T...) \
     union ArrPDeq$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(items, S$(_T)); \
             var_(cap, usize); \
             var_(ctx, P_const$ArrPDeq_Ctx); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrPDeq) $like_ref; \
     }; \
     T_impl_O$(ArrPDeq$(_T)); \
@@ -351,11 +351,11 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
 
 #define __comp_anon__ArrPDeq_Iter$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(deq, P_const$$(ArrPDeq$$(_T))); \
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrPDeq_Iter) $like_ref; \
     }
 #define __comp_alias__ArrPDeq_Iter$(_T...) tpl$(ArrPDeq_Iter, _T)
@@ -363,11 +363,11 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
     $maybe_unused typedef union ArrPDeq_Iter$(_T) ArrPDeq_Iter$(_T)
 #define __comp_gen__T_impl_ArrPDeq_Iter$(_T...) \
     union ArrPDeq_Iter$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(deq, P_const$$(ArrPDeq$(_T))); \
             var_(idx, usize); \
             debug_only(var_(type, TypeInfo);) \
-        }; \
+        }); \
         var_(as_raw, ArrPDeq_Iter) $like_ref; \
     }
 #define __comp_gen__T_use_ArrPDeq_Iter$(_T...) \

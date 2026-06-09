@@ -29,6 +29,7 @@ extern "C" {
 
 #include "prl/Co.h"
 #include "prl/Clsr.h"
+#include "prl/va.h"
 
 #include "prl/CompHash.h"
 #include "prl/Err.h"

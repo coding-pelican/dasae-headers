@@ -13,13 +13,13 @@ extern "C" {
 /* Optional Anonymous */
 #define O$$(_T...) \
     TypeOf(union { \
-        struct { \
+        T_embed$(struct { \
             var_(is_some, bool); \
             union { \
                 var_(none, Void); \
                 var_(some, _T); \
             } payload; \
-        }; \
+        }); \
         var_(as_raw $like_ref, O$raw); \
     })
 /* Optional Alias */
@@ -29,13 +29,13 @@ extern "C" {
     $maybe_unused typedef union O$(_T) O$(_T)
 #define T_impl_O$(_T...) \
     union O$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(is_some, bool); \
             union { \
                 var_(none, Void); \
                 var_(some, _T); \
             } payload; \
-        }; \
+        }); \
         var_(as_raw $like_ref, O$raw); \
     }
 #define T_use_O$(_T...) \
@@ -47,13 +47,13 @@ extern "C" {
 /* Optional void value (special case) */
 typedef union O$Void O$Void, O$void;
 // typedef union O$Void {
-//     struct {
+//     T_embed$(struct {
 //         var_(is_some, bool);
 //         union {
 //             var_(none, Void);
 //             var_(some, Void);
 //         } payload;
-//     };
+//     });
 //     var_(as_raw $like_ref, O$raw);
 // } O$Void, O$void;
 

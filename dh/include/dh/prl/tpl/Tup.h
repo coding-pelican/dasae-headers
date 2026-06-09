@@ -21,12 +21,17 @@ extern "C" {
 #define __Tup$_6(_Ts...) tpl$1T$2U$3V$4W$5X$6Y(Tup, _Ts)
 #define __Tup$_7(_Ts...) tpl$1T$2U$3V$4W$5X$6Y$7Z(Tup, _Ts)
 #define __Tup$_8(_Ts...) tpl$1T$2U$3V$4W$5X$6Y$7Z$8A(Tup, _Ts)
-#define Tup$$(_Ts...) \
-    struct { \
+#define Tup$$(_Ts...) TypeOf(union { \
+    T_embed$(struct { \
         pp_overload(__Tup$__impl, _Ts)(_Ts); \
-    }
-#define T_use_Tup$(_Ts...) T_alias$((Tup$(_Ts))(struct Tup$(_Ts)) { \
-    pp_overload(__Tup$__impl, _Ts)(_Ts); \
+    }); \
+    var_(as_raw, Tup$raw) $flexible; \
+})
+#define T_use_Tup$(_Ts...) T_alias$((Tup$(_Ts))(union Tup$(_Ts)) { \
+    T_embed$(struct { \
+        pp_overload(__Tup$__impl, _Ts)(_Ts); \
+    }); \
+    var_(as_raw, Tup$raw) $flexible; \
 })
 #define __Tup$__impl_0(...) \
     T_embed$(Void)

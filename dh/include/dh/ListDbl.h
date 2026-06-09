@@ -56,10 +56,10 @@ $extern fn_((ListDbl_Link_dataMut(P$ListDbl_Link self, TypeInfo type))(u_P$raw))
 #define T_use_ListDbl_Adp$(_T...) __comp_gen__T_use_ListDbl_Adp$(_T)
 
 struct ListDbl_Adp$raw {
-    struct {
+    T_embed$(struct {
         var_(link, ListDbl_Link);
         var_(type, debug_TypeInfo);
-    };
+    });
     var_(data, V$raw) $flexible;
 };
 
@@ -111,11 +111,11 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
 
 #define __comp_anon__ListDbl_Link$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(prev, O$$(P$$(ListDbl_Link$(_T)))); \
             var_(next, O$$(P$$(ListDbl_Link$(_T)))); \
             var_(type, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, ListDbl_Link) $like_ref; \
     }
 #define __comp_alias__ListDbl_Link$(_T...) \
@@ -127,11 +127,11 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
 #define __comp_gen__T_impl_ListDbl_Link$(_T...) \
     T_impl_O$(P$(ListDbl_Link$(_T))); \
     union ListDbl_Link$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(prev, O$(P$(ListDbl_Link$(_T)))); \
             var_(next, O$(P$(ListDbl_Link$(_T)))); \
             var_(type, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, ListDbl_Link) $like_ref; \
     }
 #define __comp_gen__T_use_ListDbl_Link$(_T...) \
@@ -168,16 +168,16 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
 
 #define __comp_anon__ListDbl_Adp$$(_T...) \
     union { \
-        struct { \
-            struct { \
+        T_embed$(struct { \
+            T_embed$(struct { \
                 var_(link, ListDbl_Link$(_T)); \
                 var_(type, debug_TypeInfo); \
-            }; \
-            union { \
+            }); \
+            T_embed$(union { \
                 var_(data, _T); \
                 var_(data_, _T) $like_ref; \
-            }; \
-        }; \
+            }); \
+        }); \
         var_(as_raw, ListDbl_Adp$raw) $flexible; \
     }
 #define __comp_alias__ListDbl_Adp$(_T...) \
@@ -186,16 +186,16 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
     $maybe_unused typedef union ListDbl_Adp$(_T) ListDbl_Adp$(_T)
 #define __comp_gen__T_impl_ListDbl_Adp$(_T...) \
     union ListDbl_Adp$(_T) { \
-        struct { \
-            struct { \
+        T_embed$(struct { \
+            T_embed$(struct { \
                 var_(link, ListDbl_Link$(_T)); \
                 var_(type, debug_TypeInfo); \
-            }; \
-            union { \
+            }); \
+            T_embed$(union { \
                 var_(data, _T); \
                 var_(data_, _T) $like_ref; \
-            }; \
-        }; \
+            }); \
+        }); \
         var_(as_raw, ListDbl_Adp$raw) $flexible; \
     }
 #define __comp_gen__T_use_ListDbl_Adp$(_T...) \
@@ -237,12 +237,12 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
 
 #define __comp_anon__ListDbl$$(_T...) \
     union { \
-        struct { \
+        T_embed$(struct { \
             var_(first, O$$(P$$(ListDbl_Link$(_T)))); \
             var_(last, O$$(P$$(ListDbl_Link$(_T)))); \
             var_(len, usize); \
             var_(type, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, ListDbl) $like_ref; \
     }
 #define __comp_alias__ListDbl$(_T...) \
@@ -251,12 +251,12 @@ $extern fn_((ListDbl_len(const ListDbl* self))(usize));
     $maybe_unused typedef union ListDbl$(_T) ListDbl$(_T)
 #define __comp_gen__T_impl_ListDbl$(_T...) \
     union ListDbl$(_T) { \
-        struct { \
+        T_embed$(struct { \
             var_(first, O$(P$(ListDbl_Link$(_T)))); \
             var_(last, O$(P$(ListDbl_Link$(_T)))); \
             var_(len, usize); \
             var_(type, debug_TypeInfo); \
-        }; \
+        }); \
         var_(as_raw, ListDbl) $like_ref; \
     }
 #define __comp_gen__T_use_ListDbl$(_T...) \

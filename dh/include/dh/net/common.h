@@ -59,10 +59,10 @@ T_alias$((net_Ip6Addr)(struct net_Ip6Addr {
 }));
 T_alias$((net_IpAddr)(struct net_IpAddr {
     var_(family, net_Addr_Family);
-    union {
+    T_embed$(union {
         var_(ip4, net_Ip4Addr);
         var_(ip6, net_Ip6Addr);
-    };
+    });
 }));
 T_use_E$(net_IpAddr);
 

@@ -12,11 +12,11 @@ extern "C" {
 
 /* Array Anonymous */
 #define A$$(_N, _T...) \
-    union { \
+    TypeOf(union { \
         var_(val, $A$(_N, _T)); \
         var_(as_raw, A$raw); \
         var_(ref_raw $like_ref, A$raw); \
-    }
+    })
 /* Array Alias */
 #define A$(_N, _T...) tpl$(tpl$(A, _N), _T)
 /* Array Template */
@@ -207,10 +207,10 @@ extern "C" {
     var __lhs = &(_lhs); \
     var __rhs = &(_rhs); \
     typedef union { \
-        struct { \
+        T_embed$(struct { \
             var_(lhs, TypeOf(*__lhs)); \
             var_(rhs, TypeOf(*__rhs)); \
-        }; \
+        }); \
         var_(catted, _T); \
     } Catting; \
     l$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
