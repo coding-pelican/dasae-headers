@@ -51,6 +51,7 @@ static void test_cmd_parse(void);
 static void test_compiler_mode_contracts(void);
 static void test_makefile_mode_contracts(void);
 static void test_project_detection(void);
+static void test_clean_prefers_local_build_dir(void);
 static void test_target_request_resolution(void);
 static void test_explicit_file_build_uses_file_project(void);
 static void test_skip_source_filters(void);
@@ -75,6 +76,7 @@ int main(void) {
     RUN_TEST(test_compiler_mode_contracts);
     RUN_TEST(test_makefile_mode_contracts);
     RUN_TEST(test_project_detection);
+    RUN_TEST(test_clean_prefers_local_build_dir);
     RUN_TEST(test_target_request_resolution);
     RUN_TEST(test_explicit_file_build_uses_file_project);
     RUN_TEST(test_skip_source_filters);
@@ -1766,6 +1768,57 @@ static void test_project_detection(void) {
     TEST_ASSERT(!proj->pch_enabled);
     dal_c_Project_cleanup(&proj);
     free(target_root_compat);
+}
+
+static void test_clean_prefers_local_build_dir(void) {
+    test_reset_temp_root();
+
+    char* original_cwd = env_getCWD();
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "clean-local-project");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* local_dir = path_join(project_root, "lab/drafts");
+    char* project_build_dev = path_join(project_root, "build/dev");
+    char* local_build_dev = path_join(local_dir, "build/dev");
+
+    TEST_ASSERT(original_cwd != NULL);
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(local_dir != NULL);
+    TEST_ASSERT(project_build_dev != NULL);
+    TEST_ASSERT(local_build_dev != NULL);
+
+    TEST_ASSERT(dir_createRecur(project_root));
+    TEST_ASSERT(dir_createRecur(local_dir));
+    TEST_ASSERT(file_write(project_dh, "output=clean-local-project\n"));
+    TEST_ASSERT(dir_createRecur(project_build_dev));
+    TEST_ASSERT(dir_createRecur(local_build_dev));
+    TEST_ASSERT(env_setCWD(local_dir));
+
+    const char* argv[] = { dal_c_tool_name, "clean", "dev", NULL };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+    TEST_ASSERT(cmd != NULL);
+    dal_c_Project* proj = dal_c_Project_detect(cmd);
+    TEST_ASSERT(proj != NULL);
+    TEST_ASSERT(proj->root != NULL);
+    TEST_ASSERT(dal_c_Cmd_cleanTarget(cmd, proj) == 0);
+    TEST_ASSERT(!path_exists(local_build_dev));
+    TEST_ASSERT(path_isDir(project_build_dev));
+
+    dal_c_Project_cleanup(&proj);
+    dal_c_Cmd_cleanup(&cmd);
+    TEST_ASSERT(env_setCWD(original_cwd));
+    (void)dir_removeRecur(temp_root);
+    TEST_ASSERT(!path_exists(temp_root));
+
+    free(local_build_dev);
+    free(project_build_dev);
+    free(local_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+    free(original_cwd);
 }
 
 static void test_target_request_resolution(void) {

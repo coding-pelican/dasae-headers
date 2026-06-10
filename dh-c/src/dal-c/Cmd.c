@@ -1098,11 +1098,17 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         if (dsl_result != 0) { return dsl_result; }
     }
 
-    char* build_dir = proj->root ? dal_c_Project_getBuildDir(proj) : NULL;
+    char* cwd = env_getCWD();
+    char* cwd_build_dir = cwd ? path_join(cwd, dal_c_dir_build) : NULL;
+    bool clean_local_build = !self->payload.clean.dsl_first
+                          && !recursive
+                          && cwd_build_dir
+                          && path_isDir(cwd_build_dir)
+                          && (!proj->root || !cwd || !str_eql(cwd, proj->root));
+
+    char* build_dir = clean_local_build ? strdup(cwd_build_dir) : (proj->root ? dal_c_Project_getBuildDir(proj) : NULL);
     if (!build_dir) {
-        char* cwd = env_getCWD();
         build_dir = cwd ? path_join(cwd, dal_c_dir_build) : strdup(dal_c_dir_build);
-        free(cwd);
     }
     char* build_target = NULL;
     if (self->profile_explicit && profile) {
@@ -1120,6 +1126,17 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     }
     free(build_target);
     free(build_dir);
+
+    if (clean_local_build) {
+        free(cwd_build_dir);
+        free(cwd);
+        if (!cleaned) {
+            printf("Nothing to clean\n");
+        }
+        return 0;
+    }
+    free(cwd_build_dir);
+    free(cwd);
 
     if (proj->root && !cache_only && !self->profile_explicit) {
         char* deps_dir = dal_c_Project_getDepsDir(proj);
