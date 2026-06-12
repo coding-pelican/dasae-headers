@@ -1,11 +1,7 @@
 #define main_no_args pp_true
 #include "dh-main.h"
 #include "dh/meta.h"
-#include "dh/prl/va.h"
 #include <stdio.h>
-
-#define draft_fmt__max_args usize_(3)
-#define draft_fmt__max_occurrences usize_(4)
 
 typedef enum_((draft_fmt__ArgTag $fits($packed))(
     draft_fmt__ArgTag_void = 0,
@@ -24,6 +20,7 @@ typedef struct draft_fmt__Iter {
 
 $attr($inline_always)
 $static fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8));
+
 $attr($inline_always)
 $static fn_((draft_fmt__Iter_init(S_const$u8 fmt))(draft_fmt__Iter));
 $attr($inline_always)
@@ -33,28 +30,30 @@ $static fn_((draft_fmt__Iter_writeNext(
     S_const$TypeInfo fields,
     u_P_const$raw tuple
 ))(O$usize));
+
 $attr($inline_always)
 $static fn_((draft_fmt__findFirstUnit(S_const$u8 mem, u8 unit))(O$usize));
 $attr($inline_always)
 $static fn_((draft_fmt__findRequiredUnit(S_const$u8 mem, u8 unit))(usize));
 $attr($inline_always)
+$static fn_((draft_fmt__copyLiteral(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize));
+$attr($inline_always)
 $static fn_((draft_fmt__argIndex(S_const$u8 spec, usize occurrence_idx))(usize));
 $attr($inline_always)
 $static fn_((draft_fmt__argTag(S_const$u8 spec))(draft_fmt__ArgTag));
-$attr($inline_always)
-$static fn_((draft_fmt__copyLiteral(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize));
+
 $attr($inline_always)
 $static fn_((draft_fmt__writeField(S$u8 mem, draft_fmt__ArgTag tag, u_P_const$raw field))(usize));
 $attr($inline_always)
-$static fn_((draft_fmt__writeVoid(S$u8 mem, draft_fmt__ArgTag tag, Void arg))(usize));
+$static fn_((draft_fmt__writeVoid(S$u8 mem, Void arg))(usize));
 $attr($inline_always)
-$static fn_((draft_fmt__writeI32(S$u8 mem, draft_fmt__ArgTag tag, i32 arg))(usize));
+$static fn_((draft_fmt__writeU32(S$u8 mem, u32 arg, S_const$u8 digits))(usize));
 $attr($inline_always)
-$static fn_((draft_fmt__writeU32(S$u8 mem, draft_fmt__ArgTag tag, u32 arg))(usize));
+$static fn_((draft_fmt__writeI32(S$u8 mem, i32 arg))(usize));
 $attr($inline_always)
-$static fn_((draft_fmt__writeF64(S$u8 mem, draft_fmt__ArgTag tag, f64 arg))(usize));
+$static fn_((draft_fmt__writeF64(S$u8 mem, f64 arg))(usize));
 $attr($inline_always)
-$static fn_((draft_fmt__writeSliU8(S$u8 mem, draft_fmt__ArgTag tag, S_const$u8 arg))(usize));
+$static fn_((draft_fmt__writeSliU8(S$u8 mem, S_const$u8 arg))(usize));
 
 fn_((main(void))(E$void) $scope) {
     var_(mem0, A$$(64, u8)) = A_zero();
@@ -62,18 +61,21 @@ fn_((main(void))(E$void) $scope) {
     var_(mem2, A$$(64, u8)) = A_zero();
     var_(mem3, A$$(64, u8)) = A_zero();
     var_(mem4, A$$(64, u8)) = A_zero();
+    var_(mem5, A$$(64, u8)) = A_zero();
 
     let s0 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem0), u8_l("case0: literal"))()));
-    let s1 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem1), u8_l("case1: {i}"))(123)));
-    let s2 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem2), u8_l("case2: {s} {i}"))(u8_l("world"), 123)));
-    let s3 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem3), u8_l("case3: {s} {u} {i}"))(u8_l("world"), u32_(7), -5)));
-    let s4 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem4), u8_l("case4: {1:i}{0:s}{0:s}{1:i}"))(u8_l("456"), 123)));
+    let s1 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem1), u8_l("case1: {0}"))(Void_())));
+    let s2 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem2), u8_l("case2: {i}"))(123)));
+    let s3 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem3), u8_l("case3: {s} {i}"))(u8_l("world"), 123)));
+    let s4 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem4), u8_l("case4: {s} {u} {i}"))(u8_l("world"), u32_(7), -5)));
+    let s5 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem5), u8_l("case5: {1:i}{0:s}{0:s}{1:i}"))(u8_l("456"), 123)));
 
     puts(as$(const char*)(s0.ptr));
     puts(as$(const char*)(s1.ptr));
     puts(as$(const char*)(s2.ptr));
     puts(as$(const char*)(s3.ptr));
     puts(as$(const char*)(s4.ptr));
+    puts(as$(const char*)(s5.ptr));
 
     return_ok({});
 } $unscoped(fn);
@@ -131,14 +133,15 @@ fn_((draft_fmt__Iter_writeNext(
 
 fn_((draft_fmt__findFirstUnit(S_const$u8 mem, u8 unit))(O$usize) $scope) {
     return mem_findFirstUnitBytes(mem, unit);
-    // for_(($rf(0), $s(mem))(idx, elem)) {
-    //     if (*elem == unit) return_some(idx);
-    // } $end(for);
-    // return_none();
 } $unscoped(fn);
 
 fn_((draft_fmt__findRequiredUnit(S_const$u8 mem, u8 unit))(usize)) {
     return unwrap_(draft_fmt__findFirstUnit(mem, unit));
+};
+
+fn_((draft_fmt__copyLiteral(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize)) {
+    let_ignore = mem_copyBytes(mem, S_slice((fmt)$r(start, start + len)));
+    return len;
 };
 
 fn_((draft_fmt__argIndex(S_const$u8 spec, usize occurrence_idx))(usize)) {
@@ -153,63 +156,70 @@ fn_((draft_fmt__argTag(S_const$u8 spec))(draft_fmt__ArgTag)) {
     claim_assert(spec.len == 1 || spec.len == 3);
     let spec_ch = spec.len == 1 ? *S_at((spec)[0]) : *S_at((spec)[2]);
     switch (spec_ch) {
-    case u8_c('0'): return draft_fmt__ArgTag_void;
-    case u8_c('u'): return draft_fmt__ArgTag_u32;
-    case u8_c('d'): return draft_fmt__ArgTag_i32;
-    case u8_c('i'): return draft_fmt__ArgTag_i32;
-    case u8_c('f'): return draft_fmt__ArgTag_f64;
-    case u8_c('s'): return draft_fmt__ArgTag_sli_u8;
-    default: claim_unreachable;
-    }
-};
-
-fn_((draft_fmt__copyLiteral(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize)) {
-    let_ignore = mem_copyBytes(mem, S_slice((fmt)$r(start, start + len)));
-    return len;
+    case_((u8_c('0'))) return draft_fmt__ArgTag_void $end(case);
+    case_((u8_c('u'))) return draft_fmt__ArgTag_u32 $end(case);
+    case_((u8_c('i'))) return draft_fmt__ArgTag_i32 $end(case);
+    case_((u8_c('d'))) return draft_fmt__ArgTag_i32 $end(case);
+    case_((u8_c('f'))) return draft_fmt__ArgTag_f64 $end(case);
+    case_((u8_c('s'))) return draft_fmt__ArgTag_sli_u8 $end(case);
+    default_() claim_unreachable $end(default);
+    };
 };
 
 fn_((draft_fmt__writeField(S$u8 mem, draft_fmt__ArgTag tag, u_P_const$raw field))(usize)) {
     switch (tag) {
-    case draft_fmt__ArgTag_void: {
+    case_((draft_fmt__ArgTag_void)) {
         claim_assert(tag == draft_fmt__ArgTag_void);
         claim_assert(TypeInfo_eql(field.type, typeInfo$(Void)));
-        return draft_fmt__writeVoid(mem, tag, *u_castP$((const Void*)(field)));
-    }
-    case draft_fmt__ArgTag_i32: {
-        claim_assert(tag == draft_fmt__ArgTag_i32);
-        claim_assert(TypeInfo_eql(field.type, typeInfo$(i32)));
-        return draft_fmt__writeI32(mem, tag, *u_castP$((const i32*)(field)));
-    }
-    case draft_fmt__ArgTag_u32: {
+        return draft_fmt__writeVoid(mem, *u_castP$((const Void*)(field)));
+    } $end(case);
+    case_((draft_fmt__ArgTag_u32)) {
         claim_assert(tag == draft_fmt__ArgTag_u32);
         claim_assert(TypeInfo_eql(field.type, typeInfo$(u32)));
-        return draft_fmt__writeU32(mem, tag, *u_castP$((const u32*)(field)));
-    }
-    case draft_fmt__ArgTag_f64: {
+        return draft_fmt__writeU32(mem, *u_castP$((const u32*)(field)), u8_l("0123456789"));
+    } $end(case);
+    case_((draft_fmt__ArgTag_i32)) {
+        claim_assert(tag == draft_fmt__ArgTag_i32);
+        claim_assert(TypeInfo_eql(field.type, typeInfo$(i32)));
+        return draft_fmt__writeI32(mem, *u_castP$((const i32*)(field)));
+    } $end(case);
+    case_((draft_fmt__ArgTag_f64)) {
         claim_assert(tag == draft_fmt__ArgTag_f64);
         claim_assert(TypeInfo_eql(field.type, typeInfo$(f64)));
-        return draft_fmt__writeF64(mem, tag, *u_castP$((const f64*)(field)));
-    }
-    case draft_fmt__ArgTag_sli_u8: {
+        return draft_fmt__writeF64(mem, *u_castP$((const f64*)(field)));
+    } $end(case);
+    case_((draft_fmt__ArgTag_sli_u8)) {
         claim_assert(tag == draft_fmt__ArgTag_sli_u8);
         claim_assert(TypeInfo_eql(field.type, typeInfo$(S_const$u8)));
-        return draft_fmt__writeSliU8(mem, tag, *u_castP$((const S_const$u8*)(field)));
-    }
-    case count$draft_fmt__ArgTag:
-        break;
-    }
-    claim_unreachable;
+        return draft_fmt__writeSliU8(mem, *u_castP$((const S_const$u8*)(field)));
+    } $end(case);
+    case_((count$draft_fmt__ArgTag)) claim_unreachable $end(case);
+    };
 };
 
-fn_((draft_fmt__writeVoid(S$u8 mem, draft_fmt__ArgTag tag, Void arg))(usize)) {
+fn_((draft_fmt__writeVoid(S$u8 mem, Void arg))(usize)) {
     let_ignore = mem;
     let_ignore = arg;
-    claim_assert(tag == draft_fmt__ArgTag_void);
     return 0;
 };
 
-fn_((draft_fmt__writeI32(S$u8 mem, draft_fmt__ArgTag tag, i32 arg))(usize)) {
-    claim_assert(tag == draft_fmt__ArgTag_i32);
+fn_((draft_fmt__writeU32(S$u8 mem, u32 arg, S_const$u8 digits))(usize)) {
+    var_(tmp, A$$(40, u8)) = A_zero();
+    var pos = A_len(tmp);
+    var val = arg;
+    if (isZero(val)) *A_at((tmp)[--pos]) = u8_c('0');
+    else {
+        while (0 < val) {
+            *A_at((tmp)[--pos]) = *S_at((digits)[val % 10]);
+            val /= 10;
+        }
+    }
+    let text = A_suffix$((S_const$u8)(tmp)(pos));
+    let_ignore = mem_copyBytes(mem, text);
+    return text.len;
+};
+
+fn_((draft_fmt__writeI32(S$u8 mem, i32 arg))(usize)) {
     let is_ngtv = cmp_Sgn_isNgtv(pri_sgn(arg));
     let abs_val = pri_abs(arg);
 
@@ -230,38 +240,28 @@ fn_((draft_fmt__writeI32(S$u8 mem, draft_fmt__ArgTag tag, i32 arg))(usize)) {
     return digits.len;
 };
 
-fn_((draft_fmt__writeU32(S$u8 mem, draft_fmt__ArgTag tag, u32 arg))(usize)) {
-    claim_assert(tag == draft_fmt__ArgTag_u32);
-
-    var_(tmp, A$$(10, u8)) = A_zero();
-    var pos = A_len(tmp);
-    if (isZero(arg)) *A_at((tmp)[--pos]) = u8_c('0');
-    else {
-        var val = arg;
-        while (val > 0) {
-            *A_at((tmp)[--pos]) = *S_at((u8_l("0123456789"))[val % 10]);
-            val /= 10;
-        }
-    }
-
-    let digits = A_suffix$((S_const$u8)(tmp)(pos));
-    let_ignore = mem_copyBytes(mem, digits);
-    return digits.len;
+fn_((draft_fmt__writeF64(S$u8 mem, f64 arg))(usize)) {
+    let negative = arg < 0.0;
+    let abs_val = negative ? -arg : arg;
+    let int_part = as$(u32)(abs_val);
+    let frac_part = as$(u32)((abs_val - as$(f64)(int_part)) * 1000000.0 + 0.5);
+    var written = usize_(0);
+    if (negative) *S_at((mem)[written++]) = u8_c('-');
+    written += draft_fmt__writeU32(S_suffix((mem)written), int_part, u8_l("0123456789"));
+    *S_at((mem)[written++]) = u8_c('.');
+    var_(frac, A$$(6, u8)) = A_zero();
+    var pos = A_len(frac);
+    var val = frac_part;
+    for_(($r(0, A_len(frac)))(i)) {
+        let_ignore = i;
+        *A_at((frac)[--pos]) = u8_c('0') + (val % 10);
+        val /= 10;
+    } $end(for);
+    let_ignore = mem_copyBytes(S_suffix((mem)written), A_ref$((S_const$u8)frac));
+    return written + A_len(frac);
 };
 
-fn_((draft_fmt__writeF64(S$u8 mem, draft_fmt__ArgTag tag, f64 arg))(usize)) {
-    claim_assert(tag == draft_fmt__ArgTag_f64);
-
-    var_(tmp, A$$(64, u8)) = A_zero();
-    let len = snprintf(as$(char*)(A_ptr(tmp)), A_len(tmp), "%f", as$(double)(arg));
-    claim_assert(len >= 0);
-    let text = A_prefix$((S_const$u8)(tmp)(as$(usize)(len)));
-    let_ignore = mem_copyBytes(mem, text);
-    return text.len;
-};
-
-fn_((draft_fmt__writeSliU8(S$u8 mem, draft_fmt__ArgTag tag, S_const$u8 arg))(usize)) {
-    claim_assert(tag == draft_fmt__ArgTag_sli_u8);
+fn_((draft_fmt__writeSliU8(S$u8 mem, S_const$u8 arg))(usize)) {
     let_ignore = mem_copyBytes(mem, arg);
     return arg.len;
 };

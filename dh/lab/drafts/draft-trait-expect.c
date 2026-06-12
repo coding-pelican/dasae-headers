@@ -7,7 +7,7 @@ typedef struct Shape_VT {
 } Shape_VT;
 typedef struct Shape {
     var_(vt, P_const$$(Shape_VT));
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } Shape;
 typedef struct ShapeDyn {
     var_(trait, Shape);
@@ -15,11 +15,11 @@ typedef struct ShapeDyn {
 } ShapeDyn;
 $attr($inline_always)
 $static fn_((Shape_area(Shape self, u_P_const$raw ctx))(f32)) {
-    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eql), self.vt->Shape_area(ctx);
+    return debug_assert_eqBy($typed(self.type), ctx.type, TypeInfo_eql), self.vt->Shape_area(ctx);
 };
 $attr($inline_always)
 $static fn_((Shape_perimeter(Shape self, u_P_const$raw ctx))(f32)) {
-    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eql), self.vt->Shape_perimeter(ctx);
+    return debug_assert_eqBy($typed(self.type), ctx.type, TypeInfo_eql), self.vt->Shape_perimeter(ctx);
 };
 
 typedef struct Circ {
@@ -27,21 +27,25 @@ typedef struct Circ {
 } Circ;
 $attr($inline_always)
 $static /* Generated begin */ fn_((Circ_Shape_area(const Circ* self))(f32));
+$attr($inline_always)
+$static fn_((Shape_area$Circ(const Circ* self))(f32)) { return Circ_Shape_area(self); };
 $attr($inline)
-$static fn_((Shape_area$Circ(u_P_const$raw ctx))(f32)) { return Circ_Shape_area(u_castP$((const Circ*)(ctx))); };
+$static fn_((trait$Shape_area$Circ(u_P_const$raw ctx))(f32)) { return Shape_area$Circ(u_castP$((const Circ*)(ctx))); };
 fn_((Circ_Shape_area(const Circ* self))(f32)) { /* Generated end */ return 3.1415926f * self->radius * self->radius; };
 $attr($inline_always)
 $static /* Generated begin */ fn_((Circ_Shape_perimeter(const Circ* self))(f32));
+$attr($inline_always)
+$static fn_((Shape_perimeter$Circ(const Circ* self))(f32)) { return Circ_Shape_perimeter(self); };
 $attr($inline)
-$static fn_((Shape_perimeter$Circ(u_P_const$raw ctx))(f32)) { return Circ_Shape_perimeter(u_castP$((const Circ*)(ctx))); };
+$static fn_((trait$Shape_perimeter$Circ(u_P_const$raw ctx))(f32)) { return Shape_perimeter$Circ(u_castP$((const Circ*)(ctx))); };
 fn_((Circ_Shape_perimeter(const Circ* self))(f32)) { /* Generated end */ return 2.0f * 3.1415926f * self->radius; };
 $attr($inline)
 $static fn_((Shape_for$Circ(void))(Shape)) {
     $static let_(vt, Shape_VT) = {
-        .Shape_area = Shape_area$Circ,
-        .Shape_perimeter = Shape_perimeter$Circ
+        .Shape_area = trait$Shape_area$Circ,
+        .Shape_perimeter = trait$Shape_perimeter$Circ
     };
-    return (Shape){ .vt = &vt, debug_only(.type = typeInfo$(Circ)) };
+    return (Shape){ .vt = &vt, .type = $typing(typeInfo$(Circ)) };
 };
 $attr($inline_always $maybe_unused)
 $static fn_((Shape_dyn$Circ(const Circ* ctx))(ShapeDyn)) {
@@ -54,21 +58,25 @@ typedef struct Rect {
 } Rect;
 $attr($inline_always)
 $static /* Generated begin */ fn_((Rect_Shape_area(const Rect* self))(f32));
+$attr($inline_always)
+$static fn_((Shape_area$Rect(const Rect* self))(f32)) { return Rect_Shape_area(self); };
 $attr($inline)
-$static fn_((Shape_area$Rect(u_P_const$raw ctx))(f32)) { return Rect_Shape_area(u_castP$((const Rect*)(ctx))); };
+$static fn_((trait$Shape_area$Rect(u_P_const$raw ctx))(f32)) { return Shape_area$Rect(u_castP$((const Rect*)(ctx))); };
 fn_((Rect_Shape_area(const Rect* self))(f32)) { /* Generated end */ return self->width * self->height; };
 $attr($inline_always)
 $static /* Generated begin */ fn_((Rect_Shape_perimeter(const Rect* self))(f32));
+$attr($inline_always)
+$static fn_((Shape_perimeter$Rect(const Rect* self))(f32)) { return Rect_Shape_perimeter(self); };
 $attr($inline)
-$static fn_((Shape_perimeter$Rect(u_P_const$raw ctx))(f32)) { return Rect_Shape_perimeter(u_castP$((const Rect*)(ctx))); };
+$static fn_((trait$Shape_perimeter$Rect(u_P_const$raw ctx))(f32)) { return Shape_perimeter$Rect(u_castP$((const Rect*)(ctx))); };
 fn_((Rect_Shape_perimeter(const Rect* self))(f32)) { /* Generated end */ return 2.0f * (self->width + self->height); };
 $attr($inline)
 $static fn_((Shape_for$Rect(void))(Shape)) {
     $static let_(vt, Shape_VT) = {
-        .Shape_area = Shape_area$Rect,
-        .Shape_perimeter = Shape_perimeter$Rect,
+        .Shape_area = trait$Shape_area$Rect,
+        .Shape_perimeter = trait$Shape_perimeter$Rect,
     };
-    return (Shape){ .vt = &vt, debug_only(.type = typeInfo$(Rect)) };
+    return (Shape){ .vt = &vt, .type = $typing(typeInfo$(Rect)) };
 };
 $attr($inline_always $maybe_unused)
 $static fn_((Shape_dyn$Rect(const Rect* ctx))(ShapeDyn)) {
@@ -79,7 +87,7 @@ $static fn_((Shape_dyn$Rect(const Rect* ctx))(ShapeDyn)) {
 typedef struct fmt_Display {
     $attr($must_check)
     fn_(((*fmt_display)(u_P_const$raw ctx, io_Writer writer))(E$void));
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } fmt_Display;
 typedef struct fmt_DisplayDyn {
     var_(trait, fmt_Display);
@@ -87,7 +95,7 @@ typedef struct fmt_DisplayDyn {
 } fmt_DisplayDyn;
 $attr($inline_always $must_check)
 $static fn_((fmt_display(fmt_Display self, u_P_const$raw ctx, io_Writer writer))(E$void)) {
-    return debug_assert_eqBy(self.type, ctx.type, TypeInfo_eql), self.fmt_display(ctx, writer);
+    return debug_assert_eqBy($typed(self.type), ctx.type, TypeInfo_eql), self.fmt_display(ctx, writer);
 };
 
 typedef struct Entity {
@@ -98,24 +106,28 @@ typedef struct Entity {
 } Entity;
 $attr($inline_always $must_check)
 $static /* Generated begin */ fn_((Entity_fmt_display(const Entity* self, io_Writer writer))(E$void));
+$attr($inline_always $must_check)
+$static fn_((fmt_display$Entity(const Entity* self, io_Writer writer))(E$void)) { return Entity_fmt_display(self, writer); };
 $attr($inline)
-$static fn_((fmt_display$Entity(u_P_const$raw ctx, io_Writer writer))(E$void)) { return Entity_fmt_display(u_castP$((const Entity*)(ctx)), writer); };
+$static fn_((trait$fmt_display$Entity(const Entity* self, io_Writer writer))(E$void)) { return fmt_display$Entity(self, writer); };
 fn_((Entity_fmt_display(const Entity* self, io_Writer writer))(E$void) $scope) {
     /* Generated end */
-    try_(io_Writer_println(writer, u8_l("Entity {")));
-    try_(io_Writer_println(writer, u8_l("    id: {:uz}"), self->id));
-    try_(io_Writer_println(writer, u8_l("    px: {:.2f}"), self->px));
-    try_(io_Writer_println(writer, u8_l("    py: {:.2f}"), self->py));
-    try_(io_Writer_println(writer, u8_l("    vx: {:.2f}"), self->vx));
-    try_(io_Writer_println(writer, u8_l("    vy: {:.2f}"), self->vy));
-    try_(io_Writer_println(writer, u8_l("    health: {:d}"), self->health));
-    try_(io_Writer_print(writer, u8_l("}")));
+    let fmt = u8_l(
+        "" nameOf(Entity) " {{" io_nl $str
+        "    " fieldName$(Entity, id) ": {:uz}" io_nl $str
+        "    " fieldName$(Entity, px) ": {:.2f}" io_nl $str
+        "    " fieldName$(Entity, py) ": {:.2f}" io_nl $str
+        "    " fieldName$(Entity, vx) ": {:.2f}" io_nl $str
+        "    " fieldName$(Entity, vy) ": {:.2f}" io_nl $str
+        "    " fieldName$(Entity, health) ": {:d}" io_nl $str
+        "}}"
+    );
+    try_(io_Writer_print(writer, fmt, self->id, self->px, self->py, self->vx, self->vy, self->health));
     return_ok({});
-}
-$unscoped(fn);
+} $unscoped(fn);
 $attr($inline)
 $static fn_((fmt_Display_for$Entity(void))(fmt_Display)) {
-    return (fmt_Display){ .fmt_display = fmt_display$Entity, debug_only(.type = typeInfo$(Entity)) };
+    return (fmt_Display){ .fmt_display = trait$fmt_display$Entity, .type = $typing(typeInfo$(Entity)) };
 };
 $attr($inline_always $maybe_unused)
 $static fn_((fmt_Display_dyn$Entity(const Entity* ctx))(fmt_DisplayDyn)) {
@@ -124,19 +136,23 @@ $static fn_((fmt_Display_dyn$Entity(const Entity* ctx))(fmt_DisplayDyn)) {
 
 $attr($inline_always $must_check)
 $static /* Generated begin */ fn_((Circ_fmt_display(const Circ* self, io_Writer writer))(E$void));
-$attr($inline)
-$static fn_((fmt_display$Circ(u_P_const$raw ctx, io_Writer writer))(E$void)) { return Circ_fmt_display(u_castP$((const Circ*)(ctx)), writer); };
+$attr($inline_always $must_check)
+$static fn_((fmt_display$Circ(const Circ* self, io_Writer writer))(E$void)) { return Circ_fmt_display(self, writer); };
+$attr($inline_always)
+$static fn_((trait$fmt_display$Circ(const Circ* self, io_Writer writer))(E$void)) { return fmt_display$Circ(self, writer); };
 fn_((Circ_fmt_display(const Circ* self, io_Writer writer))(E$void) $scope) {
     /* Generated end */
-    try_(io_Writer_println(writer, u8_l("Circ {")));
-    try_(io_Writer_println(writer, u8_l("    radius: {:.2f}"), self->radius));
-    try_(io_Writer_print(writer, u8_l("}")));
+    let fmt = u8_l(
+        "" nameOf(Circ) " {{" io_nl $str
+        "    " fieldName$(Circ, radius) ": {:.2f}" io_nl $str
+        "}}"
+    );
+    try_(io_Writer_print(writer, fmt, self->radius));
     return_ok({});
-}
-$unscoped(fn);
+} $unscoped(fn);
 $attr($inline)
 $static fn_((fmt_Display_for$Circ(void))(fmt_Display)) {
-    return (fmt_Display){ .fmt_display = fmt_display$Circ, debug_only(.type = typeInfo$(Circ)) };
+    return (fmt_Display){ .fmt_display = trait$fmt_display$Circ, .type = $typing(typeInfo$(Circ)) };
 };
 $attr($inline_always $maybe_unused)
 $static fn_((fmt_Display_dyn$Circ(const Circ* ctx))(fmt_DisplayDyn)) {
@@ -146,19 +162,23 @@ $static fn_((fmt_Display_dyn$Circ(const Circ* ctx))(fmt_DisplayDyn)) {
 $attr($inline_always $must_check)
 $static /* Generated begin */ fn_((Rect_fmt_display(const Rect* self, io_Writer writer))(E$void));
 $attr($inline)
-$static fn_((fmt_display$Rect(u_P_const$raw ctx, io_Writer writer))(E$void)) { return Rect_fmt_display(u_castP$((const Rect*)(ctx)), writer); };
+$static fn_((fmt_display$Rect(const Rect* self, io_Writer writer))(E$void)) { return Rect_fmt_display(self, writer); };
+$attr($inline_always)
+$static fn_((trait$fmt_display$Rect(const Rect* self, io_Writer writer))(E$void)) { return fmt_display$Rect(self, writer); };
 fn_((Rect_fmt_display(const Rect* self, io_Writer writer))(E$void) $scope) {
     /* Generated end */
-    try_(io_Writer_println(writer, u8_l("Rect {")));
-    try_(io_Writer_println(writer, u8_l("    width: {:.2f}"), self->width));
-    try_(io_Writer_println(writer, u8_l("    height: {:.2f}"), self->height));
-    try_(io_Writer_print(writer, u8_l("}")));
+    let fmt = u8_l(
+        "" nameOf(Rect) " {{" io_nl $str
+        "    " fieldName$(Rect, width) ": {:.2f}" io_nl $str
+        "    " fieldName$(Rect, height) ": {:.2f}" io_nl $str
+        "}}"
+    );
+    try_(io_Writer_print(writer, fmt, self->width, self->height));
     return_ok({});
-}
-$unscoped(fn);
+} $unscoped(fn);
 $attr($inline)
 $static fn_((fmt_Display_for$Rect(void))(fmt_Display)) {
-    return (fmt_Display){ .fmt_display = fmt_display$Rect, debug_only(.type = typeInfo$(Rect)) };
+    return (fmt_Display){ .fmt_display = fmt_display$Rect, .type = $typing(typeInfo$(Rect)) };
 };
 $attr($inline_always $maybe_unused)
 $static fn_((fmt_Display_dyn$Rect(const Rect* ctx))(fmt_DisplayDyn)) {
@@ -172,16 +192,18 @@ $attr($inline)
 $static fn_((fmt_display$ShapeDyn(u_P_const$raw ctx, io_Writer writer))(E$void)) { return ShapeDyn_fmt_display(u_castP$((const ShapeDyn*)(ctx)), writer); };
 fn_((ShapeDyn_fmt_display(const ShapeDyn* self, io_Writer writer))(E$void) $scope) {
     /* Generated end */
-    try_(io_Writer_println(writer, u8_l("Shape {")));
-    try_(io_Writer_println(writer, u8_l("    Area: {:.2f}"), Shape_area(self->trait, self->ctx)));
-    try_(io_Writer_println(writer, u8_l("    Perimeter: {:.2f}"), Shape_perimeter(self->trait, self->ctx)));
-    try_(io_Writer_print(writer, u8_l("}")));
+    let fmt = u8_l(
+        "" nameOf(Shape) " {{" io_nl $str
+        "    " fieldName$(Shape, area) ": {:.2f}" io_nl $str
+        "    " fieldName$(Shape, perimeter) ": {:.2f}" io_nl $str
+        "}}"
+    );
+    try_(io_Writer_print(writer, fmt, Shape_area(self->trait, self->ctx), Shape_perimeter(self->trait, self->ctx)));
     return_ok({});
-}
-$unscoped(fn);
+} $unscoped(fn);
 $attr($inline)
 $static fn_((fmt_Display_for$ShapeDyn(void))(fmt_Display)) {
-    return (fmt_Display){ .fmt_display = fmt_display$ShapeDyn, debug_only(.type = typeInfo$(ShapeDyn)) };
+    return (fmt_Display){ .fmt_display = fmt_display$ShapeDyn, .type = $typing(typeInfo$(ShapeDyn)) };
 };
 $attr($inline_always $maybe_unused)
 $static fn_((fmt_Display_dyn$ShapeDyn(const ShapeDyn* ctx))(fmt_DisplayDyn)) {
@@ -200,31 +222,29 @@ $static var_(shapes_mem, A$$(128, ShapeDyn)) = A_zero();
 $static let shapes_buf = A_ref$((S$ShapeDyn)(shapes_mem));
 $attr($must_check)
 $static fn_((example_usage(void))(E$void) $scope) {
-    let rects = ({ var initial = l0$((A$$(16, Rect))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
+    let rects = local_({ var initial = l0$((A$$(16, Rect))); for_(($rf(0), $s(A_ref(initial)))(idx, item)) {
         item->width = as$(f32)(idx + 1);
         item->height = as$(f32)(idx + 2);
-    }); initial; });
-    let circs = ({ var initial = l0$((A$$(16, Circ))); for_(($rf(0), $s(A_ref(initial)))(idx, item) {
+    } $end(for); local_return_(initial); });
+    let circs = local_({ var initial = l0$((A$$(16, Circ))); for_(($rf(0), $s(A_ref(initial)))(idx, item)) {
         item->radius = as$(f32)(idx + 1);
-    }); initial; });
+    } $end(for); local_return_(initial); });
 
     var shapes = ArrList_fixed$ShapeDyn(shapes_buf);
-    for_(($s(A_ref(rects)))(item)try_(ArrList_appendFixed$ShapeDyn(&shapes, Shape_dyn$Rect(item))));
-    for_(($s(A_ref(circs)))(item)try_(ArrList_appendFixed$ShapeDyn(&shapes, Shape_dyn$Circ(item))));
+    for_(($s(A_ref(rects)))(item)) try_(ArrList_appendFixed$ShapeDyn(&shapes, Shape_dyn$Rect(item))) $end(for);
+    for_(($s(A_ref(circs)))(item)) try_(ArrList_appendFixed$ShapeDyn(&shapes, Shape_dyn$Circ(item))) $end(for);
 
     let out = fs_File_writer(io_getStdOut());
-    for_(($s(shapes.items.as_const))(item) {
+    for_(($s(shapes.items.as_const))(item)) {
         try_(fmt_display(fmt_Display_for$ShapeDyn(), u_anyP(item), out));
         try_(io_Writer_nl(out));
-    });
+    } $end(for);
     return_ok({});
-}
-$unscoped(fn);
+} $unscoped(fn);
 
 
 #include "dh-main.h"
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
     return_ok(try_(example_usage()));
-}
-$unscoped(fn);
+} $unscoped(fn);
