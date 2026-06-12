@@ -538,7 +538,9 @@ typedef TypeOf(void*) P$raw;
 #define deref(_p /*: P(_T)*/... /*(_T)*/) __expr__ptr__deref(_p)
 
 #define ptrToInt(_p /*: PtrType*/... /*(usize)*/) __expr__ptrToInt(_p)
+#define intFromPtr __alias__intFromPtr
 #define intToPtr$(/*(_P_T: PtrType)(_val: usize)*/... /*(_P_T)*/) __expr__intToPtr$(__VA_ARGS__)
+#define ptrFromInt$ __alias__ptrFromInt$
 
 #define ptrCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) __expr__ptrCast$(__VA_ARGS__)
 #define ptrAlignCast$(/*(_P_T: PtrType)(_val: PtrType)*/... /*(_P_T)*/) __expr__ptrAlignCast$(__VA_ARGS__)
@@ -806,11 +808,13 @@ typedef TypeOf(void*) P$raw;
 #define __expr__ptr__deref(_p...) (*ensureNonnull(_p))
 
 #define __expr__ptrToInt(_p...) /* NOLINT(performance-no-int-to-ptr) */ ((usize)(_p))
+#define __alias__intFromPtr ptrToInt
 
 #define __expr__intToPtr$(...) __expr__intToPtr$__emit(__pp__intToPtr$__parseType __VA_ARGS__)
 #define __pp__intToPtr$__parseType(_P_T...) _P_T,
 #define __expr__intToPtr$__emit(...) __expr__intToPtr$__impl(__VA_ARGS__)
 #define __expr__intToPtr$__impl(_P_T, _val...) /* NOLINT(performance-no-int-to-ptr) */ ((_P_T)(_val))
+#define __alias__ptrFromInt$ intToPtr$
 
 #define __expr__ptrCast$(...) __expr__ptrCast$__emit(__pp__ptrCast$__parseType __VA_ARGS__)
 #define __pp__ptrCast$__parseType(_P_T...) _P_T,

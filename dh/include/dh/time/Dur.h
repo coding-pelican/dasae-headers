@@ -45,19 +45,18 @@ T_impl_E$($set(time_direct_E)(time_Dur));
 
 /* --- Constructors --- */
 #define time_Dur_from_static(_secs, _nanos) __comp_fn__time_Dur_from_static(_secs, _nanos)
-#define time_Dur_fromSecs_static(_secs) __comp_fn__time_Dur_fromSecs_static(_secs)
-#define time_Dur_fromSecs$f64_static(_secs) __comp_fn__time_Dur_fromSecs$f64_static(_secs)
-#define time_Dur_fromSecs$f32_static(_secs) __comp_fn__time_Dur_fromSecs$f32_static(_secs)
-#define time_Dur_fromMillis_static(_millis) __comp_fn__time_Dur_fromMillis_static(_millis)
-#define time_Dur_fromMicros_static(_micros) __comp_fn__time_Dur_fromMicros_static(_micros)
-#define time_Dur_fromNanos_static(_nanos) __comp_fn__time_Dur_fromNanos_static(_nanos)
-
 $extern fn_((time_Dur_from(u64 secs, u32 nanos))(time_Dur));
+#define time_Dur_fromSecs_static(_secs) __comp_fn__time_Dur_fromSecs_static(_secs)
 $extern fn_((time_Dur_fromSecs(u64 secs))(time_Dur));
+#define time_Dur_fromSecs$f64_static(_secs) __comp_fn__time_Dur_fromSecs$f64_static(_secs)
 $extern fn_((time_Dur_fromSecs$f64(f64 secs))(time_Dur));
+#define time_Dur_fromSecs$f32_static(_secs) __comp_fn__time_Dur_fromSecs$f32_static(_secs)
 $extern fn_((time_Dur_fromSecs$f32(f32 secs))(time_Dur));
+#define time_Dur_fromMillis_static(_millis) __comp_fn__time_Dur_fromMillis_static(_millis)
 $extern fn_((time_Dur_fromMillis(u64 millis))(time_Dur));
+#define time_Dur_fromMicros_static(_micros) __comp_fn__time_Dur_fromMicros_static(_micros)
 $extern fn_((time_Dur_fromMicros(u64 micros))(time_Dur));
+#define time_Dur_fromNanos_static(_nanos) __comp_fn__time_Dur_fromNanos_static(_nanos)
 $extern fn_((time_Dur_fromNanos(u64 nanos))(time_Dur));
 
 /* --- Accessors --- */

@@ -4,6 +4,10 @@
 #include "dh/ascii.h"
 #include <stdio.h>
 
+#if !defined(DRAFT_FMT_CASE)
+#define DRAFT_FMT_CASE -1
+#endif
+
 typedef enum_((draft_fmt__ArgTag $fits($packed))(
     draft_fmt__ArgTag_void = 0,
     draft_fmt__ArgTag_u32,
@@ -24,6 +28,8 @@ $static fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo
 
 $attr($inline_always)
 $static fn_((draft_fmt__Iter_init(S_const$u8 fmt))(draft_fmt__Iter));
+$attr($inline_always)
+$static fn_((draft_fmt__countItems(S_const$u8 fmt))(usize));
 $attr($inline_always)
 $static fn_((draft_fmt__Iter_next(
     draft_fmt__Iter* iter,
@@ -57,46 +63,83 @@ $attr($inline_always)
 $static fn_((draft_fmt__writeSliU8(S$u8 mem, S_const$u8 arg))(usize));
 
 fn_((main(void))(E$void) $scope) {
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 0
     var_(mem0, A$$(64, u8)) = A_zero();
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 1
     var_(mem1, A$$(64, u8)) = A_zero();
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 2
     var_(mem2, A$$(64, u8)) = A_zero();
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 3
     var_(mem3, A$$(64, u8)) = A_zero();
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 4
     var_(mem4, A$$(64, u8)) = A_zero();
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 5
     var_(mem5, A$$(64, u8)) = A_zero();
+#endif
 
-    let s0 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem0), u8_l("case0: literal"))()));
-    let s1 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem1), u8_l("case1: {0}"))(Void_())));
-    let s2 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem2), u8_l("case2: {i}"))(123)));
-    let s3 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem3), u8_l("case3: {s} {i}"))(u8_l("world"), 123)));
-    let s4 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem4), u8_l("case4: {s} {u} {i}"))(u8_l("world"), u32_(7), -5)));
-    let s5 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem5), u8_l("case5: {1:i}{0:s}{0:s}{1:i}"))(u8_l("456"), 123)));
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 0
+    let s0 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem0), u8_l("case0: literal ok abc"))()));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 1
+    let s1 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem1), u8_l("case1: {0}def"))(Void_())));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 2
+    let s2 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem2), u8_l("case2: {i} ghi"))(123)));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 3
+    let s3 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem3), u8_l("case3: {s} jkl{i}mno"))(u8_l("world"), 123)));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 4
+    let s4 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem4), u8_l("case4: {s} pqr {u} stu {i} vw"))(u8_l("world"), u32_(7), -5)));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 5
+    let s5 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem5), u8_l("case5: {1:i}{0:s}{0:s}{1:i} xyz"))(u8_l("456"), 123)));
+#endif
 
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 0
     puts(as$(const char*)(s0.ptr));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 1
     puts(as$(const char*)(s1.ptr));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 2
     puts(as$(const char*)(s2.ptr));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 3
     puts(as$(const char*)(s3.ptr));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 4
     puts(as$(const char*)(s4.ptr));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 5
     puts(as$(const char*)(s5.ptr));
+#endif
 
     return_ok({});
 } $unscoped(fn);
 
 fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8) $scope) {
+    claim_assert(fields.len <= 8);
     claim_assert(TypeInfo_eql(tuple.type, u_typeInfoRecord(fields)));
+    let item_count = draft_fmt__countItems(fmt);
+    claim_assert(item_count <= 8);
     var iter = draft_fmt__Iter_init(fmt);
     var out = mem;
-    if_some((draft_fmt__Iter_next(&iter, out, fields, tuple))(written)) {
-        out = S_suffix((out)written);
-        if_some((draft_fmt__Iter_next(&iter, out, fields, tuple))(written)) {
-            out = S_suffix((out)written);
-            if_some((draft_fmt__Iter_next(&iter, out, fields, tuple))(written)) {
-                out = S_suffix((out)written);
-                if_some((draft_fmt__Iter_next(&iter, out, fields, tuple))(written)) {
-                    out = S_suffix((out)written);
-                }
-            }
-        }
-    }
+
+    if (0 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
+    if (1 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
+    if (2 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
+    if (3 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
+    if (4 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
+    if (5 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
+    if (6 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
+    if (7 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
+
     out = S_suffix((out)(draft_fmt__copyLiteral(out, iter.rest, 0, iter.rest.len)));
     return_ok(S_prefix((mem)(mem.len - out.len)));
 } $unscoped(fn);
@@ -106,6 +149,14 @@ fn_((draft_fmt__Iter_init(S_const$u8 fmt))(draft_fmt__Iter)) {
         .rest = fmt,
         .occ_idx = 0,
     };
+};
+
+fn_((draft_fmt__countItems(S_const$u8 fmt))(usize)) {
+    var count = usize_(0);
+    for_(($s(fmt))(ch)) {
+        if (*ch == u8_c('{')) count += 1;
+    } $end(for);
+    return count;
 };
 
 fn_((draft_fmt__Iter_next(
@@ -211,7 +262,7 @@ fn_((draft_fmt__writeU32(S$u8 mem, u32 arg))(usize)) {
     if (isZero(val)) *A_at((tmp)[--pos]) = u8_c('0');
     else {
         while (0 < val) {
-            *A_at((tmp)[--pos]) = ascii_digitFromInt(val % 10);
+            *A_at((tmp)[--pos]) = ascii_digitFromInt(intCast$((u8)(val % 10)));
             val /= 10;
         }
     }
@@ -230,7 +281,7 @@ fn_((draft_fmt__writeI32(S$u8 mem, i32 arg))(usize)) {
     else {
         var val = abs_val;
         while (val > 0) {
-            *A_at((tmp)[--pos]) = ascii_digitFromInt(val % 10);
+            *A_at((tmp)[--pos]) = ascii_digitFromInt(intCast$((u8)(val % 10)));
             val /= 10;
         }
     }
@@ -255,7 +306,7 @@ fn_((draft_fmt__writeF64(S$u8 mem, f64 arg))(usize)) {
     var val = frac_part;
     for_(($r(0, A_len(frac)))(i)) {
         let_ignore = i;
-        *A_at((frac)[--pos]) = ascii_digitFromInt(val % 10);
+        *A_at((frac)[--pos]) = ascii_digitFromInt(intCast$((u8)(val % 10)));
         val /= 10;
     } $end(for);
     let_ignore = mem_copyBytes(S_suffix((mem)written), A_ref$((S_const$u8)frac));

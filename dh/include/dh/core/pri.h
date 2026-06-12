@@ -54,18 +54,25 @@ extern "C" {
 #define alignBwdLog2(_addr /*: usize|PtrType*/, _log2_align /*: u8*/... /*(usize)*/) __step__alignBwdLog2(_addr, _log2_align)
 
 #define alignToLog2_static(_align /*: usize*/... /*(u8)*/) ____alignToLog2_static(_align)
+#define log2FromAlign_static __alias__log2FromAlign_static
 #define alignToLog2(_align /*: usize*/... /*(u8)*/) __step__alignToLog2(_align)
+#define log2FromAlign __alias__log2FromAlign
 #define log2ToAlign_static(_log2_align /*: u8*/... /*(usize)*/) ____log2ToAlign_static(_log2_align)
+#define alignFromLog2_static __alias__alignFromLog2_static
 #define log2ToAlign(_log2_align /*: u8*/... /*(usize)*/) __step__log2ToAlign(_log2_align)
-
+#define alignFromLog2 __alias__alignFromLog2
 #define alignCast(/*(_log2_align: u8)(_ptr: PtrType)*/... /*(_T)*/) __step__alignCast(__VA_ARGS__)
 
 #define bitCast$(/*(_T)(_val)*/... /*(_T)*/) __step__bitCast$(__VA_ARGS__)
 #define intToBool(_val /*: IntType*/... /*(bool)*/) __step__intToBool(_val)
+#define boolFromInt __alias__boolFromInt
 #define boolToInt(_val /*: bool*/... /*(u8)*/) ____boolToInt(_val)
+#define intFromBool __alias__intFromBool
 #define intCast$(/*(_T: IntType)(_val: IntType)*/... /*(_T)*/) __step__intCast$(__VA_ARGS__)
 #define intToFlt$(/*(_T: FltType)(_val: IntType)*/... /*(_T)*/) __step__intToFlt$(__VA_ARGS__)
+#define fltFromInt$ __alias__fltFromInt$
 #define fltToInt$(/*(_T: IntType)(_val: FltType)*/... /*(_T)*/) __step__fltToInt$(__VA_ARGS__)
+#define intFromFlt$ __alias__intFromFlt$
 #define fltCast$(/*(_T: FltType)(_val: FltType)*/... /*(_T)*/) __step__fltCast$(__VA_ARGS__)
 
 /*========== Memory Operations ==============================================*/
@@ -863,18 +870,22 @@ $inline_always
 })
 
 #define ____alignToLog2_static(_align...) (as$(u8)(int_trailingZeros_static(_align)))
+#define __alias__log2FromAlign_static alignToLog2_static
 #define __step__alignToLog2(_align...) ____alignToLog2(pp_uniqTok(align), _align)
 #define ____alignToLog2(__align, _align...) ({ \
     let_(__align, usize) = _align; \
     claim_assert(isValidAlign(__align)); \
     intCast$((u8)(int_trailingZeros(__align))); \
 })
+#define __alias__log2FromAlign alignToLog2
 #define ____log2ToAlign_static(_log2_align...) (as$(usize)(1) << _log2_align)
+#define __alias__alignFromLog2_static log2ToAlign_static
 #define __step__log2ToAlign(_log2_align...) ____log2ToAlign(pp_uniqTok(log2_align), _log2_align)
 #define ____log2ToAlign(__log2_align, _log2_align...) ({ \
     let_(__log2_align, u8) = _log2_align; \
     usize_(1) << __log2_align; \
 })
+#define __alias__alignFromLog2 log2ToAlign
 
 #define __step__alignCast(...) __step__alignCast__emit(__step__alignCast__parse __VA_ARGS__)
 #define __step__alignCast__parse(_log2_align...) pp_uniqTok(log2_align), _log2_align, pp_uniqTok(ptr),
@@ -906,6 +917,7 @@ $inline_always
     raw_memcpy(&__dst, &__val, sizeOf$(TypeOf(__val))); \
     __dst; \
 })
+
 #define __step__intToBool(_val...) ____intToBool(pp_uniqTok(val), _val)
 #define ____intToBool(__val, _val...) ({ \
     typedef TypeOf(_val) IntType; \
@@ -914,9 +926,12 @@ $inline_always
     claim_assert(__val == 0 || __val == 1); \
     as$(bool)(__val); \
 })
+#define __alias__boolFromInt intToBool
 #define ____boolToInt(_val...) T_switch$((TypeOf(_val))( \
     T_case$((bool)(as$(u8)(_val))) \
 ))
+#define __alias__intFromBool boolToInt
+
 #define __step__intCast$(...) __step__intCast$__emit(__step__intCast$__parse __VA_ARGS__)
 #define __step__intCast$__parse(_T...) \
     _T, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max), \
@@ -973,6 +988,7 @@ $inline_always
     as$(_T)(__val); \
 })
 #endif /* UNUSED_CODE */
+
 #define __step__intToFlt$(...) __step__intToFlt$__emit(__step__intToFlt$__parse __VA_ARGS__)
 #define __step__intToFlt$__parse(_T...) _T, pp_uniqTok(val),
 #define __step__intToFlt$__emit(...) ____intToFlt$(__VA_ARGS__)
@@ -982,6 +998,23 @@ $inline_always
     let_(__val, IntType) = _val; \
     as$(_T)(__val); \
 })
+#define __alias__fltFromInt$ intToFlt$
+/* Check: (min - 1) < x < max, where max = 2^(N-1) for signed, 2^N for unsigned */
+/* This correctly handles cases like -2147483648.9 → trunc → -2147483648 (valid i32) */
+#define __step__fltToInt$(...) __step__fltToInt$__emit(__step__fltToInt$__parse __VA_ARGS__)
+#define __step__fltToInt$__parse(_T...) _T, pp_uniqTok(val),
+#define __step__fltToInt$__emit(...) ____fltToInt$(__VA_ARGS__)
+#define ____fltToInt$(_T, __val, _val...) ({ \
+    typedef TypeOf(_val) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__val, FltType) = _val; \
+    claim_assert(flt_isFinite(__val)); \
+    claim_assert(as$(FltType)(int_limit_flt_min_bound_excl$(_T)) < __val); \
+    claim_assert(__val < as$(FltType)(int_limit_flt_max_bound_excl$(_T))); \
+    as$(_T)(__val); \
+})
+#define __alias__intFromFlt$ fltToInt$
+
 #define __step__fltCast$(...) __step__fltCast$__emit(__step__fltCast$__parse __VA_ARGS__)
 #define __step__fltCast$__parse(_T...) _T, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max),
 #define __step__fltCast$__emit(...) ____fltCast$(__VA_ARGS__)
@@ -995,20 +1028,6 @@ $inline_always
     claim_assert(__min <= __max); \
     claim_assert(__min <= __val); \
     claim_assert(__val <= __max); \
-    as$(_T)(__val); \
-})
-/* Check: (min - 1) < x < max, where max = 2^(N-1) for signed, 2^N for unsigned */
-/* This correctly handles cases like -2147483648.9 → trunc → -2147483648 (valid i32) */
-#define __step__fltToInt$(...) __step__fltToInt$__emit(__step__fltToInt$__parse __VA_ARGS__)
-#define __step__fltToInt$__parse(_T...) _T, pp_uniqTok(val),
-#define __step__fltToInt$__emit(...) ____fltToInt$(__VA_ARGS__)
-#define ____fltToInt$(_T, __val, _val...) ({ \
-    typedef TypeOf(_val) FltType; \
-    claim_assert_static(isFlt$(FltType)); \
-    let_(__val, FltType) = _val; \
-    claim_assert(flt_isFinite(__val)); \
-    claim_assert(as$(FltType)(int_limit_flt_min_bound_excl$(_T)) < __val); \
-    claim_assert(__val < as$(FltType)(int_limit_flt_max_bound_excl$(_T))); \
     as$(_T)(__val); \
 })
 

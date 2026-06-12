@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    ascii.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-20 (date of creation)
- * @updated 2025-06-20 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-06-12 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  ascii
  */
@@ -155,6 +154,13 @@ $extern fn_((ascii_makeLowers(S$u8 out_buf, S_const$u8 ascii_str))(S$u8));
 /// Writes a toggled case copy of `ascii_str` to `buf`.
 $extern fn_((ascii_makeToggledCases(S$u8 out_buf, S_const$u8 ascii_str))(S$u8));
 
+$attr($inline_always)
+$static fn_((ascii_digitToInt(u8 c))(u8));
+$static let ascii_intFromDigit = ascii_digitToInt;
+$attr($inline_always)
+$static fn_((ascii_intToDigit(u8 val))(u8));
+$static let ascii_digitFromInt = ascii_intToDigit;
+
 /// Returns the index of the first occurrence of `ascii_substr` in `ascii_str`, ignoring case.
 $extern fn_((ascii_idxOfIgnoreCase(S_const$u8 ascii_str, S_const$u8 ascii_substr))(O$usize));
 /// Returns the index of the first occurrence of `ascii_substr` starting from `start_front`, ignoring case.
@@ -226,6 +232,16 @@ fn_((ascii_toggleCase(u8 c))(u8)) {
     let mask = int_shl(boolToInt(ascii_isAlpha(c)), 5);
     return c ^ mask;
 };
+
+fn_((ascii_digitToInt(u8 c))(u8)) {
+    let_(val, u8) = (claim_assert(ascii_isDigit(c)), c - u8_c('0'));
+    return val;
+};
+fn_((ascii_intToDigit(u8 val))(u8)) {
+    let_(digit, u8) = val + u8_c('0');
+    return claim_assert(ascii_isDigit(digit)), digit;
+};
+
 
 #if defined(__cplusplus)
 } /* extern "C" */
