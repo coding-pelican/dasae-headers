@@ -11,6 +11,7 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 /*========== Macros and Definitions =========================================*/
 
+#define $va_args_decl S_const$TypeInfo, u_P_const$raw
 #define $va_args $va_args_($va_ty_tup_fields, $va_ref_tup)
 #define $va_args_(_ty_tup_fields, _ref_tup) \
     S_const$TypeInfo _ty_tup_fields, u_P_const$raw _ref_tup
