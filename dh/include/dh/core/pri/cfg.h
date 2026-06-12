@@ -136,26 +136,6 @@ typedef unsigned long ulong;
     ) pp_end \
 )
 
-typedef uint64_t u64;
-#define u64_(_literal...) (as$(u64)(n_(_literal)))
-#define u64_bits (64u)
-#define u64_bytes (8u)
-#define u64_limit u64_limit_max
-#define u64_limit_min u64_(0)
-#define u64_limit_max u64_(UINT64_MAX)
-#define u64_limit_flt_min_bound_excl (-1.0)
-#define u64_limit_flt_max_bound_excl (0x1p64)
-
-// typedef __uint128_t u128;
-// #define u128_(_literal...) (as$(u128)(n_(_literal)))
-// #define u128_bits (128u)
-// #define u128_bytes (16u)
-// #define u128_limit u128_limit_max
-// #define u128_limit_min u128_(0)
-// #define u128_limit_max u128_(UINT128_MAX)
-// #define u128_limit_flt_min_bound_excl (-1.0)
-// #define u128_limit_flt_max_bound_excl (0x1p127)
-
 typedef uintptr_t usize;
 #define usize_(_literal...) (as$(usize)(n_(_literal)))
 #define usize_bits pp_expand( \
@@ -195,6 +175,26 @@ typedef uintptr_t usize;
         pp_case_((plat_bits_unit_32bit)(u32_limit_flt_max_bound_excl)) \
     ) pp_end \
 )
+
+typedef uint64_t u64;
+#define u64_(_literal...) (as$(u64)(n_(_literal)))
+#define u64_bits (64u)
+#define u64_bytes (8u)
+#define u64_limit u64_limit_max
+#define u64_limit_min u64_(0)
+#define u64_limit_max u64_(UINT64_MAX)
+#define u64_limit_flt_min_bound_excl (-1.0)
+#define u64_limit_flt_max_bound_excl (0x1p64)
+
+// typedef __uint128_t u128;
+// #define u128_(_literal...) (as$(u128)(n_(_literal)))
+// #define u128_bits (128u)
+// #define u128_bytes (16u)
+// #define u128_limit u128_limit_max
+// #define u128_limit_min u128_(0)
+// #define u128_limit_max u128_(UINT128_MAX)
+// #define u128_limit_flt_min_bound_excl (-1.0)
+// #define u128_limit_flt_max_bound_excl (0x1p127)
 
 /*--- Signed integer ---*/
 
@@ -300,32 +300,6 @@ typedef long ilong;
     ) pp_end \
 )
 
-typedef int64_t i64;
-#define i64_(_literal...) (as$(i64)(n_(_literal)))
-#define i64_bits (64u)
-#define i64_bytes (8u)
-#define i64_limit_min i64_(INT64_MIN)
-#define i64_limit_max i64_(INT64_MAX)
-#define i64_limit_max_ngtv i64_(INT64_MIN)
-#define i64_limit_min_ngtv i64_(-1)
-#define i64_limit_min_pstv i64_(+1)
-#define i64_limit_max_pstv i64_(INT64_MAX)
-#define i64_limit_flt_min_bound_excl (-0x1p63 - 1.0)
-#define i64_limit_flt_max_bound_excl (0x1p63)
-
-// typedef __int128_t i128;
-// #define i128_(_literal...) (as$(i128)(n_(_literal)))
-// #define i128_bits      (128u)
-// #define i128_bytes     (16u)
-// #define i128_limit_min i128_(INT128_MIN)
-// #define i128_limit_max i128_(INT128_MAX)
-// #define i128_limit_max_ngtv i128_(INT128_MIN)
-// #define i128_limit_min_ngtv i128_(-1)
-// #define i128_limit_min_pstv i128_(+1)
-// #define i128_limit_max_pstv i128_(INT128_MAX)
-// #define i128_limit_flt_min_bound_excl (-0x1p127 - 1.0)
-// #define i128_limit_flt_max_bound_excl (0x1p127)
-
 typedef intptr_t isize;
 #define isize_(_literal...) (as$(isize)(n_(_literal)))
 #define isize_bits pp_expand( \
@@ -388,6 +362,32 @@ typedef intptr_t isize;
         pp_case_((plat_bits_unit_32bit)(i32_limit_flt_max_bound_excl)) \
     ) pp_end \
 )
+
+typedef int64_t i64;
+#define i64_(_literal...) (as$(i64)(n_(_literal)))
+#define i64_bits (64u)
+#define i64_bytes (8u)
+#define i64_limit_min i64_(INT64_MIN)
+#define i64_limit_max i64_(INT64_MAX)
+#define i64_limit_max_ngtv i64_(INT64_MIN)
+#define i64_limit_min_ngtv i64_(-1)
+#define i64_limit_min_pstv i64_(+1)
+#define i64_limit_max_pstv i64_(INT64_MAX)
+#define i64_limit_flt_min_bound_excl (-0x1p63 - 1.0)
+#define i64_limit_flt_max_bound_excl (0x1p63)
+
+// typedef __int128_t i128;
+// #define i128_(_literal...) (as$(i128)(n_(_literal)))
+// #define i128_bits      (128u)
+// #define i128_bytes     (16u)
+// #define i128_limit_min i128_(INT128_MIN)
+// #define i128_limit_max i128_(INT128_MAX)
+// #define i128_limit_max_ngtv i128_(INT128_MIN)
+// #define i128_limit_min_ngtv i128_(-1)
+// #define i128_limit_min_pstv i128_(+1)
+// #define i128_limit_max_pstv i128_(INT128_MAX)
+// #define i128_limit_flt_min_bound_excl (-0x1p127 - 1.0)
+// #define i128_limit_flt_max_bound_excl (0x1p127)
 
 /* floating point */
 // typedef _Float16 f16;

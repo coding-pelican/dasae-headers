@@ -24,12 +24,23 @@ typedef struct draft_fmt__Iter {
 } draft_fmt__Iter;
 
 $attr($inline_always)
+$static fn_((draft_fmt__formatRuntimePlain(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8));
+$attr($inline_always)
 $static fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8));
 
 $attr($inline_always)
 $static fn_((draft_fmt__Iter_init(S_const$u8 fmt))(draft_fmt__Iter));
 $attr($inline_always)
+$static fn_((draft_fmt__countItemsPlain(S_const$u8 fmt))(usize));
+$attr($inline_always)
 $static fn_((draft_fmt__countItems(S_const$u8 fmt))(usize));
+$attr($inline_always)
+$static fn_((draft_fmt__Iter_nextPlain(
+    draft_fmt__Iter* iter,
+    S$u8 out,
+    S_const$TypeInfo fields,
+    u_P_const$raw tuple
+))(O$usize));
 $attr($inline_always)
 $static fn_((draft_fmt__Iter_next(
     draft_fmt__Iter* iter,
@@ -43,7 +54,19 @@ $static fn_((draft_fmt__findFirstUnit(S_const$u8 mem, u8 unit))(O$usize));
 $attr($inline_always)
 $static fn_((draft_fmt__findRequiredUnit(S_const$u8 mem, u8 unit))(usize));
 $attr($inline_always)
-$static fn_((draft_fmt__copyLiteral(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize));
+$static fn_((draft_fmt__findSpecOpen(S_const$u8 fmt))(O$usize));
+$attr($inline_always)
+$static fn_((draft_fmt__findFirstFmtCtrl(S_const$u8 mem))(O$usize));
+$attr($inline_always)
+$static fn_((draft_fmt__literalHasEscapes(S_const$u8 literal))(bool));
+$attr($inline_always)
+$static fn_((draft_fmt__copyLiteral(S$u8 mem, S_const$u8 fmt, usize start, usize len, bool literal_has_escapes))(usize));
+$attr($inline_always)
+$static fn_((draft_fmt__copyLiteralPlain(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize));
+$attr($inline_always)
+$static fn_((draft_fmt__copyLiteralEscaped(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize));
+$attr($inline_always)
+$static fn_((draft_fmt__writeLiteralByte(S$u8 mem, usize written, u8 byte))(usize));
 $attr($inline_always)
 $static fn_((draft_fmt__argIdx(S_const$u8 spec, usize occ_idx))(usize));
 $attr($inline_always)
@@ -81,24 +104,36 @@ fn_((main(void))(E$void) $scope) {
 #if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 5
     var_(mem5, A$$(64, u8)) = A_zero();
 #endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 6
+    var_(mem6, A$$(64, u8)) = A_zero();
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 7
+    var_(mem7, A$$(64, u8)) = A_zero();
+#endif
 
 #if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 0
-    let s0 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem0), u8_l("case0: literal ok abc"))()));
+    let s0 = try_(va_((draft_fmt__formatRuntimePlain)(A_ref$((S$u8)mem0), u8_l("case0: literal ok abc"))()));
 #endif
 #if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 1
-    let s1 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem1), u8_l("case1: {0}def"))(Void_())));
+    let s1 = try_(va_((draft_fmt__formatRuntimePlain)(A_ref$((S$u8)mem1), u8_l("case1: {0}def"))(Void_())));
 #endif
 #if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 2
-    let s2 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem2), u8_l("case2: {i} ghi"))(123)));
+    let s2 = try_(va_((draft_fmt__formatRuntimePlain)(A_ref$((S$u8)mem2), u8_l("case2: {i} ghi"))(123)));
 #endif
 #if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 3
-    let s3 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem3), u8_l("case3: {s} jkl{i}mno"))(u8_l("world"), 123)));
+    let s3 = try_(va_((draft_fmt__formatRuntimePlain)(A_ref$((S$u8)mem3), u8_l("case3: {s} jkl{i}mno"))(u8_l("world"), 123)));
 #endif
 #if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 4
-    let s4 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem4), u8_l("case4: {s} pqr {u} stu {i} vw"))(u8_l("world"), u32_(7), -5)));
+    let s4 = try_(va_((draft_fmt__formatRuntimePlain)(A_ref$((S$u8)mem4), u8_l("case4: {s} pqr {u} stu {i} vw"))(u8_l("world"), u32_(7), -5)));
 #endif
 #if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 5
-    let s5 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem5), u8_l("case5: {1:i}{0:s}{0:s}{1:i} xyz"))(u8_l("456"), 123)));
+    let s5 = try_(va_((draft_fmt__formatRuntimePlain)(A_ref$((S$u8)mem5), u8_l("case5: {1:i}{0:s}{0:s}{1:i} xyz"))(u8_l("456"), 123)));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 6
+    let s6 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem6), u8_l("case6: literal {{ok}} abc"))()));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 7
+    let s7 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem7), u8_l("case7: {{pre}} {i} {{post}}"))(123)));
 #endif
 
 #if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 0
@@ -119,11 +154,38 @@ fn_((main(void))(E$void) $scope) {
 #if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 5
     puts(as$(const char*)(s5.ptr));
 #endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 6
+    puts(as$(const char*)(s6.ptr));
+#endif
+#if DRAFT_FMT_CASE < 0 || DRAFT_FMT_CASE == 7
+    puts(as$(const char*)(s7.ptr));
+#endif
 
     return_ok({});
 } $unscoped(fn);
 
-fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8) $scope) {
+$maybe_unused fn_((draft_fmt__formatRuntimePlain(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8) $scope) {
+    claim_assert(fields.len <= 8);
+    claim_assert(TypeInfo_eql(tuple.type, u_typeInfoRecord(fields)));
+    let item_count = draft_fmt__countItemsPlain(fmt);
+    claim_assert(item_count <= 8);
+    var iter = draft_fmt__Iter_init(fmt);
+    var out = mem;
+
+    if (0 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_nextPlain(&iter, out, fields, tuple)));
+    if (1 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_nextPlain(&iter, out, fields, tuple)));
+    if (2 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_nextPlain(&iter, out, fields, tuple)));
+    if (3 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_nextPlain(&iter, out, fields, tuple)));
+    if (4 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_nextPlain(&iter, out, fields, tuple)));
+    if (5 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_nextPlain(&iter, out, fields, tuple)));
+    if (6 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_nextPlain(&iter, out, fields, tuple)));
+    if (7 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_nextPlain(&iter, out, fields, tuple)));
+
+    out = S_suffix((out)(draft_fmt__copyLiteralPlain(out, iter.rest, 0, iter.rest.len)));
+    return_ok(S_prefix((mem)(mem.len - out.len)));
+} $unscoped(fn);
+
+$maybe_unused fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8) $scope) {
     claim_assert(fields.len <= 8);
     claim_assert(TypeInfo_eql(tuple.type, u_typeInfoRecord(fields)));
     let item_count = draft_fmt__countItems(fmt);
@@ -140,7 +202,7 @@ fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields,
     if (6 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
     if (7 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, fields, tuple)));
 
-    out = S_suffix((out)(draft_fmt__copyLiteral(out, iter.rest, 0, iter.rest.len)));
+    out = S_suffix((out)(draft_fmt__copyLiteral(out, iter.rest, 0, iter.rest.len, draft_fmt__literalHasEscapes(iter.rest))));
     return_ok(S_prefix((mem)(mem.len - out.len)));
 } $unscoped(fn);
 
@@ -151,7 +213,7 @@ fn_((draft_fmt__Iter_init(S_const$u8 fmt))(draft_fmt__Iter)) {
     };
 };
 
-fn_((draft_fmt__countItems(S_const$u8 fmt))(usize)) {
+fn_((draft_fmt__countItemsPlain(S_const$u8 fmt))(usize)) {
     var count = usize_(0);
     for_(($s(fmt))(ch)) {
         if (*ch == u8_c('{')) count += 1;
@@ -159,7 +221,19 @@ fn_((draft_fmt__countItems(S_const$u8 fmt))(usize)) {
     return count;
 };
 
-fn_((draft_fmt__Iter_next(
+fn_((draft_fmt__countItems(S_const$u8 fmt))(usize)) {
+    var count = usize_(0);
+    var pos = usize_(0);
+    while (pos < fmt.len) {
+        let next = orelse_((draft_fmt__findSpecOpen(S_suffix((fmt)pos)))(break));
+        pos += next;
+        count += 1;
+        pos += 1;
+    }
+    return count;
+};
+
+fn_((draft_fmt__Iter_nextPlain(
     draft_fmt__Iter* iter,
     S$u8 out,
     S_const$TypeInfo fields,
@@ -172,7 +246,31 @@ fn_((draft_fmt__Iter_next(
     let end = spec_start + draft_fmt__findRequiredUnit(S_suffix((rest)spec_start), u8_c('}'));
     let spec = S_slice((rest)$r(brace + 1, end));
 
-    var written = draft_fmt__copyLiteral(out, rest, 0, brace);
+    var written = draft_fmt__copyLiteralPlain(out, rest, 0, brace);
+    let arg_idx = draft_fmt__argIdx(spec, iter->occ_idx);
+    claim_assert(arg_idx < fields.len);
+    let field = u_fieldPtr(tuple, fields, arg_idx);
+    let tag = draft_fmt__argTag(spec);
+    written += draft_fmt__writeField(S_suffix((out)written), tag, field);
+    iter->rest = S_suffix((rest)(end + 1));
+    iter->occ_idx += 1;
+    return_some(written);
+} $unscoped(fn);
+
+fn_((draft_fmt__Iter_next(
+    draft_fmt__Iter* iter,
+    S$u8 out,
+    S_const$TypeInfo fields,
+    u_P_const$raw tuple
+))(O$usize) $scope) {
+    claim_assert_nonnull(iter);
+    let rest = iter->rest;
+    let brace = orelse_((draft_fmt__findSpecOpen(rest))(return_none()));
+    let spec_start = brace + 1;
+    let end = spec_start + draft_fmt__findRequiredUnit(S_suffix((rest)spec_start), u8_c('}'));
+    let spec = S_slice((rest)$r(brace + 1, end));
+
+    var written = draft_fmt__copyLiteral(out, rest, 0, brace, draft_fmt__literalHasEscapes(S_prefix((rest)brace)));
     let arg_idx = draft_fmt__argIdx(spec, iter->occ_idx);
     claim_assert(arg_idx < fields.len);
     let field = u_fieldPtr(tuple, fields, arg_idx);
@@ -191,9 +289,79 @@ fn_((draft_fmt__findRequiredUnit(S_const$u8 mem, u8 unit))(usize)) {
     return unwrap_(draft_fmt__findFirstUnit(mem, unit));
 };
 
-fn_((draft_fmt__copyLiteral(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize)) {
+fn_((draft_fmt__findSpecOpen(S_const$u8 fmt))(O$usize) $scope) {
+    var pos = usize_(0);
+    while (pos < fmt.len) {
+        let next = orelse_((draft_fmt__findFirstUnit(S_suffix((fmt)pos), u8_c('{')))(return_none()));
+        pos += next;
+        if (pos + 1 < fmt.len && *S_at((fmt)[pos + 1]) == u8_c('{')) {
+            pos += 2;
+            continue;
+        }
+        return_some(pos);
+    }
+    return_none();
+} $unscoped(fn);
+
+fn_((draft_fmt__findFirstFmtCtrl(S_const$u8 mem))(O$usize) $scope) {
+    let open = draft_fmt__findFirstUnit(mem, u8_c('{'));
+    let close = draft_fmt__findFirstUnit(mem, u8_c('}'));
+    if_some((open)(open_idx)) {
+        if_some((close)(close_idx)) return_some(open_idx < close_idx ? open_idx : close_idx);
+        return_some(open_idx);
+    }
+    if_some((close)(close_idx)) return_some(close_idx);
+    return_none();
+} $unscoped(fn);
+
+fn_((draft_fmt__literalHasEscapes(S_const$u8 literal))(bool)) {
+    for_(($rf(0), $s(literal))(idx, ch)) {
+        if ((*ch == u8_c('{') || *ch == u8_c('}')) && idx + 1 < literal.len && *S_at((literal)[idx + 1]) == *ch) {
+            return true;
+        }
+    } $end(for);
+    return false;
+};
+
+fn_((draft_fmt__copyLiteral(S$u8 mem, S_const$u8 fmt, usize start, usize len, bool literal_has_escapes))(usize)) {
+    return literal_has_escapes
+           ? draft_fmt__copyLiteralEscaped(mem, fmt, start, len)
+           : draft_fmt__copyLiteralPlain(mem, fmt, start, len);
+};
+
+fn_((draft_fmt__copyLiteralPlain(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize)) {
     let_ignore = mem_copyBytes(mem, S_prefix((S_suffix((fmt)start))len));
     return len;
+};
+
+fn_((draft_fmt__copyLiteralEscaped(S$u8 mem, S_const$u8 fmt, usize start, usize len))(usize)) {
+    let end = start + len;
+    var pos = start;
+    var written = usize_(0);
+    while (pos < end) {
+        let rest = S_slice((fmt)$r(pos, end));
+        let ctrl = orelse_((draft_fmt__findFirstFmtCtrl(rest))({
+            let_ignore = mem_copyBytes(S_suffix((mem)written), rest);
+            return written + rest.len;
+        }));
+
+        let chunk = S_prefix((rest)ctrl);
+        let_ignore = mem_copyBytes(S_suffix((mem)written), chunk);
+        written += chunk.len;
+
+        let ctrl_pos = pos + ctrl;
+        let ch = *S_at((fmt)[ctrl_pos]);
+        claim_assert(ctrl_pos + 1 < end);
+        claim_assert(*S_at((fmt)[ctrl_pos + 1]) == ch);
+        written = draft_fmt__writeLiteralByte(mem, written, ch);
+        pos = ctrl_pos + 2;
+    }
+    return written;
+};
+
+fn_((draft_fmt__writeLiteralByte(S$u8 mem, usize written, u8 byte))(usize)) {
+    *S_at((mem)[written]) = byte;
+    return written + 1;
 };
 
 fn_((draft_fmt__argIdx(S_const$u8 spec, usize occ_idx))(usize)) {

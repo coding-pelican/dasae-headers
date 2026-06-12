@@ -79,21 +79,21 @@ extern "C" {
 #define plat_bits_32 __comp_int__plat_bits_32
 #define plat_bits_16 __comp_int__plat_bits_16
 
-#define plat_ptr_unit __comp_enum__plat_ptr_unit
-#define plat_long_unit __comp_enum__plat_long_unit
 #define plat_int_unit __comp_enum__plat_int_unit
+#define plat_long_unit __comp_enum__plat_long_unit
+#define plat_ptr_unit __comp_enum__plat_ptr_unit
 
-#define plat_ptr_bits __comp_int__plat_ptr_bits
-#define plat_long_bits __comp_int__plat_long_bits
 #define plat_int_bits __comp_int__plat_int_bits
+#define plat_long_bits __comp_int__plat_long_bits
+#define plat_ptr_bits __comp_int__plat_ptr_bits
 
-#define plat_ptr_is_64bit __comp_bool__plat_ptr_is_64bit
-#define plat_ptr_is_32bit __comp_bool__plat_ptr_is_32bit
-#define plat_long_is_64bit __comp_bool__plat_long_is_64bit
-#define plat_long_is_32bit __comp_bool__plat_long_is_32bit
 #define plat_int_is_64bit __comp_bool__plat_int_is_64bit
 #define plat_int_is_32bit __comp_bool__plat_int_is_32bit
 #define plat_int_is_16bit __comp_bool__plat_int_is_16bit
+#define plat_long_is_64bit __comp_bool__plat_long_is_64bit
+#define plat_long_is_32bit __comp_bool__plat_long_is_32bit
+#define plat_ptr_is_64bit __comp_bool__plat_ptr_is_64bit
+#define plat_ptr_is_32bit __comp_bool__plat_ptr_is_32bit
 
 #define plat_long_needs_distinct_int_cases __comp_bool__plat_long_needs_distinct_int_cases
 
@@ -226,11 +226,11 @@ extern "C" {
 #define __comp_int__plat_bits_32 32
 #define __comp_int__plat_bits_16 16
 
-#define __comp_enum__plat_ptr_unit pp_expand( \
+#define __comp_enum__plat_int_unit pp_expand( \
     pp_switch_ pp_begin(plat_data_model)( \
-        pp_case_((plat_data_model_lp32)(plat_bits_unit_32bit)), \
-        pp_case_((plat_data_model_ilp32)(plat_bits_unit_32bit)), \
-        pp_default_(plat_bits_unit_64bit) \
+        pp_case_((plat_data_model_lp32)(plat_bits_unit_16bit)), \
+        pp_case_((plat_data_model_ilp64)(plat_bits_unit_64bit)), \
+        pp_default_(plat_bits_unit_32bit) \
     ) pp_end \
 )
 #define __comp_enum__plat_long_unit pp_expand( \
@@ -240,18 +240,19 @@ extern "C" {
         pp_default_(plat_bits_unit_32bit) \
     ) pp_end \
 )
-#define __comp_enum__plat_int_unit pp_expand( \
+#define __comp_enum__plat_ptr_unit pp_expand( \
     pp_switch_ pp_begin(plat_data_model)( \
-        pp_case_((plat_data_model_lp32)(plat_bits_unit_16bit)), \
-        pp_case_((plat_data_model_ilp64)(plat_bits_unit_64bit)), \
-        pp_default_(plat_bits_unit_32bit) \
+        pp_case_((plat_data_model_lp32)(plat_bits_unit_32bit)), \
+        pp_case_((plat_data_model_ilp32)(plat_bits_unit_32bit)), \
+        pp_default_(plat_bits_unit_64bit) \
     ) pp_end \
 )
 
-#define __comp_int__plat_ptr_bits pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
+#define __comp_int__plat_int_bits pp_expand( \
+    pp_switch_ pp_begin(plat_int_unit)( \
         pp_case_((plat_bits_unit_64bit)(plat_bits_64)), \
         pp_case_((plat_bits_unit_32bit)(plat_bits_32)), \
+        pp_case_((plat_bits_unit_16bit)(plat_bits_16)), \
         pp_default_(plat_bits_unknown) \
     ) pp_end \
 )
@@ -262,24 +263,23 @@ extern "C" {
         pp_default_(plat_bits_unknown) \
     ) pp_end \
 )
-#define __comp_int__plat_int_bits pp_expand( \
-    pp_switch_ pp_begin(plat_int_unit)( \
+#define __comp_int__plat_ptr_bits pp_expand( \
+    pp_switch_ pp_begin(plat_ptr_unit)( \
         pp_case_((plat_bits_unit_64bit)(plat_bits_64)), \
         pp_case_((plat_bits_unit_32bit)(plat_bits_32)), \
-        pp_case_((plat_bits_unit_16bit)(plat_bits_16)), \
         pp_default_(plat_bits_unknown) \
     ) pp_end \
 )
 
-#define __comp_bool__plat_ptr_is_64bit pp_Tok_eql(plat_ptr_unit, plat_bits_unit_64bit)
-#define __comp_bool__plat_ptr_is_32bit pp_Tok_eql(plat_ptr_unit, plat_bits_unit_32bit)
+#define __comp_bool__plat_int_is_64bit pp_Tok_eql(plat_int_unit, plat_bits_unit_64bit)
+#define __comp_bool__plat_int_is_32bit pp_Tok_eql(plat_int_unit, plat_bits_unit_32bit)
+#define __comp_bool__plat_int_is_16bit pp_Tok_eql(plat_int_unit, plat_bits_unit_16bit)
 /* C requires `long` to provide at least 32 bits of range, so this layer only
  * models `long` as 32-bit or 64-bit and intentionally has no `*_long_is_16bit`. */
 #define __comp_bool__plat_long_is_64bit pp_Tok_eql(plat_long_unit, plat_bits_unit_64bit)
 #define __comp_bool__plat_long_is_32bit pp_Tok_eql(plat_long_unit, plat_bits_unit_32bit)
-#define __comp_bool__plat_int_is_64bit pp_Tok_eql(plat_int_unit, plat_bits_unit_64bit)
-#define __comp_bool__plat_int_is_32bit pp_Tok_eql(plat_int_unit, plat_bits_unit_32bit)
-#define __comp_bool__plat_int_is_16bit pp_Tok_eql(plat_int_unit, plat_bits_unit_16bit)
+#define __comp_bool__plat_ptr_is_64bit pp_Tok_eql(plat_ptr_unit, plat_bits_unit_64bit)
+#define __comp_bool__plat_ptr_is_32bit pp_Tok_eql(plat_ptr_unit, plat_bits_unit_32bit)
 
 #define __comp_bool__plat_long_needs_distinct_int_cases \
     pp_or(pp_or(plat_data_model_is_llp64, plat_data_model_is_llp32), plat_is_darwin)
