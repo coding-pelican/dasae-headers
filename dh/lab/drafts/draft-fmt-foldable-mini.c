@@ -4,6 +4,8 @@
 #include "dh/ascii.h"
 #include <stdio.h>
 
+#define draft_fmt__max_occ usize_(8)
+
 typedef enum_((draft_fmt__ArgTag $fits($packed))(
     draft_fmt__ArgTag_void = 0,
     draft_fmt__ArgTag_u32,
@@ -20,18 +22,15 @@ typedef struct draft_fmt__Iter {
 } draft_fmt__Iter;
 
 $attr($inline_always)
-$static fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8));
+$static fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, $va_args))(E$S$u8));
 
 $attr($inline_always)
 $static fn_((draft_fmt__Iter_init(S_const$u8 fmt))(draft_fmt__Iter));
 $attr($inline_always)
-$static fn_((draft_fmt__Iter_next(
-    draft_fmt__Iter* iter,
-    S$u8 out,
-    S_const$TypeInfo fields,
-    u_P_const$raw tuple
-))(O$usize));
+$static fn_((draft_fmt__Iter_next(draft_fmt__Iter* iter, S$u8 out, $va_args))(O$usize));
 
+$attr($inline_always)
+$static fn_((draft_fmt__countUnit(S_const$u8 fmt, u8 unit))(usize));
 $attr($inline_always)
 $static fn_((draft_fmt__findFirstUnit(S_const$u8 mem, u8 unit))(O$usize));
 $attr($inline_always)
@@ -45,15 +44,10 @@ $static fn_((draft_fmt__argTag(S_const$u8 spec))(draft_fmt__ArgTag));
 
 $attr($inline_always)
 $static fn_((draft_fmt__writeField(S$u8 mem, draft_fmt__ArgTag tag, u_P_const$raw field))(usize));
-$attr($inline_always)
 $static fn_((draft_fmt__writeVoid(S$u8 mem, Void arg))(usize));
-$attr($inline_always)
 $static fn_((draft_fmt__writeU32(S$u8 mem, u32 arg))(usize));
-$attr($inline_always)
 $static fn_((draft_fmt__writeI32(S$u8 mem, i32 arg))(usize));
-$attr($inline_always)
 $static fn_((draft_fmt__writeF64(S$u8 mem, f64 arg))(usize));
-$attr($inline_always)
 $static fn_((draft_fmt__writeSliU8(S$u8 mem, S_const$u8 arg))(usize));
 
 fn_((main(void))(E$void) $scope) {
@@ -64,12 +58,12 @@ fn_((main(void))(E$void) $scope) {
     var_(mem4, A$$(64, u8)) = A_zero();
     var_(mem5, A$$(64, u8)) = A_zero();
 
-    let s0 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem0), u8_l("case0: literal"))()));
-    let s1 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem1), u8_l("case1: {0}"))(Void_())));
-    let s2 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem2), u8_l("case2: {i}"))(123)));
-    let s3 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem3), u8_l("case3: {s} {i}"))(u8_l("world"), 123)));
-    let s4 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem4), u8_l("case4: {s} {u} {i}"))(u8_l("world"), u32_(7), -5)));
-    let s5 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem5), u8_l("case5: {1:i}{0:s}{0:s}{1:i}"))(u8_l("456"), 123)));
+    let s0 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem0), u8_l("case0: literal ok abc"))()));
+    let s1 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem1), u8_l("case1: {0}def"))(Void_())));
+    let s2 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem2), u8_l("case2: {i} ghi"))(123)));
+    let s3 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem3), u8_l("case3: {s} jkl{i}mno"))(u8_l("world"), 123)));
+    let s4 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem4), u8_l("case4: {s} pqr {u} stu {i} vw"))(u8_l("world"), u32_(7), -5)));
+    let s5 = try_(va_((draft_fmt__formatRuntime)(A_ref$((S$u8)mem5), u8_l("case5: {1:i}{0:s}{0:s}{1:i} xyz"))(u8_l("456"), 123)));
 
     puts(as$(const char*)(s0.ptr));
     puts(as$(const char*)(s1.ptr));
@@ -81,22 +75,22 @@ fn_((main(void))(E$void) $scope) {
     return_ok({});
 } $unscoped(fn);
 
-fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8) $scope) {
-    claim_assert(TypeInfo_eql(tuple.type, u_typeInfoRecord(fields)));
+fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, $va_args))(E$S$u8) $scope) {
+    claim_assert(TypeInfo_eql($va_ref_tup.type, u_typeInfoRecord($va_ty_tup_fields)));
     var iter = draft_fmt__Iter_init(fmt);
+    let item_count = draft_fmt__countUnit(fmt, u8_c('{'));
+    claim_assert(item_count <= draft_fmt__max_occ);
     var out = mem;
-    if_some((draft_fmt__Iter_next(&iter, out, fields, tuple))(written)) {
-        out = S_suffix((out)written);
-        if_some((draft_fmt__Iter_next(&iter, out, fields, tuple))(written)) {
-            out = S_suffix((out)written);
-            if_some((draft_fmt__Iter_next(&iter, out, fields, tuple))(written)) {
-                out = S_suffix((out)written);
-                if_some((draft_fmt__Iter_next(&iter, out, fields, tuple))(written)) {
-                    out = S_suffix((out)written);
-                }
-            }
-        }
-    }
+
+    if (0 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
+    if (1 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
+    if (2 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
+    if (3 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
+    if (4 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
+    if (5 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
+    if (6 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
+    if (7 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
+
     out = S_suffix((out)(draft_fmt__copyLiteral(out, iter.rest, 0, iter.rest.len)));
     return_ok(S_prefix((mem)(mem.len - out.len)));
 } $unscoped(fn);
@@ -108,12 +102,7 @@ fn_((draft_fmt__Iter_init(S_const$u8 fmt))(draft_fmt__Iter)) {
     };
 };
 
-fn_((draft_fmt__Iter_next(
-    draft_fmt__Iter* iter,
-    S$u8 out,
-    S_const$TypeInfo fields,
-    u_P_const$raw tuple
-))(O$usize) $scope) {
+fn_((draft_fmt__Iter_next(draft_fmt__Iter* iter, S$u8 out, $va_args))(O$usize) $scope) {
     claim_assert_nonnull(iter);
     let rest = iter->rest;
     let brace = orelse_((draft_fmt__findFirstUnit(rest, u8_c('{')))(return_none()));
@@ -123,8 +112,8 @@ fn_((draft_fmt__Iter_next(
 
     var written = draft_fmt__copyLiteral(out, rest, 0, brace);
     let arg_idx = draft_fmt__argIdx(spec, iter->occ_idx);
-    claim_assert(arg_idx < fields.len);
-    let field = u_fieldPtr(tuple, fields, arg_idx);
+    claim_assert(arg_idx < $va_ty_tup_fields.len);
+    let field = u_fieldPtr($va_ref_tup, $va_ty_tup_fields, arg_idx);
     let tag = draft_fmt__argTag(spec);
     written += draft_fmt__writeField(S_suffix((out)written), tag, field);
     iter->rest = S_suffix((rest)(end + 1));
@@ -132,9 +121,17 @@ fn_((draft_fmt__Iter_next(
     return_some(written);
 } $unscoped(fn);
 
-fn_((draft_fmt__findFirstUnit(S_const$u8 mem, u8 unit))(O$usize) $scope) {
+fn_((draft_fmt__countUnit(S_const$u8 fmt, u8 unit))(usize)) {
+    var_(count, usize) = 0;
+    for_(($s(fmt))(ch)) {
+        if (*ch == unit) count++;
+    } $end(for);
+    return count;
+};
+
+fn_((draft_fmt__findFirstUnit(S_const$u8 mem, u8 unit))(O$usize)) {
     return mem_findFirstUnitBytes(mem, unit);
-} $unscoped(fn);
+};
 
 fn_((draft_fmt__findRequiredUnit(S_const$u8 mem, u8 unit))(usize)) {
     return unwrap_(draft_fmt__findFirstUnit(mem, unit));

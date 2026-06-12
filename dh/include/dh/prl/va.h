@@ -11,6 +11,13 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 /*========== Macros and Definitions =========================================*/
 
+#define $va_args $va_args_($va_ty_tup_fields, $va_ref_tup)
+#define $va_args_(_ty_tup_fields, _ref_tup) \
+    S_const$TypeInfo _ty_tup_fields, u_P_const$raw _ref_tup
+
+#define $va_ty_tup_fields ty_tup_fields
+#define $va_ref_tup ref_tup
+
 #define va_(/*(_fn)(_args...)(...)*/...) __expr__va_(__VA_ARGS__)
 #define __expr__va_(...) __step__va_(__pp__va___parseFn __VA_ARGS__)
 #define __pp__va___parseFn(_fn...) _fn, __pp__va___parseArgs
