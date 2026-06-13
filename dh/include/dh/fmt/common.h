@@ -14,7 +14,7 @@
  *          This version exposes internal formatting logic as public APIs for composability.
  *
  * FORMAT SPECIFICATION:
- *   `{[index]:[fill][alignment][sign][#][width].[precision][type][size]}`
+ *   `%{'['[index]']'[[wrapped]type[size]][[alt]'('mode')'][':'[[fill]align][sign][width]['.'precision]]}`
  *
  *   Components:
  *   - index (optional):     Index of argument (0-indexed, 0-15, positional if omitted)
@@ -29,8 +29,8 @@
  *
  * ALTERNATE FORM (#):
  *   - Hex (x, X):     Adds '0x' prefix (e.g., 0xff, 0x0)
- *   - Binary (b):     Adds '0b' prefix (e.g., 0b101, 0b0)
  *   - Octal (o):      Adds '0' prefix (e.g., 0100, 00)
+ *   - Binary (b):     Adds '0b' prefix (e.g., 0b101, 0b0)
  *   - Float (f, F):   Always show decimal point even for whole numbers
  *   - Pointer (p, P): Adds '0x' prefix (e.g., 0x12345678, 0x0)
  *
@@ -90,6 +90,30 @@
  *    - {:!s}      → E$S_const$u8 (result)
  *    - {:e}       → Err (error object)
  */
+// `%{'['[index]']'[[wrapped]type[size]][[alt]'('mode')'][':'[[fill]align][sign][width]['.'precision]]}`
+// wrapped = '?' optional | '!' error result
+// type_void = '0'
+// type_bool = 'b' | 'B' upper
+// type_uint = 'u' | 'U' upper
+// type_iint = 'i' | 'I' upper
+// type_int = type_uint | type_iint
+// type_flt = 'f' | 'F' upper
+// type_ptr = 'p' | 'P' upper
+// type_ascii_ch = 'c'
+// type_utf8_cp = 'C'
+// type_str_z0 = 'z'
+// type_str_s = 's'
+// type_err = 'e'
+// type_sizable = type_int | type_flt
+// type_mode_usable = type_sizable | type_ptr
+// type = type_void | type_bool | type_mode_usable | type_ascii_ch | type_utf8_cp | type_str_z0 | type_str_s | type_err
+// size_common = ' ' | '32' | 'll' | '64'
+// size_int = 'hh' | '8' | 'h' | '16' | size_common | 'l' | 'long' | 'z' | 'size'
+// size_flt = size_common
+// size = size_int | size_flt
+// alt = '#'
+// mode = ' ' auto | 'd' 10 | 'x' 16 | 'o' 8 | 'b' 2 | 'e' scientific
+// sign = ' ' auto | '+' always | '-' only ngtv
 #ifndef fmt_common__included
 #define fmt_common__included 1
 #if defined(__cplusplus)
