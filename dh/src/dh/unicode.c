@@ -32,7 +32,7 @@ $static fn_((unicode__utf8ToUTF16(S_const$u8 utf8, usize required_len, S$u16 out
 
 fn_((unicode_utf8ToUTF16(S_const$u8 utf8, S$u16 out))(unicode_utf8ToUTF16_E$S$u16) $scope) {
     let required_len = try_(unicode_utf8ToUTF16Len(utf8));
-    if (required_len > out.len) return_err(E_cause$OutOfMemory());
+    if (required_len > out.len) return_err(E_cause$TooSmallBuffer());
     return_ok(unicode__utf8ToUTF16(utf8, required_len, out));
 } $unscoped(fn);
 
@@ -40,7 +40,7 @@ fn_((unicode_utf8ToUTF16Within(S_const$u8 utf8, S$u16 out))(unicode_utf8_E$S$u16
     return_ok(unicode__utf8ToUTF16(utf8, try_(unicode_utf8ToUTF16Len(utf8)), out));
 } $unscoped(fn);
 
-fn_((unicode_utf8ToUTF16Alloc(S_const$u8 utf8, mem_Alctr gpa))(unicode_mem_E$S$u16) $scope) {
+fn_((unicode_utf8ToUTF16Alloc(S_const$u8 utf8, mem_Alctr gpa))(unicode_utf8ToUTF16Alloc_E$S$u16) $scope) {
     let required_len = try_(unicode_utf8ToUTF16Len(utf8));
     let required_buf = u_castS$((S$u16)try_(mem_Alctr_alloc($trace gpa, typeInfo$(u16), required_len)));
     let utf16 = unicode__utf8ToUTF16(utf8, required_len, required_buf);
@@ -73,7 +73,7 @@ $static fn_((unicode__utf16ToUTF8(S_const$u16 utf16, usize required_len, S$u8 ou
 
 fn_((unicode_utf16ToUTF8(S_const$u16 utf16, S$u8 out))(unicode_utf16ToUTF8_E$S$u8) $scope) {
     let required_len = try_(unicode_utf16ToUTF8Len(utf16));
-    if (required_len > out.len) return_err(E_cause$OutOfMemory());
+    if (required_len > out.len) return_err(E_cause$TooSmallBuffer());
     return_ok(try_(unicode__utf16ToUTF8(utf16, required_len, out)));
 } $unscoped(fn);
 
@@ -81,7 +81,7 @@ fn_((unicode_utf16ToUTF8Within(S_const$u16 utf16, S$u8 out))(unicode_utf16_E$S$u
     return_(unicode__utf16ToUTF8(utf16, try_(unicode_utf16ToUTF8Len(utf16)), out));
 } $unscoped(fn);
 
-fn_((unicode_utf16ToUTF8Alloc(S_const$u16 utf16, mem_Alctr gpa))(unicode_mem_E$S$u8) $guard) {
+fn_((unicode_utf16ToUTF8Alloc(S_const$u16 utf16, mem_Alctr gpa))(unicode_utf16ToUTF8Alloc_E$S$u8) $guard) {
     let required_len = try_(unicode_utf16ToUTF8Len(utf16));
     let required_buf = try_(mem_Alctr_allocBytes($trace gpa, required_len));
     errdefer_($ignore, mem_Alctr_freeBytes($trace gpa, required_buf));
@@ -123,7 +123,7 @@ $static fn_((unicode__wtf8ToWTF16(S_const$u8 wtf8, usize required_len, S$u16 out
 
 fn_((unicode_wtf8ToWTF16(S_const$u8 wtf8, S$u16 out))(unicode_wtf8ToWTF16_E$S$u16) $scope) {
     let required_len = unicode_wtf8ToWTF16Len(wtf8);
-    if (required_len > out.len) return_err(E_cause$OutOfMemory());
+    if (required_len > out.len) return_err(E_cause$TooSmallBuffer());
     return_ok(unicode__wtf8ToWTF16(wtf8, required_len, out));
 } $unscoped(fn);
 
@@ -131,7 +131,7 @@ fn_((unicode_wtf8ToWTF16Within(S_const$u8 wtf8, S$u16 out))(unicode_wtf8_E$S$u16
     return_ok(unicode__wtf8ToWTF16(wtf8, unicode_wtf8ToWTF16Len(wtf8), out));
 } $unscoped(fn);
 
-fn_((unicode_wtf8ToWTF16Alloc(S_const$u8 wtf8, mem_Alctr gpa))(unicode_mem_E$S$u16) $guard) {
+fn_((unicode_wtf8ToWTF16Alloc(S_const$u8 wtf8, mem_Alctr gpa))(unicode_wtf8ToWTF16Alloc_E$S$u16) $guard) {
     let required_len = unicode_wtf8ToWTF16Len(wtf8);
     let required_buf = u_castS$((S$u16)try_(mem_Alctr_alloc($trace gpa, typeInfo$(u16), required_len)));
     errdefer_($ignore, mem_Alctr_free($trace gpa, u_anyS(required_buf)));
@@ -163,9 +163,9 @@ $static fn_((unicode__wtf16ToWTF8(S_const$u16 wtf16, usize required_len, S$u8 ou
     return S_slice((out_wtf8)$r(0, out_idx));
 };
 
-fn_((unicode_wtf16ToWTF8(S_const$u16 wtf16, S$u8 out))(unicode_mem_E$S$u8) $scope) {
+fn_((unicode_wtf16ToWTF8(S_const$u16 wtf16, S$u8 out))(unicode_io_WriteE$S$u8) $scope) {
     let required_len = unicode_wtf16ToWTF8Len(wtf16);
-    if (required_len > out.len) return_err(E_cause$OutOfMemory());
+    if (required_len > out.len) return_err(E_cause$TooSmallBuffer());
     return_ok(unicode__wtf16ToWTF8(wtf16, required_len, out));
 } $unscoped(fn);
 
@@ -190,7 +190,7 @@ fn_((unicode_wtf8AsUTF8(wtf8_View wtf))(utf8_E$utf8_View) $scope) {
     return_ok(utf8_viewUnchkd(wtf.bytes));
 } $unscoped(fn);
 
-fn_((unicode_wtf8ToUTF8LossyAlloc(S_const$u8 wtf8, mem_Alctr gpa))(unicode_mem_E$S$u8) $guard) {
+fn_((unicode_wtf8ToUTF8LossyAlloc(S_const$u8 wtf8, mem_Alctr gpa))(unicode_wtf8ToUTF8LossyAlloc_E$S$u8) $guard) {
     if (!wtf8_validate(wtf8)) return_err(E_cause$utf8_InvalidBytes());
     let len = wtf8.len;
     let buf = try_(mem_Alctr_allocBytes($trace gpa, len));
@@ -201,12 +201,12 @@ fn_((unicode_wtf8ToUTF8LossyAlloc(S_const$u8 wtf8, mem_Alctr gpa))(unicode_mem_E
         if (utf16_isSurrogate(codepoint)) {
             let replacement = utf8_replacement_ch;
             let repl_len = catch_((utf8_codepointSeqLen(replacement))($ignore, claim_unreachable));
-            if (dst_idx + repl_len > buf.len) return_err(E_cause$OutOfMemory());
+            if (dst_idx + repl_len > buf.len) return_err(E_cause$TooSmallBuffer());
             let encoded = catch_((utf8_encodeWithin(replacement, S_slice((buf)$r(dst_idx, dst_idx + repl_len))))($ignore, claim_unreachable));
             dst_idx += encoded.len;
         } else {
             let seq_len = catch_((utf8_codepointSeqLen(codepoint))($ignore, claim_unreachable));
-            if (dst_idx + seq_len > buf.len) return_err(E_cause$OutOfMemory());
+            if (dst_idx + seq_len > buf.len) return_err(E_cause$TooSmallBuffer());
             let encoded = catch_((utf8_encodeWithin(codepoint, S_slice((buf)$r(dst_idx, dst_idx + seq_len))))($ignore, claim_unreachable));
             dst_idx += seq_len;
         }

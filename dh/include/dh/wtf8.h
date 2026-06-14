@@ -34,9 +34,9 @@ errset_((wtf8_E)(
 
 T_use_E$(utf8_SeqByte);
 /// Encodes a codepoint into WTF-8 (Allows surrogates).
-errset_((wtf8_encode_E)() $union_errset_(wtf8_E, mem_E));
+errset_((wtf8_encode_E)() $union_errset_(wtf8_E, io_WriteE));
 T_use_E$($set(wtf8_encode_E)(S$u8));
-$attr($must_check) /* `wtf8_E` + `mem_E` */
+$attr($must_check) /* `wtf8_E` + `io_WriteE` */
 $extern fn_((wtf8_encode(u32 codepoint, S$u8 out))(wtf8_encode_E$S$u8));
 T_use_E$($set(wtf8_E)(S$u8));
 $attr($must_check)

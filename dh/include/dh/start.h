@@ -17,12 +17,12 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/prl.h"
+#include "prl.h"
 
 #if plat_is_windows
-#include "dh/sys/api/windows.h"
+#include "sys/api/windows.h"
 #elif plat_is_linux
-#include "dh/sys/call/linux.h"
+#include "sys/call/linux.h"
 #endif /* plat_is_linux */
 
 /*========== Definitions ====================================================*/

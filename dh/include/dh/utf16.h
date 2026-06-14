@@ -57,11 +57,11 @@ T_use_E$($set(utf16_E)(utf8_SeqLen));
 /// Returns bytes length (1-4) if encoded in UTF-8.
 $attr($must_check)
 $extern fn_((utf16_codepointSeqLen(u32 codepoint))(utf16_E$utf8_SeqLen));
-errset_((utf16_encode_E)() $union_errset_(utf16_E, mem_E));
+errset_((utf16_encode_E)() $union_errset_(utf16_E, io_WriteE));
 T_use_E$($set(utf16_encode_E)(S$u16));
 /// Encodes a single codepoint into UTF-16 code units.
 /// Returns the slice of the written buffer.
-$attr($must_check) /* `utf16_E` + `mem_E` */
+$attr($must_check) /* `utf16_E` + `io_WriteE` */
 $extern fn_((utf16_encode(u32 codepoint, S$u16 out))(utf16_encode_E$S$u16));
 T_use_E$($set(utf16_E)(S$u16));
 $attr($must_check)

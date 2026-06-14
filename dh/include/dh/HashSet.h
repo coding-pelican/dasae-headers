@@ -24,9 +24,9 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/prl.h"
-#include "dh/mem/Alctr.h"
-#include "dh/HashMap.h" /* Reuse HashMap_Ctrl, HashMap_Ctx */
+#include "prl.h"
+#include "mem/Alctr.h"
+#include "HashMap.h" /* Reuse HashMap_Ctrl, HashMap_Ctx */
 
 /*========== Macros and Declarations ========================================*/
 

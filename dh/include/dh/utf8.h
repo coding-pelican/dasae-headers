@@ -18,7 +18,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "prl.h"
-#include "mem/Alctr.h"
+#include "io/base.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -57,7 +57,7 @@ $attr($must_check)
 $extern fn_((utf8_codepointSeqLen(u32 codepoint))(utf8_E$utf8_SeqLen));
 $attr($must_check)
 $extern fn_((utf8_byteSeqLen(u8 first_byte))(utf8_E$utf8_SeqLen));
-errset_((utf8_encode_E)() $union_errset_(utf8_E, mem_E));
+errset_((utf8_encode_E)() $union_errset_(utf8_E, io_WriteE));
 T_use_E$($set(utf8_encode_E)(S$u8));
 $attr($must_check)
 $extern fn_((utf8_encode(u32 codepoint, S$u8 out))(utf8_encode_E$S$u8));

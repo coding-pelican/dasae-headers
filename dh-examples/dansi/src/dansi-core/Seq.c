@@ -57,7 +57,7 @@ fn_((dansi_Seq_receiveCSI(io_Reader in, S$u8 buf))(E$S$u8) $scope) {
             return_ok(S_prefix((buf)(written)));
         }
     }
-    return_err(E_cause$io_TooSmallBuffer());
+    return_err(E_cause$TooSmallBuffer());
 } $unscoped(fn);
 
 /*========== Internal Definitions ===========================================*/
@@ -69,9 +69,9 @@ fn_((dansi_Seq__readable(io_Buf_Reader* reader))(S_const$u8)) {
 fn_((dansi_Seq__ensure(io_Buf_Reader* reader, usize len))(E$void) $scope) {
     while (reader->end - reader->start < len) {
         let old_end = reader->end;
-        catch_((io_Buf_Reader_fill(reader))($ignore, return_err(E_cause$io_UnexpectedEOF())));
+        catch_((io_Buf_Reader_fill(reader))($ignore, return_err(E_cause$UnexpectedEOF())));
         if (reader->end == old_end) {
-            return_err(E_cause$io_UnexpectedEOF());
+            return_err(E_cause$UnexpectedEOF());
         }
     }
     return_ok({});

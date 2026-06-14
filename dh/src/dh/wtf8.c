@@ -52,7 +52,7 @@ $static fn_((wtf8_encode__handleUTF8(utf8_E$utf8_SeqLen result))(wtf8_E$utf8_Seq
 fn_((wtf8_encode(u32 codepoint, S$u8 out))(wtf8_encode_E$S$u8) $scope) {
     let handleUTF8 = wtf8_encode__handleUTF8;
     let requested_len = try_(handleUTF8(utf8_codepointSeqLen(codepoint)));
-    if (requested_len >= out.len) return_err(E_cause$OutOfMemory());
+    if (requested_len >= out.len) return_err(E_cause$TooSmallBuffer());
     return_ok(try_(wtf8__encode(codepoint, requested_len, out)));
 } $unscoped(fn);
 

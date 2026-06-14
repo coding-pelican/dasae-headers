@@ -43,7 +43,7 @@ fn_((utf8_byteSeqLen(u8 first_byte))(utf8_E$utf8_SeqLen) $scope) {
 
 fn_((utf8_encode(u32 codepoint, S$u8 out))(utf8_encode_E$S$u8) $scope) {
     let requested_len = try_(utf8_codepointSeqLen(codepoint));
-    if (requested_len >= out.len) return_err(E_cause$OutOfMemory());
+    if (requested_len >= out.len) return_err(E_cause$TooSmallBuffer());
     return_ok(try_(utf8__encode(codepoint, requested_len, out)));
 } $unscoped(fn);
 

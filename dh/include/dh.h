@@ -27,8 +27,6 @@ extern "C" {
 
 #include "dh/cmp.h"
 #include "dh/math.h"
-#include "dh/Limit.h"
-#include "dh/Range.h"
 #include "dh/Rand.h"
 #include "dh/hash.h"
 #include "dh/crypt.h"

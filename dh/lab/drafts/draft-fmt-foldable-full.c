@@ -6,6 +6,7 @@
 #include "dh/mem/common.h"
 #include "dh/utf8.h"
 #include "dh/ascii.h"
+#include "dh/io/common.h"
 #include <stdio.h>
 
 // `%{'['[index]']'[[wrapped]type[size]][[alt]'('mode')'][':'[[fill]align][sign][width]['.'precision]]}`
@@ -69,9 +70,9 @@ typedef enum_((fmt_Size $fits($packed))(
     fmt_Size_64 = 5
 )) fmt_Size;
 T_use_E$(fmt_Size);
-$attr($inline_always $must_check)
+$attr($must_check $inline_always)
 $static fn_((fmt_Size_parse(S_const$u8 text))(E$fmt_Size));
-$attr($inline_always $maybe_unused)
+$attr($maybe_unused $inline_always)
 $static fn_((fmt_Size_strfy(fmt_Size size, bool short_form))(S_const$u8));
 
 $attr($inline_always)
@@ -87,9 +88,9 @@ typedef enum_((fmt_Align $fits($packed))(
     fmt_Align_right = 2
 )) fmt_Align;
 T_use_E$(fmt_Align);
-$attr($inline_always $must_check)
+$attr($must_check $inline_always)
 $static fn_((fmt_Align_fromByte(u8 ch))(E$fmt_Align));
-$attr($inline_always $maybe_unused)
+$attr($maybe_unused $inline_always)
 $static fn_((fmt_Align_intoByte(fmt_Align align))(u8));
 
 
@@ -105,20 +106,31 @@ typedef variant_((fmt_EventPos $fits($packed))(
 )) fmt_EventPos;
 T_use_O$(fmt_EventPos);
 
-$attr($inline_always $must_check)
+$attr($must_check $inline_always)
 $static fn_((fmt_print(S$u8 out, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8));
-$attr($inline_never $branch_cold $must_check)
+$attr($must_check $inline_never $branch_cold)
 $static fn_((fmt_printRuntime(S$u8 out, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8));
 
 $static fn_((fmt_printPadded(S$u8 out, S_const$u8 text, u8 fill, fmt_Align align, usize width))(usize));
+$static fn_((fmt_printVoid(S$u8 out, Void value))(usize));
+$static fn_((fmt_printBool(S$u8 out, bool value, bool upper))(usize));
 $static fn_((fmt_printU64(S$u8 out, u64 value, u8 mode, bool upper, bool alt))(usize));
 $static fn_((fmt_printU64Base(S$u8 out, u64 value, usize base, bool upper))(usize));
 $static fn_((fmt_printU64Dec(S$u8 out, u64 value))(usize));
 $static fn_((fmt_printU64Hex(S$u8 out, u64 value, bool upper, bool alt))(usize));
 $static fn_((fmt_printU64Oct(S$u8 out, u64 value, bool alt))(usize));
 $static fn_((fmt_printU64Bin(S$u8 out, u64 value, bool upper, bool alt))(usize));
-$static fn_((fmt_printI64(S$u8 out, i64 value, u8 sign))(usize));
+$static fn_((fmt_printI64(S$u8 out, i64 value, u8 mode, bool upper, bool alt, u8 sign))(usize));
+$static fn_((fmt_printI64Dec(S$u8 out, i64 value, u8 sign))(usize));
+$attr($must_check)
 $static fn_((fmt_printF64(S$u8 out, f64 value, u8 mode, bool upper, bool alt, u8 sign, usize precision, bool has_precision))(E$usize));
+$static fn_((fmt_printPtr(S$u8 out, P_const$raw ptr, u8 mode, bool upper, bool alt))(usize));
+$attr($must_check)
+$static fn_((fmt_printASCII(S$u8 out, u8 code))(E$usize));
+$attr($must_check)
+$static fn_((fmt_printUTF8(S$u8 out, u32 code))(E$usize));
+$static fn_((fmt_printStrZ0(S$u8 out, P_const$u8 str_z0))(usize));
+$static fn_((fmt_printStr(S$u8 out, S_const$u8 str))(usize));
 $static fn_((fmt_printErr(S$u8 out, EAny err))(usize));
 
 typedef struct fmt_Iter {
@@ -133,7 +145,7 @@ typedef variant_((fmt_Iter_Step $fits($packed))(
     (fmt_Iter_Step_fallback, Void)
 )) fmt_Iter_Step;
 T_use_E$(fmt_Iter_Step);
-$attr($inline_always $must_check)
+$attr($must_check $inline_always)
 $static fn_((fmt_Iter_nextOrFinish(fmt_Iter* iter, S$u8 out, S_const$TypeInfo fields, u_P_const$raw tuple))(E$fmt_Iter_Step));
 
 
@@ -142,16 +154,19 @@ fn_((main(void))(E$void) $scope) {
     var_(mem0, A$$(96, u8)) = A_zero();
     var_(mem1, A$$(160, u8)) = A_zero();
     var_(mem2, A$$(160, u8)) = A_zero();
+    var_(mem3, A$$(160, u8)) = A_zero();
     var_(opt_i, O$i32) = some(123);
     var_(none_s, O$S_const$u8) = none$((O$S_const$u8));
 
     let s0 = try_(va_((fmt_print)(A_ref$((S$u8)mem0), u8_l("case0 {ok} %%{ %{s} %{i:+6}"))(u8_l("world"), 123)));
     let s1 = try_(va_((fmt_print)(A_ref$((S$u8)mem1), u8_l("case1 %{u(#x)} %{U(#x)} %{u(o)} %{u(b)} %{B}"))(u32_(42), u32_(42), u32_(42), u32_(42), false)));
     let s2 = try_(va_((fmt_print)(A_ref$((S$u8)mem2), u8_l("case2 %{[1]i:+6} %{[0]?i} %{?s} %{c}"))(opt_i, 77, none_s, u8_c('A'))));
+    let s3 = try_(va_((fmt_print)(A_ref$((S$u8)mem3), u8_l("case3 %{[0]u} %{[0]i} %{[0]i(#x)} %{[0]u(#X)}"))(u32_(0xDEADBEEF))));
 
     puts(as$(const char*)(s0.ptr));
     puts(as$(const char*)(s1.ptr));
     puts(as$(const char*)(s2.ptr));
+    puts(as$(const char*)(s3.ptr));
     return_ok({});
 } $unscoped(fn);
 
@@ -161,20 +176,20 @@ $attr($inline_always)
 $static fn_((fmt__findEvent(S_const$u8 fmt))(O$fmt_EventPos));
 $attr($must_check)
 $static fn_((fmt__findEventRuntime(S_const$u8 fmt))(O$fmt_EventPos));
-$attr($inline_always $must_check)
+$attr($must_check $inline_always)
 $static fn_((fmt__findClose(S_const$u8 fmt))(E$usize));
 $attr($must_check)
 $static fn_((fmt__findCloseRuntime(S_const$u8 fmt))(E$usize));
 $attr($inline_always)
 $static fn_((fmt__copy(S$u8 out, S_const$u8 text))(usize));
-$attr($inline_always $must_check)
+$attr($must_check $inline_always)
 $static fn_((fmt__argIdx(S_const$u8 body, usize occ_idx))(E$usize));
 
-$attr($inline_always $must_check)
+$attr($must_check $inline_always)
 $static fn_((fmt__writeBody(S$u8 out, S_const$u8 body, u_P_const$raw field))(E$usize));
-$attr($inline_always $must_check)
+$attr($must_check $inline_always)
 $static fn_((fmt__writeValue(S$u8 out, u8 wrapped, u8 type, fmt_Size size, u8 mode, bool alt, u8 sign, usize precision, bool has_precision, u_P_const$raw field))(E$usize));
-$attr($inline_always $must_check)
+$attr($must_check $inline_always)
 $static fn_((fmt__writePlainValue(S$u8 out, u8 type, fmt_Size size, u8 mode, bool alt, u8 sign, usize precision, bool has_precision, u_P_const$raw field))(E$usize));
 
 
@@ -325,6 +340,12 @@ fn_((fmt_printPadded(S$u8 out, S_const$u8 text, u8 fill, fmt_Align align, usize 
     return width;
 };
 
+fn_((fmt_printVoid(S$u8 out, Void value))(usize)) { return $ignore_void out, $ignore_void value, 0; };
+
+fn_((fmt_printBool(S$u8 out, bool value, bool upper))(usize)) {
+    return fmt__copy(out, value ? (upper ? u8_l("TRUE") : u8_l("true")) : (upper ? u8_l("FALSE") : u8_l("false")));
+};
+
 fn_((fmt_printU64(S$u8 out, u64 value, u8 mode, bool upper, bool alt))(usize)) {
     if (mode == u8_c('x') || mode == u8_c('X')) return fmt_printU64Hex(out, value, upper, alt);
     if (mode == u8_c('o')) return fmt_printU64Oct(out, value, alt);
@@ -352,7 +373,7 @@ fn_((fmt_printU64Hex(S$u8 out, u64 value, bool upper, bool alt))(usize)) {
     var written = usize_(0);
     if (alt) {
         *S_at((out)[written++]) = u8_c('0');
-        *S_at((out)[written++]) = upper ? u8_c('X') : u8_c('x');
+        *S_at((out)[written++]) = u8_c('x');
     }
     return written + fmt_printU64Base(S_suffix((out)written), value, 16, upper);
 };
@@ -372,7 +393,18 @@ fn_((fmt_printU64Bin(S$u8 out, u64 value, bool upper, bool alt))(usize)) {
     return written + fmt_printU64Base(S_suffix((out)written), value, 2, false);
 };
 
-fn_((fmt_printI64(S$u8 out, i64 value, u8 sign))(usize)) {
+fn_((fmt_printI64(S$u8 out, i64 value, u8 mode, bool upper, bool alt, u8 sign))(usize)) {
+    if (mode == u8_c(' ') || mode == u8_c('d')) return fmt_printI64Dec(out, value, sign);
+
+    var written = usize_(0);
+    let neg = value < 0;
+    if (neg) *S_at((out)[written++]) = u8_c('-');
+    else if (sign == u8_c('+') || sign == u8_c(' ')) *S_at((out)[written++]) = sign;
+    let magnitude = neg ? as$(u64)(-(value + 1)) + u64_(1) : as$(u64)(value);
+    return written + fmt_printU64(S_suffix((out)written), magnitude, mode, upper, alt);
+};
+
+fn_((fmt_printI64Dec(S$u8 out, i64 value, u8 sign))(usize)) {
     var written = usize_(0);
     let neg = value < 0;
     if (neg) *S_at((out)[written++]) = u8_c('-');
@@ -397,7 +429,7 @@ fn_((fmt_printF64(S$u8 out, f64 value, u8 mode, bool upper, bool alt, u8 sign, u
         }
         var written = try_(fmt_printF64(out, value < 0.0 ? -norm : norm, u8_c('d'), false, false, sign, precision, true));
         *S_at((out)[written++]) = u8_c('e');
-        written += fmt_printI64(S_suffix((out)written), exp, u8_c('+'));
+        written += fmt_printI64Dec(S_suffix((out)written), exp, u8_c('+'));
         return_ok(written);
     }
     if (mode != u8_c(' ') && mode != u8_c('d')) return_err(E_cause$fmt_InvalidTypeSpec());
@@ -426,11 +458,33 @@ fn_((fmt_printF64(S$u8 out, f64 value, u8 mode, bool upper, bool alt, u8 sign, u
     return_ok(written + fmt__copy(S_suffix((out)written), A_prefix$((S_const$u8)(tmp)(precision))));
 } $unscoped(fn);
 
+fn_((fmt_printPtr(S$u8 out, P_const$raw ptr, u8 mode, bool upper, bool alt))(usize)) {
+    return fmt_printU64(out, as$(u64)(ptrToInt(ptr)), mode == u8_c(' ') ? u8_c('x') : mode, upper, alt);
+};
+
+fn_((fmt_printASCII(S$u8 out, u8 code))(E$usize) $scope) {
+    if (out.len < 1) return_err(E_cause$TooSmallBuffer());
+    *S_at((out)[0]) = code;
+    return_ok(1);
+} $unscoped(fn);
+
+fn_((fmt_printUTF8(S$u8 out, u32 code))(E$usize) $scope) {
+    return_ok(try_(utf8_encode(code, out)).len);
+} $unscoped(fn);
+
+fn_((fmt_printStrZ0(S$u8 out, P_const$u8 str))(usize)) {
+    return fmt__copy(out, mem_spanZ0$u8(str));
+};
+
+fn_((fmt_printStr(S$u8 out, S_const$u8 str))(usize)) {
+    return fmt__copy(out, str);
+};
+
 fn_((fmt_printErr(S$u8 out, EAny err))(usize)) {
     var written = fmt__copy(out, E_strfy(&err));
     *S_at((out)[written++]) = u8_c(' ');
     *S_at((out)[written++]) = u8_c('(');
-    written += fmt_printI64(S_suffix((out)written), E_tag(&err), u8_c('-'));
+    written += fmt_printI64Dec(S_suffix((out)written), E_tag(&err), u8_c('-'));
     *S_at((out)[written++]) = u8_c(')');
     return written;
 };
@@ -652,14 +706,12 @@ fn_((fmt__writePlainValue(S$u8 out, u8 type, fmt_Size size, u8 mode, bool alt, u
     let upper = type == u8_c('B') || type == u8_c('U') || type == u8_c('I') || type == u8_c('F') || type == u8_c('P') || mode == u8_c('X');
     if (type == u8_c('0')) {
         claim_assert(TypeInfo_eql(field.type, typeInfo$(Void)));
-        let_ignore = *u_castP$((const Void*)(field));
-        return_ok(0);
+        return_ok(fmt_printVoid(out, *u_castP$((const Void*)(field))));
     }
     if (type == u8_c('b') || type == u8_c('B')) {
         claim_assert(size == fmt_Size_32 && mode == u8_c(' ') && !alt);
         claim_assert(TypeInfo_eql(field.type, typeInfo$(bool)));
-        let value = *u_castP$((const bool*)(field));
-        return_ok(fmt__copy(out, value ? (upper ? u8_l("TRUE") : u8_l("true")) : (upper ? u8_l("FALSE") : u8_l("false"))));
+        return_ok(fmt_printBool(out, *u_castP$((const bool*)(field)), upper));
     }
     if (type == u8_c('u') || type == u8_c('U')) {
         var value = u64_(0);
@@ -684,14 +736,17 @@ fn_((fmt__writePlainValue(S$u8 out, u8 type, fmt_Size size, u8 mode, bool alt, u
     if (type == u8_c('i') || type == u8_c('I')) {
         var value = i64_(0);
         if (size == fmt_Size_32) {
-            claim_assert(TypeInfo_eql(field.type, typeInfo$(i32)));
-            value = *u_castP$((const i32*)(field));
+            if (TypeInfo_eql(field.type, typeInfo$(i32))) {
+                value = *u_castP$((const i32*)(field));
+            } else {
+                claim_assert(TypeInfo_eql(field.type, typeInfo$(u32)));
+                value = as$(i32)(*u_castP$((const u32*)(field)));
+            }
         } else if (size == fmt_Size_64) {
             claim_assert(TypeInfo_eql(field.type, typeInfo$(i64)));
             value = *u_castP$((const i64*)(field));
         } else return_err(E_cause$fmt_InvalidSizeSpec());
-        if (mode == u8_c(' ') || mode == u8_c('d')) return_ok(fmt_printI64(out, value, sign));
-        return_ok(fmt_printU64(out, as$(u64)(value), mode, upper, alt));
+        return_ok(fmt_printI64(out, value, mode, upper, alt, sign));
     }
     if (type == u8_c('f') || type == u8_c('F')) {
         if (size == fmt_Size_32) {
@@ -704,25 +759,23 @@ fn_((fmt__writePlainValue(S$u8 out, u8 type, fmt_Size size, u8 mode, bool alt, u
     }
     if (type == u8_c('p') || type == u8_c('P')) {
         claim_assert(TypeInfo_eql(field.type, typeInfo$(P_const$raw)));
-        let value = *u_castP$((const P_const$raw*)(field));
-        return_ok(fmt_printU64(out, as$(u64)(ptrToInt(value)), mode == u8_c(' ') ? u8_c('x') : mode, upper, alt));
+        return_ok(fmt_printPtr(out, *u_castP$((const P_const$raw*)(field)), mode, upper, alt));
     }
     if (type == u8_c('c')) {
         claim_assert(TypeInfo_eql(field.type, typeInfo$(u8)));
-        *S_at((out)[0]) = *u_castP$((const u8*)(field));
-        return_ok(1);
+        return_ok(try_(fmt_printASCII(out, *u_castP$((const u8*)(field)))));
     }
     if (type == u8_c('C')) {
         claim_assert(TypeInfo_eql(field.type, typeInfo$(u32)));
-        return_ok(try_(utf8_encodeWithin(*u_castP$((const u32*)(field)), out)).len);
+        return_ok(try_(fmt_printUTF8(out, *u_castP$((const u32*)(field)))));
     }
     if (type == u8_c('z')) {
         claim_assert(TypeInfo_eql(field.type, typeInfo$(P_const$u8)));
-        return_ok(fmt__copy(out, mem_spanZ0$u8(*u_castP$((const P_const$u8*)(field)))));
+        return_ok(fmt_printStrZ0(out, *u_castP$((const P_const$u8*)(field))));
     }
     if (type == u8_c('s')) {
         claim_assert(TypeInfo_eql(field.type, typeInfo$(S_const$u8)));
-        return_ok(fmt__copy(out, *u_castP$((const S_const$u8*)(field))));
+        return_ok(fmt_printStr(out, *u_castP$((const S_const$u8*)(field))));
     }
     if (type == u8_c('e')) {
         claim_assert(TypeInfo_eql(field.type, typeInfo$(EAny)));

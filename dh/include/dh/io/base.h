@@ -24,10 +24,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((io_E)(
-    io_UnexpectedEOF,
-    io_TooSmallBuffer
-));
+errset_((io_ReadE)(UnexpectedEOF));
+errset_((io_WriteE)(TooSmallBuffer));
+errset_((io_E)() $union_errset_(io_ReadE, io_WriteE));
 
 T_alias$((io_Reader)(struct io_Reader));
 T_alias$((io_Writer)(struct io_Writer));

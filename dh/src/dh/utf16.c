@@ -21,7 +21,7 @@ fn_((utf16_encode(u32 codepoint, S$u16 out))(utf16_encode_E$S$u16) $scope) {
     if (utf16_isSurrogate(codepoint)) return_err(E_cause$utf16_TooLargeCodepoint());
     let required_len = (codepoint < 0x10000) ? as$(usize)(1) : as$(usize)(2);
     if (codepoint > 0x10FFFF) return_err(E_cause$utf16_TooLargeCodepoint());
-    if (required_len > out.len) return_err(E_cause$OutOfMemory());
+    if (required_len > out.len) return_err(E_cause$TooSmallBuffer());
     return_ok(try_(utf16_encodeWithin(codepoint, out)));
 } $unscoped(fn);
 

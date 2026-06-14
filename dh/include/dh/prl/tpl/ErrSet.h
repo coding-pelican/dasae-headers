@@ -151,7 +151,7 @@ errset_((io_File_E)(
 
 errset_((io_Parse_E)(
     io_Parse_InvalidArgument,
-    io_Parse_io_UnexpectedEOF,
+    io_Parse_UnexpectedEOF,
     io_Parse_UnexpectedChar,
     io_Parse_UnexpectedToken,
     io_Parse_UnexpectedTokenType,
