@@ -13,7 +13,7 @@
 #include "dage.h"
 #include <dh-main.h>
 #include <dh/Rand.h>
-#include <dh/heap/Page.h>
+#include <dh/heap/Sys.h>
 
 /*========== Simple Game State ==========*/
 
@@ -29,7 +29,7 @@ T_alias$((game_State)(struct game_State {
 $static fn_((game_handleEvent(dage_Window* win, game_State* game))(void)) {
     /* Poll and handle events */
     while_some(dage_Window_pollEvent(win), event) {
-        match_(event) {
+        $suppress_(switch_enum)(match_(event)) {
         /* Window events */
         pattern_((dage_Event_close_request)($ignore)) {
             game->is_running = false;
@@ -116,8 +116,8 @@ $static fn_((game_render(dage_Canvas* canvas, const game_State* game))(void)) {
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
     /* Setup allocator */
-    var page = l0$((heap_Page));
-    let gpa = heap_Page_alctr(&page);
+    var heap = heap_Sys_init();
+    let gpa = heap_Sys_alctr(&heap);
 
     /*
      * Step 1: Create Backend

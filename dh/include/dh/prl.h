@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    prl.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-21 (date of creation)
- * @updated 2025-06-21 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-06-14 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
  *
@@ -26,6 +25,8 @@ extern "C" {
 #include "prl/meta.h"
 
 #include "prl/base.h"
+#include "prl/Limit.h"
+#include "prl/Range.h"
 
 #include "prl/Co.h"
 #include "prl/Clsr.h"

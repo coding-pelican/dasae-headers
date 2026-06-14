@@ -22,6 +22,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "base.h"
+#include "Limit.h"
+#include "Range.h"
 #include "Co.h"
 #include "Clsr.h"
 #include "va.h"

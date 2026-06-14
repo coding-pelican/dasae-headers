@@ -12,10 +12,11 @@
 
 #include "dage.h"
 #include <dh-main.h>
-#include <dh/Rand.h>
-#include <dh/heap/Page.h>
 #include <dh/ArrList.h>
+#include <dh/time.h>
+#include <dh/heap/Sys.h>
 #include <dh/io/stream.h>
+#include <dh/Rand.h>
 
 /*========== Circle Collision Geometry ==========*/
 
@@ -149,10 +150,10 @@ $static fn_((BallManager_replaceAllRandomly(BallManager* self, u32 count))(void)
 
     for_(($r(0, count))(i)) {
         let center = m_V2f32_of(
-            (as$(f32)(Rand_rangeFlt(&self->rng, as$(f64)(-self->world_half_size.x), as$(f64)(self->world_half_size.x)))),
-            (as$(f32)(Rand_rangeFlt(&self->rng, as$(f64)(-self->world_half_size.y), as$(f64)(self->world_half_size.y))))
+            Rand_range$f32(&self->rng, range$((R$f32)(incl_(-self->world_half_size.x), incl_(self->world_half_size.x)))),
+            Rand_range$f32(&self->rng, range$((R$f32)(incl_(-self->world_half_size.y), incl_(self->world_half_size.y))))
         );
-        let radius = as$(f32)(Rand_rangeFlt(&self->rng, as$(f64)(5.0f), as$(f64)(20.0f)));
+        let radius = Rand_range$f32(&self->rng, range$((R$f32)(incl_(5.0f), incl_(20.0f))));
         ArrList_appendWithin$Ball(&self->balls, Ball_of(center, radius, i));
     } $end(for);
 };
@@ -370,7 +371,7 @@ $static fn_((BallManager_render(const BallManager* self, dage_Canvas* canvas, m_
 /*========== Event Handling ==========*/
 
 $static fn_((handleEvents(dage_Window* win, bool* running))(void)) {
-    while_some(dage_Window_pollEvent(win), event) match_(event) {
+    while_some(dage_Window_pollEvent(win), event) $suppress_(switch_enum)(match_(event)) {
     case_((dage_Event_close_request)) {
         *running = false;
     } $end(case);
@@ -391,8 +392,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
     /* Setup allocator */
-    var page = l0$((heap_Page));
-    let gpa = heap_Page_alctr(&page);
+    var heap = heap_Sys_init();
+    let gpa = heap_Sys_alctr(&heap);
 
     /* Create WSI backend */
     var wsi = try_(dage_Runtime_WSI_init(l$((dage_Runtime_WSI_Cfg){
@@ -462,16 +463,19 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     BallManager_replaceAllRandomly(&manager, initial_ball_count);
     io_stream_println(u8_l("Ball manager initialized"));
 
+    /* Setup Time */
+    var time = try_(time_Awake_direct());
+
     /* Game loop */
     let target_fps = 60.0f;
     let frame_time = 1.0f / target_fps;
     var is_running = true;
-    var prev_time = time_Inst_now();
+    var prev_time = time_Awake_now(time);
     io_stream_println(u8_l("Game loop started"));
     while (is_running && !dage_Runtime_shouldQuit(&runtime)) {
         /* Calculate delta time */
-        let curr_time = time_Inst_now();
-        let elapsed = time_Inst_durSince(curr_time, prev_time);
+        let curr_time = time_Awake_now(time);
+        let elapsed = time_Awake_Inst_durSince(curr_time, prev_time);
         let dt = time_Dur_asSecs$f32(elapsed);
         prev_time = curr_time;
 
@@ -498,7 +502,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
         /* Frame timing */
         let target_time = time_Dur_fromSecs$f64(as$(f64)(frame_time));
-        time_sleep(orelse_((time_Dur_subChkd(target_time, elapsed))(time_Dur_zero)));
+        try_(time_Awake_sleep(time, orelse_((time_Dur_subChkd(target_time, elapsed))(time_Dur_zero))));
     }
 
     io_stream_println(u8_l("Circle Physics 2D exited cleanly"));

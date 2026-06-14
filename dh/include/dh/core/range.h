@@ -5,7 +5,7 @@
  * @file    range.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-23 (date of creation)
- * @updated 2026-05-23 (date of last update)
+ * @updated 2026-06-14 (date of last update)
  * @ingroup dasae-headers(dh)/core
  * @prefix  (none)
  */
@@ -36,8 +36,8 @@ extern "C" {
 #define $rt(_expr...) $r(0, _expr)
 
 typedef enum_((R_Bound $fits($packed))(
-    R_Bound_incl = 0,
-    R_Bound_excl = 1,
+    R_Bound_incl = true,
+    R_Bound_excl = false
 )) R_Bound;
 /// default: incl
 $attr($inline_always)
@@ -118,8 +118,8 @@ $extern fn_((R__at(R, usize))(usize));
 #define comp_expand__atR R_at
 #endif
 
-fn_((R_Bound_begin(R_Bound bound, usize point))(usize)) { return point + as$(usize)(bound); /* bound == R_Bound_Tag_incl ? point : point + 1 */ };
-fn_((R_Bound_end(R_Bound bound, usize point))(usize)) { return point + (1 - as$(usize)(bound)); /* bound == R_Bound_Tag_excl ? point : point + 1 */ };
+fn_((R_Bound_begin(R_Bound bound, usize point))(usize)) { return point + (1 - as$(usize)(bound)); /* bound == R_Bound_incl ? point : point + 1 */ };
+fn_((R_Bound_end(R_Bound bound, usize point))(usize)) { return point + as$(usize)(bound); /* bound == R_Bound_excl ? point : point + 1 */ };
 
 fn_((R_from(usize begin, usize end))(R)) {
     return R_assertValid(begin, end), (R){ .begin = begin, .end = end };
@@ -170,6 +170,6 @@ fn_((R_eq(R lhs, R rhs))(bool)) { return lhs.begin == rhs.begin && lhs.end == rh
 fn_((R_ne(R lhs, R rhs))(bool)) { return !R_eq(lhs, rhs); };
 
 #if defined(__cplusplus)
-}
+} /* extern "C" */
 #endif /* defined(__cplusplus) */
 #endif /* core_range__included */
