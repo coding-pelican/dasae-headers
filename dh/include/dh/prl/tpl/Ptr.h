@@ -138,7 +138,7 @@ extern "C" {
     let_(__p, TypeOf(_p)) = _p; \
     let_(__begin, usize) = _begin; \
     /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin({:uz}) > 1", __begin); */ \
-    l$((_ST){ .ptr = __p + __begin, .len = usize_limit_max - __begin }); \
+    l$((_ST){ .ptr = &__p[__begin], .len = usize_limit_max - __begin }); \
 })
 #define suffixP$ P_suffix$
 #define P_suffix(/*(_p: P(_T))(_begin: usize)*/... /*(S(_T))*/) \
@@ -151,10 +151,10 @@ extern "C" {
     /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin({:uz}) > 1", __begin); */ \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__p))( \
-            l$((S_const$$(P_InnerT$(TypeOf(*__p)))){ .ptr = __p + __begin, .len = usize_limit_max - __begin }) \
+            l$((S_const$$(P_InnerT$(TypeOf(*__p)))){ .ptr = &__p[__begin], .len = usize_limit_max - __begin }) \
         )), \
         T_qual$((TypeOfUnqual(*__p))( \
-            l$((S$$(P_InnerT$(TypeOf(*__p)))){ .ptr = __p + __begin, .len = usize_limit_max - __begin }) \
+            l$((S$$(P_InnerT$(TypeOf(*__p)))){ .ptr = &__p[__begin], .len = usize_limit_max - __begin }) \
         )) \
     )); \
 })

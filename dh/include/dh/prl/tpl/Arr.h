@@ -96,7 +96,7 @@ extern "C" {
     let_(__idx, usize) = sizeOf$(TypeOf(u8 _idx)); \
     let_(__a, TypeOf(&(_a))) = &(_a); \
     claim_assert_fmt(__idx < A_len(*__a), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, A_len(*__a)); \
-    A_ptr(*__a) + __idx; \
+    &A_ptr(*__a)[__idx]; \
 })
 #define atA A_at
 
@@ -173,7 +173,7 @@ extern "C" {
     let_(__begin, usize) = _begin; \
     let_(__a, TypeOf(_a)*) = &(_a); \
     claim_assert_fmt(__begin <= A_len(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, A_len(*__a)); \
-    l$((_ST){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }); \
+    l$((_ST){ .ptr = &A_ptr(*__a)[__begin], .len = A_len(*__a) - __begin }); \
 })
 #define suffixA$ A_suffix$
 #define A_suffix(/*(_a: A(_N,_T))(_begin: usize)*/... /*(S(_T))*/) \
@@ -186,10 +186,10 @@ extern "C" {
     claim_assert_fmt(__begin <= A_len(*__a), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, A_len(*__a)); \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__a))( \
-            l$((S_const$$(A_T$(TypeOf(*__a)))){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }) \
+            l$((S_const$$(A_T$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__begin], .len = A_len(*__a) - __begin }) \
         )), \
         T_qual$((TypeOfUnqual(*__a))( \
-            l$((S$$(A_T$(TypeOf(*__a)))){ .ptr = A_ptr(*__a) + __begin, .len = A_len(*__a) - __begin }) \
+            l$((S$$(A_T$(TypeOf(*__a)))){ .ptr = &A_ptr(*__a)[__begin], .len = A_len(*__a) - __begin }) \
         )) \
     )); \
 })

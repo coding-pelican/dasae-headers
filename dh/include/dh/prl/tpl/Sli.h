@@ -137,7 +137,7 @@ extern "C" {
     let_(__idx, usize) = sizeOf$(TypeOf(u8 _idx)); \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(__idx < S_len(__s), "Index out of bounds: idx({:uz}) >= len({:uz})", __idx, S_len(__s)); \
-    S_ptr(__s) + __idx; \
+    &S_ptr(__s)[__idx]; \
 })
 #define atS S_at
 #if UNUSED_CODE
@@ -206,7 +206,7 @@ extern "C" {
     let_(__begin, usize) = _begin; \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, S_len(__s)); \
-    l$((_ST){ .ptr = S_ptr(__s) + __begin, .len = S_len(__s) - __begin }); \
+    l$((_ST){ .ptr = &S_ptr(__s)[__begin], .len = S_len(__s) - __begin }); \
 })
 #define suffixS$ S_suffix$
 #define S_suffix(/*(_s: S(_T))(_begin: usize)*/... /*(S(_T))*/) \
@@ -217,7 +217,7 @@ extern "C" {
     let_(__begin, usize) = _begin; \
     let_(__s, TypeOf(_s)) = _s; \
     claim_assert_fmt(__begin <= S_len(__s), "Invalid slice range: begin({:uz}) > len({:uz})", __begin, S_len(__s)); \
-    l$((TypeOf(__s)){ .ptr = S_ptr(__s) + __begin, .len = S_len(__s) - __begin }); \
+    l$((TypeOf(__s)){ .ptr = &S_ptr(__s)[__begin], .len = S_len(__s) - __begin }); \
 })
 #define suffixS S_suffix
 
