@@ -49,25 +49,36 @@ extern "C"
 #define $asc $_asc,
 #define $desc $_desc,
 
+#define $__hint_loop_none $___hint_loop_none
+#define $__hint_loop_unroll $___hint_loop_unroll
+#define $__hint_loop_inline $___hint_loop_inline
+#define $__hint_loop_rolled $___hint_loop_rolled
+
 /* TODO: add $scope-$unscoped version that doesn't require curly braces inside the calling */
-#define for_(/*<$dir_type>(_iter...)(_capture...)*/...) pp_overload(__for, __VA_ARGS__)(__VA_ARGS__)
-#define __for_1(/*(_iter...)(_capture...)*/...) __exec__for_(pp_defer(__emit__for_$_fwd)(__sep0__for_ __VA_ARGS__))
-#define __for_2(_$dir_type, /*(_iter...)(_capture...)*/...) __exec__for_(pp_defer(pp_cat(__emit__for_, _$dir_type))(__sep0__for_ __VA_ARGS__))
+#define for_(/*<$dir_type>(_iter...)(_capture...)*/...) pp_overload(__for, __VA_ARGS__)($__hint_loop_none, __VA_ARGS__)
+#define __for_1(_$__hint_loop, /*(_iter...)(_capture...)*/...) \
+    __exec__for_(pp_defer(__emit__for_$_fwd)(_$__hint_loop, __sep0__for_ __VA_ARGS__))
+#define __for_2(_$__hint_loop, _$dir_type, /*(_iter...)(_capture...)*/...) \
+    __exec__for_(pp_defer(pp_cat(__emit__for_, _$dir_type))(_$__hint_loop, __sep0__for_ __VA_ARGS__))
 #define __exec__for_(...) __VA_ARGS__
 #define __sep0__for_(_iters...) (_iters), __sep1__for_
 #define __sep1__for_(_captures...) (_captures)
-#define __emit__for_$_fwd(_iters, _captures...) __emitNext__for_(_iters, _captures)
+#define __emit__for_$_fwd(_$__hint_loop, _iters, _captures...) __emitNext__for_(_$__hint_loop, _iters, _captures)
 // #define __emitNext__for_(_iters, _captures, _block) \
 //     0(_iters), 1(_captures), 2(_block)
-#define __emit__for_$_bwd(_iters, _captures...) __emitNext__for_$_rev(_iters, _captures)
+#define __emit__for_$_bwd(_$__hint_loop, _iters, _captures...) __emitNext__for_$_rev(_$__hint_loop, _iters, _captures)
 // #define __emitNext__for_$_bwd(_iters, _captures, _block) \
 //     0(_iters), 1(_captures), 2(_block)
-#define __emit__for_$_rev(_iters, _captures...) __emitNext__for_$_rev(_iters, _captures)
+#define __emit__for_$_rev(_$__hint_loop, _iters, _captures...) __emitNext__for_$_rev(_$__hint_loop, _iters, _captures)
 // #define __emitNext__for_$_rev(_iters, _captures, _block) \
 //     0(_iters), 1(_captures), 2(_block)
-#define __emit__for_$_asc(_iters, _captures...) __emitNext__for_(_iters, _captures)
-#define __emit__for_$_desc(_iters, _captures...) __emitNext__for_$_rev(_iters, _captures)
+#define __emit__for_$_asc(_$__hint_loop, _iters, _captures...) __emitNext__for_(_$__hint_loop, _iters, _captures)
+#define __emit__for_$_desc(_$__hint_loop, _iters, _captures...) __emitNext__for_$_rev(_$__hint_loop, _iters, _captures)
 #define $end_for __stmt__$end_for
+
+#define loop_unroll_(_loop_type...) pp_cat(__loop_unroll_, _loop_type)()
+#define loop_inline_(_loop_type...) pp_cat(__loop_inline_, _loop_type)()
+#define loop_rolled_(_loop_type...) pp_cat(__loop_rolled_, _loop_type)()
 
 #define loop_labeled(_label, _stmt...) __stmt__loop_labeled(_label, _stmt)
 #define loop_continue_(_label...) __stmt__loop_continue_(_label)
@@ -128,7 +139,6 @@ extern "C"
 
 #define scope_switch(_Init, _Cond, ...) SYN__scope_switch(_Init, _Cond, __VA_ARGS__)
 #define scope_while(_Init, _Cond, ...) SYN__scope_while(_Init, _Cond __VA_OPT__(, ) __VA_ARGS__)
-#define scope_va_list(_Init) /* TODO: Implement scope_va_list */
 
 /* NOLINTBEGIN */
 #define ____using_(__run_once, _Init...) \
@@ -161,6 +171,12 @@ extern "C"
 
 /* for: implementation ======================================================*/
 /* for - common functions ===================================================*/
+#define __for__emitHintLoop(_$__hint_loop) pp_cat(__for__emitHintLoop, _$__hint_loop)
+#define __for__emitHintLoop$___hint_loop_none(...)
+#define __for__emitHintLoop$___hint_loop_unroll(...) $loop_unroll
+#define __for__emitHintLoop$___hint_loop_inline(...) $loop_inline
+#define __for__emitHintLoop$___hint_loop_rolled(...) $loop_rolled
+
 #define __for__expandIters(_iters...) _iters
 #define __for__expandIter(/*<_iter>|<_tag,_iter>*/...) __VA_ARGS__
 #define __for__expandIterIds(__ids...) __ids
@@ -193,40 +209,40 @@ extern "C"
 #define __for__atIter$u_S(__iter_id, __step) u_atS(__iter_id, __step)
 
 /* for - emitters (forward) =================================================*/
-#define __emitNext__for_(_iters, _captures...) \
-    pp_overload(__emitNext__for, __for__expandIters _iters)(_iters, _captures)
-#define __emitNext__for_1(_iters, _captures...) \
+#define __emitNext__for_(_$__hint_loop, _iters, _captures...) \
+    pp_overload(__emitNext__for, __for__expandIters _iters)(_$__hint_loop, _iters, _captures)
+#define __emitNext__for_1(_$__hint_loop, _iters, _captures...) \
     __emit__for_1( \
-        pp_uniqTok(len), pp_uniqTok(step), \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
         (pp_uniqTok(iter_id0)), \
         _iters, _captures \
     )
-#define __emitNext__for_2(_iters, _captures...) \
+#define __emitNext__for_2(_$__hint_loop, _iters, _captures...) \
     __emit__for_2( \
-        pp_uniqTok(len), pp_uniqTok(step), \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
         (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1)), \
         _iters, _captures \
     )
-#define __emitNext__for_3(_iters, _captures...) \
+#define __emitNext__for_3(_$__hint_loop, _iters, _captures...) \
     __emit__for_3( \
-        pp_uniqTok(len), pp_uniqTok(step), \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
         (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2)), \
         _iters, _captures \
     )
-#define __emitNext__for_4(_iters, _captures...) \
+#define __emitNext__for_4(_$__hint_loop, _iters, _captures...) \
     __emit__for_4( \
-        pp_uniqTok(len), pp_uniqTok(step), \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
         (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3)), \
         _iters, _captures \
     )
 
 // #define __emit__for_1(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
-#define __emit__for_1(__len, __step, __iter_ids, _iters, _captures...) \
+#define __emit__for_1(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
     { \
         __for_1__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_1__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = 0; __step < __len; ++__step) { \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = 0; __step < __len; ++__step) { \
             __for_1__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
 
 #define __for_1__initIters(__iter_id0, _iter0) __for__initIter(__iter_id0, _iter0)
@@ -235,11 +251,11 @@ extern "C"
 
 // #define __emit__for_2(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
-#define __emit__for_2(__len, __step, __iter_ids, _iters, _captures...) \
+#define __emit__for_2(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
     { \
         __for_2__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_2__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = 0; __step < __len; ++__step) { \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = 0; __step < __len; ++__step) { \
             __for_2__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
 
 #define __for_2__initIters(...) __for_2__initItersNext(__VA_ARGS__)
@@ -255,11 +271,11 @@ extern "C"
 
 // #define __emit__for_3(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
-#define __emit__for_3(__len, __step, __iter_ids, _iters, _captures...) \
+#define __emit__for_3(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
     { \
         __for_3__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_3__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = 0; __step < __len; ++__step) { \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = 0; __step < __len; ++__step) { \
             __for_3__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
 
 #define __for_3__initIters(...) __for_3__initItersNext(__VA_ARGS__)
@@ -278,11 +294,11 @@ extern "C"
 
 // #define __emit__for_4(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
-#define __emit__for_4(__len, __step, __iter_ids, _iters, _captures...) \
+#define __emit__for_4(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
     { \
         __for_4__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_4__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = 0; __step < __len; ++__step) { \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = 0; __step < __len; ++__step) { \
             __for_4__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
 
 #define __for_4__initIters(...) __for_4__initItersNext(__VA_ARGS__)
@@ -304,72 +320,95 @@ extern "C"
     let _capture3 = __for__atIter(__step, __iter_id3, _iter3)
 
 /* for - emitters (reverse) =================================================*/
-#define __emitNext__for_$_rev(_iters, _captures...) \
-    pp_overload(__emitNext__for_$_rev, __for__expandIters _iters)(_iters, _captures)
-#define __emitNext__for_$_rev_1(_iters, _captures...) \
+#define __emitNext__for_$_rev(_$__hint_loop, _iters, _captures...) \
+    pp_overload(__emitNext__for_$_rev, __for__expandIters _iters)(_$__hint_loop, _iters, _captures)
+#define __emitNext__for_$_rev_1(_$__hint_loop, _iters, _captures...) \
     __emit__for_$_rev_1( \
-        pp_uniqTok(len), pp_uniqTok(step), \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
         (pp_uniqTok(iter_id0)), \
         _iters, _captures \
     )
-#define __emitNext__for_$_rev_2(_iters, _captures...) \
+#define __emitNext__for_$_rev_2(_$__hint_loop, _iters, _captures...) \
     __emit__for_$_rev_2( \
-        pp_uniqTok(len), pp_uniqTok(step), \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
         (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1)), \
         _iters, _captures \
     )
-#define __emitNext__for_$_rev_3(_iters, _captures...) \
+#define __emitNext__for_$_rev_3(_$__hint_loop, _iters, _captures...) \
     __emit__for_$_rev_3( \
-        pp_uniqTok(len), pp_uniqTok(step), \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
         (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2)), \
         _iters, _captures \
     )
-#define __emitNext__for_$_rev_4(_iters, _captures...) \
+#define __emitNext__for_$_rev_4(_$__hint_loop, _iters, _captures...) \
     __emit__for_$_rev_4( \
-        pp_uniqTok(len), pp_uniqTok(step), \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
         (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3)), \
         _iters, _captures \
     )
 
 // #define __emit__for_$_rev_1(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
-#define __emit__for_$_rev_1(__len, __step, __iter_ids, _iters, _captures...) \
+#define __emit__for_$_rev_1(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
     { \
         __for_1__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_1__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = __len; __step-- > 0;) { \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = __len; __step-- > 0;) { \
             __for_1__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
 
 // #define __emit__for_$_rev_2(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
-#define __emit__for_$_rev_2(__len, __step, __iter_ids, _iters, _captures...) \
+#define __emit__for_$_rev_2(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
     { \
         __for_2__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_2__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = __len; __step-- > 0;) { \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = __len; __step-- > 0;) { \
             __for_2__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
 
 // #define __emit__for_$_rev_3(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
-#define __emit__for_$_rev_3(__len, __step, __iter_ids, _iters, _captures...) \
+#define __emit__for_$_rev_3(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
     { \
         __for_3__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_3__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = __len; __step-- > 0;) { \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = __len; __step-- > 0;) { \
             __for_3__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
 
 // #define __emit__for_$_rev_4(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
-#define __emit__for_$_rev_4(__len, __step, __iter_ids, _iters, _captures...) \
+#define __emit__for_$_rev_4(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
     { \
         __for_4__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         const usize __len = __for_4__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
-        for (usize __step = __len; __step-- > 0;) { \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = __len; __step-- > 0;) { \
             __for_4__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
 
 #define __stmt__$end_for \
     } \
     }
+
+/* loop unroll, inline, rolled ==============================================*/
+
+#define __loop_unroll_do() $loop_unroll do
+#define __loop_inline_do() $loop_inline do
+#define __loop_rolled_do() $loop_rolled do
+#define __loop_unroll_while() $loop_unroll while
+#define __loop_inline_while() $loop_inline while
+#define __loop_rolled_while() $loop_rolled while
+#define __loop_unroll_for() $loop_unroll for
+#define __loop_inline_for() $loop_inline for
+#define __loop_rolled_for() $loop_rolled for
+
+#define __loop_unroll_for_() ____loop_unroll_for_
+#define ____loop_unroll_for_(...) pp_overload(__for, __VA_ARGS__)($__hint_loop_unroll, __VA_ARGS__)
+#define __loop_inline_for_() ____loop_inline_for_
+#define ____loop_inline_for_(...) pp_overload(__for, __VA_ARGS__)($__hint_loop_inline, __VA_ARGS__)
+#define __loop_rolled_for_() ____loop_rolled_for_
+#define ____loop_rolled_for_(...) pp_overload(__for, __VA_ARGS__)($__hint_loop_rolled, __VA_ARGS__)
+
+#define __loop_unroll_while_() $loop_unroll while_
+#define __loop_inline_while_() $loop_inline while_
+#define __loop_rolled_while_() $loop_rolled while_
 
 #if defined(__cplusplus)
 /* extern "C" */

@@ -21,6 +21,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/builtin/pp.h"
+#include "../debug/cfg.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -34,7 +35,7 @@ extern "C" {
 /* Default values */
 
 #define __comp_bool__claim_fail_printing_enabled claim_fail_printing__enabled_default
-#define __comp_flag__claim_fail_printing__enabled_default pp_true
+#define __comp_flag__claim_fail_printing__enabled_default debug_enabled
 
 /* Override values */
 
@@ -42,11 +43,6 @@ extern "C" {
 // #undef __comp_flag__claim_fail_printing__enabled_default
 // #define __comp_flag__claim_fail_printing__enabled_default 0
 // #endif /* defined(NDEBUG) && defined(NCLAIM_FAIL_LOGGING) */
-
-#if defined(NDEBUG)
-#undef __comp_flag__claim_fail_printing__enabled_default
-#define __comp_flag__claim_fail_printing__enabled_default pp_false
-#endif /* defined(NDEBUG) */
 
 #if defined(__cplusplus)
 } /* extern "C" */

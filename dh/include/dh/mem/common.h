@@ -401,85 +401,85 @@ $attr($inline_always)
 $static fn_((mem_rotate(u_S$raw seq, usize amount))(void));
 #define T_use_mem_rotate$(_T...) __stmt__T_use_mem_rotate$(_T)
 
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstUnitBytes(S_const$u8 haystack, u8 needle))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize));
 #define T_use_mem_findFirstUnit$(_T...) __stmt__T_use_mem_findFirstUnit$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastUnitBytes(S_const$u8 haystack, u8 needle))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastUnit(u_S_const$raw haystack, u_V$raw needle))(O$usize));
 #define T_use_mem_findLastUnit$(_T...) __stmt__T_use_mem_findLastUnit$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstSeqBytes(S_const$u8 haystack, S_const$u8 needle))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize));
 #define T_use_mem_findFirstSeq$(_T...) __stmt__T_use_mem_findFirstSeq$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastSeqBytes(S_const$u8 haystack, S_const$u8 needle))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize));
 #define T_use_mem_findLastSeq$(_T...) __stmt__T_use_mem_findLastSeq$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findFirstAny$(_T...) __stmt__T_use_mem_findFirstAny$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findLastAny$(_T...) __stmt__T_use_mem_findLastAny$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findFirstNone$(_T...) __stmt__T_use_mem_findFirstNone$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findLastNone$(_T...) __stmt__T_use_mem_findLastNone$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstDiffBytes(S_const$u8 lhs, S_const$u8 rhs))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findFirstDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize));
 #define T_use_mem_findFirstDiff$(_T...) __stmt__T_use_mem_findFirstDiff$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastDiffBytes(S_const$u8 lhs, S_const$u8 rhs))(O$usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_findLastDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize));
 #define T_use_mem_findLastDiff$(_T...) __stmt__T_use_mem_findLastDiff$(_T)
 
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_countUnitBytes(S_const$u8 haystack, u8 needle))(usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_countUnit(u_S_const$raw haystack, u_V$raw needle))(usize));
 #define T_use_mem_countUnit$(_T...) __stmt__T_use_mem_countUnit$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_countBytes(S_const$u8 haystack, S_const$u8 needle))(usize));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_count(u_S_const$raw haystack, u_S_const$raw needle))(usize));
 #define T_use_mem_count$(_T...) __stmt__T_use_mem_count$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_containsUnitBytes(S_const$u8 haystack, u8 needle))(bool));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_containsUnit(u_S_const$raw haystack, u_V$raw needle))(bool));
 #define T_use_mem_containsUnit$(_T...) __stmt__T_use_mem_containsUnit$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_containsBytes(S_const$u8 haystack, S_const$u8 needle))(bool));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_contains(u_S_const$raw haystack, u_S_const$raw needle))(bool));
 #define T_use_mem_contains$(_T...) __stmt__T_use_mem_contains$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_containsAtLeastUnitBytes(S_const$u8 haystack, u8 needle, usize minimum))(bool));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_containsAtLeastUnit(u_S_const$raw haystack, u_V$raw needle, usize minimum))(bool));
 #define T_use_mem_containsAtLeastUnit$(_T...) __stmt__T_use_mem_containsAtLeastUnit$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_containsAtLeastBytes(S_const$u8 haystack, S_const$u8 needle, usize minimum))(bool));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_containsAtLeast(u_S_const$raw haystack, u_S_const$raw needle, usize minimum))(bool));
 #define T_use_mem_containsAtLeast$(_T...) __stmt__T_use_mem_containsAtLeast$(_T)
 
@@ -508,14 +508,14 @@ $extern fn_((mem_WindowIter_nextBytes(mem_WindowIter_Bytes* self))(O$S_const$u8)
 $extern fn_((mem_WindowIter_next(mem_WindowIter* self, TypeInfo type))(O$u_S_const$raw));
 #define T_use_mem_WindowIter_next$(_T...) __stmt__T_use_mem_WindowIter_next$(_T)
 
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_startsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_startsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
 #define T_use_mem_startsWith$(_T...) __stmt__T_use_mem_startsWith$(_T)
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_endsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool));
-$attr($inline_always)
+$attr($inline)
 $static fn_((mem_endsWith(u_S_const$raw haystack, u_S_const$raw needle))(bool));
 #define T_use_mem_endsWith$(_T...) __stmt__T_use_mem_endsWith$(_T)
 

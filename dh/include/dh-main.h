@@ -93,9 +93,9 @@ $attr($maybe_unused)
 $static fn_((main__runDHMain(void))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
     pp_if_(pp_not(main_no_return_err))(
-        (let returned),
-        (let_ignore)
-    ) = dh_main();
+        (let returned =),
+        ($ignore_void)
+    ) dh_main();
     pp_if_(pp_not(main_no_return_err))((catch_((returned)(err, {
         pp_if_(main_no_print_err)(
             (let_ignore = err),
@@ -111,9 +111,9 @@ $attr($maybe_unused)
 $static fn_((main__runDHMainArgs(S$S_const$u8 args))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
     pp_if_(pp_not(main_no_return_err))(
-        (let returned),
-        (let_ignore)
-    ) = dh_main(args);
+        (let returned =),
+        ($ignore_void)
+    ) dh_main(args);
     pp_if_(pp_not(main_no_return_err))((catch_((returned)(err, {
         pp_if_(main_no_print_err)(
             (let_ignore = err),

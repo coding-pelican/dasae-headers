@@ -578,11 +578,7 @@ $static fn_((u_eql(u_V$raw lhs, u_V$raw rhs))(bool)) {
         "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
         lhs.inner_type.log2_align, rhs.inner_type.log2_align
     );
-    let l = u_allocV(lhs.inner_type);
-    u_memcpy(l.ref, lhs.ref.as_const);
-    let r = u_allocV(rhs.inner_type);
-    u_memcpy(r.ref, rhs.ref.as_const);
-    return u_memeql(lhs.ref.as_const, rhs.ref.as_const);
+    return u_memeql(u_load(lhs).ref.as_const, u_load(rhs).ref.as_const);
 }
 $attr($inline_always)
 $static fn_((u_neq(u_V$raw lhs, u_V$raw rhs))(bool)) { return !u_eql(lhs, rhs); };
@@ -598,11 +594,7 @@ $static fn_((u_eqlBy(u_V$raw lhs, u_V$raw rhs, u_EqlFn eqlFn))(bool)) {
         "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
         lhs.inner_type.log2_align, rhs.inner_type.log2_align
     );
-    let l = u_allocV(lhs.inner_type);
-    u_memcpy(l.ref, lhs.ref.as_const);
-    let r = u_allocV(rhs.inner_type);
-    u_memcpy(r.ref, rhs.ref.as_const);
-    return eqlFn(l, r);
+    return eqlFn(u_load(lhs), u_load(rhs));
 };
 $attr($inline_always)
 $static fn_((u_neqBy(u_V$raw lhs, u_V$raw rhs, u_EqlFn eqlFn))(bool)) { return !u_eqlBy(lhs, rhs, eqlFn); };
@@ -619,13 +611,7 @@ $static fn_((u_eqlCtx(u_V$raw lhs, u_V$raw rhs, u_EqlCtxFn eqlFn, u_V$raw ctx))(
         "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
         lhs.inner_type.log2_align, rhs.inner_type.log2_align
     );
-    let l = u_allocV(lhs.inner_type);
-    u_memcpy(l.ref, lhs.ref.as_const);
-    let r = u_allocV(rhs.inner_type);
-    u_memcpy(r.ref, rhs.ref.as_const);
-    let c = u_allocV(ctx.inner_type);
-    u_memcpy(c.ref, ctx.ref.as_const);
-    return eqlFn(l, r, ctx);
+    return eqlFn(u_load(lhs), u_load(rhs), u_load(ctx));
 };
 $attr($inline_always)
 $static fn_((u_neqCtx(u_V$raw lhs, u_V$raw rhs, u_EqlCtxFn eqlFn, u_V$raw ctx))(bool)) { return !u_eqlCtx(lhs, rhs, eqlFn, ctx); };
@@ -643,11 +629,7 @@ $static fn_((u_ord(u_V$raw lhs, u_V$raw rhs))(cmp_Ord)) {
         "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
         lhs.inner_type.log2_align, rhs.inner_type.log2_align
     );
-    let l = u_allocV(lhs.inner_type);
-    u_memcpy(l.ref, lhs.ref.as_const);
-    let r = u_allocV(rhs.inner_type);
-    u_memcpy(r.ref, rhs.ref.as_const);
-    return u_memord(l.ref.as_const, r.ref.as_const);
+    return u_memord(u_load(lhs).ref.as_const, u_load(rhs).ref.as_const);
 };
 $attr($inline_always)
 $static fn_((u_ordBy(u_V$raw lhs, u_V$raw rhs, u_OrdFn ordFn))(cmp_Ord)) {
@@ -661,11 +643,7 @@ $static fn_((u_ordBy(u_V$raw lhs, u_V$raw rhs, u_OrdFn ordFn))(cmp_Ord)) {
         "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
         lhs.inner_type.log2_align, rhs.inner_type.log2_align
     );
-    let l = u_allocV(lhs.inner_type);
-    u_memcpy(l.ref, lhs.ref.as_const);
-    let r = u_allocV(rhs.inner_type);
-    u_memcpy(r.ref, rhs.ref.as_const);
-    return ordFn(l, r);
+    return ordFn(u_load(lhs), u_load(rhs));
 };
 T_alias$((u_OrdCtxFn)(fn_(((*)(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(cmp_Ord) $T)));
 $attr($inline_always)
@@ -680,13 +658,7 @@ $static fn_((u_ordCtx(u_V$raw lhs, u_V$raw rhs, u_OrdCtxFn ordFn, u_V$raw ctx))(
         "Type alignment mismatch: lhs({:uz}) != rhs({:uz})",
         lhs.inner_type.log2_align, rhs.inner_type.log2_align
     );
-    let l = u_allocV(lhs.inner_type);
-    u_memcpy(l.ref, lhs.ref.as_const);
-    let r = u_allocV(rhs.inner_type);
-    u_memcpy(r.ref, rhs.ref.as_const);
-    let c = u_allocV(ctx.inner_type);
-    u_memcpy(c.ref, ctx.ref.as_const);
-    return ordFn(l, r, ctx);
+    return ordFn(u_load(lhs), u_load(rhs), u_load(ctx));
 };
 
 $attr($inline_always)

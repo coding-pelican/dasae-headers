@@ -94,15 +94,16 @@ $static fn_((fmt_Align_intoByte(fmt_Align align))(u8));
 
 
 enum {
-    fmt_max_occ_count = 8,
-    fmt_max_scan_bytes = 32,
-    fmt_max_spec_bytes = 32,
+    fmt_max_arg_count = 16,
+    fmt_max_foldable_steps = 16,
+    fmt_max_foldable_event_scan_bytes = 32,
+    fmt_max_foldable_body_scan_bytes = 32,
 };
-typedef variant_((fmt_EvtPos $fits($packed))(
-    (fmt_EvtPos_placeholder, usize),
-    (fmt_EvtPos_escaped_percent_brace, usize),
-)) fmt_EvtPos;
-T_use_O$(fmt_EvtPos);
+typedef variant_((fmt_EventPos $fits($packed))(
+    (fmt_EventPos_placeholder, usize),
+    (fmt_EventPos_escaped_percent_brace, usize),
+)) fmt_EventPos;
+T_use_O$(fmt_EventPos);
 
 $attr($inline_always $must_check)
 $static fn_((fmt_print(S$u8 out, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8));
@@ -123,11 +124,17 @@ $static fn_((fmt_printErr(S$u8 out, EAny err))(usize));
 typedef struct fmt_Iter {
     var_(rest, S_const$u8);
     var_(occ_idx, usize);
+    var_(done, bool);
 } fmt_Iter;
 $attr($inline_always)
 $static fn_((fmt_Iter_init(S_const$u8 fmt))(fmt_Iter));
+typedef variant_((fmt_Iter_Step $fits($packed))(
+    (fmt_Iter_Step_written, usize),
+    (fmt_Iter_Step_fallback, Void)
+)) fmt_Iter_Step;
+T_use_E$(fmt_Iter_Step);
 $attr($inline_always $must_check)
-$static fn_((fmt_Iter_nextOrZero(fmt_Iter* iter, S$u8 out, S_const$TypeInfo fields, u_P_const$raw tuple))(E$usize));
+$static fn_((fmt_Iter_nextOrFinish(fmt_Iter* iter, S$u8 out, S_const$TypeInfo fields, u_P_const$raw tuple))(E$fmt_Iter_Step));
 
 
 
@@ -151,9 +158,9 @@ fn_((main(void))(E$void) $scope) {
 
 
 $attr($inline_always)
-$static fn_((fmt__findEvent(S_const$u8 fmt))(O$fmt_EvtPos));
+$static fn_((fmt__findEvent(S_const$u8 fmt))(O$fmt_EventPos));
 $attr($must_check)
-$static fn_((fmt__findEventRuntime(S_const$u8 fmt))(O$fmt_EvtPos));
+$static fn_((fmt__findEventRuntime(S_const$u8 fmt))(O$fmt_EventPos));
 $attr($inline_always $must_check)
 $static fn_((fmt__findClose(S_const$u8 fmt))(E$usize));
 $attr($must_check)
@@ -231,26 +238,32 @@ fn_((fmt_Align_intoByte(fmt_Align align))(u8)) {
 };
 
 
+$attr($inline_always)
+$static fn_((fmt_Iter_Step_mapWritten(fmt_Iter_Step step))(O$usize) $scope) {
+    match_(step) {
+    pattern_((fmt_Iter_Step_written)(written)) return_some(written) $end(pattern);
+    pattern_((fmt_Iter_Step_fallback)($ignore)) return_none() $end(pattern);
+    } $end(match);
+} $unscoped(fn);
 
 fn_((fmt_print(S$u8 out, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8) $scope) {
     if (!(isComptimeExpr(fmt.len) && (fmt.len == 0 || isComptimeExpr(*S_ptr(fmt))))) {
         return fmt_printRuntime(out, fmt, fields, tuple);
     }
 
-    if (fields.len > fmt_max_occ_count) return_err(E_cause$fmt_TooManyArgs());
+    if (fields.len > fmt_max_arg_count) return_err(E_cause$fmt_TooManyArgs());
     claim_assert(TypeInfo_eql(tuple.type, u_typeInfoRecord(fields)));
 
     var buf = out;
     using_(var iter = fmt_Iter_init(fmt)) {
-        buf = S_suffix((buf)try_(fmt_Iter_nextOrZero(&iter, buf, fields, tuple)));
-        buf = S_suffix((buf)try_(fmt_Iter_nextOrZero(&iter, buf, fields, tuple)));
-        buf = S_suffix((buf)try_(fmt_Iter_nextOrZero(&iter, buf, fields, tuple)));
-        buf = S_suffix((buf)try_(fmt_Iter_nextOrZero(&iter, buf, fields, tuple)));
-        buf = S_suffix((buf)try_(fmt_Iter_nextOrZero(&iter, buf, fields, tuple)));
-        buf = S_suffix((buf)try_(fmt_Iter_nextOrZero(&iter, buf, fields, tuple)));
-        buf = S_suffix((buf)try_(fmt_Iter_nextOrZero(&iter, buf, fields, tuple)));
-        buf = S_suffix((buf)try_(fmt_Iter_nextOrZero(&iter, buf, fields, tuple)));
-        if_some((fmt__findEventRuntime(iter.rest))(_event)) {
+        let nextOrFinish = fmt_Iter_nextOrFinish;
+        let mapWritten = fmt_Iter_Step_mapWritten;
+        loop_inline_(for_)(($rt(usize_(fmt_max_foldable_steps)))($ignore)) {
+            buf = S_suffix((buf)orelse_((mapWritten(try_(nextOrFinish(&iter, buf, fields, tuple))))(
+                return fmt_printRuntime(out, fmt, fields, tuple)
+            )));
+        } $end(for);
+        if_some((fmt__findEvent(iter.rest))(_event)) {
             let_ignore = _event;
             return fmt_printRuntime(out, fmt, fields, tuple);
         }
@@ -261,7 +274,7 @@ fn_((fmt_print(S$u8 out, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw 
 } $unscoped(fn);
 
 fn_((fmt_printRuntime(S$u8 out, S_const$u8 fmt, S_const$TypeInfo fields, u_P_const$raw tuple))(E$S$u8) $scope) {
-    if (fields.len > fmt_max_occ_count) return_err(E_cause$fmt_TooManyArgs());
+    if (fields.len > fmt_max_arg_count) return_err(E_cause$fmt_TooManyArgs());
     claim_assert(TypeInfo_eql(tuple.type, u_typeInfoRecord(fields)));
 
     var buf = out;
@@ -269,14 +282,14 @@ fn_((fmt_printRuntime(S$u8 out, S_const$u8 fmt, S_const$TypeInfo fields, u_P_con
         while (true) {
             let event = orelse_((fmt__findEventRuntime(iter.rest))(break));
             let written_before = expr_(usize $scope)(match_(event) {
-                patterns_((fmt_EvtPos_placeholder, fmt_EvtPos_escaped_percent_brace)(pos) {
+                patterns_((fmt_EventPos_placeholder, fmt_EventPos_escaped_percent_brace)(pos) {
                     $break_(fmt__copy(buf, S_prefix((iter.rest)pos)));
                 }) $end(patterns);
             } $end(match)) $unscoped(expr);
             buf = S_suffix((buf)written_before);
 
             match_(event) {
-            pattern_((fmt_EvtPos_placeholder)(pos)) {
+            pattern_((fmt_EventPos_placeholder)(pos)) {
                 let body_start = pos + 2;
                 let close = try_(fmt__findCloseRuntime(S_suffix((iter.rest)body_start)));
                 let body = S_prefix((S_suffix((iter.rest)body_start))close);
@@ -286,7 +299,7 @@ fn_((fmt_printRuntime(S$u8 out, S_const$u8 fmt, S_const$TypeInfo fields, u_P_con
                 iter.rest = S_suffix((iter.rest)(body_start + close + 1));
                 iter.occ_idx++;
             } $end(pattern);
-            pattern_((fmt_EvtPos_escaped_percent_brace)(pos)) {
+            pattern_((fmt_EventPos_escaped_percent_brace)(pos)) {
                 *S_at((buf)[0]) = u8_c('%');
                 *S_at((buf)[1]) = u8_c('{');
                 buf = S_suffix((buf)2);
@@ -425,18 +438,25 @@ fn_((fmt_printErr(S$u8 out, EAny err))(usize)) {
 
 
 fn_((fmt_Iter_init(S_const$u8 fmt))(fmt_Iter)) {
-    return (fmt_Iter){ .rest = fmt, .occ_idx = 0 };
+    return (fmt_Iter){ .rest = fmt, .occ_idx = 0, .done = false };
 };
 
-fn_((fmt_Iter_nextOrZero(fmt_Iter* iter, S$u8 out, S_const$TypeInfo fields, u_P_const$raw tuple))(E$usize) $scope) {
-    let event = orelse_((fmt__findEvent(iter->rest))(return_ok(0)));
+fn_((fmt_Iter_nextOrFinish(fmt_Iter* iter, S$u8 out, S_const$TypeInfo fields, u_P_const$raw tuple))(E$fmt_Iter_Step) $scope) {
+    if (iter->done) return_ok(union_of((fmt_Iter_Step_written)(0)));
+    let event = orelse_((fmt__findEvent(iter->rest))({
+        if (iter->rest.len > fmt_max_foldable_event_scan_bytes) return_ok(union_of((fmt_Iter_Step_fallback){}));
+        let written = fmt__copy(out, iter->rest);
+        iter->rest = S_suffix((iter->rest)iter->rest.len);
+        iter->done = true;
+        return_ok(union_of((fmt_Iter_Step_written)(written)));
+    }));
     let written_before = expr_(usize $scope)(match_(event) {
-        patterns_((fmt_EvtPos_placeholder, fmt_EvtPos_escaped_percent_brace)(pos) {
+        patterns_((fmt_EventPos_placeholder, fmt_EventPos_escaped_percent_brace)(pos) {
             $break_(fmt__copy(out, S_prefix((iter->rest)pos)));
         }) $end(patterns);
     } $end(match)) $unscoped(expr);
     let written_after = expr_(usize $scope)(match_(event) {
-        pattern_((fmt_EvtPos_placeholder)(pos)) {
+        pattern_((fmt_EventPos_placeholder)(pos)) {
             var written = written_before;
             let body_start = pos + 2;
             let close = try_(fmt__findClose(S_suffix((iter->rest)body_start)));
@@ -446,117 +466,57 @@ fn_((fmt_Iter_nextOrZero(fmt_Iter* iter, S$u8 out, S_const$TypeInfo fields, u_P_
             written += try_(fmt__writeBody(S_suffix((out)written), body, u_fieldPtr(tuple, fields, arg_idx)));
             iter->rest = S_suffix((iter->rest)(body_start + close + 1));
             iter->occ_idx++;
+            if (iter->rest.len == 0) iter->done = true;
             $break_(written);
         } $end(pattern);
-        pattern_((fmt_EvtPos_escaped_percent_brace)(pos)) {
+        pattern_((fmt_EventPos_escaped_percent_brace)(pos)) {
             var written = written_before;
             *S_at((out)[written++]) = u8_c('%');
             *S_at((out)[written++]) = u8_c('{');
             iter->rest = S_suffix((iter->rest)(pos + 3));
+            if (iter->rest.len == 0) iter->done = true;
             $break_(written);
         } $end(pattern);
     }$end(match)) $unscoped(expr);
-    return_ok(written_after);
+    return_ok(union_of((fmt_Iter_Step_written)(written_after)));
 } $unscoped(fn);
 
-fn_((fmt__findEvent(S_const$u8 fmt))(O$fmt_EvtPos) $scope) {
-#define fmt__checkEventAt(pos_) \
-    if (fmt.len > usize_((pos_) + 2) \
-        && *S_at((fmt)[usize_(pos_)]) == u8_c('%') \
-        && *S_at((fmt)[usize_((pos_) + 1)]) == u8_c('%') \
-        && *S_at((fmt)[usize_((pos_) + 2)]) == u8_c('{')) { \
-        return_some(union_of((fmt_EvtPos_escaped_percent_brace)(usize_(pos_)))); \
-    } \
-    if (fmt.len > usize_((pos_) + 1) \
-        && *S_at((fmt)[usize_(pos_)]) == u8_c('%') \
-        && *S_at((fmt)[usize_((pos_) + 1)]) == u8_c('{')) { \
-        return_some(union_of((fmt_EvtPos_placeholder)(usize_(pos_)))); \
-    }
-    fmt__checkEventAt(0);
-    fmt__checkEventAt(1);
-    fmt__checkEventAt(2);
-    fmt__checkEventAt(3);
-    fmt__checkEventAt(4);
-    fmt__checkEventAt(5);
-    fmt__checkEventAt(6);
-    fmt__checkEventAt(7);
-    fmt__checkEventAt(8);
-    fmt__checkEventAt(9);
-    fmt__checkEventAt(10);
-    fmt__checkEventAt(11);
-    fmt__checkEventAt(12);
-    fmt__checkEventAt(13);
-    fmt__checkEventAt(14);
-    fmt__checkEventAt(15);
-    fmt__checkEventAt(16);
-    fmt__checkEventAt(17);
-    fmt__checkEventAt(18);
-    fmt__checkEventAt(19);
-    fmt__checkEventAt(20);
-    fmt__checkEventAt(21);
-    fmt__checkEventAt(22);
-    fmt__checkEventAt(23);
-    fmt__checkEventAt(24);
-    fmt__checkEventAt(25);
-    fmt__checkEventAt(26);
-    fmt__checkEventAt(27);
-    fmt__checkEventAt(28);
-    fmt__checkEventAt(29);
-    fmt__checkEventAt(30);
-    fmt__checkEventAt(31);
-#undef fmt__checkEventAt
+fn_((fmt__findEvent(S_const$u8 fmt))(O$fmt_EventPos) $scope) {
+    loop_inline_(for_)(($rt(usize_(fmt_max_foldable_event_scan_bytes)))(pos)) {
+        if (fmt.len > usize_(pos) + 2
+            && *S_at((fmt)[usize_(pos)]) == u8_c('%')
+            && *S_at((fmt)[usize_(pos) + 1]) == u8_c('%')
+            && *S_at((fmt)[usize_(pos) + 2]) == u8_c('{')) {
+            return_some(union_of((fmt_EventPos_escaped_percent_brace)(usize_(pos))));
+        }
+        if (fmt.len > usize_(pos) + 1
+            && *S_at((fmt)[usize_(pos)]) == u8_c('%')
+            && *S_at((fmt)[usize_(pos) + 1]) == u8_c('{')) {
+            return_some(union_of((fmt_EventPos_placeholder)(usize_(pos))));
+        }
+    } $end(for);
     return_none();
 } $unscoped(fn);
 
-fn_((fmt__findEventRuntime(S_const$u8 fmt))(O$fmt_EvtPos) $scope) {
+fn_((fmt__findEventRuntime(S_const$u8 fmt))(O$fmt_EventPos) $scope) {
     for (usize pos = 0; pos + 1 < fmt.len; ++pos) {
         if (*S_at((fmt)[pos]) != u8_c('%')) continue;
-        if (pos + 2 < fmt.len && *S_at((fmt)[pos + 1]) == u8_c('%') && *S_at((fmt)[pos + 2]) == u8_c('{')) {
-            return_some(union_of((fmt_EvtPos_escaped_percent_brace)(pos)));
+        if (pos + 2 < fmt.len
+            && *S_at((fmt)[pos + 1]) == u8_c('%')
+            && *S_at((fmt)[pos + 2]) == u8_c('{')) {
+            return_some(union_of((fmt_EventPos_escaped_percent_brace)(pos)));
         }
         if (*S_at((fmt)[pos + 1]) == u8_c('{')) {
-            return_some(union_of((fmt_EvtPos_placeholder)(pos)));
+            return_some(union_of((fmt_EventPos_placeholder)(pos)));
         }
     }
     return_none();
 } $unscoped(fn);
 
 fn_((fmt__findClose(S_const$u8 fmt))(E$usize) $scope) {
-#define fmt__checkCloseAt(pos_) \
-    if (fmt.len > usize_(pos_) && *S_at((fmt)[usize_(pos_)]) == u8_c('}')) return_ok(usize_(pos_));
-    fmt__checkCloseAt(0);
-    fmt__checkCloseAt(1);
-    fmt__checkCloseAt(2);
-    fmt__checkCloseAt(3);
-    fmt__checkCloseAt(4);
-    fmt__checkCloseAt(5);
-    fmt__checkCloseAt(6);
-    fmt__checkCloseAt(7);
-    fmt__checkCloseAt(8);
-    fmt__checkCloseAt(9);
-    fmt__checkCloseAt(10);
-    fmt__checkCloseAt(11);
-    fmt__checkCloseAt(12);
-    fmt__checkCloseAt(13);
-    fmt__checkCloseAt(14);
-    fmt__checkCloseAt(15);
-    fmt__checkCloseAt(16);
-    fmt__checkCloseAt(17);
-    fmt__checkCloseAt(18);
-    fmt__checkCloseAt(19);
-    fmt__checkCloseAt(20);
-    fmt__checkCloseAt(21);
-    fmt__checkCloseAt(22);
-    fmt__checkCloseAt(23);
-    fmt__checkCloseAt(24);
-    fmt__checkCloseAt(25);
-    fmt__checkCloseAt(26);
-    fmt__checkCloseAt(27);
-    fmt__checkCloseAt(28);
-    fmt__checkCloseAt(29);
-    fmt__checkCloseAt(30);
-    fmt__checkCloseAt(31);
-#undef fmt__checkCloseAt
+    loop_inline_(for_)(($rt(usize_(fmt_max_foldable_body_scan_bytes)))(pos)) {
+        if (fmt.len > usize_(pos) && *S_at((fmt)[usize_(pos)]) == u8_c('}')) return_ok(usize_(pos));
+    } $end(for);
     return_err(E_cause$fmt_MissingClosingBrace());
 } $unscoped(fn);
 
@@ -583,7 +543,7 @@ fn_((fmt__argIdx(S_const$u8 body, usize occ_idx))(E$usize) $scope) {
         pos += 1;
     }
     if (pos >= body.len || *S_at((body)[pos]) != u8_c(']')) return_err(E_cause$fmt_InvalidIdx());
-    if (idx >= fmt_max_occ_count) return_err(E_cause$fmt_IdxOutOfBounds());
+    if (idx >= fmt_max_arg_count) return_err(E_cause$fmt_IdxOutOfBounds());
     return_ok(idx);
 } $unscoped(fn);
 

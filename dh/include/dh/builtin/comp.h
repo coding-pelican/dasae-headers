@@ -414,6 +414,10 @@ extern "C" {
 #define $listed /* just formatting comment for list expansion */
 #define $str /* just formatting comment for string literal */
 
+#define $loop_unroll __pragma(clang loop unroll(enable))
+#define $loop_inline __pragma(clang loop unroll(full))
+#define $loop_rolled __pragma(clang loop unroll(disable))
+
 #define $pragma_guard_(_push, _ctx, _pop, _code...) /* clang-format off */ \
     _Pragma(_push) \
     _Pragma(_ctx) \
