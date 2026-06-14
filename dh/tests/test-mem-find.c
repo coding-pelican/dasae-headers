@@ -11,7 +11,13 @@ T_use$((u8)(
     mem_findFirstNone,
     mem_findLastNone,
     mem_findFirstDiff,
-    mem_findLastDiff
+    mem_findLastDiff,
+    mem_countUnit,
+    mem_containsUnit,
+    mem_contains,
+    mem_count,
+    mem_containsAtLeastUnit,
+    mem_containsAtLeast
 ));
 
 TEST_fn_("mem: find - typed primitive searches" $scope) {
@@ -82,4 +88,64 @@ TEST_fn_("mem: find - direct bytes searches" $scope) {
 
     try_(TEST_expect(isNone(mem_findFirstSeqBytes(text, u8_l("zz")))));
     try_(TEST_expect(isNone(mem_findLastDiffBytes(u8_l("same"), u8_l("same")))));
+} $unscoped(TEST_fn)
+
+TEST_fn_("mem: find - count and contains typed searches" $scope) {
+    try_(TEST_expect(mem_count$u8(u8_l(""), u8_l("h")) == 0));
+    try_(TEST_expect(mem_count$u8(u8_l("h"), u8_l("h")) == 1));
+    try_(TEST_expect(mem_count$u8(u8_l("hh"), u8_l("h")) == 2));
+    try_(TEST_expect(mem_count$u8(u8_l("world!"), u8_l("hello")) == 0));
+    try_(TEST_expect(mem_count$u8(u8_l("hello world!"), u8_l("hello")) == 1));
+    try_(TEST_expect(mem_count$u8(u8_l("   abcabc   abc"), u8_l("abc")) == 3));
+    try_(TEST_expect(mem_count$u8(u8_l("radaradar"), u8_l("radar")) == 1));
+    try_(TEST_expect(mem_count$u8(u8_l("aaa"), u8_l("aa")) == 1));
+
+    try_(TEST_expect(mem_countUnit$u8(u8_l(""), u8_c('h')) == 0));
+    try_(TEST_expect(mem_countUnit$u8(u8_l("h"), u8_c('h')) == 1));
+    try_(TEST_expect(mem_countUnit$u8(u8_l("hh"), u8_c('h')) == 2));
+    try_(TEST_expect(mem_countUnit$u8(u8_l("ahhb"), u8_c('h')) == 2));
+    try_(TEST_expect(mem_countUnit$u8(u8_l("   abcabc   abc"), u8_c('b')) == 3));
+
+    try_(TEST_expect(mem_containsUnit$u8(u8_l("abc"), u8_c('b'))));
+    try_(TEST_expect(!mem_containsUnit$u8(u8_l("abc"), u8_c('z'))));
+    try_(TEST_expect(!mem_containsUnit$u8(u8_l(""), u8_c('z'))));
+    try_(TEST_expect(mem_contains$u8(u8_l("abc"), u8_l("bc"))));
+    try_(TEST_expect(!mem_contains$u8(u8_l("abc"), u8_l("bd"))));
+    try_(TEST_expect(mem_contains$u8(u8_l("abc"), u8_l(""))));
+
+    try_(TEST_expect(mem_containsAtLeast$u8(u8_l("aa"), u8_l("a"), 0)));
+    try_(TEST_expect(mem_containsAtLeast$u8(u8_l(""), u8_l("a"), 0)));
+    try_(TEST_expect(mem_containsAtLeast$u8(u8_l(""), u8_l("aa"), 0)));
+    try_(TEST_expect(mem_containsAtLeast$u8(u8_l("aa"), u8_l("a"), 1)));
+    try_(TEST_expect(mem_containsAtLeast$u8(u8_l("aa"), u8_l("a"), 2)));
+    try_(TEST_expect(!mem_containsAtLeast$u8(u8_l("aa"), u8_l("a"), 3)));
+    try_(TEST_expect(mem_containsAtLeast$u8(u8_l("radaradar"), u8_l("radar"), 1)));
+    try_(TEST_expect(!mem_containsAtLeast$u8(u8_l("radaradar"), u8_l("radar"), 2)));
+    try_(TEST_expect(mem_containsAtLeast$u8(u8_l("radarradaradarradar"), u8_l("radar"), 3)));
+    try_(TEST_expect(!mem_containsAtLeast$u8(u8_l("radarradaradarradar"), u8_l("radar"), 4)));
+
+    try_(TEST_expect(mem_containsAtLeastUnit$u8(u8_l(""), u8_c('d'), 0)));
+    try_(TEST_expect(mem_containsAtLeastUnit$u8(u8_l("adadda"), u8_c('d'), 3)));
+    try_(TEST_expect(!mem_containsAtLeastUnit$u8(u8_l("adadda"), u8_c('d'), 4)));
+} $unscoped(TEST_fn)
+
+TEST_fn_("mem: find - count and contains direct bytes searches" $scope) {
+    try_(TEST_expect(mem_countBytes(u8_l("foo bar"), u8_l("o bar")) == 1));
+    try_(TEST_expect(mem_countBytes(u8_l("aaa"), u8_l("aa")) == 1));
+    try_(TEST_expect(mem_countUnitBytes(u8_l("mississippi"), u8_c('s')) == 4));
+
+    try_(TEST_expect(mem_containsUnitBytes(u8_l("abc"), u8_c('b'))));
+    try_(TEST_expect(!mem_containsUnitBytes(u8_l("abc"), u8_c('z'))));
+    try_(TEST_expect(!mem_containsUnitBytes(u8_l(""), u8_c('z'))));
+    try_(TEST_expect(mem_containsBytes(u8_l("abc"), u8_l("bc"))));
+    try_(TEST_expect(!mem_containsBytes(u8_l("abc"), u8_l("bd"))));
+    try_(TEST_expect(mem_containsBytes(u8_l("abc"), u8_l(""))));
+
+    try_(TEST_expect(mem_containsAtLeastBytes(u8_l(""), u8_l("a"), 0)));
+    try_(TEST_expect(mem_containsAtLeastBytes(u8_l(""), u8_l("aa"), 0)));
+    try_(TEST_expect(mem_containsAtLeastBytes(u8_l("   radar      radar   "), u8_l("radar"), 2)));
+    try_(TEST_expect(!mem_containsAtLeastBytes(u8_l("   radar      radar   "), u8_l("radar"), 3)));
+    try_(TEST_expect(mem_containsAtLeastUnitBytes(u8_l(""), u8_c('a'), 0)));
+    try_(TEST_expect(mem_containsAtLeastUnitBytes(u8_l("banana"), u8_c('a'), 3)));
+    try_(TEST_expect(!mem_containsAtLeastUnitBytes(u8_l("banana"), u8_c('a'), 4)));
 } $unscoped(TEST_fn)

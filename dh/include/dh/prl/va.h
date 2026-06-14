@@ -36,25 +36,95 @@ extern "C" {
 #define __inline__va___tyTupFields__each(_$ignored, _va_arg...) \
     typeInfo$(TypeOf(_va_arg)),
 #define __inline__va___vTup(_va_args...) \
-    pp_overload(__inline__va___vTup, _va_args)(_va_args)
-#define __inline__va___vTup_0(...) \
-    $tup()
+    $tup(pp_overload(__inline__va___vTup, _va_args)(_va_args))
+#define __inline__va___vTup_0(...)
 #define __inline__va___vTup_1(_arg0...) \
-    $tup((_arg0))
+    (_arg0)
 #define __inline__va___vTup_2(_arg0, _arg1...) \
-    $tup((_arg0), (_arg1))
+    __inline__va___vTup_1(_arg0), (_arg1)
 #define __inline__va___vTup_3(_arg0, _arg1, _arg2...) \
-    $tup((_arg0), (_arg1), (_arg2))
+    __inline__va___vTup_2(_arg0, _arg1), (_arg2)
 #define __inline__va___vTup_4(_arg0, _arg1, _arg2, _arg3...) \
-    $tup((_arg0), (_arg1), (_arg2), (_arg3))
+    __inline__va___vTup_3(_arg0, _arg1, _arg2), (_arg3)
 #define __inline__va___vTup_5(_arg0, _arg1, _arg2, _arg3, _arg4...) \
-    $tup((_arg0), (_arg1), (_arg2), (_arg3), (_arg4))
+    __inline__va___vTup_4(_arg0, _arg1, _arg2, _arg3), (_arg4)
 #define __inline__va___vTup_6(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5...) \
-    $tup((_arg0), (_arg1), (_arg2), (_arg3), (_arg4), (_arg5))
+    __inline__va___vTup_5(_arg0, _arg1, _arg2, _arg3, _arg4), (_arg5)
 #define __inline__va___vTup_7(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6...) \
-    $tup((_arg0), (_arg1), (_arg2), (_arg3), (_arg4), (_arg5), (_arg6))
+    __inline__va___vTup_6(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5), (_arg6)
 #define __inline__va___vTup_8(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7...) \
-    $tup((_arg0), (_arg1), (_arg2), (_arg3), (_arg4), (_arg5), (_arg6), (_arg7))
+    __inline__va___vTup_7(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6), (_arg7)
+#define __inline__va___vTup_9( \
+    _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+    _arg8... \
+) \
+    __inline__va___vTup_8( \
+        _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7 \
+    ), \
+        (_arg8)
+#define __inline__va___vTup_10( \
+    _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+    _arg8, _arg9... \
+) \
+    __inline__va___vTup_9( \
+        _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+        _arg8 \
+    ), \
+        (_arg9)
+#define __inline__va___vTup_11( \
+    _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+    _arg8, _arg9, _arg10... \
+) \
+    __inline__va___vTup_10( \
+        _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+        _arg8, _arg9 \
+    ), \
+        (_arg10)
+#define __inline__va___vTup_12( \
+    _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+    _arg8, _arg9, _arg10, _arg11... \
+) \
+    __inline__va___vTup_11( \
+        _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+        _arg8, _arg9, _arg10 \
+    ), \
+        (_arg11)
+#define __inline__va___vTup_13( \
+    _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+    _arg8, _arg9, _arg10, _arg11, _arg12... \
+) \
+    __inline__va___vTup_12( \
+        _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+        _arg8, _arg9, _arg10, _arg11 \
+    ), \
+        (_arg12)
+#define __inline__va___vTup_14( \
+    _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+    _arg8, _arg9, _arg10, _arg11, _arg12, _arg13... \
+) \
+    __inline__va___vTup_13( \
+        _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+        _arg8, _arg9, _arg10, _arg11, _arg12 \
+    ), \
+        (_arg13)
+#define __inline__va___vTup_15( \
+    _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+    _arg8, _arg9, _arg10, _arg11, _arg12, _arg13, _arg14... \
+) \
+    __inline__va___vTup_14( \
+        _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+        _arg8, _arg9, _arg10, _arg11, _arg12, _arg13 \
+    ), \
+        (_arg14)
+#define __inline__va___vTup_16( \
+    _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+    _arg8, _arg9, _arg10, _arg11, _arg12, _arg13, _arg14, _arg15... \
+) \
+    __inline__va___vTup_15( \
+        _arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, \
+        _arg8, _arg9, _arg10, _arg11, _arg12, _arg13, _arg14 \
+    ), \
+        (_arg15)
 #define __inline__va___pass(_args, _ty_tup_fields, _v_tup...) \
     __inline__va___pass__args _args _ty_tup_fields, u_anyP(&_v_tup)
 #define __inline__va___pass__args(/*_args*/...) __VA_OPT__( \

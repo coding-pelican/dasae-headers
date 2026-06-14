@@ -6,7 +6,6 @@
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-05 (date of creation)
  * @updated 2025-11-27 (date of last update)
- * @version v0.1
  * @ingroup dal-project/da/foundation/pp
  * @prefix  pp
  *
@@ -284,73 +283,372 @@ extern "C" {
 
 #define pp_exec_foldl(_Step, _Init, ...) \
     pp_overload(pp_exec_foldl, __VA_ARGS__)(_Step, _Init, __VA_ARGS__)
-#define pp_exec_foldl_0(_Step, _Init...) _Init
-#define pp_exec_foldl_1(_Step, _Init, _A...) _Step(_Init, _A)
-#define pp_exec_foldl_2(_Step, _Init, _A, _B...) _Step(pp_exec_foldl_1(_Step, _Init, _A), _B)
-#define pp_exec_foldl_3(_Step, _Init, _A, _B, _C...) _Step(pp_exec_foldl_2(_Step, _Init, _A, _B), _C)
-#define pp_exec_foldl_4(_Step, _Init, _A, _B, _C, _D...) _Step(pp_exec_foldl_3(_Step, _Init, _A, _B, _C), _D)
-#define pp_exec_foldl_5(_Step, _Init, _A, _B, _C, _D, _E...) _Step(pp_exec_foldl_4(_Step, _Init, _A, _B, _C, _D), _E)
-#define pp_exec_foldl_6(_Step, _Init, _A, _B, _C, _D, _E, _F...) _Step(pp_exec_foldl_5(_Step, _Init, _A, _B, _C, _D, _E), _F)
-#define pp_exec_foldl_7(_Step, _Init, _A, _B, _C, _D, _E, _F, _G...) _Step(pp_exec_foldl_6(_Step, _Init, _A, _B, _C, _D, _E, _F), _G)
-#define pp_exec_foldl_8(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H...) _Step(pp_exec_foldl_7(_Step, _Init, _A, _B, _C, _D, _E, _F, _G), _H)
-#define pp_exec_foldl_9(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I...) _Step(pp_exec_foldl_8(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H), _I)
-#define pp_exec_foldl_10(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J...) _Step(pp_exec_foldl_9(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I), _J)
-#define pp_exec_foldl_11(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K...) _Step(pp_exec_foldl_10(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J), _K)
-#define pp_exec_foldl_12(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L...) _Step(pp_exec_foldl_11(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K), _L)
-#define pp_exec_foldl_13(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M...) _Step(pp_exec_foldl_12(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L), _M)
-#define pp_exec_foldl_14(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N...) _Step(pp_exec_foldl_13(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M), _N)
-#define pp_exec_foldl_15(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O...) _Step(pp_exec_foldl_14(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N), _O)
-#define pp_exec_foldl_16(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P...) _Step(pp_exec_foldl_15(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O), _P)
-#define pp_exec_foldl_17(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q...) _Step(pp_exec_foldl_16(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P), _Q)
-#define pp_exec_foldl_18(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R...) _Step(pp_exec_foldl_17(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q), _R)
-#define pp_exec_foldl_19(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S...) _Step(pp_exec_foldl_18(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R), _S)
-#define pp_exec_foldl_20(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T...) _Step(pp_exec_foldl_19(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S), _T)
-#define pp_exec_foldl_21(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U...) _Step(pp_exec_foldl_20(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T), _U)
-#define pp_exec_foldl_22(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V...) _Step(pp_exec_foldl_21(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U), _V)
-#define pp_exec_foldl_23(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W...) _Step(pp_exec_foldl_22(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V), _W)
-#define pp_exec_foldl_24(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X...) _Step(pp_exec_foldl_23(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W), _X)
-#define pp_exec_foldl_25(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y...) _Step(pp_exec_foldl_24(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X), _Y)
-#define pp_exec_foldl_26(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z...) _Step(pp_exec_foldl_25(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y), _Z)
-#define pp_exec_foldl_27(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0...) _Step(pp_exec_foldl_26(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z), _A0)
-#define pp_exec_foldl_28(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0...) _Step(pp_exec_foldl_27(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0), _B0)
-#define pp_exec_foldl_29(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0...) _Step(pp_exec_foldl_28(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0), _C0)
-#define pp_exec_foldl_30(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0...) _Step(pp_exec_foldl_29(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0), _D0)
-#define pp_exec_foldl_31(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0, _E0...) _Step(pp_exec_foldl_30(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0), _E0)
+#define pp_exec_foldl_0(_Step, _Init...) \
+    _Init
+#define pp_exec_foldl_1(_Step, _Init, _A...) \
+    _Step(_Init, _A)
+#define pp_exec_foldl_2(_Step, _Init, _A, _B...) \
+    _Step(pp_exec_foldl_1(_Step, _Init, _A), _B)
+#define pp_exec_foldl_3(_Step, _Init, _A, _B, _C...) \
+    _Step(pp_exec_foldl_2(_Step, _Init, _A, _B), _C)
+#define pp_exec_foldl_4(_Step, _Init, _A, _B, _C, _D...) \
+    _Step(pp_exec_foldl_3(_Step, _Init, _A, _B, _C), _D)
+#define pp_exec_foldl_5(_Step, _Init, _A, _B, _C, _D, _E...) \
+    _Step(pp_exec_foldl_4(_Step, _Init, _A, _B, _C, _D), _E)
+#define pp_exec_foldl_6(_Step, _Init, _A, _B, _C, _D, _E, _F...) \
+    _Step(pp_exec_foldl_5(_Step, _Init, _A, _B, _C, _D, _E), _F)
+#define pp_exec_foldl_7(_Step, _Init, _A, _B, _C, _D, _E, _F, _G...) \
+    _Step(pp_exec_foldl_6(_Step, _Init, _A, _B, _C, _D, _E, _F), _G)
+#define pp_exec_foldl_8(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H...) \
+    _Step(pp_exec_foldl_7(_Step, _Init, _A, _B, _C, _D, _E, _F, _G), _H)
+#define pp_exec_foldl_9(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I...) \
+    _Step(pp_exec_foldl_8(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H), _I)
+#define pp_exec_foldl_10(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J...) \
+    _Step(pp_exec_foldl_9(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I), _J)
+#define pp_exec_foldl_11(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K...) \
+    _Step(pp_exec_foldl_10(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J), _K)
+#define pp_exec_foldl_12(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L...) \
+    _Step(pp_exec_foldl_11(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K), _L)
+#define pp_exec_foldl_13(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M...) \
+    _Step(pp_exec_foldl_12(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L), _M)
+#define pp_exec_foldl_14(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N...) \
+    _Step(pp_exec_foldl_13(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M), _N)
+#define pp_exec_foldl_15(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O...) \
+    _Step(pp_exec_foldl_14(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N), _O)
+#define pp_exec_foldl_16(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P...) \
+    _Step(pp_exec_foldl_15(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O), _P)
+#define pp_exec_foldl_17(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q...) \
+    _Step(pp_exec_foldl_16(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P), _Q)
+#define pp_exec_foldl_18(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R...) \
+    _Step(pp_exec_foldl_17(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q), _R)
+#define pp_exec_foldl_19(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S...) \
+    _Step(pp_exec_foldl_18(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R), _S)
+#define pp_exec_foldl_20( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T... \
+) \
+    _Step( \
+        pp_exec_foldl_19( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S \
+        ), \
+        _T \
+    )
+#define pp_exec_foldl_21( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U... \
+) \
+    _Step( \
+        pp_exec_foldl_20( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T \
+        ), \
+        _U \
+    )
+#define pp_exec_foldl_22( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V... \
+) \
+    _Step( \
+        pp_exec_foldl_21( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U \
+        ), \
+        _V \
+    )
+#define pp_exec_foldl_23( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W... \
+) \
+    _Step( \
+        pp_exec_foldl_22( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V \
+        ), \
+        _W \
+    )
+#define pp_exec_foldl_24( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X... \
+) \
+    _Step( \
+        pp_exec_foldl_23( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W \
+        ), \
+        _X \
+    )
+#define pp_exec_foldl_25( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y... \
+) \
+    _Step( \
+        pp_exec_foldl_24( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X \
+        ), \
+        _Y \
+    )
+#define pp_exec_foldl_26( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z... \
+) \
+    _Step( \
+        pp_exec_foldl_25( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y \
+        ), \
+        _Z \
+    )
+#define pp_exec_foldl_27( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0... \
+) \
+    _Step( \
+        pp_exec_foldl_26( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z \
+        ), \
+        _A0 \
+    )
+#define pp_exec_foldl_28( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0, _B0... \
+) \
+    _Step( \
+        pp_exec_foldl_27( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+            _A0 \
+        ), \
+        _B0 \
+    )
+#define pp_exec_foldl_29( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0, _B0, _C0... \
+) \
+    _Step( \
+        pp_exec_foldl_28( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+            _A0, _B0 \
+        ), \
+        _C0 \
+    )
+#define pp_exec_foldl_30( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0, _B0, _C0, _D0... \
+) \
+    _Step( \
+        pp_exec_foldl_29( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+            _A0, _B0, _C0 \
+        ), \
+        _D0 \
+    )
+#define pp_exec_foldl_31( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0, _B0, _C0, _D0, _E0... \
+) \
+    _Step( \
+        pp_exec_foldl_30( \
+            _Step, _Init, \
+            _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+            _A0, _B0, _C0, _D0 \
+        ), \
+        _E0 \
+    )
 
 #define pp_exec_foldr(_Step, _Init, ...) \
     pp_overload(pp_exec_foldr, __VA_ARGS__)(_Step, _Init, __VA_ARGS__)
-#define pp_exec_foldr_0(_Step, _Init...) _Init
-#define pp_exec_foldr_1(_Step, _Init, _A...) _Step(_A, _Init)
-#define pp_exec_foldr_2(_Step, _Init, _A, _B...) _Step(_A, pp_exec_foldr_1(_Step, _Init, _B))
-#define pp_exec_foldr_3(_Step, _Init, _A, _B, _C...) _Step(_A, pp_exec_foldr_2(_Step, _Init, _B, _C))
-#define pp_exec_foldr_4(_Step, _Init, _A, _B, _C, _D...) _Step(_A, pp_exec_foldr_3(_Step, _Init, _B, _C, _D))
-#define pp_exec_foldr_5(_Step, _Init, _A, _B, _C, _D, _E...) _Step(_A, pp_exec_foldr_4(_Step, _Init, _B, _C, _D, _E))
-#define pp_exec_foldr_6(_Step, _Init, _A, _B, _C, _D, _E, _F...) _Step(_A, pp_exec_foldr_5(_Step, _Init, _B, _C, _D, _E, _F))
-#define pp_exec_foldr_7(_Step, _Init, _A, _B, _C, _D, _E, _F, _G...) _Step(_A, pp_exec_foldr_6(_Step, _Init, _B, _C, _D, _E, _F, _G))
-#define pp_exec_foldr_8(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H...) _Step(_A, pp_exec_foldr_7(_Step, _Init, _B, _C, _D, _E, _F, _G, _H))
-#define pp_exec_foldr_9(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I...) _Step(_A, pp_exec_foldr_8(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I))
-#define pp_exec_foldr_10(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J...) _Step(_A, pp_exec_foldr_9(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J))
-#define pp_exec_foldr_11(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K...) _Step(_A, pp_exec_foldr_10(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K))
-#define pp_exec_foldr_12(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L...) _Step(_A, pp_exec_foldr_11(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L))
-#define pp_exec_foldr_13(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M...) _Step(_A, pp_exec_foldr_12(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M))
-#define pp_exec_foldr_14(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N...) _Step(_A, pp_exec_foldr_13(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N))
-#define pp_exec_foldr_15(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O...) _Step(_A, pp_exec_foldr_14(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O))
-#define pp_exec_foldr_16(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P...) _Step(_A, pp_exec_foldr_15(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P))
-#define pp_exec_foldr_17(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q...) _Step(_A, pp_exec_foldr_16(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q))
-#define pp_exec_foldr_18(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R...) _Step(_A, pp_exec_foldr_17(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R))
-#define pp_exec_foldr_19(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S...) _Step(_A, pp_exec_foldr_18(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S))
-#define pp_exec_foldr_20(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T...) _Step(_A, pp_exec_foldr_19(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T))
-#define pp_exec_foldr_21(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U...) _Step(_A, pp_exec_foldr_20(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U))
-#define pp_exec_foldr_22(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V...) _Step(_A, pp_exec_foldr_21(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V))
-#define pp_exec_foldr_23(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W...) _Step(_A, pp_exec_foldr_22(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W))
-#define pp_exec_foldr_24(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X...) _Step(_A, pp_exec_foldr_23(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X))
-#define pp_exec_foldr_25(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y...) _Step(_A, pp_exec_foldr_24(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y))
-#define pp_exec_foldr_26(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z...) _Step(_A, pp_exec_foldr_25(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z))
-#define pp_exec_foldr_27(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0...) _Step(_A, pp_exec_foldr_26(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0))
-#define pp_exec_foldr_28(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0...) _Step(_A, pp_exec_foldr_27(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0))
-#define pp_exec_foldr_29(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0...) _Step(_A, pp_exec_foldr_28(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0))
-#define pp_exec_foldr_30(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0...) _Step(_A, pp_exec_foldr_29(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0))
-#define pp_exec_foldr_31(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0, _E0...) _Step(_A, pp_exec_foldr_30(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, _A0, _B0, _C0, _D0, _E0))
+#define pp_exec_foldr_0(_Step, _Init...) \
+    _Init
+#define pp_exec_foldr_1(_Step, _Init, _A...) \
+    _Step(_A, _Init)
+#define pp_exec_foldr_2(_Step, _Init, _A, _B...) \
+    _Step(_A, pp_exec_foldr_1(_Step, _Init, _B))
+#define pp_exec_foldr_3(_Step, _Init, _A, _B, _C...) \
+    _Step(_A, pp_exec_foldr_2(_Step, _Init, _B, _C))
+#define pp_exec_foldr_4(_Step, _Init, _A, _B, _C, _D...) \
+    _Step(_A, pp_exec_foldr_3(_Step, _Init, _B, _C, _D))
+#define pp_exec_foldr_5(_Step, _Init, _A, _B, _C, _D, _E...) \
+    _Step(_A, pp_exec_foldr_4(_Step, _Init, _B, _C, _D, _E))
+#define pp_exec_foldr_6(_Step, _Init, _A, _B, _C, _D, _E, _F...) \
+    _Step(_A, pp_exec_foldr_5(_Step, _Init, _B, _C, _D, _E, _F))
+#define pp_exec_foldr_7(_Step, _Init, _A, _B, _C, _D, _E, _F, _G...) \
+    _Step(_A, pp_exec_foldr_6(_Step, _Init, _B, _C, _D, _E, _F, _G))
+#define pp_exec_foldr_8(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H...) \
+    _Step(_A, pp_exec_foldr_7(_Step, _Init, _B, _C, _D, _E, _F, _G, _H))
+#define pp_exec_foldr_9(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I...) \
+    _Step(_A, pp_exec_foldr_8(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I))
+#define pp_exec_foldr_10(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J...) \
+    _Step(_A, pp_exec_foldr_9(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J))
+#define pp_exec_foldr_11(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K...) \
+    _Step(_A, pp_exec_foldr_10(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K))
+#define pp_exec_foldr_12(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L...) \
+    _Step(_A, pp_exec_foldr_11(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L))
+#define pp_exec_foldr_13(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M...) \
+    _Step(_A, pp_exec_foldr_12(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M))
+#define pp_exec_foldr_14(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N...) \
+    _Step(_A, pp_exec_foldr_13(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N))
+#define pp_exec_foldr_15(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O...) \
+    _Step(_A, pp_exec_foldr_14(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O))
+#define pp_exec_foldr_16(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P...) \
+    _Step(_A, pp_exec_foldr_15(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P))
+#define pp_exec_foldr_17(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q...) \
+    _Step(_A, pp_exec_foldr_16(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q))
+#define pp_exec_foldr_18(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R...) \
+    _Step(_A, pp_exec_foldr_17(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R))
+#define pp_exec_foldr_19(_Step, _Init, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S...) \
+    _Step(_A, pp_exec_foldr_18(_Step, _Init, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S))
+#define pp_exec_foldr_20( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_19( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T \
+        ) \
+    )
+#define pp_exec_foldr_21( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_20( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U \
+        ) \
+    )
+#define pp_exec_foldr_22( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_21( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V \
+        ) \
+    )
+#define pp_exec_foldr_23( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_22( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W \
+        ) \
+    )
+#define pp_exec_foldr_24( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_23( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X \
+        ) \
+    )
+#define pp_exec_foldr_25( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_24( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y \
+        ) \
+    )
+#define pp_exec_foldr_26( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_25( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z \
+        ) \
+    )
+#define pp_exec_foldr_27( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_26( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+            _A0 \
+        ) \
+    )
+#define pp_exec_foldr_28( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0, _B0... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_27( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+            _A0, _B0 \
+        ) \
+    )
+#define pp_exec_foldr_29( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0, _B0, _C0... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_28( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+            _A0, _B0, _C0 \
+        ) \
+    )
+#define pp_exec_foldr_30( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0, _B0, _C0, _D0... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_29( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+            _A0, _B0, _C0, _D0 \
+        ) \
+    )
+#define pp_exec_foldr_31( \
+    _Step, _Init, \
+    _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+    _A0, _B0, _C0, _D0, _E0... \
+) \
+    _Step( \
+        _A, \
+        pp_exec_foldr_30( \
+            _Step, _Init, \
+            _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, \
+            _A0, _B0, _C0, _D0, _E0 \
+        ) \
+    )
 
 /* --- tok --- */
 
@@ -674,13 +972,25 @@ extern "C" {
 
 /* --- tpl --- */
 
+#define tpls$(_tpl, ...) pp_if_(pp_bool(pp_countArg(__VA_ARGS__)))( \
+    pp_then_(pp_foldl(__tpls$__join, _tpl, __VA_ARGS__)), \
+    pp_else_(_tpl) \
+)
+#define __tpls$__join(_acc, _T...) pp_join($, _acc, _T)
+
 #define tpl$(_tpl, _T...) pp_overload(__tpl$, _T)(_tpl, _T)
-#define __tpl$_0(_tpl...) tpl$0(_tpl)
-#define __tpl$_1(_tpl, _T...) tpl$1T(_tpl, _T)
-#define __tpl$_2(_tpl, _T, _U...) tpl$1T$2U(_tpl, _T, _U)
-#define __tpl$_3(_tpl, _T, _U, _V...) tpl$1T$2U$3V(_tpl, _T, _U, _V)
-#define __tpl$_4(_tpl, _T, _U, _V, _W...) tpl$1T$2U$3V$4W(_tpl, _T, _U, _V, _W)
-#define __tpl$_5(_tpl, _T, _U, _V, _W, _X...) tpl$1T$2U$3V$4W$5X(_tpl, _T, _U, _V, _W, _X)
+#define __tpl$_0(_tpl, ...) \
+    tpl$0(_tpl)
+#define __tpl$_1(_tpl, _T...) \
+    tpl$1T(_tpl, _T)
+#define __tpl$_2(_tpl, _T, _U...) \
+    tpl$1T$2U(_tpl, _T, _U)
+#define __tpl$_3(_tpl, _T, _U, _V...) \
+    tpl$1T$2U$3V(_tpl, _T, _U, _V)
+#define __tpl$_4(_tpl, _T, _U, _V, _W...) \
+    tpl$1T$2U$3V$4W(_tpl, _T, _U, _V, _W)
+#define __tpl$_5(_tpl, _T, _U, _V, _W, _X...) \
+    tpl$1T$2U$3V$4W$5X(_tpl, _T, _U, _V, _W, _X)
 #define __tpl$_6(_tpl, _T, _U, _V, _W, _X, _Y...) \
     tpl$1T$2U$3V$4W$5X$6Y(_tpl, _T, _U, _V, _W, _X, _Y)
 #define __tpl$_7(_tpl, _T, _U, _V, _W, _X, _Y, _Z...) \
@@ -690,74 +1000,181 @@ extern "C" {
 #define __tpl$_9(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B...) \
     tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B)
 #define __tpl$_10(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C...) \
-    tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C)
+    tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C \
+    )
+#define __tpl$_11(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D...) \
+    tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D \
+    )
+#define __tpl$_12(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E...) \
+    tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E \
+    )
+#define __tpl$_13(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F...) \
+    tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E$13F( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F \
+    )
+#define __tpl$_14(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G...) \
+    tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E$13F$14G( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G \
+    )
+#define __tpl$_15(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H...) \
+    tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E$13F$14G$15H( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H \
+    )
+#define __tpl$_16(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H, _I...) \
+    tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E$13F$14G$15H$16I( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H, _I \
+    )
 
-#define tpl$T(_tpl, _T...) \
-    pp_join($, _tpl, _T)
 #define tpl$0(_tpl...) \
     _tpl
 #define tpl$1T(_tpl, _T...) \
     pp_join($, _tpl, _T)
 #define tpl$1T$2U(_tpl, _T, _U...) \
-    pp_cat(_tpl, pp_cat2(pp_cat($1, _T), pp_cat($2, _U)))
+    pp_cat5(_tpl, $1, _T, $2, _U)
 #define tpl$1T$2U$3V(_tpl, _T, _U, _V...) \
-    pp_cat(_tpl, pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)))
+    pp_cat3( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        $3, \
+        _V \
+    )
 #define tpl$1T$2U$3V$4W(_tpl, _T, _U, _V, _W...) \
-    pp_cat(_tpl, pp_cat4(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V), pp_cat($4, _W)))
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        $3, \
+        _V, \
+        $4, \
+        _W \
+    )
 #define tpl$1T$2U$3V$4W$5X(_tpl, _T, _U, _V, _W, _X...) \
-    pp_cat(_tpl, pp_cat5(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V), pp_cat($4, _W), pp_cat($5, _X)))
+    pp_cat3( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        _X \
+    )
 #define tpl$1T$2U$3V$4W$5X$6Y(_tpl, _T, _U, _V, _W, _X, _Y...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat2( \
-            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
-            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)) \
-        ) \
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        _X, \
+        $6, \
+        _Y \
     )
 #define tpl$1T$2U$3V$4W$5X$6Y$7Z(_tpl, _T, _U, _V, _W, _X, _Y, _Z...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat3( \
-            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
-            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)), \
-            pp_cat($7, _Z) \
-        ) \
+    pp_cat3( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z) \
     )
 #define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat3( \
-            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
-            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)), \
-            pp_cat2(pp_cat($7, _Z), pp_cat($8, _A)) \
-        ) \
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z), \
+        $8, \
+        _A \
     )
-#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat3( \
-            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
-            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)), \
-            pp_cat3(pp_cat($7, _Z), pp_cat($8, _A), pp_cat($9, _B)) \
-        ) \
+#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B... \
+) \
+    pp_cat4( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z), \
+        pp_cat4($8, _A, $9, _B) \
     )
-#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat3( \
-            pp_cat3(pp_cat($1, _T), pp_cat($2, _U), pp_cat($3, _V)), \
-            pp_cat3(pp_cat($4, _W), pp_cat($5, _X), pp_cat($6, _Y)), \
-            pp_cat3(pp_cat($7, _Z), pp_cat($8, _A), pp_cat($9, _B)) \
-        ) \
+#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z), \
+        pp_cat5($8, _A, $9, _B, $10), \
+        _C \
+    )
+#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z), \
+        pp_cat5($8, _A, $9, _B, $10), \
+        pp_cat3(_C, $11, _D) \
+    )
+#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z), \
+        pp_cat5($8, _A, $9, _B, $10), \
+        pp_cat5(_C, $11, _D, $12, _E) \
+    )
+#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E$13F( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z), \
+        pp_cat5($8, _A, $9, _B, $10), \
+        pp_cat3(pp_cat5(_C, $11, _D, $12, _E), $13, _F) \
+    )
+#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E$13F$14G( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z), \
+        pp_cat5($8, _A, $9, _B, $10), \
+        pp_cat5(pp_cat5(_C, $11, _D, $12, _E), $13, _F, $14, _G) \
+    )
+#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E$13F$14G$15H( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z), \
+        pp_cat5($8, _A, $9, _B, $10), \
+        pp_cat3(pp_cat5(_C, $11, _D, $12, _E), pp_cat5($13, _F, $14, _G, $15), _H) \
+    )
+#define tpl$1T$2U$3V$4W$5X$6Y$7Z$8A$9B$10C$11D$12E$13F$14G$15H$16I( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H, _I... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, $1, _T, $2, _U), \
+        pp_cat5($3, _V, $4, _W, $5), \
+        pp_cat5(_X, $6, _Y, $7, _Z), \
+        pp_cat5($8, _A, $9, _B, $10), \
+        pp_cat5(pp_cat5(_C, $11, _D, $12, _E), pp_cat5($13, _F, $14, _G, $15), _H, $16, _I) \
     )
 
+#define tpls_(_tpl, ...) pp_if_(pp_bool(pp_countArg(__VA_ARGS__)))( \
+    pp_then_(pp_foldl(__tpls___join, _tpl, __VA_ARGS__)), \
+    pp_else_(_tpl) \
+)
+#define __tpls___join(_acc, _T...) pp_join(_, _acc, _T)
+
 #define tpl_(_tpl, _T...) pp_overload(__tpl_, _T)(_tpl, _T)
-#define __tpl__0(_tpl...) tpl_0(_tpl)
-#define __tpl__1(_tpl, _T...) tpl_1T(_tpl, _T)
-#define __tpl__2(_tpl, _T, _U...) tpl_1T_2U(_tpl, _T, _U)
-#define __tpl__3(_tpl, _T, _U, _V...) tpl_1T_2U_3V(_tpl, _T, _U, _V)
-#define __tpl__4(_tpl, _T, _U, _V, _W...) tpl_1T_2U_3V_4W(_tpl, _T, _U, _V, _W)
-#define __tpl__5(_tpl, _T, _U, _V, _W, _X...) tpl_1T_2U_3V_4W_5X(_tpl, _T, _U, _V, _W, _X)
+#define __tpl__0(_tpl, ...) \
+    tpl_0(_tpl)
+#define __tpl__1(_tpl, _T...) \
+    tpl_1T(_tpl, _T)
+#define __tpl__2(_tpl, _T, _U...) \
+    tpl_1T_2U(_tpl, _T, _U)
+#define __tpl__3(_tpl, _T, _U, _V...) \
+    tpl_1T_2U_3V(_tpl, _T, _U, _V)
+#define __tpl__4(_tpl, _T, _U, _V, _W...) \
+    tpl_1T_2U_3V_4W(_tpl, _T, _U, _V, _W)
+#define __tpl__5(_tpl, _T, _U, _V, _W, _X...) \
+    tpl_1T_2U_3V_4W_5X(_tpl, _T, _U, _V, _W, _X)
 #define __tpl__6(_tpl, _T, _U, _V, _W, _X, _Y...) \
     tpl_1T_2U_3V_4W_5X_6Y(_tpl, _T, _U, _V, _W, _X, _Y)
 #define __tpl__7(_tpl, _T, _U, _V, _W, _X, _Y, _Z...) \
@@ -767,83 +1184,161 @@ extern "C" {
 #define __tpl__9(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B...) \
     tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B)
 #define __tpl__10(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C...) \
-    tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C)
+    tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C \
+    )
+#define __tpl__11(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D...) \
+    tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D \
+    )
+#define __tpl__12(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E...) \
+    tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E \
+    )
+#define __tpl__13(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F...) \
+    tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E_13F( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F \
+    )
+#define __tpl__14(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G...) \
+    tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E_13F_14G( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G \
+    )
+#define __tpl__15(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H...) \
+    tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E_13F_14G_15H( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H \
+    )
+#define __tpl__16(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H, _I...) \
+    tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E_13F_14G_15H_16I( \
+        _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H, _I \
+    )
 
-#define tpl_T(_tpl, _T...) \
-    pp_join(_, _tpl, _T)
-#define tpl_0(_tpl...) \
+#define tpl_0(_tpl, ...) \
     _tpl
 #define tpl_1T(_tpl, _T...) \
     pp_join(_, _tpl, _T)
 #define tpl_1T_2U(_tpl, _T, _U...) \
-    pp_cat(_tpl, pp_cat2(pp_cat(_1, _T), pp_cat(_2, _U)))
+    pp_cat5(_tpl, _1, _T, _2, _U)
 #define tpl_1T_2U_3V(_tpl, _T, _U, _V...) \
-    pp_cat(_tpl, pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)))
+    pp_cat3( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        _3, \
+        _V \
+    )
 #define tpl_1T_2U_3V_4W(_tpl, _T, _U, _V, _W...) \
-    pp_cat(_tpl, pp_cat4(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V), pp_cat(_4, _W)))
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        _3, \
+        _V, \
+        _4, \
+        _W \
+    )
 #define tpl_1T_2U_3V_4W_5X(_tpl, _T, _U, _V, _W, _X...) \
-    pp_cat(_tpl, pp_cat5(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V), pp_cat(_4, _W), pp_cat(_5, _X)))
+    pp_cat3( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        _X \
+    )
 #define tpl_1T_2U_3V_4W_5X_6Y(_tpl, _T, _U, _V, _W, _X, _Y...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat2( \
-            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
-            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)) \
-        ) \
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        _X, \
+        _6, \
+        _Y \
     )
 #define tpl_1T_2U_3V_4W_5X_6Y_7Z(_tpl, _T, _U, _V, _W, _X, _Y, _Z...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat3( \
-            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
-            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)), \
-            pp_cat(_7, _Z) \
-        ) \
+    pp_cat3( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z) \
     )
 #define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat3( \
-            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
-            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)), \
-            pp_cat2(pp_cat(_7, _Z), pp_cat(_8, _A)) \
-        ) \
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z), \
+        _8, \
+        _A \
     )
-#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat3( \
-            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
-            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)), \
-            pp_cat3(pp_cat(_7, _Z), pp_cat(_8, _A), pp_cat(_9, _B)) \
-        ) \
+#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B... \
+) \
+    pp_cat4( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z), \
+        pp_cat4(_8, _A, _9, _B) \
     )
-#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C(_tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C...) \
-    pp_cat( \
-        _tpl, \
-        pp_cat3( \
-            pp_cat3(pp_cat(_1, _T), pp_cat(_2, _U), pp_cat(_3, _V)), \
-            pp_cat3(pp_cat(_4, _W), pp_cat(_5, _X), pp_cat(_6, _Y)), \
-            pp_cat3(pp_cat(_7, _Z), pp_cat(_8, _A), pp_cat(_9, _B)) \
-        ) \
+#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z), \
+        pp_cat5(_8, _A, _9, _B, _10), \
+        _C \
     )
-
-#if DEPRECATED_CODE
-#define tpl_fn_(_tpl_T, _id, _Ret_T...) fn_((tpl_id(_tpl_T, _id))(_Ret_T))
-#define tpl_T(_tpl, _T...) pp_join($, _tpl, _T)
-#define tpl_Ret(_tpl, _T...) tpl_T(Ret, tpl_id(_tpl, _T))
-
-#define tpl_fn$T(_tpl_w_T_and_Params, _Ret_T...) \
-    fn_((tpl$T _tpl_w_T_and_Params)(_Ret_T))
-#define tpl_fn$1T(_tpl_w_T_and_Params, _Ret_T...) \
-    fn_((tpl$1T _tpl_w_T_and_Params)(_Ret_T))
-#define tpl_fn$1T$2U(_tpl_w_T_w_U_and_Params, _Ret_T...) \
-    fn_((tpl$1T$2U _tpl_w_T_w_U_and_Params)(_Ret_T))
-#define tpl_fn$1T$2U$3V(_tpl_w_T_w_U_w_V_and_Params, _Ret_T...) \
-    fn_((tpl$1T$2U$3V _tpl_w_T_w_U_w_V_and_Params)(_Ret_T))
-#define tpl_fn$1T$2U$3V$4W(_tpl_w_T_w_U_w_V_w_W_and_Params, _Ret_T...) \
-    fn_((tpl$1T$2U$3V$4W _tpl_w_T_w_U_w_V_w_W_and_Params)(_Ret_T))
-#endif /* DEPRECATED_CODE */
+#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z), \
+        pp_cat5(_8, _A, _9, _B, _10), \
+        pp_cat3(_C, _11, _D) \
+    )
+#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z), \
+        pp_cat5(_8, _A, _9, _B, _10), \
+        pp_cat5(_C, _11, _D, _12, _E) \
+    )
+#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E_13F( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z), \
+        pp_cat5(_8, _A, _9, _B, _10), \
+        pp_cat3(pp_cat5(_C, _11, _D, _12, _E), _13, _F) \
+    )
+#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E_13F_14G( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z), \
+        pp_cat5(_8, _A, _9, _B, _10), \
+        pp_cat5(pp_cat5(_C, _11, _D, _12, _E), _13, _F, _14, _G) \
+    )
+#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E_13F_14G_15H( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z), \
+        pp_cat5(_8, _A, _9, _B, _10), \
+        pp_cat3(pp_cat5(_C, _11, _D, _12, _E), pp_cat5(_13, _F, _14, _G, _15), _H) \
+    )
+#define tpl_1T_2U_3V_4W_5X_6Y_7Z_8A_9B_10C_11D_12E_13F_14G_15H_16I( \
+    _tpl, _T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H, _I... \
+) \
+    pp_cat5( \
+        pp_cat5(_tpl, _1, _T, _2, _U), \
+        pp_cat5(_3, _V, _4, _W, _5), \
+        pp_cat5(_X, _6, _Y, _7, _Z), \
+        pp_cat5(_8, _A, _9, _B, _10), \
+        pp_cat5(pp_cat5(_C, _11, _D, _12, _E), pp_cat5(_13, _F, _14, _G, _15), _H, _16, _I) \
+    )
 
 #if defined(__cplusplus)
 } /* extern "C" */

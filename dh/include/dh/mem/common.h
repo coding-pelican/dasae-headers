@@ -421,19 +421,23 @@ $static fn_((mem_findLastSeqBytes(S_const$u8 haystack, S_const$u8 needle))(O$usi
 $attr($inline_always)
 $static fn_((mem_findLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize));
 #define T_use_mem_findLastSeq$(_T...) __stmt__T_use_mem_findLastSeq$(_T)
-$extern fn_((mem_findFirstAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
+$attr($inline_always)
+$static fn_((mem_findFirstAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
 $attr($inline_always)
 $static fn_((mem_findFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findFirstAny$(_T...) __stmt__T_use_mem_findFirstAny$(_T)
-$extern fn_((mem_findLastAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
+$attr($inline_always)
+$static fn_((mem_findLastAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
 $attr($inline_always)
 $static fn_((mem_findLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findLastAny$(_T...) __stmt__T_use_mem_findLastAny$(_T)
-$extern fn_((mem_findFirstNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
+$attr($inline_always)
+$static fn_((mem_findFirstNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
 $attr($inline_always)
 $static fn_((mem_findFirstNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findFirstNone$(_T...) __stmt__T_use_mem_findFirstNone$(_T)
-$extern fn_((mem_findLastNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
+$attr($inline_always)
+$static fn_((mem_findLastNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize));
 $attr($inline_always)
 $static fn_((mem_findLastNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize));
 #define T_use_mem_findLastNone$(_T...) __stmt__T_use_mem_findLastNone$(_T)
@@ -447,6 +451,37 @@ $static fn_((mem_findLastDiffBytes(S_const$u8 lhs, S_const$u8 rhs))(O$usize));
 $attr($inline_always)
 $static fn_((mem_findLastDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize));
 #define T_use_mem_findLastDiff$(_T...) __stmt__T_use_mem_findLastDiff$(_T)
+
+$attr($inline_always)
+$static fn_((mem_countUnitBytes(S_const$u8 haystack, u8 needle))(usize));
+$attr($inline_always)
+$static fn_((mem_countUnit(u_S_const$raw haystack, u_V$raw needle))(usize));
+#define T_use_mem_countUnit$(_T...) __stmt__T_use_mem_countUnit$(_T)
+$attr($inline_always)
+$static fn_((mem_countBytes(S_const$u8 haystack, S_const$u8 needle))(usize));
+$attr($inline_always)
+$static fn_((mem_count(u_S_const$raw haystack, u_S_const$raw needle))(usize));
+#define T_use_mem_count$(_T...) __stmt__T_use_mem_count$(_T)
+$attr($inline_always)
+$static fn_((mem_containsUnitBytes(S_const$u8 haystack, u8 needle))(bool));
+$attr($inline_always)
+$static fn_((mem_containsUnit(u_S_const$raw haystack, u_V$raw needle))(bool));
+#define T_use_mem_containsUnit$(_T...) __stmt__T_use_mem_containsUnit$(_T)
+$attr($inline_always)
+$static fn_((mem_containsBytes(S_const$u8 haystack, S_const$u8 needle))(bool));
+$attr($inline_always)
+$static fn_((mem_contains(u_S_const$raw haystack, u_S_const$raw needle))(bool));
+#define T_use_mem_contains$(_T...) __stmt__T_use_mem_contains$(_T)
+$attr($inline_always)
+$static fn_((mem_containsAtLeastUnitBytes(S_const$u8 haystack, u8 needle, usize minimum))(bool));
+$attr($inline_always)
+$static fn_((mem_containsAtLeastUnit(u_S_const$raw haystack, u_V$raw needle, usize minimum))(bool));
+#define T_use_mem_containsAtLeastUnit$(_T...) __stmt__T_use_mem_containsAtLeastUnit$(_T)
+$attr($inline_always)
+$static fn_((mem_containsAtLeastBytes(S_const$u8 haystack, S_const$u8 needle, usize minimum))(bool));
+$attr($inline_always)
+$static fn_((mem_containsAtLeast(u_S_const$raw haystack, u_S_const$raw needle, usize minimum))(bool));
+#define T_use_mem_containsAtLeast$(_T...) __stmt__T_use_mem_containsAtLeast$(_T)
 
 T_alias$((mem_WindowIter_Bytes)(struct mem_WindowIter_Bytes {
     var_(buf, S_const$u8);
@@ -1435,13 +1470,25 @@ fn_((mem_findLastSeq(u_S_const$raw haystack, u_S_const$raw needle))(O$usize $sco
     } $end(for);
     return_none();
 } $unscoped(fn);
+fn_((mem_findFirstAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    for_(($s(haystack), $rf(0))(item, idx)) {
+        if (mem_containsUnitBytes(needles, *item)) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
 fn_((mem_findFirstAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
     claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
     claim_assert(TypeInfo_eql(haystack.type, needles.type));
     for_(($us(haystack), $rf(0))(item, idx)) {
-        for_(($us(needles))(needle)) {
-            if (u_memeql(item, needle)) return_some(idx);
-        } $end(for);
+        if (mem_containsUnit(needles, u_deref(item))) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findLastAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
+        if (mem_containsUnitBytes(needles, *item)) return_some(idx);
     } $end(for);
     return_none();
 } $unscoped(fn);
@@ -1449,32 +1496,38 @@ fn_((mem_findLastAny(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $sc
     claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
     claim_assert(TypeInfo_eql(haystack.type, needles.type));
     for_($rev($us(haystack), $rt(haystack.len))(item, idx)) {
-        for_(($us(needles))(needle)) {
-            if (u_memeql(item, needle)) return_some(idx);
-        } $end(for);
+        if (mem_containsUnit(needles, u_deref(item))) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findFirstNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    for_(($s(haystack), $rf(0))(item, idx)) {
+        if (!mem_containsUnitBytes(needles, *item)) return_some(idx);
     } $end(for);
     return_none();
 } $unscoped(fn);
 fn_((mem_findFirstNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
     claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
     claim_assert(TypeInfo_eql(haystack.type, needles.type));
-    loop_labeled(outer, for_(($us(haystack), $rf(0))(item, idx))) {
-        for_(($us(needles))(needle)) {
-            if (u_memeql(item, needle)) loop_continue_(outer);
-        } $end(for);
-        return_some(idx);
-    } $end(loop_labeled) $end(for);
+    for_(($us(haystack), $rf(0))(item, idx)) {
+        if (!mem_containsUnit(needles, u_deref(item))) return_some(idx);
+    } $end(for);
+    return_none();
+} $unscoped(fn);
+fn_((mem_findLastNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
+    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
+        if (!mem_containsUnitBytes(needles, *item)) return_some(idx);
+    } $end(for);
     return_none();
 } $unscoped(fn);
 fn_((mem_findLastNone(u_S_const$raw haystack, u_S_const$raw needles))(O$usize $scope)) {
     claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
     claim_assert(TypeInfo_eql(haystack.type, needles.type));
-    loop_labeled(outer, for_($rev($us(haystack), $rt(haystack.len))(item, idx))) {
-        for_(($us(needles))(needle)) {
-            if (u_memeql(item, needle)) loop_continue_(outer);
-        } $end(for);
-        return_some(idx);
-    } $end(loop_labeled) $end(for);
+    for_($rev($us(haystack), $rt(haystack.len))(item, idx)) {
+        if (!mem_containsUnit(needles, u_deref(item))) return_some(idx);
+    } $end(for);
     return_none();
 } $unscoped(fn);
 fn_((mem_findFirstDiffBytes(S_const$u8 lhs, S_const$u8 rhs))(O$usize $scope)) {
@@ -1539,6 +1592,122 @@ fn_((mem_findLastDiff(u_S_const$raw lhs, u_S_const$raw rhs))(O$usize $scope)) {
         else $break_(some(shortest))
     ) $unscoped(expr);
 } $unscoped(fn);
+
+fn_((mem_countUnitBytes(S_const$u8 haystack, u8 needle))(usize)) {
+    claim_assert_nonnullS(haystack);
+    var_(idx, usize) = 0;
+    var_(found, usize) = 0;
+    for_(($s(S_suffix((haystack)idx)))(item)) {
+        found += intFromBool(pri_eql(*item, needle));
+    } $end(for);
+    return found;
+};
+fn_((mem_countUnit(u_S_const$raw haystack, u_V$raw needle))(usize)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnull(needle.inner);
+    claim_assert(TypeInfo_eql(haystack.type, needle.type));
+    var_(idx, usize) = 0;
+    var_(found, usize) = 0;
+    for_(($us(u_suffixS(haystack, idx)))(item)) {
+        found += intFromBool(u_eql(u_deref(item), needle));
+    } $end(for);
+    return found;
+};
+fn_((mem_countBytes(S_const$u8 haystack, S_const$u8 needle))(usize)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
+    if (needle.len == 1) return mem_countUnitBytes(haystack, *S_at((needle)[0]));
+    claim_assert(needle.len > 0);
+    var_(idx, usize) = 0;
+    var_(found, usize) = 0;
+    while_some(mem_findFirstSeqBytes(S_suffix((haystack)idx), needle), found_idx) {
+        idx += found_idx + needle.len;
+        found++;
+    };
+    return found;
+};
+fn_((mem_count(u_S_const$raw haystack, u_S_const$raw needle))(usize)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
+    claim_assert(TypeInfo_eql(haystack.type, needle.type));
+    if (needle.len == 1) return mem_countUnit(haystack, u_deref(u_atS(needle, 0)));
+    claim_assert(needle.len > 0);
+    var_(idx, usize) = 0;
+    var_(found, usize) = 0;
+    while_some(mem_findFirstSeq(u_suffixS(haystack, idx), needle), found_idx) {
+        idx += found_idx + needle.len;
+        found++;
+    };
+    return found;
+};
+fn_((mem_containsUnitBytes(S_const$u8 haystack, u8 needle))(bool)) {
+    claim_assert_nonnullS(haystack);
+    for_(($s(haystack))(item)) {
+        if (pri_eql(*item, needle)) return true;
+    } $end(for);
+    return false;
+};
+fn_((mem_containsUnit(u_S_const$raw haystack, u_V$raw needle))(bool)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnull(needle.inner);
+    claim_assert(TypeInfo_eql(haystack.type, needle.type));
+    for_(($us(haystack))(item)) {
+        if (u_eql(u_deref(item), needle)) return true;
+    } $end(for);
+    return false;
+};
+fn_((mem_containsBytes(S_const$u8 haystack, S_const$u8 needle))(bool)) {
+    return isSome(mem_findFirstSeqBytes(haystack, needle));
+};
+fn_((mem_contains(u_S_const$raw haystack, u_S_const$raw needle))(bool)) {
+    return isSome(mem_findFirstSeq(haystack, needle));
+};
+fn_((mem_containsAtLeastUnitBytes(S_const$u8 haystack, u8 needle, usize minimum))(bool)) {
+    claim_assert_nonnullS(haystack);
+    if (minimum == 0) return true;
+    var_(idx, usize) = 0;
+    var_(found, usize) = 0;
+    for_(($s(S_suffix((haystack)idx)))(item)) {
+        found += intFromBool(pri_eql(*item, needle));
+        if (found >= minimum) return true;
+    } $end(for);
+    return false;
+};
+fn_((mem_containsAtLeastUnit(u_S_const$raw haystack, u_V$raw needle, usize minimum))(bool)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnull(needle.inner);
+    claim_assert(TypeInfo_eql(haystack.type, needle.type));
+    if (minimum == 0) return true;
+    var_(idx, usize) = 0;
+    var_(found, usize) = 0;
+    for_(($us(u_suffixS(haystack, idx)))(item)) {
+        found += intFromBool(u_eql(u_deref(item), needle));
+        if (found >= minimum) return true;
+    } $end(for);
+    return false;
+};
+fn_((mem_containsAtLeastBytes(S_const$u8 haystack, S_const$u8 needle, usize minimum))(bool)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
+    if (needle.len == 1) return mem_containsAtLeastUnitBytes(haystack, *S_at((needle)[0]), minimum);
+    claim_assert(needle.len > 0);
+    if (minimum == 0) return true;
+    var_(idx, usize) = 0;
+    var_(found, usize) = 0;
+    while_some(mem_findFirstSeqBytes(S_suffix((haystack)idx), needle), found_idx) {
+        idx += found_idx + needle.len;
+        if (++found == minimum) return true;
+    };
+    return false;
+};
+fn_((mem_containsAtLeast(u_S_const$raw haystack, u_S_const$raw needle, usize minimum))(bool)) {
+    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
+    claim_assert(TypeInfo_eql(haystack.type, needle.type));
+    if (needle.len == 1) return mem_containsAtLeastUnit(haystack, u_deref(u_atS(needle, 0)), minimum);
+    claim_assert(needle.len > 0);
+    if (minimum == 0) return true;
+    var_(idx, usize) = 0;
+    var_(found, usize) = 0;
+    while_some(mem_findFirstSeq(u_suffixS(haystack, idx), needle), found_idx) {
+        idx += found_idx + needle.len;
+        if (++found == minimum) return true;
+    };
+    return false;
+};
 
 fn_((mem_startsWithBytes(S_const$u8 haystack, S_const$u8 needle))(bool)) {
     claim_assert_nonnullS(haystack), claim_assert_nonnullS(needle);
@@ -1759,6 +1928,86 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
     $inline_always $static fn_((tpl$(mem_rotate, _T)(S$(_T) seq, usize amount))(void)) { \
         return mem_rotate(u_anyS(seq), amount); \
     }
+#define __stmt__T_use_mem_findFirstUnit$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstUnit, _T)(S_const$(_T) haystack, _T needle))(O$usize)) { \
+        return mem_findFirstUnit(u_anyS(haystack), u_anyV(needle)); \
+    }
+#define __stmt__T_use_mem_findLastUnit$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastUnit, _T)(S_const$(_T) haystack, _T needle))(O$usize)) { \
+        return mem_findLastUnit(u_anyS(haystack), u_anyV(needle)); \
+    }
+#define __stmt__T_use_mem_findFirstSeq$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstSeq, _T)(S_const$(_T) haystack, S_const$(_T) needle))(O$usize)) { \
+        return mem_findFirstSeq(u_anyS(haystack), u_anyS(needle)); \
+    }
+#define __stmt__T_use_mem_findLastSeq$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastSeq, _T)(S_const$(_T) haystack, S_const$(_T) needle))(O$usize)) { \
+        return mem_findLastSeq(u_anyS(haystack), u_anyS(needle)); \
+    }
+#define __stmt__T_use_mem_findFirstAny$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstAny, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
+        return mem_findFirstAny(u_anyS(haystack), u_anyS(needles)); \
+    }
+#define __stmt__T_use_mem_findLastAny$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastAny, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
+        return mem_findLastAny(u_anyS(haystack), u_anyS(needles)); \
+    }
+#define __stmt__T_use_mem_findFirstNone$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstNone, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
+        return mem_findFirstNone(u_anyS(haystack), u_anyS(needles)); \
+    }
+#define __stmt__T_use_mem_findLastNone$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastNone, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
+        return mem_findLastNone(u_anyS(haystack), u_anyS(needles)); \
+    }
+#define __stmt__T_use_mem_findFirstDiff$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findFirstDiff, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(O$usize)) { \
+        return mem_findFirstDiff(u_anyS(lhs), u_anyS(rhs)); \
+    }
+#define __stmt__T_use_mem_findLastDiff$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_findLastDiff, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(O$usize)) { \
+        return mem_findLastDiff(u_anyS(lhs), u_anyS(rhs)); \
+    }
+#define __stmt__T_use_mem_countUnit$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_countUnit, _T)(S_const$(_T) haystack, _T needle))(usize)) { \
+        return mem_countUnit(u_anyS(haystack), u_anyV(needle)); \
+    }
+#define __stmt__T_use_mem_count$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_count, _T)(S_const$(_T) haystack, S_const$(_T) needle))(usize)) { \
+        return mem_count(u_anyS(haystack), u_anyS(needle)); \
+    }
+#define __stmt__T_use_mem_containsUnit$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_containsUnit, _T)(S_const$(_T) haystack, _T needle))(bool)) { \
+        return mem_containsUnit(u_anyS(haystack), u_anyV(needle)); \
+    }
+#define __stmt__T_use_mem_contains$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_contains, _T)(S_const$(_T) haystack, S_const$(_T) needle))(bool)) { \
+        return mem_contains(u_anyS(haystack), u_anyS(needle)); \
+    }
+#define __stmt__T_use_mem_containsAtLeastUnit$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_containsAtLeastUnit, _T)(S_const$(_T) haystack, _T needle, usize minimum))(bool)) { \
+        return mem_containsAtLeastUnit(u_anyS(haystack), u_anyV(needle), minimum); \
+    }
+#define __stmt__T_use_mem_containsAtLeast$(_T...) \
+    $attr($inline_always $static) \
+    fn_((tpl$(mem_containsAtLeast, _T)(S_const$(_T) haystack, S_const$(_T) needle, usize minimum))(bool)) { \
+        return mem_containsAtLeast(u_anyS(haystack), u_anyS(needle), minimum); \
+    }
 #define __alias__mem_WindowIter$(_T...) tpl$(mem_WindowIter, _T)
 #define __stmt__T_use_mem_WindowIter$(_T...) \
     T_alias$((mem_WindowIter$(_T))(union mem_WindowIter$(_T) { \
@@ -1892,56 +2141,6 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
     fn_((tpl$(mem_padCenterAlloc, _T)(S_const$(_T) src, usize width, _T fill, mem_Alctr gpa))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
         return u_castE$((ReturnType)(mem_padCenterAlloc(u_anyS(src), width, u_anyV(fill), gpa))); \
     } $unscoped(fn) /* clang-format on */
-#define __stmt__T_use_mem_findFirstUnit$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findFirstUnit, _T)(S_const$(_T) haystack, _T needle))(O$usize)) { \
-        return mem_findFirstUnit(u_anyS(haystack), u_anyV(needle)); \
-    }
-#define __stmt__T_use_mem_findLastUnit$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findLastUnit, _T)(S_const$(_T) haystack, _T needle))(O$usize)) { \
-        return mem_findLastUnit(u_anyS(haystack), u_anyV(needle)); \
-    }
-#define __stmt__T_use_mem_findFirstSeq$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findFirstSeq, _T)(S_const$(_T) haystack, S_const$(_T) needle))(O$usize)) { \
-        return mem_findFirstSeq(u_anyS(haystack), u_anyS(needle)); \
-    }
-#define __stmt__T_use_mem_findLastSeq$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findLastSeq, _T)(S_const$(_T) haystack, S_const$(_T) needle))(O$usize)) { \
-        return mem_findLastSeq(u_anyS(haystack), u_anyS(needle)); \
-    }
-#define __stmt__T_use_mem_findFirstAny$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findFirstAny, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
-        return mem_findFirstAny(u_anyS(haystack), u_anyS(needles)); \
-    }
-#define __stmt__T_use_mem_findLastAny$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findLastAny, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
-        return mem_findLastAny(u_anyS(haystack), u_anyS(needles)); \
-    }
-#define __stmt__T_use_mem_findFirstNone$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findFirstNone, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
-        return mem_findFirstNone(u_anyS(haystack), u_anyS(needles)); \
-    }
-#define __stmt__T_use_mem_findLastNone$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findLastNone, _T)(S_const$(_T) haystack, S_const$(_T) needles))(O$usize)) { \
-        return mem_findLastNone(u_anyS(haystack), u_anyS(needles)); \
-    }
-#define __stmt__T_use_mem_findFirstDiff$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findFirstDiff, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(O$usize)) { \
-        return mem_findFirstDiff(u_anyS(lhs), u_anyS(rhs)); \
-    }
-#define __stmt__T_use_mem_findLastDiff$(_T...) \
-    $attr($inline_always $static) \
-    fn_((tpl$(mem_findLastDiff, _T)(S_const$(_T) lhs, S_const$(_T) rhs))(O$usize)) { \
-        return mem_findLastDiff(u_anyS(lhs), u_anyS(rhs)); \
-    }
 #define __alias__mem_Cutted$(_T...) tpl$(mem_Cutted, _T)
 #define __stmt__T_use_mem_Cutted$(_T...) \
     T_alias$((mem_Cutted$(_T))(union mem_Cutted$(_T) { \

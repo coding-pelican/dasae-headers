@@ -97,43 +97,6 @@ fn_((mem_swap(u_S$raw lhs, u_S$raw rhs))(void)) {
     mem__swapTmp(lhs, rhs, tmp);
 };
 
-$static fn_((mem__byteIn(u8 value, S_const$u8 set))(bool)) {
-    claim_assert_nonnullS(set);
-    for_(($s(set))(item)) {
-        if (*item == value) return true;
-    } $end(for);
-    return false;
-};
-
-fn_((mem_findFirstAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    for_(($s(haystack), $rf(0))(item, idx)) {
-        if (mem__byteIn(*item, needles)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastAnyBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
-        if (mem__byteIn(*item, needles)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findFirstNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    for_(($s(haystack), $rf(0))(item, idx)) {
-        if (!mem__byteIn(*item, needles)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-fn_((mem_findLastNoneBytes(S_const$u8 haystack, S_const$u8 needles))(O$usize $scope)) {
-    claim_assert_nonnullS(haystack), claim_assert_nonnullS(needles);
-    for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
-        if (!mem__byteIn(*item, needles)) return_some(idx);
-    } $end(for);
-    return_none();
-} $unscoped(fn);
-
 fn_((mem_windowBytes(S_const$u8 buf, usize size, usize advance))(mem_WindowIter_Bytes)) {
     claim_assert_nonnullS(buf);
     claim_assert(size > 0);
@@ -209,7 +172,7 @@ fn_((mem_WindowIter_next(mem_WindowIter* self, TypeInfo type))(O$u_S_const$raw) 
 fn_((mem_trimStartBytes(S_const$u8 haystack, S_const$u8 values_to_strip))(S_const$u8)) {
     claim_assert_nonnullS(haystack), claim_assert_nonnullS(values_to_strip);
     for_(($s(haystack), $rf(0))(item, idx)) {
-        if (!mem__byteIn(*item, values_to_strip)) return S_suffix((haystack)(idx));
+        if (!mem_containsUnitBytes(values_to_strip, *item)) return S_suffix((haystack)(idx));
     } $end(for);
     return S_suffix((haystack)(haystack.len));
 };
@@ -222,7 +185,7 @@ fn_((mem_trimStart(u_S_const$raw haystack, u_S_const$raw values_to_strip))(u_S_c
 fn_((mem_trimEndBytes(S_const$u8 haystack, S_const$u8 values_to_strip))(S_const$u8)) {
     claim_assert_nonnullS(haystack), claim_assert_nonnullS(values_to_strip);
     for_($rev($s(haystack), $rt(haystack.len))(item, idx)) {
-        if (!mem__byteIn(*item, values_to_strip)) return S_prefix((haystack)(idx + 1));
+        if (!mem_containsUnitBytes(values_to_strip, *item)) return S_prefix((haystack)(idx + 1));
     } $end(for);
     return S_prefix((haystack)(0));
 };
@@ -662,7 +625,7 @@ $static fn_((mem_TokzIter__isDelimBytes(mem_TokzIter_Bytes* self, usize index))(
     return expr_(bool $scope)(switch (self->delim.tag) {
         case mem_Delim_unit: $break_(*S_at((self->buf)[index]) == mem_Delim__unitBytes(&self->delim));
         case mem_Delim_seq: $break_(mem_startsWithBytes(S_suffix((self->buf)(index)), mem_Delim__seqBytes(&self->delim)));
-        case mem_Delim_any: $break_(mem__byteIn(*S_at((self->buf)[index]), mem_Delim__anyBytes(&self->delim)));
+        case mem_Delim_any: $break_(mem_containsUnitBytes(mem_Delim__anyBytes(&self->delim), *S_at((self->buf)[index])));
     }) $unscoped(expr);
 };
 $static fn_((mem_TokzIter__isDelim(mem_TokzIter$raw* self, TypeInfo type, usize index))(bool)) {
@@ -672,12 +635,7 @@ $static fn_((mem_TokzIter__isDelim(mem_TokzIter$raw* self, TypeInfo type, usize 
         case mem_Delim_unit: $break_(u_memeql(u_atS(buf, index), mem_Delim__unit(self->delim_, type).ref.as_const));
         case mem_Delim_seq: $break_(mem_startsWith(u_suffixS(buf, index), mem_Delim__seq(self->delim_, type).as_const));
         case mem_Delim_any: {
-            $break_(eval_(bool $scope)(for_(($us(mem_Delim__any(self->delim_, type)))(delim)) {
-                if (!u_memeql(u_atS(buf, index), delim.as_const)) continue;
-                $break_(true);
-            } $end(for)) eval_(else)({
-                $break_(false);
-            }) $unscoped(eval));
+            $break_(mem_containsUnit(mem_Delim__any(self->delim_, type).as_const, u_deref(u_atS(buf, index))));
         };
     }) $unscoped(expr);
 };

@@ -21,12 +21,12 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define bits_per_bit __comp_int__bits_per_bit
-#define bits_per_octet __comp_int__bits_per_octet
-#define bits_per_hextet __comp_int__bits_per_hextet
-#define bits_per_quadlet __comp_int__bits_per_quadlet
-#define bits_per_octlet __comp_int__bits_per_octlet
-#define bits_per_hexlet __comp_int__bits_per_hexlet
+#define mem_bits_per_bit __comp_int__mem_bits_per_bit
+#define mem_bits_per_octet __comp_int__mem_bits_per_octet
+#define mem_bits_per_hextet __comp_int__mem_bits_per_hextet
+#define mem_bits_per_quadlet __comp_int__mem_bits_per_quadlet
+#define mem_bits_per_octlet __comp_int__mem_bits_per_octlet
+#define mem_bits_per_hexlet __comp_int__mem_bits_per_hexlet
 
 #define raw_countOnesSize(_x...) ____raw_countOnesSize(_x)
 #define raw_countOnes64(_x...) ____raw_countOnes64(_x)
@@ -93,12 +93,12 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_int__bits_per_bit 1
-#define __comp_int__bits_per_octet 8
-#define __comp_int__bits_per_hextet 16
-#define __comp_int__bits_per_quadlet 32
-#define __comp_int__bits_per_octlet 64
-#define __comp_int__bits_per_hexlet 128
+#define __comp_int__mem_bits_per_bit 1
+#define __comp_int__mem_bits_per_octet 8
+#define __comp_int__mem_bits_per_hextet 16
+#define __comp_int__mem_bits_per_quadlet 32
+#define __comp_int__mem_bits_per_octlet 64
+#define __comp_int__mem_bits_per_hexlet 128
 
 #define ____raw_countOnesSize(_x...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_countOnes64(_x)), \
