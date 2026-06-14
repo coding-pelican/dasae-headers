@@ -1,0 +1,3 @@
+clang -std=c11 -O3 -flto -fuse-ld=lld, 20 constant callsites, 3 timed runs after warm-up
+single-pass times: 1.480 1.455 1.442 ; median 1.455 ; mean 1.459
+count-pass  times: 2.665 2.639 2.595 ; median 2.639 ; mean 2.633
