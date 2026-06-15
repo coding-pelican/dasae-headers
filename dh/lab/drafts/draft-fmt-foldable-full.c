@@ -537,23 +537,23 @@ fn_((fmt_Iter_nextOrFinish(fmt_Iter* iter, S$u8 out, S_const$TypeInfo fields, u_
 
 fn_((fmt__findEvent(S_const$u8 fmt))(O$fmt_EventPos) $scope) {
     loop_inline_(for_)(($rt(usize_(fmt_max_foldable_event_scan_bytes)))(pos)) {
-        if (fmt.len > usize_(pos) + 2
-            && *S_at((fmt)[usize_(pos)]) == u8_c('%')
-            && *S_at((fmt)[usize_(pos) + 1]) == u8_c('%')
-            && *S_at((fmt)[usize_(pos) + 2]) == u8_c('{')) {
-            return_some(union_of((fmt_EventPos_escaped_percent_brace)(usize_(pos))));
+        if (fmt.len > pos + 2
+            && *S_at((fmt)[pos]) == u8_c('%')
+            && *S_at((fmt)[pos + 1]) == u8_c('%')
+            && *S_at((fmt)[pos + 2]) == u8_c('{')) {
+            return_some(union_of((fmt_EventPos_escaped_percent_brace)(pos)));
         }
-        if (fmt.len > usize_(pos) + 1
-            && *S_at((fmt)[usize_(pos)]) == u8_c('%')
-            && *S_at((fmt)[usize_(pos) + 1]) == u8_c('{')) {
-            return_some(union_of((fmt_EventPos_placeholder)(usize_(pos))));
+        if (fmt.len > pos + 1
+            && *S_at((fmt)[pos]) == u8_c('%')
+            && *S_at((fmt)[pos + 1]) == u8_c('{')) {
+            return_some(union_of((fmt_EventPos_placeholder)(pos)));
         }
     } $end(for);
     return_none();
 } $unscoped(fn);
 
 fn_((fmt__findEventRuntime(S_const$u8 fmt))(O$fmt_EventPos) $scope) {
-    for (usize pos = 0; pos + 1 < fmt.len; ++pos) {
+    for_(($rt(fmt.len))(pos)) {
         if (*S_at((fmt)[pos]) != u8_c('%')) continue;
         if (pos + 2 < fmt.len
             && *S_at((fmt)[pos + 1]) == u8_c('%')
@@ -563,21 +563,21 @@ fn_((fmt__findEventRuntime(S_const$u8 fmt))(O$fmt_EventPos) $scope) {
         if (*S_at((fmt)[pos + 1]) == u8_c('{')) {
             return_some(union_of((fmt_EventPos_placeholder)(pos)));
         }
-    }
+    } $end(for);
     return_none();
 } $unscoped(fn);
 
 fn_((fmt__findClose(S_const$u8 fmt))(E$usize) $scope) {
     loop_inline_(for_)(($rt(usize_(fmt_max_foldable_body_scan_bytes)))(pos)) {
-        if (fmt.len > usize_(pos) && *S_at((fmt)[usize_(pos)]) == u8_c('}')) return_ok(usize_(pos));
+        if (fmt.len > pos && *S_at((fmt)[pos]) == u8_c('}')) return_ok(pos);
     } $end(for);
     return_err(E_cause$fmt_MissingClosingBrace());
 } $unscoped(fn);
 
 fn_((fmt__findCloseRuntime(S_const$u8 fmt))(E$usize) $scope) {
-    for (usize pos = 0; pos < fmt.len; ++pos) {
+    for_(($rt(fmt.len))(pos)) {
         if (*S_at((fmt)[pos]) == u8_c('}')) return_ok(pos);
-    }
+    } $end(for);
     return_err(E_cause$fmt_MissingClosingBrace());
 } $unscoped(fn);
 

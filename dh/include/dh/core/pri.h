@@ -480,7 +480,7 @@ $inline_always
 #define __op__pri_add(_lhs, _rhs...) ((_lhs) + (_rhs))
 #define __op__pri_sub(_lhs, _rhs...) ((_lhs) - (_rhs))
 #define __op__pri_mul(_lhs, _rhs...) ((_lhs) * (_rhs))
-#define __op__pri_mulAdd(_x, _y, _z...) ((__x) * (__y) + (__z))
+#define __op__pri_mulAdd(_x, _y, _z...) ((_x) * (_y) + (_z))
 #define __op__pri_div(_lhs, _rhs...) ((_lhs) / (_rhs))
 #define __op__pri_rem(_x, _n...) ((_x) % (_n))
 

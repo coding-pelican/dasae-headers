@@ -78,13 +78,13 @@ $static fn_((m_Q4f32_scal(m_Q4f32 q, f32 scalar))(m_Q4f32));
 $attr($inline_always)
 $static fn_((m_Q4f32_scalInv(m_Q4f32 q, f32 scalar))(m_Q4f32));
 $attr($inline_always)
-$static fn_((m_Q4f32_addScalar(m_Q4f32 q, f32 scalar))(m_Q4f32));
+$static fn_((m_Q4f32_addS(m_Q4f32 q, f32 scalar))(m_Q4f32));
 $attr($inline_always)
-$static fn_((m_Q4f32_subScalar(m_Q4f32 q, f32 scalar))(m_Q4f32));
+$static fn_((m_Q4f32_subS(m_Q4f32 q, f32 scalar))(m_Q4f32));
 $attr($inline_always)
-$static fn_((m_Q4f32_mulScalar(m_Q4f32 q, f32 scalar))(m_Q4f32));
+$static fn_((m_Q4f32_mulS(m_Q4f32 q, f32 scalar))(m_Q4f32));
 $attr($inline_always)
-$static fn_((m_Q4f32_divScalar(m_Q4f32 q, f32 scalar))(m_Q4f32));
+$static fn_((m_Q4f32_divS(m_Q4f32 q, f32 scalar))(m_Q4f32));
 
 /*========== Quaternion Properties ==========================================*/
 
@@ -347,17 +347,17 @@ fn_((m_Q4f32_scal(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
 fn_((m_Q4f32_scalInv(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
     return m_Q4f32_scal(q, 1.0f / scalar);
 };
-fn_((m_Q4f32_addScalar(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
-    return l$((m_Q4f32){ .v = m_V4f32_addScalar(q.v, scalar) });
+fn_((m_Q4f32_addS(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
+    return l$((m_Q4f32){ .v = m_V4f32_addS(q.v, scalar) });
 };
-fn_((m_Q4f32_subScalar(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
-    return l$((m_Q4f32){ .v = m_V4f32_subScalar(q.v, scalar) });
+fn_((m_Q4f32_subS(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
+    return l$((m_Q4f32){ .v = m_V4f32_subS(q.v, scalar) });
 };
-fn_((m_Q4f32_mulScalar(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
-    return l$((m_Q4f32){ .v = m_V4f32_mulScalar(q.v, scalar) });
+fn_((m_Q4f32_mulS(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
+    return l$((m_Q4f32){ .v = m_V4f32_mulS(q.v, scalar) });
 };
-fn_((m_Q4f32_divScalar(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
-    return l$((m_Q4f32){ .v = m_V4f32_divScalar(q.v, scalar) });
+fn_((m_Q4f32_divS(m_Q4f32 q, f32 scalar))(m_Q4f32)) {
+    return l$((m_Q4f32){ .v = m_V4f32_divS(q.v, scalar) });
 };
 
 fn_((m_Q4f32_conj(m_Q4f32 q))(m_Q4f32)) {
