@@ -25,10 +25,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define fieldName$(_path, _Tok...) __expr__fieldName( \
+#define memberName$(_path, _Tok...) __expr__memberName$( \
+    TypeOf(_path), TypeOf(pp_join(_, _path, _Tok)), _Tok \
+)
+#define __expr__memberName$(_path, _T_Path_Tok, _Tok...) #_Tok
+
+#define fieldName$(_path, _Tok...) __expr__fieldName$( \
     FieldType$(TypeOf(_path), _Tok), _Tok \
 )
-#define __expr__fieldName(_path, _Tok...) #_Tok
+#define __expr__fieldName$(_T_Path_Tok, _Tok...) #_Tok
 
 #define FieldType$(_T_Record, _field...) \
     /** \
