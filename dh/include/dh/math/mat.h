@@ -67,7 +67,7 @@ $static fn_((m_M2f32_row(m_M2f32 m, usize idx))(m_M2f32_RowV));
 
 /* Matrix Properties */
 $attr($inline_always)
-$static fn_((m_M2f32_transpose(m_M2f32 m))(m_M2f32));
+$static fn_((m_M2f32_transp(m_M2f32 m))(m_M2f32));
 $attr($inline_always)
 $static fn_((m_M2f32_det(m_M2f32 m))(f32));
 $attr($inline_always)
@@ -129,7 +129,7 @@ $static fn_((m_M3f32_row(m_M3f32 m, usize idx))(m_V3f32));
 
 /* Matrix Properties */
 $attr($inline_always)
-$static fn_((m_M3f32_transpose(m_M3f32 m))(m_M3f32));
+$static fn_((m_M3f32_transp(m_M3f32 m))(m_M3f32));
 $attr($inline_always)
 $static fn_((m_M3f32_det(m_M3f32 m))(f32));
 $attr($inline_always)
@@ -137,7 +137,7 @@ $static fn_((m_M3f32_inv(m_M3f32 m))(m_M3f32));
 
 /* 2D Transformations (homogeneous coordinates) */
 $attr($inline_always)
-$static fn_((m_M3f32_translate2D(m_V2f32 t))(m_M3f32));
+$static fn_((m_M3f32_transl2D(m_V2f32 t))(m_M3f32));
 $attr($inline_always)
 $static fn_((m_M3f32_rotate2D(f32 angle))(m_M3f32));
 $attr($inline_always)
@@ -195,7 +195,7 @@ $static fn_((m_M4f32_row(m_M4f32 m, usize idx))(m_V4f32));
 
 /* Matrix Properties */
 $attr($inline_always)
-$static fn_((m_M4f32_transpose(m_M4f32 m))(m_M4f32));
+$static fn_((m_M4f32_transp(m_M4f32 m))(m_M4f32));
 $attr($inline_always)
 $static fn_((m_M4f32_det(m_M4f32 m))(f32));
 $attr($inline_always)
@@ -203,7 +203,7 @@ $static fn_((m_M4f32_inv(m_M4f32 m))(m_M4f32));
 
 /* 3D Transformations */
 $attr($inline_always)
-$static fn_((m_M4f32_translate(m_V3f32 t))(m_M4f32));
+$static fn_((m_M4f32_transl(m_V3f32 t))(m_M4f32));
 $attr($inline_always)
 $static fn_((m_M4f32_rotateX(f32 angle))(m_M4f32));
 $attr($inline_always)
@@ -221,9 +221,9 @@ $static fn_((m_M4f32_scaleUniform(f32 s))(m_M4f32));
 $attr($inline_always)
 $static fn_((m_M4f32_lookAt(m_V3f32 eye, m_V3f32 target, m_V3f32 up))(m_M4f32));
 $attr($inline_always)
-$static fn_((m_M4f32_perspective(f32 fov_y, f32 aspect, f32 proximal, f32 distal))(m_M4f32));
+$static fn_((m_M4f32_perspect(f32 fov_y, f32 aspect, f32 proximal, f32 distal))(m_M4f32));
 $attr($inline_always)
-$static fn_((m_M4f32_perspectiveInfFar(f32 fov_y, f32 aspect, f32 proximal))(m_M4f32));
+$static fn_((m_M4f32_perspectInfFar(f32 fov_y, f32 aspect, f32 proximal))(m_M4f32));
 $attr($inline_always)
 $static fn_((m_M4f32_ortho(f32 left, f32 right, f32 bottom, f32 top, f32 proximal, f32 distal))(m_M4f32));
 $attr($inline_always)
@@ -324,7 +324,7 @@ fn_((m_M2f32_row(m_M2f32 m, usize idx))(m_V2f32)) {
     );
 };
 
-fn_((m_M2f32_transpose(m_M2f32 m))(m_M2f32)) {
+fn_((m_M2f32_transp(m_M2f32 m))(m_M2f32)) {
     return m_M2f32_ofRows(
         m_V2f32_of(m.s0_0, m.s1_0),
         m_V2f32_of(m.s0_1, m.s1_1)
@@ -472,7 +472,7 @@ fn_((m_M3f32_row(m_M3f32 m, usize idx))(m_V3f32)) {
     );
 };
 
-fn_((m_M3f32_transpose(m_M3f32 m))(m_M3f32)) {
+fn_((m_M3f32_transp(m_M3f32 m))(m_M3f32)) {
     return m_M3f32_ofRows(
         m_V3f32_of(m.s0_0, m.s1_0, m.s2_0),
         m_V3f32_of(m.s0_1, m.s1_1, m.s2_1),
@@ -506,7 +506,7 @@ fn_((m_M3f32_inv(m_M3f32 m))(m_M3f32)) {
     );
 };
 
-fn_((m_M3f32_translate2D(m_V2f32 t))(m_M3f32)) {
+fn_((m_M3f32_transl2D(m_V2f32 t))(m_M3f32)) {
     return m_M3f32_ofRows(
         m_V3f32_of(1.0f, 0.0f, t.x),
         m_V3f32_of(0.0f, 1.0f, t.y),
@@ -665,7 +665,7 @@ fn_((m_M4f32_row(m_M4f32 m, usize idx))(m_V4f32)) {
     );
 };
 
-fn_((m_M4f32_transpose(m_M4f32 m))(m_M4f32)) {
+fn_((m_M4f32_transp(m_M4f32 m))(m_M4f32)) {
     return m_M4f32_ofRows(
         m_V4f32_of(m.s0_0, m.s1_0, m.s2_0, m.s3_0),
         m_V4f32_of(m.s0_1, m.s1_1, m.s2_1, m.s3_1),
@@ -758,7 +758,7 @@ fn_((m_M4f32_inv(m_M4f32 m))(m_M4f32)) {
     );
 };
 
-fn_((m_M4f32_translate(m_V3f32 t))(m_M4f32)) {
+fn_((m_M4f32_transl(m_V3f32 t))(m_M4f32)) {
     return m_M4f32_ofRows(
         m_V4f32_of(1.0f, 0.0f, 0.0f, t.x),
         m_V4f32_of(0.0f, 1.0f, 0.0f, t.y),
@@ -846,7 +846,7 @@ fn_((m_M4f32_lookAt(m_V3f32 eye, m_V3f32 target, m_V3f32 up))(m_M4f32)) {
         m_V4f32_of(0.0f, 0.0f, 0.0f, 1.0f)
     );
 };
-fn_((m_M4f32_perspective(f32 fov_y, f32 aspect, f32 proximal, f32 distal))(m_M4f32)) {
+fn_((m_M4f32_perspect(f32 fov_y, f32 aspect, f32 proximal, f32 distal))(m_M4f32)) {
     let tan_half_fov = flt_tan(fov_y * 0.5f);
     let f = 1.0f / tan_half_fov;
     let nf = 1.0f / (proximal - distal);
@@ -858,7 +858,7 @@ fn_((m_M4f32_perspective(f32 fov_y, f32 aspect, f32 proximal, f32 distal))(m_M4f
         m_V4f32_of(0.0f, 0.0f, -1.0f, 0.0f)
     );
 };
-fn_((m_M4f32_perspectiveInfFar(f32 fov_y, f32 aspect, f32 proximal))(m_M4f32)) {
+fn_((m_M4f32_perspectInfFar(f32 fov_y, f32 aspect, f32 proximal))(m_M4f32)) {
     let tan_half_fov = flt_tan(fov_y * 0.5f);
     let f = 1.0f / tan_half_fov;
 
