@@ -67,13 +67,7 @@ static int dal_c_Cmd__buildFromSources(
     bool allow_output_defaults,
     bool print_success
 );
-static int dal_c_Cmd__writeBuildCompileDb(
-    const dal_c_Cmd* self,
-    const dal_c_Project* proj,
-    const dal_c_ProfileSpec* profile,
-    ArrStr* sources,
-    dal_c_Target target_type
-);
+static char* dal_c_Cmd__compileDbOutputPath(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__buildLibrarySetFromSources(
     const dal_c_Cmd* self,
     const dal_c_Project* proj,
@@ -1096,6 +1090,31 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
     assert(self != NULL);
     assert(proj != NULL);
 
+    if (self->payload.build.remove_output) {
+        char* output_path = dal_c_Cmd__compileDbOutputPath(self, proj);
+        if (!output_path) {
+            return 1;
+        }
+        if (!path_exists(output_path)) {
+            printf("Compilation database not found: %s\n", output_path);
+            free(output_path);
+            return 0;
+        }
+        if (!path_isFile(output_path)) {
+            (void)fprintf(stderr, "Error: Not a file: %s\n", output_path);
+            free(output_path);
+            return 1;
+        }
+        if (remove(output_path) != 0) {
+            (void)fprintf(stderr, "Error: Failed to remove compilation database: %s\n", output_path);
+            free(output_path);
+            return 1;
+        }
+        printf("Removed compilation database: %s\n", output_path);
+        free(output_path);
+        return 0;
+    }
+
     dal_c_CommandIntent intent = { 0 };
     dal_c_Cmd_normalizeIntent(self, &intent);
     const bool builds_library = dal_c_Cmd__buildsLibrary(self);
@@ -1223,16 +1242,7 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
         target_type = dal_c_Target_static_lib;
     }
 
-    char* output_path = NULL;
-    if (intent.output_path) {
-        output_path = strdup(intent.output_path);
-    } else if (build_proj && build_proj->root) {
-        output_path = path_join(build_proj->root, "compile_commands.json");
-    } else {
-        char* cwd = env_getCWD();
-        output_path = cwd ? path_join(cwd, "compile_commands.json") : strdup("compile_commands.json");
-        free(cwd);
-    }
+    char* output_path = dal_c_Cmd__compileDbOutputPath(&effective, build_proj);
 
     int result = dal_c__writeCompileDb(&effective, build_proj, profile, sources, output_path, target_type);
     if (result == 0) {
@@ -1247,6 +1257,23 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
     ArrStr_fini(&active_excludes);
     dal_c_TargetRequest_cleanup(&target_request);
     return result;
+}
+
+static char* dal_c_Cmd__compileDbOutputPath(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    assert(self != NULL);
+
+    dal_c_CommandIntent intent = { 0 };
+    dal_c_Cmd_normalizeIntent(self, &intent);
+    if (intent.output_path) {
+        return strdup(intent.output_path);
+    }
+    if (proj && proj->root) {
+        return path_join(proj->root, "compile_commands.json");
+    }
+    char* cwd = env_getCWD();
+    char* output_path = cwd ? path_join(cwd, "compile_commands.json") : strdup("compile_commands.json");
+    free(cwd);
+    return output_path;
 }
 
 int dal_c_Cmd_compileDeps(const dal_c_Cmd* self, const dal_c_Project* proj) {
@@ -1557,6 +1584,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
         if ((str_eql(opt, dal_c_opt_output) && (build_like || action == dal_c_CmdAction_lib || action == dal_c_CmdAction_run || action == dal_c_CmdAction_test || action == dal_c_CmdAction_test_dsl))
             || str_eql(opt, dal_c_opt_show_commands)
             || str_eql(opt, dal_c_opt_verbose)
+            || (str_eql(opt, dal_c_opt_remove) && action == dal_c_CmdAction_compile_db)
             || str_eql(opt, dal_c_opt_link_dsl)
             || (str_eql(opt, dal_c_opt_self) && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_clean))
             || (str_eql(opt, dal_c_opt_lib) && (build_like || action == dal_c_CmdAction_lib))
@@ -2086,6 +2114,10 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     ++i;
                 } else if (str_eql(opt, dal_c_opt_verbose)) {
                     cmd->verbose = true;
+                } else if (str_eql(opt, dal_c_opt_remove)) {
+                    if (cmd->action == dal_c_CmdAction_compile_db) {
+                        cmd->payload.build.remove_output = true;
+                    }
                 } else if (str_eql(opt, dal_c_opt_self)) {
                     if (cmd->action == dal_c_CmdAction_build) {
                         cmd->payload.build.self_boundary = true;
@@ -3171,17 +3203,6 @@ static int dal_c_Cmd__buildFromSources(
         free(profile_dir);
         return 1;
     }
-    if (dal_c_Cmd__writeBuildCompileDb(&effective, proj, profile, sources, target_type) != 0) {
-        dal_c_CompilerOpts_cleanup(&effective.opts);
-        dal_c_BuildDefaults_cleanup(&effective_defaults);
-        free(makefile_path);
-        free(object_dir);
-        free(compiler_args);
-        free(target_path);
-        free(profile_dir);
-        return 1;
-    }
-
     int result = dal_c__executeMake(makefile_path);
     free(makefile_path);
     free(object_dir);
@@ -3257,51 +3278,6 @@ static int dal_c_Cmd__buildFromSources(
     dal_c_BuildDefaults_cleanup(&effective_defaults);
     free(compiler_args);
     free(target_path);
-    return result;
-}
-
-static int dal_c_Cmd__writeBuildCompileDb(
-    const dal_c_Cmd* self,
-    const dal_c_Project* proj,
-    const dal_c_ProfileSpec* profile,
-    ArrStr* sources,
-    dal_c_Target target_type
-) {
-    assert(self != NULL);
-    assert(profile != NULL);
-    assert(sources != NULL);
-
-    if (self->action != dal_c_CmdAction_build || !proj || !proj->root) {
-        return 0;
-    }
-    dal_c_CommandIntent intent = { 0 };
-    dal_c_Cmd_normalizeIntent(self, &intent);
-    if (self->input_count != 0
-        || intent.target_path
-        || intent.target_root_name_hint
-        || self->payload.build.sample_dir != dal_c_SampleDir_none
-        || self->payload.build.as_library
-        || self->payload.build.as_image
-        || self->payload.build.emit_preprocessed
-        || self->payload.build.emit_asm) {
-        return 0;
-    }
-
-    dal_c_Target compile_db_target_type = target_type;
-    if (compile_db_target_type == dal_c_Target_lib) {
-        compile_db_target_type = dal_c_Target_static_lib;
-    }
-
-    char* output_path = path_join(proj->root, "compile_commands.json");
-    if (!output_path) {
-        return 1;
-    }
-
-    int result = dal_c__writeCompileDb(self, proj, profile, sources, output_path, compile_db_target_type);
-    if (result != 0) {
-        (void)fprintf(stderr, "Error: Failed to write compilation database: %s\n", output_path);
-    }
-    free(output_path);
     return result;
 }
 

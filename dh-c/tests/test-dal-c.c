@@ -770,16 +770,18 @@ static void test_cmd_parse(void) {
             dal_c_tool_name,
             "compile-db",
             "dev",
+            "--remove",
             "--output=compile_commands.json",
             "--all",
             "--define=APP=1",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(6, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(7, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(cmd->action == dal_c_CmdAction_compile_db);
         TEST_ASSERT(cmd->opts.profile == dal_c_Profile_dev);
         TEST_ASSERT(cmd->profile_explicit);
+        TEST_ASSERT(cmd->payload.build.remove_output);
         TEST_ASSERT(cmd->payload.build.build_all);
         TEST_ASSERT(str_eql(cmd->payload.build.output_path, "compile_commands.json"));
         TEST_ASSERT(cmd->opts.define_count == 1);
@@ -2109,20 +2111,27 @@ static void test_compile_db_command(void) {
     free(json);
     dal_c_Cmd_cleanup(&cmd);
 
+    {
+        const char* remove_argv[] = {
+            dal_c_tool_name,
+            "compile-db",
+            "--remove",
+            "--output",
+            output_path,
+            NULL
+        };
+        dal_c_Cmd* remove_cmd = dal_c_Cmd_parse(5, remove_argv);
+        TEST_ASSERT(remove_cmd != NULL);
+        TEST_ASSERT(dal_c_Cmd_writeCompileDb(remove_cmd, proj) == 0);
+        TEST_ASSERT(!path_exists(output_path));
+        dal_c_Cmd_cleanup(&remove_cmd);
+    }
+
     const char* build_argv[] = { dal_c_tool_name, "build", "dev", NULL };
     dal_c_Cmd* build_cmd = dal_c_Cmd_parse(3, build_argv);
     TEST_ASSERT(build_cmd != NULL);
     TEST_ASSERT(dal_c_Cmd_makeTarget(build_cmd, proj) == 0);
-    TEST_ASSERT(path_isFile(auto_output_path));
-
-    json = file_read(auto_output_path);
-    TEST_ASSERT(json != NULL);
-    TEST_ASSERT(strstr(json, "\"arguments\"") != NULL);
-    TEST_ASSERT(strstr(json, "\"-fsyntax-only\"") == NULL);
-    TEST_ASSERT(strstr(json, "\"-DCOMP\"") == NULL);
-    TEST_ASSERT(strstr(json, "\"-Werror=all\"") != NULL);
-    TEST_ASSERT(strstr(json, "main.c") != NULL);
-    TEST_ASSERT(strstr(json, "sample-main.c") == NULL);
+    TEST_ASSERT(!path_exists(auto_output_path));
 
     {
         const char* sample_argv[] = { dal_c_tool_name, "build", "dev", "--sample", sample_source, NULL };
@@ -2130,12 +2139,7 @@ static void test_compile_db_command(void) {
         TEST_ASSERT(sample_cmd != NULL);
         TEST_ASSERT(dal_c_Cmd_makeTarget(sample_cmd, proj) == 0);
         dal_c_Cmd_cleanup(&sample_cmd);
-
-        char* after_sample_json = file_read(auto_output_path);
-        TEST_ASSERT(after_sample_json != NULL);
-        TEST_ASSERT(str_eql(after_sample_json, json));
-        TEST_ASSERT(strstr(after_sample_json, "sample-main.c") == NULL);
-        free(after_sample_json);
+        TEST_ASSERT(!path_exists(auto_output_path));
     }
 
     TEST_ASSERT(file_write(one_off_source, "int main(void) { return 0; }\n"));
@@ -2145,15 +2149,9 @@ static void test_compile_db_command(void) {
         TEST_ASSERT(file_cmd != NULL);
         TEST_ASSERT(dal_c_Cmd_makeTarget(file_cmd, proj) == 0);
         dal_c_Cmd_cleanup(&file_cmd);
-
-        char* after_file_json = file_read(auto_output_path);
-        TEST_ASSERT(after_file_json != NULL);
-        TEST_ASSERT(str_eql(after_file_json, json));
-        TEST_ASSERT(strstr(after_file_json, "one-off.c") == NULL);
-        free(after_file_json);
+        TEST_ASSERT(!path_exists(auto_output_path));
     }
 
-    free(json);
     dal_c_Cmd_cleanup(&build_cmd);
     dal_c_Project_cleanup(&proj);
     (void)dir_removeRecur(temp_root);

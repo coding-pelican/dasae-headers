@@ -821,6 +821,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_comp_args "comp-args"
 #define dal_c_opt_link_args "link-args"
 #define dal_c_opt_exec_args "exec-args"
+#define dal_c_opt_remove "remove"
 
 #define dal_c_opt_verbose "verbose"
 #define dal_c_opt_debug "debug"
@@ -1069,6 +1070,7 @@ typedef struct dal_c_BuildOpts {
     bool build_all; // --all or "." to build all files
     bool recursive; // --recur
     bool self_boundary; // --self
+    bool remove_output; // compile-db --remove
     bool as_library; // --lib
     bool as_image; // --image
     bool emit_preprocessed; // --emit-preprocessed
@@ -1591,6 +1593,7 @@ static const char* const dal_c_help_toolchain_examples[] = {
 
 static const char* const dal_c_help_compile_db_examples[] = {
     dal_c_cmd_action_compile_db,
+    dal_c_cmd_action_compile_db " " dal_c_opt_prefix_long dal_c_opt_remove,
     dal_c_cmd_action_compile_db " " dal_c_profile_dev " " dal_c_opt_prefix_short dal_c_opt_output_short "compile_commands.json",
     dal_c_cmd_action_compile_db " " dal_c_opt_prefix_long dal_c_opt_all,
     dal_c_cmd_action_compile_db " src/main.c",
