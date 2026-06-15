@@ -367,6 +367,7 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     dal_c__pushSelfMakeKeyValue(argv, "C_STD", cmd->opts.c_std);
     dal_c__pushSelfMakeKeyValue(argv, "ARCH_TARGET", cmd->opts.arch_target);
     dal_c__pushSelfMakeKeyValue(argv, "TARGET_ARCH", cmd->opts.target_arch);
+    dal_c__pushSelfMakeKeyValue(argv, "TARGET_TUNE", cmd->opts.target_tune);
     dal_c__pushSelfMakeKeyValue(argv, "TARGET_ABI", cmd->opts.target_abi);
     dal_c__pushSelfMakeKeyValue(argv, "SYSROOT", cmd->opts.sysroot);
     if (cmd->opts.lto_mode != dal_c_LtoMode_auto) {
@@ -387,6 +388,7 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     dal_c__pushSelfMakeToggle(argv, "UNROLL_LOOPS", cmd->opts.unroll_loops);
     dal_c__pushSelfMakeToggle(argv, "UNWIND_TABLES", cmd->opts.unwind_tables);
     dal_c__pushSelfMakeToggle(argv, "ASYNC_UNWIND_TABLES", cmd->opts.async_unwind_tables);
+    dal_c__pushSelfMakeToggle(argv, "EXCEPTIONS", cmd->opts.exceptions);
     dal_c__pushSelfMakeToggle(argv, "STRIP", cmd->opts.strip_mode);
     if (cmd->opts.icf_mode != dal_c_IcfMode_auto) {
         dal_c__pushSelfMakeKeyValue(argv, "ICF", dal_c_IcfMode_format(cmd->opts.icf_mode));
@@ -2069,6 +2071,21 @@ static const char* dal_c__resolvedTargetArch(const dal_c_CompilerOpts* opts, con
     return profile->target_arch;
 }
 
+static const char* dal_c__resolvedTargetTune(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    if (opts->target_tune && opts->target_tune[0] != '\0') {
+        return str_eql(opts->target_tune, "auto") ? NULL : opts->target_tune;
+    }
+    return profile->target_tune;
+}
+
+static dal_c_ToggleState dal_c__resolvedExceptionsState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(opts != NULL);
+    assert(profile != NULL);
+    return dal_c__resolvedProfileToggleState(opts->exceptions, profile->exceptions);
+}
+
 static bool dal_c__isLtoFlag(const char* flag) {
     return flag && (str_eql(flag, "-flto") || str_eql(flag, "-fno-lto") || str_startsWith(flag, "-flto="));
 }
@@ -2478,6 +2495,10 @@ static void dal_c__appendCompileDbArguments(
     if (target_arch) {
         dal_c__argvPushFormat(argv, "-march=%s", target_arch);
     }
+    const char* target_tune = dal_c__resolvedTargetTune(opts, profile);
+    if (target_tune) {
+        dal_c__argvPushFormat(argv, "-mtune=%s", target_tune);
+    }
     if (opts->target_abi) {
         dal_c__argvPushFormat(argv, "-mabi=%s", opts->target_abi);
     }
@@ -2486,6 +2507,12 @@ static void dal_c__appendCompileDbArguments(
     }
     if (dal_c__resolvedCompileEnv(opts) == dal_c_CompileEnv_freestanding) {
         ArrStr_push(argv, "-ffreestanding");
+    }
+    dal_c_ToggleState exceptions = dal_c__resolvedExceptionsState(opts, profile);
+    if (exceptions == dal_c_ToggleState_enabled) {
+        ArrStr_push(argv, "-fexceptions");
+    } else if (exceptions == dal_c_ToggleState_disabled) {
+        ArrStr_push(argv, "-fno-exceptions");
     }
 
     /* Keep clangd away from build-only COMP branches. They make dh's preamble
@@ -3294,6 +3321,12 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     } else if (async_unwind_tables == dal_c_ToggleState_disabled) {
         (void)fprintf(fp, " -fno-asynchronous-unwind-tables");
     }
+    dal_c_ToggleState exceptions = dal_c__resolvedExceptionsState(opts, profile);
+    if (exceptions == dal_c_ToggleState_enabled) {
+        (void)fprintf(fp, " -fexceptions");
+    } else if (exceptions == dal_c_ToggleState_disabled) {
+        (void)fprintf(fp, " -fno-exceptions");
+    }
     dal_c_ToggleState merge_all_constants = dal_c__resolvedMergeAllConstantsState(opts);
     if (merge_all_constants == dal_c_ToggleState_enabled) {
         (void)fprintf(fp, " -fmerge-all-constants");
@@ -3355,6 +3388,11 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     if (target_arch) {
         (void)fprintf(fp, "TARGET_ARCH_FLAGS = -march=%s\n", target_arch);
         (void)fprintf(fp, "CFLAGS_BASE += $(TARGET_ARCH_FLAGS)\n");
+    }
+    const char* target_tune = dal_c__resolvedTargetTune(opts, profile);
+    if (target_tune) {
+        (void)fprintf(fp, "TARGET_TUNE_FLAGS = -mtune=%s\n", target_tune);
+        (void)fprintf(fp, "CFLAGS_BASE += $(TARGET_TUNE_FLAGS)\n");
     }
     if (opts->target_abi) {
         (void)fprintf(fp, "TARGET_ABI_FLAGS = -mabi=%s\n", opts->target_abi);
@@ -3676,14 +3714,17 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     bool crt_linked = start_files_linked;
     bool lto_enabled = dal_c__resolvedLtoMode(opts, profile);
     const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
+    const char* target_tune = dal_c__resolvedTargetTune(opts, profile);
     dal_c_ToggleState unwind_tables = dal_c__resolvedUnwindTablesState(opts, profile);
     dal_c_ToggleState async_unwind_tables = dal_c__resolvedAsyncUnwindTablesState(opts, profile);
+    dal_c_ToggleState exceptions = dal_c__resolvedExceptionsState(opts, profile);
     uint64_t hash = 1469598103934665603ULL;
     hash = dal_c__hashString(hash, profile->name);
     hash = dal_c__hashString(hash, opts->compiler);
     hash = dal_c__hashString(hash, opts->c_std);
     hash = dal_c__hashString(hash, opts->arch_target);
     hash = dal_c__hashString(hash, target_arch);
+    hash = dal_c__hashString(hash, target_tune);
     hash = dal_c__hashString(hash, opts->target_abi);
     hash = dal_c__hashString(hash, opts->sysroot);
     hash = dal_c__hashString(hash, cmd->compiler_args);
@@ -3712,6 +3753,9 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     hash = dal_c__hashBytes(hash, &opts->async_unwind_tables, sizeof(opts->async_unwind_tables));
     hash = dal_c__hashBytes(hash, &profile->async_unwind_tables, sizeof(profile->async_unwind_tables));
     hash = dal_c__hashBytes(hash, &async_unwind_tables, sizeof(async_unwind_tables));
+    hash = dal_c__hashBytes(hash, &opts->exceptions, sizeof(opts->exceptions));
+    hash = dal_c__hashBytes(hash, &profile->exceptions, sizeof(profile->exceptions));
+    hash = dal_c__hashBytes(hash, &exceptions, sizeof(exceptions));
     hash = dal_c__hashBytes(hash, &opts->merge_all_constants, sizeof(opts->merge_all_constants));
     hash = dal_c__hashBytes(hash, &opts->stack_protector, sizeof(opts->stack_protector));
     if (cmd->action == dal_c_CmdAction_build) {

@@ -604,6 +604,8 @@ typedef struct dal_c_ProfileSpec {
     dal_c_ToggleState strip_mode;
     dal_c_IcfMode icf_mode;
     const char* target_arch;
+    const char* target_tune;
+    dal_c_ToggleState exceptions;
     const char* extra_flags[8];
 } dal_c_ProfileSpec;
 static const dal_c_ProfileSpec dal_c_profile_specs[] = {
@@ -665,6 +667,8 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .strip_mode = dal_c_ToggleState_enabled,
         .icf_mode = dal_c_IcfMode_all,
         .target_arch = "native",
+        .target_tune = "native",
+        .exceptions = dal_c_ToggleState_disabled,
     },
     [dal_c_Profile_compact] = {
         .name = dal_c_profile_compact,
@@ -803,6 +807,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_arch "arch"
 #define dal_c_opt_target "target"
 #define dal_c_opt_target_arch "target-arch"
+#define dal_c_opt_target_tune "target-tune"
 #define dal_c_opt_target_abi "target-abi"
 #define dal_c_opt_sysroot "sysroot"
 #define dal_c_opt_include "include"
@@ -839,6 +844,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_unroll_loops "unroll-loops"
 #define dal_c_opt_unwind_tables "unwind-tables"
 #define dal_c_opt_async_unwind_tables "async-unwind-tables"
+#define dal_c_opt_exceptions "exceptions"
 #define dal_c_opt_strip "strip"
 #define dal_c_opt_icf "icf"
 #define dal_c_opt_merge_all_constants "merge-all-constants"
@@ -991,6 +997,7 @@ typedef struct dal_c_CompilerOpts {
     char* c_std; // --std=<std> (NULL = gnu17)
     char* arch_target; // --arch or --target
     char* target_arch; // --target-arch=<arch> (for example `rv32im`)
+    char* target_tune; // --target-tune=<cpu> (for example `native`)
     char* target_abi; // --target-abi=<abi> (for example `ilp32`)
     char* sysroot; // --sysroot=<path>
     char** define_macros; // --define or -D (array)
@@ -1021,6 +1028,7 @@ typedef struct dal_c_CompilerOpts {
     dal_c_ToggleState unroll_loops; // --unroll-loops=<auto|on|off>
     dal_c_ToggleState unwind_tables; // --unwind-tables=<auto|on|off>
     dal_c_ToggleState async_unwind_tables; // --async-unwind-tables=<auto|on|off>
+    dal_c_ToggleState exceptions; // --exceptions=<auto|on|off>
     dal_c_ToggleState strip_mode; // --strip=<auto|on|off>
     dal_c_IcfMode icf_mode; // --icf=<off|safe|all>
     dal_c_ToggleState merge_all_constants; // --merge-all-constants=<auto|on|off>
@@ -1418,12 +1426,14 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_unroll_loops dal_c_opt_value_sep "<auto|on|off>", "Emit or omit loop unrolling flags" },
     { dal_c_opt_prefix_long dal_c_opt_unwind_tables dal_c_opt_value_sep "<auto|on|off>", "Override unwind table emission (`-fno-unwind-tables` when off)" },
     { dal_c_opt_prefix_long dal_c_opt_async_unwind_tables dal_c_opt_value_sep "<auto|on|off>", "Override asynchronous unwind table emission (`-fno-asynchronous-unwind-tables` when off)" },
+    { dal_c_opt_prefix_long dal_c_opt_exceptions dal_c_opt_value_sep "<auto|on|off>", "Emit exception handling flags (`-fno-exceptions` when off)" },
     { dal_c_opt_prefix_long dal_c_opt_strip dal_c_opt_value_sep "<auto|on|off>", "Strip linked binary symbols (`-Wl,--strip-all` when on)" },
     { dal_c_opt_prefix_long dal_c_opt_icf dal_c_opt_value_sep "<auto|off|safe|all>", "Enable linker identical code folding (`-Wl,--icf=<mode>`)" },
     { dal_c_opt_prefix_long dal_c_opt_merge_all_constants dal_c_opt_value_sep "<auto|on|off>", "Emit or omit Clang constant merging flags" },
     { dal_c_opt_prefix_long dal_c_opt_stack_protector dal_c_opt_value_sep "<auto|on|off>", "Emit stack protector flags (`-fstack-protector-strong` or `-fno-stack-protector`)" },
     { dal_c_opt_prefix_long dal_c_opt_entry dal_c_opt_value_sep "<symbol>", "Override linker entry symbol" },
     { dal_c_opt_prefix_long dal_c_opt_target_arch dal_c_opt_value_sep "<arch>", "Target architecture sub-variant passed to compiler and linker (for example `rv32im`)" },
+    { dal_c_opt_prefix_long dal_c_opt_target_tune dal_c_opt_value_sep "<cpu>", "Target CPU tuning passed to compiler (`-mtune=<cpu>`)" },
     { dal_c_opt_prefix_long dal_c_opt_target_abi dal_c_opt_value_sep "<abi>", "Target ABI passed to compiler and linker (for example `ilp32`)" },
     { dal_c_opt_prefix_long dal_c_opt_sysroot dal_c_opt_value_sep "<path>", "System root directory" },
     { dal_c_opt_prefix_long dal_c_opt_include dal_c_opt_value_sep "<path>", "Add include path (can be repeated)" },
@@ -1657,7 +1667,7 @@ static const dal_c_HelpProfile dal_c_help_profiles[] = {
     [dal_c_Profile_profile] = { dal_c_profile_profile, "Profile build with optimization (-g -O2)" },
     [dal_c_Profile_stable] = { dal_c_profile_stable, "Stable build without debug (-g1 -O2)" },
     [dal_c_Profile_release] = { dal_c_profile_release, "Release build with LTO (-g1 -O3)" },
-    [dal_c_Profile_optimize] = { dal_c_profile_optimize, "Maximum optimization (-O3 -march=native)" },
+    [dal_c_Profile_optimize] = { dal_c_profile_optimize, "Maximum optimization (-O3 -march=native -mtune=native -fno-exceptions)" },
     [dal_c_Profile_compact] = { dal_c_profile_compact, "Size-optimized build (-Os)" },
     [dal_c_Profile_micro] = { dal_c_profile_micro, "Extreme size optimization (-Oz)" },
 };

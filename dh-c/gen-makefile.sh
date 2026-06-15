@@ -26,6 +26,7 @@ CC = clang
 C_STD ?= gnu17
 ARCH_TARGET ?= auto
 TARGET_ARCH ?= profile
+TARGET_TUNE ?= profile
 TARGET_ABI ?= auto
 SYSROOT ?= auto
 LTO ?= profile
@@ -43,6 +44,7 @@ WHOLE_ARCHIVE ?= profile
 UNROLL_LOOPS ?= profile
 UNWIND_TABLES ?= profile
 ASYNC_UNWIND_TABLES ?= profile
+EXCEPTIONS ?= profile
 STRIP ?= profile
 ICF ?= profile
 MERGE_ALL_CONSTANTS ?= auto
@@ -151,9 +153,11 @@ PROFILE_WHOLE_ARCHIVE = auto
 PROFILE_UNROLL_LOOPS = auto
 PROFILE_UNWIND_TABLES = auto
 PROFILE_ASYNC_UNWIND_TABLES = auto
+PROFILE_EXCEPTIONS = auto
 PROFILE_STRIP = auto
 PROFILE_ICF = auto
 PROFILE_TARGET_ARCH = auto
+PROFILE_TARGET_TUNE = auto
 
 ifeq ($(PROFILE),dev)
     PROFILE_CFLAGS += -g3 -Og
@@ -189,6 +193,8 @@ else ifeq ($(PROFILE),optimize)
     PROFILE_STRIP = on
     PROFILE_ICF = all
     PROFILE_TARGET_ARCH = native
+    PROFILE_TARGET_TUNE = native
+    PROFILE_EXCEPTIONS = off
 else ifeq ($(PROFILE),compact)
     PROFILE_CFLAGS += -Os
     PROFILE_LTO = on
@@ -230,9 +236,11 @@ RESOLVED_WHOLE_ARCHIVE = $(if $(filter profile,$(WHOLE_ARCHIVE)),$(PROFILE_WHOLE
 RESOLVED_UNROLL_LOOPS = $(if $(filter profile,$(UNROLL_LOOPS)),$(PROFILE_UNROLL_LOOPS),$(UNROLL_LOOPS))
 RESOLVED_UNWIND_TABLES = $(if $(filter profile,$(UNWIND_TABLES)),$(PROFILE_UNWIND_TABLES),$(UNWIND_TABLES))
 RESOLVED_ASYNC_UNWIND_TABLES = $(if $(filter profile,$(ASYNC_UNWIND_TABLES)),$(PROFILE_ASYNC_UNWIND_TABLES),$(ASYNC_UNWIND_TABLES))
+RESOLVED_EXCEPTIONS = $(if $(filter profile,$(EXCEPTIONS)),$(PROFILE_EXCEPTIONS),$(EXCEPTIONS))
 RESOLVED_STRIP = $(if $(filter profile,$(STRIP)),$(PROFILE_STRIP),$(STRIP))
 RESOLVED_ICF = $(if $(filter profile,$(ICF)),$(PROFILE_ICF),$(ICF))
 RESOLVED_TARGET_ARCH = $(if $(filter profile,$(TARGET_ARCH)),$(PROFILE_TARGET_ARCH),$(TARGET_ARCH))
+RESOLVED_TARGET_TUNE = $(if $(filter profile,$(TARGET_TUNE)),$(PROFILE_TARGET_TUNE),$(TARGET_TUNE))
 
 ifeq ($(RESOLVED_LTO),on)
     PROFILE_CFLAGS += -flto
@@ -290,12 +298,23 @@ else ifneq ($(RESOLVED_UNROLL_LOOPS),auto)
     $(error Unsupported UNROLL_LOOPS '$(UNROLL_LOOPS)')
 endif
 
+ifeq ($(RESOLVED_EXCEPTIONS),on)
+    PROFILE_CFLAGS += -fexceptions
+else ifeq ($(RESOLVED_EXCEPTIONS),off)
+    PROFILE_CFLAGS += -fno-exceptions
+else ifneq ($(RESOLVED_EXCEPTIONS),auto)
+    $(error Unsupported EXCEPTIONS '$(EXCEPTIONS)')
+endif
+
 TARGET_FLAGS =
 ifneq ($(ARCH_TARGET),auto)
     TARGET_FLAGS += -target $(ARCH_TARGET)
 endif
 ifneq ($(RESOLVED_TARGET_ARCH),auto)
     TARGET_FLAGS += -march=$(RESOLVED_TARGET_ARCH)
+endif
+ifneq ($(RESOLVED_TARGET_TUNE),auto)
+    PROFILE_CFLAGS += -mtune=$(RESOLVED_TARGET_TUNE)
 endif
 ifneq ($(TARGET_ABI),auto)
     TARGET_FLAGS += -mabi=$(TARGET_ABI)

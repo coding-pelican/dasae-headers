@@ -327,6 +327,9 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_async_unwind_tables)) {
         if (!has_toggle) { *handled = false; }
         else { cmd->opts.async_unwind_tables = toggle; }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_exceptions)) {
+        if (!has_toggle) { *handled = false; }
+        else { cmd->opts.exceptions = toggle; }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_strip)) {
         if (!has_toggle) { *handled = false; }
         else { cmd->opts.strip_mode = toggle; }
@@ -1582,6 +1585,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_unroll_loops)
             || str_eql(opt, dal_c_opt_unwind_tables)
             || str_eql(opt, dal_c_opt_async_unwind_tables)
+            || str_eql(opt, dal_c_opt_exceptions)
             || str_eql(opt, dal_c_opt_strip)
             || str_eql(opt, dal_c_opt_icf)
             || str_eql(opt, dal_c_opt_merge_all_constants)
@@ -1631,6 +1635,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_unroll_loops)
             || str_startsWith(opt, dal_c_opt_unwind_tables)
             || str_startsWith(opt, dal_c_opt_async_unwind_tables)
+            || str_startsWith(opt, dal_c_opt_exceptions)
             || str_startsWith(opt, dal_c_opt_strip)
             || str_startsWith(opt, dal_c_opt_icf)
             || str_startsWith(opt, dal_c_opt_merge_all_constants)
@@ -1664,6 +1669,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_comp_args)
             || str_startsWith(opt, dal_c_opt_link_args)
             || str_startsWith(opt, dal_c_opt_target_arch)
+            || str_startsWith(opt, dal_c_opt_target_tune)
             || str_startsWith(opt, dal_c_opt_target_abi)
             || str_startsWith(opt, dal_c_opt_link_script)
             || str_startsWith(opt, dal_c_opt_objcopy)
@@ -1746,6 +1752,8 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     dal_c_Cmd__setOwnedString(&cmd->opts.arch_target, value);
                 } else if (strncmp(opt, dal_c_opt_target_arch, opt_len) == 0) {
                     dal_c_Cmd__setOwnedString(&cmd->opts.target_arch, value);
+                } else if (strncmp(opt, dal_c_opt_target_tune, opt_len) == 0) {
+                    dal_c_Cmd__setOwnedString(&cmd->opts.target_tune, value);
                 } else if (strncmp(opt, dal_c_opt_target_abi, opt_len) == 0) {
                     dal_c_Cmd__setOwnedString(&cmd->opts.target_abi, value);
                 } else if (strncmp(opt, dal_c_opt_sysroot, opt_len) == 0) {
@@ -2002,6 +2010,12 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     dal_c_Cmd__setOwnedString(&cmd->opts.target_arch, argv[++i]);
+                } else if (str_eql(opt, dal_c_opt_target_tune)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    dal_c_Cmd__setOwnedString(&cmd->opts.target_tune, argv[++i]);
                 } else if (str_eql(opt, dal_c_opt_target_abi)) {
                     if (i + 1 >= argc) {
                         (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
@@ -2180,6 +2194,8 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     cmd->opts.unwind_tables = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_async_unwind_tables)) {
                     cmd->opts.async_unwind_tables = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_exceptions)) {
+                    cmd->opts.exceptions = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_strip)) {
                     cmd->opts.strip_mode = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_icf)) {

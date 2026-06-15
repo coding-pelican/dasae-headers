@@ -151,6 +151,7 @@ void dal_c_CompilerOpts_cleanup(dal_c_CompilerOpts* opts) {
     free(opts->c_std);
     free(opts->arch_target);
     free(opts->target_arch);
+    free(opts->target_tune);
     free(opts->target_abi);
     free(opts->sysroot);
     free(opts->entry_symbol);
@@ -186,6 +187,7 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->c_std) { dal_c_Project__setString(&dst->c_std, src->c_std); }
     if (src->arch_target) { dal_c_Project__setString(&dst->arch_target, src->arch_target); }
     if (src->target_arch) { dal_c_Project__setString(&dst->target_arch, src->target_arch); }
+    if (src->target_tune) { dal_c_Project__setString(&dst->target_tune, src->target_tune); }
     if (src->target_abi) { dal_c_Project__setString(&dst->target_abi, src->target_abi); }
     if (src->sysroot) { dal_c_Project__setString(&dst->sysroot, src->sysroot); }
     if (src->entry_symbol) { dal_c_Project__setString(&dst->entry_symbol, src->entry_symbol); }
@@ -206,6 +208,7 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->unroll_loops != dal_c_ToggleState_auto) { dst->unroll_loops = src->unroll_loops; }
     if (src->unwind_tables != dal_c_ToggleState_auto) { dst->unwind_tables = src->unwind_tables; }
     if (src->async_unwind_tables != dal_c_ToggleState_auto) { dst->async_unwind_tables = src->async_unwind_tables; }
+    if (src->exceptions != dal_c_ToggleState_auto) { dst->exceptions = src->exceptions; }
     if (src->strip_mode != dal_c_ToggleState_auto) { dst->strip_mode = src->strip_mode; }
     if (src->icf_mode != dal_c_IcfMode_auto) { dst->icf_mode = src->icf_mode; }
     if (src->merge_all_constants != dal_c_ToggleState_auto) { dst->merge_all_constants = src->merge_all_constants; }
@@ -915,6 +918,8 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         dal_c_Project__setString(&opts->arch_target, value);
     } else if (str_eql(key, dal_c_opt_target_arch)) {
         dal_c_Project__setString(&opts->target_arch, value);
+    } else if (str_eql(key, dal_c_opt_target_tune)) {
+        dal_c_Project__setString(&opts->target_tune, value);
     } else if (str_eql(key, dal_c_opt_target_abi)) {
         dal_c_Project__setString(&opts->target_abi, value);
     } else if (str_eql(key, dal_c_opt_sysroot)) {
@@ -1002,6 +1007,8 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         opts->unwind_tables = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_async_unwind_tables)) {
         opts->async_unwind_tables = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_exceptions)) {
+        opts->exceptions = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_strip)) {
         opts->strip_mode = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_icf)) {

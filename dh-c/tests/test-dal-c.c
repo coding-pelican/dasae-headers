@@ -405,6 +405,8 @@ static void test_meta_tables(void) {
     TEST_ASSERT(optimize_spec->strip_mode == dal_c_ToggleState_enabled);
     TEST_ASSERT(optimize_spec->icf_mode == dal_c_IcfMode_all);
     TEST_ASSERT(str_eql(optimize_spec->target_arch, "native"));
+    TEST_ASSERT(str_eql(optimize_spec->target_tune, "native"));
+    TEST_ASSERT(optimize_spec->exceptions == dal_c_ToggleState_disabled);
 
     const dal_c_ProfileSpec* micro_spec = dal_c_ProfileSpec_by(dal_c_Profile_micro);
     TEST_ASSERT(micro_spec != NULL);
@@ -442,12 +444,14 @@ static void test_meta_tables(void) {
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_unroll_loops));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_unwind_tables));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_async_unwind_tables));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_exceptions));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_strip));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_icf));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_merge_all_constants));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_stack_protector));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_entry));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_arch));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_tune));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_abi));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_script));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_emit_preprocessed));
@@ -664,7 +668,9 @@ static void test_cmd_parse(void) {
             dal_c_tool_name,
             "build",
             "--target-arch=rv32im",
+            "--target-tune=generic",
             "--target-abi=ilp32",
+            "--exceptions=off",
             "--version-core=1.2.3",
             "--version-prefix=beta",
             "--version-suffix=4",
@@ -673,10 +679,12 @@ static void test_cmd_parse(void) {
             "--emit-preprocessed",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(10, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(12, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(str_eql(cmd->opts.target_arch, "rv32im"));
+        TEST_ASSERT(str_eql(cmd->opts.target_tune, "generic"));
         TEST_ASSERT(str_eql(cmd->opts.target_abi, "ilp32"));
+        TEST_ASSERT(cmd->opts.exceptions == dal_c_ToggleState_disabled);
         TEST_ASSERT(cmd->opts.version.core_set);
         TEST_ASSERT(cmd->opts.version.core_major == 1u);
         TEST_ASSERT(cmd->opts.version.core_minor == 2u);
@@ -839,6 +847,8 @@ static void test_compiler_mode_contracts(void) {
         "version-prefix=rc\n"
         "version-suffix=7\n"
         "version-build=unit.1\n"
+        "target-tune=generic\n"
+        "exceptions=off\n"
         "loose-errors=suppress\n"
     ));
     TEST_ASSERT(dal_c_CompilerOpts_applyDhFile(&file_opts, opts_dh));
@@ -857,6 +867,8 @@ static void test_compiler_mode_contracts(void) {
     TEST_ASSERT(file_opts.version.label_suffix_num == 7u);
     TEST_ASSERT(file_opts.version.build_set);
     TEST_ASSERT(str_eql(file_opts.version.build_str, "unit.1"));
+    TEST_ASSERT(str_eql(file_opts.target_tune, "generic"));
+    TEST_ASSERT(file_opts.exceptions == dal_c_ToggleState_disabled);
     TEST_ASSERT(file_opts.loose_errors == dal_c_LooseErrorsMode_suppress);
     dal_c_CompilerOpts_cleanup(&file_opts);
     free(opts_dh);
@@ -913,6 +925,8 @@ static void test_makefile_mode_contracts(void) {
             "--whole-archive",
             "--unwind-tables=off",
             "--async-unwind-tables=off",
+            "--target-tune=generic",
+            "--exceptions=off",
             "--strip",
             "--icf=all",
             "--merge-all-constants",
@@ -922,7 +936,7 @@ static void test_makefile_mode_contracts(void) {
             "--entry=custom_entry",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(19, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(21, argv);
         const dal_c_ProfileSpec* profile = NULL;
         char* build_dir = NULL;
         char* profile_dir = NULL;
@@ -971,6 +985,9 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, " -fdata-sections") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -fno-unwind-tables") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -fno-asynchronous-unwind-tables") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "TARGET_TUNE_FLAGS = -mtune=generic") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += $(TARGET_TUNE_FLAGS)") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -fno-exceptions") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -fmerge-all-constants") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -fno-stack-protector") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -save-temps=obj") != NULL);
@@ -2063,10 +2080,12 @@ static void test_compile_db_command(void) {
         "--output",
         output_path,
         "--define=APP=1",
+        "--target-tune=generic",
+        "--exceptions=off",
         "--comp-args=-Wextra \"-DQUOTED=A B\"",
         NULL
     };
-    dal_c_Cmd* cmd = dal_c_Cmd_parse(7, argv);
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(9, argv);
     TEST_ASSERT(cmd != NULL);
     TEST_ASSERT(dal_c_Cmd_writeCompileDb(cmd, proj) == 0);
     TEST_ASSERT(path_isFile(output_path));
@@ -2080,6 +2099,8 @@ static void test_compile_db_command(void) {
     TEST_ASSERT(strstr(json, "\"-DCOMP\"") == NULL);
     TEST_ASSERT(strstr(json, "\"-Werror=all\"") != NULL);
     TEST_ASSERT(strstr(json, "\"-Werror=strict-prototypes\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"-mtune=generic\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"-fno-exceptions\"") != NULL);
     TEST_ASSERT(strstr(json, "\"-DAPP=1\"") != NULL);
     TEST_ASSERT(strstr(json, "\"-Wextra\"") != NULL);
     TEST_ASSERT(strstr(json, "\"-DQUOTED=A B\"") != NULL);
