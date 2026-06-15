@@ -77,6 +77,14 @@ int dal_c__generateMakefile(
     const char* build_dir,
     dal_c_Target target_type
 );
+int dal_c__writeCompileDb(
+    const dal_c_Cmd* cmd,
+    const dal_c_Project* proj,
+    const dal_c_ProfileSpec* profile,
+    ArrStr* sources,
+    const char* output_path,
+    dal_c_Target target_type
+);
 char* dal_c__resolveOutputPath(const dal_c_Project* proj, const dal_c_Cmd* cmd, const char* build_dir, const char* output_name, dal_c_Target target_type);
 char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const dal_c_Cmd* cmd, const char* target_path, dal_c_Target target_type);
 

@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <time.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <assert.h>
 #ifdef _WIN32
 #include <windows.h>
@@ -117,8 +118,13 @@ static bool dal_c__validateBuildArtifacts(const dal_c_Cmd* cmd, const dal_c_Prof
 static bool dal_c__targetUsesImplicitCompilerRt(dal_c_Target target_type);
 static bool dal_c__resolvedDefaultLibsLinked(const dal_c_CompilerOpts* opts);
 static dal_c__noinline dal_c__optnone char* dal_c__queryCompilerRtPath(const dal_c_CompilerOpts* opts);
+static ArrStr* dal_c__parseQuotedTokens(const char* line);
 static ArrStr* dal_c__queryToolchainLinkTokens(const dal_c_CompilerOpts* opts);
 static void dal_c__printToolchainCategory(const char* title, ArrStr* link_tokens, const char* compiler_rt_path, dal_c_ToolchainQuery query);
+static void dal_c__appendCompileDbArguments(ArrStr* argv, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* src, dal_c_Target target_type);
+static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_CompilerOpts* opts);
+static char* dal_c__jsonEscape(const char* text);
+static void dal_c__fprintJsonString(FILE* fp, const char* text);
 
 // === PLATFORM ===
 
@@ -2340,6 +2346,383 @@ static ArrStr* dal_c__parseQuotedTokens(const char* line) {
         cursor = end + 1;
     }
     return tokens;
+}
+
+static void dal_c__argvPushFormat(ArrStr* argv, const char* fmt, ...) dal_c__printf_format(2, 3);
+static void dal_c__argvPushFormat(ArrStr* argv, const char* fmt, ...) {
+    assert(argv != NULL);
+    assert(fmt != NULL);
+    va_list args;
+    va_start(args, fmt);
+    va_list copy;
+    va_copy(copy, args);
+    int size = vsnprintf(NULL, 0, fmt, copy);
+    va_end(copy);
+    if (size < 0) {
+        va_end(args);
+        return;
+    }
+    char* text = (char*)malloc((size_t)size + 1);
+    if (!text) {
+        va_end(args);
+        return;
+    }
+    (void)vsnprintf(text, (size_t)size + 1, fmt, args);
+    va_end(args);
+    ArrStr_push(argv, text);
+    free(text);
+}
+
+static void dal_c__appendCompilerArgsTokens(ArrStr* argv, const char* args) {
+    assert(argv != NULL);
+    if (!args || args[0] == '\0') {
+        return;
+    }
+
+    const char* cursor = args;
+    while (*cursor != '\0') {
+        while (*cursor == ' ' || *cursor == '\t' || *cursor == '\r' || *cursor == '\n') {
+            ++cursor;
+        }
+        if (*cursor == '\0') {
+            break;
+        }
+
+        size_t cap = 32;
+        size_t len = 0;
+        char* token = (char*)malloc(cap);
+        if (!token) {
+            return;
+        }
+
+        char quote = '\0';
+        while (*cursor != '\0') {
+            char ch = *cursor;
+            if (quote == '\0' && (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n')) {
+                break;
+            }
+            if ((ch == '"' || ch == '\'') && (quote == '\0' || quote == ch)) {
+                quote = quote == '\0' ? ch : '\0';
+                ++cursor;
+                continue;
+            }
+            if (ch == '\\' && cursor[1] != '\0') {
+                ++cursor;
+                ch = *cursor;
+            }
+            if (len + 2 > cap) {
+                cap *= 2;
+                char* grown = (char*)realloc(token, cap);
+                if (!grown) {
+                    free(token);
+                    return;
+                }
+                token = grown;
+            }
+            token[len++] = ch;
+            ++cursor;
+        }
+        token[len] = '\0';
+        if (len > 0) {
+            ArrStr_push(argv, token);
+        }
+        free(token);
+    }
+}
+
+static void dal_c__appendCompileDbArguments(
+    ArrStr* argv,
+    const dal_c_Cmd* cmd,
+    const dal_c_Project* proj,
+    const dal_c_ProfileSpec* profile,
+    const char* src,
+    dal_c_Target target_type
+) {
+    assert(argv != NULL);
+    assert(cmd != NULL);
+    assert(profile != NULL);
+    assert(src != NULL);
+    (void)target_type;
+
+    const dal_c_CompilerOpts* opts = &cmd->opts;
+    const char* compiler = opts->compiler ? opts->compiler : dal_c_default_compiler;
+    ArrStr_push(argv, compiler);
+
+    if (str_endsWith(src, ".h")) {
+        ArrStr_push(argv, "-xc-header");
+    } else if (str_endsWith(src, ".S")) {
+        ArrStr_push(argv, "-x");
+        ArrStr_push(argv, "assembler-with-cpp");
+    } else if (str_endsWith(src, ".s")) {
+        ArrStr_push(argv, "-x");
+        ArrStr_push(argv, "assembler");
+    } else {
+        ArrStr_push(argv, "-xc");
+    }
+    if (!dal_c__sourceIsAssembly(src)) {
+        const char* c_std = opts->c_std ? opts->c_std : dal_c_default_c_std;
+        dal_c__argvPushFormat(argv, "-std=%s", c_std);
+    }
+
+    ArrStr_push(argv, "-fgnu-keywords");
+    ArrStr_push(argv, "-fms-extensions");
+    ArrStr_push(argv, "-Wno-microsoft-anon-tag");
+    ArrStr_push(argv, "-funsigned-char");
+    dal_c__appendCompileDbDiagnostics(argv, opts);
+
+    if (opts->arch_target) {
+        ArrStr_push(argv, "-target");
+        ArrStr_push(argv, opts->arch_target);
+    }
+    const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
+    if (target_arch) {
+        dal_c__argvPushFormat(argv, "-march=%s", target_arch);
+    }
+    if (opts->target_abi) {
+        dal_c__argvPushFormat(argv, "-mabi=%s", opts->target_abi);
+    }
+    if (opts->sysroot) {
+        dal_c__argvPushFormat(argv, "--sysroot=%s", opts->sysroot);
+    }
+    if (dal_c__resolvedCompileEnv(opts) == dal_c_CompileEnv_freestanding) {
+        ArrStr_push(argv, "-ffreestanding");
+    }
+
+    /* Keep clangd away from build-only COMP branches. They make dh's preamble
+     * large enough to trip malformed AST failures on clangd 22 for Windows. */
+    if (!profile->debug_assertions) {
+        ArrStr_push(argv, "-DNDEBUG");
+    }
+
+    if (proj && proj->root) {
+        char* include_dir = path_join(proj->root, dal_c_Project_getCategoryDirName(proj, dal_c_dir_include));
+        ArrStr_push(argv, "-I");
+        ArrStr_push(argv, include_dir);
+        free(include_dir);
+    }
+    if (dal_c__usesDhLibrary(proj, opts)) {
+        char* dh_include = path_join(proj->dh_path, dal_c_dir_include);
+        ArrStr_push(argv, "-isystem");
+        ArrStr_push(argv, dh_include);
+        ArrStr_push(argv, "-isystem");
+        ArrStr_push(argv, proj->dh_path);
+        free(dh_include);
+    }
+    if (proj && proj->root && proj->lib_count > 0) {
+        char* deps_dir = dal_c_Project_getDepsDir(proj);
+        ArrStr_push(argv, "-isystem");
+        ArrStr_push(argv, deps_dir);
+        free(deps_dir);
+    }
+    for (int i = 0; i < opts->include_count; ++i) {
+        ArrStr_push(argv, "-I");
+        ArrStr_push(argv, opts->include_paths[i]);
+    }
+    for (int i = 0; i < opts->isystem_count; ++i) {
+        ArrStr_push(argv, "-isystem");
+        ArrStr_push(argv, opts->isystem_paths[i]);
+    }
+    for (int i = 0; i < opts->define_count; ++i) {
+        dal_c__argvPushFormat(argv, "-D%s", opts->define_macros[i]);
+    }
+    for (int i = 0; i < opts->undef_count; ++i) {
+        dal_c__argvPushFormat(argv, "-U%s", opts->undef_macros[i]);
+    }
+    dal_c__appendCompilerArgsTokens(argv, cmd->compiler_args);
+    ArrStr_push(argv, src);
+}
+
+static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_CompilerOpts* opts) {
+    assert(argv != NULL);
+    assert(opts != NULL);
+
+    if (opts->loose_errors == dal_c_LooseErrorsMode_suppress) {
+        ArrStr_push(argv, "-w");
+        return;
+    }
+
+    if (opts->loose_errors == dal_c_LooseErrorsMode_warn) {
+        const char* flags[] = {
+            "-Wall",
+            "-Wextra",
+            "-Wconversion",
+            "-Wsign-conversion",
+            "-Wfloat-conversion",
+            "-Wformat=2",
+            "-Wcast-qual",
+            "-Wcast-align",
+            "-Wpointer-arith",
+            "-Wbad-function-cast",
+            "-Wnull-dereference",
+            "-Wwrite-strings",
+            "-Wuninitialized",
+            "-Wframe-larger-than=4096",
+            "-Wno-switch-enum",
+            "-Winfinite-recursion",
+            "-Wno-microsoft-anon-tag",
+            "-Wloop-analysis",
+            "-Wstrict-prototypes",
+            "-Wmissing-prototypes",
+            "-Wmissing-variable-declarations",
+            "-Wdiv-by-zero",
+            "-Wthread-safety",
+            NULL
+        };
+        for (int i = 0; flags[i] != NULL; ++i) {
+            ArrStr_push(argv, flags[i]);
+        }
+        return;
+    }
+
+    const char* flags[] = {
+        "-Werror=all",
+        "-Werror=extra",
+        "-Werror=conversion",
+        "-Werror=sign-conversion",
+        "-Wfloat-conversion",
+        "-Wformat=2",
+        "-Werror=cast-qual",
+        "-Werror=cast-align",
+        "-Wpointer-arith",
+        "-Wbad-function-cast",
+        "-Wnull-dereference",
+        "-Wwrite-strings",
+        "-Werror=uninitialized",
+        "-Wframe-larger-than=4096",
+        "-Wno-switch-enum",
+        "-Winfinite-recursion",
+        "-Wno-microsoft-anon-tag",
+        "-Wloop-analysis",
+        "-Werror=strict-prototypes",
+        "-Werror=missing-prototypes",
+        "-Wmissing-variable-declarations",
+        "-Werror=div-by-zero",
+        "-Wthread-safety",
+        NULL
+    };
+    for (int i = 0; flags[i] != NULL; ++i) {
+        ArrStr_push(argv, flags[i]);
+    }
+}
+
+static char* dal_c__jsonEscape(const char* text) {
+    if (!text) {
+        return strdup("");
+    }
+    size_t cap = strlen(text) * 2 + 1;
+    char* out = (char*)malloc(cap);
+    if (!out) {
+        return NULL;
+    }
+    size_t len = 0;
+    for (const unsigned char* it = (const unsigned char*)text; *it != '\0'; ++it) {
+        char escaped[8] = { 0 };
+        const char* piece = NULL;
+        if (*it == '\\') {
+            piece = "\\\\";
+        } else if (*it == '"') {
+            piece = "\\\"";
+        } else if (*it == '\n') {
+            piece = "\\n";
+        } else if (*it == '\r') {
+            piece = "\\r";
+        } else if (*it == '\t') {
+            piece = "\\t";
+        } else if (*it < 0x20) {
+            (void)snprintf(escaped, sizeof(escaped), "\\u%04x", (unsigned)*it);
+            piece = escaped;
+        }
+        if (piece) {
+            size_t piece_len = strlen(piece);
+            if (len + piece_len + 1 > cap) {
+                cap = (len + piece_len + 1) * 2;
+                char* grown = (char*)realloc(out, cap);
+                if (!grown) {
+                    free(out);
+                    return NULL;
+                }
+                out = grown;
+            }
+            memcpy(out + len, piece, piece_len);
+            len += piece_len;
+        } else {
+            if (len + 2 > cap) {
+                cap = (len + 2) * 2;
+                char* grown = (char*)realloc(out, cap);
+                if (!grown) {
+                    free(out);
+                    return NULL;
+                }
+                out = grown;
+            }
+            out[len++] = (char)*it;
+        }
+    }
+    out[len] = '\0';
+    return out;
+}
+
+static void dal_c__fprintJsonString(FILE* fp, const char* text) {
+    assert(fp != NULL);
+    char* escaped = dal_c__jsonEscape(text);
+    (void)fprintf(fp, "\"%s\"", escaped ? escaped : "");
+    free(escaped);
+}
+
+int dal_c__writeCompileDb(
+    const dal_c_Cmd* cmd,
+    const dal_c_Project* proj,
+    const dal_c_ProfileSpec* profile,
+    ArrStr* sources,
+    const char* output_path,
+    dal_c_Target target_type
+) {
+    assert(cmd != NULL);
+    assert(profile != NULL);
+    assert(sources != NULL);
+    assert(output_path != NULL);
+
+    char* output_parent = path_parent(output_path);
+    if (output_parent) {
+        dir_createRecur(output_parent);
+    }
+    free(output_parent);
+
+    FILE* fp = fopen(output_path, "w");
+    if (!fp) {
+        (void)fprintf(stderr, "Error: Failed to open compile database: %s\n", output_path);
+        return 1;
+    }
+
+    char* cwd = env_getCWD();
+    const char* directory = (proj && proj->root) ? proj->root : (cwd ? cwd : ".");
+    (void)fprintf(fp, "[\n");
+    for (int i = 0; i < ArrStr_len(sources); ++i) {
+        const char* src = ArrStr_at(sources, i);
+        ArrStr* argv = ArrStr_init();
+        dal_c__appendCompileDbArguments(argv, cmd, proj, profile, src, target_type);
+
+        (void)fprintf(fp, "  {\n");
+        (void)fprintf(fp, "    \"directory\": ");
+        dal_c__fprintJsonString(fp, directory);
+        (void)fprintf(fp, ",\n");
+        (void)fprintf(fp, "    \"file\": ");
+        dal_c__fprintJsonString(fp, src);
+        (void)fprintf(fp, ",\n");
+        (void)fprintf(fp, "    \"arguments\": [");
+        for (int j = 0; j < ArrStr_len(argv); ++j) {
+            if (j > 0) {
+                (void)fprintf(fp, ", ");
+            }
+            dal_c__fprintJsonString(fp, ArrStr_at(argv, j));
+        }
+        (void)fprintf(fp, "]\n");
+        (void)fprintf(fp, "  }%s\n", i + 1 < ArrStr_len(sources) ? "," : "");
+        ArrStr_fini(&argv);
+    }
+    (void)fprintf(fp, "]\n");
+    free(cwd);
+    return fclose(fp) == 0 ? 0 : 1;
 }
 
 static bool dal_c__tokensLookLikeLinkerInvocation(const ArrStr* tokens) {

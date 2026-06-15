@@ -726,6 +726,7 @@ typedef enum dal_c_CmdAction {
     dal_c_CmdAction_build_self = 13,
     dal_c_CmdAction_clean_self = 14,
     dal_c_CmdAction_toolchain = 15,
+    dal_c_CmdAction_compile_db = 16,
 } dal_c_CmdAction;
 #define dal_c_cmd_action_version "version"
 #define dal_c_cmd_action_help "help"
@@ -743,6 +744,7 @@ typedef enum dal_c_CmdAction {
 #define dal_c_cmd_action_build_self "build-self"
 #define dal_c_cmd_action_clean_self "clean-self"
 #define dal_c_cmd_action_toolchain "toolchain"
+#define dal_c_cmd_action_compile_db "compile-db"
 static inline dal_c_CmdAction dal_c_CmdAction_parse(const char* str) {
     if (str_eql(str, dal_c_cmd_action_build)) { return dal_c_CmdAction_build; }
     if (str_eql(str, dal_c_cmd_action_lib)) { return dal_c_CmdAction_lib; }
@@ -758,6 +760,7 @@ static inline dal_c_CmdAction dal_c_CmdAction_parse(const char* str) {
     if (str_eql(str, dal_c_cmd_action_build_self)) { return dal_c_CmdAction_build_self; }
     if (str_eql(str, dal_c_cmd_action_clean_self)) { return dal_c_CmdAction_clean_self; }
     if (str_eql(str, dal_c_cmd_action_toolchain)) { return dal_c_CmdAction_toolchain; }
+    if (str_eql(str, dal_c_cmd_action_compile_db)) { return dal_c_CmdAction_compile_db; }
     if (str_eql(str, dal_c_cmd_action_help)) { return dal_c_CmdAction_help; }
     if (str_eql(str, dal_c_cmd_action_version)) { return dal_c_CmdAction_version; }
     return dal_c_CmdAction_invalid;
@@ -778,6 +781,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
     case dal_c_CmdAction_build_self: return dal_c_cmd_action_build_self;
     case dal_c_CmdAction_clean_self: return dal_c_cmd_action_clean_self;
     case dal_c_CmdAction_toolchain: return dal_c_cmd_action_toolchain;
+    case dal_c_CmdAction_compile_db: return dal_c_cmd_action_compile_db;
     case dal_c_CmdAction_help: return dal_c_cmd_action_help;
     case dal_c_CmdAction_version: return dal_c_cmd_action_version;
     case dal_c_CmdAction_invalid:
@@ -1215,6 +1219,7 @@ typedef struct dal_c_Project dal_c_Project;
 
 int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj);
+int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_compileDeps(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_createWorkspace(const dal_c_Cmd* self, const dal_c_Project* proj);
@@ -1574,6 +1579,14 @@ static const char* const dal_c_help_toolchain_examples[] = {
 };
 #define dal_c_help_toolchain_examples_count ((int)(sizeof(dal_c_help_toolchain_examples) / sizeof(dal_c_help_toolchain_examples[0])))
 
+static const char* const dal_c_help_compile_db_examples[] = {
+    dal_c_cmd_action_compile_db,
+    dal_c_cmd_action_compile_db " " dal_c_profile_dev " " dal_c_opt_prefix_short dal_c_opt_output_short "compile_commands.json",
+    dal_c_cmd_action_compile_db " " dal_c_opt_prefix_long dal_c_opt_all,
+    dal_c_cmd_action_compile_db " src/main.c",
+};
+#define dal_c_help_compile_db_examples_count ((int)(sizeof(dal_c_help_compile_db_examples) / sizeof(dal_c_help_compile_db_examples[0])))
+
 static const dal_c_HelpOption dal_c_help_clean_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_cache, "Clean only cache" },
     { dal_c_opt_prefix_long dal_c_opt_self, "Apply `clean` to the self boundary" },
@@ -1686,6 +1699,12 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
       "[" dal_c_toolchain_query_all "|" dal_c_toolchain_query_start_files "|" dal_c_toolchain_query_compiler_rt "|" dal_c_toolchain_query_default_libs "|" dal_c_toolchain_query_crt "|" dal_c_toolchain_query_stdlib "|" dal_c_toolchain_query_libc "|" dal_c_toolchain_query_raw_link "] [options]",
       dal_c_help_toolchain_options, dal_c_help_toolchain_options_count,
       dal_c_help_toolchain_examples, dal_c_help_toolchain_examples_count,
+      false, true },
+    { dal_c_cmd_action_compile_db,
+      "Write a clang-compatible compilation database without building",
+      "[profile] [path] [options]",
+      dal_c_help_build_options, dal_c_help_build_options_count,
+      dal_c_help_compile_db_examples, dal_c_help_compile_db_examples_count,
       false, true },
     { dal_c_cmd_action_clean,
       "Clean build artifacts",

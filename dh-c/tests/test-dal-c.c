@@ -54,6 +54,7 @@ static void test_project_detection(void);
 static void test_clean_prefers_local_build_dir(void);
 static void test_target_request_resolution(void);
 static void test_explicit_file_build_uses_file_project(void);
+static void test_compile_db_command(void);
 static void test_skip_source_filters(void);
 static void test_test_source_classification(void);
 static void test_source_collection_ignores_hidden_ancestors(void);
@@ -79,6 +80,7 @@ int main(void) {
     RUN_TEST(test_clean_prefers_local_build_dir);
     RUN_TEST(test_target_request_resolution);
     RUN_TEST(test_explicit_file_build_uses_file_project);
+    RUN_TEST(test_compile_db_command);
     RUN_TEST(test_skip_source_filters);
     RUN_TEST(test_test_source_classification);
     RUN_TEST(test_source_collection_ignores_hidden_ancestors);
@@ -475,6 +477,11 @@ static void test_meta_tables(void) {
     TEST_ASSERT(workspace_cmd != NULL);
     TEST_ASSERT(!workspace_cmd->implemented);
 
+    const dal_c_HelpCmd* compile_db_cmd = test_find_help_cmd(dal_c_cmd_action_compile_db, NULL);
+    TEST_ASSERT(compile_db_cmd != NULL);
+    TEST_ASSERT(compile_db_cmd->implemented);
+    TEST_ASSERT(test_help_has_option(compile_db_cmd, dal_c_opt_output));
+
     const int option_count = dal_c_help_global_options_count;
     TEST_ASSERT(option_count == 2);
     TEST_ASSERT(cmd_count >= 10);
@@ -747,6 +754,28 @@ static void test_cmd_parse(void) {
         TEST_ASSERT(cmd->payload.build.self_boundary);
         TEST_ASSERT(cmd->opts.profile == dal_c_Profile_optimize);
         TEST_ASSERT(cmd->profile_explicit);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = {
+            dal_c_tool_name,
+            "compile-db",
+            "dev",
+            "--output=compile_commands.json",
+            "--all",
+            "--define=APP=1",
+            NULL
+        };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(6, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->action == dal_c_CmdAction_compile_db);
+        TEST_ASSERT(cmd->opts.profile == dal_c_Profile_dev);
+        TEST_ASSERT(cmd->profile_explicit);
+        TEST_ASSERT(cmd->payload.build.build_all);
+        TEST_ASSERT(str_eql(cmd->payload.build.output_path, "compile_commands.json"));
+        TEST_ASSERT(cmd->opts.define_count == 1);
+        TEST_ASSERT(str_eql(cmd->opts.define_macros[0], "APP=1"));
         dal_c_Cmd_cleanup(&cmd);
     }
 
@@ -1982,6 +2011,142 @@ static void test_explicit_file_build_uses_file_project(void) {
     free(samples_dir);
     free(source);
     free(archive_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+}
+
+static void test_compile_db_command(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "compile-db-project");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* source_dir = path_join(project_root, "src");
+    char* include_dir = path_join(project_root, "include");
+    char* samples_dir = path_join(project_root, "samples");
+    char* header = path_join(include_dir, "app.h");
+    char* source = path_join(source_dir, "main.c");
+    char* sample_source = path_join(samples_dir, "sample-main.c");
+    char* one_off_source = path_join(source_dir, "one-off.c");
+    char* output_path = path_join(project_root, "build/clangd/compile_commands.json");
+    char* auto_output_path = path_join(project_root, "compile_commands.json");
+
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(source_dir != NULL);
+    TEST_ASSERT(include_dir != NULL);
+    TEST_ASSERT(samples_dir != NULL);
+    TEST_ASSERT(header != NULL);
+    TEST_ASSERT(source != NULL);
+    TEST_ASSERT(sample_source != NULL);
+    TEST_ASSERT(one_off_source != NULL);
+    TEST_ASSERT(output_path != NULL);
+    TEST_ASSERT(auto_output_path != NULL);
+
+    TEST_ASSERT(dir_createRecur(source_dir));
+    TEST_ASSERT(dir_createRecur(include_dir));
+    TEST_ASSERT(dir_createRecur(samples_dir));
+    TEST_ASSERT(file_write(project_dh, "output=compile-db-project\nlink-dsl=off\n"));
+    TEST_ASSERT(file_write(header, "#pragma once\n#define APP_HEADER 1\n"));
+    TEST_ASSERT(file_write(source, "#include \"app.h\"\nint main(void) { return 0; }\n"));
+    TEST_ASSERT(file_write(sample_source, "int main(void) { return 0; }\n"));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(proj != NULL);
+
+    const char* argv[] = {
+        dal_c_tool_name,
+        "compile-db",
+        "dev",
+        "--output",
+        output_path,
+        "--define=APP=1",
+        "--comp-args=-Wextra \"-DQUOTED=A B\"",
+        NULL
+    };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(7, argv);
+    TEST_ASSERT(cmd != NULL);
+    TEST_ASSERT(dal_c_Cmd_writeCompileDb(cmd, proj) == 0);
+    TEST_ASSERT(path_isFile(output_path));
+
+    char* json = file_read(output_path);
+    TEST_ASSERT(json != NULL);
+    TEST_ASSERT(strstr(json, "\"directory\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"file\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"arguments\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"-fsyntax-only\"") == NULL);
+    TEST_ASSERT(strstr(json, "\"-DCOMP\"") == NULL);
+    TEST_ASSERT(strstr(json, "\"-Werror=all\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"-Werror=strict-prototypes\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"-DAPP=1\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"-Wextra\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"-DQUOTED=A B\"") != NULL);
+    TEST_ASSERT(strstr(json, "main.c") != NULL);
+
+    free(json);
+    dal_c_Cmd_cleanup(&cmd);
+
+    const char* build_argv[] = { dal_c_tool_name, "build", "dev", NULL };
+    dal_c_Cmd* build_cmd = dal_c_Cmd_parse(3, build_argv);
+    TEST_ASSERT(build_cmd != NULL);
+    TEST_ASSERT(dal_c_Cmd_makeTarget(build_cmd, proj) == 0);
+    TEST_ASSERT(path_isFile(auto_output_path));
+
+    json = file_read(auto_output_path);
+    TEST_ASSERT(json != NULL);
+    TEST_ASSERT(strstr(json, "\"arguments\"") != NULL);
+    TEST_ASSERT(strstr(json, "\"-fsyntax-only\"") == NULL);
+    TEST_ASSERT(strstr(json, "\"-DCOMP\"") == NULL);
+    TEST_ASSERT(strstr(json, "\"-Werror=all\"") != NULL);
+    TEST_ASSERT(strstr(json, "main.c") != NULL);
+    TEST_ASSERT(strstr(json, "sample-main.c") == NULL);
+
+    {
+        const char* sample_argv[] = { dal_c_tool_name, "build", "dev", "--sample", sample_source, NULL };
+        dal_c_Cmd* sample_cmd = dal_c_Cmd_parse(5, sample_argv);
+        TEST_ASSERT(sample_cmd != NULL);
+        TEST_ASSERT(dal_c_Cmd_makeTarget(sample_cmd, proj) == 0);
+        dal_c_Cmd_cleanup(&sample_cmd);
+
+        char* after_sample_json = file_read(auto_output_path);
+        TEST_ASSERT(after_sample_json != NULL);
+        TEST_ASSERT(str_eql(after_sample_json, json));
+        TEST_ASSERT(strstr(after_sample_json, "sample-main.c") == NULL);
+        free(after_sample_json);
+    }
+
+    TEST_ASSERT(file_write(one_off_source, "int main(void) { return 0; }\n"));
+    {
+        const char* file_argv[] = { dal_c_tool_name, "build", "dev", one_off_source, NULL };
+        dal_c_Cmd* file_cmd = dal_c_Cmd_parse(4, file_argv);
+        TEST_ASSERT(file_cmd != NULL);
+        TEST_ASSERT(dal_c_Cmd_makeTarget(file_cmd, proj) == 0);
+        dal_c_Cmd_cleanup(&file_cmd);
+
+        char* after_file_json = file_read(auto_output_path);
+        TEST_ASSERT(after_file_json != NULL);
+        TEST_ASSERT(str_eql(after_file_json, json));
+        TEST_ASSERT(strstr(after_file_json, "one-off.c") == NULL);
+        free(after_file_json);
+    }
+
+    free(json);
+    dal_c_Cmd_cleanup(&build_cmd);
+    dal_c_Project_cleanup(&proj);
+    (void)dir_removeRecur(temp_root);
+    TEST_ASSERT(!path_exists(temp_root));
+
+    free(auto_output_path);
+    free(output_path);
+    free(one_off_source);
+    free(sample_source);
+    free(source);
+    free(header);
+    free(samples_dir);
+    free(include_dir);
+    free(source_dir);
     free(project_dh);
     free(project_root);
     free(temp_root);

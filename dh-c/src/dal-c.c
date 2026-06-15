@@ -140,6 +140,7 @@ bool dal_c__needsProject(const dal_c_Cmd* cmd) {
     case dal_c_CmdAction_test:
     case dal_c_CmdAction_deps:
     case dal_c_CmdAction_clean:
+    case dal_c_CmdAction_compile_db:
         if (cmd->action == dal_c_CmdAction_clean) {
             return !cmd->payload.clean.self_boundary;
         }
@@ -181,6 +182,8 @@ static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd) {
     case dal_c_CmdAction_deps:
     case dal_c_CmdAction_clean:
         return cmd->action == dal_c_CmdAction_clean;
+    case dal_c_CmdAction_compile_db:
+        return cmd->payload.build.target_path != NULL && cmd->payload.build.sample_dir == dal_c_SampleDir_none;
     case dal_c_CmdAction_version:
     case dal_c_CmdAction_help:
     case dal_c_CmdAction_workspace:
