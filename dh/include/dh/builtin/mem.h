@@ -28,6 +28,11 @@ extern "C" {
 #define mem_bits_per_octlet __comp_int__mem_bits_per_octlet
 #define mem_bits_per_hexlet __comp_int__mem_bits_per_hexlet
 
+#define mem_bits_per_word __comp_int__mem_bits_per_word
+#define mem_bits_per_byte __comp_int__mem_bits_per_byte
+#define mem_bits_per_nibble __comp_int__mem_bits_per_nibble
+#define mem_bits_per_crumb __comp_int__mem_bits_per_crumb
+
 #define raw_countOnesSize(_x...) ____raw_countOnesSize(_x)
 #define raw_countOnes64(_x...) ____raw_countOnes64(_x)
 #define raw_countOnesLong(_x...) ____raw_countOnesLong(_x)
@@ -99,6 +104,11 @@ extern "C" {
 #define __comp_int__mem_bits_per_quadlet 32
 #define __comp_int__mem_bits_per_octlet 64
 #define __comp_int__mem_bits_per_hexlet 128
+
+#define __comp_int__mem_bits_per_word arch_bits_per_word
+#define __comp_int__mem_bits_per_byte arch_bits_per_byte
+#define __comp_int__mem_bits_per_nibble arch_bits_per_nibble
+#define __comp_int__mem_bits_per_crumb arch_bits_per_crumb
 
 #define ____raw_countOnesSize(_x...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_countOnes64(_x)), \
