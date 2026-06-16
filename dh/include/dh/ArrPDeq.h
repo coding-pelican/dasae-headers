@@ -15,6 +15,7 @@
  *          maximum elements can be efficiently accessed. Supports operations for initialization,
  *          modification, and element access. Enqueuing/dequeuing items is O(log n).
  */
+#pragma once
 #ifndef ArrPDeq__included
 #define ArrPDeq__included 1
 #if defined(__cplusplus)

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef exec_base__included
 #define exec_base__included 1
 #if defined(__cplusplus)

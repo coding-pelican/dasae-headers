@@ -1,3 +1,4 @@
+#pragma once
 #ifndef Future__included
 #define Future__included 1
 #if defined(__cplusplus)

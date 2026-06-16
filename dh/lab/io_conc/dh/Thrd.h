@@ -1,3 +1,4 @@
+#pragma once
 #ifndef thrd__included
 #define thrd__included 1
 #if defined(__cplusplus)

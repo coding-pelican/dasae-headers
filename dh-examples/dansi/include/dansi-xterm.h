@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dansi_xterm__included
 #define dansi_xterm__included 1
 #if defined(__cplusplus)

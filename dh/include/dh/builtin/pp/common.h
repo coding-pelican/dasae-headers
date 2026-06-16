@@ -17,6 +17,7 @@
  *          - Token counting
  *          - Token iteration
  */
+#pragma once
 #ifndef foundation_pp_common__included
 #define foundation_pp_common__included 1
 #if defined(__cplusplus)

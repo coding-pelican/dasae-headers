@@ -14,6 +14,7 @@
  * @details Provides utilities for function operations, including function pointers,
  *          function declarations, and function implementations.
  */
+#pragma once
 #ifndef core_fn__included
 #define core_fn__included 1
 #if defined(__cplusplus)

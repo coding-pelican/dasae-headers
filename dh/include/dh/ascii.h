@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  ascii
  */
+#pragma once
 #ifndef ascii__included
 #define ascii__included 1
 #if defined(__cplusplus)

@@ -14,6 +14,7 @@
  *
  * @note Links with `-luser32 -lgdi32 -lshcore`
  */
+#pragma once
 #ifndef dh_extras_sys_api_windows_wnd__included
 #define dh_extras_sys_api_windows_wnd__included 1
 #if defined(__cplusplus)

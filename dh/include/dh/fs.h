@@ -14,6 +14,7 @@
  * @details Provides utilities for file system operations, including directory traversal,
  *          file path manipulation, and file handling.
  */
+#pragma once
 #ifndef fs__included
 #define fs__included 1
 #if defined(__cplusplus)

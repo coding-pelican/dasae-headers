@@ -8,6 +8,7 @@
  * @ingroup dasae-headers(dh)/sys/libc/darwin
  * @prefix  sys_libc_darwin
  */
+#pragma once
 #ifndef sys_libc_darwin_cfg__included
 #define sys_libc_darwin_cfg__included 1
 #if defined(__cplusplus)

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef prl_ErrTrace__included
 #define prl_ErrTrace__included 1
 #if defined(__cplusplus)

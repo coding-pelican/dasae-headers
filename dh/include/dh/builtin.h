@@ -14,6 +14,7 @@
  *          configurations. Serves as a central point for builtin definitions
  *          and compiler-related functionality used throughout the project.
  */
+#pragma once
 #ifndef builtin__included
 #define builtin__included 1
 #if defined(__cplusplus)

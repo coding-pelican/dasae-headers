@@ -12,6 +12,7 @@
  * @brief   Base prelude for dh/prl
  * @details Provides base prelude for dh/prl.
  */
+#pragma once
 #ifndef prl_base__included
 #define prl_base__included 1
 #if defined(__cplusplus)

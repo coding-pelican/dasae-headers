@@ -14,6 +14,7 @@
  * Window contains multiple Viewports, each referencing a Canvas.
  * Viewports are composited in z_order to the Window's composite buffer.
  */
+#pragma once
 #ifndef dage_render_Viewport__included
 #define dage_render_Viewport__included 1
 #if defined(__cplusplus)

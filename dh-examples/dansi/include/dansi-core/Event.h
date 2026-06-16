@@ -12,6 +12,7 @@
  *
  * @brief   Standard ANSI raw extraction and event parsing.
  */
+#pragma once
 #ifndef dansi_Event__included
 #define dansi_Event__included 1
 #if defined(__cplusplus)

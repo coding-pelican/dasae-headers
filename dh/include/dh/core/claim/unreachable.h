@@ -13,6 +13,7 @@
  * @brief   Unreachable code assertions
  * @details Provides macros for marking and asserting unreachable code paths
  */
+#pragma once
 #ifndef claim_unreachable__included
 #define claim_unreachable__included 1
 #if defined(__cplusplus)

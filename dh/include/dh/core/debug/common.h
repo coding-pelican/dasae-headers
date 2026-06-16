@@ -16,6 +16,7 @@
  *          - Debugger detection
  *          - Debug configuration
  */
+#pragma once
 #ifndef core_debug_common__included
 #define core_debug_common__included 1
 #if defined(__cplusplus)

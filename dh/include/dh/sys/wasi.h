@@ -1,3 +1,4 @@
+#pragma once
 #ifndef sys_wasi__included
 #define sys_wasi__included 1
 #if defined(__cplusplus)

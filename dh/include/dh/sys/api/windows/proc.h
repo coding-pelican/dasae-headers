@@ -22,6 +22,7 @@
  * - Topology: GetProcessGroupAffinity, SetProcessGroupAffinity, GetNumaNodeProcessorMask,
  *   GetNumaProcessorNode
  */
+#pragma once
 #ifndef sys_api_windows_proc__included
 #define sys_api_windows_proc__included 1
 #if defined(__cplusplus)

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef sys_fw__included
 #define sys_fw__included 1
 #if defined(__cplusplus)

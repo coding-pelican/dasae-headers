@@ -13,6 +13,7 @@
  * @details This header contains internal structures and functions shared
  *          between `fmt/common.c` and `fmt/private/impl/flt.c`. Not part of public API.
  */
+#pragma once
 #ifndef fmt_private_share__included
 #define fmt_private_share__included 1
 #if defined(__cplusplus)

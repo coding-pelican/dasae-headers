@@ -1,3 +1,4 @@
+#pragma once
 #ifndef time_self_thrd__included
 #define time_self_thrd__included 1
 #if defined(__cplusplus)

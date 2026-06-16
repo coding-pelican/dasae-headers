@@ -1,3 +1,4 @@
+#pragma once
 #ifndef prl_tpl_meta__included
 #define prl_tpl_meta__included 1
 #if defined(__cplusplus)

@@ -9,6 +9,7 @@
  * @ingroup dal-project/da/io
  * @prefix  io_Buf
  */
+#pragma once
 #ifndef io_Buf__included
 #define io_Buf__included 1
 #if defined(__cplusplus)

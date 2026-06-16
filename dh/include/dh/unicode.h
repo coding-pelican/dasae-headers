@@ -13,6 +13,7 @@
  * @details orchestrates conversions between UTF-8, UTF-16, WTF-8, and WTF-16.
  * Resolves circular dependencies by keeping sub-modules independent.
  */
+#pragma once
 #ifndef unicode__included
 #define unicode__included 1
 #if defined(__cplusplus)

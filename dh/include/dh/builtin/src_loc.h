@@ -13,6 +13,7 @@
  * @brief   Source location information utilities
  * @details Provides structures and functions for tracking source code locations.
  */
+#pragma once
 #ifndef builtin_src_loc__included
 #define builtin_src_loc__included 1
 #if defined(__cplusplus)

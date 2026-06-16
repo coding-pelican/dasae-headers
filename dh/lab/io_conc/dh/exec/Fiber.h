@@ -1,3 +1,4 @@
+#pragma once
 #ifndef exec_Fiber__included
 #define exec_Fiber__included 1
 #if defined(__cplusplus)

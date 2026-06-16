@@ -1,3 +1,4 @@
+#pragma once
 #ifndef sys_posix__included
 #define sys_posix__included 1
 #if defined(__cplusplus)

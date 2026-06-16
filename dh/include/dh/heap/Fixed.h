@@ -14,6 +14,7 @@
  * @details Provides a simple bump allocator that manages a fixed-size buffer.
  *          Supports allocation, resize, and free operations with appropriate constraints.
  */
+#pragma once
 #ifndef heap_Fixed__included
 #define heap_Fixed__included 1
 #if defined(__cplusplus)

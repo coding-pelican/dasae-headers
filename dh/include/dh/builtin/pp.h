@@ -14,6 +14,7 @@
  * @details The foundation of all metaprogramming in dh. Provides pure
  *          preprocessor utilities with zero dependencies.
  */
+#pragma once
 #ifndef foundation_pp__included
 #define foundation_pp__included 1
 #if defined(__cplusplus)

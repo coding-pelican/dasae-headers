@@ -12,6 +12,7 @@
  * @brief   Cross-platform atomic operations
  * @details This provides atomic operations for primitive types to prevent data races.
  */
+#pragma once
 #ifndef atom__included
 #define atom__included 1
 #if defined(__cplusplus)

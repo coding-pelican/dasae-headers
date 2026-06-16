@@ -9,6 +9,7 @@
  * @ingroup dal-project/da/io
  * @prefix  io_Fixed
  */
+#pragma once
 #ifndef io_Fixed__included
 #define io_Fixed__included 1
 #if defined(__cplusplus)

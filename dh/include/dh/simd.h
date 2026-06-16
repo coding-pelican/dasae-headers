@@ -15,6 +15,7 @@
  *          using compiler builtins and platform-specific intrinsics.
  */
 
+#pragma once
 #ifndef Vec__included
 #define Vec__included 1
 #if defined(__cplusplus)
@@ -819,6 +820,7 @@ T_use_Vec$(8, u64); /* Vec$8$u64  - 8x uint64   */
  *          and ARM (NEON), with fallback to generic implementations.
  */
 
+#pragma once
 #ifndef Vec_opt__included
 #define Vec_opt__included 1
 #if defined(__cplusplus)
@@ -1248,6 +1250,7 @@ typedef enum Vec_PrefetchLocality {
  *          and specialized patterns for high-performance computing.
  */
 
+#pragma once
 #ifndef Vec_advanced__included
 #define Vec_advanced__included 1
 #if defined(__cplusplus)

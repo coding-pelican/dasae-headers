@@ -1,3 +1,4 @@
+#pragma once
 #ifndef time_base__included
 #define time_base__included 1
 #if defined(__cplusplus)

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef math_mat_types__included
 #define math_mat_types__included 1
 #if defined(__cplusplus)

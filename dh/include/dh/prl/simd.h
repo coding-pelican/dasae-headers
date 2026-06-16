@@ -1,3 +1,4 @@
+#pragma once
 #ifndef simd_V__included
 #define simd_V__included 1
 #if defined(__cplusplus)

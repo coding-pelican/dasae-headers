@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  sys
  */
+#pragma once
 #ifndef sys__included
 #define sys__included 1
 #if defined(__cplusplus)

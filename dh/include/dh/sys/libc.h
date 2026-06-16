@@ -1,3 +1,4 @@
+#pragma once
 #ifndef sys_libc__included
 #define sys_libc__included 1
 #if defined(__cplusplus)

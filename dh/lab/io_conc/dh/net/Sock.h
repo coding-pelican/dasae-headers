@@ -1,3 +1,4 @@
+#pragma once
 #ifndef net_Sock__included
 #define net_Sock__included 1
 #if defined(__cplusplus)

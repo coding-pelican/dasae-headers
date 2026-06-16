@@ -22,6 +22,7 @@
  * - Heap Management: GetProcessHeap, HeapAlloc, HeapReAlloc, HeapFree,
  *   HeapSize, HeapValidate, HeapCreate, HeapDestroy
  */
+#pragma once
 #ifndef sys_api_windows_mem__included
 #define sys_api_windows_mem__included 1
 #if defined(__cplusplus)

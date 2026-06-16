@@ -13,6 +13,7 @@
  * @details Defines compile-time options and configuration parameters
  *          for time-related operations and utilities.
  */
+#pragma once
 #ifndef time_cfg__included
 #define time_cfg__included 1
 #if defined(__cplusplus)

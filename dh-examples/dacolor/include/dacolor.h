@@ -10,6 +10,7 @@
  * @ingroup dasae-headers-examples(dh-examples)
  * @prefix  dacolor
  */
+#pragma once
 #ifndef dacolor__included
 #define dacolor__included 1
 #if defined(__cplusplus)

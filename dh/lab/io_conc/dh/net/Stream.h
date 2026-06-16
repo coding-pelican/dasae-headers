@@ -1,3 +1,4 @@
+#pragma once
 #ifndef net_Stream__included
 #define net_Stream__included 1
 #if defined(__cplusplus)

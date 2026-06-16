@@ -12,6 +12,7 @@
  * @brief   Wobbly Transformation Format - 16-bit.
  * @details Essentially standard u16 arrays, treated permissively.
  */
+#pragma once
 #ifndef wtf16__included
 #define wtf16__included 1
 #if defined(__cplusplus)

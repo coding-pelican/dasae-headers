@@ -44,6 +44,7 @@ fn_((CompHash_val(CompHash self))(u32));
 fn_((CompHash_calc(S_const$u8 str))(u32));
 
 #endif /* CHEAT_SHEET */
+#pragma once
 #ifndef da_dsl_prelude_CompHash__included
 #define da_dsl_prelude_CompHash__included 1
 #if defined(__cplusplus)

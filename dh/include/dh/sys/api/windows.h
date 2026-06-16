@@ -12,6 +12,7 @@
  * @brief   Windows API wrapper header
  * @details Provides a comprehensive wrapper for the Windows API.
  */
+#pragma once
 #ifndef sys_api_windows__included
 #define sys_api_windows__included 1
 #if defined(__cplusplus)

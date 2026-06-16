@@ -12,6 +12,7 @@
  *
  * @brief   xterm mouse tracking controls and event parser.
  */
+#pragma once
 #ifndef dansi_xterm_mouse__included
 #define dansi_xterm_mouse__included 1
 #if defined(__cplusplus)

@@ -14,6 +14,7 @@
  *            Windows version constants. This allows precise targeting of
  *            Windows 10/11 updates (e.g., 22h2, 24h2).
  */
+#pragma once
 #ifndef sys_api_windows_cfg__included
 #define sys_api_windows_cfg__included 1
 #if defined(__cplusplus)

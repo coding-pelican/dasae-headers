@@ -1,3 +1,4 @@
+#pragma once
 #ifndef actor__included
 #define actor__included 1
 

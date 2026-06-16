@@ -1,3 +1,4 @@
+#pragma once
 #ifndef sys_api_windows_socket__included
 #define sys_api_windows_socket__included 1
 

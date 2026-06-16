@@ -22,6 +22,7 @@
  *
  * @note Sleep/SleepEx are in sync.h (synchapi.h).
  */
+#pragma once
 #ifndef sys_api_windows_thrd__included
 #define sys_api_windows_thrd__included 1
 #if defined(__cplusplus)

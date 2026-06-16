@@ -20,6 +20,7 @@
  *   CertFreeCertificateContext, CertGetNameString
  * - Hash: CryptHashData, CryptCreateHash, CryptDestroyHash, CryptGetHashParam
  */
+#pragma once
 #ifndef sys_api_windows_crypt__included
 #define sys_api_windows_crypt__included 1
 #if defined(__cplusplus)

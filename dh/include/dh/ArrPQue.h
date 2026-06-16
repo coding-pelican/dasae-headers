@@ -15,6 +15,7 @@
  *          is always at the root. Supports operations for initialization, modification,
  *          and element access. Enqueuing/dequeuing items is O(log n).
  */
+#pragma once
 #ifndef ArrPQue__included
 #define ArrPQue__included 1
 #if defined(__cplusplus)

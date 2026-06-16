@@ -1,3 +1,4 @@
+#pragma once
 #ifndef exec_FiberGrow__included
 #define exec_FiberGrow__included 1
 #if defined(__cplusplus)

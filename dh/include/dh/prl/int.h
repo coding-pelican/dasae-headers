@@ -12,6 +12,7 @@
  * @brief   Integer type overflow checking utilities
  * @details Provides utilities for checking integer overflows.
  */
+#pragma once
 #ifndef prl_int__included
 #define prl_int__included 1
 #if defined(__cplusplus)

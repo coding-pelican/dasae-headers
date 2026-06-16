@@ -12,6 +12,7 @@
  * @brief   Reset event for thread management
  * @details Defines reset event for thread management.
  */
+#pragma once
 #ifndef thrd_ResetEvent__included
 #define thrd_ResetEvent__included 1
 #if defined(__cplusplus)

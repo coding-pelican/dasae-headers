@@ -15,6 +15,7 @@
  * @details Provides ANSI escape sequence generation, raw sequence extraction,
  *          and standard ANSI event parsing without OS terminal management.
  */
+#pragma once
 #ifndef dansi__included
 #define dansi__included 1
 #if defined(__cplusplus)

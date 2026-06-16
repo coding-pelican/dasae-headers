@@ -10,6 +10,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  fmt
  */
+#pragma once
 #ifndef fmt__included
 #define fmt__included 1
 #if defined(__cplusplus)

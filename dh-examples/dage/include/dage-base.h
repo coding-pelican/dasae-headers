@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dage_base__included
 #define dage_base__included 1
 #if defined(__cplusplus)

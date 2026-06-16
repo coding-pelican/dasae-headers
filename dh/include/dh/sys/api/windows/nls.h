@@ -18,6 +18,7 @@
  * - Code Pages: GetACP, GetOEMCP, IsValidCodePage
  * - Locale: GetUserDefaultLCID, GetSystemDefaultLCID, GetLocaleInfo
  */
+#pragma once
 #ifndef sys_api_windows_nls__included
 #define sys_api_windows_nls__included 1
 #if defined(__cplusplus)

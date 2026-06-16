@@ -7,6 +7,7 @@
  * @note    This is an internal protocol (variant) - not for external extension.
  *          Backend implementations generate these events, engine consumes them.
  */
+#pragma once
 #ifndef dage_runtime_Event__included
 #define dage_runtime_Event__included 1
 #if defined(__cplusplus)

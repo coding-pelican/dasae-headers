@@ -1,3 +1,4 @@
+#pragma once
 #ifndef Sched__included
 #define Sched__included 1
 #if defined(__cplusplus)

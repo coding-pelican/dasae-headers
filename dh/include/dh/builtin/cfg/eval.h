@@ -9,6 +9,7 @@
  * @ingroup dal-project/da/foundation/cfg
  * @prefix  eval
  */
+#pragma once
 #ifndef foundation_cfg_eval__included
 #define foundation_cfg_eval__included 1
 #if defined(__cplusplus)

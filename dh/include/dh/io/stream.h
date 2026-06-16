@@ -9,6 +9,7 @@
  * @ingroup dal-project/da/io
  * @prefix  io_stream
  */
+#pragma once
 #ifndef io_stream__included
 #define io_stream__included 1
 #if defined(__cplusplus)

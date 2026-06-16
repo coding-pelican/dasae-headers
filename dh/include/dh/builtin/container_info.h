@@ -13,6 +13,7 @@
  * @brief   Container and field relationship utilities
  * @details Provides type-safe container operations and field analysis utilities
  */
+#pragma once
 #ifndef builtin_container_info__included
 #define builtin_container_info__included 1
 #if defined(__cplusplus)
@@ -25,10 +26,8 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define memberName$(_path, _Tok...) __expr__memberName$( \
-    TypeOf(_path), TypeOf(pp_join(_, _path, _Tok)), _Tok \
-)
-#define __expr__memberName$(_path, _T_Path_Tok, _Tok...) #_Tok
+#define memberName$(_path, _Tok...) __expr__memberName$(_path, _Tok)
+#define __expr__memberName$(_path, _Tok...) #_Tok
 
 #define fieldName$(_path, _Tok...) __expr__fieldName$( \
     FieldType$(TypeOf(_path), _Tok), _Tok \

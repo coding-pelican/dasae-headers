@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dage_input_Mouse__included
 #define dage_input_Mouse__included 1
 #if defined(__cplusplus)

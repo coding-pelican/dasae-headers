@@ -15,6 +15,7 @@
  *          partition point, and equal range search.
  *          Supports custom comparison functions.
  */
+#pragma once
 #ifndef search__included
 #define search__included 1
 #if defined(__cplusplus)

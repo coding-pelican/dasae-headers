@@ -13,6 +13,7 @@
  * @brief   Static assertion utilities
  * @details Provides assertion utilities for compile-time assertions
  */
+#pragma once
 #ifndef core_claim_assert_static__included
 #define core_claim_assert_static__included 1
 #if defined(__cplusplus)

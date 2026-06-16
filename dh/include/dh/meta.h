@@ -11,6 +11,7 @@
  * @prefix  u
  */
 
+#pragma once
 #ifndef meta__included
 #define meta__included 1
 #if defined(__cplusplus)

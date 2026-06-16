@@ -11,6 +11,7 @@
  *
  * @brief   hijacked main for error handling
  */
+#pragma once
 #ifndef main__included
 #define main__included 1
 #if defined(__cplusplus)
@@ -87,6 +88,7 @@ fn_((dh_main(pp_if_(pp_not(main_no_args))(
 #ifndef main_root_included
 #define main_root_included 1
 
+#if on_comptime
 #if !TEST_enabled
 #if main_no_args
 $attr($maybe_unused)
@@ -231,7 +233,8 @@ $static fn_((main__callDHMainAndExit(P$raw raw_ctx))(void)) {
 
 start_emitEntry(main__callDHMainAndExit);
 #endif /* comp_start_files_linked || !comp_start_files_linked */
-#endif /* !TEST_enabled || !TEST_enabled */
+#endif /* !TEST_enabled */
+#endif /* on_comptime */
 
 #endif /* main_root_included */
 #define main dh_main

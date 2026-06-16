@@ -13,6 +13,7 @@
  * @details Defines compile-time options and configuration parameters
  *          for thread management.
  */
+#pragma once
 #ifndef thrd_cfg__included
 #define thrd_cfg__included 1
 #if defined(__cplusplus)

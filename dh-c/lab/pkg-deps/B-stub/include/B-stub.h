@@ -1,3 +1,4 @@
+#pragma once
 #ifndef B_stub__included
 #define B_stub__included 1
 

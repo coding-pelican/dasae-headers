@@ -10,6 +10,7 @@
  * @ingroup dasae-headers-workspace(dh-workspace)/dansi
  * @prefix  dansi_mode
  */
+#pragma once
 #ifndef dansi_mode__included
 #define dansi_mode__included 1
 #if defined(__cplusplus)

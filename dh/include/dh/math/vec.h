@@ -13,6 +13,7 @@
  * @brief   Mathematical common vector operations
  * @details Provides a set of vector mathematical operations and functions
  */
+#pragma once
 #ifndef math_vec__included
 #define math_vec__included 1
 

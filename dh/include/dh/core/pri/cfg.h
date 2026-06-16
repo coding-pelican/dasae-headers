@@ -13,6 +13,7 @@
  * @details Defines compile-time options and configuration parameters
  *          for primitive types and functions.
  */
+#pragma once
 #ifndef core_pri_cfg__included
 #define core_pri_cfg__included 1
 #if defined(__cplusplus)

@@ -12,6 +12,7 @@
  * @brief   Mutex for thread management
  * @details Defines mutex for thread management.
  */
+#pragma once
 #ifndef thrd_Mtx__included
 #define thrd_Mtx__included 1
 #if defined(__cplusplus)

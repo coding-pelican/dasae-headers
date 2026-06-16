@@ -29,6 +29,7 @@
  * - Linux: X11 (XOpenDisplay, XCreateWindow, XImage)
  * - macOS: Not yet supported (planned: Cocoa)
  */
+#pragma once
 #ifndef dage_Runtime_WSI__included
 #define dage_Runtime_WSI__included 1
 #if defined(__cplusplus)

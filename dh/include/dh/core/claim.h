@@ -13,6 +13,7 @@
  * @brief   Assertion utilities
  * @details Provides assertion utilities for static and dynamic assertions.
  */
+#pragma once
 #ifndef core_claim__included
 #define core_claim__included 1
 #if defined(__cplusplus)

@@ -22,6 +22,7 @@
  *
  * @note Standard handles (GetStdHandle, SetStdHandle) are defined in proc.h via processenv.h.
  */
+#pragma once
 #ifndef sys_api_windows_console__included
 #define sys_api_windows_console__included 1
 #if defined(__cplusplus)

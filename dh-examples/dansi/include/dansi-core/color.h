@@ -13,6 +13,7 @@
  * @brief   Terminal color support (256-color and RGB)
  * @details Reference: https://www.ditig.com/256-colors-cheat-sheet
  */
+#pragma once
 #ifndef dansi_color__included
 #define dansi_color__included 1
 #if defined(__cplusplus)

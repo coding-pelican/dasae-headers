@@ -13,6 +13,7 @@
  * @brief   Mathematical common quaternion operations
  * @details Provides a set of quaternion mathematical operations and functions
  */
+#pragma once
 #ifndef math_quat__included
 #define math_quat__included 1
 

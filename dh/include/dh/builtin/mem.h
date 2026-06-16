@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  (none)
  */
+#pragma once
 #ifndef builtin_mem__included
 #define builtin_mem__included 1
 #if defined(__cplusplus)

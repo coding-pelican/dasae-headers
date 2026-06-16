@@ -27,6 +27,7 @@
  *       - io.h: GetOverlappedResult, CreateIoCompletionPort, GetQueuedCompletionStatus
  *       See "Asynchronous File I/O Example" section below for usage.
  */
+#pragma once
 #ifndef sys_api_windows_file__included
 #define sys_api_windows_file__included 1
 #if defined(__cplusplus)

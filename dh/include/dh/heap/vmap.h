@@ -14,6 +14,7 @@
  *          writable mapped regions. This surface is weaker than `heap_vmem`
  *          and is the intended substrate for page-backed allocation paths.
  */
+#pragma once
 #ifndef heap_vmap__included
 #define heap_vmap__included 1
 #if defined(__cplusplus)

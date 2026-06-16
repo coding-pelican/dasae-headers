@@ -1,3 +1,4 @@
+#pragma once
 #ifndef builtin_asm__included
 #define builtin_asm__included 1
 #if defined(__cplusplus)

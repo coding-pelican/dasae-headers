@@ -13,6 +13,7 @@
  * @brief   "Make C Great Again"
  * @details Provides core utilities and definitions for the project.
  */
+#pragma once
 #ifndef core__included
 #define core__included 1
 #if defined(__cplusplus)

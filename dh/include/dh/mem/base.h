@@ -12,6 +12,7 @@
  * @brief   Memory base types
  * @details Defines base types for memory operations and utilities.
  */
+#pragma once
 #ifndef mem_base__included
 #define mem_base__included 1
 #if defined(__cplusplus)

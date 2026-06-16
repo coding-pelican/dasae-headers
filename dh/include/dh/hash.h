@@ -11,6 +11,7 @@
  *
  * @brief   Non-cryptographic hash utilities
  */
+#pragma once
 #ifndef hash__included
 #define hash__included 1
 #if defined(__cplusplus)

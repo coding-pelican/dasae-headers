@@ -14,6 +14,7 @@
  *          memory leaks, double frees, and invalid frees. Provides detailed
  *          reports with allocation source locations and timestamps.
  */
+#pragma once
 #ifndef mem_AlcTrace__included
 #define mem_AlcTrace__included 1
 #if defined(__cplusplus)

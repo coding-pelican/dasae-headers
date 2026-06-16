@@ -13,6 +13,7 @@
  * @details Detects operating system and platform-specific features.
  *          Focus: Windows, Linux, Darwin, and WASI.
  */
+#pragma once
 #ifndef foundation_cfg_plat__included
 #define foundation_cfg_plat__included 1
 #if defined(__cplusplus)

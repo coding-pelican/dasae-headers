@@ -13,6 +13,7 @@
  * @brief   Common prelude for dh/prl
  * @details Provides common prelude for dh/prl.
  */
+#pragma once
 #ifndef prl_common__included
 #define prl_common__included 1
 #if defined(__cplusplus)

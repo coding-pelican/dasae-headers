@@ -12,6 +12,7 @@
  *
  * @brief   Terminal cursor position and visibility control
  */
+#pragma once
 #ifndef dansi_cursor__included
 #define dansi_cursor__included 1
 #if defined(__cplusplus)

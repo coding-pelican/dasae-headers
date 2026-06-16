@@ -13,6 +13,7 @@
  * @brief   Terminal attribute reset
  * @details Provides functions to reset all colors and styles.
  */
+#pragma once
 #ifndef dansi_attr__included
 #define dansi_attr__included 1
 #if defined(__cplusplus)

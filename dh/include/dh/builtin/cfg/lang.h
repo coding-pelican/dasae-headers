@@ -13,6 +13,7 @@
  * @details Detects C/C++ language standards, features, and compilation modes.
  *          Includes standard versions, language extensions, and dialect support.
  */
+#pragma once
 #ifndef foundation_cfg_lang__included
 #define foundation_cfg_lang__included 1
 #if defined(__cplusplus)

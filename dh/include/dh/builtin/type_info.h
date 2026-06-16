@@ -13,6 +13,7 @@
  * @brief   Type information and checking utilities
  * @details Provides compile-time type analysis and validation capabilities
  */
+#pragma once
 #ifndef builtin_type_info__included
 #define builtin_type_info__included 1
 #if defined(__cplusplus)

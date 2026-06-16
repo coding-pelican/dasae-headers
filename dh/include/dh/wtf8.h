@@ -12,6 +12,7 @@
  * @brief   Wobbly Transformation Format - 8-bit.
  * @details Superset of UTF-8 that allows unpaired surrogates.
  */
+#pragma once
 #ifndef wtf8__included
 #define wtf8__included 1
 #if defined(__cplusplus)

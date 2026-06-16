@@ -9,6 +9,7 @@
  * @ingroup dal-project/da/io
  * @prefix  io_Reader
  */
+#pragma once
 #ifndef io_Reader__included
 #define io_Reader__included 1
 #if defined(__cplusplus)

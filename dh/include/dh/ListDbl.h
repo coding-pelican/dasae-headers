@@ -14,6 +14,7 @@
  * @details Bidirectional traversal with O(1) operations
  *          with basic insertion, removal, and traversal operations.
  */
+#pragma once
 #ifndef ListDbl__included
 #define ListDbl__included 1
 #if defined(__cplusplus)

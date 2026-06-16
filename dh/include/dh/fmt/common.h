@@ -114,6 +114,7 @@
 // alt = '#'
 // mode = ' ' auto | 'd' 10 | 'x' 16 | 'o' 8 | 'b' 2 | 'e' scientific
 // sign = ' ' auto | '+' always | '-' only ngtv
+#pragma once
 #ifndef fmt_common__included
 #define fmt_common__included 1
 #if defined(__cplusplus)

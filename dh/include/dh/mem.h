@@ -12,6 +12,7 @@
  * @brief   Memory management with type-safe operations
  * @details Provides memory management utilities with type-safe operations.
  */
+#pragma once
 #ifndef mem__included
 #define mem__included 1
 #if defined(__cplusplus)

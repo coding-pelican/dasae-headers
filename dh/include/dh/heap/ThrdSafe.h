@@ -10,6 +10,7 @@
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap_ThrdSafe
  */
+#pragma once
 #ifndef heap_ThrdSafe__included
 #define heap_ThrdSafe__included 1
 #if defined(__cplusplus)

@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/core
  * @prefix  (none)
  */
+#pragma once
 #ifndef core_range__included
 #define core_range__included 1
 #if defined(__cplusplus)

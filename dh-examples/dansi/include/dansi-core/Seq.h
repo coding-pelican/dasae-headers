@@ -12,6 +12,7 @@
  *
  * @brief   Protocol-neutral ANSI byte sequence extraction.
  */
+#pragma once
 #ifndef dansi_Seq__included
 #define dansi_Seq__included 1
 #if defined(__cplusplus)

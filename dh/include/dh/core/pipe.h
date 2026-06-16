@@ -1,3 +1,4 @@
+#pragma once
 #ifndef core_pipe__included
 #define core_pipe__included 1
 #if defined(__cplusplus)

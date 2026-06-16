@@ -13,6 +13,7 @@
  * @brief   Wait group for thread management
  * @details Defines wait group for thread management.
  */
+#pragma once
 #ifndef thrd_WaitGroup__included
 #define thrd_WaitGroup__included 1
 #if defined(__cplusplus)

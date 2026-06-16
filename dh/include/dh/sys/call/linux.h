@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/sys/call
  * @prefix  sys_call_linux
  */
+#pragma once
 #ifndef sys_call_linux__included
 #define sys_call_linux__included 1
 #if defined(__cplusplus)

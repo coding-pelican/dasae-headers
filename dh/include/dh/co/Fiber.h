@@ -1,3 +1,4 @@
+#pragma once
 #ifndef co_Fiber__included
 #define co_Fiber__included 1
 #if defined(__cplusplus)

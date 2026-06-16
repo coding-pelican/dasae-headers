@@ -18,6 +18,7 @@
  *          - Type conversion
  *          - Type utility functions
  */
+#pragma once
 #ifndef core_type_info__included
 #define core_type_info__included 1
 #if defined(__cplusplus)

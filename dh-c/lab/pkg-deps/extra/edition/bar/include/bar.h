@@ -1,3 +1,4 @@
+#pragma once
 #ifndef bar__included
 #define bar__included 1
 

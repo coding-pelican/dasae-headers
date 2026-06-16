@@ -1,3 +1,4 @@
+#pragma once
 #ifndef exec_Coop__included
 #define exec_Coop__included 1
 #if defined(__cplusplus)

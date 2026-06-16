@@ -13,6 +13,7 @@
  * @brief   Compiler-specific configurations and optimizations
  * @details Provides compiler-specific inline directives and optimizations based on detected environment
  */
+#pragma once
 #ifndef builtin_comp__included
 #define builtin_comp__included 1
 #if defined(__cplusplus)

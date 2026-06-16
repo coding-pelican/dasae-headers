@@ -1,3 +1,4 @@
+#pragma once
 #ifndef foo__included
 #define foo__included 1
 

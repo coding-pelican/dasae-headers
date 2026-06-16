@@ -14,6 +14,7 @@
  * @details Memory-efficient forward traversal with basic insertion,
  *          removal, and traversal operations.
  */
+#pragma once
 #ifndef ListSgl__included
 #define ListSgl__included 1
 #if defined(__cplusplus)

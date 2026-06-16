@@ -26,6 +26,7 @@
  * // ... use vt100, backend, runtime ...
  * ```
  */
+#pragma once
 #ifndef dage_Runtime_VT100__included
 #define dage_Runtime_VT100__included 1
 #if defined(__cplusplus)

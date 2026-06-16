@@ -12,6 +12,7 @@
  *
  * @brief   Terminal screen buffer and clearing operations
  */
+#pragma once
 #ifndef dansi_screen__included
 #define dansi_screen__included 1
 #if defined(__cplusplus)

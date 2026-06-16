@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/thrd
  * @prefix  thrd_ftx
  */
+#pragma once
 #ifndef thrd_ftx__included
 #define thrd_ftx__included 1
 #if defined(__cplusplus)

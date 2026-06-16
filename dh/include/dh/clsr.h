@@ -1,3 +1,4 @@
+#pragma once
 #ifndef clsr__included
 #define clsr__included 1
 #if defined(__cplusplus)

@@ -20,6 +20,7 @@
  * @see [Ryu Paper: Ulf Adams (2018), "Ryū: fast float-to-string conversion"](https://dl.acm.org/doi/pdf/10.1145/3360595)
  * @see [Zig Implementation](https://github.com/ziglang/zig/blob/master/lib/std/fmt/float.zig)
  */
+#pragma once
 #ifndef fmt_private_impl_ryu__included
 #define fmt_private_impl_ryu__included 1
 #if defined(__cplusplus)

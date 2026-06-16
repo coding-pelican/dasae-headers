@@ -15,6 +15,7 @@
  *
  * @see Reference: https://www.ditig.com/256-colors-cheat-sheet
  */
+#pragma once
 #ifndef dansi_Palette8bit__included
 #define dansi_Palette8bit__included 1
 #if defined(__cplusplus)

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef sys_call__included
 #define sys_call__included 1
 #if defined(__cplusplus)

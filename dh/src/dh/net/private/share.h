@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dh_src_dh_net_private_share__included
 #define dh_src_dh_net_private_share__included 1
 

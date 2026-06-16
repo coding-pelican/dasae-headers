@@ -22,6 +22,7 @@
  * 3. dage_Window_composite() blits viewports → composite_buf
  * 4. Runtime presents composite_buf to Backend
  */
+#pragma once
 #ifndef dage_runtime_Window__included
 #define dage_runtime_Window__included 1
 #if defined(__cplusplus)

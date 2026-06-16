@@ -12,6 +12,7 @@
  * @brief   Aggregate test runner entry surface
  * @details Emits the root test `main` only when `TEST_main_enabled` is defined.
  */
+#pragma once
 #ifndef dh_TEST_main__included
 #define dh_TEST_main__included 1
 #if defined(__cplusplus)

@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/fs
  * @prefix  fs_path
  */
+#pragma once
 #ifndef fs_path__included
 #define fs_path__included 1
 #if defined(__cplusplus)

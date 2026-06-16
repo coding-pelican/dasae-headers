@@ -13,6 +13,7 @@
  * @brief   Low-level ANSI escape sequence utilities
  * @details Provides constants and helper functions for building ANSI sequences
  */
+#pragma once
 #ifndef dansi_utils__included
 #define dansi_utils__included 1
 #if defined(__cplusplus)

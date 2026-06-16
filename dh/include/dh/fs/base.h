@@ -10,6 +10,7 @@
  * @ingroup dasae-headers(dh)/fs
  * @prefix  fs
  */
+#pragma once
 #ifndef fs_base__included
 #define fs_base__included 1
 #if defined(__cplusplus)

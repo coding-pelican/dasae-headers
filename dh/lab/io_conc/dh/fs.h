@@ -1,3 +1,4 @@
+#pragma once
 #ifndef fs__included
 #define fs__included 1
 #if defined(__cplusplus)

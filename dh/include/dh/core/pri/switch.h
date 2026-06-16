@@ -16,6 +16,7 @@
  *          - Case return
  *          - Default return
  */
+#pragma once
 #ifndef core_pri_switch__included
 #define core_pri_switch__included 1
 #if defined(__cplusplus)

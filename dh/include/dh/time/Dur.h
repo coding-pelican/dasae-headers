@@ -16,6 +16,7 @@
  *          - Time formatting and parsing
  *          - Platform-independent time operations
  */
+#pragma once
 #ifndef time_Dur__included
 #define time_Dur__included 1
 #if defined(__cplusplus)

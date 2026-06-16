@@ -13,6 +13,7 @@
  *
  * @brief   Backend-neutral terminal interface.
  */
+#pragma once
 #ifndef daterm__included
 #define daterm__included 1
 #if defined(__cplusplus)

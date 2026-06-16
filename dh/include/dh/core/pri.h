@@ -22,6 +22,7 @@
  *          All operations use Clang built-ins for zero runtime cost.
  *          Debug assertions check for undefined behavior (overflow, division by zero).
  */
+#pragma once
 #ifndef core_pri__included
 #define core_pri__included 1
 #if defined(__cplusplus)

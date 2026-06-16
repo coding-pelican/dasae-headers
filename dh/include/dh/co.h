@@ -1,3 +1,4 @@
+#pragma once
 #ifndef co__included
 #define co__included 1
 #if defined(__cplusplus)

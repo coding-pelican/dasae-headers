@@ -14,6 +14,7 @@
  *          algorithms regardless of the memory source. It completely eliminates OS dependencies
  *          by accepting a parent allocator at initialization time.
  */
+#pragma once
 #ifndef heap_Smp__included
 #define heap_Smp__included 1
 #if defined(__cplusplus)

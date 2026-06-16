@@ -1,3 +1,4 @@
+#pragma once
 #ifndef fs_File_Atom__included
 #define fs_File_Atom__included 1
 #if defined(__cplusplus)

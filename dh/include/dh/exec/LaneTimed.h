@@ -1,3 +1,4 @@
+#pragma once
 #ifndef exec_LaneTimed__included
 #define exec_LaneTimed__included 1
 #if defined(__cplusplus)

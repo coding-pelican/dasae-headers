@@ -9,6 +9,7 @@
  * @ingroup dal-project/da/io
  * @prefix  io_Writer
  */
+#pragma once
 #ifndef io_Writer__included
 #define io_Writer__included 1
 #if defined(__cplusplus)

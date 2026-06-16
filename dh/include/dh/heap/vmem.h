@@ -13,6 +13,7 @@
  * @details Exposes sparse reserve, commit, decommit, protect, and release
  *          operations for page-backed virtual address-space management.
  */
+#pragma once
 #ifndef heap_vmem__included
 #define heap_vmem__included 1
 #if defined(__cplusplus)

@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap_Pool
  */
+#pragma once
 #ifndef heap_Pool__included
 #define heap_Pool__included 1
 #if defined(__cplusplus)

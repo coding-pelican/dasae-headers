@@ -12,6 +12,7 @@
  * @brief   Configuration settings for fmt
  * @details Defines compile-time options and configuration parameters for fmt.
  */
+#pragma once
 #ifndef fmt_cfg__included
 #define fmt_cfg__included 1
 #if defined(__cplusplus)

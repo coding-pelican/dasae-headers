@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  atom
  */
+#pragma once
 #ifndef builtin_atom__included
 #define builtin_atom__included 1
 #if defined(__cplusplus)

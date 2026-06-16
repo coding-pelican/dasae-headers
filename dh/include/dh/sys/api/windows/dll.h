@@ -19,6 +19,7 @@
  * - Unloading: FreeLibrary, FreeLibraryAndExitThread
  * - Information: GetModuleFileName, GetModuleFileNameA, GetModuleFileNameW
  */
+#pragma once
 #ifndef sys_api_windows_dll__included
 #define sys_api_windows_dll__included 1
 #if defined(__cplusplus)

@@ -23,6 +23,7 @@
  *
  * @see `dh-extras/heap/TLSF` for more efficiently reusable memory allocator implementation
  */
+#pragma once
 #ifndef heap__included
 #define heap__included 1
 #if defined(__cplusplus)

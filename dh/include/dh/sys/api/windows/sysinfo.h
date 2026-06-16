@@ -26,6 +26,7 @@
  *
  * @note GetUserName is in winbase.h (and requires Advapi32.lib), so it is excluded here.
  */
+#pragma once
 #ifndef sys_api_windows_sysinfo__included
 #define sys_api_windows_sysinfo__included 1
 #if defined(__cplusplus)

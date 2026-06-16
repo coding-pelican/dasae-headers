@@ -1,3 +1,4 @@
+#pragma once
 #ifndef math_quat_types__included
 #define math_quat_types__included 1
 #if defined(__cplusplus)

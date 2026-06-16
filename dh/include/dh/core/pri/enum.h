@@ -10,6 +10,7 @@
  * @ingroup dasae-headers(dh)/core/pri
  * @prefix  (none)
  */
+#pragma once
 #ifndef core_pri_enum__included
 #define core_pri_enum__included 1
 #if defined(__cplusplus)

@@ -19,6 +19,7 @@
  *
  * @note Links with `-lX11`
  */
+#pragma once
 #ifndef dh_extras_sys_call_linux_x11__included
 #define dh_extras_sys_call_linux_x11__included 1
 #if defined(__cplusplus)

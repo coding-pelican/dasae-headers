@@ -12,6 +12,7 @@
  * @brief   Strict UTF-16 handling (Validates Surrogate Pairs).
  * @details Assumes Host Endian for u16 arrays.
  */
+#pragma once
 #ifndef utf16__included
 #define utf16__included 1
 #if defined(__cplusplus)

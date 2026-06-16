@@ -23,6 +23,7 @@
  * @warning These APIs are semi-documented and may change between Windows versions.
  *          Prefer Win32 APIs when possible.
  */
+#pragma once
 #ifndef sys_api_windows_nt__included
 #define sys_api_windows_nt__included 1
 #if defined(__cplusplus)

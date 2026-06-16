@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dage_input_Keyboard__included
 #define dage_input_Keyboard__included 1
 #if defined(__cplusplus)

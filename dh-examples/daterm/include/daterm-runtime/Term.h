@@ -10,6 +10,7 @@
  * @ingroup daterm-runtime
  * @prefix  daterm_Term
  */
+#pragma once
 #ifndef daterm_Term__included
 #define daterm_Term__included 1
 #if defined(__cplusplus)

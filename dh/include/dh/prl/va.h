@@ -1,3 +1,4 @@
+#pragma once
 #ifndef prl_va__included
 #define prl_va__included 1
 #if defined(__cplusplus)

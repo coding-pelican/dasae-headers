@@ -1,3 +1,4 @@
+#pragma once
 #ifndef time__included
 #define time__included 1
 #if defined(__cplusplus)

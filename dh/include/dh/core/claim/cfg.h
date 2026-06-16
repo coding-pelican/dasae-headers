@@ -12,6 +12,7 @@
  * @brief   Configuration synthesis for claim assertions
  * @details Combines default and custom configurations for claim assertions
  */
+#pragma once
 #ifndef core_claim_cfg__included
 #define core_claim_cfg__included 1
 #if defined(__cplusplus)

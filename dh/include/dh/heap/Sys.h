@@ -14,6 +14,7 @@
  *          - Windows/POSIX: `heap_Page`
  *          - WASI: `heap_Sbrk` on top of `heap_Sbrk_Sys_Wasm`
  */
+#pragma once
 #ifndef heap_Sys__included
 #define heap_Sys__included 1
 #if defined(__cplusplus)

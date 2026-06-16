@@ -10,6 +10,7 @@
  * @ingroup dasae-headers-workspace(dh-workspace)/dansi
  * @prefix  dansi_device
  */
+#pragma once
 #ifndef dansi_device__included
 #define dansi_device__included 1
 #if defined(__cplusplus)

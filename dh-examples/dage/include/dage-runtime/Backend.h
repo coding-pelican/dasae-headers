@@ -13,6 +13,7 @@
  * 3. Event routing is pull-based (pumpEvents returns array, Runtime dispatches)
  * 4. Always RGBA32 pixel format - Backend handles conversion internally
  */
+#pragma once
 #ifndef dage_runtime_Backend__included
 #define dage_runtime_Backend__included 1
 #if defined(__cplusplus)

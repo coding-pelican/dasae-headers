@@ -12,6 +12,7 @@
  * @brief   Configuration synthesis for debug system
  * @details Combines default and custom configurations for debug system
  */
+#pragma once
 #ifndef core_debug_cfg__included
 #define core_debug_cfg__included 1
 #if defined(__cplusplus)

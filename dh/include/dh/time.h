@@ -16,6 +16,7 @@
  *          - Time formatting and conversion utilities
  *          - Platform-independent time operations
  */
+#pragma once
 #ifndef time__included
 #define time__included 1
 #if defined(__cplusplus)

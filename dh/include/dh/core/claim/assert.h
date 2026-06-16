@@ -12,6 +12,7 @@
  * @brief   Unconditional assertion utilities
  * @details Provides unconditional utilities for runtime assertions
  */
+#pragma once
 #ifndef core_claim_assert__included
 #define core_claim_assert__included 1
 #if defined(__cplusplus)

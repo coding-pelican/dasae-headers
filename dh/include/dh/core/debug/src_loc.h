@@ -12,6 +12,7 @@
  * @brief   Source location information utilities for debugging
  * @details Provides structures and functions for tracking source code locations for debugging.
  */
+#pragma once
 #ifndef da_dsl_core_debug_src_loc__included
 #define da_dsl_core_debug_src_loc__included 1
 #if defined(__cplusplus)

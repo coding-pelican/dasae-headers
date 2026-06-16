@@ -1,3 +1,4 @@
+#pragma once
 #ifndef prl_tpl_ErrRes__included
 #define prl_tpl_ErrRes__included 1
 #if defined(__cplusplus)

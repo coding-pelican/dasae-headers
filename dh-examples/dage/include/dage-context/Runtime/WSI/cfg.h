@@ -7,6 +7,7 @@
  * @details Defines compile-time options and platform-specific types
  *          for Window System Integration.
  */
+#pragma once
 #ifndef dage_context_Runtime_WSI_cfg__included
 #define dage_context_Runtime_WSI_cfg__included 1
 #if defined(__cplusplus)

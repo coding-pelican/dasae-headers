@@ -20,6 +20,7 @@
  * - Process Debugging: DebugActiveProcess, DebugActiveProcessStop,
  *   ContinueDebugEvent, WaitForDebugEvent, WaitForDebugEventEx [Min: Win10]
  */
+#pragma once
 #ifndef sys_api_windows_debug__included
 #define sys_api_windows_debug__included 1
 #if defined(__cplusplus)

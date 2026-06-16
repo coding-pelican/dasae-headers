@@ -12,6 +12,7 @@
  *
  * @brief   Terminal line scrolling and clearing operations
  */
+#pragma once
 #ifndef dansi_line__included
 #define dansi_line__included 1
 #if defined(__cplusplus)

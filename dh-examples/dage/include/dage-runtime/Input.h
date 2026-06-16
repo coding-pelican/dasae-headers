@@ -16,6 +16,7 @@
  * 4. Game logic queries InputState
  * 5. Frame end: dage_Input_endFrame() clears pressed/released flags
  */
+#pragma once
 #ifndef dage_runtime_Input__included
 #define dage_runtime_Input__included 1
 #if defined(__cplusplus)

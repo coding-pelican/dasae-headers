@@ -26,6 +26,7 @@
  * - Barriers [Min: Win8]: InitializeSynchronizationBarrier, EnterSynchronizationBarrier,
  *   DeleteSynchronizationBarrier
  */
+#pragma once
 #ifndef sys_api_windows_sync__included
 #define sys_api_windows_sync__included 1
 #if defined(__cplusplus)

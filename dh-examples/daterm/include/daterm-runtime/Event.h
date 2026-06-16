@@ -10,6 +10,7 @@
  * @ingroup daterm-runtime
  * @prefix  daterm_Event
  */
+#pragma once
 #ifndef daterm_Event__included
 #define daterm_Event__included 1
 #if defined(__cplusplus)

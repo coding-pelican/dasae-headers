@@ -10,6 +10,7 @@
  * @ingroup dasae-headers-workspace(dh-workspace)/dansi
  * @prefix  dansi_scroll
  */
+#pragma once
 #ifndef dansi_scroll__included
 #define dansi_scroll__included 1
 #if defined(__cplusplus)

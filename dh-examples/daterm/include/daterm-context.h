@@ -1,3 +1,4 @@
+#pragma once
 #ifndef daterm_context__included
 #define daterm_context__included 1
 #if defined(__cplusplus)

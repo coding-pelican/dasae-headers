@@ -1,3 +1,4 @@
+#pragma once
 #ifndef sys_hosted__included
 #define sys_hosted__included 1
 #if defined(__cplusplus)

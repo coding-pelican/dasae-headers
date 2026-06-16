@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  start
  */
+#pragma once
 #ifndef start__included
 #define start__included 1
 #if defined(__cplusplus)

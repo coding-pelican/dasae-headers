@@ -15,6 +15,7 @@
  *          including pattern matching syntax, payload extraction, and type-safe union construction.
  *          Supports compile-time type checking and exhaustive pattern matching.
  */
+#pragma once
 #ifndef prl_tpl_variant__included
 #define prl_tpl_variant__included 1
 #if defined(__cplusplus)

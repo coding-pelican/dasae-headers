@@ -1,3 +1,4 @@
+#pragma once
 #ifndef time_private_share__included
 #define time_private_share__included 1
 #if defined(__cplusplus)

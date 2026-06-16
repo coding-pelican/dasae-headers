@@ -15,6 +15,7 @@
  *          Supports operations for initialization, modification, and element access.
  *          Pushing/popping items from the stack is O(1).
  */
+#pragma once
 #ifndef ArrStk__included
 #define ArrStk__included 1
 #if defined(__cplusplus)

@@ -12,6 +12,7 @@
  *
  * @brief   Terminal text styling support
  */
+#pragma once
 #ifndef dansi_style__included
 #define dansi_style__included 1
 #if defined(__cplusplus)

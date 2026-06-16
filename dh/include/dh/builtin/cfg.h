@@ -1,3 +1,4 @@
+#pragma once
 #ifndef foundation_cfg__included
 #define foundation_cfg__included 1
 #if defined(__cplusplus)

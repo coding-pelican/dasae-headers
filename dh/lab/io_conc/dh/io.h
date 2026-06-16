@@ -1,3 +1,4 @@
+#pragma once
 #ifndef io__included
 #define io__included 1
 #if defined(__cplusplus)

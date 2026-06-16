@@ -14,6 +14,7 @@
  *          log levels, and formatting options.
  */
 
+#pragma once
 #ifndef log__included
 #define log__included 1
 #if defined(__cplusplus)

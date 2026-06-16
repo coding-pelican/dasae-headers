@@ -14,6 +14,7 @@
  * @details Defines compile-time options and configuration parameters
  *          for memory allocation behavior and safety features.
  */
+#pragma once
 #ifndef heap_cfg__included
 #define heap_cfg__included 1
 #if defined(__cplusplus)

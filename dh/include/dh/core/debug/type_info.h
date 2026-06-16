@@ -12,6 +12,7 @@
  * @brief   Type information utilities for debugging
  * @details Provides structures and functions for tracking type information for debugging.
  */
+#pragma once
 #ifndef da_dsl_core_debug_type_info__included
 #define da_dsl_core_debug_type_info__included 1
 #if defined(__cplusplus)

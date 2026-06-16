@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  prefetch
  */
+#pragma once
 #ifndef builtin_prefetch__included
 #define builtin_prefetch__included 1
 #if defined(__cplusplus)

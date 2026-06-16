@@ -41,6 +41,7 @@
  * } $unguarded(fn);
  * ```
  */
+#pragma once
 #ifndef dage__included
 #define dage__included 1
 #if defined(__cplusplus)

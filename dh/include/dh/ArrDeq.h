@@ -15,6 +15,7 @@
  *          Supports operations for initialization, modification, and element access.
  *          Pushing/popping items from either end of the queue is O(1).
  */
+#pragma once
 #ifndef ArrDeq__included
 #define ArrDeq__included 1
 #if defined(__cplusplus)

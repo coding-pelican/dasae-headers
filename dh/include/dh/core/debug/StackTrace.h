@@ -13,6 +13,7 @@
  * @details Provides stack trace functionality for debugging purposes.
  *          Only available when debug mode is enabled.
  */
+#pragma once
 #ifndef core_debug_StackTrace__included
 #define core_debug_StackTrace__included 1
 #if defined(__cplusplus)

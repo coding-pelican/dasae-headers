@@ -13,6 +13,7 @@
  * @details Defines compile-time options and configuration parameters
  *          for IO utilities.
  */
+#pragma once
 #ifndef io_cfg__included
 #define io_cfg__included 1
 #if defined(__cplusplus)

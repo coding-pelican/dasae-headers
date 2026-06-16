@@ -14,6 +14,7 @@
  *          auxiliary memory constraints (O(1), O(K), O(N)).
  *          Supports index-based context sorting for non-contiguous layouts.
  */
+#pragma once
 #ifndef sort__included
 #define sort__included 1
 #if defined(__cplusplus)

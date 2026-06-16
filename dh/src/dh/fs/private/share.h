@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dh_src_fs_private_share__included
 #define dh_src_fs_private_share__included 1
 
@@ -20,10 +21,7 @@ $attr($inline_always)
 $static fn_((fs__trimWinNtPrefix(S$u8 path))(S$u8)) {
     if (path.len < 4) return path;
     if (
-        *S_at((path)[0]) == u8_c('\\') &&
-        *S_at((path)[1]) == u8_c('\\') &&
-        *S_at((path)[2]) == u8_c('?') &&
-        *S_at((path)[3]) == u8_c('\\')
+        *S_at((path)[0]) == u8_c('\\') && *S_at((path)[1]) == u8_c('\\') && *S_at((path)[2]) == u8_c('?') && *S_at((path)[3]) == u8_c('\\')
     ) {
         return S_suffix((path)(4));
     }

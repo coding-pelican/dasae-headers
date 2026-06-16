@@ -1,3 +1,4 @@
+#pragma once
 #ifndef builtin_comp_auto__included
 #define builtin_comp_auto__included 1
 #if defined(__cplusplus)

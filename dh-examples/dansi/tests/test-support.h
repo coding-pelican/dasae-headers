@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dansi_test_support__included
 #define dansi_test_support__included 1
 

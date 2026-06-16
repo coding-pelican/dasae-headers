@@ -1,3 +1,4 @@
+#pragma once
 #ifndef daterm_runtime__included
 #define daterm_runtime__included 1
 #if defined(__cplusplus)

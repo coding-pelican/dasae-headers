@@ -13,6 +13,7 @@
  * @brief   Functional chaining utilities
  * @details Provides utilities for functional chaining operations.
  */
+#pragma once
 #ifndef core_chain__included
 #define core_chain__included 1
 #if defined(__cplusplus)

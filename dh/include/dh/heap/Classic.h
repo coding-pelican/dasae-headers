@@ -15,6 +15,7 @@
  *          for type-safe memory management. Provides a simple
  *          interface for allocating and freeing memory.
  */
+#pragma once
 #ifndef heap_Classic__included
 #define heap_Classic__included 1
 #if defined(__cplusplus)

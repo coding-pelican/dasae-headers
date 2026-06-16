@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/thrd
  * @prefix  thrd
  */
+#pragma once
 #ifndef thrd_Self__included
 #define thrd_Self__included 1
 #if defined(__cplusplus)

@@ -18,6 +18,7 @@
  *          - Tuple element counting
  *          - Tuple element iteration
  */
+#pragma once
 #ifndef foundation_pp_Tuple__included
 #define foundation_pp_Tuple__included 1
 #if defined(__cplusplus)

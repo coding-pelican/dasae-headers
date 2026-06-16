@@ -14,6 +14,7 @@
  *          Tests are organized into test cases that can be automatically discovered and run.
  *          Each test is isolated and reports detailed information on failures.
  */
+#pragma once
 #ifndef TEST__included
 #define TEST__included 1
 #if defined(__cplusplus)

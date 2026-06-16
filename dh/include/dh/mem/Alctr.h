@@ -12,6 +12,7 @@
  * @brief   Memory allocator interface using smart pointers
  * @details Provides type-safe mem allocation and management
  */
+#pragma once
 #ifndef mem_Alctr__included
 #define mem_Alctr__included 1
 #if defined(__cplusplus)

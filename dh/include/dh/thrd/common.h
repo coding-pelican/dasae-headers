@@ -12,6 +12,7 @@
  * @brief   Common definitions for thread management
  * @details Defines common definitions for thread management.
  */
+#pragma once
 #ifndef thrd_common__included
 #define thrd_common__included 1
 #if defined(__cplusplus)

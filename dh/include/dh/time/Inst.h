@@ -1,3 +1,4 @@
+#pragma once
 #ifndef time_Inst__included
 #define time_Inst__included 1
 #if defined(__cplusplus)

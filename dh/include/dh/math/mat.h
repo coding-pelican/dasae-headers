@@ -13,6 +13,7 @@
  * @brief   Mathematical common matrix operations
  * @details Provides a set of matrix mathematical operations and functions
  */
+#pragma once
 #ifndef math_mat__included
 #define math_mat__included 1
 

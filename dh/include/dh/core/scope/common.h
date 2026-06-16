@@ -16,6 +16,7 @@
  *          - Conditional scope execution
  *          - Loop constructs with initialization
  */
+#pragma once
 #ifndef core_scope_common__included
 #define core_scope_common__included 1
 #if defined(__cplusplus)

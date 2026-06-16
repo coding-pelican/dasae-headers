@@ -29,6 +29,7 @@
  * @see file.h for CreateFile, ReadFile, WriteFile and async I/O examples
  * @see sync.h for event creation and wait functions
  */
+#pragma once
 #ifndef sys_api_windows_io__included
 #define sys_api_windows_io__included 1
 #if defined(__cplusplus)

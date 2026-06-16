@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)/prl
  * @prefix  (none)
  */
+#pragma once
 #ifndef prl_flt__included
 #define prl_flt__included 1
 #if defined(__cplusplus)

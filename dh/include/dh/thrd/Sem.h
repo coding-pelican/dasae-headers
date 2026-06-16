@@ -12,6 +12,7 @@
  * @brief   Semaphore for thread management
  * @details Defines semaphore for thread management.
  */
+#pragma once
 #ifndef thrd_Sem__included
 #define thrd_Sem__included 1
 #if defined(__cplusplus)

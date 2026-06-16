@@ -13,6 +13,7 @@
  * @brief   Using one-dimensional slice as two-dimensional grid
  * @details Provides a grid implementation using a one-dimensional slice as a two-dimensional grid.
  */
+#pragma once
 #ifndef Grid__included
 #define Grid__included 1
 #if defined(__cplusplus)

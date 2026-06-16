@@ -20,6 +20,7 @@
  * - Random: SystemFunction036 (RtlGenRandom)
  * - Security: OpenProcessToken, GetTokenInformation, AdjustTokenPrivileges
  */
+#pragma once
 #ifndef sys_api_windows_auth__included
 #define sys_api_windows_auth__included 1
 #if defined(__cplusplus)

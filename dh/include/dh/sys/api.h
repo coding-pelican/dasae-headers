@@ -1,3 +1,4 @@
+#pragma once
 #ifndef sys_api__included
 #define sys_api__included 1
 #if defined(__cplusplus)

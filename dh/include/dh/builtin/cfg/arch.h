@@ -14,6 +14,7 @@
  *          Focus: x86_64, x86, aarch64, ARM, RISC-V, wasm64, wasm32.
  *          Single source of truth: all properties derived from arch_type.
  */
+#pragma once
 #ifndef foundation_cfg_arch__included
 #define foundation_cfg_arch__included 1
 #if defined(__cplusplus)

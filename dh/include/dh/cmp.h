@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  cmp
  */
+#pragma once
 #ifndef cmp__included
 #define cmp__included 1
 #if defined(__cplusplus)

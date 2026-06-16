@@ -26,6 +26,7 @@
  * - Name Resolution: getaddrinfo, freeaddrinfo, getnameinfo
  * - Address Conversion: inet_ntop, inet_pton, inet_addr [Deprecated], inet_ntoa [Deprecated]
  */
+#pragma once
 #ifndef sys_api_windows_sock__included
 #define sys_api_windows_sock__included 1
 #if defined(__cplusplus)

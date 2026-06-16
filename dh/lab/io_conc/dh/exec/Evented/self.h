@@ -1,3 +1,4 @@
+#pragma once
 #ifndef exec_Evented_self__included
 #define exec_Evented_self__included 1
 #if defined(__cplusplus)

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef proc_Child__included
 #define proc_Child__included 1
 #if defined(__cplusplus)

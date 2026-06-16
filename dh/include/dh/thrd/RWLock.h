@@ -12,6 +12,7 @@
  * @brief   Read-Write lock for thread management
  * @details Defines read-write lock for thread management.
  */
+#pragma once
 #ifndef thrd_RWLock__included
 #define thrd_RWLock__included 1
 #if defined(__cplusplus)

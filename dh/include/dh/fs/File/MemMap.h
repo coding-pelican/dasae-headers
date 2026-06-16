@@ -1,3 +1,4 @@
+#pragma once
 #ifndef fs_File_MemMap__included
 #define fs_File_MemMap__included 1
 #if defined(__cplusplus)

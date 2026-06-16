@@ -10,6 +10,7 @@
  * @ingroup dasae-headers-workspace(dh-workspace)/daterm
  * @prefix  daterm_ANSI
  */
+#pragma once
 #ifndef daterm_ANSI__included
 #define daterm_ANSI__included 1
 #if defined(__cplusplus)

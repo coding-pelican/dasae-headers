@@ -16,6 +16,7 @@
  *          Keys and values stored in contiguous arrays.
  *          Average O(1) insertion, lookup, and removal.
  */
+#pragma once
 #ifndef HashMap__included
 #define HashMap__included 1
 #if defined(__cplusplus)

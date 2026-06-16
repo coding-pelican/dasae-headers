@@ -1,3 +1,4 @@
+#pragma once
 #ifndef sys_api_windows_common__included
 #define sys_api_windows_common__included 1
 

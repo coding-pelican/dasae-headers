@@ -1,3 +1,4 @@
+#pragma once
 #ifndef net_Svr__included
 #define net_Svr__included 1
 #if defined(__cplusplus)

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef mem_dyn__included
 #define mem_dyn__included 1
 #if defined(__cplusplus)

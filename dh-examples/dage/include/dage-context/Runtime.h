@@ -23,6 +23,7 @@
  * - processEvents: Never fails (0 events is valid)
  * - presentAll: Never fails
  */
+#pragma once
 #ifndef dage_context_Runtime__included
 #define dage_context_Runtime__included 1
 #if defined(__cplusplus)

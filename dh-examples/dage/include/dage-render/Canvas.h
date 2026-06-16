@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dage_render_Canvas__included
 #define dage_render_Canvas__included 1
 #if defined(__cplusplus)

@@ -21,6 +21,7 @@
  * - Platform Types: INT_PTR, UINT_PTR, SIZE_T, SSIZE_T, DWORD_PTR
  * - Error Codes: ERROR_SUCCESS, ERROR_FILE_NOT_FOUND, E_FAIL, HRESULT_FROM_WIN32
  */
+#pragma once
 #ifndef sys_api_windows_base__included
 #define sys_api_windows_base__included 1
 #if defined(__cplusplus)

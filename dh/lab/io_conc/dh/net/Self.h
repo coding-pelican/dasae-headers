@@ -1,3 +1,4 @@
+#pragma once
 #ifndef net_Self__included
 #define net_Self__included 1
 #if defined(__cplusplus)

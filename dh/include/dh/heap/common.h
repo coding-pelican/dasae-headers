@@ -1,3 +1,4 @@
+#pragma once
 #ifndef heap_common__included
 #define heap_common__included 1
 #if defined(__cplusplus)

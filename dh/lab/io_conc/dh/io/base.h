@@ -12,6 +12,7 @@
  * @brief   Base types for IO utilities
  * @details Defines base types for IO utilities.
  */
+#pragma once
 #ifndef io_base__included
 #define io_base__included 1
 #if defined(__cplusplus)

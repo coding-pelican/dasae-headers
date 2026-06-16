@@ -18,6 +18,7 @@
  *          - Memory comparison and equality checks
  *          - Memory conversion and type-safe operations
  */
+#pragma once
 #ifndef mem_common__included
 #define mem_common__included 1
 #if defined(__cplusplus)

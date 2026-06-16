@@ -12,6 +12,7 @@
  * @brief   Rand number generator utilities
  * @details Provides a random number generator that can be used to generate random numbers.
  */
+#pragma once
 #ifndef Rand__included
 #define Rand__included 1
 #if defined(__cplusplus)

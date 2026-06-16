@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dal_c_ext_pp__included
 #define dal_c_ext_pp__included 1
 

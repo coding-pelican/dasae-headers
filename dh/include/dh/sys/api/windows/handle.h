@@ -19,6 +19,7 @@
  * - Handle Manipulation: CloseHandle, DuplicateHandle, GetHandleInformation, SetHandleInformation
  * - Error Handling: GetLastError, SetLastError, FormatMessage, RaiseException
  */
+#pragma once
 #ifndef sys_api_windows_handle__included
 #define sys_api_windows_handle__included 1
 #if defined(__cplusplus)

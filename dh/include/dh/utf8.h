@@ -9,6 +9,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  utf8
  */
+#pragma once
 #ifndef utf8__included
 #define utf8__included 1
 #if defined(__cplusplus)

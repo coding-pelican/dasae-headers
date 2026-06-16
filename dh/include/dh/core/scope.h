@@ -15,6 +15,7 @@
  *          including defer statements and scope guards that ensure resources
  *          are properly released when execution leaves the current scope.
  */
+#pragma once
 #ifndef core_scope__included
 #define core_scope__included 1
 #if defined(__cplusplus)

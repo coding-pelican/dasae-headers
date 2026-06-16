@@ -1,3 +1,4 @@
+#pragma once
 #ifndef exec_Timer__included
 #define exec_Timer__included 1
 #if defined(__cplusplus)

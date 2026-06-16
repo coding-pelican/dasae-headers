@@ -13,6 +13,7 @@
  * @details Exposes vectored and structured exception handling entry points used
  *          by low-level runtime facilities.
  */
+#pragma once
 #ifndef sys_api_windows_except__included
 #define sys_api_windows_except__included 1
 #if defined(__cplusplus)

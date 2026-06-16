@@ -16,6 +16,7 @@
  *          Keys stored in contiguous array (no values - set semantics).
  *          Average O(1) insertion, lookup, and removal.
  */
+#pragma once
 #ifndef HashSet__included
 #define HashSet__included 1
 #if defined(__cplusplus)

@@ -10,6 +10,7 @@
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
  */
+#pragma once
 #ifndef dh__included
 #define dh__included 1
 #if defined(__cplusplus)

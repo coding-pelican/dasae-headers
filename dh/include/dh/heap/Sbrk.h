@@ -13,6 +13,7 @@
  * @details Provides a Sbrk-based memory allocation implementation
             with configurable size classes for memory optimization.
  */
+#pragma once
 #ifndef heap_Sbrk__included
 #define heap_Sbrk__included 1
 #if defined(__cplusplus)

@@ -14,6 +14,7 @@
  *          features, extensions, and attributes.
  *          Primary support: Clang, then GCC. MSVC planned for future.
  */
+#pragma once
 #ifndef foundation_cfg_comp__included
 #define foundation_cfg_comp__included 1
 #if defined(__cplusplus)

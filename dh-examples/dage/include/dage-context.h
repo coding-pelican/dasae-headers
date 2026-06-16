@@ -1,3 +1,4 @@
+#pragma once
 #ifndef dage_context__included
 #define dage_context__included 1
 #if defined(__cplusplus)
