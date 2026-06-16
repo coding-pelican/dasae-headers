@@ -5,9 +5,9 @@
  * @file    dh-TEST-main.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-05 (date of creation)
- * @updated 2026-05-27 (date of last update)
+ * @updated 2026-06-16 (date of last update)
  * @ingroup dasae-headers(dh)
- * @prefix  TEST
+ * @prefix  (none)
  *
  * @brief   Aggregate test runner entry surface
  * @details Emits the root test `main` only when `TEST_main_enabled` is defined.
@@ -39,11 +39,13 @@ extern "C" {
 /*---------- Configuration Flags --------------------------------------------*/
 
 #define __comp_bool__TEST_main_enabled TEST_main__enabled_default
-#define __comp_flag__TEST_main__enabled_default pp_false
+#define __comp_flag__TEST_main__enabled_default TEST_enabled
 
 /*---------- Root main ------------------------------------------------------*/
 
+#if on_comptime
 #if TEST_main_enabled
+$attr($inline)
 $static fn_((TEST_main__runTESTMain(void))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
     TEST_Framework_run();
@@ -59,7 +61,7 @@ fn_((main(void))(int)) {
 };
 
 #else /* !comp_start_files_linked */
-$attr($no_return $maybe_unused)
+$attr($maybe_unused $no_return)
 $static fn_((TEST_main__callTESTMainAndExit(P$raw raw_ctx))(void)) {
     let_ignore = raw_ctx;
     start_callInitArray();
@@ -73,6 +75,7 @@ start_emitEntry(TEST_main__callTESTMainAndExit);
 
 #endif /* main_root_included */
 #endif /* TEST_main_enabled */
+#endif /* on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

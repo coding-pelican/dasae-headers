@@ -1,7 +1,10 @@
 #include "dh/fs/File/MemMap.h"
 
 #if plat_is_windows
-#include "dh/sys/api/windows/file.h"
+// #include "dh/sys/api/windows/handle.h"
+// #include "dh/sys/api/windows/file.h"
+// #include "dh/sys/api/windows/mem.h"
+#include "dh/sys/api/windows.h"
 #elif plat_is_linux
 #include "dh/sys/call/linux.h"
 #endif

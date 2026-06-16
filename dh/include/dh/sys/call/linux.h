@@ -1056,13 +1056,13 @@ $static fn_((sys_call_linux_clock_gettime(sys_call_linux_word clock_id, void* ts
     return sys_call_linux_syscall2(sys_call_linux_SYS_clock_gettime, clock_id, (sys_call_linux_word)(ts));
 };
 
-$attr($inline_always $no_return)
+$attr($no_return $inline_always)
 $static fn_((sys_call_linux_exit(i32 status))(void)) {
     let_ignore = sys_call_linux_syscall1(sys_call_linux_SYS_exit, as$(sys_call_linux_word)(status));
     claim_unreachable;
 };
 
-$attr($inline_always $no_return)
+$attr($no_return $inline_always)
 $static fn_((sys_call_linux_exit_group(i32 status))(void)) {
     let_ignore = sys_call_linux_syscall1(sys_call_linux_SYS_exit_group, as$(sys_call_linux_word)(status));
     claim_unreachable;

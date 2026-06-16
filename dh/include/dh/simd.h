@@ -26,16 +26,16 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "builtin.h"
-#include "core.h"
+#include "dh/builtin.h"
+#include "dh/core.h"
 
 /*========== Architecture-Specific Intrinsics ===============================*/
 
-#if arch_is_x86 || arch_is_x86_64
-#include <immintrin.h>
-#elif arch_is_arm || arch_is_aarch64
-#include <arm_neon.h>
-#endif
+// #if arch_is_x86 || arch_is_x86_64
+// #include <immintrin.h>
+// #elif arch_is_arm || arch_is_aarch64
+// #include <arm_neon.h>
+// #endif
 
 /*========== Macros and Declarations ========================================*/
 

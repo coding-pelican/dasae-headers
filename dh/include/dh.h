@@ -19,9 +19,10 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/builtin.h"
-#include "dh/core.h"
-#include "dh/prl.h"
+#include "dh/builtin.h" /* no prefix, abs path*/
+#include "dh/core.h" /* no prefix, abs path*/
+#include "dh/prl.h" /* no prefix, abs path*/
+
 #include "dh/atom.h"
 #include "dh/simd.h"
 #include "dh/clsr.h"
@@ -62,8 +63,8 @@ extern "C" {
 // #include "dh/BTreeMap.h"
 // #include "dh/BTreeSet.h"
 
-#include "dh/sys.h"
-#include "dh/c.h"
+#include "dh/sys.h" /* abs path */
+#include "dh/c.h" /* abs path */
 
 #include "dh/time.h"
 #include "dh/heap.h"
@@ -82,11 +83,11 @@ extern "C" {
 #include "dh/net.h"
 // #include "dh/http.h"
 
-#include "dh/start.h"
 #include "dh/TEST.h"
+#include "dh/start.h"
 /* main must be included directly. */
-// #include "dh-TEST-main.h"
-// #include "dh-main.h"
+// #include "dh-TEST-main.h" /* no prefix, abs path */
+// #include "dh-main.h" /* no prefix, abs path */
 
 #if defined(__cplusplus)
 } /* extern "C" */

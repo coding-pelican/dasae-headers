@@ -8,7 +8,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "common.h"
-#include "../thrd.h"
+#include "../thrd/Self.h"
 
 /*========== Macros and Declarations ========================================*/
 

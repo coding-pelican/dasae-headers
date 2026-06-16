@@ -21,7 +21,7 @@
 
 #include "common.h"
 #include "vec_types.h"
-#include "dh/simd.h"
+#include "../simd.h"
 
 /*========== Macros and Declarations ========================================*/
 

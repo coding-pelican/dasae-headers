@@ -18,10 +18,10 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "prl.h"
+#include "dh/prl.h"
 
 #if plat_is_windows
-#include "sys/api/windows.h"
+#include "sys/api/windows/proc.h"
 #elif plat_is_linux
 #include "sys/call/linux.h"
 #endif /* plat_is_linux */
@@ -32,7 +32,7 @@ T_alias$((start_ExitCode)(i32));
 T_alias$((start_Fn)(fn_(((*)(void))(void) $T)));
 T_alias$((start_InitFn)(fn_(((*)(void))(i32) $T)));
 
-$attr($maybe_unused $no_return)
+$attr($maybe_unused $no_return $inline)
 $static fn_((start_exit(start_ExitCode status))(void)) {
     pp_switch_((plat_type)(
         pp_case_((plat_type_windows)({
@@ -58,8 +58,8 @@ pp_if_(pp_not(comp_start_files_linked))((
         $extern var_(__xt_z, start_Fn);
         $extern var_(__CTOR_LIST__, start_Fn)[];
         $extern var_(__DTOR_LIST__, start_Fn)[];
-        $attr($maybe_unused)
-        $static fn_((start__win32_callInitFns(start_InitFn * first, start_InitFn* last))(void)) {
+        $attr($maybe_unused $inline)
+        $static fn_((start__win32_callInitFns(P$$(start_InitFn) first, P$$(start_InitFn) last))(void)) {
             for (var it = first + 1; it != last; ++it) {
                 let fn = *it;
                 if (fn == null) continue;
@@ -67,14 +67,14 @@ pp_if_(pp_not(comp_start_files_linked))((
                 if (code != 0) start_exit(code);
             };
         };
-        $attr($maybe_unused)
-        $static fn_((start__win32_callFnsForward(start_Fn * first, start_Fn* last))(void)) {
+        $attr($maybe_unused $inline)
+        $static fn_((start__win32_callFnsForward(P$$(start_Fn) first, P$$(start_Fn) last))(void)) {
             for (var it = first + 1; it != last; ++it) {
                 let fn = *it;
                 if (fn != null) call((fn)());
             };
         };
-        $attr($maybe_unused)
+        $attr($maybe_unused $inline)
         $static fn_((start__win32_callCtorList(void))(void)) {
             let count_or_marker = as$(usize)(__CTOR_LIST__[0]);
             if (count_or_marker != usize_limit_max) {
@@ -92,7 +92,7 @@ pp_if_(pp_not(comp_start_files_linked))((
                 --count;
             };
         };
-        $attr($maybe_unused)
+        $attr($maybe_unused $inline)
         $static fn_((start__win32_callDtorList(void))(void)) {
             let count_or_marker = as$(usize)(__DTOR_LIST__[0]);
             if (count_or_marker != usize_limit_max) {
@@ -116,19 +116,19 @@ pp_if_(pp_not(comp_start_files_linked))((
         $extern var_(__init_array_end, start_Fn)[];
         $extern var_(__fini_array_start, start_Fn)[];
         $extern var_(__fini_array_end, start_Fn)[];
-        $attr($maybe_unused)
-        $static fn_((start__linux_callPreinitArray(void))(void)) {
+        $attr($maybe_unused $inline)
+        $static fn_((start__linux_callPreInitArray(void))(void)) {
             for (var it = __preinit_array_start; it != __preinit_array_end; ++it) {
                 call((*it)());
             };
         };
-        $attr($maybe_unused)
+        $attr($maybe_unused $inline)
         $static fn_((start__linux_callInitArray(void))(void)) {
             for (var it = __init_array_start; it != __init_array_end; ++it) {
                 call((*it)());
             };
         };
-        $attr($maybe_unused)
+        $attr($maybe_unused $inline)
         $static fn_((start__linux_callFiniArray(void))(void)) {
             for (var it = __fini_array_end; it-- != __fini_array_start;) {
                 call((*it)());
@@ -136,7 +136,7 @@ pp_if_(pp_not(comp_start_files_linked))((
         };
     ));
 
-    $attr($maybe_unused)
+    $attr($maybe_unused $inline)
     $static fn_((start_callInitArray(void))(void)) {
         pp_switch_((plat_type)(
             pp_case_((plat_type_windows)({
@@ -145,13 +145,13 @@ pp_if_(pp_not(comp_start_files_linked))((
                 start__win32_callCtorList();
             })),
             pp_case_((plat_type_linux)({
-                start__linux_callPreinitArray();
+                start__linux_callPreInitArray();
                 start__linux_callInitArray();
             })),
             pp_default_({})
         ));
     };
-    $attr($maybe_unused)
+    $attr($maybe_unused $inline)
     $static fn_((start_callFiniArray(void))(void)) {
         pp_switch_((plat_type)(
             pp_case_((plat_type_windows)({
@@ -174,7 +174,9 @@ pp_if_(pp_not(comp_start_files_linked))((
     pp_switch_((plat_type)( \
         pp_case_((plat_type_windows)(start__win32_emitEntry)), \
         pp_case_((plat_type_linux)(start__linux_emitEntry)), \
-        pp_default_(static_assert_msg(false, "target does not have dh start entry support")) \
+        pp_default_(claim_assert_static_trap_msg( \
+            "target does not have dh start entry support" \
+        )) \
     ))(_Entry)
 
 #define start__win32_emitEntry(_Entry...) \
@@ -223,18 +225,15 @@ pp_if_(pp_not(comp_start_files_linked))((
         .Characteristics = 0, \
     }; \
     $attr($no_return) \
-    fn_((mainCRTStartup(void))(void)); \
-    $attr($no_return) \
+    $extern fn_((mainCRTStartup(void))(void)); \
     fn_((mainCRTStartup(void))(void)) { _Entry(null); }; \
     $attr($no_return) \
-    fn_((WinMainCRTStartup(void))(void)); \
-    $attr($no_return) \
+    $extern fn_((WinMainCRTStartup(void))(void)); \
     fn_((WinMainCRTStartup(void))(void)) { _Entry(null); }
 
 #define start__linux_emitEntry(_Entry...) \
-    $attr($no_return) \
-    fn_((_start(void))(void)); \
-    $attr($no_return $callconv_naked)\
+    $attr($callconv_naked $no_return) \
+    $extern fn_((_start(void))(void)); \
     fn_((_start(void))(void)) { \
         pp_switch_((arch_type)( \
             pp_case_((arch_type_x86_64)(asm_volatile( \
@@ -287,7 +286,9 @@ pp_if_(pp_not(comp_start_files_linked))((
                 "tail " #_Entry "\n" \
                 ".option pop\n" : : : "memory" \
             );)), \
-            pp_default_(static_assert_msg(false, "linux target architecture does not have dh start entry support")) \
+            pp_default_(claim_assert_static_trap_msg( \
+                "linux target architecture does not have dh start entry support" \
+            )) \
         )) \
     } /* clang-format on */
 

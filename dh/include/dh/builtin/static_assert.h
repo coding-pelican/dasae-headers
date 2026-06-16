@@ -27,7 +27,9 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define static_assert(_Expr) __step__static_assert(_Expr)
+#define static_assert_trap() __step__static_assert_trap()
 #define static_assert_msg(_Expr, _msg) __step__static_assert_msg(_Expr, _msg)
+#define static_assert_trap_msg(_msg) __step__static_assert_trap_msg(_msg)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -35,18 +37,26 @@ extern "C" {
 /* C++11 or later - static_assert is available */
 #define __step__static_assert(_Expr) static_assert((_Expr), "Failed assertion")
 #define __step__static_assert_msg(_Expr, _msg) static_assert((_Expr), "Failed assertion: " _msg)
+#define __step__static_assert_trap() static_assert(false, "Failed assertion")
+#define __step__static_assert_trap_msg(_msg) static_assert(false, "Failed assertion: " _msg)
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
 /* C11 or later - _Static_assert is available */
 #define __step__static_assert(_Expr) _Static_assert((_Expr), "Failed assertion")
 #define __step__static_assert_msg(_Expr, _msg) _Static_assert((_Expr), "Failed assertion: " _msg)
+#define __step__static_assert_trap() _Static_assert(false, "Failed assertion")
+#define __step__static_assert_trap_msg(_msg) _Static_assert(false, "Failed assertion: " _msg)
 #else
 /* Older versions - emulate static assert */
 #ifdef __COUNTER__
 #define __step__static_assert(_Expr) typedef int pp_join(__, __step__static_assert, __COUNTER__)[(_Expr) ? 1 : -1]
 #define __step__static_assert_msg(_Expr, _msg) typedef int pp_join(__, __step__static_assert_msg, __COUNTER__)[(_Expr) ? 1 : -1]
+#define __step__static_assert_trap() typedef int pp_join(__, __step__static_assert_trap, __COUNTER__)[0]
+#define __step__static_assert_trap_msg(_msg) typedef int pp_join(__, __step__static_assert_trap_msg, __COUNTER__)[0]
 #else
 #define __step__static_assert(_Expr) typedef int pp_join(__, __step__static_assert, __LINE__)[(_Expr) ? 1 : -1]
 #define __step__static_assert_msg(_Expr, _msg) typedef int pp_join(__, __step__static_assert_msg, __LINE__)[(_Expr) ? 1 : -1]
+#define __step__static_assert_trap() typedef int pp_join(__, __step__static_assert_trap, __LINE__)[0]
+#define __step__static_assert_trap_msg(_msg) typedef int pp_join(__, __step__static_assert_trap_msg, __LINE__)[0]
 #endif
 #endif
 

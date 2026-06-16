@@ -20,7 +20,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "prl.h"
+#include "dh/prl.h"
 #include "mem/common.h"
 
 /*========== Macros and Declarations =========================================*/

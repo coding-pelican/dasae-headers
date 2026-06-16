@@ -24,7 +24,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "TEST/cfg.h"
-#include "core.h"
+#include "dh/core.h"
 #include "ArrList.h"
 
 /*========== Definitions ====================================================*/

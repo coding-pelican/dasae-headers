@@ -2,10 +2,10 @@
  * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
- * @file    main.h
+ * @file    dh-main.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-30 (date of creation)
- * @updated 2026-06-03 (date of last update)
+ * @updated 2026-06-16 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
  *
@@ -91,7 +91,7 @@ fn_((dh_main(pp_if_(pp_not(main_no_args))(
 #if on_comptime
 #if !TEST_enabled
 #if main_no_args
-$attr($maybe_unused)
+$attr($maybe_unused $inline)
 $static fn_((main__runDHMain(void))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
     pp_if_(pp_not(main_no_return_err))(
@@ -109,7 +109,7 @@ $static fn_((main__runDHMain(void))(start_ExitCode)) {
 };
 
 #else /* !main_no_args */
-$attr($maybe_unused)
+$attr($maybe_unused $inline)
 $static fn_((main__runDHMainArgs(S$S_const$u8 args))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
     pp_if_(pp_not(main_no_return_err))(
@@ -126,7 +126,7 @@ $static fn_((main__runDHMainArgs(S$S_const$u8 args))(start_ExitCode)) {
     return 0;
 };
 
-$attr($maybe_unused)
+$attr($maybe_unused $inline)
 $static fn_((main__runDHMainFromArgv(usize argc, const char* argv[]))(start_ExitCode)) {
     let args = local_({
         let ref_args_z0 = P_prefix$((S$P_const$u8)(ptrCast$((P_const$u8*)(argv)))(argc));
@@ -138,7 +138,7 @@ $static fn_((main__runDHMainFromArgv(usize argc, const char* argv[]))(start_Exit
 };
 
 pp_if_(plat_is_windows)(pp_then_(
-    $attr($maybe_unused)
+    $attr($maybe_unused $inline)
     $static fn_((main__runDHMainFromWin32CmdLine(void))(start_ExitCode)) {
         let cmd_z = ptrCast$((const u8*)(GetCommandLineA()));
         let cmd_len = mem_lenZ0$u8(cmd_z);
@@ -205,7 +205,7 @@ fn_((main(pp_if_(pp_not(main_no_args))(
 };
 
 #else /* !comp_start_files_linked */
-$attr($no_return $maybe_unused)
+$attr($maybe_unused $no_return)
 $static fn_((main__callDHMainAndExit(P$raw raw_ctx))(void)) {
     let_ignore = raw_ctx;
     start_callInitArray();
