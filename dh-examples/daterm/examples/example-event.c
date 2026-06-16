@@ -15,6 +15,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     defer_(daterm_ANSI_disableRawMode(&ansi));
     try_(daterm_ANSI_enableMouseTracking(&ansi));
     defer_(daterm_ANSI_disableMouseTracking(&ansi));
+    try_(daterm_ANSI_enableFocusTracking(&ansi));
+    defer_(daterm_ANSI_disableFocusTracking(&ansi));
 
     let term = daterm_ANSI_term(&ansi);
     let out = daterm_Term_writer(term);
@@ -58,6 +60,12 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
                     out, u8_l("Mouse event: col={:uh}, row={:uh}, button={:uhh}, action={:uhh}, wheel={:uhh}"),
                     mouse.col, mouse.row, mouse.button, mouse.action, mouse.wheel
                 ));
+            } $end(pattern);
+            pattern_((daterm_Event_focus)(focus)) {
+                try_(io_Writer_println(out, u8_l("Focus event: state={:uhh}"), focus));
+            } $end(pattern);
+            pattern_((daterm_Event_resize)(size)) {
+                try_(io_Writer_println(out, u8_l("Resize event: cols={:uh}, rows={:uh}"), size.cols, size.rows));
             } $end(pattern);
             default_() $do_nothing $end(default);
             } $end(match);

@@ -100,6 +100,16 @@ TEST_fn_("daterm-context/ANSI: single escape follows timeout policy" $scope) {
     return_ok({});
 } $unscoped(TEST_fn);
 
+TEST_fn_("daterm-context/ANSI: focus CSI parses as backend event" $scope) {
+    let focus_in = unwrap_(daterm_ANSI_parseFocusSeq(dansi_Seq_csi(u8_l("\x1B[I"))));
+    let focus_out = unwrap_(daterm_ANSI_parseFocusSeq(dansi_Seq_csi(u8_l("\x1B[O"))));
+
+    try_(TEST_expect(focus_in == daterm_Event_Focus_in));
+    try_(TEST_expect(focus_out == daterm_Event_Focus_out));
+    try_(TEST_expect(isNone(daterm_ANSI_parseFocusSeq(dansi_Seq_csi(u8_l("\x1B[A"))))));
+    return_ok({});
+} $unscoped(TEST_fn);
+
 TEST_fn_("daterm-context/ANSI: POSIX processed output keeps output postprocessing" $guard) {
 #if !plat_is_posix
     try_(TEST_skipMsg(u8_l("POSIX termios is not available on this platform")));

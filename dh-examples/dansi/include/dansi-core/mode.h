@@ -27,6 +27,7 @@ typedef enum_((dansi_mode_Private $fits($packed))(
     dansi_mode_Private_cursor_keys = 1,
     dansi_mode_Private_origin = 6,
     dansi_mode_Private_auto_wrap = 7,
+    dansi_mode_Private_focus_events = 1004,
     dansi_mode_Private_alt_screen = 1049,
     dansi_mode_Private_bracketed_paste = 2004,
     dansi_mode_Private_synchronized_output = 2026,
@@ -118,6 +119,8 @@ $extern fn_((dansi_mode_setANSIWrite(u16 mode, bool enabled, io_Writer writer))(
 #define ____dansi_mode__pp_Private_str$dansi_mode_Private_cursor_keys "1"
 #define ____dansi_mode__pp_Private_str$dansi_mode_Private_origin "6"
 #define ____dansi_mode__pp_Private_str$dansi_mode_Private_auto_wrap "7"
+#define pp_Tok_cmp$1004(_x) _x
+#define ____dansi_mode__pp_Private_str$dansi_mode_Private_focus_events "1004"
 #define pp_Tok_cmp$1049(_x) _x
 #define ____dansi_mode__pp_Private_str$dansi_mode_Private_alt_screen "1049"
 #define pp_Tok_cmp$2004(_x) _x

@@ -112,6 +112,7 @@ It owns:
 - report buffer storage
 - raw mode state
 - mouse tracking state
+- focus tracking state
 - output mode policy
 - ESC timeout policy for ambiguous input
 
@@ -142,6 +143,8 @@ Current primitive responsibilities:
 - `daterm_ANSI_disableRawMode`
 - `daterm_ANSI_enableMouseTracking`
 - `daterm_ANSI_disableMouseTracking`
+- `daterm_ANSI_enableFocusTracking`
+- `daterm_ANSI_disableFocusTracking`
 - `daterm_ANSI_fini`
 
 `fini` must clean up state that the context owns. If raw mode or mouse tracking
@@ -181,10 +184,35 @@ variants:
 
 - `daterm_Event_key`
 - `daterm_Event_mouse`
+- `daterm_Event_focus`
 - `daterm_Event_resize`
 
 Resize events are a backend concern. ANSI streams may not provide a native
-resize event, while an OS backend may be able to detect one directly.
+resize event, while an OS backend may be able to detect one directly. The ANSI
+context converts POSIX `SIGWINCH` and Windows `WINDOW_BUFFER_SIZE_EVENT` into
+`daterm_Event_resize`.
+
+Focus events use xterm-compatible focus tracking (`CSI ? 1004 h/l`) and parse
+`CSI I`/`CSI O` reports into `daterm_Event_focus`. Bracketed paste is a useful
+future event, but it needs a deliberate buffering contract because pasted bytes
+arrive between `CSI 200~` and `CSI 201~` and can exceed the normal input event
+buffer.
+
+```mermaid
+flowchart TD
+    T[terminal or OS input] --> B[daterm_ANSI backend]
+    B -->|raw bytes| S[dansi_Seq parser]
+    S -->|key CSI SS3 ESC raw| K[dansi_Event key]
+    S -->|SGR mouse CSI| M[dansi_mouse_parseSGR]
+    S -->|CSI I/O| F[focus parser]
+    B -->|SIGWINCH or WINDOW_BUFFER_SIZE_EVENT| R[resize event]
+    B -->|Windows MOUSE_EVENT_RECORD| WM[native mouse event]
+    K --> E[daterm_Event]
+    M --> E
+    F --> E
+    R --> E
+    WM --> E
+```
 
 ## Query Path
 
@@ -241,5 +269,5 @@ dh-c test --recur
 ```
 
 The active ANSI tests cover configuration defaults, buffered sequence polling,
-split CSI handling, ESC timeout behavior, and platform-gated raw output mode
-behavior.
+split CSI handling, ESC timeout behavior, focus sequence parsing, and
+platform-gated raw output mode behavior.

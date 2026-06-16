@@ -13,6 +13,7 @@
 $static fn_((daterm_ANSI__readerOf(daterm_ANSI* self))(io_Reader));
 $static fn_((daterm_ANSI__writerOf(const daterm_ANSI* self))(io_Writer));
 
+$static fn_((daterm_ANSI__pollNativeEvent(daterm_ANSI* self))(O$daterm_Event));
 $static fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event));
 $static fn_((daterm_ANSI__wait(P$raw ctx))(Sched_Cancelable$daterm_Event));
 $static fn_((daterm_ANSI__waitTimed(P$raw ctx, time_Dur timeout))(daterm_Term_WaitE$daterm_Event));
@@ -27,7 +28,11 @@ $static fn_((daterm_ANSI__queryCursorPos(P$raw ctx))(E$daterm_Pos));
 #include <dh/sys/api/windows/sync.h>
 T_use_E$(DWORD);
 $static fn_((daterm_ANSI__windows_ctrlHandler(DWORD type))(BOOL));
-$static fn_((daterm_ANSI__windows_inputReady(HANDLE input))(bool));
+$static fn_((daterm_ANSI__windows_keyMods(DWORD control_key_state))(dansi_Event_KeyMods));
+$static fn_((daterm_ANSI__windows_mouseButton(DWORD button_mask))(daterm_Event_MouseButton));
+$static fn_((daterm_ANSI__windows_mouseEvent(daterm_ANSI* self, MOUSE_EVENT_RECORD record))(O$daterm_Event));
+$static fn_((daterm_ANSI__windows_pollNativeEvent(daterm_ANSI* self))(O$daterm_Event));
+$static fn_((daterm_ANSI__windows_inputReady(daterm_ANSI* self))(bool));
 $static fn_((daterm_ANSI__windows_enableRawMode(HANDLE input))(E$DWORD));
 $static fn_((daterm_ANSI__windows_disableRawMode(HANDLE input, DWORD old_in))(E$void));
 $static fn_((daterm_ANSI__windows_enableVTerm(HANDLE output))(E$DWORD));
@@ -38,9 +43,15 @@ $static fn_((daterm_ANSI__windows_disableVTerm(HANDLE output, DWORD old_out))(E$
 #include <sys/ioctl.h>
 #include <unistd.h>
 T_alias$((posix_termios)(struct termios));
+T_alias$((posix_sigaction)(struct sigaction));
 T_use_E$(posix_termios);
+T_use_E$(posix_sigaction);
 $static fn_((daterm_ANSI__posix_enableRawMode(fs_File_Handle handle, daterm_ANSI_OutputMode output_mode))(E$posix_termios));
 $static fn_((daterm_ANSI__posix_disableRawMode(fs_File_Handle handle, posix_termios old))(E$void));
+$static fn_((daterm_ANSI__posix_enableResizeEvents(void))(E$posix_sigaction));
+$static fn_((daterm_ANSI__posix_disableResizeEvents(posix_sigaction old))(E$void));
+$static fn_((daterm_ANSI__posix_onResize(int sig))(void));
+$static var volatile sig_atomic_t daterm_ANSI__posix_resize_pending = 0;
 #endif /* plat_is_posix */
 
 /*========== External Definitions ===========================================*/
@@ -50,7 +61,9 @@ fn_((daterm_ANSI_init(daterm_ANSI_Cfg cfg))(mem_E$daterm_ANSI) $guard) {
     let input_mem = expr_(S$u8 $scope)(if (should_alloc_input_buf) {
         let cap = local_({
             let cfg_input_buf = union_to((cfg.input_buf)(daterm_ANSI_Cfg_input_buf_owned));
-            local_return_(cfg_input_buf.cap != 0 ? cfg_input_buf.cap : daterm_ANSI_input_buf_cap_default);
+            cfg_input_buf.cap != 0
+                ? local_return_(cfg_input_buf.cap)
+                : local_return_(daterm_ANSI_input_buf_cap_default);
         });
         $break_(try_(mem_Alctr_allocBytes($trace unwrap_(cfg.gpa), cap)));
     } else {
@@ -62,7 +75,9 @@ fn_((daterm_ANSI_init(daterm_ANSI_Cfg cfg))(mem_E$daterm_ANSI) $guard) {
     let report_mem = expr_(S$u8 $scope)(if (should_alloc_report_buf) {
         let cap = local_({
             let cfg_report_buf = union_to((cfg.report_buf)(daterm_ANSI_Cfg_report_buf_owned));
-            local_return_(cfg_report_buf.cap != 0 ? cfg_report_buf.cap : daterm_ANSI_report_buf_cap_default);
+            cfg_report_buf.cap != 0
+                ? local_return_(cfg_report_buf.cap)
+                : local_return_(daterm_ANSI_report_buf_cap_default);
         });
         $break_(try_(mem_Alctr_allocBytes($trace unwrap_(cfg.gpa), cap)));
     } else {
@@ -77,6 +92,10 @@ fn_((daterm_ANSI_init(daterm_ANSI_Cfg cfg))(mem_E$daterm_ANSI) $guard) {
         .raw_mode_ = none(),
         .is_in_alt_screen = false,
         .is_tracking_mouse = false,
+        .is_tracking_focus = false,
+#if plat_is_windows
+        .windows_mouse_buttons = 0,
+#endif /* plat_is_windows */
         .input_buf = {
             .reader = io_Buf_Reader_init(fs_File_reader(cfg.input_file), input_mem),
             .is_owned = should_alloc_input_buf,
@@ -104,14 +123,19 @@ fn_((daterm_ANSI_fini(daterm_ANSI* self))(void)) {
     asg_l((self)(cleared()));
 };
 
-fn_((daterm_ANSI_enableRawMode(daterm_ANSI* self))(E$void) $scope) {
+fn_((daterm_ANSI_enableRawMode(daterm_ANSI* self))(E$void) $guard) {
     if (isSome(self->raw_mode_)) return_ok({});
 #if plat_is_windows
     let old_in = try_(daterm_ANSI__windows_enableRawMode(self->input_file.handle));
+    errdefer_($ignore, catch_((daterm_ANSI__windows_disableRawMode(self->input_file.handle, old_in))($ignore, $do_nothing)));
     let old_out = try_(daterm_ANSI__windows_enableVTerm(self->output_file.handle));
+    errdefer_($ignore, catch_((daterm_ANSI__windows_disableVTerm(self->output_file.handle, old_out))($ignore, $do_nothing)));
 #elif plat_is_posix
     let old_in = try_(daterm_ANSI__posix_enableRawMode(self->input_file.handle, self->output_mode));
-#endif
+    errdefer_($ignore, catch_((daterm_ANSI__posix_disableRawMode(self->input_file.handle, old_in))($ignore, $do_nothing)));
+    let old_winch = try_(daterm_ANSI__posix_enableResizeEvents());
+    errdefer_($ignore, catch_((daterm_ANSI__posix_disableResizeEvents(old_winch))($ignore, $do_nothing)));
+#endif /* plat_is_posix || plat_is_windows */
 #if plat_is_windows
     asg_l((&self->raw_mode_)(some({
         .old_in = old_in,
@@ -120,19 +144,22 @@ fn_((daterm_ANSI_enableRawMode(daterm_ANSI* self))(E$void) $scope) {
 #elif plat_is_posix
     asg_l((&self->raw_mode_)(some({
         .old_in = old_in,
+        .old_winch = old_winch,
     })));
-#endif
+#endif /* plat_is_windows || plat_is_posix */
     return_ok({});
-} $unscoped(fn);
+} $unguarded(fn);
 
 fn_((daterm_ANSI_disableRawMode(daterm_ANSI* self))(void)) {
     let raw_mode = orelse_((self->raw_mode_)(return));
 #if plat_is_windows
     catch_((daterm_ANSI__windows_disableRawMode(self->input_file.handle, raw_mode.old_in))($ignore, $do_nothing));
     catch_((daterm_ANSI__windows_disableVTerm(self->output_file.handle, raw_mode.old_out))($ignore, $do_nothing));
+    self->windows_mouse_buttons = 0;
 #elif plat_is_posix
+    catch_((daterm_ANSI__posix_disableResizeEvents(raw_mode.old_winch))($ignore, $do_nothing));
     catch_((daterm_ANSI__posix_disableRawMode(self->input_file.handle, raw_mode.old_in))($ignore, $do_nothing));
-#endif
+#endif /* plat_is_posix || plat_is_windows */
     asg_l((&self->raw_mode_)(none()));
 };
 
@@ -162,6 +189,23 @@ fn_((daterm_ANSI_isTrackingMouse(const daterm_ANSI* self))(bool)) {
     return self->is_tracking_mouse;
 };
 
+fn_((daterm_ANSI_enableFocusTracking(daterm_ANSI* self))(E$void) $scope) {
+    if (self->is_tracking_focus) return_ok({});
+    try_(dansi_mode_enablePrivateWrite(u16_(dansi_mode_Private_focus_events), daterm_ANSI__writerOf(self)));
+    self->is_tracking_focus = true;
+    return_ok({});
+} $unscoped(fn);
+
+fn_((daterm_ANSI_disableFocusTracking(daterm_ANSI* self))(void)) {
+    if (!self->is_tracking_focus) return;
+    catch_((dansi_mode_disablePrivateWrite(u16_(dansi_mode_Private_focus_events), daterm_ANSI__writerOf(self)))($ignore, $do_nothing));
+    self->is_tracking_focus = false;
+};
+
+fn_((daterm_ANSI_isTrackingFocus(const daterm_ANSI* self))(bool)) {
+    return self->is_tracking_focus;
+};
+
 fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term)) {
     $static let_(vtbl, daterm_Term_VTbl) = {
         .pollFn = daterm_ANSI__poll,
@@ -183,10 +227,13 @@ fn_((daterm_ANSI_enter(daterm_ANSI* self))(E$void) $guard) {
     try_(daterm_ANSI_enableRawMode(self));
     errdefer_($ignore, daterm_ANSI_disableRawMode(self));
     try_(daterm_ANSI_enableMouseTracking(self));
+    errdefer_($ignore, daterm_ANSI_disableMouseTracking(self));
+    try_(daterm_ANSI_enableFocusTracking(self));
     return_ok({});
 } $unguarded(fn);
 
 fn_((daterm_ANSI_leave(daterm_ANSI* self))(void)) {
+    daterm_ANSI_disableFocusTracking(self);
     daterm_ANSI_disableMouseTracking(self);
     daterm_ANSI_disableRawMode(self);
 };
@@ -220,9 +267,35 @@ $static fn_((daterm_ANSI__asMouseEvent(dansi_mouse_Event event))(daterm_Event)) 
     return (daterm_Event)union_of((daterm_Event_mouse)(mouse));
 };
 
+$static fn_((daterm_ANSI__asFocusEvent(daterm_Event_Focus focus))(daterm_Event)) {
+    return (daterm_Event)union_of((daterm_Event_focus)(focus));
+};
+
+fn_((daterm_ANSI_parseFocusSeq(dansi_Seq seq))(O$daterm_Event_Focus) $guard) {
+    if (seq.kind != dansi_Seq_Kind_csi || seq.bytes.len != 3) return_none();
+    let ch = *S_at((seq.bytes)[2]);
+    if (ch == 'I') return_some(daterm_Event_Focus_in);
+    if (ch == 'O') return_some(daterm_Event_Focus_out);
+    return_none();
+} $unguarded(fn);
+
+$static fn_((daterm_ANSI__pollNativeEvent(daterm_ANSI* self))(O$daterm_Event) $scope) {
+#if plat_is_windows
+    return daterm_ANSI__windows_pollNativeEvent(self);
+#elif plat_is_posix
+    if (daterm_ANSI__posix_resize_pending == 0) return_none();
+    daterm_ANSI__posix_resize_pending = 0;
+    let size = catch_((daterm_ANSI__queryScreenSize(self))($ignore, return_none()));
+    return_some(union_of((daterm_Event_resize)(size)));
+#else /* others */
+    let_ignore = self;
+    return_none();
+#endif /* plat_is_windows || plat_is_posix || others */
+} $unscoped(fn);
+
 $static fn_((daterm_ANSI__inputReady(daterm_ANSI* self))(bool)) {
 #if plat_is_windows
-    return daterm_ANSI__windows_inputReady(self->input_file.handle);
+    return daterm_ANSI__windows_inputReady(self);
 #elif plat_is_posix
     struct pollfd pfd = { .fd = as$(i32)(self->input_file.handle), .events = POLLIN, .revents = 0 };
     return poll(&pfd, 1, 0) > 0 && (pfd.revents & POLLIN) != 0;
@@ -239,12 +312,12 @@ fn_((daterm_ANSI_pollBufferedSeq(
     time_Dur esc_timeout
 ))(O$dansi_Seq) $scope) {
     let ready = io_Buf_Reader_ready(*input);
-    if (ready.len == 0) { return_none(); }
+    if (ready.len == 0) return_none();
 
     let first = *S_at((ready)[0]);
     if (first != 0x1B) {
         let len = catch_((utf8_byteSeqLen(first))($ignore, utf8_SeqLen_1));
-        if (ready.len < as$(usize)(len)) { return_none(); }
+        if (ready.len < as$(usize)(len)) return_none();
         let bytes = S_prefix((ready)(as$(usize)(len)));
         io_Buf_Reader_drop(input, as$(usize)(len));
         asg_l((esc_started_at)(none()));
@@ -275,7 +348,7 @@ fn_((daterm_ANSI_pollBufferedSeq(
     asg_l((esc_started_at)(none()));
     let second = *S_at((ready)[1]);
     switch (second) {
-    case '[': {
+    case_(('[')) {
         var_(idx, usize) = 2;
         while (idx < ready.len) {
             let ch = *S_at((ready)[idx]);
@@ -288,15 +361,15 @@ fn_((daterm_ANSI_pollBufferedSeq(
             idx += 1;
         }
         return_none();
-    }
-    case 'O': {
-        if (ready.len < 3) { return_none(); }
+    } $end(case);
+    case_(('O')) {
+        if (ready.len < 3) return_none();
         let bytes = S_prefix((ready)(3));
         io_Buf_Reader_drop(input, 3);
         return_some(dansi_Seq_ss3(bytes));
-    }
-    case ']':
-    case 'P': {
+    } $end(case);
+    case ']': $fallthrough;
+    case_(('P')) {
         let_(kind, dansi_Seq_Kind) = second == ']' ? dansi_Seq_Kind_osc
                                                    : dansi_Seq_Kind_dcs;
         var_(idx, usize) = 2;
@@ -317,20 +390,20 @@ fn_((daterm_ANSI_pollBufferedSeq(
             idx += 1;
         }
         return_none();
-    }
-    default: {
+    } $end(case);
+    default_() {
         let bytes = S_prefix((ready)(2));
         io_Buf_Reader_drop(input, 2);
         return_some(dansi_Seq_esc(bytes));
-    }
-    }
+    } $end(default);
+    };
 } $unscoped(fn);
 
 $static fn_((daterm_ANSI__pollSeq(daterm_ANSI* self))(O$dansi_Seq) $scope) {
     let os_ready = daterm_ANSI__inputReady(self);
-    if (os_ready) {
-        catch_((io_Buf_Reader_fill(&self->input_buf.reader))($ignore, return_none()));
-    }
+    if (os_ready) catch_((io_Buf_Reader_fill(&self->input_buf.reader))(
+        $ignore, return_none()
+    ));
     return daterm_ANSI_pollBufferedSeq(
         &self->input_buf.reader,
         self->clock,
@@ -341,11 +414,11 @@ $static fn_((daterm_ANSI__pollSeq(daterm_ANSI* self))(O$dansi_Seq) $scope) {
 
 fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
+    if_some((daterm_ANSI__pollNativeEvent(self))(event)) return_some(event);
     let seq = orelse_((daterm_ANSI__pollSeq(self))(return_none()));
     let parsed = dansi_Event_tryParse(seq);
-    if_some((parsed)(event)) {
-        return daterm_ANSI__asTermEvent(event);
-    }
+    if_some((parsed)(event)) return daterm_ANSI__asTermEvent(event);
+    if_some((daterm_ANSI_parseFocusSeq(seq))(focus)) return_some(daterm_ANSI__asFocusEvent(focus));
     let mouse = catch_((dansi_mouse_parseSGR(seq))($ignore, return_none()));
     return_some(daterm_ANSI__asMouseEvent(mouse));
 } $unscoped(fn);
@@ -353,7 +426,7 @@ fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event) $scope) {
 fn_((daterm_ANSI__wait(P$raw ctx))(Sched_Cancelable$daterm_Event) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
     while (true) {
-        if_some((daterm_ANSI__poll(self))(event)) { return_ok(event); }
+        if_some((daterm_ANSI__poll(self))(event)) return_ok(event);
         try_(time_Clock_sleep(self->clock, time_Dur_fromMillis(1)));
     }
 } $unscoped(fn);
@@ -365,7 +438,10 @@ fn_((daterm_ANSI__waitTimed(P$raw ctx, time_Dur timeout))(daterm_Term_WaitE$date
         if_some((daterm_ANSI__poll(ctx))(event)) { return_ok(event); }
         let elapsed = time_Clock_Inst_elapsed(instant, self->clock);
         if (time_Dur_gt(elapsed, timeout)) return_err(E_cause$Sched_Timeout());
-        try_(time_Clock_sleep(self->clock, time_Dur_sub(timeout, elapsed)));
+        let remaining = time_Dur_sub(timeout, elapsed);
+        let one_milli = time_Dur_fromMillis(1);
+        let sleep = time_Dur_gt(remaining, one_milli) ? one_milli : remaining;
+        try_(time_Clock_sleep(self->clock, sleep));
     }
 } $unscoped(fn);
 
@@ -373,7 +449,7 @@ fn_((daterm_ANSI__waitProtn(P$raw ctx))(daterm_Event) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     while (true) {
-        if_some((daterm_ANSI__poll(self))(event)) { return event; }
+        if_some((daterm_ANSI__poll(self))(event)) return event;
         catch_((time_Awake_sleep(clock, time_Dur_fromMillis(1)))($ignore, $do_nothing));
     }
 } $unscoped(fn);
@@ -390,14 +466,14 @@ fn_((daterm_ANSI__queryScreenSize(P$raw ctx))(E$daterm_Size) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
 #if plat_is_windows
     var_(csbi, CONSOLE_SCREEN_BUFFER_INFO) $undefined;
-    if (!GetConsoleScreenBufferInfo(self->output_file.handle, &csbi)) { return_err(E_cause$Unexpected()); }
+    if (!GetConsoleScreenBufferInfo(self->output_file.handle, &csbi)) return_err(E_cause$Unexpected());
     return_ok({
         .cols = as$(u16)(csbi.srWindow.Right - csbi.srWindow.Left + 1),
         .rows = as$(u16)(csbi.srWindow.Bottom - csbi.srWindow.Top + 1),
     });
 #elif plat_is_posix
     var_(ws, struct winsize) $undefined;
-    if (ioctl(as$(int)(self->output_file.handle), TIOCGWINSZ, &ws) < 0) { return_err(E_cause$Unexpected()); }
+    if (ioctl(as$(int)(self->output_file.handle), TIOCGWINSZ, &ws) < 0) return_err(E_cause$Unexpected());
     return_ok({ .cols = as$(u16)(ws.ws_col), .rows = as$(u16)(ws.ws_row) });
 #else
     return_err(E_cause$daterm_ANSI_Unsupported());
@@ -408,7 +484,7 @@ fn_((daterm_ANSI__queryCursorPos(P$raw ctx))(E$daterm_Pos) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
 #if plat_is_windows
     var_(csbi, CONSOLE_SCREEN_BUFFER_INFO) $undefined;
-    if (!GetConsoleScreenBufferInfo(self->output_file.handle, &csbi)) { return_err(E_cause$Unexpected()); }
+    if (!GetConsoleScreenBufferInfo(self->output_file.handle, &csbi)) return_err(E_cause$Unexpected());
     return_ok({
         .col = as$(u16)(csbi.dwCursorPosition.X),
         .row = as$(u16)(csbi.dwCursorPosition.Y),
@@ -429,29 +505,119 @@ fn_((daterm_ANSI__queryCursorPos(P$raw ctx))(E$daterm_Pos) $scope) {
 } $unscoped(fn);
 
 #if plat_is_windows
-
 fn_((daterm_ANSI__windows_ctrlHandler(DWORD type))(BOOL)) {
     switch (type) {
-    case CTRL_C_EVENT:
-    case CTRL_BREAK_EVENT:
-        return TRUE;
-    default:
-        return FALSE;
+    case CTRL_C_EVENT: $fallthrough;
+    case CTRL_BREAK_EVENT: return TRUE;
+    default: return FALSE;
     }
 };
 
-fn_((daterm_ANSI__windows_inputReady(HANDLE input))(bool)) {
+fn_((daterm_ANSI__windows_keyMods(DWORD control_key_state))(dansi_Event_KeyMods)) {
+    return (dansi_Event_KeyMods){
+        .shift = (control_key_state & SHIFT_PRESSED) != 0,
+        .alt = (control_key_state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) != 0,
+        .ctrl = (control_key_state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) != 0,
+    };
+};
+
+fn_((daterm_ANSI__windows_mouseButton(DWORD button_mask))(daterm_Event_MouseButton)) {
+    if ((button_mask & FROM_LEFT_1ST_BUTTON_PRESSED) != 0) return daterm_Event_MouseButton_left;
+    if ((button_mask & FROM_LEFT_2ND_BUTTON_PRESSED) != 0) return daterm_Event_MouseButton_middle;
+    if ((button_mask & RIGHTMOST_BUTTON_PRESSED) != 0) return daterm_Event_MouseButton_right;
+    return daterm_Event_MouseButton_none;
+};
+
+fn_((daterm_ANSI__windows_mouseEvent(daterm_ANSI* self, MOUSE_EVENT_RECORD record))(O$daterm_Event) $scope) {
+    let button_mask = record.dwButtonState
+                    & (FROM_LEFT_1ST_BUTTON_PRESSED | FROM_LEFT_2ND_BUTTON_PRESSED | RIGHTMOST_BUTTON_PRESSED);
+    var_(mouse, daterm_Event_Mouse) = {
+        .col = as$(u16)(record.dwMousePosition.X),
+        .row = as$(u16)(record.dwMousePosition.Y),
+        .button = daterm_Event_MouseButton_none,
+        .action = daterm_Event_MouseAction_motion,
+        .wheel = daterm_Event_MouseWheel_none,
+        .mods = daterm_ANSI__windows_keyMods(record.dwControlKeyState),
+    };
+
+    if ((record.dwEventFlags & MOUSE_WHEELED) != 0) {
+        let delta = as$(SHORT)((record.dwButtonState >> 16) & 0xffff);
+        mouse.action = daterm_Event_MouseAction_press;
+        mouse.wheel = delta < 0 ? daterm_Event_MouseWheel_down : daterm_Event_MouseWheel_up;
+        return_some(union_of((daterm_Event_mouse)(mouse)));
+    }
+
+    if ((record.dwEventFlags & MOUSE_MOVED) != 0) {
+        mouse.button = daterm_ANSI__windows_mouseButton(button_mask);
+        mouse.action = button_mask == 0 ? daterm_Event_MouseAction_motion : daterm_Event_MouseAction_drag;
+        self->windows_mouse_buttons = button_mask;
+        return_some(union_of((daterm_Event_mouse)(mouse)));
+    }
+
+    let changed = button_mask ^ self->windows_mouse_buttons;
+    if (changed == 0 && button_mask == 0) { return_none(); }
+    let active = changed != 0 ? changed : button_mask;
+    mouse.button = daterm_ANSI__windows_mouseButton(active);
+    mouse.action = (button_mask & active) != 0 ? daterm_Event_MouseAction_press : daterm_Event_MouseAction_release;
+    self->windows_mouse_buttons = button_mask;
+    return_some(union_of((daterm_Event_mouse)(mouse)));
+} $unscoped(fn);
+
+fn_((daterm_ANSI__windows_pollNativeEvent(daterm_ANSI* self))(O$daterm_Event) $scope) {
+    let input = self->input_file.handle;
+    while (WaitForSingleObject(input, 0) == WAIT_OBJECT_0) {
+        var_(record, INPUT_RECORD) $undefined;
+        var_(read_count, DWORD) = 0;
+        if (!PeekConsoleInputA(input, &record, 1, &read_count) || read_count == 0) {
+            return_none();
+        }
+        if (record.EventType == KEY_EVENT) {
+            return_none();
+        }
+        if (!ReadConsoleInputA(input, &record, 1, &read_count) || read_count == 0) {
+            return_none();
+        }
+        switch (record.EventType) {
+        case_((WINDOW_BUFFER_SIZE_EVENT)){
+            return_some(union_of((daterm_Event_resize)((daterm_Size){
+                .cols = as$(u16)(record.Event.WindowBufferSizeEvent.dwSize.X),
+                .rows = as$(u16)(record.Event.WindowBufferSizeEvent.dwSize.Y),
+            })));
+        } $end(case);
+        case_((MOUSE_EVENT)) {
+            if_some((daterm_ANSI__windows_mouseEvent(self, record.Event.MouseEvent))(event)) {
+                return_some(event);
+            }
+        } $end(case);
+        case_((FOCUS_EVENT)) {
+            return_some(daterm_ANSI__asFocusEvent(
+                record.Event.FocusEvent.bSetFocus
+                    ? daterm_Event_Focus_in
+                    : daterm_Event_Focus_out
+            ));
+        } $end(case);
+        default_() $do_nothing $end(default);
+        };
+    }
+    return_none();
+} $unscoped(fn);
+
+fn_((daterm_ANSI__windows_inputReady(daterm_ANSI* self))(bool)) {
+    let input = self->input_file.handle;
     while (WaitForSingleObject(input, 0) == WAIT_OBJECT_0) {
         var_(record, INPUT_RECORD) $undefined;
         var_(read_count, DWORD) = 0;
         if (!PeekConsoleInputA(input, &record, 1, &read_count) || read_count == 0) {
             return false;
         }
-
-        if (record.EventType == KEY_EVENT || record.EventType == MOUSE_EVENT) {
+        if (record.EventType == KEY_EVENT) {
             return true;
         }
-
+        if (record.EventType == MOUSE_EVENT
+            || record.EventType == WINDOW_BUFFER_SIZE_EVENT
+            || record.EventType == FOCUS_EVENT) {
+            return false;
+        }
         if (!ReadConsoleInputA(input, &record, 1, &read_count) || read_count == 0) {
             return false;
         }
@@ -461,11 +627,11 @@ fn_((daterm_ANSI__windows_inputReady(HANDLE input))(bool)) {
 
 fn_((daterm_ANSI__windows_enableRawMode(HANDLE input))(E$DWORD) $scope) {
     var_(old_mode, DWORD) = 0;
-    if (!GetConsoleMode(input, &old_mode)) { return_err(E_cause$Unexpected()); }
+    if (!GetConsoleMode(input, &old_mode)) return_err(E_cause$Unexpected());
     let new_mode = as$(DWORD)(ENABLE_VIRTUAL_TERMINAL_INPUT
                           | ENABLE_WINDOW_INPUT
                           | ENABLE_MOUSE_INPUT);
-    if (!SetConsoleMode(input, new_mode)) { return_err(E_cause$Unexpected()); }
+    if (!SetConsoleMode(input, new_mode)) return_err(E_cause$Unexpected());
     FlushConsoleInputBuffer(input);
     if (!SetConsoleCtrlHandler(daterm_ANSI__windows_ctrlHandler, TRUE)) {
         catch_((daterm_ANSI__windows_disableRawMode(input, old_mode))($ignore, $do_nothing));
@@ -476,31 +642,28 @@ fn_((daterm_ANSI__windows_enableRawMode(HANDLE input))(E$DWORD) $scope) {
 
 fn_((daterm_ANSI__windows_disableRawMode(HANDLE input, DWORD old_in))(E$void) $scope) {
     SetConsoleCtrlHandler(daterm_ANSI__windows_ctrlHandler, FALSE);
-    if (!SetConsoleMode(input, old_in)) { return_err(E_cause$Unexpected()); }
+    if (!SetConsoleMode(input, old_in)) return_err(E_cause$Unexpected());
     return_ok({});
 } $unscoped(fn);
 
 fn_((daterm_ANSI__windows_enableVTerm(HANDLE output))(E$DWORD) $scope) {
     var_(old_mode, DWORD) = 0;
-    if (!GetConsoleMode(output, &old_mode)) { return_err(E_cause$Unexpected()); }
+    if (!GetConsoleMode(output, &old_mode)) return_err(E_cause$Unexpected());
     let new_mode = old_mode | as$(DWORD)(ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-    if (!SetConsoleMode(output, new_mode)) { return_err(E_cause$Unexpected()); }
+    if (!SetConsoleMode(output, new_mode)) return_err(E_cause$Unexpected());
     return_ok(old_mode);
 } $unscoped(fn);
 
 fn_((daterm_ANSI__windows_disableVTerm(HANDLE output, DWORD old_out))(E$void) $scope) {
-    if (!SetConsoleMode(output, old_out)) { return_err(E_cause$Unexpected()); }
+    if (!SetConsoleMode(output, old_out)) return_err(E_cause$Unexpected());
     return_ok({});
 } $unscoped(fn);
-
 #endif /* plat_is_windows */
-
 #if plat_is_posix
-
 fn_((daterm_ANSI__posix_enableRawMode(fs_File_Handle handle, daterm_ANSI_OutputMode output_mode))(E$posix_termios) $scope) {
     let fd = as$(int)(handle);
     var_(old, posix_termios) $undefined;
-    if (tcgetattr(fd, &old) < 0) { return_err(E_cause$Unexpected()); }
+    if (tcgetattr(fd, &old) < 0) return_err(E_cause$Unexpected());
     var new = old;
     new.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
     if (output_mode == daterm_ANSI_OutputMode_raw) {
@@ -511,14 +674,34 @@ fn_((daterm_ANSI__posix_enableRawMode(fs_File_Handle handle, daterm_ANSI_OutputM
     new.c_cflag |= CS8;
     new.c_cc[VMIN] = 1;
     new.c_cc[VTIME] = 0;
-    if (tcsetattr(fd, TCSAFLUSH, &new) < 0) { return_err(E_cause$Unexpected()); }
+    if (tcsetattr(fd, TCSAFLUSH, &new) < 0) return_err(E_cause$Unexpected());
     return_ok(old);
 } $unscoped(fn);
 
 fn_((daterm_ANSI__posix_disableRawMode(fs_File_Handle handle, posix_termios old))(E$void) $scope) {
     let fd = as$(int)(handle);
-    if (tcsetattr(fd, TCSAFLUSH, &old) < 0) { return_err(E_cause$Unexpected()); }
+    if (tcsetattr(fd, TCSAFLUSH, &old) < 0) return_err(E_cause$Unexpected());
     return_ok({});
 } $unscoped(fn);
 
+fn_((daterm_ANSI__posix_enableResizeEvents(void))(E$posix_sigaction) $scope) {
+    var_(old, posix_sigaction) $undefined;
+    var_(action, posix_sigaction) = cleared();
+    action.sa_handler = daterm_ANSI__posix_onResize;
+    sigemptyset(&action.sa_mask);
+    if (sigaction(SIGWINCH, &action, &old) < 0) return_err(E_cause$Unexpected());
+    daterm_ANSI__posix_resize_pending = 0;
+    return_ok(old);
+} $unscoped(fn);
+
+fn_((daterm_ANSI__posix_disableResizeEvents(posix_sigaction old))(E$void) $scope) {
+    if (sigaction(SIGWINCH, &old, null) < 0) return_err(E_cause$Unexpected());
+    daterm_ANSI__posix_resize_pending = 0;
+    return_ok({});
+} $unscoped(fn);
+
+fn_((daterm_ANSI__posix_onResize(int sig))(void)) {
+    let_ignore = sig;
+    daterm_ANSI__posix_resize_pending = 1;
+};
 #endif /* plat_is_posix */

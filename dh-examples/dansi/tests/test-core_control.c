@@ -79,6 +79,7 @@ TEST_fn_("dansi-core/mode: mode controls have static and runtime forms" $scope) 
     try_(TEST_expect(mem_eqlBytes(u8_l(dansi_mode_enablePrivate_static("2004")), u8_l("\x1b[?2004h"))));
     try_(TEST_expect(mem_eqlBytes(u8_l(dansi_mode_enablePrivate_static(dansi_mode_Private_staticParse(dansi_mode_Private_bracketed_paste))), u8_l("\x1b[?2004h"))));
     try_(TEST_expect(mem_eqlBytes(private_enabled.as_const, u8_l("\x1b[?2004h"))));
+    try_(TEST_expect(mem_eqlBytes(u8_l(dansi_mode_enablePrivate_static(dansi_mode_Private_staticParse(dansi_mode_Private_focus_events))), u8_l("\x1b[?1004h"))));
     let private_disabled = dansi_mode_setPrivate(as$(u16)(dansi_mode_Private_bracketed_paste), false, &private_buf);
     try_(TEST_expect(mem_eqlBytes(u8_l(dansi_mode_setPrivate_static("2004", 0)), u8_l("\x1b[?2004l"))));
     try_(TEST_expect(mem_eqlBytes(u8_l(dansi_mode_setPrivate_static(dansi_mode_Private_staticParse(dansi_mode_Private_bracketed_paste), 0)), u8_l("\x1b[?2004l"))));

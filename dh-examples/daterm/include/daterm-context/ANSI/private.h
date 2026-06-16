@@ -28,6 +28,9 @@ $extern fn_((daterm_ANSI_pollBufferedSeq(
     time_Dur esc_timeout
 ))(O$dansi_Seq));
 
+$attr($must_check)
+$extern fn_((daterm_ANSI_parseFocusSeq(dansi_Seq seq))(O$daterm_Event_Focus));
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

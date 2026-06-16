@@ -40,6 +40,12 @@ typedef enum_((daterm_Event_MouseWheel $fits($packed))(
     daterm_Event_MouseWheel_down,
 )) daterm_Event_MouseWheel;
 
+typedef enum_((daterm_Event_Focus $fits($packed))(
+    daterm_Event_Focus_in,
+    daterm_Event_Focus_out,
+)) daterm_Event_Focus;
+T_use_O$(daterm_Event_Focus);
+
 typedef struct daterm_Event_Mouse {
     var_(col, u16);
     var_(row, u16);
@@ -53,6 +59,7 @@ T_use_prl$(daterm_Event_Mouse);
 typedef variant_((daterm_Event $fits($packed))(
     (daterm_Event_key, dansi_Event_Key),
     (daterm_Event_mouse, daterm_Event_Mouse),
+    (daterm_Event_focus, daterm_Event_Focus),
     (daterm_Event_resize, daterm_Size)
 )) daterm_Event;
 T_use_prl$(daterm_Event);

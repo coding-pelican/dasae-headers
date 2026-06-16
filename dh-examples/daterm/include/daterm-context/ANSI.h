@@ -28,6 +28,7 @@ extern "C" {
 #include <dh/sys/api/windows/handle.h>
 #endif /* plat_is_windows */
 #if plat_is_posix
+#include <signal.h>
 #include <termios.h>
 #endif /* plat_is_posix */
 
@@ -42,6 +43,7 @@ typedef struct daterm_ANSI__RawMode {
 #endif /* plat_is_windows */
 #if plat_is_posix
     var_(old_in, struct termios);
+    var_(old_winch, struct sigaction);
 #endif /* plat_is_posix */
 } daterm_ANSI__RawMode;
 T_use_prl$(daterm_ANSI__RawMode);
@@ -62,6 +64,10 @@ typedef struct daterm_ANSI {
     var_(raw_mode_, O$daterm_ANSI__RawMode);
     var_(is_in_alt_screen, bool);
     var_(is_tracking_mouse, bool);
+    var_(is_tracking_focus, bool);
+#if plat_is_windows
+    var_(windows_mouse_buttons, DWORD);
+#endif /* plat_is_windows */
     var_(input_buf, struct {
         var_(reader, io_Buf_Reader);
         var_(is_owned, bool);
@@ -126,6 +132,11 @@ $attr($must_check)
 $extern fn_((daterm_ANSI_enableMouseTracking(daterm_ANSI* self))(E$void));
 $extern fn_((daterm_ANSI_disableMouseTracking(daterm_ANSI* self))(void));
 $extern fn_((daterm_ANSI_isTrackingMouse(const daterm_ANSI* self))(bool));
+
+$attr($must_check)
+$extern fn_((daterm_ANSI_enableFocusTracking(daterm_ANSI* self))(E$void));
+$extern fn_((daterm_ANSI_disableFocusTracking(daterm_ANSI* self))(void));
+$extern fn_((daterm_ANSI_isTrackingFocus(const daterm_ANSI* self))(bool));
 
 $extern fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term));
 
