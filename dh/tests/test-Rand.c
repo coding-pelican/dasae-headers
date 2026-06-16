@@ -46,22 +46,22 @@ TEST_fn_("Rand: upper bound helpers preserve exact singleton ranges" $scope) {
 
     try_(TEST_expect(Rand_lessThan$u32(&rng, 1) == 0));
     try_(TEST_expect(Rand_atMost$u16(&rng, 0) == 0));
-    try_(TEST_expect(Rand_range$u8(&rng, Range_inclExcl$(u8, 7, 8)) == 7));
+    try_(TEST_expect(Rand_range$u8(&rng, range$((R$u8)(incl_(7), excl_(8)))) == 7));
 } $unscoped(TEST_fn)
 
 TEST_fn_("Rand: range uses explicit inclusive and exclusive limits" $scope) {
     var rng = Rand_initSeed(131415);
 
-    try_(TEST_expect(Rand_range$u8(&rng, Range_inclExcl$(u8, 10, 11)) == 10));
-    try_(TEST_expect(Rand_range$u8(&rng, Range_exclIncl$(u8, 9, 10)) == 10));
-    try_(TEST_expect(Rand_range$i8(&rng, Range_exclExcl$(i8, -2, 0)) == -1));
+    try_(TEST_expect(Rand_range$u8(&rng, range$((R$u8)(incl_(10), excl_(11)))) == 10));
+    try_(TEST_expect(Rand_range$u8(&rng, range$((R$u8)(excl_(9), incl_(10)))) == 10));
+    try_(TEST_expect(Rand_range$i8(&rng, range$((R$i8)(excl_(-2), excl_(0)))) == -1));
 } $unscoped(TEST_fn)
 
 TEST_fn_("Rand: range accepts full primitive ranges" $scope) {
     var rng = Rand_initSeed(161718);
 
-    let_ignore = Rand_range$u8(&rng, Range_inclIncl$(u8, 0, uint_limit$(u8)));
-    let full_i8 = Range_inclIncl$(i8, int_limit_min$(i8), int_limit_max$(i8));
+    let_ignore = Rand_range$u8(&rng, range$((R$u8)(incl_(0), incl_(uint_limit$(u8)))));
+    let full_i8 = range$((R$i8)(incl_(int_limit_min$(i8)), incl_(int_limit_max$(i8))));
     try_(TEST_expect(full_i8.begin.point == int_limit_min$(i8)));
     try_(TEST_expect(full_i8.end.point == int_limit_max$(i8)));
     let_ignore = Rand_range$i8(&rng, full_i8);
