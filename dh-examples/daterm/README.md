@@ -178,11 +178,11 @@ For ANSI streams this requires:
 - distinguishing standalone ESC from a longer sequence with a configurable
   timeout
 
-Core key parsing comes from `dansi_Event`. xterm mouse parsing comes from
-`dansi_mouse_parseSGR`. `daterm_Event` wraps these into backend-neutral event
-variants:
+Input parsing comes from `dansi-core` (`dansi_Event_parse` / `dansi_Event_tryParse`).
+`daterm_Event` wraps protocol events and adds backend-specific variants:
 
-- `daterm_Event_key`
+- `daterm_Event_special`
+- `daterm_Event_text`
 - `daterm_Event_mouse`
 - `daterm_Event_focus`
 - `daterm_Event_resize`
@@ -192,24 +192,19 @@ resize event, while an OS backend may be able to detect one directly. The ANSI
 context converts POSIX `SIGWINCH` and Windows `WINDOW_BUFFER_SIZE_EVENT` into
 `daterm_Event_resize`.
 
-Focus events use xterm-compatible focus tracking (`CSI ? 1004 h/l`) and parse
-`CSI I`/`CSI O` reports into `daterm_Event_focus`. Bracketed paste is a useful
-future event, but it needs a deliberate buffering contract because pasted bytes
-arrive between `CSI 200~` and `CSI 201~` and can exceed the normal input event
-buffer.
+Focus events use xterm-compatible focus tracking (`CSI ? 1004 h/l`) parsed as
+`dansi_Event_focus`. Bracketed paste is a useful future event, but it needs a
+deliberate buffering contract because pasted bytes arrive between `CSI 200~` and
+`CSI 201~` and can exceed the normal input event buffer.
 
 ```mermaid
 flowchart TD
     T[terminal or OS input] --> B[daterm_ANSI backend]
     B -->|raw bytes| S[dansi_Seq parser]
-    S -->|key CSI SS3 ESC raw| K[dansi_Event key]
-    S -->|SGR mouse CSI| M[dansi_mouse_parseSGR]
-    S -->|CSI I/O| F[focus parser]
+    S --> P[dansi_Event_tryParse]
     B -->|SIGWINCH or WINDOW_BUFFER_SIZE_EVENT| R[resize event]
     B -->|Windows MOUSE_EVENT_RECORD| WM[native mouse event]
-    K --> E[daterm_Event]
-    M --> E
-    F --> E
+    P --> E[daterm_Event]
     R --> E
     WM --> E
 ```

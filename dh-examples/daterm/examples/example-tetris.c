@@ -240,7 +240,8 @@ $static fn_((tetris_lock(tetris_Self* self))(void));
 $static fn_((tetris_hardDrop(tetris_Self* self))(void));
 $static fn_((tetris_hold(tetris_Self* self))(void));
 $static fn_((tetris_tick(tetris_Self* self, time_Dur dt))(void));
-$static fn_((tetris_cmdFromKey(dansi_Event_Key key))(E$O$tetris_Cmd)) $must_check;
+$static fn_((tetris_cmdFromSpecial(dansi_Event_Special special))(E$O$tetris_Cmd)) $must_check;
+$static fn_((tetris_cmdFromText(dansi_Event_Text text))(E$O$tetris_Cmd)) $must_check;
 $static fn_((tetris_applyCmd(tetris_Self* self, tetris_Cmd cmd))(void));
 $static fn_((tetris_pollInput(tetris_Self* self, daterm_Term term))(E$void)) $must_check;
 $static fn_((tetris_ghostY(const tetris_Self* self))(i32));
@@ -780,26 +781,28 @@ $static fn_((tetris_tick(tetris_Self* self, time_Dur dt))(void)) {
     }
 };
 
-$static fn_((tetris_cmdFromKey(dansi_Event_Key key))(E$O$tetris_Cmd) $scope) {
-    $suppress_(switch_enum)(switch (key.code)) {
-    case_((dansi_Event_KeyCode_esc)) return_ok(some(tetris_cmd_quit)) $end(case);
-    case_((dansi_Event_KeyCode_left)) return_ok(some(tetris_cmd_move_left)) $end(case);
-    case_((dansi_Event_KeyCode_right)) return_ok(some(tetris_cmd_move_right)) $end(case);
-    case_((dansi_Event_KeyCode_down)) return_ok(some(tetris_cmd_soft_drop)) $end(case);
-    case_((dansi_Event_KeyCode_up)) return_ok(some(tetris_cmd_rotate_cw)) $end(case);
-    case_((dansi_Event_KeyCode_char)) {
-        let len = try_((utf8_codepointSeqLen(key.codepoint)));
-        if (len != utf8_SeqLen_1) return_ok(none());
-        let ch = ascii_toLower(intCast$((u8)(key.codepoint)));
-        if (ch == 'q' || (key.mods.ctrl && ch == 'c')) return_ok(some(tetris_cmd_quit));
-        if (ch == 'p') return_ok(some(tetris_cmd_toggle_pause));
-        if (ch == ' ') return_ok(some(tetris_cmd_hard_drop));
-        if (ch == 'z') return_ok(some(tetris_cmd_rotate_ccw));
-        if (ch == 'x') return_ok(some(tetris_cmd_rotate_cw));
-        if (ch == 'c') return_ok(some(tetris_cmd_hold));
-    } $end(case);
+$static fn_((tetris_cmdFromSpecial(dansi_Event_Special special))(E$O$tetris_Cmd) $scope) {
+    $suppress_(switch_enum)(switch (special.code)) {
+    case_((dansi_key_Code_esc)) return_ok(some(tetris_cmd_quit)) $end(case);
+    case_((dansi_key_Code_left)) return_ok(some(tetris_cmd_move_left)) $end(case);
+    case_((dansi_key_Code_right)) return_ok(some(tetris_cmd_move_right)) $end(case);
+    case_((dansi_key_Code_down)) return_ok(some(tetris_cmd_soft_drop)) $end(case);
+    case_((dansi_key_Code_up)) return_ok(some(tetris_cmd_rotate_cw)) $end(case);
     default_() $do_nothing $end(default);
     }
+    return_ok(none());
+} $unscoped(fn);
+
+$static fn_((tetris_cmdFromText(dansi_Event_Text text))(E$O$tetris_Cmd) $scope) {
+    let len = try_((utf8_codepointSeqLen(text.codepoint)));
+    if (len != utf8_SeqLen_1) return_ok(none());
+    let ch = ascii_toLower(intCast$((u8)(text.codepoint)));
+    if (ch == 'q' || (text.mods.ctrl && ch == 'c')) return_ok(some(tetris_cmd_quit));
+    if (ch == 'p') return_ok(some(tetris_cmd_toggle_pause));
+    if (ch == ' ') return_ok(some(tetris_cmd_hard_drop));
+    if (ch == 'z') return_ok(some(tetris_cmd_rotate_ccw));
+    if (ch == 'x') return_ok(some(tetris_cmd_rotate_cw));
+    if (ch == 'c') return_ok(some(tetris_cmd_hold));
     return_ok(none());
 } $unscoped(fn);
 
@@ -835,8 +838,12 @@ $static fn_((tetris_pollInput(tetris_Self* self, daterm_Term term))(E$void) $sco
     while (true) {
         let event = orelse_((daterm_Term_poll(term))(return_ok({})));
         $suppress_(switch_enum)(match_(event)) {
-        pattern_((daterm_Event_key)(key)) {
-            let cmd = try_(tetris_cmdFromKey(key));
+        pattern_((daterm_Event_special)(special)) {
+            let cmd = try_(tetris_cmdFromSpecial(special));
+            if_some((cmd)(value)) tetris_applyCmd(self, value);
+        } $end(pattern);
+        pattern_((daterm_Event_text)(text)) {
+            let cmd = try_(tetris_cmdFromText(text));
             if_some((cmd)(value)) tetris_applyCmd(self, value);
         } $end(pattern);
         default_() $do_nothing $end(default);

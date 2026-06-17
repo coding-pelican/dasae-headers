@@ -1,4 +1,5 @@
 #include "dansi-core/attr.h"
+#include <dh/io/Fixed.h>
 
 /*========== External Definitions ===========================================*/
 
@@ -80,4 +81,37 @@ fn_((dansi_attr_resetStrikethrough(void))(S_const$u8)) {
 
 fn_((dansi_attr_resetStrikethroughWrite(io_Writer writer))(E$void)) {
     return io_Writer_writeBytes(writer, dansi_attr_resetStrikethrough());
+};
+
+fn_((dansi_attr_push(void))(S_const$u8)) {
+    return u8_l(dansi_attr_push_static());
+};
+
+fn_((dansi_attr_pushWrite(io_Writer writer))(E$void)) {
+    return io_Writer_writeBytes(writer, dansi_attr_push());
+};
+
+fn_((dansi_attr_pop(void))(S_const$u8)) {
+    return u8_l(dansi_attr_pop_static());
+};
+
+fn_((dansi_attr_popWrite(io_Writer writer))(E$void)) {
+    return io_Writer_writeBytes(writer, dansi_attr_pop());
+};
+
+fn_((dansi_attr_reportRect(u16 top, u16 left, u16 bottom, u16 right, dansi_attr_ReportRectBuf* buf))(S$u8)) {
+    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    catch_((dansi_attr_reportRectWrite(top, left, bottom, right, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
+    return io_Fixed_written(writing.stream);
+};
+
+fn_((dansi_attr_reportRectWrite(u16 top, u16 left, u16 bottom, u16 right, io_Writer writer))(E$void)) {
+    return io_Writer_print(
+        writer,
+        u8_l(dansi_attr_reportRect_static("{:uh}", "{:uh}", "{:uh}", "{:uh}")),
+        top,
+        left,
+        bottom,
+        right
+    );
 };

@@ -28,13 +28,13 @@ typedef A$$(64, u8) dansi_device_AttrsReportBuf;
 
 typedef enum_((dansi_device_Status $fits($packed))(
     dansi_device_Status_ok = 0,
-    dansi_device_Status_malformed = 1,
+    dansi_device_Status_malformed = 1
 )) dansi_device_Status;
 
 typedef enum_((dansi_device_AttrsKind $fits($packed))(
     dansi_device_AttrsKind_pri = 0,
     dansi_device_AttrsKind_sec = 1,
-    dansi_device_AttrsKind_ter = 2,
+    dansi_device_AttrsKind_ter = 2
 )) dansi_device_AttrsKind;
 
 typedef struct dansi_device_Attrs {

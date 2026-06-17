@@ -27,38 +27,40 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     while_(var is_running = true, is_running) {
         if_some((daterm_Term_poll(term))(event)) {
             $suppress_(switch_enum)(match_(event)) {
-            pattern_((daterm_Event_key)(key)) {
-                $suppress_(switch_enum)(switch (key.code)) {
-                case_((dansi_Event_KeyCode_esc)){
+            pattern_((daterm_Event_special)(special)) {
+                $suppress_(switch_enum)(switch (special.code)) {
+                case_((dansi_key_Code_esc)){
                     try_(io_Writer_println(out, u8_l("ESC pressed, exiting...")));
                     is_running = false;
                 } $end(case);
-                case_((dansi_Event_KeyCode_char)){
-                    try_(io_Writer_println(
-                        out, u8_l("Key event: codepoint={:C}, mods={:uhh}"),
-                        key.codepoint, key.mods.packed
-                    ));
-                    if (key.codepoint == 'm') {
-                        let captured = allow_printing_mouse_events;
-                        try_(io_Writer_println(
-                            out, u8_l("Mouse event printing {:B} -> {:B}"),
-                            captured, !captured
-                        ));
-                        allow_printing_mouse_events = !captured;
-                    }
-                    let pressed_q = key.codepoint == 'q';
-                    if (pressed_q) try_(io_Writer_println(out, u8_l("q pressed, exiting...")));
-                    let pressed_ctrl_c = key.mods.ctrl && key.codepoint == 'c';
-                    if (pressed_ctrl_c) try_(io_Writer_println(out, u8_l("Ctrl-C pressed, exiting...")));
-                    is_running = !(pressed_q || pressed_ctrl_c);
-                } $end(case);
                 default_() $do_nothing $end(default);
                 }
-            }$end(pattern);
+            } $end(pattern);
+            pattern_((daterm_Event_text)(text)) {
+                try_(io_Writer_println(
+                    out, u8_l("Key event: codepoint={:C}, mods={:uhh}"),
+                    text.codepoint, text.mods.packed
+                ));
+                if (text.codepoint == 'm') {
+                    let captured = allow_printing_mouse_events;
+                    try_(io_Writer_println(
+                        out, u8_l("Mouse event printing {:B} -> {:B}"),
+                        captured, !captured
+                    ));
+                    allow_printing_mouse_events = !captured;
+                }
+                let pressed_q = text.codepoint == 'q';
+                if (pressed_q) try_(io_Writer_println(out, u8_l("q pressed, exiting...")));
+                let pressed_ctrl_c = text.mods.ctrl && text.codepoint == 'c';
+                if (pressed_ctrl_c) try_(io_Writer_println(out, u8_l("Ctrl-C pressed, exiting...")));
+                is_running = !(pressed_q || pressed_ctrl_c);
+            } $end(pattern);
             pattern_((daterm_Event_mouse)(mouse)) {
+                let btn = isSome(mouse.btn) ? as$(u8)(unwrap_(mouse.btn)) : u8_limit_max;
+                let wheel = isSome(mouse.wheel) ? as$(u8)(unwrap_(mouse.wheel)) : u8_limit_max;
                 if (allow_printing_mouse_events) try_(io_Writer_println(
-                    out, u8_l("Mouse event: col={:uh}, row={:uh}, button={:uhh}, action={:uhh}, wheel={:uhh}"),
-                    mouse.col, mouse.row, mouse.button, mouse.action, mouse.wheel
+                    out, u8_l("Mouse event: col={:uh}, row={:uh}, btn={:uhh}, action={:uhh}, wheel={:uhh}"),
+                    mouse.col, mouse.row, btn, mouse.action, wheel
                 ));
             } $end(pattern);
             pattern_((daterm_Event_focus)(focus)) {

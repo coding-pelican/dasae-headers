@@ -1,7 +1,6 @@
 #include "daterm-context/ANSI.h"
 #include "daterm-context/ANSI/private.h"
 #include <dansi-core.h>
-#include <dansi-xterm.h>
 #include <dh/fs/File.h>
 #include <dh/mem/common.h>
 #include <dh/time/Dur.h>
@@ -22,14 +21,22 @@ $static fn_((daterm_ANSI__reader(P$raw ctx))(io_Reader));
 $static fn_((daterm_ANSI__writer(P$raw ctx))(io_Writer));
 $static fn_((daterm_ANSI__queryScreenSize(P$raw ctx))(E$daterm_Size));
 $static fn_((daterm_ANSI__queryCursorPos(P$raw ctx))(E$daterm_Pos));
+$static fn_((daterm_ANSI__mouseCol(u16 x))(u16));
+$static fn_((daterm_ANSI__mouseRow(u16 y))(u16));
+$static fn_((daterm_ANSI__mouseFromBtnReport(
+    daterm_Event_MouseAction action,
+    dansi_Event_MouseBtnReport report
+))(daterm_Event_Mouse));
+$static fn_((daterm_ANSI__mouseFromMotionReport(dansi_Event_MouseMotionReport report))(daterm_Event_Mouse));
+$static fn_((daterm_ANSI__mouseFromWheelReport(dansi_Event_MouseWheelReport report))(daterm_Event_Mouse));
 
 #if plat_is_windows
 #include <dh/sys/api/windows/console.h>
 #include <dh/sys/api/windows/sync.h>
 T_use_E$(DWORD);
 $static fn_((daterm_ANSI__windows_ctrlHandler(DWORD type))(BOOL));
-$static fn_((daterm_ANSI__windows_keyMods(DWORD control_key_state))(dansi_Event_KeyMods));
-$static fn_((daterm_ANSI__windows_mouseButton(DWORD button_mask))(daterm_Event_MouseButton));
+$static fn_((daterm_ANSI__windows_keyMods(DWORD control_key_state))(dansi_key_Mods));
+$static fn_((daterm_ANSI__windows_mouseBtn(DWORD button_mask))(O$dansi_mouse_Btn));
 $static fn_((daterm_ANSI__windows_mouseEvent(daterm_ANSI* self, MOUSE_EVENT_RECORD record))(O$daterm_Event));
 $static fn_((daterm_ANSI__windows_pollNativeEvent(daterm_ANSI* self))(O$daterm_Event));
 $static fn_((daterm_ANSI__windows_inputReady(daterm_ANSI* self))(bool));
@@ -191,14 +198,14 @@ fn_((daterm_ANSI_isTrackingMouse(const daterm_ANSI* self))(bool)) {
 
 fn_((daterm_ANSI_enableFocusTracking(daterm_ANSI* self))(E$void) $scope) {
     if (self->is_tracking_focus) return_ok({});
-    try_(dansi_mode_enablePrivateWrite(u16_(dansi_mode_Private_focus_events), daterm_ANSI__writerOf(self)));
+    try_(dansi_focus_enableTrackingWrite(daterm_ANSI__writerOf(self)));
     self->is_tracking_focus = true;
     return_ok({});
 } $unscoped(fn);
 
 fn_((daterm_ANSI_disableFocusTracking(daterm_ANSI* self))(void)) {
     if (!self->is_tracking_focus) return;
-    catch_((dansi_mode_disablePrivateWrite(u16_(dansi_mode_Private_focus_events), daterm_ANSI__writerOf(self)))($ignore, $do_nothing));
+    catch_((dansi_focus_disableTrackingWrite(daterm_ANSI__writerOf(self)))($ignore, $do_nothing));
     self->is_tracking_focus = false;
 };
 
@@ -250,34 +257,86 @@ fn_((daterm_ANSI__writerOf(const daterm_ANSI* self))(io_Writer)) {
 
 $static fn_((daterm_ANSI__asTermEvent(dansi_Event event))(O$daterm_Event) $scope) {
     match_(event) {
-    pattern_((dansi_Event_key)(key)) return_some(union_of((daterm_Event_key)(key))) $end(pattern);
+    pattern_((dansi_Event_special)(special)) return_some(union_of((daterm_Event_special)(special))) $end(pattern);
+    pattern_((dansi_Event_text)(text)) return_some(union_of((daterm_Event_text)(text))) $end(pattern);
+    pattern_((dansi_Event_focus)(focus)) return_some(union_of((daterm_Event_focus)(focus))) $end(pattern);
+    pattern_((dansi_Event_mouse)(mouse)) {
+        match_(mouse) {
+        pattern_((dansi_Event_Mouse_press)(press)) {
+            return_some(union_of((daterm_Event_mouse)(
+                daterm_ANSI__mouseFromBtnReport(daterm_Event_MouseAction_press, press)
+            )));
+        } $end(pattern);
+        pattern_((dansi_Event_Mouse_release)(release)) {
+            return_some(union_of((daterm_Event_mouse)(
+                daterm_ANSI__mouseFromBtnReport(daterm_Event_MouseAction_release, release)
+            )));
+        } $end(pattern);
+        pattern_((dansi_Event_Mouse_drag)(drag)) {
+            return_some(union_of((daterm_Event_mouse)(
+                daterm_ANSI__mouseFromBtnReport(daterm_Event_MouseAction_drag, drag)
+            )));
+        } $end(pattern);
+        pattern_((dansi_Event_Mouse_motion)(motion)) {
+            return_some(union_of((daterm_Event_mouse)(
+                daterm_ANSI__mouseFromMotionReport(motion)
+            )));
+        } $end(pattern);
+        pattern_((dansi_Event_Mouse_wheel)(wheel)) {
+            return_some(union_of((daterm_Event_mouse)(
+                daterm_ANSI__mouseFromWheelReport(wheel)
+            )));
+        } $end(pattern);
+        default_() return_none() $end(default);
+        } $end(match);
+    } $end(pattern);
     default_() return_none() $end(default);
     } $end(match);
 } $unscoped(fn);
 
-$static fn_((daterm_ANSI__asMouseEvent(dansi_mouse_Event event))(daterm_Event)) {
-    let mouse = (daterm_Event_Mouse){
-        .col = event.x == 0 ? 0 : event.x - 1,
-        .row = event.y == 0 ? 0 : event.y - 1,
-        .button = as$(daterm_Event_MouseButton)(event.button),
-        .action = as$(daterm_Event_MouseAction)(event.action),
-        .wheel = as$(daterm_Event_MouseWheel)(event.wheel),
-        .mods = event.mods,
+$static fn_((daterm_ANSI__mouseCol(u16 x))(u16)) {
+    return x == 0 ? 0 : as$(u16)(x - 1);
+};
+
+$static fn_((daterm_ANSI__mouseRow(u16 y))(u16)) {
+    return y == 0 ? 0 : as$(u16)(y - 1);
+};
+
+$static fn_((daterm_ANSI__mouseFromBtnReport(
+    daterm_Event_MouseAction action,
+    dansi_Event_MouseBtnReport report
+))(daterm_Event_Mouse)) {
+    return (daterm_Event_Mouse){
+        .col = daterm_ANSI__mouseCol(report.x),
+        .row = daterm_ANSI__mouseRow(report.y),
+        .btn = some$((O$dansi_mouse_Btn)(report.btn)),
+        .action = action,
+        .wheel = none$((O$dansi_mouse_Wheel)),
+        .mods = report.mods,
     };
-    return (daterm_Event)union_of((daterm_Event_mouse)(mouse));
 };
 
-$static fn_((daterm_ANSI__asFocusEvent(daterm_Event_Focus focus))(daterm_Event)) {
-    return (daterm_Event)union_of((daterm_Event_focus)(focus));
+$static fn_((daterm_ANSI__mouseFromMotionReport(dansi_Event_MouseMotionReport report))(daterm_Event_Mouse)) {
+    return (daterm_Event_Mouse){
+        .col = daterm_ANSI__mouseCol(report.x),
+        .row = daterm_ANSI__mouseRow(report.y),
+        .btn = none$((O$dansi_mouse_Btn)),
+        .action = daterm_Event_MouseAction_motion,
+        .wheel = none$((O$dansi_mouse_Wheel)),
+        .mods = report.mods,
+    };
 };
 
-fn_((daterm_ANSI_parseFocusSeq(dansi_Seq seq))(O$daterm_Event_Focus) $guard) {
-    if (seq.kind != dansi_Seq_Kind_csi || seq.bytes.len != 3) return_none();
-    let ch = *S_at((seq.bytes)[2]);
-    if (ch == 'I') return_some(daterm_Event_Focus_in);
-    if (ch == 'O') return_some(daterm_Event_Focus_out);
-    return_none();
-} $unguarded(fn);
+$static fn_((daterm_ANSI__mouseFromWheelReport(dansi_Event_MouseWheelReport report))(daterm_Event_Mouse)) {
+    return (daterm_Event_Mouse){
+        .col = daterm_ANSI__mouseCol(report.x),
+        .row = daterm_ANSI__mouseRow(report.y),
+        .btn = none$((O$dansi_mouse_Btn)),
+        .action = daterm_Event_MouseAction_wheel,
+        .wheel = some$((O$dansi_mouse_Wheel)(report.wheel)),
+        .mods = report.mods,
+    };
+};
 
 $static fn_((daterm_ANSI__pollNativeEvent(daterm_ANSI* self))(O$daterm_Event) $scope) {
 #if plat_is_windows
@@ -416,11 +475,8 @@ fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
     if_some((daterm_ANSI__pollNativeEvent(self))(event)) return_some(event);
     let seq = orelse_((daterm_ANSI__pollSeq(self))(return_none()));
-    let parsed = dansi_Event_tryParse(seq);
-    if_some((parsed)(event)) return daterm_ANSI__asTermEvent(event);
-    if_some((daterm_ANSI_parseFocusSeq(seq))(focus)) return_some(daterm_ANSI__asFocusEvent(focus));
-    let mouse = catch_((dansi_mouse_parseSGR(seq))($ignore, return_none()));
-    return_some(daterm_ANSI__asMouseEvent(mouse));
+    if_some((dansi_Event_tryParse(seq))(event)) return daterm_ANSI__asTermEvent(event);
+    return_none();
 } $unscoped(fn);
 
 fn_((daterm_ANSI__wait(P$raw ctx))(Sched_Cancelable$daterm_Event) $scope) {
@@ -513,42 +569,56 @@ fn_((daterm_ANSI__windows_ctrlHandler(DWORD type))(BOOL)) {
     }
 };
 
-fn_((daterm_ANSI__windows_keyMods(DWORD control_key_state))(dansi_Event_KeyMods)) {
-    return (dansi_Event_KeyMods){
+fn_((daterm_ANSI__windows_keyMods(DWORD control_key_state))(dansi_key_Mods)) {
+    return (dansi_key_Mods){
         .shift = (control_key_state & SHIFT_PRESSED) != 0,
         .alt = (control_key_state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) != 0,
         .ctrl = (control_key_state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) != 0,
     };
 };
 
-fn_((daterm_ANSI__windows_mouseButton(DWORD button_mask))(daterm_Event_MouseButton)) {
-    if ((button_mask & FROM_LEFT_1ST_BUTTON_PRESSED) != 0) return daterm_Event_MouseButton_left;
-    if ((button_mask & FROM_LEFT_2ND_BUTTON_PRESSED) != 0) return daterm_Event_MouseButton_middle;
-    if ((button_mask & RIGHTMOST_BUTTON_PRESSED) != 0) return daterm_Event_MouseButton_right;
-    return daterm_Event_MouseButton_none;
+fn_((daterm_ANSI__windows_mouseBtn(DWORD button_mask))(O$dansi_mouse_Btn)) {
+    if ((button_mask & FROM_LEFT_1ST_BUTTON_PRESSED) != 0) return some$((O$dansi_mouse_Btn)(dansi_mouse_Btn_left));
+    if ((button_mask & RIGHTMOST_BUTTON_PRESSED) != 0) return some$((O$dansi_mouse_Btn)(dansi_mouse_Btn_right));
+    if ((button_mask & FROM_LEFT_2ND_BUTTON_PRESSED) != 0) return some$((O$dansi_mouse_Btn)(dansi_mouse_Btn_middle));
+    if ((button_mask & FROM_LEFT_3RD_BUTTON_PRESSED) != 0) return some$((O$dansi_mouse_Btn)(dansi_mouse_Btn_backward));
+    if ((button_mask & FROM_LEFT_4TH_BUTTON_PRESSED) != 0) return some$((O$dansi_mouse_Btn)(dansi_mouse_Btn_forward));
+    return none$((O$dansi_mouse_Btn));
 };
 
 fn_((daterm_ANSI__windows_mouseEvent(daterm_ANSI* self, MOUSE_EVENT_RECORD record))(O$daterm_Event) $scope) {
     let button_mask = record.dwButtonState
-                    & (FROM_LEFT_1ST_BUTTON_PRESSED | FROM_LEFT_2ND_BUTTON_PRESSED | RIGHTMOST_BUTTON_PRESSED);
+                    & (FROM_LEFT_1ST_BUTTON_PRESSED
+                     | RIGHTMOST_BUTTON_PRESSED
+                     | FROM_LEFT_2ND_BUTTON_PRESSED
+                     | FROM_LEFT_3RD_BUTTON_PRESSED
+                     | FROM_LEFT_4TH_BUTTON_PRESSED);
     var_(mouse, daterm_Event_Mouse) = {
         .col = as$(u16)(record.dwMousePosition.X),
         .row = as$(u16)(record.dwMousePosition.Y),
-        .button = daterm_Event_MouseButton_none,
+        .btn = none$((O$dansi_mouse_Btn)),
         .action = daterm_Event_MouseAction_motion,
-        .wheel = daterm_Event_MouseWheel_none,
+        .wheel = none$((O$dansi_mouse_Wheel)),
         .mods = daterm_ANSI__windows_keyMods(record.dwControlKeyState),
     };
 
     if ((record.dwEventFlags & MOUSE_WHEELED) != 0) {
         let delta = as$(SHORT)((record.dwButtonState >> 16) & 0xffff);
-        mouse.action = daterm_Event_MouseAction_press;
-        mouse.wheel = delta < 0 ? daterm_Event_MouseWheel_down : daterm_Event_MouseWheel_up;
+        mouse.action = daterm_Event_MouseAction_wheel;
+        mouse.wheel = some$((O$dansi_mouse_Wheel)(delta < 0 ? dansi_mouse_Wheel_down : dansi_mouse_Wheel_up));
         return_some(union_of((daterm_Event_mouse)(mouse)));
     }
+#if defined(MOUSE_HWHEELED)
+    if ((record.dwEventFlags & MOUSE_HWHEELED) != 0) {
+        let delta = as$(SHORT)((record.dwButtonState >> 16) & 0xffff);
+        mouse.action = daterm_Event_MouseAction_wheel;
+        mouse.wheel = some$((O$dansi_mouse_Wheel)(delta < 0 ? dansi_mouse_Wheel_left : dansi_mouse_Wheel_right));
+        return_some(union_of((daterm_Event_mouse)(mouse)));
+    }
+#endif /* defined(MOUSE_HWHEELED) */
 
     if ((record.dwEventFlags & MOUSE_MOVED) != 0) {
-        mouse.button = daterm_ANSI__windows_mouseButton(button_mask);
+        mouse.btn = daterm_ANSI__windows_mouseBtn(button_mask);
         mouse.action = button_mask == 0 ? daterm_Event_MouseAction_motion : daterm_Event_MouseAction_drag;
         self->windows_mouse_buttons = button_mask;
         return_some(union_of((daterm_Event_mouse)(mouse)));
@@ -557,7 +627,7 @@ fn_((daterm_ANSI__windows_mouseEvent(daterm_ANSI* self, MOUSE_EVENT_RECORD recor
     let changed = button_mask ^ self->windows_mouse_buttons;
     if (changed == 0 && button_mask == 0) { return_none(); }
     let active = changed != 0 ? changed : button_mask;
-    mouse.button = daterm_ANSI__windows_mouseButton(active);
+    mouse.btn = daterm_ANSI__windows_mouseBtn(active);
     mouse.action = (button_mask & active) != 0 ? daterm_Event_MouseAction_press : daterm_Event_MouseAction_release;
     self->windows_mouse_buttons = button_mask;
     return_some(union_of((daterm_Event_mouse)(mouse)));
@@ -590,11 +660,11 @@ fn_((daterm_ANSI__windows_pollNativeEvent(daterm_ANSI* self))(O$daterm_Event) $s
             }
         } $end(case);
         case_((FOCUS_EVENT)) {
-            return_some(daterm_ANSI__asFocusEvent(
+            return_some(union_of((daterm_Event_focus)(
                 record.Event.FocusEvent.bSetFocus
-                    ? daterm_Event_Focus_in
-                    : daterm_Event_Focus_out
-            ));
+                    ? dansi_Event_Focus_in
+                    : dansi_Event_Focus_out
+            )));
         } $end(case);
         default_() $do_nothing $end(default);
         };

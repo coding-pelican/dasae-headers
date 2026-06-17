@@ -8,25 +8,24 @@ or call OS terminal APIs. It only builds byte sequences, writes them through
 reports into typed values.
 
 That boundary is deliberate: `dansi` is the protocol layer between a terminal
-implementation and application code. A concrete terminal object such as
-`daterm_Term` can expose an `io_Writer`/`io_Reader` pair, and users can call
-`dansi` through that contract. Backends may pass bytes through to an OS terminal,
-or parse/intercept them for a virtual terminal or native fast path.
+implementation and application code. Higher layers can expose an
+`io_Writer`/`io_Reader` pair, and users can call `dansi` through that contract.
+Backends may pass bytes through to an OS terminal, or parse/intercept them for a
+virtual terminal or native fast path.
 
 ## Package Shape
 
 ```txt
 include/
   dansi.h           package umbrella
-  dansi-core.h      ANSI core protocol umbrella
-  dansi-xterm.h     xterm extension umbrella
+  dansi-core.h      ANSI and xterm protocol umbrella
   dansi-kitty.h     kitty extension boundary
   dansi-sixel.h     sixel extension boundary
 
 include/dansi-core/
   utils.h           CSI/OSC/DCS/raw protocol constants and format helpers
   Seq.h             ANSI-family byte sequence extraction
-  Event.h           core ANSI key event parsing
+  Event.h           input report parsing (keys, mouse, focus)
   attr.h            selective SGR resets
   style.h           boolean SGR style toggles
   color.h           4-bit, 8-bit, and RGB color SGR
@@ -37,12 +36,15 @@ include/dansi-core/
   screen.h          screen clearing, alternate buffer, size reports
   scroll.h          scroll region control
   mode.h            ANSI/private mode control
+  key.h             xterm key modifier/format options (XTMODKEYS / XTFMTKEYS)
+  focus.h           focus tracking mode controls (mode 1004)
+  mouse.h           mouse tracking mode controls
+  window.h          xterm window manipulation controls (XTWINOPS)
+  resource.h        xterm resource and termcap/terminfo DCS controls
+  graphics.h        xterm graphics attribute controls
   title.h           OSC title operations
   device.h          device status and attribute reports
-
-include/dansi-xterm/
-  utils.h           xterm extension constants
-  mouse.h           xterm mouse mode and SGR mouse reports
+  palette.h         xterm palette stack controls
 ```
 
 ## API Families
@@ -90,7 +92,7 @@ try_(dansi_attr_resetWrite(out));
 ```
 
 Writer functions do not flush. Flushing, buffering, OS handles, and terminal
-lifetime belong to the caller or a higher layer such as `daterm`.
+lifetime belong to the caller or a higher layer.
 
 ## Requests And Reports
 
@@ -150,21 +152,97 @@ the whole response.
 
 ## Events
 
-`dansi-core/Event.h` parses only events that are representable by core ANSI byte
-streams. It currently exposes key events. It does not invent events that the
-stream protocol cannot actually express.
+`dansi-core/Event.h` parses terminal input reports from ANSI/xterm byte
+streams: special keys (legacy CSI, SS3, modified CSI, tilde CSI), text input
+(including CSI `u`), SGR mouse reports, and focus-in/out (mode 1004).
+Mouse reports are represented as nested action variants (`press`, `release`,
+`drag`, `motion`, `wheel`) so wheel, motion, and button states cannot be mixed
+as unrelated flags.
 
-Mouse handling lives in the xterm extension:
+`dansi-core/focus.h` and `dansi-core/mouse.h` write the private-mode sequences
+that enable those reports. `dansi-core/key.h` writes xterm key modifier/format
+option sequences.
+
+Core input domain atoms live outside the parsed event layer:
+
+- `dansi-core/key.h`: key codes and modifier bits
+- `dansi-core/mouse.h`: `dansi_mouse_Btn` including backward/forward/auxiliary
+  buttons, `dansi_mouse_Btns`, four-direction wheel values, and tracking modes
+- `dansi-core/Event.h`: parsed input report variants that combine those atoms
+
+`dansi_Event_MouseBtnReport.btn` is always a concrete `dansi_mouse_Btn`.
+Reports without a concrete button are represented by non-button variants such as
+`motion`. Multiple button state belongs to `dansi_mouse_Btns`; SGR reports still
+expose the single button identity that the protocol encodes.
 
 ```c
 try_(dansi_mouse_enableAnyWrite(out));
 try_(dansi_mouse_enableSGRWrite(out));
+try_(dansi_focus_enableTrackingWrite(out));
+try_(dansi_key_enableEnhancedWrite(out));
 
-let event = try_(dansi_mouse_parseSGR(seq));
+let event = try_(dansi_Event_parse(seq));
 ```
 
-Broader keyboard protocols, such as kitty keyboard extensions, belong in their
-own extension layer instead of being folded into core ANSI events.
+```mermaid
+graph TD
+  Seq[dansi_Seq] --> Event[dansi_Event_parse]
+  Event --> Special[dansi_Event_special]
+  Event --> Text[dansi_Event_text]
+  Event --> Mouse[dansi_Event_mouse]
+  Event --> Focus[dansi_Event_focus]
+  KeyCtl[dansi-core/key.h] --> Terminal[terminal input modes]
+  MouseCtl[dansi-core/mouse.h] --> Terminal
+  FocusCtl[dansi-core/focus.h] --> Terminal
+  Terminal --> Seq
+```
+
+```mermaid
+stateDiagram-v2
+  [*] --> input_seq
+  input_seq --> special_key: CSI/SS3 key
+  input_seq --> text: raw UTF-8 or CSI u text
+  input_seq --> mouse_press: SGR mouse M
+  input_seq --> mouse_release: SGR mouse m
+  input_seq --> mouse_drag: SGR mouse M + drag bit
+  input_seq --> mouse_motion: SGR mouse M + motion without button
+  input_seq --> mouse_wheel: SGR mouse M + wheel bit
+  input_seq --> focus: CSI I / CSI O
+```
+
+```mermaid
+flowchart TD
+  B[bytes] --> S[dansi_Seq extraction]
+  S --> P[dansi_Event_parse]
+  P --> K{event kind}
+  K -->|keyboard report| KS[special or text]
+  K -->|mouse report| MV[mouse action variant]
+  K -->|focus report| F[focus in/out]
+```
+
+Broader keyboard protocols, such as kitty keyboard extensions, belong in the
+`dansi-kitty` extension instead of being folded into core events.
+
+## Xterm Scope
+
+`dansi-core` owns xterm protocol surfaces that are already treated as part of
+the common terminal contract by the rest of the package. Separate named
+extension umbrellas remain for protocols with their own negotiation and payload
+models, such as kitty and sixel.
+
+| xterm surface | core boundary |
+| --- | --- |
+| keyboard modifier and format controls | `dansi-core/key.h` |
+| legacy, modified, tilde, and CSI `u` key reports | `dansi-core/Event.h` |
+| focus tracking controls and reports | `dansi-core/focus.h`, `dansi-core/Event.h` |
+| mouse tracking controls and SGR reports | `dansi-core/mouse.h`, `dansi-core/Event.h` |
+| private modes shared by ANSI/xterm-compatible terminals | `dansi-core/mode.h` |
+| xterm window controls (XTWINOPS) | `dansi-core/window.h` |
+| title operations and title stack | `dansi-core/title.h` |
+| palette stack controls | `dansi-core/palette.h` |
+| SGR/video-attribute stack controls and rectangular SGR reports | `dansi-core/attr.h` |
+| graphics attribute controls (XTSMGRAPHICS) | `dansi-core/graphics.h` |
+| resource and termcap/terminfo DCS controls | `dansi-core/resource.h` |
 
 ## Control Examples
 
@@ -176,7 +254,7 @@ defer_(catch_((dansi_screen_exitAlternateWrite(out))($ignore, $do_nothing)));
 ```
 
 `dansi` only writes the bytes. Whether this should be part of a terminal
-lifecycle is a `daterm` policy decision.
+lifecycle is a higher-layer policy decision.
 
 ### Clearing a message line without logical newlines
 
@@ -202,42 +280,6 @@ let bytes = u8_l(dansi_mode_enablePrivate_static(
 Runtime and writer forms are also available when the value is not compile-time
 known.
 
-## Relationship To daterm
-
-`dansi` and `daterm` have different responsibilities.
-
-`dansi`:
-
-- builds ANSI/xterm byte sequences
-- writes bytes to `io_Writer`
-- receives and parses report bytes from `io_Reader`
-- parses byte sequences into protocol-level events
-- has no terminal lifecycle or OS dependency
-
-`daterm`:
-
-- owns concrete terminal context and lifecycle policy
-- exposes `io_Reader` and `io_Writer`
-- can intercept `dansi` byte protocol for virtual or native behavior
-- can decide whether raw mode, mouse tracking, alternate screen, or output mode
-  should be enabled for a terminal object
-
-This means application code can remain protocol-oriented:
-
-```c
-let out = daterm_Term_writer(term);
-let in = daterm_Term_reader(term);
-
-try_(dansi_screen_clearWrite(out));
-try_(dansi_cursor_moveToWrite(1, 1, out));
-
-var_(buf, dansi_screen_SizeReportBuf) $undefined;
-let size = try_(dansi_screen_fetchTextAreaSizeChars(out, in, A_ref$((S$u8)(buf))));
-```
-
-The destination may be an OS terminal, a virtual terminal, or another user
-implementation.
-
 ## Verification
 
 Tests live under `tests/test-*.c`.
@@ -253,4 +295,4 @@ dh-c test --recur
 ```
 
 The current tests cover static sequence generation, writer output, split report
-receiving, report parsing, core event parsing, and xterm SGR mouse parsing.
+receiving, report parsing, and core input event parsing (keys, mouse, focus).

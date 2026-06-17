@@ -90,6 +90,26 @@ $extern fn_((dansi_attr_resetStrikethrough(void))(S_const$u8));
 $attr($must_check)
 $extern fn_((dansi_attr_resetStrikethroughWrite(io_Writer writer))(E$void));
 
+#define dansi_attr_push_static() \
+    ____dansi_attr_push_static()
+$extern fn_((dansi_attr_push(void))(S_const$u8));
+$attr($must_check)
+$extern fn_((dansi_attr_pushWrite(io_Writer writer))(E$void));
+
+#define dansi_attr_pop_static() \
+    ____dansi_attr_pop_static()
+$extern fn_((dansi_attr_pop(void))(S_const$u8));
+$attr($must_check)
+$extern fn_((dansi_attr_popWrite(io_Writer writer))(E$void));
+
+typedef A$$(4 * uint_log10Ceil_static(u16_limit_max) + 7, u8) dansi_attr_ReportRectBuf;
+
+#define dansi_attr_reportRect_static(_top_tok, _left_tok, _bottom_tok, _right_tok) \
+    ____dansi_attr_reportRect_static(_top_tok, _left_tok, _bottom_tok, _right_tok)
+$extern fn_((dansi_attr_reportRect(u16 top, u16 left, u16 bottom, u16 right, dansi_attr_ReportRectBuf* buf))(S$u8));
+$attr($must_check)
+$extern fn_((dansi_attr_reportRectWrite(u16 top, u16 left, u16 bottom, u16 right, io_Writer writer))(E$void));
+
 /*========== Macros and Definitions =========================================*/
 
 #include "utils.h"
@@ -114,6 +134,12 @@ $extern fn_((dansi_attr_resetStrikethroughWrite(io_Writer writer))(E$void));
     dansi_utils_formatCSI_static(dansi_utils_attr_style_no_invisible)
 #define ____dansi_attr_resetStrikethrough_static() \
     dansi_utils_formatCSI_static(dansi_utils_attr_style_no_strikethrough)
+#define ____dansi_attr_push_static() \
+    dansi_utils_formatCSI_static(dansi_utils_attr_stack_push)
+#define ____dansi_attr_pop_static() \
+    dansi_utils_formatCSI_static(dansi_utils_attr_stack_pop)
+#define ____dansi_attr_reportRect_static(_top_tok, _left_tok, _bottom_tok, _right_tok) \
+    dansi_utils_csi _top_tok dansi_utils_sep _left_tok dansi_utils_sep _bottom_tok dansi_utils_sep _right_tok dansi_utils_attr_report_rect
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -32,6 +32,36 @@ fn_((dansi_mode_setPrivateWrite(u16 mode, bool enabled, io_Writer writer))(E$voi
                    : dansi_mode_disablePrivateWrite(mode, writer);
 };
 
+fn_((dansi_mode_savePrivate(u16 mode, dansi_mode_PrivateBuf* buf))(S$u8)) {
+    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    catch_((dansi_mode_savePrivateWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
+    return io_Fixed_written(writing.stream);
+};
+
+fn_((dansi_mode_savePrivateWrite(u16 mode, io_Writer writer))(E$void)) {
+    return io_Writer_print(writer, u8_l(dansi_mode_savePrivate_static("{:uh}")), mode);
+};
+
+fn_((dansi_mode_restorePrivate(u16 mode, dansi_mode_PrivateBuf* buf))(S$u8)) {
+    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    catch_((dansi_mode_restorePrivateWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
+    return io_Fixed_written(writing.stream);
+};
+
+fn_((dansi_mode_restorePrivateWrite(u16 mode, io_Writer writer))(E$void)) {
+    return io_Writer_print(writer, u8_l(dansi_mode_restorePrivate_static("{:uh}")), mode);
+};
+
+fn_((dansi_mode_requestPrivate(u16 mode, dansi_mode_PrivateBuf* buf))(S$u8)) {
+    var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
+    catch_((dansi_mode_requestPrivateWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
+    return io_Fixed_written(writing.stream);
+};
+
+fn_((dansi_mode_requestPrivateWrite(u16 mode, io_Writer writer))(E$void)) {
+    return io_Writer_print(writer, u8_l(dansi_mode_requestPrivate_static("{:uh}")), mode);
+};
+
 fn_((dansi_mode_enableANSI(u16 mode, dansi_mode_ANSIBuf* buf))(S$u8)) {
     var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((dansi_mode_enableANSIWrite(mode, io_Fixed_writer(&writing)))($ignore, claim_unreachable));

@@ -11,9 +11,9 @@
  * @ingroup dasae-headers-workspace(dh-workspace)/dansi
  * @prefix  dansi
  *
- * @brief   Pure ANSI protocol library.
- * @details Provides ANSI escape sequence generation, raw sequence extraction,
- *          and standard ANSI event parsing without OS terminal management.
+ * @brief   Pure ANSI/xterm protocol library.
+ * @details Provides ANSI and xterm escape sequence generation, raw sequence
+ *          extraction, and event parsing without OS terminal management.
  */
 #pragma once
 #ifndef dansi__included
@@ -25,7 +25,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dansi-core.h"
-#include "dansi-xterm.h"
 #include "dansi-kitty.h"
 #include "dansi-sixel.h"
 

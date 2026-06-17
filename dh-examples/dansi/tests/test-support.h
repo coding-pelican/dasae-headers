@@ -30,5 +30,4 @@ $static fn_((dansi_test_ChunkReader_reader(dansi_test_ChunkReader* self))(io_Rea
         .readFn = dansi_test_ChunkReader__read,
     };
 };
-
 #endif /* dansi_test_support__included */

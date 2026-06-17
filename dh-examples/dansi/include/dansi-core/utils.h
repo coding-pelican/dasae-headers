@@ -67,6 +67,68 @@ extern "C" {
 /// Private mode prefix
 #define dansi_utils_mode_private_prefix "?"
 
+/* --- Mouse Sequences --- */
+
+#define dansi_utils_mouse_mode_x10 "9"
+#define dansi_utils_mouse_mode_normal "1000"
+#define dansi_utils_mouse_mode_hilite "1001"
+#define dansi_utils_mouse_mode_button_event "1002"
+#define dansi_utils_mouse_mode_any_event "1003"
+#define dansi_utils_mouse_mode_utf8 "1005"
+#define dansi_utils_mouse_mode_sgr "1006"
+#define dansi_utils_mouse_mode_urxvt "1015"
+#define dansi_utils_mouse_mode_sgr_pixels "1016"
+
+/* --- Focus Sequences --- */
+
+/// Focus-in report (CSI I)
+#define dansi_utils_focus_in "I"
+/// Focus-out report (CSI O)
+#define dansi_utils_focus_out "O"
+
+/* --- Key Modifier Sequences (xterm XTMODKEYS / XTFMTKEYS) --- */
+
+/// Set key modifier options (CSI > Pp ; Pv m)
+#define dansi_utils_key_set_modify_options /*> Pp ; Pv*/ "m"
+/// Set key format options (CSI > Pp ; Pv f)
+#define dansi_utils_key_set_format_options /*> Pp ; Pv*/ "f"
+/// modifyOtherKeys resource id
+#define dansi_utils_key_modify_other_keys "4"
+/// formatOtherKeys resource id
+#define dansi_utils_key_format_other_keys "4"
+/// Disable key modifier options (CSI > Ps n)
+#define dansi_utils_key_disable_modify_options /*> Ps*/ "n"
+/// Query key format options (CSI ? Pp g)
+#define dansi_utils_key_query_format_options /*? Pp*/ "g"
+/// Query key modifier options (CSI ? Pp m)
+#define dansi_utils_key_query_modify_options /*? Pp*/ "m"
+
+/* --- Xterm Window Sequences --- */
+
+#define dansi_utils_window_op /*{params}*/ "t"
+
+/* --- Xterm Resource / Termcap Sequences --- */
+
+#define dansi_utils_resource_request_values /*hex resource names*/ "+Q"
+#define dansi_utils_termcap_set /*hex termcap name*/ "+p"
+#define dansi_utils_termcap_request /*hex termcap names*/ "+q"
+
+/* --- Xterm Graphics Sequences --- */
+
+#define dansi_utils_graphics_attrs /*? Pi ; Pa ; Pv*/ "S"
+
+/* --- Xterm Palette Stack Sequences --- */
+
+#define dansi_utils_palette_stack_push /*{index}*/ "#P"
+#define dansi_utils_palette_stack_pop /*{index}*/ "#Q"
+#define dansi_utils_palette_stack_report /*{index}*/ "#R"
+
+/* --- Xterm Attribute Stack Sequences --- */
+
+#define dansi_utils_attr_stack_push "#p"
+#define dansi_utils_attr_stack_pop "#q"
+#define dansi_utils_attr_report_rect /*{top};{left};{bottom};{right}*/ "#|"
+
 /* --- Title Sequences --- */
 
 /// OSC set icon and window title (ESC ] 0 ; {title} ST)

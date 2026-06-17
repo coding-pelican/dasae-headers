@@ -6,11 +6,11 @@
  * @file    Event.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-01-08 (date of creation)
- * @updated 2026-05-23 (date of last update)
+ * @updated 2026-06-17 (date of last update)
  * @ingroup dasae-headers-workspace(dh-workspace)/dansi
  * @prefix  dansi_Event
  *
- * @brief   Standard ANSI raw extraction and event parsing.
+ * @brief   ANSI and xterm input report parsing.
  */
 #pragma once
 #ifndef dansi_Event__included
@@ -22,61 +22,66 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "Seq.h"
+#include "key.h"
+#include "mouse.h"
 
 /*========== Standard Events ===============================================*/
 
-typedef union dansi_Event_KeyMods {
-    struct {
-        u8 shift    : 1;
-        u8 ctrl     : 1;
-        u8 alt      : 1;
-        u8 reserved : 5;
-    };
-    u8 packed;
-} dansi_Event_KeyMods;
+typedef struct dansi_Event_Special {
+    var_(code, dansi_key_Code);
+    var_(mods, dansi_key_Mods);
+} dansi_Event_Special;
+T_use_prl$(dansi_Event_Special);
 
-typedef enum_((dansi_Event_KeyCode $fits($packed))(
-    dansi_Event_KeyCode_char = 0,
-
-    dansi_Event_KeyCode_enter = 0x0D,
-    dansi_Event_KeyCode_esc = 0x1B,
-    dansi_Event_KeyCode_backspace = 0x08,
-    dansi_Event_KeyCode_tab = 0x09,
-
-    dansi_Event_KeyCode_up = 0x10000,
-    dansi_Event_KeyCode_down,
-    dansi_Event_KeyCode_left,
-    dansi_Event_KeyCode_right,
-    dansi_Event_KeyCode_home,
-    dansi_Event_KeyCode_end,
-    dansi_Event_KeyCode_page_up,
-    dansi_Event_KeyCode_page_down,
-    dansi_Event_KeyCode_insert,
-    dansi_Event_KeyCode_delete,
-
-    dansi_Event_KeyCode_f1,
-    dansi_Event_KeyCode_f2,
-    dansi_Event_KeyCode_f3,
-    dansi_Event_KeyCode_f4,
-    dansi_Event_KeyCode_f5,
-    dansi_Event_KeyCode_f6,
-    dansi_Event_KeyCode_f7,
-    dansi_Event_KeyCode_f8,
-    dansi_Event_KeyCode_f9,
-    dansi_Event_KeyCode_f10,
-    dansi_Event_KeyCode_f11,
-    dansi_Event_KeyCode_f12,
-)) dansi_Event_KeyCode;
-
-typedef struct dansi_Event_Key {
-    var_(code, dansi_Event_KeyCode);
-    /// Valid only when `code == dansi_Event_KeyCode_char`.
+typedef struct dansi_Event_Text {
     var_(codepoint, u32);
-    var_(mods, dansi_Event_KeyMods);
-} dansi_Event_Key;
+    var_(mods, dansi_key_Mods);
+} dansi_Event_Text;
+T_use_prl$(dansi_Event_Text);
+
+typedef enum_((dansi_Event_Focus $fits($packed))(
+    dansi_Event_Focus_in,
+    dansi_Event_Focus_out
+)) dansi_Event_Focus;
+T_use_prl$(dansi_Event_Focus);
+
+typedef struct dansi_Event_MouseBtnReport {
+    var_(x, u16);
+    var_(y, u16);
+    var_(btn, dansi_mouse_Btn);
+    var_(mods, dansi_key_Mods);
+} dansi_Event_MouseBtnReport;
+T_use_prl$(dansi_Event_MouseBtnReport);
+
+typedef struct dansi_Event_MouseMotionReport {
+    var_(x, u16);
+    var_(y, u16);
+    var_(mods, dansi_key_Mods);
+} dansi_Event_MouseMotionReport;
+T_use_prl$(dansi_Event_MouseMotionReport);
+
+typedef struct dansi_Event_MouseWheelReport {
+    var_(x, u16);
+    var_(y, u16);
+    var_(wheel, dansi_mouse_Wheel);
+    var_(mods, dansi_key_Mods);
+} dansi_Event_MouseWheelReport;
+T_use_prl$(dansi_Event_MouseWheelReport);
+
+typedef variant_((dansi_Event_Mouse $fits($packed))(
+    (dansi_Event_Mouse_press, dansi_Event_MouseBtnReport),
+    (dansi_Event_Mouse_release, dansi_Event_MouseBtnReport),
+    (dansi_Event_Mouse_drag, dansi_Event_MouseBtnReport),
+    (dansi_Event_Mouse_motion, dansi_Event_MouseMotionReport),
+    (dansi_Event_Mouse_wheel, dansi_Event_MouseWheelReport)
+)) dansi_Event_Mouse;
+T_use_prl$(dansi_Event_Mouse);
 
 typedef variant_((dansi_Event $fits($packed))(
-    (dansi_Event_key, dansi_Event_Key)
+    (dansi_Event_special, dansi_Event_Special),
+    (dansi_Event_text, dansi_Event_Text),
+    (dansi_Event_mouse, dansi_Event_Mouse),
+    (dansi_Event_focus, dansi_Event_Focus)
 )) dansi_Event;
 T_use_prl$(dansi_Event);
 
@@ -89,21 +94,6 @@ T_use_E$($set(dansi_Event_E)(dansi_Event));
 $attr($must_check)
 $extern fn_((dansi_Event_parse(dansi_Seq seq))(dansi_Event_E$dansi_Event));
 $extern fn_((dansi_Event_tryParse(dansi_Seq seq))(O$dansi_Event));
-
-$attr($inline_always)
-$static fn_((dansi_Event_matchesChar(dansi_Event event, u32 ch, dansi_Event_KeyMods mods))(bool)) {
-    match_(event) {
-    pattern_((dansi_Event_key)(key)) {
-        if (key.code == dansi_Event_KeyCode_char && key.codepoint == ch) {
-            return key.mods.shift == mods.shift
-                && key.mods.alt == mods.alt
-                && key.mods.ctrl == mods.ctrl;
-        }
-    } $end(pattern);
-    default_() break $end(default);
-    } $end(match);
-    return false;
-};
 
 #if defined(__cplusplus)
 } /* extern "C" */
