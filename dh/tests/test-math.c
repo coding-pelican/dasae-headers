@@ -304,16 +304,16 @@ TEST_fn_("math: f64 matrix and quaternion support matches f32 conventions" $scop
         m_V3f64_right
     )));
 
-    let view_rh = m_M4f64_lookAtRH(m_V3f64_zero, m_V3f64_view_forward_RH, m_V3f64_up);
-    let view_lh = m_M4f64_lookAtLH(m_V3f64_zero, m_V3f64_view_forward_LH, m_V3f64_up);
+    let view_rh = m_M4f64_lookAtRH(m_V3f64_zero, m_V3f64_view_forward_rh, m_V3f64_up);
+    let view_lh = m_M4f64_lookAtLH(m_V3f64_zero, m_V3f64_view_forward_lh, m_V3f64_up);
 
     try_(TEST_expect(math_test_V3f64Near(
-        m_M4f64_mulV3(view_rh, m_V3f64_view_forward_RH, 1.0),
-        m_V3f64_view_forward_RH
+        m_M4f64_mulV3(view_rh, m_V3f64_view_forward_rh, 1.0),
+        m_V3f64_view_forward_rh
     )));
     try_(TEST_expect(math_test_V3f64Near(
-        m_M4f64_mulV3(view_lh, m_V3f64_view_forward_LH, 1.0),
-        m_V3f64_view_forward_LH
+        m_M4f64_mulV3(view_lh, m_V3f64_view_forward_lh, 1.0),
+        m_V3f64_view_forward_lh
     )));
 
     let proximal = 1.0;
@@ -330,10 +330,10 @@ TEST_fn_("math: f64 matrix and quaternion support matches f32 conventions" $scop
 } $unscoped(TEST_fn)
 
 TEST_fn_("math: predefined constants cover core and view conventions" $scope) {
-    try_(TEST_expect(math_test_V3f32Near(m_V3f32_view_forward_RH, m_V3f32_backward)));
-    try_(TEST_expect(math_test_V3f32Near(m_V3f32_view_forward_LH, m_V3f32_forward)));
-    try_(TEST_expect(math_test_V3f64Near(m_V3f64_view_forward_RH, m_V3f64_backward)));
-    try_(TEST_expect(math_test_V3f64Near(m_V3f64_view_forward_LH, m_V3f64_forward)));
+    try_(TEST_expect(math_test_V3f32Near(m_V3f32_view_forward_rh, m_V3f32_backward)));
+    try_(TEST_expect(math_test_V3f32Near(m_V3f32_view_forward_lh, m_V3f32_forward)));
+    try_(TEST_expect(math_test_V3f64Near(m_V3f64_view_forward_rh, m_V3f64_backward)));
+    try_(TEST_expect(math_test_V3f64Near(m_V3f64_view_forward_lh, m_V3f64_forward)));
 
     try_(TEST_expect(math_test_V3f32Near(
         m_M4f32_mulV3(m_M4f32_identity, m_V3f32_of(2.0f, 3.0f, 4.0f), 1.0f),
@@ -348,12 +348,12 @@ TEST_fn_("math: predefined constants cover core and view conventions" $scope) {
 } $unscoped(TEST_fn)
 
 TEST_fn_("math: integer vector constants cover i32 i64 and isize conventions" $scope) {
-    try_(TEST_expect(math_test_V3i32Eq(m_V3i32_view_forward_RH, m_V3i32_backward)));
-    try_(TEST_expect(math_test_V3i32Eq(m_V3i32_view_forward_LH, m_V3i32_forward)));
-    try_(TEST_expect(math_test_V3i64Eq(m_V3i64_view_forward_RH, m_V3i64_backward)));
-    try_(TEST_expect(math_test_V3i64Eq(m_V3i64_view_forward_LH, m_V3i64_forward)));
-    try_(TEST_expect(math_test_V3isizeEq(m_V3isize_view_forward_RH, m_V3isize_backward)));
-    try_(TEST_expect(math_test_V3isizeEq(m_V3isize_view_forward_LH, m_V3isize_forward)));
+    try_(TEST_expect(math_test_V3i32Eq(m_V3i32_view_forward_rh, m_V3i32_backward)));
+    try_(TEST_expect(math_test_V3i32Eq(m_V3i32_view_forward_lh, m_V3i32_forward)));
+    try_(TEST_expect(math_test_V3i64Eq(m_V3i64_view_forward_rh, m_V3i64_backward)));
+    try_(TEST_expect(math_test_V3i64Eq(m_V3i64_view_forward_lh, m_V3i64_forward)));
+    try_(TEST_expect(math_test_V3isizeEq(m_V3isize_view_forward_rh, m_V3isize_backward)));
+    try_(TEST_expect(math_test_V3isizeEq(m_V3isize_view_forward_lh, m_V3isize_forward)));
 
     try_(TEST_expect(math_test_V3isizeEq(
         m_V3isize_cross(m_V3isize_unit_x, m_V3isize_unit_y),
@@ -367,10 +367,10 @@ TEST_fn_("math: integer vector constants cover i32 i64 and isize conventions" $s
 } $unscoped(TEST_fn)
 
 TEST_fn_("math: unsigned vector support exposes only unsigned-safe constants and operations" $scope) {
-    try_(TEST_expect(math_test_V3u32Eq(m_V3u32_view_backward_RH, m_V3u32_forward)));
-    try_(TEST_expect(math_test_V3u32Eq(m_V3u32_view_forward_LH, m_V3u32_forward)));
-    try_(TEST_expect(math_test_V3u64Eq(m_V3u64_view_backward_RH, m_V3u64_forward)));
-    try_(TEST_expect(math_test_V3usizeEq(m_V3usize_view_forward_LH, m_V3usize_forward)));
+    try_(TEST_expect(math_test_V3u32Eq(m_V3u32_view_backward_rh, m_V3u32_forward)));
+    try_(TEST_expect(math_test_V3u32Eq(m_V3u32_view_forward_lh, m_V3u32_forward)));
+    try_(TEST_expect(math_test_V3u64Eq(m_V3u64_view_backward_rh, m_V3u64_forward)));
+    try_(TEST_expect(math_test_V3usizeEq(m_V3usize_view_forward_lh, m_V3usize_forward)));
 
     try_(TEST_expect(math_test_V3u32Eq(
         m_V3u32_add(m_V3u32_unit_x, m_V3u32_unit_z),

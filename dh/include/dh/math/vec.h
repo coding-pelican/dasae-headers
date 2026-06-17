@@ -126,8 +126,8 @@ $static u32 m_V2u32_dot(m_V2u32 lhs, m_V2u32 rhs);
 #define m_V3u32_right m_V3u32_of_static(1, 0, 0)
 #define m_V3u32_up m_V3u32_of_static(0, 1, 0)
 #define m_V3u32_forward m_V3u32_of_static(0, 0, 1)
-#define m_V3u32_view_backward_RH m_V3u32_forward
-#define m_V3u32_view_forward_LH m_V3u32_forward
+#define m_V3u32_view_backward_rh m_V3u32_forward
+#define m_V3u32_view_forward_lh m_V3u32_forward
 #define m_V3u32_limit_min m_V3u32_of_static(u32_limit_min, u32_limit_min, u32_limit_min)
 #define m_V3u32_limit_max m_V3u32_of_static(u32_limit_max, u32_limit_max, u32_limit_max)
 
@@ -215,8 +215,8 @@ $static u32 m_V3u32_dot(m_V3u32 lhs, m_V3u32 rhs);
 #define m_V4u32_right m_V4u32_of_static(1, 0, 0, 0)
 #define m_V4u32_up m_V4u32_of_static(0, 1, 0, 0)
 #define m_V4u32_forward m_V4u32_of_static(0, 0, 1, 0)
-#define m_V4u32_view_backward_RH m_V4u32_forward
-#define m_V4u32_view_forward_LH m_V4u32_forward
+#define m_V4u32_view_backward_rh m_V4u32_forward
+#define m_V4u32_view_forward_lh m_V4u32_forward
 #define m_V4u32_limit_min m_V4u32_of_static(u32_limit_min, u32_limit_min, u32_limit_min, u32_limit_min)
 #define m_V4u32_limit_max m_V4u32_of_static(u32_limit_max, u32_limit_max, u32_limit_max, u32_limit_max)
 
@@ -392,8 +392,8 @@ $static u64 m_V2u64_dot(m_V2u64 lhs, m_V2u64 rhs);
 #define m_V3u64_right m_V3u64_of_static(1, 0, 0)
 #define m_V3u64_up m_V3u64_of_static(0, 1, 0)
 #define m_V3u64_forward m_V3u64_of_static(0, 0, 1)
-#define m_V3u64_view_backward_RH m_V3u64_forward
-#define m_V3u64_view_forward_LH m_V3u64_forward
+#define m_V3u64_view_backward_rh m_V3u64_forward
+#define m_V3u64_view_forward_lh m_V3u64_forward
 #define m_V3u64_limit_min m_V3u64_of_static(u64_limit_min, u64_limit_min, u64_limit_min)
 #define m_V3u64_limit_max m_V3u64_of_static(u64_limit_max, u64_limit_max, u64_limit_max)
 
@@ -481,8 +481,8 @@ $static u64 m_V3u64_dot(m_V3u64 lhs, m_V3u64 rhs);
 #define m_V4u64_right m_V4u64_of_static(1, 0, 0, 0)
 #define m_V4u64_up m_V4u64_of_static(0, 1, 0, 0)
 #define m_V4u64_forward m_V4u64_of_static(0, 0, 1, 0)
-#define m_V4u64_view_backward_RH m_V4u64_forward
-#define m_V4u64_view_forward_LH m_V4u64_forward
+#define m_V4u64_view_backward_rh m_V4u64_forward
+#define m_V4u64_view_forward_lh m_V4u64_forward
 #define m_V4u64_limit_min m_V4u64_of_static(u64_limit_min, u64_limit_min, u64_limit_min, u64_limit_min)
 #define m_V4u64_limit_max m_V4u64_of_static(u64_limit_max, u64_limit_max, u64_limit_max, u64_limit_max)
 
@@ -658,8 +658,8 @@ $static usize m_V2usize_dot(m_V2usize lhs, m_V2usize rhs);
 #define m_V3usize_right m_V3usize_of_static(1, 0, 0)
 #define m_V3usize_up m_V3usize_of_static(0, 1, 0)
 #define m_V3usize_forward m_V3usize_of_static(0, 0, 1)
-#define m_V3usize_view_backward_RH m_V3usize_forward
-#define m_V3usize_view_forward_LH m_V3usize_forward
+#define m_V3usize_view_backward_rh m_V3usize_forward
+#define m_V3usize_view_forward_lh m_V3usize_forward
 #define m_V3usize_limit_min m_V3usize_of_static(usize_limit_min, usize_limit_min, usize_limit_min)
 #define m_V3usize_limit_max m_V3usize_of_static(usize_limit_max, usize_limit_max, usize_limit_max)
 
@@ -747,8 +747,8 @@ $static usize m_V3usize_dot(m_V3usize lhs, m_V3usize rhs);
 #define m_V4usize_right m_V4usize_of_static(1, 0, 0, 0)
 #define m_V4usize_up m_V4usize_of_static(0, 1, 0, 0)
 #define m_V4usize_forward m_V4usize_of_static(0, 0, 1, 0)
-#define m_V4usize_view_backward_RH m_V4usize_forward
-#define m_V4usize_view_forward_LH m_V4usize_forward
+#define m_V4usize_view_backward_rh m_V4usize_forward
+#define m_V4usize_view_forward_lh m_V4usize_forward
 #define m_V4usize_limit_min m_V4usize_of_static(usize_limit_min, usize_limit_min, usize_limit_min, usize_limit_min)
 #define m_V4usize_limit_max m_V4usize_of_static(usize_limit_max, usize_limit_max, usize_limit_max, usize_limit_max)
 
@@ -935,10 +935,10 @@ $static m_V2i32 m_V2i32_perp(m_V2i32 v);
 #define m_V3i32_down m_V3i32_of_static(0, -1, 0)
 #define m_V3i32_forward m_V3i32_of_static(0, 0, 1)
 #define m_V3i32_backward m_V3i32_of_static(0, 0, -1)
-#define m_V3i32_view_forward_RH m_V3i32_backward
-#define m_V3i32_view_backward_RH m_V3i32_forward
-#define m_V3i32_view_forward_LH m_V3i32_forward
-#define m_V3i32_view_backward_LH m_V3i32_backward
+#define m_V3i32_view_forward_rh m_V3i32_backward
+#define m_V3i32_view_backward_rh m_V3i32_forward
+#define m_V3i32_view_forward_lh m_V3i32_forward
+#define m_V3i32_view_backward_lh m_V3i32_backward
 #define m_V3i32_limit_min m_V3i32_of_static(i32_limit_min, i32_limit_min, i32_limit_min)
 #define m_V3i32_limit_max m_V3i32_of_static(i32_limit_max, i32_limit_max, i32_limit_max)
 
@@ -1035,10 +1035,10 @@ $static m_V3i32 m_V3i32_perp(m_V3i32 v);
 #define m_V4i32_down m_V4i32_of_static(0, -1, 0, 0)
 #define m_V4i32_forward m_V4i32_of_static(0, 0, 1, 0)
 #define m_V4i32_backward m_V4i32_of_static(0, 0, -1, 0)
-#define m_V4i32_view_forward_RH m_V4i32_backward
-#define m_V4i32_view_backward_RH m_V4i32_forward
-#define m_V4i32_view_forward_LH m_V4i32_forward
-#define m_V4i32_view_backward_LH m_V4i32_backward
+#define m_V4i32_view_forward_rh m_V4i32_backward
+#define m_V4i32_view_backward_rh m_V4i32_forward
+#define m_V4i32_view_forward_lh m_V4i32_forward
+#define m_V4i32_view_backward_lh m_V4i32_backward
 #define m_V4i32_limit_min m_V4i32_of_static(i32_limit_min, i32_limit_min, i32_limit_min, i32_limit_min)
 #define m_V4i32_limit_max m_V4i32_of_static(i32_limit_max, i32_limit_max, i32_limit_max, i32_limit_max)
 
@@ -1227,10 +1227,10 @@ $static m_V2i64 m_V2i64_perp(m_V2i64 v);
 #define m_V3i64_down m_V3i64_of_static(0, -1, 0)
 #define m_V3i64_forward m_V3i64_of_static(0, 0, 1)
 #define m_V3i64_backward m_V3i64_of_static(0, 0, -1)
-#define m_V3i64_view_forward_RH m_V3i64_backward
-#define m_V3i64_view_backward_RH m_V3i64_forward
-#define m_V3i64_view_forward_LH m_V3i64_forward
-#define m_V3i64_view_backward_LH m_V3i64_backward
+#define m_V3i64_view_forward_rh m_V3i64_backward
+#define m_V3i64_view_backward_rh m_V3i64_forward
+#define m_V3i64_view_forward_lh m_V3i64_forward
+#define m_V3i64_view_backward_lh m_V3i64_backward
 #define m_V3i64_limit_min m_V3i64_of_static(i64_limit_min, i64_limit_min, i64_limit_min)
 #define m_V3i64_limit_max m_V3i64_of_static(i64_limit_max, i64_limit_max, i64_limit_max)
 
@@ -1327,10 +1327,10 @@ $static m_V3i64 m_V3i64_perp(m_V3i64 v);
 #define m_V4i64_down m_V4i64_of_static(0, -1, 0, 0)
 #define m_V4i64_forward m_V4i64_of_static(0, 0, 1, 0)
 #define m_V4i64_backward m_V4i64_of_static(0, 0, -1, 0)
-#define m_V4i64_view_forward_RH m_V4i64_backward
-#define m_V4i64_view_backward_RH m_V4i64_forward
-#define m_V4i64_view_forward_LH m_V4i64_forward
-#define m_V4i64_view_backward_LH m_V4i64_backward
+#define m_V4i64_view_forward_rh m_V4i64_backward
+#define m_V4i64_view_backward_rh m_V4i64_forward
+#define m_V4i64_view_forward_lh m_V4i64_forward
+#define m_V4i64_view_backward_lh m_V4i64_backward
 #define m_V4i64_limit_min m_V4i64_of_static(i64_limit_min, i64_limit_min, i64_limit_min, i64_limit_min)
 #define m_V4i64_limit_max m_V4i64_of_static(i64_limit_max, i64_limit_max, i64_limit_max, i64_limit_max)
 
@@ -1519,10 +1519,10 @@ $static m_V2isize m_V2isize_perp(m_V2isize v);
 #define m_V3isize_down m_V3isize_of_static(0, -1, 0)
 #define m_V3isize_forward m_V3isize_of_static(0, 0, 1)
 #define m_V3isize_backward m_V3isize_of_static(0, 0, -1)
-#define m_V3isize_view_forward_RH m_V3isize_backward
-#define m_V3isize_view_backward_RH m_V3isize_forward
-#define m_V3isize_view_forward_LH m_V3isize_forward
-#define m_V3isize_view_backward_LH m_V3isize_backward
+#define m_V3isize_view_forward_rh m_V3isize_backward
+#define m_V3isize_view_backward_rh m_V3isize_forward
+#define m_V3isize_view_forward_lh m_V3isize_forward
+#define m_V3isize_view_backward_lh m_V3isize_backward
 #define m_V3isize_limit_min m_V3isize_of_static(isize_limit_min, isize_limit_min, isize_limit_min)
 #define m_V3isize_limit_max m_V3isize_of_static(isize_limit_max, isize_limit_max, isize_limit_max)
 
@@ -1619,10 +1619,10 @@ $static m_V3isize m_V3isize_perp(m_V3isize v);
 #define m_V4isize_down m_V4isize_of_static(0, -1, 0, 0)
 #define m_V4isize_forward m_V4isize_of_static(0, 0, 1, 0)
 #define m_V4isize_backward m_V4isize_of_static(0, 0, -1, 0)
-#define m_V4isize_view_forward_RH m_V4isize_backward
-#define m_V4isize_view_backward_RH m_V4isize_forward
-#define m_V4isize_view_forward_LH m_V4isize_forward
-#define m_V4isize_view_backward_LH m_V4isize_backward
+#define m_V4isize_view_forward_rh m_V4isize_backward
+#define m_V4isize_view_backward_rh m_V4isize_forward
+#define m_V4isize_view_forward_lh m_V4isize_forward
+#define m_V4isize_view_backward_lh m_V4isize_backward
 #define m_V4isize_limit_min m_V4isize_of_static(isize_limit_min, isize_limit_min, isize_limit_min, isize_limit_min)
 #define m_V4isize_limit_max m_V4isize_of_static(isize_limit_max, isize_limit_max, isize_limit_max, isize_limit_max)
 
@@ -1878,10 +1878,10 @@ $static m_V2f32 m_V2f32_perp(m_V2f32 v);
 #define m_V3f32_down m_V3f32_of_static(0.0f, -1.0f, 0.0f)
 #define m_V3f32_forward m_V3f32_of_static(0.0f, 0.0f, 1.0f)
 #define m_V3f32_backward m_V3f32_of_static(0.0f, 0.0f, -1.0f)
-#define m_V3f32_view_forward_RH m_V3f32_backward
-#define m_V3f32_view_backward_RH m_V3f32_forward
-#define m_V3f32_view_forward_LH m_V3f32_forward
-#define m_V3f32_view_backward_LH m_V3f32_backward
+#define m_V3f32_view_forward_rh m_V3f32_backward
+#define m_V3f32_view_backward_rh m_V3f32_forward
+#define m_V3f32_view_forward_lh m_V3f32_forward
+#define m_V3f32_view_backward_lh m_V3f32_backward
 #define m_V3f32_eps m_V3f32_of_static(f32_eps, f32_eps, f32_eps)
 #define m_V3f32_nan m_V3f32_of_static(f32_nan, f32_nan, f32_nan)
 #define m_V3f32_inf m_V3f32_of_static(f32_inf, f32_inf, f32_inf)
@@ -2016,10 +2016,10 @@ $static m_V3f32 m_V3f32_perp(m_V3f32 v);
 #define m_V4f32_down m_V4f32_of_static(0.0f, -1.0f, 0.0f, 0.0f)
 #define m_V4f32_forward m_V4f32_of_static(0.0f, 0.0f, 1.0f, 0.0f)
 #define m_V4f32_backward m_V4f32_of_static(0.0f, 0.0f, -1.0f, 0.0f)
-#define m_V4f32_view_forward_RH m_V4f32_backward
-#define m_V4f32_view_backward_RH m_V4f32_forward
-#define m_V4f32_view_forward_LH m_V4f32_forward
-#define m_V4f32_view_backward_LH m_V4f32_backward
+#define m_V4f32_view_forward_rh m_V4f32_backward
+#define m_V4f32_view_backward_rh m_V4f32_forward
+#define m_V4f32_view_forward_lh m_V4f32_forward
+#define m_V4f32_view_backward_lh m_V4f32_backward
 #define m_V4f32_eps m_V4f32_of_static(f32_eps, f32_eps, f32_eps, f32_eps)
 #define m_V4f32_nan m_V4f32_of_static(f32_nan, f32_nan, f32_nan, f32_nan)
 #define m_V4f32_inf m_V4f32_of_static(f32_inf, f32_inf, f32_inf, f32_inf)
@@ -2296,10 +2296,10 @@ $static m_V2f64 m_V2f64_perp(m_V2f64 v);
 #define m_V3f64_down m_V3f64_of_static(0.0, -1.0, 0.0)
 #define m_V3f64_forward m_V3f64_of_static(0.0, 0.0, 1.0)
 #define m_V3f64_backward m_V3f64_of_static(0.0, 0.0, -1.0)
-#define m_V3f64_view_forward_RH m_V3f64_backward
-#define m_V3f64_view_backward_RH m_V3f64_forward
-#define m_V3f64_view_forward_LH m_V3f64_forward
-#define m_V3f64_view_backward_LH m_V3f64_backward
+#define m_V3f64_view_forward_rh m_V3f64_backward
+#define m_V3f64_view_backward_rh m_V3f64_forward
+#define m_V3f64_view_forward_lh m_V3f64_forward
+#define m_V3f64_view_backward_lh m_V3f64_backward
 #define m_V3f64_eps m_V3f64_of_static(f64_eps, f64_eps, f64_eps)
 #define m_V3f64_nan m_V3f64_of_static(f64_nan, f64_nan, f64_nan)
 #define m_V3f64_inf m_V3f64_of_static(f64_inf, f64_inf, f64_inf)
@@ -2417,10 +2417,10 @@ $static m_V3f64 m_V3f64_perp(m_V3f64 v);
 #define m_V4f64_down m_V4f64_of_static(0.0, -1.0, 0.0, 0.0)
 #define m_V4f64_forward m_V4f64_of_static(0.0, 0.0, 1.0, 0.0)
 #define m_V4f64_backward m_V4f64_of_static(0.0, 0.0, -1.0, 0.0)
-#define m_V4f64_view_forward_RH m_V4f64_backward
-#define m_V4f64_view_backward_RH m_V4f64_forward
-#define m_V4f64_view_forward_LH m_V4f64_forward
-#define m_V4f64_view_backward_LH m_V4f64_backward
+#define m_V4f64_view_forward_rh m_V4f64_backward
+#define m_V4f64_view_backward_rh m_V4f64_forward
+#define m_V4f64_view_forward_lh m_V4f64_forward
+#define m_V4f64_view_backward_lh m_V4f64_backward
 #define m_V4f64_eps m_V4f64_of_static(f64_eps, f64_eps, f64_eps, f64_eps)
 #define m_V4f64_nan m_V4f64_of_static(f64_nan, f64_nan, f64_nan, f64_nan)
 #define m_V4f64_inf m_V4f64_of_static(f64_inf, f64_inf, f64_inf, f64_inf)
