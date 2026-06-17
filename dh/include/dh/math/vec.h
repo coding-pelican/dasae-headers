@@ -27,6 +27,29 @@
 
 #define m_V_as$(/*(_T: m_V_Type)(_src)*/... /*(m_V_Type)*/) __step__m_V_as$(__VA_ARGS__)
 
+T_alias$((m_V_Orient)(enum_((m_V_Orient $fits($packed))(
+    m_V_Orient_neg = -1,
+    m_V_Orient_ngtv = m_V_Orient_neg,
+    m_V_Orient_cw = m_V_Orient_neg,
+    m_V_Orient_zero = 0,
+    m_V_Orient_collinear = m_V_Orient_zero,
+    m_V_Orient_coplanar = m_V_Orient_zero,
+    m_V_Orient_pos = 1,
+    m_V_Orient_pstv = m_V_Orient_pos,
+    m_V_Orient_ccw = m_V_Orient_pos
+))));
+claim_assert_static(eqlType$(m_V_Orient, i8));
+#define m_V_Orient_isNeg(_orient /*: m_V_Orient*/... /*(bool)*/) bool_((_orient) < m_V_Orient_zero)
+#define m_V_Orient_isNgtv(_orient /*: m_V_Orient*/... /*(bool)*/) m_V_Orient_isNeg(_orient)
+#define m_V_Orient_isCW(_orient /*: m_V_Orient*/... /*(bool)*/) m_V_Orient_isNeg(_orient)
+#define m_V_Orient_isZero(_orient /*: m_V_Orient*/... /*(bool)*/) bool_((_orient) == m_V_Orient_zero)
+#define m_V_Orient_isNonzero(_orient /*: m_V_Orient*/... /*(bool)*/) bool_((_orient) != m_V_Orient_zero)
+#define m_V_Orient_isCollinear(_orient /*: m_V_Orient*/... /*(bool)*/) m_V_Orient_isZero(_orient)
+#define m_V_Orient_isCoplanar(_orient /*: m_V_Orient*/... /*(bool)*/) m_V_Orient_isZero(_orient)
+#define m_V_Orient_isPos(_orient /*: m_V_Orient*/... /*(bool)*/) bool_((_orient) > m_V_Orient_zero)
+#define m_V_Orient_isPstv(_orient /*: m_V_Orient*/... /*(bool)*/) m_V_Orient_isPos(_orient)
+#define m_V_Orient_isCCW(_orient /*: m_V_Orient*/... /*(bool)*/) m_V_Orient_isPos(_orient)
+
 /* --- UInt32 (u32) Vector --- */
 
 /* Vec2u functions */
@@ -917,6 +940,24 @@ $static i32 m_V2i32_dot(m_V2i32 lhs, m_V2i32 rhs);
 $attr($inline_always)
 $static i32 m_V2i32_cross(m_V2i32 lhs, m_V2i32 rhs);
 $attr($inline_always)
+$static i32 m_V2i32_det(m_V2i32 lhs, m_V2i32 rhs);
+$attr($inline_always)
+$static i32 m_V2i32_orient(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs);
+$attr($inline_always)
+$static m_V_Orient m_V2i32_orientDir(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs);
+$attr($inline_always)
+$static bool m_V2i32_isCW(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs);
+$attr($inline_always)
+$static bool m_V2i32_isCollinear(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs);
+$attr($inline_always)
+$static bool m_V2i32_isCCW(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs);
+$attr($inline_always)
+$static m_V2i32 m_V2i32_cw(m_V2i32 v);
+$attr($inline_always)
+$static m_V2i32 m_V2i32_ccw(m_V2i32 v);
+$attr($inline_always)
+$static m_V2i32 m_V2i32_skew(m_V2i32 v);
+$attr($inline_always)
 $static m_V2i32 m_V2i32_perp(m_V2i32 v);
 
 /* Vec3i functions */
@@ -1018,6 +1059,18 @@ $attr($inline_always)
 $static i32 m_V3i32_dot(m_V3i32 lhs, m_V3i32 rhs);
 $attr($inline_always)
 $static m_V3i32 m_V3i32_cross(m_V3i32 lhs, m_V3i32 rhs);
+$attr($inline_always)
+$static i32 m_V3i32_det(m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs);
+$attr($inline_always)
+$static i32 m_V3i32_orient(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs);
+$attr($inline_always)
+$static m_V_Orient m_V3i32_orientDir(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs);
+$attr($inline_always)
+$static bool m_V3i32_isOrientNeg(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs);
+$attr($inline_always)
+$static bool m_V3i32_isCoplanar(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs);
+$attr($inline_always)
+$static bool m_V3i32_isOrientPos(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs);
 $attr($inline_always)
 $static m_V3i32 m_V3i32_perp(m_V3i32 v);
 
@@ -1209,6 +1262,24 @@ $static i64 m_V2i64_dot(m_V2i64 lhs, m_V2i64 rhs);
 $attr($inline_always)
 $static i64 m_V2i64_cross(m_V2i64 lhs, m_V2i64 rhs);
 $attr($inline_always)
+$static i64 m_V2i64_det(m_V2i64 lhs, m_V2i64 rhs);
+$attr($inline_always)
+$static i64 m_V2i64_orient(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs);
+$attr($inline_always)
+$static m_V_Orient m_V2i64_orientDir(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs);
+$attr($inline_always)
+$static bool m_V2i64_isCW(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs);
+$attr($inline_always)
+$static bool m_V2i64_isCollinear(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs);
+$attr($inline_always)
+$static bool m_V2i64_isCCW(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs);
+$attr($inline_always)
+$static m_V2i64 m_V2i64_cw(m_V2i64 v);
+$attr($inline_always)
+$static m_V2i64 m_V2i64_ccw(m_V2i64 v);
+$attr($inline_always)
+$static m_V2i64 m_V2i64_skew(m_V2i64 v);
+$attr($inline_always)
 $static m_V2i64 m_V2i64_perp(m_V2i64 v);
 
 /* Vec3l functions */
@@ -1310,6 +1381,18 @@ $attr($inline_always)
 $static i64 m_V3i64_dot(m_V3i64 lhs, m_V3i64 rhs);
 $attr($inline_always)
 $static m_V3i64 m_V3i64_cross(m_V3i64 lhs, m_V3i64 rhs);
+$attr($inline_always)
+$static i64 m_V3i64_det(m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs);
+$attr($inline_always)
+$static i64 m_V3i64_orient(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs);
+$attr($inline_always)
+$static m_V_Orient m_V3i64_orientDir(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs);
+$attr($inline_always)
+$static bool m_V3i64_isOrientNeg(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs);
+$attr($inline_always)
+$static bool m_V3i64_isCoplanar(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs);
+$attr($inline_always)
+$static bool m_V3i64_isOrientPos(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs);
 $attr($inline_always)
 $static m_V3i64 m_V3i64_perp(m_V3i64 v);
 
@@ -1501,6 +1584,24 @@ $static isize m_V2isize_dot(m_V2isize lhs, m_V2isize rhs);
 $attr($inline_always)
 $static isize m_V2isize_cross(m_V2isize lhs, m_V2isize rhs);
 $attr($inline_always)
+$static isize m_V2isize_det(m_V2isize lhs, m_V2isize rhs);
+$attr($inline_always)
+$static isize m_V2isize_orient(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
+$attr($inline_always)
+$static m_V_Orient m_V2isize_orientDir(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
+$attr($inline_always)
+$static bool m_V2isize_isCW(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
+$attr($inline_always)
+$static bool m_V2isize_isCollinear(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
+$attr($inline_always)
+$static bool m_V2isize_isCCW(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
+$attr($inline_always)
+$static m_V2isize m_V2isize_cw(m_V2isize v);
+$attr($inline_always)
+$static m_V2isize m_V2isize_ccw(m_V2isize v);
+$attr($inline_always)
+$static m_V2isize m_V2isize_skew(m_V2isize v);
+$attr($inline_always)
 $static m_V2isize m_V2isize_perp(m_V2isize v);
 
 /* Vec3z functions */
@@ -1602,6 +1703,18 @@ $attr($inline_always)
 $static isize m_V3isize_dot(m_V3isize lhs, m_V3isize rhs);
 $attr($inline_always)
 $static m_V3isize m_V3isize_cross(m_V3isize lhs, m_V3isize rhs);
+$attr($inline_always)
+$static isize m_V3isize_det(m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
+$attr($inline_always)
+$static isize m_V3isize_orient(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
+$attr($inline_always)
+$static m_V_Orient m_V3isize_orientDir(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
+$attr($inline_always)
+$static bool m_V3isize_isOrientNeg(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
+$attr($inline_always)
+$static bool m_V3isize_isCoplanar(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
+$attr($inline_always)
+$static bool m_V3isize_isOrientPos(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
 $attr($inline_always)
 $static m_V3isize m_V3isize_perp(m_V3isize v);
 
@@ -1850,6 +1963,24 @@ $static f32 m_V2f32_dot(m_V2f32 lhs, m_V2f32 rhs);
 $attr($inline_always)
 $static f32 m_V2f32_cross(m_V2f32 lhs, m_V2f32 rhs);
 $attr($inline_always)
+$static f32 m_V2f32_det(m_V2f32 lhs, m_V2f32 rhs);
+$attr($inline_always)
+$static f32 m_V2f32_orient(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs);
+$attr($inline_always)
+$static m_V_Orient m_V2f32_orientDir(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs);
+$attr($inline_always)
+$static bool m_V2f32_isCW(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs);
+$attr($inline_always)
+$static bool m_V2f32_isCollinear(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs);
+$attr($inline_always)
+$static bool m_V2f32_isCCW(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs);
+$attr($inline_always)
+$static m_V2f32 m_V2f32_cw(m_V2f32 v);
+$attr($inline_always)
+$static m_V2f32 m_V2f32_ccw(m_V2f32 v);
+$attr($inline_always)
+$static m_V2f32 m_V2f32_skew(m_V2f32 v);
+$attr($inline_always)
 $static m_V2f32 m_V2f32_norm(m_V2f32 v);
 $attr($inline_always)
 $static m_V2f32 m_V2f32_project(m_V2f32 v, m_V2f32 onto);
@@ -1989,6 +2120,18 @@ $attr($inline_always)
 $static f32 m_V3f32_dot(m_V3f32 lhs, m_V3f32 rhs);
 $attr($inline_always)
 $static m_V3f32 m_V3f32_cross(m_V3f32 lhs, m_V3f32 rhs);
+$attr($inline_always)
+$static f32 m_V3f32_det(m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs);
+$attr($inline_always)
+$static f32 m_V3f32_orient(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs);
+$attr($inline_always)
+$static m_V_Orient m_V3f32_orientDir(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs);
+$attr($inline_always)
+$static bool m_V3f32_isOrientNeg(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs);
+$attr($inline_always)
+$static bool m_V3f32_isCoplanar(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs);
+$attr($inline_always)
+$static bool m_V3f32_isOrientPos(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs);
 $attr($inline_always)
 $static m_V3f32 m_V3f32_norm(m_V3f32 v);
 $attr($inline_always)
@@ -2268,6 +2411,24 @@ $static f64 m_V2f64_dot(m_V2f64 lhs, m_V2f64 rhs);
 $attr($inline_always)
 $static f64 m_V2f64_cross(m_V2f64 lhs, m_V2f64 rhs);
 $attr($inline_always)
+$static f64 m_V2f64_det(m_V2f64 lhs, m_V2f64 rhs);
+$attr($inline_always)
+$static f64 m_V2f64_orient(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs);
+$attr($inline_always)
+$static m_V_Orient m_V2f64_orientDir(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs);
+$attr($inline_always)
+$static bool m_V2f64_isCW(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs);
+$attr($inline_always)
+$static bool m_V2f64_isCollinear(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs);
+$attr($inline_always)
+$static bool m_V2f64_isCCW(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs);
+$attr($inline_always)
+$static m_V2f64 m_V2f64_cw(m_V2f64 v);
+$attr($inline_always)
+$static m_V2f64 m_V2f64_ccw(m_V2f64 v);
+$attr($inline_always)
+$static m_V2f64 m_V2f64_skew(m_V2f64 v);
+$attr($inline_always)
 $static m_V2f64 m_V2f64_norm(m_V2f64 v);
 $attr($inline_always)
 $static m_V2f64 m_V2f64_project(m_V2f64 v, m_V2f64 onto);
@@ -2390,6 +2551,18 @@ $attr($inline_always)
 $static f64 m_V3f64_dot(m_V3f64 lhs, m_V3f64 rhs);
 $attr($inline_always)
 $static m_V3f64 m_V3f64_cross(m_V3f64 lhs, m_V3f64 rhs);
+$attr($inline_always)
+$static f64 m_V3f64_det(m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs);
+$attr($inline_always)
+$static f64 m_V3f64_orient(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs);
+$attr($inline_always)
+$static m_V_Orient m_V3f64_orientDir(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs);
+$attr($inline_always)
+$static bool m_V3f64_isOrientNeg(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs);
+$attr($inline_always)
+$static bool m_V3f64_isCoplanar(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs);
+$attr($inline_always)
+$static bool m_V3f64_isOrientPos(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs);
 $attr($inline_always)
 $static m_V3f64 m_V3f64_norm(m_V3f64 v);
 $attr($inline_always)
@@ -3925,11 +4098,46 @@ $static i32 m_V2i32_cross(m_V2i32 lhs, m_V2i32 rhs) {
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
 $attr($inline_always)
-$static m_V2i32 m_V2i32_perp(m_V2i32 v) {
-#if arch_simd_use
-/* TODO: Implement Vec_perp for SIMD */
-#endif /* arch_simd_use */
+$static i32 m_V2i32_det(m_V2i32 lhs, m_V2i32 rhs) {
+    return m_V2i32_cross(lhs, rhs);
+}
+$attr($inline_always)
+$static i32 m_V2i32_orient(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs) {
+    return m_V2i32_det(m_V2i32_sub(lhs, origin), m_V2i32_sub(rhs, origin));
+}
+$attr($inline_always)
+$static m_V_Orient m_V2i32_orientDir(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs) {
+    let det = m_V2i32_orient(origin, lhs, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V2i32_isCW(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs) {
+    return m_V_Orient_isCW(m_V2i32_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2i32_isCollinear(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs) {
+    return m_V_Orient_isCollinear(m_V2i32_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2i32_isCCW(m_V2i32 origin, m_V2i32 lhs, m_V2i32 rhs) {
+    return m_V_Orient_isCCW(m_V2i32_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static m_V2i32 m_V2i32_cw(m_V2i32 v) {
+    return m_V2i32_of(v.y, -v.x);
+}
+$attr($inline_always)
+$static m_V2i32 m_V2i32_ccw(m_V2i32 v) {
     return m_V2i32_of(-v.y, v.x);
+}
+$attr($inline_always)
+$static m_V2i32 m_V2i32_skew(m_V2i32 v) {
+    return m_V2i32_ccw(v);
+}
+$attr($inline_always)
+$static m_V2i32 m_V2i32_perp(m_V2i32 v) {
+    return m_V2i32_ccw(v);
 }
 
 /* Vec3i functions */
@@ -4138,6 +4346,36 @@ $static m_V3i32 m_V3i32_cross(m_V3i32 lhs, m_V3i32 rhs) {
         lhs.z * rhs.x - lhs.x * rhs.z,
         lhs.x * rhs.y - lhs.y * rhs.x
     );
+}
+$attr($inline_always)
+$static i32 m_V3i32_det(m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs) {
+    return m_V3i32_dot(lhs, m_V3i32_cross(mid, rhs));
+}
+$attr($inline_always)
+$static i32 m_V3i32_orient(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs) {
+    return m_V3i32_det(
+        m_V3i32_sub(lhs, origin),
+        m_V3i32_sub(mid, origin),
+        m_V3i32_sub(rhs, origin)
+    );
+}
+$attr($inline_always)
+$static m_V_Orient m_V3i32_orientDir(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs) {
+    let det = m_V3i32_orient(origin, lhs, mid, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V3i32_isOrientNeg(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs) {
+    return m_V_Orient_isNeg(m_V3i32_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3i32_isCoplanar(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs) {
+    return m_V_Orient_isCoplanar(m_V3i32_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3i32_isOrientPos(m_V3i32 origin, m_V3i32 lhs, m_V3i32 mid, m_V3i32 rhs) {
+    return m_V_Orient_isPos(m_V3i32_orientDir(origin, lhs, mid, rhs));
 }
 $attr($inline_always)
 $static m_V3i32 m_V3i32_perp(m_V3i32 v) {
@@ -4547,11 +4785,46 @@ $static i64 m_V2i64_cross(m_V2i64 lhs, m_V2i64 rhs) {
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
 $attr($inline_always)
-$static m_V2i64 m_V2i64_perp(m_V2i64 v) {
-#if arch_simd_use
-/* TODO: Implement Vec_perp for SIMD */
-#endif /* arch_simd_use */
+$static i64 m_V2i64_det(m_V2i64 lhs, m_V2i64 rhs) {
+    return m_V2i64_cross(lhs, rhs);
+}
+$attr($inline_always)
+$static i64 m_V2i64_orient(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs) {
+    return m_V2i64_det(m_V2i64_sub(lhs, origin), m_V2i64_sub(rhs, origin));
+}
+$attr($inline_always)
+$static m_V_Orient m_V2i64_orientDir(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs) {
+    let det = m_V2i64_orient(origin, lhs, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V2i64_isCW(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs) {
+    return m_V_Orient_isCW(m_V2i64_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2i64_isCollinear(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs) {
+    return m_V_Orient_isCollinear(m_V2i64_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2i64_isCCW(m_V2i64 origin, m_V2i64 lhs, m_V2i64 rhs) {
+    return m_V_Orient_isCCW(m_V2i64_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static m_V2i64 m_V2i64_cw(m_V2i64 v) {
+    return m_V2i64_of(v.y, -v.x);
+}
+$attr($inline_always)
+$static m_V2i64 m_V2i64_ccw(m_V2i64 v) {
     return m_V2i64_of(-v.y, v.x);
+}
+$attr($inline_always)
+$static m_V2i64 m_V2i64_skew(m_V2i64 v) {
+    return m_V2i64_ccw(v);
+}
+$attr($inline_always)
+$static m_V2i64 m_V2i64_perp(m_V2i64 v) {
+    return m_V2i64_ccw(v);
 }
 
 /* Vec3l functions */
@@ -4758,6 +5031,36 @@ $static m_V3i64 m_V3i64_cross(m_V3i64 lhs, m_V3i64 rhs) {
         lhs.z * rhs.x - lhs.x * rhs.z,
         lhs.x * rhs.y - lhs.y * rhs.x
     );
+}
+$attr($inline_always)
+$static i64 m_V3i64_det(m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs) {
+    return m_V3i64_dot(lhs, m_V3i64_cross(mid, rhs));
+}
+$attr($inline_always)
+$static i64 m_V3i64_orient(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs) {
+    return m_V3i64_det(
+        m_V3i64_sub(lhs, origin),
+        m_V3i64_sub(mid, origin),
+        m_V3i64_sub(rhs, origin)
+    );
+}
+$attr($inline_always)
+$static m_V_Orient m_V3i64_orientDir(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs) {
+    let det = m_V3i64_orient(origin, lhs, mid, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V3i64_isOrientNeg(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs) {
+    return m_V_Orient_isNeg(m_V3i64_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3i64_isCoplanar(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs) {
+    return m_V_Orient_isCoplanar(m_V3i64_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3i64_isOrientPos(m_V3i64 origin, m_V3i64 lhs, m_V3i64 mid, m_V3i64 rhs) {
+    return m_V_Orient_isPos(m_V3i64_orientDir(origin, lhs, mid, rhs));
 }
 $attr($inline_always)
 $static m_V3i64 m_V3i64_perp(m_V3i64 v) {
@@ -5100,6 +5403,44 @@ $static isize m_V2isize_cross(m_V2isize lhs, m_V2isize rhs) {
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
 $attr($inline_always)
+$static isize m_V2isize_det(m_V2isize lhs, m_V2isize rhs) {
+    return m_V2isize_cross(lhs, rhs);
+}
+$attr($inline_always)
+$static isize m_V2isize_orient(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
+    return m_V2isize_det(m_V2isize_sub(lhs, origin), m_V2isize_sub(rhs, origin));
+}
+$attr($inline_always)
+$static m_V_Orient m_V2isize_orientDir(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
+    let det = m_V2isize_orient(origin, lhs, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V2isize_isCW(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
+    return m_V_Orient_isCW(m_V2isize_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2isize_isCollinear(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
+    return m_V_Orient_isCollinear(m_V2isize_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2isize_isCCW(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
+    return m_V_Orient_isCCW(m_V2isize_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static m_V2isize m_V2isize_cw(m_V2isize v) {
+    return m_V2isize_of(v.y, -v.x);
+}
+$attr($inline_always)
+$static m_V2isize m_V2isize_ccw(m_V2isize v) {
+    return m_V2isize_of(-v.y, v.x);
+}
+$attr($inline_always)
+$static m_V2isize m_V2isize_skew(m_V2isize v) {
+    return m_V2isize_ccw(v);
+}
+$attr($inline_always)
 $static m_V2isize m_V2isize_perp(m_V2isize v) {
     return m_V2isize_of(-v.y, v.x);
 }
@@ -5243,6 +5584,36 @@ $static m_V3isize m_V3isize_cross(m_V3isize lhs, m_V3isize rhs) {
         lhs.z * rhs.x - lhs.x * rhs.z,
         lhs.x * rhs.y - lhs.y * rhs.x
     );
+}
+$attr($inline_always)
+$static isize m_V3isize_det(m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
+    return m_V3isize_dot(lhs, m_V3isize_cross(mid, rhs));
+}
+$attr($inline_always)
+$static isize m_V3isize_orient(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
+    return m_V3isize_det(
+        m_V3isize_sub(lhs, origin),
+        m_V3isize_sub(mid, origin),
+        m_V3isize_sub(rhs, origin)
+    );
+}
+$attr($inline_always)
+$static m_V_Orient m_V3isize_orientDir(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
+    let det = m_V3isize_orient(origin, lhs, mid, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V3isize_isOrientNeg(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
+    return m_V_Orient_isNeg(m_V3isize_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3isize_isCoplanar(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
+    return m_V_Orient_isCoplanar(m_V3isize_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3isize_isOrientPos(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
+    return m_V_Orient_isPos(m_V3isize_orientDir(origin, lhs, mid, rhs));
 }
 $attr($inline_always)
 $static m_V3isize m_V3isize_perp(m_V3isize v) {
@@ -5706,11 +6077,46 @@ $static m_V2f32 m_V2f32_rotate(m_V2f32 v, f32 radians) {
     return m_V2f32_of(v.x * r.x - v.y * r.y, v.x * r.y + v.y * r.x);
 }
 $attr($inline_always)
-$static m_V2f32 m_V2f32_perp(m_V2f32 v) {
-#if arch_simd_use
-/* TODO: Implement Vec_perp for SIMD */
-#endif /* arch_simd_use */
+$static f32 m_V2f32_det(m_V2f32 lhs, m_V2f32 rhs) {
+    return m_V2f32_cross(lhs, rhs);
+}
+$attr($inline_always)
+$static f32 m_V2f32_orient(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs) {
+    return m_V2f32_det(m_V2f32_sub(lhs, origin), m_V2f32_sub(rhs, origin));
+}
+$attr($inline_always)
+$static m_V_Orient m_V2f32_orientDir(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs) {
+    let det = m_V2f32_orient(origin, lhs, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V2f32_isCW(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs) {
+    return m_V_Orient_isCW(m_V2f32_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2f32_isCollinear(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs) {
+    return m_V_Orient_isCollinear(m_V2f32_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2f32_isCCW(m_V2f32 origin, m_V2f32 lhs, m_V2f32 rhs) {
+    return m_V_Orient_isCCW(m_V2f32_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static m_V2f32 m_V2f32_cw(m_V2f32 v) {
+    return m_V2f32_of(v.y, -v.x);
+}
+$attr($inline_always)
+$static m_V2f32 m_V2f32_ccw(m_V2f32 v) {
     return m_V2f32_of(-v.y, v.x);
+}
+$attr($inline_always)
+$static m_V2f32 m_V2f32_skew(m_V2f32 v) {
+    return m_V2f32_ccw(v);
+}
+$attr($inline_always)
+$static m_V2f32 m_V2f32_perp(m_V2f32 v) {
+    return m_V2f32_ccw(v);
 }
 
 /* Vec3f functions */
@@ -5961,6 +6367,36 @@ $static m_V3f32 m_V3f32_cross(m_V3f32 lhs, m_V3f32 rhs) {
         lhs.z * rhs.x - lhs.x * rhs.z,
         lhs.x * rhs.y - lhs.y * rhs.x
     );
+}
+$attr($inline_always)
+$static f32 m_V3f32_det(m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs) {
+    return m_V3f32_dot(lhs, m_V3f32_cross(mid, rhs));
+}
+$attr($inline_always)
+$static f32 m_V3f32_orient(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs) {
+    return m_V3f32_det(
+        m_V3f32_sub(lhs, origin),
+        m_V3f32_sub(mid, origin),
+        m_V3f32_sub(rhs, origin)
+    );
+}
+$attr($inline_always)
+$static m_V_Orient m_V3f32_orientDir(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs) {
+    let det = m_V3f32_orient(origin, lhs, mid, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V3f32_isOrientNeg(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs) {
+    return m_V_Orient_isNeg(m_V3f32_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3f32_isCoplanar(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs) {
+    return m_V_Orient_isCoplanar(m_V3f32_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3f32_isOrientPos(m_V3f32 origin, m_V3f32 lhs, m_V3f32 mid, m_V3f32 rhs) {
+    return m_V_Orient_isPos(m_V3f32_orientDir(origin, lhs, mid, rhs));
 }
 $attr($inline_always)
 $static m_V3f32 m_V3f32_norm(m_V3f32 v) {
@@ -6572,11 +7008,46 @@ $static m_V2f64 m_V2f64_rotate(m_V2f64 v, f64 radians) {
     );
 }
 $attr($inline_always)
-$static m_V2f64 m_V2f64_perp(m_V2f64 v) {
-#if arch_simd_use
-/* TODO: Implement Vec_perp for SIMD */
-#endif /* arch_simd_use */
+$static f64 m_V2f64_det(m_V2f64 lhs, m_V2f64 rhs) {
+    return m_V2f64_cross(lhs, rhs);
+}
+$attr($inline_always)
+$static f64 m_V2f64_orient(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs) {
+    return m_V2f64_det(m_V2f64_sub(lhs, origin), m_V2f64_sub(rhs, origin));
+}
+$attr($inline_always)
+$static m_V_Orient m_V2f64_orientDir(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs) {
+    let det = m_V2f64_orient(origin, lhs, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V2f64_isCW(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs) {
+    return m_V_Orient_isCW(m_V2f64_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2f64_isCollinear(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs) {
+    return m_V_Orient_isCollinear(m_V2f64_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static bool m_V2f64_isCCW(m_V2f64 origin, m_V2f64 lhs, m_V2f64 rhs) {
+    return m_V_Orient_isCCW(m_V2f64_orientDir(origin, lhs, rhs));
+}
+$attr($inline_always)
+$static m_V2f64 m_V2f64_cw(m_V2f64 v) {
+    return m_V2f64_of(v.y, -v.x);
+}
+$attr($inline_always)
+$static m_V2f64 m_V2f64_ccw(m_V2f64 v) {
     return m_V2f64_of(-v.y, v.x);
+}
+$attr($inline_always)
+$static m_V2f64 m_V2f64_skew(m_V2f64 v) {
+    return m_V2f64_ccw(v);
+}
+$attr($inline_always)
+$static m_V2f64 m_V2f64_perp(m_V2f64 v) {
+    return m_V2f64_ccw(v);
 }
 
 /* Vec3d functions */
@@ -6813,6 +7284,36 @@ $static m_V3f64 m_V3f64_cross(m_V3f64 lhs, m_V3f64 rhs) {
         lhs.z * rhs.x - lhs.x * rhs.z,
         lhs.x * rhs.y - lhs.y * rhs.x
     );
+}
+$attr($inline_always)
+$static f64 m_V3f64_det(m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs) {
+    return m_V3f64_dot(lhs, m_V3f64_cross(mid, rhs));
+}
+$attr($inline_always)
+$static f64 m_V3f64_orient(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs) {
+    return m_V3f64_det(
+        m_V3f64_sub(lhs, origin),
+        m_V3f64_sub(mid, origin),
+        m_V3f64_sub(rhs, origin)
+    );
+}
+$attr($inline_always)
+$static m_V_Orient m_V3f64_orientDir(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs) {
+    let det = m_V3f64_orient(origin, lhs, mid, rhs);
+    return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
+                                              : m_V_Orient_zero;
+}
+$attr($inline_always)
+$static bool m_V3f64_isOrientNeg(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs) {
+    return m_V_Orient_isNeg(m_V3f64_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3f64_isCoplanar(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs) {
+    return m_V_Orient_isCoplanar(m_V3f64_orientDir(origin, lhs, mid, rhs));
+}
+$attr($inline_always)
+$static bool m_V3f64_isOrientPos(m_V3f64 origin, m_V3f64 lhs, m_V3f64 mid, m_V3f64 rhs) {
+    return m_V_Orient_isPos(m_V3f64_orientDir(origin, lhs, mid, rhs));
 }
 $attr($inline_always)
 $static m_V3f64 m_V3f64_norm(m_V3f64 v) {

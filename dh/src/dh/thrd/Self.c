@@ -538,7 +538,7 @@ fn_((thrd__windows_spawn(
     let start = u_castP$((thrd__Start*)(try_(thrd__startAlloc(
         cfg, clsr, ret_type, destroy_clsr, owned_clsr
     ))));
-    let stack_size = as$(usize)(pri_max(thrd__windows_stack_size_min, cfg.stack_size));
+    let stack_size = pri_max(usize_(thrd__windows_stack_size_min), cfg.stack_size);
     let handle = CreateThread(
         null, stack_size,
         thrd__windows_entry, start,

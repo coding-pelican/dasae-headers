@@ -152,6 +152,12 @@ extern "C" {
 #define pri_clamp_static(_x, _lo /*$incl*/, _hi /*$incl*/...) __op__pri_clamp_static(_x, _lo, _hi)
 #define pri_clamp(_x, _lo /*$incl*/, _hi /*$incl*/...) __op__pri_clamp__step(_x, _lo, _hi)
 
+/*========== Boolean Operations =============================================*/
+
+#define bool_any(_first, _vals...) __op__bool_any__step(_first, _vals)
+#define bool_all(_first, _vals...) __op__bool_all__step(_first, _vals)
+#define bool_none(_first, _vals...) __op__bool_none__step(_first, _vals)
+
 /*========== Integer Arithmetic Operations ==================================*/
 
 #define int_add(_lhs, _rhs...) __op__int_add__step(_lhs, _rhs)
@@ -370,7 +376,7 @@ extern "C" {
 #define flt_isNormal(_x...) ____flt_isNormal(_x)
 #define flt_isSubnormal(_x...) ____flt_isSubnormal(_x)
 #define flt_isZero(_x...) ____flt_isZero(_x)
-#define flt_signBit(_x...) ____flt_signBit(_x)
+#define flt_sgnBit(_x...) ____flt_sgnBit(_x)
 
 /*========== Floating-Point Rounding Operations =============================*/
 
@@ -478,61 +484,67 @@ $inline_always
     {}; \
 })
 
-#define __op__pri_add(_lhs, _rhs...) ((_lhs) + (_rhs))
-#define __op__pri_sub(_lhs, _rhs...) ((_lhs) - (_rhs))
-#define __op__pri_mul(_lhs, _rhs...) ((_lhs) * (_rhs))
-#define __op__pri_mulAdd(_x, _y, _z...) ((_x) * (_y) + (_z))
-#define __op__pri_div(_lhs, _rhs...) ((_lhs) / (_rhs))
-#define __op__pri_rem(_x, _n...) ((_x) % (_n))
+#define __op__pri_add(_lhs, _rhs...) (as$(TypeOf(_lhs))((_lhs) + (_rhs)))
+#define __op__pri_sub(_lhs, _rhs...) (as$(TypeOf(_lhs))((_lhs) - (_rhs)))
+#define __op__pri_mul(_lhs, _rhs...) (as$(TypeOf(_lhs))((_lhs) * (_rhs)))
+#define __op__pri_mulAdd(_x, _y, _z...) (as$(TypeOf(_x))((_x) * (_y) + (_z)))
+#define __op__pri_div(_lhs, _rhs...) (as$(TypeOf(_lhs))((_lhs) / (_rhs)))
+#define __op__pri_rem(_x, _n...) (as$(TypeOf(_x))((_x) % (_n)))
 
 #define __op__int_divRound__step(_x, _n...) __op__int_divRound( \
     pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), pp_uniqTok(half), _x, _n \
 )
 #define __op__int_divRound(__x, __n, __q, __r, __half, _x, _n...) ({ \
-    let __x = _x; \
-    let __n = _n; \
-    let __q = __x / __n; \
-    let __r = __x % __n; \
-    let __half = __n / 2; \
-    (__r > __half || (__r == __half && (__q & 1))) \
-        ? (__n > 0 ? __q + 1 : __q - 1) \
-    : (__r < -__half || (__r == -__half && (__q & 1))) \
-        ? (__n > 0 ? __q - 1 : __q + 1) \
-        : __q; \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    let_(__n, IntType) = _n; \
+    let_(__q, IntType) = __x / __n; \
+    let_(__r, IntType) = __x % __n; \
+    let_(__half, IntType) = __n / 2; \
+    as$(IntType)( \
+        (__r > __half || (__r == __half && (__q & 1))) \
+            ? (__n > 0 ? __q + 1 : __q - 1) \
+        : (__r < -__half || (__r == -__half && (__q & 1))) \
+            ? (__n > 0 ? __q - 1 : __q + 1) \
+            : __q \
+    ); \
 })
 #define __op__iint_divFloor__step(_x, _n...) __op__iint_divFloor( \
     pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), pp_uniqTok(has_r), pp_uniqTok(diff_sgn), _x, _n \
 )
 #define __op__iint_divFloor(__x, __n, __q, __r, __has_r, __diff_sgn, _x, _n...) ({ \
-    let __x = _x; \
-    let __n = _n; \
-    let __q = int_div(__x, __n); \
-    let __r = int_rem_static(__x, __n); \
-    let __has_r = __r != 0; \
-    let __diff_sgn = __r ^ __n < 0; \
-    __has_r&& __diff_sgn ? __q - 1 : __q; \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    let_(__n, IntType) = _n; \
+    let_(__q, IntType) = int_div(__x, __n); \
+    let_(__r, IntType) = int_rem_static(__x, __n); \
+    let_(__has_r, bool) = __r != 0; \
+    let_(__diff_sgn, bool) = __r ^ __n < 0; \
+    as$(IntType)(__has_r && __diff_sgn ? __q - 1 : __q); \
 })
 #define __op__iint_divEuclid__step(_x, _n...) __op__iint_divEuclid( \
     pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), _x, _n \
 )
 #define __op__iint_divEuclid(__x, __n, __q, __r, _x, _n...) ({ \
-    let __x = _x; \
-    let __n = _n; \
-    let __q = int_div(__x, __n); \
-    let __r = int_rem_static(__x, __n); \
-    __r < 0 ? (__n > 0 ? __q - 1 : __q + 1) : __q; \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    let_(__n, IntType) = _n; \
+    let_(__q, IntType) = int_div(__x, __n); \
+    let_(__r, IntType) = int_rem_static(__x, __n); \
+    as$(IntType)(__r < 0 ? (__n > 0 ? __q - 1 : __q + 1) : __q); \
 })
 #define __op__int_divCeil__step(_x, _n...) __op__int_divCeil( \
     pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(q), pp_uniqTok(r), pp_uniqTok(has_r), pp_uniqTok(same_sgn), _x, _n \
 )
 #define __op__int_divCeil(__x, __n, __q, __r, __has_r, __same_sgn, _x, _n...) ({ \
-    let __x = _x; \
-    let __n = _n; \
-    let __q = int_div(__x, __n); \
-    let __r = int_rem_static(__x, __n); \
-    let __has_r = __r != 0; \
-    let __same_sgn = __r ^ __n >= 0; \
-    __has_r&& __same_sgn ? __q + 1 : __q; \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    let_(__n, IntType) = _n; \
+    let_(__q, IntType) = int_div(__x, __n); \
+    let_(__r, IntType) = int_rem_static(__x, __n); \
+    let_(__has_r, bool) = __r != 0; \
+    let_(__same_sgn, bool) = __r ^ __n >= 0; \
+    as$(IntType)(__has_r && __same_sgn ? __q + 1 : __q); \
 })
 
 #define __op__flt_divTrunc(_x, _n...) flt_trunc(flt_div(_x, _n))
@@ -546,7 +558,7 @@ $inline_always
     let_(__n, FltType) = _n; \
     let_(__q, FltType) = flt_divTrunc(__x, __n); \
     let_(__r, FltType) = __x - __q * __n; \
-    __r < 0.0 ? (__n > 0.0 ? __q - 1.0 : __q + 1.0) : __q; \
+    as$(FltType)(__r < 0.0 ? (__n > 0.0 ? __q - 1.0 : __q + 1.0) : __q); \
 })
 #define __op__flt_divCeil(_x, _n...) flt_ceil(flt_div(__x, __n))
 
@@ -563,40 +575,44 @@ $inline_always
 })
 #define __op__int_remRound__step(_x, _n...) __op__int_remRound(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
 #define __op__int_remRound(__x, __n, _x, _n...) ({ \
-    let __x = _x; \
-    let __n = _n; \
-    __x - int_divRound(__x, __n) * __n; \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    let_(__n, IntType) = _n; \
+    as$(IntType)(__x - int_divRound(__x, __n) * __n); \
 })
 #define __op__iint_mod__step(_x, _n...) __op__iint_mod( \
     pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), pp_uniqTok(has_r), pp_uniqTok(diff_sgn), _x, _n \
 )
 #define __op__iint_mod(__x, __n, __r, __has_r, __diff_sgn, _x, _n...) ({ \
-    let __x = _x; \
-    let __n = _n; \
-    let __r = int_rem(__x, __n); \
-    let __has_r = __r != 0; \
-    let __diff_sgn = (__r ^ __n) < 0; \
-    __has_r&& __diff_sgn ? __r + __n : __r; \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    let_(__n, IntType) = _n; \
+    let_(__r, IntType) = int_rem(__x, __n); \
+    let_(__has_r, bool) = __r != 0; \
+    let_(__diff_sgn, bool) = (__r ^ __n) < 0; \
+    as$(IntType)(__has_r && __diff_sgn ? __r + __n : __r); \
 })
 #define __op__int_modEuclid__step(_x, _n...) __op__int_modEuclid( \
     pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), _x, _n \
 )
 #define __op__int_modEuclid(__x, __n, __r, _x, _n...) ({ \
-    let __x = _x; \
-    let __n = _n; \
-    let __r = int_rem(__x, __n); \
-    __r < 0 ? __r + pri_abs(__n) : __r; \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    let_(__n, IntType) = _n; \
+    let_(__r, IntType) = int_rem(__x, __n); \
+    as$(IntType)(__r < 0 ? __r + pri_abs(__n) : __r); \
 })
 #define __op__int_modCeil__step(_x, _n...) __op__int_modCeil( \
     pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), pp_uniqTok(has_r), pp_uniqTok(same_sgn), _x, _n \
 )
 #define __op__int_modCeil(__x, __n, __r, __has_r, __same_sgn, _x, _n...) ({ \
-    let __x = _x; \
-    let __n = _n; \
-    let __r = int_rem(__x, __n); \
-    let __has_r = __r != 0; \
-    let __same_sgn = __r ^ __n >= 0; \
-    __has_r&& __same_sgn ? __r - __n : __r; \
+    typedef TypeOfUnqual(_x) IntType; \
+    let_(__x, IntType) = _x; \
+    let_(__n, IntType) = _n; \
+    let_(__r, IntType) = int_rem(__x, __n); \
+    let_(__has_r, bool) = __r != 0; \
+    let_(__same_sgn, bool) = __r ^ __n >= 0; \
+    as$(IntType)(__has_r && __same_sgn ? __r - __n : __r); \
 })
 
 #define __op__flt_rem__step(_x, _n...) __op__flt_rem(pp_uniqTok(x), pp_uniqTok(n), _x, _n)
@@ -654,7 +670,8 @@ $inline_always
 #define __op__pri_abs_static(_x...) (as$(TypeOf(_x))(((_x) < 0) ? -(_x) : (_x)))
 #define __op__pri_abs__step(_x...) __op__pri_abs(pp_uniqTok(x), _x)
 #define __op__pri_abs(__x, _x...) ({ \
-    let __x = _x; \
+    typedef TypeOfUnqual(_x) ScalType; \
+    let_(__x, ScalType) = _x; \
     pri_abs_static(__x); \
 })
 #define __op__pri_sgn_static(_x...) (as$(cmp_Sgn)( \
@@ -664,7 +681,8 @@ $inline_always
 ))
 #define __op__pri_sgn__step(_x...) __op__pri_sgn(pp_uniqTok(x), _x)
 #define __op__pri_sgn(__x, _x...) local_({ \
-    let __x = _x; \
+    typedef TypeOfUnqual(_x) ScalType; \
+    let_(__x, ScalType) = _x; \
     local_return_(pri_sgn_static(__x)); \
 })
 
@@ -674,6 +692,25 @@ $inline_always
 #define __op__pri_not(_x...) bool_(!(_x))
 #define __op__pri_and(_x, _y...) bool_((_x) && (_y))
 #define __op__pri_or(_x, _y...) bool_((_x) || (_y))
+#define __op__bool_any__step(_first, _vals...) __op__bool_any(pp_uniqTok(vals), pp_uniqTok(val), _first, _vals)
+#define __op__bool_any(__vals, __val, _first, _vals...) ({ \
+    let __vals = A_from$((bool){ _first, _vals }); \
+    var __ret = false; \
+    for_(($s(A_ref(__vals)))(__val)) { \
+        __ret = pri_or(__ret, *__val); \
+    } $end(for); \
+    __ret; \
+})
+#define __op__bool_all__step(_first, _vals...) __op__bool_all(pp_uniqTok(vals), pp_uniqTok(val), _first, _vals)
+#define __op__bool_all(__vals, __val, _first, _vals...) ({ \
+    let __vals = A_from$((bool){ _first, _vals }); \
+    var __ret = true; \
+    for_(($s(A_ref(__vals)))(__val)) { \
+        __ret = pri_and(__ret, *__val); \
+    } $end(for); \
+    __ret; \
+})
+#define __op__bool_none__step(_first, _vals...) bool_(!bool_any(_first, _vals))
 
 #define __op__pri_eql(_lhs, _rhs...) bool_((_lhs) == (_rhs))
 #define __op__pri_neq(_lhs, _rhs...) bool_((_lhs) != (_rhs))
@@ -684,8 +721,9 @@ $inline_always
 ))
 #define __op__pri_ord__step(_lhs, _rhs...) __op__pri_ord(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define __op__pri_ord(__lhs, __rhs, _lhs, _rhs...) local_({ \
-    let __lhs = _lhs; \
-    let __rhs = _rhs; \
+    typedef TypeOfUnqual(_lhs) ScalType; \
+    let_(__lhs, ScalType) = _lhs; \
+    let_(__rhs, ScalType) = _rhs; \
     local_return_(pri_ord_static(__lhs, __rhs)); \
 })
 #define __op__pri_eq(_lhs, _rhs...) bool_((_lhs) == (_rhs))
@@ -700,8 +738,9 @@ $inline_always
     pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs \
 )
 #define __op__pri_min2(__lhs, __rhs, _lhs, _rhs...) ({ \
-    let __lhs = _lhs; \
-    let __rhs = _rhs; \
+    typedef TypeOfUnqual(_lhs) ScalType; \
+    let_(__lhs, ScalType) = _lhs; \
+    let_(__rhs, ScalType) = _rhs; \
     pri_min2_static(__lhs, __rhs); \
 })
 #define __op__pri_min3_static(_1st, _2nd, _3rd...) \
@@ -710,9 +749,10 @@ $inline_always
     pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), _1st, _2nd, _3rd \
 )
 #define __op__pri_min3(__1st, __2nd, __3rd, _1st, _2nd, _3rd...) ({ \
-    let __1st = _1st; \
-    let __2nd = _2nd; \
-    let __3rd = _3rd; \
+    typedef TypeOfUnqual(_1st) ScalType; \
+    let_(__1st, ScalType) = _1st; \
+    let_(__2nd, ScalType) = _2nd; \
+    let_(__3rd, ScalType) = _3rd; \
     pri_min3_static(__1st, __2nd, __3rd); \
 })
 #define __op__pri_min4_static(_1st, _2nd, _3rd, _4th...) \
@@ -721,18 +761,20 @@ $inline_always
     pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), _1st, _2nd, _3rd, _4th \
 )
 #define __op__pri_min4(__1st, __2nd, __3rd, __4th, _1st, _2nd, _3rd, _4th...) ({ \
-    let __1st = _1st; \
-    let __2nd = _2nd; \
-    let __3rd = _3rd; \
-    let __4th = _4th; \
+    typedef TypeOfUnqual(_1st) ScalType; \
+    let_(__1st, ScalType) = _1st; \
+    let_(__2nd, ScalType) = _2nd; \
+    let_(__3rd, ScalType) = _3rd; \
+    let_(__4th, ScalType) = _4th; \
     pri_min4_static(__1st, __2nd, __3rd, __4th); \
 })
 #define __op__pri_findMin__step(__best, __vals...) __op__pri_findMin( \
     pp_uniqTok(best), pp_uniqTok(vals), pp_uniqTok(val), __best, __vals \
 )
 #define __op__pri_findMin(__best, __vals, __val, _best, _vals...) ({ \
-    var __best = _best; \
-    let __vals = A_from$((TypeOf(__best)){ _vals }); \
+    typedef TypeOfUnqual(_best) ScalType; \
+    var_(__best, ScalType) = _best; \
+    let __vals = A_from$((ScalType){ _vals }); \
     for_(($s(A_ref(__vals)))(__val)) { \
         __best = pri_min2_static(__best, *__val); \
     } $end(for); \
@@ -743,8 +785,9 @@ $inline_always
     pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs \
 )
 #define __op__pri_max2(__lhs, __rhs, _lhs, _rhs...) ({ \
-    let __lhs = _lhs; \
-    let __rhs = _rhs; \
+    typedef TypeOfUnqual(_lhs) ScalType; \
+    let_(__lhs, ScalType) = _lhs; \
+    let_(__rhs, ScalType) = _rhs; \
     pri_max2_static(__lhs, __rhs); \
 })
 #define __op__pri_max3_static(_1st, _2nd, _3rd...) pri_max2_static(pri_max2_static(_1st, _2nd), _3rd)
@@ -752,9 +795,10 @@ $inline_always
     pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), _1st, _2nd, _3rd \
 )
 #define __op__pri_max3(__1st, __2nd, __3rd, _1st, _2nd, _3rd...) ({ \
-    let __1st = _1st; \
-    let __2nd = _2nd; \
-    let __3rd = _3rd; \
+    typedef TypeOfUnqual(_1st) ScalType; \
+    let_(__1st, ScalType) = _1st; \
+    let_(__2nd, ScalType) = _2nd; \
+    let_(__3rd, ScalType) = _3rd; \
     pri_max3_static(__1st, __2nd, __3rd); \
 })
 #define __op__pri_max4_static(_1st, _2nd, _3rd, _4th...) pri_max2_static(pri_max3_static(_1st, _2nd, _3rd), _4th)
@@ -762,18 +806,20 @@ $inline_always
     pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), _1st, _2nd, _3rd, _4th \
 )
 #define __op__pri_max4(__1st, __2nd, __3rd, __4th, _1st, _2nd, _3rd, _4th...) ({ \
-    let __1st = _1st; \
-    let __2nd = _2nd; \
-    let __3rd = _3rd; \
-    let __4th = _4th; \
+    typedef TypeOfUnqual(_1st) ScalType; \
+    let_(__1st, ScalType) = _1st; \
+    let_(__2nd, ScalType) = _2nd; \
+    let_(__3rd, ScalType) = _3rd; \
+    let_(__4th, ScalType) = _4th; \
     pri_max4_static(__1st, __2nd, __3rd, __4th); \
 })
 #define __op__pri_findMax__step(__best, __vals...) __op__pri_findMax( \
     pp_uniqTok(best), pp_uniqTok(vals), pp_uniqTok(val), __best, __vals \
 )
 #define __op__pri_findMax(__best, __vals, __val, _best, _vals...) ({ \
-    var __best = _best; \
-    let __vals = A_from$((TypeOf(__best)){ _vals }); \
+    typedef TypeOfUnqual(_best) ScalType; \
+    var_(__best, ScalType) = _best; \
+    let __vals = A_from$((ScalType){ _vals }); \
     for_(($s(A_ref(__vals)))(__val)) { \
         __best = pri_max2_static(__best, *__val); \
     } $end(for); \
@@ -783,9 +829,10 @@ $inline_always
 #define __op__pri_clamp_static(_x, _lo, _hi...) pri_min2_static(pri_max2_static(_lo, _x), _hi)
 #define __op__pri_clamp__step(_x, _lo, _hi...) __op__pri_clamp(pp_uniqTok(x), pp_uniqTok(lo), pp_uniqTok(hi), _x, _lo, _hi)
 #define __op__pri_clamp(__x, __lo, __hi, _x, _lo, _hi...) ({ \
-    let __x = _x; \
-    let __lo = _lo; \
-    let __hi = _hi; \
+    typedef TypeOfUnqual(_x) ScalType; \
+    let_(__x, ScalType) = _x; \
+    let_(__lo, ScalType) = _lo; \
+    let_(__hi, ScalType) = _hi; \
     claim_assert(__lo <= __hi); \
     pri_clamp_static(__x, __lo, __hi); \
 })
@@ -938,31 +985,29 @@ $inline_always
     _T, pp_uniqTok(val), pp_uniqTok(min), pp_uniqTok(max), \
         pp_uniqTok(dst_is_signed), pp_uniqTok(src_is_signed),
 #define __step__intCast$__emit(...) ____intCast$(__VA_ARGS__)
-#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) $suppress_implicit_int_conversion( \
-    ({ \
-        typedef _T DstType; \
-        typedef TypeOf(_val) SrcType; \
-        claim_assert_static(isInt$(SrcType)); \
-        let_(__val, SrcType) = _val; \
-        let_(__min, DstType) = int_limit_min$(DstType); \
-        let_(__max, DstType) = int_limit_max$(DstType); \
-        let_(__dst_is_signed, bool) = isIInt$(DstType); \
-        let_(__src_is_signed, bool) = isIInt$(SrcType); \
-        /* Lower bound check: ensure value >= target minimum */ \
-        claim_assert( \
-            __dst_is_signed \
-                ? (!__src_is_signed ? true : as$(i64)(__val) >= as$(i64)(__min)) \
-                : (!__src_is_signed ? true : __val >= 0) \
-        ); \
-        /* Upper bound check: ensure value <= target maximum */ \
-        claim_assert( \
-            (__src_is_signed && __val < 0) \
-                ? true \
-                : as$(u64)(__val) <= as$(u64)(__max) \
-        ); \
-        as$(_T)(__val); \
-    }) \
-)
+#define ____intCast$(_T, __val, __min, __max, __dst_is_signed, __src_is_signed, _val...) $suppress_implicit_int_conversion(({ \
+    typedef _T DstType; \
+    typedef TypeOf(_val) SrcType; \
+    claim_assert_static(isInt$(SrcType)); \
+    let_(__val, SrcType) = _val; \
+    let_(__min, DstType) = int_limit_min$(DstType); \
+    let_(__max, DstType) = int_limit_max$(DstType); \
+    let_(__dst_is_signed, bool) = isIInt$(DstType); \
+    let_(__src_is_signed, bool) = isIInt$(SrcType); \
+    /* Lower bound check: ensure value >= target minimum */ \
+    claim_assert( \
+        __dst_is_signed \
+            ? (!__src_is_signed ? true : as$(i64)(__val) >= as$(i64)(__min)) \
+            : (!__src_is_signed ? true : __val >= 0) \
+    ); \
+    /* Upper bound check: ensure value <= target maximum */ \
+    claim_assert( \
+        (__src_is_signed && __val < 0) \
+            ? true \
+            : as$(u64)(__val) <= as$(u64)(__max) \
+    ); \
+    as$(_T)(__val); \
+}))
 #if UNUSED_CODE
 #define ____intCast$(_T, __val, __min, __max, _val...) ({ \
     typedef TypeOf(_T) DstType; \
@@ -1291,18 +1336,18 @@ $inline_always
     _x == 0 \
         ? 0 \
         : T_switch$((TypeOf(_x))( \
-              T_case$((u8)(raw_countOnes8(as$(u8) _x))), \
-              T_case$((i8)(raw_countOnes8(as$(i8) _x))), \
-              T_case$((i16)(raw_countOnes16(as$(i16) _x))), \
-              T_case$((u16)(raw_countOnes16(as$(u16) _x))), \
-              T_case$((u32)(raw_countOnes32(as$(u32) _x))), \
-              T_case$((i32)(raw_countOnes32(as$(i32) _x))), \
+              T_case$((u8)(raw_countOnes8(as$(u8)(_x)))), \
+              T_case$((i8)(raw_countOnes8(as$(i8)(_x)))), \
+              T_case$((i16)(raw_countOnes16(as$(i16)(_x)))), \
+              T_case$((u16)(raw_countOnes16(as$(u16)(_x)))), \
+              T_case$((u32)(raw_countOnes32(as$(u32)(_x)))), \
+              T_case$((i32)(raw_countOnes32(as$(i32)(_x)))), \
               pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
-                  T_case$((ulong)(raw_countOnesLong(as$(ulong) _x))), \
-                  T_case$((ilong)(raw_countOnesLong(as$(ilong) _x))), \
+                  T_case$((ulong)(raw_countOnesLong(as$(ulong)(_x)))), \
+                  T_case$((ilong)(raw_countOnesLong(as$(ilong)(_x)))), \
               )) T_delim(), \
-              T_case$((u64)(raw_countOnes64(as$(u64) _x))), \
-              T_case$((i64)(raw_countOnes64(as$(i64) _x))) \
+              T_case$((u64)(raw_countOnes64(as$(u64)(_x)))), \
+              T_case$((i64)(raw_countOnes64(as$(i64)(_x)))) \
           )) \
 ))
 #define __step__int_countOnes(_x...) ____int_countOnes(pp_uniqTok(x), _x)
@@ -1953,7 +1998,7 @@ $inline_always
     T_case$((f32)(as$(f32)(_x) == 0.0f)), \
     T_case$((f64)(as$(f64)(_x) == 0.0)) \
 )))
-#define ____flt_signBit(_x...) bool_(T_switch$((TypeOf(_x))( \
+#define ____flt_sgnBit(_x...) bool_(T_switch$((TypeOf(_x))( \
     T_case$((f32)(__builtin_signbitf(as$(f32)(_x)))), \
     T_case$((f64)(__builtin_signbit(as$(f64)(_x)))) \
 )))

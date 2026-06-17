@@ -35,7 +35,7 @@ $static fn_((f32_isSubnormal(f32 x))(bool));
 $attr($inline_always)
 $static fn_((f32_isZero(f32 x))(bool));
 $attr($inline_always)
-$static fn_((f32_signBit(f32 x))(bool));
+$static fn_((f32_sgnBit(f32 x))(bool));
 
 $attr($inline_always)
 $static fn_((f64_isNaN(f64 x))(bool));
@@ -50,7 +50,7 @@ $static fn_((f64_isSubnormal(f64 x))(bool));
 $attr($inline_always)
 $static fn_((f64_isZero(f64 x))(bool));
 $attr($inline_always)
-$static fn_((f64_signBit(f64 x))(bool));
+$static fn_((f64_sgnBit(f64 x))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -132,8 +132,8 @@ fn_((f32_isZero(f32 x))(bool)) {
     return (conv.u & 0x7FFFFFFF) == 0;
 #endif /* UNUSED_CODE */
 };
-fn_((f32_signBit(f32 x))(bool)) {
-    return flt_signBit(x);
+fn_((f32_sgnBit(f32 x))(bool)) {
+    return flt_sgnBit(x);
 #if UNUSED_CODE
     // IEEE 754 bit-level implementation
     union {
@@ -223,8 +223,8 @@ fn_((f64_isZero(f64 x))(bool)) {
     return (conv.u & 0x7FFFFFFFFFFFFFFFULL) == 0;
 #endif /* UNUSED_CODE */
 };
-fn_((f64_signBit(f64 x))(bool)) {
-    return flt_signBit(x);
+fn_((f64_sgnBit(f64 x))(bool)) {
+    return flt_sgnBit(x);
 #if UNUSED_CODE
     // IEEE 754 bit-level implementation
     union {

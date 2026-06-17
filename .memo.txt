@@ -9,12 +9,72 @@ dh/src/*, dh/include/*, dh/test*/*, dh/sample*/*, dh/example*/*, dh-examples/*
 **/lib/deps/**,
 **/libs/**, **/asset*/**, **/note*/**
 
-# extra
+# Extra
 ## `as$` 변경사항 적용
 - src: as$((T)(Expr))
 - dest: as$(T)(Expr)
 - search: as\$\(\((.*?)\)\((.*?)\)\)
 - replace: as$$($1)($2)
+
+/*
+############################
+#### Module Layout #########
+############################
+
+/// module prefix is ​​generally not needed.
+
+extern/external
+dep/dependency
+lib/library
+
+inc/include
+src/source
+
+def/define/definition
+undef/undefine/undefined/undefinition
+scope
+unscope/unscoped
+guard
+unguard/unguarded
+
+cfg/config
+
+bti/builtin
+pri/primitive
+decl/declare/declaration
+base
+cmn/common
+
+share/shared
+pvt/private
+intern/internal
+
+self
+
+core
+impl/implement/implementation
+ext/extra/extension
+
+pub/public
+mod/module
+
+prl/prelude
+main
+
+/// module prefix is ​​generally needed.
+
+test
+sample
+example
+...
+sys/system
+rt/runtime
+ctx/context
+cmd/command
+env/environment
+exec/execute/execution
+...
+*/
 
 /*
 ################################

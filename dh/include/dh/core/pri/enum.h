@@ -34,6 +34,13 @@ extern "C" {
 #define enum_of$(/*(_Alias)(_value)*/...) \
     pp_expand(pp_defer(block_inline__enum_of$)(comp_param__enum_of$ _value))
 
+#define intToEnum$(/*(_EnumType)(_val: IntType)*/... /*(_EnumType)*/) \
+    __step__intToEnum$(__VA_ARGS__)
+#define enumFromInt$ __alias__enumFromInt$
+#define enumToInt$(/*(_IntType)(_val: EnumType)*/... /*(_IntType)*/) \
+    __step__enumToInt$(__VA_ARGS__)
+#define intFromEnum$ __alias__intFromEnum$
+
 /*========== Macros and Definitions =========================================*/
 
 #define __type__enum_(...) \
@@ -78,6 +85,18 @@ extern "C" {
 
 #define comp_param__enum_of$(_value...) _value, pp_expand
 #define block_inline__enum_of$(_value...) (as$(_Alias)(_value))
+
+#define __step__enumToInt$(...) __step__enumToInt$__emit(__step__enumToInt$__parse __VA_ARGS__)
+#define __step__enumToInt$__parse(_IntType...) _IntType,
+#define __step__enumToInt$__emit(...) ____enumToInt$(__VA_ARGS__)
+#define ____enumToInt$(_IntType, _val...) (as$(_IntType)(_val))
+#define __alias__enumFromInt$ intToEnum$
+
+#define __step__intToEnum$(...) __step__intToEnum$__emit(__step__intToEnum$__parse __VA_ARGS__)
+#define __step__intToEnum$__parse(_EnumType...) _EnumType,
+#define __step__intToEnum$__emit(...) ____intToEnum$(__VA_ARGS__)
+#define ____intToEnum$(_EnumType, _val...) (as$(_EnumType)(_val))
+#define __alias__intFromEnum$ enumToInt$
 
 #if defined(__cplusplus)
 } /* extern "C" */

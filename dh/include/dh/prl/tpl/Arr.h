@@ -44,7 +44,7 @@ extern "C" {
 #define asgA3(_p_a, _v_a...) asg(_p_a, _v_a, (val.val.val))
 #define asgA4(_p_a, _v_a...) asg(_p_a, _v_a, (val.val.val.val))
 
-#define A_zero$(_T...) l$((_T)A_zero())
+#define A_zero$(/*(_T)*/...) l$(__VA_ARGS__ A_zero())
 #define zeroA$ A_zero$
 #define A_zero() A_init({})
 #define zeroA A_zero

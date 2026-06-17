@@ -48,14 +48,19 @@ extern "C" {
 /* --- Ordering Operators --- */
 
 typedef enum_((cmp_Sgn $fits($packed))(
-    cmp_Sgn_ngtv = -1,
+    cmp_Sgn_neg = -1,
+    cmp_Sgn_ngtv = cmp_Sgn_neg,
     cmp_Sgn_zero = 0,
-    cmp_Sgn_pstv = 1
+    cmp_Sgn_pos = 1,
+    cmp_Sgn_pstv = cmp_Sgn_pos
 )) cmp_Sgn;
 #define cmp_Sgn_inv(_sgn /*: cmp_Sgn*/... /*(cmp_Sgn)*/) (as$(cmp_Sgn)(-(_sgn)))
-#define cmp_Sgn_isNgtv(_sgn /*: cmp_Sgn*/... /*(bool)*/) bool_((_sgn) < cmp_Sgn_zero)
+#define cmp_Sgn_isNeg(_sgn /*: cmp_Sgn*/... /*(bool)*/) bool_((_sgn) < cmp_Sgn_zero)
+#define cmp_Sgn_isNgtv(_sgn /*: cmp_Sgn*/... /*(bool)*/) cmp_Sgn_isNeg(_sgn)
 #define cmp_Sgn_isZero(_sgn /*: cmp_Sgn*/... /*(bool)*/) bool_((_sgn) == cmp_Sgn_zero)
-#define cmp_Sgn_isPstv(_sgn /*: cmp_Sgn*/... /*(bool)*/) bool_((_sgn) > cmp_Sgn_zero)
+#define cmp_Sgn_isNonzero(_sgn /*: cmp_Sgn*/... /*(bool)*/) bool_((_sgn) != cmp_Sgn_zero)
+#define cmp_Sgn_isPos(_sgn /*: cmp_Sgn*/... /*(bool)*/) bool_((_sgn) > cmp_Sgn_zero)
+#define cmp_Sgn_isPstv(_sgn /*: cmp_Sgn*/... /*(bool)*/) cmp_Sgn_isPos(_sgn)
 
 typedef enum_((cmp_Ord $fits($packed))(
     cmp_Ord_lt = -1,
