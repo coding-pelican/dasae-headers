@@ -3,36 +3,25 @@
  * @license   Proprietary and confidential. Unauthorized use, reproduction,
  *            or distribution is strictly prohibited.
  *
- * @file    dansi.h
+ * @file    dansi-link.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-06-18 (date of creation)
  * @updated 2026-06-18 (date of last update)
  * @ingroup dasae-headers-workspace(dh-workspace)/dansi
- * @prefix  dansi
+ * @prefix  dansi_link
  */
 #pragma once
-#ifndef dansi__included
-#define dansi__included 1
+#ifndef dansi_link__included
+#define dansi_link__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "dansi-core.h"
-
-#include "dansi-dec.h"
-
-#include "dansi-link.h"
-#include "dansi-shell.h"
-
-#include "dansi-xterm.h"
-#include "dansi-kitty.h"
-
-#include "dansi-iterm.h"
-#include "dansi-sixel.h"
+#include "dansi-link/osc8.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* dansi__included */
+#endif /* dansi_link__included */

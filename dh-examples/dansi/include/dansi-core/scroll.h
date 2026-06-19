@@ -5,8 +5,8 @@
  *
  * @file    scroll.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
- * @date    2026-05-23 (date of creation)
- * @updated 2026-05-23 (date of last update)
+ * @date    2026-06-18 (date of creation)
+ * @updated 2026-06-18 (date of last update)
  * @ingroup dasae-headers-workspace(dh-workspace)/dansi
  * @prefix  dansi_scroll
  */
@@ -19,32 +19,32 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include <dh/io/common.h>
+#include "csi.h"
 
 /*========== Macros and Declarations ========================================*/
 
-typedef A$$(4 + uint_log10Ceil_static(u16_limit_max) * 2, u8) dansi_scroll_RegionBuf;
-
-#define dansi_scroll_setRegion_static(_top_tok, _bottom_tok) \
-    ____dansi_scroll_setRegion_static(_top_tok, _bottom_tok)
-$extern fn_((dansi_scroll_setRegion(u16 top, u16 bottom, dansi_scroll_RegionBuf* buf))(S$u8));
+#define dansi_scroll_up_static(_lines_tok) \
+    ____dansi_scroll_up_static(_lines_tok)
+typedef A$$(3 + uint_log10Ceil_static(u16_limit_max), u8) dansi_scroll_UpBuf;
 $attr($must_check)
-$extern fn_((dansi_scroll_setRegionWrite(u16 top, u16 bottom, io_Writer writer))(E$void));
-
-#define dansi_scroll_resetRegion_static() \
-    ____dansi_scroll_resetRegion_static()
-$extern fn_((dansi_scroll_resetRegion(void))(S_const$u8));
+$extern fn_((dansi_scroll_up(u16 lines, dansi_scroll_UpBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_scroll_resetRegionWrite(io_Writer writer))(E$void));
+$extern fn_((dansi_scroll_upWrite(u16 lines, io_Writer out))(E$void));
+
+#define dansi_scroll_down_static(_lines_tok) \
+    ____dansi_scroll_down_static(_lines_tok)
+typedef A$$(3 + uint_log10Ceil_static(u16_limit_max), u8) dansi_scroll_DownBuf;
+$attr($must_check)
+$extern fn_((dansi_scroll_down(u16 lines, dansi_scroll_DownBuf* buf))(S$u8));
+$attr($must_check)
+$extern fn_((dansi_scroll_downWrite(u16 lines, io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
-#include "utils.h"
-
-#define ____dansi_scroll_setRegion_static(_top_tok, _bottom_tok) \
-    dansi_utils_formatCSI_u16x2_static(dansi_utils_scroll_set_region, _top_tok, _bottom_tok)
-#define ____dansi_scroll_resetRegion_static() \
-    dansi_utils_formatCSI_static(dansi_utils_scroll_reset_region)
+#define ____dansi_scroll_up_static(_lines_tok) \
+    dansi_csi_make1_static(_lines_tok, "S")
+#define ____dansi_scroll_down_static(_lines_tok) \
+    dansi_csi_make1_static(_lines_tok, "T")
 
 #if defined(__cplusplus)
 } /* extern "C" */

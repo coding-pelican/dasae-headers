@@ -4,11 +4,16 @@
  *            or distribution is strictly prohibited.
  *
  * @file    dansi.h
- * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
- * @date    2026-06-18 (date of creation)
- * @updated 2026-06-18 (date of last update)
+ * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
+ * @date    2026-01-08 (date of creation)
+ * @updated 2026-01-28 (date of last update)
+ * @version v0.1.0
  * @ingroup dasae-headers-workspace(dh-workspace)/dansi
  * @prefix  dansi
+ *
+ * @brief   Pure ANSI/xterm protocol library.
+ * @details Provides ANSI and xterm escape sequence generation, raw sequence
+ *          extraction, and event parsing without OS terminal management.
  */
 #pragma once
 #ifndef dansi__included
@@ -20,16 +25,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dansi-core.h"
-
-#include "dansi-dec.h"
-
-#include "dansi-link.h"
-#include "dansi-shell.h"
-
-#include "dansi-xterm.h"
 #include "dansi-kitty.h"
-
-#include "dansi-iterm.h"
 #include "dansi-sixel.h"
 
 #if defined(__cplusplus)
