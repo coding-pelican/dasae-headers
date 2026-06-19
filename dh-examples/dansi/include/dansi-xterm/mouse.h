@@ -321,14 +321,14 @@ $static fn_((dansi_xterm_mouse_btnsNone(void))(dansi_xterm_mouse_Btns)) {
     dansi_xterm_mouse_disableEncoding_static(dansi_xterm_mouse_Encoding_sgr) \
     dansi_xterm_mouse_disableReportMode_static(_mode_tok)
 #define ____dansi_xterm_mouse_ReportMode_staticParse(_mode_tok) \
-    pp_join(____dansi_xterm_mouse_ReportMode_str$, _mode_tok)
+    pp_join($, ____dansi_xterm_mouse_ReportMode_str, _mode_tok)
 #define ____dansi_xterm_mouse_ReportMode_str$dansi_xterm_mouse_ReportMode_x10 "9"
 #define ____dansi_xterm_mouse_ReportMode_str$dansi_xterm_mouse_ReportMode_normal "1000"
 #define ____dansi_xterm_mouse_ReportMode_str$dansi_xterm_mouse_ReportMode_hilite "1001"
 #define ____dansi_xterm_mouse_ReportMode_str$dansi_xterm_mouse_ReportMode_button_event "1002"
 #define ____dansi_xterm_mouse_ReportMode_str$dansi_xterm_mouse_ReportMode_any_event "1003"
 #define ____dansi_xterm_mouse_Encoding_staticParse(_encoding_tok) \
-    pp_join(____dansi_xterm_mouse_Encoding_str$, _encoding_tok)
+    pp_join($, ____dansi_xterm_mouse_Encoding_str, _encoding_tok)
 #define ____dansi_xterm_mouse_Encoding_str$dansi_xterm_mouse_Encoding_default "0"
 #define ____dansi_xterm_mouse_Encoding_str$dansi_xterm_mouse_Encoding_utf8 "1005"
 #define ____dansi_xterm_mouse_Encoding_str$dansi_xterm_mouse_Encoding_sgr "1006"

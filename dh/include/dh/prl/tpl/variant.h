@@ -228,9 +228,16 @@ extern "C" {
 #define __patterns___expand(_Enum...) _Enum
 #define $end_patterns
 
-#define default_(...) default __VA_ARGS__: {
+#define default_(/*(_Enums)*/...) \
+    __VA_OPT__(__step__default___casesFallthrough __VA_ARGS__) \
+    default: {
 #define $end_default \
-} break
+    } break
+#define __step__default___casesFallthrough(...) \
+    pp_foreach(__default___eachFallthrough, ~, __VA_ARGS__)
+#define __default___eachFallthrough(_$ignored, /*_Enum*/...)  __VA_OPT__( \
+    case __VA_ARGS__: $fallthrough; \
+)
 /* clang-format on */
 
 #define matchedEnum() (__matched_enum)

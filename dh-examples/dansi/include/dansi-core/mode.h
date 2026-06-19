@@ -97,7 +97,7 @@ $extern fn_((dansi_mode_disableWrite(dansi_mode_Code mode, io_Writer out))(E$voi
         pp_else_(dansi_mode_disableRaw_static(_mode_tok)) \
     )
 #define ____dansi_mode_Code_staticParse(_mode_tok) \
-    pp_join(____dansi_mode_Code_str$, _mode_tok)
+    pp_join($, ____dansi_mode_Code_str, _mode_tok)
 #define ____dansi_mode_Code_str$dansi_mode_Code_insert "4"
 #define ____dansi_mode_Code_str$dansi_mode_Code_line_feed_new_line "20"
 

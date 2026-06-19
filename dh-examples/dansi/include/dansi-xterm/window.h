@@ -192,7 +192,7 @@ $extern fn_((dansi_xterm_window_fetchPos(
 #define ____dansi_xterm_window_requestPos_static() \
     dansi_xterm_window_op_static(dansi_xterm_window_Op_report_pos)
 #define ____dansi_xterm_window_Op_staticParse(_op_tok) \
-    pp_join(____dansi_xterm_window_Op_str$, _op_tok)
+    pp_join($, ____dansi_xterm_window_Op_str, _op_tok)
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_deiconify "1"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_iconify "2"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_raise "5"
@@ -208,13 +208,13 @@ $extern fn_((dansi_xterm_window_fetchPos(
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_report_icon_label "20"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_report_title "21"
 #define ____dansi_xterm_window_Maximize_staticParse(_mode_tok) \
-    pp_join(____dansi_xterm_window_Maximize_str$, _mode_tok)
+    pp_join($, ____dansi_xterm_window_Maximize_str, _mode_tok)
 #define ____dansi_xterm_window_Maximize_str$dansi_xterm_window_Maximize_restore "0"
 #define ____dansi_xterm_window_Maximize_str$dansi_xterm_window_Maximize_full "1"
 #define ____dansi_xterm_window_Maximize_str$dansi_xterm_window_Maximize_vertical "2"
 #define ____dansi_xterm_window_Maximize_str$dansi_xterm_window_Maximize_horizontal "3"
 #define ____dansi_xterm_window_Fullscreen_staticParse(_mode_tok) \
-    pp_join(____dansi_xterm_window_Fullscreen_str$, _mode_tok)
+    pp_join($, ____dansi_xterm_window_Fullscreen_str, _mode_tok)
 #define ____dansi_xterm_window_Fullscreen_str$dansi_xterm_window_Fullscreen_restore "0"
 #define ____dansi_xterm_window_Fullscreen_str$dansi_xterm_window_Fullscreen_set "1"
 #define ____dansi_xterm_window_Fullscreen_str$dansi_xterm_window_Fullscreen_toggle "2"

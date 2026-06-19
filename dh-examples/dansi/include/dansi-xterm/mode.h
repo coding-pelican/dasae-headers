@@ -156,7 +156,7 @@ $extern fn_((dansi_xterm_mode_restoreOneWrite(dansi_xterm_mode_Code mode, io_Wri
 #define ____dansi_xterm_mode_restoreRaw_static(_mode_tok) \
     dansi_csi_makePrivate1_static(_mode_tok, "r")
 #define ____dansi_xterm_mode_Code_staticParse(_mode_tok) \
-    pp_join(____dansi_xterm_mode_Code_str$, _mode_tok)
+    pp_join($, ____dansi_xterm_mode_Code_str, _mode_tok)
 #define ____dansi_xterm_mode_Code_str$dansi_xterm_mode_Code_mouse_x10 "9"
 #define ____dansi_xterm_mode_Code_str$dansi_xterm_mode_Code_mouse_normal "1000"
 #define ____dansi_xterm_mode_Code_str$dansi_xterm_mode_Code_mouse_hilite "1001"

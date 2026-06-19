@@ -351,7 +351,7 @@ $extern fn_((dansi_xterm_key_parseEvent(dansi_Seq seq))(O$dansi_xterm_key_Event)
     dansi_xterm_key_resetFormat_static(dansi_xterm_key_Resrc_other_keys) \
     dansi_xterm_key_resetModify_static(dansi_xterm_key_Resrc_other_keys)
 #define ____dansi_xterm_key_Resrc_staticParse(_resrc_tok) \
-    pp_join(____dansi_xterm_key_Resrc_str$, _resrc_tok)
+    pp_join($, ____dansi_xterm_key_Resrc_str, _resrc_tok)
 #define ____dansi_xterm_key_Resrc_str$dansi_xterm_key_Resrc_keyboard "0"
 #define ____dansi_xterm_key_Resrc_str$dansi_xterm_key_Resrc_cursor_keys "1"
 #define ____dansi_xterm_key_Resrc_str$dansi_xterm_key_Resrc_function_keys "2"
@@ -360,12 +360,12 @@ $extern fn_((dansi_xterm_key_parseEvent(dansi_Seq seq))(O$dansi_xterm_key_Event)
 #define ____dansi_xterm_key_Resrc_str$dansi_xterm_key_Resrc_modifier_keys "6"
 #define ____dansi_xterm_key_Resrc_str$dansi_xterm_key_Resrc_special_keys "7"
 #define ____dansi_xterm_key_ModifyLevel_staticParse(_level_tok) \
-    pp_join(____dansi_xterm_key_ModifyLevel_str$, _level_tok)
+    pp_join($, ____dansi_xterm_key_ModifyLevel_str, _level_tok)
 #define ____dansi_xterm_key_ModifyLevel_str$dansi_xterm_key_ModifyLevel_default "0"
 #define ____dansi_xterm_key_ModifyLevel_str$dansi_xterm_key_ModifyLevel_modifier_params "1"
 #define ____dansi_xterm_key_ModifyLevel_str$dansi_xterm_key_ModifyLevel_other_keys "2"
 #define ____dansi_xterm_key_Format_staticParse(_format_tok) \
-    pp_join(____dansi_xterm_key_Format_str$, _format_tok)
+    pp_join($, ____dansi_xterm_key_Format_str, _format_tok)
 #define ____dansi_xterm_key_Format_str$dansi_xterm_key_Format_legacy "0"
 #define ____dansi_xterm_key_Format_str$dansi_xterm_key_Format_csi_u "1"
 

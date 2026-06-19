@@ -81,14 +81,14 @@ $extern fn_((dansi_dec_charset_shiftOutWrite(io_Writer out))(E$void));
 #define ____dansi_dec_charset_shiftOut_static() "\x0e"
 
 #define ____dansi_dec_charset_Slot_staticParse(_slot_tok) \
-    pp_join(____dansi_dec_charset_Slot_str$, _slot_tok)
+    pp_join($, ____dansi_dec_charset_Slot_str, _slot_tok)
 #define ____dansi_dec_charset_Slot_str$dansi_dec_charset_Slot_g0 "("
 #define ____dansi_dec_charset_Slot_str$dansi_dec_charset_Slot_g1 ")"
 #define ____dansi_dec_charset_Slot_str$dansi_dec_charset_Slot_g2 "*"
 #define ____dansi_dec_charset_Slot_str$dansi_dec_charset_Slot_g3 "+"
 
 #define ____dansi_dec_charset_Set_staticParse(_set_tok) \
-    pp_join(____dansi_dec_charset_Set_str$, _set_tok)
+    pp_join($, ____dansi_dec_charset_Set_str, _set_tok)
 #define ____dansi_dec_charset_Set_str$dansi_dec_charset_Set_uk "A"
 #define ____dansi_dec_charset_Set_str$dansi_dec_charset_Set_us_ascii "B"
 #define ____dansi_dec_charset_Set_str$dansi_dec_charset_Set_special_graphics "0"

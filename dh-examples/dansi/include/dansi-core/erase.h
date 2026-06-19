@@ -67,7 +67,7 @@ $extern fn_((dansi_erase_charsWrite(u16 count, io_Writer out))(E$void));
 #define ____dansi_erase_chars_static(_count_tok) \
     dansi_csi_make1_static(_count_tok, "X")
 #define ____dansi_erase_Area_staticParse(_area_tok) \
-    pp_join(____dansi_erase_Area_str$, _area_tok)
+    pp_join($, ____dansi_erase_Area_str, _area_tok)
 #define ____dansi_erase_Area_str$dansi_erase_Area_to_end "0"
 #define ____dansi_erase_Area_str$dansi_erase_Area_to_start "1"
 #define ____dansi_erase_Area_str$dansi_erase_Area_all "2"

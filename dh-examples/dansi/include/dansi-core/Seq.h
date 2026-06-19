@@ -24,6 +24,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+/// A sequence kind.
 typedef enum_((dansi_Seq_Kind $fits($packed))(
     dansi_Seq_Kind_text = 0,
     dansi_Seq_Kind_c0,
@@ -41,6 +42,7 @@ typedef enum_((dansi_Seq_Kind $fits($packed))(
 claim_assert_static(eqlType$(dansi_Seq_Kind, u8));
 T_use_prl$(dansi_Seq_Kind);
 
+/// A control string terminator end-of-sequence.
 typedef enum_((dansi_Seq_EOS $fits($packed))(
     dansi_Seq_EOS_none = 0,
     dansi_Seq_EOS_bel,
@@ -49,7 +51,19 @@ typedef enum_((dansi_Seq_EOS $fits($packed))(
 )) dansi_Seq_EOS;
 claim_assert_static(eqlType$(dansi_Seq_EOS, u8));
 T_use_prl$(dansi_Seq_EOS);
+$attr($must_check)
+$extern fn_((dansi_Seq_EOS_write(dansi_Seq_EOS self, io_Writer out))(E$void));
 
+/// A control string terminator.
+typedef struct dansi_Seq_CtrlTer {
+    var_(payload_end, usize);
+    var_(eos, dansi_Seq_EOS);
+} dansi_Seq_CtrlTer;
+T_use_prl$(dansi_Seq_CtrlTer);
+/// Find the control string terminator in the given bytes.
+$extern fn_((dansi_Seq_CtrlTer_find(S_const$u8 bytes, usize start))(O$dansi_Seq_CtrlTer));
+
+/// A sequence of bytes.
 typedef struct dansi_Seq {
     var_(kind, dansi_Seq_Kind);
     var_(bytes, S_const$u8);
@@ -63,6 +77,7 @@ errset_((dansi_Seq_E)(
 ));
 T_use_E$($set(dansi_Seq_E)(dansi_Seq));
 
+/// Create a sequence from the given kind and bytes.
 $attr($inline_always)
 $static fn_((dansi_Seq_from(dansi_Seq_Kind kind, S_const$u8 bytes))(dansi_Seq)) {
     return (dansi_Seq){ .kind = kind, .bytes = bytes };

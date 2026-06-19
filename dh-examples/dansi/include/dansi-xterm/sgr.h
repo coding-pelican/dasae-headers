@@ -70,7 +70,7 @@ $extern fn_((dansi_xterm_sgr_popWrite(io_Writer out))(E$void));
 #define ____dansi_xterm_sgr_pop_static() \
     dansi_csi_make_static("", "#", "q")
 #define ____dansi_xterm_sgr_Code_staticParse(_code_tok) \
-    pp_join(____dansi_xterm_sgr_Code_str$, _code_tok)
+    pp_join($, ____dansi_xterm_sgr_Code_str, _code_tok)
 #define ____dansi_xterm_sgr_Code_str$dansi_xterm_sgr_Code_fg_bright_black "90"
 #define ____dansi_xterm_sgr_Code_str$dansi_xterm_sgr_Code_fg_bright_red "91"
 #define ____dansi_xterm_sgr_Code_str$dansi_xterm_sgr_Code_fg_bright_green "92"

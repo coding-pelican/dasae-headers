@@ -91,7 +91,7 @@ $extern fn_((dansi_dec_cursor_setStyleWrite(dansi_dec_cursor_Style style, io_Wri
 #define ____dansi_dec_cursor_setStyle_static(_style_tok) \
     dansi_csi_make_static(dansi_dec_cursor_Style_staticParse(_style_tok), " ", "q")
 #define ____dansi_dec_cursor_Style_staticParse(_style_tok) \
-    pp_join(____dansi_dec_cursor_Style_str$, _style_tok)
+    pp_join($, ____dansi_dec_cursor_Style_str, _style_tok)
 #define ____dansi_dec_cursor_Style_str$dansi_dec_cursor_Style_default "0"
 #define ____dansi_dec_cursor_Style_str$dansi_dec_cursor_Style_block_blink "1"
 #define ____dansi_dec_cursor_Style_str$dansi_dec_cursor_Style_block "2"

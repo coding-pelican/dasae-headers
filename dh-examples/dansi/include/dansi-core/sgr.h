@@ -101,7 +101,7 @@ $extern fn_((dansi_sgr_setWrite(S_const$u16 codes, io_Writer out))(E$void));
 #define ____dansi_sgr_setOne_static(_code_tok) \
     dansi_sgr_setRaw_static(dansi_sgr_Code_staticParse(_code_tok))
 #define ____dansi_sgr_Code_staticParse(_code_tok) \
-    pp_join(____dansi_sgr_Code_str$, _code_tok)
+    pp_join($, ____dansi_sgr_Code_str, _code_tok)
 #define ____dansi_sgr_Code_str$dansi_sgr_Code_reset "0"
 #define ____dansi_sgr_Code_str$dansi_sgr_Code_bold "1"
 #define ____dansi_sgr_Code_str$dansi_sgr_Code_faint "2"

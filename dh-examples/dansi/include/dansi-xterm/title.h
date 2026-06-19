@@ -129,7 +129,7 @@ $extern fn_((dansi_xterm_title_fetchWindowTitle(
 #define ____dansi_xterm_title_requestWindowTitle_static() \
     dansi_csi_make1_static("21", "t")
 #define ____dansi_xterm_title_Target_staticParse(_target_tok) \
-    pp_join(____dansi_xterm_title_Target_str$, _target_tok)
+    pp_join($, ____dansi_xterm_title_Target_str, _target_tok)
 #define ____dansi_xterm_title_Target_str$dansi_xterm_title_Target_icon "1"
 #define ____dansi_xterm_title_Target_str$dansi_xterm_title_Target_window "2"
 #define ____dansi_xterm_title_Target_str$dansi_xterm_title_Target_both "3"

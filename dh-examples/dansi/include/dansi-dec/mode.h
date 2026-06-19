@@ -138,7 +138,7 @@ $extern fn_((dansi_dec_mode_fetch(
 #define ____dansi_dec_mode_request_static(_mode_tok) \
     dansi_csi_make_static("?" dansi_dec_mode_Code_staticParse(_mode_tok), "$", "p")
 #define ____dansi_dec_mode_Code_staticParse(_mode_tok) \
-    pp_join(____dansi_dec_mode_Code_str$, _mode_tok)
+    pp_join($, ____dansi_dec_mode_Code_str, _mode_tok)
 #define ____dansi_dec_mode_Code_str$dansi_dec_mode_Code_cursor_keys "1"
 #define ____dansi_dec_mode_Code_str$dansi_dec_mode_Code_ansi "2"
 #define ____dansi_dec_mode_Code_str$dansi_dec_mode_Code_132_columns "3"
