@@ -24,10 +24,18 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define T_decl_prl_vals$(_T...) \
+    T_decl$((_T)(O, E)); \
+    T_decl$((O$(_T))(O, E)); \
+    T_decl$((E$(_T))(O, E))
+#define T_impl_prl_vals$(_T...) \
+    T_impl$((_T)(O, E)); \
+    T_impl$((O$(_T))(O, E)); \
+    T_impl$((E$(_T))(O, E))
 #define T_use_prl_vals$(_T...) \
     T_use$((_T)(O, E)); \
     T_use$((O$(_T))(O, E)); \
-    T_use$((E$(_T))(O, E));
+    T_use$((E$(_T))(O, E))
 
 /*========== Macros and Definitions =========================================*/
 

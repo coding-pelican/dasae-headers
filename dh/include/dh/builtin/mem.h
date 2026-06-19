@@ -48,12 +48,39 @@ extern "C" {
 #define raw_leadingZeros16(_x...) ____raw_leadingZeros16(_x)
 #define raw_leadingZeros8(_x...) ____raw_leadingZeros8(_x)
 
+#define raw_leadingRedundantSgnBitsSize(_x...) ____raw_leadingRedundantSgnBitsSize(_x)
+#define raw_leadingRedundantSgnBits64(_x...) ____raw_leadingRedundantSgnBits64(_x)
+#define raw_leadingRedundantSgnBitsLong(_x...) ____raw_leadingRedundantSgnBitsLong(_x)
+#define raw_leadingRedundantSgnBits32(_x...) ____raw_leadingRedundantSgnBits32(_x)
+#define raw_leadingRedundantSgnBits16(_x...) ____raw_leadingRedundantSgnBits16(_x)
+#define raw_leadingRedundantSgnBits8(_x...) ____raw_leadingRedundantSgnBits8(_x)
+
 #define raw_trailingZerosSize(_x...) ____raw_trailingZerosSize(_x)
 #define raw_trailingZeros64(_x...) ____raw_trailingZeros64(_x)
 #define raw_trailingZerosLong(_x...) ____raw_trailingZerosLong(_x)
 #define raw_trailingZeros32(_x...) ____raw_trailingZeros32(_x)
 #define raw_trailingZeros16(_x...) ____raw_trailingZeros16(_x)
 #define raw_trailingZeros8(_x...) ____raw_trailingZeros8(_x)
+
+#define raw_firstSetBitSize(_x...) ____raw_firstSetBitSize(_x)
+#define raw_firstSetBit64(_x...) ____raw_firstSetBit64(_x)
+#define raw_firstSetBitLong(_x...) ____raw_firstSetBitLong(_x)
+#define raw_firstSetBit32(_x...) ____raw_firstSetBit32(_x)
+#define raw_firstSetBit16(_x...) ____raw_firstSetBit16(_x)
+#define raw_firstSetBit8(_x...) ____raw_firstSetBit8(_x)
+
+#define raw_paritySize(_x...) ____raw_paritySize(_x)
+#define raw_parity64(_x...) ____raw_parity64(_x)
+#define raw_parityLong(_x...) ____raw_parityLong(_x)
+#define raw_parity32(_x...) ____raw_parity32(_x)
+#define raw_parity16(_x...) ____raw_parity16(_x)
+#define raw_parity8(_x...) ____raw_parity8(_x)
+
+#define raw_swapBytesSize(_x...) ____raw_swapBytesSize(_x)
+#define raw_swapBytes64(_x...) ____raw_swapBytes64(_x)
+#define raw_swapBytesLong(_x...) ____raw_swapBytesLong(_x)
+#define raw_swapBytes32(_x...) ____raw_swapBytes32(_x)
+#define raw_swapBytes16(_x...) ____raw_swapBytes16(_x)
 
 #define raw_rotateLeftSize(_x, y...) ____raw_rotateLeftSize(_x, y)
 #define raw_rotateLeft64(_x, y...) ____raw_rotateLeft64(_x, y)
@@ -68,12 +95,6 @@ extern "C" {
 #define raw_rotateRight32(_x, y...) ____raw_rotateRight32(_x, y)
 #define raw_rotateRight16(_x, y...) ____raw_rotateRight16(_x, y)
 #define raw_rotateRight8(_x, y...) ____raw_rotateRight8(_x, y)
-
-#define raw_swapBytesSize(_x...) ____raw_swapBytesSize(_x)
-#define raw_swapBytes64(_x...) ____raw_swapBytes64(_x)
-#define raw_swapBytesLong(_x...) ____raw_swapBytesLong(_x)
-#define raw_swapBytes32(_x...) ____raw_swapBytes32(_x)
-#define raw_swapBytes16(_x...) ____raw_swapBytes16(_x)
 
 #define raw_reverseBitsSize(_x...) ____raw_reverseBitsSize(_x)
 #define raw_reverseBits64(_x...) ____raw_reverseBits64(_x)
@@ -131,6 +152,16 @@ extern "C" {
 #define ____raw_leadingZeros16(_x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u16)(_x)))) - 16)
 #define ____raw_leadingZeros8(_x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u8)(_x)))) - 24)
 
+#define ____raw_leadingRedundantSgnBitsSize(_x...) pp_if_(arch_bits_is_64bit)( \
+    pp_then_(raw_leadingRedundantSgnBits64(_x)), \
+    pp_else_(raw_leadingRedundantSgnBits32(_x)) \
+)
+#define ____raw_leadingRedundantSgnBits64(_x...) (as$(u32)(__builtin_clrsbll(as$(i64)(_x))))
+#define ____raw_leadingRedundantSgnBitsLong(_x...) (as$(u32)(__builtin_clrsbl(as$(ilong)(_x))))
+#define ____raw_leadingRedundantSgnBits32(_x...) (as$(u32)(__builtin_clrsb(as$(i32)(_x))))
+#define ____raw_leadingRedundantSgnBits16(_x...) (as$(u32)(__builtin_clrsb(as$(i32)(as$(i16)(_x)))) - 16)
+#define ____raw_leadingRedundantSgnBits8(_x...) (as$(u32)(__builtin_clrsb(as$(i32)(as$(i8)(_x)))) - 24)
+
 #define ____raw_trailingZerosSize(_x...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_trailingZeros64(_x)), \
     pp_else_(raw_trailingZeros32(_x)) \
@@ -140,6 +171,38 @@ extern "C" {
 #define ____raw_trailingZeros32(_x...) (as$(u32)(__builtin_ctz(as$(u32)(_x))))
 #define ____raw_trailingZeros16(_x...) (as$(u32)(__builtin_ctz(as$(u32)(as$(u16)(_x)))))
 #define ____raw_trailingZeros8(_x...) (as$(u32)(__builtin_ctz(as$(u32)(as$(u8)(_x)))))
+
+#define ____raw_firstSetBitSize(_x...) pp_if_(arch_bits_is_64bit)( \
+    pp_then_(raw_firstSetBit64(_x)), \
+    pp_else_(raw_firstSetBit32(_x)) \
+)
+#define ____raw_firstSetBit64(_x...) (as$(u32)(__builtin_ffsll(as$(i64)(_x))))
+#define ____raw_firstSetBitLong(_x...) (as$(u32)(__builtin_ffsl(as$(ilong)(_x))))
+#define ____raw_firstSetBit32(_x...) (as$(u32)(__builtin_ffs(as$(i32)(_x))))
+#define ____raw_firstSetBit16(_x...) (as$(u32)(__builtin_ffs(as$(i32)(as$(u16)(_x)))))
+#define ____raw_firstSetBit8(_x...) (as$(u32)(__builtin_ffs(as$(i32)(as$(u8)(_x)))))
+
+#define ____raw_paritySize(_x...) pp_if_(arch_bits_is_64bit)( \
+    pp_then_(raw_parity64(_x)), \
+    pp_else_(raw_parity32(_x)) \
+)
+#define ____raw_parity64(_x...) (as$(u32)(__builtin_parityll(as$(u64)(_x))))
+#define ____raw_parityLong(_x...) (as$(u32)(__builtin_parityl(as$(ulong)(_x))))
+#define ____raw_parity32(_x...) (as$(u32)(__builtin_parity(as$(u32)(_x))))
+#define ____raw_parity16(_x...) (as$(u32)(__builtin_parity(as$(u32)(as$(u16)(_x)))))
+#define ____raw_parity8(_x...) (as$(u32)(__builtin_parity(as$(u32)(as$(u8)(_x)))))
+
+#define ____raw_swapBytesSize(_x...) pp_if_(arch_bits_is_64bit)( \
+    pp_then_(raw_swapBytes64(_x)), \
+    pp_else_(raw_swapBytes32(_x)) \
+)
+#define ____raw_swapBytes64(_x...) (as$(u64)(__builtin_bswap64(as$(u64)(_x))))
+#define ____raw_swapBytesLong(_x...) pp_if_(plat_long_is_64bit)( \
+    pp_then_(raw_swapBytes64(_x)), \
+    pp_else_(raw_swapBytes32(_x)) \
+)
+#define ____raw_swapBytes32(_x...) (as$(u32)(__builtin_bswap32(as$(u32)(_x))))
+#define ____raw_swapBytes16(_x...) (as$(u16)(__builtin_bswap16(as$(u16)(_x))))
 
 #define ____raw_rotateLeftSize(_x, y...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_rotateLeft64(_x, y)), \
@@ -166,18 +229,6 @@ extern "C" {
 #define ____raw_rotateRight32(_x, y...) (as$(u32)(__builtin_rotateright32(as$(u32)(_x), as$(u32)(y))))
 #define ____raw_rotateRight16(_x, y...) (as$(u16)(__builtin_rotateright16(as$(u16)(_x), as$(u16)(y))))
 #define ____raw_rotateRight8(_x, y...) (as$(u8)(__builtin_rotateright8(as$(u8)(_x), as$(u8)(y))))
-
-#define ____raw_swapBytesSize(_x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_swapBytes64(_x)), \
-    pp_else_(raw_swapBytes32(_x)) \
-)
-#define ____raw_swapBytes64(_x...) (as$(u64)(__builtin_bswap64(as$(u64)(_x))))
-#define ____raw_swapBytesLong(_x...) pp_if_(plat_long_is_64bit)( \
-    pp_then_(raw_swapBytes64(_x)), \
-    pp_else_(raw_swapBytes32(_x)) \
-)
-#define ____raw_swapBytes32(_x...) (as$(u32)(__builtin_bswap32(as$(u32)(_x))))
-#define ____raw_swapBytes16(_x...) (as$(u16)(__builtin_bswap16(as$(u16)(_x))))
 
 #define ____raw_reverseBitsSize(_x...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_reverseBits64(_x)), \

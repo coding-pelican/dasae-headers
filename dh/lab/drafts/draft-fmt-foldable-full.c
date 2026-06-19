@@ -66,8 +66,8 @@ typedef enum_((fmt_Size $fits($packed))(
     fmt_Size_16 = 1,
     fmt_Size_32 = 2,
     fmt_Size_long = 3,
-    fmt_Size_ptr = 4,
-    fmt_Size_64 = 5
+    fmt_Size_64 = 4,
+    fmt_Size_ptr = 5
 )) fmt_Size;
 T_use_E$(fmt_Size);
 $attr($must_check $inline_always)
@@ -199,8 +199,8 @@ fn_((fmt_Size_parse(S_const$u8 text))(E$fmt_Size) $scope) {
     if (mem_eqlBytes(text, u8_l("h")) || mem_eqlBytes(text, u8_l("16"))) return_ok(fmt_Size_16);
     if (mem_eqlBytes(text, u8_l("")) || mem_eqlBytes(text, u8_l("32"))) return_ok(fmt_Size_32);
     if (mem_eqlBytes(text, u8_l("l")) || mem_eqlBytes(text, u8_l("long"))) return_ok(fmt_Size_64);
-    if (mem_eqlBytes(text, u8_l("z")) || mem_eqlBytes(text, u8_l("size"))) return_ok(fmt_Size_ptr);
     if (mem_eqlBytes(text, u8_l("ll")) || mem_eqlBytes(text, u8_l("64"))) return_ok(fmt_Size_64);
+    if (mem_eqlBytes(text, u8_l("z")) || mem_eqlBytes(text, u8_l("size"))) return_ok(fmt_Size_ptr);
     return_err(E_cause$fmt_InvalidSizeSpec());
 } $unscoped(fn);
 fn_((fmt_Size_strfy(fmt_Size size, bool short_form))(S_const$u8)) {
@@ -208,10 +208,10 @@ fn_((fmt_Size_strfy(fmt_Size size, bool short_form))(S_const$u8)) {
         switch (size) {
         case fmt_Size_8: return u8_l("hh");
         case fmt_Size_16: return u8_l("h");
-        case fmt_Size_32: return u8_l("l");
-        case fmt_Size_long: return u8_l("ll");
-        case fmt_Size_64: return u8_l("z");
-        case fmt_Size_ptr: return u8_l("size");
+        case fmt_Size_32: return u8_l("");
+        case fmt_Size_long: return u8_l("l");
+        case fmt_Size_64: return u8_l("ll");
+        case fmt_Size_ptr: return u8_l("z");
         default: claim_unreachable;
         }
     } else {

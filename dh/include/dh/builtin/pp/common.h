@@ -1031,6 +1031,8 @@ extern "C" {
 
 #define tpl$0(_tpl...) \
     _tpl
+#define tpl$T(_tpl, _T...) \
+    pp_join($, _tpl, _T)
 #define tpl$1T(_tpl, _T...) \
     pp_join($, _tpl, _T)
 #define tpl$1T$2U(_tpl, _T, _U...) \
@@ -1215,6 +1217,8 @@ extern "C" {
 
 #define tpl_0(_tpl, ...) \
     _tpl
+#define tpl_T(_tpl, _T...) \
+    pp_join(_, _tpl, _T)
 #define tpl_1T(_tpl, _T...) \
     pp_join(_, _tpl, _T)
 #define tpl_1T_2U(_tpl, _T, _U...) \

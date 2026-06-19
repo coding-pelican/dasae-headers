@@ -34,6 +34,14 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define T_decl_prl$(_T...) \
+    T_decl_prl_refs$(_T); \
+    T_decl_prl_vals$(_T); \
+    T_decl_prl_exts$(_T)
+#define T_impl_prl$(_T...) \
+    T_impl_prl_refs$(_T); \
+    T_impl_prl_vals$(_T); \
+    T_impl_prl_exts$(_T)
 #define T_use_prl$(_T...) \
     T_use_prl_refs$(_T); \
     T_use_prl_vals$(_T); \

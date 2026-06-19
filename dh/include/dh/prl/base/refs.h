@@ -24,12 +24,24 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define T_decl_prl_refs$(_T...) \
+    T_decl$((_T)(P, S)); \
+    T_decl$((P_const$(_T))(P, S)); \
+    T_decl$((P$(_T))(P, S)); \
+    T_decl$((S_const$(_T))(P, S)); \
+    T_decl$((S$(_T))(P, S))
+#define T_impl_prl_refs$(_T...) \
+    T_impl$((_T)(P, S)); \
+    T_impl$((P_const$(_T))(P, S)); \
+    T_impl$((P$(_T))(P, S)); \
+    T_impl$((S_const$(_T))(P, S)); \
+    T_impl$((S$(_T))(P, S))
 #define T_use_prl_refs$(_T...) \
     T_use$((_T)(P, S)); \
     T_use$((P_const$(_T))(P, S)); \
     T_use$((P$(_T))(P, S)); \
     T_use$((S_const$(_T))(P, S)); \
-    T_use$((S$(_T))(P, S));
+    T_use$((S$(_T))(P, S))
 
 /*========== Macros and Definitions =========================================*/
 

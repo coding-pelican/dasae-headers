@@ -23,6 +23,8 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 $attr($inline_always)
+$static fn_((f32_sgnBit(f32 x))(bool));
+$attr($inline_always)
 $static fn_((f32_isNaN(f32 x))(bool));
 $attr($inline_always)
 $static fn_((f32_isInf(f32 x))(bool));
@@ -35,8 +37,10 @@ $static fn_((f32_isSubnormal(f32 x))(bool));
 $attr($inline_always)
 $static fn_((f32_isZero(f32 x))(bool));
 $attr($inline_always)
-$static fn_((f32_sgnBit(f32 x))(bool));
+$static fn_((f32_isNonzero(f32 x))(bool));
 
+$attr($inline_always)
+$static fn_((f64_sgnBit(f64 x))(bool));
 $attr($inline_always)
 $static fn_((f64_isNaN(f64 x))(bool));
 $attr($inline_always)
@@ -50,10 +54,22 @@ $static fn_((f64_isSubnormal(f64 x))(bool));
 $attr($inline_always)
 $static fn_((f64_isZero(f64 x))(bool));
 $attr($inline_always)
-$static fn_((f64_sgnBit(f64 x))(bool));
+$static fn_((f64_isNonzero(f64 x))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
+fn_((f32_sgnBit(f32 x))(bool)) {
+    return flt_sgnBit(x);
+#if UNUSED_CODE
+    // IEEE 754 bit-level implementation
+    union {
+        f32 f;
+        u32 u;
+    } conv = { .f = x };
+    // Sign bit: check the 32nd bit (MSB)
+    return (conv.u >> 31) != 0;
+#endif /* UNUSED_CODE */
+};
 fn_((f32_isNaN(f32 x))(bool)) {
     return flt_isNaN(x);
 #if UNUSED_CODE
@@ -132,19 +148,21 @@ fn_((f32_isZero(f32 x))(bool)) {
     return (conv.u & 0x7FFFFFFF) == 0;
 #endif /* UNUSED_CODE */
 };
-fn_((f32_sgnBit(f32 x))(bool)) {
+fn_((f32_isNonzero(f32 x))(bool)) {
+    return !f32_isZero(x);
+};
+fn_((f64_sgnBit(f64 x))(bool)) {
     return flt_sgnBit(x);
 #if UNUSED_CODE
     // IEEE 754 bit-level implementation
     union {
-        f32 f;
-        u32 u;
+        f64 f;
+        u64 u;
     } conv = { .f = x };
-    // Sign bit: check the 32nd bit (MSB)
-    return (conv.u >> 31) != 0;
+    // Sign bit: check the 64th bit (MSB)
+    return (conv.u >> 63) != 0;
 #endif /* UNUSED_CODE */
 };
-
 fn_((f64_isNaN(f64 x))(bool)) {
     return flt_isNaN(x);
 #if UNUSED_CODE
@@ -223,17 +241,8 @@ fn_((f64_isZero(f64 x))(bool)) {
     return (conv.u & 0x7FFFFFFFFFFFFFFFULL) == 0;
 #endif /* UNUSED_CODE */
 };
-fn_((f64_sgnBit(f64 x))(bool)) {
-    return flt_sgnBit(x);
-#if UNUSED_CODE
-    // IEEE 754 bit-level implementation
-    union {
-        f64 f;
-        u64 u;
-    } conv = { .f = x };
-    // Sign bit: check the 64th bit (MSB)
-    return (conv.u >> 63) != 0;
-#endif /* UNUSED_CODE */
+fn_((f64_isNonzero(f64 x))(bool)) {
+    return !f64_isZero(x);
 };
 
 #if defined(__cplusplus)

@@ -23,13 +23,27 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define T_decl_prl_exts$(_T...) \
+    T_decl$((P_const$(_T))(O, E)); \
+    T_decl$((P$(_T))(O, E)); \
+    T_decl$((S_const$(_T))(O, E)); \
+    T_decl$((S$(_T))(O, E)); \
+    T_decl$((O$(_T))(P, S)); \
+    T_decl$((E$(_T))(P, S))
+#define T_impl_prl_exts$(_T...) \
+    T_impl$((P_const$(_T))(O, E)); \
+    T_impl$((P$(_T))(O, E)); \
+    T_impl$((S_const$(_T))(O, E)); \
+    T_impl$((S$(_T))(O, E)); \
+    T_impl$((O$(_T))(P, S)); \
+    T_impl$((E$(_T))(P, S))
 #define T_use_prl_exts$(_T...) \
     T_use$((P_const$(_T))(O, E)); \
     T_use$((P$(_T))(O, E)); \
     T_use$((S_const$(_T))(O, E)); \
     T_use$((S$(_T))(O, E)); \
     T_use$((O$(_T))(P, S)); \
-    T_use$((E$(_T))(P, S));
+    T_use$((E$(_T))(P, S))
 
 /*========== Macros and Definitions =========================================*/
 

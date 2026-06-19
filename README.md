@@ -346,7 +346,7 @@ at the type system level.
 
 | Aspect               | Traditional C (Standard C)                   | dasae-headers                                                      |
 | -------------------- | -------------------------------------------- | ------------------------------------------------------------------ |
-| **Resource Release** | `goto cleanup` or scattered manual cleanup   | Automatic scope-based cleanup with `defer_`, `errdefer_`           |
+| **Resrc Release** | `goto cleanup` or scattered manual cleanup   | Automatic scope-based cleanup with `defer_`, `errdefer_`           |
 | **Result Return**    | `bool`/error code return + `out` pointer     | **Optional** (`O$`) / **Error Result** (`E$`) return               |
 | **Result Branching** | Manual validation with `if (err)` branches   | Result control with `orelse_`, `unwrap_` / `try_`, `catch_` syntax |
 | **Data Transfer**    | Pointer and length (`len`) passed separately | **Slice** (`S$`) or **array as value** (`A$`) transfer             |
