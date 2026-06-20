@@ -252,6 +252,9 @@ if [ "$integration" -eq 1 ]; then
     invoke_external "0" "$target_root_compat" "$cli_exe" build --example --link-dsl=off
     assert_contains "$LAST_OUTPUT" "Build successful!" "Example target build did not succeed"
 
+    invoke_external "0" "$target_root_compat" "$cli_exe" test --example example-usage.c --link-dsl=off
+    assert_contains "$LAST_OUTPUT" "Build successful!" "Selected example test did not succeed"
+
     invoke_external "0" "$target_root_compat" "$cli_exe" clean
 
     recursive_dsl_project=$(copy_scenario_project "dh-c/tests/fixture/recursive-dsl-project")

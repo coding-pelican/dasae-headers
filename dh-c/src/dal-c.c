@@ -171,7 +171,7 @@ static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd) {
     case dal_c_CmdAction_run:
         return cmd->payload.run.target_path != NULL && cmd->payload.run.sample_dir == dal_c_SampleDir_none;
     case dal_c_CmdAction_test:
-        return cmd->payload.test.target_path != NULL;
+        return cmd->payload.test.target_path != NULL && cmd->payload.test.sample_dir == dal_c_SampleDir_none;
     case dal_c_CmdAction_build_dsl:
     case dal_c_CmdAction_test_dsl:
     case dal_c_CmdAction_clean_dsl:

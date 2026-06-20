@@ -1117,6 +1117,7 @@ typedef struct dal_c_TestOpts {
     char* target_path;
     char* output_path;
     char* run_args; // --exec-args="..."
+    dal_c_SampleDir sample_dir; // --sample, --example, or --test
     bool debug;
     bool build_all; // --all or "." to build all files
     bool recursive; // --recur
@@ -1551,12 +1552,16 @@ static const dal_c_HelpOption dal_c_help_test_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_debug, "Launch debugger" },
     { dal_c_opt_prefix_long dal_c_opt_exec_args dal_c_opt_value_sep "\"...\"", "Test arguments" },
     { dal_c_opt_prefix_long dal_c_opt_args dal_c_opt_value_sep "\"...\"", "Test arguments (context-aware)" },
+    { dal_c_opt_prefix_long dal_c_opt_sample, "Test the project `samples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_example, "Test the project `examples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_test, "Test the project `tests` target family" },
 };
 #define dal_c_help_test_options_count ((int)(sizeof(dal_c_help_test_options) / sizeof(dal_c_help_test_options[0])))
 
 static const char* const dal_c_help_test_examples[] = {
     dal_c_cmd_action_test " " dal_c_profile_dev,
     dal_c_cmd_action_test " tests/test-parser.c",
+    dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_example " example-color.c",
     dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_debug " sample.c",
     dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_dsl,
     dal_c_cmd_action_test " " dal_c_opt_prefix_long dal_c_opt_dsl " " dal_c_opt_prefix_long dal_c_opt_recur,

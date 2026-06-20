@@ -57,6 +57,7 @@ static void test_explicit_file_build_uses_file_project(void);
 static void test_compile_db_command(void);
 static void test_skip_source_filters(void);
 static void test_test_source_classification(void);
+static void test_test_mode_is_command_scoped(void);
 static void test_source_collection_ignores_hidden_ancestors(void);
 
 static char* test_repo_path(const char* relative_path);
@@ -83,6 +84,7 @@ int main(void) {
     RUN_TEST(test_compile_db_command);
     RUN_TEST(test_skip_source_filters);
     RUN_TEST(test_test_source_classification);
+    RUN_TEST(test_test_mode_is_command_scoped);
     RUN_TEST(test_source_collection_ignores_hidden_ancestors);
     test_reset_temp_root();
     return g_test_failures == 0 ? 0 : 1;
@@ -1981,6 +1983,22 @@ static void test_explicit_file_build_uses_file_project(void) {
     }
 
     {
+        const char* example_test_argv[] = { dal_c_tool_name, "test", "--example", "example-main.c", NULL };
+        dal_c_Cmd* example_test_cmd = dal_c_Cmd_parse(4, example_test_argv);
+        TEST_ASSERT(example_test_cmd != NULL);
+        TEST_ASSERT(example_test_cmd->payload.test.sample_dir == dal_c_SampleDir_examples);
+        dal_c_Cmd_normalizeIntent(example_test_cmd, &intent);
+        TEST_ASSERT(!intent.target_path_is_explicit_file);
+        TEST_ASSERT(dal_c_TargetRequest_resolve(proj, &intent, &request));
+        TEST_ASSERT(request.root != NULL);
+        TEST_ASSERT(str_eql(request.root->name, dal_c_dir_examples));
+        TEST_ASSERT(str_eql(request.relative_path, "example-main.c"));
+        TEST_ASSERT(path_isFile(request.resolved_path));
+        dal_c_TargetRequest_cleanup(&request);
+        dal_c_Cmd_cleanup(&example_test_cmd);
+    }
+
+    {
         const char* test_argv[] = { dal_c_tool_name, "build", "--test", test_source, NULL };
         dal_c_Cmd* test_cmd = dal_c_Cmd_parse(4, test_argv);
         TEST_ASSERT(test_cmd != NULL);
@@ -2194,6 +2212,97 @@ static void test_test_source_classification(void) {
     free(unregistered_source);
     free(registered_with_sample_main_2);
     free(registered_with_sample_main);
+}
+
+static void test_test_mode_is_command_scoped(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "command-scoped-test-mode");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* examples_dir = path_join(project_root, "examples");
+    char* source = path_join(examples_dir, "example-tetris.c");
+    char* source_fixture = test_repo_path("dh-examples/daterm/examples/example-tetris.c");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(examples_dir != NULL);
+    TEST_ASSERT(source != NULL);
+    TEST_ASSERT(source_fixture != NULL);
+    TEST_ASSERT(dir_createRecur(examples_dir));
+    TEST_ASSERT(file_write(project_dh, "pch=off\nlink-dsl=off\n"));
+    TEST_ASSERT(file_copy(source_fixture, source));
+    TEST_ASSERT(dal_c__hasTestRegistration(source));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(proj != NULL);
+
+    const char* test_argv[] = { dal_c_tool_name, "test", "--example", "example-tetris.c", NULL };
+    const char* build_argv[] = { dal_c_tool_name, "build", "--example", "example-tetris.c", NULL };
+    dal_c_Cmd* test_cmd = dal_c_Cmd_parse(4, test_argv);
+    dal_c_Cmd* build_cmd = dal_c_Cmd_parse(4, build_argv);
+    TEST_ASSERT(test_cmd != NULL);
+    TEST_ASSERT(build_cmd != NULL);
+
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(test_cmd->opts.profile);
+    TEST_ASSERT(profile != NULL);
+    char* build_dir = dal_c_Project_getBuildDir(proj);
+    char* profile_dir = path_join(build_dir, profile->name);
+    char* object_dir = path_join(profile_dir, "obj");
+    char* target_path = dal_c__resolveOutputPath(proj, test_cmd, profile_dir, "example-tetris", dal_c_Target_executable);
+    char* test_plan_path = dal_c__makePlanFilePath(proj, profile, test_cmd, target_path, dal_c_Target_executable);
+    char* build_plan_path = dal_c__makePlanFilePath(proj, profile, build_cmd, target_path, dal_c_Target_executable);
+    ArrStr* sources = ArrStr_init();
+    ArrStr_push(sources, source);
+    TEST_ASSERT(build_dir != NULL);
+    TEST_ASSERT(profile_dir != NULL);
+    TEST_ASSERT(object_dir != NULL);
+    TEST_ASSERT(target_path != NULL);
+    TEST_ASSERT(test_plan_path != NULL);
+    TEST_ASSERT(build_plan_path != NULL);
+    TEST_ASSERT(dir_createRecur(object_dir));
+
+    TEST_ASSERT(dal_c__generateMakefile(test_cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 0);
+    char* test_plan = file_read(test_plan_path);
+    char* link_dir = path_join(object_dir, ".link");
+    int contract_count = 0;
+    char** contract_paths = dir_listRecur(link_dir, &contract_count);
+    TEST_ASSERT(test_plan != NULL);
+    TEST_ASSERT(strstr(test_plan, " -DCOMP_TEST") != NULL);
+    TEST_ASSERT(contract_count == 1);
+    char* test_contract = file_read(contract_paths[0]);
+    TEST_ASSERT(test_contract != NULL);
+
+    TEST_ASSERT(dal_c__generateMakefile(build_cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 0);
+    char* build_plan = file_read(build_plan_path);
+    char* build_contract = file_read(contract_paths[0]);
+    TEST_ASSERT(build_plan != NULL);
+    TEST_ASSERT(build_contract != NULL);
+    TEST_ASSERT(strstr(build_plan, " -DCOMP_TEST") == NULL);
+    TEST_ASSERT(!str_eql(test_contract, build_contract));
+
+    free(build_contract);
+    free(build_plan);
+    free(test_contract);
+    test_free_str_array(contract_paths, contract_count);
+    free(link_dir);
+    free(test_plan);
+    ArrStr_fini(&sources);
+    free(build_plan_path);
+    free(test_plan_path);
+    free(target_path);
+    free(object_dir);
+    free(profile_dir);
+    free(build_dir);
+    dal_c_Cmd_cleanup(&build_cmd);
+    dal_c_Cmd_cleanup(&test_cmd);
+    dal_c_Project_cleanup(&proj);
+    free(source_fixture);
+    free(source);
+    free(examples_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
 }
 
 static void test_source_collection_ignores_hidden_ancestors(void) {

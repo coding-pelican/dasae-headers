@@ -536,7 +536,9 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
     case dal_c_CmdAction_test:
     case dal_c_CmdAction_test_dsl:
         out->target_path = cmd->payload.test.target_path;
-        out->target_root_name_hint = dal_c_dir_tests;
+        out->target_root_name_hint = cmd->payload.test.sample_dir == dal_c_SampleDir_none
+                                   ? dal_c_dir_tests
+                                   : dal_c_Cmd__sampleDirCanonical(cmd->payload.test.sample_dir);
         out->output_path = cmd->payload.test.output_path;
         out->run_args = cmd->payload.test.run_args;
         out->build_all = cmd->payload.test.build_all;
@@ -2325,18 +2327,24 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         cmd->payload.build.sample_dir = dal_c_SampleDir_samples;
                     } else if (cmd->action == dal_c_CmdAction_run) {
                         cmd->payload.run.sample_dir = dal_c_SampleDir_samples;
+                    } else if (cmd->action == dal_c_CmdAction_test || cmd->action == dal_c_CmdAction_test_dsl) {
+                        cmd->payload.test.sample_dir = dal_c_SampleDir_samples;
                     }
                 } else if (str_eql(opt, dal_c_opt_example)) {
                     if (build_like) {
                         cmd->payload.build.sample_dir = dal_c_SampleDir_examples;
                     } else if (cmd->action == dal_c_CmdAction_run) {
                         cmd->payload.run.sample_dir = dal_c_SampleDir_examples;
+                    } else if (cmd->action == dal_c_CmdAction_test || cmd->action == dal_c_CmdAction_test_dsl) {
+                        cmd->payload.test.sample_dir = dal_c_SampleDir_examples;
                     }
                 } else if (str_eql(opt, dal_c_opt_test)) {
                     if (build_like) {
                         cmd->payload.build.sample_dir = dal_c_SampleDir_tests;
                     } else if (cmd->action == dal_c_CmdAction_run) {
                         cmd->payload.run.sample_dir = dal_c_SampleDir_tests;
+                    } else if (cmd->action == dal_c_CmdAction_test || cmd->action == dal_c_CmdAction_test_dsl) {
+                        cmd->payload.test.sample_dir = dal_c_SampleDir_tests;
                     }
                 } else if (str_eql(opt, dal_c_opt_all)) {
                     if (build_like) {

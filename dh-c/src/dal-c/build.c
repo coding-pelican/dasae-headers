@@ -63,7 +63,8 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     char* link_contract_path
 );
 static char* dal_c__sourceToObjStem(const char* base, const char* src);
-static bool dal_c__sourceNeedsTestMode(const dal_c_Project* proj, const char* src);
+static bool dal_c__commandUsesTestMode(const dal_c_Cmd* cmd);
+static bool dal_c__sourceUsesTestMode(const dal_c_Cmd* cmd, const dal_c_Project* proj, const char* src);
 static bool dal_c__sourceUsesPchExcludedHeader(const dal_c_Project* proj, const char* src);
 static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, bool use_pch, bool test_mode);
 static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
@@ -3633,8 +3634,43 @@ static bool dal_c__sourceIsAssembly(const char* src) {
     return str_endsWith(src, ".S") || str_endsWith(src, ".s");
 }
 
-static bool dal_c__sourceNeedsTestMode(const dal_c_Project* proj, const char* src) {
+static bool dal_c__commandUsesTestMode(const dal_c_Cmd* cmd) {
+    assert(cmd != NULL);
+
+    switch (cmd->action) {
+    case dal_c_CmdAction_build:
+    case dal_c_CmdAction_compile_db:
+        return cmd->payload.build.sample_dir == dal_c_SampleDir_tests;
+    case dal_c_CmdAction_run:
+        return cmd->payload.run.sample_dir == dal_c_SampleDir_tests;
+    case dal_c_CmdAction_test:
+    case dal_c_CmdAction_test_dsl:
+        return true;
+    case dal_c_CmdAction_lib:
+    case dal_c_CmdAction_deps:
+    case dal_c_CmdAction_toolchain:
+    case dal_c_CmdAction_clean:
+    case dal_c_CmdAction_workspace:
+    case dal_c_CmdAction_project:
+    case dal_c_CmdAction_build_dsl:
+    case dal_c_CmdAction_clean_dsl:
+    case dal_c_CmdAction_build_self:
+    case dal_c_CmdAction_clean_self:
+    case dal_c_CmdAction_help:
+    case dal_c_CmdAction_version:
+    case dal_c_CmdAction_invalid:
+    default:
+        return false;
+    }
+}
+
+static bool dal_c__sourceUsesTestMode(const dal_c_Cmd* cmd, const dal_c_Project* proj, const char* src) {
+    assert(cmd != NULL);
     assert(src != NULL);
+
+    if (dal_c__commandUsesTestMode(cmd)) {
+        return true;
+    }
 
     if (proj && proj->root) {
         char* tests_dir = dal_c_Project_getTestsDir(proj);
@@ -3651,21 +3687,7 @@ static bool dal_c__sourceNeedsTestMode(const dal_c_Project* proj, const char* sr
             return true;
         }
     }
-
-    FILE* fp = fopen(src, "r");
-    if (!fp) {
-        return false;
-    }
-    bool needs_test_mode = false;
-    char line[1024];
-    while (fgets(line, sizeof(line), fp) != NULL) {
-        if (strstr(line, "TEST_fn_(") != NULL || strstr(line, "TEST_Framework_bindCase(") != NULL) {
-            needs_test_mode = true;
-            break;
-        }
-    }
-    (void)fclose(fp);
-    return needs_test_mode;
+    return false;
 }
 
 static bool dal_c__sourceUsesPchExcludedHeader(const dal_c_Project* proj, const char* src) {
@@ -3807,6 +3829,7 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     hash = dal_c__hashString(hash, opts->target_abi);
     hash = dal_c__hashString(hash, opts->sysroot);
     hash = dal_c__hashVersionSpec(hash, &opts->version);
+    hash = dal_c__hashBool(hash, dal_c__commandUsesTestMode(cmd));
     hash = dal_c__hashBool(hash, default_libs_linked);
     hash = dal_c__hashBool(hash, start_files_linked);
     hash = dal_c__hashBool(hash, compiler_rt_linked);
@@ -4029,7 +4052,7 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     for (int i = 0; i < src_count; ++i) {
         const char* src = ArrStr_at(sources, i);
         bool use_pch = has_pch && !dal_c__sourceIsAssembly(src) && !dal_c__sourceUsesPchExcludedHeader(proj, src);
-        bool test_mode = dal_c__sourceNeedsTestMode(proj, src);
+        bool test_mode = dal_c__sourceUsesTestMode(cmd, proj, src);
         char* obj_path = dal_c__makeObjectPath(cmd, profile, target_type, build_dir, obj_base, src, use_pch, test_mode);
         (void)fprintf(fp, " ");
         dal_c__fprintMakePath(fp, obj_path);
@@ -4184,7 +4207,7 @@ static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const
 
         bool is_assembly = dal_c__sourceIsAssembly(src);
         bool use_pch = !is_assembly && has_pch && !dal_c__sourceUsesPchExcludedHeader(proj, src);
-        bool test_mode = dal_c__sourceNeedsTestMode(proj, src);
+        bool test_mode = dal_c__sourceUsesTestMode(cmd, proj, src);
         char* obj_path = dal_c__makeObjectPath(cmd, profile, target_type, object_dir, base, src, use_pch, test_mode);
 
         const char* cflags_base = use_pch ? "$(CFLAGS)" : "$(CFLAGS_NO_PCH)";
