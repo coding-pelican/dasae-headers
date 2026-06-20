@@ -6,7 +6,7 @@
  * @file    ANSI.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-23 (date of creation)
- * @updated 2026-05-23 (date of last update)
+ * @updated 2026-06-20 (date of last update)
  * @ingroup dasae-headers-workspace(dh-workspace)/daterm
  * @prefix  daterm_ANSI
  */
@@ -48,25 +48,46 @@ typedef struct daterm_ANSI__RawMode {
 } daterm_ANSI__RawMode;
 T_use_prl$(daterm_ANSI__RawMode);
 
+#if plat_is_windows
+typedef struct daterm_ANSI__WindowsSurrogate {
+    var_(high, u16);
+    var_(mods, daterm_input_Mods);
+    var_(action, daterm_key_Action);
+} daterm_ANSI__WindowsSurrogate;
+T_use_prl$(daterm_ANSI__WindowsSurrogate);
+#endif /* plat_is_windows */
+
 #define daterm_ANSI_input_buf_cap_default 256
-#define daterm_ANSI_report_buf_cap_default 64
+#define daterm_ANSI_pending_event_cap 64
 #define daterm_ANSI_esc_timeout_default time_Dur_fromMillis_static(8)
 
 typedef enum_((daterm_ANSI_OutputMode $fits($packed))(
     daterm_ANSI_OutputMode_processed,
     daterm_ANSI_OutputMode_raw,
 )) daterm_ANSI_OutputMode;
+T_use_prl$(daterm_ANSI_OutputMode);
+
+typedef enum_((daterm_ANSI_InputMode $fits($packed))(
+    daterm_ANSI_InputMode_native,
+    daterm_ANSI_InputMode_vt
+)) daterm_ANSI_InputMode;
+T_use_prl$(daterm_ANSI_InputMode);
 
 typedef struct daterm_ANSI {
     var_(input_file, fs_File);
     var_(output_file, fs_File);
     var_(output_mode, daterm_ANSI_OutputMode);
+    var_(input_mode, daterm_ANSI_InputMode);
     var_(raw_mode_, O$daterm_ANSI__RawMode);
-    var_(is_in_alt_screen, bool);
     var_(is_tracking_mouse, bool);
+    var_(mouse_report_mode_, u16);
+    var_(mouse_pos_kind, daterm_mouse_PosKind);
     var_(is_tracking_focus, bool);
+    var_(is_enhanced_keyboard, bool);
+    var_(cached_screen_cells, O$daterm_Size);
 #if plat_is_windows
     var_(windows_mouse_buttons, DWORD);
+    var_(windows_surrogate, O$daterm_ANSI__WindowsSurrogate);
 #endif /* plat_is_windows */
     var_(input_buf, struct {
         var_(reader, io_Buf_Reader);
@@ -74,9 +95,10 @@ typedef struct daterm_ANSI {
         var_(esc_started_at, O$time_Clock_Inst);
         var_(esc_timeout, time_Dur);
     });
-    var_(report_buf, struct {
-        var_(mem, S$u8);
-        var_(is_owned, bool);
+    var_(pending, struct {
+        var_(items, A$$(daterm_ANSI_pending_event_cap, daterm_Event));
+        var_(head, usize);
+        var_(len, usize);
     });
     var_(gpa, O$mem_Alctr);
     var_(clock, time_Clock);
@@ -89,14 +111,11 @@ typedef struct daterm_ANSI_Cfg { /* clang-format off */
     var_(input_file, fs_File);
     var_(output_file, fs_File);
     var_(output_mode, daterm_ANSI_OutputMode);
+    var_(input_mode, daterm_ANSI_InputMode);
     var_(esc_timeout, time_Dur);
     var_(input_buf, variant_(($fits($packed))(
         (daterm_ANSI_Cfg_input_buf_fixed, S$u8),
         (daterm_ANSI_Cfg_input_buf_owned, struct { var_(cap, usize); }),
-    )));
-    var_(report_buf, variant_(($fits($packed))(
-        (daterm_ANSI_Cfg_report_buf_fixed, S$u8),
-        (daterm_ANSI_Cfg_report_buf_owned, struct { var_(cap, usize); }),
     )));
     var_(clock, time_Clock);
 } daterm_ANSI_Cfg; /* clang-format on */
@@ -108,12 +127,14 @@ $static fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
         .input_file = io_getStdIn(),
         .output_file = io_getStdOut(),
         .output_mode = daterm_ANSI_OutputMode_processed,
+#if plat_is_windows
+        .input_mode = daterm_ANSI_InputMode_native,
+#else
+        .input_mode = daterm_ANSI_InputMode_vt,
+#endif
         .esc_timeout = daterm_ANSI_esc_timeout_default,
         .input_buf = union_of((daterm_ANSI_Cfg_input_buf_owned){
             .cap = daterm_ANSI_input_buf_cap_default,
-        }),
-        .report_buf = union_of((daterm_ANSI_Cfg_report_buf_owned){
-            .cap = daterm_ANSI_report_buf_cap_default,
         }),
         .clock = union_of((time_Clock_awake)(catch_((time_Awake_direct())($ignore, time_Awake_noop)))),
     };
@@ -128,21 +149,7 @@ $extern fn_((daterm_ANSI_enableRawMode(daterm_ANSI* self))(E$void));
 $extern fn_((daterm_ANSI_disableRawMode(daterm_ANSI* self))(void));
 $extern fn_((daterm_ANSI_isInRawMode(const daterm_ANSI* self))(bool));
 
-$attr($must_check)
-$extern fn_((daterm_ANSI_enableMouseTracking(daterm_ANSI* self))(E$void));
-$extern fn_((daterm_ANSI_disableMouseTracking(daterm_ANSI* self))(void));
-$extern fn_((daterm_ANSI_isTrackingMouse(const daterm_ANSI* self))(bool));
-
-$attr($must_check)
-$extern fn_((daterm_ANSI_enableFocusTracking(daterm_ANSI* self))(E$void));
-$extern fn_((daterm_ANSI_disableFocusTracking(daterm_ANSI* self))(void));
-$extern fn_((daterm_ANSI_isTrackingFocus(const daterm_ANSI* self))(bool));
-
 $extern fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term));
-
-$attr($must_check)
-$extern fn_((daterm_ANSI_enter(daterm_ANSI* self))(E$void));
-$extern fn_((daterm_ANSI_leave(daterm_ANSI* self))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

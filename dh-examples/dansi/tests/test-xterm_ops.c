@@ -82,7 +82,7 @@ TEST_fn_("dansi-xterm/color palette sgr selection: builders and palette report p
     try_(TEST_expect(mem_eqlBytes(fg.as_const, u8_l("\x1b[91m"))));
 
     var_(rgb_buf, dansi_xterm_color_FgRGBBuf) $undefined;
-    let rgb = dansi_xterm_color_fgRGB((dansi_xterm_color_RGB8){ .r = 1, .g = 2, .b = 3 }, &rgb_buf);
+    let rgb = dansi_xterm_color_fg24bit((dansi_xterm_color_RGB8){ .r = 1, .g = 2, .b = 3 }, &rgb_buf);
     try_(TEST_expect(mem_eqlBytes(rgb.as_const, u8_l("\x1b[38;2;1;2;3m"))));
 
     var_(push_buf, dansi_xterm_sgr_PushBuf) $undefined;

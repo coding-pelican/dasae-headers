@@ -91,34 +91,34 @@ fn_((dansi_xterm_color_bg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out)
     );
 };
 
-fn_((dansi_xterm_color_fgRGB(dansi_xterm_color_RGB8 rgb, dansi_xterm_color_FgRGBBuf* buf))(S$u8)) {
+fn_((dansi_xterm_color_fg24bit(dansi_xterm_color_RGB8 color, dansi_xterm_color_FgRGBBuf* buf))(S$u8)) {
     var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
-    catch_((dansi_xterm_color_fgRGBWrite(rgb, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
+    catch_((dansi_xterm_color_fg24bitWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_fgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_fg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out))(E$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_sgr_setRaw_static(
-            dansi_xterm_color_fgRGB_prefix "{:uhh}" dansi_csi_param_sep "{:uhh}" dansi_csi_param_sep "{:uhh}"
+            dansi_xterm_color_fg24bit_prefix "{:uhh}" dansi_csi_param_sep "{:uhh}" dansi_csi_param_sep "{:uhh}"
         )),
-        rgb.r, rgb.g, rgb.b
+        color.r, color.g, color.b
     );
 };
 
-fn_((dansi_xterm_color_bgRGB(dansi_xterm_color_RGB8 rgb, dansi_xterm_color_BgRGBBuf* buf))(S$u8)) {
+fn_((dansi_xterm_color_bg24bit(dansi_xterm_color_RGB8 color, dansi_xterm_color_BgRGBBuf* buf))(S$u8)) {
     var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
-    catch_((dansi_xterm_color_bgRGBWrite(rgb, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
+    catch_((dansi_xterm_color_bg24bitWrite(color, io_Fixed_writer(&writing)))($ignore, claim_unreachable));
     return io_Fixed_written(writing.stream);
 };
 
-fn_((dansi_xterm_color_bgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer out))(E$void)) {
+fn_((dansi_xterm_color_bg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out))(E$void)) {
     return io_Writer_print(
         out,
         u8_l(dansi_sgr_setRaw_static(
-            dansi_xterm_color_bgRGB_prefix "{:uhh}" dansi_csi_param_sep "{:uhh}" dansi_csi_param_sep "{:uhh}"
+            dansi_xterm_color_bg24bit_prefix "{:uhh}" dansi_csi_param_sep "{:uhh}" dansi_csi_param_sep "{:uhh}"
         )),
-        rgb.r, rgb.g, rgb.b
+        color.r, color.g, color.b
     );
 };

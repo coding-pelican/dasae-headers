@@ -1,0 +1,120 @@
+#include "daterm-bridge/xterm.h"
+
+$static fn_((daterm_xterm__cellPixelsRequestWrite(
+    P$raw ctx, io_Writer out
+))(E$void));
+$static fn_((daterm_xterm__cellPixelsMatch(
+    P$raw ctx, S_const$u8 seq, P$raw out
+))(E$daterm_TxnMatch));
+
+fn_((daterm_xterm_enableMouse(
+    daterm_ANSI* ansi, daterm_xterm_MouseCfg cfg
+))(E$void) $guard) {
+    claim_assert_nonnull(ansi);
+#if plat_is_windows
+    if (ansi->input_mode != daterm_ANSI_InputMode_vt) {
+        return_err(E_cause$daterm_ANSI_Unsupported());
+    }
+#endif
+    if (cfg.encoding != dansi_xterm_mouse_Encoding_sgr
+        && cfg.encoding != dansi_xterm_mouse_Encoding_sgr_pixels) {
+        return_err(E_cause$daterm_ANSI_Unsupported());
+    }
+    if (ansi->is_tracking_mouse) daterm_xterm_disableMouse(ansi);
+    let out = fs_File_writer(ansi->output_file);
+    try_(dansi_xterm_mouse_enableReportModeWrite(cfg.report_mode, out));
+    errdefer_($ignore, catch_((dansi_xterm_mouse_disableReportModeWrite(
+        cfg.report_mode, out
+    ))($ignore, $do_nothing)));
+    try_(dansi_xterm_mouse_enableEncodingWrite(cfg.encoding, out));
+    ansi->is_tracking_mouse = true;
+    ansi->mouse_report_mode_ = as$(u16)(cfg.report_mode);
+    ansi->mouse_pos_kind = cfg.encoding == dansi_xterm_mouse_Encoding_sgr_pixels
+        ? daterm_mouse_PosKind_pixel
+        : daterm_mouse_PosKind_cell;
+    return_ok({});
+} $unguarded(fn);
+
+fn_((daterm_xterm_disableMouse(daterm_ANSI* ansi))(void)) {
+    claim_assert_nonnull(ansi);
+    if (!ansi->is_tracking_mouse) return;
+    let out = fs_File_writer(ansi->output_file);
+    let_(encoding, dansi_xterm_mouse_Encoding) = ansi->mouse_pos_kind == daterm_mouse_PosKind_pixel
+        ? dansi_xterm_mouse_Encoding_sgr_pixels
+        : dansi_xterm_mouse_Encoding_sgr;
+    catch_((dansi_xterm_mouse_disableEncodingWrite(encoding, out))(
+        $ignore, $do_nothing
+    ));
+    catch_((dansi_xterm_mouse_disableReportModeWrite(
+        as$(dansi_xterm_mouse_ReportMode)(ansi->mouse_report_mode_), out
+    ))($ignore, $do_nothing));
+    ansi->is_tracking_mouse = false;
+    ansi->mouse_report_mode_ = 0;
+    ansi->mouse_pos_kind = daterm_mouse_PosKind_cell;
+};
+
+fn_((daterm_xterm_setFocusTracking(daterm_ANSI* ansi, bool enabled))(E$void) $scope) {
+    claim_assert_nonnull(ansi);
+#if plat_is_windows
+    if (ansi->input_mode != daterm_ANSI_InputMode_vt) {
+        return_err(E_cause$daterm_ANSI_Unsupported());
+    }
+#endif
+    if (ansi->is_tracking_focus == enabled) return_ok({});
+    try_(dansi_xterm_focus_setTrackingWrite(enabled, fs_File_writer(ansi->output_file)));
+    ansi->is_tracking_focus = enabled;
+    return_ok({});
+} $unscoped(fn);
+
+fn_((daterm_xterm_setEnhancedKeyboard(daterm_ANSI* ansi, bool enabled))(E$void) $scope) {
+    claim_assert_nonnull(ansi);
+#if plat_is_windows
+    if (ansi->input_mode != daterm_ANSI_InputMode_vt) {
+        return_err(E_cause$daterm_ANSI_Unsupported());
+    }
+#endif
+    if (ansi->is_enhanced_keyboard == enabled) return_ok({});
+    let out = fs_File_writer(ansi->output_file);
+    if (enabled) {
+        try_(dansi_xterm_key_enableEnhancedWrite(out));
+    } else {
+        try_(dansi_xterm_key_disableEnhancedWrite(out));
+    }
+    ansi->is_enhanced_keyboard = enabled;
+    return_ok({});
+} $unscoped(fn);
+
+$static fn_((daterm_xterm__cellPixelsRequestWrite(
+    P$raw ctx, io_Writer out
+))(E$void)) {
+    let_ignore = ctx;
+    return dansi_xterm_screen_requestCellPixelsWrite(out);
+};
+
+$static fn_((daterm_xterm__cellPixelsMatch(
+    P$raw ctx, S_const$u8 seq, P$raw out
+))(E$daterm_TxnMatch) $scope) {
+    let_ignore = ctx;
+    claim_assert_nonnull(out);
+    let report = catch_((dansi_xterm_screen_parseCellPixelsReport(seq))(
+        $ignore, return_ok(daterm_TxnMatch_no)
+    ));
+    let result = ptrAlignCast$((dansi_xterm_screen_PixelSize*)(out));
+    *result = report;
+    return_ok(daterm_TxnMatch_done);
+} $unscoped(fn);
+
+fn_((daterm_xterm_fetchCellPixels(
+    daterm_Term term,
+    time_Dur timeout,
+    dansi_xterm_screen_PixelSize* out
+))(daterm_Txn_E$Void)) {
+    claim_assert_nonnull(out);
+    return daterm_Term_runTxn(term, (daterm_Txn){
+        .timeout = timeout,
+        .ctx = ptrCast$((P$raw)(out)),
+        .out = out,
+        .requestWriteFn = daterm_xterm__cellPixelsRequestWrite,
+        .matchFn = daterm_xterm__cellPixelsMatch,
+    });
+};

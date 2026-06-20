@@ -1,16 +1,4 @@
-#include <dh-main.h>
-#include <dh/ascii.h>
-#include <dh/utf8.h>
-#include <dh/Rand.h>
-#include <dh/heap/Sys.h>
-#include <dh/heap/Arena.h>
-#include <dh/io/Buf.h>
-#include <dh/io/Fixed.h>
-#include <dh/io/common.h>
-#include <dh/io/stream.h>
-#include <dh/mem/common.h>
-#include <dh/time/Dur.h>
-#include "daterm.h"
+#include <dh/prl.h>
 
 /*========== RGB ============================================================*/
 
@@ -139,6 +127,7 @@ $static fn_((tetris_Board_clearLines(tetris_Board* self))(usize));
 
 /*========== Queue ==========================================================*/
 
+#include <dh/Rand.h>
 
 #define tetris_PieceQ_Bag_len 7ull
 typedef A$$(tetris_PieceQ_Bag_len, tetris_Piece) tetris_PieceQ_Bag;
@@ -158,6 +147,10 @@ $static fn_((tetris_PieceQ_pop(tetris_PieceQ* self))(tetris_Piece));
 $static fn_((tetris_PieceQ_peek(const tetris_PieceQ* self, usize index))(tetris_Piece));
 
 /*========== Game ===========================================================*/
+
+#include <dh/time/Dur.h>
+#include "daterm-runtime/key.h"
+#include "daterm-runtime/Term.h"
 
 #define tetris_spawn_x 3
 #define tetris_spawn_y 0
@@ -235,13 +228,15 @@ $static fn_((tetris_spawn(tetris_Self* self))(void));
 $static fn_((tetris_pieceFits(const tetris_Self* self, tetris_Piece piece, tetris_Rotation rotation, i32 x, i32 y))(bool));
 $static fn_((tetris_isGrounded(const tetris_Self* self))(bool));
 $static fn_((tetris_tryMove(tetris_Self* self, i32 dx, i32 dy))(bool));
+$static fn_((tetris_rotationNext(tetris_Rotation rotation, i32 dir))(tetris_Rotation));
+$static fn_((tetris_kickIndex(tetris_Rotation from, tetris_Rotation to))(usize));
 $static fn_((tetris_tryRotate(tetris_Self* self, i32 dir))(bool));
 $static fn_((tetris_lock(tetris_Self* self))(void));
 $static fn_((tetris_hardDrop(tetris_Self* self))(void));
 $static fn_((tetris_hold(tetris_Self* self))(void));
 $static fn_((tetris_tick(tetris_Self* self, time_Dur dt))(void));
-$static fn_((tetris_cmdFromSpecial(dansi_Event_Special special))(E$O$tetris_Cmd)) $must_check;
-$static fn_((tetris_cmdFromText(dansi_Event_Text text))(E$O$tetris_Cmd)) $must_check;
+$static fn_((tetris_cmdFromKey(daterm_key_Event key))(E$O$tetris_Cmd)) $must_check;
+$static fn_((tetris_cmdFromText(daterm_key_Text text))(E$O$tetris_Cmd)) $must_check;
 $static fn_((tetris_applyCmd(tetris_Self* self, tetris_Cmd cmd))(void));
 $static fn_((tetris_pollInput(tetris_Self* self, daterm_Term term))(E$void)) $must_check;
 $static fn_((tetris_ghostY(const tetris_Self* self))(i32));
@@ -250,8 +245,10 @@ $static fn_((tetris_ghostCellAt(const tetris_Self* self, i32 ghost_y, usize x, u
 
 /*========== Frame / Presenter ============================================*/
 
+#include <dh/io/Buf.h>
+
 #define tetris_Frame_width 72ull
-#define tetris_Frame_height 34ull
+#define tetris_Frame_height (tetris_Board_visible_h + 4ull)
 #define tetris_Frame_area (tetris_Frame_width * tetris_Frame_height)
 #define tetris_Presenter_buf_len 16384ull
 
@@ -283,6 +280,7 @@ typedef struct tetris_Presenter_Layout {
     var_(board_bottom_y, usize);
     var_(panel_x, usize);
     var_(panel_name_x, usize);
+    var_(panel_piece_x, usize);
     var_(hold_y, usize);
     var_(hold_piece_y, usize);
     var_(next_y, usize);
@@ -334,7 +332,7 @@ $static fn_((tetris_SmallScreen_Cfg_fromArgs(S$S_const$u8 args))(tetris_SmallScr
 $static fn_((tetris_SmallScreen_Cfg_shouldTick(tetris_SmallScreen_Cfg self, bool is_small))(bool));
 
 typedef struct tetris_FrameCell {
-    var_(ch, u8);
+    var_(ch, u32);
     var_(fg, O$tetris_RGB);
     var_(bg, O$tetris_RGB);
 } tetris_FrameCell;
@@ -344,6 +342,9 @@ $static let_(tetris_FrameCell_blank, tetris_FrameCell) = {
     .fg = none(),
     .bg = none(),
 };
+$static let_(tetris_Glyph_upper_half, u32) = 0x2580;
+$static let_(tetris_Glyph_lower_half, u32) = 0x2584;
+$static let_(tetris_Glyph_full_block, u32) = 0x2588;
 
 typedef struct tetris_Frame {
     var_(cells, A$$(tetris_Frame_width * tetris_Frame_height, tetris_FrameCell));
@@ -357,6 +358,9 @@ $static fn_((tetris_Frame_putChar(tetris_Frame* self, usize x, usize y, u8 ch))(
 $static fn_((tetris_Frame_putText(tetris_Frame* self, usize x, usize y, S_const$u8 text))(void));
 $static fn_((tetris_Frame_putTextFg(tetris_Frame* self, usize x, usize y, S_const$u8 text, tetris_RGB fg))(void));
 $static fn_((tetris_Frame_putBlock(tetris_Frame* self, usize x, usize y, tetris_Piece piece))(void));
+$static fn_((tetris_Frame_putMiniBlock(
+    tetris_Frame* self, usize x, usize y, tetris_Piece piece, bool top, bool bottom
+))(void));
 $static fn_((tetris_Frame_putGhost(tetris_Frame* self, usize x, usize y))(void));
 $static fn_((tetris_FrameCell_eql(tetris_FrameCell lhs, tetris_FrameCell rhs))(bool));
 $static fn_((tetris_FrameCell_dimmedGray(tetris_FrameCell self))(tetris_FrameCell));
@@ -383,8 +387,13 @@ typedef struct tetris_Presenter_DiffStats {
 T_use_prl$(tetris_Presenter_DiffStats);
 
 $static fn_((tetris_Presenter_init(tetris_Presenter* self, io_Writer out))(tetris_Presenter*));
+$static fn_((tetris_Presenter_HelpLines_width(void))(usize));
+$static fn_((tetris_Presenter_Layout_centeredX(usize left, usize width, S_const$u8 text))(usize));
 $static fn_((tetris_Presenter_Layout_calc(void))(tetris_Presenter_Layout));
 $static fn_((tetris_Presenter_MessageLines_firstY(tetris_Presenter_MessageLines lines, daterm_Size screen))(usize));
+$static fn_((tetris_Presenter_composeBoardBorder(tetris_Frame* frame, tetris_Presenter_Layout layout, usize y))(void));
+$static fn_((tetris_Presenter_composeHelp(tetris_Frame* frame, tetris_Presenter_Layout layout))(void));
+$static fn_((tetris_Presenter_composeMiniPiece(tetris_Frame* frame, O$tetris_Piece piece, usize col, usize row))(void));
 $static fn_((tetris_Presenter_compose(tetris_Presenter* self, const tetris_Self* game))(void));
 $static fn_((tetris_Presenter_composeU32(tetris_Frame* frame, usize x, usize y, u32 val))(void));
 $static fn_((tetris_Presenter_present(tetris_Presenter* self))(E$void)) $must_check;
@@ -394,7 +403,12 @@ $static fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_
 $static fn_((tetris_Presenter_render(tetris_Presenter* self, const tetris_Self* game, daterm_Size screen, tetris_SmallScreen_Cfg cfg))(E$void)) $must_check;
 $static fn_((tetris_Presenter_DiffStats_calc(const tetris_Presenter* self))(tetris_Presenter_DiffStats));
 $static fn_((tetris_Presenter_DiffStats_prefersFull(tetris_Presenter_DiffStats self))(bool));
+$static fn_((tetris_Presenter_smallScreenBgCell(const tetris_Presenter* self, usize x, usize y, tetris_SmallScreen_RenderPolicy policy))(tetris_FrameCell));
+$static fn_((tetris_Presenter_smallScreenBorderCell(tetris_FrameCell under, daterm_Size screen, usize x, usize y))(tetris_FrameCell));
+$static fn_((tetris_Presenter_smallScreenTextCell(tetris_FrameCell under, u16 cols, usize x, usize y, usize text_y, S_const$u8 text, tetris_RGB fg))(tetris_FrameCell));
 $static fn_((tetris_Presenter_formatU32(S$u8 buf, u32 val))(usize));
+$static fn_((tetris_Presenter_writeGlyph(u32 glyph, io_Writer out))(E$void)) $must_check;
+$static fn_((tetris_Presenter_moveToCell(usize x, usize y, io_Writer out))(E$void)) $must_check;
 $static fn_((tetris_Presenter_beginScreen(io_Writer out))(E$void)) $must_check;
 $static fn_((tetris_Presenter_homeScreen(io_Writer out))(E$void)) $must_check;
 $static fn_((tetris_Presenter_StyleState_init(void))(tetris_Presenter_StyleState));
@@ -403,6 +417,14 @@ $static fn_((tetris_Presenter_StyleState_applyBg(tetris_Presenter_StyleState* se
 $static fn_((tetris_Presenter_StyleState_applyCell(tetris_Presenter_StyleState* self, io_Writer out, tetris_FrameCell cell))(E$void)) $must_check;
 
 /*========== Main ===========================================================*/
+
+#include <dh-main.h>
+#include <dh/heap/Sys.h>
+#include <dh/heap/Arena.h>
+#include "daterm-context/ANSI.h"
+#include <dansi-xterm/screen.h>
+#include <dansi-dec/cursor.h>
+#include <dh/time/Clock.h>
 
 $static fn_((tetris_Main_waitForEnter(void))(void));
 
@@ -424,10 +446,10 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     let term = daterm_ANSI_term(&ansi);
     let out = daterm_Term_writer(term);
-    try_(dansi_screen_enterAlternateWrite(out));
-    defer_(catch_((dansi_screen_exitAlternateWrite(out))($ignore, $do_nothing)));
-    try_(dansi_cursor_hideWrite(out));
-    defer_(catch_((dansi_cursor_showWrite(out))($ignore, $do_nothing)));
+    try_(dansi_xterm_screen_enterAlternateWrite(out));
+    defer_(catch_((dansi_xterm_screen_exitAlternateWrite(out))($ignore, $do_nothing)));
+    try_(dansi_dec_cursor_hideWrite(out));
+    defer_(catch_((dansi_dec_cursor_showWrite(out))($ignore, $do_nothing)));
 
     $static var_(game_storage, tetris_Self) $undefined_static;
     let game = tetris_init(&game_storage);
@@ -442,7 +464,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         let now = time_Clock_now(ansi.clock);
         let dt = time_Clock_Inst_durSince(now, last_tick);
         last_tick = now;
-        let screen = try_(daterm_Term_queryScreenSize(term));
+        let screen = try_(daterm_Term_queryNativeScreenCells(term));
         let is_small_screen = screen.cols < tetris_Frame_width || screen.rows < tetris_Frame_height;
 
         try_(tetris_pollInput(game, term));
@@ -466,7 +488,9 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
 /*========== Main ===========================================================*/
 
-$static fn_((tetris_Main_waitForEnter(void))(void)) {
+#include <dh/ascii.h>
+
+fn_((tetris_Main_waitForEnter(void))(void)) {
     let out = fs_File_writer(io_getStdOut());
     catch_((io_Writer_writeBytes(out, u8_l("example-tetris: press Enter to enter terminal mode\n")))($ignore, $do_nothing));
 
@@ -478,18 +502,18 @@ $static fn_((tetris_Main_waitForEnter(void))(void)) {
 
 /*========== RGB ============================================================*/
 
-$static fn_((tetris_RGB_eql(tetris_RGB lhs, tetris_RGB rhs))(bool)) {
+fn_((tetris_RGB_eql(tetris_RGB lhs, tetris_RGB rhs))(bool)) {
     return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b;
 };
 
-$static fn_((tetris_RGB_dimmedGray(tetris_RGB self))(tetris_RGB)) {
+fn_((tetris_RGB_dimmedGray(tetris_RGB self))(tetris_RGB)) {
     let gray = as$(u8)((as$(u16)(self.r) * 30u + as$(u16)(self.g) * 59u + as$(u16)(self.b) * 11u) / 200u);
     return (tetris_RGB){ gray, gray, gray };
 };
 
 /*========== Piece ==========================================================*/
 
-$static fn_((tetris_Piece_covers(tetris_Piece self, tetris_Rotation rotation, usize x, usize y))(bool)) {
+fn_((tetris_Piece_covers(tetris_Piece self, tetris_Rotation rotation, usize x, usize y))(bool)) {
     claim_assert(x < 4);
     claim_assert(y < 4);
     let mask = *A_at((*A_at((tetris_Piece_masks)[self]))[rotation]);
@@ -497,33 +521,33 @@ $static fn_((tetris_Piece_covers(tetris_Piece self, tetris_Rotation rotation, us
     return ((mask >> bit_idx) & 1u) != 0;
 };
 
-$static fn_((tetris_Piece_color(tetris_Piece self))(tetris_RGB)) {
+fn_((tetris_Piece_color(tetris_Piece self))(tetris_RGB)) {
     return *A_at((tetris_Piece_colors)[self]);
 };
 
-$static fn_((tetris_Piece_name(tetris_Piece self))(S_const$u8)) {
+fn_((tetris_Piece_name(tetris_Piece self))(S_const$u8)) {
     return *A_at((tetris_Piece_names)[self]);
 };
 
 /*========== Board ==========================================================*/
 
-$static fn_((tetris_Board_clear(tetris_Board* self))(void)) {
+fn_((tetris_Board_clear(tetris_Board* self))(void)) {
     for_(($s(A_ref(self->cells)))(cell)) asg_l((cell)(none())) $end(for);
 };
 
-$static fn_((tetris_Board_at(const tetris_Board* self, usize x, usize y))(const O$tetris_Piece*)) {
+fn_((tetris_Board_at(const tetris_Board* self, usize x, usize y))(const O$tetris_Piece*)) {
     claim_assert(x < tetris_Board_w);
     claim_assert(y < tetris_Board_h);
     return A_at((self->cells)[y * tetris_Board_w + x]);
 };
 
-$static fn_((tetris_Board_atMut(tetris_Board* self, usize x, usize y))(O$tetris_Piece*)) {
+fn_((tetris_Board_atMut(tetris_Board* self, usize x, usize y))(O$tetris_Piece*)) {
     claim_assert(x < tetris_Board_w);
     claim_assert(y < tetris_Board_h);
     return A_at((self->cells)[y * tetris_Board_w + x]);
 };
 
-$static fn_((tetris_Board_clearLines(tetris_Board* self))(usize)) {
+fn_((tetris_Board_clearLines(tetris_Board* self))(usize)) {
     var_(cleared, usize) = 0;
     var_(y, usize) = tetris_Board_h;
     while (0 < y) {
@@ -555,7 +579,7 @@ $static fn_((tetris_Board_clearLines(tetris_Board* self))(usize)) {
 
 /*========== Queue ==========================================================*/
 
-$static fn_((tetris_PieceQ_init(tetris_PieceQ* self))(void)) {
+fn_((tetris_PieceQ_init(tetris_PieceQ* self))(void)) {
     asg_l((self)({
         .len = 0,
         .rng = Rand_init(),
@@ -564,7 +588,7 @@ $static fn_((tetris_PieceQ_init(tetris_PieceQ* self))(void)) {
     tetris_PieceQ_pushBag(self);
 };
 
-$static fn_((tetris_PieceQ_pushBag(tetris_PieceQ* self))(void)) {
+fn_((tetris_PieceQ_pushBag(tetris_PieceQ* self))(void)) {
     var_(bag, tetris_PieceQ_Bag) = A_init({
         tetris_Piece_i,
         tetris_Piece_j,
@@ -590,7 +614,7 @@ $static fn_((tetris_PieceQ_pushBag(tetris_PieceQ* self))(void)) {
     } $end(for);
 };
 
-$static fn_((tetris_PieceQ_pop(tetris_PieceQ* self))(tetris_Piece)) {
+fn_((tetris_PieceQ_pop(tetris_PieceQ* self))(tetris_Piece)) {
     if (self->len < tetris_PieceQ_Bag_len) { tetris_PieceQ_pushBag(self); }
     let piece = *A_at((self->items)[0]);
     for_(($r(1, self->len))(i)) {
@@ -601,22 +625,29 @@ $static fn_((tetris_PieceQ_pop(tetris_PieceQ* self))(tetris_Piece)) {
     return piece;
 };
 
-$static fn_((tetris_PieceQ_peek(const tetris_PieceQ* self, usize index))(tetris_Piece)) {
+fn_((tetris_PieceQ_peek(const tetris_PieceQ* self, usize index))(tetris_Piece)) {
     claim_assert(index < self->len);
     return *A_at((self->items)[index]);
 };
 
 /*========== Game ===========================================================*/
 
-$static fn_((tetris_gravityForLevel(u32 level))(time_Dur)) {
+#include <dh/utf8.h>
+#include <dh/io/stream.h>
+#include <dansi-core/erase.h>
+#include <dansi-core/cursor.h>
+#include <dansi-xterm/color.h>
+#include <dh/io/Fixed.h>
+
+fn_((tetris_gravityForLevel(u32 level))(time_Dur)) {
     $static let_(gravity_ms, A$$(10, u32)) = A_init({ 800, 717, 633, 550, 467, 383, 300, 217, 133, 100 });
     if (level == 0) { level = 1; }
     if (level <= A_len(gravity_ms)) return time_Dur_fromMillis(*A_at((gravity_ms)[level - 1]));
-    let fast = 100u - (level - 10u) * 6u;
-    return time_Dur_fromMillis(fast < 50u ? 50u : fast);
+    if (19u <= level) return time_Dur_fromMillis(50);
+    return time_Dur_fromMillis(100u - (level - 10u) * 6u);
 };
 
-$static fn_((tetris_init(tetris_Self* self))(tetris_Self*)) {
+fn_((tetris_init(tetris_Self* self))(tetris_Self*)) {
     asg_l((self)({
         .hold = none(),
         .score = 0,
@@ -636,7 +667,7 @@ $static fn_((tetris_init(tetris_Self* self))(tetris_Self*)) {
     return self;
 };
 
-$static fn_((tetris_spawn(tetris_Self* self))(void)) {
+fn_((tetris_spawn(tetris_Self* self))(void)) {
     self->current = tetris_PieceQ_pop(&self->queue);
     self->rotation = tetris_Rotation_0;
     self->x = tetris_spawn_x;
@@ -647,7 +678,7 @@ $static fn_((tetris_spawn(tetris_Self* self))(void)) {
     self->is_game_over = !tetris_pieceFits(self, self->current, self->rotation, self->x, self->y);
 };
 
-$static fn_((tetris_pieceFits(const tetris_Self* self, tetris_Piece piece, tetris_Rotation rotation, i32 x, i32 y))(bool)) {
+fn_((tetris_pieceFits(const tetris_Self* self, tetris_Piece piece, tetris_Rotation rotation, i32 x, i32 y))(bool)) {
     for_(($r(0, 4))(py)) {
         for_(($r(0, 4))(px)) {
             if (!tetris_Piece_covers(piece, rotation, px, py)) { continue; }
@@ -661,11 +692,11 @@ $static fn_((tetris_pieceFits(const tetris_Self* self, tetris_Piece piece, tetri
     return true;
 };
 
-$static fn_((tetris_isGrounded(const tetris_Self* self))(bool)) {
+fn_((tetris_isGrounded(const tetris_Self* self))(bool)) {
     return !tetris_pieceFits(self, self->current, self->rotation, self->x, self->y + 1);
 };
 
-$static fn_((tetris_tryMove(tetris_Self* self, i32 dx, i32 dy))(bool)) {
+fn_((tetris_tryMove(tetris_Self* self, i32 dx, i32 dy))(bool)) {
     if (!tetris_pieceFits(self, self->current, self->rotation, self->x + dx, self->y + dy)) {
         return false;
     }
@@ -675,12 +706,12 @@ $static fn_((tetris_tryMove(tetris_Self* self, i32 dx, i32 dy))(bool)) {
     return true;
 };
 
-$static fn_((tetris_rotationNext(tetris_Rotation rotation, i32 dir))(tetris_Rotation)) {
+fn_((tetris_rotationNext(tetris_Rotation rotation, i32 dir))(tetris_Rotation)) {
     let value = (as$(i32)(rotation) + dir + as$(i32)(count$tetris_Rotation)) % as$(i32)(count$tetris_Rotation);
     return as$(tetris_Rotation)(value);
 };
 
-$static fn_((tetris_kickIndex(tetris_Rotation from, tetris_Rotation to))(usize)) {
+fn_((tetris_kickIndex(tetris_Rotation from, tetris_Rotation to))(usize)) {
     if (from == tetris_Rotation_0 && to == tetris_Rotation_r) { return 0; }
     if (from == tetris_Rotation_r && to == tetris_Rotation_0) { return 1; }
     if (from == tetris_Rotation_r && to == tetris_Rotation_2) { return 2; }
@@ -692,7 +723,7 @@ $static fn_((tetris_kickIndex(tetris_Rotation from, tetris_Rotation to))(usize))
     return 7;
 };
 
-$static fn_((tetris_tryRotate(tetris_Self* self, i32 dir))(bool)) {
+fn_((tetris_tryRotate(tetris_Self* self, i32 dir))(bool)) {
     let from = self->rotation;
     let to = tetris_rotationNext(from, dir);
     if (self->current == tetris_Piece_o) {
@@ -705,7 +736,7 @@ $static fn_((tetris_tryRotate(tetris_Self* self, i32 dir))(bool)) {
     let tests = self->current == tetris_Piece_i ? *A_at((tetris_kicks_i)[kick_idx]) : *A_at((tetris_kicks_jlstz)[kick_idx]);
     for_(($a(tests))(test)) {
         let nx = self->x + test->x;
-        let ny = self->y + test->y;
+        let ny = self->y - test->y;
         if (tetris_pieceFits(self, self->current, to, nx, ny)) {
             self->x = nx;
             self->y = ny;
@@ -717,7 +748,7 @@ $static fn_((tetris_tryRotate(tetris_Self* self, i32 dir))(bool)) {
     return false;
 };
 
-$static fn_((tetris_lock(tetris_Self* self))(void)) {
+fn_((tetris_lock(tetris_Self* self))(void)) {
     for_(($r(0, 4))(py)) {
         for_(($r(0, 4))(px)) {
             if (!tetris_Piece_covers(self->current, self->rotation, px, py)) { continue; }
@@ -736,7 +767,7 @@ $static fn_((tetris_lock(tetris_Self* self))(void)) {
     tetris_spawn(self);
 };
 
-$static fn_((tetris_hardDrop(tetris_Self* self))(void)) {
+fn_((tetris_hardDrop(tetris_Self* self))(void)) {
     var_(dropped, u32) = 0;
     while (tetris_tryMove(self, 0, 1)) {
         dropped += 1;
@@ -745,7 +776,7 @@ $static fn_((tetris_hardDrop(tetris_Self* self))(void)) {
     tetris_lock(self);
 };
 
-$static fn_((tetris_hold(tetris_Self* self))(void)) {
+fn_((tetris_hold(tetris_Self* self))(void)) {
     if (!self->can_hold) return;
     if_none(self->hold) {
         self->hold = some$((O$tetris_Piece)(self->current));
@@ -763,7 +794,7 @@ $static fn_((tetris_hold(tetris_Self* self))(void)) {
     self->can_hold = false;
 };
 
-$static fn_((tetris_tick(tetris_Self* self, time_Dur dt))(void)) {
+fn_((tetris_tick(tetris_Self* self, time_Dur dt))(void)) {
     if (self->is_paused || self->is_game_over) { return; }
 
     self->gravity_elapsed = time_Dur_addSat(self->gravity_elapsed, dt);
@@ -781,19 +812,38 @@ $static fn_((tetris_tick(tetris_Self* self, time_Dur dt))(void)) {
     }
 };
 
-$static fn_((tetris_cmdFromSpecial(dansi_Event_Special special))(E$O$tetris_Cmd) $scope) {
-    $suppress_(switch_enum)(switch (special.code)) {
-    case_((dansi_key_Code_esc)) return_ok(some(tetris_cmd_quit)) $end(case);
-    case_((dansi_key_Code_left)) return_ok(some(tetris_cmd_move_left)) $end(case);
-    case_((dansi_key_Code_right)) return_ok(some(tetris_cmd_move_right)) $end(case);
-    case_((dansi_key_Code_down)) return_ok(some(tetris_cmd_soft_drop)) $end(case);
-    case_((dansi_key_Code_up)) return_ok(some(tetris_cmd_rotate_cw)) $end(case);
+fn_((tetris_cmdFromKey(daterm_key_Event key))(E$O$tetris_Cmd) $scope) {
+    if_some((key.action)(action)) {
+        if (action == daterm_key_Action_release) return_ok(none());
+        if (action == daterm_key_Action_repeat
+            && key.code != daterm_key_Code_left
+            && key.code != daterm_key_Code_right
+            && key.code != daterm_key_Code_down
+            && key.code != daterm_key_Code_keypad_4
+            && key.code != daterm_key_Code_keypad_6
+            && key.code != daterm_key_Code_keypad_2) {
+            return_ok(none());
+        }
+    }
+    $suppress_(switch_enum)(switch (key.code)) {
+    case_((daterm_key_Code_escape)) return_ok(some(tetris_cmd_quit)) $end(case);
+    case daterm_key_Code_left: $fallthrough;
+    case_((daterm_key_Code_keypad_4)) return_ok(some(tetris_cmd_move_left)) $end(case);
+    case daterm_key_Code_right: $fallthrough;
+    case_((daterm_key_Code_keypad_6)) return_ok(some(tetris_cmd_move_right)) $end(case);
+    case daterm_key_Code_down: $fallthrough;
+    case_((daterm_key_Code_keypad_2)) return_ok(some(tetris_cmd_soft_drop)) $end(case);
+    case daterm_key_Code_up: $fallthrough;
+    case_((daterm_key_Code_keypad_8)) return_ok(some(tetris_cmd_rotate_cw)) $end(case);
     default_() $do_nothing $end(default);
     }
     return_ok(none());
 } $unscoped(fn);
 
-$static fn_((tetris_cmdFromText(dansi_Event_Text text))(E$O$tetris_Cmd) $scope) {
+fn_((tetris_cmdFromText(daterm_key_Text text))(E$O$tetris_Cmd) $scope) {
+    if_some((text.action)(action)) {
+        if (action != daterm_key_Action_press) return_ok(none());
+    }
     let len = try_((utf8_codepointSeqLen(text.codepoint)));
     if (len != utf8_SeqLen_1) return_ok(none());
     let ch = ascii_toLower(intCast$((u8)(text.codepoint)));
@@ -806,7 +856,7 @@ $static fn_((tetris_cmdFromText(dansi_Event_Text text))(E$O$tetris_Cmd) $scope) 
     return_ok(none());
 } $unscoped(fn);
 
-$static fn_((tetris_applyCmd(tetris_Self* self, tetris_Cmd cmd))(void)) {
+fn_((tetris_applyCmd(tetris_Self* self, tetris_Cmd cmd))(void)) {
     $suppress_(switch_enum)(switch (cmd)) {
     case_((tetris_cmd_quit)) {
         self->is_running = false;
@@ -834,12 +884,12 @@ $static fn_((tetris_applyCmd(tetris_Self* self, tetris_Cmd cmd))(void)) {
     };
 };
 
-$static fn_((tetris_pollInput(tetris_Self* self, daterm_Term term))(E$void) $scope) {
+fn_((tetris_pollInput(tetris_Self* self, daterm_Term term))(E$void) $scope) {
     while (true) {
         let event = orelse_((daterm_Term_poll(term))(return_ok({})));
         $suppress_(switch_enum)(match_(event)) {
-        pattern_((daterm_Event_special)(special)) {
-            let cmd = try_(tetris_cmdFromSpecial(special));
+        pattern_((daterm_Event_key)(key)) {
+            let cmd = try_(tetris_cmdFromKey(key));
             if_some((cmd)(value)) tetris_applyCmd(self, value);
         } $end(pattern);
         pattern_((daterm_Event_text)(text)) {
@@ -851,7 +901,7 @@ $static fn_((tetris_pollInput(tetris_Self* self, daterm_Term term))(E$void) $sco
     }
 } $unscoped(fn);
 
-$static fn_((tetris_ghostY(const tetris_Self* self))(i32)) {
+fn_((tetris_ghostY(const tetris_Self* self))(i32)) {
     var_(y, i32) = self->y;
     while (tetris_pieceFits(self, self->current, self->rotation, self->x, y + 1)) {
         y += 1;
@@ -859,7 +909,7 @@ $static fn_((tetris_ghostY(const tetris_Self* self))(i32)) {
     return y;
 };
 
-$static fn_((tetris_activeCellAt(const tetris_Self* self, usize x, usize y))(O$tetris_Piece)) {
+fn_((tetris_activeCellAt(const tetris_Self* self, usize x, usize y))(O$tetris_Piece)) {
     for_(($r(0, 4))(py)) {
         for_(($r(0, 4))(px)) {
             if (!tetris_Piece_covers(self->current, self->rotation, px, py)) { continue; }
@@ -871,7 +921,7 @@ $static fn_((tetris_activeCellAt(const tetris_Self* self, usize x, usize y))(O$t
     return none$((O$tetris_Piece));
 };
 
-$static fn_((tetris_ghostCellAt(const tetris_Self* self, i32 ghost_y, usize x, usize y))(bool)) {
+fn_((tetris_ghostCellAt(const tetris_Self* self, i32 ghost_y, usize x, usize y))(bool)) {
     for_(($r(0, 4))(py)) {
         for_(($r(0, 4))(px)) {
             if (!tetris_Piece_covers(self->current, self->rotation, px, py)) { continue; }
@@ -939,6 +989,28 @@ fn_((tetris_Frame_putBlock(tetris_Frame* self, usize x, usize y, tetris_Piece pi
     if_some((tetris_Frame_atMut(self, x + 1, y))(cell)) *cell = block;
 };
 
+fn_((tetris_Frame_putMiniBlock(
+    tetris_Frame* self,
+    usize x,
+    usize y,
+    tetris_Piece piece,
+    bool top,
+    bool bottom
+))(void)) {
+    if (!top && !bottom) return;
+    let glyph = top && bottom
+                  ? tetris_Glyph_full_block
+              : top
+                  ? tetris_Glyph_upper_half
+                  : tetris_Glyph_lower_half;
+    if_some((tetris_Frame_atMut(self, x, y))(cell)) {
+        *cell = with_((tetris_FrameCell_blank)(
+            (.ch)(glyph),
+            (.fg)(some(tetris_Piece_color(piece))),
+        ));
+    };
+};
+
 fn_((tetris_Frame_putGhost(tetris_Frame* self, usize x, usize y))(void)) {
     let ghost = with_((tetris_FrameCell_blank)(
         (.fg)(some(tetris_RGB_ghost)),
@@ -953,7 +1025,7 @@ fn_((tetris_Frame_putGhost(tetris_Frame* self, usize x, usize y))(void)) {
     if_some((tetris_Frame_atMut(self, x + 1, y))(cell)) *cell = right;
 };
 
-$static fn_((tetris_FrameCell_eql(tetris_FrameCell lhs, tetris_FrameCell rhs))(bool)) {
+fn_((tetris_FrameCell_eql(tetris_FrameCell lhs, tetris_FrameCell rhs))(bool)) {
     if (lhs.ch != rhs.ch) return false;
 
     if (isSome(lhs.fg) != isSome(rhs.fg)) return false;
@@ -973,13 +1045,13 @@ $static fn_((tetris_FrameCell_eql(tetris_FrameCell lhs, tetris_FrameCell rhs))(b
     return true;
 };
 
-$static fn_((tetris_FrameCell_dimmedGray(tetris_FrameCell self))(tetris_FrameCell)) {
+fn_((tetris_FrameCell_dimmedGray(tetris_FrameCell self))(tetris_FrameCell)) {
     if_some((self.fg)(fg)) asg_l((&self.fg)(some(tetris_RGB_dimmedGray(fg))));
     if_some((self.bg)(bg)) asg_l((&self.bg)(some(tetris_RGB_dimmedGray(bg))));
     return self;
 };
 
-$static fn_((tetris_SmallScreen_Cfg_fromArgs(S$S_const$u8 args))(tetris_SmallScreen_Cfg)) {
+fn_((tetris_SmallScreen_Cfg_fromArgs(S$S_const$u8 args))(tetris_SmallScreen_Cfg)) {
     var cfg = tetris_SmallScreen_Cfg_default;
     for_(($s(args))(arg)) {
         let flag_prefix = u8_l("--");
@@ -1016,11 +1088,11 @@ $static fn_((tetris_SmallScreen_Cfg_fromArgs(S$S_const$u8 args))(tetris_SmallScr
     return cfg;
 };
 
-$static fn_((tetris_SmallScreen_Cfg_shouldTick(tetris_SmallScreen_Cfg self, bool is_small))(bool)) {
+fn_((tetris_SmallScreen_Cfg_shouldTick(tetris_SmallScreen_Cfg self, bool is_small))(bool)) {
     return !is_small || self.sim_policy == tetris_small_screen_sim_policy_continue;
 };
 
-$static fn_((tetris_Presenter_init(tetris_Presenter* self, io_Writer out))(tetris_Presenter*)) {
+fn_((tetris_Presenter_init(tetris_Presenter* self, io_Writer out))(tetris_Presenter*)) {
     self->out.writer = io_Buf_Writer_init(out, A_ref$((S$u8)(self->out.mem)));
     tetris_Frame_clear(&self->frame);
     tetris_Frame_clear(&self->front);
@@ -1028,7 +1100,7 @@ $static fn_((tetris_Presenter_init(tetris_Presenter* self, io_Writer out))(tetri
     return self;
 };
 
-$static fn_((tetris_Presenter_HelpLines_width(void))(usize)) {
+fn_((tetris_Presenter_HelpLines_width(void))(usize)) {
     var_(width, usize) = 0;
     for_(($a(tetris_Presenter_help_lines))(line)) {
         if (width < line->len) { width = line->len; }
@@ -1036,19 +1108,18 @@ $static fn_((tetris_Presenter_HelpLines_width(void))(usize)) {
     return width;
 };
 
-$static fn_((tetris_Presenter_Layout_centeredX(usize left, usize width, S_const$u8 text))(usize)) {
+fn_((tetris_Presenter_Layout_centeredX(usize left, usize width, S_const$u8 text))(usize)) {
     return text.len < width ? left + (width - text.len) / 2 : left;
 };
 
-$static fn_((tetris_Presenter_Layout_calc(void))(tetris_Presenter_Layout)) {
+fn_((tetris_Presenter_Layout_calc(void))(tetris_Presenter_Layout)) {
     let board_cell_w = 2ull;
     let board_cell_h = 1ull;
     let board_wall_w = 1ull;
     let board_inner_w = tetris_Board_w * board_cell_w;
     let board_outer_w = board_inner_w + board_wall_w * 2ull;
-    let mini_piece_side = 4ull;
-    let mini_piece_w = mini_piece_side * board_cell_w;
-    let mini_piece_h = mini_piece_side * board_cell_h;
+    let mini_piece_w = 4ull;
+    let mini_piece_h = 2ull;
     var_(panel_w, usize) = mini_piece_w;
     if (panel_w < u8_l("(empty)").len) { panel_w = u8_l("(empty)").len; }
 
@@ -1065,7 +1136,7 @@ $static fn_((tetris_Presenter_Layout_calc(void))(tetris_Presenter_Layout)) {
     let header_h = 1ull;
     let label_h = 1ull;
     let row_gap = 1ull;
-    let section_gap_h = row_gap * 2ull;
+    let section_gap_h = row_gap;
     let board_top_y = header_h + row_gap;
     let board_cell_y = board_top_y + board_cell_h;
     let board_bottom_y = board_cell_y + tetris_Board_visible_h * board_cell_h;
@@ -1073,17 +1144,29 @@ $static fn_((tetris_Presenter_Layout_calc(void))(tetris_Presenter_Layout)) {
     let hold_piece_y = hold_y + label_h + row_gap;
     let next_y = hold_piece_y + mini_piece_h + section_gap_h;
     let next_piece_y = next_y + label_h + row_gap;
-    let next_piece_stride_y = mini_piece_h;
+    let next_piece_stride_y = mini_piece_h + row_gap;
     let status_y = board_cell_y + tetris_Board_visible_h / 2ull - 1ull;
+    let header_field_w = 12ull;
+    let score_x = panel_x;
+    let level_x = score_x + header_field_w;
+    let lines_x = level_x + header_field_w;
     let game_over_text = u8_l("GAME OVER");
     let game_over_hint = u8_l("press q or esc");
+    claim_assert(board_bottom_y < tetris_Frame_height);
+    claim_assert(
+        next_piece_y
+            + (tetris_PieceQ_preview_len - 1) * next_piece_stride_y
+            + mini_piece_h
+        <= tetris_Frame_height
+    );
+
     return (tetris_Presenter_Layout){
         .header_y = 0,
         .header_value_y = label_h,
         .title_x = board_wall_x,
-        .score_x = panel_x,
-        .level_x = panel_x + panel_w + gap,
-        .lines_x = panel_x + panel_w + gap * 2ull,
+        .score_x = score_x,
+        .level_x = level_x,
+        .lines_x = lines_x,
         .board_cell_w = board_cell_w,
         .board_wall_x = board_wall_x,
         .board_cell_x = board_cell_x,
@@ -1093,6 +1176,7 @@ $static fn_((tetris_Presenter_Layout_calc(void))(tetris_Presenter_Layout)) {
         .board_bottom_y = board_bottom_y,
         .panel_x = panel_x,
         .panel_name_x = panel_x + u8_l("hold ").len,
+        .panel_piece_x = panel_x + (panel_w - mini_piece_w) / 2,
         .hold_y = hold_y,
         .hold_piece_y = hold_piece_y,
         .next_y = next_y,
@@ -1107,19 +1191,19 @@ $static fn_((tetris_Presenter_Layout_calc(void))(tetris_Presenter_Layout)) {
     };
 };
 
-$static fn_((tetris_Presenter_composeU32(tetris_Frame* frame, usize x, usize y, u32 val))(void)) {
+fn_((tetris_Presenter_composeU32(tetris_Frame* frame, usize x, usize y, u32 val))(void)) {
     var_(buf_mem, A$$(10, u8)) $undefined;
     let buf = A_ref$((S$u8)(buf_mem));
     let len = tetris_Presenter_formatU32(buf, val);
     tetris_Frame_putText(frame, x, y, S_prefix((buf)(len)).as_const);
 };
 
-$static fn_((tetris_Presenter_MessageLines_firstY(tetris_Presenter_MessageLines lines, daterm_Size screen))(usize)) {
+fn_((tetris_Presenter_MessageLines_firstY(tetris_Presenter_MessageLines lines, daterm_Size screen))(usize)) {
     let rows = as$(usize)(screen.rows);
     return rows < A_len(lines) ? 0 : (rows - A_len(lines)) / 2;
 };
 
-$static fn_((tetris_Presenter_composeBoardBorder(tetris_Frame* frame, tetris_Presenter_Layout layout, usize y))(void)) {
+fn_((tetris_Presenter_composeBoardBorder(tetris_Frame* frame, tetris_Presenter_Layout layout, usize y))(void)) {
     tetris_Frame_putChar(frame, layout.board_wall_x, y, '+');
     for_(($r(layout.board_wall_x + 1, layout.board_wall_r))(x)) {
         tetris_Frame_putChar(frame, x, y, '-');
@@ -1127,27 +1211,32 @@ $static fn_((tetris_Presenter_composeBoardBorder(tetris_Frame* frame, tetris_Pre
     tetris_Frame_putChar(frame, layout.board_wall_r, y, '+');
 };
 
-$static fn_((tetris_Presenter_composeHelp(tetris_Frame* frame, tetris_Presenter_Layout layout))(void)) {
+fn_((tetris_Presenter_composeHelp(tetris_Frame* frame, tetris_Presenter_Layout layout))(void)) {
     for_(($a(tetris_Presenter_help_lines), $rf(layout.help_y))(line, y)) {
         tetris_Frame_putText(frame, layout.help_x, y, *line);
     } $end(for);
 };
 
-$static fn_((tetris_Presenter_composeMiniPiece(tetris_Frame* frame, O$tetris_Piece piece, usize col, usize row))(void)) {
+fn_((tetris_Presenter_composeMiniPiece(tetris_Frame* frame, O$tetris_Piece piece, usize col, usize row))(void)) {
     if_none(piece) {
         tetris_Frame_putText(frame, col, row, u8_l("(empty)"));
     } else_some((piece_value)) {
-        for_(($r(0, 4))(py)) {
+        for_(($r(0, 2))(py)) {
             for_(($r(0, 4))(px)) {
-                if (tetris_Piece_covers(piece_value, tetris_Rotation_0, px, py)) {
-                    tetris_Frame_putBlock(frame, col + px * 2, row + py, piece_value);
-                }
+                tetris_Frame_putMiniBlock(
+                    frame,
+                    col + px,
+                    row + py,
+                    piece_value,
+                    tetris_Piece_covers(piece_value, tetris_Rotation_0, px, py * 2),
+                    tetris_Piece_covers(piece_value, tetris_Rotation_0, px, py * 2 + 1)
+                );
             } $end(for);
         } $end(for);
     };
 };
 
-$static fn_((tetris_Presenter_compose(tetris_Presenter* self, const tetris_Self* game))(void)) {
+fn_((tetris_Presenter_compose(tetris_Presenter* self, const tetris_Self* game))(void)) {
     let frame = &self->frame;
     let layout = tetris_Presenter_Layout_calc();
     tetris_Frame_clear(frame);
@@ -1186,14 +1275,19 @@ $static fn_((tetris_Presenter_compose(tetris_Presenter* self, const tetris_Self*
     } else_none {
         tetris_Frame_putText(frame, layout.panel_name_x, layout.hold_y, u8_l("-"));
     };
-    tetris_Presenter_composeMiniPiece(frame, game->hold, layout.panel_x, layout.hold_piece_y);
+    tetris_Presenter_composeMiniPiece(
+        frame,
+        game->hold,
+        isSome(game->hold) ? layout.panel_piece_x : layout.panel_x,
+        layout.hold_piece_y
+    );
 
     tetris_Frame_putText(frame, layout.panel_x, layout.next_y, u8_l("next"));
     for_(($r(0, tetris_PieceQ_preview_len))(i)) {
         tetris_Presenter_composeMiniPiece(
             frame,
             some$((O$tetris_Piece)(tetris_PieceQ_peek(&game->queue, i))),
-            layout.panel_x,
+            layout.panel_piece_x,
             layout.next_piece_y + i * layout.next_piece_stride_y
         );
     } $end(for);
@@ -1209,7 +1303,7 @@ $static fn_((tetris_Presenter_compose(tetris_Presenter* self, const tetris_Self*
     }
 };
 
-$static fn_((tetris_Presenter_formatU32(S$u8 buf, u32 val))(usize)) {
+fn_((tetris_Presenter_formatU32(S$u8 buf, u32 val))(usize)) {
     var_(rev, A$$(10, u8)) $undefined;
     var_(len, usize) = 0;
     do {
@@ -1224,25 +1318,40 @@ $static fn_((tetris_Presenter_formatU32(S$u8 buf, u32 val))(usize)) {
     return len;
 };
 
-$static fn_((tetris_Presenter_StyleState_init(void))(tetris_Presenter_StyleState)) {
+fn_((tetris_Presenter_StyleState_init(void))(tetris_Presenter_StyleState)) {
     return (tetris_Presenter_StyleState){
         .fg = none(),
         .bg = none(),
     };
 };
 
-$static fn_((tetris_Presenter_homeScreen(io_Writer out))(E$void) $scope) {
+fn_((tetris_Presenter_writeGlyph(u32 glyph, io_Writer out))(E$void) $scope) {
+    var_(mem, A$$(4, u8)) $undefined;
+    let bytes = catch_((utf8_encodeWithin(glyph, A_ref$((S$u8)(mem))))(
+        $ignore, claim_unreachable
+    ));
+    try_(io_Writer_writeBytes(out, bytes.as_const));
+    return_ok({});
+} $unscoped(fn);
+
+fn_((tetris_Presenter_moveToCell(
+    usize x, usize y, io_Writer out
+))(E$void)) {
+    return dansi_cursor_moveToWrite(as$(u16)(y + 1), as$(u16)(x + 1), out);
+};
+
+fn_((tetris_Presenter_homeScreen(io_Writer out))(E$void) $scope) {
     try_(dansi_cursor_moveToWrite(1, 1, out));
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((tetris_Presenter_beginScreen(io_Writer out))(E$void) $scope) {
+fn_((tetris_Presenter_beginScreen(io_Writer out))(E$void) $scope) {
     try_(tetris_Presenter_homeScreen(out));
-    try_(dansi_screen_clearWrite(out));
+    try_(dansi_erase_inDisplayWrite(dansi_erase_Area_all, out));
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((tetris_Presenter_StyleState_applyFg(tetris_Presenter_StyleState* self, io_Writer out, O$tetris_RGB next))(E$void) $scope) {
+fn_((tetris_Presenter_StyleState_applyFg(tetris_Presenter_StyleState* self, io_Writer out, O$tetris_RGB next))(E$void) $scope) {
     if_some((self->fg)(curr_rgb)) {
         if_some((next)(next_rgb)) {
             if (tetris_RGB_eql(curr_rgb, next_rgb)) return_ok({});
@@ -1252,18 +1361,25 @@ $static fn_((tetris_Presenter_StyleState_applyFg(tetris_Presenter_StyleState* se
     };
 
     if_none(next) {
-        try_(dansi_attr_resetFGWrite(out));
+        try_(dansi_color_resetFGWrite(out));
         asg_l((&self->fg)(none()));
         return_ok({});
     } else_some((next_rgb)) {
-        try_(dansi_color_fg24bitWrite(next_rgb.r, next_rgb.g, next_rgb.b, out));
+        try_(dansi_xterm_color_fg24bitWrite(
+            (dansi_xterm_color_RGB8){
+                .r = next_rgb.r,
+                .g = next_rgb.g,
+                .b = next_rgb.b,
+            },
+            out
+        ));
         asg_l((&self->fg)(some(next_rgb)));
         return_ok({});
     };
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((tetris_Presenter_StyleState_applyBg(tetris_Presenter_StyleState* self, io_Writer out, O$tetris_RGB next))(E$void) $scope) {
+fn_((tetris_Presenter_StyleState_applyBg(tetris_Presenter_StyleState* self, io_Writer out, O$tetris_RGB next))(E$void) $scope) {
     if_some((self->bg)(curr_rgb)) {
         if_some((next)(next_rgb)) {
             if (tetris_RGB_eql(curr_rgb, next_rgb)) return_ok({});
@@ -1273,24 +1389,31 @@ $static fn_((tetris_Presenter_StyleState_applyBg(tetris_Presenter_StyleState* se
     };
 
     if_none(next) {
-        try_(dansi_attr_resetBGWrite(out));
+        try_(dansi_color_resetBGWrite(out));
         asg_l((&self->bg)(none()));
         return_ok({});
     } else_some(next_rgb) {
-        try_(dansi_color_bg24bitWrite(next_rgb.r, next_rgb.g, next_rgb.b, out));
+        try_(dansi_xterm_color_bg24bitWrite(
+            (dansi_xterm_color_RGB8){
+                .r = next_rgb.r,
+                .g = next_rgb.g,
+                .b = next_rgb.b,
+            },
+            out
+        ));
         asg_l((&self->bg)(some(next_rgb)));
         return_ok({});
     };
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((tetris_Presenter_StyleState_applyCell(tetris_Presenter_StyleState* self, io_Writer out, tetris_FrameCell cell))(E$void) $scope) {
+fn_((tetris_Presenter_StyleState_applyCell(tetris_Presenter_StyleState* self, io_Writer out, tetris_FrameCell cell))(E$void) $scope) {
     try_(tetris_Presenter_StyleState_applyFg(self, out, cell.fg));
     try_(tetris_Presenter_StyleState_applyBg(self, out, cell.bg));
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((tetris_Presenter_DiffStats_calc(const tetris_Presenter* self))(tetris_Presenter_DiffStats)) {
+fn_((tetris_Presenter_DiffStats_calc(const tetris_Presenter* self))(tetris_Presenter_DiffStats)) {
     var stats = (tetris_Presenter_DiffStats){};
     for_(($rt(tetris_Frame_height))(y)) {
         var_(in_run, bool) = false;
@@ -1314,11 +1437,11 @@ $static fn_((tetris_Presenter_DiffStats_calc(const tetris_Presenter* self))(tetr
     return stats;
 };
 
-$static fn_((tetris_Presenter_DiffStats_prefersFull(tetris_Presenter_DiffStats self))(bool)) {
+fn_((tetris_Presenter_DiffStats_prefersFull(tetris_Presenter_DiffStats self))(bool)) {
     return self.changed_cells * 3ull >= tetris_Frame_area || self.changed_runs * 2ull >= tetris_Frame_height;
 };
 
-$static fn_((tetris_Presenter_smallScreenBgCell(
+fn_((tetris_Presenter_smallScreenBgCell(
     const tetris_Presenter* self,
     usize x,
     usize y,
@@ -1330,7 +1453,7 @@ $static fn_((tetris_Presenter_smallScreenBgCell(
     return tetris_FrameCell_blank;
 };
 
-$static fn_((tetris_Presenter_smallScreenBorderCell(tetris_FrameCell under, daterm_Size screen, usize x, usize y))(tetris_FrameCell)) {
+fn_((tetris_Presenter_smallScreenBorderCell(tetris_FrameCell under, daterm_Size screen, usize x, usize y))(tetris_FrameCell)) {
     if (screen.cols == 0 || screen.rows == 0) { return under; }
     if (x != 0 && x + 1 != screen.cols && y != 0 && y + 1 != screen.rows) { return under; }
 
@@ -1344,7 +1467,7 @@ $static fn_((tetris_Presenter_smallScreenBorderCell(tetris_FrameCell under, date
     ));
 };
 
-$static fn_((tetris_Presenter_smallScreenTextCell(
+fn_((tetris_Presenter_smallScreenTextCell(
     tetris_FrameCell under,
     u16 cols,
     usize x,
@@ -1365,7 +1488,7 @@ $static fn_((tetris_Presenter_smallScreenTextCell(
     ));
 };
 
-$static fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_Size screen, tetris_SmallScreen_Cfg cfg))(E$void) $scope) {
+fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_Size screen, tetris_SmallScreen_Cfg cfg))(E$void) $scope) {
     let out = io_Buf_writer(&self->out.writer);
     try_(tetris_Presenter_beginScreen(out));
 
@@ -1412,7 +1535,7 @@ $static fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_
             } $end(for);
             cell = tetris_Presenter_smallScreenBorderCell(cell, screen, x, y);
             try_(tetris_Presenter_StyleState_applyCell(&style, out, cell));
-            try_(io_Writer_writeByte(out, cell.ch));
+            try_(tetris_Presenter_writeGlyph(cell.ch, out));
         } $end(for);
         try_(tetris_Presenter_StyleState_applyFg(&style, out, none$((O$tetris_RGB))));
         try_(tetris_Presenter_StyleState_applyBg(&style, out, none$((O$tetris_RGB))));
@@ -1420,13 +1543,13 @@ $static fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_
             try_(io_Writer_writeBytes(out, u8_l("\r\n")));
         }
     } $end(for);
-    try_(dansi_attr_resetWrite(out));
+    try_(dansi_sgr_resetWrite(out));
     try_(io_Buf_Writer_flush(&self->out.writer));
     self->front_valid = false;
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((tetris_Presenter_presentFull(tetris_Presenter* self, bool clear))(E$void) $scope) {
+fn_((tetris_Presenter_presentFull(tetris_Presenter* self, bool clear))(E$void) $scope) {
     let out = io_Buf_writer(&self->out.writer);
     if (clear) {
         try_(tetris_Presenter_beginScreen(out));
@@ -1443,7 +1566,7 @@ $static fn_((tetris_Presenter_presentFull(tetris_Presenter* self, bool clear))(E
         ));
         for_(($s(rows))(cell)) {
             try_(tetris_Presenter_StyleState_applyCell(&style, out, *cell));
-            try_(io_Writer_writeByte(out, cell->ch));
+            try_(tetris_Presenter_writeGlyph(cell->ch, out));
         } $end(for);
         try_(tetris_Presenter_StyleState_applyFg(&style, out, none$((O$tetris_RGB))));
         try_(tetris_Presenter_StyleState_applyBg(&style, out, none$((O$tetris_RGB))));
@@ -1451,14 +1574,14 @@ $static fn_((tetris_Presenter_presentFull(tetris_Presenter* self, bool clear))(E
             try_(io_Writer_writeBytes(out, u8_l("\r\n")));
         }
     } $end(for);
-    try_(dansi_attr_resetWrite(out));
+    try_(dansi_sgr_resetWrite(out));
     try_(io_Buf_Writer_flush(&self->out.writer));
     self->front = self->frame;
     self->front_valid = true;
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((tetris_Presenter_presentDiff(tetris_Presenter* self))(E$void) $scope) {
+fn_((tetris_Presenter_presentDiff(tetris_Presenter* self))(E$void) $scope) {
     let out = io_Buf_writer(&self->out.writer);
     var style = tetris_Presenter_StyleState_init();
 
@@ -1473,7 +1596,7 @@ $static fn_((tetris_Presenter_presentDiff(tetris_Presenter* self))(E$void) $scop
                 continue;
             }
 
-            try_(dansi_cursor_moveToWrite(as$(u16)(x + 1), as$(u16)(y + 1), out));
+            try_(tetris_Presenter_moveToCell(x, y, out));
             while (x < tetris_Frame_width) {
                 let run_idx = y * tetris_Frame_width + x;
                 let run_curr = *S_at((tetris_Frame_cells(&self->frame))[run_idx]);
@@ -1481,20 +1604,20 @@ $static fn_((tetris_Presenter_presentDiff(tetris_Presenter* self))(E$void) $scop
                 if (tetris_FrameCell_eql(run_curr, run_prev)) break;
 
                 try_(tetris_Presenter_StyleState_applyCell(&style, out, run_curr));
-                try_(io_Writer_writeByte(out, run_curr.ch));
+                try_(tetris_Presenter_writeGlyph(run_curr.ch, out));
                 x += 1;
             }
         }
     } $end(for);
 
-    try_(dansi_attr_resetWrite(out));
+    try_(dansi_sgr_resetWrite(out));
     try_(io_Buf_Writer_flush(&self->out.writer));
     self->front = self->frame;
     self->front_valid = true;
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((tetris_Presenter_present(tetris_Presenter* self))(E$void) $scope) {
+fn_((tetris_Presenter_present(tetris_Presenter* self))(E$void) $scope) {
     if (!self->front_valid) return tetris_Presenter_presentFull(self, true);
 
     let stats = tetris_Presenter_DiffStats_calc(self);
@@ -1504,7 +1627,7 @@ $static fn_((tetris_Presenter_present(tetris_Presenter* self))(E$void) $scope) {
              : tetris_Presenter_presentDiff(self);
 } $unscoped(fn);
 
-$static fn_((tetris_Presenter_render(
+fn_((tetris_Presenter_render(
     tetris_Presenter* self,
     const tetris_Self* game,
     daterm_Size screen,

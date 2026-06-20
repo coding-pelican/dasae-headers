@@ -3,35 +3,29 @@
  * @license   Proprietary and confidential. Unauthorized use, reproduction,
  *            or distribution is strictly prohibited.
  *
- * @file    base.h
+ * @file    focus.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
- * @date    2026-05-23 (date of creation)
+ * @date    2026-06-20 (date of creation)
  * @updated 2026-06-20 (date of last update)
  * @ingroup daterm-runtime
- * @prefix  daterm
+ * @prefix  daterm_focus
  */
 #pragma once
-#ifndef daterm_runtime_base__included
-#define daterm_runtime_base__included 1
+#ifndef daterm_focus__included
+#define daterm_focus__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#include <dh/prl.h>
+#include "base.h"
 
-typedef struct daterm_Pos {
-    var_(col, u16);
-    var_(row, u16);
-} daterm_Pos;
-T_use_prl$(daterm_Pos);
-
-typedef struct daterm_Size {
-    var_(cols, u16);
-    var_(rows, u16);
-} daterm_Size;
-T_use_prl$(daterm_Size);
+typedef enum_((daterm_focus_Event $fits($packed))(
+    daterm_focus_Event_in,
+    daterm_focus_Event_out
+)) daterm_focus_Event;
+T_use_prl$(daterm_focus_Event);
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* daterm_runtime_base__included */
+#endif /* daterm_focus__included */

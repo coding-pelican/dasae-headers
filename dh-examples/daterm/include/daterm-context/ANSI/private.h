@@ -6,7 +6,7 @@
  * @file    private.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-25 (date of creation)
- * @updated 2026-05-25 (date of last update)
+ * @updated 2026-06-20 (date of last update)
  * @ingroup dasae-headers-workspace(dh-workspace)/daterm
  * @prefix  daterm_ANSI
  */
@@ -17,8 +17,8 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#include "daterm-context/ANSI.h"
 #include <dansi-core/Seq.h>
+#include "daterm-context/ANSI.h"
 
 $attr($must_check)
 $extern fn_((daterm_ANSI_pollBufferedSeq(
@@ -27,6 +27,14 @@ $extern fn_((daterm_ANSI_pollBufferedSeq(
     O$time_Clock_Inst* esc_started_at,
     time_Dur esc_timeout
 ))(O$dansi_Seq));
+
+$extern fn_((daterm_ANSI_parseSeqEvent(dansi_Seq seq))(O$daterm_Event));
+
+#if plat_is_windows
+$extern fn_((daterm_ANSI_parseWindowsKeyEvent(
+    daterm_ANSI* self, KEY_EVENT_RECORD record
+))(O$daterm_Event));
+#endif /* plat_is_windows */
 
 #if defined(__cplusplus)
 } /* extern "C" */

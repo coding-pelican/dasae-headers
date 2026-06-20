@@ -1,268 +1,189 @@
 # daterm
 
-`daterm` is a concrete terminal context layer for DH-C.
+`daterm` is the terminal runtime layer for DH-C. It owns OS terminal lifecycle,
+nonblocking input, backend dispatch, and protocol-neutral runtime events.
+`dansi` owns terminal control construction, sequence framing, and protocol
+report parsing.
 
-It is not an ANSI sequence library. `dansi` owns ANSI/xterm byte protocol
-construction and parsing. `daterm` owns terminal objects, backend context,
-terminal lifecycle policy, and the `io_Reader`/`io_Writer` contracts through
-which application code uses `dansi`.
-
-The intended shape is:
-
-```txt
-application
-  |
-  | calls dansi_*Write / dansi_*fetch through reader-writer contracts
-  v
-daterm_Term
-  |
-  | exposes io_Reader, io_Writer, poll/wait
-  v
-backend context
-  |
-  | pass-through, intercept, parse, or native dispatch
-  v
-OS terminal / virtual terminal / user implementation
+```mermaid
+graph TD
+    APP[application] --> TERM[daterm_Term]
+    TERM --> ANSI[daterm_ANSI]
+    ANSI --> OS[OS terminal]
+    APP --> DANSI[dansi control APIs]
+    DANSI -->|io_Writer| TERM
+    OS -->|bytes and native events| ANSI
+    ANSI --> CORE[dansi-core framing]
+    CORE --> DEC[dansi-dec reports]
+    CORE --> XTERM[dansi-xterm reports]
+    DEC --> EVENT[daterm_Event]
+    XTERM --> EVENT
+    ANSI --> EVENT
+    EVENT --> APP
 ```
 
 ## Boundary
 
-`daterm` should not duplicate semantic drawing APIs that already exist as
-`dansi` protocol primitives.
-
-For example, application code should write terminal protocol like this:
+Applications compose output with the module that owns each protocol operation
+and write through `daterm_Term_writer`:
 
 ```c
-let out = daterm_Term_writer(term);
+#include <dansi-core.h>
+#include <dansi-xterm.h>
+#include "daterm.h"
 
-try_(dansi_screen_clearWrite(out));
+let out = daterm_Term_writer(term);
+try_(dansi_erase_inDisplayWrite(dansi_erase_Area_all, out));
 try_(dansi_cursor_moveToWrite(1, 1, out));
-try_(dansi_color_fg24bitWrite(255, 220, 80, out));
+try_(dansi_xterm_color_fg24bitWrite((dansi_xterm_color_RGB8){
+    .r = 255, .g = 220, .b = 80,
+}, out));
 try_(io_Writer_writeBytes(out, u8_l("ready")));
-try_(dansi_attr_resetWrite(out));
+try_(dansi_sgr_resetWrite(out));
 ```
 
-`daterm` provides the concrete writer. It does not need separate
-`daterm_Term_clearScreen`, `daterm_Term_moveTo`, or `daterm_Term_setFg`
-wrappers.
-
-The same rule applies to queries. If a query can be expressed as a `dansi`
-request/receive/parse/fetch operation over `io_Writer` and `io_Reader`, then a
-backend can support it by intercepting that byte protocol. A separate
-`Term_VTbl` query method is only justified when the contract cannot be modeled
-through the reader/writer protocol.
+`daterm` does not duplicate those operations as drawing methods. The runtime
+provides the reader/writer and handles terminal state that requires an OS
+backend.
 
 ## Package Shape
 
 ```txt
 include/
-  daterm.h              package umbrella
-  daterm-runtime.h      backend-neutral runtime umbrella
-  daterm-context.h      concrete context umbrella
+  daterm.h
+  daterm-runtime.h
+  daterm-context.h
+  daterm-bridge.h
 
 include/daterm-runtime/
-  base.h                shared value types
-  Event.h               backend-neutral events
-  Term.h                terminal object interface
+  base.h
+  input.h
+  key.h
+  mouse.h
+  focus.h
+  Event.h
+  Caps.h
+  Query.h
+  Txn.h
+  Term.h
 
 include/daterm-context/
-  ANSI.h                current OS terminal context
-  ANSI/private.h        internal/test-only ANSI helpers
-  Virt.h                disabled virtual-terminal draft
+  ANSI.h
+  ANSI/private.h
+
+include/daterm-bridge/
+  xterm.h
 ```
 
-`Virt` is currently not an active public context. A virtual backend should be
-reintroduced only after its role is narrowed: either a terminal implementation
-that parses `dansi` byte streams, or a focused test backend.
+`daterm_Term` exposes polling, waiting, reader/writer access, and native screen
+or cursor queries. `daterm_ANSI` is the concrete current-terminal context for
+Windows and POSIX.
 
-## Runtime Types
-
-`daterm_Term` is a lightweight object handle:
+## Lifecycle
 
 ```c
-typedef struct daterm_Term {
-    P$raw ctx;
-    const daterm_Term_VTbl* vtbl;
-} daterm_Term;
-```
+var heap = heap_Sys_init();
+defer_(heap_Sys_fini(&heap));
 
-Current runtime operations are:
-
-- `daterm_Term_reader`
-- `daterm_Term_writer`
-- `daterm_Term_poll`
-- `daterm_Term_wait`
-- `daterm_Term_waitTimed`
-- `daterm_Term_waitProtn`
-- screen/cursor query functions currently present in the interface
-
-The query functions are transitional. The preferred direction is to let `dansi`
-query primitives run through `daterm_Term_reader` and `daterm_Term_writer`, so a
-backend can pass through to ANSI, answer from a native OS API, or answer from a
-virtual state model without exposing a separate semantic query surface.
-
-## ANSI Context
-
-`daterm_ANSI` represents the current process terminal context.
-
-It owns:
-
-- input and output `fs_File` handles
-- an input `io_Buf_Reader`
-- report buffer storage
-- raw mode state
-- mouse tracking state
-- focus tracking state
-- output mode policy
-- ESC timeout policy for ambiguous input
-
-Configuration is explicit:
-
-```c
-var cfg = daterm_ANSI_Cfg_default(gpa);
-cfg.input_file = io_getStdIn();
-cfg.output_file = io_getStdOut();
-cfg.output_mode = daterm_ANSI_OutputMode_processed;
-cfg.esc_timeout = daterm_ANSI_esc_timeout_default;
-
+var cfg = daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap));
+cfg.input_mode = daterm_ANSI_InputMode_vt;
 var ansi = try_(daterm_ANSI_init(cfg));
 defer_(daterm_ANSI_fini(&ansi));
+
+try_(daterm_ANSI_enableRawMode(&ansi));
+defer_(daterm_ANSI_disableRawMode(&ansi));
+
+try_(daterm_xterm_enableMouse(&ansi, (daterm_xterm_MouseCfg){
+    .report_mode = dansi_xterm_mouse_ReportMode_button_event,
+    .encoding = dansi_xterm_mouse_Encoding_sgr,
+}));
+defer_(daterm_xterm_disableMouse(&ansi));
+
+let term = daterm_ANSI_term(&ansi);
 ```
 
-The default configuration uses owned input/report buffers. Fixed caller-owned
-buffers can be supplied through `daterm_ANSI_Cfg_input_buf_fixed` and
-`daterm_ANSI_Cfg_report_buf_fixed` when allocation is not desired.
+Raw mode is a backend primitive. Mouse, focus, and enhanced keyboard settings
+are xterm bridge operations and are configured independently.
 
-## Lifecycle Policy
+On Windows, `daterm_ANSI_InputMode_native` consumes `KEY_EVENT` records and
+provides press/repeat/release actions. `daterm_ANSI_InputMode_vt` provides the
+VT byte stream needed by protocol transactions. `daterm_Term_caps` reports the
+selected guarantee; the two input ownership models are not mixed implicitly.
 
-Lifecycle policy should be explicit and conservative.
+## Input Model
 
-Current primitive responsibilities:
+`daterm_ANSI` frames input without blocking a render loop. Partial CSI and
+control strings remain buffered, while a standalone ESC is emitted after the
+configured timeout.
 
-- `daterm_ANSI_enableRawMode`
-- `daterm_ANSI_disableRawMode`
-- `daterm_ANSI_enableMouseTracking`
-- `daterm_ANSI_disableMouseTracking`
-- `daterm_ANSI_enableFocusTracking`
-- `daterm_ANSI_disableFocusTracking`
-- `daterm_ANSI_fini`
+Protocol dispatch is ordered by ownership and information content:
 
-`fini` must clean up state that the context owns. If raw mode or mouse tracking
-was enabled through `daterm_ANSI`, it must be disabled through `daterm_ANSI`.
+1. xterm focus and SGR mouse reports
+2. xterm enhanced key reports with modifiers or CSI-u payloads
+3. DEC/VT baseline key and keypad reports
+4. xterm legacy fallback reports
+5. UTF-8 text and C0 key interpretation
 
-Broad "enter/leave" helpers are only useful as fixed sugar for a known common
-combination. If they grow options, they become lifecycle policy APIs and should
-be replaced by explicit primitive calls or a dedicated lifecycle configuration
-type.
+The result is a `daterm_Event` variant:
 
-Alternate screen is the same kind of policy decision. `dansi` provides
-`dansi_screen_enterAlternateWrite` and `dansi_screen_exitAlternateWrite`.
-`daterm` should track alternate screen only if the `Term` abstraction itself
-owns that state and can guarantee cleanup. Otherwise it should leave alternate
-screen as an explicit `dansi` protocol operation chosen by the caller.
-
-## Input And Events
-
-`daterm_Term_poll` is non-blocking. Backends must not block a frame loop while
-trying to parse input.
-
-`daterm_Term_wait` and `daterm_Term_waitTimed` are cancellation points.
-`daterm_Term_waitProtn` is a protected wait that returns only when an event is
-available.
-
-For ANSI streams this requires:
-
-- checking buffered input before OS readiness
-- reading only when the OS says input is ready
-- preserving partial escape sequences
-- distinguishing standalone ESC from a longer sequence with a configurable
-  timeout
-
-Input parsing comes from `dansi-core` (`dansi_Event_parse` / `dansi_Event_tryParse`).
-`daterm_Event` wraps protocol events and adds backend-specific variants:
-
-- `daterm_Event_special`
+- `daterm_Event_key`
 - `daterm_Event_text`
 - `daterm_Event_mouse`
 - `daterm_Event_focus`
 - `daterm_Event_resize`
 
-Resize events are a backend concern. ANSI streams may not provide a native
-resize event, while an OS backend may be able to detect one directly. The ANSI
-context converts POSIX `SIGWINCH` and Windows `WINDOW_BUFFER_SIZE_EVENT` into
-`daterm_Event_resize`.
+Mouse input is itself a variant with `press`, `release`, `motion`, and `wheel`
+payloads. Positions carry a cell/pixel kind. Key and text events carry an
+optional action, because legacy VT input cannot report releases while native
+backends can.
 
-Focus events use xterm-compatible focus tracking (`CSI ? 1004 h/l`) parsed as
-`dansi_Event_focus`. Bracketed paste is a useful future event, but it needs a
-deliberate buffering contract because pasted bytes arrive between `CSI 200~` and
-`CSI 201~` and can exceed the normal input event buffer.
+## Runtime Queries And Transactions
 
-```mermaid
-flowchart TD
-    T[terminal or OS input] --> B[daterm_ANSI backend]
-    B -->|raw bytes| S[dansi_Seq parser]
-    S --> P[dansi_Event_tryParse]
-    B -->|SIGWINCH or WINDOW_BUFFER_SIZE_EVENT| R[resize event]
-    B -->|Windows MOUSE_EVENT_RECORD| WM[native mouse event]
-    P --> E[daterm_Event]
-    R --> E
-    WM --> E
-```
+`daterm_Term_queryLocal` handles only native or cached state. Protocol reports
+use `daterm_Term_runTxn`, which writes a request, pumps complete sequences, and
+queues unrelated semantic events for subsequent `poll` or `wait` calls.
 
-## Query Path
-
-Preferred query flow:
+Protocol-specific bridge helpers compose the corresponding dansi request and
+parser with that broker:
 
 ```c
-let out = daterm_Term_writer(term);
-let in = daterm_Term_reader(term);
-
-var_(buf, dansi_screen_SizeReportBuf) $undefined;
-let size = try_(dansi_screen_fetchTextAreaSizeChars(out, in, A_ref$((S$u8)(buf))));
+var_(cell_pixels, dansi_xterm_screen_PixelSize) $undefined;
+try_(daterm_xterm_fetchCellPixels(
+    term, time_Dur_fromMillis(20), &cell_pixels
+));
 ```
 
-An OS-backed `daterm_ANSI` writer/reader may pass the request to the terminal and
-read the report. A backend with a native answer may intercept the request bytes
-and synthesize the expected response bytes. A virtual backend may parse the same
-request bytes and answer from its in-memory terminal state.
-
-That keeps application code protocol-oriented and keeps backend specialization
-behind the `io_Reader`/`io_Writer` boundary.
-
-## Output Newlines
-
-`io_Writer_nl` is a logical LF byte, not terminal cursor movement. Terminal
-layout code should use `dansi_cursor_moveNextLineWrite`,
-`dansi_cursor_moveToWrite`, `dansi_line_clearWrite`, and related protocol
-primitives when cursor position matters.
-
-This matters in raw mode and processed-output mode because `\n` and terminal
-"next line" are not the same contract.
-
-## PTY Scope
-
-PTY/ConPTY hosting is out of scope for `daterm`.
-
-A future cross-platform pseudo-terminal abstraction should live in a separate
-package such as `dapty`. That package would own child process spawning and
-master-side PTY/ConPTY IO. `daterm` should remain focused on current terminal
-objects and backend-neutral terminal contracts.
+```mermaid
+sequenceDiagram
+    participant App
+    participant Term
+    participant Terminal
+    App->>Term: runTxn(request, matcher)
+    Term->>Terminal: request bytes
+    loop until match or timeout
+        Terminal-->>Term: sequence or native event
+        alt matcher accepts sequence
+            Term-->>App: success
+        else semantic event
+            Term->>Term: pending queue
+        end
+    end
+```
 
 ## Verification
 
-Tests live under `tests/test-*.c`.
+Build the library and each declared artifact explicitly:
 
 ```sh
-dh-c test
+dh-c build
+dh-c build --test test-context_ANSI.c
+dh-c build --example example-color.c
+dh-c build --example example-event.c
+dh-c build --example example-screen.c
+dh-c build --example example-tetris.c
 ```
 
-From a dependent package, use recursive tests when the dependent package should
-also verify `dansi` and `daterm`:
-
-```sh
-dh-c test --recur
-```
-
-The active ANSI tests cover configuration defaults, buffered sequence polling,
-split CSI handling, ESC timeout behavior, focus sequence parsing, and
-platform-gated raw output mode behavior.
+The ANSI test covers nonblocking text, C1 CSI and control-string framing, ESC
+timeout behavior, DEC keys, xterm modified keys and CSI-u text, SGR mouse,
+focus, Windows input-mode capabilities and native key actions, and
+platform-gated raw output behavior.

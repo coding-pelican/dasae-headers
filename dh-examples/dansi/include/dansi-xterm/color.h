@@ -47,8 +47,8 @@ extern "C" {
 #define dansi_xterm_color_RGB_selector_u16 __uint__dansi_xterm_color_RGB_selector_u16
 #define dansi_xterm_color_fg8bit_prefix __str__dansi_xterm_color_fg8bit_prefix
 #define dansi_xterm_color_bg8bit_prefix __str__dansi_xterm_color_bg8bit_prefix
-#define dansi_xterm_color_fgRGB_prefix __str__dansi_xterm_color_fgRGB_prefix
-#define dansi_xterm_color_bgRGB_prefix __str__dansi_xterm_color_bgRGB_prefix
+#define dansi_xterm_color_fg24bit_prefix __str__dansi_xterm_color_fg24bit_prefix
+#define dansi_xterm_color_bg24bit_prefix __str__dansi_xterm_color_bg24bit_prefix
 
 typedef struct dansi_xterm_color_RGB8 {
     var_(r, u8);
@@ -127,21 +127,21 @@ $extern fn_((dansi_xterm_color_bg8bit(
 $attr($must_check)
 $extern fn_((dansi_xterm_color_bg8bitWrite(dansi_xterm_Palette8bit color, io_Writer out))(E$void));
 
-#define dansi_xterm_color_fgRGB_static(_r_tok, _g_tok, _b_tok) \
-    ____dansi_xterm_color_fgRGB_static(_r_tok, _g_tok, _b_tok)
+#define dansi_xterm_color_fg24bit_static(_r_tok, _g_tok, _b_tok) \
+    ____dansi_xterm_color_fg24bit_static(_r_tok, _g_tok, _b_tok)
 typedef A$$(9 + uint_log10Ceil_static(u8_limit_max) * 3, u8) dansi_xterm_color_FgRGBBuf;
 $attr($must_check)
-$extern fn_((dansi_xterm_color_fgRGB(dansi_xterm_color_RGB8 rgb, dansi_xterm_color_FgRGBBuf* buf))(S$u8));
+$extern fn_((dansi_xterm_color_fg24bit(dansi_xterm_color_RGB8 rgb, dansi_xterm_color_FgRGBBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_fgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_fg24bitWrite(dansi_xterm_color_RGB8 rgb, io_Writer out))(E$void));
 
-#define dansi_xterm_color_bgRGB_static(_r_tok, _g_tok, _b_tok) \
-    ____dansi_xterm_color_bgRGB_static(_r_tok, _g_tok, _b_tok)
+#define dansi_xterm_color_bg24bit_static(_r_tok, _g_tok, _b_tok) \
+    ____dansi_xterm_color_bg24bit_static(_r_tok, _g_tok, _b_tok)
 typedef A$$(9 + uint_log10Ceil_static(u8_limit_max) * 3, u8) dansi_xterm_color_BgRGBBuf;
 $attr($must_check)
-$extern fn_((dansi_xterm_color_bgRGB(dansi_xterm_color_RGB8 rgb, dansi_xterm_color_BgRGBBuf* buf))(S$u8));
+$extern fn_((dansi_xterm_color_bg24bit(dansi_xterm_color_RGB8 color, dansi_xterm_color_BgRGBBuf* buf))(S$u8));
 $attr($must_check)
-$extern fn_((dansi_xterm_color_bgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer out))(E$void));
+$extern fn_((dansi_xterm_color_bg24bitWrite(dansi_xterm_color_RGB8 color, io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -170,10 +170,10 @@ $extern fn_((dansi_xterm_color_bgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer 
 #define __str__dansi_xterm_color_bg8bit_prefix \
     dansi_xterm_color_bg_extended_code dansi_csi_param_sep \
         dansi_xterm_color_indexed_selector dansi_csi_param_sep
-#define __str__dansi_xterm_color_fgRGB_prefix \
+#define __str__dansi_xterm_color_fg24bit_prefix \
     dansi_xterm_color_fg_extended_code dansi_csi_param_sep \
         dansi_xterm_color_RGB_selector dansi_csi_param_sep
-#define __str__dansi_xterm_color_bgRGB_prefix \
+#define __str__dansi_xterm_color_bg24bit_prefix \
     dansi_xterm_color_bg_extended_code dansi_csi_param_sep \
         dansi_xterm_color_RGB_selector dansi_csi_param_sep
 #define ____dansi_xterm_color_fg4bit_staticParse(_color_tok) \
@@ -192,14 +192,14 @@ $extern fn_((dansi_xterm_color_bgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer 
     dansi_sgr_setRaw_static(dansi_xterm_color_fg8bit_prefix dansi_xterm_Palette8bit_staticParse(_index_tok))
 #define ____dansi_xterm_color_bg8bit_static(_index_tok) \
     dansi_sgr_setRaw_static(dansi_xterm_color_bg8bit_prefix dansi_xterm_Palette8bit_staticParse(_index_tok))
-#define ____dansi_xterm_color_fgRGB_static(_r_tok, _g_tok, _b_tok) \
+#define ____dansi_xterm_color_fg24bit_static(_r_tok, _g_tok, _b_tok) \
     dansi_sgr_setRaw_static( \
-        dansi_xterm_color_fgRGB_prefix \
+        dansi_xterm_color_fg24bit_prefix \
             _r_tok dansi_csi_param_sep _g_tok dansi_csi_param_sep _b_tok \
     )
-#define ____dansi_xterm_color_bgRGB_static(_r_tok, _g_tok, _b_tok) \
+#define ____dansi_xterm_color_bg24bit_static(_r_tok, _g_tok, _b_tok) \
     dansi_sgr_setRaw_static( \
-        dansi_xterm_color_bgRGB_prefix \
+        dansi_xterm_color_bg24bit_prefix \
             _r_tok dansi_csi_param_sep _g_tok dansi_csi_param_sep _b_tok \
     )
 

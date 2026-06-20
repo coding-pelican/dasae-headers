@@ -1,7 +1,10 @@
 #include <dh-main.h>
-#include <dh/io/common.h>
 #include <dh/heap/Sys.h>
-#include "daterm.h"
+#include "daterm-context/ANSI.h"
+#include "dansi-core/erase.h"
+#include "dansi-core/cursor.h"
+#include "dansi-core/style.h"
+#include "dansi-core/sgr.h"
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
@@ -16,11 +19,11 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let term = daterm_ANSI_term(&ansi);
     let out = daterm_Term_writer(term);
 
-    try_(dansi_screen_clearWrite(out));
+    try_(dansi_erase_inDisplayWrite(dansi_erase_Area_all, out));
     try_(dansi_cursor_moveToWrite(1, 1, out));
     try_(dansi_style_italicWrite(true, out));
     try_(io_Writer_println(out, u8_l("This is rendered through the daterm interface.")));
-    try_(dansi_attr_resetWrite(out));
+    try_(dansi_sgr_resetWrite(out));
 
     return_ok({});
 } $unguarded(fn);

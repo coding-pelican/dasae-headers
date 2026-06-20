@@ -6,7 +6,7 @@
  * @file    Term.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-23 (date of creation)
- * @updated 2026-05-23 (date of last update)
+ * @updated 2026-06-20 (date of last update)
  * @ingroup daterm-runtime
  * @prefix  daterm_Term
  */
@@ -20,6 +20,9 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "Event.h"
+#include "Caps.h"
+#include "Query.h"
+#include "Txn.h"
 #include <dh/io/Reader.h>
 #include <dh/io/Writer.h>
 #include <dh/time/Dur.h>
@@ -68,17 +71,24 @@ $extern fn_((daterm_Term_waitProtn(daterm_Term self))(daterm_Event));
 
 $extern fn_((daterm_Term_reader(daterm_Term self))(io_Reader));
 $extern fn_((daterm_Term_writer(daterm_Term self))(io_Writer));
-
-/* --- Queries --- */
-
-/// Get current screen size
-/// Requires terminal to be in raw mode
 $attr($must_check)
-$extern fn_((daterm_Term_queryScreenSize(daterm_Term self))(E$daterm_Size));
-/// Get current cursor position
-/// Requires terminal to be in raw mode
+$extern fn_((daterm_Term_flush(daterm_Term self))(E$void));
+$extern fn_((daterm_Term_caps(daterm_Term self))(daterm_TermCaps));
+
+/* --- Runtime Queries and Transactions --- */
+
 $attr($must_check)
-$extern fn_((daterm_Term_queryCursorPos(daterm_Term self))(E$daterm_Pos));
+$extern fn_((daterm_Term_queryLocal(
+    daterm_Term self, daterm_LocalQuery query
+))(E$daterm_LocalQueryResult));
+$attr($must_check)
+$extern fn_((daterm_Term_queryNativeScreenCells(daterm_Term self))(E$daterm_Size));
+$attr($must_check)
+$extern fn_((daterm_Term_queryCachedScreenCells(daterm_Term self))(E$daterm_Size));
+$attr($must_check)
+$extern fn_((daterm_Term_queryNativeCursorPos(daterm_Term self))(E$daterm_Pos));
+$attr($must_check)
+$extern fn_((daterm_Term_runTxn(daterm_Term self, daterm_Txn txn))(daterm_Txn_E$Void));
 
 struct daterm_Term_VTbl {
     $attr($must_check)
@@ -91,9 +101,12 @@ struct daterm_Term_VTbl {
     fn_(((*readerFn)(P$raw ctx))(io_Reader));
     fn_(((*writerFn)(P$raw ctx))(io_Writer));
     $attr($must_check)
-    fn_(((*queryScreenSizeFn)(P$raw ctx))(E$daterm_Size));
+    fn_(((*flushFn)(P$raw ctx))(E$void));
+    fn_(((*capsFn)(P$raw ctx))(daterm_TermCaps));
     $attr($must_check)
-    fn_(((*queryCursorPosFn)(P$raw ctx))(E$daterm_Pos));
+    fn_(((*queryLocalFn)(P$raw ctx, daterm_LocalQuery query))(E$daterm_LocalQueryResult));
+    $attr($must_check)
+    fn_(((*runTxnFn)(P$raw ctx, daterm_Txn txn))(daterm_Txn_E$Void));
 };
 
 /*========== Macros and Definitions =========================================*/
@@ -107,8 +120,10 @@ fn_((daterm_Term_isValid(daterm_Term self))(bool)) {
         && isNonnull(self.vtbl->waitProtnFn)
         && isNonnull(self.vtbl->readerFn)
         && isNonnull(self.vtbl->writerFn)
-        && isNonnull(self.vtbl->queryScreenSizeFn)
-        && isNonnull(self.vtbl->queryCursorPosFn);
+        && isNonnull(self.vtbl->flushFn)
+        && isNonnull(self.vtbl->capsFn)
+        && isNonnull(self.vtbl->queryLocalFn)
+        && isNonnull(self.vtbl->runTxnFn);
 };
 fn_((daterm_Term_assertValid(P$raw ctx, P_const$$(daterm_Term_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
@@ -119,8 +134,10 @@ fn_((daterm_Term_assertValid(P$raw ctx, P_const$$(daterm_Term_VTbl) vtbl))(void)
     claim_assert_nonnull(vtbl->waitProtnFn);
     claim_assert_nonnull(vtbl->readerFn);
     claim_assert_nonnull(vtbl->writerFn);
-    claim_assert_nonnull(vtbl->queryScreenSizeFn);
-    claim_assert_nonnull(vtbl->queryCursorPosFn);
+    claim_assert_nonnull(vtbl->flushFn);
+    claim_assert_nonnull(vtbl->capsFn);
+    claim_assert_nonnull(vtbl->queryLocalFn);
+    claim_assert_nonnull(vtbl->runTxnFn);
 };
 fn_((daterm_Term_ensureValid(daterm_Term self))(daterm_Term)) {
     return daterm_Term_assertValid(self.ctx, self.vtbl), self;

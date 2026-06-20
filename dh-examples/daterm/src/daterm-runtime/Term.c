@@ -24,10 +24,54 @@ fn_((daterm_Term_writer(daterm_Term self))(io_Writer)) {
     return self.vtbl->writerFn(self.ctx);
 };
 
-fn_((daterm_Term_queryScreenSize(daterm_Term self))(E$daterm_Size)) {
-    return self.vtbl->queryScreenSizeFn(self.ctx);
+fn_((daterm_Term_flush(daterm_Term self))(E$void)) {
+    return self.vtbl->flushFn(self.ctx);
 };
 
-fn_((daterm_Term_queryCursorPos(daterm_Term self))(E$daterm_Pos)) {
-    return self.vtbl->queryCursorPosFn(self.ctx);
+fn_((daterm_Term_caps(daterm_Term self))(daterm_TermCaps)) {
+    return self.vtbl->capsFn(self.ctx);
+};
+
+fn_((daterm_Term_queryLocal(
+    daterm_Term self, daterm_LocalQuery query
+))(E$daterm_LocalQueryResult)) {
+    return self.vtbl->queryLocalFn(self.ctx, query);
+};
+
+fn_((daterm_Term_queryNativeScreenCells(daterm_Term self))(E$daterm_Size) $scope) {
+    let result = try_(daterm_Term_queryLocal(self, (daterm_LocalQuery){
+        .kind = daterm_LocalQueryKind_native_screen_cells,
+    }));
+    match_(result) {
+    pattern_((daterm_LocalQueryResult_size)(size)) return_ok(size) $end(pattern);
+    default_() return_err(E_cause$Unexpected()) $end(default);
+    } $end(match);
+} $unscoped(fn);
+
+fn_((daterm_Term_queryCachedScreenCells(daterm_Term self))(E$daterm_Size) $scope) {
+    let result = try_(daterm_Term_queryLocal(self, (daterm_LocalQuery){
+        .kind = daterm_LocalQueryKind_cached_screen_cells,
+    }));
+    match_(result) {
+    pattern_((daterm_LocalQueryResult_size)(size)) return_ok(size) $end(pattern);
+    default_() return_err(E_cause$Unexpected()) $end(default);
+    } $end(match);
+} $unscoped(fn);
+
+fn_((daterm_Term_queryNativeCursorPos(daterm_Term self))(E$daterm_Pos) $scope) {
+    let result = try_(daterm_Term_queryLocal(self, (daterm_LocalQuery){
+        .kind = daterm_LocalQueryKind_native_cursor_pos,
+    }));
+    match_(result) {
+    pattern_((daterm_LocalQueryResult_pos)(pos)) return_ok(pos) $end(pattern);
+    default_() return_err(E_cause$Unexpected()) $end(default);
+    } $end(match);
+} $unscoped(fn);
+
+fn_((daterm_Term_runTxn(daterm_Term self, daterm_Txn txn))(daterm_Txn_E$Void)) {
+    claim_assert_nonnull(txn.ctx);
+    claim_assert_nonnull(txn.out);
+    claim_assert_nonnull(txn.requestWriteFn);
+    claim_assert_nonnull(txn.matchFn);
+    return self.vtbl->runTxnFn(self.ctx, txn);
 };
