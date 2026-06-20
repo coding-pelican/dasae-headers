@@ -6,7 +6,7 @@
  * @file    Caps.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-06-20 (date of creation)
- * @updated 2026-06-20 (date of last update)
+ * @updated 2026-06-21 (date of last update)
  * @ingroup daterm-runtime
  * @prefix  daterm_TermCaps
  */
@@ -29,7 +29,8 @@ typedef struct daterm_TermCaps {
     var_(protocol_txn, bool);
     var_(pending_event_queue, bool);
     var_(flush, bool);
-    var_(native_key_action, bool);
+    var_(key_action, bool);
+    var_(modifier_key_event, bool);
     var_(native_mouse_event, bool);
     var_(native_resize_event, bool);
     var_(native_focus_event, bool);

@@ -6,7 +6,7 @@
  * @file    key.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-06-20 (date of creation)
- * @updated 2026-06-20 (date of last update)
+ * @updated 2026-06-21 (date of last update)
  * @ingroup daterm-runtime
  * @prefix  daterm_key
  */
@@ -39,6 +39,14 @@ typedef enum_((daterm_key_Code $fits($packed))(
     daterm_key_Code_enter,
     daterm_key_Code_escape,
     daterm_key_Code_backspace,
+    daterm_key_Code_left_shift,
+    daterm_key_Code_right_shift,
+    daterm_key_Code_left_ctrl,
+    daterm_key_Code_right_ctrl,
+    daterm_key_Code_left_alt,
+    daterm_key_Code_right_alt,
+    daterm_key_Code_left_meta,
+    daterm_key_Code_right_meta,
     daterm_key_Code_pf1,
     daterm_key_Code_pf2,
     daterm_key_Code_pf3,

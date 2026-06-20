@@ -4,7 +4,7 @@ $static fn_((daterm_xterm__cellPixelsRequestWrite(
     P$raw ctx, io_Writer out
 ))(E$void));
 $static fn_((daterm_xterm__cellPixelsMatch(
-    P$raw ctx, S_const$u8 seq, P$raw out
+    P$raw ctx, dansi_Seq seq, P$raw out
 ))(E$daterm_TxnMatch));
 
 fn_((daterm_xterm_enableMouse(
@@ -92,11 +92,12 @@ $static fn_((daterm_xterm__cellPixelsRequestWrite(
 };
 
 $static fn_((daterm_xterm__cellPixelsMatch(
-    P$raw ctx, S_const$u8 seq, P$raw out
+    P$raw ctx, dansi_Seq seq, P$raw out
 ))(E$daterm_TxnMatch) $scope) {
     let_ignore = ctx;
     claim_assert_nonnull(out);
-    let report = catch_((dansi_xterm_screen_parseCellPixelsReport(seq))(
+    if (seq.kind != dansi_Seq_Kind_csi) return_ok(daterm_TxnMatch_no);
+    let report = catch_((dansi_xterm_screen_parseCellPixelsReport(seq.bytes))(
         $ignore, return_ok(daterm_TxnMatch_no)
     ));
     let result = ptrAlignCast$((dansi_xterm_screen_PixelSize*)(out));

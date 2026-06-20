@@ -137,11 +137,39 @@ payloads. Positions carry a cell/pixel kind. Key and text events carry an
 optional action, because legacy VT input cannot report releases while native
 backends can.
 
+`daterm_input_Mods` is the modifier snapshot attached to a key, text, or mouse
+event. Applications use it to dispatch chords such as Ctrl+C, Shift+Space, or
+Alt+Enter. It is not a held-state store.
+
+Modifier keys are also represented by `daterm_key_Code_left_shift` through
+`daterm_key_Code_right_meta`. When `daterm_TermCaps.modifier_key_event` is true,
+their key events and actions can drive an application-owned held-state model.
+`daterm_TermCaps.key_action` independently states whether key press, repeat,
+and release actions are available.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Released
+    Released --> Held: modifier key press
+    Held --> Held: modifier key repeat
+    Held --> Released: modifier key release
+```
+
+Windows native input provides both capabilities and preserves modifier side.
+VT input with xterm enhanced keys provides modifier snapshots on reported
+chords but does not provide standalone modifier events or release actions.
+Applications needing continuous input must use true key actions when available
+and an explicit fallback policy otherwise.
+
 ## Runtime Queries And Transactions
 
 `daterm_Term_queryLocal` handles only native or cached state. Protocol reports
 use `daterm_Term_runTxn`, which writes a request, pumps complete sequences, and
 queues unrelated semantic events for subsequent `poll` or `wait` calls.
+Matchers receive the complete `dansi_Seq`, including its framing kind. An
+unmatched sequence that has no semantic runtime-event interpretation is
+currently discarded; preserving such reports requires an owned raw-sequence
+queue because sequence bytes otherwise remain views into the input buffer.
 
 Protocol-specific bridge helpers compose the corresponding dansi request and
 parser with that broker:
@@ -168,6 +196,22 @@ sequenceDiagram
             Term->>Term: pending queue
         end
     end
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Request
+    Request --> Pump: request written
+    Pump --> Matched: matcher returns done
+    Pump --> Pending: unmatched semantic event
+    Pending --> Pump: event queued
+    Pump --> Discarded: unmatched nonsemantic sequence
+    Discarded --> Pump
+    Pump --> PendingFull: pending queue has no capacity
+    Pump --> Timeout: deadline reached
+    Matched --> [*]
+    PendingFull --> [*]
+    Timeout --> [*]
 ```
 
 ## Verification

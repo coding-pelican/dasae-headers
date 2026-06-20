@@ -72,7 +72,7 @@ T_use_E$(DWORD);
 $static fn_((daterm_ANSI__windows_ctrlHandler(DWORD type))(BOOL));
 $static fn_((daterm_ANSI__windows_keyMods(DWORD control_key_state))(daterm_input_Mods));
 $static fn_((daterm_ANSI__windows_keyCode(
-    WORD virtual_key, DWORD control_key_state
+    WORD virtual_key, WORD virtual_scan, DWORD control_key_state
 ))(O$daterm_key_Code));
 $static fn_((daterm_ANSI__windows_mouseBtn(DWORD button_mask))(O$daterm_mouse_Btn));
 $static fn_((daterm_ANSI__windows_mouseEvent(daterm_ANSI* self, MOUSE_EVENT_RECORD record))(O$daterm_Event));
@@ -156,12 +156,11 @@ fn_((daterm_ANSI_fini(daterm_ANSI* self))(void)) {
     }
     if (self->is_tracking_mouse) {
         let_(encoding, dansi_xterm_mouse_Encoding) = self->mouse_pos_kind == daterm_mouse_PosKind_pixel
-            ? dansi_xterm_mouse_Encoding_sgr_pixels
-            : dansi_xterm_mouse_Encoding_sgr;
+                                                       ? dansi_xterm_mouse_Encoding_sgr_pixels
+                                                       : dansi_xterm_mouse_Encoding_sgr;
         catch_((dansi_xterm_mouse_disableEncodingWrite(encoding, out))($ignore, $do_nothing));
         catch_((dansi_xterm_mouse_disableReportModeWrite(
-            as$(dansi_xterm_mouse_ReportMode)(self->mouse_report_mode_), out
-        ))($ignore, $do_nothing));
+            as$(dansi_xterm_mouse_ReportMode)(self->mouse_report_mode_), out))($ignore, $do_nothing));
     }
     daterm_ANSI_disableRawMode(self);
     if (self->input_buf.is_owned) {
@@ -427,9 +426,7 @@ $static fn_((daterm_ANSI__fromXtermMouse(
     pattern_((dansi_xterm_mouse_Event_motion)(motion)) {
         var_(btn, O$daterm_mouse_Btn) = none();
         if_some((motion.btn)(protocol_btn)) {
-            btn = some$((O$daterm_mouse_Btn)(
-                orelse_((daterm_ANSI__mouseBtn(protocol_btn))(return_none()))
-            ));
+            btn = some$((O$daterm_mouse_Btn)(orelse_((daterm_ANSI__mouseBtn(protocol_btn))(return_none()))));
         }
         let_(mouse, daterm_mouse_Event) = union_of((daterm_mouse_Event_motion){
             .btn = btn,
@@ -527,7 +524,9 @@ $static fn_((daterm_ANSI__fromCodepoint(u32 codepoint, daterm_input_Mods mods))(
     } $end(case);
     case_((dansi_c0_Code_ht)) {
         return (daterm_Event)union_of((daterm_Event_key){
-            .code = daterm_key_Code_tab, .mods = mods, .action = none(),
+            .code = daterm_key_Code_tab,
+            .mods = mods,
+            .action = none(),
         });
     } $end(case);
     case dansi_c0_Code_lf: $fallthrough;
@@ -540,7 +539,9 @@ $static fn_((daterm_ANSI__fromCodepoint(u32 codepoint, daterm_input_Mods mods))(
     } $end(case);
     case_((dansi_c0_Code_esc)) {
         return (daterm_Event)union_of((daterm_Event_key){
-            .code = daterm_key_Code_escape, .mods = mods, .action = none(),
+            .code = daterm_key_Code_escape,
+            .mods = mods,
+            .action = none(),
         });
     } $end(case);
     default_() $do_nothing $end(default);
@@ -556,11 +557,9 @@ $static fn_((daterm_ANSI__parseSeqEvent(
     dansi_Seq seq, daterm_mouse_PosKind mouse_pos_kind
 ))(O$daterm_Event) $scope) {
     if_some((dansi_xterm_focus_parseReport(seq.bytes))(focus)) {
-        return_some(union_of((daterm_Event_focus)(
-            focus == dansi_xterm_focus_Event_in
-                ? daterm_focus_Event_in
-                : daterm_focus_Event_out
-        )));
+        return_some(union_of((daterm_Event_focus)(focus == dansi_xterm_focus_Event_in
+                                                      ? daterm_focus_Event_in
+                                                      : daterm_focus_Event_out)));
     }
     if_some((dansi_xterm_mouse_parseSGR(seq.bytes))(mouse)) {
         return daterm_ANSI__fromXtermMouse(mouse, mouse_pos_kind);
@@ -594,7 +593,7 @@ $static fn_((daterm_ANSI__parseSeqEvent(
     let codepoint = catch_((utf8_decode(seq.bytes))($ignore, return_none()));
     if (seq.kind == dansi_Seq_Kind_c0
         && ((dansi_c0_Code_soh <= codepoint && codepoint <= dansi_c0_Code_ff)
-         || (dansi_c0_Code_so <= codepoint && codepoint <= dansi_c0_Code_sub))) {
+            || (dansi_c0_Code_so <= codepoint && codepoint <= dansi_c0_Code_sub))) {
         var mods = daterm_input_modsNone();
         mods.ctrl = true;
         return_some(daterm_ANSI__fromCodepoint(
@@ -667,8 +666,8 @@ $static fn_((daterm_ANSI__pollCtrlString(
 ))(O$dansi_Seq) $scope) {
     let terminator = orelse_((dansi_Seq_CtrlTer_find(ready, prefix_len))(return_none()));
     let terminator_len = terminator.eos == dansi_Seq_EOS_st_7bit
-        ? u8_l(dansi_Seq_st_7bit).len
-        : usize_(1);
+                           ? u8_l(dansi_Seq_st_7bit).len
+                           : usize_(1);
     return daterm_ANSI__takeSeq(
         input, esc_started_at, kind, terminator.payload_end + terminator_len
     );
@@ -866,13 +865,15 @@ fn_((daterm_ANSI__caps(P$raw ctx))(daterm_TermCaps)) {
         .native_screen_cells = true,
 #if plat_is_windows
         .native_cursor_pos = true,
-        .native_key_action = self->input_mode == daterm_ANSI_InputMode_native,
+        .key_action = self->input_mode == daterm_ANSI_InputMode_native,
+        .modifier_key_event = self->input_mode == daterm_ANSI_InputMode_native,
         .native_mouse_event = true,
         .native_resize_event = true,
         .native_focus_event = true,
 #else
         .native_cursor_pos = false,
-        .native_key_action = false,
+        .key_action = false,
+        .modifier_key_event = false,
         .native_mouse_event = false,
         .native_resize_event = plat_is_posix,
         .native_focus_event = false,
@@ -940,9 +941,7 @@ fn_((daterm_ANSI__queryLocal(
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
     switch (query.kind) {
     case_((daterm_LocalQueryKind_native_screen_cells)) {
-        return_ok(union_of((daterm_LocalQueryResult_size)(
-            try_(daterm_ANSI__queryNativeScreenCells(self))
-        )));
+        return_ok(union_of((daterm_LocalQueryResult_size)(try_(daterm_ANSI__queryNativeScreenCells(self)))));
     } $end(case);
     case_((daterm_LocalQueryKind_cached_screen_cells)) {
         let size = orelse_((self->cached_screen_cells)(
@@ -951,9 +950,7 @@ fn_((daterm_ANSI__queryLocal(
         return_ok(union_of((daterm_LocalQueryResult_size)(size)));
     } $end(case);
     case_((daterm_LocalQueryKind_native_cursor_pos)) {
-        return_ok(union_of((daterm_LocalQueryResult_pos)(
-            try_(daterm_ANSI__queryNativeCursorPos(self))
-        )));
+        return_ok(union_of((daterm_LocalQueryResult_pos)(try_(daterm_ANSI__queryNativeCursorPos(self)))));
     } $end(case);
     }
     return_err(E_cause$daterm_ANSI_Unsupported());
@@ -976,7 +973,7 @@ fn_((daterm_ANSI__runTxn(P$raw ctx, daterm_Txn txn))(daterm_Txn_E$Void) $scope) 
             }
         }
         if_some((daterm_ANSI__pollSeq(self))(seq)) {
-            let matched = try_(txn.matchFn(txn.ctx, seq.bytes, txn.out));
+            let matched = try_(txn.matchFn(txn.ctx, seq, txn.out));
             if (matched == daterm_TxnMatch_done) return_ok({});
             if_some((daterm_ANSI__parseSeqEvent(seq, self->mouse_pos_kind))(event)) {
                 if (!daterm_ANSI__pendingPush(self, event)) {
@@ -984,7 +981,7 @@ fn_((daterm_ANSI__runTxn(P$raw ctx, daterm_Txn txn))(daterm_Txn_E$Void) $scope) 
                 }
             }
         }
-        if (time_Dur_gt(time_Clock_Inst_elapsed(started, self->clock), txn.timeout)) {
+        if (time_Dur_ge(time_Clock_Inst_elapsed(started, self->clock), txn.timeout)) {
             return_err(E_cause$Sched_Timeout());
         }
         try_(time_Clock_sleep(self->clock, time_Dur_fromMillis(1)));
@@ -1009,15 +1006,36 @@ fn_((daterm_ANSI__windows_keyMods(DWORD control_key_state))(daterm_input_Mods)) 
 };
 
 fn_((daterm_ANSI__windows_keyCode(
-    WORD virtual_key, DWORD control_key_state
+    WORD virtual_key, WORD virtual_scan, DWORD control_key_state
 ))(O$daterm_key_Code)) {
     let is_enhanced = (control_key_state & ENHANCED_KEY) != 0;
+    var_(resolved_virtual_key, WORD) = virtual_key;
+    if (virtual_key == VK_SHIFT || virtual_key == VK_CONTROL || virtual_key == VK_MENU) {
+        let_(mapped, WORD) = as$(WORD)(MapVirtualKeyW(virtual_scan, MAPVK_VSC_TO_VK_EX));
+        switch (virtual_key) {
+        case_((VK_SHIFT)) resolved_virtual_key = mapped == VK_RSHIFT ? VK_RSHIFT : VK_LSHIFT $end(case);
+        case_((VK_CONTROL)) resolved_virtual_key = mapped == VK_RCONTROL || is_enhanced
+                                                   ? VK_RCONTROL
+                                                   : VK_LCONTROL $end(case);
+        case_((VK_MENU)) resolved_virtual_key = mapped == VK_RMENU || is_enhanced
+                                                ? VK_RMENU
+                                                : VK_LMENU $end(case);
+        default_() $unreachable $end(default);
+        }
+    }
     if (VK_NUMPAD0 <= virtual_key && virtual_key <= VK_NUMPAD9) {
         return some$((O$daterm_key_Code)(as$(daterm_key_Code)(
-            as$(u16)(daterm_key_Code_keypad_0) + as$(u16)(virtual_key - VK_NUMPAD0)
-        )));
+            as$(u16)(daterm_key_Code_keypad_0) + as$(u16)(virtual_key - VK_NUMPAD0))));
     }
-    switch (virtual_key) {
+    switch (resolved_virtual_key) {
+    case_((VK_LSHIFT)) return some$((O$daterm_key_Code)(daterm_key_Code_left_shift)) $end(case);
+    case_((VK_RSHIFT)) return some$((O$daterm_key_Code)(daterm_key_Code_right_shift)) $end(case);
+    case_((VK_LCONTROL)) return some$((O$daterm_key_Code)(daterm_key_Code_left_ctrl)) $end(case);
+    case_((VK_RCONTROL)) return some$((O$daterm_key_Code)(daterm_key_Code_right_ctrl)) $end(case);
+    case_((VK_LMENU)) return some$((O$daterm_key_Code)(daterm_key_Code_left_alt)) $end(case);
+    case_((VK_RMENU)) return some$((O$daterm_key_Code)(daterm_key_Code_right_alt)) $end(case);
+    case_((VK_LWIN)) return some$((O$daterm_key_Code)(daterm_key_Code_left_meta)) $end(case);
+    case_((VK_RWIN)) return some$((O$daterm_key_Code)(daterm_key_Code_right_meta)) $end(case);
     case_((VK_UP)) return some$((O$daterm_key_Code)(is_enhanced ? daterm_key_Code_up : daterm_key_Code_keypad_8)) $end(case);
     case_((VK_DOWN)) return some$((O$daterm_key_Code)(is_enhanced ? daterm_key_Code_down : daterm_key_Code_keypad_2)) $end(case);
     case_((VK_RIGHT)) return some$((O$daterm_key_Code)(is_enhanced ? daterm_key_Code_right : daterm_key_Code_keypad_6)) $end(case);
@@ -1043,8 +1061,7 @@ fn_((daterm_ANSI__windows_keyCode(
     }
     if (VK_F1 <= virtual_key && virtual_key <= VK_F24) {
         return some$((O$daterm_key_Code)(as$(daterm_key_Code)(
-            as$(u16)(daterm_key_Code_f1) + as$(u16)(virtual_key - VK_F1)
-        )));
+            as$(u16)(daterm_key_Code_f1) + as$(u16)(virtual_key - VK_F1))));
     }
     return none$((O$daterm_key_Code));
 };
@@ -1054,18 +1071,31 @@ fn_((daterm_ANSI_parseWindowsKeyEvent(
 ))(O$daterm_Event) $scope) {
     claim_assert_nonnull(self);
     let_(action, daterm_key_Action) = !record.bKeyDown
-        ? daterm_key_Action_release
-        : record.wRepeatCount > 1
-            ? daterm_key_Action_repeat
-            : daterm_key_Action_press;
-    let mods = daterm_ANSI__windows_keyMods(record.dwControlKeyState);
+                                        ? daterm_key_Action_release
+                                    : record.wRepeatCount > 1
+                                        ? daterm_key_Action_repeat
+                                        : daterm_key_Action_press;
+    var_(mods, daterm_input_Mods) = daterm_ANSI__windows_keyMods(record.dwControlKeyState);
     if_some((daterm_ANSI__windows_keyCode(
-        record.wVirtualKeyCode, record.dwControlKeyState
-    ))(code)) {
+           record.wVirtualKeyCode, record.wVirtualScanCode, record.dwControlKeyState
+       ))(code)) {
         self->windows_surrogate = none$((O$daterm_ANSI__WindowsSurrogate));
         let_(resolved, daterm_key_Code) = code == daterm_key_Code_tab && mods.shift
-            ? daterm_key_Code_back_tab
-            : code;
+                                            ? daterm_key_Code_back_tab
+                                            : code;
+        if (action != daterm_key_Action_release) {
+            switch (resolved) {
+            case daterm_key_Code_left_shift: $fallthrough;
+            case_((daterm_key_Code_right_shift)) mods.shift = true $end(case);
+            case daterm_key_Code_left_ctrl: $fallthrough;
+            case_((daterm_key_Code_right_ctrl)) mods.ctrl = true $end(case);
+            case daterm_key_Code_left_alt: $fallthrough;
+            case_((daterm_key_Code_right_alt)) mods.alt = true $end(case);
+            case daterm_key_Code_left_meta: $fallthrough;
+            case_((daterm_key_Code_right_meta)) mods.meta = true $end(case);
+            default_() $do_nothing $end(default);
+            }
+        }
         return_some(union_of((daterm_Event_key){
             .code = resolved,
             .mods = mods,
@@ -1125,10 +1155,10 @@ fn_((daterm_ANSI__windows_mouseBtn(DWORD button_mask))(O$daterm_mouse_Btn)) {
 fn_((daterm_ANSI__windows_mouseEvent(daterm_ANSI* self, MOUSE_EVENT_RECORD record))(O$daterm_Event) $scope) {
     let button_mask = record.dwButtonState
                     & (FROM_LEFT_1ST_BUTTON_PRESSED
-                     | RIGHTMOST_BUTTON_PRESSED
-                     | FROM_LEFT_2ND_BUTTON_PRESSED
-                     | FROM_LEFT_3RD_BUTTON_PRESSED
-                     | FROM_LEFT_4TH_BUTTON_PRESSED);
+                       | RIGHTMOST_BUTTON_PRESSED
+                       | FROM_LEFT_2ND_BUTTON_PRESSED
+                       | FROM_LEFT_3RD_BUTTON_PRESSED
+                       | FROM_LEFT_4TH_BUTTON_PRESSED);
     let_(pos, daterm_mouse_Pos) = {
         .x = as$(u16)(record.dwMousePosition.X),
         .y = as$(u16)(record.dwMousePosition.Y),
@@ -1225,11 +1255,9 @@ fn_((daterm_ANSI__windows_pollNativeEvent(daterm_ANSI* self))(O$daterm_Event) $s
             }
         } $end(case);
         case_((FOCUS_EVENT)) {
-            return_some(union_of((daterm_Event_focus)(
-                record.Event.FocusEvent.bSetFocus
-                    ? daterm_focus_Event_in
-                    : daterm_focus_Event_out
-            )));
+            return_some(union_of((daterm_Event_focus)(record.Event.FocusEvent.bSetFocus
+                                                          ? daterm_focus_Event_in
+                                                          : daterm_focus_Event_out)));
         } $end(case);
         default_() $do_nothing $end(default);
         };
@@ -1266,9 +1294,9 @@ fn_((daterm_ANSI__windows_enableRawMode(
     var_(old_mode, DWORD) = 0;
     if (!GetConsoleMode(input, &old_mode)) return_err(E_cause$Unexpected());
     let new_mode = as$(DWORD)(ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT)
-                 | (input_mode == daterm_ANSI_InputMode_vt
-                    ? as$(DWORD)(ENABLE_VIRTUAL_TERMINAL_INPUT)
-                    : as$(DWORD)(0));
+                | (input_mode == daterm_ANSI_InputMode_vt
+                       ? as$(DWORD)(ENABLE_VIRTUAL_TERMINAL_INPUT)
+                       : as$(DWORD)(0));
     if (!SetConsoleMode(input, new_mode)) return_err(E_cause$Unexpected());
     FlushConsoleInputBuffer(input);
     if (!SetConsoleCtrlHandler(daterm_ANSI__windows_ctrlHandler, TRUE)) {

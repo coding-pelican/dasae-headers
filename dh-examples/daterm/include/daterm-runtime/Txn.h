@@ -6,7 +6,7 @@
  * @file    Txn.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-06-20 (date of creation)
- * @updated 2026-06-20 (date of last update)
+ * @updated 2026-06-21 (date of last update)
  * @ingroup daterm-runtime
  * @prefix  daterm_Txn
  */
@@ -22,6 +22,7 @@ extern "C" {
 #include <dh/io/Writer.h>
 #include <dh/time/Dur.h>
 #include <dh/Sched.h>
+#include <dansi-core/Seq.h>
 
 /*========== Macros and Declarations ========================================*/
 
@@ -43,7 +44,7 @@ typedef struct daterm_Txn {
     $attr($must_check)
     fn_(((*requestWriteFn)(P$raw ctx, io_Writer out))(E$void));
     $attr($must_check)
-    fn_(((*matchFn)(P$raw ctx, S_const$u8 seq, P$raw out))(E$daterm_TxnMatch));
+    fn_(((*matchFn)(P$raw ctx, dansi_Seq seq, P$raw out))(E$daterm_TxnMatch));
 } daterm_Txn;
 T_use_prl$(daterm_Txn);
 

@@ -149,6 +149,7 @@ $static fn_((tetris_PieceQ_peek(const tetris_PieceQ* self, usize index))(tetris_
 /*========== Game ===========================================================*/
 
 #include <dh/time/Dur.h>
+#include <dh/ascii.h>
 #include "daterm-runtime/key.h"
 #include "daterm-runtime/Term.h"
 
@@ -487,8 +488,6 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 } $unguarded(fn);
 
 /*========== Main ===========================================================*/
-
-#include <dh/ascii.h>
 
 fn_((tetris_Main_waitForEnter(void))(void)) {
     let out = fs_File_writer(io_getStdOut());
@@ -1639,3 +1638,101 @@ fn_((tetris_Presenter_render(
     }
     return tetris_Presenter_present(self);
 };
+
+TEST_only(
+TEST_fn_("example-tetris: gravity remains saturated at high levels" $scope) {
+    try_(TEST_expect(time_Dur_eq(
+        tetris_gravityForLevel(19), time_Dur_fromMillis(50)
+    )));
+    try_(TEST_expect(time_Dur_eq(
+        tetris_gravityForLevel(u32_limit_max), time_Dur_fromMillis(50)
+    )));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("example-tetris: gravity tick advances an active piece" $scope) {
+    var_(game, tetris_Self) = cleared();
+    tetris_init(&game);
+    let y = game.y;
+    game.gravity_interval = time_Dur_zero;
+
+    tetris_tick(&game, time_Dur_fromMillis(1));
+
+    try_(TEST_expect(game.y == y + 1));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("example-tetris: SRS upward kick uses board coordinates" $scope) {
+    var_(game, tetris_Self) = cleared();
+    tetris_Board_clear(&game.board);
+    game.current = tetris_Piece_t;
+    game.rotation = tetris_Rotation_0;
+    game.x = 3;
+    game.y = 2;
+    *tetris_Board_atMut(&game.board, 4, 4) = some$((O$tetris_Piece)(tetris_Piece_i));
+    *tetris_Board_atMut(&game.board, 3, 4) = some$((O$tetris_Piece)(tetris_Piece_i));
+
+    try_(TEST_expect(tetris_tryRotate(&game, 1)));
+    try_(TEST_expect(game.rotation == tetris_Rotation_r));
+    try_(TEST_expect(game.x == 2));
+    try_(TEST_expect(game.y == 1));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("example-tetris: repeats only drive continuous movement" $scope) {
+    let repeat = some$((O$daterm_key_Action)(daterm_key_Action_repeat));
+    let left = try_(tetris_cmdFromKey((daterm_key_Event){
+        .code = daterm_key_Code_left,
+        .mods = daterm_input_modsNone(),
+        .action = repeat,
+    }));
+    try_(TEST_expect(isSome(left) && unwrap_(left) == tetris_cmd_move_left));
+
+    let rotate = try_(tetris_cmdFromKey((daterm_key_Event){
+        .code = daterm_key_Code_up,
+        .mods = daterm_input_modsNone(),
+        .action = repeat,
+    }));
+    try_(TEST_expect(isNone(rotate)));
+
+    let hard_drop = try_(tetris_cmdFromText((daterm_key_Text){
+        .codepoint = ' ',
+        .mods = daterm_input_modsNone(),
+        .action = repeat,
+    }));
+    try_(TEST_expect(isNone(hard_drop)));
+
+    var_(game, tetris_Self) = cleared();
+    tetris_init(&game);
+    tetris_applyCmd(&game, tetris_cmd_toggle_pause);
+    try_(TEST_expect(game.is_paused));
+    tetris_applyCmd(&game, tetris_cmd_toggle_pause);
+    try_(TEST_expect(!game.is_paused));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("example-tetris: presenter renders a complete frame" $scope) {
+    $static var_(game, tetris_Self) $undefined_static;
+    $static var_(presenter, tetris_Presenter) $undefined_static;
+    $static var_(out_mem, A$$(65536, u8)) $undefined_static;
+    var out = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(out_mem))));
+    tetris_init(&game);
+    tetris_Presenter_init(&presenter, io_Fixed_writer(&out));
+
+    try_(tetris_Presenter_render(
+        &presenter,
+        &game,
+        (daterm_Size){
+            .cols = as$(u16)(tetris_Frame_width),
+            .rows = as$(u16)(tetris_Frame_height),
+        },
+        tetris_SmallScreen_Cfg_default
+    ));
+
+    try_(TEST_expect(io_Fixed_written(out.stream).len != 0));
+    try_(TEST_expect(!tetris_SmallScreen_Cfg_shouldTick(
+        tetris_SmallScreen_Cfg_default, true
+    )));
+    return_ok({});
+} $unscoped(TEST_fn);
+)
