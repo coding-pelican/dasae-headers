@@ -23,6 +23,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_osc_7bit_prefix __str__dansi_osc_7bit_prefix
+#define dansi_osc_7bit_intro __str__dansi_osc_7bit_intro
+#define dansi_osc_7bit_intro_byte __uint__dansi_osc_7bit_intro_byte
+#define dansi_osc_8bit_intro __str__dansi_osc_8bit_intro
+#define dansi_osc_8bit_intro_byte __uint__dansi_osc_8bit_intro_byte
+#define dansi_osc_cmd_sep __str__dansi_osc_cmd_sep
+#define dansi_osc_cmd_sep_byte __uint__dansi_osc_cmd_sep_byte
+#define dansi_osc_cmd_radix __uint__dansi_osc_cmd_radix
+
 errset_((dansi_osc_E)(dansi_osc_Invalid));
 
 typedef struct dansi_osc_Frame dansi_osc_Frame;
@@ -78,14 +87,22 @@ $extern fn_((dansi_osc_CmdSplit_cmdAsU16(dansi_osc_CmdSplit self))(O$u16));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_osc_7bit_prefix dansi_Seq_esc dansi_osc_7bit_intro
+#define __str__dansi_osc_7bit_intro "]"
+#define __uint__dansi_osc_7bit_intro_byte u8_c(']')
+#define __str__dansi_osc_8bit_intro "\x9d"
+#define __uint__dansi_osc_8bit_intro_byte 0x9d
+#define __str__dansi_osc_cmd_sep ";"
+#define __uint__dansi_osc_cmd_sep_byte u8_c(';')
+#define __uint__dansi_osc_cmd_radix 10
 #define ____dansi_osc_makeRaw_static(_payload_tok) \
-    "\x1b]" _payload_tok "\x1b\\"
+    dansi_osc_7bit_prefix _payload_tok dansi_Seq_st_7bit
 #define ____dansi_osc_makeRawBEL_static(_payload_tok) \
-    "\x1b]" _payload_tok "\x07"
+    dansi_osc_7bit_prefix _payload_tok dansi_Seq_bel
 #define ____dansi_osc_make_static(_cmd_tok, _payload_tok) \
-    dansi_osc_makeRaw_static(_cmd_tok ";" _payload_tok)
+    dansi_osc_makeRaw_static(_cmd_tok dansi_osc_cmd_sep _payload_tok)
 #define ____dansi_osc_makeBEL_static(_cmd_tok, _payload_tok) \
-    dansi_osc_makeRawBEL_static(_cmd_tok ";" _payload_tok)
+    dansi_osc_makeRawBEL_static(_cmd_tok dansi_osc_cmd_sep _payload_tok)
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -15,12 +15,14 @@ fn_((dansi_device_receiveStatusReport(io_Reader in, S$u8 buf))(E$S$u8)) {
 
 fn_((dansi_device_parseStatusReport(S_const$u8 report))(dansi_device_E$dansi_device_Status) $scope) {
     let frame = catch_((dansi_csi_parse(report))($ignore, return_err(E_cause$dansi_device_InvalidResponse())));
-    if (frame.final != u8_c('n')) return_err(E_cause$dansi_device_InvalidResponse());
+    if (frame.final != dansi_device_status_report_final_byte) return_err(E_cause$dansi_device_InvalidResponse());
 
-    let status = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 0))(return_err(E_cause$dansi_device_InvalidResponse())));
+    let status = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_device_status_report_param_status))(
+        return_err(E_cause$dansi_device_InvalidResponse())
+    ));
     switch (status) {
-    case_((0)) return_ok(dansi_device_Status_ready) $end(case);
-    case_((3)) return_ok(dansi_device_Status_malformed) $end(case);
+    case_((dansi_device_Status_ready)) return_ok(dansi_device_Status_ready) $end(case);
+    case_((dansi_device_Status_malformed)) return_ok(dansi_device_Status_malformed) $end(case);
     default_() return_err(E_cause$dansi_device_InvalidResponse()) $end(default);
     }
 } $unscoped(fn);
@@ -45,7 +47,7 @@ fn_((dansi_device_receiveAttrsReport(io_Reader in, S$u8 buf))(E$S$u8)) {
 
 fn_((dansi_device_parseAttrsReport(S_const$u8 report))(dansi_device_E$dansi_device_Attrs) $scope) {
     let frame = catch_((dansi_csi_parse(report))($ignore, return_err(E_cause$dansi_device_InvalidResponse())));
-    if (frame.final != u8_c('c')) return_err(E_cause$dansi_device_InvalidResponse());
+    if (frame.final != dansi_device_attrs_report_final_byte) return_err(E_cause$dansi_device_InvalidResponse());
     return_ok({ .params = frame.params });
 } $unscoped(fn);
 

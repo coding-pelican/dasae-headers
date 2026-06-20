@@ -39,12 +39,12 @@ fn_((dansi_xterm_mode_setMany(S_const$u16 modes, bool enabled, S$u8 buf))(E$S$u8
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_setManyWrite(S_const$u16 modes, bool enabled, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b[?")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_csi_7bit_prefix dansi_xterm_mode_private_marker)));
     for_(($s(modes), $rf(0))(mode, i)) {
-        if (i != 0) try_(io_Writer_writeByte(out, u8_c(';')));
+        if (i != 0) try_(io_Writer_writeByte(out, dansi_csi_param_sep_byte));
         try_(io_Writer_print(out, u8_l("{:uh}"), *mode));
     } $end(for);
-    return io_Writer_writeByte(out, enabled ? u8_c('h') : u8_c('l'));
+    return io_Writer_writeByte(out, enabled ? dansi_xterm_mode_enable_final_byte : dansi_xterm_mode_disable_final_byte);
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_set(dansi_xterm_mode_Code mode, bool enabled, dansi_xterm_mode_SetBuf* buf))(S$u8)) {
@@ -78,12 +78,12 @@ fn_((dansi_xterm_mode_saveRaw(S_const$u16 modes, S$u8 buf))(E$S$u8) $scope) {
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_saveRawWrite(S_const$u16 modes, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b[?")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_csi_7bit_prefix dansi_xterm_mode_private_marker)));
     for_(($s(modes), $rf(0))(mode, i)) {
-        if (i != 0) try_(io_Writer_writeByte(out, u8_c(';')));
+        if (i != 0) try_(io_Writer_writeByte(out, dansi_csi_param_sep_byte));
         try_(io_Writer_print(out, u8_l("{:uh}"), *mode));
     } $end(for);
-    return io_Writer_writeByte(out, u8_c('s'));
+    return io_Writer_writeByte(out, dansi_xterm_mode_save_final_byte);
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_restoreRaw(S_const$u16 modes, S$u8 buf))(E$S$u8) $scope) {
@@ -93,12 +93,12 @@ fn_((dansi_xterm_mode_restoreRaw(S_const$u16 modes, S$u8 buf))(E$S$u8) $scope) {
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_restoreRawWrite(S_const$u16 modes, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b[?")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_csi_7bit_prefix dansi_xterm_mode_private_marker)));
     for_(($s(modes), $rf(0))(mode, i)) {
-        if (i != 0) try_(io_Writer_writeByte(out, u8_c(';')));
+        if (i != 0) try_(io_Writer_writeByte(out, dansi_csi_param_sep_byte));
         try_(io_Writer_print(out, u8_l("{:uh}"), *mode));
     } $end(for);
-    return io_Writer_writeByte(out, u8_c('r'));
+    return io_Writer_writeByte(out, dansi_xterm_mode_restore_final_byte);
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_save(S_const$dansi_xterm_mode_Code modes, S$u8 buf))(E$S$u8) $scope) {
@@ -108,12 +108,12 @@ fn_((dansi_xterm_mode_save(S_const$dansi_xterm_mode_Code modes, S$u8 buf))(E$S$u
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_saveWrite(S_const$dansi_xterm_mode_Code modes, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b[?")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_csi_7bit_prefix dansi_xterm_mode_private_marker)));
     for_(($s(modes), $rf(0))(mode, i)) {
-        if (i != 0) try_(io_Writer_writeByte(out, u8_c(';')));
+        if (i != 0) try_(io_Writer_writeByte(out, dansi_csi_param_sep_byte));
         try_(io_Writer_print(out, u8_l("{:uh}"), as$(u16)(*mode)));
     } $end(for);
-    return io_Writer_writeByte(out, u8_c('s'));
+    return io_Writer_writeByte(out, dansi_xterm_mode_save_final_byte);
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_restore(S_const$dansi_xterm_mode_Code modes, S$u8 buf))(E$S$u8) $scope) {
@@ -123,12 +123,12 @@ fn_((dansi_xterm_mode_restore(S_const$dansi_xterm_mode_Code modes, S$u8 buf))(E$
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_restoreWrite(S_const$dansi_xterm_mode_Code modes, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b[?")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_csi_7bit_prefix dansi_xterm_mode_private_marker)));
     for_(($s(modes), $rf(0))(mode, i)) {
-        if (i != 0) try_(io_Writer_writeByte(out, u8_c(';')));
+        if (i != 0) try_(io_Writer_writeByte(out, dansi_csi_param_sep_byte));
         try_(io_Writer_print(out, u8_l("{:uh}"), as$(u16)(*mode)));
     } $end(for);
-    return io_Writer_writeByte(out, u8_c('r'));
+    return io_Writer_writeByte(out, dansi_xterm_mode_restore_final_byte);
 } $unscoped(fn);
 
 fn_((dansi_xterm_mode_saveOne(dansi_xterm_mode_Code mode, dansi_xterm_mode_SaveOneBuf* buf))(S$u8)) {

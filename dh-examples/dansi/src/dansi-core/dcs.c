@@ -1,11 +1,12 @@
 #include "dansi-core/dcs.h"
+#include "dansi-core/csi.h"
 #include <dh/io/Fixed.h>
 
 fn_((dansi_dcs_parse(S_const$u8 bytes))(dansi_dcs_E$dansi_dcs_Frame) $scope) {
     var_(prefix_len, usize) = 0;
-    if (bytes.len >= 3 && *S_at((bytes)[0]) == 0x1b && *S_at((bytes)[1]) == u8_c('P')) {
+    if (bytes.len >= 3 && *S_at((bytes)[0]) == dansi_Seq_esc_byte && *S_at((bytes)[1]) == dansi_dcs_7bit_intro_byte) {
         prefix_len = 2;
-    } else if (bytes.len >= 2 && *S_at((bytes)[0]) == 0x90) {
+    } else if (bytes.len >= 2 && *S_at((bytes)[0]) == dansi_dcs_8bit_intro_byte) {
         prefix_len = 1;
     } else {
         return_err(E_cause$dansi_dcs_Invalid());
@@ -16,11 +17,13 @@ fn_((dansi_dcs_parse(S_const$u8 bytes))(dansi_dcs_E$dansi_dcs_Frame) $scope) {
     var_(idx, usize) = 0;
     while (idx < body.len) {
         let byte = *S_at((body)[idx]);
-        if (0x40 <= byte && byte <= 0x7e) {
+        if (dansi_csi_final_min_byte <= byte && byte <= dansi_csi_final_max_byte) {
             final_idx = idx;
             break;
         }
-        if (byte < 0x20 || byte > 0x3f) return_err(E_cause$dansi_dcs_Invalid());
+        if (byte < dansi_csi_intermediate_min_byte || byte > dansi_csi_private_marker_max_byte) {
+            return_err(E_cause$dansi_dcs_Invalid());
+        }
         idx += 1;
     }
 
@@ -40,7 +43,7 @@ fn_((dansi_dcs_parse(S_const$u8 bytes))(dansi_dcs_E$dansi_dcs_Frame) $scope) {
     idx = 0;
     while (idx < header.len) {
         let byte = *S_at((header)[idx]);
-        if (0x20 <= byte && byte <= 0x2f) {
+        if (dansi_csi_intermediate_min_byte <= byte && byte <= dansi_csi_intermediate_max_byte) {
             intermediates_at = idx;
             break;
         }
@@ -71,7 +74,7 @@ fn_((dansi_dcs_makeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, S$u8 buf))(
 } $unscoped(fn);
 
 fn_((dansi_dcs_writeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1bP")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_dcs_7bit_prefix)));
     try_(io_Writer_writeBytes(out, payload));
     return dansi_Seq_EOS_write(eos, out);
 } $unscoped(fn);
@@ -91,7 +94,7 @@ fn_((dansi_dcs_makeWithEOS(S_const$u8 params, S_const$u8 intermediates, u8 final
 } $unscoped(fn);
 
 fn_((dansi_dcs_writeWithEOS(S_const$u8 params, S_const$u8 intermediates, u8 final, S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1bP")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_dcs_7bit_prefix)));
     try_(io_Writer_writeBytes(out, params));
     try_(io_Writer_writeBytes(out, intermediates));
     try_(io_Writer_writeByte(out, final));

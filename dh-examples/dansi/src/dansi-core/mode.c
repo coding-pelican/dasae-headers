@@ -40,12 +40,12 @@ fn_((dansi_mode_setMany(S_const$u16 modes, bool enabled, S$u8 buf))(E$S$u8) $sco
 } $unscoped(fn);
 
 fn_((dansi_mode_setManyWrite(S_const$u16 modes, bool enabled, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b[")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_csi_7bit_prefix)));
     for_(($s(modes), $rf(0))(ch, i)) {
-        if (i != 0) try_(io_Writer_writeByte(out, u8_c(';')));
+        if (i != 0) try_(io_Writer_writeByte(out, dansi_csi_param_sep_byte));
         try_(io_Writer_print(out, u8_l("{:uh}"), *ch));
     } $end(for);
-    return io_Writer_writeByte(out, enabled ? u8_c('h') : u8_c('l'));
+    return io_Writer_writeByte(out, enabled ? dansi_mode_enable_final_byte : dansi_mode_disable_final_byte);
 } $unscoped(fn);
 
 fn_((dansi_mode_set(dansi_mode_Code mode, bool enabled, dansi_mode_SetBuf* buf))(S$u8)) {

@@ -23,6 +23,10 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_paste_boundary_final __str__dansi_xterm_paste_boundary_final
+#define dansi_xterm_paste_boundary_final_byte __uint__dansi_xterm_paste_boundary_final_byte
+#define dansi_xterm_paste_boundary_code_param __uint__dansi_xterm_paste_boundary_code_param
+
 typedef enum_((dansi_xterm_paste_Event $fits($packed))(
     dansi_xterm_paste_Event_begin = 200,
     dansi_xterm_paste_Event_end = 201
@@ -57,6 +61,9 @@ $extern fn_((dansi_xterm_paste_parseBoundary(S_const$u8 report))(O$dansi_xterm_p
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_paste_boundary_final "~"
+#define __uint__dansi_xterm_paste_boundary_final_byte u8_c('~')
+#define __uint__dansi_xterm_paste_boundary_code_param 0
 #define ____dansi_xterm_paste_enableBracketed_static() \
     dansi_xterm_mode_enable_static(dansi_xterm_mode_Code_bracketed_paste)
 #define ____dansi_xterm_paste_disableBracketed_static() \

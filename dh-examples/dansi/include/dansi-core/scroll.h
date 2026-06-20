@@ -23,6 +23,11 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_scroll_up_final __str__dansi_scroll_up_final
+#define dansi_scroll_up_final_byte __uint__dansi_scroll_up_final_byte
+#define dansi_scroll_down_final __str__dansi_scroll_down_final
+#define dansi_scroll_down_final_byte __uint__dansi_scroll_down_final_byte
+
 #define dansi_scroll_up_static(_lines_tok) \
     ____dansi_scroll_up_static(_lines_tok)
 typedef A$$(3 + uint_log10Ceil_static(u16_limit_max), u8) dansi_scroll_UpBuf;
@@ -41,10 +46,14 @@ $extern fn_((dansi_scroll_downWrite(u16 lines, io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_scroll_up_final "S"
+#define __uint__dansi_scroll_up_final_byte u8_c('S')
+#define __str__dansi_scroll_down_final "T"
+#define __uint__dansi_scroll_down_final_byte u8_c('T')
 #define ____dansi_scroll_up_static(_lines_tok) \
-    dansi_csi_make1_static(_lines_tok, "S")
+    dansi_csi_make1_static(_lines_tok, dansi_scroll_up_final)
 #define ____dansi_scroll_down_static(_lines_tok) \
-    dansi_csi_make1_static(_lines_tok, "T")
+    dansi_csi_make1_static(_lines_tok, dansi_scroll_down_final)
 
 #if defined(__cplusplus)
 } /* extern "C" */

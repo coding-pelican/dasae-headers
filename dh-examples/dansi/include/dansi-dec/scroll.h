@@ -23,6 +23,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_dec_scroll_margins_final __str__dansi_dec_scroll_margins_final
+#define dansi_dec_scroll_margins_final_byte __uint__dansi_dec_scroll_margins_final_byte
+
 #define dansi_dec_scroll_setMargins_static(_top_tok, _bottom_tok) \
     ____dansi_dec_scroll_setMargins_static(_top_tok, _bottom_tok)
 typedef A$$(4 + uint_log10Ceil_static(u16_limit_max) * 2, u8) dansi_dec_scroll_SetMarginsBuf;
@@ -42,10 +45,12 @@ $extern fn_((dansi_dec_scroll_resetMarginsWrite(io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_dec_scroll_margins_final "r"
+#define __uint__dansi_dec_scroll_margins_final_byte u8_c('r')
 #define ____dansi_dec_scroll_setMargins_static(_top_tok, _bottom_tok) \
-    dansi_csi_make2_static(_top_tok, _bottom_tok, "r")
+    dansi_csi_make2_static(_top_tok, _bottom_tok, dansi_dec_scroll_margins_final)
 #define ____dansi_dec_scroll_resetMargins_static() \
-    dansi_csi_make0_static("r")
+    dansi_csi_make0_static(dansi_dec_scroll_margins_final)
 
 #if defined(__cplusplus)
 } /* extern "C" */

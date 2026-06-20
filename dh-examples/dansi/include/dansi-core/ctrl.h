@@ -32,7 +32,7 @@ T_use_prl$(dansi_ctrl_Code);
 
 $attr($inline_always)
 $static fn_((dansi_ctrl_isCtrl(u8 byte))(bool)) {
-    return dansi_c0_isCtrl(byte) || byte == as$(u8)(dansi_ctrl_Code_del) || dansi_c1_isCtrl(byte);
+    return dansi_c0_isCtrl(byte) || byte == u8_(dansi_ctrl_Code_del) || dansi_c1_isCtrl(byte);
 };
 
 #if defined(__cplusplus)

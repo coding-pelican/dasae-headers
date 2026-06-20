@@ -26,11 +26,11 @@ fn_((dansi_xterm_paste_disableBracketedWrite(io_Writer out))(E$void)) {
 
 fn_((dansi_xterm_paste_parseBoundary(S_const$u8 report))(O$dansi_xterm_paste_Event) $scope) {
     let frame = catch_((dansi_csi_parse(report))($ignore, return_none()));
-    if (frame.final != u8_c('~')) return_none();
-    let code = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 0))(return_none()));
+    if (frame.final != dansi_xterm_paste_boundary_final_byte) return_none();
+    let code = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_paste_boundary_code_param))(return_none()));
     switch (code) {
-    case_((200)) return_some(dansi_xterm_paste_Event_begin) $end(case);
-    case_((201)) return_some(dansi_xterm_paste_Event_end) $end(case);
+    case_((dansi_xterm_paste_Event_begin)) return_some(dansi_xterm_paste_Event_begin) $end(case);
+    case_((dansi_xterm_paste_Event_end)) return_some(dansi_xterm_paste_Event_end) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);

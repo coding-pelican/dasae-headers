@@ -25,6 +25,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_dec_cursor_save_final __str__dansi_dec_cursor_save_final
+#define dansi_dec_cursor_save_final_byte __uint__dansi_dec_cursor_save_final_byte
+#define dansi_dec_cursor_restore_final __str__dansi_dec_cursor_restore_final
+#define dansi_dec_cursor_restore_final_byte __uint__dansi_dec_cursor_restore_final_byte
+#define dansi_dec_cursor_style_intermediate __str__dansi_dec_cursor_style_intermediate
+#define dansi_dec_cursor_style_intermediate_byte __uint__dansi_dec_cursor_style_intermediate_byte
+#define dansi_dec_cursor_style_final __str__dansi_dec_cursor_style_final
+#define dansi_dec_cursor_style_final_byte __uint__dansi_dec_cursor_style_final_byte
+
 typedef enum_((dansi_dec_cursor_Style $fits($packed))(
     dansi_dec_cursor_Style_default = 0,
     dansi_dec_cursor_Style_block_blink = 1,
@@ -80,16 +89,24 @@ $extern fn_((dansi_dec_cursor_setStyleWrite(dansi_dec_cursor_Style style, io_Wri
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_dec_cursor_save_final "7"
+#define __uint__dansi_dec_cursor_save_final_byte u8_c('7')
+#define __str__dansi_dec_cursor_restore_final "8"
+#define __uint__dansi_dec_cursor_restore_final_byte u8_c('8')
+#define __str__dansi_dec_cursor_style_intermediate " "
+#define __uint__dansi_dec_cursor_style_intermediate_byte u8_c(' ')
+#define __str__dansi_dec_cursor_style_final "q"
+#define __uint__dansi_dec_cursor_style_final_byte u8_c('q')
 #define ____dansi_dec_cursor_show_static() \
     dansi_dec_mode_enable_static(dansi_dec_mode_Code_text_cursor)
 #define ____dansi_dec_cursor_hide_static() \
     dansi_dec_mode_disable_static(dansi_dec_mode_Code_text_cursor)
 #define ____dansi_dec_cursor_save_static() \
-    dansi_esc_make_static("", "7")
+    dansi_esc_make_static("", dansi_dec_cursor_save_final)
 #define ____dansi_dec_cursor_restore_static() \
-    dansi_esc_make_static("", "8")
+    dansi_esc_make_static("", dansi_dec_cursor_restore_final)
 #define ____dansi_dec_cursor_setStyle_static(_style_tok) \
-    dansi_csi_make_static(dansi_dec_cursor_Style_staticParse(_style_tok), " ", "q")
+    dansi_csi_make_static(dansi_dec_cursor_Style_staticParse(_style_tok), dansi_dec_cursor_style_intermediate, dansi_dec_cursor_style_final)
 #define ____dansi_dec_cursor_Style_staticParse(_style_tok) \
     pp_join($, ____dansi_dec_cursor_Style_str, _style_tok)
 #define ____dansi_dec_cursor_Style_str$dansi_dec_cursor_Style_default "0"

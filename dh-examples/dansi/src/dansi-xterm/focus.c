@@ -28,8 +28,8 @@ fn_((dansi_xterm_focus_parseReport(S_const$u8 report))(O$dansi_xterm_focus_Event
     let frame = catch_((dansi_csi_parse(report))($ignore, return_none()));
     if (frame.params.len != 0 || frame.intermediates.len != 0) return_none();
     switch (frame.final) {
-    case_((u8_c('I'))) return_some(dansi_xterm_focus_Event_in) $end(case);
-    case_((u8_c('O'))) return_some(dansi_xterm_focus_Event_out) $end(case);
+    case_((dansi_xterm_focus_in_final_byte)) return_some(dansi_xterm_focus_Event_in) $end(case);
+    case_((dansi_xterm_focus_out_final_byte)) return_some(dansi_xterm_focus_Event_out) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);

@@ -23,6 +23,11 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_focus_in_final __str__dansi_xterm_focus_in_final
+#define dansi_xterm_focus_in_final_byte __uint__dansi_xterm_focus_in_final_byte
+#define dansi_xterm_focus_out_final __str__dansi_xterm_focus_out_final
+#define dansi_xterm_focus_out_final_byte __uint__dansi_xterm_focus_out_final_byte
+
 typedef enum_((dansi_xterm_focus_Event $fits($packed))(
     dansi_xterm_focus_Event_in,
     dansi_xterm_focus_Event_out
@@ -57,6 +62,10 @@ $extern fn_((dansi_xterm_focus_parseReport(S_const$u8 report))(O$dansi_xterm_foc
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_focus_in_final "I"
+#define __uint__dansi_xterm_focus_in_final_byte u8_c('I')
+#define __str__dansi_xterm_focus_out_final "O"
+#define __uint__dansi_xterm_focus_out_final_byte u8_c('O')
 #define ____dansi_xterm_focus_enableTracking_static() \
     dansi_xterm_mode_enable_static(dansi_xterm_mode_Code_focus_event)
 #define ____dansi_xterm_focus_disableTracking_static() \

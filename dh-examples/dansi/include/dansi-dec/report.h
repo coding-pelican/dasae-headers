@@ -23,6 +23,16 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_dec_report_private_marker __str__dansi_dec_report_private_marker
+#define dansi_dec_report_private_marker_byte __uint__dansi_dec_report_private_marker_byte
+#define dansi_dec_report_final __str__dansi_dec_report_final
+#define dansi_dec_report_final_byte __uint__dansi_dec_report_final_byte
+#define dansi_dec_report_printer_status_request_code __str__dansi_dec_report_printer_status_request_code
+#define dansi_dec_report_printer_status_request_code_u16 __uint__dansi_dec_report_printer_status_request_code_u16
+#define dansi_dec_report_keyboard_status_request_code __str__dansi_dec_report_keyboard_status_request_code
+#define dansi_dec_report_keyboard_status_request_code_u16 __uint__dansi_dec_report_keyboard_status_request_code_u16
+#define dansi_dec_report_status_param_code __uint__dansi_dec_report_status_param_code
+
 typedef enum_((dansi_dec_report_PrinterStatus $fits($packed))(
     dansi_dec_report_PrinterStatus_ready = 10,
     dansi_dec_report_PrinterStatus_not_ready = 11
@@ -75,10 +85,19 @@ $extern fn_((dansi_dec_report_fetchKeyboardStatus(
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_dec_report_private_marker dansi_csi_private_marker_query
+#define __uint__dansi_dec_report_private_marker_byte u8_c('?')
+#define __str__dansi_dec_report_final "n"
+#define __uint__dansi_dec_report_final_byte u8_c('n')
+#define __str__dansi_dec_report_printer_status_request_code "15"
+#define __uint__dansi_dec_report_printer_status_request_code_u16 15
+#define __str__dansi_dec_report_keyboard_status_request_code "26"
+#define __uint__dansi_dec_report_keyboard_status_request_code_u16 26
+#define __uint__dansi_dec_report_status_param_code 0
 #define ____dansi_dec_report_requestPrinterStatus_static() \
-    dansi_csi_makePrivate1_static("15", "n")
+    dansi_csi_makePrivate1_static(dansi_dec_report_printer_status_request_code, dansi_dec_report_final)
 #define ____dansi_dec_report_requestKeyboardStatus_static() \
-    dansi_csi_makePrivate1_static("26", "n")
+    dansi_csi_makePrivate1_static(dansi_dec_report_keyboard_status_request_code, dansi_dec_report_final)
 
 #if defined(__cplusplus)
 } /* extern "C" */

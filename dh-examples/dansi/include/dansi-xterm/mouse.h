@@ -23,6 +23,36 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_mouse_cb_shift __uint__dansi_xterm_mouse_cb_shift
+#define dansi_xterm_mouse_cb_alt __uint__dansi_xterm_mouse_cb_alt
+#define dansi_xterm_mouse_cb_ctrl __uint__dansi_xterm_mouse_cb_ctrl
+#define dansi_xterm_mouse_cb_motion __uint__dansi_xterm_mouse_cb_motion
+#define dansi_xterm_mouse_cb_btn_mask __uint__dansi_xterm_mouse_cb_btn_mask
+#define dansi_xterm_mouse_cb_btn_left __uint__dansi_xterm_mouse_cb_btn_left
+#define dansi_xterm_mouse_cb_btn_middle __uint__dansi_xterm_mouse_cb_btn_middle
+#define dansi_xterm_mouse_cb_btn_right __uint__dansi_xterm_mouse_cb_btn_right
+#define dansi_xterm_mouse_cb_btn_backward __uint__dansi_xterm_mouse_cb_btn_backward
+#define dansi_xterm_mouse_cb_btn_forward __uint__dansi_xterm_mouse_cb_btn_forward
+#define dansi_xterm_mouse_cb_btn_aux1 __uint__dansi_xterm_mouse_cb_btn_aux1
+#define dansi_xterm_mouse_cb_btn_aux2 __uint__dansi_xterm_mouse_cb_btn_aux2
+#define dansi_xterm_mouse_cb_wheel_up __uint__dansi_xterm_mouse_cb_wheel_up
+#define dansi_xterm_mouse_cb_wheel_down __uint__dansi_xterm_mouse_cb_wheel_down
+#define dansi_xterm_mouse_cb_wheel_left __uint__dansi_xterm_mouse_cb_wheel_left
+#define dansi_xterm_mouse_cb_wheel_right __uint__dansi_xterm_mouse_cb_wheel_right
+#define dansi_xterm_mouse_sgr_marker __str__dansi_xterm_mouse_sgr_marker
+#define dansi_xterm_mouse_sgr_marker_byte __uint__dansi_xterm_mouse_sgr_marker_byte
+#define dansi_xterm_mouse_sgr_press_final __str__dansi_xterm_mouse_sgr_press_final
+#define dansi_xterm_mouse_sgr_press_final_byte __uint__dansi_xterm_mouse_sgr_press_final_byte
+#define dansi_xterm_mouse_sgr_release_final __str__dansi_xterm_mouse_sgr_release_final
+#define dansi_xterm_mouse_sgr_release_final_byte __uint__dansi_xterm_mouse_sgr_release_final_byte
+#define dansi_xterm_mouse_sgr_param_cb __uint__dansi_xterm_mouse_sgr_param_cb
+#define dansi_xterm_mouse_sgr_param_x __uint__dansi_xterm_mouse_sgr_param_x
+#define dansi_xterm_mouse_sgr_param_y __uint__dansi_xterm_mouse_sgr_param_y
+
+#define __uint__dansi_xterm_mouse_cb_shift 4
+#define __uint__dansi_xterm_mouse_cb_alt 8
+#define __uint__dansi_xterm_mouse_cb_ctrl 16
+
 typedef enum_((dansi_xterm_mouse_Btn $fits($packed))(
     dansi_xterm_mouse_Btn_left,
     dansi_xterm_mouse_Btn_middle,
@@ -84,20 +114,20 @@ $static fn_((dansi_xterm_mouse_modsNone(void))(dansi_xterm_mouse_Mods)) {
 
 $attr($inline_always)
 $static fn_((dansi_xterm_mouse_modsFromCb(u16 cb))(dansi_xterm_mouse_Mods)) {
-    let_(meta, bool) = (cb & 8) != 0;
+    let_(meta, bool) = (cb & dansi_xterm_mouse_cb_alt) != 0;
     return (dansi_xterm_mouse_Mods){
-        .shift = (cb & 4) != 0,
+        .shift = (cb & dansi_xterm_mouse_cb_shift) != 0,
         .alt = meta,
-        .ctrl = (cb & 16) != 0,
+        .ctrl = (cb & dansi_xterm_mouse_cb_ctrl) != 0,
         .meta = meta,
     };
 };
 
 $attr($inline_always)
 $static fn_((dansi_xterm_mouse_modsToCb(dansi_xterm_mouse_Mods mods))(u16)) {
-    return (mods.shift ? 4 : 0)
-         | ((mods.alt || mods.meta) ? 8 : 0)
-         | (mods.ctrl ? 16 : 0);
+    return (mods.shift ? dansi_xterm_mouse_cb_shift : 0)
+         | ((mods.alt || mods.meta) ? dansi_xterm_mouse_cb_alt : 0)
+         | (mods.ctrl ? dansi_xterm_mouse_cb_ctrl : 0);
 };
 
 typedef enum_((dansi_xterm_mouse_ReportMode $fits($packed))(
@@ -298,6 +328,28 @@ $static fn_((dansi_xterm_mouse_btnsNone(void))(dansi_xterm_mouse_Btns)) {
 
 /*========== Macros and Definitions =========================================*/
 
+#define __uint__dansi_xterm_mouse_cb_motion 32
+#define __uint__dansi_xterm_mouse_cb_btn_mask 0x6f
+#define __uint__dansi_xterm_mouse_cb_btn_left 0
+#define __uint__dansi_xterm_mouse_cb_btn_middle 1
+#define __uint__dansi_xterm_mouse_cb_btn_right 2
+#define __uint__dansi_xterm_mouse_cb_btn_backward 8
+#define __uint__dansi_xterm_mouse_cb_btn_forward 9
+#define __uint__dansi_xterm_mouse_cb_btn_aux1 10
+#define __uint__dansi_xterm_mouse_cb_btn_aux2 11
+#define __uint__dansi_xterm_mouse_cb_wheel_up 64
+#define __uint__dansi_xterm_mouse_cb_wheel_down 65
+#define __uint__dansi_xterm_mouse_cb_wheel_left 66
+#define __uint__dansi_xterm_mouse_cb_wheel_right 67
+#define __str__dansi_xterm_mouse_sgr_marker "<"
+#define __uint__dansi_xterm_mouse_sgr_marker_byte u8_c('<')
+#define __str__dansi_xterm_mouse_sgr_press_final "M"
+#define __uint__dansi_xterm_mouse_sgr_press_final_byte u8_c('M')
+#define __str__dansi_xterm_mouse_sgr_release_final "m"
+#define __uint__dansi_xterm_mouse_sgr_release_final_byte u8_c('m')
+#define __uint__dansi_xterm_mouse_sgr_param_cb 0
+#define __uint__dansi_xterm_mouse_sgr_param_x 1
+#define __uint__dansi_xterm_mouse_sgr_param_y 2
 #define ____dansi_xterm_mouse_enableReportMode_static(_mode_tok) \
     dansi_xterm_mode_enableRaw_static(dansi_xterm_mouse_ReportMode_staticParse(_mode_tok))
 #define ____dansi_xterm_mouse_disableReportMode_static(_mode_tok) \
@@ -316,10 +368,10 @@ $static fn_((dansi_xterm_mouse_btnsNone(void))(dansi_xterm_mouse_Btns)) {
     dansi_xterm_mouse_disableReportMode_static(dansi_xterm_mouse_ReportMode_any_event)
 #define ____dansi_xterm_mouse_enableSGR_static(_mode_tok) \
     dansi_xterm_mouse_enableReportMode_static(_mode_tok) \
-    dansi_xterm_mouse_enableEncoding_static(dansi_xterm_mouse_Encoding_sgr)
+        dansi_xterm_mouse_enableEncoding_static(dansi_xterm_mouse_Encoding_sgr)
 #define ____dansi_xterm_mouse_disableSGR_static(_mode_tok) \
     dansi_xterm_mouse_disableEncoding_static(dansi_xterm_mouse_Encoding_sgr) \
-    dansi_xterm_mouse_disableReportMode_static(_mode_tok)
+        dansi_xterm_mouse_disableReportMode_static(_mode_tok)
 #define ____dansi_xterm_mouse_ReportMode_staticParse(_mode_tok) \
     pp_join($, ____dansi_xterm_mouse_ReportMode_str, _mode_tok)
 #define ____dansi_xterm_mouse_ReportMode_str$dansi_xterm_mouse_ReportMode_x10 "9"

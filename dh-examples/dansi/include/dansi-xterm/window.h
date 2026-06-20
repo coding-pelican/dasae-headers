@@ -26,9 +26,14 @@ extern "C" {
 typedef enum_((dansi_xterm_window_Op $fits($packed))(
     dansi_xterm_window_Op_deiconify = 1,
     dansi_xterm_window_Op_iconify = 2,
+    dansi_xterm_window_Op_move = 3,
+    dansi_xterm_window_Op_resize_pixels = 4,
     dansi_xterm_window_Op_raise = 5,
     dansi_xterm_window_Op_lower = 6,
     dansi_xterm_window_Op_refresh = 7,
+    dansi_xterm_window_Op_resize_cells = 8,
+    dansi_xterm_window_Op_maximize = 9,
+    dansi_xterm_window_Op_fullscreen = 10,
     dansi_xterm_window_Op_report_state = 11,
     dansi_xterm_window_Op_report_pos = 13,
     dansi_xterm_window_Op_report_text_area_pixels = 14,
@@ -44,6 +49,12 @@ T_use_prl$(dansi_xterm_window_Op);
 
 #define dansi_xterm_window_Op_staticParse(_op_tok) \
     ____dansi_xterm_window_Op_staticParse(_op_tok)
+
+#define dansi_xterm_window_report_final __str__dansi_xterm_window_report_final
+#define dansi_xterm_window_report_final_byte __uint__dansi_xterm_window_report_final_byte
+#define dansi_xterm_window_report_param_code __uint__dansi_xterm_window_report_param_code
+#define dansi_xterm_window_report_param_x __uint__dansi_xterm_window_report_param_x
+#define dansi_xterm_window_report_param_y __uint__dansi_xterm_window_report_param_y
 
 typedef enum_((dansi_xterm_window_Maximize $fits($packed))(
     dansi_xterm_window_Maximize_restore = 0,
@@ -175,18 +186,23 @@ $extern fn_((dansi_xterm_window_fetchPos(
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_window_report_final "t"
+#define __uint__dansi_xterm_window_report_final_byte u8_c('t')
+#define __uint__dansi_xterm_window_report_param_code 0
+#define __uint__dansi_xterm_window_report_param_x 1
+#define __uint__dansi_xterm_window_report_param_y 2
 #define ____dansi_xterm_window_op_static(_op_tok) \
-    dansi_csi_make1_static(dansi_xterm_window_Op_staticParse(_op_tok), "t")
+    dansi_csi_make1_static(dansi_xterm_window_Op_staticParse(_op_tok), dansi_xterm_window_report_final)
 #define ____dansi_xterm_window_move_static(_x_tok, _y_tok) \
-    dansi_csi_make_static("3;" _x_tok ";" _y_tok, "", "t")
+    dansi_csi_make_static(dansi_xterm_window_Op_staticParse(dansi_xterm_window_Op_move) dansi_csi_param_sep _x_tok dansi_csi_param_sep _y_tok, "", dansi_xterm_window_report_final)
 #define ____dansi_xterm_window_resizePixels_static(_height_tok, _width_tok) \
-    dansi_csi_make_static("4;" _height_tok ";" _width_tok, "", "t")
+    dansi_csi_make_static(dansi_xterm_window_Op_staticParse(dansi_xterm_window_Op_resize_pixels) dansi_csi_param_sep _height_tok dansi_csi_param_sep _width_tok, "", dansi_xterm_window_report_final)
 #define ____dansi_xterm_window_resizeCells_static(_height_tok, _width_tok) \
-    dansi_csi_make_static("8;" _height_tok ";" _width_tok, "", "t")
+    dansi_csi_make_static(dansi_xterm_window_Op_staticParse(dansi_xterm_window_Op_resize_cells) dansi_csi_param_sep _height_tok dansi_csi_param_sep _width_tok, "", dansi_xterm_window_report_final)
 #define ____dansi_xterm_window_maximize_static(_mode_tok) \
-    dansi_csi_make_static("9;" dansi_xterm_window_Maximize_staticParse(_mode_tok), "", "t")
+    dansi_csi_make_static(dansi_xterm_window_Op_staticParse(dansi_xterm_window_Op_maximize) dansi_csi_param_sep dansi_xterm_window_Maximize_staticParse(_mode_tok), "", dansi_xterm_window_report_final)
 #define ____dansi_xterm_window_fullscreen_static(_mode_tok) \
-    dansi_csi_make_static("10;" dansi_xterm_window_Fullscreen_staticParse(_mode_tok), "", "t")
+    dansi_csi_make_static(dansi_xterm_window_Op_staticParse(dansi_xterm_window_Op_fullscreen) dansi_csi_param_sep dansi_xterm_window_Fullscreen_staticParse(_mode_tok), "", dansi_xterm_window_report_final)
 #define ____dansi_xterm_window_requestState_static() \
     dansi_xterm_window_op_static(dansi_xterm_window_Op_report_state)
 #define ____dansi_xterm_window_requestPos_static() \
@@ -195,9 +211,14 @@ $extern fn_((dansi_xterm_window_fetchPos(
     pp_join($, ____dansi_xterm_window_Op_str, _op_tok)
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_deiconify "1"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_iconify "2"
+#define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_move "3"
+#define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_resize_pixels "4"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_raise "5"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_lower "6"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_refresh "7"
+#define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_resize_cells "8"
+#define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_maximize "9"
+#define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_fullscreen "10"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_report_state "11"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_report_pos "13"
 #define ____dansi_xterm_window_Op_str$dansi_xterm_window_Op_report_text_area_pixels "14"

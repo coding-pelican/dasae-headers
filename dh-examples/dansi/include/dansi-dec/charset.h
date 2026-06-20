@@ -23,6 +23,11 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_dec_charset_shift_in __str__dansi_dec_charset_shift_in
+#define dansi_dec_charset_shift_in_byte __uint__dansi_dec_charset_shift_in_byte
+#define dansi_dec_charset_shift_out __str__dansi_dec_charset_shift_out
+#define dansi_dec_charset_shift_out_byte __uint__dansi_dec_charset_shift_out_byte
+
 typedef enum_((dansi_dec_charset_Slot $fits($packed))(
     dansi_dec_charset_Slot_g0 = '(',
     dansi_dec_charset_Slot_g1 = ')',
@@ -75,10 +80,14 @@ $extern fn_((dansi_dec_charset_shiftOutWrite(io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_dec_charset_shift_in "\x0f"
+#define __uint__dansi_dec_charset_shift_in_byte 0x0f
+#define __str__dansi_dec_charset_shift_out "\x0e"
+#define __uint__dansi_dec_charset_shift_out_byte 0x0e
 #define ____dansi_dec_charset_designate_static(_slot_tok, _set_tok) \
     dansi_esc_make_static(dansi_dec_charset_Slot_staticParse(_slot_tok), dansi_dec_charset_Set_staticParse(_set_tok))
-#define ____dansi_dec_charset_shiftIn_static() "\x0f"
-#define ____dansi_dec_charset_shiftOut_static() "\x0e"
+#define ____dansi_dec_charset_shiftIn_static() dansi_dec_charset_shift_in
+#define ____dansi_dec_charset_shiftOut_static() dansi_dec_charset_shift_out
 
 #define ____dansi_dec_charset_Slot_staticParse(_slot_tok) \
     pp_join($, ____dansi_dec_charset_Slot_str, _slot_tok)

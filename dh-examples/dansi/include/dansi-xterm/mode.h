@@ -23,6 +23,17 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_mode_private_marker __str__dansi_xterm_mode_private_marker
+#define dansi_xterm_mode_private_marker_byte __uint__dansi_xterm_mode_private_marker_byte
+#define dansi_xterm_mode_enable_final __str__dansi_xterm_mode_enable_final
+#define dansi_xterm_mode_enable_final_byte __uint__dansi_xterm_mode_enable_final_byte
+#define dansi_xterm_mode_disable_final __str__dansi_xterm_mode_disable_final
+#define dansi_xterm_mode_disable_final_byte __uint__dansi_xterm_mode_disable_final_byte
+#define dansi_xterm_mode_save_final __str__dansi_xterm_mode_save_final
+#define dansi_xterm_mode_save_final_byte __uint__dansi_xterm_mode_save_final_byte
+#define dansi_xterm_mode_restore_final __str__dansi_xterm_mode_restore_final
+#define dansi_xterm_mode_restore_final_byte __uint__dansi_xterm_mode_restore_final_byte
+
 typedef enum_((dansi_xterm_mode_Code $fits($packed))(
     dansi_xterm_mode_Code_mouse_x10 = 9,
     dansi_xterm_mode_Code_mouse_normal = 1000,
@@ -142,19 +153,29 @@ $extern fn_((dansi_xterm_mode_restoreOneWrite(dansi_xterm_mode_Code mode, io_Wri
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_mode_private_marker dansi_csi_private_marker_query
+#define __uint__dansi_xterm_mode_private_marker_byte u8_c('?')
+#define __str__dansi_xterm_mode_enable_final "h"
+#define __uint__dansi_xterm_mode_enable_final_byte u8_c('h')
+#define __str__dansi_xterm_mode_disable_final "l"
+#define __uint__dansi_xterm_mode_disable_final_byte u8_c('l')
+#define __str__dansi_xterm_mode_save_final "s"
+#define __uint__dansi_xterm_mode_save_final_byte u8_c('s')
+#define __str__dansi_xterm_mode_restore_final "r"
+#define __uint__dansi_xterm_mode_restore_final_byte u8_c('r')
 #define ____dansi_xterm_mode_enableRaw_static(_mode_tok) \
-    dansi_csi_makePrivate1_static(_mode_tok, "h")
+    dansi_csi_makePrivate1_static(_mode_tok, dansi_xterm_mode_enable_final)
 #define ____dansi_xterm_mode_disableRaw_static(_mode_tok) \
-    dansi_csi_makePrivate1_static(_mode_tok, "l")
+    dansi_csi_makePrivate1_static(_mode_tok, dansi_xterm_mode_disable_final)
 #define ____dansi_xterm_mode_setRaw_static(_mode_tok, _pp_enabled) \
     pp_if_(_pp_enabled)( \
         pp_then_(dansi_xterm_mode_enableRaw_static(_mode_tok)), \
         pp_else_(dansi_xterm_mode_disableRaw_static(_mode_tok)) \
     )
 #define ____dansi_xterm_mode_saveRaw_static(_mode_tok) \
-    dansi_csi_makePrivate1_static(_mode_tok, "s")
+    dansi_csi_makePrivate1_static(_mode_tok, dansi_xterm_mode_save_final)
 #define ____dansi_xterm_mode_restoreRaw_static(_mode_tok) \
-    dansi_csi_makePrivate1_static(_mode_tok, "r")
+    dansi_csi_makePrivate1_static(_mode_tok, dansi_xterm_mode_restore_final)
 #define ____dansi_xterm_mode_Code_staticParse(_mode_tok) \
     pp_join($, ____dansi_xterm_mode_Code_str, _mode_tok)
 #define ____dansi_xterm_mode_Code_str$dansi_xterm_mode_Code_mouse_x10 "9"

@@ -23,6 +23,11 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_color_fg_prefix __str__dansi_color_fg_prefix
+#define dansi_color_fg_prefix_byte __uint__dansi_color_fg_prefix_byte
+#define dansi_color_bg_prefix __str__dansi_color_bg_prefix
+#define dansi_color_bg_prefix_byte __uint__dansi_color_bg_prefix_byte
+
 typedef enum_((dansi_color_Std $fits($packed))(
     dansi_color_Std_black = 0,
     dansi_color_Std_red = 1,
@@ -73,10 +78,15 @@ $extern fn_((dansi_color_resetBGWrite(io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_color_fg_prefix "3"
+#define __uint__dansi_color_fg_prefix_byte u8_c('3')
+#define __str__dansi_color_bg_prefix "4"
+#define __uint__dansi_color_bg_prefix_byte u8_c('4')
+
 #define ____dansi_color_fg_static(_color_tok) \
-    dansi_sgr_setRaw_static("3" dansi_color_Std_staticParse(_color_tok))
+    dansi_sgr_setRaw_static(dansi_color_fg_prefix dansi_color_Std_staticParse(_color_tok))
 #define ____dansi_color_bg_static(_color_tok) \
-    dansi_sgr_setRaw_static("4" dansi_color_Std_staticParse(_color_tok))
+    dansi_sgr_setRaw_static(dansi_color_bg_prefix dansi_color_Std_staticParse(_color_tok))
 #define ____dansi_color_resetFG_static() \
     dansi_sgr_setOne_static(dansi_sgr_Code_fg_default)
 #define ____dansi_color_resetBG_static() \

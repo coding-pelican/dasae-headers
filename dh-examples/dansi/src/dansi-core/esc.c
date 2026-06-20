@@ -2,17 +2,17 @@
 #include <dh/io/Fixed.h>
 
 fn_((dansi_esc_parse(S_const$u8 bytes))(dansi_esc_E$dansi_esc_Frame) $scope) {
-    if (bytes.len < 2 || *S_at((bytes)[0]) != 0x1b) {
+    if (bytes.len < 2 || *S_at((bytes)[0]) != dansi_Seq_esc_byte) {
         return_err(E_cause$dansi_esc_Invalid());
     }
     let final = *S_at((bytes)[bytes.len - 1]);
-    if (final < 0x30 || final > 0x7e) {
+    if (final < dansi_esc_final_min_byte || final > dansi_esc_final_max_byte) {
         return_err(E_cause$dansi_esc_Invalid());
     }
     var_(idx, usize) = 1;
     while (idx + 1 < bytes.len) {
         let byte = *S_at((bytes)[idx]);
-        if (byte < 0x20 || byte > 0x2f) {
+        if (byte < dansi_esc_intermediate_min_byte || byte > dansi_esc_intermediate_max_byte) {
             return_err(E_cause$dansi_esc_Invalid());
         }
         idx += 1;
@@ -31,7 +31,7 @@ fn_((dansi_esc_make(S_const$u8 intermediates, u8 final, S$u8 buf))(E$S$u8) $scop
 } $unscoped(fn);
 
 fn_((dansi_esc_write(S_const$u8 intermediates, u8 final, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeByte(out, 0x1b));
+    try_(io_Writer_writeByte(out, dansi_Seq_esc_byte));
     try_(io_Writer_writeBytes(out, intermediates));
     return io_Writer_writeByte(out, final);
 } $unscoped(fn);

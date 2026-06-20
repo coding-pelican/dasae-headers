@@ -69,17 +69,17 @@ fn_((dansi_dec_device_receiveAttrsReport(io_Reader in, S$u8 buf))(E$S$u8)) {
 
 fn_((dansi_dec_device_parseAttrsReport(S_const$u8 report))(dansi_dec_device_E$dansi_dec_device_Attrs) $scope) {
     let frame = catch_((dansi_csi_parse(report))($ignore, return_err(E_cause$dansi_dec_device_InvalidResponse())));
-    if (frame.final != u8_c('c')) return_err(E_cause$dansi_dec_device_InvalidResponse());
+    if (frame.final != dansi_dec_device_attrs_report_final_byte) return_err(E_cause$dansi_dec_device_InvalidResponse());
     if (frame.params.len == 0) return_err(E_cause$dansi_dec_device_InvalidResponse());
 
     let first = *S_at((frame.params)[0]);
-    if (first == u8_c('?')) {
+    if (first == dansi_dec_device_primary_marker_byte) {
         return_ok({ .kind = dansi_dec_device_Kind_primary, .params = frame.params });
     }
-    if (first == u8_c('>')) {
+    if (first == dansi_dec_device_secondary_marker_byte) {
         return_ok({ .kind = dansi_dec_device_Kind_secondary, .params = frame.params });
     }
-    if (first == u8_c('=')) {
+    if (first == dansi_dec_device_tertiary_marker_byte) {
         return_ok({ .kind = dansi_dec_device_Kind_tertiary, .params = frame.params });
     }
     return_err(E_cause$dansi_dec_device_InvalidResponse());

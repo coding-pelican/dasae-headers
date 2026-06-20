@@ -24,6 +24,65 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_key_mod_param_base __uint__dansi_xterm_key_mod_param_base
+#define dansi_xterm_key_mod_shift_bit __uint__dansi_xterm_key_mod_shift_bit
+#define dansi_xterm_key_mod_alt_bit __uint__dansi_xterm_key_mod_alt_bit
+#define dansi_xterm_key_mod_ctrl_bit __uint__dansi_xterm_key_mod_ctrl_bit
+#define dansi_xterm_key_mod_meta_bit __uint__dansi_xterm_key_mod_meta_bit
+#define dansi_xterm_key_final_up __str__dansi_xterm_key_final_up
+#define dansi_xterm_key_final_up_byte __uint__dansi_xterm_key_final_up_byte
+#define dansi_xterm_key_final_down __str__dansi_xterm_key_final_down
+#define dansi_xterm_key_final_down_byte __uint__dansi_xterm_key_final_down_byte
+#define dansi_xterm_key_final_right __str__dansi_xterm_key_final_right
+#define dansi_xterm_key_final_right_byte __uint__dansi_xterm_key_final_right_byte
+#define dansi_xterm_key_final_left __str__dansi_xterm_key_final_left
+#define dansi_xterm_key_final_left_byte __uint__dansi_xterm_key_final_left_byte
+#define dansi_xterm_key_final_home __str__dansi_xterm_key_final_home
+#define dansi_xterm_key_final_home_byte __uint__dansi_xterm_key_final_home_byte
+#define dansi_xterm_key_final_end __str__dansi_xterm_key_final_end
+#define dansi_xterm_key_final_end_byte __uint__dansi_xterm_key_final_end_byte
+#define dansi_xterm_key_final_begin __str__dansi_xterm_key_final_begin
+#define dansi_xterm_key_final_begin_byte __uint__dansi_xterm_key_final_begin_byte
+#define dansi_xterm_key_final_f1 __str__dansi_xterm_key_final_f1
+#define dansi_xterm_key_final_f1_byte __uint__dansi_xterm_key_final_f1_byte
+#define dansi_xterm_key_final_f2 __str__dansi_xterm_key_final_f2
+#define dansi_xterm_key_final_f2_byte __uint__dansi_xterm_key_final_f2_byte
+#define dansi_xterm_key_final_f3 __str__dansi_xterm_key_final_f3
+#define dansi_xterm_key_final_f3_byte __uint__dansi_xterm_key_final_f3_byte
+#define dansi_xterm_key_final_f4 __str__dansi_xterm_key_final_f4
+#define dansi_xterm_key_final_f4_byte __uint__dansi_xterm_key_final_f4_byte
+#define dansi_xterm_key_final_tilde __str__dansi_xterm_key_final_tilde
+#define dansi_xterm_key_final_tilde_byte __uint__dansi_xterm_key_final_tilde_byte
+#define dansi_xterm_key_final_csi_u __str__dansi_xterm_key_final_csi_u
+#define dansi_xterm_key_final_csi_u_byte __uint__dansi_xterm_key_final_csi_u_byte
+#define dansi_xterm_key_codepoint_tab __uint__dansi_xterm_key_codepoint_tab
+#define dansi_xterm_key_codepoint_enter __uint__dansi_xterm_key_codepoint_enter
+#define dansi_xterm_key_codepoint_escape __uint__dansi_xterm_key_codepoint_escape
+#define dansi_xterm_key_codepoint_backspace __uint__dansi_xterm_key_codepoint_backspace
+#define dansi_xterm_key_modify_other_prefix __str__dansi_xterm_key_modify_other_prefix
+#define dansi_xterm_key_modify_other_prefix_u16 __uint__dansi_xterm_key_modify_other_prefix_u16
+#define dansi_xterm_key_modify_marker __str__dansi_xterm_key_modify_marker
+#define dansi_xterm_key_modify_marker_byte __uint__dansi_xterm_key_modify_marker_byte
+#define dansi_xterm_key_query_marker __str__dansi_xterm_key_query_marker
+#define dansi_xterm_key_query_marker_byte __uint__dansi_xterm_key_query_marker_byte
+#define dansi_xterm_key_modify_final __str__dansi_xterm_key_modify_final
+#define dansi_xterm_key_modify_final_byte __uint__dansi_xterm_key_modify_final_byte
+#define dansi_xterm_key_disable_modify_final __str__dansi_xterm_key_disable_modify_final
+#define dansi_xterm_key_disable_modify_final_byte __uint__dansi_xterm_key_disable_modify_final_byte
+#define dansi_xterm_key_format_final __str__dansi_xterm_key_format_final
+#define dansi_xterm_key_format_final_byte __uint__dansi_xterm_key_format_final_byte
+#define dansi_xterm_key_query_format_final __str__dansi_xterm_key_query_format_final
+#define dansi_xterm_key_query_format_final_byte __uint__dansi_xterm_key_query_format_final_byte
+#define dansi_xterm_key_param_key __uint__dansi_xterm_key_param_key
+#define dansi_xterm_key_param_modifier __uint__dansi_xterm_key_param_modifier
+#define dansi_xterm_key_param_codepoint __uint__dansi_xterm_key_param_codepoint
+
+#define __uint__dansi_xterm_key_mod_param_base 1
+#define __uint__dansi_xterm_key_mod_shift_bit 1
+#define __uint__dansi_xterm_key_mod_alt_bit 2
+#define __uint__dansi_xterm_key_mod_ctrl_bit 4
+#define __uint__dansi_xterm_key_mod_meta_bit 8
+
 typedef enum_((dansi_xterm_key_Resrc $fits($packed))(
     dansi_xterm_key_Resrc_keyboard = 0,
     dansi_xterm_key_Resrc_cursor_keys = 1,
@@ -79,23 +138,23 @@ $static fn_((dansi_xterm_key_modsNone(void))(dansi_xterm_key_Mods)) {
 
 $attr($inline_always)
 $static fn_((dansi_xterm_key_modsFromParam(u16 param))(dansi_xterm_key_Mods)) {
-    if (param <= 1) return dansi_xterm_key_modsNone();
-    let_(mask, u16) = param - 1;
+    if (param <= dansi_xterm_key_mod_param_base) return dansi_xterm_key_modsNone();
+    let_(mask, u16) = param - dansi_xterm_key_mod_param_base;
     return (dansi_xterm_key_Mods){
-        .shift = (mask & 1) != 0,
-        .alt = (mask & 2) != 0,
-        .ctrl = (mask & 4) != 0,
-        .meta = (mask & 8) != 0,
+        .shift = (mask & dansi_xterm_key_mod_shift_bit) != 0,
+        .alt = (mask & dansi_xterm_key_mod_alt_bit) != 0,
+        .ctrl = (mask & dansi_xterm_key_mod_ctrl_bit) != 0,
+        .meta = (mask & dansi_xterm_key_mod_meta_bit) != 0,
     };
 };
 
 $attr($inline_always)
 $static fn_((dansi_xterm_key_modsToParam(dansi_xterm_key_Mods mods))(u16)) {
-    return 1
-         + (mods.shift ? 1 : 0)
-         + (mods.alt ? 2 : 0)
-         + (mods.ctrl ? 4 : 0)
-         + (mods.meta ? 8 : 0);
+    return dansi_xterm_key_mod_param_base
+         + (mods.shift ? dansi_xterm_key_mod_shift_bit : 0)
+         + (mods.alt ? dansi_xterm_key_mod_alt_bit : 0)
+         + (mods.ctrl ? dansi_xterm_key_mod_ctrl_bit : 0)
+         + (mods.meta ? dansi_xterm_key_mod_meta_bit : 0);
 };
 
 typedef enum_((dansi_xterm_key_Named $fits($packed))(
@@ -142,6 +201,37 @@ typedef enum_((dansi_xterm_key_Named $fits($packed))(
 )) dansi_xterm_key_Named;
 claim_assert_static(eqlType$(dansi_xterm_key_Named, u8));
 T_use_prl$(dansi_xterm_key_Named);
+
+typedef enum_((dansi_xterm_key_TildeCode $fits($packed))(
+    dansi_xterm_key_TildeCode_home = 1,
+    dansi_xterm_key_TildeCode_insert = 2,
+    dansi_xterm_key_TildeCode_delete = 3,
+    dansi_xterm_key_TildeCode_end = 4,
+    dansi_xterm_key_TildeCode_page_up = 5,
+    dansi_xterm_key_TildeCode_page_down = 6,
+    dansi_xterm_key_TildeCode_f5 = 15,
+    dansi_xterm_key_TildeCode_f6 = 17,
+    dansi_xterm_key_TildeCode_f7 = 18,
+    dansi_xterm_key_TildeCode_f8 = 19,
+    dansi_xterm_key_TildeCode_f9 = 20,
+    dansi_xterm_key_TildeCode_f10 = 21,
+    dansi_xterm_key_TildeCode_f11 = 23,
+    dansi_xterm_key_TildeCode_f12 = 24,
+    dansi_xterm_key_TildeCode_f13 = 25,
+    dansi_xterm_key_TildeCode_f14 = 26,
+    dansi_xterm_key_TildeCode_f15 = 28,
+    dansi_xterm_key_TildeCode_f16 = 29,
+    dansi_xterm_key_TildeCode_f17 = 31,
+    dansi_xterm_key_TildeCode_f18 = 32,
+    dansi_xterm_key_TildeCode_f19 = 33,
+    dansi_xterm_key_TildeCode_f20 = 34,
+    dansi_xterm_key_TildeCode_f21 = 35,
+    dansi_xterm_key_TildeCode_f22 = 36,
+    dansi_xterm_key_TildeCode_f23 = 37,
+    dansi_xterm_key_TildeCode_f24 = 38
+)) dansi_xterm_key_TildeCode;
+claim_assert_static(eqlType$(dansi_xterm_key_TildeCode, u8));
+T_use_prl$(dansi_xterm_key_TildeCode);
 
 typedef struct dansi_xterm_key_LegacyESCReport {
     var_(final, u8);
@@ -328,28 +418,75 @@ $extern fn_((dansi_xterm_key_parseEvent(dansi_Seq seq))(O$dansi_xterm_key_Event)
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_key_final_up "A"
+#define __uint__dansi_xterm_key_final_up_byte u8_c('A')
+#define __str__dansi_xterm_key_final_down "B"
+#define __uint__dansi_xterm_key_final_down_byte u8_c('B')
+#define __str__dansi_xterm_key_final_right "C"
+#define __uint__dansi_xterm_key_final_right_byte u8_c('C')
+#define __str__dansi_xterm_key_final_left "D"
+#define __uint__dansi_xterm_key_final_left_byte u8_c('D')
+#define __str__dansi_xterm_key_final_home "H"
+#define __uint__dansi_xterm_key_final_home_byte u8_c('H')
+#define __str__dansi_xterm_key_final_end "F"
+#define __uint__dansi_xterm_key_final_end_byte u8_c('F')
+#define __str__dansi_xterm_key_final_begin "E"
+#define __uint__dansi_xterm_key_final_begin_byte u8_c('E')
+#define __str__dansi_xterm_key_final_f1 "P"
+#define __uint__dansi_xterm_key_final_f1_byte u8_c('P')
+#define __str__dansi_xterm_key_final_f2 "Q"
+#define __uint__dansi_xterm_key_final_f2_byte u8_c('Q')
+#define __str__dansi_xterm_key_final_f3 "R"
+#define __uint__dansi_xterm_key_final_f3_byte u8_c('R')
+#define __str__dansi_xterm_key_final_f4 "S"
+#define __uint__dansi_xterm_key_final_f4_byte u8_c('S')
+#define __str__dansi_xterm_key_final_tilde "~"
+#define __uint__dansi_xterm_key_final_tilde_byte u8_c('~')
+#define __str__dansi_xterm_key_final_csi_u "u"
+#define __uint__dansi_xterm_key_final_csi_u_byte u8_c('u')
+#define __uint__dansi_xterm_key_codepoint_tab 9
+#define __uint__dansi_xterm_key_codepoint_enter 13
+#define __uint__dansi_xterm_key_codepoint_escape 27
+#define __uint__dansi_xterm_key_codepoint_backspace 127
+#define __str__dansi_xterm_key_modify_other_prefix "27"
+#define __uint__dansi_xterm_key_modify_other_prefix_u16 27
+#define __str__dansi_xterm_key_modify_marker ">"
+#define __uint__dansi_xterm_key_modify_marker_byte u8_c('>')
+#define __str__dansi_xterm_key_query_marker dansi_csi_private_marker_query
+#define __uint__dansi_xterm_key_query_marker_byte u8_c('?')
+#define __str__dansi_xterm_key_modify_final "m"
+#define __uint__dansi_xterm_key_modify_final_byte u8_c('m')
+#define __str__dansi_xterm_key_disable_modify_final "n"
+#define __uint__dansi_xterm_key_disable_modify_final_byte u8_c('n')
+#define __str__dansi_xterm_key_format_final "f"
+#define __uint__dansi_xterm_key_format_final_byte u8_c('f')
+#define __str__dansi_xterm_key_query_format_final "g"
+#define __uint__dansi_xterm_key_query_format_final_byte u8_c('g')
+#define __uint__dansi_xterm_key_param_key 0
+#define __uint__dansi_xterm_key_param_modifier 1
+#define __uint__dansi_xterm_key_param_codepoint 2
 #define ____dansi_xterm_key_setModifyRaw_static(_resrc_tok, _value_tok) \
-    dansi_csi_make_static(">" dansi_xterm_key_Resrc_staticParse(_resrc_tok) ";" _value_tok, "", "m")
+    dansi_csi_make_static(dansi_xterm_key_modify_marker dansi_xterm_key_Resrc_staticParse(_resrc_tok) dansi_csi_param_sep _value_tok, "", dansi_xterm_key_modify_final)
 #define ____dansi_xterm_key_setModifyLevel_static(_resrc_tok, _level_tok) \
     dansi_xterm_key_setModifyRaw_static(_resrc_tok, dansi_xterm_key_ModifyLevel_staticParse(_level_tok))
 #define ____dansi_xterm_key_resetModify_static(_resrc_tok) \
-    dansi_csi_make_static(">" dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", "m")
+    dansi_csi_make_static(dansi_xterm_key_modify_marker dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", dansi_xterm_key_modify_final)
 #define ____dansi_xterm_key_disableModify_static(_resrc_tok) \
-    dansi_csi_make_static(">" dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", "n")
+    dansi_csi_make_static(dansi_xterm_key_modify_marker dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", dansi_xterm_key_disable_modify_final)
 #define ____dansi_xterm_key_queryModify_static(_resrc_tok) \
-    dansi_csi_make_static("?" dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", "m")
+    dansi_csi_make_static(dansi_xterm_key_query_marker dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", dansi_xterm_key_modify_final)
 #define ____dansi_xterm_key_setFormat_static(_resrc_tok, _format_tok) \
-    dansi_csi_make_static(">" dansi_xterm_key_Resrc_staticParse(_resrc_tok) ";" dansi_xterm_key_Format_staticParse(_format_tok), "", "f")
+    dansi_csi_make_static(dansi_xterm_key_modify_marker dansi_xterm_key_Resrc_staticParse(_resrc_tok) dansi_csi_param_sep dansi_xterm_key_Format_staticParse(_format_tok), "", dansi_xterm_key_format_final)
 #define ____dansi_xterm_key_resetFormat_static(_resrc_tok) \
-    dansi_csi_make_static(">" dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", "f")
+    dansi_csi_make_static(dansi_xterm_key_modify_marker dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", dansi_xterm_key_format_final)
 #define ____dansi_xterm_key_queryFormat_static(_resrc_tok) \
-    dansi_csi_make_static("?" dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", "g")
+    dansi_csi_make_static(dansi_xterm_key_query_marker dansi_xterm_key_Resrc_staticParse(_resrc_tok), "", dansi_xterm_key_query_format_final)
 #define ____dansi_xterm_key_enableEnhanced_static() \
     dansi_xterm_key_setModifyLevel_static(dansi_xterm_key_Resrc_other_keys, dansi_xterm_key_ModifyLevel_other_keys) \
-    dansi_xterm_key_setFormat_static(dansi_xterm_key_Resrc_other_keys, dansi_xterm_key_Format_csi_u)
+        dansi_xterm_key_setFormat_static(dansi_xterm_key_Resrc_other_keys, dansi_xterm_key_Format_csi_u)
 #define ____dansi_xterm_key_disableEnhanced_static() \
     dansi_xterm_key_resetFormat_static(dansi_xterm_key_Resrc_other_keys) \
-    dansi_xterm_key_resetModify_static(dansi_xterm_key_Resrc_other_keys)
+        dansi_xterm_key_resetModify_static(dansi_xterm_key_Resrc_other_keys)
 #define ____dansi_xterm_key_Resrc_staticParse(_resrc_tok) \
     pp_join($, ____dansi_xterm_key_Resrc_str, _resrc_tok)
 #define ____dansi_xterm_key_Resrc_str$dansi_xterm_key_Resrc_keyboard "0"

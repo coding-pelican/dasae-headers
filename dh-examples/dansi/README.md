@@ -1,298 +1,285 @@
 # dansi
 
-`dansi` is a pure ANSI-family terminal protocol library for DH-C.
+`dansi` is a terminal protocol library for DH-C. It builds, writes, receives,
+and parses ANSI-family terminal byte sequences without owning terminal state or
+performing OS terminal setup.
 
-It does not own a terminal, switch raw mode, track lifecycle state, flush output,
-or call OS terminal APIs. It only builds byte sequences, writes them through
-`io_Writer`, receives response bytes through `io_Reader`, and parses protocol
-reports into typed values.
+The library does not switch raw mode, flush output, manage terminal lifetime,
+or call platform terminal APIs. Those responsibilities belong to a terminal
+backend or application layer that supplies `io_Writer` and `io_Reader` values.
 
-That boundary is deliberate: `dansi` is the protocol layer between a terminal
-implementation and application code. Higher layers can expose an
-`io_Writer`/`io_Reader` pair, and users can call `dansi` through that contract.
-Backends may pass bytes through to an OS terminal, or parse/intercept them for a
-virtual terminal or native fast path.
+## Architecture
 
-## Package Shape
-
-```txt
-include/
-  dansi.h           package umbrella
-  dansi-core.h      ANSI and xterm protocol umbrella
-  dansi-kitty.h     kitty extension boundary
-  dansi-sixel.h     sixel extension boundary
-
-include/dansi-core/
-  utils.h           CSI/OSC/DCS/raw protocol constants and format helpers
-  Seq.h             ANSI-family byte sequence extraction
-  Event.h           input report parsing (keys, mouse, focus)
-  attr.h            selective SGR resets
-  style.h           boolean SGR style toggles
-  color.h           4-bit, 8-bit, and RGB color SGR
-  Palette4bit.h     4-bit color enum
-  Palette8bit.h     8-bit color enum
-  cursor.h          cursor movement, style, reports
-  line.h            line clearing
-  screen.h          screen clearing, alternate buffer, size reports
-  scroll.h          scroll region control
-  mode.h            ANSI/private mode control
-  key.h             xterm key modifier/format options (XTMODKEYS / XTFMTKEYS)
-  focus.h           focus tracking mode controls (mode 1004)
-  mouse.h           mouse tracking mode controls
-  window.h          xterm window manipulation controls (XTWINOPS)
-  resource.h        xterm resource and termcap/terminfo DCS controls
-  graphics.h        xterm graphics attribute controls
-  title.h           OSC title operations
-  device.h          device status and attribute reports
-  palette.h         xterm palette stack controls
-```
-
-## API Families
-
-Most command modules expose three forms.
-
-### Compile-time static form
-
-`*_static(...)` macros build string literals from token arguments when the value
-is known at compile time.
-
-```c
-let bytes = u8_l(dansi_cursor_moveTo_static("12", "3"));
-```
-
-Enum-like APIs also provide `*_staticParse(...)` so symbolic values can be used
-without runtime formatting.
-
-```c
-let seq = u8_l(dansi_cursor_setStyle_static(
-    dansi_cursor_Style_staticParse(dansi_cursor_Style_bar)
-));
-```
-
-### Runtime buffer form
-
-Runtime formatters write into caller-owned fixed buffers and return the written
-slice. The required buffer type is part of the API.
-
-```c
-var_(buf, dansi_cursor_MovePosBuf) $undefined;
-let bytes = dansi_cursor_moveTo(12, 3, &buf);
-try_(io_Writer_writeBytes(out, bytes.as_const));
-```
-
-### Writer form
-
-`*Write(...)` writes the sequence to an `io_Writer` and returns `E$void`.
-
-```c
-try_(dansi_cursor_moveToWrite(12, 3, out));
-try_(dansi_style_boldWrite(true, out));
-try_(io_Writer_writeBytes(out, u8_l("ready")));
-try_(dansi_attr_resetWrite(out));
-```
-
-Writer functions do not flush. Flushing, buffering, OS handles, and terminal
-lifetime belong to the caller or a higher layer.
-
-## Requests And Reports
-
-Terminal queries are modeled as protocol operations, not hidden terminal state.
-The naming convention is:
-
-- `request*` creates or writes request bytes.
-- `receive*Report` reads one complete report byte sequence.
-- `parse*Report` parses already-read report bytes.
-- `fetch*` performs request, receive, and parse in one convenience call.
-
-For example, cursor position can be used as separate stages:
-
-```c
-var_(buf, dansi_cursor_PosReportBuf) $undefined;
-
-try_(dansi_cursor_requestPosWrite(out));
-let report = try_(dansi_cursor_receivePosReport(in, A_ref$((S$u8)(buf))));
-let pos = try_(dansi_cursor_parsePosReport(report.as_const));
-```
-
-Or as one convenience operation:
-
-```c
-var_(buf, dansi_cursor_PosReportBuf) $undefined;
-let pos = try_(dansi_cursor_fetchPos(out, in, A_ref$((S$u8)(buf))));
-```
-
-The same pattern is used for device reports and screen size reports:
-
-```c
-var_(buf, dansi_screen_SizeReportBuf) $undefined;
-let size = try_(dansi_screen_fetchTextAreaSizeChars(out, in, A_ref$((S$u8)(buf))));
-```
-
-Because these APIs only use `io_Writer` and `io_Reader`, a backend can intercept
-the request bytes and provide a native or virtual response while the caller still
-uses the same `dansi` protocol function.
-
-## Sequence Extraction
-
-`dansi_Seq` is the normalized boundary for parsing terminal input. It classifies
-borrowed bytes as raw, ESC, CSI, SS3, OSC, or DCS.
-
-```c
-var reader = io_Buf_Reader_init(input, A_ref$((S$u8)(buf)));
-let seq = try_(dansi_Seq_extract(&reader));
-```
-
-`dansi_Seq_extract` requires an `io_Buf_Reader` because terminal input can arrive
-in fragments. The returned slice is borrowed from the buffered reader and remains
-valid only until that buffer is mutated again.
-
-Report helpers that only need a complete CSI response use `dansi_Seq_receiveCSI`
-internally so split reports are handled without assuming a single read contains
-the whole response.
-
-## Events
-
-`dansi-core/Event.h` parses terminal input reports from ANSI/xterm byte
-streams: special keys (legacy CSI, SS3, modified CSI, tilde CSI), text input
-(including CSI `u`), SGR mouse reports, and focus-in/out (mode 1004).
-Mouse reports are represented as nested action variants (`press`, `release`,
-`drag`, `motion`, `wheel`) so wheel, motion, and button states cannot be mixed
-as unrelated flags.
-
-`dansi-core/focus.h` and `dansi-core/mouse.h` write the private-mode sequences
-that enable those reports. `dansi-core/key.h` writes xterm key modifier/format
-option sequences.
-
-Core input domain atoms live outside the parsed event layer:
-
-- `dansi-core/key.h`: key codes and modifier bits
-- `dansi-core/mouse.h`: `dansi_mouse_Btn` including backward/forward/auxiliary
-  buttons, `dansi_mouse_Btns`, four-direction wheel values, and tracking modes
-- `dansi-core/Event.h`: parsed input report variants that combine those atoms
-
-`dansi_Event_MouseBtnReport.btn` is always a concrete `dansi_mouse_Btn`.
-Reports without a concrete button are represented by non-button variants such as
-`motion`. Multiple button state belongs to `dansi_mouse_Btns`; SGR reports still
-expose the single button identity that the protocol encodes.
-
-```c
-try_(dansi_mouse_enableAnyWrite(out));
-try_(dansi_mouse_enableSGRWrite(out));
-try_(dansi_focus_enableTrackingWrite(out));
-try_(dansi_key_enableEnhancedWrite(out));
-
-let event = try_(dansi_Event_parse(seq));
-```
+Protocol ownership is explicit. ECMA-48 framing and standard controls live in
+core; DEC, xterm, hyperlink, and shell-integration protocols are separate
+modules layered on that base.
 
 ```mermaid
 graph TD
-  Seq[dansi_Seq] --> Event[dansi_Event_parse]
-  Event --> Special[dansi_Event_special]
-  Event --> Text[dansi_Event_text]
-  Event --> Mouse[dansi_Event_mouse]
-  Event --> Focus[dansi_Event_focus]
-  KeyCtl[dansi-core/key.h] --> Terminal[terminal input modes]
-  MouseCtl[dansi-core/mouse.h] --> Terminal
-  FocusCtl[dansi-core/focus.h] --> Terminal
-  Terminal --> Seq
+  App[application or terminal backend]
+  IO[io_Writer / io_Reader]
+  Core[dansi-core: ANSI framing and controls]
+  DEC[dansi-dec: VT and DEC protocols]
+  Xterm[dansi-xterm: xterm extensions]
+  Link[dansi-link: hyperlink protocols]
+  Shell[dansi-shell: shell integration protocols]
+  Reserved[reserved: kitty / iTerm / sixel]
+
+  App --> IO
+  IO --> Core
+  Core --> DEC
+  Core --> Xterm
+  Core --> Link
+  Core --> Shell
+  Core -. framing boundary .-> Reserved
 ```
 
 ```mermaid
-stateDiagram-v2
-  [*] --> input_seq
-  input_seq --> special_key: CSI/SS3 key
-  input_seq --> text: raw UTF-8 or CSI u text
-  input_seq --> mouse_press: SGR mouse M
-  input_seq --> mouse_release: SGR mouse m
-  input_seq --> mouse_drag: SGR mouse M + drag bit
-  input_seq --> mouse_motion: SGR mouse M + motion without button
-  input_seq --> mouse_wheel: SGR mouse M + wheel bit
-  input_seq --> focus: CSI I / CSI O
+flowchart LR
+  Static[compile-time static form] --> Bytes[terminal bytes]
+  Runtime[caller-owned buffer form] --> Bytes
+  Writer[io_Writer form] --> Bytes
+  Input[input bytes] --> Seq[dansi_Seq]
+  Seq --> Packet[protocol report parser]
+  Packet --> Event[semantic variant or typed report]
 ```
 
-```mermaid
-flowchart TD
-  B[bytes] --> S[dansi_Seq extraction]
-  S --> P[dansi_Event_parse]
-  P --> K{event kind}
-  K -->|keyboard report| KS[special or text]
-  K -->|mouse report| MV[mouse action variant]
-  K -->|focus report| F[focus in/out]
-```
+## Umbrellas
 
-Broader keyboard protocols, such as kitty keyboard extensions, belong in the
-`dansi-kitty` extension instead of being folded into core events.
-
-## Xterm Scope
-
-`dansi-core` owns xterm protocol surfaces that are already treated as part of
-the common terminal contract by the rest of the package. Separate named
-extension umbrellas remain for protocols with their own negotiation and payload
-models, such as kitty and sixel.
-
-| xterm surface | core boundary |
+| Header | Ownership |
 | --- | --- |
-| keyboard modifier and format controls | `dansi-core/key.h` |
-| legacy, modified, tilde, and CSI `u` key reports | `dansi-core/Event.h` |
-| focus tracking controls and reports | `dansi-core/focus.h`, `dansi-core/Event.h` |
-| mouse tracking controls and SGR reports | `dansi-core/mouse.h`, `dansi-core/Event.h` |
-| private modes shared by ANSI/xterm-compatible terminals | `dansi-core/mode.h` |
-| xterm window controls (XTWINOPS) | `dansi-core/window.h` |
-| title operations and title stack | `dansi-core/title.h` |
-| palette stack controls | `dansi-core/palette.h` |
-| SGR/video-attribute stack controls and rectangular SGR reports | `dansi-core/attr.h` |
-| graphics attribute controls (XTSMGRAPHICS) | `dansi-core/graphics.h` |
-| resource and termcap/terminfo DCS controls | `dansi-core/resource.h` |
+| `dansi-core.h` | C0/C1 catalogs, ESC/CSI/control-string framing, standard cursor, erase, scroll, mode, SGR, style, color, and device reports |
+| `dansi-dec.h` | DEC terminal models, charset designation, DECCKM/DEC modes, VT keys and keypad, DECSTBM, device attributes, and DEC reports |
+| `dansi-link.h` | OSC 8 hyperlinks |
+| `dansi-shell.h` | OSC 7 current directory, OSC 133 FinalTerm marks, and OSC 633 VS Code shell integration |
+| `dansi-xterm.h` | xterm modes, input extensions, screen/window/title operations, selections, resources, extended color, and palette operations |
+| `dansi.h` | Package umbrella in dependency order |
 
-## Control Examples
+`dansi-kitty.h`, `dansi-iterm.h`, and `dansi-sixel.h` reserve independent
+extension boundaries. They are not folded into core or xterm.
 
-### Alternate screen
+## Module Shape
+
+### Core
+
+- `c0.h`, `c1.h`, `ctrl.h`: control catalogs and classification.
+- `Seq.h`: sequence classification and buffered receive helpers.
+- `esc.h`, `csi.h`: raw framing, parsing, and CSI parameter/subparameter
+  iteration.
+- `osc.h`, `dcs.h`, `pm.h`, `apc.h`, `sos.h`: raw control-string framing,
+  terminator selection, and parsing.
+- `cursor.h`, `erase.h`, `scroll.h`, `mode.h`: standard terminal controls.
+- `sgr.h`, `style.h`, `color.h`: raw SGR, style conveniences, and standard
+  8-color foreground/background operations.
+- `device.h`: standard device status and attributes requests and reports.
+
+### DEC
+
+- `model.h`: DEC terminal model feature catalog.
+- `charset.h`: G0-G3 designation and shift controls.
+- `cursor.h`, `mode.h`, `scroll.h`: DEC save/restore cursor, private modes,
+  cursor style, and top/bottom margins.
+- `key.h`: VT cursor, PF, editing, function, and application-keypad reports.
+- `device.h`, `report.h`: DEC device attributes and printer/keyboard status
+  reports.
+
+### Xterm
+
+- `mode.h`: raw and typed xterm private-mode controls.
+- `mouse.h`: separate report-mode and encoding-mode controls, raw SGR packets,
+  and semantic mouse-event variants.
+- `key.h`: xterm modifier resources, `modifyOtherKeys`, CSI-u formatting, raw
+  key reports, and semantic key-event variants.
+- `focus.h`, `paste.h`: focus and bracketed-paste controls and reports.
+- `screen.h`, `window.h`, `title.h`: alternate screen, XTWINOPS, screen size,
+  window state/position, title stack, and title reports.
+- `selection.h`, `resrc.h`: OSC 52 selections and xterm resource/termcap DCS
+  operations.
+- `sgr.h`, `color.h`, `Palette4bit.h`, `Palette8bit.h`, `palette.h`: xterm SGR
+  stack, bright/indexed/RGB color, palette catalogs, palette stack, and palette
+  query reports.
+
+## API Forms
+
+An operation is grouped by name and normally exposes these forms:
 
 ```c
-try_(dansi_screen_enterAlternateWrite(out));
-defer_(catch_((dansi_screen_exitAlternateWrite(out))($ignore, $do_nothing)));
+// Compile-time string composition.
+let static_bytes = u8_l(dansi_cursor_moveTo_static("12", "34"));
+
+// Runtime formatting into a caller-owned, operation-sized buffer.
+var_(buf, dansi_cursor_MoveToBuf) $undefined;
+let bytes = dansi_cursor_moveTo(12, 34, &buf);
+
+// Direct output without an intermediate caller buffer.
+try_(dansi_cursor_moveToWrite(12, 34, out));
 ```
 
-`dansi` only writes the bytes. Whether this should be part of a terminal
-lifecycle is a higher-layer policy decision.
+The naming order is always `someOp_static`, `someOp`, `someOpWrite`. Static
+parsers such as `dansi_sgr_Code_staticParse(...)` convert symbolic catalog
+values into compile-time string fragments.
 
-### Clearing a message line without logical newlines
+Writer functions do not flush.
+
+## Protocol Constants
+
+Public wire constants are available in the representation needed by both
+compile-time composition and runtime parsing:
+
+- `name`: string fragment, backed by `__str__name`.
+- `name_byte`: one wire byte, backed by `__uint__name_byte`.
+- `name_u16`: numeric protocol parameter or command, backed by
+  `__uint__name_u16`.
+
+Derived static sequences are assembled from these constants instead of
+repeating protocol literals. Parser indexes, bit masks, bounds, and radices are
+named numeric constants but are not represented as wire strings.
+
+## Framing And Parsing
+
+Core framing preserves raw protocol fields. OSC parsing, for example, does not
+require every payload to be a numeric-command form:
 
 ```c
-try_(dansi_cursor_storePosWrite(out));
-try_(dansi_cursor_moveNextLineWrite(1, out));
-try_(dansi_line_clearWrite(out));
-try_(io_Writer_writeBytes(out, u8_l("Only ASCII characters are allowed.")));
-try_(dansi_cursor_restorePosWrite(out));
+let frame = try_(dansi_osc_parse(bytes));
+
+if_some((dansi_osc_Frame_splitCmd(frame))(split)) {
+    if_some((dansi_osc_CmdSplit_cmdAsU16(split))(cmd)) {
+        // Dispatch the numeric OSC command while retaining split.payload.
+    }
+}
 ```
 
-Use cursor movement for terminal layout. `io_Writer_nl` is a logical text LF,
-not a terminal "next line" control.
-
-### Static mode selection
+CSI frames preserve raw parameters and intermediates. Iterators distinguish
+semicolon parameters, empty/defaulted parameters, and colon subparameters:
 
 ```c
-let bytes = u8_l(dansi_mode_enablePrivate_static(
-    dansi_mode_Private_staticParse(dansi_mode_Private_bracketed_paste)
+let frame = try_(dansi_csi_parse(bytes));
+var params = dansi_csi_Frame_paramIter(frame);
+
+while_some((dansi_csi_ParamIter_next(&params)), param) {
+    var subparams = dansi_csi_Param_subparamIter(param);
+    while_some((dansi_csi_SubparamIter_next(&subparams)), subparam) {
+        // subparam is the borrowed raw field, including an empty field.
+    }
+}
+```
+
+Control-string builders default to 7-bit ST. `makeWithEOS` and `writeWithEOS`
+variants select BEL, 7-bit ST, or 8-bit ST where the protocol permits it.
+
+## Sequence Input
+
+`dansi_Seq` classifies text, C0, generic C1, ESC, CSI, SS2, SS3, OSC, DCS, PM,
+APC, and SOS input. `dansi_Seq_extract` operates on `io_Buf_Reader`; the typed
+`dansi_Seq_receive*` helpers receive one complete sequence from `io_Reader`.
+
+Protocol modules then interpret only the reports they own:
+
+```txt
+dansi_Seq
+  -> dansi_dec_key_parseReport / interpretReport
+  -> dansi_xterm_key_parseReport / interpretReport
+  -> dansi_xterm_mouse_parseSGRReport / interpretSGR
+  -> plain text or another extension parser
+```
+
+Raw packets and semantic events are separate. For example,
+`dansi_xterm_mouse_SGRReport` preserves `cb`, coordinates, and final byte, while
+`dansi_xterm_mouse_Event` is a variant of press, release, motion, and wheel
+events. Key reports use the same report-then-interpret model.
+
+## Mouse Configuration
+
+Mouse reporting policy and report encoding are independent:
+
+```c
+try_(dansi_xterm_mouse_enableReportModeWrite(
+    dansi_xterm_mouse_ReportMode_any_event, out
+));
+try_(dansi_xterm_mouse_enableEncodingWrite(
+    dansi_xterm_mouse_Encoding_sgr, out
 ));
 ```
 
-Runtime and writer forms are also available when the value is not compile-time
-known.
+The convenience operation configures both sides for SGR reporting:
 
-## Verification
-
-Tests live under `tests/test-*.c`.
-
-```sh
-dh-c test
+```c
+try_(dansi_xterm_mouse_enableSGRWrite(
+    dansi_xterm_mouse_ReportMode_any_event, out
+));
 ```
 
-When running from a dependent package and including recursive package tests:
+## Requests And Reports
 
-```sh
-dh-c test --recur
+Query APIs expose each protocol stage instead of hiding IO:
+
+- `request*`: build or write request bytes.
+- `receive*Report`: receive one complete protocol report.
+- `parse*Report`: parse bytes already owned by the caller.
+- `fetch*`: request, receive, and parse in one convenience operation.
+
+```c
+var_(report_buf, dansi_cursor_PosReportBuf) $undefined;
+
+try_(dansi_cursor_requestPosWrite(out));
+let report = try_(dansi_cursor_receivePosReport(
+    in, A_ref$((S$u8)(report_buf))
+));
+let pos = try_(dansi_cursor_parsePosReport(report.as_const));
 ```
 
-The current tests cover static sequence generation, writer output, split report
-receiving, report parsing, and core input event parsing (keys, mouse, focus).
+The combined form is:
+
+```c
+let pos = try_(dansi_cursor_fetchPos(
+    out, in, A_ref$((S$u8)(report_buf))
+));
+```
+
+The same staged contract is used by DEC reports and xterm screen, window,
+title, palette, and resource queries where the protocol provides a response.
+
+## OSC Extension Examples
+
+```c
+try_(dansi_link_osc8_openWithIdWrite(
+    u8_l("https://example.com"), u8_l("issue-42"), out
+));
+try_(io_Writer_writeBytes(out, u8_l("link text")));
+try_(dansi_link_osc8_closeWrite(out));
+
+try_(dansi_shell_osc7_setRawWrite(
+    u8_l("file://host/workspace"), out
+));
+```
+
+OSC 8 builders accept no parameters, an `id`, or raw parameter text. Parsed
+OSC 8 parameters retain the raw field and expose `id` as optional convenience.
+Shell string APIs distinguish encoded operations from `Raw` operations when
+the protocol requires escaping.
+
+## Build And Verification
+
+Build the library from `dh-examples/dansi`:
+
+```sh
+dh-c build
+```
+
+Build an individual test by passing its file name after `--test`:
+
+```sh
+dh-c build --test test-core_framing.c
+dh-c build --test test-core_ops.c
+dh-c build --test test-core_reports.c
+dh-c build --test test-core_seq.c
+dh-c build --test test-dec_ops.c
+dh-c build --test test-link_shell.c
+dh-c build --test test-xterm_ops.c
+```
+
+Built test executables are written under `build/dev/tests/`. The current suite
+covers framing, static/runtime/writer equivalence, split report receiving,
+standard and DEC reports, VT/xterm key interpretation, SGR mouse events, OSC
+link/shell protocols, and xterm screen/window/title/color/palette operations.

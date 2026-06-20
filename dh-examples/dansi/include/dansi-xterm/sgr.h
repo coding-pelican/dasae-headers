@@ -23,6 +23,13 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_sgr_stack_intermediate __str__dansi_xterm_sgr_stack_intermediate
+#define dansi_xterm_sgr_stack_intermediate_byte __uint__dansi_xterm_sgr_stack_intermediate_byte
+#define dansi_xterm_sgr_push_final __str__dansi_xterm_sgr_push_final
+#define dansi_xterm_sgr_push_final_byte __uint__dansi_xterm_sgr_push_final_byte
+#define dansi_xterm_sgr_pop_final __str__dansi_xterm_sgr_pop_final
+#define dansi_xterm_sgr_pop_final_byte __uint__dansi_xterm_sgr_pop_final_byte
+
 typedef enum_((dansi_xterm_sgr_Code $fits($packed))(
     dansi_xterm_sgr_Code_fg_bright_black = 90,
     dansi_xterm_sgr_Code_fg_bright_red = 91,
@@ -65,10 +72,16 @@ $extern fn_((dansi_xterm_sgr_popWrite(io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_sgr_stack_intermediate "#"
+#define __uint__dansi_xterm_sgr_stack_intermediate_byte u8_c('#')
+#define __str__dansi_xterm_sgr_push_final "p"
+#define __uint__dansi_xterm_sgr_push_final_byte u8_c('p')
+#define __str__dansi_xterm_sgr_pop_final "q"
+#define __uint__dansi_xterm_sgr_pop_final_byte u8_c('q')
 #define ____dansi_xterm_sgr_push_static() \
-    dansi_csi_make_static("", "#", "p")
+    dansi_csi_make_static("", dansi_xterm_sgr_stack_intermediate, dansi_xterm_sgr_push_final)
 #define ____dansi_xterm_sgr_pop_static() \
-    dansi_csi_make_static("", "#", "q")
+    dansi_csi_make_static("", dansi_xterm_sgr_stack_intermediate, dansi_xterm_sgr_pop_final)
 #define ____dansi_xterm_sgr_Code_staticParse(_code_tok) \
     pp_join($, ____dansi_xterm_sgr_Code_str, _code_tok)
 #define ____dansi_xterm_sgr_Code_str$dansi_xterm_sgr_Code_fg_bright_black "90"

@@ -24,6 +24,41 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_cursor_move_to_final __str__dansi_cursor_move_to_final
+#define dansi_cursor_move_to_final_byte __uint__dansi_cursor_move_to_final_byte
+#define dansi_cursor_move_up_final __str__dansi_cursor_move_up_final
+#define dansi_cursor_move_up_final_byte __uint__dansi_cursor_move_up_final_byte
+#define dansi_cursor_move_down_final __str__dansi_cursor_move_down_final
+#define dansi_cursor_move_down_final_byte __uint__dansi_cursor_move_down_final_byte
+#define dansi_cursor_move_right_final __str__dansi_cursor_move_right_final
+#define dansi_cursor_move_right_final_byte __uint__dansi_cursor_move_right_final_byte
+#define dansi_cursor_move_left_final __str__dansi_cursor_move_left_final
+#define dansi_cursor_move_left_final_byte __uint__dansi_cursor_move_left_final_byte
+#define dansi_cursor_move_to_row_final __str__dansi_cursor_move_to_row_final
+#define dansi_cursor_move_to_row_final_byte __uint__dansi_cursor_move_to_row_final_byte
+#define dansi_cursor_move_to_col_final __str__dansi_cursor_move_to_col_final
+#define dansi_cursor_move_to_col_final_byte __uint__dansi_cursor_move_to_col_final_byte
+#define dansi_cursor_move_next_line_final __str__dansi_cursor_move_next_line_final
+#define dansi_cursor_move_next_line_final_byte __uint__dansi_cursor_move_next_line_final_byte
+#define dansi_cursor_move_prev_line_final __str__dansi_cursor_move_prev_line_final
+#define dansi_cursor_move_prev_line_final_byte __uint__dansi_cursor_move_prev_line_final_byte
+#define dansi_cursor_set_tab_stop_final __str__dansi_cursor_set_tab_stop_final
+#define dansi_cursor_set_tab_stop_final_byte __uint__dansi_cursor_set_tab_stop_final_byte
+#define dansi_cursor_clear_tab_stop_final __str__dansi_cursor_clear_tab_stop_final
+#define dansi_cursor_clear_tab_stop_final_byte __uint__dansi_cursor_clear_tab_stop_final_byte
+#define dansi_cursor_clear_tab_stop_param __str__dansi_cursor_clear_tab_stop_param
+#define dansi_cursor_clear_tab_stop_param_u16 __uint__dansi_cursor_clear_tab_stop_param_u16
+#define dansi_cursor_clear_all_tab_stops_param __str__dansi_cursor_clear_all_tab_stops_param
+#define dansi_cursor_clear_all_tab_stops_param_u16 __uint__dansi_cursor_clear_all_tab_stops_param_u16
+#define dansi_cursor_request_pos_param __str__dansi_cursor_request_pos_param
+#define dansi_cursor_request_pos_param_u16 __uint__dansi_cursor_request_pos_param_u16
+#define dansi_cursor_request_pos_final __str__dansi_cursor_request_pos_final
+#define dansi_cursor_request_pos_final_byte __uint__dansi_cursor_request_pos_final_byte
+#define dansi_cursor_pos_report_final __str__dansi_cursor_pos_report_final
+#define dansi_cursor_pos_report_final_byte __uint__dansi_cursor_pos_report_final_byte
+#define dansi_cursor_pos_report_param_row __uint__dansi_cursor_pos_report_param_row
+#define dansi_cursor_pos_report_param_col __uint__dansi_cursor_pos_report_param_col
+
 typedef struct dansi_cursor_Pos {
     var_(row, u16);
     var_(col, u16);
@@ -143,32 +178,66 @@ $extern fn_((dansi_cursor_fetchPos(
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_cursor_move_to_final "H"
+#define __uint__dansi_cursor_move_to_final_byte u8_c('H')
+#define __str__dansi_cursor_move_up_final "A"
+#define __uint__dansi_cursor_move_up_final_byte u8_c('A')
+#define __str__dansi_cursor_move_down_final "B"
+#define __uint__dansi_cursor_move_down_final_byte u8_c('B')
+#define __str__dansi_cursor_move_right_final "C"
+#define __uint__dansi_cursor_move_right_final_byte u8_c('C')
+#define __str__dansi_cursor_move_left_final "D"
+#define __uint__dansi_cursor_move_left_final_byte u8_c('D')
+#define __str__dansi_cursor_move_to_row_final "d"
+#define __uint__dansi_cursor_move_to_row_final_byte u8_c('d')
+#define __str__dansi_cursor_move_to_col_final "G"
+#define __uint__dansi_cursor_move_to_col_final_byte u8_c('G')
+#define __str__dansi_cursor_move_next_line_final "E"
+#define __uint__dansi_cursor_move_next_line_final_byte u8_c('E')
+#define __str__dansi_cursor_move_prev_line_final "F"
+#define __uint__dansi_cursor_move_prev_line_final_byte u8_c('F')
+#define __str__dansi_cursor_set_tab_stop_final "H"
+#define __uint__dansi_cursor_set_tab_stop_final_byte u8_c('H')
+#define __str__dansi_cursor_clear_tab_stop_final "g"
+#define __uint__dansi_cursor_clear_tab_stop_final_byte u8_c('g')
+#define __str__dansi_cursor_clear_tab_stop_param "0"
+#define __uint__dansi_cursor_clear_tab_stop_param_u16 0
+#define __str__dansi_cursor_clear_all_tab_stops_param "3"
+#define __uint__dansi_cursor_clear_all_tab_stops_param_u16 3
+#define __str__dansi_cursor_request_pos_param "6"
+#define __uint__dansi_cursor_request_pos_param_u16 6
+#define __str__dansi_cursor_request_pos_final "n"
+#define __uint__dansi_cursor_request_pos_final_byte u8_c('n')
+#define __str__dansi_cursor_pos_report_final "R"
+#define __uint__dansi_cursor_pos_report_final_byte u8_c('R')
+#define __uint__dansi_cursor_pos_report_param_row 0
+#define __uint__dansi_cursor_pos_report_param_col 1
 #define ____dansi_cursor_moveTo_static(_row_tok, _col_tok) \
-    dansi_csi_make2_static(_row_tok, _col_tok, "H")
+    dansi_csi_make2_static(_row_tok, _col_tok, dansi_cursor_move_to_final)
 #define ____dansi_cursor_moveUp_static(_rows_tok) \
-    dansi_csi_make1_static(_rows_tok, "A")
+    dansi_csi_make1_static(_rows_tok, dansi_cursor_move_up_final)
 #define ____dansi_cursor_moveDown_static(_rows_tok) \
-    dansi_csi_make1_static(_rows_tok, "B")
+    dansi_csi_make1_static(_rows_tok, dansi_cursor_move_down_final)
 #define ____dansi_cursor_moveRight_static(_cols_tok) \
-    dansi_csi_make1_static(_cols_tok, "C")
+    dansi_csi_make1_static(_cols_tok, dansi_cursor_move_right_final)
 #define ____dansi_cursor_moveLeft_static(_cols_tok) \
-    dansi_csi_make1_static(_cols_tok, "D")
+    dansi_csi_make1_static(_cols_tok, dansi_cursor_move_left_final)
 #define ____dansi_cursor_moveToRow_static(_row_tok) \
-    dansi_csi_make1_static(_row_tok, "d")
+    dansi_csi_make1_static(_row_tok, dansi_cursor_move_to_row_final)
 #define ____dansi_cursor_moveToCol_static(_col_tok) \
-    dansi_csi_make1_static(_col_tok, "G")
+    dansi_csi_make1_static(_col_tok, dansi_cursor_move_to_col_final)
 #define ____dansi_cursor_moveNextLine_static(_rows_tok) \
-    dansi_csi_make1_static(_rows_tok, "E")
+    dansi_csi_make1_static(_rows_tok, dansi_cursor_move_next_line_final)
 #define ____dansi_cursor_movePrevLine_static(_rows_tok) \
-    dansi_csi_make1_static(_rows_tok, "F")
+    dansi_csi_make1_static(_rows_tok, dansi_cursor_move_prev_line_final)
 #define ____dansi_cursor_setTabStop_static() \
-    dansi_esc_make_static("", "H")
+    dansi_esc_make_static("", dansi_cursor_set_tab_stop_final)
 #define ____dansi_cursor_clearTabStop_static() \
-    dansi_csi_make1_static("0", "g")
+    dansi_csi_make1_static(dansi_cursor_clear_tab_stop_param, dansi_cursor_clear_tab_stop_final)
 #define ____dansi_cursor_clearAllTabStops_static() \
-    dansi_csi_make1_static("3", "g")
+    dansi_csi_make1_static(dansi_cursor_clear_all_tab_stops_param, dansi_cursor_clear_tab_stop_final)
 #define ____dansi_cursor_requestPos_static() \
-    dansi_csi_make1_static("6", "n")
+    dansi_csi_make1_static(dansi_cursor_request_pos_param, dansi_cursor_request_pos_final)
 
 #if defined(__cplusplus)
 } /* extern "C" */

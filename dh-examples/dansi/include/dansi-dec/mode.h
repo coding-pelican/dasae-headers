@@ -23,6 +23,25 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_dec_mode_private_marker __str__dansi_dec_mode_private_marker
+#define dansi_dec_mode_private_marker_byte __uint__dansi_dec_mode_private_marker_byte
+#define dansi_dec_mode_request_intermediate __str__dansi_dec_mode_request_intermediate
+#define dansi_dec_mode_request_intermediate_byte __uint__dansi_dec_mode_request_intermediate_byte
+#define dansi_dec_mode_request_final __str__dansi_dec_mode_request_final
+#define dansi_dec_mode_request_final_byte __uint__dansi_dec_mode_request_final_byte
+#define dansi_dec_mode_report_final __str__dansi_dec_mode_report_final
+#define dansi_dec_mode_report_final_byte __uint__dansi_dec_mode_report_final_byte
+#define dansi_dec_mode_enable_final __str__dansi_dec_mode_enable_final
+#define dansi_dec_mode_enable_final_byte __uint__dansi_dec_mode_enable_final_byte
+#define dansi_dec_mode_disable_final __str__dansi_dec_mode_disable_final
+#define dansi_dec_mode_disable_final_byte __uint__dansi_dec_mode_disable_final_byte
+#define dansi_dec_mode_save_final __str__dansi_dec_mode_save_final
+#define dansi_dec_mode_save_final_byte __uint__dansi_dec_mode_save_final_byte
+#define dansi_dec_mode_restore_final __str__dansi_dec_mode_restore_final
+#define dansi_dec_mode_restore_final_byte __uint__dansi_dec_mode_restore_final_byte
+#define dansi_dec_mode_report_param_mode __uint__dansi_dec_mode_report_param_mode
+#define dansi_dec_mode_report_param_status __uint__dansi_dec_mode_report_param_status
+
 typedef enum_((dansi_dec_mode_Code $fits($packed))(
     dansi_dec_mode_Code_cursor_keys = 1,
     dansi_dec_mode_Code_ansi = 2,
@@ -122,21 +141,39 @@ $extern fn_((dansi_dec_mode_fetch(
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_dec_mode_private_marker dansi_csi_private_marker_query
+#define __uint__dansi_dec_mode_private_marker_byte u8_c('?')
+#define __str__dansi_dec_mode_request_intermediate "$"
+#define __uint__dansi_dec_mode_request_intermediate_byte u8_c('$')
+#define __str__dansi_dec_mode_request_final "p"
+#define __uint__dansi_dec_mode_request_final_byte u8_c('p')
+#define __str__dansi_dec_mode_report_final "y"
+#define __uint__dansi_dec_mode_report_final_byte u8_c('y')
+#define __str__dansi_dec_mode_enable_final "h"
+#define __uint__dansi_dec_mode_enable_final_byte u8_c('h')
+#define __str__dansi_dec_mode_disable_final "l"
+#define __uint__dansi_dec_mode_disable_final_byte u8_c('l')
+#define __str__dansi_dec_mode_save_final "s"
+#define __uint__dansi_dec_mode_save_final_byte u8_c('s')
+#define __str__dansi_dec_mode_restore_final "r"
+#define __uint__dansi_dec_mode_restore_final_byte u8_c('r')
+#define __uint__dansi_dec_mode_report_param_mode 0
+#define __uint__dansi_dec_mode_report_param_status 1
 #define ____dansi_dec_mode_enable_static(_mode_tok) \
-    dansi_csi_makePrivate1_static(dansi_dec_mode_Code_staticParse(_mode_tok), "h")
+    dansi_csi_makePrivate1_static(dansi_dec_mode_Code_staticParse(_mode_tok), dansi_dec_mode_enable_final)
 #define ____dansi_dec_mode_disable_static(_mode_tok) \
-    dansi_csi_makePrivate1_static(dansi_dec_mode_Code_staticParse(_mode_tok), "l")
+    dansi_csi_makePrivate1_static(dansi_dec_mode_Code_staticParse(_mode_tok), dansi_dec_mode_disable_final)
 #define ____dansi_dec_mode_set_static(_mode_tok, _pp_enabled) \
     pp_if_(_pp_enabled)( \
         pp_then_(dansi_dec_mode_enable_static(_mode_tok)), \
         pp_else_(dansi_dec_mode_disable_static(_mode_tok)) \
     )
 #define ____dansi_dec_mode_save_static(_mode_tok) \
-    dansi_csi_makePrivate1_static(dansi_dec_mode_Code_staticParse(_mode_tok), "s")
+    dansi_csi_makePrivate1_static(dansi_dec_mode_Code_staticParse(_mode_tok), dansi_dec_mode_save_final)
 #define ____dansi_dec_mode_restore_static(_mode_tok) \
-    dansi_csi_makePrivate1_static(dansi_dec_mode_Code_staticParse(_mode_tok), "r")
+    dansi_csi_makePrivate1_static(dansi_dec_mode_Code_staticParse(_mode_tok), dansi_dec_mode_restore_final)
 #define ____dansi_dec_mode_request_static(_mode_tok) \
-    dansi_csi_make_static("?" dansi_dec_mode_Code_staticParse(_mode_tok), "$", "p")
+    dansi_csi_make_static(dansi_dec_mode_private_marker dansi_dec_mode_Code_staticParse(_mode_tok), dansi_dec_mode_request_intermediate, dansi_dec_mode_request_final)
 #define ____dansi_dec_mode_Code_staticParse(_mode_tok) \
     pp_join($, ____dansi_dec_mode_Code_str, _mode_tok)
 #define ____dansi_dec_mode_Code_str$dansi_dec_mode_Code_cursor_keys "1"

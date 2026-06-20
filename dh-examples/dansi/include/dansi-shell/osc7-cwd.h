@@ -23,6 +23,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_shell_osc7_cmd __str__dansi_shell_osc7_cmd
+#define dansi_shell_osc7_cmd_u16 __uint__dansi_shell_osc7_cmd_u16
+
 typedef struct dansi_shell_osc7_Cwd {
     var_(file_uri, S_const$u8);
 } dansi_shell_osc7_Cwd;
@@ -41,6 +44,11 @@ $attr($must_check)
 $extern fn_((dansi_shell_osc7_setRawWrite(S_const$u8 file_uri, io_Writer out))(E$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc7_parse(dansi_osc_Frame frame))(dansi_shell_osc7_E$dansi_shell_osc7_Cwd));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __str__dansi_shell_osc7_cmd "7"
+#define __uint__dansi_shell_osc7_cmd_u16 7
 
 #if defined(__cplusplus)
 } /* extern "C" */

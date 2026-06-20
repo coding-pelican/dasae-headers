@@ -23,6 +23,15 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_link_osc8_cmd __str__dansi_link_osc8_cmd
+#define dansi_link_osc8_cmd_u16 __uint__dansi_link_osc8_cmd_u16
+#define dansi_link_osc8_payload_sep __str__dansi_link_osc8_payload_sep
+#define dansi_link_osc8_payload_sep_byte __uint__dansi_link_osc8_payload_sep_byte
+#define dansi_link_osc8_params_sep __str__dansi_link_osc8_params_sep
+#define dansi_link_osc8_params_sep_byte __uint__dansi_link_osc8_params_sep_byte
+#define dansi_link_osc8_param_id_key __str__dansi_link_osc8_param_id_key
+#define dansi_link_osc8_param_id_key_len __uint__dansi_link_osc8_param_id_key_len
+
 typedef variant_((dansi_link_osc8_Params $fits($packed))(
     (dansi_link_osc8_Params_none, Void),
     (dansi_link_osc8_Params_id, S_const$u8),
@@ -76,6 +85,17 @@ T_use_E$($set(dansi_link_osc8_E)(dansi_link_osc8_Frame));
 
 $attr($must_check)
 $extern fn_((dansi_link_osc8_parse(dansi_osc_Frame frame))(dansi_link_osc8_E$dansi_link_osc8_Frame));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __str__dansi_link_osc8_cmd "8"
+#define __uint__dansi_link_osc8_cmd_u16 8
+#define __str__dansi_link_osc8_payload_sep ";"
+#define __uint__dansi_link_osc8_payload_sep_byte u8_c(';')
+#define __str__dansi_link_osc8_params_sep ":"
+#define __uint__dansi_link_osc8_params_sep_byte u8_c(':')
+#define __str__dansi_link_osc8_param_id_key "id="
+#define __uint__dansi_link_osc8_param_id_key_len (sizeof(dansi_link_osc8_param_id_key) - 1)
 
 #if defined(__cplusplus)
 } /* extern "C" */

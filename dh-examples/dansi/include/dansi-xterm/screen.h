@@ -24,6 +24,27 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_screen_report_final __str__dansi_xterm_screen_report_final
+#define dansi_xterm_screen_report_final_byte __uint__dansi_xterm_screen_report_final_byte
+#define dansi_xterm_screen_request_cell_pixels __str__dansi_xterm_screen_request_cell_pixels
+#define dansi_xterm_screen_request_cell_pixels_u16 __uint__dansi_xterm_screen_request_cell_pixels_u16
+#define dansi_xterm_screen_request_text_area_cells __str__dansi_xterm_screen_request_text_area_cells
+#define dansi_xterm_screen_request_text_area_cells_u16 __uint__dansi_xterm_screen_request_text_area_cells_u16
+#define dansi_xterm_screen_request_screen_cells __str__dansi_xterm_screen_request_screen_cells
+#define dansi_xterm_screen_request_screen_cells_u16 __uint__dansi_xterm_screen_request_screen_cells_u16
+#define dansi_xterm_screen_request_text_area_pixels __str__dansi_xterm_screen_request_text_area_pixels
+#define dansi_xterm_screen_request_text_area_pixels_u16 __uint__dansi_xterm_screen_request_text_area_pixels_u16
+#define dansi_xterm_screen_request_screen_pixels __str__dansi_xterm_screen_request_screen_pixels
+#define dansi_xterm_screen_request_screen_pixels_u16 __uint__dansi_xterm_screen_request_screen_pixels_u16
+#define dansi_xterm_screen_response_text_area_pixels __uint__dansi_xterm_screen_response_text_area_pixels
+#define dansi_xterm_screen_response_screen_pixels __uint__dansi_xterm_screen_response_screen_pixels
+#define dansi_xterm_screen_response_cell_pixels __uint__dansi_xterm_screen_response_cell_pixels
+#define dansi_xterm_screen_response_text_area_cells __uint__dansi_xterm_screen_response_text_area_cells
+#define dansi_xterm_screen_response_screen_cells __uint__dansi_xterm_screen_response_screen_cells
+#define dansi_xterm_screen_report_param_code __uint__dansi_xterm_screen_report_param_code
+#define dansi_xterm_screen_report_param_height __uint__dansi_xterm_screen_report_param_height
+#define dansi_xterm_screen_report_param_width __uint__dansi_xterm_screen_report_param_width
+
 typedef struct dansi_xterm_screen_CellCount {
     var_(cols, u16);
     var_(rows, u16);
@@ -146,6 +167,26 @@ $extern fn_((dansi_xterm_screen_fetchScreenPixels(
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_screen_report_final "t"
+#define __uint__dansi_xterm_screen_report_final_byte u8_c('t')
+#define __str__dansi_xterm_screen_request_cell_pixels "16"
+#define __uint__dansi_xterm_screen_request_cell_pixels_u16 16
+#define __str__dansi_xterm_screen_request_text_area_cells "18"
+#define __uint__dansi_xterm_screen_request_text_area_cells_u16 18
+#define __str__dansi_xterm_screen_request_screen_cells "19"
+#define __uint__dansi_xterm_screen_request_screen_cells_u16 19
+#define __str__dansi_xterm_screen_request_text_area_pixels "14"
+#define __uint__dansi_xterm_screen_request_text_area_pixels_u16 14
+#define __str__dansi_xterm_screen_request_screen_pixels "15"
+#define __uint__dansi_xterm_screen_request_screen_pixels_u16 15
+#define __uint__dansi_xterm_screen_response_text_area_pixels 4
+#define __uint__dansi_xterm_screen_response_screen_pixels 5
+#define __uint__dansi_xterm_screen_response_cell_pixels 6
+#define __uint__dansi_xterm_screen_response_text_area_cells 8
+#define __uint__dansi_xterm_screen_response_screen_cells 9
+#define __uint__dansi_xterm_screen_report_param_code 0
+#define __uint__dansi_xterm_screen_report_param_height 1
+#define __uint__dansi_xterm_screen_report_param_width 2
 #define ____dansi_xterm_screen_enterAlternate_static() \
     dansi_xterm_mode_enable_static(dansi_xterm_mode_Code_alt_screen)
 #define ____dansi_xterm_screen_exitAlternate_static() \
@@ -155,15 +196,15 @@ $extern fn_((dansi_xterm_screen_fetchScreenPixels(
 #define ____dansi_xterm_screen_exitAlternateSaveCursor_static() \
     dansi_xterm_mode_disable_static(dansi_xterm_mode_Code_alt_screen_save_cursor)
 #define ____dansi_xterm_screen_requestCellPixels_static() \
-    dansi_csi_make1_static("16", "t")
+    dansi_csi_make1_static(dansi_xterm_screen_request_cell_pixels, dansi_xterm_screen_report_final)
 #define ____dansi_xterm_screen_requestTextAreaCells_static() \
-    dansi_csi_make1_static("18", "t")
+    dansi_csi_make1_static(dansi_xterm_screen_request_text_area_cells, dansi_xterm_screen_report_final)
 #define ____dansi_xterm_screen_requestScreenCells_static() \
-    dansi_csi_make1_static("19", "t")
+    dansi_csi_make1_static(dansi_xterm_screen_request_screen_cells, dansi_xterm_screen_report_final)
 #define ____dansi_xterm_screen_requestTextAreaPixels_static() \
-    dansi_csi_make1_static("14", "t")
+    dansi_csi_make1_static(dansi_xterm_screen_request_text_area_pixels, dansi_xterm_screen_report_final)
 #define ____dansi_xterm_screen_requestScreenPixels_static() \
-    dansi_csi_make1_static("15", "t")
+    dansi_csi_make1_static(dansi_xterm_screen_request_screen_pixels, dansi_xterm_screen_report_final)
 
 #if defined(__cplusplus)
 } /* extern "C" */

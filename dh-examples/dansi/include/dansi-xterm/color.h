@@ -26,6 +26,30 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_color_RGB16_from8_scale __uint__dansi_xterm_color_RGB16_from8_scale
+#define dansi_xterm_color_RGB16_to8_shift __uint__dansi_xterm_color_RGB16_to8_shift
+#define dansi_xterm_color_4bit_normal_count __uint__dansi_xterm_color_4bit_normal_count
+#define dansi_xterm_color_fg_normal_base __uint__dansi_xterm_color_fg_normal_base
+#define dansi_xterm_color_bg_normal_base __uint__dansi_xterm_color_bg_normal_base
+#define dansi_xterm_color_fg_bright_base __uint__dansi_xterm_color_fg_bright_base
+#define dansi_xterm_color_bg_bright_base __uint__dansi_xterm_color_bg_bright_base
+#define dansi_xterm_color_fg_bright_prefix __str__dansi_xterm_color_fg_bright_prefix
+#define dansi_xterm_color_fg_bright_prefix_u16 __uint__dansi_xterm_color_fg_bright_prefix_u16
+#define dansi_xterm_color_bg_bright_prefix __str__dansi_xterm_color_bg_bright_prefix
+#define dansi_xterm_color_bg_bright_prefix_u16 __uint__dansi_xterm_color_bg_bright_prefix_u16
+#define dansi_xterm_color_fg_extended_code __str__dansi_xterm_color_fg_extended_code
+#define dansi_xterm_color_fg_extended_code_u16 __uint__dansi_xterm_color_fg_extended_code_u16
+#define dansi_xterm_color_bg_extended_code __str__dansi_xterm_color_bg_extended_code
+#define dansi_xterm_color_bg_extended_code_u16 __uint__dansi_xterm_color_bg_extended_code_u16
+#define dansi_xterm_color_indexed_selector __str__dansi_xterm_color_indexed_selector
+#define dansi_xterm_color_indexed_selector_u16 __uint__dansi_xterm_color_indexed_selector_u16
+#define dansi_xterm_color_RGB_selector __str__dansi_xterm_color_RGB_selector
+#define dansi_xterm_color_RGB_selector_u16 __uint__dansi_xterm_color_RGB_selector_u16
+#define dansi_xterm_color_fg8bit_prefix __str__dansi_xterm_color_fg8bit_prefix
+#define dansi_xterm_color_bg8bit_prefix __str__dansi_xterm_color_bg8bit_prefix
+#define dansi_xterm_color_fgRGB_prefix __str__dansi_xterm_color_fgRGB_prefix
+#define dansi_xterm_color_bgRGB_prefix __str__dansi_xterm_color_bgRGB_prefix
+
 typedef struct dansi_xterm_color_RGB8 {
     var_(r, u8);
     var_(g, u8);
@@ -121,6 +145,37 @@ $extern fn_((dansi_xterm_color_bgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer 
 
 /*========== Macros and Definitions =========================================*/
 
+#define __uint__dansi_xterm_color_RGB16_from8_scale 0x0101
+#define __uint__dansi_xterm_color_RGB16_to8_shift 8
+#define __uint__dansi_xterm_color_4bit_normal_count 8
+#define __uint__dansi_xterm_color_fg_normal_base 30
+#define __uint__dansi_xterm_color_bg_normal_base 40
+#define __uint__dansi_xterm_color_fg_bright_base 90
+#define __uint__dansi_xterm_color_bg_bright_base 100
+#define __str__dansi_xterm_color_fg_bright_prefix "9"
+#define __uint__dansi_xterm_color_fg_bright_prefix_u16 9
+#define __str__dansi_xterm_color_bg_bright_prefix "10"
+#define __uint__dansi_xterm_color_bg_bright_prefix_u16 10
+#define __str__dansi_xterm_color_fg_extended_code "38"
+#define __uint__dansi_xterm_color_fg_extended_code_u16 38
+#define __str__dansi_xterm_color_bg_extended_code "48"
+#define __uint__dansi_xterm_color_bg_extended_code_u16 48
+#define __str__dansi_xterm_color_indexed_selector "5"
+#define __uint__dansi_xterm_color_indexed_selector_u16 5
+#define __str__dansi_xterm_color_RGB_selector "2"
+#define __uint__dansi_xterm_color_RGB_selector_u16 2
+#define __str__dansi_xterm_color_fg8bit_prefix \
+    dansi_xterm_color_fg_extended_code dansi_csi_param_sep \
+        dansi_xterm_color_indexed_selector dansi_csi_param_sep
+#define __str__dansi_xterm_color_bg8bit_prefix \
+    dansi_xterm_color_bg_extended_code dansi_csi_param_sep \
+        dansi_xterm_color_indexed_selector dansi_csi_param_sep
+#define __str__dansi_xterm_color_fgRGB_prefix \
+    dansi_xterm_color_fg_extended_code dansi_csi_param_sep \
+        dansi_xterm_color_RGB_selector dansi_csi_param_sep
+#define __str__dansi_xterm_color_bgRGB_prefix \
+    dansi_xterm_color_bg_extended_code dansi_csi_param_sep \
+        dansi_xterm_color_RGB_selector dansi_csi_param_sep
 #define ____dansi_xterm_color_fg4bit_staticParse(_color_tok) \
     dansi_xterm_color__parsePalette4bit(dansi_xterm_color__pp_4bit_layer_fg, _color_tok)
 #define ____dansi_xterm_color_fg4bit_static(_color_tok) \
@@ -130,17 +185,23 @@ $extern fn_((dansi_xterm_color_bgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer 
 #define ____dansi_xterm_color_bg4bit_static(_color_tok) \
     dansi_sgr_setRaw_static(dansi_xterm_color_bg4bit_staticParse(_color_tok))
 #define ____dansi_xterm_color_fgBright_static(_color_tok) \
-    dansi_sgr_setRaw_static("9" dansi_color_Std_staticParse(_color_tok))
+    dansi_sgr_setRaw_static(dansi_xterm_color_fg_bright_prefix dansi_color_Std_staticParse(_color_tok))
 #define ____dansi_xterm_color_bgBright_static(_color_tok) \
-    dansi_sgr_setRaw_static("10" dansi_color_Std_staticParse(_color_tok))
+    dansi_sgr_setRaw_static(dansi_xterm_color_bg_bright_prefix dansi_color_Std_staticParse(_color_tok))
 #define ____dansi_xterm_color_fg8bit_static(_index_tok) \
-    dansi_sgr_setRaw_static("38;5;" dansi_xterm_Palette8bit_staticParse(_index_tok))
+    dansi_sgr_setRaw_static(dansi_xterm_color_fg8bit_prefix dansi_xterm_Palette8bit_staticParse(_index_tok))
 #define ____dansi_xterm_color_bg8bit_static(_index_tok) \
-    dansi_sgr_setRaw_static("48;5;" dansi_xterm_Palette8bit_staticParse(_index_tok))
+    dansi_sgr_setRaw_static(dansi_xterm_color_bg8bit_prefix dansi_xterm_Palette8bit_staticParse(_index_tok))
 #define ____dansi_xterm_color_fgRGB_static(_r_tok, _g_tok, _b_tok) \
-    dansi_sgr_setRaw_static("38;2;" _r_tok ";" _g_tok ";" _b_tok)
+    dansi_sgr_setRaw_static( \
+        dansi_xterm_color_fgRGB_prefix \
+            _r_tok dansi_csi_param_sep _g_tok dansi_csi_param_sep _b_tok \
+    )
 #define ____dansi_xterm_color_bgRGB_static(_r_tok, _g_tok, _b_tok) \
-    dansi_sgr_setRaw_static("48;2;" _r_tok ";" _g_tok ";" _b_tok)
+    dansi_sgr_setRaw_static( \
+        dansi_xterm_color_bgRGB_prefix \
+            _r_tok dansi_csi_param_sep _g_tok dansi_csi_param_sep _b_tok \
+    )
 
 #define dansi_xterm_color__pp_4bit_layer_fg 0
 #define dansi_xterm_color__pp_4bit_layer_bg 1
@@ -148,8 +209,10 @@ $extern fn_((dansi_xterm_color_bgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer 
 #define dansi_xterm_color__parsePalette4bit(_pp_4bit_layer, _tok_palette_color) \
     ____dansi_xterm_color__parsePalette4bit(_pp_4bit_layer, _tok_palette_color)
 
-#define ____dansi_xterm_color__pp_4bit_layer_pair_low ("3", "4")
-#define ____dansi_xterm_color__pp_4bit_layer_pair_high ("9", "10")
+#define ____dansi_xterm_color__pp_4bit_layer_pair_low \
+    (dansi_color_fg_prefix, dansi_color_bg_prefix)
+#define ____dansi_xterm_color__pp_4bit_layer_pair_high \
+    (dansi_xterm_color_fg_bright_prefix, dansi_xterm_color_bg_bright_prefix)
 
 #define ____dansi_xterm_color__parsePalette4bit__expand(...) __VA_ARGS__
 #define ____dansi_xterm_color__parsePalette4bit(_pp_4bit_layer, _tok_palette_color...) \
@@ -191,24 +254,24 @@ $extern fn_((dansi_xterm_color_bgRGBWrite(dansi_xterm_color_RGB8 rgb, io_Writer 
             pp_case_((14)(____dansi_xterm_color__pp_4bit_layer_pair_high)), \
             pp_case_((15)(____dansi_xterm_color__pp_4bit_layer_pair_high)) \
         ) pp_end \
-        pp_switch_ pp_begin(_tok_palette_color)( \
-            pp_case_((0)("0")), \
-            pp_case_((1)("1")), \
-            pp_case_((2)("2")), \
-            pp_case_((3)("3")), \
-            pp_case_((4)("4")), \
-            pp_case_((5)("5")), \
-            pp_case_((6)("6")), \
-            pp_case_((7)("7")), \
-            pp_case_((8)("0")), \
-            pp_case_((9)("1")), \
-            pp_case_((10)("2")), \
-            pp_case_((11)("3")), \
-            pp_case_((12)("4")), \
-            pp_case_((13)("5")), \
-            pp_case_((14)("6")), \
-            pp_case_((15)("7")) \
-        ) pp_end \
+            pp_switch_ pp_begin(_tok_palette_color)( \
+                pp_case_((0)("0")), \
+                pp_case_((1)("1")), \
+                pp_case_((2)("2")), \
+                pp_case_((3)("3")), \
+                pp_case_((4)("4")), \
+                pp_case_((5)("5")), \
+                pp_case_((6)("6")), \
+                pp_case_((7)("7")), \
+                pp_case_((8)("0")), \
+                pp_case_((9)("1")), \
+                pp_case_((10)("2")), \
+                pp_case_((11)("3")), \
+                pp_case_((12)("4")), \
+                pp_case_((13)("5")), \
+                pp_case_((14)("6")), \
+                pp_case_((15)("7")) \
+            ) pp_end \
     )
 
 #define ____dansi_xterm_color__pp_4bit_enum$dansi_xterm_Palette4bit_black 0

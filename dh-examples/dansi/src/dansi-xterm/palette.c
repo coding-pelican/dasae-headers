@@ -6,13 +6,14 @@
 
 $static fn_((dansi_xterm_palette__hex16(S_const$u8 text))(O$u16)) {
     if (text.len == 0) return none$((O$u16));
-    return catch_none$((O$u16)(fmt_parse$u16(text, 16)));
+    return catch_none$((O$u16)(fmt_parse$u16(text, dansi_xterm_palette_rgb_component_radix)));
 };
 
 $static fn_((dansi_xterm_palette__stackAt(u8 index, u8 final, dansi_xterm_palette_StackBuf* buf))(S$u8)) {
     var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(*buf))));
     catch_((io_Writer_print(
-        io_Fixed_writer(&writing), u8_l(dansi_csi_make_static("{:uhh}", "#", "{:c}")),
+        io_Fixed_writer(&writing),
+        u8_l(dansi_csi_make_static("{:uhh}", dansi_xterm_palette_stack_intermediate, "{:c}")),
         index, final
     ))(
         $ignore, claim_unreachable
@@ -21,7 +22,11 @@ $static fn_((dansi_xterm_palette__stackAt(u8 index, u8 final, dansi_xterm_palett
 };
 
 $static fn_((dansi_xterm_palette__stackAtWrite(u8 index, u8 final, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static("{:uhh}", "#", "{:c}")), index, final);
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static("{:uhh}", dansi_xterm_palette_stack_intermediate, "{:c}")),
+        index, final
+    );
 };
 
 fn_((dansi_xterm_palette_push(void))(S_const$u8)) {
@@ -33,11 +38,11 @@ fn_((dansi_xterm_palette_pushWrite(io_Writer out))(E$void)) {
 };
 
 fn_((dansi_xterm_palette_pushAt(u8 index, dansi_xterm_palette_StackBuf* buf))(S$u8)) {
-    return dansi_xterm_palette__stackAt(index, u8_c('P'), buf);
+    return dansi_xterm_palette__stackAt(index, dansi_xterm_palette_stack_push_final_byte, buf);
 };
 
 fn_((dansi_xterm_palette_pushAtWrite(u8 index, io_Writer out))(E$void)) {
-    return dansi_xterm_palette__stackAtWrite(index, u8_c('P'), out);
+    return dansi_xterm_palette__stackAtWrite(index, dansi_xterm_palette_stack_push_final_byte, out);
 };
 
 fn_((dansi_xterm_palette_pop(void))(S_const$u8)) {
@@ -49,11 +54,11 @@ fn_((dansi_xterm_palette_popWrite(io_Writer out))(E$void)) {
 };
 
 fn_((dansi_xterm_palette_popAt(u8 index, dansi_xterm_palette_StackBuf* buf))(S$u8)) {
-    return dansi_xterm_palette__stackAt(index, u8_c('Q'), buf);
+    return dansi_xterm_palette__stackAt(index, dansi_xterm_palette_stack_pop_final_byte, buf);
 };
 
 fn_((dansi_xterm_palette_popAtWrite(u8 index, io_Writer out))(E$void)) {
-    return dansi_xterm_palette__stackAtWrite(index, u8_c('Q'), out);
+    return dansi_xterm_palette__stackAtWrite(index, dansi_xterm_palette_stack_pop_final_byte, out);
 };
 
 fn_((dansi_xterm_palette_reportStack(void))(S_const$u8)) {
@@ -65,11 +70,11 @@ fn_((dansi_xterm_palette_reportStackWrite(io_Writer out))(E$void)) {
 };
 
 fn_((dansi_xterm_palette_reportStackAt(u8 index, dansi_xterm_palette_StackBuf* buf))(S$u8)) {
-    return dansi_xterm_palette__stackAt(index, u8_c('R'), buf);
+    return dansi_xterm_palette__stackAt(index, dansi_xterm_palette_stack_report_final_byte, buf);
 };
 
 fn_((dansi_xterm_palette_reportStackAtWrite(u8 index, io_Writer out))(E$void)) {
-    return dansi_xterm_palette__stackAtWrite(index, u8_c('R'), out);
+    return dansi_xterm_palette__stackAtWrite(index, dansi_xterm_palette_stack_report_final_byte, out);
 };
 
 fn_((dansi_xterm_palette_setColor16(
@@ -86,10 +91,14 @@ fn_((dansi_xterm_palette_setColor16Write(
     var payload = (A$$(24, u8)){};
     var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(payload))));
     try_(io_Writer_print(
-        io_Fixed_writer(&writing), u8_l("{:uhh};rgb:{:04xh}/{:04xh}/{:04xh}"),
+        io_Fixed_writer(&writing),
+        u8_l(
+            "{:uhh}" dansi_xterm_palette_payload_sep dansi_xterm_palette_rgb_prefix
+            "{:04xh}" dansi_xterm_palette_rgb_sep "{:04xh}" dansi_xterm_palette_rgb_sep "{:04xh}"
+        ),
         index, rgb.r, rgb.g, rgb.b
     ));
-    return dansi_osc_write(4, io_Fixed_written(writing.stream).as_const, out);
+    return dansi_osc_write(dansi_xterm_palette_color_cmd_u16, io_Fixed_written(writing.stream).as_const, out);
 } $unscoped(fn);
 
 fn_((dansi_xterm_palette_setColor(
@@ -113,8 +122,12 @@ fn_((dansi_xterm_palette_queryColor(u8 index, dansi_xterm_palette_QueryColorBuf*
 fn_((dansi_xterm_palette_queryColorWrite(u8 index, io_Writer out))(E$void) $scope) {
     var payload = (A$$(6, u8)){};
     var writing = io_Fixed_Writer_init(io_Fixed_writing(A_ref$((S$u8)(payload))));
-    try_(io_Writer_print(io_Fixed_writer(&writing), u8_l("{:uhh};?"), index));
-    return dansi_osc_write(4, io_Fixed_written(writing.stream).as_const, out);
+    try_(io_Writer_print(
+        io_Fixed_writer(&writing),
+        u8_l("{:uhh}" dansi_xterm_palette_payload_sep dansi_xterm_palette_query),
+        index
+    ));
+    return dansi_osc_write(dansi_xterm_palette_color_cmd_u16, io_Fixed_written(writing.stream).as_const, out);
 } $unscoped(fn);
 
 fn_((dansi_xterm_palette_receiveColorReport(io_Reader in, S$u8 buf))(E$S$u8)) {
@@ -130,25 +143,28 @@ fn_((dansi_xterm_palette_parseColorReport(
     let cmd = orelse_((dansi_osc_CmdSplit_cmdAsU16(split))(
         return_err(E_cause$dansi_xterm_palette_InvalidResponse())
     ));
-    if (cmd != 4) return_err(E_cause$dansi_xterm_palette_InvalidResponse());
+    if (cmd != dansi_xterm_palette_color_cmd_u16) return_err(E_cause$dansi_xterm_palette_InvalidResponse());
 
     let payload = split.payload;
-    let semi = orelse_((mem_findFirstUnitBytes(payload, u8_c(';')))(
+    let semi = orelse_((mem_findFirstUnitBytes(payload, dansi_xterm_palette_payload_sep_byte))(
         return_err(E_cause$dansi_xterm_palette_InvalidResponse())
     ));
-    let index = orelse_((catch_none$((O$u8)(fmt_parse$u8(S_prefix((payload)(semi)), 10))))(
+    let index = orelse_((catch_none$((O$u8)(fmt_parse$u8(
+        S_prefix((payload)(semi)), dansi_xterm_palette_index_radix
+    ))))(
         return_err(E_cause$dansi_xterm_palette_InvalidResponse())
     ));
     let rgb = S_suffix((payload)(semi + 1));
-    if (rgb.len < 5 || *S_at((rgb)[0]) != u8_c('r') || *S_at((rgb)[1]) != u8_c('g') || *S_at((rgb)[2]) != u8_c('b') || *S_at((rgb)[3]) != u8_c(':')) {
+    if (rgb.len < dansi_xterm_palette_rgb_prefix_len + 1
+        || !mem_eqlBytes(S_prefix((rgb)(dansi_xterm_palette_rgb_prefix_len)), u8_l(dansi_xterm_palette_rgb_prefix))) {
         return_err(E_cause$dansi_xterm_palette_InvalidResponse());
     }
-    let parts = S_suffix((rgb)(4));
-    let first = orelse_((mem_findFirstUnitBytes(parts, u8_c('/')))(
+    let parts = S_suffix((rgb)(dansi_xterm_palette_rgb_prefix_len));
+    let first = orelse_((mem_findFirstUnitBytes(parts, dansi_xterm_palette_rgb_sep_byte))(
         return_err(E_cause$dansi_xterm_palette_InvalidResponse())
     ));
     let rest = S_suffix((parts)(first + 1));
-    let second = orelse_((mem_findFirstUnitBytes(rest, u8_c('/')))(
+    let second = orelse_((mem_findFirstUnitBytes(rest, dansi_xterm_palette_rgb_sep_byte))(
         return_err(E_cause$dansi_xterm_palette_InvalidResponse())
     ));
     let r = orelse_((dansi_xterm_palette__hex16(S_prefix((parts)(first))))(
@@ -188,11 +204,11 @@ fn_((dansi_xterm_palette_resetColorWrite(u8 index, io_Writer out))(E$void)) {
 };
 
 fn_((dansi_xterm_palette_resetColors(S_const$u8 indices, S$u8 buf))(E$S$u8)) {
-    return dansi_osc_make(104, indices, buf);
+    return dansi_osc_make(dansi_xterm_palette_reset_color_cmd_u16, indices, buf);
 };
 
 fn_((dansi_xterm_palette_resetColorsWrite(S_const$u8 indices, io_Writer out))(E$void)) {
-    return dansi_osc_write(104, indices, out);
+    return dansi_osc_write(dansi_xterm_palette_reset_color_cmd_u16, indices, out);
 };
 
 fn_((dansi_xterm_palette_resetAllColors(void))(S_const$u8)) {

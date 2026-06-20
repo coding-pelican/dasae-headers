@@ -27,6 +27,29 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_palette_stack_intermediate __str__dansi_xterm_palette_stack_intermediate
+#define dansi_xterm_palette_stack_intermediate_byte __uint__dansi_xterm_palette_stack_intermediate_byte
+#define dansi_xterm_palette_stack_push_final __str__dansi_xterm_palette_stack_push_final
+#define dansi_xterm_palette_stack_push_final_byte __uint__dansi_xterm_palette_stack_push_final_byte
+#define dansi_xterm_palette_stack_pop_final __str__dansi_xterm_palette_stack_pop_final
+#define dansi_xterm_palette_stack_pop_final_byte __uint__dansi_xterm_palette_stack_pop_final_byte
+#define dansi_xterm_palette_stack_report_final __str__dansi_xterm_palette_stack_report_final
+#define dansi_xterm_palette_stack_report_final_byte __uint__dansi_xterm_palette_stack_report_final_byte
+#define dansi_xterm_palette_color_cmd __str__dansi_xterm_palette_color_cmd
+#define dansi_xterm_palette_color_cmd_u16 __uint__dansi_xterm_palette_color_cmd_u16
+#define dansi_xterm_palette_reset_color_cmd __str__dansi_xterm_palette_reset_color_cmd
+#define dansi_xterm_palette_reset_color_cmd_u16 __uint__dansi_xterm_palette_reset_color_cmd_u16
+#define dansi_xterm_palette_payload_sep __str__dansi_xterm_palette_payload_sep
+#define dansi_xterm_palette_payload_sep_byte __uint__dansi_xterm_palette_payload_sep_byte
+#define dansi_xterm_palette_rgb_prefix __str__dansi_xterm_palette_rgb_prefix
+#define dansi_xterm_palette_rgb_prefix_len __uint__dansi_xterm_palette_rgb_prefix_len
+#define dansi_xterm_palette_rgb_sep __str__dansi_xterm_palette_rgb_sep
+#define dansi_xterm_palette_rgb_sep_byte __uint__dansi_xterm_palette_rgb_sep_byte
+#define dansi_xterm_palette_query __str__dansi_xterm_palette_query
+#define dansi_xterm_palette_query_byte __uint__dansi_xterm_palette_query_byte
+#define dansi_xterm_palette_index_radix __uint__dansi_xterm_palette_index_radix
+#define dansi_xterm_palette_rgb_component_radix __uint__dansi_xterm_palette_rgb_component_radix
+
 claim_assert_static(u8_(dansi_xterm_Palette4bit_black) == u8_(dansi_xterm_Palette8bit_black));
 claim_assert_static(u8_(dansi_xterm_Palette4bit_maroon) == u8_(dansi_xterm_Palette8bit_maroon));
 claim_assert_static(u8_(dansi_xterm_Palette4bit_green) == u8_(dansi_xterm_Palette8bit_green));
@@ -154,28 +177,50 @@ $extern fn_((dansi_xterm_palette_resetAllColorsWrite(io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_palette_stack_intermediate "#"
+#define __uint__dansi_xterm_palette_stack_intermediate_byte u8_c('#')
+#define __str__dansi_xterm_palette_stack_push_final "P"
+#define __uint__dansi_xterm_palette_stack_push_final_byte u8_c('P')
+#define __str__dansi_xterm_palette_stack_pop_final "Q"
+#define __uint__dansi_xterm_palette_stack_pop_final_byte u8_c('Q')
+#define __str__dansi_xterm_palette_stack_report_final "R"
+#define __uint__dansi_xterm_palette_stack_report_final_byte u8_c('R')
+#define __str__dansi_xterm_palette_color_cmd "4"
+#define __uint__dansi_xterm_palette_color_cmd_u16 4
+#define __str__dansi_xterm_palette_reset_color_cmd "104"
+#define __uint__dansi_xterm_palette_reset_color_cmd_u16 104
+#define __str__dansi_xterm_palette_payload_sep ";"
+#define __uint__dansi_xterm_palette_payload_sep_byte u8_c(';')
+#define __str__dansi_xterm_palette_rgb_prefix "rgb:"
+#define __uint__dansi_xterm_palette_rgb_prefix_len (sizeof(dansi_xterm_palette_rgb_prefix) - 1)
+#define __str__dansi_xterm_palette_rgb_sep "/"
+#define __uint__dansi_xterm_palette_rgb_sep_byte u8_c('/')
+#define __str__dansi_xterm_palette_query "?"
+#define __uint__dansi_xterm_palette_query_byte u8_c('?')
+#define __uint__dansi_xterm_palette_index_radix 10
+#define __uint__dansi_xterm_palette_rgb_component_radix 16
 #define ____dansi_xterm_palette_push_static() \
-    dansi_csi_make_static("", "#", "P")
+    dansi_csi_make_static("", dansi_xterm_palette_stack_intermediate, dansi_xterm_palette_stack_push_final)
 #define ____dansi_xterm_palette_pushAt_static(_index_tok) \
-    dansi_csi_make_static(_index_tok, "#", "P")
+    dansi_csi_make_static(_index_tok, dansi_xterm_palette_stack_intermediate, dansi_xterm_palette_stack_push_final)
 #define ____dansi_xterm_palette_pop_static() \
-    dansi_csi_make_static("", "#", "Q")
+    dansi_csi_make_static("", dansi_xterm_palette_stack_intermediate, dansi_xterm_palette_stack_pop_final)
 #define ____dansi_xterm_palette_popAt_static(_index_tok) \
-    dansi_csi_make_static(_index_tok, "#", "Q")
+    dansi_csi_make_static(_index_tok, dansi_xterm_palette_stack_intermediate, dansi_xterm_palette_stack_pop_final)
 #define ____dansi_xterm_palette_reportStack_static() \
-    dansi_csi_make_static("", "#", "R")
+    dansi_csi_make_static("", dansi_xterm_palette_stack_intermediate, dansi_xterm_palette_stack_report_final)
 #define ____dansi_xterm_palette_reportStackAt_static(_index_tok) \
-    dansi_csi_make_static(_index_tok, "#", "R")
+    dansi_csi_make_static(_index_tok, dansi_xterm_palette_stack_intermediate, dansi_xterm_palette_stack_report_final)
 #define ____dansi_xterm_palette_setColor16_static(_index_tok, _r_tok, _g_tok, _b_tok) \
-    dansi_osc_make_static("4", _index_tok ";rgb:" _r_tok "/" _g_tok "/" _b_tok)
+    dansi_osc_make_static(dansi_xterm_palette_color_cmd, _index_tok dansi_xterm_palette_payload_sep dansi_xterm_palette_rgb_prefix _r_tok dansi_xterm_palette_rgb_sep _g_tok dansi_xterm_palette_rgb_sep _b_tok)
 #define ____dansi_xterm_palette_queryColor_static(_index_tok) \
-    dansi_osc_make_static("4", _index_tok ";?")
+    dansi_osc_make_static(dansi_xterm_palette_color_cmd, _index_tok dansi_xterm_palette_payload_sep dansi_xterm_palette_query)
 #define ____dansi_xterm_palette_resetColor_static(_index_tok) \
-    dansi_osc_make_static("104", _index_tok)
+    dansi_osc_make_static(dansi_xterm_palette_reset_color_cmd, _index_tok)
 #define ____dansi_xterm_palette_resetColors_static(_indices_tok) \
-    dansi_osc_make_static("104", _indices_tok)
+    dansi_osc_make_static(dansi_xterm_palette_reset_color_cmd, _indices_tok)
 #define ____dansi_xterm_palette_resetAllColors_static() \
-    dansi_osc_makeRaw_static("104")
+    dansi_osc_makeRaw_static(dansi_xterm_palette_reset_color_cmd)
 
 #if defined(__cplusplus)
 } /* extern "C" */

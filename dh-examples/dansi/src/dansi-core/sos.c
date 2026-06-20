@@ -3,9 +3,9 @@
 
 fn_((dansi_sos_parse(S_const$u8 bytes))(dansi_sos_E$dansi_sos_Frame) $scope) {
     var_(prefix_len, usize) = 0;
-    if (bytes.len >= 3 && *S_at((bytes)[0]) == 0x1b && *S_at((bytes)[1]) == u8_c('X')) {
+    if (bytes.len >= 3 && *S_at((bytes)[0]) == dansi_Seq_esc_byte && *S_at((bytes)[1]) == dansi_sos_7bit_intro_byte) {
         prefix_len = 2;
-    } else if (bytes.len >= 2 && *S_at((bytes)[0]) == 0x98) {
+    } else if (bytes.len >= 2 && *S_at((bytes)[0]) == dansi_sos_8bit_intro_byte) {
         prefix_len = 1;
     } else {
         return_err(E_cause$dansi_sos_Invalid());
@@ -33,7 +33,7 @@ fn_((dansi_sos_makeWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, S$u8 buf))(E$S
 } $unscoped(fn);
 
 fn_((dansi_sos_writeWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1bX")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_sos_7bit_prefix)));
     try_(io_Writer_writeBytes(out, payload));
     return dansi_Seq_EOS_write(eos, out);
 } $unscoped(fn);

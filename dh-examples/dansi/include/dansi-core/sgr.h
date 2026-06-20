@@ -23,6 +23,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_sgr_final __str__dansi_sgr_final
+#define dansi_sgr_final_byte __uint__dansi_sgr_final_byte
+
 typedef enum_((dansi_sgr_Code $fits($packed))(
     dansi_sgr_Code_reset = 0,
     dansi_sgr_Code_bold = 1,
@@ -94,10 +97,12 @@ $extern fn_((dansi_sgr_setWrite(S_const$u16 codes, io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_sgr_final "m"
+#define __uint__dansi_sgr_final_byte u8_c('m')
 #define ____dansi_sgr_reset_static() \
-    dansi_csi_make1_static("0", "m")
+    dansi_csi_make1_static(dansi_sgr_Code_staticParse(dansi_sgr_Code_reset), dansi_sgr_final)
 #define ____dansi_sgr_setRaw_static(_params_tok) \
-    dansi_csi_make1_static(_params_tok, "m")
+    dansi_csi_make1_static(_params_tok, dansi_sgr_final)
 #define ____dansi_sgr_setOne_static(_code_tok) \
     dansi_sgr_setRaw_static(dansi_sgr_Code_staticParse(_code_tok))
 #define ____dansi_sgr_Code_staticParse(_code_tok) \

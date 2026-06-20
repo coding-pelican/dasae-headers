@@ -16,12 +16,12 @@ fn_((dansi_shell_osc7_setRaw(S_const$u8 file_uri, S$u8 buf))(E$S$u8) $scope) {
 } $unscoped(fn);
 
 fn_((dansi_shell_osc7_setRawWrite(S_const$u8 file_uri, io_Writer out))(E$void)) {
-    return dansi_osc_write(7, file_uri, out);
+    return dansi_osc_write(dansi_shell_osc7_cmd_u16, file_uri, out);
 };
 
 fn_((dansi_shell_osc7_parse(dansi_osc_Frame frame))(dansi_shell_osc7_E$dansi_shell_osc7_Cwd) $scope) {
     let split = orelse_((dansi_osc_Frame_splitCmd(frame))(return_err(E_cause$dansi_shell_osc7_Invalid())));
     let cmd = orelse_((dansi_osc_CmdSplit_cmdAsU16(split))(return_err(E_cause$dansi_shell_osc7_Invalid())));
-    if (cmd != 7) return_err(E_cause$dansi_shell_osc7_Invalid());
+    if (cmd != dansi_shell_osc7_cmd_u16) return_err(E_cause$dansi_shell_osc7_Invalid());
     return_ok({ .file_uri = split.payload });
 } $unscoped(fn);

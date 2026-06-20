@@ -24,6 +24,25 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_Seq_c0_max_byte __uint__dansi_Seq_c0_max_byte
+#define dansi_Seq_c1_min_byte __uint__dansi_Seq_c1_min_byte
+#define dansi_Seq_c1_max_byte __uint__dansi_Seq_c1_max_byte
+#define dansi_Seq_esc __str__dansi_Seq_esc
+#define dansi_Seq_esc_byte __uint__dansi_Seq_esc_byte
+#define dansi_Seq_bel __str__dansi_Seq_bel
+#define dansi_Seq_bel_byte __uint__dansi_Seq_bel_byte
+#define dansi_Seq_st_7bit __str__dansi_Seq_st_7bit
+#define dansi_Seq_st_7bit_final __str__dansi_Seq_st_7bit_final
+#define dansi_Seq_st_7bit_final_byte __uint__dansi_Seq_st_7bit_final_byte
+#define dansi_Seq_st_8bit __str__dansi_Seq_st_8bit
+#define dansi_Seq_st_8bit_byte __uint__dansi_Seq_st_8bit_byte
+#define dansi_Seq_ss2_7bit_prefix __str__dansi_Seq_ss2_7bit_prefix
+#define dansi_Seq_ss2_7bit_intro __str__dansi_Seq_ss2_7bit_intro
+#define dansi_Seq_ss2_7bit_intro_byte __uint__dansi_Seq_ss2_7bit_intro_byte
+#define dansi_Seq_ss3_7bit_prefix __str__dansi_Seq_ss3_7bit_prefix
+#define dansi_Seq_ss3_7bit_intro __str__dansi_Seq_ss3_7bit_intro
+#define dansi_Seq_ss3_7bit_intro_byte __uint__dansi_Seq_ss3_7bit_intro_byte
+
 /// A sequence kind.
 typedef enum_((dansi_Seq_Kind $fits($packed))(
     dansi_Seq_Kind_text = 0,
@@ -109,6 +128,27 @@ $attr($must_check)
 $extern fn_((dansi_Seq_receivePM(io_Reader in, S$u8 buf))(E$S$u8));
 $attr($must_check)
 $extern fn_((dansi_Seq_receiveAPC(io_Reader in, S$u8 buf))(E$S$u8));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __uint__dansi_Seq_c0_max_byte 0x1f
+#define __uint__dansi_Seq_c1_min_byte 0x80
+#define __uint__dansi_Seq_c1_max_byte 0x9f
+#define __str__dansi_Seq_esc "\x1b"
+#define __uint__dansi_Seq_esc_byte 0x1b
+#define __str__dansi_Seq_bel "\a"
+#define __uint__dansi_Seq_bel_byte 0x07
+#define __str__dansi_Seq_st_7bit dansi_Seq_esc dansi_Seq_st_7bit_final
+#define __str__dansi_Seq_st_7bit_final "\\"
+#define __uint__dansi_Seq_st_7bit_final_byte u8_c('\\')
+#define __str__dansi_Seq_st_8bit "\x9c"
+#define __uint__dansi_Seq_st_8bit_byte 0x9c
+#define __str__dansi_Seq_ss2_7bit_prefix dansi_Seq_esc dansi_Seq_ss2_7bit_intro
+#define __str__dansi_Seq_ss2_7bit_intro "N"
+#define __uint__dansi_Seq_ss2_7bit_intro_byte u8_c('N')
+#define __str__dansi_Seq_ss3_7bit_prefix dansi_Seq_esc dansi_Seq_ss3_7bit_intro
+#define __str__dansi_Seq_ss3_7bit_intro "O"
+#define __uint__dansi_Seq_ss3_7bit_intro_byte u8_c('O')
 
 #if defined(__cplusplus)
 } /* extern "C" */

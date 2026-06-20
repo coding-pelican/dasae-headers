@@ -20,72 +20,74 @@ $static fn_((dansi_xterm_key__text(u32 codepoint, dansi_xterm_key_Mods mods))(da
 
 $static fn_((dansi_xterm_key__namedFromCursorFinal(u8 final))(O$dansi_xterm_key_Named) $scope) {
     switch (final) {
-    case_((u8_c('A'))) return_some(dansi_xterm_key_Named_up) $end(case);
-    case_((u8_c('B'))) return_some(dansi_xterm_key_Named_down) $end(case);
-    case_((u8_c('C'))) return_some(dansi_xterm_key_Named_right) $end(case);
-    case_((u8_c('D'))) return_some(dansi_xterm_key_Named_left) $end(case);
-    case_((u8_c('H'))) return_some(dansi_xterm_key_Named_home) $end(case);
-    case_((u8_c('F'))) return_some(dansi_xterm_key_Named_end) $end(case);
-    case_((u8_c('E'))) return_some(dansi_xterm_key_Named_begin) $end(case);
+    case_((dansi_xterm_key_final_up_byte)) return_some(dansi_xterm_key_Named_up) $end(case);
+    case_((dansi_xterm_key_final_down_byte)) return_some(dansi_xterm_key_Named_down) $end(case);
+    case_((dansi_xterm_key_final_right_byte)) return_some(dansi_xterm_key_Named_right) $end(case);
+    case_((dansi_xterm_key_final_left_byte)) return_some(dansi_xterm_key_Named_left) $end(case);
+    case_((dansi_xterm_key_final_home_byte)) return_some(dansi_xterm_key_Named_home) $end(case);
+    case_((dansi_xterm_key_final_end_byte)) return_some(dansi_xterm_key_Named_end) $end(case);
+    case_((dansi_xterm_key_final_begin_byte)) return_some(dansi_xterm_key_Named_begin) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);
 
 $static fn_((dansi_xterm_key__namedFromSS3Final(u8 final))(O$dansi_xterm_key_Named) $scope) {
     switch (final) {
-    case_((u8_c('P'))) return_some(dansi_xterm_key_Named_f1) $end(case);
-    case_((u8_c('Q'))) return_some(dansi_xterm_key_Named_f2) $end(case);
-    case_((u8_c('R'))) return_some(dansi_xterm_key_Named_f3) $end(case);
-    case_((u8_c('S'))) return_some(dansi_xterm_key_Named_f4) $end(case);
+    case_((dansi_xterm_key_final_f1_byte)) return_some(dansi_xterm_key_Named_f1) $end(case);
+    case_((dansi_xterm_key_final_f2_byte)) return_some(dansi_xterm_key_Named_f2) $end(case);
+    case_((dansi_xterm_key_final_f3_byte)) return_some(dansi_xterm_key_Named_f3) $end(case);
+    case_((dansi_xterm_key_final_f4_byte)) return_some(dansi_xterm_key_Named_f4) $end(case);
     default_() return dansi_xterm_key__namedFromCursorFinal(final) $end(default);
     }
 } $unscoped(fn);
 
 $static fn_((dansi_xterm_key__namedFromTildeCode(u16 code))(O$dansi_xterm_key_Named) $scope) {
     switch (code) {
-    case_((1)) return_some(dansi_xterm_key_Named_home) $end(case);
-    case_((2)) return_some(dansi_xterm_key_Named_insert) $end(case);
-    case_((3)) return_some(dansi_xterm_key_Named_delete) $end(case);
-    case_((4)) return_some(dansi_xterm_key_Named_end) $end(case);
-    case_((5)) return_some(dansi_xterm_key_Named_page_up) $end(case);
-    case_((6)) return_some(dansi_xterm_key_Named_page_down) $end(case);
-    case_((15)) return_some(dansi_xterm_key_Named_f5) $end(case);
-    case_((17)) return_some(dansi_xterm_key_Named_f6) $end(case);
-    case_((18)) return_some(dansi_xterm_key_Named_f7) $end(case);
-    case_((19)) return_some(dansi_xterm_key_Named_f8) $end(case);
-    case_((20)) return_some(dansi_xterm_key_Named_f9) $end(case);
-    case_((21)) return_some(dansi_xterm_key_Named_f10) $end(case);
-    case_((23)) return_some(dansi_xterm_key_Named_f11) $end(case);
-    case_((24)) return_some(dansi_xterm_key_Named_f12) $end(case);
-    case_((25)) return_some(dansi_xterm_key_Named_f13) $end(case);
-    case_((26)) return_some(dansi_xterm_key_Named_f14) $end(case);
-    case_((28)) return_some(dansi_xterm_key_Named_f15) $end(case);
-    case_((29)) return_some(dansi_xterm_key_Named_f16) $end(case);
-    case_((31)) return_some(dansi_xterm_key_Named_f17) $end(case);
-    case_((32)) return_some(dansi_xterm_key_Named_f18) $end(case);
-    case_((33)) return_some(dansi_xterm_key_Named_f19) $end(case);
-    case_((34)) return_some(dansi_xterm_key_Named_f20) $end(case);
-    case_((35)) return_some(dansi_xterm_key_Named_f21) $end(case);
-    case_((36)) return_some(dansi_xterm_key_Named_f22) $end(case);
-    case_((37)) return_some(dansi_xterm_key_Named_f23) $end(case);
-    case_((38)) return_some(dansi_xterm_key_Named_f24) $end(case);
+    case_((dansi_xterm_key_TildeCode_home)) return_some(dansi_xterm_key_Named_home) $end(case);
+    case_((dansi_xterm_key_TildeCode_insert)) return_some(dansi_xterm_key_Named_insert) $end(case);
+    case_((dansi_xterm_key_TildeCode_delete)) return_some(dansi_xterm_key_Named_delete) $end(case);
+    case_((dansi_xterm_key_TildeCode_end)) return_some(dansi_xterm_key_Named_end) $end(case);
+    case_((dansi_xterm_key_TildeCode_page_up)) return_some(dansi_xterm_key_Named_page_up) $end(case);
+    case_((dansi_xterm_key_TildeCode_page_down)) return_some(dansi_xterm_key_Named_page_down) $end(case);
+    case_((dansi_xterm_key_TildeCode_f5)) return_some(dansi_xterm_key_Named_f5) $end(case);
+    case_((dansi_xterm_key_TildeCode_f6)) return_some(dansi_xterm_key_Named_f6) $end(case);
+    case_((dansi_xterm_key_TildeCode_f7)) return_some(dansi_xterm_key_Named_f7) $end(case);
+    case_((dansi_xterm_key_TildeCode_f8)) return_some(dansi_xterm_key_Named_f8) $end(case);
+    case_((dansi_xterm_key_TildeCode_f9)) return_some(dansi_xterm_key_Named_f9) $end(case);
+    case_((dansi_xterm_key_TildeCode_f10)) return_some(dansi_xterm_key_Named_f10) $end(case);
+    case_((dansi_xterm_key_TildeCode_f11)) return_some(dansi_xterm_key_Named_f11) $end(case);
+    case_((dansi_xterm_key_TildeCode_f12)) return_some(dansi_xterm_key_Named_f12) $end(case);
+    case_((dansi_xterm_key_TildeCode_f13)) return_some(dansi_xterm_key_Named_f13) $end(case);
+    case_((dansi_xterm_key_TildeCode_f14)) return_some(dansi_xterm_key_Named_f14) $end(case);
+    case_((dansi_xterm_key_TildeCode_f15)) return_some(dansi_xterm_key_Named_f15) $end(case);
+    case_((dansi_xterm_key_TildeCode_f16)) return_some(dansi_xterm_key_Named_f16) $end(case);
+    case_((dansi_xterm_key_TildeCode_f17)) return_some(dansi_xterm_key_Named_f17) $end(case);
+    case_((dansi_xterm_key_TildeCode_f18)) return_some(dansi_xterm_key_Named_f18) $end(case);
+    case_((dansi_xterm_key_TildeCode_f19)) return_some(dansi_xterm_key_Named_f19) $end(case);
+    case_((dansi_xterm_key_TildeCode_f20)) return_some(dansi_xterm_key_Named_f20) $end(case);
+    case_((dansi_xterm_key_TildeCode_f21)) return_some(dansi_xterm_key_Named_f21) $end(case);
+    case_((dansi_xterm_key_TildeCode_f22)) return_some(dansi_xterm_key_Named_f22) $end(case);
+    case_((dansi_xterm_key_TildeCode_f23)) return_some(dansi_xterm_key_Named_f23) $end(case);
+    case_((dansi_xterm_key_TildeCode_f24)) return_some(dansi_xterm_key_Named_f24) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);
 
 $static fn_((dansi_xterm_key__namedFromCodepoint(u32 codepoint))(O$dansi_xterm_key_Named) $scope) {
     switch (codepoint) {
-    case_((9)) return_some(dansi_xterm_key_Named_tab) $end(case);
-    case_((13)) return_some(dansi_xterm_key_Named_enter) $end(case);
-    case_((27)) return_some(dansi_xterm_key_Named_escape) $end(case);
-    case_((127)) return_some(dansi_xterm_key_Named_backspace) $end(case);
+    case_((dansi_xterm_key_codepoint_tab)) return_some(dansi_xterm_key_Named_tab) $end(case);
+    case_((dansi_xterm_key_codepoint_enter)) return_some(dansi_xterm_key_Named_enter) $end(case);
+    case_((dansi_xterm_key_codepoint_escape)) return_some(dansi_xterm_key_Named_escape) $end(case);
+    case_((dansi_xterm_key_codepoint_backspace)) return_some(dansi_xterm_key_Named_backspace) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);
 
 $static fn_((dansi_xterm_key__isModifiedCSI(dansi_csi_Frame frame))(bool)) {
-    if (isNone(dansi_csi_Frame_paramAtAsU16(frame, 1))) return false;
-    if (frame.final == u8_c('~')) return isSome(dansi_csi_Frame_paramAtAsU16(frame, 0));
+    if (isNone(dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_key_param_modifier))) return false;
+    if (frame.final == dansi_xterm_key_final_tilde_byte) {
+        return isSome(dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_key_param_key));
+    }
     return isSome(dansi_xterm_key__namedFromCursorFinal(frame.final));
 };
 
@@ -98,7 +100,13 @@ fn_((dansi_xterm_key_setModifyRaw(
 };
 
 fn_((dansi_xterm_key_setModifyRawWrite(dansi_xterm_key_Resrc resource, u8 value, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static(">{:uhh};{:uhh}", "", "m")), as$(u8)(resource), value);
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static(
+            dansi_xterm_key_modify_marker "{:uhh}" dansi_csi_param_sep "{:uhh}", "", dansi_xterm_key_modify_final
+        )),
+        as$(u8)(resource), value
+    );
 };
 
 fn_((dansi_xterm_key_setModifyLevel(
@@ -120,7 +128,13 @@ fn_((dansi_xterm_key_resetModify(dansi_xterm_key_Resrc resource, dansi_xterm_key
 };
 
 fn_((dansi_xterm_key_resetModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static(">{:uhh}", "", "m")), as$(u8)(resource));
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static(
+            dansi_xterm_key_modify_marker "{:uhh}", "", dansi_xterm_key_modify_final
+        )),
+        as$(u8)(resource)
+    );
 };
 
 fn_((dansi_xterm_key_disableModify(dansi_xterm_key_Resrc resource, dansi_xterm_key_DisableModifyBuf* buf))(S$u8)) {
@@ -130,7 +144,13 @@ fn_((dansi_xterm_key_disableModify(dansi_xterm_key_Resrc resource, dansi_xterm_k
 };
 
 fn_((dansi_xterm_key_disableModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static(">{:uhh}", "", "n")), as$(u8)(resource));
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static(
+            dansi_xterm_key_modify_marker "{:uhh}", "", dansi_xterm_key_disable_modify_final
+        )),
+        as$(u8)(resource)
+    );
 };
 
 fn_((dansi_xterm_key_queryModify(dansi_xterm_key_Resrc resource, dansi_xterm_key_QueryModifyBuf* buf))(S$u8)) {
@@ -140,7 +160,13 @@ fn_((dansi_xterm_key_queryModify(dansi_xterm_key_Resrc resource, dansi_xterm_key
 };
 
 fn_((dansi_xterm_key_queryModifyWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static("?{:uhh}", "", "m")), as$(u8)(resource));
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static(
+            dansi_xterm_key_query_marker "{:uhh}", "", dansi_xterm_key_modify_final
+        )),
+        as$(u8)(resource)
+    );
 };
 
 fn_((dansi_xterm_key_setFormat(
@@ -152,7 +178,13 @@ fn_((dansi_xterm_key_setFormat(
 };
 
 fn_((dansi_xterm_key_setFormatWrite(dansi_xterm_key_Resrc resource, dansi_xterm_key_Format format, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static(">{:uhh};{:uhh}", "", "f")), as$(u8)(resource), as$(u8)(format));
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static(
+            dansi_xterm_key_modify_marker "{:uhh}" dansi_csi_param_sep "{:uhh}", "", dansi_xterm_key_format_final
+        )),
+        as$(u8)(resource), as$(u8)(format)
+    );
 };
 
 fn_((dansi_xterm_key_resetFormat(dansi_xterm_key_Resrc resource, dansi_xterm_key_ResetFormatBuf* buf))(S$u8)) {
@@ -162,7 +194,13 @@ fn_((dansi_xterm_key_resetFormat(dansi_xterm_key_Resrc resource, dansi_xterm_key
 };
 
 fn_((dansi_xterm_key_resetFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static(">{:uhh}", "", "f")), as$(u8)(resource));
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static(
+            dansi_xterm_key_modify_marker "{:uhh}", "", dansi_xterm_key_format_final
+        )),
+        as$(u8)(resource)
+    );
 };
 
 fn_((dansi_xterm_key_queryFormat(dansi_xterm_key_Resrc resource, dansi_xterm_key_QueryFormatBuf* buf))(S$u8)) {
@@ -172,7 +210,13 @@ fn_((dansi_xterm_key_queryFormat(dansi_xterm_key_Resrc resource, dansi_xterm_key
 };
 
 fn_((dansi_xterm_key_queryFormatWrite(dansi_xterm_key_Resrc resource, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static("?{:uhh}", "", "g")), as$(u8)(resource));
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static(
+            dansi_xterm_key_query_marker "{:uhh}", "", dansi_xterm_key_query_format_final
+        )),
+        as$(u8)(resource)
+    );
 };
 
 fn_((dansi_xterm_key_enableEnhanced(dansi_xterm_key_EnableEnhancedBuf* buf))(S$u8)) {
@@ -223,19 +267,23 @@ fn_((dansi_xterm_key_parseReport(dansi_Seq seq))(O$dansi_xterm_key_Report) $scop
     } $end(case);
     case_((dansi_Seq_Kind_csi)) {
         let frame = catch_((dansi_csi_parse(seq.bytes))($ignore, return_none()));
-        if (frame.final == u8_c('u')) {
-            let codepoint = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 0))(return_none()));
+        if (frame.final == dansi_xterm_key_final_csi_u_byte) {
+            let codepoint = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_key_param_key))(return_none()));
             return_some(union_of((dansi_xterm_key_Report_csi_u){
                 .codepoint = codepoint,
-                .modifier_param = dansi_csi_Frame_paramAtAsU16(frame, 1),
+                .modifier_param = dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_key_param_modifier),
                 .frame = frame,
             }));
         }
-        if (frame.final == u8_c('~')) {
-            let first = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 0))(return_none()));
-            if (first == 27) {
-                let modifier_param = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 1))(return_none()));
-                let codepoint = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 2))(return_none()));
+        if (frame.final == dansi_xterm_key_final_tilde_byte) {
+            let first = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_key_param_key))(return_none()));
+            if (first == dansi_xterm_key_modify_other_prefix_u16) {
+                let modifier_param = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_key_param_modifier))(
+                    return_none()
+                ));
+                let codepoint = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_key_param_codepoint))(
+                    return_none()
+                ));
                 return_some(union_of((dansi_xterm_key_Report_modify_other){
                     .codepoint = codepoint,
                     .modifier_param = modifier_param,
@@ -279,8 +327,8 @@ fn_((dansi_xterm_key_interpretReport(
         return_ok(dansi_xterm_key__special(named, dansi_xterm_key_modsNone()));
     } $end(pattern);
     pattern_((dansi_xterm_key_Report_legacy_csi)(csi)) {
-        if (csi.frame.final == u8_c('~')) {
-            let code = orelse_((dansi_csi_Frame_paramAtAsU16(csi.frame, 0))(
+        if (csi.frame.final == dansi_xterm_key_final_tilde_byte) {
+            let code = orelse_((dansi_csi_Frame_paramAtAsU16(csi.frame, dansi_xterm_key_param_key))(
                 return_err(E_cause$dansi_xterm_key_InvalidReport())
             ));
             let named = orelse_((dansi_xterm_key__namedFromTildeCode(code))(
@@ -294,12 +342,12 @@ fn_((dansi_xterm_key_interpretReport(
         return_ok(dansi_xterm_key__special(named, dansi_xterm_key_modsNone()));
     } $end(pattern);
     pattern_((dansi_xterm_key_Report_modified_csi)(modified)) {
-        let modifier_param = orelse_((dansi_csi_Frame_paramAtAsU16(modified.frame, 1))(
+        let modifier_param = orelse_((dansi_csi_Frame_paramAtAsU16(modified.frame, dansi_xterm_key_param_modifier))(
             return_err(E_cause$dansi_xterm_key_InvalidReport())
         ));
         let mods = dansi_xterm_key_modsFromParam(modifier_param);
-        if (modified.frame.final == u8_c('~')) {
-            let code = orelse_((dansi_csi_Frame_paramAtAsU16(modified.frame, 0))(
+        if (modified.frame.final == dansi_xterm_key_final_tilde_byte) {
+            let code = orelse_((dansi_csi_Frame_paramAtAsU16(modified.frame, dansi_xterm_key_param_key))(
                 return_err(E_cause$dansi_xterm_key_InvalidReport())
             ));
             let named = orelse_((dansi_xterm_key__namedFromTildeCode(code))(

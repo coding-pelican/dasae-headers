@@ -23,6 +23,12 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_apc_7bit_prefix __str__dansi_apc_7bit_prefix
+#define dansi_apc_7bit_intro __str__dansi_apc_7bit_intro
+#define dansi_apc_7bit_intro_byte __uint__dansi_apc_7bit_intro_byte
+#define dansi_apc_8bit_intro __str__dansi_apc_8bit_intro
+#define dansi_apc_8bit_intro_byte __uint__dansi_apc_8bit_intro_byte
+
 errset_((dansi_apc_E)(dansi_apc_Invalid));
 
 typedef struct dansi_apc_Frame dansi_apc_Frame;
@@ -50,8 +56,13 @@ T_impl_E$($set(dansi_apc_E)(dansi_apc_Frame));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_apc_7bit_prefix dansi_Seq_esc dansi_apc_7bit_intro
+#define __str__dansi_apc_7bit_intro "_"
+#define __uint__dansi_apc_7bit_intro_byte u8_c('_')
+#define __str__dansi_apc_8bit_intro "\x9f"
+#define __uint__dansi_apc_8bit_intro_byte 0x9f
 #define ____dansi_apc_make_static(_payload_tok) \
-    "\x1b_" _payload_tok "\x1b\\"
+    dansi_apc_7bit_prefix _payload_tok dansi_Seq_st_7bit
 
 #if defined(__cplusplus)
 } /* extern "C" */

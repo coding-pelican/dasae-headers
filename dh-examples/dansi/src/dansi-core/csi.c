@@ -11,27 +11,29 @@ $static fn_((dansi_csi__paramsWithoutPrivate(dansi_csi_Frame self))(S_const$u8))
 
 $static fn_((dansi_csi__parseU16(S_const$u8 text))(O$u16)) {
     if (text.len == 0) return none$((O$u16));
-    return catch_none$((O$u16)(fmt_parse$u16(text, 10)));
+    return catch_none$((O$u16)(fmt_parse$u16(text, dansi_csi_param_radix)));
 };
 
 fn_((dansi_csi_parse(S_const$u8 bytes))(dansi_csi_E$dansi_csi_Frame) $scope) {
     if (bytes.len < 2) return_err(E_cause$dansi_csi_Invalid());
     var_(prefix_len, usize) = 0;
-    if (*S_at((bytes)[0]) == 0x1b && bytes.len >= 3 && *S_at((bytes)[1]) == u8_c('[')) {
+    if (*S_at((bytes)[0]) == dansi_Seq_esc_byte && bytes.len >= 3 && *S_at((bytes)[1]) == dansi_csi_7bit_intro_byte) {
         prefix_len = 2;
-    } else if (*S_at((bytes)[0]) == 0x9b) {
+    } else if (*S_at((bytes)[0]) == dansi_csi_8bit_intro_byte) {
         prefix_len = 1;
     } else {
         return_err(E_cause$dansi_csi_Invalid());
     }
 
     let final = *S_at((bytes)[bytes.len - 1]);
-    if (final < 0x40 || final > 0x7e) return_err(E_cause$dansi_csi_Invalid());
+    if (final < dansi_csi_final_min_byte || final > dansi_csi_final_max_byte) return_err(E_cause$dansi_csi_Invalid());
 
     var_(idx, usize) = prefix_len;
     while (idx + 1 < bytes.len) {
         let byte = *S_at((bytes)[idx]);
-        if (byte < 0x20 || byte > 0x3f) return_err(E_cause$dansi_csi_Invalid());
+        if (byte < dansi_csi_intermediate_min_byte || byte > dansi_csi_private_marker_max_byte) {
+            return_err(E_cause$dansi_csi_Invalid());
+        }
         idx += 1;
     }
 
@@ -40,7 +42,7 @@ fn_((dansi_csi_parse(S_const$u8 bytes))(dansi_csi_E$dansi_csi_Frame) $scope) {
     idx = 0;
     while (idx < body.len) {
         let byte = *S_at((body)[idx]);
-        if (0x20 <= byte && byte <= 0x2f) {
+        if (dansi_csi_intermediate_min_byte <= byte && byte <= dansi_csi_intermediate_max_byte) {
             intermediates_at = idx;
             break;
         }
@@ -62,7 +64,7 @@ fn_((dansi_csi_make(S_const$u8 params, S_const$u8 intermediates, u8 final, S$u8 
 } $unscoped(fn);
 
 fn_((dansi_csi_write(S_const$u8 params, S_const$u8 intermediates, u8 final, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b[")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_csi_7bit_prefix)));
     try_(io_Writer_writeBytes(out, params));
     try_(io_Writer_writeBytes(out, intermediates));
     return io_Writer_writeByte(out, final);
@@ -76,7 +78,9 @@ fn_((dansi_csi_Frame_isPrivate(dansi_csi_Frame self, u8 marker))(bool)) {
 fn_((dansi_csi_Frame_privateMarker(dansi_csi_Frame self))(O$u8)) {
     if (self.params.len == 0) return none$((O$u8));
     let marker = *S_at((self.params)[0]);
-    if (0x3c <= marker && marker <= 0x3f) return some$((O$u8)(marker));
+    if (dansi_csi_private_marker_min_byte <= marker && marker <= dansi_csi_private_marker_max_byte) {
+        return some$((O$u8)(marker));
+    }
     return none$((O$u8));
 };
 
@@ -112,7 +116,7 @@ fn_((dansi_csi_Param_asU16(dansi_csi_Param self))(O$u16)) {
 fn_((dansi_csi_ParamIter_next(dansi_csi_ParamIter* self))(O$dansi_csi_Param) $scope) {
     if (self->cursor > self->params.len) return_none();
     let rest = S_suffix((self->params)(self->cursor));
-    if_some((mem_findFirstUnitBytes(rest, u8_c(';')))(delim)) {
+    if_some((mem_findFirstUnitBytes(rest, dansi_csi_param_sep_byte))(delim)) {
         let raw = S_prefix((rest)(delim));
         self->cursor += delim + 1;
         return_some({ .raw = raw });
@@ -124,7 +128,7 @@ fn_((dansi_csi_ParamIter_next(dansi_csi_ParamIter* self))(O$dansi_csi_Param) $sc
 fn_((dansi_csi_SubparamIter_next(dansi_csi_SubparamIter* self))(O$S_const$u8) $scope) {
     if (self->cursor > self->param.len) return_none();
     let rest = S_suffix((self->param)(self->cursor));
-    if_some((mem_findFirstUnitBytes(rest, u8_c(':')))(delim)) {
+    if_some((mem_findFirstUnitBytes(rest, dansi_csi_subparam_sep_byte))(delim)) {
         let raw = S_prefix((rest)(delim));
         self->cursor += delim + 1;
         return_some(raw);

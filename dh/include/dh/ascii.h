@@ -65,24 +65,24 @@ enum_((ascii_CtrlCode $fits($packed))(
 ));
 claim_assert_static(eqlType$(enum ascii_CtrlCode, u8));
 
-#define ascii_nul_byte __uint__ascii_nul_byte
 #define ascii_nul __str__ascii_nul
-#define ascii_bel_byte __uint__ascii_bel_byte
+#define ascii_nul_byte __uint__ascii_nul_byte
 #define ascii_bel __str__ascii_bel
-#define ascii_bs_byte __uint__ascii_bs_byte
+#define ascii_bel_byte __uint__ascii_bel_byte
 #define ascii_bs __str__ascii_bs
-#define ascii_ht_byte __uint__ascii_ht_byte
+#define ascii_bs_byte __uint__ascii_bs_byte
 #define ascii_ht __str__ascii_ht
-#define ascii_lf_byte __uint__ascii_lf_byte
+#define ascii_ht_byte __uint__ascii_ht_byte
 #define ascii_lf __str__ascii_lf
-#define ascii_vt_byte __uint__ascii_vt_byte
+#define ascii_lf_byte __uint__ascii_lf_byte
 #define ascii_vt __str__ascii_vt
-#define ascii_ff_byte __uint__ascii_ff_byte
+#define ascii_vt_byte __uint__ascii_vt_byte
 #define ascii_ff __str__ascii_ff
-#define ascii_cr_byte __uint__ascii_cr_byte
+#define ascii_ff_byte __uint__ascii_ff_byte
 #define ascii_cr __str__ascii_cr
-#define ascii_sp_byte __uint__ascii_sp_byte
+#define ascii_cr_byte __uint__ascii_cr_byte
 #define ascii_sp __str__ascii_sp
+#define ascii_sp_byte __uint__ascii_sp_byte
 
 /// Returns whether the character is a 7-bit ASCII character.
 $attr($inline_always)
@@ -121,18 +121,18 @@ $static fn_((ascii_isWhitespace(u8 c))(bool));
      */ \
     __str__ascii_whitespaces
 
-#define ascii_whitespace_sp_byte __uint__ascii_whitespace_sp_byte
 #define ascii_whitespace_sp __str__ascii_whitespace_sp
-#define ascii_whitespace_ht_byte __uint__ascii_whitespace_ht_byte
+#define ascii_whitespace_sp_byte __uint__ascii_whitespace_sp_byte
 #define ascii_whitespace_ht __str__ascii_whitespace_ht
-#define ascii_whitespace_lf_byte __uint__ascii_whitespace_lf_byte
+#define ascii_whitespace_ht_byte __uint__ascii_whitespace_ht_byte
 #define ascii_whitespace_lf __str__ascii_whitespace_lf
-#define ascii_whitespace_cr_byte __uint__ascii_whitespace_cr_byte
+#define ascii_whitespace_lf_byte __uint__ascii_whitespace_lf_byte
 #define ascii_whitespace_cr __str__ascii_whitespace_cr
-#define ascii_whitespace_vt_byte __uint__ascii_whitespace_vt_byte
+#define ascii_whitespace_cr_byte __uint__ascii_whitespace_cr_byte
 #define ascii_whitespace_vt __str__ascii_whitespace_vt
-#define ascii_whitespace_ff_byte __uint__ascii_whitespace_ff_byte
+#define ascii_whitespace_vt_byte __uint__ascii_whitespace_vt_byte
 #define ascii_whitespace_ff __str__ascii_whitespace_ff
+#define ascii_whitespace_ff_byte __uint__ascii_whitespace_ff_byte
 
 /// Uppercases the character && returns it as-is if already uppercase || not a letter.
 $attr($inline_always)
@@ -203,49 +203,49 @@ $extern fn_((ascii_ordIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cm
 
 /*========== Macros and Definitions =========================================*/
 
-#define __uint__ascii_nul_byte u8_c('\0')
 #define __str__ascii_nul "\0"
-#define __uint__ascii_bel_byte u8_c('\a')
+#define __uint__ascii_nul_byte u8_c('\0')
 #define __str__ascii_bel "\a"
-#define __uint__ascii_bs_byte u8_c('\b')
+#define __uint__ascii_bel_byte u8_c('\a')
 #define __str__ascii_bs "\b"
-#define __uint__ascii_ht_byte u8_c('\t')
+#define __uint__ascii_bs_byte u8_c('\b')
 #define __str__ascii_ht "\t"
-#define __uint__ascii_lf_byte u8_c('\n')
+#define __uint__ascii_ht_byte u8_c('\t')
 #define __str__ascii_lf "\n"
-#define __uint__ascii_vt_byte u8_c('\v')
+#define __uint__ascii_lf_byte u8_c('\n')
 #define __str__ascii_vt "\v"
-#define __uint__ascii_ff_byte u8_c('\f')
+#define __uint__ascii_vt_byte u8_c('\v')
 #define __str__ascii_ff "\f"
-#define __uint__ascii_cr_byte u8_c('\r')
+#define __uint__ascii_ff_byte u8_c('\f')
 #define __str__ascii_cr "\r"
-#define __uint__ascii_sp_byte u8_c(' ')
+#define __uint__ascii_cr_byte u8_c('\r')
 #define __str__ascii_sp " "
+#define __uint__ascii_sp_byte u8_c(' ')
 
 fn_((ascii_isASCII(u8 c))(bool)) { return c < 0x80; };
-fn_((ascii_isUpper(u8 c))(bool)) { return 'A' <= c && c <= 'Z'; };
-fn_((ascii_isLower(u8 c))(bool)) { return 'a' <= c && c <= 'z'; };
+fn_((ascii_isUpper(u8 c))(bool)) { return u8_c('A') <= c && c <= u8_c('Z'); };
+fn_((ascii_isLower(u8 c))(bool)) { return u8_c('a') <= c && c <= u8_c('z'); };
 fn_((ascii_isAlpha(u8 c))(bool)) { return ascii_isUpper(c) || ascii_isLower(c); };
-fn_((ascii_isDigit(u8 c))(bool)) { return '0' <= c && c <= '9'; };
+fn_((ascii_isDigit(u8 c))(bool)) { return u8_c('0') <= c && c <= u8_c('9'); };
 fn_((ascii_isAlNum(u8 c))(bool)) { return ascii_isDigit(c) || ascii_isAlpha(c); };
-fn_((ascii_isHex(u8 c))(bool)) { return ascii_isDigit(c) || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'); };
+fn_((ascii_isHex(u8 c))(bool)) { return ascii_isDigit(c) || (u8_c('A') <= c && c <= u8_c('F')) || (u8_c('a') <= c && c <= u8_c('f')); };
 fn_((ascii_isCtrl(u8 c))(bool)) { return c <= ascii_CtrlCode_us || c == ascii_CtrlCode_del; };
 fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; };
 fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ascii_sp_byte || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); };
 #define __str__ascii_whitespaces ascii_sp ascii_ht ascii_lf ascii_cr ascii_vt ascii_ff
 
-#define __uint__ascii_whitespace_sp_byte ascii_sp_byte
 #define __str__ascii_whitespace_sp ascii_sp
-#define __uint__ascii_whitespace_ht_byte ascii_ht_byte
+#define __uint__ascii_whitespace_sp_byte ascii_sp_byte
 #define __str__ascii_whitespace_ht ascii_ht
-#define __uint__ascii_whitespace_lf_byte ascii_lf_byte
+#define __uint__ascii_whitespace_ht_byte ascii_ht_byte
 #define __str__ascii_whitespace_lf ascii_lf
-#define __uint__ascii_whitespace_cr_byte ascii_cr_byte
+#define __uint__ascii_whitespace_lf_byte ascii_lf_byte
 #define __str__ascii_whitespace_cr ascii_cr
-#define __uint__ascii_whitespace_vt_byte ascii_vt_byte
+#define __uint__ascii_whitespace_cr_byte ascii_cr_byte
 #define __str__ascii_whitespace_vt ascii_vt
-#define __uint__ascii_whitespace_ff_byte ascii_ff_byte
+#define __uint__ascii_whitespace_vt_byte ascii_vt_byte
 #define __str__ascii_whitespace_ff ascii_ff
+#define __uint__ascii_whitespace_ff_byte ascii_ff_byte
 
 fn_((ascii_toUpper(u8 c))(u8)) {
     let mask = int_shl(boolToInt(ascii_isLower(c)), 5);

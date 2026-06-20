@@ -5,14 +5,14 @@
 
 $static fn_((dansi_osc__parseU16(S_const$u8 text))(O$u16)) {
     if (text.len == 0) return none$((O$u16));
-    return catch_none$((O$u16)(fmt_parse$u16(text, 10)));
+    return catch_none$((O$u16)(fmt_parse$u16(text, dansi_osc_cmd_radix)));
 };
 
 fn_((dansi_osc_parse(S_const$u8 bytes))(dansi_osc_E$dansi_osc_Frame) $scope) {
     var_(prefix_len, usize) = 0;
-    if (bytes.len >= 3 && *S_at((bytes)[0]) == 0x1b && *S_at((bytes)[1]) == u8_c(']')) {
+    if (bytes.len >= 3 && *S_at((bytes)[0]) == dansi_Seq_esc_byte && *S_at((bytes)[1]) == dansi_osc_7bit_intro_byte) {
         prefix_len = 2;
-    } else if (bytes.len >= 2 && *S_at((bytes)[0]) == 0x9d) {
+    } else if (bytes.len >= 2 && *S_at((bytes)[0]) == dansi_osc_8bit_intro_byte) {
         prefix_len = 1;
     } else {
         return_err(E_cause$dansi_osc_Invalid());
@@ -40,7 +40,7 @@ fn_((dansi_osc_makeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, S$u8 buf))(
 } $unscoped(fn);
 
 fn_((dansi_osc_writeRawWithEOS(S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b]")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_osc_7bit_prefix)));
     try_(io_Writer_writeBytes(out, payload));
     return dansi_Seq_EOS_write(eos, out);
 } $unscoped(fn);
@@ -60,14 +60,14 @@ fn_((dansi_osc_makeWithEOS(u16 cmd, S_const$u8 payload, dansi_Seq_EOS eos, S$u8 
 } $unscoped(fn);
 
 fn_((dansi_osc_writeWithEOS(u16 cmd, S_const$u8 payload, dansi_Seq_EOS eos, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b]")));
-    try_(io_Writer_print(out, u8_l("{:uh};"), cmd));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_osc_7bit_prefix)));
+    try_(io_Writer_print(out, u8_l("{:uh}" dansi_osc_cmd_sep), cmd));
     try_(io_Writer_writeBytes(out, payload));
     return dansi_Seq_EOS_write(eos, out);
 } $unscoped(fn);
 
 fn_((dansi_osc_Frame_splitCmd(dansi_osc_Frame self))(O$dansi_osc_CmdSplit) $scope) {
-    if_some((mem_findFirstUnitBytes(self.payload, u8_c(';')))(delim)) {
+    if_some((mem_findFirstUnitBytes(self.payload, dansi_osc_cmd_sep_byte))(delim)) {
         return_some({
             .cmd = S_prefix((self.payload)(delim)),
             .payload = S_suffix((self.payload)(delim + 1)),

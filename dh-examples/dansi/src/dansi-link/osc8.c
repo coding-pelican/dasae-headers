@@ -7,14 +7,15 @@ $static fn_((dansi_link_osc8__idFromRawParams(S_const$u8 raw))(O$S_const$u8) $sc
     while (cursor <= raw.len) {
         let rest = S_suffix((raw)(cursor));
         var_(segment, S_const$u8) = rest;
-        if_some((mem_findFirstUnitBytes(rest, u8_c(':')))(delim)) {
+        if_some((mem_findFirstUnitBytes(rest, dansi_link_osc8_params_sep_byte))(delim)) {
             segment = S_prefix((rest)(delim));
             cursor += delim + 1;
         } else {
             cursor = raw.len + 1;
         }
-        if (segment.len >= 3 && mem_eqlBytes(S_prefix((segment)(3)), u8_l("id="))) {
-            return_some(S_suffix((segment)(3)));
+        if (segment.len >= dansi_link_osc8_param_id_key_len
+            && mem_eqlBytes(S_prefix((segment)(dansi_link_osc8_param_id_key_len)), u8_l(dansi_link_osc8_param_id_key))) {
+            return_some(S_suffix((segment)(dansi_link_osc8_param_id_key_len)));
         }
     }
     return_none();
@@ -26,7 +27,7 @@ $static fn_((dansi_link_osc8__writeParams(dansi_link_osc8_Params params, io_Writ
         return_ok({});
     } $end(pattern);
     pattern_((dansi_link_osc8_Params_id)(id)) {
-        try_(io_Writer_writeBytes(out, u8_l("id=")));
+        try_(io_Writer_writeBytes(out, u8_l(dansi_link_osc8_param_id_key)));
         return io_Writer_writeBytes(out, id);
     } $end(pattern);
     pattern_((dansi_link_osc8_Params_raw)(raw)) {
@@ -44,9 +45,9 @@ fn_((dansi_link_osc8_open(S_const$u8 uri, dansi_link_osc8_Params params, S$u8 bu
 } $unscoped(fn);
 
 fn_((dansi_link_osc8_openWrite(S_const$u8 uri, dansi_link_osc8_Params params, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b]8;")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_osc_7bit_prefix dansi_link_osc8_cmd dansi_osc_cmd_sep)));
     try_(dansi_link_osc8__writeParams(params, out));
-    try_(io_Writer_writeByte(out, u8_c(';')));
+    try_(io_Writer_writeByte(out, dansi_link_osc8_payload_sep_byte));
     try_(io_Writer_writeBytes(out, uri));
     return dansi_Seq_EOS_write(dansi_Seq_EOS_st_7bit, out);
 } $unscoped(fn);
@@ -82,16 +83,18 @@ fn_((dansi_link_osc8_close(S$u8 buf))(E$S$u8) $scope) {
 } $unscoped(fn);
 
 fn_((dansi_link_osc8_closeWrite(io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b]8;;")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_osc_7bit_prefix dansi_link_osc8_cmd dansi_osc_cmd_sep dansi_osc_cmd_sep)));
     return dansi_Seq_EOS_write(dansi_Seq_EOS_st_7bit, out);
 } $unscoped(fn);
 
 fn_((dansi_link_osc8_parse(dansi_osc_Frame frame))(dansi_link_osc8_E$dansi_link_osc8_Frame) $scope) {
     let split = orelse_((dansi_osc_Frame_splitCmd(frame))(return_err(E_cause$dansi_link_osc8_Invalid())));
     let cmd = orelse_((dansi_osc_CmdSplit_cmdAsU16(split))(return_err(E_cause$dansi_link_osc8_Invalid())));
-    if (cmd != 8) return_err(E_cause$dansi_link_osc8_Invalid());
+    if (cmd != dansi_link_osc8_cmd_u16) return_err(E_cause$dansi_link_osc8_Invalid());
 
-    let delim = orelse_((mem_findFirstUnitBytes(split.payload, u8_c(';')))(return_err(E_cause$dansi_link_osc8_Invalid())));
+    let delim = orelse_((mem_findFirstUnitBytes(split.payload, dansi_link_osc8_payload_sep_byte))(
+        return_err(E_cause$dansi_link_osc8_Invalid())
+    ));
     let params = S_prefix((split.payload)(delim));
     let uri = S_suffix((split.payload)(delim + 1));
     if (uri.len == 0) {

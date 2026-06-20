@@ -9,7 +9,7 @@ fn_((dansi_erase_inDisplay(dansi_erase_Area area, dansi_erase_InDisplayBuf* buf)
 };
 
 fn_((dansi_erase_inDisplayWrite(dansi_erase_Area area, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make1_static("{:uhh}", "J")), as$(u8)(area));
+    return io_Writer_print(out, u8_l(dansi_csi_make1_static("{:uhh}", dansi_erase_in_display_final)), as$(u8)(area));
 };
 
 fn_((dansi_erase_inLine(dansi_erase_Area area, dansi_erase_InLineBuf* buf))(S$u8)) {
@@ -19,7 +19,7 @@ fn_((dansi_erase_inLine(dansi_erase_Area area, dansi_erase_InLineBuf* buf))(S$u8
 };
 
 fn_((dansi_erase_inLineWrite(dansi_erase_Area area, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make1_static("{:uhh}", "K")), as$(u8)(area));
+    return io_Writer_print(out, u8_l(dansi_csi_make1_static("{:uhh}", dansi_erase_in_line_final)), as$(u8)(area));
 };
 
 fn_((dansi_erase_chars(u16 count, dansi_erase_CharsBuf* buf))(S$u8)) {

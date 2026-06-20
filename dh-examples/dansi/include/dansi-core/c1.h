@@ -61,7 +61,7 @@ claim_assert_static(eqlType$(dansi_c1_Code, u8));
 T_use_prl$(dansi_c1_Code);
 
 $attr($inline_always)
-$static fn_((dansi_c1_isCtrl(u8 byte))(bool)) { return 0x80 <= byte && byte <= 0x9f; };
+$static fn_((dansi_c1_isCtrl(u8 byte))(bool)) { return dansi_c1_Code_pad <= byte && byte <= dansi_c1_Code_apc; };
 
 #if defined(__cplusplus)
 } /* extern "C" */

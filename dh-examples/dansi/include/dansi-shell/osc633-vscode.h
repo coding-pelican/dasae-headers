@@ -23,6 +23,29 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_shell_osc633_cmd __str__dansi_shell_osc633_cmd
+#define dansi_shell_osc633_cmd_u16 __uint__dansi_shell_osc633_cmd_u16
+#define dansi_shell_osc633_sep __str__dansi_shell_osc633_sep
+#define dansi_shell_osc633_sep_byte __uint__dansi_shell_osc633_sep_byte
+#define dansi_shell_osc633_property_sep __str__dansi_shell_osc633_property_sep
+#define dansi_shell_osc633_property_sep_byte __uint__dansi_shell_osc633_property_sep_byte
+#define dansi_shell_osc633_escape __str__dansi_shell_osc633_escape
+#define dansi_shell_osc633_escape_byte __uint__dansi_shell_osc633_escape_byte
+#define dansi_shell_osc633_command_end __str__dansi_shell_osc633_command_end
+#define dansi_shell_osc633_command_end_byte __uint__dansi_shell_osc633_command_end_byte
+#define dansi_shell_osc633_command_line __str__dansi_shell_osc633_command_line
+#define dansi_shell_osc633_command_line_byte __uint__dansi_shell_osc633_command_line_byte
+#define dansi_shell_osc633_property_op __str__dansi_shell_osc633_property_op
+#define dansi_shell_osc633_property_op_byte __uint__dansi_shell_osc633_property_op_byte
+#define dansi_shell_osc633_escape_hex_prefix __str__dansi_shell_osc633_escape_hex_prefix
+#define dansi_shell_osc633_escape_hex_digits __str__dansi_shell_osc633_escape_hex_digits
+#define dansi_shell_osc633_escape_hex_high_shift __uint__dansi_shell_osc633_escape_hex_high_shift
+#define dansi_shell_osc633_escape_hex_nibble_mask __uint__dansi_shell_osc633_escape_hex_nibble_mask
+#define dansi_shell_osc633_exit_code_radix __uint__dansi_shell_osc633_exit_code_radix
+#define dansi_shell_osc633_payload_mark_index __uint__dansi_shell_osc633_payload_mark_index
+#define dansi_shell_osc633_payload_sep_index __uint__dansi_shell_osc633_payload_sep_index
+#define dansi_shell_osc633_payload_arg_start __uint__dansi_shell_osc633_payload_arg_start
+
 typedef enum_((dansi_shell_osc633_Mark $fits($packed))(
     dansi_shell_osc633_Mark_prompt_start = 'A',
     dansi_shell_osc633_Mark_prompt_end = 'B',
@@ -87,6 +110,31 @@ $attr($must_check)
 $extern fn_((dansi_shell_osc633_propertyRawWrite(S_const$u8 property, io_Writer out))(E$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc633_parse(dansi_osc_Frame frame))(dansi_shell_osc633_E$dansi_shell_osc633_Frame));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __str__dansi_shell_osc633_cmd "633"
+#define __uint__dansi_shell_osc633_cmd_u16 633
+#define __str__dansi_shell_osc633_sep ";"
+#define __uint__dansi_shell_osc633_sep_byte u8_c(';')
+#define __str__dansi_shell_osc633_property_sep "="
+#define __uint__dansi_shell_osc633_property_sep_byte u8_c('=')
+#define __str__dansi_shell_osc633_escape "\\"
+#define __uint__dansi_shell_osc633_escape_byte u8_c('\\')
+#define __str__dansi_shell_osc633_command_end "D"
+#define __uint__dansi_shell_osc633_command_end_byte u8_c('D')
+#define __str__dansi_shell_osc633_command_line "E"
+#define __uint__dansi_shell_osc633_command_line_byte u8_c('E')
+#define __str__dansi_shell_osc633_property_op "P"
+#define __uint__dansi_shell_osc633_property_op_byte u8_c('P')
+#define __str__dansi_shell_osc633_escape_hex_prefix "\\x"
+#define __str__dansi_shell_osc633_escape_hex_digits "0123456789ABCDEF"
+#define __uint__dansi_shell_osc633_escape_hex_high_shift 4
+#define __uint__dansi_shell_osc633_escape_hex_nibble_mask 0x0f
+#define __uint__dansi_shell_osc633_exit_code_radix 10
+#define __uint__dansi_shell_osc633_payload_mark_index 0
+#define __uint__dansi_shell_osc633_payload_sep_index 1
+#define __uint__dansi_shell_osc633_payload_arg_start 2
 
 #if defined(__cplusplus)
 } /* extern "C" */

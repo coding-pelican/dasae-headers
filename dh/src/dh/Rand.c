@@ -53,7 +53,7 @@ fn_((Rand_nextUInt(Rand* self))(u64)) {
 };
 
 fn_((Rand_next$usize(Rand* self))(usize)) {
-    return as$(usize)(Rand_nextUInt(self) >> (64u - sizeof(usize) * 8u));
+    return as$(usize)(Rand_nextUInt(self) >> (64u - sizeOf$(usize) * 8u));
 };
 
 fn_((Rand_next$u64(Rand* self))(u64)) {
@@ -61,7 +61,7 @@ fn_((Rand_next$u64(Rand* self))(u64)) {
 };
 
 fn_((Rand_next$ulong(Rand* self))(ulong)) {
-    return as$(ulong)(Rand_nextUInt(self) >> (64u - sizeof(ulong) * 8u));
+    return as$(ulong)(Rand_nextUInt(self) >> (64u - sizeOf$(ulong) * 8u));
 };
 
 fn_((Rand_next$u32(Rand* self))(u32)) {

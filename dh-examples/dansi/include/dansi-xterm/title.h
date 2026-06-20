@@ -24,6 +24,29 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_title_cmd_both __str__dansi_xterm_title_cmd_both
+#define dansi_xterm_title_cmd_both_u16 __uint__dansi_xterm_title_cmd_both_u16
+#define dansi_xterm_title_cmd_icon __str__dansi_xterm_title_cmd_icon
+#define dansi_xterm_title_cmd_icon_u16 __uint__dansi_xterm_title_cmd_icon_u16
+#define dansi_xterm_title_cmd_window __str__dansi_xterm_title_cmd_window
+#define dansi_xterm_title_cmd_window_u16 __uint__dansi_xterm_title_cmd_window_u16
+#define dansi_xterm_title_stack_push_op __str__dansi_xterm_title_stack_push_op
+#define dansi_xterm_title_stack_push_op_u16 __uint__dansi_xterm_title_stack_push_op_u16
+#define dansi_xterm_title_stack_pop_op __str__dansi_xterm_title_stack_pop_op
+#define dansi_xterm_title_stack_pop_op_u16 __uint__dansi_xterm_title_stack_pop_op_u16
+#define dansi_xterm_title_request_icon_label_op __str__dansi_xterm_title_request_icon_label_op
+#define dansi_xterm_title_request_icon_label_op_u16 __uint__dansi_xterm_title_request_icon_label_op_u16
+#define dansi_xterm_title_request_window_title_op __str__dansi_xterm_title_request_window_title_op
+#define dansi_xterm_title_request_window_title_op_u16 __uint__dansi_xterm_title_request_window_title_op_u16
+#define dansi_xterm_title_report_final __str__dansi_xterm_title_report_final
+#define dansi_xterm_title_report_final_byte __uint__dansi_xterm_title_report_final_byte
+#define dansi_xterm_title_icon_label_marker __str__dansi_xterm_title_icon_label_marker
+#define dansi_xterm_title_icon_label_marker_byte __uint__dansi_xterm_title_icon_label_marker_byte
+#define dansi_xterm_title_window_title_marker __str__dansi_xterm_title_window_title_marker
+#define dansi_xterm_title_window_title_marker_byte __uint__dansi_xterm_title_window_title_marker_byte
+#define dansi_xterm_title_payload_marker_index __uint__dansi_xterm_title_payload_marker_index
+#define dansi_xterm_title_payload_text_start __uint__dansi_xterm_title_payload_text_start
+
 typedef enum_((dansi_xterm_title_Target $fits($packed))(
     dansi_xterm_title_Target_icon = 1,
     dansi_xterm_title_Target_window = 2,
@@ -114,20 +137,42 @@ $extern fn_((dansi_xterm_title_fetchWindowTitle(
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_title_cmd_both "0"
+#define __uint__dansi_xterm_title_cmd_both_u16 0
+#define __str__dansi_xterm_title_cmd_icon "1"
+#define __uint__dansi_xterm_title_cmd_icon_u16 1
+#define __str__dansi_xterm_title_cmd_window "2"
+#define __uint__dansi_xterm_title_cmd_window_u16 2
+#define __str__dansi_xterm_title_stack_push_op "22"
+#define __uint__dansi_xterm_title_stack_push_op_u16 22
+#define __str__dansi_xterm_title_stack_pop_op "23"
+#define __uint__dansi_xterm_title_stack_pop_op_u16 23
+#define __str__dansi_xterm_title_request_icon_label_op "20"
+#define __uint__dansi_xterm_title_request_icon_label_op_u16 20
+#define __str__dansi_xterm_title_request_window_title_op "21"
+#define __uint__dansi_xterm_title_request_window_title_op_u16 21
+#define __str__dansi_xterm_title_report_final "t"
+#define __uint__dansi_xterm_title_report_final_byte u8_c('t')
+#define __str__dansi_xterm_title_icon_label_marker "L"
+#define __uint__dansi_xterm_title_icon_label_marker_byte u8_c('L')
+#define __str__dansi_xterm_title_window_title_marker "l"
+#define __uint__dansi_xterm_title_window_title_marker_byte u8_c('l')
+#define __uint__dansi_xterm_title_payload_marker_index 0
+#define __uint__dansi_xterm_title_payload_text_start 1
 #define ____dansi_xterm_title_setIcon_static(_title_tok) \
-    dansi_osc_make_static("1", _title_tok)
+    dansi_osc_make_static(dansi_xterm_title_cmd_icon, _title_tok)
 #define ____dansi_xterm_title_setWindow_static(_title_tok) \
-    dansi_osc_make_static("2", _title_tok)
+    dansi_osc_make_static(dansi_xterm_title_cmd_window, _title_tok)
 #define ____dansi_xterm_title_setBoth_static(_title_tok) \
-    dansi_osc_make_static("0", _title_tok)
+    dansi_osc_make_static(dansi_xterm_title_cmd_both, _title_tok)
 #define ____dansi_xterm_title_push_static(_target_tok) \
-    dansi_csi_make2_static("22", dansi_xterm_title_Target_staticParse(_target_tok), "t")
+    dansi_csi_make2_static(dansi_xterm_title_stack_push_op, dansi_xterm_title_Target_staticParse(_target_tok), dansi_xterm_title_report_final)
 #define ____dansi_xterm_title_pop_static(_target_tok) \
-    dansi_csi_make2_static("23", dansi_xterm_title_Target_staticParse(_target_tok), "t")
+    dansi_csi_make2_static(dansi_xterm_title_stack_pop_op, dansi_xterm_title_Target_staticParse(_target_tok), dansi_xterm_title_report_final)
 #define ____dansi_xterm_title_requestIconLabel_static() \
-    dansi_csi_make1_static("20", "t")
+    dansi_csi_make1_static(dansi_xterm_title_request_icon_label_op, dansi_xterm_title_report_final)
 #define ____dansi_xterm_title_requestWindowTitle_static() \
-    dansi_csi_make1_static("21", "t")
+    dansi_csi_make1_static(dansi_xterm_title_request_window_title_op, dansi_xterm_title_report_final)
 #define ____dansi_xterm_title_Target_staticParse(_target_tok) \
     pp_join($, ____dansi_xterm_title_Target_str, _target_tok)
 #define ____dansi_xterm_title_Target_str$dansi_xterm_title_Target_icon "1"

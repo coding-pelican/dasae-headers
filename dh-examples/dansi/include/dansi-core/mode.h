@@ -23,6 +23,11 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_mode_enable_final __str__dansi_mode_enable_final
+#define dansi_mode_enable_final_byte __uint__dansi_mode_enable_final_byte
+#define dansi_mode_disable_final __str__dansi_mode_disable_final
+#define dansi_mode_disable_final_byte __uint__dansi_mode_disable_final_byte
+
 typedef enum_((dansi_mode_Code $fits($packed))(
     dansi_mode_Code_insert = 4,
     dansi_mode_Code_line_feed_new_line = 20
@@ -87,10 +92,14 @@ $extern fn_((dansi_mode_disableWrite(dansi_mode_Code mode, io_Writer out))(E$voi
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_mode_enable_final "h"
+#define __uint__dansi_mode_enable_final_byte u8_c('h')
+#define __str__dansi_mode_disable_final "l"
+#define __uint__dansi_mode_disable_final_byte u8_c('l')
 #define ____dansi_mode_enableRaw_static(_mode_tok) \
-    dansi_csi_make1_static(_mode_tok, "h")
+    dansi_csi_make1_static(_mode_tok, dansi_mode_enable_final)
 #define ____dansi_mode_disableRaw_static(_mode_tok) \
-    dansi_csi_make1_static(_mode_tok, "l")
+    dansi_csi_make1_static(_mode_tok, dansi_mode_disable_final)
 #define ____dansi_mode_setRaw_static(_mode_tok, _pp_enabled) \
     pp_if_(_pp_enabled)( \
         pp_then_(dansi_mode_enableRaw_static(_mode_tok)), \

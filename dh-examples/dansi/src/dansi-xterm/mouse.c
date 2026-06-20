@@ -3,23 +3,23 @@
 
 $static fn_((dansi_xterm_mouse__btnFromBase(u16 base))(O$dansi_xterm_mouse_Btn) $scope) {
     switch (base) {
-    case_((0)) return_some(dansi_xterm_mouse_Btn_left) $end(case);
-    case_((1)) return_some(dansi_xterm_mouse_Btn_middle) $end(case);
-    case_((2)) return_some(dansi_xterm_mouse_Btn_right) $end(case);
-    case_((8)) return_some(dansi_xterm_mouse_Btn_backward) $end(case);
-    case_((9)) return_some(dansi_xterm_mouse_Btn_forward) $end(case);
-    case_((10)) return_some(dansi_xterm_mouse_Btn_aux1) $end(case);
-    case_((11)) return_some(dansi_xterm_mouse_Btn_aux2) $end(case);
+    case_((dansi_xterm_mouse_cb_btn_left)) return_some(dansi_xterm_mouse_Btn_left) $end(case);
+    case_((dansi_xterm_mouse_cb_btn_middle)) return_some(dansi_xterm_mouse_Btn_middle) $end(case);
+    case_((dansi_xterm_mouse_cb_btn_right)) return_some(dansi_xterm_mouse_Btn_right) $end(case);
+    case_((dansi_xterm_mouse_cb_btn_backward)) return_some(dansi_xterm_mouse_Btn_backward) $end(case);
+    case_((dansi_xterm_mouse_cb_btn_forward)) return_some(dansi_xterm_mouse_Btn_forward) $end(case);
+    case_((dansi_xterm_mouse_cb_btn_aux1)) return_some(dansi_xterm_mouse_Btn_aux1) $end(case);
+    case_((dansi_xterm_mouse_cb_btn_aux2)) return_some(dansi_xterm_mouse_Btn_aux2) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);
 
 $static fn_((dansi_xterm_mouse__wheelFromBase(u16 base))(O$dansi_xterm_mouse_Wheel) $scope) {
     switch (base) {
-    case_((64)) return_some(dansi_xterm_mouse_Wheel_up) $end(case);
-    case_((65)) return_some(dansi_xterm_mouse_Wheel_down) $end(case);
-    case_((66)) return_some(dansi_xterm_mouse_Wheel_left) $end(case);
-    case_((67)) return_some(dansi_xterm_mouse_Wheel_right) $end(case);
+    case_((dansi_xterm_mouse_cb_wheel_up)) return_some(dansi_xterm_mouse_Wheel_up) $end(case);
+    case_((dansi_xterm_mouse_cb_wheel_down)) return_some(dansi_xterm_mouse_Wheel_down) $end(case);
+    case_((dansi_xterm_mouse_cb_wheel_left)) return_some(dansi_xterm_mouse_Wheel_left) $end(case);
+    case_((dansi_xterm_mouse_cb_wheel_right)) return_some(dansi_xterm_mouse_Wheel_right) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);
@@ -130,11 +130,12 @@ fn_((dansi_xterm_mouse_disableSGRWrite(dansi_xterm_mouse_ReportMode mode, io_Wri
 
 fn_((dansi_xterm_mouse_parseSGRReport(S_const$u8 report))(O$dansi_xterm_mouse_SGRReport) $scope) {
     let frame = catch_((dansi_csi_parse(report))($ignore, return_none()));
-    if (!dansi_csi_Frame_isPrivate(frame, u8_c('<'))) return_none();
-    if (frame.final != u8_c('M') && frame.final != u8_c('m')) return_none();
-    let cb = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 0))(return_none()));
-    let x = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 1))(return_none()));
-    let y = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 2))(return_none()));
+    if (!dansi_csi_Frame_isPrivate(frame, dansi_xterm_mouse_sgr_marker_byte)) return_none();
+    if (frame.final != dansi_xterm_mouse_sgr_press_final_byte
+        && frame.final != dansi_xterm_mouse_sgr_release_final_byte) return_none();
+    let cb = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_mouse_sgr_param_cb))(return_none()));
+    let x = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_mouse_sgr_param_x))(return_none()));
+    let y = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_mouse_sgr_param_y))(return_none()));
     return_some({ .cb = cb, .x = x, .y = y, .final = frame.final });
 } $unscoped(fn);
 
@@ -143,10 +144,14 @@ fn_((dansi_xterm_mouse_interpretSGR(
 ))(dansi_xterm_mouse_E$dansi_xterm_mouse_Event) $scope) {
     let mods = dansi_xterm_mouse_modsFromCb(report.cb);
     let pos = (dansi_xterm_mouse_Pos){ .x = report.x, .y = report.y };
-    let_(base, u16) = report.cb & ~(u16)(4 | 8 | 16 | 32);
-    let is_motion = (report.cb & 32) != 0;
+    let_(mask, u16) = dansi_xterm_mouse_cb_shift
+                    | dansi_xterm_mouse_cb_alt
+                    | dansi_xterm_mouse_cb_ctrl
+                    | dansi_xterm_mouse_cb_motion;
+    let_(base, u16) = report.cb & ~mask;
+    let is_motion = (report.cb & dansi_xterm_mouse_cb_motion) != 0;
 
-    if (report.final == u8_c('m')) {
+    if (report.final == dansi_xterm_mouse_sgr_release_final_byte) {
         return_ok(union_of((dansi_xterm_mouse_Event_release){
             .pos = pos,
             .mods = mods,

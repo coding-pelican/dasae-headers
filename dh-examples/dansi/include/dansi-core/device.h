@@ -23,6 +23,14 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_device_status_request_param __str__dansi_device_status_request_param
+#define dansi_device_status_request_param_u16 __uint__dansi_device_status_request_param_u16
+#define dansi_device_status_report_final __str__dansi_device_status_report_final
+#define dansi_device_status_report_final_byte __uint__dansi_device_status_report_final_byte
+#define dansi_device_attrs_report_final __str__dansi_device_attrs_report_final
+#define dansi_device_attrs_report_final_byte __uint__dansi_device_attrs_report_final_byte
+#define dansi_device_status_report_param_status __uint__dansi_device_status_report_param_status
+
 /* ECMA-48 DA/DSR device status and attributes. */
 
 typedef enum_((dansi_device_Status $fits($packed))(
@@ -70,10 +78,17 @@ $extern fn_((dansi_device_fetchAttrs(
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_device_status_request_param "5"
+#define __uint__dansi_device_status_request_param_u16 5
+#define __str__dansi_device_status_report_final "n"
+#define __uint__dansi_device_status_report_final_byte u8_c('n')
+#define __str__dansi_device_attrs_report_final "c"
+#define __uint__dansi_device_attrs_report_final_byte u8_c('c')
+#define __uint__dansi_device_status_report_param_status 0
 #define ____dansi_device_requestStatus_static() \
-    dansi_csi_make1_static("5", "n")
+    dansi_csi_make1_static(dansi_device_status_request_param, dansi_device_status_report_final)
 #define ____dansi_device_requestAttrs_static() \
-    dansi_csi_make0_static("c")
+    dansi_csi_make0_static(dansi_device_attrs_report_final)
 
 #if defined(__cplusplus)
 } /* extern "C" */

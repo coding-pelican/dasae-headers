@@ -5,15 +5,15 @@ $static fn_((dansi_xterm_screen__parsePixelSize(S_const$u8 report, u16 response_
     let frame = catch_((dansi_csi_parse(report))(
         $ignore, return_err(E_cause$dansi_xterm_screen_InvalidResponse())
     ));
-    if (frame.final != u8_c('t')) return_err(E_cause$dansi_xterm_screen_InvalidResponse());
-    let code = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 0))(
+    if (frame.final != dansi_xterm_screen_report_final_byte) return_err(E_cause$dansi_xterm_screen_InvalidResponse());
+    let code = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_screen_report_param_code))(
         return_err(E_cause$dansi_xterm_screen_InvalidResponse())
     ));
     if (code != response_code) return_err(E_cause$dansi_xterm_screen_InvalidResponse());
-    let height = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 1))(
+    let height = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_screen_report_param_height))(
         return_err(E_cause$dansi_xterm_screen_InvalidResponse())
     ));
-    let width = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 2))(
+    let width = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_screen_report_param_width))(
         return_err(E_cause$dansi_xterm_screen_InvalidResponse())
     ));
     return_ok({ .width = width, .height = height });
@@ -23,15 +23,15 @@ $static fn_((dansi_xterm_screen__parseCellCount(S_const$u8 report, u16 response_
     let frame = catch_((dansi_csi_parse(report))(
         $ignore, return_err(E_cause$dansi_xterm_screen_InvalidResponse())
     ));
-    if (frame.final != u8_c('t')) return_err(E_cause$dansi_xterm_screen_InvalidResponse());
-    let code = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 0))(
+    if (frame.final != dansi_xterm_screen_report_final_byte) return_err(E_cause$dansi_xterm_screen_InvalidResponse());
+    let code = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_screen_report_param_code))(
         return_err(E_cause$dansi_xterm_screen_InvalidResponse())
     ));
     if (code != response_code) return_err(E_cause$dansi_xterm_screen_InvalidResponse());
-    let rows = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 1))(
+    let rows = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_screen_report_param_height))(
         return_err(E_cause$dansi_xterm_screen_InvalidResponse())
     ));
-    let cols = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 2))(
+    let cols = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_xterm_screen_report_param_width))(
         return_err(E_cause$dansi_xterm_screen_InvalidResponse())
     ));
     return_ok({ .cols = cols, .rows = rows });
@@ -82,7 +82,7 @@ fn_((dansi_xterm_screen_receiveCellPixelsReport(io_Reader in, S$u8 buf))(E$S$u8)
 };
 
 fn_((dansi_xterm_screen_parseCellPixelsReport(S_const$u8 report))(dansi_xterm_screen_E$dansi_xterm_screen_PixelSize)) {
-    return dansi_xterm_screen__parsePixelSize(report, 6);
+    return dansi_xterm_screen__parsePixelSize(report, dansi_xterm_screen_response_cell_pixels);
 };
 
 fn_((dansi_xterm_screen_fetchCellPixels(
@@ -106,7 +106,7 @@ fn_((dansi_xterm_screen_receiveTextAreaCellsReport(io_Reader in, S$u8 buf))(E$S$
 };
 
 fn_((dansi_xterm_screen_parseTextAreaCellsReport(S_const$u8 report))(dansi_xterm_screen_E$dansi_xterm_screen_CellCount)) {
-    return dansi_xterm_screen__parseCellCount(report, 8);
+    return dansi_xterm_screen__parseCellCount(report, dansi_xterm_screen_response_text_area_cells);
 };
 
 fn_((dansi_xterm_screen_fetchTextAreaCells(
@@ -130,7 +130,7 @@ fn_((dansi_xterm_screen_receiveScreenCellsReport(io_Reader in, S$u8 buf))(E$S$u8
 };
 
 fn_((dansi_xterm_screen_parseScreenCellsReport(S_const$u8 report))(dansi_xterm_screen_E$dansi_xterm_screen_CellCount)) {
-    return dansi_xterm_screen__parseCellCount(report, 9);
+    return dansi_xterm_screen__parseCellCount(report, dansi_xterm_screen_response_screen_cells);
 };
 
 fn_((dansi_xterm_screen_fetchScreenCells(
@@ -154,7 +154,7 @@ fn_((dansi_xterm_screen_receiveTextAreaPixelsReport(io_Reader in, S$u8 buf))(E$S
 };
 
 fn_((dansi_xterm_screen_parseTextAreaPixelsReport(S_const$u8 report))(dansi_xterm_screen_E$dansi_xterm_screen_PixelSize)) {
-    return dansi_xterm_screen__parsePixelSize(report, 4);
+    return dansi_xterm_screen__parsePixelSize(report, dansi_xterm_screen_response_text_area_pixels);
 };
 
 fn_((dansi_xterm_screen_fetchTextAreaPixels(
@@ -178,7 +178,7 @@ fn_((dansi_xterm_screen_receiveScreenPixelsReport(io_Reader in, S$u8 buf))(E$S$u
 };
 
 fn_((dansi_xterm_screen_parseScreenPixelsReport(S_const$u8 report))(dansi_xterm_screen_E$dansi_xterm_screen_PixelSize)) {
-    return dansi_xterm_screen__parsePixelSize(report, 5);
+    return dansi_xterm_screen__parsePixelSize(report, dansi_xterm_screen_response_screen_pixels);
 };
 
 fn_((dansi_xterm_screen_fetchScreenPixels(

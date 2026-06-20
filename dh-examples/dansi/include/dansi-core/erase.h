@@ -23,6 +23,13 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_erase_in_display_final __str__dansi_erase_in_display_final
+#define dansi_erase_in_display_final_byte __uint__dansi_erase_in_display_final_byte
+#define dansi_erase_in_line_final __str__dansi_erase_in_line_final
+#define dansi_erase_in_line_final_byte __uint__dansi_erase_in_line_final_byte
+#define dansi_erase_chars_final __str__dansi_erase_chars_final
+#define dansi_erase_chars_final_byte __uint__dansi_erase_chars_final_byte
+
 typedef enum_((dansi_erase_Area $fits($packed))(
     dansi_erase_Area_to_end = 0,
     dansi_erase_Area_to_start = 1,
@@ -60,12 +67,18 @@ $extern fn_((dansi_erase_charsWrite(u16 count, io_Writer out))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_erase_in_display_final "J"
+#define __uint__dansi_erase_in_display_final_byte u8_c('J')
+#define __str__dansi_erase_in_line_final "K"
+#define __uint__dansi_erase_in_line_final_byte u8_c('K')
+#define __str__dansi_erase_chars_final "X"
+#define __uint__dansi_erase_chars_final_byte u8_c('X')
 #define ____dansi_erase_inDisplay_static(_area_tok) \
-    dansi_csi_make1_static(dansi_erase_Area_staticParse(_area_tok), "J")
+    dansi_csi_make1_static(dansi_erase_Area_staticParse(_area_tok), dansi_erase_in_display_final)
 #define ____dansi_erase_inLine_static(_area_tok) \
-    dansi_csi_make1_static(dansi_erase_Area_staticParse(_area_tok), "K")
+    dansi_csi_make1_static(dansi_erase_Area_staticParse(_area_tok), dansi_erase_in_line_final)
 #define ____dansi_erase_chars_static(_count_tok) \
-    dansi_csi_make1_static(_count_tok, "X")
+    dansi_csi_make1_static(_count_tok, dansi_erase_chars_final)
 #define ____dansi_erase_Area_staticParse(_area_tok) \
     pp_join($, ____dansi_erase_Area_str, _area_tok)
 #define ____dansi_erase_Area_str$dansi_erase_Area_to_end "0"

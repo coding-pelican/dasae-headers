@@ -41,5 +41,13 @@ fn_((dansi_dec_cursor_setStyle(dansi_dec_cursor_Style style, dansi_dec_cursor_Se
 };
 
 fn_((dansi_dec_cursor_setStyleWrite(dansi_dec_cursor_Style style, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static("{:uhh}", " ", "q")), as$(u8)(style));
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static(
+            "{:uhh}",
+            dansi_dec_cursor_style_intermediate,
+            dansi_dec_cursor_style_final
+        )),
+        as$(u8)(style)
+    );
 };

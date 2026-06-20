@@ -23,6 +23,12 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_dcs_7bit_prefix __str__dansi_dcs_7bit_prefix
+#define dansi_dcs_7bit_intro __str__dansi_dcs_7bit_intro
+#define dansi_dcs_7bit_intro_byte __uint__dansi_dcs_7bit_intro_byte
+#define dansi_dcs_8bit_intro __str__dansi_dcs_8bit_intro
+#define dansi_dcs_8bit_intro_byte __uint__dansi_dcs_8bit_intro_byte
+
 errset_((dansi_dcs_E)(dansi_dcs_Invalid));
 
 typedef struct dansi_dcs_Frame dansi_dcs_Frame;
@@ -78,10 +84,15 @@ T_impl_E$($set(dansi_dcs_E)(dansi_dcs_Frame));
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_dcs_7bit_prefix dansi_Seq_esc dansi_dcs_7bit_intro
+#define __str__dansi_dcs_7bit_intro "P"
+#define __uint__dansi_dcs_7bit_intro_byte u8_c('P')
+#define __str__dansi_dcs_8bit_intro "\x90"
+#define __uint__dansi_dcs_8bit_intro_byte 0x90
 #define ____dansi_dcs_makeRaw_static(_payload_tok) \
-    "\x1bP" _payload_tok "\x1b\\"
+    dansi_dcs_7bit_prefix _payload_tok dansi_Seq_st_7bit
 #define ____dansi_dcs_make_static(_params_tok, _intermediates_tok, _final_tok, _payload_tok) \
-    "\x1bP" _params_tok _intermediates_tok _final_tok _payload_tok "\x1b\\"
+    dansi_dcs_7bit_prefix _params_tok _intermediates_tok _final_tok _payload_tok dansi_Seq_st_7bit
 
 #if defined(__cplusplus)
 } /* extern "C" */

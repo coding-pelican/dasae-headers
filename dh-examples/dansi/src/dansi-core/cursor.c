@@ -131,10 +131,14 @@ fn_((dansi_cursor_receivePosReport(io_Reader in, S$u8 buf))(E$S$u8)) {
 
 fn_((dansi_cursor_parsePosReport(S_const$u8 report))(dansi_cursor_E$dansi_cursor_Pos) $scope) {
     let frame = catch_((dansi_csi_parse(report))($ignore, return_err(E_cause$dansi_cursor_InvalidResponse())));
-    if (frame.final != u8_c('R')) return_err(E_cause$dansi_cursor_InvalidResponse());
+    if (frame.final != dansi_cursor_pos_report_final_byte) return_err(E_cause$dansi_cursor_InvalidResponse());
 
-    let row = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 0))(return_err(E_cause$dansi_cursor_InvalidResponse())));
-    let col = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 1))(return_err(E_cause$dansi_cursor_InvalidResponse())));
+    let row = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_cursor_pos_report_param_row))(
+        return_err(E_cause$dansi_cursor_InvalidResponse())
+    ));
+    let col = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_cursor_pos_report_param_col))(
+        return_err(E_cause$dansi_cursor_InvalidResponse())
+    ));
     return_ok({ .row = row, .col = col });
 } $unscoped(fn);
 

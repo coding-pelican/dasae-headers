@@ -23,6 +23,23 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_shell_osc133_cmd __str__dansi_shell_osc133_cmd
+#define dansi_shell_osc133_cmd_u16 __uint__dansi_shell_osc133_cmd_u16
+#define dansi_shell_osc133_sep __str__dansi_shell_osc133_sep
+#define dansi_shell_osc133_sep_byte __uint__dansi_shell_osc133_sep_byte
+#define dansi_shell_osc133_mark_prompt_start __str__dansi_shell_osc133_mark_prompt_start
+#define dansi_shell_osc133_mark_prompt_start_byte __uint__dansi_shell_osc133_mark_prompt_start_byte
+#define dansi_shell_osc133_mark_prompt_end __str__dansi_shell_osc133_mark_prompt_end
+#define dansi_shell_osc133_mark_prompt_end_byte __uint__dansi_shell_osc133_mark_prompt_end_byte
+#define dansi_shell_osc133_mark_command_start __str__dansi_shell_osc133_mark_command_start
+#define dansi_shell_osc133_mark_command_start_byte __uint__dansi_shell_osc133_mark_command_start_byte
+#define dansi_shell_osc133_command_end __str__dansi_shell_osc133_command_end
+#define dansi_shell_osc133_command_end_byte __uint__dansi_shell_osc133_command_end_byte
+#define dansi_shell_osc133_exit_code_radix __uint__dansi_shell_osc133_exit_code_radix
+#define dansi_shell_osc133_payload_mark_index __uint__dansi_shell_osc133_payload_mark_index
+#define dansi_shell_osc133_payload_sep_index __uint__dansi_shell_osc133_payload_sep_index
+#define dansi_shell_osc133_payload_arg_start __uint__dansi_shell_osc133_payload_arg_start
+
 typedef enum_((dansi_shell_osc133_Mark $fits($packed))(
     dansi_shell_osc133_Mark_prompt_start = 'A',
     dansi_shell_osc133_Mark_prompt_end = 'B',
@@ -59,6 +76,25 @@ $attr($must_check)
 $extern fn_((dansi_shell_osc133_commandEndWrite(O$i32 exit_code, io_Writer out))(E$void));
 $attr($must_check)
 $extern fn_((dansi_shell_osc133_parse(dansi_osc_Frame frame))(dansi_shell_osc133_E$dansi_shell_osc133_Frame));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __str__dansi_shell_osc133_cmd "133"
+#define __uint__dansi_shell_osc133_cmd_u16 133
+#define __str__dansi_shell_osc133_sep ";"
+#define __uint__dansi_shell_osc133_sep_byte u8_c(';')
+#define __str__dansi_shell_osc133_mark_prompt_start "A"
+#define __uint__dansi_shell_osc133_mark_prompt_start_byte u8_c('A')
+#define __str__dansi_shell_osc133_mark_prompt_end "B"
+#define __uint__dansi_shell_osc133_mark_prompt_end_byte u8_c('B')
+#define __str__dansi_shell_osc133_mark_command_start "C"
+#define __uint__dansi_shell_osc133_mark_command_start_byte u8_c('C')
+#define __str__dansi_shell_osc133_command_end "D"
+#define __uint__dansi_shell_osc133_command_end_byte u8_c('D')
+#define __uint__dansi_shell_osc133_exit_code_radix 10
+#define __uint__dansi_shell_osc133_payload_mark_index 0
+#define __uint__dansi_shell_osc133_payload_sep_index 1
+#define __uint__dansi_shell_osc133_payload_arg_start 2
 
 #if defined(__cplusplus)
 } /* extern "C" */

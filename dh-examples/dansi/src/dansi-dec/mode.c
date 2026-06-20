@@ -21,7 +21,9 @@ fn_((dansi_dec_mode_enable(dansi_dec_mode_Code mode, dansi_dec_mode_EnableBuf* b
 };
 
 fn_((dansi_dec_mode_enableWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", "h")), as$(u8)(mode));
+    return io_Writer_print(
+        out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", dansi_dec_mode_enable_final)), as$(u8)(mode)
+    );
 };
 
 fn_((dansi_dec_mode_disable(dansi_dec_mode_Code mode, dansi_dec_mode_DisableBuf* buf))(S$u8)) {
@@ -31,7 +33,9 @@ fn_((dansi_dec_mode_disable(dansi_dec_mode_Code mode, dansi_dec_mode_DisableBuf*
 };
 
 fn_((dansi_dec_mode_disableWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", "l")), as$(u8)(mode));
+    return io_Writer_print(
+        out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", dansi_dec_mode_disable_final)), as$(u8)(mode)
+    );
 };
 
 fn_((dansi_dec_mode_save(dansi_dec_mode_Code mode, dansi_dec_mode_SaveBuf* buf))(S$u8)) {
@@ -41,7 +45,9 @@ fn_((dansi_dec_mode_save(dansi_dec_mode_Code mode, dansi_dec_mode_SaveBuf* buf))
 };
 
 fn_((dansi_dec_mode_saveWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", "s")), as$(u8)(mode));
+    return io_Writer_print(
+        out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", dansi_dec_mode_save_final)), as$(u8)(mode)
+    );
 };
 
 fn_((dansi_dec_mode_restore(dansi_dec_mode_Code mode, dansi_dec_mode_RestoreBuf* buf))(S$u8)) {
@@ -51,7 +57,9 @@ fn_((dansi_dec_mode_restore(dansi_dec_mode_Code mode, dansi_dec_mode_RestoreBuf*
 };
 
 fn_((dansi_dec_mode_restoreWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", "r")), as$(u8)(mode));
+    return io_Writer_print(
+        out, u8_l(dansi_csi_makePrivate1_static("{:uhh}", dansi_dec_mode_restore_final)), as$(u8)(mode)
+    );
 };
 
 fn_((dansi_dec_mode_request(dansi_dec_mode_Code mode, dansi_dec_mode_RequestBuf* buf))(S$u8)) {
@@ -61,7 +69,15 @@ fn_((dansi_dec_mode_request(dansi_dec_mode_Code mode, dansi_dec_mode_RequestBuf*
 };
 
 fn_((dansi_dec_mode_requestWrite(dansi_dec_mode_Code mode, io_Writer out))(E$void)) {
-    return io_Writer_print(out, u8_l(dansi_csi_make_static("?{:uhh}", "$", "p")), as$(u8)(mode));
+    return io_Writer_print(
+        out,
+        u8_l(dansi_csi_make_static(
+            dansi_dec_mode_private_marker "{:uhh}",
+            dansi_dec_mode_request_intermediate,
+            dansi_dec_mode_request_final
+        )),
+        as$(u8)(mode)
+    );
 };
 
 fn_((dansi_dec_mode_receiveReport(io_Reader in, S$u8 buf))(E$S$u8)) {
@@ -70,15 +86,21 @@ fn_((dansi_dec_mode_receiveReport(io_Reader in, S$u8 buf))(E$S$u8)) {
 
 fn_((dansi_dec_mode_parseReport(S_const$u8 report))(dansi_dec_mode_E$dansi_dec_mode_Report) $scope) {
     let frame = catch_((dansi_csi_parse(report))($ignore, return_err(E_cause$dansi_dec_mode_InvalidResponse())));
-    if (frame.final != u8_c('y') || !dansi_csi_Frame_isPrivate(frame, u8_c('?'))) {
+    if (frame.final != dansi_dec_mode_report_final_byte
+        || !dansi_csi_Frame_isPrivate(frame, dansi_dec_mode_private_marker_byte)) {
         return_err(E_cause$dansi_dec_mode_InvalidResponse());
     }
-    if (frame.intermediates.len != 1 || *S_at((frame.intermediates)[0]) != u8_c('$')) {
+    if (frame.intermediates.len != 1
+        || *S_at((frame.intermediates)[0]) != dansi_dec_mode_request_intermediate_byte) {
         return_err(E_cause$dansi_dec_mode_InvalidResponse());
     }
 
-    let mode = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 0))(return_err(E_cause$dansi_dec_mode_InvalidResponse())));
-    let status_raw = orelse_((dansi_csi_Frame_paramAtAsU16(frame, 1))(return_err(E_cause$dansi_dec_mode_InvalidResponse())));
+    let mode = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_dec_mode_report_param_mode))(
+        return_err(E_cause$dansi_dec_mode_InvalidResponse())
+    ));
+    let status_raw = orelse_((dansi_csi_Frame_paramAtAsU16(frame, dansi_dec_mode_report_param_status))(
+        return_err(E_cause$dansi_dec_mode_InvalidResponse())
+    ));
     if (status_raw > as$(u16)(dansi_dec_mode_Status_permanently_reset)) {
         return_err(E_cause$dansi_dec_mode_InvalidResponse());
     }

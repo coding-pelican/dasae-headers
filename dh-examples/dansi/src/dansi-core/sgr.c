@@ -11,11 +11,11 @@ fn_((dansi_sgr_resetWrite(io_Writer out))(E$void)) {
 };
 
 fn_((dansi_sgr_setRaw(S_const$u8 params, S$u8 buf))(E$S$u8) $scope) {
-    return dansi_csi_make(params, u8_l(""), u8_c('m'), buf);
+    return dansi_csi_make(params, u8_l(""), dansi_sgr_final_byte, buf);
 } $unscoped(fn);
 
 fn_((dansi_sgr_setRawWrite(S_const$u8 params, io_Writer out))(E$void)) {
-    return dansi_csi_write(params, u8_l(""), u8_c('m'), out);
+    return dansi_csi_write(params, u8_l(""), dansi_sgr_final_byte, out);
 };
 
 fn_((dansi_sgr_setOne(dansi_sgr_Code code, dansi_sgr_SetOneBuf* buf))(S$u8)) {
@@ -35,10 +35,10 @@ fn_((dansi_sgr_set(S_const$u16 codes, S$u8 buf))(E$S$u8) $scope) {
 } $unscoped(fn);
 
 fn_((dansi_sgr_setWrite(S_const$u16 codes, io_Writer out))(E$void) $scope) {
-    try_(io_Writer_writeBytes(out, u8_l("\x1b[")));
+    try_(io_Writer_writeBytes(out, u8_l(dansi_csi_7bit_prefix)));
     for_(($s(codes), $rf(0))(ch, i)) {
-        if (i != 0) try_(io_Writer_writeByte(out, u8_c(';')));
+        if (i != 0) try_(io_Writer_writeByte(out, dansi_csi_param_sep_byte));
         try_(io_Writer_print(out, u8_l("{:uh}"), *ch));
     } $end(for);
-    return io_Writer_writeByte(out, u8_c('m'));
+    return io_Writer_writeByte(out, dansi_sgr_final_byte);
 } $unscoped(fn);

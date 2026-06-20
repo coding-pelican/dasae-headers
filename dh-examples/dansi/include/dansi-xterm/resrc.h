@@ -24,6 +24,28 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define dansi_xterm_resrc_dcs_intermediate __str__dansi_xterm_resrc_dcs_intermediate
+#define dansi_xterm_resrc_dcs_intermediate_byte __uint__dansi_xterm_resrc_dcs_intermediate_byte
+#define dansi_xterm_resrc_request_xres_final __str__dansi_xterm_resrc_request_xres_final
+#define dansi_xterm_resrc_request_xres_final_byte __uint__dansi_xterm_resrc_request_xres_final_byte
+#define dansi_xterm_resrc_response_xres_final __str__dansi_xterm_resrc_response_xres_final
+#define dansi_xterm_resrc_response_xres_final_byte __uint__dansi_xterm_resrc_response_xres_final_byte
+#define dansi_xterm_resrc_set_termcap_final __str__dansi_xterm_resrc_set_termcap_final
+#define dansi_xterm_resrc_set_termcap_final_byte __uint__dansi_xterm_resrc_set_termcap_final_byte
+#define dansi_xterm_resrc_request_termcap_final __str__dansi_xterm_resrc_request_termcap_final
+#define dansi_xterm_resrc_request_termcap_final_byte __uint__dansi_xterm_resrc_request_termcap_final_byte
+#define dansi_xterm_resrc_response_termcap_final __str__dansi_xterm_resrc_response_termcap_final
+#define dansi_xterm_resrc_response_termcap_final_byte __uint__dansi_xterm_resrc_response_termcap_final_byte
+#define dansi_xterm_resrc_response_invalid __str__dansi_xterm_resrc_response_invalid
+#define dansi_xterm_resrc_response_invalid_byte __uint__dansi_xterm_resrc_response_invalid_byte
+#define dansi_xterm_resrc_response_valid __str__dansi_xterm_resrc_response_valid
+#define dansi_xterm_resrc_response_valid_byte __uint__dansi_xterm_resrc_response_valid_byte
+#define dansi_xterm_resrc_allowed_cmd __str__dansi_xterm_resrc_allowed_cmd
+#define dansi_xterm_resrc_allowed_cmd_u16 __uint__dansi_xterm_resrc_allowed_cmd_u16
+#define dansi_xterm_resrc_query __str__dansi_xterm_resrc_query
+#define dansi_xterm_resrc_query_byte __uint__dansi_xterm_resrc_query_byte
+#define dansi_xterm_resrc_response_param_flag __uint__dansi_xterm_resrc_response_param_flag
+
 typedef enum_((dansi_xterm_resrc_Allowed $fits($packed))(
     dansi_xterm_resrc_Allowed_color_ops,
     dansi_xterm_resrc_Allowed_font_ops,
@@ -89,16 +111,37 @@ $extern fn_((dansi_xterm_resrc_queryAllowableRawWrite(S_const$u8 feature, io_Wri
 
 /*========== Macros and Definitions =========================================*/
 
+#define __str__dansi_xterm_resrc_dcs_intermediate "+"
+#define __uint__dansi_xterm_resrc_dcs_intermediate_byte u8_c('+')
+#define __str__dansi_xterm_resrc_request_xres_final "Q"
+#define __uint__dansi_xterm_resrc_request_xres_final_byte u8_c('Q')
+#define __str__dansi_xterm_resrc_response_xres_final "R"
+#define __uint__dansi_xterm_resrc_response_xres_final_byte u8_c('R')
+#define __str__dansi_xterm_resrc_set_termcap_final "p"
+#define __uint__dansi_xterm_resrc_set_termcap_final_byte u8_c('p')
+#define __str__dansi_xterm_resrc_request_termcap_final "q"
+#define __uint__dansi_xterm_resrc_request_termcap_final_byte u8_c('q')
+#define __str__dansi_xterm_resrc_response_termcap_final "r"
+#define __uint__dansi_xterm_resrc_response_termcap_final_byte u8_c('r')
+#define __str__dansi_xterm_resrc_response_invalid "0"
+#define __uint__dansi_xterm_resrc_response_invalid_byte u8_c('0')
+#define __str__dansi_xterm_resrc_response_valid "1"
+#define __uint__dansi_xterm_resrc_response_valid_byte u8_c('1')
+#define __str__dansi_xterm_resrc_allowed_cmd "60"
+#define __uint__dansi_xterm_resrc_allowed_cmd_u16 60
+#define __str__dansi_xterm_resrc_query "?"
+#define __uint__dansi_xterm_resrc_query_byte u8_c('?')
+#define __uint__dansi_xterm_resrc_response_param_flag 0
 #define ____dansi_xterm_resrc_requestXResRaw_static(_names_hex_tok) \
-    dansi_dcs_make_static("", "+", "Q", _names_hex_tok)
+    dansi_dcs_make_static("", dansi_xterm_resrc_dcs_intermediate, dansi_xterm_resrc_request_xres_final, _names_hex_tok)
 #define ____dansi_xterm_resrc_setTermcapRaw_static(_name_hex_tok) \
-    dansi_dcs_make_static("", "+", "p", _name_hex_tok)
+    dansi_dcs_make_static("", dansi_xterm_resrc_dcs_intermediate, dansi_xterm_resrc_set_termcap_final, _name_hex_tok)
 #define ____dansi_xterm_resrc_requestTermcapRaw_static(_names_hex_tok) \
-    dansi_dcs_make_static("", "+", "q", _names_hex_tok)
+    dansi_dcs_make_static("", dansi_xterm_resrc_dcs_intermediate, dansi_xterm_resrc_request_termcap_final, _names_hex_tok)
 #define ____dansi_xterm_resrc_queryAllowed_static() \
-    dansi_osc_makeRaw_static("60;?")
+    dansi_osc_makeRaw_static(dansi_xterm_resrc_allowed_cmd dansi_osc_cmd_sep dansi_xterm_resrc_query)
 #define ____dansi_xterm_resrc_queryAllowableRaw_static(_feature_tok) \
-    dansi_osc_make_static("60", _feature_tok)
+    dansi_osc_make_static(dansi_xterm_resrc_allowed_cmd, _feature_tok)
 
 #if defined(__cplusplus)
 } /* extern "C" */

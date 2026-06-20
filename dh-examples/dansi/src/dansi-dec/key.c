@@ -11,73 +11,73 @@ $static fn_((dansi_dec_key__keypad(dansi_dec_key_Keypad key))(dansi_dec_key_Even
 
 $static fn_((dansi_dec_key__namedFromCursorFinal(u8 final))(O$dansi_dec_key_Named) $scope) {
     switch (final) {
-    case_((u8_c('A'))) return_some(dansi_dec_key_Named_up) $end(case);
-    case_((u8_c('B'))) return_some(dansi_dec_key_Named_down) $end(case);
-    case_((u8_c('C'))) return_some(dansi_dec_key_Named_right) $end(case);
-    case_((u8_c('D'))) return_some(dansi_dec_key_Named_left) $end(case);
-    case_((u8_c('H'))) return_some(dansi_dec_key_Named_home) $end(case);
-    case_((u8_c('F'))) return_some(dansi_dec_key_Named_end) $end(case);
+    case_((dansi_dec_key_final_up_byte)) return_some(dansi_dec_key_Named_up) $end(case);
+    case_((dansi_dec_key_final_down_byte)) return_some(dansi_dec_key_Named_down) $end(case);
+    case_((dansi_dec_key_final_right_byte)) return_some(dansi_dec_key_Named_right) $end(case);
+    case_((dansi_dec_key_final_left_byte)) return_some(dansi_dec_key_Named_left) $end(case);
+    case_((dansi_dec_key_final_home_byte)) return_some(dansi_dec_key_Named_home) $end(case);
+    case_((dansi_dec_key_final_end_byte)) return_some(dansi_dec_key_Named_end) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);
 
 $static fn_((dansi_dec_key__namedFromPFOrCursorFinal(u8 final))(O$dansi_dec_key_Named) $scope) {
     switch (final) {
-    case_((u8_c('P'))) return_some(dansi_dec_key_Named_pf1) $end(case);
-    case_((u8_c('Q'))) return_some(dansi_dec_key_Named_pf2) $end(case);
-    case_((u8_c('R'))) return_some(dansi_dec_key_Named_pf3) $end(case);
-    case_((u8_c('S'))) return_some(dansi_dec_key_Named_pf4) $end(case);
+    case_((dansi_dec_key_final_pf1_byte)) return_some(dansi_dec_key_Named_pf1) $end(case);
+    case_((dansi_dec_key_final_pf2_byte)) return_some(dansi_dec_key_Named_pf2) $end(case);
+    case_((dansi_dec_key_final_pf3_byte)) return_some(dansi_dec_key_Named_pf3) $end(case);
+    case_((dansi_dec_key_final_pf4_byte)) return_some(dansi_dec_key_Named_pf4) $end(case);
     default_() return dansi_dec_key__namedFromCursorFinal(final) $end(default);
     }
 } $unscoped(fn);
 
 $static fn_((dansi_dec_key__keypadFromFinal(u8 final))(O$dansi_dec_key_Keypad) $scope) {
     switch (final) {
-    case_((u8_c('p'))) return_some(dansi_dec_key_Keypad_0) $end(case);
-    case_((u8_c('q'))) return_some(dansi_dec_key_Keypad_1) $end(case);
-    case_((u8_c('r'))) return_some(dansi_dec_key_Keypad_2) $end(case);
-    case_((u8_c('s'))) return_some(dansi_dec_key_Keypad_3) $end(case);
-    case_((u8_c('t'))) return_some(dansi_dec_key_Keypad_4) $end(case);
-    case_((u8_c('u'))) return_some(dansi_dec_key_Keypad_5) $end(case);
-    case_((u8_c('v'))) return_some(dansi_dec_key_Keypad_6) $end(case);
-    case_((u8_c('w'))) return_some(dansi_dec_key_Keypad_7) $end(case);
-    case_((u8_c('x'))) return_some(dansi_dec_key_Keypad_8) $end(case);
-    case_((u8_c('y'))) return_some(dansi_dec_key_Keypad_9) $end(case);
-    case_((u8_c('n'))) return_some(dansi_dec_key_Keypad_decimal) $end(case);
-    case_((u8_c('m'))) return_some(dansi_dec_key_Keypad_minus) $end(case);
-    case_((u8_c('l'))) return_some(dansi_dec_key_Keypad_comma) $end(case);
-    case_((u8_c('M'))) return_some(dansi_dec_key_Keypad_enter) $end(case);
+    case_((dansi_dec_key_final_keypad_0_byte)) return_some(dansi_dec_key_Keypad_0) $end(case);
+    case_((dansi_dec_key_final_keypad_1_byte)) return_some(dansi_dec_key_Keypad_1) $end(case);
+    case_((dansi_dec_key_final_keypad_2_byte)) return_some(dansi_dec_key_Keypad_2) $end(case);
+    case_((dansi_dec_key_final_keypad_3_byte)) return_some(dansi_dec_key_Keypad_3) $end(case);
+    case_((dansi_dec_key_final_keypad_4_byte)) return_some(dansi_dec_key_Keypad_4) $end(case);
+    case_((dansi_dec_key_final_keypad_5_byte)) return_some(dansi_dec_key_Keypad_5) $end(case);
+    case_((dansi_dec_key_final_keypad_6_byte)) return_some(dansi_dec_key_Keypad_6) $end(case);
+    case_((dansi_dec_key_final_keypad_7_byte)) return_some(dansi_dec_key_Keypad_7) $end(case);
+    case_((dansi_dec_key_final_keypad_8_byte)) return_some(dansi_dec_key_Keypad_8) $end(case);
+    case_((dansi_dec_key_final_keypad_9_byte)) return_some(dansi_dec_key_Keypad_9) $end(case);
+    case_((dansi_dec_key_final_keypad_decimal_byte)) return_some(dansi_dec_key_Keypad_decimal) $end(case);
+    case_((dansi_dec_key_final_keypad_minus_byte)) return_some(dansi_dec_key_Keypad_minus) $end(case);
+    case_((dansi_dec_key_final_keypad_comma_byte)) return_some(dansi_dec_key_Keypad_comma) $end(case);
+    case_((dansi_dec_key_final_keypad_enter_byte)) return_some(dansi_dec_key_Keypad_enter) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);
 
 $static fn_((dansi_dec_key__namedFromTildeCode(u16 code))(O$dansi_dec_key_Named) $scope) {
     switch (code) {
-    case_((1)) return_some(dansi_dec_key_Named_find) $end(case);
-    case_((2)) return_some(dansi_dec_key_Named_insert) $end(case);
-    case_((3)) return_some(dansi_dec_key_Named_remove) $end(case);
-    case_((4)) return_some(dansi_dec_key_Named_select) $end(case);
-    case_((5)) return_some(dansi_dec_key_Named_prev) $end(case);
-    case_((6)) return_some(dansi_dec_key_Named_next) $end(case);
-    case_((17)) return_some(dansi_dec_key_Named_f6) $end(case);
-    case_((18)) return_some(dansi_dec_key_Named_f7) $end(case);
-    case_((19)) return_some(dansi_dec_key_Named_f8) $end(case);
-    case_((20)) return_some(dansi_dec_key_Named_f9) $end(case);
-    case_((21)) return_some(dansi_dec_key_Named_f10) $end(case);
-    case_((23)) return_some(dansi_dec_key_Named_f11) $end(case);
-    case_((24)) return_some(dansi_dec_key_Named_f12) $end(case);
-    case_((25)) return_some(dansi_dec_key_Named_f13) $end(case);
-    case_((26)) return_some(dansi_dec_key_Named_f14) $end(case);
-    case_((28)) return_some(dansi_dec_key_Named_f15) $end(case);
-    case_((29)) return_some(dansi_dec_key_Named_f16) $end(case);
-    case_((31)) return_some(dansi_dec_key_Named_f17) $end(case);
-    case_((32)) return_some(dansi_dec_key_Named_f18) $end(case);
-    case_((33)) return_some(dansi_dec_key_Named_f19) $end(case);
-    case_((34)) return_some(dansi_dec_key_Named_f20) $end(case);
-    case_((35)) return_some(dansi_dec_key_Named_f21) $end(case);
-    case_((36)) return_some(dansi_dec_key_Named_f22) $end(case);
-    case_((37)) return_some(dansi_dec_key_Named_f23) $end(case);
-    case_((38)) return_some(dansi_dec_key_Named_f24) $end(case);
+    case_((dansi_dec_key_TildeCode_find)) return_some(dansi_dec_key_Named_find) $end(case);
+    case_((dansi_dec_key_TildeCode_insert)) return_some(dansi_dec_key_Named_insert) $end(case);
+    case_((dansi_dec_key_TildeCode_remove)) return_some(dansi_dec_key_Named_remove) $end(case);
+    case_((dansi_dec_key_TildeCode_select)) return_some(dansi_dec_key_Named_select) $end(case);
+    case_((dansi_dec_key_TildeCode_prev)) return_some(dansi_dec_key_Named_prev) $end(case);
+    case_((dansi_dec_key_TildeCode_next)) return_some(dansi_dec_key_Named_next) $end(case);
+    case_((dansi_dec_key_TildeCode_f6)) return_some(dansi_dec_key_Named_f6) $end(case);
+    case_((dansi_dec_key_TildeCode_f7)) return_some(dansi_dec_key_Named_f7) $end(case);
+    case_((dansi_dec_key_TildeCode_f8)) return_some(dansi_dec_key_Named_f8) $end(case);
+    case_((dansi_dec_key_TildeCode_f9)) return_some(dansi_dec_key_Named_f9) $end(case);
+    case_((dansi_dec_key_TildeCode_f10)) return_some(dansi_dec_key_Named_f10) $end(case);
+    case_((dansi_dec_key_TildeCode_f11)) return_some(dansi_dec_key_Named_f11) $end(case);
+    case_((dansi_dec_key_TildeCode_f12)) return_some(dansi_dec_key_Named_f12) $end(case);
+    case_((dansi_dec_key_TildeCode_f13)) return_some(dansi_dec_key_Named_f13) $end(case);
+    case_((dansi_dec_key_TildeCode_f14)) return_some(dansi_dec_key_Named_f14) $end(case);
+    case_((dansi_dec_key_TildeCode_f15)) return_some(dansi_dec_key_Named_f15) $end(case);
+    case_((dansi_dec_key_TildeCode_f16)) return_some(dansi_dec_key_Named_f16) $end(case);
+    case_((dansi_dec_key_TildeCode_f17)) return_some(dansi_dec_key_Named_f17) $end(case);
+    case_((dansi_dec_key_TildeCode_f18)) return_some(dansi_dec_key_Named_f18) $end(case);
+    case_((dansi_dec_key_TildeCode_f19)) return_some(dansi_dec_key_Named_f19) $end(case);
+    case_((dansi_dec_key_TildeCode_f20)) return_some(dansi_dec_key_Named_f20) $end(case);
+    case_((dansi_dec_key_TildeCode_f21)) return_some(dansi_dec_key_Named_f21) $end(case);
+    case_((dansi_dec_key_TildeCode_f22)) return_some(dansi_dec_key_Named_f22) $end(case);
+    case_((dansi_dec_key_TildeCode_f23)) return_some(dansi_dec_key_Named_f23) $end(case);
+    case_((dansi_dec_key_TildeCode_f24)) return_some(dansi_dec_key_Named_f24) $end(case);
     default_() return_none() $end(default);
     }
 } $unscoped(fn);
@@ -151,7 +151,7 @@ fn_((dansi_dec_key_parseReport(dansi_Seq seq))(O$dansi_dec_key_Report) $scope) {
     } $end(case);
     case_((dansi_Seq_Kind_csi)) {
         let frame = catch_((dansi_csi_parse(seq.bytes))($ignore, return_none()));
-        if (frame.final == u8_c('~')) {
+        if (frame.final == dansi_dec_key_final_tilde_byte) {
             return_some(union_of((dansi_dec_key_Report_csi_tilde){ .frame = frame }));
         }
         return_some(union_of((dansi_dec_key_Report_csi){ .frame = frame }));
@@ -173,7 +173,9 @@ fn_((dansi_dec_key_parseReport(dansi_Seq seq))(O$dansi_dec_key_Report) $scope) {
 fn_((dansi_dec_key_interpretReport(dansi_dec_key_Report report))(dansi_dec_key_E$dansi_dec_key_Event) $scope) {
     match_(report) {
     pattern_((dansi_dec_key_Report_esc)(esc)) {
-        let named = orelse_((dansi_dec_key__namedFromCursorFinal(esc.final))(return_err(E_cause$dansi_dec_key_InvalidReport())));
+        let named = orelse_((dansi_dec_key__namedFromCursorFinal(esc.final))(
+            return_err(E_cause$dansi_dec_key_InvalidReport())
+        ));
         return_ok(dansi_dec_key__named(named));
     } $end(pattern);
     pattern_((dansi_dec_key_Report_ss3)(ss3)) {
@@ -186,16 +188,24 @@ fn_((dansi_dec_key_interpretReport(dansi_dec_key_Report report))(dansi_dec_key_E
         return_err(E_cause$dansi_dec_key_InvalidReport());
     } $end(pattern);
     pattern_((dansi_dec_key_Report_csi)(csi)) {
-        let named = orelse_((dansi_dec_key__namedFromCursorFinal(csi.frame.final))(return_err(E_cause$dansi_dec_key_InvalidReport())));
+        let named = orelse_((dansi_dec_key__namedFromCursorFinal(csi.frame.final))(
+            return_err(E_cause$dansi_dec_key_InvalidReport())
+        ));
         return_ok(dansi_dec_key__named(named));
     } $end(pattern);
     pattern_((dansi_dec_key_Report_csi_tilde)(tilde)) {
-        let code = orelse_((dansi_csi_Frame_paramAtAsU16(tilde.frame, 0))(return_err(E_cause$dansi_dec_key_InvalidReport())));
-        let named = orelse_((dansi_dec_key__namedFromTildeCode(code))(return_err(E_cause$dansi_dec_key_InvalidReport())));
+        let code = orelse_((dansi_csi_Frame_paramAtAsU16(tilde.frame, dansi_dec_key_tilde_param_code))(
+            return_err(E_cause$dansi_dec_key_InvalidReport())
+        ));
+        let named = orelse_((dansi_dec_key__namedFromTildeCode(code))(
+            return_err(E_cause$dansi_dec_key_InvalidReport())
+        ));
         return_ok(dansi_dec_key__named(named));
     } $end(pattern);
     pattern_((dansi_dec_key_Report_vt52)(vt52)) {
-        let named = orelse_((dansi_dec_key__namedFromCursorFinal(vt52.final))(return_err(E_cause$dansi_dec_key_InvalidReport())));
+        let named = orelse_((dansi_dec_key__namedFromCursorFinal(vt52.final))(
+            return_err(E_cause$dansi_dec_key_InvalidReport())
+        ));
         return_ok(dansi_dec_key__named(named));
     } $end(pattern);
     } $end(match);
