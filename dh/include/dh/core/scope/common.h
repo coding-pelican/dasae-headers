@@ -38,6 +38,12 @@ extern "C"
 #define if_(_Init, _Cond) __step__if_(_Init, _Cond)
 #define else_(_Init...) __step__else_(_Init)
 
+#define when_(_cond...) /*(provide_(_then...) instead_(_else...))*/ __inline__when_(_cond)
+#define __inline__when_(_cond...) (_cond) __step__when___parseProvideInstead
+#define __step__when___parseProvideInstead(_provide, _instead...) _provide _instead
+#define provide_(_then...) ? (_then)
+#define instead_(_else...) : (_else)
+
 /* for: declaration =========================================================*/
 #define $a(_a...) ($A, (_a))
 #define $s(_s...) ($S, (_s))

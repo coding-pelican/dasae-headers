@@ -121,6 +121,19 @@ $static fn_((ascii_isWhitespace(u8 c))(bool));
      */ \
     __str__ascii_whitespaces
 
+#define ascii_whitespace_sp_byte __uint__ascii_whitespace_sp_byte
+#define ascii_whitespace_sp __str__ascii_whitespace_sp
+#define ascii_whitespace_ht_byte __uint__ascii_whitespace_ht_byte
+#define ascii_whitespace_ht __str__ascii_whitespace_ht
+#define ascii_whitespace_lf_byte __uint__ascii_whitespace_lf_byte
+#define ascii_whitespace_lf __str__ascii_whitespace_lf
+#define ascii_whitespace_cr_byte __uint__ascii_whitespace_cr_byte
+#define ascii_whitespace_cr __str__ascii_whitespace_cr
+#define ascii_whitespace_vt_byte __uint__ascii_whitespace_vt_byte
+#define ascii_whitespace_vt __str__ascii_whitespace_vt
+#define ascii_whitespace_ff_byte __uint__ascii_whitespace_ff_byte
+#define ascii_whitespace_ff __str__ascii_whitespace_ff
+
 /// Uppercases the character && returns it as-is if already uppercase || not a letter.
 $attr($inline_always)
 $static fn_((ascii_toUpper(u8 c))(u8));
@@ -220,6 +233,19 @@ fn_((ascii_isCtrl(u8 c))(bool)) { return c <= ascii_CtrlCode_us || c == ascii_Ct
 fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; };
 fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ascii_sp_byte || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); };
 #define __str__ascii_whitespaces ascii_sp ascii_ht ascii_lf ascii_cr ascii_vt ascii_ff
+
+#define __uint__ascii_whitespace_sp_byte ascii_sp_byte
+#define __str__ascii_whitespace_sp ascii_sp
+#define __uint__ascii_whitespace_ht_byte ascii_ht_byte
+#define __str__ascii_whitespace_ht ascii_ht
+#define __uint__ascii_whitespace_lf_byte ascii_lf_byte
+#define __str__ascii_whitespace_lf ascii_lf
+#define __uint__ascii_whitespace_cr_byte ascii_cr_byte
+#define __str__ascii_whitespace_cr ascii_cr
+#define __uint__ascii_whitespace_vt_byte ascii_vt_byte
+#define __str__ascii_whitespace_vt ascii_vt
+#define __uint__ascii_whitespace_ff_byte ascii_ff_byte
+#define __str__ascii_whitespace_ff ascii_ff
 
 fn_((ascii_toUpper(u8 c))(u8)) {
     let mask = int_shl(boolToInt(ascii_isLower(c)), 5);
