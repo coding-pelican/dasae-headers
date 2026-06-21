@@ -20,7 +20,7 @@ extern "C" {
 #include "input.h"
 
 typedef enum_((daterm_key_Code $fits($packed))(
-    daterm_key_Code_up,
+    daterm_key_Code_up = 0,
     daterm_key_Code_down,
     daterm_key_Code_right,
     daterm_key_Code_left,
@@ -91,12 +91,13 @@ typedef enum_((daterm_key_Code $fits($packed))(
     daterm_key_Code_keypad_multiply,
     daterm_key_Code_keypad_divide,
     daterm_key_Code_keypad_comma,
-    daterm_key_Code_keypad_enter
+    daterm_key_Code_keypad_enter,
+    count$daterm_key_Code
 )) daterm_key_Code;
 T_use_prl$(daterm_key_Code);
 
 typedef enum_((daterm_key_Action $fits($packed))(
-    daterm_key_Action_press,
+    daterm_key_Action_press = 0,
     daterm_key_Action_repeat,
     daterm_key_Action_release
 )) daterm_key_Action;

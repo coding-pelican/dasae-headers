@@ -84,7 +84,7 @@ typedef struct daterm_ANSI {
     var_(mouse_pos_kind, daterm_mouse_PosKind);
     var_(is_tracking_focus, bool);
     var_(is_enhanced_keyboard, bool);
-    var_(cached_screen_cells, O$daterm_Size);
+    var_(cached_screen_cells, O$daterm_CellSize);
 #if plat_is_windows
     var_(windows_mouse_buttons, DWORD);
     var_(windows_surrogate, O$daterm_ANSI__WindowsSurrogate);

@@ -391,7 +391,7 @@ $static fn_((tetris_Presenter_init(tetris_Presenter* self, io_Writer out))(tetri
 $static fn_((tetris_Presenter_HelpLines_width(void))(usize));
 $static fn_((tetris_Presenter_Layout_centeredX(usize left, usize width, S_const$u8 text))(usize));
 $static fn_((tetris_Presenter_Layout_calc(void))(tetris_Presenter_Layout));
-$static fn_((tetris_Presenter_MessageLines_firstY(tetris_Presenter_MessageLines lines, daterm_Size screen))(usize));
+$static fn_((tetris_Presenter_MessageLines_firstY(tetris_Presenter_MessageLines lines, daterm_CellSize screen))(usize));
 $static fn_((tetris_Presenter_composeBoardBorder(tetris_Frame* frame, tetris_Presenter_Layout layout, usize y))(void));
 $static fn_((tetris_Presenter_composeHelp(tetris_Frame* frame, tetris_Presenter_Layout layout))(void));
 $static fn_((tetris_Presenter_composeMiniPiece(tetris_Frame* frame, O$tetris_Piece piece, usize col, usize row))(void));
@@ -400,12 +400,12 @@ $static fn_((tetris_Presenter_composeU32(tetris_Frame* frame, usize x, usize y, 
 $static fn_((tetris_Presenter_present(tetris_Presenter* self))(E$void)) $must_check;
 $static fn_((tetris_Presenter_presentFull(tetris_Presenter* self, bool clear))(E$void)) $must_check;
 $static fn_((tetris_Presenter_presentDiff(tetris_Presenter* self))(E$void)) $must_check;
-$static fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_Size screen, tetris_SmallScreen_Cfg cfg))(E$void)) $must_check;
-$static fn_((tetris_Presenter_render(tetris_Presenter* self, const tetris_Self* game, daterm_Size screen, tetris_SmallScreen_Cfg cfg))(E$void)) $must_check;
+$static fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_CellSize screen, tetris_SmallScreen_Cfg cfg))(E$void)) $must_check;
+$static fn_((tetris_Presenter_render(tetris_Presenter* self, const tetris_Self* game, daterm_CellSize screen, tetris_SmallScreen_Cfg cfg))(E$void)) $must_check;
 $static fn_((tetris_Presenter_DiffStats_calc(const tetris_Presenter* self))(tetris_Presenter_DiffStats));
 $static fn_((tetris_Presenter_DiffStats_prefersFull(tetris_Presenter_DiffStats self))(bool));
 $static fn_((tetris_Presenter_smallScreenBgCell(const tetris_Presenter* self, usize x, usize y, tetris_SmallScreen_RenderPolicy policy))(tetris_FrameCell));
-$static fn_((tetris_Presenter_smallScreenBorderCell(tetris_FrameCell under, daterm_Size screen, usize x, usize y))(tetris_FrameCell));
+$static fn_((tetris_Presenter_smallScreenBorderCell(tetris_FrameCell under, daterm_CellSize screen, usize x, usize y))(tetris_FrameCell));
 $static fn_((tetris_Presenter_smallScreenTextCell(tetris_FrameCell under, u16 cols, usize x, usize y, usize text_y, S_const$u8 text, tetris_RGB fg))(tetris_FrameCell));
 $static fn_((tetris_Presenter_formatU32(S$u8 buf, u32 val))(usize));
 $static fn_((tetris_Presenter_writeGlyph(u32 glyph, io_Writer out))(E$void)) $must_check;
@@ -1197,7 +1197,7 @@ fn_((tetris_Presenter_composeU32(tetris_Frame* frame, usize x, usize y, u32 val)
     tetris_Frame_putText(frame, x, y, S_prefix((buf)(len)).as_const);
 };
 
-fn_((tetris_Presenter_MessageLines_firstY(tetris_Presenter_MessageLines lines, daterm_Size screen))(usize)) {
+fn_((tetris_Presenter_MessageLines_firstY(tetris_Presenter_MessageLines lines, daterm_CellSize screen))(usize)) {
     let rows = as$(usize)(screen.rows);
     return rows < A_len(lines) ? 0 : (rows - A_len(lines)) / 2;
 };
@@ -1452,7 +1452,7 @@ fn_((tetris_Presenter_smallScreenBgCell(
     return tetris_FrameCell_blank;
 };
 
-fn_((tetris_Presenter_smallScreenBorderCell(tetris_FrameCell under, daterm_Size screen, usize x, usize y))(tetris_FrameCell)) {
+fn_((tetris_Presenter_smallScreenBorderCell(tetris_FrameCell under, daterm_CellSize screen, usize x, usize y))(tetris_FrameCell)) {
     if (screen.cols == 0 || screen.rows == 0) { return under; }
     if (x != 0 && x + 1 != screen.cols && y != 0 && y + 1 != screen.rows) { return under; }
 
@@ -1487,7 +1487,7 @@ fn_((tetris_Presenter_smallScreenTextCell(
     ));
 };
 
-fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_Size screen, tetris_SmallScreen_Cfg cfg))(E$void) $scope) {
+fn_((tetris_Presenter_presentSmallScreen(tetris_Presenter* self, daterm_CellSize screen, tetris_SmallScreen_Cfg cfg))(E$void) $scope) {
     let out = io_Buf_writer(&self->out.writer);
     try_(tetris_Presenter_beginScreen(out));
 
@@ -1629,7 +1629,7 @@ fn_((tetris_Presenter_present(tetris_Presenter* self))(E$void) $scope) {
 fn_((tetris_Presenter_render(
     tetris_Presenter* self,
     const tetris_Self* game,
-    daterm_Size screen,
+    daterm_CellSize screen,
     tetris_SmallScreen_Cfg cfg
 ))(E$void)) {
     tetris_Presenter_compose(self, game);
@@ -1722,7 +1722,7 @@ TEST_fn_("example-tetris: presenter renders a complete frame" $scope) {
     try_(tetris_Presenter_render(
         &presenter,
         &game,
-        (daterm_Size){
+        (daterm_CellSize){
             .cols = as$(u16)(tetris_Frame_width),
             .rows = as$(u16)(tetris_Frame_height),
         },

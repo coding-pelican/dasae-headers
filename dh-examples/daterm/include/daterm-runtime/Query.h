@@ -8,11 +8,11 @@
  * @date    2026-06-20 (date of creation)
  * @updated 2026-06-20 (date of last update)
  * @ingroup daterm-runtime
- * @prefix  daterm_LocalQuery
+ * @prefix  daterm_Query
  */
 #pragma once
-#ifndef daterm_LocalQuery__included
-#define daterm_LocalQuery__included 1
+#ifndef daterm_Query__included
+#define daterm_Query__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -23,25 +23,20 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-typedef enum_((daterm_LocalQueryKind $fits($packed))(
-    daterm_LocalQueryKind_native_screen_cells,
-    daterm_LocalQueryKind_cached_screen_cells,
-    daterm_LocalQueryKind_native_cursor_pos
-)) daterm_LocalQueryKind;
-T_use_prl$(daterm_LocalQueryKind);
+typedef enum_((daterm_Query $fits($packed))(
+    daterm_Query_native_screen_cells,
+    daterm_Query_cached_screen_cells,
+    daterm_Query_native_cursor_pos
+)) daterm_Query;
+T_use_prl$(daterm_Query);
 
-typedef struct daterm_LocalQuery {
-    var_(kind, daterm_LocalQueryKind);
-} daterm_LocalQuery;
-T_use_prl$(daterm_LocalQuery);
-
-typedef variant_((daterm_LocalQueryResult $fits($packed))(
-    (daterm_LocalQueryResult_size, daterm_Size),
-    (daterm_LocalQueryResult_pos, daterm_Pos)
-)) daterm_LocalQueryResult;
-T_use_prl$(daterm_LocalQueryResult);
+typedef variant_((daterm_Query_Result $fits($packed))(
+    (daterm_Query_Result_size, daterm_CellSize),
+    (daterm_Query_Result_pos, daterm_Pos)
+)) daterm_Query_Result;
+T_use_prl$(daterm_Query_Result);
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* daterm_LocalQuery__included */
+#endif /* daterm_Query__included */

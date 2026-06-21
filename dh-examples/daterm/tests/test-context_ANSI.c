@@ -93,6 +93,17 @@ TEST_fn_("daterm-context/ANSI: default config keeps processed output" $scope) {
     return_ok({});
 } $unscoped(TEST_fn);
 
+TEST_fn_("daterm-runtime: position and size vocabulary is coordinate-safe" $scope) {
+    let_(pos, daterm_Pos) = { .x = 3, .y = 5 };
+    let_(cells, daterm_CellSize) = { .cols = 80, .rows = 24 };
+    let_(pixels, daterm_PixelSize) = { .width = 8, .height = 16 };
+
+    try_(TEST_expect(pos.x == 3 && pos.y == 5));
+    try_(TEST_expect(cells.cols == 80 && cells.rows == 24));
+    try_(TEST_expect(pixels.width == 8 && pixels.height == 16));
+    return_ok({});
+} $unscoped(TEST_fn);
+
 TEST_fn_("daterm-context/ANSI: caps match selected input mode" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
@@ -138,13 +149,16 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
     try_(TEST_skipMsg(u8_l("Windows console records are not available on this platform")));
 #else
     var_(ansi, daterm_ANSI) = cleared();
-    let press = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                    .bKeyDown = TRUE,
-                                                                    .wRepeatCount = 1,
-                                                                    .wVirtualKeyCode = VK_TAB,
-                                                                    .dwControlKeyState = SHIFT_PRESSED,
-                                                                }));
-    match_(press) {
+    let press = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = TRUE,
+            .wRepeatCount = 1,
+            .wVirtualKeyCode = VK_TAB,
+            .dwControlKeyState = SHIFT_PRESSED,
+        }
+    ));
+    $suppress_(switch_enum)(match_(press)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_back_tab));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_press));
@@ -152,13 +166,16 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
-    let repeat = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                     .bKeyDown = TRUE,
-                                                                     .wRepeatCount = 2,
-                                                                     .wVirtualKeyCode = VK_LEFT,
-                                                                     .dwControlKeyState = ENHANCED_KEY,
-                                                                 }));
-    match_(repeat) {
+    let repeat = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = TRUE,
+            .wRepeatCount = 2,
+            .wVirtualKeyCode = VK_LEFT,
+            .dwControlKeyState = ENHANCED_KEY,
+        }
+    ));
+    $suppress_(switch_enum)(match_(repeat)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_left));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_repeat));
@@ -166,37 +183,46 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
-    let keypad_left = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                          .bKeyDown = TRUE,
-                                                                          .wRepeatCount = 1,
-                                                                          .wVirtualKeyCode = VK_LEFT,
-                                                                      }));
-    match_(keypad_left) {
+    let keypad_left = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = TRUE,
+            .wRepeatCount = 1,
+            .wVirtualKeyCode = VK_LEFT,
+        }
+    ));
+    $suppress_(switch_enum)(match_(keypad_left)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_keypad_4));
     } $end(pattern);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
-    let keypad_enter = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                           .bKeyDown = TRUE,
-                                                                           .wRepeatCount = 1,
-                                                                           .wVirtualKeyCode = VK_RETURN,
-                                                                           .dwControlKeyState = ENHANCED_KEY,
-                                                                       }));
-    match_(keypad_enter) {
+    let keypad_enter = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = TRUE,
+            .wRepeatCount = 1,
+            .wVirtualKeyCode = VK_RETURN,
+            .dwControlKeyState = ENHANCED_KEY,
+        }
+    ));
+    $suppress_(switch_enum)(match_(keypad_enter)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_keypad_enter));
     } $end(pattern);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
-    let release = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                      .bKeyDown = FALSE,
-                                                                      .wRepeatCount = 1,
-                                                                      .wVirtualKeyCode = VK_ESCAPE,
-                                                                  }));
-    match_(release) {
+    let release = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = FALSE,
+            .wRepeatCount = 1,
+            .wVirtualKeyCode = VK_ESCAPE,
+        }
+    ));
+    $suppress_(switch_enum)(match_(release)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_escape));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_release));
@@ -204,17 +230,23 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
-    try_(TEST_expect(isNone(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                        .bKeyDown = TRUE,
-                                                                        .wRepeatCount = 1,
-                                                                        .uChar.UnicodeChar = as$(WCHAR)(0xd83d),
-                                                                    }))));
-    let non_bmp = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                      .bKeyDown = TRUE,
-                                                                      .wRepeatCount = 1,
-                                                                      .uChar.UnicodeChar = as$(WCHAR)(0xde00),
-                                                                  }));
-    match_(non_bmp) {
+    try_(TEST_expect(isNone(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = TRUE,
+            .wRepeatCount = 1,
+            .uChar.UnicodeChar = as$(WCHAR)(0xd83d),
+        }
+    ))));
+    let non_bmp = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = TRUE,
+            .wRepeatCount = 1,
+            .uChar.UnicodeChar = as$(WCHAR)(0xde00),
+        }
+    ));
+    $suppress_(switch_enum)(match_(non_bmp)) {
     pattern_((daterm_Event_text)(text)) {
         try_(TEST_expect(text.codepoint == 0x1f600));
         try_(TEST_expect(unwrap_(text.action) == daterm_key_Action_press));
@@ -230,14 +262,17 @@ TEST_fn_("daterm-context/ANSI: Windows modifier records preserve side and lifecy
     try_(TEST_skipMsg(u8_l("Windows console records are not available on this platform")));
 #else
     var_(ansi, daterm_ANSI) = cleared();
-    let left_shift = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                         .bKeyDown = TRUE,
-                                                                         .wRepeatCount = 1,
-                                                                         .wVirtualKeyCode = VK_SHIFT,
-                                                                         .wVirtualScanCode = as$(WORD)(MapVirtualKeyW(VK_LSHIFT, MAPVK_VK_TO_VSC)),
-                                                                         .dwControlKeyState = SHIFT_PRESSED,
-                                                                     }));
-    match_(left_shift) {
+    let left_shift = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = TRUE,
+            .wRepeatCount = 1,
+            .wVirtualKeyCode = VK_SHIFT,
+            .wVirtualScanCode = as$(WORD)(MapVirtualKeyW(VK_LSHIFT, MAPVK_VK_TO_VSC)),
+            .dwControlKeyState = SHIFT_PRESSED,
+        }
+    ));
+    $suppress_(switch_enum)(match_(left_shift)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_left_shift));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_press));
@@ -246,13 +281,16 @@ TEST_fn_("daterm-context/ANSI: Windows modifier records preserve side and lifecy
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
-    let right_ctrl = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                         .bKeyDown = TRUE,
-                                                                         .wRepeatCount = 2,
-                                                                         .wVirtualKeyCode = VK_CONTROL,
-                                                                         .dwControlKeyState = RIGHT_CTRL_PRESSED | ENHANCED_KEY,
-                                                                     }));
-    match_(right_ctrl) {
+    let right_ctrl = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = TRUE,
+            .wRepeatCount = 2,
+            .wVirtualKeyCode = VK_CONTROL,
+            .dwControlKeyState = RIGHT_CTRL_PRESSED | ENHANCED_KEY,
+        }
+    ));
+    $suppress_(switch_enum)(match_(right_ctrl)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_right_ctrl));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_repeat));
@@ -261,12 +299,15 @@ TEST_fn_("daterm-context/ANSI: Windows modifier records preserve side and lifecy
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
-    let left_alt = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                       .bKeyDown = FALSE,
-                                                                       .wRepeatCount = 1,
-                                                                       .wVirtualKeyCode = VK_MENU,
-                                                                   }));
-    match_(left_alt) {
+    let left_alt = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = FALSE,
+            .wRepeatCount = 1,
+            .wVirtualKeyCode = VK_MENU,
+        }
+    ));
+    $suppress_(switch_enum)(match_(left_alt)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_left_alt));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_release));
@@ -275,12 +316,15 @@ TEST_fn_("daterm-context/ANSI: Windows modifier records preserve side and lifecy
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
-    let right_meta = unwrap_(daterm_ANSI_parseWindowsKeyEvent(&ansi, (KEY_EVENT_RECORD){
-                                                                         .bKeyDown = TRUE,
-                                                                         .wRepeatCount = 1,
-                                                                         .wVirtualKeyCode = VK_RWIN,
-                                                                     }));
-    match_(right_meta) {
+    let right_meta = unwrap_(daterm_ANSI_parseWindowsKeyEvent(
+        &ansi,
+        (KEY_EVENT_RECORD){
+            .bKeyDown = TRUE,
+            .wRepeatCount = 1,
+            .wVirtualKeyCode = VK_RWIN,
+        }
+    ));
+    $suppress_(switch_enum)(match_(right_meta)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_right_meta));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_press));
@@ -312,7 +356,7 @@ TEST_fn_("daterm-context/ANSI: transaction preserves unrelated key event" $scope
     try_(TEST_expect(ctx.requested));
     try_(TEST_expect(matched));
     let event = unwrap_(daterm_Term_poll(daterm_ANSI_term(&ansi)));
-    match_(event) {
+    $suppress_(switch_enum)(match_(event)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_up));
     } $end(pattern);
@@ -339,9 +383,9 @@ TEST_fn_("daterm-context/ANSI: transaction preserves unrelated mouse event" $sco
     ));
 
     let event = unwrap_(daterm_Term_poll(daterm_ANSI_term(&ansi)));
-    match_(event) {
+    $suppress_(switch_enum)(match_(event)) {
     pattern_((daterm_Event_mouse)(mouse)) {
-        match_(mouse) {
+        $suppress_(switch_enum)(match_(mouse)) {
         pattern_((daterm_mouse_Event_press)(press)) {
             try_(TEST_expect(press.btn == daterm_mouse_Btn_left));
             try_(TEST_expect(press.pos.x == 1));
@@ -507,7 +551,7 @@ TEST_fn_("daterm-context/ANSI: DEC cursor report becomes runtime key" $scope) {
         dansi_Seq_from(dansi_Seq_Kind_csi, u8_l("\x1B[A"))
     ));
 
-    match_(event) {
+    $suppress_(switch_enum)(match_(event)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_up));
         try_(TEST_expect(key.mods.packed == 0));
@@ -523,7 +567,7 @@ TEST_fn_("daterm-context/ANSI: xterm modified cursor preserves modifiers" $scope
         dansi_Seq_from(dansi_Seq_Kind_csi, u8_l("\x1B[1;5A"))
     ));
 
-    match_(event) {
+    $suppress_(switch_enum)(match_(event)) {
     pattern_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_up));
         try_(TEST_expect(key.mods.ctrl));
@@ -540,7 +584,7 @@ TEST_fn_("daterm-context/ANSI: xterm CSI-u becomes runtime text" $scope) {
         dansi_Seq_from(dansi_Seq_Kind_csi, u8_l("\x1B[97;3u"))
     ));
 
-    match_(event) {
+    $suppress_(switch_enum)(match_(event)) {
     pattern_((daterm_Event_text)(text)) {
         try_(TEST_expect(text.codepoint == u8_c('a')));
         try_(TEST_expect(text.mods.alt));
@@ -555,9 +599,9 @@ TEST_fn_("daterm-context/ANSI: xterm SGR mouse becomes semantic variant" $scope)
         dansi_Seq_from(dansi_Seq_Kind_csi, u8_l("\x1B[<0;10;5M"))
     ));
 
-    match_(event) {
+    $suppress_(switch_enum)(match_(event)) {
     pattern_((daterm_Event_mouse)(mouse)) {
-        match_(mouse) {
+        $suppress_(switch_enum)(match_(mouse)) {
         pattern_((daterm_mouse_Event_press)(press)) {
             try_(TEST_expect(press.btn == daterm_mouse_Btn_left));
             try_(TEST_expect(press.pos.x == 9));
@@ -577,7 +621,7 @@ TEST_fn_("daterm-context/ANSI: xterm focus becomes runtime focus" $scope) {
         dansi_Seq_from(dansi_Seq_Kind_csi, u8_l("\x1B[I"))
     ));
 
-    match_(event) {
+    $suppress_(switch_enum)(match_(event)) {
     pattern_((daterm_Event_focus)(focus)) {
         try_(TEST_expect(focus == daterm_focus_Event_in));
     } $end(pattern);

@@ -78,13 +78,11 @@ $extern fn_((daterm_Term_caps(daterm_Term self))(daterm_TermCaps));
 /* --- Runtime Queries and Transactions --- */
 
 $attr($must_check)
-$extern fn_((daterm_Term_queryLocal(
-    daterm_Term self, daterm_LocalQuery query
-))(E$daterm_LocalQueryResult));
+$extern fn_((daterm_Term_queryLocal(daterm_Term self, daterm_Query query))(E$daterm_Query_Result));
 $attr($must_check)
-$extern fn_((daterm_Term_queryNativeScreenCells(daterm_Term self))(E$daterm_Size));
+$extern fn_((daterm_Term_queryNativeScreenCells(daterm_Term self))(E$daterm_CellSize));
 $attr($must_check)
-$extern fn_((daterm_Term_queryCachedScreenCells(daterm_Term self))(E$daterm_Size));
+$extern fn_((daterm_Term_queryCachedScreenCells(daterm_Term self))(E$daterm_CellSize));
 $attr($must_check)
 $extern fn_((daterm_Term_queryNativeCursorPos(daterm_Term self))(E$daterm_Pos));
 $attr($must_check)
@@ -98,13 +96,15 @@ struct daterm_Term_VTbl {
     $attr($must_check)
     fn_(((*waitTimedFn)(P$raw ctx, time_Dur timeout))(daterm_Term_WaitE$daterm_Event));
     fn_(((*waitProtnFn)(P$raw ctx))(daterm_Event));
+
     fn_(((*readerFn)(P$raw ctx))(io_Reader));
     fn_(((*writerFn)(P$raw ctx))(io_Writer));
     $attr($must_check)
     fn_(((*flushFn)(P$raw ctx))(E$void));
     fn_(((*capsFn)(P$raw ctx))(daterm_TermCaps));
+
     $attr($must_check)
-    fn_(((*queryLocalFn)(P$raw ctx, daterm_LocalQuery query))(E$daterm_LocalQueryResult));
+    fn_(((*queryLocalFn)(P$raw ctx, daterm_Query query))(E$daterm_Query_Result));
     $attr($must_check)
     fn_(((*runTxnFn)(P$raw ctx, daterm_Txn txn))(daterm_Txn_E$Void));
 };

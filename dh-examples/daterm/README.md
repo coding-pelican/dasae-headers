@@ -137,6 +137,10 @@ payloads. Positions carry a cell/pixel kind. Key and text events carry an
 optional action, because legacy VT input cannot report releases while native
 backends can.
 
+Runtime coordinates use `x,y`: `x` is a column or pixel-x coordinate and `y`
+is a row or pixel-y coordinate. Cell sizes use `cols,rows`; pixel sizes use
+`width,height`.
+
 `daterm_input_Mods` is the modifier snapshot attached to a key, text, or mouse
 event. Applications use it to dispatch chords such as Ctrl+C, Shift+Space, or
 Alt+Enter. It is not a held-state store.
@@ -175,7 +179,7 @@ Protocol-specific bridge helpers compose the corresponding dansi request and
 parser with that broker:
 
 ```c
-var_(cell_pixels, dansi_xterm_screen_PixelSize) $undefined;
+var_(cell_pixels, daterm_PixelSize) $undefined;
 try_(daterm_xterm_fetchCellPixels(
     term, time_Dur_fromMillis(20), &cell_pixels
 ));

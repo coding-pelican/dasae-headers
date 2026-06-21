@@ -25,10 +25,10 @@ $static fn_((daterm_ANSI__writer(P$raw ctx))(io_Writer));
 $static fn_((daterm_ANSI__flush(P$raw ctx))(E$void));
 $static fn_((daterm_ANSI__caps(P$raw ctx))(daterm_TermCaps));
 $static fn_((daterm_ANSI__queryLocal(
-    P$raw ctx, daterm_LocalQuery query
-))(E$daterm_LocalQueryResult));
+    P$raw ctx, daterm_Query query
+))(E$daterm_Query_Result));
 $static fn_((daterm_ANSI__runTxn(P$raw ctx, daterm_Txn txn))(daterm_Txn_E$Void));
-$static fn_((daterm_ANSI__queryNativeScreenCells(P$raw ctx))(E$daterm_Size));
+$static fn_((daterm_ANSI__queryNativeScreenCells(P$raw ctx))(E$daterm_CellSize));
 $static fn_((daterm_ANSI__queryNativeCursorPos(P$raw ctx))(E$daterm_Pos));
 $static fn_((daterm_ANSI__pendingPush(daterm_ANSI* self, daterm_Event event))(bool));
 $static fn_((daterm_ANSI__pendingPop(daterm_ANSI* self))(O$daterm_Event));
@@ -900,23 +900,23 @@ fn_((daterm_ANSI__pendingPop(daterm_ANSI* self))(O$daterm_Event)) {
     return some$((O$daterm_Event)(event));
 };
 
-fn_((daterm_ANSI__queryNativeScreenCells(P$raw ctx))(E$daterm_Size) $scope) {
+fn_((daterm_ANSI__queryNativeScreenCells(P$raw ctx))(E$daterm_CellSize) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
 #if plat_is_windows
     var_(csbi, CONSOLE_SCREEN_BUFFER_INFO) $undefined;
     if (!GetConsoleScreenBufferInfo(self->output_file.handle, &csbi)) return_err(E_cause$Unexpected());
-    let_(size, daterm_Size) = {
+    let_(size, daterm_CellSize) = {
         .cols = as$(u16)(csbi.srWindow.Right - csbi.srWindow.Left + 1),
         .rows = as$(u16)(csbi.srWindow.Bottom - csbi.srWindow.Top + 1),
     };
 #elif plat_is_posix
     var_(ws, struct winsize) $undefined;
     if (ioctl(as$(int)(self->output_file.handle), TIOCGWINSZ, &ws) < 0) return_err(E_cause$Unexpected());
-    let_(size, daterm_Size) = { .cols = as$(u16)(ws.ws_col), .rows = as$(u16)(ws.ws_row) };
+    let_(size, daterm_CellSize) = { .cols = as$(u16)(ws.ws_col), .rows = as$(u16)(ws.ws_row) };
 #else
     return_err(E_cause$daterm_ANSI_Unsupported());
 #endif
-    self->cached_screen_cells = some$((O$daterm_Size)(size));
+    self->cached_screen_cells = some$((O$daterm_CellSize)(size));
     return_ok(size);
 } $unscoped(fn);
 
@@ -926,8 +926,8 @@ fn_((daterm_ANSI__queryNativeCursorPos(P$raw ctx))(E$daterm_Pos) $scope) {
     var_(csbi, CONSOLE_SCREEN_BUFFER_INFO) $undefined;
     if (!GetConsoleScreenBufferInfo(self->output_file.handle, &csbi)) return_err(E_cause$Unexpected());
     return_ok({
-        .col = as$(u16)(csbi.dwCursorPosition.X),
-        .row = as$(u16)(csbi.dwCursorPosition.Y),
+        .x = as$(u16)(csbi.dwCursorPosition.X),
+        .y = as$(u16)(csbi.dwCursorPosition.Y),
     });
 #else
     let_ignore = self;
@@ -936,21 +936,21 @@ fn_((daterm_ANSI__queryNativeCursorPos(P$raw ctx))(E$daterm_Pos) $scope) {
 } $unscoped(fn);
 
 fn_((daterm_ANSI__queryLocal(
-    P$raw ctx, daterm_LocalQuery query
-))(E$daterm_LocalQueryResult) $scope) {
+    P$raw ctx, daterm_Query query
+))(E$daterm_Query_Result) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
-    switch (query.kind) {
-    case_((daterm_LocalQueryKind_native_screen_cells)) {
-        return_ok(union_of((daterm_LocalQueryResult_size)(try_(daterm_ANSI__queryNativeScreenCells(self)))));
+    switch (query) {
+    case_((daterm_Query_native_screen_cells)) {
+        return_ok(union_of((daterm_Query_Result_size)(try_(daterm_ANSI__queryNativeScreenCells(self)))));
     } $end(case);
-    case_((daterm_LocalQueryKind_cached_screen_cells)) {
+    case_((daterm_Query_cached_screen_cells)) {
         let size = orelse_((self->cached_screen_cells)(
             try_(daterm_ANSI__queryNativeScreenCells(self))
         ));
-        return_ok(union_of((daterm_LocalQueryResult_size)(size)));
+        return_ok(union_of((daterm_Query_Result_size)(size)));
     } $end(case);
-    case_((daterm_LocalQueryKind_native_cursor_pos)) {
-        return_ok(union_of((daterm_LocalQueryResult_pos)(try_(daterm_ANSI__queryNativeCursorPos(self)))));
+    case_((daterm_Query_native_cursor_pos)) {
+        return_ok(union_of((daterm_Query_Result_pos)(try_(daterm_ANSI__queryNativeCursorPos(self)))));
     } $end(case);
     }
     return_err(E_cause$daterm_ANSI_Unsupported());
@@ -1084,7 +1084,7 @@ fn_((daterm_ANSI_parseWindowsKeyEvent(
                                             ? daterm_key_Code_back_tab
                                             : code;
         if (action != daterm_key_Action_release) {
-            switch (resolved) {
+            $suppress_(switch_enum)(switch (resolved)) {
             case daterm_key_Code_left_shift: $fallthrough;
             case_((daterm_key_Code_right_shift)) mods.shift = true $end(case);
             case daterm_key_Code_left_ctrl: $fallthrough;
@@ -1242,11 +1242,11 @@ fn_((daterm_ANSI__windows_pollNativeEvent(daterm_ANSI* self))(O$daterm_Event) $s
             }
         } $end(case);
         case_((WINDOW_BUFFER_SIZE_EVENT)){
-            let_(size, daterm_Size) = {
+            let_(size, daterm_CellSize) = {
                 .cols = as$(u16)(record.Event.WindowBufferSizeEvent.dwSize.X),
                 .rows = as$(u16)(record.Event.WindowBufferSizeEvent.dwSize.Y),
             };
-            self->cached_screen_cells = some$((O$daterm_Size)(size));
+            self->cached_screen_cells = some$((O$daterm_CellSize)(size));
             return_some(union_of((daterm_Event_resize)(size)));
         } $end(case);
         case_((MOUSE_EVENT)) {

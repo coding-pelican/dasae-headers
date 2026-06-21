@@ -20,26 +20,28 @@ extern "C" {
 #include "input.h"
 
 typedef enum_((daterm_mouse_Btn $fits($packed))(
-    daterm_mouse_Btn_left,
+    daterm_mouse_Btn_left = 0,
     daterm_mouse_Btn_middle,
     daterm_mouse_Btn_right,
     daterm_mouse_Btn_backward,
     daterm_mouse_Btn_forward,
     daterm_mouse_Btn_aux1,
-    daterm_mouse_Btn_aux2
+    daterm_mouse_Btn_aux2,
+    count$daterm_mouse_Btn
 )) daterm_mouse_Btn;
 T_use_prl$(daterm_mouse_Btn);
 
 typedef enum_((daterm_mouse_Wheel $fits($packed))(
-    daterm_mouse_Wheel_up,
+    daterm_mouse_Wheel_up = 0,
     daterm_mouse_Wheel_down,
     daterm_mouse_Wheel_left,
-    daterm_mouse_Wheel_right
+    daterm_mouse_Wheel_right,
+    count$daterm_mouse_Wheel
 )) daterm_mouse_Wheel;
 T_use_prl$(daterm_mouse_Wheel);
 
 typedef enum_((daterm_mouse_PosKind $fits($packed))(
-    daterm_mouse_PosKind_cell,
+    daterm_mouse_PosKind_cell = 0,
     daterm_mouse_PosKind_pixel
 )) daterm_mouse_PosKind;
 T_use_prl$(daterm_mouse_PosKind);

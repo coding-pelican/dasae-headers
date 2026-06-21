@@ -27,7 +27,7 @@ typedef variant_((daterm_Event $fits($packed))(
     (daterm_Event_text, daterm_key_Text),
     (daterm_Event_mouse, daterm_mouse_Event),
     (daterm_Event_focus, daterm_focus_Event),
-    (daterm_Event_resize, daterm_Size)
+    (daterm_Event_resize, daterm_CellSize)
 )) daterm_Event;
 T_use_prl$(daterm_Event);
 

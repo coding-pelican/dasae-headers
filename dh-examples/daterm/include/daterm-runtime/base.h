@@ -6,7 +6,7 @@
  * @file    base.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-23 (date of creation)
- * @updated 2026-06-20 (date of last update)
+ * @updated 2026-06-21 (date of last update)
  * @ingroup daterm-runtime
  * @prefix  daterm
  */
@@ -20,16 +20,22 @@ extern "C" {
 #include <dh/prl.h>
 
 typedef struct daterm_Pos {
-    var_(col, u16);
-    var_(row, u16);
+    var_(x, u16);
+    var_(y, u16);
 } daterm_Pos;
 T_use_prl$(daterm_Pos);
 
-typedef struct daterm_Size {
+typedef struct daterm_CellSize {
     var_(cols, u16);
     var_(rows, u16);
-} daterm_Size;
-T_use_prl$(daterm_Size);
+} daterm_CellSize;
+T_use_prl$(daterm_CellSize);
+
+typedef struct daterm_PixelSize {
+    var_(width, u16);
+    var_(height, u16);
+} daterm_PixelSize;
+T_use_prl$(daterm_PixelSize);
 
 #if defined(__cplusplus)
 } /* extern "C" */
