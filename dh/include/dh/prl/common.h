@@ -23,11 +23,14 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "base.h"
+#include "simd.h"
 #include "Limit.h"
 #include "Range.h"
+
 #include "Co.h"
 #include "Clsr.h"
 #include "va.h"
+
 #include "CompHash.h"
 #include "Err.h"
 #include "ErrTrace.h"

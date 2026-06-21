@@ -63,6 +63,76 @@ extern "C" {
     l$((A$$((sizeOf$(TypeOf((_T[])_a)) / sizeOf$(_T)), _T)){ .val = _a })
 #define fromA$ A_from$
 
+#define A_cat$(/*(_T)(_lhs, _rhs)*/... /*(_T)*/) \
+    __op__A_cat$(__op__A_cat$__parseT __VA_ARGS__)
+#define __op__A_cat$(...) \
+    __op__A_cat$__emit(__VA_ARGS__)
+#define __op__A_cat$__parseT(_T...) \
+    _T, __op__A_cat$__parseParams
+#define __op__A_cat$__parseParams(_lhs, _rhs...) \
+    pp_uniqTok(lhs), _lhs, pp_uniqTok(rhs), _rhs
+#define __op__A_cat$__emit(_T, __lhs, _lhs, __rhs, _rhs...) ({ \
+    var __lhs = &(_lhs); \
+    var __rhs = &(_rhs); \
+    typedef union { \
+        T_embed$(struct { \
+            var_(lhs, TypeOf(*__lhs)); \
+            var_(rhs, TypeOf(*__rhs)); \
+        }); \
+        var_(catted, _T); \
+    } Catting; \
+    l$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
+})
+#define catA$ A_cat$
+#define A_cat(_lhs, _rhs...) \
+    A_cat$((A$$(A_n$(TypeOf(_lhs)) + A_n$(TypeOf(_rhs)), A_T$(TypeOf(_lhs))))(_lhs, _rhs))
+#define catA A_cat
+
+#define A_repeat$(/*(_T: A(N, T))(_a: A(M, T))*/... /*(_T)*/) \
+    __op__A_repeat$(__VA_ARGS__)
+#define repeatA$ A_repeat$
+#define __op__A_repeat$(...) \
+    __op__A_repeat$__step(__op__A_repeat$__parseT __VA_ARGS__)
+#define __op__A_repeat$__parseT(_T...) \
+    _T, __op__A_repeat$__parseA
+#define __op__A_repeat$__parseA(_a...) \
+    pp_uniqTok(a), pp_uniqTok(ret), pp_uniqTok(i), _a
+#define __op__A_repeat$__step(...) \
+    __op__A_repeat$__emit(__VA_ARGS__)
+#define __op__A_repeat$__emit(_T, __a, __ret, __i, _a...) ({ \
+    let __a = _a; \
+    var_(__ret, _T) = A_zero(); \
+    claim_assert(A_len(__a) > 0); \
+    claim_assert(eqlType$(A_TUnqual$(_T), A_TUnqual$(TypeOf(__a)))); \
+    loop_inline_(for) (usize __i = 0; __i < A_len(__ret); ++__i) { \
+        *A_at((__ret)[__i]) = *A_at((__a)[__i % A_len(__a)]); \
+    } \
+    __ret; \
+})
+
+#define A_extract$(/*(_T: A(N, T))(_a: A(M, T), _first: usize)*/... /*(_T)*/) \
+    __op__A_extract$(__VA_ARGS__)
+#define extractA$ A_extract$
+#define __op__A_extract$(...) \
+    __op__A_extract$__step(__op__A_extract$__parseT __VA_ARGS__)
+#define __op__A_extract$__parseT(_T...) \
+    _T, __op__A_extract$__parseA
+#define __op__A_extract$__parseA(_a, _first...) \
+    pp_uniqTok(a), pp_uniqTok(first), pp_uniqTok(ret), pp_uniqTok(i), _a, _first
+#define __op__A_extract$__step(...) \
+    __op__A_extract$__emit(__VA_ARGS__)
+#define __op__A_extract$__emit(_T, __a, __first, __ret, __i, _a, _first...) ({ \
+    let __a = _a; \
+    let_(__first, usize) = _first; \
+    var_(__ret, _T) = A_zero(); \
+    claim_assert(eqlType$(A_TUnqual$(_T), A_TUnqual$(TypeOf(__a)))); \
+    claim_assert(__first + A_len(__ret) <= A_len(__a)); \
+    loop_inline_(for) (usize __i = 0; __i < A_len(__ret); ++__i) { \
+        *A_at((__ret)[__i]) = *A_at((__a)[__first + __i]); \
+    } \
+    __ret; \
+})
+
 #define A_val(_a /*: A$$(_N,_T)*/... /*($A$(_N,_T))*/) ((_a).val)
 #define valA A_val
 #define A_ptr(_a /*: A$$(_N,_T)*/... /*(P$$(_T))*/) (&*A_val(_a))
@@ -196,30 +266,6 @@ extern "C" {
 })
 #define suffixA A_suffix
 
-#define A_cat$(/*(_T)(_lhs, _rhs)*/... /*(_T)*/) \
-    __op__A_cat$(__op__A_cat$__parseT __VA_ARGS__)
-#define __op__A_cat$(...) \
-    __op__A_cat$__emit(__VA_ARGS__)
-#define __op__A_cat$__parseT(_T...) \
-    _T, __op__A_cat$__parseParams
-#define __op__A_cat$__parseParams(_lhs, _rhs...) \
-    pp_uniqTok(lhs), _lhs, pp_uniqTok(rhs), _rhs
-#define __op__A_cat$__emit(_T, __lhs, _lhs, __rhs, _rhs...) ({ \
-    var __lhs = &(_lhs); \
-    var __rhs = &(_rhs); \
-    typedef union { \
-        T_embed$(struct { \
-            var_(lhs, TypeOf(*__lhs)); \
-            var_(rhs, TypeOf(*__rhs)); \
-        }); \
-        var_(catted, _T); \
-    } Catting; \
-    l$((Catting){ .lhs = *__lhs, .rhs = *__rhs }).catted; \
-})
-#define catA$ A_cat$
-#define A_cat(_lhs, _rhs...) \
-    A_cat$((A$$(A_n$(TypeOf(_lhs)) + A_n$(TypeOf(_rhs)), A_T$(TypeOf(_lhs))))(_lhs, _rhs))
-#define catA A_cat
 
 /*========== Macros and Definitions =========================================*/
 

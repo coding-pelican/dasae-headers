@@ -32,9 +32,11 @@ extern "C" {
 #include "builtin/container_info.h" /* no prefix */
 
 #include "builtin/asm.h"
+#include "builtin/wasm.h"
 #include "builtin/mem.h" /* no prefix */
-#include "builtin/atom.h"
 #include "builtin/prefetch.h"
+#include "builtin/atom.h"
+#include "builtin/simd.h"
 
 #include "builtin/src_loc.h"
 #include "builtin/static_assert.h"

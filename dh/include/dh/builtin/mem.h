@@ -41,19 +41,19 @@ extern "C" {
 #define raw_countOnes16(_x...) ____raw_countOnes16(_x)
 #define raw_countOnes8(_x...) ____raw_countOnes8(_x)
 
-#define raw_leadingZerosSize(_x...) ____raw_leadingZerosSize(_x)
-#define raw_leadingZeros64(_x...) ____raw_leadingZeros64(_x)
-#define raw_leadingZerosLong(_x...) ____raw_leadingZerosLong(_x)
-#define raw_leadingZeros32(_x...) ____raw_leadingZeros32(_x)
-#define raw_leadingZeros16(_x...) ____raw_leadingZeros16(_x)
-#define raw_leadingZeros8(_x...) ____raw_leadingZeros8(_x)
-
 #define raw_leadingRedundantSgnBitsSize(_x...) ____raw_leadingRedundantSgnBitsSize(_x)
 #define raw_leadingRedundantSgnBits64(_x...) ____raw_leadingRedundantSgnBits64(_x)
 #define raw_leadingRedundantSgnBitsLong(_x...) ____raw_leadingRedundantSgnBitsLong(_x)
 #define raw_leadingRedundantSgnBits32(_x...) ____raw_leadingRedundantSgnBits32(_x)
 #define raw_leadingRedundantSgnBits16(_x...) ____raw_leadingRedundantSgnBits16(_x)
 #define raw_leadingRedundantSgnBits8(_x...) ____raw_leadingRedundantSgnBits8(_x)
+
+#define raw_leadingZerosSize(_x...) ____raw_leadingZerosSize(_x)
+#define raw_leadingZeros64(_x...) ____raw_leadingZeros64(_x)
+#define raw_leadingZerosLong(_x...) ____raw_leadingZerosLong(_x)
+#define raw_leadingZeros32(_x...) ____raw_leadingZeros32(_x)
+#define raw_leadingZeros16(_x...) ____raw_leadingZeros16(_x)
+#define raw_leadingZeros8(_x...) ____raw_leadingZeros8(_x)
 
 #define raw_trailingZerosSize(_x...) ____raw_trailingZerosSize(_x)
 #define raw_trailingZeros64(_x...) ____raw_trailingZeros64(_x)
@@ -114,7 +114,7 @@ extern "C" {
 #define raw_memcpy(_p_dst, _p_src, _len...) ____raw_memcpy(_p_dst, _p_src, _len)
 #define raw_memmove(_p_dst, _p_src, _len...) ____raw_memmove(_p_dst, _p_src, _len)
 #define raw_memeql(_p_lhs, _p_rhs, _len...) ____raw_memeql(_p_lhs, _p_rhs, _len)
-#define raw_memord(_p_lhs, _p_rhs, _len...) ____raw_memord(_p_lhs, _p_rhs, _len)
+#define raw_memord(_p_lhs, _p_rhs, _len...) __step__raw_memord(_p_lhs, _p_rhs, _len)
 #define raw_alloca(_len_bytes...) ____raw_alloca(_len_bytes)
 #define raw_allocaAlign(_len_bytes, _log2_align...) ____raw_allocaAlign(_len_bytes, _log2_align)
 
@@ -142,16 +142,6 @@ extern "C" {
 #define ____raw_countOnes16(_x...) (as$(u32)(__builtin_popcount(as$(u32)(as$(u16)(_x)))))
 #define ____raw_countOnes8(_x...) (as$(u32)(__builtin_popcount(as$(u32)(as$(u8)(_x)))))
 
-#define ____raw_leadingZerosSize(_x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_leadingZeros64(_x)), \
-    pp_else_(raw_leadingZeros32(_x)) \
-)
-#define ____raw_leadingZeros64(_x...) (as$(u32)(__builtin_clzll(as$(u64)(_x))))
-#define ____raw_leadingZerosLong(_x...) (as$(u32)(__builtin_clzl(as$(ulong)(_x))))
-#define ____raw_leadingZeros32(_x...) (as$(u32)(__builtin_clz(as$(u32)(_x))))
-#define ____raw_leadingZeros16(_x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u16)(_x)))) - 16)
-#define ____raw_leadingZeros8(_x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u8)(_x)))) - 24)
-
 #define ____raw_leadingRedundantSgnBitsSize(_x...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_leadingRedundantSgnBits64(_x)), \
     pp_else_(raw_leadingRedundantSgnBits32(_x)) \
@@ -161,6 +151,16 @@ extern "C" {
 #define ____raw_leadingRedundantSgnBits32(_x...) (as$(u32)(__builtin_clrsb(as$(i32)(_x))))
 #define ____raw_leadingRedundantSgnBits16(_x...) (as$(u32)(__builtin_clrsb(as$(i32)(as$(i16)(_x)))) - 16)
 #define ____raw_leadingRedundantSgnBits8(_x...) (as$(u32)(__builtin_clrsb(as$(i32)(as$(i8)(_x)))) - 24)
+
+#define ____raw_leadingZerosSize(_x...) pp_if_(arch_bits_is_64bit)( \
+    pp_then_(raw_leadingZeros64(_x)), \
+    pp_else_(raw_leadingZeros32(_x)) \
+)
+#define ____raw_leadingZeros64(_x...) (as$(u32)(__builtin_clzll(as$(u64)(_x))))
+#define ____raw_leadingZerosLong(_x...) (as$(u32)(__builtin_clzl(as$(ulong)(_x))))
+#define ____raw_leadingZeros32(_x...) (as$(u32)(__builtin_clz(as$(u32)(_x))))
+#define ____raw_leadingZeros16(_x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u16)(_x)))) - 16)
+#define ____raw_leadingZeros8(_x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u8)(_x)))) - 24)
 
 #define ____raw_trailingZerosSize(_x...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_trailingZeros64(_x)), \
@@ -258,9 +258,15 @@ extern "C" {
 #define ____raw_memeql(_p_lhs, _p_rhs, _len...) (as$(bool)(!__builtin_memcmp( \
     as$(const u8*)(_p_lhs), as$(const u8*)(_p_rhs), as$(usize)(_len) \
 )))
-#define ____raw_memord(_p_lhs, _p_rhs, _len...) (as$(cmp_Ord)(__builtin_memcmp( \
-    as$(const u8*)(_p_lhs), as$(const u8*)(_p_rhs), as$(usize)(_len) \
-)))
+#define __step__raw_memord(_p_lhs, _p_rhs, _len...) ____raw_memord( \
+    pp_uniqTok(ord), _p_lhs, _p_rhs, _len \
+)
+#define ____raw_memord(__ord, _p_lhs, _p_rhs, _len...) local_({ \
+    let __ord = __builtin_memcmp( \
+        as$(const u8*)(_p_lhs), as$(const u8*)(_p_rhs), as$(usize)(_len) \
+    ); \
+    local_return_(as$(cmp_Ord)((__ord > 0) - (__ord < 0))); \
+})
 #define ____raw_alloca(_len_bytes...) __builtin_alloca( \
     as$(usize)(_len_bytes) \
 )

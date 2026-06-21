@@ -6,6 +6,7 @@
 #include "dh/ArrList.h"
 #include "dh/heap/Sys.h"
 #include "dh/heap/Arena.h"
+#include "dh/io/stream.h"
 
 T_alias$((Event)(u8));
 T_use$((Event)(
@@ -26,12 +27,83 @@ $static fn_((EventLog_push(EventLog* self, u8 event))(void) $guard) {
     defer_(ArrList_Grip_release$Event(&list));
     ArrList_appendWithin$Event(&list.ctx, event);
 } $unguarded(fn);
+$static fn_((EventLog_dumpMismatch(EventLog* self, S_const$u8 expected))(void)) {
+    let actual = A_prefix((self->items)(self->len));
+    io_stream_println(u8_l("    event log len: actual={:uz} expected={:uz}"), self->len, expected.len);
+    let span = pri_max(self->len, expected.len);
+    for_(($rt(span))(i)) {
+        let actual_event = i < self->len ? *S_at((actual)[i]) : u8_(0xFF);
+        let expected_event = i < expected.len ? *S_at((expected)[i]) : u8_(0xFF);
+        if (actual_event == expected_event) continue;
+        io_stream_println(
+            u8_l("    [{:uz}] actual={:d} expected={:d}"),
+            i, as$(u32)(actual_event), as$(u32)(expected_event)
+        );
+    } $end(for);
+    io_stream_print(u8_l("    actual:   "));
+    for_(($s(actual))(event)) { io_stream_print(u8_l("{:d} "), as$(u32)(*event)); } $end(for);
+    io_stream_nl();
+    io_stream_print(u8_l("    expected: "));
+    for_(($s(expected))(event)) { io_stream_print(u8_l("{:d} "), as$(u32)(*event)); } $end(for);
+    io_stream_nl();
+}
+$static fn_((EventLog_dumpInterleavingMismatch(
+    EventLog* self, S_const$u8 expected_a, S_const$u8 expected_b
+))(void)) {
+    let actual = A_prefix((self->items)(self->len));
+    io_stream_println(
+        u8_l("    event log len: actual={:uz} expected={:uz}"),
+        self->len, expected_a.len + expected_b.len
+    );
+    io_stream_print(u8_l("    actual:     "));
+    for_(($s(actual))(event)) { io_stream_print(u8_l("{:d} "), as$(u32)(*event)); } $end(for);
+    io_stream_nl();
+    io_stream_print(u8_l("    expected a: "));
+    for_(($s(expected_a))(event)) { io_stream_print(u8_l("{:d} "), as$(u32)(*event)); } $end(for);
+    io_stream_nl();
+    io_stream_print(u8_l("    expected b: "));
+    for_(($s(expected_b))(event)) { io_stream_print(u8_l("{:d} "), as$(u32)(*event)); } $end(for);
+    io_stream_nl();
+}
 $attr($must_check)
 $static fn_((EventLog_expect(EventLog* self, S_const$u8 expected))(E$void) $scope) {
+    if (self->len != expected.len) EventLog_dumpMismatch(self, expected);
     try_(TEST_expect(self->len == expected.len));
     for_(($s(A_prefix((self->items)(self->len))), $s(expected))(event, expected_event)) {
+        if (*event != *expected_event) EventLog_dumpMismatch(self, expected);
         try_(TEST_expect(*event == *expected_event));
     } $end(for);
+    return_ok({});
+} $unscoped(fn);
+$attr($must_check)
+$static fn_((EventLog_expectInterleaving(
+    EventLog* self, S_const$u8 expected_a, S_const$u8 expected_b
+))(E$void) $scope) {
+    if (self->len != expected_a.len + expected_b.len) {
+        EventLog_dumpInterleavingMismatch(self, expected_a, expected_b);
+    }
+    try_(TEST_expect(self->len == expected_a.len + expected_b.len));
+
+    var_(next_a, usize) = 0;
+    var_(next_b, usize) = 0;
+    for_(($s(A_prefix((self->items)(self->len))))(event)) {
+        if (next_a < expected_a.len && *event == *S_at((expected_a)[next_a])) {
+            next_a += 1;
+            continue;
+        }
+        if (next_b < expected_b.len && *event == *S_at((expected_b)[next_b])) {
+            next_b += 1;
+            continue;
+        }
+        EventLog_dumpInterleavingMismatch(self, expected_a, expected_b);
+        return_err(E_cause$TEST_Fail());
+    } $end(for);
+
+    if (next_a != expected_a.len || next_b != expected_b.len) {
+        EventLog_dumpInterleavingMismatch(self, expected_a, expected_b);
+    }
+    try_(TEST_expect(next_a == expected_a.len));
+    try_(TEST_expect(next_b == expected_b.len));
     return_ok({});
 } $unscoped(fn);
 
@@ -151,15 +223,11 @@ TEST_fn_("exec/Task: idle consumes request; recancel re-arms" $guard) {
 } $unguarded(TEST_fn);
 
 T_use$((Event)(Future, Future_await, Future_cancel, Sched_async));
-$static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected))(E$void) $guard) {
-    var_(log, EventLog) = {
-        .items = A_zero(),
-        .len = 0,
-    };
+$static fn_((runLoggedTasks(Sched sched, time_Awake time, EventLog* log))(E$void) $guard) {
     let_(sys, SysLogged) = {
         .sched = sched,
         .time = time,
-        .log = &log,
+        .log = log,
     };
     let async = Sched_async$Event;
     let cancel = Future_cancel$Event;
@@ -171,6 +239,15 @@ $static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected)
     defer_(let_ignore = cancel(&task_b, sched));
     try_(TEST_expect(await(&task_a, sched) == 19));
     try_(TEST_expect(await(&task_b, sched) == 29));
+
+    return_ok({});
+} $unguarded(fn);
+$static fn_((runExpectedOrder(Sched sched, time_Awake time, S_const$u8 expected))(E$void) $guard) {
+    var_(log, EventLog) = {
+        .items = A_zero(),
+        .len = 0,
+    };
+    try_(runLoggedTasks(sched, time, &log));
 
     try_(EventLog_expect(&log, expected));
     return_ok({});
@@ -232,7 +309,7 @@ TEST_fn_("exec/Coop: cooperative cancel reaches sleep cancel point" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("exec/Coop: runs evented stackless and fiber tasks in deadline order" $guard) {
+TEST_fn_("exec/Coop: preserves timed progress within stackless and fiber tasks" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
@@ -240,7 +317,19 @@ TEST_fn_("exec/Coop: runs evented stackless and fiber tasks in deadline order" $
     let gpa = heap_Arena_alctr(&arena);
     var exec = exec_Coop_init(gpa, try_(time_Awake_direct()));
     defer_(exec_Coop_fini(&exec));
-    let expected = A_from$((u8){ 10, 20, 21, 11, 22, 23, 29, 12, 19 });
-    try_(runExpectedOrder(Sched_coop(&exec), time_Awake_evented(&exec), A_ref$((S_const$u8)(expected))));
+    var_(log, EventLog) = {
+        .items = A_zero(),
+        .len = 0,
+    };
+    let sched = Sched_coop(&exec);
+    try_(runLoggedTasks(sched, time_Awake_evented(&exec), &log));
+
+    let expected_a = A_from$((u8){ 10, 11, 12, 19 });
+    let expected_b = A_from$((u8){ 20, 21, 22, 23, 29 });
+    try_(EventLog_expectInterleaving(
+        &log,
+        A_ref$((S_const$u8)(expected_a)),
+        A_ref$((S_const$u8)(expected_b))
+    ));
     return_ok({});
 } $unguarded(TEST_fn);

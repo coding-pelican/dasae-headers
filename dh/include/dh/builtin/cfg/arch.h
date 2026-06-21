@@ -5,13 +5,13 @@
  * @file    arch.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2026-06-03 (date of last update)
+ * @updated 2026-06-21 (date of last update)
  * @ingroup dal-project/da/foundation/cfg
  * @prefix  arch
  *
  * @brief   Architecture detection and configuration
  * @details Detects CPU architecture and hardware capabilities.
- *          Focus: x86_64, x86, aarch64, ARM, RISC-V, wasm64, wasm32.
+ *          Focus: x86, ARM, RISC-V, WebAssembly, PowerPC, and Hexagon.
  *          Single source of truth: all properties derived from arch_type.
  */
 #pragma once
@@ -117,6 +117,12 @@ extern "C" {
 
 #define arch_cache_line_bytes __comp_int__arch_cache_line_bytes
 
+/* --- Spin-loop Features --- */
+
+#define arch_has_arm_yield __comp_bool__arch_has_arm_yield
+#define arch_has_riscv_zihintpause __comp_bool__arch_has_riscv_zihintpause
+#define arch_has_spin_loop_hint __comp_bool__arch_has_spin_loop_hint
+
 /* --- SIMD Feature --- */
 /* SIMD Intrinsic Headers
  * This is for reference on what headers correspond to what SIMD features:
@@ -146,16 +152,28 @@ extern "C" {
 #define arch_has_avx __comp_bool__arch_has_avx
 #define arch_has_avx2 __comp_bool__arch_has_avx2
 #define arch_has_avx512f __comp_bool__arch_has_avx512f
+#define arch_has_avx512bw __comp_bool__arch_has_avx512bw
+#define arch_has_avx512dq __comp_bool__arch_has_avx512dq
+#define arch_has_avx512vl __comp_bool__arch_has_avx512vl
 #define arch_has_fma __comp_bool__arch_has_fma
 /* --- ARM SIMD Features --- */
 #define arch_has_neon __comp_bool__arch_has_neon
 #define arch_has_sve __comp_bool__arch_has_sve
+#define arch_has_sve2 __comp_bool__arch_has_sve2
+#define arch_has_fp16_vector_arith __comp_bool__arch_has_fp16_vector_arith
+#define arch_has_dotprod __comp_bool__arch_has_dotprod
+#define arch_has_i8mm __comp_bool__arch_has_i8mm
 /* --- RISC-V Vector Extension --- */
 #define arch_has_rvv __comp_bool__arch_has_rvv
+#define arch_rvv_min_vlen_bits __comp_int__arch_rvv_min_vlen_bits
+/* --- WebAssembly SIMD --- */
+#define arch_has_wasm_simd128 __comp_bool__arch_has_wasm_simd128
+#define arch_has_wasm_relaxed_simd __comp_bool__arch_has_wasm_relaxed_simd
 
 /* --- SIMD Availability Summary --- */
 
-#define arch_simd_use __comp_bool__arch_simd_use
+#define arch_simd_supported __comp_bool__arch_simd_supported
+#define arch_simd_scalable __comp_bool__arch_simd_scalable
 #define arch_simd_width_bits __comp_int__arch_simd_width_bits
 #define arch_simd_align_bytes __comp_int__arch_simd_align_bytes
 
@@ -351,8 +369,10 @@ extern "C" {
 #if arch_family_type != arch_family_type_wasm
 #if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#undef __comp_enum__arch_byte_order
 #define __comp_enum__arch_byte_order arch_byte_order_little_endian
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#undef __comp_enum__arch_byte_order
 #define __comp_enum__arch_byte_order arch_byte_order_big_endian
 #else
 #warning "Unknown byte order detected. Please check your byte order settings."
@@ -364,8 +384,61 @@ extern "C" {
 
 /* --- Cache Line --- */
 
-/* Derive cache line from family */
-#define __comp_int__arch_cache_line_bytes 64
+/* Conservative false-sharing boundary, aligned with Zig's atomic cache-line table. */
+#define __comp_int__arch_cache_line_bytes pp_expand( \
+    pp_switch_ pp_begin(arch_type)( \
+        pp_case_((arch_type_x86_64)(128)), \
+        pp_case_((arch_type_aarch64)(128)), \
+        pp_case_((arch_type_arm)(32)), \
+        pp_default_(64) \
+    ) pp_end \
+)
+
+#if defined(__HEXAGON_ARCH__) && (__HEXAGON_ARCH__ >= 73)
+#define __comp_int__arch_hexagon_cache_line_bytes 64
+#else
+#define __comp_int__arch_hexagon_cache_line_bytes 32
+#endif
+
+/* --- Spin-loop Features --- */
+
+#if arch_type == arch_type_arm \
+    && (defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6M__) \
+        || (defined(__ARM_ARCH) && (__ARM_ARCH >= 7)))
+#define __comp_bool__arch_has_arm_yield 1
+#else
+#define __comp_bool__arch_has_arm_yield 0
+#endif
+
+#if arch_is_riscv_family && defined(__riscv_zihintpause)
+#define __comp_bool__arch_has_riscv_zihintpause 1
+#else
+#define __comp_bool__arch_has_riscv_zihintpause 0
+#endif
+
+#define __comp_bool__arch_has_spin_loop_hint pp_or( \
+    arch_is_x86_family, pp_or(arch_is_aarch64, arch_has_arm_yield) \
+)
+
+#if (arch_is_x86_64 || arch_is_aarch64 || arch_is_riscv64 || arch_is_wasm64) \
+    && (arch_bits_wide != 64)
+#error "64-bit architecture has an inconsistent arch_bits_wide"
+#endif
+#if (arch_is_x86 || arch_is_arm || arch_is_riscv32 || arch_is_wasm32) \
+    && (arch_bits_wide != 32)
+#error "32-bit architecture has an inconsistent arch_bits_wide"
+#endif
+#if (arch_is_x86_64 || arch_is_aarch64) \
+    && (arch_cache_line_bytes != 128)
+#error "architecture has an inconsistent 128-byte atomic cache-line boundary"
+#endif
+#if arch_is_arm && (arch_cache_line_bytes != 32)
+#error "ARM has an inconsistent 32-byte atomic cache-line boundary"
+#endif
+#if !(arch_is_x86_64 || arch_is_aarch64 || arch_is_arm) \
+    && (arch_cache_line_bytes != 64)
+#error "architecture has an inconsistent default atomic cache-line boundary"
+#endif
 
 /* --- SIMD Feature --- */
 
@@ -379,10 +452,20 @@ extern "C" {
 #define __comp_bool__arch_has_avx 0
 #define __comp_bool__arch_has_avx2 0
 #define __comp_bool__arch_has_avx512f 0
+#define __comp_bool__arch_has_avx512bw 0
+#define __comp_bool__arch_has_avx512dq 0
+#define __comp_bool__arch_has_avx512vl 0
 #define __comp_bool__arch_has_fma 0
 #define __comp_bool__arch_has_neon 0
 #define __comp_bool__arch_has_sve 0
+#define __comp_bool__arch_has_sve2 0
+#define __comp_bool__arch_has_fp16_vector_arith 0
+#define __comp_bool__arch_has_dotprod 0
+#define __comp_bool__arch_has_i8mm 0
 #define __comp_bool__arch_has_rvv 0
+#define __comp_int__arch_rvv_min_vlen_bits 0
+#define __comp_bool__arch_has_wasm_simd128 0
+#define __comp_bool__arch_has_wasm_relaxed_simd 0
 
 /* --- x86/x86_64 SIMD Detection --- */
 
@@ -442,6 +525,21 @@ extern "C" {
 #define __comp_bool__arch_has_avx512f 1
 #endif /* defined(__AVX512F__) */
 
+#if defined(__AVX512BW__)
+#undef __comp_bool__arch_has_avx512bw
+#define __comp_bool__arch_has_avx512bw 1
+#endif /* defined(__AVX512BW__) */
+
+#if defined(__AVX512DQ__)
+#undef __comp_bool__arch_has_avx512dq
+#define __comp_bool__arch_has_avx512dq 1
+#endif /* defined(__AVX512DQ__) */
+
+#if defined(__AVX512VL__)
+#undef __comp_bool__arch_has_avx512vl
+#define __comp_bool__arch_has_avx512vl 1
+#endif /* defined(__AVX512VL__) */
+
 /* FMA (Fused Multiply-Add) */
 #if defined(__FMA__)
 #undef __comp_bool__arch_has_fma
@@ -466,6 +564,26 @@ extern "C" {
 #define __comp_bool__arch_has_sve 1
 #endif /* defined(__ARM_FEATURE_SVE) */
 
+#if defined(__ARM_FEATURE_SVE2)
+#undef __comp_bool__arch_has_sve2
+#define __comp_bool__arch_has_sve2 1
+#endif /* defined(__ARM_FEATURE_SVE2) */
+
+#if defined(__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+#undef __comp_bool__arch_has_fp16_vector_arith
+#define __comp_bool__arch_has_fp16_vector_arith 1
+#endif /* defined(__ARM_FEATURE_FP16_VECTOR_ARITHMETIC) */
+
+#if defined(__ARM_FEATURE_DOTPROD)
+#undef __comp_bool__arch_has_dotprod
+#define __comp_bool__arch_has_dotprod 1
+#endif /* defined(__ARM_FEATURE_DOTPROD) */
+
+#if defined(__ARM_FEATURE_MATMUL_INT8)
+#undef __comp_bool__arch_has_i8mm
+#define __comp_bool__arch_has_i8mm 1
+#endif /* defined(__ARM_FEATURE_MATMUL_INT8) */
+
 #endif /* arch_is_arm_family */
 
 /* --- RISC-V Vector Extension Detection --- */
@@ -477,21 +595,48 @@ extern "C" {
 #define __comp_bool__arch_has_rvv 1
 #endif /* defined(__riscv_v) || defined(__riscv_vector) */
 
+#if defined(__riscv_v_min_vlen)
+#undef __comp_int__arch_rvv_min_vlen_bits
+#define __comp_int__arch_rvv_min_vlen_bits __riscv_v_min_vlen
+#elif defined(__riscv_zvl128b)
+#undef __comp_int__arch_rvv_min_vlen_bits
+#define __comp_int__arch_rvv_min_vlen_bits 128
+#endif
+
 #endif /* arch_is_riscv_family */
+
+/* --- WebAssembly SIMD Detection --- */
+
+#if arch_is_wasm_family
+
+#if defined(__wasm_simd128__)
+#undef __comp_bool__arch_has_wasm_simd128
+#define __comp_bool__arch_has_wasm_simd128 1
+#endif /* defined(__wasm_simd128__) */
+
+#if defined(__wasm_relaxed_simd__)
+#undef __comp_bool__arch_has_wasm_relaxed_simd
+#define __comp_bool__arch_has_wasm_relaxed_simd 1
+#endif /* defined(__wasm_relaxed_simd__) */
+
+#endif /* arch_is_wasm_family */
 
 /* --- SIMD Availability Summary --- */
 
 /* Determine if any SIMD is available */
-#define __comp_bool__arch_simd_use /* pp_or(arch_has_sse2, pp_or(arch_has_neon, arch_has_rvv)) */ pp_false
+#define __comp_bool__arch_simd_supported pp_or( \
+    arch_has_sse2, pp_or(arch_has_neon, pp_or(arch_has_sve, pp_or(arch_has_rvv, arch_has_wasm_simd128))) \
+)
+#define __comp_bool__arch_simd_scalable pp_or(arch_has_sve, arch_has_rvv)
 /* Determine maximum SIMD width */
 #define __comp_int__arch_simd_width_bits pp_if_(arch_has_avx512f)( \
     pp_then_(512), \
     pp_else_(pp_if_(pp_or(arch_has_avx, arch_has_avx2))( \
         pp_then_(256), \
-        pp_else_(pp_if_(pp_or(arch_has_sse, pp_or(arch_has_sse2, arch_has_neon)))( \
+        pp_else_(pp_if_(pp_or(arch_has_sse, pp_or(arch_has_sse2, pp_or(arch_has_neon, arch_has_wasm_simd128))))( \
             pp_then_(128), \
-            pp_else_(pp_if_(arch_has_rvv)( \
-                pp_then_(128), /* RVV width is implementation-defined, assume minimum 128 */ \
+            pp_else_(pp_if_(pp_or(arch_has_sve, arch_has_rvv))( \
+                pp_then_(256), /* recommendation for scalable targets, not register width */ \
                 pp_else_(0) \
             )) \
         )) \
@@ -502,7 +647,22 @@ extern "C" {
     pp_then_(64), \
     pp_else_(pp_if_(pp_or(arch_has_avx, arch_has_avx2))( \
         pp_then_(32), \
-        pp_else_(pp_if_(pp_or(arch_has_sse, pp_or(arch_has_sse2, pp_or(arch_has_neon, arch_has_rvv))))( \
+        pp_else_(pp_if_(pp_or( \
+            arch_has_sse, \
+            pp_or( \
+                arch_has_sse2, \
+                pp_or( \
+                    arch_has_neon, \
+                    pp_or( \
+                        arch_has_sve, \
+                        pp_or( \
+                            arch_has_rvv, \
+                            arch_has_wasm_simd128 \
+                        ) \
+                    ) \
+                ) \
+            ) \
+        ))( \
             pp_then_(16), \
             pp_else_(1) \
         )) \

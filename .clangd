@@ -180,6 +180,27 @@ CompileFlags:
 ---
 If:
   PathMatch: [.*\.cc, .*\.cxx, .*\.cpp, .*\.hh, .*\.hxx, .*\.hpp]
+  PathExclude:
+    # Hidden paths
+    - (^|.*/)\.[^/]+(/.*)?
+    # Build and cache output
+    - (^|.*/)[Bb]uilds?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Cc]aches?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Tt]mps?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Tt]emps?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Test doubles and placeholders
+    - (^|.*/)[Mm]ocks?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ff]akes?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Dd]umm(ys?|ies)([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ss]tubs?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Ss]hims?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Drafts and backups
+    - (^|.*/)[Dd]rafts?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Bb]aks?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Bb]ackups?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    - (^|.*/)[Aa]rchives?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
+    # Local vendored dependencies
+    - (^|.*/)lib/deps(/.*)?
 CompileFlags:
   Compiler: clang++
   Add:

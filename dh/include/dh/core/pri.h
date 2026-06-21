@@ -5,7 +5,7 @@
  * @file    pri.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-28 (date of creation)
- * @updated 2026-06-03 (date of last update)
+ * @updated 2026-06-21 (date of last update)
  * @ingroup dasae-headers(dh)/core/pri
  * @prefix  (none)
  *
@@ -286,12 +286,12 @@ extern "C" {
 #define int_countZeros_static(_x... /*(u32)*/) ____int_countZeros_static(_x)
 #define int_countZeros(_x... /*(u32)*/) __step__int_countZeros(_x)
 
+#define iint_leadingRedundantSgnBits_static(_x... /*(u32)*/) ____iint_leadingRedundantSgnBits_static(_x)
+#define iint_leadingRedundantSgnBits(_x... /*(u32)*/) __step__iint_leadingRedundantSgnBits(_x)
 #define int_leadingOnes_static(_x... /*(u32)*/) ____int_leadingOnes_static(_x)
 #define int_leadingOnes(_x... /*(u32)*/) __step__int_leadingOnes(_x)
 #define int_leadingZeros_static(_x... /*(u32)*/) ____int_leadingZeros_static(_x)
 #define int_leadingZeros(_x... /*(u32)*/) __step__int_leadingZeros(_x)
-#define iint_leadingRedundantSgnBits_static(_x... /*(u32)*/) ____iint_leadingRedundantSgnBits_static(_x)
-#define iint_leadingRedundantSgnBits(_x... /*(u32)*/) __step__iint_leadingRedundantSgnBits(_x)
 #define int_trailingOnes_static(_x... /*(u32)*/) ____int_trailingOnes_static(_x)
 #define int_trailingOnes(_x... /*(u32)*/) __step__int_trailingOnes(_x)
 #define int_trailingZeros_static(_x... /*(u32)*/) ____int_trailingZeros_static(_x)
@@ -437,6 +437,13 @@ extern "C" {
 #define flt_neq(_lhs, _rhs...) __op__flt_neq(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 
 #define flt_ord(_lhs, _rhs... /*(cmp_Ord)*/) __op__flt_ord__step(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
+#define flt_ordApx(_lhs, _rhs, _threshold, _mode... /*(cmp_Ord)*/) __op__flt_ordApx( \
+    pp_uniqTok(lhs), pp_uniqTok(rhs), pp_uniqTok(threshold), pp_uniqTok(mode), \
+    pp_uniqTok(diff), pp_uniqTok(tolerance), pp_uniqTok(ret), \
+    _lhs, _rhs, _threshold, _mode \
+)
+#define flt_ordApxAbs(_lhs, _rhs, _threshold... /*(cmp_Ord)*/) flt_ordApx(_lhs, _rhs, _threshold, cmp_ApxMode_abs)
+#define flt_ordApxRel(_lhs, _rhs, _threshold... /*(cmp_Ord)*/) flt_ordApx(_lhs, _rhs, _threshold, cmp_ApxMode_rel)
 #define flt_eq(_lhs, _rhs...) __op__flt_eq(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define flt_ne(_lhs, _rhs...) __op__flt_ne(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
 #define flt_lt(_lhs, _rhs...) __op__flt_lt(pp_uniqTok(lhs), pp_uniqTok(rhs), _lhs, _rhs)
@@ -1699,6 +1706,25 @@ $inline_always
     local_return_(int_countZeros_static(__x)); \
 })
 
+#define ____iint_leadingRedundantSgnBits_static(_x /*: IIntType */... /*(u32)*/) (as$(u32)( \
+    T_switch$((TypeOf(_x))( \
+        T_case$((i8)(raw_leadingRedundantSgnBits8(as$(i8)(_x)))), \
+        T_case$((i16)(raw_leadingRedundantSgnBits16(as$(i16)(_x)))), \
+        T_case$((i32)(raw_leadingRedundantSgnBits32(as$(i32)(_x)))), \
+        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+            T_case$((ilong)(raw_leadingRedundantSgnBitsLong(as$(ilong)(_x)))), \
+        )) T_delim(), \
+        T_case$((i64)(raw_leadingRedundantSgnBits64(as$(i64)(_x)))) \
+    )) \
+))
+#define __step__iint_leadingRedundantSgnBits(_x...) ____iint_leadingRedundantSgnBits(pp_uniqTok(x), _x)
+#define ____iint_leadingRedundantSgnBits(__x, _x...) local_({ \
+    typedef TypeOfUnqual(_x) IIntType; \
+    claim_assert_static(isIInt$(IIntType)); \
+    let_(__x, IIntType) = _x; \
+    local_return_(iint_leadingRedundantSgnBits_static(__x)); \
+})
+
 #define ____int_leadingOnes_static(_x /*: IntType */... /*(u32)*/) \
     int_leadingZeros_static(as$(TypeOf(_x))(~(_x)))
 #define __step__int_leadingOnes(_x...) ____int_leadingOnes(pp_uniqTok(x), _x)
@@ -1731,25 +1757,6 @@ $inline_always
     typedef TypeOfUnqual(_x) IntType; \
     let_(__x, IntType) = _x; \
     local_return_(int_leadingZeros_static(__x)); \
-})
-
-#define ____iint_leadingRedundantSgnBits_static(_x /*: IIntType */... /*(u32)*/) (as$(u32)( \
-    T_switch$((TypeOf(_x))( \
-        T_case$((i8)(raw_leadingRedundantSgnBits8(as$(i8)(_x)))), \
-        T_case$((i16)(raw_leadingRedundantSgnBits16(as$(i16)(_x)))), \
-        T_case$((i32)(raw_leadingRedundantSgnBits32(as$(i32)(_x)))), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
-            T_case$((ilong)(raw_leadingRedundantSgnBitsLong(as$(ilong)(_x)))), \
-        )) T_delim(), \
-        T_case$((i64)(raw_leadingRedundantSgnBits64(as$(i64)(_x)))) \
-    )) \
-))
-#define __step__iint_leadingRedundantSgnBits(_x...) ____iint_leadingRedundantSgnBits(pp_uniqTok(x), _x)
-#define ____iint_leadingRedundantSgnBits(__x, _x...) local_({ \
-    typedef TypeOfUnqual(_x) IIntType; \
-    claim_assert_static(isIInt$(IIntType)); \
-    let_(__x, IIntType) = _x; \
-    local_return_(iint_leadingRedundantSgnBits_static(__x)); \
 })
 
 #define ____int_trailingOnes_static(_x /*: IntType */... /*(u32)*/) \
@@ -2397,6 +2404,31 @@ $inline_always
     let_(__lhs, FltType) = _lhs; \
     let_(__rhs, FltType) = _rhs; \
     local_return_(pri_ord_static(__lhs, __rhs)); \
+})
+#define __op__flt_ordApx( \
+    __lhs, __rhs, __threshold, __mode, __diff, __tolerance, __ret, \
+    _lhs, _rhs, _threshold, _mode... \
+) local_({ \
+    typedef TypeOfUnqual(_lhs) FltType; \
+    claim_assert_static(isFlt$(FltType)); \
+    let_(__lhs, FltType) = _lhs; \
+    let_(__rhs, FltType) = _rhs; \
+    let_(__threshold, FltType) = _threshold; \
+    let_(__mode, cmp_ApxMode) = _mode; \
+    claim_assert(0 <= __threshold); \
+    claim_assert(__mode == cmp_ApxMode_abs || __mode == cmp_ApxMode_rel); \
+    claim_assert(!flt_isNaN(__lhs) && !flt_isNaN(__rhs)); \
+    var_(__ret, cmp_Ord) = flt_ord(__lhs, __rhs); \
+    if (__ret != cmp_Ord_eq && flt_isFinite(__lhs) && flt_isFinite(__rhs)) { \
+        let_(__diff, FltType) = flt_abs(flt_sub(__lhs, __rhs)); \
+        let_(__tolerance, FltType) = (__mode == cmp_ApxMode_abs) \
+                                       ? __threshold \
+                                       : flt_mul(__threshold, flt_max(flt_abs(__lhs), flt_abs(__rhs))); \
+        if (flt_le(__diff, __tolerance)) { \
+            __ret = cmp_Ord_eq; \
+        } \
+    } \
+    local_return_(__ret); \
 })
 #define __op__flt_eq(__lhs, __rhs, _lhs, _rhs...) local_({ \
     typedef TypeOfUnqual(_lhs) FltType; \

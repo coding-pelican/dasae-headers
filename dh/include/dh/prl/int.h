@@ -79,6 +79,23 @@ $attr($inline_always)
 $static fn_((u32_shr(u32 x, u32 shift))(u32));
 
 $attr($inline_always)
+$static fn_((ulong_add(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_sub(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_mul(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_div(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_mod(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_pow(ulong base, u32 exp))(ulong));
+$attr($inline_always)
+$static fn_((ulong_shl(ulong x, u32 shift))(ulong));
+$attr($inline_always)
+$static fn_((ulong_shr(ulong x, u32 shift))(ulong));
+
+$attr($inline_always)
 $static fn_((u64_add(u64 lhs, u64 rhs))(u64));
 $attr($inline_always)
 $static fn_((u64_sub(u64 lhs, u64 rhs))(u64));
@@ -178,6 +195,27 @@ $attr($inline_always)
 $static fn_((i32_shr(i32 x, u32 shift))(i32));
 
 $attr($inline_always)
+$static fn_((ilong_add(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_sub(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_mul(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_div(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_mod(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_neg(ilong x))(ilong));
+$attr($inline_always)
+$static fn_((ilong_abs(ilong x))(ilong));
+$attr($inline_always)
+$static fn_((ilong_pow(ilong base, u32 exp))(ilong));
+$attr($inline_always)
+$static fn_((ilong_shl(ilong x, u32 shift))(ilong));
+$attr($inline_always)
+$static fn_((ilong_shr(ilong x, u32 shift))(ilong));
+
+$attr($inline_always)
 $static fn_((i64_add(i64 lhs, i64 rhs))(i64));
 $attr($inline_always)
 $static fn_((i64_sub(i64 lhs, i64 rhs))(i64));
@@ -271,6 +309,23 @@ $attr($inline_always)
 $static fn_((u32_shlChkd(u32 x, u32 shift))(O$u32));
 $attr($inline_always)
 $static fn_((u32_shrChkd(u32 x, u32 shift))(O$u32));
+
+$attr($inline_always)
+$static fn_((ulong_addChkd(ulong lhs, ulong rhs))(O$ulong));
+$attr($inline_always)
+$static fn_((ulong_subChkd(ulong lhs, ulong rhs))(O$ulong));
+$attr($inline_always)
+$static fn_((ulong_mulChkd(ulong lhs, ulong rhs))(O$ulong));
+$attr($inline_always)
+$static fn_((ulong_divChkd(ulong lhs, ulong rhs))(O$ulong));
+$attr($inline_always)
+$static fn_((ulong_modChkd(ulong lhs, ulong rhs))(O$ulong));
+$attr($inline_always)
+$static fn_((ulong_powChkd(ulong base, u32 exp))(O$ulong));
+$attr($inline_always)
+$static fn_((ulong_shlChkd(ulong x, u32 shift))(O$ulong));
+$attr($inline_always)
+$static fn_((ulong_shrChkd(ulong x, u32 shift))(O$ulong));
 
 $attr($inline_always)
 $static fn_((u64_addChkd(u64 lhs, u64 rhs))(O$u64));
@@ -372,6 +427,27 @@ $attr($inline_always)
 $static fn_((i32_shrChkd(i32 x, u32 shift))(O$i32));
 
 $attr($inline_always)
+$static fn_((ilong_addChkd(ilong lhs, ilong rhs))(O$ilong));
+$attr($inline_always)
+$static fn_((ilong_subChkd(ilong lhs, ilong rhs))(O$ilong));
+$attr($inline_always)
+$static fn_((ilong_mulChkd(ilong lhs, ilong rhs))(O$ilong));
+$attr($inline_always)
+$static fn_((ilong_divChkd(ilong lhs, ilong rhs))(O$ilong));
+$attr($inline_always)
+$static fn_((ilong_modChkd(ilong lhs, ilong rhs))(O$ilong));
+$attr($inline_always)
+$static fn_((ilong_negChkd(ilong x))(O$ilong));
+$attr($inline_always)
+$static fn_((ilong_absChkd(ilong x))(O$ilong));
+$attr($inline_always)
+$static fn_((ilong_powChkd(ilong base, u32 exp))(O$ilong));
+$attr($inline_always)
+$static fn_((ilong_shlChkd(ilong x, u32 shift))(O$ilong));
+$attr($inline_always)
+$static fn_((ilong_shrChkd(ilong x, u32 shift))(O$ilong));
+
+$attr($inline_always)
 $static fn_((i64_addChkd(i64 lhs, i64 rhs))(O$i64));
 $attr($inline_always)
 $static fn_((i64_subChkd(i64 lhs, i64 rhs))(O$i64));
@@ -449,6 +525,17 @@ $attr($inline_always)
 $static fn_((u32_shrWrap(u32 x, u32 shift))(u32));
 
 $attr($inline_always)
+$static fn_((ulong_addWrap(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_subWrap(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_mulWrap(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_shlWrap(ulong x, u32 shift))(ulong));
+$attr($inline_always)
+$static fn_((ulong_shrWrap(ulong x, u32 shift))(ulong));
+
+$attr($inline_always)
 $static fn_((u64_addWrap(u64 lhs, u64 rhs))(u64));
 $attr($inline_always)
 $static fn_((u64_subWrap(u64 lhs, u64 rhs))(u64));
@@ -512,6 +599,19 @@ $attr($inline_always)
 $static fn_((i32_shrWrap(i32 x, u32 shift))(i32));
 
 $attr($inline_always)
+$static fn_((ilong_addWrap(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_subWrap(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_mulWrap(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_negWrap(ilong x))(ilong));
+$attr($inline_always)
+$static fn_((ilong_shlWrap(ilong x, u32 shift))(ilong));
+$attr($inline_always)
+$static fn_((ilong_shrWrap(ilong x, u32 shift))(ilong));
+
+$attr($inline_always)
 $static fn_((i64_addWrap(i64 lhs, i64 rhs))(i64));
 $attr($inline_always)
 $static fn_((i64_subWrap(i64 lhs, i64 rhs))(i64));
@@ -565,6 +665,15 @@ $attr($inline_always)
 $static fn_((u32_mulSat(u32 lhs, u32 rhs))(u32));
 $attr($inline_always)
 $static fn_((u32_powSat(u32 base, u32 exp))(u32));
+
+$attr($inline_always)
+$static fn_((ulong_addSat(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_subSat(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_mulSat(ulong lhs, ulong rhs))(ulong));
+$attr($inline_always)
+$static fn_((ulong_powSat(ulong base, u32 exp))(ulong));
 
 $attr($inline_always)
 $static fn_((u64_addSat(u64 lhs, u64 rhs))(u64));
@@ -630,6 +739,21 @@ $attr($inline_always)
 $static fn_((i32_absSat(i32 x))(i32));
 $attr($inline_always)
 $static fn_((i32_powSat(i32 base, u32 exp))(i32));
+
+$attr($inline_always)
+$static fn_((ilong_addSat(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_subSat(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_mulSat(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_divSat(ilong lhs, ilong rhs))(ilong));
+$attr($inline_always)
+$static fn_((ilong_negSat(ilong x))(ilong));
+$attr($inline_always)
+$static fn_((ilong_absSat(ilong x))(ilong));
+$attr($inline_always)
+$static fn_((ilong_powSat(ilong base, u32 exp))(ilong));
 
 $attr($inline_always)
 $static fn_((i64_addSat(i64 lhs, i64 rhs))(i64));
@@ -753,6 +877,36 @@ fn_((u32_shl(u32 x, u32 shift))(u32)) {
 };
 fn_((u32_shr(u32 x, u32 shift))(u32)) {
     return debug_assert(shift < 32), x >> shift;
+};
+fn_((ulong_add(ulong lhs, ulong rhs))(ulong)) {
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &l0$((ulong)))), lhs + rhs;
+};
+fn_((ulong_sub(ulong lhs, ulong rhs))(ulong)) {
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &l0$((ulong)))), lhs - rhs;
+};
+fn_((ulong_mul(ulong lhs, ulong rhs))(ulong)) {
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &l0$((ulong)))), lhs * rhs;
+};
+fn_((ulong_div(ulong lhs, ulong rhs))(ulong)) {
+    return debug_assert(rhs != 0), lhs / rhs;
+};
+fn_((ulong_mod(ulong lhs, ulong rhs))(ulong)) {
+    return debug_assert(rhs != 0), lhs % rhs;
+};
+fn_((ulong_pow(ulong base, u32 exp))(ulong)) {
+    if (exp == 0) return 1;
+    var_(result, ulong) = 1;
+    for (var_(i, u32) = 0; i < exp; ++i) {
+        debug_assert(!__builtin_mul_overflow(result, base, &l0$((ulong))));
+        result *= base;
+    }
+    return result;
+};
+fn_((ulong_shl(ulong x, u32 shift))(ulong)) {
+    return debug_assert(shift < (sizeOf$(ulong) * 8)), x << shift;
+};
+fn_((ulong_shr(ulong x, u32 shift))(ulong)) {
+    return debug_assert(shift < (sizeOf$(ulong) * 8)), x >> shift;
 };
 fn_((u64_add(u64 lhs, u64 rhs))(u64)) {
     return debug_assert(!__builtin_add_overflow(lhs, rhs, &l0$((u64)))), lhs + rhs;
@@ -923,6 +1077,42 @@ fn_((i32_shl(i32 x, u32 shift))(i32)) {
 };
 fn_((i32_shr(i32 x, u32 shift))(i32)) {
     return debug_assert(shift < 32), x >> shift;
+};
+fn_((ilong_add(ilong lhs, ilong rhs))(ilong)) {
+    return debug_assert(!__builtin_add_overflow(lhs, rhs, &l0$((ilong)))), lhs + rhs;
+};
+fn_((ilong_sub(ilong lhs, ilong rhs))(ilong)) {
+    return debug_assert(!__builtin_sub_overflow(lhs, rhs, &l0$((ilong)))), lhs - rhs;
+};
+fn_((ilong_mul(ilong lhs, ilong rhs))(ilong)) {
+    return debug_assert(!__builtin_mul_overflow(lhs, rhs, &l0$((ilong)))), lhs * rhs;
+};
+fn_((ilong_div(ilong lhs, ilong rhs))(ilong)) {
+    return debug_assert(rhs != 0), debug_assert(!(lhs == ilong_limit_min && rhs == -1)), lhs / rhs;
+};
+fn_((ilong_mod(ilong lhs, ilong rhs))(ilong)) {
+    return debug_assert(rhs != 0), debug_assert(!(lhs == ilong_limit_min && rhs == -1)), lhs % rhs;
+};
+fn_((ilong_neg(ilong x))(ilong)) {
+    return debug_assert(x != ilong_limit_min), -x;
+};
+fn_((ilong_abs(ilong x))(ilong)) {
+    return debug_assert(x != ilong_limit_min), (x < 0) ? -x : x;
+};
+fn_((ilong_pow(ilong base, u32 exp))(ilong)) {
+    if (exp == 0) return 1;
+    var_(result, ilong) = 1;
+    for (var_(i, u32) = 0; i < exp; ++i) {
+        debug_assert(!__builtin_mul_overflow(result, base, &l0$((ilong))));
+        result *= base;
+    }
+    return result;
+};
+fn_((ilong_shl(ilong x, u32 shift))(ilong)) {
+    return debug_assert(shift < (sizeOf$(ilong) * 8)), debug_assert(0 <= x), x << shift;
+};
+fn_((ilong_shr(ilong x, u32 shift))(ilong)) {
+    return debug_assert(shift < (sizeOf$(ilong) * 8)), x >> shift;
 };
 fn_((i64_add(i64 lhs, i64 rhs))(i64)) {
     return debug_assert(!__builtin_add_overflow(lhs, rhs, &l0$((i64)))), lhs + rhs;
@@ -1122,6 +1312,47 @@ fn_((u32_shlChkd(u32 x, u32 shift))(O$u32)) {
 fn_((u32_shrChkd(u32 x, u32 shift))(O$u32)) {
     if (shift >= 32) return none$((O$u32));
     return some$((O$u32)(x >> shift));
+};
+fn_((ulong_addChkd(ulong lhs, ulong rhs))(O$ulong)) {
+    var_(result, ulong) = 0;
+    if (__builtin_add_overflow(lhs, rhs, &result)) return none$((O$ulong));
+    return some$((O$ulong)(result));
+};
+fn_((ulong_subChkd(ulong lhs, ulong rhs))(O$ulong)) {
+    var_(result, ulong) = 0;
+    if (__builtin_sub_overflow(lhs, rhs, &result)) return none$((O$ulong));
+    return some$((O$ulong)(result));
+};
+fn_((ulong_mulChkd(ulong lhs, ulong rhs))(O$ulong)) {
+    var_(result, ulong) = 0;
+    if (__builtin_mul_overflow(lhs, rhs, &result)) return none$((O$ulong));
+    return some$((O$ulong)(result));
+};
+fn_((ulong_divChkd(ulong lhs, ulong rhs))(O$ulong)) {
+    if (rhs == 0) return none$((O$ulong));
+    return some$((O$ulong)(lhs / rhs));
+};
+fn_((ulong_modChkd(ulong lhs, ulong rhs))(O$ulong)) {
+    if (rhs == 0) return none$((O$ulong));
+    return some$((O$ulong)(lhs % rhs));
+};
+fn_((ulong_powChkd(ulong base, u32 exp))(O$ulong)) {
+    if (exp == 0) return some$((O$ulong)(1));
+    var_(result, ulong) = 1;
+    for (var_(i, u32) = 0; i < exp; ++i) {
+        if (__builtin_mul_overflow(result, base, &result)) return none$((O$ulong));
+    }
+    return some$((O$ulong)(result));
+};
+fn_((ulong_shlChkd(ulong x, u32 shift))(O$ulong)) {
+    if (shift >= (sizeOf$(ulong) * 8)) return none$((O$ulong));
+    if (shift == 0) return some$((O$ulong)(x));
+    if (x > (ulong_limit_max >> shift)) return none$((O$ulong));
+    return some$((O$ulong)(x << shift));
+};
+fn_((ulong_shrChkd(ulong x, u32 shift))(O$ulong)) {
+    if (shift >= (sizeOf$(ulong) * 8)) return none$((O$ulong));
+    return some$((O$ulong)(x >> shift));
 };
 fn_((u64_addChkd(u64 lhs, u64 rhs))(O$u64)) {
     var_(result, u64) = 0;
@@ -1357,6 +1588,56 @@ fn_((i32_shrChkd(i32 x, u32 shift))(O$i32)) {
     if (shift >= 32) return none$((O$i32));
     return some$((O$i32)(x >> shift));
 };
+fn_((ilong_addChkd(ilong lhs, ilong rhs))(O$ilong)) {
+    var_(result, ilong) = 0;
+    if (__builtin_add_overflow(lhs, rhs, &result)) return none$((O$ilong));
+    return some$((O$ilong)(result));
+};
+fn_((ilong_subChkd(ilong lhs, ilong rhs))(O$ilong)) {
+    var_(result, ilong) = 0;
+    if (__builtin_sub_overflow(lhs, rhs, &result)) return none$((O$ilong));
+    return some$((O$ilong)(result));
+};
+fn_((ilong_mulChkd(ilong lhs, ilong rhs))(O$ilong)) {
+    var_(result, ilong) = 0;
+    if (__builtin_mul_overflow(lhs, rhs, &result)) return none$((O$ilong));
+    return some$((O$ilong)(result));
+};
+fn_((ilong_divChkd(ilong lhs, ilong rhs))(O$ilong)) {
+    if (rhs == 0 || (lhs == ilong_limit_min && rhs == -1)) return none$((O$ilong));
+    return some$((O$ilong)(lhs / rhs));
+};
+fn_((ilong_modChkd(ilong lhs, ilong rhs))(O$ilong)) {
+    if (rhs == 0 || (lhs == ilong_limit_min && rhs == -1)) return none$((O$ilong));
+    return some$((O$ilong)(lhs % rhs));
+};
+fn_((ilong_negChkd(ilong x))(O$ilong)) {
+    if (x == ilong_limit_min) return none$((O$ilong));
+    return some$((O$ilong)(-x));
+};
+fn_((ilong_absChkd(ilong x))(O$ilong)) {
+    if (x == ilong_limit_min) return none$((O$ilong));
+    return some$((O$ilong)((x < 0) ? -x : x));
+};
+fn_((ilong_powChkd(ilong base, u32 exp))(O$ilong)) {
+    if (exp == 0) return some$((O$ilong)(1));
+    var_(result, ilong) = 1;
+    for (var_(i, u32) = 0; i < exp; ++i) {
+        if (__builtin_mul_overflow(result, base, &result)) return none$((O$ilong));
+    }
+    return some$((O$ilong)(result));
+};
+fn_((ilong_shlChkd(ilong x, u32 shift))(O$ilong)) {
+    if (shift >= (sizeOf$(ilong) * 8)) return none$((O$ilong));
+    if (shift == 0) return some$((O$ilong)(x));
+    if (x < 0) return none$((O$ilong));
+    if (x > (ilong_limit_max >> shift)) return none$((O$ilong));
+    return some$((O$ilong)(x << shift));
+};
+fn_((ilong_shrChkd(ilong x, u32 shift))(O$ilong)) {
+    if (shift >= (sizeOf$(ilong) * 8)) return none$((O$ilong));
+    return some$((O$ilong)(x >> shift));
+};
 fn_((i64_addChkd(i64 lhs, i64 rhs))(O$i64)) {
     var_(result, i64) = 0;
     if (__builtin_add_overflow(lhs, rhs, &result)) return none$((O$i64));
@@ -1479,6 +1760,11 @@ fn_((u32_mulWrap(u32 lhs, u32 rhs))(u32)) { return lhs * rhs; };
 fn_((u32_shlWrap(u32 x, u32 shift))(u32)) { return x << (shift & 31); };
 fn_((u32_shrWrap(u32 x, u32 shift))(u32)) { return x >> (shift & 31); };
 
+fn_((ulong_addWrap(ulong lhs, ulong rhs))(ulong)) { return lhs + rhs; };
+fn_((ulong_subWrap(ulong lhs, ulong rhs))(ulong)) { return lhs - rhs; };
+fn_((ulong_mulWrap(ulong lhs, ulong rhs))(ulong)) { return lhs * rhs; };
+fn_((ulong_shlWrap(ulong x, u32 shift))(ulong)) { return x << (shift & ((sizeOf$(ulong) * 8) - 1)); };
+fn_((ulong_shrWrap(ulong x, u32 shift))(ulong)) { return x >> (shift & ((sizeOf$(ulong) * 8) - 1)); };
 fn_((u64_addWrap(u64 lhs, u64 rhs))(u64)) { return lhs + rhs; };
 fn_((u64_subWrap(u64 lhs, u64 rhs))(u64)) { return lhs - rhs; };
 fn_((u64_mulWrap(u64 lhs, u64 rhs))(u64)) { return lhs * rhs; };
@@ -1513,6 +1799,12 @@ fn_((i32_negWrap(i32 x))(i32)) { return -x; };
 fn_((i32_shlWrap(i32 x, u32 shift))(i32)) { return x << (shift & 31); };
 fn_((i32_shrWrap(i32 x, u32 shift))(i32)) { return x >> (shift & 31); };
 
+fn_((ilong_addWrap(ilong lhs, ilong rhs))(ilong)) { return lhs + rhs; };
+fn_((ilong_subWrap(ilong lhs, ilong rhs))(ilong)) { return lhs - rhs; };
+fn_((ilong_mulWrap(ilong lhs, ilong rhs))(ilong)) { return lhs * rhs; };
+fn_((ilong_negWrap(ilong x))(ilong)) { return -x; };
+fn_((ilong_shlWrap(ilong x, u32 shift))(ilong)) { return x << (shift & ((sizeOf$(ilong) * 8) - 1)); };
+fn_((ilong_shrWrap(ilong x, u32 shift))(ilong)) { return x >> (shift & ((sizeOf$(ilong) * 8) - 1)); };
 fn_((i64_addWrap(i64 lhs, i64 rhs))(i64)) { return lhs + rhs; };
 fn_((i64_subWrap(i64 lhs, i64 rhs))(i64)) { return lhs - rhs; };
 fn_((i64_mulWrap(i64 lhs, i64 rhs))(i64)) { return lhs * rhs; };
@@ -1596,6 +1888,29 @@ fn_((u32_powSat(u32 base, u32 exp))(u32)) {
     var_(result, u32) = 1;
     for (var_(i, u32) = 0; i < exp; ++i) {
         if (__builtin_mul_overflow(result, base, &result)) return u32_limit_max;
+    }
+    return result;
+};
+fn_((ulong_addSat(ulong lhs, ulong rhs))(ulong)) {
+    var_(result, ulong) = 0;
+    if (__builtin_add_overflow(lhs, rhs, &result)) return ulong_limit_max;
+    return result;
+};
+fn_((ulong_subSat(ulong lhs, ulong rhs))(ulong)) {
+    var_(result, ulong) = 0;
+    if (__builtin_sub_overflow(lhs, rhs, &result)) return ulong_limit_min;
+    return result;
+};
+fn_((ulong_mulSat(ulong lhs, ulong rhs))(ulong)) {
+    var_(result, ulong) = 0;
+    if (__builtin_mul_overflow(lhs, rhs, &result)) return ulong_limit_max;
+    return result;
+};
+fn_((ulong_powSat(ulong base, u32 exp))(ulong)) {
+    if (exp == 0) return 1;
+    var_(result, ulong) = 1;
+    for (var_(i, u32) = 0; i < exp; ++i) {
+        if (__builtin_mul_overflow(result, base, &result)) return ulong_limit_max;
     }
     return result;
 };
@@ -1772,6 +2087,49 @@ fn_((i32_powSat(i32 base, u32 exp))(i32)) {
         if (__builtin_mul_overflow(result, base, &result)) {
             let_(same_sign, bool) = (0 < old_result && 0 < base) || (old_result < 0 && base < 0);
             return same_sign ? i32_limit_max : i32_limit_min;
+        }
+    }
+    return result;
+};
+fn_((ilong_addSat(ilong lhs, ilong rhs))(ilong)) {
+    var_(result, ilong) = 0;
+    if (__builtin_add_overflow(lhs, rhs, &result)) return (0 < lhs) ? ilong_limit_max : ilong_limit_min;
+    return result;
+};
+fn_((ilong_subSat(ilong lhs, ilong rhs))(ilong)) {
+    var_(result, ilong) = 0;
+    if (__builtin_sub_overflow(lhs, rhs, &result)) return (0 < lhs) ? ilong_limit_max : ilong_limit_min;
+    return result;
+};
+fn_((ilong_mulSat(ilong lhs, ilong rhs))(ilong)) {
+    var_(result, ilong) = 0;
+    if (__builtin_mul_overflow(lhs, rhs, &result)) {
+        let_(same_sign, bool) = (0 < lhs && 0 < rhs) || (lhs < 0 && rhs < 0);
+        return same_sign ? ilong_limit_max : ilong_limit_min;
+    }
+    return result;
+};
+fn_((ilong_divSat(ilong lhs, ilong rhs))(ilong)) {
+    if (rhs == 0) return (0 <= lhs) ? ilong_limit_max : ilong_limit_min;
+    if (lhs == ilong_limit_min && rhs == -1) return ilong_limit_max;
+    return lhs / rhs;
+};
+fn_((ilong_negSat(ilong x))(ilong)) {
+    if (x == ilong_limit_min) return ilong_limit_max;
+    return -x;
+};
+fn_((ilong_absSat(ilong x))(ilong)) {
+    if (x == ilong_limit_min) return ilong_limit_max;
+    return (x < 0) ? -x : x;
+};
+fn_((ilong_powSat(ilong base, u32 exp))(ilong)) {
+    if (exp == 0) return 1;
+    var_(result, ilong) = 1;
+    for (var_(i, u32) = 0; i < exp; ++i) {
+        let_(old_result, ilong) = result;
+        if (__builtin_mul_overflow(result, base, &result)) {
+            let_(same_sign, bool) = (0 < old_result && 0 < base) || (old_result < 0 && base < 0);
+            return same_sign ? ilong_limit_max : ilong_limit_min;
         }
     }
     return result;

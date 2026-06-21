@@ -1,19 +1,14 @@
 #include "dh/HashMap.h"
 #include "dh/hash.h"
+#include "dh/prl/simd.h"
 #include "dh/meta.h"
 
 /*========== SIMD Configuration =============================================*/
 
-#define HashMap__use_simd arch_simd_use
-#define HashMap__simd_sse2 (arch_is_x86_family && arch_has_sse2)
-#define HashMap__simd_neon (arch_is_arm_family && arch_has_neon)
+#define HashMap__use_simd simd_supported
 #if HashMap__use_simd
-#if HashMap__simd_sse2
-#include <emmintrin.h>
-#elif HashMap__simd_neon
-#include <arm_neon.h>
-#endif
-#define HashMap__simd_group_size (arch_simd_width_bits / arch_bits_per_byte)
+#define HashMap__simd_group_size (simd_width_bits / arch_bits_per_byte)
+T_alias$((HashMap__SimdGroup)(simd_V$$(HashMap__simd_group_size, u8)));
 #endif /* HashMap__use_simd */
 
 /*========== Definitions ====================================================*/
@@ -317,7 +312,7 @@ $attr($inline_always)
 $static fn_((HashMap__simd_match_free(const HashMap_Ctrl* group))(u32));
 /// SIMD-accelerated lookup
 fn_((HashMap__idx_simd(HashMap self, u_V$raw key))(O$usize) $scope) {
-    if (self.size == 0) { return_none(); }
+    if (self.size == 0) return_none();
 
     let ctx = self.ctx;
     let hash = ctx->hashFn(key, u_load(u_deref(ctx->inner)));
@@ -359,51 +354,15 @@ fn_((HashMap__idx_simd(HashMap self, u_V$raw key))(O$usize) $scope) {
     return_none();
 } $unscoped(fn);
 
-#if HashMap__simd_sse2
-/* --- SSE2 Implementation --- */
 fn_((HashMap__simd_match_fingerprint(const HashMap_Ctrl* group, u8 fingerprint))(u32)) {
-    /* Create a vector with the fingerprint in all 16 lanes */
-    let needle = _mm_set1_epi8(as$(char)(as$(i8)(fingerprint | 0x80))); /* Set used bit */
-    /* Load 16 control bytes */
-    let haystack = _mm_loadu_si128(ptrAlignCast$((const __m128i*)(group)));
-    /* Compare for equality - returns 0xFF for matches, 0x00 for non-matches */
-    let cmp = _mm_cmpeq_epi8(needle, haystack);
-    /* Extract comparison results to bitmask (1 bit per byte) */
-    return as$(u32)(_mm_movemask_epi8(cmp));
+    let haystack = simd_V_load$((HashMap__SimdGroup)(mem_asBytes(u_anyP(ensureNonnull(group))).ptr));
+    let needle = simd_V_splat(haystack, fingerprint | 0x80);
+    return as$(u32)(simd_V_bool_bitMask(simd_V_int_eq(haystack, needle)));
 };
 fn_((HashMap__simd_match_free(const HashMap_Ctrl* group))(u32)) {
-    /* Free slots are exactly 0x00 */
-    let zero = _mm_setzero_si128();
-    let haystack = _mm_loadu_si128(ptrAlignCast$((const __m128i*)(group)));
-    let cmp = _mm_cmpeq_epi8(zero, haystack);
-    return as$(u32)(_mm_movemask_epi8(cmp));
+    let haystack = simd_V_load$((HashMap__SimdGroup)(mem_asBytes(u_anyP(ensureNonnull(group))).ptr));
+    return as$(u32)(simd_V_bool_bitMask(simd_V_int_eq(haystack, simd_V_splat(haystack, 0))));
 };
-#endif /* HashMap__simd_sse2 */
-#if HashMap__simd_neon
-/* --- NEON Implementation --- */
-fn_((HashMap__simd_match_fingerprint(const HashMap_Ctrl* group, u8 fingerprint))(u32)) {
-    let needle = vdupq_n_u8(fingerprint | 0x80);
-    let haystack = vld1q_u8(as$(const u8*)(group));
-    let cmp = vceqq_u8(needle, haystack);
-    let bit_mask = (uint8x16_t){ 1, 2, 4, 8, 1, 2, 4, 8, 1, 2, 4, 8, 1, 2, 4, 8 };
-    let masked = vandq_u8(cmp, bit_mask);
-    uint8x8_t paired = vpadd_u8(vget_low_u8(masked), vget_high_u8(masked));
-    paired = vpadd_u8(paired, paired);
-    paired = vpadd_u8(paired, paired);
-    return as$(u32)(vget_lane_u16(vreinterpret_u16_u8(paired), 0));
-};
-fn_((HashMap__simd_match_free(const HashMap_Ctrl* group))(u32)) {
-    let zero = vdupq_n_u8(0);
-    let haystack = vld1q_u8(as$(const u8*)(group));
-    let cmp = vceqq_u8(zero, haystack);
-    let bit_mask = (uint8x16_t){ 1, 2, 4, 8, 1, 2, 4, 8, 1, 2, 4, 8, 1, 2, 4, 8 };
-    let masked = vandq_u8(cmp, bit_mask);
-    uint8x8_t paired = vpadd_u8(vget_low_u8(masked), vget_high_u8(masked));
-    paired = vpadd_u8(paired, paired);
-    paired = vpadd_u8(paired, paired);
-    return as$(u32)(vget_lane_u16(vreinterpret_u16_u8(paired), 0));
-};
-#endif /* HashMap__simd_neon */
 #endif /* HashMap__use_simd */
 
 $static fn_((HashMap__grow(HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa, u32 new_capacity))(mem_E$void) $scope) {

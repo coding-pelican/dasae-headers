@@ -26,6 +26,7 @@ extern "C" {
 #include "prl/meta.h"
 
 #include "prl/base.h"
+#include "prl/simd.h"
 #include "prl/Limit.h"
 #include "prl/Range.h"
 

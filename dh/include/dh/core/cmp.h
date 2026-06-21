@@ -5,7 +5,7 @@
  * @file    cmp.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-24 (date of creation)
- * @updated 2024-11-29 (date of last update)
+ * @updated 2026-06-21 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers(dh)/core
  * @prefix  (none)
@@ -75,6 +75,11 @@ typedef enum_((cmp_Ord $fits($packed))(
 #define cmp_Ord_isLe(_ord /*: cmp_Ord*/... /*(bool)*/) bool_((_ord) <= cmp_Ord_eq)
 #define cmp_Ord_isGe(_ord /*: cmp_Ord*/... /*(bool)*/) bool_((_ord) >= cmp_Ord_eq)
 
+typedef enum_((cmp_ApxMode $fits($packed))(
+    cmp_ApxMode_abs,
+    cmp_ApxMode_rel,
+)) cmp_ApxMode;
+
 /*
  * Defining ordering for a type _T (cmp_ord$ / cmp_lt$):
  *
@@ -108,13 +113,29 @@ typedef enum_((cmp_Ord $fits($packed))(
 #define cmp_leCtx$(_T /*)(_lhs: _T, _rhs: _T, _ctx: u_V$raw) -> (bool*/) tpl_(_T, leCtx)
 #define cmp_geCtx$(_T /*)(_lhs: _T, _rhs: _T, _ctx: u_V$raw) -> (bool*/) tpl_(_T, geCtx)
 
-#define cmp_ordApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (cmp_Ord*/) tpl_(_T, ordApx)
-#define cmp_eqApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, eqApx)
-#define cmp_neApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, neApx)
-#define cmp_ltApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, ltApx)
-#define cmp_gtApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, gtApx)
-#define cmp_leApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, leApx)
-#define cmp_geApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, geApx)
+#define cmp_ordApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T, _mode: cmp_ApxMode) -> (cmp_Ord*/) tpl_(_T, ordApx)
+#define cmp_eqApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, eqApx)
+#define cmp_neApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, neApx)
+#define cmp_ltApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, ltApx)
+#define cmp_gtApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, gtApx)
+#define cmp_leApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, leApx)
+#define cmp_geApx$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, geApx)
+
+#define cmp_ordApxAbs$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (cmp_Ord*/) tpl_(_T, ordApxAbs)
+#define cmp_eqApxAbs$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, eqApxAbs)
+#define cmp_neApxAbs$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, neApxAbs)
+#define cmp_ltApxAbs$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, ltApxAbs)
+#define cmp_gtApxAbs$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, gtApxAbs)
+#define cmp_leApxAbs$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, leApxAbs)
+#define cmp_geApxAbs$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, geApxAbs)
+
+#define cmp_ordApxRel$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (cmp_Ord*/) tpl_(_T, ordApxRel)
+#define cmp_eqApxRel$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, eqApxRel)
+#define cmp_neApxRel$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, neApxRel)
+#define cmp_ltApxRel$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, ltApxRel)
+#define cmp_gtApxRel$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, gtApxRel)
+#define cmp_leApxRel$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, leApxRel)
+#define cmp_geApxRel$(_T /*)(_lhs: _T, _rhs: _T, _threshold: _T) -> (bool*/) tpl_(_T, geApxRel)
 
 #define cmp_u_ord$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw) -> (cmp_Ord*/) tpl_(_T, u_ord)
 #define cmp_u_eq$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw) -> (bool*/) tpl_(_T, u_eq)
@@ -132,13 +153,29 @@ typedef enum_((cmp_Ord $fits($packed))(
 #define cmp_u_leCtx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _ctx: u_V$raw) -> (bool*/) tpl_(_T, u_leCtx)
 #define cmp_u_geCtx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _ctx: u_V$raw) -> (bool*/) tpl_(_T, u_geCtx)
 
-#define cmp_u_ordApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (cmp_Ord*/) tpl_(_T, u_ordApx)
-#define cmp_u_eqApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_eqApx)
-#define cmp_u_neApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_neApx)
-#define cmp_u_ltApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_ltApx)
-#define cmp_u_gtApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_gtApx)
-#define cmp_u_leApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_leApx)
-#define cmp_u_geApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_geApx)
+#define cmp_u_ordApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw, _mode: cmp_ApxMode) -> (cmp_Ord*/) tpl_(_T, u_ordApx)
+#define cmp_u_eqApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, u_eqApx)
+#define cmp_u_neApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, u_neApx)
+#define cmp_u_ltApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, u_ltApx)
+#define cmp_u_gtApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, u_gtApx)
+#define cmp_u_leApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, u_leApx)
+#define cmp_u_geApx$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw, _mode: cmp_ApxMode) -> (bool*/) tpl_(_T, u_geApx)
+
+#define cmp_u_ordApxAbs$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (cmp_Ord*/) tpl_(_T, u_ordApxAbs)
+#define cmp_u_eqApxAbs$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_eqApxAbs)
+#define cmp_u_neApxAbs$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_neApxAbs)
+#define cmp_u_ltApxAbs$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_ltApxAbs)
+#define cmp_u_gtApxAbs$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_gtApxAbs)
+#define cmp_u_leApxAbs$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_leApxAbs)
+#define cmp_u_geApxAbs$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_geApxAbs)
+
+#define cmp_u_ordApxRel$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (cmp_Ord*/) tpl_(_T, u_ordApxRel)
+#define cmp_u_eqApxRel$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_eqApxRel)
+#define cmp_u_neApxRel$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_neApxRel)
+#define cmp_u_ltApxRel$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_ltApxRel)
+#define cmp_u_gtApxRel$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_gtApxRel)
+#define cmp_u_leApxRel$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_leApxRel)
+#define cmp_u_geApxRel$(_T /*)(_lhs: u_V$raw, _rhs: u_V$raw, _threshold: u_V$raw) -> (bool*/) tpl_(_T, u_geApxRel)
 
 /* --- Function-like Macros --- */
 
@@ -166,13 +203,29 @@ typedef enum_((cmp_Ord $fits($packed))(
 #define cmp_fn_leCtx$(/*(_T)(_id_lhs, _id_rhs, _id_ctx)*/...) __step__cmp_fn_leCtx$(__step__cmp_fn_leCtx$__parse __VA_ARGS__)
 #define cmp_fn_geCtx$(/*(_T)(_id_lhs, _id_rhs, _id_ctx)*/...) __step__cmp_fn_geCtx$(__step__cmp_fn_geCtx$__parse __VA_ARGS__)
 
-#define cmp_fn_ordApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_ordApx$(__step__cmp_fn_ordApx$__parse __VA_ARGS__)
-#define cmp_fn_eqApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_eqApx$(__step__cmp_fn_eqApx$__parse __VA_ARGS__)
-#define cmp_fn_neApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_neApx$(__step__cmp_fn_neApx$__parse __VA_ARGS__)
-#define cmp_fn_ltApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_ltApx$(__step__cmp_fn_ltApx$__parse __VA_ARGS__)
-#define cmp_fn_gtApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_gtApx$(__step__cmp_fn_gtApx$__parse __VA_ARGS__)
-#define cmp_fn_leApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_leApx$(__step__cmp_fn_leApx$__parse __VA_ARGS__)
-#define cmp_fn_geApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_geApx$(__step__cmp_fn_geApx$__parse __VA_ARGS__)
+#define cmp_fn_ordApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_ordApx$(__step__cmp_fn_ordApx$__parse __VA_ARGS__)
+#define cmp_fn_eqApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_eqApx$(__step__cmp_fn_eqApx$__parse __VA_ARGS__)
+#define cmp_fn_neApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_neApx$(__step__cmp_fn_neApx$__parse __VA_ARGS__)
+#define cmp_fn_ltApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_ltApx$(__step__cmp_fn_ltApx$__parse __VA_ARGS__)
+#define cmp_fn_gtApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_gtApx$(__step__cmp_fn_gtApx$__parse __VA_ARGS__)
+#define cmp_fn_leApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_leApx$(__step__cmp_fn_leApx$__parse __VA_ARGS__)
+#define cmp_fn_geApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_geApx$(__step__cmp_fn_geApx$__parse __VA_ARGS__)
+
+#define cmp_fn_ordApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_ordApxAbs$(__step__cmp_fn_ordApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_eqApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_eqApxAbs$(__step__cmp_fn_eqApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_neApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_neApxAbs$(__step__cmp_fn_neApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_ltApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_ltApxAbs$(__step__cmp_fn_ltApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_gtApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_gtApxAbs$(__step__cmp_fn_gtApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_leApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_leApxAbs$(__step__cmp_fn_leApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_geApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_geApxAbs$(__step__cmp_fn_geApxAbs$__parse __VA_ARGS__)
+
+#define cmp_fn_ordApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_ordApxRel$(__step__cmp_fn_ordApxRel$__parse __VA_ARGS__)
+#define cmp_fn_eqApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_eqApxRel$(__step__cmp_fn_eqApxRel$__parse __VA_ARGS__)
+#define cmp_fn_neApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_neApxRel$(__step__cmp_fn_neApxRel$__parse __VA_ARGS__)
+#define cmp_fn_ltApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_ltApxRel$(__step__cmp_fn_ltApxRel$__parse __VA_ARGS__)
+#define cmp_fn_gtApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_gtApxRel$(__step__cmp_fn_gtApxRel$__parse __VA_ARGS__)
+#define cmp_fn_leApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_leApxRel$(__step__cmp_fn_leApxRel$__parse __VA_ARGS__)
+#define cmp_fn_geApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_geApxRel$(__step__cmp_fn_geApxRel$__parse __VA_ARGS__)
 
 #define cmp_fn_u_eql$(/*(_T)(_id_lhs, _id_rhs)*/...) __step__cmp_fn_u_eql$(__step__cmp_fn_u_eql$__parse __VA_ARGS__)
 #define cmp_fn_u_neq$(/*(_T)(_id_lhs, _id_rhs)*/...) __step__cmp_fn_u_neq$(__step__cmp_fn_u_neq$__parse __VA_ARGS__)
@@ -196,13 +249,29 @@ typedef enum_((cmp_Ord $fits($packed))(
 #define cmp_fn_u_leCtx$(/*(_T)(_id_lhs, _id_rhs, _id_ctx)*/...) __step__cmp_fn_u_leCtx$(__step__cmp_fn_u_leCtx$__parse __VA_ARGS__)
 #define cmp_fn_u_geCtx$(/*(_T)(_id_lhs, _id_rhs, _id_ctx)*/...) __step__cmp_fn_u_geCtx$(__step__cmp_fn_u_geCtx$__parse __VA_ARGS__)
 
-#define cmp_fn_u_ordApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_ordApx$(__step__cmp_fn_u_ordApx$__parse __VA_ARGS__)
-#define cmp_fn_u_eqApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_eqApx$(__step__cmp_fn_u_eqApx$__parse __VA_ARGS__)
-#define cmp_fn_u_neApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_neApx$(__step__cmp_fn_u_neApx$__parse __VA_ARGS__)
-#define cmp_fn_u_ltApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_ltApx$(__step__cmp_fn_u_ltApx$__parse __VA_ARGS__)
-#define cmp_fn_u_gtApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_gtApx$(__step__cmp_fn_u_gtApx$__parse __VA_ARGS__)
-#define cmp_fn_u_leApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_leApx$(__step__cmp_fn_u_leApx$__parse __VA_ARGS__)
-#define cmp_fn_u_geApx$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_geApx$(__step__cmp_fn_u_geApx$__parse __VA_ARGS__)
+#define cmp_fn_u_ordApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_u_ordApx$(__step__cmp_fn_u_ordApx$__parse __VA_ARGS__)
+#define cmp_fn_u_eqApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_u_eqApx$(__step__cmp_fn_u_eqApx$__parse __VA_ARGS__)
+#define cmp_fn_u_neApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_u_neApx$(__step__cmp_fn_u_neApx$__parse __VA_ARGS__)
+#define cmp_fn_u_ltApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_u_ltApx$(__step__cmp_fn_u_ltApx$__parse __VA_ARGS__)
+#define cmp_fn_u_gtApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_u_gtApx$(__step__cmp_fn_u_gtApx$__parse __VA_ARGS__)
+#define cmp_fn_u_leApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_u_leApx$(__step__cmp_fn_u_leApx$__parse __VA_ARGS__)
+#define cmp_fn_u_geApx$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) __step__cmp_fn_u_geApx$(__step__cmp_fn_u_geApx$__parse __VA_ARGS__)
+
+#define cmp_fn_u_ordApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_ordApxAbs$(__step__cmp_fn_u_ordApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_u_eqApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_eqApxAbs$(__step__cmp_fn_u_eqApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_u_neApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_neApxAbs$(__step__cmp_fn_u_neApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_u_ltApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_ltApxAbs$(__step__cmp_fn_u_ltApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_u_gtApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_gtApxAbs$(__step__cmp_fn_u_gtApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_u_leApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_leApxAbs$(__step__cmp_fn_u_leApxAbs$__parse __VA_ARGS__)
+#define cmp_fn_u_geApxAbs$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_geApxAbs$(__step__cmp_fn_u_geApxAbs$__parse __VA_ARGS__)
+
+#define cmp_fn_u_ordApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_ordApxRel$(__step__cmp_fn_u_ordApxRel$__parse __VA_ARGS__)
+#define cmp_fn_u_eqApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_eqApxRel$(__step__cmp_fn_u_eqApxRel$__parse __VA_ARGS__)
+#define cmp_fn_u_neApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_neApxRel$(__step__cmp_fn_u_neApxRel$__parse __VA_ARGS__)
+#define cmp_fn_u_ltApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_ltApxRel$(__step__cmp_fn_u_ltApxRel$__parse __VA_ARGS__)
+#define cmp_fn_u_gtApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_gtApxRel$(__step__cmp_fn_u_gtApxRel$__parse __VA_ARGS__)
+#define cmp_fn_u_leApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_leApxRel$(__step__cmp_fn_u_leApxRel$__parse __VA_ARGS__)
+#define cmp_fn_u_geApxRel$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) __step__cmp_fn_u_geApxRel$(__step__cmp_fn_u_geApxRel$__parse __VA_ARGS__)
 
 /* --- Function-like Macros Default Implementations --- */
 /*
@@ -268,27 +337,71 @@ typedef enum_((cmp_Ord $fits($packed))(
     /* if `cmp_ordCtx` is implemented */ \
     __step__cmp_fn_geCtx_default$(__step__cmp_fn_geCtx_default$__parse __VA_ARGS__)
 
-#define cmp_fn_ordApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
-    /* if `cmp_ltApx` is implemented */ \
+#define cmp_fn_ordApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
+    /* if `cmp_ordApxAbs` and `cmp_ordApxRel` are implemented */ \
     __step__cmp_fn_ordApx_default$(__step__cmp_fn_ordApx_default$__parse __VA_ARGS__)
-#define cmp_fn_eqApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_eqApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_ordApx` is implemented */ \
     __step__cmp_fn_eqApx_default$(__step__cmp_fn_eqApx_default$__parse __VA_ARGS__)
-#define cmp_fn_neApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_neApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_ordApx` is implemented */ \
     __step__cmp_fn_neApx_default$(__step__cmp_fn_neApx_default$__parse __VA_ARGS__)
-#define cmp_fn_ltApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_ltApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_ordApx` is implemented */ \
     __step__cmp_fn_ltApx_default$(__step__cmp_fn_ltApx_default$__parse __VA_ARGS__)
-#define cmp_fn_gtApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_gtApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_ordApx` is implemented */ \
     __step__cmp_fn_gtApx_default$(__step__cmp_fn_gtApx_default$__parse __VA_ARGS__)
-#define cmp_fn_leApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_leApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_ordApx` is implemented */ \
     __step__cmp_fn_leApx_default$(__step__cmp_fn_leApx_default$__parse __VA_ARGS__)
-#define cmp_fn_geApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_geApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_ordApx` is implemented */ \
     __step__cmp_fn_geApx_default$(__step__cmp_fn_geApx_default$__parse __VA_ARGS__)
+
+#define cmp_fn_ordApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ltApxAbs` is implemented */ \
+    __step__cmp_fn_ordApxAbs_default$(__step__cmp_fn_ordApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_eqApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxAbs` is implemented */ \
+    __step__cmp_fn_eqApxAbs_default$(__step__cmp_fn_eqApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_neApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxAbs` is implemented */ \
+    __step__cmp_fn_neApxAbs_default$(__step__cmp_fn_neApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_ltApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxAbs` is implemented */ \
+    __step__cmp_fn_ltApxAbs_default$(__step__cmp_fn_ltApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_gtApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxAbs` is implemented */ \
+    __step__cmp_fn_gtApxAbs_default$(__step__cmp_fn_gtApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_leApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxAbs` is implemented */ \
+    __step__cmp_fn_leApxAbs_default$(__step__cmp_fn_leApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_geApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxAbs` is implemented */ \
+    __step__cmp_fn_geApxAbs_default$(__step__cmp_fn_geApxAbs_default$__parse __VA_ARGS__)
+
+#define cmp_fn_ordApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ltApxRel` is implemented */ \
+    __step__cmp_fn_ordApxRel_default$(__step__cmp_fn_ordApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_eqApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxRel` is implemented */ \
+    __step__cmp_fn_eqApxRel_default$(__step__cmp_fn_eqApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_neApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxRel` is implemented */ \
+    __step__cmp_fn_neApxRel_default$(__step__cmp_fn_neApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_ltApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxRel` is implemented */ \
+    __step__cmp_fn_ltApxRel_default$(__step__cmp_fn_ltApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_gtApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxRel` is implemented */ \
+    __step__cmp_fn_gtApxRel_default$(__step__cmp_fn_gtApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_leApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxRel` is implemented */ \
+    __step__cmp_fn_leApxRel_default$(__step__cmp_fn_leApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_geApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    /* if `cmp_ordApxRel` is implemented */ \
+    __step__cmp_fn_geApxRel_default$(__step__cmp_fn_geApxRel_default$__parse __VA_ARGS__)
 
 #define cmp_fn_u_eql_default$(/*(_T)(_id_lhs, _id_rhs)*/...) \
     /* if `cmp_u_neq` is implemented */ \
@@ -348,27 +461,57 @@ typedef enum_((cmp_Ord $fits($packed))(
     /* if `cmp_u_ordCtx` is implemented */ \
     __step__cmp_fn_u_geCtx_default$(__step__cmp_fn_u_geCtx_default$__parse __VA_ARGS__)
 
-#define cmp_fn_u_ordApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_u_ordApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_u_ltApx` is implemented */ \
     __step__cmp_fn_u_ordApx_default$(__step__cmp_fn_u_ordApx_default$__parse __VA_ARGS__)
-#define cmp_fn_u_eqApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_u_eqApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_u_ordApx` is implemented */ \
     __step__cmp_fn_u_eqApx_default$(__step__cmp_fn_u_eqApx_default$__parse __VA_ARGS__)
-#define cmp_fn_u_neApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_u_neApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_u_ordApx` is implemented */ \
     __step__cmp_fn_u_neApx_default$(__step__cmp_fn_u_neApx_default$__parse __VA_ARGS__)
-#define cmp_fn_u_ltApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_u_ltApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_u_ordApx` is implemented */ \
     __step__cmp_fn_u_ltApx_default$(__step__cmp_fn_u_ltApx_default$__parse __VA_ARGS__)
-#define cmp_fn_u_gtApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_u_gtApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_u_ordApx` is implemented */ \
     __step__cmp_fn_u_gtApx_default$(__step__cmp_fn_u_gtApx_default$__parse __VA_ARGS__)
-#define cmp_fn_u_leApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_u_leApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_u_ordApx` is implemented */ \
     __step__cmp_fn_u_leApx_default$(__step__cmp_fn_u_leApx_default$__parse __VA_ARGS__)
-#define cmp_fn_u_geApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+#define cmp_fn_u_geApx_default$(/*(_T)(_id_lhs, _id_rhs, _threshold, _mode)*/...) \
     /* if `cmp_u_ordApx` is implemented */ \
     __step__cmp_fn_u_geApx_default$(__step__cmp_fn_u_geApx_default$__parse __VA_ARGS__)
+
+#define cmp_fn_u_ordApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_ordApxAbs_default$(__step__cmp_fn_u_ordApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_u_eqApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_eqApxAbs_default$(__step__cmp_fn_u_eqApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_u_neApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_neApxAbs_default$(__step__cmp_fn_u_neApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_u_ltApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_ltApxAbs_default$(__step__cmp_fn_u_ltApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_u_gtApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_gtApxAbs_default$(__step__cmp_fn_u_gtApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_u_leApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_leApxAbs_default$(__step__cmp_fn_u_leApxAbs_default$__parse __VA_ARGS__)
+#define cmp_fn_u_geApxAbs_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_geApxAbs_default$(__step__cmp_fn_u_geApxAbs_default$__parse __VA_ARGS__)
+
+#define cmp_fn_u_ordApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_ordApxRel_default$(__step__cmp_fn_u_ordApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_u_eqApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_eqApxRel_default$(__step__cmp_fn_u_eqApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_u_neApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_neApxRel_default$(__step__cmp_fn_u_neApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_u_ltApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_ltApxRel_default$(__step__cmp_fn_u_ltApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_u_gtApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_gtApxRel_default$(__step__cmp_fn_u_gtApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_u_leApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_leApxRel_default$(__step__cmp_fn_u_leApxRel_default$__parse __VA_ARGS__)
+#define cmp_fn_u_geApxRel_default$(/*(_T)(_id_lhs, _id_rhs, _threshold)*/...) \
+    __step__cmp_fn_u_geApxRel_default$(__step__cmp_fn_u_geApxRel_default$__parse __VA_ARGS__)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -468,39 +611,74 @@ typedef enum_((cmp_Ord $fits($packed))(
 
 #define __step__cmp_fn_ordApx$(...) __cmp_fn_ordApx$(__VA_ARGS__)
 #define __step__cmp_fn_ordApx$__parse(_T...) _T, __step__cmp_fn_ordApx$__parseNext
-#define __step__cmp_fn_ordApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_ordApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_ordApx$(_T)(_T _lhs, _T _rhs, _T _threshold))(cmp_Ord))
+#define __step__cmp_fn_ordApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_ordApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_ordApx$(_T)(_T _lhs, _T _rhs, _T _threshold, cmp_ApxMode _mode))(cmp_Ord))
 #define __step__cmp_fn_eqApx$(...) __cmp_fn_eqApx$(__VA_ARGS__)
 #define __step__cmp_fn_eqApx$__parse(_T...) _T, __step__cmp_fn_eqApx$__parseNext
-#define __step__cmp_fn_eqApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_eqApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_eqApx$(_T)(_T _lhs, _T _rhs, _T _threshold))(bool))
+#define __step__cmp_fn_eqApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_eqApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_eqApx$(_T)(_T _lhs, _T _rhs, _T _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_neApx$(...) __cmp_fn_neApx$(__VA_ARGS__)
 #define __step__cmp_fn_neApx$__parse(_T...) _T, __step__cmp_fn_neApx$__parseNext
-#define __step__cmp_fn_neApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_neApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_neApx$(_T)(_T _lhs, _T _rhs, _T _threshold))(bool))
+#define __step__cmp_fn_neApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_neApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_neApx$(_T)(_T _lhs, _T _rhs, _T _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_ltApx$(...) __cmp_fn_ltApx$(__VA_ARGS__)
 #define __step__cmp_fn_ltApx$__parse(_T...) _T, __step__cmp_fn_ltApx$__parseNext
-#define __step__cmp_fn_ltApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_ltApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_ltApx$(_T)(_T _lhs, _T _rhs, _T _threshold))(bool))
+#define __step__cmp_fn_ltApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_ltApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_ltApx$(_T)(_T _lhs, _T _rhs, _T _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_gtApx$(...) __cmp_fn_gtApx$(__VA_ARGS__)
 #define __step__cmp_fn_gtApx$__parse(_T...) _T, __step__cmp_fn_gtApx$__parseNext
-#define __step__cmp_fn_gtApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_gtApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_gtApx$(_T)(_T _lhs, _T _rhs, _T _threshold))(bool))
+#define __step__cmp_fn_gtApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_gtApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_gtApx$(_T)(_T _lhs, _T _rhs, _T _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_leApx$(...) __cmp_fn_leApx$(__VA_ARGS__)
 #define __step__cmp_fn_leApx$__parse(_T...) _T, __step__cmp_fn_leApx$__parseNext
-#define __step__cmp_fn_leApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_leApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_leApx$(_T)(_T _lhs, _T _rhs, _T _threshold))(bool))
+#define __step__cmp_fn_leApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_leApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_leApx$(_T)(_T _lhs, _T _rhs, _T _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_geApx$(...) __cmp_fn_geApx$(__VA_ARGS__)
 #define __step__cmp_fn_geApx$__parse(_T...) _T, __step__cmp_fn_geApx$__parseNext
-#define __step__cmp_fn_geApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_geApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_geApx$(_T)(_T _lhs, _T _rhs, _T _threshold))(bool))
+#define __step__cmp_fn_geApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_geApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_geApx$(_T)(_T _lhs, _T _rhs, _T _threshold, cmp_ApxMode _mode))(bool))
+
+#define __step__cmp_fn_Apx3$__parse(_T...) _T, __step__cmp_fn_Apx3$__parseNext
+#define __step__cmp_fn_Apx3$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
+#define __cmp_fn_Apx3$(_op, _Ret, _T, _lhs, _rhs, _threshold...) \
+    fn_((tpl_(_T, _op)(_T _lhs, _T _rhs, _T _threshold))(_Ret))
+
+#define __step__cmp_fn_ordApxAbs$(...) __cmp_fn_Apx3$(ordApxAbs, cmp_Ord, __VA_ARGS__)
+#define __step__cmp_fn_ordApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_eqApxAbs$(...) __cmp_fn_Apx3$(eqApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_eqApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_neApxAbs$(...) __cmp_fn_Apx3$(neApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_neApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_ltApxAbs$(...) __cmp_fn_Apx3$(ltApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_ltApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_gtApxAbs$(...) __cmp_fn_Apx3$(gtApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_gtApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_leApxAbs$(...) __cmp_fn_Apx3$(leApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_leApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_geApxAbs$(...) __cmp_fn_Apx3$(geApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_geApxAbs$__parse __step__cmp_fn_Apx3$__parse
+
+#define __step__cmp_fn_ordApxRel$(...) __cmp_fn_Apx3$(ordApxRel, cmp_Ord, __VA_ARGS__)
+#define __step__cmp_fn_ordApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_eqApxRel$(...) __cmp_fn_Apx3$(eqApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_eqApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_neApxRel$(...) __cmp_fn_Apx3$(neApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_neApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_ltApxRel$(...) __cmp_fn_Apx3$(ltApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_ltApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_gtApxRel$(...) __cmp_fn_Apx3$(gtApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_gtApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_leApxRel$(...) __cmp_fn_Apx3$(leApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_leApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_geApxRel$(...) __cmp_fn_Apx3$(geApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_geApxRel$__parse __step__cmp_fn_Apx3$__parse
 
 #define __step__cmp_fn_u_eql$(...) __cmp_fn_u_eql$(__VA_ARGS__)
 #define __step__cmp_fn_u_eql$__parse(_T...) _T, __step__cmp_fn_u_eql$__parseNext
@@ -598,39 +776,72 @@ typedef enum_((cmp_Ord $fits($packed))(
 
 #define __step__cmp_fn_u_ordApx$(...) __cmp_fn_u_ordApx$(__VA_ARGS__)
 #define __step__cmp_fn_u_ordApx$__parse(_T...) _T, __step__cmp_fn_u_ordApx$__parseNext
-#define __step__cmp_fn_u_ordApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_ordApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_u_ordApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold))(cmp_Ord))
+#define __step__cmp_fn_u_ordApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_ordApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_u_ordApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold, cmp_ApxMode _mode))(cmp_Ord))
 #define __step__cmp_fn_u_eqApx$(...) __cmp_fn_u_eqApx$(__VA_ARGS__)
 #define __step__cmp_fn_u_eqApx$__parse(_T...) _T, __step__cmp_fn_u_eqApx$__parseNext
-#define __step__cmp_fn_u_eqApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_eqApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_u_eqApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold))(bool))
+#define __step__cmp_fn_u_eqApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_eqApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_u_eqApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_u_neApx$(...) __cmp_fn_u_neApx$(__VA_ARGS__)
 #define __step__cmp_fn_u_neApx$__parse(_T...) _T, __step__cmp_fn_u_neApx$__parseNext
-#define __step__cmp_fn_u_neApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_neApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_u_neApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold))(bool))
+#define __step__cmp_fn_u_neApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_neApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_u_neApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_u_ltApx$(...) __cmp_fn_u_ltApx$(__VA_ARGS__)
 #define __step__cmp_fn_u_ltApx$__parse(_T...) _T, __step__cmp_fn_u_ltApx$__parseNext
-#define __step__cmp_fn_u_ltApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_ltApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_u_ltApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold))(bool))
+#define __step__cmp_fn_u_ltApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_ltApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_u_ltApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_u_gtApx$(...) __cmp_fn_u_gtApx$(__VA_ARGS__)
 #define __step__cmp_fn_u_gtApx$__parse(_T...) _T, __step__cmp_fn_u_gtApx$__parseNext
-#define __step__cmp_fn_u_gtApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_gtApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_u_gtApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold))(bool))
+#define __step__cmp_fn_u_gtApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_gtApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_u_gtApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_u_leApx$(...) __cmp_fn_u_leApx$(__VA_ARGS__)
 #define __step__cmp_fn_u_leApx$__parse(_T...) _T, __step__cmp_fn_u_leApx$__parseNext
-#define __step__cmp_fn_u_leApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_leApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_u_leApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold))(bool))
+#define __step__cmp_fn_u_leApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_leApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_u_leApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold, cmp_ApxMode _mode))(bool))
 #define __step__cmp_fn_u_geApx$(...) __cmp_fn_u_geApx$(__VA_ARGS__)
 #define __step__cmp_fn_u_geApx$__parse(_T...) _T, __step__cmp_fn_u_geApx$__parseNext
-#define __step__cmp_fn_u_geApx$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_geApx$(_T, _lhs, _rhs, _threshold...) \
-    fn_((cmp_u_geApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold))(bool))
+#define __step__cmp_fn_u_geApx$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_geApx$(_T, _lhs, _rhs, _threshold, _mode...) \
+    fn_((cmp_u_geApx$(_T)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold, cmp_ApxMode _mode))(bool))
+
+#define __cmp_fn_u_Apx3$(_op, _Ret, _T, _lhs, _rhs, _threshold...) \
+    fn_((tpl_(_T, _op)(u_V$raw _lhs, u_V$raw _rhs, u_V$raw _threshold))(_Ret))
+
+#define __step__cmp_fn_u_ordApxAbs$(...) __cmp_fn_u_Apx3$(u_ordApxAbs, cmp_Ord, __VA_ARGS__)
+#define __step__cmp_fn_u_ordApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_eqApxAbs$(...) __cmp_fn_u_Apx3$(u_eqApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_eqApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_neApxAbs$(...) __cmp_fn_u_Apx3$(u_neApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_neApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_ltApxAbs$(...) __cmp_fn_u_Apx3$(u_ltApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_ltApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_gtApxAbs$(...) __cmp_fn_u_Apx3$(u_gtApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_gtApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_leApxAbs$(...) __cmp_fn_u_Apx3$(u_leApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_leApxAbs$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_geApxAbs$(...) __cmp_fn_u_Apx3$(u_geApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_geApxAbs$__parse __step__cmp_fn_Apx3$__parse
+
+#define __step__cmp_fn_u_ordApxRel$(...) __cmp_fn_u_Apx3$(u_ordApxRel, cmp_Ord, __VA_ARGS__)
+#define __step__cmp_fn_u_ordApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_eqApxRel$(...) __cmp_fn_u_Apx3$(u_eqApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_eqApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_neApxRel$(...) __cmp_fn_u_Apx3$(u_neApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_neApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_ltApxRel$(...) __cmp_fn_u_Apx3$(u_ltApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_ltApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_gtApxRel$(...) __cmp_fn_u_Apx3$(u_gtApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_gtApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_leApxRel$(...) __cmp_fn_u_Apx3$(u_leApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_leApxRel$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_geApxRel$(...) __cmp_fn_u_Apx3$(u_geApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_geApxRel$__parse __step__cmp_fn_Apx3$__parse
 
 #define __step__cmp_fn_eql_default$(...) __cmp_fn_eql_default$(__VA_ARGS__)
 #define __step__cmp_fn_eql_default$__parse(_T...) _T, __step__cmp_fn_eql_default$__parseNext
@@ -770,56 +981,97 @@ typedef enum_((cmp_Ord $fits($packed))(
 
 #define __step__cmp_fn_ordApx_default$(...) __cmp_fn_ordApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_ordApx_default$__parse(_T...) _T, __step__cmp_fn_ordApx_default$__parseNext
-#define __step__cmp_fn_ordApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_ordApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(ordApx)((_T)(_lhs, _rhs, _threshold)) { \
-        return cmp_ltApx$(_T)(_lhs, _rhs, _threshold) ? cmp_Ord_lt \
-             : (pri_swap(&_lhs, &_rhs), cmp_ltApx$(_T)(_lhs, _rhs, _threshold)) \
-                 ? cmp_Ord_gt \
-                 : cmp_Ord_eq; \
+#define __step__cmp_fn_ordApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_ordApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(ordApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
+        claim_assert(_mode == cmp_ApxMode_abs || _mode == cmp_ApxMode_rel); \
+        return _mode == cmp_ApxMode_abs ? cmp_ordApxAbs$(_T)(_lhs, _rhs, _threshold) \
+                                        : cmp_ordApxRel$(_T)(_lhs, _rhs, _threshold); \
     }
 #define __step__cmp_fn_eqApx_default$(...) __cmp_fn_eqApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_eqApx_default$__parse(_T...) _T, __step__cmp_fn_eqApx_default$__parseNext
-#define __step__cmp_fn_eqApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_eqApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(eqApx)((_T)(_lhs, _rhs, _threshold)) { \
-        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold) == cmp_Ord_eq; \
+#define __step__cmp_fn_eqApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_eqApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(eqApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
+        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold, _mode) == cmp_Ord_eq; \
     }
 #define __step__cmp_fn_neApx_default$(...) __cmp_fn_neApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_neApx_default$__parse(_T...) _T, __step__cmp_fn_neApx_default$__parseNext
-#define __step__cmp_fn_neApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_neApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(neApx)((_T)(_lhs, _rhs, _threshold)) { \
-        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold) != cmp_Ord_eq; \
+#define __step__cmp_fn_neApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_neApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(neApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
+        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold, _mode) != cmp_Ord_eq; \
     }
 #define __step__cmp_fn_ltApx_default$(...) __cmp_fn_ltApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_ltApx_default$__parse(_T...) _T, __step__cmp_fn_ltApx_default$__parseNext
-#define __step__cmp_fn_ltApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_ltApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(ltApx)((_T)(_lhs, _rhs, _threshold)) { \
-        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold) < cmp_Ord_eq; \
+#define __step__cmp_fn_ltApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_ltApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(ltApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
+        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold, _mode) < cmp_Ord_eq; \
     }
 #define __step__cmp_fn_gtApx_default$(...) __cmp_fn_gtApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_gtApx_default$__parse(_T...) _T, __step__cmp_fn_gtApx_default$__parseNext
-#define __step__cmp_fn_gtApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_gtApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(gtApx)((_T)(_lhs, _rhs, _threshold)) { \
-        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold) > cmp_Ord_eq; \
+#define __step__cmp_fn_gtApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_gtApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(gtApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
+        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold, _mode) > cmp_Ord_eq; \
     }
 #define __step__cmp_fn_leApx_default$(...) __cmp_fn_leApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_leApx_default$__parse(_T...) _T, __step__cmp_fn_leApx_default$__parseNext
-#define __step__cmp_fn_leApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_leApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(leApx)((_T)(_lhs, _rhs, _threshold)) { \
-        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold) <= cmp_Ord_eq; \
+#define __step__cmp_fn_leApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_leApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(leApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
+        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold, _mode) <= cmp_Ord_eq; \
     }
 #define __step__cmp_fn_geApx_default$(...) __cmp_fn_geApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_geApx_default$__parse(_T...) _T, __step__cmp_fn_geApx_default$__parseNext
-#define __step__cmp_fn_geApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_geApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(geApx)((_T)(_lhs, _rhs, _threshold)) { \
-        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold) >= cmp_Ord_eq; \
+#define __step__cmp_fn_geApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_geApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(geApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
+        return cmp_ordApx$(_T)(_lhs, _rhs, _threshold, _mode) >= cmp_Ord_eq; \
     }
+
+#define __cmp_fn_ordApx3_default$(_ordOp, _ltOp, _T, _lhs, _rhs, _threshold...) \
+    __cmp_fn_Apx3$(_ordOp, cmp_Ord, _T, _lhs, _rhs, _threshold) { \
+        return tpl_(_T, _ltOp)(_lhs, _rhs, _threshold) ? cmp_Ord_lt \
+             : (pri_swap(&_lhs, &_rhs), tpl_(_T, _ltOp)(_lhs, _rhs, _threshold)) \
+                 ? cmp_Ord_gt \
+                 : cmp_Ord_eq; \
+    }
+#define __cmp_fn_relApx3_default$(_op, _ordOp, _pred, _T, _lhs, _rhs, _threshold...) \
+    __cmp_fn_Apx3$(_op, bool, _T, _lhs, _rhs, _threshold) { \
+        return _pred(tpl_(_T, _ordOp)(_lhs, _rhs, _threshold)); \
+    }
+
+#define __step__cmp_fn_ordApxAbs_default$(...) __cmp_fn_ordApx3_default$(ordApxAbs, ltApxAbs, __VA_ARGS__)
+#define __step__cmp_fn_ordApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_eqApxAbs_default$(...) __cmp_fn_relApx3_default$(eqApxAbs, ordApxAbs, cmp_Ord_isEq, __VA_ARGS__)
+#define __step__cmp_fn_eqApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_neApxAbs_default$(...) __cmp_fn_relApx3_default$(neApxAbs, ordApxAbs, cmp_Ord_isNe, __VA_ARGS__)
+#define __step__cmp_fn_neApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_ltApxAbs_default$(...) __cmp_fn_relApx3_default$(ltApxAbs, ordApxAbs, cmp_Ord_isLt, __VA_ARGS__)
+#define __step__cmp_fn_ltApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_gtApxAbs_default$(...) __cmp_fn_relApx3_default$(gtApxAbs, ordApxAbs, cmp_Ord_isGt, __VA_ARGS__)
+#define __step__cmp_fn_gtApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_leApxAbs_default$(...) __cmp_fn_relApx3_default$(leApxAbs, ordApxAbs, cmp_Ord_isLe, __VA_ARGS__)
+#define __step__cmp_fn_leApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_geApxAbs_default$(...) __cmp_fn_relApx3_default$(geApxAbs, ordApxAbs, cmp_Ord_isGe, __VA_ARGS__)
+#define __step__cmp_fn_geApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+
+#define __step__cmp_fn_ordApxRel_default$(...) __cmp_fn_ordApx3_default$(ordApxRel, ltApxRel, __VA_ARGS__)
+#define __step__cmp_fn_ordApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_eqApxRel_default$(...) __cmp_fn_relApx3_default$(eqApxRel, ordApxRel, cmp_Ord_isEq, __VA_ARGS__)
+#define __step__cmp_fn_eqApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_neApxRel_default$(...) __cmp_fn_relApx3_default$(neApxRel, ordApxRel, cmp_Ord_isNe, __VA_ARGS__)
+#define __step__cmp_fn_neApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_ltApxRel_default$(...) __cmp_fn_relApx3_default$(ltApxRel, ordApxRel, cmp_Ord_isLt, __VA_ARGS__)
+#define __step__cmp_fn_ltApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_gtApxRel_default$(...) __cmp_fn_relApx3_default$(gtApxRel, ordApxRel, cmp_Ord_isGt, __VA_ARGS__)
+#define __step__cmp_fn_gtApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_leApxRel_default$(...) __cmp_fn_relApx3_default$(leApxRel, ordApxRel, cmp_Ord_isLe, __VA_ARGS__)
+#define __step__cmp_fn_leApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_geApxRel_default$(...) __cmp_fn_relApx3_default$(geApxRel, ordApxRel, cmp_Ord_isGe, __VA_ARGS__)
+#define __step__cmp_fn_geApxRel_default$__parse __step__cmp_fn_Apx3$__parse
 
 #define __step__cmp_fn_u_eql_default$(...) __cmp_fn_u_eql_default$(__VA_ARGS__)
 #define __step__cmp_fn_u_eql_default$__parse(_T...) _T, __step__cmp_fn_u_eql_default$__parseNext
@@ -989,74 +1241,112 @@ typedef enum_((cmp_Ord $fits($packed))(
 
 #define __step__cmp_fn_u_ordApx_default$(...) __cmp_fn_u_ordApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_u_ordApx_default$__parse(_T...) _T, __step__cmp_fn_u_ordApx_default$__parseNext
-#define __step__cmp_fn_u_ordApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_ordApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(u_ordApx)((_T)(_lhs, _rhs, _threshold)) { \
+#define __step__cmp_fn_u_ordApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_ordApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(u_ordApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
         let l = u_castV$((_T)(_lhs)); \
         let r = u_castV$((_T)(_rhs)); \
         let t = u_castV$((_T)(_threshold)); \
-        return cmp_ordApx$(_T)(l, r, t); \
+        return cmp_ordApx$(_T)(l, r, t, _mode); \
     }
 #define __step__cmp_fn_u_eqApx_default$(...) __cmp_fn_u_eqApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_u_eqApx_default$__parse(_T...) _T, __step__cmp_fn_u_eqApx_default$__parseNext
-#define __step__cmp_fn_u_eqApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_eqApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(u_eqApx)((_T)(_lhs, _rhs, _threshold)) { \
+#define __step__cmp_fn_u_eqApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_eqApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(u_eqApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
         let l = u_castV$((_T)(_lhs)); \
         let r = u_castV$((_T)(_rhs)); \
         let t = u_castV$((_T)(_threshold)); \
-        return cmp_eqApx$(_T)(l, r, t); \
+        return cmp_eqApx$(_T)(l, r, t, _mode); \
     }
 #define __step__cmp_fn_u_neApx_default$(...) __cmp_fn_u_neApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_u_neApx_default$__parse(_T...) _T, __step__cmp_fn_u_neApx_default$__parseNext
-#define __step__cmp_fn_u_neApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_neApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(u_neApx)((_T)(_lhs, _rhs, _threshold)) { \
+#define __step__cmp_fn_u_neApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_neApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(u_neApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
         let l = u_castV$((_T)(_lhs)); \
         let r = u_castV$((_T)(_rhs)); \
         let t = u_castV$((_T)(_threshold)); \
-        return cmp_neApx$(_T)(l, r, t); \
+        return cmp_neApx$(_T)(l, r, t, _mode); \
     }
 #define __step__cmp_fn_u_ltApx_default$(...) __cmp_fn_u_ltApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_u_ltApx_default$__parse(_T...) _T, __step__cmp_fn_u_ltApx_default$__parseNext
-#define __step__cmp_fn_u_ltApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_ltApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(u_ltApx)((_T)(_lhs, _rhs, _threshold)) { \
+#define __step__cmp_fn_u_ltApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_ltApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(u_ltApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
         let l = u_castV$((_T)(_lhs)); \
         let r = u_castV$((_T)(_rhs)); \
         let t = u_castV$((_T)(_threshold)); \
-        return cmp_ltApx$(_T)(l, r, t); \
+        return cmp_ltApx$(_T)(l, r, t, _mode); \
     }
 #define __step__cmp_fn_u_gtApx_default$(...) __cmp_fn_u_gtApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_u_gtApx_default$__parse(_T...) _T, __step__cmp_fn_u_gtApx_default$__parseNext
-#define __step__cmp_fn_u_gtApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_gtApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(u_gtApx)((_T)(_lhs, _rhs, _threshold)) { \
+#define __step__cmp_fn_u_gtApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_gtApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(u_gtApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
         let l = u_castV$((_T)(_lhs)); \
         let r = u_castV$((_T)(_rhs)); \
         let t = u_castV$((_T)(_threshold)); \
-        return cmp_gtApx$(_T)(l, r, t); \
+        return cmp_gtApx$(_T)(l, r, t, _mode); \
     }
 #define __step__cmp_fn_u_leApx_default$(...) __cmp_fn_u_leApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_u_leApx_default$__parse(_T...) _T, __step__cmp_fn_u_leApx_default$__parseNext
-#define __step__cmp_fn_u_leApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_leApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(u_leApx)((_T)(_lhs, _rhs, _threshold)) { \
+#define __step__cmp_fn_u_leApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_leApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(u_leApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
         let l = u_castV$((_T)(_lhs)); \
         let r = u_castV$((_T)(_rhs)); \
         let t = u_castV$((_T)(_threshold)); \
-        return cmp_leApx$(_T)(l, r, t); \
+        return cmp_leApx$(_T)(l, r, t, _mode); \
     }
 #define __step__cmp_fn_u_geApx_default$(...) __cmp_fn_u_geApx_default$(__VA_ARGS__)
 #define __step__cmp_fn_u_geApx_default$__parse(_T...) _T, __step__cmp_fn_u_geApx_default$__parseNext
-#define __step__cmp_fn_u_geApx_default$__parseNext(_lhs, _rhs, _threshold...) _lhs, _rhs, _threshold
-#define __cmp_fn_u_geApx_default$(_T, _lhs, _rhs, _threshold...) \
-    cmp_fn_(u_geApx)((_T)(_lhs, _rhs, _threshold)) { \
+#define __step__cmp_fn_u_geApx_default$__parseNext(_lhs, _rhs, _threshold, _mode...) _lhs, _rhs, _threshold, _mode
+#define __cmp_fn_u_geApx_default$(_T, _lhs, _rhs, _threshold, _mode...) \
+    cmp_fn_(u_geApx)((_T)(_lhs, _rhs, _threshold, _mode)) { \
         let l = u_castV$((_T)(_lhs)); \
         let r = u_castV$((_T)(_rhs)); \
         let t = u_castV$((_T)(_threshold)); \
-        return cmp_geApx$(_T)(l, r, t); \
+        return cmp_geApx$(_T)(l, r, t, _mode); \
     }
+
+#define __cmp_fn_u_Apx3_default$(_uOp, _op, _Ret, _T, _lhs, _rhs, _threshold...) \
+    __cmp_fn_u_Apx3$(_uOp, _Ret, _T, _lhs, _rhs, _threshold) { \
+        let l = u_castV$((_T)(_lhs)); \
+        let r = u_castV$((_T)(_rhs)); \
+        let t = u_castV$((_T)(_threshold)); \
+        return tpl_(_T, _op)(l, r, t); \
+    }
+
+#define __step__cmp_fn_u_ordApxAbs_default$(...) __cmp_fn_u_Apx3_default$(u_ordApxAbs, ordApxAbs, cmp_Ord, __VA_ARGS__)
+#define __step__cmp_fn_u_ordApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_eqApxAbs_default$(...) __cmp_fn_u_Apx3_default$(u_eqApxAbs, eqApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_eqApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_neApxAbs_default$(...) __cmp_fn_u_Apx3_default$(u_neApxAbs, neApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_neApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_ltApxAbs_default$(...) __cmp_fn_u_Apx3_default$(u_ltApxAbs, ltApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_ltApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_gtApxAbs_default$(...) __cmp_fn_u_Apx3_default$(u_gtApxAbs, gtApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_gtApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_leApxAbs_default$(...) __cmp_fn_u_Apx3_default$(u_leApxAbs, leApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_leApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_geApxAbs_default$(...) __cmp_fn_u_Apx3_default$(u_geApxAbs, geApxAbs, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_geApxAbs_default$__parse __step__cmp_fn_Apx3$__parse
+
+#define __step__cmp_fn_u_ordApxRel_default$(...) __cmp_fn_u_Apx3_default$(u_ordApxRel, ordApxRel, cmp_Ord, __VA_ARGS__)
+#define __step__cmp_fn_u_ordApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_eqApxRel_default$(...) __cmp_fn_u_Apx3_default$(u_eqApxRel, eqApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_eqApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_neApxRel_default$(...) __cmp_fn_u_Apx3_default$(u_neApxRel, neApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_neApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_ltApxRel_default$(...) __cmp_fn_u_Apx3_default$(u_ltApxRel, ltApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_ltApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_gtApxRel_default$(...) __cmp_fn_u_Apx3_default$(u_gtApxRel, gtApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_gtApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_leApxRel_default$(...) __cmp_fn_u_Apx3_default$(u_leApxRel, leApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_leApxRel_default$__parse __step__cmp_fn_Apx3$__parse
+#define __step__cmp_fn_u_geApxRel_default$(...) __cmp_fn_u_Apx3_default$(u_geApxRel, geApxRel, bool, __VA_ARGS__)
+#define __step__cmp_fn_u_geApxRel_default$__parse __step__cmp_fn_Apx3$__parse
 
 #if defined(__cplusplus)
 } /* extern "C" */
