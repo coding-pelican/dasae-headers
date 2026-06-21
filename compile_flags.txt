@@ -1,6 +1,8 @@
 -xc
 -std=gnu17
--I./dh/include
+-I./include
+-isystem./lib/deps
+-isystem./dh/include
 -isystem./dh/lib/deps
 -Werror=all
 -Werror=extra
@@ -23,7 +25,6 @@
 -Winfinite-recursion
 -Wloop-analysis
 -Wswitch-enum
--Wthread-safety
 -fgnu-keywords
 -fms-extensions
 -Wno-microsoft-anon-tag

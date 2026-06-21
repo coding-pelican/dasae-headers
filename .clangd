@@ -54,22 +54,28 @@ Diagnostics:
       - hicpp-uppercase-literal-suffix
 Completion:
   AllScopes: true
+  CodePatterns: All
   ArgumentLists: FullPlaceholders
+  MacroFilter: ExactPrefix
   # HeaderInsertion: IWYU
-  # CodePatterns: All
+  HeaderInsertion: Never
 InlayHints:
   Enabled: true
   ParameterNames: true
+  DefaultArguments: false
   DeducedTypes: true
   Designators: true
   BlockEnd: false
-  DefaultArguments: false
   TypeNameLimit: 24
 Hover:
   ShowAKA: true
   # MacroContentsLimit: 2048
-# Documentation:
-#   CommentFormat: Doxygen
+  MacroContentsLimit: 128
+Documentation:
+  CommentFormat: Doxygen
+Style:
+  QuotedHeaders: ["src/.*", "include/.*"]
+  AngledHeaders: ["lib/deps/.*"]
 #========== Excluded Paths ====================================================
 ---
 If:
@@ -132,7 +138,10 @@ CompileFlags:
     - -std=gnu17
     # [Relative Paths] use relative paths based on the project root
     # This configuration file (.clangd) is the reference point.
-    - -I./dh/include
+    # - -I./src
+    - -I./include
+    - -isystem./lib/deps
+    - -isystem./dh/include
     - -isystem./dh/lib/deps
     # [Diagnostic: Common]
     - -Werror=all
@@ -170,7 +179,7 @@ CompileFlags:
     - -Wswitch-enum # enum switch completeness (default included warning, `-Wno-switch-enum` to disable)
     # - -Wcomma # comma operator misuse
     # [Diagnostic: Thread Safety]
-    - -Wthread-safety # (Clang only) thread safety annotation analysis
+    # - -Wthread-safety # (Clang only) thread safety annotation analysis
     # [Compatibility]
     - -fgnu-keywords # Enable GCC Compatibility
     - -fms-extensions # Windows Compatibility (Declspec, etc.)
@@ -207,7 +216,10 @@ CompileFlags:
     - -xc++
     - -std=gnu++20
     # [Relative Paths]
-    - -I./dh/include
+    # - -I./src
+    - -I./include
+    - -isystem./lib/deps
+    - -isystem./dh/include
     - -isystem./dh/lib/deps
     # [Diagnostic: Common]
     - -Werror=all
@@ -245,7 +257,7 @@ CompileFlags:
     - -Wswitch-enum
     # - -Wcomma
     # [Diagnostic: Thread Safety]
-    - -Wthread-safety # (Clang only)
+    # - -Wthread-safety # (Clang only)
     # Compatibility
     - -fgnu-keywords
     - -fms-extensions
