@@ -25,10 +25,10 @@ extern "C" {
 #if plat_is_windows
 
 #include <winuser.h>
-#include <wingdi.h>
-#include <shellscalingapi.h>
 #pragma comment(lib, "user32.lib")
+#include <wingdi.h>
 #pragma comment(lib, "gdi32.lib")
+#include <shellscalingapi.h>
 #pragma comment(lib, "shcore.lib")
 
 #endif /* plat_is_windows */

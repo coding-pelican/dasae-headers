@@ -172,6 +172,7 @@ extern "C" {
 /// Documentation:
 /// https://learn.microsoft.com/en-us/windows/win32/api/winsock2/
 #include <winsock2.h>
+#pragma comment(lib, "user32.lib")
 /// ==================================================================================
 /// Winsock Extension API
 /// ==================================================================================
