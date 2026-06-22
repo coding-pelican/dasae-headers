@@ -751,6 +751,7 @@ $extern fn_((mem_SplitIter_rest(mem_SplitIter$raw* self, TypeInfo type))(u_S_con
     ) pp_end \
 ))
 
+#if on_analysis_active_only || on_comptime
 /* --- Integer Bit Operations --- */
 
 fn_((mem_trailingZerosSize(usize x))(u32)) {
@@ -1763,6 +1764,7 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
     debug_assert_eqBy($typed(self.type), type, TypeInfo_eql);
     return S_meta((type)(self.after));
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /* --- template --- */
 

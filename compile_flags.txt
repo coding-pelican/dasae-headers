@@ -4,6 +4,8 @@
 -isystem./lib/deps
 -isystem./dh/include
 -isystem./dh/lib/deps
+-DANALYSIS
+-Wno-undefined-internal
 -Werror=all
 -Werror=extra
 -Werror=conversion

@@ -2719,6 +2719,7 @@ $static m_V4f64 m_V4f64_reflect(m_V4f64 v, m_V4f64 normal);
     local_return_(__dst); \
 })
 
+#if on_analysis_active_only || on_comptime
 /* Vec2u functions */
 /* Construction */
 $attr($inline_always)
@@ -7774,6 +7775,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_reflect(m_V4f64 v, m_V4f64 normal) {
     return m_V4f64_sub(v, m_V4f64_scal(normal, 2.0 * m_V4f64_dot(v, normal)));
 }
+#endif /* on_analysis_active_only || on_comptime */
 
 #undef m_simd_from2
 #undef m_simd_from3

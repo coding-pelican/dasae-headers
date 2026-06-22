@@ -31,6 +31,7 @@ extern "C" {
 #define TEST__enabled_default __comp_flag__TEST__enabled_default
 
 #define TEST_only(_inner...) __comp_syn__TEST_only(_inner)
+#define TEST_unless(_inner...) __comp_syn__TEST_unless(_inner)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -49,6 +50,7 @@ extern "C" {
 #endif /* defined(COMP_TEST) */
 
 #define __comp_syn__TEST_only(_inner...) pp_if_(TEST_enabled)(pp_then_(_inner))
+#define __comp_syn__TEST_unless(_inner...) pp_if_(pp_not(TEST_enabled))(pp_then_(_inner))
 
 #if defined(__cplusplus)
 } /* extern "C" */

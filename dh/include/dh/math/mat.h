@@ -1528,6 +1528,7 @@ $static fn_((m_M4f64_frustumLHZO(f64 left, f64 right, f64 bottom, f64 top, f64 p
         [1] = m_V2u32_of_static((_r0).y, (_r1).y), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M2u32_ofCols(m_M2u32_ColV c0, m_M2u32_ColV c1))(m_M2u32)) {
     return m_M2u32_ofCols_static(c0, c1);
 };
@@ -1630,6 +1631,7 @@ fn_((m_M2u32_transp(m_M2u32 x))(m_M2u32)) {
         m_V2u32_of(x.s0_1, x.s1_1)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M3u32 Implementations ==========================================*/
 
@@ -1654,6 +1656,7 @@ fn_((m_M2u32_transp(m_M2u32 x))(m_M2u32)) {
         [2] = m_V3u32_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M3u32_ofCols(m_M3u32_ColV c0, m_M3u32_ColV c1, m_M3u32_ColV c2))(m_M3u32)) {
     return m_M3u32_ofCols_static(c0, c1, c2);
 };
@@ -1775,6 +1778,7 @@ fn_((m_M3u32_transp(m_M3u32 x))(m_M3u32)) {
         m_V3u32_of(x.s0_2, x.s1_2, x.s2_2)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M4u32 Implementations ==========================================*/
 
@@ -1802,6 +1806,7 @@ fn_((m_M3u32_transp(m_M3u32 x))(m_M3u32)) {
         [3] = m_V4u32_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M4u32_ofCols(m_M4u32_ColV c0, m_M4u32_ColV c1, m_M4u32_ColV c2, m_M4u32_ColV c3))(m_M4u32)) {
     return m_M4u32_ofCols_static(c0, c1, c2, c3);
 };
@@ -1935,6 +1940,7 @@ fn_((m_M4u32_transp(m_M4u32 x))(m_M4u32)) {
         m_V4u32_of(x.s0_3, x.s1_3, x.s2_3, x.s3_3)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M2u64 Implementations ==========================================*/
 
@@ -1956,6 +1962,7 @@ fn_((m_M4u32_transp(m_M4u32 x))(m_M4u32)) {
         [1] = m_V2u64_of_static((_r0).y, (_r1).y), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M2u64_ofCols(m_M2u64_ColV c0, m_M2u64_ColV c1))(m_M2u64)) {
     return m_M2u64_ofCols_static(c0, c1);
 };
@@ -2058,6 +2065,7 @@ fn_((m_M2u64_transp(m_M2u64 x))(m_M2u64)) {
         m_V2u64_of(x.s0_1, x.s1_1)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M3u64 Implementations ==========================================*/
 
@@ -2082,6 +2090,7 @@ fn_((m_M2u64_transp(m_M2u64 x))(m_M2u64)) {
         [2] = m_V3u64_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M3u64_ofCols(m_M3u64_ColV c0, m_M3u64_ColV c1, m_M3u64_ColV c2))(m_M3u64)) {
     return m_M3u64_ofCols_static(c0, c1, c2);
 };
@@ -2203,6 +2212,7 @@ fn_((m_M3u64_transp(m_M3u64 x))(m_M3u64)) {
         m_V3u64_of(x.s0_2, x.s1_2, x.s2_2)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M4u64 Implementations ==========================================*/
 
@@ -2230,6 +2240,7 @@ fn_((m_M3u64_transp(m_M3u64 x))(m_M3u64)) {
         [3] = m_V4u64_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M4u64_ofCols(m_M4u64_ColV c0, m_M4u64_ColV c1, m_M4u64_ColV c2, m_M4u64_ColV c3))(m_M4u64)) {
     return m_M4u64_ofCols_static(c0, c1, c2, c3);
 };
@@ -2363,6 +2374,7 @@ fn_((m_M4u64_transp(m_M4u64 x))(m_M4u64)) {
         m_V4u64_of(x.s0_3, x.s1_3, x.s2_3, x.s3_3)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M2usize Implementations ==========================================*/
 
@@ -2384,6 +2396,7 @@ fn_((m_M4u64_transp(m_M4u64 x))(m_M4u64)) {
         [1] = m_V2usize_of_static((_r0).y, (_r1).y), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M2usize_ofCols(m_M2usize_ColV c0, m_M2usize_ColV c1))(m_M2usize)) {
     return m_M2usize_ofCols_static(c0, c1);
 };
@@ -2486,6 +2499,7 @@ fn_((m_M2usize_transp(m_M2usize x))(m_M2usize)) {
         m_V2usize_of(x.s0_1, x.s1_1)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M3usize Implementations ==========================================*/
 
@@ -2510,6 +2524,7 @@ fn_((m_M2usize_transp(m_M2usize x))(m_M2usize)) {
         [2] = m_V3usize_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M3usize_ofCols(m_M3usize_ColV c0, m_M3usize_ColV c1, m_M3usize_ColV c2))(m_M3usize)) {
     return m_M3usize_ofCols_static(c0, c1, c2);
 };
@@ -2631,6 +2646,7 @@ fn_((m_M3usize_transp(m_M3usize x))(m_M3usize)) {
         m_V3usize_of(x.s0_2, x.s1_2, x.s2_2)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M4usize Implementations ==========================================*/
 
@@ -2658,6 +2674,7 @@ fn_((m_M3usize_transp(m_M3usize x))(m_M3usize)) {
         [3] = m_V4usize_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M4usize_ofCols(m_M4usize_ColV c0, m_M4usize_ColV c1, m_M4usize_ColV c2, m_M4usize_ColV c3))(m_M4usize)) {
     return m_M4usize_ofCols_static(c0, c1, c2, c3);
 };
@@ -2791,6 +2808,7 @@ fn_((m_M4usize_transp(m_M4usize x))(m_M4usize)) {
         m_V4usize_of(x.s0_3, x.s1_3, x.s2_3, x.s3_3)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M2i32 Implementations ==========================================*/
 
@@ -2812,6 +2830,7 @@ fn_((m_M4usize_transp(m_M4usize x))(m_M4usize)) {
         [1] = m_V2i32_of_static((_r0).y, (_r1).y), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M2i32_ofCols(m_M2i32_ColV c0, m_M2i32_ColV c1))(m_M2i32)) {
     return m_M2i32_ofCols_static(c0, c1);
 };
@@ -2925,6 +2944,7 @@ fn_((m_M2i32_transp(m_M2i32 x))(m_M2i32)) {
 fn_((m_M2i32_det(m_M2i32 x))(i32)) {
     return x.s0_0 * x.s1_1 - x.s0_1 * x.s1_0;
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M3i32 Implementations ==========================================*/
 
@@ -2949,6 +2969,7 @@ fn_((m_M2i32_det(m_M2i32 x))(i32)) {
         [2] = m_V3i32_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M3i32_ofCols(m_M3i32_ColV c0, m_M3i32_ColV c1, m_M3i32_ColV c2))(m_M3i32)) {
     return m_M3i32_ofCols_static(c0, c1, c2);
 };
@@ -3084,6 +3105,7 @@ fn_((m_M3i32_det(m_M3i32 x))(i32)) {
          - x.s0_1 * (x.s1_0 * x.s2_2 - x.s1_2 * x.s2_0)
          + x.s0_2 * (x.s1_0 * x.s2_1 - x.s1_1 * x.s2_0);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M4i32 Implementations ==========================================*/
 
@@ -3111,6 +3133,7 @@ fn_((m_M3i32_det(m_M3i32 x))(i32)) {
         [3] = m_V4i32_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M4i32_ofCols(m_M4i32_ColV c0, m_M4i32_ColV c1, m_M4i32_ColV c2, m_M4i32_ColV c3))(m_M4i32)) {
     return m_M4i32_ofCols_static(c0, c1, c2, c3);
 };
@@ -3272,6 +3295,7 @@ fn_((m_M4i32_det(m_M4i32 x))(i32)) {
          + c * (e * jp_ln - f * ip_lm + h * in_jm)
          - d * (e * jo_kn - f * io_km + g * in_jm);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M2i64 Implementations ==========================================*/
 
@@ -3293,6 +3317,7 @@ fn_((m_M4i32_det(m_M4i32 x))(i32)) {
         [1] = m_V2i64_of_static((_r0).y, (_r1).y), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M2i64_ofCols(m_M2i64_ColV c0, m_M2i64_ColV c1))(m_M2i64)) {
     return m_M2i64_ofCols_static(c0, c1);
 };
@@ -3406,6 +3431,7 @@ fn_((m_M2i64_transp(m_M2i64 x))(m_M2i64)) {
 fn_((m_M2i64_det(m_M2i64 x))(i64)) {
     return x.s0_0 * x.s1_1 - x.s0_1 * x.s1_0;
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M3i64 Implementations ==========================================*/
 
@@ -3430,6 +3456,7 @@ fn_((m_M2i64_det(m_M2i64 x))(i64)) {
         [2] = m_V3i64_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M3i64_ofCols(m_M3i64_ColV c0, m_M3i64_ColV c1, m_M3i64_ColV c2))(m_M3i64)) {
     return m_M3i64_ofCols_static(c0, c1, c2);
 };
@@ -3565,6 +3592,7 @@ fn_((m_M3i64_det(m_M3i64 x))(i64)) {
          - x.s0_1 * (x.s1_0 * x.s2_2 - x.s1_2 * x.s2_0)
          + x.s0_2 * (x.s1_0 * x.s2_1 - x.s1_1 * x.s2_0);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M4i64 Implementations ==========================================*/
 
@@ -3592,6 +3620,7 @@ fn_((m_M3i64_det(m_M3i64 x))(i64)) {
         [3] = m_V4i64_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M4i64_ofCols(m_M4i64_ColV c0, m_M4i64_ColV c1, m_M4i64_ColV c2, m_M4i64_ColV c3))(m_M4i64)) {
     return m_M4i64_ofCols_static(c0, c1, c2, c3);
 };
@@ -3753,6 +3782,7 @@ fn_((m_M4i64_det(m_M4i64 x))(i64)) {
          + c * (e * jp_ln - f * ip_lm + h * in_jm)
          - d * (e * jo_kn - f * io_km + g * in_jm);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M2isize Implementations ==========================================*/
 
@@ -3774,6 +3804,7 @@ fn_((m_M4i64_det(m_M4i64 x))(i64)) {
         [1] = m_V2isize_of_static((_r0).y, (_r1).y), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M2isize_ofCols(m_M2isize_ColV c0, m_M2isize_ColV c1))(m_M2isize)) {
     return m_M2isize_ofCols_static(c0, c1);
 };
@@ -3887,6 +3918,7 @@ fn_((m_M2isize_transp(m_M2isize x))(m_M2isize)) {
 fn_((m_M2isize_det(m_M2isize x))(isize)) {
     return x.s0_0 * x.s1_1 - x.s0_1 * x.s1_0;
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M3isize Implementations ==========================================*/
 
@@ -3911,6 +3943,7 @@ fn_((m_M2isize_det(m_M2isize x))(isize)) {
         [2] = m_V3isize_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M3isize_ofCols(m_M3isize_ColV c0, m_M3isize_ColV c1, m_M3isize_ColV c2))(m_M3isize)) {
     return m_M3isize_ofCols_static(c0, c1, c2);
 };
@@ -4046,6 +4079,7 @@ fn_((m_M3isize_det(m_M3isize x))(isize)) {
          - x.s0_1 * (x.s1_0 * x.s2_2 - x.s1_2 * x.s2_0)
          + x.s0_2 * (x.s1_0 * x.s2_1 - x.s1_1 * x.s2_0);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== m_M4isize Implementations ==========================================*/
 
@@ -4073,6 +4107,7 @@ fn_((m_M3isize_det(m_M3isize x))(isize)) {
         [3] = m_V4isize_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M4isize_ofCols(m_M4isize_ColV c0, m_M4isize_ColV c1, m_M4isize_ColV c2, m_M4isize_ColV c3))(m_M4isize)) {
     return m_M4isize_ofCols_static(c0, c1, c2, c3);
 };
@@ -4234,6 +4269,7 @@ fn_((m_M4isize_det(m_M4isize x))(isize)) {
          + c * (e * jp_ln - f * ip_lm + h * in_jm)
          - d * (e * jo_kn - f * io_km + g * in_jm);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== M2f32 Implementations ==========================================*/
 
@@ -4255,6 +4291,7 @@ fn_((m_M4isize_det(m_M4isize x))(isize)) {
         [1] = m_V2f32_of_static((_r0).y, (_r1).y), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M2f32_ofCols(m_M2f32_ColV c0, m_M2f32_ColV c1))(m_M2f32)) {
     return m_M2f32_ofCols_static(c0, c1);
 };
@@ -4364,6 +4401,7 @@ fn_((m_M2f32_scale(m_V2f32 s))(m_M2f32)) {
 fn_((m_M2f32_scaleUniform(f32 s))(m_M2f32)) {
     return m_M2f32_diag(s);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== M3f32 Implementations ==========================================*/
 
@@ -4388,6 +4426,7 @@ fn_((m_M2f32_scaleUniform(f32 s))(m_M2f32)) {
         [2] = m_V3f32_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M3f32_ofCols(m_M3f32_ColV c0, m_M3f32_ColV c1, m_M3f32_ColV c2))(m_M3f32)) {
     return m_M3f32_ofCols_static(c0, c1, c2);
 };
@@ -4537,6 +4576,7 @@ fn_((m_M3f32_scale2D(m_V2f32 s))(m_M3f32)) {
 fn_((m_M3f32_scaleUniform2D(f32 s))(m_M3f32)) {
     return m_M3f32_scale2D(m_V2f32_splat(s));
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== M4f32 Implementations ==========================================*/
 
@@ -4564,6 +4604,7 @@ fn_((m_M3f32_scaleUniform2D(f32 s))(m_M3f32)) {
         [3] = m_V4f32_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M4f32_ofCols(m_M4f32_ColV c0, m_M4f32_ColV c1, m_M4f32_ColV c2, m_M4f32_ColV c3))(m_M4f32)) {
     return m_M4f32_ofCols_static(c0, c1, c2, c3);
 };
@@ -5052,6 +5093,7 @@ fn_((m_M4f32_frustumLHZO(f32 left, f32 right, f32 bottom, f32 top, f32 proximal,
         m_V4f32_of(0.0f, 0.0f, 1.0f, 0.0f)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== M2f64 Implementations ==========================================*/
 
@@ -5073,6 +5115,7 @@ fn_((m_M4f32_frustumLHZO(f32 left, f32 right, f32 bottom, f32 top, f32 proximal,
         [1] = m_V2f64_of_static((_r0).y, (_r1).y), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M2f64_ofCols(m_M2f64_ColV c0, m_M2f64_ColV c1))(m_M2f64)) {
     return m_M2f64_ofCols_static(c0, c1);
 };
@@ -5182,6 +5225,7 @@ fn_((m_M2f64_scale(m_V2f64 s))(m_M2f64)) {
 fn_((m_M2f64_scaleUniform(f64 s))(m_M2f64)) {
     return m_M2f64_diag(s);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== M3f64 Implementations ==========================================*/
 
@@ -5206,6 +5250,7 @@ fn_((m_M2f64_scaleUniform(f64 s))(m_M2f64)) {
         [2] = m_V3f64_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M3f64_ofCols(m_M3f64_ColV c0, m_M3f64_ColV c1, m_M3f64_ColV c2))(m_M3f64)) {
     return m_M3f64_ofCols_static(c0, c1, c2);
 };
@@ -5355,6 +5400,7 @@ fn_((m_M3f64_scale2D(m_V2f64 s))(m_M3f64)) {
 fn_((m_M3f64_scaleUniform2D(f64 s))(m_M3f64)) {
     return m_M3f64_scale2D(m_V2f64_splat(s));
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== M4f64 Implementations ==========================================*/
 
@@ -5382,6 +5428,7 @@ fn_((m_M3f64_scaleUniform2D(f64 s))(m_M3f64)) {
         [3] = m_V4f64_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_M4f64_ofCols(m_M4f64_ColV c0, m_M4f64_ColV c1, m_M4f64_ColV c2, m_M4f64_ColV c3))(m_M4f64)) {
     return m_M4f64_ofCols_static(c0, c1, c2, c3);
 };
@@ -5870,5 +5917,6 @@ fn_((m_M4f64_frustumLHZO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal,
         m_V4f64_of(0.0, 0.0, 1.0, 0.0)
     );
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #endif /* math_mat__included */

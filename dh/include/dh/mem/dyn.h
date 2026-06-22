@@ -38,6 +38,8 @@ $static fn_((mem_dyn_addOrOOM(usize lhs, usize rhs))(mem_dyn_E$usize));
 #define __val__mem_dyn_initCap_static(_type /*: TypeInfo*/...) ( \
     mem_dyn__initCap(pp_true, TypeInfo_size(_type)) \
 )
+
+#if on_analysis_active_only || on_comptime
 fn_((mem_dyn_initCap(TypeInfo type))(usize)) {
     return mem_dyn__initCap(pp_false, type.size);
 };
@@ -56,6 +58,7 @@ fn_((mem_dyn_addOrOOM(usize lhs, usize rhs))(mem_dyn_E$usize) $scope) {
     }
     claim_unreachable;
 } $unscoped(fn);
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

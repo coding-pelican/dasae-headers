@@ -331,6 +331,7 @@ $static fn_((m_Q4f64_backward(m_Q4f64 q))(m_V3f64));
 #define ____m_Q4f32_of_static(_x, _y, _z, _w...) l$((m_Q4f32){ \
     .v = m_V4f32_of_static(_x, _y, _z, _w), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_Q4f32_of(f32 x, f32 y, f32 z, f32 w))(m_Q4f32)) {
     return m_Q4f32_of_static(x, y, z, w);
 };
@@ -690,6 +691,7 @@ fn_((m_Q4f32_forward(m_Q4f32 q))(m_V3f32)) {
 fn_((m_Q4f32_backward(m_Q4f32 q))(m_V3f32)) {
     return m_Q4f32_rotateV(q, m_V3f32_backward);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 /*========== Q4f64 Implementations ==========================================*/
 
@@ -701,6 +703,7 @@ fn_((m_Q4f32_backward(m_Q4f32 q))(m_V3f32)) {
 #define ____m_Q4f64_of_static(_x, _y, _z, _w...) l$((m_Q4f64){ \
     .v = m_V4f64_of_static(_x, _y, _z, _w), \
 })
+#if on_analysis_active_only || on_comptime
 fn_((m_Q4f64_of(f64 x, f64 y, f64 z, f64 w))(m_Q4f64)) {
     return m_Q4f64_of_static(x, y, z, w);
 };
@@ -1060,6 +1063,6 @@ fn_((m_Q4f64_forward(m_Q4f64 q))(m_V3f64)) {
 fn_((m_Q4f64_backward(m_Q4f64 q))(m_V3f64)) {
     return m_Q4f64_rotateV(q, m_V3f64_backward);
 };
-
+#endif /* on_analysis_active_only || on_comptime */
 
 #endif /* math_quat__included */

@@ -1,4 +1,6 @@
 CompileFlags:
+  Remove:
+    - -isystem./dh/include
   Add:
     - -I./dh/src
     - -I./dh/include

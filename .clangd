@@ -98,14 +98,20 @@ If:
     - (^|.*/)[Bb]aks?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
     - (^|.*/)[Bb]ackups?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
     - (^|.*/)[Aa]rchives?([0-9]+|[_-][0-9A-Za-z]+)?(/.*|$)
-    # Local vendored dependencies
-    - (^|.*/)lib/deps(/.*)?
 Index:
   Background: Skip
 Diagnostics:
   Suppress: "*"
 CompileFlags:
-  Add: [-w] # Inhibit all warnings
+  Add: [-w, -Xclang, -skip-function-bodies] # Inhibit all warnings
+#========== Local Vendored Dependencies =======================================
+---
+If:
+  PathMatch: [(^|.*/)lib/deps(/.*)?]
+Diagnostics:
+  Suppress: "*"
+CompileFlags:
+  Add: [-w, -Xclang, -skip-function-bodies] # Inhibit all warnings
 #========== C Sources =========================================================
 ---
 If:
@@ -143,6 +149,9 @@ CompileFlags:
     - -isystem./lib/deps
     - -isystem./dh/include
     - -isystem./dh/lib/deps
+    # [Diagnostic: Analysis Only]
+    - -DANALYSIS
+    - -Wno-undefined-internal
     # [Diagnostic: Common]
     - -Werror=all
     - -Werror=extra
@@ -221,6 +230,9 @@ CompileFlags:
     - -isystem./lib/deps
     - -isystem./dh/include
     - -isystem./dh/lib/deps
+    # [Diagnostic: Analysis Only]
+    - -DANALYSIS
+    - -Wno-undefined-internal
     # [Diagnostic: Common]
     - -Werror=all
     - -Werror=extra

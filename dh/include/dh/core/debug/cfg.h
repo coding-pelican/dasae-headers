@@ -38,6 +38,7 @@ extern "C" {
 #define debug_only(_inner...) \
     /* Used only when `debug_enabled`. */ \
     __comp_syn__debug_only(_inner)
+#define debug_unless(_inner...) __comp_syn__debug_unless(_inner)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -62,6 +63,7 @@ extern "C" {
 #endif /* defined(NDEBUG) || defined(NDEBUG_BREAK) */
 
 #define __comp_syn__debug_only(_inner...) pp_if_(debug_enabled)(pp_then_(_inner))
+#define __comp_syn__debug_unless(_inner...) pp_if_(pp_not(debug_enabled))(pp_then_(_inner))
 
 #if defined(__cplusplus)
 } /* extern "C" */

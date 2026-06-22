@@ -26,12 +26,27 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define on_analysis eval_on_analysis
+#define analysis_enabled eval_analysis_enabled
+#define analysis_mode eval_analysis_mode
+#define analysis_mode_active_only eval_analysis_mode_active_only
+#define analysis_mode_full eval_analysis_mode_full
+#define analysis_mode_is_active_only eval_analysis_mode_is_active_only
+#define analysis_mode_is_full eval_analysis_mode_is_full
+#define on_analysis_active_only eval_on_analysis_active_only
+#define on_analysis_full eval_on_analysis_full
+#define analysis_only eval_analysis_only
+#define analysis_unless eval_analysis_unless
+
 #define on_comptime eval_on_comptime
-#define comptime_comp_enabled eval_comptime_comp_enabled
+#define comptime_enabled eval_comptime_enabled
 #define comptime_only eval_comptime_only
+#define comptime_unless eval_comptime_unless
+
 #define on_runtime eval_on_runtime
-#define runtime_comp_enabled eval_runtime_comp_enabled
+#define runtime_enabled eval_runtime_enabled
 #define runtime_only eval_runtime_only
+#define runtime_unless eval_runtime_unless
 
 #define $dispatch_on_comptime /* just comment that dispatches to detailed implementation at compile-time */
 

@@ -872,7 +872,7 @@ extern "C" {
     } \
     __ret; \
 })
-#define __op__simd_V_clamp__step(_x, _lo, _hi...) simd_V_min(simd_V_max(_x, _lo), _hi)
+#define __op__simd_V_clamp__step(_x, _lo, _hi...) simd_V_map3(_x, _lo, _hi, pri_clamp)
 
 #define __op__simd_V_dot(__lhs, __rhs, _lhs, _rhs...) ({ \
     let __lhs = _lhs; \
