@@ -262,7 +262,7 @@ extern "C" {
 })
 
 #define $asg(_val...) , $_asg, (_val)
-#define $field(...) __op__$field(__VA_ARGS__)
+#define $field(/*(_field)*/...) __op__$field(__VA_ARGS__)
 #define __op__$field(...) pp_overload(__op__$field, __VA_ARGS__)(__VA_ARGS__)
 #define __op__$field_1(...) __op__$field_1__emit(__VA_ARGS__)
 #define __op__$field_1__emit(_field_val...) \
