@@ -263,22 +263,22 @@ $static fn_((dansi_Event__parseEsc(dansi_Seq seq))(dansi_Event_E$dansi_Event) $s
         let nested = dansi_Seq_raw(S_suffix((seq.bytes)(1)));
         let parsed = try_(dansi_Event__parseRaw(nested));
         match_(parsed) {
-        pattern_((dansi_Event_text)(text)) {
+        patt_((dansi_Event_text)(text)) {
             let modified = local_({
                 var text_mut = text;
                 text_mut.mods.alt = true;
                 local_return_(text_mut);
             });
             return_ok(union_of((dansi_Event_text)(modified)));
-        } $end(pattern);
-        pattern_((dansi_Event_special)(special)) {
+        } $end(patt);
+        patt_((dansi_Event_special)(special)) {
             let modified = local_({
                 var special_mut = special;
                 special_mut.mods.alt = true;
                 local_return_(special_mut);
             });
             return_ok(union_of((dansi_Event_special)(modified)));
-        } $end(pattern);
+        } $end(patt);
         case dansi_Event_mouse: $fallthrough;
         case dansi_Event_focus: $fallthrough;
         default_() return_err(E_cause$dansi_Event_UnknownSeq()) $end(default);

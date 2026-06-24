@@ -579,7 +579,7 @@ Core algebraic types: Optional, Error Result, Slice, Array, Variant.
   - `E$(T)` (Error Result) — `ok(v)`, `err(e)`, `try_(expr)`, `catch_((expr)(err, block))`, `return_ok`, `return_err`
   - `S$(T)` (Slice) — `S_deref$`, `S_at`, `S_slice`, `S_prefix`, `S_suffix`, `S_len`
   - `A$(N, T)` (Array) — `A_zero`, `A_init$`, `A_from$`, `A_ref$`, `A_len`
-  - `variant_` — Tagged union; create with `union_of$`, match with `match_`, `pattern_`
+  - `variant_` — Tagged union; create with `union_of$`, match with `match_`, `patt_`
   - `ErrTrace` — Error tracing with call stack information
 - **prl/int, prl/flt:**
   Per-type safe wrappers (e.g. `u8_add`, `u32_div`, `i64_mod`) with debug overflow checks;
@@ -1294,20 +1294,20 @@ fn_((pullInputEvent(void))(O$InputEvent));
 
 fn_((example(void))(void)) {
     if_some((pullInputEvent())(event)) match_(event) {
-    pattern_((InputEvent_press_key)(on_pressed)) {
+    patt_((InputEvent_press_key)(on_pressed)) {
         debug_assert_true_fmt(
             -1 < on_pressed->key && on_pressed->key <= 255,
             "key is out of range"
         );
         break;
-    } $end(pattern);
-    pattern_((InputEvent_release_button)(on_released)) {
+    } $end(patt);
+    patt_((InputEvent_release_button)(on_released)) {
         debug_assert_true_fmt(
             -1 < on_released->button && on_released->button <= 5,
             "button is out of range"
         );
         break;
-    } $end(pattern);
+    } $end(patt);
     fallback_(claim_unreachable);
 } $end(match);
 } $unscoped_(fn);

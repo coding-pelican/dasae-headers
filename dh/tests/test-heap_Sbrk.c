@@ -4,11 +4,11 @@
 
 #define test_heap_Sbrk__enabled_outstream pp_false
 $static fn_((ignorePrintln(S_const$u8 fmt, ...))(void)) { let_ignore = fmt; };
-$static let io_println = pp_if_(test_heap_Sbrk__enabled_outstream)(
+$static let test_println = pp_if_(test_heap_Sbrk__enabled_outstream)(
     pp_then_(io_stream_println),
     pp_else_(ignorePrintln));
 $static fn_((ignoreNL(void))(void)) $do_nothing;
-$static let io_nl = pp_if_(test_heap_Sbrk__enabled_outstream)(
+$static let test_nl = pp_if_(test_heap_Sbrk__enabled_outstream)(
     pp_then_(io_stream_nl),
     pp_else_(ignoreNL));
 
@@ -17,12 +17,12 @@ TEST_fn_("heap/Sbrk: size variants" $scope) {
     let medium_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_medium)cleared()));
     let large_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_large)cleared()));
 
-    io_nl();
-    io_println(u8_l("SbrkAlctr sizes:"));
-    io_println(u8_l("  .small:  {:uz} bytes"), small_size);
-    io_println(u8_l("  .medium: {:uz} bytes"), medium_size);
-    io_println(u8_l("  .large:  {:uz} bytes"), large_size);
-    io_nl();
+    test_nl();
+    test_println(u8_l("SbrkAlctr sizes:"));
+    test_println(u8_l("  .small:  {:uz} bytes"), small_size);
+    test_println(u8_l("  .medium: {:uz} bytes"), medium_size);
+    test_println(u8_l("  .large:  {:uz} bytes"), large_size);
+    test_nl();
 
     try_(TEST_expect(small_size < medium_size));
     try_(TEST_expect(medium_size < large_size));

@@ -887,14 +887,14 @@ fn_((tetris_pollInput(tetris_Self* self, daterm_Term term))(E$void) $scope) {
     while (true) {
         let event = orelse_((daterm_Term_poll(term))(return_ok({})));
         $suppress_(switch_enum)(match_(event)) {
-        pattern_((daterm_Event_key)(key)) {
+        patt_((daterm_Event_key)(key)) {
             let cmd = try_(tetris_cmdFromKey(key));
             if_some((cmd)(value)) tetris_applyCmd(self, value);
-        } $end(pattern);
-        pattern_((daterm_Event_text)(text)) {
+        } $end(patt);
+        patt_((daterm_Event_text)(text)) {
             let cmd = try_(tetris_cmdFromText(text));
             if_some((cmd)(value)) tetris_applyCmd(self, value);
-        } $end(pattern);
+        } $end(patt);
         default_() $do_nothing $end(default);
         } $end(match);
     }

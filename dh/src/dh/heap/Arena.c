@@ -81,9 +81,9 @@ fn_((heap_Arena_reset(heap_Arena* self, heap_Arena_ResetMode mode))(bool)) {
     claim_assert_nonnull(self);
     // Calculate requested capacity based on mode
     let requested_capacity = expr_(usize $scope)(match_(mode) {
-        pattern_((heap_Arena_ResetMode_free_all)($ignore)) $break_(0) $end(pattern);
-        pattern_((heap_Arena_ResetMode_retain_capacity)($ignore)) $break_(heap_Arena_queryCap(self)) $end(pattern);
-        pattern_((heap_Arena_ResetMode_retain_with_limit)(limit)) $break_(pri_min(limit, heap_Arena_queryCap(self))) $end(pattern);
+        patt_((heap_Arena_ResetMode_free_all)($ignore)) $break_(0) $end(patt);
+        patt_((heap_Arena_ResetMode_retain_capacity)($ignore)) $break_(heap_Arena_queryCap(self)) $end(patt);
+        patt_((heap_Arena_ResetMode_retain_with_limit)(limit)) $break_(pri_min(limit, heap_Arena_queryCap(self))) $end(patt);
     } $end(match)) $unscoped(expr);
     if (requested_capacity == 0) {
         // Free all memory and reset state

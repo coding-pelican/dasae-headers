@@ -54,7 +54,7 @@ $static fn_((io_PTY_Size_default(void))(io_PTY_Size));
 T_alias$((io_PTY_OpenCfg)(struct io_PTY_OpenCfg {
     var_(size, io_PTY_Size);
     var_(nonblocking, bool);
-    var_(slave_mode_, O$io_TTY_ModePatch);
+    var_(slave_mode, O$io_TTY_ModePatch);
 }));
 T_use_prl$(io_PTY_OpenCfg);
 $attr($inline_always)
@@ -64,9 +64,9 @@ $static fn_((io_PTY_OpenCfg_default(void))(io_PTY_OpenCfg));
 
 T_alias$((io_PTY)(struct io_PTY {
     var_(read_file, fs_File);
-    var_(write_file_, O$fs_File);
-    var_(slave_file_, O$fs_File);
-    var_(platform_resource_, O$P$raw);
+    var_(write_file, O$fs_File);
+    var_(slave_file, O$fs_File);
+    var_(platform_resource, O$P$raw);
 }));
 T_use_prl$(io_PTY);
 T_use_E$($set(io_PTY_E)(io_PTY));
@@ -126,7 +126,7 @@ fn_((io_PTY_OpenCfg_default(void))(io_PTY_OpenCfg)) {
     return (io_PTY_OpenCfg){
         .size = io_PTY_Size_default(),
         .nonblocking = false,
-        .slave_mode_ = none(),
+        .slave_mode = none(),
     };
 };
 fn_((io_PTY_SpawnCfg_default(mem_Alctr gpa, proc_Cmd cmd))(io_PTY_SpawnCfg)) {

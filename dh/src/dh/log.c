@@ -1,6 +1,6 @@
 #include "dh/log.h"
 #include "dh/fs/Dir.h"
-#include "dh/io/common.h"
+#include "dh/io/self.h"
 #include "dh/mem/common.h"
 #include "dh/time/self/Real.h"
 

@@ -228,7 +228,7 @@ fn_((heap_Sbrk_LocalLarge_ref(heap_Sbrk_LocalLarge* self))(heap_Sbrk_LocalRef) $
 #if on_analysis_active_only || on_comptime
 fn_((heap_Sbrk_LocalRef_frees(heap_Sbrk_LocalRef self))(S$usize)) {
     return expr_(S$usize $scope)(match_(self) {
-        patterns_((
+        patts_((
             heap_Sbrk_LocalRef_small,
             heap_Sbrk_LocalRef_medium,
             heap_Sbrk_LocalRef_large
@@ -238,7 +238,7 @@ fn_((heap_Sbrk_LocalRef_frees(heap_Sbrk_LocalRef self))(S$usize)) {
 
 fn_((heap_Sbrk_LocalRef_big_frees(heap_Sbrk_LocalRef self))(S$usize)) {
     return expr_(S$usize $scope)(match_(self) {
-        patterns_((
+        patts_((
             heap_Sbrk_LocalRef_small,
             heap_Sbrk_LocalRef_medium,
             heap_Sbrk_LocalRef_large
@@ -247,7 +247,7 @@ fn_((heap_Sbrk_LocalRef_big_frees(heap_Sbrk_LocalRef self))(S$usize)) {
 };
 fn_((heap_Sbrk_LocalRef_next_addrs(heap_Sbrk_LocalRef self))(S$usize)) {
     return expr_(S$usize $scope)(match_(self) {
-        patterns_((
+        patts_((
             heap_Sbrk_LocalRef_small,
             heap_Sbrk_LocalRef_medium,
             heap_Sbrk_LocalRef_large
@@ -257,7 +257,7 @@ fn_((heap_Sbrk_LocalRef_next_addrs(heap_Sbrk_LocalRef self))(S$usize)) {
 
 fn_((heap_Sbrk_LocalRef_end_addrs(heap_Sbrk_LocalRef self))(S$usize)) {
     return expr_(S$usize $scope)(match_(self) {
-        patterns_((
+        patts_((
             heap_Sbrk_LocalRef_small,
             heap_Sbrk_LocalRef_medium,
             heap_Sbrk_LocalRef_large

@@ -35,8 +35,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     });
     let cmd = (proc_Cmd){
         .argv = A_ref$((S$S_const$u8)(argv)),
-        .env = {},
-        .cwd = null,
+        .env = none(),
+        .cwd = none(),
         .std_in = proc_StdIO_inherit,
         .std_out = proc_StdIO_inherit,
         .std_err = proc_StdIO_inherit,

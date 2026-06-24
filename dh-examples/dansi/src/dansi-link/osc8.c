@@ -23,16 +23,16 @@ $static fn_((dansi_link_osc8__idFromRawParams(S_const$u8 raw))(O$S_const$u8) $sc
 
 $static fn_((dansi_link_osc8__writeParams(dansi_link_osc8_Params params, io_Writer out))(E$void) $scope) {
     match_(params) {
-    pattern_((dansi_link_osc8_Params_none)($ignore)) {
+    patt_((dansi_link_osc8_Params_none)($ignore)) {
         return_ok({});
-    } $end(pattern);
-    pattern_((dansi_link_osc8_Params_id)(id)) {
+    } $end(patt);
+    patt_((dansi_link_osc8_Params_id)(id)) {
         try_(io_Writer_writeBytes(out, u8_l(dansi_link_osc8_param_id_key)));
         return io_Writer_writeBytes(out, id);
-    } $end(pattern);
-    pattern_((dansi_link_osc8_Params_raw)(raw)) {
+    } $end(patt);
+    patt_((dansi_link_osc8_Params_raw)(raw)) {
         return io_Writer_writeBytes(out, raw);
-    } $end(pattern);
+    } $end(patt);
     }
     $end_match;
     return_ok({});

@@ -193,40 +193,40 @@ extern "C" {
 #define __cases___expand(...) __VA_ARGS__
 #define $end_cases
 
-#define pattern_(/*(_Enum)(_capt)*/...) __step__pattern_(__step__pattern___parseEnum __VA_ARGS__)
-#define __step__pattern_(...) __step__pattern___emit(__VA_ARGS__)
-#define __step__pattern___parseEnum(_Enum...) _Enum, __step__pattern___parseCapt
-#define __step__pattern___parseCapt(_capt...) pp_overload(__step__pattern___parseCapt, _capt)(_capt)
-#define __step__pattern___parseCapt_1(_capt...) $deref _capt
-#define __step__pattern___parseCapt_2(_$opt, _capt...) _$opt, _capt
-#define __step__pattern___capt(_$opt...) pp_cat(__step__pattern___capt, _$opt)
-#define __step__pattern___capt$_ref(_Enum...) union_as((__matching_tagged)(_Enum))
-#define __step__pattern___capt$_deref(_Enum...) union_to((*__matching_tagged)(_Enum))
-#define __step__pattern___emit(_Enum, _$opt, _capt...) case _Enum: { \
+#define patt_(/*(_Enum)(_capt)*/...) __step__patt_(__step__patt___parseEnum __VA_ARGS__)
+#define __step__patt_(...) __step__patt___emit(__VA_ARGS__)
+#define __step__patt___parseEnum(_Enum...) _Enum, __step__patt___parseCapt
+#define __step__patt___parseCapt(_capt...) pp_overload(__step__patt___parseCapt, _capt)(_capt)
+#define __step__patt___parseCapt_1(_capt...) $deref _capt
+#define __step__patt___parseCapt_2(_$opt, _capt...) _$opt, _capt
+#define __step__patt___capt(_$opt...) pp_cat(__step__patt___capt, _$opt)
+#define __step__patt___capt$_ref(_Enum...) union_as((__matching_tagged)(_Enum))
+#define __step__patt___capt$_deref(_Enum...) union_to((*__matching_tagged)(_Enum))
+#define __step__patt___emit(_Enum, _$opt, _capt...) case _Enum: { \
     $attr($maybe_unused) \
     $static let __matched_enum = _Enum; \
     $attr($maybe_unused) \
     T_alias$((MatchedType)(TypeOfUnqual(union_to((*__matching_tagged)(_Enum))))); \
-    let _capt = __step__pattern___capt(_$opt(_Enum));
-#define $end_pattern \
+    let _capt = __step__patt___capt(_$opt(_Enum));
+#define $end_patt \
 } break
 
-#define patterns_(/*(_Enums...)(_capt) stmts...*/...) __step__patterns_(__step__patterns___parseEnums __VA_ARGS__)
-#define __step__patterns_(...) __step__patterns___emit(__VA_ARGS__)
-#define __step__patterns___parseEnums(_Enums...) (_Enums), __step__patterns___parseCapt
-#define __step__patterns___parseCapt(_capt...) (pp_overload(__step__patterns___parseCapt, _capt)(_capt)),
-#define __step__patterns___parseCapt_1(_capt...) $deref _capt
-#define __step__patterns___parseCapt_2(_$opt, _capt...) _$opt, _capt
-#define __step__patterns___emit(_Enums, ...) \
-    pp_foreach(__step__patterns___each, (__VA_ARGS__), __patterns___expand _Enums)
-#define __step__patterns___each(_$opt_w_capt_w_stmts, /*_Enum*/...) __VA_OPT__( \
-    __step__patterns___each_emit(__VA_ARGS__, __patterns___expand _$opt_w_capt_w_stmts) \
+#define patts_(/*(_Enums...)(_capt) stmts...*/...) __step__patts_(__step__patts___parseEnums __VA_ARGS__)
+#define __step__patts_(...) __step__patts___emit(__VA_ARGS__)
+#define __step__patts___parseEnums(_Enums...) (_Enums), __step__patts___parseCapt
+#define __step__patts___parseCapt(_capt...) (pp_overload(__step__patts___parseCapt, _capt)(_capt)),
+#define __step__patts___parseCapt_1(_capt...) $deref _capt
+#define __step__patts___parseCapt_2(_$opt, _capt...) _$opt, _capt
+#define __step__patts___emit(_Enums, ...) \
+    pp_foreach(__step__patts___each, (__VA_ARGS__), __patts___expand _Enums)
+#define __step__patts___each(_$opt_w_capt_w_stmts, /*_Enum*/...) __VA_OPT__( \
+    __step__patts___each_emit(__VA_ARGS__, __patts___expand _$opt_w_capt_w_stmts) \
 )
-#define __step__patterns___each_emit(...) ____patterns___each(__VA_ARGS__)
-#define ____patterns___each(_Enum, _$opt_w_capt, stmts...) \
-    pattern_((_Enum)_$opt_w_capt) stmts $end(pattern);
-#define __patterns___expand(_Enum...) _Enum
-#define $end_patterns
+#define __step__patts___each_emit(...) ____patts___each(__VA_ARGS__)
+#define ____patts___each(_Enum, _$opt_w_capt, stmts...) \
+    patt_((_Enum)_$opt_w_capt) stmts $end(patt);
+#define __patts___expand(_Enum...) _Enum
+#define $end_patts
 
 #define default_(/*(_Enums)*/...) \
     __VA_OPT__(__step__default___casesFallthrough __VA_ARGS__) \

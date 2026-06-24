@@ -234,14 +234,14 @@ $static fn_((mem_log2ToAlign(mem_Align log2_align))(usize));
 /* --- Memory Utilities --- */
 
 $attr($inline_always)
-$static fn_((mem_idxZ$u8(u8 sentinel, const u8* p))(usize));
+$static fn_((mem_idxZ$u8(u8 sentinel, const u8* pz))(usize));
 $attr($inline_always)
-$static fn_((mem_lenZ0$u8(const u8* p))(usize));
+$static fn_((mem_lenZ0$u8(const u8* pz0))(usize));
 
 $attr($inline_always)
-$static fn_((mem_spanZ0$u8(const u8* p))(S_const$u8));
+$static fn_((mem_spanZ0$u8(const u8* pz0))(S_const$u8));
 $attr($inline_always)
-$static fn_((mem_spanZ0Mut$u8(u8* p))(S$u8));
+$static fn_((mem_spanZ0Mut$u8(u8* pz0))(S$u8));
 
 $attr($inline_always)
 $static fn_((mem_asBytes(u_P_const$raw ptr))(S_const$u8));
@@ -1155,24 +1155,24 @@ fn_((mem_log2ToAlign(mem_Align log2_align))(usize)) {
 
 /* --- Memory Utilities --- */
 
-fn_((mem_idxZ$u8(u8 sentinel, const u8* p))(usize)) {
-    claim_assert_nonnull(p);
+fn_((mem_idxZ$u8(u8 sentinel, const u8* pz))(usize)) {
+    claim_assert_nonnull(pz);
     var_(idx, usize) = 0;
-    while (*P_at((p)[idx]) != sentinel) { ++idx; }
+    while (*P_at((pz)[idx]) != sentinel) { ++idx; }
     return idx;
 };
-fn_((mem_lenZ0$u8(const u8* p))(usize)) {
-    claim_assert_nonnull(p);
-    return mem_idxZ$u8(u8_c('\0'), p);
+fn_((mem_lenZ0$u8(const u8* pz0))(usize)) {
+    claim_assert_nonnull(pz0);
+    return mem_idxZ$u8(u8_c('\0'), pz0);
 };
 
-fn_((mem_spanZ0$u8(const u8* p))(S_const$u8)) {
-    claim_assert_nonnull(p);
-    return (S_const$u8){ .ptr = p, .len = mem_lenZ0$u8(p) };
+fn_((mem_spanZ0$u8(const u8* pz0))(S_const$u8)) {
+    claim_assert_nonnull(pz0);
+    return (S_const$u8){ .ptr = pz0, .len = mem_lenZ0$u8(pz0) };
 };
-fn_((mem_spanZ0Mut$u8(u8* p))(S$u8)) {
-    claim_assert_nonnull(p);
-    return (S$u8){ .ptr = p, .len = mem_lenZ0$u8(p) };
+fn_((mem_spanZ0Mut$u8(u8* pz0))(S$u8)) {
+    claim_assert_nonnull(pz0);
+    return (S$u8){ .ptr = pz0, .len = mem_lenZ0$u8(pz0) };
 };
 
 fn_((mem_asBytes(u_P_const$raw ptr))(S_const$u8)) {

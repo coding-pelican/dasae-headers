@@ -95,7 +95,7 @@ struct ETrace {
 #define ETrace_depth_callDebug() ETrace_depth_debug()
 #define ETrace_print_callDebug() ETrace_print_debug()
 
-#if arch_is_wasm_family
+#if arch_family_is_wasm
 #define ETrace_captureFrame_callDebug() ETrace_captureFrame_debug(srcLoc(), null)
 #else
 #define ETrace_captureFrame_callDebug() ETrace_captureFrame_debug(srcLoc(), __builtin_return_address(0))

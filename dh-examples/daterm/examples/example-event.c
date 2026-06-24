@@ -35,7 +35,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     while_(var is_running = true, is_running) {
         if_some((daterm_Term_poll(term))(event)) {
             $suppress_(switch_enum)(match_(event)) {
-            pattern_((daterm_Event_key)(key)) {
+            patt_((daterm_Event_key)(key)) {
                 if_some((key.action)(action)) {
                     if (action == daterm_key_Action_release) continue;
                 }
@@ -46,8 +46,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
                 } $end(case);
                 default_() $do_nothing $end(default);
                 }
-            } $end(pattern);
-            pattern_((daterm_Event_text)(text)) {
+            } $end(patt);
+            patt_((daterm_Event_text)(text)) {
                 if_some((text.action)(action)) {
                     if (action == daterm_key_Action_release) continue;
                 }
@@ -68,16 +68,16 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
                 let pressed_ctrl_c = text.mods.ctrl && text.codepoint == 'c';
                 if (pressed_ctrl_c) try_(io_Writer_println(out, u8_l("Ctrl-C pressed, exiting...")));
                 is_running = !(pressed_q || pressed_ctrl_c);
-            } $end(pattern);
-            pattern_((daterm_Event_mouse)(mouse)) {
+            } $end(patt);
+            patt_((daterm_Event_mouse)(mouse)) {
                 if (allow_printing_mouse_events) match_(mouse) {
-                    pattern_((daterm_mouse_Event_press)(press)) {
+                    patt_((daterm_mouse_Event_press)(press)) {
                         try_(io_Writer_println(
                             out, u8_l("Mouse press: col={:uh}, row={:uh}, btn={:uhh}"),
                             press.pos.x, press.pos.y, press.btn
                         ));
-                    } $end(pattern);
-                    pattern_((daterm_mouse_Event_release)(release)) {
+                    } $end(patt);
+                    patt_((daterm_mouse_Event_release)(release)) {
                         let btn = isSome(release.btn)
                                     ? as$(u8)(unwrap_(release.btn))
                                     : u8_limit_max;
@@ -85,8 +85,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
                             out, u8_l("Mouse release: col={:uh}, row={:uh}, btn={:uhh}"),
                             release.pos.x, release.pos.y, btn
                         ));
-                    } $end(pattern);
-                    pattern_((daterm_mouse_Event_motion)(motion)) {
+                    } $end(patt);
+                    patt_((daterm_mouse_Event_motion)(motion)) {
                         let btn = isSome(motion.btn)
                                     ? as$(u8)(unwrap_(motion.btn))
                                     : u8_limit_max;
@@ -94,21 +94,21 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
                             out, u8_l("Mouse motion: col={:uh}, row={:uh}, btn={:uhh}"),
                             motion.pos.x, motion.pos.y, btn
                         ));
-                    } $end(pattern);
-                    pattern_((daterm_mouse_Event_wheel)(wheel)) {
+                    } $end(patt);
+                    patt_((daterm_mouse_Event_wheel)(wheel)) {
                         try_(io_Writer_println(
                             out, u8_l("Mouse wheel: col={:uh}, row={:uh}, wheel={:uhh}"),
                             wheel.pos.x, wheel.pos.y, wheel.wheel
                         ));
-                    } $end(pattern);
+                    } $end(patt);
                     } $end(match);
-            } $end(pattern);
-            pattern_((daterm_Event_focus)(focus)) {
+            } $end(patt);
+            patt_((daterm_Event_focus)(focus)) {
                 try_(io_Writer_println(out, u8_l("Focus event: state={:uhh}"), focus));
-            } $end(pattern);
-            pattern_((daterm_Event_resize)(size)) {
+            } $end(patt);
+            patt_((daterm_Event_resize)(size)) {
                 try_(io_Writer_println(out, u8_l("Resize event: cols={:uh}, rows={:uh}"), size.cols, size.rows));
-            } $end(pattern);
+            } $end(patt);
             default_() $do_nothing $end(default);
             } $end(match);
         }

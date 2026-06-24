@@ -3,9 +3,10 @@
 #if plat_is_windows
 #include "dh/sys/api/windows/console.h"
 #include "dh/sys/api/windows/handle.h"
-#elif plat_is_linux
+#endif /* plat_is_windows */
+#if plat_is_linux
 #include "dh/sys/call/linux.h"
-#endif
+#endif /* plat_is_linux */
 
 /*========== Internal Types and Declarations ================================*/
 
@@ -18,10 +19,8 @@ T_alias$((io_TTY__NativeMode)(sys_call_linux_termios));
 #else
 T_alias$((io_TTY__NativeMode)(Void));
 #endif
-
 claim_assert_static(sizeOf$(io_TTY_ModeState) >= sizeOf$(io_TTY__NativeMode));
 claim_assert_static(alignOf$(io_TTY_ModeState) >= alignOf$(io_TTY__NativeMode));
-
 $static fn_((io_TTY__stateFromNative(io_TTY__NativeMode native))(io_TTY_ModeState));
 $static fn_((io_TTY__stateAsNative(const io_TTY_ModeState* state))(const io_TTY__NativeMode*));
 $static fn_((io_TTY__getMode(fs_File file))(io_TTY_E$O$io_TTY_ModeState));
@@ -32,9 +31,10 @@ $static fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patc
 #if plat_is_windows
 $static fn_((io_TTY__mapWindowsError(DWORD error))(io_TTY_E));
 $static fn_((io_TTY__patchWindowsFlag(DWORD mode, DWORD flag, io_TTY_ModePatch patch, io_TTY_ModeBit bit))(DWORD));
-#elif plat_is_linux
+#endif /* plat_is_windows */
+#if plat_is_linux
 $static fn_((io_TTY__patchLinuxFlag(sys_call_linux_tcflag_t* flags, sys_call_linux_tcflag_t flag, io_TTY_ModePatch patch, io_TTY_ModeBit bit))(void));
-#endif
+#endif /* plat_is_linux */
 
 /*========== Internal Definitions ===========================================*/
 
@@ -44,29 +44,29 @@ fn_((io_TTY__stateFromNative(io_TTY__NativeMode native))(io_TTY_ModeState)) {
     var_(state, io_TTY_ModeState) = cleared();
     *ptrCast$((io_TTY__NativeMode*)(A_ptr(state.storage))) = native;
     return state;
-}
+};
 
 fn_((io_TTY__stateAsNative(const io_TTY_ModeState* state))(const io_TTY__NativeMode*)) {
     claim_assert_nonnull(state);
     return ptrCast$((const io_TTY__NativeMode*)(A_ptr(state->storage)));
-}
+};
 
 /*---------- Windows Console Backend ----------------------------------------*/
 
 #if plat_is_windows
 fn_((io_TTY__mapWindowsError(DWORD error))(io_TTY_E)) {
     switch (error) {
-    case ERROR_INVALID_HANDLE: return E_cause$io_TTY_BadHandle();
+    case_((ERROR_INVALID_HANDLE)) return E_cause$io_TTY_BadHandle() $end(case);
     default_() return E_cause$io_TTY_ModeFailed() $end(default);
     }
-}
+};
 
 fn_((io_TTY__patchWindowsFlag(DWORD mode, DWORD flag, io_TTY_ModePatch patch, io_TTY_ModeBit bit))(DWORD)) {
     let mask = as$(io_TTY_ModeBits)(bit);
     if ((patch.disable & mask) != 0) return mode & ~flag;
     if ((patch.enable & mask) != 0) return mode | flag;
     return mode;
-}
+};
 
 fn_((io_TTY__applyInput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void)) {
     claim_assert_nonnull(mode);
@@ -81,7 +81,7 @@ fn_((io_TTY__applyInput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void)
     }
     *mode = io_TTY__patchWindowsFlag(*mode, ENABLE_QUICK_EDIT_MODE, patch, io_TTY_ModeBit_quick_edit);
     *mode = io_TTY__patchWindowsFlag(*mode, ENABLE_INSERT_MODE, patch, io_TTY_ModeBit_insert_input);
-}
+};
 
 fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void)) {
     claim_assert_nonnull(mode);
@@ -91,9 +91,9 @@ fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void
 #if defined(DISABLE_NEWLINE_AUTO_RETURN)
     if ((patch.disable & io_TTY_ModeBit_vt_auto_return) != 0) *mode |= u32_(DISABLE_NEWLINE_AUTO_RETURN);
     if ((patch.enable & io_TTY_ModeBit_vt_auto_return) != 0) *mode &= ~u32_(DISABLE_NEWLINE_AUTO_RETURN);
-#endif
-}
-#endif
+#endif /* defined(DISABLE_NEWLINE_AUTO_RETURN) */
+};
+#endif /* plat_is_windows */
 
 /*---------- Linux Terminal Backend -----------------------------------------*/
 
@@ -106,7 +106,7 @@ fn_((io_TTY__patchLinuxFlag(sys_call_linux_tcflag_t* flags, sys_call_linux_tcfla
     } else if ((patch.enable & mask) != 0) {
         *flags |= flag;
     }
-}
+};
 
 fn_((io_TTY__applyInput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void)) {
     claim_assert_nonnull(mode);
@@ -124,13 +124,13 @@ fn_((io_TTY__applyInput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void)
         *A_at((mode->c_cc)[sys_call_linux_VMIN]) = patch.min_read;
         *A_at((mode->c_cc)[sys_call_linux_VTIME]) = patch.timeout_ds;
     }
-}
+};
 
 fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void)) {
     claim_assert_nonnull(mode);
     io_TTY__patchLinuxFlag(&mode->c_oflag, sys_call_linux_OPOST, patch, io_TTY_ModeBit_output_process);
-}
-#endif
+};
+#endif /* plat_is_linux */
 
 /*---------- Native Mode Operations -----------------------------------------*/
 
@@ -182,33 +182,33 @@ fn_((io_TTY_init(io_TTY_Cfg cfg))(io_TTY)) {
     return (io_TTY){
         .input_file = cfg.input_file,
         .output_file = cfg.output_file,
-        .restore_ = none(),
+        .restore = none(),
     };
-}
+};
 
 fn_((io_TTY_fini(io_TTY* self))(void)) {
     claim_assert_nonnull(self);
     io_TTY_leaveMode(self);
     asg_l((self)(cleared()));
-}
+};
 
 /*---------- Reader and Writer Views ----------------------------------------*/
 
 fn_((io_TTY_reader(const io_TTY* self))(io_Reader)) {
     claim_assert_nonnull(self);
     return fs_File_reader(self->input_file);
-}
+};
 
 fn_((io_TTY_writer(const io_TTY* self))(io_Writer)) {
     claim_assert_nonnull(self);
     return fs_File_writer(self->output_file);
-}
+};
 
 /*---------- Mode Control ---------------------------------------------------*/
 
 fn_((io_TTY_snapshot(const io_TTY* self))(io_TTY_E$io_TTY_ModeSnapshot) $scope) {
     claim_assert_nonnull(self);
-    return_ok((io_TTY_ModeSnapshot){
+    return_ok({
         .input = try_(io_TTY__getMode(self->input_file)),
         .output = try_(io_TTY__getMode(self->output_file)),
     });
@@ -242,25 +242,25 @@ fn_((io_TTY_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(E$void) 
 
 fn_((io_TTY_enterMode(io_TTY* self, io_TTY_ModePatch patch))(E$void) $guard) {
     claim_assert_nonnull(self);
-    claim_assert(isNone(self->restore_));
+    claim_assert(isNone(self->restore));
     let snapshot = try_(io_TTY_snapshot(self));
     errdefer_($ignore, catch_((io_TTY_restore(self, snapshot))($ignore, $do_nothing)));
     try_(io_TTY_applyModePatch(self, patch));
-    asg_l((&self->restore_)(some((io_TTY_Restore){ .snapshot = snapshot })));
+    asg_l((&self->restore)(some((io_TTY_Restore){ .snapshot = snapshot })));
     return_ok({});
 } $unguarded(fn);
 
 fn_((io_TTY_leaveMode(io_TTY* self))(void)) {
     claim_assert_nonnull(self);
-    let restore = orelse_((self->restore_)(return));
+    let restore = orelse_((self->restore)(return));
     catch_((io_TTY_restore(self, restore.snapshot))($ignore, $do_nothing));
-    asg_l((&self->restore_)(none()));
-}
+    asg_l((&self->restore)(none()));
+};
 
 fn_((io_TTY_isInEnteredMode(const io_TTY* self))(bool)) {
     claim_assert_nonnull(self);
-    return isSome(self->restore_);
-}
+    return isSome(self->restore);
+};
 
 /*---------- Queries --------------------------------------------------------*/
 
@@ -281,7 +281,7 @@ fn_((io_TTY_queryScreenCells(const io_TTY* self))(io_TTY_E$io_TTY_CellSize) $sco
     if (!GetConsoleScreenBufferInfo(fs_File_handle(self->output_file), &info)) {
         return_err(E_cause$io_TTY_QueryFailed());
     }
-    return_ok((io_TTY_CellSize){
+    return_ok({
         .cols = as$(u16)(info.srWindow.Right - info.srWindow.Left + 1),
         .rows = as$(u16)(info.srWindow.Bottom - info.srWindow.Top + 1),
     });
@@ -303,7 +303,7 @@ fn_((io_TTY_queryCursorPosNative(const io_TTY* self))(io_TTY_E$io_TTY_Pos) $scop
     if (!GetConsoleScreenBufferInfo(fs_File_handle(self->output_file), &info)) {
         return_err(E_cause$io_TTY_QueryFailed());
     }
-    return_ok((io_TTY_Pos){
+    return_ok({
         .x = as$(u16)(info.dwCursorPosition.X),
         .y = as$(u16)(info.dwCursorPosition.Y),
     });

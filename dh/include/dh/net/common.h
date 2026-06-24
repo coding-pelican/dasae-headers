@@ -29,24 +29,26 @@ errset_((net_E)(
     net_SocketModeUnsupported,
     net_SystemResources,
     net_TimedOut,
+    net_Unsupported,
     net_WouldBlock
 ));
 
 T_alias$((net_Proto)(enum_((net_Proto $fits($packed))(
     net_Proto_tcp = 6,
     net_Proto_udp = 17,
-    net_Proto_raw = 255,
+    net_Proto_raw = 255
 ))));
 T_alias$((net_Sock_Mode)(enum_((net_Sock_Mode $fits($packed))(
     net_Sock_Mode_stream = 0,
     net_Sock_Mode_dgram,
     net_Sock_Mode_seqpacket,
-    net_Sock_Mode_raw,
+    net_Sock_Mode_raw
 ))));
+
 T_alias$((net_Addr_Family)(enum_((net_Addr_Family $fits($packed))(
     net_Addr_Family_ip4 = 0,
     net_Addr_Family_ip6,
-    net_Addr_Family_unix,
+    net_Addr_Family_unix
 ))));
 T_alias$((net_Ip4Addr)(struct net_Ip4Addr {
     var_(bytes, A$$(4, u8));
@@ -58,13 +60,11 @@ T_alias$((net_Ip6Addr)(struct net_Ip6Addr {
     var_(flow, u32);
     var_(scope_id, u32);
 }));
-T_alias$((net_IpAddr)(struct net_IpAddr {
-    var_(family, net_Addr_Family);
-    T_embed$(union {
-        var_(ip4, net_Ip4Addr);
-        var_(ip6, net_Ip6Addr);
-    });
-}));
+T_alias$((net_IpAddr)(variant_((net_IpAddr $maps(net_Addr_Family))(
+    (net_Addr_Family_ip4, net_Ip4Addr),
+    (net_Addr_Family_ip6, net_Ip6Addr),
+    (net_Addr_Family_unix, Void)
+))));
 T_use_E$(net_IpAddr);
 
 T_alias$((net_ConnectOpts)(struct net_ConnectOpts {
@@ -73,6 +73,13 @@ T_alias$((net_ConnectOpts)(struct net_ConnectOpts {
     var_(timeout, time_Dur);
     var_(nonblocking, bool);
 }));
+$static let_(net_ConnectOpts_default, net_ConnectOpts) = {
+    .mode = net_Sock_Mode_stream,
+    .protocol = net_Proto_tcp,
+    .timeout = time_Dur_zero,
+    .nonblocking = false,
+};
+
 T_alias$((net_ListenOpts)(struct net_ListenOpts {
     var_(mode, net_Sock_Mode);
     var_(protocol, net_Proto);
@@ -80,25 +87,6 @@ T_alias$((net_ListenOpts)(struct net_ListenOpts {
     var_(reuse_address, bool);
     var_(nonblocking, bool);
 }));
-T_alias$((net_BindOpts)(struct net_BindOpts {
-    var_(mode, net_Sock_Mode);
-    var_(protocol, net_Proto);
-    var_(allow_broadcast, bool);
-    var_(ip6_only, bool);
-    var_(nonblocking, bool);
-}));
-T_alias$((net_ShutdownHow)(enum_((net_ShutdownHow $fits($packed))(
-    net_ShutdownHow_recv = 0,
-    net_ShutdownHow_send,
-    net_ShutdownHow_both,
-))));
-
-$static let_(net_ConnectOpts_default, net_ConnectOpts) = {
-    .mode = net_Sock_Mode_stream,
-    .protocol = net_Proto_tcp,
-    .timeout = time_Dur_zero,
-    .nonblocking = false,
-};
 $static let_(net_ListenOpts_default, net_ListenOpts) = {
     .mode = net_Sock_Mode_stream,
     .protocol = net_Proto_tcp,
@@ -106,6 +94,14 @@ $static let_(net_ListenOpts_default, net_ListenOpts) = {
     .reuse_address = true,
     .nonblocking = false,
 };
+
+T_alias$((net_BindOpts)(struct net_BindOpts {
+    var_(mode, net_Sock_Mode);
+    var_(protocol, net_Proto);
+    var_(allow_broadcast, bool);
+    var_(ip6_only, bool);
+    var_(nonblocking, bool);
+}));
 $static let_(net_BindOpts_default, net_BindOpts) = {
     .mode = net_Sock_Mode_stream,
     .protocol = net_Proto_tcp,
@@ -114,39 +110,47 @@ $static let_(net_BindOpts_default, net_BindOpts) = {
     .nonblocking = false,
 };
 
-$attr($inline_always)
-$static fn_((net_IpAddr_ip4(u8 b0, u8 b1, u8 b2, u8 b3, u16 port))(net_IpAddr)) {
-    return (net_IpAddr){
-        .family = net_Addr_Family_ip4,
-        .ip4 = {
-            .bytes = { .val = { b0, b1, b2, b3 } },
-            .port = port,
-        },
-    };
-}
+T_alias$((net_ShutdownHow)(enum_((net_ShutdownHow $fits($packed))(
+    net_ShutdownHow_recv = 0,
+    net_ShutdownHow_send,
+    net_ShutdownHow_both
+))));
 
 $attr($inline_always)
-$static fn_((net_IpAddr_ip4Loopback(u16 port))(net_IpAddr)) {
+$static fn_((net_IpAddr_ip4(u8 b0, u8 b1, u8 b2, u8 b3, u16 port))(net_IpAddr));
+
+
+$attr($inline_always)
+$static fn_((net_IpAddr_ip4Loopback(u16 port))(net_IpAddr));
+
+$attr($inline_always)
+$static fn_((net_IpAddr_ip6Loopback(u16 port))(net_IpAddr));
+
+$extern fn_((net_listenIp(net_IpAddr addr, net_ListenOpts opts))(E$net_Svr));
+$extern fn_((net_bindIp(net_IpAddr addr, net_BindOpts opts))(E$net_Sock));
+$extern fn_((net_connectIp(net_IpAddr addr, net_ConnectOpts opts))(E$net_Stream));
+
+/*========== Macros and Definitions =========================================*/
+
+fn_((net_IpAddr_ip4(u8 b0, u8 b1, u8 b2, u8 b3, u16 port))(net_IpAddr)) {
+    return (net_IpAddr)union_of((net_Addr_Family_ip4){
+        .bytes = { .val = { b0, b1, b2, b3 } },
+        .port = port,
+    });
+};
+
+fn_((net_IpAddr_ip4Loopback(u16 port))(net_IpAddr)) {
     return net_IpAddr_ip4(127, 0, 0, 1, port);
-}
+};
 
-$attr($inline_always)
-$static fn_((net_IpAddr_ip6Loopback(u16 port))(net_IpAddr)) {
-    return (net_IpAddr){
-        .family = net_Addr_Family_ip6,
-        .ip6 = {
-            .bytes = {
-                .val = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 } },
-            .port = port,
-            .flow = 0,
-            .scope_id = 0,
-        },
-    };
-}
-
-$extern fn_((net_listenIp(const net_IpAddr* addr, net_ListenOpts opts))(E$net_Svr));
-$extern fn_((net_bindIp(const net_IpAddr* addr, net_BindOpts opts))(E$net_Sock));
-$extern fn_((net_connectIp(const net_IpAddr* addr, net_ConnectOpts opts))(E$net_Stream));
+fn_((net_IpAddr_ip6Loopback(u16 port))(net_IpAddr)) {
+    return (net_IpAddr)union_of((net_Addr_Family_ip6){
+        .bytes = A_init({ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }),
+        .port = port,
+        .flow = 0,
+        .scope_id = 0,
+    });
+};
 
 #if defined(__cplusplus)
 } /* extern "C" */

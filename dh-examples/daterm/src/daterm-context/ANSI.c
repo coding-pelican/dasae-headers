@@ -407,23 +407,23 @@ $static fn_((daterm_ANSI__fromXtermMouse(
     dansi_xterm_mouse_Event event, daterm_mouse_PosKind pos_kind
 ))(O$daterm_Event) $scope) {
     match_(event) {
-    pattern_((dansi_xterm_mouse_Event_press)(press)) {
+    patt_((dansi_xterm_mouse_Event_press)(press)) {
         let_(mouse, daterm_mouse_Event) = union_of((daterm_mouse_Event_press){
             .btn = orelse_((daterm_ANSI__mouseBtn(press.btn))(return_none())),
             .pos = daterm_ANSI__mousePos(press.pos, pos_kind),
             .mods = daterm_ANSI__xtermMouseMods(press.mods),
         });
         return_some(union_of((daterm_Event_mouse)(mouse)));
-    } $end(pattern);
-    pattern_((dansi_xterm_mouse_Event_release)(release)) {
+    } $end(patt);
+    patt_((dansi_xterm_mouse_Event_release)(release)) {
         let_(mouse, daterm_mouse_Event) = union_of((daterm_mouse_Event_release){
             .btn = none$((O$daterm_mouse_Btn)),
             .pos = daterm_ANSI__mousePos(release.pos, pos_kind),
             .mods = daterm_ANSI__xtermMouseMods(release.mods),
         });
         return_some(union_of((daterm_Event_mouse)(mouse)));
-    } $end(pattern);
-    pattern_((dansi_xterm_mouse_Event_motion)(motion)) {
+    } $end(patt);
+    patt_((dansi_xterm_mouse_Event_motion)(motion)) {
         var_(btn, O$daterm_mouse_Btn) = none();
         if_some((motion.btn)(protocol_btn)) {
             btn = some$((O$daterm_mouse_Btn)(orelse_((daterm_ANSI__mouseBtn(protocol_btn))(return_none()))));
@@ -434,58 +434,58 @@ $static fn_((daterm_ANSI__fromXtermMouse(
             .mods = daterm_ANSI__xtermMouseMods(motion.mods),
         });
         return_some(union_of((daterm_Event_mouse)(mouse)));
-    } $end(pattern);
-    pattern_((dansi_xterm_mouse_Event_wheel)(wheel)) {
+    } $end(patt);
+    patt_((dansi_xterm_mouse_Event_wheel)(wheel)) {
         let_(mouse, daterm_mouse_Event) = union_of((daterm_mouse_Event_wheel){
             .wheel = orelse_((daterm_ANSI__mouseWheel(wheel.wheel))(return_none())),
             .pos = daterm_ANSI__mousePos(wheel.pos, pos_kind),
             .mods = daterm_ANSI__xtermMouseMods(wheel.mods),
         });
         return_some(union_of((daterm_Event_mouse)(mouse)));
-    } $end(pattern);
+    } $end(patt);
     } $end(match);
     return_none();
 } $unscoped(fn);
 
 $static fn_((daterm_ANSI__fromDecKey(dansi_dec_key_Event event))(O$daterm_Event) $scope) {
     match_(event) {
-    pattern_((dansi_dec_key_Event_named)(named)) {
+    patt_((dansi_dec_key_Event_named)(named)) {
         return_some(union_of((daterm_Event_key){
             .code = orelse_((daterm_ANSI__decKeyCode(named))(return_none())),
             .mods = daterm_input_modsNone(),
             .action = none(),
         }));
-    } $end(pattern);
-    pattern_((dansi_dec_key_Event_keypad)(keypad)) {
+    } $end(patt);
+    patt_((dansi_dec_key_Event_keypad)(keypad)) {
         return_some(union_of((daterm_Event_key){
             .code = orelse_((daterm_ANSI__decKeypadCode(keypad))(return_none())),
             .mods = daterm_input_modsNone(),
             .action = none(),
         }));
-    } $end(pattern);
+    } $end(patt);
     } $end(match);
     return_none();
 } $unscoped(fn);
 
 $static fn_((daterm_ANSI__fromXtermKey(dansi_xterm_key_Event event))(O$daterm_Event) $scope) {
     match_(event) {
-    pattern_((dansi_xterm_key_Event_special)(special)) {
+    patt_((dansi_xterm_key_Event_special)(special)) {
         return_some(union_of((daterm_Event_key){
             .code = orelse_((daterm_ANSI__xtermKeyCode(special.key))(return_none())),
             .mods = daterm_ANSI__xtermKeyMods(special.mods),
             .action = none(),
         }));
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Event_text)(text)) {
+    } $end(patt);
+    patt_((dansi_xterm_key_Event_text)(text)) {
         return_some(daterm_ANSI__fromCodepoint(
             text.codepoint, daterm_ANSI__xtermKeyMods(text.mods)
         ));
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Event_modify_other)(other)) {
+    } $end(patt);
+    patt_((dansi_xterm_key_Event_modify_other)(other)) {
         return_some(daterm_ANSI__fromCodepoint(
             other.codepoint, daterm_ANSI__xtermKeyMods(other.mods)
         ));
-    } $end(pattern);
+    } $end(patt);
     } $end(match);
     return_none();
 } $unscoped(fn);
@@ -493,21 +493,21 @@ $static fn_((daterm_ANSI__fromXtermKey(dansi_xterm_key_Event event))(O$daterm_Ev
 $static fn_((daterm_ANSI__parseXtermEnhancedKey(dansi_Seq seq))(O$daterm_Event) $scope) {
     let report = orelse_((dansi_xterm_key_parseReport(seq))(return_none()));
     match_(report) {
-    pattern_((dansi_xterm_key_Report_modified_csi)($ignore)) {
+    patt_((dansi_xterm_key_Report_modified_csi)($ignore)) {
         let event = catch_((dansi_xterm_key_interpretReport(report))($ignore, return_none()));
         return daterm_ANSI__fromXtermKey(event);
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Report_modify_other)($ignore)) {
+    } $end(patt);
+    patt_((dansi_xterm_key_Report_modify_other)($ignore)) {
         let event = catch_((dansi_xterm_key_interpretReport(report))($ignore, return_none()));
         return daterm_ANSI__fromXtermKey(event);
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Report_csi_u)($ignore)) {
+    } $end(patt);
+    patt_((dansi_xterm_key_Report_csi_u)($ignore)) {
         let event = catch_((dansi_xterm_key_interpretReport(report))($ignore, return_none()));
         return daterm_ANSI__fromXtermKey(event);
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Report_legacy_esc)($ignore)) return_none() $end(pattern);
-    pattern_((dansi_xterm_key_Report_legacy_ss3)($ignore)) return_none() $end(pattern);
-    pattern_((dansi_xterm_key_Report_legacy_csi)($ignore)) return_none() $end(pattern);
+    } $end(patt);
+    patt_((dansi_xterm_key_Report_legacy_esc)($ignore)) return_none() $end(patt);
+    patt_((dansi_xterm_key_Report_legacy_ss3)($ignore)) return_none() $end(patt);
+    patt_((dansi_xterm_key_Report_legacy_csi)($ignore)) return_none() $end(patt);
     } $end(match);
     return_none();
 } $unscoped(fn);

@@ -24,18 +24,18 @@ extern "C" {
 
 #include "cfg.h"
 
-#if arch_is_x86_family && arch_has_sse
+#if arch_family_is_x86 && arch_has_sse
 #include <immintrin.h>
-#elif arch_is_arm_family
+#elif arch_family_is_arm
 #if arch_has_neon
 #include <arm_neon.h>
 #endif /* arch_has_neon */
 #if arch_has_sve
 #include <arm_sve.h>
 #endif /* arch_has_sve */
-#elif arch_is_riscv_family && arch_has_rvv
+#elif arch_family_is_riscv && arch_has_rvv
 #include <riscv_vector.h>
-#elif arch_is_wasm_family && arch_has_wasm_simd128
+#elif arch_family_is_wasm && arch_has_wasm_simd128
 #include <wasm_simd128.h>
 #endif
 

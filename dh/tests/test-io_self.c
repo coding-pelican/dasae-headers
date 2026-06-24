@@ -16,7 +16,7 @@
 /*========== Includes =======================================================*/
 
 #include "dh-main.h"
-#include "dh/io/common.h"
+#include "dh/io/self.h"
 #include "dh/fs/File.h"
 
 #if plat_is_windows
@@ -27,7 +27,7 @@
 
 /*========== Tests ==========================================================*/
 
-TEST_fn_("io/common: Check `io_handleStdIn` is valid handle" $scope) {
+TEST_fn_("io/self: Check `io_handleStdIn` is valid handle" $scope) {
     let std_in = io_handleStdIn();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
@@ -35,7 +35,7 @@ TEST_fn_("io/common: Check `io_handleStdIn` is valid handle" $scope) {
     try_(TEST_expect(std_in.handle == handle));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io/common: Check `io_handleStdOut` is valid handle" $scope) {
+TEST_fn_("io/self: Check `io_handleStdOut` is valid handle" $scope) {
     let std_out = io_handleStdOut();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
@@ -43,7 +43,7 @@ TEST_fn_("io/common: Check `io_handleStdOut` is valid handle" $scope) {
     try_(TEST_expect(std_out.handle == handle));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io/common: Check `io_handleStdErr` is valid handle" $scope) {
+TEST_fn_("io/self: Check `io_handleStdErr` is valid handle" $scope) {
     let std_err = io_handleStdErr();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_ERROR_HANDLE)),

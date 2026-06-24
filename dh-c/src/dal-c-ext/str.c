@@ -132,11 +132,11 @@ char* str_toUpper(const char* str) {
 
 char* str_format(const char* fmt, ...) {
     if (!fmt) { return NULL; }
-    va_list args = dsl_l0$((va_list));
+    va_list args dsl_$undefined;
     va_start(args, fmt);
 
     // Determine size needed
-    va_list args_copy = dsl_l0$((va_list));
+    va_list args_copy dsl_$undefined;
     va_copy(args_copy, args);
     int size = vsnprintf(NULL, 0, fmt, args_copy);
     va_end(args_copy);

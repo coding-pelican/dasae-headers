@@ -39,7 +39,7 @@ fn_((daterm_Term_queryLocal(daterm_Term self, daterm_Query query))(E$daterm_Quer
 fn_((daterm_Term_queryNativeScreenCells(daterm_Term self))(E$daterm_CellSize) $scope) {
     let result = try_(daterm_Term_queryLocal(self, daterm_Query_native_screen_cells));
     $suppress_(switch_enum)(match_(result)) {
-    pattern_((daterm_Query_Result_size)(size)) return_ok(size) $end(pattern);
+    patt_((daterm_Query_Result_size)(size)) return_ok(size) $end(patt);
     default_() return_err(E_cause$Unexpected()) $end(default);
     } $end(match);
 } $unscoped(fn);
@@ -47,7 +47,7 @@ fn_((daterm_Term_queryNativeScreenCells(daterm_Term self))(E$daterm_CellSize) $s
 fn_((daterm_Term_queryCachedScreenCells(daterm_Term self))(E$daterm_CellSize) $scope) {
     let result = try_(daterm_Term_queryLocal(self, daterm_Query_cached_screen_cells));
     $suppress_(switch_enum)(match_(result)) {
-    pattern_((daterm_Query_Result_size)(size)) return_ok(size) $end(pattern);
+    patt_((daterm_Query_Result_size)(size)) return_ok(size) $end(patt);
     default_() return_err(E_cause$Unexpected()) $end(default);
     } $end(match);
 } $unscoped(fn);
@@ -55,7 +55,7 @@ fn_((daterm_Term_queryCachedScreenCells(daterm_Term self))(E$daterm_CellSize) $s
 fn_((daterm_Term_queryNativeCursorPos(daterm_Term self))(E$daterm_Pos) $scope) {
     let result = try_(daterm_Term_queryLocal(self, daterm_Query_native_cursor_pos));
     $suppress_(switch_enum)(match_(result)) {
-    pattern_((daterm_Query_Result_pos)(pos)) return_ok(pos) $end(pattern);
+    patt_((daterm_Query_Result_pos)(pos)) return_ok(pos) $end(patt);
     default_() return_err(E_cause$Unexpected()) $end(default);
     } $end(match);
 } $unscoped(fn);

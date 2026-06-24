@@ -375,11 +375,11 @@ $static fn_((handleEvents(dage_Window* win, bool* running))(void)) {
     case_((dage_Event_close_request)) {
         *running = false;
     } $end(case);
-    pattern_((dage_Event_key_down)(on_key_down)) {
+    patt_((dage_Event_key_down)(on_key_down)) {
         if (on_key_down.key == dage_KeyCode_esc) {
             *running = false;
         }
-    } $end(pattern);
+    } $end(patt);
     default_() {
         /* Ignore other events */
     } $end(default);

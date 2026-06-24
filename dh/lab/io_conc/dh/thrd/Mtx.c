@@ -242,7 +242,7 @@ fn_((thrd_Mtx__default_lock(thrd_Mtx* self))(void)) {
 };
 
 fn_((thrd_Mtx__default_tryLock(thrd_Mtx* self))(bool)) {
-    pp_if_(arch_is_x86_family)(
+    pp_if_(arch_family_is_x86)(
         /*pp_then_*/ (
             // On x86, use `lock bts` instead of `lock cmpxchg` as:
             // - they both seem to mark the cache-line as modified regardless: https://stackoverflow.com/a/63350048

@@ -40,7 +40,7 @@ extern "C" {
         pp_case_((plat_type_windows)(pp_some((4 << 10)))), \
         pp_case_((plat_type_linux)(pp_some((4 << 10)))), \
         pp_case_((plat_type_darwin)(pp_some((4 << 10)))), \
-        pp_case_((plat_type_wasi)(pp_if_(arch_is_wasm_family)( \
+        pp_case_((plat_type_wasi)(pp_if_(arch_family_is_wasm)( \
             pp_then_(pp_some((64 << 10))), \
             pp_else_(claim_assert_static(false)) \
         ))), \

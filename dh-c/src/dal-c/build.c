@@ -1357,7 +1357,7 @@ void dal_c__printVerbose(const dal_c_Cmd* cmd, const char* fmt, ...) {
     assert(fmt != NULL);
 
     if (!cmd->verbose) { return; }
-    va_list args = dsl_l0$((va_list));
+    va_list args dsl_$undefined;
     va_start(args, fmt);
     (void)vprintf(fmt, args);
     va_end(args);
@@ -1366,7 +1366,7 @@ void dal_c__printVerbose(const dal_c_Cmd* cmd, const char* fmt, ...) {
 void dal_c__printError(const char* fmt, ...) {
     assert(fmt != NULL);
 
-    va_list args = dsl_l0$((va_list));
+    va_list args dsl_$undefined;
     va_start(args, fmt);
     (void)vfprintf(stderr, fmt, args);
     va_end(args);

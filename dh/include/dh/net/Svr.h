@@ -17,8 +17,8 @@ T_alias$((net_Svr)(struct net_Svr {
 }));
 T_impl_E$(net_Svr);
 
-$extern fn_((net_Svr_close(net_Svr* self))(void));
-$extern fn_((net_Svr_accept(net_Svr* self))(E$net_Stream));
+$extern fn_((net_Svr_close(net_Svr self))(void));
+$extern fn_((net_Svr_accept(net_Svr self))(E$net_Stream));
 
 #if defined(__cplusplus)
 } /* extern "C" */

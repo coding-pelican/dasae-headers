@@ -14,9 +14,11 @@ TEST_fn_("fs/File/MemMap: write, flush, shrink, and reopen" $guard) {
     let_ignore = catch_((fs_File_delete(path.as_const))($ignore, $do_nothing));
     defer_(let_ignore = catch_((fs_File_delete(path.as_const))($ignore, $do_nothing)));
 
-    var create_flags = fs_File_CreateFlags_default;
-    create_flags.read = true;
-    {
+    using_(
+        let create_flags = with_((fs_File_CreateFlags_default)(
+            (.read)(true)
+        ))
+    ) blk_defer {
         var file = try_(fs_File_create(path.as_const, create_flags));
         defer_(fs_File_close(file));
 
@@ -30,18 +32,20 @@ TEST_fn_("fs/File/MemMap: write, flush, shrink, and reopen" $guard) {
         try_(fs_File_MemMap_setLen(&map, 3));
         try_(TEST_expect(map.mem.len == 3));
         try_(TEST_expect(mem_eqlBytes(map.mem.as_const, u8_l("abc"))));
-    }
+    } blk_deferral;
 
-    var open_flags = fs_File_OpenFlags_default;
-    open_flags.mode = fs_OpenMode_read_only;
-    {
+    using_(
+        let open_flags = with_((fs_File_OpenFlags_default)(
+            (.mode)(fs_OpenMode_read_only)
+        ))
+    ) blk_defer {
         var file = try_(fs_File_open(path.as_const, open_flags));
         defer_(fs_File_close(file));
 
         var_(buf, A$$(3, u8)) $undefined;
         try_(TEST_expect(try_(fs_File_readPos(file, A_ref$((S$u8)(buf)), 0)) == 3));
         try_(TEST_expect(mem_eqlBytes(A_ref$((S_const$u8)(buf)), u8_l("abc"))));
-    }
+    } blk_deferral;
 
     try_(fs_File_delete(path.as_const));
 } $unguarded(TEST_fn);

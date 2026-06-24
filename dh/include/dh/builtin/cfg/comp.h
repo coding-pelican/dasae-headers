@@ -35,9 +35,9 @@ extern "C" {
 #define comp_type_gcc __comp_enum__comp_type_gcc
 #define comp_type_msvc __comp_enum__comp_type_msvc
 
-#define comp_type_is_clang __comp_bool__comp_type_is_clang
-#define comp_type_is_gcc __comp_bool__comp_type_is_gcc
-#define comp_type_is_msvc __comp_bool__comp_type_is_msvc
+#define comp_is_clang __comp_bool__comp_is_clang
+#define comp_is_gcc __comp_bool__comp_is_gcc
+#define comp_is_msvc __comp_bool__comp_is_msvc
 
 #define comp_name __comp_str__comp_name
 #define comp_name_unknown __comp_str__comp_name_unknown
@@ -59,8 +59,8 @@ extern "C" {
 #define comp_env_type_hosted __comp_enum__comp_env_type_hosted
 #define comp_env_type_freestanding __comp_enum__comp_env_type_freestanding
 
-#define comp_env_type_is_hosted __comp_bool__comp_env_type_is_hosted
-#define comp_env_type_is_freestanding __comp_bool__comp_env_type_is_freestanding
+#define comp_env_is_hosted __comp_bool__comp_env_is_hosted
+#define comp_env_is_freestanding __comp_bool__comp_env_is_freestanding
 
 #define comp_start_files_linked __comp_bool__comp_start_files_linked
 /* Derived from start-files unless explicitly provided by `COMP_HAS_CRT` / `COMP_NO_CRT`. */
@@ -161,9 +161,9 @@ extern "C" {
 #warning "Unknown compiler detected. Please check your compiler settings."
 #endif
 
-#define __comp_bool__comp_type_is_clang pp_Tok_eql(comp_type, comp_type_clang)
-#define __comp_bool__comp_type_is_gcc pp_Tok_eql(comp_type, comp_type_gcc)
-#define __comp_bool__comp_type_is_msvc pp_Tok_eql(comp_type, comp_type_msvc)
+#define __comp_bool__comp_is_clang pp_Tok_eql(comp_type, comp_type_clang)
+#define __comp_bool__comp_is_gcc pp_Tok_eql(comp_type, comp_type_gcc)
+#define __comp_bool__comp_is_msvc pp_Tok_eql(comp_type, comp_type_msvc)
 
 /* Derive name from type */
 #define __comp_str__comp_name pp_expand( \
@@ -347,8 +347,8 @@ extern "C" {
 #define __comp_flag__comp_stdlib_linked (comp_start_files_linked && comp_default_libs_linked)
 #endif
 
-#define __comp_bool__comp_env_type_is_hosted pp_Tok_eql(comp_env_type, comp_env_type_hosted)
-#define __comp_bool__comp_env_type_is_freestanding pp_Tok_eql(comp_env_type, comp_env_type_freestanding)
+#define __comp_bool__comp_env_is_hosted pp_Tok_eql(comp_env_type, comp_env_type_hosted)
+#define __comp_bool__comp_env_is_freestanding pp_Tok_eql(comp_env_type, comp_env_type_freestanding)
 
 #define __comp_bool__comp_start_files_linked __comp_flag__comp_start_files_linked
 #define __comp_bool__comp_crt_linked __comp_flag__comp_crt_linked

@@ -121,7 +121,7 @@ T_use_O$(io_TTY_Restore);
 T_alias$((io_TTY)(struct io_TTY {
     var_(input_file, fs_File);
     var_(output_file, fs_File);
-    var_(restore_, O$io_TTY_Restore);
+    var_(restore, O$io_TTY_Restore);
 }));
 
 /*---------- Lifecycle ------------------------------------------------------*/

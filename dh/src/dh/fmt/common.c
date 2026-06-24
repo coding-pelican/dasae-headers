@@ -1495,15 +1495,15 @@ fn_((fmt__collectArgErrorResult(va_list* ap, fmt__ArgValue_Tag tag))(E$fmt__ArgV
 fn_((fmt__formatArg(io_Writer writer, fmt__ArgType arg, fmt_Spec spec))(E$void) $scope) {
     // printf("--- debug print: fmt__formatArg ---\n");
     match_(arg) {
-    pattern_((fmt__ArgType_value)(value)) {
+    patt_((fmt__ArgType_value)(value)) {
         return fmt__formatArgValue(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgType_optional)(optional)) {
+    } $end(patt);
+    patt_((fmt__ArgType_optional)(optional)) {
         return fmt__formatArgOptional(writer, optional, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgType_error_result)(error_result)) {
+    } $end(patt);
+    patt_((fmt__ArgType_error_result)(error_result)) {
         return fmt__formatArgErrorResult(writer, error_result, spec);
-    } $end(pattern);
+    } $end(patt);
     default_() return_err(E_cause$fmt_InvalidTypeSpec()) $end(default);
     } $end(match);
 } $unscoped(fn);
@@ -1511,13 +1511,13 @@ fn_((fmt__formatArg(io_Writer writer, fmt__ArgType arg, fmt_Spec spec))(E$void) 
 fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(E$void) $scope) {
     // printf("--- debug print: fmt__formatArgValue ---\n");
     match_(value) {
-    pattern_((fmt__ArgValue_void)(value)) {
+    patt_((fmt__ArgValue_void)(value)) {
         return_ok(value);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_bool)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_bool)(value)) {
         return fmt_formatBool(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_u8)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_u8)(value)) {
         // printf("formatArgValue u8: value=%d, spec.type=%d\n", *value, spec.type);
         if (spec.type == fmt_Type_signed) {
             return fmt_formatIInt(writer, as$(i8)(value), spec);
@@ -1526,14 +1526,14 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
             return fmt_formatASCII(writer, value, spec);
         }
         return fmt_formatUInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_u16)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_u16)(value)) {
         if (spec.type == fmt_Type_signed) {
             return fmt_formatIInt(writer, as$(i16)(value), spec);
         }
         return fmt_formatUInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_u32)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_u32)(value)) {
         if (spec.type == fmt_Type_signed) {
             return fmt_formatIInt(writer, as$(i32)(value), spec);
         }
@@ -1541,20 +1541,20 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
             return fmt_formatUTF8(writer, value, spec);
         }
         return fmt_formatUInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_u64)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_u64)(value)) {
         if (spec.type == fmt_Type_signed) {
             return fmt_formatIInt(writer, as$(i64)(value), spec);
         }
         return fmt_formatUInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_usize)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_usize)(value)) {
         if (spec.type == fmt_Type_signed) {
             return fmt_formatIInt(writer, as$(isize)(value), spec);
         }
         return fmt_formatUInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_i8)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_i8)(value)) {
         if (spec.type == fmt_Type_unsigned
             || spec.type == fmt_Type_hex_lower
             || spec.type == fmt_Type_hex_upper
@@ -1563,8 +1563,8 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
             return fmt_formatUInt(writer, as$(u8)(value), spec);
         }
         return fmt_formatIInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_i16)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_i16)(value)) {
         if (spec.type == fmt_Type_unsigned
             || spec.type == fmt_Type_hex_lower
             || spec.type == fmt_Type_hex_upper
@@ -1573,8 +1573,8 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
             return fmt_formatUInt(writer, as$(u16)(value), spec);
         }
         return fmt_formatIInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_i32)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_i32)(value)) {
         if (spec.type == fmt_Type_unsigned
             || spec.type == fmt_Type_hex_lower
             || spec.type == fmt_Type_hex_upper
@@ -1583,8 +1583,8 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
             return fmt_formatUInt(writer, as$(u32)(value), spec);
         }
         return fmt_formatIInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_i64)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_i64)(value)) {
         if (spec.type == fmt_Type_unsigned
             || spec.type == fmt_Type_hex_lower
             || spec.type == fmt_Type_hex_upper
@@ -1593,8 +1593,8 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
             return fmt_formatUInt(writer, as$(u64)(value), spec);
         }
         return fmt_formatIInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_isize)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_isize)(value)) {
         if (spec.type == fmt_Type_unsigned
             || spec.type == fmt_Type_hex_lower
             || spec.type == fmt_Type_hex_upper
@@ -1603,8 +1603,8 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
             return fmt_formatUInt(writer, as$(usize)(value), spec);
         }
         return fmt_formatIInt(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_f32)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_f32)(value)) {
 #if fmt_flt_enabled
         return fmt_formatFlt(writer, value, spec);
 #else /* fmt_flt_enabled */
@@ -1613,8 +1613,8 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
         let_ignore = spec;
         return_err(E_cause$fmt_FltDisabled());
 #endif /* fmt_flt_enabled */
-    } $end(pattern);
-    pattern_((fmt__ArgValue_f64)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_f64)(value)) {
 #if fmt_flt_enabled
         return fmt_formatFlt(writer, value, spec);
 #else /* fmt_flt_enabled */
@@ -1623,21 +1623,21 @@ fn_((fmt__formatArgValue(io_Writer writer, fmt__ArgValue value, fmt_Spec spec))(
         let_ignore = spec;
         return_err(E_cause$fmt_FltDisabled());
 #endif /* fmt_flt_enabled */
-    } $end(pattern);
-    pattern_((fmt__ArgValue_ptr)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_ptr)(value)) {
         return fmt_formatPtr(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_error)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_error)(value)) {
         return fmt_formatErr(writer, value, spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_sli_z_u8)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_sli_z_u8)(value)) {
         let ptr = value;
         let len = mem_lenZ0$u8(ptr);
         return fmt_formatStr(writer, P_prefix$((S_const$u8)(ptr)(len)), spec);
-    } $end(pattern);
-    pattern_((fmt__ArgValue_sli_u8)(value)) {
+    } $end(patt);
+    patt_((fmt__ArgValue_sli_u8)(value)) {
         return fmt_formatStr(writer, value, spec);
-    } $end(pattern);
+    } $end(patt);
     default_() return_err(E_cause$fmt_InvalidTypeSpec()) $end(default);
     } $end(match);
 } $unscoped(fn);

@@ -46,7 +46,7 @@ T_alias$((my_math_Res)(variant_((my_math_Res $fits($packed))(
 // Function demonstrating if_err/else_ok pattern
 $static fn_((processResult(my_math_Res result))(void)) {
     let maybe_err = expr_(O$$(my_math_E) $scope)(match_(result) {
-        patterns_((math_Res_i32, math_Res_f32)($deref result) if_err((result)(err)) {
+        patts_((math_Res_i32, math_Res_f32)($deref result) if_err((result)(err)) {
             $break_(some(err));
         } else_ok(value) {
             let msg = u8_a("Operation succeeded with value: ");

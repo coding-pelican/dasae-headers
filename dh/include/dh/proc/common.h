@@ -54,10 +54,14 @@ T_alias$((proc_Ter)(struct proc_Ter {
 }));
 T_use_E$(proc_Ter);
 
+T_alias$((proc_Env)(S$S_const$u8));
+T_use_O$(proc_Env);
+T_use_O$(fs_Dir);
+
 T_alias$((proc_Cmd)(struct proc_Cmd {
     var_(argv, S$S_const$u8);
-    var_(env, S$S_const$u8);
-    var_(cwd, fs_Dir*);
+    var_(env, O$proc_Env);
+    var_(cwd, O$fs_Dir);
     var_(std_in, proc_StdIO);
     var_(std_out, proc_StdIO);
     var_(std_err, proc_StdIO);
@@ -83,12 +87,7 @@ $static let_(proc_StdIO_close, proc_StdIO) = {
     .file = cleared(),
 };
 $attr($inline_always)
-$static fn_((proc_StdIO_file(fs_File file))(proc_StdIO)) {
-    return (proc_StdIO){
-        .tag = proc_StdIO_Tag_file,
-        .file = file,
-    };
-}
+$static fn_((proc_StdIO_file(fs_File file))(proc_StdIO));
 
 $attr($must_check)
 $extern fn_((proc_executablePath(S$u8 out_buf))(E$S$u8));
@@ -104,6 +103,15 @@ $attr($must_check)
 $extern fn_((proc_replace(proc_Cmd cmd))(E$void));
 $attr($must_check)
 $extern fn_((proc_replacePath(fs_Dir dir, proc_Cmd cmd))(E$void));
+
+/*========== Macros and Definitions =========================================*/
+
+fn_((proc_StdIO_file(fs_File file))(proc_StdIO)) {
+    return (proc_StdIO){
+        .tag = proc_StdIO_Tag_file,
+        .file = file,
+    };
+};
 
 #if defined(__cplusplus)
 } /* extern "C" */

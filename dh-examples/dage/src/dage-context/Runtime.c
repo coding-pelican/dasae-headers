@@ -168,12 +168,12 @@ fn_((dage_Runtime_processEvents(dage_Runtime* self))(void)) {
                 /* User can override by consuming the event first */
                 self->state.should_quit = true;
             } $end(case);
-            pattern_((dage_Event_resize)(on_resize)) {
+            patt_((dage_Event_resize)(on_resize)) {
                 /* Handle resize - ignore errors (best effort) */
                 catch_((dage_Window_handleResize(win, on_resize.new_size))(
                     $ignore, /* Resize failed - continue anyway */
                 ));
-            } $end(pattern);
+            } $end(patt);
             default_() {
                 /* Unknown event - ignore */
             } $end(default);

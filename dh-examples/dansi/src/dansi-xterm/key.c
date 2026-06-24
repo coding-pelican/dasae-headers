@@ -314,19 +314,19 @@ fn_((dansi_xterm_key_interpretReport(
     dansi_xterm_key_Report report
 ))(dansi_xterm_key_E$dansi_xterm_key_Event) $scope) {
     match_(report) {
-    pattern_((dansi_xterm_key_Report_legacy_esc)(esc)) {
+    patt_((dansi_xterm_key_Report_legacy_esc)(esc)) {
         let named = orelse_((dansi_xterm_key__namedFromCursorFinal(esc.final))(
             return_err(E_cause$dansi_xterm_key_InvalidReport())
         ));
         return_ok(dansi_xterm_key__special(named, dansi_xterm_key_modsNone()));
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Report_legacy_ss3)(ss3)) {
+    } $end(patt);
+    patt_((dansi_xterm_key_Report_legacy_ss3)(ss3)) {
         let named = orelse_((dansi_xterm_key__namedFromSS3Final(ss3.final))(
             return_err(E_cause$dansi_xterm_key_InvalidReport())
         ));
         return_ok(dansi_xterm_key__special(named, dansi_xterm_key_modsNone()));
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Report_legacy_csi)(csi)) {
+    } $end(patt);
+    patt_((dansi_xterm_key_Report_legacy_csi)(csi)) {
         if (csi.frame.final == dansi_xterm_key_final_tilde_byte) {
             let code = orelse_((dansi_csi_Frame_paramAtAsU16(csi.frame, dansi_xterm_key_param_key))(
                 return_err(E_cause$dansi_xterm_key_InvalidReport())
@@ -340,8 +340,8 @@ fn_((dansi_xterm_key_interpretReport(
             return_err(E_cause$dansi_xterm_key_InvalidReport())
         ));
         return_ok(dansi_xterm_key__special(named, dansi_xterm_key_modsNone()));
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Report_modified_csi)(modified)) {
+    } $end(patt);
+    patt_((dansi_xterm_key_Report_modified_csi)(modified)) {
         let modifier_param = orelse_((dansi_csi_Frame_paramAtAsU16(modified.frame, dansi_xterm_key_param_modifier))(
             return_err(E_cause$dansi_xterm_key_InvalidReport())
         ));
@@ -359,14 +359,14 @@ fn_((dansi_xterm_key_interpretReport(
             return_err(E_cause$dansi_xterm_key_InvalidReport())
         ));
         return_ok(dansi_xterm_key__special(named, mods));
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Report_modify_other)(other)) {
+    } $end(patt);
+    patt_((dansi_xterm_key_Report_modify_other)(other)) {
         return_ok(union_of((dansi_xterm_key_Event_modify_other){
             .codepoint = other.codepoint,
             .mods = dansi_xterm_key_modsFromParam(other.modifier_param),
         }));
-    } $end(pattern);
-    pattern_((dansi_xterm_key_Report_csi_u)(csi_u)) {
+    } $end(patt);
+    patt_((dansi_xterm_key_Report_csi_u)(csi_u)) {
         let mods = isSome(csi_u.modifier_param)
                      ? dansi_xterm_key_modsFromParam(unwrap_(csi_u.modifier_param))
                      : dansi_xterm_key_modsNone();
@@ -374,7 +374,7 @@ fn_((dansi_xterm_key_interpretReport(
             return_ok(dansi_xterm_key__special(named, mods));
         }
         return_ok(dansi_xterm_key__text(csi_u.codepoint, mods));
-    } $end(pattern);
+    } $end(patt);
     } $end(match);
     return_err(E_cause$dansi_xterm_key_InvalidReport());
 } $unscoped(fn);

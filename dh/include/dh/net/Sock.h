@@ -26,20 +26,26 @@ struct net_Sock {
 T_impl_E$(net_Sock);
 
 $attr($inline_always)
-$static fn_((net_Sock_promote(net_Handle handle, net_IpAddr addr, net_Sock_Flags flags))(net_Sock)) {
+$static fn_((net_Sock_promote(net_Handle handle, net_IpAddr addr, net_Sock_Flags flags))(net_Sock));
+
+$attr($inline_always)
+$static fn_((net_Sock_handle(net_Sock self))(net_Handle));
+
+$extern fn_((net_Sock_close(net_Sock self))(void));
+
+/*========== Macros and Definitions =========================================*/
+
+fn_((net_Sock_promote(net_Handle handle, net_IpAddr addr, net_Sock_Flags flags))(net_Sock)) {
     return (net_Sock){
         .handle = handle,
         .addr = addr,
         .flags = flags,
     };
-}
+};
 
-$attr($inline_always)
-$static fn_((net_Sock_handle(net_Sock self))(net_Handle)) {
+fn_((net_Sock_handle(net_Sock self))(net_Handle)) {
     return self.handle;
-}
-
-$extern fn_((net_Sock_close(net_Sock self))(void));
+};
 
 #if defined(__cplusplus)
 } /* extern "C" */

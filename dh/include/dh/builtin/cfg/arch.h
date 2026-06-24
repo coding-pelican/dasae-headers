@@ -71,10 +71,10 @@ extern "C" {
 #define arch_family_type_riscv __comp_enum__arch_family_type_riscv
 #define arch_family_type_wasm __comp_enum__arch_family_type_wasm
 
-#define arch_is_x86_family __comp_bool__arch_is_x86_family
-#define arch_is_arm_family __comp_bool__arch_is_arm_family
-#define arch_is_riscv_family __comp_bool__arch_is_riscv_family
-#define arch_is_wasm_family __comp_bool__arch_is_wasm_family
+#define arch_family_is_x86 __comp_bool__arch_family_is_x86
+#define arch_family_is_arm __comp_bool__arch_family_is_arm
+#define arch_family_is_riscv __comp_bool__arch_family_is_riscv
+#define arch_family_is_wasm __comp_bool__arch_family_is_wasm
 
 /* --- Architecture Family name */
 
@@ -294,10 +294,10 @@ extern "C" {
 #define __comp_enum__arch_family_type_riscv 3
 #define __comp_enum__arch_family_type_wasm 4
 
-#define __comp_bool__arch_is_x86_family pp_Tok_eql(arch_family_type, arch_family_type_x86)
-#define __comp_bool__arch_is_arm_family pp_Tok_eql(arch_family_type, arch_family_type_arm)
-#define __comp_bool__arch_is_riscv_family pp_Tok_eql(arch_family_type, arch_family_type_riscv)
-#define __comp_bool__arch_is_wasm_family pp_Tok_eql(arch_family_type, arch_family_type_wasm)
+#define __comp_bool__arch_family_is_x86 pp_Tok_eql(arch_family_type, arch_family_type_x86)
+#define __comp_bool__arch_family_is_arm pp_Tok_eql(arch_family_type, arch_family_type_arm)
+#define __comp_bool__arch_family_is_riscv pp_Tok_eql(arch_family_type, arch_family_type_riscv)
+#define __comp_bool__arch_family_is_wasm pp_Tok_eql(arch_family_type, arch_family_type_wasm)
 
 /* Derive family name from type */
 #define __comp_str__arch_family_name pp_expand( \
@@ -410,14 +410,14 @@ extern "C" {
 #define __comp_bool__arch_has_arm_yield 0
 #endif
 
-#if arch_is_riscv_family && defined(__riscv_zihintpause)
+#if arch_family_is_riscv && defined(__riscv_zihintpause)
 #define __comp_bool__arch_has_riscv_zihintpause 1
 #else
 #define __comp_bool__arch_has_riscv_zihintpause 0
 #endif
 
 #define __comp_bool__arch_has_spin_loop_hint pp_or( \
-    arch_is_x86_family, pp_or(arch_is_aarch64, arch_has_arm_yield) \
+    arch_family_is_x86, pp_or(arch_is_aarch64, arch_has_arm_yield) \
 )
 
 #if (arch_is_x86_64 || arch_is_aarch64 || arch_is_riscv64 || arch_is_wasm64) \
@@ -469,7 +469,7 @@ extern "C" {
 
 /* --- x86/x86_64 SIMD Detection --- */
 
-#if arch_is_x86_family
+#if arch_family_is_x86
 
 /* SSE (Streaming SIMD Extensions) */
 #if defined(__SSE__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1)
@@ -546,11 +546,11 @@ extern "C" {
 #define __comp_bool__arch_has_fma 1
 #endif /* defined(__FMA__) */
 
-#endif /* arch_is_x86_family */
+#endif /* arch_family_is_x86 */
 
 /* --- ARM SIMD Detection --- */
 
-#if arch_is_arm_family
+#if arch_family_is_arm
 
 /* NEON (Advanced SIMD) */
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
@@ -584,11 +584,11 @@ extern "C" {
 #define __comp_bool__arch_has_i8mm 1
 #endif /* defined(__ARM_FEATURE_MATMUL_INT8) */
 
-#endif /* arch_is_arm_family */
+#endif /* arch_family_is_arm */
 
 /* --- RISC-V Vector Extension Detection --- */
 
-#if arch_is_riscv_family
+#if arch_family_is_riscv
 
 #if defined(__riscv_v) || defined(__riscv_vector)
 #undef __comp_bool__arch_has_rvv
@@ -603,11 +603,11 @@ extern "C" {
 #define __comp_int__arch_rvv_min_vlen_bits 128
 #endif
 
-#endif /* arch_is_riscv_family */
+#endif /* arch_family_is_riscv */
 
 /* --- WebAssembly SIMD Detection --- */
 
-#if arch_is_wasm_family
+#if arch_family_is_wasm
 
 #if defined(__wasm_simd128__)
 #undef __comp_bool__arch_has_wasm_simd128
@@ -619,7 +619,7 @@ extern "C" {
 #define __comp_bool__arch_has_wasm_relaxed_simd 1
 #endif /* defined(__wasm_relaxed_simd__) */
 
-#endif /* arch_is_wasm_family */
+#endif /* arch_family_is_wasm */
 
 /* --- SIMD Availability Summary --- */
 

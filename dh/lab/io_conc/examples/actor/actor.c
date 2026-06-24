@@ -29,11 +29,11 @@ $static fn_((actor_Unit__syncExit(actor_Unit* self))(void)) {
     if (task->state != exec_Task_State_done) return;
 
     match_((self->completion)) {
-    pattern_((actor_Unit_Ret_void)(future)) {
+    patt_((actor_Unit_Ret_void)(future)) {
         let_ignore = future;
         actor_Unit__setExit(self, actor_Exit_normalNow());
-    } $end(pattern);
-    pattern_((actor_Unit_Ret_err_void)(future)) {
+    } $end(patt);
+    patt_((actor_Unit_Ret_err_void)(future)) {
         actor_Unit__setExit(
             self,
             expr_(actor_Exit $scope)(if_ok_void((future.result)) {
@@ -42,8 +42,8 @@ $static fn_((actor_Unit__syncExit(actor_Unit* self))(void)) {
                 $break_(actor_Exit_errorOf(err));
             }) $unscoped(expr)
         );
-    } $end(pattern);
-    pattern_((actor_Unit_Ret_undefined)($ignore)) claim_unreachable $end(pattern);
+    } $end(patt);
+    patt_((actor_Unit_Ret_undefined)($ignore)) claim_unreachable $end(patt);
     } $end(match);
 };
 

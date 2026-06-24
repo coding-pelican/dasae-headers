@@ -8,17 +8,10 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/sys/posix.h"
-
-#if plat_is_windows
-#include "dh/sys/api/windows/sock.h"
-#endif
 
 /*========== Macros and Declarations ========================================*/
 
-typedef pp_if_(plat_is_windows)(
-    pp_then_(SOCKET),
-    pp_else_(sys_posix_fd_t)) net_Handle;
+typedef usize net_Handle;
 T_use_E$(net_Handle);
 
 typedef struct net_Sock net_Sock;

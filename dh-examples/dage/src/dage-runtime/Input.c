@@ -46,7 +46,7 @@ fn_((dage_Input_applyEvent(dage_Input* self, const dage_Event* event))(void)) {
 
     match_(*event) {
     /*=== Keyboard Events ===*/
-    pattern_((dage_Event_key_down)(on_key_down)) {
+    patt_((dage_Event_key_down)(on_key_down)) {
         if (on_key_down.key == dage_KeyCode_unknown) { return; }
         claim_assert(dage_KeyCode_unknown != on_key_down.key);
         claim_assert(on_key_down.key < dage_KeyCode$count);
@@ -57,9 +57,9 @@ fn_((dage_Input_applyEvent(dage_Input* self, const dage_Event* event))(void)) {
         }
         *state |= dage_KeyBtnFlags_held;
         updateModsFromKey(self, on_key_down.key, true);
-    } $end(pattern);
+    } $end(patt);
 
-    pattern_((dage_Event_key_up)(on_key_up)) {
+    patt_((dage_Event_key_up)(on_key_up)) {
         if (on_key_up.key == dage_KeyCode_unknown) { return; }
         claim_assert(dage_KeyCode_unknown != on_key_up.key);
         claim_assert(on_key_up.key < dage_KeyCode$count);
@@ -67,14 +67,14 @@ fn_((dage_Input_applyEvent(dage_Input* self, const dage_Event* event))(void)) {
         *state &= ~dage_KeyBtnFlags_held;
         *state |= dage_KeyBtnFlags_released;
         updateModsFromKey(self, on_key_up.key, false);
-    } $end(pattern);
+    } $end(patt);
 
-    pattern_((dage_Event_key_repeat)($ignore)) {
+    patt_((dage_Event_key_repeat)($ignore)) {
         /* Key repeat doesn't change state, just confirms held */
-    } $end(pattern);
+    } $end(patt);
 
     /*=== Mouse Button Events ===*/
-    pattern_((dage_Event_mouse_down)(on_mouse_down)) {
+    patt_((dage_Event_mouse_down)(on_mouse_down)) {
         if (on_mouse_down.btn == dage_MouseBtn_unknown) { return; }
         claim_assert(dage_MouseBtn_unknown != on_mouse_down.btn);
         claim_assert(on_mouse_down.btn < dage_MouseBtn$count);
@@ -84,9 +84,9 @@ fn_((dage_Input_applyEvent(dage_Input* self, const dage_Event* event))(void)) {
         }
         *state |= dage_KeyBtnFlags_held;
         A_at((self->mouse)[dage_Input_Frame_curr])->pos = on_mouse_down.pos;
-    } $end(pattern);
+    } $end(patt);
 
-    pattern_((dage_Event_mouse_up)(on_mouse_up)) {
+    patt_((dage_Event_mouse_up)(on_mouse_up)) {
         if (on_mouse_up.btn == dage_MouseBtn_unknown) { return; }
         claim_assert(dage_MouseBtn_unknown != on_mouse_up.btn);
         claim_assert(on_mouse_up.btn < dage_MouseBtn$count);
@@ -94,26 +94,26 @@ fn_((dage_Input_applyEvent(dage_Input* self, const dage_Event* event))(void)) {
         *state &= ~dage_KeyBtnFlags_held;
         *state |= dage_KeyBtnFlags_released;
         A_at((self->mouse)[dage_Input_Frame_curr])->pos = on_mouse_up.pos;
-    } $end(pattern);
+    } $end(patt);
 
     /*=== Mouse Movement Events ===*/
-    pattern_((dage_Event_mouse_move)(on_mouse_move)) {
+    patt_((dage_Event_mouse_move)(on_mouse_move)) {
         A_at((self->mouse)[dage_Input_Frame_curr])->pos = on_mouse_move.pos;
-    } $end(pattern);
+    } $end(patt);
 
-    pattern_((dage_Event_mouse_enter)($ignore)) {
+    patt_((dage_Event_mouse_enter)($ignore)) {
         A_at((self->mouse)[dage_Input_Frame_curr])->inside_window = true;
-    } $end(pattern);
+    } $end(patt);
 
-    pattern_((dage_Event_mouse_leave)($ignore)) {
+    patt_((dage_Event_mouse_leave)($ignore)) {
         A_at((self->mouse)[dage_Input_Frame_curr])->inside_window = false;
-    } $end(pattern);
+    } $end(patt);
 
-    pattern_((dage_Event_scroll)(on_scroll)) {
+    patt_((dage_Event_scroll)(on_scroll)) {
         /* Accumulate scroll for this frame */
         A_at((self->mouse)[dage_Input_Frame_curr])->scroll_delta.x += on_scroll.delta.x;
         A_at((self->mouse)[dage_Input_Frame_curr])->scroll_delta.y += on_scroll.delta.y;
-    } $end(pattern);
+    } $end(patt);
 
     /*=== Window Events - No input state change ===*/
     case dage_Event_close_request: $fallthrough;

@@ -159,10 +159,10 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
         }
     ));
     $suppress_(switch_enum)(match_(press)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_back_tab));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_press));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
@@ -176,10 +176,10 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
         }
     ));
     $suppress_(switch_enum)(match_(repeat)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_left));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_repeat));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
@@ -192,9 +192,9 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
         }
     ));
     $suppress_(switch_enum)(match_(keypad_left)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_keypad_4));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
@@ -208,9 +208,9 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
         }
     ));
     $suppress_(switch_enum)(match_(keypad_enter)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_keypad_enter));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
@@ -223,10 +223,10 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
         }
     ));
     $suppress_(switch_enum)(match_(release)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_escape));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_release));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
@@ -247,10 +247,10 @@ TEST_fn_("daterm-context/ANSI: Windows key records preserve actions" $scope) {
         }
     ));
     $suppress_(switch_enum)(match_(non_bmp)) {
-    pattern_((daterm_Event_text)(text)) {
+    patt_((daterm_Event_text)(text)) {
         try_(TEST_expect(text.codepoint == 0x1f600));
         try_(TEST_expect(unwrap_(text.action) == daterm_key_Action_press));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 #endif
@@ -273,11 +273,11 @@ TEST_fn_("daterm-context/ANSI: Windows modifier records preserve side and lifecy
         }
     ));
     $suppress_(switch_enum)(match_(left_shift)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_left_shift));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_press));
         try_(TEST_expect(key.mods.shift));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
@@ -291,11 +291,11 @@ TEST_fn_("daterm-context/ANSI: Windows modifier records preserve side and lifecy
         }
     ));
     $suppress_(switch_enum)(match_(right_ctrl)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_right_ctrl));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_repeat));
         try_(TEST_expect(key.mods.ctrl));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
@@ -308,11 +308,11 @@ TEST_fn_("daterm-context/ANSI: Windows modifier records preserve side and lifecy
         }
     ));
     $suppress_(switch_enum)(match_(left_alt)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_left_alt));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_release));
         try_(TEST_expect(!key.mods.alt));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 
@@ -325,11 +325,11 @@ TEST_fn_("daterm-context/ANSI: Windows modifier records preserve side and lifecy
         }
     ));
     $suppress_(switch_enum)(match_(right_meta)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_right_meta));
         try_(TEST_expect(unwrap_(key.action) == daterm_key_Action_press));
         try_(TEST_expect(key.mods.meta));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
 #endif
@@ -357,9 +357,9 @@ TEST_fn_("daterm-context/ANSI: transaction preserves unrelated key event" $scope
     try_(TEST_expect(matched));
     let event = unwrap_(daterm_Term_poll(daterm_ANSI_term(&ansi)));
     $suppress_(switch_enum)(match_(event)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_up));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
     return_ok({});
@@ -384,16 +384,16 @@ TEST_fn_("daterm-context/ANSI: transaction preserves unrelated mouse event" $sco
 
     let event = unwrap_(daterm_Term_poll(daterm_ANSI_term(&ansi)));
     $suppress_(switch_enum)(match_(event)) {
-    pattern_((daterm_Event_mouse)(mouse)) {
+    patt_((daterm_Event_mouse)(mouse)) {
         $suppress_(switch_enum)(match_(mouse)) {
-        pattern_((daterm_mouse_Event_press)(press)) {
+        patt_((daterm_mouse_Event_press)(press)) {
             try_(TEST_expect(press.btn == daterm_mouse_Btn_left));
             try_(TEST_expect(press.pos.x == 1));
             try_(TEST_expect(press.pos.y == 2));
-        } $end(pattern);
+        } $end(patt);
         default_() try_(TEST_expect(false)) $end(default);
         } $end(match);
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
     return_ok({});
@@ -552,11 +552,11 @@ TEST_fn_("daterm-context/ANSI: DEC cursor report becomes runtime key" $scope) {
     ));
 
     $suppress_(switch_enum)(match_(event)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_up));
         try_(TEST_expect(key.mods.packed == 0));
         try_(TEST_expect(isNone(key.action)));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
     return_ok({});
@@ -568,12 +568,12 @@ TEST_fn_("daterm-context/ANSI: xterm modified cursor preserves modifiers" $scope
     ));
 
     $suppress_(switch_enum)(match_(event)) {
-    pattern_((daterm_Event_key)(key)) {
+    patt_((daterm_Event_key)(key)) {
         try_(TEST_expect(key.code == daterm_key_Code_up));
         try_(TEST_expect(key.mods.ctrl));
         try_(TEST_expect(!key.mods.shift));
         try_(TEST_expect(!key.mods.alt));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
     return_ok({});
@@ -585,10 +585,10 @@ TEST_fn_("daterm-context/ANSI: xterm CSI-u becomes runtime text" $scope) {
     ));
 
     $suppress_(switch_enum)(match_(event)) {
-    pattern_((daterm_Event_text)(text)) {
+    patt_((daterm_Event_text)(text)) {
         try_(TEST_expect(text.codepoint == u8_c('a')));
         try_(TEST_expect(text.mods.alt));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
     return_ok({});
@@ -600,17 +600,17 @@ TEST_fn_("daterm-context/ANSI: xterm SGR mouse becomes semantic variant" $scope)
     ));
 
     $suppress_(switch_enum)(match_(event)) {
-    pattern_((daterm_Event_mouse)(mouse)) {
+    patt_((daterm_Event_mouse)(mouse)) {
         $suppress_(switch_enum)(match_(mouse)) {
-        pattern_((daterm_mouse_Event_press)(press)) {
+        patt_((daterm_mouse_Event_press)(press)) {
             try_(TEST_expect(press.btn == daterm_mouse_Btn_left));
             try_(TEST_expect(press.pos.x == 9));
             try_(TEST_expect(press.pos.y == 4));
             try_(TEST_expect(press.pos.kind == daterm_mouse_PosKind_cell));
-        } $end(pattern);
+        } $end(patt);
         default_() try_(TEST_expect(false)) $end(default);
         } $end(match);
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
     return_ok({});
@@ -622,9 +622,9 @@ TEST_fn_("daterm-context/ANSI: xterm focus becomes runtime focus" $scope) {
     ));
 
     $suppress_(switch_enum)(match_(event)) {
-    pattern_((daterm_Event_focus)(focus)) {
+    patt_((daterm_Event_focus)(focus)) {
         try_(TEST_expect(focus == daterm_focus_Event_in));
-    } $end(pattern);
+    } $end(patt);
     default_() try_(TEST_expect(false)) $end(default);
     } $end(match);
     return_ok({});

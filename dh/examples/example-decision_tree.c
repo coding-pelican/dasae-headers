@@ -196,10 +196,10 @@ fn_((TreeNode_createDecision(mem_Alctr gpa, u32 feature_index, f32 threshold, Tr
 fn_((TreeNode_destroyRecur(mem_Alctr gpa, TreeNode* target))(void)) /* NOLINT(misc-no-recursion) */ {
     match_($ref(target)) {
     case_((TreeNode_leaf)) break $end(case);
-    pattern_((TreeNode_decision)($ref decision)) {
+    patt_((TreeNode_decision)($ref decision)) {
         if_some((decision->left)(left)) TreeNode_destroyRecur(gpa, left);
         if_some((decision->right)(right)) TreeNode_destroyRecur(gpa, right);
-    } $end(pattern);
+    } $end(patt);
     default_() {
         log_error("Invalid node type encountered during prediction");
         claim_unreachable;
@@ -212,8 +212,8 @@ fn_((TreeNode_predict(const TreeNode* target, S_const$f32 features))(i32)) {
     claim_assert_nonnullS(features);
     var_(curr, O$TreeNode) = some(deref(target));
     while_some(curr, node) match_(node) {
-    pattern_((TreeNode_leaf)(leaf)) return leaf.class_label $end(pattern);
-    pattern_((TreeNode_decision)(decision)) {
+    patt_((TreeNode_leaf)(leaf)) return leaf.class_label $end(patt);
+    patt_((TreeNode_decision)(decision)) {
         if (features.len <= decision.feature_index) {
             log_error("Feature index out of bounds: %u >= %zu", decision.feature_index, features.len);
             claim_unreachable;
@@ -223,7 +223,7 @@ fn_((TreeNode_predict(const TreeNode* target, S_const$f32 features))(i32)) {
                 ? $break_(O_deref$((O$TreeNode)(decision.left)))
                 : $break_(O_deref$((O$TreeNode)(decision.right)))
         ) $unscoped(expr);
-    } $end(pattern);
+    } $end(patt);
     default_() {
         log_error("Invalid node type encountered during prediction");
         claim_unreachable;
@@ -246,13 +246,13 @@ fn_((TreeNode_printRecur(const TreeNode* target, u32 depth))(void)) /* NOLINT(mi
     let indent_z = A_ptr(indent);
 
     match_($ref(target)) {
-    pattern_((TreeNode_leaf)($ref leaf)) log_info("{:z}Class: {:d}", indent_z, leaf->class_label) $end(pattern);
-    pattern_((TreeNode_decision)($ref decision)) {
+    patt_((TreeNode_leaf)($ref leaf)) log_info("{:z}Class: {:d}", indent_z, leaf->class_label) $end(patt);
+    patt_((TreeNode_decision)($ref decision)) {
         log_info("{:z}Feature {:u} <= {:.2f}", indent_z, decision->feature_index, decision->threshold);
         if_some((decision->left)(left)) { TreeNode_printRecur(left, depth + 1); }
         log_info("{:z}Feature {:u} > {:.2f}", indent_z, decision->feature_index, decision->threshold);
         if_some((decision->right)(right)) { TreeNode_printRecur(right, depth + 1); }
-    } $end(pattern);
+    } $end(patt);
     default_() {
         log_error("{:z}Invalid node type", indent_z);
         claim_unreachable;
@@ -265,15 +265,15 @@ fn_((TreeNode_saveToFileRecur(const TreeNode* node, io_Writer writer))(E$void) $
     try_(io_Writer_writeBytes(writer, mem_asBytes(u_anyP(&node->tag))));
 
     match_($ref(node)) {
-    pattern_((TreeNode_leaf)($ref leaf)) {
+    patt_((TreeNode_leaf)($ref leaf)) {
         try_(io_Writer_writeBytes(writer, mem_asBytes(u_anyP(&leaf->class_label))));
-    } $end(pattern);
-    pattern_((TreeNode_decision)($ref decision)) {
+    } $end(patt);
+    patt_((TreeNode_decision)($ref decision)) {
         try_(io_Writer_writeBytes(writer, mem_asBytes(u_anyP(&decision->feature_index))));
         try_(io_Writer_writeBytes(writer, mem_asBytes(u_anyP(&decision->threshold))));
         if_some((decision->left)(left)) { try_(TreeNode_saveToFileRecur(left, writer)); }
         if_some((decision->right)(right)) { try_(TreeNode_saveToFileRecur(right, writer)); }
-    } $end(pattern);
+    } $end(patt);
     default_() {
         log_error("Invalid node type encountered during saving");
         claim_unreachable;

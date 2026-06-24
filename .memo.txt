@@ -118,7 +118,7 @@ name_
 - not limited to "statement macro"
 - examples:
   - `if_`, `using_`, `defer_`
-  - `match_`, `pattern_`, `fold_`
+  - `match_`, `patt_`, `fold_`
   - `co_fn_`, `clsr_`
 
 name
@@ -213,7 +213,7 @@ For compile-time scalar data, prefer:
 - `__<domain>_<kind>__<name>`
 
 Examples:
-- `__comp_bool__comp_type_is_clang`
+- `__comp_bool__comp_is_clang`
 - `__comp_enum__comp_type`
 - `__comp_str__comp_name`
 

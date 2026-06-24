@@ -29,18 +29,18 @@ co_fn_scope(sample_counterActor) {
         }
 
         match_($co_mut(msg)) {
-        pattern_((actor_Msg_increment)(delta)) {
+        patt_((actor_Msg_increment)(delta)) {
             $co_mut(count) += delta;
-        } $end(pattern);
-        pattern_((actor_Msg_get_value)($ignore)) {
+        } $end(patt);
+        patt_((actor_Msg_get_value)($ignore)) {
             io_stream_println(
                 catch_((io_direct())($ignore, io_noop)),
                 u8_l("[{:s}] value={:il}"),
                 $co_arg(name),
                 $co_mut(count)
             );
-        } $end(pattern);
-        pattern_((actor_Msg_stop)($ignore)) {
+        } $end(patt);
+        patt_((actor_Msg_stop)($ignore)) {
             io_stream_println(
                 catch_((io_direct())($ignore, io_noop)),
                 u8_l("[{:s}] stop value={:il}"),
@@ -48,7 +48,7 @@ co_fn_scope(sample_counterActor) {
                 $co_mut(count)
             );
             co_return_({});
-        } $end(pattern);
+        } $end(patt);
         default_() claim_unreachable $end(default);
         } $end(match);
     }
@@ -77,16 +77,16 @@ co_fn_scope(sample_feederActor) {
         }
 
         match_($co_mut(msg)) {
-        pattern_((actor_Msg_increment)(delta)) {
+        patt_((actor_Msg_increment)(delta)) {
             try_(actor_Unit_send($co_arg(dst), actor_Msg_inc(delta)));
             try_(actor_Unit_send($co_arg(dst), actor_Msg_getValue()));
-        } $end(pattern);
-        pattern_((actor_Msg_get_value)($ignore)) $do_nothing $end(pattern);
-        pattern_((actor_Msg_stop)($ignore)) {
+        } $end(patt);
+        patt_((actor_Msg_get_value)($ignore)) $do_nothing $end(patt);
+        patt_((actor_Msg_stop)($ignore)) {
             try_(actor_Unit_send($co_arg(dst), actor_Msg_stopNow()));
             io_stream_println(catch_((io_direct())($ignore, io_noop)), u8_l("[{:s}] stop"), $co_arg(name));
             co_return_(ok({}));
-        } $end(pattern);
+        } $end(patt);
         default_() claim_unreachable $end(default);
         } $end(match);
     }
@@ -116,11 +116,11 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     actor_Unit_startE$mem_E(feeder, clsr_((sample_feederActor)(feeder, counter, u8_l("feeder"))).as_base);
     defer_({
         match_((unwrap_(actor_Unit_exit(feeder)))) {
-        pattern_((actor_Exit_normal)($ignore)) $do_nothing $end(pattern);
-        pattern_((actor_Exit_error)(err)) {
+        patt_((actor_Exit_normal)($ignore)) $do_nothing $end(patt);
+        patt_((actor_Exit_error)(err)) {
             io_stream_println(io, u8_l("[feeder] error: {:e}"), err);
-        } $end(pattern);
-        pattern_((actor_Exit_canceled)($ignore)) $do_nothing $end(pattern);
+        } $end(patt);
+        patt_((actor_Exit_canceled)($ignore)) $do_nothing $end(patt);
         } $end(match);
     });
 

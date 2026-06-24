@@ -225,8 +225,8 @@ Macros:
   - "match_(_Expr)=switch (_Expr)"
   - "case_(_Enum)=case _Enum:"
   - "cases_(_Enums)=case _Enum: { pp_exec_expand(_Enums); }"
-  - "pattern_(_Enum)=case _Enum:"
-  - "patterns_(_Enums)=case _Enum: { pp_exec_expand(_Enums); }"
+  - "patt_(_Enum)=case _Enum:"
+  - "patts_(_Enums)=case _Enum: { pp_exec_expand(_Enums); }"
   - "default_(_Empty)=case _Empty otherwise:"
 
   # Control flow

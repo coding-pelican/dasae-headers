@@ -172,13 +172,13 @@ fn_((dansi_dec_key_parseReport(dansi_Seq seq))(O$dansi_dec_key_Report) $scope) {
 
 fn_((dansi_dec_key_interpretReport(dansi_dec_key_Report report))(dansi_dec_key_E$dansi_dec_key_Event) $scope) {
     match_(report) {
-    pattern_((dansi_dec_key_Report_esc)(esc)) {
+    patt_((dansi_dec_key_Report_esc)(esc)) {
         let named = orelse_((dansi_dec_key__namedFromCursorFinal(esc.final))(
             return_err(E_cause$dansi_dec_key_InvalidReport())
         ));
         return_ok(dansi_dec_key__named(named));
-    } $end(pattern);
-    pattern_((dansi_dec_key_Report_ss3)(ss3)) {
+    } $end(patt);
+    patt_((dansi_dec_key_Report_ss3)(ss3)) {
         if_some((dansi_dec_key__namedFromPFOrCursorFinal(ss3.final))(named)) {
             return_ok(dansi_dec_key__named(named));
         }
@@ -186,14 +186,14 @@ fn_((dansi_dec_key_interpretReport(dansi_dec_key_Report report))(dansi_dec_key_E
             return_ok(dansi_dec_key__keypad(keypad));
         }
         return_err(E_cause$dansi_dec_key_InvalidReport());
-    } $end(pattern);
-    pattern_((dansi_dec_key_Report_csi)(csi)) {
+    } $end(patt);
+    patt_((dansi_dec_key_Report_csi)(csi)) {
         let named = orelse_((dansi_dec_key__namedFromCursorFinal(csi.frame.final))(
             return_err(E_cause$dansi_dec_key_InvalidReport())
         ));
         return_ok(dansi_dec_key__named(named));
-    } $end(pattern);
-    pattern_((dansi_dec_key_Report_csi_tilde)(tilde)) {
+    } $end(patt);
+    patt_((dansi_dec_key_Report_csi_tilde)(tilde)) {
         let code = orelse_((dansi_csi_Frame_paramAtAsU16(tilde.frame, dansi_dec_key_tilde_param_code))(
             return_err(E_cause$dansi_dec_key_InvalidReport())
         ));
@@ -201,13 +201,13 @@ fn_((dansi_dec_key_interpretReport(dansi_dec_key_Report report))(dansi_dec_key_E
             return_err(E_cause$dansi_dec_key_InvalidReport())
         ));
         return_ok(dansi_dec_key__named(named));
-    } $end(pattern);
-    pattern_((dansi_dec_key_Report_vt52)(vt52)) {
+    } $end(patt);
+    patt_((dansi_dec_key_Report_vt52)(vt52)) {
         let named = orelse_((dansi_dec_key__namedFromCursorFinal(vt52.final))(
             return_err(E_cause$dansi_dec_key_InvalidReport())
         ));
         return_ok(dansi_dec_key__named(named));
-    } $end(pattern);
+    } $end(patt);
     } $end(match);
     return_err(E_cause$dansi_dec_key_InvalidReport());
 } $unscoped(fn);

@@ -8,12 +8,11 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/sys/posix.h"
 
 /*========== Macros and Declarations ========================================*/
 
-T_alias$((proc_Handle)(sys_posix_fd_t));
-T_use_E$(proc_Handle);
+T_alias$((proc_Handle)(usize));
+T_use_prl$(proc_Handle);
 T_alias$((proc_Child)(struct proc_Child));
 T_decl_E$(proc_Child);
 

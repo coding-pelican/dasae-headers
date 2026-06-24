@@ -31,15 +31,15 @@ $static fn_((game_handleEvent(dage_Window* win, game_State* game))(void)) {
     while_some(dage_Window_pollEvent(win), event) {
         $suppress_(switch_enum)(match_(event)) {
         /* Window events */
-        pattern_((dage_Event_close_request)($ignore)) {
+        patt_((dage_Event_close_request)($ignore)) {
             game->is_running = false;
-        } $end(pattern);
+        } $end(patt);
 
-        pattern_((dage_Event_resize)(on_resize)) log_info(
+        patt_((dage_Event_resize)(on_resize)) log_info(
             "Window resized: {:u}x{:u} -> {:u}x{:u}",
             on_resize.old_size.x, on_resize.old_size.y,
             on_resize.new_size.x, on_resize.new_size.y
-        ) $end(pattern);
+        ) $end(patt);
 
         case_((dage_Event_focus)) {
             log_info("Window focused");
@@ -49,7 +49,7 @@ $static fn_((game_handleEvent(dage_Window* win, game_State* game))(void)) {
         } $end(case);
 
         /* Input events (optional - can use state queries instead) */
-        pattern_((dage_Event_key_down)(on_key_down)) {
+        patt_((dage_Event_key_down)(on_key_down)) {
             if (on_key_down.key == dage_KeyCode_esc) {
                 game->is_running = false;
             }
@@ -62,7 +62,7 @@ $static fn_((game_handleEvent(dage_Window* win, game_State* game))(void)) {
                     int_rem(Rand_next$u8(&game->rng), 255)
                 );
             }
-        } $end(pattern);
+        } $end(patt);
 
         default_()/* Ignore other events */ $end(default);
         } $end(match);
