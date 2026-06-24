@@ -1,11 +1,12 @@
 #include "dh-main.h"
 #include "dh/io/Buf.h"
-#include "dh/io/common.h"
+#include "dh/io/self.h"
+#include "dh/fs/File/self.h"
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    let out_file = io_getStdOut();
+    let out_file = io_handleStdOut();
     let unbufd = fs_File_writer(out_file);
 
     var_(buf, A$$(4096, u8)) $undefined;

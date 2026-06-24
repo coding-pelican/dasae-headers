@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -199,10 +199,13 @@
                 width: 100%;
                 height: 100%;
                 opacity: 0.08;
-                background-image: radial-gradient(circle at 25% 25%, #60d1c3 2px, transparent 2px),
+                background-image:
+                    radial-gradient(circle at 25% 25%, #60d1c3 2px, transparent 2px),
                     radial-gradient(circle at 75% 75%, #117f75 2px, transparent 2px);
                 background-size: 60px 60px;
-                background-position: 0 0, 30px 30px;
+                background-position:
+                    0 0,
+                    30px 30px;
             }
 
             .glow {
@@ -265,7 +268,7 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let_ignore</span> =
                     <span class="mutable">args</span>;<br />
                     &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let</span> <span class="constant">out</span> =
-                    <span class="function">fs_File_writer</span>(<span class="function">io_getStdOut</span>());<br />
+                    <span class="function">fs_File_writer</span>(<span class="function">io_handleStdOut</span>());<br />
                     &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">let_</span>(<span class="constant">msg</span>,
                     <span class="type">O$S_const$u8</span>) = <span class="keyword">some</span>(<span class="function"
                         >u8_l</span

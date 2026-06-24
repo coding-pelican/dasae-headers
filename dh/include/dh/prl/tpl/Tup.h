@@ -383,8 +383,8 @@ extern "C" {
     ) \
         _bind15 = __tup.$15;
 
-#define $skip , $_skip,
-#define bind_(/*(_binds...: (var|let, _field))(_record)*/...) __stmt__bind_(__VA_ARGS__)
+#define $skip /*_decl*/ let_ignore, /*field_as*/,
+#define bind_(/*(_binds...: (var|let, _field)|(var|let, _field_as, _field))(_record)*/...) __stmt__bind_(__VA_ARGS__)
 #define __stmt__bind_(...) __step__bind$__emit(__step__bind$__parseBinds __VA_ARGS__)
 #define __step__bind$__parseBinds(_binds...) (_binds), pp_uniqTok(record),
 #define __step__bind$__emit(...) __step__bind_(__VA_ARGS__)
@@ -398,8 +398,8 @@ extern "C" {
     pp_overload(__step__bind___each, __VA_ARGS__)(__record, __VA_ARGS__)
 #define __step__bind___each_2(__record, _decl, _field...) \
     _decl _field = (__record)._field;
-#define __step__bind___each_3(__record, _$ignored, _$_skip, _field...) \
-    let_ignore = (__record)._field;
+#define __step__bind___each_3(__record, _decl, _field_as, _field...) \
+    _decl _field_as = (__record)._field;
 #define ____bind___each__expandBind(_bind...) _bind
 
 #if defined(__cplusplus)

@@ -35,6 +35,7 @@ errset_((fs_path_E)(
 #define fs_path_sep_backslash __str__fs_path_sep_backslash
 #define fs_path_sep_backslash_byte __uint__fs_path_sep_backslash_byte
 
+#define fs_path_sep __str__alias__fs_path_sep
 #define fs_path_sep_native __str__fs_path_sep_native
 #define fs_path_sep_native_byte __uint__fs_path_sep_native_byte
 #define fs_path_sep_alt_native __opt_str__fs_path_sep_alt_native
@@ -85,6 +86,7 @@ $extern fn_((fs_path_resolveAlloc(S_const$u8 base, S_const$u8 sub_path, mem_Alct
 #define __uint__fs_path_sep_backslash_byte \
     u8_c('\\')
 
+#define __str__alias__fs_path_sep fs_path_sep_native
 #define __str__fs_path_sep_native pp_if_(plat_is_windows)( \
     pp_then_(fs_path_sep_windows), \
     pp_else_(fs_path_sep_unix) \

@@ -50,7 +50,7 @@ T_alias$((Runtime)(struct Runtime {
 }));
 
 $static fn_((Term_readLine(Runtime rt, S$u8 mem))(S$u8)) {
-    var file_io = fs_File_io(io_getStdIn(), rt.fs);
+    var file_io = fs_File_io(io_handleStdIn(), rt.fs);
     let bytes = catch_((io_Reader_read(fs_File_IO_reader(&file_io), mem))(
         $ignore, 0
     ));

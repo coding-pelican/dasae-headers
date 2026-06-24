@@ -41,12 +41,16 @@ fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void) $scope) {
     return_ok({});
 } $unscoped(fn);
 
-fn_((io_Writer_nl(io_Writer self))(E$void)) {
-    return io_Writer_writeByte(self, io_nl_byte);
+fn_((io_Writer_lf(io_Writer self))(E$void)) {
+    return io_Writer_writeByte(self, io_lf_byte);
 };
 
 fn_((io_Writer_crlf(io_Writer self))(E$void)) {
     return io_Writer_writeBytes(self, u8_l(io_crlf));
+};
+
+fn_((io_Writer_nl(io_Writer self))(E$void)) {
+    return io_Writer_writeBytes(self, u8_l(io_nl));
 };
 
 fn_((io_Writer_print(io_Writer self, S_const$u8 fmt, ...))(E$void) $guard) {

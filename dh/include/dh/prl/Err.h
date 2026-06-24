@@ -93,6 +93,7 @@ T_alias$((General_E$void)(General_E$Void));
 
 /*========== Macros and Definitions =========================================*/
 
+#if on_analysis_active_only || on_comptime
 /*---------- Internal Declarations ------------------------------------------*/
 
 $attr($inline_always)
@@ -180,6 +181,7 @@ fn_((E__hashId$NotImplemented(void))(E_HashId)) {
 fn_((E__hashId$Unexpected(void))(E_HashId)) {
     return E_hasher(u8_l("Unexpected"));
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

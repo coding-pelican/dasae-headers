@@ -78,7 +78,7 @@ $extern fn_((fs_File_stat(fs_File self, fs_Self fs))(fs_E$fs_File_Stat));
 $attr($must_check)
 $extern fn_((fs_File_sync(fs_File self, fs_Self fs))(E$void));
 $attr($must_check)
-$extern fn_((fs_File_isTty(fs_File self, fs_Self fs))(E$bool));
+$extern fn_((fs_File_isTTY(fs_File self, fs_Self fs))(E$bool));
 $attr($must_check)
 $extern fn_((fs_File_setLen(fs_File self, fs_Self fs, u64 new_len))(E$void));
 $attr($must_check)

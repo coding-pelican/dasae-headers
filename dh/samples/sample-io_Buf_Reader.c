@@ -1,13 +1,14 @@
 #include "dh-main.h"
 #include "dh/io/Buf.h"
-#include "dh/io/common.h"
+#include "dh/io/self.h"
+#include "dh/fs/File/self.h"
 #include "dh/io/stream.h"
 #include "dh/fmt/common.h"
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
-    let in_file = io_getStdIn();
+    let in_file = io_handleStdIn();
     let unbufd = fs_File_reader(in_file);
 
     var_(buf, A$$(4096, u8)) $undefined;

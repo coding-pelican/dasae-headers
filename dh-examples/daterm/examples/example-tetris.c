@@ -490,11 +490,11 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 /*========== Main ===========================================================*/
 
 fn_((tetris_Main_waitForEnter(void))(void)) {
-    let out = fs_File_writer(io_getStdOut());
+    let out = fs_File_writer(io_handleStdOut());
     catch_((io_Writer_writeBytes(out, u8_l("example-tetris: press Enter to enter terminal mode\n")))($ignore, $do_nothing));
 
     var_(read_mem, A$$(128, u8)) $undefined;
-    var reader = io_Buf_Reader_init(fs_File_reader(io_getStdIn()), A_ref$((S$u8)(read_mem)));
+    var reader = io_Buf_Reader_init(fs_File_reader(io_handleStdIn()), A_ref$((S$u8)(read_mem)));
     var_(line_mem, A$$(256, u8)) $undefined;
     catch_((io_Buf_Reader_readUntilByte(&reader, ascii_lf_byte, A_ref$((S$u8)(line_mem))))($ignore, $do_nothing));
 };

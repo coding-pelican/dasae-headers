@@ -27,14 +27,14 @@ $static fn_((io__getStdErrHandle(void))(sys_posix_fd_t)) {
         pp_else_(sys_posix_STDERR_FILENO));
 };
 
-fn_((io_getStdIn(void))(fs_File)) {
+fn_((io_handleStdIn(void))(fs_File)) {
     return fs_File_Handle_promote(io__getStdInHandle(), fs_File_Flags_default);
 };
 
-fn_((io_getStdOut(void))(fs_File)) {
+fn_((io_handleStdOut(void))(fs_File)) {
     return fs_File_Handle_promote(io__getStdOutHandle(), fs_File_Flags_default);
 };
 
-fn_((io_getStdErr(void))(fs_File)) {
+fn_((io_handleStdErr(void))(fs_File)) {
     return fs_File_Handle_promote(io__getStdErrHandle(), fs_File_Flags_default);
 };

@@ -27,24 +27,24 @@
 
 /*========== Tests ==========================================================*/
 
-TEST_fn_("io/common: Check `io_getStdIn` is valid handle" $scope) {
-    let std_in = io_getStdIn();
+TEST_fn_("io/common: Check `io_handleStdIn` is valid handle" $scope) {
+    let std_in = io_handleStdIn();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
         pp_else_(sys_posix_STDIN_FILENO));
     try_(TEST_expect(std_in.handle == handle));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io/common: Check `io_getStdOut` is valid handle" $scope) {
-    let std_out = io_getStdOut();
+TEST_fn_("io/common: Check `io_handleStdOut` is valid handle" $scope) {
+    let std_out = io_handleStdOut();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
         pp_else_(sys_posix_STDOUT_FILENO));
     try_(TEST_expect(std_out.handle == handle));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io/common: Check `io_getStdErr` is valid handle" $scope) {
-    let std_err = io_getStdErr();
+TEST_fn_("io/common: Check `io_handleStdErr` is valid handle" $scope) {
+    let std_err = io_handleStdErr();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_ERROR_HANDLE)),
         pp_else_(sys_posix_STDERR_FILENO));

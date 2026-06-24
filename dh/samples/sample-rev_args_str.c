@@ -1,8 +1,7 @@
 #include "dh-main.h"
-#include "dh/fs/File.h"
-#include "dh/io/Buf.h"
-#include "dh/io/common.h"
 #include "dh/io/stream.h"
+#include "dh/fs/File/self.h"
+#include "dh/io/Buf.h"
 #include "dh/mem/common.h"
 #include "dh/fmt/common.h"
 #include "dh/ascii.h"
@@ -24,7 +23,7 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
     var_(input_mem, A$$(64, u8)) $undefined;
     let input_buf = A_ref$((S$u8)(input_mem));
     var_(read_mem, A$$(256, u8)) $undefined;
-    var stream_in = io_Buf_Reader_init(fs_File_reader(io_getStdIn()), A_ref$((S$u8)(read_mem)));
+    var stream_in = io_Buf_Reader_init(fs_File_reader(io_handleStdIn()), A_ref$((S$u8)(read_mem)));
     let whitespace = A_ref$((S_const$u8)(u8_a(ascii_whitespaces)));
 
     io_stream_print(u8_l("tokenizing reading input: "));

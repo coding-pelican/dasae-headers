@@ -15,10 +15,13 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include "dh/builtin/pp.h"
 #include "dh/builtin/cfg/plat.h"
 
-#if plat_is_darwin
+/*========== Macros and Declarations ========================================*/
+
 #if !defined(sys_libc_darwin_pref_target_ver)
 #define sys_libc_darwin_pref_target_ver __comp_int__sys_libc_darwin_pref_target_ver
 #endif /* !defined(sys_libc_darwin_pref_target_ver) */
@@ -26,20 +29,24 @@ extern "C" {
 #define sys_libc_darwin_ver_macos_10_12 101200
 #define sys_libc_darwin_ver_macos_11_0 110000
 
-#if sys_libc_darwin_pref_target_ver >= sys_libc_darwin_ver_macos_10_12
-#define sys_libc_darwin_has_unfair_lock pp_true
-#else
-#define sys_libc_darwin_has_unfair_lock pp_false
-#endif
+#define sys_libc_darwin_has_unfair_lock __comp_bool__sys_libc_darwin_has_unfair_lock
+#define sys_libc_darwin_has_ulock_wait2 __comp_bool__sys_libc_darwin_has_ulock_wait2
 
-#if sys_libc_darwin_pref_target_ver >= sys_libc_darwin_ver_macos_11_0
-#define sys_libc_darwin_has_ulock_wait2 pp_true
-#else
-#define sys_libc_darwin_has_ulock_wait2 pp_false
-#endif
+/*========== Macros and Definitions =========================================*/
 
 #define __comp_int__sys_libc_darwin_pref_target_ver sys_libc_darwin_ver_macos_10_12
-#endif /* plat_is_darwin */
+#define __comp_bool__sys_libc_darwin_has_unfair_lock pp_false
+#define __comp_bool__sys_libc_darwin_has_ulock_wait2 pp_false
+
+#if sys_libc_darwin_pref_target_ver >= sys_libc_darwin_ver_macos_10_12
+#undef __comp_bool__sys_libc_darwin_has_unfair_lock
+#define __comp_bool__sys_libc_darwin_has_unfair_lock pp_true
+#endif /* sys_libc_darwin_pref_target_ver >= sys_libc_darwin_ver_macos_10_12 */
+
+#if sys_libc_darwin_pref_target_ver >= sys_libc_darwin_ver_macos_11_0
+#undef __comp_bool__sys_libc_darwin_has_ulock_wait2
+#define __comp_bool__sys_libc_darwin_has_ulock_wait2 pp_true
+#endif /* sys_libc_darwin_pref_target_ver >= sys_libc_darwin_ver_macos_11_0 */
 
 #if defined(__cplusplus)
 } /* extern "C" */

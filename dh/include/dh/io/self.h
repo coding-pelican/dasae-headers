@@ -2,38 +2,46 @@
  * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
- * @file    common.h
+ * @file    self.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
- * @date    2025-03-22 (date of creation)
- * @updated 2026-02-06 (date of last update)
+ * @date    2025-08-09 (date of creation)
+ * @updated 2026-06-24 (date of last update)
  * @ingroup dal-project/da/io
  * @prefix  io
- *
- * @brief   Common IO utilities
- * @details Provides common IO utilities and functions for:
- *          - Stream operations
- *          - Buffer operations
- *          - Utility functions
  */
 #pragma once
-#ifndef io_common__included
-#define io_common__included 1
+#ifndef io_self__included
+#define io_self__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
 
 /*========== Includes =======================================================*/
 
-#include "base.h"
-#include "../fs/File.h"
+#include "common.h"
+#include "../fs/base.h"
 
 /*========== Macros and Declarations ========================================*/
 
+#define io_using_libc __comp_bool__io_using_libc
+
 $extern fn_((io_handleStdIn(void))(fs_File));
+$extern fn_((io_lockStdIn(void))(void));
+$extern fn_((io_unlockStdIn(void))(void));
+
 $extern fn_((io_handleStdOut(void))(fs_File));
+$extern fn_((io_lockStdOut(void))(void));
+$extern fn_((io_unlockStdOut(void))(void));
+
 $extern fn_((io_handleStdErr(void))(fs_File));
+$extern fn_((io_lockStdErr(void))(void));
+$extern fn_((io_unlockStdErr(void))(void));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __comp_bool__io_using_libc comp_libc_linked
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* io_common__included */
+#endif /* io_self__included */

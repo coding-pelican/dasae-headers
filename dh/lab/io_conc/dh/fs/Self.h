@@ -180,7 +180,7 @@ T_alias$((fs_Self_VTbl_File)(struct fs_Self_VTbl_File {
     fn_(((*writeFn)(P$raw ctx, fs_File file, S_const$u8 bytes))(E$usize));
     fn_(((*statFn)(P$raw ctx, fs_File file))(fs_E$fs_File_Stat));
     fn_(((*syncFn)(P$raw ctx, fs_File file))(E$void));
-    fn_(((*isTtyFn)(P$raw ctx, fs_File file))(E$bool));
+    fn_(((*isTTYFn)(P$raw ctx, fs_File file))(E$bool));
     fn_(((*setLenFn)(P$raw ctx, fs_File file, u64 new_len))(E$void));
     fn_(((*setPermsFn)(P$raw ctx, fs_File file, fs_File_Mode perms))(E$void));
     fn_(((*readPosFn)(P$raw ctx, fs_File file, S$u8 buf, u64 offset))(E$usize));
@@ -204,7 +204,7 @@ $extern fn_((fs_VTbl_File_failingStat(P$raw ctx, fs_File file))(fs_E$fs_File_Sta
 $attr($must_check)
 $extern fn_((fs_VTbl_File_failingSync(P$raw ctx, fs_File file))(E$void));
 $attr($must_check)
-$extern fn_((fs_VTbl_File_failingIsTty(P$raw ctx, fs_File file))(E$bool));
+$extern fn_((fs_VTbl_File_failingIsTTY(P$raw ctx, fs_File file))(E$bool));
 $attr($must_check)
 $extern fn_((fs_VTbl_File_failingSetLen(P$raw ctx, fs_File file, u64 new_len))(E$void));
 $attr($must_check)
@@ -276,7 +276,7 @@ fn_((fs_isValid(fs_Self self))(bool)) {
         && isNonnull(self.vtbl->file.writeFn)
         && isNonnull(self.vtbl->file.statFn)
         && isNonnull(self.vtbl->file.syncFn)
-        && isNonnull(self.vtbl->file.isTtyFn)
+        && isNonnull(self.vtbl->file.isTTYFn)
         && isNonnull(self.vtbl->file.setLenFn)
         && isNonnull(self.vtbl->file.setPermsFn)
         && isNonnull(self.vtbl->file.readPosFn)
@@ -329,7 +329,7 @@ fn_((fs_assertValid(P$raw ctx, P_const$$(fs_Self_VTbl) vtbl))(void)) {
     claim_assert_nonnull(vtbl->file.writeFn);
     claim_assert_nonnull(vtbl->file.statFn);
     claim_assert_nonnull(vtbl->file.syncFn);
-    claim_assert_nonnull(vtbl->file.isTtyFn);
+    claim_assert_nonnull(vtbl->file.isTTYFn);
     claim_assert_nonnull(vtbl->file.setLenFn);
     claim_assert_nonnull(vtbl->file.setPermsFn);
     claim_assert_nonnull(vtbl->file.readPosFn);

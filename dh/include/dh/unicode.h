@@ -130,9 +130,11 @@ $extern fn_((unicode_wtf8ToUTF8LossyAlloc(S_const$u8 wtf8, mem_Alctr gpa))(unico
 
 /*========== Macros and Definitions =========================================*/
 
+#if on_analysis_active_only || on_comptime
 fn_((unicode_utf8AsWTF8(utf8_View utf))(wtf8_View)) {
     return wtf8_viewUnchkd(utf.bytes);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

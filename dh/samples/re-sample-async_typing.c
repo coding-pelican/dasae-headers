@@ -68,16 +68,17 @@ use_Co_Ctx$(Void);
 async_fn_(exec_sleep, (var_(caller, O$$(Co_Ctx*)); var_(ms, u64);), Void);
 async_fn_scope(exec_sleep, {}) {
     let_ignore = locals;
-    suspend_({
-        let slot = exec_findSlot();
-        let time = local_({
-            static let fromMs = time_Duration_fromMillis;
-            static let addDur = time_Instant_addDuration;
-            static let now = time_Instant_now;
-            local_return_(addDur(now(), fromMs(args->ms)));
+    suspend_(
+        {
+            let slot = exec_findSlot();
+            let time = local_({
+                static let fromMs = time_Duration_fromMillis;
+                static let addDur = time_Instant_addDuration;
+                static let now = time_Instant_now;
+                local_return_(addDur(now(), fromMs(args->ms)));
+            });
+            asg_l((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
         });
-        asg_l((slot)(some({ .frame = orelse_((args->caller)(ctx->anyraw)), .expires = time })));
-    });
     areturn_({});
 } $unscoped(async_fn);
 
@@ -120,7 +121,7 @@ $static fn_((Terminal_writeTextAt(u32 x, u32 y, S_const$u8 text))(void)) {
 
 T_use_A$(1024, u8);
 $static fn_((Terminal_readBytes(S$u8 mem))(S$u8)) {
-    let stream_in = fs_File_reader(io_getStdIn());
+    let stream_in = fs_File_reader(io_handleStdIn());
     return S_prefix((mem)(catch_((io_Reader_read(stream_in, mem))($ignore, claim_unreachable))));
 };
 
@@ -281,23 +282,23 @@ async_fn_scope(runMain, {
 
     // Demo 1: Fixed interval between characters
     locals->demo1.type_ctx = *async_ctx((typeEffectWithInterval)(none(), locals->sample_text, 0.1, .x = 0, .y = 1));
-    resume_(&locals->demo1.type_ctx);
+    resume_(& locals->demo1.type_ctx);
     locals->demo3.type_ctx = *async_ctx((typeEffectWithInterval)(none(), locals->sample_text, 0.125, .x = 0, .y = 3));
-    resume_(&locals->demo3.type_ctx);
+    resume_(& locals->demo3.type_ctx);
     locals->demo5.type_ctx = *async_ctx((typeEffectWithInterval)(none(), locals->sample_text, 0.075, .x = 0, .y = 5));
-    resume_(&locals->demo5.type_ctx);
+    resume_(& locals->demo5.type_ctx);
 
     // Demo 2: Complete typing over specific duration
     locals->demo2.type_ctx = *async_ctx((typeEffectOverDuration)(none(), locals->sample_text, 3.0, .x = 0, .y = 2));
-    resume_(&locals->demo2.type_ctx);
+    resume_(& locals->demo2.type_ctx);
     locals->demo4.type_ctx = *async_ctx((typeEffectOverDuration)(none(), locals->sample_text, 5.0, .x = 0, .y = 4));
-    resume_(&locals->demo4.type_ctx);
+    resume_(& locals->demo4.type_ctx);
     locals->demo6.type_ctx = *async_ctx((typeEffectOverDuration)(none(), locals->sample_text, 4.0, .x = 0, .y = 6));
-    resume_(&locals->demo6.type_ctx);
+    resume_(& locals->demo6.type_ctx);
 
     // Demo 3: Realistic typing with randomness
     locals->demo7.type_ctx = *async_ctx((typeEffectRealistic)(none(), locals->sample_text, 0.08, true, .x = 0, .y = 7));
-    resume_(&locals->demo7.type_ctx);
+    resume_(& locals->demo7.type_ctx);
     locals->line = 8;
 
     await_(&locals->demo1.type_ctx);
@@ -338,7 +339,7 @@ async_fn_scope(runMain, {
             locals->interactive_ctx.type_interval = *async_ctx(
                 (typeEffectWithInterval)(none(), locals->user_text.as_const, locals->interval, .x = as$(u32)(message.len), .y = locals->line++)
             );
-            resume_(&locals->interactive_ctx.type_interval);
+            resume_(& locals->interactive_ctx.type_interval);
             exec_runLoop(false);
             await_(&locals->interactive_ctx.type_interval);
         } else_err(e) {
@@ -351,7 +352,7 @@ async_fn_scope(runMain, {
             locals->interactive_ctx.type_realistic = *async_ctx(
                 (typeEffectRealistic)(none(), locals->user_text.as_const, 0.08, true, .x = as$(u32)(message.len), .y = locals->line++)
             );
-            resume_(&locals->interactive_ctx.type_realistic);
+            resume_(& locals->interactive_ctx.type_realistic);
             exec_runLoop(false);
             await_(&locals->interactive_ctx.type_realistic);
         }

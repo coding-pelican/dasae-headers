@@ -119,6 +119,7 @@ $extern fn_((R__at(R, usize))(usize));
 #define comp_expand__atR R_at
 #endif
 
+#if on_analysis_active_only || on_comptime
 fn_((R_Bound_begin(R_Bound bound, usize point))(usize)) { return point + (1 - as$(usize)(bound)); /* bound == R_Bound_incl ? point : point + 1 */ };
 fn_((R_Bound_end(R_Bound bound, usize point))(usize)) { return point + as$(usize)(bound); /* bound == R_Bound_excl ? point : point + 1 */ };
 
@@ -169,6 +170,7 @@ fn_((R_suffix(R self, usize begin))(R)) {
 
 fn_((R_eq(R lhs, R rhs))(bool)) { return lhs.begin == rhs.begin && lhs.end == rhs.end; };
 fn_((R_ne(R lhs, R rhs))(bool)) { return !R_eq(lhs, rhs); };
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

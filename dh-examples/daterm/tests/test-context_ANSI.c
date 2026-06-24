@@ -677,8 +677,8 @@ TEST_fn_("daterm-context/ANSI: POSIX processed output keeps output postprocessin
 #if !plat_is_posix
     try_(TEST_skipMsg(u8_l("POSIX termios is not available on this platform")));
 #else
-    let input = io_getStdIn();
-    if (!try_(fs_File_isTty(input))) {
+    let input = io_handleStdIn();
+    if (!try_(fs_File_isTTY(input))) {
         try_(TEST_skipMsg(u8_l("stdin is not a TTY")));
     }
 
@@ -699,8 +699,8 @@ TEST_fn_("daterm-context/ANSI: POSIX raw output disables output postprocessing" 
 #if !plat_is_posix
     try_(TEST_skipMsg(u8_l("POSIX termios is not available on this platform")));
 #else
-    let input = io_getStdIn();
-    if (!try_(fs_File_isTty(input))) {
+    let input = io_handleStdIn();
+    if (!try_(fs_File_isTTY(input))) {
         try_(TEST_skipMsg(u8_l("stdin is not a TTY")));
     }
 

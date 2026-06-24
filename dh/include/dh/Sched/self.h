@@ -119,6 +119,7 @@ $extern fn_((Sched_VTbl_failingIdle(P$raw ctx))(Sched_Cancelable$void));
 
 /*========== Macro and Definitions ==========================================*/
 
+#if on_analysis_active_only || on_comptime
 fn_((Sched_isValid(Sched self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
@@ -144,6 +145,7 @@ fn_((Sched_assertValid(P$raw ctx, P_const$$(Sched_VTbl) vtbl))(void)) {
 fn_((Sched_ensureValid(Sched self))(Sched)) {
     return Sched_assertValid(self.ctx, self.vtbl), self;
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #define __stmt__T_use_Sched_async$(_T...) /* clang-format off */ \
     $attr($inline_always) \

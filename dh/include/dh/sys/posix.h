@@ -18,12 +18,19 @@ typedef pp_if_(plat_is_windows)(
     pp_else_(i32)) sys_posix_fd_t;
 typedef i32 sys_posix_mode_t;
 
+#define sys_posix_STDIN_FILENO comp_const__sys_posix_STDIN_FILENO
+#define sys_posix_STDOUT_FILENO comp_const__sys_posix_STDOUT_FILENO
+#define sys_posix_STDERR_FILENO comp_const__sys_posix_STDERR_FILENO
+
 typedef pp_if_(plat_is_linux)(
     pp_then_(sys_call_linux_timespec),
     pp_else_(pp_if_(plat_is_darwin)(
         pp_then_(sys_libc_darwin_timespec),
         pp_else_(Void)
     ))) sys_posix_timespec;
+
+#define sys_posix_CLOCK_REALTIME comp_const__sys_posix_CLOCK_REALTIME
+#define sys_posix_CLOCK_MONOTONIC comp_const__sys_posix_CLOCK_MONOTONIC
 
 typedef pp_if_(plat_is_linux)(
     pp_then_(sys_call_linux_CLOCK),
@@ -32,12 +39,8 @@ typedef pp_if_(plat_is_linux)(
         pp_else_(Void)
     ))) sys_posix_clockid_t;
 
-#define sys_posix_STDIN_FILENO comp_const__sys_posix_STDIN_FILENO
-#define sys_posix_STDOUT_FILENO comp_const__sys_posix_STDOUT_FILENO
-#define sys_posix_STDERR_FILENO comp_const__sys_posix_STDERR_FILENO
-
-#define sys_posix_CLOCK_REALTIME comp_const__sys_posix_CLOCK_REALTIME
-#define sys_posix_CLOCK_MONOTONIC comp_const__sys_posix_CLOCK_MONOTONIC
+$attr($inline_always $must_check)
+$static fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -60,8 +63,8 @@ typedef pp_if_(plat_is_linux)(
     )) \
 )
 
-$attr($inline_always $must_check)
-$static fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32)) {
+#if on_analysis_active_only || on_comptime
+fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32)) {
     return pp_if_(plat_is_linux)(
         pp_then_(as$(i32)(sys_call_linux_clock_gettime(as$(sys_call_linux_word)(clock_id), ts))),
         pp_else_(pp_if_(plat_is_darwin)(
@@ -69,6 +72,7 @@ $static fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_tim
             pp_else_($ignore_void clock_id, $ignore_void ts, -1)
         )));
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

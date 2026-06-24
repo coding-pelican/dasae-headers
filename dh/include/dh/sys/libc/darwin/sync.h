@@ -15,17 +15,20 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include "cfg.h"
 #include "dh/prl.h"
 
-#if plat_is_darwin
+/*========== Macros and Declarations ========================================*/
+
 typedef struct sys_libc_darwin_unfair_lock {
-    u32 _os_unfair_lock_opaque;
+    var_(os_unfair_lock_opaque_, u32);
 } sys_libc_darwin_unfair_lock;
 typedef sys_libc_darwin_unfair_lock* sys_libc_darwin_unfair_lock_t;
 
 #define sys_libc_darwin_UNFAIR_LOCK_INIT \
-    (sys_libc_darwin_unfair_lock){ ._os_unfair_lock_opaque = 0 }
+    __val__sys_libc_darwin_UNFAIR_LOCK_INIT
 
 typedef enum sys_libc_darwin_errno {
     sys_libc_darwin_EINTR = 4,
@@ -55,9 +58,7 @@ $static let sys_libc_darwin_ULF_WAIT_ADAPTIVE_SPIN = u32_(0x00040000);
 $static let sys_libc_darwin_ULF_NO_ERRNO = u32_(0x01000000);
 
 $attr($inline_always $must_check)
-$static fn_((sys_libc_darwin_UL_make(sys_libc_darwin_UL_op op, u32 flags))(sys_libc_darwin_UL)) {
-    return as$(sys_libc_darwin_UL)(op) | flags;
-};
+$static fn_((sys_libc_darwin_UL_make(sys_libc_darwin_UL_op op, u32 flags))(sys_libc_darwin_UL));
 
 $extern fn_((sys_libc_darwin_unfair_lock_lock(sys_libc_darwin_unfair_lock_t lock))(void));
 $extern fn_((sys_libc_darwin_unfair_lock_trylock(sys_libc_darwin_unfair_lock_t lock))(bool));
@@ -66,11 +67,19 @@ $extern fn_((sys_libc_darwin_unfair_lock_assert_owner(sys_libc_darwin_unfair_loc
 $extern fn_((sys_libc_darwin_unfair_lock_assert_not_owner(sys_libc_darwin_unfair_lock_t lock))(void));
 
 $extern fn_((sys_libc_darwin_ulock_wait(sys_libc_darwin_UL operation, P$raw addr, u64 value, u32 timeout_us))(i32));
-#if sys_libc_darwin_has_ulock_wait2
 $extern fn_((sys_libc_darwin_ulock_wait2(sys_libc_darwin_UL operation, P$raw addr, u64 value, u64 timeout_ns, u64 value2))(i32));
-#endif /* sys_libc_darwin_has_ulock_wait2 */
 $extern fn_((sys_libc_darwin_ulock_wake(sys_libc_darwin_UL operation, P$raw addr, u64 wake_value))(i32));
-#endif /* plat_is_darwin */
+
+/*========== Macros and Definitions =========================================*/
+
+#define __val__sys_libc_darwin_UNFAIR_LOCK_INIT \
+    l$((sys_libc_darwin_unfair_lock){ .os_unfair_lock_opaque_ = 0 })
+
+#if on_analysis_active_only || on_comptime
+fn_((sys_libc_darwin_UL_make(sys_libc_darwin_UL_op op, u32 flags))(sys_libc_darwin_UL)) {
+    return as$(sys_libc_darwin_UL)(op) | flags;
+};
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

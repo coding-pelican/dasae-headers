@@ -33,7 +33,7 @@ $static fn_((fs_direct__File_read(P$raw ctx, fs_File file, S$u8 buf))(E$usize));
 $static fn_((fs_direct__File_write(P$raw ctx, fs_File file, S_const$u8 bytes))(E$usize));
 $static fn_((fs_direct__File_stat(P$raw ctx, fs_File file))(fs_E$fs_File_Stat));
 $static fn_((fs_direct__File_sync(P$raw ctx, fs_File file))(E$void));
-$static fn_((fs_direct__File_isTty(P$raw ctx, fs_File file))(E$bool));
+$static fn_((fs_direct__File_isTTY(P$raw ctx, fs_File file))(E$bool));
 $static fn_((fs_direct__File_setLen(P$raw ctx, fs_File file, u64 new_len))(E$void));
 $static fn_((fs_direct__File_setPerms(P$raw ctx, fs_File file, fs_File_Mode perms))(E$void));
 $static fn_((fs_direct__File_readPos(P$raw ctx, fs_File file, S$u8 buf, u64 offset))(E$usize));
@@ -120,7 +120,7 @@ let_(fs_VTbl_noop, fs_Self_VTbl) = {
         .writeFn = fs_VTbl_File_failingWrite,
         .statFn = fs_VTbl_File_failingStat,
         .syncFn = fs_VTbl_File_failingSync,
-        .isTtyFn = fs_VTbl_File_failingIsTty,
+        .isTTYFn = fs_VTbl_File_failingIsTTY,
         .setLenFn = fs_VTbl_File_failingSetLen,
         .setPermsFn = fs_VTbl_File_failingSetPerms,
         .readPosFn = fs_VTbl_File_failingReadPos,
@@ -177,7 +177,7 @@ let_(fs_VTbl_failing, fs_Self_VTbl) = {
         .writeFn = fs_VTbl_File_failingWrite,
         .statFn = fs_VTbl_File_failingStat,
         .syncFn = fs_VTbl_File_failingSync,
-        .isTtyFn = fs_VTbl_File_failingIsTty,
+        .isTTYFn = fs_VTbl_File_failingIsTTY,
         .setLenFn = fs_VTbl_File_failingSetLen,
         .setPermsFn = fs_VTbl_File_failingSetPerms,
         .readPosFn = fs_VTbl_File_failingReadPos,
@@ -271,7 +271,7 @@ fn_((fs_direct(void))(fs_direct_E$fs_Self) $scope) {
                     .writeFn = fs_direct__File_write,
                     .statFn = fs_direct__File_stat,
                     .syncFn = fs_direct__File_sync,
-                    .isTtyFn = fs_direct__File_isTty,
+                    .isTTYFn = fs_direct__File_isTTY,
                     .setLenFn = fs_direct__File_setLen,
                     .setPermsFn = fs_direct__File_setPerms,
                     .readPosFn = fs_direct__File_readPos,
@@ -341,7 +341,7 @@ fn_((fs_evented(exec_Coop* coop))(fs_Self)) {
             .writeFn = fs_evented__File_write,
             .statFn = fs_direct__File_stat,
             .syncFn = fs_direct__File_sync,
-            .isTtyFn = fs_direct__File_isTty,
+            .isTTYFn = fs_direct__File_isTTY,
             .setLenFn = fs_direct__File_setLen,
             .setPermsFn = fs_direct__File_setPerms,
             .readPosFn = fs_evented__File_readPos,
@@ -543,7 +543,7 @@ fn_((fs_VTbl_File_failingSync(P$raw ctx, fs_File file))(E$void) $scope) {
     let_ignore = file;
     return_err(E_cause$fs_direct_Unsupported());
 } $unscoped(fn);
-fn_((fs_VTbl_File_failingIsTty(P$raw ctx, fs_File file))(E$bool) $scope) {
+fn_((fs_VTbl_File_failingIsTTY(P$raw ctx, fs_File file))(E$bool) $scope) {
     let_ignore = ctx;
     let_ignore = file;
     return_err(E_cause$fs_direct_Unsupported());
@@ -1336,7 +1336,7 @@ fn_((fs_direct__File_sync(P$raw ctx, fs_File file))(E$void) $scope) {
 #endif
 } $unscoped(fn);
 
-fn_((fs_direct__File_isTty(P$raw ctx, fs_File file))(E$bool) $scope) {
+fn_((fs_direct__File_isTTY(P$raw ctx, fs_File file))(E$bool) $scope) {
     let_ignore = ctx;
 #if plat_is_posix
     return_ok(isatty(file.handle) != 0);

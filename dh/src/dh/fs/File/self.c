@@ -203,7 +203,7 @@ fn_((fs_File_sync(fs_File self))(E$void) $scope) {
     return_ok({});
 } $unscoped(fn);
 
-fn_((fs_File_isTty(fs_File self))(E$bool) $scope) {
+fn_((fs_File_isTTY(fs_File self))(E$bool) $scope) {
 #if plat_is_windows
     return_ok(GetFileType(self.handle) == FILE_TYPE_CHAR);
 #elif plat_is_linux

@@ -169,7 +169,6 @@ pp_if_(pp_not(comp_start_files_linked))((
 
 /*========== Macros =========================================================*/
 
-
 #define start_emitEntry(_Entry...) /* clang-format off */ \
     pp_switch_((plat_type)( \
         pp_case_((plat_type_windows)(start__win32_emitEntry)), \

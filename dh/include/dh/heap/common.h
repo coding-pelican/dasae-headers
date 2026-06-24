@@ -51,6 +51,7 @@ $static fn_((heap_alignCommit(usize size))(usize));
 
 /*========== Macros and Definitions =========================================*/
 
+#if on_analysis_active_only || on_comptime
 fn_((heap_Geom_isValid(heap_Geom self))(bool)) {
     return mem_isValidAlign(self.page_size)
         && mem_isValidAlign(self.reserve_align)
@@ -126,6 +127,8 @@ fn_((heap_alignReserve(usize size))(usize)) {
 fn_((heap_alignCommit(usize size))(usize)) {
     return heap_Geom_alignCommitWith(heap_Geom_default(), size);
 };
+#endif /* on_analysis_active_only || on_comptime */
+
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */

@@ -42,17 +42,17 @@ T_alias$((proc_StdIO)(struct proc_StdIO {
     var_(file, fs_File);
 }));
 
-T_alias$((proc_Term_Tag)(enum_((proc_Term_Tag $fits($packed))(
-    proc_Term_Tag_exited = 0,
-    proc_Term_Tag_signal,
-    proc_Term_Tag_stopped,
-    proc_Term_Tag_unknown,
+T_alias$((proc_Ter_Tag)(enum_((proc_Ter_Tag $fits($packed))(
+    proc_Ter_Tag_exited = 0,
+    proc_Ter_Tag_signal,
+    proc_Ter_Tag_stopped,
+    proc_Ter_Tag_unknown,
 ))));
-T_alias$((proc_Term)(struct proc_Term {
-    var_(tag, proc_Term_Tag);
+T_alias$((proc_Ter)(struct proc_Ter {
+    var_(tag, proc_Ter_Tag);
     var_(code, u32);
 }));
-T_use_E$(proc_Term);
+T_use_E$(proc_Ter);
 
 T_alias$((proc_Cmd)(struct proc_Cmd {
     var_(argv, S$S_const$u8);

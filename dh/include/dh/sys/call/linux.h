@@ -5,7 +5,7 @@
  * @file    linux.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-25 (date of creation)
- * @updated 2026-05-25 (date of last update)
+ * @updated 2026-06-24 (date of last update)
  * @ingroup dasae-headers(dh)/sys/call
  * @prefix  sys_call_linux
  */
@@ -20,17 +20,25 @@ extern "C" {
 
 #include "dh/prl.h"
 
-/*========== Types and Declarations =========================================*/
-
-/* NOLINTBEGIN(hicpp-no-assembler) */
+/*========== Macros and Declarations ========================================*/
 
 typedef isize sys_call_linux_word;
 typedef u32 sys_call_linux_mode_t;
+
+/*---------- <time.h> -------------------------------------------------------*/
 
 typedef struct sys_call_linux_timespec {
     var_(tv_sec, pp_if_(arch_is_riscv32)(pp_then_(i64), pp_else_(sys_call_linux_word)));
     var_(tv_nsec, pp_if_(arch_is_riscv32)(pp_then_(i64), pp_else_(sys_call_linux_word)));
 } sys_call_linux_timespec;
+
+typedef enum sys_call_linux_CLOCK {
+    sys_call_linux_CLOCK_REALTIME = 0,
+    sys_call_linux_CLOCK_MONOTONIC = 1,
+} sys_call_linux_CLOCK;
+typedef sys_call_linux_CLOCK sys_call_linux_clockid_t;
+
+/*---------- <sys/stat.h> ---------------------------------------------------*/
 
 typedef struct sys_call_linux_statx_timestamp {
     i64 tv_sec;
@@ -62,39 +70,6 @@ typedef struct sys_call_linux_statx {
     u64 __spare2[14];
 } sys_call_linux_statx;
 
-typedef enum sys_call_linux_Errno {
-    sys_call_linux_EINTR = 4,
-    sys_call_linux_ETIMEDOUT = 110,
-} sys_call_linux_Errno;
-
-typedef enum sys_call_linux_CLOCK {
-    sys_call_linux_CLOCK_REALTIME = 0,
-    sys_call_linux_CLOCK_MONOTONIC = 1,
-} sys_call_linux_CLOCK;
-
-typedef enum sys_call_linux_AT {
-    sys_call_linux_AT_FDCWD = -100,
-    sys_call_linux_AT_EMPTY_PATH = 0x1000,
-    sys_call_linux_AT_REMOVEDIR = 0x200,
-} sys_call_linux_AT;
-
-typedef enum sys_call_linux_O {
-    sys_call_linux_O_RDONLY = 0,
-    sys_call_linux_O_WRONLY = 1,
-    sys_call_linux_O_RDWR = 2,
-    sys_call_linux_O_CREAT = 00000100,
-    sys_call_linux_O_EXCL = 00000200,
-    sys_call_linux_O_TRUNC = 00001000,
-    sys_call_linux_O_NONBLOCK = 00004000,
-    sys_call_linux_O_DIRECTORY = 000200000,
-} sys_call_linux_O;
-
-typedef enum sys_call_linux_SEEK {
-    sys_call_linux_SEEK_SET = 0,
-    sys_call_linux_SEEK_CUR = 1,
-    sys_call_linux_SEEK_END = 2,
-} sys_call_linux_SEEK;
-
 typedef enum sys_call_linux_S_IF {
     sys_call_linux_S_IFMT = 0170000,
     sys_call_linux_S_IFSOCK = 0140000,
@@ -109,6 +84,43 @@ typedef enum sys_call_linux_S_IF {
 typedef enum sys_call_linux_STATX {
     sys_call_linux_STATX_BASIC_STATS = 0x000007ff,
 } sys_call_linux_STATX;
+
+/*---------- <errno.h> ------------------------------------------------------*/
+
+typedef enum sys_call_linux_Errno {
+    sys_call_linux_EINTR = 4,
+    sys_call_linux_ETIMEDOUT = 110,
+} sys_call_linux_Errno;
+
+/*---------- <fcntl.h> ------------------------------------------------------*/
+
+typedef enum sys_call_linux_AT {
+    sys_call_linux_AT_FDCWD = -100,
+    sys_call_linux_AT_EMPTY_PATH = 0x1000,
+    sys_call_linux_AT_REMOVEDIR = 0x200,
+} sys_call_linux_AT;
+
+typedef enum sys_call_linux_O {
+    sys_call_linux_O_RDONLY = 0,
+    sys_call_linux_O_WRONLY = 1,
+    sys_call_linux_O_RDWR = 2,
+    sys_call_linux_O_CREAT = 00000100,
+    sys_call_linux_O_EXCL = 00000200,
+    sys_call_linux_O_NOCTTY = 00000400,
+    sys_call_linux_O_TRUNC = 00001000,
+    sys_call_linux_O_NONBLOCK = 00004000,
+    sys_call_linux_O_DIRECTORY = 000200000,
+} sys_call_linux_O;
+
+/*---------- <unistd.h> -----------------------------------------------------*/
+
+typedef enum sys_call_linux_SEEK {
+    sys_call_linux_SEEK_SET = 0,
+    sys_call_linux_SEEK_CUR = 1,
+    sys_call_linux_SEEK_END = 2,
+} sys_call_linux_SEEK;
+
+/*---------- <sys/mman.h> ---------------------------------------------------*/
 
 typedef enum sys_call_linux_PROT {
     sys_call_linux_PROT_NONE = 0,
@@ -129,15 +141,78 @@ typedef enum sys_call_linux_MS {
     sys_call_linux_MS_SYNC = 4,
 } sys_call_linux_MS;
 
+typedef enum sys_call_linux_MREMAP {
+    sys_call_linux_MREMAP_MAYMOVE = 1,
+} sys_call_linux_MREMAP;
+
+/*---------- <termios.h> ----------------------------------------------------*/
+
+typedef u32 sys_call_linux_tcflag_t;
+typedef u8 sys_call_linux_cc_t;
+
+typedef struct sys_call_linux_termios {
+    var_(c_iflag, sys_call_linux_tcflag_t);
+    var_(c_oflag, sys_call_linux_tcflag_t);
+    var_(c_cflag, sys_call_linux_tcflag_t);
+    var_(c_lflag, sys_call_linux_tcflag_t);
+    var_(c_line, sys_call_linux_cc_t);
+    var_(c_cc, A$$(19, sys_call_linux_cc_t));
+} sys_call_linux_termios;
+
+typedef enum sys_call_linux_CC {
+    sys_call_linux_VTIME = 5,
+    sys_call_linux_VMIN = 6,
+} sys_call_linux_CC;
+
+typedef enum sys_call_linux_IFLAG {
+    sys_call_linux_BRKINT = 0000002,
+    sys_call_linux_INPCK = 0000020,
+    sys_call_linux_ISTRIP = 0000040,
+    sys_call_linux_ICRNL = 0000400,
+    sys_call_linux_IXON = 0002000,
+    sys_call_linux_IXOFF = 0010000,
+} sys_call_linux_IFLAG;
+
+typedef enum sys_call_linux_OFLAG {
+    sys_call_linux_OPOST = 0000001,
+} sys_call_linux_OFLAG;
+
+typedef enum sys_call_linux_LFLAG {
+    sys_call_linux_ISIG = 0000001,
+    sys_call_linux_ICANON = 0000002,
+    sys_call_linux_ECHO = 0000010,
+    sys_call_linux_IEXTEN = 0100000,
+} sys_call_linux_LFLAG;
+
+/*---------- <sys/ioctl.h> --------------------------------------------------*/
+
+typedef struct sys_call_linux_winsize {
+    var_(ws_row, u16);
+    var_(ws_col, u16);
+    var_(ws_xpixel, u16);
+    var_(ws_ypixel, u16);
+} sys_call_linux_winsize;
+
 typedef enum sys_call_linux_IOCTL {
     sys_call_linux_TCGETS = 0x5401,
+    sys_call_linux_TCSETS = 0x5402,
+    sys_call_linux_TIOCSCTTY = 0x540e,
+    sys_call_linux_TIOCGWINSZ = 0x5413,
+    sys_call_linux_TIOCSWINSZ = 0x5414,
+    sys_call_linux_FIONREAD = 0x541b,
+    sys_call_linux_TIOCGPTN = 0x80045430,
+    sys_call_linux_TIOCSPTLCK = 0x40045431,
 } sys_call_linux_IOCTL;
+
+/*---------- <linux/futex.h> ------------------------------------------------*/
 
 typedef enum sys_call_linux_FUTEX {
     sys_call_linux_FUTEX_WAIT = 0,
     sys_call_linux_FUTEX_WAKE = 1,
     sys_call_linux_FUTEX_PRIVATE_FLAG = 128,
 } sys_call_linux_FUTEX;
+
+/*---------- <sched.h> ------------------------------------------------------*/
 
 typedef enum sys_call_linux_CLONE {
     sys_call_linux_CLONE_VM = 0x00000100,
@@ -151,9 +226,7 @@ typedef enum sys_call_linux_CLONE {
     sys_call_linux_CLONE_CHILD_CLEARTID = 0x00200000,
 } sys_call_linux_CLONE;
 
-typedef enum sys_call_linux_MREMAP {
-    sys_call_linux_MREMAP_MAYMOVE = 1,
-} sys_call_linux_MREMAP;
+/*---------- System Call ABI ------------------------------------------------*/
 
 typedef enum sys_call_linux_SYS {
     sys_call_linux_SYS_read = pp_switch_((arch_type)(
@@ -336,6 +409,69 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_riscv32)(407)),
         pp_default_(0)
     )),
+    sys_call_linux_SYS_clone = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(56)),
+        pp_case_((arch_type_x86)(120)),
+        pp_case_((arch_type_aarch64)(220)),
+        pp_case_((arch_type_arm)(120)),
+        pp_case_((arch_type_riscv64)(220)),
+        pp_case_((arch_type_riscv32)(220)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_setsid = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(112)),
+        pp_case_((arch_type_x86)(66)),
+        pp_case_((arch_type_aarch64)(157)),
+        pp_case_((arch_type_arm)(66)),
+        pp_case_((arch_type_riscv64)(157)),
+        pp_case_((arch_type_riscv32)(157)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_dup3 = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(292)),
+        pp_case_((arch_type_x86)(330)),
+        pp_case_((arch_type_aarch64)(24)),
+        pp_case_((arch_type_arm)(358)),
+        pp_case_((arch_type_riscv64)(24)),
+        pp_case_((arch_type_riscv32)(24)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_execve = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(59)),
+        pp_case_((arch_type_x86)(11)),
+        pp_case_((arch_type_aarch64)(221)),
+        pp_case_((arch_type_arm)(11)),
+        pp_case_((arch_type_riscv64)(221)),
+        pp_case_((arch_type_riscv32)(221)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_fchdir = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(81)),
+        pp_case_((arch_type_x86)(133)),
+        pp_case_((arch_type_aarch64)(50)),
+        pp_case_((arch_type_arm)(133)),
+        pp_case_((arch_type_riscv64)(50)),
+        pp_case_((arch_type_riscv32)(50)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_wait4 = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(61)),
+        pp_case_((arch_type_x86)(114)),
+        pp_case_((arch_type_aarch64)(260)),
+        pp_case_((arch_type_arm)(114)),
+        pp_case_((arch_type_riscv64)(260)),
+        pp_case_((arch_type_riscv32)(260)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_kill = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(62)),
+        pp_case_((arch_type_x86)(37)),
+        pp_case_((arch_type_aarch64)(129)),
+        pp_case_((arch_type_arm)(37)),
+        pp_case_((arch_type_riscv64)(129)),
+        pp_case_((arch_type_riscv32)(129)),
+        pp_default_(0)
+    )),
     sys_call_linux_SYS_exit = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(60)),
         pp_case_((arch_type_x86)(1)),
@@ -426,7 +562,146 @@ typedef enum sys_call_linux_SYS {
     )),
 } sys_call_linux_SYS;
 
-#define sys_call_linux_has_renameat pp_expand( \
+$attr($inline)
+$static fn_((sys_call_linux_syscall0(sys_call_linux_word n))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_syscall1(sys_call_linux_word n, sys_call_linux_word a1))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_syscall2(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_syscall3(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_syscall4(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3, sys_call_linux_word a4))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_syscall5(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3, sys_call_linux_word a4, sys_call_linux_word a5))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_syscall6(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3, sys_call_linux_word a4, sys_call_linux_word a5, sys_call_linux_word a6))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_syscall_isErr(sys_call_linux_word rc))(bool));
+$attr($inline)
+$static fn_((sys_call_linux_syscall_err(sys_call_linux_word rc))(sys_call_linux_word));
+
+/*---------- <unistd.h> -----------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_read(sys_call_linux_word fd, void* buf, usize len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_write(sys_call_linux_word fd, const void* buf, usize len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_close(sys_call_linux_word fd))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_lseek(sys_call_linux_word fd, i64 offset, sys_call_linux_word whence))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_pread(sys_call_linux_word fd, void* buf, usize len, u64 offset))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_pwrite(sys_call_linux_word fd, const void* buf, usize len, u64 offset))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_fsync(sys_call_linux_word fd))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_ftruncate(sys_call_linux_word fd, u64 len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_fchdir(sys_call_linux_word fd))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_dup3(sys_call_linux_word old_fd, sys_call_linux_word new_fd, sys_call_linux_word flags))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_execve(const char* path, char* const* argv, char* const* envp))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_setsid(void))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_fork(void))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_unlinkat(sys_call_linux_word dirfd, const char* path, sys_call_linux_word flags))(sys_call_linux_word));
+$attr($no_return $inline)
+$static fn_((sys_call_linux_exit(i32 status))(void));
+$attr($no_return $inline)
+$static fn_((sys_call_linux_exit_group(i32 status))(void));
+$attr($inline)
+$static fn_((sys_call_linux_gettid(void))(sys_call_linux_word));
+
+/*---------- <fcntl.h> ------------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_openat(sys_call_linux_word dirfd, const char* path, sys_call_linux_word flags, sys_call_linux_word mode))(sys_call_linux_word));
+
+/*---------- <sys/stat.h> ---------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_statx_get(sys_call_linux_word dirfd, const char* path, sys_call_linux_word flags, sys_call_linux_word mask, sys_call_linux_statx* stat))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_fchmod(sys_call_linux_word fd, sys_call_linux_mode_t mode))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_mkdirat(sys_call_linux_word dirfd, const char* path, sys_call_linux_mode_t mode))(sys_call_linux_word));
+
+/*---------- <sys/ioctl.h> --------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_ioctl(sys_call_linux_word fd, sys_call_linux_word request, void* arg))(sys_call_linux_word));
+
+/*---------- <sys/mman.h> ---------------------------------------------------*/
+
+#define sys_call_linux_mmap_uses_mmap2 __comp_bool__sys_call_linux_mmap_uses_mmap2
+#define sys_call_linux_MMAP2_UNIT __comp_uint__sys_call_linux_MMAP2_UNIT
+
+$attr($inline)
+$static fn_((sys_call_linux_mmap(void* addr, usize len, sys_call_linux_word prot, sys_call_linux_word flags, sys_call_linux_word fd, u64 offset))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_munmap(void* addr, usize len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_mprotect(void* addr, usize len, sys_call_linux_word prot))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_msync(void* addr, usize len, sys_call_linux_word flags))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_mremap(void* old_addr, usize old_size, usize new_size, sys_call_linux_word flags, void* new_addr))(sys_call_linux_word));
+
+/*---------- <time.h> -------------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_clock_gettime(sys_call_linux_word clock_id, void* ts))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_nanosleep(void* req, void* rem))(sys_call_linux_word));
+
+/*---------- <sched.h> ------------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_sched_yield(void))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_sched_getaffinity(sys_call_linux_word pid, usize size, void* set))(sys_call_linux_word));
+
+/*---------- <sys/wait.h> ---------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_wait4(sys_call_linux_word pid, int* status, sys_call_linux_word options, void* usage))(sys_call_linux_word));
+
+/*---------- <signal.h> -----------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_kill(sys_call_linux_word pid, sys_call_linux_word signal))(sys_call_linux_word));
+
+/*---------- <linux/futex.h> ------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_futex(void* addr, sys_call_linux_word op, sys_call_linux_word value, void* timeout, void* addr2, sys_call_linux_word value3))(sys_call_linux_word));
+
+/*---------- <stdio.h> ------------------------------------------------------*/
+
+#define sys_call_linux_has_renameat __comp_bool__sys_call_linux_has_renameat
+
+$attr($inline)
+$static fn_((sys_call_linux_renameat(sys_call_linux_word old_dirfd, const char* old_path, sys_call_linux_word new_dirfd, const char* new_path))(sys_call_linux_word));
+
+/*========== Macros and Definitions =========================================*/
+
+#define __comp_bool__sys_call_linux_mmap_uses_mmap2 pp_expand( \
+    pp_switch_ pp_begin(arch_type)( \
+        pp_case_((arch_type_x86)(pp_true)), \
+        pp_case_((arch_type_arm)(pp_true)), \
+        pp_case_((arch_type_riscv32)(pp_true)), \
+        pp_default_(pp_false) \
+    ) pp_end \
+)
+#define __comp_uint__sys_call_linux_MMAP2_UNIT u64_(4096)
+
+#define __comp_bool__sys_call_linux_has_renameat pp_expand( \
     pp_switch_ pp_begin(arch_type)( \
         pp_case_((arch_type_x86_64)(pp_true)), \
         pp_case_((arch_type_x86)(pp_true)), \
@@ -435,18 +710,10 @@ typedef enum sys_call_linux_SYS {
         pp_default_(pp_false) \
     ) pp_end \
 )
-#define sys_call_linux_mmap_uses_mmap2 pp_expand( \
-    pp_switch_ pp_begin(arch_type)( \
-        pp_case_((arch_type_x86)(pp_true)), \
-        pp_case_((arch_type_arm)(pp_true)), \
-        pp_case_((arch_type_riscv32)(pp_true)), \
-        pp_default_(pp_false) \
-    ) pp_end \
-)
-#define sys_call_linux_MMAP2_UNIT u64_(4096)
 
-$attr($inline_always)
-$static fn_((sys_call_linux_syscall0(sys_call_linux_word n))(sys_call_linux_word)) {
+#if on_analysis_active_only || on_comptime
+/* NOLINTBEGIN(hicpp-no-assembler) */
+fn_((sys_call_linux_syscall0(sys_call_linux_word n))(sys_call_linux_word)) {
     pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
             asm_var_reg(rax, sys_call_linux_word) = n;
@@ -484,13 +751,12 @@ $static fn_((sys_call_linux_syscall0(sys_call_linux_word n))(sys_call_linux_word
         })),
         pp_default_({
             let_ignore = n;
-            claim_unreachable;
+            claim_unreachable_msg(nameOf(sys_call_linux_syscall0) "is not supported on this platform");
         })
     ));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_syscall1(sys_call_linux_word n, sys_call_linux_word a1))(sys_call_linux_word)) {
+fn_((sys_call_linux_syscall1(sys_call_linux_word n, sys_call_linux_word a1))(sys_call_linux_word)) {
     pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
             asm_var_reg(rax, sys_call_linux_word) = n;
@@ -531,13 +797,12 @@ $static fn_((sys_call_linux_syscall1(sys_call_linux_word n, sys_call_linux_word 
         pp_default_({
             let_ignore = n;
             let_ignore = a1;
-            claim_unreachable;
+            claim_unreachable_msg(nameOf(sys_call_linux_syscall1) "is not supported on this platform");
         })
     ));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_syscall2(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2))(sys_call_linux_word)) {
+fn_((sys_call_linux_syscall2(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2))(sys_call_linux_word)) {
     pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
             asm_var_reg(rax, sys_call_linux_word) = n;
@@ -585,13 +850,12 @@ $static fn_((sys_call_linux_syscall2(sys_call_linux_word n, sys_call_linux_word 
             let_ignore = n;
             let_ignore = a1;
             let_ignore = a2;
-            claim_unreachable;
+            claim_unreachable_msg(nameOf(sys_call_linux_syscall2) "is not supported on this platform");
         })
     ));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_syscall3(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3))(sys_call_linux_word)) {
+fn_((sys_call_linux_syscall3(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3))(sys_call_linux_word)) {
     pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
             asm_var_reg(rax, sys_call_linux_word) = n;
@@ -646,13 +910,12 @@ $static fn_((sys_call_linux_syscall3(sys_call_linux_word n, sys_call_linux_word 
             let_ignore = a1;
             let_ignore = a2;
             let_ignore = a3;
-            claim_unreachable;
+            claim_unreachable_msg(nameOf(sys_call_linux_syscall3) "is not supported on this platform");
         })
     ));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_syscall4(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3, sys_call_linux_word a4))(sys_call_linux_word)) {
+fn_((sys_call_linux_syscall4(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3, sys_call_linux_word a4))(sys_call_linux_word)) {
     pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
             asm_var_reg(rax, sys_call_linux_word) = n;
@@ -714,13 +977,12 @@ $static fn_((sys_call_linux_syscall4(sys_call_linux_word n, sys_call_linux_word 
             let_ignore = a2;
             let_ignore = a3;
             let_ignore = a4;
-            claim_unreachable;
+            claim_unreachable_msg(nameOf(sys_call_linux_syscall4) "is not supported on this platform");
         })
     ));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_syscall5(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3, sys_call_linux_word a4, sys_call_linux_word a5))(sys_call_linux_word)) {
+fn_((sys_call_linux_syscall5(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3, sys_call_linux_word a4, sys_call_linux_word a5))(sys_call_linux_word)) {
     pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
             asm_var_reg(rax, sys_call_linux_word) = n;
@@ -789,13 +1051,12 @@ $static fn_((sys_call_linux_syscall5(sys_call_linux_word n, sys_call_linux_word 
             let_ignore = a3;
             let_ignore = a4;
             let_ignore = a5;
-            claim_unreachable;
+            claim_unreachable_msg(nameOf(sys_call_linux_syscall5) "is not supported on this platform");
         })
     ));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_syscall6(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3, sys_call_linux_word a4, sys_call_linux_word a5, sys_call_linux_word a6))(sys_call_linux_word)) {
+fn_((sys_call_linux_syscall6(sys_call_linux_word n, sys_call_linux_word a1, sys_call_linux_word a2, sys_call_linux_word a3, sys_call_linux_word a4, sys_call_linux_word a5, sys_call_linux_word a6))(sys_call_linux_word)) {
     pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)({
             asm_var_reg(rax, sys_call_linux_word) = n;
@@ -882,23 +1143,22 @@ $static fn_((sys_call_linux_syscall6(sys_call_linux_word n, sys_call_linux_word 
             let_ignore = a4;
             let_ignore = a5;
             let_ignore = a6;
-            claim_unreachable;
+            claim_unreachable_msg(nameOf(sys_call_linux_syscall6) "is not supported on this platform");
         })
     ));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_syscall_isErr(sys_call_linux_word rc))(bool)) {
+fn_((sys_call_linux_syscall_isErr(sys_call_linux_word rc))(bool)) {
     return rc < 0 && -4095 <= rc;
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_syscall_err(sys_call_linux_word rc))(sys_call_linux_word)) {
+fn_((sys_call_linux_syscall_err(sys_call_linux_word rc))(sys_call_linux_word)) {
     return -rc;
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_read(sys_call_linux_word fd, void* buf, usize len))(sys_call_linux_word)) {
+/*---------- <unistd.h> -----------------------------------------------------*/
+
+fn_((sys_call_linux_read(sys_call_linux_word fd, void* buf, usize len))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(
         sys_call_linux_SYS_read,
         fd,
@@ -907,8 +1167,7 @@ $static fn_((sys_call_linux_read(sys_call_linux_word fd, void* buf, usize len))(
     );
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_write(sys_call_linux_word fd, const void* buf, usize len))(sys_call_linux_word)) {
+fn_((sys_call_linux_write(sys_call_linux_word fd, const void* buf, usize len))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(
         sys_call_linux_SYS_write,
         fd,
@@ -917,13 +1176,13 @@ $static fn_((sys_call_linux_write(sys_call_linux_word fd, const void* buf, usize
     );
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_close(sys_call_linux_word fd))(sys_call_linux_word)) {
+fn_((sys_call_linux_close(sys_call_linux_word fd))(sys_call_linux_word)) {
     return sys_call_linux_syscall1(sys_call_linux_SYS_close, fd);
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_openat(
+/*---------- <fcntl.h> ------------------------------------------------------*/
+
+fn_((sys_call_linux_openat(
     sys_call_linux_word dirfd,
     const char* path,
     sys_call_linux_word flags,
@@ -938,8 +1197,9 @@ $static fn_((sys_call_linux_openat(
     );
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_statx_get(
+/*---------- <sys/stat.h> ---------------------------------------------------*/
+
+fn_((sys_call_linux_statx_get(
     sys_call_linux_word dirfd,
     const char* path,
     sys_call_linux_word flags,
@@ -956,13 +1216,13 @@ $static fn_((sys_call_linux_statx_get(
     );
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_lseek(sys_call_linux_word fd, i64 offset, sys_call_linux_word whence))(sys_call_linux_word)) {
+/*---------- <unistd.h> -----------------------------------------------------*/
+
+fn_((sys_call_linux_lseek(sys_call_linux_word fd, i64 offset, sys_call_linux_word whence))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(sys_call_linux_SYS_lseek, fd, (sys_call_linux_word)(offset), whence);
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_pread(sys_call_linux_word fd, void* buf, usize len, u64 offset))(sys_call_linux_word)) {
+fn_((sys_call_linux_pread(sys_call_linux_word fd, void* buf, usize len, u64 offset))(sys_call_linux_word)) {
     return sys_call_linux_syscall4(
         sys_call_linux_SYS_pread64,
         fd,
@@ -972,8 +1232,7 @@ $static fn_((sys_call_linux_pread(sys_call_linux_word fd, void* buf, usize len, 
     );
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_pwrite(sys_call_linux_word fd, const void* buf, usize len, u64 offset))(sys_call_linux_word)) {
+fn_((sys_call_linux_pwrite(sys_call_linux_word fd, const void* buf, usize len, u64 offset))(sys_call_linux_word)) {
     return sys_call_linux_syscall4(
         sys_call_linux_SYS_pwrite64,
         fd,
@@ -983,38 +1242,60 @@ $static fn_((sys_call_linux_pwrite(sys_call_linux_word fd, const void* buf, usiz
     );
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_fsync(sys_call_linux_word fd))(sys_call_linux_word)) {
+fn_((sys_call_linux_fsync(sys_call_linux_word fd))(sys_call_linux_word)) {
     return sys_call_linux_syscall1(sys_call_linux_SYS_fsync, fd);
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_ftruncate(sys_call_linux_word fd, u64 len))(sys_call_linux_word)) {
+fn_((sys_call_linux_ftruncate(sys_call_linux_word fd, u64 len))(sys_call_linux_word)) {
     return sys_call_linux_syscall2(sys_call_linux_SYS_ftruncate, fd, (sys_call_linux_word)(len));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_fchmod(sys_call_linux_word fd, sys_call_linux_mode_t mode))(sys_call_linux_word)) {
+fn_((sys_call_linux_fchdir(sys_call_linux_word fd))(sys_call_linux_word)) {
+    return sys_call_linux_syscall1(sys_call_linux_SYS_fchdir, fd);
+};
+
+fn_((sys_call_linux_dup3(sys_call_linux_word old_fd, sys_call_linux_word new_fd, sys_call_linux_word flags))(sys_call_linux_word)) {
+    return sys_call_linux_syscall3(sys_call_linux_SYS_dup3, old_fd, new_fd, flags);
+};
+
+fn_((sys_call_linux_execve(const char* path, char* const* argv, char* const* envp))(sys_call_linux_word)) {
+    return sys_call_linux_syscall3(
+        sys_call_linux_SYS_execve,
+        (sys_call_linux_word)(path),
+        (sys_call_linux_word)(argv),
+        (sys_call_linux_word)(envp)
+    );
+};
+
+fn_((sys_call_linux_setsid(void))(sys_call_linux_word)) {
+    return sys_call_linux_syscall0(sys_call_linux_SYS_setsid);
+};
+
+/*---------- <sys/stat.h> ---------------------------------------------------*/
+
+fn_((sys_call_linux_fchmod(sys_call_linux_word fd, sys_call_linux_mode_t mode))(sys_call_linux_word)) {
     return sys_call_linux_syscall2(sys_call_linux_SYS_fchmod, fd, (sys_call_linux_word)(mode));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_mkdirat(sys_call_linux_word dirfd, const char* path, sys_call_linux_mode_t mode))(sys_call_linux_word)) {
+fn_((sys_call_linux_mkdirat(sys_call_linux_word dirfd, const char* path, sys_call_linux_mode_t mode))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(sys_call_linux_SYS_mkdirat, dirfd, (sys_call_linux_word)(path), (sys_call_linux_word)(mode));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_unlinkat(sys_call_linux_word dirfd, const char* path, sys_call_linux_word flags))(sys_call_linux_word)) {
+/*---------- <unistd.h> -----------------------------------------------------*/
+
+fn_((sys_call_linux_unlinkat(sys_call_linux_word dirfd, const char* path, sys_call_linux_word flags))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(sys_call_linux_SYS_unlinkat, dirfd, (sys_call_linux_word)(path), flags);
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_ioctl(sys_call_linux_word fd, sys_call_linux_word request, void* arg))(sys_call_linux_word)) {
+/*---------- <sys/ioctl.h> --------------------------------------------------*/
+
+fn_((sys_call_linux_ioctl(sys_call_linux_word fd, sys_call_linux_word request, void* arg))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(sys_call_linux_SYS_ioctl, fd, request, (sys_call_linux_word)(arg));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_mmap(
+/*---------- <sys/mman.h> ---------------------------------------------------*/
+
+fn_((sys_call_linux_mmap(
     void* addr,
     usize len,
     sys_call_linux_word prot,
@@ -1036,40 +1317,39 @@ $static fn_((sys_call_linux_mmap(
     );
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_munmap(void* addr, usize len))(sys_call_linux_word)) {
+fn_((sys_call_linux_munmap(void* addr, usize len))(sys_call_linux_word)) {
     return sys_call_linux_syscall2(sys_call_linux_SYS_munmap, (sys_call_linux_word)(addr), (sys_call_linux_word)(len));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_mprotect(void* addr, usize len, sys_call_linux_word prot))(sys_call_linux_word)) {
+fn_((sys_call_linux_mprotect(void* addr, usize len, sys_call_linux_word prot))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(sys_call_linux_SYS_mprotect, (sys_call_linux_word)(addr), (sys_call_linux_word)(len), prot);
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_msync(void* addr, usize len, sys_call_linux_word flags))(sys_call_linux_word)) {
+fn_((sys_call_linux_msync(void* addr, usize len, sys_call_linux_word flags))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(sys_call_linux_SYS_msync, (sys_call_linux_word)(addr), (sys_call_linux_word)(len), flags);
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_clock_gettime(sys_call_linux_word clock_id, void* ts))(sys_call_linux_word)) {
+/*---------- <time.h> -------------------------------------------------------*/
+
+fn_((sys_call_linux_clock_gettime(sys_call_linux_word clock_id, void* ts))(sys_call_linux_word)) {
     return sys_call_linux_syscall2(sys_call_linux_SYS_clock_gettime, clock_id, (sys_call_linux_word)(ts));
 };
 
-$attr($no_return $inline_always)
-$static fn_((sys_call_linux_exit(i32 status))(void)) {
+/*---------- <unistd.h> -----------------------------------------------------*/
+
+fn_((sys_call_linux_exit(i32 status))(void)) {
     let_ignore = sys_call_linux_syscall1(sys_call_linux_SYS_exit, as$(sys_call_linux_word)(status));
     claim_unreachable;
 };
 
-$attr($no_return $inline_always)
-$static fn_((sys_call_linux_exit_group(i32 status))(void)) {
+fn_((sys_call_linux_exit_group(i32 status))(void)) {
     let_ignore = sys_call_linux_syscall1(sys_call_linux_SYS_exit_group, as$(sys_call_linux_word)(status));
     claim_unreachable;
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_nanosleep(void* req, void* rem))(sys_call_linux_word)) {
+/*---------- <time.h> -------------------------------------------------------*/
+
+fn_((sys_call_linux_nanosleep(void* req, void* rem))(sys_call_linux_word)) {
     return pp_if_(arch_is_riscv32)(
         pp_then_(sys_call_linux_syscall4(
             sys_call_linux_SYS_clock_nanosleep_time64,
@@ -1085,18 +1365,13 @@ $static fn_((sys_call_linux_nanosleep(void* req, void* rem))(sys_call_linux_word
         )));
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_sched_yield(void))(sys_call_linux_word)) {
+/*---------- <sched.h> ------------------------------------------------------*/
+
+fn_((sys_call_linux_sched_yield(void))(sys_call_linux_word)) {
     return sys_call_linux_syscall0(sys_call_linux_SYS_sched_yield);
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_gettid(void))(sys_call_linux_word)) {
-    return sys_call_linux_syscall0(sys_call_linux_SYS_gettid);
-};
-
-$attr($inline_always)
-$static fn_((sys_call_linux_sched_getaffinity(
+fn_((sys_call_linux_sched_getaffinity(
     sys_call_linux_word pid,
     usize size,
     void* set
@@ -1114,8 +1389,37 @@ $static fn_((sys_call_linux_sched_getaffinity(
     return 0;
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_futex(
+/*---------- <unistd.h> -----------------------------------------------------*/
+
+fn_((sys_call_linux_gettid(void))(sys_call_linux_word)) {
+    return sys_call_linux_syscall0(sys_call_linux_SYS_gettid);
+};
+
+fn_((sys_call_linux_fork(void))(sys_call_linux_word)) {
+    return sys_call_linux_syscall5(sys_call_linux_SYS_clone, 17, 0, 0, 0, 0);
+};
+
+/*---------- <sys/wait.h> ---------------------------------------------------*/
+
+fn_((sys_call_linux_wait4(sys_call_linux_word pid, int* status, sys_call_linux_word options, void* usage))(sys_call_linux_word)) {
+    return sys_call_linux_syscall4(
+        sys_call_linux_SYS_wait4,
+        pid,
+        (sys_call_linux_word)(status),
+        options,
+        (sys_call_linux_word)(usage)
+    );
+};
+
+/*---------- <signal.h> -----------------------------------------------------*/
+
+fn_((sys_call_linux_kill(sys_call_linux_word pid, sys_call_linux_word signal))(sys_call_linux_word)) {
+    return sys_call_linux_syscall2(sys_call_linux_SYS_kill, pid, signal);
+};
+
+/*---------- <linux/futex.h> ------------------------------------------------*/
+
+fn_((sys_call_linux_futex(
     void* addr,
     sys_call_linux_word op,
     sys_call_linux_word value,
@@ -1134,8 +1438,9 @@ $static fn_((sys_call_linux_futex(
     );
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_mremap(
+/*---------- <sys/mman.h> ---------------------------------------------------*/
+
+fn_((sys_call_linux_mremap(
     void* old_addr,
     usize old_size,
     usize new_size,
@@ -1152,8 +1457,9 @@ $static fn_((sys_call_linux_mremap(
     );
 };
 
-$attr($inline_always)
-$static fn_((sys_call_linux_renameat(
+/*---------- <stdio.h> ------------------------------------------------------*/
+
+fn_((sys_call_linux_renameat(
     sys_call_linux_word old_dirfd,
     const char* old_path,
     sys_call_linux_word new_dirfd,
@@ -1176,8 +1482,8 @@ $static fn_((sys_call_linux_renameat(
             0
         )));
 };
-
 /* NOLINTEND(hicpp-no-assembler) */
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

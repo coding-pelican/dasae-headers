@@ -15,10 +15,13 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include "cfg.h"
 #include "dh/prl.h"
 
-#if plat_is_darwin
+/*========== Macros and Declarations ========================================*/
+
 typedef isize sys_libc_darwin_time_t;
 typedef isize sys_libc_darwin_c_long;
 
@@ -36,7 +39,6 @@ typedef enum sys_libc_darwin_CLOCK {
 typedef sys_libc_darwin_CLOCK sys_libc_darwin_clockid_t;
 
 $extern fn_((sys_libc_darwin_clock_gettime(sys_libc_darwin_clockid_t clock_id, sys_libc_darwin_timespec* ts))(i32));
-#endif /* plat_is_darwin */
 
 #if defined(__cplusplus)
 } /* extern "C" */

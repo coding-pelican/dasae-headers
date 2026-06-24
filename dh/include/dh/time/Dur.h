@@ -165,57 +165,41 @@ $static cmp_fn_neqCtx$((time_Dur)(lhs, rhs, ctx));
     .nanos = (_nanos) == 0 ? 0 : (_nanos) % time_nanos_per_sec, \
 })
 
-$attr($inline_always)
-$static cmp_fn_ord$((time_Dur)(lhs, rhs)) {
+#if on_analysis_active_only || on_comptime
+cmp_fn_ord$((time_Dur)(lhs, rhs)) {
     if (lhs.secs < rhs.secs) { return cmp_Ord_lt; }
     if (lhs.secs > rhs.secs) { return cmp_Ord_gt; }
     if (lhs.nanos < rhs.nanos) { return cmp_Ord_lt; }
     if (lhs.nanos > rhs.nanos) { return cmp_Ord_gt; }
     return cmp_Ord_eq;
 };
-$attr($inline_always)
-$static cmp_fn_eq_default$((time_Dur)(lhs, rhs));
-$attr($inline_always)
-$static cmp_fn_ne_default$((time_Dur)(lhs, rhs));
-$attr($inline_always)
-$static cmp_fn_lt_default$((time_Dur)(lhs, rhs));
-$attr($inline_always)
-$static cmp_fn_gt_default$((time_Dur)(lhs, rhs));
-$attr($inline_always)
-$static cmp_fn_le_default$((time_Dur)(lhs, rhs));
-$attr($inline_always)
-$static cmp_fn_ge_default$((time_Dur)(lhs, rhs));
-$attr($inline_always)
-$static cmp_fn_ordCtx$((time_Dur)(lhs, rhs, ctx)) {
+cmp_fn_eq_default$((time_Dur)(lhs, rhs));
+cmp_fn_ne_default$((time_Dur)(lhs, rhs));
+cmp_fn_lt_default$((time_Dur)(lhs, rhs));
+cmp_fn_gt_default$((time_Dur)(lhs, rhs));
+cmp_fn_le_default$((time_Dur)(lhs, rhs));
+cmp_fn_ge_default$((time_Dur)(lhs, rhs));
+cmp_fn_ordCtx$((time_Dur)(lhs, rhs, ctx)) {
     let_ignore = ctx;
     return cmp_ord$(time_Dur)(lhs, rhs);
 };
-$attr($inline_always)
-$static cmp_fn_eqCtx_default$((time_Dur)(lhs, rhs, ctx));
-$attr($inline_always)
-$static cmp_fn_neCtx_default$((time_Dur)(lhs, rhs, ctx));
-$attr($inline_always)
-$static cmp_fn_ltCtx_default$((time_Dur)(lhs, rhs, ctx));
-$attr($inline_always)
-$static cmp_fn_gtCtx_default$((time_Dur)(lhs, rhs, ctx));
-$attr($inline_always)
-$static cmp_fn_leCtx_default$((time_Dur)(lhs, rhs, ctx));
-$attr($inline_always)
-$static cmp_fn_geCtx_default$((time_Dur)(lhs, rhs, ctx));
+cmp_fn_eqCtx_default$((time_Dur)(lhs, rhs, ctx));
+cmp_fn_neCtx_default$((time_Dur)(lhs, rhs, ctx));
+cmp_fn_ltCtx_default$((time_Dur)(lhs, rhs, ctx));
+cmp_fn_gtCtx_default$((time_Dur)(lhs, rhs, ctx));
+cmp_fn_leCtx_default$((time_Dur)(lhs, rhs, ctx));
+cmp_fn_geCtx_default$((time_Dur)(lhs, rhs, ctx));
 
-$attr($inline_always)
-$static cmp_fn_eql$((time_Dur)(lhs, rhs)) {
+cmp_fn_eql$((time_Dur)(lhs, rhs)) {
     return cmp_ord$(time_Dur)(lhs, rhs) == cmp_Ord_eq;
 };
-$attr($inline_always)
-$static cmp_fn_neq_default$((time_Dur)(lhs, rhs));
-$attr($inline_always)
-$static cmp_fn_eqlCtx$((time_Dur)(lhs, rhs, ctx)) {
+cmp_fn_neq_default$((time_Dur)(lhs, rhs));
+cmp_fn_eqlCtx$((time_Dur)(lhs, rhs, ctx)) {
     let_ignore = ctx;
     return cmp_eql$(time_Dur)(lhs, rhs);
 };
-$attr($inline_always)
-$static cmp_fn_neqCtx_default$((time_Dur)(lhs, rhs, ctx));
+cmp_fn_neqCtx_default$((time_Dur)(lhs, rhs, ctx));
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

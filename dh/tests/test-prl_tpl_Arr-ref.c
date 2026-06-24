@@ -43,7 +43,7 @@ TEST_fn_("prl/tpl/Arr: S_deref" $scope) {
     try_(TEST_expect(*A_at((deref_sli)[9]) == 10));
 
 #if UNUSED_CODE
-    let out = fs_File_writer(io_getStdOut());
+    let out = fs_File_writer(io_handleStdOut());
 
     let as_bytes = mem_asBytesMut(A_at(deref_sli, 0));
     for (usize i = 0; i < sizeOf(i32); ++i) { test_io_printBits(out, Sli_getAt(as_bytes, i)); }
@@ -80,7 +80,7 @@ TEST_fn_("prl/tpl/Arr: S_deref" $scope) {
 mem_asBytes_useT$(i32);
 mem_toBytes_useT$(i32);
 TEST_fn_("mem_asBytes/toBytes_useT$(i32)" $scope) {
-    let out = fs_File_writer(io_getStdOut());
+    let out = fs_File_writer(io_handleStdOut());
 
     i32 val = 1234567890;
 

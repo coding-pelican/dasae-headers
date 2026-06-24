@@ -52,8 +52,8 @@ fn_((io_direct(void))(io_direct_E$io_Self) $scope) {
     $static var_(is_initialized, bool) = false;
     if (!is_initialized) {
         ctx.fs = try_(fs_direct());
-        ctx.out = io_getStdOut();
-        ctx.err = io_getStdErr();
+        ctx.out = io_handleStdOut();
+        ctx.err = io_handleStdErr();
         is_initialized = true;
     }
     return_ok(io_Self_ensureValid((io_Self){

@@ -15,9 +15,9 @@ fn_((fs_File_sync(fs_File self, fs_Self fs))(E$void)) {
     return fs.vtbl->file.syncFn(fs.ctx, self);
 };
 
-fn_((fs_File_isTty(fs_File self, fs_Self fs))(E$bool)) {
+fn_((fs_File_isTTY(fs_File self, fs_Self fs))(E$bool)) {
     fs = fs_ensureValid(fs);
-    return fs.vtbl->file.isTtyFn(fs.ctx, self);
+    return fs.vtbl->file.isTTYFn(fs.ctx, self);
 };
 
 fn_((fs_File_setLen(fs_File self, fs_Self fs, u64 new_len))(E$void)) {

@@ -57,7 +57,7 @@ TEST_fn_("proc: spawn and wait exit code" $scope) {
     }));
     let term = try_(proc_Child_wait(&child));
 
-    try_(TEST_expect(term.tag == proc_Term_Tag_exited));
+    try_(TEST_expect(term.tag == proc_Ter_Tag_exited));
     try_(TEST_expect(term.code == 7));
 } $unscoped(TEST_fn);
 
@@ -82,7 +82,7 @@ TEST_fn_("proc: stdout pipe captures child output" $scope) {
     try_(TEST_expect(child.std_out.is_present));
 
     let term = try_(proc_Child_wait(&child));
-    try_(TEST_expect(term.tag == proc_Term_Tag_exited));
+    try_(TEST_expect(term.tag == proc_Ter_Tag_exited));
     try_(TEST_expect(term.code == 0));
 
     var_(buf, A$$(7, u8)) $undefined;

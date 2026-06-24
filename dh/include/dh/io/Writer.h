@@ -18,7 +18,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "base.h"
+#include "common.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -40,9 +40,11 @@ $attr($must_check)
 $extern fn_((io_Writer_writeByteN(io_Writer self, u8 byte, usize n))(E$void));
 
 $attr($must_check)
-$extern fn_((io_Writer_nl(io_Writer self))(E$void));
+$extern fn_((io_Writer_lf(io_Writer self))(E$void));
 $attr($must_check)
 $extern fn_((io_Writer_crlf(io_Writer self))(E$void));
+$attr($must_check)
+$extern fn_((io_Writer_nl(io_Writer self))(E$void));
 $attr($must_check)
 $extern fn_((io_Writer_print(io_Writer self, S_const$u8 fmt, ...))(E$void));
 $attr($must_check)

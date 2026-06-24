@@ -236,13 +236,13 @@ For the public `project.dh` contract and supported commands, see [BUILD.md](./BU
 
 ```c
 #include "dh-main.h"
-#include "dh/io/common.h"
-#include "dh/fs/File.h"
+#include "dh/io/self.h"
+#include "dh/fs/File/self.h"
 #include "dh/io/Writer.h"
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
-    let out = fs_File_writer(io_getStdOut());
+    let out = fs_File_writer(io_handleStdOut());
     let_(msg, O$S_const$u8) = some(u8_l("world"));
     try_(io_Writer_print(out, u8_l("Hello, {:?s}!\n"), msg));
     return_ok({});

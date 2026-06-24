@@ -124,8 +124,8 @@ $attr($inline_always)
 $static fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
     return (daterm_ANSI_Cfg){
         .gpa = some(gpa),
-        .input_file = io_getStdIn(),
-        .output_file = io_getStdOut(),
+        .input_file = io_handleStdIn(),
+        .output_file = io_handleStdOut(),
         .output_mode = daterm_ANSI_OutputMode_processed,
 #if plat_is_windows
         .input_mode = daterm_ANSI_InputMode_native,

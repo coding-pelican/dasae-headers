@@ -787,6 +787,7 @@ $static fn_((isize_powSat(isize base, u32 exp))(isize));
 
 /*========== Macros and Definitions =========================================*/
 
+#if on_analysis_active_only || on_comptime
 /// Unsigned integer basic arithmetic implementations
 fn_((u8_add(u8 lhs, u8 rhs))(u8)) {
     return debug_assert(!__builtin_add_overflow(lhs, rhs, &l0$((u8)))), as$(u8)(lhs + rhs);
@@ -2220,6 +2221,7 @@ fn_((isize_powSat(isize base, u32 exp))(isize)) {
     }
     return result;
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

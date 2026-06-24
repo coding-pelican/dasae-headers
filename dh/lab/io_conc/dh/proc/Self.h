@@ -56,7 +56,7 @@ struct proc_Self_VTbl {
     fn_(((*spawnPathFn)(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(E$proc_Child));
     fn_(((*replaceFn)(P$raw ctx, proc_Cmd cmd))(E$void));
     fn_(((*replacePathFn)(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(E$void));
-    fn_(((*waitFn)(P$raw ctx, proc_Child* child))(E$proc_Term));
+    fn_(((*waitFn)(P$raw ctx, proc_Child* child))(E$proc_Ter));
     fn_(((*killFn)(P$raw ctx, proc_Child* child))(void));
 };
 

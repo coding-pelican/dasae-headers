@@ -87,6 +87,7 @@ $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A
 
 #include "../meta.h"
 
+#if on_analysis_active_only || on_comptime
 fn_((Future_result(const Future$raw* self, TypeInfo type))(u_P_const$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$Future)(
@@ -103,6 +104,7 @@ fn_((Future_resultMut(Future$raw* self, TypeInfo type))(u_P$raw)) {
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_result_$Future);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #define __stmt__T_use_Future_result$(_T...) /* clang-format off */  \
     $attr($inline_always) \

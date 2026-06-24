@@ -5,7 +5,7 @@
 #include "dh/sys/api/windows/proc.h"
 #endif
 
-fn_((proc_Child_wait(proc_Child* self))(E$proc_Term) $scope) {
+fn_((proc_Child_wait(proc_Child* self))(E$proc_Ter) $scope) {
     claim_assert_nonnull(self);
 #if plat_is_windows
     if (self->handle == null || self->handle == INVALID_HANDLE_VALUE) {
@@ -25,7 +25,7 @@ fn_((proc_Child_wait(proc_Child* self))(E$proc_Term) $scope) {
     claim_assert(CloseHandle(self->handle));
     self->handle = INVALID_HANDLE_VALUE;
     return_ok({
-        .tag = proc_Term_Tag_exited,
+        .tag = proc_Ter_Tag_exited,
         .code = as$(u32)(exit_code),
     });
 #else

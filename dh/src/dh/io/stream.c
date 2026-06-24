@@ -2,68 +2,35 @@
 #include "dh/io/common.h"
 #include "dh/io/Writer.h"
 #include "dh/fs/File.h"
-#include "dh/thrd/Mtx.h"
 
-#if plat_is_windows
-#include "dh/sys/api/windows/console.h"
-#endif /* plat_is_windows */
-#if io_stream_using_libc
-#include <locale.h>
-#endif /* io_stream_using_libc */
-
-#if io_locked_out_enabled
-$static var_(io_stream__s_out_mtx, thrd_Mtx_Recur) = cleared();
-$static var_(io_stream__s_err_mtx, thrd_Mtx_Recur) = cleared();
-#endif /* io_locked_out_enabled */
-
-$attr($on_load)
-$static fn_((io_stream__init(void))(void)) {
-#if io_locked_out_enabled
-    io_stream__s_out_mtx = thrd_Mtx_Recur_init();
-    io_stream__s_err_mtx = thrd_Mtx_Recur_init();
-#endif /* io_locked_out_enabled */
-#if io_pre_ensured_utf8_env_enabled
-#if plat_is_windows
-    // [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-    // chcp 65001
-    let_ignore = SetConsoleCP(CP_UTF8);
-    let_ignore = SetConsoleOutputCP(CP_UTF8);
-#endif /* plat_is_windows */
-#if io_stream_using_libc
-    /* NOLINTNEXTLINE(concurrency-mt-unsafe) */
-    let_ignore = setlocale(LC_ALL, ".UTF-8"); /* Code page 65001 */
-#endif /* io_stream_using_libc */
-#endif /* io_pre_ensured_utf8_env_enabled */
-};
-
-$attr($on_exit)
-$static fn_((io_stream__fini(void))(void)) {
-#if io_locked_out_enabled
-    thrd_Mtx_Recur_fini(&io_stream__s_out_mtx);
-    thrd_Mtx_Recur_fini(&io_stream__s_err_mtx);
-#endif /* io_locked_out_enabled */
-};
-
-fn_((io_stream_nl(void))(void) $guard) {
-#if io_locked_out_enabled
-    thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
-    defer_(thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
-#endif /* io_locked_out_enabled */
-
-    var stream_out_file = fs_File_io(io_getStdOut());
+fn_((io_stream_lf(void))(void) $guard) {
+#if io_locked_std_enabled
+    io_lockStdOut();
+    defer_(io_unlockStdOut());
+#endif /* io_locked_std_enabled */
+    var stream_out_file = fs_File_io(io_handleStdOut());
     let stream_out = fs_File_IO_writer(&stream_out_file);
-    let_ignore = catch_((io_Writer_nl(stream_out))($ignore, $do_nothing));
+    let_ignore = catch_((io_Writer_lf(stream_out))($ignore, $do_nothing));
 } $unguarded(fn);
 
 fn_((io_stream_crlf(void))(void) $guard) {
-#if io_locked_out_enabled
-    thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
-    defer_(thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
-#endif /* io_locked_out_enabled */
-
-    var stream_out_file = fs_File_io(io_getStdOut());
+#if io_locked_std_enabled
+    io_lockStdOut();
+    defer_(io_unlockStdOut());
+#endif /* io_locked_std_enabled */
+    var stream_out_file = fs_File_io(io_handleStdOut());
     let stream_out = fs_File_IO_writer(&stream_out_file);
     let_ignore = catch_((io_Writer_crlf(stream_out))($ignore, $do_nothing));
+} $unguarded(fn);
+
+fn_((io_stream_nl(void))(void) $guard) {
+#if io_locked_std_enabled
+    io_lockStdOut();
+    defer_(io_unlockStdOut());
+#endif /* io_locked_std_enabled */
+    var stream_out_file = fs_File_io(io_handleStdOut());
+    let stream_out = fs_File_IO_writer(&stream_out_file);
+    let_ignore = catch_((io_Writer_nl(stream_out))($ignore, $do_nothing));
 } $unguarded(fn);
 
 fn_((io_stream_print(S_const$u8 fmt, ...))(void)) {
@@ -73,12 +40,11 @@ fn_((io_stream_print(S_const$u8 fmt, ...))(void)) {
 };
 
 fn_((io_stream_printVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
-#if io_locked_out_enabled
-    thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
-    defer_(thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
-#endif /* io_locked_out_enabled */
-
-    var stream_out_file = fs_File_io(io_getStdOut());
+#if io_locked_std_enabled
+    io_lockStdOut();
+    defer_(io_unlockStdOut());
+#endif /* io_locked_std_enabled */
+    var stream_out_file = fs_File_io(io_handleStdOut());
     let stream_out = fs_File_IO_writer(&stream_out_file);
     let_ignore = catch_((io_Writer_printVaArgs(stream_out, fmt, va_args))($ignore, $do_nothing));
 } $unguarded(fn);
@@ -90,36 +56,43 @@ fn_((io_stream_println(S_const$u8 fmt, ...))(void)) {
 };
 
 fn_((io_stream_printlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
-#if io_locked_out_enabled
-    thrd_Mtx_Recur_lock(&io_stream__s_out_mtx);
-    defer_(thrd_Mtx_Recur_unlock(&io_stream__s_out_mtx));
-#endif /* io_locked_out_enabled */
-
-    var stream_out_file = fs_File_io(io_getStdOut());
+#if io_locked_std_enabled
+    io_lockStdOut();
+    defer_(io_unlockStdOut());
+#endif /* io_locked_std_enabled */
+    var stream_out_file = fs_File_io(io_handleStdOut());
     let stream_out = fs_File_IO_writer(&stream_out_file);
     let_ignore = catch_((io_Writer_printlnVaArgs(stream_out, fmt, va_args))($ignore, $do_nothing));
 } $unguarded(fn);
 
-fn_((io_stream_enl(void))(void) $guard) {
-#if io_locked_out_enabled
-    thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
-    defer_(thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
-#endif /* io_locked_out_enabled */
-
-    var stream_err_file = fs_File_io(io_getStdErr());
+fn_((io_stream_elf(void))(void) $guard) {
+#if io_locked_std_enabled
+    io_lockStdOut();
+    defer_(io_unlockStdOut());
+#endif /* io_locked_std_enabled */
+    var stream_err_file = fs_File_io(io_handleStdOut());
     let stream_err = fs_File_IO_writer(&stream_err_file);
-    let_ignore = catch_((io_Writer_nl(stream_err))($ignore, $do_nothing));
+    let_ignore = catch_((io_Writer_lf(stream_err))($ignore, $do_nothing));
 } $unguarded(fn);
 
 fn_((io_stream_ecrlf(void))(void) $guard) {
-#if io_locked_out_enabled
-    thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
-    defer_(thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
-#endif /* io_locked_out_enabled */
-
-    var stream_err_file = fs_File_io(io_getStdErr());
+#if io_locked_std_enabled
+    io_lockStdOut();
+    defer_(io_unlockStdOut());
+#endif /* io_locked_std_enabled */
+    var stream_err_file = fs_File_io(io_handleStdOut());
     let stream_err = fs_File_IO_writer(&stream_err_file);
     let_ignore = catch_((io_Writer_crlf(stream_err))($ignore, $do_nothing));
+} $unguarded(fn);
+
+fn_((io_stream_enl(void))(void) $guard) {
+#if io_locked_std_enabled
+    io_lockStdErr();
+    defer_(io_unlockStdErr());
+#endif /* io_locked_std_enabled */
+    var stream_err_file = fs_File_io(io_handleStdErr());
+    let stream_err = fs_File_IO_writer(&stream_err_file);
+    let_ignore = catch_((io_Writer_nl(stream_err))($ignore, $do_nothing));
 } $unguarded(fn);
 
 fn_((io_stream_eprint(S_const$u8 fmt, ...))(void)) {
@@ -129,12 +102,11 @@ fn_((io_stream_eprint(S_const$u8 fmt, ...))(void)) {
 };
 
 fn_((io_stream_eprintVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
-#if io_locked_out_enabled
-    thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
-    defer_(thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
-#endif /* io_locked_out_enabled */
-
-    var stream_err_file = fs_File_io(io_getStdErr());
+#if io_locked_std_enabled
+    io_lockStdErr();
+    defer_(io_unlockStdErr());
+#endif /* io_locked_std_enabled */
+    var stream_err_file = fs_File_io(io_handleStdErr());
     let stream_err = fs_File_IO_writer(&stream_err_file);
     let_ignore = catch_((io_Writer_printVaArgs(stream_err, fmt, va_args))($ignore, $do_nothing));
 } $unguarded(fn);
@@ -146,12 +118,11 @@ fn_((io_stream_eprintln(S_const$u8 fmt, ...))(void)) {
 };
 
 fn_((io_stream_eprintlnVaArgs(S_const$u8 fmt, va_list va_args))(void) $guard) {
-#if io_locked_out_enabled
-    thrd_Mtx_Recur_lock(&io_stream__s_err_mtx);
-    defer_(thrd_Mtx_Recur_unlock(&io_stream__s_err_mtx));
-#endif /* io_locked_out_enabled */
-
-    var stream_err_file = fs_File_io(io_getStdErr());
+#if io_locked_std_enabled
+    io_lockStdErr();
+    defer_(io_unlockStdErr());
+#endif /* io_locked_std_enabled */
+    var stream_err_file = fs_File_io(io_handleStdErr());
     let stream_err = fs_File_IO_writer(&stream_err_file);
     let_ignore = catch_((io_Writer_printlnVaArgs(stream_err, fmt, va_args))($ignore, $do_nothing));
 } $unguarded(fn);

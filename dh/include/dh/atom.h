@@ -97,6 +97,7 @@ $static fn_((atom_Lock_unlock(atom_Lock* self))(void));
 
 #define __comp_int__atom_cache_line_bytes arch_cache_line_bytes
 
+#if on_analysis_active_only || on_comptime
 fn_((atom_spinLoopHint(void))(void)) { /* NOLINTBEGIN(hicpp-no-assembler) */
 #if arch_family_type == arch_family_type_x86
     asm_volatile("pause");
@@ -145,6 +146,7 @@ fn_((atom_Lock_unlock(atom_Lock* self))(void)) {
     claim_assert(atom_Lock_isLocked(self));
     atom_store(self, atom_Lock_unlocked, atom_MemOrd_release);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #define __op__atom_V_zero() cleared()
 #define __op__atom_V_zero$(_VT) l$((_VT)cleared())
