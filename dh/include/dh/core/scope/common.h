@@ -242,6 +242,38 @@ extern "C"
         (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3)), \
         _iters, _captures \
     )
+#define __emitNext__for_5(_$__hint_loop, _iters, _captures...) \
+    __emit__for_5( \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
+        (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3), pp_uniqTok(iter_id4)), \
+        _iters, _captures \
+    )
+#define __emitNext__for_6(_$__hint_loop, _iters, _captures...) \
+    __emit__for_6( \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
+        ( \
+            pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3), pp_uniqTok(iter_id4), pp_uniqTok(iter_id5) \
+        ), \
+        _iters, _captures \
+    )
+#define __emitNext__for_7(_$__hint_loop, _iters, _captures...) \
+    __emit__for_7( \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
+        ( \
+            pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3), pp_uniqTok(iter_id4), pp_uniqTok(iter_id5), \
+            pp_uniqTok(iter_id6) \
+        ), \
+        _iters, _captures \
+    )
+#define __emitNext__for_8(_$__hint_loop, _iters, _captures...) \
+    __emit__for_8( \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
+        ( \
+            pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3), pp_uniqTok(iter_id4), pp_uniqTok(iter_id5), \
+            pp_uniqTok(iter_id6), pp_uniqTok(iter_id7) \
+        ), \
+        _iters, _captures \
+    )
 
 // #define __emit__for_1(__len, __step, __iter_ids, _iters, _captures, _block) \
 //     0(__len), 1(__step), 2(__iter_ids), 3(_iters), 4(_captures), 5(_block)
@@ -326,6 +358,156 @@ extern "C"
     let _capture2 = __for__atIter(__step, __iter_id2, _iter2); \
     let _capture3 = __for__atIter(__step, __iter_id3, _iter3)
 
+#define __emit__for_5(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
+    { \
+        __for_5__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        const usize __len = __for_5__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = 0; __step < __len; ++__step) { \
+            __for_5__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
+
+#define __for_5__initIters(...) __for_5__initItersNext(__VA_ARGS__)
+#define __for_5__initItersNext(__iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, _iter0, _iter1, _iter2, _iter3, _iter4) \
+    __for__initIter(__iter_id0, _iter0); \
+    __for__initIter(__iter_id1, _iter1); \
+    __for__initIter(__iter_id2, _iter2); \
+    __for__initIter(__iter_id3, _iter3); \
+    __for__initIter(__iter_id4, _iter4)
+#define __for_5__measureLen(...) __for_5__measureLenNext(__VA_ARGS__)
+#define __for_5__measureLenNext(__iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, _iter0, _iter1, _iter2, _iter3, _iter4) \
+    pri_min2( \
+        pri_min4(__for__lenIter(_iter0)(__iter_id0), __for__lenIter(_iter1)(__iter_id1), __for__lenIter(_iter2)(__iter_id2), __for__lenIter(_iter3)(__iter_id3)), \
+        __for__lenIter(_iter4)(__iter_id4) \
+    )
+#define __for_5__captureIters(...) __for_5__captureItersNext(__VA_ARGS__)
+#define __for_5__captureItersNext( \
+    __step, _capture0, _capture1, _capture2, _capture3, _capture4, __iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, _iter0, _iter1, _iter2, _iter3, \
+    _iter4 \
+) \
+    let _capture0 = __for__atIter(__step, __iter_id0, _iter0); \
+    let _capture1 = __for__atIter(__step, __iter_id1, _iter1); \
+    let _capture2 = __for__atIter(__step, __iter_id2, _iter2); \
+    let _capture3 = __for__atIter(__step, __iter_id3, _iter3); \
+    let _capture4 = __for__atIter(__step, __iter_id4, _iter4)
+
+#define __emit__for_6(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
+    { \
+        __for_6__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        const usize __len = __for_6__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = 0; __step < __len; ++__step) { \
+            __for_6__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
+
+#define __for_6__initIters(...) __for_6__initItersNext(__VA_ARGS__)
+#define __for_6__initItersNext( \
+    __iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, __iter_id5, _iter0, _iter1, _iter2, _iter3, _iter4, _iter5 \
+) \
+    __for__initIter(__iter_id0, _iter0); \
+    __for__initIter(__iter_id1, _iter1); \
+    __for__initIter(__iter_id2, _iter2); \
+    __for__initIter(__iter_id3, _iter3); \
+    __for__initIter(__iter_id4, _iter4); \
+    __for__initIter(__iter_id5, _iter5)
+#define __for_6__measureLen(...) __for_6__measureLenNext(__VA_ARGS__)
+#define __for_6__measureLenNext( \
+    __iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, __iter_id5, _iter0, _iter1, _iter2, _iter3, _iter4, _iter5 \
+) \
+    pri_min2( \
+        pri_min4(__for__lenIter(_iter0)(__iter_id0), __for__lenIter(_iter1)(__iter_id1), __for__lenIter(_iter2)(__iter_id2), __for__lenIter(_iter3)(__iter_id3)), \
+        pri_min2(__for__lenIter(_iter4)(__iter_id4), __for__lenIter(_iter5)(__iter_id5)) \
+    )
+#define __for_6__captureIters(...) __for_6__captureItersNext(__VA_ARGS__)
+#define __for_6__captureItersNext( \
+    __step, _capture0, _capture1, _capture2, _capture3, _capture4, _capture5, __iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, __iter_id5, \
+    _iter0, _iter1, _iter2, _iter3, _iter4, _iter5 \
+) \
+    let _capture0 = __for__atIter(__step, __iter_id0, _iter0); \
+    let _capture1 = __for__atIter(__step, __iter_id1, _iter1); \
+    let _capture2 = __for__atIter(__step, __iter_id2, _iter2); \
+    let _capture3 = __for__atIter(__step, __iter_id3, _iter3); \
+    let _capture4 = __for__atIter(__step, __iter_id4, _iter4); \
+    let _capture5 = __for__atIter(__step, __iter_id5, _iter5)
+
+#define __emit__for_7(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
+    { \
+        __for_7__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        const usize __len = __for_7__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = 0; __step < __len; ++__step) { \
+            __for_7__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
+
+#define __for_7__initIters(...) __for_7__initItersNext(__VA_ARGS__)
+#define __for_7__initItersNext( \
+    __iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, __iter_id5, __iter_id6, _iter0, _iter1, _iter2, _iter3, _iter4, _iter5, _iter6 \
+) \
+    __for__initIter(__iter_id0, _iter0); \
+    __for__initIter(__iter_id1, _iter1); \
+    __for__initIter(__iter_id2, _iter2); \
+    __for__initIter(__iter_id3, _iter3); \
+    __for__initIter(__iter_id4, _iter4); \
+    __for__initIter(__iter_id5, _iter5); \
+    __for__initIter(__iter_id6, _iter6)
+#define __for_7__measureLen(...) __for_7__measureLenNext(__VA_ARGS__)
+#define __for_7__measureLenNext( \
+    __iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, __iter_id5, __iter_id6, _iter0, _iter1, _iter2, _iter3, _iter4, _iter5, _iter6 \
+) \
+    pri_min2( \
+        pri_min4(__for__lenIter(_iter0)(__iter_id0), __for__lenIter(_iter1)(__iter_id1), __for__lenIter(_iter2)(__iter_id2), __for__lenIter(_iter3)(__iter_id3)), \
+        pri_min3(__for__lenIter(_iter4)(__iter_id4), __for__lenIter(_iter5)(__iter_id5), __for__lenIter(_iter6)(__iter_id6)) \
+    )
+#define __for_7__captureIters(...) __for_7__captureItersNext(__VA_ARGS__)
+#define __for_7__captureItersNext( \
+    __step, _capture0, _capture1, _capture2, _capture3, _capture4, _capture5, _capture6, __iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, \
+    __iter_id5, __iter_id6, _iter0, _iter1, _iter2, _iter3, _iter4, _iter5, _iter6 \
+) \
+    let _capture0 = __for__atIter(__step, __iter_id0, _iter0); \
+    let _capture1 = __for__atIter(__step, __iter_id1, _iter1); \
+    let _capture2 = __for__atIter(__step, __iter_id2, _iter2); \
+    let _capture3 = __for__atIter(__step, __iter_id3, _iter3); \
+    let _capture4 = __for__atIter(__step, __iter_id4, _iter4); \
+    let _capture5 = __for__atIter(__step, __iter_id5, _iter5); \
+    let _capture6 = __for__atIter(__step, __iter_id6, _iter6)
+
+#define __emit__for_8(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
+    { \
+        __for_8__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        const usize __len = __for_8__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = 0; __step < __len; ++__step) { \
+            __for_8__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
+
+#define __for_8__initIters(...) __for_8__initItersNext(__VA_ARGS__)
+#define __for_8__initItersNext( \
+    __iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, __iter_id5, __iter_id6, __iter_id7, _iter0, _iter1, _iter2, _iter3, _iter4, _iter5, \
+    _iter6, _iter7 \
+) \
+    __for__initIter(__iter_id0, _iter0); \
+    __for__initIter(__iter_id1, _iter1); \
+    __for__initIter(__iter_id2, _iter2); \
+    __for__initIter(__iter_id3, _iter3); \
+    __for__initIter(__iter_id4, _iter4); \
+    __for__initIter(__iter_id5, _iter5); \
+    __for__initIter(__iter_id6, _iter6); \
+    __for__initIter(__iter_id7, _iter7)
+#define __for_8__measureLen(...) __for_8__measureLenNext(__VA_ARGS__)
+#define __for_8__measureLenNext( \
+    __iter_id0, __iter_id1, __iter_id2, __iter_id3, __iter_id4, __iter_id5, __iter_id6, __iter_id7, _iter0, _iter1, _iter2, _iter3, _iter4, _iter5, \
+    _iter6, _iter7 \
+) \
+    pri_min2( \
+        pri_min4(__for__lenIter(_iter0)(__iter_id0), __for__lenIter(_iter1)(__iter_id1), __for__lenIter(_iter2)(__iter_id2), __for__lenIter(_iter3)(__iter_id3)), \
+        pri_min4(__for__lenIter(_iter4)(__iter_id4), __for__lenIter(_iter5)(__iter_id5), __for__lenIter(_iter6)(__iter_id6), __for__lenIter(_iter7)(__iter_id7)) \
+    )
+#define __for_8__captureIters(...) __for_8__captureItersNext(__VA_ARGS__)
+#define __for_8__captureItersNext( \
+    __step, _capture0, _capture1, _capture2, _capture3, _capture4, _capture5, _capture6, _capture7, __iter_id0, __iter_id1, __iter_id2, __iter_id3, \
+    __iter_id4, __iter_id5, __iter_id6, __iter_id7, _iter0, _iter1, _iter2, _iter3, _iter4, _iter5, _iter6, _iter7 \
+) \
+    let _capture0 = __for__atIter(__step, __iter_id0, _iter0); \
+    let _capture1 = __for__atIter(__step, __iter_id1, _iter1); \
+    let _capture2 = __for__atIter(__step, __iter_id2, _iter2); \
+    let _capture3 = __for__atIter(__step, __iter_id3, _iter3); \
+    let _capture4 = __for__atIter(__step, __iter_id4, _iter4); \
+    let _capture5 = __for__atIter(__step, __iter_id5, _iter5); \
+    let _capture6 = __for__atIter(__step, __iter_id6, _iter6); \
+    let _capture7 = __for__atIter(__step, __iter_id7, _iter7)
+
 /* for - emitters (reverse) =================================================*/
 #define __emitNext__for_$_rev(_$__hint_loop, _iters, _captures...) \
     pp_overload(__emitNext__for_$_rev, __for__expandIters _iters)(_$__hint_loop, _iters, _captures)
@@ -351,6 +533,38 @@ extern "C"
     __emit__for_$_rev_4( \
         _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
         (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3)), \
+        _iters, _captures \
+    )
+#define __emitNext__for_$_rev_5(_$__hint_loop, _iters, _captures...) \
+    __emit__for_$_rev_5( \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
+        (pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3), pp_uniqTok(iter_id4)), \
+        _iters, _captures \
+    )
+#define __emitNext__for_$_rev_6(_$__hint_loop, _iters, _captures...) \
+    __emit__for_$_rev_6( \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
+        ( \
+            pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3), pp_uniqTok(iter_id4), pp_uniqTok(iter_id5) \
+        ), \
+        _iters, _captures \
+    )
+#define __emitNext__for_$_rev_7(_$__hint_loop, _iters, _captures...) \
+    __emit__for_$_rev_7( \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
+        ( \
+            pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3), pp_uniqTok(iter_id4), pp_uniqTok(iter_id5), \
+            pp_uniqTok(iter_id6) \
+        ), \
+        _iters, _captures \
+    )
+#define __emitNext__for_$_rev_8(_$__hint_loop, _iters, _captures...) \
+    __emit__for_$_rev_8( \
+        _$__hint_loop, pp_uniqTok(len), pp_uniqTok(step), \
+        ( \
+            pp_uniqTok(iter_id0), pp_uniqTok(iter_id1), pp_uniqTok(iter_id2), pp_uniqTok(iter_id3), pp_uniqTok(iter_id4), pp_uniqTok(iter_id5), \
+            pp_uniqTok(iter_id6), pp_uniqTok(iter_id7) \
+        ), \
         _iters, _captures \
     )
 
@@ -389,6 +603,34 @@ extern "C"
         const usize __len = __for_4__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
         __for__emitHintLoop(_$__hint_loop)() for (usize __step = __len; __step-- > 0;) { \
             __for_4__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
+
+#define __emit__for_$_rev_5(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
+    { \
+        __for_5__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        const usize __len = __for_5__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = __len; __step-- > 0;) { \
+            __for_5__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
+
+#define __emit__for_$_rev_6(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
+    { \
+        __for_6__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        const usize __len = __for_6__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = __len; __step-- > 0;) { \
+            __for_6__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
+
+#define __emit__for_$_rev_7(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
+    { \
+        __for_7__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        const usize __len = __for_7__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = __len; __step-- > 0;) { \
+            __for_7__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
+
+#define __emit__for_$_rev_8(_$__hint_loop, __len, __step, __iter_ids, _iters, _captures...) \
+    { \
+        __for_8__initIters(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        const usize __len = __for_8__measureLen(__for__expandIterIds __iter_ids, __for__expandIters _iters); \
+        __for__emitHintLoop(_$__hint_loop)() for (usize __step = __len; __step-- > 0;) { \
+            __for_8__captureIters(__step, __for__expandCaptures _captures, __for__expandIterIds __iter_ids, __for__expandIters _iters);
 
 #define __stmt__$end_for \
     } \

@@ -692,10 +692,10 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     let_(__diff_sgn, bool) = (__r ^ __n) < 0; \
     as$(IntType)(__has_r && __diff_sgn ? __r + __n : __r); \
 })
-#define __op__int_modEuclid__step(_x, _n...) __op__int_modEuclid( \
+#define __op__iint_modEuclid__step(_x, _n...) __op__iint_modEuclid( \
     pp_uniqTok(x), pp_uniqTok(n), pp_uniqTok(r), _x, _n \
 )
-#define __op__int_modEuclid(__x, __n, __r, _x, _n...) ({ \
+#define __op__iint_modEuclid(__x, __n, __r, _x, _n...) ({ \
     typedef TypeOfUnqual(_x) IntType; \
     let_(__x, IntType) = _x; \
     let_(__n, IntType) = _n; \
@@ -944,7 +944,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     let_(__lo, IntType) = _lo; \
     let_(__hi, IntType) = _hi; \
     claim_assert(__lo < __hi); \
-    __lo + int_modEuclid(__x - __lo, __hi - __lo); \
+    __lo + iint_modEuclid(__x - __lo, __hi - __lo); \
 })
 
 #define __op__flt_wrap__step(_x, _lo, _hi...) __op__flt_wrap(pp_uniqTok(x), pp_uniqTok(lo), pp_uniqTok(hi), _x, _lo, _hi)
