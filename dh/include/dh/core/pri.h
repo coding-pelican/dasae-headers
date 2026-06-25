@@ -536,23 +536,23 @@ extern "C" {
 /*========== Memory Operations Implementation ===============================*/
 
 #if UNUSED_CODE
-$inline_always
-    $static P$raw pri__memset(P$raw ptr, u8 val, usize len) {
+$attr($inline_always)
+$static P$raw pri__memset(P$raw ptr, u8 val, usize len) {
     if (len == 0) { return ptr; }
     return raw_memset(ptr, val, len);
 }
-$inline_always
-    $static P$raw pri__memcpy(P$raw dst, P_const$raw src, usize len) {
+$attr($inline_always)
+$static P$raw pri__memcpy(P$raw dst, P_const$raw src, usize len) {
     if (len == 0 || dst == src) { return dst; }
     return raw_memcpy(dst, src, len);
 }
-$inline_always
-    $static P$raw pri__memmove(P$raw dst, P_const$raw src, usize len) {
+$attr($inline_always)
+$static P$raw pri__memmove(P$raw dst, P_const$raw src, usize len) {
     if (len == 0 || dst == src) { return dst; }
     return raw_memmove(dst, src, len);
 }
-$inline_always
-    $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
+$attr($inline_always)
+$static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     if (len == 0 || lhs == rhs) { return 0; }
     return raw_memcmp(lhs, rhs, len);
 }

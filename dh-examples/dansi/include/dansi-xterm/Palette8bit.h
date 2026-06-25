@@ -294,19 +294,11 @@ T_use_prl$(dansi_xterm_Palette8bit);
     ____dansi_xterm_Palette8bit_staticParse(_color_tok)
 
 $attr($inline_always)
-$static fn_((dansi_xterm_Palette8bit_system(u8 index))(dansi_xterm_Palette8bit)) {
-    return claim_assert(index < 16), index;
-};
-
+$static fn_((dansi_xterm_Palette8bit_system(u8 index))(dansi_xterm_Palette8bit));
 $attr($inline_always)
-$static fn_((dansi_xterm_Palette8bit_cube(u8 r, u8 g, u8 b))(dansi_xterm_Palette8bit)) {
-    return claim_assert(r < 6), claim_assert(g < 6), claim_assert(b < 6), as$(u8)(16 + 36 * r + 6 * g + b);
-};
-
+$static fn_((dansi_xterm_Palette8bit_cube(u8 r, u8 g, u8 b))(dansi_xterm_Palette8bit));
 $attr($inline_always)
-$static fn_((dansi_xterm_Palette8bit_gray(u8 index))(dansi_xterm_Palette8bit)) {
-    return claim_assert(index < 24), as$(u8)(232 + index);
-};
+$static fn_((dansi_xterm_Palette8bit_gray(u8 index))(dansi_xterm_Palette8bit));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -571,6 +563,20 @@ $static fn_((dansi_xterm_Palette8bit_gray(u8 index))(dansi_xterm_Palette8bit)) {
 #define ____dansi_xterm_Palette8bit_str$dansi_xterm_Palette8bit_grey_85 "253"
 #define ____dansi_xterm_Palette8bit_str$dansi_xterm_Palette8bit_grey_89 "254"
 #define ____dansi_xterm_Palette8bit_str$dansi_xterm_Palette8bit_grey_93 "255"
+
+#if on_analysis_active_only || on_comptime
+fn_((dansi_xterm_Palette8bit_system(u8 index))(dansi_xterm_Palette8bit)) {
+    return claim_assert(index < 16), index;
+};
+
+fn_((dansi_xterm_Palette8bit_cube(u8 r, u8 g, u8 b))(dansi_xterm_Palette8bit)) {
+    return claim_assert(r < 6), claim_assert(g < 6), claim_assert(b < 6), as$(u8)(16 + 36 * r + 6 * g + b);
+};
+
+fn_((dansi_xterm_Palette8bit_gray(u8 index))(dansi_xterm_Palette8bit)) {
+    return claim_assert(index < 24), as$(u8)(232 + index);
+};
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

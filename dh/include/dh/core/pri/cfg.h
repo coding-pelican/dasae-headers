@@ -26,22 +26,22 @@ extern "C" {
 #include "../claim/assert_static.h"
 
 #include <stddef.h>
-#if !lang_version_in_c23 && UNUSED_CODE
+#if !lang_ver_in_c23 && UNUSED_CODE
 #include <stdbool.h> /* deprecated in C23; `bool`, `true`, `false` are now keywords. */
 #include <iso646.h> /* deprecated in C23; `not`, `and`, `or` are now keywords. */
-#endif /* !lang_version_in_c23 && UNUSED_CODE */
+#endif /* !lang_ver_in_c23 && UNUSED_CODE */
 
 #include <stdint.h>
 #include <limits.h>
 #include <float.h>
 
-#if lang_version_in_c23 && UNUSED_CODE
+#if lang_ver_in_c23 && UNUSED_CODE
 #include <stdbit.h>
 #include <stdckdint.h>
 #include <stdcountof.h>
-#endif /* lang_version_in_c23 && UNUSED_CODE */
+#endif /* lang_ver_in_c23 && UNUSED_CODE */
 
-#if !lang_version_in_c23 && UNUSED_CODE
+#if !lang_ver_in_c23 && UNUSED_CODE
 #include <stdalign.h> /* deprecated in C23; use `alignof`, `alignas` or `[[alignas]]`. */
 /* C11 `stdnoreturn.h` conflicts with Windows when included before `windows.h`.
  * `noreturn` expands to `_Noreturn`; MSVC uses `__declspec(noreturn)`, yielding
@@ -49,7 +49,7 @@ extern "C" {
  * Gnulib: https://www.gnu.org/software/gnulib/manual/html_node/stdnoreturn_002eh.html
  * Eric Blake (autoconf 2012-04): https://lists.gnu.org/archive/html/autoconf/2012-04/msg00051.html */
 #include <stdnoreturn.h> /* deprecated in C23; use `[[noreturn]]`. */
-#endif /* !lang_version_in_c23 && UNUSED_CODE */
+#endif /* !lang_ver_in_c23 && UNUSED_CODE */
 
 #include <stdarg.h>
 #if !defined(__STDC_NO_ATOMICS__) && UNUSED_CODE

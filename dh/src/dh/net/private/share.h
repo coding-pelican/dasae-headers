@@ -45,13 +45,16 @@ $static fn_((net__windows_ipFromSockAddr(net__windows_SockAddr addr))(E$net_IpAd
         var_(ip4, SOCKADDR_IN) = { 0 };
         raw_memcpy(&ip4, raw, sizeOf$(SOCKADDR_IN));
         let raw = ptrCast$((const u8*)(&ip4.sin_addr));
-        return_ok(net_IpAddr_ip4(raw[0], raw[1], raw[2], raw[3], ntohs(ip4.sin_port)));
+        return_ok((net_IpAddr)union_of((net_Addr_Family_ip4){
+            .bytes = A_init({ raw[0], raw[1], raw[2], raw[3] }),
+            .port = ntohs(ip4.sin_port),
+        }));
     }
     case AF_INET6: {
         var_(ip6, SOCKADDR_IN6) = { 0 };
         raw_memcpy(&ip6, raw, sizeOf$(SOCKADDR_IN6));
         var result = (net_IpAddr)union_of((net_Addr_Family_ip6){
-            .bytes = { 0 },
+            .bytes = A_zero(),
             .port = ntohs(ip6.sin6_port),
             .flow = ntohl(ip6.sin6_flowinfo),
             .scope_id = ip6.sin6_scope_id,

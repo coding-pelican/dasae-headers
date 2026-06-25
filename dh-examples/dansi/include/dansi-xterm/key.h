@@ -130,32 +130,12 @@ typedef union dansi_xterm_key_Mods {
     u8 packed;
 } dansi_xterm_key_Mods;
 T_use_prl$(dansi_xterm_key_Mods);
-
 $attr($inline_always)
-$static fn_((dansi_xterm_key_modsNone(void))(dansi_xterm_key_Mods)) {
-    return (dansi_xterm_key_Mods){};
-};
-
+$static fn_((dansi_xterm_key_modsNone(void))(dansi_xterm_key_Mods));
 $attr($inline_always)
-$static fn_((dansi_xterm_key_modsFromParam(u16 param))(dansi_xterm_key_Mods)) {
-    if (param <= dansi_xterm_key_mod_param_base) return dansi_xterm_key_modsNone();
-    let_(mask, u16) = param - dansi_xterm_key_mod_param_base;
-    return (dansi_xterm_key_Mods){
-        .shift = (mask & dansi_xterm_key_mod_shift_bit) != 0,
-        .alt = (mask & dansi_xterm_key_mod_alt_bit) != 0,
-        .ctrl = (mask & dansi_xterm_key_mod_ctrl_bit) != 0,
-        .meta = (mask & dansi_xterm_key_mod_meta_bit) != 0,
-    };
-};
-
+$static fn_((dansi_xterm_key_modsFromParam(u16 param))(dansi_xterm_key_Mods));
 $attr($inline_always)
-$static fn_((dansi_xterm_key_modsToParam(dansi_xterm_key_Mods mods))(u16)) {
-    return dansi_xterm_key_mod_param_base
-         + (mods.shift ? dansi_xterm_key_mod_shift_bit : 0)
-         + (mods.alt ? dansi_xterm_key_mod_alt_bit : 0)
-         + (mods.ctrl ? dansi_xterm_key_mod_ctrl_bit : 0)
-         + (mods.meta ? dansi_xterm_key_mod_meta_bit : 0);
-};
+$static fn_((dansi_xterm_key_modsToParam(dansi_xterm_key_Mods mods))(u16));
 
 typedef enum_((dansi_xterm_key_Named $fits($packed))(
     dansi_xterm_key_Named_up,
@@ -505,6 +485,31 @@ $extern fn_((dansi_xterm_key_parseEvent(dansi_Seq seq))(O$dansi_xterm_key_Event)
     pp_join($, ____dansi_xterm_key_Format_str, _format_tok)
 #define ____dansi_xterm_key_Format_str$dansi_xterm_key_Format_legacy "0"
 #define ____dansi_xterm_key_Format_str$dansi_xterm_key_Format_csi_u "1"
+
+#if on_analysis_active_only || on_comptime
+fn_((dansi_xterm_key_modsNone(void))(dansi_xterm_key_Mods)) {
+    return (dansi_xterm_key_Mods){};
+};
+
+fn_((dansi_xterm_key_modsFromParam(u16 param))(dansi_xterm_key_Mods)) {
+    if (param <= dansi_xterm_key_mod_param_base) return dansi_xterm_key_modsNone();
+    let_(mask, u16) = param - dansi_xterm_key_mod_param_base;
+    return (dansi_xterm_key_Mods){
+        .shift = (mask & dansi_xterm_key_mod_shift_bit) != 0,
+        .alt = (mask & dansi_xterm_key_mod_alt_bit) != 0,
+        .ctrl = (mask & dansi_xterm_key_mod_ctrl_bit) != 0,
+        .meta = (mask & dansi_xterm_key_mod_meta_bit) != 0,
+    };
+};
+
+fn_((dansi_xterm_key_modsToParam(dansi_xterm_key_Mods mods))(u16)) {
+    return dansi_xterm_key_mod_param_base
+         + (mods.shift ? dansi_xterm_key_mod_shift_bit : 0)
+         + (mods.alt ? dansi_xterm_key_mod_alt_bit : 0)
+         + (mods.ctrl ? dansi_xterm_key_mod_ctrl_bit : 0)
+         + (mods.meta ? dansi_xterm_key_mod_meta_bit : 0);
+};
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

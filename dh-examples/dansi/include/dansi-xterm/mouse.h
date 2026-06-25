@@ -79,6 +79,8 @@ typedef union dansi_xterm_mouse_Btns {
     u8 packed;
 } dansi_xterm_mouse_Btns;
 T_use_prl$(dansi_xterm_mouse_Btns);
+$attr($inline_always)
+$static fn_((dansi_xterm_mouse_btnsNone(void))(dansi_xterm_mouse_Btns));
 
 typedef enum_((dansi_xterm_mouse_Wheel $fits($packed))(
     dansi_xterm_mouse_Wheel_up,
@@ -106,29 +108,12 @@ typedef union dansi_xterm_mouse_Mods {
     u8 packed;
 } dansi_xterm_mouse_Mods;
 T_use_prl$(dansi_xterm_mouse_Mods);
-
 $attr($inline_always)
-$static fn_((dansi_xterm_mouse_modsNone(void))(dansi_xterm_mouse_Mods)) {
-    return (dansi_xterm_mouse_Mods){};
-};
-
+$static fn_((dansi_xterm_mouse_modsNone(void))(dansi_xterm_mouse_Mods));
 $attr($inline_always)
-$static fn_((dansi_xterm_mouse_modsFromCb(u16 cb))(dansi_xterm_mouse_Mods)) {
-    let_(meta, bool) = (cb & dansi_xterm_mouse_cb_alt) != 0;
-    return (dansi_xterm_mouse_Mods){
-        .shift = (cb & dansi_xterm_mouse_cb_shift) != 0,
-        .alt = meta,
-        .ctrl = (cb & dansi_xterm_mouse_cb_ctrl) != 0,
-        .meta = meta,
-    };
-};
-
+$static fn_((dansi_xterm_mouse_modsFromCb(u16 cb))(dansi_xterm_mouse_Mods));
 $attr($inline_always)
-$static fn_((dansi_xterm_mouse_modsToCb(dansi_xterm_mouse_Mods mods))(u16)) {
-    return (mods.shift ? dansi_xterm_mouse_cb_shift : 0)
-         | ((mods.alt || mods.meta) ? dansi_xterm_mouse_cb_alt : 0)
-         | (mods.ctrl ? dansi_xterm_mouse_cb_ctrl : 0);
-};
+$static fn_((dansi_xterm_mouse_modsToCb(dansi_xterm_mouse_Mods mods))(u16));
 
 typedef enum_((dansi_xterm_mouse_ReportMode $fits($packed))(
     dansi_xterm_mouse_ReportMode_x10 = dansi_xterm_mode_Code_mouse_x10,
@@ -321,11 +306,6 @@ $extern fn_((dansi_xterm_mouse_interpretSGR(
 ))(dansi_xterm_mouse_E$dansi_xterm_mouse_Event));
 $extern fn_((dansi_xterm_mouse_parseSGR(S_const$u8 report))(O$dansi_xterm_mouse_Event));
 
-$attr($inline_always)
-$static fn_((dansi_xterm_mouse_btnsNone(void))(dansi_xterm_mouse_Btns)) {
-    return (dansi_xterm_mouse_Btns){};
-};
-
 /*========== Macros and Definitions =========================================*/
 
 #define __uint__dansi_xterm_mouse_cb_motion 32
@@ -386,6 +366,32 @@ $static fn_((dansi_xterm_mouse_btnsNone(void))(dansi_xterm_mouse_Btns)) {
 #define ____dansi_xterm_mouse_Encoding_str$dansi_xterm_mouse_Encoding_sgr "1006"
 #define ____dansi_xterm_mouse_Encoding_str$dansi_xterm_mouse_Encoding_urxvt "1015"
 #define ____dansi_xterm_mouse_Encoding_str$dansi_xterm_mouse_Encoding_sgr_pixels "1016"
+
+#if on_analysis_active_only || on_comptime
+fn_((dansi_xterm_mouse_btnsNone(void))(dansi_xterm_mouse_Btns)) {
+    return (dansi_xterm_mouse_Btns){};
+};
+
+fn_((dansi_xterm_mouse_modsNone(void))(dansi_xterm_mouse_Mods)) {
+    return (dansi_xterm_mouse_Mods){};
+};
+
+fn_((dansi_xterm_mouse_modsFromCb(u16 cb))(dansi_xterm_mouse_Mods)) {
+    let_(meta, bool) = (cb & dansi_xterm_mouse_cb_alt) != 0;
+    return (dansi_xterm_mouse_Mods){
+        .shift = (cb & dansi_xterm_mouse_cb_shift) != 0,
+        .alt = meta,
+        .ctrl = (cb & dansi_xterm_mouse_cb_ctrl) != 0,
+        .meta = meta,
+    };
+};
+
+fn_((dansi_xterm_mouse_modsToCb(dansi_xterm_mouse_Mods mods))(u16)) {
+    return (mods.shift ? dansi_xterm_mouse_cb_shift : 0)
+         | ((mods.alt || mods.meta) ? dansi_xterm_mouse_cb_alt : 0)
+         | (mods.ctrl ? dansi_xterm_mouse_cb_ctrl : 0);
+};
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

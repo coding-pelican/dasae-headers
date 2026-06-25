@@ -61,7 +61,13 @@ claim_assert_static(eqlType$(dansi_c0_Code, u8));
 T_use_prl$(dansi_c0_Code);
 
 $attr($inline_always)
-$static fn_((dansi_c0_isCtrl(u8 byte))(bool)) { return byte <= dansi_c0_Code_us; };
+$static fn_((dansi_c0_isCtrl(u8 byte))(bool));
+
+/*========== Macros and Definitions =========================================*/
+
+#if on_analysis_active_only || on_comptime
+fn_((dansi_c0_isCtrl(u8 byte))(bool)) { return byte <= dansi_c0_Code_us; };
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

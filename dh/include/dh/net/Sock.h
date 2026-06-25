@@ -24,17 +24,15 @@ struct net_Sock {
     var_(flags, net_Sock_Flags);
 };
 T_impl_E$(net_Sock);
-
 $attr($inline_always)
 $static fn_((net_Sock_promote(net_Handle handle, net_IpAddr addr, net_Sock_Flags flags))(net_Sock));
-
 $attr($inline_always)
 $static fn_((net_Sock_handle(net_Sock self))(net_Handle));
-
 $extern fn_((net_Sock_close(net_Sock self))(void));
 
 /*========== Macros and Definitions =========================================*/
 
+#if on_analysis_active_only || on_comptime
 fn_((net_Sock_promote(net_Handle handle, net_IpAddr addr, net_Sock_Flags flags))(net_Sock)) {
     return (net_Sock){
         .handle = handle,
@@ -46,6 +44,7 @@ fn_((net_Sock_promote(net_Handle handle, net_IpAddr addr, net_Sock_Flags flags))
 fn_((net_Sock_handle(net_Sock self))(net_Handle)) {
     return self.handle;
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

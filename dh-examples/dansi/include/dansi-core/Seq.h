@@ -98,12 +98,11 @@ T_use_E$($set(dansi_Seq_E)(dansi_Seq));
 
 /// Create a sequence from the given kind and bytes.
 $attr($inline_always)
-$static fn_((dansi_Seq_from(dansi_Seq_Kind kind, S_const$u8 bytes))(dansi_Seq)) {
-    return (dansi_Seq){ .kind = kind, .bytes = bytes };
-};
+$static fn_((dansi_Seq_from(dansi_Seq_Kind kind, S_const$u8 bytes))(dansi_Seq));
 
 $attr($must_check)
 $extern fn_((dansi_Seq_extract(io_Buf_Reader* reader))(dansi_Seq_E$dansi_Seq));
+
 $attr($must_check)
 $extern fn_((dansi_Seq_receive(io_Reader in, S$u8 buf))(dansi_Seq_E$dansi_Seq));
 $attr($must_check)
@@ -149,6 +148,12 @@ $extern fn_((dansi_Seq_receiveAPC(io_Reader in, S$u8 buf))(E$S$u8));
 #define __str__dansi_Seq_ss3_7bit_prefix dansi_Seq_esc dansi_Seq_ss3_7bit_intro
 #define __str__dansi_Seq_ss3_7bit_intro "O"
 #define __uint__dansi_Seq_ss3_7bit_intro_byte u8_c('O')
+
+#if on_analysis_active_only || on_comptime
+fn_((dansi_Seq_from(dansi_Seq_Kind kind, S_const$u8 bytes))(dansi_Seq)) {
+    return (dansi_Seq){ .kind = kind, .bytes = bytes };
+};
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

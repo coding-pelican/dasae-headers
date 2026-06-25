@@ -589,7 +589,7 @@ detect_toolchain() {
 detect_clang() {
     local clang_cmd=""
     local clang_path=""
-    local clang_version=""
+    local clang_ver=""
 
     # Priority order for Clang detection
     local -a clang_candidates=()
@@ -656,7 +656,7 @@ detect_clang() {
 
             if [[ -n "$ver" ]]; then
                 clang_cmd="$candidate"
-                clang_version="$ver"
+                clang_ver="$ver"
 
                 # Get full path
                 if [[ "$candidate" == /* ]]; then
@@ -670,12 +670,12 @@ detect_clang() {
         fi
     done
 
-    if [[ -n "$clang_version" ]]; then
-        log_success "Found Clang: ${C_BOLD}$clang_version${C_RESET} ($clang_path)"
+    if [[ -n "$clang_ver" ]]; then
+        log_success "Found Clang: ${C_BOLD}$clang_ver${C_RESET} ($clang_path)"
 
         # Determine tier
         local tier
-        tier=$(get_version_tier "$clang_version" "$CLANG_RECOMMENDED" "$CLANG_SUPPORTED" "$CLANG_MINIMUM")
+        tier=$(get_version_tier "$clang_ver" "$CLANG_RECOMMENDED" "$CLANG_SUPPORTED" "$CLANG_MINIMUM")
 
         case "$tier" in
             recommended)
@@ -694,7 +694,7 @@ detect_clang() {
 
         # Store for later use
         DETECTED_CLANG_PATH="$clang_path"
-        DETECTED_CLANG_VERSION="$clang_version"
+        DETECTED_CLANG_VERSION="$clang_ver"
         DETECTED_CLANG_TIER="$tier"
     else
         log_info "Clang: Not found"

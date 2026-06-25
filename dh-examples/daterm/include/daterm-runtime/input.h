@@ -17,7 +17,11 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include "base.h"
+
+/*========== Macros and Declarations ========================================*/
 
 typedef union daterm_input_Mods {
     struct {
@@ -30,11 +34,16 @@ typedef union daterm_input_Mods {
     u8 packed;
 } daterm_input_Mods;
 T_use_prl$(daterm_input_Mods);
-
 $attr($inline_always)
-$static fn_((daterm_input_modsNone(void))(daterm_input_Mods)) {
+$static fn_((daterm_input_modsNone(void))(daterm_input_Mods));
+
+/*========== Macros and Definitions =========================================*/
+
+#if on_analysis_active_only || on_comptime
+fn_((daterm_input_modsNone(void))(daterm_input_Mods)) {
     return (daterm_input_Mods){};
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

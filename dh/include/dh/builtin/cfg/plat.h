@@ -35,6 +35,11 @@ extern "C" {
 #define plat_type_darwin __comp_enum__plat_type_darwin
 #define plat_type_wasi __comp_enum__plat_type_wasi
 
+#define plat_is_windows __comp_bool__plat_is_windows
+#define plat_is_linux __comp_bool__plat_is_linux
+#define plat_is_darwin __comp_bool__plat_is_darwin
+#define plat_is_wasi __comp_bool__plat_is_wasi
+
 #define plat_name __comp_str__plat_name
 #define plat_name_unknown __comp_str__plat_name_unknown
 #define plat_name_windows __comp_str__plat_name_windows
@@ -44,11 +49,6 @@ extern "C" {
 
 #define plat_based_unix __comp_bool__plat_based_unix
 #define plat_is_posix __comp_bool__plat_is_posix
-
-#define plat_is_windows __comp_bool__plat_is_windows
-#define plat_is_linux __comp_bool__plat_is_linux
-#define plat_is_darwin __comp_bool__plat_is_darwin
-#define plat_is_wasi __comp_bool__plat_is_wasi
 
 /* --- Data Model --- */
 
@@ -122,6 +122,11 @@ extern "C" {
 #define __comp_enum__plat_type_darwin 3
 #define __comp_enum__plat_type_wasi 4
 
+#define __comp_bool__plat_is_windows pp_Tok_eql(plat_type, plat_type_windows)
+#define __comp_bool__plat_is_linux pp_Tok_eql(plat_type, plat_type_linux)
+#define __comp_bool__plat_is_darwin pp_Tok_eql(plat_type, plat_type_darwin)
+#define __comp_bool__plat_is_wasi pp_Tok_eql(plat_type, plat_type_wasi)
+
 /* Detect WASI (WebAssembly System Interface) */
 #if defined(__wasi__)
 #undef __comp_enum__plat_type
@@ -174,11 +179,6 @@ extern "C" {
     ) pp_end \
 )
 #define __comp_bool__plat_is_posix plat_based_unix
-
-#define __comp_bool__plat_is_windows pp_Tok_eql(plat_type, plat_type_windows)
-#define __comp_bool__plat_is_linux pp_Tok_eql(plat_type, plat_type_linux)
-#define __comp_bool__plat_is_darwin pp_Tok_eql(plat_type, plat_type_darwin)
-#define __comp_bool__plat_is_wasi pp_Tok_eql(plat_type, plat_type_wasi)
 
 /* --- Data Model --- */
 

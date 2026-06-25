@@ -61,37 +61,21 @@ typedef union HashMap_Ctrl {
 T_use_P$(HashMap_Ctrl);
 T_use_O$(P_const$HashMap_Ctrl);
 T_use_O$(P$HashMap_Ctrl);
-$static const HashMap_Ctrl HashMap_Ctrl_default = { .fingerprint = HashMap_Ctrl_free, .used = 0 };
-#define HashMap_Ctrl_slot_free (n$(HashMap_Ctrl){ .fingerprint = HashMap_Ctrl_free, .used = 0 })
-#define HashMap_Ctrl_slot_tombstone (n$(HashMap_Ctrl){ .fingerprint = HashMap_Ctrl_tombstone, .used = 0 })
+#define HashMap_Ctrl_default HashMap_Ctrl_slot_free
+#define HashMap_Ctrl_slot_free l$((HashMap_Ctrl){ .fingerprint = HashMap_Ctrl_free, .used = 0 })
+#define HashMap_Ctrl_slot_tombstone l$((HashMap_Ctrl){ .fingerprint = HashMap_Ctrl_tombstone, .used = 0 })
 $attr($inline_always)
-$static fn_((HashMap_Ctrl_isUsed(HashMap_Ctrl ctrl))(bool)) {
-    return ctrl.used == 1;
-}
+$static fn_((HashMap_Ctrl_isUsed(HashMap_Ctrl ctrl))(bool));
 $attr($inline_always)
-$static fn_((HashMap_Ctrl_isTombstone(HashMap_Ctrl ctrl))(bool)) {
-    return ctrl.bits == HashMap_Ctrl_tombstone;
-}
+$static fn_((HashMap_Ctrl_isTombstone(HashMap_Ctrl ctrl))(bool));
 $attr($inline_always)
-$static fn_((HashMap_Ctrl_isFree(HashMap_Ctrl ctrl))(bool)) {
-    return ctrl.bits == HashMap_Ctrl_free;
-}
+$static fn_((HashMap_Ctrl_isFree(HashMap_Ctrl ctrl))(bool));
 $attr($inline_always)
-$static fn_((HashMap_Ctrl_takeFingerprint(u64 hash))(u8)) {
-    let hash_bits = 64;
-    let fp_bits = 7;
-    return (hash >> (hash_bits - fp_bits)) & ((2 << 6) - 1);
-}
+$static fn_((HashMap_Ctrl_takeFingerprint(u64 hash))(u8));
 $attr($inline_always)
-$static fn_((HashMap_Ctrl_fill(HashMap_Ctrl* ctrl, u8 fingerprint))(void)) {
-    ctrl->used = 1;
-    ctrl->fingerprint = fingerprint;
-}
+$static fn_((HashMap_Ctrl_fill(HashMap_Ctrl* ctrl, u8 fingerprint))(void));
 $attr($inline_always)
-$static fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
-    ctrl->used = 0;
-    ctrl->fingerprint = HashMap_Ctrl_tombstone;
-}
+$static fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void));
 
 /* --- HashMap_Header: Internal header stored before metadata --- */
 
@@ -467,6 +451,31 @@ $extern fn_((HashMap_ValIter_next(HashMap_ValIter* self, TypeInfo val_ty))(O$u_P
 $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$u_P$raw));
 
 /*========== Macro and Definitions ==========================================*/
+
+#if on_analysis_active_only || on_comptime
+fn_((HashMap_Ctrl_isUsed(HashMap_Ctrl ctrl))(bool)) {
+    return ctrl.used == 1;
+};
+fn_((HashMap_Ctrl_isTombstone(HashMap_Ctrl ctrl))(bool)) {
+    return ctrl.bits == HashMap_Ctrl_tombstone;
+};
+fn_((HashMap_Ctrl_isFree(HashMap_Ctrl ctrl))(bool)) {
+    return ctrl.bits == HashMap_Ctrl_free;
+};
+fn_((HashMap_Ctrl_takeFingerprint(u64 hash))(u8)) {
+    let hash_bits = 64;
+    let fp_bits = 7;
+    return (hash >> (hash_bits - fp_bits)) & ((2 << 6) - 1);
+};
+fn_((HashMap_Ctrl_fill(HashMap_Ctrl* ctrl, u8 fingerprint))(void)) {
+    ctrl->used = 1;
+    ctrl->fingerprint = fingerprint;
+};
+fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
+    ctrl->used = 0;
+    ctrl->fingerprint = HashMap_Ctrl_tombstone;
+};
+#endif /* on_analysis_active_only || on_comptime */
 
 #define __comp_anon__HashMap_Header$$(_K, _V...) \
     union { \

@@ -17,10 +17,12 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include "daterm-runtime/Term.h"
-#include <dh/fs/File.h>
+#include <dh/fs/File/self.h>
 #include <dh/io/Buf.h>
-#include <dh/io/common.h>
+#include <dh/io/self.h>
 #include <dh/mem/Alctr.h>
 #include <dh/time/Clock.h>
 
@@ -31,6 +33,8 @@ extern "C" {
 #include <signal.h>
 #include <termios.h>
 #endif /* plat_is_posix */
+
+/*========== Macros and Declarations ========================================*/
 
 errset_((daterm_ANSI_E)(
     daterm_ANSI_Unsupported
@@ -121,7 +125,23 @@ typedef struct daterm_ANSI_Cfg { /* clang-format off */
 } daterm_ANSI_Cfg; /* clang-format on */
 T_use_prl$(daterm_ANSI_Cfg);
 $attr($inline_always)
-$static fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
+$static fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg));
+
+$attr($must_check)
+$extern fn_((daterm_ANSI_init(daterm_ANSI_Cfg cfg))(mem_E$daterm_ANSI));
+$extern fn_((daterm_ANSI_fini(daterm_ANSI* self))(void));
+
+$attr($must_check)
+$extern fn_((daterm_ANSI_enableRawMode(daterm_ANSI* self))(E$void));
+$extern fn_((daterm_ANSI_disableRawMode(daterm_ANSI* self))(void));
+$extern fn_((daterm_ANSI_isInRawMode(const daterm_ANSI* self))(bool));
+
+$extern fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term));
+
+/*========== Macros and Definitions =========================================*/
+
+#if on_analysis_active_only || on_comptime
+fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
     return (daterm_ANSI_Cfg){
         .gpa = some(gpa),
         .input_file = io_handleStdIn(),
@@ -139,17 +159,7 @@ $static fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
         .clock = union_of((time_Clock_awake)(catch_((time_Awake_direct())($ignore, time_Awake_noop)))),
     };
 };
-
-$attr($must_check)
-$extern fn_((daterm_ANSI_init(daterm_ANSI_Cfg cfg))(mem_E$daterm_ANSI));
-$extern fn_((daterm_ANSI_fini(daterm_ANSI* self))(void));
-
-$attr($must_check)
-$extern fn_((daterm_ANSI_enableRawMode(daterm_ANSI* self))(E$void));
-$extern fn_((daterm_ANSI_disableRawMode(daterm_ANSI* self))(void));
-$extern fn_((daterm_ANSI_isInRawMode(const daterm_ANSI* self))(bool));
-
-$extern fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term));
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

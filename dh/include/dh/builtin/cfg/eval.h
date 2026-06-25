@@ -75,8 +75,8 @@ extern "C" {
 #define eval_analysis_mode_active_only __comp_enum__eval_analysis_mode_active_only
 #define eval_analysis_mode_full __comp_enum__eval_analysis_mode_full
 
-#define eval_analysis_mode_is_active_only __comp_bool__eval_analysis_mode_is_active_only
-#define eval_analysis_mode_is_full __comp_bool__eval_analysis_mode_is_full
+#define eval_analysis_is_active_only __comp_bool__eval_analysis_is_active_only
+#define eval_analysis_is_full __comp_bool__eval_analysis_is_full
 
 #define eval_on_analysis_active_only __comp_bool__eval_on_analysis_active_only
 #define eval_on_analysis_full __comp_bool__eval_on_analysis_full
@@ -147,15 +147,15 @@ extern "C" {
 #define __comp_enum__eval_analysis_mode_active_only 0
 #define __comp_enum__eval_analysis_mode_full 1
 
-#define __comp_bool__eval_analysis_mode_is_active_only \
+#define __comp_bool__eval_analysis_is_active_only \
     pp_Tok_eql(eval_analysis_mode, eval_analysis_mode_active_only)
-#define __comp_bool__eval_analysis_mode_is_full \
+#define __comp_bool__eval_analysis_is_full \
     pp_Tok_eql(eval_analysis_mode, eval_analysis_mode_full)
 
 #define __comp_bool__eval_on_analysis_active_only \
-    pp_and(eval_on_analysis, pp_and(eval_analysis_mode_is_active_only, eval_include_level_is_0))
+    pp_and(eval_on_analysis, pp_and(eval_analysis_is_active_only, eval_include_level_is_0))
 #define __comp_bool__eval_on_analysis_full \
-    pp_and(eval_on_analysis, eval_analysis_mode_is_full)
+    pp_and(eval_on_analysis, eval_analysis_is_full)
 
 #define __comp_syn__eval_analysis_only(_inner...) pp_if_(pp_and( \
     eval_on_analysis, \

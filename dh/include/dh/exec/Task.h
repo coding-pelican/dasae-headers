@@ -81,6 +81,7 @@ $extern fn_((exec_Task_idle(exec_Task* task))(Sched_Cancelable$void));
 
 #include "../meta.h"
 
+#if on_analysis_active_only || on_comptime
 fn_((exec_Task_kind(P_const$$(Clsr$raw) clsr))(exec_Task_Kind)) {
     claim_assert_nonnull(clsr), claim_assert(clsr->kind != Clsr_Kind_undefined);
     return clsr->kind == Clsr_Kind_co
@@ -93,6 +94,7 @@ fn_((exec_Task_kind(P_const$$(Clsr$raw) clsr))(exec_Task_Kind)) {
     $static fn_((tpl$(exec_Task_kind, _T)(P_const$$(Clsr$(_T)) clsr))(exec_Task_Kind)) { \
         return exec_Task_kind(clsr->as_raw); \
     } /* clang-format on */
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

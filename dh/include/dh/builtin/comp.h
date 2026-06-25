@@ -31,8 +31,8 @@ extern "C" {
 #define analysis_mode eval_analysis_mode
 #define analysis_mode_active_only eval_analysis_mode_active_only
 #define analysis_mode_full eval_analysis_mode_full
-#define analysis_mode_is_active_only eval_analysis_mode_is_active_only
-#define analysis_mode_is_full eval_analysis_mode_is_full
+#define analysis_is_active_only eval_analysis_is_active_only
+#define analysis_is_full eval_analysis_is_full
 #define on_analysis_active_only eval_on_analysis_active_only
 #define on_analysis_full eval_on_analysis_full
 #define analysis_only eval_analysis_only

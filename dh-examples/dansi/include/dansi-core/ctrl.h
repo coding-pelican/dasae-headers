@@ -31,9 +31,15 @@ claim_assert_static(eqlType$(dansi_ctrl_Code, u8));
 T_use_prl$(dansi_ctrl_Code);
 
 $attr($inline_always)
-$static fn_((dansi_ctrl_isCtrl(u8 byte))(bool)) {
+$static fn_((dansi_ctrl_isCtrl(u8 byte))(bool));
+
+/*========== Macros and Definitions =========================================*/
+
+#if on_analysis_active_only || on_comptime
+fn_((dansi_ctrl_isCtrl(u8 byte))(bool)) {
     return dansi_c0_isCtrl(byte) || byte == u8_(dansi_ctrl_Code_del) || dansi_c1_isCtrl(byte);
 };
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

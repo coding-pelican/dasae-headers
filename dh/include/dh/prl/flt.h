@@ -124,9 +124,8 @@ fn_((f32_isNormal(f32 x))(bool)) {
 #endif /* UNUSED_CODE */
 };
 fn_((f32_isSubnormal(f32 x))(bool)) {
-#if UNUSED_CODE
     return flt_isSubnormal(x);
-#endif /* UNUSED_CODE */
+#if UNUSED_CODE
     // IEEE 754 bit-level implementation
     union {
         f32 f;
@@ -136,6 +135,7 @@ fn_((f32_isSubnormal(f32 x))(bool)) {
     u32 mantissa = conv.u & 0x7FFFFF;
     // Subnormal: exponent = 0, mantissa != 0
     return (exponent == 0) && (mantissa != 0);
+#endif /* UNUSED_CODE */
 };
 fn_((f32_isZero(f32 x))(bool)) {
     return flt_isZero(x);
@@ -217,9 +217,8 @@ fn_((f64_isNormal(f64 x))(bool)) {
 #endif /* UNUSED_CODE */
 };
 fn_((f64_isSubnormal(f64 x))(bool)) {
-#if UNUSED_CODE
     return flt_isSubnormal(x);
-#endif /* UNUSED_CODE */
+#if UNUSED_CODE
     // IEEE 754 bit-level implementation
     union {
         f64 f;
@@ -229,6 +228,7 @@ fn_((f64_isSubnormal(f64 x))(bool)) {
     u64 mantissa = conv.u & 0xFFFFFFFFFFFFFULL;
     // Subnormal: exponent = 0, mantissa != 0
     return (exponent == 0) && (mantissa != 0);
+#endif /* UNUSED_CODE */
 };
 fn_((f64_isZero(f64 x))(bool)) {
     return flt_isZero(x);
