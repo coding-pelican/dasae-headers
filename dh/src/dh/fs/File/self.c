@@ -180,9 +180,9 @@ fn_((fs_File_stat(fs_File self))(fs_E$fs_File_Stat) $scope) {
         .size = as$(u64)(st.stx_size),
         .permissions = as$(fs_Mode)(st.stx_mode),
         .kind = fs__linuxKind(st.stx_mode),
-        .atime = time_SysTime_fromUnixEpoch(as$(u64)(st.stx_atime.tv_sec)),
-        .mtime = time_SysTime_fromUnixEpoch(as$(u64)(st.stx_mtime.tv_sec)),
-        .ctime = time_SysTime_fromUnixEpoch(as$(u64)(st.stx_ctime.tv_sec)),
+        .atime = time_Real_Inst_fromUnixEpoch(as$(u64)(st.stx_atime.tv_sec)),
+        .mtime = time_Real_Inst_fromUnixEpoch(as$(u64)(st.stx_mtime.tv_sec)),
+        .ctime = time_Real_Inst_fromUnixEpoch(as$(u64)(st.stx_ctime.tv_sec)),
         .block_size = as$(fs_BlockSize)(st.stx_blksize),
     });
 #else

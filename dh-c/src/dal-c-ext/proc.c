@@ -1,4 +1,5 @@
 #include "dal-c-ext/proc.h"
+#include <string.h>
 #ifdef _WIN32
 #include <windows.h>
 #include <process.h>
@@ -7,6 +8,7 @@
 #include <sys/wait.h>
 #endif
 
+#ifdef _WIN32
 static char* proc__buildCommandLine(const char** argv) {
     size_t cmd_len = 0;
     for (int i = 0; argv[i]; ++i) {
@@ -25,6 +27,38 @@ static char* proc__buildCommandLine(const char** argv) {
     }
     return cmd_line;
 }
+#endif
+#ifndef _WIN32
+static void proc__freeMutableArgv(char** argv) {
+    if (!argv) { return; }
+    for (size_t i = 0; argv[i] != NULL; ++i) {
+        free(argv[i]);
+    }
+    free(argv);
+}
+
+static char** proc__makeMutableArgv(const char** argv) {
+    if (!argv) { return NULL; }
+
+    size_t count = 0;
+    while (argv[count] != NULL) { ++count; }
+
+    char** result = (char**)calloc(count + 1, sizeof(char*));
+    if (!result) { return NULL; }
+
+    for (size_t i = 0; i < count; ++i) {
+        const size_t len = strlen(argv[i]);
+        result[i] = (char*)malloc(len + 1);
+        if (!result[i]) {
+            proc__freeMutableArgv(result);
+            return NULL;
+        }
+        memcpy(result[i], argv[i], len + 1);
+    }
+    result[count] = NULL;
+    return result;
+}
+#endif
 
 int proc_run(const char** argv, bool show_output) {
     if (!argv || !argv[0]) { return -1; }
@@ -71,7 +105,10 @@ int proc_run(const char** argv, bool show_output) {
             freopen("/dev/null", "w", stdout);
             freopen("/dev/null", "w", stderr);
         }
-        execvp(argv[0], argv);
+        char** const exec_argv = proc__makeMutableArgv(argv);
+        if (!exec_argv) { exit(1); }
+        execvp(exec_argv[0], exec_argv);
+        proc__freeMutableArgv(exec_argv);
         exit(1); // execvp failed
     } else {
         // Parent process
@@ -161,7 +198,10 @@ char* proc_output(const char** argv) {
         dup2(pipefd[1], STDOUT_FILENO);
         dup2(pipefd[1], STDERR_FILENO);
         close(pipefd[1]);
-        execvp(argv[0], argv);
+        char** const exec_argv = proc__makeMutableArgv(argv);
+        if (!exec_argv) { exit(1); }
+        execvp(exec_argv[0], exec_argv);
+        proc__freeMutableArgv(exec_argv);
         exit(1);
     } else {
         // Parent process
@@ -171,8 +211,9 @@ char* proc_output(const char** argv) {
         char* output = NULL;
         ssize_t bytes_read = 0;
         while ((bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1)) > 0) {
-            buffer[bytes_read] = '\0';
-            char* const temp = (char*)realloc(output, total_size + bytes_read + 1);
+            const size_t bytes_count = (size_t)bytes_read;
+            buffer[bytes_count] = '\0';
+            char* const temp = (char*)realloc(output, total_size + bytes_count + 1);
             if (!temp) {
                 free(output);
                 close(pipefd[0]);
@@ -180,8 +221,8 @@ char* proc_output(const char** argv) {
                 return NULL;
             }
             output = temp;
-            memcpy(output + total_size, buffer, (size_t)bytes_read);
-            total_size += bytes_read;
+            memcpy(output + total_size, buffer, bytes_count);
+            total_size += bytes_count;
         }
         if (output) { output[total_size] = '\0'; }
         close(pipefd[0]);

@@ -656,9 +656,9 @@ $static fn_((sys_call_linux_mremap(void* old_addr, usize old_size, usize new_siz
 /*---------- <time.h> -------------------------------------------------------*/
 
 $attr($inline)
-$static fn_((sys_call_linux_clock_gettime(sys_call_linux_word clock_id, void* ts))(sys_call_linux_word));
+$static fn_((sys_call_linux_clock_gettime(sys_call_linux_clockid_t clock_id, sys_call_linux_timespec* ts))(sys_call_linux_word));
 $attr($inline)
-$static fn_((sys_call_linux_nanosleep(void* req, void* rem))(sys_call_linux_word));
+$static fn_((sys_call_linux_nanosleep(const sys_call_linux_timespec* req, sys_call_linux_timespec* rem))(sys_call_linux_word));
 
 /*---------- <sched.h> ------------------------------------------------------*/
 
@@ -1331,7 +1331,7 @@ fn_((sys_call_linux_msync(void* addr, usize len, sys_call_linux_word flags))(sys
 
 /*---------- <time.h> -------------------------------------------------------*/
 
-fn_((sys_call_linux_clock_gettime(sys_call_linux_word clock_id, void* ts))(sys_call_linux_word)) {
+fn_((sys_call_linux_clock_gettime(sys_call_linux_clockid_t clock_id, sys_call_linux_timespec* ts))(sys_call_linux_word)) {
     return sys_call_linux_syscall2(sys_call_linux_SYS_clock_gettime, clock_id, (sys_call_linux_word)(ts));
 };
 
@@ -1349,7 +1349,7 @@ fn_((sys_call_linux_exit_group(i32 status))(void)) {
 
 /*---------- <time.h> -------------------------------------------------------*/
 
-fn_((sys_call_linux_nanosleep(void* req, void* rem))(sys_call_linux_word)) {
+fn_((sys_call_linux_nanosleep(const sys_call_linux_timespec* req, sys_call_linux_timespec* rem))(sys_call_linux_word)) {
     return pp_if_(arch_is_riscv32)(
         pp_then_(sys_call_linux_syscall4(
             sys_call_linux_SYS_clock_nanosleep_time64,

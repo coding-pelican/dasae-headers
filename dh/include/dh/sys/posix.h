@@ -39,8 +39,10 @@ typedef pp_if_(plat_is_linux)(
         pp_else_(Void)
     ))) sys_posix_clockid_t;
 
-$attr($inline_always $must_check)
+$attr($inline_always)
 $static fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32));
+$attr($inline_always)
+$static fn_((sys_posix_nanosleep(const sys_posix_timespec* req, sys_posix_timespec* rem))(i32));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -65,12 +67,34 @@ $static fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_tim
 
 #if on_analysis_active_only || on_comptime
 fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32)) {
-    return pp_if_(plat_is_linux)(
-        pp_then_(as$(i32)(sys_call_linux_clock_gettime(as$(sys_call_linux_word)(clock_id), ts))),
-        pp_else_(pp_if_(plat_is_darwin)(
-            pp_then_(sys_libc_darwin_clock_gettime(clock_id, ts)),
-            pp_else_($ignore_void clock_id, $ignore_void ts, -1)
-        )));
+    pp_switch_((plat_type)(
+        pp_case_((plat_type_linux)(
+            return as$(i32)(sys_call_linux_clock_gettime(as$(sys_call_linux_word)(clock_id), ts))
+        )),
+        pp_case_((plat_type_darwin)(
+            return sys_libc_darwin_clock_gettime(clock_id, ts)
+        )),
+        pp_default_({
+            let_ignore = clock_id;
+            let_ignore = ts;
+            claim_unreachable_msg(nameOf(sys_posix_clock_gettime) "is not supported on this platform");
+        })
+    ));
+};
+fn_((sys_posix_nanosleep(const sys_posix_timespec* req, sys_posix_timespec* rem))(i32)) {
+    pp_switch_((plat_type)(
+        pp_case_((plat_type_linux)(
+            return as$(i32)(sys_call_linux_nanosleep(req, rem))
+        )),
+        pp_case_((plat_type_darwin)(
+            return sys_libc_darwin_nanosleep(req, rem)
+        )),
+        pp_default_({
+            let_ignore = req;
+            let_ignore = rem;
+            claim_unreachable_msg(nameOf(sys_posix_nanosleep) "is not supported on this platform");
+        })
+    ));
 };
 #endif /* on_analysis_active_only || on_comptime */
 

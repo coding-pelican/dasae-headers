@@ -53,7 +53,7 @@ extern "C" {
     pp_else_(io_nl_unix) \
 )
 #define __str__io_nl_windows io_crlf
-#define __str__io_nl_unix io_nl
+#define __str__io_nl_unix io_lf
 
 #if defined(__cplusplus)
 } /* extern "C" */

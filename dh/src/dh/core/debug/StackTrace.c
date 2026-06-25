@@ -113,14 +113,14 @@ $attr($callconv_stdcall)
 $static fn_((debug_StackTrace__windows__handleException(EXCEPTION_POINTERS* ExceptionInfo))(LONG)) {
     let code = ExceptionInfo->ExceptionRecord->ExceptionCode;
     let reason = expr_(S_const$u8 $scope)(switch (code) {
-        case EXCEPTION_ACCESS_VIOLATION: $break_(u8_l("access violation"));
-        case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: $break_(u8_l("array bounds exceeded"));
-        case EXCEPTION_DATATYPE_MISALIGNMENT: $break_(u8_l("datatype misalignment"));
-        case EXCEPTION_FLT_DIVIDE_BY_ZERO: $break_(u8_l("float divide by zero"));
-        case EXCEPTION_INT_DIVIDE_BY_ZERO: $break_(u8_l("integer divide by zero"));
-        case EXCEPTION_ILLEGAL_INSTRUCTION: $break_(u8_l("illegal instruction"));
-        case EXCEPTION_STACK_OVERFLOW: $break_(u8_l("stack overflow"));
-        default: $break_(u8_l("unknown exception"));
+        case_((EXCEPTION_ACCESS_VIOLATION)) $break_(u8_l("access violation")) $end(case);
+        case_((EXCEPTION_ARRAY_BOUNDS_EXCEEDED)) $break_(u8_l("array bounds exceeded")) $end(case);
+        case_((EXCEPTION_DATATYPE_MISALIGNMENT)) $break_(u8_l("datatype misalignment")) $end(case);
+        case_((EXCEPTION_FLT_DIVIDE_BY_ZERO)) $break_(u8_l("float divide by zero")) $end(case);
+        case_((EXCEPTION_INT_DIVIDE_BY_ZERO)) $break_(u8_l("integer divide by zero")) $end(case);
+        case_((EXCEPTION_ILLEGAL_INSTRUCTION)) $break_(u8_l("illegal instruction")) $end(case);
+        case_((EXCEPTION_STACK_OVERFLOW)) $break_(u8_l("stack overflow")) $end(case);
+        default_() $break_(u8_l("unknown exception")) $end(default);
     }) $unscoped(expr);
     debug_StackTrace__printPanicHeader(reason, as$(usize)(code));
     debug_StackTrace_print();
@@ -184,12 +184,12 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
 
 $static fn_((debug_StackTrace__unix__handleSignal(i32 sig))(void)) {
     let reason = expr_(S_const$u8 $scope)(switch (sig) {
-        case SIGSEGV: $break_(u8_l("segmentation fault"));
-        case SIGABRT: $break_(u8_l("aborted"));
-        case SIGFPE: $break_(u8_l("floating point exception"));
-        case SIGILL: $break_(u8_l("illegal instruction"));
-        case SIGBUS: $break_(u8_l("bus error"));
-        default: $break_(u8_l("unknown signal"));
+        case_((SIGSEGV)) $break_(u8_l("segmentation fault")) $end(case);
+        case_((SIGABRT)) $break_(u8_l("aborted")) $end(case);
+        case_((SIGFPE)) $break_(u8_l("floating point exception")) $end(case);
+        case_((SIGILL)) $break_(u8_l("illegal instruction")) $end(case);
+        case_((SIGBUS)) $break_(u8_l("bus error")) $end(case);
+        default_() $break_(u8_l("unknown signal")) $end(default);
     }) $unscoped(expr);
     debug_StackTrace__printPanicHeader(reason, 0); /* Signals usually don't have a code */
     debug_StackTrace_print();
@@ -211,7 +211,7 @@ fn_((debug_StackTrace__unix_setupCrashHandler(void))(void)) {
 
 fn_((debug_StackTrace__unix_print(void))(void)) {
     $static var_(stack, A$$(debug_StackTrace__max_frames, P$raw)) $undefined_static;
-    let frames = backtrace(A_ptr(stack), debug_StackTrace__max_frames);
+    let frames = as$(usize)(backtrace(A_ptr(stack), debug_StackTrace__max_frames));
     let tid = as$(u64)(thrd_currId());
 
     io_stream_eprintln(u8_l("stack backtrace (tid: {:ul}):"), tid);

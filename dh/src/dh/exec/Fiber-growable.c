@@ -217,12 +217,10 @@ fn_((exec_Fiber__ensureWindowsExceptionHandler(void))(bool)) {
     while (true) {
         let state = atom_V_load(&exec_Fiber__windows_handler_state, atom_MemOrd_acquire);
         switch (state) {
-        case exec_Fiber__handler_state_ready: return true;
-        case exec_Fiber__handler_state_failed: return false;
-        case exec_Fiber__handler_state_installing:
-            atom_spinLoopHint();
-            continue;
-        default: break;
+        case_((exec_Fiber__handler_state_ready)) return true $end(case);
+        case_((exec_Fiber__handler_state_failed)) return false $end(case);
+        case_((exec_Fiber__handler_state_installing)) $continue_(atom_spinLoopHint()) $end(case);
+        default_() $do_nothing $end(default);
         }
         if (isSome(atom_V_cmpXchgStrong(
                 &exec_Fiber__windows_handler_state,
@@ -265,21 +263,18 @@ fn_((exec_Fiber__ensureUnixSignalHandler(void))(bool)) {
     while (true) {
         let state = atom_V_load(&exec_Fiber__unix_handler_state, atom_MemOrd_acquire);
         switch (state) {
-        case exec_Fiber__handler_state_ready: return true;
-        case exec_Fiber__handler_state_failed: return false;
-        case exec_Fiber__handler_state_installing:
-            atom_spinLoopHint();
-            continue;
-        default: break;
+        case_((exec_Fiber__handler_state_ready)) return true $end(case);
+        case_((exec_Fiber__handler_state_failed)) return false $end(case);
+        case_((exec_Fiber__handler_state_installing)) $continue_(atom_spinLoopHint()) $end(case);
+        default_() $do_nothing $end(default);
         }
-        if_some((atom_V_cmpXchgStrong(
-               &exec_Fiber__unix_handler_state,
-               exec_Fiber__handler_state_uninit,
-               exec_Fiber__handler_state_installing,
-               atom_MemOrd_acq_rel,
-               atom_MemOrd_acquire
-           ))(continue))
-            ;
+        if (isSome(atom_V_cmpXchgStrong(
+                &exec_Fiber__unix_handler_state,
+                exec_Fiber__handler_state_uninit,
+                exec_Fiber__handler_state_installing,
+                atom_MemOrd_acq_rel,
+                atom_MemOrd_acquire
+            ))) continue;
 
         struct sigaction current = cleared();
         if (sigaction(SIGSEGV, null, &current) != 0) {
@@ -377,6 +372,7 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
     self->is_virtual = true;
     return_ok({});
 #elif plat_based_unix
+    let_ignore = gpa;
     let reserve_size = exec_Fiber_alignPage(policy.reserve_size);
     var guard_size = exec_Fiber_alignPage(policy.guard_size);
     var commit_size = exec_Fiber_alignPage(policy.initial_commit_size);

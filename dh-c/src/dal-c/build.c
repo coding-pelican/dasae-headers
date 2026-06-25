@@ -1938,14 +1938,22 @@ static bool dal_c__copyLibraryArtifacts(
 }
 
 static char* dal_c__buildParallelFlag(void) {
-    bool is_windows = dal_c__platformIsWindows();
-    if (is_windows) {
-        const char* procs = env_get("NUMBER_OF_PROCESSORS");
-        if (procs) {
-            return str_format("-j%s", procs);
-        }
+    const char* jobs = env_get("DAL_C_MAKE_JOBS");
+    if (jobs && jobs[0] != '\0') {
+        return str_format("-j%s", jobs);
     }
-    return strdup("-j");
+#if _WIN32
+    const char* procs = env_get("NUMBER_OF_PROCESSORS");
+    if (procs) {
+        return str_format("-j%s", procs);
+    }
+#else
+    long procs = sysconf(_SC_NPROCESSORS_ONLN);
+    if (procs > 0) {
+        return str_format("-j%ld", procs);
+    }
+#endif
+    return strdup("-j1");
 }
 
 static void dal_c__writePlatformDebugFlags(FILE* fp, bool is_windows, const dal_c_ProfileSpec* profile) {

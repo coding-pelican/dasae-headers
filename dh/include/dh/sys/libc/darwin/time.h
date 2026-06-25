@@ -39,6 +39,7 @@ typedef enum sys_libc_darwin_CLOCK {
 typedef sys_libc_darwin_CLOCK sys_libc_darwin_clockid_t;
 
 $extern fn_((sys_libc_darwin_clock_gettime(sys_libc_darwin_clockid_t clock_id, sys_libc_darwin_timespec* ts))(i32));
+$extern fn_((sys_libc_darwin_nanosleep(const sys_libc_darwin_timespec* req, sys_libc_darwin_timespec* rem))(i32));
 
 #if defined(__cplusplus)
 } /* extern "C" */

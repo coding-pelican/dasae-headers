@@ -219,7 +219,7 @@ fn_((thrd_Mtx__pthread_unlock(thrd_Mtx* self))(void)) {
 /* --- Default --- */
 
 #if !thrd_Mtx_has_specialized
-#include "dh/Thrd/ftx.h"
+#include "dh/thrd/ftx.h"
 
 #define thrd_Mtx__default_unlocked (as$(u32)(0b00))
 #define thrd_Mtx__default_locked (as$(u32)(0b01))
