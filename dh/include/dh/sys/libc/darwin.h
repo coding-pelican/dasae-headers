@@ -18,6 +18,7 @@ extern "C" {
 #include "darwin/cfg.h"
 #include "darwin/time.h"
 #include "darwin/sync.h"
+#include "darwin/signal.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

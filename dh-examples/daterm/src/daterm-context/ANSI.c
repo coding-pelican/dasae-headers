@@ -82,12 +82,12 @@ $static fn_((daterm_ANSI__windows_enableCtrlHandler(void))(E$void));
 $static fn_((daterm_ANSI__windows_disableCtrlHandler(void))(void));
 #endif /* plat_is_windows */
 #if plat_is_posix
-T_alias$((posix_sigaction)(struct sigaction));
+T_alias$((posix_sigaction)(sys_posix_sigaction));
 T_use_E$(posix_sigaction);
 $static fn_((daterm_ANSI__posix_enableResizeEvents(void))(E$posix_sigaction));
 $static fn_((daterm_ANSI__posix_disableResizeEvents(posix_sigaction old))(E$void));
 $static fn_((daterm_ANSI__posix_onResize(int sig))(void));
-$static var volatile sig_atomic_t daterm_ANSI__posix_resize_pending = 0;
+$static var volatile sys_posix_sig_atomic_t daterm_ANSI__posix_resize_pending = 0;
 #endif /* plat_is_posix */
 
 /*========== External Definitions ===========================================*/
@@ -1268,14 +1268,22 @@ fn_((daterm_ANSI__posix_enableResizeEvents(void))(E$posix_sigaction) $scope) {
     var_(old, posix_sigaction) $undefined;
     var_(action, posix_sigaction) = cleared();
     action.sa_handler = daterm_ANSI__posix_onResize;
-    sigemptyset(&action.sa_mask);
-    if (sigaction(SIGWINCH, &action, &old) < 0) return_err(E_cause$Unexpected());
+    sys_posix_sigemptyset(&action.sa_mask);
+    if (sys_posix_sigaction_set(
+            sys_posix_SIGWINCH,
+            some$((O$P$raw)(&action)),
+            some$((O$P$raw)(&old))
+        ) < 0) return_err(E_cause$Unexpected());
     daterm_ANSI__posix_resize_pending = 0;
     return_ok(old);
 } $unscoped(fn);
 
 fn_((daterm_ANSI__posix_disableResizeEvents(posix_sigaction old))(E$void) $scope) {
-    if (sigaction(SIGWINCH, &old, null) < 0) return_err(E_cause$Unexpected());
+    if (sys_posix_sigaction_set(
+            sys_posix_SIGWINCH,
+            some$((O$P$raw)(&old)),
+            none$((O$P$raw))
+        ) < 0) return_err(E_cause$Unexpected());
     daterm_ANSI__posix_resize_pending = 0;
     return_ok({});
 } $unscoped(fn);

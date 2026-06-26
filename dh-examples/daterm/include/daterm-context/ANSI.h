@@ -29,7 +29,7 @@ extern "C" {
 #include <dh/sys/api/windows/handle.h>
 #endif /* plat_is_windows */
 #if plat_is_posix
-#include <signal.h>
+#include <dh/sys/posix.h>
 #endif /* plat_is_posix */
 
 /*========== Macros and Declarations ========================================*/
@@ -41,7 +41,7 @@ errset_((daterm_ANSI_E)(
 typedef struct daterm_ANSI__RawMode {
     var_(tty_restore, io_TTY_Restore);
 #if plat_is_posix
-    var_(old_winch, struct sigaction);
+    var_(old_winch, sys_posix_sigaction);
 #endif /* plat_is_posix */
 } daterm_ANSI__RawMode;
 T_use_prl$(daterm_ANSI__RawMode);

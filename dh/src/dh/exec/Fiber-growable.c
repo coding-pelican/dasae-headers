@@ -5,7 +5,7 @@
 #include "dh/sys/api/windows/except.h"
 #include "dh/sys/api/windows/nt.h"
 #elif plat_based_unix
-#include <signal.h>
+#include "dh/sys/posix.h"
 #endif
 
 #if plat_is_windows || plat_based_unix
@@ -25,11 +25,11 @@ $static fn_((exec_Fiber__faultInFiberStack(exec_Fiber* self, usize fault_addr))(
 static LONG CALLBACK exec_Fiber__windowsHandleException(EXCEPTION_POINTERS* info);
 #elif plat_based_unix
 $static var_(exec_Fiber__unix_handler_state, atom_V$$(u32)) = atom_V_init(exec_Fiber__handler_state_uninit);
-$static var_(exec_Fiber__unix_old_sigsegv, struct sigaction);
-$static var_(exec_Fiber__unix_old_sigbus, struct sigaction);
+$static var_(exec_Fiber__unix_old_sigsegv, sys_posix_sigaction);
+$static var_(exec_Fiber__unix_old_sigbus, sys_posix_sigaction);
 $static fn_((exec_Fiber__ensureUnixSignalHandler(void))(bool));
 $static fn_((exec_Fiber__faultInFiberStack(exec_Fiber* self, usize fault_addr))(bool));
-static void exec_Fiber__unixHandleSignal(i32 sig, siginfo_t* info, P$raw uctx);
+static void exec_Fiber__unixHandleSignal(i32 sig, sys_posix_siginfo* info, P$raw uctx);
 #endif
 
 #if TEST_enabled
@@ -276,36 +276,56 @@ fn_((exec_Fiber__ensureUnixSignalHandler(void))(bool)) {
                 atom_MemOrd_acquire
             ))) continue;
 
-        struct sigaction current = cleared();
-        if (sigaction(SIGSEGV, null, &current) != 0) {
+        sys_posix_sigaction current = cleared();
+        if (sys_posix_sigaction_set(
+                sys_posix_SIGSEGV,
+                none$((O$P$raw)),
+                some$((O$P$raw)(&current))
+            ) != 0) {
             atom_V_store(&exec_Fiber__unix_handler_state, exec_Fiber__handler_state_failed, atom_MemOrd_release);
             return false;
         }
-        if (current.sa_handler != SIG_DFL) {
+        if (current.sa_handler != sys_posix_SIG_DFL) {
             atom_V_store(&exec_Fiber__unix_handler_state, exec_Fiber__handler_state_failed, atom_MemOrd_release);
             return false;
         }
         exec_Fiber__unix_old_sigsegv = current;
-        if (sigaction(SIGBUS, null, &current) != 0) {
+        if (sys_posix_sigaction_set(
+                sys_posix_SIGBUS,
+                none$((O$P$raw)),
+                some$((O$P$raw)(&current))
+            ) != 0) {
             atom_V_store(&exec_Fiber__unix_handler_state, exec_Fiber__handler_state_failed, atom_MemOrd_release);
             return false;
         }
-        if (current.sa_handler != SIG_DFL) {
+        if (current.sa_handler != sys_posix_SIG_DFL) {
             atom_V_store(&exec_Fiber__unix_handler_state, exec_Fiber__handler_state_failed, atom_MemOrd_release);
             return false;
         }
         exec_Fiber__unix_old_sigbus = current;
 
-        struct sigaction action = cleared();
-        action.sa_flags = SA_SIGINFO;
+        sys_posix_sigaction action = cleared();
+        action.sa_flags = sys_posix_SA_SIGINFO;
         action.sa_sigaction = exec_Fiber__unixHandleSignal;
-        sigemptyset(&action.sa_mask);
-        if (sigaction(SIGSEGV, &action, null) != 0) {
+        sys_posix_sigemptyset(&action.sa_mask);
+        if (sys_posix_sigaction_set(
+                sys_posix_SIGSEGV,
+                some$((O$P$raw)(&action)),
+                none$((O$P$raw))
+            ) != 0) {
             atom_V_store(&exec_Fiber__unix_handler_state, exec_Fiber__handler_state_failed, atom_MemOrd_release);
             return false;
         }
-        if (sigaction(SIGBUS, &action, null) != 0) {
-            let_ignore = sigaction(SIGSEGV, &exec_Fiber__unix_old_sigsegv, null);
+        if (sys_posix_sigaction_set(
+                sys_posix_SIGBUS,
+                some$((O$P$raw)(&action)),
+                none$((O$P$raw))
+            ) != 0) {
+            let_ignore = sys_posix_sigaction_set(
+                sys_posix_SIGSEGV,
+                some$((O$P$raw)(&exec_Fiber__unix_old_sigsegv)),
+                none$((O$P$raw))
+            );
             atom_V_store(&exec_Fiber__unix_handler_state, exec_Fiber__handler_state_failed, atom_MemOrd_release);
             return false;
         }
@@ -314,11 +334,11 @@ fn_((exec_Fiber__ensureUnixSignalHandler(void))(bool)) {
     }
 };
 
-static void exec_Fiber__unixHandleSignal(i32 sig, siginfo_t* info, P$raw uctx) {
+static void exec_Fiber__unixHandleSignal(i32 sig, sys_posix_siginfo* info, P$raw uctx) {
     let_ignore = uctx;
     let fiber = exec_Fiber__current;
     if (info != null && fiber != null) {
-        let fault_addr = ptrToInt(info->si_addr);
+        let fault_addr = ptrToInt(sys_posix_siginfo_addr(info));
         if (exec_Fiber__faultInFiberStack(fiber, fault_addr)) {
             exec_Fiber_ensureDiagSet(
                 exec_Fiber_EnsureDiag_Stage_fail_post_fault,
@@ -330,9 +350,13 @@ static void exec_Fiber__unixHandleSignal(i32 sig, siginfo_t* info, P$raw uctx) {
             );
         }
     }
-    struct sigaction old = sig == SIGBUS ? exec_Fiber__unix_old_sigbus : exec_Fiber__unix_old_sigsegv;
-    let_ignore = sigaction(sig, &old, null);
-    raise(sig);
+    sys_posix_sigaction old = sig == sys_posix_SIGBUS ? exec_Fiber__unix_old_sigbus : exec_Fiber__unix_old_sigsegv;
+    let_ignore = sys_posix_sigaction_set(
+        sig,
+        some$((O$P$raw)(&old)),
+        none$((O$P$raw))
+    );
+    sys_posix_raise(sig);
 }
 #endif
 

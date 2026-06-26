@@ -35,8 +35,71 @@ typedef struct sys_call_linux_timespec {
 typedef enum sys_call_linux_CLOCK {
     sys_call_linux_CLOCK_REALTIME = 0,
     sys_call_linux_CLOCK_MONOTONIC = 1,
+    sys_call_linux_CLOCK_PROCESS_CPUTIME_ID = 2,
+    sys_call_linux_CLOCK_THREAD_CPUTIME_ID = 3,
+    sys_call_linux_CLOCK_MONOTONIC_RAW = 4,
+    sys_call_linux_CLOCK_BOOTTIME = 7,
 } sys_call_linux_CLOCK;
 typedef sys_call_linux_CLOCK sys_call_linux_clockid_t;
+
+/*---------- <sys/time.h> ---------------------------------------------------*/
+
+typedef struct sys_call_linux_timeval {
+    var_(tv_sec, sys_call_linux_word);
+    var_(tv_usec, sys_call_linux_word);
+} sys_call_linux_timeval;
+
+/*---------- <signal.h> -----------------------------------------------------*/
+
+typedef struct sys_call_linux_sigset {
+    var_(bits, u64);
+} sys_call_linux_sigset;
+
+struct sys_call_linux_siginfo;
+typedef struct sys_call_linux_siginfo sys_call_linux_siginfo;
+
+typedef void (*sys_call_linux_sighandler_fn)(i32);
+typedef void (*sys_call_linux_sigaction_fn)(i32, sys_call_linux_siginfo*, void*);
+typedef void (*sys_call_linux_sigrestore_fn)(void);
+
+#if arch_is_x86_64
+typedef struct sys_call_linux_sigaction {
+    union {
+        sys_call_linux_sighandler_fn sa_handler;
+        sys_call_linux_sigaction_fn sa_sigaction;
+    };
+    var_(sa_mask, sys_call_linux_sigset);
+    var_(sa_flags, sys_call_linux_word);
+    var_(sa_restorer, sys_call_linux_sigrestore_fn);
+} sys_call_linux_sigaction;
+#else
+typedef struct sys_call_linux_sigaction {
+    union {
+        sys_call_linux_sighandler_fn sa_handler;
+        sys_call_linux_sigaction_fn sa_sigaction;
+    };
+    var_(sa_flags, sys_call_linux_word);
+    var_(sa_restorer, sys_call_linux_sigrestore_fn);
+    var_(sa_mask, sys_call_linux_sigset);
+} sys_call_linux_sigaction;
+#endif /* arch_is_x86_64 */
+
+typedef enum sys_call_linux_SIG {
+    sys_call_linux_SIGILL = 4,
+    sys_call_linux_SIGTRAP = 5,
+    sys_call_linux_SIGABRT = 6,
+    sys_call_linux_SIGBUS = 7,
+    sys_call_linux_SIGFPE = 8,
+    sys_call_linux_SIGSEGV = 11,
+    sys_call_linux_SIGWINCH = 28,
+} sys_call_linux_SIG;
+
+typedef enum sys_call_linux_SA {
+    sys_call_linux_SA_SIGINFO = 0x00000004,
+    sys_call_linux_SA_RESTORER = 0x04000000,
+} sys_call_linux_SA;
+
+#define sys_call_linux_SIG_DFL as$(sys_call_linux_sighandler_fn)(0)
 
 /*---------- <sys/stat.h> ---------------------------------------------------*/
 
@@ -400,6 +463,15 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_riscv32)(403)),
         pp_default_(0)
     )),
+    sys_call_linux_SYS_clock_getres = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(229)),
+        pp_case_((arch_type_x86)(266)),
+        pp_case_((arch_type_aarch64)(114)),
+        pp_case_((arch_type_arm)(264)),
+        pp_case_((arch_type_riscv64)(114)),
+        pp_case_((arch_type_riscv32)(406)),
+        pp_default_(0)
+    )),
     sys_call_linux_SYS_clock_nanosleep_time64 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(230)),
         pp_case_((arch_type_x86)(407)),
@@ -472,6 +544,33 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_riscv32)(129)),
         pp_default_(0)
     )),
+    sys_call_linux_SYS_rt_sigaction = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(13)),
+        pp_case_((arch_type_x86)(174)),
+        pp_case_((arch_type_aarch64)(134)),
+        pp_case_((arch_type_arm)(174)),
+        pp_case_((arch_type_riscv64)(134)),
+        pp_case_((arch_type_riscv32)(134)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_rt_sigreturn = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(15)),
+        pp_case_((arch_type_x86)(173)),
+        pp_case_((arch_type_aarch64)(139)),
+        pp_case_((arch_type_arm)(173)),
+        pp_case_((arch_type_riscv64)(139)),
+        pp_case_((arch_type_riscv32)(139)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_gettimeofday = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(96)),
+        pp_case_((arch_type_x86)(78)),
+        pp_case_((arch_type_aarch64)(169)),
+        pp_case_((arch_type_arm)(78)),
+        pp_case_((arch_type_riscv64)(169)),
+        pp_case_((arch_type_riscv32)(169)),
+        pp_default_(0)
+    )),
     sys_call_linux_SYS_exit = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(60)),
         pp_case_((arch_type_x86)(1)),
@@ -515,6 +614,15 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(224)),
         pp_case_((arch_type_riscv64)(178)),
         pp_case_((arch_type_riscv32)(178)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_getpid = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(39)),
+        pp_case_((arch_type_x86)(20)),
+        pp_case_((arch_type_aarch64)(172)),
+        pp_case_((arch_type_arm)(20)),
+        pp_case_((arch_type_riscv64)(172)),
+        pp_case_((arch_type_riscv32)(172)),
         pp_default_(0)
     )),
     sys_call_linux_SYS_sched_getaffinity = pp_switch_((arch_type)(
@@ -617,6 +725,8 @@ $attr($no_return $inline)
 $static fn_((sys_call_linux_exit_group(i32 status))(void));
 $attr($inline)
 $static fn_((sys_call_linux_gettid(void))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_getpid(void))(sys_call_linux_word));
 
 /*---------- <fcntl.h> ------------------------------------------------------*/
 
@@ -658,7 +768,14 @@ $static fn_((sys_call_linux_mremap(void* old_addr, usize old_size, usize new_siz
 $attr($inline)
 $static fn_((sys_call_linux_clock_gettime(sys_call_linux_clockid_t clock_id, sys_call_linux_timespec* ts))(sys_call_linux_word));
 $attr($inline)
+$static fn_((sys_call_linux_clock_getres(sys_call_linux_clockid_t clock_id, sys_call_linux_timespec* ts))(sys_call_linux_word));
+$attr($inline)
 $static fn_((sys_call_linux_nanosleep(const sys_call_linux_timespec* req, sys_call_linux_timespec* rem))(sys_call_linux_word));
+
+/*---------- <sys/time.h> ---------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_gettimeofday(sys_call_linux_timeval* tv))(sys_call_linux_word));
 
 /*---------- <sched.h> ------------------------------------------------------*/
 
@@ -676,6 +793,14 @@ $static fn_((sys_call_linux_wait4(sys_call_linux_word pid, int* status, sys_call
 
 $attr($inline)
 $static fn_((sys_call_linux_kill(sys_call_linux_word pid, sys_call_linux_word signal))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_sigemptyset(sys_call_linux_sigset* set))(void));
+$attr($inline)
+$static fn_((sys_call_linux_siginfo_addr(const sys_call_linux_siginfo* info))(void*));
+$attr($inline)
+$static fn_((sys_call_linux_rt_sigaction(sys_call_linux_word signal, const sys_call_linux_sigaction* act, sys_call_linux_sigaction* old_act))(sys_call_linux_word));
+$attr(comp_naked $no_return $maybe_unused)
+$static fn_((sys_call_linux_rt_sigreturn_trampoline(void))(void));
 
 /*---------- <linux/futex.h> ------------------------------------------------*/
 
@@ -1335,6 +1460,16 @@ fn_((sys_call_linux_clock_gettime(sys_call_linux_clockid_t clock_id, sys_call_li
     return sys_call_linux_syscall2(sys_call_linux_SYS_clock_gettime, clock_id, (sys_call_linux_word)(ts));
 };
 
+fn_((sys_call_linux_clock_getres(sys_call_linux_clockid_t clock_id, sys_call_linux_timespec* ts))(sys_call_linux_word)) {
+    return sys_call_linux_syscall2(sys_call_linux_SYS_clock_getres, clock_id, (sys_call_linux_word)(ts));
+};
+
+/*---------- <sys/time.h> ---------------------------------------------------*/
+
+fn_((sys_call_linux_gettimeofday(sys_call_linux_timeval* tv))(sys_call_linux_word)) {
+    return sys_call_linux_syscall2(sys_call_linux_SYS_gettimeofday, (sys_call_linux_word)(tv), 0);
+};
+
 /*---------- <unistd.h> -----------------------------------------------------*/
 
 fn_((sys_call_linux_exit(i32 status))(void)) {
@@ -1395,6 +1530,10 @@ fn_((sys_call_linux_gettid(void))(sys_call_linux_word)) {
     return sys_call_linux_syscall0(sys_call_linux_SYS_gettid);
 };
 
+fn_((sys_call_linux_getpid(void))(sys_call_linux_word)) {
+    return sys_call_linux_syscall0(sys_call_linux_SYS_getpid);
+};
+
 fn_((sys_call_linux_fork(void))(sys_call_linux_word)) {
     return sys_call_linux_syscall5(sys_call_linux_SYS_clone, 17, 0, 0, 0, 0);
 };
@@ -1415,6 +1554,62 @@ fn_((sys_call_linux_wait4(sys_call_linux_word pid, int* status, sys_call_linux_w
 
 fn_((sys_call_linux_kill(sys_call_linux_word pid, sys_call_linux_word signal))(sys_call_linux_word)) {
     return sys_call_linux_syscall2(sys_call_linux_SYS_kill, pid, signal);
+};
+
+fn_((sys_call_linux_sigemptyset(sys_call_linux_sigset* set))(void)) {
+    raw_memset0(set, sizeOf$(sys_call_linux_sigset));
+};
+
+fn_((sys_call_linux_siginfo_addr(const sys_call_linux_siginfo* info))(void*)) {
+    let bytes = as$(const u8*)(info);
+    var_(addr, void*) $undefined;
+    let offset = pp_if_(arch_bits_is_64bit)(pp_then_(as$(usize)(16)), pp_else_(as$(usize)(12)));
+    raw_memcpy(&addr, bytes + offset, sizeOf$(void*));
+    return addr;
+};
+
+fn_((sys_call_linux_rt_sigaction(
+    sys_call_linux_word signal,
+    const sys_call_linux_sigaction* act,
+    sys_call_linux_sigaction* old_act
+))(sys_call_linux_word)) {
+    return sys_call_linux_syscall4(
+        sys_call_linux_SYS_rt_sigaction,
+        signal,
+        (sys_call_linux_word)(act),
+        (sys_call_linux_word)(old_act),
+        sizeOf$(sys_call_linux_sigset)
+    );
+};
+
+fn_((sys_call_linux_rt_sigreturn_trampoline(void))(void)) {
+    pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(asm_volatile(
+            "movq %0, %%rax\n\t"
+            "syscall" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "rax", "rcx", "r11", "memory"
+        ))),
+        pp_case_((arch_type_x86)(asm_volatile(
+            "movl %0, %%eax\n\t"
+            "int $0x80" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "eax", "memory"
+        ))),
+        pp_case_((arch_type_aarch64)(asm_volatile(
+            "mov x8, %0\n\t"
+            "svc #0" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "x8", "memory"
+        ))),
+        pp_case_((arch_type_arm)(asm_volatile(
+            "mov r7, %0\n\t"
+            "svc 0" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "r7", "memory"
+        ))),
+        pp_case_((arch_type_riscv64)(asm_volatile(
+            "li a7, %0\n\t"
+            "ecall" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "a7", "memory"
+        ))),
+        pp_case_((arch_type_riscv32)(asm_volatile(
+            "li a7, %0\n\t"
+            "ecall" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "a7", "memory"
+        ))),
+        pp_default_(claim_unreachable)
+    ));
 };
 
 /*---------- <linux/futex.h> ------------------------------------------------*/

@@ -30,16 +30,26 @@ typedef struct sys_libc_darwin_timespec {
     sys_libc_darwin_c_long tv_nsec;
 } sys_libc_darwin_timespec;
 
+typedef struct sys_libc_darwin_timeval {
+    sys_libc_darwin_time_t tv_sec;
+    sys_libc_darwin_c_long tv_usec;
+} sys_libc_darwin_timeval;
+
 typedef enum sys_libc_darwin_CLOCK {
     sys_libc_darwin_CLOCK_REALTIME = 0,
     sys_libc_darwin_CLOCK_MONOTONIC_RAW = 4,
     sys_libc_darwin_CLOCK_MONOTONIC_RAW_APPROX = 5,
     sys_libc_darwin_CLOCK_MONOTONIC = 6,
+    sys_libc_darwin_CLOCK_UPTIME_RAW = 8,
+    sys_libc_darwin_CLOCK_PROCESS_CPUTIME_ID = 12,
+    sys_libc_darwin_CLOCK_THREAD_CPUTIME_ID = 16,
 } sys_libc_darwin_CLOCK;
 typedef sys_libc_darwin_CLOCK sys_libc_darwin_clockid_t;
 
 $extern fn_((sys_libc_darwin_clock_gettime(sys_libc_darwin_clockid_t clock_id, sys_libc_darwin_timespec* ts))(i32));
+$extern fn_((sys_libc_darwin_clock_getres(sys_libc_darwin_clockid_t clock_id, sys_libc_darwin_timespec* ts))(i32));
 $extern fn_((sys_libc_darwin_nanosleep(const sys_libc_darwin_timespec* req, sys_libc_darwin_timespec* rem))(i32));
+$extern fn_((sys_libc_darwin_gettimeofday(sys_libc_darwin_timeval* tv))(i32));
 
 #if defined(__cplusplus)
 } /* extern "C" */

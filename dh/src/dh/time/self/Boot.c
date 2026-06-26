@@ -13,7 +13,7 @@ pp_if_(plat_is_windows)(pp_then_(
     $static fn_((time_Boot_direct__windows_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
 ));
 pp_if_(plat_based_unix)(pp_then_(
-    $static fn_((time_Boot_direct__unix__clockId(void))(clockid_t));
+    $static fn_((time_Boot_direct__unix__clockId(void))(sys_posix_clockid_t));
     $static fn_((time_Boot_direct__unix_now(P$raw ctx))(time_Boot_Inst));
     $attr($must_check)
     $static fn_((time_Boot_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution));
@@ -228,27 +228,21 @@ pp_if_(plat_is_windows)(pp_then_(
 ));
 
 #if plat_based_unix
-fn_((time_Boot_direct__unix__clockId(void))(clockid_t)) {
-#if defined(CLOCK_BOOTTIME)
-    return CLOCK_BOOTTIME;
-#elif defined(CLOCK_MONOTONIC_RAW)
-    return CLOCK_MONOTONIC_RAW;
-#else
-    return CLOCK_MONOTONIC;
-#endif
+fn_((time_Boot_direct__unix__clockId(void))(sys_posix_clockid_t)) {
+    return sys_posix_CLOCK_BOOT;
 };
 
 fn_((time_Boot_direct__unix_now(P$raw ctx))(time_Boot_Inst)) {
-    var_(now, struct timespec) = cleared();
+    var_(now, sys_posix_timespec) = cleared();
     let_ignore = ctx;
-    clock_gettime(time_Boot_direct__unix__clockId(), &now);
-    return l$((time_Boot_Inst){ .raw = time__unix_fromTimespec(now) });
+    let_ignore = sys_posix_clock_gettime(time_Boot_direct__unix__clockId(), &now);
+    return l$((time_Boot_Inst){ .raw = time__posix_fromTimespec(now) });
 };
 
 fn_((time_Boot_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
-    var_(res, struct timespec) = cleared();
+    var_(res, sys_posix_timespec) = cleared();
     let_ignore = ctx;
-    clock_getres(time_Boot_direct__unix__clockId(), &res);
+    let_ignore = sys_posix_clock_getres(time_Boot_direct__unix__clockId(), &res);
     return_ok({ .secs = as$(u64)(res.tv_sec), .nanos = as$(u32)(res.tv_nsec) });
 };
 #endif /* plat_based_unix */

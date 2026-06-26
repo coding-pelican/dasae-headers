@@ -179,16 +179,16 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
 #if debug_StackTrace__unix_enabled
 #include <execinfo.h>
 #include <dlfcn.h>
-#include <signal.h>
 #include <unistd.h>
+#include "dh/sys/posix.h"
 
 $static fn_((debug_StackTrace__unix__handleSignal(i32 sig))(void)) {
     let reason = expr_(S_const$u8 $scope)(switch (sig) {
-        case_((SIGSEGV)) $break_(u8_l("segmentation fault")) $end(case);
-        case_((SIGABRT)) $break_(u8_l("aborted")) $end(case);
-        case_((SIGFPE)) $break_(u8_l("floating point exception")) $end(case);
-        case_((SIGILL)) $break_(u8_l("illegal instruction")) $end(case);
-        case_((SIGBUS)) $break_(u8_l("bus error")) $end(case);
+        case_((sys_posix_SIGSEGV)) $break_(u8_l("segmentation fault")) $end(case);
+        case_((sys_posix_SIGABRT)) $break_(u8_l("aborted")) $end(case);
+        case_((sys_posix_SIGFPE)) $break_(u8_l("floating point exception")) $end(case);
+        case_((sys_posix_SIGILL)) $break_(u8_l("illegal instruction")) $end(case);
+        case_((sys_posix_SIGBUS)) $break_(u8_l("bus error")) $end(case);
         default_() $break_(u8_l("unknown signal")) $end(default);
     }) $unscoped(expr);
     debug_StackTrace__printPanicHeader(reason, 0); /* Signals usually don't have a code */
@@ -197,16 +197,16 @@ $static fn_((debug_StackTrace__unix__handleSignal(i32 sig))(void)) {
 };
 
 fn_((debug_StackTrace__unix_setupCrashHandler(void))(void)) {
-    struct sigaction sa = {
+    sys_posix_sigaction sa = {
         .sa_handler = debug_StackTrace__unix__handleSignal,
         .sa_flags = 0,
     };
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGSEGV, &sa, null);
-    sigaction(SIGABRT, &sa, null);
-    sigaction(SIGFPE, &sa, null);
-    sigaction(SIGILL, &sa, null);
-    sigaction(SIGBUS, &sa, null);
+    sys_posix_sigemptyset(&sa.sa_mask);
+    let_ignore = sys_posix_sigaction_set(sys_posix_SIGSEGV, some$((O$P$raw)(&sa)), none$((O$P$raw)));
+    let_ignore = sys_posix_sigaction_set(sys_posix_SIGABRT, some$((O$P$raw)(&sa)), none$((O$P$raw)));
+    let_ignore = sys_posix_sigaction_set(sys_posix_SIGFPE, some$((O$P$raw)(&sa)), none$((O$P$raw)));
+    let_ignore = sys_posix_sigaction_set(sys_posix_SIGILL, some$((O$P$raw)(&sa)), none$((O$P$raw)));
+    let_ignore = sys_posix_sigaction_set(sys_posix_SIGBUS, some$((O$P$raw)(&sa)), none$((O$P$raw)));
 };
 
 fn_((debug_StackTrace__unix_print(void))(void)) {

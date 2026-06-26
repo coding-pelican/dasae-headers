@@ -207,16 +207,16 @@ pp_if_(plat_is_windows)(pp_then_(
 
 pp_if_(plat_based_unix)(pp_then_(
     fn_((time_Real_direct__unix_now(P$raw ctx))(time_Real_Inst)) {
-        var_(now, struct timespec) = cleared();
+        var_(now, sys_posix_timespec) = cleared();
         let_ignore = ctx;
-        clock_gettime(CLOCK_REALTIME, &now);
-        return l$((time_Real_Inst){ .raw = time__unix_fromTimespec(now) });
+        let_ignore = sys_posix_clock_gettime(sys_posix_CLOCK_REALTIME, &now);
+        return l$((time_Real_Inst){ .raw = time__posix_fromTimespec(now) });
     };
 
     fn_((time_Real_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolution) $scope) {
-        var_(res, struct timespec) = cleared();
+        var_(res, sys_posix_timespec) = cleared();
         let_ignore = ctx;
-        clock_getres(CLOCK_REALTIME, &res);
+        let_ignore = sys_posix_clock_getres(sys_posix_CLOCK_REALTIME, &res);
         return_ok({ .secs = as$(u64)(res.tv_sec), .nanos = as$(u32)(res.tv_nsec) });
     } $unscoped(fn);
 ));
