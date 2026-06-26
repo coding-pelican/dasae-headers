@@ -5,6 +5,7 @@
 #if plat_is_windows
 #include "dh/sys/api/windows/handle.h"
 #include "dh/sys/api/windows/file.h"
+#include "dh/sys/api/windows/console.h"
 #elif plat_is_linux
 #include "dh/sys/call/linux.h"
 #endif
@@ -205,7 +206,8 @@ fn_((fs_File_sync(fs_File self))(E$void) $scope) {
 
 fn_((fs_File_isTTY(fs_File self))(E$bool) $scope) {
 #if plat_is_windows
-    return_ok(GetFileType(self.handle) == FILE_TYPE_CHAR);
+    var_(mode, DWORD) = 0;
+    return_ok(GetConsoleMode(self.handle, &mode));
 #elif plat_is_linux
     var_(termios_buf, A$$(128, u8)) = A_zero();
     return_ok(sys_call_linux_ioctl(self.handle, sys_call_linux_TCGETS, A_ptr(termios_buf)) == 0);

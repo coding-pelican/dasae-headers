@@ -20,9 +20,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "daterm-runtime/Term.h"
-#include <dh/fs/File/self.h>
 #include <dh/io/Buf.h>
-#include <dh/io/self.h>
+#include <dh/io/TTY.h>
 #include <dh/mem/Alctr.h>
 #include <dh/time/Clock.h>
 
@@ -31,7 +30,6 @@ extern "C" {
 #endif /* plat_is_windows */
 #if plat_is_posix
 #include <signal.h>
-#include <termios.h>
 #endif /* plat_is_posix */
 
 /*========== Macros and Declarations ========================================*/
@@ -41,12 +39,8 @@ errset_((daterm_ANSI_E)(
 ));
 
 typedef struct daterm_ANSI__RawMode {
-#if plat_is_windows
-    var_(old_in, DWORD);
-    var_(old_out, DWORD);
-#endif /* plat_is_windows */
+    var_(tty_restore, io_TTY_Restore);
 #if plat_is_posix
-    var_(old_in, struct termios);
     var_(old_winch, struct sigaction);
 #endif /* plat_is_posix */
 } daterm_ANSI__RawMode;
@@ -78,8 +72,7 @@ typedef enum_((daterm_ANSI_InputMode $fits($packed))(
 T_use_prl$(daterm_ANSI_InputMode);
 
 typedef struct daterm_ANSI {
-    var_(input_file, fs_File);
-    var_(output_file, fs_File);
+    var_(tty, io_TTY);
     var_(output_mode, daterm_ANSI_OutputMode);
     var_(input_mode, daterm_ANSI_InputMode);
     var_(raw_mode_, O$daterm_ANSI__RawMode);

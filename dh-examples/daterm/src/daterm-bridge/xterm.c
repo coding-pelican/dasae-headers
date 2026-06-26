@@ -23,7 +23,7 @@ fn_((daterm_xterm_enableMouse(
         return_err(E_cause$daterm_ANSI_Unsupported());
     }
     if (ansi->is_tracking_mouse) try_(daterm_xterm_disableMouse(ansi));
-    let out = fs_File_writer(ansi->output_file);
+    let out = io_TTY_writer(&ansi->tty);
     try_(dansi_xterm_mouse_enableReportModeWrite(cfg.report_mode, out));
     errdefer_($ignore, catch_((dansi_xterm_mouse_disableReportModeWrite(cfg.report_mode, out))($ignore, $do_nothing)));
     try_(dansi_xterm_mouse_enableEncodingWrite(cfg.encoding, out));
@@ -38,7 +38,7 @@ fn_((daterm_xterm_enableMouse(
 fn_((daterm_xterm_disableMouse(daterm_ANSI* ansi))(E$void) $scope) {
     claim_assert_nonnull(ansi);
     if (!ansi->is_tracking_mouse) return_ok({});
-    let out = fs_File_writer(ansi->output_file);
+    let out = io_TTY_writer(&ansi->tty);
     let_(encoding, dansi_xterm_mouse_Encoding) = ansi->mouse_pos_kind == daterm_mouse_PosKind_pixel
                                                    ? dansi_xterm_mouse_Encoding_sgr_pixels
                                                    : dansi_xterm_mouse_Encoding_sgr;
@@ -58,7 +58,7 @@ fn_((daterm_xterm_setFocusTracking(daterm_ANSI* ansi, bool enabled))(E$void) $sc
     }
 #endif
     if (ansi->is_tracking_focus == enabled) return_ok({});
-    try_(dansi_xterm_focus_setTrackingWrite(enabled, fs_File_writer(ansi->output_file)));
+    try_(dansi_xterm_focus_setTrackingWrite(enabled, io_TTY_writer(&ansi->tty)));
     ansi->is_tracking_focus = enabled;
     return_ok({});
 } $unscoped(fn);
@@ -79,7 +79,7 @@ fn_((daterm_xterm_setEnhancedKeyboard(daterm_ANSI* ansi, bool enabled))(E$void) 
     }
 #endif
     if (ansi->is_enhanced_keyboard == enabled) return_ok({});
-    let out = fs_File_writer(ansi->output_file);
+    let out = io_TTY_writer(&ansi->tty);
     if (enabled) {
         try_(dansi_xterm_key_enableEnhancedWrite(out));
     } else {

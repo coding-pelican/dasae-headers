@@ -1,0 +1,75 @@
+#include "dh-main.h"
+#include "dh/io/TTY.h"
+#include "dh/fs/File.h"
+
+TEST_fn_("io/TTY: std config wraps stdio handles" $scope) {
+    let cfg = io_TTY_Cfg_std();
+    var tty = io_TTY_init(cfg);
+
+    try_(TEST_expect(fs_File_handle(tty.input_file) == fs_File_handle(cfg.input_file)));
+    try_(TEST_expect(fs_File_handle(tty.output_file) == fs_File_handle(cfg.output_file)));
+} $unscoped(TEST_fn);
+
+TEST_fn_("io/TTY: mode patch presets expose raw byte and VT intent" $scope) {
+    let preserve = io_TTY_ModePatch_preserve();
+    try_(TEST_expect(preserve.enable == io_TTY_ModeBit_none));
+    try_(TEST_expect(preserve.disable == io_TTY_ModeBit_none));
+    try_(TEST_expect(!preserve.set_min_time));
+
+    let raw = io_TTY_ModePatch_rawBytes();
+    try_(TEST_expect((raw.disable & io_TTY_ModeBit_echo) != 0));
+    try_(TEST_expect((raw.disable & io_TTY_ModeBit_line_input) != 0));
+    try_(TEST_expect((raw.disable & io_TTY_ModeBit_signal_input) != 0));
+    try_(TEST_expect((raw.disable & io_TTY_ModeBit_output_process) != 0));
+    try_(TEST_expect(raw.set_min_time));
+    try_(TEST_expect(raw.min_read == 1));
+    try_(TEST_expect(raw.timeout_ds == 0));
+
+    let raw_vt = io_TTY_ModePatch_rawVT();
+    try_(TEST_expect((raw_vt.enable & io_TTY_ModeBit_vt_input) != 0));
+    try_(TEST_expect((raw_vt.enable & io_TTY_ModeBit_vt_output) != 0));
+    try_(TEST_expect((raw_vt.enable & io_TTY_ModeBit_output_process) != 0));
+    try_(TEST_expect((raw_vt.disable & io_TTY_ModeBit_output_process) == 0));
+
+    let cbreak_vt = io_TTY_ModePatch_cbreakVT();
+    try_(TEST_expect((cbreak_vt.enable & io_TTY_ModeBit_signal_input) != 0));
+    try_(TEST_expect((cbreak_vt.enable & io_TTY_ModeBit_vt_input) != 0));
+    try_(TEST_expect((cbreak_vt.disable & io_TTY_ModeBit_echo) != 0));
+    try_(TEST_expect((cbreak_vt.disable & io_TTY_ModeBit_line_input) != 0));
+} $unscoped(TEST_fn);
+
+TEST_fn_("io/TTY: stdio TTY queries match file queries" $scope) {
+    var tty = io_TTY_init(io_TTY_Cfg_std());
+
+    try_(TEST_expect(try_(io_TTY_inputIsTTY(&tty)) == try_(fs_File_isTTY(tty.input_file))));
+    try_(TEST_expect(try_(io_TTY_outputIsTTY(&tty)) == try_(fs_File_isTTY(tty.output_file))));
+} $unscoped(TEST_fn);
+
+TEST_fn_("io/TTY: enter and leave raw VT mode when stdin is a TTY" $guard) {
+    var tty = io_TTY_init(io_TTY_Cfg_std());
+    defer_(io_TTY_fini(&tty));
+
+    catch_((io_TTY_enterMode(&tty, io_TTY_ModePatch_rawVT()))(err, switch (E_tag$io_TTY_E(E_handle$io_TTY_E(*ptrCast$((const io_TTY_E*)(&err))))) {
+        case_((E_Tag$io_TTY_Unsupported)) {
+            try_(TEST_skipMsg(u8_l("TTY mode control is not supported on this platform")));
+        } $end(case);
+        case_((E_Tag$io_TTY_NotTTY)) {
+            try_(TEST_skipMsg(u8_l("stdio is not an interactive TTY")));
+        } $end(case);
+        case_((E_Tag$io_TTY_BadHandle)) {
+            return_err(err);
+        } $end(case);
+        case_((E_Tag$io_TTY_ModeFailed)) {
+            return_err(err);
+        } $end(case);
+        case_((E_Tag$io_TTY_QueryFailed)) {
+            return_err(err);
+        } $end(case);
+        case_((E_Tag$io_TTY_E_Any)) {
+            return_err(err);
+        } $end(case);
+    }));
+    try_(TEST_expect(io_TTY_isInEnteredMode(&tty)));
+    io_TTY_leaveMode(&tty);
+    try_(TEST_expect(!io_TTY_isInEnteredMode(&tty)));
+} $unguarded(TEST_fn);
