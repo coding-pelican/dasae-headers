@@ -3,10 +3,9 @@
 #if plat_is_windows
 #include "dh/sys/api/windows/console.h"
 #include "dh/sys/api/windows/handle.h"
-#endif /* plat_is_windows */
-#if plat_is_linux
-#include "dh/sys/call/linux.h"
-#endif /* plat_is_linux */
+#elif plat_is_posix
+#include "dh/sys/posix.h"
+#endif /* platform backend */
 
 /*========== Internal Types and Declarations ================================*/
 
@@ -14,8 +13,8 @@ T_use_E$($set(io_TTY_E)(O$io_TTY_ModeState));
 
 #if plat_is_windows
 T_alias$((io_TTY__NativeMode)(DWORD));
-#elif plat_is_linux
-T_alias$((io_TTY__NativeMode)(sys_call_linux_termios));
+#elif plat_is_posix
+T_alias$((io_TTY__NativeMode)(sys_posix_termios));
 #else
 T_alias$((io_TTY__NativeMode)(Void));
 #endif
@@ -32,9 +31,9 @@ $static fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patc
 $static fn_((io_TTY__mapWindowsError(DWORD error))(io_TTY_E));
 $static fn_((io_TTY__patchWindowsFlag(DWORD mode, DWORD flag, io_TTY_ModePatch patch, io_TTY_ModeBit bit))(DWORD));
 #endif /* plat_is_windows */
-#if plat_is_linux
-$static fn_((io_TTY__patchLinuxFlag(sys_call_linux_tcflag_t* flags, sys_call_linux_tcflag_t flag, io_TTY_ModePatch patch, io_TTY_ModeBit bit))(void));
-#endif /* plat_is_linux */
+#if plat_is_posix
+$static fn_((io_TTY__patchPosixFlag(sys_posix_tcflag_t* flags, sys_posix_tcflag_t flag, io_TTY_ModePatch patch, io_TTY_ModeBit bit))(void));
+#endif /* plat_is_posix */
 
 /*========== Internal Definitions ===========================================*/
 
@@ -95,10 +94,10 @@ fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void
 };
 #endif /* plat_is_windows */
 
-/*---------- Linux Terminal Backend -----------------------------------------*/
+/*---------- POSIX Terminal Backend -----------------------------------------*/
 
-#if plat_is_linux
-fn_((io_TTY__patchLinuxFlag(sys_call_linux_tcflag_t* flags, sys_call_linux_tcflag_t flag, io_TTY_ModePatch patch, io_TTY_ModeBit bit))(void)) {
+#if plat_is_posix
+fn_((io_TTY__patchPosixFlag(sys_posix_tcflag_t* flags, sys_posix_tcflag_t flag, io_TTY_ModePatch patch, io_TTY_ModeBit bit))(void)) {
     claim_assert_nonnull(flags);
     let mask = as$(io_TTY_ModeBits)(bit);
     if ((patch.disable & mask) != 0) {
@@ -110,27 +109,27 @@ fn_((io_TTY__patchLinuxFlag(sys_call_linux_tcflag_t* flags, sys_call_linux_tcfla
 
 fn_((io_TTY__applyInput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void)) {
     claim_assert_nonnull(mode);
-    io_TTY__patchLinuxFlag(&mode->c_lflag, sys_call_linux_ECHO, patch, io_TTY_ModeBit_echo);
-    io_TTY__patchLinuxFlag(&mode->c_lflag, sys_call_linux_ICANON, patch, io_TTY_ModeBit_line_input);
-    io_TTY__patchLinuxFlag(&mode->c_lflag, sys_call_linux_ISIG, patch, io_TTY_ModeBit_signal_input);
-    io_TTY__patchLinuxFlag(&mode->c_lflag, sys_call_linux_IEXTEN, patch, io_TTY_ModeBit_extended_input);
-    io_TTY__patchLinuxFlag(&mode->c_iflag, sys_call_linux_ICRNL, patch, io_TTY_ModeBit_crlf_input);
-    io_TTY__patchLinuxFlag(&mode->c_iflag, sys_call_linux_IXON, patch, io_TTY_ModeBit_flow_input);
-    io_TTY__patchLinuxFlag(&mode->c_iflag, sys_call_linux_IXOFF, patch, io_TTY_ModeBit_flow_input);
-    io_TTY__patchLinuxFlag(&mode->c_iflag, sys_call_linux_BRKINT, patch, io_TTY_ModeBit_break_input);
-    io_TTY__patchLinuxFlag(&mode->c_iflag, sys_call_linux_INPCK, patch, io_TTY_ModeBit_parity_check);
-    io_TTY__patchLinuxFlag(&mode->c_iflag, sys_call_linux_ISTRIP, patch, io_TTY_ModeBit_strip_input);
+    io_TTY__patchPosixFlag(&mode->c_lflag, sys_posix_ECHO, patch, io_TTY_ModeBit_echo);
+    io_TTY__patchPosixFlag(&mode->c_lflag, sys_posix_ICANON, patch, io_TTY_ModeBit_line_input);
+    io_TTY__patchPosixFlag(&mode->c_lflag, sys_posix_ISIG, patch, io_TTY_ModeBit_signal_input);
+    io_TTY__patchPosixFlag(&mode->c_lflag, sys_posix_IEXTEN, patch, io_TTY_ModeBit_extended_input);
+    io_TTY__patchPosixFlag(&mode->c_iflag, sys_posix_ICRNL, patch, io_TTY_ModeBit_crlf_input);
+    io_TTY__patchPosixFlag(&mode->c_iflag, sys_posix_IXON, patch, io_TTY_ModeBit_flow_input);
+    io_TTY__patchPosixFlag(&mode->c_iflag, sys_posix_IXOFF, patch, io_TTY_ModeBit_flow_input);
+    io_TTY__patchPosixFlag(&mode->c_iflag, sys_posix_BRKINT, patch, io_TTY_ModeBit_break_input);
+    io_TTY__patchPosixFlag(&mode->c_iflag, sys_posix_INPCK, patch, io_TTY_ModeBit_parity_check);
+    io_TTY__patchPosixFlag(&mode->c_iflag, sys_posix_ISTRIP, patch, io_TTY_ModeBit_strip_input);
     if (patch.set_min_time) {
-        *A_at((mode->c_cc)[sys_call_linux_VMIN]) = patch.min_read;
-        *A_at((mode->c_cc)[sys_call_linux_VTIME]) = patch.timeout_ds;
+        *A_at((mode->c_cc)[sys_posix_VMIN]) = patch.min_read;
+        *A_at((mode->c_cc)[sys_posix_VTIME]) = patch.timeout_ds;
     }
 };
 
 fn_((io_TTY__applyOutput(io_TTY__NativeMode* mode, io_TTY_ModePatch patch))(void)) {
     claim_assert_nonnull(mode);
-    io_TTY__patchLinuxFlag(&mode->c_oflag, sys_call_linux_OPOST, patch, io_TTY_ModeBit_output_process);
+    io_TTY__patchPosixFlag(&mode->c_oflag, sys_posix_OPOST, patch, io_TTY_ModeBit_output_process);
 };
-#endif /* plat_is_linux */
+#endif /* plat_is_posix */
 
 /*---------- Native Mode Operations -----------------------------------------*/
 
@@ -140,9 +139,9 @@ fn_((io_TTY__getMode(fs_File file))(io_TTY_E$O$io_TTY_ModeState) $scope) {
     var_(native, io_TTY__NativeMode) = 0;
     if (!GetConsoleMode(fs_File_handle(file), &native)) return_err(io_TTY__mapWindowsError(GetLastError()));
     return_ok(some(io_TTY__stateFromNative(native)));
-#elif plat_is_linux
+#elif plat_is_posix
     var_(native, io_TTY__NativeMode) = cleared();
-    if (sys_call_linux_ioctl(fs_File_handle(file), sys_call_linux_TCGETS, &native) != 0) {
+    if (sys_posix_tcgetattr(fs_File_handle(file), &native) != 0) {
         return_err(E_cause$io_TTY_BadHandle());
     }
     return_ok(some(io_TTY__stateFromNative(native)));
@@ -158,13 +157,8 @@ fn_((io_TTY__setMode(fs_File file, const io_TTY_ModeState* state))(E$void) $scop
     if (!SetConsoleMode(fs_File_handle(file), *io_TTY__stateAsNative(state))) {
         return_err(io_TTY__mapWindowsError(GetLastError()));
     }
-#elif plat_is_linux
-    if (sys_call_linux_ioctl(
-            fs_File_handle(file),
-            sys_call_linux_TCSETS,
-            ptrQualCast$((io_TTY__NativeMode*)(io_TTY__stateAsNative(state)))
-        )
-        != 0) {
+#elif plat_is_posix
+    if (sys_posix_tcsetattr(fs_File_handle(file), io_TTY__stateAsNative(state)) != 0) {
         return_err(E_cause$io_TTY_ModeFailed());
     }
 #else
@@ -285,9 +279,9 @@ fn_((io_TTY_queryScreenCells(const io_TTY* self))(io_TTY_E$io_TTY_CellSize) $sco
         .cols = as$(u16)(info.srWindow.Right - info.srWindow.Left + 1),
         .rows = as$(u16)(info.srWindow.Bottom - info.srWindow.Top + 1),
     });
-#elif plat_is_linux
-    var_(size, sys_call_linux_winsize) = cleared();
-    if (sys_call_linux_ioctl(fs_File_handle(self->output_file), sys_call_linux_TIOCGWINSZ, &size) != 0) {
+#elif plat_is_posix
+    var_(size, sys_posix_winsize) = cleared();
+    if (sys_posix_tiocgwinsz(fs_File_handle(self->output_file), &size) != 0) {
         return_err(E_cause$io_TTY_QueryFailed());
     }
     return_ok((io_TTY_CellSize){ .cols = size.ws_col, .rows = size.ws_row });
@@ -320,9 +314,9 @@ fn_((io_TTY_inputReady(const io_TTY* self))(E$bool) $scope) {
         return_err(E_cause$io_TTY_QueryFailed());
     }
     return_ok(count != 0);
-#elif plat_is_linux
+#elif plat_is_posix
     var_(count, int) = 0;
-    if (sys_call_linux_ioctl(fs_File_handle(self->input_file), sys_call_linux_FIONREAD, &count) != 0) {
+    if (sys_posix_fionread(fs_File_handle(self->input_file), &count) != 0) {
         return_err(E_cause$io_TTY_QueryFailed());
     }
     return_ok(count != 0);

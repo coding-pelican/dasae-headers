@@ -18,25 +18,43 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "cfg.h"
+#include "common.h"
 #include "dh/prl.h"
-
-#if plat_is_darwin
-#include <signal.h>
-#endif /* plat_is_darwin */
 
 /*========== Macros and Declarations ========================================*/
 
-#if plat_is_darwin
-typedef struct sigaction sys_libc_darwin_sigaction;
-typedef sigset_t sys_libc_darwin_sigset;
-typedef siginfo_t sys_libc_darwin_siginfo;
-typedef sig_atomic_t sys_libc_darwin_sig_atomic_t;
-#else
-typedef Void sys_libc_darwin_sigaction;
-typedef Void sys_libc_darwin_sigset;
-typedef Void sys_libc_darwin_siginfo;
 typedef i32 sys_libc_darwin_sig_atomic_t;
-#endif /* plat_is_darwin */
+typedef u32 sys_libc_darwin_sigset;
+
+typedef union sys_libc_darwin_sigval {
+    var_(sival_int, int);
+    var_(sival_ptr, P$raw);
+} sys_libc_darwin_sigval;
+
+typedef struct sys_libc_darwin_siginfo {
+    var_(si_signo, int);
+    var_(si_errno, int);
+    var_(si_code, int);
+    var_(si_pid, i32);
+    var_(si_uid, u32);
+    var_(si_status, int);
+    var_(si_addr, P$raw);
+    var_(si_value, sys_libc_darwin_sigval);
+    var_(si_band, isize);
+    var_(__pad, A$$(7, usize));
+} sys_libc_darwin_siginfo;
+
+typedef void (*sys_libc_darwin_sighandler_fn)(sys_libc_darwin_signal_t);
+typedef void (*sys_libc_darwin_sigaction_fn)(sys_libc_darwin_signal_t, sys_libc_darwin_siginfo*, void*);
+
+typedef struct sys_libc_darwin_sigaction {
+    union {
+        sys_libc_darwin_sighandler_fn sa_handler;
+        sys_libc_darwin_sigaction_fn sa_sigaction;
+    };
+    var_(sa_mask, sys_libc_darwin_sigset);
+    var_(sa_flags, int);
+} sys_libc_darwin_sigaction;
 
 typedef enum sys_libc_darwin_SIG {
     sys_libc_darwin_SIGILL = 4,
@@ -52,16 +70,12 @@ typedef enum sys_libc_darwin_SA {
     sys_libc_darwin_SA_SIGINFO = 0x00000040,
 } sys_libc_darwin_SA;
 
-#if plat_is_darwin
-#define sys_libc_darwin_SIG_DFL SIG_DFL
-#else
-#define sys_libc_darwin_SIG_DFL as$(void (*)(i32))(0)
-#endif /* plat_is_darwin */
+#define sys_libc_darwin_SIG_DFL as$(sys_libc_darwin_sighandler_fn)(0)
 
 $extern fn_((sys_libc_darwin_sigemptyset(sys_libc_darwin_sigset* set))(i32));
 $extern fn_((sys_libc_darwin_siginfo_addr(const sys_libc_darwin_siginfo* info))(void*));
-$extern fn_((sys_libc_darwin_sigaction_set(i32 signal, const sys_libc_darwin_sigaction* act, sys_libc_darwin_sigaction* old_act))(i32));
-$extern fn_((sys_libc_darwin_raise(i32 signal))(i32));
+$extern fn_((sys_libc_darwin_sigaction_set(sys_libc_darwin_signal_t signal, const sys_libc_darwin_sigaction* act, sys_libc_darwin_sigaction* old_act))(i32));
+$extern fn_((sys_libc_darwin_raise(sys_libc_darwin_signal_t signal))(i32));
 
 #if defined(__cplusplus)
 } /* extern "C" */

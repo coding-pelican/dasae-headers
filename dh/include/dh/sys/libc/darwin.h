@@ -15,10 +15,13 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#include "darwin/common.h"
 #include "darwin/cfg.h"
 #include "darwin/time.h"
 #include "darwin/sync.h"
 #include "darwin/signal.h"
+#include "darwin/termios.h"
+#include "darwin/mem.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -8,6 +8,9 @@
 #include "dh/sys/api/windows/console.h"
 #elif plat_is_linux
 #include "dh/sys/call/linux.h"
+#include "dh/sys/posix.h"
+#elif plat_is_darwin
+#include "dh/sys/posix.h"
 #endif
 
 #if plat_is_windows
@@ -208,9 +211,9 @@ fn_((fs_File_isTTY(fs_File self))(E$bool) $scope) {
 #if plat_is_windows
     var_(mode, DWORD) = 0;
     return_ok(GetConsoleMode(self.handle, &mode));
-#elif plat_is_linux
-    var_(termios_buf, A$$(128, u8)) = A_zero();
-    return_ok(sys_call_linux_ioctl(self.handle, sys_call_linux_TCGETS, A_ptr(termios_buf)) == 0);
+#elif plat_is_posix
+    var_(termios, sys_posix_termios) = cleared();
+    return_ok(sys_posix_tcgetattr(self.handle, &termios) == 0);
 #else
     let_ignore = self;
     return_err(E_cause$fs_Unsupported());

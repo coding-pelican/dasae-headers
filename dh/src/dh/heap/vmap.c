@@ -4,6 +4,8 @@
 #include "dh/sys/api/windows/mem.h"
 #elif plat_is_linux
 #include "dh/sys/call/linux.h"
+#elif plat_is_darwin
+#include "dh/sys/libc/darwin/mem.h"
 #endif
 
 fn_((heap_vmap_geom(void))(heap_Geom)) {
@@ -31,6 +33,18 @@ fn_((heap_vmap_map(P$raw addr_hint, usize len))(O$P$u8) $scope) {
     return_(expr_(ReturnType $scope)(
         sys_call_linux_syscall_isErr(mapped) ? $break_(none()) : $break_(some(intToPtr$((P$raw)(mapped))))
     ) $unscoped(expr));
+#elif plat_is_darwin
+    let mapped = sys_libc_darwin_mmap(
+        addr_hint,
+        aligned_len,
+        sys_libc_darwin_PROT_READ | sys_libc_darwin_PROT_WRITE,
+        sys_libc_darwin_MAP_PRIVATE | sys_libc_darwin_MAP_ANONYMOUS,
+        -1,
+        0
+    );
+    return_(expr_(ReturnType $scope)(
+        mapped == sys_libc_darwin_MAP_FAILED ? $break_(none()) : $break_(some(mapped))
+    ) $unscoped(expr));
 #else
     let_ignore = addr_hint;
     let_ignore = aligned_len;
@@ -45,6 +59,8 @@ fn_((heap_vmap_release(P$raw addr, usize len))(bool)) {
     return VirtualFree(addr, 0, MEM_RELEASE);
 #elif plat_is_linux
     return sys_call_linux_munmap(addr, aligned_len) == 0;
+#elif plat_is_darwin
+    return sys_libc_darwin_munmap(addr, aligned_len) == 0;
 #else
     let_ignore = addr;
     let_ignore = aligned_len;

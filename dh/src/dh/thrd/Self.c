@@ -591,29 +591,9 @@ fn_((thrd__windows_join(thrd_Self self))(Clsr$raw*)) {
 #endif
 
 #if plat_is_linux
-#if comp_libc_linked
-$extern fn_((clone(i32 (*fn)(P$raw), P$raw child_stack, i32 flags, P$raw arg, i32* parent_tid, P$raw tls, i32* child_tid))(i32));
-#endif
-$static fn_((thrd__linux_clone(i32 (*fn)(P$raw), P$raw child_stack, i32 flags, P$raw arg, i32* parent_tid, P$raw tls, i32* child_tid))(i32));
-
 typedef struct thrd__linux_CpuSet {
     usize words[128 / arch_bits_per_word];
 } thrd__linux_CpuSet;
-
-$static fn_((thrd__linux_clone(i32 (*fn)(P$raw), P$raw child_stack, i32 flags, P$raw arg, i32* parent_tid, P$raw tls, i32* child_tid))(i32)) {
-#if comp_libc_linked
-    return clone(fn, child_stack, flags, arg, parent_tid, tls, child_tid);
-#else
-    let_ignore = fn;
-    let_ignore = child_stack;
-    let_ignore = flags;
-    let_ignore = arg;
-    let_ignore = parent_tid;
-    let_ignore = tls;
-    let_ignore = child_tid;
-    return -1;
-#endif
-};
 
 $attr($inline_always)
 $static fn_((thrd__linux_cpuSetZero(thrd__linux_CpuSet* self))(void)) {
@@ -714,7 +694,7 @@ fn_((thrd__linux_spawn(
         .child_tid = atom_V_init(1),
     };
     let stack_top = as$(P$raw)(meta);
-    let tid = thrd__linux_clone(
+    let tid = sys_call_linux_clone_thread(
         thrd__linux_entry, stack_top,
         thrd__linux_clone_flags, meta,
         &meta->parent_tid,
@@ -766,79 +746,9 @@ fn_((thrd__linux_join(thrd_Self self))(Clsr$raw*)) {
     return ensureNonnull(self.clsr);
 };
 
-fn_((thrd__linux_freeAndExit(thrd__linux_Meta* meta))(void)) pp_switch_((arch_family_type)(
-    pp_case_((arch_family_type_x86)(pp_switch_((arch_type)(
-        pp_case_((arch_type_x86_64)({
-            asm_var_(map_base, P$raw) $reg(rdi) = meta->map.ptr;
-            asm_var_(map_size, usize) $reg(rsi) = meta->map.len;
-            asm_volatile(
-                "movl $11, %%eax\n\t"
-                "syscall\n\t"
-                "movl $60, %%eax\n\t"
-                "xor %%rdi, %%rdi\n\t"
-                "syscall" : : "r"(map_base),
-                "r"(map_size) : "memory", "rax"
-            );
-            claim_unreachable;
-        })),
-        pp_case_((arch_type_x86)({
-            asm_var_(map_base, P$raw) $reg(ebx) = meta->map.ptr;
-            asm_var_(map_size, usize) $reg(ecx) = meta->map.len;
-            __asm__ __volatile__(
-                "movl $91, %%eax\n\t"
-                "int $0x80\n\t"
-                "movl $1, %%eax\n\t"
-                "movl $0, %%ebx\n\t"
-                "int $0x80"
-                :
-                : "r"(map_base), "r"(map_size)
-                : "memory", "eax"
-            );
-            claim_unreachable;
-        }))
-    )))),
-    pp_case_((arch_family_type_arm)(pp_switch_((arch_type)(
-        pp_case_((arch_type_aarch64)({
-            asm_var_(map_base, P$raw) $reg(x0) = meta->map.ptr;
-            asm_var_(map_size, usize) $reg(x1) = meta->map.len;
-            asm_volatile(
-                "mov x8, #215\n\t"
-                "svc 0\n\t"
-                "mov x8, #93\n\t"
-                "mov x0, #0\n\t"
-                "svc 0" : : "r"(map_base),
-                "r"(map_size) : "memory", "x8"
-            );
-            claim_unreachable;
-        })),
-        pp_case_((arch_type_arm)({
-            asm_var_(map_base, P$raw) $reg(r0) = meta->map.ptr;
-            asm_var_(map_size, usize) $reg(r1) = meta->map.len;
-            asm_volatile(
-                "mov r7, #91\n\t"
-                "svc 0\n\t"
-                "mov r7, #1\n\t"
-                "mov r0, #0\n\t"
-                "svc 0" : : "r"(map_base),
-                "r"(map_size) : "memory", "r7"
-            );
-            claim_unreachable;
-        }))
-    )))),
-    pp_case_((arch_family_type_riscv)({
-        asm_var_(map_base, P$raw) $reg(a0) = meta->map.ptr;
-        asm_var_(map_size, usize) $reg(a1) = meta->map.len;
-        asm_volatile(
-            "li a7, 215\n\t"
-            "ecall\n\t"
-            "li a7, 93\n\t"
-            "li a0, 0\n\t"
-            "ecall" : : "r"(map_base),
-            "r"(map_size) : "memory", "a7"
-        );
-        claim_unreachable;
-    }))
-));
+fn_((thrd__linux_freeAndExit(thrd__linux_Meta* meta))(void)) {
+    sys_call_linux_munmap_exit(meta->map.ptr, meta->map.len, 0);
+};
 #endif
 
 #if plat_is_wasi

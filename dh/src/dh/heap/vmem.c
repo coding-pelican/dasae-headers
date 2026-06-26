@@ -6,6 +6,9 @@ $static fn_((heap_vmem__windowsProtect(heap_vmem_Protn protect))(DWORD));
 #elif plat_is_linux
 #include "dh/sys/call/linux.h"
 $static fn_((heap_vmem__linuxProtect(heap_vmem_Protn protect))(sys_call_linux_word));
+#elif plat_is_darwin
+#include "dh/sys/libc/darwin/mem.h"
+$static fn_((heap_vmem__darwinProtect(heap_vmem_Protn protect))(i32));
 #endif
 
 fn_((heap_vmem_geom(void))(heap_Geom)) {
@@ -37,6 +40,14 @@ fn_((heap_vmem__linuxProtect(heap_vmem_Protn protect))(sys_call_linux_word)) {
     case heap_vmem_Protn_read_write_guard: return sys_call_linux_PROT_NONE;
     }
 };
+#elif plat_is_darwin
+fn_((heap_vmem__darwinProtect(heap_vmem_Protn protect))(i32)) {
+    switch (protect) {
+    case heap_vmem_Protn_none: return sys_libc_darwin_PROT_NONE;
+    case heap_vmem_Protn_read_write: return sys_libc_darwin_PROT_READ | sys_libc_darwin_PROT_WRITE;
+    case heap_vmem_Protn_read_write_guard: return sys_libc_darwin_PROT_NONE;
+    }
+};
 #endif
 
 fn_((heap_vmem_reserve(P$raw addr_hint, usize len))(O$P$u8) $scope) {
@@ -51,6 +62,18 @@ fn_((heap_vmem_reserve(P$raw addr_hint, usize len))(O$P$u8) $scope) {
     return_(expr_(ReturnType $scope)(
         sys_call_linux_syscall_isErr(mapped) ? $break_(none()) : $break_(some(intToPtr$((P$raw)(mapped))))
     ) $unscoped(expr));
+#elif plat_is_darwin
+    let mapped = sys_libc_darwin_mmap(
+        addr_hint,
+        aligned_len,
+        sys_libc_darwin_PROT_NONE,
+        sys_libc_darwin_MAP_PRIVATE | sys_libc_darwin_MAP_ANONYMOUS,
+        -1,
+        0
+    );
+    return_(expr_(ReturnType $scope)(
+        mapped == sys_libc_darwin_MAP_FAILED ? $break_(none()) : $break_(some(mapped))
+    ) $unscoped(expr));
 #else
     let_ignore = addr_hint;
     let_ignore = aligned_len;
@@ -64,6 +87,8 @@ fn_((heap_vmem_commit(P$raw addr, usize len))(bool)) {
     return VirtualAlloc(addr, aligned_len, MEM_COMMIT, PAGE_READWRITE) != null;
 #elif plat_is_linux
     return sys_call_linux_mprotect(addr, aligned_len, sys_call_linux_PROT_READ | sys_call_linux_PROT_WRITE) == 0;
+#elif plat_is_darwin
+    return sys_libc_darwin_mprotect(addr, aligned_len, sys_libc_darwin_PROT_READ | sys_libc_darwin_PROT_WRITE) == 0;
 #else
     let_ignore = addr;
     let_ignore = aligned_len;
@@ -77,6 +102,8 @@ fn_((heap_vmem_decommit(P$raw addr, usize len))(bool)) {
     return VirtualFree(addr, aligned_len, MEM_DECOMMIT);
 #elif plat_is_linux
     return sys_call_linux_mprotect(addr, aligned_len, sys_call_linux_PROT_NONE) == 0;
+#elif plat_is_darwin
+    return sys_libc_darwin_mprotect(addr, aligned_len, sys_libc_darwin_PROT_NONE) == 0;
 #else
     let_ignore = addr;
     let_ignore = aligned_len;
@@ -91,6 +118,8 @@ fn_((heap_vmem_protect(P$raw addr, usize len, heap_vmem_Protn protect))(bool)) {
     return VirtualProtect(addr, aligned_len, heap_vmem__windowsProtect(protect), &old_protect);
 #elif plat_is_linux
     return sys_call_linux_mprotect(addr, aligned_len, heap_vmem__linuxProtect(protect)) == 0;
+#elif plat_is_darwin
+    return sys_libc_darwin_mprotect(addr, aligned_len, heap_vmem__darwinProtect(protect)) == 0;
 #else
     let_ignore = addr;
     let_ignore = aligned_len;
@@ -106,6 +135,8 @@ fn_((heap_vmem_release(P$raw addr, usize len))(bool)) {
     return VirtualFree(addr, 0, MEM_RELEASE);
 #elif plat_is_linux
     return sys_call_linux_munmap(addr, aligned_len) == 0;
+#elif plat_is_darwin
+    return sys_libc_darwin_munmap(addr, aligned_len) == 0;
 #else
     let_ignore = addr;
     let_ignore = aligned_len;

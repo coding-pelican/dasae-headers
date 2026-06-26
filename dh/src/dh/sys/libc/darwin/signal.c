@@ -1,14 +1,24 @@
 #include "dh/sys/libc/darwin/signal.h"
 
 #if plat_is_darwin
-$extern fn_((sigemptyset(sys_libc_darwin_sigset* set))(i32));
-$extern fn_((sigaction(i32 signal, const sys_libc_darwin_sigaction* act, sys_libc_darwin_sigaction* old_act))(i32));
-$extern fn_((raise(i32 signal))(i32));
+#include <signal.h>
+
+claim_assert_static(sizeOf$(sys_libc_darwin_sigset) == sizeof(sigset_t));
+claim_assert_static(alignOf$(sys_libc_darwin_sigset) == __alignof__(sigset_t));
+claim_assert_static(sizeOf$(sys_libc_darwin_sig_atomic_t) == sizeof(sig_atomic_t));
+claim_assert_static(alignOf$(sys_libc_darwin_sig_atomic_t) == __alignof__(sig_atomic_t));
+claim_assert_static(sizeOf$(sys_libc_darwin_siginfo) == sizeof(siginfo_t));
+claim_assert_static(alignOf$(sys_libc_darwin_siginfo) == __alignof__(siginfo_t));
+claim_assert_static(offsetTo(sys_libc_darwin_siginfo, si_addr) == __builtin_offsetof(siginfo_t, si_addr));
+claim_assert_static(sizeOf$(sys_libc_darwin_sigaction) == sizeof(struct sigaction));
+claim_assert_static(alignOf$(sys_libc_darwin_sigaction) == __alignof__(struct sigaction));
+claim_assert_static(offsetTo(sys_libc_darwin_sigaction, sa_mask) == __builtin_offsetof(struct sigaction, sa_mask));
+claim_assert_static(offsetTo(sys_libc_darwin_sigaction, sa_flags) == __builtin_offsetof(struct sigaction, sa_flags));
 #endif /* plat_is_darwin */
 
 fn_((sys_libc_darwin_sigemptyset(sys_libc_darwin_sigset* set))(i32)) {
 #if plat_is_darwin
-    return sigemptyset(set);
+    return sigemptyset(as$(sigset_t*)(set));
 #else
     let_ignore = set;
     claim_unreachable_msg(nameOf(sys_libc_darwin_sigemptyset) "is not supported on this platform");
@@ -17,7 +27,7 @@ fn_((sys_libc_darwin_sigemptyset(sys_libc_darwin_sigset* set))(i32)) {
 
 fn_((sys_libc_darwin_siginfo_addr(const sys_libc_darwin_siginfo* info))(void*)) {
 #if plat_is_darwin
-    return info->si_addr;
+    return as$(const siginfo_t*)(info)->si_addr;
 #else
     let_ignore = info;
     claim_unreachable_msg(nameOf(sys_libc_darwin_siginfo_addr) "is not supported on this platform");
@@ -25,12 +35,12 @@ fn_((sys_libc_darwin_siginfo_addr(const sys_libc_darwin_siginfo* info))(void*)) 
 };
 
 fn_((sys_libc_darwin_sigaction_set(
-    i32 signal,
+    sys_libc_darwin_signal_t signal,
     const sys_libc_darwin_sigaction* act,
     sys_libc_darwin_sigaction* old_act
 ))(i32)) {
 #if plat_is_darwin
-    return sigaction(signal, act, old_act);
+    return sigaction(signal, as$(const struct sigaction*)(act), as$(struct sigaction*)(old_act));
 #else
     let_ignore = signal;
     let_ignore = act;
@@ -39,7 +49,7 @@ fn_((sys_libc_darwin_sigaction_set(
 #endif /* plat_is_darwin */
 };
 
-fn_((sys_libc_darwin_raise(i32 signal))(i32)) {
+fn_((sys_libc_darwin_raise(sys_libc_darwin_signal_t signal))(i32)) {
 #if plat_is_darwin
     return raise(signal);
 #else

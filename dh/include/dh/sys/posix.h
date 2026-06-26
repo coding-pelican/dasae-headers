@@ -15,8 +15,23 @@ extern "C" {
 
 typedef pp_if_(plat_is_windows)(
     pp_then_(HANDLE),
-    pp_else_(i32)) sys_posix_fd_t;
-typedef i32 sys_posix_mode_t;
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(sys_call_linux_fd_t),
+        pp_else_(pp_if_(plat_is_darwin)(
+            pp_then_(sys_libc_darwin_fd_t),
+            pp_else_(Void)
+        ))
+    ))) sys_posix_fd_t;
+
+typedef pp_if_(plat_is_windows)(
+    pp_then_(i32),
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(sys_call_linux_mode_t),
+        pp_else_(pp_if_(plat_is_darwin)(
+            pp_then_(sys_libc_darwin_mode_t),
+            pp_else_(Void)
+        ))
+    ))) sys_posix_mode_t;
 
 #define sys_posix_STDIN_FILENO comp_const__sys_posix_STDIN_FILENO
 #define sys_posix_STDOUT_FILENO comp_const__sys_posix_STDOUT_FILENO
@@ -72,11 +87,53 @@ typedef pp_if_(plat_is_linux)(
     ))) sys_posix_siginfo;
 
 typedef pp_if_(plat_is_linux)(
-    pp_then_(i32),
+    pp_then_(sys_call_linux_signal_t),
+    pp_else_(pp_if_(plat_is_darwin)(
+        pp_then_(sys_libc_darwin_signal_t),
+        pp_else_(i32)
+    ))) sys_posix_signal_t;
+
+typedef pp_if_(plat_is_linux)(
+    pp_then_(sys_call_linux_sig_atomic_t),
     pp_else_(pp_if_(plat_is_darwin)(
         pp_then_(sys_libc_darwin_sig_atomic_t),
         pp_else_(i32)
     ))) sys_posix_sig_atomic_t;
+
+typedef pp_if_(plat_is_linux)(
+    pp_then_(sys_call_linux_tcflag_t),
+    pp_else_(pp_if_(plat_is_darwin)(
+        pp_then_(sys_libc_darwin_tcflag_t),
+        pp_else_(u32)
+    ))) sys_posix_tcflag_t;
+
+typedef pp_if_(plat_is_linux)(
+    pp_then_(sys_call_linux_cc_t),
+    pp_else_(pp_if_(plat_is_darwin)(
+        pp_then_(sys_libc_darwin_cc_t),
+        pp_else_(u8)
+    ))) sys_posix_cc_t;
+
+typedef pp_if_(plat_is_linux)(
+    pp_then_(sys_call_linux_termios),
+    pp_else_(pp_if_(plat_is_darwin)(
+        pp_then_(sys_libc_darwin_termios),
+        pp_else_(Void)
+    ))) sys_posix_termios;
+
+typedef pp_if_(plat_is_linux)(
+    pp_then_(sys_call_linux_winsize),
+    pp_else_(pp_if_(plat_is_darwin)(
+        pp_then_(sys_libc_darwin_winsize),
+        pp_else_(Void)
+    ))) sys_posix_winsize;
+
+typedef pp_if_(plat_is_linux)(
+    pp_then_(sys_call_linux_ioctl_req_t),
+    pp_else_(pp_if_(plat_is_darwin)(
+        pp_then_(sys_libc_darwin_ioctl_req_t),
+        pp_else_(Void)
+    ))) sys_posix_ioctl_req_t;
 
 #define sys_posix_SIGILL comp_const__sys_posix_SIGILL
 #define sys_posix_SIGTRAP comp_const__sys_posix_SIGTRAP
@@ -88,6 +145,20 @@ typedef pp_if_(plat_is_linux)(
 
 #define sys_posix_SA_SIGINFO comp_const__sys_posix_SA_SIGINFO
 #define sys_posix_SIG_DFL comp_const__sys_posix_SIG_DFL
+
+#define sys_posix_VTIME comp_const__sys_posix_VTIME
+#define sys_posix_VMIN comp_const__sys_posix_VMIN
+#define sys_posix_BRKINT comp_const__sys_posix_BRKINT
+#define sys_posix_INPCK comp_const__sys_posix_INPCK
+#define sys_posix_ISTRIP comp_const__sys_posix_ISTRIP
+#define sys_posix_ICRNL comp_const__sys_posix_ICRNL
+#define sys_posix_IXON comp_const__sys_posix_IXON
+#define sys_posix_IXOFF comp_const__sys_posix_IXOFF
+#define sys_posix_OPOST comp_const__sys_posix_OPOST
+#define sys_posix_ISIG comp_const__sys_posix_ISIG
+#define sys_posix_ICANON comp_const__sys_posix_ICANON
+#define sys_posix_ECHO comp_const__sys_posix_ECHO
+#define sys_posix_IEXTEN comp_const__sys_posix_IEXTEN
 
 $attr($inline_always)
 $static fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32));
@@ -102,9 +173,19 @@ $static fn_((sys_posix_sigemptyset(sys_posix_sigset* set))(i32));
 $attr($inline_always)
 $static fn_((sys_posix_siginfo_addr(const sys_posix_siginfo* info))(void*));
 $attr($inline_always)
-$static fn_((sys_posix_sigaction_set(i32 signal, O$P$raw act, O$P$raw old_act))(i32));
+$static fn_((sys_posix_sigaction_set(sys_posix_signal_t signal, O$P$raw act, O$P$raw old_act))(i32));
 $attr($inline_always)
-$static fn_((sys_posix_raise(i32 signal))(i32));
+$static fn_((sys_posix_raise(sys_posix_signal_t signal))(i32));
+$attr($inline_always)
+$static fn_((sys_posix_tcgetattr(sys_posix_fd_t fd, sys_posix_termios* termios))(i32));
+$attr($inline_always)
+$static fn_((sys_posix_tcsetattr(sys_posix_fd_t fd, const sys_posix_termios* termios))(i32));
+$attr($inline_always)
+$static fn_((sys_posix_ioctl(sys_posix_fd_t fd, sys_posix_ioctl_req_t request, O$P$raw arg))(i32));
+$attr($inline_always)
+$static fn_((sys_posix_tiocgwinsz(sys_posix_fd_t fd, sys_posix_winsize* size))(i32));
+$attr($inline_always)
+$static fn_((sys_posix_fionread(sys_posix_fd_t fd, int* count))(i32));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -165,6 +246,20 @@ $static fn_((sys_posix_raise(i32 signal))(i32));
 
 #define comp_const__sys_posix_SA_SIGINFO pp_if_(plat_is_linux)(pp_then_(sys_call_linux_SA_SIGINFO), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_SA_SIGINFO), pp_else_(0))))
 #define comp_const__sys_posix_SIG_DFL pp_if_(plat_is_linux)(pp_then_(sys_call_linux_SIG_DFL), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_SIG_DFL), pp_else_(null))))
+
+#define comp_const__sys_posix_VTIME pp_if_(plat_is_linux)(pp_then_(sys_call_linux_VTIME), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_VTIME), pp_else_(0))))
+#define comp_const__sys_posix_VMIN pp_if_(plat_is_linux)(pp_then_(sys_call_linux_VMIN), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_VMIN), pp_else_(0))))
+#define comp_const__sys_posix_BRKINT pp_if_(plat_is_linux)(pp_then_(sys_call_linux_BRKINT), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_BRKINT), pp_else_(0))))
+#define comp_const__sys_posix_INPCK pp_if_(plat_is_linux)(pp_then_(sys_call_linux_INPCK), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_INPCK), pp_else_(0))))
+#define comp_const__sys_posix_ISTRIP pp_if_(plat_is_linux)(pp_then_(sys_call_linux_ISTRIP), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_ISTRIP), pp_else_(0))))
+#define comp_const__sys_posix_ICRNL pp_if_(plat_is_linux)(pp_then_(sys_call_linux_ICRNL), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_ICRNL), pp_else_(0))))
+#define comp_const__sys_posix_IXON pp_if_(plat_is_linux)(pp_then_(sys_call_linux_IXON), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_IXON), pp_else_(0))))
+#define comp_const__sys_posix_IXOFF pp_if_(plat_is_linux)(pp_then_(sys_call_linux_IXOFF), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_IXOFF), pp_else_(0))))
+#define comp_const__sys_posix_OPOST pp_if_(plat_is_linux)(pp_then_(sys_call_linux_OPOST), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_OPOST), pp_else_(0))))
+#define comp_const__sys_posix_ISIG pp_if_(plat_is_linux)(pp_then_(sys_call_linux_ISIG), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_ISIG), pp_else_(0))))
+#define comp_const__sys_posix_ICANON pp_if_(plat_is_linux)(pp_then_(sys_call_linux_ICANON), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_ICANON), pp_else_(0))))
+#define comp_const__sys_posix_ECHO pp_if_(plat_is_linux)(pp_then_(sys_call_linux_ECHO), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_ECHO), pp_else_(0))))
+#define comp_const__sys_posix_IEXTEN pp_if_(plat_is_linux)(pp_then_(sys_call_linux_IEXTEN), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_IEXTEN), pp_else_(0))))
 
 #if on_analysis_active_only || on_comptime
 fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32)) {
@@ -255,7 +350,7 @@ fn_((sys_posix_siginfo_addr(const sys_posix_siginfo* info))(void*)) {
         })
     ));
 };
-fn_((sys_posix_sigaction_set(i32 signal, O$P$raw act, O$P$raw old_act))(i32)) {
+fn_((sys_posix_sigaction_set(sys_posix_signal_t signal, O$P$raw act, O$P$raw old_act))(i32)) {
     pp_switch_((plat_type)(
         pp_case_((plat_type_linux)({
             var_(linux_act, sys_call_linux_sigaction) = cleared();
@@ -284,7 +379,7 @@ fn_((sys_posix_sigaction_set(i32 signal, O$P$raw act, O$P$raw old_act))(i32)) {
         })
     ));
 };
-fn_((sys_posix_raise(i32 signal))(i32)) {
+fn_((sys_posix_raise(sys_posix_signal_t signal))(i32)) {
     pp_switch_((plat_type)(
         pp_case_((plat_type_linux)({
             let pid = sys_call_linux_getpid();
@@ -297,6 +392,101 @@ fn_((sys_posix_raise(i32 signal))(i32)) {
         pp_default_({
             let_ignore = signal;
             claim_unreachable_msg(nameOf(sys_posix_raise) "is not supported on this platform");
+        })
+    ));
+};
+fn_((sys_posix_tcgetattr(sys_posix_fd_t fd, sys_posix_termios* termios))(i32)) {
+    pp_switch_((plat_type)(
+        pp_case_((plat_type_linux)(
+            return as$(i32)(sys_call_linux_ioctl(as$(sys_call_linux_fd_t)(fd), sys_call_linux_TCGETS, termios))
+        )),
+        pp_case_((plat_type_darwin)(
+            return sys_libc_darwin_tcgetattr(fd, termios)
+        )),
+        pp_default_({
+            let_ignore = fd;
+            let_ignore = termios;
+            claim_unreachable_msg(nameOf(sys_posix_tcgetattr) "is not supported on this platform");
+        })
+    ));
+};
+fn_((sys_posix_tcsetattr(sys_posix_fd_t fd, const sys_posix_termios* termios))(i32)) {
+    pp_switch_((plat_type)(
+        pp_case_((plat_type_linux)(
+            return as$(i32)(sys_call_linux_ioctl(
+                as$(sys_call_linux_fd_t)(fd),
+                sys_call_linux_TCSETS,
+                ptrQualCast$((sys_posix_termios*)(termios))
+            ))
+        )),
+        pp_case_((plat_type_darwin)(
+            return sys_libc_darwin_tcsetattr(fd, termios)
+        )),
+        pp_default_({
+            let_ignore = fd;
+            let_ignore = termios;
+            claim_unreachable_msg(nameOf(sys_posix_tcsetattr) "is not supported on this platform");
+        })
+    ));
+};
+fn_((sys_posix_ioctl(sys_posix_fd_t fd, sys_posix_ioctl_req_t request, O$P$raw arg))(i32)) {
+    pp_switch_((plat_type)(
+        pp_case_((plat_type_linux)(
+            return as$(i32)(sys_call_linux_ioctl(
+                as$(sys_call_linux_fd_t)(fd),
+                as$(sys_call_linux_ioctl_req_t)(request),
+                orelse_((arg)(null))
+            ))
+        )),
+        pp_case_((plat_type_darwin)(
+            let_ignore = fd;
+            let_ignore = request;
+            let_ignore = arg;
+            claim_unreachable_msg(nameOf(sys_posix_ioctl) "does not expose raw Darwin ioctl requests")
+        )),
+        pp_default_({
+            let_ignore = fd;
+            let_ignore = request;
+            let_ignore = arg;
+            claim_unreachable_msg(nameOf(sys_posix_ioctl) "is not supported on this platform");
+        })
+    ));
+};
+fn_((sys_posix_tiocgwinsz(sys_posix_fd_t fd, sys_posix_winsize* size))(i32)) {
+    pp_switch_((plat_type)(
+        pp_case_((plat_type_linux)(
+            return as$(i32)(sys_call_linux_ioctl(
+                as$(sys_call_linux_fd_t)(fd),
+                sys_call_linux_TIOCGWINSZ,
+                size
+            ))
+        )),
+        pp_case_((plat_type_darwin)(
+            return sys_libc_darwin_tiocgwinsz(fd, size)
+        )),
+        pp_default_({
+            let_ignore = fd;
+            let_ignore = size;
+            claim_unreachable_msg(nameOf(sys_posix_tiocgwinsz) "is not supported on this platform");
+        })
+    ));
+};
+fn_((sys_posix_fionread(sys_posix_fd_t fd, int* count))(i32)) {
+    pp_switch_((plat_type)(
+        pp_case_((plat_type_linux)(
+            return as$(i32)(sys_call_linux_ioctl(
+                as$(sys_call_linux_fd_t)(fd),
+                sys_call_linux_FIONREAD,
+                count
+            ))
+        )),
+        pp_case_((plat_type_darwin)(
+            return sys_libc_darwin_fionread(fd, count)
+        )),
+        pp_default_({
+            let_ignore = fd;
+            let_ignore = count;
+            claim_unreachable_msg(nameOf(sys_posix_fionread) "is not supported on this platform");
         })
     ));
 };
