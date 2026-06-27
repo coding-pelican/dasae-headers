@@ -42,6 +42,8 @@ static bool dal_c_Cmd__hasSingleExplicitFileInput(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectPathSources(const char* path, bool resolved_is_dir, bool skip_auto_paths);
 static ArrStr* dal_c_Cmd__collectExplicitSources(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_TargetRequest* request);
+static char* dal_c_Cmd__targetLocalSourceRoot(const dal_c_TargetRequest* request);
+static char* dal_c_Cmd__targetLocalIncludeRoot(const dal_c_TargetRequest* request);
 static int dal_c_Cmd__pushExcludePath(dal_c_Cmd* cmd, const char* value);
 static bool dal_c_Cmd__pathMatchesExclude(const char* path, const char* exclude_path);
 static const char* dal_c_Cmd__findMatchingExclude(const char* path, const ArrStr* excludes);
@@ -67,6 +69,7 @@ static int dal_c_Cmd__buildFromSources(
     bool allow_output_defaults,
     bool print_success
 );
+static void dal_c_Cmd__appendTargetLocalInclude(dal_c_CompilerOpts* opts, const dal_c_Project* proj, const dal_c_Cmd* cmd);
 static char* dal_c_Cmd__compileDbOutputPath(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__buildLibrarySetFromSources(
     const dal_c_Cmd* self,
@@ -1219,6 +1222,7 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
     memset(&effective.opts, 0, sizeof(effective.opts));
     effective.opts.profile = dal_c_Profile_invalid;
     dal_c_Cmd__mergeBuildProperties(&effective.opts, &effective_defaults, build_proj, sources, self);
+    dal_c_Cmd__appendTargetLocalInclude(&effective.opts, build_proj, self);
     if (effective.opts.profile == dal_c_Profile_invalid) {
         effective.opts.profile = self->opts.profile;
     }
@@ -2531,7 +2535,54 @@ static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_TargetRequest* reques
     if (!request->resolved_path) {
         return ArrStr_init();
     }
+    char* source_root = dal_c_Cmd__targetLocalSourceRoot(request);
+    if (source_root) {
+        ArrStr* sources = dal_c_Cmd__collectPathSources(source_root, true, request->raw_target_path == NULL);
+        free(source_root);
+        return sources;
+    }
     return dal_c_Cmd__collectPathSources(request->resolved_path, request->resolved_is_dir, request->raw_target_path == NULL);
+}
+
+static char* dal_c_Cmd__firstExistingChildDir(const char* root, const char* const* names) {
+    assert(root != NULL);
+    assert(names != NULL);
+    for (int i = 0; names[i] != NULL; ++i) {
+        char* child = path_join(root, names[i]);
+        if (child && path_isDir(child)) {
+            return child;
+        }
+        free(child);
+    }
+    return NULL;
+}
+
+static char* dal_c_Cmd__targetLocalSourceRoot(const dal_c_TargetRequest* request) {
+    assert(request != NULL);
+    if (!request->resolved_is_dir || !request->resolved_path) {
+        return NULL;
+    }
+    static const char* source_names[] = {
+        dal_c_dir_src,
+        dal_c_dir_src_alias_source,
+        dal_c_dir_src_alias_sources,
+        NULL
+    };
+    return dal_c_Cmd__firstExistingChildDir(request->resolved_path, source_names);
+}
+
+static char* dal_c_Cmd__targetLocalIncludeRoot(const dal_c_TargetRequest* request) {
+    assert(request != NULL);
+    if (!request->resolved_is_dir || !request->resolved_path) {
+        return NULL;
+    }
+    static const char* include_names[] = {
+        dal_c_dir_include,
+        dal_c_dir_include_alias_includes,
+        dal_c_dir_include_alias_inc,
+        NULL
+    };
+    return dal_c_Cmd__firstExistingChildDir(request->resolved_path, include_names);
 }
 
 static int dal_c_Cmd__pushExcludePath(dal_c_Cmd* cmd, const char* value) {
@@ -3158,6 +3209,7 @@ static int dal_c_Cmd__buildFromSources(
     memset(&effective.opts, 0, sizeof(effective.opts));
     effective.opts.profile = dal_c_Profile_invalid;
     dal_c_Cmd__mergeBuildProperties(&effective.opts, &effective_defaults, proj, sources, self);
+    dal_c_Cmd__appendTargetLocalInclude(&effective.opts, proj, self);
     if (effective.opts.version.label_suffix_set && !effective.opts.version.label_prefix_set) {
         (void)fprintf(stderr, "Error: `%s` requires `%s`\n", dal_c_opt_version_suffix, dal_c_opt_version_prefix);
         dal_c_CompilerOpts_cleanup(&effective.opts);
@@ -3287,6 +3339,35 @@ static int dal_c_Cmd__buildFromSources(
     free(compiler_args);
     free(target_path);
     return result;
+}
+
+static void dal_c_Cmd__appendTargetLocalInclude(dal_c_CompilerOpts* opts, const dal_c_Project* proj, const dal_c_Cmd* cmd) {
+    assert(opts != NULL);
+    assert(cmd != NULL);
+    if (!proj || !proj->root) {
+        return;
+    }
+
+    dal_c_CommandIntent intent = { 0 };
+    dal_c_Cmd_normalizeIntent(cmd, &intent);
+    if (intent.target_path_is_explicit_file
+        || (intent.target_root_name_hint == NULL && intent.target_path != NULL && path_isFile(intent.target_path))) {
+        return;
+    }
+    dal_c_TargetRequest request = { 0 };
+    if (!dal_c_TargetRequest_resolve(proj, &intent, &request)) {
+        return;
+    }
+
+    if (request.root) {
+        char* include_dir = dal_c_Cmd__targetLocalIncludeRoot(&request);
+        if (include_dir) {
+            dal_c_Cmd__addToArray(&opts->include_paths, &opts->include_count, include_dir);
+            free(include_dir);
+        }
+    }
+
+    dal_c_TargetRequest_cleanup(&request);
 }
 
 static char* dal_c_Cmd__writeTestMainSource(const dal_c_Project* proj, const dal_c_Cmd* cmd, const char* output_name) {

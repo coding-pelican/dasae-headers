@@ -66,6 +66,7 @@ static char* dal_c__sourceToObjStem(const char* base, const char* src);
 static bool dal_c__commandUsesTestMode(const dal_c_Cmd* cmd);
 static bool dal_c__sourceUsesTestMode(const dal_c_Cmd* cmd, const dal_c_Project* proj, const char* src);
 static bool dal_c__sourceUsesPchExcludedHeader(const dal_c_Project* proj, const char* src);
+static bool dal_c__shouldAddProjectInclude(const dal_c_Project* proj, const dal_c_Cmd* cmd);
 static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, bool use_pch, bool test_mode);
 static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static char* dal_c__makeLinkContractPath(const char* build_dir, const char* target_path);
@@ -1088,8 +1089,14 @@ static int dal_c__ensureLibDH(const dal_c_Project* proj, const dal_c_ProfileSpec
     cmd.payload.lib.linking = dal_c_Linking_static;
     cmd.opts.profile = dal_c_Profile_invalid;
     dal_c_CompilerOpts_merge(&cmd.opts, &dh_proj->opts);
+    int dh_include_count = cmd.opts.include_count;
     if (parent_opts) {
         dal_c_CompilerOpts_merge(&cmd.opts, parent_opts);
+        for (int i = dh_include_count; i < cmd.opts.include_count; ++i) {
+            free(cmd.opts.include_paths[i]);
+            cmd.opts.include_paths[i] = NULL;
+        }
+        cmd.opts.include_count = dh_include_count;
     }
     cmd.opts.dsl_mode = dal_c_ToggleState_disabled;
     if (cmd.opts.profile == dal_c_Profile_invalid) {
@@ -2530,7 +2537,7 @@ static void dal_c__appendCompileDbArguments(
         ArrStr_push(argv, "-DNDEBUG");
     }
 
-    if (proj && proj->root) {
+    if (dal_c__shouldAddProjectInclude(proj, cmd)) {
         char* include_dir = path_join(proj->root, dal_c_Project_getCategoryDirName(proj, dal_c_dir_include));
         ArrStr_push(argv, "-I");
         ArrStr_push(argv, include_dir);
@@ -3419,7 +3426,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     (void)fprintf(fp, "\n");
 
     (void)fprintf(fp, "INCLUDES =");
-    if (proj && proj->root) {
+    if (dal_c__shouldAddProjectInclude(proj, cmd)) {
         (void)fprintf(fp, " -I$(PROJECT_ROOT)/%s", dal_c_Project_getCategoryDirName(proj, dal_c_dir_include));
     }
     if (dal_c__usesDhLibrary(proj, opts)) {
@@ -3728,6 +3735,24 @@ static bool dal_c__sourceUsesPchExcludedHeader(const dal_c_Project* proj, const 
     }
     (void)fclose(fp);
     return excluded;
+}
+
+static bool dal_c__shouldAddProjectInclude(const dal_c_Project* proj, const dal_c_Cmd* cmd) {
+    assert(cmd != NULL);
+    if (!proj || !proj->root) {
+        return false;
+    }
+
+    dal_c_CommandIntent intent = { 0 };
+    dal_c_Cmd_normalizeIntent(cmd, &intent);
+    dal_c_TargetRequest request = { 0 };
+    bool has_request = dal_c_TargetRequest_resolve(proj, &intent, &request);
+    bool add_include = true;
+    if (has_request && request.root) {
+        add_include = request.link_project;
+    }
+    dal_c_TargetRequest_cleanup(&request);
+    return add_include;
 }
 
 static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, bool use_pch, bool test_mode) {

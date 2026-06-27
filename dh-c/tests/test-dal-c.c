@@ -54,6 +54,7 @@ static void test_project_detection(void);
 static void test_clean_prefers_local_build_dir(void);
 static void test_target_request_resolution(void);
 static void test_explicit_file_build_uses_file_project(void);
+static void test_target_root_directory_uses_local_include(void);
 static void test_compile_db_command(void);
 static void test_skip_source_filters(void);
 static void test_test_source_classification(void);
@@ -81,6 +82,7 @@ int main(void) {
     RUN_TEST(test_clean_prefers_local_build_dir);
     RUN_TEST(test_target_request_resolution);
     RUN_TEST(test_explicit_file_build_uses_file_project);
+    RUN_TEST(test_target_root_directory_uses_local_include);
     RUN_TEST(test_compile_db_command);
     RUN_TEST(test_skip_source_filters);
     RUN_TEST(test_test_source_classification);
@@ -2048,6 +2050,81 @@ static void test_explicit_file_build_uses_file_project(void) {
     free(samples_dir);
     free(source);
     free(archive_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+}
+
+static void test_target_root_directory_uses_local_include(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "target-local-include-project");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* demo_src_dir = path_join(project_root, "examples/demo/src");
+    char* demo_include_dir = path_join(project_root, "examples/demo/include");
+    char* demo_header = path_join(demo_include_dir, "demo.h");
+    char* demo_source = path_join(demo_src_dir, "main.c");
+    char* compile_db_path = path_join(project_root, "build/clangd/compile_commands.json");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(demo_src_dir != NULL);
+    TEST_ASSERT(demo_include_dir != NULL);
+    TEST_ASSERT(demo_header != NULL);
+    TEST_ASSERT(demo_source != NULL);
+    TEST_ASSERT(compile_db_path != NULL);
+
+    TEST_ASSERT(dir_createRecur(demo_src_dir));
+    TEST_ASSERT(dir_createRecur(demo_include_dir));
+    TEST_ASSERT(file_write(project_dh, "output=target-local-include-project\nlink-dsl=off\npch=off\n"));
+    TEST_ASSERT(file_write(demo_header, "#pragma once\n#define DEMO_VALUE 7\n"));
+    TEST_ASSERT(file_write(demo_source, "#include \"demo.h\"\nint main(void) { return DEMO_VALUE == 7 ? 0 : 1; }\n"));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(proj != NULL);
+
+    {
+        const char* build_argv[] = { dal_c_tool_name, "build", "dev", "--example", "demo", NULL };
+        dal_c_Cmd* build_cmd = dal_c_Cmd_parse(5, build_argv);
+        TEST_ASSERT(build_cmd != NULL);
+        TEST_ASSERT(dal_c_Cmd_makeTarget(build_cmd, proj) == 0);
+        dal_c_Cmd_cleanup(&build_cmd);
+    }
+
+    {
+        const char* compile_db_argv[] = {
+            dal_c_tool_name,
+            "compile-db",
+            "dev",
+            "--example",
+            "demo",
+            "--output",
+            compile_db_path,
+            NULL
+        };
+        dal_c_Cmd* compile_db_cmd = dal_c_Cmd_parse(7, compile_db_argv);
+        TEST_ASSERT(compile_db_cmd != NULL);
+        TEST_ASSERT(dal_c_Cmd_writeCompileDb(compile_db_cmd, proj) == 0);
+        dal_c_Cmd_cleanup(&compile_db_cmd);
+    }
+
+    char* compile_db = file_read(compile_db_path);
+    TEST_ASSERT(compile_db != NULL);
+    TEST_ASSERT(strstr(compile_db, "examples/demo/include") != NULL
+             || strstr(compile_db, "examples\\\\demo\\\\include") != NULL
+             || strstr(compile_db, "examples\\\\\\\\demo\\\\\\\\include") != NULL);
+
+    free(compile_db);
+    dal_c_Project_cleanup(&proj);
+    (void)dir_removeRecur(temp_root);
+    TEST_ASSERT(!path_exists(temp_root));
+
+    free(compile_db_path);
+    free(demo_source);
+    free(demo_header);
+    free(demo_include_dir);
+    free(demo_src_dir);
     free(project_dh);
     free(project_root);
     free(temp_root);

@@ -43,7 +43,7 @@ Target roots are declared with:
 path=<path>
 kind=<executable|static-lib|shared-lib>
 selection=<path|file|dir>
-link-self=<true|false>
+link-project=<true|false>
 ```
 
 Meaning:
@@ -52,7 +52,7 @@ Meaning:
 - `path=` is the root directory for that target family
 - `kind=` chooses the produced artifact type
 - `selection=` controls whether the CLI target under that root may be a file, a directory, or either
-- `link-self=` controls whether the target links the cached self-project reusable unit
+- `link-project=` controls whether the target links the parent project's cached reusable unit and includes the parent project headers
 
 ## Implicit Rules
 
@@ -106,9 +106,83 @@ Inside a `[target-root ...]` block:
 
 - `kind=` defaults to `executable`
 - `selection=` defaults to `path`
-- `link-self=` defaults to `true`
+- `link-project=` defaults to `true`
 
 Only `path=` is effectively mandatory for a meaningful target root.
+
+### Directory target local layout
+
+When a target-root selection resolves to a directory, `dh-c` treats that
+directory as a target-local project unit if it has project-shaped category
+roots:
+
+- `src/`, `source/`, or `sources/` becomes the target-local source root
+- `include/`, `includes/`, or `inc/` becomes the target-local include root
+
+If no target-local source root exists, source collection falls back to the
+selected directory itself for compatibility with flat target directories.
+
+`link-project=` controls whether the parent project participates:
+
+- `link-project=true` links the parent project's reusable self library and adds
+  the parent project include root
+- `link-project=false` builds only the target-local code plus explicit
+  dependency and CLI include inputs
+
+Built-in `samples`, `examples`, and `tests` roots use the same directory target
+rules as explicit target roots.
+
+Architecture view:
+
+```mermaid
+graph TD
+    CLI[CLI target selection] --> Request[Target request]
+    Request --> Local[Target-local project unit]
+    Local --> LocalSrc[local src/source/sources]
+    Local --> LocalInclude[local include/includes/inc]
+    Request --> LinkProject{link-project}
+    LinkProject -->|true| ParentSrc[parent self library]
+    LinkProject -->|true| ParentInclude[parent include root]
+    LinkProject -->|false| TargetOnly[target-local code only]
+```
+
+State view:
+
+```mermaid
+stateDiagram-v2
+    [*] --> ResolveTarget
+    ResolveTarget --> FileTarget: selected file
+    ResolveTarget --> DirectoryTarget: selected directory
+    DirectoryTarget --> ProjectShaped: local src/source/sources exists
+    DirectoryTarget --> FlatDirectory: no local source root
+    ProjectShaped --> CompileLocalSources
+    FlatDirectory --> CompileSelectedDirectory
+    FileTarget --> CompileSelectedFile
+    CompileLocalSources --> LinkParentDecision
+    CompileSelectedDirectory --> LinkParentDecision
+    CompileSelectedFile --> LinkParentDecision
+    LinkParentDecision --> ParentLinked: link-project=true
+    LinkParentDecision --> TargetOnlyLinked: link-project=false
+    ParentLinked --> [*]
+    TargetOnlyLinked --> [*]
+```
+
+Flow view:
+
+```mermaid
+flowchart TD
+    A[resolve target-root request] --> B{directory target?}
+    B -->|no| C[compile selected file]
+    B -->|yes| D{has local source root?}
+    D -->|yes| E[collect from local source root]
+    D -->|no| F[collect from selected directory]
+    E --> G[add target-local include root when present]
+    F --> G
+    C --> H{link-project?}
+    G --> H
+    H -->|true| I[add parent include and link parent self library]
+    H -->|false| J[skip parent include and parent self library]
+```
 
 ### Output naming defaults
 
@@ -151,7 +225,7 @@ self-root=pkg
 path=cmd
 kind=executable
 selection=dir
-link-self=true
+link-project=true
 ```
 
 Then:
@@ -165,7 +239,7 @@ means:
 
 - compile only sources under `cmd/runner1`
 - reuse cached self sources from `src` and `pkg`
-- link the self unit because `link-self=true`
+- link the self unit because `link-project=true`
 
 ### Compatibility shorthands
 
@@ -203,7 +277,7 @@ self-root=internal
 path=cmd
 kind=executable
 selection=dir
-link-self=true
+link-project=true
 ```
 
 ### Shared-library plugin targets
@@ -215,7 +289,7 @@ self-root=src
 path=plugins
 kind=shared-lib
 selection=dir
-link-self=true
+link-project=true
 ```
 
 ### Minimal project using only implicit defaults
