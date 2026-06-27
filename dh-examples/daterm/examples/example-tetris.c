@@ -1639,7 +1639,6 @@ fn_((tetris_Presenter_render(
     return tetris_Presenter_present(self);
 };
 
-TEST_only(
 TEST_fn_("example-tetris: gravity remains saturated at high levels" $scope) {
     try_(TEST_expect(time_Dur_eq(
         tetris_gravityForLevel(19), time_Dur_fromMillis(50)
@@ -1735,4 +1734,3 @@ TEST_fn_("example-tetris: presenter renders a complete frame" $scope) {
     )));
     return_ok({});
 } $unscoped(TEST_fn);
-)

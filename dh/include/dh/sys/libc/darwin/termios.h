@@ -23,6 +23,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#if on_analysis || plat_is_darwin
 typedef usize sys_libc_darwin_tcflag_t;
 typedef u8 sys_libc_darwin_cc_t;
 typedef usize sys_libc_darwin_speed_t;
@@ -77,6 +78,7 @@ $extern fn_((sys_libc_darwin_tcgetattr(sys_libc_darwin_fd_t fd, sys_libc_darwin_
 $extern fn_((sys_libc_darwin_tcsetattr(sys_libc_darwin_fd_t fd, const sys_libc_darwin_termios* termios))(i32));
 $extern fn_((sys_libc_darwin_tiocgwinsz(sys_libc_darwin_fd_t fd, sys_libc_darwin_winsize* size))(i32));
 $extern fn_((sys_libc_darwin_fionread(sys_libc_darwin_fd_t fd, int* count))(i32));
+#endif /* on_analysis || plat_is_darwin */
 
 #if defined(__cplusplus)
 } /* extern "C" */

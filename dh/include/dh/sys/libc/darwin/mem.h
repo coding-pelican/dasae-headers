@@ -22,6 +22,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#if on_analysis || plat_is_darwin
 #define sys_libc_darwin_PROT_NONE 0
 #define sys_libc_darwin_PROT_READ 0x01
 #define sys_libc_darwin_PROT_WRITE 0x02
@@ -32,6 +33,7 @@ extern "C" {
 $extern fn_((sys_libc_darwin_mmap(P$raw addr, usize len, i32 prot, i32 flags, i32 fd, isize offset))(P$raw));
 $extern fn_((sys_libc_darwin_munmap(P$raw addr, usize len))(i32));
 $extern fn_((sys_libc_darwin_mprotect(P$raw addr, usize len, i32 prot))(i32));
+#endif /* on_analysis || plat_is_darwin */
 
 #if defined(__cplusplus)
 } /* extern "C" */

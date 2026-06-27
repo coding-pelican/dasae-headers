@@ -14,6 +14,7 @@ $extern fn_((__ulock_wait2(sys_libc_darwin_UL operation, P$raw addr, u64 value, 
 $extern fn_((__ulock_wake(sys_libc_darwin_UL operation, P$raw addr, u64 wake_value))(i32));
 #endif /* plat_is_darwin */
 
+#if on_analysis || plat_is_darwin
 fn_((sys_libc_darwin_unfair_lock_lock(sys_libc_darwin_unfair_lock_t lock))(void)) {
 #if plat_is_darwin
     os_unfair_lock_lock(lock);
@@ -94,3 +95,4 @@ fn_((sys_libc_darwin_ulock_wake(sys_libc_darwin_UL operation, P$raw addr, u64 wa
     claim_unreachable_msg(nameOf(sys_libc_darwin_ulock_wake) "is not supported on this platform");
 #endif /* plat_is_darwin */
 };
+#endif /* on_analysis || plat_is_darwin */

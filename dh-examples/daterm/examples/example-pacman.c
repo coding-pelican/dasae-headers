@@ -131,16 +131,6 @@ $static fn_((pac_Dir_reverse(pac_Dir dir))(pac_Dir)) {
     case_((count$pac_Dir)) claim_unreachable $end(case);
     }
 };
-$static fn_((pac_claimDirInvariants(void))(void)) {
-    claim_assert(pac_Dir_delta(pac_Dir_up).x == 0);
-    claim_assert(pac_Dir_delta(pac_Dir_up).y == -1);
-    claim_assert(pac_Dir_delta(pac_Dir_down).x == 0);
-    claim_assert(pac_Dir_delta(pac_Dir_down).y == 1);
-    claim_assert(pac_Dir_delta(pac_Dir_left).x == -1);
-    claim_assert(pac_Dir_delta(pac_Dir_left).y == 0);
-    claim_assert(pac_Dir_delta(pac_Dir_right).x == 1);
-    claim_assert(pac_Dir_delta(pac_Dir_right).y == 0);
-};
 
 /*========== Board ==========================================================*/
 
@@ -269,6 +259,7 @@ typedef struct pac_Ghost {
     var_(dir, pac_Dir);
     var_(anim_frame, u8);
     var_(mode_left, time_Dur);
+    var_(frightened_left, time_Dur);
     var_(step_elapsed, time_Dur);
     var_(in_home, bool);
 } pac_Ghost;
@@ -315,13 +306,20 @@ $static let_(pac_Ghost_stay_ms, A$$(count$pac_Ghost_Type, u32)) = A_init({
 });
 
 $static fn_((pac_Ghost_stepDur(const pac_Ghost* self))(time_Dur)) {
+    if (self->mode != pac_Ghost_eaten && !time_Dur_isZero(self->frightened_left)) {
+        return time_Dur_fromMillis(500);
+    }
     switch (self->mode) {
-    case_((pac_Ghost_frightened)) return time_Dur_fromMillis(500) $end(case);
     case_((pac_Ghost_eaten)) return time_Dur_fromMillis(100) $end(case);
+    case pac_Ghost_frightened: $fallthrough;
     case pac_Ghost_staying: $fallthrough;
     case pac_Ghost_scattering: $fallthrough;
     case_((pac_Ghost_chasing)) return time_Dur_fromMillis(250) $end(case);
     }
+};
+
+$static fn_((pac_Ghost_isFrightened(const pac_Ghost* self))(bool)) {
+    return self->mode != pac_Ghost_eaten && !time_Dur_isZero(self->frightened_left);
 };
 
 $static fn_((pac_Game_playerCanMove(const pac_Game* self, pac_V2i pos))(bool)) {
@@ -352,6 +350,7 @@ $static fn_((pac_Ghost_reset(pac_Ghost* self, pac_Ghost_Type type))(void)) {
         .dir = *A_at((pac_Ghost_init_dir)[type]),
         .anim_frame = 0,
         .mode_left = time_Dur_fromMillis(*A_at((pac_Ghost_stay_ms)[type])),
+        .frightened_left = time_Dur_zero,
         .step_elapsed = time_Dur_zero,
         .in_home = type != pac_Ghost_blinky,
     }));
@@ -427,8 +426,7 @@ $static fn_((pac_Game_setAllFrightened(pac_Game* self))(void)) {
     self->frightened_epoch += 1;
     for_(($s(A_ref(self->ghosts)))(ghost)) {
         if (ghost->mode == pac_Ghost_eaten) continue;
-        ghost->mode = pac_Ghost_frightened;
-        ghost->mode_left = time_Dur_fromSecs(8);
+        ghost->frightened_left = time_Dur_fromSecs(8);
         ghost->dir = pac_Dir_reverse(ghost->dir);
         ghost->step_elapsed = time_Dur_zero;
     } $end(for);
@@ -464,10 +462,11 @@ $static fn_((pac_Game_collide(pac_Game* self))(void)) {
     }
     for_(($s(A_ref(self->ghosts)))(ghost)) {
         if (!pac_V2i_eq(self->player.pos, ghost->pos)) continue;
-        if (ghost->mode == pac_Ghost_frightened) {
+        if (pac_Ghost_isFrightened(ghost)) {
             pac_Game_startFlash(self, 1, 500);
             ghost->mode = pac_Ghost_eaten;
             ghost->mode_left = time_Dur_fromSecs(8);
+            ghost->frightened_left = time_Dur_zero;
             ghost->target = pac_Ghost_inside;
             ghost->step_elapsed = time_Dur_zero;
             self->score += 200;
@@ -594,6 +593,13 @@ $static fn_((pac_Ghost_chooseDir(pac_Game* self, const pac_Ghost* ghost))(pac_Di
                 ArrList_appendWithin$pac_Dir(&dirs, dir);
             }
         } $end(for);
+        if (ArrList_len$pac_Dir(dirs) == 0) {
+            let dir = pac_Dir_reverse(ghost->dir);
+            let next = pac_V2i_add(ghost->pos, pac_Dir_delta(dir));
+            if (pac_Game_ghostCanMove(self, ghost, next)) {
+                ArrList_appendWithin$pac_Dir(&dirs, dir);
+            }
+        }
         let len = ArrList_len$pac_Dir(dirs);
         if (len > 0) {
             let idx = len > 1 ? Rand_lessThan$usize(&self->rng, len) : usize_(0);
@@ -602,18 +608,25 @@ $static fn_((pac_Ghost_chooseDir(pac_Game* self, const pac_Ghost* ghost))(pac_Di
     }
     var_(best, pac_Dir) = ghost->dir;
     var_(best_score, i32) = 0x7fffffff;
+    var_(found, bool) = false;
     for_(($r(0, count$pac_Dir))(i)) {
         let dir = as$(pac_Dir)(i);
         if (dir == pac_Dir_reverse(ghost->dir)) continue;
         let next = pac_V2i_add(ghost->pos, pac_Dir_delta(dir));
         if (!pac_Game_ghostCanMove(self, ghost, next)) continue;
         var_(score, i32) = pac_V2i_distSq(next, ghost->target);
-        if (ghost->mode == pac_Ghost_frightened) score = -score;
-        if (score < best_score) {
+        if (pac_Ghost_isFrightened(ghost)) score = -score;
+        if (!found || score < best_score) {
             best_score = score;
             best = dir;
+            found = true;
         }
     } $end(for);
+    if (!found) {
+        let dir = pac_Dir_reverse(ghost->dir);
+        let next = pac_V2i_add(ghost->pos, pac_Dir_delta(dir));
+        if (pac_Game_ghostCanMove(self, ghost, next)) return dir;
+    }
     return best;
 };
 
@@ -623,6 +636,7 @@ $static fn_((pac_Ghost_recoverFromEaten(pac_Ghost* self))(void)) {
     self->target = pac_Ghost_inside;
     self->anim_frame = 0;
     self->mode_left = time_Dur_fromSecs(8);
+    self->frightened_left = time_Dur_zero;
     self->step_elapsed = time_Dur_zero;
     self->in_home = true;
 };
@@ -658,6 +672,10 @@ $static fn_((pac_Ghost_updateMode(pac_Ghost* self))(void)) {
 };
 
 $static fn_((pac_Ghost_updateTarget(pac_Game* self, pac_Ghost* ghost))(void)) {
+    if (pac_Ghost_isFrightened(ghost)) {
+        ghost->target = self->player.pos;
+        return;
+    }
     switch (ghost->mode) {
     case_((pac_Ghost_staying)) {
     } $end(case);
@@ -747,20 +765,35 @@ typedef enum_((pac_Cmd $fits($packed))(
 )) pac_Cmd;
 T_use_prl$(pac_Cmd);
 
+$static fn_((pac_Game_playerLook(pac_Game* self, pac_Dir dir))(void)) {
+    let look_pos = pac_Board_wrapPos(pac_V2i_add(self->player.pos, pac_Dir_delta(dir)));
+    if (pac_Game_playerCanMove(self, look_pos)) {
+        self->player.dir = dir;
+        asg_l((&self->player.next_dir)(none()));
+    } else {
+        asg_l((&self->player.next_dir)(some(dir)));
+    }
+};
+
 $static fn_((pac_applyCmd(pac_Game* self, pac_Cmd cmd))(void)) {
     switch (cmd) {
     case_((pac_Cmd_quit)) self->is_running = false $end(case);
     case_((pac_Cmd_pause)) self->is_paused = !self->is_paused $end(case);
-    case_((pac_Cmd_up)) asg_l((&self->player.next_dir)(some(pac_Dir_up))) $end(case);
-    case_((pac_Cmd_down)) asg_l((&self->player.next_dir)(some(pac_Dir_down))) $end(case);
-    case_((pac_Cmd_left)) asg_l((&self->player.next_dir)(some(pac_Dir_left))) $end(case);
-    case_((pac_Cmd_right)) asg_l((&self->player.next_dir)(some(pac_Dir_right))) $end(case);
+    case_((pac_Cmd_up)) pac_Game_playerLook(self, pac_Dir_up) $end(case);
+    case_((pac_Cmd_down)) pac_Game_playerLook(self, pac_Dir_down) $end(case);
+    case_((pac_Cmd_left)) pac_Game_playerLook(self, pac_Dir_left) $end(case);
+    case_((pac_Cmd_right)) pac_Game_playerLook(self, pac_Dir_right) $end(case);
     }
 };
 
-$static fn_((pac_cmdFromText(S_const$u8 text))(O$pac_Cmd) $scope) {
-    if (text.len == 0) return_none();
-    switch (*S_at((text)[0])) {
+$static fn_((pac_cmdFromText(daterm_key_Text text))(O$pac_Cmd) $scope) {
+    if_some((text.action)(action)) {
+        if (action == daterm_key_Action_release) return_none();
+    }
+    var_(ch, u32) = text.codepoint;
+    if (ch >= 'A' && ch <= 'Z') ch += 'a' - 'A';
+    if (text.mods.ctrl && ch == 'c') return_some(pac_Cmd_quit);
+    switch (ch) {
     case 'q': return_some(pac_Cmd_quit);
     case 'p': return_some(pac_Cmd_pause);
     case 'w': return_some(pac_Cmd_up);
@@ -772,6 +805,9 @@ $static fn_((pac_cmdFromText(S_const$u8 text))(O$pac_Cmd) $scope) {
 } $unscoped(fn);
 
 $static fn_((pac_cmdFromKey(daterm_key_Event key))(O$pac_Cmd) $scope) {
+    if_some((key.action)(action)) {
+        if (action == daterm_key_Action_release) return_none();
+    }
     if (key.code == daterm_key_Code_escape) return_some(pac_Cmd_quit);
     if (key.code == daterm_key_Code_up) return_some(pac_Cmd_up);
     if (key.code == daterm_key_Code_down) return_some(pac_Cmd_down);
@@ -780,20 +816,22 @@ $static fn_((pac_cmdFromKey(daterm_key_Event key))(O$pac_Cmd) $scope) {
     return_none();
 } $unscoped(fn);
 
+#define pac_Input_events_per_frame 16
+
 $static fn_((pac_pollInput(pac_Game* self, daterm_Term term))(E$void) $scope) {
-    while (true) {
+    for_(($r(0, pac_Input_events_per_frame))(i)) {
+        let_ignore = i;
         let event = orelse_((daterm_Term_poll(term))(return_ok({})));
         $suppress_(switch_enum)(match_(event)) {
         patt_((daterm_Event_key)(key)) {
             if_some((pac_cmdFromKey(key))(cmd)) pac_applyCmd(self, cmd);
         } $end(patt);
         patt_((daterm_Event_text)(text)) {
-            let codepoint_bytes = mem_asBytes(u_anyP(&text.codepoint));
-            if_some((pac_cmdFromText(codepoint_bytes))(cmd)) pac_applyCmd(self, cmd);
+            if_some((pac_cmdFromText(text))(cmd)) pac_applyCmd(self, cmd);
         } $end(patt);
         default_() $do_nothing $end(default);
         } $end(match);
-    }
+    } $end(for);
     return_ok({});
 } $unscoped(fn);
 
@@ -834,6 +872,7 @@ co_use_Clsr_((pac_Player_animCo)(pac_Player_RoutineCtx)(Void));
 
 $static fn_((pac_Game_ghostTick(pac_Game* self, pac_Ghost* ghost, time_Dur dt))(void)) {
     ghost->mode_left = time_Dur_subSat(ghost->mode_left, dt);
+    ghost->frightened_left = time_Dur_subSat(ghost->frightened_left, dt);
     pac_Ghost_updateMode(ghost);
     ghost->step_elapsed = time_Dur_addSat(ghost->step_elapsed, dt);
     while (time_Dur_ge(ghost->step_elapsed, pac_Ghost_stepDur(ghost))) {
@@ -1015,9 +1054,9 @@ $static fn_((pac_playerGlyph(pac_Dir dir, u8 frame))(u8)) {
     case_((count$pac_Dir)) claim_unreachable $end(case);
     }
 };
-$static fn_((pac_ghostFG(pac_Ghost_Type type, pac_Ghost_Mode mode))(pac_RGB)) {
-    if (mode == pac_Ghost_frightened) return (pac_RGB){ 50, 80, 255 };
+$static fn_((pac_ghostFG(pac_Ghost_Type type, pac_Ghost_Mode mode, bool is_frightened))(pac_RGB)) {
     if (mode == pac_Ghost_eaten) return (pac_RGB){ 245, 245, 245 };
+    if (is_frightened) return (pac_RGB){ 50, 80, 255 };
     switch (type) {
     case pac_Ghost_blinky: return (pac_RGB){ 255, 80, 80 };
     case pac_Ghost_inky: return (pac_RGB){ 80, 220, 255 };
@@ -1026,7 +1065,9 @@ $static fn_((pac_ghostFG(pac_Ghost_Type type, pac_Ghost_Mode mode))(pac_RGB)) {
     case count$pac_Ghost_Type: claim_unreachable;
     }
 };
-$static fn_((pac_ghostGlyph(pac_Ghost_Mode mode))(u8)) {
+$static fn_((pac_ghostGlyph(pac_Ghost_Mode mode, bool is_frightened))(u8)) {
+    if (mode == pac_Ghost_eaten) return '%';
+    if (is_frightened) return 'm';
     switch (mode) {
     case pac_Ghost_frightened: return 'm';
     case pac_Ghost_eaten: return '%';
@@ -1063,8 +1104,8 @@ $static fn_((pac_Presenter_compose(pac_Presenter* self, const pac_Game* game))(v
             frame,
             ox + as$(usize)(ghost->pos.x),
             oy + as$(usize)(ghost->pos.y),
-            pac_ghostGlyph(ghost->mode),
-            pac_ghostFG(ghost->type, ghost->mode)
+            pac_ghostGlyph(ghost->mode, pac_Ghost_isFrightened(ghost)),
+            pac_ghostFG(ghost->type, ghost->mode, pac_Ghost_isFrightened(ghost))
         );
     } $end(for);
 
@@ -1232,7 +1273,6 @@ $static fn_((pac_waitForEnter(void))(void)) {
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    pac_claimDirInvariants();
     pac_waitForEnter();
 
     var heap = heap_Sys_init();
@@ -1296,7 +1336,6 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     return_ok({});
 } $unguarded(fn);
 
-TEST_only(
 TEST_fn_("example-pacman: direction deltas use board coordinates" $scope) {
     try_(TEST_expect(pac_Dir_delta(pac_Dir_up).x == 0));
     try_(TEST_expect(pac_Dir_delta(pac_Dir_up).y == -1));
@@ -1323,6 +1362,42 @@ TEST_fn_("example-pacman: up input advances toward lower board rows" $scope) {
     pac_Game_tick(&game, time_Dur_fromMillis(200));
     try_(TEST_expect(game.player.pos.x == 1));
     try_(TEST_expect(game.player.pos.y == 3));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("example-pacman: movement input turns immediately when open" $scope) {
+    var_(game, pac_Game) $undefined;
+    pac_Game_reset(&game);
+    game.player.pos = pac_V2i_of(1, 4);
+    game.player.dir = pac_Dir_right;
+
+    pac_applyCmd(&game, pac_Cmd_up);
+
+    var_(has_next, bool) = false;
+    if_some((game.player.next_dir)(next_dir)) {
+        let_ignore = next_dir;
+        has_next = true;
+    };
+    try_(TEST_expect(game.player.dir == pac_Dir_up));
+    try_(TEST_expect(!has_next));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("example-pacman: movement input buffers when blocked" $scope) {
+    var_(game, pac_Game) $undefined;
+    pac_Game_reset(&game);
+    game.player.pos = pac_V2i_of(1, 1);
+    game.player.dir = pac_Dir_right;
+
+    pac_applyCmd(&game, pac_Cmd_up);
+
+    var_(has_next, bool) = false;
+    if_some((game.player.next_dir)(next_dir)) {
+        has_next = true;
+        try_(TEST_expect(next_dir == pac_Dir_up));
+    };
+    try_(TEST_expect(game.player.dir == pac_Dir_right));
+    try_(TEST_expect(has_next));
     return_ok({});
 } $unscoped(TEST_fn);
 
@@ -1376,11 +1451,29 @@ TEST_fn_("example-pacman: collision only consumes one life while flash is pendin
 } $unscoped(TEST_fn);
 
 TEST_fn_("example-pacman: ghost glyphs represent state, not animation" $scope) {
-    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_staying) == 'M'));
-    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_scattering) == 'M'));
-    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_chasing) == 'M'));
-    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_frightened) == 'm'));
-    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_eaten) == '%'));
+    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_staying, false) == 'M'));
+    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_scattering, false) == 'M'));
+    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_chasing, false) == 'M'));
+    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_staying, true) == 'm'));
+    try_(TEST_expect(pac_ghostGlyph(pac_Ghost_eaten, true) == '%'));
+    return_ok({});
+} $unscoped(TEST_fn);
+
+TEST_fn_("example-pacman: power pellet overlays frightened without stopping base state" $scope) {
+    var_(game, pac_Game) $undefined;
+    pac_Game_reset(&game);
+    game.player.pos = pac_V2i_of(1, 3);
+    game.player.dir = pac_Dir_left;
+
+    let ghost = A_at((game.ghosts)[pac_Ghost_clyde]);
+    try_(TEST_expect(ghost->mode == pac_Ghost_staying));
+    try_(TEST_expect(time_Dur_isZero(ghost->frightened_left)));
+
+    pac_Game_tick(&game, time_Dur_fromMillis(200));
+
+    try_(TEST_expect(game.is_running));
+    try_(TEST_expect(ghost->mode == pac_Ghost_staying));
+    try_(TEST_expect(pac_Ghost_isFrightened(ghost)));
     return_ok({});
 } $unscoped(TEST_fn);
 
@@ -1413,7 +1506,7 @@ TEST_fn_("example-pacman: ghosts do not choose the player-only tunnel exit" $sco
     ghost->mode = pac_Ghost_chasing;
     ghost->pos = pac_V2i_of(0, 11);
     ghost->target = pac_V2i_of(0, 23);
-    ghost->dir = pac_Dir_up;
+    ghost->dir = pac_Dir_left;
     ghost->in_home = false;
 
     try_(TEST_expect(!pac_Game_ghostCanMove(&game, ghost, pac_V2i_of(-1, 11))));
@@ -1426,11 +1519,11 @@ TEST_fn_("example-pacman: recovered ghosts leave the house after staying" $scope
     pac_Game_reset(&game);
     let ghost = A_at((game.ghosts)[pac_Ghost_clyde]);
     pac_Ghost_recoverFromEaten(ghost);
-    ghost->mode_left = time_Dur_zero;
+    game.player.pos = pac_V2i_of(1, 1);
 
-    for_(($r(0, 12))(step)) {
+    for_(($r(0, 48))(step)) {
         let_ignore = step;
-        pac_Game_ghostStep(&game, ghost);
+        pac_Game_ghostTick(&game, ghost, time_Dur_fromMillis(250));
         if (ghost->mode == pac_Ghost_scattering) break;
     } $end(for);
 
@@ -1438,4 +1531,3 @@ TEST_fn_("example-pacman: recovered ghosts leave the house after staying" $scope
     try_(TEST_expect(!ghost->in_home));
     return_ok({});
 } $unscoped(TEST_fn);
-)

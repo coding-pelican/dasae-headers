@@ -137,6 +137,8 @@ extern "C" {
 #define pri_min3(_1st, _2nd, _3rd...) __op__pri_min3__step(_1st, _2nd, _3rd)
 #define pri_min4_static(_1st, _2nd, _3rd, _4th...) __op__pri_min4_static(_1st, _2nd, _3rd, _4th)
 #define pri_min4(_1st, _2nd, _3rd, _4th...) __op__pri_min4__step(_1st, _2nd, _3rd, _4th)
+#define pri_min5_static(_1st, _2nd, _3rd, _4th, _5th...) __op__pri_min5_static(_1st, _2nd, _3rd, _4th, _5th)
+#define pri_min5(_1st, _2nd, _3rd, _4th, _5th...) __op__pri_min5__step(_1st, _2nd, _3rd, _4th, _5th)
 #define pri_findMin(_vals...) __op__pri_findMin__step(_vals)
 
 #define pri_max_static(_lhs, _rhs...) __op__pri_max2_static(_lhs, _rhs)
@@ -147,6 +149,8 @@ extern "C" {
 #define pri_max3(_1st, _2nd, _3rd...) __op__pri_max3__step(_1st, _2nd, _3rd)
 #define pri_max4_static(_1st, _2nd, _3rd, _4th...) __op__pri_max4_static(_1st, _2nd, _3rd, _4th)
 #define pri_max4(_1st, _2nd, _3rd, _4th...) __op__pri_max3__step(_1st, _2nd, _3rd, _4th)
+#define pri_max5_static(_1st, _2nd, _3rd, _4th, _5th...) __op__pri_max5_static(_1st, _2nd, _3rd, _4th, _5th)
+#define pri_max5(_1st, _2nd, _3rd, _4th, _5th...) __op__pri_max5__step(_1st, _2nd, _3rd, _4th, _5th)
 #define pri_findMax(_vals...) __op__pri_findMax__step(_vals)
 
 #define pri_clamp_static(_x, _lo /*$incl*/, _hi /*$incl*/...) __op__pri_clamp_static(_x, _lo, _hi)
@@ -868,6 +872,19 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     let_(__4th, ScalType) = _4th; \
     pri_min4_static(__1st, __2nd, __3rd, __4th); \
 })
+#define __op__pri_min5_static(_1st, _2nd, _3rd, _4th, _5th...) pri_min2_static(pri_min4_static(_1st, _2nd, _3rd, _4th), _5th)
+#define __op__pri_min5__step(_1st, _2nd, _3rd, _4th, _5th...) __op__pri_min5( \
+    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), pp_uniqTok(5th), _1st, _2nd, _3rd, _4th, _5th \
+)
+#define __op__pri_min5(__1st, __2nd, __3rd, __4th, __5th, _1st, _2nd, _3rd, _4th, _5th...) ({ \
+    typedef TypeOfUnqual(_1st) ScalType; \
+    let_(__1st, ScalType) = _1st; \
+    let_(__2nd, ScalType) = _2nd; \
+    let_(__3rd, ScalType) = _3rd; \
+    let_(__4th, ScalType) = _4th; \
+    let_(__5th, ScalType) = _5th; \
+    pri_min5_static(__1st, __2nd, __3rd, __4th, __5th); \
+})
 #define __op__pri_findMin__step(_vals...) __op__pri_findMin( \
     pp_uniqTok(best), pp_uniqTok(vals), pp_uniqTok(val), _vals \
 )
@@ -912,6 +929,19 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
     let_(__3rd, ScalType) = _3rd; \
     let_(__4th, ScalType) = _4th; \
     pri_max4_static(__1st, __2nd, __3rd, __4th); \
+})
+#define __op__pri_max5_static(_1st, _2nd, _3rd, _4th, _5th...) pri_max2_static(pri_max4_static(_1st, _2nd, _3rd, _4th), _5th)
+#define __op__pri_max5__step(_1st, _2nd, _3rd, _4th, _5th...) __op__pri_max5( \
+    pp_uniqTok(1st), pp_uniqTok(2nd), pp_uniqTok(3rd), pp_uniqTok(4th), pp_uniqTok(5th), _1st, _2nd, _3rd, _4th, _5th \
+)
+#define __op__pri_max5(__1st, __2nd, __3rd, __4th, __5th, _1st, _2nd, _3rd, _4th, _5th...) ({ \
+    typedef TypeOfUnqual(_1st) ScalType; \
+    let_(__1st, ScalType) = _1st; \
+    let_(__2nd, ScalType) = _2nd; \
+    let_(__3rd, ScalType) = _3rd; \
+    let_(__4th, ScalType) = _4th; \
+    let_(__5th, ScalType) = _5th; \
+    pri_max5_static(__1st, __2nd, __3rd, __4th, __5th); \
 })
 #define __op__pri_findMax__step(_vals...) __op__pri_findMax( \
     pp_uniqTok(best), pp_uniqTok(vals), pp_uniqTok(val), _vals \

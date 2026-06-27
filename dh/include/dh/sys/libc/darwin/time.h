@@ -22,6 +22,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#if on_analysis || plat_is_darwin
 typedef isize sys_libc_darwin_time_t;
 typedef isize sys_libc_darwin_c_long;
 
@@ -50,6 +51,7 @@ $extern fn_((sys_libc_darwin_clock_gettime(sys_libc_darwin_clockid_t clock_id, s
 $extern fn_((sys_libc_darwin_clock_getres(sys_libc_darwin_clockid_t clock_id, sys_libc_darwin_timespec* ts))(i32));
 $extern fn_((sys_libc_darwin_nanosleep(const sys_libc_darwin_timespec* req, sys_libc_darwin_timespec* rem))(i32));
 $extern fn_((sys_libc_darwin_gettimeofday(sys_libc_darwin_timeval* tv))(i32));
+#endif /* on_analysis || plat_is_darwin */
 
 #if defined(__cplusplus)
 } /* extern "C" */

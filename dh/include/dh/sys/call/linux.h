@@ -22,6 +22,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#if on_analysis || plat_is_linux
 typedef isize sys_call_linux_word;
 typedef sys_call_linux_word sys_call_linux_fd_t;
 typedef sys_call_linux_word sys_call_linux_pid_t;
@@ -844,9 +845,11 @@ $static fn_((sys_call_linux_futex(void* addr, sys_call_linux_word op, sys_call_l
 
 $attr($inline)
 $static fn_((sys_call_linux_renameat(sys_call_linux_word old_dirfd, const char* old_path, sys_call_linux_word new_dirfd, const char* new_path))(sys_call_linux_word));
+#endif /* on_analysis || plat_is_linux */
 
 /*========== Macros and Definitions =========================================*/
 
+#if on_analysis || plat_is_linux
 #define __comp_bool__sys_call_linux_mmap_uses_mmap2 pp_expand( \
     pp_switch_ pp_begin(arch_type)( \
         pp_case_((arch_type_x86)(pp_true)), \
@@ -866,8 +869,9 @@ $static fn_((sys_call_linux_renameat(sys_call_linux_word old_dirfd, const char* 
         pp_default_(pp_false) \
     ) pp_end \
 )
+#endif /* on_analysis || plat_is_linux */
 
-#if on_analysis_active_only || on_comptime
+#if on_analysis_active_only || on_comptime && plat_is_linux
 /* NOLINTBEGIN(hicpp-no-assembler) */
 fn_((sys_call_linux_syscall0(sys_call_linux_word n))(sys_call_linux_word)) {
     pp_switch_((arch_type)(
@@ -1495,8 +1499,7 @@ fn_((sys_call_linux_munmap_exit(P$raw addr, usize len, i32 status))(void)) pp_sw
             "syscall\n\t"
             "movq %1, %%rax\n\t"
             "movslq %%edx, %%rdi\n\t"
-            "syscall" : :
-            "i"(sys_call_linux_SYS_munmap),
+            "syscall" : : "i"(sys_call_linux_SYS_munmap),
             "i"(sys_call_linux_SYS_exit),
             "r"(rdi),
             "r"(rsi),
@@ -1533,8 +1536,7 @@ fn_((sys_call_linux_munmap_exit(P$raw addr, usize len, i32 status))(void)) pp_sw
             "svc 0\n\t"
             "mov x8, %1\n\t"
             "sxtw x0, w2\n\t"
-            "svc 0" : :
-            "i"(sys_call_linux_SYS_munmap),
+            "svc 0" : : "i"(sys_call_linux_SYS_munmap),
             "i"(sys_call_linux_SYS_exit),
             "r"(x0),
             "r"(x1),
@@ -1551,8 +1553,7 @@ fn_((sys_call_linux_munmap_exit(P$raw addr, usize len, i32 status))(void)) pp_sw
             "svc 0\n\t"
             "mov r7, %1\n\t"
             "mov r0, r2\n\t"
-            "svc 0" : :
-            "i"(sys_call_linux_SYS_munmap),
+            "svc 0" : : "i"(sys_call_linux_SYS_munmap),
             "i"(sys_call_linux_SYS_exit),
             "r"(r0),
             "r"(r1),
@@ -1569,8 +1570,7 @@ fn_((sys_call_linux_munmap_exit(P$raw addr, usize len, i32 status))(void)) pp_sw
             "ecall\n\t"
             "li a7, %1\n\t"
             "mv a0, a2\n\t"
-            "ecall" : :
-            "i"(sys_call_linux_SYS_munmap),
+            "ecall" : : "i"(sys_call_linux_SYS_munmap),
             "i"(sys_call_linux_SYS_exit),
             "r"(a0),
             "r"(a1r),
@@ -1587,8 +1587,7 @@ fn_((sys_call_linux_munmap_exit(P$raw addr, usize len, i32 status))(void)) pp_sw
             "ecall\n\t"
             "li a7, %1\n\t"
             "mv a0, a2\n\t"
-            "ecall" : :
-            "i"(sys_call_linux_SYS_munmap),
+            "ecall" : : "i"(sys_call_linux_SYS_munmap),
             "i"(sys_call_linux_SYS_exit),
             "r"(a0),
             "r"(a1r),
@@ -1722,9 +1721,8 @@ fn_((sys_call_linux_clone_thread(
                 "movq %1, %%rax\n\t"
                 "syscall\n\t"
                 "ud2\n"
-                "1:" : "+r"(rax)
-                : "i"(sys_call_linux_SYS_exit), "r"(rdi), "r"(rsi), "r"(rdx), "r"(r10), "r"(r8)
-                : "rcx", "r11", "r12", "memory"
+                "1:" : "+r"(rax) : "i"(sys_call_linux_SYS_exit),
+                "r"(rdi), "r"(rsi), "r"(rdx), "r"(r10), "r"(r8) : "rcx", "r11", "r12", "memory"
             );
             return rax;
         })),
@@ -1747,9 +1745,8 @@ fn_((sys_call_linux_clone_thread(
                 "movl %1, %%eax\n\t"
                 "int $0x80\n\t"
                 "ud2\n"
-                "1:" : "+r"(eax)
-                : "i"(sys_call_linux_SYS_exit), "r"(ebx), "r"(ecx), "r"(edx), "r"(esi), "r"(edi)
-                : "memory"
+                "1:" : "+r"(eax) : "i"(sys_call_linux_SYS_exit),
+                "r"(ebx), "r"(ecx), "r"(edx), "r"(esi), "r"(edi) : "memory"
             );
             return eax;
         })),
@@ -1768,9 +1765,8 @@ fn_((sys_call_linux_clone_thread(
                 "mov x8, %1\n\t"
                 "svc #0\n\t"
                 "brk #0\n"
-                "1:" : "+r"(x0)
-                : "i"(sys_call_linux_SYS_exit), "r"(x8), "r"(x1), "r"(x2), "r"(x3), "r"(x4)
-                : "x9", "memory"
+                "1:" : "+r"(x0) : "i"(sys_call_linux_SYS_exit),
+                "r"(x8), "r"(x1), "r"(x2), "r"(x3), "r"(x4) : "x9", "memory"
             );
             return x0;
         })),
@@ -1791,9 +1787,8 @@ fn_((sys_call_linux_clone_thread(
                 "mov r7, %1\n\t"
                 "svc 0\n\t"
                 ".inst 0xe7f000f0\n"
-                "1:" : "+r"(r0)
-                : "i"(sys_call_linux_SYS_exit), "r"(r7), "r"(r1), "r"(r2), "r"(r3), "r"(r4)
-                : "memory"
+                "1:" : "+r"(r0) : "i"(sys_call_linux_SYS_exit),
+                "r"(r7), "r"(r1), "r"(r2), "r"(r3), "r"(r4) : "memory"
             );
             return r0;
         })),
@@ -1814,9 +1809,8 @@ fn_((sys_call_linux_clone_thread(
                 "li a7, %1\n\t"
                 "ecall\n\t"
                 "unimp\n"
-                "1:" : "+r"(a0)
-                : "i"(sys_call_linux_SYS_exit), "r"(a7), "r"(a1r), "r"(a2r), "r"(a3r), "r"(a4r)
-                : "t0", "memory"
+                "1:" : "+r"(a0) : "i"(sys_call_linux_SYS_exit),
+                "r"(a7), "r"(a1r), "r"(a2r), "r"(a3r), "r"(a4r) : "t0", "memory"
             );
             return a0;
         })),
@@ -1837,9 +1831,8 @@ fn_((sys_call_linux_clone_thread(
                 "li a7, %1\n\t"
                 "ecall\n\t"
                 "unimp\n"
-                "1:" : "+r"(a0)
-                : "i"(sys_call_linux_SYS_exit), "r"(a7), "r"(a1r), "r"(a2r), "r"(a3r), "r"(a4r)
-                : "t0", "memory"
+                "1:" : "+r"(a0) : "i"(sys_call_linux_SYS_exit),
+                "r"(a7), "r"(a1r), "r"(a2r), "r"(a3r), "r"(a4r) : "t0", "memory"
             );
             return a0;
         })),
@@ -1901,27 +1894,33 @@ fn_((sys_call_linux_rt_sigreturn_trampoline(void))(void)) {
     pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(asm_volatile(
             "movq %0, %%rax\n\t"
-            "syscall" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "rax", "rcx", "r11", "memory"
+            "syscall" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "rax",
+            "rcx", "r11", "memory"
         ))),
         pp_case_((arch_type_x86)(asm_volatile(
             "movl %0, %%eax\n\t"
-            "int $0x80" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "eax", "memory"
+            "int $0x80" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "eax",
+            "memory"
         ))),
         pp_case_((arch_type_aarch64)(asm_volatile(
             "mov x8, %0\n\t"
-            "svc #0" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "x8", "memory"
+            "svc #0" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "x8",
+            "memory"
         ))),
         pp_case_((arch_type_arm)(asm_volatile(
             "mov r7, %0\n\t"
-            "svc 0" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "r7", "memory"
+            "svc 0" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "r7",
+            "memory"
         ))),
         pp_case_((arch_type_riscv64)(asm_volatile(
             "li a7, %0\n\t"
-            "ecall" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "a7", "memory"
+            "ecall" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "a7",
+            "memory"
         ))),
         pp_case_((arch_type_riscv32)(asm_volatile(
             "li a7, %0\n\t"
-            "ecall" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "a7", "memory"
+            "ecall" : : "i"(sys_call_linux_SYS_rt_sigreturn) : "a7",
+            "memory"
         ))),
         pp_default_(claim_unreachable)
     ));
@@ -1993,7 +1992,7 @@ fn_((sys_call_linux_renameat(
         )));
 };
 /* NOLINTEND(hicpp-no-assembler) */
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* on_analysis_active_only || on_comptime && plat_is_linux */
 
 #if defined(__cplusplus)
 } /* extern "C" */
