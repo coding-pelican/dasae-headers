@@ -62,9 +62,10 @@ fn_((fs_path_join2(S_const$u8 lhs, S_const$u8 rhs, S$u8 out_buf))(E$S$u8) $scope
     let_(need_sep, bool) = lhs.len != 0 && rhs.len != 0 && !fs_path__isSep(*S_at((lhs)[lhs.len - 1]));
     let len = orelse_((fs_path__joinLen(lhs, rhs))(return_err(E_cause$fs_path_TooSmallBuffer())));
     if (out_buf.len < len) return_err(E_cause$fs_path_TooSmallBuffer());
+    let slices = A_ref$((S_const$S_const$u8)A_from$((S_const$u8){ lhs, rhs }));
     when_(need_sep)(
-        provide_(return_ok(mem_joinWithinBytes(fs_path__sepNative(), lhs, rhs, out_buf))),
-        instead_(return_ok(mem_catWithinBytes(lhs, rhs, out_buf)))
+        provide_(return_ok(mem_joinWithinBytes(fs_path__sepNative(), slices, out_buf))),
+        instead_(return_ok(mem_catWithinBytes(slices, out_buf)))
     );
 } $unscoped(fn);
 

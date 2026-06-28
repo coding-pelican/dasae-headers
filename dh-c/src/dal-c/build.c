@@ -31,6 +31,7 @@ static bool dal_c__copyHeaderRelativeTo(const char* src, const char* src_root, c
 static bool dal_c__copyHeadersRecursive(const char* src_dir, const char* dst_dir);
 static char* dal_c__resolveDepsTargetDir(const char* deps_dir, const char* lib_name);
 static char* dal_c__makeMakePath(const char* path);
+static char* dal_c__makeTempPath(const char* path);
 static void dal_c__fprintMakePath(FILE* fp, const char* path);
 static dal_c__noinline void dal_c__writeMakefileVariables(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const dal_c_Project* proj, const char* build_dir, dal_c_Target target_type, const char* target_path, const char* link_contract_path);
 static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* build_dir, dal_c_Target target_type);
@@ -150,6 +151,16 @@ static char* dal_c__makeMakePath(const char* path) {
         }
     }
     return result;
+}
+
+static char* dal_c__makeTempPath(const char* path) {
+    assert(path != NULL);
+#ifdef _WIN32
+    unsigned long pid = (unsigned long)GetCurrentProcessId();
+#else
+    unsigned long pid = (unsigned long)getpid();
+#endif
+    return str_format("%s.tmp.%lu.%p", path, pid, (const void*)path);
 }
 
 static void dal_c__fprintMakePath(FILE* fp, const char* path) {
@@ -355,6 +366,13 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
         (void)printf("Using self-build Makefile at %s\n", self_dir);
     }
 
+    dal_c_ProjectLock lock = { 0 };
+    if (!dal_c__projectLockAcquireAt(self_dir, &lock)) {
+        (void)fprintf(stderr, "Error: Failed to acquire self-build lock\n");
+        free(self_dir);
+        return 1;
+    }
+
     ArrStr* argv = ArrStr_init();
     ArrStr_push(argv, dal_c_tool_make);
     ArrStr_push(argv, "-C");
@@ -410,12 +428,14 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     const char** raw_argv = dal_c__makeConstArgvView(argv);
     if (!raw_argv) {
         ArrStr_fini(&argv);
+        dal_c__projectLockRelease(&lock);
         free(self_dir);
         return -1;
     }
     int result = proc_run(raw_argv, true);
     free((void*)raw_argv);
     ArrStr_fini(&argv);
+    dal_c__projectLockRelease(&lock);
     free(self_dir);
     return result;
 }
@@ -443,7 +463,7 @@ static bool dal_c__writeFileIfChanged(const char* path, const char* content) {
         return true;
     }
     free(existing);
-    return file_write(path, content);
+    return file_writeAtomic(path, content);
 }
 
 static uint64_t dal_c__hashBytes(uint64_t hash, const void* data, size_t len) {
@@ -758,6 +778,14 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
 
     // Use absolute path from lib_proj (or convert lib->path if no lib_proj)
     char* lib_abs_path = lib_proj ? lib_proj->root : lib->path;
+    dal_c_ProjectLock lib_lock = { 0 };
+    if (!dal_c__projectLockAcquireAt(lib_abs_path, &lib_lock)) {
+        (void)fprintf(stderr, "Error: Failed to acquire library build lock: %s\n", lib->name);
+        ArrStr_fini(&lib_sources);
+        dal_c_CompilerOpts_cleanup(&merged.opts);
+        dal_c_Project_cleanup(&lib_proj);
+        return 1;
+    }
     char* lib_build_dir = path_join(lib_abs_path, dal_c_dir_build);
     char* lib_build_profile = path_join(lib_build_dir, lib_profile->name);
     free(lib_build_dir);
@@ -800,6 +828,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         free(lib_target_path);
         dal_c_CompilerOpts_cleanup(&merged.opts);
         free(lib_build_profile);
+        dal_c__projectLockRelease(&lib_lock);
         dal_c_Project_cleanup(&lib_proj);
         return 1;
     }
@@ -814,6 +843,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         free(lib_target_path);
         dal_c_CompilerOpts_cleanup(&merged.opts);
         free(lib_build_profile);
+        dal_c__projectLockRelease(&lib_lock);
         dal_c_Project_cleanup(&lib_proj);
         return 1;
     }
@@ -832,6 +862,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         (void)fprintf(stderr, "Error: Failed to build library: %s\n", lib->name);
         dal_c_CompilerOpts_cleanup(&merged.opts);
         free(lib_build_profile);
+        dal_c__projectLockRelease(&lib_lock);
         dal_c_Project_cleanup(&lib_proj);
         return result;
     }
@@ -850,6 +881,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         if (result != 0) {
             dal_c_CompilerOpts_cleanup(&merged.opts);
             free(lib_build_profile);
+            dal_c__projectLockRelease(&lib_lock);
             dal_c_Project_cleanup(&lib_proj);
             return result;
         }
@@ -857,6 +889,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
 
     dal_c_CompilerOpts_cleanup(&merged.opts);
     free(lib_build_profile);
+    dal_c__projectLockRelease(&lib_lock);
     dal_c_Project_cleanup(&lib_proj);
     return 0;
 }
@@ -1060,10 +1093,17 @@ static int dal_c__ensureLibDH(const dal_c_Project* proj, const dal_c_ProfileSpec
         (void)fprintf(stderr, "Error: Failed to detect DH project at %s\n", proj->dh_path);
         return 1;
     }
+    dal_c_ProjectLock lock = { 0 };
+    if (!dal_c__projectLockAcquire(dh_proj, &lock)) {
+        (void)fprintf(stderr, "Error: Failed to acquire DH build lock\n");
+        dal_c_Project_cleanup(&dh_proj);
+        return 1;
+    }
     ArrStr* sources = dal_c__collectSourceFiles(dh_proj, NULL);
     if (ArrStr_len(sources) == 0) {
         (void)fprintf(stderr, "Error: No source files found for libdh\n");
         ArrStr_fini(&sources);
+        dal_c__projectLockRelease(&lock);
         dal_c_Project_cleanup(&dh_proj);
         return 1;
     }
@@ -1080,6 +1120,7 @@ static int dal_c__ensureLibDH(const dal_c_Project* proj, const dal_c_ProfileSpec
         free(profile_dir);
         free(build_dir);
         ArrStr_fini(&sources);
+        dal_c__projectLockRelease(&lock);
         dal_c_Project_cleanup(&dh_proj);
         return 1;
     }
@@ -1122,6 +1163,7 @@ static int dal_c__ensureLibDH(const dal_c_Project* proj, const dal_c_ProfileSpec
     free(profile_dir);
     free(build_dir);
     ArrStr_fini(&sources);
+    dal_c__projectLockRelease(&lock);
     dal_c_Project_cleanup(&dh_proj);
     return result;
 }
@@ -1152,6 +1194,12 @@ int dal_c__cleanDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     assert(cmd != NULL);
     if (!proj || !proj->dh_path) {
         (void)fprintf(stderr, "Error: DH root not found\n");
+        return 1;
+    }
+
+    dal_c_ProjectLock lock = { 0 };
+    if (!dal_c__projectLockAcquireAt(proj->dh_path, &lock)) {
+        (void)fprintf(stderr, "Error: Failed to acquire DH clean lock\n");
         return 1;
     }
 
@@ -1198,6 +1246,7 @@ int dal_c__cleanDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     if (!cleaned) {
         printf("Nothing to clean\n");
     }
+    dal_c__projectLockRelease(&lock);
     return 0;
 }
 
@@ -1261,7 +1310,7 @@ dal_c__noinline dal_c__optnone int dal_c__generateMakefile(
     char* makefile_path = dal_c__makePlanFilePath(proj, profile, cmd, target_path, target_type);
     char* makefile_dir = path_parent(makefile_path);
     dir_createRecur(makefile_dir);
-    char* makefile_tmp = str_format("%s.tmp", makefile_path);
+    char* makefile_tmp = dal_c__makeTempPath(makefile_path);
     char* link_contract_path = NULL;
     if (target_type == dal_c_Target_executable || target_type == dal_c_Target_shared_lib || target_type == dal_c_Target_image) {
         link_contract_path = dal_c__makeLinkContractPath(build_dir, target_path);
@@ -2731,9 +2780,16 @@ int dal_c__writeCompileDb(
     }
     free(output_parent);
 
-    FILE* fp = fopen(output_path, "w");
+    char* output_tmp = dal_c__makeTempPath(output_path);
+    if (!output_tmp) {
+        (void)fprintf(stderr, "Error: Failed to allocate compile database path: %s\n", output_path);
+        return 1;
+    }
+
+    FILE* fp = fopen(output_tmp, "w");
     if (!fp) {
-        (void)fprintf(stderr, "Error: Failed to open compile database: %s\n", output_path);
+        (void)fprintf(stderr, "Error: Failed to open compile database: %s\n", output_tmp);
+        free(output_tmp);
         return 1;
     }
 
@@ -2765,7 +2821,18 @@ int dal_c__writeCompileDb(
     }
     (void)fprintf(fp, "]\n");
     free(cwd);
-    return fclose(fp) == 0 ? 0 : 1;
+    if (fclose(fp) != 0) {
+        (void)remove(output_tmp);
+        free(output_tmp);
+        return 1;
+    }
+
+    char* generated = file_read(output_tmp);
+    bool ok = generated != NULL && dal_c__writeFileIfChanged(output_path, generated);
+    free(generated);
+    (void)remove(output_tmp);
+    free(output_tmp);
+    return ok ? 0 : 1;
 }
 
 static bool dal_c__tokensLookLikeLinkerInvocation(const ArrStr* tokens) {
@@ -4039,7 +4106,9 @@ static dal_c__noinline int dal_c__writeEmitOnlyMakefile(
 
     free(emit_flags);
     (void)fclose(fp);
-    bool ok = file_copy(makefile_tmp, makefile_path);
+    char* generated = file_read(makefile_tmp);
+    bool ok = generated != NULL && dal_c__writeFileIfChanged(makefile_path, generated);
+    free(generated);
     (void)remove(makefile_tmp);
     free(link_contract_path);
     free(makefile_tmp);

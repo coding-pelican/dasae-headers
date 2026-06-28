@@ -29,19 +29,23 @@ TEST_fn_("mem: build - trim strips selected edge units" $scope) {
 
 TEST_fn_("mem: build - cat and join write into caller buffers" $scope) {
     var cat_buf = u8_a("................");
-    let cat = mem_catWithin$u8(u8_l("ab"), u8_l("cd"), A_ref$((S$u8)(cat_buf)));
+    let cat_slices = A_ref$((S_const$S_const$u8)A_from$((S_const$u8){ u8_l("ab"), u8_l("cd") }));
+    let cat = mem_catWithin$u8(cat_slices, A_ref$((S$u8)(cat_buf)));
     try_(TEST_expect(mem_eqlBytes(cat.as_const, u8_l("abcd"))));
 
     var checked_cat_buf = u8_a("................");
-    let checked_cat = try_(mem_cat$u8(u8_l("xy"), u8_l("z"), A_ref$((S$u8)(checked_cat_buf))));
+    let checked_cat_slices = A_ref$((S_const$S_const$u8)A_from$((S_const$u8){ u8_l("xy"), u8_l("z") }));
+    let checked_cat = try_(mem_cat$u8(checked_cat_slices, A_ref$((S$u8)(checked_cat_buf))));
     try_(TEST_expect(mem_eqlBytes(checked_cat.as_const, u8_l("xyz"))));
 
     var join_buf = u8_a("................");
-    let joined = mem_joinWithin$u8(u8_l(","), u8_l("ab"), u8_l("cd"), A_ref$((S$u8)(join_buf)));
+    let join_slices = A_ref$((S_const$S_const$u8)A_from$((S_const$u8){ u8_l("ab"), u8_l("cd") }));
+    let joined = mem_joinWithin$u8(u8_l(","), join_slices, A_ref$((S$u8)(join_buf)));
     try_(TEST_expect(mem_eqlBytes(joined.as_const, u8_l("ab,cd"))));
 
     var checked_buf = u8_a("................");
-    let checked = try_(mem_join$u8(u8_l(":"), u8_l("ab"), u8_l("cd"), A_ref$((S$u8)(checked_buf))));
+    let checked_slices = A_ref$((S_const$S_const$u8)A_from$((S_const$u8){ u8_l("ab"), u8_l("cd") }));
+    let checked = try_(mem_join$u8(u8_l(":"), checked_slices, A_ref$((S$u8)(checked_buf))));
     try_(TEST_expect(mem_eqlBytes(checked.as_const, u8_l("ab:cd"))));
 } $unscoped(TEST_fn)
 

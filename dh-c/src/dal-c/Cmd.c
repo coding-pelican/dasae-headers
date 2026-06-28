@@ -44,6 +44,7 @@ static ArrStr* dal_c_Cmd__collectExplicitSources(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_TargetRequest* request);
 static char* dal_c_Cmd__targetLocalSourceRoot(const dal_c_TargetRequest* request);
 static char* dal_c_Cmd__targetLocalIncludeRoot(const dal_c_TargetRequest* request);
+static char* dal_c_Cmd__targetLocalProjectDhPath(const dal_c_Project* proj, const dal_c_Cmd* cmd);
 static int dal_c_Cmd__pushExcludePath(dal_c_Cmd* cmd, const char* value);
 static bool dal_c_Cmd__pathMatchesExclude(const char* path, const char* exclude_path);
 static const char* dal_c_Cmd__findMatchingExclude(const char* path, const ArrStr* excludes);
@@ -98,8 +99,134 @@ static char* dal_c_Cmd__buildIncludeArgs(const ArrStr* include_dirs);
 static int dal_c_Cmd__runRecursiveBuild(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runRecursiveTest(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runRecursiveClean(const dal_c_Cmd* self, const dal_c_Project* proj);
+static bool dal_c_Cmd__executeNeedsProjectLock(const dal_c_Cmd* self);
+static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj);
+static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj);
+static char* dal_c_Cmd__makeProjectLockPath(const char* root);
 
 // === PUBLIC API ===
+
+typedef struct dal_c_Cmd__HeldProjectLock {
+    char* path;
+    file_Lock lock;
+    int ref_count;
+} dal_c_Cmd__HeldProjectLock;
+
+static dal_c_Cmd__HeldProjectLock* dal_c_Cmd__held_locks = NULL;
+static int dal_c_Cmd__held_lock_count = 0;
+
+static char* dal_c_Cmd__makeProjectLockPath(const char* root) {
+    char* base_dir = NULL;
+    if (root && root[0] != '\0') {
+        base_dir = strdup(root);
+    } else {
+        char* cwd = env_getCWD();
+        base_dir = cwd ? cwd : strdup(".");
+    }
+    if (!base_dir) {
+        return NULL;
+    }
+
+    char* lock_path = path_join(base_dir, ".dh-c.lock");
+    free(base_dir);
+    return lock_path;
+}
+
+bool dal_c__projectLockAcquireAt(const char* root, dal_c_ProjectLock* lock) {
+    assert(lock != NULL);
+    memset(lock, 0, sizeof(*lock));
+
+    char* lock_path = dal_c_Cmd__makeProjectLockPath(root);
+    if (!lock_path) {
+        return false;
+    }
+
+    for (int i = 0; i < dal_c_Cmd__held_lock_count; ++i) {
+        if (str_eql(dal_c_Cmd__held_locks[i].path, lock_path)) {
+            dal_c_Cmd__held_locks[i].ref_count++;
+            lock->path = lock_path;
+            lock->acquired = true;
+            return true;
+        }
+    }
+
+    char* lock_parent = path_parent(lock_path);
+    if (lock_parent && !dir_createRecur(lock_parent)) {
+        free(lock_parent);
+        free(lock_path);
+        return false;
+    }
+    free(lock_parent);
+
+    file_Lock os_lock = { 0 };
+#ifndef _WIN32
+    os_lock.fd = -1;
+#endif
+    if (!file_lockAcquire(&os_lock, lock_path)) {
+        free(lock_path);
+        return false;
+    }
+
+    dal_c_Cmd__HeldProjectLock* grown = realloc(
+        dal_c_Cmd__held_locks,
+        (size_t)(dal_c_Cmd__held_lock_count + 1) * sizeof(*dal_c_Cmd__held_locks)
+    );
+    if (!grown) {
+        file_lockRelease(&os_lock);
+        free(lock_path);
+        return false;
+    }
+    dal_c_Cmd__held_locks = grown;
+    dal_c_Cmd__held_locks[dal_c_Cmd__held_lock_count] = (dal_c_Cmd__HeldProjectLock){
+        .path = strdup(lock_path),
+        .lock = os_lock,
+        .ref_count = 1,
+    };
+    if (!dal_c_Cmd__held_locks[dal_c_Cmd__held_lock_count].path) {
+        file_lockRelease(&os_lock);
+        free(lock_path);
+        return false;
+    }
+    dal_c_Cmd__held_lock_count++;
+
+    lock->path = lock_path;
+    lock->acquired = true;
+    return true;
+}
+
+bool dal_c__projectLockAcquire(const dal_c_Project* proj, dal_c_ProjectLock* lock) {
+    return dal_c__projectLockAcquireAt((proj && proj->root) ? proj->root : NULL, lock);
+}
+
+void dal_c__projectLockRelease(dal_c_ProjectLock* lock) {
+    if (!lock || !lock->acquired || !lock->path) {
+        return;
+    }
+
+    for (int i = 0; i < dal_c_Cmd__held_lock_count; ++i) {
+        if (!str_eql(dal_c_Cmd__held_locks[i].path, lock->path)) {
+            continue;
+        }
+
+        dal_c_Cmd__held_locks[i].ref_count--;
+        if (dal_c_Cmd__held_locks[i].ref_count <= 0) {
+            file_lockRelease(&dal_c_Cmd__held_locks[i].lock);
+            free(dal_c_Cmd__held_locks[i].path);
+            for (int j = i + 1; j < dal_c_Cmd__held_lock_count; ++j) {
+                dal_c_Cmd__held_locks[j - 1] = dal_c_Cmd__held_locks[j];
+            }
+            dal_c_Cmd__held_lock_count--;
+            if (dal_c_Cmd__held_lock_count == 0) {
+                free(dal_c_Cmd__held_locks);
+                dal_c_Cmd__held_locks = NULL;
+            }
+        }
+        break;
+    }
+
+    free(lock->path);
+    memset(lock, 0, sizeof(*lock));
+}
 
 dal_c_Cmd* dal_c_Cmd_parse(int argc, const char* argv[]) {
     if (argc < 2) { return NULL; }
@@ -574,7 +701,52 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
                                      && dal_c_Cmd__hasSingleExplicitFileInput(cmd);
 }
 
+static bool dal_c_Cmd__executeNeedsProjectLock(const dal_c_Cmd* self) {
+    assert(self != NULL);
+    switch (self->action) {
+    case dal_c_CmdAction_build:
+        return !self->payload.build.self_boundary;
+    case dal_c_CmdAction_compile_db:
+    case dal_c_CmdAction_lib:
+    case dal_c_CmdAction_run:
+    case dal_c_CmdAction_test:
+    case dal_c_CmdAction_deps:
+    case dal_c_CmdAction_build_dsl:
+    case dal_c_CmdAction_test_dsl:
+    case dal_c_CmdAction_clean_dsl:
+    case dal_c_CmdAction_workspace:
+    case dal_c_CmdAction_project:
+        return true;
+    case dal_c_CmdAction_clean:
+        return !self->payload.clean.self_boundary;
+    case dal_c_CmdAction_toolchain:
+    case dal_c_CmdAction_build_self:
+    case dal_c_CmdAction_clean_self:
+    case dal_c_CmdAction_help:
+    case dal_c_CmdAction_version:
+    case dal_c_CmdAction_invalid:
+    default:
+        return false;
+    }
+}
+
 int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    assert(self != NULL);
+    if (!dal_c_Cmd__executeNeedsProjectLock(self)) {
+        return dal_c_Cmd__executeUnlocked(self, proj);
+    }
+
+    dal_c_ProjectLock lock = { 0 };
+    if (!dal_c__projectLockAcquire(proj, &lock)) {
+        (void)fprintf(stderr, "Error: Failed to acquire build lock\n");
+        return 1;
+    }
+    int result = dal_c_Cmd__executeUnlocked(self, proj);
+    dal_c__projectLockRelease(&lock);
+    return result;
+}
+
+static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj) {
     switch (self->action) {
     case dal_c_CmdAction_build:
         if (self->payload.build.self_boundary) {
@@ -626,6 +798,20 @@ int dal_c_Cmd_queryToolchain(const dal_c_Cmd* self) {
 
 /* NOLINTNEXTLINE(misc-no-recursion) */
 int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    assert(self != NULL);
+    assert(proj != NULL);
+    dal_c_ProjectLock lock = { 0 };
+    if (!dal_c__projectLockAcquire(proj, &lock)) {
+        (void)fprintf(stderr, "Error: Failed to acquire build lock\n");
+        return 1;
+    }
+    int result = dal_c_Cmd__makeTargetUnlocked(self, proj);
+    dal_c__projectLockRelease(&lock);
+    return result;
+}
+
+/* NOLINTNEXTLINE(misc-no-recursion) */
+static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj) {
     assert(self != NULL);
     assert(proj != NULL);
     dal_c_CommandIntent intent = { 0 };
@@ -2733,6 +2919,15 @@ static void dal_c_Cmd__mergeBuildProperties(dal_c_CompilerOpts* opts, dal_c_Buil
         }
     }
 
+    char* target_project_dh = dal_c_Cmd__targetLocalProjectDhPath(proj, cmd);
+    if (target_project_dh) {
+        (void)dal_c_CompilerOpts_applyDhFile(opts, target_project_dh);
+        if (defaults) {
+            (void)dal_c_BuildDefaults_applyDhFile(defaults, target_project_dh);
+        }
+        free(target_project_dh);
+    }
+
     ArrStr* dh_files = ArrStr_init();
     dal_c_Cmd__collectCompanionDhFiles(dh_files, sources);
     for (int i = 0; i < ArrStr_len(dh_files); ++i) {
@@ -2750,6 +2945,38 @@ static void dal_c_Cmd__mergeBuildProperties(dal_c_CompilerOpts* opts, dal_c_Buil
         }
     }
     dal_c_CompilerOpts_merge(opts, &cmd->opts);
+}
+
+static char* dal_c_Cmd__targetLocalProjectDhPath(const dal_c_Project* proj, const dal_c_Cmd* cmd) {
+    assert(cmd != NULL);
+    if (!proj || !proj->root) {
+        return NULL;
+    }
+
+    dal_c_CommandIntent intent = { 0 };
+    dal_c_Cmd_normalizeIntent(cmd, &intent);
+    if (intent.target_path_is_explicit_file
+        || (intent.target_root_name_hint == NULL && intent.target_path != NULL && path_isFile(intent.target_path))) {
+        return NULL;
+    }
+
+    dal_c_TargetRequest request = { 0 };
+    if (!dal_c_TargetRequest_resolve(proj, &intent, &request)) {
+        return NULL;
+    }
+
+    char* project_dh = NULL;
+    if (request.root && request.resolved_is_dir && request.resolved_path) {
+        char* candidate = path_join(request.resolved_path, dal_c_file_detector_project);
+        if (candidate && path_isFile(candidate)) {
+            project_dh = candidate;
+            candidate = NULL;
+        }
+        free(candidate);
+    }
+
+    dal_c_TargetRequest_cleanup(&request);
+    return project_dh;
 }
 
 static bool dal_c_Cmd__hasExplicitVersionFlags(const dal_c_Cmd* cmd) {
@@ -2907,7 +3134,7 @@ static int dal_c_Cmd__writeVersionDhFile(const char* path, const dal_c_VersionSp
         content = next;
     }
 
-    bool ok = content != NULL && file_write(path, content);
+    bool ok = content != NULL && file_writeAtomic(path, content);
     free(content);
     free(core_value);
     free(suffix_value);
@@ -3165,7 +3392,7 @@ static bool dal_c_Cmd__writeFileIfChanged(const char* path, const char* content)
         return true;
     }
     free(existing);
-    return file_write(path, content);
+    return file_writeAtomic(path, content);
 }
 
 static char* dal_c_Cmd__generatedSourceDir(const dal_c_Project* proj, const dal_c_Cmd* cmd) {

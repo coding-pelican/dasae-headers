@@ -1,8 +1,18 @@
 #include "dal-c-ext/file.h"
+#include "dal-c-ext/str.h"
 #include <sys/stat.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <errno.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <process.h>
+#else
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/file.h>
+#endif
 
 static void file__freeLines(char** lines, int count) {
     if (!lines) { return; }
@@ -162,6 +172,37 @@ bool file_write(const char* path, const char* content) {
     return fclose(fp), success;
 }
 
+static char* file__tmpPathFor(const char* path) {
+    assert(path != NULL);
+#ifdef _WIN32
+    return str_format("%s.tmp.%lu.%lu", path, (unsigned long)GetCurrentProcessId(), (unsigned long)GetCurrentThreadId());
+#else
+    return str_format("%s.tmp.%ld", path, (long)getpid());
+#endif
+}
+
+static bool file__replacePath(const char* src, const char* dst) {
+    assert(src != NULL);
+    assert(dst != NULL);
+#ifdef _WIN32
+    return MoveFileExA(src, dst, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != 0;
+#else
+    return rename(src, dst) == 0;
+#endif
+}
+
+bool file_writeAtomic(const char* path, const char* content) {
+    if (!path || !content) { return false; }
+    char* tmp_path = file__tmpPathFor(path);
+    if (!tmp_path) { return false; }
+    bool success = file_write(tmp_path, content) && file__replacePath(tmp_path, path);
+    if (!success) {
+        (void)remove(tmp_path);
+    }
+    free(tmp_path);
+    return success;
+}
+
 bool file_copy(const char* src, const char* dst) {
     if (!src || !dst) { return false; }
     FILE* const src_fp = fopen(src, "rb");
@@ -182,6 +223,68 @@ bool file_copy(const char* src, const char* dst) {
     (void)fclose(src_fp);
     (void)fclose(dst_fp);
     return success;
+}
+
+bool file_lockAcquire(file_Lock* lock, const char* path) {
+    if (!lock || !path) { return false; }
+    memset(lock, 0, sizeof(*lock));
+    lock->path = strdup(path);
+    if (!lock->path) { return false; }
+#ifdef _WIN32
+    for (;;) {
+        HANDLE handle = CreateFileA(
+            path,
+            GENERIC_READ | GENERIC_WRITE,
+            0,
+            NULL,
+            OPEN_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL
+        );
+        if (handle != INVALID_HANDLE_VALUE) {
+            lock->handle = handle;
+            return true;
+        }
+        DWORD err = GetLastError();
+        if (err != ERROR_SHARING_VIOLATION && err != ERROR_LOCK_VIOLATION) {
+            free(lock->path);
+            memset(lock, 0, sizeof(*lock));
+            return false;
+        }
+        Sleep(50);
+    }
+#else
+    int fd = open(path, O_CREAT | O_RDWR, 0666);
+    if (fd < 0) {
+        free(lock->path);
+        memset(lock, 0, sizeof(*lock));
+        return false;
+    }
+    if (flock(fd, LOCK_EX) != 0) {
+        close(fd);
+        free(lock->path);
+        memset(lock, 0, sizeof(*lock));
+        return false;
+    }
+    lock->fd = fd;
+    return true;
+#endif
+}
+
+void file_lockRelease(file_Lock* lock) {
+    if (!lock) { return; }
+#ifdef _WIN32
+    if (lock->handle) {
+        CloseHandle((HANDLE)lock->handle);
+    }
+#else
+    if (lock->fd >= 0) {
+        (void)flock(lock->fd, LOCK_UN);
+        (void)close(lock->fd);
+    }
+#endif
+    free(lock->path);
+    memset(lock, 0, sizeof(*lock));
 }
 
 time_t file_ctime(const char* path) {

@@ -531,31 +531,31 @@ $extern fn_((mem_trim(u_S_const$raw haystack, u_S_const$raw values_to_strip))(u_
 #define T_use_mem_trim$(_T...) __stmt__T_use_mem_trim$(_T)
 
 $attr($must_check)
-$extern fn_((mem_catBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$S$u8));
+$extern fn_((mem_catBytes(S_const$S_const$u8 slices, S$u8 out))(mem_E$S$u8));
 $attr($must_check)
-$extern fn_((mem_cat(u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(mem_E$u_S$raw));
+$extern fn_((mem_cat(u_S_const$S_const$raw slices, u_S$raw out))(mem_E$u_S$raw));
 #define T_use_mem_cat$(_T...) __stmt__T_use_mem_cat$(_T)
-$extern fn_((mem_catWithinBytes(S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(S$u8));
-$extern fn_((mem_catWithin(u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(u_S$raw));
+$extern fn_((mem_catWithinBytes(S_const$S_const$u8 slices, S$u8 out))(S$u8));
+$extern fn_((mem_catWithin(u_S_const$S_const$raw slices, u_S$raw out))(u_S$raw));
 #define T_use_mem_catWithin$(_T...) __stmt__T_use_mem_catWithin$(_T)
 $attr($must_check)
-$extern fn_((mem_catAllocBytes(S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$S$u8));
+$extern fn_((mem_catAllocBytes(S_const$S_const$u8 slices, mem_Alctr gpa))(mem_E$S$u8));
 $attr($must_check)
-$extern fn_((mem_catAlloc(u_S_const$raw lhs, u_S_const$raw rhs, mem_Alctr gpa))(mem_E$u_S$raw));
+$extern fn_((mem_catAlloc(TypeInfo type, u_S_const$S_const$raw slices, mem_Alctr gpa))(mem_E$u_S$raw));
 #define T_use_mem_catAlloc$(_T...) __stmt__T_use_mem_catAlloc$(_T)
 
 $attr($must_check)
-$extern fn_((mem_joinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(mem_E$S$u8));
+$extern fn_((mem_joinBytes(S_const$u8 sep, S_const$S_const$u8 slices, S$u8 out))(mem_E$S$u8));
 $attr($must_check)
-$extern fn_((mem_join(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(mem_E$u_S$raw));
+$extern fn_((mem_join(u_S_const$raw sep, u_S_const$S_const$raw slices, u_S$raw out))(mem_E$u_S$raw));
 #define T_use_mem_join$(_T...) __stmt__T_use_mem_join$(_T)
-$extern fn_((mem_joinWithinBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, S$u8 out))(S$u8));
-$extern fn_((mem_joinWithin(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, u_S$raw out))(u_S$raw));
+$extern fn_((mem_joinWithinBytes(S_const$u8 sep, S_const$S_const$u8 slices, S$u8 out))(S$u8));
+$extern fn_((mem_joinWithin(u_S_const$raw sep, u_S_const$S_const$raw slices, u_S$raw out))(u_S$raw));
 #define T_use_mem_joinWithin$(_T...) __stmt__T_use_mem_joinWithin$(_T)
 $attr($must_check)
-$extern fn_((mem_joinAllocBytes(S_const$u8 sep, S_const$u8 lhs, S_const$u8 rhs, mem_Alctr gpa))(mem_E$S$u8));
+$extern fn_((mem_joinAllocBytes(S_const$u8 sep, S_const$S_const$u8 slices, mem_Alctr gpa))(mem_E$S$u8));
 $attr($must_check)
-$extern fn_((mem_joinAlloc(u_S_const$raw sep, u_S_const$raw lhs, u_S_const$raw rhs, mem_Alctr gpa))(mem_E$u_S$raw));
+$extern fn_((mem_joinAlloc(u_S_const$raw sep, u_S_const$S_const$raw slices, mem_Alctr gpa))(mem_E$u_S$raw));
 #define T_use_mem_joinAlloc$(_T...) __stmt__T_use_mem_joinAlloc$(_T)
 
 $attr($must_check)
@@ -698,6 +698,43 @@ $extern fn_((mem_TokzIter_restBytes(mem_TokzIter_Bytes* self))(S_const$u8));
 $extern fn_((mem_TokzIter_rest(mem_TokzIter$raw* self, TypeInfo type))(u_S_const$raw));
 #define T_use_mem_TokzIter_rest$(_T...) __stmt__T_use_mem_TokzIter_rest$(_T)
 
+T_alias$((mem_TokzBwdIter_Bytes)(struct mem_TokzBwdIter_Bytes {
+    var_(buf, S_const$u8);
+    var_(idx, usize);
+    var_(delim, mem_Delim_Bytes);
+}));
+#define mem_TokzBwdIter$(_T...) __alias__mem_TokzBwdIter$(_T)
+T_alias$((mem_TokzBwdIter$raw)(struct mem_TokzBwdIter$raw {
+    var_(buf, S_const$raw);
+    var_(idx, usize);
+    var_(type, debug_TypeInfo);
+    var_(delim_, mem_Delim$raw) $flexible;
+}));
+T_use_P$(mem_TokzBwdIter$raw);
+T_alias$((V$mem_TokzBwdIter$raw)(P$mem_TokzBwdIter$raw));
+#define T_use_mem_TokzBwdIter$(_T...) __stmt__T_use_mem_TokzBwdIter$(_T)
+$extern fn_((mem_tokzBwdUnitBytes(S_const$u8 buf, u8 unit))(mem_TokzBwdIter_Bytes));
+$extern fn_((mem_tokzBwdUnit(u_S_const$raw buf, u_V$raw unit, V$mem_TokzBwdIter$raw ret_mem))(V$mem_TokzBwdIter$raw));
+#define T_use_mem_tokzBwdUnit$(_T...) __stmt__T_use_mem_tokzBwdUnit$(_T)
+$extern fn_((mem_tokzBwdSeqBytes(S_const$u8 buf, S_const$u8 seq))(mem_TokzBwdIter_Bytes));
+$extern fn_((mem_tokzBwdSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_TokzBwdIter$raw ret_mem))(V$mem_TokzBwdIter$raw));
+#define T_use_mem_tokzBwdSeq$(_T...) __stmt__T_use_mem_tokzBwdSeq$(_T)
+$extern fn_((mem_tokzBwdAnyBytes(S_const$u8 buf, S_const$u8 any))(mem_TokzBwdIter_Bytes));
+$extern fn_((mem_tokzBwdAny(u_S_const$raw buf, u_S_const$raw any, V$mem_TokzBwdIter$raw ret_mem))(V$mem_TokzBwdIter$raw));
+#define T_use_mem_tokzBwdAny$(_T...) __stmt__T_use_mem_tokzBwdAny$(_T)
+$extern fn_((mem_TokzBwdIter_resetBytes(mem_TokzBwdIter_Bytes* self))(void));
+$extern fn_((mem_TokzBwdIter_reset(mem_TokzBwdIter$raw* self))(void));
+#define T_use_mem_TokzBwdIter_reset$(_T...) __stmt__T_use_mem_TokzBwdIter_reset$(_T)
+$extern fn_((mem_TokzBwdIter_nextBytes(mem_TokzBwdIter_Bytes* self))(O$S_const$u8));
+$extern fn_((mem_TokzBwdIter_next(mem_TokzBwdIter$raw* self, TypeInfo type))(O$u_S_const$raw));
+#define T_use_mem_TokzBwdIter_next$(_T...) __stmt__T_use_mem_TokzBwdIter_next$(_T)
+$extern fn_((mem_TokzBwdIter_peekBytes(mem_TokzBwdIter_Bytes* self))(O$S_const$u8));
+$extern fn_((mem_TokzBwdIter_peek(mem_TokzBwdIter$raw* self, TypeInfo type))(O$u_S_const$raw));
+#define T_use_mem_TokzBwdIter_peek$(_T...) __stmt__T_use_mem_TokzBwdIter_peek$(_T)
+$extern fn_((mem_TokzBwdIter_restBytes(mem_TokzBwdIter_Bytes* self))(S_const$u8));
+$extern fn_((mem_TokzBwdIter_rest(mem_TokzBwdIter$raw* self, TypeInfo type))(u_S_const$raw));
+#define T_use_mem_TokzBwdIter_rest$(_T...) __stmt__T_use_mem_TokzBwdIter_rest$(_T)
+
 #define mem_SplitIter$(_T...) __alias__mem_SplitIter$(_T)
 T_alias$((mem_SplitIter_Bytes)(struct mem_SplitIter_Bytes {
     var_(buf, S_const$u8);
@@ -737,6 +774,46 @@ $extern fn_((mem_SplitIter_peek(mem_SplitIter$raw* self, TypeInfo type))(O$u_S_c
 $extern fn_((mem_SplitIter_restBytes(mem_SplitIter_Bytes* self))(S_const$u8));
 $extern fn_((mem_SplitIter_rest(mem_SplitIter$raw* self, TypeInfo type))(u_S_const$raw));
 #define T_use_mem_SplitIter_rest$(_T...) __stmt__T_use_mem_SplitIter_rest$(_T)
+
+#define mem_SplitBwdIter$(_T...) __alias__mem_SplitBwdIter$(_T)
+T_alias$((mem_SplitBwdIter_Bytes)(struct mem_SplitBwdIter_Bytes {
+    var_(buf, S_const$u8);
+    var_(idx, O$usize);
+    var_(delim, mem_Delim_Bytes);
+}));
+T_alias$((mem_SplitBwdIter$raw)(struct mem_SplitBwdIter$raw {
+    var_(buf, S_const$raw);
+    var_(idx, O$usize);
+    var_(type, debug_TypeInfo);
+    var_(delim_, mem_Delim$raw) $flexible;
+}));
+T_use_P$(mem_SplitBwdIter$raw);
+T_alias$((V$mem_SplitBwdIter$raw)(P$mem_SplitBwdIter$raw));
+#define T_use_mem_SplitBwdIter$(_T...) __stmt__T_use_mem_SplitBwdIter$(_T)
+$extern fn_((mem_splitBwdUnitBytes(S_const$u8 buf, u8 unit))(mem_SplitBwdIter_Bytes));
+$extern fn_((mem_splitBwdUnit(u_S_const$raw buf, u_V$raw unit, V$mem_SplitBwdIter$raw ret_mem))(V$mem_SplitBwdIter$raw));
+#define T_use_mem_splitBwdUnit$(_T...) __stmt__T_use_mem_splitBwdUnit$(_T)
+$extern fn_((mem_splitBwdSeqBytes(S_const$u8 buf, S_const$u8 seq))(mem_SplitBwdIter_Bytes));
+$extern fn_((mem_splitBwdSeq(u_S_const$raw buf, u_S_const$raw seq, V$mem_SplitBwdIter$raw ret_mem))(V$mem_SplitBwdIter$raw));
+#define T_use_mem_splitBwdSeq$(_T...) __stmt__T_use_mem_splitBwdSeq$(_T)
+$extern fn_((mem_splitBwdAnyBytes(S_const$u8 buf, S_const$u8 any))(mem_SplitBwdIter_Bytes));
+$extern fn_((mem_splitBwdAny(u_S_const$raw buf, u_S_const$raw any, V$mem_SplitBwdIter$raw ret_mem))(V$mem_SplitBwdIter$raw));
+#define T_use_mem_splitBwdAny$(_T...) __stmt__T_use_mem_splitBwdAny$(_T)
+$extern fn_((mem_SplitBwdIter_resetBytes(mem_SplitBwdIter_Bytes* self))(void));
+$extern fn_((mem_SplitBwdIter_reset(mem_SplitBwdIter$raw* self))(void));
+#define T_use_mem_SplitBwdIter_reset$(_T...) __stmt__T_use_mem_SplitBwdIter_reset$(_T)
+$extern fn_((mem_SplitBwdIter_firstBytes(mem_SplitBwdIter_Bytes* self))(S_const$u8));
+$extern fn_((mem_SplitBwdIter_first(mem_SplitBwdIter$raw* self, TypeInfo type))(u_S_const$raw));
+#define T_use_mem_SplitBwdIter_first$(_T...) __stmt__T_use_mem_SplitBwdIter_first$(_T)
+$extern fn_((mem_SplitBwdIter_nextBytes(mem_SplitBwdIter_Bytes* self))(O$S_const$u8));
+$extern fn_((mem_SplitBwdIter_next(mem_SplitBwdIter$raw* self, TypeInfo type))(O$u_S_const$raw));
+#define T_use_mem_SplitBwdIter_next$(_T...) __stmt__T_use_mem_SplitBwdIter_next$(_T)
+$extern fn_((mem_SplitBwdIter_peekBytes(mem_SplitBwdIter_Bytes* self))(O$S_const$u8));
+$extern fn_((mem_SplitBwdIter_peek(mem_SplitBwdIter$raw* self, TypeInfo type))(O$u_S_const$raw));
+#define T_use_mem_SplitBwdIter_peek$(_T...) __stmt__T_use_mem_SplitBwdIter_peek$(_T)
+$extern fn_((mem_SplitBwdIter_restBytes(mem_SplitBwdIter_Bytes* self))(S_const$u8));
+$extern fn_((mem_SplitBwdIter_rest(mem_SplitBwdIter$raw* self, TypeInfo type))(u_S_const$raw));
+#define T_use_mem_SplitBwdIter_rest$(_T...) __stmt__T_use_mem_SplitBwdIter_rest$(_T)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -2065,39 +2142,39 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
     }
 #define __stmt__T_use_mem_cat$(_T...) \
     $attr($inline_always $static) \
-    fn_((tpl$(mem_cat, _T)(S_const$(_T) lhs, S_const$(_T) rhs, S$(_T) out))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
-        return u_castE$((ReturnType)(mem_cat(u_anyS(lhs), u_anyS(rhs), u_anyS(out)))); \
+    fn_((tpl$(mem_cat, _T)(S_const$(S_const$(_T)) slices, S$(_T) out))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_cat(u_anyS$((u_S_const$S_const$raw)(slices)), u_anyS(out)))); \
     } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_catWithin$(_T...) \
     $attr($inline_always $static) \
-    fn_((tpl$(mem_catWithin, _T)(S_const$(_T) lhs, S_const$(_T) rhs, S$(_T) out))(S$(_T))) { \
-        return u_castS$((S$(_T))(mem_catWithin(u_anyS(lhs), u_anyS(rhs), u_anyS(out)))); \
+    fn_((tpl$(mem_catWithin, _T)(S_const$(S_const$(_T)) slices, S$(_T) out))(S$(_T))) { \
+        return u_castS$((S$(_T))(mem_catWithin(u_anyS$((u_S_const$S_const$raw)(slices)), u_anyS(out)))); \
     }
 #define __stmt__T_use_mem_catAlloc$(_T...) \
     $attr($inline_always $must_check $static) \
-    fn_((tpl$(mem_catAlloc, _T)(S_const$(_T) lhs, S_const$(_T) rhs, mem_Alctr gpa))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
-        return u_castE$((ReturnType)(mem_catAlloc(u_anyS(lhs), u_anyS(rhs), gpa))); \
+    fn_((tpl$(mem_catAlloc, _T)(S_const$(S_const$(_T)) slices, mem_Alctr gpa))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
+        return u_castE$((ReturnType)(mem_catAlloc(typeInfo$(_T), u_anyS$((u_S_const$S_const$raw)(slices)), gpa))); \
     } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_join$(_T...) \
     $attr($inline_always $static) \
     fn_((tpl$(mem_join, _T)( \
-        S_const$(_T) sep, S_const$(_T) lhs, S_const$(_T) rhs, S$(_T) out \
+        S_const$(_T) sep, S_const$(S_const$(_T)) slices, S$(_T) out \
     ))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
-        return u_castE$((ReturnType)(mem_join(u_anyS(sep), u_anyS(lhs), u_anyS(rhs), u_anyS(out)))); \
+        return u_castE$((ReturnType)(mem_join(u_anyS(sep), u_anyS$((u_S_const$S_const$raw)(slices)), u_anyS(out)))); \
     } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_joinWithin$(_T...) \
     $attr($inline_always $static) \
     fn_((tpl$(mem_joinWithin, _T)( \
-        S_const$(_T) sep, S_const$(_T) lhs, S_const$(_T) rhs, S$(_T) out \
+        S_const$(_T) sep, S_const$(S_const$(_T)) slices, S$(_T) out \
     ))(S$(_T))) { \
-        return u_castS$((S$(_T))(mem_joinWithin(u_anyS(sep), u_anyS(lhs), u_anyS(rhs), u_anyS(out)))); \
+        return u_castS$((S$(_T))(mem_joinWithin(u_anyS(sep), u_anyS$((u_S_const$S_const$raw)(slices)), u_anyS(out)))); \
     }
 #define __stmt__T_use_mem_joinAlloc$(_T...) \
     $attr($inline_always $must_check $static) \
     fn_((tpl$(mem_joinAlloc, _T)( \
-        S_const$(_T) sep, S_const$(_T) lhs, S_const$(_T) rhs, mem_Alctr gpa \
+        S_const$(_T) sep, S_const$(S_const$(_T)) slices, mem_Alctr gpa \
     ))(E$($set(mem_E)(S$(_T))))$scope) { /* clang-format off */ \
-        return u_castE$((ReturnType)(mem_joinAlloc(u_anyS(sep), u_anyS(lhs), u_anyS(rhs), gpa))); \
+        return u_castE$((ReturnType)(mem_joinAlloc(u_anyS(sep), u_anyS$((u_S_const$S_const$raw)(slices)), gpa))); \
     } $unscoped(fn) /* clang-format on */
 #define __stmt__T_use_mem_padLeft$(_T...) \
     $attr($inline_always $static) \
@@ -2258,6 +2335,53 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
     $static fn_((tpl$(mem_TokzIter_rest, _T)($P$(mem_TokzIter$(_T)) self))(S_const$(_T))$scope) { \
         return_(u_castS$((ReturnType)(mem_TokzIter_rest(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
+#define __alias__mem_TokzBwdIter$(_T...) tpl$(mem_TokzBwdIter, _T)
+#define __stmt__T_use_mem_TokzBwdIter$(_T...) \
+    T_alias$((mem_TokzBwdIter$(_T))(union mem_TokzBwdIter$(_T) { \
+        T_embed$(struct { \
+            var_(buf, S_const$(_T)); \
+            var_(idx, usize); \
+            var_(type, debug_TypeInfo); \
+            var_(delim, mem_Delim$(_T)); \
+            var_(delim_, mem_Delim$(_T)) $like_ref; \
+        }); \
+        var_(as_raw, mem_TokzBwdIter$raw) $flexible; \
+    }))
+#define __stmt__T_use_mem_tokzBwdUnit$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_tokzBwdUnit, _T)(S_const$(_T) buf, _T unit))(mem_TokzBwdIter$(_T))) { \
+        return *as$(mem_TokzBwdIter$(_T)*)(mem_tokzBwdUnit(u_anyS(buf), u_anyV(unit), l0$((mem_TokzBwdIter$(_T))).as_raw)); \
+    } /* clang-format on */
+#define __stmt__T_use_mem_tokzBwdSeq$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_tokzBwdSeq, _T)(S_const$(_T) buf, S_const$(_T) seq))(mem_TokzBwdIter$(_T))) { \
+        return *as$(mem_TokzBwdIter$(_T)*)(mem_tokzBwdSeq(u_anyS(buf), u_anyS(seq), l0$((mem_TokzBwdIter$(_T))).as_raw)); \
+    } /* clang-format on */
+#define __stmt__T_use_mem_tokzBwdAny$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_tokzBwdAny, _T)(S_const$(_T) buf, S_const$(_T) any))(mem_TokzBwdIter$(_T))) { \
+        return *as$(mem_TokzBwdIter$(_T)*)(mem_tokzBwdAny(u_anyS(buf), u_anyS(any), l0$((mem_TokzBwdIter$(_T))).as_raw)); \
+    } /* clang-format on */
+#define __stmt__T_use_mem_TokzBwdIter_reset$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_TokzBwdIter_reset, _T)($P$(mem_TokzBwdIter$(_T)) self))(void)) { \
+        return mem_TokzBwdIter_reset(self->as_raw); \
+    } /* clang-format on */
+#define __stmt__T_use_mem_TokzBwdIter_next$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_TokzBwdIter_next, _T)($P$(mem_TokzBwdIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
+        return_(u_castO$((ReturnType)(mem_TokzBwdIter_next(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_TokzBwdIter_peek$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_TokzBwdIter_peek, _T)($P$(mem_TokzBwdIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
+        return_(u_castO$((ReturnType)(mem_TokzBwdIter_peek(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_TokzBwdIter_rest$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_TokzBwdIter_rest, _T)($P$(mem_TokzBwdIter$(_T)) self))(S_const$(_T))$scope) { \
+        return_(u_castS$((ReturnType)(mem_TokzBwdIter_rest(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped(fn) /* clang-format on */
 #define __alias__mem_SplitIter$(_T...) tpl$(mem_SplitIter, _T)
 #define __stmt__T_use_mem_SplitIter$(_T...) \
     T_alias$((mem_SplitIter$(_T))(union mem_SplitIter$(_T) { \
@@ -2309,6 +2433,58 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
     $attr($inline_always) \
     $static fn_((tpl$(mem_SplitIter_rest, _T)($P$(mem_SplitIter$(_T)) self))(S_const$(_T))$scope) { \
         return_(u_castS$((ReturnType)(mem_SplitIter_rest(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped(fn) /* clang-format on */
+#define __alias__mem_SplitBwdIter$(_T...) tpl$(mem_SplitBwdIter, _T)
+#define __stmt__T_use_mem_SplitBwdIter$(_T...) \
+    T_alias$((mem_SplitBwdIter$(_T))(union mem_SplitBwdIter$(_T) { \
+        T_embed$(struct { \
+            var_(buf, S_const$(_T)); \
+            var_(idx, O$usize); \
+            var_(type, debug_TypeInfo); \
+            var_(delim, mem_Delim$(_T)); \
+            var_(delim_, mem_Delim$(_T)) $like_ref; \
+        }); \
+        var_(as_raw, mem_SplitBwdIter$raw) $flexible; \
+    }))
+#define __stmt__T_use_mem_splitBwdUnit$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_splitBwdUnit, _T)(S_const$(_T) buf, _T unit))(mem_SplitBwdIter$(_T))) { \
+        return *as$(mem_SplitBwdIter$(_T)*)(mem_splitBwdUnit(u_anyS(buf), u_anyV(unit), l0$((mem_SplitBwdIter$(_T))).as_raw)); \
+    } /* clang-format on */
+#define __stmt__T_use_mem_splitBwdSeq$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_splitBwdSeq, _T)(S_const$(_T) buf, S_const$(_T) seq))(mem_SplitBwdIter$(_T))) { \
+        return *as$(mem_SplitBwdIter$(_T)*)(mem_splitBwdSeq(u_anyS(buf), u_anyS(seq), l0$((mem_SplitBwdIter$(_T))).as_raw)); \
+    } /* clang-format on */
+#define __stmt__T_use_mem_splitBwdAny$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_splitBwdAny, _T)(S_const$(_T) buf, S_const$(_T) any))(mem_SplitBwdIter$(_T))) { \
+        return *as$(mem_SplitBwdIter$(_T)*)(mem_splitBwdAny(u_anyS(buf), u_anyS(any), l0$((mem_SplitBwdIter$(_T))).as_raw)); \
+    } /* clang-format on */
+#define __stmt__T_use_mem_SplitBwdIter_reset$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_SplitBwdIter_reset, _T)($P$(mem_SplitBwdIter$(_T)) self))(void)) { \
+        return mem_SplitBwdIter_reset(self->as_raw); \
+    } /* clang-format on */
+#define __stmt__T_use_mem_SplitBwdIter_first$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_SplitBwdIter_first, _T)($P$(mem_SplitBwdIter$(_T)) self))(S_const$(_T))$scope) { \
+        return_(u_castS$((ReturnType)(mem_SplitBwdIter_first(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_SplitBwdIter_next$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_SplitBwdIter_next, _T)($P$(mem_SplitBwdIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
+        return_(u_castO$((ReturnType)(mem_SplitBwdIter_next(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_SplitBwdIter_peek$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_SplitBwdIter_peek, _T)($P$(mem_SplitBwdIter$(_T)) self))(O$(S_const$(_T)))$scope) { \
+        return_(u_castO$((ReturnType)(mem_SplitBwdIter_peek(self->as_raw, typeInfo$(_T))))); \
+    } $unscoped(fn) /* clang-format on */
+#define __stmt__T_use_mem_SplitBwdIter_rest$(_T...) /* clang-format off */ \
+    $attr($inline_always) \
+    $static fn_((tpl$(mem_SplitBwdIter_rest, _T)($P$(mem_SplitBwdIter$(_T)) self))(S_const$(_T))$scope) { \
+        return_(u_castS$((ReturnType)(mem_SplitBwdIter_rest(self->as_raw, typeInfo$(_T))))); \
     } $unscoped(fn) /* clang-format on */
 
 #if defined(__cplusplus)

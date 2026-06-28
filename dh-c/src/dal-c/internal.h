@@ -49,6 +49,11 @@ typedef struct dal_c_TargetRequest {
     bool resolved_is_dir;
 } dal_c_TargetRequest;
 
+typedef struct dal_c_ProjectLock {
+    char* path;
+    bool acquired;
+} dal_c_ProjectLock;
+
 void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out);
 void dal_c_TargetRequest_cleanup(dal_c_TargetRequest* request);
 const dal_c_TargetRoot* dal_c_Project_findTargetRootByName(const dal_c_Project* proj, const char* name);
@@ -120,6 +125,9 @@ bool dal_c__isHeaderOnlyBuild(const dal_c_Cmd* cmd, const dal_c_Project* proj, A
 /// === PLATFORM ===
 
 bool dal_c__platformIsWindows(void);
+bool dal_c__projectLockAcquire(const dal_c_Project* proj, dal_c_ProjectLock* lock);
+bool dal_c__projectLockAcquireAt(const char* root, dal_c_ProjectLock* lock);
+void dal_c__projectLockRelease(dal_c_ProjectLock* lock);
 
 /// === OPTION UTILITIES ===
 

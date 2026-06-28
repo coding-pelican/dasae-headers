@@ -96,6 +96,126 @@ typedef union u_A$raw {
     u_S$raw ref;
 } u_A$raw;
 
+/* Meta wrapper aliases */
+#define u_V$(_T...) __u_V$(_T)
+#define u_P_const$(_T...) __u_P_const$(_T)
+#define u_P$(_T...) pp_Tok_if_(Tok_isConst$(_T))( \
+    pp_Tok_then_(__u_P_const$(Tok_removeConst$(_T))), \
+    pp_Tok_else_(__u_P$(_T)) \
+)
+#define u_S_const$(_T...) __u_S_const$(_T)
+#define u_S$(_T...) pp_Tok_if_(Tok_isConst$(_T))( \
+    pp_Tok_then_(__u_S_const$(Tok_removeConst$(_T))), \
+    pp_Tok_else_(__u_S$(_T)) \
+)
+#define __u_V$(_T...) tpl$(u_V, _T)
+#define __u_P_const$(_T...) tpl$(u_P_const, _T)
+#define __u_P$(_T...) tpl$(u_P, _T)
+#define __u_S_const$(_T...) tpl$(u_S_const, _T)
+#define __u_S$(_T...) tpl$(u_S, _T)
+
+/* Meta wrapper templates */
+#define T_decl_u_V$(_T...) \
+    $maybe_unused typedef union u_V$(_T) u_V$(_T)
+#define T_impl_u_V$(_T...) \
+    union u_V$(_T) { \
+        T_embed$(struct { \
+            T_embed$(union { \
+                $P$(_T) \
+                inner; \
+                $P$(_T) \
+                raw $like_ref; \
+            }); \
+            T_embed$(union { \
+                TypeInfo inner_type; \
+                TypeInfo type; \
+            }); \
+        }); \
+        u_V$raw as_raw; \
+        u_P$raw ref; \
+    }
+#define T_use_u_V$(_T...) \
+    T_decl_u_V$(_T); \
+    T_impl_u_V$(_T)
+
+#define T_decl_u_P$(_T...) \
+    $maybe_unused typedef union u_P$(const _T) u_P$(const _T); \
+    $maybe_unused typedef union u_P$(_T) u_P$(_T)
+#define T_impl_u_P$(_T...) \
+    union u_P$(const _T) { \
+        T_embed$(struct { \
+            T_embed$(union { \
+                $P$(const _T) \
+                raw; \
+                $P$(const _T) \
+                inner $like_ref; \
+            }); \
+            TypeInfo type; \
+        }); \
+        u_P_const$raw as_raw; \
+    }; \
+    union u_P$(_T) { \
+        T_embed$(struct { \
+            T_embed$(union { \
+                $P$(_T) \
+                raw; \
+                $P$(_T) \
+                inner $like_ref; \
+            }); \
+            TypeInfo type; \
+        }); \
+        u_P$(const _T) as_const; \
+        u_P$raw as_raw; \
+    }
+#define T_use_u_P$(_T...) \
+    T_decl_u_P$(_T); \
+    T_impl_u_P$(_T)
+
+#define T_decl_u_S$(_T...) \
+    $maybe_unused typedef union u_S$(const _T) u_S$(const _T); \
+    $maybe_unused typedef union u_S$(_T) u_S$(_T)
+#define T_impl_u_S$(_T...) \
+    union u_S$(const _T) { \
+        T_embed$(struct { \
+            T_embed$(union { \
+                T_embed$(struct { \
+                    $P$(const _T) \
+                    ptr; \
+                    usize len; \
+                }); \
+                S_const$raw raw; \
+                S_const$raw inner $like_ref; \
+            }); \
+            TypeInfo type; \
+            struct { \
+                u_P_const$raw ptr $zero_sized; \
+            } __type_hint $zero_sized; \
+        }); \
+        u_S_const$raw as_raw; \
+    }; \
+    union u_S$(_T) { \
+        T_embed$(struct { \
+            T_embed$(union { \
+                T_embed$(struct { \
+                    $P$(_T) \
+                    ptr; \
+                    usize len; \
+                }); \
+                S$raw raw; \
+                S$raw inner $like_ref; \
+            }); \
+            TypeInfo type; \
+        }); \
+        u_S$(const _T) as_const; \
+        u_S$raw as_raw; \
+        struct { \
+            u_P$raw ptr $zero_sized; \
+        } __type_hint $zero_sized; \
+    }
+#define T_use_u_S$(_T...) \
+    T_decl_u_S$(_T); \
+    T_impl_u_S$(_T)
+
 typedef struct u_O$raw {
     bool is_some;
     T_embed$(union {
@@ -125,6 +245,14 @@ typedef struct u_E$raw {
 #define ____V_meta(_type, _raw...) T_switch$((TypeOf(*_raw))( \
     T_case$((V$raw)(l$((u_V$raw){ .raw = as$(V$raw)(_raw->inner), .type = _type }))) \
 ))
+#define V_meta$(/*(_u_VT)(_type: TypeInfo)(_raw: u_Inner*)*/... /*(u_V_const$T|u_V$T)*/) \
+    __step__V_meta$(__step__V_meta$__parse __VA_ARGS__)
+#define __step__V_meta$__parse(_u_VT...) _u_VT, __step__V_meta__parse
+#define __step__V_meta$(...) ____V_meta$(__VA_ARGS__)
+#define ____V_meta$(_u_VT, _type, _raw...) l$((_u_VT){ \
+    .inner = ptrCast$((FieldType$(_u_VT, inner))((_raw)->inner)), \
+    .type = _type, \
+})
 #define P_meta(/*(_type: TypeInfo)(_raw: P_const$T|P$T)*/... /*(u_P_const$T|u_P$T)*/) \
     __step__P_meta(__step__P_meta__parse __VA_ARGS__)
 #define __step__P_meta__parse(_type...) _type,
@@ -133,6 +261,14 @@ typedef struct u_E$raw {
     T_case$((P_const$raw)(l$((u_P_const$raw){ .raw = ptrQualCast$((P_const$raw)(_raw)), .type = _type }))), \
     T_case$((P$raw)(l$((u_P$raw){ .raw = ptrQualCast$((P$raw)(_raw)), .type = _type }))) \
 ))
+#define P_meta$(/*(_u_PT)(_type: TypeInfo)(_raw: P_const$T|P$T)*/... /*(u_P_const$T|u_P$T)*/) \
+    __step__P_meta$(__step__P_meta$__parse __VA_ARGS__)
+#define __step__P_meta$__parse(_u_PT...) _u_PT, __step__P_meta__parse
+#define __step__P_meta$(...) ____P_meta$(__VA_ARGS__)
+#define ____P_meta$(_u_PT, _type, _raw...) l$((_u_PT){ \
+    .raw = ptrQualCast$((FieldType$(_u_PT, raw))(_raw)), \
+    .type = _type, \
+})
 #define S_meta(/*(_type: TypeInfo)(_raw: S_const$T|S$T)*/... /*(u_S_const$T|u_S$T)*/) \
     __step__S_meta(__step__S_meta__parse __VA_ARGS__)
 #define __step__S_meta__parse(_type...) _type,
@@ -141,6 +277,14 @@ typedef struct u_E$raw {
     T_case$((S_const$raw)(l$((u_S_const$raw){ .raw = *ptrQualCast$((S_const$raw*)(&copy(_raw))), .type = _type }))), \
     T_case$((S$raw)(l$((u_S$raw){ .raw = *ptrQualCast$((S$raw*)(&copy(_raw))), .type = _type }))) \
 ))
+#define S_meta$(/*(_u_ST)(_type: TypeInfo)(_raw: S_const$T|S$T)*/... /*(u_S_const$T|u_S$T)*/) \
+    __step__S_meta$(__step__S_meta$__parse __VA_ARGS__)
+#define __step__S_meta$__parse(_u_ST...) _u_ST, __step__S_meta__parse
+#define __step__S_meta$(...) ____S_meta$(__VA_ARGS__)
+#define ____S_meta$(_u_ST, _type, _raw...) l$((_u_ST){ \
+    .raw = *ptrQualCast$((FieldType$(_u_ST, raw)*)(&copy(_raw))), \
+    .type = _type, \
+})
 
 #define V_raw(_v /*: u_V_const$T|u_V$T*/... /*(u_Inner*)*/) (_v.inner)
 #define P_raw(_p /*: u_P_const$T|u_P$T*/... /*(P_const$T|P$T)*/) (_p.raw)
@@ -550,6 +694,40 @@ $static fn_((u_geApxRelBy(u_V$raw lhs, u_V$raw rhs, u_V$raw threshold, u_OrdApxF
     let __p_v = &copy(_v); \
     l$((u_V$raw){ .inner = ptrCast$((P$raw)(__p_v)), .inner_type = typeInfo$(TypeOf(*__p_v)) }); \
 }))
+#define u_anyP$(/*(_u_PT)(_p: P_const$T|P$T)*/... /*(_u_PT)*/) \
+    __step_inline__u_anyP$(pp_defer(__emit_inline__u_anyP$)(__param_parse__u_anyP$ __VA_ARGS__))
+#define __step_inline__u_anyP$(...) __VA_ARGS__
+#define __param_parse__u_anyP$(...) __VA_ARGS__,
+#define __emit_inline__u_anyP$(_u_PT, _p...) $suppress_cast_qual(({ \
+    typedef _u_PT MetaType; \
+    l$((MetaType){ \
+        .raw = ptrQualCast$((FieldType$(MetaType, raw))(_p)), \
+        .type = typeInfo$(TypeOf(*(_p))), \
+    }); \
+}))
+#define u_anyS$(/*(_u_ST)(_s: S_const$T|S$T)*/... /*(_u_ST)*/) \
+    __step_inline__u_anyS$(pp_defer(__emit_inline__u_anyS$)(__param_parse__u_anyS$ __VA_ARGS__))
+#define __step_inline__u_anyS$(...) __VA_ARGS__
+#define __param_parse__u_anyS$(...) __VA_ARGS__,
+#define __emit_inline__u_anyS$(_u_ST, _s...) $suppress_cast_qual(({ \
+    typedef _u_ST MetaType; \
+    l$((MetaType){ \
+        .raw = *ptrQualCast$((FieldType$(MetaType, raw)*)((_s).ref_raw)), \
+        .type = typeInfo$(TypeOf(*(_s).ptr)), \
+    }); \
+}))
+#define u_anyV$(/*(_u_VT)(_v: T)*/... /*(_u_VT)*/) \
+    __step_inline__u_anyV$(pp_defer(__emit_inline__u_anyV$)(__param_parse__u_anyV$ __VA_ARGS__))
+#define __step_inline__u_anyV$(...) __VA_ARGS__
+#define __param_parse__u_anyV$(...) __VA_ARGS__,
+#define __emit_inline__u_anyV$(_u_VT, _v...) $suppress_cast_qual(({ \
+    typedef _u_VT MetaType; \
+    let __p_v = &copy(_v); \
+    l$((MetaType){ \
+        .inner = ptrCast$((FieldType$(MetaType, inner))(__p_v)), \
+        .type = typeInfo$(TypeOf(*__p_v)), \
+    }); \
+}))
 #define u_anyA(_a...) $suppress_cast_qual(({ \
     let __p_a = &copy(_a); \
     l$((u_A$raw){ .inner = A_ref(*__p_a).as_raw, .inner_type = typeInfo$(TypeOf(*__p_a->val)) }); \
@@ -565,6 +743,49 @@ $static fn_((u_geApxRelBy(u_V$raw lhs, u_V$raw rhs, u_V$raw threshold, u_OrdApxF
     __p_e->is_ok \
         ? (u_E$raw)ok(u_anyV(__p_e->payload.ok)) \
         : (u_E$raw)err(__p_e->payload.err); \
+}))
+
+#define u_as$ u_asV$
+
+#define u_asV$(/*(_u_VT)(_meta: u_V$raw|u_V$T)*/... /*(_u_VT)*/) \
+    __step_inline__u_asV$(pp_defer(__emit_inline__u_asV$)(__param_parse__u_asV$ __VA_ARGS__))
+#define __step_inline__u_asV$(...) __VA_ARGS__
+#define __param_parse__u_asV$(...) __VA_ARGS__,
+#define __emit_inline__u_asV$(_u_VT, _meta...) $suppress_cast_qual(({ \
+    typedef _u_VT MetaType; \
+    let __meta = _meta; \
+    l$((MetaType){ \
+        .inner = ptrCast$((FieldType$(MetaType, inner))(__meta.inner)), \
+        .type = __meta.type, \
+    }); \
+}))
+#define u_asP$(/*(_u_PT)(_meta: u_P_const$raw|u_P$raw|u_P$T)*/... /*(_u_PT)*/) \
+    __step_inline__u_asP$(pp_defer(__emit_inline__u_asP$)(__param_parse__u_asP$ __VA_ARGS__))
+#define __step_inline__u_asP$(...) __VA_ARGS__
+#define __param_parse__u_asP$(...) __VA_ARGS__,
+#define __emit_inline__u_asP$(_u_PT, _meta...) $suppress_cast_qual(({ \
+    typedef _u_PT MetaType; \
+    $maybe_unused typedef FieldType$(MetaType, raw) RawType; \
+    let __meta = _meta; \
+    claim_assert(!P_isConst$(TypeOf(__meta.raw)) || P_isConst$(RawType)); \
+    l$((MetaType){ \
+        .raw = ptrQualCast$((RawType)(__meta.raw)), \
+        .type = __meta.type, \
+    }); \
+}))
+#define u_asS$(/*(_u_ST)(_meta: u_S_const$raw|u_S$raw|u_S$T)*/... /*(_u_ST)*/) \
+    __step_inline__u_asS$(pp_defer(__emit_inline__u_asS$)(__param_parse__u_asS$ __VA_ARGS__))
+#define __step_inline__u_asS$(...) __VA_ARGS__
+#define __param_parse__u_asS$(...) __VA_ARGS__,
+#define __emit_inline__u_asS$(_u_ST, _meta...) $suppress_cast_qual(({ \
+    typedef _u_ST MetaType; \
+    $maybe_unused typedef FieldType$(MetaType, ptr) PtrType; \
+    let __meta = _meta; \
+    claim_assert(!P_isConst$(TypeOf(__meta.ptr)) || P_isConst$(PtrType)); \
+    l$((MetaType){ \
+        .raw = *ptrQualCast$((FieldType$(MetaType, raw)*)(&__meta.raw)), \
+        .type = __meta.type, \
+    }); \
 }))
 
 #define u_cast$ u_castV$

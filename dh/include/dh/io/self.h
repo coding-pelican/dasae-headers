@@ -27,14 +27,17 @@ extern "C" {
 
 $extern fn_((io_handleStdIn(void))(fs_File));
 $extern fn_((io_lockStdIn(void))(void));
+$extern fn_((io_tryLockStdIn(void))(bool));
 $extern fn_((io_unlockStdIn(void))(void));
 
 $extern fn_((io_handleStdOut(void))(fs_File));
 $extern fn_((io_lockStdOut(void))(void));
+$extern fn_((io_tryLockStdOut(void))(bool));
 $extern fn_((io_unlockStdOut(void))(void));
 
 $extern fn_((io_handleStdErr(void))(fs_File));
 $extern fn_((io_lockStdErr(void))(void));
+$extern fn_((io_tryLockStdErr(void))(bool));
 $extern fn_((io_unlockStdErr(void))(void));
 
 /*========== Macros and Definitions =========================================*/

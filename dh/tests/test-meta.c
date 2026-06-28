@@ -40,6 +40,81 @@ T_alias$((Record$15$1P$raw$2usize)(struct Record$15$1P$raw$2usize {
     var_(field1, A$$(15, usize));
 }));
 
+T_use$((u32)(u_V, u_P, u_S));
+
+TEST_fn_("meta: target-aware wrappers preserve requested shape" $scope) {
+    var value = as$(u32)(1234);
+
+    let v_meta = u_anyV$((u_V$u32)(value));
+    try_(TEST_expect(TypeInfo_eql(v_meta.type, typeInfo$(u32))));
+    try_(TEST_expect(*v_meta.inner == value));
+
+    let p_meta = u_anyP$((u_P$u32)(&value));
+    try_(TEST_expect(TypeInfo_eql(p_meta.type, typeInfo$(u32))));
+    try_(TEST_expect(p_meta.raw == &value));
+
+    var items = A_from$((u32){ 1, 2, 3 });
+    let items_s = A_ref$((S$u32)(items));
+    let s_meta = u_anyS$((u_S$u32)(items_s));
+    try_(TEST_expect(TypeInfo_eql(s_meta.type, typeInfo$(u32))));
+    try_(TEST_expect(s_meta.ptr == items_s.ptr));
+    try_(TEST_expect(s_meta.len == items_s.len));
+
+    let slices = A_ref$((S_const$S_const$u32)A_from$((S_const$u32){ items_s.as_const, S_slice((items_s.as_const)$r(1, 3)) }));
+    let shaped_slices = u_anyS$((u_S_const$S_const$raw)(slices));
+    try_(TEST_expect(TypeInfo_eql(shaped_slices.type, typeInfo$(S_const$u32))));
+    try_(TEST_expect(shaped_slices.len == slices.len));
+} $unscoped(TEST_fn);
+
+TEST_fn_("meta: target-aware meta casts preserve requested shape" $scope) {
+    var value = as$(u32)(5678);
+    let raw_v = u_anyV(value);
+    let typed_v = V_meta$((u_V$u32)(typeInfo$(u32))(&raw_v));
+    try_(TEST_expect(TypeInfo_eql(typed_v.type, typeInfo$(u32))));
+    try_(TEST_expect(*typed_v.inner == value));
+
+    let typed_p = P_meta$((u_P$u32)(typeInfo$(u32))(&value));
+    try_(TEST_expect(TypeInfo_eql(typed_p.type, typeInfo$(u32))));
+    try_(TEST_expect(typed_p.raw == &value));
+
+    var items = A_from$((u32){ 5, 6, 7 });
+    let items_s = A_ref$((S$u32)(items));
+    let typed_s = S_meta$((u_S$u32)(typeInfo$(u32))(items_s));
+    try_(TEST_expect(TypeInfo_eql(typed_s.type, typeInfo$(u32))));
+    try_(TEST_expect(typed_s.ptr == items_s.ptr));
+    try_(TEST_expect(typed_s.len == items_s.len));
+} $unscoped(TEST_fn);
+
+TEST_fn_("meta: u_as preserves type while refining wrapper shape" $scope) {
+    var value = as$(u32)(9012);
+
+    let raw_v = u_anyV(value);
+    let as_v = u_as$((u_V$u32)(raw_v));
+    try_(TEST_expect(TypeInfo_eql(as_v.type, raw_v.type)));
+    try_(TEST_expect(*as_v.inner == value));
+
+    let raw_p = u_anyP(&value);
+    let as_p = u_asP$((u_P$u32)(raw_p));
+    try_(TEST_expect(TypeInfo_eql(as_p.type, raw_p.type)));
+    try_(TEST_expect(as_p.raw == &value));
+
+    var items = A_from$((u32){ 8, 9, 10, 11 });
+    let items_s = A_ref$((S$u32)(items));
+    let slices = A_ref$((S_const$S_const$u32)A_from$((S_const$u32){
+        items_s.as_const,
+        S_slice((items_s.as_const)$r(1, 3)),
+    }));
+    let raw_slices = u_anyS(slices);
+    let as_slices = u_asS$((u_S_const$S_const$raw)(raw_slices));
+    try_(TEST_expect(TypeInfo_eql(as_slices.type, raw_slices.type)));
+    try_(TEST_expect(as_slices.ptr == raw_slices.ptr));
+    try_(TEST_expect(as_slices.len == raw_slices.len));
+
+    let first = *u_castP$((const S_const$u32*)(u_atS(as_slices.as_raw, 0)));
+    try_(TEST_expect(first.ptr == items_s.ptr));
+    try_(TEST_expect(first.len == items_s.len));
+} $unscoped(TEST_fn);
+
 // =============================================================================
 // Tests for basic record layout (simulating regular structs)
 // =============================================================================

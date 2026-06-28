@@ -2061,23 +2061,28 @@ static void test_target_root_directory_uses_local_include(void) {
     char* temp_root = test_temp_root();
     char* project_root = path_join(temp_root, "target-local-include-project");
     char* project_dh = path_join(project_root, "project.dh");
+    char* demo_project_dh = path_join(project_root, "examples/demo/project.dh");
     char* demo_src_dir = path_join(project_root, "examples/demo/src");
     char* demo_include_dir = path_join(project_root, "examples/demo/include");
     char* demo_header = path_join(demo_include_dir, "demo.h");
     char* demo_source = path_join(demo_src_dir, "main.c");
+    char* demo_output_dir = path_join(project_root, "build/dev/examples/demo");
     char* compile_db_path = path_join(project_root, "build/clangd/compile_commands.json");
     TEST_ASSERT(temp_root != NULL);
     TEST_ASSERT(project_root != NULL);
     TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(demo_project_dh != NULL);
     TEST_ASSERT(demo_src_dir != NULL);
     TEST_ASSERT(demo_include_dir != NULL);
     TEST_ASSERT(demo_header != NULL);
     TEST_ASSERT(demo_source != NULL);
+    TEST_ASSERT(demo_output_dir != NULL);
     TEST_ASSERT(compile_db_path != NULL);
 
     TEST_ASSERT(dir_createRecur(demo_src_dir));
     TEST_ASSERT(dir_createRecur(demo_include_dir));
-    TEST_ASSERT(file_write(project_dh, "output=target-local-include-project\nlink-dsl=off\npch=off\n"));
+    TEST_ASSERT(file_write(project_dh, "output=parent-output\nlink-dsl=off\npch=off\n"));
+    TEST_ASSERT(file_write(demo_project_dh, "output=demo-output\n"));
     TEST_ASSERT(file_write(demo_header, "#pragma once\n#define DEMO_VALUE 7\n"));
     TEST_ASSERT(file_write(demo_source, "#include \"demo.h\"\nint main(void) { return DEMO_VALUE == 7 ? 0 : 1; }\n"));
 
@@ -2091,6 +2096,15 @@ static void test_target_root_directory_uses_local_include(void) {
         TEST_ASSERT(dal_c_Cmd_makeTarget(build_cmd, proj) == 0);
         dal_c_Cmd_cleanup(&build_cmd);
     }
+    char* demo_output = path_join(demo_output_dir,
+#ifdef _WIN32
+        "demo-output.exe"
+#else
+        "demo-output"
+#endif
+    );
+    TEST_ASSERT(demo_output != NULL);
+    TEST_ASSERT(path_isFile(demo_output));
 
     {
         const char* compile_db_argv[] = {
@@ -2116,15 +2130,18 @@ static void test_target_root_directory_uses_local_include(void) {
              || strstr(compile_db, "examples\\\\\\\\demo\\\\\\\\include") != NULL);
 
     free(compile_db);
+    free(demo_output);
     dal_c_Project_cleanup(&proj);
     (void)dir_removeRecur(temp_root);
     TEST_ASSERT(!path_exists(temp_root));
 
     free(compile_db_path);
+    free(demo_output_dir);
     free(demo_source);
     free(demo_header);
     free(demo_include_dir);
     free(demo_src_dir);
+    free(demo_project_dh);
     free(project_dh);
     free(project_root);
     free(temp_root);

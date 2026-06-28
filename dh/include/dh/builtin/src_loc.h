@@ -35,10 +35,22 @@ extern "C" {
 /*========== Macros and Implementations =====================================*/
 
 #define __comp_inline__src_loc_filePath() (as$(const u8*)(__builtin_FILE()))
+#if defined(__clang__)
 #define __comp_inline__src_loc_fileName() (as$(const u8*)(__builtin_FILE_NAME()))
+#elif defined(__GNUC__)
+#if __GNUC__ >= 12
+#define __comp_inline__src_loc_fileName() (as$(const u8*)(__FILE_NAME__))
+#else /* 12 > __GNUC__ */
+#define __comp_inline__src_loc_fileName() (as$(const u8*)(__builtin_strrchr("/" __FILE__, '/') + 1))
+#endif /* __GNUC__ >= 12, 12 > __GNUC__ */
+#endif /* defined(__clang__), defined(__GNUC__) */
 #define __comp_inline__src_loc_fnName() (as$(const u8*)(__builtin_FUNCTION()))
 #define __comp_inline__src_loc_line() (as$(u32)(__builtin_LINE()))
+#if defined(__clang__)
 #define __comp_inline__src_loc_column() (as$(u32)(__builtin_COLUMN()))
+#elif defined(__GNUC__)
+#define __comp_inline__src_loc_column() (as$(u32)(0))
+#endif /* defined(__clang__), defined(__GNUC__) */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -45,24 +45,42 @@ extern "C" {
     T_use$((O$(_T))(P, S)); \
     T_use$((E$(_T))(P, S))
 
+#define T_decl_prl_u_exts$(_T...) \
+    T_decl$((O$(_T))(u_P, u_S)); \
+    T_decl$((E$(_T))(u_P, u_S))
+#define T_impl_prl_u_exts$(_T...) \
+    T_impl$((O$(_T))(u_P, u_S)); \
+    T_impl$((E$(_T))(u_P, u_S))
+#define T_use_prl_u_exts$(_T...) \
+    T_use$((O$(_T))(u_P, u_S)); \
+    T_use$((E$(_T))(u_P, u_S))
+
 /*========== Macros and Definitions =========================================*/
 
-// clang-format off
+/* clang-format off */
 T_use_prl_exts$(bool);
 T_use_prl_exts$(u8); T_use_prl_exts$(u16); T_use_prl_exts$(u32);
 T_use_prl_exts$(ulong); T_use_prl_exts$(u64); T_use_prl_exts$(usize);
 T_use_prl_exts$(i8); T_use_prl_exts$(i16); T_use_prl_exts$(i32);
 T_use_prl_exts$(ilong); T_use_prl_exts$(i64); T_use_prl_exts$(isize);
 T_use_prl_exts$(f32); T_use_prl_exts$(f64);
+
 T_use_prl_exts$(Opaq); T_use_prl_exts$(EAny);
 T_use_prl_exts$(Void);
 T_use_prl_exts$(P_const$raw); T_use_prl_exts$(S_const$raw);
 T_use_prl_exts$(P$raw); T_use_prl_exts$(S$raw);
 T_use_prl_exts$(V$raw); T_use_prl_exts$(A$raw);
+
 T_use_prl_exts$(u_P_const$raw); T_use_prl_exts$(u_S_const$raw);
 T_use_prl_exts$(u_P$raw); T_use_prl_exts$(u_S$raw);
 T_use_prl_exts$(u_V$raw); T_use_prl_exts$(u_A$raw);
-// clang-format on
+
+T_use_prl_u_exts$(Opaq); T_use_prl_u_exts$(EAny);
+T_use_prl_u_exts$(Void);
+T_use_prl_u_exts$(P_const$raw); T_use_prl_u_exts$(S_const$raw);
+T_use_prl_u_exts$(P$raw); T_use_prl_u_exts$(S$raw);
+T_use_prl_u_exts$(V$raw); T_use_prl_u_exts$(A$raw);
+/* clang-format on */
 
 #if defined(__cplusplus)
 } /* extern "C" */

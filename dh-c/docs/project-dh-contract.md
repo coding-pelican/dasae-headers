@@ -118,9 +118,15 @@ roots:
 
 - `src/`, `source/`, or `sources/` becomes the target-local source root
 - `include/`, `includes/`, or `inc/` becomes the target-local include root
+- `project.dh` provides target-local build defaults and compiler options
 
 If no target-local source root exists, source collection falls back to the
 selected directory itself for compatibility with flat target directories.
+
+Target-local `project.dh` is applied after the parent project's defaults and
+before source companion `.dh` files, explicit `.dh` files, and CLI options. That
+means a directory target can set its own `output=`, `kind=`, `link-dsl=`, or
+similar defaults while command-line options still have final priority.
 
 `link-project=` controls whether the parent project participates:
 
@@ -140,6 +146,7 @@ graph TD
     Request --> Local[Target-local project unit]
     Local --> LocalSrc[local src/source/sources]
     Local --> LocalInclude[local include/includes/inc]
+    Local --> LocalProject[local project.dh]
     Request --> LinkProject{link-project}
     LinkProject -->|true| ParentSrc[parent self library]
     LinkProject -->|true| ParentInclude[parent include root]
