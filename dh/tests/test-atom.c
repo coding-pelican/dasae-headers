@@ -38,30 +38,27 @@ TEST_fn_("atom: spin loop hint is callable" $scope) {
 } $unscoped(TEST_fn)
 
 TEST_fn_("atom: lock preserves single-owner state transitions" $scope) {
-    var lock = atom_Lock_init();
-    try_(TEST_expect(!atom_Lock_isLocked(&lock)));
-    try_(TEST_expect(atom_Lock_tryLock(&lock)));
-    try_(TEST_expect(atom_Lock_isLocked(&lock)));
-    try_(TEST_expect(!atom_Lock_tryLock(&lock)));
-    atom_Lock_unlock(&lock);
-    try_(TEST_expect(!atom_Lock_isLocked(&lock)));
+    var lock = atom_SpinLock_init();
+    try_(TEST_expect(!atom_SpinLock_isLocked(&lock)));
+    try_(TEST_expect(atom_SpinLock_tryLock(&lock)));
+    try_(TEST_expect(atom_SpinLock_isLocked(&lock)));
+    try_(TEST_expect(!atom_SpinLock_tryLock(&lock)));
+    atom_SpinLock_unlock(&lock);
+    try_(TEST_expect(!atom_SpinLock_isLocked(&lock)));
 
-    atom_Lock_lock(&lock);
-    try_(TEST_expect(atom_Lock_isLocked(&lock)));
-    atom_Lock_unlock(&lock);
+    atom_SpinLock_lock(&lock);
+    try_(TEST_expect(atom_SpinLock_isLocked(&lock)));
+    atom_SpinLock_unlock(&lock);
     return_ok({});
 } $unscoped(TEST_fn)
 
 TEST_fn_("arch: atomic cache-line constants match supported Zig targets" $scope) {
     try_(TEST_expect(arch_bits_wide == sizeOf$(usize) * arch_bits_per_byte));
     try_(TEST_expect(atom_cache_line_bytes == arch_cache_line_bytes));
-#if arch_type == arch_type_x86_64 || arch_type == arch_type_aarch64 \
-    || arch_type == arch_type_powerpc64
+#if arch_type == arch_type_x86_64 || arch_type == arch_type_aarch64
     try_(TEST_expect(arch_cache_line_bytes == 128));
 #elif arch_type == arch_type_arm
     try_(TEST_expect(arch_cache_line_bytes == 32));
-#elif arch_type == arch_type_hexagon
-    try_(TEST_expect(arch_cache_line_bytes == 32 || arch_cache_line_bytes == 64));
 #else
     try_(TEST_expect(arch_cache_line_bytes == 64));
 #endif

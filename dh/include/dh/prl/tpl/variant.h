@@ -92,6 +92,9 @@ extern "C" {
 #define __step__variant__2(...) __gen__variant_raw(__VA_ARGS__)
 #define __gen__variant_raw(_Alias, _$T...) struct _Alias
 
+#define enum_Tag$(_Alias...) FieldType$(_Alias, tag)
+#define enum_tag(_tagged...) ((_tagged).tag)
+
 #define union_of(/*(_Enum){ _payload... }*/...) \
     __op__union_of(__op__union_of__parseEnum __VA_ARGS__)
 #define __op__union_of(...) __op__union_of__emit(__VA_ARGS__)

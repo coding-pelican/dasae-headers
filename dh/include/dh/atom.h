@@ -31,21 +31,22 @@ extern "C" {
 $attr($inline_always)
 $static fn_((atom_spinLoopHint(void))(void));
 
-typedef enum $packed atom_Lock {
-    atom_Lock_unlocked,
-    atom_Lock_locked,
-} atom_Lock;
-
+typedef enum $packed atom_SpinLock {
+    atom_SpinLock_unlocked,
+    atom_SpinLock_locked,
+} atom_SpinLock;
+#define atom_SpinLock_init_static() \
+    ____atom_SpinLock_init_static()
 $attr($inline_always)
-$static fn_((atom_Lock_init(void))(atom_Lock));
+$static fn_((atom_SpinLock_init(void))(atom_SpinLock));
 $attr($inline_always)
-$static fn_((atom_Lock_isLocked(const atom_Lock* self))(bool));
+$static fn_((atom_SpinLock_isLocked(const atom_SpinLock* self))(bool));
 $attr($inline_always)
-$static fn_((atom_Lock_tryLock(atom_Lock* self))(bool));
+$static fn_((atom_SpinLock_lock(atom_SpinLock* self))(void));
 $attr($inline_always)
-$static fn_((atom_Lock_lock(atom_Lock* self))(void));
+$static fn_((atom_SpinLock_tryLock(atom_SpinLock* self))(bool));
 $attr($inline_always)
-$static fn_((atom_Lock_unlock(atom_Lock* self))(void));
+$static fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void));
 
 #define atom_V$(_T...) tpl$(atom_V, _T)
 #define atom_V$$(_T...) \
@@ -119,32 +120,34 @@ fn_((atom_spinLoopHint(void))(void)) { /* NOLINTBEGIN(hicpp-no-assembler) */
     asm_volatile("");
 #endif
 }; /* NOLINTEND(hicpp-no-assembler) */
+#endif /* on_analysis_active_only || on_comptime */
 
-fn_((atom_Lock_init(void))(atom_Lock)) { return atom_Lock_unlocked; };
-
-fn_((atom_Lock_isLocked(const atom_Lock* self))(bool)) {
-    return atom_load(self, atom_MemOrd_unordered) == atom_Lock_locked;
+#define ____atom_SpinLock_init_static() \
+    enum_of$((atom_SpinLock)(atom_SpinLock_unlocked))
+#if on_analysis_active_only || on_comptime
+fn_((atom_SpinLock_init(void))(atom_SpinLock)) {
+    return atom_SpinLock_unlocked;
 };
-
-fn_((atom_Lock_tryLock(atom_Lock* self))(bool)) {
+fn_((atom_SpinLock_isLocked(const atom_SpinLock* self))(bool)) {
+    return atom_load(self, atom_MemOrd_unordered) == atom_SpinLock_locked;
+};
+fn_((atom_SpinLock_lock(atom_SpinLock* self))(void)) {
+    while (!atom_SpinLock_tryLock(self)) {
+        while (atom_SpinLock_isLocked(self)) atom_spinLoopHint();
+    }
+};
+fn_((atom_SpinLock_tryLock(atom_SpinLock* self))(bool)) {
     return isNone(atom_cmpXchgStrong(
         self,
-        atom_Lock_unlocked,
-        atom_Lock_locked,
+        atom_SpinLock_unlocked,
+        atom_SpinLock_locked,
         atom_MemOrd_acquire,
         atom_MemOrd_monotonic
     ));
 };
-
-fn_((atom_Lock_lock(atom_Lock* self))(void)) {
-    while (!atom_Lock_tryLock(self)) {
-        while (atom_Lock_isLocked(self)) { atom_spinLoopHint(); }
-    }
-};
-
-fn_((atom_Lock_unlock(atom_Lock* self))(void)) {
-    claim_assert(atom_Lock_isLocked(self));
-    atom_store(self, atom_Lock_unlocked, atom_MemOrd_release);
+fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void)) {
+    claim_assert(atom_SpinLock_isLocked(self));
+    atom_store(self, atom_SpinLock_unlocked, atom_MemOrd_release);
 };
 #endif /* on_analysis_active_only || on_comptime */
 

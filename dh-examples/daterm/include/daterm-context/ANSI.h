@@ -97,25 +97,26 @@ typedef struct daterm_ANSI {
         var_(head, usize);
         var_(len, usize);
     });
-    var_(gpa, O$mem_Alctr);
     var_(clock, time_Clock);
+    var_(gpa, O$mem_Alctr);
 } daterm_ANSI;
 T_use_prl$(daterm_ANSI);
 T_use_E$($set(mem_E)(daterm_ANSI));
 
-typedef struct daterm_ANSI_Cfg { /* clang-format off */
+typedef variant_((Field$input_buf$daterm_ANSI_Cfg $fits($packed))(
+    (daterm_ANSI_Cfg_input_buf_fixed, S$u8),
+    (daterm_ANSI_Cfg_input_buf_owned, struct { var_(cap, usize); }),
+)) Field$input_buf$daterm_ANSI_Cfg;
+typedef struct daterm_ANSI_Cfg {
     var_(gpa, O$mem_Alctr);
-    var_(input_file, fs_File);
+    var_(clock, time_Clock);
     var_(output_file, fs_File);
     var_(output_mode, daterm_ANSI_OutputMode);
+    var_(input_file, fs_File);
     var_(input_mode, daterm_ANSI_InputMode);
+    var_(input_buf, Field$input_buf$daterm_ANSI_Cfg);
     var_(esc_timeout, time_Dur);
-    var_(input_buf, variant_(($fits($packed))(
-        (daterm_ANSI_Cfg_input_buf_fixed, S$u8),
-        (daterm_ANSI_Cfg_input_buf_owned, struct { var_(cap, usize); }),
-    )));
-    var_(clock, time_Clock);
-} daterm_ANSI_Cfg; /* clang-format on */
+} daterm_ANSI_Cfg;
 T_use_prl$(daterm_ANSI_Cfg);
 $attr($inline_always)
 $static fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg));
@@ -137,19 +138,19 @@ $extern fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term));
 fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
     return (daterm_ANSI_Cfg){
         .gpa = some(gpa),
-        .input_file = io_handleStdIn(),
+        .clock = union_of((time_Clock_awake)(catch_((time_Awake_direct())($ignore, time_Awake_noop)))),
         .output_file = io_handleStdOut(),
         .output_mode = daterm_ANSI_OutputMode_processed,
+        .input_file = io_handleStdIn(),
 #if plat_is_windows
         .input_mode = daterm_ANSI_InputMode_native,
 #else
         .input_mode = daterm_ANSI_InputMode_vt,
 #endif
-        .esc_timeout = daterm_ANSI_esc_timeout_default,
         .input_buf = union_of((daterm_ANSI_Cfg_input_buf_owned){
             .cap = daterm_ANSI_input_buf_cap_default,
         }),
-        .clock = union_of((time_Clock_awake)(catch_((time_Awake_direct())($ignore, time_Awake_noop)))),
+        .esc_timeout = daterm_ANSI_esc_timeout_default,
     };
 };
 #endif /* on_analysis_active_only || on_comptime */

@@ -165,9 +165,7 @@ fn_((daterm_ANSI_enableRawMode(daterm_ANSI* self))(E$void) $guard) {
     if (isSome(self->raw_mode_)) return_ok({});
     let snapshot = try_(io_TTY_snapshot(&self->tty));
     errdefer_($ignore, catch_((io_TTY_restore(&self->tty, snapshot))($ignore, $do_nothing)));
-    try_(io_TTY_applyModePatch(&self->tty, daterm_ANSI__modePatch(
-        self->input_mode, self->output_mode
-    )));
+    try_(io_TTY_applyModePatch(&self->tty, daterm_ANSI__modePatch(self->input_mode, self->output_mode)));
 #if plat_is_windows
     FlushConsoleInputBuffer(fs_File_handle(self->tty.input_file));
     try_(daterm_ANSI__windows_enableCtrlHandler());
@@ -237,8 +235,8 @@ fn_((daterm_ANSI__modePatch(
     daterm_ANSI_InputMode input_mode, daterm_ANSI_OutputMode output_mode
 ))(io_TTY_ModePatch)) {
     var patch = input_mode == daterm_ANSI_InputMode_vt
-              ? io_TTY_ModePatch_rawVT()
-              : io_TTY_ModePatch_rawBytes();
+                  ? io_TTY_ModePatch_rawVT()
+                  : io_TTY_ModePatch_rawBytes();
     if (input_mode == daterm_ANSI_InputMode_native) {
         patch.enable |= io_TTY_ModeBit_window_input
                       | io_TTY_ModeBit_native_mouse
@@ -630,7 +628,7 @@ $static fn_((daterm_ANSI__pollNativeEvent(daterm_ANSI* self))(O$daterm_Event) $s
 #else /* others */
     let_ignore = self;
     return_none();
-#endif /* plat_is_windows || plat_is_posix || others */
+#endif /* plat_is_windows, plat_is_posix, others */
 } $unscoped(fn);
 
 $static fn_((daterm_ANSI__inputReady(daterm_ANSI* self))(bool)) {
@@ -951,7 +949,7 @@ fn_((daterm_ANSI__runTxn(P$raw ctx, daterm_Txn txn))(daterm_Txn_E$Void) $scope) 
     if (self->input_mode != daterm_ANSI_InputMode_vt) {
         return_err(E_cause$daterm_Txn_Unsupported());
     }
-#endif
+#endif /* plat_is_windows */
     try_(txn.requestWriteFn(txn.ctx, daterm_ANSI__writerOf(self)));
     try_(daterm_ANSI__flush(self));
     let started = time_Clock_now(self->clock);
@@ -1090,7 +1088,7 @@ fn_((daterm_ANSI_parseWindowsKeyEvent(
             .mods = mods,
             .action = some$((O$daterm_key_Action)(action)),
         }));
-    }
+    };
     let codeunit = as$(u16)(record.uChar.UnicodeChar);
     if (codeunit == 0) return_none();
     if (utf16_isHighSurrogate(codeunit)) {
@@ -1273,7 +1271,8 @@ fn_((daterm_ANSI__posix_enableResizeEvents(void))(E$posix_sigaction) $scope) {
             sys_posix_SIGWINCH,
             some$((O$P$raw)(&action)),
             some$((O$P$raw)(&old))
-        ) < 0) return_err(E_cause$Unexpected());
+        )
+        < 0) return_err(E_cause$Unexpected());
     daterm_ANSI__posix_resize_pending = 0;
     return_ok(old);
 } $unscoped(fn);
@@ -1283,7 +1282,8 @@ fn_((daterm_ANSI__posix_disableResizeEvents(posix_sigaction old))(E$void) $scope
             sys_posix_SIGWINCH,
             some$((O$P$raw)(&old)),
             none$((O$P$raw))
-        ) < 0) return_err(E_cause$Unexpected());
+        )
+        < 0) return_err(E_cause$Unexpected());
     daterm_ANSI__posix_resize_pending = 0;
     return_ok({});
 } $unscoped(fn);

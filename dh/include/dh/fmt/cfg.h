@@ -5,7 +5,7 @@
  * @file    cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-12-22 (date of creation)
- * @updated 2026-06-03 (date of last update)
+ * @updated 2026-07-01 (date of last update)
  * @ingroup dasae-headers(dh)/fmt
  * @prefix  fmt
  *
@@ -68,12 +68,12 @@ extern "C" {
 
 /* Default values */
 
-#define __comp_enum__fmt_flt_ryu_table_type pp_if_(fmt_flt_enabled_ryu_tableless)( \
-    pp_then_(fmt_flt_ryu_table_type_less), \
+#define __comp_enum__fmt_flt_ryu_table_type pp_if_(fmt_flt_enabled_ryu_table_full)( \
+    pp_then_(fmt_flt_ryu_table_type_full), \
     pp_else_(pp_if_(fmt_flt_enabled_ryu_table_small)( \
         pp_then_(fmt_flt_ryu_table_type_small), \
-        pp_else_(pp_if_(fmt_flt_enabled_ryu_table_full)( \
-            pp_then_(fmt_flt_ryu_table_type_full), \
+        pp_else_(pp_if_(fmt_flt_enabled_ryu_tableless)( \
+            pp_then_(fmt_flt_ryu_table_type_less), \
             pp_else_(fmt_flt_ryu_table_type_unknown) \
         )) \
     )) \

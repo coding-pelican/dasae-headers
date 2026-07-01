@@ -102,14 +102,14 @@ $extern let_(fmt__ryu_table_pow5_base, fmt__ryu_TablePow5Base);
 /// @details Contains 5^(i*26) approximations
 ///          Size: 13 entries × 16 bytes = 208 bytes
 $extern let_(fmt__ryu_table_pow5_split, fmt__ryu_TablePow5Split);
-/// @brief Inverse power of 5 split table
-/// @details Contains 5^(-i*26) approximations
-///          Size: 15 entries × 16 bytes = 240 bytes
-$extern let_(fmt__ryu_table_pow5_inv_split, fmt__ryu_TablePow5InvSplit);
 /// @brief Power of 5 correction offsets
 /// @details Each entry contains 16 packed 2-bit correction values
 ///          Size: 21 entries × 4 bytes = 84 bytes
 $extern let_(fmt__ryu_table_pow5_offsets, fmt__ryu_TablePow5Offsets);
+/// @brief Inverse power of 5 split table
+/// @details Contains 5^(-i*26) approximations
+///          Size: 15 entries × 16 bytes = 240 bytes
+$extern let_(fmt__ryu_table_pow5_inv_split, fmt__ryu_TablePow5InvSplit);
 /// @brief Inverse power of 5 correction offsets
 /// @details Each entry contains 16 packed 2-bit correction values
 ///          Size: 19 entries × 4 bytes = 76 bytes
@@ -123,30 +123,88 @@ $extern let_(fmt__ryu_table_pow5_inv_offsets, fmt__ryu_TablePow5InvOffsets);
 
 /// if (e == 0) 1 else ceil(log_2(5^e))
 $attr($inline_always)
-$static fn_((fmt__ryu_pow5Bits(u32 e))(u32)) {
-    return as$(u32)(((as$(u64)(e) * 163391164108059ull) >> 46) + 1);
-};
+$static fn_((fmt__ryu_pow5Bits(u32 e))(u32));
 
 /* --- Table Access Functions --- */
 
 #if fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full
 /// Get power of 5 approximation (full version - direct lookup)
 $attr($inline_always)
-$static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
+$static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry));
+/// Get inverse power of 5 approximation (full version - direct lookup)
+$attr($inline_always)
+$static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry));
+
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small
+/// Compute 5^i using split tables and offsets
+$attr($inline_always)
+$static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry));
+/// Compute 5^(-i) using split tables and offsets
+$attr($inline_always)
+$static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry));
+
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_less
+$attr($inline_always)
+$static fn_((fmt__ryu_limbMul5Add(u64* limb, u64 carry))(u64));
+#define fmt__ryu_bigint_limb_count (16)
+typedef A$$(fmt__ryu_bigint_limb_count, u64) fmt__ryu_BigInt;
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintPow5(u32 e))(fmt__ryu_BigInt));
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintShr128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_TableEntry));
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintShl128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_TableEntry));
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintCompare(fmt__ryu_BigInt lhs, fmt__ryu_BigInt rhs))(i32));
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintSub(fmt__ryu_BigInt* lhs, fmt__ryu_BigInt rhs))(void));
+$attr($inline_always)
+$static fn_((fmt__ryu_bigintShl1(fmt__ryu_BigInt* self))(void));
+$attr($inline_always)
+$static fn_((fmt__ryu_tableEntryAdd1(fmt__ryu_TableEntry value))(fmt__ryu_TableEntry));
+
+$attr($inline_always)
+$static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry));
+$attr($inline_always)
+$static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry));
+
+#elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
+#endif /* fmt_flt_ryu_table_type */
+
+/* --- 64-bit Arithmetic --- */
+
+/// Multiply two u64 values and get high 64 bits of result
+/// Returns the high 64 bits of (a * b)
+$attr($inline_always)
+$static fn_((fmt__ryu_mul64High(u64 lhs, u64 rhs))(u64));
+/// Multiply and shift: (m * mul) >> shift
+/// Note: shift is always in range (64, 128) for f64
+/// Computes: ((m * mul_lo) >> 64 + m * mul_hi) >> (shift - 64)
+$attr($inline_always)
+$static fn_((fmt__ryu_mulShift64(u64 m, fmt__ryu_TableEntry mul, u32 shift))(u64));
+
+/*========== Macros and Definitions =========================================*/
+
+/* --- Helper Functions --- */
+
+fn_((fmt__ryu_pow5Bits(u32 e))(u32)) {
+    return as$(u32)(((as$(u64)(e) * 163391164108059ull) >> 46) + 1);
+};
+
+/* --- Table Access Functions --- */
+
+#if fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full
+fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
     claim_assert(i < fmt__ryu_table_pow5_size);
     return *A_at((fmt__ryu_table_pow5)[i]);
 };
-/// Get inverse power of 5 approximation (full version - direct lookup)
-$attr($inline_always)
-$static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
+fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
     claim_assert(i < fmt__ryu_table_pow5_inv_size);
     return *A_at((fmt__ryu_table_pow5_inv)[i]);
 };
 
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_small
-/// Compute 5^i using split tables and offsets
-$attr($inline_always)
-$static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
+fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
     let base = i / fmt__ryu_table_pow5_base_size;
     let base2 = base * fmt__ryu_table_pow5_base_size;
     let mul = *A_at((fmt__ryu_table_pow5_split)[base]);
@@ -183,9 +241,7 @@ $static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
 
     return (fmt__ryu_TableEntry)A_init({ shifted_low, shifted_high });
 };
-/// Compute 5^(-i) using split tables and offsets
-$attr($inline_always)
-$static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
+fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
     let base = (i + fmt__ryu_table_pow5_base_size - 1) / fmt__ryu_table_pow5_base_size;
     let base2 = base * fmt__ryu_table_pow5_base_size;
     let mul = *A_at((fmt__ryu_table_pow5_inv_split)[base]);
@@ -225,10 +281,7 @@ $static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
 };
 
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_less
-#define fmt__ryu_bigint_limb_count (16)
-typedef A$$(fmt__ryu_bigint_limb_count, u64) fmt__ryu_BigInt;
-$attr($inline_always)
-$static fn_((fmt__ryu_limbMul5Add(u64* limb, u64 carry))(u64)) {
+fn_((fmt__ryu_limbMul5Add(u64* limb, u64 carry))(u64)) {
     let value = *limb;
     var lo = value << 2;
     var hi = value >> 62;
@@ -242,8 +295,7 @@ $static fn_((fmt__ryu_limbMul5Add(u64* limb, u64 carry))(u64)) {
     *limb = add_carry;
     return hi;
 };
-$attr($inline_always)
-$static fn_((fmt__ryu_bigintPow5(u32 e))(fmt__ryu_BigInt)) {
+fn_((fmt__ryu_bigintPow5(u32 e))(fmt__ryu_BigInt)) {
     var out = (fmt__ryu_BigInt)cleared();
     *A_at((out)[0]) = 1;
     for_(($r(0, e))(step)) {
@@ -256,8 +308,7 @@ $static fn_((fmt__ryu_bigintPow5(u32 e))(fmt__ryu_BigInt)) {
     } $end(for);
     return out;
 };
-$attr($inline_always)
-$static fn_((fmt__ryu_bigintShr128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_TableEntry)) {
+fn_((fmt__ryu_bigintShr128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_TableEntry)) {
     let limb_idx = shift / 64;
     let bit_idx = shift % 64;
     let lo0 = limb_idx < fmt__ryu_bigint_limb_count ? *A_at((value)[limb_idx]) : 0;
@@ -271,8 +322,7 @@ $static fn_((fmt__ryu_bigintShr128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_T
         (lo1 >> bit_idx) | (lo2 << (64 - bit_idx)),
     });
 };
-$attr($inline_always)
-$static fn_((fmt__ryu_bigintShl128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_TableEntry)) {
+fn_((fmt__ryu_bigintShl128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_TableEntry)) {
     claim_assert(shift < 128);
     let limb_shift = shift / 64;
     let bit_shift = shift % 64;
@@ -289,16 +339,14 @@ $static fn_((fmt__ryu_bigintShl128(fmt__ryu_BigInt value, u32 shift))(fmt__ryu_T
     }
     return (fmt__ryu_TableEntry)A_init({ lo, hi });
 };
-$attr($inline_always)
-$static fn_((fmt__ryu_bigintCompare(fmt__ryu_BigInt lhs, fmt__ryu_BigInt rhs))(i32)) {
+fn_((fmt__ryu_bigintCompare(fmt__ryu_BigInt lhs, fmt__ryu_BigInt rhs))(i32)) {
     for_($rev($a(lhs), $a(rhs))(l, r)) {
         if (*l < *r) return -1;
         if (*l > *r) return 1;
     } $end(for);
     return 0;
 };
-$attr($inline_always)
-$static fn_((fmt__ryu_bigintSub(fmt__ryu_BigInt* lhs, fmt__ryu_BigInt rhs))(void)) {
+fn_((fmt__ryu_bigintSub(fmt__ryu_BigInt* lhs, fmt__ryu_BigInt rhs))(void)) {
     var borrow = u64_(0);
     for_(($s(A_ref(*lhs)), $a(rhs))(l_limb, r_limb)) {
         let l = *l_limb;
@@ -309,8 +357,7 @@ $static fn_((fmt__ryu_bigintSub(fmt__ryu_BigInt* lhs, fmt__ryu_BigInt rhs))(void
     } $end(for);
     claim_assert(borrow == 0);
 };
-$attr($inline_always)
-$static fn_((fmt__ryu_bigintShl1(fmt__ryu_BigInt* self))(void)) {
+fn_((fmt__ryu_bigintShl1(fmt__ryu_BigInt* self))(void)) {
     var carry = u64_(0);
     for_(($s(A_ref(*self)))(limb)) {
         let next_carry = *limb >> 63;
@@ -319,15 +366,14 @@ $static fn_((fmt__ryu_bigintShl1(fmt__ryu_BigInt* self))(void)) {
     } $end(for);
     claim_assert(carry == 0);
 };
-$attr($inline_always)
-$static fn_((fmt__ryu_tableEntryAdd1(fmt__ryu_TableEntry value))(fmt__ryu_TableEntry)) {
+fn_((fmt__ryu_tableEntryAdd1(fmt__ryu_TableEntry value))(fmt__ryu_TableEntry)) {
     var lo = *A_at((value)[0]) + 1;
     var hi = *A_at((value)[1]);
     if (lo == 0) hi += 1;
     return (fmt__ryu_TableEntry)A_init({ lo, hi });
 };
-$attr($inline_always)
-$static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
+
+fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
     claim_assert(i < fmt__ryu_table_pow5_size);
     let pow5 = fmt__ryu_bigintPow5(i);
     let bits = fmt__ryu_pow5Bits(i);
@@ -336,8 +382,7 @@ $static fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
     }
     return fmt__ryu_bigintShr128(pow5, bits - fmt__ryu_bit_count);
 };
-$attr($inline_always)
-$static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
+fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
     claim_assert(i < fmt__ryu_table_pow5_inv_size);
     let divisor = fmt__ryu_bigintPow5(i);
     let numerator_bit = fmt__ryu_pow5Bits(i) - 1 + fmt__ryu_bit_count;
@@ -369,10 +414,7 @@ $static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
 
 /* --- 64-bit Arithmetic --- */
 
-/// Multiply two u64 values and get high 64 bits of result
-/// Returns the high 64 bits of (a * b)
-$attr($inline_always)
-$static fn_((mul64_high(u64 lhs, u64 rhs))(u64)) {
+fn_((fmt__ryu_mul64High(u64 lhs, u64 rhs))(u64)) {
     // Split into 32-bit parts
     const u64 l_lo = lhs & 0xFFFFFFFFull;
     const u64 l_hi = lhs >> 32;
@@ -391,22 +433,17 @@ $static fn_((mul64_high(u64 lhs, u64 rhs))(u64)) {
 
     return l_hi * r_hi + w3 + k;
 };
-
-/// Multiply and shift: (m * mul) >> shift
-/// Note: shift is always in range (64, 128) for f64
-/// Computes: ((m * mul_lo) >> 64 + m * mul_hi) >> (shift - 64)
-$attr($inline_always)
-$static fn_((fmt__ryu_mulShift64(u64 m, fmt__ryu_TableEntry mul, u32 shift))(u64)) {
+fn_((fmt__ryu_mulShift64(u64 m, fmt__ryu_TableEntry mul, u32 shift))(u64)) {
     // mul is [low, high] representing a 128-bit value
     const u64 mul_lo = *A_at((mul)[0]);
     const u64 mul_hi = *A_at((mul)[1]);
 
     // b0 = m * mul_lo as 128-bit, we need high 64 bits
-    const u64 b0_high = mul64_high(m, mul_lo);
+    const u64 b0_high = fmt__ryu_mul64High(m, mul_lo);
 
     // b2 = m * mul_hi as 128-bit
     const u64 b2_lo = m * mul_hi;
-    const u64 b2_hi = mul64_high(m, mul_hi);
+    const u64 b2_hi = fmt__ryu_mul64High(m, mul_hi);
 
     // sum = b0_high + b2 as a 128-bit pair
     // sum_lo = b0_high + b2_lo, with carry to sum_hi
