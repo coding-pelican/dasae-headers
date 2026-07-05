@@ -443,7 +443,7 @@ TEST_fn_("math: unsigned vector support exposes only unsigned-safe constants and
 
 TEST_fn_("math: signed and floating vector SIMD paths preserve lane semantics" $scope) {
     try_(TEST_expect(math_test_V3i32Eq(
-        m_V3i32_mod(m_V3i32_of(7, 8, 9), m_V3i32_of(3, 3, 4)),
+        m_V3i32_rem(m_V3i32_of(7, 8, 9), m_V3i32_of(3, 3, 4)),
         m_V3i32_of(1, 2, 1)
     )));
     try_(TEST_expect(math_test_V3i32Eq(
@@ -461,7 +461,7 @@ TEST_fn_("math: signed and floating vector SIMD paths preserve lane semantics" $
         m_V3f32_of(0.5f, 0.25f, 0.125f)
     )));
     try_(TEST_expect(math_test_V3f32Near(
-        m_V3f32_mod(m_V3f32_of(7.5f, 8.5f, 9.5f), m_V3f32_of(3.0f, 3.0f, 4.0f)),
+        m_V3f32_rem(m_V3f32_of(7.5f, 8.5f, 9.5f), m_V3f32_of(3.0f, 3.0f, 4.0f)),
         m_V3f32_of(1.5f, 2.5f, 1.5f)
     )));
     try_(TEST_expect(math_test_V3f32Near(

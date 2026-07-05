@@ -2548,8 +2548,8 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
 #define ____flt_isNonzero(_x...) bool_(!flt_isZero(_x))
 #define ____flt_sgn(_x...) pri_sgn_static(_x)
 #define ____flt_sgnBit_static(_x...) bool_(T_switch$((TypeOf(_x))( \
-    T_case$((f32)(__builtin_signbitf(as$(f32)(_x)))), \
-    T_case$((f64)(__builtin_signbit(as$(f64)(_x)))) \
+    T_case$((f32)(__builtin_copysignf(1.0f, as$(f32)(_x)) < 0.0f)), \
+    T_case$((f64)(__builtin_copysign(1.0, as$(f64)(_x)) < 0.0)) \
 )))
 #define __step__flt_sgnBit(_x...) ____flt_sgnBit(pp_uniqTok(x), _x)
 #define ____flt_sgnBit(__x, _x...) local_({ \

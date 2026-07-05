@@ -6,6 +6,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#if !defined(_WIN32)
+#include <unistd.h>
+#endif
 
 // === PRIVATE HELPERS ===
 
@@ -1318,9 +1321,30 @@ static bool dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj)
 
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
     if (!proj->root || !proj->pch_enabled) { return NULL; }
+#if !defined(_WIN32)
+    long page_size = sysconf(_SC_PAGESIZE);
+    long phys_pages = sysconf(_SC_PHYS_PAGES);
+    if (page_size > 0 && phys_pages > 0) {
+        unsigned long long mem_bytes = (unsigned long long)page_size * (unsigned long long)phys_pages;
+        if (mem_bytes < 8ull * 1024ull * 1024ull * 1024ull) {
+            return NULL;
+        }
+    }
+#endif
 
     if (proj->pch_header_override) {
-        return path_isFile(proj->pch_header_override) ? strdup(proj->pch_header_override) : NULL;
+        if (path_isFile(proj->pch_header_override)) {
+            return strdup(proj->pch_header_override);
+        }
+        char* inc_dir_for_override = dal_c_Project_getIncludeDir(proj);
+        const char* override_name = path_basename(proj->pch_header_override);
+        char* inc_relative = inc_dir_for_override && override_name ? path_join(inc_dir_for_override, override_name) : NULL;
+        free(inc_dir_for_override);
+        if (inc_relative && path_isFile(inc_relative)) {
+            return inc_relative;
+        }
+        free(inc_relative);
+        return NULL;
     }
 
     char* inc_dir = dal_c_Project_getIncludeDir(proj);

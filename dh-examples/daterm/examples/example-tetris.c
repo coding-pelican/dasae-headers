@@ -201,7 +201,7 @@ $static let_(tetris_kicks_i, tetris_KickTable) = A_init({
     A_init({ { 0, 0 }, { -1, 0 }, { 2, 0 }, { -1, 2 }, { 2, -1 } }),
 });
 
-$static let tetris_line_scores = A_from$((u32){ 0, 100, 300, 500, 800 });
+$static let tetris_line_scores = A_from_static$((u32){ 0, 100, 300, 500, 800 });
 
 typedef struct tetris_Self {
     var_(board, tetris_Board);

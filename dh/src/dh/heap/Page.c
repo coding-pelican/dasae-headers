@@ -234,8 +234,8 @@ fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))
     let new_size_aligned = heap_Page__alignedLen(new_len);
     let buf_aligned_len = heap_Page__alignedLen(buf.len);
 
-    if (new_size_aligned == buf_aligned_len && new_len <= buf.len) {
-        return true; // No resize needed
+    if (new_size_aligned == buf_aligned_len) {
+        return true; // Same mapped page span can satisfy the requested logical size.
     }
 
 #if plat_is_windows
@@ -254,12 +254,8 @@ fn_((heap_Page__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))
         return heap_Page__shrinkPosix(self, buf, new_size_aligned);
     }
 
-    if (isSome(heap_vmap_remap(buf.ptr, buf.len, new_len))) {
-        heap_Page__updateHintForRemap(self, buf.ptr, buf_aligned_len, buf.ptr, new_size_aligned);
-        return true; // Assume success for now, further hint update needed if address changes.
-    }
-
-    // mremap is not available or failed, larger resize is not supported in this simple page allocator.
+    // rawResize must preserve the original address.  Growing across a mapped-page
+    // span can require a moving remap, so leave that to rawRemap/remapFn.
     return false;
 #endif /* posix */
 };
@@ -274,8 +270,8 @@ fn_((heap_Page__remap(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(
     let new_size_aligned = heap_Page__alignedLen(new_len);
     let buf_aligned_len = heap_Page__alignedLen(buf.len);
 
-    if (new_size_aligned == buf_aligned_len && new_len <= buf.len) {
-        return_some(buf.ptr); // No resize needed
+    if (new_size_aligned == buf_aligned_len) {
+        return_some(buf.ptr); // Same mapped page span can satisfy the requested logical size.
     }
 
 #if plat_is_windows

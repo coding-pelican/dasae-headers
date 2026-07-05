@@ -204,44 +204,212 @@ extern "C" {
 #define ____raw_swapBytes32(_x...) (as$(u32)(__builtin_bswap32(as$(u32)(_x))))
 #define ____raw_swapBytes16(_x...) (as$(u16)(__builtin_bswap16(as$(u16)(_x))))
 
+/* GCC does not provide Clang's bitreverse/rotate builtin names.
+ * Keep the public raw_* surface unchanged and provide constant-expression
+ * fallbacks for constant operands, with a single-evaluation runtime path. */
+#define __comp_raw_rotl8_const(_x, _n) \
+    (as$(u8)((as$(u8)(_x) << (as$(u32)(_n) & 7u)) | (as$(u8)(_x) >> ((0u - as$(u32)(_n)) & 7u))))
+#define __comp_raw_rotl16_const(_x, _n) \
+    (as$(u16)((as$(u16)(_x) << (as$(u32)(_n) & 15u)) | (as$(u16)(_x) >> ((0u - as$(u32)(_n)) & 15u))))
+#define __comp_raw_rotl32_const(_x, _n) \
+    (as$(u32)((as$(u32)(_x) << (as$(u32)(_n) & 31u)) | (as$(u32)(_x) >> ((0u - as$(u32)(_n)) & 31u))))
+#define __comp_raw_rotl64_const(_x, _n) \
+    (as$(u64)((as$(u64)(_x) << (as$(u64)(_n) & 63ull)) | (as$(u64)(_x) >> ((0ull - as$(u64)(_n)) & 63ull))))
+
+#define __comp_raw_rotr8_const(_x, _n) __comp_raw_rotl8_const((_x), (0u - as$(u32)(_n)))
+#define __comp_raw_rotr16_const(_x, _n) __comp_raw_rotl16_const((_x), (0u - as$(u32)(_n)))
+#define __comp_raw_rotr32_const(_x, _n) __comp_raw_rotl32_const((_x), (0u - as$(u32)(_n)))
+#define __comp_raw_rotr64_const(_x, _n) __comp_raw_rotl64_const((_x), (0ull - as$(u64)(_n)))
+
+#define __comp_raw_brev8_const(_x) \
+    (as$(u8)((((as$(u8)(_x) & 0x55u) << 1) | ((as$(u8)(_x) >> 1) & 0x55u))))
+#define __comp_raw_brev8_const2(_x) \
+    (as$(u8)((((__comp_raw_brev8_const(_x) & 0x33u) << 2) | ((__comp_raw_brev8_const(_x) >> 2) & 0x33u))))
+#define __comp_raw_brev8(_x) \
+    (as$(u8)((((__comp_raw_brev8_const2(_x) & 0x0fu) << 4) | ((__comp_raw_brev8_const2(_x) >> 4) & 0x0fu))))
+#define __comp_raw_brev16_const(_x) \
+    (as$(u16)((as$(u16)(__comp_raw_brev8(as$(u8)(_x))) << 8) | as$(u16)(__comp_raw_brev8(as$(u8)(as$(u16)(_x) >> 8)))))
+#define __comp_raw_brev32_const(_x) \
+    (as$(u32)((as$(u32)(__comp_raw_brev16_const(as$(u16)(_x))) << 16) | as$(u32)(__comp_raw_brev16_const(as$(u16)(as$(u32)(_x) >> 16)))))
+#define __comp_raw_brev64_const(_x) \
+    (as$(u64)((as$(u64)(__comp_raw_brev32_const(as$(u32)(_x))) << 32) | as$(u64)(__comp_raw_brev32_const(as$(u32)(as$(u64)(_x) >> 32)))))
+
+static inline __UINT8_TYPE__ __comp_raw_rotl8_runtime(__UINT8_TYPE__ x, __UINT32_TYPE__ n) {
+    return (__UINT8_TYPE__)((__UINT8_TYPE__)(x << (n & 7u)) | (__UINT8_TYPE__)(x >> ((0u - n) & 7u)));
+}
+static inline __UINT16_TYPE__ __comp_raw_rotl16_runtime(__UINT16_TYPE__ x, __UINT32_TYPE__ n) {
+    return (__UINT16_TYPE__)((__UINT16_TYPE__)(x << (n & 15u)) | (__UINT16_TYPE__)(x >> ((0u - n) & 15u)));
+}
+static inline __UINT32_TYPE__ __comp_raw_rotl32_runtime(__UINT32_TYPE__ x, __UINT32_TYPE__ n) {
+    return (__UINT32_TYPE__)((__UINT32_TYPE__)(x << (n & 31u)) | (__UINT32_TYPE__)(x >> ((0u - n) & 31u)));
+}
+static inline __UINT64_TYPE__ __comp_raw_rotl64_runtime(__UINT64_TYPE__ x, __UINT64_TYPE__ n) {
+    return (__UINT64_TYPE__)((__UINT64_TYPE__)(x << (n & 63ull)) | (__UINT64_TYPE__)(x >> ((0ull - n) & 63ull)));
+}
+static inline __UINT8_TYPE__ __comp_raw_rotr8_runtime(__UINT8_TYPE__ x, __UINT32_TYPE__ n) {
+    return __comp_raw_rotl8_runtime(x, 0u - n);
+}
+static inline __UINT16_TYPE__ __comp_raw_rotr16_runtime(__UINT16_TYPE__ x, __UINT32_TYPE__ n) {
+    return __comp_raw_rotl16_runtime(x, 0u - n);
+}
+static inline __UINT32_TYPE__ __comp_raw_rotr32_runtime(__UINT32_TYPE__ x, __UINT32_TYPE__ n) {
+    return __comp_raw_rotl32_runtime(x, 0u - n);
+}
+static inline __UINT64_TYPE__ __comp_raw_rotr64_runtime(__UINT64_TYPE__ x, __UINT64_TYPE__ n) {
+    return __comp_raw_rotl64_runtime(x, 0ull - n);
+}
+static inline __UINT8_TYPE__ __comp_raw_brev8_runtime(__UINT8_TYPE__ x) {
+    x = (__UINT8_TYPE__)(((x & 0x55u) << 1) | ((x >> 1) & 0x55u));
+    x = (__UINT8_TYPE__)(((x & 0x33u) << 2) | ((x >> 2) & 0x33u));
+    return (__UINT8_TYPE__)(((x & 0x0fu) << 4) | ((x >> 4) & 0x0fu));
+}
+static inline __UINT16_TYPE__ __comp_raw_brev16_runtime(__UINT16_TYPE__ x) {
+    return (__UINT16_TYPE__)(((__UINT16_TYPE__)__comp_raw_brev8_runtime((__UINT8_TYPE__)x) << 8)
+                             | (__UINT16_TYPE__)__comp_raw_brev8_runtime((__UINT8_TYPE__)(x >> 8)));
+}
+static inline __UINT32_TYPE__ __comp_raw_brev32_runtime(__UINT32_TYPE__ x) {
+    return ((__UINT32_TYPE__)__comp_raw_brev16_runtime((__UINT16_TYPE__)x) << 16)
+         | (__UINT32_TYPE__)__comp_raw_brev16_runtime((__UINT16_TYPE__)(x >> 16));
+}
+static inline __UINT64_TYPE__ __comp_raw_brev64_runtime(__UINT64_TYPE__ x) {
+    return ((__UINT64_TYPE__)__comp_raw_brev32_runtime((__UINT32_TYPE__)x) << 32)
+         | (__UINT64_TYPE__)__comp_raw_brev32_runtime((__UINT32_TYPE__)(x >> 32));
+}
+
 #define ____raw_rotateLeftSize(_x, y...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_rotateLeft64(_x, y)), \
     pp_else_(raw_rotateLeft32(_x, y)) \
 )
+#if comp_type == comp_type_clang
 #define ____raw_rotateLeft64(_x, y...) (as$(u64)(__builtin_rotateleft64(as$(u64)(_x), as$(u64)(y))))
+#else
+#define ____raw_rotateLeft64(_x, y...) __builtin_choose_expr( \
+    __builtin_constant_p(_x) && __builtin_constant_p(y), \
+    __comp_raw_rotl64_const(_x, y), \
+    __comp_raw_rotl64_runtime(as$(u64)(_x), as$(u64)(y)) \
+)
+#endif
 #define ____raw_rotateLeftLong(_x, y...) pp_if_(plat_long_is_64bit)( \
     pp_then_(raw_rotateLeft64(_x, y)), \
     pp_else_(raw_rotateLeft32(_x, y)) \
 )
+#if comp_type == comp_type_clang
 #define ____raw_rotateLeft32(_x, y...) (as$(u32)(__builtin_rotateleft32(as$(u32)(_x), as$(u32)(y))))
+#else
+#define ____raw_rotateLeft32(_x, y...) __builtin_choose_expr( \
+    __builtin_constant_p(_x) && __builtin_constant_p(y), \
+    __comp_raw_rotl32_const(_x, y), \
+    __comp_raw_rotl32_runtime(as$(u32)(_x), as$(u32)(y)) \
+)
+#endif
+#if comp_type == comp_type_clang
 #define ____raw_rotateLeft16(_x, y...) (as$(u16)(__builtin_rotateleft16(as$(u16)(_x), as$(u16)(y))))
+#else
+#define ____raw_rotateLeft16(_x, y...) __builtin_choose_expr( \
+    __builtin_constant_p(_x) && __builtin_constant_p(y), \
+    __comp_raw_rotl16_const(_x, y), \
+    __comp_raw_rotl16_runtime(as$(u16)(_x), as$(u32)(y)) \
+)
+#endif
+#if comp_type == comp_type_clang
 #define ____raw_rotateLeft8(_x, y...) (as$(u8)(__builtin_rotateleft8(as$(u8)(_x), as$(u8)(y))))
+#else
+#define ____raw_rotateLeft8(_x, y...) __builtin_choose_expr( \
+    __builtin_constant_p(_x) && __builtin_constant_p(y), \
+    __comp_raw_rotl8_const(_x, y), \
+    __comp_raw_rotl8_runtime(as$(u8)(_x), as$(u32)(y)) \
+)
+#endif
 
 #define ____raw_rotateRightSize(_x, y...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_rotateRight64(_x, y)), \
     pp_else_(raw_rotateRight32(_x, y)) \
 )
+#if comp_type == comp_type_clang
 #define ____raw_rotateRight64(_x, y...) (as$(u64)(__builtin_rotateright64(as$(u64)(_x), as$(u64)(y))))
+#else
+#define ____raw_rotateRight64(_x, y...) __builtin_choose_expr( \
+    __builtin_constant_p(_x) && __builtin_constant_p(y), \
+    __comp_raw_rotr64_const(_x, y), \
+    __comp_raw_rotr64_runtime(as$(u64)(_x), as$(u64)(y)) \
+)
+#endif
 #define ____raw_rotateRightLong(_x, y...) pp_if_(plat_long_is_64bit)( \
     pp_then_(raw_rotateRight64(_x, y)), \
     pp_else_(raw_rotateRight32(_x, y)) \
 )
+#if comp_type == comp_type_clang
 #define ____raw_rotateRight32(_x, y...) (as$(u32)(__builtin_rotateright32(as$(u32)(_x), as$(u32)(y))))
+#else
+#define ____raw_rotateRight32(_x, y...) __builtin_choose_expr( \
+    __builtin_constant_p(_x) && __builtin_constant_p(y), \
+    __comp_raw_rotr32_const(_x, y), \
+    __comp_raw_rotr32_runtime(as$(u32)(_x), as$(u32)(y)) \
+)
+#endif
+#if comp_type == comp_type_clang
 #define ____raw_rotateRight16(_x, y...) (as$(u16)(__builtin_rotateright16(as$(u16)(_x), as$(u16)(y))))
+#else
+#define ____raw_rotateRight16(_x, y...) __builtin_choose_expr( \
+    __builtin_constant_p(_x) && __builtin_constant_p(y), \
+    __comp_raw_rotr16_const(_x, y), \
+    __comp_raw_rotr16_runtime(as$(u16)(_x), as$(u32)(y)) \
+)
+#endif
+#if comp_type == comp_type_clang
 #define ____raw_rotateRight8(_x, y...) (as$(u8)(__builtin_rotateright8(as$(u8)(_x), as$(u8)(y))))
+#else
+#define ____raw_rotateRight8(_x, y...) __builtin_choose_expr( \
+    __builtin_constant_p(_x) && __builtin_constant_p(y), \
+    __comp_raw_rotr8_const(_x, y), \
+    __comp_raw_rotr8_runtime(as$(u8)(_x), as$(u32)(y)) \
+)
+#endif
 
 #define ____raw_reverseBitsSize(_x...) pp_if_(arch_bits_is_64bit)( \
     pp_then_(raw_reverseBits64(_x)), \
     pp_else_(raw_reverseBits32(_x)) \
 )
+#if comp_type == comp_type_clang
 #define ____raw_reverseBits64(_x...) (as$(u64)(__builtin_bitreverse64(as$(u64)(_x))))
+#else
+#define ____raw_reverseBits64(_x...) __builtin_choose_expr( \
+    __builtin_constant_p(_x), \
+    __comp_raw_brev64_const(_x), \
+    __comp_raw_brev64_runtime(as$(u64)(_x)) \
+)
+#endif
 #define ____raw_reverseBitsLong(_x...) pp_if_(plat_long_is_64bit)( \
     pp_then_(raw_reverseBits64(_x)), \
     pp_else_(raw_reverseBits32(_x)) \
 )
+#if comp_type == comp_type_clang
 #define ____raw_reverseBits32(_x...) (as$(u32)(__builtin_bitreverse32(as$(u32)(_x))))
+#else
+#define ____raw_reverseBits32(_x...) __builtin_choose_expr( \
+    __builtin_constant_p(_x), \
+    __comp_raw_brev32_const(_x), \
+    __comp_raw_brev32_runtime(as$(u32)(_x)) \
+)
+#endif
+#if comp_type == comp_type_clang
 #define ____raw_reverseBits16(_x...) (as$(u16)(__builtin_bitreverse16(as$(u16)(_x))))
+#else
+#define ____raw_reverseBits16(_x...) __builtin_choose_expr( \
+    __builtin_constant_p(_x), \
+    __comp_raw_brev16_const(_x), \
+    __comp_raw_brev16_runtime(as$(u16)(_x)) \
+)
+#endif
+#if comp_type == comp_type_clang
 #define ____raw_reverseBits8(_x...) (as$(u8)(__builtin_bitreverse8(as$(u8)(_x))))
+#else
+#define ____raw_reverseBits8(_x...) __builtin_choose_expr( \
+    __builtin_constant_p(_x), \
+    __comp_raw_brev8(_x), \
+    __comp_raw_brev8_runtime(as$(u8)(_x)) \
+)
+#endif
 
 #define ____raw_memset0(_p_dst, _len...) __builtin_memset( \
     as$(u8*)(_p_dst), as$(u32)(as$(u8)(0x00)), as$(usize)(_len) \

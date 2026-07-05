@@ -66,6 +66,12 @@ extern "C" {
 
 #define __expr__nameOf(_$ignored, _Tok...) _Tok
 
+#define comp_when_(_cond...) /*(comp_provide_(_then...) comp_instead_(_else...))*/ __inline__comp_when_(_cond)
+#define __inline__comp_when_(_cond...) __builtin_choose_expr pp_begin(_cond) __step__comp_when___parseProvideInstead
+#define __step__comp_when___parseProvideInstead(_provide, _instead...) _provide _instead pp_end
+#define comp_provide_(_then...) , (_then)
+#define comp_instead_(_else...) , (_else)
+
 #define __expr__isComptimeExpr(_expr...) bool_(__builtin_constant_p(_expr))
 #define __expr__isRuntimeExpr(_expr...) pri_not(isComptimeExpr(_expr))
 

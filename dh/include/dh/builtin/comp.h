@@ -196,7 +196,7 @@ extern "C" {
 #define __typeV$__sep(_T...) _T, __typeV$__sepRaw
 #define __typeV$__sepRaw(_raw...) _raw
 #define __typeV$__emit(_T, _raw...) __typeV$__emitNext(_T, _raw)
-#define __typeV$__emitNext(_T, _raw...) (*(_T*)raw_memcpy(&l0$((_T)), &copy(_raw), sizeOf$(_T)))
+#define __typeV$__emitNext(_T, _raw...) local_({     typedef _T __typeV__T;     let __typeV__raw = _raw;     local_return_(         *(__typeV__T*)raw_memcpy(             &l0$((__typeV__T)),             &__typeV__raw,             sizeOf$(__typeV__T)         )     ); })
 
 #define typeO$(/*(_T)(_raw...)*/... /*(_T)*/) __typeO$__step(pp_defer(__typeO$__emit)(__typeO$__sep __VA_ARGS__))
 #define __typeO$__step(...) __VA_ARGS__
@@ -318,11 +318,11 @@ extern "C" {
     *__p_val = l0$((TypeOf(__val))); \
     local_return_(__val); \
 })
-#define copy(_val... /*(TypeOf(_val))*/) ____copy(_val)
+#define copy(_val... /*(TypeOf(_val))*/) ____copy(pp_uniqTok(val), _val)
 #if UNUSED_CODE
-#define ____copy(_val...) (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
+#define ____copy(__val, _val...) (*&*((TypeOfUnqual(_val)[1]){ [0] = _val }))
 #endif /* UNUSED_CODE */
-#define ____copy(_val...) ( \
+#define ____copy(__val, _val...) ( \
     *(TypeOfUnqual(_val)*)raw_memcpy( \
         &l0$((TypeOfUnqual(_val))), \
         local_({ \
@@ -539,8 +539,12 @@ extern "C" {
     _Pragma("clang diagnostic ignored \"-Wcast-align\"")
 #define __$suppress_cast_qual() \
     _Pragma("clang diagnostic ignored \"-Wcast-qual\"")
+#if defined(__clang__) && (__clang_major__ >= 18)
 #define __$suppress_unterminated_string_initialization() \
     _Pragma("clang diagnostic ignored \"-Wunterminated-string-initialization\"")
+#else
+#define __$suppress_unterminated_string_initialization()
+#endif
 #define __$suppress_return_stack_address() \
     _Pragma("clang diagnostic ignored \"-Wreturn-stack-address\"")
 #define __$suppress_frame_larger_than() \

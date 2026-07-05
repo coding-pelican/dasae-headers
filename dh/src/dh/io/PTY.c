@@ -341,9 +341,9 @@ fn_((io_PTY_open(io_PTY_OpenCfg cfg))(io_PTY_E$io_PTY) $guard) {
     }
     return_ok((io_PTY){
         .read_file = master,
-        .write_file_ = none(),
-        .slave_file_ = some(slave),
-        .platform_resource_ = none(),
+        .write_file = none(),
+        .slave_file = some(slave),
+        .platform_resource = none(),
     });
 #else
     let_ignore = cfg;
@@ -467,7 +467,7 @@ fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_E$io_PTY_Session) $guard) {
     if (sys_call_linux_syscall_isErr(pid)) return_err(E_cause$io_PTY_SpawnFailed());
     if (pid == 0) {
         let master_fd = as$(sys_call_linux_word)(fs_File_handle(pty.read_file));
-        let slave = unwrap_(pty.slave_file_);
+        let slave = unwrap_(pty.slave_file);
         let slave_fd = as$(sys_call_linux_word)(fs_File_handle(slave));
         let_ignore = sys_call_linux_close(master_fd);
         if (sys_call_linux_setsid() < 0) sys_call_linux_exit_group(127);
@@ -486,8 +486,8 @@ fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_E$io_PTY_Session) $guard) {
         }
         io_PTY__linux_exec(cfg.cmd, argv, env);
     }
-    fs_File_close(unwrap_(pty.slave_file_));
-    asg_l((&pty.slave_file_)(none()));
+    fs_File_close(unwrap_(pty.slave_file));
+    asg_l((&pty.slave_file)(none()));
     return_ok((io_PTY_Session){
         .pty = pty,
         .child = {

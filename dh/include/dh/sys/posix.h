@@ -265,7 +265,7 @@ $static fn_((sys_posix_fionread(sys_posix_fd_t fd, int* count))(i32));
 fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32)) {
     pp_switch_((plat_type)(
         pp_case_((plat_type_linux)(
-            return as$(i32)(sys_call_linux_clock_gettime(as$(sys_call_linux_word)(clock_id), ts))
+            return as$(i32)(sys_call_linux_clock_gettime(as$(sys_call_linux_clockid_t)(clock_id), ts))
         )),
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_clock_gettime(clock_id, ts)
@@ -280,7 +280,7 @@ fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* t
 fn_((sys_posix_clock_getres(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32)) {
     pp_switch_((plat_type)(
         pp_case_((plat_type_linux)(
-            return as$(i32)(sys_call_linux_clock_getres(as$(sys_call_linux_word)(clock_id), ts))
+            return as$(i32)(sys_call_linux_clock_getres(as$(sys_call_linux_clockid_t)(clock_id), ts))
         )),
         pp_case_((plat_type_darwin)(
             return sys_libc_darwin_clock_getres(clock_id, ts)
@@ -354,7 +354,7 @@ fn_((sys_posix_sigaction_set(sys_posix_signal_t signal, O$P$raw act, O$P$raw old
     pp_switch_((plat_type)(
         pp_case_((plat_type_linux)({
             var_(linux_act, sys_call_linux_sigaction) = cleared();
-            let act_ptr = as$(sys_call_linux_sigaction*)(orelse_((act)(null)));
+            var act_ptr = as$(sys_call_linux_sigaction*)(orelse_((act)(null)));
             let old_act_ptr = as$(sys_call_linux_sigaction*)(orelse_((old_act)(null)));
             if (act_ptr != null) {
                 linux_act = *act_ptr;

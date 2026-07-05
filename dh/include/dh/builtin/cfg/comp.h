@@ -402,7 +402,11 @@ extern "C" {
 #define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
 #define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
 #define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), 1, _prob)
+#if comp_type == comp_type_clang
 #define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
+#else
+#define __comp_attr__comp_branch_unpredictable(_expr...) (!!(_expr))
+#endif
 
 #define __comp_attr__comp_prefetch(_addr, _rw, _locality...) __builtin_prefetch(_addr, _rw, _locality)
 
@@ -460,7 +464,7 @@ extern "C" {
 #define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
 #define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
 #define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), 1, _prob)
-#define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
+#define __comp_attr__comp_branch_unpredictable(_expr...) (!!(_expr))
 
 #define __comp_attr__comp_prefetch(_addr, _rw, _locality...) __prefetch(_addr, _rw, _locality)
 
@@ -512,7 +516,7 @@ extern "C" {
 #define __comp_attr__comp_branch_likely(_expr...) __builtin_expect(!!(_expr), 1)
 #define __comp_attr__comp_branch_unlikely(_expr...) __builtin_expect(!!(_expr), 0)
 #define __comp_attr__comp_branch_predict_at(_prob, _expr...) __builtin_expect_with_probability(!!(_expr), 1, _prob)
-#define __comp_attr__comp_branch_unpredictable(_expr...) __builtin_unpredictable(!!(_expr))
+#define __comp_attr__comp_branch_unpredictable(_expr...) (!!(_expr))
 
 #define __comp_attr__comp_prefetch(_addr, _rw, _locality...) __prefetch(_addr, _rw, _locality)
 

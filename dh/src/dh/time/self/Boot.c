@@ -244,7 +244,7 @@ fn_((time_Boot_direct__unix_resolution(P$raw ctx))(time_ResolutionE$time_Resolut
     let_ignore = ctx;
     let_ignore = sys_posix_clock_getres(time_Boot_direct__unix__clockId(), &res);
     return_ok({ .secs = as$(u64)(res.tv_sec), .nanos = as$(u32)(res.tv_nsec) });
-};
+} $unscoped(fn);
 #endif /* plat_based_unix */
 
 fn_((time_Boot_direct__sleep(P$raw ctx, time_Dur dur))(Sched_Cancelable$void)) {

@@ -54,7 +54,7 @@ $static fn_((m_M2u32_mul(m_M2u32 lhs, m_M2u32 rhs))(m_M2u32));
 $attr($inline_always)
 $static fn_((m_M2u32_div(m_M2u32 lhs, m_M2u32 rhs))(m_M2u32));
 $attr($inline_always)
-$static fn_((m_M2u32_mod(m_M2u32 lhs, m_M2u32 rhs))(m_M2u32));
+$static fn_((m_M2u32_rem(m_M2u32 lhs, m_M2u32 rhs))(m_M2u32));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -108,7 +108,7 @@ $static fn_((m_M3u32_mul(m_M3u32 lhs, m_M3u32 rhs))(m_M3u32));
 $attr($inline_always)
 $static fn_((m_M3u32_div(m_M3u32 lhs, m_M3u32 rhs))(m_M3u32));
 $attr($inline_always)
-$static fn_((m_M3u32_mod(m_M3u32 lhs, m_M3u32 rhs))(m_M3u32));
+$static fn_((m_M3u32_rem(m_M3u32 lhs, m_M3u32 rhs))(m_M3u32));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -162,7 +162,7 @@ $static fn_((m_M4u32_mul(m_M4u32 lhs, m_M4u32 rhs))(m_M4u32));
 $attr($inline_always)
 $static fn_((m_M4u32_div(m_M4u32 lhs, m_M4u32 rhs))(m_M4u32));
 $attr($inline_always)
-$static fn_((m_M4u32_mod(m_M4u32 lhs, m_M4u32 rhs))(m_M4u32));
+$static fn_((m_M4u32_rem(m_M4u32 lhs, m_M4u32 rhs))(m_M4u32));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -214,7 +214,7 @@ $static fn_((m_M2u64_mul(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
 $attr($inline_always)
 $static fn_((m_M2u64_div(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
 $attr($inline_always)
-$static fn_((m_M2u64_mod(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
+$static fn_((m_M2u64_rem(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -268,7 +268,7 @@ $static fn_((m_M3u64_mul(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
 $attr($inline_always)
 $static fn_((m_M3u64_div(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
 $attr($inline_always)
-$static fn_((m_M3u64_mod(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
+$static fn_((m_M3u64_rem(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -322,7 +322,7 @@ $static fn_((m_M4u64_mul(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
 $attr($inline_always)
 $static fn_((m_M4u64_div(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
 $attr($inline_always)
-$static fn_((m_M4u64_mod(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
+$static fn_((m_M4u64_rem(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -374,7 +374,7 @@ $static fn_((m_M2usize_mul(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
 $attr($inline_always)
 $static fn_((m_M2usize_div(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
 $attr($inline_always)
-$static fn_((m_M2usize_mod(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
+$static fn_((m_M2usize_rem(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -428,7 +428,7 @@ $static fn_((m_M3usize_mul(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
 $attr($inline_always)
 $static fn_((m_M3usize_div(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
 $attr($inline_always)
-$static fn_((m_M3usize_mod(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
+$static fn_((m_M3usize_rem(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -482,7 +482,7 @@ $static fn_((m_M4usize_mul(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
 $attr($inline_always)
 $static fn_((m_M4usize_div(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
 $attr($inline_always)
-$static fn_((m_M4usize_mod(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
+$static fn_((m_M4usize_rem(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -536,7 +536,7 @@ $static fn_((m_M2i32_mul(m_M2i32 lhs, m_M2i32 rhs))(m_M2i32));
 $attr($inline_always)
 $static fn_((m_M2i32_div(m_M2i32 lhs, m_M2i32 rhs))(m_M2i32));
 $attr($inline_always)
-$static fn_((m_M2i32_mod(m_M2i32 lhs, m_M2i32 rhs))(m_M2i32));
+$static fn_((m_M2i32_rem(m_M2i32 lhs, m_M2i32 rhs))(m_M2i32));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -594,7 +594,7 @@ $static fn_((m_M3i32_mul(m_M3i32 lhs, m_M3i32 rhs))(m_M3i32));
 $attr($inline_always)
 $static fn_((m_M3i32_div(m_M3i32 lhs, m_M3i32 rhs))(m_M3i32));
 $attr($inline_always)
-$static fn_((m_M3i32_mod(m_M3i32 lhs, m_M3i32 rhs))(m_M3i32));
+$static fn_((m_M3i32_rem(m_M3i32 lhs, m_M3i32 rhs))(m_M3i32));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -652,7 +652,7 @@ $static fn_((m_M4i32_mul(m_M4i32 lhs, m_M4i32 rhs))(m_M4i32));
 $attr($inline_always)
 $static fn_((m_M4i32_div(m_M4i32 lhs, m_M4i32 rhs))(m_M4i32));
 $attr($inline_always)
-$static fn_((m_M4i32_mod(m_M4i32 lhs, m_M4i32 rhs))(m_M4i32));
+$static fn_((m_M4i32_rem(m_M4i32 lhs, m_M4i32 rhs))(m_M4i32));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -708,7 +708,7 @@ $static fn_((m_M2i64_mul(m_M2i64 lhs, m_M2i64 rhs))(m_M2i64));
 $attr($inline_always)
 $static fn_((m_M2i64_div(m_M2i64 lhs, m_M2i64 rhs))(m_M2i64));
 $attr($inline_always)
-$static fn_((m_M2i64_mod(m_M2i64 lhs, m_M2i64 rhs))(m_M2i64));
+$static fn_((m_M2i64_rem(m_M2i64 lhs, m_M2i64 rhs))(m_M2i64));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -766,7 +766,7 @@ $static fn_((m_M3i64_mul(m_M3i64 lhs, m_M3i64 rhs))(m_M3i64));
 $attr($inline_always)
 $static fn_((m_M3i64_div(m_M3i64 lhs, m_M3i64 rhs))(m_M3i64));
 $attr($inline_always)
-$static fn_((m_M3i64_mod(m_M3i64 lhs, m_M3i64 rhs))(m_M3i64));
+$static fn_((m_M3i64_rem(m_M3i64 lhs, m_M3i64 rhs))(m_M3i64));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -824,7 +824,7 @@ $static fn_((m_M4i64_mul(m_M4i64 lhs, m_M4i64 rhs))(m_M4i64));
 $attr($inline_always)
 $static fn_((m_M4i64_div(m_M4i64 lhs, m_M4i64 rhs))(m_M4i64));
 $attr($inline_always)
-$static fn_((m_M4i64_mod(m_M4i64 lhs, m_M4i64 rhs))(m_M4i64));
+$static fn_((m_M4i64_rem(m_M4i64 lhs, m_M4i64 rhs))(m_M4i64));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -880,7 +880,7 @@ $static fn_((m_M2isize_mul(m_M2isize lhs, m_M2isize rhs))(m_M2isize));
 $attr($inline_always)
 $static fn_((m_M2isize_div(m_M2isize lhs, m_M2isize rhs))(m_M2isize));
 $attr($inline_always)
-$static fn_((m_M2isize_mod(m_M2isize lhs, m_M2isize rhs))(m_M2isize));
+$static fn_((m_M2isize_rem(m_M2isize lhs, m_M2isize rhs))(m_M2isize));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -938,7 +938,7 @@ $static fn_((m_M3isize_mul(m_M3isize lhs, m_M3isize rhs))(m_M3isize));
 $attr($inline_always)
 $static fn_((m_M3isize_div(m_M3isize lhs, m_M3isize rhs))(m_M3isize));
 $attr($inline_always)
-$static fn_((m_M3isize_mod(m_M3isize lhs, m_M3isize rhs))(m_M3isize));
+$static fn_((m_M3isize_rem(m_M3isize lhs, m_M3isize rhs))(m_M3isize));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -996,7 +996,7 @@ $static fn_((m_M4isize_mul(m_M4isize lhs, m_M4isize rhs))(m_M4isize));
 $attr($inline_always)
 $static fn_((m_M4isize_div(m_M4isize lhs, m_M4isize rhs))(m_M4isize));
 $attr($inline_always)
-$static fn_((m_M4isize_mod(m_M4isize lhs, m_M4isize rhs))(m_M4isize));
+$static fn_((m_M4isize_rem(m_M4isize lhs, m_M4isize rhs))(m_M4isize));
 
 /* Scalar Operations */
 $attr($inline_always)
@@ -1574,10 +1574,10 @@ fn_((m_M2u32_div(m_M2u32 lhs, m_M2u32 rhs))(m_M2u32)) {
     );
 };
 
-fn_((m_M2u32_mod(m_M2u32 lhs, m_M2u32 rhs))(m_M2u32)) {
+fn_((m_M2u32_rem(m_M2u32 lhs, m_M2u32 rhs))(m_M2u32)) {
     return m_M2u32_ofCols(
-        m_V2u32_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V2u32_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
+        m_V2u32_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V2u32_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
     );
 };
 
@@ -1715,11 +1715,11 @@ fn_((m_M3u32_div(m_M3u32 lhs, m_M3u32 rhs))(m_M3u32)) {
     );
 };
 
-fn_((m_M3u32_mod(m_M3u32 lhs, m_M3u32 rhs))(m_M3u32)) {
+fn_((m_M3u32_rem(m_M3u32 lhs, m_M3u32 rhs))(m_M3u32)) {
     return m_M3u32_ofCols(
-        m_V3u32_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V3u32_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V3u32_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
+        m_V3u32_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V3u32_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V3u32_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
     );
 };
 
@@ -1871,12 +1871,12 @@ fn_((m_M4u32_div(m_M4u32 lhs, m_M4u32 rhs))(m_M4u32)) {
     );
 };
 
-fn_((m_M4u32_mod(m_M4u32 lhs, m_M4u32 rhs))(m_M4u32)) {
+fn_((m_M4u32_rem(m_M4u32 lhs, m_M4u32 rhs))(m_M4u32)) {
     return m_M4u32_ofCols(
-        m_V4u32_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V4u32_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V4u32_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
-        m_V4u32_mod(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
+        m_V4u32_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V4u32_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V4u32_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
+        m_V4u32_rem(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
     );
 };
 
@@ -2008,10 +2008,10 @@ fn_((m_M2u64_div(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64)) {
     );
 };
 
-fn_((m_M2u64_mod(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64)) {
+fn_((m_M2u64_rem(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64)) {
     return m_M2u64_ofCols(
-        m_V2u64_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V2u64_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
+        m_V2u64_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V2u64_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
     );
 };
 
@@ -2149,11 +2149,11 @@ fn_((m_M3u64_div(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64)) {
     );
 };
 
-fn_((m_M3u64_mod(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64)) {
+fn_((m_M3u64_rem(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64)) {
     return m_M3u64_ofCols(
-        m_V3u64_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V3u64_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V3u64_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
+        m_V3u64_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V3u64_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V3u64_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
     );
 };
 
@@ -2305,12 +2305,12 @@ fn_((m_M4u64_div(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64)) {
     );
 };
 
-fn_((m_M4u64_mod(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64)) {
+fn_((m_M4u64_rem(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64)) {
     return m_M4u64_ofCols(
-        m_V4u64_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V4u64_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V4u64_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
-        m_V4u64_mod(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
+        m_V4u64_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V4u64_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V4u64_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
+        m_V4u64_rem(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
     );
 };
 
@@ -2442,10 +2442,10 @@ fn_((m_M2usize_div(m_M2usize lhs, m_M2usize rhs))(m_M2usize)) {
     );
 };
 
-fn_((m_M2usize_mod(m_M2usize lhs, m_M2usize rhs))(m_M2usize)) {
+fn_((m_M2usize_rem(m_M2usize lhs, m_M2usize rhs))(m_M2usize)) {
     return m_M2usize_ofCols(
-        m_V2usize_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V2usize_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
+        m_V2usize_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V2usize_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
     );
 };
 
@@ -2583,11 +2583,11 @@ fn_((m_M3usize_div(m_M3usize lhs, m_M3usize rhs))(m_M3usize)) {
     );
 };
 
-fn_((m_M3usize_mod(m_M3usize lhs, m_M3usize rhs))(m_M3usize)) {
+fn_((m_M3usize_rem(m_M3usize lhs, m_M3usize rhs))(m_M3usize)) {
     return m_M3usize_ofCols(
-        m_V3usize_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V3usize_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V3usize_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
+        m_V3usize_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V3usize_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V3usize_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
     );
 };
 
@@ -2739,12 +2739,12 @@ fn_((m_M4usize_div(m_M4usize lhs, m_M4usize rhs))(m_M4usize)) {
     );
 };
 
-fn_((m_M4usize_mod(m_M4usize lhs, m_M4usize rhs))(m_M4usize)) {
+fn_((m_M4usize_rem(m_M4usize lhs, m_M4usize rhs))(m_M4usize)) {
     return m_M4usize_ofCols(
-        m_V4usize_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V4usize_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V4usize_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
-        m_V4usize_mod(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
+        m_V4usize_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V4usize_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V4usize_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
+        m_V4usize_rem(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
     );
 };
 
@@ -2883,10 +2883,10 @@ fn_((m_M2i32_div(m_M2i32 lhs, m_M2i32 rhs))(m_M2i32)) {
     );
 };
 
-fn_((m_M2i32_mod(m_M2i32 lhs, m_M2i32 rhs))(m_M2i32)) {
+fn_((m_M2i32_rem(m_M2i32 lhs, m_M2i32 rhs))(m_M2i32)) {
     return m_M2i32_ofCols(
-        m_V2i32_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V2i32_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
+        m_V2i32_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V2i32_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
     );
 };
 
@@ -3036,11 +3036,11 @@ fn_((m_M3i32_div(m_M3i32 lhs, m_M3i32 rhs))(m_M3i32)) {
     );
 };
 
-fn_((m_M3i32_mod(m_M3i32 lhs, m_M3i32 rhs))(m_M3i32)) {
+fn_((m_M3i32_rem(m_M3i32 lhs, m_M3i32 rhs))(m_M3i32)) {
     return m_M3i32_ofCols(
-        m_V3i32_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V3i32_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V3i32_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
+        m_V3i32_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V3i32_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V3i32_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
     );
 };
 
@@ -3207,12 +3207,12 @@ fn_((m_M4i32_div(m_M4i32 lhs, m_M4i32 rhs))(m_M4i32)) {
     );
 };
 
-fn_((m_M4i32_mod(m_M4i32 lhs, m_M4i32 rhs))(m_M4i32)) {
+fn_((m_M4i32_rem(m_M4i32 lhs, m_M4i32 rhs))(m_M4i32)) {
     return m_M4i32_ofCols(
-        m_V4i32_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V4i32_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V4i32_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
-        m_V4i32_mod(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
+        m_V4i32_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V4i32_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V4i32_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
+        m_V4i32_rem(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
     );
 };
 
@@ -3370,10 +3370,10 @@ fn_((m_M2i64_div(m_M2i64 lhs, m_M2i64 rhs))(m_M2i64)) {
     );
 };
 
-fn_((m_M2i64_mod(m_M2i64 lhs, m_M2i64 rhs))(m_M2i64)) {
+fn_((m_M2i64_rem(m_M2i64 lhs, m_M2i64 rhs))(m_M2i64)) {
     return m_M2i64_ofCols(
-        m_V2i64_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V2i64_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
+        m_V2i64_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V2i64_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
     );
 };
 
@@ -3523,11 +3523,11 @@ fn_((m_M3i64_div(m_M3i64 lhs, m_M3i64 rhs))(m_M3i64)) {
     );
 };
 
-fn_((m_M3i64_mod(m_M3i64 lhs, m_M3i64 rhs))(m_M3i64)) {
+fn_((m_M3i64_rem(m_M3i64 lhs, m_M3i64 rhs))(m_M3i64)) {
     return m_M3i64_ofCols(
-        m_V3i64_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V3i64_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V3i64_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
+        m_V3i64_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V3i64_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V3i64_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
     );
 };
 
@@ -3694,12 +3694,12 @@ fn_((m_M4i64_div(m_M4i64 lhs, m_M4i64 rhs))(m_M4i64)) {
     );
 };
 
-fn_((m_M4i64_mod(m_M4i64 lhs, m_M4i64 rhs))(m_M4i64)) {
+fn_((m_M4i64_rem(m_M4i64 lhs, m_M4i64 rhs))(m_M4i64)) {
     return m_M4i64_ofCols(
-        m_V4i64_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V4i64_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V4i64_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
-        m_V4i64_mod(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
+        m_V4i64_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V4i64_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V4i64_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
+        m_V4i64_rem(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
     );
 };
 
@@ -3857,10 +3857,10 @@ fn_((m_M2isize_div(m_M2isize lhs, m_M2isize rhs))(m_M2isize)) {
     );
 };
 
-fn_((m_M2isize_mod(m_M2isize lhs, m_M2isize rhs))(m_M2isize)) {
+fn_((m_M2isize_rem(m_M2isize lhs, m_M2isize rhs))(m_M2isize)) {
     return m_M2isize_ofCols(
-        m_V2isize_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V2isize_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
+        m_V2isize_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V2isize_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1]))
     );
 };
 
@@ -4010,11 +4010,11 @@ fn_((m_M3isize_div(m_M3isize lhs, m_M3isize rhs))(m_M3isize)) {
     );
 };
 
-fn_((m_M3isize_mod(m_M3isize lhs, m_M3isize rhs))(m_M3isize)) {
+fn_((m_M3isize_rem(m_M3isize lhs, m_M3isize rhs))(m_M3isize)) {
     return m_M3isize_ofCols(
-        m_V3isize_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V3isize_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V3isize_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
+        m_V3isize_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V3isize_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V3isize_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2]))
     );
 };
 
@@ -4181,12 +4181,12 @@ fn_((m_M4isize_div(m_M4isize lhs, m_M4isize rhs))(m_M4isize)) {
     );
 };
 
-fn_((m_M4isize_mod(m_M4isize lhs, m_M4isize rhs))(m_M4isize)) {
+fn_((m_M4isize_rem(m_M4isize lhs, m_M4isize rhs))(m_M4isize)) {
     return m_M4isize_ofCols(
-        m_V4isize_mod(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
-        m_V4isize_mod(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
-        m_V4isize_mod(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
-        m_V4isize_mod(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
+        m_V4isize_rem(*A_at((lhs.cols)[0]), *A_at((rhs.cols)[0])),
+        m_V4isize_rem(*A_at((lhs.cols)[1]), *A_at((rhs.cols)[1])),
+        m_V4isize_rem(*A_at((lhs.cols)[2]), *A_at((rhs.cols)[2])),
+        m_V4isize_rem(*A_at((lhs.cols)[3]), *A_at((rhs.cols)[3]))
     );
 };
 

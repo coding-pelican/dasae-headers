@@ -90,6 +90,15 @@ $static fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void));
 #define atom_V_int_fetchXor(_p_self, _val, _ord...) __op__atom_V_int_fetchXor(_p_self, _val, _ord)
 #define atom_V_int_fetchOr(_p_self, _val, _ord...) __op__atom_V_int_fetchOr(_p_self, _val, _ord)
 
+#define atom_V_pri_addFetch(_p_self, _val, _ord...) __op__atom_V_pri_addFetch(_p_self, _val, _ord)
+#define atom_V_pri_subFetch(_p_self, _val, _ord...) __op__atom_V_pri_subFetch(_p_self, _val, _ord)
+#define atom_V_pri_minFetch(_p_self, _val, _ord...) __op__atom_V_pri_minFetch(_p_self, _val, _ord)
+#define atom_V_pri_maxFetch(_p_self, _val, _ord...) __op__atom_V_pri_maxFetch(_p_self, _val, _ord)
+#define atom_V_int_nandFetch(_p_self, _val, _ord...) __op__atom_V_int_nandFetch(_p_self, _val, _ord)
+#define atom_V_int_andFetch(_p_self, _val, _ord...) __op__atom_V_int_andFetch(_p_self, _val, _ord)
+#define atom_V_int_xorFetch(_p_self, _val, _ord...) __op__atom_V_int_xorFetch(_p_self, _val, _ord)
+#define atom_V_int_orFetch(_p_self, _val, _ord...) __op__atom_V_int_orFetch(_p_self, _val, _ord)
+
 #define atom_V_int_setBit(_p_self, _bit, _ord...) __step__atom_V_int_setBit(_p_self, _bit, _ord)
 #define atom_V_int_resetBit(_p_self, _bit, _ord...) __step__atom_V_int_resetBit(_p_self, _bit, _ord)
 #define atom_V_int_toggleBit(_p_self, _bit, _ord...) __step__atom_V_int_toggleBit(_p_self, _bit, _ord)
@@ -186,6 +195,23 @@ fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void)) {
     atom_int_fetchXor(&(_p_self)->raw, _val, _ord)
 #define __op__atom_V_int_fetchOr(_p_self, _val, _ord...) \
     atom_int_fetchOr(&(_p_self)->raw, _val, _ord)
+
+#define __op__atom_V_pri_addFetch(_p_self, _val, _ord...) \
+    atom_pri_addFetch(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_pri_subFetch(_p_self, _val, _ord...) \
+    atom_pri_subFetch(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_pri_minFetch(_p_self, _val, _ord...) \
+    atom_pri_minFetch(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_pri_maxFetch(_p_self, _val, _ord...) \
+    atom_pri_maxFetch(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_int_nandFetch(_p_self, _val, _ord...) \
+    atom_int_nandFetch(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_int_andFetch(_p_self, _val, _ord...) \
+    atom_int_andFetch(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_int_xorFetch(_p_self, _val, _ord...) \
+    atom_int_xorFetch(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_int_orFetch(_p_self, _val, _ord...) \
+    atom_int_orFetch(&(_p_self)->raw, _val, _ord)
 
 #define __step__atom_V_int_setBit(_p_self, _bit, _ord...) \
     ____atom_V_int_setBit(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)

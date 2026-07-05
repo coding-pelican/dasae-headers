@@ -7,15 +7,15 @@
  * @date    2025-01-08 (date of creation)
  * @updated 2025-12-25 (date of last update)
  * @version v0.1-alpha.3
- * @ingroup dasae-headers(dh)/math
+ * @ingroup dasae-headers(dh)/pri
  * @prefix  m_V
  *
  * @brief   Mathematical common vector operations
- * @details Provides a set of vector mathematical operations and functions
+ * @details Provides a set of vector priematical operations and functions
  */
 #pragma once
-#ifndef math_vec__included
-#define math_vec__included 1
+#ifndef pri_vec__included
+#define pri_vec__included 1
 
 /*========== Includes =======================================================*/
 
@@ -111,7 +111,7 @@ $static m_V2u32 m_V2u32_mul(m_V2u32 lhs, m_V2u32 rhs);
 $attr($inline_always)
 $static m_V2u32 m_V2u32_div(m_V2u32 lhs, m_V2u32 rhs);
 $attr($inline_always)
-$static m_V2u32 m_V2u32_mod(m_V2u32 lhs, m_V2u32 rhs);
+$static m_V2u32 m_V2u32_rem(m_V2u32 lhs, m_V2u32 rhs);
 
 $attr($inline_always)
 $static m_V2u32 m_V2u32_scal(m_V2u32 v, u32 scalar);
@@ -127,7 +127,7 @@ $static m_V2u32 m_V2u32_mulS(m_V2u32 v, u32 scalar);
 $attr($inline_always)
 $static m_V2u32 m_V2u32_divS(m_V2u32 v, u32 scalar);
 $attr($inline_always)
-$static m_V2u32 m_V2u32_modS(m_V2u32 v, u32 scalar);
+$static m_V2u32 m_V2u32_remS(m_V2u32 v, u32 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -202,7 +202,7 @@ $static m_V3u32 m_V3u32_mul(m_V3u32 lhs, m_V3u32 rhs);
 $attr($inline_always)
 $static m_V3u32 m_V3u32_div(m_V3u32 lhs, m_V3u32 rhs);
 $attr($inline_always)
-$static m_V3u32 m_V3u32_mod(m_V3u32 lhs, m_V3u32 rhs);
+$static m_V3u32 m_V3u32_rem(m_V3u32 lhs, m_V3u32 rhs);
 
 $attr($inline_always)
 $static m_V3u32 m_V3u32_scal(m_V3u32 v, u32 scalar);
@@ -218,7 +218,7 @@ $static m_V3u32 m_V3u32_mulS(m_V3u32 v, u32 scalar);
 $attr($inline_always)
 $static m_V3u32 m_V3u32_divS(m_V3u32 v, u32 scalar);
 $attr($inline_always)
-$static m_V3u32 m_V3u32_modS(m_V3u32 v, u32 scalar);
+$static m_V3u32 m_V3u32_remS(m_V3u32 v, u32 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -291,7 +291,7 @@ $static m_V4u32 m_V4u32_mul(m_V4u32 lhs, m_V4u32 rhs);
 $attr($inline_always)
 $static m_V4u32 m_V4u32_div(m_V4u32 lhs, m_V4u32 rhs);
 $attr($inline_always)
-$static m_V4u32 m_V4u32_mod(m_V4u32 lhs, m_V4u32 rhs);
+$static m_V4u32 m_V4u32_rem(m_V4u32 lhs, m_V4u32 rhs);
 
 $attr($inline_always)
 $static m_V4u32 m_V4u32_scal(m_V4u32 v, u32 scalar);
@@ -307,7 +307,7 @@ $static m_V4u32 m_V4u32_mulS(m_V4u32 v, u32 scalar);
 $attr($inline_always)
 $static m_V4u32 m_V4u32_divS(m_V4u32 v, u32 scalar);
 $attr($inline_always)
-$static m_V4u32 m_V4u32_modS(m_V4u32 v, u32 scalar);
+$static m_V4u32 m_V4u32_remS(m_V4u32 v, u32 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -377,7 +377,7 @@ $static m_V2u64 m_V2u64_mul(m_V2u64 lhs, m_V2u64 rhs);
 $attr($inline_always)
 $static m_V2u64 m_V2u64_div(m_V2u64 lhs, m_V2u64 rhs);
 $attr($inline_always)
-$static m_V2u64 m_V2u64_mod(m_V2u64 lhs, m_V2u64 rhs);
+$static m_V2u64 m_V2u64_rem(m_V2u64 lhs, m_V2u64 rhs);
 
 $attr($inline_always)
 $static m_V2u64 m_V2u64_scal(m_V2u64 v, u64 scalar);
@@ -393,7 +393,7 @@ $static m_V2u64 m_V2u64_mulS(m_V2u64 v, u64 scalar);
 $attr($inline_always)
 $static m_V2u64 m_V2u64_divS(m_V2u64 v, u64 scalar);
 $attr($inline_always)
-$static m_V2u64 m_V2u64_modS(m_V2u64 v, u64 scalar);
+$static m_V2u64 m_V2u64_remS(m_V2u64 v, u64 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -468,7 +468,7 @@ $static m_V3u64 m_V3u64_mul(m_V3u64 lhs, m_V3u64 rhs);
 $attr($inline_always)
 $static m_V3u64 m_V3u64_div(m_V3u64 lhs, m_V3u64 rhs);
 $attr($inline_always)
-$static m_V3u64 m_V3u64_mod(m_V3u64 lhs, m_V3u64 rhs);
+$static m_V3u64 m_V3u64_rem(m_V3u64 lhs, m_V3u64 rhs);
 
 $attr($inline_always)
 $static m_V3u64 m_V3u64_scal(m_V3u64 v, u64 scalar);
@@ -484,7 +484,7 @@ $static m_V3u64 m_V3u64_mulS(m_V3u64 v, u64 scalar);
 $attr($inline_always)
 $static m_V3u64 m_V3u64_divS(m_V3u64 v, u64 scalar);
 $attr($inline_always)
-$static m_V3u64 m_V3u64_modS(m_V3u64 v, u64 scalar);
+$static m_V3u64 m_V3u64_remS(m_V3u64 v, u64 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -557,7 +557,7 @@ $static m_V4u64 m_V4u64_mul(m_V4u64 lhs, m_V4u64 rhs);
 $attr($inline_always)
 $static m_V4u64 m_V4u64_div(m_V4u64 lhs, m_V4u64 rhs);
 $attr($inline_always)
-$static m_V4u64 m_V4u64_mod(m_V4u64 lhs, m_V4u64 rhs);
+$static m_V4u64 m_V4u64_rem(m_V4u64 lhs, m_V4u64 rhs);
 
 $attr($inline_always)
 $static m_V4u64 m_V4u64_scal(m_V4u64 v, u64 scalar);
@@ -573,7 +573,7 @@ $static m_V4u64 m_V4u64_mulS(m_V4u64 v, u64 scalar);
 $attr($inline_always)
 $static m_V4u64 m_V4u64_divS(m_V4u64 v, u64 scalar);
 $attr($inline_always)
-$static m_V4u64 m_V4u64_modS(m_V4u64 v, u64 scalar);
+$static m_V4u64 m_V4u64_remS(m_V4u64 v, u64 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -643,7 +643,7 @@ $static m_V2usize m_V2usize_mul(m_V2usize lhs, m_V2usize rhs);
 $attr($inline_always)
 $static m_V2usize m_V2usize_div(m_V2usize lhs, m_V2usize rhs);
 $attr($inline_always)
-$static m_V2usize m_V2usize_mod(m_V2usize lhs, m_V2usize rhs);
+$static m_V2usize m_V2usize_rem(m_V2usize lhs, m_V2usize rhs);
 
 $attr($inline_always)
 $static m_V2usize m_V2usize_scal(m_V2usize v, usize scalar);
@@ -659,7 +659,7 @@ $static m_V2usize m_V2usize_mulS(m_V2usize v, usize scalar);
 $attr($inline_always)
 $static m_V2usize m_V2usize_divS(m_V2usize v, usize scalar);
 $attr($inline_always)
-$static m_V2usize m_V2usize_modS(m_V2usize v, usize scalar);
+$static m_V2usize m_V2usize_remS(m_V2usize v, usize scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -734,7 +734,7 @@ $static m_V3usize m_V3usize_mul(m_V3usize lhs, m_V3usize rhs);
 $attr($inline_always)
 $static m_V3usize m_V3usize_div(m_V3usize lhs, m_V3usize rhs);
 $attr($inline_always)
-$static m_V3usize m_V3usize_mod(m_V3usize lhs, m_V3usize rhs);
+$static m_V3usize m_V3usize_rem(m_V3usize lhs, m_V3usize rhs);
 
 $attr($inline_always)
 $static m_V3usize m_V3usize_scal(m_V3usize v, usize scalar);
@@ -750,7 +750,7 @@ $static m_V3usize m_V3usize_mulS(m_V3usize v, usize scalar);
 $attr($inline_always)
 $static m_V3usize m_V3usize_divS(m_V3usize v, usize scalar);
 $attr($inline_always)
-$static m_V3usize m_V3usize_modS(m_V3usize v, usize scalar);
+$static m_V3usize m_V3usize_remS(m_V3usize v, usize scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -823,7 +823,7 @@ $static m_V4usize m_V4usize_mul(m_V4usize lhs, m_V4usize rhs);
 $attr($inline_always)
 $static m_V4usize m_V4usize_div(m_V4usize lhs, m_V4usize rhs);
 $attr($inline_always)
-$static m_V4usize m_V4usize_mod(m_V4usize lhs, m_V4usize rhs);
+$static m_V4usize m_V4usize_rem(m_V4usize lhs, m_V4usize rhs);
 
 $attr($inline_always)
 $static m_V4usize m_V4usize_scal(m_V4usize v, usize scalar);
@@ -839,7 +839,7 @@ $static m_V4usize m_V4usize_mulS(m_V4usize v, usize scalar);
 $attr($inline_always)
 $static m_V4usize m_V4usize_divS(m_V4usize v, usize scalar);
 $attr($inline_always)
-$static m_V4usize m_V4usize_modS(m_V4usize v, usize scalar);
+$static m_V4usize m_V4usize_remS(m_V4usize v, usize scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -913,7 +913,7 @@ $static m_V2i32 m_V2i32_mul(m_V2i32 lhs, m_V2i32 rhs);
 $attr($inline_always)
 $static m_V2i32 m_V2i32_div(m_V2i32 lhs, m_V2i32 rhs);
 $attr($inline_always)
-$static m_V2i32 m_V2i32_mod(m_V2i32 lhs, m_V2i32 rhs);
+$static m_V2i32 m_V2i32_rem(m_V2i32 lhs, m_V2i32 rhs);
 
 $attr($inline_always)
 $static m_V2i32 m_V2i32_scal(m_V2i32 v, i32 scalar);
@@ -929,7 +929,7 @@ $static m_V2i32 m_V2i32_mulS(m_V2i32 v, i32 scalar);
 $attr($inline_always)
 $static m_V2i32 m_V2i32_divS(m_V2i32 v, i32 scalar);
 $attr($inline_always)
-$static m_V2i32 m_V2i32_modS(m_V2i32 v, i32 scalar);
+$static m_V2i32 m_V2i32_remS(m_V2i32 v, i32 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -1033,7 +1033,7 @@ $static m_V3i32 m_V3i32_mul(m_V3i32 lhs, m_V3i32 rhs);
 $attr($inline_always)
 $static m_V3i32 m_V3i32_div(m_V3i32 lhs, m_V3i32 rhs);
 $attr($inline_always)
-$static m_V3i32 m_V3i32_mod(m_V3i32 lhs, m_V3i32 rhs);
+$static m_V3i32 m_V3i32_rem(m_V3i32 lhs, m_V3i32 rhs);
 
 $attr($inline_always)
 $static m_V3i32 m_V3i32_scal(m_V3i32 v, i32 scalar);
@@ -1049,7 +1049,7 @@ $static m_V3i32 m_V3i32_mulS(m_V3i32 v, i32 scalar);
 $attr($inline_always)
 $static m_V3i32 m_V3i32_divS(m_V3i32 v, i32 scalar);
 $attr($inline_always)
-$static m_V3i32 m_V3i32_modS(m_V3i32 v, i32 scalar);
+$static m_V3i32 m_V3i32_remS(m_V3i32 v, i32 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -1145,7 +1145,7 @@ $static m_V4i32 m_V4i32_mul(m_V4i32 lhs, m_V4i32 rhs);
 $attr($inline_always)
 $static m_V4i32 m_V4i32_div(m_V4i32 lhs, m_V4i32 rhs);
 $attr($inline_always)
-$static m_V4i32 m_V4i32_mod(m_V4i32 lhs, m_V4i32 rhs);
+$static m_V4i32 m_V4i32_rem(m_V4i32 lhs, m_V4i32 rhs);
 
 $attr($inline_always)
 $static m_V4i32 m_V4i32_scal(m_V4i32 v, i32 scalar);
@@ -1161,7 +1161,7 @@ $static m_V4i32 m_V4i32_mulS(m_V4i32 v, i32 scalar);
 $attr($inline_always)
 $static m_V4i32 m_V4i32_divS(m_V4i32 v, i32 scalar);
 $attr($inline_always)
-$static m_V4i32 m_V4i32_modS(m_V4i32 v, i32 scalar);
+$static m_V4i32 m_V4i32_remS(m_V4i32 v, i32 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -1235,7 +1235,7 @@ $static m_V2i64 m_V2i64_mul(m_V2i64 lhs, m_V2i64 rhs);
 $attr($inline_always)
 $static m_V2i64 m_V2i64_div(m_V2i64 lhs, m_V2i64 rhs);
 $attr($inline_always)
-$static m_V2i64 m_V2i64_mod(m_V2i64 lhs, m_V2i64 rhs);
+$static m_V2i64 m_V2i64_rem(m_V2i64 lhs, m_V2i64 rhs);
 
 $attr($inline_always)
 $static m_V2i64 m_V2i64_scal(m_V2i64 v, i64 scalar);
@@ -1251,7 +1251,7 @@ $static m_V2i64 m_V2i64_mulS(m_V2i64 v, i64 scalar);
 $attr($inline_always)
 $static m_V2i64 m_V2i64_divS(m_V2i64 v, i64 scalar);
 $attr($inline_always)
-$static m_V2i64 m_V2i64_modS(m_V2i64 v, i64 scalar);
+$static m_V2i64 m_V2i64_remS(m_V2i64 v, i64 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -1355,7 +1355,7 @@ $static m_V3i64 m_V3i64_mul(m_V3i64 lhs, m_V3i64 rhs);
 $attr($inline_always)
 $static m_V3i64 m_V3i64_div(m_V3i64 lhs, m_V3i64 rhs);
 $attr($inline_always)
-$static m_V3i64 m_V3i64_mod(m_V3i64 lhs, m_V3i64 rhs);
+$static m_V3i64 m_V3i64_rem(m_V3i64 lhs, m_V3i64 rhs);
 
 $attr($inline_always)
 $static m_V3i64 m_V3i64_scal(m_V3i64 v, i64 scalar);
@@ -1371,7 +1371,7 @@ $static m_V3i64 m_V3i64_mulS(m_V3i64 v, i64 scalar);
 $attr($inline_always)
 $static m_V3i64 m_V3i64_divS(m_V3i64 v, i64 scalar);
 $attr($inline_always)
-$static m_V3i64 m_V3i64_modS(m_V3i64 v, i64 scalar);
+$static m_V3i64 m_V3i64_remS(m_V3i64 v, i64 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -1467,7 +1467,7 @@ $static m_V4i64 m_V4i64_mul(m_V4i64 lhs, m_V4i64 rhs);
 $attr($inline_always)
 $static m_V4i64 m_V4i64_div(m_V4i64 lhs, m_V4i64 rhs);
 $attr($inline_always)
-$static m_V4i64 m_V4i64_mod(m_V4i64 lhs, m_V4i64 rhs);
+$static m_V4i64 m_V4i64_rem(m_V4i64 lhs, m_V4i64 rhs);
 
 $attr($inline_always)
 $static m_V4i64 m_V4i64_scal(m_V4i64 v, i64 scalar);
@@ -1483,7 +1483,7 @@ $static m_V4i64 m_V4i64_mulS(m_V4i64 v, i64 scalar);
 $attr($inline_always)
 $static m_V4i64 m_V4i64_divS(m_V4i64 v, i64 scalar);
 $attr($inline_always)
-$static m_V4i64 m_V4i64_modS(m_V4i64 v, i64 scalar);
+$static m_V4i64 m_V4i64_remS(m_V4i64 v, i64 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -1557,7 +1557,7 @@ $static m_V2isize m_V2isize_mul(m_V2isize lhs, m_V2isize rhs);
 $attr($inline_always)
 $static m_V2isize m_V2isize_div(m_V2isize lhs, m_V2isize rhs);
 $attr($inline_always)
-$static m_V2isize m_V2isize_mod(m_V2isize lhs, m_V2isize rhs);
+$static m_V2isize m_V2isize_rem(m_V2isize lhs, m_V2isize rhs);
 
 $attr($inline_always)
 $static m_V2isize m_V2isize_scal(m_V2isize v, isize scalar);
@@ -1573,7 +1573,7 @@ $static m_V2isize m_V2isize_mulS(m_V2isize v, isize scalar);
 $attr($inline_always)
 $static m_V2isize m_V2isize_divS(m_V2isize v, isize scalar);
 $attr($inline_always)
-$static m_V2isize m_V2isize_modS(m_V2isize v, isize scalar);
+$static m_V2isize m_V2isize_remS(m_V2isize v, isize scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -1677,7 +1677,7 @@ $static m_V3isize m_V3isize_mul(m_V3isize lhs, m_V3isize rhs);
 $attr($inline_always)
 $static m_V3isize m_V3isize_div(m_V3isize lhs, m_V3isize rhs);
 $attr($inline_always)
-$static m_V3isize m_V3isize_mod(m_V3isize lhs, m_V3isize rhs);
+$static m_V3isize m_V3isize_rem(m_V3isize lhs, m_V3isize rhs);
 
 $attr($inline_always)
 $static m_V3isize m_V3isize_scal(m_V3isize v, isize scalar);
@@ -1693,7 +1693,7 @@ $static m_V3isize m_V3isize_mulS(m_V3isize v, isize scalar);
 $attr($inline_always)
 $static m_V3isize m_V3isize_divS(m_V3isize v, isize scalar);
 $attr($inline_always)
-$static m_V3isize m_V3isize_modS(m_V3isize v, isize scalar);
+$static m_V3isize m_V3isize_remS(m_V3isize v, isize scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -1789,7 +1789,7 @@ $static m_V4isize m_V4isize_mul(m_V4isize lhs, m_V4isize rhs);
 $attr($inline_always)
 $static m_V4isize m_V4isize_div(m_V4isize lhs, m_V4isize rhs);
 $attr($inline_always)
-$static m_V4isize m_V4isize_mod(m_V4isize lhs, m_V4isize rhs);
+$static m_V4isize m_V4isize_rem(m_V4isize lhs, m_V4isize rhs);
 
 $attr($inline_always)
 $static m_V4isize m_V4isize_scal(m_V4isize v, isize scalar);
@@ -1805,7 +1805,7 @@ $static m_V4isize m_V4isize_mulS(m_V4isize v, isize scalar);
 $attr($inline_always)
 $static m_V4isize m_V4isize_divS(m_V4isize v, isize scalar);
 $attr($inline_always)
-$static m_V4isize m_V4isize_modS(m_V4isize v, isize scalar);
+$static m_V4isize m_V4isize_remS(m_V4isize v, isize scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -1893,7 +1893,7 @@ $static m_V2f32 m_V2f32_mul(m_V2f32 lhs, m_V2f32 rhs);
 $attr($inline_always)
 $static m_V2f32 m_V2f32_div(m_V2f32 lhs, m_V2f32 rhs);
 $attr($inline_always)
-$static m_V2f32 m_V2f32_mod(m_V2f32 lhs, m_V2f32 rhs);
+$static m_V2f32 m_V2f32_rem(m_V2f32 lhs, m_V2f32 rhs);
 
 $attr($inline_always)
 $static m_V2f32 m_V2f32_scal(m_V2f32 v, f32 scalar);
@@ -1909,7 +1909,7 @@ $static m_V2f32 m_V2f32_mulS(m_V2f32 v, f32 scalar);
 $attr($inline_always)
 $static m_V2f32 m_V2f32_divS(m_V2f32 v, f32 scalar);
 $attr($inline_always)
-$static m_V2f32 m_V2f32_modS(m_V2f32 v, f32 scalar);
+$static m_V2f32 m_V2f32_remS(m_V2f32 v, f32 scalar);
 
 $attr($inline_always)
 $static m_V2f32* m_V2f32_addAsg(m_V2f32* lhs, m_V2f32 rhs);
@@ -1920,7 +1920,7 @@ $static m_V2f32* m_V2f32_mulAsg(m_V2f32* lhs, m_V2f32 rhs);
 $attr($inline_always)
 $static m_V2f32* m_V2f32_divAsg(m_V2f32* lhs, m_V2f32 rhs);
 $attr($inline_always)
-$static m_V2f32* m_V2f32_modAsg(m_V2f32* lhs, m_V2f32 rhs);
+$static m_V2f32* m_V2f32_remAsg(m_V2f32* lhs, m_V2f32 rhs);
 
 $attr($inline_always)
 $static m_V2f32* m_V2f32_scalAsg(m_V2f32* v, f32 scalar);
@@ -1936,7 +1936,7 @@ $static m_V2f32* m_V2f32_mulSAsg(m_V2f32* v, f32 scalar);
 $attr($inline_always)
 $static m_V2f32* m_V2f32_divSAsg(m_V2f32* v, f32 scalar);
 $attr($inline_always)
-$static m_V2f32* m_V2f32_modSAsg(m_V2f32* v, f32 scalar);
+$static m_V2f32* m_V2f32_remSAsg(m_V2f32* v, f32 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -2070,7 +2070,7 @@ $static m_V3f32 m_V3f32_mul(m_V3f32 lhs, m_V3f32 rhs);
 $attr($inline_always)
 $static m_V3f32 m_V3f32_div(m_V3f32 lhs, m_V3f32 rhs);
 $attr($inline_always)
-$static m_V3f32 m_V3f32_mod(m_V3f32 lhs, m_V3f32 rhs);
+$static m_V3f32 m_V3f32_rem(m_V3f32 lhs, m_V3f32 rhs);
 
 $attr($inline_always)
 $static m_V3f32 m_V3f32_scal(m_V3f32 v, f32 scalar);
@@ -2086,7 +2086,7 @@ $static m_V3f32 m_V3f32_mulS(m_V3f32 v, f32 scalar);
 $attr($inline_always)
 $static m_V3f32 m_V3f32_divS(m_V3f32 v, f32 scalar);
 $attr($inline_always)
-$static m_V3f32 m_V3f32_modS(m_V3f32 v, f32 scalar);
+$static m_V3f32 m_V3f32_remS(m_V3f32 v, f32 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -2212,7 +2212,7 @@ $static m_V4f32 m_V4f32_mul(m_V4f32 lhs, m_V4f32 rhs);
 $attr($inline_always)
 $static m_V4f32 m_V4f32_div(m_V4f32 lhs, m_V4f32 rhs);
 $attr($inline_always)
-$static m_V4f32 m_V4f32_mod(m_V4f32 lhs, m_V4f32 rhs);
+$static m_V4f32 m_V4f32_rem(m_V4f32 lhs, m_V4f32 rhs);
 
 $attr($inline_always)
 $static m_V4f32 m_V4f32_scal(m_V4f32 v, f32 scalar);
@@ -2228,7 +2228,7 @@ $static m_V4f32 m_V4f32_mulS(m_V4f32 v, f32 scalar);
 $attr($inline_always)
 $static m_V4f32 m_V4f32_divS(m_V4f32 v, f32 scalar);
 $attr($inline_always)
-$static m_V4f32 m_V4f32_modS(m_V4f32 v, f32 scalar);
+$static m_V4f32 m_V4f32_remS(m_V4f32 v, f32 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -2332,7 +2332,7 @@ $static m_V2f64 m_V2f64_mul(m_V2f64 lhs, m_V2f64 rhs);
 $attr($inline_always)
 $static m_V2f64 m_V2f64_div(m_V2f64 lhs, m_V2f64 rhs);
 $attr($inline_always)
-$static m_V2f64 m_V2f64_mod(m_V2f64 lhs, m_V2f64 rhs);
+$static m_V2f64 m_V2f64_rem(m_V2f64 lhs, m_V2f64 rhs);
 
 $attr($inline_always)
 $static m_V2f64 m_V2f64_scal(m_V2f64 v, f64 scalar);
@@ -2348,7 +2348,7 @@ $static m_V2f64 m_V2f64_mulS(m_V2f64 lhs, f64 rhs);
 $attr($inline_always)
 $static m_V2f64 m_V2f64_divS(m_V2f64 lhs, f64 rhs);
 $attr($inline_always)
-$static m_V2f64 m_V2f64_modS(m_V2f64 lhs, f64 rhs);
+$static m_V2f64 m_V2f64_remS(m_V2f64 lhs, f64 rhs);
 
 $attr($inline_always)
 $static m_V2f64* m_V2f64_addAsg(m_V2f64* lhs, m_V2f64 rhs);
@@ -2359,7 +2359,7 @@ $static m_V2f64* m_V2f64_mulAsg(m_V2f64* lhs, m_V2f64 rhs);
 $attr($inline_always)
 $static m_V2f64* m_V2f64_divAsg(m_V2f64* lhs, m_V2f64 rhs);
 $attr($inline_always)
-$static m_V2f64* m_V2f64_modAsg(m_V2f64* lhs, m_V2f64 rhs);
+$static m_V2f64* m_V2f64_remAsg(m_V2f64* lhs, m_V2f64 rhs);
 
 $attr($inline_always)
 $static m_V2f64* m_V2f64_scalAsg(m_V2f64* v, f64 scalar);
@@ -2375,7 +2375,7 @@ $static m_V2f64* m_V2f64_mulSAsg(m_V2f64* lhs, f64 rhs);
 $attr($inline_always)
 $static m_V2f64* m_V2f64_divSAsg(m_V2f64* lhs, f64 rhs);
 $attr($inline_always)
-$static m_V2f64* m_V2f64_modSAsg(m_V2f64* lhs, f64 rhs);
+$static m_V2f64* m_V2f64_remSAsg(m_V2f64* lhs, f64 rhs);
 
 /* Range Operations */
 $attr($inline_always)
@@ -2507,7 +2507,7 @@ $static m_V3f64 m_V3f64_mul(m_V3f64 lhs, m_V3f64 rhs);
 $attr($inline_always)
 $static m_V3f64 m_V3f64_div(m_V3f64 lhs, m_V3f64 rhs);
 $attr($inline_always)
-$static m_V3f64 m_V3f64_mod(m_V3f64 lhs, m_V3f64 rhs);
+$static m_V3f64 m_V3f64_rem(m_V3f64 lhs, m_V3f64 rhs);
 
 $attr($inline_always)
 $static m_V3f64 m_V3f64_scal(m_V3f64 v, f64 scalar);
@@ -2523,7 +2523,7 @@ $static m_V3f64 m_V3f64_mulS(m_V3f64 v, f64 scalar);
 $attr($inline_always)
 $static m_V3f64 m_V3f64_divS(m_V3f64 v, f64 scalar);
 $attr($inline_always)
-$static m_V3f64 m_V3f64_modS(m_V3f64 v, f64 scalar);
+$static m_V3f64 m_V3f64_remS(m_V3f64 v, f64 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -2649,7 +2649,7 @@ $static m_V4f64 m_V4f64_mul(m_V4f64 lhs, m_V4f64 rhs);
 $attr($inline_always)
 $static m_V4f64 m_V4f64_div(m_V4f64 lhs, m_V4f64 rhs);
 $attr($inline_always)
-$static m_V4f64 m_V4f64_mod(m_V4f64 lhs, m_V4f64 rhs);
+$static m_V4f64 m_V4f64_rem(m_V4f64 lhs, m_V4f64 rhs);
 
 $attr($inline_always)
 $static m_V4f64 m_V4f64_scal(m_V4f64 v, f64 scalar);
@@ -2665,7 +2665,7 @@ $static m_V4f64 m_V4f64_mulS(m_V4f64 v, f64 scalar);
 $attr($inline_always)
 $static m_V4f64 m_V4f64_divS(m_V4f64 v, f64 scalar);
 $attr($inline_always)
-$static m_V4f64 m_V4f64_modS(m_V4f64 v, f64 scalar);
+$static m_V4f64 m_V4f64_remS(m_V4f64 v, f64 scalar);
 
 /* Range Operations */
 $attr($inline_always)
@@ -2767,10 +2767,10 @@ $static m_V2u32 m_V2u32_div(m_V2u32 lhs, m_V2u32 rhs) {
     return m_V2u32_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 $attr($inline_always)
-$static m_V2u32 m_V2u32_mod(m_V2u32 lhs, m_V2u32 rhs) {
+$static m_V2u32 m_V2u32_rem(m_V2u32 lhs, m_V2u32 rhs) {
     return m_V2u32_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y)
     );
 }
 
@@ -2800,23 +2800,23 @@ $static m_V2u32 m_V2u32_divS(m_V2u32 v, u32 scalar) {
     return m_V2u32_div(v, m_V2u32_splat(scalar));
 }
 $attr($inline_always)
-$static m_V2u32 m_V2u32_modS(m_V2u32 v, u32 scalar) {
-    return m_V2u32_mod(v, m_V2u32_splat(scalar));
+$static m_V2u32 m_V2u32_remS(m_V2u32 v, u32 scalar) {
+    return m_V2u32_rem(v, m_V2u32_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V2u32 m_V2u32_min(m_V2u32 lhs, m_V2u32 rhs) {
     return m_V2u32_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
 $static m_V2u32 m_V2u32_max(m_V2u32 lhs, m_V2u32 rhs) {
     return m_V2u32_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
@@ -2826,8 +2826,8 @@ $static m_V2u32 m_V2u32_clamp(m_V2u32 v, m_V2u32 min, m_V2u32 max) {
 $attr($inline_always)
 $static m_V2u32 m_V2u32_wrap(m_V2u32 v, m_V2u32 min, m_V2u32 max) {
     return m_V2u32_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y)
     );
 }
 
@@ -2895,11 +2895,11 @@ $static m_V3u32 m_V3u32_div(m_V3u32 lhs, m_V3u32 rhs) {
     return m_V3u32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 $attr($inline_always)
-$static m_V3u32 m_V3u32_mod(m_V3u32 lhs, m_V3u32 rhs) {
+$static m_V3u32 m_V3u32_rem(m_V3u32 lhs, m_V3u32 rhs) {
     return m_V3u32_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z)
     );
 }
 
@@ -2929,25 +2929,25 @@ $static m_V3u32 m_V3u32_divS(m_V3u32 v, u32 scalar) {
     return m_V3u32_div(v, m_V3u32_splat(scalar));
 }
 $attr($inline_always)
-$static m_V3u32 m_V3u32_modS(m_V3u32 v, u32 scalar) {
-    return m_V3u32_mod(v, m_V3u32_splat(scalar));
+$static m_V3u32 m_V3u32_remS(m_V3u32 v, u32 scalar) {
+    return m_V3u32_rem(v, m_V3u32_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V3u32 m_V3u32_min(m_V3u32 lhs, m_V3u32 rhs) {
     return m_V3u32_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
 $static m_V3u32 m_V3u32_max(m_V3u32 lhs, m_V3u32 rhs) {
     return m_V3u32_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -2957,9 +2957,9 @@ $static m_V3u32 m_V3u32_clamp(m_V3u32 v, m_V3u32 min, m_V3u32 max) {
 $attr($inline_always)
 $static m_V3u32 m_V3u32_wrap(m_V3u32 v, m_V3u32 min, m_V3u32 max) {
     return m_V3u32_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z)
     );
 }
 
@@ -3028,12 +3028,12 @@ $static m_V4u32 m_V4u32_div(m_V4u32 lhs, m_V4u32 rhs) {
     return m_V4u32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 $attr($inline_always)
-$static m_V4u32 m_V4u32_mod(m_V4u32 lhs, m_V4u32 rhs) {
+$static m_V4u32 m_V4u32_rem(m_V4u32 lhs, m_V4u32 rhs) {
     return m_V4u32_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z),
-        math_mod(lhs.w, rhs.w)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z),
+        int_rem(lhs.w, rhs.w)
     );
 }
 
@@ -3063,27 +3063,27 @@ $static m_V4u32 m_V4u32_divS(m_V4u32 v, u32 scalar) {
     return m_V4u32_div(v, m_V4u32_splat(scalar));
 }
 $attr($inline_always)
-$static m_V4u32 m_V4u32_modS(m_V4u32 v, u32 scalar) {
-    return m_V4u32_mod(v, m_V4u32_splat(scalar));
+$static m_V4u32 m_V4u32_remS(m_V4u32 v, u32 scalar) {
+    return m_V4u32_rem(v, m_V4u32_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V4u32 m_V4u32_min(m_V4u32 lhs, m_V4u32 rhs) {
     return m_V4u32_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z),
-        math_min(lhs.w, rhs.w)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z),
+        pri_min(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
 $static m_V4u32 m_V4u32_max(m_V4u32 lhs, m_V4u32 rhs) {
     return m_V4u32_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z),
-        math_max(lhs.w, rhs.w)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z),
+        pri_max(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -3093,10 +3093,10 @@ $static m_V4u32 m_V4u32_clamp(m_V4u32 v, m_V4u32 min, m_V4u32 max) {
 $attr($inline_always)
 $static m_V4u32 m_V4u32_wrap(m_V4u32 v, m_V4u32 min, m_V4u32 max) {
     return m_V4u32_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z),
-        math_wrap(v.w, min.w, max.w)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z),
+        int_wrap(v.w, min.w, max.w)
     );
 }
 
@@ -3166,10 +3166,10 @@ $static m_V2u64 m_V2u64_div(m_V2u64 lhs, m_V2u64 rhs) {
     return m_V2u64_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 $attr($inline_always)
-$static m_V2u64 m_V2u64_mod(m_V2u64 lhs, m_V2u64 rhs) {
+$static m_V2u64 m_V2u64_rem(m_V2u64 lhs, m_V2u64 rhs) {
     return m_V2u64_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y)
     );
 }
 
@@ -3199,23 +3199,23 @@ $static m_V2u64 m_V2u64_divS(m_V2u64 v, u64 scalar) {
     return m_V2u64_div(v, m_V2u64_splat(scalar));
 }
 $attr($inline_always)
-$static m_V2u64 m_V2u64_modS(m_V2u64 v, u64 scalar) {
-    return m_V2u64_mod(v, m_V2u64_splat(scalar));
+$static m_V2u64 m_V2u64_remS(m_V2u64 v, u64 scalar) {
+    return m_V2u64_rem(v, m_V2u64_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V2u64 m_V2u64_min(m_V2u64 lhs, m_V2u64 rhs) {
     return m_V2u64_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
 $static m_V2u64 m_V2u64_max(m_V2u64 lhs, m_V2u64 rhs) {
     return m_V2u64_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
@@ -3225,8 +3225,8 @@ $static m_V2u64 m_V2u64_clamp(m_V2u64 v, m_V2u64 min, m_V2u64 max) {
 $attr($inline_always)
 $static m_V2u64 m_V2u64_wrap(m_V2u64 v, m_V2u64 min, m_V2u64 max) {
     return m_V2u64_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y)
     );
 }
 
@@ -3294,11 +3294,11 @@ $static m_V3u64 m_V3u64_div(m_V3u64 lhs, m_V3u64 rhs) {
     return m_V3u64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 $attr($inline_always)
-$static m_V3u64 m_V3u64_mod(m_V3u64 lhs, m_V3u64 rhs) {
+$static m_V3u64 m_V3u64_rem(m_V3u64 lhs, m_V3u64 rhs) {
     return m_V3u64_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z)
     );
 }
 
@@ -3328,25 +3328,25 @@ $static m_V3u64 m_V3u64_divS(m_V3u64 v, u64 scalar) {
     return m_V3u64_div(v, m_V3u64_splat(scalar));
 }
 $attr($inline_always)
-$static m_V3u64 m_V3u64_modS(m_V3u64 v, u64 scalar) {
-    return m_V3u64_mod(v, m_V3u64_splat(scalar));
+$static m_V3u64 m_V3u64_remS(m_V3u64 v, u64 scalar) {
+    return m_V3u64_rem(v, m_V3u64_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V3u64 m_V3u64_min(m_V3u64 lhs, m_V3u64 rhs) {
     return m_V3u64_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
 $static m_V3u64 m_V3u64_max(m_V3u64 lhs, m_V3u64 rhs) {
     return m_V3u64_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -3356,9 +3356,9 @@ $static m_V3u64 m_V3u64_clamp(m_V3u64 v, m_V3u64 min, m_V3u64 max) {
 $attr($inline_always)
 $static m_V3u64 m_V3u64_wrap(m_V3u64 v, m_V3u64 min, m_V3u64 max) {
     return m_V3u64_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z)
     );
 }
 
@@ -3427,12 +3427,12 @@ $static m_V4u64 m_V4u64_div(m_V4u64 lhs, m_V4u64 rhs) {
     return m_V4u64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 $attr($inline_always)
-$static m_V4u64 m_V4u64_mod(m_V4u64 lhs, m_V4u64 rhs) {
+$static m_V4u64 m_V4u64_rem(m_V4u64 lhs, m_V4u64 rhs) {
     return m_V4u64_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z),
-        math_mod(lhs.w, rhs.w)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z),
+        int_rem(lhs.w, rhs.w)
     );
 }
 
@@ -3462,27 +3462,27 @@ $static m_V4u64 m_V4u64_divS(m_V4u64 v, u64 scalar) {
     return m_V4u64_div(v, m_V4u64_splat(scalar));
 }
 $attr($inline_always)
-$static m_V4u64 m_V4u64_modS(m_V4u64 v, u64 scalar) {
-    return m_V4u64_mod(v, m_V4u64_splat(scalar));
+$static m_V4u64 m_V4u64_remS(m_V4u64 v, u64 scalar) {
+    return m_V4u64_rem(v, m_V4u64_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V4u64 m_V4u64_min(m_V4u64 lhs, m_V4u64 rhs) {
     return m_V4u64_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z),
-        math_min(lhs.w, rhs.w)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z),
+        pri_min(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
 $static m_V4u64 m_V4u64_max(m_V4u64 lhs, m_V4u64 rhs) {
     return m_V4u64_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z),
-        math_max(lhs.w, rhs.w)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z),
+        pri_max(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -3492,10 +3492,10 @@ $static m_V4u64 m_V4u64_clamp(m_V4u64 v, m_V4u64 min, m_V4u64 max) {
 $attr($inline_always)
 $static m_V4u64 m_V4u64_wrap(m_V4u64 v, m_V4u64 min, m_V4u64 max) {
     return m_V4u64_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z),
-        math_wrap(v.w, min.w, max.w)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z),
+        int_wrap(v.w, min.w, max.w)
     );
 }
 
@@ -3565,10 +3565,10 @@ $static m_V2usize m_V2usize_div(m_V2usize lhs, m_V2usize rhs) {
     return m_V2usize_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 $attr($inline_always)
-$static m_V2usize m_V2usize_mod(m_V2usize lhs, m_V2usize rhs) {
+$static m_V2usize m_V2usize_rem(m_V2usize lhs, m_V2usize rhs) {
     return m_V2usize_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y)
     );
 }
 
@@ -3598,23 +3598,23 @@ $static m_V2usize m_V2usize_divS(m_V2usize v, usize scalar) {
     return m_V2usize_div(v, m_V2usize_splat(scalar));
 }
 $attr($inline_always)
-$static m_V2usize m_V2usize_modS(m_V2usize v, usize scalar) {
-    return m_V2usize_mod(v, m_V2usize_splat(scalar));
+$static m_V2usize m_V2usize_remS(m_V2usize v, usize scalar) {
+    return m_V2usize_rem(v, m_V2usize_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V2usize m_V2usize_min(m_V2usize lhs, m_V2usize rhs) {
     return m_V2usize_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
 $static m_V2usize m_V2usize_max(m_V2usize lhs, m_V2usize rhs) {
     return m_V2usize_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
@@ -3624,8 +3624,8 @@ $static m_V2usize m_V2usize_clamp(m_V2usize v, m_V2usize min, m_V2usize max) {
 $attr($inline_always)
 $static m_V2usize m_V2usize_wrap(m_V2usize v, m_V2usize min, m_V2usize max) {
     return m_V2usize_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y)
     );
 }
 
@@ -3693,11 +3693,11 @@ $static m_V3usize m_V3usize_div(m_V3usize lhs, m_V3usize rhs) {
     return m_V3usize_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 $attr($inline_always)
-$static m_V3usize m_V3usize_mod(m_V3usize lhs, m_V3usize rhs) {
+$static m_V3usize m_V3usize_rem(m_V3usize lhs, m_V3usize rhs) {
     return m_V3usize_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z)
     );
 }
 
@@ -3727,25 +3727,25 @@ $static m_V3usize m_V3usize_divS(m_V3usize v, usize scalar) {
     return m_V3usize_div(v, m_V3usize_splat(scalar));
 }
 $attr($inline_always)
-$static m_V3usize m_V3usize_modS(m_V3usize v, usize scalar) {
-    return m_V3usize_mod(v, m_V3usize_splat(scalar));
+$static m_V3usize m_V3usize_remS(m_V3usize v, usize scalar) {
+    return m_V3usize_rem(v, m_V3usize_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V3usize m_V3usize_min(m_V3usize lhs, m_V3usize rhs) {
     return m_V3usize_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
 $static m_V3usize m_V3usize_max(m_V3usize lhs, m_V3usize rhs) {
     return m_V3usize_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -3755,9 +3755,9 @@ $static m_V3usize m_V3usize_clamp(m_V3usize v, m_V3usize min, m_V3usize max) {
 $attr($inline_always)
 $static m_V3usize m_V3usize_wrap(m_V3usize v, m_V3usize min, m_V3usize max) {
     return m_V3usize_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z)
     );
 }
 
@@ -3826,12 +3826,12 @@ $static m_V4usize m_V4usize_div(m_V4usize lhs, m_V4usize rhs) {
     return m_V4usize_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 $attr($inline_always)
-$static m_V4usize m_V4usize_mod(m_V4usize lhs, m_V4usize rhs) {
+$static m_V4usize m_V4usize_rem(m_V4usize lhs, m_V4usize rhs) {
     return m_V4usize_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z),
-        math_mod(lhs.w, rhs.w)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z),
+        int_rem(lhs.w, rhs.w)
     );
 }
 
@@ -3861,27 +3861,27 @@ $static m_V4usize m_V4usize_divS(m_V4usize v, usize scalar) {
     return m_V4usize_div(v, m_V4usize_splat(scalar));
 }
 $attr($inline_always)
-$static m_V4usize m_V4usize_modS(m_V4usize v, usize scalar) {
-    return m_V4usize_mod(v, m_V4usize_splat(scalar));
+$static m_V4usize m_V4usize_remS(m_V4usize v, usize scalar) {
+    return m_V4usize_rem(v, m_V4usize_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V4usize m_V4usize_min(m_V4usize lhs, m_V4usize rhs) {
     return m_V4usize_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z),
-        math_min(lhs.w, rhs.w)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z),
+        pri_min(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
 $static m_V4usize m_V4usize_max(m_V4usize lhs, m_V4usize rhs) {
     return m_V4usize_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z),
-        math_max(lhs.w, rhs.w)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z),
+        pri_max(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -3891,10 +3891,10 @@ $static m_V4usize m_V4usize_clamp(m_V4usize v, m_V4usize min, m_V4usize max) {
 $attr($inline_always)
 $static m_V4usize m_V4usize_wrap(m_V4usize v, m_V4usize min, m_V4usize max) {
     return m_V4usize_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z),
-        math_wrap(v.w, min.w, max.w)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z),
+        int_wrap(v.w, min.w, max.w)
     );
 }
 
@@ -3998,12 +3998,12 @@ $static m_V2i32 m_V2i32_div(m_V2i32 lhs, m_V2i32 rhs) {
     return m_V2i32_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 $attr($inline_always)
-$static m_V2i32 m_V2i32_mod(m_V2i32 lhs, m_V2i32 rhs) {
+$static m_V2i32 m_V2i32_rem(m_V2i32 lhs, m_V2i32 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from2(lhs), m_simd_from2(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from2(lhs), m_simd_from2(rhs), int_rem);
     return m_simd_to2$(m_V2i32, result);
 #endif /* arch_simd_supported */
-    return m_V2i32_of(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y));
+    return m_V2i32_of(int_rem(lhs.x, rhs.x), int_rem(lhs.y, rhs.y));
 }
 
 $attr($inline_always)
@@ -4040,8 +4040,8 @@ $static m_V2i32 m_V2i32_divS(m_V2i32 v, i32 scalar) {
     return m_V2i32_div(v, m_V2i32_splat(scalar));
 }
 $attr($inline_always)
-$static m_V2i32 m_V2i32_modS(m_V2i32 v, i32 scalar) {
-    return m_V2i32_mod(v, m_V2i32_splat(scalar));
+$static m_V2i32 m_V2i32_remS(m_V2i32 v, i32 scalar) {
+    return m_V2i32_rem(v, m_V2i32_splat(scalar));
 }
 
 /* Range Operations */
@@ -4051,7 +4051,7 @@ $static m_V2i32 m_V2i32_min(m_V2i32 lhs, m_V2i32 rhs) {
     let result = simd_V_min(m_simd_from2(lhs), m_simd_from2(rhs));
     return m_simd_to2$(m_V2i32, result);
 #endif /* arch_simd_supported */
-    return m_V2i32_of(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
+    return m_V2i32_of(pri_min(lhs.x, rhs.x), pri_min(lhs.y, rhs.y));
 }
 $attr($inline_always)
 $static m_V2i32 m_V2i32_max(m_V2i32 lhs, m_V2i32 rhs) {
@@ -4059,7 +4059,7 @@ $static m_V2i32 m_V2i32_max(m_V2i32 lhs, m_V2i32 rhs) {
     let result = simd_V_max(m_simd_from2(lhs), m_simd_from2(rhs));
     return m_simd_to2$(m_V2i32, result);
 #endif /* arch_simd_supported */
-    return m_V2i32_of(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
+    return m_V2i32_of(pri_max(lhs.x, rhs.x), pri_max(lhs.y, rhs.y));
 }
 $attr($inline_always)
 $static m_V2i32 m_V2i32_clamp(m_V2i32 v, m_V2i32 min, m_V2i32 max) {
@@ -4072,12 +4072,12 @@ $static m_V2i32 m_V2i32_clamp(m_V2i32 v, m_V2i32 min, m_V2i32 max) {
 $attr($inline_always)
 $static m_V2i32 m_V2i32_wrap(m_V2i32 v, m_V2i32 min, m_V2i32 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from2(v), m_simd_from2(min), m_simd_from2(max), math_wrap);
+    let result = simd_V_map3(m_simd_from2(v), m_simd_from2(min), m_simd_from2(max), int_wrap);
     return m_simd_to2$(m_V2i32, result);
 #endif /* arch_simd_supported */
     return m_V2i32_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y)
     );
 }
 
@@ -4233,15 +4233,15 @@ $static m_V3i32 m_V3i32_div(m_V3i32 lhs, m_V3i32 rhs) {
     return m_V3i32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 $attr($inline_always)
-$static m_V3i32 m_V3i32_mod(m_V3i32 lhs, m_V3i32 rhs) {
+$static m_V3i32 m_V3i32_rem(m_V3i32 lhs, m_V3i32 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from3(lhs), m_simd_from3Divisor(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from3(lhs), m_simd_from3Divisor(rhs), int_rem);
     return m_simd_to3$(m_V3i32, result);
 #endif /* arch_simd_supported */
     return m_V3i32_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z)
     );
 }
 
@@ -4279,8 +4279,8 @@ $static m_V3i32 m_V3i32_divS(m_V3i32 v, i32 scalar) {
     return m_V3i32_div(v, m_V3i32_splat(scalar));
 }
 $attr($inline_always)
-$static m_V3i32 m_V3i32_modS(m_V3i32 v, i32 scalar) {
-    return m_V3i32_mod(v, m_V3i32_splat(scalar));
+$static m_V3i32 m_V3i32_remS(m_V3i32 v, i32 scalar) {
+    return m_V3i32_rem(v, m_V3i32_splat(scalar));
 }
 
 /* Range Operations */
@@ -4291,9 +4291,9 @@ $static m_V3i32 m_V3i32_min(m_V3i32 lhs, m_V3i32 rhs) {
     return m_simd_to3$(m_V3i32, result);
 #endif /* arch_simd_supported */
     return m_V3i32_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -4303,9 +4303,9 @@ $static m_V3i32 m_V3i32_max(m_V3i32 lhs, m_V3i32 rhs) {
     return m_simd_to3$(m_V3i32, result);
 #endif /* arch_simd_supported */
     return m_V3i32_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -4319,13 +4319,13 @@ $static m_V3i32 m_V3i32_clamp(m_V3i32 v, m_V3i32 min, m_V3i32 max) {
 $attr($inline_always)
 $static m_V3i32 m_V3i32_wrap(m_V3i32 v, m_V3i32 min, m_V3i32 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), math_wrap);
+    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), int_wrap);
     return m_simd_to3$(m_V3i32, result);
 #endif /* arch_simd_supported */
     return m_V3i32_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z)
     );
 }
 
@@ -4494,16 +4494,16 @@ $static m_V4i32 m_V4i32_div(m_V4i32 lhs, m_V4i32 rhs) {
     return m_V4i32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 $attr($inline_always)
-$static m_V4i32 m_V4i32_mod(m_V4i32 lhs, m_V4i32 rhs) {
+$static m_V4i32 m_V4i32_rem(m_V4i32 lhs, m_V4i32 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from4(lhs), m_simd_from4(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from4(lhs), m_simd_from4(rhs), int_rem);
     return m_simd_to4$(m_V4i32, result);
 #endif /* arch_simd_supported */
     return m_V4i32_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z),
-        math_mod(lhs.w, rhs.w)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z),
+        int_rem(lhs.w, rhs.w)
     );
 }
 
@@ -4541,8 +4541,8 @@ $static m_V4i32 m_V4i32_divS(m_V4i32 v, i32 scalar) {
     return m_V4i32_div(v, m_V4i32_splat(scalar));
 }
 $attr($inline_always)
-$static m_V4i32 m_V4i32_modS(m_V4i32 v, i32 scalar) {
-    return m_V4i32_mod(v, m_V4i32_splat(scalar));
+$static m_V4i32 m_V4i32_remS(m_V4i32 v, i32 scalar) {
+    return m_V4i32_rem(v, m_V4i32_splat(scalar));
 }
 
 /* Range Operations */
@@ -4553,10 +4553,10 @@ $static m_V4i32 m_V4i32_min(m_V4i32 lhs, m_V4i32 rhs) {
     return m_simd_to4$(m_V4i32, result);
 #endif /* arch_simd_supported */
     return m_V4i32_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z),
-        math_min(lhs.w, rhs.w)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z),
+        pri_min(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -4566,10 +4566,10 @@ $static m_V4i32 m_V4i32_max(m_V4i32 lhs, m_V4i32 rhs) {
     return m_simd_to4$(m_V4i32, result);
 #endif /* arch_simd_supported */
     return m_V4i32_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z),
-        math_max(lhs.w, rhs.w)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z),
+        pri_max(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -4583,14 +4583,14 @@ $static m_V4i32 m_V4i32_clamp(m_V4i32 v, m_V4i32 min, m_V4i32 max) {
 $attr($inline_always)
 $static m_V4i32 m_V4i32_wrap(m_V4i32 v, m_V4i32 min, m_V4i32 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from4(v), m_simd_from4(min), m_simd_from4(max), math_wrap);
+    let result = simd_V_map3(m_simd_from4(v), m_simd_from4(min), m_simd_from4(max), int_wrap);
     return m_simd_to4$(m_V4i32, result);
 #endif /* arch_simd_supported */
     return m_V4i32_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z),
-        math_wrap(v.w, min.w, max.w)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z),
+        int_wrap(v.w, min.w, max.w)
     );
 }
 
@@ -4694,14 +4694,14 @@ $static m_V2i64 m_V2i64_div(m_V2i64 lhs, m_V2i64 rhs) {
     return m_V2i64_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 $attr($inline_always)
-$static m_V2i64 m_V2i64_mod(m_V2i64 lhs, m_V2i64 rhs) {
+$static m_V2i64 m_V2i64_rem(m_V2i64 lhs, m_V2i64 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from2(lhs), m_simd_from2(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from2(lhs), m_simd_from2(rhs), int_rem);
     return m_simd_to2$(m_V2i64, result);
 #endif /* arch_simd_supported */
     return m_V2i64_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y)
     );
 }
 
@@ -4739,8 +4739,8 @@ $static m_V2i64 m_V2i64_divS(m_V2i64 v, i64 scalar) {
     return m_V2i64_div(v, m_V2i64_splat(scalar));
 }
 $attr($inline_always)
-$static m_V2i64 m_V2i64_modS(m_V2i64 v, i64 scalar) {
-    return m_V2i64_mod(v, m_V2i64_splat(scalar));
+$static m_V2i64 m_V2i64_remS(m_V2i64 v, i64 scalar) {
+    return m_V2i64_rem(v, m_V2i64_splat(scalar));
 }
 
 /* Range Operations */
@@ -4751,8 +4751,8 @@ $static m_V2i64 m_V2i64_min(m_V2i64 lhs, m_V2i64 rhs) {
     return m_simd_to2$(m_V2i64, result);
 #endif /* arch_simd_supported */
     return m_V2i64_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
@@ -4762,8 +4762,8 @@ $static m_V2i64 m_V2i64_max(m_V2i64 lhs, m_V2i64 rhs) {
     return m_simd_to2$(m_V2i64, result);
 #endif /* arch_simd_supported */
     return m_V2i64_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
@@ -4777,12 +4777,12 @@ $static m_V2i64 m_V2i64_clamp(m_V2i64 v, m_V2i64 min, m_V2i64 max) {
 $attr($inline_always)
 $static m_V2i64 m_V2i64_wrap(m_V2i64 v, m_V2i64 min, m_V2i64 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from2(v), m_simd_from2(min), m_simd_from2(max), math_wrap);
+    let result = simd_V_map3(m_simd_from2(v), m_simd_from2(min), m_simd_from2(max), int_wrap);
     return m_simd_to2$(m_V2i64, result);
 #endif /* arch_simd_supported */
     return m_V2i64_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y)
     );
 }
 
@@ -4938,15 +4938,15 @@ $static m_V3i64 m_V3i64_div(m_V3i64 lhs, m_V3i64 rhs) {
     return m_V3i64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 $attr($inline_always)
-$static m_V3i64 m_V3i64_mod(m_V3i64 lhs, m_V3i64 rhs) {
+$static m_V3i64 m_V3i64_rem(m_V3i64 lhs, m_V3i64 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from3(lhs), m_simd_from3Divisor(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from3(lhs), m_simd_from3Divisor(rhs), int_rem);
     return m_simd_to3$(m_V3i64, result);
 #endif /* arch_simd_supported */
     return m_V3i64_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z)
     );
 }
 
@@ -4984,8 +4984,8 @@ $static m_V3i64 m_V3i64_divS(m_V3i64 v, i64 scalar) {
     return m_V3i64_div(v, m_V3i64_splat(scalar));
 }
 $attr($inline_always)
-$static m_V3i64 m_V3i64_modS(m_V3i64 v, i64 scalar) {
-    return m_V3i64_mod(v, m_V3i64_splat(scalar));
+$static m_V3i64 m_V3i64_remS(m_V3i64 v, i64 scalar) {
+    return m_V3i64_rem(v, m_V3i64_splat(scalar));
 }
 
 /* Range Operations */
@@ -4996,9 +4996,9 @@ $static m_V3i64 m_V3i64_min(m_V3i64 lhs, m_V3i64 rhs) {
     return m_simd_to3$(m_V3i64, result);
 #endif /* arch_simd_supported */
     return m_V3i64_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -5008,9 +5008,9 @@ $static m_V3i64 m_V3i64_max(m_V3i64 lhs, m_V3i64 rhs) {
     return m_simd_to3$(m_V3i64, result);
 #endif /* arch_simd_supported */
     return m_V3i64_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -5024,13 +5024,13 @@ $static m_V3i64 m_V3i64_clamp(m_V3i64 v, m_V3i64 min, m_V3i64 max) {
 $attr($inline_always)
 $static m_V3i64 m_V3i64_wrap(m_V3i64 v, m_V3i64 min, m_V3i64 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), math_wrap);
+    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), int_wrap);
     return m_simd_to3$(m_V3i64, result);
 #endif /* arch_simd_supported */
     return m_V3i64_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z)
     );
 }
 
@@ -5197,16 +5197,16 @@ $static m_V4i64 m_V4i64_div(m_V4i64 lhs, m_V4i64 rhs) {
     return m_V4i64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 $attr($inline_always)
-$static m_V4i64 m_V4i64_mod(m_V4i64 lhs, m_V4i64 rhs) {
+$static m_V4i64 m_V4i64_rem(m_V4i64 lhs, m_V4i64 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from4(lhs), m_simd_from4(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from4(lhs), m_simd_from4(rhs), int_rem);
     return m_simd_to4$(m_V4i64, result);
 #endif /* arch_simd_supported */
     return m_V4i64_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z),
-        math_mod(lhs.w, rhs.w)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z),
+        int_rem(lhs.w, rhs.w)
     );
 }
 
@@ -5244,8 +5244,8 @@ $static m_V4i64 m_V4i64_divS(m_V4i64 v, i64 scalar) {
     return m_V4i64_div(v, m_V4i64_splat(scalar));
 }
 $attr($inline_always)
-$static m_V4i64 m_V4i64_modS(m_V4i64 v, i64 scalar) {
-    return m_V4i64_mod(v, m_V4i64_splat(scalar));
+$static m_V4i64 m_V4i64_remS(m_V4i64 v, i64 scalar) {
+    return m_V4i64_rem(v, m_V4i64_splat(scalar));
 }
 
 /* Range Operations */
@@ -5256,10 +5256,10 @@ $static m_V4i64 m_V4i64_min(m_V4i64 lhs, m_V4i64 rhs) {
     return m_simd_to4$(m_V4i64, result);
 #endif /* arch_simd_supported */
     return m_V4i64_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z),
-        math_min(lhs.w, rhs.w)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z),
+        pri_min(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -5269,10 +5269,10 @@ $static m_V4i64 m_V4i64_max(m_V4i64 lhs, m_V4i64 rhs) {
     return m_simd_to4$(m_V4i64, result);
 #endif /* arch_simd_supported */
     return m_V4i64_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z),
-        math_max(lhs.w, rhs.w)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z),
+        pri_max(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -5286,14 +5286,14 @@ $static m_V4i64 m_V4i64_clamp(m_V4i64 v, m_V4i64 min, m_V4i64 max) {
 $attr($inline_always)
 $static m_V4i64 m_V4i64_wrap(m_V4i64 v, m_V4i64 min, m_V4i64 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from4(v), m_simd_from4(min), m_simd_from4(max), math_wrap);
+    let result = simd_V_map3(m_simd_from4(v), m_simd_from4(min), m_simd_from4(max), int_wrap);
     return m_simd_to4$(m_V4i64, result);
 #endif /* arch_simd_supported */
     return m_V4i64_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z),
-        math_wrap(v.w, min.w, max.w)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z),
+        int_wrap(v.w, min.w, max.w)
     );
 }
 
@@ -5366,10 +5366,10 @@ $static m_V2isize m_V2isize_div(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 $attr($inline_always)
-$static m_V2isize m_V2isize_mod(m_V2isize lhs, m_V2isize rhs) {
+$static m_V2isize m_V2isize_rem(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y)
     );
 }
 
@@ -5399,23 +5399,23 @@ $static m_V2isize m_V2isize_divS(m_V2isize v, isize scalar) {
     return m_V2isize_div(v, m_V2isize_splat(scalar));
 }
 $attr($inline_always)
-$static m_V2isize m_V2isize_modS(m_V2isize v, isize scalar) {
-    return m_V2isize_mod(v, m_V2isize_splat(scalar));
+$static m_V2isize m_V2isize_remS(m_V2isize v, isize scalar) {
+    return m_V2isize_rem(v, m_V2isize_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V2isize m_V2isize_min(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
 $static m_V2isize m_V2isize_max(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y)
     );
 }
 $attr($inline_always)
@@ -5425,8 +5425,8 @@ $static m_V2isize m_V2isize_clamp(m_V2isize v, m_V2isize min, m_V2isize max) {
 $attr($inline_always)
 $static m_V2isize m_V2isize_wrap(m_V2isize v, m_V2isize min, m_V2isize max) {
     return m_V2isize_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y)
     );
 }
 
@@ -5541,11 +5541,11 @@ $static m_V3isize m_V3isize_div(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 $attr($inline_always)
-$static m_V3isize m_V3isize_mod(m_V3isize lhs, m_V3isize rhs) {
+$static m_V3isize m_V3isize_rem(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z)
     );
 }
 
@@ -5575,25 +5575,25 @@ $static m_V3isize m_V3isize_divS(m_V3isize v, isize scalar) {
     return m_V3isize_div(v, m_V3isize_splat(scalar));
 }
 $attr($inline_always)
-$static m_V3isize m_V3isize_modS(m_V3isize v, isize scalar) {
-    return m_V3isize_mod(v, m_V3isize_splat(scalar));
+$static m_V3isize m_V3isize_remS(m_V3isize v, isize scalar) {
+    return m_V3isize_rem(v, m_V3isize_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V3isize m_V3isize_min(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
 $static m_V3isize m_V3isize_max(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -5603,9 +5603,9 @@ $static m_V3isize m_V3isize_clamp(m_V3isize v, m_V3isize min, m_V3isize max) {
 $attr($inline_always)
 $static m_V3isize m_V3isize_wrap(m_V3isize v, m_V3isize min, m_V3isize max) {
     return m_V3isize_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z)
     );
 }
 
@@ -5718,12 +5718,12 @@ $static m_V4isize m_V4isize_div(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 $attr($inline_always)
-$static m_V4isize m_V4isize_mod(m_V4isize lhs, m_V4isize rhs) {
+$static m_V4isize m_V4isize_rem(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z),
-        math_mod(lhs.w, rhs.w)
+        int_rem(lhs.x, rhs.x),
+        int_rem(lhs.y, rhs.y),
+        int_rem(lhs.z, rhs.z),
+        int_rem(lhs.w, rhs.w)
     );
 }
 
@@ -5753,27 +5753,27 @@ $static m_V4isize m_V4isize_divS(m_V4isize v, isize scalar) {
     return m_V4isize_div(v, m_V4isize_splat(scalar));
 }
 $attr($inline_always)
-$static m_V4isize m_V4isize_modS(m_V4isize v, isize scalar) {
-    return m_V4isize_mod(v, m_V4isize_splat(scalar));
+$static m_V4isize m_V4isize_remS(m_V4isize v, isize scalar) {
+    return m_V4isize_rem(v, m_V4isize_splat(scalar));
 }
 
 /* Range Operations */
 $attr($inline_always)
 $static m_V4isize m_V4isize_min(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z),
-        math_min(lhs.w, rhs.w)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z),
+        pri_min(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
 $static m_V4isize m_V4isize_max(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z),
-        math_max(lhs.w, rhs.w)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z),
+        pri_max(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -5783,10 +5783,10 @@ $static m_V4isize m_V4isize_clamp(m_V4isize v, m_V4isize min, m_V4isize max) {
 $attr($inline_always)
 $static m_V4isize m_V4isize_wrap(m_V4isize v, m_V4isize min, m_V4isize max) {
     return m_V4isize_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z),
-        math_wrap(v.w, min.w, max.w)
+        int_wrap(v.x, min.x, max.x),
+        int_wrap(v.y, min.y, max.y),
+        int_wrap(v.z, min.z, max.z),
+        int_wrap(v.w, min.w, max.w)
     );
 }
 
@@ -5927,7 +5927,7 @@ $static m_V2f32 m_V2f32_div(m_V2f32 lhs, m_V2f32 rhs) {
     return m_V2f32_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 $attr($inline_always)
-$static m_V2f32 m_V2f32_mod(m_V2f32 lhs, m_V2f32 rhs) {
+$static m_V2f32 m_V2f32_rem(m_V2f32 lhs, m_V2f32 rhs) {
 #if arch_simd_supported
     let result = simd_V_flt_rem(m_simd_from2(lhs), m_simd_from2(rhs));
     return m_simd_to2$(m_V2f32, result);
@@ -5968,8 +5968,8 @@ $static m_V2f32 m_V2f32_divS(m_V2f32 lhs, f32 rhs) {
     return m_V2f32_div(lhs, m_V2f32_splat(rhs));
 }
 $attr($inline_always)
-$static m_V2f32 m_V2f32_modS(m_V2f32 lhs, f32 rhs) {
-    return m_V2f32_mod(lhs, m_V2f32_splat(rhs));
+$static m_V2f32 m_V2f32_remS(m_V2f32 lhs, f32 rhs) {
+    return m_V2f32_rem(lhs, m_V2f32_splat(rhs));
 }
 
 $attr($inline_always)
@@ -5989,8 +5989,8 @@ $static m_V2f32* m_V2f32_divAsg(m_V2f32* lhs, m_V2f32 rhs) {
     return *lhs = m_V2f32_div(*lhs, rhs), lhs;
 }
 $attr($inline_always)
-$static m_V2f32* m_V2f32_modAsg(m_V2f32* lhs, m_V2f32 rhs) {
-    return *lhs = m_V2f32_mod(*lhs, rhs), lhs;
+$static m_V2f32* m_V2f32_remAsg(m_V2f32* lhs, m_V2f32 rhs) {
+    return *lhs = m_V2f32_rem(*lhs, rhs), lhs;
 }
 $attr($inline_always)
 $static m_V2f32* m_V2f32_scalAsg(m_V2f32* v, f32 scalar) {
@@ -6018,8 +6018,8 @@ $static m_V2f32* m_V2f32_divSAsg(m_V2f32* lhs, f32 rhs) {
     return *lhs = m_V2f32_divS(*lhs, rhs), lhs;
 }
 $attr($inline_always)
-$static m_V2f32* m_V2f32_modSAsg(m_V2f32* lhs, f32 rhs) {
-    return *lhs = m_V2f32_modS(*lhs, rhs), lhs;
+$static m_V2f32* m_V2f32_remSAsg(m_V2f32* lhs, f32 rhs) {
+    return *lhs = m_V2f32_remS(*lhs, rhs), lhs;
 }
 
 /* Range Operations */
@@ -6293,12 +6293,12 @@ $static m_V3f32 m_V3f32_div(m_V3f32 lhs, m_V3f32 rhs) {
     return m_V3f32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 $attr($inline_always)
-$static m_V3f32 m_V3f32_mod(m_V3f32 lhs, m_V3f32 rhs) {
+$static m_V3f32 m_V3f32_rem(m_V3f32 lhs, m_V3f32 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from3(lhs), m_simd_from3Divisor(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from3(lhs), m_simd_from3Divisor(rhs), flt_rem);
     return m_simd_to3$(m_V3f32, result);
 #endif /* arch_simd_supported */
-    return m_V3f32_of(flt_mod(lhs.x, rhs.x), flt_mod(lhs.y, rhs.y), flt_mod(lhs.z, rhs.z));
+    return m_V3f32_of(flt_rem(lhs.x, rhs.x), flt_rem(lhs.y, rhs.y), flt_rem(lhs.z, rhs.z));
 }
 
 $attr($inline_always)
@@ -6335,8 +6335,8 @@ $static m_V3f32 m_V3f32_divS(m_V3f32 v, f32 scalar) {
     return m_V3f32_div(v, m_V3f32_splat(scalar));
 }
 $attr($inline_always)
-$static m_V3f32 m_V3f32_modS(m_V3f32 v, f32 scalar) {
-    return m_V3f32_mod(v, m_V3f32_splat(scalar));
+$static m_V3f32 m_V3f32_remS(m_V3f32 v, f32 scalar) {
+    return m_V3f32_rem(v, m_V3f32_splat(scalar));
 }
 
 /* Range Operations */
@@ -6347,9 +6347,9 @@ $static m_V3f32 m_V3f32_min(m_V3f32 lhs, m_V3f32 rhs) {
     return m_simd_to3$(m_V3f32, result);
 #endif /* arch_simd_supported */
     return m_V3f32_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -6359,9 +6359,9 @@ $static m_V3f32 m_V3f32_max(m_V3f32 lhs, m_V3f32 rhs) {
     return m_simd_to3$(m_V3f32, result);
 #endif /* arch_simd_supported */
     return m_V3f32_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -6383,13 +6383,13 @@ $static m_V3f32 m_V3f32_clamp01(m_V3f32 v) {
 $attr($inline_always)
 $static m_V3f32 m_V3f32_wrap(m_V3f32 v, m_V3f32 min, m_V3f32 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), math_wrap);
+    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), flt_wrap);
     return m_simd_to3$(m_V3f32, result);
 #endif /* arch_simd_supported */
     return m_V3f32_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z)
+        flt_wrap(v.x, min.x, max.x),
+        flt_wrap(v.y, min.y, max.y),
+        flt_wrap(v.z, min.z, max.z)
     );
 }
 $attr($inline_always)
@@ -6634,16 +6634,16 @@ $static m_V4f32 m_V4f32_div(m_V4f32 lhs, m_V4f32 rhs) {
     return m_V4f32_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 $attr($inline_always)
-$static m_V4f32 m_V4f32_mod(m_V4f32 lhs, m_V4f32 rhs) {
+$static m_V4f32 m_V4f32_rem(m_V4f32 lhs, m_V4f32 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from4(lhs), m_simd_from4(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from4(lhs), m_simd_from4(rhs), flt_rem);
     return m_simd_to4$(m_V4f32, result);
 #endif /* arch_simd_supported */
     return m_V4f32_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z),
-        math_mod(lhs.w, rhs.w)
+        flt_rem(lhs.x, rhs.x),
+        flt_rem(lhs.y, rhs.y),
+        flt_rem(lhs.z, rhs.z),
+        flt_rem(lhs.w, rhs.w)
     );
 }
 
@@ -6681,8 +6681,8 @@ $static m_V4f32 m_V4f32_divS(m_V4f32 v, f32 scalar) {
     return m_V4f32_div(v, m_V4f32_splat(scalar));
 }
 $attr($inline_always)
-$static m_V4f32 m_V4f32_modS(m_V4f32 v, f32 scalar) {
-    return m_V4f32_mod(v, m_V4f32_splat(scalar));
+$static m_V4f32 m_V4f32_remS(m_V4f32 v, f32 scalar) {
+    return m_V4f32_rem(v, m_V4f32_splat(scalar));
 }
 
 /* Range Operations */
@@ -6693,10 +6693,10 @@ $static m_V4f32 m_V4f32_min(m_V4f32 lhs, m_V4f32 rhs) {
     return m_simd_to4$(m_V4f32, result);
 #endif /* arch_simd_supported */
     return m_V4f32_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z),
-        math_min(lhs.w, rhs.w)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z),
+        pri_min(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -6706,10 +6706,10 @@ $static m_V4f32 m_V4f32_max(m_V4f32 lhs, m_V4f32 rhs) {
     return m_simd_to4$(m_V4f32, result);
 #endif /* arch_simd_supported */
     return m_V4f32_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z),
-        math_max(lhs.w, rhs.w)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z),
+        pri_max(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -6731,14 +6731,14 @@ $static m_V4f32 m_V4f32_clamp01(m_V4f32 v) {
 $attr($inline_always)
 $static m_V4f32 m_V4f32_wrap(m_V4f32 v, m_V4f32 min, m_V4f32 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from4(v), m_simd_from4(min), m_simd_from4(max), math_wrap);
+    let result = simd_V_map3(m_simd_from4(v), m_simd_from4(min), m_simd_from4(max), flt_wrap);
     return m_simd_to4$(m_V4f32, result);
 #endif /* arch_simd_supported */
     return m_V4f32_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z),
-        math_wrap(v.w, min.w, max.w)
+        flt_wrap(v.x, min.x, max.x),
+        flt_wrap(v.y, min.y, max.y),
+        flt_wrap(v.z, min.z, max.z),
+        flt_wrap(v.w, min.w, max.w)
     );
 }
 $attr($inline_always)
@@ -6910,12 +6910,12 @@ $static m_V2f64 m_V2f64_div(m_V2f64 lhs, m_V2f64 rhs) {
     return m_V2f64_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
 $attr($inline_always)
-$static m_V2f64 m_V2f64_mod(m_V2f64 lhs, m_V2f64 rhs) {
+$static m_V2f64 m_V2f64_rem(m_V2f64 lhs, m_V2f64 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from2(lhs), m_simd_from2(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from2(lhs), m_simd_from2(rhs), flt_rem);
     return m_simd_to2$(m_V2f64, result);
 #endif /* arch_simd_supported */
-    return m_V2f64_of(math_mod(lhs.x, rhs.x), math_mod(lhs.y, rhs.y));
+    return m_V2f64_of(flt_rem(lhs.x, rhs.x), flt_rem(lhs.y, rhs.y));
 }
 
 $attr($inline_always)
@@ -6952,8 +6952,8 @@ $static m_V2f64 m_V2f64_divS(m_V2f64 lhs, f64 rhs) {
     return m_V2f64_div(lhs, m_V2f64_splat(rhs));
 }
 $attr($inline_always)
-$static m_V2f64 m_V2f64_modS(m_V2f64 lhs, f64 rhs) {
-    return m_V2f64_mod(lhs, m_V2f64_splat(rhs));
+$static m_V2f64 m_V2f64_remS(m_V2f64 lhs, f64 rhs) {
+    return m_V2f64_rem(lhs, m_V2f64_splat(rhs));
 }
 
 $attr($inline_always)
@@ -6973,8 +6973,8 @@ $static m_V2f64* m_V2f64_divAsg(m_V2f64* lhs, m_V2f64 rhs) {
     return *lhs = m_V2f64_div(*lhs, rhs), lhs;
 }
 $attr($inline_always)
-$static m_V2f64* m_V2f64_modAsg(m_V2f64* lhs, m_V2f64 rhs) {
-    return *lhs = m_V2f64_mod(*lhs, rhs), lhs;
+$static m_V2f64* m_V2f64_remAsg(m_V2f64* lhs, m_V2f64 rhs) {
+    return *lhs = m_V2f64_rem(*lhs, rhs), lhs;
 }
 $attr($inline_always)
 $static m_V2f64* m_V2f64_scalAsg(m_V2f64* v, f64 scalar) {
@@ -7002,8 +7002,8 @@ $static m_V2f64* m_V2f64_divSAsg(m_V2f64* lhs, f64 rhs) {
     return *lhs = m_V2f64_divS(*lhs, rhs), lhs;
 }
 $attr($inline_always)
-$static m_V2f64* m_V2f64_modSAsg(m_V2f64* lhs, f64 rhs) {
-    return *lhs = m_V2f64_modS(*lhs, rhs), lhs;
+$static m_V2f64* m_V2f64_remSAsg(m_V2f64* lhs, f64 rhs) {
+    return *lhs = m_V2f64_remS(*lhs, rhs), lhs;
 }
 
 /* Range Operations */
@@ -7013,7 +7013,7 @@ $static m_V2f64 m_V2f64_min(m_V2f64 lhs, m_V2f64 rhs) {
     let result = simd_V_min(m_simd_from2(lhs), m_simd_from2(rhs));
     return m_simd_to2$(m_V2f64, result);
 #endif /* arch_simd_supported */
-    return m_V2f64_of(math_min(lhs.x, rhs.x), math_min(lhs.y, rhs.y));
+    return m_V2f64_of(pri_min(lhs.x, rhs.x), pri_min(lhs.y, rhs.y));
 }
 $attr($inline_always)
 $static m_V2f64 m_V2f64_max(m_V2f64 lhs, m_V2f64 rhs) {
@@ -7021,7 +7021,7 @@ $static m_V2f64 m_V2f64_max(m_V2f64 lhs, m_V2f64 rhs) {
     let result = simd_V_max(m_simd_from2(lhs), m_simd_from2(rhs));
     return m_simd_to2$(m_V2f64, result);
 #endif /* arch_simd_supported */
-    return m_V2f64_of(math_max(lhs.x, rhs.x), math_max(lhs.y, rhs.y));
+    return m_V2f64_of(pri_max(lhs.x, rhs.x), pri_max(lhs.y, rhs.y));
 }
 $attr($inline_always)
 $static m_V2f64 m_V2f64_clamp(m_V2f64 v, m_V2f64 min, m_V2f64 max) {
@@ -7042,10 +7042,10 @@ $static m_V2f64 m_V2f64_clamp01(m_V2f64 v) {
 $attr($inline_always)
 $static m_V2f64 m_V2f64_wrap(m_V2f64 v, m_V2f64 min, m_V2f64 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from2(v), m_simd_from2(min), m_simd_from2(max), math_wrap);
+    let result = simd_V_map3(m_simd_from2(v), m_simd_from2(min), m_simd_from2(max), flt_wrap);
     return m_simd_to2$(m_V2f64, result);
 #endif /* arch_simd_supported */
-    return m_V2f64_of(math_wrap(v.x, min.x, max.x), math_wrap(v.y, min.y, max.y));
+    return m_V2f64_of(flt_wrap(v.x, min.x, max.x), flt_wrap(v.y, min.y, max.y));
 }
 $attr($inline_always)
 $static m_V2f64 m_V2f64_wrap01(m_V2f64 v) {
@@ -7278,15 +7278,15 @@ $static m_V3f64 m_V3f64_div(m_V3f64 lhs, m_V3f64 rhs) {
     return m_V3f64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
 $attr($inline_always)
-$static m_V3f64 m_V3f64_mod(m_V3f64 lhs, m_V3f64 rhs) {
+$static m_V3f64 m_V3f64_rem(m_V3f64 lhs, m_V3f64 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from3(lhs), m_simd_from3Divisor(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from3(lhs), m_simd_from3Divisor(rhs), flt_rem);
     return m_simd_to3$(m_V3f64, result);
 #endif /* arch_simd_supported */
     return m_V3f64_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z)
+        flt_rem(lhs.x, rhs.x),
+        flt_rem(lhs.y, rhs.y),
+        flt_rem(lhs.z, rhs.z)
     );
 }
 
@@ -7324,8 +7324,8 @@ $static m_V3f64 m_V3f64_divS(m_V3f64 v, f64 scalar) {
     return m_V3f64_div(v, m_V3f64_splat(scalar));
 }
 $attr($inline_always)
-$static m_V3f64 m_V3f64_modS(m_V3f64 v, f64 scalar) {
-    return m_V3f64_mod(v, m_V3f64_splat(scalar));
+$static m_V3f64 m_V3f64_remS(m_V3f64 v, f64 scalar) {
+    return m_V3f64_rem(v, m_V3f64_splat(scalar));
 }
 
 /* Range Operations */
@@ -7336,9 +7336,9 @@ $static m_V3f64 m_V3f64_min(m_V3f64 lhs, m_V3f64 rhs) {
     return m_simd_to3$(m_V3f64, result);
 #endif /* arch_simd_supported */
     return m_V3f64_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -7348,9 +7348,9 @@ $static m_V3f64 m_V3f64_max(m_V3f64 lhs, m_V3f64 rhs) {
     return m_simd_to3$(m_V3f64, result);
 #endif /* arch_simd_supported */
     return m_V3f64_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z)
     );
 }
 $attr($inline_always)
@@ -7372,13 +7372,13 @@ $static m_V3f64 m_V3f64_clamp01(m_V3f64 v) {
 $attr($inline_always)
 $static m_V3f64 m_V3f64_wrap(m_V3f64 v, m_V3f64 min, m_V3f64 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), math_wrap);
+    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), flt_wrap);
     return m_simd_to3$(m_V3f64, result);
 #endif /* arch_simd_supported */
     return m_V3f64_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z)
+        flt_wrap(v.x, min.x, max.x),
+        flt_wrap(v.y, min.y, max.y),
+        flt_wrap(v.z, min.z, max.z)
     );
 }
 $attr($inline_always)
@@ -7621,16 +7621,16 @@ $static m_V4f64 m_V4f64_div(m_V4f64 lhs, m_V4f64 rhs) {
     return m_V4f64_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
 $attr($inline_always)
-$static m_V4f64 m_V4f64_mod(m_V4f64 lhs, m_V4f64 rhs) {
+$static m_V4f64 m_V4f64_rem(m_V4f64 lhs, m_V4f64 rhs) {
 #if arch_simd_supported
-    let result = simd_V_map2(m_simd_from4(lhs), m_simd_from4(rhs), math_mod);
+    let result = simd_V_map2(m_simd_from4(lhs), m_simd_from4(rhs), flt_rem);
     return m_simd_to4$(m_V4f64, result);
 #endif /* arch_simd_supported */
     return m_V4f64_of(
-        math_mod(lhs.x, rhs.x),
-        math_mod(lhs.y, rhs.y),
-        math_mod(lhs.z, rhs.z),
-        math_mod(lhs.w, rhs.w)
+        flt_rem(lhs.x, rhs.x),
+        flt_rem(lhs.y, rhs.y),
+        flt_rem(lhs.z, rhs.z),
+        flt_rem(lhs.w, rhs.w)
     );
 }
 
@@ -7668,8 +7668,8 @@ $static m_V4f64 m_V4f64_divS(m_V4f64 v, f64 scalar) {
     return m_V4f64_div(v, m_V4f64_splat(scalar));
 }
 $attr($inline_always)
-$static m_V4f64 m_V4f64_modS(m_V4f64 v, f64 scalar) {
-    return m_V4f64_mod(v, m_V4f64_splat(scalar));
+$static m_V4f64 m_V4f64_remS(m_V4f64 v, f64 scalar) {
+    return m_V4f64_rem(v, m_V4f64_splat(scalar));
 }
 
 /* Range Operations */
@@ -7680,10 +7680,10 @@ $static m_V4f64 m_V4f64_min(m_V4f64 lhs, m_V4f64 rhs) {
     return m_simd_to4$(m_V4f64, result);
 #endif /* arch_simd_supported */
     return m_V4f64_of(
-        math_min(lhs.x, rhs.x),
-        math_min(lhs.y, rhs.y),
-        math_min(lhs.z, rhs.z),
-        math_min(lhs.w, rhs.w)
+        pri_min(lhs.x, rhs.x),
+        pri_min(lhs.y, rhs.y),
+        pri_min(lhs.z, rhs.z),
+        pri_min(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -7693,10 +7693,10 @@ $static m_V4f64 m_V4f64_max(m_V4f64 lhs, m_V4f64 rhs) {
     return m_simd_to4$(m_V4f64, result);
 #endif /* arch_simd_supported */
     return m_V4f64_of(
-        math_max(lhs.x, rhs.x),
-        math_max(lhs.y, rhs.y),
-        math_max(lhs.z, rhs.z),
-        math_max(lhs.w, rhs.w)
+        pri_max(lhs.x, rhs.x),
+        pri_max(lhs.y, rhs.y),
+        pri_max(lhs.z, rhs.z),
+        pri_max(lhs.w, rhs.w)
     );
 }
 $attr($inline_always)
@@ -7718,14 +7718,14 @@ $static m_V4f64 m_V4f64_clamp01(m_V4f64 v) {
 $attr($inline_always)
 $static m_V4f64 m_V4f64_wrap(m_V4f64 v, m_V4f64 min, m_V4f64 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from4(v), m_simd_from4(min), m_simd_from4(max), math_wrap);
+    let result = simd_V_map3(m_simd_from4(v), m_simd_from4(min), m_simd_from4(max), flt_wrap);
     return m_simd_to4$(m_V4f64, result);
 #endif /* arch_simd_supported */
     return m_V4f64_of(
-        math_wrap(v.x, min.x, max.x),
-        math_wrap(v.y, min.y, max.y),
-        math_wrap(v.z, min.z, max.z),
-        math_wrap(v.w, min.w, max.w)
+        flt_wrap(v.x, min.x, max.x),
+        flt_wrap(v.y, min.y, max.y),
+        flt_wrap(v.z, min.z, max.z),
+        flt_wrap(v.w, min.w, max.w)
     );
 }
 $attr($inline_always)
@@ -7788,4 +7788,4 @@ $static m_V4f64 m_V4f64_reflect(m_V4f64 v, m_V4f64 normal) {
 #undef m_simd_to3$
 #undef m_simd_to4$
 
-#endif /* math_vec__included */
+#endif /* pri_vec__included */

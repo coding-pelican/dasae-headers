@@ -73,21 +73,30 @@ extern "C" {
 /* clang-format off */
 #define __step__claim_assert(_Expr, _ExprStr...) $ignore_void(\
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
+        claim_assert_static_msg( \
+            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
+            _ExprStr \
+        ); \
         $debug_point claim_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
         $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_msg(_Expr, _ExprStr, _msg...) $ignore_void( \
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _msg); \
+        claim_assert_static_msg( \
+            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
+            _msg \
+        ); \
         $debug_point claim_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
         $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_fmt(_Expr, _ExprStr, _fmt...) $ignore_void(\
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
+        claim_assert_static_msg( \
+            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
+            _ExprStr \
+        ); \
         $debug_point claim_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
         $unreachable; \
     }), 0) \
@@ -110,19 +119,28 @@ extern "C" {
 /* clang-format off */
 #define __step__claim_assert(_Expr, _ExprStr...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
+        claim_assert_static_msg( \
+            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
+            _ExprStr \
+        ); \
         $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_msg(_Expr, _ExprStr, _msg...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _msg); \
+        claim_assert_static_msg( \
+            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
+            _msg \
+        ); \
         $unreachable; \
     }), 0) \
 )
 #define __step__claim_assert_fmt(_Expr, _ExprStr, fmt...) $dispatch_on_comptime $ignore_void( \
     (!!_Expr) || (({ \
-        claim_assert_static_msg(isComptimeExpr(_Expr) ? _Expr : true, _ExprStr); \
+        claim_assert_static_msg( \
+            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
+            _ExprStr \
+        ); \
         $unreachable; \
     }), 0) \
 )
@@ -184,6 +202,7 @@ extern "C" {
  * @param file The file where the assertion failed.
  * @param line The line number where the assertion failed.
  */
+$attr($branch_cold)
 $extern fn_((claim_assert_failLog(const char* expr, const char* func, const char* file, u32 line))(void));
 /**
  * @brief Logs an assertion failure with the given expression, function, file, line, and message.
@@ -194,6 +213,7 @@ $extern fn_((claim_assert_failLog(const char* expr, const char* func, const char
  * @param line The line number where the assertion failed.
  * @param msg The message to include in the assertion failure.
  */
+$attr($branch_cold)
 $extern fn_((claim_assert_failLogMsg(const char* expr, const char* func, const char* file, u32 line, const char* msg))(void));
 /**
  * @brief Logs an assertion failure with the given expression, function, file, line, and formatted message.
@@ -205,10 +225,14 @@ $extern fn_((claim_assert_failLogMsg(const char* expr, const char* func, const c
  * @param fmt The formatted message to include in the assertion failure.
  * @param ... The arguments for the formatted message.
  */
+$attr($branch_cold)
 $extern fn_((claim_assert_failLogFmt(const char* expr, const char* func, const char* file, u32 line, const char* fmt, ...))(void));
 #else /* !on_comptime */
+$attr($branch_cold)
 $extern fn_((claim_assert_failLog(const char*, const char*, const char*, u32))(void));
+$attr($branch_cold)
 $extern fn_((claim_assert_failLogMsg(const char*, const char*, const char*, u32, const char*))(void));
+$attr($branch_cold)
 $extern fn_((claim_assert_failLogFmt(const char*, const char*, const char*, u32, const char*, ...))(void));
 #endif /* on_comptime */
 #else /* !claim_fail_printing_enabled */

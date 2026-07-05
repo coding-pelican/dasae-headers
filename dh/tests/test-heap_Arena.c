@@ -11,7 +11,7 @@ TEST_fn_("heap/Arena: reset while retaining a buffer" $guard) {
 
     // Create two internal buffers
     let_ignore = try_(mem_Alctr_allocBytes($trace gpa, 1));
-    let_ignore = try_(mem_Alctr_allocBytes($trace gpa, 1000));
+    let_ignore = try_(mem_Alctr_allocBytes($trace gpa, 1024 * 1024));
 
     // Check that we have at least two buffers
     try_(TEST_expect(isSome(unwrap_(arena.state.buf_list.first)->next)));

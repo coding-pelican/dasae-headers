@@ -132,8 +132,10 @@ extern "C" {
     __offset - (__offset & ~(__align - 1)); \
 })
 
-// #define ____fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
-//     eqlType$(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldType$(T_Generic, _Field), (var_anon)._Field)), FieldType$(T_Generic, _Field_))
+#if UNUSED_CODE
+#define ____fieldAnonTypeCastable(T_Generic, var_anon, T_FieldNamed, _Field...) \
+    eqlType$(TypeOf(pp_join(_, T_FieldNamed, anonCast$)(FieldType$(T_Generic, _Field), (var_anon)._Field)), FieldType$(T_Generic, _Field_))
+#endif /* UNUSED_CODE */
 
 #if defined(__cplusplus)
 } /* extern "C" */

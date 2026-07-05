@@ -55,7 +55,7 @@ $static let pac_V2i_mul = m_V2i32_mul;
 $attr($maybe_unused)
 $static let pac_V2i_div = m_V2i32_div;
 $attr($maybe_unused)
-$static let pac_V2i_mod = m_V2i32_mod;
+$static let pac_V2i_rem = m_V2i32_rem;
 $attr($maybe_unused)
 $static let pac_V2i_scal = m_V2i32_scal;
 $attr($maybe_unused)
@@ -69,7 +69,7 @@ $static let pac_V2i_mulS = m_V2i32_mulS;
 $attr($maybe_unused)
 $static let pac_V2i_divS = m_V2i32_divS;
 $attr($maybe_unused)
-$static let pac_V2i_modS = m_V2i32_modS;
+$static let pac_V2i_remS = m_V2i32_remS;
 $attr($maybe_unused)
 $static let pac_V2i_min = m_V2i32_min;
 $attr($maybe_unused)

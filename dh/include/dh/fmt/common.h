@@ -208,7 +208,7 @@ typedef enum_((fmt_Type $fits($packed))(
     fmt_Type_string_s,
 )) fmt_Type;
 T_use_O$(fmt_Type);
-$static let fmt_Type_values = A_from$((S_const$u8){
+$static let fmt_Type_values = A_from_static$((S_const$u8){
     [fmt_Type_hex_lower] = u8_l("x"),
     [fmt_Type_hex_upper] = u8_l("X"),
     [fmt_Type_octal] = u8_l("o"),
@@ -240,7 +240,7 @@ typedef enum_((fmt_Size $fits($packed))(
 T_use_O$(fmt_Size);
 $static let fmt_Size_default = fmt_Size_32;
 $static let fmt_Size_values_default = u8_l("");
-$static let fmt_Size_values = A_from$((S_const$u8){
+$static let fmt_Size_values = A_from_static$((S_const$u8){
     [fmt_Size_8] = u8_l("hh"),
     [fmt_Size_16] = u8_l("h"),
     [fmt_Size_32] = fmt_Size_values_default,

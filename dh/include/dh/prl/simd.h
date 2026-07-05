@@ -445,7 +445,8 @@ extern "C" {
 #define __emit_inline__simd_V_from$(_T, _initial...) \
     ({ \
         let __arr = A_from$((_T)_initial); \
-        var_(__ret, simd_V$$((sizeOf$(TypeOf((_T[])_initial)) / sizeOf$(_T)), _T)) = {}; \
+        typedef TypeOf(__arr) __simd_V_from__Arr; \
+        var_(__ret, simd_V$$(A_n$(__simd_V_from__Arr), _T)) = {}; \
         loop_inline_(for) (usize __i = 0; __i < simd_V_len(__ret); ++__i) { __ret.val[__i] = __arr.val[__i]; } \
         __ret; \
     })
