@@ -165,7 +165,7 @@ fn_((exec_Lane__createTask(
         return_ok(asg_l((task)({
             .state = state,
             .cancel = exec_Task_Cancel_none,
-            .cancel_protection = Sched_CancelProtn_unblocked,
+            .cancel_protection = Sched_CancelProtcn_unblocked,
             .result = cleared(),
             .inner = inner,
             .fiber = none(),
@@ -181,7 +181,7 @@ fn_((exec_Lane__createTask(
     return_ok(asg_l((task)({
         .state = state,
         .cancel = exec_Task_Cancel_none,
-        .cancel_protection = Sched_CancelProtn_unblocked,
+        .cancel_protection = Sched_CancelProtcn_unblocked,
         .result = exec_Task__resultMut(task, result.type),
         .inner = inner,
         .fiber = none(),

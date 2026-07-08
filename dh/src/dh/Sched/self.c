@@ -20,7 +20,7 @@ $static fn_((Sched__cancelTimed(exec_Lane* lane, exec_LaneTimed* timed, exec_Tas
 $attr($inline_always)
 $static fn_((Sched__recancelLane(exec_Lane* lane))(void));
 $attr($inline_always)
-$static fn_((Sched__swapCancelProtnLane(exec_Lane* lane, Sched_CancelProtn new_protection))(Sched_CancelProtn));
+$static fn_((Sched__swapCancelProtcnLane(exec_Lane* lane, Sched_CancelProtcn new_protection))(Sched_CancelProtcn));
 $attr($inline_always $must_check)
 $static fn_((Sched__idleLane(exec_Lane* lane))(Sched_Cancelable$void));
 
@@ -30,7 +30,7 @@ $static fn_((Sched_seq__spawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(S
 $static fn_((Sched_seq__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_seq__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_seq__recancel(P$raw ctx))(void));
-$static fn_((Sched_seq__swapCancelProtn(P$raw ctx, Sched_CancelProtn new_protection))(Sched_CancelProtn));
+$static fn_((Sched_seq__swapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protection))(Sched_CancelProtcn));
 $attr($must_check)
 $static fn_((Sched_seq__idle(P$raw ctx))(Sched_Cancelable$void));
 
@@ -40,7 +40,7 @@ $static fn_((Sched_coop__spawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))(
 $static fn_((Sched_coop__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_coop__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_coop__recancel(P$raw ctx))(void));
-$static fn_((Sched_coop__swapCancelProtn(P$raw ctx, Sched_CancelProtn new_protection))(Sched_CancelProtn));
+$static fn_((Sched_coop__swapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protection))(Sched_CancelProtcn));
 $attr($must_check)
 $static fn_((Sched_coop__idle(P$raw ctx))(Sched_Cancelable$void));
 
@@ -50,7 +50,7 @@ $static fn_((Sched_preem__spawn(P$raw ctx, u_P$raw result, P$$(Clsr$raw) inner))
 $static fn_((Sched_preem__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_preem__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $static fn_((Sched_preem__recancel(P$raw ctx))(void));
-$static fn_((Sched_preem__swapCancelProtn(P$raw ctx, Sched_CancelProtn new_protection))(Sched_CancelProtn));
+$static fn_((Sched_preem__swapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protection))(Sched_CancelProtcn));
 $attr($must_check)
 $static fn_((Sched_preem__idle(P$raw ctx))(Sched_Cancelable$void));
 
@@ -62,7 +62,7 @@ let_(Sched_VTbl_noop, Sched_VTbl) = {
     .awaitFn = Sched_VTbl_noAwait,
     .cancelFn = Sched_VTbl_noCancel,
     .recancelFn = Sched_VTbl_noRecancel,
-    .swapCancelProtnFn = Sched_VTbl_noSwapCancelProtn,
+    .swapCancelProtcnFn = Sched_VTbl_noSwapCancelProtcn,
     .idleFn = Sched_VTbl_failingIdle,
 };
 
@@ -72,7 +72,7 @@ let_(Sched_VTbl_failing, Sched_VTbl) = {
     .awaitFn = Sched_VTbl_unreachableAwait,
     .cancelFn = Sched_VTbl_unreachableCancel,
     .recancelFn = Sched_VTbl_unreachableRecancel,
-    .swapCancelProtnFn = Sched_VTbl_unreachableSwapCancelProtn,
+    .swapCancelProtcnFn = Sched_VTbl_unreachableSwapCancelProtcn,
     .idleFn = Sched_VTbl_failingIdle,
 };
 
@@ -113,9 +113,9 @@ fn_((Sched_recancel(Sched self))(void)) {
     self.vtbl->recancelFn(self.ctx);
 };
 
-fn_((Sched_swapCancelProtn(Sched self, Sched_CancelProtn new_protect))(Sched_CancelProtn)) {
+fn_((Sched_swapCancelProtcn(Sched self, Sched_CancelProtcn new_protect))(Sched_CancelProtcn)) {
     self = Sched_ensureValid(self);
-    return self.vtbl->swapCancelProtnFn(self.ctx, new_protect);
+    return self.vtbl->swapCancelProtcnFn(self.ctx, new_protect);
 };
 
 fn_((Sched_idle(Sched self))(Sched_Cancelable$void)) {
@@ -130,7 +130,7 @@ fn_((Sched_seq(exec_Seq* self))(Sched)) {
         .awaitFn = Sched_seq__await,
         .cancelFn = Sched_seq__cancel,
         .recancelFn = Sched_seq__recancel,
-        .swapCancelProtnFn = Sched_seq__swapCancelProtn,
+        .swapCancelProtcnFn = Sched_seq__swapCancelProtcn,
         .idleFn = Sched_seq__idle,
     } };
     return Sched_ensureValid((Sched){
@@ -146,7 +146,7 @@ fn_((Sched_coop(exec_Coop* loop))(Sched)) {
         .awaitFn = Sched_coop__await,
         .cancelFn = Sched_coop__cancel,
         .recancelFn = Sched_coop__recancel,
-        .swapCancelProtnFn = Sched_coop__swapCancelProtn,
+        .swapCancelProtcnFn = Sched_coop__swapCancelProtcn,
         .idleFn = Sched_coop__idle,
     } };
     return Sched_ensureValid((Sched){
@@ -163,7 +163,7 @@ fn_((Sched_preem(exec_Preem* preem))(Sched)) {
         .cancelFn = Sched_preem__cancel,
         .recancelFn = Sched_preem__recancel,
         .idleFn = Sched_preem__idle,
-        .swapCancelProtnFn = Sched_preem__swapCancelProtn,
+        .swapCancelProtcnFn = Sched_preem__swapCancelProtcn,
     } };
     return Sched_ensureValid((Sched){
         .ctx = preem,
@@ -179,7 +179,7 @@ fn_((Sched_para(exec_Para* para))(Sched)) {
         .cancelFn = Sched_VTbl_unreachableCancel,
         .recancelFn = Sched_VTbl_unreachableRecancel,
         .idleFn = Sched_VTbl_failingIdle,
-        .swapCancelProtnFn = Sched_VTbl_unreachableSwapCancelProtn,
+        .swapCancelProtcnFn = Sched_VTbl_unreachableSwapCancelProtcn,
     } };
     return Sched_ensureValid((Sched){
         .ctx = para,
@@ -236,13 +236,13 @@ fn_((Sched_VTbl_unreachableRecancel(P$raw ctx))(void)) {
     claim_unreachable;
 };
 
-fn_((Sched_VTbl_noSwapCancelProtn(P$raw ctx, Sched_CancelProtn new_protection))(Sched_CancelProtn)) {
+fn_((Sched_VTbl_noSwapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protection))(Sched_CancelProtcn)) {
     let_ignore = ctx;
     let_ignore = new_protection;
-    return Sched_CancelProtn_unblocked;
+    return Sched_CancelProtcn_unblocked;
 };
 
-fn_((Sched_VTbl_unreachableSwapCancelProtn(P$raw ctx, Sched_CancelProtn new_protection))(Sched_CancelProtn)) {
+fn_((Sched_VTbl_unreachableSwapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protection))(Sched_CancelProtcn)) {
     let_ignore = ctx;
     let_ignore = new_protection;
     claim_unreachable;
@@ -295,11 +295,11 @@ fn_((Sched__recancelLane(exec_Lane* lane))(void)) {
     return exec_Task_recancel(task);
 };
 
-fn_((Sched__swapCancelProtnLane(exec_Lane* lane, Sched_CancelProtn new_protection))(Sched_CancelProtn)) {
+fn_((Sched__swapCancelProtcnLane(exec_Lane* lane, Sched_CancelProtcn new_protection))(Sched_CancelProtcn)) {
     if_some((ensureNonnull(lane)->task_curr)(task)) {
-        return exec_Task_swapCancelProtn(task, new_protection);
+        return exec_Task_swapCancelProtcn(task, new_protection);
     }
-    return Sched_CancelProtn_unblocked;
+    return Sched_CancelProtcn_unblocked;
 };
 
 fn_((Sched__idleLane(exec_Lane* lane))(Sched_Cancelable$void) $scope) {
@@ -343,9 +343,9 @@ fn_((Sched_seq__recancel(P$raw ctx))(void)) {
     return Sched__recancelLane(&self->lane);
 };
 
-fn_((Sched_seq__swapCancelProtn(P$raw ctx, Sched_CancelProtn new_protection))(Sched_CancelProtn)) {
+fn_((Sched_seq__swapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protection))(Sched_CancelProtcn)) {
     let self = ptrAlignCast$((exec_Seq*)(ensureNonnull(ctx)));
-    return Sched__swapCancelProtnLane(&self->lane, new_protection);
+    return Sched__swapCancelProtcnLane(&self->lane, new_protection);
 };
 
 fn_((Sched_seq__idle(P$raw ctx))(Sched_Cancelable$void)) {
@@ -386,9 +386,9 @@ fn_((Sched_coop__recancel(P$raw ctx))(void)) {
     return Sched__recancelLane(&self->timed.lane);
 };
 
-fn_((Sched_coop__swapCancelProtn(P$raw ctx, Sched_CancelProtn new_protection))(Sched_CancelProtn)) {
+fn_((Sched_coop__swapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protection))(Sched_CancelProtcn)) {
     let self = ptrAlignCast$((exec_Coop*)(ensureNonnull(ctx)));
-    return Sched__swapCancelProtnLane(&self->timed.lane, new_protection);
+    return Sched__swapCancelProtcnLane(&self->timed.lane, new_protection);
 };
 
 fn_((Sched_coop__idle(P$raw ctx))(Sched_Cancelable$void)) {
@@ -442,13 +442,13 @@ fn_((Sched_preem__recancel(P$raw ctx))(void)) {
     claim_unreachable_msg("`exec_Preem` has no cooperative cancel points");
 };
 
-fn_((Sched_preem__swapCancelProtn(
+fn_((Sched_preem__swapCancelProtcn(
     P$raw ctx,
-    Sched_CancelProtn new_protection
-))(Sched_CancelProtn)) {
+    Sched_CancelProtcn new_protection
+))(Sched_CancelProtcn)) {
     let_ignore = ctx;
     let_ignore = new_protection;
-    return Sched_CancelProtn_unblocked;
+    return Sched_CancelProtcn_unblocked;
 };
 
 fn_((Sched_preem__idle(P$raw ctx))(Sched_Cancelable$void) $scope) {

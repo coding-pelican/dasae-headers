@@ -12,8 +12,8 @@ fn_((daterm_Term_waitTimed(daterm_Term self, time_Dur timeout))(daterm_Term_Wait
     return self.vtbl->waitTimedFn(self.ctx, timeout);
 };
 
-fn_((daterm_Term_waitProtn(daterm_Term self))(daterm_Event)) {
-    return self.vtbl->waitProtnFn(self.ctx);
+fn_((daterm_Term_waitProtcd(daterm_Term self))(daterm_Event)) {
+    return self.vtbl->waitProtcdFn(self.ctx);
 };
 
 fn_((daterm_Term_reader(daterm_Term self))(io_Reader)) {

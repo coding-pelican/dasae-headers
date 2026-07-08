@@ -37,7 +37,7 @@ $extern fn_((Sched_spawn(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$r
 #define T_use_Sched_spawn$(_T...) __stmt__T_use_Sched_spawn$(_T)
 
 $extern fn_((Sched_recancel(Sched self))(void));
-$extern fn_((Sched_swapCancelProtn(Sched self, Sched_CancelProtn new_protect))(Sched_CancelProtn));
+$extern fn_((Sched_swapCancelProtcn(Sched self, Sched_CancelProtcn new_protect))(Sched_CancelProtcn));
 $attr($must_check)
 $extern fn_((Sched_idle(Sched self))(Sched_Cancelable$void));
 
@@ -90,10 +90,10 @@ struct Sched_VTbl {
     /// Not thread-safe.
     fn_(((*recancelFn)(P$raw ctx))(void));
     /// Toggle whether `idleFn` and other cancellation points may return
-    /// `Sched_Canceled`, like `std.Io.swapCancelProtn`.
+    /// `Sched_Canceled`, like `std.Io.swapCancelProtcn`.
     ///
     /// Not thread-safe.
-    fn_(((*swapCancelProtnFn)(P$raw ctx, Sched_CancelProtn new_protect))(Sched_CancelProtn));
+    fn_(((*swapCancelProtcnFn)(P$raw ctx, Sched_CancelProtcn new_protect))(Sched_CancelProtcn));
     /// Cooperative no-op for the current routine; may return `Sched_Canceled`.
     /// Same role as `std.Io.checkCancel`: one outstanding request is consumed
     /// per successful `Sched_Canceled` return. Use `try_`/`catch_` like
@@ -112,8 +112,8 @@ $extern fn_((Sched_VTbl_noCancel(P$raw ctx, P$FutureAny any_future, u_P$raw resu
 $extern fn_((Sched_VTbl_unreachableCancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void));
 $extern fn_((Sched_VTbl_noRecancel(P$raw ctx))(void));
 $extern fn_((Sched_VTbl_unreachableRecancel(P$raw ctx))(void));
-$extern fn_((Sched_VTbl_noSwapCancelProtn(P$raw ctx, Sched_CancelProtn new_protect))(Sched_CancelProtn));
-$extern fn_((Sched_VTbl_unreachableSwapCancelProtn(P$raw ctx, Sched_CancelProtn new_protect))(Sched_CancelProtn));
+$extern fn_((Sched_VTbl_noSwapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protect))(Sched_CancelProtcn));
+$extern fn_((Sched_VTbl_unreachableSwapCancelProtcn(P$raw ctx, Sched_CancelProtcn new_protect))(Sched_CancelProtcn));
 $attr($must_check)
 $extern fn_((Sched_VTbl_failingIdle(P$raw ctx))(Sched_Cancelable$void));
 
@@ -128,7 +128,7 @@ fn_((Sched_isValid(Sched self))(bool)) {
         && isNonnull(self.vtbl->awaitFn)
         && isNonnull(self.vtbl->cancelFn)
         && isNonnull(self.vtbl->recancelFn)
-        && isNonnull(self.vtbl->swapCancelProtnFn)
+        && isNonnull(self.vtbl->swapCancelProtcnFn)
         && isNonnull(self.vtbl->idleFn);
 };
 fn_((Sched_assertValid(P$raw ctx, P_const$$(Sched_VTbl) vtbl))(void)) {
@@ -139,7 +139,7 @@ fn_((Sched_assertValid(P$raw ctx, P_const$$(Sched_VTbl) vtbl))(void)) {
     claim_assert_nonnull(vtbl->awaitFn);
     claim_assert_nonnull(vtbl->cancelFn);
     claim_assert_nonnull(vtbl->recancelFn);
-    claim_assert_nonnull(vtbl->swapCancelProtnFn);
+    claim_assert_nonnull(vtbl->swapCancelProtcnFn);
     claim_assert_nonnull(vtbl->idleFn);
 };
 fn_((Sched_ensureValid(Sched self))(Sched)) {

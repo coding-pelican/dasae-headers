@@ -203,7 +203,7 @@ TEST_fn_("exec/Task: idle consumes request; recancel re-arms" $guard) {
     var_(task, exec_Task) = {
         .state = exec_Task_State_running,
         .cancel = exec_Task_Cancel_none,
-        .cancel_protection = Sched_CancelProtn_unblocked,
+        .cancel_protection = Sched_CancelProtcn_unblocked,
         .result = cleared(),
         .inner = cleared(),
         .fiber = none(),

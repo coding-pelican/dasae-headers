@@ -45,7 +45,7 @@ T_alias$((exec_Task)(union exec_Task {
     T_embed$(struct {
         var_(state, exec_Task_State);
         var_(cancel, exec_Task_Cancel);
-        var_(cancel_protection, Sched_CancelProtn);
+        var_(cancel_protection, Sched_CancelProtcn);
         var_(result, u_P$raw);
         var_(inner, P$$(Clsr$raw));
         var_(fiber, O$P$exec_Fiber);
@@ -72,7 +72,7 @@ $extern fn_((exec_Task_copyToResult(P_const$exec_Task task, u_P$raw result))(voi
 $extern fn_((exec_Task_hasCancelRequest(P_const$exec_Task task))(bool));
 $extern fn_((exec_Task_requestCancel(exec_Task* task))(void));
 $extern fn_((exec_Task_recancel(exec_Task* task))(void));
-$extern fn_((exec_Task_swapCancelProtn(exec_Task* task, Sched_CancelProtn new_protection))(Sched_CancelProtn));
+$extern fn_((exec_Task_swapCancelProtcn(exec_Task* task, Sched_CancelProtcn new_protection))(Sched_CancelProtcn));
 /// May return `Sched_Canceled` and consume one outstanding request (`exec_Task_idle`).
 $attr($must_check)
 $extern fn_((exec_Task_idle(exec_Task* task))(Sched_Cancelable$void));

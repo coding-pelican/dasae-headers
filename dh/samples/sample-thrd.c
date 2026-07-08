@@ -2,7 +2,7 @@
 #include "dh/heap/Sys.h"
 #include "dh/time/Dur.h"
 #include "dh/time/self/Awake.h"
-#include "dh/thrd/ResetEvent.h"
+#include "dh/thrd/CancelTok.h"
 #include "dh/thrd/Self.h"
 #include "dh/io/stream.h"
 
@@ -49,7 +49,7 @@ $static fn_((demoThrdDefer(time_Awake time, time_Dur wait))(i32) $guard) {
     return_(cnt);
 } $unguarded(fn);
 fn_use_Clsr_((demoThrdDefer)(time_Awake, time_Dur)(i32));
-$static fn_((demoThrdDeferCheck(time_Awake time, time_Dur wait, thrd_ResetEvent* cancel))(i32) $guard) {
+$static fn_((demoThrdDeferCheck(time_Awake time, time_Dur wait, thrd_CancelTok cancel))(i32) $guard) {
     defer_(report(u8_l(nameOf(demoThrdDeferCheck)), u8_l("deferred 2")));
     defer_(report(u8_l(nameOf(demoThrdDeferCheck)), u8_l("deferred 1")));
     var_(cnt, i32) = 0;
@@ -58,7 +58,7 @@ $static fn_((demoThrdDeferCheck(time_Awake time, time_Dur wait, thrd_ResetEvent*
         let start = time_Awake_now(time),
         time_Dur_lt(time_Awake_Inst_elapsed(start, time), wait)
     ) {
-        if_some_void((catch_none(thrd_ResetEvent_timedWait(cancel, time_Dur_fromMillis(1))))) {
+        if_some_void((catch_none(thrd_CancelTok_timedWait(cancel, time_Dur_fromMillis(1))))) {
             report(u8_l(nameOf(demoThrdDeferCheck)), u8_l("canceled"));
             return_(cnt);
         }
@@ -67,7 +67,7 @@ $static fn_((demoThrdDeferCheck(time_Awake time, time_Dur wait, thrd_ResetEvent*
     report(u8_l(nameOf(demoThrdDeferCheck)), u8_l("cnt: {:d}"), cnt);
     return_(cnt);
 } $unguarded(fn);
-fn_use_Clsr_((demoThrdDeferCheck)(time_Awake, time_Dur, thrd_ResetEvent*)(i32));
+fn_use_Clsr_((demoThrdDeferCheck)(time_Awake, time_Dur, thrd_CancelTok)(i32));
 
 T_use$((i32)(thrd_spawn, thrd_join));
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
@@ -85,15 +85,15 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     var demo_thrd_defer = clsr_((demoThrdDefer)(clock, time_Dur_sec));
     let thrd_defer = try_(thrd_spawn$i32(spawn_cfg, demo_thrd_defer.as_base));
 
-    var cancel = thrd_ResetEvent_init();
-    defer_(thrd_ResetEvent_fini(&cancel));
-    var demo_thrd_defer_check = clsr_((demoThrdDeferCheck)(clock, time_Dur_mul$u32(time_Dur_sec, 10), &cancel));
+    var cancel = thrd_CancelTok_Src_init();
+    defer_(thrd_CancelTok_Src_fini(&cancel));
+    var demo_thrd_defer_check = clsr_((demoThrdDeferCheck)(clock, time_Dur_mul$u32(time_Dur_sec, 10), thrd_CancelTok_Src_tok(&cancel)));
     let thrd_defer_check = try_(thrd_spawn$i32(spawn_cfg, demo_thrd_defer_check.as_base));
 
     for_(($r(0, 20))(i)) {
         report(u8_l(nameOf(main)), u8_l("current: {:uz}"), i);
         if (i == 10) {
-            thrd_ResetEvent_set(&cancel);
+            thrd_CancelTok_Src_cancel(&cancel);
             report(u8_l(nameOf(main)), u8_l("requested cancel"));
         }
         try_(time_Awake_sleep(clock, time_Dur_fromSecs$f64(0.1)));

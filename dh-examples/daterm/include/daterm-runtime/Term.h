@@ -65,7 +65,7 @@ $attr($must_check)
 $extern fn_((daterm_Term_waitTimed(daterm_Term self, time_Dur timeout))(daterm_Term_WaitE$daterm_Event));
 /// Protected wait for next event; does not introduce a cancellation point.
 /// Requires terminal to be in raw mode
-$extern fn_((daterm_Term_waitProtn(daterm_Term self))(daterm_Event));
+$extern fn_((daterm_Term_waitProtcd(daterm_Term self))(daterm_Event));
 
 /* --- IO Contracts --- */
 
@@ -95,7 +95,7 @@ struct daterm_Term_VTbl {
     fn_(((*waitFn)(P$raw ctx))(Sched_Cancelable$daterm_Event));
     $attr($must_check)
     fn_(((*waitTimedFn)(P$raw ctx, time_Dur timeout))(daterm_Term_WaitE$daterm_Event));
-    fn_(((*waitProtnFn)(P$raw ctx))(daterm_Event));
+    fn_(((*waitProtcdFn)(P$raw ctx))(daterm_Event));
 
     fn_(((*readerFn)(P$raw ctx))(io_Reader));
     fn_(((*writerFn)(P$raw ctx))(io_Writer));
@@ -118,7 +118,7 @@ fn_((daterm_Term_isValid(daterm_Term self))(bool)) {
         && isNonnull(self.vtbl->pollFn)
         && isNonnull(self.vtbl->waitFn)
         && isNonnull(self.vtbl->waitTimedFn)
-        && isNonnull(self.vtbl->waitProtnFn)
+        && isNonnull(self.vtbl->waitProtcdFn)
         && isNonnull(self.vtbl->readerFn)
         && isNonnull(self.vtbl->writerFn)
         && isNonnull(self.vtbl->flushFn)
@@ -132,7 +132,7 @@ fn_((daterm_Term_assertValid(P$raw ctx, P_const$$(daterm_Term_VTbl) vtbl))(void)
     claim_assert_nonnull(vtbl->pollFn);
     claim_assert_nonnull(vtbl->waitFn);
     claim_assert_nonnull(vtbl->waitTimedFn);
-    claim_assert_nonnull(vtbl->waitProtnFn);
+    claim_assert_nonnull(vtbl->waitProtcdFn);
     claim_assert_nonnull(vtbl->readerFn);
     claim_assert_nonnull(vtbl->writerFn);
     claim_assert_nonnull(vtbl->flushFn);

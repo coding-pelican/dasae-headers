@@ -19,7 +19,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     var tty = io_TTY_init(io_TTY_Cfg_std());
     defer_(io_TTY_fini(&tty));
 
-    try_(io_TTY_enterMode(&tty, io_TTY_ModePatch_rawVt()));
+    try_(io_TTY_enterMode(&tty, io_TTY_ModePatch_rawVT()));
     let out = io_TTY_writer(&tty);
     try_(io_Writer_println(out, u8_l("Raw VT mode enabled. Press any byte to exit.")));
 

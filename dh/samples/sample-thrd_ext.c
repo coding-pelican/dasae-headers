@@ -4,8 +4,8 @@
 #include "dh/Thrd/Mtx.h"
 #include "dh/Thrd/Sem.h"
 #include "dh/Thrd/Cond.h"
-#include "dh/Thrd/ResetEvent.h"
-#include "dh/Thrd/WaitGroup.h"
+#include "dh/Thrd/ResetEvt.h"
+#include "dh/Thrd/Group.h"
 #include "dh/heap/Page.h"
 #include "dh/time/Duration.h"
 #include "dh/io/stream.h"
@@ -19,39 +19,39 @@ $static fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
 }
 
 //=============================================================================
-// Example 1: ResetEvent - Signal between threads
+// Example 1: ResetEvt - Signal between threads
 //=============================================================================
 
-$static var_(g_reset_event, Thrd_ResetEvent) = {};
+$static var_(g_reset_evt, Thrd_ResetEvt) = {};
 
-$static Thrd_fn_(resetEventWorker, (Void, Void), ($ignore, $ignore)$scope) {
-    report(u8_l("resetEventWorker"), u8_l("waiting for signal..."));
-    Thrd_ResetEvent_wait(&g_reset_event);
-    report(u8_l("resetEventWorker"), u8_l("signal received!"));
+$static Thrd_fn_(resetEvtWorker, (Void, Void), ($ignore, $ignore)$scope) {
+    report(u8_l("resetEvtWorker"), u8_l("waiting for signal..."));
+    Thrd_ResetEvt_wait(&g_reset_evt);
+    report(u8_l("resetEvtWorker"), u8_l("signal received!"));
     return_({});
 } $unscoped(Thrd_fn);
 
-$static fn_((exampleResetEvent(void))(void) $guard) {
-    report(u8_l("example"), u8_l("=== ResetEvent Demo ==="));
+$static fn_((exampleResetEvt(void))(void) $guard) {
+    report(u8_l("example"), u8_l("=== ResetEvt Demo ==="));
 
-    g_reset_event = Thrd_ResetEvent_init();
-    defer_(Thrd_ResetEvent_fini(&g_reset_event));
+    g_reset_evt = Thrd_ResetEvt_init();
+    defer_(Thrd_ResetEvt_fini(&g_reset_evt));
 
-    var thrd = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((resetEventWorker)()).as_raw))($ignore, return));
+    var thrd = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((resetEvtWorker)()).as_raw))($ignore, return));
 
     time_sleep(time_Duration_fromMillis(100));
     report(u8_l("example"), u8_l("sending signal..."));
-    Thrd_ResetEvent_set(&g_reset_event);
+    Thrd_ResetEvt_set(&g_reset_evt);
 
     let_ignore = Thrd_join(thrd);
     io_stream_nl();
 } $unguarded(fn);
 
 //=============================================================================
-// Example 2: WaitGroup - Wait for multiple tasks
+// Example 2: Group - Wait for multiple tasks
 //=============================================================================
 
-$static var_(g_wait_group, Thrd_WaitGroup) = {};
+$static var_(g_wait_group, Thrd_Group) = {};
 
 $static Thrd_fn_(waitGroupTask, ({ i32 task_id; }, Void), ($ignore, args)$scope) {
     report(u8_l("waitGroupTask"), u8_l("task {:d} started"), args->task_id);
@@ -60,24 +60,24 @@ $static Thrd_fn_(waitGroupTask, ({ i32 task_id; }, Void), ($ignore, args)$scope)
     return_({});
 } $unscoped(Thrd_fn);
 
-$static fn_((exampleWaitGroup(void))(void) $guard) {
+$static fn_((exampleGroup(void))(void) $guard) {
     var page = (heap_Page){};
     let gpa = heap_Page_alctr(&page);
-    report(u8_l("example"), u8_l("=== WaitGroup Demo ==="));
+    report(u8_l("example"), u8_l("=== Group Demo ==="));
 
-    g_wait_group = Thrd_WaitGroup_init();
-    defer_(Thrd_WaitGroup_fini(&g_wait_group));
+    g_wait_group = Thrd_Group_init();
+    defer_(Thrd_Group_fini(&g_wait_group));
 
     // Spawn multiple tasks
     A$$(4, Thrd_FnCtx$(waitGroupTask)) task_ctxs = A_zero();
     for_(($r(1, 5), $s(A_ref(task_ctxs)))(i, task_ctx) {
         *task_ctx = Thrd_FnCtx_from$((waitGroupTask)(as$(i32)(i)));
-        Thrd_WaitGroup_spawn(&g_wait_group, gpa, task_ctx->as_raw);
+        Thrd_Group_spawn(&g_wait_group, gpa, task_ctx->as_raw);
     })
         ;
 
     report(u8_l("example"), u8_l("waiting for all tasks..."));
-    Thrd_WaitGroup_wait(&g_wait_group);
+    Thrd_Group_wait(&g_wait_group);
     report(u8_l("example"), u8_l("all tasks completed!"));
     io_stream_nl();
 } $unguarded(fn);
@@ -111,18 +111,18 @@ $static fn_((exampleSemaphore(void))(void) $guard) {
     Thrd_Sem_post(&g_sem);
     Thrd_Sem_post(&g_sem);
 
-    var wait_group = Thrd_WaitGroup_init();
-    defer_(Thrd_WaitGroup_fini(&wait_group));
+    var wait_group = Thrd_Group_init();
+    defer_(Thrd_Group_fini(&wait_group));
 
     // Spawn 4 workers competing for 2 permits
     A$$(4, Thrd_FnCtx$(semWorker)) worker_ctxs = A_zero();
     for_(($r(1, 5), $s(A_ref(worker_ctxs)))(i, worker_ctx) {
         *worker_ctx = Thrd_FnCtx_from$((semWorker)(as$(i32)(i)));
-        Thrd_WaitGroup_spawn(&wait_group, gpa, worker_ctx->as_raw);
+        Thrd_Group_spawn(&wait_group, gpa, worker_ctx->as_raw);
     })
         ;
 
-    Thrd_WaitGroup_wait(&wait_group);
+    Thrd_Group_wait(&wait_group);
     report(u8_l("example"), u8_l("all workers completed!"));
     io_stream_nl();
 } $unguarded(fn);
@@ -212,8 +212,8 @@ $static fn_((exampleProducerConsumer(void))(void) $guard) {
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
     let_ignore = args;
 
-    exampleResetEvent();
-    exampleWaitGroup();
+    exampleResetEvt();
+    exampleGroup();
     exampleSemaphore();
     exampleProducerConsumer();
 

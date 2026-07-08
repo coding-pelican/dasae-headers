@@ -1,4 +1,3 @@
-#if UNUSED_CODE
 #include "dh-main.h"
 #include "dh/Thrd/common.h"
 #include "dh/time/Duration.h"
@@ -300,5 +299,3 @@ void test_concurrent_stress() {
     TEST_PASS("Concurrent stress test");
 }
  */
-
-#endif /* UNUSED_CODE */

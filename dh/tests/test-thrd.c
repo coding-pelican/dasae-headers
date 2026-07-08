@@ -80,7 +80,7 @@ TEST_fn_("thrd: spawn and join coroutine closure" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("thrd/WaitGroup: spawn detached closure" $guard) {
+TEST_fn_("thrd/Group: spawn detached closure" $guard) {
     var sys_heap = heap_Sys_init();
     defer_(heap_Sys_fini(&sys_heap));
 
@@ -90,17 +90,15 @@ TEST_fn_("thrd/WaitGroup: spawn detached closure" $guard) {
     };
     defer_(thrd_Mtx_fini(&thrd_safe_heap.mtx));
 
-    var wg = thrd_WaitGroup_init();
-    defer_(thrd_WaitGroup_fini(&wg));
+    var wg = thrd_Group_init();
+    defer_(thrd_Group_fini(&wg));
 
     var done_count = atom_V_init$(atom_V$usize, 0);
     var clsr = clsr_((test__markDone)(&done_count));
 
-    thrd_WaitGroup_spawn(&wg, heap_ThrdSafe_alctr(&thrd_safe_heap), clsr.as_base);
-    thrd_WaitGroup_wait(&wg);
+    thrd_Group_spawn(&wg, heap_ThrdSafe_alctr(&thrd_safe_heap), clsr.as_base);
+    thrd_Group_wait(&wg);
 
     try_(TEST_expect(atom_V_load(&done_count, atom_MemOrd_acquire) == 1));
-    thrd_WaitGroup_reset(&wg);
-    try_(TEST_expect(thrd_WaitGroup_isDone(&wg)));
     return_ok({});
 } $unguarded(TEST_fn);

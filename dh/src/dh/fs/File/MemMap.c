@@ -10,14 +10,14 @@
 #endif
 
 #if plat_is_windows
-$static fn_((fs__File_MemMap_windowsPageProtect(fs_File_MemMap_Protn protection))(DWORD)) {
+$static fn_((fs__File_MemMap_windowsPageProtect(fs_File_MemMap_Protcn protection))(DWORD)) {
     if (protection.execute) {
         return protection.write ? PAGE_EXECUTE_READWRITE : PAGE_EXECUTE_READ;
     }
     return protection.write ? PAGE_READWRITE : PAGE_READONLY;
 }
 
-$static fn_((fs__File_MemMap_windowsViewAccess(fs_File_MemMap_Protn protection))(DWORD)) {
+$static fn_((fs__File_MemMap_windowsViewAccess(fs_File_MemMap_Protcn protection))(DWORD)) {
     DWORD access = 0;
     if (protection.read) access |= FILE_MAP_READ;
     if (protection.write) access |= FILE_MAP_WRITE;
@@ -25,7 +25,7 @@ $static fn_((fs__File_MemMap_windowsViewAccess(fs_File_MemMap_Protn protection))
     return access == 0 ? FILE_MAP_READ : access;
 }
 #elif plat_is_linux
-$static fn_((fs__File_MemMap_linuxProtect(fs_File_MemMap_Protn protection))(sys_call_linux_word)) {
+$static fn_((fs__File_MemMap_linuxProtect(fs_File_MemMap_Protcn protection))(sys_call_linux_word)) {
     sys_call_linux_word prot = 0;
     if (protection.read) prot |= sys_call_linux_PROT_READ;
     if (protection.write) prot |= sys_call_linux_PROT_WRITE;
@@ -97,7 +97,7 @@ $static fn_((fs__File_MemMap_remap(fs_File_MemMap* self, usize len))(fs_E$void) 
 fn_((fs_File_MemMap_init(
     fs_File file,
     usize len,
-    fs_File_MemMap_Protn protection,
+    fs_File_MemMap_Protcn protection,
     bool undefined_contents,
     bool populate,
     u64 offset

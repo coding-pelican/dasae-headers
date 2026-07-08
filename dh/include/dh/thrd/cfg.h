@@ -66,10 +66,11 @@ typedef pp_if_(thrd_use_pthread)(
 #define thrd_max_name_len __comp_const__thrd_max_name_len
 #define __comp_const__thrd_max_name_len (15)
 T_use_atom_V$(u32); /* for thrd_ftx, thrd_Mtx */
+T_use_atom_V$(u64); /* for thrd_Batch */
+T_use_atom_V$(usize); /* for thrd_Group */
 typedef struct thrd_Mtx__Impl thrd_Mtx__Impl;
 typedef struct thrd_Cond__Impl thrd_Cond__Impl;
 typedef struct thrd_RWLock__Impl thrd_RWLock__Impl;
-T_use_atom_V$(usize); /* for thrd_WaitGroup */
 
 #if defined(__cplusplus)
 } /* extern "C" */

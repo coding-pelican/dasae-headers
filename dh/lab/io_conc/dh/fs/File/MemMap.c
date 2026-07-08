@@ -5,7 +5,7 @@ fn_((fs_File_MemMap_init(
     fs_File file,
     fs_Self fs,
     usize len,
-    fs_File_MemMap_Protn protection,
+    fs_File_MemMap_Protcn protection,
     bool undefined_contents,
     bool populate,
     u64 offset

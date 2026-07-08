@@ -35,11 +35,11 @@ $static fn_((net__windows_sockType(net_Sock_Mode mode))(E$i32) $scope) {
     }
 } $unscoped(fn);
 
-$static fn_((net__windows_protocol(net_Proto protocol))(E$i32) $scope) {
+$static fn_((net__windows_protocol(net_Protoc protocol))(E$i32) $scope) {
     switch (protocol) {
-    case_((net_Proto_tcp)) return_ok(IPPROTO_TCP) $end(case);
-    case_((net_Proto_udp)) return_ok(IPPROTO_UDP) $end(case);
-    case_((net_Proto_raw)) return_ok(IPPROTO_RAW) $end(case);
+    case_((net_Protoc_tcp)) return_ok(IPPROTO_TCP) $end(case);
+    case_((net_Protoc_udp)) return_ok(IPPROTO_UDP) $end(case);
+    case_((net_Protoc_raw)) return_ok(IPPROTO_RAW) $end(case);
     default_() return_err(E_cause$net_ProtocolUnsupported()) $end(default);
     }
 } $unscoped(fn);
@@ -95,7 +95,7 @@ $static fn_((net__windows_localIp(SOCKET socket))(E$net_IpAddr) $scope) {
     return_(net__windows_ipFromSockAddr(addr));
 } $unscoped(fn);
 
-$static fn_((net__windows_newSocket(net_IpAddr addr, net_Sock_Mode mode, net_Proto protocol))(E$net_Handle) $scope) {
+$static fn_((net__windows_newSocket(net_IpAddr addr, net_Sock_Mode mode, net_Protoc protocol))(E$net_Handle) $scope) {
     let family = try_(net__windows_family(addr));
     let sock_type = try_(net__windows_sockType(mode));
     let sock_protocol = try_(net__windows_protocol(protocol));
@@ -175,7 +175,7 @@ $static fn_((net__windows_bindIp(net_IpAddr addr, net_BindOpts opts))(E$net_Sock
 $static fn_((net__windows_listenIp(net_IpAddr addr, net_ListenOpts opts))(E$net_Svr) $scope) {
     try_(net__windows_ensureStarted());
     if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$net_SocketModeUnsupported());
-    if (opts.protocol != net_Proto_tcp) return_err(E_cause$net_ProtocolUnsupported());
+    if (opts.protocol != net_Protoc_tcp) return_err(E_cause$net_ProtocolUnsupported());
 
     let socket = try_(net__windows_newSocket(addr, opts.mode, opts.protocol));
     if (matches(addr, net_Addr_Family_ip6)) {
@@ -226,7 +226,7 @@ $static fn_((net__windows_listenIp(net_IpAddr addr, net_ListenOpts opts))(E$net_
 $static fn_((net__windows_connectIp(net_IpAddr addr, net_ConnectOpts opts))(E$net_Stream) $scope) {
     try_(net__windows_ensureStarted());
     if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$net_SocketModeUnsupported());
-    if (opts.protocol != net_Proto_tcp) return_err(E_cause$net_ProtocolUnsupported());
+    if (opts.protocol != net_Protoc_tcp) return_err(E_cause$net_ProtocolUnsupported());
 
     let socket = try_(net__windows_newSocket(addr, opts.mode, opts.protocol));
     let use_async_connect = opts.nonblocking || !time_Dur_isZero(opts.timeout);

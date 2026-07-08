@@ -32,10 +32,10 @@ errset_((net_E)(
     net_WouldBlock
 ) $union_errset_(Sched_TimeoutE));
 
-T_alias$((net_Proto)(enum_((net_Proto $fits($packed))(
-    net_Proto_tcp = 6,
-    net_Proto_udp = 17,
-    net_Proto_raw = 255,
+T_alias$((net_Protoc)(enum_((net_Protoc $fits($packed))(
+    net_Protoc_tcp = 6,
+    net_Protoc_udp = 17,
+    net_Protoc_raw = 255,
 ))));
 T_alias$((net_Sock_Mode)(enum_((net_Sock_Mode $fits($packed))(
     net_Sock_Mode_stream = 0,
@@ -68,20 +68,20 @@ T_alias$((net_IpAddr)(struct net_IpAddr {
 
 T_alias$((net_ConnectOpts)(struct net_ConnectOpts {
     var_(mode, net_Sock_Mode);
-    var_(protocol, net_Proto);
+    var_(protocol, net_Protoc);
     var_(timeout, time_Dur);
     var_(nonblocking, bool);
 }));
 T_alias$((net_ListenOpts)(struct net_ListenOpts {
     var_(mode, net_Sock_Mode);
-    var_(protocol, net_Proto);
+    var_(protocol, net_Protoc);
     var_(kernel_backlog, u32);
     var_(reuse_address, bool);
     var_(nonblocking, bool);
 }));
 T_alias$((net_BindOpts)(struct net_BindOpts {
     var_(mode, net_Sock_Mode);
-    var_(protocol, net_Proto);
+    var_(protocol, net_Protoc);
     var_(allow_broadcast, bool);
     var_(ip6_only, bool);
     var_(nonblocking, bool);

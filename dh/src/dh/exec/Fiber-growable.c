@@ -173,7 +173,7 @@ fn_((exec_Fiber_ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))(
             );
         }
         if (!heap_vmem_protect(
-                intToPtr$((P$raw)(cur_guard_begin)), self->guard_size, heap_vmem_Protn_read_write)) {
+                intToPtr$((P$raw)(cur_guard_begin)), self->guard_size, heap_vmem_Protcn_read_write)) {
             exec_Fiber_ensureDiagSet(
                 exec_Fiber_EnsureDiag_Stage_fail_protect_rw,
                 rsp, storage_begin, storage_end, stack_bottom, target, chunk_guard_begin, commit_len, cur_guard_begin
@@ -186,9 +186,9 @@ fn_((exec_Fiber_ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))(
         if (!heap_vmem_protect(
                 intToPtr$((P$raw)(chunk_guard_begin)), self->guard_size,
 #if plat_is_windows
-                               heap_vmem_Protn_read_write_guard
+                               heap_vmem_Protcn_read_write_guard
 #else
-                               heap_vmem_Protn_none
+                               heap_vmem_Protcn_none
 #endif
             )) {
             exec_Fiber_ensureDiagSet(
@@ -281,7 +281,8 @@ fn_((exec_Fiber__ensureUnixSignalHandler(void))(bool)) {
                 sys_posix_SIGSEGV,
                 none$((O$P$raw)),
                 some$((O$P$raw)(&current))
-            ) != 0) {
+            )
+            != 0) {
             atom_V_store(&exec_Fiber__unix_handler_state, exec_Fiber__handler_state_failed, atom_MemOrd_release);
             return false;
         }
@@ -294,7 +295,8 @@ fn_((exec_Fiber__ensureUnixSignalHandler(void))(bool)) {
                 sys_posix_SIGBUS,
                 none$((O$P$raw)),
                 some$((O$P$raw)(&current))
-            ) != 0) {
+            )
+            != 0) {
             atom_V_store(&exec_Fiber__unix_handler_state, exec_Fiber__handler_state_failed, atom_MemOrd_release);
             return false;
         }
@@ -312,7 +314,8 @@ fn_((exec_Fiber__ensureUnixSignalHandler(void))(bool)) {
                 sys_posix_SIGSEGV,
                 some$((O$P$raw)(&action)),
                 none$((O$P$raw))
-            ) != 0) {
+            )
+            != 0) {
             atom_V_store(&exec_Fiber__unix_handler_state, exec_Fiber__handler_state_failed, atom_MemOrd_release);
             return false;
         }
@@ -320,7 +323,8 @@ fn_((exec_Fiber__ensureUnixSignalHandler(void))(bool)) {
                 sys_posix_SIGBUS,
                 some$((O$P$raw)(&action)),
                 none$((O$P$raw))
-            ) != 0) {
+            )
+            != 0) {
             let_ignore = sys_posix_sigaction_set(
                 sys_posix_SIGSEGV,
                 some$((O$P$raw)(&exec_Fiber__unix_old_sigsegv)),
@@ -385,7 +389,7 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
         return_err(E_cause$OutOfMemory());
     }
     if (guard_size != 0) {
-        if (!heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protn_read_write_guard)) {
+        if (!heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protcn_read_write_guard)) {
             return_err(E_cause$OutOfMemory());
         }
     }
@@ -417,7 +421,7 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
     if (!heap_vmem_commit(intToPtr$((P$raw)(commit_begin)), commit_size)) {
         return_err(E_cause$OutOfMemory());
     }
-    if (guard_size != 0 && !heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protn_none)) {
+    if (guard_size != 0 && !heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protcn_none)) {
         return_err(E_cause$OutOfMemory());
     }
     self->storage = (S$u8){ .ptr = storage_ptr, .len = reserve_size };

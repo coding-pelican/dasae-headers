@@ -29,7 +29,7 @@ fn_((exec_Task_recancel(exec_Task* task))(void)) {
     task->cancel = exec_Task_Cancel_requested;
 };
 
-fn_((exec_Task_swapCancelProtn(exec_Task* task, Sched_CancelProtn new_protection))(Sched_CancelProtn)) {
+fn_((exec_Task_swapCancelProtcn(exec_Task* task, Sched_CancelProtcn new_protection))(Sched_CancelProtcn)) {
     claim_assert_nonnull(task);
     let old = task->cancel_protection;
     task->cancel_protection = new_protection;
@@ -38,7 +38,7 @@ fn_((exec_Task_swapCancelProtn(exec_Task* task, Sched_CancelProtn new_protection
 
 fn_((exec_Task_idle(exec_Task* task))(Sched_Cancelable$void) $scope) {
     claim_assert_nonnull(task);
-    if (task->cancel_protection == Sched_CancelProtn_blocked) return_ok({});
+    if (task->cancel_protection == Sched_CancelProtcn_blocked) return_ok({});
     if (task->cancel == exec_Task_Cancel_requested) {
         task->cancel = exec_Task_Cancel_acknowledged;
         return_err(E_cause$Sched_Canceled());

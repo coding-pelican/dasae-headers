@@ -20,7 +20,7 @@ $static fn_((daterm_ANSI__pollNativeEvent(daterm_ANSI* self))(O$daterm_Event));
 $static fn_((daterm_ANSI__poll(P$raw ctx))(O$daterm_Event));
 $static fn_((daterm_ANSI__wait(P$raw ctx))(Sched_Cancelable$daterm_Event));
 $static fn_((daterm_ANSI__waitTimed(P$raw ctx, time_Dur timeout))(daterm_Term_WaitE$daterm_Event));
-$static fn_((daterm_ANSI__waitProtn(P$raw ctx))(daterm_Event));
+$static fn_((daterm_ANSI__waitProtcd(P$raw ctx))(daterm_Event));
 $static fn_((daterm_ANSI__reader(P$raw ctx))(io_Reader));
 $static fn_((daterm_ANSI__writer(P$raw ctx))(io_Writer));
 $static fn_((daterm_ANSI__flush(P$raw ctx))(E$void));
@@ -207,7 +207,7 @@ fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term)) {
         .pollFn = daterm_ANSI__poll,
         .waitFn = daterm_ANSI__wait,
         .waitTimedFn = daterm_ANSI__waitTimed,
-        .waitProtnFn = daterm_ANSI__waitProtn,
+        .waitProtcdFn = daterm_ANSI__waitProtcd,
         .readerFn = daterm_ANSI__reader,
         .writerFn = daterm_ANSI__writer,
         .flushFn = daterm_ANSI__flush,
@@ -839,7 +839,7 @@ fn_((daterm_ANSI__waitTimed(P$raw ctx, time_Dur timeout))(daterm_Term_WaitE$date
     }
 } $unscoped(fn);
 
-fn_((daterm_ANSI__waitProtn(P$raw ctx))(daterm_Event) $scope) {
+fn_((daterm_ANSI__waitProtcd(P$raw ctx))(daterm_Event) $scope) {
     let self = ptrAlignCast$((daterm_ANSI*)(ctx));
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     while (true) {

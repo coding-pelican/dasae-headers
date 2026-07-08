@@ -20,20 +20,21 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
-    var_(argv, A$$(4, S_const$u8)) = A_init({
-#if plat_is_windows
-        [0] = u8_l("cmd.exe"),
-        [1] = u8_l("/D"),
-        [2] = u8_l("/C"),
-        [3] = u8_l("exit 0"),
-#else
-        [0] = u8_l("/bin/sh"),
-        [1] = u8_l("-c"),
-        [2] = u8_l("exit 0"),
-        [3] = u8_l("example-pty-spawn"),
-#endif
-    });
-    let cmd = (proc_Cmd){
+    var_(argv, A$$(4, S_const$u8)) = A_init(pp_if_(plat_is_windows)(
+        pp_then_({
+            [0] = u8_l("cmd.exe"),
+            [1] = u8_l("/D"),
+            [2] = u8_l("/C"),
+            [3] = u8_l("exit 0"),
+        }),
+        pp_else_({
+            [0] = u8_l("/bin/sh"),
+            [1] = u8_l("-c"),
+            [2] = u8_l("exit 0"),
+            [3] = u8_l("example-pty-spawn"),
+        })
+    ));
+    let_(cmd, proc_Cmd) = {
         .argv = A_ref$((S$S_const$u8)(argv)),
         .env = none(),
         .cwd = none(),
@@ -45,12 +46,15 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         .create_no_window = false,
     };
 
-    var cfg = io_PTY_SpawnCfg_default(heap_Sys_alctr(&heap), cmd);
-    cfg.pty.size = (io_PTY_Size){ .cols = u16_(120), .rows = u16_(40) };
-
+    let cfg = with_((io_PTY_SpawnCfg_default(heap_Sys_alctr(&heap), cmd))(
+        (.pty.size)({ .cols = u16_(120), .rows = u16_(40) })
+    ));
     var session = try_(io_PTY_spawn(cfg));
     defer_(io_PTY_Session_close(&session));
-    try_(io_PTY_Session_resize(&session, (io_PTY_Size){ .cols = u16_(120), .rows = u16_(40) }));
+
+    let_(size, io_PTY_Size) = { .cols = u16_(120), .rows = u16_(40) };
+    try_(io_PTY_Session_resize(&session, size));
     let_ignore = try_(io_PTY_Session_wait(&session));
+
     return_ok({});
 } $unguarded(fn);

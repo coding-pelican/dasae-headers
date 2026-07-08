@@ -31,16 +31,34 @@ extern "C" {
 #include "thrd/Self.h"
 
 #include "thrd/ftx.h"
-#include "thrd/Mtx.h"
-#include "thrd/Sem.h"
-#include "thrd/Cond.h"
 
-// #include "thrd/Once.h"
-// #include "thrd/OnceLock.h"
-// #include "thrd/LazyLock.h"
+#include "thrd/Mtx.h"
+#include "thrd/Cond.h"
+#include "thrd/Sem.h"
 #include "thrd/RWLock.h"
-#include "thrd/ResetEvent.h"
-#include "thrd/WaitGroup.h"
+
+#include "thrd/Once.h"
+#include "thrd/OnceLock.h"
+#include "thrd/LazeLock.h"
+
+#include "thrd/OnceEvt.h"
+#include "thrd/ResetEvt.h"
+#include "thrd/CancelTok.h"
+
+#include "thrd/Latch.h"
+#include "thrd/Group.h"
+
+#include "thrd/chan.h"
+#include "thrd/wait.h"
+
+#include "thrd/Que.h"
+#include "thrd/SPSC.h"
+#include "thrd/MPSC.h"
+#include "thrd/SPMC.h"
+#include "thrd/MPMC.h"
+
+#include "thrd/Batch.h"
+#include "thrd/Select.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

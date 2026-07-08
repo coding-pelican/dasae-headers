@@ -26,17 +26,17 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-T_alias$((heap_vmem_Protn)(enum_((heap_vmem_Protn $fits($packed))(
-    heap_vmem_Protn_none,
-    heap_vmem_Protn_read_write,
-    heap_vmem_Protn_read_write_guard
+T_alias$((heap_vmem_Protcn)(enum_((heap_vmem_Protcn $fits($packed))(
+    heap_vmem_Protcn_none,
+    heap_vmem_Protcn_read_write,
+    heap_vmem_Protcn_read_write_guard
 ))));
 
 $extern fn_((heap_vmem_geom(void))(heap_Geom));
 $extern fn_((heap_vmem_reserve(P$raw addr_hint, usize len))(O$P$u8));
 $extern fn_((heap_vmem_commit(P$raw addr, usize len))(bool));
 $extern fn_((heap_vmem_decommit(P$raw addr, usize len))(bool));
-$extern fn_((heap_vmem_protect(P$raw addr, usize len, heap_vmem_Protn protect))(bool));
+$extern fn_((heap_vmem_protect(P$raw addr, usize len, heap_vmem_Protcn protect))(bool));
 $extern fn_((heap_vmem_release(P$raw addr, usize len))(bool));
 
 #if defined(__cplusplus)

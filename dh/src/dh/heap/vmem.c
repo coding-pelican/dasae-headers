@@ -2,13 +2,13 @@
 
 #if plat_is_windows
 #include "dh/sys/api/windows/mem.h"
-$static fn_((heap_vmem__windowsProtect(heap_vmem_Protn protect))(DWORD));
+$static fn_((heap_vmem__windowsProtect(heap_vmem_Protcn protect))(DWORD));
 #elif plat_is_linux
 #include "dh/sys/call/linux.h"
-$static fn_((heap_vmem__linuxProtect(heap_vmem_Protn protect))(sys_call_linux_word));
+$static fn_((heap_vmem__linuxProtect(heap_vmem_Protcn protect))(sys_call_linux_word));
 #elif plat_is_darwin
 #include "dh/sys/libc/darwin/mem.h"
-$static fn_((heap_vmem__darwinProtect(heap_vmem_Protn protect))(i32));
+$static fn_((heap_vmem__darwinProtect(heap_vmem_Protcn protect))(i32));
 #endif
 
 fn_((heap_vmem_geom(void))(heap_Geom)) {
@@ -25,27 +25,27 @@ fn_((heap_vmem_geom(void))(heap_Geom)) {
 };
 
 #if plat_is_windows
-fn_((heap_vmem__windowsProtect(heap_vmem_Protn protect))(DWORD)) {
+fn_((heap_vmem__windowsProtect(heap_vmem_Protcn protect))(DWORD)) {
     switch (protect) {
-    case heap_vmem_Protn_none: return PAGE_NOACCESS;
-    case heap_vmem_Protn_read_write: return PAGE_READWRITE;
-    case heap_vmem_Protn_read_write_guard: return PAGE_READWRITE | PAGE_GUARD;
+    case heap_vmem_Protcn_none: return PAGE_NOACCESS;
+    case heap_vmem_Protcn_read_write: return PAGE_READWRITE;
+    case heap_vmem_Protcn_read_write_guard: return PAGE_READWRITE | PAGE_GUARD;
     }
 };
 #elif plat_is_linux
-fn_((heap_vmem__linuxProtect(heap_vmem_Protn protect))(sys_call_linux_word)) {
+fn_((heap_vmem__linuxProtect(heap_vmem_Protcn protect))(sys_call_linux_word)) {
     switch (protect) {
-    case heap_vmem_Protn_none: return sys_call_linux_PROT_NONE;
-    case heap_vmem_Protn_read_write: return sys_call_linux_PROT_READ | sys_call_linux_PROT_WRITE;
-    case heap_vmem_Protn_read_write_guard: return sys_call_linux_PROT_NONE;
+    case heap_vmem_Protcn_none: return sys_call_linux_PROT_NONE;
+    case heap_vmem_Protcn_read_write: return sys_call_linux_PROT_READ | sys_call_linux_PROT_WRITE;
+    case heap_vmem_Protcn_read_write_guard: return sys_call_linux_PROT_NONE;
     }
 };
 #elif plat_is_darwin
-fn_((heap_vmem__darwinProtect(heap_vmem_Protn protect))(i32)) {
+fn_((heap_vmem__darwinProtect(heap_vmem_Protcn protect))(i32)) {
     switch (protect) {
-    case heap_vmem_Protn_none: return sys_libc_darwin_PROT_NONE;
-    case heap_vmem_Protn_read_write: return sys_libc_darwin_PROT_READ | sys_libc_darwin_PROT_WRITE;
-    case heap_vmem_Protn_read_write_guard: return sys_libc_darwin_PROT_NONE;
+    case heap_vmem_Protcn_none: return sys_libc_darwin_PROT_NONE;
+    case heap_vmem_Protcn_read_write: return sys_libc_darwin_PROT_READ | sys_libc_darwin_PROT_WRITE;
+    case heap_vmem_Protcn_read_write_guard: return sys_libc_darwin_PROT_NONE;
     }
 };
 #endif
@@ -111,7 +111,7 @@ fn_((heap_vmem_decommit(P$raw addr, usize len))(bool)) {
 #endif
 };
 
-fn_((heap_vmem_protect(P$raw addr, usize len, heap_vmem_Protn protect))(bool)) {
+fn_((heap_vmem_protect(P$raw addr, usize len, heap_vmem_Protcn protect))(bool)) {
     let aligned_len = heap_Geom_alignCommitWith(heap_vmem_geom(), len);
 #if plat_is_windows
     DWORD old_protect = 0;

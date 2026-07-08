@@ -22,7 +22,7 @@ TEST_fn_("fs/File/MemMap: write, flush, shrink, and reopen" $guard) {
         var file = try_(fs_File_create(path.as_const, create_flags));
         defer_(fs_File_close(file));
 
-        var protection = fs_File_MemMap_Protn_default;
+        var protection = fs_File_MemMap_Protcn_default;
         var map = try_(fs_File_MemMap_init(file, 6, protection, false, false, 0));
         defer_(fs_File_MemMap_fini(&map));
         mem_copyBytes(map.mem, u8_l("abcdef"));

@@ -167,7 +167,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         }),
         l$((net_ListenOpts){
             .mode = net_Sock_Mode_stream,
-            .protocol = net_Proto_tcp,
+            .protocol = net_Protoc_tcp,
             .kernel_backlog = 4096,
             .reuse_address = true,
             .nonblocking = true,

@@ -12,12 +12,10 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 T_alias$((FutureAny)(Opaq));
-T_use_P$(FutureAny);
-T_use_O$(P$FutureAny);
+T_use$((FutureAny)(P, (O, P)));
 
 T_alias$((Future$raw)(struct Future$raw));
-T_use_P$(Future$raw);
-T_use_O$(P$Future$raw);
+T_use$((Future$raw)(P, (O, P), u_V));
 T_alias$((V$Future$raw)(P$Future$raw));
 
 #if defined(__cplusplus)

@@ -72,7 +72,7 @@ fn_((exec_Fiber__windowsGrow(exec_Fiber* self))(bool)) {
     if (!heap_vmem_commit(intToPtr$((P$raw)(new_guard_begin)), grow_size)) {
         return false;
     }
-    if (!heap_vmem_protect(intToPtr$((P$raw)(new_guard_begin)), self->guard_size, heap_vmem_Protn_read_write_guard)) {
+    if (!heap_vmem_protect(intToPtr$((P$raw)(new_guard_begin)), self->guard_size, heap_vmem_Protcn_read_write_guard)) {
         return false;
     }
     self->stack.ptr = intToPtr$((u8*)(new_guard_begin + self->guard_size));
@@ -163,7 +163,7 @@ fn_((exec_Fiber__unixGrow(exec_Fiber* self))(bool)) {
     if (!heap_vmem_commit(intToPtr$((P$raw)(new_guard_begin)), grow_size)) {
         return false;
     }
-    if (!heap_vmem_protect(intToPtr$((P$raw)(new_guard_begin)), self->guard_size, heap_vmem_Protn_none)) {
+    if (!heap_vmem_protect(intToPtr$((P$raw)(new_guard_begin)), self->guard_size, heap_vmem_Protcn_none)) {
         return false;
     }
     self->stack.ptr = intToPtr$((u8*)(new_guard_begin + self->guard_size));
@@ -212,7 +212,7 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
         return_err(E_cause$OutOfMemory());
     }
     if (guard_size != 0) {
-        if (!heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protn_read_write_guard)) {
+        if (!heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protcn_read_write_guard)) {
             return_err(E_cause$OutOfMemory());
         }
     }
@@ -244,7 +244,7 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
     if (!heap_vmem_commit(intToPtr$((P$raw)(commit_begin)), commit_size)) {
         return_err(E_cause$OutOfMemory());
     }
-    if (guard_size != 0 && !heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protn_none)) {
+    if (guard_size != 0 && !heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protcn_none)) {
         return_err(E_cause$OutOfMemory());
     }
     self->storage = (S$u8){ .ptr = storage_ptr, .len = reserve_size };
