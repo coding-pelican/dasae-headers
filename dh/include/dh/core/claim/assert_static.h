@@ -25,10 +25,10 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define claim_assert_static(_Expr) static_assert(_Expr)
+#define claim_assert_static(_$Expr) static_assert(_$Expr)
 #define claim_assert_static_trap() static_assert_trap()
-#define claim_assert_static_msg(_Expr, _msg) static_assert_msg(_Expr, _msg)
-#define claim_assert_static_trap_msg(_msg) static_assert_trap_msg(_msg)
+#define claim_assert_static_msg(_$Expr, _$msg) static_assert_msg(_$Expr, _$msg)
+#define claim_assert_static_trap_msg(_$msg) static_assert_trap_msg(_$msg)
 
 #if defined(__cplusplus)
 } /* extern "C" */

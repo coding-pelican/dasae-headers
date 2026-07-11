@@ -24,32 +24,32 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define T_decl_prl_vals$(_T...) \
-    T_decl$((_T)(O, E)); \
-    T_decl$((O$(_T))(O, E)); \
-    T_decl$((E$(_T))(O, E))
-#define T_impl_prl_vals$(_T...) \
-    T_impl$((_T)(O, E)); \
-    T_impl$((O$(_T))(O, E)); \
-    T_impl$((E$(_T))(O, E))
-#define T_use_prl_vals$(_T...) \
-    T_use$((_T)(O, E)); \
-    T_use$((O$(_T))(O, E)); \
-    T_use$((E$(_T))(O, E))
+#define T_decl_prl_vals$(_$T...) \
+    T_decl$((_$T)(O, E)); \
+    T_decl$((O$(_$T))(O, E)); \
+    T_decl$((E$(_$T))(O, E))
+#define T_impl_prl_vals$(_$T...) \
+    T_impl$((_$T)(O, E)); \
+    T_impl$((O$(_$T))(O, E)); \
+    T_impl$((E$(_$T))(O, E))
+#define T_use_prl_vals$(_$T...) \
+    T_use$((_$T)(O, E)); \
+    T_use$((O$(_$T))(O, E)); \
+    T_use$((E$(_$T))(O, E))
 
 /* clang-format off */
-#define T_decl_prl_u_vals$(_T...) \
-    T_decl$((_T)(u_V)); T_decl$((O$(_T))(u_V)); T_decl$((E$(_T))(u_V)); \
-    T_decl$((O$(O$(_T)))(u_V)); T_decl$((O$(E$(_T)))(u_V)); \
-    T_decl$((E$(O$(_T)))(u_V)); T_decl$((E$(E$(_T)))(u_V))
-#define T_impl_prl_u_vals$(_T...) \
-    T_impl$((_T)(u_V)); T_impl$((O$(_T))(u_V)); T_impl$((E$(_T))(u_V)); \
-    T_impl$((O$(O$(_T)))(u_V)); T_impl$((O$(E$(_T)))(u_V)); \
-    T_impl$((E$(O$(_T)))(u_V)); T_impl$((E$(E$(_T)))(u_V))
-#define T_use_prl_u_vals$(_T...) \
-    T_use$((_T)(u_V)); T_use$((O$(_T))(u_V)); T_use$((E$(_T))(u_V)); \
-    T_use$((O$(O$(_T)))(u_V)); T_use$((O$(E$(_T)))(u_V)); \
-    T_use$((E$(O$(_T)))(u_V)); T_use$((E$(E$(_T)))(u_V))
+#define T_decl_prl_u_vals$(_$T...) \
+    T_decl$((_$T)(u_V)); T_decl$((O$(_$T))(u_V)); T_decl$((E$(_$T))(u_V)); \
+    T_decl$((O$(O$(_$T)))(u_V)); T_decl$((O$(E$(_$T)))(u_V)); \
+    T_decl$((E$(O$(_$T)))(u_V)); T_decl$((E$(E$(_$T)))(u_V))
+#define T_impl_prl_u_vals$(_$T...) \
+    T_impl$((_$T)(u_V)); T_impl$((O$(_$T))(u_V)); T_impl$((E$(_$T))(u_V)); \
+    T_impl$((O$(O$(_$T)))(u_V)); T_impl$((O$(E$(_$T)))(u_V)); \
+    T_impl$((E$(O$(_$T)))(u_V)); T_impl$((E$(E$(_$T)))(u_V))
+#define T_use_prl_u_vals$(_$T...) \
+    T_use$((_$T)(u_V)); T_use$((O$(_$T))(u_V)); T_use$((E$(_$T))(u_V)); \
+    T_use$((O$(O$(_$T)))(u_V)); T_use$((O$(E$(_$T)))(u_V)); \
+    T_use$((E$(O$(_$T)))(u_V)); T_use$((E$(E$(_$T)))(u_V))
 /* clang-format on */
 
 /*========== Macros and Definitions =========================================*/

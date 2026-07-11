@@ -12,41 +12,41 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 /* Pointer Anonymous */
-#define P_const$$(_T...) __P_const$$(_T)
-#define P$$(_T...) pp_Tok_if_(Tok_isConst$(_T))( \
-    pp_Tok_then_(__P_const$$(Tok_removeConst$(_T))), \
-    pp_Tok_else_(__P$$(_T)) \
+#define P_const$$(_$T...) __P_const$$(_$T)
+#define P$$(_$T...) pp_Tok_if_(Tok_isConst$(_$T))( \
+    pp_Tok_then_(__P_const$$(Tok_removeConst$(_$T))), \
+    pp_Tok_else_(__P$$(_$T)) \
 )
-#define __P_const$$(_T...) $P_const$(_T)
-#define __P$$(_T...) $P$(_T)
+#define __P_const$$(_$T...) $P_const$(_$T)
+#define __P$$(_$T...) $P$(_$T)
 
 /* Pointer Alias */
-#define P_const$(_T...) __P_const$(_T)
-#define P$(_T...) pp_Tok_if_(Tok_isConst$(_T))( \
-    pp_Tok_then_(__P_const$(Tok_removeConst$(_T))), \
-    pp_Tok_else_(__P$(_T)) \
+#define P_const$(_$T...) __P_const$(_$T)
+#define P$(_$T...) pp_Tok_if_(Tok_isConst$(_$T))( \
+    pp_Tok_then_(__P_const$(Tok_removeConst$(_$T))), \
+    pp_Tok_else_(__P$(_$T)) \
 )
-#define __P_const$(_T...) tpl$(P_const, _T)
-#define __P$(_T...) tpl$(P, _T)
+#define __P_const$(_$T...) tpl$(P_const, _$T)
+#define __P$(_$T...) tpl$(P, _$T)
 
 /* Pointer Template */
-#define T_decl_P$(_T...) \
-    $maybe_unused typedef $P$(const _T) P$(const _T); \
-    $maybe_unused typedef $P$(_T) P$(_T)
-#define T_impl_P$(_T...) \
-    $maybe_unused typedef $P$(const _T) P$(const _T); \
-    $maybe_unused typedef $P$(_T) P$(_T)
-#define T_use_P$(_T...) \
-    T_impl_P$(_T)
+#define T_decl_P$(_$T...) \
+    $maybe_unused typedef $P$(const _$T) P$(const _$T); \
+    $maybe_unused typedef $P$(_$T) P$(_$T)
+#define T_impl_P$(_$T...) \
+    $maybe_unused typedef $P$(const _$T) P$(const _$T); \
+    $maybe_unused typedef $P$(_$T) P$(_$T)
+#define T_use_P$(_$T...) \
+    T_impl_P$(_$T)
 
-#define P_T$(_T...) TypeOf(*as$(_T)(null))
-#define P_TUnqual$(_T...) TypeOfUnqual(*as$(_T)(null))
-#define P_isConst$(_T... /*(bool)*/) eqlType$(P_DerefT$(_T)*, const P_DerefTUnqual$(_T)*)
+#define P_T$(_$T...) TypeOf(*as$(_$T)(null))
+#define P_TUnqual$(_$T...) TypeOfUnqual(*as$(_$T)(null))
+#define P_isConst$(_$T... /*(bool)*/) eqlType$(P_DerefT$(_$T)*, const P_DerefTUnqual$(_$T)*)
 
-#define P_DerefT$(_T...) TypeOf(*as$(_T)(null))
-#define P_DerefTUnqual$(_T...) TypeOfUnqual(*as$(_T)(null))
-#define P_InnerT$(_T...) TypeOf(*as$(_T)(null))
-#define P_InnerTUnqual$(_T...) TypeOfUnqual(*as$(_T)(null))
+#define P_DerefT$(_$T...) TypeOf(*as$(_$T)(null))
+#define P_DerefTUnqual$(_$T...) TypeOfUnqual(*as$(_$T)(null))
+#define P_InnerT$(_$T...) TypeOf(*as$(_$T)(null))
+#define P_InnerTUnqual$(_$T...) TypeOfUnqual(*as$(_$T)(null))
 
 /* Pointer Operations */
 #define isNullP isNull
@@ -63,29 +63,29 @@ extern "C" {
 #define P_constCast constCast
 #define constCastP P_constCast
 
-#define P_at(/*(_p: P(_T))[_idx: usize]*/... /*(P(_T))*/) (&__VA_ARGS__)
+#define P_at(/*(_$p: P(_$T))[_$idx: usize]*/... /*(P(_$T))*/) (&__VA_ARGS__)
 #define atP P_at
 
-#define P_slice$(/*(_ST: S(_T))((_p: P(_T))(_range: R))*/... /*(_ST)*/) \
+#define P_slice$(/*(_$ST: S(_$T))((_$p: P(_$T))(_$range: R))*/... /*(_$ST)*/) \
     __op__P_slice$(__op__P_slice$__parseST __VA_ARGS__)
 #define __op__P_slice$(...) __op__P_slice$__emit(__VA_ARGS__)
-#define __op__P_slice$__parseST(_ST...) _ST, __op__P_slice$__parseP
-#define __op__P_slice$__parseP(_p...) pp_uniqTok(p), _p, pp_uniqTok(range),
-#define __op__P_slice$__emit(_ST, __p, _p, __range, _range...) ({ \
-    let_(__p, TypeOf(_p)) = _p; \
-    let_(__range, R) = _range; \
+#define __op__P_slice$__parseST(_$ST...) _$ST, __op__P_slice$__parseP
+#define __op__P_slice$__parseP(_$p...) pp_uniqTok(p), _$p, pp_uniqTok(range),
+#define __op__P_slice$__emit(_$ST, __p, _$p, __range, _$range...) ({ \
+    let_(__p, TypeOf(_$p)) = _$p; \
+    let_(__range, R) = _$range; \
     claim_assert_fmt(R_isValid(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
     /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end({:uz}) > 1", __range.end); */ \
-    l$((_ST){ .ptr = &__p[__range.begin], .len = R_len(__range) }); \
+    l$((_$ST){ .ptr = &__p[__range.begin], .len = R_len(__range) }); \
 })
 #define sliceP$ P_slice$
-#define P_slice(/*(_p: P(_T))(_range: R)*/... /*(S(_T))*/) \
+#define P_slice(/*(_$p: P(_$T))(_$range: R)*/... /*(S(_$T))*/) \
     __op__P_slice(__op__A_slice__parse __VA_ARGS__)
 #define __op__P_slice(...) __op__P_slice__emit(__VA_ARGS__)
-#define __op__P_slice__parse(_p...) pp_uniqTok(p), _p, pp_uniqTok(range),
-#define __op__P_slice__emit(__p, _p, __range, _range...) ({ \
-    let_(__p, TypeOf(_p)) = _p; \
-    let_(__range, R) = _range; \
+#define __op__P_slice__parse(_$p...) pp_uniqTok(p), _$p, pp_uniqTok(range),
+#define __op__P_slice__emit(__p, _$p, __range, _$range...) ({ \
+    let_(__p, TypeOf(_$p)) = _$p; \
+    let_(__range, R) = _$range; \
     claim_assert_fmt(R_isValid(__range), "Invalid range: begin({:uz}) > end({:uz})", __range.begin, __range.end); \
     /* claim_assert_fmt(__range.end <= 1, "Invalid slice range: end({:uz}) > 1", __range.end); */ \
     T_switch$((TypeOf(*__p))( \
@@ -99,25 +99,25 @@ extern "C" {
 })
 #define sliceP P_slice
 
-#define P_prefix$(/*(_ST: S(_T))(_p: P(_T))(_end: usize)*/... /*(_ST)*/) \
+#define P_prefix$(/*(_$ST: S(_$T))(_$p: P(_$T))(_$end: usize)*/... /*(_$ST)*/) \
     __op__P_prefix$(__op__P_prefix$__parseST __VA_ARGS__)
 #define __op__P_prefix$(...) __op__P_prefix$__emit(__VA_ARGS__)
-#define __op__P_prefix$__parseST(_ST...) _ST, __op__P_prefix$__parseA
-#define __op__P_prefix$__parseA(_p...) pp_uniqTok(p), _p, pp_uniqTok(end),
-#define __op__P_prefix$__emit(_ST, __p, _p, __end, _end...) ({ \
-    let_(__p, TypeOf(_p)) = _p; \
-    let_(__end, usize) = _end; \
+#define __op__P_prefix$__parseST(_$ST...) _$ST, __op__P_prefix$__parseA
+#define __op__P_prefix$__parseA(_$p...) pp_uniqTok(p), _$p, pp_uniqTok(end),
+#define __op__P_prefix$__emit(_$ST, __p, _$p, __end, _$end...) ({ \
+    let_(__p, TypeOf(_$p)) = _$p; \
+    let_(__end, usize) = _$end; \
     /* claim_assert_fmt(__end <= 1, "Invalid slice range: end({:uz}) > 1", __end); */ \
-    l$((_ST){ .ptr = __p, .len = __end }); \
+    l$((_$ST){ .ptr = __p, .len = __end }); \
 })
 #define prefixP$ P_prefix$
-#define P_prefix(/*(_p: P(_T))(_end: usize)*/... /*(S(_T))*/) \
+#define P_prefix(/*(_$p: P(_$T))(_$end: usize)*/... /*(S(_$T))*/) \
     __op__P_prefix(__op__P_prefix__parse __VA_ARGS__)
 #define __op__P_prefix(...) __op__P_prefix__emit(__VA_ARGS__)
-#define __op__P_prefix__parse(_p...) pp_uniqTok(p), _p, pp_uniqTok(end),
-#define __op__P_prefix__emit(__p, _p, __end, _end...) ({ \
-    let_(__p, TypeOf(_p)) = _p; \
-    let_(__end, usize) = _end; \
+#define __op__P_prefix__parse(_$p...) pp_uniqTok(p), _$p, pp_uniqTok(end),
+#define __op__P_prefix__emit(__p, _$p, __end, _$end...) ({ \
+    let_(__p, TypeOf(_$p)) = _$p; \
+    let_(__end, usize) = _$end; \
     /* claim_assert_fmt(__end <= 1, "Invalid slice range: end({:uz}) > 1", __end); */ \
     T_switch$((TypeOf(*__p))( \
         T_qual$((const TypeOfUnqual(*__p))( \
@@ -130,25 +130,25 @@ extern "C" {
 })
 #define prefixP P_prefix
 
-#define P_suffix$(/*(_ST: S(_T))((_p: P(_T))(_begin: usize))*/... /*(_ST)*/) \
+#define P_suffix$(/*(_$ST: S(_$T))((_$p: P(_$T))(_$begin: usize))*/... /*(_$ST)*/) \
     __op__P_suffix$(__op__P_suffix$__parseST __VA_ARGS__)
 #define __op__P_suffix$(...) __op__P_suffix$__emit(__VA_ARGS__)
-#define __op__P_suffix$__parseST(_ST...) _ST, __op__P_suffix$__parseA
-#define __op__P_suffix$__parseA(_p...) pp_uniqTok(p), _p, pp_uniqTok(begin),
-#define __op__P_suffix$__emit(_ST, __p, _p, __begin, _begin...) ({ \
-    let_(__p, TypeOf(_p)) = _p; \
-    let_(__begin, usize) = _begin; \
+#define __op__P_suffix$__parseST(_$ST...) _$ST, __op__P_suffix$__parseA
+#define __op__P_suffix$__parseA(_$p...) pp_uniqTok(p), _$p, pp_uniqTok(begin),
+#define __op__P_suffix$__emit(_$ST, __p, _$p, __begin, _$begin...) ({ \
+    let_(__p, TypeOf(_$p)) = _$p; \
+    let_(__begin, usize) = _$begin; \
     /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin({:uz}) > 1", __begin); */ \
-    l$((_ST){ .ptr = &__p[__begin], .len = usize_limit_max - __begin }); \
+    l$((_$ST){ .ptr = &__p[__begin], .len = usize_limit_max - __begin }); \
 })
 #define suffixP$ P_suffix$
-#define P_suffix(/*(_p: P(_T))(_begin: usize)*/... /*(S(_T))*/) \
+#define P_suffix(/*(_$p: P(_$T))(_$begin: usize)*/... /*(S(_$T))*/) \
     __op__P_suffix(__op__P_suffix__parse __VA_ARGS__)
 #define __op__P_suffix(...) __op__P_suffix__emit(__VA_ARGS__)
-#define __op__P_suffix__parse(_p...) pp_uniqTok(p), _p, pp_uniqTok(begin),
-#define __op__P_suffix__emit(__p, _p, __begin, _begin...) ({ \
-    let_(__p, TypeOf(_p)) = _p; \
-    let_(__begin, usize) = _begin; \
+#define __op__P_suffix__parse(_$p...) pp_uniqTok(p), _$p, pp_uniqTok(begin),
+#define __op__P_suffix__emit(__p, _$p, __begin, _$begin...) ({ \
+    let_(__p, TypeOf(_$p)) = _$p; \
+    let_(__begin, usize) = _$begin; \
     /* claim_assert_fmt(__begin <= 1, "Invalid slice range: begin({:uz}) > 1", __begin); */ \
     T_switch$((TypeOf(*__a))( \
         T_qual$((const TypeOfUnqual(*__p))( \

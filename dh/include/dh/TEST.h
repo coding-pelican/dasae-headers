@@ -66,14 +66,14 @@ $extern fn_((TEST_Framework_run(void))(void));
 
 /*========== Test Macros ====================================================*/
 
-#define TEST_fn_(_Name, _Extension...) \
-    pp_overload(__TEST_fn _Extension)(_Name _Extension)
-#define __TEST_fn_0(_Name, _Extension...) \
-    pp_join(_, TEST_fn, _Extension)(_Name)
+#define TEST_fn_(_$Name, _$Extension...) \
+    pp_overload(__TEST_fn _$Extension)(_$Name _$Extension)
+#define __TEST_fn_0(_$Name, _$Extension...) \
+    pp_join(_, TEST_fn, _$Extension)(_$Name)
 
-#define TEST_fn_$_scope(_Name...) comp_syn__TEST_fn_$_scope(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
+#define TEST_fn_$_scope(_$Name...) comp_syn__TEST_fn_$_scope(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _$Name)
 #define $unscoped_TEST_fn comp_syn__$unscoped_TEST_fn
-#define TEST_fn_$_guard(_Name...) comp_syn__TEST_fn_$_guard(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _Name)
+#define TEST_fn_$_guard(_$Name...) comp_syn__TEST_fn_$_guard(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _$Name)
 #define $unguarded_TEST_fn comp_syn__$unguarded_TEST_fn
 
 #if !on_comptime
@@ -91,46 +91,46 @@ $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(TEST_E$void));
 
 /*========== Implementation Details ========================================*/
 
-#define comp_syn__TEST_fn_$_scope(_ID_binder, _ID_caseFn, _Name...) \
-    TEST__binder(_ID_binder, _ID_caseFn, _Name); \
-    TEST__caseFn(_ID_binder, _ID_caseFn)
+#define comp_syn__TEST_fn_$_scope(_$ID_binder, _$ID_caseFn, _$Name...) \
+    TEST__binder(_$ID_binder, _$ID_caseFn, _$Name); \
+    TEST__caseFn(_$ID_binder, _$ID_caseFn)
 
-#define comp_syn__TEST_fn_$_guard(_ID_binder, _ID_caseFn, _Name...) \
-    TEST__binder(_ID_binder, _ID_caseFn, _Name); \
-    TEST__caseFn_ext(_ID_binder, _ID_caseFn)
+#define comp_syn__TEST_fn_$_guard(_$ID_binder, _$ID_caseFn, _$Name...) \
+    TEST__binder(_$ID_binder, _$ID_caseFn, _$Name); \
+    TEST__caseFn_ext(_$ID_binder, _$ID_caseFn)
 
-#define TEST__binder(_ID_binder, _ID_caseFn, _Name...) comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name)
-#define TEST__caseFn(_ID_binder, _ID_caseFn...) comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn)
-#define TEST__caseFn_ext(_ID_binder, _ID_caseFn...) comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn)
+#define TEST__binder(_$ID_binder, _$ID_caseFn, _$Name...) comp_fn_gen__TEST__binder(_$ID_binder, _$ID_caseFn, _$Name)
+#define TEST__caseFn(_$ID_binder, _$ID_caseFn...) comp_fn_gen__TEST__caseFn(_$ID_binder, _$ID_caseFn)
+#define TEST__caseFn_ext(_$ID_binder, _$ID_caseFn...) comp_fn_gen__TEST__caseFn_ext(_$ID_binder, _$ID_caseFn)
 
-#define comp_fn_gen__TEST__binder(_ID_binder, _ID_caseFn, _Name...) \
-    $static fn_((_ID_caseFn(void))(E$void)) $must_check; \
-    $static comp_fn_gen__TEST__binder__sgn(_ID_binder) { \
+#define comp_fn_gen__TEST__binder(_$ID_binder, _$ID_caseFn, _$Name...) \
+    $static fn_((_$ID_caseFn(void))(E$void)) $must_check; \
+    $static comp_fn_gen__TEST__binder__sgn(_$ID_binder) { \
         $static bool s_is_bound = !comp_fn_gen__TEST__binder__isEnabled(); \
         if (!s_is_bound) { \
-            TEST_Framework_bindCase(_ID_caseFn, u8_l(_Name)); \
+            TEST_Framework_bindCase(_$ID_caseFn, u8_l(_$Name)); \
             s_is_bound = true; \
         } \
     }
 #if TEST_enabled
-#define comp_fn_gen__TEST__binder__sgn(_ID_binder) $on_load fn_((_ID_binder(void))(void))
+#define comp_fn_gen__TEST__binder__sgn(_$ID_binder) $on_load fn_((_$ID_binder(void))(void))
 #define comp_fn_gen__TEST__binder__isEnabled() (true)
 #else /* !TEST_enabled */
-#define comp_fn_gen__TEST__binder__sgn(_ID_binder) fn_((_ID_binder(void))(void))
+#define comp_fn_gen__TEST__binder__sgn(_$ID_binder) fn_((_$ID_binder(void))(void))
 #define comp_fn_gen__TEST__binder__isEnabled() (false)
 #endif /* !TEST_enabled */
 // clang-format off
-#define comp_fn_gen__TEST__caseFn(_ID_binder, _ID_caseFn...)      \
+#define comp_fn_gen__TEST__caseFn(_$ID_binder, _$ID_caseFn...)      \
     /* TODO: Add case check if it has been run before $on_exit */ \
-    $static fn_((_ID_caseFn(void))(E$void) $scope) {                 \
-        _ID_binder();
+    $static fn_((_$ID_caseFn(void))(E$void) $scope) {                 \
+        _$ID_binder();
 #define comp_syn__$unscoped_TEST_fn \
         return_ok({});          \
     } $unscoped_fn
 
-#define comp_fn_gen__TEST__caseFn_ext(_ID_binder, _ID_caseFn...) \
-    $static fn_((_ID_caseFn(void))(E$void) $guard) {            \
-        _ID_binder();
+#define comp_fn_gen__TEST__caseFn_ext(_$ID_binder, _$ID_caseFn...) \
+    $static fn_((_$ID_caseFn(void))(E$void) $guard) {            \
+        _$ID_binder();
 #define comp_syn__$unguarded_TEST_fn \
         return_ok({});              \
     } $unguarded_fn

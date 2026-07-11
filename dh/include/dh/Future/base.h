@@ -16,6 +16,7 @@ T_use$((FutureAny)(P, (O, P)));
 
 T_alias$((Future$raw)(struct Future$raw));
 T_use$((Future$raw)(P, (O, P), u_V));
+T_use$((P$Future$raw)(S));
 T_alias$((V$Future$raw)(P$Future$raw));
 
 #if defined(__cplusplus)

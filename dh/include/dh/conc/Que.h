@@ -37,12 +37,20 @@ $extern fn_((conc_Que_cap(const conc_Que$raw* self))(usize));
 $extern fn_((conc_Que_close(conc_Que$raw* self))(void));
 $extern fn_((conc_Que_isClosed(const conc_Que$raw* self))(bool));
 $attr($must_check)
-$extern fn_((conc_Que_trySend(conc_Que$raw* self, TypeInfo type, u_V$raw item))(E$($set(conc_E)(void))));
-$extern fn_((conc_Que_tryRecv(conc_Que$raw* self, TypeInfo type, V$raw ret_mem))(E$($set(conc_E)(V$raw))));
+$extern fn_((conc_Que_trySend(conc_Que$raw* self, TypeInfo type, u_V$raw item))(conc_chan_E$void));
+$extern fn_((conc_Que_tryRecv(conc_Que$raw* self, TypeInfo type, u_V$raw ret_mem))(conc_chan_E$u_V$raw));
 $attr($must_check)
-$extern fn_((conc_Que_send(conc_Que$raw* self, TypeInfo type, Sched sched, u_V$raw item))(E$($set(conc_WaitE)(void))));
+$extern fn_((conc_Que_send(conc_Que$raw* self, TypeInfo type, Sched sched, u_V$raw item))(conc_chan_WaitE$void));
 $attr($must_check)
-$extern fn_((conc_Que_recv(conc_Que$raw* self, TypeInfo type, Sched sched, V$raw ret_mem))(E$($set(conc_WaitE)(V$raw))));
+$extern fn_((conc_Que_sendFor(conc_Que$raw* self, TypeInfo type, Sched sched, time_Dur dur, u_V$raw item))(conc_chan_TimedE$void));
+$attr($must_check)
+$extern fn_((conc_Que_sendUntil(conc_Que$raw* self, TypeInfo type, Sched sched, time_Inst deadline, u_V$raw item))(conc_chan_TimedE$void));
+$attr($must_check)
+$extern fn_((conc_Que_recv(conc_Que$raw* self, TypeInfo type, Sched sched, u_V$raw ret_mem))(conc_chan_WaitE$u_V$raw));
+$attr($must_check)
+$extern fn_((conc_Que_recvFor(conc_Que$raw* self, TypeInfo type, Sched sched, time_Dur dur, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
+$attr($must_check)
+$extern fn_((conc_Que_recvUntil(conc_Que$raw* self, TypeInfo type, Sched sched, time_Inst deadline, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
 $extern fn_((conc_Que_recvSrc(conc_Que$raw* self, TypeInfo type))(conc_AwaitSrc));
 
 #define __comp_anon__conc_Que$$(_T...) \

@@ -13,8 +13,6 @@ extern "C" {
 #include "OnceEvt.h"
 
 T_alias$((conc_Latch)(struct conc_Latch));
-T_use_atom_V$(usize);
-
 struct conc_Latch {
     var_(count, atom_V$usize);
     var_(done_evt, conc_OnceEvt);
@@ -30,9 +28,9 @@ $extern fn_((conc_Latch_value(const conc_Latch* self))(usize));
 $attr($must_check)
 $extern fn_((conc_Latch_wait(conc_Latch* self, Sched sched))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((conc_Latch_waitFor(conc_Latch* self, Sched sched, time_Dur dur))(E$($set(conc_TimedE)(void))));
+$extern fn_((conc_Latch_waitFor(conc_Latch* self, Sched sched, time_Dur dur))(Sched_TimedE$void));
 $attr($must_check)
-$extern fn_((conc_Latch_waitUntil(conc_Latch* self, Sched sched, time_Inst deadline))(E$($set(conc_TimedE)(void))));
+$extern fn_((conc_Latch_waitUntil(conc_Latch* self, Sched sched, time_Inst deadline))(Sched_TimedE$void));
 
 #define ____conc_Latch_init_static(_count) l$((conc_Latch){ \
     .count = atom_V_init(_count), \

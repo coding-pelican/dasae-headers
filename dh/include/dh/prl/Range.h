@@ -22,43 +22,43 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define R$(_T...) tpl$(R, _T)
-#define R$$(_T...) \
+#define R$(_$T...) tpl$(R, _$T)
+#define R$$(_$T...) \
     struct { \
-        var_(begin, L$$(_T)); \
-        var_(end, L$$(_T)); \
+        var_(begin, L$$(_$T)); \
+        var_(end, L$$(_$T)); \
     }
-#define T_decl_R$(_T...) \
-    typedef struct R$(_T) R$(_T)
-#define T_impl_R$(_T...) \
-    struct R$(_T) { \
-        var_(begin, L$(_T)); \
-        var_(end, L$(_T)); \
+#define T_decl_R$(_$T...) \
+    typedef struct R$(_$T) R$(_$T)
+#define T_impl_R$(_$T...) \
+    struct R$(_$T) { \
+        var_(begin, L$(_$T)); \
+        var_(end, L$(_$T)); \
     }
-#define T_use_R$(_T...) \
-    T_decl_R$(_T); \
-    T_impl_R$(_T)
+#define T_use_R$(_$T...) \
+    T_decl_R$(_$T); \
+    T_impl_R$(_$T)
 
-#define R_bound(_begin /*: L(_T)*/, _end /*: L(_T)*/...) { .begin = _begin, .end = _end }
-#define R_bound$(/*(_R: R(_T))(_begin: L(_T), _end: L(_T))*/... /*(_R)*/) __val__R_bound$(__VA_ARGS__)
+#define R_bound(_$begin /*: L(_$T)*/, _$end /*: L(_$T)*/...) { .begin = _$begin, .end = _$end }
+#define R_bound$(/*(_$R: R(_$T))(_$begin: L(_$T), _$end: L(_$T))*/... /*(_$R)*/) __val__R_bound$(__VA_ARGS__)
 
-#define range_(_begin, _end) R_bound(__range___expandLimits _begin, __range___expandLimits _end)
-#define range$(/*(_R: R(_T))(_begin: L(_T), _end: L(_T))*/... /*(_R)*/) __val__range$(__VA_ARGS__)
+#define range_(_$begin, _$end) R_bound(__range___expandLimits _$begin, __range___expandLimits _$end)
+#define range$(/*(_$R: R(_$T))(_$begin: L(_$T), _$end: L(_$T))*/... /*(_$R)*/) __val__range$(__VA_ARGS__)
 
 /*========== Macros and Definitions =========================================*/
 
 #define __range___expandLimits(...) __VA_ARGS__
 #define __val__range$(...) __step__range$__emit(__step__range$__parse __VA_ARGS__)
-#define __step__range$__parse(_R...) _R, __step__range$__parseLimits
+#define __step__range$__parse(_$R...) _$R, __step__range$__parseLimits
 #define __step__range$__parseLimits(...) __VA_ARGS__
 #define __step__range$__emit(...) __inline__range$(__VA_ARGS__)
-#define __inline__range$(_R, _begin, _end...) l$((_R)range_(_begin, _end))
+#define __inline__range$(_$R, _$begin, _$end...) l$((_$R)range_(_$begin, _$end))
 
 #define __val__R_bound$(...) __step__R_bound$__emit(__step__R_bound$__parse __VA_ARGS__)
-#define __step__R_bound$__parse(_R...) _R, __step__R_bound$__parseLimits
+#define __step__R_bound$__parse(_$R...) _$R, __step__R_bound$__parseLimits
 #define __step__R_bound$__parseLimits(...) __VA_ARGS__
 #define __step__R_bound$__emit(...) __inline__R_bound$(__VA_ARGS__)
-#define __inline__R_bound$(_R, _begin, _end...) l$((_R)R_bound(_begin, _end))
+#define __inline__R_bound$(_$R, _$begin, _$end...) l$((_$R)R_bound(_$begin, _$end))
 
 T_use_R$(u8);
 T_use_R$(u16);

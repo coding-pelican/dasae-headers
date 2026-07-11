@@ -19,12 +19,20 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "Que.h"
+#include "chan.h"
+#include "../ArrQue.h"
 
 /*========== Macros and Declarations ========================================*/
 
 typedef struct thrd_MPSC {
-    var_(que, thrd_Que);
+    var_(buf, S$raw);
+    var_(head, usize);
+    var_(len, usize);
+    var_(closed, bool);
+    var_(lock, thrd_Mtx);
+    var_(not_empty, thrd_Cond);
+    var_(not_full, thrd_Cond);
+    var_(type, debug_TypeInfo);
 } thrd_MPSC;
 $extern fn_((thrd_MPSC_init(u_S$raw buf))(thrd_MPSC));
 $extern fn_((thrd_MPSC_fini(thrd_MPSC* self, TypeInfo type))(void));

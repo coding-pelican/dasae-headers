@@ -33,7 +33,7 @@ errset_((heap_Classic_E)(heap_Classic_Unsupported));
 
 /// Classic allocator instance
 T_alias$((heap_Classic)(struct heap_Classic {
-    var_(unused_, Void); /* Empty struct not allowed in C */
+    var_(_unused, Void); /* Empty struct not allowed in C */
 }));
 T_use_E$($set(heap_Classic_E)(mem_Alctr));
 $static let_(heap_Classic_default, heap_Classic) = cleared();

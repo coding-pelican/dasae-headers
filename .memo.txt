@@ -77,6 +77,21 @@ exec/execute/execution
 */
 
 /*
+symbol-like name rules:
+
+- public: name
+- private: _name
+- public flexible: name_
+- private flexible: _name_
+
+- macro args: _$name
+- macro uniq: __name
+
+- attr public: $name
+- attr private: $_name
+*/
+
+/*
 ################################
 #### Macro Naming Principles ###
 ################################

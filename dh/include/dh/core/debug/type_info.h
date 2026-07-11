@@ -27,10 +27,10 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 typedef struct debug_TypeInfo debug_TypeInfo;
-#define debug_typeInfo$(_T... /*(debug_TypeInfo)*/) __val__debug_typeInfo$(_T)
+#define debug_typeInfo$(_$T... /*(debug_TypeInfo)*/) __val__debug_typeInfo$(_$T)
 
-#define $typing(_type /*: TypeInfo*/... /*(debug_TypeInfo)*/) __val__$typing(_type)
-#define $typed(_ti /*: debug_TypeInfo*/... /*(TypeInfo|Void)*/) __expr__$typed(_ti)
+#define $typing(_$type /*: TypeInfo*/... /*(debug_TypeInfo)*/) __val__$typing(_$type)
+#define $typed(_$ti /*: debug_TypeInfo*/... /*(TypeInfo|Void)*/) __expr__$typed(_$ti)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -45,22 +45,22 @@ struct debug_TypeInfo { /* clang-format off */
         })
     ));
 }; /* clang-format on */
-#define __val__debug_typeInfo$(_T...) l$((debug_TypeInfo){ \
+#define __val__debug_typeInfo$(_$T...) l$((debug_TypeInfo){ \
     .impl = pp_if_(debug_enabled)( \
-        pp_then_({ .is_bound = true, .inner = typeInfo$(_T) }), \
+        pp_then_({ .is_bound = true, .inner = typeInfo$(_$T) }), \
         pp_else_({ .inner = Void_({}) }) \
     ), \
 })
 
-#define __val__$typing(_type...) l$((debug_TypeInfo){ \
+#define __val__$typing(_$type...) l$((debug_TypeInfo){ \
     .impl = pp_if_(debug_enabled)( \
-        pp_then_({ .is_bound = true, .inner = _type }), \
-        pp_else_({ .inner = Void_(_type) }) \
+        pp_then_({ .is_bound = true, .inner = _$type }), \
+        pp_else_({ .inner = Void_(_$type) }) \
     ), \
 })
-#define __expr__$typed(_ti...) __pp__$typed__emit(pp_uniqTok(ti), _ti)
-#define __pp__$typed__emit(__ti, _ti...) local_({ \
-    let_(__ti, debug_TypeInfo) = _ti; \
+#define __expr__$typed(_$ti...) __pp__$typed__emit(pp_uniqTok(ti), _$ti)
+#define __pp__$typed__emit(__ti, _$ti...) local_({ \
+    let_(__ti, debug_TypeInfo) = _$ti; \
     debug_assert(__ti.impl.is_bound); \
     local_return_(__ti.impl.inner); \
 })

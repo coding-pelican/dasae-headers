@@ -18,18 +18,15 @@ extern "C" {
 #include "../clsr.h"
 
 T_alias$((conc_Group)(struct conc_Group));
-T_use_E$($set(mem_E)(conc_Group));
 errset_((conc_Group_SpawnE)() $union_errset_(mem_E, Sched_ConcE));
-T_use_E$($set(conc_Group_SpawnE)(void));
-T_use_ArrList$(V$Future$raw);
-T_use_atom_V$(bool);
-T_use_E$($set(Sched_ConcE)(void));
+T_use_ArrList$(P$Future$raw);
 
 struct conc_Group {
-    var_(futs, ArrList$V$Future$raw);
+    var_(futs, ArrList$P$Future$raw);
     var_(cancel_requested, atom_V$bool);
     var_(closed, bool);
 };
+T_use_E$($set(mem_E)(conc_Group));
 
 $extern fn_((conc_Group_init(mem_Alctr gpa, usize cap))(E$($set(mem_E)(conc_Group))));
 $extern fn_((conc_Group_empty(void))(conc_Group));

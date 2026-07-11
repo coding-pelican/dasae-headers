@@ -13,13 +13,13 @@ extern "C" {
 
 $attr($inline_always)
 $static fn_((clsr_kind(const Clsr$raw* self))(Clsr_Kind));
-#define T_use_clsr_kind$(_T...) __stmt__T_use_clsr_kind$(_T)
+#define T_use_clsr_kind$(_$T...) __stmt__T_use_clsr_kind$(_$T)
 $attr($inline_always)
 $static fn_((clsr_invokeToStep(Clsr$raw* self, TypeInfo type))(O$u_P_const$raw));
-#define T_use_clsr_invokeToStep$(_T...) __stmt__T_use_clsr_invokeToStep$(_T)
+#define T_use_clsr_invokeToStep$(_$T...) __stmt__T_use_clsr_invokeToStep$(_$T)
 $attr($inline_always)
 $static fn_((clsr_invokeToComplete(Clsr$raw* self, TypeInfo type))(u_P_const$raw));
-#define T_use_clsr_invokeToComplete$(_T...) __stmt__T_use_clsr_invokeToComplete$(_T)
+#define T_use_clsr_invokeToComplete$(_$T...) __stmt__T_use_clsr_invokeToComplete$(_$T)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -55,28 +55,28 @@ fn_((clsr_invokeToComplete(Clsr$raw* self, TypeInfo type))(u_P_const$raw)) {
 };
 #endif /* on_analysis_active_only || on_comptime */
 
-#define __stmt__T_use_clsr_kind$(_T...) /* clang-format off */ \
+#define __stmt__T_use_clsr_kind$(_$T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl$(clsr_kind, _T)(Clsr$(_T)* self))(Clsr_Kind)) { \
+    $static fn_((tpl$(clsr_kind, _$T)(Clsr$(_$T)* self))(Clsr_Kind)) { \
         return clsr_kind(self->as_raw); \
     } /* clang-format on */
 T_use$((Void)(clsr_kind));
 
-#define __stmt__T_use_clsr_invokeToStep$(_T...) /* clang-format off */ \
+#define __stmt__T_use_clsr_invokeToStep$(_$T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl$(clsr_invokeToStep, _T)(Clsr$(_T)* self))(O$(P_const$(_T))) $scope) { \
-        if_some((clsr_invokeToStep(self->as_raw, typeInfo$(_T)))(ret)) { \
-            return_some(u_castP$((const _T*)(ret))); \
+    $static fn_((tpl$(clsr_invokeToStep, _$T)(Clsr$(_$T)* self))(O$(P_const$(_$T))) $scope) { \
+        if_some((clsr_invokeToStep(self->as_raw, typeInfo$(_$T)))(ret)) { \
+            return_some(u_castP$((const _$T*)(ret))); \
         } else_none { \
             return_none(); \
         } \
         claim_unreachable; \
     } $unscoped(fn) /* clang-format on */
 
-#define __stmt__T_use_clsr_invokeToComplete$(_T...) /* clang-format off */ \
+#define __stmt__T_use_clsr_invokeToComplete$(_$T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl$(clsr_invokeToComplete, _T)(Clsr$(_T)* self))(const _T*)) { \
-        return u_castP$((const _T*)(clsr_invokeToComplete(self->as_raw, typeInfo$(_T)))); \
+    $static fn_((tpl$(clsr_invokeToComplete, _$T)(Clsr$(_$T)* self))(const _$T*)) { \
+        return u_castP$((const _$T*)(clsr_invokeToComplete(self->as_raw, typeInfo$(_$T)))); \
     } /* clang-format on */
 
 #if defined(__cplusplus)

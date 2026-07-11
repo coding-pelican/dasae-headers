@@ -37,17 +37,15 @@ T_use_E$($set(conc_Batch_SpawnE)(u64));
 T_alias$((conc_Batch_Node)(struct conc_Batch_Node));
 T_alias$((conc_Batch$raw)(struct conc_Batch$raw));
 T_alias$((conc_Batch_Done$raw)(struct conc_Batch_Done$raw));
-T_use_ArrList$(conc_Batch_Node);
-T_use_E$($set(mem_E)(conc_Batch$raw));
 T_use_E$($set(mem_E)(u64));
-T_use_O$(conc_Batch_Done$raw);
-T_use_E$($set(Sched_Cancelable)(O$conc_Batch_Done$raw));
 
 struct conc_Batch_Node {
     var_(id, u64);
     var_(future, V$Future$raw);
     var_(done_next, O$usize);
 };
+T_use_prl$(conc_Batch_Node);
+T_use_ArrList$(conc_Batch_Node);
 
 struct conc_Batch$raw {
     var_(nodes, ArrList$conc_Batch_Node);
@@ -58,6 +56,7 @@ struct conc_Batch$raw {
     var_(cancel_requested, atom_V$bool);
     var_(type, debug_TypeInfo);
 };
+T_use_E$($set(mem_E)(conc_Batch$raw));
 
 struct conc_Batch_Done$raw {
     T_embed$(struct {
@@ -66,6 +65,8 @@ struct conc_Batch_Done$raw {
     });
     var_(result_, V$raw) $flexible;
 };
+T_use_O$(conc_Batch_Done$raw);
+T_use_E$($set(Sched_Cancelable)(O$conc_Batch_Done$raw));
 
 $extern fn_((conc_Batch_empty(TypeInfo type))(conc_Batch$raw));
 $extern fn_((conc_Batch_init(TypeInfo type, mem_Alctr gpa, usize cap))(E$($set(mem_E)(conc_Batch$raw))));

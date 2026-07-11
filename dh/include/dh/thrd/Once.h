@@ -33,6 +33,7 @@ typedef struct thrd_Once {
     ____thrd_Once_init_static()
 $extern fn_((thrd_Once_init(void))(thrd_Once));
 $extern fn_((thrd_Once_fini(thrd_Once* self))(void));
+
 $extern fn_((thrd_Once_tryBegin(thrd_Once* self))(bool));
 $extern fn_((thrd_Once_finish(thrd_Once* self))(void));
 $extern fn_((thrd_Once_wait(thrd_Once* self))(void));

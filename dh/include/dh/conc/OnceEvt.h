@@ -40,16 +40,16 @@ $extern fn_((conc_OnceEvt_set(conc_OnceEvt* self))(void));
 $attr($must_check)
 $extern fn_((conc_OnceEvt_wait(conc_OnceEvt* self, Sched sched))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((conc_OnceEvt_waitFor(conc_OnceEvt* self, Sched sched, time_Dur dur))(E$($set(conc_TimedE)(void))));
+$extern fn_((conc_OnceEvt_waitFor(conc_OnceEvt* self, Sched sched, time_Dur dur))(Sched_TimedE$void));
 $attr($must_check)
-$extern fn_((conc_OnceEvt_waitUntil(conc_OnceEvt* self, Sched sched, time_Inst deadline))(E$($set(conc_TimedE)(void))));
+$extern fn_((conc_OnceEvt_waitUntil(conc_OnceEvt* self, Sched sched, time_Inst deadline))(Sched_TimedE$void));
 $extern fn_((conc_OnceEvt_Tok_isSet(conc_OnceEvt_Tok self))(bool));
 $attr($must_check)
 $extern fn_((conc_OnceEvt_Tok_wait(conc_OnceEvt_Tok self, Sched sched))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((conc_OnceEvt_Tok_waitFor(conc_OnceEvt_Tok self, Sched sched, time_Dur dur))(E$($set(conc_TimedE)(void))));
+$extern fn_((conc_OnceEvt_Tok_waitFor(conc_OnceEvt_Tok self, Sched sched, time_Dur dur))(Sched_TimedE$void));
 $attr($must_check)
-$extern fn_((conc_OnceEvt_Tok_waitUntil(conc_OnceEvt_Tok self, Sched sched, time_Inst deadline))(E$($set(conc_TimedE)(void))));
+$extern fn_((conc_OnceEvt_Tok_waitUntil(conc_OnceEvt_Tok self, Sched sched, time_Inst deadline))(Sched_TimedE$void));
 $extern fn_((conc_OnceEvt_Sig_set(conc_OnceEvt_Sig self))(void));
 $extern fn_((conc_OnceEvt_asAwaitSrc(conc_OnceEvt* self))(conc_AwaitSrc));
 

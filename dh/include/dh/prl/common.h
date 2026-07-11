@@ -37,33 +37,33 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define T_decl_prl$(_T...) \
-    T_decl_prl_refs$(_T); \
-    T_decl_prl_vals$(_T); \
-    T_decl_prl_exts$(_T)
-#define T_impl_prl$(_T...) \
-    T_impl_prl_refs$(_T); \
-    T_impl_prl_vals$(_T); \
-    T_impl_prl_exts$(_T)
-#define T_use_prl$(_T...) \
-    T_use_prl_refs$(_T); \
-    T_use_prl_vals$(_T); \
-    T_use_prl_exts$(_T)
+#define T_decl_prl$(_$T...) \
+    T_decl_prl_refs$(_$T); \
+    T_decl_prl_vals$(_$T); \
+    T_decl_prl_exts$(_$T)
+#define T_impl_prl$(_$T...) \
+    T_impl_prl_refs$(_$T); \
+    T_impl_prl_vals$(_$T); \
+    T_impl_prl_exts$(_$T)
+#define T_use_prl$(_$T...) \
+    T_use_prl_refs$(_$T); \
+    T_use_prl_vals$(_$T); \
+    T_use_prl_exts$(_$T)
 
 T_use$((TypeInfo)(P, S));
-#define typeInfos$(_T...) ____typeInfos$(_T)
-#define typeInfosFrom(_type_infos...) ____typeInfosFrom(_type_infos)
+#define typeInfos$(_$T...) ____typeInfos$(_$T)
+#define typeInfosFrom(_$type_infos...) ____typeInfosFrom(_$type_infos)
 
 /*========== Macros and Definitions =========================================*/
 
-#define ____typeInfos$(_T...) \
-    A_ref$((S_const$TypeInfo)A_from$((TypeInfo){ pp_foreach(____typeInfos$__each, ~, _T) }))
-#define ____typeInfos$__each(_$ignored, _T...) \
-    typeInfo$(_T),
-#define ____typeInfosFrom(_type_infos...) \
-    A_ref$((S_const$TypeInfo)A_from$((TypeInfo){ pp_foreach(____typeInfosFrom__each, ~, _type_infos) }))
-#define ____typeInfosFrom__each(_$ignored, _type_info...) \
-    (_type_info),
+#define ____typeInfos$(_$T...) \
+    A_ref$((S_const$TypeInfo)A_from$((TypeInfo){ pp_foreach(____typeInfos$__each, ~, _$T) }))
+#define ____typeInfos$__each(_$ignored, _$T...) \
+    typeInfo$(_$T),
+#define ____typeInfosFrom(_$type_infos...) \
+    A_ref$((S_const$TypeInfo)A_from$((TypeInfo){ pp_foreach(____typeInfosFrom__each, ~, _$type_infos) }))
+#define ____typeInfosFrom__each(_$ignored, _$type_info...) \
+    (_$type_info),
 
 #if defined(__cplusplus)
 } /* extern "C" */

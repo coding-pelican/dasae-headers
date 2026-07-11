@@ -93,13 +93,13 @@ fn_((heap_Page__hintAddrAsPtr(usize hint_addr))(P$raw)) {
 };
 
 fn_((heap_Page__loadHintAddr(heap_Page* self))(usize)) {
-    return heap_Page__normalizeHintAddr(atom_load(&self->next_addr_hint_, atom_MemOrd_seq_cst));
+    return heap_Page__normalizeHintAddr(atom_load(&self->_next_addr_hint, atom_MemOrd_seq_cst));
 };
 
 fn_((heap_Page__storeHintAddr(heap_Page* self, usize old_hint_addr, u8* map, usize aligned_len))(void)) {
     let new_hint_addr = heap_Page__normalizeHintAddr(ptrToInt(map + aligned_len));
     let_ignore = atom_cmpXchgStrong(
-        &self->next_addr_hint_,
+        &self->_next_addr_hint,
         old_hint_addr,
         new_hint_addr,
         atom_MemOrd_seq_cst,
@@ -116,7 +116,7 @@ fn_((heap_Page__updateHintForRelease(heap_Page* self, u8* released_ptr, usize re
         if (old_hint_addr < start || end < old_hint_addr) return;
         let new_hint_addr = heap_Page__normalizeHintAddr(ptrToInt(released_ptr));
         let_ignore = orelse_((atom_cmpXchgStrong(
-            &self->next_addr_hint_,
+            &self->_next_addr_hint,
             old_hint_addr,
             new_hint_addr,
             atom_MemOrd_seq_cst,
@@ -134,7 +134,7 @@ fn_((heap_Page__updateHintForRemap(heap_Page* self, u8* old_ptr, usize old_len, 
         if (old_hint_addr < old_start || old_end < old_hint_addr) return;
         let new_hint_addr = heap_Page__normalizeHintAddr(ptrToInt(new_ptr + new_len));
         let_ignore = orelse_((atom_cmpXchgStrong(
-            &self->next_addr_hint_,
+            &self->_next_addr_hint,
             old_hint_addr,
             new_hint_addr,
             atom_MemOrd_seq_cst,

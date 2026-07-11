@@ -48,8 +48,8 @@ T_use_E$($set(mem_E)(ArrList));
 
 /*========== Function Prototypes ============================================*/
 
-#define ArrList_empty_static(_type /*: TypeInfo*/...) ____ArrList_empty_static(_type)
 #define ArrList_empty_static$(_T...) ____ArrList_empty_static$(_T)
+#define ArrList_empty_static(_type /*: TypeInfo*/...) ____ArrList_empty_static(_type)
 $extern fn_((ArrList_empty(TypeInfo type))(ArrList));
 $extern fn_((ArrList_fixed(u_S$raw buf))(ArrList));
 $attr($must_check)
@@ -223,9 +223,15 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     T_impl_ArrList$(_T)
 
 #define ____ArrList_empty_static(_type...) \
-    l$((ArrList){ .items = cleared(), .cap = 0, debug_only(.type = _type) })
+    l$((ArrList){ \
+        .items = cleared(), \
+        .cap = 0, \
+        debug_only(.type = _type) })
 #define ____ArrList_empty_static$(_T...) \
-    l$((ArrList$(_T)){ .items = cleared(), .cap = 0, debug_only(.type = typeInfo$(S_T$(FieldType$(ArrList$(_T), items)))) })
+    l$((ArrList$(_T)){ \
+        .items = cleared(), \
+        .cap = 0, \
+        debug_only(.type = typeInfo$(S_T$(FieldType$(ArrList$(_T), items)))) })
 
 /* clang-format off */
 #define T_use_ArrList_empty$(_T...) \

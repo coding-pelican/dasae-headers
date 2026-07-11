@@ -31,10 +31,10 @@ $attr($inline_always)
 $static fn_((Sched_ensureValid(Sched self))(Sched));
 
 $extern fn_((Sched_async(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$raw ret_mem))(V$Future$raw));
-#define T_use_Sched_async$(_T...) __stmt__T_use_Sched_async$(_T)
+#define T_use_Sched_async$(_$T...) __stmt__T_use_Sched_async$(_$T)
 $attr($must_check)
 $extern fn_((Sched_spawn(Sched self, Clsr$raw* clsr, TypeInfo ret_ty, V$Future$raw ret_mem))(Sched_ConcE$V$Future$raw));
-#define T_use_Sched_spawn$(_T...) __stmt__T_use_Sched_spawn$(_T)
+#define T_use_Sched_spawn$(_$T...) __stmt__T_use_Sched_spawn$(_$T)
 
 $extern fn_((Sched_recancel(Sched self))(void));
 $extern fn_((Sched_swapCancelProtcn(Sched self, Sched_CancelProtcn new_protect))(Sched_CancelProtcn));
@@ -147,19 +147,19 @@ fn_((Sched_ensureValid(Sched self))(Sched)) {
 };
 #endif /* on_analysis_active_only || on_comptime */
 
-#define __stmt__T_use_Sched_async$(_T...) /* clang-format off */ \
+#define __stmt__T_use_Sched_async$(_$T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl$(Sched_async, _T)(Sched self, Clsr$(_T)* clsr))(Future$(_T))) { \
-        return *ptrAlignCast$((Future$(_T)*)( \
-            Sched_async(self, clsr->as_raw, typeInfo$(_T), l0$((Future$(_T))).as_raw) \
+    $static fn_((tpl$(Sched_async, _$T)(Sched self, Clsr$(_$T)* clsr))(Future$(_$T))) { \
+        return *ptrAlignCast$((Future$(_$T)*)( \
+            Sched_async(self, clsr->as_raw, typeInfo$(_$T), l0$((Future$(_$T))).as_raw) \
         )); \
     } /* clang-format on */
-#define __stmt__T_use_Sched_spawn$(_T...) /* clang-format off */ \
-    T_use_E$($set(Sched_ConcE)(Future$(_T))); \
+#define __stmt__T_use_Sched_spawn$(_$T...) /* clang-format off */ \
+    T_use_E$($set(Sched_ConcE)(Future$(_$T))); \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(Sched_spawn, _T)(Sched self, Clsr$(_T)* clsr))(E$($set(Sched_ConcE)(Future$(_T)))) $scope) { \
-        return_ok(*ptrAlignCast$((Future$(_T)*)( \
-            try_(Sched_spawn(self, clsr->as_raw, typeInfo$(_T), l0$((Future$(_T))).as_raw)) \
+    $static fn_((tpl$(Sched_spawn, _$T)(Sched self, Clsr$(_$T)* clsr))(E$($set(Sched_ConcE)(Future$(_$T)))) $scope) { \
+        return_ok(*ptrAlignCast$((Future$(_$T)*)( \
+            try_(Sched_spawn(self, clsr->as_raw, typeInfo$(_$T), l0$((Future$(_$T))).as_raw)) \
         ))); \
     } $unscoped(fn) /* clang-format on */
 

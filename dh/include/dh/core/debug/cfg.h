@@ -35,10 +35,10 @@ extern "C" {
 #endif /* !defined(debug_break_enabled) */
 #define debug_break__enabled_default __comp_flag__debug_break__enabled_default
 
-#define debug_only(_inner...) \
+#define debug_only(_$inner...) \
     /* Used only when `debug_enabled`. */ \
-    __comp_syn__debug_only(_inner)
-#define debug_unless(_inner...) __comp_syn__debug_unless(_inner)
+    __comp_syn__debug_only(_$inner)
+#define debug_unless(_$inner...) __comp_syn__debug_unless(_$inner)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -62,8 +62,8 @@ extern "C" {
 #define __comp_flag__debug_break__enabled_default pp_false
 #endif /* defined(NDEBUG) || defined(NDEBUG_BREAK) */
 
-#define __comp_syn__debug_only(_inner...) pp_if_(debug_enabled)(pp_then_(_inner))
-#define __comp_syn__debug_unless(_inner...) pp_if_(pp_not(debug_enabled))(pp_then_(_inner))
+#define __comp_syn__debug_only(_$inner...) pp_if_(debug_enabled)(pp_then_(_$inner))
+#define __comp_syn__debug_unless(_$inner...) pp_if_(pp_not(debug_enabled))(pp_then_(_$inner))
 
 #if defined(__cplusplus)
 } /* extern "C" */

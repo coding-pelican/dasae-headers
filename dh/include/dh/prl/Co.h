@@ -48,7 +48,7 @@ T_alias$((Co_FlowCtrl)(union Co_FlowCtrl {
 }));
 claim_assert_static((Co_FlowCtrl_line_bits + Co_FlowCtrl_State_bits) == (arch_bits_wide / 2));
 /*--- Coroutine's Context ---*/
-#define Co_Ctx$(_T...) __alias__Co_Ctx$(_T)
+#define Co_Ctx$(_$T...) __alias__Co_Ctx$(_$T)
 T_alias$((Co_Ctx$raw)(struct Co_Ctx$raw {
     var_(ctrl, Co_FlowCtrl);
     var_(suspended_data, P$raw);
@@ -56,60 +56,60 @@ T_alias$((Co_Ctx$raw)(struct Co_Ctx$raw {
     var_(args_, V$raw) $flexible;
     var_(data_, V$raw) $flexible;
 }));
-#define T_use_Co_Ctx$(_T...) __stmt__T_use_Co_Ctx$(_T)
-#define T_decl_Co_Ctx$(_T...) __stmt__T_decl_Co_Ctx$(_T)
-#define T_impl_Co_Ctx$(_T...) __stmt__T_impl_Co_Ctx$(_T)
+#define T_use_Co_Ctx$(_$T...) __stmt__T_use_Co_Ctx$(_$T)
+#define T_decl_Co_Ctx$(_$T...) __stmt__T_decl_Co_Ctx$(_$T)
+#define T_impl_Co_Ctx$(_$T...) __stmt__T_impl_Co_Ctx$(_$T)
 /*--- Coroutine's Routine ---*/
-#define Co_Rtn$(_T...) __alias__Co_Rtn$(_T)
+#define Co_Rtn$(_$T...) __alias__Co_Rtn$(_$T)
 T_alias$((Co_Rtn)(fn_(((*)(P$$(Co_Ctx$raw) ctx))(P$$(Co_Ctx$raw)) $T)));
-#define T_use_Co_Rtn$(_T...) __stmt__T_use_Co_Rtn$(_T)
+#define T_use_Co_Rtn$(_$T...) __stmt__T_use_Co_Rtn$(_$T)
 /*--- Coroutine's Frame ---*/
-#define Co_Frame$(_T...) __alias__Co_Frame$(_T)
+#define Co_Frame$(_$T...) __alias__Co_Frame$(_$T)
 T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
     var_(rtn, Co_Rtn);
     var_(ctx_, Co_Ctx$raw) $flexible;
 }));
-#define T_use_Co_Frame$(_T...) __stmt__T_use_Co_Frame$(_T)
-#define T_decl_Co_Frame$(_T...) __stmt__T_decl_Co_Frame$(_T)
-#define T_impl_Co_Frame$(_T...) __stmt__T_impl_Co_Frame$(_T)
+#define T_use_Co_Frame$(_$T...) __stmt__T_use_Co_Frame$(_$T)
+#define T_decl_Co_Frame$(_$T...) __stmt__T_decl_Co_Frame$(_$T)
+#define T_impl_Co_Frame$(_$T...) __stmt__T_impl_Co_Frame$(_$T)
 /*--- Coroutine's Field ---*/
-#define Co_Ret_(_rtn...) __alias__Co_Ret_(_rtn)
-// #define co_use_Co_Ret_(_rtn...) __stmt__co_use_Co_Ret_(_rtn)
-#define Co_Args_(_rtn...) __alias__Co_Args_(_rtn)
-// #define co_use_Co_Args_(_rtn...) __stmt__co_use_Co_Args_(_rtn)
-#define Co_Suspended_(_rtn...) __alias__Co_Suspended_(_rtn)
-// #define co_use_Co_Suspended_(_rtn...) __stmt__co_use_Co_Suspended_(_rtn)
-#define Co_Locals_(_rtn...) __alias__Co_Locals_(_rtn)
-// #define co_use_Co_Locals_(_rtn...) __stmt__co_use_Co_Locals_(_rtn)
-#define Co_LocalsMut_(_rtn...) __alias__Co_LocalsMut_(_rtn)
-// #define co_use_Co_LocalsMut_(_rtn...) __stmt__co_use_Co_LocalsMut_(_rtn)
-#define Co_Data_(_rtn...) __alias__Co_Data_(_rtn)
-// #define co_use_Co_Data_(_rtn...) __stmt__co_use_Co_Data_(_rtn)
-#define Co_Ctx_(_rtn...) __alias__Co_Ctx_(_rtn)
-// #define co_use_Co_Ctx_(_rtn...) __stmt__co_use_Co_Ctx_(_rtn)
-#define Co_CtxBase_(_rtn...) __alias__Co_CtxBase_(_rtn)
-// #define co_use_Co_CtxBase_(_rtn...) __stmt__co_use_Co_CtxBase_(_rtn)
-#define Co_Rtn_(_rtn...) __alias__Co_Rtn_(_rtn)
-// #define co_use_Co_Rtn_(_rtn...) __stmt__co_use_Co_Rtn_(_rtn)
-#define Co_rtn_(_rtn...) __alias__Co_rtn_(_rtn)
-// #define co_use_Co_rtn_(_rtn...) __stmt__co_use_Co_rtn_(_rtn)
-#define Co_Frame_(_rtn...) __alias__Co_Frame_(_rtn)
-// #define co_use_Co_Frame_(_rtn...) __stmt__co_use_Co_Frame_(_rtn)
-#define Co_FrameBase_(_rtn...) __alias__Co_FrameBase_(_rtn)
-// #define co_use_Co_FrameBase_(_rtn...) __stmt__co_use_Co_FrameBase_(_rtn)
+#define Co_Ret_(_$rtn...) __alias__Co_Ret_(_$rtn)
+// #define co_use_Co_Ret_(_$rtn...) __stmt__co_use_Co_Ret_(_$rtn)
+#define Co_Args_(_$rtn...) __alias__Co_Args_(_$rtn)
+// #define co_use_Co_Args_(_$rtn...) __stmt__co_use_Co_Args_(_$rtn)
+#define Co_Suspended_(_$rtn...) __alias__Co_Suspended_(_$rtn)
+// #define co_use_Co_Suspended_(_$rtn...) __stmt__co_use_Co_Suspended_(_$rtn)
+#define Co_Locals_(_$rtn...) __alias__Co_Locals_(_$rtn)
+// #define co_use_Co_Locals_(_$rtn...) __stmt__co_use_Co_Locals_(_$rtn)
+#define Co_LocalsMut_(_$rtn...) __alias__Co_LocalsMut_(_$rtn)
+// #define co_use_Co_LocalsMut_(_$rtn...) __stmt__co_use_Co_LocalsMut_(_$rtn)
+#define Co_Data_(_$rtn...) __alias__Co_Data_(_$rtn)
+// #define co_use_Co_Data_(_$rtn...) __stmt__co_use_Co_Data_(_$rtn)
+#define Co_Ctx_(_$rtn...) __alias__Co_Ctx_(_$rtn)
+// #define co_use_Co_Ctx_(_$rtn...) __stmt__co_use_Co_Ctx_(_$rtn)
+#define Co_CtxBase_(_$rtn...) __alias__Co_CtxBase_(_$rtn)
+// #define co_use_Co_CtxBase_(_$rtn...) __stmt__co_use_Co_CtxBase_(_$rtn)
+#define Co_Rtn_(_$rtn...) __alias__Co_Rtn_(_$rtn)
+// #define co_use_Co_Rtn_(_$rtn...) __stmt__co_use_Co_Rtn_(_$rtn)
+#define Co_rtn_(_$rtn...) __alias__Co_rtn_(_$rtn)
+// #define co_use_Co_rtn_(_$rtn...) __stmt__co_use_Co_rtn_(_$rtn)
+#define Co_Frame_(_$rtn...) __alias__Co_Frame_(_$rtn)
+// #define co_use_Co_Frame_(_$rtn...) __stmt__co_use_Co_Frame_(_$rtn)
+#define Co_FrameBase_(_$rtn...) __alias__Co_FrameBase_(_$rtn)
+// #define co_use_Co_FrameBase_(_$rtn...) __stmt__co_use_Co_FrameBase_(_$rtn)
 /*--- Coroutine ---*/
-#define co_fn_(_fnName, _Args, _Ret_Type...) \
-    __stmt__co_fn_(_fnName, _Args, _Ret_Type)
-#define co_fn_frame_scope(_fnName, _Locals, _LocalsMut, _Suspended...) \
-    __stmt__co_fn_frame_scope(_fnName, _Locals, _LocalsMut, _Suspended)
-#define co_fn_scope(_fnName...) \
-    __stmt__co_fn_scope(_fnName)
+#define co_fn_(_$fnName, _$Args, _$Ret_Type...) \
+    __stmt__co_fn_(_$fnName, _$Args, _$Ret_Type)
+#define co_fn_frame_scope(_$fnName, _$Locals, _$LocalsMut, _$Suspended...) \
+    __stmt__co_fn_frame_scope(_$fnName, _$Locals, _$LocalsMut, _$Suspended)
+#define co_fn_scope(_$fnName...) \
+    __stmt__co_fn_scope(_$fnName)
 #define $unscoped_co_fn \
     __stmt__$unscoped_co_fn()
-#define co_fn_frame_guard(_fnName, _Locals, _LocalsMut, _Suspended, _Deferrable...) \
-    __stmt__co_fn_frame_guard(_fnName, _Locals, _LocalsMut, _Suspended, _Deferrable)
-#define co_fn_guard(_fnName...) \
-    __stmt__co_fn_guard(_fnName)
+#define co_fn_frame_guard(_$fnName, _$Locals, _$LocalsMut, _$Suspended, _$Deferrable...) \
+    __stmt__co_fn_frame_guard(_$fnName, _$Locals, _$LocalsMut, _$Suspended, _$Deferrable)
+#define co_fn_guard(_$fnName...) \
+    __stmt__co_fn_guard(_$fnName)
 #define $unguarded_co_fn \
     __stmt__$unguarded_co_fn()
 #define co_locals_mut_(...) \
@@ -121,19 +121,19 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
 #define co_deferrable_(...) \
     __stmt__co_deferrable_(__VA_ARGS__)
 #define $co_frame(/*void) -> (P(Co_Frame)*/) __expr__$co_frame()
-#define $co_arg(_ident...) __expr__$co_arg(_ident)
-#define $co(_ident...) __expr__$co(_ident)
-#define $co_mut(_ident...) __expr__$co_mut(_ident)
-#define $co_suspended(_ident...) __expr__$co_suspended(_ident)
-#define co_let_(_ident, _T...) __stmt__co_let_(_ident, _T)
-#define co_var_(_ident, _T...) __stmt__co_var_(_ident, _T)
-#define $co_init(_ident...) __expr__$co_init(_ident)
-#define $co_init_mut(_ident...) __expr__$co_init_mut(_ident)
-#define suspend_(/*(_ident)(_expr...)*/... /*(void)*/) __stmt__suspend_(__VA_ARGS__)
-#define resume_(_p_frame /*: P(Co_Frame)*/... /*(P(Co_Frame))*/) __expr__resume_(_p_frame)
-#define co_return_(_expr...) __expr__co_return_(_expr)
-#define co_defer_(_expr...) __stmt__co_defer_(_expr)
-#define co_errdefer_(_capt, _expr...) __stmt__co_errdefer_(_capt, _expr)
+#define $co_arg(_$ident...) __expr__$co_arg(_$ident)
+#define $co(_$ident...) __expr__$co(_$ident)
+#define $co_mut(_$ident...) __expr__$co_mut(_$ident)
+#define $co_suspended(_$ident...) __expr__$co_suspended(_$ident)
+#define co_let_(_$ident, _$T...) __stmt__co_let_(_$ident, _$T)
+#define co_var_(_$ident, _$T...) __stmt__co_var_(_$ident, _$T)
+#define $co_init(_$ident...) __expr__$co_init(_$ident)
+#define $co_init_mut(_$ident...) __expr__$co_init_mut(_$ident)
+#define suspend_(/*(_$ident)(_$expr...)*/... /*(void)*/) __stmt__suspend_(__VA_ARGS__)
+#define resume_(_$p_frame /*: P(Co_Frame)*/... /*(P(Co_Frame))*/) __expr__resume_(_$p_frame)
+#define co_return_(_$expr...) __expr__co_return_(_$expr)
+#define co_defer_(_$expr...) __stmt__co_defer_(_$expr)
+#define co_errdefer_(_$capt, _$expr...) __stmt__co_errdefer_(_$capt, _$expr)
 #define co_blk_defer comp_syn__co_blk_defer
 #define co_blk_deferral comp_syn__co_blk_deferral
 #define co_loop_defer comp_syn__co_loop_defer
@@ -147,20 +147,20 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
 /*========== Macros and Definitions =========================================*/
 
 /*--- Coroutine's Context ---*/
-#define __alias__Co_Ctx$(_T...) tpl$(Co_Ctx, _T)
-#define __stmt__T_use_Co_Ctx$(_T...) \
-    T_decl_Co_Ctx$(_T); \
-    T_impl_Co_Ctx$(_T)
-#define __stmt__T_decl_Co_Ctx$(_T...) \
-    T_alias$((Co_Ctx$(_T))(union Co_Ctx$(_T)))
-#define __stmt__T_impl_Co_Ctx$(_T...) \
-    union Co_Ctx$(_T) { \
+#define __alias__Co_Ctx$(_$T...) tpl$(Co_Ctx, _$T)
+#define __stmt__T_use_Co_Ctx$(_$T...) \
+    T_decl_Co_Ctx$(_$T); \
+    T_impl_Co_Ctx$(_$T)
+#define __stmt__T_decl_Co_Ctx$(_$T...) \
+    T_alias$((Co_Ctx$(_$T))(union Co_Ctx$(_$T)))
+#define __stmt__T_impl_Co_Ctx$(_$T...) \
+    union Co_Ctx$(_$T) { \
         T_embed$(struct { \
             var_(ctrl, Co_FlowCtrl); \
             var_(suspended_data, P$raw); \
             T_embed$(union { \
-                var_(ret, _T); \
-                var_(ret_, _T) $like_ref; \
+                var_(ret, _$T); \
+                var_(ret_, _$T) $like_ref; \
             }); \
             var_(args_, V$raw) $flexible; \
             var_(data_, V$raw) $flexible; \
@@ -168,101 +168,101 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
         var_(as_raw, Co_Ctx$raw) $flexible; \
     }
 /*--- Coroutine's Routine ---*/
-#define __alias__Co_Rtn$(_T...) tpl$(Co_Rtn, _T)
-#define __stmt__T_use_Co_Rtn$(_T...) \
-    T_alias$((Co_Rtn$(_T))(fn_(((*)(P$$(Co_Ctx$(_T)) ctx))(P$$(Co_Ctx$(_T)))$T)))
+#define __alias__Co_Rtn$(_$T...) tpl$(Co_Rtn, _$T)
+#define __stmt__T_use_Co_Rtn$(_$T...) \
+    T_alias$((Co_Rtn$(_$T))(fn_(((*)(P$$(Co_Ctx$(_$T)) ctx))(P$$(Co_Ctx$(_$T)))$T)))
 /*--- Coroutine's Frame ---*/
-#define __alias__Co_Frame$(_T...) tpl$(Co_Frame, _T)
-#define __stmt__T_use_Co_Frame$(_T...) \
-    T_decl_Co_Frame$(_T); \
-    T_impl_Co_Frame$(_T)
-#define __stmt__T_decl_Co_Frame$(_T...) \
-    T_alias$((Co_Frame$(_T))(union Co_Frame$(_T)))
-#define __stmt__T_impl_Co_Frame$(_T...) \
-    union Co_Frame$(_T) { \
+#define __alias__Co_Frame$(_$T...) tpl$(Co_Frame, _$T)
+#define __stmt__T_use_Co_Frame$(_$T...) \
+    T_decl_Co_Frame$(_$T); \
+    T_impl_Co_Frame$(_$T)
+#define __stmt__T_decl_Co_Frame$(_$T...) \
+    T_alias$((Co_Frame$(_$T))(union Co_Frame$(_$T)))
+#define __stmt__T_impl_Co_Frame$(_$T...) \
+    union Co_Frame$(_$T) { \
         T_embed$(struct { \
-            var_(rtn, Co_Rtn$(_T)); \
+            var_(rtn, Co_Rtn$(_$T)); \
             T_embed$(union { \
-                var_(ctx, Co_Ctx$(_T)); \
-                var_(ctx_, Co_Ctx$(_T)) $like_ref; \
+                var_(ctx, Co_Ctx$(_$T)); \
+                var_(ctx_, Co_Ctx$(_$T)) $like_ref; \
             }); \
         }); \
         var_(as_raw, Co_Frame$raw) $flexible; \
     }
 /*--- Coroutine's Field ---*/
-#define __alias__Co_Ret_(_rtn...) tpl_(Co_Ret, _rtn)
-#define __alias__Co_Args_(_rtn...) tpl_(Co_Args, _rtn)
-#define __alias__Co_Suspended_(_rtn...) tpl_(Co_Suspended, _rtn)
-#define __alias__Co_Locals_(_rtn...) tpl_(Co_Locals, _rtn)
-#define __alias__Co_LocalsMut_(_rtn...) tpl_(Co_Locals_mut, _rtn)
-#define __alias__Co_Data_(_rtn...) tpl_(Co_Data, _rtn)
-#define __alias__Co_Ctx_(_rtn...) tpl_(Co_Ctx, _rtn)
-#define __alias__Co_CtxBase_(_rtn...) tpl_(Co_CtxBase, _rtn)
-#define __alias__Co_Rtn_(_rtn...) tpl_(Co_Rtn, _rtn)
-#define __alias__Co_rtn_(_rtn...) tpl_(Co_rtn, _rtn)
-#define __alias__Co_Frame_(_rtn...) tpl_(Co_Frame, _rtn)
-#define __alias__Co_FrameBase_(_rtn...) tpl_(Co_FrameBase, _rtn)
+#define __alias__Co_Ret_(_$rtn...) tpl_(Co_Ret, _$rtn)
+#define __alias__Co_Args_(_$rtn...) tpl_(Co_Args, _$rtn)
+#define __alias__Co_Suspended_(_$rtn...) tpl_(Co_Suspended, _$rtn)
+#define __alias__Co_Locals_(_$rtn...) tpl_(Co_Locals, _$rtn)
+#define __alias__Co_LocalsMut_(_$rtn...) tpl_(Co_Locals_mut, _$rtn)
+#define __alias__Co_Data_(_$rtn...) tpl_(Co_Data, _$rtn)
+#define __alias__Co_Ctx_(_$rtn...) tpl_(Co_Ctx, _$rtn)
+#define __alias__Co_CtxBase_(_$rtn...) tpl_(Co_CtxBase, _$rtn)
+#define __alias__Co_Rtn_(_$rtn...) tpl_(Co_Rtn, _$rtn)
+#define __alias__Co_rtn_(_$rtn...) tpl_(Co_rtn, _$rtn)
+#define __alias__Co_Frame_(_$rtn...) tpl_(Co_Frame, _$rtn)
+#define __alias__Co_FrameBase_(_$rtn...) tpl_(Co_FrameBase, _$rtn)
 /*--- Coroutine ---*/
-#define __stmt__co_fn_(_fnName, Args, Ret_T...) \
-    fn_((_fnName(P$$(union Co_Ctx_(_fnName)) ctx))(P$$(union Co_Ctx_(_fnName)))); \
-    T_alias$((Co_FrameBase_(_fnName))(Co_Frame$(Ret_T))); \
-    T_alias$((Co_Frame_(_fnName))(union Co_Frame_(_fnName))); \
-    T_alias$((Co_CtxBase_(_fnName))(Co_Ctx$(Ret_T))); \
-    T_alias$((Co_Ctx_(_fnName))(union Co_Ctx_(_fnName))); \
-    T_alias$((Co_Rtn_(_fnName))(fn_(((*)(P$$(Co_Ctx_(_fnName)) ctx))(P$$(Co_Ctx_(_fnName)))$T))); \
-    T_alias$((Co_Ret_(_fnName))(Ret_T)); \
-    T_alias$((Co_Args_(_fnName))(struct Co_Args_(_fnName) { \
+#define __stmt__co_fn_(_$fnName, Args, Ret_T...) \
+    fn_((_$fnName(P$$(union Co_Ctx_(_$fnName)) ctx))(P$$(union Co_Ctx_(_$fnName)))); \
+    T_alias$((Co_FrameBase_(_$fnName))(Co_Frame$(Ret_T))); \
+    T_alias$((Co_Frame_(_$fnName))(union Co_Frame_(_$fnName))); \
+    T_alias$((Co_CtxBase_(_$fnName))(Co_Ctx$(Ret_T))); \
+    T_alias$((Co_Ctx_(_$fnName))(union Co_Ctx_(_$fnName))); \
+    T_alias$((Co_Rtn_(_$fnName))(fn_(((*)(P$$(Co_Ctx_(_$fnName)) ctx))(P$$(Co_Ctx_(_$fnName)))$T))); \
+    T_alias$((Co_Ret_(_$fnName))(Ret_T)); \
+    T_alias$((Co_Args_(_$fnName))(struct Co_Args_(_$fnName) { \
         pp_Tuple_unwrap Args; \
     }))
-#define __stmt__co_fn_frame_scope(_fnName, _Locals, _LocalsMut, _Suspended...) \
+#define __stmt__co_fn_frame_scope(_$fnName, _$Locals, _$LocalsMut, _$Suspended...) \
     claim_assert_static(eqlType$( \
-        TypeOf(_fnName)*, \
-        fn_(((*)(P$$(union Co_Ctx_(_fnName)) ctx))(P$$(union Co_Ctx_(_fnName)))$T) \
+        TypeOf(_$fnName)*, \
+        fn_(((*)(P$$(union Co_Ctx_(_$fnName)) ctx))(P$$(union Co_Ctx_(_$fnName)))$T) \
     )); \
-    T_alias$((Co_Suspended_(_fnName))(union Co_Suspended_(_fnName) _Suspended)); \
-    T_alias$((Co_Locals_(_fnName))(struct Co_Locals_(_fnName) _Locals)); \
-    T_alias$((Co_LocalsMut_(_fnName))(struct Co_LocalsMut_(_fnName) _LocalsMut)); \
-    T_alias$((Co_Data_(_fnName))(struct Co_Data_(_fnName) { \
-        var_(suspended, Co_Suspended_(_fnName)); \
-        var_(locals, Co_Locals_(_fnName)); \
-        var_(locals_mut, Co_LocalsMut_(_fnName)); \
+    T_alias$((Co_Suspended_(_$fnName))(union Co_Suspended_(_$fnName) _$Suspended)); \
+    T_alias$((Co_Locals_(_$fnName))(struct Co_Locals_(_$fnName) _$Locals)); \
+    T_alias$((Co_LocalsMut_(_$fnName))(struct Co_LocalsMut_(_$fnName) _$LocalsMut)); \
+    T_alias$((Co_Data_(_$fnName))(struct Co_Data_(_$fnName) { \
+        var_(suspended, Co_Suspended_(_$fnName)); \
+        var_(locals, Co_Locals_(_$fnName)); \
+        var_(locals_mut, Co_LocalsMut_(_$fnName)); \
     })); \
-    union Co_Ctx_(_fnName) { \
+    union Co_Ctx_(_$fnName) { \
         T_embed$(struct { \
             var_(ctrl, Co_FlowCtrl); \
             var_(suspended_data, P$raw); \
             T_embed$(union { \
-                var_(ret, Co_Ret_(_fnName)); \
-                var_(ret_, Co_Ret_(_fnName)) $like_ref; \
+                var_(ret, Co_Ret_(_$fnName)); \
+                var_(ret_, Co_Ret_(_$fnName)) $like_ref; \
             }); \
             T_embed$(union { \
-                var_(args, Co_Args_(_fnName)); \
-                var_(args_, Co_Args_(_fnName)) $like_ref; \
+                var_(args, Co_Args_(_$fnName)); \
+                var_(args_, Co_Args_(_$fnName)) $like_ref; \
             }); \
             T_embed$(union { \
-                var_(data, Co_Data_(_fnName)); \
-                var_(data_, Co_Data_(_fnName)) $like_ref; \
+                var_(data, Co_Data_(_$fnName)); \
+                var_(data_, Co_Data_(_$fnName)) $like_ref; \
             }); \
         }); \
         var_(as_raw, Co_Ctx$raw) $flexible; \
-        var_(as_base, Co_CtxBase_(_fnName)) $flexible; \
+        var_(as_base, Co_CtxBase_(_$fnName)) $flexible; \
     }; \
-    union Co_Frame_(_fnName) { \
+    union Co_Frame_(_$fnName) { \
         T_embed$(struct { \
-            var_(rtn, Co_Rtn_(_fnName)); \
+            var_(rtn, Co_Rtn_(_$fnName)); \
             T_embed$(union { \
-                var_(ctx, Co_Ctx_(_fnName)); \
-                var_(ctx_, Co_Ctx_(_fnName)) $like_ref; \
+                var_(ctx, Co_Ctx_(_$fnName)); \
+                var_(ctx_, Co_Ctx_(_$fnName)) $like_ref; \
             }); \
         }); \
         var_(as_raw, Co_Frame$raw) $flexible; \
-        var_(as_base, Co_FrameBase_(_fnName)) $flexible; \
+        var_(as_base, Co_FrameBase_(_$fnName)) $flexible; \
     }
-#define __stmt__co_fn_scope(_fnName...) \
-    fn_((_fnName(P$$(union Co_Ctx_(_fnName)) ctx))(P$$(union Co_Ctx_(_fnName)))) { /* clang-format off */ \
+#define __stmt__co_fn_scope(_$fnName...) \
+    fn_((_$fnName(P$$(union Co_Ctx_(_$fnName)) ctx))(P$$(union Co_Ctx_(_$fnName)))) { /* clang-format off */ \
         let __ctx = ctx; \
         $attr($maybe_unused) \
-        let __frame = recordPtr(__ctx, Co_FrameBase_(_fnName), ctx); \
+        let __frame = recordPtr(__ctx, Co_FrameBase_(_$fnName), ctx); \
         let __reserved_return = &__ctx->ret; \
         $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
         $maybe_unused typedef ReturnType ReturnT; \
@@ -295,58 +295,58 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
             return __ctx; \
         } \
     } /* clang-format on */
-#define __stmt__co_fn_frame_guard(_fnName, _Locals, _LocalsMut, _Suspended, _Deferrable...) \
+#define __stmt__co_fn_frame_guard(_$fnName, _$Locals, _$LocalsMut, _$Suspended, _$Deferrable...) \
     claim_assert_static(eqlType$( \
-        TypeOf(_fnName)*, \
-        fn_(((*)(P$$(union Co_Ctx_(_fnName)) ctx))(P$$(union Co_Ctx_(_fnName)))$T) \
+        TypeOf(_$fnName)*, \
+        fn_(((*)(P$$(union Co_Ctx_(_$fnName)) ctx))(P$$(union Co_Ctx_(_$fnName)))$T) \
     )); \
-    T_alias$((Co_Suspended_(_fnName))(union Co_Suspended_(_fnName) _Suspended)); \
-    T_alias$((Co_Locals_(_fnName))(struct Co_Locals_(_fnName) _Locals)); \
-    T_alias$((Co_LocalsMut_(_fnName))(struct Co_LocalsMut_(_fnName) _LocalsMut)); \
-    T_alias$((Co_Data_(_fnName))(struct Co_Data_(_fnName) { \
-        var_(suspended, Co_Suspended_(_fnName)); \
-        var_(locals, Co_Locals_(_fnName)); \
-        var_(locals_mut, Co_LocalsMut_(_fnName)); \
+    T_alias$((Co_Suspended_(_$fnName))(union Co_Suspended_(_$fnName) _$Suspended)); \
+    T_alias$((Co_Locals_(_$fnName))(struct Co_Locals_(_$fnName) _$Locals)); \
+    T_alias$((Co_LocalsMut_(_$fnName))(struct Co_LocalsMut_(_$fnName) _$LocalsMut)); \
+    T_alias$((Co_Data_(_$fnName))(struct Co_Data_(_$fnName) { \
+        var_(suspended, Co_Suspended_(_$fnName)); \
+        var_(locals, Co_Locals_(_$fnName)); \
+        var_(locals_mut, Co_LocalsMut_(_$fnName)); \
         var_(deferrable_top, u32); \
-        var_(deferrable_stack, A$$(_Deferrable, fn__FlowCursorPacked)); \
-        var_(deferrable_break_stack, A$$(_Deferrable, bool)); \
+        var_(deferrable_stack, A$$(_$Deferrable, fn__FlowCursorPacked)); \
+        var_(deferrable_break_stack, A$$(_$Deferrable, bool)); \
     })); \
-    union Co_Ctx_(_fnName) { \
+    union Co_Ctx_(_$fnName) { \
         T_embed$(struct { \
             var_(ctrl, Co_FlowCtrl); \
             var_(suspended_data, P$raw); \
             T_embed$(union { \
-                var_(ret, Co_Ret_(_fnName)); \
-                var_(ret_, Co_Ret_(_fnName)) $like_ref; \
+                var_(ret, Co_Ret_(_$fnName)); \
+                var_(ret_, Co_Ret_(_$fnName)) $like_ref; \
             }); \
             T_embed$(union { \
-                var_(args, Co_Args_(_fnName)); \
-                var_(args_, Co_Args_(_fnName)) $like_ref; \
+                var_(args, Co_Args_(_$fnName)); \
+                var_(args_, Co_Args_(_$fnName)) $like_ref; \
             }); \
             T_embed$(union { \
-                var_(data, Co_Data_(_fnName)); \
-                var_(data_, Co_Data_(_fnName)) $like_ref; \
+                var_(data, Co_Data_(_$fnName)); \
+                var_(data_, Co_Data_(_$fnName)) $like_ref; \
             }); \
         }); \
         var_(as_raw, Co_Ctx$raw) $flexible; \
-        var_(as_base, Co_CtxBase_(_fnName)) $flexible; \
+        var_(as_base, Co_CtxBase_(_$fnName)) $flexible; \
     }; \
-    union Co_Frame_(_fnName) { \
+    union Co_Frame_(_$fnName) { \
         T_embed$(struct { \
-            var_(rtn, Co_Rtn_(_fnName)); \
+            var_(rtn, Co_Rtn_(_$fnName)); \
             T_embed$(union { \
-                var_(ctx, Co_Ctx_(_fnName)); \
-                var_(ctx_, Co_Ctx_(_fnName)) $like_ref; \
+                var_(ctx, Co_Ctx_(_$fnName)); \
+                var_(ctx_, Co_Ctx_(_$fnName)) $like_ref; \
             }); \
         }); \
         var_(as_raw, Co_Frame$raw) $flexible; \
-        var_(as_base, Co_FrameBase_(_fnName)) $flexible; \
+        var_(as_base, Co_FrameBase_(_$fnName)) $flexible; \
     }
-#define __stmt__co_fn_guard(_fnName, _Locals, _LocalsMut, _Suspended, _Deferrable...) \
-    fn_((_fnName(P$$(union Co_Ctx_(_fnName)) ctx))(P$$(union Co_Ctx_(_fnName)))) { /* clang-format off */ \
+#define __stmt__co_fn_guard(_$fnName, _$Locals, _$LocalsMut, _$Suspended, _$Deferrable...) \
+    fn_((_$fnName(P$$(union Co_Ctx_(_$fnName)) ctx))(P$$(union Co_Ctx_(_$fnName)))) { /* clang-format off */ \
         let __ctx = ctx; \
         $attr($maybe_unused) \
-        let __frame = recordPtr(__ctx, Co_FrameBase_(_fnName), ctx); \
+        let __frame = recordPtr(__ctx, Co_FrameBase_(_$fnName), ctx); \
         let __reserved_return = &__ctx->ret; \
         $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
         $maybe_unused typedef ReturnType ReturnT; \
@@ -388,28 +388,28 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 #define __stmt__co_deferrable_(...) __VA_ARGS__
 
 #define __expr__$co_frame() (*__frame)
-#define __expr__$co_arg(_ident...) (__args->_ident)
-#define __expr__$co(_ident...) (__locals->_ident)
-#define __expr__$co_mut(_ident...) (__locals_mut->_ident)
-#define __expr__$co_suspended(_ident...) (__suspended->_ident)
-#define __stmt__co_let_(_ident, /*_T*/...) \
-    __VA_OPT__(({ claim_assert_static(eqlType$(TypeOf(__ctx->data.locals._ident), __VA_ARGS__)); }), ) \
-    __ctx->data.locals._ident
-#define __stmt__co_var_(_ident, /*_T*/...) \
-    __VA_OPT__(({ claim_assert_static(eqlType$(TypeOf(__locals_mut->_ident), __VA_ARGS__)); }), ) \
-    __locals_mut->_ident
+#define __expr__$co_arg(_$ident...) (__args->_$ident)
+#define __expr__$co(_$ident...) (__locals->_$ident)
+#define __expr__$co_mut(_$ident...) (__locals_mut->_$ident)
+#define __expr__$co_suspended(_$ident...) (__suspended->_$ident)
+#define __stmt__co_let_(_$ident, /*_$T*/...) \
+    __VA_OPT__(({ claim_assert_static(eqlType$(TypeOf(__ctx->data.locals._$ident), __VA_ARGS__)); }), ) \
+    __ctx->data.locals._$ident
+#define __stmt__co_var_(_$ident, /*_$T*/...) \
+    __VA_OPT__(({ claim_assert_static(eqlType$(TypeOf(__locals_mut->_$ident), __VA_ARGS__)); }), ) \
+    __locals_mut->_$ident
 #define __step__$co_init__expand(...) __VA_ARGS__
-#define __expr__$co_init(_ident...) (TypeOf(__ctx->data.locals._ident)) __step__$co_init__expand
+#define __expr__$co_init(_$ident...) (TypeOf(__ctx->data.locals._$ident)) __step__$co_init__expand
 #define __step__$co_init_mut__expand(...) __VA_ARGS__
-#define __expr__$co_init_mut(_ident...) (TypeOf(__locals_mut->_ident)) __step__$co_init_mut__expand
+#define __expr__$co_init_mut(_$ident...) (TypeOf(__locals_mut->_$ident)) __step__$co_init_mut__expand
 
 #define __stmt__suspend_(...) __step__suspend___emit(__step__suspend___parse __VA_ARGS__)
-#define __step__suspend___parse(_ident...) pp_uniqTok(suspended_data), _ident, /*_expr*/
+#define __step__suspend___parse(_$ident...) pp_uniqTok(suspended_data), _$ident, /*_$expr*/
 #define __step__suspend___emit(...) __inline__suspend_(__VA_ARGS__)
-#define __inline__suspend_(__suspended_data, _ident, _expr...) \
+#define __inline__suspend_(__suspended_data, _$ident, _$expr...) \
     do { \
-        let __suspended_data = &__suspended->_ident; \
-        *__suspended_data = _expr; \
+        let __suspended_data = &__suspended->_$ident; \
+        *__suspended_data = _$expr; \
         __ctx->suspended_data = __suspended_data; \
         __ctx->ctrl.state = Co_State_suspended; \
         __ctx->ctrl.line = __LINE__; \
@@ -419,22 +419,22 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
         __ctx->ctrl.state = Co_State_pending; \
     } while (false)
 
-#define __expr__resume_(_p_frame...) __inline__resume_(pp_uniqTok(p_frame), _p_frame)
-#define __inline__resume_(__p_frame, _p_frame...) local_({ \
-    let __p_frame = ensureNonnull(_p_frame); \
+#define __expr__resume_(_$p_frame...) __inline__resume_(pp_uniqTok(p_frame), _$p_frame)
+#define __inline__resume_(__p_frame, _$p_frame...) local_({ \
+    let __p_frame = ensureNonnull(_$p_frame); \
     claim_assert(__p_frame->ctx_->ctrl.state != Co_State_undefined); \
     local_return_(__p_frame->rtn(__p_frame->ctx_)->suspended_data); \
 })
 
-#define __expr__co_return_(_expr...) return_(_expr)
+#define __expr__co_return_(_$expr...) return_(_$expr)
 #define __expr__co_returned(...)
 
-#define __stmt__co_defer_(_expr...) comp_syn__co_defer__op_snapshot(_expr; goto __step_deferred)
-#define __stmt__co_errdefer_(_capt, _expr...) co_defer_(if (!__reserved_return->is_ok) { \
+#define __stmt__co_defer_(_$expr...) comp_syn__co_defer__op_snapshot(_$expr; goto __step_deferred)
+#define __stmt__co_errdefer_(_$capt, _$expr...) co_defer_(if (!__reserved_return->is_ok) { \
     claim_assert(__reserved_return->payload.err.ctx != 0); \
     claim_assert_nonnull(__reserved_return->payload.err.vt); \
-    let _capt = __reserved_return->payload.err; \
-    _expr; \
+    let _$capt = __reserved_return->payload.err; \
+    _$expr; \
 })
 /* clang-format off */
 /* Coroutine block-local defer boundary. A raw break/continue inside the body
@@ -487,21 +487,21 @@ __co_loop_defer_break: \
     } \
     false; \
 })
-#define comp_syn__co_defer__op_snapshot(_expr...) comp_syn__co_defer__op_snapshot_(false, _expr)
-#define comp_syn__co_defer__op_snapshot_(_is_breaking, _expr...) \
+#define comp_syn__co_defer__op_snapshot(_$expr...) comp_syn__co_defer__op_snapshot_(false, _$expr)
+#define comp_syn__co_defer__op_snapshot_(_$is_breaking, _$expr...) \
     { \
         let __deferrable_idx = (*__deferrable_top)++; \
         *S_at((__deferrable_stack)[__deferrable_idx]) = __flow_cursor.curr_line; \
-        *S_at((__deferrable_break_stack)[__deferrable_idx]) = (_is_breaking); \
+        *S_at((__deferrable_break_stack)[__deferrable_idx]) = (_$is_breaking); \
         __flow_cursor.curr_line = __LINE__; \
         if (false) { \
         case __LINE__: \
             __flow_cursor.curr_line = *S_at((__deferrable_stack)[--(*__deferrable_top)]); \
-            _expr; \
+            _$expr; \
         } \
     }
 
-#define __expr__co_call_(_ctx_co, _fnCo_and_Args...)
+#define __expr__co_call_(_$ctx_co, _$fnCo_and_Args...)
 #define __stmt__co_called(...)
 
 T_use_Co_Ctx$(Void);

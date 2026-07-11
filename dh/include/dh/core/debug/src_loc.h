@@ -30,10 +30,10 @@ typedef struct debug_SrcLoc debug_SrcLoc;
 #define debug_srcLoc() __val__debug_srcLoc()
 
 #define $traced __syn__param__$traced
-#define $traced_(_ident...) __syn__paramNamed__$traced_(_ident)
+#define $traced_(_$ident...) __syn__paramNamed__$traced_(_$ident)
 #define $trace __syn__arg__$trace
 #define $tracing __ident__capt__$tracing
-#define $tracing_(_ident...) __ident__captNamed__$tracing_(_ident)
+#define $tracing_(_$ident...) __ident__captNamed__$tracing_(_$ident)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -52,14 +52,14 @@ struct debug_SrcLoc { /* clang-format off */
 
 #define __syn__param__$traced \
     $maybe_unused debug_SrcLoc __traced,
-#define __syn__paramNamed__$traced_(_ident...) \
-    $maybe_unused debug_SrcLoc pp_join(_, __traced, _ident),
+#define __syn__paramNamed__$traced_(_$ident...) \
+    $maybe_unused debug_SrcLoc pp_join(_, __traced, _$ident),
 #define __syn__arg__$trace \
     debug_srcLoc(),
 #define __ident__capt__$tracing \
     __traced,
-#define __ident__captNamed__$tracing_(_ident...) \
-    pp_join(_, __traced, _ident),
+#define __ident__captNamed__$tracing_(_$ident...) \
+    pp_join(_, __traced, _$ident),
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -28,84 +28,84 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define debug_assert(_Expr) __step__debug_assert((_Expr), #_Expr)
+#define debug_assert(_$Expr) __step__debug_assert((_$Expr), #_$Expr)
 #define debug_assert_trap() __step__debug_assert_trap()
-#define debug_assert_true(_Expr) __step__debug_assert_true((_Expr), #_Expr)
-#define debug_assert_false(_Expr) __step__debug_assert_false((_Expr), #_Expr)
-#define debug_assert_eq(_Expr1, _Expr2) __step__debug_assert_eq((_Expr1), (_Expr2), #_Expr1, #_Expr2)
-#define debug_assert_ne(_Expr1, _Expr2) __step__debug_assert_ne((_Expr1), (_Expr2), #_Expr1, #_Expr2)
-#define debug_assert_zero(_Expr) __step__debug_assert_zero((_Expr), #_Expr)
-#define debug_assert_nonzero(_Expr) __step__debug_assert_nonzero((_Expr), #_Expr)
-#define debug_assert_null(_Expr) __step__debug_assert_null((_Expr), #_Expr)
-#define debug_assert_nullS(_Expr) __step__debug_assert_nullS((_Expr), #_Expr)
-#define debug_assert_nonnull(_Expr) __step__debug_assert_nonnull((_Expr), #_Expr)
-#define debug_assert_nonnullS(_Expr) __step__debug_assert_nonnullS((_Expr), #_Expr)
+#define debug_assert_true(_$Expr) __step__debug_assert_true((_$Expr), #_$Expr)
+#define debug_assert_false(_$Expr) __step__debug_assert_false((_$Expr), #_$Expr)
+#define debug_assert_eq(_$Expr1, _$Expr2) __step__debug_assert_eq((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2)
+#define debug_assert_ne(_$Expr1, _$Expr2) __step__debug_assert_ne((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2)
+#define debug_assert_zero(_$Expr) __step__debug_assert_zero((_$Expr), #_$Expr)
+#define debug_assert_nonzero(_$Expr) __step__debug_assert_nonzero((_$Expr), #_$Expr)
+#define debug_assert_null(_$Expr) __step__debug_assert_null((_$Expr), #_$Expr)
+#define debug_assert_nullS(_$Expr) __step__debug_assert_nullS((_$Expr), #_$Expr)
+#define debug_assert_nonnull(_$Expr) __step__debug_assert_nonnull((_$Expr), #_$Expr)
+#define debug_assert_nonnullS(_$Expr) __step__debug_assert_nonnullS((_$Expr), #_$Expr)
 
-#define debug_assert_eqBy(_Expr1, _Expr2, _eq) __step__debug_assert_eqBy((_Expr1), (_Expr2), _eq, #_Expr1, #_Expr2)
-#define debug_assert_neBy(_Expr1, _Expr2, _ne) __step__debug_assert_neBy((_Expr1), (_Expr2), _ne, #_Expr1, #_Expr2)
+#define debug_assert_eqBy(_$Expr1, _$Expr2, _$eq) __step__debug_assert_eqBy((_$Expr1), (_$Expr2), _$eq, #_$Expr1, #_$Expr2)
+#define debug_assert_neBy(_$Expr1, _$Expr2, _$ne) __step__debug_assert_neBy((_$Expr1), (_$Expr2), _$ne, #_$Expr1, #_$Expr2)
 
-#define debug_assert_msg(_Expr, _msg) __step__debug_assert_msg((_Expr), #_Expr, _msg)
-#define debug_assert_trap_msg(_msg) __step__debug_assert_trap_msg(_msg)
-#define debug_assert_true_msg(_Expr, _msg) __step__debug_assert_true_msg((_Expr), #_Expr, _msg)
-#define debug_assert_false_msg(_Expr, _msg) __step__debug_assert_false_msg((_Expr), #_Expr, _msg)
-#define debug_assert_eq_msg(_Expr1, _Expr2, _msg) __step__debug_assert_eq_msg((_Expr1), (_Expr2), #_Expr1, #_Expr2, _msg)
-#define debug_assert_ne_msg(_Expr1, _Expr2, _msg) __step__debug_assert_ne_msg((_Expr1), (_Expr2), #_Expr1, #_Expr2, _msg)
-#define debug_assert_zero_msg(_Expr, _msg) __step__debug_assert_zero_msg((_Expr), #_Expr, _msg)
-#define debug_assert_nonzero_msg(_Expr, _msg) __step__debug_assert_nonzero_msg((_Expr), #_Expr, _msg)
-#define debug_assert_null_msg(_Expr, _msg) __step__debug_assert_null_msg((_Expr), #_Expr, _msg)
-#define debug_assert_nullS_msg(_Expr, _msg) __step__debug_assert_nullS_msg((_Expr), #_Expr, _msg)
-#define debug_assert_nonnull_msg(_Expr, _msg) __step__debug_assert_nonnull_msg((_Expr), #_Expr, _msg)
-#define debug_assert_nonnullS_msg(_Expr, _msg) __step__debug_assert_nonnullS_msg((_Expr), #_Expr, _msg)
+#define debug_assert_msg(_$Expr, _$msg) __step__debug_assert_msg((_$Expr), #_$Expr, _$msg)
+#define debug_assert_trap_msg(_$msg) __step__debug_assert_trap_msg(_$msg)
+#define debug_assert_true_msg(_$Expr, _$msg) __step__debug_assert_true_msg((_$Expr), #_$Expr, _$msg)
+#define debug_assert_false_msg(_$Expr, _$msg) __step__debug_assert_false_msg((_$Expr), #_$Expr, _$msg)
+#define debug_assert_eq_msg(_$Expr1, _$Expr2, _$msg) __step__debug_assert_eq_msg((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2, _$msg)
+#define debug_assert_ne_msg(_$Expr1, _$Expr2, _$msg) __step__debug_assert_ne_msg((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2, _$msg)
+#define debug_assert_zero_msg(_$Expr, _$msg) __step__debug_assert_zero_msg((_$Expr), #_$Expr, _$msg)
+#define debug_assert_nonzero_msg(_$Expr, _$msg) __step__debug_assert_nonzero_msg((_$Expr), #_$Expr, _$msg)
+#define debug_assert_null_msg(_$Expr, _$msg) __step__debug_assert_null_msg((_$Expr), #_$Expr, _$msg)
+#define debug_assert_nullS_msg(_$Expr, _$msg) __step__debug_assert_nullS_msg((_$Expr), #_$Expr, _$msg)
+#define debug_assert_nonnull_msg(_$Expr, _$msg) __step__debug_assert_nonnull_msg((_$Expr), #_$Expr, _$msg)
+#define debug_assert_nonnullS_msg(_$Expr, _$msg) __step__debug_assert_nonnullS_msg((_$Expr), #_$Expr, _$msg)
 
-#define debug_assert_fmt(_Expr, _fmt...) __step__debug_assert_fmt((_Expr), #_Expr, _fmt)
-#define debug_assert_trap_fmt(_fmt...) __step__debug_assert_trap_fmt(_fmt)
-#define debug_assert_true_fmt(_Expr, _fmt...) __step__debug_assert_true_fmt((_Expr), #_Expr, _fmt)
-#define debug_assert_false_fmt(_Expr, _fmt...) __step__debug_assert_false_fmt((_Expr), #_Expr, _fmt)
-#define debug_assert_eq_fmt(_Expr1, _Expr2, _fmt...) __step__debug_assert_eq_fmt((_Expr1), (_Expr2), #_Expr1, #_Expr2, _fmt)
-#define debug_assert_ne_fmt(_Expr1, _Expr2, _fmt...) __step__debug_assert_ne_fmt((_Expr1), (_Expr2), #_Expr1, #_Expr2, _fmt)
-#define debug_assert_zero_fmt(_Expr, _fmt...) __step__debug_assert_zero_fmt((_Expr), #_Expr, _fmt)
-#define debug_assert_nonzero_fmt(_Expr, _fmt...) __step__debug_assert_nonzero_fmt((_Expr), #_Expr, _fmt)
-#define debug_assert_null_fmt(_Expr, _fmt...) __step__debug_assert_null_fmt((_Expr), #_Expr, _fmt)
-#define debug_assert_nonnull_fmt(_Expr, _fmt...) __step__debug_assert_nonnull_fmt((_Expr), #_Expr, _fmt)
-#define debug_assert_nonnullS_fmt(_Expr, _fmt...) __step__debug_assert_nonnullS_fmt((_Expr), #_Expr, _fmt)
+#define debug_assert_fmt(_$Expr, _$fmt...) __step__debug_assert_fmt((_$Expr), #_$Expr, _$fmt)
+#define debug_assert_trap_fmt(_$fmt...) __step__debug_assert_trap_fmt(_$fmt)
+#define debug_assert_true_fmt(_$Expr, _$fmt...) __step__debug_assert_true_fmt((_$Expr), #_$Expr, _$fmt)
+#define debug_assert_false_fmt(_$Expr, _$fmt...) __step__debug_assert_false_fmt((_$Expr), #_$Expr, _$fmt)
+#define debug_assert_eq_fmt(_$Expr1, _$Expr2, _$fmt...) __step__debug_assert_eq_fmt((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2, _$fmt)
+#define debug_assert_ne_fmt(_$Expr1, _$Expr2, _$fmt...) __step__debug_assert_ne_fmt((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2, _$fmt)
+#define debug_assert_zero_fmt(_$Expr, _$fmt...) __step__debug_assert_zero_fmt((_$Expr), #_$Expr, _$fmt)
+#define debug_assert_nonzero_fmt(_$Expr, _$fmt...) __step__debug_assert_nonzero_fmt((_$Expr), #_$Expr, _$fmt)
+#define debug_assert_null_fmt(_$Expr, _$fmt...) __step__debug_assert_null_fmt((_$Expr), #_$Expr, _$fmt)
+#define debug_assert_nonnull_fmt(_$Expr, _$fmt...) __step__debug_assert_nonnull_fmt((_$Expr), #_$Expr, _$fmt)
+#define debug_assert_nonnullS_fmt(_$Expr, _$fmt...) __step__debug_assert_nonnullS_fmt((_$Expr), #_$Expr, _$fmt)
 
 /*========== Macros and Definitions =========================================*/
 
 #if debug_enabled
 #if on_comptime
 /* clang-format off */
-#define __step__debug_assert(_Expr, _ExprStr...) $ignore_void(\
-    (!!_Expr) || (({ \
+#define __step__debug_assert(_$Expr, _$ExprStr...) $ignore_void(\
+    (!!_$Expr) || (({ \
         debug_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _ExprStr \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$ExprStr \
         ); \
         $debug_point debug_assert_failLog(\
-            _ExprStr, __func__, __FILE__, u32_(__LINE__) \
+            _$ExprStr, __func__, __FILE__, u32_(__LINE__) \
         ); \
         $unreachable; \
     }), 0) \
 )
-#define __step__debug_assert_msg(_Expr, _ExprStr, _msg...) $ignore_void( \
-    (!!_Expr) || (({ \
+#define __step__debug_assert_msg(_$Expr, _$ExprStr, _$msg...) $ignore_void( \
+    (!!_$Expr) || (({ \
         debug_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _msg \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$msg \
         ); \
         $debug_point debug_assert_failLogMsg( \
-            _ExprStr, __func__, __FILE__, u32_(__LINE__), _msg \
+            _$ExprStr, __func__, __FILE__, u32_(__LINE__), _$msg \
         ); \
         $unreachable; \
     }), 0) \
 )
-#define __step__debug_assert_fmt(_Expr, _ExprStr, _fmt...) $ignore_void(\
-    (!!_Expr) || (({ \
+#define __step__debug_assert_fmt(_$Expr, _$ExprStr, _$fmt...) $ignore_void(\
+    (!!_$Expr) || (({ \
         debug_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _ExprStr \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$ExprStr \
         ); \
         $debug_point debug_assert_failLogFmt( \
-            _ExprStr, __func__, __FILE__, u32_(__LINE__), _fmt \
+            _$ExprStr, __func__, __FILE__, u32_(__LINE__), _$fmt \
         ); \
         $unreachable; \
     }), 0) \
@@ -117,144 +117,144 @@ extern "C" {
     ); \
     $unreachable; \
 }), 0)
-#define __step__debug_assert_trap_msg(_msg...) $ignore_void(({ \
+#define __step__debug_assert_trap_msg(_$msg...) $ignore_void(({ \
     $debug_point debug_assert_failLogMsg( \
-        "(none)", __func__, __FILE__, u32_(__LINE__), _msg \
+        "(none)", __func__, __FILE__, u32_(__LINE__), _$msg \
     ); \
     $unreachable; \
 }), 0)
-#define __step__debug_assert_trap_fmt(_fmt...) $ignore_void(({ \
+#define __step__debug_assert_trap_fmt(_$fmt...) $ignore_void(({ \
     $debug_point debug_assert_failLogFmt( \
-        "(none)", __func__, __FILE__, u32_(__LINE__), _fmt \
+        "(none)", __func__, __FILE__, u32_(__LINE__), _$fmt \
     ); \
     $unreachable; \
 }), 0)
 /* clang-format on */
 #else /* !on_comptime */
 /* clang-format off */
-#define __step__debug_assert(_Expr, _ExprStr...) $dispatch_on_comptime $ignore_void( \
-    (!!_Expr) || (({ \
+#define __step__debug_assert(_$Expr, _$ExprStr...) $dispatch_on_comptime $ignore_void( \
+    (!!_$Expr) || (({ \
         debug_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _ExprStr \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$ExprStr \
         ); \
         $debug_point $unreachable; \
     }), 0) \
 )
-#define __step__debug_assert_msg(_Expr, _ExprStr, _msg...) $dispatch_on_comptime $ignore_void( \
-    (!!_Expr) || (({ \
+#define __step__debug_assert_msg(_$Expr, _$ExprStr, _$msg...) $dispatch_on_comptime $ignore_void( \
+    (!!_$Expr) || (({ \
         debug_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _msg \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$msg \
         ); \
         $debug_point $unreachable; \
     }), 0) \
 )
-#define __step__debug_assert_fmt(_Expr, _ExprStr, fmt...) $dispatch_on_comptime $ignore_void( \
-    (!!_Expr) || (({ \
+#define __step__debug_assert_fmt(_$Expr, _$ExprStr, _$fmt...) $dispatch_on_comptime $ignore_void( \
+    (!!_$Expr) || (({ \
         debug_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _ExprStr \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$ExprStr \
         ); \
         $debug_point $unreachable; \
     }), 0) \
 )
 
 #define __step__debug_assert_trap()            $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
-#define __step__debug_assert_trap_msg(_msg...) $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
-#define __step__debug_assert_trap_fmt(_fmt...) $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
+#define __step__debug_assert_trap_msg(_$msg...) $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
+#define __step__debug_assert_trap_fmt(_$fmt...) $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
 /* clang-format on */
 #endif /* on_comptime */
 
-#define __step__debug_assert_true(_Expr, _ExprStr...) __step__debug_assert_msg(((_Expr) == true), _ExprStr " != true", _ExprStr " is not true")
-#define __step__debug_assert_false(_Expr, _ExprStr...) __step__debug_assert_msg(((_Expr) == false), _ExprStr " != false", _ExprStr " is not false")
-#define __step__debug_assert_eq(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) \
-    __step__debug_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _Expr1Str " is not equal to " _Expr2Str)
-#define __step__debug_assert_ne(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) \
-    __step__debug_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _Expr1Str " is equal to " _Expr2Str)
-#define __step__debug_assert_zero(_Expr, _ExprStr...) __step__debug_assert_msg(((_Expr) == 0), _ExprStr " != 0", _ExprStr " is not zero")
-#define __step__debug_assert_nonzero(_Expr, _ExprStr...) __step__debug_assert_msg(((_Expr) != 0), _ExprStr " == 0", _ExprStr " is zero")
-#define __step__debug_assert_null(_Expr, _ExprStr...) __step__debug_assert_msg(((_Expr) == null$(TypeOf(_Expr))), _ExprStr " != null", _ExprStr " is nonnull")
-#define __step__debug_assert_nullS(_Expr, _ExprStr...) __step__debug_assert_msg(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _ExprStr " is nonnull")
-#define __step__debug_assert_nonnull(_Expr, _ExprStr...) __step__debug_assert_msg(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _ExprStr " is null")
-#define __step__debug_assert_nonnullS(_Expr, _ExprStr...) __step__debug_assert_msg(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _ExprStr " is null")
+#define __step__debug_assert_true(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr) == true), _$ExprStr " != true", _$ExprStr " is not true")
+#define __step__debug_assert_false(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr) == false), _$ExprStr " != false", _$ExprStr " is not false")
+#define __step__debug_assert_eq(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str...) \
+    __step__debug_assert_msg(((_$Expr1) == (_$Expr2)), _$Expr1Str " == " _$Expr2Str, _$Expr1Str " is not equal to " _$Expr2Str)
+#define __step__debug_assert_ne(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str...) \
+    __step__debug_assert_msg(((_$Expr1) != (_$Expr2)), _$Expr1Str " != " _$Expr2Str, _$Expr1Str " is equal to " _$Expr2Str)
+#define __step__debug_assert_zero(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr) == 0), _$ExprStr " != 0", _$ExprStr " is not zero")
+#define __step__debug_assert_nonzero(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr) != 0), _$ExprStr " == 0", _$ExprStr " is zero")
+#define __step__debug_assert_null(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr) == null$(TypeOf(_$Expr))), _$ExprStr " != null", _$ExprStr " is nonnull")
+#define __step__debug_assert_nullS(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr).ptr == null$(TypeOf((_$Expr).ptr))), _$ExprStr " != null", _$ExprStr " is nonnull")
+#define __step__debug_assert_nonnull(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr) != null$(TypeOf(_$Expr))), _$ExprStr " == null", _$ExprStr " is null")
+#define __step__debug_assert_nonnullS(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr).ptr != null$(TypeOf((_$Expr).ptr))), _$ExprStr " == null", _$ExprStr " is null")
 
-#define __step__debug_assert_eqBy(_Expr1, _Expr2, _eq, _Expr1Str, _Expr2Str...) \
-    __step__debug_assert_msg((_eq(_Expr1, _Expr2)), _Expr1Str " == " _Expr2Str, _Expr1Str " is not equal to " _Expr2Str)
-#define __step__debug_assert_neBy(_Expr1, _Expr2, _ne, _Expr1Str, _Expr2Str...) \
-    __step__debug_assert_msg((_ne(_Expr1, _Expr2)), _Expr1Str " != " _Expr2Str, _Expr1Str " is equal to " _Expr2Str)
+#define __step__debug_assert_eqBy(_$Expr1, _$Expr2, _$eq, _$Expr1Str, _$Expr2Str...) \
+    __step__debug_assert_msg((_$eq(_$Expr1, _$Expr2)), _$Expr1Str " == " _$Expr2Str, _$Expr1Str " is not equal to " _$Expr2Str)
+#define __step__debug_assert_neBy(_$Expr1, _$Expr2, _$ne, _$Expr1Str, _$Expr2Str...) \
+    __step__debug_assert_msg((_$ne(_$Expr1, _$Expr2)), _$Expr1Str " != " _$Expr2Str, _$Expr1Str " is equal to " _$Expr2Str)
 
-#define __step__debug_assert_true_msg(_Expr, _ExprStr, _msg...) __step__debug_assert_msg(((_Expr) == true), _ExprStr " != true", _msg)
-#define __step__debug_assert_false_msg(_Expr, _ExprStr, _msg...) __step__debug_assert_msg(((_Expr) == false), _ExprStr " != false", _msg)
-#define __step__debug_assert_eq_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) \
-    __step__debug_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _msg)
-#define __step__debug_assert_ne_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) \
-    __step__debug_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _msg)
-#define __step__debug_assert_zero_msg(_Expr, _ExprStr, _msg...) __step__debug_assert_msg(((_Expr) == 0), _ExprStr " != 0", _msg)
-#define __step__debug_assert_nonzero_msg(_Expr, _ExprStr, _msg...) __step__debug_assert_msg(((_Expr) != 0), _ExprStr " == 0", _msg)
-#define __step__debug_assert_null_msg(_Expr, _ExprStr, _msg...) __step__debug_assert_msg(((_Expr) == null$(TypeOf(_Expr))), _ExprStr " != null", _msg)
-#define __step__debug_assert_nullS_msg(_Expr, _ExprStr, _msg...) __step__debug_assert_msg(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _msg)
-#define __step__debug_assert_nonnull_msg(_Expr, _ExprStr, _msg...) __step__debug_assert_msg(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _msg)
-#define __step__debug_assert_nonnullS_msg(_Expr, _ExprStr, _msg...) __step__debug_assert_msg(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _msg)
+#define __step__debug_assert_true_msg(_$Expr, _$ExprStr, _$msg...) __step__debug_assert_msg(((_$Expr) == true), _$ExprStr " != true", _$msg)
+#define __step__debug_assert_false_msg(_$Expr, _$ExprStr, _$msg...) __step__debug_assert_msg(((_$Expr) == false), _$ExprStr " != false", _$msg)
+#define __step__debug_assert_eq_msg(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$msg...) \
+    __step__debug_assert_msg(((_$Expr1) == (_$Expr2)), _$Expr1Str " == " _$Expr2Str, _$msg)
+#define __step__debug_assert_ne_msg(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$msg...) \
+    __step__debug_assert_msg(((_$Expr1) != (_$Expr2)), _$Expr1Str " != " _$Expr2Str, _$msg)
+#define __step__debug_assert_zero_msg(_$Expr, _$ExprStr, _$msg...) __step__debug_assert_msg(((_$Expr) == 0), _$ExprStr " != 0", _$msg)
+#define __step__debug_assert_nonzero_msg(_$Expr, _$ExprStr, _$msg...) __step__debug_assert_msg(((_$Expr) != 0), _$ExprStr " == 0", _$msg)
+#define __step__debug_assert_null_msg(_$Expr, _$ExprStr, _$msg...) __step__debug_assert_msg(((_$Expr) == null$(TypeOf(_$Expr))), _$ExprStr " != null", _$msg)
+#define __step__debug_assert_nullS_msg(_$Expr, _$ExprStr, _$msg...) __step__debug_assert_msg(((_$Expr).ptr == null$(TypeOf((_$Expr).ptr))), _$ExprStr " != null", _$msg)
+#define __step__debug_assert_nonnull_msg(_$Expr, _$ExprStr, _$msg...) __step__debug_assert_msg(((_$Expr) != null$(TypeOf(_$Expr))), _$ExprStr " == null", _$msg)
+#define __step__debug_assert_nonnullS_msg(_$Expr, _$ExprStr, _$msg...) __step__debug_assert_msg(((_$Expr).ptr != null$(TypeOf((_$Expr).ptr))), _$ExprStr " == null", _$msg)
 
-#define __step__debug_assert_true_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr) == true), _ExprStr " != true", _fmt)
-#define __step__debug_assert_false_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr) == false), _ExprStr " != false", _fmt)
-#define __step__debug_assert_eq_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) \
-    __step__debug_assert_fmt(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _fmt)
-#define __step__debug_assert_ne_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) \
-    __step__debug_assert_fmt(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _fmt)
-#define __step__debug_assert_zero_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr) == 0), _ExprStr " != 0", _fmt)
-#define __step__debug_assert_nonzero_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr) != 0), _ExprStr " == 0", _fmt)
-#define __step__debug_assert_null_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr) == null$(TypeOf(_Expr))), _ExprStr " != null", _fmt)
-#define __step__debug_assert_nullS_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _fmt)
-#define __step__debug_assert_nonnull_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _fmt)
-#define __step__debug_assert_nonnullS_fmt(_Expr, _ExprStr, _fmt...) __step__debug_assert_fmt(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _fmt)
+#define __step__debug_assert_true_fmt(_$Expr, _$ExprStr, _$fmt...) __step__debug_assert_fmt(((_$Expr) == true), _$ExprStr " != true", _$fmt)
+#define __step__debug_assert_false_fmt(_$Expr, _$ExprStr, _$fmt...) __step__debug_assert_fmt(((_$Expr) == false), _$ExprStr " != false", _$fmt)
+#define __step__debug_assert_eq_fmt(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$fmt...) \
+    __step__debug_assert_fmt(((_$Expr1) == (_$Expr2)), _$Expr1Str " == " _$Expr2Str, _$fmt)
+#define __step__debug_assert_ne_fmt(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$fmt...) \
+    __step__debug_assert_fmt(((_$Expr1) != (_$Expr2)), _$Expr1Str " != " _$Expr2Str, _$fmt)
+#define __step__debug_assert_zero_fmt(_$Expr, _$ExprStr, _$fmt...) __step__debug_assert_fmt(((_$Expr) == 0), _$ExprStr " != 0", _$fmt)
+#define __step__debug_assert_nonzero_fmt(_$Expr, _$ExprStr, _$fmt...) __step__debug_assert_fmt(((_$Expr) != 0), _$ExprStr " == 0", _$fmt)
+#define __step__debug_assert_null_fmt(_$Expr, _$ExprStr, _$fmt...) __step__debug_assert_fmt(((_$Expr) == null$(TypeOf(_$Expr))), _$ExprStr " != null", _$fmt)
+#define __step__debug_assert_nullS_fmt(_$Expr, _$ExprStr, _$fmt...) __step__debug_assert_fmt(((_$Expr).ptr == null$(TypeOf((_$Expr).ptr))), _$ExprStr " != null", _$fmt)
+#define __step__debug_assert_nonnull_fmt(_$Expr, _$ExprStr, _$fmt...) __step__debug_assert_fmt(((_$Expr) != null$(TypeOf(_$Expr))), _$ExprStr " == null", _$fmt)
+#define __step__debug_assert_nonnullS_fmt(_$Expr, _$ExprStr, _$fmt...) __step__debug_assert_fmt(((_$Expr).ptr != null$(TypeOf((_$Expr).ptr))), _$ExprStr " == null", _$fmt)
 
 #else /* !debug_enabled */
 
-#define __step__debug_assert(_Expr, _ExprStr...) $unused(0)
-#define __step__debug_assert_msg(_Expr, _ExprStr, _msg...) $unused(0)
-#define __step__debug_assert_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
+#define __step__debug_assert(_$Expr, _$ExprStr...) $unused(0)
+#define __step__debug_assert_msg(_$Expr, _$ExprStr, _$msg...) $unused(0)
+#define __step__debug_assert_fmt(_$Expr, _$ExprStr, _$fmt...) $unused(0)
 
 #define __step__debug_assert_trap() $unused(0)
-#define __step__debug_assert_trap_msg(_msg...) $unused(0)
-#define __step__debug_assert_trap_fmt(_fmt...) $unused(0)
+#define __step__debug_assert_trap_msg(_$msg...) $unused(0)
+#define __step__debug_assert_trap_fmt(_$fmt...) $unused(0)
 
-#define __step__debug_assert_true(_Expr, _ExprStr...) $unused(0)
-#define __step__debug_assert_false(_Expr, _ExprStr...) $unused(0)
-#define __step__debug_assert_eq(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) $unused(0)
-#define __step__debug_assert_ne(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) $unused(0)
-#define __step__debug_assert_zero(_Expr, _ExprStr...) $unused(0)
-#define __step__debug_assert_nonzero(_Expr, _ExprStr...) $unused(0)
-#define __step__debug_assert_null(_Expr, _ExprStr...) $unused(0)
-#define __step__debug_assert_nullS(_Expr, _ExprStr...) $unused(0)
-#define __step__debug_assert_nonnull(_Expr, _ExprStr...) $unused(0)
-#define __step__debug_assert_nonnullS(_Expr, _ExprStr...) $unused(0)
+#define __step__debug_assert_true(_$Expr, _$ExprStr...) $unused(0)
+#define __step__debug_assert_false(_$Expr, _$ExprStr...) $unused(0)
+#define __step__debug_assert_eq(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str...) $unused(0)
+#define __step__debug_assert_ne(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str...) $unused(0)
+#define __step__debug_assert_zero(_$Expr, _$ExprStr...) $unused(0)
+#define __step__debug_assert_nonzero(_$Expr, _$ExprStr...) $unused(0)
+#define __step__debug_assert_null(_$Expr, _$ExprStr...) $unused(0)
+#define __step__debug_assert_nullS(_$Expr, _$ExprStr...) $unused(0)
+#define __step__debug_assert_nonnull(_$Expr, _$ExprStr...) $unused(0)
+#define __step__debug_assert_nonnullS(_$Expr, _$ExprStr...) $unused(0)
 
-#define __step__debug_assert_eqBy(_Expr1, _Expr2, _eq, _Expr1Str, _Expr2Str...) $unused(0)
-#define __step__debug_assert_neBy(_Expr1, _Expr2, _ne, _Expr1Str, _Expr2Str...) $unused(0)
+#define __step__debug_assert_eqBy(_$Expr1, _$Expr2, _$eq, _$Expr1Str, _$Expr2Str...) $unused(0)
+#define __step__debug_assert_neBy(_$Expr1, _$Expr2, _$ne, _$Expr1Str, _$Expr2Str...) $unused(0)
 
-#define __step__debug_assert_true_msg(_Expr, _ExprStr, _msg...) $unused(0)
-#define __step__debug_assert_false_msg(_Expr, _ExprStr, _msg...) $unused(0)
-#define __step__debug_assert_eq_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) $unused(0)
-#define __step__debug_assert_ne_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) $unused(0)
-#define __step__debug_assert_zero_msg(_Expr, _ExprStr, _msg...) $unused(0)
-#define __step__debug_assert_nonzero_msg(_Expr, _ExprStr, _msg...) $unused(0)
-#define __step__debug_assert_null_msg(_Expr, _ExprStr, _msg...) $unused(0)
-#define __step__debug_assert_nullS_msg(_Expr, _ExprStr, _msg...) $unused(0)
-#define __step__debug_assert_nonnull_msg(_Expr, _ExprStr, _msg...) $unused(0)
-#define __step__debug_assert_nonnullS_msg(_Expr, _ExprStr, _msg...) $unused(0)
+#define __step__debug_assert_true_msg(_$Expr, _$ExprStr, _$msg...) $unused(0)
+#define __step__debug_assert_false_msg(_$Expr, _$ExprStr, _$msg...) $unused(0)
+#define __step__debug_assert_eq_msg(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$msg...) $unused(0)
+#define __step__debug_assert_ne_msg(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$msg...) $unused(0)
+#define __step__debug_assert_zero_msg(_$Expr, _$ExprStr, _$msg...) $unused(0)
+#define __step__debug_assert_nonzero_msg(_$Expr, _$ExprStr, _$msg...) $unused(0)
+#define __step__debug_assert_null_msg(_$Expr, _$ExprStr, _$msg...) $unused(0)
+#define __step__debug_assert_nullS_msg(_$Expr, _$ExprStr, _$msg...) $unused(0)
+#define __step__debug_assert_nonnull_msg(_$Expr, _$ExprStr, _$msg...) $unused(0)
+#define __step__debug_assert_nonnullS_msg(_$Expr, _$ExprStr, _$msg...) $unused(0)
 
-#define __step__debug_assert_true_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
-#define __step__debug_assert_false_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
-#define __step__debug_assert_eq_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) $unused(0)
-#define __step__debug_assert_ne_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) $unused(0)
-#define __step__debug_assert_zero_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
-#define __step__debug_assert_nonzero_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
-#define __step__debug_assert_null_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
-#define __step__debug_assert_nullS_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
-#define __step__debug_assert_nonnull_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
-#define __step__debug_assert_nonnullS_fmt(_Expr, _ExprStr, _fmt...) $unused(0)
+#define __step__debug_assert_true_fmt(_$Expr, _$ExprStr, _$fmt...) $unused(0)
+#define __step__debug_assert_false_fmt(_$Expr, _$ExprStr, _$fmt...) $unused(0)
+#define __step__debug_assert_eq_fmt(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$fmt...) $unused(0)
+#define __step__debug_assert_ne_fmt(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$fmt...) $unused(0)
+#define __step__debug_assert_zero_fmt(_$Expr, _$ExprStr, _$fmt...) $unused(0)
+#define __step__debug_assert_nonzero_fmt(_$Expr, _$ExprStr, _$fmt...) $unused(0)
+#define __step__debug_assert_null_fmt(_$Expr, _$ExprStr, _$fmt...) $unused(0)
+#define __step__debug_assert_nullS_fmt(_$Expr, _$ExprStr, _$fmt...) $unused(0)
+#define __step__debug_assert_nonnull_fmt(_$Expr, _$ExprStr, _$fmt...) $unused(0)
+#define __step__debug_assert_nonnullS_fmt(_$Expr, _$ExprStr, _$fmt...) $unused(0)
 #endif /* debug_enabled */
 
 /*========== Extern Function Prototypes =====================================*/

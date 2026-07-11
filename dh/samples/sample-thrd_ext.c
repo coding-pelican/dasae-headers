@@ -1,222 +1,220 @@
 #include "dh-main.h"
-#include "dh/Thrd/common.h"
-#include "dh/Thrd/ftx.h"
-#include "dh/Thrd/Mtx.h"
-#include "dh/Thrd/Sem.h"
-#include "dh/Thrd/Cond.h"
-#include "dh/Thrd/ResetEvt.h"
-#include "dh/Thrd/Group.h"
-#include "dh/heap/Page.h"
-#include "dh/time/Duration.h"
+#include "dh/thrd.h"
+#include "dh/clsr.h"
+#include "dh/heap/Sys.h"
+#include "dh/heap/ThrdSafe.h"
+#include "dh/time/Dur.h"
+#include "dh/time/self/Awake.h"
 #include "dh/io/stream.h"
 
+$static var_(g_clock, time_Awake) = {};
+
 $static fn_((report(S_const$u8 label, S_const$u8 fmt, ...))(void)) {
-    io_stream_print(u8_l("[ThrdId({:uz}): {:s}] "), Thrd_currentId(), label);
-    using_(var args = l0$((va_list))) using_fini_(va_start(args, fmt), va_end(args)) {
+    io_stream_print(u8_l("[ThrdId({:uz}): {:s}] "), thrd_currId(), label);
+    using_(var_(args, va_list) $undefined) using_fini_(va_start(args, fmt), va_end(args)) {
         io_stream_printVaArgs(fmt, args);
     }
     io_stream_nl();
-}
+};
 
-//=============================================================================
-// Example 1: ResetEvt - Signal between threads
-//=============================================================================
+$static fn_((sleepMillis(u64 millis))(void)) {
+    catch_((time_Awake_sleepMillis(g_clock, millis))($ignore, $do_nothing));
+};
 
-$static var_(g_reset_evt, Thrd_ResetEvt) = {};
+T_use$((Void)(thrd_spawn, thrd_join));
+T_use$((i32)(Clsr_Ctx, Clsr_Rtn, Clsr));
+T_use$((i32)(thrd_spawn, thrd_join));
 
-$static Thrd_fn_(resetEvtWorker, (Void, Void), ($ignore, $ignore)$scope) {
+$static var_(g_reset_evt, thrd_ResetEvt) = {};
+
+$static fn_((resetEvtWorker(Void unused))(Void) $scope) {
+    let_ignore = unused;
     report(u8_l("resetEvtWorker"), u8_l("waiting for signal..."));
-    Thrd_ResetEvt_wait(&g_reset_evt);
+    thrd_ResetEvt_wait(&g_reset_evt);
     report(u8_l("resetEvtWorker"), u8_l("signal received!"));
-    return_({});
-} $unscoped(Thrd_fn);
+    return_void();
+} $unscoped(fn);
+fn_use_Clsr_((resetEvtWorker)(Void)(Void));
 
-$static fn_((exampleResetEvt(void))(void) $guard) {
+$static fn_((exampleResetEvt(thrd_SpawnCfg spawn_cfg))(void) $guard) {
     report(u8_l("example"), u8_l("=== ResetEvt Demo ==="));
 
-    g_reset_evt = Thrd_ResetEvt_init();
-    defer_(Thrd_ResetEvt_fini(&g_reset_evt));
+    g_reset_evt = thrd_ResetEvt_init();
+    defer_(thrd_ResetEvt_fini(&g_reset_evt));
 
-    var thrd = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((resetEvtWorker)()).as_raw))($ignore, return));
+    var worker = clsr_((resetEvtWorker)(Void_()));
+    let thrd = catch_((thrd_spawn$Void(spawn_cfg, worker.as_base))($ignore, return));
 
-    time_sleep(time_Duration_fromMillis(100));
+    sleepMillis(100);
     report(u8_l("example"), u8_l("sending signal..."));
-    Thrd_ResetEvt_set(&g_reset_evt);
+    thrd_ResetEvt_set(&g_reset_evt);
 
-    let_ignore = Thrd_join(thrd);
+    let_ignore = thrd_join$Void(thrd);
     io_stream_nl();
 } $unguarded(fn);
 
-//=============================================================================
-// Example 2: Group - Wait for multiple tasks
-//=============================================================================
+$static fn_((waitGroupTask(i32 task_id))(Void) $scope) {
+    report(u8_l("waitGroupTask"), u8_l("task {:d} started"), task_id);
+    sleepMillis(as$(u64)(task_id) * 50);
+    report(u8_l("waitGroupTask"), u8_l("task {:d} finished"), task_id);
+    return_void();
+} $unscoped(fn);
+fn_use_Clsr_((waitGroupTask)(i32)(Void));
 
-$static var_(g_wait_group, Thrd_Group) = {};
-
-$static Thrd_fn_(waitGroupTask, ({ i32 task_id; }, Void), ($ignore, args)$scope) {
-    report(u8_l("waitGroupTask"), u8_l("task {:d} started"), args->task_id);
-    time_sleep(time_Duration_fromMillis(as$(u64)(args->task_id) * 50));
-    report(u8_l("waitGroupTask"), u8_l("task {:d} finished"), args->task_id);
-    return_({});
-} $unscoped(Thrd_fn);
-
-$static fn_((exampleGroup(void))(void) $guard) {
-    var page = (heap_Page){};
-    let gpa = heap_Page_alctr(&page);
+$static fn_((exampleGroup(mem_Alctr gpa))(void) $guard) {
     report(u8_l("example"), u8_l("=== Group Demo ==="));
 
-    g_wait_group = Thrd_Group_init();
-    defer_(Thrd_Group_fini(&g_wait_group));
+    var group = thrd_Group_init();
+    defer_(thrd_Group_fini(&group));
 
-    // Spawn multiple tasks
-    A$$(4, Thrd_FnCtx$(waitGroupTask)) task_ctxs = A_zero();
-    for_(($r(1, 5), $s(A_ref(task_ctxs)))(i, task_ctx) {
-        *task_ctx = Thrd_FnCtx_from$((waitGroupTask)(as$(i32)(i)));
-        Thrd_Group_spawn(&g_wait_group, gpa, task_ctx->as_raw);
-    })
-        ;
+    A$$(4, Clsr_(waitGroupTask)) tasks = A_zero();
+    for_(($r(1, 5), $s(A_ref(tasks)))(i, task)) {
+        *task = clsr_((waitGroupTask)(as$(i32)(i)));
+        thrd_Group_spawn(&group, gpa, task->as_base);
+    } $end(for);
 
     report(u8_l("example"), u8_l("waiting for all tasks..."));
-    Thrd_Group_wait(&g_wait_group);
+    thrd_Group_wait(&group);
     report(u8_l("example"), u8_l("all tasks completed!"));
     io_stream_nl();
 } $unguarded(fn);
 
-//=============================================================================
-// Example 3: Semaphore - Resource limiting (max 2 concurrent)
-//=============================================================================
+$static var_(g_sem, thrd_Sem) = {};
 
-$static var_(g_sem, Thrd_Sem) = {};
+$static fn_((semWorker(i32 worker_id))(Void) $guard) {
+    report(u8_l("semWorker"), u8_l("worker {:d} waiting for permit..."), worker_id);
+    thrd_Sem_wait(&g_sem);
+    defer_(thrd_Sem_post(&g_sem));
 
-$static Thrd_fn_(semWorker, ({ i32 worker_id; }, Void), ($ignore, args)$guard) {
-    report(u8_l("semWorker"), u8_l("worker {:d} waiting for permit..."), args->worker_id);
-    Thrd_Sem_wait(&g_sem);
-    defer_(Thrd_Sem_post(&g_sem));
+    report(u8_l("semWorker"), u8_l("worker {:d} acquired permit, working..."), worker_id);
+    sleepMillis(200);
+    report(u8_l("semWorker"), u8_l("worker {:d} done, releasing permit"), worker_id);
+    return_void();
+} $unguarded(fn);
+fn_use_Clsr_((semWorker)(i32)(Void));
 
-    report(u8_l("semWorker"), u8_l("worker {:d} acquired permit, working..."), args->worker_id);
-    time_sleep(time_Duration_fromMillis(200));
-    report(u8_l("semWorker"), u8_l("worker {:d} done, releasing permit"), args->worker_id);
-    return_({});
-} $unguarded(Thrd_fn);
-
-$static fn_((exampleSemaphore(void))(void) $guard) {
-    var page = (heap_Page){};
-    let gpa = heap_Page_alctr(&page);
+$static fn_((exampleSemaphore(mem_Alctr gpa))(void) $guard) {
     report(u8_l("example"), u8_l("=== Semaphore Demo (max 2 concurrent) ==="));
 
-    g_sem = Thrd_Sem_init();
-    defer_(Thrd_Sem_fini(&g_sem));
+    g_sem = thrd_Sem_init();
+    defer_(thrd_Sem_fini(&g_sem));
 
-    // Give 2 permits
-    Thrd_Sem_post(&g_sem);
-    Thrd_Sem_post(&g_sem);
+    thrd_Sem_post(&g_sem);
+    thrd_Sem_post(&g_sem);
 
-    var wait_group = Thrd_Group_init();
-    defer_(Thrd_Group_fini(&wait_group));
+    var group = thrd_Group_init();
+    defer_(thrd_Group_fini(&group));
 
-    // Spawn 4 workers competing for 2 permits
-    A$$(4, Thrd_FnCtx$(semWorker)) worker_ctxs = A_zero();
-    for_(($r(1, 5), $s(A_ref(worker_ctxs)))(i, worker_ctx) {
-        *worker_ctx = Thrd_FnCtx_from$((semWorker)(as$(i32)(i)));
-        Thrd_Group_spawn(&wait_group, gpa, worker_ctx->as_raw);
-    })
-        ;
+    A$$(4, Clsr_(semWorker)) workers = A_zero();
+    for_(($r(1, 5), $s(A_ref(workers)))(i, worker)) {
+        *worker = clsr_((semWorker)(as$(i32)(i)));
+        thrd_Group_spawn(&group, gpa, worker->as_base);
+    } $end(for);
 
-    Thrd_Group_wait(&wait_group);
+    thrd_Group_wait(&group);
     report(u8_l("example"), u8_l("all workers completed!"));
     io_stream_nl();
 } $unguarded(fn);
 
-//=============================================================================
-// Example 4: Mutex + Condition Variable - Producer/Consumer
-//=============================================================================
-
-$static var_(g_mtx, Thrd_Mtx) = {};
-$static var_(g_cond, Thrd_Cond) = {};
+$static var_(g_mtx, thrd_Mtx) = {};
+$static var_(g_cond, thrd_Cond) = {};
 $static var_(g_queue_count, i32) = 0;
 $static var_(g_done, bool) = false;
 
-$static Thrd_fn_(producer, ({ i32 items_to_produce; }, Void), ($ignore, args)$scope) {
-    for_(($r(0, intCast$((usize)(args->items_to_produce))))($ignore) {
-        time_sleep(time_Duration_fromMillis(50));
+$static fn_((producer(i32 items_to_produce))(Void) $scope) {
+    for_(($r(0, intCast$((usize)(items_to_produce))))($ignore)) {
+        sleepMillis(50);
 
-        Thrd_Mtx_lock(&g_mtx);
+        thrd_Mtx_lock(&g_mtx);
         g_queue_count++;
         report(u8_l("producer"), u8_l("produced item, queue size: {:d}"), g_queue_count);
-        Thrd_Cond_signal(&g_cond);
-        Thrd_Mtx_unlock(&g_mtx);
-    })
-        ;
+        thrd_Cond_signal(&g_cond);
+        thrd_Mtx_unlock(&g_mtx);
+    } $end(for);
 
-    Thrd_Mtx_lock(&g_mtx);
+    thrd_Mtx_lock(&g_mtx);
     g_done = true;
-    Thrd_Cond_broadcast(&g_cond);
-    Thrd_Mtx_unlock(&g_mtx);
+    thrd_Cond_broadcast(&g_cond);
+    thrd_Mtx_unlock(&g_mtx);
 
     report(u8_l("producer"), u8_l("finished producing"));
-    return_({});
-} $unscoped(Thrd_fn);
+    return_void();
+} $unscoped(fn);
+fn_use_Clsr_((producer)(i32)(Void));
 
-$static Thrd_fn_(consumer, ({ i32 consumer_id; }, i32), ($ignore, args)$scope) {
+$static fn_((consumer(i32 consumer_id))(i32) $scope) {
     i32 consumed = 0;
     while (true) {
-        Thrd_Mtx_lock(&g_mtx);
+        thrd_Mtx_lock(&g_mtx);
 
         while (g_queue_count == 0 && !g_done) {
-            Thrd_Cond_wait(&g_cond, &g_mtx);
+            thrd_Cond_wait(&g_cond, &g_mtx);
         }
 
         if (g_queue_count > 0) {
             g_queue_count--;
             consumed++;
-            report(u8_l("consumer"), u8_l("consumer {:d} consumed item, remaining: {:d}"), args->consumer_id, g_queue_count);
+            report(u8_l("consumer"), u8_l("consumer {:d} consumed item, remaining: {:d}"), consumer_id, g_queue_count);
         } else if (g_done) {
-            Thrd_Mtx_unlock(&g_mtx);
+            thrd_Mtx_unlock(&g_mtx);
             break;
         }
 
-        Thrd_Mtx_unlock(&g_mtx);
+        thrd_Mtx_unlock(&g_mtx);
     }
 
-    report(u8_l("consumer"), u8_l("consumer {:d} finished, consumed {:d} items"), args->consumer_id, consumed);
-    return_(consumed);
-} $unscoped(Thrd_fn);
+    report(u8_l("consumer"), u8_l("consumer {:d} finished, consumed {:d} items"), consumer_id, consumed);
+    return consumed;
+} $unscoped(fn);
+fn_use_Clsr_((consumer)(i32)(i32));
 
-$static fn_((exampleProducerConsumer(void))(void) $guard) {
+$static fn_((exampleProducerConsumer(thrd_SpawnCfg spawn_cfg))(void) $guard) {
     report(u8_l("example"), u8_l("=== Producer/Consumer Demo ==="));
 
-    g_mtx = Thrd_Mtx_init();
-    defer_(Thrd_Mtx_fini(&g_mtx));
-    g_cond = Thrd_Cond_init();
-    defer_(Thrd_Cond_fini(&g_cond));
+    g_mtx = thrd_Mtx_init();
+    defer_(thrd_Mtx_fini(&g_mtx));
+    g_cond = thrd_Cond_init();
+    defer_(thrd_Cond_fini(&g_cond));
     g_queue_count = 0;
     g_done = false;
 
-    var prod = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((producer)(5)).as_raw))($ignore, return));
+    var prod_work = clsr_((producer)(5));
+    let prod = catch_((thrd_spawn$Void(spawn_cfg, prod_work.as_base))($ignore, return));
 
-    var cons1 = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((consumer)(1)).as_raw))($ignore, return));
-    var cons2 = catch_((Thrd_spawn(Thrd_SpawnCfg_default, Thrd_FnCtx_from$((consumer)(2)).as_raw))($ignore, return));
+    var cons1_work = clsr_((consumer)(1));
+    var cons2_work = clsr_((consumer)(2));
+    let cons1 = catch_((thrd_spawn$i32(spawn_cfg, cons1_work.as_base))($ignore, return));
+    let cons2 = catch_((thrd_spawn$i32(spawn_cfg, cons2_work.as_base))($ignore, return));
 
-    let_ignore = Thrd_join(prod);
-    let c1 = Thrd_FnCtx_ret$((consumer)(Thrd_join(cons1)));
-    let c2 = Thrd_FnCtx_ret$((consumer)(Thrd_join(cons2)));
+    let_ignore = thrd_join$Void(prod);
+    let c1 = thrd_join$i32(cons1)->ctx.ret;
+    let c2 = thrd_join$i32(cons2)->ctx.ret;
 
     report(u8_l("example"), u8_l("total consumed: {:d}"), c1 + c2);
     io_stream_nl();
 } $unguarded(fn);
 
-//=============================================================================
-// Main
-//=============================================================================
-
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    exampleResetEvt();
-    exampleGroup();
-    exampleSemaphore();
-    exampleProducerConsumer();
+    var sys_heap = heap_Sys_init();
+    defer_(heap_Sys_fini(&sys_heap));
+
+    var thrd_safe_heap = (heap_ThrdSafe){
+        .child_alctr = heap_Sys_alctr(&sys_heap),
+        .mtx = thrd_Mtx_init(),
+    };
+    defer_(thrd_Mtx_fini(&thrd_safe_heap.mtx));
+
+    g_clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
+    let gpa = heap_ThrdSafe_alctr(&thrd_safe_heap);
+    let spawn_cfg = with_((thrd_SpawnCfg_default)((.gpa)(some(gpa))));
+
+    exampleResetEvt(spawn_cfg);
+    exampleGroup(gpa);
+    exampleSemaphore(gpa);
+    exampleProducerConsumer(spawn_cfg);
 
     report(u8_l("main"), u8_l("All examples completed!"));
     return_ok({});
-} $unscoped(fn);
+} $unguarded(fn);

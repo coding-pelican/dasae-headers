@@ -24,43 +24,43 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define T_decl_prl_refs$(_T...) \
-    T_decl$((_T)(P, S)); \
-    T_decl$((P_const$(_T))(P, S)); \
-    T_decl$((P$(_T))(P, S)); \
-    T_decl$((S_const$(_T))(P, S)); \
-    T_decl$((S$(_T))(P, S))
-#define T_impl_prl_refs$(_T...) \
-    T_impl$((_T)(P, S)); \
-    T_impl$((P_const$(_T))(P, S)); \
-    T_impl$((P$(_T))(P, S)); \
-    T_impl$((S_const$(_T))(P, S)); \
-    T_impl$((S$(_T))(P, S))
-#define T_use_prl_refs$(_T...) \
-    T_use$((_T)(P, S)); \
-    T_use$((P_const$(_T))(P, S)); \
-    T_use$((P$(_T))(P, S)); \
-    T_use$((S_const$(_T))(P, S)); \
-    T_use$((S$(_T))(P, S))
+#define T_decl_prl_refs$(_$T...) \
+    T_decl$((_$T)(P, S)); \
+    T_decl$((P_const$(_$T))(P, S)); \
+    T_decl$((P$(_$T))(P, S)); \
+    T_decl$((S_const$(_$T))(P, S)); \
+    T_decl$((S$(_$T))(P, S))
+#define T_impl_prl_refs$(_$T...) \
+    T_impl$((_$T)(P, S)); \
+    T_impl$((P_const$(_$T))(P, S)); \
+    T_impl$((P$(_$T))(P, S)); \
+    T_impl$((S_const$(_$T))(P, S)); \
+    T_impl$((S$(_$T))(P, S))
+#define T_use_prl_refs$(_$T...) \
+    T_use$((_$T)(P, S)); \
+    T_use$((P_const$(_$T))(P, S)); \
+    T_use$((P$(_$T))(P, S)); \
+    T_use$((S_const$(_$T))(P, S)); \
+    T_use$((S$(_$T))(P, S))
 
-#define T_decl_prl_u_refs$(_T...) \
-    T_decl$((_T)(u_P, u_S)); \
-    T_decl$((P_const$(_T))(u_P, u_S)); \
-    T_decl$((P$(_T))(u_P, u_S)); \
-    T_decl$((S_const$(_T))(u_P, u_S)); \
-    T_decl$((S$(_T))(u_P, u_S))
-#define T_impl_prl_u_refs$(_T...) \
-    T_impl$((_T)(u_P, u_S)); \
-    T_impl$((P_const$(_T))(u_P, u_S)); \
-    T_impl$((P$(_T))(u_P, u_S)); \
-    T_impl$((S_const$(_T))(u_P, u_S)); \
-    T_impl$((S$(_T))(u_P, u_S))
-#define T_use_prl_u_refs$(_T...) \
-    T_use$((_T)(u_P, u_S)); \
-    T_use$((P_const$(_T))(u_P, u_S)); \
-    T_use$((P$(_T))(u_P, u_S)); \
-    T_use$((S_const$(_T))(u_P, u_S)); \
-    T_use$((S$(_T))(u_P, u_S))
+#define T_decl_prl_u_refs$(_$T...) \
+    T_decl$((_$T)(u_P, u_S)); \
+    T_decl$((P_const$(_$T))(u_P, u_S)); \
+    T_decl$((P$(_$T))(u_P, u_S)); \
+    T_decl$((S_const$(_$T))(u_P, u_S)); \
+    T_decl$((S$(_$T))(u_P, u_S))
+#define T_impl_prl_u_refs$(_$T...) \
+    T_impl$((_$T)(u_P, u_S)); \
+    T_impl$((P_const$(_$T))(u_P, u_S)); \
+    T_impl$((P$(_$T))(u_P, u_S)); \
+    T_impl$((S_const$(_$T))(u_P, u_S)); \
+    T_impl$((S$(_$T))(u_P, u_S))
+#define T_use_prl_u_refs$(_$T...) \
+    T_use$((_$T)(u_P, u_S)); \
+    T_use$((P_const$(_$T))(u_P, u_S)); \
+    T_use$((P$(_$T))(u_P, u_S)); \
+    T_use$((S_const$(_$T))(u_P, u_S)); \
+    T_use$((S$(_$T))(u_P, u_S))
 
 /*========== Macros and Definitions =========================================*/
 

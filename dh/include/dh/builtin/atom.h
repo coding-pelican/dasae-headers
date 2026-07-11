@@ -31,114 +31,114 @@ typedef enum $packed atom_MemOrd {
     atom_MemOrd_seq_cst = __ATOMIC_SEQ_CST, ///< All memory operations are sequentially consistent.
 } atom_MemOrd;
 
-#define atom_fence(_ord...) __op__atom_fence(_ord)
-#define atom_load(_ptr, _ord...) __op__atom_load(pp_uniqTok(ret), _ptr, _ord)
-#define atom_store(_ptr, _val, _ord...) __op__atom_store(_ptr, _val, _ord)
+#define atom_fence(_$ord...) __op__atom_fence(_$ord)
+#define atom_load(_$ptr, _$ord...) __op__atom_load(pp_uniqTok(ret), _$ptr, _$ord)
+#define atom_store(_$ptr, _$val, _$ord...) __op__atom_store(_$ptr, _$val, _$ord)
 
 /// Compare-and-Swap
-#define atom_cmpXchgWeak$(_OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) \
+#define atom_cmpXchgWeak$(_$OT, _$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
     __op__atom_cmpXchgWeak$( \
         pp_uniqTok(is_succ), pp_uniqTok(expected), \
-        _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord \
+        _$OT, _$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord \
     )
-#define atom_cmpXchgWeak(_ptr, _expected, _desired, _succ_ord, _fail_ord...) \
+#define atom_cmpXchgWeak(_$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
     atom_cmpXchgWeak$( \
-        O$$(TypeOfUnqual(*_ptr)), _ptr, _expected, _desired, _succ_ord, _fail_ord \
+        O$$(TypeOfUnqual(*_$ptr)), _$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord \
     )
-#define atom_cmpXchgStrong$(_OT, _ptr, _expected, _desired, _succ_ord, _fail_ord...) \
+#define atom_cmpXchgStrong$(_$OT, _$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
     __op__atom_cmpXchgStrong$( \
         pp_uniqTok(is_succ), pp_uniqTok(expected), \
-        _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord \
+        _$OT, _$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord \
     )
-#define atom_cmpXchgStrong(_ptr, _expected, _desired, _succ_ord, _fail_ord...) \
+#define atom_cmpXchgStrong(_$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
     atom_cmpXchgStrong$( \
-        O$$(TypeOfUnqual(*_ptr)), _ptr, _expected, _desired, _succ_ord, _fail_ord \
+        O$$(TypeOfUnqual(*_$ptr)), _$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord \
     )
 
 /// RMW (Read-Modify-Write) - returns the value before the operation (Fetch-and-Op)
-#define atom_fetchXchg(_ptr, _val, _ord...) __op__atom_fetchXchg(pp_uniqTok(ret), _ptr, _val, _ord)
-#define atom_pri_fetchAdd(_ptr, _val, _ord...) __op__atom_pri_fetchAdd(_ptr, _val, _ord)
-#define atom_pri_fetchSub(_ptr, _val, _ord...) __op__atom_pri_fetchSub(_ptr, _val, _ord)
-#define atom_pri_fetchMin(_ptr, _val, _ord...) __op__atom_pri_fetchMin__step(_ptr, _val, _ord)
-#define atom_pri_fetchMax(_ptr, _val, _ord...) __op__atom_pri_fetchMax__step(_ptr, _val, _ord)
-#define atom_int_fetchNand(_ptr, _val, _ord...) __op__atom_int_fetchNand(_ptr, _val, _ord)
-#define atom_int_fetchAnd(_ptr, _val, _ord...) __op__atom_int_fetchAnd(_ptr, _val, _ord)
-#define atom_int_fetchXor(_ptr, _val, _ord...) __op__atom_int_fetchXor(_ptr, _val, _ord)
-#define atom_int_fetchOr(_ptr, _val, _ord...) __op__atom_int_fetchOr(_ptr, _val, _ord)
+#define atom_fetchXchg(_$ptr, _$val, _$ord...) __op__atom_fetchXchg(pp_uniqTok(ret), _$ptr, _$val, _$ord)
+#define atom_pri_fetchAdd(_$ptr, _$val, _$ord...) __op__atom_pri_fetchAdd(_$ptr, _$val, _$ord)
+#define atom_pri_fetchSub(_$ptr, _$val, _$ord...) __op__atom_pri_fetchSub(_$ptr, _$val, _$ord)
+#define atom_pri_fetchMin(_$ptr, _$val, _$ord...) __op__atom_pri_fetchMin__step(_$ptr, _$val, _$ord)
+#define atom_pri_fetchMax(_$ptr, _$val, _$ord...) __op__atom_pri_fetchMax__step(_$ptr, _$val, _$ord)
+#define atom_int_fetchNand(_$ptr, _$val, _$ord...) __op__atom_int_fetchNand(_$ptr, _$val, _$ord)
+#define atom_int_fetchAnd(_$ptr, _$val, _$ord...) __op__atom_int_fetchAnd(_$ptr, _$val, _$ord)
+#define atom_int_fetchXor(_$ptr, _$val, _$ord...) __op__atom_int_fetchXor(_$ptr, _$val, _$ord)
+#define atom_int_fetchOr(_$ptr, _$val, _$ord...) __op__atom_int_fetchOr(_$ptr, _$val, _$ord)
 
 /// RMW (Read-Modify-Write) - returns the value after the operation (Op-and-Fetch)
-#define atom_pri_addFetch(_ptr, _val, _ord...) __op__atom_pri_addFetch(_ptr, _val, _ord)
-#define atom_pri_subFetch(_ptr, _val, _ord...) __op__atom_pri_subFetch(_ptr, _val, _ord)
-#define atom_pri_minFetch(_ptr, _val, _ord...) __op__atom_pri_minFetch__step(_ptr, _val, _ord)
-#define atom_pri_maxFetch(_ptr, _val, _ord...) __op__atom_pri_maxFetch__step(_ptr, _val, _ord)
-#define atom_int_nandFetch(_ptr, _val, _ord...) __op__atom_int_nandFetch(_ptr, _val, _ord)
-#define atom_int_andFetch(_ptr, _val, _ord...) __op__atom_int_andFetch(_ptr, _val, _ord)
-#define atom_int_xorFetch(_ptr, _val, _ord...) __op__atom_int_xorFetch(_ptr, _val, _ord)
-#define atom_int_orFetch(_ptr, _val, _ord...) __op__atom_int_orFetch(_ptr, _val, _ord)
+#define atom_pri_addFetch(_$ptr, _$val, _$ord...) __op__atom_pri_addFetch(_$ptr, _$val, _$ord)
+#define atom_pri_subFetch(_$ptr, _$val, _$ord...) __op__atom_pri_subFetch(_$ptr, _$val, _$ord)
+#define atom_pri_minFetch(_$ptr, _$val, _$ord...) __op__atom_pri_minFetch__step(_$ptr, _$val, _$ord)
+#define atom_pri_maxFetch(_$ptr, _$val, _$ord...) __op__atom_pri_maxFetch__step(_$ptr, _$val, _$ord)
+#define atom_int_nandFetch(_$ptr, _$val, _$ord...) __op__atom_int_nandFetch(_$ptr, _$val, _$ord)
+#define atom_int_andFetch(_$ptr, _$val, _$ord...) __op__atom_int_andFetch(_$ptr, _$val, _$ord)
+#define atom_int_xorFetch(_$ptr, _$val, _$ord...) __op__atom_int_xorFetch(_$ptr, _$val, _$ord)
+#define atom_int_orFetch(_$ptr, _$val, _$ord...) __op__atom_int_orFetch(_$ptr, _$val, _$ord)
 
 /*========== Macros and Definitions =========================================*/
 
-#define __op__atom_fence(_ord...) __atomic_thread_fence(_ord)
-#define __op__atom_load(__ret, _ptr, _ord...) local_({ \
-    var __ret = l0$((TypeOf(*_ptr))); \
-    __atomic_load(_ptr, &__ret, as$(int)(as$(atom_MemOrd)(_ord))); \
+#define __op__atom_fence(_$ord...) __atomic_thread_fence(_$ord)
+#define __op__atom_load(__ret, _$ptr, _$ord...) local_({ \
+    var __ret = l0$((TypeOf(*_$ptr))); \
+    __atomic_load(_$ptr, &__ret, as$(int)(as$(atom_MemOrd)(_$ord))); \
     local_return_(__ret); \
 })
-#define __op__atom_store(_ptr, _val, _ord...) \
-    __atomic_store(_ptr, &from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_store(_$ptr, _$val, _$ord...) \
+    __atomic_store(_$ptr, &from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
 
 #if UNUSED_CODE
 #define __op__atom_alwaysLockFree_size(_size) \
     __atomic_always_lock_free((_size), null)
 #define __op__atom_alwaysLockFree$(_T...) \
     __op__atom_alwaysLockFree_size(sizeOf$(_T))
-#define __op__atom_isLockFree(_ptr) \
-    __atomic_is_lock_free(sizeOf$(TypeOf(*(_ptr))), (_ptr))
+#define __op__atom_isLockFree(_$ptr) \
+    __atomic_is_lock_free(sizeOf$(TypeOf(*(_$ptr))), (_$ptr))
 #endif /* UNUSED_CODE */
 
 #define __op__atom_cmpXchgWeak$( \
     __is_succ, __expected, \
-    _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord... \
+    _$OT, _$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord... \
 ) local_({ \
-    typedef _OT O$Ret$atom_cmpXchgWeak; \
-    var __expected = l$((TypeOf(*_ptr))_expected); \
+    typedef _$OT O$Ret$atom_cmpXchgWeak; \
+    var __expected = l$((TypeOf(*_$ptr))_$expected); \
     let_(__is_success, bool) = __atomic_compare_exchange( \
-        _ptr, &__expected, &from$((TypeOf(__expected))_desired), true, \
-        as$(int)(as$(atom_MemOrd)(_succ_ord)), as$(int)(as$(atom_MemOrd)(_fail_ord)) \
+        _$ptr, &__expected, &from$((TypeOf(__expected))_$desired), true, \
+        as$(int)(as$(atom_MemOrd)(_$succ_ord)), as$(int)(as$(atom_MemOrd)(_$fail_ord)) \
     ); \
     __is_success ? local_return_(l$((O$Ret$atom_cmpXchgWeak)none())) \
                  : local_return_(l$((O$Ret$atom_cmpXchgWeak)some(__expected))); \
 })
 #define __op__atom_cmpXchgStrong$( \
     __is_succ, __expected, \
-    _OT, _ptr, _expected, _desired, _succ_ord, _fail_ord... \
+    _$OT, _$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord... \
 ) local_({ \
-    typedef _OT O$Ret$atom_cmpXchgStrong; \
-    var __expected = l$((TypeOf(*_ptr))_expected); \
+    typedef _$OT O$Ret$atom_cmpXchgStrong; \
+    var __expected = l$((TypeOf(*_$ptr))_$expected); \
     let_(__is_success, bool) = __atomic_compare_exchange( \
-        _ptr, &__expected, &from$((TypeOf(__expected))_desired), false, \
-        as$(int)(as$(atom_MemOrd)(_succ_ord)), as$(int)(as$(atom_MemOrd)(_fail_ord)) \
+        _$ptr, &__expected, &from$((TypeOf(__expected))_$desired), false, \
+        as$(int)(as$(atom_MemOrd)(_$succ_ord)), as$(int)(as$(atom_MemOrd)(_$fail_ord)) \
     ); \
     __is_success ? local_return_(l$((O$Ret$atom_cmpXchgStrong)none())) \
                  : local_return_(l$((O$Ret$atom_cmpXchgStrong)some(__expected))); \
 })
 
-#define __op__atom_fetchXchg(__ret, _ptr, _val, _ord...) local_({ \
-    var __ret = l0$((TypeOf(*_ptr))); \
-    __atomic_exchange(_ptr, &from$((TypeOf(__ret))_val), &__ret, as$(int)(as$(atom_MemOrd)(_ord))); \
+#define __op__atom_fetchXchg(__ret, _$ptr, _$val, _$ord...) local_({ \
+    var __ret = l0$((TypeOf(*_$ptr))); \
+    __atomic_exchange(_$ptr, &from$((TypeOf(__ret))_$val), &__ret, as$(int)(as$(atom_MemOrd)(_$ord))); \
     local_return_(__ret); \
 })
-#define __op__atom_pri_fetchAdd(_ptr, _val, _ord...) \
-    __atomic_fetch_add(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_pri_fetchSub(_ptr, _val, _ord...) \
-    __atomic_fetch_sub(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_pri_fetchMin__step(_ptr, _val, _ord...) __op__atom_pri_fetchMin( \
+#define __op__atom_pri_fetchAdd(_$ptr, _$val, _$ord...) \
+    __atomic_fetch_add(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_pri_fetchSub(_$ptr, _$val, _$ord...) \
+    __atomic_fetch_sub(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_pri_fetchMin__step(_$ptr, _$val, _$ord...) __op__atom_pri_fetchMin( \
     pp_uniqTok(ptr), pp_uniqTok(operand), pp_uniqTok(expected), pp_uniqTok(desired), \
-    _ptr, _val, _ord \
+    _$ptr, _$val, _$ord \
 )
-#define __op__atom_pri_fetchMax__step(_ptr, _val, _ord...) __op__atom_pri_fetchMax( \
+#define __op__atom_pri_fetchMax__step(_$ptr, _$val, _$ord...) __op__atom_pri_fetchMax( \
     pp_uniqTok(ptr), pp_uniqTok(operand), pp_uniqTok(expected), pp_uniqTok(desired), \
-    _ptr, _val, _ord \
+    _$ptr, _$val, _$ord \
 )
 #if !defined(__comp_bool__atom_has_fetch_min_max) && defined(__has_builtin)
 #if __has_builtin(__atomic_fetch_min) && __has_builtin(__atomic_fetch_max)
@@ -149,20 +149,20 @@ typedef enum $packed atom_MemOrd {
 #define __comp_bool__atom_has_fetch_min_max 0
 #endif
 #if __comp_bool__atom_has_fetch_min_max
-#define __op__atom_pri_fetchMin(__ptr, __operand, __expected, __desired, _ptr, _val, _ord...) \
-    __atomic_fetch_min(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_pri_fetchMax(__ptr, __operand, __expected, __desired, _ptr, _val, _ord...) \
-    __atomic_fetch_max(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_pri_fetchMin(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) \
+    __atomic_fetch_min(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_pri_fetchMax(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) \
+    __atomic_fetch_max(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
 #else
-#define __op__atom_cmpXchgFailOrd(_ord...) ( \
-    (as$(atom_MemOrd)(_ord) == atom_MemOrd_release)   ? atom_MemOrd_monotonic \
-    : (as$(atom_MemOrd)(_ord) == atom_MemOrd_acq_rel) ? atom_MemOrd_acquire \
-                                                      : as$(atom_MemOrd)(_ord) \
+#define __op__atom_cmpXchgFailOrd(_$ord...) ( \
+    (as$(atom_MemOrd)(_$ord) == atom_MemOrd_release)   ? atom_MemOrd_monotonic \
+    : (as$(atom_MemOrd)(_$ord) == atom_MemOrd_acq_rel) ? atom_MemOrd_acquire \
+                                                       : as$(atom_MemOrd)(_$ord) \
 )
-#define __op__atom_pri_fetchMin(__ptr, __operand, __expected, __desired, _ptr, _val, _ord...) local_({ \
-    let __ptr = (_ptr); \
+#define __op__atom_pri_fetchMin(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) local_({ \
+    let __ptr = (_$ptr); \
     typedef TypeOfUnqual(*__ptr) AtomType; \
-    let_(__operand, AtomType) = _val; \
+    let_(__operand, AtomType) = _$val; \
     var_(__expected, AtomType) = atom_load(__ptr, atom_MemOrd_monotonic); \
     while (true) { \
         var_(__desired, AtomType) = flt_isNaN(__expected)    ? __operand \
@@ -171,17 +171,17 @@ typedef enum $packed atom_MemOrd {
                                                              : __expected; \
         if (__atomic_compare_exchange( \
                 __ptr, &__expected, &__desired, false, \
-                as$(int)(as$(atom_MemOrd)(_ord)), as$(int)(__op__atom_cmpXchgFailOrd(_ord)) \
+                as$(int)(as$(atom_MemOrd)(_$ord)), as$(int)(__op__atom_cmpXchgFailOrd(_$ord)) \
             )) { \
             break; \
         } \
     } \
     local_return_(__expected); \
 })
-#define __op__atom_pri_fetchMax(__ptr, __operand, __expected, __desired, _ptr, _val, _ord...) local_({ \
-    let __ptr = (_ptr); \
+#define __op__atom_pri_fetchMax(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) local_({ \
+    let __ptr = (_$ptr); \
     typedef TypeOfUnqual(*__ptr) AtomType; \
-    let_(__operand, AtomType) = _val; \
+    let_(__operand, AtomType) = _$val; \
     var_(__expected, AtomType) = atom_load(__ptr, atom_MemOrd_monotonic); \
     while (true) { \
         var_(__desired, AtomType) = flt_isNaN(__expected)    ? __operand \
@@ -190,7 +190,7 @@ typedef enum $packed atom_MemOrd {
                                                              : __expected; \
         if (__atomic_compare_exchange( \
                 __ptr, &__expected, &__desired, false, \
-                as$(int)(as$(atom_MemOrd)(_ord)), as$(int)(__op__atom_cmpXchgFailOrd(_ord)) \
+                as$(int)(as$(atom_MemOrd)(_$ord)), as$(int)(__op__atom_cmpXchgFailOrd(_$ord)) \
             )) { \
             break; \
         } \
@@ -198,26 +198,26 @@ typedef enum $packed atom_MemOrd {
     local_return_(__expected); \
 })
 #endif
-#define __op__atom_int_fetchNand(_ptr, _val, _ord...) \
-    __atomic_fetch_nand(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_int_fetchAnd(_ptr, _val, _ord...) \
-    __atomic_fetch_and(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_int_fetchXor(_ptr, _val, _ord...) \
-    __atomic_fetch_xor(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_int_fetchOr(_ptr, _val, _ord...) \
-    __atomic_fetch_or(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_int_fetchNand(_$ptr, _$val, _$ord...) \
+    __atomic_fetch_nand(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_int_fetchAnd(_$ptr, _$val, _$ord...) \
+    __atomic_fetch_and(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_int_fetchXor(_$ptr, _$val, _$ord...) \
+    __atomic_fetch_xor(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_int_fetchOr(_$ptr, _$val, _$ord...) \
+    __atomic_fetch_or(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
 
-#define __op__atom_pri_addFetch(_ptr, _val, _ord...) \
-    __atomic_add_fetch(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_pri_subFetch(_ptr, _val, _ord...) \
-    __atomic_sub_fetch(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_pri_minFetch__step(_ptr, _val, _ord...) __op__atom_pri_minFetch( \
+#define __op__atom_pri_addFetch(_$ptr, _$val, _$ord...) \
+    __atomic_add_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_pri_subFetch(_$ptr, _$val, _$ord...) \
+    __atomic_sub_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_pri_minFetch__step(_$ptr, _$val, _$ord...) __op__atom_pri_minFetch( \
     pp_uniqTok(ptr), pp_uniqTok(operand), pp_uniqTok(expected), pp_uniqTok(desired), \
-    _ptr, _val, _ord \
+    _$ptr, _$val, _$ord \
 )
-#define __op__atom_pri_maxFetch__step(_ptr, _val, _ord...) __op__atom_pri_maxFetch( \
+#define __op__atom_pri_maxFetch__step(_$ptr, _$val, _$ord...) __op__atom_pri_maxFetch( \
     pp_uniqTok(ptr), pp_uniqTok(operand), pp_uniqTok(expected), pp_uniqTok(desired), \
-    _ptr, _val, _ord \
+    _$ptr, _$val, _$ord \
 )
 #if !defined(__comp_bool__atom_has_min_max_fetch) && defined(__has_builtin)
 #if __has_builtin(__atomic_min_fetch) && __has_builtin(__atomic_max_fetch)
@@ -228,27 +228,27 @@ typedef enum $packed atom_MemOrd {
 #define __comp_bool__atom_has_min_max_fetch 0
 #endif
 #if __comp_bool__atom_has_min_max_fetch
-#define __op__atom_pri_minFetch(_ptr, _val, _ord...) \
-    __atomic_min_fetch(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_pri_maxFetch(_ptr, _val, _ord...) \
-    __atomic_max_fetch(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_pri_minFetch(_$ptr, _$val, _$ord...) \
+    __atomic_min_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_pri_maxFetch(_$ptr, _$val, _$ord...) \
+    __atomic_max_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
 #else
-#define __op__atom_cmpXchgFailOrd(_ord...) ( \
-    (as$(atom_MemOrd)(_ord) == atom_MemOrd_release)   ? atom_MemOrd_monotonic \
-    : (as$(atom_MemOrd)(_ord) == atom_MemOrd_acq_rel) ? atom_MemOrd_acquire \
-                                                      : as$(atom_MemOrd)(_ord) \
+#define __op__atom_cmpXchgFailOrd(_$ord...) ( \
+    (as$(atom_MemOrd)(_$ord) == atom_MemOrd_release)   ? atom_MemOrd_monotonic \
+    : (as$(atom_MemOrd)(_$ord) == atom_MemOrd_acq_rel) ? atom_MemOrd_acquire \
+                                                       : as$(atom_MemOrd)(_$ord) \
 )
-#define __op__atom_pri_fetchMin(__ptr, __operand, __expected, __desired, _ptr, _val, _ord...) /* TODO: Implement __op__atom_pri_fetchMin */
-#define __op__atom_pri_fetchMax(__ptr, __operand, __expected, __desired, _ptr, _val, _ord...) /* TODO: Implement __op__atom_pri_fetchMax */
+#define __op__atom_pri_fetchMin(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) /* TODO: Implement __op__atom_pri_fetchMin */
+#define __op__atom_pri_fetchMax(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) /* TODO: Implement __op__atom_pri_fetchMax */
 #endif
-#define __op__atom_int_nandFetch(_ptr, _val, _ord...) \
-    __atomic_nand_fetch(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_int_andFetch(_ptr, _val, _ord...) \
-    __atomic_and_fetch(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_int_xorFetch(_ptr, _val, _ord...) \
-    __atomic_xor_fetch(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
-#define __op__atom_int_orFetch(_ptr, _val, _ord...) \
-    __atomic_or_fetch(_ptr, from$((TypeOf(*_ptr))_val), as$(int)(as$(atom_MemOrd)(_ord)))
+#define __op__atom_int_nandFetch(_$ptr, _$val, _$ord...) \
+    __atomic_nand_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_int_andFetch(_$ptr, _$val, _$ord...) \
+    __atomic_and_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_int_xorFetch(_$ptr, _$val, _$ord...) \
+    __atomic_xor_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
+#define __op__atom_int_orFetch(_$ptr, _$val, _$ord...) \
+    __atomic_or_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -23,37 +23,37 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define T_decl_prl_exts$(_T...) \
-    T_decl$((P_const$(_T))(O, E)); \
-    T_decl$((P$(_T))(O, E)); \
-    T_decl$((S_const$(_T))(O, E)); \
-    T_decl$((S$(_T))(O, E)); \
-    T_decl$((O$(_T))(P, S)); \
-    T_decl$((E$(_T))(P, S))
-#define T_impl_prl_exts$(_T...) \
-    T_impl$((P_const$(_T))(O, E)); \
-    T_impl$((P$(_T))(O, E)); \
-    T_impl$((S_const$(_T))(O, E)); \
-    T_impl$((S$(_T))(O, E)); \
-    T_impl$((O$(_T))(P, S)); \
-    T_impl$((E$(_T))(P, S))
-#define T_use_prl_exts$(_T...) \
-    T_use$((P_const$(_T))(O, E)); \
-    T_use$((P$(_T))(O, E)); \
-    T_use$((S_const$(_T))(O, E)); \
-    T_use$((S$(_T))(O, E)); \
-    T_use$((O$(_T))(P, S)); \
-    T_use$((E$(_T))(P, S))
+#define T_decl_prl_exts$(_$T...) \
+    T_decl$((P_const$(_$T))(O, E)); \
+    T_decl$((P$(_$T))(O, E)); \
+    T_decl$((S_const$(_$T))(O, E)); \
+    T_decl$((S$(_$T))(O, E)); \
+    T_decl$((O$(_$T))(P, S)); \
+    T_decl$((E$(_$T))(P, S))
+#define T_impl_prl_exts$(_$T...) \
+    T_impl$((P_const$(_$T))(O, E)); \
+    T_impl$((P$(_$T))(O, E)); \
+    T_impl$((S_const$(_$T))(O, E)); \
+    T_impl$((S$(_$T))(O, E)); \
+    T_impl$((O$(_$T))(P, S)); \
+    T_impl$((E$(_$T))(P, S))
+#define T_use_prl_exts$(_$T...) \
+    T_use$((P_const$(_$T))(O, E)); \
+    T_use$((P$(_$T))(O, E)); \
+    T_use$((S_const$(_$T))(O, E)); \
+    T_use$((S$(_$T))(O, E)); \
+    T_use$((O$(_$T))(P, S)); \
+    T_use$((E$(_$T))(P, S))
 
-#define T_decl_prl_u_exts$(_T...) \
-    T_decl$((O$(_T))(u_P, u_S)); \
-    T_decl$((E$(_T))(u_P, u_S))
-#define T_impl_prl_u_exts$(_T...) \
-    T_impl$((O$(_T))(u_P, u_S)); \
-    T_impl$((E$(_T))(u_P, u_S))
-#define T_use_prl_u_exts$(_T...) \
-    T_use$((O$(_T))(u_P, u_S)); \
-    T_use$((E$(_T))(u_P, u_S))
+#define T_decl_prl_u_exts$(_$T...) \
+    T_decl$((O$(_$T))(u_P, u_S)); \
+    T_decl$((E$(_$T))(u_P, u_S))
+#define T_impl_prl_u_exts$(_$T...) \
+    T_impl$((O$(_$T))(u_P, u_S)); \
+    T_impl$((E$(_$T))(u_P, u_S))
+#define T_use_prl_u_exts$(_$T...) \
+    T_use$((O$(_$T))(u_P, u_S)); \
+    T_use$((E$(_$T))(u_P, u_S))
 
 /*========== Macros and Definitions =========================================*/
 

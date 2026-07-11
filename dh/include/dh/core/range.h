@@ -23,18 +23,18 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define $incl(_point...) comp_expand__$incl(_point)
-#define $excl(_point...) comp_expand__$excl(_point)
+#define $incl(_$point...) comp_expand__$incl(_$point)
+#define $excl(_$point...) comp_expand__$excl(_$point)
 
-#define $r(_begin, _end...) comp_expand__$r(_begin, _end)
+#define $r(_$begin, _$end...) comp_expand__$r(_$begin, _$end)
 #define $r_begin(...) pp_overload(__$r_begin, __VA_ARGS__)(__VA_ARGS__)
-#define __$r_begin_1(_point...) (_point)
-#define __$r_begin_2(_bound_type, _point...) (R_Bound_begin(_bound_type, _point))
+#define __$r_begin_1(_$point...) (_$point)
+#define __$r_begin_2(_$bound_type, _$point...) (R_Bound_begin(_$bound_type, _$point))
 #define $r_end(...) pp_overload(__$r_end, __VA_ARGS__)(__VA_ARGS__)
-#define __$r_end_1(_point...) (_point)
-#define __$r_end_2(_bound_type, _point...) (R_Bound_end(_bound_type, _point))
-#define $rf(_expr...) $r(_expr, usize_limit_max)
-#define $rt(_expr...) $r(0, _expr)
+#define __$r_end_1(_$point...) (_$point)
+#define __$r_end_2(_$bound_type, _$point...) (R_Bound_end(_$bound_type, _$point))
+#define $rf(_$expr...) $r(_$expr, usize_limit_max)
+#define $rt(_$expr...) $r(0, _$expr)
 
 typedef enum_((R_Bound $fits($packed))(
     R_Bound_incl = true,
@@ -104,17 +104,17 @@ $static fn_((R_ne(R lhs, R rhs))(bool));
 /*========== Macros and Definitions =========================================*/
 
 #if !on_comptime
-#define comp_expand__$incl(_point...) _point
-#define comp_expand__$excl(_point...) _point
-#define comp_expand__$r(_begin, _end...) (R_from(_begin, _end))
+#define comp_expand__$incl(_$point...) _$point
+#define comp_expand__$excl(_$point...) _$point
+#define comp_expand__$r(_$begin, _$end...) (R_from(_$begin, _$end))
 $extern fn_((R__len(R))(usize));
 $extern fn_((R__at(R, usize))(usize));
 #define comp_expand__lenR R__len
 #define comp_expand__atR R__at
 #else
-#define comp_expand__$incl(_point...) R_Bound_incl, _point
-#define comp_expand__$excl(_point...) R_Bound_excl, _point
-#define comp_expand__$r(_begin, _end...) (R_from($r_begin(_begin), $r_end(_end)))
+#define comp_expand__$incl(_$point...) R_Bound_incl, _$point
+#define comp_expand__$excl(_$point...) R_Bound_excl, _$point
+#define comp_expand__$r(_$begin, _$end...) (R_from($r_begin(_$begin), $r_end(_$end)))
 #define comp_expand__lenR R_len
 #define comp_expand__atR R_at
 #endif

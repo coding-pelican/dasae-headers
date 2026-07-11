@@ -11,9 +11,9 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define $P_const$(_T...) TypeOf(const _T*)
-#define $P$(_T...) TypeOf(_T*)
-#define $A$(_N, _T...) TypeOf(_T[_N])
+#define $P_const$(_$T...) TypeOf(const _$T*)
+#define $P$(_$T...) TypeOf(_$T*)
+#define $A$(_$N, _$T...) TypeOf(_$T[_$N])
 
 typedef TypeOf(const void*) P_const$raw;
 typedef TypeOf(void*) P$raw;

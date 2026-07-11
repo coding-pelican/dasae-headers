@@ -22,52 +22,52 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define $limit_incl(_point...) (L_incl(_point))
-#define $limit_excl(_point...) (L_excl(_point))
+#define $limit_incl(_$point...) (L_incl(_$point))
+#define $limit_excl(_$point...) (L_excl(_$point))
 
 typedef enum_((L_Bound $fits($packed))(
     L_Bound_incl = true,
     L_Bound_excl = false
 )) L_Bound;
 
-#define L$(_T...) tpl$(Limit, _T)
-#define L$$(_T...) \
+#define L$(_$T...) tpl$(Limit, _$T)
+#define L$$(_$T...) \
     struct { \
         var_(bound, L_Bound); \
-        var_(point, _T); \
+        var_(point, _$T); \
     }
-#define T_decl_L$(_T...) \
-    typedef struct L$(_T) L$(_T)
-#define T_impl_L$(_T...) \
-    struct L$(_T) { \
+#define T_decl_L$(_$T...) \
+    typedef struct L$(_$T) L$(_$T)
+#define T_impl_L$(_$T...) \
+    struct L$(_$T) { \
         var_(bound, L_Bound); \
-        var_(point, _T); \
+        var_(point, _$T); \
     }
-#define T_use_L$(_T...) \
-    T_decl_L$(_T); \
-    T_impl_L$(_T)
+#define T_use_L$(_$T...) \
+    T_decl_L$(_$T); \
+    T_impl_L$(_$T)
 
-#define L_incl(_point...) { .bound = L_Bound_incl, .point = _point }
-#define L_incl$(/*(_L: L(_T))(_point: _T)*/... /*(_L)*/) __val__L_incl$(__VA_ARGS__)
-#define L_excl(_point...) { .bound = L_Bound_excl, .point = _point }
-#define L_excl$(/*(_L: L(_T))(_point: _T)*/... /*(_L)*/) __val__L_excl$(__VA_ARGS__)
+#define L_incl(_$point...) { .bound = L_Bound_incl, .point = _$point }
+#define L_incl$(/*(_$L: L(_$T))(_$point: _$T)*/... /*(_$L)*/) __val__L_incl$(__VA_ARGS__)
+#define L_excl(_$point...) { .bound = L_Bound_excl, .point = _$point }
+#define L_excl$(/*(_$L: L(_$T))(_$point: _$T)*/... /*(_$L)*/) __val__L_excl$(__VA_ARGS__)
 
-#define incl_(_point...) (L_incl(_point))
+#define incl_(_$point...) (L_incl(_$point))
 #define incl$ L_incl$
-#define excl_(_point...) (L_excl(_point))
+#define excl_(_$point...) (L_excl(_$point))
 #define excl$ L_excl$
 
 /*========== Macros and Definitions =========================================*/
 
 #define __val__L_incl$(...) __step__L_incl$__emit(__step__L_incl$__parse __VA_ARGS__)
-#define __step__L_incl$__parse(_L...) _L,
+#define __step__L_incl$__parse(_$L...) _$L,
 #define __step__L_incl$__emit(...) __inline__L_incl$(__VA_ARGS__)
-#define __inline__L_incl$(_L, _point...) l$((_L)L_incl(_point))
+#define __inline__L_incl$(_$L, _$point...) l$((_$L)L_incl(_$point))
 
 #define __val__L_excl$(...) __step__L_excl$__emit(__step__L_excl$__parse __VA_ARGS__)
-#define __step__L_excl$__parse(_L...) _L,
+#define __step__L_excl$__parse(_$L...) _$L,
 #define __step__L_excl$__emit(...) __inline__L_excl$(__VA_ARGS__)
-#define __inline__L_excl$(_L, _point...) l$((_L)L_excl(_point))
+#define __inline__L_excl$(_$L, _$point...) l$((_$L)L_excl(_$point))
 
 T_use_L$(u8);
 T_use_L$(u16);

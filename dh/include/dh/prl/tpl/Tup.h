@@ -12,395 +12,395 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 /*========== Macros and Definitions =========================================*/
 
-#define Tup$(_Ts...) tpl$(Tup, _Ts)
-#define Tup$$(_Ts...) TypeOf(union { \
+#define Tup$(_$Ts...) tpl$(Tup, _$Ts)
+#define Tup$$(_$Ts...) TypeOf(union { \
     T_embed$(struct { \
-        pp_overload(__Tup$__impl, _Ts)(_Ts); \
+        pp_overload(__Tup$__impl, _$Ts)(_$Ts); \
     }); \
     var_(as_raw, Tup$raw) $flexible; \
 })
-#define T_use_Tup$(_Ts...) T_alias$((Tup$(_Ts))(union Tup$(_Ts)) { \
+#define T_use_Tup$(_$Ts...) T_alias$((Tup$(_$Ts))(union Tup$(_$Ts)) { \
     T_embed$(struct { \
-        pp_overload(__Tup$__impl, _Ts)(_Ts); \
+        pp_overload(__Tup$__impl, _$Ts)(_$Ts); \
     }); \
     var_(as_raw, Tup$raw) $flexible; \
 })
 #define __Tup$__impl_0(...) \
     T_embed$(Void)
-#define __Tup$__impl_1(_T...) \
-    _T $0
-#define __Tup$__impl_2(_T, _U...) \
-    __Tup$__impl_1(_T); \
-    _U $1
-#define __Tup$__impl_3(_T, _U, _V...) \
-    __Tup$__impl_2(_T, _U); \
-    _V $2
-#define __Tup$__impl_4(_T, _U, _V, _W...) \
-    __Tup$__impl_3(_T, _U, _V); \
-    _W $3
-#define __Tup$__impl_5(_T, _U, _V, _W, _X...) \
-    __Tup$__impl_4(_T, _U, _V, _W); \
-    _X $4
-#define __Tup$__impl_6(_T, _U, _V, _W, _X, _Y...) \
-    __Tup$__impl_5(_T, _U, _V, _W, _X); \
-    _Y $5
-#define __Tup$__impl_7(_T, _U, _V, _W, _X, _Y, _Z...) \
-    __Tup$__impl_6(_T, _U, _V, _W, _X, _Y); \
-    _Z $6
-#define __Tup$__impl_8(_T, _U, _V, _W, _X, _Y, _Z, _A...) \
-    __Tup$__impl_7(_T, _U, _V, _W, _X, _Y, _Z); \
-    _A $7
-#define __Tup$__impl_9(_T, _U, _V, _W, _X, _Y, _Z, _A, _B...) \
-    __Tup$__impl_8(_T, _U, _V, _W, _X, _Y, _Z, _A); \
-    _B $8
-#define __Tup$__impl_10(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C...) \
-    __Tup$__impl_9(_T, _U, _V, _W, _X, _Y, _Z, _A, _B); \
-    _C $9
-#define __Tup$__impl_11(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D...) \
-    __Tup$__impl_10(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C); \
-    _D $10
-#define __Tup$__impl_12(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E...) \
-    __Tup$__impl_11(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D); \
-    _E $11
-#define __Tup$__impl_13(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F...) \
-    __Tup$__impl_12(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E); \
-    _F $12
-#define __Tup$__impl_14(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G...) \
-    __Tup$__impl_13(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F); \
-    _G $13
-#define __Tup$__impl_15(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H...) \
-    __Tup$__impl_14(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G); \
-    _H $14
-#define __Tup$__impl_16(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H, _I...) \
-    __Tup$__impl_15(_T, _U, _V, _W, _X, _Y, _Z, _A, _B, _C, _D, _E, _F, _G, _H); \
-    _I $15
+#define __Tup$__impl_1(_$T...) \
+    _$T $0
+#define __Tup$__impl_2(_$T, _$U...) \
+    __Tup$__impl_1(_$T); \
+    _$U $1
+#define __Tup$__impl_3(_$T, _$U, _$V...) \
+    __Tup$__impl_2(_$T, _$U); \
+    _$V $2
+#define __Tup$__impl_4(_$T, _$U, _$V, _$W...) \
+    __Tup$__impl_3(_$T, _$U, _$V); \
+    _$W $3
+#define __Tup$__impl_5(_$T, _$U, _$V, _$W, _$X...) \
+    __Tup$__impl_4(_$T, _$U, _$V, _$W); \
+    _$X $4
+#define __Tup$__impl_6(_$T, _$U, _$V, _$W, _$X, _$Y...) \
+    __Tup$__impl_5(_$T, _$U, _$V, _$W, _$X); \
+    _$Y $5
+#define __Tup$__impl_7(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z...) \
+    __Tup$__impl_6(_$T, _$U, _$V, _$W, _$X, _$Y); \
+    _$Z $6
+#define __Tup$__impl_8(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A...) \
+    __Tup$__impl_7(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z); \
+    _$A $7
+#define __Tup$__impl_9(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B...) \
+    __Tup$__impl_8(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A); \
+    _$B $8
+#define __Tup$__impl_10(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C...) \
+    __Tup$__impl_9(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B); \
+    _$C $9
+#define __Tup$__impl_11(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D...) \
+    __Tup$__impl_10(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C); \
+    _$D $10
+#define __Tup$__impl_12(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D, _$E...) \
+    __Tup$__impl_11(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D); \
+    _$E $11
+#define __Tup$__impl_13(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D, _$E, _$F...) \
+    __Tup$__impl_12(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D, _$E); \
+    _$F $12
+#define __Tup$__impl_14(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D, _$E, _$F, _$G...) \
+    __Tup$__impl_13(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D, _$E, _$F); \
+    _$G $13
+#define __Tup$__impl_15(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D, _$E, _$F, _$G, _$H...) \
+    __Tup$__impl_14(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D, _$E, _$F, _$G); \
+    _$H $14
+#define __Tup$__impl_16(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D, _$E, _$F, _$G, _$H, _$I...) \
+    __Tup$__impl_15(_$T, _$U, _$V, _$W, _$X, _$Y, _$Z, _$A, _$B, _$C, _$D, _$E, _$F, _$G, _$H); \
+    _$I $15
 
 
-#define tie_(_vals... /*: (_val)*/) { pp_overload(__tie_, _vals)(_vals) }
+#define tie_(_$vals... /*: (_$val)*/) { pp_overload(__tie_, _$vals)(_$vals) }
 #define __tie___expand(...) __VA_ARGS__
 #define __tie__0(...)
-#define __tie__1(_val0...) \
-    .$0 = __tie___expand _val0
-#define __tie__2(_val0, _val1...) \
-    __tie__1(_val0), .$1 = __tie___expand _val1
-#define __tie__3(_val0, _val1, _val2...) \
-    __tie__2(_val0, _val1), .$2 = __tie___expand _val2
-#define __tie__4(_val0, _val1, _val2, _val3...) \
-    __tie__3(_val0, _val1, _val2), .$3 = __tie___expand _val3
-#define __tie__5(_val0, _val1, _val2, _val3, _val4...) \
-    __tie__4(_val0, _val1, _val2, _val3), .$4 = __tie___expand _val4
-#define __tie__6(_val0, _val1, _val2, _val3, _val4, _val5...) \
-    __tie__5(_val0, _val1, _val2, _val3, _val4), .$5 = __tie___expand _val5
-#define __tie__7(_val0, _val1, _val2, _val3, _val4, _val5, _val6...) \
-    __tie__6(_val0, _val1, _val2, _val3, _val4, _val5), .$6 = __tie___expand _val6
-#define __tie__8(_val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7...) \
-    __tie__7(_val0, _val1, _val2, _val3, _val4, _val5, _val6), .$7 = __tie___expand _val7
+#define __tie__1(_$val0...) \
+    .$0 = __tie___expand _$val0
+#define __tie__2(_$val0, _$val1...) \
+    __tie__1(_$val0), .$1 = __tie___expand _$val1
+#define __tie__3(_$val0, _$val1, _$val2...) \
+    __tie__2(_$val0, _$val1), .$2 = __tie___expand _$val2
+#define __tie__4(_$val0, _$val1, _$val2, _$val3...) \
+    __tie__3(_$val0, _$val1, _$val2), .$3 = __tie___expand _$val3
+#define __tie__5(_$val0, _$val1, _$val2, _$val3, _$val4...) \
+    __tie__4(_$val0, _$val1, _$val2, _$val3), .$4 = __tie___expand _$val4
+#define __tie__6(_$val0, _$val1, _$val2, _$val3, _$val4, _$val5...) \
+    __tie__5(_$val0, _$val1, _$val2, _$val3, _$val4), .$5 = __tie___expand _$val5
+#define __tie__7(_$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6...) \
+    __tie__6(_$val0, _$val1, _$val2, _$val3, _$val4, _$val5), .$6 = __tie___expand _$val6
+#define __tie__8(_$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7...) \
+    __tie__7(_$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6), .$7 = __tie___expand _$val7
 #define __tie__9( \
-    _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-    _val8... \
+    _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+    _$val8... \
 ) \
     __tie__8( \
-        _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7 \
+        _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7 \
     ), \
-        .$8 = __tie___expand _val8
+        .$8 = __tie___expand _$val8
 #define __tie__10( \
-    _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-    _val8, _val9... \
+    _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+    _$val8, _$val9... \
 ) \
     __tie__9( \
-        _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-        _val8 \
+        _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+        _$val8 \
     ), \
-        .$9 = __tie___expand _val9
+        .$9 = __tie___expand _$val9
 #define __tie__11( \
-    _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-    _val8, _val9, _val10... \
+    _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+    _$val8, _$val9, _$val10... \
 ) \
     __tie__10( \
-        _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-        _val8, _val9 \
+        _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+        _$val8, _$val9 \
     ), \
-        .$10 = __tie___expand _val10
+        .$10 = __tie___expand _$val10
 #define __tie__12( \
-    _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-    _val8, _val9, _val10, _val11... \
+    _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+    _$val8, _$val9, _$val10, _$val11... \
 ) \
     __tie__11( \
-        _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-        _val8, _val9, _val10 \
+        _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+        _$val8, _$val9, _$val10 \
     ), \
-        .$11 = __tie___expand _val11
+        .$11 = __tie___expand _$val11
 #define __tie__13( \
-    _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-    _val8, _val9, _val10, _val11, _val12... \
+    _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+    _$val8, _$val9, _$val10, _$val11, _$val12... \
 ) \
     __tie__12( \
-        _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-        _val8, _val9, _val10, _val11 \
+        _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+        _$val8, _$val9, _$val10, _$val11 \
     ), \
-        .$12 = __tie___expand _val12
+        .$12 = __tie___expand _$val12
 #define __tie__14( \
-    _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-    _val8, _val9, _val10, _val11, _val12, _val13... \
+    _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+    _$val8, _$val9, _$val10, _$val11, _$val12, _$val13... \
 ) \
     __tie__13( \
-        _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-        _val8, _val9, _val10, _val11, _val12 \
+        _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+        _$val8, _$val9, _$val10, _$val11, _$val12 \
     ), \
-        .$13 = __tie___expand _val13
+        .$13 = __tie___expand _$val13
 #define __tie__15( \
-    _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-    _val8, _val9, _val10, _val11, _val12, _val13, _val14... \
+    _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+    _$val8, _$val9, _$val10, _$val11, _$val12, _$val13, _$val14... \
 ) \
     __tie__14( \
-        _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-        _val8, _val9, _val10, _val11, _val12, _val13 \
+        _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+        _$val8, _$val9, _$val10, _$val11, _$val12, _$val13 \
     ), \
-        .$14 = __tie___expand _val14
+        .$14 = __tie___expand _$val14
 #define __tie__16( \
-    _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-    _val8, _val9, _val10, _val11, _val12, _val13, _val14, _val15... \
+    _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+    _$val8, _$val9, _$val10, _$val11, _$val12, _$val13, _$val14, _$val15... \
 ) \
     __tie__15( \
-        _val0, _val1, _val2, _val3, _val4, _val5, _val6, _val7, \
-        _val8, _val9, _val10, _val11, _val12, _val13, _val14 \
+        _$val0, _$val1, _$val2, _$val3, _$val4, _$val5, _$val6, _$val7, \
+        _$val8, _$val9, _$val10, _$val11, _$val12, _$val13, _$val14 \
     ), \
-        .$15 = __tie___expand _val15
+        .$15 = __tie___expand _$val15
 
 
-#define tie$(/*(_T)(_vals...: (_val))*/... /*(_T)*/) __expr__tie$(__VA_ARGS__)
+#define tie$(/*(_$T)(_$vals...: (_$val))*/... /*(_$T)*/) __expr__tie$(__VA_ARGS__)
 #define __expr__tie$(...) __step__tie$__emit(__step__tie$__parseT __VA_ARGS__)
-#define __step__tie$__parseT(_T...) _T,
+#define __step__tie$__parseT(_$T...) _$T,
 #define __step__tie$__emit(...) __step__tie$(__VA_ARGS__)
-#define __step__tie$(_T, _vals...) ((_T)tie_ _vals)
+#define __step__tie$(_$T, _$vals...) ((_$T)tie_ _$vals)
 
 
-#define $tup(_fields...) l$((Tup$$(pp_overload(__$tup__impl, _fields)(_fields)))tie_(_fields))
+#define $tup(_$fields...) l$((Tup$$(pp_overload(__$tup__impl, _$fields)(_$fields)))tie_(_$fields))
 #define __$tup__impl_0(...)
-#define __$tup__impl_1(_field0...) \
-    TypeOf _field0
-#define __$tup__impl_2(_field0, _field1...) \
-    __$tup__impl_1(_field0), TypeOf _field1
-#define __$tup__impl_3(_field0, _field1, _field2...) \
-    __$tup__impl_2(_field0, _field1), TypeOf _field2
-#define __$tup__impl_4(_field0, _field1, _field2, _field3...) \
-    __$tup__impl_3(_field0, _field1, _field2), TypeOf _field3
-#define __$tup__impl_5(_field0, _field1, _field2, _field3, _field4...) \
-    __$tup__impl_4(_field0, _field1, _field2, _field3), TypeOf _field4
-#define __$tup__impl_6(_field0, _field1, _field2, _field3, _field4, _field5...) \
-    __$tup__impl_5(_field0, _field1, _field2, _field3, _field4), TypeOf _field5
-#define __$tup__impl_7(_field0, _field1, _field2, _field3, _field4, _field5, _field6...) \
-    __$tup__impl_6(_field0, _field1, _field2, _field3, _field4, _field5), TypeOf _field6
-#define __$tup__impl_8(_field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7...) \
-    __$tup__impl_7(_field0, _field1, _field2, _field3, _field4, _field5, _field6), TypeOf _field7
+#define __$tup__impl_1(_$field0...) \
+    TypeOf _$field0
+#define __$tup__impl_2(_$field0, _$field1...) \
+    __$tup__impl_1(_$field0), TypeOf _$field1
+#define __$tup__impl_3(_$field0, _$field1, _$field2...) \
+    __$tup__impl_2(_$field0, _$field1), TypeOf _$field2
+#define __$tup__impl_4(_$field0, _$field1, _$field2, _$field3...) \
+    __$tup__impl_3(_$field0, _$field1, _$field2), TypeOf _$field3
+#define __$tup__impl_5(_$field0, _$field1, _$field2, _$field3, _$field4...) \
+    __$tup__impl_4(_$field0, _$field1, _$field2, _$field3), TypeOf _$field4
+#define __$tup__impl_6(_$field0, _$field1, _$field2, _$field3, _$field4, _$field5...) \
+    __$tup__impl_5(_$field0, _$field1, _$field2, _$field3, _$field4), TypeOf _$field5
+#define __$tup__impl_7(_$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6...) \
+    __$tup__impl_6(_$field0, _$field1, _$field2, _$field3, _$field4, _$field5), TypeOf _$field6
+#define __$tup__impl_8(_$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7...) \
+    __$tup__impl_7(_$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6), TypeOf _$field7
 #define __$tup__impl_9( \
-    _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-    _field8... \
+    _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+    _$field8... \
 ) \
     __$tup__impl_8( \
-        _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7 \
+        _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7 \
     ), \
-        TypeOf _field8
+        TypeOf _$field8
 #define __$tup__impl_10( \
-    _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-    _field8, _field9... \
+    _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+    _$field8, _$field9... \
 ) \
     __$tup__impl_9( \
-        _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-        _field8 \
+        _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+        _$field8 \
     ), \
-        TypeOf _field9
+        TypeOf _$field9
 #define __$tup__impl_11( \
-    _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-    _field8, _field9, _field10... \
+    _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+    _$field8, _$field9, _$field10... \
 ) \
     __$tup__impl_10( \
-        _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-        _field8, _field9 \
+        _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+        _$field8, _$field9 \
     ), \
-        TypeOf _field10
+        TypeOf _$field10
 #define __$tup__impl_12( \
-    _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-    _field8, _field9, _field10, _field11... \
+    _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+    _$field8, _$field9, _$field10, _$field11... \
 ) \
     __$tup__impl_11( \
-        _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-        _field8, _field9, _field10 \
+        _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+        _$field8, _$field9, _$field10 \
     ), \
-        TypeOf _field11
+        TypeOf _$field11
 #define __$tup__impl_13( \
-    _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-    _field8, _field9, _field10, _field11, _field12... \
+    _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+    _$field8, _$field9, _$field10, _$field11, _$field12... \
 ) \
     __$tup__impl_12( \
-        _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-        _field8, _field9, _field10, _field11 \
+        _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+        _$field8, _$field9, _$field10, _$field11 \
     ), \
-        TypeOf _field12
+        TypeOf _$field12
 #define __$tup__impl_14( \
-    _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-    _field8, _field9, _field10, _field11, _field12, _field13... \
+    _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+    _$field8, _$field9, _$field10, _$field11, _$field12, _$field13... \
 ) \
     __$tup__impl_13( \
-        _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-        _field8, _field9, _field10, _field11, _field12 \
+        _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+        _$field8, _$field9, _$field10, _$field11, _$field12 \
     ), \
-        TypeOf _field13
+        TypeOf _$field13
 #define __$tup__impl_15( \
-    _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-    _field8, _field9, _field10, _field11, _field12, _field13, _field14... \
+    _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+    _$field8, _$field9, _$field10, _$field11, _$field12, _$field13, _$field14... \
 ) \
     __$tup__impl_14( \
-        _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-        _field8, _field9, _field10, _field11, _field12, _field13 \
+        _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+        _$field8, _$field9, _$field10, _$field11, _$field12, _$field13 \
     ), \
-        TypeOf _field14
+        TypeOf _$field14
 #define __$tup__impl_16( \
-    _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-    _field8, _field9, _field10, _field11, _field12, _field13, _field14, _field15... \
+    _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+    _$field8, _$field9, _$field10, _$field11, _$field12, _$field13, _$field14, _$field15... \
 ) \
     __$tup__impl_15( \
-        _field0, _field1, _field2, _field3, _field4, _field5, _field6, _field7, \
-        _field8, _field9, _field10, _field11, _field12, _field13, _field14 \
+        _$field0, _$field1, _$field2, _$field3, _$field4, _$field5, _$field6, _$field7, \
+        _$field8, _$field9, _$field10, _$field11, _$field12, _$field13, _$field14 \
     ), \
-        TypeOf _field15
+        TypeOf _$field15
 
 
-#define untie_(/*(_binds...: (var|let _ident))(_tup)*/...) __stmt__untie_(__VA_ARGS__)
+#define untie_(/*(_$binds...: (var|let _$ident))(_$tup)*/...) __stmt__untie_(__VA_ARGS__)
 #define __stmt__untie_(...) __step__untie___emit(__step__untie___parseBinds __VA_ARGS__)
-#define __step__untie___parseBinds(_binds...) (_binds), pp_uniqTok(tup),
+#define __step__untie___parseBinds(_$binds...) (_$binds), pp_uniqTok(tup),
 #define __step__untie___emit(...) __step__untie_(__VA_ARGS__)
-#define __step__untie_(_binds, __tup, _tup...) \
-    let __tup = _tup; \
-    ____untie___each_emit(__tup, ____untie___expandBinds _binds)
-#define ____untie___expandBinds(_binds...) _binds
+#define __step__untie_(_$binds, __tup, _$tup...) \
+    let __tup = _$tup; \
+    ____untie___each_emit(__tup, ____untie___expandBinds _$binds)
+#define ____untie___expandBinds(_$binds...) _$binds
 #define ____untie___each_emit(...) ____untie___each(__VA_ARGS__)
-#define ____untie___each(__tup, _binds...) pp_overload(____untie___each, _binds)(__tup, _binds)
+#define ____untie___each(__tup, _$binds...) pp_overload(____untie___each, _$binds)(__tup, _$binds)
 #define ____untie___each_0(__tup, ...)
-#define ____untie___each_1(__tup, _bind0...) \
-    _bind0 = __tup.$0;
-#define ____untie___each_2(__tup, _bind0, _bind1...) \
-    ____untie___each_1(__tup, _bind0) _bind1 = __tup.$1;
-#define ____untie___each_3(__tup, _bind0, _bind1, _bind2...) \
-    ____untie___each_2(__tup, _bind0, _bind1) _bind2 = __tup.$2;
-#define ____untie___each_4(__tup, _bind0, _bind1, _bind2, _bind3...) \
-    ____untie___each_3(__tup, _bind0, _bind1, _bind2) _bind3 = __tup.$3;
-#define ____untie___each_5(__tup, _bind0, _bind1, _bind2, _bind3, _bind4...) \
-    ____untie___each_4(__tup, _bind0, _bind1, _bind2, _bind3) _bind4 = __tup.$4;
-#define ____untie___each_6(__tup, _bind0, _bind1, _bind2, _bind3, _bind4, _bind5...) \
-    ____untie___each_5(__tup, _bind0, _bind1, _bind2, _bind3, _bind4) _bind5 = __tup.$5;
-#define ____untie___each_7(__tup, _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6...) \
-    ____untie___each_6(__tup, _bind0, _bind1, _bind2, _bind3, _bind4, _bind5) _bind6 = __tup.$6;
-#define ____untie___each_8(__tup, _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7...) \
-    ____untie___each_7(__tup, _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6) _bind7 = __tup.$7;
+#define ____untie___each_1(__tup, _$bind0...) \
+    _$bind0 = __tup.$0;
+#define ____untie___each_2(__tup, _$bind0, _$bind1...) \
+    ____untie___each_1(__tup, _$bind0) _$bind1 = __tup.$1;
+#define ____untie___each_3(__tup, _$bind0, _$bind1, _$bind2...) \
+    ____untie___each_2(__tup, _$bind0, _$bind1) _$bind2 = __tup.$2;
+#define ____untie___each_4(__tup, _$bind0, _$bind1, _$bind2, _$bind3...) \
+    ____untie___each_3(__tup, _$bind0, _$bind1, _$bind2) _$bind3 = __tup.$3;
+#define ____untie___each_5(__tup, _$bind0, _$bind1, _$bind2, _$bind3, _$bind4...) \
+    ____untie___each_4(__tup, _$bind0, _$bind1, _$bind2, _$bind3) _$bind4 = __tup.$4;
+#define ____untie___each_6(__tup, _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5...) \
+    ____untie___each_5(__tup, _$bind0, _$bind1, _$bind2, _$bind3, _$bind4) _$bind5 = __tup.$5;
+#define ____untie___each_7(__tup, _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6...) \
+    ____untie___each_6(__tup, _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5) _$bind6 = __tup.$6;
+#define ____untie___each_8(__tup, _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7...) \
+    ____untie___each_7(__tup, _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6) _$bind7 = __tup.$7;
 #define ____untie___each_9( \
     __tup, \
-    _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-    _bind8... \
+    _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+    _$bind8... \
 ) \
     ____untie___each_8( \
         __tup, \
-        _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7 \
+        _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7 \
     ) \
-        _bind8 = __tup.$8;
+        _$bind8 = __tup.$8;
 #define ____untie___each_10( \
     __tup, \
-    _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-    _bind8, _bind9... \
+    _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+    _$bind8, _$bind9... \
 ) \
     ____untie___each_9( \
         __tup, \
-        _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-        _bind8 \
+        _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+        _$bind8 \
     ) \
-        _bind9 = __tup.$9;
+        _$bind9 = __tup.$9;
 #define ____untie___each_11( \
     __tup, \
-    _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-    _bind8, _bind9, _bind10... \
+    _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+    _$bind8, _$bind9, _$bind10... \
 ) \
     ____untie___each_10( \
         __tup, \
-        _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-        _bind8, _bind9 \
+        _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+        _$bind8, _$bind9 \
     ) \
-        _bind10 = __tup.$10;
+        _$bind10 = __tup.$10;
 #define ____untie___each_12( \
     __tup, \
-    _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-    _bind8, _bind9, _bind10, _bind11... \
+    _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+    _$bind8, _$bind9, _$bind10, _$bind11... \
 ) \
     ____untie___each_11( \
         __tup, \
-        _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-        _bind8, _bind9, _bind10 \
+        _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+        _$bind8, _$bind9, _$bind10 \
     ) \
-        _bind11 = __tup.$11;
+        _$bind11 = __tup.$11;
 
 #define ____untie___each_13( \
     __tup, \
-    _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-    _bind8, _bind9, _bind10, _bind11, _bind12... \
+    _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+    _$bind8, _$bind9, _$bind10, _$bind11, _$bind12... \
 ) \
     ____untie___each_12( \
         __tup, \
-        _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-        _bind8, _bind9, _bind10, _bind11 \
+        _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+        _$bind8, _$bind9, _$bind10, _$bind11 \
     ) \
-        _bind12 = __tup.$12;
+        _$bind12 = __tup.$12;
 
 #define ____untie___each_14( \
     __tup, \
-    _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-    _bind8, _bind9, _bind10, _bind11, _bind12, _bind13... \
+    _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+    _$bind8, _$bind9, _$bind10, _$bind11, _$bind12, _$bind13... \
 ) \
     ____untie___each_13( \
         __tup, \
-        _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-        _bind8, _bind9, _bind10, _bind11, _bind12 \
+        _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+        _$bind8, _$bind9, _$bind10, _$bind11, _$bind12 \
     ) \
-        _bind13 = __tup.$13;
+        _$bind13 = __tup.$13;
 #define ____untie___each_15( \
     __tup, \
-    _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-    _bind8, _bind9, _bind10, _bind11, _bind12, _bind13, _bind14... \
+    _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+    _$bind8, _$bind9, _$bind10, _$bind11, _$bind12, _$bind13, _$bind14... \
 ) \
     ____untie___each_14( \
         __tup, \
-        _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-        _bind8, _bind9, _bind10, _bind11, _bind12, _bind13 \
+        _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+        _$bind8, _$bind9, _$bind10, _$bind11, _$bind12, _$bind13 \
     ) \
-        _bind14 = __tup.$14;
+        _$bind14 = __tup.$14;
 #define ____untie___each_16( \
     __tup, \
-    _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-    _bind8, _bind9, _bind10, _bind11, _bind12, _bind13, _bind14, _bind15... \
+    _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+    _$bind8, _$bind9, _$bind10, _$bind11, _$bind12, _$bind13, _$bind14, _$bind15... \
 ) \
     ____untie___each_15( \
         __tup, \
-        _bind0, _bind1, _bind2, _bind3, _bind4, _bind5, _bind6, _bind7, \
-        _bind8, _bind9, _bind10, _bind11, _bind12, _bind13, _bind14 \
+        _$bind0, _$bind1, _$bind2, _$bind3, _$bind4, _$bind5, _$bind6, _$bind7, \
+        _$bind8, _$bind9, _$bind10, _$bind11, _$bind12, _$bind13, _$bind14 \
     ) \
-        _bind15 = __tup.$15;
+        _$bind15 = __tup.$15;
 
-#define $skip /*_decl*/ let_ignore, /*field_as*/,
-#define bind_(/*(_binds...: (var|let, _field)|(var|let, _field_as, _field))(_record)*/...) __stmt__bind_(__VA_ARGS__)
+#define $skip /*_$decl*/ let_ignore, /*field_as*/,
+#define bind_(/*(_$binds...: (var|let, _$field)|(var|let, _$field_as, _$field))(_$record)*/...) __stmt__bind_(__VA_ARGS__)
 #define __stmt__bind_(...) __step__bind$__emit(__step__bind$__parseBinds __VA_ARGS__)
-#define __step__bind$__parseBinds(_binds...) (_binds), pp_uniqTok(record),
+#define __step__bind$__parseBinds(_$binds...) (_$binds), pp_uniqTok(record),
 #define __step__bind$__emit(...) __step__bind_(__VA_ARGS__)
-#define __step__bind_(_binds, __record, _record...) \
-    let __record = _record; \
-    pp_foreach(__stmt__bind___each, __record, ____bind___expandBinds _binds)
-#define ____bind___expandBinds(_binds...) _binds
-#define __stmt__bind___each(__record, _bind...) __step__bind___each__emit(__record, ____bind___each__expandBind _bind)
+#define __step__bind_(_$binds, __record, _$record...) \
+    let __record = _$record; \
+    pp_foreach(__stmt__bind___each, __record, ____bind___expandBinds _$binds)
+#define ____bind___expandBinds(_$binds...) _$binds
+#define __stmt__bind___each(__record, _$bind...) __step__bind___each__emit(__record, ____bind___each__expandBind _$bind)
 #define __step__bind___each__emit(...) __step__bind___each(__VA_ARGS__)
 #define __step__bind___each(__record, ...) \
     pp_overload(__step__bind___each, __VA_ARGS__)(__record, __VA_ARGS__)
-#define __step__bind___each_2(__record, _decl, _field...) \
-    _decl _field = (__record)._field;
-#define __step__bind___each_3(__record, _decl, _field_as, _field...) \
-    _decl _field_as = (__record)._field;
-#define ____bind___each__expandBind(_bind...) _bind
+#define __step__bind___each_2(__record, _$decl, _$field...) \
+    _$decl _$field = (__record)._$field;
+#define __step__bind___each_3(__record, _$decl, _$field_as, _$field...) \
+    _$decl _$field_as = (__record)._$field;
+#define ____bind___each__expandBind(_$bind...) _$bind
 
 #if defined(__cplusplus)
 } /* extern "C" */

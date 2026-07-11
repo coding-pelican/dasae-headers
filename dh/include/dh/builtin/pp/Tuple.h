@@ -54,25 +54,25 @@ extern "C" {
 
 #define pp_Tuple_cat(/* _Elems */...) pp_Tuple_wrapOpen() __VA_ARGS__ pp_Tuple_unwrapOpenOptComma
 
-#define pp_Tuple_get1st(_a, ...) _a
-#define pp_Tuple_get2nd(_a, _b, ...) _b
-#define pp_Tuple_get3rd(_a, _b, _c, ...) _c
-#define pp_Tuple_get4th(_a, _b, _c, _d, ...) _d
-#define pp_Tuple_get5th(_a, _b, _c, _d, _e, ...) _e
-#define pp_Tuple_get6th(_a, _b, _c, _d, _e, _f, ...) _f
-#define pp_Tuple_get7th(_a, _b, _c, _d, _e, _f, _g, ...) _g
-#define pp_Tuple_get8th(_a, _b, _c, _d, _e, _f, _g, _h, ...) _h
+#define pp_Tuple_get1st(_$a, ...) _$a
+#define pp_Tuple_get2nd(_$a, _$b, ...) _$b
+#define pp_Tuple_get3rd(_$a, _$b, _$c, ...) _$c
+#define pp_Tuple_get4th(_$a, _$b, _$c, _$d, ...) _$d
+#define pp_Tuple_get5th(_$a, _$b, _$c, _$d, _$e, ...) _$e
+#define pp_Tuple_get6th(_$a, _$b, _$c, _$d, _$e, _$f, ...) _$f
+#define pp_Tuple_get7th(_$a, _$b, _$c, _$d, _$e, _$f, _$g, ...) _$g
+#define pp_Tuple_get8th(_$a, _$b, _$c, _$d, _$e, _$f, _$g, _$h, ...) _$h
 
-#define pp_Tuple_get1stRest(_a, _b...) _b
-#define pp_Tuple_get2ndRest(_a, _b, _c...) _c
-#define pp_Tuple_get3rdRest(_a, _b, _c, _d...) _d
-#define pp_Tuple_get4thRest(_a, _b, _c, _d, _e...) _e
-#define pp_Tuple_get5thRest(_a, _b, _c, _d, _e, _f...) _f
-#define pp_Tuple_get6thRest(_a, _b, _c, _d, _e, _f, _g...) _g
-#define pp_Tuple_get7thRest(_a, _b, _c, _d, _e, _f, _g, _h...) _h
+#define pp_Tuple_get1stRest(_$a, _$b...) _$b
+#define pp_Tuple_get2ndRest(_$a, _$b, _$c...) _$c
+#define pp_Tuple_get3rdRest(_$a, _$b, _$c, _$d...) _$d
+#define pp_Tuple_get4thRest(_$a, _$b, _$c, _$d, _$e...) _$e
+#define pp_Tuple_get5thRest(_$a, _$b, _$c, _$d, _$e, _$f...) _$f
+#define pp_Tuple_get6thRest(_$a, _$b, _$c, _$d, _$e, _$f, _$g...) _$g
+#define pp_Tuple_get7thRest(_$a, _$b, _$c, _$d, _$e, _$f, _$g, _$h...) _$h
 
-#define pp_Tuple_pushFront(_Elem, _Tuple) pp_Tuple_wrap(_Elem, pp_Tuple_unwrap _Tuple)
-#define pp_Tuple_pushBack(_Elem, _Tuple) pp_Tuple_wrap(pp_Tuple_unwrap _Tuple, _Elem)
+#define pp_Tuple_pushFront(_$Elem, _$Tuple) pp_Tuple_wrap(_$Elem, pp_Tuple_unwrap _$Tuple)
+#define pp_Tuple_pushBack(_$Elem, _$Tuple) pp_Tuple_wrap(pp_Tuple_unwrap _$Tuple, _$Elem)
 
 #if defined(__cplusplus)
 } /* extern "C" */

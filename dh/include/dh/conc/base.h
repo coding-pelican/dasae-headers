@@ -43,6 +43,11 @@ errset_((conc_chan_WaitE)() $union_errset_(conc_chan_ClosedE, Sched_Cancelable))
 T_use_E$($set(conc_chan_WaitE)(V$raw));
 errset_((conc_chan_TimedE)() $union_errset_(conc_chan_ClosedE, Sched_Cancelable, Sched_TimeoutE));
 T_use_E$($set(conc_chan_TimedE)(V$raw));
+T_use_E$($set(conc_chan_ClosedE)(u_V$raw));
+T_use_E$($set(conc_chan_CapE)(u_V$raw));
+T_use_E$($set(conc_chan_E)(u_V$raw));
+T_use_E$($set(conc_chan_WaitE)(u_V$raw));
+T_use_E$($set(conc_chan_TimedE)(u_V$raw));
 
 T_alias$((conc_AwaitSrc_VTbl)(struct conc_AwaitSrc_VTbl));
 /// Erased readiness source for `conc_Select` and async waits.

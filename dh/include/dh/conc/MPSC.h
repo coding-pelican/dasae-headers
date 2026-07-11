@@ -33,8 +33,6 @@ extern "C" {
 T_alias$((conc_MPSC$raw)(struct conc_MPSC$raw));
 T_alias$((conc_MPSC_Tx$raw)(struct conc_MPSC_Tx$raw));
 T_alias$((conc_MPSC_Rx$raw)(struct conc_MPSC_Rx$raw));
-T_use_atom_V$(usize);
-T_use_atom_V$(bool);
 
 struct conc_MPSC$raw {
     var_(buf, S$raw);
@@ -62,16 +60,16 @@ $extern fn_((conc_MPSC_Tx_clone(conc_MPSC_Tx$raw self))(conc_MPSC_Tx$raw));
 $extern fn_((conc_MPSC_Tx_drop(conc_MPSC_Tx$raw* self))(void));
 $extern fn_((conc_MPSC_Rx_drop(conc_MPSC_Rx$raw* self))(void));
 $attr($must_check)
-$extern fn_((conc_MPSC_Tx_trySend(conc_MPSC_Tx$raw* self, TypeInfo type, u_V$raw item))(E$($set(conc_E)(void))));
+$extern fn_((conc_MPSC_Tx_trySend(conc_MPSC_Tx$raw* self, TypeInfo type, u_V$raw item))(conc_chan_E$void));
 $attr($must_check)
-$extern fn_((conc_MPSC_Tx_send(conc_MPSC_Tx$raw* self, TypeInfo type, Sched sched, u_V$raw item))(E$($set(conc_WaitE)(void))));
-$extern fn_((conc_MPSC_Rx_tryRecv(conc_MPSC_Rx$raw* self, TypeInfo type, V$raw ret_mem))(E$($set(conc_E)(V$raw))));
+$extern fn_((conc_MPSC_Tx_send(conc_MPSC_Tx$raw* self, TypeInfo type, Sched sched, u_V$raw item))(conc_chan_WaitE$void));
+$extern fn_((conc_MPSC_Rx_tryRecv(conc_MPSC_Rx$raw* self, TypeInfo type, u_V$raw ret_mem))(conc_chan_E$u_V$raw));
 $attr($must_check)
-$extern fn_((conc_MPSC_Rx_recv(conc_MPSC_Rx$raw* self, TypeInfo type, Sched sched, V$raw ret_mem))(E$($set(conc_WaitE)(V$raw))));
+$extern fn_((conc_MPSC_Rx_recv(conc_MPSC_Rx$raw* self, TypeInfo type, Sched sched, u_V$raw ret_mem))(conc_chan_WaitE$u_V$raw));
 $attr($must_check)
-$extern fn_((conc_MPSC_Rx_recvFor(conc_MPSC_Rx$raw* self, TypeInfo type, Sched sched, time_Dur dur, V$raw ret_mem))(E$($set(conc_TimedE)(V$raw))));
+$extern fn_((conc_MPSC_Rx_recvFor(conc_MPSC_Rx$raw* self, TypeInfo type, Sched sched, time_Dur dur, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
 $attr($must_check)
-$extern fn_((conc_MPSC_Rx_recvUntil(conc_MPSC_Rx$raw* self, TypeInfo type, Sched sched, time_Inst deadline, V$raw ret_mem))(E$($set(conc_TimedE)(V$raw))));
+$extern fn_((conc_MPSC_Rx_recvUntil(conc_MPSC_Rx$raw* self, TypeInfo type, Sched sched, time_Inst deadline, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
 $extern fn_((conc_MPSC_Rx_asAwaitSrc(conc_MPSC_Rx$raw* self, TypeInfo type))(conc_AwaitSrc));
 
 #define __comp_anon__conc_MPSC$$(_T...) \

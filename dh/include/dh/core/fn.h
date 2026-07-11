@@ -32,28 +32,28 @@ extern "C" {
 #define $T , $_T
 #define $void
 
-#define fn_(/*(_ident(_Params...))(_T_Return) <$ext> | (_Params...)(_T_Return) $T*/...) \
+#define fn_(/*(_$ident(_$Params...))(_$T_Return) <$ext> | (_$Params...)(_$T_Return) $T*/...) \
     __step__fn_(__param_expand__fn_ __VA_ARGS__)
 #define __step__fn_(...) __step__fn___emit(__VA_ARGS__)
 #define __step__fn___emit(...) __block_inline__fn_(__VA_ARGS__)
 #define __param_expand__fn_(...) (__VA_ARGS__), __param_expand__fn___next
 #define __param_expand__fn___next(...) __VA_ARGS__
 #define __block_inline__fn_(...) pp_overload(__block_inline__fn, __VA_ARGS__)(__VA_ARGS__)
-#define __block_inline__fn_2(_ident_w_Params, _T_Return...) comp_syn__fn_(__param_extract__fn_ _ident_w_Params, _T_Return)
-#define __block_inline__fn_3(_ident_w_Params_OR_Params, _T_Return, _$ext...) pp_join(_, __block_inline__fn_3, _$ext)(_ident_w_Params_OR_Params, _T_Return)
-#define __block_inline__fn_3_$_scope(_ident_w_Params, _T_Return...) comp_syn__fn_$_scope(__param_extract__fn_ _ident_w_Params, _T_Return)
-#define __block_inline__fn_3_$_guard(_ident_w_Params, _T_Return...) comp_syn__fn_$_guard(__param_extract__fn_ _ident_w_Params, _T_Return)
-#define __block_inline__fn_3_$_T(_Params, _T_Return...) comp_syn__fn_$_T(_Params, _T_Return)
+#define __block_inline__fn_2(_$ident_w_Params, _$T_Return...) comp_syn__fn_(__param_extract__fn_ _$ident_w_Params, _$T_Return)
+#define __block_inline__fn_3(_$ident_w_Params_OR_Params, _$T_Return, _$ext...) pp_join(_, __block_inline__fn_3, _$ext)(_$ident_w_Params_OR_Params, _$T_Return)
+#define __block_inline__fn_3_$_scope(_$ident_w_Params, _$T_Return...) comp_syn__fn_$_scope(__param_extract__fn_ _$ident_w_Params, _$T_Return)
+#define __block_inline__fn_3_$_guard(_$ident_w_Params, _$T_Return...) comp_syn__fn_$_guard(__param_extract__fn_ _$ident_w_Params, _$T_Return)
+#define __block_inline__fn_3_$_T(_$Params, _$T_Return...) comp_syn__fn_$_T(_$Params, _$T_Return)
 #define __param_extract__fn_(...) __VA_ARGS__
 
-#define fn_$_scope(_ident_w_Params, _T_Return...) comp_syn__fn_$_scope(_ident_w_Params, _T_Return)
+#define fn_$_scope(_$ident_w_Params, _$T_Return...) comp_syn__fn_$_scope(_$ident_w_Params, _$T_Return)
 #define $unscoped_fn comp_syn__$unscoped_fn
 
-#define fn_$_guard(_ident_w_Params, _T_Return...) comp_syn__fn_$_guard(_ident_w_Params, _T_Return)
+#define fn_$_guard(_$ident_w_Params, _$T_Return...) comp_syn__fn_$_guard(_$ident_w_Params, _$T_Return)
 #define $unguarded_fn comp_syn__$unguarded_fn
 
-#define return_(_Expr...) comp_syn__return_(_Expr)
-#define return_void(_Expr...) pp_overload(comp_syn__return_void, _Expr)(_Expr)
+#define return_(_$Expr...) comp_syn__return_(_$Expr)
+#define return_void(_$Expr...) pp_overload(comp_syn__return_void, _$Expr)(_$Expr)
 
 #define reservedReturn() $suppress_pointer_arith((__reserved_return[0]))
 // #define ReturnType       TypeOf(reservedReturn())
@@ -61,13 +61,13 @@ extern "C" {
 // #define BreakType        TypeOf(reservedBreak())
 
 /*
-#define return_ok(_Expr...)   comp_syn__return_ok(_Expr)
-#define return_err(_Expr...)  comp_syn__return_err(_Expr)
-#define return_some(_Expr...) comp_syn__return_some(_Expr)
+#define return_ok(_$Expr...)   comp_syn__return_ok(_$Expr)
+#define return_err(_$Expr...)  comp_syn__return_err(_$Expr)
+#define return_some(_$Expr...) comp_syn__return_some(_$Expr)
 #define return_none()         comp_syn__return_none()
 */
 
-#define defer_(_Expr...) comp_syn__defer(_Expr)
+#define defer_(_$Expr...) comp_syn__defer(_$Expr)
 
 #define blk_defer comp_syn__blk_defer
 #define blk_deferral comp_syn__blk_deferral
@@ -75,19 +75,19 @@ extern "C" {
 #define loop_deferral comp_syn__loop_deferral
 
 /*
-#define errdefer_(_Expr...) comp_syn__errdefer_(_Expr)
+#define errdefer_(_$Expr...) comp_syn__errdefer_(_$Expr)
 */
 
 /*========== Macros and Definitions =========================================*/
 
-#define comp_syn__fn_$_T(_Params, _T_Return...) TypeOf(_T_Return _Params)
+#define comp_syn__fn_$_T(_$Params, _$T_Return...) TypeOf(_$T_Return _$Params)
 
-#define comp_syn__fn_(_ident_w_Params, _T_Return...) _T_Return _ident_w_Params
+#define comp_syn__fn_(_$ident_w_Params, _$T_Return...) _$T_Return _$ident_w_Params
 
-#define comp_syn__fn_$_scope(_ident_w_Params, _T_Return...) /* clang-format off */ \
-_T_Return _ident_w_Params { \
-    $alignAs(alignOf$(_T_Return)) var_(__reserved_buf, A$$(sizeOf$(_T_Return), u8)) = A_zero(); \
-    let __reserved_return = ptrCast$((_T_Return*)(A_ptr(__reserved_buf))); \
+#define comp_syn__fn_$_scope(_$ident_w_Params, _$T_Return...) /* clang-format off */ \
+_$T_Return _$ident_w_Params { \
+    $alignAs(alignOf$(_$T_Return)) var_(__reserved_buf, A$$(sizeOf$(_$T_Return), u8)) = A_zero(); \
+    let __reserved_return = ptrCast$((_$T_Return*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
     if (false) { __step_return: goto __step_unscope; } \
@@ -123,10 +123,10 @@ struct fn__FlowCursor {
     };
 };
 claim_assert_static((fn__FlowCursor_line_bits + fn__FlowCursor_is_returning_bits) == (arch_bits_wide / 2));
-#define comp_syn__fn_$_guard(_ident_w_Params, _T_Return...) /* clang-format off */ \
-_T_Return _ident_w_Params { \
-    $alignAs(alignOf$(_T_Return)) volatile var_(__reserved_buf, A$$(sizeOf$(_T_Return), u8)) = A_zero(); \
-    let __reserved_return = ptrQualCast$((_T_Return*)(A_ptr(__reserved_buf))); \
+#define comp_syn__fn_$_guard(_$ident_w_Params, _$T_Return...) /* clang-format off */ \
+_$T_Return _$ident_w_Params { \
+    $alignAs(alignOf$(_$T_Return)) volatile var_(__reserved_buf, A$$(sizeOf$(_$T_Return), u8)) = A_zero(); \
+    let __reserved_return = ptrQualCast$((_$T_Return*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
     var_(__flow_cursor, struct fn__FlowCursor) = { \
@@ -159,30 +159,30 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 } /* clang-format on */
 
 #if !on_comptime
-#define fn__memset(_dst, _val, _len...) __fn_memset__no_hinting(_dst, _val, _len)
+#define fn__memset(_$dst, _$val, _$len...) __fn_memset__no_hinting(_$dst, _$val, _$len)
 extern fn_((__fn_memset__no_hinting(void*, u32, usize))(void*));
-#define fn__memcpy(_dst, _src, _len...) __fn_memcpy__no_hinting(_dst, _src, _len)
+#define fn__memcpy(_$dst, _$src, _$len...) __fn_memcpy__no_hinting(_$dst, _$src, _$len)
 extern fn_((__fn_memcpy__no_hinting(void*, const void*, usize))(void*));
-#define fn__memmove(_dst, _src, _len...) __fn_memmove__no_hinting(_dst, _src, _len)
+#define fn__memmove(_$dst, _$src, _$len...) __fn_memmove__no_hinting(_$dst, _$src, _$len)
 extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 #else
-#define fn__memset(_dst, _val, _len...) raw_memset(_dst, _val, _len)
-#define fn__memcpy(_dst, _src, _len...) raw_memcpy(_dst, _src, _len)
-#define fn__memmove(_dst, _src, _len...) raw_memmove(_dst, _src, _len)
+#define fn__memset(_$dst, _$val, _$len...) raw_memset(_$dst, _$val, _$len)
+#define fn__memcpy(_$dst, _$src, _$len...) raw_memcpy(_$dst, _$src, _$len)
+#define fn__memmove(_$dst, _$src, _$len...) raw_memmove(_$dst, _$src, _$len)
 #endif /* !on_comptime */
 
-/* #define comp_syn__return_(_Expr...) local_({ \
+/* #define comp_syn__return_(_$Expr...) local_({ \
     $ignore_void fn__memcpy( \
         as$(u8*)(__reserved_return), \
-        as$(u8*)((TypeOf (*__reserved_return)[1]){ [0] = _Expr }), \
+        as$(u8*)((TypeOf (*__reserved_return)[1]){ [0] = _$Expr }), \
         sizeOf$(*__reserved_return) \
     ); \
     goto __step_return; \
 }) */
-#define comp_syn__return_(_Expr...) ({ \
+#define comp_syn__return_(_$Expr...) ({ \
     $ignore_void fn__memcpy( \
         ptrCast$((u8*)(__reserved_return)), \
-        ptrCast$((u8*)((ReturnT[1]){ [0] = _Expr })), \
+        ptrCast$((u8*)((ReturnT[1]){ [0] = _$Expr })), \
         sizeOf$(ReturnT) \
     ); \
     goto __step_return; \
@@ -194,20 +194,20 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
     ); \
     goto __step_return; \
 })
-#define comp_syn__return_void_1(_Expr...) ({ \
+#define comp_syn__return_void_1(_$Expr...) ({ \
     claim_assert_static( \
         eqlType$(ReturnT, void) \
         || eqlType$(ReturnT, Void) \
     ); \
     claim_assert_static( \
-        eqlType$(TypeOf(({ _Expr; })), void) \
-        || eqlType$(TypeOf(({ _Expr; })), Void) \
+        eqlType$(TypeOf(({ _$Expr; })), void) \
+        || eqlType$(TypeOf(({ _$Expr; })), Void) \
     ); \
-    $ignore_void _Expr; \
+    $ignore_void _$Expr; \
     goto __step_return; \
 })
 
-#define comp_syn__defer(_Expr...) comp_syn__defer__op_snapshot(_Expr; goto __step_deferred)
+#define comp_syn__defer(_$Expr...) comp_syn__defer__op_snapshot(_$Expr; goto __step_deferred)
 
 /* Block-local defer boundary. A raw break/continue inside the body exits this
  * synthetic block, so it does not target an outer loop. */
@@ -249,32 +249,32 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
     if (__loop_defer_is_breaking) { break; } \
 } /* clang-format on */
 
-#define comp_syn__defer__op_snapshot(_Expr...) \
+#define comp_syn__defer__op_snapshot(_$Expr...) \
     { \
         const fn__FlowCursorPacked __flow_cursor_prev_line = __flow_cursor.curr_line; \
         __flow_cursor.curr_line = __LINE__; \
         if (false) { \
         case __LINE__: \
             __flow_cursor.curr_line = __flow_cursor_prev_line; \
-            _Expr; \
+            _$Expr; \
         } \
     }
 
-#define call(/*(_ident)(_Args...)*/...) pp_expand(pp_exec_defer(__exec_call)()(pp_Tuple_unwrapSufComma __VA_ARGS__))
+#define call(/*(_$ident)(_$Args...)*/...) pp_expand(pp_exec_defer(__exec_call)()(pp_Tuple_unwrapSufComma __VA_ARGS__))
 #define __exec_call() __call
-#define __call(_ident, _Args...) (ensureNonnull(_ident) _Args)
+#define __call(_$ident, _$Args...) (ensureNonnull(_$ident) _$Args)
 
 // clang-format off
 /* if-else as expression block */
-#define expr_(/*<_T_Break $ext>|<else>*/...) __expr_(__VA_ARGS__) __expr_block
+#define expr_(/*<_$T_Break $ext>|<else>*/...) __expr_(__VA_ARGS__) __expr_block
 #define __expr_block(...) __VA_ARGS__
 #define __expr_(...) pp_overload(__expr_, __VA_ARGS__)(__VA_ARGS__)
-#define __expr__1(_else...) _else
-#define __expr__2(_T_Break, _ext...) pp_cat(comp_syn__expr_, _ext)(_T_Break)
-#define comp_syn__expr_$_scope(_T_Break...) ({ \
+#define __expr__1(_$else...) _$else
+#define __expr__2(_$T_Break, _$ext...) pp_cat(comp_syn__expr_, _$ext)(_$T_Break)
+#define comp_syn__expr_$_scope(_$T_Break...) ({ \
     local_label __step_break, __step_unscope; \
-    $alignAs(alignOf$(_T_Break)) var_(__reserved_buf, A$$(sizeOf$(_T_Break), u8)) = A_zero(); \
-    let __reserved_break = ptrCast$((_T_Break*)(A_ptr(__reserved_buf))); \
+    $alignAs(alignOf$(_$T_Break)) var_(__reserved_buf, A$$(sizeOf$(_$T_Break), u8)) = A_zero(); \
+    let __reserved_break = ptrCast$((_$T_Break*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
     $maybe_unused bool __has_broken = false; /* for integration with `eval_` */ \
@@ -289,11 +289,11 @@ __step_unscope: \
         T_default_(reservedBreak()) \
     )); \
 })
-#define comp_syn__expr_$_guard(_T_Break...) ({ \
+#define comp_syn__expr_$_guard(_$T_Break...) ({ \
     local_label __step_return_inner, __step_break, __step_deferred, __step_unscope; \
     if (false) { __step_return_inner: goto __step_return; } \
-    $alignAs(alignOf$(_T_Break)) volatile var_(__reserved_buf, A$$(sizeOf$(_T_Break), u8)) = A_zero(); \
-    let __reserved_break = ptrQualCast$((_T_Break*)(A_ptr(__reserved_buf))); \
+    $alignAs(alignOf$(_$T_Break)) volatile var_(__reserved_buf, A$$(sizeOf$(_$T_Break), u8)) = A_zero(); \
+    let __reserved_break = ptrQualCast$((_$T_Break*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
     var __flow_cursor = (struct fn__FlowCursor){ \
@@ -325,17 +325,17 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 // clang-format on
 
 // clang-format off
-#define $break_(_Expr...) ({ \
+#define $break_(_$Expr...) ({ \
     $ignore_void fn__memcpy( \
         ptrCast$((u8*)(__reserved_break)), \
-        ptrCast$((u8*)((BreakT[1]){ [0] = _Expr })), \
+        ptrCast$((u8*)((BreakT[1]){ [0] = _$Expr })), \
         sizeOf$(BreakT) \
     ); \
     __has_broken = true; \
     goto __step_break; \
 })
 
-#define $break_void(_Expr...) pp_overload(comp_syn__$break_void, _Expr)(_Expr)
+#define $break_void(_$Expr...) pp_overload(comp_syn__$break_void, _$Expr)(_$Expr)
 #define comp_syn__$break_void_0() local_({ \
     claim_assert_static( \
         eqlType$(BreakT, void) \
@@ -343,27 +343,27 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
     ); \
     goto __step_break; \
 })
-#define comp_syn__$break_void_1(_Expr...) local_({ \
+#define comp_syn__$break_void_1(_$Expr...) local_({ \
     claim_assert_static( \
         eqlType$(BreakT, void) \
         || eqlType$(BreakT, Void) \
     ); \
     claim_assert_static( \
-        eqlType$(TypeOf(({ _Expr; })), void) \
-        || eqlType$(TypeOf(({ _Expr; })), Void) \
+        eqlType$(TypeOf(({ _$Expr; })), void) \
+        || eqlType$(TypeOf(({ _$Expr; })), Void) \
     ); \
-    $ignore_void _Expr; \
+    $ignore_void _$Expr; \
     goto __step_break; \
 })
 
 #define $continue_(...) pp_overload(comp_syn__$continue, __VA_ARGS__)(__VA_ARGS__)
 #define comp_syn__$continue_0() continue
-#define comp_syn__$continue_1(_Expr...) local_({ \
+#define comp_syn__$continue_1(_$Expr...) local_({ \
     claim_assert_static( \
-        eqlType$(TypeOf(({ _Expr; })), void) \
-        || eqlType$(TypeOf(({ _Expr; })), Void) \
+        eqlType$(TypeOf(({ _$Expr; })), void) \
+        || eqlType$(TypeOf(({ _$Expr; })), Void) \
     ); \
-    $ignore_void _Expr; \
+    $ignore_void _$Expr; \
     local_return_(continue); \
 })
 // clang-format on
@@ -371,14 +371,14 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 /* TODO: else로 끝나지 않으면 컴파일 에러를 발생시키도록 만들기 */
 // clang-format off
 /* [for|while|switch|match]-else as expression block (supports else) */
-#define eval_(/*<_T_Break $ext>|<else>*/...) inline__eval_(__VA_ARGS__) pp_expand
+#define eval_(/*<_$T_Break $ext>|<else>*/...) inline__eval_(__VA_ARGS__) pp_expand
 #define inline__eval_(...) pp_overload(inline__eval, __VA_ARGS__)(__VA_ARGS__)
-#define inline__eval_1(_else...) ; if (__has_broken) { goto __step_break; } _else
-#define inline__eval_2(_T_Break, _ext...) pp_cat(inline__eval_2, _ext)(_T_Break)
-#define inline__eval_2$_scope(_T_Break...) ({ \
+#define inline__eval_1(_$else...) ; if (__has_broken) { goto __step_break; } _$else
+#define inline__eval_2(_$T_Break, _$ext...) pp_cat(inline__eval_2, _$ext)(_$T_Break)
+#define inline__eval_2$_scope(_$T_Break...) ({ \
     local_label __step_break; \
-    $alignAs(alignOf$(_T_Break)) var_(__reserved_buf, A$$(sizeOf$(_T_Break), u8)) = A_zero(); \
-    let __reserved_break = ptrQualCast$((_T_Break*)(A_ptr(__reserved_buf))); \
+    $alignAs(alignOf$(_$T_Break)) var_(__reserved_buf, A$$(sizeOf$(_$T_Break), u8)) = A_zero(); \
+    let __reserved_break = ptrQualCast$((_$T_Break*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
     $maybe_unused bool __has_broken = false;\
@@ -394,11 +394,11 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 })
 // clang-format on
 
-#define $un(_keyword) pp_cat(inline__$un, _keyword)()
+#define $un(_$keyword) pp_cat(inline__$un, _$keyword)()
 #define inline__$unscoped() $unscoped_fn
 #define inline__$unguarded() $unguarded_fn
 
-#define $unscoped(_keyword) pp_cat(inline__$unscoped_, _keyword)()
+#define $unscoped(_$keyword) pp_cat(inline__$unscoped_, _$keyword)()
 #define inline__$unscoped_fn() $unscoped_fn
 #define inline__$unscoped_TEST_fn() $unscoped_TEST_fn
 #define inline__$unscoped_thrd_fn() $unscoped_thrd_fn
@@ -407,7 +407,7 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 #define inline__$unscoped_expr() $unscoped_expr
 #define inline__$unscoped_eval() $unscoped_eval
 
-#define $unguarded(_keyword) pp_cat(inline__$unguarded_, _keyword)()
+#define $unguarded(_$keyword) pp_cat(inline__$unguarded_, _$keyword)()
 #define inline__$unguarded_fn() $unguarded_fn
 #define inline__$unguarded_TEST_fn() $unguarded_TEST_fn
 #define inline__$unguarded_thrd_fn() $unguarded_thrd_fn
@@ -418,15 +418,15 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 
 /* TODO: move to `using` */
 #define $defer , $_defer
-#define $defer_(/*_stmt|_expr*/...) , $_defer_(__VA_ARGS__)
-#define $errdefer_(/*(_capt)(_stmt|_expr)*/...) , $_errdefer_(__VA_ARGS__)
+#define $defer_(/*_$stmt|_$expr*/...) , $_defer_(__VA_ARGS__)
+#define $errdefer_(/*(_$capt)(_$stmt|_$expr)*/...) , $_errdefer_(__VA_ARGS__)
 
-#define $end(_keyword) \
+#define $end(_$keyword) \
     ; \
-    pp_cat($end_, _keyword)
-#define $deferral(_keyword) \
+    pp_cat($end_, _$keyword)
+#define $deferral(_$keyword) \
     ; \
-    pp_cat($deferral_, _keyword)
+    pp_cat($deferral_, _$keyword)
 
 /*========== Example usage ==================================================*/
 

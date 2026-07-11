@@ -24,44 +24,114 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define thrd_OnceLock$(_T...) tpl$(thrd_OnceLock, _T)
-#define thrd_OnceLock$$(_T...) \
-    struct { \
-        var_(once, thrd_Once); \
-        var_(value, _T); \
-    }
-#define T_decl_thrd_OnceLock$(_T...) \
-    $maybe_unused typedef struct thrd_OnceLock$(_T) thrd_OnceLock$(_T);
-#define T_impl_thrd_OnceLock$(_T...) \
-    struct thrd_OnceLock$(_T) { \
-        var_(once, thrd_Once); \
-        var_(value, _T); \
-    }
-#define T_use_thrd_OnceLock$(_T...) \
-    T_decl_thrd_OnceLock$(_T); \
-    T_impl_thrd_OnceLock$(_T)
+typedef struct thrd_OnceLock$raw {
+    var_(once, thrd_Once);
+    var_(val_type, debug_TypeInfo);
+    var_(val_, V$raw) $flexible;
+} thrd_OnceLock$raw;
+T_use$((thrd_OnceLock$raw)(u_V));
+#define thrd_OnceLock$(_T...) __alias__thrd_OnceLock$(_T)
+#define thrd_OnceLock$$(_T...) __anon__thrd_OnceLock$$(_T)
+#define T_decl_thrd_OnceLock$(_T...) __gen__T_decl_thrd_OnceLock$(_T)
+#define T_impl_thrd_OnceLock$(_T...) __gen__T_impl_thrd_OnceLock$(_T)
+#define T_use_thrd_OnceLock$(_T...) __gen__T_use_thrd_OnceLock$(_T)
 
-#define thrd_OnceLock_init$(_T...) \
-    ____thrd_OnceLock_init$(_T)
-#define thrd_OnceLock_isSet(_p_self) thrd_Once_isDone(&(_p_self)->once)
-#define thrd_OnceLock_wait(_p_self) thrd_Once_wait(&(_p_self)->once)
-#define thrd_OnceLock_get(_p_self) (&(_p_self)->value)
-#define thrd_OnceLock_trySet(_p_self, _val) __step__thrd_OnceLock_trySet(_p_self, _val)
+#define thrd_OnceLock_init_static$(_T...) ____thrd_OnceLock_init_static$(_T)
+#define thrd_OnceLock_init_static(_type /*: TypeInfo*/...) ____thrd_OnceLock_init_static(_type)
+$extern fn_((thrd_OnceLock_init(TypeInfo val_type, u_V$thrd_OnceLock$raw ret_mem))(u_V$thrd_OnceLock$raw));
+#define T_use_thrd_OnceLock_init$(_T...) __gen__T_use_thrd_OnceLock_init$(_T)
+$extern fn_((thrd_OnceLock_fini(thrd_OnceLock$raw* self, TypeInfo val_type))(void));
+#define T_use_thrd_OnceLock_fini$(_T...) __gen__T_use_thrd_OnceLock_fini$(_T)
+
+$extern fn_((thrd_OnceLock_isSet(const thrd_OnceLock$raw* self, TypeInfo val_type))(bool));
+#define T_use_thrd_OnceLock_isSet$(_T...) __gen__T_use_thrd_OnceLock_isSet$(_T)
+$extern fn_((thrd_OnceLock_trySet(thrd_OnceLock$raw* self, u_V$raw val))(bool));
+#define T_use_thrd_OnceLock_trySet$(_T...) __gen__T_use_thrd_OnceLock_trySet$(_T)
+$extern fn_((thrd_OnceLock_wait(thrd_OnceLock$raw* self, TypeInfo val_type))(void));
+#define T_use_thrd_OnceLock_wait$(_T...) __gen__T_use_thrd_OnceLock_wait$(_T)
+$extern fn_((thrd_OnceLock_get(thrd_OnceLock$raw* self, u_V$raw ret_mem))(u_V$raw));
+#define T_use_thrd_OnceLock_get$(_T...) __gen__T_use_thrd_OnceLock_get$(_T)
+
+T_alias$((u_Fields_Idx$thrd_OnceLock)(enum_((u_Fields_Idx$thrd_OnceLock $fits($packed))(
+    u_Fields_Idx_once$thrd_OnceLock = 0,
+    u_Fields_Idx_val_type$thrd_OnceLock,
+    u_Fields_Idx_val_$thrd_OnceLock,
+    count$u_Fields_Idx$thrd_OnceLock
+))));
+$static let_(u_Fields_type$thrd_OnceLock, A$$(count$u_Fields_Idx$thrd_OnceLock, TypeInfo)) = A_init({
+    [u_Fields_Idx_once$thrd_OnceLock] = typeInfo$(FieldType$(thrd_OnceLock$raw, once)),
+    [u_Fields_Idx_val_type$thrd_OnceLock] = typeInfo$(FieldType$(thrd_OnceLock$raw, val_type)),
+    [u_Fields_Idx_val_$thrd_OnceLock] = typeInfo$(FieldType$(thrd_OnceLock$raw, val_)),
+});
+
+#define T_use_thrd_OnceLock_val$(_T...) __gen__T_use_thrd_OnceLock_val$(_T)
+$attr($inline_always)
+$static fn_((thrd_OnceLock_val(const thrd_OnceLock$raw* self, TypeInfo val_type))(u_P_const$raw));
+#define T_use_thrd_OnceLock_valMut$(_T...) __gen__T_use_thrd_OnceLock_valMut$(_T)
+$attr($inline_always)
+$static fn_((thrd_OnceLock_valMut(thrd_OnceLock$raw* self, TypeInfo val_type))(u_P$raw));
 
 /*========== Macros and Definitions =========================================*/
 
-#define ____thrd_OnceLock_init$(_T...) l$((thrd_OnceLock$(_T)){ \
+#define __alias__thrd_OnceLock$(_T...) tpl$(thrd_OnceLock, _T)
+#define __anon__thrd_OnceLock$$(_T...) TypeOf(union { \
+    T_embed$(struct { \
+        var_(once, thrd_Once); \
+        var_(val_type, debug_TypeInfo); \
+        T_embed$(union { \
+            var_(val, _T); \
+            var_(val_, _T) $like_ref; \
+        }); \
+    }); \
+    var_(as_raw, thrd_OnceLock$raw) $flexible; \
+})
+#define __gen__T_decl_thrd_OnceLock$(_T...) \
+    $maybe_unused typedef union thrd_OnceLock$(_T) thrd_OnceLock$(_T);
+#define __gen__T_impl_thrd_OnceLock$(_T...) \
+    union thrd_OnceLock$(_T) { \
+        T_embed$(struct { \
+            var_(once, thrd_Once); \
+            var_(val_type, debug_TypeInfo); \
+            T_embed$(union { \
+                var_(val, _T); \
+                var_(val_, _T) $like_ref; \
+            }); \
+        }); \
+        var_(as_raw, thrd_OnceLock$raw) $flexible; \
+    }
+#define __gen__T_use_thrd_OnceLock$(_T...) \
+    T_decl_thrd_OnceLock$(_T); \
+    T_impl_thrd_OnceLock$(_T)
+
+#define ____thrd_OnceLock_init_static$(_T...) l$((_T)thrd_OnceLock_init_static( \
+    typeInfo$(FieldType$(_T, val)) \
+))
+#define ____thrd_OnceLock_init_static(_type /*: TypeInfo*/...) { \
     .once = thrd_Once_init_static(), \
-    .value = cleared(), \
-})
-#define __step__thrd_OnceLock_trySet(_p_self, _val) ({ \
-    let_(__ok, bool) = thrd_Once_tryBegin(&(_p_self)->once); \
-    if (__ok) { \
-        (_p_self)->value = (_val); \
-        thrd_Once_finish(&(_p_self)->once); \
-    } \
-    __ok; \
-})
+    .val_type = $typing(_type), \
+    .val_ = cleared(), \
+}
+
+#include "../meta.h"
+
+#if on_analysis_active_only || on_comptime
+fn_((thrd_OnceLock_val(const thrd_OnceLock$raw* self, TypeInfo val_type))(u_P_const$raw)) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->val_type), val_type, TypeInfo_eql);
+    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$thrd_OnceLock)(
+        (.val[u_Fields_Idx_val_$thrd_OnceLock])(val_type)
+    )));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P_const$raw)(self)));
+    return u_fieldPtr(u_self, ty_fields, u_Fields_Idx_val_$thrd_OnceLock);
+};
+fn_((thrd_OnceLock_valMut(thrd_OnceLock$raw* self, TypeInfo val_type))(u_P$raw)) {
+    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->val_type), val_type, TypeInfo_eql);
+    let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$thrd_OnceLock)(
+        (.val[u_Fields_Idx_val_$thrd_OnceLock])(val_type)
+    )));
+    let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
+    return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_val_$thrd_OnceLock);
+};
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -34,20 +34,20 @@ typedef enum $packed prefetch_Locality {
     prefetch_Locality_l1 = 3
 } prefetch_Locality;
 
-#define prefetch(_addr /*: PtrType*/, _rw /*: prefetch_RW*/, _locality /*: prefetch_Locality*/... /*(void)*/) \
-    __op__prefetch(_addr, _rw, _locality)
-#define prefetch_read(_addr /*: PtrType*/, _locality /*: prefetch_Locality*/... /*(void)*/) \
-    __op__prefetch_read(_addr, _locality)
-#define prefetch_write(_addr /*: PtrType*/, _locality /*: prefetch_Locality*/... /*(void)*/) \
-    __op__prefetch_write(_addr, _locality)
+#define prefetch(_$addr /*: PtrType*/, _$rw /*: prefetch_RW*/, _$locality /*: prefetch_Locality*/... /*(void)*/) \
+    __op__prefetch(_$addr, _$rw, _$locality)
+#define prefetch_read(_$addr /*: PtrType*/, _$locality /*: prefetch_Locality*/... /*(void)*/) \
+    __op__prefetch_read(_$addr, _$locality)
+#define prefetch_write(_$addr /*: PtrType*/, _$locality /*: prefetch_Locality*/... /*(void)*/) \
+    __op__prefetch_write(_$addr, _$locality)
 
 /*========== Macros and Definitions =========================================*/
 
-#define __op__prefetch(_addr, _rw, _locality...) comp_prefetch( \
-    _addr, as$(int)(as$(prefetch_RW)(_rw)), as$(int)(as$(prefetch_Locality)(_locality)) \
+#define __op__prefetch(_$addr, _$rw, _$locality...) comp_prefetch( \
+    _$addr, as$(int)(as$(prefetch_RW)(_$rw)), as$(int)(as$(prefetch_Locality)(_$locality)) \
 )
-#define __op__prefetch_read(_addr, _locality...) prefetch(_addr, prefetch_RW_read, _locality)
-#define __op__prefetch_write(_addr, _locality...) prefetch(_addr, prefetch_RW_write, _locality)
+#define __op__prefetch_read(_$addr, _$locality...) prefetch(_$addr, prefetch_RW_read, _$locality)
+#define __op__prefetch_write(_$addr, _$locality...) prefetch(_$addr, prefetch_RW_write, _$locality)
 
 #if defined(__cplusplus)
 } /* extern "C" */

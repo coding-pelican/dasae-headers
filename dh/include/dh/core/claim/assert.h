@@ -28,76 +28,76 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define claim_assert(_Expr) __step__claim_assert((_Expr), #_Expr)
+#define claim_assert(_$Expr) __step__claim_assert((_$Expr), #_$Expr)
 #define claim_assert_trap() __step__claim_assert_trap()
-#define claim_assert_true(_Expr) __step__claim_assert_true((_Expr), #_Expr)
-#define claim_assert_false(_Expr) __step__claim_assert_false((_Expr), #_Expr)
-#define claim_assert_eq(_Expr1, _Expr2) __step__claim_assert_eq((_Expr1), (_Expr2), #_Expr1, #_Expr2)
-#define claim_assert_ne(_Expr1, _Expr2) __step__claim_assert_ne((_Expr1), (_Expr2), #_Expr1, #_Expr2)
-#define claim_assert_zero(_Expr) __step__claim_assert_zero((_Expr), #_Expr)
-#define claim_assert_nonzero(_Expr) __step__claim_assert_nonzero((_Expr), #_Expr)
-#define claim_assert_null(_Expr) __step__claim_assert_null((_Expr), #_Expr)
-#define claim_assert_nullS(_Expr) __step__claim_assert_nullS((_Expr), #_Expr)
-#define claim_assert_nonnull(_Expr) __step__claim_assert_nonnull((_Expr), #_Expr)
-#define claim_assert_nonnullS(_Expr) __step__claim_assert_nonnullS((_Expr), #_Expr)
+#define claim_assert_true(_$Expr) __step__claim_assert_true((_$Expr), #_$Expr)
+#define claim_assert_false(_$Expr) __step__claim_assert_false((_$Expr), #_$Expr)
+#define claim_assert_eq(_$Expr1, _$Expr2) __step__claim_assert_eq((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2)
+#define claim_assert_ne(_$Expr1, _$Expr2) __step__claim_assert_ne((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2)
+#define claim_assert_zero(_$Expr) __step__claim_assert_zero((_$Expr), #_$Expr)
+#define claim_assert_nonzero(_$Expr) __step__claim_assert_nonzero((_$Expr), #_$Expr)
+#define claim_assert_null(_$Expr) __step__claim_assert_null((_$Expr), #_$Expr)
+#define claim_assert_nullS(_$Expr) __step__claim_assert_nullS((_$Expr), #_$Expr)
+#define claim_assert_nonnull(_$Expr) __step__claim_assert_nonnull((_$Expr), #_$Expr)
+#define claim_assert_nonnullS(_$Expr) __step__claim_assert_nonnullS((_$Expr), #_$Expr)
 
-#define claim_assert_msg(_Expr, _msg) __step__claim_assert_msg((_Expr), #_Expr, _msg)
-#define claim_assert_trap_msg(_msg) __step__claim_assert_trap_msg(_msg)
-#define claim_assert_true_msg(_Expr, _msg) __step__claim_assert_true_msg((_Expr), #_Expr, _msg)
-#define claim_assert_false_msg(_Expr, _msg) __step__claim_assert_false_msg((_Expr), #_Expr, _msg)
-#define claim_assert_eq_msg(_Expr1, _Expr2, _msg) __step__claim_assert_eq_msg((_Expr1), (_Expr2), #_Expr1, #_Expr2, _msg)
-#define claim_assert_ne_msg(_Expr1, _Expr2, _msg) __step__claim_assert_ne_msg((_Expr1), (_Expr2), #_Expr1, #_Expr2, _msg)
-#define claim_assert_zero_msg(_Expr, _msg) __step__claim_assert_zero_msg((_Expr), #_Expr, _msg)
-#define claim_assert_nonzero_msg(_Expr, _msg) __step__claim_assert_nonzero_msg((_Expr), #_Expr, _msg)
-#define claim_assert_null_msg(_Expr, _msg) __step__claim_assert_null_msg((_Expr), #_Expr, _msg)
-#define claim_assert_nullS_msg(_Expr, _msg) __step__claim_assert_nullS_msg((_Expr), #_Expr, _msg)
-#define claim_assert_nonnull_msg(_Expr, _msg) __step__claim_assert_nonnull_msg((_Expr), #_Expr, _msg)
-#define claim_assert_nonnullS_msg(_Expr, _msg) __step__claim_assert_nonnullS_msg((_Expr), #_Expr, _msg)
+#define claim_assert_msg(_$Expr, _$msg) __step__claim_assert_msg((_$Expr), #_$Expr, _$msg)
+#define claim_assert_trap_msg(_$msg) __step__claim_assert_trap_msg(_$msg)
+#define claim_assert_true_msg(_$Expr, _$msg) __step__claim_assert_true_msg((_$Expr), #_$Expr, _$msg)
+#define claim_assert_false_msg(_$Expr, _$msg) __step__claim_assert_false_msg((_$Expr), #_$Expr, _$msg)
+#define claim_assert_eq_msg(_$Expr1, _$Expr2, _$msg) __step__claim_assert_eq_msg((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2, _$msg)
+#define claim_assert_ne_msg(_$Expr1, _$Expr2, _$msg) __step__claim_assert_ne_msg((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2, _$msg)
+#define claim_assert_zero_msg(_$Expr, _$msg) __step__claim_assert_zero_msg((_$Expr), #_$Expr, _$msg)
+#define claim_assert_nonzero_msg(_$Expr, _$msg) __step__claim_assert_nonzero_msg((_$Expr), #_$Expr, _$msg)
+#define claim_assert_null_msg(_$Expr, _$msg) __step__claim_assert_null_msg((_$Expr), #_$Expr, _$msg)
+#define claim_assert_nullS_msg(_$Expr, _$msg) __step__claim_assert_nullS_msg((_$Expr), #_$Expr, _$msg)
+#define claim_assert_nonnull_msg(_$Expr, _$msg) __step__claim_assert_nonnull_msg((_$Expr), #_$Expr, _$msg)
+#define claim_assert_nonnullS_msg(_$Expr, _$msg) __step__claim_assert_nonnullS_msg((_$Expr), #_$Expr, _$msg)
 
-#define claim_assert_fmt(_Expr, _fmt...) __step__claim_assert_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_trap_fmt(_fmt...) __step__claim_assert_trap_fmt(_fmt)
-#define claim_assert_true_fmt(_Expr, _fmt...) __step__claim_assert_true_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_false_fmt(_Expr, _fmt...) __step__claim_assert_false_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_eq_fmt(_Expr1, _Expr2, _fmt...) __step__claim_assert_eq_fmt((_Expr1), (_Expr2), #_Expr1, #_Expr2, _fmt)
-#define claim_assert_ne_fmt(_Expr1, _Expr2, _fmt...) __step__claim_assert_ne_fmt((_Expr1), (_Expr2), #_Expr1, #_Expr2, _fmt)
-#define claim_assert_zero_fmt(_Expr, _fmt...) __step__claim_assert_zero_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_nonzero_fmt(_Expr, _fmt...) __step__claim_assert_nonzero_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_null_fmt(_Expr, _fmt...) __step__claim_assert_null_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_nullS_fmt(_Expr, _fmt...) __step__claim_assert_nullS_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_nonnull_fmt(_Expr, _fmt...) __step__claim_assert_nonnull_fmt((_Expr), #_Expr, _fmt)
-#define claim_assert_nonnullS_fmt(_Expr, _fmt...) __step__claim_assert_nonnullS_fmt((_Expr), #_Expr, _fmt)
+#define claim_assert_fmt(_$Expr, _$fmt...) __step__claim_assert_fmt((_$Expr), #_$Expr, _$fmt)
+#define claim_assert_trap_fmt(_$fmt...) __step__claim_assert_trap_fmt(_$fmt)
+#define claim_assert_true_fmt(_$Expr, _$fmt...) __step__claim_assert_true_fmt((_$Expr), #_$Expr, _$fmt)
+#define claim_assert_false_fmt(_$Expr, _$fmt...) __step__claim_assert_false_fmt((_$Expr), #_$Expr, _$fmt)
+#define claim_assert_eq_fmt(_$Expr1, _$Expr2, _$fmt...) __step__claim_assert_eq_fmt((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2, _$fmt)
+#define claim_assert_ne_fmt(_$Expr1, _$Expr2, _$fmt...) __step__claim_assert_ne_fmt((_$Expr1), (_$Expr2), #_$Expr1, #_$Expr2, _$fmt)
+#define claim_assert_zero_fmt(_$Expr, _$fmt...) __step__claim_assert_zero_fmt((_$Expr), #_$Expr, _$fmt)
+#define claim_assert_nonzero_fmt(_$Expr, _$fmt...) __step__claim_assert_nonzero_fmt((_$Expr), #_$Expr, _$fmt)
+#define claim_assert_null_fmt(_$Expr, _$fmt...) __step__claim_assert_null_fmt((_$Expr), #_$Expr, _$fmt)
+#define claim_assert_nullS_fmt(_$Expr, _$fmt...) __step__claim_assert_nullS_fmt((_$Expr), #_$Expr, _$fmt)
+#define claim_assert_nonnull_fmt(_$Expr, _$fmt...) __step__claim_assert_nonnull_fmt((_$Expr), #_$Expr, _$fmt)
+#define claim_assert_nonnullS_fmt(_$Expr, _$fmt...) __step__claim_assert_nonnullS_fmt((_$Expr), #_$Expr, _$fmt)
 
 /*========== Macros and Definitions =========================================*/
 
 #if on_comptime
 /* clang-format off */
-#define __step__claim_assert(_Expr, _ExprStr...) $ignore_void(\
-    (!!_Expr) || (({ \
+#define __step__claim_assert(_$Expr, _$ExprStr...) $ignore_void(\
+    (!!_$Expr) || (({ \
         claim_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _ExprStr \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$ExprStr \
         ); \
-        $debug_point claim_assert_failLog(_ExprStr, __func__, __FILE__, __LINE__); \
+        $debug_point claim_assert_failLog(_$ExprStr, __func__, __FILE__, __LINE__); \
         $unreachable; \
     }), 0) \
 )
-#define __step__claim_assert_msg(_Expr, _ExprStr, _msg...) $ignore_void( \
-    (!!_Expr) || (({ \
+#define __step__claim_assert_msg(_$Expr, _$ExprStr, _$msg...) $ignore_void( \
+    (!!_$Expr) || (({ \
         claim_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _msg \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$msg \
         ); \
-        $debug_point claim_assert_failLogMsg(_ExprStr, __func__, __FILE__, __LINE__, _msg); \
+        $debug_point claim_assert_failLogMsg(_$ExprStr, __func__, __FILE__, __LINE__, _$msg); \
         $unreachable; \
     }), 0) \
 )
-#define __step__claim_assert_fmt(_Expr, _ExprStr, _fmt...) $ignore_void(\
-    (!!_Expr) || (({ \
+#define __step__claim_assert_fmt(_$Expr, _$ExprStr, _$fmt...) $ignore_void(\
+    (!!_$Expr) || (({ \
         claim_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _ExprStr \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$ExprStr \
         ); \
-        $debug_point claim_assert_failLogFmt(_ExprStr, __func__, __FILE__, __LINE__, _fmt); \
+        $debug_point claim_assert_failLogFmt(_$ExprStr, __func__, __FILE__, __LINE__, _$fmt); \
         $unreachable; \
     }), 0) \
 )
@@ -106,89 +106,89 @@ extern "C" {
     $debug_point claim_assert_failLog("(none)", __func__, __FILE__, __LINE__); \
     $unreachable; \
 }), 0)
-#define __step__claim_assert_trap_msg(_msg...) $ignore_void(({ \
-    $debug_point claim_assert_failLogMsg("(none)", __func__, __FILE__, __LINE__, _msg); \
+#define __step__claim_assert_trap_msg(_$msg...) $ignore_void(({ \
+    $debug_point claim_assert_failLogMsg("(none)", __func__, __FILE__, __LINE__, _$msg); \
     $unreachable; \
 }), 0)
-#define __step__claim_assert_trap_fmt(_fmt...) $ignore_void(({ \
-    $debug_point claim_assert_failLogFmt("(none)", __func__, __FILE__, __LINE__, _fmt); \
+#define __step__claim_assert_trap_fmt(_$fmt...) $ignore_void(({ \
+    $debug_point claim_assert_failLogFmt("(none)", __func__, __FILE__, __LINE__, _$fmt); \
     $unreachable; \
 }), 0)
 /* clang-format on */
 #else /* !on_comptime */
 /* clang-format off */
-#define __step__claim_assert(_Expr, _ExprStr...) $dispatch_on_comptime $ignore_void( \
-    (!!_Expr) || (({ \
+#define __step__claim_assert(_$Expr, _$ExprStr...) $dispatch_on_comptime $ignore_void( \
+    (!!_$Expr) || (({ \
         claim_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _ExprStr \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$ExprStr \
         ); \
         $unreachable; \
     }), 0) \
 )
-#define __step__claim_assert_msg(_Expr, _ExprStr, _msg...) $dispatch_on_comptime $ignore_void( \
-    (!!_Expr) || (({ \
+#define __step__claim_assert_msg(_$Expr, _$ExprStr, _$msg...) $dispatch_on_comptime $ignore_void( \
+    (!!_$Expr) || (({ \
         claim_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _msg \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$msg \
         ); \
         $unreachable; \
     }), 0) \
 )
-#define __step__claim_assert_fmt(_Expr, _ExprStr, fmt...) $dispatch_on_comptime $ignore_void( \
-    (!!_Expr) || (({ \
+#define __step__claim_assert_fmt(_$Expr, _$ExprStr, _$fmt...) $dispatch_on_comptime $ignore_void( \
+    (!!_$Expr) || (({ \
         claim_assert_static_msg( \
-            comp_when_(isComptimeExpr(_Expr))(comp_provide_(_Expr), comp_instead_(true)), \
-            _ExprStr \
+            comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
+            _$ExprStr \
         ); \
         $unreachable; \
     }), 0) \
 )
 
 #define __step__claim_assert_trap()            $dispatch_on_comptime $ignore_void($unreachable, 0)
-#define __step__claim_assert_trap_msg(_msg...) $dispatch_on_comptime $ignore_void($unreachable, 0)
-#define __step__claim_assert_trap_fmt(_fmt...) $dispatch_on_comptime $ignore_void($unreachable, 0)
+#define __step__claim_assert_trap_msg(_$msg...) $dispatch_on_comptime $ignore_void($unreachable, 0)
+#define __step__claim_assert_trap_fmt(_$fmt...) $dispatch_on_comptime $ignore_void($unreachable, 0)
 /* clang-format on */
 #endif /* on_comptime */
 
-#define __step__claim_assert_true(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) == true), _ExprStr " != true", _ExprStr " is not true")
-#define __step__claim_assert_false(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) == false), _ExprStr " != false", _ExprStr " is not false")
-#define __step__claim_assert_eq(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) \
-    __step__claim_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _Expr1Str " is not equal to " _Expr2Str)
-#define __step__claim_assert_ne(_Expr1, _Expr2, _Expr1Str, _Expr2Str...) \
-    __step__claim_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _Expr1Str " is equal to " _Expr2Str)
-#define __step__claim_assert_zero(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) == 0), _ExprStr " != 0", _ExprStr " is not zero")
-#define __step__claim_assert_nonzero(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) != 0), _ExprStr " == 0", _ExprStr " is zero")
-#define __step__claim_assert_null(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) == null$(TypeOf(_Expr))), _ExprStr " != null", _ExprStr " is nonnull")
-#define __step__claim_assert_nullS(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _ExprStr " is nonnull")
-#define __step__claim_assert_nonnull(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _ExprStr " is null")
-#define __step__claim_assert_nonnullS(_Expr, _ExprStr...) __step__claim_assert_msg(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _ExprStr " is null")
+#define __step__claim_assert_true(_$Expr, _$ExprStr...) __step__claim_assert_msg(((_$Expr) == true), _$ExprStr " != true", _$ExprStr " is not true")
+#define __step__claim_assert_false(_$Expr, _$ExprStr...) __step__claim_assert_msg(((_$Expr) == false), _$ExprStr " != false", _$ExprStr " is not false")
+#define __step__claim_assert_eq(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str...) \
+    __step__claim_assert_msg(((_$Expr1) == (_$Expr2)), _$Expr1Str " == " _$Expr2Str, _$Expr1Str " is not equal to " _$Expr2Str)
+#define __step__claim_assert_ne(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str...) \
+    __step__claim_assert_msg(((_$Expr1) != (_$Expr2)), _$Expr1Str " != " _$Expr2Str, _$Expr1Str " is equal to " _$Expr2Str)
+#define __step__claim_assert_zero(_$Expr, _$ExprStr...) __step__claim_assert_msg(((_$Expr) == 0), _$ExprStr " != 0", _$ExprStr " is not zero")
+#define __step__claim_assert_nonzero(_$Expr, _$ExprStr...) __step__claim_assert_msg(((_$Expr) != 0), _$ExprStr " == 0", _$ExprStr " is zero")
+#define __step__claim_assert_null(_$Expr, _$ExprStr...) __step__claim_assert_msg(((_$Expr) == null$(TypeOf(_$Expr))), _$ExprStr " != null", _$ExprStr " is nonnull")
+#define __step__claim_assert_nullS(_$Expr, _$ExprStr...) __step__claim_assert_msg(((_$Expr).ptr == null$(TypeOf((_$Expr).ptr))), _$ExprStr " != null", _$ExprStr " is nonnull")
+#define __step__claim_assert_nonnull(_$Expr, _$ExprStr...) __step__claim_assert_msg(((_$Expr) != null$(TypeOf(_$Expr))), _$ExprStr " == null", _$ExprStr " is null")
+#define __step__claim_assert_nonnullS(_$Expr, _$ExprStr...) __step__claim_assert_msg(((_$Expr).ptr != null$(TypeOf((_$Expr).ptr))), _$ExprStr " == null", _$ExprStr " is null")
 
-#define __step__claim_assert_true_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == true), _ExprStr " != true", _msg)
-#define __step__claim_assert_false_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == false), _ExprStr " != false", _msg)
-#define __step__claim_assert_eq_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) \
-    __step__claim_assert_msg(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _msg)
-#define __step__claim_assert_ne_msg(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _msg...) \
-    __step__claim_assert_msg(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _msg)
-#define __step__claim_assert_zero_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == 0), _ExprStr " != 0", _msg)
-#define __step__claim_assert_nonzero_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) != 0), _ExprStr " == 0", _msg)
-#define __step__claim_assert_null_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) == null$(TypeOf(_Expr))), _ExprStr " != null", _msg)
-#define __step__claim_assert_nullS_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _msg)
-#define __step__claim_assert_nonnull_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _msg)
-#define __step__claim_assert_nonnullS_msg(_Expr, _ExprStr, _msg...) __step__claim_assert_msg(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _msg)
+#define __step__claim_assert_true_msg(_$Expr, _$ExprStr, _$msg...) __step__claim_assert_msg(((_$Expr) == true), _$ExprStr " != true", _$msg)
+#define __step__claim_assert_false_msg(_$Expr, _$ExprStr, _$msg...) __step__claim_assert_msg(((_$Expr) == false), _$ExprStr " != false", _$msg)
+#define __step__claim_assert_eq_msg(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$msg...) \
+    __step__claim_assert_msg(((_$Expr1) == (_$Expr2)), _$Expr1Str " == " _$Expr2Str, _$msg)
+#define __step__claim_assert_ne_msg(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$msg...) \
+    __step__claim_assert_msg(((_$Expr1) != (_$Expr2)), _$Expr1Str " != " _$Expr2Str, _$msg)
+#define __step__claim_assert_zero_msg(_$Expr, _$ExprStr, _$msg...) __step__claim_assert_msg(((_$Expr) == 0), _$ExprStr " != 0", _$msg)
+#define __step__claim_assert_nonzero_msg(_$Expr, _$ExprStr, _$msg...) __step__claim_assert_msg(((_$Expr) != 0), _$ExprStr " == 0", _$msg)
+#define __step__claim_assert_null_msg(_$Expr, _$ExprStr, _$msg...) __step__claim_assert_msg(((_$Expr) == null$(TypeOf(_$Expr))), _$ExprStr " != null", _$msg)
+#define __step__claim_assert_nullS_msg(_$Expr, _$ExprStr, _$msg...) __step__claim_assert_msg(((_$Expr).ptr == null$(TypeOf((_$Expr).ptr))), _$ExprStr " != null", _$msg)
+#define __step__claim_assert_nonnull_msg(_$Expr, _$ExprStr, _$msg...) __step__claim_assert_msg(((_$Expr) != null$(TypeOf(_$Expr))), _$ExprStr " == null", _$msg)
+#define __step__claim_assert_nonnullS_msg(_$Expr, _$ExprStr, _$msg...) __step__claim_assert_msg(((_$Expr).ptr != null$(TypeOf((_$Expr).ptr))), _$ExprStr " == null", _$msg)
 
-#define __step__claim_assert_true_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == true), _ExprStr " != true", _fmt)
-#define __step__claim_assert_false_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == false), _ExprStr " != false", _fmt)
-#define __step__claim_assert_eq_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) \
-    __step__claim_assert_fmt(((_Expr1) == (_Expr2)), _Expr1Str " == " _Expr2Str, _fmt)
-#define __step__claim_assert_ne_fmt(_Expr1, _Expr2, _Expr1Str, _Expr2Str, _fmt...) \
-    __step__claim_assert_fmt(((_Expr1) != (_Expr2)), _Expr1Str " != " _Expr2Str, _fmt)
-#define __step__claim_assert_zero_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == 0), _ExprStr " != 0", _fmt)
-#define __step__claim_assert_nonzero_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) != 0), _ExprStr " == 0", _fmt)
-#define __step__claim_assert_null_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) == null$(TypeOf(_Expr))), _ExprStr " != null", _fmt)
-#define __step__claim_assert_nullS_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr).ptr == null$(TypeOf((_Expr).ptr))), _ExprStr " != null", _fmt)
-#define __step__claim_assert_nonnull_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr) != null$(TypeOf(_Expr))), _ExprStr " == null", _fmt)
-#define __step__claim_assert_nonnullS_fmt(_Expr, _ExprStr, _fmt...) __step__claim_assert_fmt(((_Expr).ptr != null$(TypeOf((_Expr).ptr))), _ExprStr " == null", _fmt)
+#define __step__claim_assert_true_fmt(_$Expr, _$ExprStr, _$fmt...) __step__claim_assert_fmt(((_$Expr) == true), _$ExprStr " != true", _$fmt)
+#define __step__claim_assert_false_fmt(_$Expr, _$ExprStr, _$fmt...) __step__claim_assert_fmt(((_$Expr) == false), _$ExprStr " != false", _$fmt)
+#define __step__claim_assert_eq_fmt(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$fmt...) \
+    __step__claim_assert_fmt(((_$Expr1) == (_$Expr2)), _$Expr1Str " == " _$Expr2Str, _$fmt)
+#define __step__claim_assert_ne_fmt(_$Expr1, _$Expr2, _$Expr1Str, _$Expr2Str, _$fmt...) \
+    __step__claim_assert_fmt(((_$Expr1) != (_$Expr2)), _$Expr1Str " != " _$Expr2Str, _$fmt)
+#define __step__claim_assert_zero_fmt(_$Expr, _$ExprStr, _$fmt...) __step__claim_assert_fmt(((_$Expr) == 0), _$ExprStr " != 0", _$fmt)
+#define __step__claim_assert_nonzero_fmt(_$Expr, _$ExprStr, _$fmt...) __step__claim_assert_fmt(((_$Expr) != 0), _$ExprStr " == 0", _$fmt)
+#define __step__claim_assert_null_fmt(_$Expr, _$ExprStr, _$fmt...) __step__claim_assert_fmt(((_$Expr) == null$(TypeOf(_$Expr))), _$ExprStr " != null", _$fmt)
+#define __step__claim_assert_nullS_fmt(_$Expr, _$ExprStr, _$fmt...) __step__claim_assert_fmt(((_$Expr).ptr == null$(TypeOf((_$Expr).ptr))), _$ExprStr " != null", _$fmt)
+#define __step__claim_assert_nonnull_fmt(_$Expr, _$ExprStr, _$fmt...) __step__claim_assert_fmt(((_$Expr) != null$(TypeOf(_$Expr))), _$ExprStr " == null", _$fmt)
+#define __step__claim_assert_nonnullS_fmt(_$Expr, _$ExprStr, _$fmt...) __step__claim_assert_fmt(((_$Expr).ptr != null$(TypeOf((_$Expr).ptr))), _$ExprStr " == null", _$fmt)
 
 /*========== Extern Function Prototypes =====================================*/
 
@@ -236,9 +236,9 @@ $attr($branch_cold)
 $extern fn_((claim_assert_failLogFmt(const char*, const char*, const char*, u32, const char*, ...))(void));
 #endif /* on_comptime */
 #else /* !claim_fail_printing_enabled */
-#define claim_assert_failLog(_expr, _func, _file, _line) $unused(0)
-#define claim_assert_failLogMsg(_expr, _func, _file, _line, _msg) $unused(0)
-#define claim_assert_failLogFmt(_expr, _func, _file, _line, _fmt, ...) $unused(0)
+#define claim_assert_failLog(_$expr, _$func, _$file, _$line) $unused(0)
+#define claim_assert_failLogMsg(_$expr, _$func, _$file, _$line, _$msg) $unused(0)
+#define claim_assert_failLogFmt(_$expr, _$func, _$file, _$line, _$fmt, ...) $unused(0)
 #endif /* claim_fail_printing_enabled */
 
 #if defined(__cplusplus)

@@ -169,16 +169,16 @@ pp_if_(pp_not(comp_start_files_linked))((
 
 /*========== Macros =========================================================*/
 
-#define start_emitEntry(_Entry...) /* clang-format off */ \
+#define start_emitEntry(_$Entry...) /* clang-format off */ \
     pp_switch_((plat_type)( \
         pp_case_((plat_type_windows)(start__win32_emitEntry)), \
         pp_case_((plat_type_linux)(start__linux_emitEntry)), \
         pp_default_(claim_assert_static_trap_msg( \
             "target does not have dh start entry support" \
         )) \
-    ))(_Entry)
+    ))(_$Entry)
 
-#define start__win32_emitEntry(_Entry...) \
+#define start__win32_emitEntry(_$Entry...) \
     T_alias$((start_win32_TLSCallback)(fn_((($callconv_stdcall*)(P$raw inst, u32 reason, P$raw reserved))(void) $T))); \
     T_alias$((start_win32_IMAGE_TLS_DIRECTORY)(struct start_win32_IMAGE_TLS_DIRECTORY { \
         var_(StartAddressOfRawData, P$raw*); \
@@ -225,12 +225,12 @@ pp_if_(pp_not(comp_start_files_linked))((
     }; \
     $attr($no_return) \
     $extern fn_((mainCRTStartup(void))(void)); \
-    fn_((mainCRTStartup(void))(void)) { _Entry(null); }; \
+    fn_((mainCRTStartup(void))(void)) { _$Entry(null); }; \
     $attr($no_return) \
     $extern fn_((WinMainCRTStartup(void))(void)); \
-    fn_((WinMainCRTStartup(void))(void)) { _Entry(null); }
+    fn_((WinMainCRTStartup(void))(void)) { _$Entry(null); }
 
-#define start__linux_emitEntry(_Entry...) \
+#define start__linux_emitEntry(_$Entry...) \
     $attr($callconv_naked $no_return) \
     $extern fn_((_start(void))(void)); \
     fn_((_start(void))(void)) { \
@@ -239,7 +239,7 @@ pp_if_(pp_not(comp_start_files_linked))((
                 "xorl %%ebp, %%ebp\n" \
                 "movq %%rsp, %%rdi\n" \
                 "andq $-16, %%rsp\n" \
-                "callq " #_Entry "\n" : : : "memory" \
+                "callq " #_$Entry "\n" : : : "memory" \
             );)), \
             pp_case_((arch_type_x86)(asm_volatile( \
                 "xorl %%ebp, %%ebp\n" \
@@ -247,7 +247,7 @@ pp_if_(pp_not(comp_start_files_linked))((
                 "andl $-16, %%esp\n" \
                 "subl $12, %%esp\n" \
                 "pushl %%eax\n" \
-                "calll " #_Entry "\n" : : : "memory" \
+                "calll " #_$Entry "\n" : : : "memory" \
             );)), \
             pp_case_((arch_type_aarch64)(asm_volatile( \
                 "mov x29, #0\n" \
@@ -255,7 +255,7 @@ pp_if_(pp_not(comp_start_files_linked))((
                 "mov x0, sp\n" \
                 "and x1, x0, #-16\n" \
                 "mov sp, x1\n" \
-                "b " #_Entry "\n" : : : "memory" \
+                "b " #_$Entry "\n" : : : "memory" \
             );)), \
             pp_case_((arch_type_arm)(asm_volatile( \
                 "mov r7, #0\n" \
@@ -263,7 +263,7 @@ pp_if_(pp_not(comp_start_files_linked))((
                 "mov lr, #0\n" \
                 "mov r0, sp\n" \
                 "bic sp, r0, #15\n" \
-                "b " #_Entry "\n" : : : "memory" \
+                "b " #_$Entry "\n" : : : "memory" \
             );)), \
             pp_case_((arch_type_riscv64)(asm_volatile( \
                 ".option push\n" \
@@ -272,7 +272,7 @@ pp_if_(pp_not(comp_start_files_linked))((
                 "mv ra, zero\n" \
                 "mv a0, sp\n" \
                 "andi sp, sp, -16\n" \
-                "tail " #_Entry "\n" \
+                "tail " #_$Entry "\n" \
                 ".option pop\n" : : : "memory" \
             );)), \
             pp_case_((arch_type_riscv32)(asm_volatile( \
@@ -282,7 +282,7 @@ pp_if_(pp_not(comp_start_files_linked))((
                 "mv ra, zero\n" \
                 "mv a0, sp\n" \
                 "andi sp, sp, -16\n" \
-                "tail " #_Entry "\n" \
+                "tail " #_$Entry "\n" \
                 ".option pop\n" : : : "memory" \
             );)), \
             pp_default_(claim_assert_static_trap_msg( \

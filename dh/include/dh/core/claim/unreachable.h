@@ -28,15 +28,15 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define claim_unreachable __step__claim_unreachable
-#define claim_unreachable_msg(_msg) __step__claim_unreachable_msg(_msg)
-#define claim_unreachable_fmt(_fmt...) __step__claim_unreachable_fmt(_fmt)
+#define claim_unreachable_msg(_$msg) __step__claim_unreachable_msg(_$msg)
+#define claim_unreachable_fmt(_$fmt...) __step__claim_unreachable_fmt(_$fmt)
 #define claim_unreachable_val$(_T...) __step__claim_unreachable_val$(_T)
 
 /*========== Macros and Definitions =========================================*/
 
 #define __step__claim_unreachable (debug_assert_trap_msg("Reached unreachable code"), $unreachable)
-#define __step__claim_unreachable_msg(_msg...) (debug_assert_trap_msg(_msg), $unreachable)
-#define __step__claim_unreachable_fmt(_fmt...) (debug_assert_trap_fmt(_fmt), $unreachable)
+#define __step__claim_unreachable_msg(_$msg...) (debug_assert_trap_msg(_$msg), $unreachable)
+#define __step__claim_unreachable_fmt(_$fmt...) (debug_assert_trap_fmt(_$fmt), $unreachable)
 #define __step__claim_unreachable_val$(_T...) (claim_unreachable, l0$((_T)))
 
 /*========== Example Usage (Disabled to prevent compilation) ================*/

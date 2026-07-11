@@ -28,6 +28,7 @@ struct conc_Select_Case {
     var_(result, u_P$raw);
     var_(link, conc_AwaitLink);
 };
+T_use_prl$(conc_Select_Case);
 
 struct conc_Select$raw {
     var_(cases, S$conc_Select_Case);

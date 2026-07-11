@@ -26,109 +26,109 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define memberName$(_path, _Tok...) __expr__memberName$(_path, _Tok)
-#define __expr__memberName$(_path, _Tok...) #_Tok
+#define memberName$(_$path, _$Tok...) __expr__memberName$(_$path, _$Tok)
+#define __expr__memberName$(_$path, _$Tok...) #_$Tok
 
-#define fieldName$(_path, _Tok...) __expr__fieldName$( \
-    FieldType$(TypeOf(_path), _Tok), _Tok \
+#define fieldName$(_$path, _$Tok...) __expr__fieldName$( \
+    FieldType$(TypeOf(_$path), _$Tok), _$Tok \
 )
-#define __expr__fieldName$(_T_Path_Tok, _Tok...) #_Tok
+#define __expr__fieldName$(_$T_Path_Tok, _$Tok...) #_$Tok
 
-#define FieldType$(_T_Record, _field...) \
+#define FieldType$(_$T_Record, _$field...) \
     /** \
      * @brief Get the type of a field within a container type \
      * \
-     * @param _T_Record The container type \
-     * @param _field The field name \
+     * @param _$T_Record The container type \
+     * @param _$field The field name \
      * @return The type of the specified field \
      */ \
-    ____FieldType$(_T_Record, _field)
-#define FieldTypeUnqual$(_T_Record, _field...) \
+    ____FieldType$(_$T_Record, _$field)
+#define FieldTypeUnqual$(_$T_Record, _$field...) \
     /** \
      * @brief Get the type of a field within a container type \
      * \
-     * @param _T_Record The container type \
-     * @param _field The field name \
+     * @param _$T_Record The container type \
+     * @param _$field The field name \
      * @return The type of the specified field \
      */ \
-    ____FieldTypeUnqual$(_T_Record, _field)
+    ____FieldTypeUnqual$(_$T_Record, _$field)
 
-#define eqlFieldType$(_T_Record, _field, _T_Expected...) \
+#define eqlFieldType$(_$T_Record, _$field, _$T_Expected...) \
     /** \
      * @brief Check if a field has the expected type \
      * \
-     * @param _T_Record The container type \
-     * @param _field The field name \
-     * @param _T_Expected The expected type \
+     * @param _$T_Record The container type \
+     * @param _$field The field name \
+     * @param _$T_Expected The expected type \
      * @return True if the field has the expected type, false otherwise \
      */ \
-    ____eqlFieldType$(_T_Record, _field, _T_Expected)
-#define eqlFieldTypeUnqual$(_T_Record, _field, _T_Expected...) \
+    ____eqlFieldType$(_$T_Record, _$field, _$T_Expected)
+#define eqlFieldTypeUnqual$(_$T_Record, _$field, _$T_Expected...) \
     /** \
      * @brief Check if a field has the expected type \
      * \
-     * @param _T_Record The container type \
-     * @param _field The field name \
-     * @param _T_Expected The expected type \
+     * @param _$T_Record The container type \
+     * @param _$field The field name \
+     * @param _$T_Expected The expected type \
      * @return True if the field has the expected type, false otherwise \
      */ \
-    ____eqlFieldTypeUnqual$(_T_Record, _field, _T_Expected)
+    ____eqlFieldTypeUnqual$(_$T_Record, _$field, _$T_Expected)
 
-#define offsetTo(_T_Record, _field...) \
+#define offsetTo(_$T_Record, _$field...) \
     /** \
      * @brief Get byte offset of a field within a type at compile time \
      * \
-     * @param _T_Record The container type \
-     * @param _field The field name within the container \
+     * @param _$T_Record The container type \
+     * @param _$field The field name within the container \
      * @return isize Byte offset of the field \
      */ \
-    ____offsetTo(_T_Record, _field)
-#define fieldPtr(_p_record, _field) \
+    ____offsetTo(_$T_Record, _$field)
+#define fieldPtr(_$p_record, _$field) \
     /** \
      * @brief Get pointer to a field within a container \
      * \
-     * @param _p_record Pointer to the container \
-     * @param _field Name of the field to access \
+     * @param _$p_record Pointer to the container \
+     * @param _$field Name of the field to access \
      * @return Pointer to the field \
      */ \
-    ____fieldPtr(_p_record, _field)
-#define recordPtr(_p_field, _T_Record, _field...) \
+    ____fieldPtr(_$p_record, _$field)
+#define recordPtr(_$p_field, _$T_Record, _$field...) \
     /** \
      * @brief Get containing struct from pointer to member \
      * \
      * This is an optimized version that assumes type correctness. \
      * Use safeContainerOf for additional type checking. \
      * \
-     * @param _p_field Pointer to the member field \
-     * @param _T_Record Type of the container struct \
-     * @param _field Name of the member field \
+     * @param _$p_field Pointer to the member field \
+     * @param _$T_Record Type of the container struct \
+     * @param _$field Name of the member field \
      * @return Pointer to the containing struct \
      */ \
-    ____recordPtr(_p_field, _T_Record, _field)
-#define fieldPadding$(_T_Record, _field) \
+    ____recordPtr(_$p_field, _$T_Record, _$field)
+#define fieldPadding$(_$T_Record, _$field) \
     /** \
      * @brief Calculate padding before a field in bytes \
      * \
-     * @param _T_Record The container type \
-     * @param _field The field to check \
+     * @param _$T_Record The container type \
+     * @param _$field The field to check \
      * @return usize Number of padding bytes before the field \
      */ \
-    ____fieldPadding$(pp_uniqTok(offset), pp_uniqTok(align), _T_Record, _field)
+    ____fieldPadding$(pp_uniqTok(offset), pp_uniqTok(align), _$T_Record, _$field)
 
 /*========== Macros and Definitions =========================================*/
 
-#define ____FieldType$(_T_Record, _field...) TypeOf((as$(_T_Record*)(null))->_field)
-#define ____FieldTypeUnqual$(_T_Record, _field...) TypeOfUnqual((as$(_T_Record*)(null))->_field)
+#define ____FieldType$(_$T_Record, _$field...) TypeOf((as$(_$T_Record*)(null))->_$field)
+#define ____FieldTypeUnqual$(_$T_Record, _$field...) TypeOfUnqual((as$(_$T_Record*)(null))->_$field)
 
-#define ____eqlFieldType$(_T_Record, _field, _T_Expected...) eqlType$(FieldType$(_T_Record, _field), _T_Expected)
-#define ____eqlFieldTypeUnqual$(_T_Record, _field, _T_Expected...) Type_eqUnqual$(FieldTypeUnqual$(_T_Record, _field), _T_Expected)
+#define ____eqlFieldType$(_$T_Record, _$field, _$T_Expected...) eqlType$(FieldType$(_$T_Record, _$field), _$T_Expected)
+#define ____eqlFieldTypeUnqual$(_$T_Record, _$field, _$T_Expected...) Type_eqUnqual$(FieldTypeUnqual$(_$T_Record, _$field), _$T_Expected)
 
-#define ____offsetTo(_T_Record, _field...) (as$(usize)(__builtin_offsetof(_T_Record, _field)))
-#define ____fieldPtr(_p_record, _field...) (&((_p_record)->_field))
-#define ____recordPtr(_p_field, _T_Record, _field...) ptrAlignCast$((_T_Record*)(as$(u8*)(as$(FieldType$(_T_Record, _field)*)(_p_field)) - offsetTo(_T_Record, _field)))
-#define ____fieldPadding$(__offset, __align, _T_Record, _field...) ({ \
-    const usize __offset = offsetTo(_T_Record, _field); \
-    const usize __align = alignOf$(FieldType$(_T_Record, _field)); \
+#define ____offsetTo(_$T_Record, _$field...) (as$(usize)(__builtin_offsetof(_$T_Record, _$field)))
+#define ____fieldPtr(_$p_record, _$field...) (&((_$p_record)->_$field))
+#define ____recordPtr(_$p_field, _$T_Record, _$field...) ptrAlignCast$((_$T_Record*)(as$(u8*)(as$(FieldType$(_$T_Record, _$field)*)(_$p_field)) - offsetTo(_$T_Record, _$field)))
+#define ____fieldPadding$(__offset, __align, _$T_Record, _$field...) ({ \
+    const usize __offset = offsetTo(_$T_Record, _$field); \
+    const usize __align = alignOf$(FieldType$(_$T_Record, _$field)); \
     __offset - (__offset & ~(__align - 1)); \
 })
 

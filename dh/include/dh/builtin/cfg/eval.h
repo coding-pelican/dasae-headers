@@ -81,24 +81,24 @@ extern "C" {
 #define eval_on_analysis_active_only __comp_bool__eval_on_analysis_active_only
 #define eval_on_analysis_full __comp_bool__eval_on_analysis_full
 
-#define eval_analysis_only(_inner...) __comp_syn__eval_analysis_only(_inner)
-#define eval_analysis_unless(_inner...) __comp_syn__eval_analysis_unless(_inner)
+#define eval_analysis_only(_$inner...) __comp_syn__eval_analysis_only(_$inner)
+#define eval_analysis_unless(_$inner...) __comp_syn__eval_analysis_unless(_$inner)
 
 #if !defined(eval_on_comptime)
 #define eval_on_comptime __comp_bool__eval_on_comptime
 #endif /* !defined(eval_on_comptime) */
 #define eval_on_comptime__default __comp_flag__eval_on_comptime__default
 #define eval_comptime_enabled __comp_bool__eval_comptime_enabled
-#define eval_comptime_only(_inner...) __comp_syn__eval_comptime_only(_inner)
-#define eval_comptime_unless(_inner...) __comp_syn__eval_comptime_unless(_inner)
+#define eval_comptime_only(_$inner...) __comp_syn__eval_comptime_only(_$inner)
+#define eval_comptime_unless(_$inner...) __comp_syn__eval_comptime_unless(_$inner)
 
 #if !defined(eval_on_runtime)
 #define eval_on_runtime __comp_bool__eval_on_runtime
 #endif /* !defined(eval_on_runtime) */
 #define eval_on_runtime__default __comp_flag__eval_on_runtime__default
 #define eval_runtime_enabled __comp_bool__eval_runtime_enabled
-#define eval_runtime_only(_inner...) __comp_syn__eval_runtime_only(_inner)
-#define eval_runtime_unless(_inner...) __comp_syn__eval_runtime_unless(_inner)
+#define eval_runtime_only(_$inner...) __comp_syn__eval_runtime_only(_$inner)
+#define eval_runtime_unless(_$inner...) __comp_syn__eval_runtime_unless(_$inner)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -157,14 +157,14 @@ extern "C" {
 #define __comp_bool__eval_on_analysis_full \
     pp_and(eval_on_analysis, eval_analysis_is_full)
 
-#define __comp_syn__eval_analysis_only(_inner...) pp_if_(pp_and( \
+#define __comp_syn__eval_analysis_only(_$inner...) pp_if_(pp_and( \
     eval_on_analysis, \
     pp_switch_ pp_begin(eval_analysis_mode)( \
         pp_case_(eval_analysis_mode_active_only)(eval_include_level_is_0), \
         pp_case_(eval_analysis_mode_full)(pp_true) pp_end \
     ) \
-))(pp_then_(_inner))
-#define __comp_syn__eval_analysis_unless(_inner...) pp_if_(pp_not(eval_on_analysis))(pp_then_(_inner))
+))(pp_then_(_$inner))
+#define __comp_syn__eval_analysis_unless(_$inner...) pp_if_(pp_not(eval_on_analysis))(pp_then_(_$inner))
 
 #if defined(ANALYSIS)
 #undef __comp_flag__eval_on_analysis__default
@@ -183,8 +183,8 @@ extern "C" {
 #define __comp_bool__eval_on_comptime eval_on_comptime__default
 #define __comp_flag__eval_on_comptime__default pp_false
 #define __comp_bool__eval_comptime_enabled eval_on_comptime
-#define __comp_syn__eval_comptime_only(_inner...) pp_if_(eval_on_comptime)(pp_then_(_inner))
-#define __comp_syn__eval_comptime_unless(_inner...) pp_if_(pp_not(eval_on_comptime))(pp_then_(_inner))
+#define __comp_syn__eval_comptime_only(_$inner...) pp_if_(eval_on_comptime)(pp_then_(_$inner))
+#define __comp_syn__eval_comptime_unless(_$inner...) pp_if_(pp_not(eval_on_comptime))(pp_then_(_$inner))
 
 #if defined(COMP)
 #undef __comp_flag__eval_on_comptime__default
@@ -194,8 +194,8 @@ extern "C" {
 #define __comp_bool__eval_on_runtime eval_on_runtime__default
 #define __comp_flag__eval_on_runtime__default pp_not(pp_or(eval_on_analysis, eval_on_comptime))
 #define __comp_bool__eval_runtime_enabled eval_on_runtime
-#define __comp_syn__eval_runtime_only(_inner...) pp_if_(eval_on_runtime)(pp_then_(_inner))
-#define __comp_syn__eval_runtime_unless(_inner...) pp_if_(pp_not(eval_on_runtime))(pp_then_(_inner))
+#define __comp_syn__eval_runtime_only(_$inner...) pp_if_(eval_on_runtime)(pp_then_(_$inner))
+#define __comp_syn__eval_runtime_unless(_$inner...) pp_if_(pp_not(eval_on_runtime))(pp_then_(_$inner))
 
 #if defined(__cplusplus)
 } /* extern "C" */

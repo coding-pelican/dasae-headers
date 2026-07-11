@@ -61,14 +61,14 @@ fn_((thrd_Latch_timedWait(thrd_Latch* self, time_Dur timeout))(thrd_ftx_E$void))
     return thrd_Latch_timedWaitOn(&self->state, &self->done_evt, timeout);
 };
 
-fn_((thrd_Latch_timedWaitOn(atom_V$usize* state, thrd_OnceEvt* event, time_Dur timeout))(thrd_ftx_E$void)) {
+fn_((thrd_Latch_timedWaitOn(atom_V$usize* state, thrd_OnceEvt* event, time_Dur timeout))(thrd_ftx_E$void) $scope) {
     let prev_state = atom_V_pri_fetchAdd(state, thrd_Latch__is_waiting, atom_MemOrd_acquire);
     claim_assert((prev_state & thrd_Latch__is_waiting) == 0);
     if ((prev_state / thrd_Latch__one_pending) == 0) {
         return_ok({});
     }
     return thrd_OnceEvt_timedWait(event, timeout);
-};
+} $unscoped(fn);
 
 fn_((thrd_Latch_isDone(thrd_Latch* self))(bool)) {
     return thrd_Latch_isDoneOn(&self->state);

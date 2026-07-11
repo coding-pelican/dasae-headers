@@ -30,8 +30,8 @@ extern "C" {
 #endif /* !defined(TEST_enabled) */
 #define TEST__enabled_default __comp_flag__TEST__enabled_default
 
-#define TEST_only(_inner...) __comp_syn__TEST_only(_inner)
-#define TEST_unless(_inner...) __comp_syn__TEST_unless(_inner)
+#define TEST_only(_$inner...) __comp_syn__TEST_only(_$inner)
+#define TEST_unless(_$inner...) __comp_syn__TEST_unless(_$inner)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -49,8 +49,8 @@ extern "C" {
 #define __comp_flag__TEST__enabled_default pp_true
 #endif /* defined(COMP_TEST) */
 
-#define __comp_syn__TEST_only(_inner...) pp_if_(TEST_enabled)(pp_then_(_inner))
-#define __comp_syn__TEST_unless(_inner...) pp_if_(pp_not(TEST_enabled))(pp_then_(_inner))
+#define __comp_syn__TEST_only(_$inner...) pp_if_(TEST_enabled)(pp_then_(_$inner))
+#define __comp_syn__TEST_unless(_$inner...) pp_if_(pp_not(TEST_enabled))(pp_then_(_$inner))
 
 #if defined(__cplusplus)
 } /* extern "C" */

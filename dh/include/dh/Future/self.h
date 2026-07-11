@@ -12,11 +12,11 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#define Future$$(_T...) __type__Future$$(_T)
-#define Future$(_T...) __alias__Future$(_T)
-#define T_decl_Future$(_T...) __stmt__T_decl_Future$(_T)
-#define T_impl_Future$(_T...) __stmt__T_impl_Future$(_T)
-#define T_use_Future$(_T...) __stmt__T_use_Future$(_T)
+#define Future$$(_$T...) __type__Future$$(_$T)
+#define Future$(_$T...) __alias__Future$(_$T)
+#define T_decl_Future$(_$T...) __stmt__T_decl_Future$(_$T)
+#define T_impl_Future$(_$T...) __stmt__T_impl_Future$(_$T)
+#define T_use_Future$(_$T...) __stmt__T_use_Future$(_$T)
 struct Future$raw {
     T_embed$(struct {
         var_(any_future, O$P$FutureAny);
@@ -24,17 +24,10 @@ struct Future$raw {
     });
     var_(result_, V$raw) $flexible;
 };
-$attr($inline_always)
-$static fn_((Future_result(const Future$raw* self, TypeInfo type))(u_P_const$raw));
-#define T_use_Future_result$(_T...) __stmt__T_use_Future_result$(_T)
-$attr($inline_always)
-$static fn_((Future_resultMut(Future$raw* self, TypeInfo type))(u_P$raw));
-#define T_use_Future_resultMut$(_T...) __stmt__T_use_Future_resultMut$(_T)
-
 $extern fn_((Future_await(Future$raw* self, Sched sched, u_V$raw ret_mem))(u_V$raw));
-#define T_use_Future_await$(_T...) __stmt__T_use_Future_await$(_T)
+#define T_use_Future_await$(_$T...) __stmt__T_use_Future_await$(_$T)
 $extern fn_((Future_cancel(Future$raw* self, Sched sched, u_V$raw ret_mem))(u_V$raw));
-#define T_use_Future_cancel$(_T...) __stmt__T_use_Future_cancel$(_T)
+#define T_use_Future_cancel$(_$T...) __stmt__T_use_Future_cancel$(_$T)
 
 T_alias$((u_Fields_Idx$Future)(enum_((u_Fields_Idx$Future $fits($packed))(
     u_Fields_Idx_any_future$Future = 0,
@@ -48,9 +41,16 @@ $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A
     [u_Fields_Idx_result_$Future] = typeInfo$(FieldType$(Future$raw, result_)),
 });
 
+$attr($inline_always)
+$static fn_((Future_result(const Future$raw* self, TypeInfo type))(u_P_const$raw));
+#define T_use_Future_result$(_$T...) __stmt__T_use_Future_result$(_$T)
+$attr($inline_always)
+$static fn_((Future_resultMut(Future$raw* self, TypeInfo type))(u_P$raw));
+#define T_use_Future_resultMut$(_$T...) __stmt__T_use_Future_resultMut$(_$T)
+
 /*========== Macro and Definitions ==========================================*/
 
-#define __type__Future$$(_T...) \
+#define __type__Future$$(_$T...) \
     union { \
         T_embed$(struct { \
             T_embed$(struct { \
@@ -58,32 +58,32 @@ $static let_(u_Fields_type$Future, A$$(count$u_Fields_Idx$Future, TypeInfo)) = A
                 var_(type, debug_TypeInfo); \
             }); \
             T_embed$(union { \
-                var_(result, _T); \
-                var_(result_, _T) $like_ref; \
+                var_(result, _$T); \
+                var_(result_, _$T) $like_ref; \
             }); \
         }); \
         var_(as_raw, Future$raw) $flexible; \
     }
-#define __alias__Future$(_T...) tpl$(Future, _T)
-#define __stmt__T_decl_Future$(_T...) \
-    T_alias$((Future$(_T))(union Future$(_T)))
-#define __stmt__T_impl_Future$(_T...) \
-    union Future$(_T) { \
+#define __alias__Future$(_$T...) tpl$(Future, _$T)
+#define __stmt__T_decl_Future$(_$T...) \
+    T_alias$((Future$(_$T))(union Future$(_$T)))
+#define __stmt__T_impl_Future$(_$T...) \
+    union Future$(_$T) { \
         T_embed$(struct { \
             T_embed$(struct { \
                 var_(any_future, O$P$FutureAny); \
                 var_(type, debug_TypeInfo); \
             }); \
             T_embed$(union { \
-                var_(result, _T); \
-                var_(result_, _T) $like_ref; \
+                var_(result, _$T); \
+                var_(result_, _$T) $like_ref; \
             }); \
         }); \
         var_(as_raw, Future$raw) $flexible; \
     }
-#define __stmt__T_use_Future$(_T...) \
-    T_decl_Future$(_T); \
-    T_impl_Future$(_T)
+#define __stmt__T_use_Future$(_$T...) \
+    T_decl_Future$(_$T); \
+    T_impl_Future$(_$T)
 
 #include "../meta.h"
 
@@ -106,25 +106,25 @@ fn_((Future_resultMut(Future$raw* self, TypeInfo type))(u_P$raw)) {
 };
 #endif /* on_analysis_active_only || on_comptime */
 
-#define __stmt__T_use_Future_result$(_T...) /* clang-format off */  \
+#define __stmt__T_use_Future_result$(_$T...) /* clang-format off */  \
     $attr($inline_always) \
-    $static fn_((tpl$(Future_result, _T)(const Future$(_T)* self))(const _T*)) { \
-        return u_castP$((const _T*)(Future_result(self->as_raw, typeInfo$(_T)))); \
+    $static fn_((tpl$(Future_result, _$T)(const Future$(_$T)* self))(const _$T*)) { \
+        return u_castP$((const _$T*)(Future_result(self->as_raw, typeInfo$(_$T)))); \
     } /* clang-format on */
-#define __stmt__T_use_Future_resultMut$(_T...) /* clang-format off */\
+#define __stmt__T_use_Future_resultMut$(_$T...) /* clang-format off */\
     $attr($inline_always) \
-    $static fn_((tpl$(Future_resultMut, _T)(Future$(_T)* self))(_T*)) { \
-        return u_castP$((_T*)(Future_resultMut(self->as_raw, typeInfo$(_T)))); \
+    $static fn_((tpl$(Future_resultMut, _$T)(Future$(_$T)* self))(_$T*)) { \
+        return u_castP$((_$T*)(Future_resultMut(self->as_raw, typeInfo$(_$T)))); \
     } /* clang-format on */
-#define __stmt__T_use_Future_await$(_T...) /* clang-format off */ \
+#define __stmt__T_use_Future_await$(_$T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl$(Future_await, _T)(Future$(_T)* self, Sched sched))(_T)) { \
-        return u_castV$((_T)(Future_await(self->as_raw, sched, u_retV$(_T)))); \
+    $static fn_((tpl$(Future_await, _$T)(Future$(_$T)* self, Sched sched))(_$T)) { \
+        return u_castV$((_$T)(Future_await(self->as_raw, sched, u_retV$(_$T)))); \
     }/* clang-format on */
-#define __stmt__T_use_Future_cancel$(_T...) /* clang-format off */ \
+#define __stmt__T_use_Future_cancel$(_$T...) /* clang-format off */ \
     $attr($inline_always) \
-    $static fn_((tpl$(Future_cancel, _T)(Future$(_T)* self, Sched sched))(_T)) { \
-        return u_castV$((_T)(Future_cancel(self->as_raw, sched, u_retV$(_T)))); \
+    $static fn_((tpl$(Future_cancel, _$T)(Future$(_$T)* self, Sched sched))(_$T)) { \
+        return u_castV$((_$T)(Future_cancel(self->as_raw, sched, u_retV$(_$T)))); \
     } /* clang-format on */
 
 #if defined(__cplusplus)

@@ -15,14 +15,14 @@ extern "C" {
 #define var __comp_syn__var
 #define let __comp_syn__let
 
-#define var_(_ident, _T...) __comp_syn__var_(_ident, _T)
-#define let_(_ident, _T...) __comp_syn__let_(_ident, _T)
+#define var_(_$ident, _$T...) __comp_syn__var_(_$ident, _$T)
+#define let_(_$ident, _$T...) __comp_syn__let_(_$ident, _$T)
 
 #define var_const __comp_syn__var_const
 #define let_const __comp_syn__let_const
 
-#define var_const_(_ident, _T...) __comp_syn__var_const_(_ident, _T)
-#define let_const_(_ident, _T...) __comp_syn__let_const_(_ident, _T)
+#define var_const_(_$ident, _$T...) __comp_syn__var_const_(_$ident, _$T)
+#define let_const_(_$ident, _$T...) __comp_syn__let_const_(_$ident, _$T)
 
 /*========== Macros and Implementations =====================================*/
 
@@ -58,14 +58,14 @@ extern "C" {
 #warning "No support for auto type deduction in this compiler"
 #endif
 
-#define __comp_syn__var_(_ident, _T...) _T _ident
-#define __comp_syn__let_(_ident, _T...) _T const _ident
+#define __comp_syn__var_(_$ident, _$T...) _$T _$ident
+#define __comp_syn__let_(_$ident, _$T...) _$T const _$ident
 
 #define __comp_syn__var_const const var*
 #define __comp_syn__let_const let* const
 
-#define __comp_syn__var_const_(_ident, _T...) const _T _ident
-#define __comp_syn__let_const_(_ident, _T...) const _T const _ident
+#define __comp_syn__var_const_(_$ident, _$T...) const _$T _$ident
+#define __comp_syn__let_const_(_$ident, _$T...) const _$T const _$ident
 
 #if defined(__cplusplus)
 } /* extern "C" */

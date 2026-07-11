@@ -48,60 +48,60 @@ $static fn_((atom_SpinLock_tryLock(atom_SpinLock* self))(bool));
 $attr($inline_always)
 $static fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void));
 
-#define atom_V$(_T...) tpl$(atom_V, _T)
-#define atom_V$$(_T...) \
+#define atom_V$(_$T...) tpl$(atom_V, _$T)
+#define atom_V$$(_$T...) \
     struct { \
-        volatile _T raw; \
+        volatile _$T raw; \
     }
-#define T_use_atom_V$(_T...) \
-    T_decl_atom_V$(_T); \
-    T_impl_atom_V$(_T)
-#define T_decl_atom_V$(_T...) \
-    typedef struct atom_V$(_T) atom_V$(_T);
-#define T_impl_atom_V$(_T...) \
-    struct atom_V$(_T) { \
-        volatile _T raw; \
+#define T_use_atom_V$(_$T...) \
+    T_decl_atom_V$(_$T); \
+    T_impl_atom_V$(_$T)
+#define T_decl_atom_V$(_$T...) \
+    typedef struct atom_V$(_$T) atom_V$(_$T);
+#define T_impl_atom_V$(_$T...) \
+    struct atom_V$(_$T) { \
+        volatile _$T raw; \
     }
 
 #define atom_V_zero() __op__atom_V_zero()
-#define atom_V_zero$(_VT) __op__atom_V_zero$(_VT)
-#define atom_V_init(_val...) __op__atom_V_init(_val)
-#define atom_V_init$(_VT, _val...) __op__atom_V_init$(_VT, _val)
-#define atom_V_from(_val...) __op__atom_V_from(_val)
-#define atom_V_load(_p_self, _ord...) __op__atom_V_load(_p_self, _ord)
-#define atom_V_store(_p_self, _val, _ord...) __op__atom_V_store(_p_self, _val, _ord)
+#define atom_V_zero$(_$VT) __op__atom_V_zero$(_$VT)
+#define atom_V_init(_$val...) __op__atom_V_init(_$val)
+#define atom_V_init$(_$VT, _$val...) __op__atom_V_init$(_$VT, _$val)
+#define atom_V_from(_$val...) __op__atom_V_from(_$val)
+#define atom_V_load(_$p_self, _$ord...) __op__atom_V_load(_$p_self, _$ord)
+#define atom_V_store(_$p_self, _$val, _$ord...) __op__atom_V_store(_$p_self, _$val, _$ord)
 
-#define atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    __op__atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord)
-#define atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    __op__atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord)
-#define atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    __op__atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord)
-#define atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    __op__atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord)
+#define atom_V_cmpXchgWeak$(_OT, _$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
+    __op__atom_V_cmpXchgWeak$(_OT, _$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord)
+#define atom_V_cmpXchgWeak(_$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
+    __op__atom_V_cmpXchgWeak(_$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord)
+#define atom_V_cmpXchgStrong$(_OT, _$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
+    __op__atom_V_cmpXchgStrong$(_OT, _$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord)
+#define atom_V_cmpXchgStrong(_$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
+    __op__atom_V_cmpXchgStrong(_$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord)
 
-#define atom_V_fetchXchg(_p_self, _val, _ord...) __op__atom_V_fetchXchg(_p_self, _val, _ord)
-#define atom_V_pri_fetchAdd(_p_self, _val, _ord...) __op__atom_V_pri_fetchAdd(_p_self, _val, _ord)
-#define atom_V_pri_fetchSub(_p_self, _val, _ord...) __op__atom_V_pri_fetchSub(_p_self, _val, _ord)
-#define atom_V_pri_fetchMin(_p_self, _val, _ord...) __op__atom_V_pri_fetchMin(_p_self, _val, _ord)
-#define atom_V_pri_fetchMax(_p_self, _val, _ord...) __op__atom_V_pri_fetchMax(_p_self, _val, _ord)
-#define atom_V_int_fetchNand(_p_self, _val, _ord...) __op__atom_V_int_fetchNand(_p_self, _val, _ord)
-#define atom_V_int_fetchAnd(_p_self, _val, _ord...) __op__atom_V_int_fetchAnd(_p_self, _val, _ord)
-#define atom_V_int_fetchXor(_p_self, _val, _ord...) __op__atom_V_int_fetchXor(_p_self, _val, _ord)
-#define atom_V_int_fetchOr(_p_self, _val, _ord...) __op__atom_V_int_fetchOr(_p_self, _val, _ord)
+#define atom_V_fetchXchg(_$p_self, _$val, _$ord...) __op__atom_V_fetchXchg(_$p_self, _$val, _$ord)
+#define atom_V_pri_fetchAdd(_$p_self, _$val, _$ord...) __op__atom_V_pri_fetchAdd(_$p_self, _$val, _$ord)
+#define atom_V_pri_fetchSub(_$p_self, _$val, _$ord...) __op__atom_V_pri_fetchSub(_$p_self, _$val, _$ord)
+#define atom_V_pri_fetchMin(_$p_self, _$val, _$ord...) __op__atom_V_pri_fetchMin(_$p_self, _$val, _$ord)
+#define atom_V_pri_fetchMax(_$p_self, _$val, _$ord...) __op__atom_V_pri_fetchMax(_$p_self, _$val, _$ord)
+#define atom_V_int_fetchNand(_$p_self, _$val, _$ord...) __op__atom_V_int_fetchNand(_$p_self, _$val, _$ord)
+#define atom_V_int_fetchAnd(_$p_self, _$val, _$ord...) __op__atom_V_int_fetchAnd(_$p_self, _$val, _$ord)
+#define atom_V_int_fetchXor(_$p_self, _$val, _$ord...) __op__atom_V_int_fetchXor(_$p_self, _$val, _$ord)
+#define atom_V_int_fetchOr(_$p_self, _$val, _$ord...) __op__atom_V_int_fetchOr(_$p_self, _$val, _$ord)
 
-#define atom_V_pri_addFetch(_p_self, _val, _ord...) __op__atom_V_pri_addFetch(_p_self, _val, _ord)
-#define atom_V_pri_subFetch(_p_self, _val, _ord...) __op__atom_V_pri_subFetch(_p_self, _val, _ord)
-#define atom_V_pri_minFetch(_p_self, _val, _ord...) __op__atom_V_pri_minFetch(_p_self, _val, _ord)
-#define atom_V_pri_maxFetch(_p_self, _val, _ord...) __op__atom_V_pri_maxFetch(_p_self, _val, _ord)
-#define atom_V_int_nandFetch(_p_self, _val, _ord...) __op__atom_V_int_nandFetch(_p_self, _val, _ord)
-#define atom_V_int_andFetch(_p_self, _val, _ord...) __op__atom_V_int_andFetch(_p_self, _val, _ord)
-#define atom_V_int_xorFetch(_p_self, _val, _ord...) __op__atom_V_int_xorFetch(_p_self, _val, _ord)
-#define atom_V_int_orFetch(_p_self, _val, _ord...) __op__atom_V_int_orFetch(_p_self, _val, _ord)
+#define atom_V_pri_addFetch(_$p_self, _$val, _$ord...) __op__atom_V_pri_addFetch(_$p_self, _$val, _$ord)
+#define atom_V_pri_subFetch(_$p_self, _$val, _$ord...) __op__atom_V_pri_subFetch(_$p_self, _$val, _$ord)
+#define atom_V_pri_minFetch(_$p_self, _$val, _$ord...) __op__atom_V_pri_minFetch(_$p_self, _$val, _$ord)
+#define atom_V_pri_maxFetch(_$p_self, _$val, _$ord...) __op__atom_V_pri_maxFetch(_$p_self, _$val, _$ord)
+#define atom_V_int_nandFetch(_$p_self, _$val, _$ord...) __op__atom_V_int_nandFetch(_$p_self, _$val, _$ord)
+#define atom_V_int_andFetch(_$p_self, _$val, _$ord...) __op__atom_V_int_andFetch(_$p_self, _$val, _$ord)
+#define atom_V_int_xorFetch(_$p_self, _$val, _$ord...) __op__atom_V_int_xorFetch(_$p_self, _$val, _$ord)
+#define atom_V_int_orFetch(_$p_self, _$val, _$ord...) __op__atom_V_int_orFetch(_$p_self, _$val, _$ord)
 
-#define atom_V_int_setBit(_p_self, _bit, _ord...) __step__atom_V_int_setBit(_p_self, _bit, _ord)
-#define atom_V_int_resetBit(_p_self, _bit, _ord...) __step__atom_V_int_resetBit(_p_self, _bit, _ord)
-#define atom_V_int_toggleBit(_p_self, _bit, _ord...) __step__atom_V_int_toggleBit(_p_self, _bit, _ord)
+#define atom_V_int_setBit(_$p_self, _$bit, _$ord...) __step__atom_V_int_setBit(_$p_self, _$bit, _$ord)
+#define atom_V_int_resetBit(_$p_self, _$bit, _$ord...) __step__atom_V_int_resetBit(_$p_self, _$bit, _$ord)
+#define atom_V_int_toggleBit(_$p_self, _$bit, _$ord...) __step__atom_V_int_toggleBit(_$p_self, _$bit, _$ord)
 
 /*========== Macros and Definitions =========================================*/
 
@@ -161,82 +161,88 @@ fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void)) {
 #endif /* on_analysis_active_only || on_comptime */
 
 #define __op__atom_V_zero() cleared()
-#define __op__atom_V_zero$(_VT) l$((_VT)cleared())
-#define __op__atom_V_init(_val...) initial(.raw = _val)
-#define __op__atom_V_init$(_VT, _val...) l$((_VT)atom_V_init(_val))
-#define __op__atom_V_from(_val...) atom_V_init$(atom_V$$(TypeOf(_val)), _val)
-#define __op__atom_V_load(_p_self, _ord...) atom_load(&(_p_self)->raw, _ord)
-#define __op__atom_V_store(_p_self, _val, _ord...) atom_store(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_zero$(_$VT) l$((_$VT)cleared())
+#define __op__atom_V_init(_$val...) initial(.raw = _$val)
+#define __op__atom_V_init$(_$VT, _$val...) l$((_$VT)atom_V_init(_$val))
+#define __op__atom_V_from(_$val...) atom_V_init$(atom_V$$(TypeOf(_$val)), _$val)
+#define __op__atom_V_load(_$p_self, _$ord...) atom_load(&(_$p_self)->raw, _$ord)
+#define __op__atom_V_store(_$p_self, _$val, _$ord...) atom_store(&(_$p_self)->raw, _$val, _$ord)
 
-#define __op__atom_V_cmpXchgWeak$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgWeak$(_OT, &(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
-#define __op__atom_V_cmpXchgWeak(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgWeak(&(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
-#define __op__atom_V_cmpXchgStrong$(_OT, _p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgStrong$(_OT, &(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
-#define __op__atom_V_cmpXchgStrong(_p_self, _expected, _desired, _succ_ord, _fail_ord...) \
-    atom_cmpXchgStrong(&(_p_self)->raw, _expected, _desired, _succ_ord, _fail_ord)
+#define __op__atom_V_cmpXchgWeak$(_OT, _$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
+    atom_cmpXchgWeak$(_OT, &(_$p_self)->raw, _$expected, _$desired, _$succ_ord, _$fail_ord)
+#define __op__atom_V_cmpXchgWeak(_$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
+    atom_cmpXchgWeak(&(_$p_self)->raw, _$expected, _$desired, _$succ_ord, _$fail_ord)
+#define __op__atom_V_cmpXchgStrong$(_OT, _$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
+    atom_cmpXchgStrong$(_OT, &(_$p_self)->raw, _$expected, _$desired, _$succ_ord, _$fail_ord)
+#define __op__atom_V_cmpXchgStrong(_$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
+    atom_cmpXchgStrong(&(_$p_self)->raw, _$expected, _$desired, _$succ_ord, _$fail_ord)
 
-#define __op__atom_V_fetchXchg(_p_self, _val, _ord...) \
-    atom_fetchXchg(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_pri_fetchAdd(_p_self, _val, _ord...) \
-    atom_pri_fetchAdd(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_pri_fetchSub(_p_self, _val, _ord...) \
-    atom_pri_fetchSub(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_pri_fetchMin(_p_self, _val, _ord...) \
-    atom_pri_fetchMin(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_pri_fetchMax(_p_self, _val, _ord...) \
-    atom_pri_fetchMax(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_int_fetchNand(_p_self, _val, _ord...) \
-    atom_int_fetchNand(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_int_fetchAnd(_p_self, _val, _ord...) \
-    atom_int_fetchAnd(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_int_fetchXor(_p_self, _val, _ord...) \
-    atom_int_fetchXor(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_int_fetchOr(_p_self, _val, _ord...) \
-    atom_int_fetchOr(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_fetchXchg(_$p_self, _$val, _$ord...) \
+    atom_fetchXchg(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_pri_fetchAdd(_$p_self, _$val, _$ord...) \
+    atom_pri_fetchAdd(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_pri_fetchSub(_$p_self, _$val, _$ord...) \
+    atom_pri_fetchSub(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_pri_fetchMin(_$p_self, _$val, _$ord...) \
+    atom_pri_fetchMin(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_pri_fetchMax(_$p_self, _$val, _$ord...) \
+    atom_pri_fetchMax(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_int_fetchNand(_$p_self, _$val, _$ord...) \
+    atom_int_fetchNand(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_int_fetchAnd(_$p_self, _$val, _$ord...) \
+    atom_int_fetchAnd(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_int_fetchXor(_$p_self, _$val, _$ord...) \
+    atom_int_fetchXor(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_int_fetchOr(_$p_self, _$val, _$ord...) \
+    atom_int_fetchOr(&(_$p_self)->raw, _$val, _$ord)
 
-#define __op__atom_V_pri_addFetch(_p_self, _val, _ord...) \
-    atom_pri_addFetch(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_pri_subFetch(_p_self, _val, _ord...) \
-    atom_pri_subFetch(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_pri_minFetch(_p_self, _val, _ord...) \
-    atom_pri_minFetch(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_pri_maxFetch(_p_self, _val, _ord...) \
-    atom_pri_maxFetch(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_int_nandFetch(_p_self, _val, _ord...) \
-    atom_int_nandFetch(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_int_andFetch(_p_self, _val, _ord...) \
-    atom_int_andFetch(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_int_xorFetch(_p_self, _val, _ord...) \
-    atom_int_xorFetch(&(_p_self)->raw, _val, _ord)
-#define __op__atom_V_int_orFetch(_p_self, _val, _ord...) \
-    atom_int_orFetch(&(_p_self)->raw, _val, _ord)
+#define __op__atom_V_pri_addFetch(_$p_self, _$val, _$ord...) \
+    atom_pri_addFetch(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_pri_subFetch(_$p_self, _$val, _$ord...) \
+    atom_pri_subFetch(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_pri_minFetch(_$p_self, _$val, _$ord...) \
+    atom_pri_minFetch(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_pri_maxFetch(_$p_self, _$val, _$ord...) \
+    atom_pri_maxFetch(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_int_nandFetch(_$p_self, _$val, _$ord...) \
+    atom_int_nandFetch(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_int_andFetch(_$p_self, _$val, _$ord...) \
+    atom_int_andFetch(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_int_xorFetch(_$p_self, _$val, _$ord...) \
+    atom_int_xorFetch(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_int_orFetch(_$p_self, _$val, _$ord...) \
+    atom_int_orFetch(&(_$p_self)->raw, _$val, _$ord)
 
-#define __step__atom_V_int_setBit(_p_self, _bit, _ord...) \
-    ____atom_V_int_setBit(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
-#define ____atom_V_int_setBit(__mask, __val, _p_self, _bit, _ord...) ({ \
-    typedef TypeOf((_p_self)->raw) SelfType; \
-    let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
-    let_(__val, SelfType) = atom_V_int_fetchOr(_p_self, __mask, _ord); \
+#define __step__atom_V_int_setBit(_$p_self, _$bit, _$ord...) \
+    ____atom_V_int_setBit(pp_uniqTok(mask), pp_uniqTok(val), _$p_self, _$bit, _$ord)
+#define ____atom_V_int_setBit(__mask, __val, _$p_self, _$bit, _$ord...) ({ \
+    typedef TypeOf((_$p_self)->raw) SelfType; \
+    let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _$bit); \
+    let_(__val, SelfType) = atom_V_int_fetchOr(_$p_self, __mask, _$ord); \
     ((__val & __mask) != 0); \
 })
-#define __step__atom_V_int_resetBit(_p_self, _bit, _ord...) \
-    ____atom_V_int_resetBit(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
-#define ____atom_V_int_resetBit(__mask, __val, _p_self, _bit, _ord...) ({ \
-    typedef TypeOf((_p_self)->raw) SelfType; \
-    let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
-    let_(__val, SelfType) = atom_V_int_fetchAnd(_p_self, ~__mask, _ord); \
+#define __step__atom_V_int_resetBit(_$p_self, _$bit, _$ord...) \
+    ____atom_V_int_resetBit(pp_uniqTok(mask), pp_uniqTok(val), _$p_self, _$bit, _$ord)
+#define ____atom_V_int_resetBit(__mask, __val, _$p_self, _$bit, _$ord...) ({ \
+    typedef TypeOf((_$p_self)->raw) SelfType; \
+    let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _$bit); \
+    let_(__val, SelfType) = atom_V_int_fetchAnd(_$p_self, ~__mask, _$ord); \
     ((__val & __mask) != 0); \
 })
-#define __step__atom_V_int_toggleBit(_p_self, _bit, _ord...) \
-    ____atom_V_int_toggleBit(pp_uniqTok(mask), pp_uniqTok(val), _p_self, _bit, _ord)
-#define ____atom_V_int_toggleBit(__mask, __val, _p_self, _bit, _ord...) ({ \
-    typedef TypeOf((_p_self)->raw) SelfType; \
-    let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _bit); \
-    let_(__val, SelfType) = atom_V_int_fetchXor(_p_self, __mask, _ord); \
+#define __step__atom_V_int_toggleBit(_$p_self, _$bit, _$ord...) \
+    ____atom_V_int_toggleBit(pp_uniqTok(mask), pp_uniqTok(val), _$p_self, _$bit, _$ord)
+#define ____atom_V_int_toggleBit(__mask, __val, _$p_self, _$bit, _$ord...) ({ \
+    typedef TypeOf((_$p_self)->raw) SelfType; \
+    let_(__mask, SelfType) = int_shl(as$(SelfType)(1), _$bit); \
+    let_(__val, SelfType) = atom_V_int_fetchXor(_$p_self, __mask, _$ord); \
     ((__val & __mask) != 0); \
 })
+
+/* clang-format off */
+T_use_atom_V$(bool);
+T_use_atom_V$(u8); T_use_atom_V$(u16); T_use_atom_V$(u32);
+T_use_atom_V$(ulong); T_use_atom_V$(u64); T_use_atom_V$(usize);
+/* clang-format on */
 
 #if defined(__cplusplus)
 } /* extern "C" */

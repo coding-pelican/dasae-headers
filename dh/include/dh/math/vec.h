@@ -4319,7 +4319,7 @@ $static m_V3i32 m_V3i32_clamp(m_V3i32 v, m_V3i32 min, m_V3i32 max) {
 $attr($inline_always)
 $static m_V3i32 m_V3i32_wrap(m_V3i32 v, m_V3i32 min, m_V3i32 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), int_wrap);
+    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3Divisor(max), int_wrap);
     return m_simd_to3$(m_V3i32, result);
 #endif /* arch_simd_supported */
     return m_V3i32_of(
@@ -5024,7 +5024,7 @@ $static m_V3i64 m_V3i64_clamp(m_V3i64 v, m_V3i64 min, m_V3i64 max) {
 $attr($inline_always)
 $static m_V3i64 m_V3i64_wrap(m_V3i64 v, m_V3i64 min, m_V3i64 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), int_wrap);
+    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3Divisor(max), int_wrap);
     return m_simd_to3$(m_V3i64, result);
 #endif /* arch_simd_supported */
     return m_V3i64_of(
@@ -6383,7 +6383,7 @@ $static m_V3f32 m_V3f32_clamp01(m_V3f32 v) {
 $attr($inline_always)
 $static m_V3f32 m_V3f32_wrap(m_V3f32 v, m_V3f32 min, m_V3f32 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), flt_wrap);
+    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3Divisor(max), flt_wrap);
     return m_simd_to3$(m_V3f32, result);
 #endif /* arch_simd_supported */
     return m_V3f32_of(
@@ -7372,7 +7372,7 @@ $static m_V3f64 m_V3f64_clamp01(m_V3f64 v) {
 $attr($inline_always)
 $static m_V3f64 m_V3f64_wrap(m_V3f64 v, m_V3f64 min, m_V3f64 max) {
 #if arch_simd_supported
-    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3(max), flt_wrap);
+    let result = simd_V_map3(m_simd_from3(v), m_simd_from3(min), m_simd_from3Divisor(max), flt_wrap);
     return m_simd_to3$(m_V3f64, result);
 #endif /* arch_simd_supported */
     return m_V3f64_of(

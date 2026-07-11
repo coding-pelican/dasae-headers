@@ -75,29 +75,29 @@ T_alias$((CompHash32)(struct CompHash32 {
 }));
 
 /// @brief  Directly calculate hash value from a null-terminated string
-/// @param  raw_str Null-terminated string to hash
+/// @param  _$raw_str Null-terminated string to hash
 /// @return usize-bit hash value
 /// @example
 ///   usize hash = compHash("hello");
 ///   // hash now contains the usize-bit hash value for "hello"
-#define compHash(_raw_str...) \
-    ____compHash(_raw_str)
+#define compHash(_$raw_str...) \
+    ____compHash(_$raw_str)
 /// @brief  Directly calculate hash value from a null-terminated string
-/// @param  raw_str Null-terminated string to hash
+/// @param  _$raw_str Null-terminated string to hash
 /// @return 64-bit hash value
 /// @example
 ///   u64 hash = compHash64("hello");
 ///   // hash now contains the 64-bit hash value for "hello"
-#define compHash64(_raw_str...) \
-    ____compHash64(_raw_str)
+#define compHash64(_$raw_str...) \
+    ____compHash64(_$raw_str)
 /// @brief  Directly calculate hash value from a null-terminated string
-/// @param  raw_str Null-terminated string to hash
+/// @param  _$raw_str Null-terminated string to hash
 /// @return 32-bit hash value
 /// @example
 ///   u32 hash = compHash32("hello");
 ///   // hash now contains the 32-bit hash value for "hello"
-#define compHash32(_raw_str...) \
-    ____compHash32(_raw_str)
+#define compHash32(_$raw_str...) \
+    ____compHash32(_$raw_str)
 
 /// @brief  Create a CompHash from a string
 /// @param  str String to hash
@@ -179,17 +179,17 @@ $static fn_((CompHash32_calc(S_const$u8 str))(u32));
 
 /*========== Macros and Definitions =========================================*/
 
-#define ____compHash(_raw_str...) \
+#define ____compHash(_$raw_str...) \
     /** Calculate hash value from a compile-time string literal */ \
-    CompHash_calc(u8_l(_raw_str))
+    CompHash_calc(u8_l(_$raw_str))
 
-#define ____compHash64(_raw_str...) \
+#define ____compHash64(_$raw_str...) \
     /** Calculate hash value from a compile-time string literal */ \
-    CompHash64_calc(u8_l(_raw_str))
+    CompHash64_calc(u8_l(_$raw_str))
 
-#define ____compHash32(_raw_str...) \
+#define ____compHash32(_$raw_str...) \
     /** Calculate hash value from a compile-time string literal */ \
-    CompHash32_calc(u8_l(_raw_str))
+    CompHash32_calc(u8_l(_$raw_str))
 
 #if on_analysis_active_only || on_comptime
 fn_((CompHash_from(S_const$u8 str))(CompHash)) {
