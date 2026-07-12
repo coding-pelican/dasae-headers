@@ -2,40 +2,45 @@
 
 /* --- Pthreads --- */
 
-#if thrd_RWLock__use_pthread
+#if thrd_RWLock_use_pthread
 fn_((thrd_RWLock_init(void))(thrd_RWLock)) {
     return (thrd_RWLock){
         .impl = PTHREAD_RWLOCK_INITIALIZER
     };
 };
-
 fn_((thrd_RWLock_fini(thrd_RWLock* self))(void)) {
     pthread_rwlock_destroy(&self->impl);
-};
-
-fn_((thrd_RWLock_lock(thrd_RWLock* self))(void)) {
-    let rc = pthread_rwlock_wrlock(&self->impl);
-    claim_assert(rc == (/*SUCCESS*/ 0));
 };
 
 fn_((thrd_RWLock_tryLock(thrd_RWLock* self))(bool)) {
     return pthread_rwlock_trywrlock(&self->impl) == (/*SUCCESS*/ 0);
 };
-
-fn_((thrd_RWLock_unlock(thrd_RWLock* self))(void)) {
-    let rc = pthread_rwlock_unlock(&self->impl);
+fn_((thrd_RWLock_lock(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void)) {
+    let_ignore = self;
+    let_ignore = cancel_src;
+    claim_unreachable;
+};
+fn_((thrd_RWLock_lockProtcd(thrd_RWLock* self))(void)) {
+    let rc = pthread_rwlock_wrlock(&self->impl);
     claim_assert(rc == (/*SUCCESS*/ 0));
 };
-
-fn_((thrd_RWLock_lockShared(thrd_RWLock* self))(void)) {
-    let rc = pthread_rwlock_rdlock(&self->impl);
+fn_((thrd_RWLock_unlock(thrd_RWLock* self))(void)) {
+    let rc = pthread_rwlock_unlock(&self->impl);
     claim_assert(rc == (/*SUCCESS*/ 0));
 };
 
 fn_((thrd_RWLock_tryLockShared(thrd_RWLock* self))(bool)) {
     return pthread_rwlock_tryrdlock(&self->impl) == (/*SUCCESS*/ 0);
 };
-
+fn_((thrd_RWLock_lockShared(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void)) {
+    let_ignore = self;
+    let_ignore = cancel_src;
+    claim_unreachable;
+};
+fn_((thrd_RWLock_lockSharedProtcd(thrd_RWLock* self))(void)) {
+    let rc = pthread_rwlock_rdlock(&self->impl);
+    claim_assert(rc == (/*SUCCESS*/ 0));
+};
 fn_((thrd_RWLock_unlockShared(thrd_RWLock* self))(void)) {
     let rc = pthread_rwlock_unlock(&self->impl);
     claim_assert(rc == (/*SUCCESS*/ 0));
@@ -62,102 +67,95 @@ fn_((thrd_RWLock_init(void))(thrd_RWLock)) {
         .impl = {
             .state = 0,
             .mtx = thrd_Mtx_init(),
-            .sem = thrd_Sem_init(),
+            .cond = thrd_Cond_init(),
         }
     };
 };
-
 fn_((thrd_RWLock_fini(thrd_RWLock* self))(void)) {
     self->impl.state = 0;
-    thrd_Sem_fini(&self->impl.sem);
+    thrd_Cond_fini(&self->impl.cond);
     thrd_Mtx_fini(&self->impl.mtx);
-};
-
-fn_((thrd_RWLock_lock(thrd_RWLock* self))(void)) {
-    let_ignore = atom_pri_fetchAdd(&self->impl.state, thrd_RWLock__writer, atom_MemOrd_seq_cst);
-    thrd_Mtx_lock(&self->impl.mtx);
-    // Add IS_WRITING and subtract WRITER atomically: IS_WRITING - WRITER
-    // Note: This uses wrapping subtraction semantics
-    let state = atom_pri_fetchAdd(
-        &self->impl.state,
-        thrd_RWLock__is_writing - thrd_RWLock__writer,
-        atom_MemOrd_seq_cst
-    );
-    if ((state & thrd_RWLock__reader_mask) != 0) {
-        thrd_Sem_wait(&self->impl.sem);
-    }
 };
 
 fn_((thrd_RWLock_tryLock(thrd_RWLock* self))(bool)) {
     if (thrd_Mtx_tryLock(&self->impl.mtx)) {
-        let state = atom_load(&self->impl.state, atom_MemOrd_seq_cst);
-        if ((state & thrd_RWLock__reader_mask) == 0) {
-            let_ignore = atom_int_fetchOr(&self->impl.state, thrd_RWLock__is_writing, atom_MemOrd_seq_cst);
+        if ((self->impl.state & (thrd_RWLock__is_writing | thrd_RWLock__reader_mask)) == 0) {
+            self->impl.state |= thrd_RWLock__is_writing;
+            thrd_Mtx_unlock(&self->impl.mtx);
             return true;
         }
         thrd_Mtx_unlock(&self->impl.mtx);
     }
     return false;
 };
-
-fn_((thrd_RWLock_unlock(thrd_RWLock* self))(void)) {
-    let_ignore = atom_int_fetchAnd(&self->impl.state, ~thrd_RWLock__is_writing, atom_MemOrd_seq_cst);
+fn_((thrd_RWLock_lock(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $guard) {
+    try_(thrd_Mtx_lock(&self->impl.mtx, cancel_src));
+    self->impl.state += thrd_RWLock__writer;
+    while ((self->impl.state & (thrd_RWLock__is_writing | thrd_RWLock__reader_mask)) != 0) {
+        catch_((thrd_Cond_wait(&self->impl.cond, &self->impl.mtx, cancel_src))(err, {
+            self->impl.state -= thrd_RWLock__writer;
+            thrd_Cond_broadcast(&self->impl.cond);
+            thrd_Mtx_unlock(&self->impl.mtx);
+            return_err(err);
+        }));
+    }
+    self->impl.state += thrd_RWLock__is_writing - thrd_RWLock__writer;
+    thrd_Mtx_unlock(&self->impl.mtx);
+    return_ok({});
+} $unguarded(fn);
+fn_((thrd_RWLock_lockProtcd(thrd_RWLock* self))(void)) {
+    thrd_Mtx_lockProtcd(&self->impl.mtx);
+    self->impl.state += thrd_RWLock__writer;
+    while ((self->impl.state & (thrd_RWLock__is_writing | thrd_RWLock__reader_mask)) != 0) {
+        thrd_Cond_waitProtcd(&self->impl.cond, &self->impl.mtx);
+    }
+    self->impl.state += thrd_RWLock__is_writing - thrd_RWLock__writer;
     thrd_Mtx_unlock(&self->impl.mtx);
 };
-
-fn_((thrd_RWLock_lockShared(thrd_RWLock* self))(void)) {
-    var state = atom_load(&self->impl.state, atom_MemOrd_seq_cst);
-    // Fast path: try to acquire read lock without mutex if no writers
-    while ((state & (thrd_RWLock__is_writing | thrd_RWLock__writer_mask)) == 0) {
-        let result = atom_cmpXchgWeak(
-            &self->impl.state,
-            state,
-            state + thrd_RWLock__reader,
-            atom_MemOrd_seq_cst,
-            atom_MemOrd_seq_cst
-        );
-        if (isNone(result)) {
-            return;
-        }
-        state = unwrap_(result);
-    }
-    // Slow path: acquire mutex to add reader (waits for writer to finish)
-    thrd_Mtx_lock(&self->impl.mtx);
-    let_ignore = atom_pri_fetchAdd(&self->impl.state, thrd_RWLock__reader, atom_MemOrd_seq_cst);
+fn_((thrd_RWLock_unlock(thrd_RWLock* self))(void)) {
+    thrd_Mtx_lockProtcd(&self->impl.mtx);
+    self->impl.state &= ~thrd_RWLock__is_writing;
+    thrd_Cond_broadcast(&self->impl.cond);
     thrd_Mtx_unlock(&self->impl.mtx);
 };
 
 fn_((thrd_RWLock_tryLockShared(thrd_RWLock* self))(bool)) {
-    let state = atom_load(&self->impl.state, atom_MemOrd_seq_cst);
-    // Fast path: no writers waiting or writing
-    if ((state & (thrd_RWLock__is_writing | thrd_RWLock__writer_mask)) == 0) {
-        let result = atom_cmpXchgStrong(
-            &self->impl.state,
-            state,
-            state + thrd_RWLock__reader,
-            atom_MemOrd_seq_cst,
-            atom_MemOrd_seq_cst
-        );
-        if (isNone(result)) {
+    if (thrd_Mtx_tryLock(&self->impl.mtx)) {
+        if ((self->impl.state & (thrd_RWLock__is_writing | thrd_RWLock__writer_mask)) == 0) {
+            self->impl.state += thrd_RWLock__reader;
+            thrd_Mtx_unlock(&self->impl.mtx);
             return true;
         }
-    }
-    // Slow path: acquire mutex to add reader
-    if (thrd_Mtx_tryLock(&self->impl.mtx)) {
-        let_ignore = atom_pri_fetchAdd(&self->impl.state, thrd_RWLock__reader, atom_MemOrd_seq_cst);
         thrd_Mtx_unlock(&self->impl.mtx);
-        return true;
     }
     return false;
 };
-
-fn_((thrd_RWLock_unlockShared(thrd_RWLock* self))(void)) {
-    let state = atom_pri_fetchSub(&self->impl.state, thrd_RWLock__reader, atom_MemOrd_seq_cst);
-    // If we were the last reader and a writer is waiting, signal the semaphore
-    let was_last_reader = (state & thrd_RWLock__reader_mask) == thrd_RWLock__reader;
-    let writer_is_waiting = (state & thrd_RWLock__is_writing) != 0;
-    if (was_last_reader && writer_is_waiting) {
-        thrd_Sem_post(&self->impl.sem);
+fn_((thrd_RWLock_lockShared(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $guard) {
+    try_(thrd_Mtx_lock(&self->impl.mtx, cancel_src));
+    while ((self->impl.state & (thrd_RWLock__is_writing | thrd_RWLock__writer_mask)) != 0) {
+        catch_((thrd_Cond_wait(&self->impl.cond, &self->impl.mtx, cancel_src))(err, {
+            thrd_Mtx_unlock(&self->impl.mtx);
+            return_err(err);
+        }));
     }
+    self->impl.state += thrd_RWLock__reader;
+    thrd_Mtx_unlock(&self->impl.mtx);
+    return_ok({});
+} $unguarded(fn);
+fn_((thrd_RWLock_lockSharedProtcd(thrd_RWLock* self))(void)) {
+    thrd_Mtx_lockProtcd(&self->impl.mtx);
+    while ((self->impl.state & (thrd_RWLock__is_writing | thrd_RWLock__writer_mask)) != 0) {
+        thrd_Cond_waitProtcd(&self->impl.cond, &self->impl.mtx);
+    }
+    self->impl.state += thrd_RWLock__reader;
+    thrd_Mtx_unlock(&self->impl.mtx);
+};
+fn_((thrd_RWLock_unlockShared(thrd_RWLock* self))(void)) {
+    thrd_Mtx_lockProtcd(&self->impl.mtx);
+    self->impl.state -= thrd_RWLock__reader;
+    if ((self->impl.state & thrd_RWLock__reader_mask) == 0) {
+        thrd_Cond_broadcast(&self->impl.cond);
+    }
+    thrd_Mtx_unlock(&self->impl.mtx);
 };
 #endif

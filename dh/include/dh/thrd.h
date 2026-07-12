@@ -30,10 +30,12 @@ extern "C" {
 #include "thrd/common.h"
 #include "thrd/Self.h"
 
+#include "thrd/wait.h"
 #include "thrd/ftx.h"
 
 #include "thrd/Mtx.h"
 #include "thrd/Cond.h"
+#include "thrd/Waiter.h"
 #include "thrd/Sem.h"
 #include "thrd/RWLock.h"
 
@@ -49,7 +51,7 @@ extern "C" {
 #include "thrd/Group.h"
 
 #include "thrd/chan.h"
-#include "thrd/wait.h"
+#include "thrd/Select.h"
 
 #include "thrd/Que.h"
 #include "thrd/SPSC.h"
@@ -58,7 +60,6 @@ extern "C" {
 #include "thrd/MPMC.h"
 
 #include "thrd/Batch.h"
-#include "thrd/Select.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

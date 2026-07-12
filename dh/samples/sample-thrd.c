@@ -58,10 +58,11 @@ $static fn_((demoThrdDeferCheck(time_Awake time, time_Dur wait, thrd_CancelTok c
         let start = time_Awake_now(time),
         time_Dur_lt(time_Awake_Inst_elapsed(start, time), wait)
     ) {
-        if_some_void((catch_none(thrd_CancelTok_timedWait(cancel, time_Dur_fromMillis(1))))) {
+        if (thrd_CancelTok_tryWait(cancel)) {
             report(u8_l(nameOf(demoThrdDeferCheck)), u8_l("canceled"));
             return_(cnt);
         }
+        catch_((time_Awake_sleep(time, time_Dur_fromMillis(1)))($ignore, $do_nothing));
         cnt++;
     }
     report(u8_l(nameOf(demoThrdDeferCheck)), u8_l("cnt: {:d}"), cnt);
@@ -77,7 +78,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
-    let spawn_cfg = with_((thrd_SpawnCfg_default)((.gpa)(some(gpa))));
+    let spawn_cfg = thrd_SpawnCfg_default(gpa);
 
     var demo_thrd = clsr_((demoThrd)(clock, time_Dur_sec));
     let thrd = try_(thrd_spawn$i32(spawn_cfg, demo_thrd.as_base));

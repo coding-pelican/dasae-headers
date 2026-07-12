@@ -70,7 +70,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     defer_(heap_Sys_fini(&heap));
 
     let_(spawn_cfg, thrd_SpawnCfg) = {
-        .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+        .gpa = heap_Sys_alctr(&heap),
         .stack_size = thrd_SpawnCfg_default_stack_size,
     };
     var buffer = SharedBuf_init();

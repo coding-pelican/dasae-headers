@@ -22,7 +22,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "Mtx.h"
-#include "Sem.h"
+#include "Cond.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -34,29 +34,35 @@ extern "C" {
 #define thrd_RWLock__use_pthread_default __comp_bool__thrd_RWLock__use_pthread_default
 #define __comp_bool__thrd_RWLock__use_pthread_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
-        pp_default_(thrd_use_pthread) \
+        pp_default_(pp_false) \
     ) pp_end \
 )
 
 struct thrd_RWLock__Impl pp_if_(thrd_RWLock_use_pthread)(
     pp_then_({
-        var_(unused_, Void);
+        var_(_unused, Void);
     }),
     pp_else_({
         var_(state, usize);
         var_(mtx, thrd_Mtx);
-        var_(sem, thrd_Sem);
+        var_(cond, thrd_Cond);
     }));
 struct thrd_RWLock pp_if_(thrd_RWLock_use_pthread)(
     pp_then_({ var_(impl, pthread_rwlock_t); }),
     pp_else_({ var_(impl, thrd_RWLock__Impl); }));
 $extern fn_((thrd_RWLock_init(void))(thrd_RWLock));
 $extern fn_((thrd_RWLock_fini(thrd_RWLock* self))(void));
-$extern fn_((thrd_RWLock_lock(thrd_RWLock* self))(void));
+
 $extern fn_((thrd_RWLock_tryLock(thrd_RWLock* self))(bool));
+$attr($must_check)
+$extern fn_((thrd_RWLock_lock(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_RWLock_lockProtcd(thrd_RWLock* self))(void));
 $extern fn_((thrd_RWLock_unlock(thrd_RWLock* self))(void));
-$extern fn_((thrd_RWLock_lockShared(thrd_RWLock* self))(void));
+
 $extern fn_((thrd_RWLock_tryLockShared(thrd_RWLock* self))(bool));
+$attr($must_check)
+$extern fn_((thrd_RWLock_lockShared(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_RWLock_lockSharedProtcd(thrd_RWLock* self))(void));
 $extern fn_((thrd_RWLock_unlockShared(thrd_RWLock* self))(void));
 
 #if defined(__cplusplus)

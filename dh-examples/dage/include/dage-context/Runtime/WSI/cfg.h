@@ -79,7 +79,7 @@ struct dage_Runtime_WSI_Image pp_switch_((plat_type)(
         var_(pixels, S$u32); /* Pixel buffer (owned, allocated via gpa) */
     })),
     pp_default_({
-        var_(unused_, Void);
+        var_(_unused, Void);
     })
 ));
 
@@ -102,7 +102,7 @@ struct dage_Runtime_WSI_Impl pp_switch_((plat_type)(
         var_(screen, i32);
         var_(wm_delete_window, u64); /* Atom */
     })),
-    pp_default_({ var_(unused_, Void); })
+    pp_default_({ var_(_unused, Void); })
 ));
 
 #if defined(__cplusplus)

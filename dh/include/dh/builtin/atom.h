@@ -32,8 +32,13 @@ typedef enum $packed atom_MemOrd {
 } atom_MemOrd;
 
 #define atom_fence(_$ord...) __op__atom_fence(_$ord)
+
 #define atom_load(_$ptr, _$ord...) __op__atom_load(pp_uniqTok(ret), _$ptr, _$ord)
 #define atom_store(_$ptr, _$val, _$ord...) __op__atom_store(_$ptr, _$val, _$ord)
+
+#define atom_alwaysLockFreeSize(_$size) __op__atom_alwaysLockFreeSize(_$size)
+#define atom_alwaysLockFree$(_$T...) __op__atom_alwaysLockFree$(_$T)
+#define atom_isLockFree(_$ptr) __op__atom_isLockFree(_$ptr)
 
 /// Compare-and-Swap
 #define atom_cmpXchgWeak$(_$OT, _$ptr, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
@@ -79,6 +84,7 @@ typedef enum $packed atom_MemOrd {
 /*========== Macros and Definitions =========================================*/
 
 #define __op__atom_fence(_$ord...) __atomic_thread_fence(_$ord)
+
 #define __op__atom_load(__ret, _$ptr, _$ord...) local_({ \
     var __ret = l0$((TypeOf(*_$ptr))); \
     __atomic_load(_$ptr, &__ret, as$(int)(as$(atom_MemOrd)(_$ord))); \
@@ -87,14 +93,12 @@ typedef enum $packed atom_MemOrd {
 #define __op__atom_store(_$ptr, _$val, _$ord...) \
     __atomic_store(_$ptr, &from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
 
-#if UNUSED_CODE
-#define __op__atom_alwaysLockFree_size(_size) \
-    __atomic_always_lock_free((_size), null)
+#define __op__atom_alwaysLockFreeSize(_$size) \
+    bool_(__atomic_always_lock_free((_$size), null))
 #define __op__atom_alwaysLockFree$(_T...) \
-    __op__atom_alwaysLockFree_size(sizeOf$(_T))
+    __op__atom_alwaysLockFreeSize(sizeOf$(_T))
 #define __op__atom_isLockFree(_$ptr) \
-    __atomic_is_lock_free(sizeOf$(TypeOf(*(_$ptr))), (_$ptr))
-#endif /* UNUSED_CODE */
+    bool_(__atomic_is_lock_free(sizeOf$(TypeOf(*(_$ptr))), (_$ptr)))
 
 #define __op__atom_cmpXchgWeak$( \
     __is_succ, __expected, \
@@ -228,18 +232,49 @@ typedef enum $packed atom_MemOrd {
 #define __comp_bool__atom_has_min_max_fetch 0
 #endif
 #if __comp_bool__atom_has_min_max_fetch
-#define __op__atom_pri_minFetch(_$ptr, _$val, _$ord...) \
+#define __op__atom_pri_minFetch(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) \
     __atomic_min_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
-#define __op__atom_pri_maxFetch(_$ptr, _$val, _$ord...) \
+#define __op__atom_pri_maxFetch(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) \
     __atomic_max_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
 #else
-#define __op__atom_cmpXchgFailOrd(_$ord...) ( \
-    (as$(atom_MemOrd)(_$ord) == atom_MemOrd_release)   ? atom_MemOrd_monotonic \
-    : (as$(atom_MemOrd)(_$ord) == atom_MemOrd_acq_rel) ? atom_MemOrd_acquire \
-                                                       : as$(atom_MemOrd)(_$ord) \
-)
-#define __op__atom_pri_fetchMin(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) /* TODO: Implement __op__atom_pri_fetchMin */
-#define __op__atom_pri_fetchMax(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) /* TODO: Implement __op__atom_pri_fetchMax */
+#define __op__atom_pri_minFetch(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) local_({ \
+    let __ptr = (_$ptr); \
+    typedef TypeOfUnqual(*__ptr) AtomType; \
+    let_(__operand, AtomType) = _$val; \
+    var_(__expected, AtomType) = atom_load(__ptr, atom_MemOrd_monotonic); \
+    while (true) { \
+        var_(__desired, AtomType) = flt_isNaN(__expected)    ? __operand \
+                                  : flt_isNaN(__operand)     ? __expected \
+                                  : (__operand < __expected) ? __operand \
+                                                             : __expected; \
+        if (__atomic_compare_exchange( \
+                __ptr, &__expected, &__desired, false, \
+                as$(int)(as$(atom_MemOrd)(_$ord)), as$(int)(__op__atom_cmpXchgFailOrd(_$ord)) \
+            )) { \
+            break; \
+        } \
+    } \
+    local_return_(__desired); \
+})
+#define __op__atom_pri_maxFetch(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) local_({ \
+    let __ptr = (_$ptr); \
+    typedef TypeOfUnqual(*__ptr) AtomType; \
+    let_(__operand, AtomType) = _$val; \
+    var_(__expected, AtomType) = atom_load(__ptr, atom_MemOrd_monotonic); \
+    while (true) { \
+        var_(__desired, AtomType) = flt_isNaN(__expected)    ? __operand \
+                                  : flt_isNaN(__operand)     ? __expected \
+                                  : (__operand > __expected) ? __operand \
+                                                             : __expected; \
+        if (__atomic_compare_exchange( \
+                __ptr, &__expected, &__desired, false, \
+                as$(int)(as$(atom_MemOrd)(_$ord)), as$(int)(__op__atom_cmpXchgFailOrd(_$ord)) \
+            )) { \
+            break; \
+        } \
+    } \
+    local_return_(__desired); \
+})
 #endif
 #define __op__atom_int_nandFetch(_$ptr, _$val, _$ord...) \
     __atomic_nand_fetch(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))

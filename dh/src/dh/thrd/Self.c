@@ -20,13 +20,6 @@ $static fn_((thrd__startAlloc(
     bool destroy_clsr,
     u_P$raw owned_clsr
 ))(mem_E$u_P$raw));
-$attr($must_check)
-$extern fn_((thrd__spawnOwned(
-    thrd_SpawnCfg cfg,
-    Clsr$raw* clsr,
-    TypeInfo ret_type,
-    u_P$raw owned_clsr
-))(thrd_spawn_E$thrd_Self));
 $static fn_((thrd__startFree(thrd__Start* start))(void));
 
 pp_if_(pp_true)(pp_then_(
@@ -297,7 +290,7 @@ fn_((thrd_spawn(thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(thrd_spaw
     return thrd__spawn(cfg, clsr, ret_type, false, u_anyP(null));
 };
 
-fn_((thrd__spawnOwned(
+fn_((thrd_spawnOwned(
     thrd_SpawnCfg cfg,
     Clsr$raw* clsr,
     TypeInfo ret_type,
@@ -322,7 +315,7 @@ fn_((thrd__startAlloc(
     bool destroy_clsr,
     u_P$raw owned_clsr
 ))(mem_E$u_P$raw) $scope) {
-    let gpa = orelse_((cfg.gpa)(return_err(E_cause$Unexpected())));
+    let gpa = mem_Alctr_ensureValid(cfg.gpa);
     let raw = try_(mem_Alctr_create($trace gpa, typeInfo$(thrd__Start)));
     let start = u_castP$((thrd__Start*)(raw));
     asg_l((start)({
@@ -620,6 +613,9 @@ T_use_atom_V$(i32);
 typedef struct thrd__linux_Meta {
     var_(clsr, Clsr$raw*);
     var_(ret_type, TypeInfo);
+    var_(gpa, mem_Alctr);
+    var_(destroy_clsr, bool);
+    var_(owned_clsr, u_P$raw);
     var_(map, S$raw);
     var_(completion, atom_V$thrd__linux_Completion);
     var_(parent_tid, i32);
@@ -673,8 +669,7 @@ fn_((thrd__linux_spawn(
     u_P$raw owned_clsr
 ))(thrd_spawn_E$thrd_Self) $guard) {
     claim_assert_nonnull(clsr);
-    let_ignore = destroy_clsr;
-    let_ignore = owned_clsr;
+    cfg.gpa = mem_Alctr_ensureValid(cfg.gpa);
     let page_size = mem_page_size;
     let stack_size = mem_alignFwd(pri_max(page_size, cfg.stack_size), page_size);
     let meta_size = mem_alignFwd(sizeOf$(thrd__linux_Meta), alignOf$(thrd__linux_Meta));
@@ -688,6 +683,9 @@ fn_((thrd__linux_spawn(
     *meta = (thrd__linux_Meta){
         .clsr = clsr,
         .ret_type = ret_type,
+        .gpa = cfg.gpa,
+        .destroy_clsr = destroy_clsr,
+        .owned_clsr = owned_clsr,
         .map = P_prefix$((S$raw)(map_base)(map_size)),
         .completion = atom_V_init(thrd__linux_Completion_running),
         .parent_tid = 0,
@@ -714,6 +712,9 @@ $static fn_((thrd__linux_freeAndExit(thrd__linux_Meta* meta))(void));
 fn_((thrd__linux_entry(P$raw arg))(i32)) {
     let meta = ensureNonnull(as$(thrd__linux_Meta*)(arg));
     clsr_invokeToComplete(ensureNonnull(meta->clsr), meta->ret_type);
+    if (meta->destroy_clsr) {
+        mem_Alctr_destroy($trace meta->gpa, meta->owned_clsr);
+    }
     let prev = atom_V_fetchXchg(&meta->completion, thrd__linux_Completion_completed, atom_MemOrd_seq_cst);
     switch (prev) {
     case_((thrd__linux_Completion_running)) return 0 $end(case);

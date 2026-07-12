@@ -31,12 +31,27 @@ typedef struct thrd_Sem {
     var_(cond, thrd_Cond);
     var_(permits, usize);
 } thrd_Sem;
+#define thrd_Sem_init_static(/*void*/) \
+    ____thrd_Sem_init_static()
 $extern fn_((thrd_Sem_init(void))(thrd_Sem));
 $extern fn_((thrd_Sem_fini(thrd_Sem* self))(void));
-$extern fn_((thrd_Sem_wait(thrd_Sem* self))(void));
+
+$extern fn_((thrd_Sem_tryWait(thrd_Sem* self))(bool));
 $attr($must_check)
-$extern fn_((thrd_Sem_timedWait(thrd_Sem* self, time_Dur timeout))(Sched_TimeoutE$void));
+$extern fn_((thrd_Sem_wait(thrd_Sem* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$attr($must_check)
+$extern fn_((thrd_Sem_waitFor(thrd_Sem* self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$extern fn_((thrd_Sem_waitProtcd(thrd_Sem* self))(void));
+
 $extern fn_((thrd_Sem_post(thrd_Sem* self))(void));
+
+/*========== Macros and Definitions =========================================*/
+
+#define ____thrd_Sem_init_static() l$((thrd_Sem){ \
+    .mtx = thrd_Mtx_init_static(), \
+    .cond = thrd_Cond_init_static(), \
+    .permits = 0, \
+})
 
 #if defined(__cplusplus)
 } /* extern "C" */

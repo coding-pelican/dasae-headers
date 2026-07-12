@@ -3,7 +3,6 @@
 #include "dh/meta.h"
 
 fn_((ListDbl_Link_empty(TypeInfo type))(ListDbl_Link) $scope) {
-    let_ignore = type;
     return_({ .prev = none(), .next = none(), .type = $typing(type) });
 } $unscoped(fn);
 
@@ -73,7 +72,6 @@ fn_((ListDbl_Adp_dataMut(ListDbl_Adp$raw* self, TypeInfo type))(u_P$raw)) {
 };
 
 fn_((ListDbl_empty(TypeInfo type))(ListDbl) $scope) {
-    let_ignore = type;
     return_({ .first = none(), .last = none(), .len = 0, .type = $typing(type) });
 } $unscoped(fn);
 

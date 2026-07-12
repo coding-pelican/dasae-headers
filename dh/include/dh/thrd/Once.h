@@ -36,9 +36,10 @@ $extern fn_((thrd_Once_fini(thrd_Once* self))(void));
 
 $extern fn_((thrd_Once_tryBegin(thrd_Once* self))(bool));
 $extern fn_((thrd_Once_finish(thrd_Once* self))(void));
-$extern fn_((thrd_Once_wait(thrd_Once* self))(void));
-$extern fn_((thrd_Once_isDone(const thrd_Once* self))(bool));
 $extern fn_((thrd_Once_run(thrd_Once* self, Clsr$Void* clsr))(void));
+
+$extern fn_((thrd_Once_isDone(const thrd_Once* self))(bool));
+$extern fn_((thrd_Once_wait(thrd_Once* self))(void));
 
 /*========== Macros and Definitions =========================================*/
 

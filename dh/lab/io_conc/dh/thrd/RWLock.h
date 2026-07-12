@@ -39,7 +39,7 @@ extern "C" {
 
 struct thrd_RWLock__Impl pp_if_(thrd_RWLock_use_pthread)(
     pp_then_({
-        var_(unused_, Void);
+        var_(_unused, Void);
     }),
     pp_else_({
         var_(state, usize);

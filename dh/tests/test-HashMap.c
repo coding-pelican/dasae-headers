@@ -107,7 +107,7 @@ TEST_fn_("HashMap: basic usage - no templates used" $guard) {
 
     using_(var_(sum, u32) = 0) {
         for_(($r(0, count))(i)) {
-            try_(TEST_expect(HashMap_contains(map_value, typeInfo$(u16), u_anyV(as$(usize)(i)))));
+            try_(TEST_expect(HashMap_contains(map_value, u_anyV(as$(usize)(i)))));
             try_(TEST_expect(i == unwrap_(u_castO$((O$u16)(HashMap_by(map_value, u_anyV(as$(usize)(i)), u_retV$(u16)))))));
             sum += unwrap_(u_castO$((O$u16)(HashMap_by(map_value, u_anyV(as$(usize)(i)), u_retV$(u16)))));
         } $end(for);

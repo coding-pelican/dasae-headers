@@ -30,7 +30,7 @@ $static var_(g_reset_evt, thrd_ResetEvt) = {};
 $static fn_((resetEvtWorker(Void unused))(Void) $scope) {
     let_ignore = unused;
     report(u8_l("resetEvtWorker"), u8_l("waiting for signal..."));
-    thrd_ResetEvt_wait(&g_reset_evt);
+    thrd_ResetEvt_waitProtcd(&g_reset_evt);
     report(u8_l("resetEvtWorker"), u8_l("signal received!"));
     return_void();
 } $unscoped(fn);
@@ -74,7 +74,7 @@ $static fn_((exampleGroup(mem_Alctr gpa))(void) $guard) {
     } $end(for);
 
     report(u8_l("example"), u8_l("waiting for all tasks..."));
-    thrd_Group_wait(&group);
+    thrd_Group_waitProtcd(&group);
     report(u8_l("example"), u8_l("all tasks completed!"));
     io_stream_nl();
 } $unguarded(fn);
@@ -83,7 +83,7 @@ $static var_(g_sem, thrd_Sem) = {};
 
 $static fn_((semWorker(i32 worker_id))(Void) $guard) {
     report(u8_l("semWorker"), u8_l("worker {:d} waiting for permit..."), worker_id);
-    thrd_Sem_wait(&g_sem);
+    thrd_Sem_waitProtcd(&g_sem);
     defer_(thrd_Sem_post(&g_sem));
 
     report(u8_l("semWorker"), u8_l("worker {:d} acquired permit, working..."), worker_id);
@@ -111,7 +111,7 @@ $static fn_((exampleSemaphore(mem_Alctr gpa))(void) $guard) {
         thrd_Group_spawn(&group, gpa, worker->as_base);
     } $end(for);
 
-    thrd_Group_wait(&group);
+    thrd_Group_waitProtcd(&group);
     report(u8_l("example"), u8_l("all workers completed!"));
     io_stream_nl();
 } $unguarded(fn);
@@ -125,14 +125,14 @@ $static fn_((producer(i32 items_to_produce))(Void) $scope) {
     for_(($r(0, intCast$((usize)(items_to_produce))))($ignore)) {
         sleepMillis(50);
 
-        thrd_Mtx_lock(&g_mtx);
+        thrd_Mtx_lockProtcd(&g_mtx);
         g_queue_count++;
         report(u8_l("producer"), u8_l("produced item, queue size: {:d}"), g_queue_count);
         thrd_Cond_signal(&g_cond);
         thrd_Mtx_unlock(&g_mtx);
     } $end(for);
 
-    thrd_Mtx_lock(&g_mtx);
+    thrd_Mtx_lockProtcd(&g_mtx);
     g_done = true;
     thrd_Cond_broadcast(&g_cond);
     thrd_Mtx_unlock(&g_mtx);
@@ -145,10 +145,10 @@ fn_use_Clsr_((producer)(i32)(Void));
 $static fn_((consumer(i32 consumer_id))(i32) $scope) {
     i32 consumed = 0;
     while (true) {
-        thrd_Mtx_lock(&g_mtx);
+        thrd_Mtx_lockProtcd(&g_mtx);
 
         while (g_queue_count == 0 && !g_done) {
-            thrd_Cond_wait(&g_cond, &g_mtx);
+            thrd_Cond_waitProtcd(&g_cond, &g_mtx);
         }
 
         if (g_queue_count > 0) {
@@ -208,7 +208,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     g_clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     let gpa = heap_ThrdSafe_alctr(&thrd_safe_heap);
-    let spawn_cfg = with_((thrd_SpawnCfg_default)((.gpa)(some(gpa))));
+    let spawn_cfg = thrd_SpawnCfg_default(gpa);
 
     exampleResetEvt(spawn_cfg);
     exampleGroup(gpa);

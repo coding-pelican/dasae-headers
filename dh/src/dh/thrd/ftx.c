@@ -1,5 +1,9 @@
 #include "dh/thrd/ftx.h"
 
+T_use$((thrd_wait_Link_Data)(
+    ListSgl_Adp_init
+));
+
 /*========== Internal Declarations ==========================================*/
 
 pp_if_(pp_true)(pp_then_(
@@ -8,6 +12,12 @@ pp_if_(pp_true)(pp_then_(
     $attr($inline_always $maybe_unused)
     $static fn_((thrd_ftx__unsupported_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 ));
+
+typedef struct thrd_ftx__CancelWake {
+    var_(ptr, const atom_V$u32*);
+} thrd_ftx__CancelWake;
+$static fn_((thrd_ftx__wakeCanceled(P$raw ctx))(void));
+$static fn_((thrd_ftx__waitForTimeout(const atom_V$u32* ptr, u32 expect, time_Dur timeout))(thrd_ftx_E$void));
 pp_if_(thrd_ftx_use_pthread)(pp_then_(
     $attr($inline_always)
     $static fn_((thrd_ftx__pthread_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout))(thrd_ftx_E$void));
@@ -73,21 +83,64 @@ $static let thrd_ftx__wake = pp_if_(thrd_ftx_use_pthread)(
 /*========== External Definitions ===========================================*/
 
 $attr($branch_cold)
-fn_((thrd_ftx_wait(const atom_V$u32* ptr, u32 expect))(void) $scope) {
+fn_((thrd_ftx_wait(const atom_V$u32* ptr, u32 expect, thrd_wait_Src cancel_src))(thrd_ftx_E$void) $guard) {
+    let src = thrd_wait_Src_ensureValid(cancel_src);
+    if (src.vtbl->readyFn(src.ctx)) {
+        return_err(E_cause$Sched_Canceled());
+    }
+
+    var wake = (thrd_ftx__CancelWake){ .ptr = ptr };
+    var link = ListSgl_Adp_init$thrd_wait_Link_Data((thrd_wait_Link_Data){
+        .wake_ctx = &wake,
+        .wakeFn = thrd_ftx__wakeCanceled,
+        .case_idx = 0,
+    });
+    if (src.vtbl->linkFn(src.ctx, &link)) {
+        return_err(E_cause$Sched_Canceled());
+    }
+    defer_(src.vtbl->unlinkFn(src.ctx, &link));
+
+    catch_((thrd_ftx__wait(ptr, expect, none$((O$time_Dur))))(err, return_err(err)));
+    if (src.vtbl->readyFn(src.ctx)) {
+        return_err(E_cause$Sched_Canceled());
+    }
+    return_ok({});
+} $unguarded(fn);
+$attr($branch_cold)
+fn_((thrd_ftx_waitFor(const atom_V$u32* ptr, u32 expect, thrd_wait_Src cancel_src, time_Dur timeout))(thrd_ftx_E$void) $guard) {
+    let src = thrd_wait_Src_ensureValid(cancel_src);
+    if (src.vtbl->readyFn(src.ctx)) {
+        return_err(E_cause$Sched_Canceled());
+    }
+
+    var wake = (thrd_ftx__CancelWake){ .ptr = ptr };
+    var link = ListSgl_Adp_init$thrd_wait_Link_Data((thrd_wait_Link_Data){
+        .wake_ctx = &wake,
+        .wakeFn = thrd_ftx__wakeCanceled,
+        .case_idx = 0,
+    });
+    if (src.vtbl->linkFn(src.ctx, &link)) {
+        return_err(E_cause$Sched_Canceled());
+    }
+    defer_(src.vtbl->unlinkFn(src.ctx, &link));
+
+    catch_((thrd_ftx__waitForTimeout(ptr, expect, timeout))(err, {
+        if (src.vtbl->readyFn(src.ctx)) {
+            return_err(E_cause$Sched_Canceled());
+        }
+        return_err(err);
+    }));
+    if (src.vtbl->readyFn(src.ctx)) {
+        return_err(E_cause$Sched_Canceled());
+    }
+    return_ok({});
+} $unguarded(fn);
+$attr($branch_cold)
+fn_((thrd_ftx_waitProtcd(const atom_V$u32* ptr, u32 expect))(void) $scope) {
     return_void(catch_((thrd_ftx__wait(ptr, expect, none$((O$time_Dur))))(
         $ignore, claim_unreachable
     )));
 } $unscoped(fn);
-
-$attr($branch_cold)
-fn_((thrd_ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Dur timeout))(thrd_ftx_E$void) $scope) {
-    if (time_Dur_isZero(timeout)) {
-        if (atom_V_load(ptr, atom_MemOrd_seq_cst) != expect) return_ok({});
-        return_err(E_cause$Sched_Timeout());
-    }
-    return_(thrd_ftx__wait(ptr, expect, some$((O$time_Dur)(timeout))));
-} $unscoped(fn);
-
 $attr($branch_cold)
 fn_((thrd_ftx_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
     if (max_waiters == 0) { return; }
@@ -106,19 +159,40 @@ fn_((thrd_ftx_Deadline_init(O$time_Dur expires))(thrd_ftx_Deadline)) {
     }
     return deadline;
 };
-
 $attr($branch_cold)
-fn_((thrd_ftx_Deadline_wait(thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 expect))(thrd_ftx_E$void) $scope) {
-    let timeout = orelse_((self->timeout)(return_ok_void(thrd_ftx_wait(ptr, expect))));
+fn_((thrd_ftx_Deadline_wait(thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 expect, O$thrd_wait_Src cancel_src))(thrd_ftx_E$void) $scope) {
+    let timeout = orelse_((self->timeout)({
+        if_some((cancel_src)(src)) {
+            return thrd_ftx_wait(ptr, expect, src);
+        }
+        return_ok_void(thrd_ftx_waitProtcd(ptr, expect));
+    }));
     let elapsed = time_Awake_Inst_elapsed(
         self->started,
         catch_((time_Awake_direct())($ignore, time_Awake_noop))
     );
     let until_timeout = orelse_((time_Dur_subChkd(timeout, elapsed))(time_Dur_zero));
-    return_(thrd_ftx_timedWait(ptr, expect, until_timeout));
+    if_some((cancel_src)(src)) {
+        return_(thrd_ftx_waitFor(ptr, expect, src, until_timeout));
+    }
+    return_(thrd_ftx__waitForTimeout(ptr, expect, until_timeout));
 } $unscoped(fn);
 
 /*========== Internal Definitions ===========================================*/
+
+fn_((thrd_ftx__wakeCanceled(P$raw ctx))(void)) {
+    let wake = ptrAlignCast$((thrd_ftx__CancelWake*)(ctx));
+    thrd_ftx_wake(wake->ptr, 1);
+};
+
+$attr($branch_cold)
+fn_((thrd_ftx__waitForTimeout(const atom_V$u32* ptr, u32 expect, time_Dur timeout))(thrd_ftx_E$void) $scope) {
+    if (time_Dur_isZero(timeout)) {
+        if (atom_V_load(ptr, atom_MemOrd_seq_cst) != expect) return_ok({});
+        return_err(E_cause$Sched_Timeout());
+    }
+    return_(thrd_ftx__wait(ptr, expect, some$((O$time_Dur)(timeout))));
+} $unscoped(fn);
 
 /* --- Unsupported --- */
 

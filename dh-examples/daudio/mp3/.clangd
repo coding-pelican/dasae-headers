@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./daudio/mp3/src
+    - -I./daudio/mp3/include
+    - -isystem./daudio/mp3/lib/deps

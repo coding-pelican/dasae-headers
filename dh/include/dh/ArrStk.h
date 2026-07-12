@@ -42,7 +42,7 @@ extern "C" {
 typedef struct ArrStk {
     var_(items, S$raw);
     var_(cap, usize);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } ArrStk;
 T_use$((ArrStk)(O, E));
 T_use_E$($set(mem_E)(ArrStk));
@@ -135,7 +135,7 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
         T_embed$(struct { \
             var_(items, S$$(_T)); \
             var_(cap, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw $like_ref, ArrStk); \
     }
@@ -150,7 +150,7 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
         T_embed$(struct { \
             var_(items, S$(_T)); \
             var_(cap, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw $like_ref, ArrStk); \
     }; \

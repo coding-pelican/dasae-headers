@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./dadsp/src
+    - -I./dadsp/include
+    - -isystem./dadsp/lib/deps

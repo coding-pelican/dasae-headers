@@ -328,14 +328,14 @@ $extern fn_((HashMap_by(HashMap self, u_V$raw key, u_V$raw ret_mem))(O$u_V$raw))
 $extern fn_((HashMap_ptrBy(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P_const$raw));
 $extern fn_((HashMap_ptrMutBy(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P$raw));
 
-$extern fn_((HashMap_for(HashMap self, TypeInfo val_ty, u_V$raw key, u_V$raw ret_mem))(O$u_V$raw));
-$extern fn_((HashMap_ptrFor(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P_const$raw));
-$extern fn_((HashMap_ptrMutFor(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P$raw));
+$extern fn_((HashMap_for(HashMap self, u_V$raw key, u_V$raw ret_mem))(O$u_V$raw));
+$extern fn_((HashMap_ptrFor(HashMap self, u_V$raw key))(O$u_P_const$raw));
+$extern fn_((HashMap_ptrMutFor(HashMap self, u_V$raw key))(O$u_P$raw));
 
 $extern fn_((HashMap_entry(HashMap self, TypeInfo val_ty, u_V$raw key))(O$HashMap_Entry));
 $extern fn_((HashMap_entryMut(HashMap self, TypeInfo val_ty, u_V$raw key))(O$HashMap_EntryMut));
 
-$extern fn_((HashMap_contains(HashMap self, TypeInfo val_ty, u_V$raw key))(bool));
+$extern fn_((HashMap_contains(HashMap self, u_V$raw key))(bool));
 
 /* --- Insertion Operations --- */
 
@@ -383,13 +383,13 @@ $extern fn_((HashMap_ensureValue(
 /* --- Removal Operations --- */
 
 /// Remove entry if present, returning true if removed.
-$extern fn_((HashMap_remove(HashMap* self, TypeInfo val_ty, u_V$raw key))(bool));
+$extern fn_((HashMap_remove(HashMap* self, u_V$raw key))(bool));
 /// Remove entry if present, returning the removed key-value pair.
 $extern fn_((HashMap_fetchRemove(
     HashMap* self, TypeInfo val_ty, u_V$raw key, V$HashMap_Pair$raw ret_mem
 ))(O$V$HashMap_Pair$raw));
 /// Remove entry by key pointer (must be valid pointer into map).
-$extern fn_((HashMap_removeByPtr(HashMap* self, TypeInfo val_ty, u_P$raw key_ptr))(void));
+$extern fn_((HashMap_removeByPtr(HashMap* self, u_P$raw key_ptr))(void));
 
 /* --- Maintenance Operations --- */
 
@@ -428,7 +428,7 @@ typedef struct HashMap_KeyIter {
     var_(keys, P$raw);
     var_(key_ty, debug_TypeInfo);
 } HashMap_KeyIter;
-$extern fn_((HashMap_keyIter(HashMap self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_KeyIter));
+$extern fn_((HashMap_keyIter(HashMap self, TypeInfo key_ty))(HashMap_KeyIter));
 $extern fn_((HashMap_KeyIter_next(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P_const$raw));
 $extern fn_((HashMap_KeyIter_nextMut(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P$raw));
 
@@ -446,7 +446,7 @@ typedef struct HashMap_ValIter {
     var_(vals, P$raw);
     var_(val_ty, debug_TypeInfo);
 } HashMap_ValIter;
-$extern fn_((HashMap_valIter(HashMap self, TypeInfo key_ty, TypeInfo val_ty))(HashMap_ValIter));
+$extern fn_((HashMap_valIter(HashMap self, TypeInfo val_ty))(HashMap_ValIter));
 $extern fn_((HashMap_ValIter_next(HashMap_ValIter* self, TypeInfo val_ty))(O$u_P_const$raw));
 $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$u_P$raw));
 
@@ -867,17 +867,17 @@ fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
 #define T_use_HashMap_for$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl$(HashMap_for, _K, _V)(HashMap$(_K, _V) self, _K key))(O$(_K))) { \
-        return u_castO$((O$(_K))(HashMap_for(*self.as_raw, typeInfo$(_V), u_anyV(key), u_retV$(_K)))); \
+        return u_castO$((O$(_K))(HashMap_for(*self.as_raw, u_anyV(key), u_retV$(_K)))); \
     }
 #define T_use_HashMap_ptrFor$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl$(HashMap_ptrFor, _K, _V)(HashMap$(_K, _V) self, _K key))(O$(P_const$(_K)))) { \
-        return u_castO$((O$(P_const$(_K)))(HashMap_ptrFor(*self.as_raw, typeInfo$(_V), u_anyV(key)))); \
+        return u_castO$((O$(P_const$(_K)))(HashMap_ptrFor(*self.as_raw, u_anyV(key)))); \
     }
 #define T_use_HashMap_ptrMutFor$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl$(HashMap_ptrMutFor, _K, _V)(HashMap$(_K, _V) self, _K key))(O$(P$(_K)))) { \
-        return u_castO$((O$(P$(_K)))(HashMap_ptrMutFor(*self.as_raw, typeInfo$(_V), u_anyV(key)))); \
+        return u_castO$((O$(P$(_K)))(HashMap_ptrMutFor(*self.as_raw, u_anyV(key)))); \
     }
 
 #define T_use_HashMap_entry$(_K, _V...) \
@@ -894,7 +894,7 @@ fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
 #define T_use_HashMap_contains$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl$(HashMap_contains, _K, _V)(HashMap$(_K, _V) self, _K key))(bool)) { \
-        return HashMap_contains(*self.as_raw, typeInfo$(_V), u_anyV(key)); \
+        return HashMap_contains(*self.as_raw, u_anyV(key)); \
     }
 
 #define T_use_HashMap_put$(_K, _V...) \
@@ -961,7 +961,7 @@ fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
 #define T_use_HashMap_remove$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl$(HashMap_remove, _K, _V)(HashMap$(_K, _V)* self, _K key))(bool)) { \
-        return HashMap_remove(self->as_raw, typeInfo$(_V), u_anyV(key)); \
+        return HashMap_remove(self->as_raw, u_anyV(key)); \
     }
 #define T_use_HashMap_fetchRemove$(_K, _V...) \
     $attr($inline_always) \
@@ -973,7 +973,7 @@ fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
 #define T_use_HashMap_removeByPtr$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl$(HashMap_removeByPtr, _K, _V)(HashMap$(_K, _V)* self, _K* key))(void)) { \
-        return HashMap_removeByPtr(self->as_raw, typeInfo$(_V), u_anyP(key)); \
+        return HashMap_removeByPtr(self->as_raw, u_anyP(key)); \
     }
 
 #define T_use_HashMap_rehash$(_K, _V...) \
@@ -1059,7 +1059,7 @@ fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
 #define T_use_HashMap_keyIter$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl$(HashMap_keyIter, _K, _V)(HashMap$(_K, _V) self))(HashMap_KeyIter$(_K, _V))) { \
-        return type$((HashMap_KeyIter$(_K, _V))(HashMap_keyIter(*self.as_raw, typeInfo$(_K), typeInfo$(_V)))); \
+        return type$((HashMap_KeyIter$(_K, _V))(HashMap_keyIter(*self.as_raw, typeInfo$(_K)))); \
     }
 #define T_use_HashMap_KeyIter_next$(_K, _V...) \
     $attr($inline_always) \
@@ -1105,7 +1105,7 @@ fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
 #define T_use_HashMap_valIter$(_K, _V...) \
     $attr($inline_always) \
     $static fn_((tpl$(HashMap_valIter, _K, _V)(HashMap$(_K, _V) self))(HashMap_ValIter$(_K, _V))) { \
-        return type$((HashMap_ValIter$(_K, _V))(HashMap_valIter(*self.as_raw, typeInfo$(_K), typeInfo$(_V)))); \
+        return type$((HashMap_ValIter$(_K, _V))(HashMap_valIter(*self.as_raw, typeInfo$(_V)))); \
     }
 #define T_use_HashMap_ValIter_next$(_K, _V...) \
     $attr($inline_always) \

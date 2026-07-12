@@ -4,10 +4,10 @@
 #include "dh/time/self.h"
 #include "dh/heap/Sys.h"
 
-T_use$((i32)(Clsr_Ctx, Clsr_Rtn, Clsr));
-T_use_thrd_spawn$(i32);
-T_use_thrd_join$(i32);
-
+T_use$((i32)(
+    Clsr_Ctx, Clsr_Rtn, Clsr,
+    thrd_spawn, thrd_join
+));
 $static fn_((test_thrd_ext__timesTwo(i32 input))(i32)) {
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     catch_((time_Awake_sleepMillis(clock, 1))($ignore, $do_nothing));
@@ -15,14 +15,14 @@ $static fn_((test_thrd_ext__timesTwo(i32 input))(i32)) {
 };
 fn_use_Clsr_((test_thrd_ext__timesTwo)(i32)(i32));
 
-TEST_fn_("thrd/ext: stack closure lifetime" $guard) {
+TEST_fn_("thrd: ext - stack closure lifetime" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
     var clsr = clsr_((test_thrd_ext__timesTwo)(42));
     let worker = try_(thrd_spawn$i32(
         (thrd_SpawnCfg){
-            .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+            .gpa = heap_Sys_alctr(&heap),
             .stack_size = thrd_SpawnCfg_default_stack_size,
         },
         clsr.as_base
@@ -45,7 +45,7 @@ $static fn_((test_thrd_ext__sumValues(test_thrd_ext__Values values))(i32)) {
 };
 fn_use_Clsr_((test_thrd_ext__sumValues)(test_thrd_ext__Values)(i32));
 
-TEST_fn_("thrd/ext: array argument synchronization" $guard) {
+TEST_fn_("thrd: ext - array argument synchronization" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
@@ -57,7 +57,7 @@ TEST_fn_("thrd/ext: array argument synchronization" $guard) {
     var clsr = clsr_((test_thrd_ext__sumValues)(values));
     let worker = try_(thrd_spawn$i32(
         (thrd_SpawnCfg){
-            .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+            .gpa = heap_Sys_alctr(&heap),
             .stack_size = thrd_SpawnCfg_default_stack_size,
         },
         clsr.as_base
@@ -135,12 +135,12 @@ $static fn_((test_thrd_ext__checksumComplex(test_thrd_ext__Complex* ctx))(i32)) 
 };
 fn_use_Clsr_((test_thrd_ext__checksumComplex)(test_thrd_ext__Complex*)(i32));
 
-TEST_fn_("thrd/ext: multiple stack closures" $guard) {
+TEST_fn_("thrd: ext - multiple stack closures" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
     let cfg = (thrd_SpawnCfg){
-        .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+        .gpa = heap_Sys_alctr(&heap),
         .stack_size = thrd_SpawnCfg_default_stack_size,
     };
     A$$(10, Clsr_(test_thrd_ext__square)) workers = A_zero();
@@ -160,7 +160,7 @@ TEST_fn_("thrd/ext: multiple stack closures" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("thrd/ext: compound stack context remains valid until join" $guard) {
+TEST_fn_("thrd: ext - compound stack context remains valid until join" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
@@ -171,7 +171,7 @@ TEST_fn_("thrd/ext: compound stack context remains valid until join" $guard) {
     var clsr = clsr_((test_thrd_ext__processCompound)(&ctx));
     let worker = try_(thrd_spawn$i32(
         (thrd_SpawnCfg){
-            .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+            .gpa = heap_Sys_alctr(&heap),
             .stack_size = thrd_SpawnCfg_default_stack_size,
         },
         clsr.as_base
@@ -185,12 +185,12 @@ TEST_fn_("thrd/ext: compound stack context remains valid until join" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("thrd/ext: repeated stress closures update caller contexts" $guard) {
+TEST_fn_("thrd: ext - repeated stress closures update caller contexts" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
     let cfg = (thrd_SpawnCfg){
-        .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+        .gpa = heap_Sys_alctr(&heap),
         .stack_size = thrd_SpawnCfg_default_stack_size,
     };
     let expected_base = (999 * 1000) / 2;
@@ -212,12 +212,12 @@ TEST_fn_("thrd/ext: repeated stress closures update caller contexts" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("thrd/ext: fast spawn join observes stack writes" $guard) {
+TEST_fn_("thrd: ext - fast spawn join observes stack writes" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
     let cfg = (thrd_SpawnCfg){
-        .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+        .gpa = heap_Sys_alctr(&heap),
         .stack_size = thrd_SpawnCfg_default_stack_size,
     };
 
@@ -238,7 +238,7 @@ TEST_fn_("thrd/ext: fast spawn join observes stack writes" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("thrd/ext: complex structure stack context is processed" $guard) {
+TEST_fn_("thrd: ext - complex structure stack context is processed" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
@@ -257,7 +257,7 @@ TEST_fn_("thrd/ext: complex structure stack context is processed" $guard) {
     var clsr = clsr_((test_thrd_ext__checksumComplex)(&ctx));
     let worker = try_(thrd_spawn$i32(
         (thrd_SpawnCfg){
-            .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+            .gpa = heap_Sys_alctr(&heap),
             .stack_size = thrd_SpawnCfg_default_stack_size,
         },
         clsr.as_base
@@ -270,12 +270,12 @@ TEST_fn_("thrd/ext: complex structure stack context is processed" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("thrd/ext: concurrent stack closures all complete" $guard) {
+TEST_fn_("thrd: ext - concurrent stack closures all complete" $guard) {
     var heap = heap_Sys_init();
     defer_(heap_Sys_fini(&heap));
 
     let cfg = (thrd_SpawnCfg){
-        .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+        .gpa = heap_Sys_alctr(&heap),
         .stack_size = thrd_SpawnCfg_default_stack_size,
     };
     A$$(32, Clsr_(test_thrd_ext__square)) workers = A_zero();

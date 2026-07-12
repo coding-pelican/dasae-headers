@@ -58,7 +58,7 @@ fn_((io_handleStdIn(void))(fs_File)) {
 
 fn_((io_lockStdIn(void))(void)) {
 #if io_locked_std_enabled
-    thrd_Mtx_Recur_lock(&io__s_in_mtx);
+    thrd_Mtx_Recur_lockProtcd(&io__s_in_mtx);
 #endif /* io_locked_std_enabled */
 };
 
@@ -85,7 +85,7 @@ fn_((io_handleStdOut(void))(fs_File)) {
 
 fn_((io_lockStdOut(void))(void)) {
 #if io_locked_std_enabled
-    thrd_Mtx_Recur_lock(&io__s_out_mtx);
+    thrd_Mtx_Recur_lockProtcd(&io__s_out_mtx);
 #endif /* io_locked_std_enabled */
 };
 
@@ -112,7 +112,7 @@ fn_((io_handleStdErr(void))(fs_File)) {
 
 fn_((io_lockStdErr(void))(void)) {
 #if io_locked_std_enabled
-    thrd_Mtx_Recur_lock(&io__s_err_mtx);
+    thrd_Mtx_Recur_lockProtcd(&io__s_err_mtx);
 #endif /* io_locked_std_enabled */
 };
 

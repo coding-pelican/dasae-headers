@@ -20,7 +20,7 @@ fn_((exec_Preem_work(exec_Preem_Task* task))(Void)) {
 fn_((exec_Preem_init(mem_Alctr gpa))(exec_Preem)) {
     gpa = mem_Alctr_ensureValid(gpa);
     return (exec_Preem){
-        .spawn_cfg = with_((thrd_SpawnCfg_default)((.gpa)(some(gpa)))),
+        .spawn_cfg = thrd_SpawnCfg_default(gpa),
         .tasks_mtx = thrd_Mtx_init(),
         .tasks = none(),
     };
@@ -35,7 +35,7 @@ fn_((exec_Preem_fini(exec_Preem* self))(void)) {
 
 fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner))(Sched_ConcE$P$exec_Preem_Task) $guard) {
     claim_assert_nonnull(self), claim_assert_nonnull(result.raw), claim_assert_nonnull(inner);
-    let gpa = unwrap_(self->spawn_cfg.gpa);
+    let gpa = self->spawn_cfg.gpa;
     let bytes = exec_Preem_Task__slabBytes(result.type);
     let mem = orelse_((mem_Alctr_rawAlloc($trace gpa, bytes, alignOfLog2$(exec_Preem_Task)))(
         return_err(E_cause$Sched_ConcUnavailable())
@@ -62,13 +62,13 @@ fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner
 
 fn_((exec_Preem_destroyTask(exec_Preem* self, exec_Preem_Task* task))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(task);
-    let gpa = unwrap_(self->spawn_cfg.gpa);
+    let gpa = self->spawn_cfg.gpa;
     exec_Preem_Task__freeSlab(task, gpa);
 };
 
 fn_((exec_Preem_linkTask(exec_Preem* self, exec_Preem_Task* task))(void) $guard) {
     claim_assert_nonnull(self), claim_assert_nonnull(task);
-    thrd_Mtx_lock(&self->tasks_mtx);
+    thrd_Mtx_lockProtcd(&self->tasks_mtx);
     defer_(thrd_Mtx_unlock(&self->tasks_mtx));
     task->next = self->tasks;
     asg_l((&self->tasks)(some(task)));
@@ -76,7 +76,7 @@ fn_((exec_Preem_linkTask(exec_Preem* self, exec_Preem_Task* task))(void) $guard)
 
 fn_((exec_Preem_unlinkTask(exec_Preem* self, exec_Preem_Task* task))(void) $guard) {
     claim_assert_nonnull(self), claim_assert_nonnull(task);
-    thrd_Mtx_lock(&self->tasks_mtx);
+    thrd_Mtx_lockProtcd(&self->tasks_mtx);
     defer_(thrd_Mtx_unlock(&self->tasks_mtx));
     var_(prev, O$P$exec_Preem_Task) = none();
     var_(curr, O$P$exec_Preem_Task) = self->tasks;

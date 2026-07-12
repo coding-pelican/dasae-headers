@@ -54,7 +54,7 @@ typedef struct ArrPDeq {
     var_(items, S$raw);
     var_(cap, usize);
     var_(ctx, P_const$ArrPDeq_Ctx);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } ArrPDeq;
 T_use$((ArrPDeq)(O, E));
 T_use_E$($set(mem_E)(ArrPDeq));
@@ -126,7 +126,7 @@ $extern fn_((ArrPDeq_update(ArrPDeq* self, u_V$raw old_item, u_V$raw new_item))(
 typedef struct ArrPDeq_Iter {
     var_(deq, const ArrPDeq*);
     var_(idx, usize);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } ArrPDeq_Iter;
 $extern fn_((ArrPDeq_iter(const ArrPDeq* self, TypeInfo type))(ArrPDeq_Iter));
 $extern fn_((ArrPDeq_Iter_next(ArrPDeq_Iter* self, TypeInfo type))(O$u_P_const$raw));
@@ -140,7 +140,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
             var_(items, S$$(_T)); \
             var_(cap, usize); \
             var_(ctx, P_const$ArrPDeq_Ctx); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrPDeq) $like_ref; \
     }
@@ -156,7 +156,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
             var_(items, S$(_T)); \
             var_(cap, usize); \
             var_(ctx, P_const$ArrPDeq_Ctx); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrPDeq) $like_ref; \
     }; \
@@ -355,7 +355,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
         T_embed$(struct { \
             var_(deq, P_const$$(ArrPDeq$$(_T))); \
             var_(idx, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrPDeq_Iter) $like_ref; \
     }
@@ -367,7 +367,7 @@ $extern fn_((ArrPDeq_Iter_nextMut(ArrPDeq_Iter* self, TypeInfo type))(O$u_P$raw)
         T_embed$(struct { \
             var_(deq, P_const$$(ArrPDeq$(_T))); \
             var_(idx, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrPDeq_Iter) $like_ref; \
     }

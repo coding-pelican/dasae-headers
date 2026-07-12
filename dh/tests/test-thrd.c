@@ -5,12 +5,24 @@
 #include "dh/heap/Sys.h"
 #include "dh/heap/ThrdSafe.h"
 
-T_use$((i32)(Clsr_Ctx, Clsr_Rtn, Clsr));
-T_use$((i32)(Co_Ctx, Co_Rtn, Co_Frame));
-T_use_clsr_kind$(i32);
-T_use_thrd_spawn$(i32);
-T_use_thrd_join$(i32);
-
+T_use$((i32)(
+    Co_Ctx, Co_Rtn, Co_Frame,
+    Clsr_Ctx, Clsr_Rtn, Clsr,
+    clsr_kind, thrd_spawn, thrd_join
+));
+T_use$((u32)(
+    Clsr_Ctx, Clsr_Rtn, Clsr,
+    thrd_OnceLock,
+    thrd_OnceLock_fini,
+    thrd_OnceLock_isSet,
+    thrd_OnceLock_trySet,
+    thrd_OnceLock_wait,
+    thrd_OnceLock_get,
+    thrd_LazeLock,
+    thrd_LazeLock_fini,
+    thrd_LazeLock_isSet,
+    thrd_LazeLock_getOrInit
+));
 $static fn_((test__double(i32 value))(i32)) {
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     catch_((time_Awake_sleepMillis(clock, 1))($ignore, $do_nothing));
@@ -23,6 +35,12 @@ $static fn_((test__markDone(atom_V$usize* counter))(Void) $scope) {
     return_void();
 } $unscoped(fn);
 fn_use_Clsr_((test__markDone)(atom_V$usize*)(Void));
+
+$static fn_((test__nextLazyValue(u32* counter))(u32)) {
+    *counter += 1;
+    return 100 + *counter;
+};
+fn_use_Clsr_((test__nextLazyValue)(u32*)(u32));
 
 $static co_fn_(test__sumAfterSuspend, (i32 lhs; i32 rhs), i32);
 co_fn_frame_scope(
@@ -46,7 +64,7 @@ TEST_fn_("thrd: spawn and join function closure" $guard) {
     var clsr = clsr_((test__double)(21));
     let worker = try_(thrd_spawn$i32(
         (thrd_SpawnCfg){
-            .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+            .gpa = heap_Sys_alctr(&heap),
             .stack_size = thrd_SpawnCfg_default_stack_size,
         },
         clsr.as_base
@@ -66,7 +84,7 @@ TEST_fn_("thrd: spawn and join coroutine closure" $guard) {
     var clsr = clsr_((test__sumAfterSuspend)(19, 23));
     let worker = try_(thrd_spawn$i32(
         (thrd_SpawnCfg){
-            .gpa = some$((O$mem_Alctr)(heap_Sys_alctr(&heap))),
+            .gpa = heap_Sys_alctr(&heap),
             .stack_size = thrd_SpawnCfg_default_stack_size,
         },
         clsr.as_base
@@ -80,7 +98,7 @@ TEST_fn_("thrd: spawn and join coroutine closure" $guard) {
     return_ok({});
 } $unguarded(TEST_fn);
 
-TEST_fn_("thrd/Group: spawn detached closure" $guard) {
+TEST_fn_("thrd/Group: spawn closure" $guard) {
     var sys_heap = heap_Sys_init();
     defer_(heap_Sys_fini(&sys_heap));
 
@@ -97,8 +115,69 @@ TEST_fn_("thrd/Group: spawn detached closure" $guard) {
     var clsr = clsr_((test__markDone)(&done_count));
 
     thrd_Group_spawn(&wg, heap_ThrdSafe_alctr(&thrd_safe_heap), clsr.as_base);
-    thrd_Group_wait(&wg);
+    thrd_Group_waitProtcd(&wg);
 
     try_(TEST_expect(atom_V_load(&done_count, atom_MemOrd_acquire) == 1));
+    return_ok({});
+} $unguarded(TEST_fn);
+
+TEST_fn_("thrd waits: try cancel timeout" $guard) {
+    var cancel_src = thrd_CancelTok_Src_init();
+    defer_(thrd_CancelTok_Src_fini(&cancel_src));
+    let cancel = thrd_CancelTok_Src_tok(&cancel_src);
+    thrd_CancelTok_Src_cancel(&cancel_src);
+
+    var evt = thrd_ResetEvt_init();
+    defer_(thrd_ResetEvt_fini(&evt));
+    try_(TEST_expect(isErr(thrd_ResetEvt_wait(&evt, thrd_CancelTok_waitSrc(cancel)))));
+    try_(TEST_expect(isErr(thrd_ResetEvt_waitFor(&evt, thrd_CancelTok_waitSrc(cancel), time_Dur_fromMillis(1)))));
+
+    var sem = thrd_Sem_init();
+    defer_(thrd_Sem_fini(&sem));
+    try_(TEST_expect(!thrd_Sem_tryWait(&sem)));
+    try_(TEST_expect(isErr(thrd_Sem_wait(&sem, thrd_CancelTok_waitSrc(cancel)))));
+
+    var open_cancel_src = thrd_CancelTok_Src_init();
+    defer_(thrd_CancelTok_Src_fini(&open_cancel_src));
+    let open_cancel = thrd_CancelTok_Src_tok(&open_cancel_src);
+    try_(TEST_expect(isErr(thrd_Sem_waitFor(&sem, thrd_CancelTok_waitSrc(open_cancel), time_Dur_zero))));
+
+    var rw = thrd_RWLock_init();
+    defer_(thrd_RWLock_fini(&rw));
+    try_(thrd_RWLock_lock(&rw, thrd_CancelTok_waitSrc(open_cancel)));
+    thrd_RWLock_unlock(&rw);
+    try_(thrd_RWLock_lockShared(&rw, thrd_CancelTok_waitSrc(open_cancel)));
+    thrd_RWLock_unlockShared(&rw);
+
+    return_ok({});
+} $unguarded(TEST_fn);
+
+TEST_fn_("thrd/OnceLock: sets once and returns typed value" $guard) {
+    var lock = thrd_OnceLock_init_static$(u32);
+    defer_(thrd_OnceLock_fini$u32(&lock));
+
+    try_(TEST_expect(!thrd_OnceLock_isSet$u32(&lock)));
+    try_(TEST_expect(thrd_OnceLock_trySet$u32(&lock, 42)));
+    try_(TEST_expect(!thrd_OnceLock_trySet$u32(&lock, 99)));
+    thrd_OnceLock_wait$u32(&lock);
+
+    try_(TEST_expect(thrd_OnceLock_isSet$u32(&lock)));
+    try_(TEST_expect(thrd_OnceLock_get$u32(&lock) == 42));
+    return_ok({});
+} $unguarded(TEST_fn);
+
+TEST_fn_("thrd/LazeLock: initializes once lazily" $guard) {
+    var lock = thrd_LazeLock_init$(u32);
+    defer_(thrd_LazeLock_fini$u32(&lock));
+
+    u32 init_count = 0;
+    var init = clsr_((test__nextLazyValue)(&init_count));
+    let first = thrd_LazeLock_getOrInit$u32(&lock, init.as_base);
+    let second = thrd_LazeLock_getOrInit$u32(&lock, init.as_base);
+
+    try_(TEST_expect(first == second));
+    try_(TEST_expect(*first == 101));
+    try_(TEST_expect(init_count == 1));
+    try_(TEST_expect(thrd_LazeLock_isSet$u32(&lock)));
     return_ok({});
 } $unguarded(TEST_fn);

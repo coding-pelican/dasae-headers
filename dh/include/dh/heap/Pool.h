@@ -46,7 +46,7 @@ T_use_E$($set(mem_E)(heap_Pool));
 $extern fn_((heap_Pool_empty(TypeInfo type, heap_Pool_Opts opts))(heap_Pool));
 $attr($must_check)
 $extern fn_((heap_Pool_init(TypeInfo type, mem_Alctr child_alctr, usize cap, heap_Pool_Opts opts))(mem_E$heap_Pool));
-$extern fn_((heap_Pool_fini(heap_Pool* self, TypeInfo type, mem_Alctr child_alctr))(void));
+$extern fn_((heap_Pool_fini(heap_Pool* self, mem_Alctr child_alctr))(void));
 
 $attr($must_check)
 $extern fn_((heap_Pool_addCap(heap_Pool* self, TypeInfo type, mem_Alctr child_alctr, usize additional))(mem_E$void));
@@ -111,7 +111,7 @@ fn_((heap_Pool_Opts_default(void))(heap_Pool_Opts)) {
 #define T_use_heap_Pool_fini$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(heap_Pool_fini, _T)(heap_Pool$(_T)* self, mem_Alctr child_alctr))(void)) { \
-        return heap_Pool_fini(self->as_raw, typeInfo$(_T), child_alctr); \
+        return heap_Pool_fini(self->as_raw, child_alctr); \
     }
 #define T_use_heap_Pool_addCap$(_T...) \
     $attr($inline_always $must_check) \

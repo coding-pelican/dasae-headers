@@ -53,7 +53,7 @@ extern "C" {
 
 struct thrd_Cond__Impl pp_if_(thrd_Cond_use_pthread)(
     pp_then_({
-        var_(unused_, Void);
+        var_(_unused, Void);
     }),
     pp_else_(pp_if_(thrd_Cond_has_specialized)(
         pp_then_(pp_expand(

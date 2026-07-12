@@ -1,5 +1,5 @@
 /**
- * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
+ * @copyright Copyright (c) 2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    Latch.h
@@ -34,23 +34,33 @@ typedef struct thrd_Latch {
     ____thrd_Latch_init_static()
 $extern fn_((thrd_Latch_init(void))(thrd_Latch));
 $extern fn_((thrd_Latch_fini(thrd_Latch* self))(void));
+
+$extern fn_((thrd_Latch_tok(thrd_Latch* self))(thrd_OnceEvt_Tok));
+
 $extern fn_((thrd_Latch_start(thrd_Latch* self))(void));
 $extern fn_((thrd_Latch_startOn(atom_V$usize* state))(void));
 $extern fn_((thrd_Latch_startN(thrd_Latch* self, usize n))(void));
 $extern fn_((thrd_Latch_startNOn(atom_V$usize* state, usize n))(void));
 $extern fn_((thrd_Latch_finish(thrd_Latch* self))(void));
 $extern fn_((thrd_Latch_finishOn(atom_V$usize* state, thrd_OnceEvt* event))(void));
-$extern fn_((thrd_Latch_wait(thrd_Latch* self))(void));
-$extern fn_((thrd_Latch_waitOn(atom_V$usize* state, thrd_OnceEvt* event))(void));
-$attr($must_check)
-$extern fn_((thrd_Latch_timedWait(thrd_Latch* self, time_Dur timeout))(thrd_ftx_E$void));
-$attr($must_check)
-$extern fn_((thrd_Latch_timedWaitOn(atom_V$usize* state, thrd_OnceEvt* event, time_Dur timeout))(thrd_ftx_E$void));
+
 $extern fn_((thrd_Latch_isDone(thrd_Latch* self))(bool));
 $extern fn_((thrd_Latch_isDoneOn(atom_V$usize* state))(bool));
 $extern fn_((thrd_Latch_value(thrd_Latch* self))(usize));
 $extern fn_((thrd_Latch_valueOn(atom_V$usize* state))(usize));
-$extern fn_((thrd_Latch_tok(thrd_Latch* self))(thrd_OnceEvt_Tok));
+
+$extern fn_((thrd_Latch_tryWait(thrd_Latch* self))(bool));
+$extern fn_((thrd_Latch_tryWaitOn(atom_V$usize* state))(bool));
+$attr($must_check)
+$extern fn_((thrd_Latch_wait(thrd_Latch* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$attr($must_check)
+$extern fn_((thrd_Latch_waitOn(atom_V$usize* state, thrd_OnceEvt* event, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$attr($must_check)
+$extern fn_((thrd_Latch_waitFor(thrd_Latch* self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$attr($must_check)
+$extern fn_((thrd_Latch_waitForOn(atom_V$usize* state, thrd_OnceEvt* event, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$extern fn_((thrd_Latch_waitProtcd(thrd_Latch* self))(void));
+$extern fn_((thrd_Latch_waitOnProtcd(atom_V$usize* state, thrd_OnceEvt* event))(void));
 
 /*========== Macros and Definitions =========================================*/
 

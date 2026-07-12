@@ -27,10 +27,8 @@ fn_((heap_Pool_init(TypeInfo type, mem_Alctr child_alctr, usize cap, heap_Pool_O
     try_(heap_Pool_addCap(&pool, type, child_alctr, cap));
     return_ok(pool);
 } $unscoped(fn);
-fn_((heap_Pool_fini(heap_Pool* self, TypeInfo type, mem_Alctr child_alctr))(void)) {
+fn_((heap_Pool_fini(heap_Pool* self, mem_Alctr child_alctr))(void)) {
     claim_assert_nonnull(self);
-    debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
-    let_ignore = type;
     var arena = heap_Arena_State_promote(self->arena_state, child_alctr);
     heap_Arena_fini(&arena);
     asg_l((self)(cleared()));

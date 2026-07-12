@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    mem.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-01 (date of creation)
- * @updated 2026-02-26 (date of last update)
+ * @updated 2026-07-11 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  mem
  *
@@ -24,6 +24,7 @@ extern "C" {
 #include "mem/cfg.h"
 #include "mem/base.h"
 #include "mem/common.h"
+#include "mem/ring.h"
 #include "mem/dyn.h"
 #include "mem/Alctr.h"
 #include "mem/AlcTrace.h"

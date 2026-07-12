@@ -7,7 +7,6 @@
 } */
 
 fn_((ListSgl_Link_empty(TypeInfo type))(ListSgl_Link) $scope) {
-    let_ignore = type;
     return_({ .next = none(), .type = $typing(type) });
 } $unscoped(fn);
 
@@ -128,7 +127,6 @@ fn_((ListSgl_Adp_dataMut(ListSgl_Adp$raw* self, TypeInfo type))(u_P$raw)) {
 };
 
 fn_((ListSgl_empty(TypeInfo type))(ListSgl) $scope) {
-    let_ignore = type;
     return_({ .first = none(), .type = $typing(type) });
 } $unscoped(fn);
 

@@ -58,7 +58,6 @@ fn_((HashSet_Ensured_keyMut(HashSet_Ensured self, TypeInfo key_ty))(u_P$raw)) {
 
 fn_((HashSet_Ensured_foundExisting(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_Entry)) {
     debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
-    let_ignore = key_ty;
     return expr_(O$HashSet_Entry $scope)(if (self.found_existing) {
         $break_(some({ .key = self.key, .key_ty = $typing(key_ty) }));
     }) expr_(else)({
@@ -68,7 +67,6 @@ fn_((HashSet_Ensured_foundExisting(HashSet_Ensured self, TypeInfo key_ty))(O$Has
 
 fn_((HashSet_Ensured_foundExistingMut(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_EntryMut)) {
     debug_assert_eqBy($typed(self.key_ty), key_ty, TypeInfo_eql);
-    let_ignore = key_ty;
     return expr_(O$HashSet_EntryMut $scope)(if (self.found_existing) {
         $break_(some({ .key = self.key, .key_ty = $typing(key_ty) }));
     }) expr_(else)({
@@ -307,7 +305,6 @@ $static fn_((HashSet__growIfNeeded(HashSet* self, TypeInfo key_ty, mem_Alctr gpa
 
 fn_((HashSet_empty(TypeInfo key_ty, P_const$HashSet_Ctx ctx))(HashSet)) {
     claim_assert_nonnull(ctx);
-    let_ignore = key_ty;
     return (HashSet){
         .metadata = none(),
         .size = 0,
@@ -761,7 +758,6 @@ fn_((HashSet_isDisjoint(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
 fn_((HashSet_iter(const HashSet* self, TypeInfo key_ty))(HashSet_Iter)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy($typed(self->key_ty), key_ty, TypeInfo_eql);
-    let_ignore = key_ty;
     return (HashSet_Iter){
         .set = self,
         .idx = 0,

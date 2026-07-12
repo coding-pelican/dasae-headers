@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./datext/src
+    - -I./datext/include
+    - -isystem./datext/lib/deps

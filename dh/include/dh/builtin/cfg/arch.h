@@ -384,7 +384,7 @@ extern "C" {
 
 /* --- Cache Line --- */
 
-/* Conservative false-sharing boundary, aligned with Zig's atomic cache-line table. */
+/* Conservative false-sharing boundary */
 #define __comp_int__arch_cache_line_bytes pp_expand( \
     pp_switch_ pp_begin(arch_type)( \
         pp_case_((arch_type_x86_64)(128)), \

@@ -18,7 +18,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "common.h"
+#include "wait.h"
 #include "../time/self/Awake.h"
 
 /*========== Macros and Declarations ========================================*/
@@ -31,14 +31,17 @@ extern "C" {
 #define thrd_ftx__use_pthread_default __comp_bool__thrd_ftx__use_pthread_default
 #define __comp_bool__thrd_ftx__use_pthread_default pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
-        pp_default_(thrd_use_pthread) \
+        pp_default_(pp_false) \
     ) pp_end \
 )
 
-errset_((thrd_ftx_E)(thrd_ftx_Unsupported) $union_errset_(Sched_TimeoutE));
-$extern fn_((thrd_ftx_wait(const atom_V$u32* ptr, u32 expect))(void));
+errset_((thrd_ftx_E)(thrd_ftx_Unsupported) $union_errset_(Sched_TimedE));
+
 $attr($must_check)
-$extern fn_((thrd_ftx_timedWait(const atom_V$u32* ptr, u32 expect, time_Dur timeout))(thrd_ftx_E$void));
+$extern fn_((thrd_ftx_wait(const atom_V$u32* ptr, u32 expect, thrd_wait_Src cancel_src))(thrd_ftx_E$void));
+$attr($must_check)
+$extern fn_((thrd_ftx_waitFor(const atom_V$u32* ptr, u32 expect, thrd_wait_Src cancel_src, time_Dur timeout))(thrd_ftx_E$void));
+$extern fn_((thrd_ftx_waitProtcd(const atom_V$u32* ptr, u32 expect))(void));
 $extern fn_((thrd_ftx_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 
 typedef struct thrd_ftx_Deadline {
@@ -47,7 +50,7 @@ typedef struct thrd_ftx_Deadline {
 } thrd_ftx_Deadline;
 $extern fn_((thrd_ftx_Deadline_init(O$time_Dur expires))(thrd_ftx_Deadline));
 $attr($must_check)
-$extern fn_((thrd_ftx_Deadline_wait(thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 expect))(thrd_ftx_E$void));
+$extern fn_((thrd_ftx_Deadline_wait(thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 expect, O$thrd_wait_Src cancel_src))(thrd_ftx_E$void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

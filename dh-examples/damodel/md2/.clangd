@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./damodel/md2/src
+    - -I./damodel/md2/include
+    - -isystem./damodel/md2/lib/deps

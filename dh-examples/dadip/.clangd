@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./dadip/src
+    - -I./dadip/include
+    - -isystem./dadip/lib/deps

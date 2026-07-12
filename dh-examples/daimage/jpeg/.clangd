@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./daimage/jpeg/src
+    - -I./daimage/jpeg/include
+    - -isystem./daimage/jpeg/lib/deps

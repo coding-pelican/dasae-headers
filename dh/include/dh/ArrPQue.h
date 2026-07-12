@@ -56,7 +56,7 @@ typedef struct ArrPQue {
     var_(items, S$raw);
     var_(cap, usize);
     var_(ctx, P_const$ArrPQue_Ctx);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } ArrPQue;
 T_use$((ArrPQue)(O, E));
 T_use_E$($set(mem_E)(ArrPQue));
@@ -125,7 +125,7 @@ $extern fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(
 typedef struct ArrPQue_Iter {
     var_(que, const ArrPQue*);
     var_(idx, usize);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } ArrPQue_Iter;
 $extern fn_((ArrPQue_iter(const ArrPQue* self, TypeInfo type))(ArrPQue_Iter));
 $extern fn_((ArrPQue_Iter_next(ArrPQue_Iter* self, TypeInfo type))(O$u_P_const$raw));
@@ -139,7 +139,7 @@ $extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw)
             var_(items, S$$(_T)); \
             var_(cap, usize); \
             var_(ctx, P_const$ArrPQue_Ctx); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrPQue) $like_ref; \
     }
@@ -155,7 +155,7 @@ $extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw)
             var_(items, S$(_T)); \
             var_(cap, usize); \
             var_(ctx, P_const$ArrPQue_Ctx); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrPQue) $like_ref; \
     }; \
@@ -349,7 +349,7 @@ $extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw)
         T_embed$(struct { \
             var_(que, P_const$$(ArrPQue$$(_T))); \
             var_(idx, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrPQue_Iter) $like_ref; \
     }
@@ -361,7 +361,7 @@ $extern fn_((ArrPQue_Iter_nextMut(ArrPQue_Iter* self, TypeInfo type))(O$u_P$raw)
         T_embed$(struct { \
             var_(que, P_const$$(ArrPQue$(_T))); \
             var_(idx, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrPQue_Iter) $like_ref; \
     }

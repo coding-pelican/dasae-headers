@@ -71,6 +71,9 @@ $static fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void));
 #define atom_V_load(_$p_self, _$ord...) __op__atom_V_load(_$p_self, _$ord)
 #define atom_V_store(_$p_self, _$val, _$ord...) __op__atom_V_store(_$p_self, _$val, _$ord)
 
+#define atom_V_alwaysLockFree$(_$T...) __op__atom_V_alwaysLockFree$(_$T)
+#define atom_V_isLockFree(_$p_self) __op__atom_V_isLockFree(_$p_self)
+
 #define atom_V_cmpXchgWeak$(_OT, _$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
     __op__atom_V_cmpXchgWeak$(_OT, _$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord)
 #define atom_V_cmpXchgWeak(_$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
@@ -167,6 +170,8 @@ fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void)) {
 #define __op__atom_V_from(_$val...) atom_V_init$(atom_V$$(TypeOf(_$val)), _$val)
 #define __op__atom_V_load(_$p_self, _$ord...) atom_load(&(_$p_self)->raw, _$ord)
 #define __op__atom_V_store(_$p_self, _$val, _$ord...) atom_store(&(_$p_self)->raw, _$val, _$ord)
+#define __op__atom_V_alwaysLockFree$(_$T...) atom_alwaysLockFree$(_$T)
+#define __op__atom_V_isLockFree(_$p_self) atom_isLockFree(&(_$p_self)->raw)
 
 #define __op__atom_V_cmpXchgWeak$(_OT, _$p_self, _$expected, _$desired, _$succ_ord, _$fail_ord...) \
     atom_cmpXchgWeak$(_OT, &(_$p_self)->raw, _$expected, _$desired, _$succ_ord, _$fail_ord)

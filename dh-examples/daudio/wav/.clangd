@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./daudio/wav/src
+    - -I./daudio/wav/include
+    - -isystem./daudio/wav/lib/deps

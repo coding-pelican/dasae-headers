@@ -133,6 +133,7 @@ fn_((debug_StackTrace__windows_setupCrashHandler(void))(void)) {
 
 fn_((debug_StackTrace__windows_print(void))(void) $guard) {
     let process = GetCurrentProcess();
+    SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
     SymInitialize(process, null, true);
     defer_(SymCleanup(process));
 
@@ -157,6 +158,9 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
         /* 1. Get Module Name (e.g., KERNEL32, MyApp) */
         let has_mod = SymGetModuleInfo64(process, addr, &mod_info);
         let mod_name = has_mod ? mod_info.ModuleName : "unknown";
+        var_(line, IMAGEHLP_LINE64) = { .SizeOfStruct = sizeOf$(TypeOf(line)) };
+        var_(line_displacement, DWORD) = 0;
+        let has_line = SymGetLineFromAddr64(process, addr, &line_displacement, &line);
         /* 2. Get Symbol Name */
         /* Output: "  0: 0xAddress in Symbol + Offset (Module)" */
         if (SymFromAddr(process, addr, &displacement, symbol)) {
@@ -168,6 +172,12 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
             io_stream_eprintln(
                 u8_l("  {:uz}: {:#P} in <unknown> ({:z})"),
                 frame, addr, mod_name
+            );
+        }
+        if (has_line) {
+            io_stream_eprintln(
+                u8_l("      at {:z}:{:uz}"),
+                line.FileName, as$(usize)(line.LineNumber)
             );
         }
     } $end(for);

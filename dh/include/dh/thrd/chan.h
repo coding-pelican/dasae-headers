@@ -7,10 +7,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "base.h"
 #include "Mtx.h"
 #include "Cond.h"
-#include "CancelTok.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -23,7 +21,7 @@ T_use_E$($set(thrd_chan_E)(u_V$raw));
 
 errset_((thrd_chan_WaitE)() $union_errset_(thrd_chan_ClosedE, Sched_Cancelable));
 T_use_E$($set(thrd_chan_WaitE)(u_V$raw));
-errset_((thrd_chan_TimedE)() $union_errset_(thrd_chan_ClosedE, Sched_Cancelable, Sched_TimeoutE));
+errset_((thrd_chan_TimedE)() $union_errset_(thrd_chan_ClosedE, Sched_TimedE));
 T_use_E$($set(thrd_chan_TimedE)(u_V$raw));
 
 #if defined(__cplusplus)

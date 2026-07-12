@@ -41,7 +41,7 @@ extern "C" {
 typedef struct ArrList {
     var_(items, S$raw);
     var_(cap, usize);
-    debug_only(var_(type, TypeInfo);)
+    var_(type, debug_TypeInfo);
 } ArrList;
 T_use$((ArrList)(O, E));
 T_use_E$($set(mem_E)(ArrList));
@@ -196,7 +196,7 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
         T_embed$(struct { \
             var_(items, S$$(_T)); \
             var_(cap, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrList) $like_ref; \
     }
@@ -211,7 +211,7 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
         T_embed$(struct { \
             var_(items, S$(_T)); \
             var_(cap, usize); \
-            debug_only(var_(type, TypeInfo);) \
+            var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, ArrList) $like_ref; \
     }; \
@@ -226,12 +226,14 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
     l$((ArrList){ \
         .items = cleared(), \
         .cap = 0, \
-        debug_only(.type = _type) })
+        .type = $typing(_type), \
+    })
 #define ____ArrList_empty_static$(_T...) \
     l$((ArrList$(_T)){ \
         .items = cleared(), \
         .cap = 0, \
-        debug_only(.type = typeInfo$(S_T$(FieldType$(ArrList$(_T), items)))) })
+        .type = $typing(typeInfo$(S_T$(FieldType$(ArrList$(_T), items)))), \
+    })
 
 /* clang-format off */
 #define T_use_ArrList_empty$(_T...) \

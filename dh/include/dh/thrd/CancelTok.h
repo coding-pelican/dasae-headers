@@ -1,5 +1,5 @@
 /**
- * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
+ * @copyright Copyright (c) 2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    CancelTok.h
@@ -22,18 +22,9 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "OnceEvt.h"
+#include "Waiter.h"
 
 /*========== Macros and Declarations ========================================*/
-
-typedef struct thrd_CancelTok {
-    var_(event, thrd_OnceEvt_Tok);
-} thrd_CancelTok;
-$extern fn_((thrd_CancelTok_isCanceled(thrd_CancelTok self))(bool));
-$attr($must_check)
-$extern fn_((thrd_CancelTok_check(thrd_CancelTok self))(Sched_Cancelable$void));
-$extern fn_((thrd_CancelTok_wait(thrd_CancelTok self))(void));
-$attr($must_check)
-$extern fn_((thrd_CancelTok_timedWait(thrd_CancelTok self, time_Dur timeout))(thrd_ftx_E$void));
 
 typedef struct thrd_CancelTok_Src {
     var_(event, thrd_OnceEvt);
@@ -42,9 +33,20 @@ typedef struct thrd_CancelTok_Src {
     ____thrd_CancelTok_Src_init_static()
 $extern fn_((thrd_CancelTok_Src_init(void))(thrd_CancelTok_Src));
 $extern fn_((thrd_CancelTok_Src_fini(thrd_CancelTok_Src* self))(void));
+typedef struct thrd_CancelTok thrd_CancelTok;
 $extern fn_((thrd_CancelTok_Src_tok(thrd_CancelTok_Src* self))(thrd_CancelTok));
-$extern fn_((thrd_CancelTok_Src_cancel(thrd_CancelTok_Src* self))(void));
 $extern fn_((thrd_CancelTok_Src_isCanceled(thrd_CancelTok_Src* self))(bool));
+$extern fn_((thrd_CancelTok_Src_cancel(thrd_CancelTok_Src* self))(void));
+
+struct thrd_CancelTok {
+    var_(event, thrd_OnceEvt_Tok);
+};
+$extern fn_((thrd_CancelTok_isCanceled(thrd_CancelTok self))(bool));
+$attr($must_check)
+$extern fn_((thrd_CancelTok_check(thrd_CancelTok self))(Sched_Cancelable$void));
+$extern fn_((thrd_CancelTok_tryWait(thrd_CancelTok self))(bool));
+$extern fn_((thrd_CancelTok_waitProtcd(thrd_CancelTok self))(void));
+$extern fn_((thrd_CancelTok_waitSrc(thrd_CancelTok self))(thrd_wait_Src));
 
 /*========== Macros and Definitions =========================================*/
 

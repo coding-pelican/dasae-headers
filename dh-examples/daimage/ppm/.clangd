@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./daimage/ppm/src
+    - -I./daimage/ppm/include
+    - -isystem./daimage/ppm/lib/deps

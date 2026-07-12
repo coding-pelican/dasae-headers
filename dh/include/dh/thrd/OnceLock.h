@@ -1,5 +1,5 @@
 /**
- * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
+ * @copyright Copyright (c) 2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    OnceLock.h
@@ -40,14 +40,14 @@ T_use$((thrd_OnceLock$raw)(u_V));
 #define thrd_OnceLock_init_static(_type /*: TypeInfo*/...) ____thrd_OnceLock_init_static(_type)
 $extern fn_((thrd_OnceLock_init(TypeInfo val_type, u_V$thrd_OnceLock$raw ret_mem))(u_V$thrd_OnceLock$raw));
 #define T_use_thrd_OnceLock_init$(_T...) __gen__T_use_thrd_OnceLock_init$(_T)
-$extern fn_((thrd_OnceLock_fini(thrd_OnceLock$raw* self, TypeInfo val_type))(void));
+$extern fn_((thrd_OnceLock_fini(thrd_OnceLock$raw* self))(void));
 #define T_use_thrd_OnceLock_fini$(_T...) __gen__T_use_thrd_OnceLock_fini$(_T)
 
-$extern fn_((thrd_OnceLock_isSet(const thrd_OnceLock$raw* self, TypeInfo val_type))(bool));
+$extern fn_((thrd_OnceLock_isSet(const thrd_OnceLock$raw* self))(bool));
 #define T_use_thrd_OnceLock_isSet$(_T...) __gen__T_use_thrd_OnceLock_isSet$(_T)
 $extern fn_((thrd_OnceLock_trySet(thrd_OnceLock$raw* self, u_V$raw val))(bool));
 #define T_use_thrd_OnceLock_trySet$(_T...) __gen__T_use_thrd_OnceLock_trySet$(_T)
-$extern fn_((thrd_OnceLock_wait(thrd_OnceLock$raw* self, TypeInfo val_type))(void));
+$extern fn_((thrd_OnceLock_wait(thrd_OnceLock$raw* self))(void));
 #define T_use_thrd_OnceLock_wait$(_T...) __gen__T_use_thrd_OnceLock_wait$(_T)
 $extern fn_((thrd_OnceLock_get(thrd_OnceLock$raw* self, u_V$raw ret_mem))(u_V$raw));
 #define T_use_thrd_OnceLock_get$(_T...) __gen__T_use_thrd_OnceLock_get$(_T)
@@ -103,14 +103,59 @@ $static fn_((thrd_OnceLock_valMut(thrd_OnceLock$raw* self, TypeInfo val_type))(u
     T_decl_thrd_OnceLock$(_T); \
     T_impl_thrd_OnceLock$(_T)
 
-#define ____thrd_OnceLock_init_static$(_T...) l$((_T)thrd_OnceLock_init_static( \
-    typeInfo$(FieldType$(_T, val)) \
-))
+#define ____thrd_OnceLock_init_static$(_T...) l$((thrd_OnceLock$(_T)){ \
+    .once = thrd_Once_init_static(), \
+    .val_type = $typing(typeInfo$(_T)), \
+    .val = cleared(), \
+})
 #define ____thrd_OnceLock_init_static(_type /*: TypeInfo*/...) { \
     .once = thrd_Once_init_static(), \
     .val_type = $typing(_type), \
     .val_ = cleared(), \
 }
+
+/* clang-format off */
+#define __gen__T_use_thrd_OnceLock_init$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_OnceLock_init, _T)(void))(thrd_OnceLock$(_T))) { \
+        return type$((thrd_OnceLock$(_T))(thrd_OnceLock_init(typeInfo$(_T), u_asV$((u_V$thrd_OnceLock$raw)(u_retV$(thrd_OnceLock$(_T))))))); \
+    }
+#define __gen__T_use_thrd_OnceLock_fini$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_OnceLock_fini, _T)(P$$(thrd_OnceLock$(_T)) self))(void)) { \
+        return thrd_OnceLock_fini(self->as_raw); \
+    }
+#define __gen__T_use_thrd_OnceLock_isSet$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_OnceLock_isSet, _T)(P_const$$(thrd_OnceLock$(_T)) self))(bool)) { \
+        return thrd_OnceLock_isSet(self->as_raw); \
+    }
+#define __gen__T_use_thrd_OnceLock_trySet$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_OnceLock_trySet, _T)(P$$(thrd_OnceLock$(_T)) self, _T val))(bool)) { \
+        return thrd_OnceLock_trySet(self->as_raw, u_anyV(val)); \
+    }
+#define __gen__T_use_thrd_OnceLock_wait$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_OnceLock_wait, _T)(P$$(thrd_OnceLock$(_T)) self))(void)) { \
+        return thrd_OnceLock_wait(self->as_raw); \
+    }
+#define __gen__T_use_thrd_OnceLock_get$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_OnceLock_get, _T)(P$$(thrd_OnceLock$(_T)) self))(_T)) { \
+        return u_castV$((_T)(thrd_OnceLock_get(self->as_raw, u_retV$(_T)))); \
+    }
+#define __gen__T_use_thrd_OnceLock_val$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_OnceLock_val, _T)(P_const$$(thrd_OnceLock$(_T)) self))(const _T*)) { \
+        return u_castP$((const _T*)(thrd_OnceLock_val(self->as_raw, typeInfo$(_T)))); \
+    }
+#define __gen__T_use_thrd_OnceLock_valMut$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_OnceLock_valMut, _T)(P$$(thrd_OnceLock$(_T)) self))(_T*)) { \
+        return u_castP$((_T*)(thrd_OnceLock_valMut(self->as_raw, typeInfo$(_T)))); \
+    }
+/* clang-format on */
 
 #include "../meta.h"
 

@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./daudio/aac/src
+    - -I./daudio/aac/include
+    - -isystem./daudio/aac/lib/deps

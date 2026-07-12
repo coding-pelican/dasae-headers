@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./daimage/bmp/src
+    - -I./daimage/bmp/include
+    - -isystem./daimage/bmp/lib/deps

@@ -44,6 +44,7 @@ $extern fn_((debug_StackTrace_setupCrashHandler(void))(void));
 ///          - Thread ID
 ///          - Number of frames
 ///          - For each frame: index, address, symbol name, offset, module name
+///          - Source file and line when debug symbols provide line tables
 ///
 /// @note only available when debug mode is enabled.
 /// @note thread-safe (uses thread-safe `io_stream_eprintln`).

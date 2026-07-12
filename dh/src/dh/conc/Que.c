@@ -3,7 +3,7 @@
 #include "dh/Sched.h"
 #include "dh/time/self/Awake.h"
 
-$static fn_((conc_Que__grip(conc_Que$raw* self))(ArrQue_Grip));
+$static fn_((conc_Que__grip(conc_Que$raw* self, TypeInfo type))(ArrQue_Grip));
 $static fn_((conc_Que__wakeAll(O$P$conc_AwaitLink waiters))(void));
 $static fn_((conc_Que__wakeOne(O$P$conc_AwaitLink* waiters))(void));
 $static fn_((conc_Que__unlinkWaiter(O$P$conc_AwaitLink* waiters, conc_AwaitLink* link))(void));
@@ -73,9 +73,9 @@ fn_((conc_Que_trySend(conc_Que$raw* self, TypeInfo type, u_V$raw item))(conc_cha
     if (self->len == self->buf.len) {
         return_err(E_cause$conc_chan_Full());
     }
-    var que = conc_Que__grip(self);
+    var que = conc_Que__grip(self, type);
     ArrQue_enqueWithin(&que.ctx, item);
-    ArrQue_Grip_release(&que, $typed(self->type));
+    ArrQue_Grip_release(&que, type);
     conc_Que__wakeOne(&self->recv_waiters);
     return_ok({});
 } $unguarded(fn);
@@ -91,9 +91,9 @@ fn_((conc_Que_tryRecv(conc_Que$raw* self, TypeInfo type, u_V$raw ret_mem))(conc_
         }
         return_err(E_cause$conc_chan_Empty());
     }
-    var que = conc_Que__grip(self);
+    var que = conc_Que__grip(self, type);
     let_ignore = unwrap_(ArrQue_deque(&que.ctx, ret_mem));
-    ArrQue_Grip_release(&que, $typed(self->type));
+    ArrQue_Grip_release(&que, type);
     conc_Que__wakeOne(&self->send_waiters);
     return_ok(ret_mem);
 } $unguarded(fn);
@@ -205,9 +205,9 @@ fn_((conc_Que_recvSrc(conc_Que$raw* self, TypeInfo type))(conc_AwaitSrc)) {
     return conc_AwaitSrc_init(self, &conc_Que__recv_vtbl);
 };
 
-fn_((conc_Que__grip(conc_Que$raw* self))(ArrQue_Grip)) {
+fn_((conc_Que__grip(conc_Que$raw* self, TypeInfo type))(ArrQue_Grip)) {
     return ArrQue_grip(
-        (u_S$raw){ .raw = self->buf, .type = $typed(self->type) },
+        (u_S$raw){ .raw = self->buf, .type = type },
         &self->head,
         &self->len
     );
@@ -256,7 +256,7 @@ fn_((conc_Que__unlinkWaiter(O$P$conc_AwaitLink* waiters, conc_AwaitLink* link))(
 
 fn_((conc_Que__poll(P$raw ctx, u_P$raw out))(bool) $scope) {
     let self = ptrAlignCast$((conc_Que$raw*)(ctx));
-    return isOk(conc_Que_tryRecv(self, $typed(self->type), (u_V$raw){ .inner = out.raw, .type = out.type }));
+    return isOk(conc_Que_tryRecv(self, out.type, (u_V$raw){ .inner = out.raw, .type = out.type }));
 } $unscoped(fn);
 
 fn_((conc_Que__link(P$raw ctx, Sched sched, conc_AwaitLink* link))(bool)) {

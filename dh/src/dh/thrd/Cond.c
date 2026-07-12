@@ -17,7 +17,7 @@ pp_if_(thrd_Cond_use_pthread)(
         $attr($inline_always)
         $static fn_((thrd_Cond__pthread_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx))(void));
         $attr($inline_always $must_check)
-        $static fn_((thrd_Cond__pthread_timedWait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, time_Dur duration))(Sched_TimeoutE$void));
+        $static fn_((thrd_Cond__pthread_waitFor(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, time_Dur duration))(Sched_TimedE$void));
         $attr($inline_always)
         $static fn_((thrd_Cond__pthread_signal(P$$(thrd_Cond) self))(void));
         $attr($inline_always)
@@ -28,10 +28,8 @@ pp_if_(thrd_Cond_use_pthread)(
         $static fn_((thrd_Cond__common_init(void))(thrd_Cond));
         $attr($inline_always)
         $static fn_((thrd_Cond__common_fini(P$$(thrd_Cond) self))(void));
-        $attr($inline_always)
-        $static fn_((thrd_Cond__common_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx))(void));
         $attr($inline_always $must_check)
-        $static fn_((thrd_Cond__common_timedWait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, time_Dur duration))(Sched_TimeoutE$void));
+        $static fn_((thrd_Cond__common_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void));
         $attr($inline_always)
         $static fn_((thrd_Cond__common_signal(P$$(thrd_Cond) self))(void));
         $attr($inline_always)
@@ -47,9 +45,6 @@ $static let thrd_Cond__fini = pp_if_(thrd_Cond_use_pthread)(
 $static let thrd_Cond__wait = pp_if_(thrd_Cond_use_pthread)(
     pp_then_(thrd_Cond__pthread_wait),
     pp_else_(thrd_Cond__common_wait));
-$static let thrd_Cond__timedWait = pp_if_(thrd_Cond_use_pthread)(
-    pp_then_(thrd_Cond__pthread_timedWait),
-    pp_else_(thrd_Cond__common_timedWait));
 $static let thrd_Cond__signal = pp_if_(thrd_Cond_use_pthread)(
     pp_then_(thrd_Cond__pthread_signal),
     pp_else_(thrd_Cond__common_signal));
@@ -62,23 +57,29 @@ $static let thrd_Cond__broadcast = pp_if_(thrd_Cond_use_pthread)(
 fn_((thrd_Cond_init(void))(thrd_Cond)) {
     return thrd_Cond__init();
 };
-
 fn_((thrd_Cond_fini(thrd_Cond* self))(void)) {
     thrd_Cond__fini(self);
 };
 
-fn_((thrd_Cond_wait(thrd_Cond* self, thrd_Mtx* mtx))(void)) {
-    thrd_Cond__wait(self, mtx);
-};
-
-fn_((thrd_Cond_timedWait(thrd_Cond* self, thrd_Mtx* mtx, time_Dur duration))(Sched_TimeoutE$void)) {
-    return thrd_Cond__timedWait(self, mtx, duration);
-};
+fn_((thrd_Cond_wait(thrd_Cond* self, thrd_Mtx* mtx, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $scope) {
+    catch_((thrd_Cond__wait(self, mtx, some$((O$thrd_wait_Src)(cancel_src)), none$((O$time_Dur))))(err, {
+        if (E_eql(err.as_any, E_cause$Sched_Canceled().as_any)) {
+            return_err(E_cause$Sched_Canceled());
+        }
+        claim_unreachable;
+    }));
+    return_ok({});
+} $unscoped(fn);
+fn_((thrd_Cond_waitFor(thrd_Cond* self, thrd_Mtx* mtx, thrd_wait_Src cancel_src, time_Dur duration))(Sched_TimedE$void) $scope) {
+    return_(thrd_Cond__wait(self, mtx, some$((O$thrd_wait_Src)(cancel_src)), some$((O$time_Dur)(duration))));
+} $unscoped(fn);
+fn_((thrd_Cond_waitProtcd(thrd_Cond* self, thrd_Mtx* mtx))(void) $scope) {
+    return_void(catch_((thrd_Cond__wait(self, mtx, none$((O$thrd_wait_Src)), none$((O$time_Dur))))($ignore, claim_unreachable)));
+} $unscoped(fn);
 
 fn_((thrd_Cond_signal(thrd_Cond* self))(void)) {
     thrd_Cond__signal(self);
 };
-
 fn_((thrd_Cond_broadcast(thrd_Cond* self))(void)) {
     thrd_Cond__broadcast(self);
 };
@@ -97,16 +98,13 @@ fn_((thrd_Cond__pthread_init(void))(thrd_Cond) $guard) {
     pthread_cond_init(&cond.impl, &attr);
     return_(cond);
 } $unguarded(fn);
-
 fn_((thrd_Cond__pthread_fini(thrd_Cond* self))(void)) {
     pthread_cond_destroy(&self->impl);
 };
-
 fn_((thrd_Cond__pthread_wait(thrd_Cond* self, thrd_Mtx* mtx))(void)) {
     pthread_cond_wait(&self->impl, &mtx->impl);
 };
-
-fn_((thrd_Cond__pthread_timedWait(thrd_Cond* self, thrd_Mtx* mtx, time_Dur duration))(Sched_TimeoutE$void) $scope) {
+fn_((thrd_Cond__pthread_waitFor(thrd_Cond* self, thrd_Mtx* mtx, time_Dur duration))(Sched_TimedE$void) $scope) {
     struct timespec abs_ts = cleared();
 #if plat_is_linux
     if (sys_call_linux_clock_gettime(sys_call_linux_CLOCK_MONOTONIC, &abs_ts) != 0) {
@@ -129,11 +127,9 @@ fn_((thrd_Cond__pthread_timedWait(thrd_Cond* self, thrd_Mtx* mtx, time_Dur durat
     default_() claim_unreachable $end(default);
     }
 } $unscoped(fn);
-
 fn_((thrd_Cond__pthread_signal(thrd_Cond* self))(void)) {
     pthread_cond_signal(&self->impl);
 };
-
 fn_((thrd_Cond__pthread_broadcast(thrd_Cond* self))(void)) {
     pthread_cond_broadcast(&self->impl);
 };
@@ -156,7 +152,7 @@ pp_if_(thrd_Cond_has_specialized)(
                 $attr($inline_always)
                 $static fn_((thrd_Cond__windows_impl_fini(P$$(thrd_Cond) self))(void));
                 $attr($inline_always $must_check)
-                $static fn_((thrd_Cond__windows_impl_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$time_Dur timeout))(Sched_TimeoutE$void));
+                $static fn_((thrd_Cond__windows_impl_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void));
                 $attr($inline_always)
                 $static fn_((thrd_Cond__windows_impl_wake(P$$(thrd_Cond) self, thrd_Cond__Notify notify))(void))
             ))
@@ -168,7 +164,7 @@ pp_if_(thrd_Cond_has_specialized)(
         $attr($inline_always)
         $static fn_((thrd_Cond__default_impl_fini(P$$(thrd_Cond) self))(void));
         $attr($inline_always $must_check)
-        $static fn_((thrd_Cond__default_impl_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$time_Dur timeout))(Sched_TimeoutE$void));
+        $static fn_((thrd_Cond__default_impl_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void));
         $attr($inline_always)
         $static fn_((thrd_Cond__default_impl_wake(P$$(thrd_Cond) self, thrd_Cond__Notify notify))(void))
     ));
@@ -215,23 +211,15 @@ $static let thrd_Cond__impl_wake = pp_if_(thrd_Cond_has_specialized)(
 fn_((thrd_Cond__common_init(void))(thrd_Cond)) {
     return thrd_Cond__impl_init();
 };
-
 fn_((thrd_Cond__common_fini(thrd_Cond* self))(void)) {
     thrd_Cond__impl_fini(self);
 };
-
-fn_((thrd_Cond__common_wait(thrd_Cond* self, thrd_Mtx* mtx))(void) $scope) {
-    return_void(catch_((thrd_Cond__impl_wait(self, mtx, none$((O$time_Dur))))($ignore, claim_unreachable)));
-} $unscoped(fn);
-
-fn_((thrd_Cond__common_timedWait(thrd_Cond* self, thrd_Mtx* mtx, time_Dur duration))(Sched_TimeoutE$void)) {
-    return thrd_Cond__impl_wait(self, mtx, some$((O$time_Dur)(duration)));
+fn_((thrd_Cond__common_wait(thrd_Cond* self, thrd_Mtx* mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void)) {
+    return thrd_Cond__impl_wait(self, mtx, cancel_src, timeout);
 };
-
 fn_((thrd_Cond__common_signal(thrd_Cond* self))(void)) {
     thrd_Cond__impl_wake(self, thrd_Cond__Notify_one);
 };
-
 fn_((thrd_Cond__common_broadcast(thrd_Cond* self))(void)) {
     thrd_Cond__impl_wake(self, thrd_Cond__Notify_all);
 };
@@ -273,18 +261,18 @@ $static fn_((thrd_Cond__default_impl_fini(thrd_Cond* self))(void)) {
 // - T1: s & signals == 0 -> FUTEX_WAIT(&epoch, e) (missed the state update + the epoch change)
 //
 // Acquire barrier to ensure the epoch load happens before the state load.
-fn_((thrd_Cond__default_impl_wait(thrd_Cond* self, thrd_Mtx* mtx, O$time_Dur timeout))(Sched_TimeoutE$void) $guard) {
+fn_((thrd_Cond__default_impl_wait(thrd_Cond* self, thrd_Mtx* mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void) $guard) {
     var epoch = atom_V_load(&self->impl.epoch, atom_MemOrd_acquire);
     var state = atom_V_pri_fetchAdd(&self->impl.state, thrd_Cond__default_one_waiter, atom_MemOrd_monotonic);
     debug_assert((state & thrd_Cond__default_waiter_mask) != thrd_Cond__default_waiter_mask);
     state += thrd_Cond__default_one_waiter;
 
     thrd_Mtx_unlock(mtx);
-    defer_(thrd_Mtx_lock(mtx));
+    defer_(thrd_Mtx_lockProtcd(mtx));
 
     var deadline = thrd_ftx_Deadline_init(timeout);
     while (true) {
-        catch_((thrd_ftx_Deadline_wait(&deadline, &self->impl.epoch, epoch))(err, {
+        catch_((thrd_ftx_Deadline_wait(&deadline, &self->impl.epoch, epoch, cancel_src))(err, {
             // On timeout, we must decrement the waiter we added above.
             while (true) {
                 // If there's a signal when we're timing out, consume it and report being woken up instead.
@@ -364,7 +352,8 @@ fn_((thrd_Cond__windows_impl_fini(thrd_Cond* self))(void)) {
     let_ignore = self;
 };
 
-fn_((thrd_Cond__windows_impl_wait(thrd_Cond* self, thrd_Mtx* mtx, O$time_Dur timeout))(Sched_TimeoutE$void) $scope) {
+fn_((thrd_Cond__windows_impl_wait(thrd_Cond* self, thrd_Mtx* mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void) $scope) {
+    let_ignore = cancel_src;
     claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(DWORD), packTypeInfo$(u32)));
     var timeout_overflowed = false;
     var timeout_ms = u32_limit_max;

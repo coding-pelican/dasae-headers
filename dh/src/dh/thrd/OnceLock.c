@@ -14,19 +14,15 @@ fn_((thrd_OnceLock_init(TypeInfo val_type, u_V$thrd_OnceLock$raw ret_mem))(u_V$t
     mem_set0P(field_val_);
     return ret_mem;
 };
-
-fn_((thrd_OnceLock_fini(thrd_OnceLock$raw* self, TypeInfo val_type))(void)) {
-    let_ignore = val_type;
-    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->val_type), val_type, TypeInfo_eql);
+fn_((thrd_OnceLock_fini(thrd_OnceLock$raw* self))(void)) {
+    claim_assert_nonnull(self);
     thrd_Once_fini(&self->once);
 };
 
-fn_((thrd_OnceLock_isSet(const thrd_OnceLock$raw* self, TypeInfo val_type))(bool)) {
-    let_ignore = val_type;
-    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->val_type), val_type, TypeInfo_eql);
+fn_((thrd_OnceLock_isSet(const thrd_OnceLock$raw* self))(bool)) {
+    claim_assert_nonnull(self);
     return thrd_Once_isDone(&self->once);
 };
-
 fn_((thrd_OnceLock_trySet(thrd_OnceLock$raw* self, u_V$raw val))(bool)) {
     claim_assert_nonnull(self), debug_assert_eqBy($typed(self->val_type), val.type, TypeInfo_eql);
     if (thrd_Once_tryBegin(&self->once)) {
@@ -36,12 +32,10 @@ fn_((thrd_OnceLock_trySet(thrd_OnceLock$raw* self, u_V$raw val))(bool)) {
     }
     return false;
 };
-
-fn_((thrd_OnceLock_wait(thrd_OnceLock$raw* self, TypeInfo val_type))(void)) {
-    claim_assert_nonnull(self), debug_assert_eqBy($typed(self->val_type), val_type, TypeInfo_eql);
+fn_((thrd_OnceLock_wait(thrd_OnceLock$raw* self))(void)) {
+    claim_assert_nonnull(self);
     thrd_Once_wait(&self->once);
 };
-
 fn_((thrd_OnceLock_get(thrd_OnceLock$raw* self, u_V$raw ret_mem))(u_V$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy($typed(self->val_type), ret_mem.type, TypeInfo_eql);
     thrd_Once_wait(&self->once);

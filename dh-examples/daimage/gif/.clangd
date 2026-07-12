@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I./daimage/gif/src
+    - -I./daimage/gif/include
+    - -isystem./daimage/gif/lib/deps

@@ -481,7 +481,7 @@ extern "C" {
     __VA_ARGS__ \
 )
 
-#define $suppress_unterminated_string_$initialization(...) $pragma_guard_( \
+#define $suppress_unterminated_string_initialization(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wunterminated-string-initialization\"", \
     "clang diagnostic pop", \
@@ -548,10 +548,10 @@ extern "C" {
 #define __$suppress_cast_qual() \
     _Pragma("clang diagnostic ignored \"-Wcast-qual\"")
 #if defined(__clang__) && (__clang_major__ >= 18)
-#define __$suppress_unterminated_string_$initialization() \
+#define __$suppress_unterminated_string_initialization() \
     _Pragma("clang diagnostic ignored \"-Wunterminated-string-initialization\"")
 #else
-#define __$suppress_unterminated_string_$initialization()
+#define __$suppress_unterminated_string_initialization()
 #endif
 #define __$suppress_return_stack_address() \
     _Pragma("clang diagnostic ignored \"-Wreturn-stack-address\"")

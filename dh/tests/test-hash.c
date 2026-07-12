@@ -1,7 +1,7 @@
 #include "dh-main.h"
 #include "dh/hash.h"
 
-TEST_fn_("hash: integer mixers match Zig vectors" $scope) {
+TEST_fn_("hash: integer mixers match vectors" $scope) {
     try_(TEST_expect(hash_int$u8(1) == u8_(0xd6u)));
     try_(TEST_expect(hash_int$u16(1) == u16_(0x2880u)));
     try_(TEST_expect(hash_int$u32(1) == u32_(0x042741d6u)));
