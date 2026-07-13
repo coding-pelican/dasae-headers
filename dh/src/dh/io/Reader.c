@@ -3,8 +3,7 @@
 #include "dh/mem/common.h"
 
 fn_((io_Reader_read(io_Reader self, S$u8 out_bytes))(E$usize)) {
-    claim_assert_nonnull(self.ctx);
-    claim_assert_nonnull(self.readFn);
+    self = io_Reader_ensureValid(self);
     claim_assert_nonnullS(out_bytes);
     return self.readFn(self.ctx, out_bytes);
 };

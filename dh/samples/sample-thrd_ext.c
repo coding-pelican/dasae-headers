@@ -70,7 +70,7 @@ $static fn_((exampleGroup(mem_Alctr gpa))(void) $guard) {
     A$$(4, Clsr_(waitGroupTask)) tasks = A_zero();
     for_(($r(1, 5), $s(A_ref(tasks)))(i, task)) {
         *task = clsr_((waitGroupTask)(as$(i32)(i)));
-        thrd_Group_spawn(&group, gpa, task->as_base);
+        catch_((thrd_Group_spawn(&group, gpa, task->as_base))($ignore, return));
     } $end(for);
 
     report(u8_l("example"), u8_l("waiting for all tasks..."));
@@ -108,7 +108,7 @@ $static fn_((exampleSemaphore(mem_Alctr gpa))(void) $guard) {
     A$$(4, Clsr_(semWorker)) workers = A_zero();
     for_(($r(1, 5), $s(A_ref(workers)))(i, worker)) {
         *worker = clsr_((semWorker)(as$(i32)(i)));
-        thrd_Group_spawn(&group, gpa, worker->as_base);
+        catch_((thrd_Group_spawn(&group, gpa, worker->as_base))($ignore, return));
     } $end(for);
 
     thrd_Group_waitProtcd(&group);

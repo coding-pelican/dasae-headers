@@ -27,6 +27,12 @@ struct io_Reader {
     $attr($must_check)
     fn_(((*readFn)(P$raw ctx, S$u8 out_buf))(E$usize));
 };
+$attr($inline_always)
+$static fn_((io_Reader_isValid(io_Reader self))(bool));
+$attr($inline_always)
+$static fn_((io_Reader_assertValid(P$raw ctx, fn_(((*readFn)(P$raw ctx, S$u8 out_buf))(E$usize))))(void));
+$attr($inline_always)
+$static fn_((io_Reader_ensureValid(io_Reader self))(io_Reader));
 
 $attr($must_check)
 $extern fn_((io_Reader_read(io_Reader self, S$u8 out_bytes))(E$usize));
@@ -59,6 +65,22 @@ $extern fn_((io_Reader_copyExact(io_Reader self, io_Writer writer, usize copy_le
 /// Copy until at least_len bytes are copied or EOF is reached.
 $attr($must_check)
 $extern fn_((io_Reader_copyAtLeast(io_Reader self, io_Writer writer, usize least_len))(E$usize));
+
+/*========== Macros and Definitions =========================================*/
+
+#if on_analysis_active_only || on_comptime
+fn_((io_Reader_isValid(io_Reader self))(bool)) {
+    return isNonnull(self.ctx)
+        && isNonnull(self.readFn);
+};
+fn_((io_Reader_assertValid(P$raw ctx, fn_(((*readFn)(P$raw ctx, S$u8 out_buf))(E$usize))))(void)) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(readFn);
+};
+fn_((io_Reader_ensureValid(io_Reader self))(io_Reader)) {
+    return io_Reader_assertValid(self.ctx, self.readFn), self;
+};
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -15,7 +15,7 @@ fn_((thrd_RWLock_fini(thrd_RWLock* self))(void)) {
 fn_((thrd_RWLock_tryLock(thrd_RWLock* self))(bool)) {
     return pthread_rwlock_trywrlock(&self->impl) == (/*SUCCESS*/ 0);
 };
-fn_((thrd_RWLock_lock(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void)) {
+fn_((thrd_RWLock_lock(thrd_RWLock* self, thrd_Wakeable cancel_src))(Sched_Cancelable$void)) {
     let_ignore = self;
     let_ignore = cancel_src;
     claim_unreachable;
@@ -32,7 +32,7 @@ fn_((thrd_RWLock_unlock(thrd_RWLock* self))(void)) {
 fn_((thrd_RWLock_tryLockShared(thrd_RWLock* self))(bool)) {
     return pthread_rwlock_tryrdlock(&self->impl) == (/*SUCCESS*/ 0);
 };
-fn_((thrd_RWLock_lockShared(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void)) {
+fn_((thrd_RWLock_lockShared(thrd_RWLock* self, thrd_Wakeable cancel_src))(Sched_Cancelable$void)) {
     let_ignore = self;
     let_ignore = cancel_src;
     claim_unreachable;
@@ -88,7 +88,7 @@ fn_((thrd_RWLock_tryLock(thrd_RWLock* self))(bool)) {
     }
     return false;
 };
-fn_((thrd_RWLock_lock(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $guard) {
+fn_((thrd_RWLock_lock(thrd_RWLock* self, thrd_Wakeable cancel_src))(Sched_Cancelable$void) $guard) {
     try_(thrd_Mtx_lock(&self->impl.mtx, cancel_src));
     self->impl.state += thrd_RWLock__writer;
     while ((self->impl.state & (thrd_RWLock__is_writing | thrd_RWLock__reader_mask)) != 0) {
@@ -130,7 +130,7 @@ fn_((thrd_RWLock_tryLockShared(thrd_RWLock* self))(bool)) {
     }
     return false;
 };
-fn_((thrd_RWLock_lockShared(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $guard) {
+fn_((thrd_RWLock_lockShared(thrd_RWLock* self, thrd_Wakeable cancel_src))(Sched_Cancelable$void) $guard) {
     try_(thrd_Mtx_lock(&self->impl.mtx, cancel_src));
     while ((self->impl.state & (thrd_RWLock__is_writing | thrd_RWLock__writer_mask)) != 0) {
         catch_((thrd_Cond_wait(&self->impl.cond, &self->impl.mtx, cancel_src))(err, {

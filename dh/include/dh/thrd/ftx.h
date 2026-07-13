@@ -18,7 +18,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "wait.h"
+#include "Wakeable.h"
 #include "../time/self/Awake.h"
 
 /*========== Macros and Declarations ========================================*/
@@ -38,9 +38,13 @@ extern "C" {
 errset_((thrd_ftx_E)(thrd_ftx_Unsupported) $union_errset_(Sched_TimedE));
 
 $attr($must_check)
-$extern fn_((thrd_ftx_wait(const atom_V$u32* ptr, u32 expect, thrd_wait_Src cancel_src))(thrd_ftx_E$void));
+$extern fn_((thrd_ftx_wait(
+    const atom_V$u32* ptr, u32 expect, thrd_Wakeable cancel_src
+))(thrd_ftx_E$void));
 $attr($must_check)
-$extern fn_((thrd_ftx_waitFor(const atom_V$u32* ptr, u32 expect, thrd_wait_Src cancel_src, time_Dur timeout))(thrd_ftx_E$void));
+$extern fn_((thrd_ftx_waitFor(
+    const atom_V$u32* ptr, u32 expect, thrd_Wakeable cancel_src, time_Dur timeout
+))(thrd_ftx_E$void));
 $extern fn_((thrd_ftx_waitProtcd(const atom_V$u32* ptr, u32 expect))(void));
 $extern fn_((thrd_ftx_wake(const atom_V$u32* ptr, u32 max_waiters))(void));
 
@@ -50,7 +54,9 @@ typedef struct thrd_ftx_Deadline {
 } thrd_ftx_Deadline;
 $extern fn_((thrd_ftx_Deadline_init(O$time_Dur expires))(thrd_ftx_Deadline));
 $attr($must_check)
-$extern fn_((thrd_ftx_Deadline_wait(thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 expect, O$thrd_wait_Src cancel_src))(thrd_ftx_E$void));
+$extern fn_((thrd_ftx_Deadline_wait(
+    thrd_ftx_Deadline* self, const atom_V$u32* ptr, u32 expect, O$thrd_Wakeable cancel_src
+))(thrd_ftx_E$void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

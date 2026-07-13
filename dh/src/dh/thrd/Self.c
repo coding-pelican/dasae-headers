@@ -286,15 +286,14 @@ fn_((thrd_setName(thrd_Self self, S_const$u8 name))(thrd_E$void)) {
     return thrd__setName(self, name);
 };
 
-fn_((thrd_spawn(thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(thrd_spawn_E$thrd_Self)) {
+fn_((thrd_spawn(
+    thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type
+))(thrd_spawn_E$thrd_Self)) {
     return thrd__spawn(cfg, clsr, ret_type, false, u_anyP(null));
 };
 
 fn_((thrd_spawnOwned(
-    thrd_SpawnCfg cfg,
-    Clsr$raw* clsr,
-    TypeInfo ret_type,
-    u_P$raw owned_clsr
+    thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type, u_P$raw owned_clsr
 ))(thrd_spawn_E$thrd_Self)) {
     return thrd__spawn(cfg, clsr, ret_type, true, owned_clsr);
 };

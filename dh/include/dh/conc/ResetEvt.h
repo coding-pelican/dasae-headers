@@ -28,8 +28,12 @@ struct conc_ResetEvt {
 };
 T_alias$((conc_ResetEvt_Tok)(struct conc_ResetEvt_Tok));
 T_alias$((conc_ResetEvt_Sig)(struct conc_ResetEvt_Sig));
-struct conc_ResetEvt_Tok { var_(evt, conc_ResetEvt*); };
-struct conc_ResetEvt_Sig { var_(evt, conc_ResetEvt*); };
+struct conc_ResetEvt_Tok {
+    var_(evt, conc_ResetEvt*);
+};
+struct conc_ResetEvt_Sig {
+    var_(evt, conc_ResetEvt*);
+};
 
 #define conc_ResetEvt_init_static(/*void*/) ____conc_ResetEvt_init_static()
 $extern fn_((conc_ResetEvt_init(void))(conc_ResetEvt));
@@ -53,7 +57,7 @@ $attr($must_check)
 $extern fn_((conc_ResetEvt_Tok_waitUntil(conc_ResetEvt_Tok self, Sched sched, time_Inst deadline))(Sched_TimedE$void));
 $extern fn_((conc_ResetEvt_Sig_set(conc_ResetEvt_Sig self))(void));
 $extern fn_((conc_ResetEvt_Sig_reset(conc_ResetEvt_Sig self))(void));
-$extern fn_((conc_ResetEvt_asAwaitSrc(conc_ResetEvt* self))(conc_AwaitSrc));
+$extern fn_((conc_ResetEvt_asAwakeable(conc_ResetEvt* self))(conc_Awakeable));
 
 #define ____conc_ResetEvt_init_static() l$((conc_ResetEvt){ \
     .state = atom_V_init(conc_ResetEvt_State_unset), \

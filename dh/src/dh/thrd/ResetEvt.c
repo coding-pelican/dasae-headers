@@ -12,7 +12,7 @@ $static fn_((thrd_ResetEvt__waitUntilSet(thrd_ResetEvt* self, O$time_Dur timeout
 $static fn_((thrd_ResetEvt__ready(P$raw ctx))(bool));
 $static fn_((thrd_ResetEvt__link(P$raw ctx, thrd_wait_Link* link))(bool));
 $static fn_((thrd_ResetEvt__unlink(P$raw ctx, thrd_wait_Link* link))(void));
-$static let_(thrd_ResetEvt__src_vtbl, thrd_wait_Src_VTbl) = {
+$static let_(thrd_ResetEvt__src_vtbl, thrd_Wakeable_VTbl) = {
     .readyFn = thrd_ResetEvt__ready,
     .linkFn = thrd_ResetEvt__link,
     .unlinkFn = thrd_ResetEvt__unlink,
@@ -22,7 +22,7 @@ fn_((thrd_ResetEvt_init(void))(thrd_ResetEvt)) {
     return (thrd_ResetEvt){
         .state = atom_V_init(thrd_ResetEvt__unset),
         .lock = thrd_Mtx_init(),
-        .waiters = thrd_wait_List_init(),
+        .waiters = thrd_wait_Chain_init(),
     };
 };
 fn_((thrd_ResetEvt_fini(thrd_ResetEvt* self))(void)) {
@@ -43,7 +43,9 @@ fn_((thrd_ResetEvt_isSet(const thrd_ResetEvt* self))(bool)) {
 fn_((thrd_ResetEvt_tryWait(thrd_ResetEvt* self))(bool)) {
     return thrd_ResetEvt_isSet(self);
 };
-fn_((thrd_ResetEvt_wait(thrd_ResetEvt* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $guard) {
+fn_((thrd_ResetEvt_wait(
+    thrd_ResetEvt* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void) $guard) {
     if (thrd_ResetEvt_isSet(self)) {
         return_ok({});
     }
@@ -51,16 +53,18 @@ fn_((thrd_ResetEvt_wait(thrd_ResetEvt* self, thrd_wait_Src cancel_src))(Sched_Ca
     defer_(thrd_Waiter_fini(&waiter));
 
     var link = thrd_Waiter_link(&waiter, 0);
-    let src = thrd_ResetEvt_waitSrc(self);
-    if (src.vtbl->linkFn(src.ctx, &link)) {
+    let src = thrd_ResetEvt_wakeable(self);
+    if (thrd_Wakeable_link(src, &link)) {
         return_ok({});
     }
-    defer_(src.vtbl->unlinkFn(src.ctx, &link));
+    defer_(thrd_Wakeable_unlink(src, &link));
 
     try_(thrd_Waiter_wait(&waiter, cancel_src));
     return_ok({});
 } $unguarded(fn);
-fn_((thrd_ResetEvt_waitFor(thrd_ResetEvt* self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void) $guard) {
+fn_((thrd_ResetEvt_waitFor(
+    thrd_ResetEvt* self, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void) $guard) {
     if (thrd_ResetEvt_isSet(self)) {
         return_ok({});
     }
@@ -68,11 +72,11 @@ fn_((thrd_ResetEvt_waitFor(thrd_ResetEvt* self, thrd_wait_Src cancel_src, time_D
     defer_(thrd_Waiter_fini(&waiter));
 
     var link = thrd_Waiter_link(&waiter, 0);
-    let src = thrd_ResetEvt_waitSrc(self);
-    if (src.vtbl->linkFn(src.ctx, &link)) {
+    let src = thrd_ResetEvt_wakeable(self);
+    if (thrd_Wakeable_link(src, &link)) {
         return_ok({});
     }
-    defer_(src.vtbl->unlinkFn(src.ctx, &link));
+    defer_(thrd_Wakeable_unlink(src, &link));
 
     try_(thrd_Waiter_waitFor(&waiter, cancel_src, timeout));
     return_ok({});
@@ -80,8 +84,8 @@ fn_((thrd_ResetEvt_waitFor(thrd_ResetEvt* self, thrd_wait_Src cancel_src, time_D
 fn_((thrd_ResetEvt_waitProtcd(thrd_ResetEvt* self))(void) $scope) {
     return_void(catch_((thrd_ResetEvt__wait(self, none$((O$time_Dur))))($ignore, claim_unreachable)));
 } $unscoped(fn);
-fn_((thrd_ResetEvt_waitSrc(thrd_ResetEvt* self))(thrd_wait_Src)) {
-    return (thrd_wait_Src){
+fn_((thrd_ResetEvt_wakeable(thrd_ResetEvt* self))(thrd_Wakeable)) {
+    return (thrd_Wakeable){
         .ctx = self,
         .vtbl = &thrd_ResetEvt__src_vtbl,
     };
@@ -93,12 +97,12 @@ fn_((thrd_ResetEvt_set(thrd_ResetEvt* self))(void)) {
     thrd_Mtx_lockProtcd(&self->lock);
     let prev_state = atom_V_fetchXchg(&self->state, thrd_ResetEvt__is_set, atom_MemOrd_release);
     var waiters = self->waiters;
-    self->waiters = thrd_wait_List_init();
+    self->waiters = thrd_wait_Chain_init();
     thrd_Mtx_unlock(&self->lock);
     if (prev_state == thrd_ResetEvt__waiting) {
         thrd_ftx_wake(&self->state, u32_limit_max);
     }
-    thrd_wait_List_wakeAll(&waiters);
+    thrd_wait_Chain_wakeAll(&waiters);
 };
 fn_((thrd_ResetEvt_reset(thrd_ResetEvt* self))(void)) {
     atom_V_store(&self->state, thrd_ResetEvt__unset, atom_MemOrd_monotonic);
@@ -110,17 +114,21 @@ fn_((thrd_ResetEvt_Tok_isSet(thrd_ResetEvt_Tok self))(bool)) {
 fn_((thrd_ResetEvt_Tok_tryWait(thrd_ResetEvt_Tok self))(bool)) {
     return thrd_ResetEvt_tryWait(self.event);
 };
-fn_((thrd_ResetEvt_Tok_wait(thrd_ResetEvt_Tok self, thrd_wait_Src cancel_src))(Sched_Cancelable$void)) {
+fn_((thrd_ResetEvt_Tok_wait(
+    thrd_ResetEvt_Tok self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void)) {
     return thrd_ResetEvt_wait(self.event, cancel_src);
 };
-fn_((thrd_ResetEvt_Tok_waitFor(thrd_ResetEvt_Tok self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void)) {
+fn_((thrd_ResetEvt_Tok_waitFor(
+    thrd_ResetEvt_Tok self, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void)) {
     return thrd_ResetEvt_waitFor(self.event, cancel_src, timeout);
 };
 fn_((thrd_ResetEvt_Tok_waitProtcd(thrd_ResetEvt_Tok self))(void)) {
     thrd_ResetEvt_waitProtcd(self.event);
 };
-fn_((thrd_ResetEvt_Tok_waitSrc(thrd_ResetEvt_Tok self))(thrd_wait_Src)) {
-    return thrd_ResetEvt_waitSrc(self.event);
+fn_((thrd_ResetEvt_Tok_wakeable(thrd_ResetEvt_Tok self))(thrd_Wakeable)) {
+    return thrd_ResetEvt_wakeable(self.event);
 };
 
 fn_((thrd_ResetEvt_Sig_set(thrd_ResetEvt_Sig self))(void)) {
@@ -148,7 +156,7 @@ fn_((thrd_ResetEvt__waitUntilSet(thrd_ResetEvt* self, O$time_Dur timeout))(thrd_
     if (state == thrd_ResetEvt__waiting) {
         var deadline = thrd_ftx_Deadline_init(timeout);
         while (true) {
-            let waiting = thrd_ftx_Deadline_wait(&deadline, &self->state, thrd_ResetEvt__waiting, none$((O$thrd_wait_Src)));
+            let waiting = thrd_ftx_Deadline_wait(&deadline, &self->state, thrd_ResetEvt__waiting, none$((O$thrd_Wakeable)));
             state = atom_V_load(&self->state, atom_MemOrd_acquire);
             if (state != thrd_ResetEvt__waiting) { break; }
             try_(waiting);
@@ -168,13 +176,13 @@ fn_((thrd_ResetEvt__link(P$raw ctx, thrd_wait_Link* link))(bool)) {
         thrd_Mtx_unlock(&self->lock);
         return true;
     }
-    thrd_wait_List_prepend(&self->waiters, link);
+    thrd_wait_Chain_prepend(&self->waiters, link);
     thrd_Mtx_unlock(&self->lock);
     return false;
 };
 fn_((thrd_ResetEvt__unlink(P$raw ctx, thrd_wait_Link* link))(void)) {
     let self = ptrAlignCast$((thrd_ResetEvt*)(ctx));
     thrd_Mtx_lockProtcd(&self->lock);
-    thrd_wait_List_unlink(&self->waiters, link);
+    thrd_wait_Chain_unlink(&self->waiters, link);
     thrd_Mtx_unlock(&self->lock);
 };

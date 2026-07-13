@@ -55,13 +55,13 @@ $extern fn_((thrd_RWLock_fini(thrd_RWLock* self))(void));
 
 $extern fn_((thrd_RWLock_tryLock(thrd_RWLock* self))(bool));
 $attr($must_check)
-$extern fn_((thrd_RWLock_lock(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_RWLock_lock(thrd_RWLock* self, thrd_Wakeable cancel_src))(Sched_Cancelable$void));
 $extern fn_((thrd_RWLock_lockProtcd(thrd_RWLock* self))(void));
 $extern fn_((thrd_RWLock_unlock(thrd_RWLock* self))(void));
 
 $extern fn_((thrd_RWLock_tryLockShared(thrd_RWLock* self))(bool));
 $attr($must_check)
-$extern fn_((thrd_RWLock_lockShared(thrd_RWLock* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_RWLock_lockShared(thrd_RWLock* self, thrd_Wakeable cancel_src))(Sched_Cancelable$void));
 $extern fn_((thrd_RWLock_lockSharedProtcd(thrd_RWLock* self))(void));
 $extern fn_((thrd_RWLock_unlockShared(thrd_RWLock* self))(void));
 

@@ -5,10 +5,13 @@
  * @file    MPMC.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-06-30 (date of creation)
- * @updated 2026-06-30 (date of last update)
+ * @updated 2026-07-13 (date of last update)
  * @ingroup dasae-headers(dh)/thrd
  * @prefix  thrd_MPMC
+ *
  * @brief   MPMC OS-thread blocking channel surface.
+ * @details Defines a multiple-producer, multiple-consumer OS-thread blocking
+ *          channel surface.
  */
 #pragma once
 #ifndef thrd_MPMC__included
@@ -38,14 +41,15 @@ typedef struct thrd_MPMC {
     var_(tail_commit, atom_V$usize);
     var_(closed, atom_V$bool);
     var_(wait_lock, thrd_Mtx);
-    var_(send_waiters, thrd_wait_List);
-    var_(recv_waiters, thrd_wait_List);
+    var_(send_waiters, thrd_wait_Chain);
+    var_(recv_waiters, thrd_wait_Chain);
     var_(type, debug_TypeInfo);
 } thrd_MPMC;
-$extern fn_((thrd_MPMC_init(u_S$raw buf))(thrd_MPMC));
-#define T_use_thrd_MPMC_init$(_T...) __gen__T_use_thrd_MPMC_init$(_T)
-$extern fn_((thrd_MPMC_fini(thrd_MPMC* self))(void));
-#define T_use_thrd_MPMC_fini$(_T...) __gen__T_use_thrd_MPMC_fini$(_T)
+$extern fn_((thrd_MPMC_initFixed(u_S$raw buf))(thrd_MPMC));
+#define T_use_thrd_MPMC_initFixed$(_T...) __gen__T_use_thrd_MPMC_initFixed$(_T)
+$extern fn_((thrd_MPMC_finiFixed(thrd_MPMC* self))(void));
+#define T_use_thrd_MPMC_finiFixed$(_T...) __gen__T_use_thrd_MPMC_finiFixed$(_T)
+
 $extern fn_((thrd_MPMC_len(thrd_MPMC* self))(usize));
 #define T_use_thrd_MPMC_len$(_T...) __gen__T_use_thrd_MPMC_len$(_T)
 $extern fn_((thrd_MPMC_cap(thrd_MPMC* self))(usize));
@@ -71,7 +75,7 @@ typedef struct thrd_MPMC_Rx {
 } thrd_MPMC_Rx;
 typedef struct thrd_MPMC_Rx_RecvOp {
     var_(rx, thrd_MPMC_Rx);
-    var_(type, debug_TypeInfo);
+    var_(type, TypeInfo);
 } thrd_MPMC_Rx_RecvOp;
 typedef Tup$$(thrd_MPMC_Tx, thrd_MPMC_Rx) thrd_MPMC_Chans;
 
@@ -85,6 +89,11 @@ typedef Tup$$(thrd_MPMC_Tx, thrd_MPMC_Rx) thrd_MPMC_Chans;
 #define T_decl_thrd_MPMC_Tx$(_T...) __gen__T_decl_thrd_MPMC_Tx$(_T)
 #define T_impl_thrd_MPMC_Tx$(_T...) __gen__T_impl_thrd_MPMC_Tx$(_T)
 #define T_use_thrd_MPMC_Tx$(_T...) __gen__T_use_thrd_MPMC_Tx$(_T)
+#define thrd_MPMC_Tx_SendOp$(_T...) __alias__thrd_MPMC_Tx_SendOp$(_T)
+#define thrd_MPMC_Tx_SendOp$$(_T...) __anon__thrd_MPMC_Tx_SendOp$$(_T)
+#define T_decl_thrd_MPMC_Tx_SendOp$(_T...) __gen__T_decl_thrd_MPMC_Tx_SendOp$(_T)
+#define T_impl_thrd_MPMC_Tx_SendOp$(_T...) __gen__T_impl_thrd_MPMC_Tx_SendOp$(_T)
+#define T_use_thrd_MPMC_Tx_SendOp$(_T...) __gen__T_use_thrd_MPMC_Tx_SendOp$(_T)
 #define thrd_MPMC_Rx$(_T...) __alias__thrd_MPMC_Rx$(_T)
 #define thrd_MPMC_Rx$$(_T...) __anon__thrd_MPMC_Rx$$(_T)
 #define T_decl_thrd_MPMC_Rx$(_T...) __gen__T_decl_thrd_MPMC_Rx$(_T)
@@ -103,14 +112,15 @@ $attr($must_check)
 $extern fn_((thrd_MPMC_Tx_trySend(thrd_MPMC_Tx self, u_V$raw item))(thrd_chan_E$void));
 #define T_use_thrd_MPMC_Tx_trySend$(_T...) __gen__T_use_thrd_MPMC_Tx_trySend$(_T)
 $attr($must_check)
-$extern fn_((thrd_MPMC_Tx_send(thrd_MPMC_Tx self, u_V$raw item, thrd_wait_Src cancel_src))(thrd_chan_WaitE$void));
+$extern fn_((thrd_MPMC_Tx_send(thrd_MPMC_Tx self, u_V$raw item, thrd_Wakeable cancel_src))(thrd_chan_WaitE$void));
 #define T_use_thrd_MPMC_Tx_send$(_T...) __gen__T_use_thrd_MPMC_Tx_send$(_T)
 $attr($must_check)
-$extern fn_((thrd_MPMC_Tx_sendFor(thrd_MPMC_Tx self, u_V$raw item, thrd_wait_Src cancel_src, time_Dur dur))(thrd_chan_TimedE$void));
+$extern fn_((thrd_MPMC_Tx_sendFor(thrd_MPMC_Tx self, u_V$raw item, thrd_Wakeable cancel_src, time_Dur dur))(thrd_chan_TimedE$void));
 #define T_use_thrd_MPMC_Tx_sendFor$(_T...) __gen__T_use_thrd_MPMC_Tx_sendFor$(_T)
 $extern fn_((thrd_MPMC_Tx_sendOp(thrd_MPMC_Tx self, u_P$raw item))(thrd_MPMC_Tx_SendOp));
 #define T_use_thrd_MPMC_Tx_sendOp$(_T...) __gen__T_use_thrd_MPMC_Tx_sendOp$(_T)
 $extern fn_((thrd_MPMC_Tx_SendOp_op(thrd_MPMC_Tx_SendOp* self))(thrd_Select_Op));
+#define T_use_thrd_MPMC_Tx_SendOp_op$(_T...) __gen__T_use_thrd_MPMC_Tx_SendOp_op$(_T)
 
 $extern fn_((thrd_MPMC_rx(thrd_MPMC* self))(thrd_MPMC_Rx));
 #define T_use_thrd_MPMC_rx$(_T...) __gen__T_use_thrd_MPMC_rx$(_T)
@@ -118,10 +128,10 @@ $attr($must_check)
 $extern fn_((thrd_MPMC_Rx_tryRecv(thrd_MPMC_Rx self, u_V$raw ret_mem))(thrd_chan_E$u_V$raw));
 #define T_use_thrd_MPMC_Rx_tryRecv$(_T...) __gen__T_use_thrd_MPMC_Rx_tryRecv$(_T)
 $attr($must_check)
-$extern fn_((thrd_MPMC_Rx_recv(thrd_MPMC_Rx self, thrd_wait_Src cancel_src, u_V$raw ret_mem))(thrd_chan_WaitE$u_V$raw));
+$extern fn_((thrd_MPMC_Rx_recv(thrd_MPMC_Rx self, thrd_Wakeable cancel_src, u_V$raw ret_mem))(thrd_chan_WaitE$u_V$raw));
 #define T_use_thrd_MPMC_Rx_recv$(_T...) __gen__T_use_thrd_MPMC_Rx_recv$(_T)
 $attr($must_check)
-$extern fn_((thrd_MPMC_Rx_recvFor(thrd_MPMC_Rx self, thrd_wait_Src cancel_src, time_Dur dur, u_V$raw ret_mem))(thrd_chan_TimedE$u_V$raw));
+$extern fn_((thrd_MPMC_Rx_recvFor(thrd_MPMC_Rx self, thrd_Wakeable cancel_src, time_Dur dur, u_V$raw ret_mem))(thrd_chan_TimedE$u_V$raw));
 #define T_use_thrd_MPMC_Rx_recvFor$(_T...) __gen__T_use_thrd_MPMC_Rx_recvFor$(_T)
 $extern fn_((thrd_MPMC_Rx_recvOp(thrd_MPMC_Rx self, TypeInfo type))(thrd_MPMC_Rx_RecvOp));
 #define T_use_thrd_MPMC_Rx_recvOp$(_T...) __gen__T_use_thrd_MPMC_Rx_recvOp$(_T)
@@ -140,8 +150,8 @@ $extern fn_((thrd_MPMC_Rx_RecvOp_op(thrd_MPMC_Rx_RecvOp* self))(thrd_Select_Op))
         var_(tail_commit, atom_V$usize); \
         var_(closed, atom_V$bool); \
         var_(wait_lock, thrd_Mtx); \
-        var_(send_waiters, thrd_wait_List); \
-        var_(recv_waiters, thrd_wait_List); \
+        var_(send_waiters, thrd_wait_Chain); \
+        var_(recv_waiters, thrd_wait_Chain); \
         var_(type, debug_TypeInfo); \
     }); \
     var_(as_raw, thrd_MPMC) $like_ref; \
@@ -157,8 +167,8 @@ $extern fn_((thrd_MPMC_Rx_RecvOp_op(thrd_MPMC_Rx_RecvOp* self))(thrd_Select_Op))
             var_(tail_commit, atom_V$usize); \
             var_(closed, atom_V$bool); \
             var_(wait_lock, thrd_Mtx); \
-            var_(send_waiters, thrd_wait_List); \
-            var_(recv_waiters, thrd_wait_List); \
+            var_(send_waiters, thrd_wait_Chain); \
+            var_(recv_waiters, thrd_wait_Chain); \
             var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, thrd_MPMC) $like_ref; \
@@ -170,6 +180,19 @@ $extern fn_((thrd_MPMC_Rx_RecvOp_op(thrd_MPMC_Rx_RecvOp* self))(thrd_Select_Op))
 #define __gen__T_decl_thrd_MPMC_Tx$(_T...) $maybe_unused typedef union thrd_MPMC_Tx$(_T) thrd_MPMC_Tx$(_T)
 #define __gen__T_impl_thrd_MPMC_Tx$(_T...) union thrd_MPMC_Tx$(_T) { var_(chan, thrd_MPMC$(_T)*); var_(as_raw, thrd_MPMC_Tx) $like_ref; }
 #define __gen__T_use_thrd_MPMC_Tx$(_T...) T_decl_thrd_MPMC_Tx$(_T); T_impl_thrd_MPMC_Tx$(_T)
+
+#define __alias__thrd_MPMC_Tx_SendOp$(_T...) tpl$(thrd_MPMC_Tx_SendOp, _T)
+#define __anon__thrd_MPMC_Tx_SendOp$$(_T...) TypeOf(struct { \
+    var_(tx, thrd_MPMC_Tx$(_T)); \
+    var_(item, _T); \
+})
+#define __gen__T_decl_thrd_MPMC_Tx_SendOp$(_T...) $maybe_unused typedef struct thrd_MPMC_Tx_SendOp$(_T) thrd_MPMC_Tx_SendOp$(_T)
+#define __gen__T_impl_thrd_MPMC_Tx_SendOp$(_T...) \
+    struct thrd_MPMC_Tx_SendOp$(_T) { \
+        var_(tx, thrd_MPMC_Tx$(_T)); \
+        var_(item, _T); \
+    }
+#define __gen__T_use_thrd_MPMC_Tx_SendOp$(_T...) T_decl_thrd_MPMC_Tx_SendOp$(_T); T_impl_thrd_MPMC_Tx_SendOp$(_T)
 
 #define __alias__thrd_MPMC_Rx$(_T...) tpl$(thrd_MPMC_Rx, _T)
 #define __anon__thrd_MPMC_Rx$$(_T...) TypeOf(union { var_(chan, thrd_MPMC$(_T)*); var_(as_raw, thrd_MPMC_Rx) $like_ref; })
@@ -185,15 +208,15 @@ $extern fn_((thrd_MPMC_Rx_RecvOp_op(thrd_MPMC_Rx_RecvOp* self))(thrd_Select_Op))
     T_impl_E$($set(thrd_chan_TimedE)(_T))
 #define __gen__T_use_thrd_MPMC_Rx$(_T...) T_decl_thrd_MPMC_Rx$(_T); T_impl_thrd_MPMC_Rx$(_T)
 
-#define __gen__T_use_thrd_MPMC_init$(_T...) \
+#define __gen__T_use_thrd_MPMC_initFixed$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl$(thrd_MPMC_init, _T)(S$(_T) buf))(thrd_MPMC$(_T))) { \
-        return type$((thrd_MPMC$(_T))(thrd_MPMC_init(u_anyS(buf)))); \
+    $static fn_((tpl$(thrd_MPMC_initFixed, _T)(S$(_T) buf))(thrd_MPMC$(_T))) { \
+        return type$((thrd_MPMC$(_T))(thrd_MPMC_initFixed(u_anyS(buf)))); \
     }
-#define __gen__T_use_thrd_MPMC_fini$(_T...) \
+#define __gen__T_use_thrd_MPMC_finiFixed$(_T...) \
     $attr($inline_always) \
-    $static fn_((tpl$(thrd_MPMC_fini, _T)(P$$(thrd_MPMC$(_T)) self))(void)) { \
-        return thrd_MPMC_fini(self->as_raw); \
+    $static fn_((tpl$(thrd_MPMC_finiFixed, _T)(P$$(thrd_MPMC$(_T)) self))(void)) { \
+        return thrd_MPMC_finiFixed(self->as_raw); \
     }
 #define __gen__T_use_thrd_MPMC_len$(_T...) \
     $attr($inline_always) \
@@ -252,18 +275,26 @@ $extern fn_((thrd_MPMC_Rx_RecvOp_op(thrd_MPMC_Rx_RecvOp* self))(thrd_Select_Op))
     }
 #define __gen__T_use_thrd_MPMC_Tx_send$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_MPMC_Tx_send, _T)(thrd_MPMC_Tx$(_T) self, _T item, thrd_wait_Src cancel_src))(thrd_chan_WaitE$void)) { \
+    $static fn_((tpl$(thrd_MPMC_Tx_send, _T)(thrd_MPMC_Tx$(_T) self, _T item, thrd_Wakeable cancel_src))(thrd_chan_WaitE$void)) { \
         return thrd_MPMC_Tx_send(*self.as_raw, u_anyV(item), cancel_src); \
     }
 #define __gen__T_use_thrd_MPMC_Tx_sendFor$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_MPMC_Tx_sendFor, _T)(thrd_MPMC_Tx$(_T) self, _T item, thrd_wait_Src cancel_src, time_Dur dur))(thrd_chan_TimedE$void)) { \
+    $static fn_((tpl$(thrd_MPMC_Tx_sendFor, _T)(thrd_MPMC_Tx$(_T) self, _T item, thrd_Wakeable cancel_src, time_Dur dur))(thrd_chan_TimedE$void)) { \
         return thrd_MPMC_Tx_sendFor(*self.as_raw, u_anyV(item), cancel_src, dur); \
     }
 #define __gen__T_use_thrd_MPMC_Tx_sendOp$(_T...) \
+    T_use_thrd_MPMC_Tx_SendOp$(_T); \
     $attr($inline_always) \
-    $static fn_((tpl$(thrd_MPMC_Tx_sendOp, _T)(thrd_MPMC_Tx$(_T) self, _T* item))(thrd_MPMC_Tx_SendOp)) { \
-        return thrd_MPMC_Tx_sendOp(*self.as_raw, u_anyP(item)); \
+    $static fn_((tpl$(thrd_MPMC_Tx_sendOp, _T)(thrd_MPMC_Tx$(_T) self, _T item))(thrd_MPMC_Tx_SendOp$(_T))) { \
+        return (thrd_MPMC_Tx_SendOp$(_T)){ .tx = self, .item = item }; \
+    }
+#define __gen__T_use_thrd_MPMC_Tx_SendOp_op$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_MPMC_Tx_SendOp_op, _T)(P$$(thrd_MPMC_Tx_SendOp$(_T)) self))(thrd_Select_Op)) { \
+        claim_assert_nonnull(self); \
+        var raw = thrd_MPMC_Tx_sendOp(*self->tx.as_raw, u_anyP(&self->item)); \
+        return thrd_MPMC_Tx_SendOp_op(&raw); \
     }
 #define __gen__T_use_thrd_MPMC_Rx_tryRecv$(_T...) \
     $attr($inline_always $must_check) \
@@ -272,12 +303,12 @@ $extern fn_((thrd_MPMC_Rx_RecvOp_op(thrd_MPMC_Rx_RecvOp* self))(thrd_Select_Op))
     } $unscoped(fn)
 #define __gen__T_use_thrd_MPMC_Rx_recv$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_MPMC_Rx_recv, _T)(thrd_MPMC_Rx$(_T) self, thrd_wait_Src cancel_src))(E$($set(thrd_chan_WaitE)(_T))) $scope) { \
+    $static fn_((tpl$(thrd_MPMC_Rx_recv, _T)(thrd_MPMC_Rx$(_T) self, thrd_Wakeable cancel_src))(E$($set(thrd_chan_WaitE)(_T))) $scope) { \
         return_(u_castE$((ReturnType)(thrd_MPMC_Rx_recv(*self.as_raw, cancel_src, u_retV$(_T))))); \
     } $unscoped(fn)
 #define __gen__T_use_thrd_MPMC_Rx_recvFor$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_MPMC_Rx_recvFor, _T)(thrd_MPMC_Rx$(_T) self, thrd_wait_Src cancel_src, time_Dur dur))(E$($set(thrd_chan_TimedE)(_T))) $scope) { \
+    $static fn_((tpl$(thrd_MPMC_Rx_recvFor, _T)(thrd_MPMC_Rx$(_T) self, thrd_Wakeable cancel_src, time_Dur dur))(E$($set(thrd_chan_TimedE)(_T))) $scope) { \
         return_(u_castE$((ReturnType)(thrd_MPMC_Rx_recvFor(*self.as_raw, cancel_src, dur, u_retV$(_T))))); \
     } $unscoped(fn)
 #define __gen__T_use_thrd_MPMC_Rx_recvOp$(_T...) \

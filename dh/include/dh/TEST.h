@@ -33,21 +33,21 @@ extern "C" {
 errset_((TEST_E)(TEST_Fail, TEST_Skip));
 
 /* Test case function type */
-typedef fn_(((*)(void))(E$void) $T) TEST_CaseFn;
+typedef fn_(((*)(void))(E$void) $T) TEST_UnitFn;
 
 /* Test case structure */
-typedef struct TEST_Case {
-    TEST_CaseFn fn;
+typedef struct TEST_Unit {
+    TEST_UnitFn fn;
     S_const$u8 name;
-} TEST_Case;
+} TEST_Unit;
 /* Use slice for test cases */
-T_use$((TEST_Case)(P, S, ArrList));
+T_use$((TEST_Unit)(P, S, ArrList));
 
 /*========== Public API =====================================================*/
 
 /// @brief Test framework structure
 typedef struct TEST_Framework {
-    ArrList$TEST_Case cases $like_ref;
+    ArrList$TEST_Unit units $like_ref;
     struct {
         u32 total;
         u32 passed;
@@ -60,7 +60,7 @@ typedef struct TEST_Framework {
 /// @brief Access test framework singleton instance
 $extern fn_((TEST_Framework_instance(void))(TEST_Framework*));
 /// @brief Bind test case to framework
-$extern fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void));
+$extern fn_((TEST_Framework_bindUnit(TEST_UnitFn fn, S_const$u8 name))(void));
 /// @brief Run all registered tests
 $extern fn_((TEST_Framework_run(void))(void));
 
@@ -71,9 +71,9 @@ $extern fn_((TEST_Framework_run(void))(void));
 #define __TEST_fn_0(_$Name, _$Extension...) \
     pp_join(_, TEST_fn, _$Extension)(_$Name)
 
-#define TEST_fn_$_scope(_$Name...) comp_syn__TEST_fn_$_scope(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _$Name)
+#define TEST_fn_$_scope(_$Name...) comp_syn__TEST_fn_$_scope(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(unitFn)), _$Name)
 #define $unscoped_TEST_fn comp_syn__$unscoped_TEST_fn
-#define TEST_fn_$_guard(_$Name...) comp_syn__TEST_fn_$_guard(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(caseFn)), _$Name)
+#define TEST_fn_$_guard(_$Name...) comp_syn__TEST_fn_$_guard(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(unitFn)), _$Name)
 #define $unguarded_TEST_fn comp_syn__$unguarded_TEST_fn
 
 #if !on_comptime
@@ -91,24 +91,25 @@ $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(TEST_E$void));
 
 /*========== Implementation Details ========================================*/
 
-#define comp_syn__TEST_fn_$_scope(_$ID_binder, _$ID_caseFn, _$Name...) \
-    TEST__binder(_$ID_binder, _$ID_caseFn, _$Name); \
-    TEST__caseFn(_$ID_binder, _$ID_caseFn)
+#define comp_syn__TEST_fn_$_scope(_$ID_binder, _$ID_unitFn, _$Name...) \
+    TEST__binder(_$ID_binder, _$ID_unitFn, _$Name); \
+    TEST__unitFn(_$ID_binder, _$ID_unitFn)
 
-#define comp_syn__TEST_fn_$_guard(_$ID_binder, _$ID_caseFn, _$Name...) \
-    TEST__binder(_$ID_binder, _$ID_caseFn, _$Name); \
-    TEST__caseFn_ext(_$ID_binder, _$ID_caseFn)
+#define comp_syn__TEST_fn_$_guard(_$ID_binder, _$ID_unitFn, _$Name...) \
+    TEST__binder(_$ID_binder, _$ID_unitFn, _$Name); \
+    TEST__unitFn_ext(_$ID_binder, _$ID_unitFn)
 
-#define TEST__binder(_$ID_binder, _$ID_caseFn, _$Name...) comp_fn_gen__TEST__binder(_$ID_binder, _$ID_caseFn, _$Name)
-#define TEST__caseFn(_$ID_binder, _$ID_caseFn...) comp_fn_gen__TEST__caseFn(_$ID_binder, _$ID_caseFn)
-#define TEST__caseFn_ext(_$ID_binder, _$ID_caseFn...) comp_fn_gen__TEST__caseFn_ext(_$ID_binder, _$ID_caseFn)
+#define TEST__binder(_$ID_binder, _$ID_unitFn, _$Name...) comp_fn_gen__TEST__binder(_$ID_binder, _$ID_unitFn, _$Name)
+#define TEST__unitFn(_$ID_binder, _$ID_unitFn...) comp_fn_gen__TEST__unitFn(_$ID_binder, _$ID_unitFn)
+#define TEST__unitFn_ext(_$ID_binder, _$ID_unitFn...) comp_fn_gen__TEST__unitFn_ext(_$ID_binder, _$ID_unitFn)
 
-#define comp_fn_gen__TEST__binder(_$ID_binder, _$ID_caseFn, _$Name...) \
-    $static fn_((_$ID_caseFn(void))(E$void)) $must_check; \
+#define comp_fn_gen__TEST__binder(_$ID_binder, _$ID_unitFn, _$Name...) \
+    $static comp_fn_gen__TEST__binder__sgn(_$ID_binder); \
+    $static fn_((_$ID_unitFn(void))(E$void)) $must_check; \
     $static comp_fn_gen__TEST__binder__sgn(_$ID_binder) { \
         $static bool s_is_bound = !comp_fn_gen__TEST__binder__isEnabled(); \
         if (!s_is_bound) { \
-            TEST_Framework_bindCase(_$ID_caseFn, u8_l(_$Name)); \
+            TEST_Framework_bindUnit(_$ID_unitFn, u8_l(_$Name)); \
             s_is_bound = true; \
         } \
     }
@@ -120,16 +121,16 @@ $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(TEST_E$void));
 #define comp_fn_gen__TEST__binder__isEnabled() (false)
 #endif /* !TEST_enabled */
 // clang-format off
-#define comp_fn_gen__TEST__caseFn(_$ID_binder, _$ID_caseFn...)      \
+#define comp_fn_gen__TEST__unitFn(_$ID_binder, _$ID_unitFn...)      \
     /* TODO: Add case check if it has been run before $on_exit */ \
-    $static fn_((_$ID_caseFn(void))(E$void) $scope) {                 \
+    $static fn_((_$ID_unitFn(void))(E$void) $scope) {                 \
         _$ID_binder();
 #define comp_syn__$unscoped_TEST_fn \
         return_ok({});          \
     } $unscoped_fn
 
-#define comp_fn_gen__TEST__caseFn_ext(_$ID_binder, _$ID_caseFn...) \
-    $static fn_((_$ID_caseFn(void))(E$void) $guard) {            \
+#define comp_fn_gen__TEST__unitFn_ext(_$ID_binder, _$ID_unitFn...) \
+    $static fn_((_$ID_unitFn(void))(E$void) $guard) {            \
         _$ID_binder();
 #define comp_syn__$unguarded_TEST_fn \
         return_ok({});              \

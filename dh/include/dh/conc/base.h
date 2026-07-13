@@ -49,14 +49,14 @@ T_use_E$($set(conc_chan_E)(u_V$raw));
 T_use_E$($set(conc_chan_WaitE)(u_V$raw));
 T_use_E$($set(conc_chan_TimedE)(u_V$raw));
 
-T_alias$((conc_AwaitSrc_VTbl)(struct conc_AwaitSrc_VTbl));
+T_alias$((conc_Awakeable_VTbl)(struct conc_Awakeable_VTbl));
 /// Erased readiness source for `conc_Select` and async waits.
-T_alias$((conc_AwaitSrc)(struct conc_AwaitSrc {
+T_alias$((conc_Awakeable)(struct conc_Awakeable {
     var_(ctx, P$raw);
-    var_(vtbl, const conc_AwaitSrc_VTbl*);
+    var_(vtbl, const conc_Awakeable_VTbl*);
 }));
 $attr($inline_always)
-$static fn_((conc_AwaitSrc_init(P$raw ctx, const conc_AwaitSrc_VTbl* vtbl))(conc_AwaitSrc));
+$static fn_((conc_Awakeable_init(P$raw ctx, const conc_Awakeable_VTbl* vtbl))(conc_Awakeable));
 
 T_alias$((conc_AwaitLink_State)(enum_((conc_AwaitLink_State $fits($packed))(
     conc_AwaitLink_State_idle = 0,
@@ -84,7 +84,7 @@ struct conc_AwaitLink {
 $attr($inline_always)
 $static fn_((conc_AwaitLink_init(P$raw wake_ctx, conc_AwaitLink_WakeFn wakeFn, usize case_idx))(conc_AwaitLink));
 
-struct conc_AwaitSrc_VTbl {
+struct conc_Awakeable_VTbl {
     /// Try to consume a ready value without scheduling. Returns false if the
     /// source is not ready. `out` points to caller-owned storage for the
     /// source-specific payload type.
@@ -113,14 +113,14 @@ fn_((conc_AwaitLink_init(P$raw wake_ctx, conc_AwaitLink_WakeFn wakeFn, usize cas
         .case_idx = case_idx,
     };
 };
-fn_((conc_AwaitSrc_init(P$raw ctx, const conc_AwaitSrc_VTbl* vtbl))(conc_AwaitSrc)) {
+fn_((conc_Awakeable_init(P$raw ctx, const conc_Awakeable_VTbl* vtbl))(conc_Awakeable)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
     claim_assert_nonnull(vtbl->pollFn);
     claim_assert_nonnull(vtbl->linkFn);
     claim_assert_nonnull(vtbl->unlinkFn);
     claim_assert_nonnull(vtbl->cancelFn);
-    return (conc_AwaitSrc){ .ctx = ctx, .vtbl = vtbl };
+    return (conc_Awakeable){ .ctx = ctx, .vtbl = vtbl };
 };
 #endif /* on_analysis_active_only || on_comptime */
 

@@ -16,7 +16,7 @@ $static fn_((conc_OnceEvt__waitUntil(
     O$time_Inst deadline
 ))(Sched_TimedE$void));
 
-$static let_(conc_OnceEvt__vtbl, conc_AwaitSrc_VTbl) = {
+$static let_(conc_OnceEvt__vtbl, conc_Awakeable_VTbl) = {
     .pollFn = conc_OnceEvt__poll,
     .linkFn = conc_OnceEvt__link,
     .unlinkFn = conc_OnceEvt__unlink,
@@ -89,8 +89,8 @@ fn_((conc_OnceEvt_Sig_set(conc_OnceEvt_Sig self))(void)) {
     return conc_OnceEvt_set(self.evt);
 };
 
-fn_((conc_OnceEvt_asAwaitSrc(conc_OnceEvt* self))(conc_AwaitSrc)) {
-    return conc_AwaitSrc_init(self, &conc_OnceEvt__vtbl);
+fn_((conc_OnceEvt_asAwakeable(conc_OnceEvt* self))(conc_Awakeable)) {
+    return conc_Awakeable_init(self, &conc_OnceEvt__vtbl);
 };
 
 fn_((conc_OnceEvt__wakeAll(O$P$conc_AwaitLink waiters))(void)) {

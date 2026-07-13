@@ -24,7 +24,7 @@ T_alias$((conc_Select$raw)(struct conc_Select$raw));
 
 struct conc_Select_Case {
     var_(field_idx, u32);
-    var_(src, conc_AwaitSrc);
+    var_(src, conc_Awakeable);
     var_(result, u_P$raw);
     var_(link, conc_AwaitLink);
 };
@@ -37,7 +37,7 @@ struct conc_Select$raw {
 };
 
 $extern fn_((conc_Select_init(TypeInfo union_ty, S$conc_Select_Case cases))(conc_Select$raw));
-$extern fn_((conc_Select_addSrc(conc_Select$raw* self, u32 field_idx, conc_AwaitSrc src, u_P$raw result))(void));
+$extern fn_((conc_Select_addSrc(conc_Select$raw* self, u32 field_idx, conc_Awakeable src, u_P$raw result))(void));
 $extern fn_((conc_Select_addFuture(conc_Select$raw* self, u32 field_idx, Future$raw* fut, TypeInfo field_ty, u_P$raw result))(void));
 $extern fn_((conc_Select_poll(conc_Select$raw* self, TypeInfo union_ty, u_V$raw ret_mem))(bool));
 $attr($must_check)

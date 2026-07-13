@@ -29,7 +29,7 @@ extern "C" {
 typedef struct thrd_ResetEvt {
     var_(state, atom_V$u32);
     var_(lock, thrd_Mtx);
-    var_(waiters, thrd_wait_List);
+    var_(waiters, thrd_wait_Chain);
 } thrd_ResetEvt;
 #define thrd_ResetEvt_init_static(/*void*/) \
     ____thrd_ResetEvt_init_static()
@@ -44,11 +44,15 @@ $extern fn_((thrd_ResetEvt_sig(thrd_ResetEvt* self))(thrd_ResetEvt_Sig));
 $extern fn_((thrd_ResetEvt_isSet(const thrd_ResetEvt* self))(bool));
 $extern fn_((thrd_ResetEvt_tryWait(thrd_ResetEvt* self))(bool));
 $attr($must_check)
-$extern fn_((thrd_ResetEvt_wait(thrd_ResetEvt* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_ResetEvt_wait(
+    thrd_ResetEvt* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((thrd_ResetEvt_waitFor(thrd_ResetEvt* self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$extern fn_((thrd_ResetEvt_waitFor(
+    thrd_ResetEvt* self, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void));
 $extern fn_((thrd_ResetEvt_waitProtcd(thrd_ResetEvt* self))(void));
-$extern fn_((thrd_ResetEvt_waitSrc(thrd_ResetEvt* self))(thrd_wait_Src));
+$extern fn_((thrd_ResetEvt_wakeable(thrd_ResetEvt* self))(thrd_Wakeable));
 $extern fn_((thrd_ResetEvt_set(thrd_ResetEvt* self))(void));
 $extern fn_((thrd_ResetEvt_reset(thrd_ResetEvt* self))(void));
 
@@ -58,11 +62,15 @@ struct thrd_ResetEvt_Tok {
 $extern fn_((thrd_ResetEvt_Tok_isSet(thrd_ResetEvt_Tok self))(bool));
 $extern fn_((thrd_ResetEvt_Tok_tryWait(thrd_ResetEvt_Tok self))(bool));
 $attr($must_check)
-$extern fn_((thrd_ResetEvt_Tok_wait(thrd_ResetEvt_Tok self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_ResetEvt_Tok_wait(
+    thrd_ResetEvt_Tok self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((thrd_ResetEvt_Tok_waitFor(thrd_ResetEvt_Tok self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$extern fn_((thrd_ResetEvt_Tok_waitFor(
+    thrd_ResetEvt_Tok self, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void));
 $extern fn_((thrd_ResetEvt_Tok_waitProtcd(thrd_ResetEvt_Tok self))(void));
-$extern fn_((thrd_ResetEvt_Tok_waitSrc(thrd_ResetEvt_Tok self))(thrd_wait_Src));
+$extern fn_((thrd_ResetEvt_Tok_wakeable(thrd_ResetEvt_Tok self))(thrd_Wakeable));
 
 struct thrd_ResetEvt_Sig {
     var_(event, thrd_ResetEvt*);
@@ -75,7 +83,7 @@ $extern fn_((thrd_ResetEvt_Sig_reset(thrd_ResetEvt_Sig self))(void));
 #define ____thrd_ResetEvt_init_static() l$((thrd_ResetEvt){ \
     .state = atom_V_init(0u), \
     .lock = thrd_Mtx_init_static(), \
-    .waiters = thrd_wait_List_init_static(), \
+    .waiters = thrd_wait_Chain_init_static(), \
 })
 
 #if defined(__cplusplus)

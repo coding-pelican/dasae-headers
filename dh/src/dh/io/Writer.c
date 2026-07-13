@@ -3,8 +3,7 @@
 #include "dh/fmt/common.h"
 
 fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(E$usize)) {
-    claim_assert_nonnull(self.ctx);
-    claim_assert_nonnull(self.writeFn);
+    self = io_Writer_ensureValid(self);
     claim_assert_nonnullS(bytes);
     return self.writeFn(self.ctx, bytes);
 };

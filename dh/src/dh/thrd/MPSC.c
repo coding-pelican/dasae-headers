@@ -15,16 +15,18 @@ $static fn_((thrd_MPSC__sendUnlink(P$raw ctx, thrd_wait_Link* link))(void));
 $static fn_((thrd_MPSC__recvReady(P$raw ctx))(bool));
 $static fn_((thrd_MPSC__recvLink(P$raw ctx, thrd_wait_Link* link))(bool));
 $static fn_((thrd_MPSC__recvUnlink(P$raw ctx, thrd_wait_Link* link))(void));
-$static fn_((thrd_MPSC__sendOpPoll(P$raw ctx, u_P$raw result))(bool));
-$static fn_((thrd_MPSC__recvOpPoll(P$raw ctx, u_P$raw result))(bool));
+$static fn_((thrd_MPSC__sendOpPoll(P$raw ctx))(bool));
+$static fn_((thrd_MPSC__sendOpCommit(P$raw ctx, u_P$raw data, u_P$raw result))(bool));
+$static fn_((thrd_MPSC__recvOpPoll(P$raw ctx))(bool));
+$static fn_((thrd_MPSC__recvOpCommit(P$raw ctx, u_P$raw data, u_P$raw result))(bool));
 
-$static let_(thrd_MPSC__send_vtbl, thrd_wait_Src_VTbl) = {
+$static let_(thrd_MPSC__send_vtbl, thrd_Wakeable_VTbl) = {
     .readyFn = thrd_MPSC__sendReady,
     .linkFn = thrd_MPSC__sendLink,
     .unlinkFn = thrd_MPSC__sendUnlink,
 };
 
-$static let_(thrd_MPSC__recv_vtbl, thrd_wait_Src_VTbl) = {
+$static let_(thrd_MPSC__recv_vtbl, thrd_Wakeable_VTbl) = {
     .readyFn = thrd_MPSC__recvReady,
     .linkFn = thrd_MPSC__recvLink,
     .unlinkFn = thrd_MPSC__recvUnlink,
@@ -32,13 +34,16 @@ $static let_(thrd_MPSC__recv_vtbl, thrd_wait_Src_VTbl) = {
 
 $static let_(thrd_MPSC__send_op_vtbl, thrd_Select_Op_VTbl) = {
     .pollFn = thrd_MPSC__sendOpPoll,
+    .commitFn = thrd_MPSC__sendOpCommit,
 };
 
 $static let_(thrd_MPSC__recv_op_vtbl, thrd_Select_Op_VTbl) = {
     .pollFn = thrd_MPSC__recvOpPoll,
+    .commitFn = thrd_MPSC__recvOpCommit,
 };
 
-fn_((thrd_MPSC_init(u_S$raw buf))(thrd_MPSC)) {
+fn_((thrd_MPSC_initFixed(u_S$raw buf))(thrd_MPSC)) {
+    claim_assert(buf.len != 0);
     return (thrd_MPSC){
         .buf = buf.raw,
         .head = atom_V_init(0),
@@ -46,13 +51,13 @@ fn_((thrd_MPSC_init(u_S$raw buf))(thrd_MPSC)) {
         .tail_commit = atom_V_init(0),
         .closed = atom_V_init(false),
         .wait_lock = thrd_Mtx_init(),
-        .send_waiters = thrd_wait_List_init(),
-        .recv_waiters = thrd_wait_List_init(),
+        .send_waiters = thrd_wait_Chain_init(),
+        .recv_waiters = thrd_wait_Chain_init(),
         .type = $typing(buf.type),
     };
 };
 
-fn_((thrd_MPSC_fini(thrd_MPSC* self))(void)) {
+fn_((thrd_MPSC_finiFixed(thrd_MPSC* self))(void)) {
     claim_assert_nonnull(self);
     atom_V_store(&self->closed, true, atom_MemOrd_release);
     thrd_MPSC__broadcast(self);
@@ -107,7 +112,7 @@ fn_((thrd_MPSC_Tx_trySend(thrd_MPSC_Tx self, u_V$raw item))(thrd_chan_E$void) $g
     return_err(E_cause$thrd_chan_Full());
 } $unguarded(fn);
 
-fn_((thrd_MPSC_Tx_send(thrd_MPSC_Tx self, u_V$raw item, thrd_wait_Src cancel_src))(thrd_chan_WaitE$void) $guard) {
+fn_((thrd_MPSC_Tx_send(thrd_MPSC_Tx self, u_V$raw item, thrd_Wakeable cancel_src))(thrd_chan_WaitE$void) $guard) {
     debug_assert_eqBy($typed(self.chan->type), item.inner_type, TypeInfo_eql);
     var waiter = thrd_Waiter_init();
     defer_(thrd_Waiter_fini(&waiter));
@@ -125,22 +130,22 @@ fn_((thrd_MPSC_Tx_send(thrd_MPSC_Tx self, u_V$raw item, thrd_wait_Src cancel_src
 
         thrd_Mtx_lockProtcd(&self.chan->wait_lock);
         if (!thrd_MPSC_isClosed(self.chan) && thrd_MPSC_isFull(self.chan)) {
-            thrd_wait_List_prepend(&self.chan->send_waiters, &link);
+            thrd_wait_Chain_prepend(&self.chan->send_waiters, &link);
             thrd_Mtx_unlock(&self.chan->wait_lock);
             catch_((thrd_Waiter_wait(&waiter, cancel_src))(err, {
                 thrd_Mtx_lockProtcd(&self.chan->wait_lock);
-                thrd_wait_List_unlink(&self.chan->send_waiters, &link);
+                thrd_wait_Chain_unlink(&self.chan->send_waiters, &link);
                 thrd_Mtx_unlock(&self.chan->wait_lock);
                 return_err(err);
             }));
             thrd_Mtx_lockProtcd(&self.chan->wait_lock);
-            thrd_wait_List_unlink(&self.chan->send_waiters, &link);
+            thrd_wait_Chain_unlink(&self.chan->send_waiters, &link);
         }
         thrd_Mtx_unlock(&self.chan->wait_lock);
     }
 } $unguarded(fn);
 
-fn_((thrd_MPSC_Tx_sendFor(thrd_MPSC_Tx self, u_V$raw item, thrd_wait_Src cancel_src, time_Dur dur))(thrd_chan_TimedE$void) $guard) {
+fn_((thrd_MPSC_Tx_sendFor(thrd_MPSC_Tx self, u_V$raw item, thrd_Wakeable cancel_src, time_Dur dur))(thrd_chan_TimedE$void) $guard) {
     debug_assert_eqBy($typed(self.chan->type), item.inner_type, TypeInfo_eql);
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     let started = time_Awake_now(clock);
@@ -165,16 +170,16 @@ fn_((thrd_MPSC_Tx_sendFor(thrd_MPSC_Tx self, u_V$raw item, thrd_wait_Src cancel_
                 thrd_Mtx_unlock(&self.chan->wait_lock);
                 return_err(E_cause$Sched_Timeout());
             }
-            thrd_wait_List_prepend(&self.chan->send_waiters, &link);
+            thrd_wait_Chain_prepend(&self.chan->send_waiters, &link);
             thrd_Mtx_unlock(&self.chan->wait_lock);
             catch_((thrd_Waiter_waitFor(&waiter, cancel_src, remaining))(err, {
                 thrd_Mtx_lockProtcd(&self.chan->wait_lock);
-                thrd_wait_List_unlink(&self.chan->send_waiters, &link);
+                thrd_wait_Chain_unlink(&self.chan->send_waiters, &link);
                 thrd_Mtx_unlock(&self.chan->wait_lock);
                 return_err(err);
             }));
             thrd_Mtx_lockProtcd(&self.chan->wait_lock);
-            thrd_wait_List_unlink(&self.chan->send_waiters, &link);
+            thrd_wait_Chain_unlink(&self.chan->send_waiters, &link);
         }
         thrd_Mtx_unlock(&self.chan->wait_lock);
     }
@@ -184,7 +189,7 @@ fn_((thrd_MPSC_rx(thrd_MPSC* self))(thrd_MPSC_Rx)) {
     return (thrd_MPSC_Rx){ .chan = self };
 };
 
-fn_((thrd_MPSC_Rx_recv(thrd_MPSC_Rx self, thrd_wait_Src cancel_src, u_V$raw out))(thrd_chan_WaitE$u_V$raw) $guard) {
+fn_((thrd_MPSC_Rx_recv(thrd_MPSC_Rx self, thrd_Wakeable cancel_src, u_V$raw out))(thrd_chan_WaitE$u_V$raw) $guard) {
     debug_assert_eqBy($typed(self.chan->type), out.inner_type, TypeInfo_eql);
     var waiter = thrd_Waiter_init();
     defer_(thrd_Waiter_fini(&waiter));
@@ -204,16 +209,16 @@ fn_((thrd_MPSC_Rx_recv(thrd_MPSC_Rx self, thrd_wait_Src cancel_src, u_V$raw out)
 
         thrd_Mtx_lockProtcd(&self.chan->wait_lock);
         if (!thrd_MPSC_isClosed(self.chan) && thrd_MPSC_isEmpty(self.chan)) {
-            thrd_wait_List_prepend(&self.chan->recv_waiters, &link);
+            thrd_wait_Chain_prepend(&self.chan->recv_waiters, &link);
             thrd_Mtx_unlock(&self.chan->wait_lock);
             catch_((thrd_Waiter_wait(&waiter, cancel_src))(err, {
                 thrd_Mtx_lockProtcd(&self.chan->wait_lock);
-                thrd_wait_List_unlink(&self.chan->recv_waiters, &link);
+                thrd_wait_Chain_unlink(&self.chan->recv_waiters, &link);
                 thrd_Mtx_unlock(&self.chan->wait_lock);
                 return_err(err);
             }));
             thrd_Mtx_lockProtcd(&self.chan->wait_lock);
-            thrd_wait_List_unlink(&self.chan->recv_waiters, &link);
+            thrd_wait_Chain_unlink(&self.chan->recv_waiters, &link);
         }
         thrd_Mtx_unlock(&self.chan->wait_lock);
     }
@@ -235,7 +240,7 @@ fn_((thrd_MPSC_Rx_tryRecv(thrd_MPSC_Rx self, u_V$raw out))(thrd_chan_E$u_V$raw) 
     return_ok(out);
 } $unguarded(fn);
 
-fn_((thrd_MPSC_Rx_recvFor(thrd_MPSC_Rx self, thrd_wait_Src cancel_src, time_Dur dur, u_V$raw out))(thrd_chan_TimedE$u_V$raw) $guard) {
+fn_((thrd_MPSC_Rx_recvFor(thrd_MPSC_Rx self, thrd_Wakeable cancel_src, time_Dur dur, u_V$raw out))(thrd_chan_TimedE$u_V$raw) $guard) {
     debug_assert_eqBy($typed(self.chan->type), out.inner_type, TypeInfo_eql);
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     let started = time_Awake_now(clock);
@@ -262,16 +267,16 @@ fn_((thrd_MPSC_Rx_recvFor(thrd_MPSC_Rx self, thrd_wait_Src cancel_src, time_Dur 
                 thrd_Mtx_unlock(&self.chan->wait_lock);
                 return_err(E_cause$Sched_Timeout());
             }
-            thrd_wait_List_prepend(&self.chan->recv_waiters, &link);
+            thrd_wait_Chain_prepend(&self.chan->recv_waiters, &link);
             thrd_Mtx_unlock(&self.chan->wait_lock);
             catch_((thrd_Waiter_waitFor(&waiter, cancel_src, remaining))(err, {
                 thrd_Mtx_lockProtcd(&self.chan->wait_lock);
-                thrd_wait_List_unlink(&self.chan->recv_waiters, &link);
+                thrd_wait_Chain_unlink(&self.chan->recv_waiters, &link);
                 thrd_Mtx_unlock(&self.chan->wait_lock);
                 return_err(err);
             }));
             thrd_Mtx_lockProtcd(&self.chan->wait_lock);
-            thrd_wait_List_unlink(&self.chan->recv_waiters, &link);
+            thrd_wait_Chain_unlink(&self.chan->recv_waiters, &link);
         }
         thrd_Mtx_unlock(&self.chan->wait_lock);
     }
@@ -279,13 +284,15 @@ fn_((thrd_MPSC_Rx_recvFor(thrd_MPSC_Rx self, thrd_wait_Src cancel_src, time_Dur 
 
 fn_((thrd_MPSC_Rx_recvOp(thrd_MPSC_Rx self, TypeInfo type))(thrd_MPSC_Rx_RecvOp)) {
     debug_assert_eqBy($typed(self.chan->type), type, TypeInfo_eql);
-    return (thrd_MPSC_Rx_RecvOp){ .rx = self, .type = $typing(type) };
+    return (thrd_MPSC_Rx_RecvOp){ .rx = self, .type = type };
 };
 
 fn_((thrd_MPSC_Rx_RecvOp_op(thrd_MPSC_Rx_RecvOp* self))(thrd_Select_Op)) {
     claim_assert_nonnull(self);
     return (thrd_Select_Op){
-        .ctx = self,
+        .ctx = self->rx.chan,
+        .data = u_anyP(&self->type),
+        .result_type = self->type,
         .vtbl = &thrd_MPSC__recv_op_vtbl,
         .src = { .ctx = self->rx.chan, .vtbl = &thrd_MPSC__recv_vtbl },
     };
@@ -299,7 +306,9 @@ fn_((thrd_MPSC_Tx_sendOp(thrd_MPSC_Tx self, u_P$raw item))(thrd_MPSC_Tx_SendOp))
 fn_((thrd_MPSC_Tx_SendOp_op(thrd_MPSC_Tx_SendOp* self))(thrd_Select_Op)) {
     claim_assert_nonnull(self);
     return (thrd_Select_Op){
-        .ctx = self,
+        .ctx = self->tx.chan,
+        .data = self->item,
+        .result_type = typeInfo$(Void),
         .vtbl = &thrd_MPSC__send_op_vtbl,
         .src = { .ctx = self->tx.chan, .vtbl = &thrd_MPSC__send_vtbl },
     };
@@ -349,33 +358,44 @@ fn_((thrd_MPSC__publishTail(thrd_MPSC* self, usize pos))(void)) {
 
 fn_((thrd_MPSC__wakeNotEmpty(thrd_MPSC* self))(void)) {
     thrd_Mtx_lockProtcd(&self->wait_lock);
-    thrd_wait_List_wakeOne(&self->recv_waiters);
+    thrd_wait_Chain_wakeOne(&self->recv_waiters);
     thrd_Mtx_unlock(&self->wait_lock);
 };
 
 fn_((thrd_MPSC__wakeNotFull(thrd_MPSC* self))(void)) {
     thrd_Mtx_lockProtcd(&self->wait_lock);
-    thrd_wait_List_wakeOne(&self->send_waiters);
+    thrd_wait_Chain_wakeOne(&self->send_waiters);
     thrd_Mtx_unlock(&self->wait_lock);
 };
 
 fn_((thrd_MPSC__broadcast(thrd_MPSC* self))(void)) {
     thrd_Mtx_lockProtcd(&self->wait_lock);
-    thrd_wait_List_wakeAll(&self->send_waiters);
-    thrd_wait_List_wakeAll(&self->recv_waiters);
+    thrd_wait_Chain_wakeAll(&self->send_waiters);
+    thrd_wait_Chain_wakeAll(&self->recv_waiters);
     thrd_Mtx_unlock(&self->wait_lock);
 };
 
-fn_((thrd_MPSC__recvOpPoll(P$raw ctx, u_P$raw result))(bool) $scope) {
-    let self = ptrAlignCast$((thrd_MPSC_Rx_RecvOp*)(ctx));
-    debug_assert_eqBy($typed(self->type), result.type, TypeInfo_eql);
-    return isOk(thrd_MPSC_Rx_tryRecv(self->rx, (u_V$raw){ .inner = result.raw, .type = result.type }));
+fn_((thrd_MPSC__recvOpPoll(P$raw ctx))(bool) $scope) {
+    let self = ptrAlignCast$((thrd_MPSC*)(ctx));
+    return !thrd_MPSC_isEmpty(self);
 } $unscoped(fn);
 
-fn_((thrd_MPSC__sendOpPoll(P$raw ctx, u_P$raw result))(bool) $scope) {
-    let self = ptrAlignCast$((thrd_MPSC_Tx_SendOp*)(ctx));
+fn_((thrd_MPSC__recvOpCommit(P$raw ctx, u_P$raw data, u_P$raw result))(bool) $scope) {
+    let self = ptrAlignCast$((thrd_MPSC*)(ctx));
+    let_ignore = data;
+    debug_assert_eqBy($typed(self->type), result.type, TypeInfo_eql);
+    return isOk(thrd_MPSC_Rx_tryRecv((thrd_MPSC_Rx){ .chan = self }, (u_V$raw){ .inner = result.raw, .type = result.type }));
+} $unscoped(fn);
+
+fn_((thrd_MPSC__sendOpPoll(P$raw ctx))(bool) $scope) {
+    let self = ptrAlignCast$((thrd_MPSC*)(ctx));
+    return !thrd_MPSC_isFull(self);
+} $unscoped(fn);
+
+fn_((thrd_MPSC__sendOpCommit(P$raw ctx, u_P$raw data, u_P$raw result))(bool) $scope) {
+    let self = ptrAlignCast$((thrd_MPSC*)(ctx));
     let_ignore = result;
-    return isOk(thrd_MPSC_Tx_trySend(self->tx, (u_V$raw){ .inner = self->item.raw, .type = self->item.type }));
+    return isOk(thrd_MPSC_Tx_trySend((thrd_MPSC_Tx){ .chan = self }, (u_V$raw){ .inner = data.raw, .type = data.type }));
 } $unscoped(fn);
 
 fn_((thrd_MPSC__recvReady(P$raw ctx))(bool)) {
@@ -395,7 +415,7 @@ fn_((thrd_MPSC__sendLink(P$raw ctx, thrd_wait_Link* link))(bool)) {
         thrd_Mtx_unlock(&self->wait_lock);
         return true;
     }
-    thrd_wait_List_prepend(&self->send_waiters, link);
+    thrd_wait_Chain_prepend(&self->send_waiters, link);
     thrd_Mtx_unlock(&self->wait_lock);
     return false;
 };
@@ -403,7 +423,7 @@ fn_((thrd_MPSC__sendLink(P$raw ctx, thrd_wait_Link* link))(bool)) {
 fn_((thrd_MPSC__sendUnlink(P$raw ctx, thrd_wait_Link* link))(void)) {
     let self = ptrAlignCast$((thrd_MPSC*)(ctx));
     thrd_Mtx_lockProtcd(&self->wait_lock);
-    thrd_wait_List_unlink(&self->send_waiters, link);
+    thrd_wait_Chain_unlink(&self->send_waiters, link);
     thrd_Mtx_unlock(&self->wait_lock);
 };
 
@@ -414,7 +434,7 @@ fn_((thrd_MPSC__recvLink(P$raw ctx, thrd_wait_Link* link))(bool)) {
         thrd_Mtx_unlock(&self->wait_lock);
         return true;
     }
-    thrd_wait_List_prepend(&self->recv_waiters, link);
+    thrd_wait_Chain_prepend(&self->recv_waiters, link);
     thrd_Mtx_unlock(&self->wait_lock);
     return false;
 };
@@ -422,6 +442,6 @@ fn_((thrd_MPSC__recvLink(P$raw ctx, thrd_wait_Link* link))(bool)) {
 fn_((thrd_MPSC__recvUnlink(P$raw ctx, thrd_wait_Link* link))(void)) {
     let self = ptrAlignCast$((thrd_MPSC*)(ctx));
     thrd_Mtx_lockProtcd(&self->wait_lock);
-    thrd_wait_List_unlink(&self->recv_waiters, link);
+    thrd_wait_Chain_unlink(&self->recv_waiters, link);
     thrd_Mtx_unlock(&self->wait_lock);
 };

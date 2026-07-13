@@ -35,6 +35,6 @@ fn_((thrd_CancelTok_tryWait(thrd_CancelTok self))(bool)) {
 fn_((thrd_CancelTok_waitProtcd(thrd_CancelTok self))(void)) {
     thrd_OnceEvt_Tok_waitProtcd(self.event);
 };
-fn_((thrd_CancelTok_waitSrc(thrd_CancelTok self))(thrd_wait_Src)) {
-    return thrd_OnceEvt_Tok_waitSrc(self.event);
+fn_((thrd_CancelTok_wakeable(thrd_CancelTok self))(thrd_Wakeable)) {
+    return thrd_OnceEvt_Tok_wakeable(self.event);
 };

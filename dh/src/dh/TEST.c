@@ -9,8 +9,8 @@
 #define TEST_color_yellow "\033[33m"
 #define TEST_color_blue "\033[34m"
 
-T_use$((TEST_Case)(O, E));
-T_use$((TEST_Case)(ArrList_init, ArrList_fini, ArrList_append));
+T_use$((TEST_Unit)(O, E));
+T_use$((TEST_Unit)(ArrList_init, ArrList_fini, ArrList_append));
 fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
     /* Singleton instance */
     $static var_(heap, heap_Sys) $undefined_static;
@@ -20,7 +20,7 @@ fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
         debug_StackTrace_setupCrashHandler();
         heap = heap_Sys_init();
         instance.gpa = heap_Sys_alctr(&heap);
-        instance.cases $like_deref = catch_((ArrList_init$TEST_Case(instance.gpa, 8))($ignore, claim_unreachable));
+        instance.units $like_deref = catch_((ArrList_init$TEST_Unit(instance.gpa, 8))($ignore, claim_unreachable));
         is_initialized = true;
     }
     return &instance;
@@ -28,40 +28,40 @@ fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
 
 $static fn_((TEST_Framework_fini(void))(void)) {
     let instance = TEST_Framework_instance();
-    let cases = instance->cases;
+    let units = instance->units;
     let gpa = instance->gpa;
-    ArrList_fini$TEST_Case(cases, gpa);
+    ArrList_fini$TEST_Unit(units, gpa);
 };
 
-fn_((TEST_Framework_bindCase(TEST_CaseFn fn, S_const$u8 name))(void)) {
+fn_((TEST_Framework_bindUnit(TEST_UnitFn fn, S_const$u8 name))(void)) {
     let instance = TEST_Framework_instance();
-    let cases = instance->cases;
+    let units = instance->units;
     let gpa = instance->gpa;
-    catch_((ArrList_append$TEST_Case(cases, gpa, l$((TEST_Case){ .fn = fn, .name = name })))($ignore, claim_unreachable));
+    catch_((ArrList_append$TEST_Unit(units, gpa, l$((TEST_Unit){ .fn = fn, .name = name })))($ignore, claim_unreachable));
 };
 
 fn_((TEST_Framework_run(void))(void) $guard) {
     defer_(TEST_Framework_fini());
 
     let instance = TEST_Framework_instance();
-    let cases = instance->cases;
+    let units = instance->units;
     // printf("--- debug print: TEST_Framework_run ---\n");
-    // printf("len(%llu), cap(%llu)\n", cases->items.len, cases->cap);
+    // printf("len(%llu), cap(%llu)\n", units->items.len, units->cap);
 
     // Print header
     io_stream_nl();
     io_stream_println(u8_l(TEST_color_blue "=== Running Tests ===" TEST_color_reset));
 
     // Run each test case
-    for_(($s(cases->items))(test_case)) {
+    for_(($s(units->items))(unit)) {
         instance->stats.total++;
         io_stream_println(
             u8_l("Running test: {:s}{:s}{:s}"),
-            u8_l(TEST_color_yellow), test_case->name, u8_l(TEST_color_reset)
+            u8_l(TEST_color_yellow), unit->name, u8_l(TEST_color_reset)
         );
         // Run the test
         ETrace_reset();
-        if_err((test_case->fn())(err)) {
+        if_err((unit->fn())(err)) {
             switch (E_tag$TEST_E(*ptrCast$((const TEST_E*)(&err)))) {
             case_((E_Tag$TEST_Skip)) {
                 instance->stats.skipped++;

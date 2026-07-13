@@ -22,6 +22,16 @@ fn_((heap_ThrdSafe_alctr(heap_ThrdSafe* self))(mem_Alctr)) {
         .vtbl = &vtbl,
     });
 };
+fn_((heap_ThrdSafe_init(mem_Alctr child_alctr))(heap_ThrdSafe)) {
+    return (heap_ThrdSafe){
+        .child_alctr = mem_Alctr_ensureValid(child_alctr),
+        .mtx = thrd_Mtx_init(),
+    };
+}
+fn_((heap_ThrdSafe_fini(heap_ThrdSafe* self))(void)) {
+    thrd_Mtx_fini(&self->mtx);
+    asg_l((self)(cleared()));
+};
 
 /*========== Internal Definitions ===========================================*/
 

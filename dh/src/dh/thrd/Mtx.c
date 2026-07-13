@@ -11,7 +11,7 @@ pp_if_(pp_not(thrd_Mtx_has_specialized))(pp_then_(
     $attr($inline_always)
     $static fn_((thrd_Mtx__default_tryLock(P$$(thrd_Mtx) self))(bool));
     $attr($inline_always $must_check)
-    $static fn_((thrd_Mtx__default_lockCancelable(P$$(thrd_Mtx) self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+    $static fn_((thrd_Mtx__default_lockCancelable(P$$(thrd_Mtx) self, thrd_Wakeable cancel_src))(Sched_Cancelable$void));
     $attr($inline_always)
     $static fn_((thrd_Mtx__default_lock(P$$(thrd_Mtx) self))(void));
     $attr($inline_always)
@@ -141,7 +141,9 @@ fn_((thrd_Mtx_fini(thrd_Mtx* self))(void)) {
 fn_((thrd_Mtx_tryLock(thrd_Mtx* self))(bool)) {
     return thrd_Mtx__tryLock(self);
 };
-fn_((thrd_Mtx_lock(thrd_Mtx* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $scope) {
+fn_((thrd_Mtx_lock(
+    thrd_Mtx* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void) $scope) {
     pp_if_(pp_not(thrd_Mtx_has_specialized))(
         pp_then_(return_(thrd_Mtx__default_lockCancelable(self, cancel_src))),
         pp_else_({
@@ -178,7 +180,9 @@ fn_((thrd_Mtx_Recur_tryLock(thrd_Mtx_Recur* self))(bool)) {
     self->lock_count++;
     return true;
 };
-fn_((thrd_Mtx_Recur_lock(thrd_Mtx_Recur* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $scope) {
+fn_((thrd_Mtx_Recur_lock(
+    thrd_Mtx_Recur* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void) $scope) {
     let current_id = thrd_currId();
     if (atom_load(&self->thrd_id, atom_MemOrd_unordered) != current_id) {
         try_(thrd_Mtx_lock(&self->inner, cancel_src));
@@ -236,7 +240,7 @@ fn_((thrd_Mtx__pthread_unlock(thrd_Mtx* self))(void)) {
 #define thrd_Mtx__default_locked (as$(u32)(0b01))
 #define thrd_Mtx__default_contended (as$(u32)(0b11)) /* must contain the `locked` bit for x86 optimization below */
 
-$static fn_((thrd_Mtx__default_lockSlowCancelable(thrd_Mtx* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$static fn_((thrd_Mtx__default_lockSlowCancelable(thrd_Mtx* self, thrd_Wakeable cancel_src))(Sched_Cancelable$void));
 $static fn_((thrd_Mtx__default_lockSlow(thrd_Mtx* self))(void));
 
 fn_((thrd_Mtx__default_init(void))(thrd_Mtx)) {
@@ -270,7 +274,7 @@ fn_((thrd_Mtx__default_tryLock(thrd_Mtx* self))(bool)) {
         )
     );
 };
-fn_((thrd_Mtx__default_lockCancelable(thrd_Mtx* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $scope) {
+fn_((thrd_Mtx__default_lockCancelable(thrd_Mtx* self, thrd_Wakeable cancel_src))(Sched_Cancelable$void) $scope) {
     if (thrd_Mtx_tryLock(self)) {
         return_ok({});
     }
@@ -297,7 +301,7 @@ fn_((thrd_Mtx__default_unlock(thrd_Mtx* self))(void)) {
 };
 
 $attr($branch_cold)
-fn_((thrd_Mtx__default_lockSlowCancelable(thrd_Mtx* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $scope) {
+fn_((thrd_Mtx__default_lockSlowCancelable(thrd_Mtx* self, thrd_Wakeable cancel_src))(Sched_Cancelable$void) $scope) {
     if (atom_V_load(&self->impl.state, atom_MemOrd_monotonic) == thrd_Mtx__default_contended) {
         catch_((thrd_ftx_wait(&self->impl.state, thrd_Mtx__default_contended, cancel_src))(err, {
             if (E_eql(err.as_any, E_cause$Sched_Canceled().as_any)) {

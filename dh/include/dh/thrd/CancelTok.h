@@ -22,7 +22,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "OnceEvt.h"
-#include "Waiter.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -46,7 +45,7 @@ $attr($must_check)
 $extern fn_((thrd_CancelTok_check(thrd_CancelTok self))(Sched_Cancelable$void));
 $extern fn_((thrd_CancelTok_tryWait(thrd_CancelTok self))(bool));
 $extern fn_((thrd_CancelTok_waitProtcd(thrd_CancelTok self))(void));
-$extern fn_((thrd_CancelTok_waitSrc(thrd_CancelTok self))(thrd_wait_Src));
+$extern fn_((thrd_CancelTok_wakeable(thrd_CancelTok self))(thrd_Wakeable));
 
 /*========== Macros and Definitions =========================================*/
 

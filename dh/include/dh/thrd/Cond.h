@@ -21,7 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "wait.h"
+#include "Wakeable.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -83,14 +83,18 @@ $extern fn_((thrd_Cond_fini(thrd_Cond* self))(void));
 /// @param mtx Pointer to the mutex to unlock while waiting
 /// @param cancel_src Source that cancels the wait
 $attr($must_check)
-$extern fn_((thrd_Cond_wait(thrd_Cond* self, thrd_Mtx* mtx, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_Cond_wait(
+    thrd_Cond* self, thrd_Mtx* mtx, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 /// @brief Waits for a condition variable to be signaled, canceled, or timed out
 /// @param self Pointer to the condition variable to wait on
 /// @param mtx Pointer to the mutex to unlock while waiting
 /// @param cancel_src Source that cancels the wait
 /// @param timeout Maximum time to wait
 $attr($must_check)
-$extern fn_((thrd_Cond_waitFor(thrd_Cond* self, thrd_Mtx* mtx, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$extern fn_((thrd_Cond_waitFor(
+    thrd_Cond* self, thrd_Mtx* mtx, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void));
 /// @brief Waits for a condition variable to be signaled
 /// @param self Pointer to the condition variable to wait on
 /// @param mtx Pointer to the mutex to unlock while waiting
@@ -113,10 +117,12 @@ $extern fn_((thrd_Cond_broadcast(thrd_Cond* self))(void));
                 pp_case_((plat_type_windows)(l$((thrd_Cond){ .impl.inner = CONDITION_VARIABLE_INIT }))) \
             ) pp_end \
         )), \
-        pp_else_(l$((thrd_Cond){ .impl = { \
-            .state = atom_V_init(0), \
-            .epoch = atom_V_init(0), \
-        } })) \
+        pp_else_(l$((thrd_Cond){ \
+            .impl = { \
+                .state = atom_V_init(0), \
+                .epoch = atom_V_init(0), \
+            }, \
+        })) \
     )) \
 )
 

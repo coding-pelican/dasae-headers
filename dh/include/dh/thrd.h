@@ -5,7 +5,7 @@
  * @file    Thrd.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-05-23 (date of creation)
- * @updated 2026-05-30 (date of last update)
+ * @updated 2026-07-13 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  thrd
  *
@@ -30,12 +30,17 @@ extern "C" {
 #include "thrd/common.h"
 #include "thrd/Self.h"
 
+#include "thrd/Waker.h"
 #include "thrd/wait.h"
+#include "thrd/Wakeable.h"
+
 #include "thrd/ftx.h"
 
 #include "thrd/Mtx.h"
 #include "thrd/Cond.h"
+
 #include "thrd/Waiter.h"
+
 #include "thrd/Sem.h"
 #include "thrd/RWLock.h"
 

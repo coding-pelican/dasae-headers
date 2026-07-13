@@ -28,7 +28,7 @@ fn_((heap_Arena_State_default(void))(heap_Arena_State)) {
 
 fn_((heap_Arena_State_promote(heap_Arena_State self, mem_Alctr child_alctr))(heap_Arena)) {
     return l$((heap_Arena){
-        .child_alctr = child_alctr,
+        .child_alctr = mem_Alctr_ensureValid(child_alctr),
         .state = self,
     });
 };

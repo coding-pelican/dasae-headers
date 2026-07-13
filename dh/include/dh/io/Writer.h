@@ -27,6 +27,12 @@ struct io_Writer {
     $attr($must_check)
     fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(E$usize));
 };
+$attr($inline_always)
+$static fn_((io_Writer_isValid(io_Writer self))(bool));
+$attr($inline_always)
+$static fn_((io_Writer_assertValid(P$raw ctx, fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(E$usize))))(void));
+$attr($inline_always)
+$static fn_((io_Writer_ensureValid(io_Writer self))(io_Writer));
 
 $attr($must_check)
 $extern fn_((io_Writer_write(io_Writer self, S_const$u8 bytes))(E$usize));
@@ -53,6 +59,22 @@ $attr($must_check)
 $extern fn_((io_Writer_println(io_Writer self, S_const$u8 fmt, ...))(E$void));
 $attr($must_check)
 $extern fn_((io_Writer_printlnVaArgs(io_Writer self, S_const$u8 fmt, va_list va_args))(E$void));
+
+/*========== Macros and Definitions =========================================*/
+
+#if on_analysis_active_only || on_comptime
+fn_((io_Writer_isValid(io_Writer self))(bool)) {
+    return isNonnull(self.ctx)
+        && isNonnull(self.writeFn);
+}
+fn_((io_Writer_assertValid(P$raw ctx, fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(E$usize))))(void)) {
+    claim_assert_nonnull(ctx);
+    claim_assert_nonnull(writeFn);
+}
+fn_((io_Writer_ensureValid(io_Writer self))(io_Writer)) {
+    return io_Writer_assertValid(self.ctx, self.writeFn), self;
+}
+#endif /* on_analysis_active_only || on_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

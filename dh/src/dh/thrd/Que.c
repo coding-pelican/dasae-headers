@@ -7,16 +7,18 @@ $static fn_((thrd_Que__sendUnlink(P$raw ctx, thrd_wait_Link* link))(void));
 $static fn_((thrd_Que__recvReady(P$raw ctx))(bool));
 $static fn_((thrd_Que__recvLink(P$raw ctx, thrd_wait_Link* link))(bool));
 $static fn_((thrd_Que__recvUnlink(P$raw ctx, thrd_wait_Link* link))(void));
-$static fn_((thrd_Que__sendOpPoll(P$raw ctx, u_P$raw result))(bool));
-$static fn_((thrd_Que__recvOpPoll(P$raw ctx, u_P$raw result))(bool));
+$static fn_((thrd_Que__sendOpPoll(P$raw ctx))(bool));
+$static fn_((thrd_Que__sendOpCommit(P$raw ctx, u_P$raw data, u_P$raw result))(bool));
+$static fn_((thrd_Que__recvOpPoll(P$raw ctx))(bool));
+$static fn_((thrd_Que__recvOpCommit(P$raw ctx, u_P$raw data, u_P$raw result))(bool));
 
-$static let_(thrd_Que__send_vtbl, thrd_wait_Src_VTbl) = {
+$static let_(thrd_Que__send_vtbl, thrd_Wakeable_VTbl) = {
     .readyFn = thrd_Que__sendReady,
     .linkFn = thrd_Que__sendLink,
     .unlinkFn = thrd_Que__sendUnlink,
 };
 
-$static let_(thrd_Que__recv_vtbl, thrd_wait_Src_VTbl) = {
+$static let_(thrd_Que__recv_vtbl, thrd_Wakeable_VTbl) = {
     .readyFn = thrd_Que__recvReady,
     .linkFn = thrd_Que__recvLink,
     .unlinkFn = thrd_Que__recvUnlink,
@@ -24,19 +26,22 @@ $static let_(thrd_Que__recv_vtbl, thrd_wait_Src_VTbl) = {
 
 $static let_(thrd_Que__send_op_vtbl, thrd_Select_Op_VTbl) = {
     .pollFn = thrd_Que__sendOpPoll,
+    .commitFn = thrd_Que__sendOpCommit,
 };
 
 $static let_(thrd_Que__recv_op_vtbl, thrd_Select_Op_VTbl) = {
     .pollFn = thrd_Que__recvOpPoll,
+    .commitFn = thrd_Que__recvOpCommit,
 };
 
 fn_((thrd_Que_init(u_S$raw buf))(thrd_Que)) {
+    claim_assert(buf.len != 0);
     return (thrd_Que){
         .que = ArrQue_fixed(buf),
         .closed = false,
         .lock = thrd_Mtx_init(),
-        .send_waiters = thrd_wait_List_init(),
-        .recv_waiters = thrd_wait_List_init(),
+        .send_waiters = thrd_wait_Chain_init(),
+        .recv_waiters = thrd_wait_Chain_init(),
         .type = $typing(buf.type),
     };
 };
@@ -46,8 +51,8 @@ fn_((thrd_Que_fini(thrd_Que* self))(void) $guard) {
     thrd_Mtx_lockProtcd(&self->lock);
     self->closed = true;
     ArrQue_clearRetainingCap(&self->que);
-    thrd_wait_List_wakeAll(&self->send_waiters);
-    thrd_wait_List_wakeAll(&self->recv_waiters);
+    thrd_wait_Chain_wakeAll(&self->send_waiters);
+    thrd_wait_Chain_wakeAll(&self->recv_waiters);
     thrd_Mtx_unlock(&self->lock);
     thrd_Mtx_fini(&self->lock);
 } $unguarded(fn);
@@ -86,8 +91,8 @@ fn_((thrd_Que_close(thrd_Que* self))(void) $guard) {
     thrd_Mtx_lockProtcd(&self->lock);
     defer_(thrd_Mtx_unlock(&self->lock));
     self->closed = true;
-    thrd_wait_List_wakeAll(&self->send_waiters);
-    thrd_wait_List_wakeAll(&self->recv_waiters);
+    thrd_wait_Chain_wakeAll(&self->send_waiters);
+    thrd_wait_Chain_wakeAll(&self->recv_waiters);
 } $unguarded(fn);
 
 fn_((thrd_Que_isClosed(thrd_Que* self))(bool) $guard) {
@@ -96,7 +101,7 @@ fn_((thrd_Que_isClosed(thrd_Que* self))(bool) $guard) {
     return_(self->closed);
 } $unguarded(fn);
 
-fn_((thrd_Que_send(thrd_Que* self, u_V$raw item, thrd_wait_Src cancel_src))(thrd_chan_WaitE$void) $guard) {
+fn_((thrd_Que_send(thrd_Que* self, u_V$raw item, thrd_Wakeable cancel_src))(thrd_chan_WaitE$void) $guard) {
     debug_assert_eqBy($typed(self->type), item.inner_type, TypeInfo_eql);
     var waiter = thrd_Waiter_init();
     defer_(thrd_Waiter_fini(&waiter));
@@ -109,20 +114,20 @@ fn_((thrd_Que_send(thrd_Que* self, u_V$raw item, thrd_wait_Src cancel_src))(thrd
         }
         if (!ArrQue_isFull(self->que)) {
             ArrQue_enqueWithin(&self->que, item);
-            thrd_wait_List_wakeOne(&self->recv_waiters);
+            thrd_wait_Chain_wakeOne(&self->recv_waiters);
             thrd_Mtx_unlock(&self->lock);
             return_ok({});
         }
-        thrd_wait_List_prepend(&self->send_waiters, &link);
+        thrd_wait_Chain_prepend(&self->send_waiters, &link);
         thrd_Mtx_unlock(&self->lock);
         catch_((thrd_Waiter_wait(&waiter, cancel_src))(err, {
             thrd_Mtx_lockProtcd(&self->lock);
-            thrd_wait_List_unlink(&self->send_waiters, &link);
+            thrd_wait_Chain_unlink(&self->send_waiters, &link);
             thrd_Mtx_unlock(&self->lock);
             return_err(err);
         }));
         thrd_Mtx_lockProtcd(&self->lock);
-        thrd_wait_List_unlink(&self->send_waiters, &link);
+        thrd_wait_Chain_unlink(&self->send_waiters, &link);
         thrd_Mtx_unlock(&self->lock);
     }
 } $unguarded(fn);
@@ -139,11 +144,11 @@ fn_((thrd_Que_trySend(thrd_Que* self, u_V$raw item))(thrd_chan_E$void) $guard) {
         return_err(E_cause$thrd_chan_Full());
     }
     ArrQue_enqueWithin(&self->que, item);
-    thrd_wait_List_wakeOne(&self->recv_waiters);
+    thrd_wait_Chain_wakeOne(&self->recv_waiters);
     return_ok({});
 } $unguarded(fn);
 
-fn_((thrd_Que_sendFor(thrd_Que* self, u_V$raw item, thrd_wait_Src cancel_src, time_Dur dur))(thrd_chan_TimedE$void) $guard) {
+fn_((thrd_Que_sendFor(thrd_Que* self, u_V$raw item, thrd_Wakeable cancel_src, time_Dur dur))(thrd_chan_TimedE$void) $guard) {
     debug_assert_eqBy($typed(self->type), item.inner_type, TypeInfo_eql);
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     let started = time_Awake_now(clock);
@@ -158,7 +163,7 @@ fn_((thrd_Que_sendFor(thrd_Que* self, u_V$raw item, thrd_wait_Src cancel_src, ti
         }
         if (!ArrQue_isFull(self->que)) {
             ArrQue_enqueWithin(&self->que, item);
-            thrd_wait_List_wakeOne(&self->recv_waiters);
+            thrd_wait_Chain_wakeOne(&self->recv_waiters);
             thrd_Mtx_unlock(&self->lock);
             return_ok({});
         }
@@ -167,21 +172,21 @@ fn_((thrd_Que_sendFor(thrd_Que* self, u_V$raw item, thrd_wait_Src cancel_src, ti
             thrd_Mtx_unlock(&self->lock);
             return_err(E_cause$Sched_Timeout());
         }
-        thrd_wait_List_prepend(&self->send_waiters, &link);
+        thrd_wait_Chain_prepend(&self->send_waiters, &link);
         thrd_Mtx_unlock(&self->lock);
         catch_((thrd_Waiter_waitFor(&waiter, cancel_src, remaining))(err, {
             thrd_Mtx_lockProtcd(&self->lock);
-            thrd_wait_List_unlink(&self->send_waiters, &link);
+            thrd_wait_Chain_unlink(&self->send_waiters, &link);
             thrd_Mtx_unlock(&self->lock);
             return_err(err);
         }));
         thrd_Mtx_lockProtcd(&self->lock);
-        thrd_wait_List_unlink(&self->send_waiters, &link);
+        thrd_wait_Chain_unlink(&self->send_waiters, &link);
         thrd_Mtx_unlock(&self->lock);
     }
 } $unguarded(fn);
 
-fn_((thrd_Que_recv(thrd_Que* self, thrd_wait_Src cancel_src, u_V$raw out))(thrd_chan_WaitE$u_V$raw) $guard) {
+fn_((thrd_Que_recv(thrd_Que* self, thrd_Wakeable cancel_src, u_V$raw out))(thrd_chan_WaitE$u_V$raw) $guard) {
     debug_assert_eqBy($typed(self->type), out.inner_type, TypeInfo_eql);
     var waiter = thrd_Waiter_init();
     defer_(thrd_Waiter_fini(&waiter));
@@ -190,7 +195,7 @@ fn_((thrd_Que_recv(thrd_Que* self, thrd_wait_Src cancel_src, u_V$raw out))(thrd_
         thrd_Mtx_lockProtcd(&self->lock);
         if (!ArrQue_isEmpty(self->que)) {
             let_ignore = unwrap_(ArrQue_deque(&self->que, out));
-            thrd_wait_List_wakeOne(&self->send_waiters);
+            thrd_wait_Chain_wakeOne(&self->send_waiters);
             thrd_Mtx_unlock(&self->lock);
             return_ok(out);
         }
@@ -198,16 +203,16 @@ fn_((thrd_Que_recv(thrd_Que* self, thrd_wait_Src cancel_src, u_V$raw out))(thrd_
             thrd_Mtx_unlock(&self->lock);
             return_err(E_cause$thrd_chan_Closed());
         }
-        thrd_wait_List_prepend(&self->recv_waiters, &link);
+        thrd_wait_Chain_prepend(&self->recv_waiters, &link);
         thrd_Mtx_unlock(&self->lock);
         catch_((thrd_Waiter_wait(&waiter, cancel_src))(err, {
             thrd_Mtx_lockProtcd(&self->lock);
-            thrd_wait_List_unlink(&self->recv_waiters, &link);
+            thrd_wait_Chain_unlink(&self->recv_waiters, &link);
             thrd_Mtx_unlock(&self->lock);
             return_err(err);
         }));
         thrd_Mtx_lockProtcd(&self->lock);
-        thrd_wait_List_unlink(&self->recv_waiters, &link);
+        thrd_wait_Chain_unlink(&self->recv_waiters, &link);
         thrd_Mtx_unlock(&self->lock);
     }
 } $unguarded(fn);
@@ -215,13 +220,15 @@ fn_((thrd_Que_recv(thrd_Que* self, thrd_wait_Src cancel_src, u_V$raw out))(thrd_
 fn_((thrd_Que_recvOp(thrd_Que* self, TypeInfo type))(thrd_Que_RecvOp)) {
     claim_assert_nonnull(self);
     debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
-    return (thrd_Que_RecvOp){ .que = self, .type = $typing(type) };
+    return (thrd_Que_RecvOp){ .que = self, .type = type };
 };
 
 fn_((thrd_Que_RecvOp_op(thrd_Que_RecvOp* self))(thrd_Select_Op)) {
     claim_assert_nonnull(self);
     return (thrd_Select_Op){
-        .ctx = self,
+        .ctx = self->que,
+        .data = u_anyP(&self->type),
+        .result_type = self->type,
         .vtbl = &thrd_Que__recv_op_vtbl,
         .src = { .ctx = self->que, .vtbl = &thrd_Que__recv_vtbl },
     };
@@ -236,22 +243,35 @@ fn_((thrd_Que_sendOp(thrd_Que* self, u_P$raw item))(thrd_Que_SendOp)) {
 fn_((thrd_Que_SendOp_op(thrd_Que_SendOp* self))(thrd_Select_Op)) {
     claim_assert_nonnull(self);
     return (thrd_Select_Op){
-        .ctx = self,
+        .ctx = self->que,
+        .data = self->item,
+        .result_type = typeInfo$(Void),
         .vtbl = &thrd_Que__send_op_vtbl,
         .src = { .ctx = self->que, .vtbl = &thrd_Que__send_vtbl },
     };
 };
 
-fn_((thrd_Que__recvOpPoll(P$raw ctx, u_P$raw result))(bool) $scope) {
-    let self = ptrAlignCast$((thrd_Que_RecvOp*)(ctx));
-    debug_assert_eqBy($typed(self->type), result.type, TypeInfo_eql);
-    return isOk(thrd_Que_tryRecv(self->que, (u_V$raw){ .inner = result.raw, .type = result.type }));
+fn_((thrd_Que__recvOpPoll(P$raw ctx))(bool) $scope) {
+    let self = ptrAlignCast$((thrd_Que*)(ctx));
+    return !thrd_Que_isEmpty(self);
 } $unscoped(fn);
 
-fn_((thrd_Que__sendOpPoll(P$raw ctx, u_P$raw result))(bool) $scope) {
-    let self = ptrAlignCast$((thrd_Que_SendOp*)(ctx));
+fn_((thrd_Que__recvOpCommit(P$raw ctx, u_P$raw data, u_P$raw result))(bool) $scope) {
+    let self = ptrAlignCast$((thrd_Que*)(ctx));
+    let_ignore = data;
+    debug_assert_eqBy($typed(self->type), result.type, TypeInfo_eql);
+    return isOk(thrd_Que_tryRecv(self, (u_V$raw){ .inner = result.raw, .type = result.type }));
+} $unscoped(fn);
+
+fn_((thrd_Que__sendOpPoll(P$raw ctx))(bool) $scope) {
+    let self = ptrAlignCast$((thrd_Que*)(ctx));
+    return !thrd_Que_isFull(self);
+} $unscoped(fn);
+
+fn_((thrd_Que__sendOpCommit(P$raw ctx, u_P$raw data, u_P$raw result))(bool) $scope) {
+    let self = ptrAlignCast$((thrd_Que*)(ctx));
     let_ignore = result;
-    return isOk(thrd_Que_trySend(self->que, (u_V$raw){ .inner = self->item.raw, .type = self->item.type }));
+    return isOk(thrd_Que_trySend(self, (u_V$raw){ .inner = data.raw, .type = data.type }));
 } $unscoped(fn);
 
 fn_((thrd_Que__recvReady(P$raw ctx))(bool)) {
@@ -271,7 +291,7 @@ fn_((thrd_Que__sendLink(P$raw ctx, thrd_wait_Link* link))(bool)) {
         thrd_Mtx_unlock(&self->lock);
         return true;
     }
-    thrd_wait_List_prepend(&self->send_waiters, link);
+    thrd_wait_Chain_prepend(&self->send_waiters, link);
     thrd_Mtx_unlock(&self->lock);
     return false;
 };
@@ -279,7 +299,7 @@ fn_((thrd_Que__sendLink(P$raw ctx, thrd_wait_Link* link))(bool)) {
 fn_((thrd_Que__sendUnlink(P$raw ctx, thrd_wait_Link* link))(void)) {
     let self = ptrAlignCast$((thrd_Que*)(ctx));
     thrd_Mtx_lockProtcd(&self->lock);
-    thrd_wait_List_unlink(&self->send_waiters, link);
+    thrd_wait_Chain_unlink(&self->send_waiters, link);
     thrd_Mtx_unlock(&self->lock);
 };
 
@@ -290,7 +310,7 @@ fn_((thrd_Que__recvLink(P$raw ctx, thrd_wait_Link* link))(bool)) {
         thrd_Mtx_unlock(&self->lock);
         return true;
     }
-    thrd_wait_List_prepend(&self->recv_waiters, link);
+    thrd_wait_Chain_prepend(&self->recv_waiters, link);
     thrd_Mtx_unlock(&self->lock);
     return false;
 };
@@ -298,7 +318,7 @@ fn_((thrd_Que__recvLink(P$raw ctx, thrd_wait_Link* link))(bool)) {
 fn_((thrd_Que__recvUnlink(P$raw ctx, thrd_wait_Link* link))(void)) {
     let self = ptrAlignCast$((thrd_Que*)(ctx));
     thrd_Mtx_lockProtcd(&self->lock);
-    thrd_wait_List_unlink(&self->recv_waiters, link);
+    thrd_wait_Chain_unlink(&self->recv_waiters, link);
     thrd_Mtx_unlock(&self->lock);
 };
 
@@ -314,11 +334,11 @@ fn_((thrd_Que_tryRecv(thrd_Que* self, u_V$raw out))(thrd_chan_E$u_V$raw) $guard)
         return_err(E_cause$thrd_chan_Empty());
     }
     let_ignore = unwrap_(ArrQue_deque(&self->que, out));
-    thrd_wait_List_wakeOne(&self->send_waiters);
+    thrd_wait_Chain_wakeOne(&self->send_waiters);
     return_ok(out);
 } $unguarded(fn);
 
-fn_((thrd_Que_recvFor(thrd_Que* self, thrd_wait_Src cancel_src, time_Dur dur, u_V$raw out))(thrd_chan_TimedE$u_V$raw) $guard) {
+fn_((thrd_Que_recvFor(thrd_Que* self, thrd_Wakeable cancel_src, time_Dur dur, u_V$raw out))(thrd_chan_TimedE$u_V$raw) $guard) {
     debug_assert_eqBy($typed(self->type), out.inner_type, TypeInfo_eql);
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     let started = time_Awake_now(clock);
@@ -329,7 +349,7 @@ fn_((thrd_Que_recvFor(thrd_Que* self, thrd_wait_Src cancel_src, time_Dur dur, u_
         thrd_Mtx_lockProtcd(&self->lock);
         if (!ArrQue_isEmpty(self->que)) {
             let_ignore = unwrap_(ArrQue_deque(&self->que, out));
-            thrd_wait_List_wakeOne(&self->send_waiters);
+            thrd_wait_Chain_wakeOne(&self->send_waiters);
             thrd_Mtx_unlock(&self->lock);
             return_ok(out);
         }
@@ -342,16 +362,16 @@ fn_((thrd_Que_recvFor(thrd_Que* self, thrd_wait_Src cancel_src, time_Dur dur, u_
             thrd_Mtx_unlock(&self->lock);
             return_err(E_cause$Sched_Timeout());
         }
-        thrd_wait_List_prepend(&self->recv_waiters, &link);
+        thrd_wait_Chain_prepend(&self->recv_waiters, &link);
         thrd_Mtx_unlock(&self->lock);
         catch_((thrd_Waiter_waitFor(&waiter, cancel_src, remaining))(err, {
             thrd_Mtx_lockProtcd(&self->lock);
-            thrd_wait_List_unlink(&self->recv_waiters, &link);
+            thrd_wait_Chain_unlink(&self->recv_waiters, &link);
             thrd_Mtx_unlock(&self->lock);
             return_err(err);
         }));
         thrd_Mtx_lockProtcd(&self->lock);
-        thrd_wait_List_unlink(&self->recv_waiters, &link);
+        thrd_wait_Chain_unlink(&self->recv_waiters, &link);
         thrd_Mtx_unlock(&self->lock);
     }
 } $unguarded(fn);

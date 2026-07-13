@@ -5,9 +5,10 @@
  * @file    Que.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-06-30 (date of creation)
- * @updated 2026-06-30 (date of last update)
+ * @updated 2026-07-13 (date of last update)
  * @ingroup dasae-headers(dh)/thrd
  * @prefix  thrd_Que
+ *
  * @brief   Endpoint-less OS-thread blocking queue surface.
  */
 #pragma once
@@ -29,8 +30,8 @@ typedef struct thrd_Que {
     var_(que, ArrQue);
     var_(closed, bool);
     var_(lock, thrd_Mtx);
-    var_(send_waiters, thrd_wait_List);
-    var_(recv_waiters, thrd_wait_List);
+    var_(send_waiters, thrd_wait_Chain);
+    var_(recv_waiters, thrd_wait_Chain);
     var_(type, debug_TypeInfo);
 } thrd_Que;
 typedef struct thrd_Que_SendOp {
@@ -39,7 +40,7 @@ typedef struct thrd_Que_SendOp {
 } thrd_Que_SendOp;
 typedef struct thrd_Que_RecvOp {
     var_(que, thrd_Que*);
-    var_(type, debug_TypeInfo);
+    var_(type, TypeInfo);
 } thrd_Que_RecvOp;
 
 #define thrd_Que$(_T...) __alias__thrd_Que$(_T)
@@ -47,6 +48,11 @@ typedef struct thrd_Que_RecvOp {
 #define T_decl_thrd_Que$(_T...) __gen__T_decl_thrd_Que$(_T)
 #define T_impl_thrd_Que$(_T...) __gen__T_impl_thrd_Que$(_T)
 #define T_use_thrd_Que$(_T...) __gen__T_use_thrd_Que$(_T)
+#define thrd_Que_SendOp$(_T...) __alias__thrd_Que_SendOp$(_T)
+#define thrd_Que_SendOp$$(_T...) __anon__thrd_Que_SendOp$$(_T)
+#define T_decl_thrd_Que_SendOp$(_T...) __gen__T_decl_thrd_Que_SendOp$(_T)
+#define T_impl_thrd_Que_SendOp$(_T...) __gen__T_impl_thrd_Que_SendOp$(_T)
+#define T_use_thrd_Que_SendOp$(_T...) __gen__T_use_thrd_Que_SendOp$(_T)
 
 $extern fn_((thrd_Que_init(u_S$raw buf))(thrd_Que));
 #define T_use_thrd_Que_init$(_T...) __gen__T_use_thrd_Que_init$(_T)
@@ -73,23 +79,24 @@ $attr($must_check)
 $extern fn_((thrd_Que_trySend(thrd_Que* self, u_V$raw item))(thrd_chan_E$void));
 #define T_use_thrd_Que_trySend$(_T...) __gen__T_use_thrd_Que_trySend$(_T)
 $attr($must_check)
-$extern fn_((thrd_Que_send(thrd_Que* self, u_V$raw item, thrd_wait_Src cancel_src))(thrd_chan_WaitE$void));
+$extern fn_((thrd_Que_send(thrd_Que* self, u_V$raw item, thrd_Wakeable cancel_src))(thrd_chan_WaitE$void));
 #define T_use_thrd_Que_send$(_T...) __gen__T_use_thrd_Que_send$(_T)
 $attr($must_check)
-$extern fn_((thrd_Que_sendFor(thrd_Que* self, u_V$raw item, thrd_wait_Src cancel_src, time_Dur dur))(thrd_chan_TimedE$void));
+$extern fn_((thrd_Que_sendFor(thrd_Que* self, u_V$raw item, thrd_Wakeable cancel_src, time_Dur dur))(thrd_chan_TimedE$void));
 #define T_use_thrd_Que_sendFor$(_T...) __gen__T_use_thrd_Que_sendFor$(_T)
 $extern fn_((thrd_Que_sendOp(thrd_Que* self, u_P$raw item))(thrd_Que_SendOp));
 #define T_use_thrd_Que_sendOp$(_T...) __gen__T_use_thrd_Que_sendOp$(_T)
 $extern fn_((thrd_Que_SendOp_op(thrd_Que_SendOp* self))(thrd_Select_Op));
+#define T_use_thrd_Que_SendOp_op$(_T...) __gen__T_use_thrd_Que_SendOp_op$(_T)
 
 $attr($must_check)
 $extern fn_((thrd_Que_tryRecv(thrd_Que* self, u_V$raw ret_mem))(thrd_chan_E$u_V$raw));
 #define T_use_thrd_Que_tryRecv$(_T...) __gen__T_use_thrd_Que_tryRecv$(_T)
 $attr($must_check)
-$extern fn_((thrd_Que_recv(thrd_Que* self, thrd_wait_Src cancel_src, u_V$raw ret_mem))(thrd_chan_WaitE$u_V$raw));
+$extern fn_((thrd_Que_recv(thrd_Que* self, thrd_Wakeable cancel_src, u_V$raw ret_mem))(thrd_chan_WaitE$u_V$raw));
 #define T_use_thrd_Que_recv$(_T...) __gen__T_use_thrd_Que_recv$(_T)
 $attr($must_check)
-$extern fn_((thrd_Que_recvFor(thrd_Que* self, thrd_wait_Src cancel_src, time_Dur dur, u_V$raw ret_mem))(thrd_chan_TimedE$u_V$raw));
+$extern fn_((thrd_Que_recvFor(thrd_Que* self, thrd_Wakeable cancel_src, time_Dur dur, u_V$raw ret_mem))(thrd_chan_TimedE$u_V$raw));
 #define T_use_thrd_Que_recvFor$(_T...) __gen__T_use_thrd_Que_recvFor$(_T)
 $extern fn_((thrd_Que_recvOp(thrd_Que* self, TypeInfo type))(thrd_Que_RecvOp));
 #define T_use_thrd_Que_recvOp$(_T...) __gen__T_use_thrd_Que_recvOp$(_T)
@@ -104,8 +111,8 @@ $extern fn_((thrd_Que_RecvOp_op(thrd_Que_RecvOp* self))(thrd_Select_Op));
         var_(que, ArrQue$$(_T)); \
         var_(closed, bool); \
         var_(lock, thrd_Mtx); \
-        var_(send_waiters, thrd_wait_List); \
-        var_(recv_waiters, thrd_wait_List); \
+        var_(send_waiters, thrd_wait_Chain); \
+        var_(recv_waiters, thrd_wait_Chain); \
         var_(type, debug_TypeInfo); \
     }); \
     var_(as_raw, thrd_Que) $like_ref; \
@@ -123,8 +130,8 @@ $extern fn_((thrd_Que_RecvOp_op(thrd_Que_RecvOp* self))(thrd_Select_Op));
             var_(que, ArrQue$(_T)); \
             var_(closed, bool); \
             var_(lock, thrd_Mtx); \
-            var_(send_waiters, thrd_wait_List); \
-            var_(recv_waiters, thrd_wait_List); \
+            var_(send_waiters, thrd_wait_Chain); \
+            var_(recv_waiters, thrd_wait_Chain); \
             var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, thrd_Que) $like_ref; \
@@ -135,6 +142,22 @@ $extern fn_((thrd_Que_RecvOp_op(thrd_Que_RecvOp* self))(thrd_Select_Op));
 #define __gen__T_use_thrd_Que$(_T...) \
     T_decl_thrd_Que$(_T); \
     T_impl_thrd_Que$(_T)
+
+#define __alias__thrd_Que_SendOp$(_T...) tpl$(thrd_Que_SendOp, _T)
+#define __anon__thrd_Que_SendOp$$(_T...) TypeOf(struct { \
+    var_(que, thrd_Que$(_T)*); \
+    var_(item, _T); \
+})
+#define __gen__T_decl_thrd_Que_SendOp$(_T...) \
+    $maybe_unused typedef struct thrd_Que_SendOp$(_T) thrd_Que_SendOp$(_T)
+#define __gen__T_impl_thrd_Que_SendOp$(_T...) \
+    struct thrd_Que_SendOp$(_T) { \
+        var_(que, thrd_Que$(_T)*); \
+        var_(item, _T); \
+    }
+#define __gen__T_use_thrd_Que_SendOp$(_T...) \
+    T_decl_thrd_Que_SendOp$(_T); \
+    T_impl_thrd_Que_SendOp$(_T)
 
 #define __gen__T_use_thrd_Que_init$(_T...) \
     $attr($inline_always) \
@@ -188,18 +211,26 @@ $extern fn_((thrd_Que_RecvOp_op(thrd_Que_RecvOp* self))(thrd_Select_Op));
     }
 #define __gen__T_use_thrd_Que_send$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_Que_send, _T)(P$$(thrd_Que$(_T)) self, _T item, thrd_wait_Src cancel_src))(thrd_chan_WaitE$void)) { \
+    $static fn_((tpl$(thrd_Que_send, _T)(P$$(thrd_Que$(_T)) self, _T item, thrd_Wakeable cancel_src))(thrd_chan_WaitE$void)) { \
         return thrd_Que_send(self->as_raw, u_anyV(item), cancel_src); \
     }
 #define __gen__T_use_thrd_Que_sendFor$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_Que_sendFor, _T)(P$$(thrd_Que$(_T)) self, _T item, thrd_wait_Src cancel_src, time_Dur dur))(thrd_chan_TimedE$void)) { \
+    $static fn_((tpl$(thrd_Que_sendFor, _T)(P$$(thrd_Que$(_T)) self, _T item, thrd_Wakeable cancel_src, time_Dur dur))(thrd_chan_TimedE$void)) { \
         return thrd_Que_sendFor(self->as_raw, u_anyV(item), cancel_src, dur); \
     }
 #define __gen__T_use_thrd_Que_sendOp$(_T...) \
+    T_use_thrd_Que_SendOp$(_T); \
     $attr($inline_always) \
-    $static fn_((tpl$(thrd_Que_sendOp, _T)(P$$(thrd_Que$(_T)) self, _T* item))(thrd_Que_SendOp)) { \
-        return thrd_Que_sendOp(self->as_raw, u_anyP(item)); \
+    $static fn_((tpl$(thrd_Que_sendOp, _T)(P$$(thrd_Que$(_T)) self, _T item))(thrd_Que_SendOp$(_T))) { \
+        return (thrd_Que_SendOp$(_T)){ .que = self, .item = item }; \
+    }
+#define __gen__T_use_thrd_Que_SendOp_op$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_Que_SendOp_op, _T)(P$$(thrd_Que_SendOp$(_T)) self))(thrd_Select_Op)) { \
+        claim_assert_nonnull(self); \
+        var raw = thrd_Que_sendOp(self->que->as_raw, u_anyP(&self->item)); \
+        return thrd_Que_SendOp_op(&raw); \
     }
 #define __gen__T_use_thrd_Que_tryRecv$(_T...) \
     $attr($inline_always $must_check) \
@@ -208,12 +239,12 @@ $extern fn_((thrd_Que_RecvOp_op(thrd_Que_RecvOp* self))(thrd_Select_Op));
     } $unscoped(fn)
 #define __gen__T_use_thrd_Que_recv$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_Que_recv, _T)(P$$(thrd_Que$(_T)) self, thrd_wait_Src cancel_src))(E$($set(thrd_chan_WaitE)(_T))) $scope) { \
+    $static fn_((tpl$(thrd_Que_recv, _T)(P$$(thrd_Que$(_T)) self, thrd_Wakeable cancel_src))(E$($set(thrd_chan_WaitE)(_T))) $scope) { \
         return_(u_castE$((ReturnType)(thrd_Que_recv(self->as_raw, cancel_src, u_retV$(_T))))); \
     } $unscoped(fn)
 #define __gen__T_use_thrd_Que_recvFor$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_Que_recvFor, _T)(P$$(thrd_Que$(_T)) self, thrd_wait_Src cancel_src, time_Dur dur))(E$($set(thrd_chan_TimedE)(_T))) $scope) { \
+    $static fn_((tpl$(thrd_Que_recvFor, _T)(P$$(thrd_Que$(_T)) self, thrd_Wakeable cancel_src, time_Dur dur))(E$($set(thrd_chan_TimedE)(_T))) $scope) { \
         return_(u_castE$((ReturnType)(thrd_Que_recvFor(self->as_raw, cancel_src, dur, u_retV$(_T))))); \
     } $unscoped(fn)
 #define __gen__T_use_thrd_Que_recvOp$(_T...) \

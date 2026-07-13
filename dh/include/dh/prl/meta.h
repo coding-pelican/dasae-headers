@@ -121,10 +121,8 @@ typedef union u_A$raw {
     union u_V$(_$T) { \
         T_embed$(struct { \
             T_embed$(union { \
-                $P$(_$T) \
-                inner; \
-                $P$(_$T) \
-                raw $like_ref; \
+                var_(inner, $P$(_$T)); \
+                var_(raw, $P$(_$T)) $like_ref; \
             }); \
             T_embed$(union { \
                 TypeInfo inner_type; \
@@ -139,16 +137,14 @@ typedef union u_A$raw {
     T_impl_u_V$(_$T)
 
 #define T_decl_u_P$(_$T...) \
-    $maybe_unused typedef union u_P$(const _$T) u_P$(const _$T); \
+    $maybe_unused typedef union u_P_const$(_$T) u_P_const$(_$T); \
     $maybe_unused typedef union u_P$(_$T) u_P$(_$T)
 #define T_impl_u_P$(_$T...) \
-    union u_P$(const _$T) { \
+    union u_P_const$(_$T) { \
         T_embed$(struct { \
             T_embed$(union { \
-                $P$(const _$T) \
-                raw; \
-                $P$(const _$T) \
-                inner $like_ref; \
+                var_(raw, $P_const$(_$T)); \
+                var_(inner, $P_const$(_$T)) $like_ref; \
             }); \
             TypeInfo type; \
         }); \
@@ -157,14 +153,12 @@ typedef union u_A$raw {
     union u_P$(_$T) { \
         T_embed$(struct { \
             T_embed$(union { \
-                $P$(_$T) \
-                raw; \
-                $P$(_$T) \
-                inner $like_ref; \
+                var_(raw, $P$(_$T)); \
+                var_(inner, $P$(_$T)) $like_ref; \
             }); \
             TypeInfo type; \
         }); \
-        u_P$(const _$T) as_const; \
+        u_P_const$(_$T) as_const; \
         u_P$raw as_raw; \
     }
 #define T_use_u_P$(_$T...) \
@@ -172,19 +166,18 @@ typedef union u_A$raw {
     T_impl_u_P$(_$T)
 
 #define T_decl_u_S$(_$T...) \
-    $maybe_unused typedef union u_S$(const _$T) u_S$(const _$T); \
+    $maybe_unused typedef union u_S_const$(_$T) u_S_const$(_$T); \
     $maybe_unused typedef union u_S$(_$T) u_S$(_$T)
 #define T_impl_u_S$(_$T...) \
-    union u_S$(const _$T) { \
+    union u_S_const$(_$T) { \
         T_embed$(struct { \
             T_embed$(union { \
                 T_embed$(struct { \
-                    $P$(const _$T) \
-                    ptr; \
+                    var_(ptr, $P_const$(_$T)); \
                     usize len; \
                 }); \
-                S_const$raw raw; \
-                S_const$raw inner $like_ref; \
+                var_(raw, S_const$(_$T)); \
+                var_(inner, S_const$(_$T)) $like_ref; \
             }); \
             TypeInfo type; \
             struct { \
@@ -197,16 +190,15 @@ typedef union u_A$raw {
         T_embed$(struct { \
             T_embed$(union { \
                 T_embed$(struct { \
-                    $P$(_$T) \
-                    ptr; \
+                    var_(ptr, $P$(_$T)); \
                     usize len; \
                 }); \
-                S$raw raw; \
-                S$raw inner $like_ref; \
+                var_(raw, S$(_$T)); \
+                var_(inner, S$(_$T)) $like_ref; \
             }); \
             TypeInfo type; \
         }); \
-        u_S$(const _$T) as_const; \
+        u_S_const$(_$T) as_const; \
         u_S$raw as_raw; \
         struct { \
             u_P$raw ptr $zero_sized; \

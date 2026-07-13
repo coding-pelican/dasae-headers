@@ -51,7 +51,7 @@ $attr($must_check)
 $extern fn_((conc_Que_recvFor(conc_Que$raw* self, TypeInfo type, Sched sched, time_Dur dur, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
 $attr($must_check)
 $extern fn_((conc_Que_recvUntil(conc_Que$raw* self, TypeInfo type, Sched sched, time_Inst deadline, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
-$extern fn_((conc_Que_recvSrc(conc_Que$raw* self, TypeInfo type))(conc_AwaitSrc));
+$extern fn_((conc_Que_recvSrc(conc_Que$raw* self, TypeInfo type))(conc_Awakeable));
 
 #define __comp_anon__conc_Que$$(_T...) \
     union { \

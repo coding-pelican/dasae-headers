@@ -38,9 +38,13 @@ $extern fn_((thrd_Sem_fini(thrd_Sem* self))(void));
 
 $extern fn_((thrd_Sem_tryWait(thrd_Sem* self))(bool));
 $attr($must_check)
-$extern fn_((thrd_Sem_wait(thrd_Sem* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_Sem_wait(
+    thrd_Sem* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((thrd_Sem_waitFor(thrd_Sem* self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$extern fn_((thrd_Sem_waitFor(
+    thrd_Sem* self, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void));
 $extern fn_((thrd_Sem_waitProtcd(thrd_Sem* self))(void));
 
 $extern fn_((thrd_Sem_post(thrd_Sem* self))(void));

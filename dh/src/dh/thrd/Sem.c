@@ -24,7 +24,9 @@ fn_((thrd_Sem_tryWait(thrd_Sem* self))(bool)) {
     thrd_Mtx_unlock(&self->mtx);
     return true;
 };
-fn_((thrd_Sem_wait(thrd_Sem* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $guard) {
+fn_((thrd_Sem_wait(
+    thrd_Sem* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void) $guard) {
     thrd_Mtx_lockProtcd(&self->mtx);
     while (self->permits == 0) {
         catch_((thrd_Cond_wait(&self->cond, &self->mtx, cancel_src))(err, {
@@ -39,7 +41,9 @@ fn_((thrd_Sem_wait(thrd_Sem* self, thrd_wait_Src cancel_src))(Sched_Cancelable$v
     thrd_Mtx_unlock(&self->mtx);
     return_ok({});
 } $unguarded(fn);
-fn_((thrd_Sem_waitFor(thrd_Sem* self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void) $guard) {
+fn_((thrd_Sem_waitFor(
+    thrd_Sem* self, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void) $guard) {
     let clock = catch_((time_Awake_direct())($ignore, time_Awake_noop));
     let started = time_Awake_now(clock);
 

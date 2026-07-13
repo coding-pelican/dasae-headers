@@ -145,7 +145,6 @@ fn_((mem_Alctr_isValid(mem_Alctr self))(bool)) {
         && isNonnull(self.vtbl->remapFn)
         && isNonnull(self.vtbl->freeFn);
 };
-
 fn_((mem_Alctr_assertValid(P$raw ctx, P_const$$(mem_Alctr_VTbl) vtbl))(void)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(vtbl);
@@ -154,7 +153,6 @@ fn_((mem_Alctr_assertValid(P$raw ctx, P_const$$(mem_Alctr_VTbl) vtbl))(void)) {
     claim_assert_nonnull(vtbl->remapFn);
     claim_assert_nonnull(vtbl->freeFn);
 };
-
 fn_((mem_Alctr_ensureValid(mem_Alctr self))(mem_Alctr)) {
     return mem_Alctr_assertValid(self.ctx, self.vtbl), self;
 };

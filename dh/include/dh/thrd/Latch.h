@@ -30,9 +30,15 @@ typedef struct thrd_Latch {
     var_(state, atom_V$usize);
     var_(done_evt, thrd_OnceEvt);
 } thrd_Latch;
-#define thrd_Latch_init_static(/*void*/) \
-    ____thrd_Latch_init_static()
-$extern fn_((thrd_Latch_init(void))(thrd_Latch));
+#define thrd_Latch_init_static(_count) \
+    ____thrd_Latch_init_static(_count)
+#define thrd_Latch_initDone_static(/*void*/) \
+    thrd_Latch_init_static(0)
+#define thrd_Latch_initPending_static(_count) \
+    ____thrd_Latch_initPending_static(_count)
+$extern fn_((thrd_Latch_init(usize count))(thrd_Latch));
+$extern fn_((thrd_Latch_initDone(void))(thrd_Latch));
+$extern fn_((thrd_Latch_initPending(usize count))(thrd_Latch));
 $extern fn_((thrd_Latch_fini(thrd_Latch* self))(void));
 
 $extern fn_((thrd_Latch_tok(thrd_Latch* self))(thrd_OnceEvt_Tok));
@@ -52,20 +58,32 @@ $extern fn_((thrd_Latch_valueOn(atom_V$usize* state))(usize));
 $extern fn_((thrd_Latch_tryWait(thrd_Latch* self))(bool));
 $extern fn_((thrd_Latch_tryWaitOn(atom_V$usize* state))(bool));
 $attr($must_check)
-$extern fn_((thrd_Latch_wait(thrd_Latch* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_Latch_wait(
+    thrd_Latch* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((thrd_Latch_waitOn(atom_V$usize* state, thrd_OnceEvt* event, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_Latch_waitOn(
+    atom_V$usize* state, thrd_OnceEvt* event, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((thrd_Latch_waitFor(thrd_Latch* self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$extern fn_((thrd_Latch_waitFor(
+    thrd_Latch* self, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void));
 $attr($must_check)
-$extern fn_((thrd_Latch_waitForOn(atom_V$usize* state, thrd_OnceEvt* event, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$extern fn_((thrd_Latch_waitForOn(
+    atom_V$usize* state, thrd_OnceEvt* event, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void));
 $extern fn_((thrd_Latch_waitProtcd(thrd_Latch* self))(void));
 $extern fn_((thrd_Latch_waitOnProtcd(atom_V$usize* state, thrd_OnceEvt* event))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#define ____thrd_Latch_init_static() l$((thrd_Latch){ \
-    .state = atom_V_init(0), \
+#define ____thrd_Latch_init_static(_count) l$((thrd_Latch){ \
+    .state = atom_V_init(_count), \
+    .done_evt = ((_count) == 0 ? thrd_OnceEvt_initSet_static() : thrd_OnceEvt_init_static()), \
+})
+#define ____thrd_Latch_initPending_static(_count) l$((thrd_Latch){ \
+    .state = atom_V_init(_count), \
     .done_evt = thrd_OnceEvt_init_static(), \
 })
 

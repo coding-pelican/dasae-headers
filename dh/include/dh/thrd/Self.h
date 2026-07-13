@@ -55,10 +55,14 @@ $static fn_((thrd_SpawnCfg_default(mem_Alctr gpa))(thrd_SpawnCfg));
 errset_((thrd_spawn_E)() $union_errset_(thrd_E, mem_E));
 T_use_E$($set(thrd_spawn_E)(thrd_Self));
 $attr($must_check)
-$extern fn_((thrd_spawn(thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(thrd_spawn_E$thrd_Self));
+$extern fn_((thrd_spawn(
+    thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type
+))(thrd_spawn_E$thrd_Self));
 #define T_use_thrd_spawn$(_T...) __stmt__T_use_thrd_spawn$(_T)
 $attr($must_check)
-$extern fn_((thrd_spawnOwned(thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type, u_P$raw owned_clsr))(thrd_spawn_E$thrd_Self));
+$extern fn_((thrd_spawnOwned(
+    thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type, u_P$raw owned_clsr
+))(thrd_spawn_E$thrd_Self));
 #define T_use_thrd_spawnOwned$(_T...) __stmt__T_use_thrd_spawnOwned$(_T)
 $extern fn_((thrd_detach(thrd_Self self))(void));
 $extern fn_((thrd_join(thrd_Self self))(Clsr$raw*));

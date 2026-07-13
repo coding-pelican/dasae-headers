@@ -5,10 +5,13 @@
  * @file    SPSC.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-06-30 (date of creation)
- * @updated 2026-06-30 (date of last update)
+ * @updated 2026-07-13 (date of last update)
  * @ingroup dasae-headers(dh)/thrd
  * @prefix  thrd_SPSC
+ *
  * @brief   SPSC OS-thread blocking channel surface.
+ * @details Defines a single-producer, single-consumer OS-thread blocking
+ *          channel surface.
  */
 #pragma once
 #ifndef thrd_SPSC__included
@@ -30,8 +33,8 @@ typedef struct thrd_SPSC {
     var_(tail, atom_V$usize);
     var_(closed, atom_V$bool);
     var_(wait_lock, thrd_Mtx);
-    var_(send_waiters, thrd_wait_List);
-    var_(recv_waiters, thrd_wait_List);
+    var_(send_waiters, thrd_wait_Chain);
+    var_(recv_waiters, thrd_wait_Chain);
     var_(type, debug_TypeInfo);
 } thrd_SPSC;
 $extern fn_((thrd_SPSC_init(u_S$raw buf))(thrd_SPSC));
@@ -64,7 +67,7 @@ typedef struct thrd_SPSC_Rx {
 } thrd_SPSC_Rx;
 typedef struct thrd_SPSC_Rx_RecvOp {
     var_(rx, thrd_SPSC_Rx);
-    var_(type, debug_TypeInfo);
+    var_(type, TypeInfo);
 } thrd_SPSC_Rx_RecvOp;
 typedef Tup$$(thrd_SPSC_Tx, thrd_SPSC_Rx) thrd_SPSC_Chans;
 
@@ -78,6 +81,11 @@ typedef Tup$$(thrd_SPSC_Tx, thrd_SPSC_Rx) thrd_SPSC_Chans;
 #define T_decl_thrd_SPSC_Tx$(_T...) __gen__T_decl_thrd_SPSC_Tx$(_T)
 #define T_impl_thrd_SPSC_Tx$(_T...) __gen__T_impl_thrd_SPSC_Tx$(_T)
 #define T_use_thrd_SPSC_Tx$(_T...) __gen__T_use_thrd_SPSC_Tx$(_T)
+#define thrd_SPSC_Tx_SendOp$(_T...) __alias__thrd_SPSC_Tx_SendOp$(_T)
+#define thrd_SPSC_Tx_SendOp$$(_T...) __anon__thrd_SPSC_Tx_SendOp$$(_T)
+#define T_decl_thrd_SPSC_Tx_SendOp$(_T...) __gen__T_decl_thrd_SPSC_Tx_SendOp$(_T)
+#define T_impl_thrd_SPSC_Tx_SendOp$(_T...) __gen__T_impl_thrd_SPSC_Tx_SendOp$(_T)
+#define T_use_thrd_SPSC_Tx_SendOp$(_T...) __gen__T_use_thrd_SPSC_Tx_SendOp$(_T)
 #define thrd_SPSC_Rx$(_T...) __alias__thrd_SPSC_Rx$(_T)
 #define thrd_SPSC_Rx$$(_T...) __anon__thrd_SPSC_Rx$$(_T)
 #define T_decl_thrd_SPSC_Rx$(_T...) __gen__T_decl_thrd_SPSC_Rx$(_T)
@@ -96,14 +104,15 @@ $attr($must_check)
 $extern fn_((thrd_SPSC_Tx_trySend(thrd_SPSC_Tx self, u_V$raw item))(thrd_chan_E$void));
 #define T_use_thrd_SPSC_Tx_trySend$(_T...) __gen__T_use_thrd_SPSC_Tx_trySend$(_T)
 $attr($must_check)
-$extern fn_((thrd_SPSC_Tx_send(thrd_SPSC_Tx self, u_V$raw item, thrd_wait_Src cancel_src))(thrd_chan_WaitE$void));
+$extern fn_((thrd_SPSC_Tx_send(thrd_SPSC_Tx self, u_V$raw item, thrd_Wakeable cancel_src))(thrd_chan_WaitE$void));
 #define T_use_thrd_SPSC_Tx_send$(_T...) __gen__T_use_thrd_SPSC_Tx_send$(_T)
 $attr($must_check)
-$extern fn_((thrd_SPSC_Tx_sendFor(thrd_SPSC_Tx self, u_V$raw item, thrd_wait_Src cancel_src, time_Dur dur))(thrd_chan_TimedE$void));
+$extern fn_((thrd_SPSC_Tx_sendFor(thrd_SPSC_Tx self, u_V$raw item, thrd_Wakeable cancel_src, time_Dur dur))(thrd_chan_TimedE$void));
 #define T_use_thrd_SPSC_Tx_sendFor$(_T...) __gen__T_use_thrd_SPSC_Tx_sendFor$(_T)
 $extern fn_((thrd_SPSC_Tx_sendOp(thrd_SPSC_Tx self, u_P$raw item))(thrd_SPSC_Tx_SendOp));
 #define T_use_thrd_SPSC_Tx_sendOp$(_T...) __gen__T_use_thrd_SPSC_Tx_sendOp$(_T)
 $extern fn_((thrd_SPSC_Tx_SendOp_op(thrd_SPSC_Tx_SendOp* self))(thrd_Select_Op));
+#define T_use_thrd_SPSC_Tx_SendOp_op$(_T...) __gen__T_use_thrd_SPSC_Tx_SendOp_op$(_T)
 
 $extern fn_((thrd_SPSC_rx(thrd_SPSC* self))(thrd_SPSC_Rx));
 #define T_use_thrd_SPSC_rx$(_T...) __gen__T_use_thrd_SPSC_rx$(_T)
@@ -111,10 +120,10 @@ $attr($must_check)
 $extern fn_((thrd_SPSC_Rx_tryRecv(thrd_SPSC_Rx self, u_V$raw ret_mem))(thrd_chan_E$u_V$raw));
 #define T_use_thrd_SPSC_Rx_tryRecv$(_T...) __gen__T_use_thrd_SPSC_Rx_tryRecv$(_T)
 $attr($must_check)
-$extern fn_((thrd_SPSC_Rx_recv(thrd_SPSC_Rx self, thrd_wait_Src cancel_src, u_V$raw ret_mem))(thrd_chan_WaitE$u_V$raw));
+$extern fn_((thrd_SPSC_Rx_recv(thrd_SPSC_Rx self, thrd_Wakeable cancel_src, u_V$raw ret_mem))(thrd_chan_WaitE$u_V$raw));
 #define T_use_thrd_SPSC_Rx_recv$(_T...) __gen__T_use_thrd_SPSC_Rx_recv$(_T)
 $attr($must_check)
-$extern fn_((thrd_SPSC_Rx_recvFor(thrd_SPSC_Rx self, thrd_wait_Src cancel_src, time_Dur dur, u_V$raw ret_mem))(thrd_chan_TimedE$u_V$raw));
+$extern fn_((thrd_SPSC_Rx_recvFor(thrd_SPSC_Rx self, thrd_Wakeable cancel_src, time_Dur dur, u_V$raw ret_mem))(thrd_chan_TimedE$u_V$raw));
 #define T_use_thrd_SPSC_Rx_recvFor$(_T...) __gen__T_use_thrd_SPSC_Rx_recvFor$(_T)
 $extern fn_((thrd_SPSC_Rx_recvOp(thrd_SPSC_Rx self, TypeInfo type))(thrd_SPSC_Rx_RecvOp));
 #define T_use_thrd_SPSC_Rx_recvOp$(_T...) __gen__T_use_thrd_SPSC_Rx_recvOp$(_T)
@@ -131,8 +140,8 @@ $extern fn_((thrd_SPSC_Rx_RecvOp_op(thrd_SPSC_Rx_RecvOp* self))(thrd_Select_Op))
         var_(tail, atom_V$usize); \
         var_(closed, atom_V$bool); \
         var_(wait_lock, thrd_Mtx); \
-        var_(send_waiters, thrd_wait_List); \
-        var_(recv_waiters, thrd_wait_List); \
+        var_(send_waiters, thrd_wait_Chain); \
+        var_(recv_waiters, thrd_wait_Chain); \
         var_(type, debug_TypeInfo); \
     }); \
     var_(as_raw, thrd_SPSC) $like_ref; \
@@ -146,8 +155,8 @@ $extern fn_((thrd_SPSC_Rx_RecvOp_op(thrd_SPSC_Rx_RecvOp* self))(thrd_Select_Op))
             var_(tail, atom_V$usize); \
             var_(closed, atom_V$bool); \
             var_(wait_lock, thrd_Mtx); \
-            var_(send_waiters, thrd_wait_List); \
-            var_(recv_waiters, thrd_wait_List); \
+            var_(send_waiters, thrd_wait_Chain); \
+            var_(recv_waiters, thrd_wait_Chain); \
             var_(type, debug_TypeInfo); \
         }); \
         var_(as_raw, thrd_SPSC) $like_ref; \
@@ -159,6 +168,19 @@ $extern fn_((thrd_SPSC_Rx_RecvOp_op(thrd_SPSC_Rx_RecvOp* self))(thrd_Select_Op))
 #define __gen__T_decl_thrd_SPSC_Tx$(_T...) $maybe_unused typedef union thrd_SPSC_Tx$(_T) thrd_SPSC_Tx$(_T)
 #define __gen__T_impl_thrd_SPSC_Tx$(_T...) union thrd_SPSC_Tx$(_T) { var_(chan, thrd_SPSC$(_T)*); var_(as_raw, thrd_SPSC_Tx) $like_ref; }
 #define __gen__T_use_thrd_SPSC_Tx$(_T...) T_decl_thrd_SPSC_Tx$(_T); T_impl_thrd_SPSC_Tx$(_T)
+
+#define __alias__thrd_SPSC_Tx_SendOp$(_T...) tpl$(thrd_SPSC_Tx_SendOp, _T)
+#define __anon__thrd_SPSC_Tx_SendOp$$(_T...) TypeOf(struct { \
+    var_(tx, thrd_SPSC_Tx$(_T)); \
+    var_(item, _T); \
+})
+#define __gen__T_decl_thrd_SPSC_Tx_SendOp$(_T...) $maybe_unused typedef struct thrd_SPSC_Tx_SendOp$(_T) thrd_SPSC_Tx_SendOp$(_T)
+#define __gen__T_impl_thrd_SPSC_Tx_SendOp$(_T...) \
+    struct thrd_SPSC_Tx_SendOp$(_T) { \
+        var_(tx, thrd_SPSC_Tx$(_T)); \
+        var_(item, _T); \
+    }
+#define __gen__T_use_thrd_SPSC_Tx_SendOp$(_T...) T_decl_thrd_SPSC_Tx_SendOp$(_T); T_impl_thrd_SPSC_Tx_SendOp$(_T)
 
 #define __alias__thrd_SPSC_Rx$(_T...) tpl$(thrd_SPSC_Rx, _T)
 #define __anon__thrd_SPSC_Rx$$(_T...) TypeOf(union { var_(chan, thrd_SPSC$(_T)*); var_(as_raw, thrd_SPSC_Rx) $like_ref; })
@@ -241,18 +263,26 @@ $extern fn_((thrd_SPSC_Rx_RecvOp_op(thrd_SPSC_Rx_RecvOp* self))(thrd_Select_Op))
     }
 #define __gen__T_use_thrd_SPSC_Tx_send$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_SPSC_Tx_send, _T)(thrd_SPSC_Tx$(_T) self, _T item, thrd_wait_Src cancel_src))(thrd_chan_WaitE$void)) { \
+    $static fn_((tpl$(thrd_SPSC_Tx_send, _T)(thrd_SPSC_Tx$(_T) self, _T item, thrd_Wakeable cancel_src))(thrd_chan_WaitE$void)) { \
         return thrd_SPSC_Tx_send(*self.as_raw, u_anyV(item), cancel_src); \
     }
 #define __gen__T_use_thrd_SPSC_Tx_sendFor$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_SPSC_Tx_sendFor, _T)(thrd_SPSC_Tx$(_T) self, _T item, thrd_wait_Src cancel_src, time_Dur dur))(thrd_chan_TimedE$void)) { \
+    $static fn_((tpl$(thrd_SPSC_Tx_sendFor, _T)(thrd_SPSC_Tx$(_T) self, _T item, thrd_Wakeable cancel_src, time_Dur dur))(thrd_chan_TimedE$void)) { \
         return thrd_SPSC_Tx_sendFor(*self.as_raw, u_anyV(item), cancel_src, dur); \
     }
 #define __gen__T_use_thrd_SPSC_Tx_sendOp$(_T...) \
+    T_use_thrd_SPSC_Tx_SendOp$(_T); \
     $attr($inline_always) \
-    $static fn_((tpl$(thrd_SPSC_Tx_sendOp, _T)(thrd_SPSC_Tx$(_T) self, _T* item))(thrd_SPSC_Tx_SendOp)) { \
-        return thrd_SPSC_Tx_sendOp(*self.as_raw, u_anyP(item)); \
+    $static fn_((tpl$(thrd_SPSC_Tx_sendOp, _T)(thrd_SPSC_Tx$(_T) self, _T item))(thrd_SPSC_Tx_SendOp$(_T))) { \
+        return (thrd_SPSC_Tx_SendOp$(_T)){ .tx = self, .item = item }; \
+    }
+#define __gen__T_use_thrd_SPSC_Tx_SendOp_op$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(thrd_SPSC_Tx_SendOp_op, _T)(P$$(thrd_SPSC_Tx_SendOp$(_T)) self))(thrd_Select_Op)) { \
+        claim_assert_nonnull(self); \
+        var raw = thrd_SPSC_Tx_sendOp(*self->tx.as_raw, u_anyP(&self->item)); \
+        return thrd_SPSC_Tx_SendOp_op(&raw); \
     }
 #define __gen__T_use_thrd_SPSC_Rx_tryRecv$(_T...) \
     $attr($inline_always $must_check) \
@@ -261,12 +291,12 @@ $extern fn_((thrd_SPSC_Rx_RecvOp_op(thrd_SPSC_Rx_RecvOp* self))(thrd_Select_Op))
     } $unscoped(fn)
 #define __gen__T_use_thrd_SPSC_Rx_recv$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_SPSC_Rx_recv, _T)(thrd_SPSC_Rx$(_T) self, thrd_wait_Src cancel_src))(E$($set(thrd_chan_WaitE)(_T))) $scope) { \
+    $static fn_((tpl$(thrd_SPSC_Rx_recv, _T)(thrd_SPSC_Rx$(_T) self, thrd_Wakeable cancel_src))(E$($set(thrd_chan_WaitE)(_T))) $scope) { \
         return_(u_castE$((ReturnType)(thrd_SPSC_Rx_recv(*self.as_raw, cancel_src, u_retV$(_T))))); \
     } $unscoped(fn)
 #define __gen__T_use_thrd_SPSC_Rx_recvFor$(_T...) \
     $attr($inline_always $must_check) \
-    $static fn_((tpl$(thrd_SPSC_Rx_recvFor, _T)(thrd_SPSC_Rx$(_T) self, thrd_wait_Src cancel_src, time_Dur dur))(E$($set(thrd_chan_TimedE)(_T))) $scope) { \
+    $static fn_((tpl$(thrd_SPSC_Rx_recvFor, _T)(thrd_SPSC_Rx$(_T) self, thrd_Wakeable cancel_src, time_Dur dur))(E$($set(thrd_chan_TimedE)(_T))) $scope) { \
         return_(u_castE$((ReturnType)(thrd_SPSC_Rx_recvFor(*self.as_raw, cancel_src, dur, u_retV$(_T))))); \
     } $unscoped(fn)
 #define __gen__T_use_thrd_SPSC_Rx_recvOp$(_T...) \

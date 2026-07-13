@@ -29,8 +29,7 @@ fn_((thrd_Once_finish(thrd_Once* self))(void)) {
 fn_((thrd_Once_run(thrd_Once* self, Clsr$Void* clsr))(void)) {
     if (thrd_Once_tryBegin(self)) {
         clsr_invokeToComplete$Void(clsr);
-        thrd_Once_finish(self);
-        return;
+        return thrd_Once_finish(self);
     }
     thrd_Once_wait(self);
 };

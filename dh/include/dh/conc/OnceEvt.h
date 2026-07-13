@@ -28,8 +28,12 @@ struct conc_OnceEvt {
 };
 T_alias$((conc_OnceEvt_Tok)(struct conc_OnceEvt_Tok));
 T_alias$((conc_OnceEvt_Sig)(struct conc_OnceEvt_Sig));
-struct conc_OnceEvt_Tok { var_(evt, conc_OnceEvt*); };
-struct conc_OnceEvt_Sig { var_(evt, conc_OnceEvt*); };
+struct conc_OnceEvt_Tok {
+    var_(evt, conc_OnceEvt*);
+};
+struct conc_OnceEvt_Sig {
+    var_(evt, conc_OnceEvt*);
+};
 
 #define conc_OnceEvt_init_static(/*void*/) ____conc_OnceEvt_init_static()
 $extern fn_((conc_OnceEvt_init(void))(conc_OnceEvt));
@@ -51,7 +55,7 @@ $extern fn_((conc_OnceEvt_Tok_waitFor(conc_OnceEvt_Tok self, Sched sched, time_D
 $attr($must_check)
 $extern fn_((conc_OnceEvt_Tok_waitUntil(conc_OnceEvt_Tok self, Sched sched, time_Inst deadline))(Sched_TimedE$void));
 $extern fn_((conc_OnceEvt_Sig_set(conc_OnceEvt_Sig self))(void));
-$extern fn_((conc_OnceEvt_asAwaitSrc(conc_OnceEvt* self))(conc_AwaitSrc));
+$extern fn_((conc_OnceEvt_asAwakeable(conc_OnceEvt* self))(conc_Awakeable));
 
 #define ____conc_OnceEvt_init_static() l$((conc_OnceEvt){ \
     .state = atom_V_init(conc_OnceEvt_State_unset), \

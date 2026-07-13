@@ -15,9 +15,13 @@ pp_if_(thrd_Cond_use_pthread)(
         $attr($inline_always)
         $static fn_((thrd_Cond__pthread_fini(P$$(thrd_Cond) self))(void));
         $attr($inline_always)
-        $static fn_((thrd_Cond__pthread_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx))(void));
+        $static fn_((thrd_Cond__pthread_wait(
+            P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx
+        ))(void));
         $attr($inline_always $must_check)
-        $static fn_((thrd_Cond__pthread_waitFor(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, time_Dur duration))(Sched_TimedE$void));
+        $static fn_((thrd_Cond__pthread_waitFor(
+            P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, time_Dur duration
+        ))(Sched_TimedE$void));
         $attr($inline_always)
         $static fn_((thrd_Cond__pthread_signal(P$$(thrd_Cond) self))(void));
         $attr($inline_always)
@@ -29,7 +33,9 @@ pp_if_(thrd_Cond_use_pthread)(
         $attr($inline_always)
         $static fn_((thrd_Cond__common_fini(P$$(thrd_Cond) self))(void));
         $attr($inline_always $must_check)
-        $static fn_((thrd_Cond__common_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void));
+        $static fn_((thrd_Cond__common_wait(
+            P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$thrd_Wakeable cancel_src, O$time_Dur timeout
+        ))(Sched_TimedE$void));
         $attr($inline_always)
         $static fn_((thrd_Cond__common_signal(P$$(thrd_Cond) self))(void));
         $attr($inline_always)
@@ -61,8 +67,12 @@ fn_((thrd_Cond_fini(thrd_Cond* self))(void)) {
     thrd_Cond__fini(self);
 };
 
-fn_((thrd_Cond_wait(thrd_Cond* self, thrd_Mtx* mtx, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $scope) {
-    catch_((thrd_Cond__wait(self, mtx, some$((O$thrd_wait_Src)(cancel_src)), none$((O$time_Dur))))(err, {
+fn_((thrd_Cond_wait(
+    thrd_Cond* self, thrd_Mtx* mtx, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void) $scope) {
+    catch_((thrd_Cond__wait(
+        self, mtx, some$((O$thrd_Wakeable)(cancel_src)), none$((O$time_Dur))
+    ))(err, {
         if (E_eql(err.as_any, E_cause$Sched_Canceled().as_any)) {
             return_err(E_cause$Sched_Canceled());
         }
@@ -70,11 +80,17 @@ fn_((thrd_Cond_wait(thrd_Cond* self, thrd_Mtx* mtx, thrd_wait_Src cancel_src))(S
     }));
     return_ok({});
 } $unscoped(fn);
-fn_((thrd_Cond_waitFor(thrd_Cond* self, thrd_Mtx* mtx, thrd_wait_Src cancel_src, time_Dur duration))(Sched_TimedE$void) $scope) {
-    return_(thrd_Cond__wait(self, mtx, some$((O$thrd_wait_Src)(cancel_src)), some$((O$time_Dur)(duration))));
+fn_((thrd_Cond_waitFor(
+    thrd_Cond* self, thrd_Mtx* mtx, thrd_Wakeable cancel_src, time_Dur duration
+))(Sched_TimedE$void) $scope) {
+    return_(thrd_Cond__wait(
+        self, mtx, some$((O$thrd_Wakeable)(cancel_src)), some$((O$time_Dur)(duration))
+    ));
 } $unscoped(fn);
 fn_((thrd_Cond_waitProtcd(thrd_Cond* self, thrd_Mtx* mtx))(void) $scope) {
-    return_void(catch_((thrd_Cond__wait(self, mtx, none$((O$thrd_wait_Src)), none$((O$time_Dur))))($ignore, claim_unreachable)));
+    return_void(catch_((thrd_Cond__wait(
+        self, mtx, none$((O$thrd_Wakeable)), none$((O$time_Dur))
+    ))($ignore, claim_unreachable)));
 } $unscoped(fn);
 
 fn_((thrd_Cond_signal(thrd_Cond* self))(void)) {
@@ -101,10 +117,14 @@ fn_((thrd_Cond__pthread_init(void))(thrd_Cond) $guard) {
 fn_((thrd_Cond__pthread_fini(thrd_Cond* self))(void)) {
     pthread_cond_destroy(&self->impl);
 };
-fn_((thrd_Cond__pthread_wait(thrd_Cond* self, thrd_Mtx* mtx))(void)) {
+fn_((thrd_Cond__pthread_wait(
+    thrd_Cond* self, thrd_Mtx* mtx
+))(void)) {
     pthread_cond_wait(&self->impl, &mtx->impl);
 };
-fn_((thrd_Cond__pthread_waitFor(thrd_Cond* self, thrd_Mtx* mtx, time_Dur duration))(Sched_TimedE$void) $scope) {
+fn_((thrd_Cond__pthread_waitFor(
+    thrd_Cond* self, thrd_Mtx* mtx, time_Dur duration
+))(Sched_TimedE$void) $scope) {
     struct timespec abs_ts = cleared();
 #if plat_is_linux
     if (sys_call_linux_clock_gettime(sys_call_linux_CLOCK_MONOTONIC, &abs_ts) != 0) {
@@ -152,7 +172,9 @@ pp_if_(thrd_Cond_has_specialized)(
                 $attr($inline_always)
                 $static fn_((thrd_Cond__windows_impl_fini(P$$(thrd_Cond) self))(void));
                 $attr($inline_always $must_check)
-                $static fn_((thrd_Cond__windows_impl_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void));
+                $static fn_((thrd_Cond__windows_impl_wait(
+                    P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$thrd_Wakeable cancel_src, O$time_Dur timeout
+                ))(Sched_TimedE$void));
                 $attr($inline_always)
                 $static fn_((thrd_Cond__windows_impl_wake(P$$(thrd_Cond) self, thrd_Cond__Notify notify))(void))
             ))
@@ -164,7 +186,9 @@ pp_if_(thrd_Cond_has_specialized)(
         $attr($inline_always)
         $static fn_((thrd_Cond__default_impl_fini(P$$(thrd_Cond) self))(void));
         $attr($inline_always $must_check)
-        $static fn_((thrd_Cond__default_impl_wait(P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void));
+        $static fn_((thrd_Cond__default_impl_wait(
+            P$$(thrd_Cond) self, P$$(thrd_Mtx) mtx, O$thrd_Wakeable cancel_src, O$time_Dur timeout
+        ))(Sched_TimedE$void));
         $attr($inline_always)
         $static fn_((thrd_Cond__default_impl_wake(P$$(thrd_Cond) self, thrd_Cond__Notify notify))(void))
     ));
@@ -214,7 +238,9 @@ fn_((thrd_Cond__common_init(void))(thrd_Cond)) {
 fn_((thrd_Cond__common_fini(thrd_Cond* self))(void)) {
     thrd_Cond__impl_fini(self);
 };
-fn_((thrd_Cond__common_wait(thrd_Cond* self, thrd_Mtx* mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void)) {
+fn_((thrd_Cond__common_wait(
+    thrd_Cond* self, thrd_Mtx* mtx, O$thrd_Wakeable cancel_src, O$time_Dur timeout
+))(Sched_TimedE$void)) {
     return thrd_Cond__impl_wait(self, mtx, cancel_src, timeout);
 };
 fn_((thrd_Cond__common_signal(thrd_Cond* self))(void)) {
@@ -261,7 +287,9 @@ $static fn_((thrd_Cond__default_impl_fini(thrd_Cond* self))(void)) {
 // - T1: s & signals == 0 -> FUTEX_WAIT(&epoch, e) (missed the state update + the epoch change)
 //
 // Acquire barrier to ensure the epoch load happens before the state load.
-fn_((thrd_Cond__default_impl_wait(thrd_Cond* self, thrd_Mtx* mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void) $guard) {
+fn_((thrd_Cond__default_impl_wait(
+    thrd_Cond* self, thrd_Mtx* mtx, O$thrd_Wakeable cancel_src, O$time_Dur timeout
+))(Sched_TimedE$void) $guard) {
     var epoch = atom_V_load(&self->impl.epoch, atom_MemOrd_acquire);
     var state = atom_V_pri_fetchAdd(&self->impl.state, thrd_Cond__default_one_waiter, atom_MemOrd_monotonic);
     debug_assert((state & thrd_Cond__default_waiter_mask) != thrd_Cond__default_waiter_mask);
@@ -279,12 +307,16 @@ fn_((thrd_Cond__default_impl_wait(thrd_Cond* self, thrd_Mtx* mtx, O$thrd_wait_Sr
                 // Acquire barrier ensures code before the wake() which added the signal happens before we decrement it and return.
                 while ((state & thrd_Cond__default_signal_mask) != 0) {
                     let new_state = state - thrd_Cond__default_one_waiter - thrd_Cond__default_one_signal;
-                    state = orelse_((atom_V_cmpXchgWeak(&self->impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic))(return_ok({})));
+                    state = orelse_((atom_V_cmpXchgWeak(
+                        &self->impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic
+                    ))(return_ok({})));
                 }
 
                 // Remove the waiter we added and officially return timed out.
                 let new_state = state - thrd_Cond__default_one_waiter;
-                state = orelse_((atom_V_cmpXchgWeak(&self->impl.state, state, new_state, atom_MemOrd_monotonic, atom_MemOrd_monotonic))(return_err(err)));
+                state = orelse_((atom_V_cmpXchgWeak(
+                    &self->impl.state, state, new_state, atom_MemOrd_monotonic, atom_MemOrd_monotonic
+                ))(return_err(err)));
             }
         }));
 
@@ -295,7 +327,9 @@ fn_((thrd_Cond__default_impl_wait(thrd_Cond* self, thrd_Mtx* mtx, O$thrd_wait_Sr
         // Acquire barrier ensures code before the wake() which added the signal happens before we decrement it and return.
         while ((state & thrd_Cond__default_signal_mask) != 0) {
             let new_state = state - thrd_Cond__default_one_waiter - thrd_Cond__default_one_signal;
-            state = orelse_((atom_V_cmpXchgWeak(&self->impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic))(return_ok({})));
+            state = orelse_((atom_V_cmpXchgWeak(
+                &self->impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic
+            ))(return_ok({})));
         }
     }
     return_ok({});
@@ -321,7 +355,9 @@ fn_((thrd_Cond__default_impl_wake(thrd_Cond* self, thrd_Cond__Notify notify))(vo
         // Reserve the amount of waiters to wake by incrementing the signals count.
         // Release barrier ensures code before the wake() happens before the signal it posted and consumed by the wait() threads.
         let new_state = state + (thrd_Cond__default_one_signal * to_wake);
-        state = orelse_((atom_V_cmpXchgWeak(&self->impl.state, state, new_state, atom_MemOrd_release, atom_MemOrd_monotonic))({
+        state = orelse_((atom_V_cmpXchgWeak(
+            &self->impl.state, state, new_state, atom_MemOrd_release, atom_MemOrd_monotonic
+        ))({
             // Wake up the waiting threads we reserved above by changing the epoch value.
             // NOTE: a waiting thread could miss a wake up if *exactly* ((1<<32)-1) wake()s happen between it observing the epoch and sleeping on it.
             // This is very unlikely due to how many precise amount of Futex.wake() calls that would be between the waiting thread's potential preemption.
@@ -352,7 +388,9 @@ fn_((thrd_Cond__windows_impl_fini(thrd_Cond* self))(void)) {
     let_ignore = self;
 };
 
-fn_((thrd_Cond__windows_impl_wait(thrd_Cond* self, thrd_Mtx* mtx, O$thrd_wait_Src cancel_src, O$time_Dur timeout))(Sched_TimedE$void) $scope) {
+fn_((thrd_Cond__windows_impl_wait(
+    thrd_Cond* self, thrd_Mtx* mtx, O$thrd_Wakeable cancel_src, O$time_Dur timeout
+))(Sched_TimedE$void) $scope) {
     let_ignore = cancel_src;
     claim_assert_static(TypeInfoPacked_eql(packTypeInfo$(DWORD), packTypeInfo$(u32)));
     var timeout_overflowed = false;

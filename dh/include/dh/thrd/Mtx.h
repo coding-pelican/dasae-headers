@@ -21,7 +21,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "wait.h"
+#include "Wakeable.h"
 #include "dh/sys/libc/darwin/sync.h"
 
 /*========== Macros and Declarations ========================================*/
@@ -88,7 +88,9 @@ $extern fn_((thrd_Mtx_fini(thrd_Mtx* self))(void));
 $extern fn_((thrd_Mtx_tryLock(thrd_Mtx* self))(bool));
 /// @brief Locks a mutex, blocking until locked or canceled
 $attr($must_check)
-$extern fn_((thrd_Mtx_lock(thrd_Mtx* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_Mtx_lock(
+    thrd_Mtx* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 /// @brief Locks a mutex, blocking if the mutex is already locked
 /// @param self Pointer to the mutex to lock
 $extern fn_((thrd_Mtx_lockProtcd(thrd_Mtx* self))(void));
@@ -106,7 +108,9 @@ $extern fn_((thrd_Mtx_Recur_fini(thrd_Mtx_Recur* self))(void));
 
 $extern fn_((thrd_Mtx_Recur_tryLock(thrd_Mtx_Recur* self))(bool));
 $attr($must_check)
-$extern fn_((thrd_Mtx_Recur_lock(thrd_Mtx_Recur* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_Mtx_Recur_lock(
+    thrd_Mtx_Recur* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 $extern fn_((thrd_Mtx_Recur_lockProtcd(thrd_Mtx_Recur* self))(void));
 $extern fn_((thrd_Mtx_Recur_unlock(thrd_Mtx_Recur* self))(void));
 

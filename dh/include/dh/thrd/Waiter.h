@@ -23,9 +23,13 @@ $extern fn_((thrd_Waiter_fini(thrd_Waiter* self))(void));
 
 $extern fn_((thrd_Waiter_link(thrd_Waiter* self, usize case_idx))(thrd_wait_Link));
 $attr($must_check)
-$extern fn_((thrd_Waiter_wait(thrd_Waiter* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_Waiter_wait(
+    thrd_Waiter* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((thrd_Waiter_waitFor(thrd_Waiter* self, thrd_wait_Src cancel_src, time_Dur dur))(Sched_TimedE$void));
+$extern fn_((thrd_Waiter_waitFor(
+    thrd_Waiter* self, thrd_Wakeable cancel_src, time_Dur dur
+))(Sched_TimedE$void));
 $extern fn_((thrd_Waiter_waitProtcd(thrd_Waiter* self))(void));
 $extern fn_((thrd_Waiter_wake(P$raw ctx))(void));
 

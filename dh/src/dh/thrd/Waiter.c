@@ -12,15 +12,18 @@ fn_((thrd_Waiter_fini(thrd_Waiter* self))(void)) {
     thrd_Mtx_fini(&self->lock);
 };
 
-T_use$((thrd_wait_Link_Data)(ListSgl_Adp_init));
 fn_((thrd_Waiter_link(thrd_Waiter* self, usize case_idx))(thrd_wait_Link)) {
-    return ListSgl_Adp_init$thrd_wait_Link_Data((thrd_wait_Link_Data){
-        .wake_ctx = self,
-        .wakeFn = thrd_Waiter_wake,
-        .case_idx = case_idx,
-    });
+    return thrd_wait_Link_from(
+        thrd_Waker_ensureValid((thrd_Waker){
+            .ctx = self,
+            .wakeFn = thrd_Waiter_wake,
+        }),
+        case_idx
+    );
 };
-fn_((thrd_Waiter_wait(thrd_Waiter* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void) $guard) {
+fn_((thrd_Waiter_wait(
+    thrd_Waiter* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void) $guard) {
     thrd_Mtx_lockProtcd(&self->lock);
     while (!self->woken) {
         catch_((thrd_Cond_wait(&self->cond, &self->lock, cancel_src))(err, {
@@ -32,7 +35,9 @@ fn_((thrd_Waiter_wait(thrd_Waiter* self, thrd_wait_Src cancel_src))(Sched_Cancel
     thrd_Mtx_unlock(&self->lock);
     return_ok({});
 } $unguarded(fn);
-fn_((thrd_Waiter_waitFor(thrd_Waiter* self, thrd_wait_Src cancel_src, time_Dur dur))(Sched_TimedE$void) $guard) {
+fn_((thrd_Waiter_waitFor(
+    thrd_Waiter* self, thrd_Wakeable cancel_src, time_Dur dur
+))(Sched_TimedE$void) $guard) {
     thrd_Mtx_lockProtcd(&self->lock);
     while (!self->woken) {
         catch_((thrd_Cond_waitFor(&self->cond, &self->lock, cancel_src, dur))(err, {

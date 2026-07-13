@@ -12,7 +12,7 @@ $static fn_((conc_Que__link(P$raw ctx, Sched sched, conc_AwaitLink* link))(bool)
 $static fn_((conc_Que__unlink(P$raw ctx, conc_AwaitLink* link))(void));
 $static fn_((conc_Que__cancel(P$raw ctx, Sched sched))(void));
 
-$static let_(conc_Que__recv_vtbl, conc_AwaitSrc_VTbl) = {
+$static let_(conc_Que__recv_vtbl, conc_Awakeable_VTbl) = {
     .pollFn = conc_Que__poll,
     .linkFn = conc_Que__link,
     .unlinkFn = conc_Que__unlink,
@@ -200,9 +200,9 @@ fn_((conc_Que_recvUntil(
     }
 } $unscoped(fn);
 
-fn_((conc_Que_recvSrc(conc_Que$raw* self, TypeInfo type))(conc_AwaitSrc)) {
+fn_((conc_Que_recvSrc(conc_Que$raw* self, TypeInfo type))(conc_Awakeable)) {
     let_ignore = type;
-    return conc_AwaitSrc_init(self, &conc_Que__recv_vtbl);
+    return conc_Awakeable_init(self, &conc_Que__recv_vtbl);
 };
 
 fn_((conc_Que__grip(conc_Que$raw* self, TypeInfo type))(ArrQue_Grip)) {

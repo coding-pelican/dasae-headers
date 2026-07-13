@@ -47,8 +47,12 @@ struct conc_SPSC$raw {
     var_(type, debug_TypeInfo);
 };
 
-struct conc_SPSC_Tx$raw { var_(chan, conc_SPSC$raw*); };
-struct conc_SPSC_Rx$raw { var_(chan, conc_SPSC$raw*); };
+struct conc_SPSC_Tx$raw {
+    var_(chan, conc_SPSC$raw*);
+};
+struct conc_SPSC_Rx$raw {
+    var_(chan, conc_SPSC$raw*);
+};
 
 $extern fn_((conc_SPSC_fixed(TypeInfo type, u_S$raw buf))(conc_SPSC$raw));
 $extern fn_((conc_SPSC_split(conc_SPSC$raw* self, conc_SPSC_Tx$raw* tx, conc_SPSC_Rx$raw* rx))(void));
@@ -69,7 +73,7 @@ $attr($must_check)
 $extern fn_((conc_SPSC_Rx_recvFor(conc_SPSC_Rx$raw* self, TypeInfo type, Sched sched, time_Dur dur, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
 $attr($must_check)
 $extern fn_((conc_SPSC_Rx_recvUntil(conc_SPSC_Rx$raw* self, TypeInfo type, Sched sched, time_Inst deadline, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
-$extern fn_((conc_SPSC_Rx_asAwaitSrc(conc_SPSC_Rx$raw* self, TypeInfo type))(conc_AwaitSrc));
+$extern fn_((conc_SPSC_Rx_asAwakeable(conc_SPSC_Rx$raw* self, TypeInfo type))(conc_Awakeable));
 
 #define __comp_anon__conc_SPSC$$(_T...) \
     union { \
@@ -110,17 +114,37 @@ $extern fn_((conc_SPSC_Rx_asAwaitSrc(conc_SPSC_Rx$raw* self, TypeInfo type))(con
     T_decl_conc_SPSC$(_T); \
     T_impl_conc_SPSC$(_T)
 
-#define __comp_anon__conc_SPSC_Tx$$(_T...) union { var_(chan, conc_SPSC$(_T)*); var_(as_raw, conc_SPSC_Tx$raw) $like_ref; }
+#define __comp_anon__conc_SPSC_Tx$$(_T...) \
+    union { \
+        var_(chan, conc_SPSC$(_T) *); \
+        var_(as_raw, conc_SPSC_Tx$raw) $like_ref; \
+    }
 #define __comp_alias__conc_SPSC_Tx$(_T...) tpl$(conc_SPSC_Tx, _T)
 #define __comp_gen__T_decl_conc_SPSC_Tx$(_T...) $maybe_unused typedef union conc_SPSC_Tx$(_T) conc_SPSC_Tx$(_T)
-#define __comp_gen__T_impl_conc_SPSC_Tx$(_T...) union conc_SPSC_Tx$(_T) { var_(chan, conc_SPSC$(_T)*); var_(as_raw, conc_SPSC_Tx$raw) $like_ref; }
-#define __comp_gen__T_use_conc_SPSC_Tx$(_T...) T_decl_conc_SPSC_Tx$(_T); T_impl_conc_SPSC_Tx$(_T)
+#define __comp_gen__T_impl_conc_SPSC_Tx$(_T...) \
+    union conc_SPSC_Tx$(_T) { \
+        var_(chan, conc_SPSC$(_T) *); \
+        var_(as_raw, conc_SPSC_Tx$raw) $like_ref; \
+    }
+#define __comp_gen__T_use_conc_SPSC_Tx$(_T...) \
+    T_decl_conc_SPSC_Tx$(_T); \
+    T_impl_conc_SPSC_Tx$(_T)
 
-#define __comp_anon__conc_SPSC_Rx$$(_T...) union { var_(chan, conc_SPSC$(_T)*); var_(as_raw, conc_SPSC_Rx$raw) $like_ref; }
+#define __comp_anon__conc_SPSC_Rx$$(_T...) \
+    union { \
+        var_(chan, conc_SPSC$(_T) *); \
+        var_(as_raw, conc_SPSC_Rx$raw) $like_ref; \
+    }
 #define __comp_alias__conc_SPSC_Rx$(_T...) tpl$(conc_SPSC_Rx, _T)
 #define __comp_gen__T_decl_conc_SPSC_Rx$(_T...) $maybe_unused typedef union conc_SPSC_Rx$(_T) conc_SPSC_Rx$(_T)
-#define __comp_gen__T_impl_conc_SPSC_Rx$(_T...) union conc_SPSC_Rx$(_T) { var_(chan, conc_SPSC$(_T)*); var_(as_raw, conc_SPSC_Rx$raw) $like_ref; }
-#define __comp_gen__T_use_conc_SPSC_Rx$(_T...) T_decl_conc_SPSC_Rx$(_T); T_impl_conc_SPSC_Rx$(_T)
+#define __comp_gen__T_impl_conc_SPSC_Rx$(_T...) \
+    union conc_SPSC_Rx$(_T) { \
+        var_(chan, conc_SPSC$(_T) *); \
+        var_(as_raw, conc_SPSC_Rx$raw) $like_ref; \
+    }
+#define __comp_gen__T_use_conc_SPSC_Rx$(_T...) \
+    T_decl_conc_SPSC_Rx$(_T); \
+    T_impl_conc_SPSC_Rx$(_T)
 
 #define T_use_conc_SPSC_all$(_T...) \
     T_use_conc_SPSC$(_T); \

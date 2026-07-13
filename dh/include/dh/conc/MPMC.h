@@ -47,8 +47,12 @@ struct conc_MPMC$raw {
     var_(type, debug_TypeInfo);
 };
 
-struct conc_MPMC_Tx$raw { var_(chan, conc_MPMC$raw*); };
-struct conc_MPMC_Rx$raw { var_(chan, conc_MPMC$raw*); };
+struct conc_MPMC_Tx$raw {
+    var_(chan, conc_MPMC$raw*);
+};
+struct conc_MPMC_Rx$raw {
+    var_(chan, conc_MPMC$raw*);
+};
 
 $extern fn_((conc_MPMC_fixed(TypeInfo type, u_S$raw buf))(conc_MPMC$raw));
 $extern fn_((conc_MPMC_split(conc_MPMC$raw* self, conc_MPMC_Tx$raw* tx, conc_MPMC_Rx$raw* rx))(void));
@@ -71,7 +75,7 @@ $attr($must_check)
 $extern fn_((conc_MPMC_Rx_recvFor(conc_MPMC_Rx$raw* self, TypeInfo type, Sched sched, time_Dur dur, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
 $attr($must_check)
 $extern fn_((conc_MPMC_Rx_recvUntil(conc_MPMC_Rx$raw* self, TypeInfo type, Sched sched, time_Inst deadline, u_V$raw ret_mem))(conc_chan_TimedE$u_V$raw));
-$extern fn_((conc_MPMC_Rx_asAwaitSrc(conc_MPMC_Rx$raw* self, TypeInfo type))(conc_AwaitSrc));
+$extern fn_((conc_MPMC_Rx_asAwakeable(conc_MPMC_Rx$raw* self, TypeInfo type))(conc_Awakeable));
 
 #define __comp_anon__conc_MPMC$$(_T...) \
     union { \
@@ -112,17 +116,37 @@ $extern fn_((conc_MPMC_Rx_asAwaitSrc(conc_MPMC_Rx$raw* self, TypeInfo type))(con
     T_decl_conc_MPMC$(_T); \
     T_impl_conc_MPMC$(_T)
 
-#define __comp_anon__conc_MPMC_Tx$$(_T...) union { var_(chan, conc_MPMC$(_T)*); var_(as_raw, conc_MPMC_Tx$raw) $like_ref; }
+#define __comp_anon__conc_MPMC_Tx$$(_T...) \
+    union { \
+        var_(chan, conc_MPMC$(_T) *); \
+        var_(as_raw, conc_MPMC_Tx$raw) $like_ref; \
+    }
 #define __comp_alias__conc_MPMC_Tx$(_T...) tpl$(conc_MPMC_Tx, _T)
 #define __comp_gen__T_decl_conc_MPMC_Tx$(_T...) $maybe_unused typedef union conc_MPMC_Tx$(_T) conc_MPMC_Tx$(_T)
-#define __comp_gen__T_impl_conc_MPMC_Tx$(_T...) union conc_MPMC_Tx$(_T) { var_(chan, conc_MPMC$(_T)*); var_(as_raw, conc_MPMC_Tx$raw) $like_ref; }
-#define __comp_gen__T_use_conc_MPMC_Tx$(_T...) T_decl_conc_MPMC_Tx$(_T); T_impl_conc_MPMC_Tx$(_T)
+#define __comp_gen__T_impl_conc_MPMC_Tx$(_T...) \
+    union conc_MPMC_Tx$(_T) { \
+        var_(chan, conc_MPMC$(_T) *); \
+        var_(as_raw, conc_MPMC_Tx$raw) $like_ref; \
+    }
+#define __comp_gen__T_use_conc_MPMC_Tx$(_T...) \
+    T_decl_conc_MPMC_Tx$(_T); \
+    T_impl_conc_MPMC_Tx$(_T)
 
-#define __comp_anon__conc_MPMC_Rx$$(_T...) union { var_(chan, conc_MPMC$(_T)*); var_(as_raw, conc_MPMC_Rx$raw) $like_ref; }
+#define __comp_anon__conc_MPMC_Rx$$(_T...) \
+    union { \
+        var_(chan, conc_MPMC$(_T) *); \
+        var_(as_raw, conc_MPMC_Rx$raw) $like_ref; \
+    }
 #define __comp_alias__conc_MPMC_Rx$(_T...) tpl$(conc_MPMC_Rx, _T)
 #define __comp_gen__T_decl_conc_MPMC_Rx$(_T...) $maybe_unused typedef union conc_MPMC_Rx$(_T) conc_MPMC_Rx$(_T)
-#define __comp_gen__T_impl_conc_MPMC_Rx$(_T...) union conc_MPMC_Rx$(_T) { var_(chan, conc_MPMC$(_T)*); var_(as_raw, conc_MPMC_Rx$raw) $like_ref; }
-#define __comp_gen__T_use_conc_MPMC_Rx$(_T...) T_decl_conc_MPMC_Rx$(_T); T_impl_conc_MPMC_Rx$(_T)
+#define __comp_gen__T_impl_conc_MPMC_Rx$(_T...) \
+    union conc_MPMC_Rx$(_T) { \
+        var_(chan, conc_MPMC$(_T) *); \
+        var_(as_raw, conc_MPMC_Rx$raw) $like_ref; \
+    }
+#define __comp_gen__T_use_conc_MPMC_Rx$(_T...) \
+    T_decl_conc_MPMC_Rx$(_T); \
+    T_impl_conc_MPMC_Rx$(_T)
 
 #define T_use_conc_MPMC_all$(_T...) \
     T_use_conc_MPMC$(_T); \

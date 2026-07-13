@@ -50,8 +50,13 @@ $extern fn_((thrd_Group_fini(thrd_Group* self))(void));
 $extern fn_((thrd_Group_start(thrd_Group* self))(void));
 $extern fn_((thrd_Group_startN(thrd_Group* self, usize n))(void));
 /// Spawns a new thread and counts it in the group latch.
-$extern fn_((thrd_Group_spawn(thrd_Group* self, mem_Alctr gpa, Clsr$Void* clsr))(void));
-$extern fn_((thrd_Group_adopt(thrd_Group* self, thrd_Group_Node* node, thrd_Self thrd))(void));
+$attr($must_check)
+$extern fn_((thrd_Group_spawn(
+    thrd_Group* self, mem_Alctr gpa, Clsr$Void* clsr
+))(thrd_spawn_E$void));
+$extern fn_((thrd_Group_adopt(
+    thrd_Group* self, thrd_Group_Node* node, thrd_Self thrd
+))(void));
 $extern fn_((thrd_Group_finish(thrd_Group* self))(void));
 
 $extern fn_((thrd_Group_isDone(thrd_Group* self))(bool));
@@ -59,15 +64,19 @@ $extern fn_((thrd_Group_value(thrd_Group* self))(usize));
 
 $extern fn_((thrd_Group_tryWait(thrd_Group* self))(bool));
 $attr($must_check)
-$extern fn_((thrd_Group_wait(thrd_Group* self, thrd_wait_Src cancel_src))(Sched_Cancelable$void));
+$extern fn_((thrd_Group_wait(
+    thrd_Group* self, thrd_Wakeable cancel_src
+))(Sched_Cancelable$void));
 $attr($must_check)
-$extern fn_((thrd_Group_waitFor(thrd_Group* self, thrd_wait_Src cancel_src, time_Dur timeout))(Sched_TimedE$void));
+$extern fn_((thrd_Group_waitFor(
+    thrd_Group* self, thrd_Wakeable cancel_src, time_Dur timeout
+))(Sched_TimedE$void));
 $extern fn_((thrd_Group_waitProtcd(thrd_Group* self))(void));
 
 /*========== Macros and Definitions =========================================*/
 
 #define ____thrd_Group_init_static() l$((thrd_Group){ \
-    .latch = thrd_Latch_init_static(), \
+    .latch = thrd_Latch_initPending_static(0), \
     .lock = thrd_Mtx_init_static(), \
     .threads = none(), \
 })
