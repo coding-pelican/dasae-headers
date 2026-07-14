@@ -189,7 +189,7 @@ TEST_fn_("proc: cwd handle is passed to child" $guard) {
     defer_(fs_Dir_close(&dir_handle));
 
     var_(expected_buf, A$$(512, u8)) = A_zero();
-    let expected = try_(test__fullPathZ(A_ptr(dir_z), A_ref$((S$u8)(expected_buf))));
+    let expected = try_(test__fullPathZ(A_ptr(dir_z), A_ref$((S$u8)(expected_buf)))).as_const;
 
     var_(argv, A$$(3, S_const$u8)) = A_init({
         [0] = u8_l("cmd.exe"),
@@ -227,7 +227,7 @@ TEST_fn_("proc: cwd handle is passed to child" $guard) {
     let out = try_(test__readPipeAll(std_out, A_ref$((S$u8)(buf))));
 
     var_(expected_line, A$$(640, u8)) $undefined;
-    mem_copyBytes(S_slice(((S$u8)A_ref$((S$u8)(expected_line)))$r(0, expected.len)), expected.as_const);
+    mem_copyBytes(S_slice(((S$u8)A_ref$((S$u8)(expected_line)))$r(0, expected.len)), expected);
 #if plat_is_windows
     *A_at((expected_line)[expected.len]) = io_cr_byte;
     *A_at((expected_line)[expected.len + 1]) = io_lf_byte;
