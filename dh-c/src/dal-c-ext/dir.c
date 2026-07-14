@@ -88,6 +88,42 @@ static bool dir_isRootPath(const char* path) {
 #endif
 }
 
+#ifdef _WIN32
+static bool dir__deleteFilePath(const char* path) {
+    assert(path != NULL);
+    for (int attempt = 0; attempt < 8; ++attempt) {
+        if (DeleteFileA(path)) { return true; }
+        const DWORD err = GetLastError();
+        if (err == ERROR_FILE_NOT_FOUND || err == ERROR_PATH_NOT_FOUND) { return true; }
+        if (err == ERROR_ACCESS_DENIED) {
+            const DWORD attrs = GetFileAttributesA(path);
+            if (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_READONLY)) {
+                (void)SetFileAttributesA(path, attrs & ~(DWORD)FILE_ATTRIBUTE_READONLY);
+            }
+        }
+        Sleep(10);
+    }
+    return DeleteFileA(path) != 0;
+}
+
+static bool dir__removeEmptyDirPath(const char* path) {
+    assert(path != NULL);
+    for (int attempt = 0; attempt < 8; ++attempt) {
+        if (RemoveDirectoryA(path)) { return true; }
+        const DWORD err = GetLastError();
+        if (err == ERROR_FILE_NOT_FOUND || err == ERROR_PATH_NOT_FOUND) { return true; }
+        if (err == ERROR_ACCESS_DENIED) {
+            const DWORD attrs = GetFileAttributesA(path);
+            if (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_READONLY)) {
+                (void)SetFileAttributesA(path, attrs & ~(DWORD)FILE_ATTRIBUTE_READONLY);
+            }
+        }
+        Sleep(10);
+    }
+    return RemoveDirectoryA(path) != 0;
+}
+#endif
+
 /* NOLINTNEXTLINE(misc-no-recursion) */
 bool dir_createRecur(const char* path) {
     if (!path) { return false; }
@@ -114,20 +150,25 @@ bool dir_removeRecur(const char* path) {
     char search_path[MAX_PATH] = {};
     (void)snprintf(search_path, MAX_PATH, "%s\\*", path);
     HANDLE const hFind = FindFirstFileA(search_path, &find_data);
+    bool success = true;
     if (hFind != INVALID_HANDLE_VALUE) {
         do {
             if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0) { continue; }
             char* const full_path = path_join(path, find_data.cFileName);
             if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                dir_removeRecur(full_path);
+                if (!dir_removeRecur(full_path)) {
+                    success = false;
+                }
             } else {
-                DeleteFileA(full_path);
+                if (!dir__deleteFilePath(full_path)) {
+                    success = false;
+                }
             }
             free(full_path);
         } while (FindNextFileA(hFind, &find_data));
         FindClose(hFind);
     }
-    return RemoveDirectoryA(path) != 0;
+    return success && dir__removeEmptyDirPath(path);
 #else
     DIR* const dir = opendir(path);
     if (!dir) { return false; }

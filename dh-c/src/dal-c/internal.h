@@ -61,7 +61,7 @@ const dal_c_TargetRoot* dal_c_Project_findTargetRootByPath(const dal_c_Project* 
 bool dal_c_TargetRequest_resolve(const dal_c_Project* proj, const dal_c_CommandIntent* intent, dal_c_TargetRequest* out);
 void dal_c_BuildDefaults_cleanup(dal_c_BuildDefaults* defaults);
 void dal_c_BuildDefaults_merge(dal_c_BuildDefaults* dst, const dal_c_BuildDefaults* src);
-bool dal_c_BuildDefaults_applyDhFile(dal_c_BuildDefaults* dst, const char* path);
+bool dal_c_BuildDefaults_applyDHFile(dal_c_BuildDefaults* dst, const char* path);
 void dal_c_VersionSpec_cleanup(dal_c_VersionSpec* version);
 void dal_c_VersionSpec_merge(dal_c_VersionSpec* dst, const dal_c_VersionSpec* src);
 bool dal_c_VersionSpec_parseCore(dal_c_VersionSpec* dst, const char* value);
@@ -87,6 +87,14 @@ int dal_c__generateMakefile(
     const char* build_dir,
     dal_c_Target target_type
 );
+void dal_c__appendCompileDbArguments(
+    ArrStr* argv,
+    const dal_c_Cmd* cmd,
+    const dal_c_Project* proj,
+    const dal_c_ProfileSpec* profile,
+    const char* src,
+    dal_c_Target target_type
+);
 int dal_c__writeCompileDb(
     const dal_c_Cmd* cmd,
     const dal_c_Project* proj,
@@ -101,7 +109,7 @@ char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec
 int dal_c__executeMake(const dal_c_Cmd* cmd, const char* makefile_path);
 int dal_c__executeMakeInDir(const dal_c_Cmd* cmd, const char* directory);
 bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_CompilerOpts* opts);
-bool dal_c__usesDhLibrary(const dal_c_Project* proj, const dal_c_CompilerOpts* opts);
+bool dal_c__usesDHLibrary(const dal_c_Project* proj, const dal_c_CompilerOpts* opts);
 int dal_c__buildDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__cleanDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__testDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
@@ -140,7 +148,7 @@ void dal_c__projectLockRelease(dal_c_ProjectLock* lock);
 
 void dal_c_CompilerOpts_cleanup(dal_c_CompilerOpts* opts);
 void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts* src);
-bool dal_c_CompilerOpts_applyDhFile(dal_c_CompilerOpts* dst, const char* path);
+bool dal_c_CompilerOpts_applyDHFile(dal_c_CompilerOpts* dst, const char* path);
 ArrStr* dal_c__collectDescendantProjects(const dal_c_Project* proj);
 
 #endif /* dal_c_internal__included */

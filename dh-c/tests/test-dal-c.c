@@ -516,6 +516,21 @@ static void test_meta_tables(void) {
     TEST_ASSERT(compile_db_cmd->implemented);
     TEST_ASSERT(test_help_has_option(compile_db_cmd, dal_c_opt_output));
 
+    const dal_c_HelpCmd* syntax_cmd = test_find_help_cmd(dal_c_cmd_action_syntax, NULL);
+    TEST_ASSERT(syntax_cmd != NULL);
+    TEST_ASSERT(syntax_cmd->implemented);
+    TEST_ASSERT(test_help_has_option(syntax_cmd, dal_c_opt_progress));
+
+    const dal_c_HelpCmd* tidy_cmd = test_find_help_cmd(dal_c_cmd_action_tidy, NULL);
+    TEST_ASSERT(tidy_cmd != NULL);
+    TEST_ASSERT(tidy_cmd->implemented);
+    TEST_ASSERT(test_help_has_option(tidy_cmd, dal_c_opt_commands));
+
+    const dal_c_HelpCmd* format_cmd = test_find_help_cmd(dal_c_cmd_action_format, NULL);
+    TEST_ASSERT(format_cmd != NULL);
+    TEST_ASSERT(format_cmd->implemented);
+    TEST_ASSERT(test_help_has_option(format_cmd, dal_c_opt_verbose));
+
     const int option_count = dal_c_help_global_options_count;
     TEST_ASSERT(option_count == 2);
     TEST_ASSERT(cmd_count >= 10);
@@ -559,6 +574,38 @@ static void test_cmd_parse(void) {
         const char* argv[] = { dal_c_tool_name, "clean", "--self", "--cache", NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
         TEST_ASSERT(cmd == NULL);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "syntax", "release", "--all", "--progress=hide", "--commands=show", "--verbose=off", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(7, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->action == dal_c_CmdAction_syntax);
+        TEST_ASSERT(cmd->opts.profile == dal_c_Profile_release);
+        TEST_ASSERT(cmd->payload.build.build_all);
+        TEST_ASSERT(!cmd->show_progress);
+        TEST_ASSERT(cmd->show_commands);
+        TEST_ASSERT(!cmd->verbose);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "tidy", "dev", "--file=" dal_c_tool_name "/src/dal-c-ext/str.c", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->action == dal_c_CmdAction_tidy);
+        TEST_ASSERT(cmd->opts.profile == dal_c_Profile_dev);
+        TEST_ASSERT(cmd->input_count == 1);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "format", "--file=" dal_c_tool_name "/src/dal-c-ext/str.c", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->action == dal_c_CmdAction_format_code);
+        TEST_ASSERT(cmd->input_count == 1);
+        dal_c_Cmd_cleanup(&cmd);
     }
 
     {
@@ -902,7 +949,7 @@ static void test_compiler_mode_contracts(void) {
         "exceptions=off\n"
         "loose-errors=suppress\n"
     ));
-    TEST_ASSERT(dal_c_CompilerOpts_applyDhFile(&file_opts, opts_dh));
+    TEST_ASSERT(dal_c_CompilerOpts_applyDHFile(&file_opts, opts_dh));
     TEST_ASSERT(file_opts.compile_env == dal_c_CompileEnv_freestanding);
     TEST_ASSERT(file_opts.libc_linked == dal_c_ToggleState_enabled);
     TEST_ASSERT(file_opts.dsl_mode == dal_c_ToggleState_disabled);

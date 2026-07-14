@@ -313,7 +313,7 @@ $static fn_((net__linux_sockaddrFromIp(net_IpAddr addr))(E$net__linux_SockAddr) 
         *ip4 = (sys_call_linux_sockaddr_in){ 0 };
         ip4->sin_family = sys_call_linux_AF_INET;
         ip4->sin_port = net__linux_toNetwork16(ip.port);
-        ip4->sin_addr.s_addr = ip.bytes;
+        raw_memcpy(ip4->sin_addr.s_addr.val, ip.bytes.val, 4);
         out.len = sizeOf$(sys_call_linux_sockaddr_in);
         return_ok(out);
     } $end(patt);
@@ -323,7 +323,7 @@ $static fn_((net__linux_sockaddrFromIp(net_IpAddr addr))(E$net__linux_SockAddr) 
         ip6->sin6_family = sys_call_linux_AF_INET6;
         ip6->sin6_port = net__linux_toNetwork16(ip.port);
         ip6->sin6_flowinfo = net__linux_toNetwork32(ip.flow);
-        ip6->sin6_addr.s6_addr = ip.bytes;
+        raw_memcpy(ip6->sin6_addr.s6_addr.val, ip.bytes.val, 16);
         ip6->sin6_scope_id = ip.scope_id;
         out.len = sizeOf$(sys_call_linux_sockaddr_in6);
         return_ok(out);

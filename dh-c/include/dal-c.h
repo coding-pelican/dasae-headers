@@ -732,6 +732,9 @@ typedef enum dal_c_CmdAction {
     dal_c_CmdAction_clean_self = 14,
     dal_c_CmdAction_toolchain = 15,
     dal_c_CmdAction_compile_db = 16,
+    dal_c_CmdAction_syntax = 17,
+    dal_c_CmdAction_tidy = 18,
+    dal_c_CmdAction_format_code = 19,
 } dal_c_CmdAction;
 #define dal_c_cmd_action_version "version"
 #define dal_c_cmd_action_help "help"
@@ -750,6 +753,9 @@ typedef enum dal_c_CmdAction {
 #define dal_c_cmd_action_clean_self "clean-self"
 #define dal_c_cmd_action_toolchain "toolchain"
 #define dal_c_cmd_action_compile_db "compile-db"
+#define dal_c_cmd_action_syntax "syntax"
+#define dal_c_cmd_action_tidy "tidy"
+#define dal_c_cmd_action_format "format"
 static inline dal_c_CmdAction dal_c_CmdAction_parse(const char* str) {
     if (str_eql(str, dal_c_cmd_action_build)) { return dal_c_CmdAction_build; }
     if (str_eql(str, dal_c_cmd_action_lib)) { return dal_c_CmdAction_lib; }
@@ -766,6 +772,9 @@ static inline dal_c_CmdAction dal_c_CmdAction_parse(const char* str) {
     if (str_eql(str, dal_c_cmd_action_clean_self)) { return dal_c_CmdAction_clean_self; }
     if (str_eql(str, dal_c_cmd_action_toolchain)) { return dal_c_CmdAction_toolchain; }
     if (str_eql(str, dal_c_cmd_action_compile_db)) { return dal_c_CmdAction_compile_db; }
+    if (str_eql(str, dal_c_cmd_action_syntax)) { return dal_c_CmdAction_syntax; }
+    if (str_eql(str, dal_c_cmd_action_tidy)) { return dal_c_CmdAction_tidy; }
+    if (str_eql(str, dal_c_cmd_action_format)) { return dal_c_CmdAction_format_code; }
     if (str_eql(str, dal_c_cmd_action_help)) { return dal_c_CmdAction_help; }
     if (str_eql(str, dal_c_cmd_action_version)) { return dal_c_CmdAction_version; }
     return dal_c_CmdAction_invalid;
@@ -787,6 +796,9 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
     case dal_c_CmdAction_clean_self: return dal_c_cmd_action_clean_self;
     case dal_c_CmdAction_toolchain: return dal_c_cmd_action_toolchain;
     case dal_c_CmdAction_compile_db: return dal_c_cmd_action_compile_db;
+    case dal_c_CmdAction_syntax: return dal_c_cmd_action_syntax;
+    case dal_c_CmdAction_tidy: return dal_c_cmd_action_tidy;
+    case dal_c_CmdAction_format_code: return dal_c_cmd_action_format;
     case dal_c_CmdAction_help: return dal_c_cmd_action_help;
     case dal_c_CmdAction_version: return dal_c_cmd_action_version;
     case dal_c_CmdAction_invalid:
@@ -1236,6 +1248,9 @@ typedef struct dal_c_Project dal_c_Project;
 int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj);
+int dal_c_Cmd_runSyntax(const dal_c_Cmd* self, const dal_c_Project* proj);
+int dal_c_Cmd_runTidy(const dal_c_Cmd* self, const dal_c_Project* proj);
+int dal_c_Cmd_runFormat(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_compileDeps(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_createWorkspace(const dal_c_Cmd* self, const dal_c_Project* proj);
@@ -1618,6 +1633,34 @@ static const char* const dal_c_help_compile_db_examples[] = {
 };
 #define dal_c_help_compile_db_examples_count ((int)(sizeof(dal_c_help_compile_db_examples) / sizeof(dal_c_help_compile_db_examples[0])))
 
+static const dal_c_HelpOption dal_c_help_check_options[] = {
+    { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact check progress lines" },
+    { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide tool commands" },
+    { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
+};
+#define dal_c_help_check_options_count ((int)(sizeof(dal_c_help_check_options) / sizeof(dal_c_help_check_options[0])))
+
+static const char* const dal_c_help_syntax_examples[] = {
+    dal_c_cmd_action_syntax " " dal_c_profile_dev,
+    dal_c_cmd_action_syntax " " dal_c_profile_dev " src/main.c",
+    dal_c_cmd_action_syntax " " dal_c_profile_dev " " dal_c_opt_prefix_long dal_c_opt_all,
+};
+#define dal_c_help_syntax_examples_count ((int)(sizeof(dal_c_help_syntax_examples) / sizeof(dal_c_help_syntax_examples[0])))
+
+static const char* const dal_c_help_tidy_examples[] = {
+    dal_c_cmd_action_tidy " " dal_c_profile_dev,
+    dal_c_cmd_action_tidy " " dal_c_profile_dev " src/main.c",
+    dal_c_cmd_action_tidy " " dal_c_profile_dev " " dal_c_opt_prefix_long dal_c_opt_all,
+};
+#define dal_c_help_tidy_examples_count ((int)(sizeof(dal_c_help_tidy_examples) / sizeof(dal_c_help_tidy_examples[0])))
+
+static const char* const dal_c_help_format_examples[] = {
+    dal_c_cmd_action_format,
+    dal_c_cmd_action_format " src/main.c",
+    dal_c_cmd_action_format " " dal_c_opt_prefix_long dal_c_opt_all,
+};
+#define dal_c_help_format_examples_count ((int)(sizeof(dal_c_help_format_examples) / sizeof(dal_c_help_format_examples[0])))
+
 static const dal_c_HelpOption dal_c_help_clean_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_cache, "Clean only cache" },
     { dal_c_opt_prefix_long dal_c_opt_self, "Apply `clean` to the self boundary" },
@@ -1738,6 +1781,24 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
       "[profile] [path] [options]",
       dal_c_help_build_options, dal_c_help_build_options_count,
       dal_c_help_compile_db_examples, dal_c_help_compile_db_examples_count,
+      false, true },
+    { dal_c_cmd_action_syntax,
+      "Run compiler syntax-only checks without linking",
+      "[profile] [path] [options]",
+      dal_c_help_build_options, dal_c_help_build_options_count,
+      dal_c_help_syntax_examples, dal_c_help_syntax_examples_count,
+      false, true },
+    { dal_c_cmd_action_tidy,
+      "Run clang-tidy using dh-c's compilation database",
+      "[profile] [path] [options]",
+      dal_c_help_build_options, dal_c_help_build_options_count,
+      dal_c_help_tidy_examples, dal_c_help_tidy_examples_count,
+      false, true },
+    { dal_c_cmd_action_format,
+      "Run clang-format in-place on selected source files",
+      "[profile] [path] [options]",
+      dal_c_help_build_options, dal_c_help_build_options_count,
+      dal_c_help_format_examples, dal_c_help_format_examples_count,
       false, true },
     { dal_c_cmd_action_clean,
       "Clean build artifacts",

@@ -90,6 +90,10 @@ $static fn_((net__windows_finishConnect(net_Handle socket))(E$void) $scope) {
 #if plat_is_linux
 #include "dh/sys/call/linux.h"
 
+T_use_E$(sys_call_linux_sock_type_t);
+T_use_E$(sys_call_linux_sock_protocol_t);
+T_use_E$(sys_call_linux_sock_family_t);
+
 T_alias$((net__linux_SockAddr)(struct net__linux_SockAddr {
     var_(storage, sys_call_linux_sockaddr_storage);
     var_(len, sys_call_linux_socklen_t);
@@ -139,20 +143,24 @@ $static fn_((net__linux_ipFromSockAddr(net__linux_SockAddr addr))(E$net_IpAddr) 
     case sys_call_linux_AF_INET: {
         var_(ip4, sys_call_linux_sockaddr_in) = cleared();
         raw_memcpy(&ip4, raw, sizeOf$(sys_call_linux_sockaddr_in));
-        return_ok((net_IpAddr)union_of((net_Addr_Family_ip4){
-            .bytes = ip4.sin_addr.s_addr,
+        var result = (net_IpAddr)union_of((net_Addr_Family_ip4){
+            .bytes = A_zero(),
             .port = net__linux_toNetwork16(ip4.sin_port),
-        }));
+        });
+        raw_memcpy(union_as((&result)(net_Addr_Family_ip4))->bytes.val, ip4.sin_addr.s_addr.val, 4);
+        return_ok(result);
     }
     case sys_call_linux_AF_INET6: {
         var_(ip6, sys_call_linux_sockaddr_in6) = cleared();
         raw_memcpy(&ip6, raw, sizeOf$(sys_call_linux_sockaddr_in6));
-        return_ok((net_IpAddr)union_of((net_Addr_Family_ip6){
-            .bytes = ip6.sin6_addr.s6_addr,
+        var result = (net_IpAddr)union_of((net_Addr_Family_ip6){
+            .bytes = A_zero(),
             .port = net__linux_toNetwork16(ip6.sin6_port),
             .flow = net__linux_toNetwork32(ip6.sin6_flowinfo),
             .scope_id = ip6.sin6_scope_id,
-        }));
+        });
+        raw_memcpy(union_as((&result)(net_Addr_Family_ip6))->bytes.val, ip6.sin6_addr.s6_addr.val, 16);
+        return_ok(result);
     }
     default_() return_err(E_cause$net_AddressFamilyUnsupported()) $end(default);
     }

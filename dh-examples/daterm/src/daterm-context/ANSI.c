@@ -87,7 +87,7 @@ T_use_E$(posix_sigaction);
 $static fn_((daterm_ANSI__posix_enableResizeEvents(void))(E$posix_sigaction));
 $static fn_((daterm_ANSI__posix_disableResizeEvents(posix_sigaction old))(E$void));
 $static fn_((daterm_ANSI__posix_onResize(int sig))(void));
-$static var volatile sys_posix_sig_atomic_t daterm_ANSI__posix_resize_pending = 0;
+$static var_(daterm_ANSI__posix_resize_pending, volatile sys_posix_sig_atomic_t) = 0;
 #endif /* plat_is_posix */
 
 /*========== External Definitions ===========================================*/

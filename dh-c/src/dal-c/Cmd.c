@@ -4,6 +4,7 @@
 #include "dal-c-ext/dir.h"
 #include "dal-c-ext/env.h"
 #include "dal-c-ext/file.h"
+#include "dal-c-ext/proc.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,7 +45,7 @@ static ArrStr* dal_c_Cmd__collectExplicitSources(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_Project* proj, const dal_c_TargetRequest* request);
 static char* dal_c_Cmd__targetLocalSourceRoot(const dal_c_TargetRequest* request);
 static char* dal_c_Cmd__targetLocalIncludeRoot(const dal_c_TargetRequest* request);
-static char* dal_c_Cmd__targetLocalProjectDhPath(const dal_c_Project* proj, const dal_c_Cmd* cmd);
+static char* dal_c_Cmd__targetLocalProjectDHPath(const dal_c_Project* proj, const dal_c_Cmd* cmd);
 static int dal_c_Cmd__pushExcludePath(dal_c_Cmd* cmd, const char* value);
 static bool dal_c_Cmd__pathMatchesExclude(const char* path, const char* exclude_path);
 static const char* dal_c_Cmd__findMatchingExclude(const char* path, const ArrStr* excludes);
@@ -52,12 +53,12 @@ static int dal_c_Cmd__rejectExcludedPath(const char* path, const ArrStr* exclude
 static ArrStr* dal_c_Cmd__collectActiveExcludes(const dal_c_Project* proj, const dal_c_TargetRequest* request, const dal_c_Cmd* cmd);
 static int dal_c_Cmd__applyExcludeContract(ArrStr** sources, const ArrStr* excludes, bool explicit_selection);
 static char* dal_c_Cmd__basenameNoExt(const char* path);
-static void dal_c_Cmd__collectCompanionDhFiles(ArrStr* dh_files, ArrStr* sources);
+static void dal_c_Cmd__collectCompanionDHFiles(ArrStr* dh_files, ArrStr* sources);
 static void dal_c_Cmd__mergeBuildProperties(dal_c_CompilerOpts* opts, dal_c_BuildDefaults* defaults, const dal_c_Project* proj, ArrStr* sources, const dal_c_Cmd* cmd);
 static bool dal_c_Cmd__hasExplicitVersionFlags(const dal_c_Cmd* cmd);
 static int dal_c_Cmd__recordVersionFlags(const dal_c_Cmd* cmd, const dal_c_Project* proj, ArrStr* sources);
 static char* dal_c_Cmd__versionRecordPath(const dal_c_Cmd* cmd, const dal_c_Project* proj, ArrStr* sources);
-static int dal_c_Cmd__writeVersionDhFile(const char* path, const dal_c_VersionSpec* version);
+static int dal_c_Cmd__writeVersionDHFile(const char* path, const dal_c_VersionSpec* version);
 static int dal_c_Cmd__ensureProjectStaticLibrary(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runBuildDefaultTests(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Profile profile);
 static int dal_c_Cmd__buildFromSources(
@@ -72,6 +73,14 @@ static int dal_c_Cmd__buildFromSources(
 );
 static void dal_c_Cmd__appendTargetLocalInclude(dal_c_CompilerOpts* opts, const dal_c_Project* proj, const dal_c_Cmd* cmd);
 static char* dal_c_Cmd__compileDbOutputPath(const dal_c_Cmd* self, const dal_c_Project* proj);
+typedef struct dal_c_Cmd__CheckPlan dal_c_Cmd__CheckPlan;
+static int dal_c_Cmd__prepareCheckPlan(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Cmd__CheckPlan* plan);
+static void dal_c_Cmd__cleanupCheckPlan(dal_c_Cmd__CheckPlan* plan);
+static bool dal_c_Cmd__isAssemblySource(const char* path);
+static int dal_c_Cmd__runSyntaxPlan(dal_c_Cmd__CheckPlan* plan);
+static int dal_c_Cmd__runTidyPlan(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Cmd__CheckPlan* plan);
+static int dal_c_Cmd__runFormatPlan(const dal_c_Cmd* self, dal_c_Cmd__CheckPlan* plan);
+static bool dal_c_Cmd__toolAvailable(const char* tool);
 static int dal_c_Cmd__buildLibrarySetFromSources(
     const dal_c_Cmd* self,
     const dal_c_Project* proj,
@@ -307,6 +316,9 @@ void dal_c_Cmd_cleanup(dal_c_Cmd** self) {
     switch (cmd->action) {
     case dal_c_CmdAction_build:
     case dal_c_CmdAction_compile_db:
+    case dal_c_CmdAction_syntax:
+    case dal_c_CmdAction_tidy:
+    case dal_c_CmdAction_format_code:
         free(cmd->payload.build.target_path);
         free(cmd->payload.build.output_path);
         free(cmd->payload.build.emit_map_path);
@@ -357,7 +369,11 @@ static bool dal_c_Cmd__buildsLibrary(const dal_c_Cmd* cmd) {
 }
 
 static bool dal_c_Cmd__usesBuildPayload(dal_c_CmdAction action) {
-    return action == dal_c_CmdAction_build || action == dal_c_CmdAction_compile_db;
+    return action == dal_c_CmdAction_build
+        || action == dal_c_CmdAction_compile_db
+        || action == dal_c_CmdAction_syntax
+        || action == dal_c_CmdAction_tidy
+        || action == dal_c_CmdAction_format_code;
 }
 
 static bool dal_c_Cmd__tryParseBoolValue(const char* value, bool* out) {
@@ -753,6 +769,9 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
     switch (cmd->action) {
     case dal_c_CmdAction_build:
     case dal_c_CmdAction_compile_db:
+    case dal_c_CmdAction_syntax:
+    case dal_c_CmdAction_tidy:
+    case dal_c_CmdAction_format_code:
         out->target_path = cmd->payload.build.target_path;
         out->target_root_name_hint = dal_c_Cmd__sampleDirCanonical(cmd->payload.build.sample_dir);
         out->output_path = cmd->payload.build.output_path;
@@ -889,7 +908,7 @@ bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_Compil
     effective_opts.profile = dal_c_Profile_invalid;
     dal_c_CompilerOpts_merge(&effective_opts, &proj->opts);
     dal_c_CompilerOpts_merge(&effective_opts, opts);
-    bool include_dh_bundle = dal_c__usesDhLibrary(proj, &effective_opts);
+    bool include_dh_bundle = dal_c__usesDHLibrary(proj, &effective_opts);
     bool explicit_deps_pch = proj->pch_header_override && str_eql(proj->pch_header_override, dal_c_pch_value_deps);
 
     int raw_count = 0;
@@ -983,6 +1002,9 @@ static bool dal_c_Cmd__executeNeedsProjectLock(const dal_c_Cmd* self) {
     case dal_c_CmdAction_build:
         return !self->payload.build.self_boundary;
     case dal_c_CmdAction_compile_db:
+    case dal_c_CmdAction_syntax:
+    case dal_c_CmdAction_tidy:
+    case dal_c_CmdAction_format_code:
     case dal_c_CmdAction_lib:
     case dal_c_CmdAction_run:
     case dal_c_CmdAction_test:
@@ -1031,6 +1053,12 @@ static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project
         return dal_c_Cmd_makeTarget(self, proj);
     case dal_c_CmdAction_compile_db:
         return dal_c_Cmd_writeCompileDb(self, proj);
+    case dal_c_CmdAction_syntax:
+        return dal_c_Cmd_runSyntax(self, proj);
+    case dal_c_CmdAction_tidy:
+        return dal_c_Cmd_runTidy(self, proj);
+    case dal_c_CmdAction_format_code:
+        return dal_c_Cmd_runFormat(self, proj);
     case dal_c_CmdAction_lib:
     case dal_c_CmdAction_run:
     case dal_c_CmdAction_test:
@@ -1563,6 +1591,328 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
     return 0;
 }
 
+
+typedef struct dal_c_Cmd__CheckPlan {
+    dal_c_Cmd effective;
+    dal_c_Project* file_proj;
+    const dal_c_Project* build_proj;
+    dal_c_BuildDefaults defaults;
+    const dal_c_ProfileSpec* profile;
+    ArrStr* sources;
+    dal_c_Target target_type;
+} dal_c_Cmd__CheckPlan;
+
+static bool dal_c_Cmd__isAssemblySource(const char* path) {
+    return path && (str_endsWith(path, ".S") || str_endsWith(path, ".s"));
+}
+
+static void dal_c_Cmd__cleanupCheckPlan(dal_c_Cmd__CheckPlan* plan) {
+    if (!plan) { return; }
+    dal_c_BuildDefaults_cleanup(&plan->defaults);
+    dal_c_CompilerOpts_cleanup(&plan->effective.opts);
+    dal_c_Project_cleanup(&plan->file_proj);
+    ArrStr_fini(&plan->sources);
+    memset(plan, 0, sizeof(*plan));
+}
+
+static int dal_c_Cmd__prepareCheckPlan(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Cmd__CheckPlan* plan) {
+    assert(self != NULL);
+    assert(proj != NULL);
+    assert(plan != NULL);
+    memset(plan, 0, sizeof(*plan));
+
+    dal_c_CommandIntent intent = { 0 };
+    dal_c_Cmd_normalizeIntent(self, &intent);
+    const bool builds_library = dal_c_Cmd__buildsLibrary(self);
+    const bool build_all = intent.build_all;
+
+    const dal_c_Project* target_proj = proj;
+    dal_c_TargetRequest target_request = { 0 };
+    if (!dal_c_TargetRequest_resolve(target_proj, &intent, &target_request)) {
+        return 1;
+    }
+
+    ArrStr* active_excludes = intent.target_path_is_explicit_file
+                                ? ArrStr_init()
+                                : dal_c_Cmd__collectActiveExcludes(target_proj, &target_request, self);
+    if (target_request.root && target_request.raw_target_path && target_request.resolved_path) {
+        if (dal_c_Cmd__rejectExcludedPath(target_request.resolved_path, active_excludes) != 0) {
+            ArrStr_fini(&active_excludes);
+            dal_c_TargetRequest_cleanup(&target_request);
+            return 1;
+        }
+    } else if (self->input_count > 0 && !dal_c_Cmd__inputsNeedCategoryResolution(self)) {
+        for (int i = 0; i < self->input_count; ++i) {
+            if (dal_c_Cmd__rejectExcludedPath(self->input_files[i], active_excludes) != 0) {
+                ArrStr_fini(&active_excludes);
+                dal_c_TargetRequest_cleanup(&target_request);
+                return 1;
+            }
+        }
+    }
+
+    ArrStr* sources = ArrStr_init();
+    if (target_request.root) {
+        ArrStr_fini(&sources);
+        sources = dal_c_Cmd__collectTargetSources(target_proj, &target_request);
+        if (dal_c_Cmd__applyExcludeContract(&sources, active_excludes, target_request.raw_target_path != NULL) != 0) {
+            ArrStr_fini(&sources);
+            ArrStr_fini(&active_excludes);
+            dal_c_TargetRequest_cleanup(&target_request);
+            return 1;
+        }
+    } else if (self->input_count > 0) {
+        ArrStr_fini(&sources);
+        sources = dal_c_Cmd__collectExplicitSources(self);
+        if (dal_c_Cmd__applyExcludeContract(&sources, active_excludes, true) != 0) {
+            ArrStr_fini(&sources);
+            ArrStr_fini(&active_excludes);
+            dal_c_TargetRequest_cleanup(&target_request);
+            return 1;
+        }
+    } else if (build_all || !intent.target_path) {
+        ArrStr_fini(&sources);
+        sources = dal_c__collectSourceFiles(proj, NULL);
+        if (dal_c_Cmd__applyExcludeContract(&sources, active_excludes, false) != 0) {
+            ArrStr_fini(&sources);
+            ArrStr_fini(&active_excludes);
+            dal_c_TargetRequest_cleanup(&target_request);
+            return 1;
+        }
+    } else {
+        ArrStr_push(sources, intent.target_path);
+        if (dal_c_Cmd__applyExcludeContract(&sources, active_excludes, true) != 0) {
+            ArrStr_fini(&sources);
+            ArrStr_fini(&active_excludes);
+            dal_c_TargetRequest_cleanup(&target_request);
+            return 1;
+        }
+    }
+
+    if (ArrStr_len(sources) == 0) {
+        (void)fprintf(stderr, "Error: No source files found\n");
+        ArrStr_fini(&sources);
+        ArrStr_fini(&active_excludes);
+        dal_c_TargetRequest_cleanup(&target_request);
+        return 1;
+    }
+
+    dal_c_Project* file_proj = NULL;
+    const dal_c_Project* build_proj = proj;
+    if (intent.target_path_is_explicit_file) {
+        char* rel_to_project = (proj && proj->root) ? path_relative(proj->root, self->input_files[0]) : NULL;
+        if (rel_to_project) {
+            free(rel_to_project);
+        } else {
+            char* parent = path_parent(self->input_files[0]);
+            if (!parent) {
+                ArrStr_fini(&sources);
+                ArrStr_fini(&active_excludes);
+                dal_c_TargetRequest_cleanup(&target_request);
+                return 1;
+            }
+            file_proj = dal_c_Project_detectAt(parent, proj->dh_path);
+            free(parent);
+            if (!file_proj) {
+                ArrStr_fini(&sources);
+                ArrStr_fini(&active_excludes);
+                dal_c_TargetRequest_cleanup(&target_request);
+                return 1;
+            }
+            file_proj->pch_enabled = false;
+            free(file_proj->pch_header);
+            file_proj->pch_header = NULL;
+            build_proj = file_proj;
+        }
+    }
+
+    plan->effective = *self;
+    memset(&plan->effective.opts, 0, sizeof(plan->effective.opts));
+    plan->effective.opts.profile = dal_c_Profile_invalid;
+    dal_c_Cmd__mergeBuildProperties(&plan->effective.opts, &plan->defaults, build_proj, sources, self);
+    dal_c_Cmd__appendTargetLocalInclude(&plan->effective.opts, build_proj, self);
+    if (plan->effective.opts.profile == dal_c_Profile_invalid) {
+        plan->effective.opts.profile = self->opts.profile;
+    }
+    plan->profile = dal_c_ProfileSpec_by(plan->effective.opts.profile);
+    if (!plan->profile) {
+        (void)fprintf(stderr, "Error: Invalid profile\n");
+        ArrStr_fini(&sources);
+        ArrStr_fini(&active_excludes);
+        dal_c_TargetRequest_cleanup(&target_request);
+        plan->file_proj = file_proj;
+        dal_c_Cmd__cleanupCheckPlan(plan);
+        return 1;
+    }
+
+    dal_c_Target target_type = target_request.root ? target_request.kind : dal_c_Cmd__resolveBuildTargetType(self, intent.linking, builds_library);
+    if (!target_request.root && !builds_library && plan->defaults.target_kind_set) {
+        target_type = plan->defaults.target_kind;
+    }
+    if (target_type == dal_c_Target_lib) {
+        target_type = dal_c_Target_static_lib;
+    }
+
+    plan->file_proj = file_proj;
+    plan->build_proj = build_proj;
+    plan->sources = sources;
+    plan->target_type = target_type;
+    ArrStr_fini(&active_excludes);
+    dal_c_TargetRequest_cleanup(&target_request);
+    return 0;
+}
+
+static int dal_c_Cmd__runSyntaxPlan(dal_c_Cmd__CheckPlan* plan) {
+    assert(plan != NULL);
+    int result = 0;
+    const int total = ArrStr_len(plan->sources);
+    for (int i = 0; i < total; ++i) {
+        const char* src = ArrStr_at(plan->sources, i);
+        if (dal_c_Cmd__isAssemblySource(src)) {
+            if (plan->effective.show_progress) {
+                printf("[%d/%d] SKIP syntax %s\n", i + 1, total, src);
+            }
+            continue;
+        }
+        ArrStr* argv = ArrStr_init();
+        dal_c__appendCompileDbArguments(argv, &plan->effective, plan->build_proj, plan->profile, src, plan->target_type);
+        ArrStr_push(argv, "-fsyntax-only");
+        if (plan->effective.show_progress) {
+            printf("[%d/%d] SYNTAX %s\n", i + 1, total, src);
+        }
+        char** raw = ArrStr_toRaw(argv);
+        int raw_count = 0;
+        while (raw && raw[raw_count] != NULL) { ++raw_count; }
+        const char** proc_argv = raw ? (const char**)calloc((size_t)raw_count + 1u, sizeof(char*)) : NULL;
+        for (int j = 0; proc_argv && j < raw_count; ++j) { proc_argv[j] = raw[j]; }
+        if (plan->effective.show_commands) {
+            for (int j = 0; raw && raw[j] != NULL; ++j) {
+                if (j > 0) { printf(" "); }
+                printf("%s", raw[j]);
+            }
+            printf("\n");
+        }
+        int code = proc_argv ? proc_run(proc_argv, true) : 1;
+        if (code != 0 && result == 0) {
+            result = code;
+        }
+        free((void*)proc_argv);
+        if (raw) {
+            for (int j = 0; raw[j] != NULL; ++j) { free(raw[j]); }
+            free((void*)raw);
+        }
+        ArrStr_fini(&argv);
+        if (result != 0) { break; }
+    }
+    if (result == 0) {
+        printf("Syntax check successful!\n");
+    }
+    return result;
+}
+
+
+static bool dal_c_Cmd__toolAvailable(const char* tool) {
+    if (!tool || tool[0] == '\0') { return false; }
+    const char* argv[] = { tool, "--version", NULL };
+    return proc_run(argv, false) == 0;
+}
+
+static int dal_c_Cmd__runTidyPlan(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Cmd__CheckPlan* plan) {
+    assert(self != NULL);
+    assert(proj != NULL);
+    assert(plan != NULL);
+    if (!dal_c_Cmd__toolAvailable("clang-tidy")) {
+        (void)fprintf(stderr, "Error: clang-tidy not found in PATH\n");
+        return 1;
+    }
+
+    int db_result = dal_c_Cmd_writeCompileDb(self, proj);
+    if (db_result != 0) { return db_result; }
+
+    const char* project_root = (plan->build_proj && plan->build_proj->root) ? plan->build_proj->root : ".";
+    int result = 0;
+    const int total = ArrStr_len(plan->sources);
+    for (int i = 0; i < total; ++i) {
+        const char* src = ArrStr_at(plan->sources, i);
+        if (dal_c_Cmd__isAssemblySource(src)) {
+            if (self->show_progress) {
+                printf("[%d/%d] SKIP tidy %s\n", i + 1, total, src);
+            }
+            continue;
+        }
+        if (self->show_progress) {
+            printf("[%d/%d] TIDY %s\n", i + 1, total, src);
+        }
+        const char* argv[] = { "clang-tidy", src, "-p", project_root, NULL };
+        if (self->show_commands) {
+            printf("clang-tidy %s -p %s\n", src, project_root);
+        }
+        int code = proc_run(argv, true);
+        if (code != 0 && result == 0) {
+            result = code;
+            break;
+        }
+    }
+    if (result == 0) {
+        printf("Tidy check successful!\n");
+    }
+    return result;
+}
+
+static int dal_c_Cmd__runFormatPlan(const dal_c_Cmd* self, dal_c_Cmd__CheckPlan* plan) {
+    assert(self != NULL);
+    assert(plan != NULL);
+    if (!dal_c_Cmd__toolAvailable("clang-format")) {
+        (void)fprintf(stderr, "Error: clang-format not found in PATH\n");
+        return 1;
+    }
+    int result = 0;
+    const int total = ArrStr_len(plan->sources);
+    for (int i = 0; i < total; ++i) {
+        const char* src = ArrStr_at(plan->sources, i);
+        if (self->show_progress) {
+            printf("[%d/%d] FORMAT %s\n", i + 1, total, src);
+        }
+        const char* argv[] = { "clang-format", "-i", src, NULL };
+        if (self->show_commands) {
+            printf("clang-format -i %s\n", src);
+        }
+        int code = proc_run(argv, true);
+        if (code != 0 && result == 0) {
+            result = code;
+            break;
+        }
+    }
+    if (result == 0) {
+        printf("Format successful!\n");
+    }
+    return result;
+}
+
+int dal_c_Cmd_runSyntax(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    dal_c_Cmd__CheckPlan plan;
+    if (dal_c_Cmd__prepareCheckPlan(self, proj, &plan) != 0) { return 1; }
+    int result = dal_c_Cmd__runSyntaxPlan(&plan);
+    dal_c_Cmd__cleanupCheckPlan(&plan);
+    return result;
+}
+
+int dal_c_Cmd_runTidy(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    dal_c_Cmd__CheckPlan plan;
+    if (dal_c_Cmd__prepareCheckPlan(self, proj, &plan) != 0) { return 1; }
+    int result = dal_c_Cmd__runTidyPlan(self, proj, &plan);
+    dal_c_Cmd__cleanupCheckPlan(&plan);
+    return result;
+}
+
+int dal_c_Cmd_runFormat(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    dal_c_Cmd__CheckPlan plan;
+    if (dal_c_Cmd__prepareCheckPlan(self, proj, &plan) != 0) { return 1; }
+    int result = dal_c_Cmd__runFormatPlan(self, &plan);
+    dal_c_Cmd__cleanupCheckPlan(&plan);
+    return result;
+}
+
 int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
     assert(self != NULL);
     assert(proj != NULL);
@@ -1671,25 +2021,30 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
     dal_c_Project* file_proj = NULL;
     const dal_c_Project* build_proj = proj;
     if (intent.target_path_is_explicit_file) {
-        char* parent = path_parent(self->input_files[0]);
-        if (!parent) {
-            ArrStr_fini(&sources);
-            ArrStr_fini(&active_excludes);
-            dal_c_TargetRequest_cleanup(&target_request);
-            return 1;
+        char* rel_to_project = (proj && proj->root) ? path_relative(proj->root, self->input_files[0]) : NULL;
+        if (rel_to_project) {
+            free(rel_to_project);
+        } else {
+            char* parent = path_parent(self->input_files[0]);
+            if (!parent) {
+                ArrStr_fini(&sources);
+                ArrStr_fini(&active_excludes);
+                dal_c_TargetRequest_cleanup(&target_request);
+                return 1;
+            }
+            file_proj = dal_c_Project_detectAt(parent, proj->dh_path);
+            free(parent);
+            if (!file_proj) {
+                ArrStr_fini(&sources);
+                ArrStr_fini(&active_excludes);
+                dal_c_TargetRequest_cleanup(&target_request);
+                return 1;
+            }
+            file_proj->pch_enabled = false;
+            free(file_proj->pch_header);
+            file_proj->pch_header = NULL;
+            build_proj = file_proj;
         }
-        file_proj = dal_c_Project_detectAt(parent, proj->dh_path);
-        free(parent);
-        if (!file_proj) {
-            ArrStr_fini(&sources);
-            ArrStr_fini(&active_excludes);
-            dal_c_TargetRequest_cleanup(&target_request);
-            return 1;
-        }
-        file_proj->pch_enabled = false;
-        free(file_proj->pch_header);
-        file_proj->pch_header = NULL;
-        build_proj = file_proj;
     }
 
     dal_c_Cmd effective = *self;
@@ -1949,6 +2304,9 @@ static char** dal_c_Cmd__targetPathSlot(dal_c_Cmd* cmd) {
     switch (cmd->action) {
     case dal_c_CmdAction_build: return &cmd->payload.build.target_path;
     case dal_c_CmdAction_compile_db: return &cmd->payload.build.target_path;
+    case dal_c_CmdAction_syntax:
+    case dal_c_CmdAction_tidy:
+    case dal_c_CmdAction_format_code: return &cmd->payload.build.target_path;
     case dal_c_CmdAction_lib: return &cmd->payload.lib.target_path;
     case dal_c_CmdAction_run: return &cmd->payload.run.target_path;
     case dal_c_CmdAction_test:
@@ -1974,6 +2332,9 @@ static char** dal_c_Cmd__outputPathSlot(dal_c_Cmd* cmd) {
     switch (cmd->action) {
     case dal_c_CmdAction_build: return &cmd->payload.build.output_path;
     case dal_c_CmdAction_compile_db: return &cmd->payload.build.output_path;
+    case dal_c_CmdAction_syntax:
+    case dal_c_CmdAction_tidy:
+    case dal_c_CmdAction_format_code: return &cmd->payload.build.output_path;
     case dal_c_CmdAction_lib: return &cmd->payload.lib.output_path;
     case dal_c_CmdAction_run: return &cmd->payload.run.output_path;
     case dal_c_CmdAction_test:
@@ -2002,6 +2363,9 @@ static char** dal_c_Cmd__runArgsSlot(dal_c_Cmd* cmd) {
     case dal_c_CmdAction_test_dsl: return &cmd->payload.test.run_args;
     case dal_c_CmdAction_build:
     case dal_c_CmdAction_compile_db:
+    case dal_c_CmdAction_syntax:
+    case dal_c_CmdAction_tidy:
+    case dal_c_CmdAction_format_code:
     case dal_c_CmdAction_lib:
     case dal_c_CmdAction_clean:
     case dal_c_CmdAction_clean_dsl:
@@ -3215,7 +3579,7 @@ static char* dal_c_Cmd__basenameNoExt(const char* path) {
     return base;
 }
 
-static void dal_c_Cmd__collectCompanionDhFiles(ArrStr* dh_files, ArrStr* sources) {
+static void dal_c_Cmd__collectCompanionDHFiles(ArrStr* dh_files, ArrStr* sources) {
     assert(dh_files != NULL);
     assert(sources != NULL);
 
@@ -3245,35 +3609,35 @@ static void dal_c_Cmd__mergeBuildProperties(dal_c_CompilerOpts* opts, dal_c_Buil
         }
     }
 
-    char* target_project_dh = dal_c_Cmd__targetLocalProjectDhPath(proj, cmd);
+    char* target_project_dh = dal_c_Cmd__targetLocalProjectDHPath(proj, cmd);
     if (target_project_dh) {
-        (void)dal_c_CompilerOpts_applyDhFile(opts, target_project_dh);
+        (void)dal_c_CompilerOpts_applyDHFile(opts, target_project_dh);
         if (defaults) {
-            (void)dal_c_BuildDefaults_applyDhFile(defaults, target_project_dh);
+            (void)dal_c_BuildDefaults_applyDHFile(defaults, target_project_dh);
         }
         free(target_project_dh);
     }
 
     ArrStr* dh_files = ArrStr_init();
-    dal_c_Cmd__collectCompanionDhFiles(dh_files, sources);
+    dal_c_Cmd__collectCompanionDHFiles(dh_files, sources);
     for (int i = 0; i < ArrStr_len(dh_files); ++i) {
-        (void)dal_c_CompilerOpts_applyDhFile(opts, ArrStr_at(dh_files, i));
+        (void)dal_c_CompilerOpts_applyDHFile(opts, ArrStr_at(dh_files, i));
         if (defaults) {
-            (void)dal_c_BuildDefaults_applyDhFile(defaults, ArrStr_at(dh_files, i));
+            (void)dal_c_BuildDefaults_applyDHFile(defaults, ArrStr_at(dh_files, i));
         }
     }
     ArrStr_fini(&dh_files);
 
     for (int i = 0; i < cmd->explicit_dh_count; ++i) {
-        (void)dal_c_CompilerOpts_applyDhFile(opts, cmd->explicit_dh_files[i]);
+        (void)dal_c_CompilerOpts_applyDHFile(opts, cmd->explicit_dh_files[i]);
         if (defaults) {
-            (void)dal_c_BuildDefaults_applyDhFile(defaults, cmd->explicit_dh_files[i]);
+            (void)dal_c_BuildDefaults_applyDHFile(defaults, cmd->explicit_dh_files[i]);
         }
     }
     dal_c_CompilerOpts_merge(opts, &cmd->opts);
 }
 
-static char* dal_c_Cmd__targetLocalProjectDhPath(const dal_c_Project* proj, const dal_c_Cmd* cmd) {
+static char* dal_c_Cmd__targetLocalProjectDHPath(const dal_c_Project* proj, const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
     if (!proj || !proj->root) {
         return NULL;
@@ -3348,7 +3712,7 @@ static char* dal_c_Cmd__versionRecordPath(const dal_c_Cmd* cmd, const dal_c_Proj
     }
 }
 
-static int dal_c_Cmd__writeVersionDhFile(const char* path, const dal_c_VersionSpec* version) {
+static int dal_c_Cmd__writeVersionDHFile(const char* path, const dal_c_VersionSpec* version) {
     assert(path != NULL);
     assert(version != NULL);
 
@@ -3480,7 +3844,7 @@ static int dal_c_Cmd__recordVersionFlags(const dal_c_Cmd* cmd, const dal_c_Proje
     if (!path) {
         return 1;
     }
-    int result = dal_c_Cmd__writeVersionDhFile(path, &cmd->opts.version);
+    int result = dal_c_Cmd__writeVersionDHFile(path, &cmd->opts.version);
     free(path);
     return result;
 }

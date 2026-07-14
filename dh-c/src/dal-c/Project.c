@@ -15,10 +15,10 @@
 static char* dal_c_Project__findRoot(const char* start);
 static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd);
 static bool dal_c_Project__isDHRoot(const char* path);
-static bool dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj);
+static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj);
 static char* dal_c_Project__depsPreludeHeaderPath(const dal_c_Project* proj);
 static char* dal_c_Project__findIncludeHeader(const dal_c_Project* proj, const char* header);
-static bool dal_c_Project__usesDhLibraryDefault(const dal_c_Project* proj);
+static bool dal_c_Project__usesDHLibraryDefault(const dal_c_Project* proj);
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj);
 static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib);
 static void dal_c_Project__addSelfRoot(dal_c_Project* proj, const char* path);
@@ -59,7 +59,7 @@ dal_c_Project* dal_c_Project_detect(const dal_c_Cmd* cmd) {
         proj->project_dh = path_join(proj->root, dal_c_file_detector_project);
         proj->pch_enabled = true;
         if (path_isFile(proj->project_dh)) {
-            if (!dal_c_Project__parseProjectDh(proj->project_dh, proj)) {
+            if (!dal_c_Project__parseProjectDH(proj->project_dh, proj)) {
                 dal_c_Project_cleanup(&proj);
                 return NULL;
             }
@@ -88,7 +88,7 @@ dal_c_Project* dal_c_Project_detectAt(const char* lib_path, const char* dh_path)
     proj->project_dh = path_join(proj->root, dal_c_file_detector_project);
     proj->pch_enabled = true;
     if (proj->project_dh && path_isFile(proj->project_dh)) {
-        if (!dal_c_Project__parseProjectDh(proj->project_dh, proj)) {
+        if (!dal_c_Project__parseProjectDH(proj->project_dh, proj)) {
             dal_c_Project_cleanup(&proj);
             return NULL;
         }
@@ -379,7 +379,7 @@ void dal_c_BuildDefaults_merge(dal_c_BuildDefaults* dst, const dal_c_BuildDefaul
     }
 }
 
-bool dal_c_BuildDefaults_applyDhFile(dal_c_BuildDefaults* dst, const char* path) {
+bool dal_c_BuildDefaults_applyDHFile(dal_c_BuildDefaults* dst, const char* path) {
     assert(dst != NULL);
     if (!path || !path_isFile(path)) { return false; }
 
@@ -405,7 +405,7 @@ bool dal_c_BuildDefaults_applyDhFile(dal_c_BuildDefaults* dst, const char* path)
     return applied;
 }
 
-bool dal_c_CompilerOpts_applyDhFile(dal_c_CompilerOpts* dst, const char* path) {
+bool dal_c_CompilerOpts_applyDHFile(dal_c_CompilerOpts* dst, const char* path) {
     assert(dst != NULL);
     if (!path || !path_isFile(path)) { return false; }
 
@@ -1184,7 +1184,7 @@ static void dal_c_Project__applyTargetRootLine(dal_c_TargetRoot* root, const dal
     }
 }
 
-static bool dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj) {
+static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj) {
     int line_count = 0;
     char** lines = file_readLines(path, &line_count);
     if (!lines) { return false; }
@@ -1345,7 +1345,7 @@ static char* dal_c_Project__findIncludeHeader(const dal_c_Project* proj, const c
     return NULL;
 }
 
-static bool dal_c_Project__usesDhLibraryDefault(const dal_c_Project* proj) {
+static bool dal_c_Project__usesDHLibraryDefault(const dal_c_Project* proj) {
     return proj
         && proj->dh_path
         && dal_c_ToggleState_resolve(proj->opts.dsl_mode, true)
@@ -1386,7 +1386,7 @@ static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
     if (builtin_header) { return builtin_header; }
 
     if (!dal_c_Project__isDHRoot(proj->root)
-        && (proj->lib_count > 0 || dal_c_Project__usesDhLibraryDefault(proj))) {
+        && (proj->lib_count > 0 || dal_c_Project__usesDHLibraryDefault(proj))) {
         return dal_c_Project__depsPreludeHeaderPath(proj);
     }
 

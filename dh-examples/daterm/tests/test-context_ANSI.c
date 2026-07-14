@@ -689,9 +689,9 @@ TEST_fn_("daterm-context/ANSI: POSIX processed output keeps output postprocessin
 
     try_(daterm_ANSI_enableRawMode(&ansi));
 
-    struct termios mode = cleared();
-    try_(TEST_expect(tcgetattr(as$(int)(input.handle), &mode) == 0));
-    try_(TEST_expect((mode.c_oflag & OPOST) != 0));
+    var_(mode, sys_posix_termios) = cleared();
+    try_(TEST_expect(sys_posix_tcgetattr(as$(sys_posix_fd_t)(input.handle), &mode) == 0));
+    try_(TEST_expect((mode.c_oflag & sys_posix_OPOST) != 0));
 #endif
 } $unguarded(TEST_fn);
 
@@ -713,8 +713,8 @@ TEST_fn_("daterm-context/ANSI: POSIX raw output disables output postprocessing" 
 
     try_(daterm_ANSI_enableRawMode(&ansi));
 
-    struct termios mode = cleared();
-    try_(TEST_expect(tcgetattr(as$(int)(input.handle), &mode) == 0));
-    try_(TEST_expect((mode.c_oflag & OPOST) == 0));
+    var_(mode, sys_posix_termios) = cleared();
+    try_(TEST_expect(sys_posix_tcgetattr(as$(sys_posix_fd_t)(input.handle), &mode) == 0));
+    try_(TEST_expect((mode.c_oflag & sys_posix_OPOST) == 0));
 #endif
 } $unguarded(TEST_fn);

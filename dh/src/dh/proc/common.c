@@ -438,12 +438,43 @@ $static fn_((proc__linux_pipeFile(sys_call_linux_fd_t fd))(fs_File)) {
     return fs_File_Handle_promote(as$(fs_File_Handle)(fd), fs_File_Flags_default);
 };
 
+T_alias$((proc__linux_Envp)(char**));
+T_use_E$(proc__linux_Envp);
+
 typedef struct proc__linux_StdIO {
     var_(child_fd, sys_call_linux_fd_t);
     var_(parent_, O$fs_File);
     var_(needs_close_child, bool);
 } proc__linux_StdIO;
 T_use_E$(proc__linux_StdIO);
+
+
+typedef struct proc__linux_SpawnScratch {
+    char* argv[proc__linux_arg_max];
+    char arg_bufs[proc__linux_arg_max][proc__linux_arg_len_max];
+    char* envp[proc__linux_arg_max];
+    char env_bufs[proc__linux_arg_max][proc__linux_arg_len_max];
+    char exe_buf[proc__linux_path_len_max];
+    char path_buf[proc__linux_path_len_max];
+} proc__linux_SpawnScratch;
+T_use_E$(proc__linux_SpawnScratch);
+
+$static fn_((proc__linux_allocScratch(void))(E$P$raw) $scope) {
+    let mapped = sys_call_linux_mmap(
+        null,
+        sizeOf$(proc__linux_SpawnScratch),
+        sys_call_linux_PROT_READ | sys_call_linux_PROT_WRITE,
+        sys_call_linux_MAP_PRIVATE | sys_call_linux_MAP_ANONYMOUS,
+        -1,
+        0
+    );
+    if (sys_call_linux_syscall_isErr(mapped)) return_err(E_cause$proc_SystemResources());
+    return_ok(intToPtr$((P$raw)(mapped)));
+} $unscoped(fn);
+
+$static fn_((proc__linux_freeScratch(P$raw scratch))(void)) {
+    if (scratch != null) let_ignore = sys_call_linux_munmap(scratch, sizeof(proc__linux_SpawnScratch));
+};
 
 $static fn_((proc__linux_closeIf(sys_call_linux_fd_t fd))(void)) {
     if (fd >= 0) let_ignore = sys_call_linux_close(fd);
@@ -534,7 +565,7 @@ $static fn_((proc__linux_buildArgv(S$S_const$u8 args, char* argv[proc__linux_arg
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((proc__linux_buildEnv(O$proc_Env env, char* envp[proc__linux_arg_max], char env_bufs[proc__linux_arg_max][proc__linux_arg_len_max]))(E$char**) $scope) {
+$static fn_((proc__linux_buildEnv(O$proc_Env env, char* envp[proc__linux_arg_max], char env_bufs[proc__linux_arg_max][proc__linux_arg_len_max]))(E$proc__linux_Envp) $scope) {
     if_none(env) return_ok(null);
     let items = unwrap_(env);
     if (items.len >= proc__linux_arg_max) return_err(E_cause$proc_ResourceLimitReached());
@@ -546,35 +577,44 @@ $static fn_((proc__linux_buildEnv(O$proc_Env env, char* envp[proc__linux_arg_max
     return_ok(envp);
 } $unscoped(fn);
 
-$static fn_((proc__linux_spawnImpl(proc_Cmd cmd, O$S_const$u8 exe_path))(E$proc_Child) $scope) {
-    if (cmd.start_suspended || cmd.create_no_window) return_err(E_cause$proc_OperationUnsupported());
-    char* argv[proc__linux_arg_max] = { 0 };
-    char arg_bufs[proc__linux_arg_max][proc__linux_arg_len_max] = { 0 };
-    try_(proc__linux_buildArgv(cmd.argv, argv, arg_bufs));
+$static fn_((proc__linux_spawnImpl(proc_Cmd cmd, O$S_const$u8 exe_path))(E$proc_Child) $guard) {
+    if (cmd.start_suspended) return_err(E_cause$proc_OperationUnsupported());
+    let_ignore = cmd.create_no_window;
 
-    char* envp[proc__linux_arg_max] = { 0 };
-    char env_bufs[proc__linux_arg_max][proc__linux_arg_len_max] = { 0 };
-    let child_env = try_(proc__linux_buildEnv(cmd.env, envp, env_bufs));
+    let scratch_raw = try_(proc__linux_allocScratch());
+    defer_(proc__linux_freeScratch(scratch_raw));
+    let scratch = ptrAlignCast$((proc__linux_SpawnScratch*)(scratch_raw));
 
-    char exe_buf[proc__linux_path_len_max] = { 0 };
+    try_(proc__linux_buildArgv(cmd.argv, scratch->argv, scratch->arg_bufs));
+    let child_env = try_(proc__linux_buildEnv(cmd.env, scratch->envp, scratch->env_bufs));
+
     let exe = eval_(const char* $scope)({
         if_some((exe_path)(path)) {
-            $break_(as$(const char*)(try_(proc__linux_copyZ(path, (S$u8){ .ptr = as$(P$u8)(exe_buf), .len = proc__linux_path_len_max }))));
+            $break_(as$(const char*)(try_(proc__linux_copyZ(path, (S$u8){ .ptr = as$(P$u8)(scratch->exe_buf), .len = proc__linux_path_len_max }))));
         }
-        $break_(as$(const char*)(argv[0]));
+        $break_(as$(const char*)(scratch->argv[0]));
     }) $unscoped(eval);
 
     var_(std_in, proc__linux_StdIO) = try_(proc__linux_resolveStdIO(cmd.std_in, 0));
-    errdefer_($ignore, if (std_in.needs_close_child) proc__linux_closeIf(std_in.child_fd));
-    var_(std_out, proc__linux_StdIO) = try_(proc__linux_resolveStdIO(cmd.std_out, 1));
-    errdefer_($ignore, if (std_out.needs_close_child) proc__linux_closeIf(std_out.child_fd));
-    var_(std_err, proc__linux_StdIO) = try_(proc__linux_resolveStdIO(cmd.std_err, 2));
-    errdefer_($ignore, if (std_err.needs_close_child) proc__linux_closeIf(std_err.child_fd));
+    var_(std_out, proc__linux_StdIO) = catch_((proc__linux_resolveStdIO(cmd.std_out, 1))(err, {
+        if (std_in.needs_close_child) proc__linux_closeIf(std_in.child_fd);
+        return_err(err);
+    }));
+    var_(std_err, proc__linux_StdIO) = catch_((proc__linux_resolveStdIO(cmd.std_err, 2))(err, {
+        if (std_in.needs_close_child) proc__linux_closeIf(std_in.child_fd);
+        if (std_out.needs_close_child) proc__linux_closeIf(std_out.child_fd);
+        return_err(err);
+    }));
 
     let pid = sys_call_linux_fork();
-    if (sys_call_linux_syscall_isErr(pid)) return_err(proc__linux_mapErr(sys_call_linux_syscall_err(pid)));
+    if (sys_call_linux_syscall_isErr(pid)) {
+        if (std_in.needs_close_child) proc__linux_closeIf(std_in.child_fd);
+        if (std_out.needs_close_child) proc__linux_closeIf(std_out.child_fd);
+        if (std_err.needs_close_child) proc__linux_closeIf(std_err.child_fd);
+        return_err(proc__linux_mapErr(sys_call_linux_syscall_err(pid)));
+    }
     if (pid == 0) {
-        proc__linux_childExec(cmd, exe, argv, child_env, std_in, std_out, std_err);
+        proc__linux_childExec(cmd, exe, scratch->argv, child_env, std_in, std_out, std_err);
     }
 
     if (std_in.needs_close_child) proc__linux_closeIf(std_in.child_fd);
@@ -588,7 +628,7 @@ $static fn_((proc__linux_spawnImpl(proc_Cmd cmd, O$S_const$u8 exe_path))(E$proc_
         .std_out = std_out.parent_,
         .std_err = std_err.parent_,
     });
-} $unscoped(fn);
+} $unguarded(fn);
 
 $static fn_((proc__linux_executablePath(S$u8 out_buf))(E$S$u8) $scope) {
     let read = sys_call_linux_readlinkat(sys_call_linux_AT_FDCWD, "/proc/self/exe", as$(char*)(out_buf.ptr), out_buf.len);
@@ -604,13 +644,15 @@ $static fn_((proc__linux_currentPath(S$u8 out_buf))(E$S$u8) $scope) {
     return_ok(S_prefix((out_buf)(len)));
 } $unscoped(fn);
 
-$static fn_((proc__linux_setCurrentPath(S_const$u8 path))(E$void) $scope) {
-    char path_z[proc__linux_path_len_max] = { 0 };
-    let raw = try_(proc__linux_copyZ(path, (S$u8){ .ptr = as$(P$u8)(path_z), .len = proc__linux_path_len_max }));
+$static fn_((proc__linux_setCurrentPath(S_const$u8 path))(E$void) $guard) {
+    let scratch_raw = try_(proc__linux_allocScratch());
+    defer_(proc__linux_freeScratch(scratch_raw));
+    let scratch = ptrAlignCast$((proc__linux_SpawnScratch*)(scratch_raw));
+    let raw = try_(proc__linux_copyZ(path, (S$u8){ .ptr = as$(P$u8)(scratch->path_buf), .len = proc__linux_path_len_max }));
     let rc = sys_call_linux_chdir(as$(const char*)(raw));
     if (sys_call_linux_syscall_isErr(rc)) return_err(proc__linux_mapErr(sys_call_linux_syscall_err(rc)));
     return_ok({});
-} $unscoped(fn);
+} $unguarded(fn);
 
 $static fn_((proc__linux_spawn(proc_Cmd cmd))(E$proc_Child)) {
     return proc__linux_spawnImpl(cmd, none$((O$S_const$u8)));
@@ -630,10 +672,12 @@ $static fn_((proc__linux_appendU64(S$u8 out, usize* pos, u64 value))(bool)) {
     return true;
 };
 
-$static fn_((proc__linux_spawnPath(fs_Dir dir, proc_Cmd cmd))(E$proc_Child) $scope) {
+$static fn_((proc__linux_spawnPath(fs_Dir dir, proc_Cmd cmd))(E$proc_Child) $guard) {
     if (cmd.argv.len == 0) return_err(E_cause$proc_InvalidName());
-    char path_buf[proc__linux_path_len_max] = { 0 };
-    let out = (S$u8){ .ptr = as$(P$u8)(path_buf), .len = proc__linux_path_len_max };
+    let scratch_raw = try_(proc__linux_allocScratch());
+    defer_(proc__linux_freeScratch(scratch_raw));
+    let scratch = ptrAlignCast$((proc__linux_SpawnScratch*)(scratch_raw));
+    let out = (S$u8){ .ptr = as$(P$u8)(scratch->path_buf), .len = proc__linux_path_len_max };
     let prefix = u8_l("/proc/self/fd/");
     var_(pos, usize) = 0;
     mem_copyBytes(S_prefix((out)(prefix.len)), prefix);
@@ -647,7 +691,7 @@ $static fn_((proc__linux_spawnPath(fs_Dir dir, proc_Cmd cmd))(E$proc_Child) $sco
     pos += arg0.len;
     *S_at((out)[pos]) = 0;
     return proc__linux_spawnImpl(cmd, some$((O$S_const$u8)(S_prefix((out.as_const)(pos)))));
-} $unscoped(fn);
+} $unguarded(fn);
 #endif /* plat_is_linux */
 
 $attr($maybe_unused)
