@@ -73,6 +73,7 @@ static bool dal_c__commandUsesTestMode(const dal_c_Cmd* cmd);
 static bool dal_c__sourceUsesTestMode(const dal_c_Cmd* cmd, const dal_c_Project* proj, const char* src);
 static bool dal_c__sourceUsesPchExcludedHeader(const dal_c_Project* proj, const char* src);
 static bool dal_c__shouldAddProjectInclude(const dal_c_Project* proj, const dal_c_Cmd* cmd);
+static bool dal_c__shouldAddProjectPrivateInclude(const dal_c_Project* proj, const dal_c_Cmd* cmd);
 static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type, bool use_pch, bool test_mode);
 static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static char* dal_c__makeLinkContractPath(const char* build_dir, const char* target_path);
@@ -128,7 +129,6 @@ static bool dal_c__isSelfProjectDir(const char* path);
 static char* dal_c__findSelfProjectDirFrom(const char* start_dir);
 static char* dal_c__resolveSelfProjectDir(void);
 static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target);
-static bool dal_c__usesDhLibrary(const dal_c_Project* proj, const dal_c_CompilerOpts* opts);
 static dal_c__noinline dal_c__optnone bool dal_c__validateLinkToolchain(const dal_c_CompilerOpts* opts, dal_c_Target target_type);
 static bool dal_c__validateBuildArtifacts(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, ArrStr* sources, dal_c_Target target_type);
 static bool dal_c__targetUsesImplicitCompilerRt(dal_c_Target target_type);
@@ -516,7 +516,7 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     return result;
 }
 
-static bool dal_c__usesDhLibrary(const dal_c_Project* proj, const dal_c_CompilerOpts* opts) {
+bool dal_c__usesDhLibrary(const dal_c_Project* proj, const dal_c_CompilerOpts* opts) {
     assert(opts != NULL);
     return proj
         && proj->dh_path
@@ -3044,6 +3044,12 @@ static void dal_c__appendCompileDbArguments(
         ArrStr_push(argv, include_dir);
         free(include_dir);
     }
+    if (dal_c__shouldAddProjectPrivateInclude(proj, cmd)) {
+        char* src_dir = path_join(proj->root, dal_c_Project_getCategoryDirName(proj, dal_c_dir_src));
+        ArrStr_push(argv, "-I");
+        ArrStr_push(argv, src_dir);
+        free(src_dir);
+    }
     if (dal_c__usesDhLibrary(proj, opts)) {
         char* dh_include = path_join(proj->dh_path, dal_c_dir_include);
         ArrStr_push(argv, "-isystem");
@@ -3994,6 +4000,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     if (dal_c__shouldAddProjectInclude(proj, cmd)) {
         (void)fprintf(fp, " -I$(PROJECT_ROOT)/%s", dal_c_Project_getCategoryDirName(proj, dal_c_dir_include));
     }
+    if (dal_c__shouldAddProjectPrivateInclude(proj, cmd)) {
+        (void)fprintf(fp, " -I$(PROJECT_ROOT)/%s", dal_c_Project_getCategoryDirName(proj, dal_c_dir_src));
+    }
     if (dal_c__usesDhLibrary(proj, opts)) {
         (void)fprintf(fp, " -I$(DH_PATH)/include");
         (void)fprintf(fp, " -I$(DH_PATH)");
@@ -4325,6 +4334,13 @@ static bool dal_c__shouldAddProjectInclude(const dal_c_Project* proj, const dal_
     return add_include;
 }
 
+static bool dal_c__shouldAddProjectPrivateInclude(const dal_c_Project* proj, const dal_c_Cmd* cmd) {
+    return proj
+        && proj->root
+        && dal_c__commandUsesTestMode(cmd)
+        && dal_c__shouldAddProjectInclude(proj, cmd);
+}
+
 static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type, bool use_pch, bool test_mode) {
     assert(cmd != NULL);
     assert(profile != NULL);
@@ -4387,6 +4403,7 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
      * byte-for-byte identical. Hashing the raw DSL mode caused separate object
      * directories and forced a second full libdh compile. */
     hash = dal_c__hashBool(hash, proj && dal_c__shouldAddProjectInclude(proj, cmd));
+    hash = dal_c__hashBool(hash, proj && dal_c__shouldAddProjectPrivateInclude(proj, cmd));
     hash = dal_c__hashBytes(hash, &opts->lto_mode, sizeof(opts->lto_mode));
     hash = dal_c__hashBytes(hash, &profile->lto_mode, sizeof(profile->lto_mode));
     hash = dal_c__hashBytes(hash, &lto_state, sizeof(lto_state));

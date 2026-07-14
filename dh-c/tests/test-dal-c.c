@@ -57,6 +57,7 @@ static void test_target_request_resolution(void);
 static void test_explicit_file_build_uses_file_project(void);
 static void test_target_root_directory_uses_local_include(void);
 static void test_compile_db_command(void);
+static void test_deps_prelude_tracks_dh_contract(void);
 static void test_skip_source_filters(void);
 static void test_test_source_classification(void);
 static void test_test_mode_is_command_scoped(void);
@@ -87,6 +88,7 @@ int main(void) {
     RUN_TEST(test_explicit_file_build_uses_file_project);
     RUN_TEST(test_target_root_directory_uses_local_include);
     RUN_TEST(test_compile_db_command);
+    RUN_TEST(test_deps_prelude_tracks_dh_contract);
     RUN_TEST(test_skip_source_filters);
     RUN_TEST(test_test_source_classification);
     RUN_TEST(test_test_mode_is_command_scoped);
@@ -2385,7 +2387,7 @@ static void test_compile_db_command(void) {
     dal_c_Cmd* build_cmd = dal_c_Cmd_parse(3, build_argv);
     TEST_ASSERT(build_cmd != NULL);
     TEST_ASSERT(dal_c_Cmd_makeTarget(build_cmd, proj) == 0);
-    TEST_ASSERT(path_isFile(deps_header));
+    TEST_ASSERT(!path_exists(deps_header));
     TEST_ASSERT(!path_exists(nested_deps_header));
     TEST_ASSERT(!path_exists(auto_output_path));
 
@@ -2426,6 +2428,54 @@ static void test_compile_db_command(void) {
     free(source_dir);
     free(project_dh);
     free(project_root);
+    free(temp_root);
+}
+
+static void test_deps_prelude_tracks_dh_contract(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* dh_root = test_repo_path("dh");
+    char* project_root = path_join(temp_root, "dh-prelude-project");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* deps_header = path_join(project_root, "lib/deps.h");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(dh_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(deps_header != NULL);
+    TEST_ASSERT(dir_createRecur(project_root));
+    TEST_ASSERT(file_write(project_dh, "output=dh-prelude\n"));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, dh_root);
+    TEST_ASSERT(proj != NULL);
+    TEST_ASSERT(proj->pch_header != NULL);
+    TEST_ASSERT(dal_c__writeDepsPreludeHeader(proj, &proj->opts));
+    TEST_ASSERT(path_isFile(deps_header));
+
+    char* deps_text = file_read(deps_header);
+    TEST_ASSERT(deps_text != NULL);
+    TEST_ASSERT(strstr(deps_text, "#include <dh-bundle.h>") != NULL);
+    free(deps_text);
+    dal_c_Project_cleanup(&proj);
+
+    TEST_ASSERT(dir_removeRecur(project_root));
+    TEST_ASSERT(dir_createRecur(project_root));
+    TEST_ASSERT(file_write(project_dh, "output=dh-prelude\nlink-dsl=off\n"));
+    proj = dal_c_Project_detectAt(project_root, dh_root);
+    TEST_ASSERT(proj != NULL);
+    TEST_ASSERT(proj->pch_header == NULL);
+    TEST_ASSERT(dal_c__writeDepsPreludeHeader(proj, &proj->opts));
+    TEST_ASSERT(!path_exists(deps_header));
+
+    dal_c_Project_cleanup(&proj);
+    (void)dir_removeRecur(temp_root);
+    TEST_ASSERT(!path_exists(temp_root));
+
+    free(deps_header);
+    free(project_dh);
+    free(project_root);
+    free(dh_root);
     free(temp_root);
 }
 

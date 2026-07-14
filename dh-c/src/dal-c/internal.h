@@ -101,6 +101,7 @@ char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec
 int dal_c__executeMake(const dal_c_Cmd* cmd, const char* makefile_path);
 int dal_c__executeMakeInDir(const dal_c_Cmd* cmd, const char* directory);
 bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_CompilerOpts* opts);
+bool dal_c__usesDhLibrary(const dal_c_Project* proj, const dal_c_CompilerOpts* opts);
 int dal_c__buildDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__cleanDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__testDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);

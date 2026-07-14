@@ -18,6 +18,7 @@ static bool dal_c_Project__isDHRoot(const char* path);
 static bool dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj);
 static char* dal_c_Project__depsPreludeHeaderPath(const dal_c_Project* proj);
 static char* dal_c_Project__findIncludeHeader(const dal_c_Project* proj, const char* header);
+static bool dal_c_Project__usesDhLibraryDefault(const dal_c_Project* proj);
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj);
 static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib);
 static void dal_c_Project__addSelfRoot(dal_c_Project* proj, const char* path);
@@ -1344,6 +1345,13 @@ static char* dal_c_Project__findIncludeHeader(const dal_c_Project* proj, const c
     return NULL;
 }
 
+static bool dal_c_Project__usesDhLibraryDefault(const dal_c_Project* proj) {
+    return proj
+        && proj->dh_path
+        && dal_c_ToggleState_resolve(proj->opts.dsl_mode, true)
+        && !(proj->root && str_eql(proj->root, proj->dh_path));
+}
+
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
     if (!proj || !proj->root || !proj->pch_enabled) { return NULL; }
 
@@ -1364,19 +1372,25 @@ static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
         return NULL;
     }
 
-    if (!dal_c_Project__isDHRoot(proj->root)) {
-        return dal_c_Project__depsPreludeHeaderPath(proj);
-    }
-
     char* dh_pch_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_bundle);
     if (dh_pch_header) { return dh_pch_header; }
+    char* dh_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh);
+    if (dh_header) { return dh_header; }
     char* sys_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_sys);
     if (sys_header) { return sys_header; }
     char* prl_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_prl);
     if (prl_header) { return prl_header; }
     char* core_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_core);
     if (core_header) { return core_header; }
-    return dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_builtin);
+    char* builtin_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_builtin);
+    if (builtin_header) { return builtin_header; }
+
+    if (!dal_c_Project__isDHRoot(proj->root)
+        && (proj->lib_count > 0 || dal_c_Project__usesDhLibraryDefault(proj))) {
+        return dal_c_Project__depsPreludeHeaderPath(proj);
+    }
+
+    return NULL;
 }
 
 static void dal_c_Project__ensureBuiltinTargetRoots(dal_c_Project* proj) {
