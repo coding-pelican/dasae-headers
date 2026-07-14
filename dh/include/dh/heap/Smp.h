@@ -29,15 +29,22 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 #define heap_Smp_max_thrd_count \
-    128
+    usize_(heap_Smp__max_thrd_count)
 #define heap_Smp_slab_len \
-    pri_max_static(heap_page_size, 64 * 1024)
+    usize_(heap_Smp__slab_len)
 #define heap_Smp_min_size_class /* Because of storing free list pointers, the minimum size class is 3 */ \
-    uint_log2_static(sizeOf$(usize))
+    usize_(heap_Smp__min_size_class)
 #define heap_Smp_size_class_count \
-    (uint_log2_static(heap_Smp_slab_len) - heap_Smp_min_size_class)
+    usize_(heap_Smp__size_class_count)
 #define heap_Smp_max_alloc_search /* Before mapping a fresh page, `alloc` will rotate this many times */ \
-    1
+    usize_(heap_Smp__max_alloc_search)
+enum {
+    heap_Smp__max_thrd_count = usize_(128),
+    heap_Smp__slab_len = usize_(pri_max_static(heap_page_size, 64 * 1024)),
+    heap_Smp__min_size_class = usize_(uint_log2_static(sizeOf$(usize))),
+    heap_Smp__size_class_count = usize_(uint_log2_static(heap_Smp_slab_len) - heap_Smp_min_size_class),
+    heap_Smp__max_alloc_search = usize_(1),
+};
 
 typedef struct heap_Smp_ThrdMeta {
     var_(_avoid_false_sharing, Void) $align(arch_cache_line_bytes);

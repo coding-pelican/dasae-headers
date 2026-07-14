@@ -76,9 +76,9 @@ let_(heap_Sbrk_vtbl_local_large, mem_Alctr_VTbl) = {
 fn_((heap_Sbrk_alctr(heap_Sbrk* self))(mem_Alctr)) {
     claim_assert_nonnull(self);
     let vtbl = expr_(const mem_Alctr_VTbl* $scope)(match_(self->local_ref) {
-        case_((heap_Sbrk_LocalRef_small)) $break_(&heap_Sbrk_vtbl_local_small) $end(case);
-        case_((heap_Sbrk_LocalRef_medium)) $break_(&heap_Sbrk_vtbl_local_medium) $end(case);
-        case_((heap_Sbrk_LocalRef_large)) $break_(&heap_Sbrk_vtbl_local_large) $end(case);
+        case_((heap_Sbrk_local_Ref_small)) $break_(&heap_Sbrk_vtbl_local_small) $end(case);
+        case_((heap_Sbrk_local_Ref_medium)) $break_(&heap_Sbrk_vtbl_local_medium) $end(case);
+        case_((heap_Sbrk_local_Ref_large)) $break_(&heap_Sbrk_vtbl_local_large) $end(case);
     } $end(match)) $unscoped(expr);
     return mem_Alctr_ensureValid((mem_Alctr){
         .ctx = self,
@@ -86,7 +86,7 @@ fn_((heap_Sbrk_alctr(heap_Sbrk* self))(mem_Alctr)) {
     });
 };
 
-fn_((heap_Sbrk_from(heap_Sbrk_LocalRef local_ref, P_const$heap_Sbrk_Ctx ctx))(heap_Sbrk)) {
+fn_((heap_Sbrk_from(heap_Sbrk_local_Ref local_ref, P_const$heap_Sbrk_Ctx ctx))(heap_Sbrk)) {
     claim_assert_nonnull(ctx);
     claim_assert_nonnull(ctx->sbrkFn);
     return (heap_Sbrk){
@@ -134,10 +134,10 @@ fn_((heap_Sbrk__allocBigPages(heap_Sbrk* self, usize n))(usize)) {
     let pow2_pages = heap_Sbrk__bigSlotPages(n);
     let slot_size_bytes = pow2_pages * heap_Sbrk__bigpage_size(*self);
     let class_idx = uint_log2(pow2_pages);
-    let top_free_ptr = *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[class_idx]);
+    let top_free_ptr = *S_at((heap_Sbrk_local_Ref_big_frees(self->local_ref))[class_idx]);
     if (top_free_ptr != 0) {
         let node = intToPtr$((usize*)(top_free_ptr + (slot_size_bytes - sizeOf$(usize))));
-        *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[class_idx]) = *node;
+        *S_at((heap_Sbrk_local_Ref_big_frees(self->local_ref))[class_idx]) = *node;
         return top_free_ptr;
     }
     return self->ctx->sbrkFn(self->ctx->inner, pow2_pages * heap_Sbrk__bigpage_size(*self));
@@ -145,15 +145,15 @@ fn_((heap_Sbrk__allocBigPages(heap_Sbrk* self, usize n))(usize)) {
 
 fn_((heap_Sbrk__allocSmall(heap_Sbrk* self, usize class_idx))(usize)) {
     let slot_size = heap_Sbrk__slotSize(class_idx);
-    let top_free_ptr = *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]);
+    let top_free_ptr = *S_at((heap_Sbrk_local_Ref_frees(self->local_ref))[class_idx]);
     if (top_free_ptr != 0) {
         let node = intToPtr$((usize*)(top_free_ptr + (slot_size - sizeOf$(usize))));
-        *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]) = *node;
+        *S_at((heap_Sbrk_local_Ref_frees(self->local_ref))[class_idx]) = *node;
         return top_free_ptr;
     }
 
-    let next_addrs = heap_Sbrk_LocalRef_next_addrs(self->local_ref);
-    let end_addrs = heap_Sbrk_LocalRef_end_addrs(self->local_ref);
+    let next_addrs = heap_Sbrk_local_Ref_next_addrs(self->local_ref);
+    let end_addrs = heap_Sbrk_local_Ref_end_addrs(self->local_ref);
     let next_addr = *S_at((next_addrs)[class_idx]);
     let end_addr = *S_at((end_addrs)[class_idx]);
     if (next_addr == 0 || end_addr < next_addr || (end_addr - next_addr) < slot_size) {
@@ -250,8 +250,8 @@ fn_((heap_Sbrk__free(heap_Sbrk* self, S$u8 buf, mem_Align buf_align))(void)) {
         // Small allocation - use slot size helper
         let slot_size = heap_Sbrk__slotSize(class_idx);
         let node = intToPtr$((usize*)(addr + (slot_size - sizeOf$(usize))));
-        *node = *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]);
-        *S_at((heap_Sbrk_LocalRef_frees(self->local_ref))[class_idx]) = addr;
+        *node = *S_at((heap_Sbrk_local_Ref_frees(self->local_ref))[class_idx]);
+        *S_at((heap_Sbrk_local_Ref_frees(self->local_ref))[class_idx]) = addr;
     } else {
         // Large allocation
         let actual_len = heap_Sbrk__actualLen(buf.len, buf_align);
@@ -262,8 +262,8 @@ fn_((heap_Sbrk__free(heap_Sbrk* self, S$u8 buf, mem_Align buf_align))(void)) {
         let node = intToPtr$((usize*)(addr + (big_slot_size_bytes - sizeOf$(usize))));
 
         let big_class_idx = uint_log2(pow2_pages);
-        *node = *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[big_class_idx]);
-        *S_at((heap_Sbrk_LocalRef_big_frees(self->local_ref))[big_class_idx]) = addr;
+        *node = *S_at((heap_Sbrk_local_Ref_big_frees(self->local_ref))[big_class_idx]);
+        *S_at((heap_Sbrk_local_Ref_big_frees(self->local_ref))[big_class_idx]) = addr;
     }
 };
 
@@ -272,74 +272,74 @@ fn_((heap_Sbrk__free(heap_Sbrk* self, S$u8 buf, mem_Align buf_align))(void)) {
 // Small variant
 fn_((heap_Sbrk__alloc_small(P$raw ctx, usize len, mem_Align align))(O$P$u8)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_small));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_small));
     return heap_Sbrk__alloc(self, len, align);
 };
 
 fn_((heap_Sbrk__resize_small(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_small));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_small));
     return heap_Sbrk__resize(self, buf, buf_align, new_len);
 };
 
 fn_((heap_Sbrk__remap_small(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_small));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_small));
     return heap_Sbrk__remap(self, buf, buf_align, new_len);
 };
 
 fn_((heap_Sbrk__free_small(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_small));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_small));
     return heap_Sbrk__free(self, buf, buf_align);
 };
 
 // Medium variant
 fn_((heap_Sbrk__alloc_medium(P$raw ctx, usize len, mem_Align align))(O$P$u8)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_medium));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_medium));
     return heap_Sbrk__alloc(self, len, align);
 };
 
 fn_((heap_Sbrk__resize_medium(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_medium));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_medium));
     return heap_Sbrk__resize(self, buf, buf_align, new_len);
 };
 
 fn_((heap_Sbrk__remap_medium(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_medium));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_medium));
     return heap_Sbrk__remap(self, buf, buf_align, new_len);
 };
 
 fn_((heap_Sbrk__free_medium(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_medium));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_medium));
     return heap_Sbrk__free(self, buf, buf_align);
 };
 
 // Large variant
 fn_((heap_Sbrk__alloc_large(P$raw ctx, usize len, mem_Align align))(O$P$u8)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_large));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_large));
     return heap_Sbrk__alloc(self, len, align);
 };
 
 fn_((heap_Sbrk__resize_large(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_large));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_large));
     return heap_Sbrk__resize(self, buf, buf_align, new_len);
 };
 
 fn_((heap_Sbrk__remap_large(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(O$P$u8)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_large));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_large));
     return heap_Sbrk__remap(self, buf, buf_align, new_len);
 };
 
 fn_((heap_Sbrk__free_large(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)) {
     let self = ptrAlignCast$((heap_Sbrk*)(ctx));
-    claim_assert(matches(self->local_ref, heap_Sbrk_LocalRef_large));
+    claim_assert(matches(self->local_ref, heap_Sbrk_local_Ref_large));
     return heap_Sbrk__free(self, buf, buf_align);
 };

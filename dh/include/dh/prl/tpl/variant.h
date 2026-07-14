@@ -176,8 +176,7 @@ extern "C" {
 #define __inline__case___parseEnum(_$Enum...) _$Enum
 #define __step__case_(...) __inline__case_(__VA_ARGS__)
 #define __inline__case_(_$Enum...) case _$Enum: { \
-    $attr($maybe_unused) \
-    $static let __matched_enum = _$Enum;
+    enum { __matched_enum = _$Enum };
 #define $end_case \
 } break
 
@@ -206,8 +205,7 @@ extern "C" {
 #define __step__patt___capt$_ref(_$Enum...) union_as((__matching_tagged)(_$Enum))
 #define __step__patt___capt$_deref(_$Enum...) union_to((*__matching_tagged)(_$Enum))
 #define __step__patt___emit(_$Enum, _$opt, _$capt...) case _$Enum: { \
-    $attr($maybe_unused) \
-    $static let __matched_enum = _$Enum; \
+    enum { __matched_enum = _$Enum }; \
     $attr($maybe_unused) \
     T_alias$((MatchedType)(TypeOfUnqual(union_to((*__matching_tagged)(_$Enum))))); \
     let _$capt = __step__patt___capt(_$opt(_$Enum));

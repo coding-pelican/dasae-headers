@@ -12,19 +12,17 @@ typedef struct heap_Smp__CacheEntry {
     var_(lru_age, u32); /// LRU(Least Recently Used) age
 } heap_Smp__CacheEntry;
 #define heap_Smp__cache_size /*:usize*/ (arch_cache_line_bytes / sizeOf$(heap_Smp__CacheEntry))
-#define heap_Smp__use_thrd_cache (!plat_is_darwin)
-#if heap_Smp__use_thrd_cache
-$static $thrd_local var_(heap_Smp__cache, A$$(heap_Smp__cache_size, heap_Smp__CacheEntry)) = A_zero();
-#endif
+#define heap_Smp__use_thrd_cache pp_not(plat_is_darwin)
+pp_if_(heap_Smp__use_thrd_cache)(pp_then_(
+    $static $thrd_local var_(heap_Smp__cache, A$$(heap_Smp__cache_size, heap_Smp__CacheEntry)) = A_zero()
+));
 
 typedef struct heap_Smp__Locked {
     var_(meta, heap_Smp_ThrdMeta*);
     var_(idx, u32);
 } heap_Smp__Locked;
 $static fn_((heap_Smp__lockThrdMeta(heap_Smp* self))(heap_Smp__Locked));
-#if heap_Smp__use_thrd_cache
 $static fn_((heap_Smp__updateCache(usize addr, u32 idx))(void));
-#endif
 
 $static fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8));
 $static fn_((heap_Smp__resize(P$raw ctx, S$u8 buf, mem_Align buf_align, usize new_len))(bool));
@@ -98,9 +96,8 @@ fn_((heap_Smp__cpuCount(heap_Smp* self))(u32)) {
 };
 
 fn_((heap_Smp__lockThrdMeta(heap_Smp* self))(heap_Smp__Locked) $scope) {
-#if heap_Smp__use_thrd_cache
     let self_addr = ptrToInt(self);
-    for_(($s(A_ref(heap_Smp__cache)))(entry)) {
+    pp_if_(heap_Smp__use_thrd_cache)(pp_then_(for_(($s(A_ref(heap_Smp__cache)))(entry)) {
         if (entry->inst_addr == self_addr) {
             let idx = entry->slot_idx;
             let meta = S_at((self->thrd_metas)[idx]);
@@ -114,16 +111,13 @@ fn_((heap_Smp__lockThrdMeta(heap_Smp* self))(heap_Smp__Locked) $scope) {
             break;
         }
         entry->lru_age = u32_addSat(entry->lru_age, 1);
-    } $end(for);
-#endif
+    } $end(for)));
     var_(idx, u32) = 0;
     let cpu_count = heap_Smp__cpuCount(self);
     while (true) {
         let meta = S_at((self->thrd_metas)[idx]);
         if (thrd_Mtx_tryLock(&meta->mtx)) {
-#if heap_Smp__use_thrd_cache
             heap_Smp__updateCache(self_addr, idx);
-#endif
             return_({
                 .meta = meta,
                 .idx = idx,
@@ -133,29 +127,33 @@ fn_((heap_Smp__lockThrdMeta(heap_Smp* self))(heap_Smp__Locked) $scope) {
     }
 } $unscoped(fn);
 
-#if heap_Smp__use_thrd_cache
-fn_((heap_Smp__updateCache(usize addr, u32 idx))(void)) {
-    var_(oldest_idx, usize) = 0;
-    var_(max_age, u32) = 0;
-    for_(($s(A_ref(heap_Smp__cache)), $rf(0))(entry, i)) {
-        if (entry->inst_addr == 0 || entry->inst_addr == addr) {
-            entry->inst_addr = addr;
-            entry->slot_idx = idx;
-            entry->lru_age = 0;
-            return;
-        }
-        if (entry->lru_age > max_age) {
-            max_age = entry->lru_age;
-            oldest_idx = i;
-        }
-    } $end(for);
-    asg_l((A_at((heap_Smp__cache)[oldest_idx]))({
-        .inst_addr = addr,
-        .slot_idx = idx,
-        .lru_age = 0,
-    }));
-};
-#endif
+fn_((heap_Smp__updateCache(usize addr, u32 idx))(void)) pp_if_(pp_not(heap_Smp__use_thrd_cache))(
+    /*pp_then_*/ ({
+        let_ignore = addr;
+        let_ignore = idx;
+    }),
+    /*pp_else_*/ ({
+        var_(oldest_idx, usize) = 0;
+        var_(max_age, u32) = 0;
+        for_(($s(A_ref(heap_Smp__cache)), $rf(0))(entry, i)) {
+            if (entry->inst_addr == 0 || entry->inst_addr == addr) {
+                entry->inst_addr = addr;
+                entry->slot_idx = idx;
+                entry->lru_age = 0;
+                return;
+            }
+            if (entry->lru_age > max_age) {
+                max_age = entry->lru_age;
+                oldest_idx = i;
+            }
+        } $end(for);
+        asg_l((A_at((heap_Smp__cache)[oldest_idx]))({
+            .inst_addr = addr,
+            .slot_idx = idx,
+            .lru_age = 0,
+        }));
+    })
+);
 
 fn_((heap_Smp__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $guard) {
     let self = ptrAlignCast$((heap_Smp*)(ctx));

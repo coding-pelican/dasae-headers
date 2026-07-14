@@ -30,7 +30,7 @@ extern "C" {
 
 T_alias$((heap_Sys__Impl)(pp_if_(plat_is_wasi)(
     pp_then_(struct heap_Sys__Impl {
-        var_(local, heap_Sbrk_LocalLarge);
+        var_(local, heap_Sbrk_local_Large);
         var_(sys_wasm, heap_Sbrk_Sys_Wasm);
         var_(ctx, heap_Sbrk_Ctx);
         var_(sbrk, heap_Sbrk);

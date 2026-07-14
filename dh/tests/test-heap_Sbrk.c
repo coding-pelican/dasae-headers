@@ -13,9 +13,9 @@ $static let test_nl = pp_if_(test_heap_Sbrk__enabled_outstream)(
     pp_else_(ignoreNL));
 
 TEST_fn_("heap/Sbrk: size variants" $scope) {
-    let small_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_small)cleared()));
-    let medium_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_medium)cleared()));
-    let large_size = heap_Sbrk_LocalRef_calcSelfSize(union_of$((heap_Sbrk_LocalRef)(heap_Sbrk_LocalRef_large)cleared()));
+    let small_size = heap_Sbrk_local_Ref_calcSelfSize(union_of$((heap_Sbrk_local_Ref)(heap_Sbrk_local_Ref_small)cleared()));
+    let medium_size = heap_Sbrk_local_Ref_calcSelfSize(union_of$((heap_Sbrk_local_Ref)(heap_Sbrk_local_Ref_medium)cleared()));
+    let large_size = heap_Sbrk_local_Ref_calcSelfSize(union_of$((heap_Sbrk_local_Ref)(heap_Sbrk_local_Ref_large)cleared()));
 
     test_nl();
     test_println(u8_l("SbrkAlctr sizes:"));
@@ -53,8 +53,8 @@ $static fn_((test_heap_Sbrk_ctx(void))(heap_Sbrk_Ctx)) {
 
 TEST_fn_("heap/Sbrk: basic allocation" $guard) {
     let ctx = test_heap_Sbrk_ctx();
-    var local = l0$((heap_Sbrk_LocalMedium));
-    var sbrk = heap_Sbrk_from(heap_Sbrk_LocalMedium_ref(&local), &ctx);
+    var local = l0$((heap_Sbrk_local_Medium));
+    var sbrk = heap_Sbrk_from(heap_Sbrk_local_Medium_ref(&local), &ctx);
     let gpa = heap_Sbrk_alctr(&sbrk);
 
     let allocation = try_(mem_Alctr_allocBytes($trace gpa, 100));
@@ -65,8 +65,8 @@ TEST_fn_("heap/Sbrk: basic allocation" $guard) {
 
 TEST_fn_("heap/Sbrk: reuses a bigpage before requesting another one" $guard) {
     let ctx = test_heap_Sbrk_ctx();
-    var local = l0$((heap_Sbrk_LocalMedium));
-    var sbrk = heap_Sbrk_from(heap_Sbrk_LocalMedium_ref(&local), &ctx);
+    var local = l0$((heap_Sbrk_local_Medium));
+    var sbrk = heap_Sbrk_from(heap_Sbrk_local_Medium_ref(&local), &ctx);
     let gpa = heap_Sbrk_alctr(&sbrk);
     var_(slots, A$$(30, S$u8)) = cleared();
 
@@ -82,6 +82,6 @@ TEST_fn_("heap/Sbrk: reuses a bigpage before requesting another one" $guard) {
 
     try_(TEST_expect(
         u_castP$((test_heap_Sbrk__TestCtx*)(ctx.inner))->cursor
-        == heap_Sbrk__bigpage_size_static(heap_Sbrk_LocalRef_medium)
+        == heap_Sbrk__bigpage_size_static(heap_Sbrk_local_Ref_medium)
     ));
 } $unguarded(TEST_fn);

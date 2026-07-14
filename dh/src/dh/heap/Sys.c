@@ -13,7 +13,7 @@ fn_((heap_Sys_init(void))(heap_Sys)) {
         },
     };
     self.impl.ctx = heap_Sbrk_Sys_Wasm_ctx(&self.impl.sys_wasm);
-    self.impl.sbrk = heap_Sbrk_from(heap_Sbrk_LocalLarge_ref(&self.impl.local), &self.impl.ctx);
+    self.impl.sbrk = heap_Sbrk_from(heap_Sbrk_local_Large_ref(&self.impl.local), &self.impl.ctx);
     return self;
 #else
     return (heap_Sys){

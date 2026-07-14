@@ -209,7 +209,7 @@ Examples of preferred direction:
 - `__expr__ptrCast$__emit`
 - `__syn__trace__param`
 - `__ident__trace__captNamed`
-- `__pp__heap_Sbrk_LocalRef__enum_fromTok`
+- `__pp__heap_Sbrk_local_Ref__enum_fromTok`
 
 Avoid in new code:
 - `____name`
