@@ -56,6 +56,7 @@ static void test_clean_prefers_local_build_dir(void);
 static void test_target_request_resolution(void);
 static void test_explicit_file_build_uses_file_project(void);
 static void test_target_root_directory_uses_local_include(void);
+static void test_syntax_arguments_follow_build_compile_contract(void);
 static void test_compile_db_command(void);
 static void test_deps_prelude_tracks_dh_contract(void);
 static void test_skip_source_filters(void);
@@ -64,10 +65,13 @@ static void test_test_mode_is_command_scoped(void);
 static void test_source_collection_ignores_hidden_ancestors(void);
 
 static char* test_repo_path(const char* relative_path);
+static char* test_repo_root(void);
 static char* test_temp_root(void);
 static void test_reset_temp_root(void);
 static void test_free_str_array(char** items, int count);
 static char* test_makefile_var_first_value(const char* makefile_text, const char* var_name);
+static bool test_arrstr_contains(ArrStr* items, const char* value);
+static const dal_c_HelpProfile* test_find_help_profile(const char* name);
 static const dal_c_HelpCmd* test_find_help_cmd(const char* name, int* count_out);
 static bool test_help_has_option(const dal_c_HelpCmd* cmd, const char* option_name);
 
@@ -87,6 +91,7 @@ int main(void) {
     RUN_TEST(test_target_request_resolution);
     RUN_TEST(test_explicit_file_build_uses_file_project);
     RUN_TEST(test_target_root_directory_uses_local_include);
+    RUN_TEST(test_syntax_arguments_follow_build_compile_contract);
     RUN_TEST(test_compile_db_command);
     RUN_TEST(test_deps_prelude_tracks_dh_contract);
     RUN_TEST(test_skip_source_filters);
@@ -98,11 +103,36 @@ int main(void) {
 }
 
 static char* test_repo_path(const char* relative_path) {
-    char* cwd = env_getCWD();
-    if (!cwd) { return NULL; }
-    char* path = path_join(cwd, relative_path);
-    free(cwd);
+    char* root = test_repo_root();
+    if (!root) { return NULL; }
+    char* path = path_join(root, relative_path);
+    free(root);
     return path;
+}
+
+static char* test_repo_root(void) {
+    char* current = env_getCWD();
+    if (!current) { return NULL; }
+
+    for (;;) {
+        char* dh_project = path_join(current, "dh-c/project.dh");
+        char* test_source = path_join(current, "dh-c/tests/test-dal-c.c");
+        bool is_root = path_isFile(dh_project) && path_isFile(test_source);
+        free(dh_project);
+        free(test_source);
+        if (is_root) {
+            return current;
+        }
+
+        char* parent = path_parent(current);
+        if (!parent || str_eql(parent, current)) {
+            free(parent);
+            free(current);
+            return NULL;
+        }
+        free(current);
+        current = parent;
+    }
 }
 
 static char* test_temp_root(void) {
@@ -144,6 +174,26 @@ static char* test_makefile_var_first_value(const char* makefile_text, const char
     memcpy(out, value, len);
     out[len] = '\0';
     return out;
+}
+
+static bool test_arrstr_contains(ArrStr* items, const char* value) {
+    if (!items || !value) { return false; }
+    for (int i = 0; i < ArrStr_len(items); ++i) {
+        if (str_eql(ArrStr_at(items, i), value)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static const dal_c_HelpProfile* test_find_help_profile(const char* name) {
+    if (!name) { return NULL; }
+    for (int i = 0; i < dal_c_help_profiles_count; ++i) {
+        if (str_eql(dal_c_help_profiles[i].name, name)) {
+            return &dal_c_help_profiles[i];
+        }
+    }
+    return NULL;
 }
 
 static const dal_c_HelpCmd* test_find_help_cmd(const char* name, int* count_out) {
@@ -349,7 +399,7 @@ static void test_env_helpers(void) {
     TEST_ASSERT(cwd != NULL);
     TEST_ASSERT(path_isDir(cwd));
 
-    char* path_before = path_join(cwd, dal_c_tool_name);
+    char* path_before = test_repo_path("dh-c");
     TEST_ASSERT(path_before != NULL);
     TEST_ASSERT(env_setCWD(path_before));
 
@@ -397,6 +447,8 @@ static void test_meta_tables(void) {
     TEST_ASSERT(dal_c_LinkMode_toLibraryLinking(dal_c_LinkMode_shared, dal_c_Linking_static) == dal_c_Linking_shared);
     TEST_ASSERT(str_eql(dal_c_OptiLevel_toFlag(dal_c_OptiLevel_balanced), "-O2"));
     TEST_ASSERT(dal_c_DebugLevel_fromFlag("-g3") == dal_c_DebugLevel_extended);
+    TEST_ASSERT(dal_c_Profile_parse("fast") == dal_c_Profile_fast);
+    TEST_ASSERT(str_eql(dal_c_Profile_format(dal_c_Profile_fast), dal_c_profile_fast));
     TEST_ASSERT(dal_c_Profile_parse("release") == dal_c_Profile_release);
     TEST_ASSERT(dal_c_CompileEnv_parse("hosted") == dal_c_CompileEnv_hosted);
     TEST_ASSERT(dal_c_CompileEnv_parse("freestanding") == dal_c_CompileEnv_freestanding);
@@ -421,6 +473,17 @@ static void test_meta_tables(void) {
     TEST_ASSERT(release_spec != NULL);
     TEST_ASSERT(str_eql(release_spec->name, dal_c_profile_release));
     TEST_ASSERT(release_spec->opti_level == dal_c_OptiLevel_aggressive);
+
+    const dal_c_ProfileSpec* fast_spec = dal_c_ProfileSpec_by(dal_c_Profile_fast);
+    TEST_ASSERT(fast_spec != NULL);
+    TEST_ASSERT(str_eql(fast_spec->name, dal_c_profile_fast));
+    TEST_ASSERT(fast_spec->opti_level == dal_c_OptiLevel_none);
+    TEST_ASSERT(fast_spec->debug_level == dal_c_DebugLevel_none);
+    TEST_ASSERT(fast_spec->debug_assertions);
+    TEST_ASSERT(fast_spec->lto_mode == dal_c_LtoMode_off);
+    TEST_ASSERT(fast_spec->function_sections == dal_c_ToggleState_disabled);
+    TEST_ASSERT(fast_spec->data_sections == dal_c_ToggleState_disabled);
+    TEST_ASSERT(fast_spec->gc_sections == dal_c_ToggleState_disabled);
 
     const dal_c_ProfileSpec* optimize_spec = dal_c_ProfileSpec_by(dal_c_Profile_optimize);
     TEST_ASSERT(optimize_spec != NULL);
@@ -536,7 +599,8 @@ static void test_meta_tables(void) {
     TEST_ASSERT(cmd_count >= 10);
 
     const int profile_count = dal_c_help_profiles_count;
-    TEST_ASSERT(profile_count >= 8);
+    TEST_ASSERT(profile_count >= 9);
+    TEST_ASSERT(test_find_help_profile(dal_c_profile_fast) != NULL);
 
     const char* const* skip_segments = dal_c_sourceSkipSegments();
     TEST_ASSERT(skip_segments != NULL);
@@ -558,8 +622,12 @@ static void test_cmd_parse(void) {
     }
 
     {
-        char* file_a = str_format("--file=%s", dal_c_tool_name "/tests/test-dal-c.c");
-        char* file_b = str_format("--file=%s", dal_c_tool_name "/src/dal-c-ext/str.c");
+        char* test_source = test_repo_path("dh-c/tests/test-dal-c.c");
+        char* str_source = test_repo_path("dh-c/src/dal-c-ext/str.c");
+        TEST_ASSERT(test_source != NULL);
+        TEST_ASSERT(str_source != NULL);
+        char* file_a = str_format("--file=%s", test_source);
+        char* file_b = str_format("--file=%s", str_source);
         const char* argv[] = { dal_c_tool_name, "build", file_a, file_b, "-obundle", NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(5, argv);
         TEST_ASSERT(cmd != NULL);
@@ -568,6 +636,8 @@ static void test_cmd_parse(void) {
         dal_c_Cmd_cleanup(&cmd);
         free(file_b);
         free(file_a);
+        free(str_source);
+        free(test_source);
     }
 
     {
@@ -590,22 +660,34 @@ static void test_cmd_parse(void) {
     }
 
     {
-        const char* argv[] = { dal_c_tool_name, "tidy", "dev", "--file=" dal_c_tool_name "/src/dal-c-ext/str.c", NULL };
+        char* str_source = test_repo_path("dh-c/src/dal-c-ext/str.c");
+        TEST_ASSERT(str_source != NULL);
+        char* file_arg = str_format("--file=%s", str_source);
+        TEST_ASSERT(file_arg != NULL);
+        const char* argv[] = { dal_c_tool_name, "tidy", "dev", file_arg, NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(cmd->action == dal_c_CmdAction_tidy);
         TEST_ASSERT(cmd->opts.profile == dal_c_Profile_dev);
         TEST_ASSERT(cmd->input_count == 1);
         dal_c_Cmd_cleanup(&cmd);
+        free(file_arg);
+        free(str_source);
     }
 
     {
-        const char* argv[] = { dal_c_tool_name, "format", "--file=" dal_c_tool_name "/src/dal-c-ext/str.c", NULL };
+        char* str_source = test_repo_path("dh-c/src/dal-c-ext/str.c");
+        TEST_ASSERT(str_source != NULL);
+        char* file_arg = str_format("--file=%s", str_source);
+        TEST_ASSERT(file_arg != NULL);
+        const char* argv[] = { dal_c_tool_name, "format", file_arg, NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(cmd->action == dal_c_CmdAction_format_code);
         TEST_ASSERT(cmd->input_count == 1);
         dal_c_Cmd_cleanup(&cmd);
+        free(file_arg);
+        free(str_source);
     }
 
     {
@@ -847,6 +929,40 @@ static void test_cmd_parse(void) {
         TEST_ASSERT(cmd->opts.profile == dal_c_Profile_optimize);
         TEST_ASSERT(cmd->profile_explicit);
         TEST_ASSERT(cmd->show_commands);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = {
+            dal_c_tool_name,
+            "build-self",
+            "fast",
+            "--commands=show",
+            "--emit-ir=build/self.ll",
+            "--emit-disasm=build/self.disasm.s",
+            "--disasm-source=off",
+            "--analysis-artifacts",
+            "--save-temps=obj",
+            "--loose-errors=warn",
+            "--comp-args=-Wno-unused-function",
+            NULL
+        };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(11, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->action == dal_c_CmdAction_build_self);
+        TEST_ASSERT(cmd->opts.profile == dal_c_Profile_fast);
+        TEST_ASSERT(cmd->show_commands);
+        TEST_ASSERT(cmd->payload.build.emit_ir);
+        TEST_ASSERT(str_eql(cmd->payload.build.emit_ir_path, "build/self.ll"));
+        TEST_ASSERT(cmd->payload.build.emit_disasm);
+        TEST_ASSERT(str_eql(cmd->payload.build.emit_disasm_path, "build/self.disasm.s"));
+        TEST_ASSERT(cmd->payload.build.disasm_source == dal_c_ToggleState_disabled);
+        TEST_ASSERT(cmd->payload.build.analysis_artifacts);
+        TEST_ASSERT(cmd->payload.build.emit_map);
+        TEST_ASSERT(cmd->payload.build.emit_linked_asm);
+        TEST_ASSERT(cmd->payload.build.save_temps == dal_c_SaveTempsMode_obj);
+        TEST_ASSERT(cmd->opts.loose_errors == dal_c_LooseErrorsMode_warn);
+        TEST_ASSERT(str_eql(cmd->compiler_args, "-Wno-unused-function"));
         dal_c_Cmd_cleanup(&cmd);
     }
 
@@ -2329,6 +2445,89 @@ static void test_target_root_directory_uses_local_include(void) {
     free(demo_include_dir);
     free(demo_src_dir);
     free(demo_project_dh);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+}
+
+static void test_syntax_arguments_follow_build_compile_contract(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(dir_createRecur(temp_root));
+
+    char* project_root = path_join(temp_root, "syntax-contract-project");
+    char* project_dh = path_join(project_root, dal_c_file_detector_project);
+    char* source_dir = path_join(project_root, "src");
+    char* source = path_join(source_dir, "main.c");
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(source_dir != NULL);
+    TEST_ASSERT(source != NULL);
+    TEST_ASSERT(dir_createRecur(source_dir));
+    TEST_ASSERT(file_write(project_dh, "output=syntax-contract-project\nlink-dsl=off\n"));
+    TEST_ASSERT(file_write(source, "int main(void) { return 0; }\n"));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(proj != NULL);
+
+    const char* argv[] = {
+        dal_c_tool_name,
+        "syntax",
+        "release",
+        "--freestanding",
+        "--link-stdlib=off",
+        "--target-tune=generic",
+        "--exceptions=off",
+        "--merge-all-constants=on",
+        "--stack-protector=off",
+        "--version-core=1.2.3",
+        "--comp-args=-Wno-unused",
+        "--jobs=3",
+        NULL
+    };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(12, argv);
+    TEST_ASSERT(cmd != NULL);
+    TEST_ASSERT(dal_c__parallelJobCount(cmd) == 3);
+    dal_c_CompilerOpts_merge(&cmd->opts, &proj->opts);
+
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    TEST_ASSERT(profile != NULL);
+
+    ArrStr* args = ArrStr_init();
+    dal_c__appendSyntaxArguments(args, cmd, proj, profile, source, dal_c_Target_executable);
+
+    const char* opt_flag = dal_c_OptiLevel_toFlag(profile->opti_level);
+    TEST_ASSERT(test_arrstr_contains(args, "-DCOMP"));
+    TEST_ASSERT(test_arrstr_contains(args, "-DCOMP_FREESTANDING"));
+    TEST_ASSERT(test_arrstr_contains(args, "-DCOMP_NO_STDLIB"));
+    TEST_ASSERT(test_arrstr_contains(args, "-ffreestanding"));
+    TEST_ASSERT(test_arrstr_contains(args, "-mtune=generic"));
+    TEST_ASSERT(test_arrstr_contains(args, "-fno-exceptions"));
+    TEST_ASSERT(test_arrstr_contains(args, "-fmerge-all-constants"));
+    TEST_ASSERT(test_arrstr_contains(args, "-fno-stack-protector"));
+    TEST_ASSERT(test_arrstr_contains(args, "-Ddal_c__NUM__VER_CORE_MAJOR=1"));
+    TEST_ASSERT(test_arrstr_contains(args, "-Ddal_c__NUM__VER_CORE_MINOR=2"));
+    TEST_ASSERT(test_arrstr_contains(args, "-Ddal_c__NUM__VER_CORE_PATCH=3"));
+    TEST_ASSERT(test_arrstr_contains(args, "-Wno-unused"));
+    TEST_ASSERT(test_arrstr_contains(args, source));
+    if (opt_flag) {
+        TEST_ASSERT(test_arrstr_contains(args, opt_flag));
+    }
+    if (!profile->debug_assertions) {
+        TEST_ASSERT(test_arrstr_contains(args, "-DNDEBUG"));
+    }
+    TEST_ASSERT(!test_arrstr_contains(args, "-fsyntax-only"));
+
+    ArrStr_fini(&args);
+    dal_c_Cmd_cleanup(&cmd);
+    dal_c_Project_cleanup(&proj);
+    (void)dir_removeRecur(temp_root);
+    TEST_ASSERT(!path_exists(temp_root));
+
+    free(source);
+    free(source_dir);
     free(project_dh);
     free(project_root);
     free(temp_root);

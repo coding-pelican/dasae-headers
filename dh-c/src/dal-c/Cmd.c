@@ -22,6 +22,7 @@ static void dal_c_Cmd__setOwnedString(char** slot, const char* value);
 static bool dal_c_Cmd__isSourceOrHeader(const char* name);
 static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action);
 static bool dal_c_Cmd__usesBuildPayload(dal_c_CmdAction action);
+static bool dal_c_Cmd__usesBuildArtifactPayload(dal_c_CmdAction action);
 static bool dal_c_Cmd__tryParseBoolValue(const char* value, bool* out);
 static bool dal_c_Cmd__tryParseToggleValue(const char* value, dal_c_ToggleState* out);
 static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt, size_t opt_len, const char* value, bool* handled);
@@ -78,6 +79,7 @@ static int dal_c_Cmd__prepareCheckPlan(const dal_c_Cmd* self, const dal_c_Projec
 static void dal_c_Cmd__cleanupCheckPlan(dal_c_Cmd__CheckPlan* plan);
 static bool dal_c_Cmd__isAssemblySource(const char* path);
 static int dal_c_Cmd__runSyntaxPlan(dal_c_Cmd__CheckPlan* plan);
+static void dal_c_Cmd__freeRawArgv(char** raw);
 static int dal_c_Cmd__runTidyPlan(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Cmd__CheckPlan* plan);
 static int dal_c_Cmd__runFormatPlan(const dal_c_Cmd* self, dal_c_Cmd__CheckPlan* plan);
 static bool dal_c_Cmd__toolAvailable(const char* tool);
@@ -315,6 +317,7 @@ void dal_c_Cmd_cleanup(dal_c_Cmd** self) {
 
     switch (cmd->action) {
     case dal_c_CmdAction_build:
+    case dal_c_CmdAction_build_self:
     case dal_c_CmdAction_compile_db:
     case dal_c_CmdAction_syntax:
     case dal_c_CmdAction_tidy:
@@ -349,7 +352,6 @@ void dal_c_Cmd_cleanup(dal_c_Cmd** self) {
     case dal_c_CmdAction_workspace:
     case dal_c_CmdAction_project:
     case dal_c_CmdAction_build_dsl:
-    case dal_c_CmdAction_build_self:
     case dal_c_CmdAction_clean_self:
     case dal_c_CmdAction_help:
     case dal_c_CmdAction_version:
@@ -374,6 +376,11 @@ static bool dal_c_Cmd__usesBuildPayload(dal_c_CmdAction action) {
         || action == dal_c_CmdAction_syntax
         || action == dal_c_CmdAction_tidy
         || action == dal_c_CmdAction_format_code;
+}
+
+static bool dal_c_Cmd__usesBuildArtifactPayload(dal_c_CmdAction action) {
+    return action == dal_c_CmdAction_build
+        || action == dal_c_CmdAction_build_self;
 }
 
 static bool dal_c_Cmd__tryParseBoolValue(const char* value, bool* out) {
@@ -548,37 +555,37 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_demangle)) {
         if (!has_toggle) {
             *handled = false;
-        } else if (cmd->action == dal_c_CmdAction_build) {
+        } else if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
             cmd->payload.build.disasm_demangle = toggle;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_source)) {
         if (!has_toggle) {
             *handled = false;
-        } else if (cmd->action == dal_c_CmdAction_build) {
+        } else if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
             cmd->payload.build.disasm_source = toggle;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_line_numbers)) {
         if (!has_toggle) {
             *handled = false;
-        } else if (cmd->action == dal_c_CmdAction_build) {
+        } else if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
             cmd->payload.build.disasm_line_numbers = toggle;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_symbolize_operands)) {
         if (!has_toggle) {
             *handled = false;
-        } else if (cmd->action == dal_c_CmdAction_build) {
+        } else if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
             cmd->payload.build.disasm_symbolize_operands = toggle;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_raw_insn)) {
         if (!has_toggle) {
             *handled = false;
-        } else if (cmd->action == dal_c_CmdAction_build) {
+        } else if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
             cmd->payload.build.disasm_raw_insn = toggle;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_section_contents)) {
         if (!has_toggle) {
             *handled = false;
-        } else if (cmd->action == dal_c_CmdAction_build) {
+        } else if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
             cmd->payload.build.disasm_section_contents = toggle;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_freestanding)) {
@@ -630,7 +637,7 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
         if (!has_bool) {
             *handled = false;
         } else {
-            if (cmd->action == dal_c_CmdAction_build) {
+            if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                 cmd->payload.build.emit_preprocessed = enabled;
             }
         }
@@ -638,7 +645,7 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
         if (!has_bool) {
             *handled = false;
         } else {
-            if (cmd->action == dal_c_CmdAction_build) {
+            if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                 cmd->payload.build.emit_asm = enabled;
             }
         }
@@ -660,7 +667,7 @@ static void dal_c_Cmd__setArtifactPath(char** slot, bool* enabled, const char* v
 
 static void dal_c_Cmd__enableAnalysisArtifacts(dal_c_Cmd* cmd) {
     assert(cmd != NULL);
-    if (cmd->action != dal_c_CmdAction_build) { return; }
+    if (!dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) { return; }
     cmd->payload.build.analysis_artifacts = true;
     cmd->payload.build.emit_map = true;
     cmd->payload.build.emit_linked_asm = true;
@@ -1077,9 +1084,9 @@ static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project
     case dal_c_CmdAction_clean_self:
         return dal_c__cleanSelf(self);
     case dal_c_CmdAction_workspace:
-        return dal_c_Cmd_createWorkspace(self, proj);
+        return dal_c_Cmd_createWorkspace();
     case dal_c_CmdAction_project:
-        return dal_c_Cmd_createProject(self, proj);
+        return dal_c_Cmd_createProject();
     case dal_c_CmdAction_build_dsl:
         return dal_c__buildDSL(self, proj);
     case dal_c_CmdAction_test_dsl:
@@ -1766,50 +1773,93 @@ static int dal_c_Cmd__runSyntaxPlan(dal_c_Cmd__CheckPlan* plan) {
     assert(plan != NULL);
     int result = 0;
     const int total = ArrStr_len(plan->sources);
-    for (int i = 0; i < total; ++i) {
-        const char* src = ArrStr_at(plan->sources, i);
-        if (dal_c_Cmd__isAssemblySource(src)) {
+    int job_count = dal_c__parallelJobCount(&plan->effective);
+    if (job_count < 1) { job_count = 1; }
+    if (job_count > total) { job_count = total; }
+    proc_Child** active = job_count > 0 ? (proc_Child**)calloc((size_t)job_count, sizeof(*active)) : NULL;
+    if (job_count > 0 && !active) { return 1; }
+
+    int next = 0;
+    int active_count = 0;
+    while (next < total || active_count > 0) {
+        while (result == 0 && next < total && active_count < job_count) {
+            const int source_index = next++;
+            const char* src = ArrStr_at(plan->sources, source_index);
+            if (dal_c_Cmd__isAssemblySource(src)) {
+                if (plan->effective.show_progress) {
+                    printf("[%d/%d] SKIP syntax %s\n", source_index + 1, total, src);
+                }
+                continue;
+            }
+
+            ArrStr* argv = ArrStr_init();
+            dal_c__appendSyntaxArguments(argv, &plan->effective, plan->build_proj, plan->profile, src, plan->target_type);
+            ArrStr_push(argv, "-fsyntax-only");
             if (plan->effective.show_progress) {
-                printf("[%d/%d] SKIP syntax %s\n", i + 1, total, src);
+                printf("[%d/%d] SYNTAX %s\n", source_index + 1, total, src);
             }
-            continue;
-        }
-        ArrStr* argv = ArrStr_init();
-        dal_c__appendCompileDbArguments(argv, &plan->effective, plan->build_proj, plan->profile, src, plan->target_type);
-        ArrStr_push(argv, "-fsyntax-only");
-        if (plan->effective.show_progress) {
-            printf("[%d/%d] SYNTAX %s\n", i + 1, total, src);
-        }
-        char** raw = ArrStr_toRaw(argv);
-        int raw_count = 0;
-        while (raw && raw[raw_count] != NULL) { ++raw_count; }
-        const char** proc_argv = raw ? (const char**)calloc((size_t)raw_count + 1u, sizeof(char*)) : NULL;
-        for (int j = 0; proc_argv && j < raw_count; ++j) { proc_argv[j] = raw[j]; }
-        if (plan->effective.show_commands) {
-            for (int j = 0; raw && raw[j] != NULL; ++j) {
-                if (j > 0) { printf(" "); }
-                printf("%s", raw[j]);
+            char** raw = ArrStr_toRaw(argv);
+            int raw_count = 0;
+            while (raw && raw[raw_count] != NULL) { ++raw_count; }
+            const char** proc_argv = raw ? (const char**)calloc((size_t)raw_count + 1u, sizeof(char*)) : NULL;
+            for (int j = 0; proc_argv && j < raw_count; ++j) { proc_argv[j] = raw[j]; }
+            if (plan->effective.show_commands) {
+                for (int j = 0; raw && raw[j] != NULL; ++j) {
+                    if (j > 0) { printf(" "); }
+                    printf("%s", raw[j]);
+                }
+                printf("\n");
             }
-            printf("\n");
+            proc_Child* child = proc_argv ? proc_spawn(proc_argv, true) : NULL;
+            free((void*)proc_argv);
+            dal_c_Cmd__freeRawArgv(raw);
+            ArrStr_fini(&argv);
+            if (!child) {
+                result = 1;
+                break;
+            }
+            active[active_count++] = child;
         }
-        int code = proc_argv ? proc_run(proc_argv, true) : 1;
+
+        if (active_count == 0) {
+            break;
+        }
+
+        int finished_index = -1;
+        int code = proc_waitAny(active, active_count, &finished_index);
+        if (finished_index >= 0 && finished_index < active_count) {
+            active[finished_index] = active[active_count - 1];
+            active[active_count - 1] = NULL;
+            --active_count;
+        } else {
+            result = result == 0 ? 1 : result;
+            break;
+        }
         if (code != 0 && result == 0) {
             result = code;
         }
-        free((void*)proc_argv);
-        if (raw) {
-            for (int j = 0; raw[j] != NULL; ++j) { free(raw[j]); }
-            free((void*)raw);
-        }
-        ArrStr_fini(&argv);
-        if (result != 0) { break; }
     }
+
+    for (int i = 0; i < active_count; ++i) {
+        int code = proc_wait(&active[i]);
+        if (code != 0 && result == 0) {
+            result = code;
+        }
+    }
+    free(active);
     if (result == 0) {
         printf("Syntax check successful!\n");
     }
     return result;
 }
 
+static void dal_c_Cmd__freeRawArgv(char** raw) {
+    if (!raw) { return; }
+    for (int i = 0; raw[i] != NULL; ++i) {
+        free(raw[i]);
+    }
+    free((void*)raw);
+}
 
 static bool dal_c_Cmd__toolAvailable(const char* tool) {
     if (!tool || tool[0] == '\0') { return false; }
@@ -1944,7 +1994,6 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
 
     dal_c_CommandIntent intent = { 0 };
     dal_c_Cmd_normalizeIntent(self, &intent);
-    const bool builds_library = dal_c_Cmd__buildsLibrary(self);
     const bool build_all = intent.build_all;
 
     const dal_c_Project* target_proj = proj;
@@ -2048,10 +2097,9 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
     }
 
     dal_c_Cmd effective = *self;
-    dal_c_BuildDefaults effective_defaults = { 0 };
     memset(&effective.opts, 0, sizeof(effective.opts));
     effective.opts.profile = dal_c_Profile_invalid;
-    dal_c_Cmd__mergeBuildProperties(&effective.opts, &effective_defaults, build_proj, sources, self);
+    dal_c_Cmd__mergeBuildProperties(&effective.opts, NULL, build_proj, sources, self);
     dal_c_Cmd__appendTargetLocalInclude(&effective.opts, build_proj, self);
     if (effective.opts.profile == dal_c_Profile_invalid) {
         effective.opts.profile = self->opts.profile;
@@ -2059,7 +2107,6 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
     const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(effective.opts.profile);
     if (!profile) {
         (void)fprintf(stderr, "Error: Invalid profile\n");
-        dal_c_BuildDefaults_cleanup(&effective_defaults);
         dal_c_CompilerOpts_cleanup(&effective.opts);
         dal_c_Project_cleanup(&file_proj);
         ArrStr_fini(&sources);
@@ -2068,25 +2115,14 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
         return 1;
     }
 
-    dal_c_Target target_type = target_request.root ? target_request.kind : dal_c_Cmd__resolveBuildTargetType(self, intent.linking, builds_library);
-    if (!target_request.root
-        && !builds_library
-        && effective_defaults.target_kind_set) {
-        target_type = effective_defaults.target_kind;
-    }
-    if (target_type == dal_c_Target_lib) {
-        target_type = dal_c_Target_static_lib;
-    }
-
     char* output_path = dal_c_Cmd__compileDbOutputPath(&effective, build_proj);
 
-    int result = dal_c__writeCompileDb(&effective, build_proj, profile, sources, output_path, target_type);
+    int result = dal_c__writeCompileDb(&effective, build_proj, profile, sources, output_path);
     if (result == 0) {
         printf("Wrote compilation database: %s\n", output_path);
     }
 
     free(output_path);
-    dal_c_BuildDefaults_cleanup(&effective_defaults);
     dal_c_CompilerOpts_cleanup(&effective.opts);
     dal_c_Project_cleanup(&file_proj);
     ArrStr_fini(&sources);
@@ -2238,16 +2274,12 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     return 0;
 }
 
-int dal_c_Cmd_createWorkspace(const dal_c_Cmd* self, const dal_c_Project* proj) {
-    (void)self;
-    (void)proj;
+int dal_c_Cmd_createWorkspace(void) {
     (void)fprintf(stderr, "Not implemented: workspace\n");
     return 1;
 }
 
-int dal_c_Cmd_createProject(const dal_c_Cmd* self, const dal_c_Project* proj) {
-    (void)self;
-    (void)proj;
+int dal_c_Cmd_createProject(void) {
     (void)fprintf(stderr, "Not implemented: project\n");
     return 1;
 }
@@ -2427,6 +2459,7 @@ static const char* dal_c_Cmd__sampleDirCanonical(dal_c_SampleDir sample_dir) {
 
 static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
     bool build_like = dal_c_Cmd__usesBuildPayload(action);
+    bool build_artifact_like = dal_c_Cmd__usesBuildArtifactPayload(action);
     if (str_startsWith(arg, dal_c_opt_prefix_long)) {
         const char* opt = arg + 2;
         if ((str_eql(opt, dal_c_opt_output) && (build_like || action == dal_c_CmdAction_lib || action == dal_c_CmdAction_run || action == dal_c_CmdAction_test || action == dal_c_CmdAction_test_dsl))
@@ -2470,16 +2503,16 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_stack_protector)
             || str_eql(opt, dal_c_opt_loose_errors)
             || (str_eql(opt, dal_c_opt_image) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_emit_preprocessed) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_emit_asm) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_emit_map) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_emit_linked_asm) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_emit_disasm) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_emit_ir) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_emit_debug_info) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_save_temps) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_print_link_gc) && action == dal_c_CmdAction_build)
-            || (str_eql(opt, dal_c_opt_analysis_artifacts) && action == dal_c_CmdAction_build)
+            || (str_eql(opt, dal_c_opt_emit_preprocessed) && build_artifact_like)
+            || (str_eql(opt, dal_c_opt_emit_asm) && build_artifact_like)
+            || (str_eql(opt, dal_c_opt_emit_map) && build_artifact_like)
+            || (str_eql(opt, dal_c_opt_emit_linked_asm) && build_artifact_like)
+            || (str_eql(opt, dal_c_opt_emit_disasm) && build_artifact_like)
+            || (str_eql(opt, dal_c_opt_emit_ir) && build_artifact_like)
+            || (str_eql(opt, dal_c_opt_emit_debug_info) && build_artifact_like)
+            || (str_eql(opt, dal_c_opt_save_temps) && build_artifact_like)
+            || (str_eql(opt, dal_c_opt_print_link_gc) && build_artifact_like)
+            || (str_eql(opt, dal_c_opt_analysis_artifacts) && build_artifact_like)
             || str_eql(opt, dal_c_opt_version_core)
             || str_eql(opt, dal_c_opt_version_prefix)
             || str_eql(opt, dal_c_opt_version_suffix)
@@ -2520,22 +2553,22 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_stack_protector)
             || str_startsWith(opt, dal_c_opt_loose_errors)
             || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_image))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_preprocessed))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_asm))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_map))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_linked_asm))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_disasm))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_ir))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_emit_debug_info))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_demangle))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_source))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_line_numbers))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_symbolize_operands))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_raw_insn))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_disasm_section_contents))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_save_temps))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_print_link_gc))
-            || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_analysis_artifacts))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_emit_preprocessed))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_emit_asm))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_emit_map))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_emit_linked_asm))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_emit_disasm))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_emit_ir))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_emit_debug_info))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_disasm_demangle))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_disasm_source))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_disasm_line_numbers))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_disasm_symbolize_operands))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_disasm_raw_insn))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_disasm_section_contents))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_save_temps))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_print_link_gc))
+            || (build_artifact_like && str_startsWith(opt, dal_c_opt_analysis_artifacts))
             || str_startsWith(opt, dal_c_opt_version_core)
             || str_startsWith(opt, dal_c_opt_version_prefix)
             || str_startsWith(opt, dal_c_opt_version_suffix)
@@ -3015,31 +3048,31 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         cmd->payload.build.as_image = true;
                     }
                 } else if (str_eql(opt, dal_c_opt_emit_preprocessed)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.emit_preprocessed = true;
                     }
                 } else if (str_eql(opt, dal_c_opt_emit_asm)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.emit_asm = true;
                     }
                 } else if (str_eql(opt, dal_c_opt_emit_map)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_map_path, &cmd->payload.build.emit_map, NULL);
                     }
                 } else if (str_eql(opt, dal_c_opt_emit_linked_asm)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_linked_asm_path, &cmd->payload.build.emit_linked_asm, NULL);
                     }
                 } else if (str_eql(opt, dal_c_opt_emit_disasm)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_disasm_path, &cmd->payload.build.emit_disasm, NULL);
                     }
                 } else if (str_eql(opt, dal_c_opt_emit_ir)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         dal_c_Cmd__setArtifactPath(&cmd->payload.build.emit_ir_path, &cmd->payload.build.emit_ir, NULL);
                     }
                 } else if (str_eql(opt, dal_c_opt_emit_debug_info)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         dal_c_Cmd__setArtifactPath(
                             &cmd->payload.build.emit_debug_info_path,
                             &cmd->payload.build.emit_debug_info,
@@ -3047,7 +3080,7 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         );
                     }
                 } else if (str_eql(opt, dal_c_opt_print_link_gc)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.print_link_gc = true;
                     }
                 } else if (str_eql(opt, dal_c_opt_analysis_artifacts)) {
@@ -3119,27 +3152,27 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                 } else if (str_eql(opt, dal_c_opt_stack_protector)) {
                     cmd->opts.stack_protector = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_disasm_demangle)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.disasm_demangle = dal_c_ToggleState_enabled;
                     }
                 } else if (str_eql(opt, dal_c_opt_disasm_source)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.disasm_source = dal_c_ToggleState_enabled;
                     }
                 } else if (str_eql(opt, dal_c_opt_disasm_line_numbers)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.disasm_line_numbers = dal_c_ToggleState_enabled;
                     }
                 } else if (str_eql(opt, dal_c_opt_disasm_symbolize_operands)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.disasm_symbolize_operands = dal_c_ToggleState_enabled;
                     }
                 } else if (str_eql(opt, dal_c_opt_disasm_raw_insn)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.disasm_raw_insn = dal_c_ToggleState_enabled;
                     }
                 } else if (str_eql(opt, dal_c_opt_disasm_section_contents)) {
-                    if (cmd->action == dal_c_CmdAction_build) {
+                    if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.disasm_section_contents = dal_c_ToggleState_enabled;
                     }
                 } else if (str_eql(opt, dal_c_opt_save_temps)) {

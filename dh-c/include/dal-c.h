@@ -498,7 +498,8 @@ typedef enum dal_c_Profile {
     dal_c_Profile_release = 4,
     dal_c_Profile_optimize = 5,
     dal_c_Profile_compact = 6,
-    dal_c_Profile_micro = 7
+    dal_c_Profile_micro = 7,
+    dal_c_Profile_fast = 8
 } dal_c_Profile;
 #define dal_c_profile_dev "dev"
 #define dal_c_profile_test "test"
@@ -508,6 +509,7 @@ typedef enum dal_c_Profile {
 #define dal_c_profile_optimize "optimize"
 #define dal_c_profile_compact "compact"
 #define dal_c_profile_micro "micro"
+#define dal_c_profile_fast "fast"
 static inline dal_c_Profile dal_c_Profile_parse(const char* str) {
     if (str_eql(str, dal_c_profile_dev)) { return dal_c_Profile_dev; }
     if (str_eql(str, dal_c_profile_test)) { return dal_c_Profile_test; }
@@ -517,6 +519,7 @@ static inline dal_c_Profile dal_c_Profile_parse(const char* str) {
     if (str_eql(str, dal_c_profile_optimize)) { return dal_c_Profile_optimize; }
     if (str_eql(str, dal_c_profile_compact)) { return dal_c_Profile_compact; }
     if (str_eql(str, dal_c_profile_micro)) { return dal_c_Profile_micro; }
+    if (str_eql(str, dal_c_profile_fast)) { return dal_c_Profile_fast; }
     return dal_c_Profile_invalid;
 }
 static inline const char* dal_c_Profile_format(dal_c_Profile profile) {
@@ -529,6 +532,7 @@ static inline const char* dal_c_Profile_format(dal_c_Profile profile) {
     case dal_c_Profile_optimize: return dal_c_profile_optimize;
     case dal_c_Profile_compact: return dal_c_profile_compact;
     case dal_c_Profile_micro: return dal_c_profile_micro;
+    case dal_c_Profile_fast: return dal_c_profile_fast;
     case dal_c_Profile_invalid:
     default: return NULL;
     }
@@ -701,6 +705,19 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .async_unwind_tables = dal_c_ToggleState_disabled,
         .strip_mode = dal_c_ToggleState_enabled,
         .icf_mode = dal_c_IcfMode_all,
+    },
+    [dal_c_Profile_fast] = {
+        .name = dal_c_profile_fast,
+        .opti_level = dal_c_OptiLevel_none,
+        .debug_level = dal_c_DebugLevel_none,
+        .debug_assertions = true,
+        .lto_mode = dal_c_LtoMode_off,
+        .omit_frame_pointer = dal_c_ToggleState_disabled,
+        .function_sections = dal_c_ToggleState_disabled,
+        .data_sections = dal_c_ToggleState_disabled,
+        .gc_sections = dal_c_ToggleState_disabled,
+        .unwind_tables = dal_c_ToggleState_disabled,
+        .async_unwind_tables = dal_c_ToggleState_disabled,
     },
 };
 #define dal_c_profile_specs_count ((int)(sizeof(dal_c_profile_specs) / sizeof(dal_c_profile_specs[0])))
@@ -1253,8 +1270,8 @@ int dal_c_Cmd_runTidy(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_runFormat(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_compileDeps(const dal_c_Cmd* self, const dal_c_Project* proj);
-int dal_c_Cmd_createWorkspace(const dal_c_Cmd* self, const dal_c_Project* proj);
-int dal_c_Cmd_createProject(const dal_c_Cmd* self, const dal_c_Project* proj);
+int dal_c_Cmd_createWorkspace(void);
+int dal_c_Cmd_createProject(void);
 int dal_c_Cmd_queryToolchain(const dal_c_Cmd* self);
 
 /// === LIBRARY (Dependency) ===
@@ -1729,6 +1746,7 @@ static const dal_c_HelpOption dal_c_help_global_options[] = {
 
 static const dal_c_HelpProfile dal_c_help_profiles[] = {
     [dal_c_Profile_dev] = { dal_c_profile_dev, "Debug build with assertions (-g3 -Og)" },
+    [dal_c_Profile_fast] = { dal_c_profile_fast, "Fast compile build with assertions (-O0, no debug info)" },
     [dal_c_Profile_test] = { dal_c_profile_test, "Test build with basic optimization (-g -O1)" },
     [dal_c_Profile_profile] = { dal_c_profile_profile, "Profile build with optimization (-g -O2)" },
     [dal_c_Profile_stable] = { dal_c_profile_stable, "Stable build without debug (-g1 -O2)" },

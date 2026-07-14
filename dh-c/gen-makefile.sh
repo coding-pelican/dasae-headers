@@ -51,6 +51,7 @@ PROFILE ?= dev
 
 CC = clang
 C_STD ?= gnu17
+COMPILE_ENV ?= auto
 ARCH_TARGET ?= auto
 TARGET_ARCH ?= profile
 TARGET_TUNE ?= profile
@@ -76,9 +77,43 @@ STRIP ?= profile
 ICF ?= profile
 MERGE_ALL_CONSTANTS ?= auto
 STACK_PROTECTOR ?= auto
+LOOSE_ERRORS ?= auto
 SAVE_TEMPS ?= off
 EMIT_MAP ?= off
 MAP_PATH ?=
+EMIT_PREPROCESSED ?= off
+PREPROCESSED_PATH ?=
+EMIT_ASM ?= off
+ASM_PATH ?=
+EMIT_IR ?= off
+IR_PATH ?=
+EMIT_LINKED_ASM ?= off
+LINKED_ASM_PATH ?=
+EMIT_DISASM ?= off
+DISASM_PATH ?=
+EMIT_DEBUG_INFO ?= off
+DEBUG_INFO_PATH ?=
+PRINT_LINK_GC ?= off
+ANALYSIS_ARTIFACTS ?= off
+LLVM_OBJDUMP ?= llvm-objdump
+LLVM_DWARFDUMP ?= llvm-dwarfdump
+OBJCOPY ?= llvm-objcopy
+OBJCOPY_FORMAT ?= binary
+DISASM_DEMANGLE ?= auto
+DISASM_SOURCE ?= auto
+DISASM_LINE_NUMBERS ?= auto
+DISASM_SYMBOLIZE_OPERANDS ?= auto
+DISASM_RAW_INSN ?= auto
+DISASM_SECTION_CONTENTS ?= auto
+DISASM_FLAGS ?=
+COMP_ARGS ?=
+LINK_ARGS ?=
+LINKER_SCRIPT ?=
+ENTRY ?=
+EXTRA_INCLUDES ?=
+EXTRA_ISYSTEMS ?=
+EXTRA_DEFINES ?=
+EXTRA_UNDEFS ?=
 EXTRA_LIBS ?=
 
 # Directories
@@ -149,21 +184,8 @@ VERSION_BUILD_VALUE = $(if $(strip $(VER_BUILD)),$(VER_BUILD),$(BUILD_STAMP))
 # Compiler flags
 BASE_CFLAGS = -std=$(C_STD) \
               -I$(INCLUDE_DIR) \
-              -Wall -Wextra \
-              -Werror=all -Werror=extra -Werror=conversion \
-              -Werror=sign-conversion -Wfloat-conversion \
-              -Wformat=2 \
-              -Werror=cast-qual -Werror=cast-align \
-              -Wpointer-arith -Wbad-function-cast \
-              -Wnull-dereference -Wwrite-strings \
-              -Werror=uninitialized \
-              -Wframe-larger-than=4096 \
-              -Wno-switch-enum -Winfinite-recursion \
-              -Wloop-analysis -Werror=strict-prototypes \
-              -Werror=missing-prototypes \
-              -Wmissing-variable-declarations \
-              -Werror=div-by-zero -Wthread-safety \
               -fgnu-keywords -fms-extensions -Wno-microsoft-anon-tag \
+              -fcolor-diagnostics \
               -funsigned-char \
               -mllvm -enable-dfa-jump-thread \
               $(VERSION_DEFINES) \
@@ -185,20 +207,38 @@ PROFILE_STRIP = auto
 PROFILE_ICF = auto
 PROFILE_TARGET_ARCH = auto
 PROFILE_TARGET_TUNE = auto
+PROFILE_DEBUG_ASSERTIONS = on
+PROFILE_DEBUG_INFO = off
 
 ifeq ($(PROFILE),dev)
     PROFILE_CFLAGS += -g3 -Og
     PROFILE_OMIT_FRAME_POINTER = off
+    PROFILE_DEBUG_INFO = on
+else ifeq ($(PROFILE),fast)
+    PROFILE_CFLAGS += -O0
+    PROFILE_LTO = off
+    PROFILE_OMIT_FRAME_POINTER = off
+    PROFILE_FUNCTION_SECTIONS = off
+    PROFILE_DATA_SECTIONS = off
+    PROFILE_GC_SECTIONS = off
+    PROFILE_UNWIND_TABLES = off
+    PROFILE_ASYNC_UNWIND_TABLES = off
 else ifeq ($(PROFILE),test)
     PROFILE_CFLAGS += -g -O1
     PROFILE_OMIT_FRAME_POINTER = off
+    PROFILE_DEBUG_INFO = on
 else ifeq ($(PROFILE),profile)
     PROFILE_CFLAGS += -g -O2
     PROFILE_OMIT_FRAME_POINTER = off
+    PROFILE_DEBUG_INFO = on
 else ifeq ($(PROFILE),stable)
     PROFILE_CFLAGS += -g1 -O2
+    PROFILE_DEBUG_ASSERTIONS = off
+    PROFILE_DEBUG_INFO = on
 else ifeq ($(PROFILE),release)
     PROFILE_CFLAGS += -g1 -O3
+    PROFILE_DEBUG_ASSERTIONS = off
+    PROFILE_DEBUG_INFO = on
     PROFILE_LTO = on
     PROFILE_FUNCTION_SECTIONS = on
     PROFILE_DATA_SECTIONS = on
@@ -210,6 +250,7 @@ else ifeq ($(PROFILE),release)
     PROFILE_ICF = all
 else ifeq ($(PROFILE),optimize)
     PROFILE_CFLAGS += -O3
+    PROFILE_DEBUG_ASSERTIONS = off
     PROFILE_LTO = on
     PROFILE_FUNCTION_SECTIONS = on
     PROFILE_DATA_SECTIONS = on
@@ -224,6 +265,7 @@ else ifeq ($(PROFILE),optimize)
     PROFILE_EXCEPTIONS = off
 else ifeq ($(PROFILE),compact)
     PROFILE_CFLAGS += -Os
+    PROFILE_DEBUG_ASSERTIONS = off
     PROFILE_LTO = on
     PROFILE_FUNCTION_SECTIONS = on
     PROFILE_DATA_SECTIONS = on
@@ -235,6 +277,7 @@ else ifeq ($(PROFILE),compact)
     PROFILE_ICF = all
 else ifeq ($(PROFILE),micro)
     PROFILE_CFLAGS += -Oz
+    PROFILE_DEBUG_ASSERTIONS = off
     PROFILE_LTO = on
     PROFILE_FUNCTION_SECTIONS = on
     PROFILE_DATA_SECTIONS = on
@@ -249,6 +292,7 @@ else
     $(error Unsupported PROFILE '$(PROFILE)')
 endif
 
+RESOLVED_COMPILE_ENV = $(if $(filter auto,$(COMPILE_ENV)),hosted,$(COMPILE_ENV))
 RESOLVED_LTO = $(if $(filter profile,$(LTO)),$(PROFILE_LTO),$(LTO))
 RESOLVED_OMIT_FRAME_POINTER = $(if $(filter profile,$(OMIT_FRAME_POINTER)),$(PROFILE_OMIT_FRAME_POINTER),$(OMIT_FRAME_POINTER))
 RESOLVED_FUNCTION_SECTIONS = $(if $(filter profile,$(FUNCTION_SECTIONS)),$(PROFILE_FUNCTION_SECTIONS),$(FUNCTION_SECTIONS))
@@ -268,6 +312,20 @@ RESOLVED_STRIP = $(if $(filter profile,$(STRIP)),$(PROFILE_STRIP),$(STRIP))
 RESOLVED_ICF = $(if $(filter profile,$(ICF)),$(PROFILE_ICF),$(ICF))
 RESOLVED_TARGET_ARCH = $(if $(filter profile,$(TARGET_ARCH)),$(PROFILE_TARGET_ARCH),$(TARGET_ARCH))
 RESOLVED_TARGET_TUNE = $(if $(filter profile,$(TARGET_TUNE)),$(PROFILE_TARGET_TUNE),$(TARGET_TUNE))
+
+ifeq ($(ANALYSIS_ARTIFACTS),on)
+    EMIT_MAP := on
+    EMIT_LINKED_ASM := on
+    EMIT_DISASM := on
+else ifeq ($(ANALYSIS_ARTIFACTS),off)
+else ifeq ($(ANALYSIS_ARTIFACTS),auto)
+else
+    $(error Unsupported ANALYSIS_ARTIFACTS '$(ANALYSIS_ARTIFACTS)')
+endif
+
+ifeq ($(PROFILE_DEBUG_ASSERTIONS),off)
+    PROFILE_CFLAGS += -DNDEBUG
+endif
 
 ifeq ($(RESOLVED_LTO),on)
     PROFILE_CFLAGS += -flto
@@ -350,6 +408,20 @@ ifneq ($(SYSROOT),auto)
     TARGET_FLAGS += --sysroot=$(SYSROOT)
 endif
 
+ifeq ($(RESOLVED_COMPILE_ENV),freestanding)
+    PROFILE_CFLAGS += -ffreestanding
+else ifeq ($(RESOLVED_COMPILE_ENV),hosted)
+else
+    $(error Unsupported COMPILE_ENV '$(COMPILE_ENV)')
+endif
+
+CONTRACT_DEFINES = -DCOMP
+ifeq ($(RESOLVED_COMPILE_ENV),freestanding)
+    CONTRACT_DEFINES += -DCOMP_FREESTANDING
+else
+    CONTRACT_DEFINES += -DCOMP_HOSTED
+endif
+
 ifeq ($(RESOLVED_LINK_MODE),static)
     PROFILE_LDFLAGS += -static
 else ifeq ($(RESOLVED_LINK_MODE),shared)
@@ -392,6 +464,13 @@ else ifeq ($(RESOLVED_LINK_START_FILES),on)
 else
     $(error Unsupported LINK_START_FILES '$(LINK_START_FILES)')
 endif
+
+CONTRACT_DEFINES += $(if $(filter on,$(RESOLVED_LINK_START_FILES)),-DCOMP_HAS_START_FILES,-DCOMP_NO_START_FILES)
+CONTRACT_DEFINES += $(if $(filter on,$(RESOLVED_LINK_START_FILES)),-DCOMP_HAS_CRT,-DCOMP_NO_CRT)
+CONTRACT_DEFINES += $(if $(filter on,$(RESOLVED_LINK_DEFAULT_LIBS)),-DCOMP_HAS_DEFAULT_LIBS,-DCOMP_NO_DEFAULT_LIBS)
+CONTRACT_DEFINES += $(if $(filter off,$(RESOLVED_LINK_COMPILER_RT)),-DCOMP_NO_COMPILER_RT,-DCOMP_HAS_COMPILER_RT)
+CONTRACT_DEFINES += $(if $(filter off,$(RESOLVED_LINK_LIBC)),-DCOMP_NO_LIBC,-DCOMP_HAS_LIBC)
+CONTRACT_DEFINES += $(if $(and $(filter on,$(RESOLVED_LINK_START_FILES)),$(filter on,$(RESOLVED_LINK_DEFAULT_LIBS))),-DCOMP_HAS_STDLIB,-DCOMP_NO_STDLIB)
 
 ifeq ($(RESOLVED_UNWIND_TABLES),off)
     PROFILE_CFLAGS += -fno-unwind-tables
@@ -461,6 +540,85 @@ else
     $(error Unsupported EMIT_MAP '$(EMIT_MAP)')
 endif
 
+ifeq ($(PRINT_LINK_GC),on)
+ifeq ($(PLATFORM),windows)
+    $(error PRINT_LINK_GC is not supported by the COFF LLD linker used on Windows)
+endif
+    PROFILE_LDFLAGS += -Wl,--print-gc-sections
+else ifeq ($(PRINT_LINK_GC),off)
+else ifeq ($(PRINT_LINK_GC),auto)
+else
+    $(error Unsupported PRINT_LINK_GC '$(PRINT_LINK_GC)')
+endif
+
+RESOLVED_DISASM_FLAGS =
+ifeq ($(DISASM_DEMANGLE),on)
+    RESOLVED_DISASM_FLAGS += --demangle
+else ifeq ($(DISASM_DEMANGLE),off)
+else ifeq ($(DISASM_DEMANGLE),auto)
+else
+    $(error Unsupported DISASM_DEMANGLE '$(DISASM_DEMANGLE)')
+endif
+ifeq ($(DISASM_SOURCE),on)
+    RESOLVED_DISASM_FLAGS += --source
+else ifeq ($(DISASM_SOURCE),off)
+else ifeq ($(DISASM_SOURCE),auto)
+    RESOLVED_DISASM_FLAGS += --source
+else
+    $(error Unsupported DISASM_SOURCE '$(DISASM_SOURCE)')
+endif
+ifeq ($(DISASM_LINE_NUMBERS),on)
+    RESOLVED_DISASM_FLAGS += --line-numbers
+else ifeq ($(DISASM_LINE_NUMBERS),off)
+else ifeq ($(DISASM_LINE_NUMBERS),auto)
+    RESOLVED_DISASM_FLAGS += --line-numbers
+else
+    $(error Unsupported DISASM_LINE_NUMBERS '$(DISASM_LINE_NUMBERS)')
+endif
+ifeq ($(DISASM_SYMBOLIZE_OPERANDS),on)
+    RESOLVED_DISASM_FLAGS += --symbolize-operands
+else ifeq ($(DISASM_SYMBOLIZE_OPERANDS),off)
+else ifeq ($(DISASM_SYMBOLIZE_OPERANDS),auto)
+else
+    $(error Unsupported DISASM_SYMBOLIZE_OPERANDS '$(DISASM_SYMBOLIZE_OPERANDS)')
+endif
+ifeq ($(DISASM_RAW_INSN),on)
+else ifeq ($(DISASM_RAW_INSN),off)
+    RESOLVED_DISASM_FLAGS += --no-show-raw-insn
+else ifeq ($(DISASM_RAW_INSN),auto)
+else
+    $(error Unsupported DISASM_RAW_INSN '$(DISASM_RAW_INSN)')
+endif
+ifeq ($(DISASM_SECTION_CONTENTS),on)
+    RESOLVED_DISASM_FLAGS += -s
+else ifeq ($(DISASM_SECTION_CONTENTS),off)
+else ifeq ($(DISASM_SECTION_CONTENTS),auto)
+else
+    $(error Unsupported DISASM_SECTION_CONTENTS '$(DISASM_SECTION_CONTENTS)')
+endif
+RESOLVED_DISASM_FLAGS += $(DISASM_FLAGS)
+
+ifeq ($(LOOSE_ERRORS),suppress)
+    DIAGNOSTIC_CFLAGS = -w
+else ifeq ($(LOOSE_ERRORS),warn)
+    DIAGNOSTIC_CFLAGS = -Wall -Wextra -Wconversion -Wsign-conversion -Wfloat-conversion -Wformat=2 -Wcast-qual -Wcast-align -Wpointer-arith -Wbad-function-cast -Wnull-dereference -Wwrite-strings -Wuninitialized -Wframe-larger-than=4096 -Wno-switch-enum -Winfinite-recursion -Wno-microsoft-anon-tag -Wloop-analysis -Wstrict-prototypes -Wmissing-prototypes -Wmissing-variable-declarations -Wdiv-by-zero -Wthread-safety
+else ifeq ($(LOOSE_ERRORS),auto)
+    DIAGNOSTIC_CFLAGS = -Werror=all -Werror=extra -Werror=conversion -Werror=sign-conversion -Wfloat-conversion -Wformat=2 -Werror=cast-qual -Werror=cast-align -Wpointer-arith -Wbad-function-cast -Wnull-dereference -Wwrite-strings -Werror=uninitialized -Wframe-larger-than=4096 -Wno-switch-enum -Winfinite-recursion -Wno-microsoft-anon-tag -Wloop-analysis -Werror=strict-prototypes -Werror=missing-prototypes -Wmissing-variable-declarations -Werror=div-by-zero -Wthread-safety
+else ifeq ($(LOOSE_ERRORS),never)
+    DIAGNOSTIC_CFLAGS = -Werror=all -Werror=extra -Werror=conversion -Werror=sign-conversion -Wfloat-conversion -Wformat=2 -Werror=cast-qual -Werror=cast-align -Wpointer-arith -Wbad-function-cast -Wnull-dereference -Wwrite-strings -Werror=uninitialized -Wframe-larger-than=4096 -Wno-switch-enum -Winfinite-recursion -Wno-microsoft-anon-tag -Wloop-analysis -Werror=strict-prototypes -Werror=missing-prototypes -Wmissing-variable-declarations -Werror=div-by-zero -Wthread-safety
+else ifeq ($(LOOSE_ERRORS),off)
+    DIAGNOSTIC_CFLAGS = -Werror=all -Werror=extra -Werror=conversion -Werror=sign-conversion -Wfloat-conversion -Wformat=2 -Werror=cast-qual -Werror=cast-align -Wpointer-arith -Wbad-function-cast -Wnull-dereference -Wwrite-strings -Werror=uninitialized -Wframe-larger-than=4096 -Wno-switch-enum -Winfinite-recursion -Wno-microsoft-anon-tag -Wloop-analysis -Werror=strict-prototypes -Werror=missing-prototypes -Wmissing-variable-declarations -Werror=div-by-zero -Wthread-safety
+else
+    $(error Unsupported LOOSE_ERRORS '$(LOOSE_ERRORS)')
+endif
+
+ifneq ($(strip $(ENTRY)),)
+    PROFILE_LDFLAGS += -Wl,-e,$(ENTRY)
+endif
+ifneq ($(strip $(LINKER_SCRIPT)),)
+    PROFILE_LDFLAGS += -Wl,-T,$(LINKER_SCRIPT)
+endif
+
 LINK_LIBS = $(EXTRA_LIBS)
 ifeq ($(RESOLVED_WHOLE_ARCHIVE),on)
 ifneq ($(strip $(EXTRA_LIBS)),)
@@ -472,19 +630,72 @@ else
     $(error Unsupported WHOLE_ARCHIVE '$(WHOLE_ARCHIVE)')
 endif
 
-CFLAGS = $(BASE_CFLAGS) $(PROFILE_CFLAGS) $(TARGET_FLAGS)
+CFLAGS = $(BASE_CFLAGS) $(PROFILE_CFLAGS) $(TARGET_FLAGS) $(CONTRACT_DEFINES) $(DIAGNOSTIC_CFLAGS) $(EXTRA_INCLUDES) $(EXTRA_ISYSTEMS) $(EXTRA_DEFINES) $(EXTRA_UNDEFS) $(COMP_ARGS)
+LDFLAGS_EXTRA = $(LINK_ARGS)
 
 # Platform-specific flags
 ifeq ($(PLATFORM),windows)
     CFLAGS += -D_WIN32_WINNT=0x0600
-    LDFLAGS = -fuse-ld=lld $(TARGET_FLAGS) $(PROFILE_LDFLAGS)
+    CFLAGS += -fansi-escape-codes
+    LDFLAGS = -fuse-ld=lld $(TARGET_FLAGS) $(PROFILE_LDFLAGS) $(LDFLAGS_EXTRA)
 else
     CFLAGS += -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L
-    LDFLAGS = $(TARGET_FLAGS) $(PROFILE_LDFLAGS)
+    LDFLAGS = $(TARGET_FLAGS) $(PROFILE_LDFLAGS) $(LDFLAGS_EXTRA)
+endif
+
+EXTRA_TARGETS =
+PREPROCESSED_TARGET = $(if $(strip $(PREPROCESSED_PATH)),$(PREPROCESSED_PATH),$(BUILD_DIR)/dh-c.i)
+ASM_TARGET = $(if $(strip $(ASM_PATH)),$(ASM_PATH),$(BUILD_DIR)/dh-c.s)
+IR_TARGET = $(if $(strip $(IR_PATH)),$(IR_PATH),$(BUILD_DIR)/dh-c.ll)
+LINKED_ASM_TARGET = $(if $(strip $(LINKED_ASM_PATH)),$(LINKED_ASM_PATH),$(BUILD_DIR)/dh-c.linked.s)
+DISASM_TARGET = $(if $(strip $(DISASM_PATH)),$(DISASM_PATH),$(BUILD_DIR)/dh-c.disasm.s)
+DEBUG_INFO_TARGET = $(if $(strip $(DEBUG_INFO_PATH)),$(DEBUG_INFO_PATH),$(BUILD_DIR)/dh-c.debug.txt)
+
+ifeq ($(EMIT_PREPROCESSED),on)
+    EXTRA_TARGETS += $(PREPROCESSED_TARGET)
+else ifeq ($(EMIT_PREPROCESSED),off)
+else
+    $(error Unsupported EMIT_PREPROCESSED '$(EMIT_PREPROCESSED)')
+endif
+ifeq ($(EMIT_ASM),on)
+    EXTRA_TARGETS += $(ASM_TARGET)
+else ifeq ($(EMIT_ASM),off)
+else
+    $(error Unsupported EMIT_ASM '$(EMIT_ASM)')
+endif
+ifeq ($(EMIT_IR),on)
+    EXTRA_TARGETS += $(IR_TARGET)
+else ifeq ($(EMIT_IR),off)
+else
+    $(error Unsupported EMIT_IR '$(EMIT_IR)')
+endif
+ifeq ($(EMIT_LINKED_ASM),on)
+ifneq ($(RESOLVED_LTO),on)
+    $(error EMIT_LINKED_ASM requires effective LTO to be enabled)
+endif
+    EXTRA_TARGETS += $(LINKED_ASM_TARGET)
+else ifeq ($(EMIT_LINKED_ASM),off)
+else
+    $(error Unsupported EMIT_LINKED_ASM '$(EMIT_LINKED_ASM)')
+endif
+ifeq ($(EMIT_DISASM),on)
+    EXTRA_TARGETS += $(DISASM_TARGET)
+else ifeq ($(EMIT_DISASM),off)
+else
+    $(error Unsupported EMIT_DISASM '$(EMIT_DISASM)')
+endif
+ifeq ($(EMIT_DEBUG_INFO),on)
+ifneq ($(PROFILE_DEBUG_INFO),on)
+    $(error EMIT_DEBUG_INFO requires debug info to be enabled by the selected profile)
+endif
+    EXTRA_TARGETS += $(DEBUG_INFO_TARGET)
+else ifeq ($(EMIT_DEBUG_INFO),off)
+else
+    $(error Unsupported EMIT_DEBUG_INFO '$(EMIT_DEBUG_INFO)')
 endif
 
 # Default target
-all: $(TARGET)
+all: $(TARGET) $(EXTRA_TARGETS)
 
 # Build executable
 $(TARGET): $(OBJS)
@@ -495,6 +706,30 @@ $(TARGET): $(OBJS)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(Q)$(MKDIR) $(dir $@)
 	$(Q)$(call P_CC,$<)$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(PREPROCESSED_TARGET): $(MAIN_SRC)
+	$(Q)$(MKDIR) $(dir $@)
+	$(Q)$(call P_CC,$<)$(CC) $(CFLAGS) -E $< -o $@
+
+$(ASM_TARGET): $(MAIN_SRC)
+	$(Q)$(MKDIR) $(dir $@)
+	$(Q)$(call P_CC,$<)$(CC) $(CFLAGS) -S $< -o $@
+
+$(IR_TARGET): $(MAIN_SRC)
+	$(Q)$(MKDIR) $(dir $@)
+	$(Q)$(call P_CC,$<)$(CC) $(CFLAGS) -S -emit-llvm $< -o $@
+
+$(LINKED_ASM_TARGET): $(OBJS)
+	$(Q)$(MKDIR) $(dir $@)
+	$(Q)$(call P_LD,$@)$(CC) $(OBJS) -o $@ $(LDFLAGS) -Wl,--lto-emit-asm $(LINK_LIBS)
+
+$(DISASM_TARGET): $(TARGET)
+	$(Q)$(MKDIR) $(dir $@)
+	$(Q)$(LLVM_OBJDUMP) -d $(RESOLVED_DISASM_FLAGS) $< > $@
+
+$(DEBUG_INFO_TARGET): $(TARGET)
+	$(Q)$(MKDIR) $(dir $@)
+	$(Q)$(LLVM_DWARFDUMP) --debug-info --debug-line $< > $@
 
 # Include dependency files
 -include $(OBJS:.o=.d)

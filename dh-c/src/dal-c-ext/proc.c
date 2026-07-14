@@ -13,6 +13,16 @@
 #endif
 #endif
 
+struct proc_Child {
+#ifdef _WIN32
+    HANDLE process;
+    HANDLE thread;
+    HANDLE job;
+#else
+    pid_t pid;
+#endif
+};
+
 #ifdef _WIN32
 static char* proc__buildCommandLine(const char** argv) {
     size_t cmd_len = 0;
@@ -34,6 +44,12 @@ static char* proc__buildCommandLine(const char** argv) {
 }
 #endif
 #ifndef _WIN32
+static int proc__statusToExitCode(int status) {
+    if (WIFEXITED(status)) { return WEXITSTATUS(status); }
+    if (WIFSIGNALED(status)) { return 128 + WTERMSIG(status); }
+    return -1;
+}
+
 static volatile sig_atomic_t proc__pending_signal = 0;
 static volatile sig_atomic_t proc__active_child_pgid = 0;
 
@@ -74,6 +90,162 @@ static char** proc__makeMutableArgv(const char** argv) {
     return result;
 }
 #endif
+
+proc_Child* proc_spawn(const char** argv, bool show_output) {
+    if (!argv || !argv[0]) { return NULL; }
+#ifdef _WIN32
+    char* const cmd_line = proc__buildCommandLine(argv);
+    if (!cmd_line) { return NULL; }
+
+    STARTUPINFOA si = { 0 };
+    PROCESS_INFORMATION pi = { 0 };
+    si.cb = sizeof(si);
+    if (!show_output) {
+        si.dwFlags |= STARTF_USESTDHANDLES;
+        si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+        si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+        si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+    }
+    HANDLE job = CreateJobObjectA(NULL, NULL);
+    if (job) {
+        JOBOBJECT_EXTENDED_LIMIT_INFORMATION info;
+        memset(&info, 0, sizeof(info));
+        info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+        if (!SetInformationJobObject(job, JobObjectExtendedLimitInformation, &info, sizeof(info))) {
+            CloseHandle(job);
+            job = NULL;
+        }
+    }
+
+    const BOOL success = CreateProcessA(
+        NULL,
+        cmd_line,
+        NULL,
+        NULL,
+        !show_output,
+        CREATE_NEW_PROCESS_GROUP,
+        NULL,
+        NULL,
+        &si,
+        &pi
+    );
+    free(cmd_line);
+    if (!success) {
+        if (job) { CloseHandle(job); }
+        return NULL;
+    }
+    if (job) {
+        (void)AssignProcessToJobObject(job, pi.hProcess);
+    }
+
+    proc_Child* child = (proc_Child*)malloc(sizeof(*child));
+    if (!child) {
+        TerminateProcess(pi.hProcess, 1);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        if (job) { CloseHandle(job); }
+        return NULL;
+    }
+    child->process = pi.hProcess;
+    child->thread = pi.hThread;
+    child->job = job;
+    return child;
+#else
+    const pid_t pid = fork();
+    if (pid == -1) { return NULL; }
+    if (pid == 0) {
+        (void)setpgid(0, 0);
+#ifdef __linux__
+        (void)prctl(PR_SET_PDEATHSIG, SIGTERM);
+        if (getppid() == 1) { _exit(128 + SIGTERM); }
+#endif
+        if (!show_output) {
+            freopen("/dev/null", "w", stdout);
+            freopen("/dev/null", "w", stderr);
+        }
+        char** const exec_argv = proc__makeMutableArgv(argv);
+        if (!exec_argv) { exit(1); }
+        execvp(exec_argv[0], exec_argv);
+        proc__freeMutableArgv(exec_argv);
+        exit(1);
+    }
+
+    (void)setpgid(pid, pid);
+    proc_Child* child = (proc_Child*)malloc(sizeof(*child));
+    if (!child) {
+        (void)kill(-pid, SIGTERM);
+        (void)waitpid(pid, NULL, 0);
+        return NULL;
+    }
+    child->pid = pid;
+    return child;
+#endif
+}
+
+int proc_wait(proc_Child** child) {
+    if (!child || !*child) { return -1; }
+    proc_Child* value = *child;
+#ifdef _WIN32
+    WaitForSingleObject(value->process, INFINITE);
+    DWORD exit_code = 0;
+    GetExitCodeProcess(value->process, &exit_code);
+    CloseHandle(value->process);
+    CloseHandle(value->thread);
+    if (value->job) { CloseHandle(value->job); }
+    free(value);
+    *child = NULL;
+    return (int)exit_code;
+#else
+    int status = 0;
+    for (;;) {
+        pid_t waited = waitpid(value->pid, &status, 0);
+        if (waited == value->pid) { break; }
+        if (waited == -1 && errno == EINTR) { continue; }
+        free(value);
+        *child = NULL;
+        return -1;
+    }
+    int code = proc__statusToExitCode(status);
+    free(value);
+    *child = NULL;
+    return code;
+#endif
+}
+
+int proc_waitAny(proc_Child** children, int count, int* index_out) {
+    if (!children || count <= 0 || !index_out) { return -1; }
+#ifdef _WIN32
+    HANDLE handles[MAXIMUM_WAIT_OBJECTS];
+    if (count > (int)MAXIMUM_WAIT_OBJECTS) { return -1; }
+    for (int i = 0; i < count; ++i) {
+        if (!children[i]) { return -1; }
+        handles[i] = children[i]->process;
+    }
+    DWORD waited = WaitForMultipleObjects((DWORD)count, handles, FALSE, INFINITE);
+    if (waited < WAIT_OBJECT_0 || waited >= WAIT_OBJECT_0 + (DWORD)count) {
+        return -1;
+    }
+    int index = (int)(waited - WAIT_OBJECT_0);
+    *index_out = index;
+    return proc_wait(&children[index]);
+#else
+    for (;;) {
+        int status = 0;
+        pid_t waited = waitpid(-1, &status, 0);
+        if (waited == -1 && errno == EINTR) { continue; }
+        if (waited == -1) { return -1; }
+        for (int i = 0; i < count; ++i) {
+            if (children[i] && children[i]->pid == waited) {
+                int code = proc__statusToExitCode(status);
+                free(children[i]);
+                children[i] = NULL;
+                *index_out = i;
+                return code;
+            }
+        }
+    }
+#endif
+}
 
 int proc_run(const char** argv, bool show_output) {
     if (!argv || !argv[0]) { return -1; }

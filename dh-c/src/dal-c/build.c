@@ -42,12 +42,9 @@ static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* c
 
 static dal_c__noinline int dal_c__writeEmitOnlyMakefile(
     FILE* fp,
-    const dal_c_Cmd* cmd,
     const dal_c_Project* proj,
-    const dal_c_ProfileSpec* profile,
     ArrStr* sources,
     const char* target_path,
-    const char* build_dir,
     dal_c_Target target_type,
     char* makefile_tmp,
     char* makefile_path,
@@ -80,7 +77,7 @@ static char* dal_c__makeLinkContractPath(const char* build_dir, const char* targ
 static bool dal_c__writeLinkContractFile(const char* path, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static char* dal_c__makeObjectPath(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type, const char* object_dir, const char* base, const char* src, bool use_pch, bool test_mode);
 static char* dal_c__makePchPath(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type, const char* object_dir, const char* ext);
-static bool dal_c__pchEnabledForProfile(const dal_c_Project* proj, const dal_c_ProfileSpec* profile);
+static bool dal_c__pchEnabled(const dal_c_Project* proj);
 static bool dal_c__pchDepsAreUpToDate(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* object_dir, dal_c_Target target_type);
 static bool dal_c__sourcesUsePch(const dal_c_Project* proj, ArrStr* sources, bool has_pch);
 static void dal_c__removePchArtifacts(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* object_dir, dal_c_Target target_type);
@@ -88,12 +85,13 @@ static bool dal_c__sourceIsAssembly(const char* src);
 static char* dal_c__makeImageLinkPath(const char* target_path);
 static uint64_t dal_c__hashVersionSpec(uint64_t hash, const dal_c_VersionSpec* version);
 static void dal_c__writeVersionDefines(FILE* fp, const dal_c_VersionSpec* version);
+static void dal_c__appendVersionDefineArguments(ArrStr* argv, const dal_c_VersionSpec* version);
 static bool dal_c__targetIsEmitOnly(dal_c_Target target_type);
 static bool dal_c__linkedPlanIsUpToDate(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, ArrStr* sources, bool has_pch, const char* object_dir, const char* base, dal_c_Target target_type, const char* target_path, const char* link_contract_path);
 static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, ArrStr* sources, bool has_pch, const char* object_dir, const char* base, dal_c_Target target_type);
 static void dal_c__writeMakefileTargetVar(FILE* fp, const char* target_path);
-static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target type, bool is_windows, const char* target_path, const char* link_contract_path);
+static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target type, bool is_windows, const char* link_contract_path);
 static char* dal_c__artifactPath(const char* target_path, const char* override_path, const char* ext);
 static void dal_c__writePlatformLinkerFlags(FILE* fp, bool is_windows, const dal_c_ProfileSpec* profile, const char* target_path);
 static void dal_c__writeLinkModelFlags(FILE* fp, bool is_windows, const dal_c_CompilerOpts* opts, dal_c_Target target_type);
@@ -138,7 +136,8 @@ static dal_c__noinline dal_c__optnone char* dal_c__queryCompilerRtPath(const dal
 static ArrStr* dal_c__parseQuotedTokens(const char* line);
 static ArrStr* dal_c__queryToolchainLinkTokens(const dal_c_CompilerOpts* opts);
 static void dal_c__printToolchainCategory(const char* title, ArrStr* link_tokens, const char* compiler_rt_path, dal_c_ToolchainQuery query);
-void dal_c__appendCompileDbArguments(ArrStr* argv, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* src, dal_c_Target target_type);
+void dal_c__appendCompileDbArguments(ArrStr* argv, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* src);
+void dal_c__appendSyntaxArguments(ArrStr* argv, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* src, dal_c_Target target_type);
 static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_CompilerOpts* opts, bool compiler_is_clang);
 static char* dal_c__jsonEscape(const char* text);
 static void dal_c__fprintJsonString(FILE* fp, const char* text);
@@ -414,6 +413,29 @@ static void dal_c__pushSelfMakeToggle(ArrStr* argv, const char* key, dal_c_Toggl
     dal_c__pushSelfMakeKeyValue(argv, key, dal_c_ToggleState_format(state));
 }
 
+static void dal_c__pushSelfMakeStringList(ArrStr* argv, const char* key, const char* prefix, char** items, int count) {
+    assert(argv != NULL);
+    assert(key != NULL);
+    assert(prefix != NULL);
+    if (!items || count <= 0) {
+        return;
+    }
+
+    char* value = NULL;
+    for (int i = 0; i < count; ++i) {
+        if (!items[i] || items[i][0] == '\0') {
+            continue;
+        }
+        char* next = value
+                       ? str_format("%s %s%s", value, prefix, items[i])
+                       : str_format("%s%s", prefix, items[i]);
+        free(value);
+        value = next;
+    }
+    dal_c__pushSelfMakeKeyValue(argv, key, value);
+    free(value);
+}
+
 static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     assert(cmd != NULL);
 
@@ -465,6 +487,14 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     dal_c__pushSelfMakeKeyValue(argv, "TARGET_TUNE", cmd->opts.target_tune);
     dal_c__pushSelfMakeKeyValue(argv, "TARGET_ABI", cmd->opts.target_abi);
     dal_c__pushSelfMakeKeyValue(argv, "SYSROOT", cmd->opts.sysroot);
+    if (cmd->opts.compile_env != dal_c_CompileEnv_auto) {
+        dal_c__pushSelfMakeKeyValue(argv, "COMPILE_ENV", dal_c_CompileEnv_format(cmd->opts.compile_env));
+    }
+    dal_c__pushSelfMakeStringList(argv, "EXTRA_INCLUDES", "-I", cmd->opts.include_paths, cmd->opts.include_count);
+    dal_c__pushSelfMakeStringList(argv, "EXTRA_ISYSTEMS", "-isystem ", cmd->opts.isystem_paths, cmd->opts.isystem_count);
+    dal_c__pushSelfMakeStringList(argv, "EXTRA_DEFINES", "-D", cmd->opts.define_macros, cmd->opts.define_count);
+    dal_c__pushSelfMakeStringList(argv, "EXTRA_UNDEFS", "-U", cmd->opts.undef_macros, cmd->opts.undef_count);
+    dal_c__pushSelfMakeStringList(argv, "EXTRA_LIBS", "-l", cmd->opts.link_libs, cmd->opts.link_count);
     if (cmd->opts.lto_mode != dal_c_LtoMode_auto) {
         dal_c__pushSelfMakeKeyValue(argv, "LTO", dal_c_LtoMode_format(cmd->opts.lto_mode));
     }
@@ -487,6 +517,41 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     dal_c__pushSelfMakeToggle(argv, "STRIP", cmd->opts.strip_mode);
     if (cmd->opts.icf_mode != dal_c_IcfMode_auto) {
         dal_c__pushSelfMakeKeyValue(argv, "ICF", dal_c_IcfMode_format(cmd->opts.icf_mode));
+    }
+    dal_c__pushSelfMakeToggle(argv, "MERGE_ALL_CONSTANTS", cmd->opts.merge_all_constants);
+    dal_c__pushSelfMakeToggle(argv, "STACK_PROTECTOR", cmd->opts.stack_protector);
+    if (cmd->opts.loose_errors != dal_c_LooseErrorsMode_auto) {
+        dal_c__pushSelfMakeKeyValue(argv, "LOOSE_ERRORS", dal_c_LooseErrorsMode_format(cmd->opts.loose_errors));
+    }
+    dal_c__pushSelfMakeKeyValue(argv, "ENTRY", cmd->opts.entry_symbol);
+    dal_c__pushSelfMakeKeyValue(argv, "COMP_ARGS", cmd->compiler_args);
+    dal_c__pushSelfMakeKeyValue(argv, "LINK_ARGS", cmd->link_args);
+    dal_c__pushSelfMakeKeyValue(argv, "LINKER_SCRIPT", cmd->linker_script);
+    bool build_artifact_like = cmd->action == dal_c_CmdAction_build || cmd->action == dal_c_CmdAction_build_self;
+    if (build_artifact_like) {
+        if (cmd->payload.build.save_temps != dal_c_SaveTempsMode_off) {
+            dal_c__pushSelfMakeKeyValue(argv, "SAVE_TEMPS", dal_c_SaveTempsMode_format(cmd->payload.build.save_temps));
+        }
+        dal_c__pushSelfMakeToggle(argv, "EMIT_MAP", cmd->payload.build.emit_map ? dal_c_ToggleState_enabled : dal_c_ToggleState_auto);
+        dal_c__pushSelfMakeKeyValue(argv, "MAP_PATH", cmd->payload.build.emit_map_path);
+        dal_c__pushSelfMakeToggle(argv, "EMIT_PREPROCESSED", cmd->payload.build.emit_preprocessed ? dal_c_ToggleState_enabled : dal_c_ToggleState_auto);
+        dal_c__pushSelfMakeToggle(argv, "EMIT_ASM", cmd->payload.build.emit_asm ? dal_c_ToggleState_enabled : dal_c_ToggleState_auto);
+        dal_c__pushSelfMakeToggle(argv, "EMIT_IR", cmd->payload.build.emit_ir ? dal_c_ToggleState_enabled : dal_c_ToggleState_auto);
+        dal_c__pushSelfMakeKeyValue(argv, "IR_PATH", cmd->payload.build.emit_ir_path);
+        dal_c__pushSelfMakeToggle(argv, "EMIT_LINKED_ASM", cmd->payload.build.emit_linked_asm ? dal_c_ToggleState_enabled : dal_c_ToggleState_auto);
+        dal_c__pushSelfMakeKeyValue(argv, "LINKED_ASM_PATH", cmd->payload.build.emit_linked_asm_path);
+        dal_c__pushSelfMakeToggle(argv, "EMIT_DISASM", cmd->payload.build.emit_disasm ? dal_c_ToggleState_enabled : dal_c_ToggleState_auto);
+        dal_c__pushSelfMakeKeyValue(argv, "DISASM_PATH", cmd->payload.build.emit_disasm_path);
+        dal_c__pushSelfMakeToggle(argv, "EMIT_DEBUG_INFO", cmd->payload.build.emit_debug_info ? dal_c_ToggleState_enabled : dal_c_ToggleState_auto);
+        dal_c__pushSelfMakeKeyValue(argv, "DEBUG_INFO_PATH", cmd->payload.build.emit_debug_info_path);
+        dal_c__pushSelfMakeToggle(argv, "PRINT_LINK_GC", cmd->payload.build.print_link_gc ? dal_c_ToggleState_enabled : dal_c_ToggleState_auto);
+        dal_c__pushSelfMakeToggle(argv, "ANALYSIS_ARTIFACTS", cmd->payload.build.analysis_artifacts ? dal_c_ToggleState_enabled : dal_c_ToggleState_auto);
+        dal_c__pushSelfMakeToggle(argv, "DISASM_DEMANGLE", cmd->payload.build.disasm_demangle);
+        dal_c__pushSelfMakeToggle(argv, "DISASM_SOURCE", cmd->payload.build.disasm_source);
+        dal_c__pushSelfMakeToggle(argv, "DISASM_LINE_NUMBERS", cmd->payload.build.disasm_line_numbers);
+        dal_c__pushSelfMakeToggle(argv, "DISASM_SYMBOLIZE_OPERANDS", cmd->payload.build.disasm_symbolize_operands);
+        dal_c__pushSelfMakeToggle(argv, "DISASM_RAW_INSN", cmd->payload.build.disasm_raw_insn);
+        dal_c__pushSelfMakeToggle(argv, "DISASM_SECTION_CONTENTS", cmd->payload.build.disasm_section_contents);
     }
     if (target) {
         ArrStr_push(argv, target);
@@ -1726,7 +1791,7 @@ dal_c__noinline dal_c__optnone int dal_c__generateMakefile(
         }
     }
 
-    bool has_pch = dal_c__pchEnabledForProfile(proj, profile);
+    bool has_pch = dal_c__pchEnabled(proj);
     const char* obj_base = (proj && proj->root) ? proj->root : NULL;
     if (dal_c__sourcesUsePch(proj, sources, has_pch)
         && !dal_c__pchDepsAreUpToDate(cmd, proj, profile, build_dir, target_type)) {
@@ -1767,7 +1832,7 @@ dal_c__noinline dal_c__optnone int dal_c__generateMakefile(
 
     if (dal_c__targetIsEmitOnly(target_type)) {
         return dal_c__writeEmitOnlyMakefile(
-            fp, cmd, proj, profile, sources, target_path, build_dir, target_type,
+            fp, proj, sources, target_path, target_type,
             makefile_tmp, makefile_path, makefile_dir, link_contract_path
         );
     }
@@ -2500,18 +2565,21 @@ static bool dal_c__copyLibraryArtifacts(
     return success;
 }
 
-static char* dal_c__buildParallelFlag(const dal_c_Cmd* cmd) {
+int dal_c__parallelJobCount(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
     const char* jobs = cmd->make_jobs ? cmd->make_jobs : env_get("DAL_C_MAKE_JOBS");
     if (jobs && jobs[0] != '\0') {
-        return str_format("-j%s", jobs);
+        long parsed = strtol(jobs, NULL, 10);
+        if (parsed < 1) { parsed = 1; }
+        if (parsed > 32) { parsed = 32; }
+        return (int)parsed;
     }
 #if _WIN32
     const char* procs_env = env_get("NUMBER_OF_PROCESSORS");
     long procs = procs_env ? strtol(procs_env, NULL, 10) : 1;
     if (procs < 1) { procs = 1; }
     if (procs > 32) { procs = 32; }
-    return str_format("-j%ld", procs);
+    return (int)procs;
 #else
     long procs = sysconf(_SC_NPROCESSORS_ONLN);
     if (procs < 1) { procs = 1; }
@@ -2533,8 +2601,13 @@ static char* dal_c__buildParallelFlag(const dal_c_Cmd* cmd) {
         if (procs > mem_jobs) { procs = mem_jobs; }
     }
     if (procs > 32) { procs = 32; }
-    return str_format("-j%ld", procs);
+    return (int)procs;
 #endif
+}
+
+static char* dal_c__buildParallelFlag(const dal_c_Cmd* cmd) {
+    assert(cmd != NULL);
+    return str_format("-j%d", dal_c__parallelJobCount(cmd));
 }
 
 static void dal_c__writePlatformDebugFlags(FILE* fp, bool is_windows, const dal_c_ProfileSpec* profile) {
@@ -3043,14 +3116,12 @@ void dal_c__appendCompileDbArguments(
     const dal_c_Cmd* cmd,
     const dal_c_Project* proj,
     const dal_c_ProfileSpec* profile,
-    const char* src,
-    dal_c_Target target_type
+    const char* src
 ) {
     assert(argv != NULL);
     assert(cmd != NULL);
     assert(profile != NULL);
     assert(src != NULL);
-    (void)target_type;
 
     const dal_c_CompilerOpts* opts = &cmd->opts;
     const char* compiler = opts->compiler ? opts->compiler : dal_c_default_compiler;
@@ -3154,6 +3225,227 @@ void dal_c__appendCompileDbArguments(
     }
     for (int i = 0; i < opts->define_count; ++i) {
         dal_c__argvPushFormat(argv, "-D%s", opts->define_macros[i]);
+    }
+    for (int i = 0; i < opts->undef_count; ++i) {
+        dal_c__argvPushFormat(argv, "-U%s", opts->undef_macros[i]);
+    }
+    dal_c__appendCompilerArgsTokens(argv, cmd->compiler_args);
+    ArrStr_push(argv, src);
+}
+
+void dal_c__appendSyntaxArguments(
+    ArrStr* argv,
+    const dal_c_Cmd* cmd,
+    const dal_c_Project* proj,
+    const dal_c_ProfileSpec* profile,
+    const char* src,
+    dal_c_Target target_type
+) {
+    assert(argv != NULL);
+    assert(cmd != NULL);
+    assert(profile != NULL);
+    assert(src != NULL);
+
+    const dal_c_CompilerOpts* opts = &cmd->opts;
+    bool is_windows = dal_c__platformIsWindows();
+    const char* compiler = opts->compiler ? opts->compiler : dal_c_default_compiler;
+    bool compiler_is_clang = dal_c__compilerLooksLikeClang(compiler);
+    dal_c_CompileEnv compile_env = dal_c__resolvedCompileEnv(opts);
+    bool libc_linked = dal_c__resolvedLibcLinked(opts);
+    bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
+    bool start_files_linked = dal_c__resolvedStartFilesLinked(opts);
+    bool compiler_rt_linked = dal_c__resolvedCompilerRtLinked(opts, target_type);
+    bool stdlib_linked = start_files_linked && default_libs_linked;
+
+    ArrStr_push(argv, compiler);
+
+    if (str_endsWith(src, ".h")) {
+        ArrStr_push(argv, "-xc-header");
+    } else if (str_endsWith(src, ".S")) {
+        ArrStr_push(argv, "-x");
+        ArrStr_push(argv, "assembler-with-cpp");
+    } else if (str_endsWith(src, ".s")) {
+        ArrStr_push(argv, "-x");
+        ArrStr_push(argv, "assembler");
+    } else {
+        ArrStr_push(argv, "-xc");
+    }
+    if (!dal_c__sourceIsAssembly(src)) {
+        const char* c_std = opts->c_std ? opts->c_std : dal_c_default_c_std;
+        dal_c__argvPushFormat(argv, "-std=%s", c_std);
+    }
+
+    if (compiler_is_clang) {
+        ArrStr_push(argv, "-fgnu-keywords");
+        ArrStr_push(argv, "-Wno-microsoft-anon-tag");
+        ArrStr_push(argv, "-fcolor-diagnostics");
+        if (is_windows) {
+            ArrStr_push(argv, "-fansi-escape-codes");
+        }
+    }
+    ArrStr_push(argv, "-fms-extensions");
+    ArrStr_push(argv, "-funsigned-char");
+    if (!is_windows && target_type == dal_c_Target_shared_lib) {
+        ArrStr_push(argv, "-fPIC");
+    }
+    if (compiler_is_clang) {
+        ArrStr_push(argv, "-mllvm");
+        ArrStr_push(argv, "-enable-dfa-jump-thread");
+    }
+
+    ArrStr_push(argv, "-DCOMP");
+    ArrStr_push(argv, compile_env == dal_c_CompileEnv_freestanding ? "-DCOMP_FREESTANDING" : "-DCOMP_HOSTED");
+    ArrStr_push(argv, start_files_linked ? "-DCOMP_HAS_START_FILES" : "-DCOMP_NO_START_FILES");
+    ArrStr_push(argv, start_files_linked ? "-DCOMP_HAS_CRT" : "-DCOMP_NO_CRT");
+    ArrStr_push(argv, default_libs_linked ? "-DCOMP_HAS_DEFAULT_LIBS" : "-DCOMP_NO_DEFAULT_LIBS");
+    ArrStr_push(argv, compiler_rt_linked ? "-DCOMP_HAS_COMPILER_RT" : "-DCOMP_NO_COMPILER_RT");
+    ArrStr_push(argv, libc_linked ? "-DCOMP_HAS_LIBC" : "-DCOMP_NO_LIBC");
+    ArrStr_push(argv, stdlib_linked ? "-DCOMP_HAS_STDLIB" : "-DCOMP_NO_STDLIB");
+    if (!profile->debug_assertions) {
+        ArrStr_push(argv, "-DNDEBUG");
+    }
+
+    const char* debug_flag = dal_c_DebugLevel_toFlag(profile->debug_level);
+    if (debug_flag && strlen(debug_flag) > 0) {
+        ArrStr_push(argv, debug_flag);
+        if (is_windows) {
+            ArrStr_push(argv, "-gcodeview");
+        }
+    }
+
+    const char* opt_flag = dal_c_OptiLevel_toFlag(profile->opti_level);
+    if (opt_flag) {
+        ArrStr_push(argv, opt_flag);
+    }
+
+    dal_c_LtoMode lto_state = dal_c__resolvedLtoState(opts, profile);
+    for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
+        const char* flag = profile->extra_flags[i];
+        if (dal_c__isLtoFlag(flag)) {
+            continue;
+        }
+        if (!str_startsWith(flag, "-Wl,") && !str_startsWith(flag, "-L") && !str_startsWith(flag, "-l")) {
+            ArrStr_push(argv, flag);
+        }
+    }
+    const char* lto_flag = dal_c_LtoMode_toFlag(lto_state);
+    if (lto_flag) {
+        ArrStr_push(argv, lto_flag);
+    }
+
+    dal_c_ToggleState omit_frame_pointer = dal_c__resolvedOmitFramePointerState(opts, profile);
+    if (omit_frame_pointer == dal_c_ToggleState_enabled) {
+        ArrStr_push(argv, "-fomit-frame-pointer");
+    } else if (omit_frame_pointer == dal_c_ToggleState_disabled) {
+        ArrStr_push(argv, "-fno-omit-frame-pointer");
+    }
+    if (dal_c__resolvedFunctionSections(opts, profile)) {
+        ArrStr_push(argv, "-ffunction-sections");
+    }
+    if (dal_c__resolvedDataSections(opts, profile)) {
+        ArrStr_push(argv, "-fdata-sections");
+    }
+    dal_c_ToggleState unroll_loops = dal_c__resolvedUnrollLoopsState(opts, profile);
+    if (unroll_loops == dal_c_ToggleState_enabled) {
+        ArrStr_push(argv, "-funroll-loops");
+    } else if (unroll_loops == dal_c_ToggleState_disabled) {
+        ArrStr_push(argv, "-fno-unroll-loops");
+    }
+    dal_c_ToggleState unwind_tables = dal_c__resolvedUnwindTablesState(opts, profile);
+    if (unwind_tables == dal_c_ToggleState_enabled) {
+        ArrStr_push(argv, "-funwind-tables");
+    } else if (unwind_tables == dal_c_ToggleState_disabled) {
+        ArrStr_push(argv, "-fno-unwind-tables");
+    }
+    dal_c_ToggleState async_unwind_tables = dal_c__resolvedAsyncUnwindTablesState(opts, profile);
+    if (async_unwind_tables == dal_c_ToggleState_enabled) {
+        ArrStr_push(argv, "-fasynchronous-unwind-tables");
+    } else if (async_unwind_tables == dal_c_ToggleState_disabled) {
+        ArrStr_push(argv, "-fno-asynchronous-unwind-tables");
+    }
+    dal_c_ToggleState exceptions = dal_c__resolvedExceptionsState(opts, profile);
+    if (exceptions == dal_c_ToggleState_enabled) {
+        ArrStr_push(argv, "-fexceptions");
+    } else if (exceptions == dal_c_ToggleState_disabled) {
+        ArrStr_push(argv, "-fno-exceptions");
+    }
+    dal_c_ToggleState merge_all_constants = dal_c__resolvedMergeAllConstantsState(opts);
+    if (merge_all_constants == dal_c_ToggleState_enabled) {
+        ArrStr_push(argv, "-fmerge-all-constants");
+    } else if (merge_all_constants == dal_c_ToggleState_disabled) {
+        ArrStr_push(argv, "-fno-merge-all-constants");
+    }
+    dal_c_ToggleState stack_protector = dal_c__resolvedStackProtectorState(opts);
+    if (stack_protector == dal_c_ToggleState_enabled) {
+        ArrStr_push(argv, "-fstack-protector-strong");
+    } else if (stack_protector == dal_c_ToggleState_disabled) {
+        ArrStr_push(argv, "-fno-stack-protector");
+    }
+
+    dal_c__appendCompileDbDiagnostics(argv, opts, compiler_is_clang);
+
+    if (opts->arch_target) {
+        ArrStr_push(argv, "-target");
+        ArrStr_push(argv, opts->arch_target);
+    }
+    const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
+    if (target_arch) {
+        dal_c__argvPushFormat(argv, "-march=%s", target_arch);
+    }
+    const char* target_tune = dal_c__resolvedTargetTune(opts, profile);
+    if (target_tune) {
+        dal_c__argvPushFormat(argv, "-mtune=%s", target_tune);
+    }
+    if (opts->target_abi) {
+        dal_c__argvPushFormat(argv, "-mabi=%s", opts->target_abi);
+    }
+    if (compile_env == dal_c_CompileEnv_freestanding) {
+        ArrStr_push(argv, "-ffreestanding");
+    }
+    if (opts->sysroot) {
+        dal_c__argvPushFormat(argv, "--sysroot=%s", opts->sysroot);
+    }
+
+    if (dal_c__shouldAddProjectInclude(proj, cmd)) {
+        char* include_dir = path_join(proj->root, dal_c_Project_getCategoryDirName(proj, dal_c_dir_include));
+        ArrStr_push(argv, "-I");
+        ArrStr_push(argv, include_dir);
+        free(include_dir);
+    }
+    if (dal_c__shouldAddProjectPrivateInclude(proj, cmd)) {
+        char* src_dir = path_join(proj->root, dal_c_Project_getCategoryDirName(proj, dal_c_dir_src));
+        ArrStr_push(argv, "-I");
+        ArrStr_push(argv, src_dir);
+        free(src_dir);
+    }
+    if (dal_c__usesDHLibrary(proj, opts)) {
+        char* dh_include = path_join(proj->dh_path, dal_c_dir_include);
+        ArrStr_push(argv, "-I");
+        ArrStr_push(argv, dh_include);
+        ArrStr_push(argv, "-I");
+        ArrStr_push(argv, proj->dh_path);
+        free(dh_include);
+    }
+    if (proj && proj->root && proj->lib_count > 0) {
+        char* deps_dir = dal_c_Project_getDepsDir(proj);
+        ArrStr_push(argv, "-I");
+        ArrStr_push(argv, deps_dir);
+        free(deps_dir);
+    }
+    for (int i = 0; i < opts->include_count; ++i) {
+        ArrStr_push(argv, "-I");
+        ArrStr_push(argv, opts->include_paths[i]);
+    }
+    for (int i = 0; i < opts->isystem_count; ++i) {
+        ArrStr_push(argv, "-isystem");
+        ArrStr_push(argv, opts->isystem_paths[i]);
+    }
+    for (int i = 0; i < opts->define_count; ++i) {
+        dal_c__argvPushFormat(argv, "-D%s", opts->define_macros[i]);
+    }
+    dal_c__appendVersionDefineArguments(argv, &opts->version);
+    if (dal_c__sourceUsesTestMode(cmd, proj, src)) {
+        ArrStr_push(argv, "-DCOMP_TEST");
     }
     for (int i = 0; i < opts->undef_count; ++i) {
         dal_c__argvPushFormat(argv, "-U%s", opts->undef_macros[i]);
@@ -3319,8 +3611,7 @@ int dal_c__writeCompileDb(
     const dal_c_Project* proj,
     const dal_c_ProfileSpec* profile,
     ArrStr* sources,
-    const char* output_path,
-    dal_c_Target target_type
+    const char* output_path
 ) {
     assert(cmd != NULL);
     assert(profile != NULL);
@@ -3352,7 +3643,7 @@ int dal_c__writeCompileDb(
     for (int i = 0; i < ArrStr_len(sources); ++i) {
         const char* src = ArrStr_at(sources, i);
         ArrStr* argv = ArrStr_init();
-        dal_c__appendCompileDbArguments(argv, cmd, proj, profile, src, target_type);
+        dal_c__appendCompileDbArguments(argv, cmd, proj, profile, src);
 
         (void)fprintf(fp, "  {\n");
         (void)fprintf(fp, "    \"directory\": ");
@@ -3826,6 +4117,28 @@ static void dal_c__writeVersionDefines(FILE* fp, const dal_c_VersionSpec* versio
     }
     if (version->build_set && version->build_str) {
         (void)fprintf(fp, " -Ddal_c__STR__VER_BUILD=\\\"%s\\\"", version->build_str);
+    }
+}
+
+static void dal_c__appendVersionDefineArguments(ArrStr* argv, const dal_c_VersionSpec* version) {
+    assert(argv != NULL);
+    assert(version != NULL);
+
+    if (version->core_set) {
+        dal_c__argvPushFormat(argv, "-Ddal_c__NUM__VER_CORE_MAJOR=%u", version->core_major);
+        dal_c__argvPushFormat(argv, "-Ddal_c__NUM__VER_CORE_MINOR=%u", version->core_minor);
+        dal_c__argvPushFormat(argv, "-Ddal_c__NUM__VER_CORE_PATCH=%u", version->core_patch);
+    }
+    if (version->label_prefix_set && version->label_prefix_str) {
+        dal_c__argvPushFormat(argv, "-Ddal_c__NUM__VER_LABEL_PREFIX=%d", version->label_prefix_num);
+        dal_c__argvPushFormat(argv, "-Ddal_c__STR__VER_LABEL_PREFIX=\\\"%s\\\"", version->label_prefix_str);
+    }
+    if (version->label_suffix_set && version->label_suffix_str) {
+        dal_c__argvPushFormat(argv, "-Ddal_c__NUM__VER_LABEL_SUFFIX=%u", version->label_suffix_num);
+        dal_c__argvPushFormat(argv, "-Ddal_c__STR__VER_LABEL_SUFFIX=\\\"%s\\\"", version->label_suffix_str);
+    }
+    if (version->build_set && version->build_str) {
+        dal_c__argvPushFormat(argv, "-Ddal_c__STR__VER_BUILD=\\\"%s\\\"", version->build_str);
     }
 }
 
@@ -4693,8 +5006,7 @@ static char* dal_c__makePchPath(const dal_c_Cmd* cmd, const dal_c_Project* proj,
     return pch_path;
 }
 
-static bool dal_c__pchEnabledForProfile(const dal_c_Project* proj, const dal_c_ProfileSpec* profile) {
-    (void)profile;
+static bool dal_c__pchEnabled(const dal_c_Project* proj) {
     if (!proj || !proj->pch_header) { return false; }
     return true;
 }
@@ -4926,12 +5238,9 @@ static bool dal_c__linkedPlanIsUpToDate(
 
 static dal_c__noinline int dal_c__writeEmitOnlyMakefile(
     FILE* fp,
-    const dal_c_Cmd* cmd,
     const dal_c_Project* proj,
-    const dal_c_ProfileSpec* profile,
     ArrStr* sources,
     const char* target_path,
-    const char* build_dir,
     dal_c_Target target_type,
     char* makefile_tmp,
     char* makefile_path,
@@ -4939,17 +5248,11 @@ static dal_c__noinline int dal_c__writeEmitOnlyMakefile(
     char* link_contract_path
 ) {
     assert(fp != NULL);
-    assert(cmd != NULL);
-    assert(profile != NULL);
     assert(sources != NULL);
     assert(target_path != NULL);
-    assert(build_dir != NULL);
-    (void)cmd;
-    (void)profile;
-    (void)build_dir;
 
     int src_count = ArrStr_len(sources);
-    bool has_pch = dal_c__pchEnabledForProfile(proj, profile);
+    bool has_pch = dal_c__pchEnabled(proj);
     if (src_count != 1) {
         (void)fprintf(stderr, "Error: `%s` export requires exactly one source file\n", dal_c_Target_format(target_type));
         (void)fclose(fp);
@@ -5029,7 +5332,7 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     assert(build_dir != NULL);
 
     int src_count = ArrStr_len(sources);
-    bool has_pch = dal_c__pchEnabledForProfile(proj, profile);
+    bool has_pch = dal_c__pchEnabled(proj);
     bool is_windows = dal_c__platformIsWindows();
     const char* obj_base = (proj && proj->root) ? proj->root : NULL;
 
@@ -5137,7 +5440,7 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     (void)fprintf(fp, "all: $(TARGET) $(EXTRA_TARGETS)\n\n");
 
     dal_c__writeMakefileCompilationRules(fp, cmd, proj, profile, sources, has_pch, build_dir, obj_base, target_type);
-    dal_c__writeMakefileTargetRule(fp, cmd, profile, target_type, is_windows, target_path, link_contract_path);
+    dal_c__writeMakefileTargetRule(fp, cmd, profile, target_type, is_windows, link_contract_path);
 
     (void)fprintf(fp, "clean:\n\trm -f $(TARGET) $(EXTRA_TARGETS)\n\n");
     (void)fprintf(fp, "-include $(DEPS)\n");
@@ -5172,7 +5475,7 @@ static dal_c__noinline void dal_c__writeMakefilePCH(FILE* fp, const dal_c_Cmd* c
     assert(cmd != NULL);
     assert(profile != NULL);
     assert(build_dir != NULL);
-    if (!dal_c__pchEnabledForProfile(proj, profile)) {
+    if (!dal_c__pchEnabled(proj)) {
         (void)fprintf(fp, "PCH_OUT =\n\n");
         (void)fprintf(fp, "CFLAGS = $(CFLAGS_NO_PCH)\n\n");
         return;
@@ -5251,13 +5554,10 @@ static void dal_c__writeMakefileTargetVar(FILE* fp, const char* target_path) {
     (void)fprintf(fp, "\n\n");
 }
 
-static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target type, bool is_windows, const char* target_path, const char* link_contract_path) {
+static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target type, bool is_windows, const char* link_contract_path) {
     assert(fp != NULL);
     assert(cmd != NULL);
     assert(profile != NULL);
-    assert(target_path != NULL);
-    (void)is_windows;
-    (void)profile;
 
     if (type == dal_c_Target_executable) {
         if (link_contract_path) {
