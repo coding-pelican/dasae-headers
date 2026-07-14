@@ -41,7 +41,7 @@ static bool dal_c_Cmd__inputsNeedCategoryResolution(const dal_c_Cmd* cmd);
 static bool dal_c_Cmd__hasSingleExplicitFileInput(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectPathSources(const char* path, bool resolved_is_dir, bool skip_auto_paths);
 static ArrStr* dal_c_Cmd__collectExplicitSources(const dal_c_Cmd* cmd);
-static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_TargetRequest* request);
+static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_Project* proj, const dal_c_TargetRequest* request);
 static char* dal_c_Cmd__targetLocalSourceRoot(const dal_c_TargetRequest* request);
 static char* dal_c_Cmd__targetLocalIncludeRoot(const dal_c_TargetRequest* request);
 static char* dal_c_Cmd__targetLocalProjectDhPath(const dal_c_Project* proj, const dal_c_Cmd* cmd);
@@ -233,6 +233,7 @@ dal_c_Cmd* dal_c_Cmd_parse(int argc, const char* argv[]) {
     dal_c_Cmd* cmd = calloc(1, sizeof(dal_c_Cmd));
     if (!cmd) { return NULL; }
     cmd->opts.profile = dal_c_default_profile;
+    cmd->show_progress = true;
 
     for (int i = 1; i < argc; ++i) {
         const char* arg = argv[i];
@@ -301,6 +302,7 @@ void dal_c_Cmd_cleanup(dal_c_Cmd** self) {
     free(cmd->objcopy);
     free(cmd->objcopy_format);
     free(cmd->dh_path_override);
+    free(cmd->make_jobs);
 
     switch (cmd->action) {
     case dal_c_CmdAction_build:
@@ -374,6 +376,22 @@ static bool dal_c_Cmd__tryParseBoolValue(const char* value, bool* out) {
     return false;
 }
 
+static bool dal_c_Cmd__tryParseVisibilityValue(const char* value, bool* out) {
+    assert(out != NULL);
+    if (!value) {
+        return false;
+    }
+    if (str_eql(value, "show")) {
+        *out = true;
+        return true;
+    }
+    if (str_eql(value, "hide")) {
+        *out = false;
+        return true;
+    }
+    return false;
+}
+
 static bool dal_c_Cmd__tryParseToggleValue(const char* value, dal_c_ToggleState* out) {
     assert(out != NULL);
     dal_c_ToggleState state = dal_c_ToggleState_parse(value);
@@ -395,95 +413,169 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
     *handled = false;
     bool enabled = false;
     bool has_bool = dal_c_Cmd__tryParseBoolValue(value, &enabled);
+    bool shown = false;
+    bool has_visibility = dal_c_Cmd__tryParseVisibilityValue(value, &shown);
     dal_c_ToggleState toggle = dal_c_ToggleState_auto;
     bool has_toggle = dal_c_Cmd__tryParseToggleValue(value, &toggle);
 
     *handled = true;
     if (dal_c_Cmd__OPT_IS(dal_c_opt_link_dsl)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.dsl_mode = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.dsl_mode = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_libc)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.libc_linked = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.libc_linked = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_default_libs)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.default_libs_linked = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.default_libs_linked = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_start_files)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.start_files_linked = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.start_files_linked = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_compiler_rt)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.compiler_rt_linked = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.compiler_rt_linked = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_stdlib)) {
-        if (!has_toggle) { *handled = false; }
-        else {
+        if (!has_toggle) {
+            *handled = false;
+        } else {
             cmd->opts.default_libs_linked = toggle;
             cmd->opts.start_files_linked = toggle;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_link_crt)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.start_files_linked = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.start_files_linked = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_lto)) {
         dal_c_LtoMode mode = dal_c_LtoMode_parse(value);
-        if (mode == dal_c_LtoMode_invalid) { *handled = false; }
-        else { cmd->opts.lto_mode = mode; }
+        if (mode == dal_c_LtoMode_invalid) {
+            *handled = false;
+        } else {
+            cmd->opts.lto_mode = mode;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_omit_frame_pointer)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.omit_frame_pointer = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.omit_frame_pointer = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_function_sections)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.function_sections = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.function_sections = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_data_sections)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.data_sections = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.data_sections = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_gc_sections)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.gc_sections = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.gc_sections = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_whole_archive)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.whole_archive = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.whole_archive = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_unroll_loops)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.unroll_loops = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.unroll_loops = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_unwind_tables)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.unwind_tables = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.unwind_tables = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_async_unwind_tables)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.async_unwind_tables = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.async_unwind_tables = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_exceptions)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.exceptions = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.exceptions = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_strip)) {
-        if (!has_toggle) { *handled = false; }
-        else { cmd->opts.strip_mode = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else {
+            cmd->opts.strip_mode = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_demangle)) {
-        if (!has_toggle) { *handled = false; }
-        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_demangle = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else if (cmd->action == dal_c_CmdAction_build) {
+            cmd->payload.build.disasm_demangle = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_source)) {
-        if (!has_toggle) { *handled = false; }
-        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_source = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else if (cmd->action == dal_c_CmdAction_build) {
+            cmd->payload.build.disasm_source = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_line_numbers)) {
-        if (!has_toggle) { *handled = false; }
-        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_line_numbers = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else if (cmd->action == dal_c_CmdAction_build) {
+            cmd->payload.build.disasm_line_numbers = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_symbolize_operands)) {
-        if (!has_toggle) { *handled = false; }
-        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_symbolize_operands = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else if (cmd->action == dal_c_CmdAction_build) {
+            cmd->payload.build.disasm_symbolize_operands = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_raw_insn)) {
-        if (!has_toggle) { *handled = false; }
-        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_raw_insn = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else if (cmd->action == dal_c_CmdAction_build) {
+            cmd->payload.build.disasm_raw_insn = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_disasm_section_contents)) {
-        if (!has_toggle) { *handled = false; }
-        else if (cmd->action == dal_c_CmdAction_build) { cmd->payload.build.disasm_section_contents = toggle; }
+        if (!has_toggle) {
+            *handled = false;
+        } else if (cmd->action == dal_c_CmdAction_build) {
+            cmd->payload.build.disasm_section_contents = toggle;
+        }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_freestanding)) {
-        if (!has_bool) { *handled = false; }
-        else {
-        cmd->opts.compile_env = enabled ? dal_c_CompileEnv_freestanding : dal_c_CompileEnv_hosted;
+        if (!has_bool) {
+            *handled = false;
+        } else {
+            cmd->opts.compile_env = enabled ? dal_c_CompileEnv_freestanding : dal_c_CompileEnv_hosted;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_hosted)) {
-        if (!has_bool) { *handled = false; }
-        else {
-        cmd->opts.compile_env = enabled ? dal_c_CompileEnv_hosted : dal_c_CompileEnv_freestanding;
+        if (!has_bool) {
+            *handled = false;
+        } else {
+            cmd->opts.compile_env = enabled ? dal_c_CompileEnv_hosted : dal_c_CompileEnv_freestanding;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_loose_errors)) {
         dal_c_LooseErrorsMode mode = dal_c_LooseErrorsMode_parse(value);
@@ -492,26 +584,47 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
             return 1;
         }
         cmd->opts.loose_errors = mode;
-    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_image)) {
-        if (!has_bool) { *handled = false; }
-        else {
-        if (cmd->action == dal_c_CmdAction_build) {
-            cmd->payload.build.as_image = enabled;
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_verbose)) {
+        if (!has_bool) {
+            *handled = false;
+        } else {
+            cmd->verbose = enabled;
         }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_commands)) {
+        if (!has_visibility) {
+            *handled = false;
+        } else {
+            cmd->show_commands = shown;
+        }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_progress)) {
+        if (!has_visibility) {
+            *handled = false;
+        } else {
+            cmd->show_progress = shown;
+        }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_image)) {
+        if (!has_bool) {
+            *handled = false;
+        } else {
+            if (cmd->action == dal_c_CmdAction_build) {
+                cmd->payload.build.as_image = enabled;
+            }
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_emit_preprocessed)) {
-        if (!has_bool) { *handled = false; }
-        else {
-        if (cmd->action == dal_c_CmdAction_build) {
-            cmd->payload.build.emit_preprocessed = enabled;
-        }
+        if (!has_bool) {
+            *handled = false;
+        } else {
+            if (cmd->action == dal_c_CmdAction_build) {
+                cmd->payload.build.emit_preprocessed = enabled;
+            }
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_emit_asm)) {
-        if (!has_bool) { *handled = false; }
-        else {
-        if (cmd->action == dal_c_CmdAction_build) {
-            cmd->payload.build.emit_asm = enabled;
-        }
+        if (!has_bool) {
+            *handled = false;
+        } else {
+            if (cmd->action == dal_c_CmdAction_build) {
+                cmd->payload.build.emit_asm = enabled;
+            }
         }
     } else {
         *handled = false;
@@ -667,8 +780,8 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
     case dal_c_CmdAction_test_dsl:
         out->target_path = cmd->payload.test.target_path;
         out->target_root_name_hint = cmd->payload.test.sample_dir == dal_c_SampleDir_none
-                                   ? dal_c_dir_tests
-                                   : dal_c_Cmd__sampleDirCanonical(cmd->payload.test.sample_dir);
+                                       ? dal_c_dir_tests
+                                       : dal_c_Cmd__sampleDirCanonical(cmd->payload.test.sample_dir);
         out->output_path = cmd->payload.test.output_path;
         out->run_args = cmd->payload.test.run_args;
         out->build_all = cmd->payload.test.build_all;
@@ -699,6 +812,143 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
     out->target_path_is_explicit_file = out->target_root_name_hint == NULL
                                      && out->target_path != NULL
                                      && dal_c_Cmd__hasSingleExplicitFileInput(cmd);
+}
+
+static int dal_c_Cmd__compareDepsHeaderPath(const void* lhs, const void* rhs) {
+    const char* a = *(const char* const*)lhs;
+    const char* b = *(const char* const*)rhs;
+    int depth_a = 0;
+    int depth_b = 0;
+    for (const char* p = a; p && *p; ++p) {
+        if (*p == '/' || *p == '\\') { depth_a++; }
+    }
+    for (const char* p = b; p && *p; ++p) {
+        if (*p == '/' || *p == '\\') { depth_b++; }
+    }
+    if (depth_a != depth_b) { return depth_a - depth_b; }
+    return strcmp(a, b);
+}
+
+static void dal_c_Cmd__appendGeneratedLine(char** content, size_t* len, size_t* cap, const char* line) {
+    assert(content != NULL);
+    assert(len != NULL);
+    assert(cap != NULL);
+    assert(line != NULL);
+    size_t line_len = strlen(line);
+    if (*len + line_len + 1 > *cap) {
+        size_t new_cap = (*cap == 0) ? 1024 : *cap;
+        while (*len + line_len + 1 > new_cap) { new_cap *= 2; }
+        char* grown = realloc(*content, new_cap);
+        if (!grown) { return; }
+        *content = grown;
+        *cap = new_cap;
+    }
+    memcpy(*content + *len, line, line_len);
+    *len += line_len;
+    (*content)[*len] = '\0';
+}
+
+static void dal_c_Cmd__normalizeIncludePath(char* path) {
+    if (!path) { return; }
+    for (char* p = path; *p; ++p) {
+        if (*p == '\\') { *p = '/'; }
+    }
+}
+
+static bool dal_c_Cmd__writeTextIfChanged(const char* path, const char* content) {
+    assert(path != NULL);
+    assert(content != NULL);
+    char* existing = file_read(path);
+    if (existing && str_eql(existing, content)) {
+        free(existing);
+        return true;
+    }
+    free(existing);
+    return file_writeAtomic(path, content);
+}
+
+bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_CompilerOpts* opts) {
+    (void)opts;
+    if (!proj || !proj->root) { return true; }
+
+    char* lib_dir = dal_c_Project_getLibDir(proj);
+    char* deps_dir = dal_c_Project_getDepsDir(proj);
+    if (!lib_dir || !deps_dir) {
+        free(deps_dir);
+        free(lib_dir);
+        return false;
+    }
+    dir_createRecur(lib_dir);
+    dir_createRecur(deps_dir);
+    char* deps_header = path_join(lib_dir, "deps.h");
+    if (!deps_header) {
+        free(deps_dir);
+        free(lib_dir);
+        return false;
+    }
+
+    int raw_count = 0;
+    char** raw_files = path_isDir(deps_dir) ? dir_listRecur(deps_dir, &raw_count) : NULL;
+    char** rel_headers = NULL;
+    int rel_count = 0;
+    int rel_cap = 0;
+    for (int i = 0; i < raw_count; ++i) {
+        const char* file = raw_files[i];
+        if (!str_endsWith(file, ".h")) { continue; }
+        char* rel = path_relative(deps_dir, file);
+        if (!rel) { continue; }
+        dal_c_Cmd__normalizeIncludePath(rel);
+        if (str_eql(rel, "deps.h")) {
+            free(rel);
+            continue;
+        }
+        if (rel_count >= rel_cap) {
+            int new_cap = (rel_cap == 0) ? 16 : rel_cap * 2;
+            char** grown = realloc(rel_headers, (size_t)new_cap * sizeof(char*));
+            if (!grown) {
+                free(rel);
+                for (int j = 0; j < rel_count; ++j) { free(rel_headers[j]); }
+                free(rel_headers);
+                if (raw_files) {
+                    for (int j = 0; j < raw_count; ++j) { free(raw_files[j]); }
+                    free(raw_files);
+                }
+                free(deps_header);
+                free(deps_dir);
+                free(lib_dir);
+                return false;
+            }
+            rel_headers = grown;
+            rel_cap = new_cap;
+        }
+        rel_headers[rel_count++] = rel;
+    }
+    if (rel_count > 1) { qsort(rel_headers, (size_t)rel_count, sizeof(char*), dal_c_Cmd__compareDepsHeaderPath); }
+
+    char* content = NULL;
+    size_t len = 0;
+    size_t cap = 0;
+    dal_c_Cmd__appendGeneratedLine(&content, &len, &cap, "#pragma once\n");
+    dal_c_Cmd__appendGeneratedLine(&content, &len, &cap, "/* Generated by dh-c. Do not edit. */\n\n");
+    for (int i = 0; i < rel_count; ++i) {
+        char* line = str_format("#include <%s>\n", rel_headers[i]);
+        if (line) {
+            dal_c_Cmd__appendGeneratedLine(&content, &len, &cap, line);
+            free(line);
+        }
+    }
+    bool ok = content && dal_c_Cmd__writeTextIfChanged(deps_header, content);
+    free(content);
+    for (int i = 0; i < rel_count; ++i) { free(rel_headers[i]); }
+    free(rel_headers);
+    if (raw_files) {
+        for (int i = 0; i < raw_count; ++i) { free(raw_files[i]); }
+        free(raw_files);
+    }
+    free(deps_header);
+    free(deps_dir);
+    free(lib_dir);
+    return ok;
 }
 
 static bool dal_c_Cmd__executeNeedsProjectLock(const dal_c_Cmd* self) {
@@ -836,8 +1086,8 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
         return 1;
     }
     ArrStr* active_excludes = intent.target_path_is_explicit_file
-                            ? ArrStr_init()
-                            : dal_c_Cmd__collectActiveExcludes(target_proj, &target_request, self);
+                                ? ArrStr_init()
+                                : dal_c_Cmd__collectActiveExcludes(target_proj, &target_request, self);
     if (target_request.root && target_request.raw_target_path && target_request.resolved_path) {
         if (dal_c_Cmd__rejectExcludedPath(target_request.resolved_path, active_excludes) != 0) {
             ArrStr_fini(&active_excludes);
@@ -870,8 +1120,15 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
         }
     }
 
+    if (!intent.target_path_is_explicit_file && !dal_c__writeDepsPreludeHeader(target_proj, &self->opts)) {
+        ArrStr_fini(&active_excludes);
+        dal_c_TargetRequest_cleanup(&target_request);
+        (void)fprintf(stderr, "Error: Failed to generate dependency prelude header\n");
+        return 1;
+    }
+
     bool needs_project_static_lib = !intent.target_path_is_explicit_file
-                                  && ((target_request.root && target_request.link_project) || is_test_mode);
+                                 && ((target_request.root && target_request.link_project) || is_test_mode);
     if (needs_project_static_lib) {
         int lib_result = dal_c_Cmd__ensureProjectStaticLibrary(self, target_proj);
         if (lib_result != 0) {
@@ -914,7 +1171,7 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
             }
         } else if (target_request.root) {
             ArrStr_fini(&tests);
-            tests = dal_c_Cmd__collectTargetSources(&target_request);
+            tests = dal_c_Cmd__collectTargetSources(target_proj, &target_request);
             if (dal_c_Cmd__applyExcludeContract(&tests, active_excludes, target_request.raw_target_path != NULL) != 0) {
                 ArrStr_fini(&tests);
                 ArrStr_fini(&active_excludes);
@@ -1018,7 +1275,7 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
         ArrStr_fini(&tests);
         free(output_name);
     } else if (target_request.root) {
-        ArrStr* target_sources = dal_c_Cmd__collectTargetSources(&target_request);
+        ArrStr* target_sources = dal_c_Cmd__collectTargetSources(target_proj, &target_request);
         if (dal_c_Cmd__applyExcludeContract(&target_sources, active_excludes, target_request.raw_target_path != NULL) != 0) {
             ArrStr_fini(&target_sources);
             ArrStr_fini(&active_excludes);
@@ -1160,6 +1417,9 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
                     dal_c_TargetRequest_cleanup(&target_request);
                     return 1;
                 }
+                file_proj->pch_enabled = false;
+                free(file_proj->pch_header);
+                file_proj->pch_header = NULL;
                 build_proj = file_proj;
             }
 
@@ -1318,8 +1578,8 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
     }
 
     ArrStr* active_excludes = intent.target_path_is_explicit_file
-                            ? ArrStr_init()
-                            : dal_c_Cmd__collectActiveExcludes(target_proj, &target_request, self);
+                                ? ArrStr_init()
+                                : dal_c_Cmd__collectActiveExcludes(target_proj, &target_request, self);
     if (target_request.root && target_request.raw_target_path && target_request.resolved_path) {
         if (dal_c_Cmd__rejectExcludedPath(target_request.resolved_path, active_excludes) != 0) {
             ArrStr_fini(&active_excludes);
@@ -1339,7 +1599,7 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
     ArrStr* sources = ArrStr_init();
     if (target_request.root) {
         ArrStr_fini(&sources);
-        sources = dal_c_Cmd__collectTargetSources(&target_request);
+        sources = dal_c_Cmd__collectTargetSources(target_proj, &target_request);
         if (dal_c_Cmd__applyExcludeContract(&sources, active_excludes, target_request.raw_target_path != NULL) != 0) {
             ArrStr_fini(&sources);
             ArrStr_fini(&active_excludes);
@@ -1400,6 +1660,9 @@ int dal_c_Cmd_writeCompileDb(const dal_c_Cmd* self, const dal_c_Project* proj) {
             dal_c_TargetRequest_cleanup(&target_request);
             return 1;
         }
+        file_proj->pch_enabled = false;
+        free(file_proj->pch_header);
+        file_proj->pch_header = NULL;
         build_proj = file_proj;
     }
 
@@ -1469,14 +1732,17 @@ static char* dal_c_Cmd__compileDbOutputPath(const dal_c_Cmd* self, const dal_c_P
 }
 
 int dal_c_Cmd_compileDeps(const dal_c_Cmd* self, const dal_c_Project* proj) {
-    if (proj->lib_count == 0) { return 0; }
-    if (self->verbose) {
+    if (proj->lib_count > 0 && self->verbose) {
         printf("Building %d libraries...\n", proj->lib_count);
     }
     for (int i = 0; i < proj->lib_count; ++i) {
         if (dal_c__buildSingleLibrary(self, proj, &proj->libraries[i]) != 0) {
             return 1;
         }
+    }
+    if (!dal_c__writeDepsPreludeHeader(proj, &self->opts)) {
+        (void)fprintf(stderr, "Error: Failed to generate dependency prelude header\n");
+        return 1;
     }
     return 0;
 }
@@ -1774,8 +2040,10 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
     if (str_startsWith(arg, dal_c_opt_prefix_long)) {
         const char* opt = arg + 2;
         if ((str_eql(opt, dal_c_opt_output) && (build_like || action == dal_c_CmdAction_lib || action == dal_c_CmdAction_run || action == dal_c_CmdAction_test || action == dal_c_CmdAction_test_dsl))
-            || str_eql(opt, dal_c_opt_show_commands)
+            || str_eql(opt, dal_c_opt_commands)
             || str_eql(opt, dal_c_opt_verbose)
+            || str_eql(opt, dal_c_opt_progress)
+            || str_eql(opt, dal_c_opt_jobs)
             || (str_eql(opt, dal_c_opt_remove) && action == dal_c_CmdAction_compile_db)
             || str_eql(opt, dal_c_opt_link_dsl)
             || (str_eql(opt, dal_c_opt_self) && (action == dal_c_CmdAction_build || action == dal_c_CmdAction_clean))
@@ -1886,6 +2154,10 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_compiler)
             || str_startsWith(opt, dal_c_opt_std)
             || str_startsWith(opt, dal_c_opt_args)
+            || str_startsWith(opt, dal_c_opt_verbose)
+            || str_startsWith(opt, dal_c_opt_commands)
+            || str_startsWith(opt, dal_c_opt_progress)
+            || str_startsWith(opt, dal_c_opt_jobs)
             || str_startsWith(opt, dal_c_opt_comp_args)
             || str_startsWith(opt, dal_c_opt_link_args)
             || str_startsWith(opt, dal_c_opt_target_arch)
@@ -1907,7 +2179,8 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_undef)
             || str_startsWith(opt, dal_c_opt_isystem)
             || str_startsWith(opt, dal_c_opt_file)
-            || str_startsWith(opt, dal_c_opt_dh_file)) {
+            || str_startsWith(opt, dal_c_opt_dh_file)
+            || str_startsWith(opt, dal_c_opt_jobs)) {
             return true;
         }
         return false;
@@ -2164,6 +2437,18 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     } else {
                         cmd->payload.build.analysis_artifacts = false;
                     }
+                } else if (strncmp(opt, dal_c_opt_jobs, opt_len) == 0) {
+                    if (value[0] == '\0') {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_jobs, value);
+                        return 1;
+                    }
+                    char* end = NULL;
+                    long parsed = strtol(value, &end, 10);
+                    if (parsed < 1 || !end || *end != '\0') {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_jobs, value);
+                        return 1;
+                    }
+                    dal_c_Cmd__setOwnedString(&cmd->make_jobs, value);
                 } else if (strncmp(opt, dal_c_opt_args, opt_len) == 0) {
                     char** run_args_slot = dal_c_Cmd__runArgsSlot(cmd);
                     if (run_args_slot) {
@@ -2204,7 +2489,7 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     return 1;
                 }
             } else {
-                if (str_eql(opt, dal_c_opt_show_commands)) {
+                if (str_eql(opt, dal_c_opt_commands)) {
                     cmd->show_commands = true;
                 } else if (str_eql(opt, dal_c_opt_output)) {
                     if (i + 1 >= argc) {
@@ -2306,6 +2591,21 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     ++i;
                 } else if (str_eql(opt, dal_c_opt_verbose)) {
                     cmd->verbose = true;
+                } else if (str_eql(opt, dal_c_opt_progress)) {
+                    cmd->show_progress = true;
+                } else if (str_eql(opt, dal_c_opt_jobs)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    const char* value = argv[++i];
+                    char* end = NULL;
+                    long parsed = strtol(value, &end, 10);
+                    if (parsed < 1 || !end || *end != '\0') {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_jobs, value);
+                        return 1;
+                    }
+                    dal_c_Cmd__setOwnedString(&cmd->make_jobs, value);
                 } else if (str_eql(opt, dal_c_opt_remove)) {
                     if (cmd->action == dal_c_CmdAction_compile_db) {
                         cmd->payload.build.remove_output = true;
@@ -2716,18 +3016,18 @@ static ArrStr* dal_c_Cmd__collectExplicitSources(const dal_c_Cmd* cmd) {
     return sources;
 }
 
-static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_TargetRequest* request) {
+static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_Project* proj, const dal_c_TargetRequest* request) {
     assert(request != NULL);
     if (!request->resolved_path) {
         return ArrStr_init();
     }
     char* source_root = dal_c_Cmd__targetLocalSourceRoot(request);
     if (source_root) {
-        ArrStr* sources = dal_c_Cmd__collectPathSources(source_root, true, request->raw_target_path == NULL);
+        ArrStr* sources = dal_c__collectPathSourcesCached(proj, source_root, true, request->raw_target_path == NULL);
         free(source_root);
         return sources;
     }
-    return dal_c_Cmd__collectPathSources(request->resolved_path, request->resolved_is_dir, request->raw_target_path == NULL);
+    return dal_c__collectPathSourcesCached(proj, request->resolved_path, request->resolved_is_dir, request->raw_target_path == NULL);
 }
 
 static char* dal_c_Cmd__firstExistingChildDir(const char* root, const char* const* names) {
@@ -3479,7 +3779,8 @@ static int dal_c_Cmd__buildFromSources(
     }
     char* target_path = dal_c__resolveOutputPath(proj, self, profile_dir, resolved_output_name, target_type);
     char* makefile_path = dal_c__makePlanFilePath(proj, profile, &effective, target_path, target_type);
-    if (dal_c__generateMakefile(&effective, proj, profile, sources, target_path, object_dir, target_type) != 0) {
+    int plan_result = dal_c__generateMakefile(&effective, proj, profile, sources, target_path, object_dir, target_type);
+    if (plan_result != dal_c_generateMakefile_success && plan_result != dal_c_generateMakefile_upToDate) {
         (void)fprintf(stderr, "Error: Failed to generate Makefile\n");
         dal_c_CompilerOpts_cleanup(&effective.opts);
         dal_c_BuildDefaults_cleanup(&effective_defaults);
@@ -3490,7 +3791,7 @@ static int dal_c_Cmd__buildFromSources(
         free(profile_dir);
         return 1;
     }
-    int result = dal_c__executeMake(makefile_path);
+    int result = (plan_result == dal_c_generateMakefile_upToDate) ? 0 : dal_c__executeMake(self, makefile_path);
     free(makefile_path);
     free(object_dir);
     free(profile_dir);
@@ -3504,6 +3805,7 @@ static int dal_c_Cmd__buildFromSources(
     }
     if (print_success) {
         printf("Build successful!\n");
+        (void)fflush(stdout);
     }
 
     if (self->action == dal_c_CmdAction_build

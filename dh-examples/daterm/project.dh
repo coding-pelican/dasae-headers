@@ -1,5 +1,4 @@
 kind=lib
-pch=daterm.h
 link-dsl=on
 
 [dansi]

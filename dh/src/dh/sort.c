@@ -640,13 +640,14 @@ fn_((sort_block__mergeInPlace(
     if (R_len(left) == 0 || R_len(right) == 0) return;
     while (true) {
         let pivot_ptr = u_atS(seq.as_const, left.begin);
+        let pivot_ctx = l$((sort__SearchOrdAdpCtx){
+            .val_ptr = pivot_ptr,
+            .inner = ctx,
+            .ordFn = ordFn,
+        });
         let split_offset = search_lowerBound(
             u_sliceS(seq, right).as_const,
-            u_anyV(l$((sort__SearchOrdAdpCtx){
-                .val_ptr = pivot_ptr,
-                .inner = ctx,
-                .ordFn = ordFn,
-            })),
+            u_anyV(pivot_ctx),
             sort__searchOrdAdp
         );
         let split_point = split_offset + right.begin;
@@ -660,13 +661,14 @@ fn_((sort_block__mergeInPlace(
         left = $r(left.begin + (split_point - left.end), right.begin);
 
         let left_pivot_ptr = u_atS(seq.as_const, left.begin);
+        let left_pivot_ctx = l$((sort__SearchOrdAdpCtx){
+            .val_ptr = left_pivot_ptr,
+            .inner = ctx,
+            .ordFn = ordFn,
+        });
         let skip_offset = search_upperBound(
             u_sliceS(seq, left).as_const,
-            u_anyV(l$((sort__SearchOrdAdpCtx){
-                .val_ptr = left_pivot_ptr,
-                .inner = ctx,
-                .ordFn = ordFn,
-            })),
+            u_anyV(left_pivot_ctx),
             sort__searchOrdAdp
         );
         left.begin += skip_offset;

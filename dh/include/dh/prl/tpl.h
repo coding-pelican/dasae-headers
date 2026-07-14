@@ -7,14 +7,19 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "tpl/Val.h"
-#include "tpl/Ptr.h"
-#include "tpl/Arr.h"
-#include "tpl/Sli.h"
-#include "tpl/Opt.h"
-#include "tpl/ErrSet.h"
-#include "tpl/ErrRes.h"
+#include "tpl/V-Val.h"
+#include "tpl/P-Ptr.h"
+
+#include "tpl/A-Arr.h"
+#include "tpl/S-Sli.h"
+
+#include "tpl/O-Opt.h"
+#include "tpl/E-ErrSet.h"
+#include "tpl/E-ErrRes.h"
+
+#include "tpl/enum.h"
 #include "tpl/variant.h"
+
 #include "tpl/Tup.h"
 
 /*========== Macros and Declarations ========================================*/

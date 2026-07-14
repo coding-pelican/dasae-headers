@@ -58,11 +58,12 @@ fn_((thrd_Group__spawnInst(thrd_Group* self, mem_Alctr gpa, Clsr$Void* clsr))(th
         mem_Alctr_create($trace gpa, typeInfo$(Clsr_(thrd_Group__entryInst)))
     ))));
     errdefer_($ignore, mem_Alctr_destroy($trace gpa, u_anyP(thrd_clsr)));
+    let inst = l$((thrd_Group__Inst){
+        .clsr = clsr,
+    });
     *thrd_clsr = clsr_((thrd_Group__entryInst)(
         self,
-        l$((thrd_Group__Inst){
-            .clsr = clsr,
-        })
+        inst
     ));
     let thrd = try_(thrd_spawnOwned(
         thrd_SpawnCfg_default(gpa),

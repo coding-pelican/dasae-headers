@@ -1,3 +1,2 @@
 kind=lib
-pch=dacolor.h
 link-dsl=on

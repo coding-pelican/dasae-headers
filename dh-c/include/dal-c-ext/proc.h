@@ -9,6 +9,7 @@
 
 // Process execution
 extern int proc_run(const char** argv, bool show_output);
+extern int proc_runMergedOutput(const char** argv, bool show_output);
 // Returns: allocated string; caller must `free()`
 extern char* proc_output(const char** argv);
 

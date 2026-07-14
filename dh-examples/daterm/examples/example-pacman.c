@@ -12,7 +12,7 @@
 
 /*========== Common =========================================================*/
 
-#include <dh/math/vec.h>
+#include <dh/m-math-linalg/V-Vec/i32.h>
 #include <dh/ArrList.h>
 #include <dh/ArrQue.h>
 

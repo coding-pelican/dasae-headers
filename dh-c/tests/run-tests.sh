@@ -86,6 +86,18 @@ assert_contains() {
     esac
 }
 
+assert_occurrences() {
+    text=$1
+    needle=$2
+    expected=$3
+    message=$4
+    count=$( (printf '%s\n' "$text" | "$grep_bin" -F -o "$needle" || true) | wc -l | tr -d ' ')
+    if [ "$count" != "$expected" ]; then
+        printf '%s: expected %s occurrence(s), found %s\n' "$message" "$expected" "$count" >&2
+        exit 1
+    fi
+}
+
 invoke_external() {
     expected_codes=$1
     working_directory=$2
@@ -261,6 +273,7 @@ if [ "$integration" -eq 1 ]; then
     invoke_external "0" "$recursive_dsl_project" "$cli_exe" test --recur --dsl
     assert_contains "$LAST_OUTPUT" "TEST: Basic Math Operations" "Recursive DSL test did not include dh tests"
     assert_contains "$LAST_OUTPUT" "fixture: recursive dsl reaches current project" "Recursive DSL test did not include current project tests"
+    assert_occurrences "$LAST_OUTPUT" "fixture-dep: recursive dsl includes dependency once" "1" "Recursive DSL test ran dependency tests outside the aggregate"
 
     lib_kind_project=$(copy_scenario_project "dh-c/tests/fixture/lib-kind-project")
     invoke_external "0" "$lib_kind_project" "$cli_exe" build

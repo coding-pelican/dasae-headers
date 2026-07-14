@@ -23,20 +23,20 @@ extern "C" {
 
 #include "prl/raw.h"
 #include "prl/tpl.h"
-#include "prl/meta.h"
+#include "prl/u-meta.h"
 
 #include "prl/base.h"
 #include "prl/simd.h"
-#include "prl/Limit.h"
-#include "prl/Range.h"
+#include "prl/L-Limit.h"
+#include "prl/R-Range.h"
 
 #include "prl/Co.h"
 #include "prl/Clsr.h"
 #include "prl/va.h"
 
 #include "prl/CompHash.h"
-#include "prl/Err.h"
-#include "prl/ErrTrace.h"
+#include "prl/E-Err.h"
+#include "prl/ETrace.h"
 
 #include "prl/common.h"
 

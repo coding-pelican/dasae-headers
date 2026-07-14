@@ -123,12 +123,14 @@ TEST_fn_("io/Writer: print w arg idx - Indexed arguments out of order" $scope) {
         try_(TEST_expect(mem_eqlBytes(result, u8_l("A10ffend"))));
     }
 
-    // Test sparse indexing (skipping indices)
+    // Test non-monotonic indexing while still describing every intervening
+    // vararg. Plain C va_list is sequential, so truly sparse indexes cannot be
+    // consumed portably without separate type metadata for the skipped slot.
     test_Buf_clear(&buf);
-    try_(io_Writer_print(writer, u8_l("{0:d} {2:d}"), 1, 999, 3)); // Skip argument 1
+    try_(io_Writer_print(writer, u8_l("{0:d} {2:d} {1:d}"), 1, 999, 3));
     {
         let result = test_Buf_view(buf);
-        try_(TEST_expect(mem_eqlBytes(result, u8_l("1 3"))));
+        try_(TEST_expect(mem_eqlBytes(result, u8_l("1 3 999"))));
     }
 } $unscoped(TEST_fn);
 

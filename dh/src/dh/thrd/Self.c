@@ -1,6 +1,6 @@
 #include "dh/thrd/Self.h"
 #include "dh/heap/vmem.h"
-#include "dh/meta.h"
+#include "dh/u-meta.h"
 #if plat_is_linux
 #include "dh/sys/call/linux.h"
 #endif
@@ -102,19 +102,24 @@ pp_if_(plat_is_windows)(pp_then_(
 ));
 pp_if_(plat_is_linux)(pp_then_(
     $attr($inline_always)
-    $static fn_((thrd__linux_handle(thrd_Self self))(thrd_Handle));
+    $static $attr($maybe_unused)
+fn_((thrd__linux_handle(thrd_Self self))(thrd_Handle));
     $attr($inline_always $must_check)
-    $static fn_((thrd__linux_yield(void))(thrd_E$void));
+    $static $attr($maybe_unused)
+fn_((thrd__linux_yield(void))(thrd_E$void));
     $attr($inline_always)
     $static fn_((thrd__linux_currId(void))(thrd_Id));
     $attr($inline_always $must_check)
     $static fn_((thrd__linux_cpuCount(void))(thrd_E$usize));
     $attr($inline_always $must_check)
-    $static fn_((thrd__linux_getName(thrd_Self self, thrd_NameBuf* buf_ptr))(thrd_E$O$S_const$u8));
+    $static $attr($maybe_unused)
+fn_((thrd__linux_getName(thrd_Self self, thrd_NameBuf* buf_ptr))(thrd_E$O$S_const$u8));
     $attr($inline_always $must_check)
-    $static fn_((thrd__linux_setName(thrd_Self self, S_const$u8 name))(thrd_E$void));
+    $static $attr($maybe_unused)
+fn_((thrd__linux_setName(thrd_Self self, S_const$u8 name))(thrd_E$void));
     $attr($inline_always $must_check)
-    $static fn_((thrd__linux_spawn(
+    $static $attr($maybe_unused)
+fn_((thrd__linux_spawn(
         thrd_SpawnCfg cfg,
         Clsr$raw* clsr,
         TypeInfo ret_type,
@@ -122,9 +127,11 @@ pp_if_(plat_is_linux)(pp_then_(
         u_P$raw owned_clsr
     ))(thrd_spawn_E$thrd_Self));
     $attr($inline_always)
-    $static fn_((thrd__linux_detach(thrd_Self self))(void));
+    $static $attr($maybe_unused)
+fn_((thrd__linux_detach(thrd_Self self))(void));
     $attr($inline_always)
-    $static fn_((thrd__linux_join(thrd_Self self))(Clsr$raw*));
+    $static $attr($maybe_unused)
+fn_((thrd__linux_join(thrd_Self self))(Clsr$raw*));
 ));
 pp_if_(plat_is_wasi)(pp_then_(
     $attr($inline_always)
@@ -407,20 +414,30 @@ fn_((thrd__pthread_currId(void))(thrd_Id)) {
 };
 
 fn_((thrd__pthread_cpuCount(void))(thrd_E$usize) $scope) {
-    pp_switch_((plat_type)(
-        pp_case_((plat_type_linux)(thrd__linux_cpuCount())),
-        pp_case_((plat_type_darwin)({
-            var_(count, i32) = 0;
-            var_(len, usize) = sizeOf$(i32);
-            if (sysctlbyname("hw.logicalcpu", &count, &len, null, 0) == 0) return_ok(as$(usize)(count));
-            return_err(E_cause$thrd_SystemResources());
-        })),
-        pp_default_({
-            let count = sysconf(_SC_NPROCESSORS_ONLN);
-            if (count < 1) return_err(E_cause$thrd_SystemResources());
-            return_ok(as$(usize)(count));
-        })
-    ));
+#if plat_is_linux
+    return thrd__linux_cpuCount();
+#elif plat_is_darwin
+    var_(count, i32) = 0;
+    var_(len, usize) = sizeOf$(i32);
+    if (sysctlbyname("hw.logicalcpu", &count, &len, null, 0) == 0) return_ok(as$(usize)(count));
+    return_err(E_cause$thrd_SystemResources());
+#else
+    let count = sysconf(_SC_NPROCESSORS_ONLN);
+    if (count < 1) return_err(E_cause$thrd_SystemResources());
+    return_ok(as$(usize)(count));
+#endif
+} $unscoped(fn);
+
+fn_((thrd__pthread_getName(thrd_Self self, thrd_NameBuf* buf_ptr))(thrd_E$O$S_const$u8) $scope) {
+    let_ignore = self;
+    let_ignore = buf_ptr;
+    return_err(E_cause$thrd_Unsupported());
+} $unscoped(fn);
+
+fn_((thrd__pthread_setName(thrd_Self self, S_const$u8 name))(thrd_E$void) $scope) {
+    let_ignore = self;
+    let_ignore = name;
+    return_err(E_cause$thrd_Unsupported());
 } $unscoped(fn);
 
 #if defined(PTHREAD_STACK_MIN)
@@ -441,10 +458,11 @@ fn_((thrd__pthread_spawn(
     let start = u_castP$((thrd__Start*)(try_(thrd__startAlloc(
         cfg, clsr, ret_type, destroy_clsr, owned_clsr
     ))));
-    pthread_attr_t attr = 0;
+    pthread_attr_t attr = cleared();
     pthread_attr_init(&attr);
     defer_(pthread_attr_destroy(&attr));
-    let stack_size = as$(usize)(pri_max(thrd__pthread_stack_size_min, cfg.stack_size));
+    let stack_size_min = as$(usize)(thrd__pthread_stack_size_min);
+    let stack_size = cfg.stack_size > stack_size_min ? cfg.stack_size : stack_size_min;
     pthread_attr_setstacksize(&attr, stack_size);
     var_(handle, pthread_t) = 0;
     if (pthread_create(&handle, &attr, thrd__pthread_entry, start) != 0) {
@@ -621,10 +639,12 @@ typedef struct thrd__linux_Meta {
     var_(child_tid, atom_V$i32);
 } thrd__linux_Meta;
 
+$attr($maybe_unused)
 fn_((thrd__linux_handle(thrd_Self self))(thrd_Handle)) {
     return self.handle;
 };
 
+$attr($maybe_unused)
 fn_((thrd__linux_yield(void))(thrd_E$void) $scope) {
     if (sys_call_linux_sched_yield() != 0) return_err(E_cause$thrd_SystemResources());
     return_ok({});
@@ -641,12 +661,14 @@ fn_((thrd__linux_cpuCount(void))(thrd_E$usize) $scope) {
     return_ok(thrd__linux_cpuSetCount(&cpu_set));
 } $unscoped(fn);
 
+$attr($maybe_unused)
 fn_((thrd__linux_getName(thrd_Self self, thrd_NameBuf* buf_ptr))(thrd_E$O$S_const$u8) $scope) {
     let_ignore = self;
     let_ignore = buf_ptr;
     return_err(E_cause$thrd_Unsupported());
 } $unscoped(fn);
 
+$attr($maybe_unused)
 fn_((thrd__linux_setName(thrd_Self self, S_const$u8 name))(thrd_E$void) $scope) {
     let_ignore = self;
     let_ignore = name;
@@ -655,11 +677,13 @@ fn_((thrd__linux_setName(thrd_Self self, S_const$u8 name))(thrd_E$void) $scope) 
 
 #define thrd__linux_clone_flags ( \
     sys_call_linux_CLONE_VM | sys_call_linux_CLONE_FS | sys_call_linux_CLONE_FILES | sys_call_linux_CLONE_SIGHAND \
-    | sys_call_linux_CLONE_THREAD | sys_call_linux_CLONE_SYSVSEM | sys_call_linux_CLONE_SETTLS \
+    | sys_call_linux_CLONE_THREAD | sys_call_linux_CLONE_SYSVSEM \
     | sys_call_linux_CLONE_PARENT_SETTID | sys_call_linux_CLONE_CHILD_CLEARTID \
 )
 
-$static fn_((thrd__linux_entry(P$raw arg))(i32));
+$static $attr($maybe_unused)
+fn_((thrd__linux_entry(P$raw arg))(i32));
+$attr($maybe_unused)
 fn_((thrd__linux_spawn(
     thrd_SpawnCfg cfg,
     Clsr$raw* clsr,
@@ -707,7 +731,9 @@ fn_((thrd__linux_spawn(
 } $unguarded(fn);
 
 $attr($no_return)
-$static fn_((thrd__linux_freeAndExit(thrd__linux_Meta* meta))(void));
+$static $attr($maybe_unused)
+fn_((thrd__linux_freeAndExit(thrd__linux_Meta* meta))(void));
+$attr($maybe_unused)
 fn_((thrd__linux_entry(P$raw arg))(i32)) {
     let meta = ensureNonnull(as$(thrd__linux_Meta*)(arg));
     clsr_invokeToComplete(ensureNonnull(meta->clsr), meta->ret_type);
@@ -724,6 +750,7 @@ fn_((thrd__linux_entry(P$raw arg))(i32)) {
     return 0;
 };
 
+$attr($maybe_unused)
 fn_((thrd__linux_detach(thrd_Self self))(void)) {
     let meta = as$(thrd__linux_Meta*)(self.inner);
     let prev = atom_V_fetchXchg(&meta->completion, thrd__linux_Completion_detached, atom_MemOrd_seq_cst);
@@ -735,17 +762,19 @@ fn_((thrd__linux_detach(thrd_Self self))(void)) {
     }
 };
 
+$attr($maybe_unused)
 fn_((thrd__linux_join(thrd_Self self))(Clsr$raw*)) {
     let meta = as$(thrd__linux_Meta*)(self.inner);
     while (true) {
         let tid = atom_V_load(&meta->child_tid, atom_MemOrd_seq_cst);
         if (tid == 0) break;
-        let_ignore = sys_call_linux_futex(ptrQualCast$((P$raw)(&meta->child_tid.raw)), sys_call_linux_FUTEX_WAIT | sys_call_linux_FUTEX_PRIVATE_FLAG, tid, null, null, 0);
+        let_ignore = sys_call_linux_futex(ptrQualCast$((P$raw)(&meta->child_tid.raw)), sys_call_linux_FUTEX_WAIT, tid, null, null, 0);
     }
     let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
     return ensureNonnull(self.clsr);
 };
 
+$attr($maybe_unused)
 fn_((thrd__linux_freeAndExit(thrd__linux_Meta* meta))(void)) {
     sys_call_linux_munmap_exit(meta->map.ptr, meta->map.len, 0);
 };

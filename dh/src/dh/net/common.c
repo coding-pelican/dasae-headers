@@ -273,6 +273,247 @@ $static fn_((net__windows_connectIp(net_IpAddr addr, net_ConnectOpts opts))(E$ne
 } $unscoped(fn);
 #endif /* plat_is_windows */
 
+#if plat_is_linux
+$static fn_((net__linux_sockType(net_Sock_Mode mode))(E$sys_call_linux_sock_type_t) $scope) {
+    switch (mode) {
+    case_((net_Sock_Mode_stream)) return_ok(sys_call_linux_SOCK_STREAM) $end(case);
+    case_((net_Sock_Mode_dgram)) return_ok(sys_call_linux_SOCK_DGRAM) $end(case);
+    case_((net_Sock_Mode_raw)) return_ok(sys_call_linux_SOCK_RAW) $end(case);
+    case net_Sock_Mode_seqpacket: $fallthrough;
+    default_() return_err(E_cause$net_SocketModeUnsupported()) $end(default);
+    }
+} $unscoped(fn);
+
+$static fn_((net__linux_protocol(net_Protoc protocol))(E$sys_call_linux_sock_protocol_t) $scope) {
+    switch (protocol) {
+    case_((net_Protoc_tcp)) return_ok(sys_call_linux_IPPROTO_TCP) $end(case);
+    case_((net_Protoc_udp)) return_ok(sys_call_linux_IPPROTO_UDP) $end(case);
+    case_((net_Protoc_raw)) return_ok(sys_call_linux_IPPROTO_RAW) $end(case);
+    default_() return_err(E_cause$net_ProtocolUnsupported()) $end(default);
+    }
+} $unscoped(fn);
+
+$static fn_((net__linux_family(net_IpAddr addr))(E$sys_call_linux_sock_family_t) $scope) {
+    match_(addr){
+    case_((net_Addr_Family_ip4)) return_ok(sys_call_linux_AF_INET) $end(case);
+    case_((net_Addr_Family_ip6)) return_ok(sys_call_linux_AF_INET6) $end(case);
+    case net_Addr_Family_unix: $fallthrough;
+    default_() return_err(E_cause$net_AddressFamilyUnsupported()) $end(default);
+    }$end(match);
+} $unscoped(fn);
+
+$static fn_((net__linux_sockaddrFromIp(net_IpAddr addr))(E$net__linux_SockAddr) $scope) {
+    var_(out, net__linux_SockAddr) = {
+        .storage = cleared(),
+        .len = 0,
+    };
+    match_(addr){
+    patt_((net_Addr_Family_ip4)(ip)) {
+        let ip4 = ptrCast$((sys_call_linux_sockaddr_in*)(&out.storage));
+        *ip4 = (sys_call_linux_sockaddr_in){ 0 };
+        ip4->sin_family = sys_call_linux_AF_INET;
+        ip4->sin_port = net__linux_toNetwork16(ip.port);
+        ip4->sin_addr.s_addr = ip.bytes;
+        out.len = sizeOf$(sys_call_linux_sockaddr_in);
+        return_ok(out);
+    } $end(patt);
+    patt_((net_Addr_Family_ip6)(ip)) {
+        let ip6 = ptrCast$((sys_call_linux_sockaddr_in6*)(&out.storage));
+        *ip6 = (sys_call_linux_sockaddr_in6){ 0 };
+        ip6->sin6_family = sys_call_linux_AF_INET6;
+        ip6->sin6_port = net__linux_toNetwork16(ip.port);
+        ip6->sin6_flowinfo = net__linux_toNetwork32(ip.flow);
+        ip6->sin6_addr.s6_addr = ip.bytes;
+        ip6->sin6_scope_id = ip.scope_id;
+        out.len = sizeOf$(sys_call_linux_sockaddr_in6);
+        return_ok(out);
+    } $end(patt);
+    case net_Addr_Family_unix: $fallthrough;
+    default_() return_err(E_cause$net_AddressFamilyUnsupported()) $end(default);
+    }$end(match);
+} $unscoped(fn);
+
+$static fn_((net__linux_localIp(net_Handle socket))(E$net_IpAddr) $scope) {
+    var_(addr, net__linux_SockAddr) = {
+        .storage = cleared(),
+        .len = sizeOf$(sys_call_linux_sockaddr_storage),
+    };
+    let rc = sys_call_linux_getsockname(
+        (as$(sys_call_linux_fd_t)(socket)),
+        (ptrCast$((sys_call_linux_sockaddr*)(&addr.storage))),
+        &addr.len
+    );
+    if (sys_call_linux_syscall_isErr(rc)) return_err(net__linux_mapError(sys_call_linux_syscall_err(rc)));
+    return_(net__linux_ipFromSockAddr(addr));
+} $unscoped(fn);
+
+$static fn_((net__linux_newSocket(net_IpAddr addr, net_Sock_Mode mode, net_Protoc protocol))(E$net_Handle) $scope) {
+    let family = try_(net__linux_family(addr));
+    let sock_type = try_(net__linux_sockType(mode));
+    let sock_protocol = try_(net__linux_protocol(protocol));
+    let socket = sys_call_linux_socket(family, sock_type, sock_protocol);
+    if (sys_call_linux_syscall_isErr(socket)) return_err(net__linux_mapError(sys_call_linux_syscall_err(socket)));
+    return_ok(as$(net_Handle)(socket));
+} $unscoped(fn);
+
+$static fn_((net__linux_setIp6Only(net_Handle socket, bool ip6_only))(E$void) $scope) {
+    var_(flag, i32) = ip6_only ? 1 : 0;
+    let rc = sys_call_linux_setsockopt(
+        (as$(sys_call_linux_fd_t)(socket)),
+        sys_call_linux_IPPROTO_IPV6,
+        sys_call_linux_IPV6_V6ONLY,
+        &flag, sizeOf$(i32)
+    );
+    if (sys_call_linux_syscall_isErr(rc)) return_err(net__linux_mapError(sys_call_linux_syscall_err(rc)));
+    return_ok({});
+} $unscoped(fn);
+
+$static fn_((net__linux_bindIp(net_IpAddr addr, net_BindOpts opts))(E$net_Sock) $scope) {
+    if (opts.ip6_only && !matches(addr, net_Addr_Family_ip6)) return_err(E_cause$net_AddressFamilyUnsupported());
+
+    let socket = try_(net__linux_newSocket(addr, opts.mode, opts.protocol));
+    if (matches(addr, net_Addr_Family_ip6)) {
+        catch_((net__linux_setIp6Only(socket, opts.ip6_only))(err, {
+            let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+            return_err(err);
+        }));
+    }
+    if (opts.allow_broadcast) {
+        var_(flag, i32) = 1;
+        let rc = sys_call_linux_setsockopt(
+            (as$(sys_call_linux_fd_t)(socket)),
+            sys_call_linux_SOL_SOCKET,
+            sys_call_linux_SO_BROADCAST,
+            &flag, sizeOf$(i32)
+        );
+        if (sys_call_linux_syscall_isErr(rc)) {
+            let err = sys_call_linux_syscall_err(rc);
+            let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+            return_err(net__linux_mapError(err));
+        }
+    }
+
+    let sockaddr = try_(net__linux_sockaddrFromIp(addr));
+    let bound = sys_call_linux_bind(
+        (as$(sys_call_linux_fd_t)(socket)),
+        (ptrCast$((const sys_call_linux_sockaddr*)(&sockaddr.storage))),
+        sockaddr.len
+    );
+    if (sys_call_linux_syscall_isErr(bound)) {
+        let err = sys_call_linux_syscall_err(bound);
+        let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+        return_err(net__linux_mapError(err));
+    }
+    if (opts.nonblocking) {
+        catch_((net__linux_setNonblocking(socket, true))(err, {
+            let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+            return_err(err);
+        }));
+    }
+    let local = catch_((net__linux_localIp(socket))(err, {
+        let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+        return_err(err);
+    }));
+    return_ok(net_Sock_promote(socket, local, (net_Sock_Flags){ .nonblocking = opts.nonblocking }));
+} $unscoped(fn);
+
+$static fn_((net__linux_listenIp(net_IpAddr addr, net_ListenOpts opts))(E$net_Svr) $scope) {
+    if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$net_SocketModeUnsupported());
+    if (opts.protocol != net_Protoc_tcp) return_err(E_cause$net_ProtocolUnsupported());
+
+    let socket = try_(net__linux_newSocket(addr, opts.mode, opts.protocol));
+    if (matches(addr, net_Addr_Family_ip6)) {
+        catch_((net__linux_setIp6Only(socket, false))(err, {
+            let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+            return_err(err);
+        }));
+    }
+    if (opts.reuse_address) {
+        var_(flag, i32) = 1;
+        let rc = sys_call_linux_setsockopt(
+            (as$(sys_call_linux_fd_t)(socket)),
+            sys_call_linux_SOL_SOCKET,
+            sys_call_linux_SO_REUSEADDR,
+            &flag, sizeOf$(i32)
+        );
+        if (sys_call_linux_syscall_isErr(rc)) {
+            let err = sys_call_linux_syscall_err(rc);
+            let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+            return_err(net__linux_mapError(err));
+        }
+    }
+
+    let sockaddr = try_(net__linux_sockaddrFromIp(addr));
+    let bound = sys_call_linux_bind(
+        (as$(sys_call_linux_fd_t)(socket)),
+        (ptrCast$((const sys_call_linux_sockaddr*)(&sockaddr.storage))),
+        sockaddr.len
+    );
+    if (sys_call_linux_syscall_isErr(bound)) {
+        let err = sys_call_linux_syscall_err(bound);
+        let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+        return_err(net__linux_mapError(err));
+    }
+    let local = catch_((net__linux_localIp(socket))(err, {
+        let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+        return_err(err);
+    }));
+    let listening = sys_call_linux_listen(
+        (as$(sys_call_linux_fd_t)(socket)),
+        (as$(sys_call_linux_word)(opts.kernel_backlog))
+    );
+    if (sys_call_linux_syscall_isErr(listening)) {
+        let err = sys_call_linux_syscall_err(listening);
+        let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+        return_err(net__linux_mapError(err));
+    }
+    if (opts.nonblocking) {
+        catch_((net__linux_setNonblocking(socket, true))(err, {
+            let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+            return_err(err);
+        }));
+    }
+    return_ok({
+        .socket = net_Sock_promote(socket, local, (net_Sock_Flags){ .nonblocking = opts.nonblocking }),
+        .options = opts,
+    });
+} $unscoped(fn);
+
+$static fn_((net__linux_connectIp(net_IpAddr addr, net_ConnectOpts opts))(E$net_Stream) $scope) {
+    if (opts.mode != net_Sock_Mode_stream) return_err(E_cause$net_SocketModeUnsupported());
+    if (opts.protocol != net_Protoc_tcp) return_err(E_cause$net_ProtocolUnsupported());
+
+    let socket = try_(net__linux_newSocket(addr, opts.mode, opts.protocol));
+    if (opts.nonblocking) {
+        catch_((net__linux_setNonblocking(socket, true))(err, {
+            let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+            return_err(err);
+        }));
+    }
+
+    let sockaddr = try_(net__linux_sockaddrFromIp(addr));
+    let rc = sys_call_linux_connect(
+        (as$(sys_call_linux_fd_t)(socket)),
+        (ptrCast$((const sys_call_linux_sockaddr*)(&sockaddr.storage))),
+        sockaddr.len
+    );
+    if (sys_call_linux_syscall_isErr(rc)) {
+        let err = sys_call_linux_syscall_err(rc);
+        if (err != sys_call_linux_EINPROGRESS && err != sys_call_linux_EAGAIN) {
+            let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+            return_err(net__linux_mapError(err));
+        }
+        if (!opts.nonblocking) {
+            let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(socket));
+            return_err(E_cause$net_WouldBlock());
+        }
+    }
+    return_ok({
+        .socket = net_Sock_promote(socket, addr, (net_Sock_Flags){ .nonblocking = opts.nonblocking }),
+    });
+} $unscoped(fn);
+#endif /* plat_is_linux */
+
 $attr($maybe_unused)
 $static fn_((net__unsupported_bindIp(net_IpAddr addr, net_BindOpts opts))(E$net_Sock) $scope) {
     let_ignore = addr;
@@ -296,13 +537,22 @@ $static fn_((net__unsupported_connectIp(net_IpAddr addr, net_ConnectOpts opts))(
 
 $static let net__bindIp = pp_if_(plat_is_windows)(
     pp_then_(net__windows_bindIp),
-    pp_else_(net__unsupported_bindIp));
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(net__linux_bindIp),
+        pp_else_(net__unsupported_bindIp)
+    )));
 $static let net__listenIp = pp_if_(plat_is_windows)(
     pp_then_(net__windows_listenIp),
-    pp_else_(net__unsupported_listenIp));
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(net__linux_listenIp),
+        pp_else_(net__unsupported_listenIp)
+    )));
 $static let net__connectIp = pp_if_(plat_is_windows)(
     pp_then_(net__windows_connectIp),
-    pp_else_(net__unsupported_connectIp));
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(net__linux_connectIp),
+        pp_else_(net__unsupported_connectIp)
+    )));
 
 fn_((net_bindIp(net_IpAddr addr, net_BindOpts opts))(E$net_Sock)) {
     return net__bindIp(addr, opts);

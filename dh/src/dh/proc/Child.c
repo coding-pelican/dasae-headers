@@ -3,6 +3,8 @@
 #if plat_is_windows
 #include "dh/sys/api/windows/handle.h"
 #include "dh/sys/api/windows/proc.h"
+#elif plat_is_linux
+#include "dh/sys/call/linux.h"
 #endif /* plat_is_windows */
 
 #if plat_is_windows
@@ -35,6 +37,39 @@ $static fn_((proc_Child__windows_kill(proc_Child self))(void)) {
 };
 #endif /* plat_is_windows */
 
+#if plat_is_linux
+$static fn_((proc_Child__linux_wait(proc_Child* self))(E$proc_Ter) $scope) {
+    claim_assert_nonnull(self);
+    if (self->id == 0) return_err(E_cause$proc_ProcessAlreadyExited());
+    var_(status, int) = 0;
+    let waited = sys_call_linux_wait4(as$(sys_call_linux_pid_t)(self->id), &status, 0, null);
+    if (sys_call_linux_syscall_isErr(waited)) return_err(E_cause$proc_SystemResources());
+    self->id = 0;
+    if ((status & 0x7f) == 0) {
+        return_ok({
+            .tag = proc_Ter_Tag_exited,
+            .code = as$(u32)((status >> 8) & 0xff),
+        });
+    }
+    if ((status & 0x7f) != 0x7f) {
+        return_ok({
+            .tag = proc_Ter_Tag_signal,
+            .code = as$(u32)(status & 0x7f),
+        });
+    }
+    return_ok({
+        .tag = proc_Ter_Tag_stopped,
+        .code = as$(u32)((status >> 8) & 0xff),
+    });
+} $unscoped(fn);
+
+$static fn_((proc_Child__linux_kill(proc_Child self))(void)) {
+    if (self.id != 0) {
+        let_ignore = sys_call_linux_kill(as$(sys_call_linux_pid_t)(self.id), 9);
+    }
+};
+#endif /* plat_is_linux */
+
 $attr($maybe_unused)
 $static fn_((proc_Child__unsupported_wait(proc_Child* self))(E$proc_Ter) $scope) {
     claim_assert_nonnull(self);
@@ -49,10 +84,16 @@ $static fn_((proc_Child__unsupported_kill(proc_Child self))(void)) {
 
 $static let proc_Child__wait = pp_if_(plat_is_windows)(
     pp_then_(proc_Child__windows_wait),
-    pp_else_(proc_Child__unsupported_wait));
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(proc_Child__linux_wait),
+        pp_else_(proc_Child__unsupported_wait)
+    )));
 $static let proc_Child__kill = pp_if_(plat_is_windows)(
     pp_then_(proc_Child__windows_kill),
-    pp_else_(proc_Child__unsupported_kill));
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(proc_Child__linux_kill),
+        pp_else_(proc_Child__unsupported_kill)
+    )));
 
 fn_((proc_Child_wait(proc_Child* self))(E$proc_Ter)) {
     claim_assert_nonnull(self);

@@ -157,7 +157,7 @@ $static fn_((thrd_OnceLock_valMut(thrd_OnceLock$raw* self, TypeInfo val_type))(u
     }
 /* clang-format on */
 
-#include "../meta.h"
+#include "../u-meta.h"
 
 #if on_analysis_active_only || on_comptime
 fn_((thrd_OnceLock_val(const thrd_OnceLock$raw* self, TypeInfo val_type))(u_P_const$raw)) {

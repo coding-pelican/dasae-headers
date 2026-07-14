@@ -1,6 +1,6 @@
 #include "dh/mem/common.h"
 #include "dh/mem/Alctr.h"
-#include "dh/meta.h"
+#include "dh/u-meta.h"
 
 #if !comp_libc_linked
 $extern fn_((memset(P$raw dst, int val, usize len))(P$raw));

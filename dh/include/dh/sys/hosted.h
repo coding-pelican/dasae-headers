@@ -5,6 +5,8 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+/*========== Includes =======================================================*/
+
 #include "hosted/wasi.h"
 #include "hosted/emscripten.h"
 #include "hosted/art.h"

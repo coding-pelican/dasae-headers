@@ -241,7 +241,8 @@ $static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope
     let data = args->data;
     for_(((data.range))(i) {
         data.workerFn(i, data.params);
-    });
+    })
+        ;
     return_({});
 } $unscoped(Thrd_fn);
 
@@ -264,15 +265,18 @@ $maybe_unused
         data->workerFn = workerFn;
         data->params = params;
         *worker = Thrd_FnCtx_from$((mp_worker)(*data));
-    });
+    })
+        ;
     for_(($s(threads), $s(workers))(thread, worker) {
         *thread = catch_((Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw))(
             $ignore, claim_unreachable
         ));
-    });
+    })
+        ;
     for_(($s(threads))(thread) {
         Thrd_join(*thread);
-    });
+    })
+        ;
 }
 
 typedef fn_(((*)(R, u_V$raw))(void) $T) mp_ThrdPool_TaskFn;
@@ -365,7 +369,8 @@ $must_check
         *thread = catch_((Thrd_spawn(
             Thrd_SpawnCfg_default, worker->as_raw
         ))($ignore, claim_unreachable));
-    });
+    })
+        ;
     return_ok(pool);
 } $unscoped(fn);
 
@@ -395,7 +400,8 @@ $static fn_((mp_ThrdPool_shutdown(mp_ThrdPool* self))(void)) {
     Thrd_Mtx_lock(&self->mutex);
     Thrd_Cond_broadcast(&self->cond_has_task);
     Thrd_Mtx_unlock(&self->mutex);
-    for_(($s(self->threads))(thread) { Thrd_join(*thread); });
+    for_(($s(self->threads))(thread) { Thrd_join(*thread); })
+        ;
     Thrd_Mtx_fini(&self->mutex);
     Thrd_Cond_fini(&self->cond_has_task);
     Thrd_Cond_fini(&self->cond_all_done);
@@ -417,11 +423,12 @@ $static fn_((mp_parallel_for_pooled(mp_ThrdPool* pool, R range, mp_ThrdPool_Task
         if (begin < end) {
             mp_ThrdPool_submit(pool, $r(begin, end), fn, params);
         }
-    });
+    })
+        ;
     mp_ThrdPool_waitAll(pool);
 }
 
-#include "dh/math/common.h"
+#include "dh/m-math/common.h"
 #include "dh/Rand.h"
 
 typedef struct RandGaussian {
@@ -460,7 +467,7 @@ $static fn_((RandGaussian_next$f64(RandGaussian* self, f64 mean, f64 std_dev))(f
 // 시뮬레이션 설정
 // ============================================
 
-#include "dh/math/vec.h"
+#include "dh/m-math/vec.h"
 
 #define State_particles_log2 (23ull)
 #define State_particles (1ull << State_particles_log2) // 2^20 = 1,048,576
@@ -542,7 +549,8 @@ $static fn_((State_buildSpatialGrid(State* self))(void)) {
         if (pos < State_max_particles_per_cell) {
             *atA(atS(self->grid, cell_idx)->indices, pos) = i;
         }
-    });
+    })
+        ;
 }
 
 // ============================================
@@ -594,7 +602,8 @@ $static fn_((State_simulate(State* self, mp_ThrdPool* pool, usize frame_amount))
                 (total_time / (frame + 1)) * 1000.0, (frame + 1) / total_time
             );
         }
-    });
+    })
+        ;
 
     let avg_fps = as$(f64)(frame_amount) / total_time;
     let avg_spf = total_time / as$(f64)(frame_amount);
@@ -669,7 +678,8 @@ fn_((dh_main(S$S_const$u8 args))(E$void) $guard) {
             u8_l("- Particles {:uz}: pos({:.2fl}, {:.2fl}) vel({:.2fl}, {:.2fl})"),
             i, particle.pos.x, particle.pos.y, particle.vel.x, particle.vel.y
         );
-    });
+    })
+        ;
     io_stream_println(u8_l("\n=== Program Complete ==="));
     return_ok({});
 } $unguarded(fn);
@@ -823,7 +833,8 @@ fn_((State_clearGrid_worker(R range, u_V$raw params))(void)) {
     let grid = sliceS(args.grid, range);
     for_(($s(grid))(cell) {
         atom_store(&cell->count, 0ull, atom_MemOrd_release);
-    });
+    })
+        ;
 }
 
 fn_((State_clearGrid(mp_ThrdPool* pool, S$Cell grid))(void)) {

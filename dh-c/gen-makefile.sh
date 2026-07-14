@@ -3,6 +3,33 @@ cat > Makefile << 'EOF'
 # Makefile for building dh-c
 # Cross-platform build system
 
+.SUFFIXES:
+MAKEFLAGS += --no-builtin-rules --no-builtin-variables --no-print-directory
+COMMANDS ?= hide
+PROGRESS ?= show
+VERBOSE ?= off
+# Compatibility with the old self-build knob. Prefer COMMANDS=show|hide.
+ifeq ($(V),1)
+COMMANDS := show
+endif
+ifeq ($(VERBOSE),on)
+COMMANDS := show
+endif
+ifeq ($(COMMANDS),show)
+Q :=
+PROGRESS := hide
+else
+Q := @
+endif
+ifeq ($(PROGRESS),show)
+P_CC = printf '[CC] %s\n' '$1';
+P_LD = printf '[LD] %s\n' '$1';
+else
+P_CC =
+P_LD =
+endif
+
+
 # Detect platform
 ifeq ($(OS),Windows_NT)
     PLATFORM = windows
@@ -461,40 +488,32 @@ all: $(TARGET)
 
 # Build executable
 $(TARGET): $(OBJS)
-	@$(MKDIR) $(dir $@)
-	@echo "[LD] $@"
-	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LINK_LIBS)
+	$(Q)$(MKDIR) $(dir $@)
+	$(Q)$(call P_LD,$@)$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LINK_LIBS)
 
 # Build object files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	@$(MKDIR) $(dir $@)
-	@echo "[CC] $<"
-	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+	$(Q)$(MKDIR) $(dir $@)
+	$(Q)$(call P_CC,$<)$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # Include dependency files
 -include $(OBJS:.o=.d)
 
 # Clean build artifacts
 clean:
-	@echo "Cleaning all profiles under $(BUILD_ROOT)/..."
-	@$(RMDIR) $(BUILD_ROOT) 2>/dev/null || true
-	@echo "Clean complete"
+	$(Q)$(RMDIR) $(BUILD_ROOT) 2>/dev/null || true
 
 clean-profile:
-	@echo "Cleaning $(BUILD_DIR)/..."
-	@$(RMDIR) $(BUILD_DIR) 2>/dev/null || true
-	@echo "Clean complete"
+	$(Q)$(RMDIR) $(BUILD_DIR) 2>/dev/null || true
 
 # Install (copy to system path - optional)
 ifeq ($(PLATFORM),windows)
 install: $(TARGET)
-	@echo "Installation not implemented for Windows"
+	$(Q)echo "Installation not implemented for Windows"
 else
 install: $(TARGET)
-	@echo "Installing dh-c..."
-	@cp $(TARGET) /usr/local/bin/dh-c
-	@chmod +x /usr/local/bin/dh-c
-	@echo "Installation complete"
+	$(Q)cp $(TARGET) /usr/local/bin/dh-c
+	$(Q)chmod +x /usr/local/bin/dh-c
 endif
 
 # Phony targets

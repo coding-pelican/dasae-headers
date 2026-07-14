@@ -1,8 +1,7 @@
 #include "dh-main.h"
-#include "dh/builtin/lambda.h"
 #include "dh/io/stream.h"
 #include "dh/mem/common.h"
-#include "dh/math.h"
+#include "dh/m-math.h"
 
 /* example usage ============================================================*/
 

@@ -9,13 +9,13 @@ extern "C" {
 #include <dh/log.h>
 #include <dh/mem/Alctr.h>
 
-#include <dh/math/common.h>
-#include <dh/math/vec_types.h>
-#include <dh/math/vec.h>
-#include <dh/math/mat_types.h>
-#include <dh/math/mat.h>
-#include <dh/math/quat_types.h>
-#include <dh/math/quat.h>
+#include <dh/m-math/common.h>
+#include <dh/m-math/vec_types.h>
+#include <dh/m-math/vec.h>
+#include <dh/m-math/mat_types.h>
+#include <dh/m-math/mat.h>
+#include <dh/m-math/quat_types.h>
+#include <dh/m-math/quat.h>
 
 /* clang-format off */
 T_use_prl$(m_V2f32);   T_use_prl$(m_V3f32);   T_use_prl$(m_V4f32);

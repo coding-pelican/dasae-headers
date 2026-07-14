@@ -825,8 +825,10 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_remove "remove"
 
 #define dal_c_opt_verbose "verbose"
+#define dal_c_opt_progress "progress"
+#define dal_c_opt_jobs "jobs"
 #define dal_c_opt_debug "debug"
-#define dal_c_opt_show_commands "show-commands"
+#define dal_c_opt_commands "commands"
 #define dal_c_opt_link_dsl "link-dsl"
 #define dal_c_opt_hosted "hosted"
 #define dal_c_opt_freestanding "freestanding"
@@ -1217,8 +1219,10 @@ typedef struct dal_c_Cmd {
     char* objcopy_format; // --objcopy-format=<fmt>
     char* dh_path_override; // --dh=<path>
     dal_c_VersionRecordMode version_record_mode; // --version-record=<mode>
-    bool show_commands; // --show-commands
+    bool show_commands; // --commands=show|hide
     bool verbose; // --verbose
+    bool show_progress; // --progress=show|hide
+    char* make_jobs; // --jobs=<n>
     bool profile_explicit; // profile token was provided explicitly by user
     bool is_help; // --help, -h
     bool is_version; // --version, -v
@@ -1317,6 +1321,11 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_header_file_ext ".h"
 #define dal_c_pch_header_target_dsl dal_c_tool_target_dsl dal_c_header_file_ext
 #define dal_c_pch_header_dh "dh" dal_c_header_file_ext
+#define dal_c_pch_header_dh_builtin "dh/builtin" dal_c_header_file_ext
+#define dal_c_pch_header_dh_core "dh/core" dal_c_header_file_ext
+#define dal_c_pch_header_dh_prl "dh/prl" dal_c_header_file_ext
+#define dal_c_pch_header_dh_sys "dh/sys" dal_c_header_file_ext
+#define dal_c_pch_header_dh_bundle "dh-bundle" dal_c_header_file_ext
 #define dal_c_pch_header_dal "dal" dal_c_header_file_ext
 #define dal_c_pch_header_da "da" dal_c_header_file_ext
 #define dal_c_project_prop_pch "pch"
@@ -1334,6 +1343,7 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_project_section_target_root "target-root"
 #define dal_c_pch_value_auto "auto"
 #define dal_c_pch_value_off "off"
+#define dal_c_pch_value_deps "deps"
 
 /// === DIRECTORY NAMES ===
 
@@ -1494,8 +1504,10 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_dsl, "Include the DSL boundary in this command" },
     { dal_c_opt_prefix_long dal_c_opt_recur, "Apply command recursively to descendant `project.dh` projects" },
     { dal_c_opt_all_alias, "Build all source files (alternative to " dal_c_opt_prefix_long dal_c_opt_all ")" },
-    { dal_c_opt_prefix_long dal_c_opt_show_commands, "Print commands" },
-    { dal_c_opt_prefix_long dal_c_opt_verbose, "Verbose output" },
+    { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide compiler/link commands" },
+    { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact build progress lines" },
+    { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
+    { dal_c_opt_prefix_long dal_c_opt_jobs dal_c_opt_value_sep "<n>", "Override make parallelism" },
     { dal_c_opt_prefix_long dal_c_opt_dh dal_c_opt_value_sep "<path>", "Override DH path" },
 };
 #define dal_c_help_build_options_count ((int)(sizeof(dal_c_help_build_options) / sizeof(dal_c_help_build_options[0])))
@@ -1569,7 +1581,7 @@ static const char* const dal_c_help_test_examples[] = {
 #define dal_c_help_test_examples_count ((int)(sizeof(dal_c_help_test_examples) / sizeof(dal_c_help_test_examples[0])))
 
 static const dal_c_HelpOption dal_c_help_deps_options[] = {
-    { dal_c_opt_prefix_long dal_c_opt_verbose, "Verbose output" },
+    { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
 };
 #define dal_c_help_deps_options_count ((int)(sizeof(dal_c_help_deps_options) / sizeof(dal_c_help_deps_options[0])))
 
@@ -1648,8 +1660,10 @@ static const char* const dal_c_help_clean_dsl_examples[] = {
 #define dal_c_help_clean_dsl_examples_count ((int)(sizeof(dal_c_help_clean_dsl_examples) / sizeof(dal_c_help_clean_dsl_examples[0])))
 
 static const dal_c_HelpOption dal_c_help_self_options[] = {
-    { dal_c_opt_prefix_long dal_c_opt_show_commands, "Print commands" },
-    { dal_c_opt_prefix_long dal_c_opt_verbose, "Verbose output" },
+    { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide compiler/link commands" },
+    { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact build progress lines" },
+    { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
+    { dal_c_opt_prefix_long dal_c_opt_jobs dal_c_opt_value_sep "<n>", "Override make parallelism" },
 };
 #define dal_c_help_self_options_count ((int)(sizeof(dal_c_help_self_options) / sizeof(dal_c_help_self_options[0])))
 

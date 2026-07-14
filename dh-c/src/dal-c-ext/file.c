@@ -231,6 +231,7 @@ bool file_lockAcquire(file_Lock* lock, const char* path) {
     lock->path = strdup(path);
     if (!lock->path) { return false; }
 #ifdef _WIN32
+    bool waiting_reported = false;
     for (;;) {
         HANDLE handle = CreateFileA(
             path,
@@ -251,6 +252,10 @@ bool file_lockAcquire(file_Lock* lock, const char* path) {
             memset(lock, 0, sizeof(*lock));
             return false;
         }
+        if (!waiting_reported) {
+            (void)fprintf(stderr, "Waiting for build lock: %s\n", path);
+            waiting_reported = true;
+        }
         Sleep(50);
     }
 #else
@@ -260,11 +265,20 @@ bool file_lockAcquire(file_Lock* lock, const char* path) {
         memset(lock, 0, sizeof(*lock));
         return false;
     }
-    if (flock(fd, LOCK_EX) != 0) {
-        close(fd);
-        free(lock->path);
-        memset(lock, 0, sizeof(*lock));
-        return false;
+    if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
+        if (errno != EWOULDBLOCK && errno != EAGAIN) {
+            close(fd);
+            free(lock->path);
+            memset(lock, 0, sizeof(*lock));
+            return false;
+        }
+        (void)fprintf(stderr, "Waiting for build lock: %s\n", path);
+        if (flock(fd, LOCK_EX) != 0) {
+            close(fd);
+            free(lock->path);
+            memset(lock, 0, sizeof(*lock));
+            return false;
+        }
     }
     lock->fd = fd;
     return true;

@@ -74,6 +74,10 @@ void dal_c__printError(const char* fmt, ...) dal_c__printf_format(1, 2);
 
 /// === BUILD HELPERS ===
 
+#define dal_c_generateMakefile_success 0
+#define dal_c_generateMakefile_upToDate 2
+
+
 int dal_c__generateMakefile(
     const dal_c_Cmd* cmd,
     const dal_c_Project* proj,
@@ -94,8 +98,9 @@ int dal_c__writeCompileDb(
 char* dal_c__resolveOutputPath(const dal_c_Project* proj, const dal_c_Cmd* cmd, const char* build_dir, const char* output_name, dal_c_Target target_type);
 char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const dal_c_Cmd* cmd, const char* target_path, dal_c_Target target_type);
 
-int dal_c__executeMake(const char* makefile_path);
-int dal_c__executeMakeInDir(const char* directory);
+int dal_c__executeMake(const dal_c_Cmd* cmd, const char* makefile_path);
+int dal_c__executeMakeInDir(const dal_c_Cmd* cmd, const char* directory);
+bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_CompilerOpts* opts);
 int dal_c__buildDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__cleanDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 int dal_c__testDSL(const dal_c_Cmd* cmd, const dal_c_Project* proj);
@@ -108,6 +113,7 @@ char* dal_c__cacheBaseDir(const dal_c_Project* proj);
 
 ArrStr* dal_c__collectSourceFiles(const dal_c_Project* proj, const char* target_path);
 ArrStr* dal_c__collectDirectoryFiles(const dal_c_Project* proj, const char* dir_name);
+ArrStr* dal_c__collectPathSourcesCached(const dal_c_Project* proj, const char* path, bool resolved_is_dir, bool skip_auto_paths);
 bool dal_c__shouldSkipAutoSourcePath(const char* path);
 bool dal_c__hasTestRegistration(const char* path);
 

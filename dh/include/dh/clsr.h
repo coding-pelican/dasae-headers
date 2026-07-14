@@ -23,7 +23,7 @@ $static fn_((clsr_invokeToComplete(Clsr$raw* self, TypeInfo type))(u_P_const$raw
 
 /*========== Macros and Definitions =========================================*/
 
-#include "meta.h"
+#include "u-meta.h"
 
 #if on_analysis_active_only || on_comptime
 fn_((clsr_kind(P_const$$(Clsr$raw) self))(Clsr_Kind)) {

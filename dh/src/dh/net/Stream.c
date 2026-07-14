@@ -38,6 +38,39 @@ $static fn_((net_Stream__windows_write(net_Stream self, S_const$u8 bytes))(E$usi
 } $unscoped(fn);
 #endif /* plat_is_windows */
 
+#if plat_is_linux
+$static fn_((net_Stream__linux_shutdownHow(net_ShutdownHow how))(sys_call_linux_shutdown_how_t)) {
+    switch (how) {
+    case net_ShutdownHow_recv: return sys_call_linux_SHUT_RD;
+    case net_ShutdownHow_send: return sys_call_linux_SHUT_WR;
+    case net_ShutdownHow_both: $fallthrough;
+    default_() return sys_call_linux_SHUT_RDWR $end(default);
+    }
+};
+
+$static fn_((net_Sock__linux_close(net_Sock self))(void)) {
+    let_ignore = sys_call_linux_close(as$(sys_call_linux_fd_t)(self.handle));
+};
+
+$static fn_((net_Stream__linux_shutdown(net_Stream self, net_ShutdownHow how))(E$void) $scope) {
+    let rc = sys_call_linux_shutdown(as$(sys_call_linux_fd_t)(self.socket.handle), net_Stream__linux_shutdownHow(how));
+    if (sys_call_linux_syscall_isErr(rc)) return_err(net__linux_mapError(sys_call_linux_syscall_err(rc)));
+    return_ok({});
+} $unscoped(fn);
+
+$static fn_((net_Stream__linux_read(net_Stream self, S$u8 buf))(E$usize) $scope) {
+    let read = sys_call_linux_recvfrom(as$(sys_call_linux_fd_t)(self.socket.handle), buf.ptr, buf.len, 0, null, null);
+    if (sys_call_linux_syscall_isErr(read)) return_err(net__linux_mapError(sys_call_linux_syscall_err(read)));
+    return_ok(as$(usize)(read));
+} $unscoped(fn);
+
+$static fn_((net_Stream__linux_write(net_Stream self, S_const$u8 bytes))(E$usize) $scope) {
+    let wrote = sys_call_linux_sendto(as$(sys_call_linux_fd_t)(self.socket.handle), bytes.ptr, bytes.len, 0, null, 0);
+    if (sys_call_linux_syscall_isErr(wrote)) return_err(net__linux_mapError(sys_call_linux_syscall_err(wrote)));
+    return_ok(as$(usize)(wrote));
+} $unscoped(fn);
+#endif /* plat_is_linux */
+
 $attr($maybe_unused)
 $static fn_((net_Sock__unsupported_close(net_Sock self))(void)) {
     let_ignore = self;
@@ -66,16 +99,28 @@ $static fn_((net_Stream__unsupported_write(net_Stream self, S_const$u8 bytes))(E
 
 $static let net_Sock__close = pp_if_(plat_is_windows)(
     pp_then_(net_Sock__windows_close),
-    pp_else_(net_Sock__unsupported_close));
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(net_Sock__linux_close),
+        pp_else_(net_Sock__unsupported_close)
+    )));
 $static let net_Stream__shutdown = pp_if_(plat_is_windows)(
     pp_then_(net_Stream__windows_shutdown),
-    pp_else_(net_Stream__unsupported_shutdown));
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(net_Stream__linux_shutdown),
+        pp_else_(net_Stream__unsupported_shutdown)
+    )));
 $static let net_Stream__read = pp_if_(plat_is_windows)(
     pp_then_(net_Stream__windows_read),
-    pp_else_(net_Stream__unsupported_read));
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(net_Stream__linux_read),
+        pp_else_(net_Stream__unsupported_read)
+    )));
 $static let net_Stream__write = pp_if_(plat_is_windows)(
     pp_then_(net_Stream__windows_write),
-    pp_else_(net_Stream__unsupported_write));
+    pp_else_(pp_if_(plat_is_linux)(
+        pp_then_(net_Stream__linux_write),
+        pp_else_(net_Stream__unsupported_write)
+    )));
 
 fn_((net_Sock_close(net_Sock self))(void)) {
     net_Sock__close(self);

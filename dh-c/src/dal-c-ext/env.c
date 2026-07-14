@@ -40,46 +40,50 @@ bool env_setCWD(const char* path) {
 
 char* env_getExecutableDir(void) {
 #ifdef _WIN32
-    char exe_path[MAX_PATH] = {};
+    char* exe_path = (char*)calloc(MAX_PATH, 1);
+    if (!exe_path) { return NULL; }
     const DWORD len = GetModuleFileNameA(NULL, exe_path, MAX_PATH);
-    if (len == 0 || len >= MAX_PATH) { return NULL; }
+    if (len == 0 || len >= MAX_PATH) { return free(exe_path), NULL; }
     // Find last backslash
     char* const last_slash = strrchr(exe_path, '\\');
-    if (!last_slash) { return NULL; }
+    if (!last_slash) { return free(exe_path), NULL; }
     *last_slash = '\0';
-    return strdup(exe_path);
+    return exe_path;
 #else
-    char exe_path[PATH_MAX] = {};
+    char* exe_path = (char*)calloc(PATH_MAX, 1);
+    if (!exe_path) { return NULL; }
     ssize_t len = readlink("/proc/self/exe", exe_path, PATH_MAX - 1);
     if (len == -1) {
         // Fallback: try /proc/curproc/file (FreeBSD)
         len = readlink("/proc/curproc/file", exe_path, PATH_MAX - 1);
-        if (len == -1) { return NULL; }
+        if (len == -1) { return free(exe_path), NULL; }
     }
     exe_path[len] = '\0';
     // Find last slash
     char* const last_slash = strrchr(exe_path, '/');
-    if (!last_slash) { return NULL; }
+    if (!last_slash) { return free(exe_path), NULL; }
     *last_slash = '\0';
-    return strdup(exe_path);
+    return exe_path;
 #endif
 }
 
 char* env_getExecutablePath(void) {
 #ifdef _WIN32
-    char exe_path[MAX_PATH] = {};
+    char* exe_path = (char*)calloc(MAX_PATH, 1);
+    if (!exe_path) { return NULL; }
     const DWORD len = GetModuleFileNameA(NULL, exe_path, MAX_PATH);
-    if (len == 0 || len >= MAX_PATH) { return NULL; }
-    return strdup(exe_path);
+    if (len == 0 || len >= MAX_PATH) { return free(exe_path), NULL; }
+    return exe_path;
 #else
-    char exe_path[PATH_MAX] = {};
+    char* exe_path = (char*)calloc(PATH_MAX, 1);
+    if (!exe_path) { return NULL; }
     ssize_t len = readlink("/proc/self/exe", exe_path, PATH_MAX - 1);
     if (len == -1) {
         // Fallback: try /proc/curproc/file (FreeBSD)
         len = readlink("/proc/curproc/file", exe_path, PATH_MAX - 1);
-        if (len == -1) { return NULL; }
+        if (len == -1) { return free(exe_path), NULL; }
     }
     exe_path[len] = '\0';
-    return strdup(exe_path);
+    return exe_path;
 #endif
 }

@@ -1,7 +1,7 @@
 #include "dh/thrd/Cond.h"
 #include "dh/thrd/ftx.h"
 #include "dh/thrd/Mtx.h"
-#include "dh/math/common.h"
+#include "dh/m-math/common.h"
 #if plat_is_linux
 #include "dh/sys/call/linux.h"
 #endif

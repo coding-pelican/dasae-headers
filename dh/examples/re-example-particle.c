@@ -18,7 +18,8 @@ $static Thrd_fn_(mp_worker, ({ mp_LoopData data; }, Void), ($ignore, args)$scope
     let data = args->data;
     for_(((data.range))(i) {
         data.workerFn(i, data.params);
-    });
+    })
+        ;
     return_({});
 } $unscoped(Thrd_fn);
 
@@ -39,23 +40,26 @@ $static fn_((mp_parallel_for(R range, mp_LoopFn workerFn, u_V$raw params))(void)
         data->workerFn = workerFn;
         data->params = params;
         *worker = Thrd_FnCtx_from$((mp_worker)(*data));
-    });
+    })
+        ;
     for_(($s(threads), $s(workers))(thread, worker) {
         *thread = catch_((Thrd_spawn(Thrd_SpawnCfg_default, worker->as_raw))(
             $ignore, claim_unreachable
         ));
-    });
+    })
+        ;
     for_(($s(threads))(thread) {
         Thrd_join(*thread);
-    });
+    })
+        ;
 }
 
 // ============================================
 // 유틸리티
 // ============================================
 
-#include "dh/math/common.h"
-#include "dh/math/vec.h"
+#include "dh/m-math/common.h"
+#include "dh/m-math/vec.h"
 #include "dh/Rand.h"
 
 typedef struct RandGaussian {
@@ -160,7 +164,8 @@ $static fn_((State_buildSpatialGrid(State* self))(void)) {
         if (pos < State_max_particles_per_cell) {
             *A_at((S_at((self->grid)[cell_idx])->indices)[pos]) = i;
         }
-    });
+    })
+        ;
 }
 
 // ============================================
@@ -212,7 +217,8 @@ $static fn_((State_simulate(State* self, usize frame_amount))(void)) {
                 (total_time / intToFlt$((f64)(frame + 1))) * 1000.0, intToFlt$((f64)(frame + 1)) / total_time
             );
         }
-    });
+    })
+        ;
 
     let avg_fps = as$(f64)(frame_amount) / total_time;
     let avg_spf = total_time / as$(f64)(frame_amount);
@@ -281,7 +287,8 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
             u8_l("- Particle {:uz}: pos({:.2fl}, {:.2fl}) vel({:.2fl}, {:.2fl})"),
             i, particle->pos.x, particle->pos.y, particle->vel.x, particle->vel.y
         );
-    });
+    })
+        ;
     io_stream_println(u8_l("\n=== Program Complete ==="));
     return_ok({});
 } $unguarded(fn);
@@ -464,8 +471,10 @@ fn_((State_handleCollisions_worker(usize i, u_V$raw params))(void)) {
                     m_V2f64_subAsg(&self->pos, m_V2f64_scal(n_norm, separation));
                 }
             }
-        });
-    });
+        })
+            ;
+    })
+        ;
 
     *particle_i = particle;
 }

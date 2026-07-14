@@ -5,6 +5,7 @@
  * @file    darwin.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-05-27 (date of creation)
+ * @updated 2026-07-14 (date of last update)
  * @ingroup dasae-headers(dh)/sys/libc
  * @prefix  sys_libc_darwin
  */
@@ -14,6 +15,8 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
+
+/*========== Includes =======================================================*/
 
 #include "darwin/common.h"
 #include "darwin/cfg.h"

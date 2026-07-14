@@ -26,6 +26,9 @@ dh/src/*, dh/include/*, dh/test*/*, dh/sample*/*, dh/example*/*, dh-examples/*
 extern/external
 dep/dependency
 lib/library
+pkg/package
+bundle
+pch/precompiled-header
 
 inc/include
 src/source

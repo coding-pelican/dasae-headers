@@ -144,14 +144,19 @@ typedef enum $packed atom_MemOrd {
     pp_uniqTok(ptr), pp_uniqTok(operand), pp_uniqTok(expected), pp_uniqTok(desired), \
     _$ptr, _$val, _$ord \
 )
-#if !defined(__comp_bool__atom_has_fetch_min_max) && defined(__has_builtin)
-#if __has_builtin(__atomic_fetch_min) && __has_builtin(__atomic_fetch_max)
-#define __comp_bool__atom_has_fetch_min_max 1
-#endif
-#endif
+/* Use the CAS fallback even when compiler builtins exist.
+ * Clang/GCC integer fetch-min/max builtins do not provide dh's floating-point
+ * NaN policy for atom_V$$(f32/f64). The fallback is type-generic and preserves
+ * the documented dh semantics across integer and floating-point atomics. */
 #if !defined(__comp_bool__atom_has_fetch_min_max)
 #define __comp_bool__atom_has_fetch_min_max 0
 #endif
+
+#define __op__atom_pri_isCmpNaN(_$x...) bool_(T_switch$((TypeOf(_$x))( \
+    T_case$((f32)(flt_isNaN(as$(f32)(_$x)))), \
+    T_case$((f64)(flt_isNaN(as$(f64)(_$x)))), \
+    T_default_(false) \
+)))
 #if __comp_bool__atom_has_fetch_min_max
 #define __op__atom_pri_fetchMin(__ptr, __operand, __expected, __desired, _$ptr, _$val, _$ord...) \
     __atomic_fetch_min(_$ptr, from$((TypeOf(*_$ptr))_$val), as$(int)(as$(atom_MemOrd)(_$ord)))
@@ -168,11 +173,12 @@ typedef enum $packed atom_MemOrd {
     typedef TypeOfUnqual(*__ptr) AtomType; \
     let_(__operand, AtomType) = _$val; \
     var_(__expected, AtomType) = atom_load(__ptr, atom_MemOrd_monotonic); \
+    var_(__desired, AtomType) = l0$((AtomType)); \
     while (true) { \
-        var_(__desired, AtomType) = flt_isNaN(__expected)    ? __operand \
-                                  : flt_isNaN(__operand)     ? __expected \
-                                  : (__operand < __expected) ? __operand \
-                                                             : __expected; \
+        __desired = __op__atom_pri_isCmpNaN(__expected) ? __operand \
+                  : __op__atom_pri_isCmpNaN(__operand)  ? __expected \
+                  : (__operand < __expected)            ? __operand \
+                                                        : __expected; \
         if (__atomic_compare_exchange( \
                 __ptr, &__expected, &__desired, false, \
                 as$(int)(as$(atom_MemOrd)(_$ord)), as$(int)(__op__atom_cmpXchgFailOrd(_$ord)) \
@@ -187,11 +193,12 @@ typedef enum $packed atom_MemOrd {
     typedef TypeOfUnqual(*__ptr) AtomType; \
     let_(__operand, AtomType) = _$val; \
     var_(__expected, AtomType) = atom_load(__ptr, atom_MemOrd_monotonic); \
+    var_(__desired, AtomType) = l0$((AtomType)); \
     while (true) { \
-        var_(__desired, AtomType) = flt_isNaN(__expected)    ? __operand \
-                                  : flt_isNaN(__operand)     ? __expected \
-                                  : (__operand > __expected) ? __operand \
-                                                             : __expected; \
+        __desired = __op__atom_pri_isCmpNaN(__expected) ? __operand \
+                  : __op__atom_pri_isCmpNaN(__operand)  ? __expected \
+                  : (__operand > __expected)            ? __operand \
+                                                        : __expected; \
         if (__atomic_compare_exchange( \
                 __ptr, &__expected, &__desired, false, \
                 as$(int)(as$(atom_MemOrd)(_$ord)), as$(int)(__op__atom_cmpXchgFailOrd(_$ord)) \
@@ -223,11 +230,7 @@ typedef enum $packed atom_MemOrd {
     pp_uniqTok(ptr), pp_uniqTok(operand), pp_uniqTok(expected), pp_uniqTok(desired), \
     _$ptr, _$val, _$ord \
 )
-#if !defined(__comp_bool__atom_has_min_max_fetch) && defined(__has_builtin)
-#if __has_builtin(__atomic_min_fetch) && __has_builtin(__atomic_max_fetch)
-#define __comp_bool__atom_has_min_max_fetch 1
-#endif
-#endif
+/* See fetch-min/max note above. */
 #if !defined(__comp_bool__atom_has_min_max_fetch)
 #define __comp_bool__atom_has_min_max_fetch 0
 #endif
@@ -242,11 +245,12 @@ typedef enum $packed atom_MemOrd {
     typedef TypeOfUnqual(*__ptr) AtomType; \
     let_(__operand, AtomType) = _$val; \
     var_(__expected, AtomType) = atom_load(__ptr, atom_MemOrd_monotonic); \
+    var_(__desired, AtomType) = l0$((AtomType)); \
     while (true) { \
-        var_(__desired, AtomType) = flt_isNaN(__expected)    ? __operand \
-                                  : flt_isNaN(__operand)     ? __expected \
-                                  : (__operand < __expected) ? __operand \
-                                                             : __expected; \
+        __desired = __op__atom_pri_isCmpNaN(__expected) ? __operand \
+                  : __op__atom_pri_isCmpNaN(__operand)  ? __expected \
+                  : (__operand < __expected)            ? __operand \
+                                                        : __expected; \
         if (__atomic_compare_exchange( \
                 __ptr, &__expected, &__desired, false, \
                 as$(int)(as$(atom_MemOrd)(_$ord)), as$(int)(__op__atom_cmpXchgFailOrd(_$ord)) \
@@ -261,11 +265,12 @@ typedef enum $packed atom_MemOrd {
     typedef TypeOfUnqual(*__ptr) AtomType; \
     let_(__operand, AtomType) = _$val; \
     var_(__expected, AtomType) = atom_load(__ptr, atom_MemOrd_monotonic); \
+    var_(__desired, AtomType) = l0$((AtomType)); \
     while (true) { \
-        var_(__desired, AtomType) = flt_isNaN(__expected)    ? __operand \
-                                  : flt_isNaN(__operand)     ? __expected \
-                                  : (__operand > __expected) ? __operand \
-                                                             : __expected; \
+        __desired = __op__atom_pri_isCmpNaN(__expected) ? __operand \
+                  : __op__atom_pri_isCmpNaN(__operand)  ? __expected \
+                  : (__operand > __expected)            ? __operand \
+                                                        : __expected; \
         if (__atomic_compare_exchange( \
                 __ptr, &__expected, &__desired, false, \
                 as$(int)(as$(atom_MemOrd)(_$ord)), as$(int)(__op__atom_cmpXchgFailOrd(_$ord)) \

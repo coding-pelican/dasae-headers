@@ -160,8 +160,12 @@ typedef sys_call_linux_word sys_call_linux_statx_mask_t;
 /*---------- <errno.h> ------------------------------------------------------*/
 
 typedef enum sys_call_linux_Errno {
+    sys_call_linux_EAGAIN = 11,
+    sys_call_linux_EINPROGRESS = 115,
     sys_call_linux_EINTR = 4,
+    sys_call_linux_ENOENT = 2,
     sys_call_linux_ETIMEDOUT = 110,
+    sys_call_linux_EWOULDBLOCK = sys_call_linux_EAGAIN,
 } sys_call_linux_Errno;
 
 /*---------- <fcntl.h> ------------------------------------------------------*/
@@ -183,8 +187,15 @@ typedef enum sys_call_linux_O {
     sys_call_linux_O_TRUNC = 00001000,
     sys_call_linux_O_NONBLOCK = 00004000,
     sys_call_linux_O_DIRECTORY = 000200000,
+    sys_call_linux_O_CLOEXEC = 02000000,
 } sys_call_linux_O;
 typedef sys_call_linux_word sys_call_linux_open_flags_t;
+
+typedef enum sys_call_linux_F {
+    sys_call_linux_F_GETFL = 3,
+    sys_call_linux_F_SETFL = 4,
+} sys_call_linux_F;
+typedef sys_call_linux_word sys_call_linux_fcntl_cmd_t;
 
 /*---------- <unistd.h> -----------------------------------------------------*/
 
@@ -195,6 +206,88 @@ typedef enum sys_call_linux_SEEK {
 } sys_call_linux_SEEK;
 typedef sys_call_linux_word sys_call_linux_seek_whence_t;
 typedef sys_call_linux_word sys_call_linux_dup_flags_t;
+
+/*---------- <sys/socket.h> -------------------------------------------------*/
+
+typedef enum sys_call_linux_AF {
+    sys_call_linux_AF_INET = 2,
+    sys_call_linux_AF_INET6 = 10,
+} sys_call_linux_AF;
+typedef sys_call_linux_word sys_call_linux_sock_family_t;
+
+typedef enum sys_call_linux_SOCK {
+    sys_call_linux_SOCK_STREAM = 1,
+    sys_call_linux_SOCK_DGRAM = 2,
+    sys_call_linux_SOCK_RAW = 3,
+    sys_call_linux_SOCK_NONBLOCK = sys_call_linux_O_NONBLOCK,
+    sys_call_linux_SOCK_CLOEXEC = sys_call_linux_O_CLOEXEC,
+} sys_call_linux_SOCK;
+typedef sys_call_linux_word sys_call_linux_sock_type_t;
+typedef sys_call_linux_word sys_call_linux_sock_protocol_t;
+typedef u32 sys_call_linux_socklen_t;
+
+typedef enum sys_call_linux_SOL {
+    sys_call_linux_SOL_SOCKET = 1,
+} sys_call_linux_SOL;
+typedef sys_call_linux_word sys_call_linux_sock_level_t;
+
+typedef enum sys_call_linux_SO {
+    sys_call_linux_SO_REUSEADDR = 2,
+    sys_call_linux_SO_BROADCAST = 6,
+    sys_call_linux_SO_ERROR = 4,
+} sys_call_linux_SO;
+typedef sys_call_linux_word sys_call_linux_sock_opt_t;
+
+typedef enum sys_call_linux_IPPROTO {
+    sys_call_linux_IPPROTO_TCP = 6,
+    sys_call_linux_IPPROTO_UDP = 17,
+    sys_call_linux_IPPROTO_IPV6 = 41,
+    sys_call_linux_IPPROTO_RAW = 255,
+} sys_call_linux_IPPROTO;
+
+typedef enum sys_call_linux_IPV6 {
+    sys_call_linux_IPV6_V6ONLY = 26,
+} sys_call_linux_IPV6;
+
+typedef enum sys_call_linux_SHUT {
+    sys_call_linux_SHUT_RD = 0,
+    sys_call_linux_SHUT_WR = 1,
+    sys_call_linux_SHUT_RDWR = 2,
+} sys_call_linux_SHUT;
+typedef sys_call_linux_word sys_call_linux_shutdown_how_t;
+
+typedef struct sys_call_linux_sockaddr {
+    u16 sa_family;
+    A$$(14, u8) sa_data;
+} sys_call_linux_sockaddr;
+
+typedef struct sys_call_linux_in_addr {
+    A$$(4, u8) s_addr;
+} sys_call_linux_in_addr;
+
+typedef struct sys_call_linux_in6_addr {
+    A$$(16, u8) s6_addr;
+} sys_call_linux_in6_addr;
+
+typedef struct sys_call_linux_sockaddr_in {
+    u16 sin_family;
+    u16 sin_port;
+    sys_call_linux_in_addr sin_addr;
+    A$$(8, u8) sin_zero;
+} sys_call_linux_sockaddr_in;
+
+typedef struct sys_call_linux_sockaddr_in6 {
+    u16 sin6_family;
+    u16 sin6_port;
+    u32 sin6_flowinfo;
+    sys_call_linux_in6_addr sin6_addr;
+    u32 sin6_scope_id;
+} sys_call_linux_sockaddr_in6;
+
+typedef struct sys_call_linux_sockaddr_storage {
+    u16 ss_family;
+    A$$(126, u8) __data;
+} sys_call_linux_sockaddr_storage;
 
 /*---------- <sys/mman.h> ---------------------------------------------------*/
 
@@ -339,6 +432,24 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_riscv32)(57)),
         pp_default_(0)
     )),
+    sys_call_linux_SYS_getcwd = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(79)),
+        pp_case_((arch_type_x86)(183)),
+        pp_case_((arch_type_aarch64)(17)),
+        pp_case_((arch_type_arm)(183)),
+        pp_case_((arch_type_riscv64)(17)),
+        pp_case_((arch_type_riscv32)(17)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_chdir = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(80)),
+        pp_case_((arch_type_x86)(12)),
+        pp_case_((arch_type_aarch64)(49)),
+        pp_case_((arch_type_arm)(12)),
+        pp_case_((arch_type_riscv64)(49)),
+        pp_case_((arch_type_riscv32)(49)),
+        pp_default_(0)
+    )),
     sys_call_linux_SYS_statx = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(332)),
         pp_case_((arch_type_x86)(383)),
@@ -402,6 +513,15 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_riscv32)(29)),
         pp_default_(0)
     )),
+    sys_call_linux_SYS_fcntl = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(72)),
+        pp_case_((arch_type_x86)(55)),
+        pp_case_((arch_type_aarch64)(25)),
+        pp_case_((arch_type_arm)(55)),
+        pp_case_((arch_type_riscv64)(25)),
+        pp_case_((arch_type_riscv32)(25)),
+        pp_default_(0)
+    )),
     sys_call_linux_SYS_pread64 = pp_switch_((arch_type)(
         pp_case_((arch_type_x86_64)(17)),
         pp_case_((arch_type_x86)(180)),
@@ -427,6 +547,123 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(322)),
         pp_case_((arch_type_riscv64)(56)),
         pp_case_((arch_type_riscv32)(56)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_readlinkat = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(267)),
+        pp_case_((arch_type_x86)(305)),
+        pp_case_((arch_type_aarch64)(78)),
+        pp_case_((arch_type_arm)(332)),
+        pp_case_((arch_type_riscv64)(78)),
+        pp_case_((arch_type_riscv32)(78)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_pipe2 = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(293)),
+        pp_case_((arch_type_x86)(331)),
+        pp_case_((arch_type_aarch64)(59)),
+        pp_case_((arch_type_arm)(359)),
+        pp_case_((arch_type_riscv64)(59)),
+        pp_case_((arch_type_riscv32)(59)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_socket = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(41)),
+        pp_case_((arch_type_x86)(359)),
+        pp_case_((arch_type_aarch64)(198)),
+        pp_case_((arch_type_arm)(281)),
+        pp_case_((arch_type_riscv64)(198)),
+        pp_case_((arch_type_riscv32)(198)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_bind = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(49)),
+        pp_case_((arch_type_x86)(361)),
+        pp_case_((arch_type_aarch64)(200)),
+        pp_case_((arch_type_arm)(282)),
+        pp_case_((arch_type_riscv64)(200)),
+        pp_case_((arch_type_riscv32)(200)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_listen = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(50)),
+        pp_case_((arch_type_x86)(363)),
+        pp_case_((arch_type_aarch64)(201)),
+        pp_case_((arch_type_arm)(284)),
+        pp_case_((arch_type_riscv64)(201)),
+        pp_case_((arch_type_riscv32)(201)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_accept4 = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(288)),
+        pp_case_((arch_type_x86)(364)),
+        pp_case_((arch_type_aarch64)(242)),
+        pp_case_((arch_type_arm)(366)),
+        pp_case_((arch_type_riscv64)(242)),
+        pp_case_((arch_type_riscv32)(242)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_connect = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(42)),
+        pp_case_((arch_type_x86)(362)),
+        pp_case_((arch_type_aarch64)(203)),
+        pp_case_((arch_type_arm)(283)),
+        pp_case_((arch_type_riscv64)(203)),
+        pp_case_((arch_type_riscv32)(203)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_getsockname = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(51)),
+        pp_case_((arch_type_x86)(367)),
+        pp_case_((arch_type_aarch64)(204)),
+        pp_case_((arch_type_arm)(286)),
+        pp_case_((arch_type_riscv64)(204)),
+        pp_case_((arch_type_riscv32)(204)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_setsockopt = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(54)),
+        pp_case_((arch_type_x86)(366)),
+        pp_case_((arch_type_aarch64)(208)),
+        pp_case_((arch_type_arm)(294)),
+        pp_case_((arch_type_riscv64)(208)),
+        pp_case_((arch_type_riscv32)(208)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_getsockopt = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(55)),
+        pp_case_((arch_type_x86)(365)),
+        pp_case_((arch_type_aarch64)(209)),
+        pp_case_((arch_type_arm)(295)),
+        pp_case_((arch_type_riscv64)(209)),
+        pp_case_((arch_type_riscv32)(209)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_shutdown = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(48)),
+        pp_case_((arch_type_x86)(373)),
+        pp_case_((arch_type_aarch64)(210)),
+        pp_case_((arch_type_arm)(293)),
+        pp_case_((arch_type_riscv64)(210)),
+        pp_case_((arch_type_riscv32)(210)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_sendto = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(44)),
+        pp_case_((arch_type_x86)(369)),
+        pp_case_((arch_type_aarch64)(206)),
+        pp_case_((arch_type_arm)(290)),
+        pp_case_((arch_type_riscv64)(206)),
+        pp_case_((arch_type_riscv32)(206)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_recvfrom = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(45)),
+        pp_case_((arch_type_x86)(371)),
+        pp_case_((arch_type_aarch64)(207)),
+        pp_case_((arch_type_arm)(292)),
+        pp_case_((arch_type_riscv64)(207)),
+        pp_case_((arch_type_riscv32)(207)),
         pp_default_(0)
     )),
     sys_call_linux_SYS_fsync = pp_switch_((arch_type)(
@@ -718,6 +955,10 @@ $static fn_((sys_call_linux_write(sys_call_linux_fd_t fd, const void* buf, usize
 $attr($inline)
 $static fn_((sys_call_linux_close(sys_call_linux_fd_t fd))(sys_call_linux_word));
 $attr($inline)
+$static fn_((sys_call_linux_getcwd(char* buf, usize len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_chdir(const char* path))(sys_call_linux_word));
+$attr($inline)
 $static fn_((sys_call_linux_lseek(sys_call_linux_fd_t fd, i64 offset, sys_call_linux_seek_whence_t whence))(sys_call_linux_word));
 $attr($inline)
 $static fn_((sys_call_linux_pread(sys_call_linux_fd_t fd, void* buf, usize len, u64 offset))(sys_call_linux_word));
@@ -731,6 +972,10 @@ $attr($inline)
 $static fn_((sys_call_linux_fchdir(sys_call_linux_fd_t fd))(sys_call_linux_word));
 $attr($inline)
 $static fn_((sys_call_linux_dup3(sys_call_linux_fd_t old_fd, sys_call_linux_fd_t new_fd, sys_call_linux_dup_flags_t flags))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_pipe2(int fds[2], sys_call_linux_open_flags_t flags))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_readlinkat(sys_call_linux_fd_t dirfd, const char* path, char* buf, usize len))(sys_call_linux_word));
 $attr($inline)
 $static fn_((sys_call_linux_execve(const char* path, char* const* argv, char* const* envp))(sys_call_linux_word));
 $attr($inline)
@@ -762,6 +1007,33 @@ $static fn_((sys_call_linux_getpid(void))(sys_call_linux_pid_t));
 
 $attr($inline)
 $static fn_((sys_call_linux_openat(sys_call_linux_fd_t dirfd, const char* path, sys_call_linux_open_flags_t flags, sys_call_linux_mode_t mode))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_fcntl(sys_call_linux_fd_t fd, sys_call_linux_fcntl_cmd_t cmd, sys_call_linux_word arg))(sys_call_linux_word));
+
+/*---------- <sys/socket.h> -------------------------------------------------*/
+
+$attr($inline)
+$static fn_((sys_call_linux_socket(sys_call_linux_sock_family_t domain, sys_call_linux_sock_type_t type, sys_call_linux_sock_protocol_t protocol))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_bind(sys_call_linux_fd_t fd, const sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_listen(sys_call_linux_fd_t fd, sys_call_linux_word backlog))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_accept4(sys_call_linux_fd_t fd, sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t* len, sys_call_linux_open_flags_t flags))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_connect(sys_call_linux_fd_t fd, const sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_getsockname(sys_call_linux_fd_t fd, sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t* len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_setsockopt(sys_call_linux_fd_t fd, sys_call_linux_sock_level_t level, sys_call_linux_sock_opt_t opt, const void* val, sys_call_linux_socklen_t len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_getsockopt(sys_call_linux_fd_t fd, sys_call_linux_sock_level_t level, sys_call_linux_sock_opt_t opt, void* val, sys_call_linux_socklen_t* len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_shutdown(sys_call_linux_fd_t fd, sys_call_linux_shutdown_how_t how))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_sendto(sys_call_linux_fd_t fd, const void* buf, usize len, sys_call_linux_word flags, const sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t addr_len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_recvfrom(sys_call_linux_fd_t fd, void* buf, usize len, sys_call_linux_word flags, sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t* addr_len))(sys_call_linux_word));
 
 /*---------- <sys/stat.h> ---------------------------------------------------*/
 
@@ -1340,6 +1612,14 @@ fn_((sys_call_linux_close(sys_call_linux_fd_t fd))(sys_call_linux_word)) {
     return sys_call_linux_syscall1(sys_call_linux_SYS_close, fd);
 };
 
+fn_((sys_call_linux_getcwd(char* buf, usize len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall2(sys_call_linux_SYS_getcwd, (sys_call_linux_word)(buf), (sys_call_linux_word)(len));
+};
+
+fn_((sys_call_linux_chdir(const char* path))(sys_call_linux_word)) {
+    return sys_call_linux_syscall1(sys_call_linux_SYS_chdir, (sys_call_linux_word)(path));
+};
+
 /*---------- <fcntl.h> ------------------------------------------------------*/
 
 fn_((sys_call_linux_openat(
@@ -1355,6 +1635,10 @@ fn_((sys_call_linux_openat(
         flags,
         mode
     );
+};
+
+fn_((sys_call_linux_fcntl(sys_call_linux_fd_t fd, sys_call_linux_fcntl_cmd_t cmd, sys_call_linux_word arg))(sys_call_linux_word)) {
+    return sys_call_linux_syscall3(sys_call_linux_SYS_fcntl, fd, cmd, arg);
 };
 
 /*---------- <sys/stat.h> ---------------------------------------------------*/
@@ -1418,6 +1702,14 @@ fn_((sys_call_linux_dup3(sys_call_linux_fd_t old_fd, sys_call_linux_fd_t new_fd,
     return sys_call_linux_syscall3(sys_call_linux_SYS_dup3, old_fd, new_fd, flags);
 };
 
+fn_((sys_call_linux_pipe2(int fds[2], sys_call_linux_open_flags_t flags))(sys_call_linux_word)) {
+    return sys_call_linux_syscall2(sys_call_linux_SYS_pipe2, (sys_call_linux_word)(fds), flags);
+};
+
+fn_((sys_call_linux_readlinkat(sys_call_linux_fd_t dirfd, const char* path, char* buf, usize len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall4(sys_call_linux_SYS_readlinkat, dirfd, (sys_call_linux_word)(path), (sys_call_linux_word)(buf), (sys_call_linux_word)(len));
+};
+
 fn_((sys_call_linux_execve(const char* path, char* const* argv, char* const* envp))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(
         sys_call_linux_SYS_execve,
@@ -1429,6 +1721,52 @@ fn_((sys_call_linux_execve(const char* path, char* const* argv, char* const* env
 
 fn_((sys_call_linux_setsid(void))(sys_call_linux_word)) {
     return sys_call_linux_syscall0(sys_call_linux_SYS_setsid);
+};
+
+/*---------- <sys/socket.h> -------------------------------------------------*/
+
+fn_((sys_call_linux_socket(sys_call_linux_sock_family_t domain, sys_call_linux_sock_type_t type, sys_call_linux_sock_protocol_t protocol))(sys_call_linux_word)) {
+    return sys_call_linux_syscall3(sys_call_linux_SYS_socket, domain, type, protocol);
+};
+
+fn_((sys_call_linux_bind(sys_call_linux_fd_t fd, const sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall3(sys_call_linux_SYS_bind, fd, (sys_call_linux_word)(addr), len);
+};
+
+fn_((sys_call_linux_listen(sys_call_linux_fd_t fd, sys_call_linux_word backlog))(sys_call_linux_word)) {
+    return sys_call_linux_syscall2(sys_call_linux_SYS_listen, fd, backlog);
+};
+
+fn_((sys_call_linux_accept4(sys_call_linux_fd_t fd, sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t* len, sys_call_linux_open_flags_t flags))(sys_call_linux_word)) {
+    return sys_call_linux_syscall4(sys_call_linux_SYS_accept4, fd, (sys_call_linux_word)(addr), (sys_call_linux_word)(len), flags);
+};
+
+fn_((sys_call_linux_connect(sys_call_linux_fd_t fd, const sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall3(sys_call_linux_SYS_connect, fd, (sys_call_linux_word)(addr), len);
+};
+
+fn_((sys_call_linux_getsockname(sys_call_linux_fd_t fd, sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t* len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall3(sys_call_linux_SYS_getsockname, fd, (sys_call_linux_word)(addr), (sys_call_linux_word)(len));
+};
+
+fn_((sys_call_linux_setsockopt(sys_call_linux_fd_t fd, sys_call_linux_sock_level_t level, sys_call_linux_sock_opt_t opt, const void* val, sys_call_linux_socklen_t len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall5(sys_call_linux_SYS_setsockopt, fd, level, opt, (sys_call_linux_word)(val), len);
+};
+
+fn_((sys_call_linux_getsockopt(sys_call_linux_fd_t fd, sys_call_linux_sock_level_t level, sys_call_linux_sock_opt_t opt, void* val, sys_call_linux_socklen_t* len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall5(sys_call_linux_SYS_getsockopt, fd, level, opt, (sys_call_linux_word)(val), (sys_call_linux_word)(len));
+};
+
+fn_((sys_call_linux_shutdown(sys_call_linux_fd_t fd, sys_call_linux_shutdown_how_t how))(sys_call_linux_word)) {
+    return sys_call_linux_syscall2(sys_call_linux_SYS_shutdown, fd, how);
+};
+
+fn_((sys_call_linux_sendto(sys_call_linux_fd_t fd, const void* buf, usize len, sys_call_linux_word flags, const sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t addr_len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall6(sys_call_linux_SYS_sendto, fd, (sys_call_linux_word)(buf), (sys_call_linux_word)(len), flags, (sys_call_linux_word)(addr), addr_len);
+};
+
+fn_((sys_call_linux_recvfrom(sys_call_linux_fd_t fd, void* buf, usize len, sys_call_linux_word flags, sys_call_linux_sockaddr* addr, sys_call_linux_socklen_t* addr_len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall6(sys_call_linux_SYS_recvfrom, fd, (sys_call_linux_word)(buf), (sys_call_linux_word)(len), flags, (sys_call_linux_word)(addr), (sys_call_linux_word)(addr_len));
 };
 
 /*---------- <sys/stat.h> ---------------------------------------------------*/

@@ -584,7 +584,7 @@ Core algebraic types: Optional, Error Result, Slice, Array, Variant.
 - **prl/int, prl/flt:**
   Per-type safe wrappers (e.g. `u8_add`, `u32_div`, `i64_mod`) with debug overflow checks;
   see `core`/`prim` for generic `int_add`, `intCast$`, etc.
-- **Zero-cost meta type system** (`prl/meta` and `prl/tpl`):
+- **Zero-cost meta type system** (`prl/u-meta` and `prl/tpl`):
   Type-erased generic layer over PRL types so algorithms can work on values
   without knowing the concrete type at compile time.
   How it works and how it relates to the `meta` module (record/type reflection)
@@ -820,7 +820,7 @@ Low-level memory operations with type-safe wrappers.
 
 Record layout and field access from `TypeInfo`, operating on the **meta type system**
 (`u_P$raw`, `u_S$raw`).
-For the relationship between this module and the meta type system (`prl/meta`),
+For the relationship between this module and the meta type system (`prl/u-meta`),
 see [Meta System](#meta-system).
 Compile-time type info is in `builtin`/`core` (`typeInfo$`, `sizeOf$`, `alignOf$`).
 
@@ -1054,7 +1054,7 @@ Both use the same `u_` prefix and share `TypeInfo` from `core`/`type_info.h`.
 
 ---
 
-**1. Meta type system** (`prl/meta.h`, included through `prl.h`)
+**1. Meta type system** (`prl/u-meta.h`, included through `prl.h`)
 
 A **zero-cost generic layer** over PRL types so algorithms can operate on values
 without knowing the concrete type at compile time.

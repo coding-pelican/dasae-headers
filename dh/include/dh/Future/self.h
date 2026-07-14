@@ -85,7 +85,7 @@ $static fn_((Future_resultMut(Future$raw* self, TypeInfo type))(u_P$raw));
     T_decl_Future$(_$T); \
     T_impl_Future$(_$T)
 
-#include "../meta.h"
+#include "../u-meta.h"
 
 #if on_analysis_active_only || on_comptime
 fn_((Future_result(const Future$raw* self, TypeInfo type))(u_P_const$raw)) {

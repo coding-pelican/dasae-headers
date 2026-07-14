@@ -50,6 +50,7 @@ static void test_meta_tables(void);
 static void test_cmd_parse(void);
 static void test_compiler_mode_contracts(void);
 static void test_makefile_mode_contracts(void);
+static void test_pch_dependency_invalidates_linked_plan(void);
 static void test_project_detection(void);
 static void test_clean_prefers_local_build_dir(void);
 static void test_target_request_resolution(void);
@@ -65,6 +66,7 @@ static char* test_repo_path(const char* relative_path);
 static char* test_temp_root(void);
 static void test_reset_temp_root(void);
 static void test_free_str_array(char** items, int count);
+static char* test_makefile_var_first_value(const char* makefile_text, const char* var_name);
 static const dal_c_HelpCmd* test_find_help_cmd(const char* name, int* count_out);
 static bool test_help_has_option(const dal_c_HelpCmd* cmd, const char* option_name);
 
@@ -78,6 +80,7 @@ int main(void) {
     RUN_TEST(test_cmd_parse);
     RUN_TEST(test_compiler_mode_contracts);
     RUN_TEST(test_makefile_mode_contracts);
+    RUN_TEST(test_pch_dependency_invalidates_linked_plan);
     RUN_TEST(test_project_detection);
     RUN_TEST(test_clean_prefers_local_build_dir);
     RUN_TEST(test_target_request_resolution);
@@ -118,6 +121,27 @@ static void test_free_str_array(char** items, int count) {
         free(items[i]);
     }
     free((void*)items);
+}
+
+static char* test_makefile_var_first_value(const char* makefile_text, const char* var_name) {
+    if (!makefile_text || !var_name) { return NULL; }
+    char* prefix = str_format("%s =", var_name);
+    if (!prefix) { return NULL; }
+    char* line = strstr(makefile_text, prefix);
+    free(prefix);
+    if (!line) { return NULL; }
+    char* value = strchr(line, '=');
+    if (!value) { return NULL; }
+    ++value;
+    while (*value == ' ' || *value == '\t') { ++value; }
+    char* end = value;
+    while (*end != '\0' && *end != ' ' && *end != '\t' && *end != '\r' && *end != '\n') { ++end; }
+    size_t len = (size_t)(end - value);
+    char* out = malloc(len + 1);
+    if (!out) { return NULL; }
+    memcpy(out, value, len);
+    out[len] = '\0';
+    return out;
 }
 
 static const dal_c_HelpCmd* test_find_help_cmd(const char* name, int* count_out) {
@@ -640,6 +664,25 @@ static void test_cmd_parse(void) {
         dal_c_Cmd_cleanup(&cmd);
     }
 
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--progress=hide", "--commands=show", "--verbose=off", "--jobs=3", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(6, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->action == dal_c_CmdAction_build);
+        TEST_ASSERT(!cmd->show_progress);
+        TEST_ASSERT(cmd->show_commands);
+        TEST_ASSERT(!cmd->verbose);
+        TEST_ASSERT(str_eql(cmd->make_jobs, "3"));
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--progress=off", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
     {
         const char* argv[] = { dal_c_tool_name, "run", "optimize", "sample.c", "--emit-asm", NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(5, argv);
@@ -748,7 +791,7 @@ static void test_cmd_parse(void) {
     }
 
     {
-        const char* argv[] = { dal_c_tool_name, "build-self", "optimize", "--show-commands", NULL };
+        const char* argv[] = { dal_c_tool_name, "build-self", "optimize", "--commands=show", NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(cmd->action == dal_c_CmdAction_build_self);
@@ -998,7 +1041,7 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, " -fno-stack-protector") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -save-temps=obj") != NULL);
         TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -ffreestanding") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "$(CC) $(CFLAGS_PCH) -MMD -MP -MF $(PCH_DEP) -x c-header $< -o $@") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-include-pch") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") != NULL);
         TEST_ASSERT(strstr(makefile_text, "--print-libgcc-file-name") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") == NULL);
@@ -1450,8 +1493,8 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, "LINK_TARGET = ") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-Xlinker -T -Xlinker ") != NULL);
         TEST_ASSERT(strstr(makefile_text, "--print-libgcc-file-name") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "[AS] ") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "[OBJCOPY] $@") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "P_AS = printf") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "P_OBJCOPY = printf") != NULL);
         TEST_ASSERT(strstr(makefile_text, "$(TARGET): $(LINK_CONTRACT) $(LINK_TARGET)") != NULL);
         TEST_ASSERT(strstr(makefile_text, "$(LINK_TARGET): $(LINK_CONTRACT) $(OBJS)") != NULL);
 
@@ -1499,8 +1542,6 @@ static void test_makefile_mode_contracts(void) {
         char* guest_pch_out = NULL;
         char* hosted_pch_line = NULL;
         char* guest_pch_line = NULL;
-        char* hosted_pch_end = NULL;
-        char* guest_pch_end = NULL;
 
         TEST_ASSERT(hosted_cmd != NULL);
         TEST_ASSERT(guest_cmd != NULL);
@@ -1532,25 +1573,15 @@ static void test_makefile_mode_contracts(void) {
         guest_text = file_read(guest_makefile);
         TEST_ASSERT(guest_text != NULL);
 
-        hosted_pch_line = strstr(hosted_text, "PCH_OUT = ");
-        guest_pch_line = strstr(guest_text, "PCH_OUT = ");
+        hosted_pch_line = strstr(hosted_text, "-include-pch");
+        guest_pch_line = strstr(guest_text, "-include-pch");
+        hosted_pch_out = test_makefile_var_first_value(hosted_text, "PCH_OUT");
+        guest_pch_out = test_makefile_var_first_value(guest_text, "PCH_OUT");
         TEST_ASSERT(hosted_pch_line != NULL);
         TEST_ASSERT(guest_pch_line != NULL);
-        hosted_pch_end = strchr(hosted_pch_line, '\n');
-        guest_pch_end = strchr(guest_pch_line, '\n');
-        TEST_ASSERT(hosted_pch_end != NULL);
-        TEST_ASSERT(guest_pch_end != NULL);
-        hosted_pch_out = strndup(
-            hosted_pch_line + strlen("PCH_OUT = "),
-            (size_t)(hosted_pch_end - (hosted_pch_line + strlen("PCH_OUT = ")))
-        );
-        guest_pch_out = strndup(
-            guest_pch_line + strlen("PCH_OUT = "),
-            (size_t)(guest_pch_end - (guest_pch_line + strlen("PCH_OUT = ")))
-        );
         TEST_ASSERT(hosted_pch_out != NULL);
         TEST_ASSERT(guest_pch_out != NULL);
-        TEST_ASSERT(strcmp(hosted_pch_out, guest_pch_out) != 0);
+        TEST_ASSERT(!str_eql(hosted_pch_out, guest_pch_out));
 
         free(guest_pch_out);
         free(hosted_pch_out);
@@ -1639,7 +1670,7 @@ static void test_makefile_mode_contracts(void) {
             TEST_ASSERT(makefile_text != NULL);
             TEST_ASSERT(strstr(makefile_text, "TARGET = ") != NULL);
             TEST_ASSERT(strstr(makefile_text, "SRC = ") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "[CPP] ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "P_GEN = printf") != NULL);
             TEST_ASSERT(strstr(makefile_text, " -E $(SRC) -o $@") != NULL);
             TEST_ASSERT(strstr(makefile_text, "$(TARGET): $(SRC)") != NULL);
             TEST_ASSERT(strstr(makefile_text, "TARGET_ARCH_FLAGS = -march=rv32im") != NULL);
@@ -1739,7 +1770,7 @@ static void test_makefile_mode_contracts(void) {
             TEST_ASSERT(dal_c__generateMakefile(asm_cmd, proj, profile, single_source, target_path, object_dir, dal_c_Target_assembly) == 0);
             makefile_text = file_read(makefile_path);
             TEST_ASSERT(makefile_text != NULL);
-            TEST_ASSERT(strstr(makefile_text, "[ASM] ") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "P_GEN = printf") != NULL);
             TEST_ASSERT(strstr(makefile_text, " -S $(SRC) -o $@") != NULL);
             TEST_ASSERT(strstr(makefile_text, "-flto") != NULL);
             TEST_ASSERT(strstr(makefile_text, "-fno-lto") == NULL);
@@ -1769,6 +1800,115 @@ static void test_makefile_mode_contracts(void) {
     free(pch_header);
     free(include_dir);
     free(source_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+}
+
+static void test_pch_dependency_invalidates_linked_plan(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "pch-deps-project");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* include_dir = path_join(project_root, "include");
+    char* source_dir = path_join(project_root, "source");
+    char* pch_header = path_join(include_dir, "dh.h");
+    char* pch_dep_header = path_join(include_dir, "dep.h");
+    char* source = path_join(source_dir, "main.c");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(include_dir != NULL);
+    TEST_ASSERT(source_dir != NULL);
+    TEST_ASSERT(pch_header != NULL);
+    TEST_ASSERT(pch_dep_header != NULL);
+    TEST_ASSERT(source != NULL);
+    TEST_ASSERT(dir_createRecur(include_dir));
+    TEST_ASSERT(dir_createRecur(source_dir));
+    TEST_ASSERT(file_write(project_dh, "output=pch-deps\nlink-dsl=off\npch=dh.h\n"));
+    TEST_ASSERT(file_write(pch_header, "#pragma once\n#include \"dep.h\"\n#define PCH_DEPS 1\n"));
+    TEST_ASSERT(file_write(pch_dep_header, "#pragma once\n#define PCH_DEP_VALUE 1\n"));
+    TEST_ASSERT(file_write(source, "int main(void) { return 0; }\n"));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(proj != NULL);
+    TEST_ASSERT(proj->pch_header != NULL);
+
+    ArrStr* sources = dal_c__collectSourceFiles(proj, NULL);
+    TEST_ASSERT(sources != NULL);
+    TEST_ASSERT(ArrStr_len(sources) == 1);
+
+    const char* argv[] = { dal_c_tool_name, "build", "release", "--link-dsl=off", NULL };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+    TEST_ASSERT(cmd != NULL);
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    TEST_ASSERT(profile != NULL);
+
+    char* build_dir = dal_c_Project_getBuildDir(proj);
+    char* profile_dir = path_join(build_dir, profile->name);
+    char* object_dir = path_join(profile_dir, "obj");
+    char* target_path = dal_c__resolveOutputPath(proj, cmd, profile_dir, proj->defaults.output_name, dal_c_Target_executable);
+    char* makefile_path = dal_c__makePlanFilePath(proj, profile, cmd, target_path, dal_c_Target_executable);
+    TEST_ASSERT(build_dir != NULL);
+    TEST_ASSERT(profile_dir != NULL);
+    TEST_ASSERT(object_dir != NULL);
+    TEST_ASSERT(target_path != NULL);
+    TEST_ASSERT(makefile_path != NULL);
+    TEST_ASSERT(dir_createRecur(object_dir));
+
+    TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == dal_c_generateMakefile_success);
+    char* makefile_text = file_read(makefile_path);
+    TEST_ASSERT(makefile_text != NULL);
+    TEST_ASSERT(strstr(makefile_text, "PCH_OUT = ") != NULL);
+    TEST_ASSERT(strstr(makefile_text, "PCH_DEP = ") != NULL);
+    TEST_ASSERT(strstr(makefile_text, ".tmp.$$$$") != NULL);
+    TEST_ASSERT(strstr(makefile_text, "-MQ \"$(PCH_OUT)\"") != NULL);
+    TEST_ASSERT(strstr(makefile_text, "-MQ \"$@\"") != NULL);
+    TEST_ASSERT(strstr(makefile_text, "-include $(PCH_DEP)") != NULL);
+
+    char* obj_path = test_makefile_var_first_value(makefile_text, "OBJS");
+    TEST_ASSERT(obj_path != NULL);
+    char* obj_dep_path = strdup(obj_path);
+    TEST_ASSERT(obj_dep_path != NULL);
+    char* obj_ext = strrchr(obj_dep_path, '.');
+    TEST_ASSERT(obj_ext != NULL && str_eql(obj_ext, ".o"));
+    strcpy(obj_ext, ".d");
+
+    char* target_parent = path_parent(target_path);
+    char* obj_parent = path_parent(obj_path);
+    TEST_ASSERT(target_parent != NULL);
+    TEST_ASSERT(obj_parent != NULL);
+    TEST_ASSERT(dir_createRecur(target_parent));
+    TEST_ASSERT(dir_createRecur(obj_parent));
+    TEST_ASSERT(file_write(obj_path, "fake object\n"));
+    char* obj_dep_text = str_format("%s: %s\n", obj_path, source);
+    TEST_ASSERT(obj_dep_text != NULL);
+    TEST_ASSERT(file_write(obj_dep_path, obj_dep_text));
+    TEST_ASSERT(file_write(target_path, "fake executable\n"));
+
+    int plan_result = dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable);
+    TEST_ASSERT(plan_result == dal_c_generateMakefile_success);
+
+    free(obj_dep_text);
+    free(obj_parent);
+    free(target_parent);
+    free(obj_dep_path);
+    free(obj_path);
+    free(makefile_text);
+    free(makefile_path);
+    free(target_path);
+    free(object_dir);
+    free(profile_dir);
+    free(build_dir);
+    dal_c_Cmd_cleanup(&cmd);
+    ArrStr_fini(&sources);
+    dal_c_Project_cleanup(&proj);
+    free(source);
+    free(pch_dep_header);
+    free(pch_header);
+    free(source_dir);
+    free(include_dir);
     free(project_dh);
     free(project_root);
     free(temp_root);
@@ -2098,9 +2238,9 @@ static void test_target_root_directory_uses_local_include(void) {
     }
     char* demo_output = path_join(demo_output_dir,
 #ifdef _WIN32
-        "demo-output.exe"
+                                  "demo-output.exe"
 #else
-        "demo-output"
+                                  "demo-output"
 #endif
     );
     TEST_ASSERT(demo_output != NULL);
@@ -2125,9 +2265,7 @@ static void test_target_root_directory_uses_local_include(void) {
 
     char* compile_db = file_read(compile_db_path);
     TEST_ASSERT(compile_db != NULL);
-    TEST_ASSERT(strstr(compile_db, "examples/demo/include") != NULL
-             || strstr(compile_db, "examples\\\\demo\\\\include") != NULL
-             || strstr(compile_db, "examples\\\\\\\\demo\\\\\\\\include") != NULL);
+    TEST_ASSERT(strstr(compile_db, "examples/demo/include") != NULL || strstr(compile_db, "examples\\\\demo\\\\include") != NULL || strstr(compile_db, "examples\\\\\\\\demo\\\\\\\\include") != NULL);
 
     free(compile_db);
     free(demo_output);
@@ -2160,6 +2298,8 @@ static void test_compile_db_command(void) {
     char* source = path_join(source_dir, "main.c");
     char* sample_source = path_join(samples_dir, "sample-main.c");
     char* one_off_source = path_join(source_dir, "one-off.c");
+    char* deps_header = path_join(project_root, "lib/deps.h");
+    char* nested_deps_header = path_join(project_root, "lib/deps/deps.h");
     char* output_path = path_join(project_root, "build/clangd/compile_commands.json");
     char* auto_output_path = path_join(project_root, "compile_commands.json");
 
@@ -2173,6 +2313,8 @@ static void test_compile_db_command(void) {
     TEST_ASSERT(source != NULL);
     TEST_ASSERT(sample_source != NULL);
     TEST_ASSERT(one_off_source != NULL);
+    TEST_ASSERT(deps_header != NULL);
+    TEST_ASSERT(nested_deps_header != NULL);
     TEST_ASSERT(output_path != NULL);
     TEST_ASSERT(auto_output_path != NULL);
 
@@ -2243,6 +2385,8 @@ static void test_compile_db_command(void) {
     dal_c_Cmd* build_cmd = dal_c_Cmd_parse(3, build_argv);
     TEST_ASSERT(build_cmd != NULL);
     TEST_ASSERT(dal_c_Cmd_makeTarget(build_cmd, proj) == 0);
+    TEST_ASSERT(path_isFile(deps_header));
+    TEST_ASSERT(!path_exists(nested_deps_header));
     TEST_ASSERT(!path_exists(auto_output_path));
 
     {
@@ -2271,6 +2415,8 @@ static void test_compile_db_command(void) {
 
     free(auto_output_path);
     free(output_path);
+    free(nested_deps_header);
+    free(deps_header);
     free(one_off_source);
     free(sample_source);
     free(source);

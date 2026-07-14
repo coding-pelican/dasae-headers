@@ -368,7 +368,7 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 })
 // clang-format on
 
-/* TODO: else로 끝나지 않으면 컴파일 에러를 발생시키도록 만들기 */
+/* TODO: make it compile error if it does not end with else */
 // clang-format off
 /* [for|while|switch|match]-else as expression block (supports else) */
 #define eval_(/*<_$T_Break $ext>|<else>*/...) inline__eval_(__VA_ARGS__) pp_expand
@@ -432,7 +432,7 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
 
 #if EXAMPLE_USAGE
 #include "dh-main.h"
-#include "dh/math.h"
+#include "dh/m-math.h"
 
 /* declarations =============================================================*/
 use_ErrSet$(math_E, i32);

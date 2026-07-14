@@ -4,6 +4,9 @@
 #include "dh/fs/Dir.h"
 #include "dh/io/Reader.h"
 #include "dh/fs/path.h"
+#if plat_is_linux
+#include "dh/sys/call/linux.h"
+#endif
 
 TEST_fn_("proc: current path is available" $scope) {
     var_(buf, A$$(512, u8)) $undefined;
@@ -13,12 +16,20 @@ TEST_fn_("proc: current path is available" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("proc: spawn and wait exit code" $scope) {
+#if plat_is_windows
     var_(argv, A$$(4, S_const$u8)) = A_init({
         [0] = u8_l("cmd.exe"),
         [1] = u8_l("/c"),
         [2] = u8_l("exit"),
         [3] = u8_l("7"),
     });
+#else
+    var_(argv, A$$(3, S_const$u8)) = A_init({
+        [0] = u8_l("/bin/sh"),
+        [1] = u8_l("-c"),
+        [2] = u8_l("exit 7"),
+    });
+#endif
     var child = try_(proc_spawn((proc_Cmd){
         .argv = A_ref$((S$S_const$u8)(argv)),
         .env = none(),
@@ -37,12 +48,22 @@ TEST_fn_("proc: spawn and wait exit code" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("proc: stdout pipe captures child output" $guard) {
+#if plat_is_windows
     var_(argv, A$$(4, S_const$u8)) = A_init({
         [0] = u8_l("cmd.exe"),
         [1] = u8_l("/c"),
         [2] = u8_l("echo"),
         [3] = u8_l("hello"),
     });
+    let expected = u8_l("hello" io_crlf);
+#else
+    var_(argv, A$$(3, S_const$u8)) = A_init({
+        [0] = u8_l("/bin/sh"),
+        [1] = u8_l("-c"),
+        [2] = u8_l("printf 'hello\\n'"),
+    });
+    let expected = u8_l("hello\n");
+#endif
     var child = try_(proc_spawn((proc_Cmd){
         .argv = A_ref$((S$S_const$u8)(argv)),
         .env = none(),
@@ -64,9 +85,9 @@ TEST_fn_("proc: stdout pipe captures child output" $guard) {
 
     var_(buf, A$$(7, u8)) $undefined;
     let reader = fs_File_reader(std_out);
-    try_(io_Reader_readExact(reader, A_ref$((S$u8)(buf))));
+    try_(io_Reader_readExact(reader, S_prefix((A_ref$((S$u8)(buf)))(expected.len))));
 
-    try_(TEST_expect(mem_eqlBytes(A_ref$((S_const$u8)(buf)), u8_l("hello" io_crlf))));
+    try_(TEST_expect(mem_eqlBytes(S_prefix((A_ref$((S_const$u8)(buf)))(expected.len)), expected)));
 } $unguarded(TEST_fn);
 
 #if plat_is_windows
@@ -101,10 +122,16 @@ $static fn_((test__fullPathZ(P_const$u8 path_z, S$u8 out))(E$S$u8) $scope) {
 } $unscoped(fn);
 #endif /* plat_is_windows */
 
-TEST_fn_("proc: custom environment block is passed to child" $guard) {
 #if !plat_is_windows
-    try_(TEST_skip());
-#else
+$static fn_((test__readPipeAll(fs_File file, S$u8 out))(E$S$u8) $scope) {
+    let reader = fs_File_reader(file);
+    let read = try_(io_Reader_read(reader, out));
+    return_ok(S_slice((out)$r(0, read)));
+} $unscoped(fn);
+#endif /* !plat_is_windows */
+
+TEST_fn_("proc: custom environment block is passed to child" $guard) {
+#if plat_is_windows
     var_(comspec_buf, A$$(512, u8)) $undefined;
     let comspec_len = GetEnvironmentVariableA(
         "ComSpec", as$(LPSTR)(A_ptr(comspec_buf)), as$(DWORD)(A_len(comspec_buf))
@@ -117,6 +144,15 @@ TEST_fn_("proc: custom environment block is passed to child" $guard) {
         [2] = u8_l("echo"),
         [3] = u8_l("%PROC_TEST_VAR%"),
     });
+    let expected = u8_l("from-env" io_crlf);
+#else
+    var_(argv, A$$(3, S_const$u8)) = A_init({
+        [0] = u8_l("/bin/sh"),
+        [1] = u8_l("-c"),
+        [2] = u8_l("printf '%s\\n' \"$PROC_TEST_VAR\""),
+    });
+    let expected = u8_l("from-env\n");
+#endif
     var_(env, A$$(1, S_const$u8)) = A_init({
         [0] = u8_l("PROC_TEST_VAR=from-env"),
     });
@@ -140,18 +176,15 @@ TEST_fn_("proc: custom environment block is passed to child" $guard) {
     defer_(fs_File_close(std_out));
 
     let out = try_(test__readPipeAll(std_out, A_ref$((S$u8)(buf))));
-    try_(TEST_expect(mem_eqlBytes(out.as_const, u8_l("from-env" io_crlf))));
-#endif /* plat_is_windows */
+    try_(TEST_expect(mem_eqlBytes(out.as_const, expected)));
 } $unguarded(TEST_fn);
 
 TEST_fn_("proc: cwd handle is passed to child" $guard) {
-#if !plat_is_windows
-    try_(TEST_skip());
-#else
     let dir = fs_path_dirname(mem_spanZ0$u8(src_loc_filePath()));
     var_(dir_z, A$$(1024, u8)) = A_zero();
     mem_copyBytes(S_prefix((A_ref$((S$u8)(dir_z)))(dir.len)), dir);
 
+#if plat_is_windows
     var dir_handle = try_(test__openDirZ(A_ptr(dir_z)));
     defer_(fs_Dir_close(&dir_handle));
 
@@ -163,6 +196,16 @@ TEST_fn_("proc: cwd handle is passed to child" $guard) {
         [1] = u8_l("/c"),
         [2] = u8_l("cd"),
     });
+#else
+    var dir_handle = try_(fs_Dir_openDir((fs_Dir){ .handle = sys_call_linux_AT_FDCWD }, dir, fs_File_OpenFlags_default));
+    defer_(fs_Dir_close(&dir_handle));
+
+    let expected = dir;
+
+    var_(argv, A$$(1, S_const$u8)) = A_init({
+        [0] = u8_l("/bin/pwd"),
+    });
+#endif
     var child = try_(proc_spawn((proc_Cmd){
         .argv = A_ref$((S$S_const$u8)(argv)),
         .env = none(),
@@ -185,18 +228,21 @@ TEST_fn_("proc: cwd handle is passed to child" $guard) {
 
     var_(expected_line, A$$(640, u8)) $undefined;
     mem_copyBytes(S_slice(((S$u8)A_ref$((S$u8)(expected_line)))$r(0, expected.len)), expected.as_const);
+#if plat_is_windows
     *A_at((expected_line)[expected.len]) = io_cr_byte;
     *A_at((expected_line)[expected.len + 1]) = io_lf_byte;
+    let expected_line_len = expected.len + 2;
+#else
+    *A_at((expected_line)[expected.len]) = io_lf_byte;
+    let expected_line_len = expected.len + 1;
+#endif
     try_(TEST_expect(mem_eqlBytes(
-        out.as_const, S_slice(((S_const$u8)A_ref$((S_const$u8)(expected_line)))$r(0, expected.len + 2))
+        out.as_const, S_slice(((S_const$u8)A_ref$((S_const$u8)(expected_line)))$r(0, expected_line_len))
     )));
-#endif /* plat_is_windows */
 } $unguarded(TEST_fn);
 
 TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
-#if !plat_is_windows
-    try_(TEST_skip());
-#else
+#if plat_is_windows
     var_(comspec_buf, A$$(512, u8)) $undefined;
     let comspec_len = GetEnvironmentVariableA(
         "ComSpec", as$(LPSTR)(A_ptr(comspec_buf)), as$(DWORD)(A_len(comspec_buf))
@@ -219,6 +265,16 @@ TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
         [2] = u8_l("exit"),
         [3] = u8_l("9"),
     });
+#else
+    var dir = try_(fs_Dir_openDir((fs_Dir){ .handle = sys_call_linux_AT_FDCWD }, u8_l("/bin"), fs_File_OpenFlags_default));
+    defer_(fs_Dir_close(&dir));
+
+    var_(argv, A$$(3, S_const$u8)) = A_init({
+        [0] = u8_l("sh"),
+        [1] = u8_l("-c"),
+        [2] = u8_l("exit 9"),
+    });
+#endif
     var child = try_(proc_spawnPath(
         dir,
         (proc_Cmd){
@@ -236,5 +292,4 @@ TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
 
     let term = try_(proc_Child_wait(&child));
     try_(TEST_expect(term.code == 9));
-#endif /* plat_is_windows */
 } $unguarded(TEST_fn);

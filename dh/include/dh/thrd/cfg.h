@@ -37,7 +37,7 @@ extern "C" {
     pp_switch_ pp_begin(plat_type)( \
         pp_case_((plat_type_windows)(pp_false)), \
         pp_case_((plat_type_linux)(pp_false)), \
-        pp_case_((plat_type_darwin)(pp_false)), \
+        pp_case_((plat_type_darwin)(pp_true)), \
         pp_case_((plat_type_wasi)(pp_false)), \
         pp_default_(pp_false) \
     ) pp_end \

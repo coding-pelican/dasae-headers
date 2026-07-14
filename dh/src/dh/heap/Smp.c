@@ -1,6 +1,6 @@
 #include "dh/heap/Smp.h"
 #include "dh/thrd/Self.h"
-#include "dh/meta.h"
+#include "dh/u-meta.h"
 
 /*========== Internal Declarations ==========================================*/
 

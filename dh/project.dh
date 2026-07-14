@@ -1,2 +1,2 @@
 kind=lib
-pch=off
+pch=dh-bundle.h

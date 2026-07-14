@@ -16,6 +16,8 @@ static char* dal_c_Project__findRoot(const char* start);
 static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd);
 static bool dal_c_Project__isDHRoot(const char* path);
 static bool dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj);
+static char* dal_c_Project__depsPreludeHeaderPath(const dal_c_Project* proj);
+static char* dal_c_Project__findIncludeHeader(const dal_c_Project* proj, const char* header);
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj);
 static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib);
 static void dal_c_Project__addSelfRoot(dal_c_Project* proj, const char* path);
@@ -875,11 +877,11 @@ static bool dal_c_Project__versionBuildIsValid(const char* value) {
     for (const unsigned char* p = (const unsigned char*)value; *p != '\0'; ++p) {
         unsigned char c = *p;
         bool ok = (c >= '0' && c <= '9')
-            || (c >= 'A' && c <= 'Z')
-            || (c >= 'a' && c <= 'z')
-            || c == '.'
-            || c == '_'
-            || c == '-';
+               || (c >= 'A' && c <= 'Z')
+               || (c >= 'a' && c <= 'z')
+               || c == '.'
+               || c == '_'
+               || c == '-';
         if (!ok) {
             return false;
         }
@@ -1265,6 +1267,9 @@ static bool dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj)
                 proj->pch_enabled = true;
                 free(proj->pch_header_override);
                 proj->pch_header_override = NULL;
+            } else if (str_eql(value, dal_c_pch_value_deps)) {
+                proj->pch_enabled = true;
+                dal_c_Project__setString(&proj->pch_header_override, dal_c_pch_value_deps);
             } else {
                 proj->pch_enabled = true;
                 char* pch_path = dal_c_Project__resolveProjectPath(proj, value);
@@ -1319,82 +1324,59 @@ static bool dal_c_Project__parseProjectDh(const char* path, dal_c_Project* proj)
     return true;
 }
 
+static char* dal_c_Project__depsPreludeHeaderPath(const dal_c_Project* proj) {
+    if (!proj || !proj->root) { return NULL; }
+    char* lib_dir = dal_c_Project_getLibDir(proj);
+    if (!lib_dir) { return NULL; }
+    char* deps_header = path_join(lib_dir, "deps.h");
+    free(lib_dir);
+    return deps_header;
+}
+
+static char* dal_c_Project__findIncludeHeader(const dal_c_Project* proj, const char* header) {
+    if (!proj || !proj->root || !header) { return NULL; }
+    char* inc_dir = dal_c_Project_getIncludeDir(proj);
+    if (!inc_dir) { return NULL; }
+    char* header_path = path_join(inc_dir, header);
+    free(inc_dir);
+    if (header_path && path_isFile(header_path)) { return header_path; }
+    free(header_path);
+    return NULL;
+}
+
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
-    if (!proj->root || !proj->pch_enabled) { return NULL; }
-#if !defined(_WIN32)
-    long page_size = sysconf(_SC_PAGESIZE);
-    long phys_pages = sysconf(_SC_PHYS_PAGES);
-    if (page_size > 0 && phys_pages > 0) {
-        unsigned long long mem_bytes = (unsigned long long)page_size * (unsigned long long)phys_pages;
-        if (mem_bytes < 8ull * 1024ull * 1024ull * 1024ull) {
-            return NULL;
-        }
-    }
-#endif
+    if (!proj || !proj->root || !proj->pch_enabled) { return NULL; }
 
     if (proj->pch_header_override) {
+        if (str_eql(proj->pch_header_override, dal_c_pch_value_deps)) {
+            return dal_c_Project__depsPreludeHeaderPath(proj);
+        }
         if (path_isFile(proj->pch_header_override)) {
             return strdup(proj->pch_header_override);
         }
         char* inc_dir_for_override = dal_c_Project_getIncludeDir(proj);
-        const char* override_name = path_basename(proj->pch_header_override);
+        char* override_name = path_basename(proj->pch_header_override);
         char* inc_relative = inc_dir_for_override && override_name ? path_join(inc_dir_for_override, override_name) : NULL;
         free(inc_dir_for_override);
-        if (inc_relative && path_isFile(inc_relative)) {
-            return inc_relative;
-        }
+        free(override_name);
+        if (inc_relative && path_isFile(inc_relative)) { return inc_relative; }
         free(inc_relative);
         return NULL;
     }
 
-    char* inc_dir = dal_c_Project_getIncludeDir(proj);
-    if (!path_isDir(inc_dir)) {
-        free(inc_dir);
-        return NULL;
+    if (!dal_c_Project__isDHRoot(proj->root)) {
+        return dal_c_Project__depsPreludeHeaderPath(proj);
     }
 
-    const char* common_names[] = {
-        dal_c_pch_header_target_dsl,
-        dal_c_pch_header_dh,
-        dal_c_pch_header_dal,
-        dal_c_pch_header_da,
-        NULL
-    };
-
-    for (int i = 0; common_names[i] != NULL; ++i) {
-        char* header_path = path_join(inc_dir, common_names[i]);
-        if (path_isFile(header_path)) {
-            free(inc_dir);
-            return header_path;
-        }
-        free(header_path);
-    }
-
-    if (proj->name) {
-        char* proj_header = str_format("%s.h", proj->name);
-        char* header_path = path_join(inc_dir, proj_header);
-        free(proj_header);
-        if (path_isFile(header_path)) {
-            free(inc_dir);
-            return header_path;
-        }
-        free(header_path);
-    }
-
-    int file_count = 0;
-    char** files = dir_listRecur(inc_dir, &file_count);
-    free(inc_dir);
-    if (!files) { return NULL; }
-
-    char* header_path = NULL;
-    for (int i = 0; i < file_count; ++i) {
-        if (!header_path && str_endsWith(files[i], ".h")) {
-            header_path = strdup(files[i]);
-        }
-        free(files[i]);
-    }
-    free((void*)files);
-    return header_path;
+    char* dh_pch_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_bundle);
+    if (dh_pch_header) { return dh_pch_header; }
+    char* sys_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_sys);
+    if (sys_header) { return sys_header; }
+    char* prl_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_prl);
+    if (prl_header) { return prl_header; }
+    char* core_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_core);
+    if (core_header) { return core_header; }
+    return dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_builtin);
 }
 
 static void dal_c_Project__ensureBuiltinTargetRoots(dal_c_Project* proj) {

@@ -160,7 +160,7 @@ $static fn_((thrd_LazeLock_valMut(thrd_LazeLock$raw* self, TypeInfo val_type))(u
     }
 /* clang-format on */
 
-#include "../meta.h"
+#include "../u-meta.h"
 
 #if on_analysis_active_only || on_comptime
 fn_((thrd_LazeLock_val(const thrd_LazeLock$raw* self, TypeInfo val_type))(u_P_const$raw)) {

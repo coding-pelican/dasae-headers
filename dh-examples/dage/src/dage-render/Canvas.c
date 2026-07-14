@@ -1,5 +1,5 @@
 #include "dage-render/Canvas.h"
-#include <dh/math/common.h>
+#include <dh/m-math/common.h>
 #include <dh/mem/cfg.h>
 
 fn_((dage_Canvas_init(dage_Canvas_Cfg cfg))(E$dage_Canvas) $guard) {

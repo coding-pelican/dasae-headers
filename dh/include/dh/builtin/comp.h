@@ -330,6 +330,7 @@ extern "C" {
 #if UNUSED_CODE
 #define ____copy(__val, _$val...) (*&*((TypeOfUnqual(_$val)[1]){ [0] = _$val }))
 #endif /* UNUSED_CODE */
+/* TODO: Check compound literal / initializer "compile-time constant" issue on Clang 17 */
 #define ____copy(__val, _$val...) ( \
     *(TypeOfUnqual(_$val)*)raw_memcpy( \
         &l0$((TypeOfUnqual(_$val))), \
@@ -481,12 +482,15 @@ extern "C" {
     __VA_ARGS__ \
 )
 
-#define $suppress_unterminated_string_initialization(...) $pragma_guard_( \
-    "clang diagnostic push", \
-    "clang diagnostic ignored \"-Wunterminated-string-initialization\"", \
-    "clang diagnostic pop", \
+#if comp_type == comp_type_clang && comp_version_major >= 18
+#define $suppress_unterminated_string_initialization(...) /* clang-format off */ \
+    _Pragma("clang diagnostic push") \
+    _Pragma("clang diagnostic ignored \"-Wunterminated-string-initialization\"") \
     __VA_ARGS__ \
-)
+    _Pragma("clang diagnostic pop") /* clang-format on */
+#else
+#define $suppress_unterminated_string_initialization(...) __VA_ARGS__
+#endif
 #define $suppress_return_stack_address(...) $pragma_guard_( \
     "clang diagnostic push", \
     "clang diagnostic ignored \"-Wreturn-stack-address\"", \

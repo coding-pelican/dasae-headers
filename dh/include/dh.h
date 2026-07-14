@@ -19,18 +19,22 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/builtin.h" /* no prefix, abs path*/
-#include "dh/core.h" /* no prefix, abs path*/
-#include "dh/prl.h" /* no prefix, abs path*/
+#include "dh/builtin.h" /* no prefix, abs path, pch target */
+#include "dh/core.h" /* no prefix, abs path, pch target */
+#include "dh/prl.h" /* no prefix, abs path, pch target */
 
-#include "dh/atom.h"
-#include "dh/simd.h"
-#include "dh/clsr.h"
+#include "dh/atom.h" /* pch target */
+#include "dh/simd.h" /* pch target */
+#include "dh/clsr.h" /* pch target */
 
-#include "dh/cmp.h"
-#include "dh/math.h"
-#include "dh/mem.h"
-#include "dh/meta.h"
+#include "dh/cmp.h" /* pch target */
+#include "dh/m-math.h" /* pch target */
+#include "dh/m-math-linalg.h"
+#include "dh/m-math-geom.h"
+#include "dh/m-math-interp.h"
+#include "dh/m-math-ease.h"
+#include "dh/mem.h" /* pch target */
+#include "dh/u-meta.h" /* pch target */
 
 #include "dh/Rand.h"
 #include "dh/hash.h"
@@ -65,8 +69,8 @@ extern "C" {
 #include "dh/BTreeMap.h"
 #include "dh/BTreeSet.h"
 
-#include "dh/sys.h" /* abs path */
-#include "dh/c.h" /* abs path */
+#include "dh/sys.h" /* abs path, pch target */
+#include "dh/c.h" /* abs path, pch target */
 
 #include "dh/fs.h"
 #include "dh/time.h"

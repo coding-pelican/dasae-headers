@@ -1,6 +1,6 @@
 #include "Cond.h"
 #include "Mtx.h"
-#include "dh/math/common.h"
+#include "dh/m-math/common.h"
 
 /*========== Internal Declarations ==========================================*/
 

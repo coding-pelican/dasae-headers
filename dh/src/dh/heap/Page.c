@@ -74,13 +74,11 @@ fn_((heap_Page__noHintAddr(void))(usize)) {
 };
 
 fn_((heap_Page__assertContract(mem_Align align))(void)) {
-    let ptr_align = mem_log2ToAlign(align);
-    let max_align = heap_Page__guaranteedAlign();
-    claim_assert_fmt(
-        ptr_align <= max_align,
-        "Page allocator can only guarantee platform page mapping alignment (requested: {:uz}, max: {:uz})",
-        ptr_align, max_align
-    );
+    /* Page mappings are naturally aligned to heap_Page__guaranteedAlign().
+     * Larger power-of-two alignments are supported by overmapping and trimming
+     * the leading/trailing page ranges in heap_Page__alloc. */
+    let_ignore = align;
+    let_ignore = heap_Page__guaranteedAlign();
 };
 
 fn_((heap_Page__normalizeHintAddr(usize hint_addr))(usize)) {
@@ -214,11 +212,34 @@ fn_((heap_Page__alloc(P$raw ctx, usize len, mem_Align align))(O$P$u8) $scope) {
     let aligned_len = heap_Page__alignedLen(len);
     let hint_addr = heap_Page__loadHintAddr(self);
     let hint = heap_Page__hintAddrAsPtr(hint_addr);
-    let map = orelse_((heap_vmap_map(hint, aligned_len))(null));
-    if (map == null) return_none();
-    claim_assert(mem_isAligned(ptrToInt(map), geom.page_size));
-    claim_assert_fmt(mem_isAligned(ptrToInt(map), ptr_align), "mmap returned misaligned address");
+    if (ptr_align <= geom.map_align) {
+        let map = orelse_((heap_vmap_map(hint, aligned_len))(null));
+        if (map == null) return_none();
+        claim_assert(mem_isAligned(ptrToInt(map), geom.page_size));
+        claim_assert_fmt(mem_isAligned(ptrToInt(map), ptr_align), "mmap returned misaligned address");
 
+        heap_Page__storeHintAddr(self, hint_addr, map, aligned_len);
+        return_some(map);
+    }
+
+    if (usize_limit - aligned_len < ptr_align - geom.map_align) return_none();
+    let overalloc_len = aligned_len + (ptr_align - geom.map_align);
+    let overalloc_map = orelse_((heap_vmap_map(hint, overalloc_len))(null));
+    if (overalloc_map == null) return_none();
+
+    let overalloc_addr = ptrToInt(overalloc_map);
+    let aligned_addr = mem_alignFwd(overalloc_addr, ptr_align);
+    let prefix_len = aligned_addr - overalloc_addr;
+    let suffix_addr = aligned_addr + aligned_len;
+    let overalloc_end = overalloc_addr + overalloc_len;
+    let suffix_len = overalloc_end - suffix_addr;
+
+    if (prefix_len != 0) { let_ignore = heap_vmap_release(overalloc_map, prefix_len); }
+    if (suffix_len != 0) { let_ignore = heap_vmap_release(intToPtr$((P$raw)(suffix_addr)), suffix_len); }
+
+    let map = intToPtr$((u8*)(aligned_addr));
+    claim_assert(mem_isAligned(ptrToInt(map), geom.page_size));
+    claim_assert(mem_isAligned(ptrToInt(map), ptr_align));
     heap_Page__storeHintAddr(self, hint_addr, map, aligned_len);
     return_some(map);
 #endif /* posix */

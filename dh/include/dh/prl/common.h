@@ -24,16 +24,16 @@ extern "C" {
 
 #include "base.h"
 #include "simd.h"
-#include "Limit.h"
-#include "Range.h"
+#include "L-Limit.h"
+#include "R-Range.h"
 
 #include "Co.h"
 #include "Clsr.h"
 #include "va.h"
 
 #include "CompHash.h"
-#include "Err.h"
-#include "ErrTrace.h"
+#include "E-Err.h"
+#include "ETrace.h"
 
 /*========== Macros and Declarations ========================================*/
 

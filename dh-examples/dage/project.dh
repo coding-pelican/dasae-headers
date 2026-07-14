@@ -1,5 +1,4 @@
 kind=lib
-pch=dage.h
 link-dsl=on
 
 [dh-extras/sys/api/windows/wnd]

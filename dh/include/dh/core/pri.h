@@ -1261,12 +1261,35 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
         T_case$((u64)(____uint_addCarry64(__lhs, __rhs, __carry_in, _p_carry_out))) \
     ))); \
 })
+#if UINT64_MAX == ULONG_MAX
 #define ____uint_addCarry64(_$lhs, _$rhs, _carry_in, _p_carry_out...) local_({ \
-    var_(__carry_out, u64) = 0; \
-    let_(__res, u64) = __builtin_addcll(as$(u64)(_$lhs), as$(u64)(_$rhs), as$(u64)(_carry_in), &__carry_out); \
+    var_(__carry_out, ulong) = 0; \
+    let_(__res, u64) = as$(u64)(__builtin_addcl( \
+        as$(ulong)(_$lhs), as$(ulong)(_$rhs), as$(ulong)(_carry_in), &__carry_out \
+    )); \
     *(_p_carry_out) = as$(TypeOf(*(_p_carry_out)))(__carry_out); \
     local_return_(__res); \
 })
+#elif UINT64_MAX == ULLONG_MAX
+#define ____uint_addCarry64(_$lhs, _$rhs, _carry_in, _p_carry_out...) local_({ \
+    var_(__carry_out, unsigned long long) = 0; \
+    let_(__res, u64) = as$(u64)(__builtin_addcll( \
+        as$(unsigned long long)(_$lhs), as$(unsigned long long)(_$rhs), as$(unsigned long long)(_carry_in), &__carry_out \
+    )); \
+    *(_p_carry_out) = as$(TypeOf(*(_p_carry_out)))(__carry_out); \
+    local_return_(__res); \
+})
+#else
+#define ____uint_addCarry64(_$lhs, _$rhs, _carry_in, _p_carry_out...) local_({ \
+    let_(__lhs, u64) = as$(u64)(_$lhs); \
+    let_(__rhs, u64) = as$(u64)(_$rhs); \
+    let_(__cin, u64) = as$(u64)(_carry_in); \
+    let_(__sum, u64) = as$(u64)(__lhs + __rhs); \
+    let_(__res, u64) = as$(u64)(__sum + __cin); \
+    *(_p_carry_out) = as$(TypeOf(*(_p_carry_out)))((__sum < __lhs) || (__res < __sum)); \
+    local_return_(__res); \
+})
+#endif
 #define ____uint_addCarryLong(_$lhs, _$rhs, _carry_in, _p_carry_out...) local_({ \
     var_(__carry_out, ulong) = 0; \
     let_(__res, ulong) = __builtin_addcl(as$(ulong)(_$lhs), as$(ulong)(_$rhs), as$(ulong)(_carry_in), &__carry_out); \
@@ -1341,12 +1364,35 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
         T_case$((u64)(____uint_subBorrow64(__lhs, __rhs, __borrow_in, _p_borrow_out))) \
     ))); \
 })
+#if UINT64_MAX == ULONG_MAX
 #define ____uint_subBorrow64(_$lhs, _$rhs, _borrow_in, _p_borrow_out...) local_({ \
-    var_(__borrow_out, u64) = 0; \
-    let_(__res, u64) = __builtin_subcll(as$(u64)(_$lhs), as$(u64)(_$rhs), as$(u64)(_borrow_in), &__borrow_out); \
+    var_(__borrow_out, ulong) = 0; \
+    let_(__res, u64) = as$(u64)(__builtin_subcl( \
+        as$(ulong)(_$lhs), as$(ulong)(_$rhs), as$(ulong)(_borrow_in), &__borrow_out \
+    )); \
     *(_p_borrow_out) = as$(TypeOf(*(_p_borrow_out)))(__borrow_out); \
     local_return_(__res); \
 })
+#elif UINT64_MAX == ULLONG_MAX
+#define ____uint_subBorrow64(_$lhs, _$rhs, _borrow_in, _p_borrow_out...) local_({ \
+    var_(__borrow_out, unsigned long long) = 0; \
+    let_(__res, u64) = as$(u64)(__builtin_subcll( \
+        as$(unsigned long long)(_$lhs), as$(unsigned long long)(_$rhs), as$(unsigned long long)(_borrow_in), &__borrow_out \
+    )); \
+    *(_p_borrow_out) = as$(TypeOf(*(_p_borrow_out)))(__borrow_out); \
+    local_return_(__res); \
+})
+#else
+#define ____uint_subBorrow64(_$lhs, _$rhs, _borrow_in, _p_borrow_out...) local_({ \
+    let_(__lhs, u64) = as$(u64)(_$lhs); \
+    let_(__rhs, u64) = as$(u64)(_$rhs); \
+    let_(__bin, u64) = as$(u64)(_borrow_in); \
+    let_(__sub, u64) = as$(u64)(__rhs + __bin); \
+    let_(__res, u64) = as$(u64)(__lhs - __sub); \
+    *(_p_borrow_out) = as$(TypeOf(*(_p_borrow_out)))((__sub < __rhs) || (__lhs < __sub)); \
+    local_return_(__res); \
+})
+#endif
 #define ____uint_subBorrowLong(_$lhs, _$rhs, _borrow_in, _p_borrow_out...) local_({ \
     var_(__borrow_out, ulong) = 0; \
     let_(__res, ulong) = __builtin_subcl(as$(ulong)(_$lhs), as$(ulong)(_$rhs), as$(ulong)(_borrow_in), &__borrow_out); \

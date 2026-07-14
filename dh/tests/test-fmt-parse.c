@@ -15,7 +15,7 @@
 
 #include "dh-main.h"
 #include "dh/fmt/common.h"
-#include "dh/math/common.h"
+#include "dh/m-math/common.h"
 
 /*========== Unsigned Integer Parsing Tests =================================*/
 
