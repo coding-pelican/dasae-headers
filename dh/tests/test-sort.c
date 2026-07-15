@@ -463,6 +463,35 @@ TEST_fn_("sort: block cache handles uneven merge levels with right-side cache" $
     } $end(for);
 } $unscoped(TEST_fn);
 
+TEST_fn_("sort: block cache preserves stability without external cache" $scope) {
+    var_(items, A$$(192, test_sort_Pair)) $undefined;
+    var_(cache, A$$(1, test_sort_Pair)) $undefined;
+
+    for_(($rt(A_len(items)))(i)) {
+        *A_at((items)[i]) = (test_sort_Pair){
+            .key = intCast$((i32)((i * 41u + 7u) % 23u)),
+            .order = intCast$((i32)i),
+        };
+    } $end(for);
+
+    let sorted = sort_blockCache(
+        u_anyS(A_ref(items)),
+        cmp_u_ord$(test_sort_Pair),
+        u_prefixS(u_anyS(A_ref(cache)), 0)
+    );
+
+    try_(TEST_expect(sorted.raw.ptr == A_ref(items).ptr));
+    try_(TEST_expect(sorted.len == A_len(items)));
+    try_(TEST_expect(sort_inOrdd(u_anyS(A_ref(items)).as_const, cmp_u_ord$(test_sort_Pair))));
+    for_(($r(1, A_len(items)))(i)) {
+        let prev = A_at((items)[i - 1]);
+        let curr = A_at((items)[i]);
+        if (prev->key == curr->key) {
+            try_(TEST_expect(prev->order < curr->order));
+        }
+    } $end(for);
+} $unscoped(TEST_fn);
+
 TEST_fn_("sort: pdq - regression input from 5823 coordinate compression" $scope) {
     var data = A_from$((i32){
         0, 2000000001,

@@ -430,11 +430,11 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
     while (l <= r) {
         let unknown_count = r + 1 - l;
         let_(l_scan_count, usize) = (l_count == 0)
-            ? pri_min(block_size, (r_count == 0) ? (unknown_count / 2) : unknown_count)
-            : usize_(0);
+                                      ? pri_min(block_size, (r_count == 0) ? (unknown_count / 2) : unknown_count)
+                                      : usize_(0);
         let_(r_scan_count, usize) = (r_count == 0)
-            ? pri_min(block_size, unknown_count - l_scan_count)
-            : usize_(0);
+                                      ? pri_min(block_size, unknown_count - l_scan_count)
+                                      : usize_(0);
 
         if (l_count == 0) {
             l_start = 0;
@@ -518,6 +518,12 @@ T_alias$((sort_block__Iter)(struct sort_block__Iter {
     var_(num_step, usize);
     var_(denom, usize);
 }));
+T_alias$((sort_block__Pull)(struct sort_block__Pull {
+    var_(from, usize);
+    var_(to, usize);
+    var_(count, usize);
+    var_(range, R);
+}));
 $attr($inline_always)
 $static fn_((sort_block__Iter_init(usize size2, usize min_level))(sort_block__Iter));
 $attr($inline_always)
@@ -541,10 +547,33 @@ $static fn_((sort_block__mergeExternal(
     u_S$raw seq, R left, R right, u_S$raw cache,
     sort_OrdCtxFn ordFn, u_V$raw ctx
 ))(void));
+$static fn_((sort_block__mergeExternalCached(
+    u_S$raw seq, R left, R right, u_S$raw cache,
+    sort_OrdCtxFn ordFn, u_V$raw ctx
+))(void));
 $static fn_((sort_block__mergeExternalRight(
     u_S$raw seq, R left, R right, u_S$raw cache,
     sort_OrdCtxFn ordFn, u_V$raw ctx
 ))(void));
+$static fn_((sort_block__mergeInternal(
+    u_S$raw seq, R left, R right, R buffer,
+    sort_OrdCtxFn ordFn, u_V$raw ctx
+))(void));
+$static fn_((sort_block__mergeWikiLevel(
+    u_S$raw seq, sort_block__Iter* iter, u_S$raw cache,
+    sort_OrdCtxFn ordFn, u_V$raw ctx
+))(void));
+$attr($inline_always)
+$static fn_((sort_block__blockSwap(u_S$raw seq, usize lhs, usize rhs, usize len))(void));
+$attr($inline_always)
+$static fn_((sort_block__lessIdx(u_S$raw seq, usize lhs, usize rhs, sort_OrdCtxFn ordFn, u_V$raw ctx))(bool));
+$static fn_((sort_block__sqrtFloor(usize value))(usize));
+$static fn_((sort_block__binaryFirst(u_S$raw seq, u_P_const$raw value, R range, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize));
+$static fn_((sort_block__binaryLast(u_S$raw seq, u_P_const$raw value, R range, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize));
+$static fn_((sort_block__findFirstForward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize));
+$static fn_((sort_block__findFirstBackward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize));
+$static fn_((sort_block__findLastForward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize));
+$static fn_((sort_block__findLastBackward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize));
 
 /* --- External Definitions --- */
 
@@ -581,39 +610,42 @@ fn_((sort_blockCtxCache(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, u_S$raw c
     }
     /* bottom-up hierarchical merging */
     while (true) {
-        sort_block__Iter_begin(&iter);
-        while (!sort_block__Iter_finished(&iter)) {
-            let left = sort_block__Iter_nextRange(&iter);
-            let right = sort_block__Iter_nextRange(&iter);
-            if (R_len(right) == 0) continue;
+        if (sort_block__Iter_len(&iter) < cache.len) {
+            sort_block__Iter_begin(&iter);
+            while (!sort_block__Iter_finished(&iter)) {
+                let left = sort_block__Iter_nextRange(&iter);
+                let right = sort_block__Iter_nextRange(&iter);
+                if (R_len(left) == 0 || R_len(right) == 0) continue;
 
-            let already_sorted = cmp_Ord_isLe(cmp_ordCtxP(
-                u_atS(seq, left.end - 1).as_const,
-                u_atS(seq, right.begin).as_const,
-                ctx,
-                ordFn
-            ));
-            if (already_sorted) continue;
+                let already_sorted = cmp_Ord_isLe(cmp_ordCtxP(
+                    u_atS(seq, left.end - 1).as_const,
+                    u_atS(seq, right.begin).as_const,
+                    ctx,
+                    ordFn
+                ));
+                if (already_sorted) continue;
 
-            let reverse_sorted = cmp_Ord_isLt(cmp_ordCtxP(
-                u_atS(seq, right.end - 1).as_const,
-                u_atS(seq, left.begin).as_const,
-                ctx,
-                ordFn
-            ));
-            if (reverse_sorted) {
-                mem_rotate(u_sliceS(seq, $r(left.begin, right.end)), R_len(left));
-                continue;
+                let reverse_sorted = cmp_Ord_isLt(cmp_ordCtxP(
+                    u_atS(seq, right.end - 1).as_const,
+                    u_atS(seq, left.begin).as_const,
+                    ctx,
+                    ordFn
+                ));
+                if (reverse_sorted) {
+                    mem_rotate(u_sliceS(seq, $r(left.begin, right.end)), R_len(left));
+                    continue;
+                }
+
+                if (R_len(left) <= cache.len) {
+                    sort_block__mergeExternal(seq, left, right, cache, ordFn, ctx);
+                } else if (R_len(right) <= cache.len) {
+                    sort_block__mergeExternalRight(seq, left, right, cache, ordFn, ctx);
+                } else {
+                    sort_block__mergeInPlace(seq, left, right, ordFn, ctx);
+                }
             }
-
-            /* adaptive dispatch: use external memory from either side when possible */
-            if (R_len(left) <= cache.len) {
-                sort_block__mergeExternal(seq, left, right, cache, ordFn, ctx);
-            } else if (R_len(right) <= cache.len) {
-                sort_block__mergeExternalRight(seq, left, right, cache, ordFn, ctx);
-            } else {
-                sort_block__mergeInPlace(seq, left, right, ordFn, ctx);
-            }
+        } else {
+            sort_block__mergeWikiLevel(seq, &iter, cache, ordFn, ctx);
         }
         if (!sort_block__Iter_nextLevel(&iter)) break;
     }
@@ -682,6 +714,502 @@ fn_((sort_block__Iter_finished(sort_block__Iter* self))(bool)) {
     return self->dec >= self->size;
 };
 
+$attr($inline_always)
+fn_((sort_block__blockSwap(u_S$raw seq, usize lhs, usize rhs, usize len))(void)) {
+    if (lhs == rhs || len == 0) return;
+    for_(($rt(len))(i)) {
+        if (lhs + i != rhs + i) {
+            mem_swapP(u_atS(seq, lhs + i), u_atS(seq, rhs + i));
+        }
+    } $end(for);
+};
+$attr($inline_always)
+fn_((sort_block__lessIdx(u_S$raw seq, usize lhs, usize rhs, sort_OrdCtxFn ordFn, u_V$raw ctx))(bool)) {
+    return cmp_Ord_isLt(cmp_ordCtxP(
+        u_atS(seq, lhs).as_const,
+        u_atS(seq, rhs).as_const,
+        ctx,
+        ordFn
+    ));
+};
+fn_((sort_block__sqrtFloor(usize value))(usize)) {
+    var_(root, usize) = 0;
+    var_(bit, usize) = usize_(1) << ((sizeof(usize) * 8) - 2);
+    while (bit > value) bit >>= 2;
+    while (bit != 0) {
+        if (value >= root + bit) {
+            value -= root + bit;
+            root = (root >> 1) + bit;
+        } else {
+            root >>= 1;
+        }
+        bit >>= 2;
+    }
+    return root;
+};
+fn_((sort_block__binaryFirst(u_S$raw seq, u_P_const$raw value, R range, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize)) {
+    var curr = range.begin;
+    var size = R_len(range);
+    if (range.begin >= range.end) return range.end;
+    while (size > 0) {
+        let offset = size % 2;
+        size /= 2;
+        let mid = curr + size;
+        if (cmp_Ord_isLt(cmp_ordCtxP(u_atS(seq, mid).as_const, value, ctx, ordFn))) {
+            curr += size + offset;
+        }
+    }
+    return curr;
+};
+fn_((sort_block__binaryLast(u_S$raw seq, u_P_const$raw value, R range, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize)) {
+    var curr = range.begin;
+    var size = R_len(range);
+    if (range.begin >= range.end) return range.end;
+    while (size > 0) {
+        let offset = size % 2;
+        size /= 2;
+        let mid = curr + size;
+        if (!cmp_Ord_isLt(cmp_ordCtxP(value, u_atS(seq, mid).as_const, ctx, ordFn))) {
+            curr += size + offset;
+        }
+    }
+    return curr;
+};
+fn_((sort_block__findFirstForward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize)) {
+    if (R_len(range) == 0) return range.begin;
+    let skip = pri_max(R_len(range) / unique, usize_(1));
+
+    var index = range.begin + skip;
+    while (cmp_Ord_isLt(cmp_ordCtxP(u_atS(seq, index - 1).as_const, value, ctx, ordFn))) {
+        if (index >= range.end - skip) {
+            return sort_block__binaryFirst(seq, value, $r(index, range.end), ordFn, ctx);
+        }
+        index += skip;
+    }
+    return sort_block__binaryFirst(seq, value, $r(index - skip, index), ordFn, ctx);
+};
+fn_((sort_block__findFirstBackward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize)) {
+    if (R_len(range) == 0) return range.begin;
+    let skip = pri_max(R_len(range) / unique, usize_(1));
+
+    var index = range.end - skip;
+    while (index > range.begin && !cmp_Ord_isLt(cmp_ordCtxP(u_atS(seq, index - 1).as_const, value, ctx, ordFn))) {
+        if (index < range.begin + skip) {
+            return sort_block__binaryFirst(seq, value, $r(range.begin, index), ordFn, ctx);
+        }
+        index -= skip;
+    }
+    return sort_block__binaryFirst(seq, value, $r(index, index + skip), ordFn, ctx);
+};
+fn_((sort_block__findLastForward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize)) {
+    if (R_len(range) == 0) return range.begin;
+    let skip = pri_max(R_len(range) / unique, usize_(1));
+
+    var index = range.begin + skip;
+    while (!cmp_Ord_isLt(cmp_ordCtxP(value, u_atS(seq, index - 1).as_const, ctx, ordFn))) {
+        if (index >= range.end - skip) {
+            return sort_block__binaryLast(seq, value, $r(index, range.end), ordFn, ctx);
+        }
+        index += skip;
+    }
+    return sort_block__binaryLast(seq, value, $r(index - skip, index), ordFn, ctx);
+};
+fn_((sort_block__findLastBackward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize)) {
+    if (R_len(range) == 0) return range.begin;
+    let skip = pri_max(R_len(range) / unique, usize_(1));
+
+    var index = range.end - skip;
+    while (index > range.begin && cmp_Ord_isLt(cmp_ordCtxP(value, u_atS(seq, index - 1).as_const, ctx, ordFn))) {
+        if (index < range.begin + skip) {
+            return sort_block__binaryLast(seq, value, $r(range.begin, index), ordFn, ctx);
+        }
+        index -= skip;
+    }
+    return sort_block__binaryLast(seq, value, $r(index, index + skip), ordFn, ctx);
+};
+
+fn_((sort_block__mergeWikiLevel(
+    u_S$raw seq, sort_block__Iter* iter, u_S$raw cache,
+    sort_OrdCtxFn ordFn, u_V$raw ctx
+))(void)) {
+    var block_size = sort_block__sqrtFloor(sort_block__Iter_len(iter));
+    if (block_size == 0) block_size = 1;
+    var buffer_size = sort_block__Iter_len(iter) / block_size + 1;
+
+    var_(left, R) = {};
+    var_(right, R) = {};
+    var_(index, usize) = 0;
+    var_(last, usize) = 0;
+    var_(count, usize) = 0;
+    var_(find, usize) = 0;
+    var_(start, usize) = 0;
+    var_(pull_index, usize) = 0;
+    var pull = A_from$((sort_block__Pull){
+        { .from = 0, .to = 0, .count = 0, .range = $r(0, 0) },
+        { .from = 0, .to = 0, .count = 0, .range = $r(0, 0) } $listed
+    });
+
+    var buffer1 = $r(0, 0);
+    var buffer2 = $r(0, 0);
+    find = buffer_size + buffer_size;
+    var_(find_separately, bool) = false;
+
+    if (block_size <= cache.len) {
+        find = buffer_size;
+    } else if (find > sort_block__Iter_len(iter)) {
+        find = buffer_size;
+        find_separately = true;
+    }
+
+    sort_block__Iter_begin(iter);
+    while (!sort_block__Iter_finished(iter)) {
+        left = sort_block__Iter_nextRange(iter);
+        right = sort_block__Iter_nextRange(iter);
+        if (R_len(left) == 0 || R_len(right) == 0) continue;
+
+        last = left.begin;
+        count = 1;
+        while (count < find) {
+            index = sort_block__findLastForward(
+                seq,
+                u_atS(seq, last).as_const,
+                $r(last + 1, left.end),
+                find - count,
+                ordFn,
+                ctx
+            );
+            if (index == left.end) break;
+            last = index;
+            count++;
+        }
+        index = last;
+
+        if (count >= buffer_size) {
+            *A_at((pull)[pull_index]) = (sort_block__Pull){
+                .range = $r(left.begin, right.end),
+                .count = count,
+                .from = index,
+                .to = left.begin,
+            };
+            pull_index = 1;
+
+            if (count == buffer_size + buffer_size) {
+                buffer1 = $r(left.begin, left.begin + buffer_size);
+                buffer2 = $r(left.begin + buffer_size, left.begin + count);
+                break;
+            } else if (find == buffer_size + buffer_size) {
+                buffer1 = $r(left.begin, left.begin + count);
+                find = buffer_size;
+            } else if (block_size <= cache.len) {
+                buffer1 = $r(left.begin, left.begin + count);
+                break;
+            } else if (find_separately) {
+                buffer1 = $r(left.begin, left.begin + count);
+                find_separately = false;
+            } else {
+                buffer2 = $r(left.begin, left.begin + count);
+                break;
+            }
+        } else if (pull_index == 0 && count > R_len(buffer1)) {
+            buffer1 = $r(left.begin, left.begin + count);
+            *A_at((pull)[pull_index]) = (sort_block__Pull){
+                .range = $r(left.begin, right.end),
+                .count = count,
+                .from = index,
+                .to = left.begin,
+            };
+        }
+
+        last = right.end - 1;
+        count = 1;
+        while (count < find) {
+            index = sort_block__findFirstBackward(
+                seq,
+                u_atS(seq, last).as_const,
+                $r(right.begin, last),
+                find - count,
+                ordFn,
+                ctx
+            );
+            if (index == right.begin) break;
+            last = index - 1;
+            count++;
+        }
+        index = last;
+
+        if (count >= buffer_size) {
+            *A_at((pull)[pull_index]) = (sort_block__Pull){
+                .range = $r(left.begin, right.end),
+                .count = count,
+                .from = index,
+                .to = right.end,
+            };
+            pull_index = 1;
+
+            if (count == buffer_size + buffer_size) {
+                buffer1 = $r(right.end - count, right.end - buffer_size);
+                buffer2 = $r(right.end - buffer_size, right.end);
+                break;
+            } else if (find == buffer_size + buffer_size) {
+                buffer1 = $r(right.end - count, right.end);
+                find = buffer_size;
+            } else if (block_size <= cache.len) {
+                buffer1 = $r(right.end - count, right.end);
+                break;
+            } else if (find_separately) {
+                buffer1 = $r(right.end - count, right.end);
+                find_separately = false;
+            } else {
+                if (A_at((pull)[0])->range.begin == left.begin) {
+                    A_at((pull)[0])->range.end -= A_at((pull)[1])->count;
+                }
+                buffer2 = $r(right.end - count, right.end);
+                break;
+            }
+        } else if (pull_index == 0 && count > R_len(buffer1)) {
+            buffer1 = $r(right.end - count, right.end);
+            *A_at((pull)[pull_index]) = (sort_block__Pull){
+                .range = $r(left.begin, right.end),
+                .count = count,
+                .from = index,
+                .to = right.end,
+            };
+        }
+    }
+
+    for_(($rt(2))(pull_idx)) {
+        let pull_ref = A_at((pull)[pull_idx]);
+        let length = pull_ref->count;
+        if (length == 0) continue;
+
+        if (pull_ref->to < pull_ref->from) {
+            index = pull_ref->from;
+            count = 1;
+            while (count < length) {
+                index = sort_block__findFirstBackward(
+                    seq,
+                    u_atS(seq, index - 1).as_const,
+                    $r(pull_ref->to, pull_ref->from - (count - 1)),
+                    length - count,
+                    ordFn,
+                    ctx
+                );
+                let range = $r(index + 1, pull_ref->from + 1);
+                mem_rotate(u_sliceS(seq, range), R_len(range) - count);
+                pull_ref->from = index + count;
+                count++;
+            }
+        } else if (pull_ref->to > pull_ref->from) {
+            index = pull_ref->from + 1;
+            count = 1;
+            while (count < length) {
+                index = sort_block__findLastForward(
+                    seq,
+                    u_atS(seq, index).as_const,
+                    $r(index, pull_ref->to),
+                    length - count,
+                    ordFn,
+                    ctx
+                );
+                let range = $r(pull_ref->from, index - 1);
+                mem_rotate(u_sliceS(seq, range), count);
+                pull_ref->from = index - 1 - count;
+                count++;
+            }
+        }
+    } $end(for);
+
+    buffer_size = R_len(buffer1);
+    if (buffer_size == 0) {
+        sort_block__Iter_begin(iter);
+        while (!sort_block__Iter_finished(iter)) {
+            left = sort_block__Iter_nextRange(iter);
+            right = sort_block__Iter_nextRange(iter);
+            if (R_len(left) == 0 || R_len(right) == 0) continue;
+            sort_block__mergeInPlace(seq, left, right, ordFn, ctx);
+        }
+        return;
+    }
+    block_size = sort_block__Iter_len(iter) / buffer_size + 1;
+
+    sort_block__Iter_begin(iter);
+    while (!sort_block__Iter_finished(iter)) {
+        left = sort_block__Iter_nextRange(iter);
+        right = sort_block__Iter_nextRange(iter);
+        if (R_len(left) == 0 || R_len(right) == 0) continue;
+
+        start = left.begin;
+        for_(($rt(2))(pull_idx)) {
+            let pull_ref = A_at((pull)[pull_idx]);
+            if (start == pull_ref->range.begin) {
+                if (pull_ref->from > pull_ref->to) {
+                    left.begin += pull_ref->count;
+                } else if (pull_ref->from < pull_ref->to) {
+                    right.end -= pull_ref->count;
+                }
+            }
+        } $end(for);
+        if (R_len(left) == 0 || R_len(right) == 0) continue;
+
+        if (sort_block__lessIdx(seq, right.end - 1, left.begin, ordFn, ctx)) {
+            mem_rotate(u_sliceS(seq, $r(left.begin, right.end)), R_len(left));
+        } else if (sort_block__lessIdx(seq, right.begin, left.end - 1, ordFn, ctx)) {
+            var_(find_left, usize) = 0;
+            var block_left = $r(left.begin, left.end);
+            var first_left = $r(left.begin, left.begin + (R_len(block_left) % block_size));
+
+            var index_left = buffer1.begin;
+            index = first_left.end;
+            while (index < block_left.end) {
+                if (index_left != index) {
+                    mem_swapP(u_atS(seq, index_left), u_atS(seq, index));
+                }
+                index_left++;
+                index += block_size;
+            }
+
+            var last_left = first_left;
+            var last_right = $r(0, 0);
+            var block_right = $r(right.begin, right.begin + pri_min(block_size, R_len(right)));
+            block_left.begin += R_len(first_left);
+            index_left = buffer1.begin;
+
+            if (R_len(last_left) <= cache.len) {
+                u_memcpyS(u_prefixS(cache, R_len(last_left)), u_sliceS(seq, last_left).as_const);
+            } else if (R_len(buffer2) > 0) {
+                sort_block__blockSwap(seq, last_left.begin, buffer2.begin, R_len(last_left));
+            }
+
+            if (R_len(block_left) > 0) {
+                while (true) {
+                    if ((R_len(last_right) > 0 && !sort_block__lessIdx(seq, last_right.end - 1, index_left, ordFn, ctx))
+                        || R_len(block_right) == 0) {
+                        let right_split = sort_block__binaryFirst(
+                            seq,
+                            u_atS(seq, index_left).as_const,
+                            last_right,
+                            ordFn,
+                            ctx
+                        );
+                        let right_remaining = last_right.end - right_split;
+
+                        var min_left = block_left.begin;
+                        find_left = min_left + block_size;
+                        while (find_left < block_left.end) {
+                            if (sort_block__lessIdx(seq, find_left, min_left, ordFn, ctx)) {
+                                min_left = find_left;
+                            }
+                            find_left += block_size;
+                        }
+                        sort_block__blockSwap(seq, block_left.begin, min_left, block_size);
+
+                        if (block_left.begin != index_left) {
+                            mem_swapP(u_atS(seq, block_left.begin), u_atS(seq, index_left));
+                        }
+                        index_left++;
+
+                        if (R_len(last_left) <= cache.len) {
+                            sort_block__mergeExternalCached(seq, last_left, $r(last_left.end, right_split), cache, ordFn, ctx);
+                        } else if (R_len(buffer2) > 0) {
+                            sort_block__mergeInternal(seq, last_left, $r(last_left.end, right_split), buffer2, ordFn, ctx);
+                        } else {
+                            sort_block__mergeInPlace(seq, last_left, $r(last_left.end, right_split), ordFn, ctx);
+                        }
+
+                        if (R_len(buffer2) > 0 || block_size <= cache.len) {
+                            if (block_size <= cache.len) {
+                                u_memcpyS(u_prefixS(cache, block_size), u_sliceS(seq, $r(block_left.begin, block_left.begin + block_size)).as_const);
+                            } else {
+                                sort_block__blockSwap(seq, block_left.begin, buffer2.begin, block_size);
+                            }
+                            sort_block__blockSwap(seq, right_split, block_left.begin + block_size - right_remaining, right_remaining);
+                        } else {
+                            mem_rotate(u_sliceS(seq, $r(right_split, block_left.begin + block_size)), block_left.begin - right_split);
+                        }
+
+                        last_left = $r(block_left.begin - right_remaining, block_left.begin - right_remaining + block_size);
+                        last_right = $r(last_left.end, last_left.end + right_remaining);
+
+                        block_left.begin += block_size;
+                        if (R_len(block_left) == 0) break;
+                    } else if (R_len(block_right) < block_size) {
+                        mem_rotate(u_sliceS(seq, $r(block_left.begin, block_right.end)), block_right.begin - block_left.begin);
+                        last_right = $r(block_left.begin, block_left.begin + R_len(block_right));
+                        block_left.begin += R_len(block_right);
+                        block_left.end += R_len(block_right);
+                        block_right.end = block_right.begin;
+                    } else {
+                        sort_block__blockSwap(seq, block_left.begin, block_right.begin, block_size);
+                        last_right = $r(block_left.begin, block_left.begin + block_size);
+
+                        block_left.begin += block_size;
+                        block_left.end += block_size;
+                        block_right.begin += block_size;
+
+                        if (block_right.end > right.end - block_size) {
+                            block_right.end = right.end;
+                        } else {
+                            block_right.end += block_size;
+                        }
+                    }
+                }
+            }
+
+            if (R_len(last_left) <= cache.len) {
+                sort_block__mergeExternalCached(seq, last_left, $r(last_left.end, right.end), cache, ordFn, ctx);
+            } else if (R_len(buffer2) > 0) {
+                sort_block__mergeInternal(seq, last_left, $r(last_left.end, right.end), buffer2, ordFn, ctx);
+            } else {
+                sort_block__mergeInPlace(seq, last_left, $r(last_left.end, right.end), ordFn, ctx);
+            }
+        }
+    }
+
+    sort_insertCtx(u_sliceS(seq, buffer2), ordFn, ctx);
+
+    for_(($rt(2))(pull_idx)) {
+        let pull_ref = A_at((pull)[pull_idx]);
+        var unique = pull_ref->count * 2;
+        if (pull_ref->count == 0) continue;
+
+        if (pull_ref->from > pull_ref->to) {
+            var buffer = $r(pull_ref->range.begin, pull_ref->range.begin + pull_ref->count);
+            while (R_len(buffer) > 0) {
+                index = sort_block__findFirstForward(
+                    seq,
+                    u_atS(seq, buffer.begin).as_const,
+                    $r(buffer.end, pull_ref->range.end),
+                    unique,
+                    ordFn,
+                    ctx
+                );
+                let amount = index - buffer.end;
+                mem_rotate(u_sliceS(seq, $r(buffer.begin, index)), R_len(buffer));
+                buffer.begin += amount + 1;
+                buffer.end += amount;
+                unique -= 2;
+            }
+        } else if (pull_ref->from < pull_ref->to) {
+            var buffer = $r(pull_ref->range.end - pull_ref->count, pull_ref->range.end);
+            while (R_len(buffer) > 0) {
+                index = sort_block__findLastBackward(
+                    seq,
+                    u_atS(seq, buffer.end - 1).as_const,
+                    $r(pull_ref->range.begin, buffer.begin),
+                    unique,
+                    ordFn,
+                    ctx
+                );
+                let amount = buffer.begin - index;
+                mem_rotate(u_sliceS(seq, $r(index, buffer.end)), amount);
+                buffer.begin -= amount;
+                buffer.end -= amount + 1;
+                unique -= 2;
+            }
+        }
+    } $end(for);
+};
+
 fn_((sort_block__mergeInPlace(
     u_S$raw seq, R left, R right,
     sort_OrdCtxFn ordFn, u_V$raw ctx
@@ -731,6 +1259,13 @@ fn_((sort_block__mergeExternal(
     let left_len = R_len(left);
     /* cache left run into external memory */
     u_memcpyS(u_prefixS(cache, left_len), u_sliceS(seq, left).as_const);
+    sort_block__mergeExternalCached(seq, left, right, cache, ordFn, ctx);
+};
+fn_((sort_block__mergeExternalCached(
+    u_S$raw seq, R left, R right, u_S$raw cache,
+    sort_OrdCtxFn ordFn, u_V$raw ctx
+))(void)) {
+    let left_len = R_len(left);
 
     var_(cache_idx, usize) = 0;
     var_(right_idx, usize) = right.begin;
@@ -762,6 +1297,44 @@ fn_((sort_block__mergeExternal(
             u_sliceS(cache, $r(cache_idx, left_len)).as_const
         );
     }
+};
+fn_((sort_block__mergeInternal(
+    u_S$raw seq, R left, R right, R buffer,
+    sort_OrdCtxFn ordFn, u_V$raw ctx
+))(void)) {
+    var_(left_count, usize) = 0;
+    var_(right_count, usize) = 0;
+    var_(insert, usize) = 0;
+    let left_len = R_len(left);
+    let right_len = R_len(right);
+
+    if (0 < left_len && 0 < right_len) {
+        while (true) {
+            let ord = cmp_ordCtxP(
+                u_atS(seq, right.begin + right_count).as_const,
+                u_atS(seq, buffer.begin + left_count).as_const,
+                ctx,
+                ordFn
+            );
+            if (!cmp_Ord_isLt(ord)) {
+                if (left.begin + insert != buffer.begin + left_count) {
+                    mem_swapP(u_atS(seq, left.begin + insert), u_atS(seq, buffer.begin + left_count));
+                }
+                left_count++;
+                insert++;
+                if (left_count >= left_len) break;
+            } else {
+                if (left.begin + insert != right.begin + right_count) {
+                    mem_swapP(u_atS(seq, left.begin + insert), u_atS(seq, right.begin + right_count));
+                }
+                right_count++;
+                insert++;
+                if (right_count >= right_len) break;
+            }
+        }
+    }
+
+    sort_block__blockSwap(seq, buffer.begin + left_count, left.begin + insert, left_len - left_count);
 };
 fn_((sort_block__mergeExternalRight(
     u_S$raw seq, R left, R right, u_S$raw cache,
