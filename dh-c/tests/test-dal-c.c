@@ -592,6 +592,7 @@ static void test_meta_tables(void) {
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_build));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_record));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_loose_errors));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_elapsed_precision));
 
     const dal_c_HelpCmd* workspace_cmd = test_find_help_cmd(dal_c_cmd_action_workspace, NULL);
     TEST_ASSERT(workspace_cmd != NULL);
@@ -606,6 +607,7 @@ static void test_meta_tables(void) {
     TEST_ASSERT(syntax_cmd != NULL);
     TEST_ASSERT(syntax_cmd->implemented);
     TEST_ASSERT(test_help_has_option(syntax_cmd, dal_c_opt_progress));
+    TEST_ASSERT(test_help_has_option(syntax_cmd, dal_c_opt_elapsed_precision));
 
     const dal_c_HelpCmd* tidy_cmd = test_find_help_cmd(dal_c_cmd_action_tidy, NULL);
     TEST_ASSERT(tidy_cmd != NULL);
@@ -827,8 +829,31 @@ static void test_cmd_parse(void) {
         TEST_ASSERT(!cmd->show_progress);
         TEST_ASSERT(cmd->show_commands);
         TEST_ASSERT(!cmd->verbose);
+        TEST_ASSERT(cmd->elapsed_precision == dal_c_default_elapsed_precision);
         TEST_ASSERT(str_eql(cmd->make_jobs, "3"));
         dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--elapsed-precision=0", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->elapsed_precision == 0);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "test", "--elapsed-precision", "4", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->elapsed_precision == 4);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--elapsed-precision=10", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd == NULL);
     }
 
     {

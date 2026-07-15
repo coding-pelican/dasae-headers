@@ -55,6 +55,25 @@ typedef struct dal_c_ProjectLock {
     bool waited;
 } dal_c_ProjectLock;
 
+typedef enum dal_c_CmdPhase {
+    dal_c_CmdPhase_target_build,
+    dal_c_CmdPhase_dependency_build,
+    dal_c_CmdPhase_dh_build,
+    dal_c_CmdPhase_self_build,
+    dal_c_CmdPhase_test_build,
+    dal_c_CmdPhase_run_build,
+    dal_c_CmdPhase_test_run,
+    dal_c_CmdPhase_run_exec,
+    dal_c_CmdPhase_syntax,
+    dal_c_CmdPhase_tidy,
+    dal_c_CmdPhase_format,
+    dal_c_CmdPhase_compile_db,
+    dal_c_CmdPhase_clean,
+} dal_c_CmdPhase;
+
+double dal_c__phaseNowSeconds(void);
+void dal_c__phaseRecord(dal_c_CmdPhase phase, double elapsed_seconds);
+
 void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out);
 void dal_c_TargetRequest_cleanup(dal_c_TargetRequest* request);
 const dal_c_TargetRoot* dal_c_Project_findTargetRootByName(const dal_c_Project* proj, const char* name);

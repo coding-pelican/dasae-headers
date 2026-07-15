@@ -579,7 +579,10 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     }
     (void)fflush(stdout);
     (void)fflush(stderr);
+    dal_c_CmdPhase phase = target ? dal_c_CmdPhase_clean : dal_c_CmdPhase_self_build;
+    double self_started_at = dal_c__phaseNowSeconds();
     int result = proc_runMergedOutput(raw_argv, true);
+    dal_c__phaseRecord(phase, dal_c__phaseNowSeconds() - self_started_at);
     free((void*)raw_argv);
     ArrStr_fini(&argv);
     dal_c__projectLockRelease(&lock);
@@ -1118,6 +1121,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     bool has_include_dir = path_isDir(lib_inc);
     bool is_header_only = ArrStr_len(lib_sources) == 0 && (is_single_header || has_include_dir);
     if (is_header_only) {
+        double dependency_started_at = dal_c__phaseNowSeconds();
         char* deps_dir = dal_c_Project_getDepsDir(proj);
         dir_createRecur(deps_dir);
         char* target_dir = dal_c__resolveDepsTargetDir(deps_dir, lib->name);
@@ -1146,6 +1150,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
 
         if (!copy_ok) {
             (void)fprintf(stderr, "Error: Failed to stage header-only library: %s\n", lib->name);
+            dal_c__phaseRecord(dal_c_CmdPhase_dependency_build, dal_c__phaseNowSeconds() - dependency_started_at);
             free(target_dir);
             free(deps_dir);
             free(lib_inc);
@@ -1164,6 +1169,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
                                         && (lib->test_enabled
                                             || (cmd->action == dal_c_CmdAction_test && cmd->payload.test.recursive));
         if (should_run_dependency_tests && (lib->test_enabled || dal_c__projectHasTestSources(lib_proj))) {
+            dal_c__phaseRecord(dal_c_CmdPhase_dependency_build, dal_c__phaseNowSeconds() - dependency_started_at);
             result = dal_c__runDependencyTests(cmd, lib_proj, &merged.opts);
             dal_c_CompilerOpts_cleanup(&merged.opts);
             dal_c_Project_cleanup(&lib_proj);
@@ -1174,6 +1180,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         if (cmd->verbose) {
             printf("Header-only library %s: headers copied\n", lib->name);
         }
+        dal_c__phaseRecord(dal_c_CmdPhase_dependency_build, dal_c__phaseNowSeconds() - dependency_started_at);
         return 0;
     }
 
@@ -1249,8 +1256,10 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         return 1;
     }
 
+    double dependency_started_at = dal_c__phaseNowSeconds();
     int plan_result = dal_c__generateMakefile(&merged, &build_proj, lib_profile, lib_sources, lib_target_path, lib_object_dir, lib_target_type);
     if (plan_result != dal_c_generateMakefile_success && plan_result != dal_c_generateMakefile_upToDate) {
+        dal_c__phaseRecord(dal_c_CmdPhase_dependency_build, dal_c__phaseNowSeconds() - dependency_started_at);
         (void)env_setCWD(saved_cwd);
         free(saved_cwd);
         (void)fprintf(stderr, "Error: Failed to generate Makefile for library: %s\n", lib->name);
@@ -1289,6 +1298,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     ArrStr_fini(&lib_sources);
     if (result != 0) {
         (void)fprintf(stderr, "Error: Failed to build library: %s\n", lib->name);
+        dal_c__phaseRecord(dal_c_CmdPhase_dependency_build, dal_c__phaseNowSeconds() - dependency_started_at);
         dal_c_CompilerOpts_cleanup(&merged.opts);
         free(lib_build_profile);
         dal_c__projectLockRelease(&lib_lock);
@@ -1301,6 +1311,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     if (!dal_c__copyLibraryArtifacts(proj, lib_proj, lib, lib_abs_path, lib_build_profile, &merged, lib_profile, lib_target_type, is_windows)) {
         (void)fprintf(stderr, "Warning: Failed to copy some artifacts for %s\n", lib->name);
     }
+    dal_c__phaseRecord(dal_c_CmdPhase_dependency_build, dal_c__phaseNowSeconds() - dependency_started_at);
 
     bool should_run_dependency_tests = lib_proj
                                     && !dal_c__cmdAggregatesRecursiveTests(cmd)
@@ -1605,6 +1616,7 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
 
     char* lib_target_path = dal_c__resolveOutputPath(dh_proj, &cmd, profile_dir, "dh", dh_target_type);
     char* makefile_path = dal_c__makePlanFilePath(dh_proj, profile, &cmd, lib_target_path, dh_target_type);
+    double dh_started_at = dal_c__phaseNowSeconds();
     int result = dal_c__generateMakefile(&cmd, dh_proj, profile, sources, lib_target_path, object_dir, dh_target_type);
     if (result == dal_c_generateMakefile_success) {
         if (cmd.show_progress) {
@@ -1619,6 +1631,7 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
         }
         result = 0;
     }
+    dal_c__phaseRecord(dal_c_CmdPhase_dh_build, dal_c__phaseNowSeconds() - dh_started_at);
     if (!env_setCWD(saved_cwd)) {
         (void)fprintf(stderr, "Error: Failed to restore working directory: %s\n", saved_cwd);
         result = 1;

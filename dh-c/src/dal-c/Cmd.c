@@ -19,6 +19,22 @@
 
 // === PRIVATE HELPERS ===
 
+typedef struct dal_c_Cmd__ElapsedPhases {
+    double target_build;
+    double dependency_build;
+    double dh_build;
+    double self_build;
+    double test_build;
+    double run_build;
+    double test_run;
+    double run_exec;
+    double syntax;
+    double tidy;
+    double format;
+    double compile_db;
+    double clean;
+} dal_c_Cmd__ElapsedPhases;
+
 static void dal_c_Cmd__addToArray(char*** arr, int* count, const char* value);
 static void dal_c_Cmd__pushOwnedString(char*** arr, int* count, char* value);
 static void dal_c_Cmd__setOwnedString(char** slot, const char* value);
@@ -28,6 +44,7 @@ static bool dal_c_Cmd__usesBuildPayload(dal_c_CmdAction action);
 static bool dal_c_Cmd__usesBuildArtifactPayload(dal_c_CmdAction action);
 static bool dal_c_Cmd__tryParseBoolValue(const char* value, bool* out);
 static bool dal_c_Cmd__tryParseToggleValue(const char* value, dal_c_ToggleState* out);
+static bool dal_c_Cmd__tryParseElapsedPrecision(const char* value, int* out);
 static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt, size_t opt_len, const char* value, bool* handled);
 static dal_c_Target dal_c_Cmd__resolveBuildTargetType(const dal_c_Cmd* cmd, dal_c_Linking linking, bool builds_library);
 static void dal_c_Cmd__setStdlibBundle(dal_c_CompilerOpts* opts, bool linked);
@@ -39,8 +56,16 @@ static char** dal_c_Cmd__runArgsSlot(dal_c_Cmd* cmd);
 static bool dal_c_Cmd__buildsLibrary(const dal_c_Cmd* cmd);
 static double dal_c_Cmd__nowSeconds(void);
 static bool dal_c_Cmd__reportsElapsed(const dal_c_Cmd* cmd);
-static void dal_c_Cmd__reportElapsed(const dal_c_Cmd* cmd, int result, double elapsed_seconds, double lock_wait_seconds);
+static void dal_c_Cmd__reportElapsed(
+    const dal_c_Cmd* cmd,
+    int result,
+    double elapsed_seconds,
+    double lock_wait_seconds,
+    int elapsed_precision,
+    const dal_c_Cmd__ElapsedPhases* phases
+);
 static int dal_c_Cmd__validateCanonicalModifiers(const dal_c_Cmd* cmd);
+static bool dal_c_Cmd__phasesHaveAny(const dal_c_Cmd__ElapsedPhases* phases);
 static void dal_c_Cmd__setPrimaryTargetPath(dal_c_Cmd* cmd, const char* path);
 static void dal_c_Cmd__setOutputPath(dal_c_Cmd* cmd, const char* path);
 static const char* dal_c_Cmd__sampleDirCanonical(dal_c_SampleDir sample_dir);
@@ -132,6 +157,7 @@ typedef struct dal_c_Cmd__HeldProjectLock {
 static dal_c_Cmd__HeldProjectLock* dal_c_Cmd__held_locks = NULL;
 static int dal_c_Cmd__held_lock_count = 0;
 static double dal_c_Cmd__elapsed_lock_wait_seconds = 0.0;
+static dal_c_Cmd__ElapsedPhases dal_c_Cmd__elapsed_phases = { 0 };
 
 static char* dal_c_Cmd__makeProjectLockPath(const char* root) {
     char* base_dir = NULL;
@@ -259,6 +285,7 @@ dal_c_Cmd* dal_c_Cmd_parse(int argc, const char* argv[]) {
     if (!cmd) { return NULL; }
     cmd->opts.profile = dal_c_default_profile;
     cmd->show_progress = true;
+    cmd->elapsed_precision = dal_c_default_elapsed_precision;
 
     for (int i = 1; i < argc; ++i) {
         const char* arg = argv[i];
@@ -436,6 +463,20 @@ static bool dal_c_Cmd__tryParseToggleValue(const char* value, dal_c_ToggleState*
         return false;
     }
     *out = state;
+    return true;
+}
+
+static bool dal_c_Cmd__tryParseElapsedPrecision(const char* value, int* out) {
+    assert(out != NULL);
+    if (!value || value[0] == '\0') {
+        return false;
+    }
+    char* end = NULL;
+    long parsed = strtol(value, &end, 10);
+    if (parsed < 0 || parsed > dal_c_max_elapsed_precision || !end || *end != '\0') {
+        return false;
+    }
+    *out = (int)parsed;
     return true;
 }
 
@@ -639,6 +680,13 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
         } else {
             cmd->show_progress = shown;
         }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_elapsed_precision)) {
+        int precision = 0;
+        if (!dal_c_Cmd__tryParseElapsedPrecision(value, &precision)) {
+            (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_elapsed_precision, value);
+            return 1;
+        }
+        cmd->elapsed_precision = precision;
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_image)) {
         if (!has_bool) {
             *handled = false;
@@ -1070,6 +1118,30 @@ static double dal_c_Cmd__nowSeconds(void) {
     return (double)now;
 }
 
+double dal_c__phaseNowSeconds(void) {
+    return dal_c_Cmd__nowSeconds();
+}
+
+void dal_c__phaseRecord(dal_c_CmdPhase phase, double elapsed_seconds) {
+    if (elapsed_seconds <= 0.0) { return; }
+    switch (phase) {
+    case dal_c_CmdPhase_target_build: dal_c_Cmd__elapsed_phases.target_build += elapsed_seconds; break;
+    case dal_c_CmdPhase_dependency_build: dal_c_Cmd__elapsed_phases.dependency_build += elapsed_seconds; break;
+    case dal_c_CmdPhase_dh_build: dal_c_Cmd__elapsed_phases.dh_build += elapsed_seconds; break;
+    case dal_c_CmdPhase_self_build: dal_c_Cmd__elapsed_phases.self_build += elapsed_seconds; break;
+    case dal_c_CmdPhase_test_build: dal_c_Cmd__elapsed_phases.test_build += elapsed_seconds; break;
+    case dal_c_CmdPhase_run_build: dal_c_Cmd__elapsed_phases.run_build += elapsed_seconds; break;
+    case dal_c_CmdPhase_test_run: dal_c_Cmd__elapsed_phases.test_run += elapsed_seconds; break;
+    case dal_c_CmdPhase_run_exec: dal_c_Cmd__elapsed_phases.run_exec += elapsed_seconds; break;
+    case dal_c_CmdPhase_syntax: dal_c_Cmd__elapsed_phases.syntax += elapsed_seconds; break;
+    case dal_c_CmdPhase_tidy: dal_c_Cmd__elapsed_phases.tidy += elapsed_seconds; break;
+    case dal_c_CmdPhase_format: dal_c_Cmd__elapsed_phases.format += elapsed_seconds; break;
+    case dal_c_CmdPhase_compile_db: dal_c_Cmd__elapsed_phases.compile_db += elapsed_seconds; break;
+    case dal_c_CmdPhase_clean: dal_c_Cmd__elapsed_phases.clean += elapsed_seconds; break;
+    default: break;
+    }
+}
+
 static bool dal_c_Cmd__reportsElapsed(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
     if (!cmd->show_progress) { return false; }
@@ -1101,27 +1173,161 @@ static bool dal_c_Cmd__reportsElapsed(const dal_c_Cmd* cmd) {
     }
 }
 
-static void dal_c_Cmd__reportElapsed(const dal_c_Cmd* cmd, int result, double elapsed_seconds, double lock_wait_seconds) {
+static void dal_c_Cmd__reportFinishedPhaseElapsed(FILE* out, const char* action, const char* phase, double elapsed_seconds, int precision) {
+    if (elapsed_seconds <= 0.0) { return; }
+    (void)fprintf(out, "Finished `%s` %s in %.*fs\n", action, phase, precision, elapsed_seconds);
+}
+
+static bool dal_c_Cmd__phasesHaveAny(const dal_c_Cmd__ElapsedPhases* phases) {
+    return phases
+        && (phases->target_build > 0.0
+            || phases->dependency_build > 0.0
+            || phases->dh_build > 0.0
+            || phases->self_build > 0.0
+            || phases->test_build > 0.0
+            || phases->run_build > 0.0
+            || phases->test_run > 0.0
+            || phases->run_exec > 0.0
+            || phases->syntax > 0.0
+            || phases->tidy > 0.0
+            || phases->format > 0.0
+            || phases->compile_db > 0.0
+            || phases->clean > 0.0);
+}
+
+static int dal_c_Cmd__phaseCount(const dal_c_Cmd__ElapsedPhases* phases) {
+    if (!phases) { return 0; }
+    int count = 0;
+    count += phases->target_build > 0.0 ? 1 : 0;
+    count += phases->dependency_build > 0.0 ? 1 : 0;
+    count += phases->dh_build > 0.0 ? 1 : 0;
+    count += phases->self_build > 0.0 ? 1 : 0;
+    count += phases->test_build > 0.0 ? 1 : 0;
+    count += phases->run_build > 0.0 ? 1 : 0;
+    count += phases->test_run > 0.0 ? 1 : 0;
+    count += phases->run_exec > 0.0 ? 1 : 0;
+    count += phases->syntax > 0.0 ? 1 : 0;
+    count += phases->tidy > 0.0 ? 1 : 0;
+    count += phases->format > 0.0 ? 1 : 0;
+    count += phases->compile_db > 0.0 ? 1 : 0;
+    count += phases->clean > 0.0 ? 1 : 0;
+    return count;
+}
+
+static void dal_c_Cmd__reportFinishedPhases(FILE* out, const char* action, const dal_c_Cmd__ElapsedPhases* phases, int precision) {
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "dependencies", phases->dependency_build, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "dh", phases->dh_build, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "self", phases->self_build, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "target", phases->target_build, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "build", phases->test_build, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "build", phases->run_build, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "test", phases->test_run, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "run", phases->run_exec, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "syntax", phases->syntax, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "tidy", phases->tidy, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "format", phases->format, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "compile-db", phases->compile_db, precision);
+    dal_c_Cmd__reportFinishedPhaseElapsed(out, action, "clean", phases->clean, precision);
+}
+
+static void dal_c_Cmd__fprintPhaseSummaryItem(FILE* out, bool* wrote, const char* label, double seconds, int precision) {
+    if (seconds <= 0.0) { return; }
+    (void)fprintf(out, "%s%s %.*fs", *wrote ? ", " : "", label, precision, seconds);
+    *wrote = true;
+}
+
+static void dal_c_Cmd__fprintPhaseSummaryItems(
+    FILE* out,
+    bool* wrote,
+    const dal_c_Cmd__ElapsedPhases* phases,
+    double lock_wait_seconds,
+    int precision
+) {
+    if (!phases) { return; }
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "deps", phases->dependency_build, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "dh", phases->dh_build, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "self", phases->self_build, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "target", phases->target_build, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "build", phases->test_build, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "build", phases->run_build, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "test", phases->test_run, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "run", phases->run_exec, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "syntax", phases->syntax, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "tidy", phases->tidy, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "format", phases->format, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "compile-db", phases->compile_db, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "clean", phases->clean, precision);
+    dal_c_Cmd__fprintPhaseSummaryItem(out, wrote, "lock", lock_wait_seconds, precision);
+}
+
+static void dal_c_Cmd__fprintPhaseSummary(
+    FILE* out,
+    const dal_c_Cmd__ElapsedPhases* phases,
+    double lock_wait_seconds,
+    int precision
+) {
+    bool wrote = false;
+    (void)fprintf(out, " (");
+    dal_c_Cmd__fprintPhaseSummaryItems(out, &wrote, phases, lock_wait_seconds, precision);
+    (void)fprintf(out, ")");
+}
+
+static void dal_c_Cmd__reportElapsed(
+    const dal_c_Cmd* cmd,
+    int result,
+    double elapsed_seconds,
+    double lock_wait_seconds,
+    int elapsed_precision,
+    const dal_c_Cmd__ElapsedPhases* phases
+) {
     assert(cmd != NULL);
     const char* action = dal_c_CmdAction_format(cmd->action);
     if (!action) { action = "command"; }
     FILE* out = result == 0 ? stdout : stderr;
     const char* state = result == 0 ? "Finished" : "Failed";
+    if (result == 0 && dal_c_Cmd__phaseCount(phases) > 1) {
+        dal_c_Cmd__reportFinishedPhases(out, action, phases, elapsed_precision);
+    }
     if (lock_wait_seconds > 0.0) {
         double active_seconds = elapsed_seconds - lock_wait_seconds;
         if (active_seconds < 0.0) { active_seconds = 0.0; }
+        if (dal_c_Cmd__phasesHaveAny(phases)) {
+            bool wrote = true;
+            (void)fprintf(
+                out,
+                "%s `%s` in %.*fs (active %.*fs",
+                state,
+                action,
+                elapsed_precision,
+                elapsed_seconds,
+                elapsed_precision,
+                active_seconds
+            );
+            dal_c_Cmd__fprintPhaseSummaryItems(out, &wrote, phases, lock_wait_seconds, elapsed_precision);
+            (void)fprintf(out, ")\n");
+            return;
+        }
         (void)fprintf(
             out,
-            "%s `%s` in %.2fs (active %.2fs, lock %.2fs)\n",
+            "%s `%s` in %.*fs (active %.*fs, lock %.*fs)\n",
             state,
             action,
+            elapsed_precision,
             elapsed_seconds,
+            elapsed_precision,
             active_seconds,
+            elapsed_precision,
             lock_wait_seconds
         );
         return;
     }
-    (void)fprintf(out, "%s `%s` in %.2fs\n", state, action, elapsed_seconds);
+    if (dal_c_Cmd__phasesHaveAny(phases)) {
+        (void)fprintf(out, "%s `%s` in %.*fs", state, action, elapsed_precision, elapsed_seconds);
+        dal_c_Cmd__fprintPhaseSummary(out, phases, 0.0, elapsed_precision);
+        (void)fprintf(out, "\n");
+        return;
+    }
+    (void)fprintf(out, "%s `%s` in %.*fs\n", state, action, elapsed_precision, elapsed_seconds);
 }
 
 int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
@@ -1129,14 +1335,24 @@ int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
     bool report_elapsed = dal_c_Cmd__reportsElapsed(self);
     double started_at = report_elapsed ? dal_c_Cmd__nowSeconds() : 0.0;
     double saved_lock_wait_seconds = dal_c_Cmd__elapsed_lock_wait_seconds;
+    dal_c_Cmd__ElapsedPhases saved_phases = dal_c_Cmd__elapsed_phases;
     dal_c_Cmd__elapsed_lock_wait_seconds = 0.0;
+    memset(&dal_c_Cmd__elapsed_phases, 0, sizeof(dal_c_Cmd__elapsed_phases));
     int result = 0;
     if (!dal_c_Cmd__executeNeedsProjectLock(self)) {
         result = dal_c_Cmd__executeUnlocked(self, proj);
         if (report_elapsed) {
-            dal_c_Cmd__reportElapsed(self, result, dal_c_Cmd__nowSeconds() - started_at, dal_c_Cmd__elapsed_lock_wait_seconds);
+            dal_c_Cmd__reportElapsed(
+                self,
+                result,
+                dal_c_Cmd__nowSeconds() - started_at,
+                dal_c_Cmd__elapsed_lock_wait_seconds,
+                self->elapsed_precision,
+                &dal_c_Cmd__elapsed_phases
+            );
         }
         dal_c_Cmd__elapsed_lock_wait_seconds = saved_lock_wait_seconds;
+        dal_c_Cmd__elapsed_phases = saved_phases;
         return result;
     }
 
@@ -1144,17 +1360,33 @@ int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
     if (!dal_c__projectLockAcquire(proj, &lock)) {
         (void)fprintf(stderr, "Error: Failed to acquire build lock\n");
         if (report_elapsed) {
-            dal_c_Cmd__reportElapsed(self, 1, dal_c_Cmd__nowSeconds() - started_at, dal_c_Cmd__elapsed_lock_wait_seconds);
+            dal_c_Cmd__reportElapsed(
+                self,
+                1,
+                dal_c_Cmd__nowSeconds() - started_at,
+                dal_c_Cmd__elapsed_lock_wait_seconds,
+                self->elapsed_precision,
+                &dal_c_Cmd__elapsed_phases
+            );
         }
         dal_c_Cmd__elapsed_lock_wait_seconds = saved_lock_wait_seconds;
+        dal_c_Cmd__elapsed_phases = saved_phases;
         return 1;
     }
     result = dal_c_Cmd__executeUnlocked(self, proj);
     dal_c__projectLockRelease(&lock);
     if (report_elapsed) {
-        dal_c_Cmd__reportElapsed(self, result, dal_c_Cmd__nowSeconds() - started_at, dal_c_Cmd__elapsed_lock_wait_seconds);
+        dal_c_Cmd__reportElapsed(
+            self,
+            result,
+            dal_c_Cmd__nowSeconds() - started_at,
+            dal_c_Cmd__elapsed_lock_wait_seconds,
+            self->elapsed_precision,
+            &dal_c_Cmd__elapsed_phases
+        );
     }
     dal_c_Cmd__elapsed_lock_wait_seconds = saved_lock_wait_seconds;
+    dal_c_Cmd__elapsed_phases = saved_phases;
     return result;
 }
 
@@ -1166,7 +1398,12 @@ static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project
         }
         return dal_c_Cmd_makeTarget(self, proj);
     case dal_c_CmdAction_compile_db:
-        return dal_c_Cmd_writeCompileDb(self, proj);
+    {
+        double started_at = dal_c__phaseNowSeconds();
+        int result = dal_c_Cmd_writeCompileDb(self, proj);
+        dal_c__phaseRecord(dal_c_CmdPhase_compile_db, dal_c__phaseNowSeconds() - started_at);
+        return result;
+    }
     case dal_c_CmdAction_syntax:
         return dal_c_Cmd_runSyntax(self, proj);
     case dal_c_CmdAction_tidy:
@@ -1182,10 +1419,15 @@ static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project
     case dal_c_CmdAction_toolchain:
         return dal_c_Cmd_queryToolchain(self);
     case dal_c_CmdAction_clean:
+    {
         if (self->payload.clean.self_boundary) {
             return dal_c__cleanSelf(self);
         }
-        return dal_c_Cmd_cleanTarget(self, proj);
+        double started_at = dal_c__phaseNowSeconds();
+        int result = dal_c_Cmd_cleanTarget(self, proj);
+        dal_c__phaseRecord(dal_c_CmdPhase_clean, dal_c__phaseNowSeconds() - started_at);
+        return result;
+    }
     case dal_c_CmdAction_build_self:
         return dal_c__buildSelf(self);
     case dal_c_CmdAction_clean_self:
@@ -1199,7 +1441,12 @@ static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project
     case dal_c_CmdAction_test_dsl:
         return dal_c__testDSL(self, proj);
     case dal_c_CmdAction_clean_dsl:
-        return dal_c__cleanDSL(self, proj);
+    {
+        double started_at = dal_c__phaseNowSeconds();
+        int result = dal_c__cleanDSL(self, proj);
+        dal_c__phaseRecord(dal_c_CmdPhase_clean, dal_c__phaseNowSeconds() - started_at);
+        return result;
+    }
     case dal_c_CmdAction_help:
     case dal_c_CmdAction_version:
     case dal_c_CmdAction_invalid:
@@ -2047,26 +2294,41 @@ static int dal_c_Cmd__runFormatPlan(const dal_c_Cmd* self, dal_c_Cmd__CheckPlan*
 }
 
 int dal_c_Cmd_runSyntax(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    double started_at = dal_c__phaseNowSeconds();
     dal_c_Cmd__CheckPlan plan;
-    if (dal_c_Cmd__prepareCheckPlan(self, proj, &plan) != 0) { return 1; }
+    if (dal_c_Cmd__prepareCheckPlan(self, proj, &plan) != 0) {
+        dal_c__phaseRecord(dal_c_CmdPhase_syntax, dal_c__phaseNowSeconds() - started_at);
+        return 1;
+    }
     int result = dal_c_Cmd__runSyntaxPlan(&plan);
     dal_c_Cmd__cleanupCheckPlan(&plan);
+    dal_c__phaseRecord(dal_c_CmdPhase_syntax, dal_c__phaseNowSeconds() - started_at);
     return result;
 }
 
 int dal_c_Cmd_runTidy(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    double started_at = dal_c__phaseNowSeconds();
     dal_c_Cmd__CheckPlan plan;
-    if (dal_c_Cmd__prepareCheckPlan(self, proj, &plan) != 0) { return 1; }
+    if (dal_c_Cmd__prepareCheckPlan(self, proj, &plan) != 0) {
+        dal_c__phaseRecord(dal_c_CmdPhase_tidy, dal_c__phaseNowSeconds() - started_at);
+        return 1;
+    }
     int result = dal_c_Cmd__runTidyPlan(self, proj, &plan);
     dal_c_Cmd__cleanupCheckPlan(&plan);
+    dal_c__phaseRecord(dal_c_CmdPhase_tidy, dal_c__phaseNowSeconds() - started_at);
     return result;
 }
 
 int dal_c_Cmd_runFormat(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    double started_at = dal_c__phaseNowSeconds();
     dal_c_Cmd__CheckPlan plan;
-    if (dal_c_Cmd__prepareCheckPlan(self, proj, &plan) != 0) { return 1; }
+    if (dal_c_Cmd__prepareCheckPlan(self, proj, &plan) != 0) {
+        dal_c__phaseRecord(dal_c_CmdPhase_format, dal_c__phaseNowSeconds() - started_at);
+        return 1;
+    }
     int result = dal_c_Cmd__runFormatPlan(self, &plan);
     dal_c_Cmd__cleanupCheckPlan(&plan);
+    dal_c__phaseRecord(dal_c_CmdPhase_format, dal_c__phaseNowSeconds() - started_at);
     return result;
 }
 
@@ -2573,6 +2835,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_commands)
             || str_eql(opt, dal_c_opt_verbose)
             || str_eql(opt, dal_c_opt_progress)
+            || str_eql(opt, dal_c_opt_elapsed_precision)
             || str_eql(opt, dal_c_opt_jobs)
             || (str_eql(opt, dal_c_opt_remove) && action == dal_c_CmdAction_compile_db)
             || str_eql(opt, dal_c_opt_link_dsl)
@@ -2687,6 +2950,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_verbose)
             || str_startsWith(opt, dal_c_opt_commands)
             || str_startsWith(opt, dal_c_opt_progress)
+            || str_startsWith(opt, dal_c_opt_elapsed_precision)
             || str_startsWith(opt, dal_c_opt_jobs)
             || str_startsWith(opt, dal_c_opt_comp_args)
             || str_startsWith(opt, dal_c_opt_link_args)
@@ -2967,6 +3231,13 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     } else {
                         cmd->payload.build.analysis_artifacts = false;
                     }
+                } else if (strncmp(opt, dal_c_opt_elapsed_precision, opt_len) == 0) {
+                    int precision = 0;
+                    if (!dal_c_Cmd__tryParseElapsedPrecision(value, &precision)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_elapsed_precision, value);
+                        return 1;
+                    }
+                    cmd->elapsed_precision = precision;
                 } else if (strncmp(opt, dal_c_opt_jobs, opt_len) == 0) {
                     if (value[0] == '\0') {
                         (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_jobs, value);
@@ -3123,6 +3394,18 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     cmd->verbose = true;
                 } else if (str_eql(opt, dal_c_opt_progress)) {
                     cmd->show_progress = true;
+                } else if (str_eql(opt, dal_c_opt_elapsed_precision)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    const char* value = argv[++i];
+                    int precision = 0;
+                    if (!dal_c_Cmd__tryParseElapsedPrecision(value, &precision)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_elapsed_precision, value);
+                        return 1;
+                    }
+                    cmd->elapsed_precision = precision;
                 } else if (str_eql(opt, dal_c_opt_jobs)) {
                     if (i + 1 >= argc) {
                         (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
@@ -4309,8 +4592,16 @@ static int dal_c_Cmd__buildFromSources(
     }
     char* target_path = dal_c__resolveOutputPath(proj, self, profile_dir, resolved_output_name, target_type);
     char* makefile_path = dal_c__makePlanFilePath(proj, profile, &effective, target_path, target_type);
+    dal_c_CmdPhase build_phase = dal_c_CmdPhase_target_build;
+    if (self->action == dal_c_CmdAction_test || self->action == dal_c_CmdAction_test_dsl) {
+        build_phase = dal_c_CmdPhase_test_build;
+    } else if (self->action == dal_c_CmdAction_run) {
+        build_phase = dal_c_CmdPhase_run_build;
+    }
+    double build_started_at = dal_c_Cmd__nowSeconds();
     int plan_result = dal_c__generateMakefile(&effective, proj, profile, sources, target_path, object_dir, target_type);
     if (plan_result != dal_c_generateMakefile_success && plan_result != dal_c_generateMakefile_upToDate) {
+        dal_c__phaseRecord(build_phase, dal_c_Cmd__nowSeconds() - build_started_at);
         (void)fprintf(stderr, "Error: Failed to generate Makefile\n");
         dal_c_CompilerOpts_cleanup(&effective.opts);
         dal_c_BuildDefaults_cleanup(&effective_defaults);
@@ -4322,6 +4613,7 @@ static int dal_c_Cmd__buildFromSources(
         return 1;
     }
     int result = (plan_result == dal_c_generateMakefile_upToDate) ? 0 : dal_c__executeMake(self, makefile_path);
+    dal_c__phaseRecord(build_phase, dal_c_Cmd__nowSeconds() - build_started_at);
     free(makefile_path);
     free(object_dir);
     free(profile_dir);
@@ -4387,9 +4679,23 @@ static int dal_c_Cmd__buildFromSources(
             break;
         }
         if (intent.debug) {
+            double runtime_started_at = dal_c_Cmd__nowSeconds();
             result = dal_c__runDebugger(&runtime_cmd, proj);
+            double runtime_elapsed = dal_c_Cmd__nowSeconds() - runtime_started_at;
+            if (self->action == dal_c_CmdAction_run) {
+                dal_c__phaseRecord(dal_c_CmdPhase_run_exec, runtime_elapsed);
+            } else {
+                dal_c__phaseRecord(dal_c_CmdPhase_test_run, runtime_elapsed);
+            }
         } else {
+            double runtime_started_at = dal_c_Cmd__nowSeconds();
             result = dal_c__runExecutable(&runtime_cmd, proj);
+            double runtime_elapsed = dal_c_Cmd__nowSeconds() - runtime_started_at;
+            if (self->action == dal_c_CmdAction_run) {
+                dal_c__phaseRecord(dal_c_CmdPhase_run_exec, runtime_elapsed);
+            } else {
+                dal_c__phaseRecord(dal_c_CmdPhase_test_run, runtime_elapsed);
+            }
         }
     }
 

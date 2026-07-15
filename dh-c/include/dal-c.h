@@ -855,6 +855,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 
 #define dal_c_opt_verbose "verbose"
 #define dal_c_opt_progress "progress"
+#define dal_c_opt_elapsed_precision "elapsed-precision"
 #define dal_c_opt_jobs "jobs"
 #define dal_c_opt_debug "debug"
 #define dal_c_opt_commands "commands"
@@ -1251,6 +1252,7 @@ typedef struct dal_c_Cmd {
     bool show_commands; // --commands=show|hide
     bool verbose; // --verbose
     bool show_progress; // --progress=show|hide
+    int elapsed_precision; // --elapsed-precision=<0..9>
     char* make_jobs; // --jobs=<n>
     bool profile_explicit; // profile token was provided explicitly by user
     bool is_help; // --help, -h
@@ -1335,6 +1337,8 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_default_objcopy "llvm-objcopy"
 #define dal_c_default_c_std "gnu17"
 #define dal_c_default_profile dal_c_Profile_dev
+#define dal_c_default_elapsed_precision 2
+#define dal_c_max_elapsed_precision 9
 
 #define dal_c_default_compile_env "hosted"
 // libc_linked default depends on compile_env: hosted -> linked, freestanding -> not linked
@@ -1538,6 +1542,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_all_alias, "Build all source files (alternative to " dal_c_opt_prefix_long dal_c_opt_all ")" },
     { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide compiler/link commands" },
     { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact build progress lines" },
+    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
     { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
     { dal_c_opt_prefix_long dal_c_opt_jobs dal_c_opt_value_sep "<n>", "Override make parallelism" },
     { dal_c_opt_prefix_long dal_c_opt_dh dal_c_opt_value_sep "<path>", "Override DH path" },
@@ -1614,6 +1619,7 @@ static const char* const dal_c_help_test_examples[] = {
 
 static const dal_c_HelpOption dal_c_help_deps_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
+    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
 };
 #define dal_c_help_deps_options_count ((int)(sizeof(dal_c_help_deps_options) / sizeof(dal_c_help_deps_options[0])))
 
@@ -1652,6 +1658,7 @@ static const char* const dal_c_help_compile_db_examples[] = {
 
 static const dal_c_HelpOption dal_c_help_check_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact check progress lines" },
+    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
     { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide tool commands" },
     { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
 };
@@ -1683,11 +1690,13 @@ static const dal_c_HelpOption dal_c_help_clean_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_self, "Apply `clean` to the self boundary" },
     { dal_c_opt_prefix_long dal_c_opt_dsl, "Include the DSL boundary in `clean`" },
     { dal_c_opt_prefix_long dal_c_opt_recur, "Recursive clean" },
+    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
 };
 #define dal_c_help_clean_options_count ((int)(sizeof(dal_c_help_clean_options) / sizeof(dal_c_help_clean_options[0])))
 
 static const dal_c_HelpOption dal_c_help_clean_dsl_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_cache, "Clean only cache" },
+    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
 };
 #define dal_c_help_clean_dsl_options_count ((int)(sizeof(dal_c_help_clean_dsl_options) / sizeof(dal_c_help_clean_dsl_options[0])))
 
@@ -1722,6 +1731,7 @@ static const char* const dal_c_help_clean_dsl_examples[] = {
 static const dal_c_HelpOption dal_c_help_self_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide compiler/link commands" },
     { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact build progress lines" },
+    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
     { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
     { dal_c_opt_prefix_long dal_c_opt_jobs dal_c_opt_value_sep "<n>", "Override make parallelism" },
 };
