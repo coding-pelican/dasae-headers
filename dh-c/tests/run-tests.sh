@@ -168,20 +168,35 @@ assert_build_artifacts_exist() {
     done
 }
 
+remove_recur() {
+    path=$1
+    i=0
+    while [ "$i" -lt 20 ]; do
+        rm -rf "$path" 2>/dev/null || true
+        if [ ! -e "$path" ]; then
+            return 0
+        fi
+        i=$((i + 1))
+        sleep 0.1
+    done
+    rm -rf "$path" 2>/dev/null || true
+    [ ! -e "$path" ]
+}
+
 remove_generated_dirs() {
     root=$1
     "$find_bin" "$root" -type d \( -name build -o -name .cache \) -prune -print | while IFS= read -r dir; do
-        rm -rf "$dir"
+        remove_recur "$dir" || true
     done
 }
 
 reset_temp_root() {
-    rm -rf "$temp_root"
+    remove_recur "$temp_root"
     mkdir -p "$temp_root"
 }
 
 cleanup_temp_root() {
-    rm -rf "$scratch_root"
+    remove_recur "$scratch_root" || true
 }
 
 trap cleanup_temp_root EXIT

@@ -1,4 +1,5 @@
 link-dsl=off
+pch=B.h
 output=dep-b
 
 [A]

@@ -52,6 +52,7 @@ typedef struct dal_c_TargetRequest {
 typedef struct dal_c_ProjectLock {
     char* path;
     bool acquired;
+    bool waited;
 } dal_c_ProjectLock;
 
 void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out);

@@ -102,6 +102,7 @@ static const char* dal_c__planContextDir(const dal_c_Project* proj, const dal_c_
 static ArrStr* dal_c__collectLibrarySources(const dal_c_Lib* lib, const dal_c_Project* lib_proj);
 static bool dal_c__cmdAggregatesRecursiveTests(const dal_c_Cmd* cmd);
 static int dal_c__runDependencyTests(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_CompilerOpts* opts);
+static bool dal_c__compilerLooksLikeClang(const char* compiler);
 static bool dal_c__copyLibraryArtifacts(
     const dal_c_Project* consumer_proj,
     const dal_c_Project* lib_proj,
@@ -136,6 +137,10 @@ static dal_c__noinline dal_c__optnone char* dal_c__queryCompilerRtPath(const dal
 static ArrStr* dal_c__parseQuotedTokens(const char* line);
 static ArrStr* dal_c__queryToolchainLinkTokens(const dal_c_CompilerOpts* opts);
 static void dal_c__printToolchainCategory(const char* title, ArrStr* link_tokens, const char* compiler_rt_path, dal_c_ToolchainQuery query);
+static dal_c_LtoMode dal_c__effectiveLtoState(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
+static bool dal_c__effectiveLtoEnabled(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
+static bool dal_c__shouldUseLldForClangLto(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
+static void dal_c__warnIfProfileLtoDisabledByToolchain(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 void dal_c__appendCompileDbArguments(ArrStr* argv, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* src);
 void dal_c__appendSyntaxArguments(ArrStr* argv, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* src, dal_c_Target target_type);
 static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_CompilerOpts* opts, bool compiler_is_clang);
@@ -1774,6 +1779,7 @@ dal_c__noinline dal_c__optnone int dal_c__generateMakefile(
     if (!dal_c__validateBuildArtifacts(cmd, profile, sources, target_type)) {
         return 1;
     }
+    dal_c__warnIfProfileLtoDisabledByToolchain(cmd, profile, target_type);
 
     char* makefile_path = dal_c__makePlanFilePath(proj, profile, cmd, target_path, target_type);
     char* makefile_dir = path_parent(makefile_path);
@@ -2646,10 +2652,6 @@ static dal_c_LtoMode dal_c__resolvedLtoState(const dal_c_CompilerOpts* opts, con
     return dal_c__resolvedProfileLtoMode(opts->lto_mode, profile->lto_mode);
 }
 
-static bool dal_c__resolvedLtoMode(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
-    return dal_c_LtoMode_isEnabled(dal_c__resolvedLtoState(opts, profile));
-}
-
 static dal_c_ToggleState dal_c__resolvedOmitFramePointerState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
     assert(opts != NULL);
     assert(profile != NULL);
@@ -2746,6 +2748,154 @@ static dal_c_ToggleState dal_c__resolvedExceptionsState(const dal_c_CompilerOpts
 
 static bool dal_c__isLtoFlag(const char* flag) {
     return flag && (str_eql(flag, "-flto") || str_eql(flag, "-fno-lto") || str_startsWith(flag, "-flto="));
+}
+
+static bool dal_c__isLinkedTarget(dal_c_Target target_type) {
+    return target_type == dal_c_Target_executable
+        || target_type == dal_c_Target_shared_lib
+        || target_type == dal_c_Target_image;
+}
+
+static bool dal_c__hostClangLtoPrefersLld(void) {
+#if defined(_WIN32) || defined(__APPLE__)
+    return false;
+#else
+    return true;
+#endif
+}
+
+static bool dal_c__textMentionsLinkerSelection(const char* text) {
+    return text && (strstr(text, "-fuse-ld=") != NULL || strstr(text, "-fuse-ld ") != NULL);
+}
+
+static bool dal_c__cmdHasExplicitLinkerSelection(const dal_c_Cmd* cmd) {
+    if (!cmd) { return false; }
+    return dal_c__textMentionsLinkerSelection(cmd->compiler_args)
+        || dal_c__textMentionsLinkerSelection(cmd->link_args);
+}
+
+static bool dal_c__toolExistsInDir(const char* dir, const char* tool) {
+    if (!dir || !tool) { return false; }
+    char* path = path_join(dir, tool);
+    bool found = path_isFile(path);
+#ifdef _WIN32
+    if (!found && !str_endsWith(tool, ".exe")) {
+        char* exe_name = str_format("%s.exe", tool);
+        char* exe_path = exe_name ? path_join(dir, exe_name) : NULL;
+        found = path_isFile(exe_path);
+        free(exe_path);
+        free(exe_name);
+    }
+#endif
+    free(path);
+    return found;
+}
+
+static bool dal_c__toolAvailableOnPath(const char* tool) {
+    if (!tool || tool[0] == '\0') { return false; }
+    char* path_env = env_get("PATH");
+    if (!path_env) { return false; }
+#ifdef _WIN32
+    const char sep = ';';
+#else
+    const char sep = ':';
+#endif
+    bool found = false;
+    char* cursor = path_env;
+    while (!found && cursor && *cursor != '\0') {
+        char* next = strchr(cursor, sep);
+        if (next) { *next = '\0'; }
+        found = dal_c__toolExistsInDir(cursor[0] != '\0' ? cursor : ".", tool);
+        cursor = next ? next + 1 : NULL;
+    }
+    free(path_env);
+    return found;
+}
+
+static bool dal_c__toolAvailableNearCompiler(const char* compiler, const char* tool) {
+    if (!compiler || !tool || !dal_c__pathHasSeparator(compiler)) {
+        return false;
+    }
+    char* dir = path_parent(compiler);
+    bool found = dal_c__toolExistsInDir(dir, tool);
+    free(dir);
+    return found;
+}
+
+static bool dal_c__toolAvailableForCompiler(const char* compiler, const char* tool) {
+    return dal_c__toolAvailableNearCompiler(compiler, tool)
+        || dal_c__toolAvailableOnPath(tool);
+}
+
+static bool dal_c__clangCanUseLld(const dal_c_Cmd* cmd) {
+    assert(cmd != NULL);
+    const char* compiler = cmd->opts.compiler ? cmd->opts.compiler : dal_c_default_compiler;
+    return dal_c__toolAvailableForCompiler(compiler, "ld.lld")
+        || dal_c__toolAvailableForCompiler(compiler, "lld");
+}
+
+static bool dal_c__clangLtoNeedsLldDecision(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type) {
+    assert(cmd != NULL);
+    assert(profile != NULL);
+    if (!dal_c__isLinkedTarget(target_type) || !dal_c__hostClangLtoPrefersLld()) {
+        return false;
+    }
+    dal_c_LtoMode lto_state = dal_c__resolvedLtoState(&cmd->opts, profile);
+    if (!dal_c_LtoMode_isEnabled(lto_state)) {
+        return false;
+    }
+    const char* compiler = cmd->opts.compiler ? cmd->opts.compiler : dal_c_default_compiler;
+    return dal_c__compilerLooksLikeClang(compiler)
+        && !dal_c__cmdHasExplicitLinkerSelection(cmd);
+}
+
+static bool dal_c__profileDefaultLtoEnabled(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile) {
+    assert(cmd != NULL);
+    assert(profile != NULL);
+    return cmd->opts.lto_mode == dal_c_LtoMode_auto
+        && dal_c_LtoMode_isEnabled(profile->lto_mode);
+}
+
+static bool dal_c__profileLtoDisabledByToolchain(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type) {
+    return dal_c__profileDefaultLtoEnabled(cmd, profile)
+        && dal_c__clangLtoNeedsLldDecision(cmd, profile, target_type)
+        && !dal_c__clangCanUseLld(cmd);
+}
+
+static dal_c_LtoMode dal_c__effectiveLtoState(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type) {
+    assert(cmd != NULL);
+    assert(profile != NULL);
+    if (dal_c__profileLtoDisabledByToolchain(cmd, profile, target_type)) {
+        return dal_c_LtoMode_off;
+    }
+    return dal_c__resolvedLtoState(&cmd->opts, profile);
+}
+
+static bool dal_c__effectiveLtoEnabled(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type) {
+    return dal_c_LtoMode_isEnabled(dal_c__effectiveLtoState(cmd, profile, target_type));
+}
+
+static bool dal_c__shouldUseLldForClangLto(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type) {
+    return dal_c__clangLtoNeedsLldDecision(cmd, profile, target_type)
+        && dal_c__effectiveLtoEnabled(cmd, profile, target_type)
+        && dal_c__clangCanUseLld(cmd);
+}
+
+static void dal_c__warnIfProfileLtoDisabledByToolchain(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type) {
+    static bool warned = false;
+    if (warned || !dal_c__profileLtoDisabledByToolchain(cmd, profile, target_type)) {
+        return;
+    }
+    warned = true;
+    const char* compiler = cmd->opts.compiler ? cmd->opts.compiler : dal_c_default_compiler;
+    (void)fprintf(
+        stderr,
+        "Warning: `%s` profile LTO was disabled because `%s` is Clang-like and `ld.lld` was not found. Install LLD/LLVMgold, pass `--%s=on` to require LTO, or pass `--%s=off` explicitly.\n",
+        profile->name,
+        compiler,
+        dal_c_opt_lto,
+        dal_c_opt_lto
+    );
 }
 
 static bool dal_c__targetSupportsNoLibcFlag(const dal_c_CompilerOpts* opts) {
@@ -3318,7 +3468,7 @@ void dal_c__appendSyntaxArguments(
         ArrStr_push(argv, opt_flag);
     }
 
-    dal_c_LtoMode lto_state = dal_c__resolvedLtoState(opts, profile);
+    dal_c_LtoMode lto_state = dal_c__effectiveLtoState(cmd, profile, target_type);
     for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
         const char* flag = profile->extra_flags[i];
         if (dal_c__isLtoFlag(flag)) {
@@ -3907,7 +4057,7 @@ static bool dal_c__validateBuildArtifacts(const dal_c_Cmd* cmd, const dal_c_Prof
         (void)fprintf(stderr, "Error: linked assembly, disassembly, and debug-info artifacts currently require an executable target\n");
         return false;
     }
-    if (build->emit_linked_asm && !dal_c__resolvedLtoMode(&cmd->opts, profile)) {
+    if (build->emit_linked_asm && !dal_c__effectiveLtoEnabled(cmd, profile, target_type)) {
         (void)fprintf(stderr, "Error: `%s` requires effective LTO to be enabled\n", dal_c_opt_emit_linked_asm);
         return false;
     }
@@ -4239,7 +4389,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, " %s", opt_flag);
     }
 
-    dal_c_LtoMode lto_state = dal_c__resolvedLtoState(opts, profile);
+    dal_c_LtoMode lto_state = dal_c__effectiveLtoState(cmd, profile, target_type);
     for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
         const char* flag = profile->extra_flags[i];
         if (dal_c__isLtoFlag(flag)) {
@@ -4532,6 +4682,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
                 (void)fprintf(fp, " %s", flag);
             }
         }
+        if (dal_c__shouldUseLldForClangLto(cmd, profile, target_type)) {
+            (void)fprintf(fp, " -fuse-ld=lld");
+        }
         if (lto_flag) {
             (void)fprintf(fp, " %s", lto_flag);
         }
@@ -4749,7 +4902,7 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     bool compiler_rt_linked = dal_c__resolvedCompilerRtLinked(opts, target_type);
     bool stdlib_linked = start_files_linked && default_libs_linked;
     bool crt_linked = start_files_linked;
-    dal_c_LtoMode lto_state = dal_c__resolvedLtoState(opts, profile);
+    dal_c_LtoMode lto_state = dal_c__effectiveLtoState(cmd, profile, target_type);
     bool lto_enabled = dal_c_LtoMode_isEnabled(lto_state);
     const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
     const char* target_tune = dal_c__resolvedTargetTune(opts, profile);
@@ -4870,7 +5023,8 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
     bool start_files_linked = dal_c__resolvedStartFilesLinked(opts);
     bool compiler_rt_linked = dal_c__resolvedCompilerRtLinked(opts, target_type);
-    bool lto_enabled = dal_c__resolvedLtoMode(opts, profile);
+    bool lto_enabled = dal_c__effectiveLtoEnabled(cmd, profile, target_type);
+    bool use_lld_for_lto = dal_c__shouldUseLldForClangLto(cmd, profile, target_type);
     const char* target_arch = dal_c__resolvedTargetArch(opts, profile);
     dal_c_IcfMode icf_mode = dal_c__resolvedIcfMode(opts, profile);
     uint64_t hash = 1469598103934665603ULL;
@@ -4893,6 +5047,7 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     hash = dal_c__hashBool(hash, compiler_rt_linked);
     hash = dal_c__hashBytes(hash, &opts->lto_mode, sizeof(opts->lto_mode));
     hash = dal_c__hashBool(hash, lto_enabled);
+    hash = dal_c__hashBool(hash, use_lld_for_lto);
     hash = dal_c__hashBytes(hash, &opts->gc_sections, sizeof(opts->gc_sections));
     hash = dal_c__hashBool(hash, dal_c__resolvedGcSections(opts, profile));
     hash = dal_c__hashBytes(hash, &opts->whole_archive, sizeof(opts->whole_archive));
@@ -5008,7 +5163,7 @@ static char* dal_c__makePchPath(const dal_c_Cmd* cmd, const dal_c_Project* proj,
 
 static bool dal_c__pchEnabled(const dal_c_Project* proj) {
     if (!proj || !proj->pch_header) { return false; }
-    return true;
+    return path_isFile(proj->pch_header);
 }
 
 

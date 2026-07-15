@@ -255,6 +255,7 @@ bool file_lockAcquire(file_Lock* lock, const char* path) {
         if (!waiting_reported) {
             (void)fprintf(stderr, "Waiting for build lock: %s\n", path);
             waiting_reported = true;
+            lock->waited = true;
         }
         Sleep(50);
     }
@@ -273,6 +274,7 @@ bool file_lockAcquire(file_Lock* lock, const char* path) {
             return false;
         }
         (void)fprintf(stderr, "Waiting for build lock: %s\n", path);
+        lock->waited = true;
         if (flock(fd, LOCK_EX) != 0) {
             close(fd);
             free(lock->path);

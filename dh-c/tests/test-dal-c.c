@@ -11,6 +11,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <time.h>
+#endif
 
 static int g_test_failures = 0;
 
@@ -67,6 +72,7 @@ static void test_source_collection_ignores_hidden_ancestors(void);
 static char* test_repo_path(const char* relative_path);
 static char* test_repo_root(void);
 static char* test_temp_root(void);
+static bool test_remove_recur(const char* path);
 static void test_reset_temp_root(void);
 static void test_free_str_array(char** items, int count);
 static char* test_makefile_var_first_value(const char* makefile_text, const char* var_name);
@@ -139,11 +145,29 @@ static char* test_temp_root(void) {
     return test_repo_path("dh-c/tests/.scratch/unit");
 }
 
+static void test_sleep_remove_retry(void) {
+#ifdef _WIN32
+    Sleep(20);
+#else
+    struct timespec ts = { .tv_sec = 0, .tv_nsec = 20 * 1000 * 1000 };
+    (void)nanosleep(&ts, NULL);
+#endif
+}
+
+static bool test_remove_recur(const char* path) {
+    if (!path || !path_exists(path)) { return true; }
+    for (int i = 0; i < 20; ++i) {
+        if ((!path_isDir(path) || dir_removeRecur(path)) && !path_exists(path)) {
+            return true;
+        }
+        test_sleep_remove_retry();
+    }
+    return !path_exists(path);
+}
+
 static void test_reset_temp_root(void) {
     char* temp_root = test_temp_root();
-    if (temp_root && path_isDir(temp_root)) {
-        (void)dir_removeRecur(temp_root);
-    }
+    (void)test_remove_recur(temp_root);
     free(temp_root);
 }
 
@@ -384,8 +408,7 @@ static void test_file_and_dir_helpers(void) {
     TEST_ASSERT(file_count >= 3);
     test_free_str_array(listed, file_count);
 
-    (void)dir_removeRecur(temp_root);
-    TEST_ASSERT(!path_exists(temp_root));
+    TEST_ASSERT(test_remove_recur(temp_root));
 
     free(long_line_file);
     free(file_copy_path);
@@ -1956,8 +1979,7 @@ static void test_makefile_mode_contracts(void) {
 
     ArrStr_fini(&sources);
     dal_c_Project_cleanup(&proj);
-    (void)dir_removeRecur(temp_root);
-    TEST_ASSERT(!path_exists(temp_root));
+    TEST_ASSERT(test_remove_recur(temp_root));
 
     free(main_source);
     free(crt0_source);
@@ -2166,8 +2188,7 @@ static void test_clean_prefers_local_build_dir(void) {
     dal_c_Project_cleanup(&proj);
     dal_c_Cmd_cleanup(&cmd);
     TEST_ASSERT(env_setCWD(original_cwd));
-    (void)dir_removeRecur(temp_root);
-    TEST_ASSERT(!path_exists(temp_root));
+    TEST_ASSERT(test_remove_recur(temp_root));
 
     free(local_build_dev);
     free(project_build_dev);
@@ -2435,8 +2456,7 @@ static void test_target_root_directory_uses_local_include(void) {
     free(compile_db);
     free(demo_output);
     dal_c_Project_cleanup(&proj);
-    (void)dir_removeRecur(temp_root);
-    TEST_ASSERT(!path_exists(temp_root));
+    TEST_ASSERT(test_remove_recur(temp_root));
 
     free(compile_db_path);
     free(demo_output_dir);
@@ -2523,8 +2543,7 @@ static void test_syntax_arguments_follow_build_compile_contract(void) {
     ArrStr_fini(&args);
     dal_c_Cmd_cleanup(&cmd);
     dal_c_Project_cleanup(&proj);
-    (void)dir_removeRecur(temp_root);
-    TEST_ASSERT(!path_exists(temp_root));
+    TEST_ASSERT(test_remove_recur(temp_root));
 
     free(source);
     free(source_dir);
@@ -2658,8 +2677,7 @@ static void test_compile_db_command(void) {
 
     dal_c_Cmd_cleanup(&build_cmd);
     dal_c_Project_cleanup(&proj);
-    (void)dir_removeRecur(temp_root);
-    TEST_ASSERT(!path_exists(temp_root));
+    TEST_ASSERT(test_remove_recur(temp_root));
 
     free(auto_output_path);
     free(output_path);
@@ -2684,14 +2702,20 @@ static void test_deps_prelude_tracks_dh_contract(void) {
     char* dh_root = test_repo_path("dh");
     char* project_root = path_join(temp_root, "dh-prelude-project");
     char* project_dh = path_join(project_root, "project.dh");
+    char* source_dir = path_join(project_root, "src");
+    char* main_source = path_join(source_dir, "main.c");
     char* deps_header = path_join(project_root, "lib/deps.h");
     TEST_ASSERT(temp_root != NULL);
     TEST_ASSERT(dh_root != NULL);
     TEST_ASSERT(project_root != NULL);
     TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(source_dir != NULL);
+    TEST_ASSERT(main_source != NULL);
     TEST_ASSERT(deps_header != NULL);
     TEST_ASSERT(dir_createRecur(project_root));
     TEST_ASSERT(file_write(project_dh, "output=dh-prelude\n"));
+    TEST_ASSERT(dir_createRecur(source_dir));
+    TEST_ASSERT(file_write(main_source, "int main(void) { return 0; }\n"));
 
     dal_c_Project* proj = dal_c_Project_detectAt(project_root, dh_root);
     TEST_ASSERT(proj != NULL);
@@ -2705,7 +2729,49 @@ static void test_deps_prelude_tracks_dh_contract(void) {
     free(deps_text);
     dal_c_Project_cleanup(&proj);
 
-    TEST_ASSERT(dir_removeRecur(project_root));
+    proj = dal_c_Project_detectAt(project_root, dh_root);
+    TEST_ASSERT(proj != NULL);
+    TEST_ASSERT(proj->pch_header != NULL);
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--link-dsl=off", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(dal_c__writeDepsPreludeHeader(proj, &cmd->opts));
+        TEST_ASSERT(!path_exists(deps_header));
+
+        const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+        char* build_dir = dal_c_Project_getBuildDir(proj);
+        char* profile_dir = path_join(build_dir, profile->name);
+        char* object_dir = path_join(profile_dir, "obj");
+        char* target_path = dal_c__resolveOutputPath(proj, cmd, profile_dir, "dh-prelude", dal_c_Target_executable);
+        char* makefile_path = dal_c__makePlanFilePath(proj, profile, cmd, target_path, dal_c_Target_executable);
+        ArrStr* sources = ArrStr_init();
+        TEST_ASSERT(build_dir != NULL);
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(target_path != NULL);
+        TEST_ASSERT(makefile_path != NULL);
+        TEST_ASSERT(sources != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+        ArrStr_push(sources, main_source);
+        TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 0);
+        char* makefile_text = file_read(makefile_path);
+        TEST_ASSERT(makefile_text != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-include-pch") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "PCH_SRC = ") == NULL);
+        free(makefile_text);
+        ArrStr_fini(&sources);
+        free(makefile_path);
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+    dal_c_Project_cleanup(&proj);
+
+    TEST_ASSERT(test_remove_recur(project_root));
     TEST_ASSERT(dir_createRecur(project_root));
     TEST_ASSERT(file_write(project_dh, "output=dh-prelude\nlink-dsl=off\n"));
     proj = dal_c_Project_detectAt(project_root, dh_root);
@@ -2715,10 +2781,11 @@ static void test_deps_prelude_tracks_dh_contract(void) {
     TEST_ASSERT(!path_exists(deps_header));
 
     dal_c_Project_cleanup(&proj);
-    (void)dir_removeRecur(temp_root);
-    TEST_ASSERT(!path_exists(temp_root));
+    TEST_ASSERT(test_remove_recur(temp_root));
 
     free(deps_header);
+    free(main_source);
+    free(source_dir);
     free(project_dh);
     free(project_root);
     free(dh_root);
@@ -2879,8 +2946,7 @@ static void test_source_collection_ignores_hidden_ancestors(void) {
 
     ArrStr_fini(&sources);
     dal_c_Project_cleanup(&proj);
-    (void)dir_removeRecur(temp_root);
-    TEST_ASSERT(!path_exists(temp_root));
+    TEST_ASSERT(test_remove_recur(temp_root));
 
     free(source_relative);
     free(main_source);

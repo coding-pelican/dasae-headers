@@ -14,6 +14,7 @@ typedef struct file_Lock {
     int fd;
 #endif
     char* path;
+    bool waited;
 } file_Lock;
 
 // Returns: allocated string; caller must `free()`

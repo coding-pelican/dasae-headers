@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <time.h>
 #include <assert.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 /* Supported: single file build/run/test; --sample/--example/--test with bare filename
  * (e.g. dh-c build --sample target.c resolves to samples/target.c); aggregate test builds
  * use a generated runner TU plus separate test translation units. */
@@ -34,6 +37,9 @@ static char** dal_c_Cmd__targetPathSlot(dal_c_Cmd* cmd);
 static char** dal_c_Cmd__outputPathSlot(dal_c_Cmd* cmd);
 static char** dal_c_Cmd__runArgsSlot(dal_c_Cmd* cmd);
 static bool dal_c_Cmd__buildsLibrary(const dal_c_Cmd* cmd);
+static double dal_c_Cmd__nowSeconds(void);
+static bool dal_c_Cmd__reportsElapsed(const dal_c_Cmd* cmd);
+static void dal_c_Cmd__reportElapsed(const dal_c_Cmd* cmd, int result, double elapsed_seconds, double lock_wait_seconds);
 static int dal_c_Cmd__validateCanonicalModifiers(const dal_c_Cmd* cmd);
 static void dal_c_Cmd__setPrimaryTargetPath(dal_c_Cmd* cmd, const char* path);
 static void dal_c_Cmd__setOutputPath(dal_c_Cmd* cmd, const char* path);
@@ -125,6 +131,7 @@ typedef struct dal_c_Cmd__HeldProjectLock {
 
 static dal_c_Cmd__HeldProjectLock* dal_c_Cmd__held_locks = NULL;
 static int dal_c_Cmd__held_lock_count = 0;
+static double dal_c_Cmd__elapsed_lock_wait_seconds = 0.0;
 
 static char* dal_c_Cmd__makeProjectLockPath(const char* root) {
     char* base_dir = NULL;
@@ -173,9 +180,15 @@ bool dal_c__projectLockAcquireAt(const char* root, dal_c_ProjectLock* lock) {
 #ifndef _WIN32
     os_lock.fd = -1;
 #endif
+    double lock_started_at = dal_c_Cmd__nowSeconds();
     if (!file_lockAcquire(&os_lock, lock_path)) {
         free(lock_path);
         return false;
+    }
+    double lock_elapsed = dal_c_Cmd__nowSeconds() - lock_started_at;
+    if (os_lock.waited) {
+        lock->waited = true;
+        dal_c_Cmd__elapsed_lock_wait_seconds += lock_elapsed;
     }
 
     dal_c_Cmd__HeldProjectLock* grown = realloc(
@@ -202,6 +215,7 @@ bool dal_c__projectLockAcquireAt(const char* root, dal_c_ProjectLock* lock) {
 
     lock->path = lock_path;
     lock->acquired = true;
+    lock->waited = os_lock.waited;
     return true;
 }
 
@@ -957,6 +971,7 @@ bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_Compil
     if (rel_count > 1) { qsort(rel_headers, (size_t)rel_count, sizeof(char*), dal_c_Cmd__compareDepsHeaderPath); }
 
     if (!include_dh_bundle && !explicit_deps_pch && rel_count == 0) {
+        (void)remove(deps_header);
         dal_c_CompilerOpts_cleanup(&effective_opts);
         for (int i = 0; i < rel_count; ++i) { free(rel_headers[i]); }
         free(rel_headers);
@@ -1035,19 +1050,111 @@ static bool dal_c_Cmd__executeNeedsProjectLock(const dal_c_Cmd* self) {
     }
 }
 
+static double dal_c_Cmd__nowSeconds(void) {
+#ifdef _WIN32
+    static LARGE_INTEGER frequency = { 0 };
+    LARGE_INTEGER counter = { 0 };
+    if (frequency.QuadPart == 0) {
+        (void)QueryPerformanceFrequency(&frequency);
+    }
+    if (frequency.QuadPart != 0 && QueryPerformanceCounter(&counter)) {
+        return (double)counter.QuadPart / (double)frequency.QuadPart;
+    }
+#elif defined(CLOCK_MONOTONIC)
+    struct timespec ts = { 0 };
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
+        return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
+    }
+#endif
+    time_t now = time(NULL);
+    return (double)now;
+}
+
+static bool dal_c_Cmd__reportsElapsed(const dal_c_Cmd* cmd) {
+    assert(cmd != NULL);
+    if (!cmd->show_progress) { return false; }
+    switch (cmd->action) {
+    case dal_c_CmdAction_build:
+    case dal_c_CmdAction_lib:
+    case dal_c_CmdAction_run:
+    case dal_c_CmdAction_test:
+    case dal_c_CmdAction_deps:
+    case dal_c_CmdAction_clean:
+    case dal_c_CmdAction_build_dsl:
+    case dal_c_CmdAction_test_dsl:
+    case dal_c_CmdAction_clean_dsl:
+    case dal_c_CmdAction_build_self:
+    case dal_c_CmdAction_clean_self:
+    case dal_c_CmdAction_compile_db:
+    case dal_c_CmdAction_syntax:
+    case dal_c_CmdAction_tidy:
+    case dal_c_CmdAction_format_code:
+        return true;
+    case dal_c_CmdAction_workspace:
+    case dal_c_CmdAction_project:
+    case dal_c_CmdAction_toolchain:
+    case dal_c_CmdAction_help:
+    case dal_c_CmdAction_version:
+    case dal_c_CmdAction_invalid:
+    default:
+        return false;
+    }
+}
+
+static void dal_c_Cmd__reportElapsed(const dal_c_Cmd* cmd, int result, double elapsed_seconds, double lock_wait_seconds) {
+    assert(cmd != NULL);
+    const char* action = dal_c_CmdAction_format(cmd->action);
+    if (!action) { action = "command"; }
+    FILE* out = result == 0 ? stdout : stderr;
+    const char* state = result == 0 ? "Finished" : "Failed";
+    if (lock_wait_seconds > 0.0) {
+        double active_seconds = elapsed_seconds - lock_wait_seconds;
+        if (active_seconds < 0.0) { active_seconds = 0.0; }
+        (void)fprintf(
+            out,
+            "%s `%s` in %.2fs (active %.2fs, lock %.2fs)\n",
+            state,
+            action,
+            elapsed_seconds,
+            active_seconds,
+            lock_wait_seconds
+        );
+        return;
+    }
+    (void)fprintf(out, "%s `%s` in %.2fs\n", state, action, elapsed_seconds);
+}
+
 int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
     assert(self != NULL);
+    bool report_elapsed = dal_c_Cmd__reportsElapsed(self);
+    double started_at = report_elapsed ? dal_c_Cmd__nowSeconds() : 0.0;
+    double saved_lock_wait_seconds = dal_c_Cmd__elapsed_lock_wait_seconds;
+    dal_c_Cmd__elapsed_lock_wait_seconds = 0.0;
+    int result = 0;
     if (!dal_c_Cmd__executeNeedsProjectLock(self)) {
-        return dal_c_Cmd__executeUnlocked(self, proj);
+        result = dal_c_Cmd__executeUnlocked(self, proj);
+        if (report_elapsed) {
+            dal_c_Cmd__reportElapsed(self, result, dal_c_Cmd__nowSeconds() - started_at, dal_c_Cmd__elapsed_lock_wait_seconds);
+        }
+        dal_c_Cmd__elapsed_lock_wait_seconds = saved_lock_wait_seconds;
+        return result;
     }
 
     dal_c_ProjectLock lock = { 0 };
     if (!dal_c__projectLockAcquire(proj, &lock)) {
         (void)fprintf(stderr, "Error: Failed to acquire build lock\n");
+        if (report_elapsed) {
+            dal_c_Cmd__reportElapsed(self, 1, dal_c_Cmd__nowSeconds() - started_at, dal_c_Cmd__elapsed_lock_wait_seconds);
+        }
+        dal_c_Cmd__elapsed_lock_wait_seconds = saved_lock_wait_seconds;
         return 1;
     }
-    int result = dal_c_Cmd__executeUnlocked(self, proj);
+    result = dal_c_Cmd__executeUnlocked(self, proj);
     dal_c__projectLockRelease(&lock);
+    if (report_elapsed) {
+        dal_c_Cmd__reportElapsed(self, result, dal_c_Cmd__nowSeconds() - started_at, dal_c_Cmd__elapsed_lock_wait_seconds);
+    }
+    dal_c_Cmd__elapsed_lock_wait_seconds = saved_lock_wait_seconds;
     return result;
 }
 

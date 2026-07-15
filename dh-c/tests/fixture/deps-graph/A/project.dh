@@ -1,2 +1,3 @@
 link-dsl=off
+pch=A.h
 output=dep-a
