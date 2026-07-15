@@ -1,6 +1,6 @@
 #pragma once
-#ifndef m_math_linalg_M_Mat_u32_included
-#define m_math_linalg_M_Mat_u32_included 1
+#ifndef m_math_linalg_M_Mat_u32__included
+#define m_math_linalg_M_Mat_u32__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -611,4 +611,4 @@ fn_((m_M4u32_transp(m_M4u32 x))(m_M4u32)) {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_M_Mat_u32_included */
+#endif /* m_math_linalg_M_Mat_u32__included */

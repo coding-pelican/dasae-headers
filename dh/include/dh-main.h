@@ -85,8 +85,8 @@ fn_((dh_main(pp_if_(pp_not(main_no_args))(
 
 /*---------- Root main ------------------------------------------------------*/
 
-#ifndef main_root_included
-#define main_root_included 1
+#ifndef main__root_included
+#define main__root_included 1
 
 #if on_comptime
 #if !TEST_enabled
@@ -236,7 +236,7 @@ start_emitEntry(main__callDHMainAndExit);
 #endif /* !TEST_enabled */
 #endif /* on_comptime */
 
-#endif /* main_root_included */
+#endif /* main__root_included */
 #define main dh_main
 #endif /* main_no_hijack || !main_no_hijack */
 

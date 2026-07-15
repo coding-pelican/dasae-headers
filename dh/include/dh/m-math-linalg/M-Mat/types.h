@@ -1,6 +1,6 @@
 #pragma once
-#ifndef m_math_linalg_M_Mat_types_included
-#define m_math_linalg_M_Mat_types_included 1
+#ifndef m_math_linalg_M_Mat_types__included
+#define m_math_linalg_M_Mat_types__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -398,4 +398,4 @@ typedef union m_M4f64 {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_M_Mat_types_included */
+#endif /* m_math_linalg_M_Mat_types__included */

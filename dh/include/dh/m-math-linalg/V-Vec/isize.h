@@ -1,6 +1,6 @@
 #pragma once
-#ifndef m_math_linalg_V_Vec_isize_included
-#define m_math_linalg_V_Vec_isize_included 1
+#ifndef m_math_linalg_V_Vec_isize__included
+#define m_math_linalg_V_Vec_isize__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -829,4 +829,4 @@ $static isize m_V4isize_dot(m_V4isize lhs, m_V4isize rhs) {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_V_Vec_isize_included */
+#endif /* m_math_linalg_V_Vec_isize__included */

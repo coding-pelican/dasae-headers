@@ -3,8 +3,8 @@
  * @license   MIT License - see LICENSE file for details
  */
 #pragma once
-#ifndef m_math_linalg_Q_Quat_included
-#define m_math_linalg_Q_Quat_included 1
+#ifndef m_math_linalg_Q_Quat__included
+#define m_math_linalg_Q_Quat__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -18,4 +18,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_Q_Quat_included */
+#endif /* m_math_linalg_Q_Quat__included */

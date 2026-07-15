@@ -13,8 +13,8 @@
  * @details Provides a set of vector priematical operations and functions
  */
 #pragma once
-#ifndef m_math_linalg_V_Vec_base_included
-#define m_math_linalg_V_Vec_base_included 1
+#ifndef m_math_linalg_V_Vec_base__included
+#define m_math_linalg_V_Vec_base__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -84,4 +84,4 @@ claim_assert_static(eqlType$(m_V_Orient, i8));
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_V_Vec_base_included */
+#endif /* m_math_linalg_V_Vec_base__included */

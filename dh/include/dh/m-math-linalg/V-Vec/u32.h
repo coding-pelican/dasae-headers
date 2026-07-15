@@ -1,6 +1,6 @@
 #pragma once
-#ifndef m_math_linalg_V_Vec_u32_included
-#define m_math_linalg_V_Vec_u32_included 1
+#ifndef m_math_linalg_V_Vec_u32__included
+#define m_math_linalg_V_Vec_u32__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -680,4 +680,4 @@ $static u32 m_V4u32_dot(m_V4u32 lhs, m_V4u32 rhs) {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_V_Vec_u32_included */
+#endif /* m_math_linalg_V_Vec_u32__included */

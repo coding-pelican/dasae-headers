@@ -1,6 +1,6 @@
 #pragma once
-#ifndef m_math_linalg_M_Mat_i32_included
-#define m_math_linalg_M_Mat_i32_included 1
+#ifndef m_math_linalg_M_Mat_i32__included
+#define m_math_linalg_M_Mat_i32__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -676,4 +676,4 @@ fn_((m_M4i32_det(m_M4i32 x))(i32)) {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_M_Mat_i32_included */
+#endif /* m_math_linalg_M_Mat_i32__included */

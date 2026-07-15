@@ -52,8 +52,8 @@ $static fn_((TEST_main__runTESTMain(void))(start_ExitCode)) {
     return 0;
 };
 
-#ifndef main_root_included
-#define main_root_included 1
+#ifndef main__root_included
+#define main__root_included 1
 
 #if comp_start_files_linked
 fn_((main(void))(int)) {
@@ -73,7 +73,7 @@ $static fn_((TEST_main__callTESTMainAndExit(P$raw raw_ctx))(void)) {
 start_emitEntry(TEST_main__callTESTMainAndExit);
 #endif /* comp_start_files_linked || !comp_start_files_linked */
 
-#endif /* main_root_included */
+#endif /* main__root_included */
 #endif /* TEST_main_enabled */
 #endif /* on_comptime */
 

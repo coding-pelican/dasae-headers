@@ -14,8 +14,8 @@
  *          Pure scheduling-agnostic primitives — no knowledge of Io.
  *          suspended_data field enables communication with external runners.
  */
-#ifndef prl_Co_included
-#define prl_Co_included 1
+#ifndef prl_Co__included
+#define prl_Co__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -511,4 +511,4 @@ T_use_Co_Frame$(Void);
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* prl_Co_included */
+#endif /* prl_Co__included */

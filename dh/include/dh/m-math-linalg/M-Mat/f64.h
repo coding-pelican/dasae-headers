@@ -1,6 +1,6 @@
 #pragma once
-#ifndef m_math_linalg_M_Mat_f64_included
-#define m_math_linalg_M_Mat_f64_included 1
+#ifndef m_math_linalg_M_Mat_f64__included
+#define m_math_linalg_M_Mat_f64__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -1075,4 +1075,4 @@ fn_((m_M4f64_frustumLHZO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal,
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_M_Mat_f64_included */
+#endif /* m_math_linalg_M_Mat_f64__included */

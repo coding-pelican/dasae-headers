@@ -13,8 +13,8 @@
  * @details Provides a set of quaternion mathematical operations and functions
  */
 #pragma once
-#ifndef m_math_linalg_Q_Quat_base_included
-#define m_math_linalg_Q_Quat_base_included 1
+#ifndef m_math_linalg_Q_Quat_base__included
+#define m_math_linalg_Q_Quat_base__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -50,4 +50,4 @@ extern "C" {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_Q_Quat_base_included */
+#endif /* m_math_linalg_Q_Quat_base__included */

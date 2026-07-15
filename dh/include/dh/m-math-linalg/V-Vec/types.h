@@ -1,6 +1,6 @@
 #pragma once
-#ifndef m_math_linalg_V_Vec_types_included
-#define m_math_linalg_V_Vec_types_included 1
+#ifndef m_math_linalg_V_Vec_types__included
+#define m_math_linalg_V_Vec_types__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -160,4 +160,4 @@ typedef m_V4f64 m_V4d;
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_V_Vec_types_included */
+#endif /* m_math_linalg_V_Vec_types__included */

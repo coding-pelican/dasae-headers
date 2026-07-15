@@ -1,6 +1,6 @@
 #pragma once
-#ifndef m_math_linalg_Q_Quat_f32_included
-#define m_math_linalg_Q_Quat_f32_included 1
+#ifndef m_math_linalg_Q_Quat_f32__included
+#define m_math_linalg_Q_Quat_f32__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -524,4 +524,4 @@ fn_((m_Q4f32_backward(m_Q4f32 q))(m_V3f32)) {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_Q_Quat_f32_included */
+#endif /* m_math_linalg_Q_Quat_f32__included */

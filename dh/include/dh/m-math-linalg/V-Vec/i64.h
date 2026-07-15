@@ -1,6 +1,6 @@
 #pragma once
-#ifndef m_math_linalg_V_Vec_i64_included
-#define m_math_linalg_V_Vec_i64_included 1
+#ifndef m_math_linalg_V_Vec_i64__included
+#define m_math_linalg_V_Vec_i64__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -1043,4 +1043,4 @@ $static i64 m_V4i64_dot(m_V4i64 lhs, m_V4i64 rhs) {
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* m_math_linalg_V_Vec_i64_included */
+#endif /* m_math_linalg_V_Vec_i64__included */

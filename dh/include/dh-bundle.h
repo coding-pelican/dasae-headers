@@ -7,21 +7,21 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "dh/builtin.h" /* no prefix, abs path, pch target*/
-#include "dh/core.h" /* no prefix, abs path, pch target*/
-#include "dh/prl.h" /* no prefix, abs path, pch target*/
+#include "dh/builtin.h" /* no prefix, abs path, pch bundle target*/
+#include "dh/core.h" /* no prefix, abs path, pch bundle target*/
+#include "dh/prl.h" /* no prefix, abs path, pch bundle target*/
 
-#include "dh/atom.h" /* pch target */
-#include "dh/simd.h" /* pch target */
-#include "dh/clsr.h" /* pch target */
+#include "dh/atom.h" /* pch bundle target */
+#include "dh/simd.h" /* pch bundle target */
+#include "dh/clsr.h" /* pch bundle target */
 
-#include "dh/cmp.h" /* pch target */
-#include "dh/m-math.h" /* pch target */
-#include "dh/mem.h" /* pch target */
-#include "dh/u-meta.h" /* pch target */
+#include "dh/cmp.h" /* pch bundle target */
+#include "dh/m-math.h" /* pch bundle target */
+#include "dh/mem.h" /* pch bundle target */
+#include "dh/u-meta.h" /* pch bundle target */
 
-#include "dh/sys.h" /* abs path, pch target */
-#include "dh/c.h" /* abs path, pch target */
+#include "dh/sys.h" /* abs path, pch bundle target */
+#include "dh/c.h" /* abs path, pch bundle target */
 
 #if defined(__cplusplus)
 } /* extern "C" */
