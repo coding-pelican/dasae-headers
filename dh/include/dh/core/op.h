@@ -178,10 +178,10 @@ extern "C" {
 #define __op__fn_binWith$_2(_$ident, _$rename, /*((_$T, _$U)(_$id_lhs, _$id_rhs))(_$TRet)*/...) __step__op__fn_binWith$__rename(_$ident, _$rename, __step__op__fn_binWith$__parse __VA_ARGS__)
 #define __step__op__fn_binWith$__rename(_$ident, _$rename, ...) __step__op__fn_binWith$__rename__emit(_$ident, _$rename, __VA_ARGS__)
 #define __step__op__fn_binWith$__rename__emit(_$ident, _$rename, ...) __op__fn_binWith$__rename(_$ident, _$rename, __VA_ARGS__)
-#if !on_comptime
+#if !in_comptime
 #define __op__fn_binWith$__rename(_$ident, _$rename, _$T, _$U, _$lhs, _$rhs, _$TRet...) \
     $inline_always fn_((tpl_(_$T, _$rename)(_$T _$lhs, _$U _$rhs))_$TRet) { return pp_cat3(op_, _$ident, With$)(_$T, _$U)(_$lhs, _$rhs); }
-#else /* on_comptime */
+#else /* in_comptime */
 #define __op__fn_binWith$__rename(_$ident, _$rename, _$T, _$U, _$lhs, _$rhs, _$TRet...) \
     let tpl_(_$T, _$rename) = pp_cat3(op_, _$ident, With$)(_$T, _$U)
 #endif
@@ -198,10 +198,10 @@ extern "C" {
 #define __op__fn_binAsgWith$_2(_$ident, _$rename, /*((_$T, _$U)(_$id_lhs, _$id_rhs))(_$TRet)*/...) __step__op__fn_binAsgWith$__rename(_$ident, _$rename, __step__op__fn_binAsgWith$__parse __VA_ARGS__)
 #define __step__op__fn_binAsgWith$__rename(_$ident, _$rename, ...) __step__op__fn_binAsgWith$__rename__emit(_$ident, _$rename, __VA_ARGS__)
 #define __step__op__fn_binAsgWith$__rename__emit(_$ident, _$rename, ...) __op__fn_binAsgWith$__rename(_$ident, _$rename, __VA_ARGS__)
-#if !on_comptime
+#if !in_comptime
 #define __op__fn_binAsgWith$__rename(_$ident, _$rename, _$T, _$U, _$lhs, _$rhs, _$TRet...) \
     $inline_always fn_((tpl_(_$T, _$rename)($P$(_$T) _$lhs, _$U _$rhs))_$TRet) { return pp_cat3(op_, _$ident, AsgWith$)(_$T, _$U)(_$lhs, _$rhs); }
-#else /* on_comptime */
+#else /* in_comptime */
 #define __op__fn_binAsgWith$__rename(_$ident, _$rename, _$T, _$U, _$lhs, _$rhs, _$TRet...) \
     let tpl_(_$T, _$rename) = pp_cat3(op_, _$ident, AsgWith$)(_$T, _$U)
 #endif

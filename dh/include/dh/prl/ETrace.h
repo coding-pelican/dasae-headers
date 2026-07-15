@@ -21,7 +21,7 @@ T_alias$((ETrace_Frame)(struct ETrace_Frame));
 /// Fixed-size stack trace buffer
 T_alias$((ETrace)(struct ETrace));
 
-#if !on_comptime
+#if !in_comptime
 $extern fn_((ETrace_reset(void))(void));
 $extern fn_((ETrace_enable(void))(void));
 $extern fn_((ETrace_disable(void))(void));
@@ -29,7 +29,7 @@ $extern fn_((ETrace_isEnabled(void))(bool));
 $extern fn_((ETrace_depth(void))(usize));
 $extern fn_((ETrace_captureFrame(void))(void));
 $extern fn_((ETrace_print(void))(void));
-#endif /* !on_comptime */
+#endif /* !in_comptime */
 
 /*========== Macros and Definitions =========================================*/
 
@@ -67,7 +67,7 @@ struct ETrace {
     var_(is_enabled, bool);
 };
 
-#if on_comptime
+#if in_comptime
 #if !ETrace_comp_enabled
 
 #define ETrace_reset() $unused(0)
@@ -102,7 +102,7 @@ struct ETrace {
 #endif
 
 #endif /* ETrace_comp_enabled */
-#endif /* on_comptime */
+#endif /* in_comptime */
 
 $extern fn_((ETrace_reset_debug(void))(void));
 $extern fn_((ETrace_enable_debug(void))(void));

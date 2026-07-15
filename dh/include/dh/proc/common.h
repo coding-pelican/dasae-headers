@@ -106,14 +106,14 @@ $extern fn_((proc_replacePath(fs_Dir dir, proc_Cmd cmd))(E$void));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((proc_StdIO_file(fs_File file))(proc_StdIO)) {
     return (proc_StdIO){
         .tag = proc_StdIO_Tag_file,
         .file = file,
     };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

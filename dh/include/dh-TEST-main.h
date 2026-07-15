@@ -43,7 +43,7 @@ extern "C" {
 
 /*---------- Root main ------------------------------------------------------*/
 
-#if on_comptime
+#if in_comptime
 #if TEST_main_enabled
 $attr($inline)
 $static fn_((TEST_main__runTESTMain(void))(start_ExitCode)) {
@@ -75,7 +75,7 @@ start_emitEntry(TEST_main__callTESTMainAndExit);
 
 #endif /* main__root_included */
 #endif /* TEST_main_enabled */
-#endif /* on_comptime */
+#endif /* in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

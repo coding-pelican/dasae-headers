@@ -158,7 +158,7 @@ __step_deferred: switch (__flow_cursor.curr_line) { \
     } \
 } /* clang-format on */
 
-#if !on_comptime
+#if !in_comptime
 #define fn__memset(_$dst, _$val, _$len...) __fn_memset__no_hinting(_$dst, _$val, _$len)
 extern fn_((__fn_memset__no_hinting(void*, u32, usize))(void*));
 #define fn__memcpy(_$dst, _$src, _$len...) __fn_memcpy__no_hinting(_$dst, _$src, _$len)
@@ -169,7 +169,7 @@ extern fn_((__fn_memmove__no_hinting(void*, const void*, usize))(void*));
 #define fn__memset(_$dst, _$val, _$len...) raw_memset(_$dst, _$val, _$len)
 #define fn__memcpy(_$dst, _$src, _$len...) raw_memcpy(_$dst, _$src, _$len)
 #define fn__memmove(_$dst, _$src, _$len...) raw_memmove(_$dst, _$src, _$len)
-#endif /* !on_comptime */
+#endif /* !in_comptime */
 
 /* #define comp_syn__return_(_$Expr...) local_({ \
     $ignore_void fn__memcpy( \

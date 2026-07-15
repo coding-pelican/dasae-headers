@@ -367,7 +367,7 @@ $extern fn_((dansi_xterm_mouse_parseSGR(S_const$u8 report))(O$dansi_xterm_mouse_
 #define ____dansi_xterm_mouse_Encoding_str$dansi_xterm_mouse_Encoding_urxvt "1015"
 #define ____dansi_xterm_mouse_Encoding_str$dansi_xterm_mouse_Encoding_sgr_pixels "1016"
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((dansi_xterm_mouse_btnsNone(void))(dansi_xterm_mouse_Btns)) {
     return (dansi_xterm_mouse_Btns){};
 };
@@ -391,7 +391,7 @@ fn_((dansi_xterm_mouse_modsToCb(dansi_xterm_mouse_Mods mods))(u16)) {
          | ((mods.alt || mods.meta) ? dansi_xterm_mouse_cb_alt : 0)
          | (mods.ctrl ? dansi_xterm_mouse_cb_ctrl : 0);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

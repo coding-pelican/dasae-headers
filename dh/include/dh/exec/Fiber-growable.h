@@ -61,7 +61,7 @@ $extern fn_((exec_Fiber_ensureDiagLast(void))(exec_Fiber_EnsureDiag));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((exec_Fiber_alignPage(usize size))(usize)) {
     return mem_alignFwd(size == 0 ? mem_page_size : size, mem_page_size);
 };
@@ -75,7 +75,7 @@ fn_((exec_Fiber_usableStack(exec_Fiber* self, usize commit_size))(S$u8)) {
         .len = commit_size - self->guard_size,
     };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

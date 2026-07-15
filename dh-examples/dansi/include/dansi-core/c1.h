@@ -65,9 +65,9 @@ $static fn_((dansi_c1_isCtrl(u8 byte))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((dansi_c1_isCtrl(u8 byte))(bool)) { return dansi_c1_Code_pad <= byte && byte <= dansi_c1_Code_apc; };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

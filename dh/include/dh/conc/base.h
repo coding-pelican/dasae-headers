@@ -102,7 +102,7 @@ struct conc_Awakeable_VTbl {
 
 /*========== Macro and Definitions ==========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((conc_AwaitLink_init(P$raw wake_ctx, conc_AwaitLink_WakeFn wakeFn, usize case_idx))(conc_AwaitLink)) {
     claim_assert_nonnull(wakeFn);
     return (conc_AwaitLink){
@@ -122,7 +122,7 @@ fn_((conc_Awakeable_init(P$raw ctx, const conc_Awakeable_VTbl* vtbl))(conc_Awake
     claim_assert_nonnull(vtbl->cancelFn);
     return (conc_Awakeable){ .ctx = ctx, .vtbl = vtbl };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

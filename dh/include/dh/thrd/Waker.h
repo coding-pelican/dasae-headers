@@ -26,7 +26,7 @@ $extern fn_((thrd_Waker_wake(thrd_Waker self))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((thrd_Waker_isValid(thrd_Waker self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.wakeFn);
@@ -38,7 +38,7 @@ fn_((thrd_Waker_assertValid(P$raw ctx, fn_(((*wakeFn)(P$raw ctx))(void))))(void)
 fn_((thrd_Waker_ensureValid(thrd_Waker self))(thrd_Waker)) {
     return thrd_Waker_assertValid(self.ctx, self.wakeFn), self;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

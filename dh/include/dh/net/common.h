@@ -126,7 +126,7 @@ $extern fn_((net_connectIp(net_IpAddr addr, net_ConnectOpts opts))(E$net_Stream)
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((net_IpAddr_ip4Loopback(u16 port))(net_IpAddr)) {
     return (net_IpAddr)union_of((net_Addr_Family_ip4){
         .bytes = A_init({ 127, 0, 0, 1 }),
@@ -142,7 +142,7 @@ fn_((net_IpAddr_ip6Loopback(u16 port))(net_IpAddr)) {
         .scope_id = 0,
     });
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

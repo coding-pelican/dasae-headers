@@ -18,7 +18,7 @@ $static fn_((mem_ring_idxFrom(usize head, usize cap, usize idx))(usize));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((mem_ring_idx(usize cap, usize pos))(usize)) {
     claim_assert(cap != 0);
     return pos % cap;
@@ -33,7 +33,7 @@ fn_((mem_ring_idxFrom(usize head, usize cap, usize idx))(usize)) {
         instead_(idx - head_len)
     );
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

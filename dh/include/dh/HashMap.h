@@ -452,7 +452,7 @@ $extern fn_((HashMap_ValIter_nextMut(HashMap_ValIter* self, TypeInfo val_ty))(O$
 
 /*========== Macro and Definitions ==========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((HashMap_Ctrl_isUsed(HashMap_Ctrl ctrl))(bool)) {
     return ctrl.used == 1;
 };
@@ -475,7 +475,7 @@ fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void)) {
     ctrl->used = 0;
     ctrl->fingerprint = HashMap_Ctrl_tombstone;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #define __comp_anon__HashMap_Header$$(_K, _V...) \
     union { \

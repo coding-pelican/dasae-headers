@@ -74,7 +74,7 @@ struct co_Fiber_Context {
     )));
 };
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((co_Fiber_Context_from(co_Fiber_Context* self, P$raw stack_arg, co_Fiber_EntryFn entry))(void)) {
     claim_assert_nonnull(self), claim_assert_nonnull(stack_arg), claim_assert_nonnull(entry);
     asg_l((self)(pp_switch_((arch_type)(
@@ -184,7 +184,7 @@ fn_((co_Fiber_Context_stackPtr(const co_Fiber_Context* self))(usize)) {
         pp_default_(claim_unreachable)
     ));
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -865,7 +865,7 @@ $static fn_((u_geApxRelBy(u_V$raw lhs, u_V$raw rhs, u_V$raw threshold, u_OrdApxF
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((u_memset0(u_P$raw dst))(u_P$raw)) {
     claim_assert_nonnull(dst.raw);
     return raw_memset0(dst.raw, dst.type.size), dst;
@@ -1222,7 +1222,7 @@ fn_((u_leApxRelBy(u_V$raw lhs, u_V$raw rhs, u_V$raw threshold, u_OrdApxFn ordApx
 fn_((u_geApxRelBy(u_V$raw lhs, u_V$raw rhs, u_V$raw threshold, u_OrdApxFn ordApxFn))(bool)) {
     return u_ordApxRelBy(lhs, rhs, threshold, ordApxFn) >= cmp_Ord_eq;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

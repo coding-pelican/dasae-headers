@@ -110,7 +110,7 @@ $static fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void));
 
 #define __comp_int__atom_cache_line_bytes arch_cache_line_bytes
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((atom_spinLoopHint(void))(void)) { /* NOLINTBEGIN(hicpp-no-assembler) */
 #if arch_family_type == arch_family_type_x86
     asm_volatile("pause");
@@ -132,11 +132,11 @@ fn_((atom_spinLoopHint(void))(void)) { /* NOLINTBEGIN(hicpp-no-assembler) */
     asm_volatile("");
 #endif
 }; /* NOLINTEND(hicpp-no-assembler) */
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #define ____atom_SpinLock_init_static() \
     enum_of$((atom_SpinLock)(atom_SpinLock_unlocked))
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((atom_SpinLock_init(void))(atom_SpinLock)) {
     return atom_SpinLock_unlocked;
 };
@@ -161,7 +161,7 @@ fn_((atom_SpinLock_unlock(atom_SpinLock* self))(void)) {
     claim_assert(atom_SpinLock_isLocked(self));
     atom_store(self, atom_SpinLock_unlocked, atom_MemOrd_release);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #define __op__atom_V_zero() cleared()
 #define __op__atom_V_zero$(_$VT) l$((_$VT)cleared())

@@ -75,7 +75,7 @@ extern void log_message(log_Level /* level */, const char* /* file */, int /* li
 
 // Convenience macros for different log levels
 #if debug_enabled || !log_comp_disabled_not_debug_enabled
-#if on_comptime
+#if in_comptime
 
 #define log_debug(...) log_message(log_Level_debug, __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define log_info(...) log_message(log_Level_info, __FILE__, __LINE__, __func__, __VA_ARGS__)

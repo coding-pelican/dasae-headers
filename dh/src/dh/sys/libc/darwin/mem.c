@@ -10,7 +10,7 @@ claim_assert_static(sys_libc_darwin_MAP_PRIVATE == MAP_PRIVATE);
 claim_assert_static(sys_libc_darwin_MAP_ANONYMOUS == MAP_ANON);
 #endif /* plat_is_darwin */
 
-#if on_analysis || plat_is_darwin
+#if in_analysis || plat_is_darwin
 fn_((sys_libc_darwin_mmap(P$raw addr, usize len, i32 prot, i32 flags, i32 fd, isize offset))(P$raw)) {
 #if plat_is_darwin
     return mmap(addr, len, prot, flags, fd, offset);
@@ -45,4 +45,4 @@ fn_((sys_libc_darwin_mprotect(P$raw addr, usize len, i32 prot))(i32)) {
     claim_unreachable_msg(nameOf(sys_libc_darwin_mprotect) "is not supported on this platform");
 #endif /* plat_is_darwin */
 };
-#endif /* on_analysis || plat_is_darwin */
+#endif /* in_analysis || plat_is_darwin */

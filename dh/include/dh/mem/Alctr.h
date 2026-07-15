@@ -136,7 +136,7 @@ $extern fn_((mem_Alctr_VTbl_unreachableFree(P$raw ctx, S$u8 buf, mem_Align buf_a
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((mem_Alctr_isValid(mem_Alctr self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
@@ -156,7 +156,7 @@ fn_((mem_Alctr_assertValid(P$raw ctx, P_const$$(mem_Alctr_VTbl) vtbl))(void)) {
 fn_((mem_Alctr_ensureValid(mem_Alctr self))(mem_Alctr)) {
     return mem_Alctr_assertValid(self.ctx, self.vtbl), self;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 /* clang-format off */
 #define __comp_gen__T_use_mem_Alctr_create$(_T...) \

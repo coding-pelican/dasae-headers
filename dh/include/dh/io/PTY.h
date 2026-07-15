@@ -116,7 +116,7 @@ $extern fn_((io_PTY_Session_kill(io_PTY_Session* self))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 /*---------- Default Configurations -----------------------------------------*/
 
 fn_((io_PTY_Size_default(void))(io_PTY_Size)) {
@@ -136,7 +136,7 @@ fn_((io_PTY_SpawnCfg_default(mem_Alctr gpa, proc_Cmd cmd))(io_PTY_SpawnCfg)) {
         .pty = io_PTY_OpenCfg_default(),
     };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

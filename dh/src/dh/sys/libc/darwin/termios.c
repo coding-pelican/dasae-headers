@@ -17,7 +17,7 @@ claim_assert_static(sizeOf$(sys_libc_darwin_winsize) == sizeof(struct winsize));
 claim_assert_static(alignOf$(sys_libc_darwin_winsize) == __alignof__(struct winsize));
 #endif /* plat_is_darwin */
 
-#if on_analysis || plat_is_darwin
+#if in_analysis || plat_is_darwin
 fn_((sys_libc_darwin_tcgetattr(sys_libc_darwin_fd_t fd, sys_libc_darwin_termios* termios))(i32)) {
 #if plat_is_darwin
     return tcgetattr(fd, as$(struct termios*)(termios));
@@ -57,4 +57,4 @@ fn_((sys_libc_darwin_fionread(sys_libc_darwin_fd_t fd, int* count))(i32)) {
     claim_unreachable_msg(nameOf(sys_libc_darwin_fionread) "is not supported on this platform");
 #endif /* plat_is_darwin */
 };
-#endif /* on_analysis || plat_is_darwin */
+#endif /* in_analysis || plat_is_darwin */

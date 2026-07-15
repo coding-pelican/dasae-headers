@@ -261,7 +261,7 @@ $static fn_((sys_posix_fionread(sys_posix_fd_t fd, int* count))(i32));
 #define comp_const__sys_posix_ECHO pp_if_(plat_is_linux)(pp_then_(sys_call_linux_ECHO), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_ECHO), pp_else_(0))))
 #define comp_const__sys_posix_IEXTEN pp_if_(plat_is_linux)(pp_then_(sys_call_linux_IEXTEN), pp_else_(pp_if_(plat_is_darwin)(pp_then_(sys_libc_darwin_IEXTEN), pp_else_(0))))
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((sys_posix_clock_gettime(sys_posix_clockid_t clock_id, sys_posix_timespec* ts))(i32)) {
     pp_switch_((plat_type)(
         pp_case_((plat_type_linux)(
@@ -490,7 +490,7 @@ fn_((sys_posix_fionread(sys_posix_fd_t fd, int* count))(i32)) {
         })
     ));
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

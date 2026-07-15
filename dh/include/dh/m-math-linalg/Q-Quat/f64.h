@@ -159,7 +159,7 @@ $static fn_((m_Q4f64_backward(m_Q4f64 q))(m_V3f64));
 #define ____m_Q4f64_of_static(_x, _y, _z, _w...) l$((m_Q4f64){ \
     .v = m_V4f64_of_static(_x, _y, _z, _w), \
 })
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((m_Q4f64_of(f64 x, f64 y, f64 z, f64 w))(m_Q4f64)) {
     return m_Q4f64_of_static(x, y, z, w);
 };
@@ -519,7 +519,7 @@ fn_((m_Q4f64_forward(m_Q4f64 q))(m_V3f64)) {
 fn_((m_Q4f64_backward(m_Q4f64 q))(m_V3f64)) {
     return m_Q4f64_rotateV(q, m_V3f64_backward);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

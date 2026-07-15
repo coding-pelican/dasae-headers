@@ -39,11 +39,11 @@ $static fn_((daterm_input_modsNone(void))(daterm_input_Mods));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((daterm_input_modsNone(void))(daterm_input_Mods)) {
     return (daterm_input_Mods){};
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

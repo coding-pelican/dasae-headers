@@ -89,7 +89,7 @@ $static fn_((exec_Fiber_resultMut(exec_Fiber* self, TypeInfo type))(u_P$raw));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((exec_Fiber_slabBytes(TypeInfo result_ty))(usize)) {
     return mem_alignFwd(sizeOf$(exec_Fiber), mem_log2ToAlign(result_ty.log2_align)) + result_ty.size;
 };
@@ -109,7 +109,7 @@ fn_((exec_Fiber_resultMut(exec_Fiber* self, TypeInfo type))(u_P$raw)) {
         .type = type,
     };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

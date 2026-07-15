@@ -108,7 +108,7 @@ $extern fn_((time_Proc_VTbl_failingResolution(P$raw ctx))(time_ResolutionE$time_
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((time_Proc_isValid(time_Proc self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
@@ -124,7 +124,7 @@ fn_((time_Proc_assertValid(P$raw ctx, P_const$$(time_Proc_VTbl) vtbl))(void)) {
 fn_((time_Proc_ensureValid(time_Proc self))(time_Proc)) {
     return time_Proc_assertValid(self.ctx, self.vtbl), self;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

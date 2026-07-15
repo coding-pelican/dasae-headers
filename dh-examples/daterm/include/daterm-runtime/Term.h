@@ -111,7 +111,7 @@ struct daterm_Term_VTbl {
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((daterm_Term_isValid(daterm_Term self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
@@ -143,7 +143,7 @@ fn_((daterm_Term_assertValid(P$raw ctx, P_const$$(daterm_Term_VTbl) vtbl))(void)
 fn_((daterm_Term_ensureValid(daterm_Term self))(daterm_Term)) {
     return daterm_Term_assertValid(self.ctx, self.vtbl), self;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -62,7 +62,7 @@ $extern fn_((io_Writer_printlnVaArgs(io_Writer self, S_const$u8 fmt, va_list va_
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((io_Writer_isValid(io_Writer self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.writeFn);
@@ -74,7 +74,7 @@ fn_((io_Writer_assertValid(P$raw ctx, fn_(((*writeFn)(P$raw ctx, S_const$u8 byte
 fn_((io_Writer_ensureValid(io_Writer self))(io_Writer)) {
     return io_Writer_assertValid(self.ctx, self.writeFn), self;
 }
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

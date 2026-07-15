@@ -206,7 +206,7 @@ $static fn_((m_M4i32_det(m_M4i32 m))(i32));
         [1] = m_V2i32_of_static((_r0).y, (_r1).y), \
     }), \
 })
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((m_M2i32_ofCols(m_M2i32_ColV c0, m_M2i32_ColV c1))(m_M2i32)) {
     return m_M2i32_ofCols_static(c0, c1);
 };
@@ -320,7 +320,7 @@ fn_((m_M2i32_transp(m_M2i32 x))(m_M2i32)) {
 fn_((m_M2i32_det(m_M2i32 x))(i32)) {
     return x.s0_0 * x.s1_1 - x.s0_1 * x.s1_0;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 /*--- M3i32 Macros and Definitions ---*/
 
@@ -345,7 +345,7 @@ fn_((m_M2i32_det(m_M2i32 x))(i32)) {
         [2] = m_V3i32_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((m_M3i32_ofCols(m_M3i32_ColV c0, m_M3i32_ColV c1, m_M3i32_ColV c2))(m_M3i32)) {
     return m_M3i32_ofCols_static(c0, c1, c2);
 };
@@ -481,7 +481,7 @@ fn_((m_M3i32_det(m_M3i32 x))(i32)) {
          - x.s0_1 * (x.s1_0 * x.s2_2 - x.s1_2 * x.s2_0)
          + x.s0_2 * (x.s1_0 * x.s2_1 - x.s1_1 * x.s2_0);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 /*--- M4i32 Macros and Definitions ---*/
 
@@ -509,7 +509,7 @@ fn_((m_M3i32_det(m_M3i32 x))(i32)) {
         [3] = m_V4i32_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((m_M4i32_ofCols(m_M4i32_ColV c0, m_M4i32_ColV c1, m_M4i32_ColV c2, m_M4i32_ColV c3))(m_M4i32)) {
     return m_M4i32_ofCols_static(c0, c1, c2, c3);
 };
@@ -671,7 +671,7 @@ fn_((m_M4i32_det(m_M4i32 x))(i32)) {
          + c * (e * jp_ln - f * ip_lm + h * in_jm)
          - d * (e * jo_kn - f * io_km + g * in_jm);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

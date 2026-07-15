@@ -124,14 +124,14 @@ $extern fn_((sort_blockCtxAlloc(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, m
 #define __const__sort_limit_pdq_offset_blocks 64
 #define __const__sort_limit_block_cache_stack_bytes pp_if_(arch_bits_is_64bit)(pp_then_(2048), pp_else_(1024))
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((sort_IdxCtx_ord(sort_IdxCtx self, usize lhs, usize rhs))(cmp_Ord)) {
     return call((self.ordFn)(lhs, rhs, u_load(self.inner)));
 };
 fn_((sort_IdxCtx_swap(sort_IdxCtx self, usize lhs, usize rhs))(void)) {
     return call((self.swapFn)(lhs, rhs, u_load(self.inner)));
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* $extern "C" */

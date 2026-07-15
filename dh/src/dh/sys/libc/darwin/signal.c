@@ -16,7 +16,7 @@ claim_assert_static(offsetTo(sys_libc_darwin_sigaction, sa_mask) == __builtin_of
 claim_assert_static(offsetTo(sys_libc_darwin_sigaction, sa_flags) == __builtin_offsetof(struct sigaction, sa_flags));
 #endif /* plat_is_darwin */
 
-#if on_analysis || plat_is_darwin
+#if in_analysis || plat_is_darwin
 fn_((sys_libc_darwin_sigemptyset(sys_libc_darwin_sigset* set))(i32)) {
 #if plat_is_darwin
     return sigemptyset(as$(sigset_t*)(set));
@@ -58,4 +58,4 @@ fn_((sys_libc_darwin_raise(sys_libc_darwin_signal_t signal))(i32)) {
     claim_unreachable_msg(nameOf(sys_libc_darwin_raise) "is not supported on this platform");
 #endif /* plat_is_darwin */
 };
-#endif /* on_analysis || plat_is_darwin */
+#endif /* in_analysis || plat_is_darwin */

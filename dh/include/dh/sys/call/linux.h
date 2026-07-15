@@ -22,7 +22,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if on_analysis || plat_is_linux
+#if in_analysis || plat_is_linux
 typedef isize sys_call_linux_word;
 typedef sys_call_linux_word sys_call_linux_fd_t;
 typedef sys_call_linux_word sys_call_linux_pid_t;
@@ -1117,11 +1117,11 @@ $static fn_((sys_call_linux_futex(void* addr, sys_call_linux_word op, sys_call_l
 
 $attr($inline)
 $static fn_((sys_call_linux_renameat(sys_call_linux_word old_dirfd, const char* old_path, sys_call_linux_word new_dirfd, const char* new_path))(sys_call_linux_word));
-#endif /* on_analysis || plat_is_linux */
+#endif /* in_analysis || plat_is_linux */
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis || plat_is_linux
+#if in_analysis || plat_is_linux
 #define __comp_bool__sys_call_linux_mmap_uses_mmap2 pp_expand( \
     pp_switch_ pp_begin(arch_type)( \
         pp_case_((arch_type_x86)(pp_true)), \
@@ -1141,9 +1141,9 @@ $static fn_((sys_call_linux_renameat(sys_call_linux_word old_dirfd, const char* 
         pp_default_(pp_false) \
     ) pp_end \
 )
-#endif /* on_analysis || plat_is_linux */
+#endif /* in_analysis || plat_is_linux */
 
-#if on_analysis_active_only || on_comptime && plat_is_linux
+#if in_analysis_active_only || in_comptime && plat_is_linux
 /* NOLINTBEGIN(hicpp-no-assembler) */
 fn_((sys_call_linux_syscall0(sys_call_linux_word n))(sys_call_linux_word)) {
     pp_switch_((arch_type)(
@@ -2330,7 +2330,7 @@ fn_((sys_call_linux_renameat(
         )));
 };
 /* NOLINTEND(hicpp-no-assembler) */
-#endif /* on_analysis_active_only || on_comptime && plat_is_linux */
+#endif /* in_analysis_active_only || in_comptime && plat_is_linux */
 
 #if defined(__cplusplus)
 } /* extern "C" */

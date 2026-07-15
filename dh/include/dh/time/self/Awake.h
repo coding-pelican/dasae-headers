@@ -132,7 +132,7 @@ $extern fn_((time_Awake_VTbl_failingSleep(P$raw ctx, time_Dur dur))(Sched_Cancel
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((time_Awake_isValid(time_Awake self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
@@ -150,7 +150,7 @@ fn_((time_Awake_assertValid(P$raw ctx, P_const$$(time_Awake_VTbl) vtbl))(void)) 
 fn_((time_Awake_ensureValid(time_Awake self))(time_Awake)) {
     return time_Awake_assertValid(self.ctx, self.vtbl), self;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

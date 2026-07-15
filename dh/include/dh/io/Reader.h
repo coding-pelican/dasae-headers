@@ -68,7 +68,7 @@ $extern fn_((io_Reader_copyAtLeast(io_Reader self, io_Writer writer, usize least
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((io_Reader_isValid(io_Reader self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.readFn);
@@ -80,7 +80,7 @@ fn_((io_Reader_assertValid(P$raw ctx, fn_(((*readFn)(P$raw ctx, S$u8 out_buf))(E
 fn_((io_Reader_ensureValid(io_Reader self))(io_Reader)) {
     return io_Reader_assertValid(self.ctx, self.readFn), self;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

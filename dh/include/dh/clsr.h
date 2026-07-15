@@ -25,7 +25,7 @@ $static fn_((clsr_invokeToComplete(Clsr$raw* self, TypeInfo type))(u_P_const$raw
 
 #include "u-meta.h"
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((clsr_kind(P_const$$(Clsr$raw) self))(Clsr_Kind)) {
     claim_assert_nonnull(self);
     claim_assert(self->kind != Clsr_Kind_undefined);
@@ -53,7 +53,7 @@ fn_((clsr_invokeToComplete(Clsr$raw* self, TypeInfo type))(u_P_const$raw)) {
     while_none(step = clsr_invokeToStep(self, type)) $do_nothing;
     return unwrap_(step);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #define __stmt__T_use_clsr_kind$(_$T...) /* clang-format off */ \
     $attr($inline_always) \

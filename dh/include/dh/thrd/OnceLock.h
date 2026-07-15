@@ -159,7 +159,7 @@ $static fn_((thrd_OnceLock_valMut(thrd_OnceLock$raw* self, TypeInfo val_type))(u
 
 #include "../u-meta.h"
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((thrd_OnceLock_val(const thrd_OnceLock$raw* self, TypeInfo val_type))(u_P_const$raw)) {
     claim_assert_nonnull(self), debug_assert_eqBy($typed(self->val_type), val_type, TypeInfo_eql);
     let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$thrd_OnceLock)(
@@ -176,7 +176,7 @@ fn_((thrd_OnceLock_valMut(thrd_OnceLock$raw* self, TypeInfo val_type))(u_P$raw))
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_val_$thrd_OnceLock);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

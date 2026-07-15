@@ -91,7 +91,7 @@ $extern fn_((utf16_Iter_next(utf16_Iter* self))(utf16_E$O$u32));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((utf16_isHighSurrogate(u16 codeunit))(bool)) {
     return (codeunit & ~0x03ff) == 0xd800;
 };
@@ -103,7 +103,7 @@ fn_((utf16_isLowSurrogate(u16 codeunit))(bool)) {
 fn_((utf16_isSurrogate(u32 codepoint))(bool)) {
     return 0xD800 <= codepoint && codepoint <= 0xDFFF;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

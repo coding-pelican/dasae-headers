@@ -86,14 +86,14 @@ $extern fn_((thrd_join(thrd_Self self))(Clsr$raw*));
         return as$(Clsr$(_T)*)(thrd_join(self)); \
     }
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((thrd_SpawnCfg_default(mem_Alctr gpa))(thrd_SpawnCfg)) {
     return (thrd_SpawnCfg){
         .gpa = mem_Alctr_ensureValid(gpa),
         .stack_size = thrd_SpawnCfg_default_stack_size,
     };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -180,7 +180,7 @@ struct thrd_Select_Op_VTbl {
     fn_(((*commitFn)(P$raw ctx, u_P$raw data, u_P$raw result))(bool));
 };
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((thrd_Select_Op_isValid(thrd_Select_Op self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.data.raw)
@@ -207,7 +207,7 @@ fn_((thrd_Select_Op_assertValid(
 fn_((thrd_Select_Op_ensureValid(thrd_Select_Op self))(thrd_Select_Op)) {
     return thrd_Select_Op_assertValid(self.ctx, self.data, self.result_type, self.vtbl, self.src), self;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 /* clang-format off */
 #define __alias__thrd_Select_Arm$(_T...) tpl$(thrd_Select_Arm, _T)
@@ -388,7 +388,7 @@ fn_((thrd_Select_Op_ensureValid(thrd_Select_Op self))(thrd_Select_Op)) {
     }
 /* clang-format on */
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((thrd_Select_Arm_typeInfo(TypeInfo result_type))(TypeInfo)) {
     let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$thrd_Select_Arm)(
         (.val[u_Fields_Idx_result_$thrd_Select_Arm])(result_type)
@@ -411,7 +411,7 @@ fn_((thrd_Select_Arm_resultMut(thrd_Select_Arm$raw* self, TypeInfo type))(u_P$ra
     let u_self = P_meta((thrd_Select_Arm_typeInfo(type))(ptrCast$((P$raw)(self))));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_result_$thrd_Select_Arm);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

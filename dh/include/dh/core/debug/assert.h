@@ -72,7 +72,7 @@ extern "C" {
 /*========== Macros and Definitions =========================================*/
 
 #if debug_enabled
-#if on_comptime
+#if in_comptime
 /* clang-format off */
 #define __step__debug_assert(_$Expr, _$ExprStr...) $ignore_void(\
     (!!_$Expr) || (({ \
@@ -130,9 +130,9 @@ extern "C" {
     $unreachable; \
 }), 0)
 /* clang-format on */
-#else /* !on_comptime */
+#else /* !in_comptime */
 /* clang-format off */
-#define __step__debug_assert(_$Expr, _$ExprStr...) $dispatch_on_comptime $ignore_void( \
+#define __step__debug_assert(_$Expr, _$ExprStr...) $dispatch_in_comptime $ignore_void( \
     (!!_$Expr) || (({ \
         debug_assert_static_msg( \
             comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
@@ -141,7 +141,7 @@ extern "C" {
         $debug_point $unreachable; \
     }), 0) \
 )
-#define __step__debug_assert_msg(_$Expr, _$ExprStr, _$msg...) $dispatch_on_comptime $ignore_void( \
+#define __step__debug_assert_msg(_$Expr, _$ExprStr, _$msg...) $dispatch_in_comptime $ignore_void( \
     (!!_$Expr) || (({ \
         debug_assert_static_msg( \
             comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
@@ -150,7 +150,7 @@ extern "C" {
         $debug_point $unreachable; \
     }), 0) \
 )
-#define __step__debug_assert_fmt(_$Expr, _$ExprStr, _$fmt...) $dispatch_on_comptime $ignore_void( \
+#define __step__debug_assert_fmt(_$Expr, _$ExprStr, _$fmt...) $dispatch_in_comptime $ignore_void( \
     (!!_$Expr) || (({ \
         debug_assert_static_msg( \
             comp_when_(isComptimeExpr(_$Expr))(comp_provide_(_$Expr), comp_instead_(true)), \
@@ -160,11 +160,11 @@ extern "C" {
     }), 0) \
 )
 
-#define __step__debug_assert_trap()            $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
-#define __step__debug_assert_trap_msg(_$msg...) $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
-#define __step__debug_assert_trap_fmt(_$fmt...) $dispatch_on_comptime $ignore_void($debug_point $unreachable, 0)
+#define __step__debug_assert_trap()            $dispatch_in_comptime $ignore_void($debug_point $unreachable, 0)
+#define __step__debug_assert_trap_msg(_$msg...) $dispatch_in_comptime $ignore_void($debug_point $unreachable, 0)
+#define __step__debug_assert_trap_fmt(_$fmt...) $dispatch_in_comptime $ignore_void($debug_point $unreachable, 0)
 /* clang-format on */
-#endif /* on_comptime */
+#endif /* in_comptime */
 
 #define __step__debug_assert_true(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr) == true), _$ExprStr " != true", _$ExprStr " is not true")
 #define __step__debug_assert_false(_$Expr, _$ExprStr...) __step__debug_assert_msg(((_$Expr) == false), _$ExprStr " != false", _$ExprStr " is not false")
@@ -259,7 +259,7 @@ extern "C" {
 
 /*========== Extern Function Prototypes =====================================*/
 
-#if on_comptime
+#if in_comptime
 /**
  * @brief Logs an assertion failure with the given expression, function, file, and line.
  *
@@ -293,14 +293,14 @@ $extern fn_((debug_assert_failLogMsg(const char* expr, const char* func, const c
  */
 $attr($branch_cold)
 $extern fn_((debug_assert_failLogFmt(const char* expr, const char* func, const char* file, u32 line, const char* fmt, ...))(void));
-#else /* !on_comptime */
+#else /* !in_comptime */
 $attr($branch_cold)
 $extern fn_((debug_assert_failLog(const char*, const char*, const char*, u32))(void));
 $attr($branch_cold)
 $extern fn_((debug_assert_failLogMsg(const char*, const char*, const char*, u32, const char*))(void));
 $attr($branch_cold)
 $extern fn_((debug_assert_failLogFmt(const char*, const char*, const char*, u32, const char*, ...))(void));
-#endif /* on_comptime */
+#endif /* in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

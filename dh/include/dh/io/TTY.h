@@ -162,7 +162,7 @@ $extern fn_((io_TTY_inputReady(const io_TTY* self))(E$bool));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((io_TTY_ModePatch_preserve(void))(io_TTY_ModePatch)) {
     return (io_TTY_ModePatch){
         .enable = io_TTY_ModeBit_none,
@@ -225,7 +225,7 @@ fn_((io_TTY_Cfg_std(void))(io_TTY_Cfg)) {
         .output_file = io_handleStdOut(),
     };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

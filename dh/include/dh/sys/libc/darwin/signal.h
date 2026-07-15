@@ -23,7 +23,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if on_analysis || plat_is_darwin
+#if in_analysis || plat_is_darwin
 typedef i32 sys_libc_darwin_sig_atomic_t;
 typedef u32 sys_libc_darwin_sigset;
 
@@ -77,7 +77,7 @@ $extern fn_((sys_libc_darwin_sigemptyset(sys_libc_darwin_sigset* set))(i32));
 $extern fn_((sys_libc_darwin_siginfo_addr(const sys_libc_darwin_siginfo* info))(void*));
 $extern fn_((sys_libc_darwin_sigaction_set(sys_libc_darwin_signal_t signal, const sys_libc_darwin_sigaction* act, sys_libc_darwin_sigaction* old_act))(i32));
 $extern fn_((sys_libc_darwin_raise(sys_libc_darwin_signal_t signal))(i32));
-#endif /* on_analysis || plat_is_darwin */
+#endif /* in_analysis || plat_is_darwin */
 
 #if defined(__cplusplus)
 } /* extern "C" */

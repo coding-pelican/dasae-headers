@@ -486,7 +486,7 @@ $extern fn_((dansi_xterm_key_parseEvent(dansi_Seq seq))(O$dansi_xterm_key_Event)
 #define ____dansi_xterm_key_Format_str$dansi_xterm_key_Format_legacy "0"
 #define ____dansi_xterm_key_Format_str$dansi_xterm_key_Format_csi_u "1"
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((dansi_xterm_key_modsNone(void))(dansi_xterm_key_Mods)) {
     return (dansi_xterm_key_Mods){};
 };
@@ -509,7 +509,7 @@ fn_((dansi_xterm_key_modsToParam(dansi_xterm_key_Mods mods))(u16)) {
          + (mods.ctrl ? dansi_xterm_key_mod_ctrl_bit : 0)
          + (mods.meta ? dansi_xterm_key_mod_meta_bit : 0);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

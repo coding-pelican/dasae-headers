@@ -76,7 +76,7 @@ $extern fn_((TEST_Framework_run(void))(void));
 #define TEST_fn_$_guard(_$Name...) comp_syn__TEST_fn_$_guard(pp_join(_, TEST, pp_uniqTok(binder)), pp_join(_, TEST, pp_uniqTok(unitFn)), _$Name)
 #define $unguarded_TEST_fn comp_syn__$unguarded_TEST_fn
 
-#if !on_comptime
+#if !in_comptime
 /// @brief Check expression and record result
 /// @brief Same as TEST_expect but with custom message
 $attr($must_check)
@@ -87,7 +87,7 @@ $attr($must_check)
 $extern fn_((TEST_expect(bool expr))(TEST_E$void));
 $attr($must_check)
 $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(TEST_E$void));
-#endif /* !on_comptime */
+#endif /* !in_comptime */
 
 /*========== Implementation Details ========================================*/
 
@@ -137,7 +137,7 @@ $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(TEST_E$void));
     } $unguarded_fn
 // clang-format on
 
-#if on_comptime
+#if in_comptime
 #define TEST_skip() TEST_skip_callTest(srcLoc())
 #define TEST_skipMsg(_msg...) TEST_skipMsg_callTest(_msg, srcLoc())
 #define TEST_expect(_expr...) TEST_expect_callTest(_expr, srcLoc(), u8_l(#_expr))
@@ -147,7 +147,7 @@ $extern fn_((TEST_expectMsg(bool expr, S_const$u8 msg))(TEST_E$void));
 #define TEST_skipMsg_callTest(_msg, _loc) TEST_skipMsg_test(_msg, _loc)
 #define TEST_expect_callTest(_expr, _loc, _eval_str) TEST_expect_test(_expr, _loc, _eval_str)
 #define TEST_expectMsg_callTest(_expr, _msg, _loc, _eval_str) TEST_expectMsg_test(_expr, _msg, _loc, _eval_str)
-#endif /* on_comptime */
+#endif /* in_comptime */
 
 $attr($must_check)
 $extern fn_((TEST_skip_test(SrcLoc loc))(TEST_E$void));

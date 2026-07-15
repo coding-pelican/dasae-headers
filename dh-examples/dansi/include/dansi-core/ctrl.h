@@ -35,11 +35,11 @@ $static fn_((dansi_ctrl_isCtrl(u8 byte))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((dansi_ctrl_isCtrl(u8 byte))(bool)) {
     return dansi_c0_isCtrl(byte) || byte == u8_(dansi_ctrl_Code_del) || dansi_c1_isCtrl(byte);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

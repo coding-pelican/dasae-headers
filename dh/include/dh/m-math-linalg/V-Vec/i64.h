@@ -335,7 +335,7 @@ $static i64 m_V4i64_dot(m_V4i64 lhs, m_V4i64 rhs);
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 /* Vec2l functions */
 /* Construction */
 $attr($inline_always)
@@ -1038,7 +1038,7 @@ $static i64 m_V4i64_dot(m_V4i64 lhs, m_V4i64 rhs) {
 #endif /* arch_simd_supported */
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
 }
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

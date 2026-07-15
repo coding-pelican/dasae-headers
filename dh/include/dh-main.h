@@ -88,7 +88,7 @@ fn_((dh_main(pp_if_(pp_not(main_no_args))(
 #ifndef main__root_included
 #define main__root_included 1
 
-#if on_comptime
+#if in_comptime
 #if !TEST_enabled
 #if main_no_args
 $attr($maybe_unused $inline)
@@ -234,7 +234,7 @@ $static fn_((main__callDHMainAndExit(P$raw raw_ctx))(void)) {
 start_emitEntry(main__callDHMainAndExit);
 #endif /* comp_start_files_linked || !comp_start_files_linked */
 #endif /* !TEST_enabled */
-#endif /* on_comptime */
+#endif /* in_comptime */
 
 #endif /* main__root_included */
 #define main dh_main

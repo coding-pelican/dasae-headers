@@ -134,7 +134,7 @@ $extern fn_((daterm_ANSI_term(daterm_ANSI* self))(daterm_Term));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
     return (daterm_ANSI_Cfg){
         .gpa = some(gpa),
@@ -153,7 +153,7 @@ fn_((daterm_ANSI_Cfg_default(mem_Alctr gpa))(daterm_ANSI_Cfg)) {
         .esc_timeout = daterm_ANSI_esc_timeout_default,
     };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -58,13 +58,13 @@ $extern fn_((heap_Pool_destroy(heap_Pool* self, u_P$raw ptr))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((heap_Pool_Opts_default(void))(heap_Pool_Opts)) {
     return (heap_Pool_Opts){
         .growable = true,
     };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #define __comp_anon__heap_Pool$$(_T...) \
     union { \

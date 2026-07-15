@@ -7,7 +7,7 @@ $extern fn_((nanosleep(const sys_libc_darwin_timespec* req, sys_libc_darwin_time
 $extern fn_((gettimeofday(sys_libc_darwin_timeval* tv, void* tz))(i32));
 #endif /* plat_is_darwin */
 
-#if on_analysis || plat_is_darwin
+#if in_analysis || plat_is_darwin
 fn_((sys_libc_darwin_clock_gettime(sys_libc_darwin_clockid_t clock_id, sys_libc_darwin_timespec* ts))(i32)) {
 #if plat_is_darwin
     return clock_gettime(clock_id, ts);
@@ -46,4 +46,4 @@ fn_((sys_libc_darwin_gettimeofday(sys_libc_darwin_timeval* tv))(i32)) {
     claim_unreachable_msg(nameOf(sys_libc_darwin_gettimeofday) "is not supported on this platform");
 #endif /* plat_is_darwin */
 };
-#endif /* on_analysis || plat_is_darwin */
+#endif /* in_analysis || plat_is_darwin */

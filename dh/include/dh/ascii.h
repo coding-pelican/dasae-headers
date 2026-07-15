@@ -222,7 +222,7 @@ $extern fn_((ascii_ordIgnoreCase(S_const$u8 ascii_lhs, S_const$u8 ascii_rhs))(cm
 #define __str__ascii_sp " "
 #define __uint__ascii_sp_byte u8_c(' ')
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((ascii_isASCII(u8 c))(bool)) { return c < 0x80; };
 fn_((ascii_isUpper(u8 c))(bool)) { return u8_c('A') <= c && c <= u8_c('Z'); };
 fn_((ascii_isLower(u8 c))(bool)) { return u8_c('a') <= c && c <= u8_c('z'); };
@@ -233,7 +233,7 @@ fn_((ascii_isHex(u8 c))(bool)) { return ascii_isDigit(c) || (u8_c('A') <= c && c
 fn_((ascii_isCtrl(u8 c))(bool)) { return c <= ascii_CtrlCode_us || c == ascii_CtrlCode_del; };
 fn_((ascii_isGlyph(u8 c))(bool)) { return c < 0x20 || 0x7E <= c; };
 fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ascii_sp_byte || (ascii_CtrlCode_ht <= c && c <= ascii_CtrlCode_lf); };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 #define __str__ascii_whitespaces ascii_sp ascii_ht ascii_lf ascii_cr ascii_vt ascii_ff
 
 #define __str__ascii_whitespace_sp ascii_sp
@@ -249,7 +249,7 @@ fn_((ascii_isWhitespace(u8 c))(bool)) { return c == ascii_sp_byte || (ascii_Ctrl
 #define __str__ascii_whitespace_ff ascii_ff
 #define __uint__ascii_whitespace_ff_byte ascii_ff_byte
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((ascii_toUpper(u8 c))(u8)) {
     let mask = int_shl(boolToInt(ascii_isLower(c)), 5);
     return c ^ mask;
@@ -271,7 +271,7 @@ fn_((ascii_intToDigit(u8 val))(u8)) {
     let_(digit, u8) = val + u8_c('0');
     return claim_assert(ascii_isDigit(digit)), digit;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

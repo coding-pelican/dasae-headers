@@ -165,7 +165,7 @@ $static cmp_fn_neqCtx$((time_Dur)(lhs, rhs, ctx));
     .nanos = (_nanos) == 0 ? 0 : (_nanos) % time_nanos_per_sec, \
 })
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 cmp_fn_ord$((time_Dur)(lhs, rhs)) {
     if (lhs.secs < rhs.secs) { return cmp_Ord_lt; }
     if (lhs.secs > rhs.secs) { return cmp_Ord_gt; }
@@ -199,7 +199,7 @@ cmp_fn_eqlCtx$((time_Dur)(lhs, rhs, ctx)) {
     return cmp_eql$(time_Dur)(lhs, rhs);
 };
 cmp_fn_neqCtx_default$((time_Dur)(lhs, rhs, ctx));
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -450,7 +450,7 @@ $static m_V4f64 m_V4f64_reflect(m_V4f64 v, m_V4f64 normal);
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 /* Vec2d functions */
 /* Construction */
 $attr($inline_always)
@@ -1437,7 +1437,7 @@ $attr($inline_always)
 $static m_V4f64 m_V4f64_reflect(m_V4f64 v, m_V4f64 normal) {
     return m_V4f64_sub(v, m_V4f64_scal(normal, 2.0 * m_V4f64_dot(v, normal)));
 }
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

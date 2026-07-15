@@ -305,7 +305,7 @@ fn_((heap_Sbrk_local_Large_ref(heap_Sbrk_local_Large* self))(heap_Sbrk_local_Ref
     return_(union_of((heap_Sbrk_local_Ref_large)(self)));
 } $unscoped(fn);
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((heap_Sbrk_local_Ref_frees(heap_Sbrk_local_Ref self))(S$usize)) {
     return expr_(S$usize $scope)(match_(self) {
         patts_((
@@ -388,7 +388,7 @@ fn_((heap_Sbrk__big_size_class_count(heap_Sbrk self))(usize)) {
         case_((heap_Sbrk_local_Ref_large)) $break_(heap_Sbrk_local_Large__big_size_class_count) $end(case);
     } $end(match)) $unscoped(expr);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -58,7 +58,7 @@ $static fn_((f64_isNonzero(f64 x))(bool));
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((f32_sgnBit(f32 x))(bool)) {
     return flt_sgnBit(x);
 #if UNUSED_CODE
@@ -245,7 +245,7 @@ fn_((f64_isZero(f64 x))(bool)) {
 fn_((f64_isNonzero(f64 x))(bool)) {
     return !f64_isZero(x);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

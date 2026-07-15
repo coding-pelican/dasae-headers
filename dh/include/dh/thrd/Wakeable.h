@@ -36,7 +36,7 @@ struct thrd_Wakeable_VTbl {
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((thrd_Wakeable_isValid(thrd_Wakeable self))(bool)) {
     return isNonnull(self.ctx)
         && isNonnull(self.vtbl)
@@ -54,7 +54,7 @@ fn_((thrd_Wakeable_assertValid(P$raw ctx, P_const$$(thrd_Wakeable_VTbl) vtbl))(v
 fn_((thrd_Wakeable_ensureValid(thrd_Wakeable self))(thrd_Wakeable)) {
     return thrd_Wakeable_assertValid(self.ctx, self.vtbl), self;
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

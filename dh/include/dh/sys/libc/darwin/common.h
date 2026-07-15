@@ -22,12 +22,12 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if on_analysis || plat_is_darwin
+#if in_analysis || plat_is_darwin
 typedef i32 sys_libc_darwin_fd_t;
 typedef u16 sys_libc_darwin_mode_t;
 typedef i32 sys_libc_darwin_signal_t;
 typedef usize sys_libc_darwin_ioctl_req_t;
-#endif /* on_analysis || plat_is_darwin */
+#endif /* in_analysis || plat_is_darwin */
 
 #if defined(__cplusplus)
 } /* extern "C" */

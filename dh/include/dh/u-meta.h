@@ -115,7 +115,7 @@ $static fn_((u_recordNPtrMut(u_S$raw field, usize n, S_const$TypeInfo fields, us
 
 /*========== Macros and Definitions =========================================*/
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((u_typeInfoRecord(S_const$TypeInfo fields))(TypeInfo)) {
     claim_assert_nonnull(fields.ptr);
     usize end_offset = 0;
@@ -405,7 +405,7 @@ fn_((u_recordNPtrMut(u_S$raw field, usize n, S_const$TypeInfo fields, usize fiel
         .type = u_typeInfoRecordN(n, fields)
     };
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if UNUSED_CODE
 // ============================================================================

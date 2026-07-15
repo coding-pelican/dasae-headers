@@ -268,7 +268,7 @@ $static fn_((m_M4f64_frustumLHZO(f64 left, f64 right, f64 bottom, f64 top, f64 p
         [1] = m_V2f64_of_static((_r0).y, (_r1).y), \
     }), \
 })
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((m_M2f64_ofCols(m_M2f64_ColV c0, m_M2f64_ColV c1))(m_M2f64)) {
     return m_M2f64_ofCols_static(c0, c1);
 };
@@ -378,7 +378,7 @@ fn_((m_M2f64_scale(m_V2f64 s))(m_M2f64)) {
 fn_((m_M2f64_scaleUniform(f64 s))(m_M2f64)) {
     return m_M2f64_diag(s);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 /*--- M3f64 Macros and Definitions ---*/
 
@@ -403,7 +403,7 @@ fn_((m_M2f64_scaleUniform(f64 s))(m_M2f64)) {
         [2] = m_V3f64_of_static((_r0).z, (_r1).z, (_r2).z), \
     }), \
 })
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((m_M3f64_ofCols(m_M3f64_ColV c0, m_M3f64_ColV c1, m_M3f64_ColV c2))(m_M3f64)) {
     return m_M3f64_ofCols_static(c0, c1, c2);
 };
@@ -553,7 +553,7 @@ fn_((m_M3f64_scale2D(m_V2f64 s))(m_M3f64)) {
 fn_((m_M3f64_scaleUniform2D(f64 s))(m_M3f64)) {
     return m_M3f64_scale2D(m_V2f64_splat(s));
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 /*--- M4f64 Macros and Definitions ---*/
 
@@ -581,7 +581,7 @@ fn_((m_M3f64_scaleUniform2D(f64 s))(m_M3f64)) {
         [3] = m_V4f64_of_static((_r0).w, (_r1).w, (_r2).w, (_r3).w), \
     }), \
 })
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((m_M4f64_ofCols(m_M4f64_ColV c0, m_M4f64_ColV c1, m_M4f64_ColV c2, m_M4f64_ColV c3))(m_M4f64)) {
     return m_M4f64_ofCols_static(c0, c1, c2, c3);
 };
@@ -1070,7 +1070,7 @@ fn_((m_M4f64_frustumLHZO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal,
         m_V4f64_of(0.0, 0.0, 1.0, 0.0)
     );
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

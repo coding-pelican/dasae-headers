@@ -191,7 +191,7 @@ $static fn_((CompHash32_calc(S_const$u8 str))(u32));
     /** Calculate hash value from a compile-time string literal */ \
     CompHash32_calc(u8_l(_$raw_str))
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((CompHash_from(S_const$u8 str))(CompHash)) {
     claim_assert_nonnullS(str);
     return (CompHash){ .val = isZero(str.len) ? 0 : CompHash_calc(str) };
@@ -243,7 +243,7 @@ fn_((CompHash32_calc(S_const$u8 str))(u32)) {
     } $end(for);
     return hash ^ (hash >> 16);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

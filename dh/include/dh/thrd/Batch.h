@@ -253,7 +253,7 @@ $extern fn_((thrd_Batch_waitProtcd(thrd_Batch* self, TypeInfo result_type))(void
     }
 /* clang-format on */
 
-#if on_analysis_active_only || on_comptime
+#if in_analysis_active_only || in_comptime
 fn_((thrd_Batch_Done_typeInfo(TypeInfo result_type))(TypeInfo)) {
     let ty_fields = A_ref$((S_const$TypeInfo)with_((u_Fields_type$thrd_Batch_Done)(
         (.val[u_Fields_Idx_result_$thrd_Batch_Done])(result_type)
@@ -276,7 +276,7 @@ fn_((thrd_Batch_Done_resultMut(thrd_Batch_Done$raw* self, TypeInfo result_type))
     let u_self = P_meta((u_typeInfoRecord(ty_fields))(as$(P$raw)(self)));
     return u_fieldPtrMut(u_self, ty_fields, u_Fields_Idx_result_$thrd_Batch_Done);
 };
-#endif /* on_analysis_active_only || on_comptime */
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */
