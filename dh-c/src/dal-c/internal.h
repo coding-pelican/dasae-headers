@@ -56,7 +56,7 @@ typedef struct dal_c_ProjectLock {
 } dal_c_ProjectLock;
 
 typedef enum dal_c_CmdPhase {
-    dal_c_CmdPhase_target_build,
+    dal_c_CmdPhase_project_lib_build,
     dal_c_CmdPhase_dependency_build,
     dal_c_CmdPhase_dh_build,
     dal_c_CmdPhase_self_build,
