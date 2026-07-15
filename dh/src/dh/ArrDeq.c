@@ -143,11 +143,11 @@ fn_((ArrDeq_ensureCap(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize new_cap)
 fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize new_cap))(mem_E$void) $scope) {
     claim_assert_nonnull(self);
     debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
-    if (new_cap <= self->len) { return_ok({}); }
+    if (new_cap <= self->buf.len) { return_ok({}); }
 
     let old_buf = ArrDeq_bufMut(*self, type);
     if_some((mem_Alctr_remap($trace gpa, old_buf, new_cap))(new_buf)) {
-        if (self->head < old_buf.len - self->len) {
+        if (self->head > old_buf.len - self->len) {
             let head = u_sliceS(new_buf, $r(self->head, old_buf.len));
             let tail = u_sliceS(new_buf, $r(0, self->len - head.len));
             if (head.len > tail.len && new_buf.len - old_buf.len > tail.len) {
@@ -160,7 +160,7 @@ fn_((ArrDeq_ensureCapPrecise(ArrDeq* self, TypeInfo type, mem_Alctr gpa, usize n
         self->buf = new_buf.raw;
     } else_none {
         let new_buf = try_(mem_Alctr_alloc($trace gpa, type, new_cap));
-        if (self->head < old_buf.len - self->len) {
+        if (self->head <= old_buf.len - self->len) {
             u_memcpyS(u_prefixS(new_buf, self->len), u_prefixS(u_suffixS(old_buf, self->head), self->len).as_const);
         } else {
             let head = u_suffixS(old_buf, self->head);

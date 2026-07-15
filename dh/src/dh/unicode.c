@@ -186,7 +186,7 @@ fn_((unicode_wtf16ToWTF8Alloc(S_const$u16 wtf16, mem_Alctr gpa))(unicode_mem_E$S
  *-------------------------------------------------------------------------*/
 
 fn_((unicode_wtf8AsUTF8(wtf8_View wtf))(utf8_E$utf8_View) $scope) {
-    if (!wtf8_validate(wtf.bytes)) return_err(E_cause$utf8_InvalidBytes());
+    if (!utf8_validate(wtf.bytes)) return_err(E_cause$utf8_InvalidBytes());
     return_ok(utf8_viewUnchkd(wtf.bytes));
 } $unscoped(fn);
 

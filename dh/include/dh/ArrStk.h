@@ -185,7 +185,7 @@ $extern fn_((ArrStk_pop(ArrStk* self, u_V$raw ret_mem))(O$u_V$raw));
 #define T_use_ArrStk_clone$(_T...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl$(ArrStk_clone, _T)(ArrStk$(_T) self, mem_Alctr gpa))(E$($set(mem_E)(ArrStk$(_T)))) $scope) { \
-        return_(typeE$((ReturnType)(ArrStk_clone(*self->as_raw, typeInfo$(_T), gpa)))); \
+        return_(typeE$((ReturnType)(ArrStk_clone(*self.as_raw, typeInfo$(_T), gpa)))); \
     } $unscoped(fn)
 /* clang-format on */
 

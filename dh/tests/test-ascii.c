@@ -11,7 +11,7 @@ TEST_fn_("ascii: scalar classification and case conversion" $scope) {
     try_(TEST_expect(ascii_isDigit(u8_c('7'))));
     try_(TEST_expect(ascii_isAlNum(u8_c('9'))));
     try_(TEST_expect(ascii_isHex(u8_c('f'))));
-    try_(TEST_expect(ascii_isCtrl(as$(u8)(ascii_CtrlCode_lf))));
+    try_(TEST_expect(ascii_isCtrl(as$(u8)(ascii_ctrl_Code_lf))));
     try_(TEST_expect(ascii_isWhitespace(u8_c('\t'))));
 
     try_(TEST_expect(ascii_toUpper(u8_c('a')) == u8_c('A')));
@@ -21,6 +21,25 @@ TEST_fn_("ascii: scalar classification and case conversion" $scope) {
     try_(TEST_expect(ascii_toggleCase(u8_c('A')) == u8_c('a')));
     try_(TEST_expect(ascii_toggleCase(u8_c('a')) == u8_c('A')));
     try_(TEST_expect(ascii_toggleCase(u8_c('!')) == u8_c('!')));
+} $unscoped(TEST_fn);
+
+TEST_fn_("ascii: named constants and digit conversions define byte-level ASCII contract" $scope) {
+    try_(TEST_expect(ascii_nul_byte == u8_(0x00)));
+    try_(TEST_expect(ascii_bel_byte == u8_(0x07)));
+    try_(TEST_expect(ascii_bs_byte == u8_(0x08)));
+    try_(TEST_expect(ascii_ht_byte == u8_(0x09)));
+    try_(TEST_expect(ascii_lf_byte == u8_(0x0A)));
+    try_(TEST_expect(ascii_vt_byte == u8_(0x0B)));
+    try_(TEST_expect(ascii_ff_byte == u8_(0x0C)));
+    try_(TEST_expect(ascii_cr_byte == u8_(0x0D)));
+    try_(TEST_expect(ascii_sp_byte == u8_(0x20)));
+
+    try_(TEST_expect(ascii_digitToInt(u8_c('0')) == 0));
+    try_(TEST_expect(ascii_digitToInt(u8_c('9')) == 9));
+    try_(TEST_expect(ascii_intToDigit(0) == u8_c('0')));
+    try_(TEST_expect(ascii_intToDigit(9) == u8_c('9')));
+    try_(TEST_expect(ascii_intFromDigit(u8_c('7')) == 7));
+    try_(TEST_expect(ascii_digitFromInt(4) == u8_c('4')));
 } $unscoped(TEST_fn);
 
 TEST_fn_("ascii: in-place and within-buffer case conversion" $scope) {
@@ -52,6 +71,10 @@ TEST_fn_("ascii: case-insensitive search" $scope) {
     try_(TEST_expect(isNone(ascii_idxOfIgnoreCase(haystack, u8_l("missing")))));
     try_(TEST_expect(isNone(ascii_idxFirstOfIgnoreCase(haystack, u8_l("hello"), 12))));
     try_(TEST_expect(unwrap_(ascii_idxOfIgnoreCase(haystack, u8_l(""))) == 0));
+    try_(TEST_expect(unwrap_(ascii_idxFirstOfIgnoreCase(haystack, u8_l(""), 5)) == 5));
+    try_(TEST_expect(unwrap_(ascii_idxLastOfIgnoreCase(haystack, u8_l(""), 7)) == 7));
+    try_(TEST_expect(unwrap_(ascii_idxLastOfIgnoreCase(haystack, u8_l("HELLO"), 10)) == 6));
+    try_(TEST_expect(isNone(ascii_idxLastOfIgnoreCase(haystack, u8_l("HELLO"), 3))));
 } $unscoped(TEST_fn);
 
 TEST_fn_("ascii: prefix suffix equality and ordering" $scope) {

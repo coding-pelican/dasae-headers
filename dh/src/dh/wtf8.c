@@ -52,12 +52,13 @@ $static fn_((wtf8_encode__handleUTF8(utf8_E$utf8_SeqLen result))(wtf8_E$utf8_Seq
 fn_((wtf8_encode(u32 codepoint, S$u8 out))(wtf8_encode_E$S$u8) $scope) {
     let handleUTF8 = wtf8_encode__handleUTF8;
     let requested_len = try_(handleUTF8(utf8_codepointSeqLen(codepoint)));
-    if (requested_len >= out.len) return_err(E_cause$TooSmallBuffer());
+    if (requested_len > out.len) return_err(E_cause$TooSmallBuffer());
     return_ok(try_(wtf8__encode(codepoint, requested_len, out)));
 } $unscoped(fn);
 
 fn_((wtf8_encodeWithin(u32 codepoint, S$u8 out))(wtf8_E$S$u8) $scope) {
-    return_(wtf8__encode(codepoint, try_(utf8_codepointSeqLen(codepoint)), out));
+    let handleUTF8 = wtf8_encode__handleUTF8;
+    return_(wtf8__encode(codepoint, try_(handleUTF8(utf8_codepointSeqLen(codepoint))), out));
 } $unscoped(fn);
 
 $static fn_((wtf8__decode3(utf8_Decode3Buf bytes))(wtf8_E$u32) $scope) {
@@ -73,15 +74,21 @@ $static fn_((wtf8__decode3(utf8_Decode3Buf bytes))(wtf8_E$u32) $scope) {
 
 $static fn_((wtf8_decode__handleUTF8(utf8_E$u32 result))(wtf8_E$u32) $scope) {
     return_ok(catch_((result)(err, $suppress_(switch_enum)(switch (E_tag$utf8_E(err))) {
+        case_((E_Tag$utf8_InvalidBytes)) return_err(E_cause$wtf8_InvalidStartByte()) $end(case);
+        case_((E_Tag$utf8_InvalidStartByte)) return_err(E_cause$wtf8_InvalidStartByte()) $end(case);
         case_((E_Tag$utf8_ExpectedContinuation)) return_err(E_cause$wtf8_ExpectedContinuation()) $end(case);
         case_((E_Tag$utf8_OverlongEncoding)) return_err(E_cause$wtf8_OverlongEncoding()) $end(case);
+        case_((E_Tag$utf8_TooLargeCodepoint)) return_err(E_cause$wtf8_TooLargeCodepoint()) $end(case);
         default_() claim_unreachable $end(default);
     })));
 } $unscoped(fn);
 fn_((wtf8_decode(S_const$u8 bytes))(wtf8_E$u32) $scope) {
     let handleUTF8 = wtf8_decode__handleUTF8;
     if (bytes.len == 0) return_err(E_cause$wtf8_InvalidStartByte());
-    let seq_len = try_(utf8_byteSeqLen(*S_at((bytes)[0])));
+    let seq_len = catch_((utf8_byteSeqLen(*S_at((bytes)[0])))(err, $suppress_(switch_enum)(switch (E_tag$utf8_E(err))) {
+        case_((E_Tag$utf8_InvalidStartByte)) return_err(E_cause$wtf8_InvalidStartByte()) $end(case);
+        default_() claim_unreachable $end(default);
+    }));
     if (seq_len > bytes.len) return_err(E_cause$wtf8_InvalidStartByte());
     switch (seq_len) {
     case utf8_SeqLen_1: return_ok(*S_at((bytes)[0]));

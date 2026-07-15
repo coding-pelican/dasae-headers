@@ -69,6 +69,7 @@ fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
 };
 
 fn_((sort_insertIdx(R range, sort_IdxCtx idx_ctx))(void)) {
+    if (R_len(range) <= 1) return;
     for_(((R_suffix(range, 1)))(unsorted_idx)) {
         var sorted_bwd_idx = unsorted_idx;
         while (range.begin < sorted_bwd_idx) {
@@ -118,10 +119,13 @@ fn_((sort_heapIdx(R range, sort_IdxCtx idx_ctx))(void)) {
 };
 
 fn_((sort_heap__siftDown(R range, usize target, sort_IdxCtx idx_ctx))(void)) {
+    let range_len = R_len(range);
+    if (range_len <= 1) return;
     var curr = target;
     while (true) {
-        var child = ((curr - range.begin) * 2) + range.begin + 1;
-        if (child >= range.end) break;
+        let child_offset = orelse_((usize_mulChkd(curr - range.begin, 2))(break));
+        if (child_offset >= range_len - 1) break;
+        var child = range.begin + child_offset + 1;
         let next_child = child + 1;
         if (next_child < range.end) {
             let ord = sort_IdxCtx_ord(idx_ctx, child, next_child);
@@ -192,7 +196,7 @@ fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void)) {
     var_(stack, A$$(sort_limit_pdq_stack_frames, sort_pdq__Frame)) $undefined;
     var_(depth, usize) = 0;
 
-    let max_limit = uint_pow2Floor$((usize)(len)) + 1;
+    let max_limit = uint_log2(len);
     var_(frame, sort_pdq__Frame) = { .range = range, .limit = max_limit };
 
     while (true) {
@@ -401,78 +405,104 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
     var_(r_offsets, A$$(sort_limit_pdq_offset_blocks, u8)) $undefined;
     var_(l_count, usize) = 0;
     var_(r_count, usize) = 0;
-    var_(l_offset_idx, usize) = 0;
-    var_(r_offset_idx, usize) = 0;
+    var_(l_start, usize) = 0;
+    var_(r_start, usize) = 0;
+    var_(l_base, usize) = 0;
+    var_(r_base, usize) = 0;
     var_(was_partitioned, bool) = true;
-
-    let block_size = sort_limit_pdq_offset_blocks;
-    let min_remaining = 2 * block_size;
-    while (l < r && (r - l + 1) >= min_remaining) {
-        if (l_count == 0) {
-            l_offset_idx = 0;
-            for_(($rt(block_size))(scan)) {
-                let is_ge = cmp_Ord_isGe(sort_IdxCtx_ord(idx_ctx, l + scan, pivot_idx));
-                *A_at((l_offsets)[l_count]) = intCast$((u8)(scan));
-                l_count += as$(usize)(boolToInt(is_ge));
-            } $end(for);
-        }
-
-        if (r_count == 0) {
-            r_offset_idx = 0;
-            for_(($rt(block_size))(scan)) {
-                let is_lt = cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r - scan, pivot_idx));
-                *A_at((r_offsets)[r_count]) = intCast$((u8)(scan));
-                r_count += as$(usize)(boolToInt(is_lt));
-            } $end(for);
-        }
-
-        let l_remaining = l_count - l_offset_idx;
-        let r_remaining = r_count - r_offset_idx;
-        let pair_l_r_count = (l_remaining < r_remaining) ? l_remaining : r_remaining;
-        for_(($rt(pair_l_r_count))(i)) {
-            sort_IdxCtx_swap(
-                idx_ctx,
-                l + *A_at((l_offsets)[l_offset_idx + i]),
-                r - *A_at((r_offsets)[r_offset_idx + i])
-            );
-        } $end(for);
-        if (pair_l_r_count > 0) was_partitioned = false;
-
-        l_offset_idx += pair_l_r_count;
-        r_offset_idx += pair_l_r_count;
-
-        if (l_offset_idx == l_count) {
-            l += block_size;
-            l_count = 0;
-            l_offset_idx = 0;
-        }
-        if (r_offset_idx == r_count) {
-            r -= block_size;
-            r_count = 0;
-            r_offset_idx = 0;
-        }
-    }
 
     while (l <= r && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, l, pivot_idx))) l++;
     while (l <= r && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r, pivot_idx))) r--;
     if (l > r) {
         sort_IdxCtx_swap(idx_ctx, r, pivot_idx);
         *pivot = r;
-        return was_partitioned;
+        return true;
     }
 
-    sort_IdxCtx_swap(idx_ctx, l++, r--);
+    sort_IdxCtx_swap(idx_ctx, l, r);
+    was_partitioned = false;
+    l++;
+    r--;
 
-    while (true) {
-        while (l <= r && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, l, pivot_idx))) l++;
-        while (l <= r && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r, pivot_idx))) r--;
-        if (l > r) break;
-        sort_IdxCtx_swap(idx_ctx, l++, r--);
+    let_(block_size, usize) = sort_limit_pdq_offset_blocks;
+    l_base = l;
+    r_base = r;
+    while (l <= r) {
+        let unknown_count = r + 1 - l;
+        let_(l_scan_count, usize) = (l_count == 0)
+            ? pri_min(block_size, (r_count == 0) ? (unknown_count / 2) : unknown_count)
+            : usize_(0);
+        let_(r_scan_count, usize) = (r_count == 0)
+            ? pri_min(block_size, unknown_count - l_scan_count)
+            : usize_(0);
+
+        if (l_count == 0) {
+            l_start = 0;
+            l_base = l;
+            for_(($rt(l_scan_count))(scan)) {
+                let is_ge = cmp_Ord_isGe(sort_IdxCtx_ord(idx_ctx, l + scan, pivot_idx));
+                *A_at((l_offsets)[l_count]) = intCast$((u8)(scan));
+                l_count += as$(usize)(boolToInt(is_ge));
+            } $end(for);
+            l += l_scan_count;
+        }
+
+        if (r_count == 0) {
+            r_start = 0;
+            r_base = r;
+            for_(($rt(r_scan_count))(scan)) {
+                let is_lt = cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r - scan, pivot_idx));
+                *A_at((r_offsets)[r_count]) = intCast$((u8)(scan));
+                r_count += as$(usize)(boolToInt(is_lt));
+            } $end(for);
+            r -= r_scan_count;
+        }
+
+        let pair_count = pri_min(l_count, r_count);
+        for_(($rt(pair_count))(i)) {
+            sort_IdxCtx_swap(
+                idx_ctx,
+                l_base + *A_at((l_offsets)[l_start + i]),
+                r_base - *A_at((r_offsets)[r_start + i])
+            );
+        } $end(for);
+        if (pair_count > 0) was_partitioned = false;
+
+        l_count -= pair_count;
+        r_count -= pair_count;
+        l_start += pair_count;
+        r_start += pair_count;
+
+        if (l_count == 0) {
+            l_start = 0;
+            l_base = l;
+        }
+        if (r_count == 0) {
+            r_start = 0;
+            r_base = r;
+        }
+    }
+
+    if (l_count > 0) {
+        while (l_count > 0) {
+            l_count--;
+            sort_IdxCtx_swap(idx_ctx, l_base + *A_at((l_offsets)[l_start + l_count]), r);
+            r--;
+        }
+        l = r + 1;
+    }
+    if (r_count > 0) {
+        while (r_count > 0) {
+            r_count--;
+            sort_IdxCtx_swap(idx_ctx, r_base - *A_at((r_offsets)[r_start + r_count]), l);
+            l++;
+        }
+        r = l - 1;
     }
 
     sort_IdxCtx_swap(idx_ctx, r, pivot_idx);
     *pivot = r;
-    return false;
+    return was_partitioned;
 };
 
 /*========== External Definitions: Block Sort ===============================*/
@@ -511,6 +541,10 @@ $static fn_((sort_block__mergeExternal(
     u_S$raw seq, R left, R right, u_S$raw cache,
     sort_OrdCtxFn ordFn, u_V$raw ctx
 ))(void));
+$static fn_((sort_block__mergeExternalRight(
+    u_S$raw seq, R left, R right, u_S$raw cache,
+    sort_OrdCtxFn ordFn, u_V$raw ctx
+))(void));
 
 /* --- External Definitions --- */
 
@@ -535,14 +569,16 @@ fn_((sort_blockCtxCache(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, u_S$raw c
     if (seq.len <= 1) return seq;
 
     let_(min_level, usize) = sort_threshold_fallback_to_insert_sort;
+    if (seq.len <= min_level) {
+        sort_insertCtx(seq, ordFn, ctx);
+        return seq;
+    }
     var iter = sort_block__Iter_init(seq.len, min_level);
     /* O(N) insertion phase for lowest-level runs */
     while (!sort_block__Iter_finished(&iter)) {
         let range = sort_block__Iter_nextRange(&iter);
         sort_insertCtx(u_sliceS(seq, range), ordFn, ctx);
     }
-    if (!sort_block__Iter_nextLevel(&iter)) return seq;
-
     /* bottom-up hierarchical merging */
     while (true) {
         sort_block__Iter_begin(&iter);
@@ -559,11 +595,24 @@ fn_((sort_blockCtxCache(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, u_S$raw c
             ));
             if (already_sorted) continue;
 
-            /* adaptive dispatch: route to fast path if buffer satisfies partial length K */
-            if (cache.len < R_len(left)) {
-                sort_block__mergeInPlace(seq, left, right, ordFn, ctx);
-            } else {
+            let reverse_sorted = cmp_Ord_isLt(cmp_ordCtxP(
+                u_atS(seq, right.end - 1).as_const,
+                u_atS(seq, left.begin).as_const,
+                ctx,
+                ordFn
+            ));
+            if (reverse_sorted) {
+                mem_rotate(u_sliceS(seq, $r(left.begin, right.end)), R_len(left));
+                continue;
+            }
+
+            /* adaptive dispatch: use external memory from either side when possible */
+            if (R_len(left) <= cache.len) {
                 sort_block__mergeExternal(seq, left, right, cache, ordFn, ctx);
+            } else if (R_len(right) <= cache.len) {
+                sort_block__mergeExternalRight(seq, left, right, cache, ordFn, ctx);
+            } else {
+                sort_block__mergeInPlace(seq, left, right, ordFn, ctx);
             }
         }
         if (!sort_block__Iter_nextLevel(&iter)) break;
@@ -592,7 +641,7 @@ fn_((sort_block__allocCache(mem_Alctr gpa, TypeInfo type, usize len))(mem_E$u_S$
 
 fn_((sort_block__Iter_init(usize size2, usize min_level))(sort_block__Iter)) {
     let pow2 = uint_pow2Floor$((usize)(size2));
-    let denom = pow2 / min_level;
+    let denom = pri_max(usize_(1), pow2 / min_level);
     return (sort_block__Iter){
         .size = size2,
         .pow2 = pow2,
@@ -611,14 +660,14 @@ fn_((sort_block__Iter_begin(sort_block__Iter* self))(void)) {
     self->num = 0;
 };
 fn_((sort_block__Iter_nextRange(sort_block__Iter* self))(R)) {
-    let start = self->dec;
+    let start = pri_min(self->dec, self->size);
     self->dec += self->dec_step;
     self->num += self->num_step;
     if (self->num >= self->denom) {
         self->num -= self->denom;
         self->dec += 1;
     }
-    return $r(start, self->dec);
+    return $r(start, pri_min(self->dec, self->size));
 };
 fn_((sort_block__Iter_nextLevel(sort_block__Iter* self))(bool)) {
     self->dec_step += self->dec_step;
@@ -695,7 +744,10 @@ fn_((sort_block__mergeExternal(
             ordFn
         );
         if (cmp_Ord_isLt(ord)) {
-            u_memcpy(u_atS(seq, dst_idx), u_atS(seq, right_idx++).as_const);
+            if (dst_idx != right_idx) {
+                u_memcpy(u_atS(seq, dst_idx), u_atS(seq, right_idx).as_const);
+            }
+            right_idx++;
         } else {
             u_memcpy(u_atS(seq, dst_idx), u_atS(cache, cache_idx++).as_const);
         }
@@ -707,7 +759,45 @@ fn_((sort_block__mergeExternal(
         let remaining = left_len - cache_idx;
         u_memcpyS(
             u_sliceS(seq, $r(dst_idx, dst_idx + remaining)),
-            u_sliceS(cache, $rf(cache_idx)).as_const
+            u_sliceS(cache, $r(cache_idx, left_len)).as_const
+        );
+    }
+};
+fn_((sort_block__mergeExternalRight(
+    u_S$raw seq, R left, R right, u_S$raw cache,
+    sort_OrdCtxFn ordFn, u_V$raw ctx
+))(void)) {
+    let right_len = R_len(right);
+    /* cache right run into external memory and merge backward */
+    u_memcpyS(u_prefixS(cache, right_len), u_sliceS(seq, right).as_const);
+
+    var_(left_idx, usize) = left.end;
+    var_(cache_idx, usize) = right_len;
+    var_(dst_idx, usize) = right.end;
+
+    while (left.begin < left_idx && 0 < cache_idx) {
+        let ord = cmp_ordCtxP(
+            u_atS(cache, cache_idx - 1).as_const,
+            u_atS(seq, left_idx - 1).as_const,
+            ctx,
+            ordFn
+        );
+        dst_idx--;
+        if (cmp_Ord_isLt(ord)) {
+            left_idx--;
+            if (dst_idx != left_idx) {
+                u_memcpy(u_atS(seq, dst_idx), u_atS(seq, left_idx).as_const);
+            }
+        } else {
+            cache_idx--;
+            u_memcpy(u_atS(seq, dst_idx), u_atS(cache, cache_idx).as_const);
+        }
+    }
+
+    if (0 < cache_idx) {
+        u_memcpyS(
+            u_sliceS(seq, $r(left.begin, left.begin + cache_idx)),
+            u_prefixS(cache, cache_idx).as_const
         );
     }
 };

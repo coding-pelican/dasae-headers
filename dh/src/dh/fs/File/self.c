@@ -501,34 +501,34 @@ $static fn_((fs_File_handle__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope
     claim_unreachable;
 } $unscoped(fn);
 
-typedef union Reader {
+typedef union fs_File__Reader {
     io_Reader base;
     T_embed$(struct {
         P$raw ctx;
         fn_(((*readFn)(P$raw ctx, S$u8 buf))(E$usize)) $must_check;
     });
-} Reader;
+} fs_File__Reader;
 
-$static fn_((Reader_init(fs_File file))(Reader)) {
-    return (Reader){ .ctx = fs__File_handleToCtx(file.handle), .readFn = fs_File_handle__read };
+$static fn_((fs_File__Reader_init(fs_File file))(fs_File__Reader)) {
+    return (fs_File__Reader){ .ctx = fs__File_handleToCtx(file.handle), .readFn = fs_File_handle__read };
 }
 
 fn_((fs_File_reader(fs_File file))(io_Reader)) {
-    return Reader_init(file).base;
+    return fs_File__Reader_init(file).base;
 }
 
-typedef union Writer {
+typedef union fs_File__Writer {
     io_Writer base;
     T_embed$(struct {
         P$raw ctx;
         fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
     });
-} Writer;
+} fs_File__Writer;
 
-$static fn_((Writer_init(fs_File file))(Writer)) {
-    return (Writer){ .ctx = fs__File_handleToCtx(file.handle), .writeFn = fs_File_handle__write };
+$static fn_((fs_File__Writer_init(fs_File file))(fs_File__Writer)) {
+    return (fs_File__Writer){ .ctx = fs__File_handleToCtx(file.handle), .writeFn = fs_File_handle__write };
 }
 
 fn_((fs_File_writer(fs_File file))(io_Writer)) {
-    return Writer_init(file).base;
+    return fs_File__Writer_init(file).base;
 }

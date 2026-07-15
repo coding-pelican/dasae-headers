@@ -43,6 +43,7 @@ T_alias$((sort_OrdFn)(cmp_OrdFn));
 T_alias$((sort_OrdCtxFn)(cmp_OrdCtxFn));
 
 /// Checks if the sequence is ordered in ascending order according to `ordFn`.
+/// Empty and single-element sequences are ordered.
 /// - Time Complexity: O(N)
 $extern fn_((sort_inOrdd(u_S_const$raw seq, sort_OrdFn ordFn))(bool));
 $extern fn_((sort_inOrddCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(bool));
@@ -68,44 +69,62 @@ $static fn_((sort_IdxCtx_swap(sort_IdxCtx self, usize lhs, usize rhs))(void));
 /*========== Base Algorithms ==========*/
 
 /// Insertion sort: for small or partially sorted arrays.
+/// Empty and single-element sequences are valid inputs and are returned unchanged
+/// without invoking the comparator.
 /// - Time Complexity: O(N) best, O(N^2) worst.
 /// - Space Complexity: O(1)
 $extern fn_((sort_insert(u_S$raw seq, sort_OrdFn ordFn))(void));
 $extern fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void));
+/// Index-based insertion sort over a half-open range.
+/// Empty and single-index ranges are valid inputs and perform no comparisons or swaps.
 $extern fn_((sort_insertIdx(R range, sort_IdxCtx idx_ctx))(void));
 
 /*========== Unstable ==========*/
 
 /// Heapsort: Optimal for strict O(1) memory constraints.
+/// Empty and single-element sequences are valid inputs and are returned unchanged
+/// without invoking the comparator.
 /// - Time Complexity: O(N log N) deterministic.
 /// - Space Complexity: O(1)
 $extern fn_((sort_heap(u_S$raw seq, sort_OrdFn ordFn))(void));
 $extern fn_((sort_heapCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void));
+/// Index-based heapsort over a half-open range.
+/// Empty and single-index ranges are valid inputs and perform no comparisons or swaps.
 $extern fn_((sort_heapIdx(R range, sort_IdxCtx idx_ctx))(void));
 
 /// Pattern-Defeating Quicksort (pdqsort): Optimal for O(log N) stack constraints.
+/// Empty and single-element sequences are valid inputs and are returned unchanged
+/// without invoking the comparator.
 /// - Time Complexity: O(N) best, O(N log N) worst/avg.
 /// - Space Complexity: O(log N) stack limit.
 $extern fn_((sort_pdq(u_S$raw seq, sort_OrdFn ordFn))(void));
 $extern fn_((sort_pdqCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void));
+/// Index-based pdqsort over a half-open range.
+/// Empty and single-index ranges are valid inputs and perform no comparisons or swaps.
 $extern fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void));
 
 /*========== Stable ==========*/
 
 /// Block Sort (WikiSort): Optimal for strict O(1) memory constraints.
 /// Fractional cascading with internal buffers and Hwang-Lin rotations.
+/// Empty and single-element sequences are valid inputs and are returned unchanged
+/// without invoking the comparator.
 /// - Time Complexity: O(N) best, O(N log N) worst.
 /// - Space Complexity: O(1)
 $extern fn_((sort_block(u_S$raw seq, sort_OrdFn ordFn))(void));
 $extern fn_((sort_blockCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void));
 /// Block Sort with Partial Buffer: Optimal for O(K) memory constraints.
 /// Bypasses internal buffer extraction when partial contiguous memory is provided.
+/// Empty and single-element sequences return the original sequence unchanged
+/// without invoking the comparator or touching the cache.
 /// - Time Complexity: O(N log N) with reduced constant factors.
 /// - Space Complexity: O(K) where K <= N.
 $extern fn_((sort_blockCache(u_S$raw seq, sort_OrdFn ordFn, u_S$raw cache))(u_S$raw));
 $extern fn_((sort_blockCtxCache(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, u_S$raw cache))(u_S$raw));
 /// Block Sort with Alctr: Optimal for O(K) memory constraints.
 /// Uses provided allocator to allocate temporary buffer.
+/// Empty and single-element sequences are returned unchanged without invoking
+/// the comparator.
 /// - Time Complexity: O(N log N) with reduced constant factors.
 /// - Space Complexity: O(K) where K <= N.
 $attr($must_check)
@@ -129,6 +148,7 @@ fn_((sort_IdxCtx_ord(sort_IdxCtx self, usize lhs, usize rhs))(cmp_Ord)) {
     return call((self.ordFn)(lhs, rhs, u_load(self.inner)));
 };
 fn_((sort_IdxCtx_swap(sort_IdxCtx self, usize lhs, usize rhs))(void)) {
+    if (lhs == rhs) return;
     return call((self.swapFn)(lhs, rhs, u_load(self.inner)));
 };
 #endif /* in_analysis_active_only || in_comptime */

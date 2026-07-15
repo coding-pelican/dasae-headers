@@ -15,23 +15,23 @@ $static fn_((ArrPDeq__ord(ArrPDeq* self, u_P_const$raw lhs, u_P_const$raw rhs))(
 // ============================================================================
 
 $attr($inline_always)
-$static fn_((parentIdx(usize idx))(usize)) {
+$static fn_((ArrPDeq__parentIdx(usize idx))(usize)) {
     return (idx - 1) >> 1;
 };
 
 $attr($inline_always)
-$static fn_((grandparentIdx(usize idx))(usize)) {
-    return parentIdx(parentIdx(idx));
+$static fn_((ArrPDeq__grandparentIdx(usize idx))(usize)) {
+    return ArrPDeq__parentIdx(ArrPDeq__parentIdx(idx));
 };
 
 $attr($inline_always)
-$static fn_((firstChildIdx(usize idx))(usize)) {
+$static fn_((ArrPDeq__firstChildIdx(usize idx))(usize)) {
     return (idx << 1) + 1;
 };
 
 $attr($inline_always)
-$static fn_((firstGrandchildIdx(usize idx))(usize)) {
-    return firstChildIdx(firstChildIdx(idx));
+$static fn_((ArrPDeq__firstGrandchildIdx(usize idx))(usize)) {
+    return ArrPDeq__firstChildIdx(ArrPDeq__firstChildIdx(idx));
 };
 
 // In the min-max heap structure:
@@ -39,24 +39,24 @@ $static fn_((firstGrandchildIdx(usize idx))(usize)) {
 // next two are on a max layer;
 // next four are on a min layer, and so on.
 $attr($inline_always)
-$static fn_((isMinLayer(usize index))(bool)) {
+$static fn_((ArrPDeq__isMinLayer(usize index))(bool)) {
     return 1 == (mem_leadingZerosSize(index + 1) & 1);
 };
 
-typedef struct StartIndexAndLayer {
+typedef struct ArrPDeq__StartIndexAndLayer {
     var_(index, usize);
     var_(min_layer, bool);
-} StartIndexAndLayer;
+} ArrPDeq__StartIndexAndLayer;
 
-$static fn_((getStartForSiftUp(ArrPDeq* self, TypeInfo type, usize index))(StartIndexAndLayer)) {
+$static fn_((ArrPDeq__getStartForSiftUp(ArrPDeq* self, TypeInfo type, usize index))(ArrPDeq__StartIndexAndLayer)) {
     let child_index = index;
-    let parent_index = parentIdx(child_index);
+    let parent_index = ArrPDeq__parentIdx(child_index);
     let child = u_atS(ArrPDeq_itemsCappedMut(*self, type), child_index);
     let parent = u_atS(ArrPDeq_itemsCappedMut(*self, type), parent_index);
-    let min_layer = isMinLayer(index);
+    let min_layer = ArrPDeq__isMinLayer(index);
     let order = ArrPDeq__ord(self, child.as_const, parent.as_const);
     // We must swap the item with its parent if it is on the "wrong" layer
-    return expr_(StartIndexAndLayer $scope)(if ((min_layer && order == cmp_Ord_gt) || (!min_layer && order == cmp_Ord_lt)) {
+    return expr_(ArrPDeq__StartIndexAndLayer $scope)(if ((min_layer && order == cmp_Ord_gt) || (!min_layer && order == cmp_Ord_lt)) {
         // Swap child and parent
         let temp = u_deref(u_memcpy(u_allocV(type).ref, child.as_const));
         u_memcpy(child, parent.as_const);
@@ -67,10 +67,10 @@ $static fn_((getStartForSiftUp(ArrPDeq* self, TypeInfo type, usize index))(Start
     }) $unscoped(expr);
 };
 
-$static fn_((doSiftUp(ArrPDeq* self, TypeInfo type, usize start_index, cmp_Ord target_order))(void)) {
+$static fn_((ArrPDeq__doSiftUp(ArrPDeq* self, TypeInfo type, usize start_index, cmp_Ord target_order))(void)) {
     var child_index = start_index;
     while (child_index > 2) {
-        let grandparent_index = grandparentIdx(child_index);
+        let grandparent_index = ArrPDeq__grandparentIdx(child_index);
         let child = u_atS(ArrPDeq_itemsCappedMut(*self, type), child_index);
         let grandparent = u_atS(ArrPDeq_itemsCappedMut(*self, type), grandparent_index);
 
@@ -84,68 +84,68 @@ $static fn_((doSiftUp(ArrPDeq* self, TypeInfo type, usize start_index, cmp_Ord t
     }
 };
 
-$static fn_((siftUp(ArrPDeq* self, TypeInfo type, StartIndexAndLayer start))(void)) {
+$static fn_((ArrPDeq__siftUp(ArrPDeq* self, TypeInfo type, ArrPDeq__StartIndexAndLayer start))(void)) {
     if (start.min_layer) {
-        doSiftUp(self, type, start.index, cmp_Ord_lt);
+        ArrPDeq__doSiftUp(self, type, start.index, cmp_Ord_lt);
     } else {
-        doSiftUp(self, type, start.index, cmp_Ord_gt);
+        ArrPDeq__doSiftUp(self, type, start.index, cmp_Ord_gt);
     }
 };
 
-typedef struct ItemAndIndex {
+typedef struct ArrPDeq__ItemAndIndex {
     var_(item, u_P$raw);
     var_(index, usize);
-} ItemAndIndex;
+} ArrPDeq__ItemAndIndex;
 
 $attr($inline_always)
-$static fn_((getItem(ArrPDeq* self, TypeInfo type, usize index))(ItemAndIndex)) {
-    return (ItemAndIndex){
+$static fn_((ArrPDeq__getItem(ArrPDeq* self, TypeInfo type, usize index))(ArrPDeq__ItemAndIndex)) {
+    return (ArrPDeq__ItemAndIndex){
         .item = u_atS(ArrPDeq_itemsCappedMut(*self, type), index),
         .index = index,
     };
 };
 
-$static fn_((bestItem(ArrPDeq* self, ItemAndIndex item1, ItemAndIndex item2, cmp_Ord target_order))(ItemAndIndex)) {
+$static fn_((ArrPDeq__bestItem(ArrPDeq* self, ArrPDeq__ItemAndIndex item1, ArrPDeq__ItemAndIndex item2, cmp_Ord target_order))(ArrPDeq__ItemAndIndex)) {
     return ArrPDeq__ord(self, item1.item.as_const, item2.item.as_const) == target_order ? item1 : item2;
 };
 
-$static fn_((bestItemAtIndices(ArrPDeq* self, TypeInfo type, usize index1, usize index2, cmp_Ord target_order))(ItemAndIndex)) {
-    let item1 = getItem(self, type, index1);
-    let item2 = getItem(self, type, index2);
-    return bestItem(self, item1, item2, target_order);
+$static fn_((ArrPDeq__bestItemAtIndices(ArrPDeq* self, TypeInfo type, usize index1, usize index2, cmp_Ord target_order))(ArrPDeq__ItemAndIndex)) {
+    let item1 = ArrPDeq__getItem(self, type, index1);
+    let item2 = ArrPDeq__getItem(self, type, index2);
+    return ArrPDeq__bestItem(self, item1, item2, target_order);
 };
 
-$static fn_((bestDescendent(ArrPDeq* self, TypeInfo type, usize first_child_index, usize first_grandchild_index, cmp_Ord target_order))(ItemAndIndex)) {
+$static fn_((ArrPDeq__bestDescendent(ArrPDeq* self, TypeInfo type, usize first_child_index, usize first_grandchild_index, cmp_Ord target_order))(ArrPDeq__ItemAndIndex)) {
     let second_child_index = first_child_index + 1;
     if (first_grandchild_index >= self->items.len) {
         // No grandchildren, find the best child (second may not exist)
-        return expr_(ItemAndIndex $scope)(if (second_child_index >= self->items.len) {
+        return expr_(ArrPDeq__ItemAndIndex $scope)(if (second_child_index >= self->items.len) {
             $break_({
                 .item = u_atS(ArrPDeq_itemsCappedMut(*self, type), first_child_index),
                 .index = first_child_index,
             });
         }) expr_(else)({
-            $break_(bestItemAtIndices(self, type, first_child_index, second_child_index, target_order));
+            $break_(ArrPDeq__bestItemAtIndices(self, type, first_child_index, second_child_index, target_order));
         }) $unscoped(expr);
     }
     let second_grandchild_index = first_grandchild_index + 1;
     if (second_grandchild_index >= self->items.len) {
         // One grandchild, so we know there is a second child. Compare first grandchild and second child
-        return bestItemAtIndices(self, type, first_grandchild_index, second_child_index, target_order);
+        return ArrPDeq__bestItemAtIndices(self, type, first_grandchild_index, second_child_index, target_order);
     }
-    let best_left_grandchild_index = bestItemAtIndices(self, type, first_grandchild_index, second_grandchild_index, target_order).index;
+    let best_left_grandchild_index = ArrPDeq__bestItemAtIndices(self, type, first_grandchild_index, second_grandchild_index, target_order).index;
     let third_grandchild_index = second_grandchild_index + 1;
-    return expr_(ItemAndIndex $scope)(if (third_grandchild_index >= self->items.len) {
+    return expr_(ArrPDeq__ItemAndIndex $scope)(if (third_grandchild_index >= self->items.len) {
         // Two grandchildren, and we know the best. Compare this to second child.
-        $break_(bestItemAtIndices(self, type, best_left_grandchild_index, second_child_index, target_order));
+        $break_(ArrPDeq__bestItemAtIndices(self, type, best_left_grandchild_index, second_child_index, target_order));
     }) expr_(else)({
         // Three grandchildren, compare the best of the first two with the third
-        $break_(bestItemAtIndices(self, type, best_left_grandchild_index, third_grandchild_index, target_order));
+        $break_(ArrPDeq__bestItemAtIndices(self, type, best_left_grandchild_index, third_grandchild_index, target_order));
     }) $unscoped(expr);
 };
 
-$static fn_((swapIfParentIsBetter(ArrPDeq* self, TypeInfo type, usize child_index, cmp_Ord target_order))(void)) {
-    let parent_index = parentIdx(child_index);
+$static fn_((ArrPDeq__swapIfParentIsBetter(ArrPDeq* self, TypeInfo type, usize child_index, cmp_Ord target_order))(void)) {
+    let parent_index = ArrPDeq__parentIdx(child_index);
     let child = u_atS(ArrPDeq_itemsCappedMut(*self, type), child_index);
     let parent = u_atS(ArrPDeq_itemsCappedMut(*self, type), parent_index);
     if (ArrPDeq__ord(self, parent.as_const, child.as_const) == target_order) {
@@ -155,11 +155,11 @@ $static fn_((swapIfParentIsBetter(ArrPDeq* self, TypeInfo type, usize child_inde
     }
 };
 
-$static fn_((doSiftDown(ArrPDeq* self, TypeInfo type, usize start_index, cmp_Ord target_order))(void)) {
+$static fn_((ArrPDeq__doSiftDown(ArrPDeq* self, TypeInfo type, usize start_index, cmp_Ord target_order))(void)) {
     var index = start_index;
     let half = self->items.len >> 1;
     while (true) {
-        let first_grandchild_index = firstGrandchildIdx(index);
+        let first_grandchild_index = ArrPDeq__firstGrandchildIdx(index);
         let last_grandchild_index = first_grandchild_index + 3;
         let elem = u_atS(ArrPDeq_itemsCappedMut(*self, type), index);
         if (last_grandchild_index < self->items.len) {
@@ -167,9 +167,9 @@ $static fn_((doSiftDown(ArrPDeq* self, TypeInfo type, usize start_index, cmp_Ord
             let index2 = first_grandchild_index + 1;
             let index3 = index2 + 1;
             // Find the best grandchild
-            let best_left = bestItemAtIndices(self, type, first_grandchild_index, index2, target_order);
-            let best_right = bestItemAtIndices(self, type, index3, last_grandchild_index, target_order);
-            let best_grandchild = bestItem(self, best_left, best_right, target_order);
+            let best_left = ArrPDeq__bestItemAtIndices(self, type, first_grandchild_index, index2, target_order);
+            let best_right = ArrPDeq__bestItemAtIndices(self, type, index3, last_grandchild_index, target_order);
+            let best_grandchild = ArrPDeq__bestItem(self, best_left, best_right, target_order);
             // If the item is better than or equal to its best grandchild, we are done
             if (ArrPDeq__ord(self, best_grandchild.item.as_const, elem.as_const) != target_order) {
                 return;
@@ -180,12 +180,12 @@ $static fn_((doSiftDown(ArrPDeq* self, TypeInfo type, usize start_index, cmp_Ord
             u_memcpy(best_grandchild.item, temp.ref.as_const);
             index = best_grandchild.index;
             // We might need to swap the element with its parent
-            swapIfParentIsBetter(self, type, index, target_order);
+            ArrPDeq__swapIfParentIsBetter(self, type, index, target_order);
         } else {
             // The children or grandchildren are the last layer
-            let first_child_index = firstChildIdx(index);
+            let first_child_index = ArrPDeq__firstChildIdx(index);
             if (first_child_index >= self->items.len) { return; }
-            let best_descendent = bestDescendent(self, type, first_child_index, first_grandchild_index, target_order);
+            let best_descendent = ArrPDeq__bestDescendent(self, type, first_child_index, first_grandchild_index, target_order);
             // If the item is better than or equal to its best descendant, we are done
             if (ArrPDeq__ord(self, best_descendent.item.as_const, elem.as_const) != target_order) {
                 return;
@@ -198,7 +198,7 @@ $static fn_((doSiftDown(ArrPDeq* self, TypeInfo type, usize start_index, cmp_Ord
             // If we didn't swap a grandchild, we are done
             if (index < first_grandchild_index) { return; }
             // We might need to swap the element with its parent
-            swapIfParentIsBetter(self, type, index, target_order);
+            ArrPDeq__swapIfParentIsBetter(self, type, index, target_order);
             return;
         }
         // If we are now in the last layer, we are done
@@ -206,28 +206,28 @@ $static fn_((doSiftDown(ArrPDeq* self, TypeInfo type, usize start_index, cmp_Ord
     }
 };
 
-$static fn_((siftDown(ArrPDeq* self, TypeInfo type, usize index))(void)) {
-    if (isMinLayer(index)) {
-        doSiftDown(self, type, index, cmp_Ord_lt);
+$static fn_((ArrPDeq__siftDown(ArrPDeq* self, TypeInfo type, usize index))(void)) {
+    if (ArrPDeq__isMinLayer(index)) {
+        ArrPDeq__doSiftDown(self, type, index, cmp_Ord_lt);
     } else {
-        doSiftDown(self, type, index, cmp_Ord_gt);
+        ArrPDeq__doSiftDown(self, type, index, cmp_Ord_gt);
     }
 };
 
-$static fn_((heapify(ArrPDeq* self, TypeInfo type))(void)) {
+$static fn_((ArrPDeq__heapify(ArrPDeq* self, TypeInfo type))(void)) {
     if (self->items.len <= 1) { return; }
     let half = (self->items.len >> 1) - 1;
     for (usize i = 0; i <= half; i++) {
         let index = half - i;
-        siftDown(self, type, index);
+        ArrPDeq__siftDown(self, type, index);
     }
 };
 
-$static fn_((maxIndex(ArrPDeq self, TypeInfo type))(O$usize) $scope) {
+$static fn_((ArrPDeq__maxIndex(ArrPDeq self, TypeInfo type))(O$usize) $scope) {
     if (self.items.len == 0) { return_none(); }
     if (self.items.len == 1) { return_some(0); }
     if (self.items.len == 2) { return_some(1); }
-    return_some(bestItemAtIndices((ArrPDeq*)&self, type, 1, 2, cmp_Ord_gt).index);
+    return_some(ArrPDeq__bestItemAtIndices((ArrPDeq*)&self, type, 1, 2, cmp_Ord_gt).index);
 } $unscoped(fn);
 
 // ============================================================================
@@ -302,7 +302,7 @@ fn_((ArrPDeq_peekMinMut(ArrPDeq self, TypeInfo type))(O$u_P$raw) $scope) {
 
 fn_((ArrPDeq_peekMax(ArrPDeq self, TypeInfo type))(O$u_P_const$raw) $scope) {
     debug_assert_eqBy($typed(self.type), type, TypeInfo_eql);
-    if_some((maxIndex(self, type))(idx)) {
+    if_some((ArrPDeq__maxIndex(self, type))(idx)) {
         return_some(u_atS(ArrPDeq_items(self, type), idx));
     }
     return_none();
@@ -310,7 +310,7 @@ fn_((ArrPDeq_peekMax(ArrPDeq self, TypeInfo type))(O$u_P_const$raw) $scope) {
 
 fn_((ArrPDeq_peekMaxMut(ArrPDeq self, TypeInfo type))(O$u_P$raw) $scope) {
     debug_assert_eqBy($typed(self.type), type, TypeInfo_eql);
-    if_some((maxIndex(self, type))(idx)) {
+    if_some((ArrPDeq__maxIndex(self, type))(idx)) {
         return_some(u_atS(ArrPDeq_itemsMut(self, type), idx));
     }
     return_none();
@@ -460,8 +460,8 @@ fn_((ArrPDeq_enqueWithin(ArrPDeq* self, u_V$raw item))(void)) {
     // Add item at the end
     u_memcpy(u_atS(ArrPDeq_itemsCappedMut(*self, type), self->items.len), item.ref.as_const);
     if (self->items.len > 0) {
-        let start = getStartForSiftUp(self, type, self->items.len);
-        siftUp(self, type, start);
+        let start = ArrPDeq__getStartForSiftUp(self, type, self->items.len);
+        ArrPDeq__siftUp(self, type, start);
     }
     self->items.len++;
 };
@@ -490,7 +490,7 @@ fn_((ArrPDeq_enqueSWithin(ArrPDeq* self, u_S_const$raw items))(void)) {
     u_memcpyS(u_prefixS(ArrPDeq_itemsUnusedMut(*self, type), items.len), items);
     self->items.len += items.len;
     // Restore heap property
-    heapify(self, type);
+    ArrPDeq__heapify(self, type);
 };
 
 // ============================================================================
@@ -508,7 +508,7 @@ fn_((ArrPDeq_dequeMax(ArrPDeq* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     claim_assert_nonnull(self);
     let type = ret_mem.type;
     debug_assert_eqBy($typed(self->type), type, TypeInfo_eql);
-    if_some((maxIndex(*self, type))(idx)) {
+    if_some((ArrPDeq__maxIndex(*self, type))(idx)) {
         return_some({ .inner = ArrPDeq_removeAt(self, idx, ret_mem).inner });
     }
     return_none();
@@ -527,7 +527,7 @@ fn_((ArrPDeq_removeAt(ArrPDeq* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scop
     if (idx != last_idx) {
         let last = u_atS(ArrPDeq_itemsCapped(*self, type), last_idx);
         u_memcpy(u_atS(ArrPDeq_itemsCappedMut(*self, type), idx), last);
-        siftDown(self, type, idx);
+        ArrPDeq__siftDown(self, type, idx);
     }
     return_({ .inner = u_memcpy(ret_mem.ref, value.ref.as_const).raw });
 } $unscoped(fn);

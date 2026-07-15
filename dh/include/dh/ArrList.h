@@ -259,7 +259,7 @@ $extern fn_((ArrList_shift(ArrList* self, u_V$raw ret_mem))(O$u_V$raw));
 #define T_use_ArrList_clone$(_T...) \
     $attr($inline_always $must_check) \
     $static fn_((tpl$(ArrList_clone, _T)(ArrList$(_T) self, mem_Alctr gpa))(E$($set(mem_E)(ArrList$(_T)))) $scope) { \
-        return_(typeE$((ReturnType)(ArrList_clone(*self->as_raw, typeInfo$(_T), gpa)))); \
+        return_(typeE$((ReturnType)(ArrList_clone(*self.as_raw, typeInfo$(_T), gpa)))); \
     } $unscoped(fn)
 /* clang-format on */
 

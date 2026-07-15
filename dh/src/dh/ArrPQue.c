@@ -25,26 +25,26 @@ $static fn_((ArrPQue__ge(ArrPQue* self, u_P_const$raw lhs, u_P_const$raw rhs))(b
 // ============================================================================
 
 $attr($inline_always)
-$static fn_((parentIdx(usize idx))(usize)) {
+$static fn_((ArrPQue__parentIdx(usize idx))(usize)) {
     return (idx - 1) >> 1;
 };
 
 $attr($inline_always)
-$static fn_((leftChildIdx(usize idx))(usize)) {
+$static fn_((ArrPQue__leftChildIdx(usize idx))(usize)) {
     return (idx << 1) + 1;
 };
 
 $attr($inline_always)
-$static fn_((rightChildIdx(usize idx))(usize)) {
+$static fn_((ArrPQue__rightChildIdx(usize idx))(usize)) {
     return (idx << 1) + 2;
 };
 
 // Sift up: restore heap property after insertion at idx
-$static fn_((siftUp(ArrPQue* self, TypeInfo type, usize start_idx))(void)) {
+$static fn_((ArrPQue__siftUp(ArrPQue* self, TypeInfo type, usize start_idx))(void)) {
     var child_idx = start_idx;
     let child = u_deref(u_memcpy(u_allocV(type).ref, u_atS(ArrPQue_itemsMut(*self, type), child_idx).as_const));
     while (child_idx > 0) {
-        let parent_idx = parentIdx(child_idx);
+        let parent_idx = ArrPQue__parentIdx(child_idx);
         let parent = u_atS(ArrPQue_itemsMut(*self, type), parent_idx);
         // If child >= parent (min-heap), we're done
         if (ArrPQue__ge(self, child.ref.as_const, parent.as_const)) { break; }
@@ -57,13 +57,13 @@ $static fn_((siftUp(ArrPQue* self, TypeInfo type, usize start_idx))(void)) {
 };
 
 // Sift down: restore heap property after removal at idx
-$static fn_((siftDown(ArrPQue* self, TypeInfo type, usize start_idx))(void)) {
+$static fn_((ArrPQue__siftDown(ArrPQue* self, TypeInfo type, usize start_idx))(void)) {
     let half = self->items.len >> 1;
     var idx = start_idx;
     let elem = u_deref(u_memcpy(u_allocV(type).ref, u_atS(ArrPQue_itemsMut(*self, type), idx).as_const));
     while (idx < half) {
-        let left_idx = leftChildIdx(idx);
-        let right_idx = rightChildIdx(idx);
+        let left_idx = ArrPQue__leftChildIdx(idx);
+        let right_idx = ArrPQue__rightChildIdx(idx);
         var min_child_idx = left_idx;
         // Find the smaller child
         if (right_idx < self->items.len) {
@@ -86,12 +86,12 @@ $static fn_((siftDown(ArrPQue* self, TypeInfo type, usize start_idx))(void)) {
 };
 
 // Heapify: build heap from unordered array
-$static fn_((heapify(ArrPQue* self, TypeInfo type))(void)) {
+$static fn_((ArrPQue__heapify(ArrPQue* self, TypeInfo type))(void)) {
     if (self->items.len <= 1) { return; }
     // Start from last non-leaf node and sift down
     var i = (self->items.len >> 1);
     while (i > 0) {
-        siftDown(self, type, --i);
+        ArrPQue__siftDown(self, type, --i);
     }
 };
 
@@ -331,7 +331,7 @@ fn_((ArrPQue_enqueWithin(ArrPQue* self, u_V$raw item))(void)) {
     u_memcpy(u_atS(ArrPQue_itemsCappedMut(*self, type), new_idx), item.ref.as_const);
     self->items.len++;
     // Restore heap property
-    siftUp(self, type, new_idx);
+    ArrPQue__siftUp(self, type, new_idx);
 };
 
 fn_((ArrPQue_enqueS(ArrPQue* self, mem_Alctr gpa, u_S_const$raw items))(mem_E$void) $scope) {
@@ -358,7 +358,7 @@ fn_((ArrPQue_enqueSWithin(ArrPQue* self, u_S_const$raw items))(void)) {
     u_memcpyS(u_prefixS(ArrPQue_itemsUnusedMut(*self, type), items.len), items);
     self->items.len += items.len;
     // Restore heap property
-    heapify(self, type);
+    ArrPQue__heapify(self, type);
 };
 
 // ============================================================================
@@ -378,7 +378,7 @@ fn_((ArrPQue_deque(ArrPQue* self, u_V$raw ret_mem))(O$u_V$raw) $scope) {
     if (self->items.len > 0) {
         u_memcpy(u_atS(ArrPQue_itemsMut(*self, type), 0), u_atS(ArrPQue_itemsCapped(*self, type), last_idx));
         // Restore heap property
-        siftDown(self, type, 0);
+        ArrPQue__siftDown(self, type, 0);
     }
     return_some({ .inner = u_memcpy(ret_mem.ref, value.ref.as_const).raw });
 } $unscoped(fn);
@@ -400,16 +400,16 @@ fn_((ArrPQue_removeAt(ArrPQue* self, usize idx, u_V$raw ret_mem))(u_V$raw) $scop
     u_memcpy(u_atS(ArrPQue_itemsMut(*self, type), idx), u_atS(ArrPQue_itemsCapped(*self, type), last_idx));
     // Restore heap property
     if (idx == 0) {
-        siftDown(self, type, idx);
+        ArrPQue__siftDown(self, type, idx);
     } else {
-        let parent_idx = parentIdx(idx);
+        let parent_idx = ArrPQue__parentIdx(idx);
         let elem = u_atS(ArrPQue_items(*self, type), idx);
         let parent = u_atS(ArrPQue_items(*self, type), parent_idx);
-        // If elem < parent, violates min-heap, need to siftUp
+        // If elem < parent, violates min-heap, need to ArrPQue__siftUp
         if (ArrPQue__lt(self, elem, parent)) {
-            siftUp(self, type, idx);
+            ArrPQue__siftUp(self, type, idx);
         } else {
-            siftDown(self, type, idx);
+            ArrPQue__siftDown(self, type, idx);
         }
     }
     return_({ .inner = u_memcpy(ret_mem.ref, value.ref.as_const).raw });
@@ -440,8 +440,8 @@ fn_((ArrPQue_update(ArrPQue* self, u_V$raw old_item, u_V$raw new_item))(mem_E$vo
     // Restore heap property based on comparison
     let_(no_need_to_restore, Void) = {};
     switch (ArrPQue__ord(self, new_item.ref.as_const, old_elem.ref.as_const)) {
-    case_((cmp_Ord_lt)) siftUp(self, type, idx) $end(case);
-    case_((cmp_Ord_gt)) siftDown(self, type, idx) $end(case);
+    case_((cmp_Ord_lt)) ArrPQue__siftUp(self, type, idx) $end(case);
+    case_((cmp_Ord_gt)) ArrPQue__siftDown(self, type, idx) $end(case);
     case_((cmp_Ord_eq)) $ignore_void no_need_to_restore $end(case);
     }
     return_ok({});

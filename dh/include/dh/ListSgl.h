@@ -236,6 +236,16 @@ $extern fn_((ListSgl_len(const ListSgl* self))(usize));
     $static fn_((tpl$(ListSgl_Adp_init, _T)(_T data))(ListSgl_Adp$(_T))) { \
         return *as$(ListSgl_Adp$(_T)*)(ListSgl_Adp_init(u_anyV(data), l0$((ListSgl_Adp$(_T))).as_raw)); \
     }
+#define T_use_ListSgl_Adp_link$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(ListSgl_Adp_link, _T)(const ListSgl_Adp$(_T)* self))(P_const$(ListSgl_Link$(_T)))) { \
+        return as$(P_const$(ListSgl_Link$(_T)))(ListSgl_Adp_link(self->as_raw)); \
+    }
+#define T_use_ListSgl_Adp_linkMut$(_T...) \
+    $attr($inline_always) \
+    $static fn_((tpl$(ListSgl_Adp_linkMut, _T)(ListSgl_Adp$(_T)* self))(P$(ListSgl_Link$(_T)))) { \
+        return as$(P$(ListSgl_Link$(_T)))(ListSgl_Adp_linkMut(self->as_raw)); \
+    }
 #define T_use_ListSgl_Adp_data$(_T...) \
     $attr($inline_always) \
     $static fn_((tpl$(ListSgl_Adp_data, _T)(const ListSgl_Adp$(_T)* self))(const _T*)) { \

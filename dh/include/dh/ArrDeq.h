@@ -365,7 +365,7 @@ $extern fn_((ArrDeq_Iter_nextMut(ArrDeq_Iter* self, TypeInfo type))(O$u_P$raw));
         }); \
         var_(as_raw, ArrDeq_Iter) $like_ref; \
     }
-#define __comp_alias__ArrDeq_Iter$(_T...) tpl$(ArrDeq_Iter, _T) s
+#define __comp_alias__ArrDeq_Iter$(_T...) tpl$(ArrDeq_Iter, _T)
 #define __comp_gen__T_decl_ArrDeq_Iter$(_T...) \
     $maybe_unused typedef union ArrDeq_Iter$(_T) ArrDeq_Iter$(_T)
 #define __comp_gen__T_impl_ArrDeq_Iter$(_T...) \

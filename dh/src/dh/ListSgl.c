@@ -22,6 +22,7 @@ fn_((ListSgl_Link_removeNext(P$ListSgl_Link self))(O$P$ListSgl_Link) $scope) {
     let after = orelse_((self->next)(return_none()));
     debug_assert_eqBy($typed(self->type), $typed(after->type), TypeInfo_eql);
     self->next = after->next;
+    asg_l((&after->next)(none()));
     return_some(after);
 } $unscoped(fn);
 
