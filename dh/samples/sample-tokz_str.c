@@ -1,10 +1,10 @@
 #include "dh-main.h"
-#include "dh/io/stream.h"
+#include "dh/ascii.h"
+#include "dh/fmt/common.h"
 #include "dh/fs/File/self.h"
 #include "dh/io/Buf.h"
+#include "dh/io/stream.h"
 #include "dh/mem/common.h"
-#include "dh/fmt/common.h"
-#include "dh/ascii.h"
 
 T_use$((u8)(
     mem_Delim,
@@ -14,11 +14,7 @@ T_use$((u8)(
 ));
 
 fn_((main(S$S_const$u8 args))(E$void) $scope) {
-    io_stream_println(u8_l("passed args:"));
-    for_($rev($s(args), $rf(0))(arg, index)) {
-        io_stream_println(u8_l("  arg {:ul}: {:s}"), index, arg);
-    } $end(for);
-    io_stream_nl();
+    let_ignore = args;
 
     var_(input_mem, A$$(64, u8)) $undefined;
     let input_buf = A_ref$((S$u8)(input_mem));
@@ -44,14 +40,15 @@ fn_((main(S$S_const$u8 args))(E$void) $scope) {
         io_stream_println(u8_l("b: {:?s}"), b);
         let c_maybe_none = mem_TokzIter_next$u8(&iter);
         io_stream_println(u8_l("c: {:?s}"), c_maybe_none);
+
         let parsed_a = try_(fmt_parse$i32(unwrap_(a), 10));
         io_stream_println(u8_l("parsed_a: {:i}"), parsed_a);
         let parsed_b = try_(fmt_parse$i32(unwrap_(b), 10));
         io_stream_println(u8_l("parsed_b: {:i}"), parsed_b);
-        let add_a_b = parsed_a + parsed_b;
-        io_stream_println(u8_l("add_a_b: {:i}"), add_a_b);
+        io_stream_println(u8_l("add_a_b: {:i}"), parsed_a + parsed_b);
         io_stream_nl();
     }
 
-    return_ok_void(io_stream_println(u8_l("done")));
+    io_stream_println(u8_l("done"));
+    return_ok({});
 } $unscoped(fn);
