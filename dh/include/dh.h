@@ -39,7 +39,7 @@ extern "C" {
 #include "dh/Rand.h"
 #include "dh/hash.h"
 #include "dh/crypt.h"
-#include "dh/cmpr.h"
+#include "dh/cmprs.h"
 
 #include "dh/search.h"
 #include "dh/sort.h"
@@ -54,6 +54,7 @@ extern "C" {
 #include "dh/ListDbl.h"
 #include "dh/BTree.h"
 #include "dh/SegTree.h"
+#include "dh/Treap.h"
 
 #include "dh/ArrList.h"
 #include "dh/ArrStk.h"
@@ -62,6 +63,7 @@ extern "C" {
 #include "dh/ArrPDeq.h"
 #include "dh/ArrPQue.h"
 
+#include "dh/BitSet.h"
 #include "dh/HashMap.h"
 #include "dh/HashSet.h"
 #include "dh/HashMapSeq.h"
@@ -76,6 +78,7 @@ extern "C" {
 #include "dh/time.h"
 #include "dh/heap.h"
 #include "dh/proc.h"
+#include "dh/DynLib.h"
 #include "dh/thrd.h"
 #include "dh/co.h"
 
@@ -87,6 +90,7 @@ extern "C" {
 
 #include "dh/fmt.h"
 #include "dh/regex.h"
+#include "dh/SemVer.h"
 
 #include "dh/log.h"
 #include "dh/csv.h"
@@ -97,6 +101,20 @@ extern "C" {
 
 #include "dh/base32.h"
 #include "dh/base64.h"
+
+#include "dh/ar.h"
+
+#include "dh/coff.h"
+#include "dh/pe.h"
+#include "dh/pdb.h"
+
+#include "dh/elf.h"
+#include "dh/dwarf.h"
+
+#include "dh/macho.h"
+
+#include "dh/pie.h"
+#include "dh/wasm.h"
 
 #include "dh/zip.h"
 #include "dh/rar.h"
