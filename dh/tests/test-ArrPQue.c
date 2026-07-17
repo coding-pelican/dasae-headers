@@ -25,7 +25,7 @@ T_use$((u32)(
 ));
 
 $attr($maybe_unused)
-$static fn_((printHeap(ArrPQue$u32 pq))(void)) {
+$static fn_((test_ArrPQue_printHeap(ArrPQue$u32 pq))(void)) {
     let items = ArrPQue_items$u32(pq);
     io_stream_print(u8_l("Heap: ["));
     for_(($rf(0), $s(items))(i, val)) {
@@ -38,7 +38,7 @@ $static fn_((printHeap(ArrPQue$u32 pq))(void)) {
 };
 
 TEST_fn_("ArrPQue: enque and deque min heap" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -60,7 +60,7 @@ TEST_fn_("ArrPQue: enque and deque min heap" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: enque and deque same min heap" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -82,7 +82,7 @@ TEST_fn_("ArrPQue: enque and deque same min heap" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: deque on empty" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -92,7 +92,7 @@ TEST_fn_("ArrPQue: deque on empty" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: edge case 3 elements" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -108,7 +108,7 @@ TEST_fn_("ArrPQue: edge case 3 elements" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: peek" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -129,7 +129,7 @@ TEST_fn_("ArrPQue: peek" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: sift up with odd indices" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -148,7 +148,7 @@ TEST_fn_("ArrPQue: sift up with odd indices" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: enqueS (addSlice)" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -165,7 +165,7 @@ TEST_fn_("ArrPQue: enqueS (addSlice)" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: enque and deque max heap" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultDesc(cmp_m_T_u32);
@@ -187,7 +187,7 @@ TEST_fn_("ArrPQue: enque and deque max heap" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: enque and deque same max heap" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultDesc(cmp_m_T_u32);
@@ -209,7 +209,7 @@ TEST_fn_("ArrPQue: enque and deque same max heap" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: iterator" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -237,7 +237,7 @@ TEST_fn_("ArrPQue: iterator" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: iterator while empty" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -249,7 +249,7 @@ TEST_fn_("ArrPQue: iterator while empty" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: remove at index" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -285,7 +285,7 @@ TEST_fn_("ArrPQue: remove at index" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: shrinkAndFree" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -312,7 +312,7 @@ TEST_fn_("ArrPQue: shrinkAndFree" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: update min heap" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -331,7 +331,7 @@ TEST_fn_("ArrPQue: update min heap" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: update same min heap" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);
@@ -351,7 +351,7 @@ TEST_fn_("ArrPQue: update same min heap" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: update max heap" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultDesc(cmp_m_T_u32);
@@ -370,7 +370,7 @@ TEST_fn_("ArrPQue: update max heap" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: update same max heap" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultDesc(cmp_m_T_u32);
@@ -390,7 +390,7 @@ TEST_fn_("ArrPQue: update same max heap" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPQue: siftUp in remove" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPQue_Ctx_defaultAsc(cmp_m_T_u32);

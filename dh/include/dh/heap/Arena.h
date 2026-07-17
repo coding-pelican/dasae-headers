@@ -45,6 +45,7 @@ struct heap_Arena {
 };
 /// Get allocator interface for instance
 $extern fn_((heap_Arena_alctr(heap_Arena* self))(mem_Alctr));
+
 /// Initialize with child allocator
 $extern fn_((heap_Arena_init(mem_Alctr child_alctr))(heap_Arena));
 /// Finalize and free all memory

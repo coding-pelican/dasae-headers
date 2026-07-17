@@ -18,6 +18,8 @@ typedef struct heap_Geom {
     var_(commit_align, usize);
     var_(map_align, usize);
 } heap_Geom;
+errset_((heap_Geom_E)(heap_Geom_Unsupported));
+T_use_E$($set(heap_Geom_E)(heap_Geom));
 
 $attr($inline_always)
 $static fn_((heap_Geom_isValid(heap_Geom self))(bool));
@@ -33,6 +35,8 @@ $static fn_((heap_Geom_ensureValid(heap_Geom self))(heap_Geom));
 
 $attr($inline_always)
 $static fn_((heap_Geom_default(void))(heap_Geom));
+$attr($must_check)
+$extern fn_((heap_Geom_system(void))(heap_Geom_E$heap_Geom));
 $attr($inline_always)
 $static fn_((heap_Geom_from(usize page_size))(heap_Geom));
 $attr($inline_always)

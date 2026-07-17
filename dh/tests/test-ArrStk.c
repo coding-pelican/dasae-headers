@@ -87,7 +87,7 @@ TEST_fn_("ArrStk: add APIs return writable slots" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("ArrStk: dynamic resize clear and clone define ownership" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var stk = try_(ArrStk_init$u32(gpa, 2));

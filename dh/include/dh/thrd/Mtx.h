@@ -70,8 +70,8 @@ struct thrd_Mtx__Impl pp_if_(thrd_Mtx_use_pthread)(
         })
     )));
 struct thrd_Mtx pp_if_(thrd_Mtx_use_pthread)(
-    pp_then_({ var_(impl, pthread_mutex_t); }),
-    pp_else_({ var_(impl, thrd_Mtx__Impl); }));
+    pp_then_({ var_(_impl, pthread_mutex_t); }),
+    pp_else_({ var_(_impl, thrd_Mtx__Impl); }));
 
 #define thrd_Mtx_init_static(/*void*/) \
     ____thrd_Mtx_init_static()
@@ -117,15 +117,15 @@ $extern fn_((thrd_Mtx_Recur_unlock(thrd_Mtx_Recur* self))(void));
 /*========== Macros and Definitions =========================================*/
 
 #define ____thrd_Mtx_init_static() pp_if_(thrd_Mtx_use_pthread)( \
-    pp_then_(l$((thrd_Mtx){ .impl = PTHREAD_MUTEX_INITIALIZER })), \
+    pp_then_(l$((thrd_Mtx){ ._impl = PTHREAD_MUTEX_INITIALIZER })), \
     pp_else_(pp_if_(thrd_Mtx_has_specialized)( \
         pp_then_(pp_expand( \
             pp_switch_ pp_begin(plat_type)( \
-                pp_case_((plat_type_windows)(l$((thrd_Mtx){ .impl.inner = SRWLOCK_INIT }))), \
-                pp_case_((plat_type_darwin)(l$((thrd_Mtx){ .impl.inner = sys_libc_darwin_UNFAIR_LOCK_INIT }))) \
+                pp_case_((plat_type_windows)(l$((thrd_Mtx){ ._impl.inner = SRWLOCK_INIT }))), \
+                pp_case_((plat_type_darwin)(l$((thrd_Mtx){ ._impl.inner = sys_libc_darwin_UNFAIR_LOCK_INIT }))) \
             ) pp_end \
         )), \
-        pp_else_(l$((thrd_Mtx){ .impl.state = atom_V_init(0) })) \
+        pp_else_(l$((thrd_Mtx){ ._impl.state = atom_V_init(0) })) \
     )) \
 )
 

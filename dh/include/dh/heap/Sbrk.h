@@ -22,7 +22,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
+#include "VMem.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -73,35 +73,44 @@ $extern let_(heap_Sbrk_vtbl_local_small, mem_Alctr_VTbl);
 $extern let_(heap_Sbrk_vtbl_local_medium, mem_Alctr_VTbl);
 $extern let_(heap_Sbrk_vtbl_local_large, mem_Alctr_VTbl);
 $extern fn_((heap_Sbrk_alctr(heap_Sbrk* self))(mem_Alctr));
+
 $extern fn_((heap_Sbrk_from(heap_Sbrk_local_Ref local_ref, P_const$heap_Sbrk_Ctx ctx))(heap_Sbrk));
 
-#if plat_is_windows
+#if in_analysis || plat_is_windows
 /// Windows VirtualAlloc context
 typedef struct heap_Sbrk_Sys_Windows {
+    var_(vmem, heap_VMem);
     var_(base_addr, usize);
     var_(reserved_size, usize);
     var_(committed_size, usize);
 } heap_Sbrk_Sys_Windows;
+T_use_E$($set(heap_VMem_E)(heap_Sbrk_Sys_Windows));
 $extern fn_((heap_Sbrk_Sys_Windows_sbrk(u_P$raw ctx, usize n))(usize));
 $extern fn_((heap_Sbrk_Sys_Windows_ctx(heap_Sbrk_Sys_Windows* self))(heap_Sbrk_Ctx));
-$extern fn_((heap_Sbrk_Sys_Windows_init(usize reserve_size))(heap_Sbrk_Sys_Windows));
+$extern fn_((heap_Sbrk_Sys_Windows_from(heap_VMem vmem, usize reserve_size))(heap_Sbrk_Sys_Windows));
+$attr($must_check)
+$extern fn_((heap_Sbrk_Sys_Windows_init(usize reserve_size))(heap_VMem_E$heap_Sbrk_Sys_Windows));
 $extern fn_((heap_Sbrk_Sys_Windows_fini(heap_Sbrk_Sys_Windows* self))(void));
-#endif /* plat_is_windows */
+#endif /* in_analysis || plat_is_windows */
 
-#if plat_is_posix
+#if in_analysis || plat_is_posix
 /// POSIX mmap or sbrk context
 typedef struct heap_Sbrk_Sys_Posix {
+    var_(vmem, heap_VMem);
     var_(base_addr, usize);
     var_(reserved_size, usize);
     var_(committed_size, usize);
 } heap_Sbrk_Sys_Posix;
+T_use_E$($set(heap_VMem_E)(heap_Sbrk_Sys_Posix));
 $extern fn_((heap_Sbrk_Sys_Posix_sbrk(u_P$raw ctx, usize n))(usize));
 $extern fn_((heap_Sbrk_Sys_Posix_ctx(heap_Sbrk_Sys_Posix* self))(heap_Sbrk_Ctx));
-$extern fn_((heap_Sbrk_Sys_Posix_init(usize reserve_size))(heap_Sbrk_Sys_Posix));
+$extern fn_((heap_Sbrk_Sys_Posix_from(heap_VMem vmem, usize reserve_size))(heap_Sbrk_Sys_Posix));
+$attr($must_check)
+$extern fn_((heap_Sbrk_Sys_Posix_init(usize reserve_size))(heap_VMem_E$heap_Sbrk_Sys_Posix));
 $extern fn_((heap_Sbrk_Sys_Posix_fini(heap_Sbrk_Sys_Posix* self))(void));
-#endif /* plat_is_posix */
+#endif /* in_analysis || plat_is_posix */
 
-#if plat_is_wasi
+#if in_analysis || plat_is_wasi
 /// WASM memory.grow context
 typedef struct heap_Sbrk_Sys_Wasm {
     var_(page_count, usize); // Current page count
@@ -110,7 +119,7 @@ $extern fn_((heap_Sbrk_Sys_Wasm_sbrk(u_P$raw ctx, usize n))(usize));
 $extern fn_((heap_Sbrk_Sys_Wasm_ctx(heap_Sbrk_Sys_Wasm* self))(heap_Sbrk_Ctx));
 $extern fn_((heap_Sbrk_Sys_Wasm_init(void))(heap_Sbrk_Sys_Wasm));
 $extern fn_((heap_Sbrk_Sys_Wasm_fini(heap_Sbrk_Sys_Wasm* self))(void));
-#endif /* plat_is_wasi */
+#endif /* in_analysis || plat_is_wasi */
 
 /// Fixed-size buffer context for Sbrk allocator
 /// Usage: Embedded systems, stack-allocated arenas, static buffers

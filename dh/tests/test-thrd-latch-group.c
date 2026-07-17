@@ -21,7 +21,7 @@ TEST_fn_("thrd/Latch: zero count is done for wait and token" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("thrd/Group: spawn closure" $guard) {
-    var sys_heap = heap_Sys_init();
+    var sys_heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&sys_heap));
 
     var thrd_safe_heap = (heap_ThrdSafe){

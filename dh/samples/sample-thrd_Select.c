@@ -80,7 +80,7 @@ T_use$((SelectMsg)(
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    var sys_heap = heap_Sys_init();
+    var sys_heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&sys_heap));
     var thrd_safe_heap = heap_ThrdSafe_init(heap_Sys_alctr(&sys_heap));
     defer_(heap_ThrdSafe_fini(&thrd_safe_heap));

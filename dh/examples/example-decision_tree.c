@@ -90,7 +90,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
     log_info("Starting decision tree application");
 
     // Create gpa
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     // Load dataset if a filename was provided, otherwise create a demo tree

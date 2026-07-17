@@ -42,7 +42,6 @@ T_alias$((heap_Pool)(struct heap_Pool {
     var_(type, debug_TypeInfo);
 }));
 T_use_E$($set(mem_E)(heap_Pool));
-
 $extern fn_((heap_Pool_empty(TypeInfo type, heap_Pool_Opts opts))(heap_Pool));
 $attr($must_check)
 $extern fn_((heap_Pool_init(TypeInfo type, mem_Alctr child_alctr, usize cap, heap_Pool_Opts opts))(mem_E$heap_Pool));

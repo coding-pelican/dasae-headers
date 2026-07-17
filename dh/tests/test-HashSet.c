@@ -42,7 +42,7 @@ T_use$((usize)(
 ));
 
 TEST_fn_("HashSet: basic usage" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
@@ -75,7 +75,7 @@ TEST_fn_("HashSet: basic usage" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashSet: basic usage - no templates used" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
@@ -108,7 +108,7 @@ TEST_fn_("HashSet: basic usage - no templates used" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashSet: basic hash set usage" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
@@ -158,7 +158,7 @@ TEST_fn_("HashSet: basic hash set usage" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashSet: set operations" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
@@ -214,7 +214,7 @@ TEST_fn_("HashSet: set operations" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashSet: clone and clear operations" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
@@ -250,7 +250,7 @@ TEST_fn_("HashSet: clone and clear operations" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashSet: rehash" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();
@@ -284,7 +284,7 @@ TEST_fn_("HashSet: rehash" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashSet: key iterator" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashSet_Ctx_default();

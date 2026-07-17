@@ -88,7 +88,7 @@ TEST_fn_("ArrDeq: fixed buffer preserves logical order across wrap" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("ArrDeq: grow preserves wrapped logical order" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var deq = try_(ArrDeq_init$u32(gpa, 4));
@@ -114,7 +114,7 @@ TEST_fn_("ArrDeq: grow preserves wrapped logical order" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrDeq: dynamic prepend append and growth preserve both endpoints" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var deq = try_(ArrDeq_init$u32(gpa, 0));
@@ -156,7 +156,7 @@ TEST_fn_("ArrDeq: mutable iterator and endpoint access mutate logical items" $sc
 } $unscoped(TEST_fn);
 
 TEST_fn_("ArrDeq: clear retaining capacity and clear free define capacity ownership" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var deq = try_(ArrDeq_init$u32(gpa, 4));

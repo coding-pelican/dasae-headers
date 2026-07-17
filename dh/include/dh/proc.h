@@ -10,6 +10,8 @@ extern "C" {
 #include "proc/base.h"
 #include "proc/common.h"
 #include "proc/Child.h"
+#include "proc/Arg.h"
+#include "proc/Env.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

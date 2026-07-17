@@ -28,6 +28,8 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+errset_((heap_Sys_E)(heap_Sys_Unsupported) $union_errset_(heap_VMap_E, heap_VMem_E));
+
 T_alias$((heap_Sys__Impl)(pp_if_(plat_is_wasi)(
     pp_then_(struct heap_Sys__Impl {
         var_(local, heap_Sbrk_local_Large);
@@ -40,14 +42,21 @@ T_alias$((heap_Sys__Impl)(pp_if_(plat_is_wasi)(
     }))));
 /// Default system allocator instance
 T_alias$((heap_Sys)(struct heap_Sys {
-    var_(impl, heap_Sys__Impl);
+    var_(_impl, heap_Sys__Impl);
 }));
-/// Create an initialized system allocator instance
-$extern fn_((heap_Sys_init(void))(heap_Sys));
-/// Finalize platform-specific state and clear the instance
-$extern fn_((heap_Sys_fini(heap_Sys* self))(void));
+T_use_E$($set(heap_Sys_E)(heap_Sys));
+T_use_E$($set(heap_Sys_E)(mem_Alctr));
 /// Get allocator interface for instance
 $extern fn_((heap_Sys_alctr(heap_Sys* self))(mem_Alctr));
+/// Get thread-safe allocator interface for instance
+$attr($must_check)
+$extern fn_((heap_Sys_thrdSafeAlctr(heap_Sys* self))(heap_Sys_E$mem_Alctr));
+
+/// Create an initialized system allocator instance
+$attr($must_check)
+$extern fn_((heap_Sys_init(void))(heap_Sys_E$heap_Sys));
+/// Finalize platform-specific state and clear the instance
+$extern fn_((heap_Sys_fini(heap_Sys* self))(void));
 
 #if defined(__cplusplus)
 } /* extern "C" */

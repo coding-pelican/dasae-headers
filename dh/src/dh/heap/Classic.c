@@ -168,5 +168,5 @@ $static fn_((heap_Classic__free(P$raw ctx, S$u8 buf, mem_Align buf_align))(void)
     var original_ptr = *header_ptr;
     free(original_ptr);
 #endif /* other platforms */
-}
+};
 #endif /* heap_Classic_enabled */

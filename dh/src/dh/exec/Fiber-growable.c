@@ -1,5 +1,5 @@
 #include "dh/exec/Fiber-growable.h"
-#include "dh/heap/vmem.h"
+#include "dh/heap/VMem.h"
 
 #if plat_is_windows
 #include "dh/sys/api/windows/except.h"
@@ -86,6 +86,7 @@ fn_((exec_Fiber_ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))(
         );
         return;
     }
+    let vmem = catch_((heap_VMem_system())($ignore, claim_unreachable));
     let storage_begin = ptrToInt(self->storage.ptr);
     let storage_end = storage_begin + self->storage.len;
     var stack_bottom = ptrToInt(self->stack.ptr);
@@ -162,7 +163,7 @@ fn_((exec_Fiber_ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))(
         }
         let commit_len = cur_guard_begin - chunk_guard_begin;
         if (commit_len == 0) break;
-        if (!heap_vmem_commit(intToPtr$((P$raw)(chunk_guard_begin)), commit_len)) {
+        if (!heap_VMem_commit(vmem, intToPtr$((P$raw)(chunk_guard_begin)), commit_len)) {
             exec_Fiber_ensureDiagSet(
                 exec_Fiber_EnsureDiag_Stage_fail_commit,
                 rsp, storage_begin, storage_end, stack_bottom, target, chunk_guard_begin, commit_len, 0
@@ -172,8 +173,10 @@ fn_((exec_Fiber_ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))(
                 chunk_guard_begin, commit_len
             );
         }
-        if (!heap_vmem_protect(
-                intToPtr$((P$raw)(cur_guard_begin)), self->guard_size, heap_vmem_Protcn_read_write)) {
+        if (!heap_VMem_protect(
+                vmem,
+                intToPtr$((P$raw)(cur_guard_begin)), self->guard_size, heap_VMem_Protcn_read_write
+            )) {
             exec_Fiber_ensureDiagSet(
                 exec_Fiber_EnsureDiag_Stage_fail_protect_rw,
                 rsp, storage_begin, storage_end, stack_bottom, target, chunk_guard_begin, commit_len, cur_guard_begin
@@ -183,12 +186,13 @@ fn_((exec_Fiber_ensureStackHeadroom(exec_Fiber* self, usize rsp, usize margin))(
                 cur_guard_begin
             );
         }
-        if (!heap_vmem_protect(
+        if (!heap_VMem_protect(
+                vmem,
                 intToPtr$((P$raw)(chunk_guard_begin)), self->guard_size,
 #if plat_is_windows
-                               heap_vmem_Protcn_read_write_guard
+                heap_VMem_Protcn_read_write_guard
 #else
-                               heap_vmem_Protcn_none
+                heap_VMem_Protcn_none
 #endif
             )) {
             exec_Fiber_ensureDiagSet(
@@ -382,14 +386,15 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
         grow_size = 0;
         commit_size = reserve_size;
     }
-    let storage_ptr = orelse_((heap_vmem_reserve(null, reserve_size))(return_err(E_cause$OutOfMemory())));
-    errdefer_($ignore, heap_vmem_release(storage_ptr, reserve_size));
+    let vmem = catch_((heap_VMem_system())($ignore, return_err(E_cause$OutOfMemory())));
+    let storage_ptr = orelse_((heap_VMem_reserve(vmem, none$((O$P$raw)), reserve_size))(return_err(E_cause$OutOfMemory())));
+    errdefer_($ignore, let_ignore = heap_VMem_release(vmem, storage_ptr, reserve_size));
     let commit_begin = ptrToInt(storage_ptr) + (reserve_size - commit_size);
-    if (!heap_vmem_commit(intToPtr$((P$raw)(commit_begin)), commit_size)) {
+    if (!heap_VMem_commit(vmem, intToPtr$((P$raw)(commit_begin)), commit_size)) {
         return_err(E_cause$OutOfMemory());
     }
     if (guard_size != 0) {
-        if (!heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protcn_read_write_guard)) {
+        if (!heap_VMem_protect(vmem, intToPtr$((P$raw)(commit_begin)), guard_size, heap_VMem_Protcn_read_write_guard)) {
             return_err(E_cause$OutOfMemory());
         }
     }
@@ -415,13 +420,14 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
         grow_size = 0;
         commit_size = reserve_size;
     }
-    let storage_ptr = orelse_((heap_vmem_reserve(null, reserve_size))(return_err(E_cause$OutOfMemory())));
-    errdefer_($ignore, heap_vmem_release(storage_ptr, reserve_size));
+    let vmem = catch_((heap_VMem_system())($ignore, return_err(E_cause$OutOfMemory())));
+    let storage_ptr = orelse_((heap_VMem_reserve(vmem, none$((O$P$raw)), reserve_size))(return_err(E_cause$OutOfMemory())));
+    errdefer_($ignore, let_ignore = heap_VMem_release(vmem, storage_ptr, reserve_size));
     let commit_begin = ptrToInt(storage_ptr) + (reserve_size - commit_size);
-    if (!heap_vmem_commit(intToPtr$((P$raw)(commit_begin)), commit_size)) {
+    if (!heap_VMem_commit(vmem, intToPtr$((P$raw)(commit_begin)), commit_size)) {
         return_err(E_cause$OutOfMemory());
     }
-    if (guard_size != 0 && !heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protcn_none)) {
+    if (guard_size != 0 && !heap_VMem_protect(vmem, intToPtr$((P$raw)(commit_begin)), guard_size, heap_VMem_Protcn_none)) {
         return_err(E_cause$OutOfMemory());
     }
     self->storage = (S$u8){ .ptr = storage_ptr, .len = reserve_size };
@@ -447,7 +453,8 @@ fn_((exec_Fiber_finiStorage(exec_Fiber* self, mem_Alctr gpa))(void)) {
 #if plat_is_windows || plat_based_unix
     let_ignore = gpa;
     if (self->is_virtual) {
-        let_ignore = heap_vmem_release(self->storage.ptr, self->storage.len);
+        let vmem = catch_((heap_VMem_system())($ignore, claim_unreachable));
+        let_ignore = heap_VMem_release(vmem, self->storage.ptr, self->storage.len);
         return;
     }
 #endif

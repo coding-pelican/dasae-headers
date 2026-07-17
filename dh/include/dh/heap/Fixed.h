@@ -34,7 +34,6 @@ typedef struct heap_Fixed {
 } heap_Fixed;
 T_use_O$(heap_Fixed);
 T_use_E$(heap_Fixed);
-
 /// Get allocator interface for instance
 $extern fn_((heap_Fixed_alctr(heap_Fixed* self))(mem_Alctr));
 /// Get thread-safe allocator interface for instance

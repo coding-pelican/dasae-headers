@@ -73,6 +73,7 @@ T_use_P$(heap_Smp);
 T_use_E$($set(mem_E)(P$heap_Smp));
 $extern let_(heap_Smp_vtbl, mem_Alctr_VTbl);
 $extern fn_((heap_Smp_alctr(heap_Smp* self))(mem_Alctr));
+
 $extern fn_((heap_Smp_from(mem_Alctr backing_alctr, S$heap_Smp_ThrdMeta thrd_metas))(heap_Smp));
 $attr($must_check)
 $extern fn_((heap_Smp_createOnHeap(mem_Alctr backing_alctr, usize thrd_meta_count))(mem_E$P$heap_Smp));

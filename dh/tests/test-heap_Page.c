@@ -2,7 +2,7 @@
 #include "dh/heap/Page.h"
 
 TEST_fn_("heap/Page: header initializer yields a usable instance" $guard) {
-    var page = heap_Page_default;
+    var page = heap_Page_from(try_(heap_VMap_system()));
     let gpa = heap_Page_alctr(&page);
 
     let memory = try_(mem_Alctr_allocBytes($trace gpa, 1));
@@ -14,7 +14,7 @@ TEST_fn_("heap/Page: header initializer yields a usable instance" $guard) {
 TEST_fn_("heap/Page: POSIX shrink remap keeps the existing prefix" $guard) {
     if (plat_is_windows) try_(TEST_skip());
 
-    var page = heap_Page_default;
+    var page = heap_Page_from(try_(heap_VMap_system()));
     let gpa = heap_Page_alctr(&page);
 
     var memory = try_(mem_Alctr_allocBytes($trace gpa, heap_page_size + 1));

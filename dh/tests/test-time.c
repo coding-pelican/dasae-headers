@@ -34,6 +34,38 @@ TEST_fn_("time/Dur: checked arithmetic" $scope) {
     try_(TEST_expect(isNone(time_Dur_divChkd$u32(one_sec, 0))));
 } $unscoped(TEST_fn);
 
+TEST_fn_("time/Dur: checked arithmetic normalizes results and saturation clamps" $scope) {
+    let max = time_Dur_from(u64_limit_max, time_nanos_per_sec - 1);
+    let one_nano = time_Dur_nano;
+    let one_sec = time_Dur_fromSecs(1);
+
+    let half = unwrap_(time_Dur_divChkd$u32(one_sec, 2));
+    try_(TEST_expect(half.secs == 0));
+    try_(TEST_expect(half.nanos == time_nanos_per_sec / 2));
+    try_(TEST_expect(isNone(time_Dur_addChkd(max, one_nano))));
+    try_(TEST_expect(isNone(time_Dur_mulChkd$u32(max, 2))));
+    try_(TEST_expect(time_Dur_eq(time_Dur_addSat(max, one_nano), max)));
+    try_(TEST_expect(time_Dur_eq(time_Dur_subSat(one_sec, time_Dur_fromSecs(2)), time_Dur_zero)));
+    try_(TEST_expect(time_Dur_eq(time_Dur_mulSat$u32(max, 2), max)));
+} $unscoped(TEST_fn);
+
+TEST_fn_("time/Inst: constructor normalizes nanos and checked arithmetic rejects overflow" $scope) {
+    let normalized = time_Inst_from(1, time_nanos_per_sec + 5);
+    let later = time_Inst_from(3, 100);
+    let earlier = time_Inst_from(1, 200);
+    let diff = unwrap_(time_Inst_durSinceChkd(later, earlier));
+    let max = time_Inst_from(u64_limit_max, time_nanos_per_sec - 1);
+
+    try_(TEST_expect(normalized.secs == 2));
+    try_(TEST_expect(normalized.nanos == 5));
+    try_(TEST_expect(time_Inst_ticks(time_Inst_from(1, 2)) == as$(u64)(time_nanos_per_sec) + 2));
+    try_(TEST_expect(diff.secs == 1));
+    try_(TEST_expect(diff.nanos == time_nanos_per_sec - 100));
+    try_(TEST_expect(isNone(time_Inst_durSinceChkd(earlier, later))));
+    try_(TEST_expect(isNone(time_Inst_addChkdDur(max, time_Dur_nano))));
+    try_(TEST_expect(isNone(time_Inst_subChkdDur(time_Inst_from(0, 0), time_Dur_nano))));
+} $unscoped(TEST_fn);
+
 TEST_fn_("time/Awake: monotonic duration since earlier instant" $scope) {
     let clock = catch_((time_Awake_direct())($ignore, return_ok(try_(TEST_skip()))));
     let begin = time_Awake_now(clock);
@@ -44,6 +76,13 @@ TEST_fn_("time/Awake: monotonic duration since earlier instant" $scope) {
     try_(TEST_expect(cmp_ge$(time_Awake_Inst)(end, begin)));
     try_(TEST_expect(!time_Dur_isZero(elapsed)));
     try_(TEST_expect(isNone(time_Awake_Inst_durSinceChkd(begin, end))));
+} $unscoped(TEST_fn);
+
+TEST_fn_("time/Awake: direct resolution is a non-zero duration when supported" $scope) {
+    let clock = catch_((time_Awake_direct())($ignore, return_ok(try_(TEST_skip()))));
+    let resolution = try_(time_Awake_resolution(clock));
+
+    try_(TEST_expect(!time_Dur_isZero(resolution)));
 } $unscoped(TEST_fn);
 
 TEST_fn_("time/Real: unix epoch conversion and duration" $scope) {

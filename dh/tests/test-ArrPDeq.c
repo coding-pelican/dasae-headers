@@ -25,7 +25,7 @@ T_use$((u32)(
 ));
 
 TEST_fn_("ArrPDeq: enque and deque min" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -47,7 +47,7 @@ TEST_fn_("ArrPDeq: enque and deque min" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: enque and deque max" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -69,7 +69,7 @@ TEST_fn_("ArrPDeq: enque and deque max" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: enque and deque same min" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -91,7 +91,7 @@ TEST_fn_("ArrPDeq: enque and deque same min" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: enque and deque same max" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -113,7 +113,7 @@ TEST_fn_("ArrPDeq: enque and deque same max" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: deque on empty" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -124,7 +124,7 @@ TEST_fn_("ArrPDeq: deque on empty" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: edge case 3 elements min" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -140,7 +140,7 @@ TEST_fn_("ArrPDeq: edge case 3 elements min" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: edge case 3 elements max" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -156,7 +156,7 @@ TEST_fn_("ArrPDeq: edge case 3 elements max" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: peekMin" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -176,7 +176,7 @@ TEST_fn_("ArrPDeq: peekMin" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: peekMax" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -196,7 +196,7 @@ TEST_fn_("ArrPDeq: peekMax" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: sift up with odd indices, dequeMin" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -215,7 +215,7 @@ TEST_fn_("ArrPDeq: sift up with odd indices, dequeMin" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: sift up with odd indices, dequeMax" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -234,7 +234,7 @@ TEST_fn_("ArrPDeq: sift up with odd indices, dequeMax" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: enqueS min" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -251,7 +251,7 @@ TEST_fn_("ArrPDeq: enqueS min" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: enqueS max" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -268,7 +268,7 @@ TEST_fn_("ArrPDeq: enqueS max" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: update min" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -287,7 +287,7 @@ TEST_fn_("ArrPDeq: update min" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: update same min" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -307,7 +307,7 @@ TEST_fn_("ArrPDeq: update same min" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: update max" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -326,7 +326,7 @@ TEST_fn_("ArrPDeq: update max" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: update same max" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -346,7 +346,7 @@ TEST_fn_("ArrPDeq: update same max" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: iterator" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -374,7 +374,7 @@ TEST_fn_("ArrPDeq: iterator" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: iterator while empty" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -386,7 +386,7 @@ TEST_fn_("ArrPDeq: iterator while empty" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: remove at index" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -417,7 +417,7 @@ TEST_fn_("ArrPDeq: remove at index" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrPDeq: shrinkAndFree" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = ArrPDeq_Ctx_default(cmp_m_T_u32);
@@ -461,7 +461,7 @@ $static fn_((test_ascCtx(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(cmp_Ord)) {
 };
 
 TEST_fn_("ArrPDeq: enque and deque with context comparator" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx_arr = A_from$((u32){ 5, 3, 4, 2, 2, 8, 0 });

@@ -1,5 +1,5 @@
 #include "FiberGrow.h"
-#include "dh/heap/vmem.h"
+#include "dh/heap/VMem.h"
 
 #if plat_is_windows
 #include "dh/sys/api/windows/except.h"
@@ -69,10 +69,10 @@ fn_((exec_Fiber__windowsGrow(exec_Fiber* self))(bool)) {
     let available = guard_begin - storage_begin;
     let grow_size = self->grow_size <= available ? self->grow_size : available;
     let new_guard_begin = guard_begin - grow_size;
-    if (!heap_vmem_commit(intToPtr$((P$raw)(new_guard_begin)), grow_size)) {
+    if (!heap_VMem_commit(intToPtr$((P$raw)(new_guard_begin)), grow_size)) {
         return false;
     }
-    if (!heap_vmem_protect(intToPtr$((P$raw)(new_guard_begin)), self->guard_size, heap_vmem_Protcn_read_write_guard)) {
+    if (!heap_VMem_protect(intToPtr$((P$raw)(new_guard_begin)), self->guard_size, heap_VMem_Protcn_read_write_guard)) {
         return false;
     }
     self->stack.ptr = intToPtr$((u8*)(new_guard_begin + self->guard_size));
@@ -160,10 +160,10 @@ fn_((exec_Fiber__unixGrow(exec_Fiber* self))(bool)) {
     let available = guard_begin - storage_begin;
     let grow_size = self->grow_size <= available ? self->grow_size : available;
     let new_guard_begin = guard_begin - grow_size;
-    if (!heap_vmem_commit(intToPtr$((P$raw)(new_guard_begin)), grow_size)) {
+    if (!heap_VMem_commit(intToPtr$((P$raw)(new_guard_begin)), grow_size)) {
         return false;
     }
-    if (!heap_vmem_protect(intToPtr$((P$raw)(new_guard_begin)), self->guard_size, heap_vmem_Protcn_none)) {
+    if (!heap_VMem_protect(intToPtr$((P$raw)(new_guard_begin)), self->guard_size, heap_VMem_Protcn_none)) {
         return false;
     }
     self->stack.ptr = intToPtr$((u8*)(new_guard_begin + self->guard_size));
@@ -205,14 +205,14 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
         grow_size = 0;
         commit_size = reserve_size;
     }
-    let storage_ptr = orelse_((heap_vmem_reserve(null, reserve_size))(return_err(E_cause$OutOfMemory())));
-    errdefer_($ignore, heap_vmem_release(storage_ptr, reserve_size));
+    let storage_ptr = orelse_((heap_VMem_reserve(null, reserve_size))(return_err(E_cause$OutOfMemory())));
+    errdefer_($ignore, heap_VMem_release(storage_ptr, reserve_size));
     let commit_begin = ptrToInt(storage_ptr) + (reserve_size - commit_size);
-    if (!heap_vmem_commit(intToPtr$((P$raw)(commit_begin)), commit_size)) {
+    if (!heap_VMem_commit(intToPtr$((P$raw)(commit_begin)), commit_size)) {
         return_err(E_cause$OutOfMemory());
     }
     if (guard_size != 0) {
-        if (!heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protcn_read_write_guard)) {
+        if (!heap_VMem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_VMem_Protcn_read_write_guard)) {
             return_err(E_cause$OutOfMemory());
         }
     }
@@ -238,13 +238,13 @@ fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPol
         grow_size = 0;
         commit_size = reserve_size;
     }
-    let storage_ptr = orelse_((heap_vmem_reserve(null, reserve_size))(return_err(E_cause$OutOfMemory())));
-    errdefer_($ignore, heap_vmem_release(storage_ptr, reserve_size));
+    let storage_ptr = orelse_((heap_VMem_reserve(null, reserve_size))(return_err(E_cause$OutOfMemory())));
+    errdefer_($ignore, heap_VMem_release(storage_ptr, reserve_size));
     let commit_begin = ptrToInt(storage_ptr) + (reserve_size - commit_size);
-    if (!heap_vmem_commit(intToPtr$((P$raw)(commit_begin)), commit_size)) {
+    if (!heap_VMem_commit(intToPtr$((P$raw)(commit_begin)), commit_size)) {
         return_err(E_cause$OutOfMemory());
     }
-    if (guard_size != 0 && !heap_vmem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_vmem_Protcn_none)) {
+    if (guard_size != 0 && !heap_VMem_protect(intToPtr$((P$raw)(commit_begin)), guard_size, heap_VMem_Protcn_none)) {
         return_err(E_cause$OutOfMemory());
     }
     self->storage = (S$u8){ .ptr = storage_ptr, .len = reserve_size };
@@ -270,7 +270,7 @@ fn_((exec_Fiber_finiStorage(exec_Fiber* self, mem_Alctr gpa))(void)) {
 #if plat_is_windows || plat_based_unix
     let_ignore = gpa;
     if (self->is_virtual) {
-        let_ignore = heap_vmem_release(self->storage.ptr, self->storage.len);
+        let_ignore = heap_VMem_release(self->storage.ptr, self->storage.len);
         return;
     }
 #endif

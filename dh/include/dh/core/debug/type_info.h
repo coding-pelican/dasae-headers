@@ -35,7 +35,7 @@ typedef struct debug_TypeInfo debug_TypeInfo;
 /*========== Macros and Definitions =========================================*/
 
 struct debug_TypeInfo { /* clang-format off */
-    var_(impl, pp_if_(debug_enabled)(
+    var_(_impl, pp_if_(debug_enabled)(
         pp_then_(struct {
             var_(is_bound, bool);
             var_(inner, TypeInfo);
@@ -46,14 +46,14 @@ struct debug_TypeInfo { /* clang-format off */
     ));
 }; /* clang-format on */
 #define __val__debug_typeInfo$(_$T...) l$((debug_TypeInfo){ \
-    .impl = pp_if_(debug_enabled)( \
+    ._impl = pp_if_(debug_enabled)( \
         pp_then_({ .is_bound = true, .inner = typeInfo$(_$T) }), \
         pp_else_({ .inner = Void_({}) }) \
     ), \
 })
 
 #define __val__$typing(_$type...) l$((debug_TypeInfo){ \
-    .impl = pp_if_(debug_enabled)( \
+    ._impl = pp_if_(debug_enabled)( \
         pp_then_({ .is_bound = true, .inner = _$type }), \
         pp_else_({ .inner = Void_(_$type) }) \
     ), \
@@ -61,8 +61,8 @@ struct debug_TypeInfo { /* clang-format off */
 #define __expr__$typed(_$ti...) __pp__$typed__emit(pp_uniqTok(ti), _$ti)
 #define __pp__$typed__emit(__ti, _$ti...) local_({ \
     let_(__ti, debug_TypeInfo) = _$ti; \
-    debug_assert(__ti.impl.is_bound); \
-    local_return_(__ti.impl.inner); \
+    debug_assert(__ti._impl.is_bound); \
+    local_return_(__ti._impl.inner); \
 })
 
 #if defined(__cplusplus)

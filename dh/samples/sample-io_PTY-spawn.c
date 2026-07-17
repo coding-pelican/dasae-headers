@@ -17,7 +17,7 @@
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     var_(argv, A$$(4, S_const$u8)) = A_init(pp_if_(plat_is_windows)(

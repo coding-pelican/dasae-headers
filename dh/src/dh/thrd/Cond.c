@@ -111,16 +111,16 @@ fn_((thrd_Cond__pthread_init(void))(thrd_Cond) $guard) {
     pthread_condattr_init(&attr);
     defer_(pthread_condattr_destroy(&attr));
     pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
-    pthread_cond_init(&cond.impl, &attr);
+    pthread_cond_init(&cond._impl, &attr);
     return_(cond);
 } $unguarded(fn);
 fn_((thrd_Cond__pthread_fini(thrd_Cond* self))(void)) {
-    pthread_cond_destroy(&self->impl);
+    pthread_cond_destroy(&self->_impl);
 };
 fn_((thrd_Cond__pthread_wait(
     thrd_Cond* self, thrd_Mtx* mtx
 ))(void)) {
-    pthread_cond_wait(&self->impl, &mtx->impl);
+    pthread_cond_wait(&self->_impl, &mtx->_impl);
 };
 fn_((thrd_Cond__pthread_waitFor(
     thrd_Cond* self, thrd_Mtx* mtx, time_Dur duration
@@ -141,17 +141,17 @@ fn_((thrd_Cond__pthread_waitFor(
         abs_ts.tv_sec += abs_ts.tv_nsec / as$(long)(time_nanos_per_sec);
         abs_ts.tv_nsec = abs_ts.tv_nsec % as$(long)(time_nanos_per_sec);
     }
-    switch (pthread_cond_timedwait(&self->impl, &mtx->impl, &abs_ts)) {
+    switch (pthread_cond_timedwait(&self->_impl, &mtx->_impl, &abs_ts)) {
     case_((0 /* SUCCESS */)) return_ok({}) $end(case);
     case_((ETIMEDOUT /* TIMED OUT */)) return_err(E_cause$Sched_Timeout()) $end(case);
     default_() claim_unreachable $end(default);
     }
 } $unscoped(fn);
 fn_((thrd_Cond__pthread_signal(thrd_Cond* self))(void)) {
-    pthread_cond_signal(&self->impl);
+    pthread_cond_signal(&self->_impl);
 };
 fn_((thrd_Cond__pthread_broadcast(thrd_Cond* self))(void)) {
-    pthread_cond_broadcast(&self->impl);
+    pthread_cond_broadcast(&self->_impl);
 };
 
 #else /*========== Common ==========*/
@@ -264,7 +264,7 @@ fn_((thrd_Cond__common_broadcast(thrd_Cond* self))(void)) {
 $attr($inline_always)
 $static fn_((thrd_Cond__default_impl_init(void))(thrd_Cond)) {
     return (thrd_Cond){
-        .impl = {
+        ._impl = {
             .state = atom_V_init(0),
             .epoch = atom_V_init(0),
         }
@@ -273,8 +273,8 @@ $static fn_((thrd_Cond__default_impl_init(void))(thrd_Cond)) {
 
 $attr($inline_always)
 $static fn_((thrd_Cond__default_impl_fini(thrd_Cond* self))(void)) {
-    atom_V_store(&self->impl.epoch, 0, atom_MemOrd_monotonic);
-    atom_V_store(&self->impl.state, 0, atom_MemOrd_monotonic);
+    atom_V_store(&self->_impl.epoch, 0, atom_MemOrd_monotonic);
+    atom_V_store(&self->_impl.state, 0, atom_MemOrd_monotonic);
 };
 
 // Observe the epoch, then check the state again to see if we should wake up.
@@ -290,8 +290,8 @@ $static fn_((thrd_Cond__default_impl_fini(thrd_Cond* self))(void)) {
 fn_((thrd_Cond__default_impl_wait(
     thrd_Cond* self, thrd_Mtx* mtx, O$thrd_Wakeable cancel_src, O$time_Dur timeout
 ))(Sched_TimedE$void) $guard) {
-    var epoch = atom_V_load(&self->impl.epoch, atom_MemOrd_acquire);
-    var state = atom_V_pri_fetchAdd(&self->impl.state, thrd_Cond__default_one_waiter, atom_MemOrd_monotonic);
+    var epoch = atom_V_load(&self->_impl.epoch, atom_MemOrd_acquire);
+    var state = atom_V_pri_fetchAdd(&self->_impl.state, thrd_Cond__default_one_waiter, atom_MemOrd_monotonic);
     debug_assert((state & thrd_Cond__default_waiter_mask) != thrd_Cond__default_waiter_mask);
     state += thrd_Cond__default_one_waiter;
 
@@ -300,7 +300,7 @@ fn_((thrd_Cond__default_impl_wait(
 
     var deadline = thrd_ftx_Deadline_init(timeout);
     while (true) {
-        catch_((thrd_ftx_Deadline_wait(&deadline, &self->impl.epoch, epoch, cancel_src))(err, {
+        catch_((thrd_ftx_Deadline_wait(&deadline, &self->_impl.epoch, epoch, cancel_src))(err, {
             // On timeout, we must decrement the waiter we added above.
             while (true) {
                 // If there's a signal when we're timing out, consume it and report being woken up instead.
@@ -308,27 +308,27 @@ fn_((thrd_Cond__default_impl_wait(
                 while ((state & thrd_Cond__default_signal_mask) != 0) {
                     let new_state = state - thrd_Cond__default_one_waiter - thrd_Cond__default_one_signal;
                     state = orelse_((atom_V_cmpXchgWeak(
-                        &self->impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic
+                        &self->_impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic
                     ))(return_ok({})));
                 }
 
                 // Remove the waiter we added and officially return timed out.
                 let new_state = state - thrd_Cond__default_one_waiter;
                 state = orelse_((atom_V_cmpXchgWeak(
-                    &self->impl.state, state, new_state, atom_MemOrd_monotonic, atom_MemOrd_monotonic
+                    &self->_impl.state, state, new_state, atom_MemOrd_monotonic, atom_MemOrd_monotonic
                 ))(return_err(err)));
             }
         }));
 
-        epoch = atom_V_load(&self->impl.epoch, atom_MemOrd_acquire);
-        state = atom_V_load(&self->impl.state, atom_MemOrd_monotonic);
+        epoch = atom_V_load(&self->_impl.epoch, atom_MemOrd_acquire);
+        state = atom_V_load(&self->_impl.state, atom_MemOrd_monotonic);
 
         // Try to wake up by consuming a signal and decremented the waiter we added previously.
         // Acquire barrier ensures code before the wake() which added the signal happens before we decrement it and return.
         while ((state & thrd_Cond__default_signal_mask) != 0) {
             let new_state = state - thrd_Cond__default_one_waiter - thrd_Cond__default_one_signal;
             state = orelse_((atom_V_cmpXchgWeak(
-                &self->impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic
+                &self->_impl.state, state, new_state, atom_MemOrd_acquire, atom_MemOrd_monotonic
             ))(return_ok({})));
         }
     }
@@ -336,7 +336,7 @@ fn_((thrd_Cond__default_impl_wait(
 } $unguarded(fn);
 
 fn_((thrd_Cond__default_impl_wake(thrd_Cond* self, thrd_Cond__Notify notify))(void)) {
-    var state = atom_V_load(&self->impl.state, atom_MemOrd_monotonic);
+    var state = atom_V_load(&self->_impl.state, atom_MemOrd_monotonic);
     while (true) {
         let waiters = (state & thrd_Cond__default_waiter_mask) / thrd_Cond__default_one_waiter;
         let signals = (state & thrd_Cond__default_signal_mask) / thrd_Cond__default_one_signal;
@@ -356,7 +356,7 @@ fn_((thrd_Cond__default_impl_wake(thrd_Cond* self, thrd_Cond__Notify notify))(vo
         // Release barrier ensures code before the wake() happens before the signal it posted and consumed by the wait() threads.
         let new_state = state + (thrd_Cond__default_one_signal * to_wake);
         state = orelse_((atom_V_cmpXchgWeak(
-            &self->impl.state, state, new_state, atom_MemOrd_release, atom_MemOrd_monotonic
+            &self->_impl.state, state, new_state, atom_MemOrd_release, atom_MemOrd_monotonic
         ))({
             // Wake up the waiting threads we reserved above by changing the epoch value.
             // NOTE: a waiting thread could miss a wake up if *exactly* ((1<<32)-1) wake()s happen between it observing the epoch and sleeping on it.
@@ -370,8 +370,8 @@ fn_((thrd_Cond__default_impl_wake(thrd_Cond* self, thrd_Cond__Notify notify))(vo
             // - T1: s = LOAD(&state)
             // - T2: UPDATE(&state, signal) + FUTEX_WAKE(&epoch)
             // - T1: s & signals == 0 -> FUTEX_WAIT(&epoch, e) (missed both epoch change and state change)
-            let_ignore = atom_V_pri_fetchAdd(&self->impl.epoch, 1, atom_MemOrd_release);
-            return thrd_ftx_wake(&self->impl.epoch, to_wake);
+            let_ignore = atom_V_pri_fetchAdd(&self->_impl.epoch, 1, atom_MemOrd_release);
+            return thrd_ftx_wake(&self->_impl.epoch, to_wake);
         }));
     }
 };
@@ -381,7 +381,7 @@ fn_((thrd_Cond__default_impl_wake(thrd_Cond* self, thrd_Cond__Notify notify))(vo
 
 #if thrd_Cond_has_specialized && plat_is_windows
 fn_((thrd_Cond__windows_impl_init(void))(thrd_Cond)) {
-    return (thrd_Cond){ .impl.inner = CONDITION_VARIABLE_INIT };
+    return (thrd_Cond){ ._impl.inner = CONDITION_VARIABLE_INIT };
 };
 
 fn_((thrd_Cond__windows_impl_fini(thrd_Cond* self))(void)) {
@@ -409,8 +409,8 @@ fn_((thrd_Cond__windows_impl_wait(
         }
     }
     let rc = SleepConditionVariableSRW(
-        &self->impl.inner,
-        &mtx->impl.inner,
+        &self->_impl.inner,
+        &mtx->_impl.inner,
         timeout_ms,
         0 // the srwlock was assumed to acquired in exclusive mode not shared
     );
@@ -423,8 +423,8 @@ fn_((thrd_Cond__windows_impl_wait(
 
 fn_((thrd_Cond__windows_impl_wake(thrd_Cond* self, thrd_Cond__Notify notify))(void)) {
     switch (notify) {
-    case_((thrd_Cond__Notify_one)) WakeConditionVariable(&self->impl.inner) $end(case);
-    case_((thrd_Cond__Notify_all)) WakeAllConditionVariable(&self->impl.inner) $end(case);
+    case_((thrd_Cond__Notify_one)) WakeConditionVariable(&self->_impl.inner) $end(case);
+    case_((thrd_Cond__Notify_all)) WakeAllConditionVariable(&self->_impl.inner) $end(case);
     }
 };
 #endif /* thrd_Cond_has_specialized && plat_is_windows */

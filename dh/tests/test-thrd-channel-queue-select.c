@@ -91,7 +91,7 @@ TEST_fn_("thrd: channel - typed batch queue and select templates" $guard) {
     try_(thrd_Batch_wait$u8(&batch, thrd_CancelTok_Src_tok(&batch_cancel)));
     thrd_Batch_fini$u8(&batch);
 
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var batch_evt = thrd_ResetEvt_init();

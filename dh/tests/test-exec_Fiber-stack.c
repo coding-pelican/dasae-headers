@@ -109,7 +109,7 @@ fn_use_Clsr_((
 
 TEST_fn_("exec/Fiber - stack: evented yield preserves 16-, 24-, and 32-byte struct arguments" $guard) {
     pp_if_(pp_not(co_Fiber_supported))(pp_then_(try_(TEST_skip())));
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));
@@ -144,7 +144,7 @@ TEST_fn_("exec/Fiber - stack: evented yield preserves 16-, 24-, and 32-byte stru
 } $unguarded(TEST_fn);
 
 TEST_fn_("exec/Fiber - stack: stackful async await with io from fiber stack" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));
@@ -165,7 +165,7 @@ TEST_fn_("exec/Fiber - stack: stackful async await with io from fiber stack" $gu
 
 TEST_fn_("exec/Fiber - stack: stackful spawn await returns task result" $guard) {
     pp_if_(pp_not(co_Fiber_supported))(pp_then_(try_(TEST_skip())));
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));
@@ -184,7 +184,7 @@ TEST_fn_("exec/Fiber - stack: stackful spawn await returns task result" $guard) 
 
 TEST_fn_("exec/Fiber - stack: stackful spawns await with io from fiber stack" $guard) {
     pp_if_(pp_not(co_Fiber_supported))(pp_then_(try_(TEST_skip())));
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));

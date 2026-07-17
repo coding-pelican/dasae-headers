@@ -1,9 +1,9 @@
 #include "dh/thrd/Self.h"
-#include "dh/heap/vmem.h"
+#include "dh/heap/VMem.h"
 #include "dh/u-meta.h"
 #if plat_is_linux
 #include "dh/sys/call/linux.h"
-#endif
+#endif /* plat_is_linux */
 
 typedef struct thrd__Start {
     var_(clsr, Clsr$raw*);
@@ -697,11 +697,12 @@ fn_((thrd__linux_spawn(
     let stack_size = mem_alignFwd(pri_max(page_size, cfg.stack_size), page_size);
     let meta_size = mem_alignFwd(sizeOf$(thrd__linux_Meta), alignOf$(thrd__linux_Meta));
     let map_size = page_size + stack_size + meta_size;
-    let map_base = orelse_((heap_vmem_reserve(null, map_size))(null));
+    let vmem = catch_((heap_VMem_system())($ignore, return_err(E_cause$thrd_Unsupported())));
+    let map_base = orelse_((heap_VMem_reserve(vmem, none$((O$P$raw)), map_size))(null));
     if (map_base == null) return_err(E_cause$thrd_SystemResources());
-    errdefer_($ignore, heap_vmem_release(map_base, map_size));
+    errdefer_($ignore, let_ignore = heap_VMem_release(vmem, map_base, map_size));
     let stack_start = as$(u8*)(map_base) + page_size;
-    if (!heap_vmem_commit(stack_start, stack_size + meta_size)) return_err(E_cause$thrd_SystemResources());
+    if (!heap_VMem_commit(vmem, stack_start, stack_size + meta_size)) return_err(E_cause$thrd_SystemResources());
     let meta = intToPtr$((thrd__linux_Meta*)(ptrToInt(map_base) + page_size + stack_size));
     *meta = (thrd__linux_Meta){
         .clsr = clsr,
@@ -756,7 +757,10 @@ fn_((thrd__linux_detach(thrd_Self self))(void)) {
     let prev = atom_V_fetchXchg(&meta->completion, thrd__linux_Completion_detached, atom_MemOrd_seq_cst);
     switch (prev) {
     case_((thrd__linux_Completion_running)) $do_nothing $end(case);
-    case_((thrd__linux_Completion_completed)) let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len) $end(case);
+    case_((thrd__linux_Completion_completed)) {
+        let vmem = catch_((heap_VMem_system())($ignore, claim_unreachable));
+        let_ignore = heap_VMem_release(vmem, meta->map.ptr, meta->map.len);
+    } $end(case);
     case_((thrd__linux_Completion_detached)) claim_unreachable $end(case);
     default_() claim_unreachable $end(default);
     }
@@ -770,7 +774,8 @@ fn_((thrd__linux_join(thrd_Self self))(Clsr$raw*)) {
         if (tid == 0) break;
         let_ignore = sys_call_linux_futex(ptrQualCast$((P$raw)(&meta->child_tid.raw)), sys_call_linux_FUTEX_WAIT, tid, null, null, 0);
     }
-    let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
+    let vmem = catch_((heap_VMem_system())($ignore, claim_unreachable));
+    let_ignore = heap_VMem_release(vmem, meta->map.ptr, meta->map.len);
     return ensureNonnull(self.clsr);
 };
 

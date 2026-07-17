@@ -67,7 +67,7 @@ TEST_fn_("ArrQue: fixed buffer dequeues FIFO across wrap" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("ArrQue: dynamic enqueue grows and preserves FIFO order" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var que = try_(ArrQue_init$u32(gpa, 0));
@@ -106,7 +106,7 @@ TEST_fn_("ArrQue: mutable access mutates queue logical order" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("ArrQue: clear retaining capacity and clear free define capacity ownership" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var que = try_(ArrQue_init$u32(gpa, 4));

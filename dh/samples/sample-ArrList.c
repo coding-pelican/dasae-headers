@@ -66,7 +66,7 @@ $static fn_((example(mem_Alctr gpa))(mem_E$void) $guard) {
 
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     try_(example(gpa));

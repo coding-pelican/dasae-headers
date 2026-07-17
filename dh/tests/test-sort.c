@@ -598,6 +598,27 @@ $static fn_((test_sort_fillIdxData(i32* data, usize len))(void)) {
     } $end(for);
 };
 
+TEST_fn_("sort: inOrddIdx detects inversion only inside requested range" $scope) {
+    var data = A_from$((i32){ 100, 9, 1, 2, -100 });
+    let sorted_tail_ctx = (test_sort_IdxCmpXchgr){
+        .data = A_ptr(data),
+        .range = $r(2, 4),
+    };
+    let unsorted_mid_ctx = (test_sort_IdxCmpXchgr){
+        .data = A_ptr(data),
+        .range = $r(1, 4),
+    };
+
+    try_(TEST_expect(sort_inOrddIdx($r(2, 4), (sort_IdxCmpr){
+        .inner = u_deref(u_anyP(&sorted_tail_ctx)),
+        .ordFn = test_sort_IdxCmpXchgr_ord,
+    })));
+    try_(TEST_expect(!sort_inOrddIdx($r(1, 4), (sort_IdxCmpr){
+        .inner = u_deref(u_anyP(&unsorted_mid_ctx)),
+        .ordFn = test_sort_IdxCmpXchgr_ord,
+    })));
+} $unscoped(TEST_fn);
+
 TEST_fn_("sort: idx algorithms respect non-zero range boundaries" $scope) {
     enum {
         data_len = usize_(256),

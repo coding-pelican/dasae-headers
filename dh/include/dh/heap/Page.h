@@ -23,19 +23,23 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "cfg.h"
+#include "VMap.h"
 
 /*========== Macros and Declarations ========================================*/
 
 /// Page allocator instance
 T_alias$((heap_Page)(struct heap_Page {
+    var_(vmap, heap_VMap);
     /// Hint for the next address to map
     /// When first using the allocator, this is must be `null`
     var_(_next_addr_hint, usize);
 }));
-$static let_(heap_Page_default, heap_Page) = { ._next_addr_hint = ptrToInt(null) };
 /// Get allocator interface for instance
 $extern fn_((heap_Page_alctr(heap_Page* self))(mem_Alctr));
+/// Get thread-safe allocator interface for instance
+$extern fn_((heap_Page_thrdSafeAlctr(heap_Page* self))(mem_Alctr));
+
+$extern fn_((heap_Page_from(heap_VMap vmap))(heap_Page));
 
 #if defined(__cplusplus)
 } /* extern "C" */

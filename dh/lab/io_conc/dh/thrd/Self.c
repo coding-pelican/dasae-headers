@@ -1,6 +1,6 @@
 #include "Self.h"
 #include "../time/self/internal.h"
-#include "dh/heap/vmem.h"
+#include "dh/heap/VMem.h"
 #include "dh/u-meta.h"
 
 typedef struct thrd__Start {
@@ -653,15 +653,15 @@ fn_((thrd__linux_spawn(thrd_SpawnCfg cfg, Clsr$raw* clsr, TypeInfo ret_type))(th
     let map_size = page_size + stack_size + meta_size;
 
     // Reserve entire region as inaccessible first
-    let map_base = orelse_((heap_vmem_reserve(null, map_size))(null));
+    let map_base = orelse_((heap_VMem_reserve(null, map_size))(null));
     if (map_base == null) {
         return_err(E_cause$thrd_SystemResources()); /* TODO: Replace to specific error */
     }
-    errdefer_(let_ignore = heap_vmem_release(map_base, map_size));
+    errdefer_(let_ignore = heap_VMem_release(map_base, map_size));
 
     // Commit stack + meta area (keep guard page reserved/inaccessible)
     let stack_start = as$(u8*)(map_base) + page_size;
-    if (!heap_vmem_commit(stack_start, stack_size + meta_size)) {
+    if (!heap_VMem_commit(stack_start, stack_size + meta_size)) {
         return_err(E_cause$thrd_SystemResources()); /* TODO: Replace to specific error */
     }
 
@@ -731,7 +731,7 @@ fn_((thrd__linux_detach(thrd_Self self))(void)) {
     case_((thrd__linux_Completion_running)) /* Thread still running */
         break $end(case); /* it will self-cleanup */
     case_((thrd__linux_Completion_completed)) /* Thread already finished */
-        let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
+        let_ignore = heap_VMem_release(meta->map.ptr, meta->map.len);
         break $end(case); /* self-cleanup (like join but discard result) */
     case_((thrd__linux_Completion_detached)) $fallthrough;
     default_() claim_unreachable $end(default);
@@ -752,7 +752,7 @@ fn_((thrd__linux_join(thrd_Self self))(Clsr$raw*)) {
         // Ignore return value - spurious wakeups are fine, we'll check tid again
     }
     // Thread has exited, safe to unmap
-    let_ignore = heap_vmem_release(meta->map.ptr, meta->map.len);
+    let_ignore = heap_VMem_release(meta->map.ptr, meta->map.len);
     return ensureNonnull(self.clsr);
 };
 

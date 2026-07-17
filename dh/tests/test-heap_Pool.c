@@ -14,7 +14,7 @@ T_use$((u32)(
 ));
 
 TEST_fn_("heap/Pool: reuses destroyed slots" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
 
@@ -36,7 +36,7 @@ TEST_fn_("heap/Pool: reuses destroyed slots" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("heap/Pool: fixed pool reports out of memory" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
 

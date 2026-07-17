@@ -48,7 +48,7 @@ T_use$((usize, u16)(
 ));
 
 TEST_fn_("HashMap: basic usage" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();
@@ -81,7 +81,7 @@ TEST_fn_("HashMap: basic usage" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashMap: basic usage - no templates used" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();
@@ -116,7 +116,7 @@ TEST_fn_("HashMap: basic usage - no templates used" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashMap: basic hash map usage" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();
@@ -165,7 +165,7 @@ TEST_fn_("HashMap: basic hash map usage" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashMap: clone and clear operations" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();
@@ -209,7 +209,7 @@ TEST_fn_("HashMap: clone and clear operations" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashMap: rehash" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();
@@ -249,7 +249,7 @@ TEST_fn_("HashMap: rehash" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashMap: key iterator" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();
@@ -279,7 +279,7 @@ TEST_fn_("HashMap: key iterator" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashMap: value iterator" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();
@@ -309,7 +309,7 @@ TEST_fn_("HashMap: value iterator" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("HashMap: entry iterator" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();
@@ -338,7 +338,7 @@ TEST_fn_("HashMap: entry iterator" $guard) {
 
 #define test_HashMap_enable_debug_print 0
 TEST_fn_("HashMap: stress test with many insertions and deletions" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     let ctx = HashMap_Ctx_default();

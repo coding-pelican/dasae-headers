@@ -34,8 +34,8 @@ extern "C" {
 
 #include "heap/cfg.h"
 #include "heap/common.h"
-#include "heap/vmap.h"
-#include "heap/vmem.h"
+#include "heap/VMap.h"
+#include "heap/VMem.h"
 
 #include "heap/Classic.h"
 #include "heap/Page.h"

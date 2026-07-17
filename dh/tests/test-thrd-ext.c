@@ -16,7 +16,7 @@ $static fn_((test_thrd_ext__timesTwo(i32 input))(i32)) {
 fn_use_Clsr_((test_thrd_ext__timesTwo)(i32)(i32));
 
 TEST_fn_("thrd: ext - stack closure lifetime" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     var clsr = clsr_((test_thrd_ext__timesTwo)(42));
@@ -46,7 +46,7 @@ $static fn_((test_thrd_ext__sumValues(test_thrd_ext__Values values))(i32)) {
 fn_use_Clsr_((test_thrd_ext__sumValues)(test_thrd_ext__Values)(i32));
 
 TEST_fn_("thrd: ext - array argument synchronization" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     test_thrd_ext__Values values = A_zero();
@@ -136,7 +136,7 @@ $static fn_((test_thrd_ext__checksumComplex(test_thrd_ext__Complex* ctx))(i32)) 
 fn_use_Clsr_((test_thrd_ext__checksumComplex)(test_thrd_ext__Complex*)(i32));
 
 TEST_fn_("thrd: ext - multiple stack closures" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     let cfg = (thrd_SpawnCfg){
@@ -161,7 +161,7 @@ TEST_fn_("thrd: ext - multiple stack closures" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("thrd: ext - compound stack context remains valid until join" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     var ctx = (test_thrd_ext__Compound){
@@ -186,7 +186,7 @@ TEST_fn_("thrd: ext - compound stack context remains valid until join" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("thrd: ext - repeated stress closures update caller contexts" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     let cfg = (thrd_SpawnCfg){
@@ -213,7 +213,7 @@ TEST_fn_("thrd: ext - repeated stress closures update caller contexts" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("thrd: ext - fast spawn join observes stack writes" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     let cfg = (thrd_SpawnCfg){
@@ -239,7 +239,7 @@ TEST_fn_("thrd: ext - fast spawn join observes stack writes" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("thrd: ext - complex structure stack context is processed" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     var ctx = (test_thrd_ext__Complex){
@@ -271,7 +271,7 @@ TEST_fn_("thrd: ext - complex structure stack context is processed" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("thrd: ext - concurrent stack closures all complete" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     let cfg = (thrd_SpawnCfg){

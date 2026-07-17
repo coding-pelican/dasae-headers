@@ -3,7 +3,7 @@
 #include "dh/heap/Arena.h"
 
 TEST_fn_("heap/Arena: reset while retaining a buffer" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));

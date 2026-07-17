@@ -315,7 +315,7 @@ TEST_fn_("meta: u_fieldSlisMut produces correctly positioned slices" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("meta: u_fieldSlisMut with heap allocation" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
 

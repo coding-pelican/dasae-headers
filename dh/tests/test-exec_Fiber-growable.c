@@ -15,7 +15,7 @@ $static var_(test_exec_Fiber_task, u8) = 0;
 
 TEST_fn_("exec/Fiber-growable: proactive ensure from saved rsp" $guard) {
     pp_if_(pp_not(co_Fiber_supported))(pp_then_(try_(TEST_skip())));
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));

@@ -46,7 +46,7 @@ TEST_fn_("io/PTY: open resize and close supported PTY" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
 #if plat_is_windows

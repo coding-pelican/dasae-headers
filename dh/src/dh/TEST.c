@@ -18,7 +18,7 @@ fn_((TEST_Framework_instance(void))(TEST_Framework*)) {
     $static var_(is_initialized, bool) = false;
     if (!is_initialized) {
         debug_StackTrace_setupCrashHandler();
-        heap = heap_Sys_init();
+        heap = catch_((heap_Sys_init())($ignore, claim_unreachable));
         instance.gpa = heap_Sys_alctr(&heap);
         instance.units $like_deref = catch_((ArrList_init$TEST_Unit(instance.gpa, 8))($ignore, claim_unreachable));
         is_initialized = true;

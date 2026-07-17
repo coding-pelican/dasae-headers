@@ -67,8 +67,8 @@ struct thrd_Cond__Impl pp_if_(thrd_Cond_use_pthread)(
         })
     )));
 struct thrd_Cond pp_if_(thrd_Cond_use_pthread)(
-    pp_then_({ var_(impl, pthread_cond_t); }),
-    pp_else_({ var_(impl, thrd_Cond__Impl); }));
+    pp_then_({ var_(_impl, pthread_cond_t); }),
+    pp_else_({ var_(_impl, thrd_Cond__Impl); }));
 #define thrd_Cond_init_static(/*void*/) \
     ____thrd_Cond_init_static()
 /// @brief Initializes a condition variable
@@ -110,15 +110,15 @@ $extern fn_((thrd_Cond_broadcast(thrd_Cond* self))(void));
 /*========== Macros and Definitions =========================================*/
 
 #define ____thrd_Cond_init_static() pp_if_(thrd_Cond_use_pthread)( \
-    pp_then_(l$((thrd_Cond){ .impl = PTHREAD_COND_INITIALIZER })), \
+    pp_then_(l$((thrd_Cond){ ._impl = PTHREAD_COND_INITIALIZER })), \
     pp_else_(pp_if_(thrd_Cond_has_specialized)( \
         pp_then_(pp_expand( \
             pp_switch_ pp_begin(plat_type)( \
-                pp_case_((plat_type_windows)(l$((thrd_Cond){ .impl.inner = CONDITION_VARIABLE_INIT }))) \
+                pp_case_((plat_type_windows)(l$((thrd_Cond){ ._impl.inner = CONDITION_VARIABLE_INIT }))) \
             ) pp_end \
         )), \
         pp_else_(l$((thrd_Cond){ \
-            .impl = { \
+            ._impl = { \
                 .state = atom_V_init(0), \
                 .epoch = atom_V_init(0), \
             }, \

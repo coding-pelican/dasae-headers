@@ -197,7 +197,7 @@ $static fn_((exampleProducerConsumer(thrd_SpawnCfg spawn_cfg))(void) $guard) {
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    var sys_heap = heap_Sys_init();
+    var sys_heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&sys_heap));
 
     var thrd_safe_heap = (heap_ThrdSafe){

@@ -180,7 +180,7 @@ TEST_fn_("ArrList: mutable access mutates the stored item in place" $scope) {
 } $unscoped(TEST_fn);
 
 TEST_fn_("ArrList: dynamic capacity operations preserve contents and define clear semantics" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var list = try_(ArrList_init$u32(gpa, 2));
@@ -211,7 +211,7 @@ TEST_fn_("ArrList: dynamic capacity operations preserve contents and define clea
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrList: clone copies items and preserves independent storage" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var list = try_(ArrList_init$u32(gpa, 3));
@@ -229,7 +229,7 @@ TEST_fn_("ArrList: clone copies items and preserves independent storage" $guard)
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrList: shrinkAndFree shrinks length preserves prefix and does not grow capacity" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var list = try_(ArrList_init$u32(gpa, 8));
@@ -250,7 +250,7 @@ TEST_fn_("ArrList: shrinkAndFree shrinks length preserves prefix and does not gr
 } $unguarded(TEST_fn);
 
 TEST_fn_("ArrList: clearAndFree resets to empty no-capacity state" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     let gpa = heap_Sys_alctr(&heap);
     var list = try_(ArrList_init$u32(gpa, 4));

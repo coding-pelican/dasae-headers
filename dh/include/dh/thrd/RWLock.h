@@ -48,8 +48,8 @@ struct thrd_RWLock__Impl pp_if_(thrd_RWLock_use_pthread)(
         var_(cond, thrd_Cond);
     }));
 struct thrd_RWLock pp_if_(thrd_RWLock_use_pthread)(
-    pp_then_({ var_(impl, pthread_rwlock_t); }),
-    pp_else_({ var_(impl, thrd_RWLock__Impl); }));
+    pp_then_({ var_(_impl, pthread_rwlock_t); }),
+    pp_else_({ var_(_impl, thrd_RWLock__Impl); }));
 $extern fn_((thrd_RWLock_init(void))(thrd_RWLock));
 $extern fn_((thrd_RWLock_fini(thrd_RWLock* self))(void));
 

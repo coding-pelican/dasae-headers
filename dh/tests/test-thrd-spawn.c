@@ -1,7 +1,7 @@
 #include "test-thrd/main.h"
 
 TEST_fn_("thrd: spawn and join function closure" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     var clsr = clsr_((test__double)(21));
@@ -21,7 +21,7 @@ TEST_fn_("thrd: spawn and join function closure" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("thrd: spawn and join coroutine closure" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
 
     var clsr = clsr_((test__sumAfterSuspend)(19, 23));

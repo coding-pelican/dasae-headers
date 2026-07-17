@@ -13,3 +13,13 @@ TEST_fn_("mem/ring: absolute and head-relative indices wrap" $scope) {
     try_(TEST_expect(mem_ring_idxFrom(2, 5, 5) == 2));
     return_ok({});
 } $unscoped(TEST_fn)
+
+TEST_fn_("mem/ring: every logical slot maps from head modulo capacity" $scope) {
+    for_(($r(1, 9))(cap)) {
+        for_(($rt(cap))(head)) {
+            for_(($r(0, cap + 1))(idx)) {
+                try_(TEST_expect(mem_ring_idxFrom(head, cap, idx) == ((head + idx) % cap)));
+            } $end(for);
+        } $end(for);
+    } $end(for);
+} $unscoped(TEST_fn)
