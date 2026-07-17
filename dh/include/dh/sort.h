@@ -42,29 +42,39 @@ extern "C" {
 T_alias$((sort_OrdFn)(cmp_OrdFn));
 T_alias$((sort_OrdCtxFn)(cmp_OrdCtxFn));
 
-/// Checks if the sequence is ordered in ascending order according to `ordFn`.
-/// Empty and single-element sequences are ordered.
-/// - Time Complexity: O(N)
-$extern fn_((sort_inOrdd(u_S_const$raw seq, sort_OrdFn ordFn))(bool));
-$extern fn_((sort_inOrddCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(bool));
-
 T_alias$((sort_SwapFn)(fn_(((*)(u_V$raw lhs, u_V$raw rhs))(void) $T)));
-T_alias$((sort_SwapCtxFn)(fn_(((*)(u_V$raw lhs, u_V$raw rhs, u_V$raw ctx))(void) $T)));
+T_alias$((sort_SwapCtxFn)(fn_(((*)(usize lhs, usize rhs, u_V$raw ctx))(void) $T)));
 
 /// Callable types for index-based (context) sorting functions
 T_alias$((sort_IdxOrdFn)(fn_(((*)(usize lhs, usize rhs, u_V$raw ctx))(cmp_Ord) $T)));
 T_alias$((sort_IdxSwapFn)(fn_(((*)(usize lhs, usize rhs, u_V$raw ctx))(void) $T)));
 
-/// Context definition for abstract sorting
-T_alias$((sort_IdxCtx)(struct sort_IdxCtx {
-    var_(ordFn, sort_IdxOrdFn);
-    var_(swapFn, sort_IdxSwapFn);
+/// Compare context for index-based queries and sorting.
+T_alias$((sort_IdxCmpr)(struct sort_IdxCmpr {
     var_(inner, u_V$raw);
+    var_(ordFn, sort_IdxOrdFn);
 }));
 $attr($inline_always)
-$static fn_((sort_IdxCtx_ord(sort_IdxCtx self, usize lhs, usize rhs))(cmp_Ord));
+$static fn_((sort_IdxCmpr_ord(sort_IdxCmpr self, usize lhs, usize rhs))(cmp_Ord));
+
+/// Compare-exchange context for index-based sorting.
+T_alias$((sort_IdxCmpXchgr)(struct sort_IdxCmpXchgr {
+    var_(base, sort_IdxCmpr);
+    var_(swapFn, sort_IdxSwapFn);
+}));
 $attr($inline_always)
-$static fn_((sort_IdxCtx_swap(sort_IdxCtx self, usize lhs, usize rhs))(void));
+$static fn_((sort_IdxCmpXchgr_cmpr(sort_IdxCmpXchgr self))(sort_IdxCmpr));
+$attr($inline_always)
+$static fn_((sort_IdxCmpXchgr_ord(sort_IdxCmpXchgr self, usize lhs, usize rhs))(cmp_Ord));
+$attr($inline_always)
+$static fn_((sort_IdxCmpXchgr_swap(sort_IdxCmpXchgr self, usize lhs, usize rhs))(void));
+
+/// Checks if the sequence is ordered in ascending order according to `ordFn`.
+/// Empty and single-element sequences are ordered.
+/// - Time Complexity: O(N)
+$extern fn_((sort_inOrdd(u_S_const$raw seq, sort_OrdFn ordFn))(bool));
+$extern fn_((sort_inOrddCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(bool));
+$extern fn_((sort_inOrddIdx(R range, sort_IdxCmpr idx_ctx))(bool));
 
 /*========== Base Algorithms ==========*/
 
@@ -77,7 +87,7 @@ $extern fn_((sort_insert(u_S$raw seq, sort_OrdFn ordFn))(void));
 $extern fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void));
 /// Index-based insertion sort over a half-open range.
 /// Empty and single-index ranges are valid inputs and perform no comparisons or swaps.
-$extern fn_((sort_insertIdx(R range, sort_IdxCtx idx_ctx))(void));
+$extern fn_((sort_insertIdx(R range, sort_IdxCmpXchgr idx_ctx))(void));
 
 /*========== Unstable ==========*/
 
@@ -90,7 +100,7 @@ $extern fn_((sort_heap(u_S$raw seq, sort_OrdFn ordFn))(void));
 $extern fn_((sort_heapCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void));
 /// Index-based heapsort over a half-open range.
 /// Empty and single-index ranges are valid inputs and perform no comparisons or swaps.
-$extern fn_((sort_heapIdx(R range, sort_IdxCtx idx_ctx))(void));
+$extern fn_((sort_heapIdx(R range, sort_IdxCmpXchgr idx_ctx))(void));
 
 /// Pattern-Defeating Quicksort (pdqsort): Optimal for O(log N) stack constraints.
 /// Empty and single-element sequences are valid inputs and are returned unchanged
@@ -101,7 +111,7 @@ $extern fn_((sort_pdq(u_S$raw seq, sort_OrdFn ordFn))(void));
 $extern fn_((sort_pdqCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void));
 /// Index-based pdqsort over a half-open range.
 /// Empty and single-index ranges are valid inputs and perform no comparisons or swaps.
-$extern fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void));
+$extern fn_((sort_pdqIdx(R range, sort_IdxCmpXchgr idx_ctx))(void));
 
 /*========== Stable ==========*/
 
@@ -144,12 +154,18 @@ $extern fn_((sort_blockCtxAlloc(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, m
 #define __const__sort_limit_block_cache_stack_bytes pp_if_(arch_bits_is_64bit)(pp_then_(2048), pp_else_(1024))
 
 #if in_analysis_active_only || in_comptime
-fn_((sort_IdxCtx_ord(sort_IdxCtx self, usize lhs, usize rhs))(cmp_Ord)) {
+fn_((sort_IdxCmpr_ord(sort_IdxCmpr self, usize lhs, usize rhs))(cmp_Ord)) {
     return call((self.ordFn)(lhs, rhs, u_load(self.inner)));
 };
-fn_((sort_IdxCtx_swap(sort_IdxCtx self, usize lhs, usize rhs))(void)) {
+fn_((sort_IdxCmpXchgr_cmpr(sort_IdxCmpXchgr self))(sort_IdxCmpr)) {
+    return self.base;
+};
+fn_((sort_IdxCmpXchgr_ord(sort_IdxCmpXchgr self, usize lhs, usize rhs))(cmp_Ord)) {
+    return sort_IdxCmpr_ord(self.base, lhs, rhs);
+};
+fn_((sort_IdxCmpXchgr_swap(sort_IdxCmpXchgr self, usize lhs, usize rhs))(void)) {
     if (lhs == rhs) return;
-    return call((self.swapFn)(lhs, rhs, u_load(self.inner)));
+    return call((self.swapFn)(lhs, rhs, u_load(self.base.inner)));
 };
 #endif /* in_analysis_active_only || in_comptime */
 

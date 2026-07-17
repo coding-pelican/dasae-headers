@@ -4,21 +4,32 @@
 
 /*========== Internal Declarations & Definitions ============================*/
 
-T_alias$((sort_IdxCtx__Inner)(struct sort_IdxCtx__Inner {
+T_alias$((sort_IdxCmpr__Inner)(struct sort_IdxCmpr__Inner {
+    var_(seq, u_S_const$raw);
+    var_(ctx, u_V$raw);
+    var_(ordFn, sort_OrdCtxFn);
+}));
+$attr($inline_always)
+$static fn_((sort_IdxCmpr__Inner_ord(usize lhs, usize rhs, u_V$raw ctx))(cmp_Ord)) {
+    let inner = u_castV$((sort_IdxCmpr__Inner)(ctx));
+    return cmp_ordCtxP(u_atS(inner.seq, lhs), u_atS(inner.seq, rhs), inner.ctx, inner.ordFn);
+};
+
+T_alias$((sort_IdxCmpXchgr__Inner)(struct sort_IdxCmpXchgr__Inner {
     var_(seq, u_S$raw);
     var_(ctx, u_V$raw);
     var_(ordFn, sort_OrdCtxFn);
 }));
 $attr($inline_always)
-$static fn_((sort_IdxCtx__Inner_ord(usize lhs, usize rhs, u_V$raw ctx))(cmp_Ord)) {
-    let inner = u_castV$((sort_IdxCtx__Inner)(ctx));
+$static fn_((sort_IdxCmpXchgr__Inner_ord(usize lhs, usize rhs, u_V$raw ctx))(cmp_Ord)) {
+    let inner = u_castV$((sort_IdxCmpXchgr__Inner)(ctx));
     let lhs_ptr = u_atS(inner.seq, lhs).as_const;
     let rhs_ptr = u_atS(inner.seq, rhs).as_const;
     return cmp_ordCtxP(lhs_ptr, rhs_ptr, inner.ctx, inner.ordFn);
 };
 $attr($inline_always)
-$static fn_((sort_IdxCtx__Inner_swap(usize lhs, usize rhs, u_V$raw ctx))(void)) {
-    let inner = u_castV$((sort_IdxCtx__Inner)(ctx));
+$static fn_((sort_IdxCmpXchgr__Inner_swap(usize lhs, usize rhs, u_V$raw ctx))(void)) {
+    let inner = u_castV$((sort_IdxCmpXchgr__Inner)(ctx));
     mem_swapP(u_atS(inner.seq, lhs), u_atS(inner.seq, rhs));
 };
 
@@ -43,9 +54,18 @@ fn_((sort_inOrdd(u_S_const$raw seq, sort_OrdFn ordFn))(bool)) {
 };
 
 fn_((sort_inOrddCtx(u_S_const$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(bool)) {
-    if (seq.len <= 1) return true;
-    for_(($r(1, seq.len))(i)) {
-        let ord = cmp_ordCtxP(u_atS(seq, i), u_atS(seq, i - 1), ctx, ordFn);
+    let_(inner, sort_IdxCmpr__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
+    let_(idx_cmpr, sort_IdxCmpr) = {
+        .inner = u_deref(u_anyP(&inner)),
+        .ordFn = sort_IdxCmpr__Inner_ord,
+    };
+    return sort_inOrddIdx($rt(seq.len), idx_cmpr);
+};
+
+fn_((sort_inOrddIdx(R range, sort_IdxCmpr idx_cmpr))(bool)) {
+    if (R_len(range) <= 1) return true;
+    for_(((R_suffix(range, 1)))(i)) {
+        let ord = sort_IdxCmpr_ord(idx_cmpr, i, i - 1);
         if (cmp_Ord_isLt(ord)) return false;
     } $end(for);
     return true;
@@ -59,25 +79,27 @@ fn_((sort_insert(u_S$raw seq, sort_OrdFn ordFn))(void)) {
 };
 
 fn_((sort_insertCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
-    let_(inner, sort_IdxCtx__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
-    let_(idx_ctx, sort_IdxCtx) = {
-        .ordFn = sort_IdxCtx__Inner_ord,
-        .swapFn = sort_IdxCtx__Inner_swap,
-        .inner = u_deref(u_anyP(&inner))
+    let_(inner, sort_IdxCmpXchgr__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
+    let_(idx_ctx, sort_IdxCmpXchgr) = {
+        .base = {
+            .inner = u_deref(u_anyP(&inner)),
+            .ordFn = sort_IdxCmpXchgr__Inner_ord,
+        },
+        .swapFn = sort_IdxCmpXchgr__Inner_swap,
     };
     sort_insertIdx($rt(seq.len), idx_ctx);
 };
 
-fn_((sort_insertIdx(R range, sort_IdxCtx idx_ctx))(void)) {
+fn_((sort_insertIdx(R range, sort_IdxCmpXchgr idx_ctx))(void)) {
     if (R_len(range) <= 1) return;
     for_(((R_suffix(range, 1)))(unsorted_idx)) {
         var sorted_bwd_idx = unsorted_idx;
         while (range.begin < sorted_bwd_idx) {
             let curr = sorted_bwd_idx;
             let prev = curr - 1;
-            let ord = sort_IdxCtx_ord(idx_ctx, curr, prev);
+            let ord = sort_IdxCmpXchgr_ord(idx_ctx, curr, prev);
             if (!cmp_Ord_isLt(ord)) break;
-            sort_IdxCtx_swap(idx_ctx, curr, prev);
+            sort_IdxCmpXchgr_swap(idx_ctx, curr, prev);
             sorted_bwd_idx--;
         }
     } $end(for);
@@ -91,18 +113,20 @@ fn_((sort_heap(u_S$raw seq, sort_OrdFn ordFn))(void)) {
 };
 
 fn_((sort_heapCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
-    let_(inner, sort_IdxCtx__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
-    let_(idx_ctx, sort_IdxCtx) = {
-        .ordFn = sort_IdxCtx__Inner_ord,
-        .swapFn = sort_IdxCtx__Inner_swap,
-        .inner = u_deref(u_anyP(&inner))
+    let_(inner, sort_IdxCmpXchgr__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
+    let_(idx_ctx, sort_IdxCmpXchgr) = {
+        .base = {
+            .inner = u_deref(u_anyP(&inner)),
+            .ordFn = sort_IdxCmpXchgr__Inner_ord,
+        },
+        .swapFn = sort_IdxCmpXchgr__Inner_swap,
     };
     sort_heapIdx($rt(seq.len), idx_ctx);
 };
 
 $attr($inline_always)
-$static fn_((sort_heap__siftDown(R range, usize target, sort_IdxCtx idx_ctx))(void));
-fn_((sort_heapIdx(R range, sort_IdxCtx idx_ctx))(void)) {
+$static fn_((sort_heap__siftDown(R range, usize target, sort_IdxCmpXchgr idx_ctx))(void));
+fn_((sort_heapIdx(R range, sort_IdxCmpXchgr idx_ctx))(void)) {
     let len = R_len(range);
     if (len <= 1) return;
     /* heapify */
@@ -113,12 +137,12 @@ fn_((sort_heapIdx(R range, sort_IdxCtx idx_ctx))(void)) {
     /* extract */
     i = len;
     while (i-- > 0) {
-        sort_IdxCtx_swap(idx_ctx, range.begin, range.begin + i);
+        sort_IdxCmpXchgr_swap(idx_ctx, range.begin, range.begin + i);
         sort_heap__siftDown(R_prefix(range, i), range.begin, idx_ctx);
     }
 };
 
-fn_((sort_heap__siftDown(R range, usize target, sort_IdxCtx idx_ctx))(void)) {
+fn_((sort_heap__siftDown(R range, usize target, sort_IdxCmpXchgr idx_ctx))(void)) {
     let range_len = R_len(range);
     if (range_len <= 1) return;
     var curr = target;
@@ -128,12 +152,12 @@ fn_((sort_heap__siftDown(R range, usize target, sort_IdxCtx idx_ctx))(void)) {
         var child = range.begin + child_offset + 1;
         let next_child = child + 1;
         if (next_child < range.end) {
-            let ord = sort_IdxCtx_ord(idx_ctx, child, next_child);
+            let ord = sort_IdxCmpXchgr_ord(idx_ctx, child, next_child);
             if (cmp_Ord_isLt(ord)) child = next_child;
         }
-        let ord = sort_IdxCtx_ord(idx_ctx, child, curr);
+        let ord = sort_IdxCmpXchgr_ord(idx_ctx, child, curr);
         if (!cmp_Ord_isLt(ord)) {
-            sort_IdxCtx_swap(idx_ctx, child, curr);
+            sort_IdxCmpXchgr_swap(idx_ctx, child, curr);
             curr = child;
         } else {
             break;
@@ -146,25 +170,25 @@ fn_((sort_heap__siftDown(R range, usize target, sort_IdxCtx idx_ctx))(void)) {
 /* --- Internal Declarations --- */
 
 /* Break patterns in the slice by shuffling some elements around. */
-$static fn_((sort_pdq__breakPatterns(R range, sort_IdxCtx idx_ctx))(void));
+$static fn_((sort_pdq__breakPatterns(R range, sort_IdxCmpXchgr idx_ctx))(void));
 /* Choose a pivot in `items[begin..end]`. Swaps likely_sorted when slice seems already sorted. */
-$static fn_((sort_pdq__choosePivot(R range, usize* pivot, sort_IdxCtx idx_ctx))(u8));
+$static fn_((sort_pdq__choosePivot(R range, usize* pivot, sort_IdxCmpXchgr idx_ctx))(u8));
 /* Sort 3 elements and count swaps performed */
 $attr($inline_always)
-$static fn_((sort_pdq__sort3(usize lo, usize mid, usize hi, usize* swaps, sort_IdxCtx idx_ctx))(void));
+$static fn_((sort_pdq__sort3(usize lo, usize mid, usize hi, usize* swaps, sort_IdxCmpXchgr idx_ctx))(void));
 /* Reverse the range in place. */
-$static fn_((sort_pdq__reverseRange(R range, sort_IdxCtx idx_ctx))(void));
+$static fn_((sort_pdq__reverseRange(R range, sort_IdxCmpXchgr idx_ctx))(void));
 /* Partially sorts a slice by shifting several out-of-order elements around.
  * Returns `true` if the slice is sorted at the end. This function is O(n) worst-case. */
-$static fn_((sort_pdq__insertPartial(R range, sort_IdxCtx idx_ctx))(bool));
+$static fn_((sort_pdq__insertPartial(R range, sort_IdxCmpXchgr idx_ctx))(bool));
 /* Partitions `items[begin..end]` into elements equal to `items[pivot]`
  * followed by elements greater than `items[pivot]`.
  * Assumes `items[begin..end]` does not contain elements smaller than `items[pivot]`. */
-$static fn_((sort_pdq__partEq(R range, usize pivot, sort_IdxCtx idx_ctx))(usize));
+$static fn_((sort_pdq__partEq(R range, usize pivot, sort_IdxCmpXchgr idx_ctx))(usize));
 /* Partitions `items[begin..end]` into elements smaller than `items[pivot]`,
  * followed by elements greater than or equal to `items[pivot]`.
  * Sets the new pivot. Returns `true` if already partitioned. */
-$static fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool));
+$static fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCmpXchgr idx_ctx))(bool));
 
 /* --- External Definitions --- */
 
@@ -179,16 +203,18 @@ fn_((sort_pdq(u_S$raw seq, sort_OrdFn ordFn))(void)) {
 };
 
 fn_((sort_pdqCtx(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx))(void)) {
-    let_(inner, sort_IdxCtx__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
-    let_(idx_ctx, sort_IdxCtx) = {
-        .ordFn = sort_IdxCtx__Inner_ord,
-        .swapFn = sort_IdxCtx__Inner_swap,
-        .inner = u_deref(u_anyP(&inner))
+    let_(inner, sort_IdxCmpXchgr__Inner) = { .seq = seq, .ordFn = ordFn, .ctx = ctx };
+    let_(idx_ctx, sort_IdxCmpXchgr) = {
+        .base = {
+            .inner = u_deref(u_anyP(&inner)),
+            .ordFn = sort_IdxCmpXchgr__Inner_ord,
+        },
+        .swapFn = sort_IdxCmpXchgr__Inner_swap,
     };
     sort_pdqIdx($rt(seq.len), idx_ctx);
 };
 
-fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void)) {
+fn_((sort_pdqIdx(R range, sort_IdxCmpXchgr idx_ctx))(void)) {
     let_(max_insertion, usize) = sort_threshold_fallback_to_insert_sort;
     let len = R_len(range);
     if (len <= 1) return;
@@ -246,7 +272,7 @@ fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void)) {
              * element in the slice. Partition the slice into elements equal to and
              * elements greater than the pivot. */
             if (frame.range.begin > range.begin) {
-                let ord = sort_IdxCtx_ord(idx_ctx, frame.range.begin - 1, pivot);
+                let ord = sort_IdxCmpXchgr_ord(idx_ctx, frame.range.begin - 1, pivot);
                 if (!cmp_Ord_isLt(ord)) {
                     frame.range.begin = sort_pdq__partEq(frame.range, pivot, idx_ctx);
                     continue;
@@ -286,7 +312,7 @@ fn_((sort_pdqIdx(R range, sort_IdxCtx idx_ctx))(void)) {
 
 /* --- Internal Definitions --- */
 
-fn_((sort_pdq__breakPatterns(R range, sort_IdxCtx idx_ctx))(void)) {
+fn_((sort_pdq__breakPatterns(R range, sort_IdxCmpXchgr idx_ctx))(void)) {
     let_(min_partition, usize) = 8;
     let len = R_len(range);
     if (len < min_partition) return;
@@ -302,10 +328,10 @@ fn_((sort_pdq__breakPatterns(R range, sort_IdxCtx idx_ctx))(void)) {
         rng ^= rng << 17;
         var target = (usize)(rng & (modulus - 1));
         if (target >= len) target -= len;
-        sort_IdxCtx_swap(idx_ctx, curr, range.begin + target);
+        sort_IdxCmpXchgr_swap(idx_ctx, curr, range.begin + target);
     } $end(for);
 };
-fn_((sort_pdq__choosePivot(R range, usize* pivot, sort_IdxCtx idx_ctx))(u8)) {
+fn_((sort_pdq__choosePivot(R range, usize* pivot, sort_IdxCmpXchgr idx_ctx))(u8)) {
     let_(shortest_ninther, usize) = sort_threshold_pdq_tukey_ninther;
     let_(max_swaps, usize) = sort_max_swaps_pdq_choose_pivot;
     let len = R_len(range);
@@ -330,44 +356,44 @@ fn_((sort_pdq__choosePivot(R range, usize* pivot, sort_IdxCtx idx_ctx))(u8)) {
     if (swaps == max_swaps) return 1; /* decreasing */
     return 2; /* unknown */
 };
-fn_((sort_pdq__sort3(usize lo, usize mid, usize hi, usize* swaps, sort_IdxCtx idx_ctx))(void)) {
-    if (cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, mid, lo))) {
-        sort_IdxCtx_swap(idx_ctx, mid, lo);
+fn_((sort_pdq__sort3(usize lo, usize mid, usize hi, usize* swaps, sort_IdxCmpXchgr idx_ctx))(void)) {
+    if (cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, mid, lo))) {
+        sort_IdxCmpXchgr_swap(idx_ctx, mid, lo);
         *swaps += 1;
     }
-    if (cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, hi, mid))) {
-        sort_IdxCtx_swap(idx_ctx, hi, mid);
+    if (cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, hi, mid))) {
+        sort_IdxCmpXchgr_swap(idx_ctx, hi, mid);
         *swaps += 1;
     }
-    if (cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, mid, lo))) {
-        sort_IdxCtx_swap(idx_ctx, mid, lo);
+    if (cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, mid, lo))) {
+        sort_IdxCmpXchgr_swap(idx_ctx, mid, lo);
         *swaps += 1;
     }
 };
-fn_((sort_pdq__reverseRange(R range, sort_IdxCtx idx_ctx))(void)) {
+fn_((sort_pdq__reverseRange(R range, sort_IdxCmpXchgr idx_ctx))(void)) {
     var lo = range.begin;
     var hi = range.end - 1;
-    while (lo < hi) sort_IdxCtx_swap(idx_ctx, lo++, hi--);
+    while (lo < hi) sort_IdxCmpXchgr_swap(idx_ctx, lo++, hi--);
 };
-fn_((sort_pdq__insertPartial(R range, sort_IdxCtx idx_ctx))(bool)) {
+fn_((sort_pdq__insertPartial(R range, sort_IdxCmpXchgr idx_ctx))(bool)) {
     let_(max_steps, usize) = sort_max_steps_pdq_partial_insert_sort;
     let_(shortest_shifting, usize) = sort_threshold_pdq_partial_insert_sort;
     var curr = range.begin + 1;
     for_(($rt(max_steps))($ignore)) {
         /* find the next pair of adjacent out-of-order elements */
-        while (curr < range.end && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, curr, curr - 1))) curr++;
+        while (curr < range.end && !cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, curr, curr - 1))) curr++;
         if (curr == range.end) return true;
         /* don't shift elements on short arrays, that has a performance cost */
         if (R_len(range) < shortest_shifting) return false;
 
         /* swap the found pair of elements. This puts them in correct order. */
-        sort_IdxCtx_swap(idx_ctx, curr, curr - 1);
+        sort_IdxCmpXchgr_swap(idx_ctx, curr, curr - 1);
         /* shift the smaller element to the left */
         if (curr - range.begin >= 2) {
             var scan = curr - 1;
             while (scan > range.begin) {
-                if (!cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, scan, scan - 1))) break;
-                sort_IdxCtx_swap(idx_ctx, scan, scan - 1);
+                if (!cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, scan, scan - 1))) break;
+                sort_IdxCmpXchgr_swap(idx_ctx, scan, scan - 1);
                 scan--;
             }
         }
@@ -375,28 +401,28 @@ fn_((sort_pdq__insertPartial(R range, sort_IdxCtx idx_ctx))(bool)) {
         if (range.end - curr >= 2) {
             var scan = curr + 1;
             while (scan < range.end) {
-                if (!cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, scan, scan - 1))) break;
-                sort_IdxCtx_swap(idx_ctx, scan, scan - 1);
+                if (!cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, scan, scan - 1))) break;
+                sort_IdxCmpXchgr_swap(idx_ctx, scan, scan - 1);
                 scan++;
             }
         }
     } $end(for);
     return false;
 };
-fn_((sort_pdq__partEq(R range, usize pivot, sort_IdxCtx idx_ctx))(usize)) {
-    sort_IdxCtx_swap(idx_ctx, range.begin, pivot);
+fn_((sort_pdq__partEq(R range, usize pivot, sort_IdxCmpXchgr idx_ctx))(usize)) {
+    sort_IdxCmpXchgr_swap(idx_ctx, range.begin, pivot);
     var lo = range.begin + 1;
     var hi = range.end - 1;
     while (true) {
-        while (lo <= hi && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, range.begin, lo))) lo++;
-        while (lo <= hi && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, range.begin, hi))) hi--;
+        while (lo <= hi && !cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, range.begin, lo))) lo++;
+        while (lo <= hi && cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, range.begin, hi))) hi--;
         if (lo > hi) break;
-        sort_IdxCtx_swap(idx_ctx, lo++, hi--);
+        sort_IdxCmpXchgr_swap(idx_ctx, lo++, hi--);
     }
     return lo;
 };
-fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
-    sort_IdxCtx_swap(idx_ctx, range.begin, *pivot);
+fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCmpXchgr idx_ctx))(bool)) {
+    sort_IdxCmpXchgr_swap(idx_ctx, range.begin, *pivot);
     let pivot_idx = range.begin;
 
     var l = range.begin + 1;
@@ -411,15 +437,15 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
     var_(r_base, usize) = 0;
     var_(was_partitioned, bool) = true;
 
-    while (l <= r && cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, l, pivot_idx))) l++;
-    while (l <= r && !cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r, pivot_idx))) r--;
+    while (l <= r && cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, l, pivot_idx))) l++;
+    while (l <= r && !cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, r, pivot_idx))) r--;
     if (l > r) {
-        sort_IdxCtx_swap(idx_ctx, r, pivot_idx);
+        sort_IdxCmpXchgr_swap(idx_ctx, r, pivot_idx);
         *pivot = r;
         return true;
     }
 
-    sort_IdxCtx_swap(idx_ctx, l, r);
+    sort_IdxCmpXchgr_swap(idx_ctx, l, r);
     was_partitioned = false;
     l++;
     r--;
@@ -440,7 +466,7 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
             l_start = 0;
             l_base = l;
             for_(($rt(l_scan_count))(scan)) {
-                let is_ge = cmp_Ord_isGe(sort_IdxCtx_ord(idx_ctx, l + scan, pivot_idx));
+                let is_ge = cmp_Ord_isGe(sort_IdxCmpXchgr_ord(idx_ctx, l + scan, pivot_idx));
                 *A_at((l_offsets)[l_count]) = intCast$((u8)(scan));
                 l_count += as$(usize)(boolToInt(is_ge));
             } $end(for);
@@ -451,7 +477,7 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
             r_start = 0;
             r_base = r;
             for_(($rt(r_scan_count))(scan)) {
-                let is_lt = cmp_Ord_isLt(sort_IdxCtx_ord(idx_ctx, r - scan, pivot_idx));
+                let is_lt = cmp_Ord_isLt(sort_IdxCmpXchgr_ord(idx_ctx, r - scan, pivot_idx));
                 *A_at((r_offsets)[r_count]) = intCast$((u8)(scan));
                 r_count += as$(usize)(boolToInt(is_lt));
             } $end(for);
@@ -460,7 +486,7 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
 
         let pair_count = pri_min(l_count, r_count);
         for_(($rt(pair_count))(i)) {
-            sort_IdxCtx_swap(
+            sort_IdxCmpXchgr_swap(
                 idx_ctx,
                 l_base + *A_at((l_offsets)[l_start + i]),
                 r_base - *A_at((r_offsets)[r_start + i])
@@ -486,7 +512,7 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
     if (l_count > 0) {
         while (l_count > 0) {
             l_count--;
-            sort_IdxCtx_swap(idx_ctx, l_base + *A_at((l_offsets)[l_start + l_count]), r);
+            sort_IdxCmpXchgr_swap(idx_ctx, l_base + *A_at((l_offsets)[l_start + l_count]), r);
             r--;
         }
         l = r + 1;
@@ -494,13 +520,13 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCtx idx_ctx))(bool)) {
     if (r_count > 0) {
         while (r_count > 0) {
             r_count--;
-            sort_IdxCtx_swap(idx_ctx, r_base - *A_at((r_offsets)[r_start + r_count]), l);
+            sort_IdxCmpXchgr_swap(idx_ctx, r_base - *A_at((r_offsets)[r_start + r_count]), l);
             l++;
         }
         r = l - 1;
     }
 
-    sort_IdxCtx_swap(idx_ctx, r, pivot_idx);
+    sort_IdxCmpXchgr_swap(idx_ctx, r, pivot_idx);
     *pivot = r;
     return was_partitioned;
 };

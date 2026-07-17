@@ -155,10 +155,12 @@ TEST_fn_("sort: empty and singleton inputs do not compare swap or mutate" $scope
     let empty_seq = u_prefixS(u_anyS(A_ref(empty_storage)), 0);
     let single_seq = u_anyS(A_ref(single_storage));
     let cache_seq = u_anyS(A_ref(cache_storage));
-    let idx_ctx = (sort_IdxCtx){
-        .ordFn = test_sort_countIdxOrd,
+    let idx_ctx = (sort_IdxCmpXchgr){
+        .base = {
+            .inner = u_anyV(&stats),
+            .ordFn = test_sort_countIdxOrd,
+        },
         .swapFn = test_sort_countIdxSwap,
-        .inner = u_anyV(&stats),
     };
 
     stats = (test_sort_CallStats){};
@@ -574,18 +576,18 @@ TEST_fn_("sort: pdq - deterministic duplicates and patterned values" $scope) {
     try_(TEST_expect(sort_inOrdd(u_anyS(A_ref(data)).as_const, cmp_u_ord$(i32))));
 } $unscoped(TEST_fn);
 
-T_alias$((test_sort_IdxCtx)(struct test_sort_IdxCtx {
+T_alias$((test_sort_IdxCmpXchgr)(struct test_sort_IdxCmpXchgr {
     var_(data, i32*);
     var_(range, R);
 }));
-$static fn_((test_sort_IdxCtx_ord(usize lhs, usize rhs, u_V$raw raw_ctx))(cmp_Ord)) {
-    let ctx = u_castV$((test_sort_IdxCtx)(raw_ctx));
+$static fn_((test_sort_IdxCmpXchgr_ord(usize lhs, usize rhs, u_V$raw raw_ctx))(cmp_Ord)) {
+    let ctx = u_castV$((test_sort_IdxCmpXchgr)(raw_ctx));
     claim_assert(ctx.range.begin <= lhs), claim_assert(lhs < ctx.range.end);
     claim_assert(ctx.range.begin <= rhs), claim_assert(rhs < ctx.range.end);
     return pri_ord(*P_at((ctx.data)[lhs]), *P_at((ctx.data)[rhs]));
 };
-$static fn_((test_sort_IdxCtx_swap(usize lhs, usize rhs, u_V$raw raw_ctx))(void)) {
-    let ctx = u_castV$((test_sort_IdxCtx)(raw_ctx));
+$static fn_((test_sort_IdxCmpXchgr_swap(usize lhs, usize rhs, u_V$raw raw_ctx))(void)) {
+    let ctx = u_castV$((test_sort_IdxCmpXchgr)(raw_ctx));
     claim_assert(ctx.range.begin <= lhs), claim_assert(lhs < ctx.range.end);
     claim_assert(ctx.range.begin <= rhs), claim_assert(rhs < ctx.range.end);
     return pri_swap(P_at((ctx.data)[lhs]), P_at((ctx.data)[rhs]));
@@ -617,34 +619,40 @@ TEST_fn_("sort: idx algorithms respect non-zero range boundaries" $scope) {
     let pdq_before_begin = *A_at((pdq_data)[sort_begin - 1]);
     let pdq_after_end = *A_at((pdq_data)[sort_end]);
 
-    let insert_ctx = (test_sort_IdxCtx){
+    let insert_ctx = (test_sort_IdxCmpXchgr){
         .data = A_ptr(insert_data),
         .range = $r(sort_begin, sort_end),
     };
-    let heap_ctx = (test_sort_IdxCtx){
+    let heap_ctx = (test_sort_IdxCmpXchgr){
         .data = A_ptr(heap_data),
         .range = $r(sort_begin, sort_end),
     };
-    let pdq_ctx = (test_sort_IdxCtx){
+    let pdq_ctx = (test_sort_IdxCmpXchgr){
         .data = A_ptr(pdq_data),
         .range = $r(sort_begin, sort_end),
     };
 
-    sort_insertIdx($r(sort_begin, sort_end), (sort_IdxCtx){
-        .ordFn = test_sort_IdxCtx_ord,
-        .swapFn = test_sort_IdxCtx_swap,
-        .inner = u_deref(u_anyP(&insert_ctx)),
-    });
-    sort_heapIdx($r(sort_begin, sort_end), (sort_IdxCtx){
-        .ordFn = test_sort_IdxCtx_ord,
-        .swapFn = test_sort_IdxCtx_swap,
-        .inner = u_deref(u_anyP(&heap_ctx)),
-    });
-    sort_pdqIdx($r(sort_begin, sort_end), (sort_IdxCtx){
-        .ordFn = test_sort_IdxCtx_ord,
-        .swapFn = test_sort_IdxCtx_swap,
-        .inner = u_deref(u_anyP(&pdq_ctx)),
-    });
+    sort_insertIdx($r(sort_begin, sort_end), (sort_IdxCmpXchgr){
+                                                 .base = {
+                                                     .inner = u_deref(u_anyP(&insert_ctx)),
+                                                     .ordFn = test_sort_IdxCmpXchgr_ord,
+                                                 },
+                                                 .swapFn = test_sort_IdxCmpXchgr_swap,
+                                             });
+    sort_heapIdx($r(sort_begin, sort_end), (sort_IdxCmpXchgr){
+                                               .base = {
+                                                   .inner = u_deref(u_anyP(&heap_ctx)),
+                                                   .ordFn = test_sort_IdxCmpXchgr_ord,
+                                               },
+                                               .swapFn = test_sort_IdxCmpXchgr_swap,
+                                           });
+    sort_pdqIdx($r(sort_begin, sort_end), (sort_IdxCmpXchgr){
+                                              .base = {
+                                                  .inner = u_deref(u_anyP(&pdq_ctx)),
+                                                  .ordFn = test_sort_IdxCmpXchgr_ord,
+                                              },
+                                              .swapFn = test_sort_IdxCmpXchgr_swap,
+                                          });
 
     try_(TEST_expect(*A_at((insert_data)[sort_begin - 1]) == insert_before_begin));
     try_(TEST_expect(*A_at((insert_data)[sort_end]) == insert_after_end));
@@ -652,6 +660,10 @@ TEST_fn_("sort: idx algorithms respect non-zero range boundaries" $scope) {
         u_anyS(A_slice((insert_data)$r(sort_begin, sort_end))).as_const,
         cmp_u_ord$(i32)
     )));
+    try_(TEST_expect(sort_inOrddIdx($r(sort_begin, sort_end), (sort_IdxCmpr){
+        .inner = u_deref(u_anyP(&insert_ctx)),
+        .ordFn = test_sort_IdxCmpXchgr_ord,
+    })));
     try_(TEST_expect(*A_at((heap_data)[sort_begin - 1]) == heap_before_begin));
     try_(TEST_expect(*A_at((heap_data)[sort_end]) == heap_after_end));
     try_(TEST_expect(sort_inOrdd(
@@ -680,14 +692,16 @@ TEST_fn_("sort: pdqIdx - non-zero range stays in bounds and sorts range" $scope)
     let before_begin = *A_at((data)[sort_begin - 1]);
     let after_end = *A_at((data)[sort_end]);
 
-    let ctx = (test_sort_IdxCtx){
+    let ctx = (test_sort_IdxCmpXchgr){
         .data = A_ptr(data),
         .range = $r(sort_begin, sort_end),
     };
-    let idx_ctx = (sort_IdxCtx){
-        .ordFn = test_sort_IdxCtx_ord,
-        .swapFn = test_sort_IdxCtx_swap,
-        .inner = u_deref(u_anyP(&ctx)),
+    let idx_ctx = (sort_IdxCmpXchgr){
+        .base = {
+            .inner = u_deref(u_anyP(&ctx)),
+            .ordFn = test_sort_IdxCmpXchgr_ord,
+        },
+        .swapFn = test_sort_IdxCmpXchgr_swap,
     };
     sort_pdqIdx($r(sort_begin, sort_end), idx_ctx);
 
