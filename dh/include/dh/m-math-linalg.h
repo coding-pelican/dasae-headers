@@ -20,6 +20,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
+#include "m-math-linalg/cfg.h"
+
 #include "m-math-linalg/V-Vec.h"
 #include "m-math-linalg/V-Vec-flt.h"
 #include "m-math-linalg/V-Vec-int.h"

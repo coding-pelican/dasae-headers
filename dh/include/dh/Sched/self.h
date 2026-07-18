@@ -43,8 +43,8 @@ $extern fn_((Sched_idle(Sched self))(Sched_Cancelable$void));
 
 $extern fn_((Sched_seq(exec_Seq* self))(Sched));
 $extern fn_((Sched_coop(exec_Coop* self))(Sched));
-$extern fn_((Sched_para(exec_Para* self))(Sched));
 $extern fn_((Sched_preem(exec_Preem* self))(Sched));
+$extern fn_((Sched_para(exec_Para* self))(Sched));
 
 struct Sched_VTbl {
     /// Split a call from its result storage and use available asynchronous

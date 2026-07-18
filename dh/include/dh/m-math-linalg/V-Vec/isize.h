@@ -28,99 +28,99 @@ extern "C" {
 
 /* Construction */
 #define m_V2isize_of_static(_x, _y...) l$((m_V2isize){ .x = (_x), .y = (_y) })
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_of(isize x, isize y);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_splat(isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_from3(m_V3isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_from4(m_V4isize v);
 
 /* Comparison */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ord$((m_V2isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_eq_default$((m_V2isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ne_default$((m_V2isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_lt_default$((m_V2isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_gt_default$((m_V2isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_le_default$((m_V2isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ge_default$((m_V2isize)(lhs, rhs));
 
 /* Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_neg(m_V2isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_add(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_sub(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_mul(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_div(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_rem(m_V2isize lhs, m_V2isize rhs);
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_scal(m_V2isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_scalInv(m_V2isize v, isize scalar);
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_addS(m_V2isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_subS(m_V2isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_mulS(m_V2isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_divS(m_V2isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_remS(m_V2isize v, isize scalar);
 
 /* Range Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_min(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_max(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_clamp(m_V2isize v, m_V2isize min, m_V2isize max);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_wrap(m_V2isize v, m_V2isize min, m_V2isize max);
 
 /* Geometric Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_lenSq(m_V2isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_distSq(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_dot(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_cross(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_det(m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_orient(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V_Orient m_V2isize_orientDir(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V2isize_isCW(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V2isize_isCollinear(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V2isize_isCCW(m_V2isize origin, m_V2isize lhs, m_V2isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_cw(m_V2isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_ccw(m_V2isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_skew(m_V2isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_perp(m_V2isize v);
 
 /* Vec3z functions */
@@ -148,93 +148,93 @@ $static m_V2isize m_V2isize_perp(m_V2isize v);
 
 /* Construction */
 #define m_V3isize_of_static(_x, _y, _z...) l$((m_V3isize){ .x = (_x), .y = (_y), .z = (_z) })
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_of(isize x, isize y, isize z);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_splat(isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_from2(m_V2isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_from4(m_V4isize v);
 
 /* Comparison */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ord$((m_V3isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_eq_default$((m_V3isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ne_default$((m_V3isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_lt_default$((m_V3isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_gt_default$((m_V3isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_le_default$((m_V3isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ge_default$((m_V3isize)(lhs, rhs));
 
 /* Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_neg(m_V3isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_add(m_V3isize lhs, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_sub(m_V3isize lhs, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_mul(m_V3isize lhs, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_div(m_V3isize lhs, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_rem(m_V3isize lhs, m_V3isize rhs);
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_scal(m_V3isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_scalInv(m_V3isize v, isize scalar);
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_addS(m_V3isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_subS(m_V3isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_mulS(m_V3isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_divS(m_V3isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_remS(m_V3isize v, isize scalar);
 
 /* Range Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_min(m_V3isize lhs, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_max(m_V3isize lhs, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_clamp(m_V3isize v, m_V3isize min, m_V3isize max);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_wrap(m_V3isize v, m_V3isize min, m_V3isize max);
 
 /* Geometric Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_lenSq(m_V3isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_distSq(m_V3isize lhs, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_dot(m_V3isize lhs, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_cross(m_V3isize lhs, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_det(m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_orient(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V_Orient m_V3isize_orientDir(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V3isize_isOrientNeg(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V3isize_isCoplanar(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V3isize_isOrientPos(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_perp(m_V3isize v);
 
 /* Vec4z functions */
@@ -260,77 +260,77 @@ $static m_V3isize m_V3isize_perp(m_V3isize v);
 
 /* Construction */
 #define m_V4isize_of_static(_x, _y, _z, _w...) l$((m_V4isize){ .x = (_x), .y = (_y), .z = (_z), .w = (_w) })
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_of(isize x, isize y, isize z, isize w);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_splat(isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_from2(m_V2isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_from3(m_V3isize v);
 
 /* Comparison */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ord$((m_V4isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_eq_default$((m_V4isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ne_default$((m_V4isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_lt_default$((m_V4isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_gt_default$((m_V4isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_le_default$((m_V4isize)(lhs, rhs));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ge_default$((m_V4isize)(lhs, rhs));
 
 /* Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_neg(m_V4isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_add(m_V4isize lhs, m_V4isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_sub(m_V4isize lhs, m_V4isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_mul(m_V4isize lhs, m_V4isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_div(m_V4isize lhs, m_V4isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_rem(m_V4isize lhs, m_V4isize rhs);
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_scal(m_V4isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_scalInv(m_V4isize v, isize scalar);
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_addS(m_V4isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_subS(m_V4isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_mulS(m_V4isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_divS(m_V4isize v, isize scalar);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_remS(m_V4isize v, isize scalar);
 
 /* Range Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_min(m_V4isize lhs, m_V4isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_max(m_V4isize lhs, m_V4isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_clamp(m_V4isize v, m_V4isize min, m_V4isize max);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_wrap(m_V4isize v, m_V4isize min, m_V4isize max);
 
 /* Geometric Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V4isize_lenSq(m_V4isize v);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V4isize_distSq(m_V4isize lhs, m_V4isize rhs);
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V4isize_dot(m_V4isize lhs, m_V4isize rhs);
 
 /*========== Macros and Definitions =========================================*/
@@ -338,25 +338,25 @@ $static isize m_V4isize_dot(m_V4isize lhs, m_V4isize rhs);
 #if in_analysis_active_only || in_comptime
 /* Vec2z functions */
 /* Construction */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_of(isize x, isize y) {
     return (m_V2isize){ .x = x, .y = y };
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_splat(isize scalar) {
     return m_V2isize_of(scalar, scalar);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_from3(m_V3isize v) {
     return m_V2isize_of(v.x, v.y);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_from4(m_V4isize v) {
     return m_V2isize_of(v.x, v.y);
 }
 
 /* Comparison */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ord$((m_V2isize)(lhs, rhs)) {
     for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
@@ -366,27 +366,27 @@ $static cmp_fn_ord$((m_V2isize)(lhs, rhs)) {
 }
 
 /* Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_neg(m_V2isize v) {
     return m_V2isize_of(-v.x, -v.y);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_add(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(lhs.x + rhs.x, lhs.y + rhs.y);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_sub(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(lhs.x - rhs.x, lhs.y - rhs.y);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_mul(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(lhs.x * rhs.x, lhs.y * rhs.y);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_div(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(lhs.x / rhs.x, lhs.y / rhs.y);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_rem(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(
         int_rem(lhs.x, rhs.x),
@@ -394,56 +394,56 @@ $static m_V2isize m_V2isize_rem(m_V2isize lhs, m_V2isize rhs) {
     );
 }
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_scal(m_V2isize v, isize scalar) {
     return m_V2isize_of(v.x * scalar, v.y * scalar);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_scalInv(m_V2isize v, isize scalar) {
     return m_V2isize_of(v.x / scalar, v.y / scalar);
 }
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_addS(m_V2isize v, isize scalar) {
     return m_V2isize_add(v, m_V2isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_subS(m_V2isize v, isize scalar) {
     return m_V2isize_sub(v, m_V2isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_mulS(m_V2isize v, isize scalar) {
     return m_V2isize_mul(v, m_V2isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_divS(m_V2isize v, isize scalar) {
     return m_V2isize_div(v, m_V2isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_remS(m_V2isize v, isize scalar) {
     return m_V2isize_rem(v, m_V2isize_splat(scalar));
 }
 
 /* Range Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_min(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(
         pri_min(lhs.x, rhs.x),
         pri_min(lhs.y, rhs.y)
     );
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_max(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_of(
         pri_max(lhs.x, rhs.x),
         pri_max(lhs.y, rhs.y)
     );
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_clamp(m_V2isize v, m_V2isize min, m_V2isize max) {
     return m_V2isize_min(m_V2isize_max(v, min), max);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_wrap(m_V2isize v, m_V2isize min, m_V2isize max) {
     return m_V2isize_of(
         int_wrap(v.x, min.x, max.x),
@@ -452,86 +452,86 @@ $static m_V2isize m_V2isize_wrap(m_V2isize v, m_V2isize min, m_V2isize max) {
 }
 
 /* Geometric Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_lenSq(m_V2isize v) {
     return m_V2isize_dot(v, v);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_distSq(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_lenSq(m_V2isize_sub(lhs, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_dot(m_V2isize lhs, m_V2isize rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y;
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_cross(m_V2isize lhs, m_V2isize rhs) {
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_det(m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_cross(lhs, rhs);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V2isize_orient(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
     return m_V2isize_det(m_V2isize_sub(lhs, origin), m_V2isize_sub(rhs, origin));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V_Orient m_V2isize_orientDir(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
     let det = m_V2isize_orient(origin, lhs, rhs);
     return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
                                               : m_V_Orient_zero;
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V2isize_isCW(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
     return m_V_Orient_isCW(m_V2isize_orientDir(origin, lhs, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V2isize_isCollinear(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
     return m_V_Orient_isCollinear(m_V2isize_orientDir(origin, lhs, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V2isize_isCCW(m_V2isize origin, m_V2isize lhs, m_V2isize rhs) {
     return m_V_Orient_isCCW(m_V2isize_orientDir(origin, lhs, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_cw(m_V2isize v) {
     return m_V2isize_of(v.y, -v.x);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_ccw(m_V2isize v) {
     return m_V2isize_of(-v.y, v.x);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_skew(m_V2isize v) {
     return m_V2isize_ccw(v);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V2isize m_V2isize_perp(m_V2isize v) {
     return m_V2isize_of(-v.y, v.x);
 }
 
 /* Vec3z functions */
 /* Construction */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_of(isize x, isize y, isize z) {
     return (m_V3isize){ .x = x, .y = y, .z = z };
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_splat(isize scalar) {
     return m_V3isize_of(scalar, scalar, scalar);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_from2(m_V2isize v) {
     return m_V3isize_of(v.x, v.y, 0);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_from4(m_V4isize v) {
     return m_V3isize_of(v.x, v.y, v.z);
 }
 
 /* Comparison */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ord$((m_V3isize)(lhs, rhs)) {
     for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
@@ -541,27 +541,27 @@ $static cmp_fn_ord$((m_V3isize)(lhs, rhs)) {
 }
 
 /* Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_neg(m_V3isize v) {
     return m_V3isize_of(-v.x, -v.y, -v.z);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_add(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_sub(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_mul(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_div(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_rem(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(
         int_rem(lhs.x, rhs.x),
@@ -570,38 +570,38 @@ $static m_V3isize m_V3isize_rem(m_V3isize lhs, m_V3isize rhs) {
     );
 }
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_scal(m_V3isize v, isize scalar) {
     return m_V3isize_of(v.x * scalar, v.y * scalar, v.z * scalar);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_scalInv(m_V3isize v, isize scalar) {
     return m_V3isize_of(v.x / scalar, v.y / scalar, v.z / scalar);
 }
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_addS(m_V3isize v, isize scalar) {
     return m_V3isize_add(v, m_V3isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_subS(m_V3isize v, isize scalar) {
     return m_V3isize_sub(v, m_V3isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_mulS(m_V3isize v, isize scalar) {
     return m_V3isize_mul(v, m_V3isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_divS(m_V3isize v, isize scalar) {
     return m_V3isize_div(v, m_V3isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_remS(m_V3isize v, isize scalar) {
     return m_V3isize_rem(v, m_V3isize_splat(scalar));
 }
 
 /* Range Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_min(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(
         pri_min(lhs.x, rhs.x),
@@ -609,7 +609,7 @@ $static m_V3isize m_V3isize_min(m_V3isize lhs, m_V3isize rhs) {
         pri_min(lhs.z, rhs.z)
     );
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_max(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(
         pri_max(lhs.x, rhs.x),
@@ -617,11 +617,11 @@ $static m_V3isize m_V3isize_max(m_V3isize lhs, m_V3isize rhs) {
         pri_max(lhs.z, rhs.z)
     );
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_clamp(m_V3isize v, m_V3isize min, m_V3isize max) {
     return m_V3isize_min(m_V3isize_max(v, min), max);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_wrap(m_V3isize v, m_V3isize min, m_V3isize max) {
     return m_V3isize_of(
         int_wrap(v.x, min.x, max.x),
@@ -631,19 +631,19 @@ $static m_V3isize m_V3isize_wrap(m_V3isize v, m_V3isize min, m_V3isize max) {
 }
 
 /* Geometric Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_lenSq(m_V3isize v) {
     return m_V3isize_dot(v, v);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_distSq(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_lenSq(m_V3isize_sub(lhs, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_dot(m_V3isize lhs, m_V3isize rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_cross(m_V3isize lhs, m_V3isize rhs) {
     return m_V3isize_of(
         lhs.y * rhs.z - lhs.z * rhs.y,
@@ -651,11 +651,11 @@ $static m_V3isize m_V3isize_cross(m_V3isize lhs, m_V3isize rhs) {
         lhs.x * rhs.y - lhs.y * rhs.x
     );
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_det(m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
     return m_V3isize_dot(lhs, m_V3isize_cross(mid, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V3isize_orient(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
     return m_V3isize_det(
         m_V3isize_sub(lhs, origin),
@@ -663,25 +663,25 @@ $static isize m_V3isize_orient(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m
         m_V3isize_sub(rhs, origin)
     );
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V_Orient m_V3isize_orientDir(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
     let det = m_V3isize_orient(origin, lhs, mid, rhs);
     return det < 0 ? m_V_Orient_neg : det > 0 ? m_V_Orient_pos
                                               : m_V_Orient_zero;
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V3isize_isOrientNeg(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
     return m_V_Orient_isNeg(m_V3isize_orientDir(origin, lhs, mid, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V3isize_isCoplanar(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
     return m_V_Orient_isCoplanar(m_V3isize_orientDir(origin, lhs, mid, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static bool m_V3isize_isOrientPos(m_V3isize origin, m_V3isize lhs, m_V3isize mid, m_V3isize rhs) {
     return m_V_Orient_isPos(m_V3isize_orientDir(origin, lhs, mid, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V3isize m_V3isize_perp(m_V3isize v) {
     return v.x != 0 || v.y != 0
              ? m_V3isize_of(-v.y, v.x, 0)
@@ -690,25 +690,25 @@ $static m_V3isize m_V3isize_perp(m_V3isize v) {
 
 /* Vec4z functions */
 /* Construction */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_of(isize x, isize y, isize z, isize w) {
     return (m_V4isize){ .x = x, .y = y, .z = z, .w = w };
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_splat(isize scalar) {
     return m_V4isize_of(scalar, scalar, scalar, scalar);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_from2(m_V2isize v) {
     return m_V4isize_of(v.x, v.y, 0, 0);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_from3(m_V3isize v) {
     return m_V4isize_of(v.x, v.y, v.z, 0);
 }
 
 /* Comparison */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static cmp_fn_ord$((m_V4isize)(lhs, rhs)) {
     for_(($s(A_ref(lhs.s)), $s(A_ref(rhs.s)))(l, r)) {
         if (*l < *r) { return cmp_Ord_lt; }
@@ -718,27 +718,27 @@ $static cmp_fn_ord$((m_V4isize)(lhs, rhs)) {
 }
 
 /* Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_neg(m_V4isize v) {
     return m_V4isize_of(-v.x, -v.y, -v.z, -v.w);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_add(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_sub(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_mul(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_div(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_rem(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(
         int_rem(lhs.x, rhs.x),
@@ -748,38 +748,38 @@ $static m_V4isize m_V4isize_rem(m_V4isize lhs, m_V4isize rhs) {
     );
 }
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_scal(m_V4isize v, isize scalar) {
     return m_V4isize_of(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_scalInv(m_V4isize v, isize scalar) {
     return m_V4isize_of(v.x / scalar, v.y / scalar, v.z / scalar, v.w / scalar);
 }
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_addS(m_V4isize v, isize scalar) {
     return m_V4isize_add(v, m_V4isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_subS(m_V4isize v, isize scalar) {
     return m_V4isize_sub(v, m_V4isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_mulS(m_V4isize v, isize scalar) {
     return m_V4isize_mul(v, m_V4isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_divS(m_V4isize v, isize scalar) {
     return m_V4isize_div(v, m_V4isize_splat(scalar));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_remS(m_V4isize v, isize scalar) {
     return m_V4isize_rem(v, m_V4isize_splat(scalar));
 }
 
 /* Range Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_min(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(
         pri_min(lhs.x, rhs.x),
@@ -788,7 +788,7 @@ $static m_V4isize m_V4isize_min(m_V4isize lhs, m_V4isize rhs) {
         pri_min(lhs.w, rhs.w)
     );
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_max(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_of(
         pri_max(lhs.x, rhs.x),
@@ -797,11 +797,11 @@ $static m_V4isize m_V4isize_max(m_V4isize lhs, m_V4isize rhs) {
         pri_max(lhs.w, rhs.w)
     );
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_clamp(m_V4isize v, m_V4isize min, m_V4isize max) {
     return m_V4isize_min(m_V4isize_max(v, min), max);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static m_V4isize m_V4isize_wrap(m_V4isize v, m_V4isize min, m_V4isize max) {
     return m_V4isize_of(
         int_wrap(v.x, min.x, max.x),
@@ -812,15 +812,15 @@ $static m_V4isize m_V4isize_wrap(m_V4isize v, m_V4isize min, m_V4isize max) {
 }
 
 /* Geometric Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V4isize_lenSq(m_V4isize v) {
     return m_V4isize_dot(v, v);
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V4isize_distSq(m_V4isize lhs, m_V4isize rhs) {
     return m_V4isize_lenSq(m_V4isize_sub(lhs, rhs));
 }
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static isize m_V4isize_dot(m_V4isize lhs, m_V4isize rhs) {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
 }

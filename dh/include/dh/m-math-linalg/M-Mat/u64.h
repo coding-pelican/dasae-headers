@@ -21,47 +21,47 @@ extern "C" {
 /* Creation */
 #define m_M2u64_ofCols_static(_c0, _c1...) ____m_M2u64_ofCols_static(_c0, _c1)
 #define m_M2u64_ofRows_static(_r0, _r1...) ____m_M2u64_ofRows_static(_r0, _r1)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_ofCols(m_M2u64_ColV c0, m_M2u64_ColV c1))(m_M2u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_ofRows(m_M2u64_RowV r0, m_M2u64_RowV r1))(m_M2u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_splat(u64 scalar))(m_M2u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_diag(u64 d))(m_M2u64));
 
 /* Component-wise Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_add(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_sub(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_mul(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_div(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_rem(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
 
 /* Scalar Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_scal(m_M2u64 m, u64 scalar))(m_M2u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_scalInv(m_M2u64 m, u64 scalar))(m_M2u64));
 
 /* Matrix Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_mulM(m_M2u64 lhs, m_M2u64 rhs))(m_M2u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_mulV(m_M2u64 m, m_V2u64 v))(m_V2u64));
 
 /* Accessors */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_col(m_M2u64 m, usize idx))(m_M2u64_ColV));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_row(m_M2u64 m, usize idx))(m_M2u64_RowV));
 
 /* Matrix Properties */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2u64_transp(m_M2u64 m))(m_M2u64));
 
 /*--- M3u64 Constants and Declarations ---*/
@@ -73,49 +73,49 @@ $static fn_((m_M2u64_transp(m_M2u64 m))(m_M2u64));
 /* Creation */
 #define m_M3u64_ofCols_static(_c0, _c1, _c2...) ____m_M3u64_ofCols_static(_c0, _c1, _c2)
 #define m_M3u64_ofRows_static(_r0, _r1, _r2...) ____m_M3u64_ofRows_static(_r0, _r1, _r2)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_ofCols(m_M3u64_ColV c0, m_M3u64_ColV c1, m_M3u64_ColV c2))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_ofRows(m_M3u64_RowV r0, m_M3u64_RowV r1, m_M3u64_RowV r2))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_splat(u64 scalar))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_diag(u64 d))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_fromM4(m_M4u64 m))(m_M3u64));
 
 /* Component-wise Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_add(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_sub(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_mul(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_div(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_rem(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
 
 /* Scalar Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_scal(m_M3u64 m, u64 scalar))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_scalInv(m_M3u64 m, u64 scalar))(m_M3u64));
 
 /* Matrix Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_mulM(m_M3u64 lhs, m_M3u64 rhs))(m_M3u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_mulV(m_M3u64 m, m_V3u64 v))(m_V3u64));
 
 /* Accessors */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_col(m_M3u64 m, usize idx))(m_M3u64_ColV));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_row(m_M3u64 m, usize idx))(m_M3u64_RowV));
 
 /* Matrix Properties */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3u64_transp(m_M3u64 m))(m_M3u64));
 
 /*--- M4u64 Constants and Declarations ---*/
@@ -127,49 +127,49 @@ $static fn_((m_M3u64_transp(m_M3u64 m))(m_M3u64));
 /* Creation */
 #define m_M4u64_ofCols_static(_c0, _c1, _c2, _c3...) ____m_M4u64_ofCols_static(_c0, _c1, _c2, _c3)
 #define m_M4u64_ofRows_static(_r0, _r1, _r2, _r3...) ____m_M4u64_ofRows_static(_r0, _r1, _r2, _r3)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_ofCols(m_M4u64_ColV c0, m_M4u64_ColV c1, m_M4u64_ColV c2, m_M4u64_ColV c3))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_ofRows(m_M4u64_RowV r0, m_M4u64_RowV r1, m_M4u64_RowV r2, m_M4u64_RowV r3))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_splat(u64 scalar))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_diag(u64 d))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_fromM3(m_M3u64 m))(m_M4u64));
 
 /* Component-wise Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_add(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_sub(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_mul(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_div(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_rem(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
 
 /* Scalar Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_scal(m_M4u64 m, u64 scalar))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_scalInv(m_M4u64 m, u64 scalar))(m_M4u64));
 
 /* Matrix Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_mulM(m_M4u64 lhs, m_M4u64 rhs))(m_M4u64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_mulV(m_M4u64 m, m_V4u64 v))(m_V4u64));
 
 /* Accessors */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_col(m_M4u64 m, usize idx))(m_M4u64_ColV));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_row(m_M4u64 m, usize idx))(m_M4u64_RowV));
 
 /* Matrix Properties */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4u64_transp(m_M4u64 m))(m_M4u64));
 
 /*========== Macros and Definitions =========================================*/

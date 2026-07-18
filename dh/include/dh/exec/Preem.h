@@ -8,6 +8,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "common.h"
+#include "../atom.h"
 #include "../thrd/Self.h"
 #include "../thrd/Mtx.h"
 
@@ -30,7 +31,7 @@ union exec_Preem_Task {
         var_(thrd, thrd_Self);
         var_(result, u_P$raw);
         var_(inner, P$$(Clsr$raw));
-        var_(state, exec_Task_State);
+        var_(state, atom_V$u8);
         var_(runner, Clsr_(exec_Preem_work));
     });
     var_(as_any, FutureAny) $flexible;
@@ -54,6 +55,8 @@ $extern fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$ra
 $extern fn_((exec_Preem_destroyTask(exec_Preem* self, exec_Preem_Task* task))(void));
 $extern fn_((exec_Preem_linkTask(exec_Preem* self, exec_Preem_Task* task))(void));
 $extern fn_((exec_Preem_unlinkTask(exec_Preem* self, exec_Preem_Task* task))(void));
+$extern fn_((exec_Preem_Task_state(exec_Preem_Task* self))(exec_Task_State));
+$extern fn_((exec_Preem_Task_requestCancel(exec_Preem_Task* self))(exec_Task_State));
 
 #if defined(__cplusplus)
 } /* extern "C" */

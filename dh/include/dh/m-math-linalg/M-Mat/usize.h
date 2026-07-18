@@ -21,47 +21,47 @@ extern "C" {
 /* Creation */
 #define m_M2usize_ofCols_static(_c0, _c1...) ____m_M2usize_ofCols_static(_c0, _c1)
 #define m_M2usize_ofRows_static(_r0, _r1...) ____m_M2usize_ofRows_static(_r0, _r1)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_ofCols(m_M2usize_ColV c0, m_M2usize_ColV c1))(m_M2usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_ofRows(m_M2usize_RowV r0, m_M2usize_RowV r1))(m_M2usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_splat(usize scalar))(m_M2usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_diag(usize d))(m_M2usize));
 
 /* Component-wise Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_add(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_sub(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_mul(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_div(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_rem(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
 
 /* Scalar Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_scal(m_M2usize m, usize scalar))(m_M2usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_scalInv(m_M2usize m, usize scalar))(m_M2usize));
 
 /* Matrix Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_mulM(m_M2usize lhs, m_M2usize rhs))(m_M2usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_mulV(m_M2usize m, m_V2usize v))(m_V2usize));
 
 /* Accessors */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_col(m_M2usize m, usize idx))(m_M2usize_ColV));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_row(m_M2usize m, usize idx))(m_M2usize_RowV));
 
 /* Matrix Properties */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2usize_transp(m_M2usize m))(m_M2usize));
 
 /*--- M3usize Constants and Declarations ---*/
@@ -73,49 +73,49 @@ $static fn_((m_M2usize_transp(m_M2usize m))(m_M2usize));
 /* Creation */
 #define m_M3usize_ofCols_static(_c0, _c1, _c2...) ____m_M3usize_ofCols_static(_c0, _c1, _c2)
 #define m_M3usize_ofRows_static(_r0, _r1, _r2...) ____m_M3usize_ofRows_static(_r0, _r1, _r2)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_ofCols(m_M3usize_ColV c0, m_M3usize_ColV c1, m_M3usize_ColV c2))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_ofRows(m_M3usize_RowV r0, m_M3usize_RowV r1, m_M3usize_RowV r2))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_splat(usize scalar))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_diag(usize d))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_fromM4(m_M4usize m))(m_M3usize));
 
 /* Component-wise Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_add(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_sub(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_mul(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_div(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_rem(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
 
 /* Scalar Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_scal(m_M3usize m, usize scalar))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_scalInv(m_M3usize m, usize scalar))(m_M3usize));
 
 /* Matrix Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_mulM(m_M3usize lhs, m_M3usize rhs))(m_M3usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_mulV(m_M3usize m, m_V3usize v))(m_V3usize));
 
 /* Accessors */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_col(m_M3usize m, usize idx))(m_M3usize_ColV));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_row(m_M3usize m, usize idx))(m_M3usize_RowV));
 
 /* Matrix Properties */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3usize_transp(m_M3usize m))(m_M3usize));
 
 /*--- M4usize Constants and Declarations ---*/
@@ -127,49 +127,49 @@ $static fn_((m_M3usize_transp(m_M3usize m))(m_M3usize));
 /* Creation */
 #define m_M4usize_ofCols_static(_c0, _c1, _c2, _c3...) ____m_M4usize_ofCols_static(_c0, _c1, _c2, _c3)
 #define m_M4usize_ofRows_static(_r0, _r1, _r2, _r3...) ____m_M4usize_ofRows_static(_r0, _r1, _r2, _r3)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_ofCols(m_M4usize_ColV c0, m_M4usize_ColV c1, m_M4usize_ColV c2, m_M4usize_ColV c3))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_ofRows(m_M4usize_RowV r0, m_M4usize_RowV r1, m_M4usize_RowV r2, m_M4usize_RowV r3))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_splat(usize scalar))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_diag(usize d))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_fromM3(m_M3usize m))(m_M4usize));
 
 /* Component-wise Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_add(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_sub(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_mul(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_div(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_rem(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
 
 /* Scalar Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_scal(m_M4usize m, usize scalar))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_scalInv(m_M4usize m, usize scalar))(m_M4usize));
 
 /* Matrix Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_mulM(m_M4usize lhs, m_M4usize rhs))(m_M4usize));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_mulV(m_M4usize m, m_V4usize v))(m_V4usize));
 
 /* Accessors */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_col(m_M4usize m, usize idx))(m_M4usize_ColV));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_row(m_M4usize m, usize idx))(m_M4usize_RowV));
 
 /* Matrix Properties */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4usize_transp(m_M4usize m))(m_M4usize));
 
 /*========== Macros and Definitions =========================================*/

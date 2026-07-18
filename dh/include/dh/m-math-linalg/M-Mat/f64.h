@@ -21,55 +21,55 @@ extern "C" {
 /* Creation */
 #define m_M2f64_ofCols_static(_c0, _c1...) ____m_M2f64_ofCols_static(_c0, _c1)
 #define m_M2f64_ofRows_static(_r0, _r1...) ____m_M2f64_ofRows_static(_r0, _r1)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_ofCols(m_M2f64_ColV c0, m_M2f64_ColV c1))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_ofRows(m_M2f64_RowV r0, m_M2f64_RowV r1))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_splat(f64 scalar))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_diag(f64 d))(m_M2f64));
 
 /* Component-wise Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_neg(m_M2f64 m))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_add(m_M2f64 lhs, m_M2f64 rhs))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_sub(m_M2f64 lhs, m_M2f64 rhs))(m_M2f64));
 
 /* Scalar Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_scal(m_M2f64 m, f64 scalar))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_scalInv(m_M2f64 m, f64 scalar))(m_M2f64));
 
 /* Matrix Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_mulM(m_M2f64 lhs, m_M2f64 rhs))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_mulV(m_M2f64 m, m_V2f64 v))(m_V2f64));
 
 /* Accessors */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_col(m_M2f64 m, usize idx))(m_M2f64_ColV));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_row(m_M2f64 m, usize idx))(m_M2f64_RowV));
 
 /* Matrix Properties */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_transp(m_M2f64 m))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_det(m_M2f64 m))(f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_inv(m_M2f64 m))(m_M2f64));
 
 /* Transformations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_rotate(f64 angle))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_scale(m_V2f64 s))(m_M2f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M2f64_scaleUniform(f64 s))(m_M2f64));
 
 /*--- M3f64 Constants and Declarations ---*/
@@ -81,59 +81,59 @@ $static fn_((m_M2f64_scaleUniform(f64 s))(m_M2f64));
 /* Creation */
 #define m_M3f64_ofCols_static(_c0, _c1, _c2...) ____m_M3f64_ofCols_static(_c0, _c1, _c2)
 #define m_M3f64_ofRows_static(_r0, _r1, _r2...) ____m_M3f64_ofRows_static(_r0, _r1, _r2)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_ofCols(m_M3f64_ColV c0, m_M3f64_ColV c1, m_M3f64_ColV c2))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_ofRows(m_M3f64_RowV r0, m_M3f64_RowV r1, m_M3f64_RowV r2))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_splat(f64 scalar))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_diag(f64 d))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_fromM4(m_M4f64 m))(m_M3f64));
 
 /* Component-wise Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_neg(m_M3f64 m))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_add(m_M3f64 lhs, m_M3f64 rhs))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_sub(m_M3f64 lhs, m_M3f64 rhs))(m_M3f64));
 
 /* Scalar Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_scal(m_M3f64 m, f64 scalar))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_scalInv(m_M3f64 m, f64 scalar))(m_M3f64));
 
 /* Matrix Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_mulM(m_M3f64 lhs, m_M3f64 rhs))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_mulV(m_M3f64 m, m_V3f64 v))(m_V3f64));
 
 /* Accessors */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_col(m_M3f64 m, usize idx))(m_V3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_row(m_M3f64 m, usize idx))(m_V3f64));
 
 /* Matrix Properties */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_transp(m_M3f64 m))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_det(m_M3f64 m))(f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_inv(m_M3f64 m))(m_M3f64));
 
 /* 2D Transformations (homogeneous coordinates) */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_transl2D(m_V2f64 t))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_rotate2D(f64 angle))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_scale2D(m_V2f64 s))(m_M3f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M3f64_scaleUniform2D(f64 s))(m_M3f64));
 
 /*--- M4f64 Constants and Declarations ---*/
@@ -145,105 +145,105 @@ $static fn_((m_M3f64_scaleUniform2D(f64 s))(m_M3f64));
 /* Creation */
 #define m_M4f64_ofCols_static(_c0, _c1, _c2, _c3...) ____m_M4f64_ofCols_static(_c0, _c1, _c2, _c3)
 #define m_M4f64_ofRows_static(_r0, _r1, _r2, _r3...) ____m_M4f64_ofRows_static(_r0, _r1, _r2, _r3)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_ofCols(m_M4f64_ColV c0, m_M4f64_ColV c1, m_M4f64_ColV c2, m_M4f64_ColV c3))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_ofRows(m_M4f64_RowV r0, m_M4f64_RowV r1, m_M4f64_RowV r2, m_M4f64_RowV r3))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_splat(f64 scalar))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_diag(f64 d))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_fromM3(m_M3f64 m))(m_M4f64));
 
 /* Component-wise Arithmetic */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_neg(m_M4f64 m))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_add(m_M4f64 lhs, m_M4f64 rhs))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_sub(m_M4f64 lhs, m_M4f64 rhs))(m_M4f64));
 
 /* Scalar Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_scal(m_M4f64 m, f64 scalar))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_scalInv(m_M4f64 m, f64 scalar))(m_M4f64));
 
 /* Matrix Operations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_mulM(m_M4f64 lhs, m_M4f64 rhs))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_mulV(m_M4f64 m, m_V4f64 v))(m_V4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_mulV3(m_M4f64 m, m_V3f64 v, f64 w))(m_V3f64));
 
 /* Accessors */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_col(m_M4f64 m, usize idx))(m_V4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_row(m_M4f64 m, usize idx))(m_V4f64));
 
 /* Matrix Properties */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_transp(m_M4f64 m))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_det(m_M4f64 m))(f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_inv(m_M4f64 m))(m_M4f64));
 
 /* 3D Transformations */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_transl(m_V3f64 t))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_rotateX(f64 angle))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_rotateY(f64 angle))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_rotateZ(f64 angle))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_rotateAxis(m_V3f64 axis, f64 angle))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_scale(m_V3f64 s))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_scaleUniform(f64 s))(m_M4f64));
 
 /* View and Projection */
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_lookAtRH(m_V3f64 eye, m_V3f64 target, m_V3f64 up))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_lookAtLH(m_V3f64 eye, m_V3f64 target, m_V3f64 up))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_perspectRHNO(f64 fov_y, f64 aspect, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_perspectRHZO(f64 fov_y, f64 aspect, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_perspectLHNO(f64 fov_y, f64 aspect, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_perspectLHZO(f64 fov_y, f64 aspect, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_perspectInfFarRHNO(f64 fov_y, f64 aspect, f64 proximal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_perspectInfFarRHZO(f64 fov_y, f64 aspect, f64 proximal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_perspectInfFarLHNO(f64 fov_y, f64 aspect, f64 proximal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_perspectInfFarLHZO(f64 fov_y, f64 aspect, f64 proximal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_orthoRHNO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_orthoRHZO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_orthoLHNO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_orthoLHZO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_frustumRHNO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_frustumRHZO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_frustumLHNO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal, f64 distal))(m_M4f64));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_M4f64_frustumLHZO(f64 left, f64 right, f64 bottom, f64 top, f64 proximal, f64 distal))(m_M4f64));
 
 /*========== Macros and Definitions =========================================*/

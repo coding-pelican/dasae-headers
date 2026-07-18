@@ -23,6 +23,7 @@ extern "C" {
 
 #include "../../m-math/common.h"
 #include "../../prl/simd.h"
+#include "../cfg.h"
 #include "types.h"
 
 /*========== Macros and Declarations ========================================*/

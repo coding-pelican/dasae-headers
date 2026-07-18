@@ -418,7 +418,9 @@ fn_((Sched_preem__await(P$raw ctx, P$FutureAny any_future, u_P$raw result))(void
     let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
     let task = ptrAlignCast$((exec_Preem_Task*)(ensureNonnull(any_future)));
     let_ignore = thrd_join(task->thrd);
-    if (task->state == exec_Task_State_done) u_memcpy(result, task->result.as_const);
+    if (exec_Preem_Task_state(task) == exec_Task_State_done) {
+        u_memcpy(result, task->result.as_const);
+    }
     exec_Preem_unlinkTask(self, task);
     exec_Preem_destroyTask(self, task);
 };
@@ -427,11 +429,10 @@ fn_((Sched_preem__cancel(P$raw ctx, P$FutureAny any_future, u_P$raw result))(voi
     claim_assert_nonnull(result.raw);
     let self = ptrAlignCast$((exec_Preem*)(ensureNonnull(ctx)));
     let task = ptrAlignCast$((exec_Preem_Task*)(ensureNonnull(any_future)));
-    if (task->state == exec_Task_State_done) {
+    let prev_state = exec_Preem_Task_requestCancel(task);
+    let_ignore = thrd_join(task->thrd);
+    if (prev_state == exec_Task_State_done) {
         u_memcpy(result, task->result.as_const);
-    } else {
-        task->state = exec_Task_State_canceled;
-        let_ignore = thrd_join(task->thrd);
     }
     exec_Preem_unlinkTask(self, task);
     exec_Preem_destroyTask(self, task);

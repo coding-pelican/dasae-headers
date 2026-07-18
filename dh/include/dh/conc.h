@@ -19,11 +19,15 @@ extern "C" {
 
 #include "conc/base.h"
 
-#include "conc/chan.h"
-#include "conc/await.h"
+#include "conc/Waker.h"
+#include "conc/wait.h"
+#include "conc/Wakeable.h"
 
 #include "conc/Mtx.h"
 #include "conc/Cond.h"
+
+#include "conc/Waiter.h"
+
 #include "conc/Sem.h"
 #include "conc/RWLock.h"
 
@@ -37,6 +41,9 @@ extern "C" {
 #include "conc/Latch.h"
 #include "conc/Group.h"
 
+#include "conc/chan.h"
+#include "conc/Select.h"
+
 #include "conc/Que.h"
 #include "conc/SPSC.h"
 #include "conc/MPSC.h"
@@ -44,7 +51,6 @@ extern "C" {
 #include "conc/MPMC.h"
 
 #include "conc/Batch.h"
-#include "conc/Select.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

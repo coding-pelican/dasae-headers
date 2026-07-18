@@ -21,132 +21,132 @@ extern "C" {
 /* Creation Functions */
 
 #define m_Q4f32_of_static(_x, _y, _z, _w...) ____m_Q4f32_of_static(_x, _y, _z, _w)
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_of(f32 x, f32 y, f32 z, f32 w))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_splat(f32 scalar))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_fromV3(m_V3f32 v, f32 w))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_fromV4(m_V4f32 v))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_fromTo(m_V3f32 from, m_V3f32 to))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_fromEuler(f32 pitch, f32 yaw, f32 roll))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_fromAxisAngle(m_V3f32 axis, f32 angle))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_fromM3(m_M3f32 m))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_fromM4(m_M4f32 m))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_lookRotation(m_V3f32 forward, m_V3f32 up))(m_Q4f32));
 
 /* Component-wise Arithmetic */
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_neg(m_Q4f32 q))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_add(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_sub(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_mul(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_div(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32));
 
 /* Quaternion Arithmetic (Hamilton Product) */
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_mulQ(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_divQ(m_Q4f32 lhs, m_Q4f32 rhs))(m_Q4f32));
 
 /* Scalar Operations */
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_scal(m_Q4f32 q, f32 scalar))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_scalInv(m_Q4f32 q, f32 scalar))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_addS(m_Q4f32 q, f32 scalar))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_subS(m_Q4f32 q, f32 scalar))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_mulS(m_Q4f32 q, f32 scalar))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_divS(m_Q4f32 q, f32 scalar))(m_Q4f32));
 
 /* Quaternion Properties */
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_conj(m_Q4f32 q))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_invQ(m_Q4f32 q))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_lenSq(m_Q4f32 q))(f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_len(m_Q4f32 q))(f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_dot(m_Q4f32 lhs, m_Q4f32 rhs))(f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_norm(m_Q4f32 q))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_isNorm(m_Q4f32 q))(bool));
 
 /* Rotation Operations */
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_rotateV(m_Q4f32 q, m_V3f32 v))(m_V3f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_rotateX(m_Q4f32 q, f32 angle))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_rotateY(m_Q4f32 q, f32 angle))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_rotateZ(m_Q4f32 q, f32 angle))(m_Q4f32));
 
 /* Interpolation */
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_lerp(m_Q4f32 a, m_Q4f32 b, f32 t))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_nlerp(m_Q4f32 a, m_Q4f32 b, f32 t))(m_Q4f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_slerp(m_Q4f32 a, m_Q4f32 b, f32 t))(m_Q4f32));
 
 /* Extraction */
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_angle(m_Q4f32 lhs, m_Q4f32 rhs))(f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_toAxisAngle(m_Q4f32 q))(m_Q4f32_AxisAngle));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_toEuler(m_Q4f32 q))(m_V3f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_axis(m_Q4f32 q))(m_V3f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_angleRad(m_Q4f32 q))(f32));
 
 /* Conversion to Matrix */
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_toM3(m_Q4f32 q))(m_M3f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_toM4(m_Q4f32 q))(m_M4f32));
 
 /* Utility */
 
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_left(m_Q4f32 q))(m_V3f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_up(m_Q4f32 q))(m_V3f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_right(m_Q4f32 q))(m_V3f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_down(m_Q4f32 q))(m_V3f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_forward(m_Q4f32 q))(m_V3f32));
-$attr($inline_always)
+$attr(m_linalg_$inline)
 $static fn_((m_Q4f32_backward(m_Q4f32 q))(m_V3f32));
 
 /*========== Macros and Definitions =========================================*/

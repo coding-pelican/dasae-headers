@@ -21,9 +21,10 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "types.h"
+#include "../cfg.h"
 #include "../V-Vec/base.h"
 #include "../M-Mat/base.h"
+#include "types.h"
 
 /*========== Macros and Declarations ========================================*/
 

@@ -5,15 +5,40 @@
 $static fn_((exec_Preem_Task__slabBytes(TypeInfo result_ty))(usize));
 $static fn_((exec_Preem_Task__resultMut(exec_Preem_Task* self, TypeInfo type))(u_P$raw));
 $static fn_((exec_Preem_Task__freeSlab(exec_Preem_Task* self, mem_Alctr gpa))(void));
+$static fn_((exec_Preem_Task__loadState(exec_Preem_Task* self, atom_MemOrd order))(exec_Task_State));
+$static fn_((exec_Preem_Task__xchgState(
+    exec_Preem_Task* self, exec_Task_State state, atom_MemOrd order
+))(exec_Task_State));
+$static fn_((exec_Preem_Task__tryTransit(
+    exec_Preem_Task* self,
+    exec_Task_State expected,
+    exec_Task_State desired,
+    atom_MemOrd success_order,
+    atom_MemOrd fail_order
+))(bool));
 
 /*========== External Definitions ===========================================*/
 
 fn_((exec_Preem_work(exec_Preem_Task* task))(Void)) {
     claim_assert_nonnull(task), claim_assert_nonnull(task->owner);
     claim_assert_nonnull(task->result.raw), claim_assert_nonnull(task->inner);
-    task->state = exec_Task_State_running;
+    if (!exec_Preem_Task__tryTransit(
+            task,
+            exec_Task_State_ready,
+            exec_Task_State_running,
+            atom_MemOrd_acq_rel,
+            atom_MemOrd_acquire
+        )) {
+        return (Void){};
+    }
     u_memcpy(task->result, clsr_invokeToComplete(task->inner, task->result.type));
-    if (task->state != exec_Task_State_canceled) task->state = exec_Task_State_done;
+    let_ignore = exec_Preem_Task__tryTransit(
+        task,
+        exec_Task_State_running,
+        exec_Task_State_done,
+        atom_MemOrd_release,
+        atom_MemOrd_acquire
+    );
     return (Void){};
 };
 
@@ -49,7 +74,7 @@ fn_((exec_Preem_createTask(exec_Preem* self, u_P$raw result, P$$(Clsr$raw) inner
         .thrd = cleared(),
         .result = exec_Preem_Task__resultMut(task, result.type),
         .inner = inner,
-        .state = exec_Task_State_ready,
+        .state = atom_V_init(as$(u8)(exec_Task_State_ready)),
         .runner = clsr_((exec_Preem_work)(task)),
     }));
     let thrd = catch_((thrd_spawn(self->spawn_cfg, task->runner.as_raw, typeInfo$(Void)))(
@@ -77,7 +102,6 @@ fn_((exec_Preem_linkTask(exec_Preem* self, exec_Preem_Task* task))(void) $guard)
 fn_((exec_Preem_unlinkTask(exec_Preem* self, exec_Preem_Task* task))(void) $guard) {
     claim_assert_nonnull(self), claim_assert_nonnull(task);
     thrd_Mtx_lockProtcd(&self->tasks_mtx);
-    defer_(thrd_Mtx_unlock(&self->tasks_mtx));
     var_(prev, O$P$exec_Preem_Task) = none();
     var_(curr, O$P$exec_Preem_Task) = self->tasks;
     while_some(curr, node) {
@@ -87,12 +111,22 @@ fn_((exec_Preem_unlinkTask(exec_Preem* self, exec_Preem_Task* task))(void) $guar
             } else {
                 self->tasks = node->next;
             }
-            break;
+            thrd_Mtx_unlock(&self->tasks_mtx);
+            return;
         }
         prev = curr;
         curr = node->next;
     }
+    thrd_Mtx_unlock(&self->tasks_mtx);
 } $unguarded(fn);
+
+fn_((exec_Preem_Task_state(exec_Preem_Task* self))(exec_Task_State)) {
+    return exec_Preem_Task__loadState(self, atom_MemOrd_acquire);
+};
+
+fn_((exec_Preem_Task_requestCancel(exec_Preem_Task* self))(exec_Task_State)) {
+    return exec_Preem_Task__xchgState(self, exec_Task_State_canceled, atom_MemOrd_acq_rel);
+};
 
 /*========== Internal Definitions ===========================================*/
 
@@ -110,4 +144,30 @@ fn_((exec_Preem_Task__freeSlab(exec_Preem_Task* self, mem_Alctr gpa))(void)) {
     claim_assert_nonnull(self);
     let bytes = exec_Preem_Task__slabBytes(self->result.type);
     mem_Alctr_rawFree($trace gpa, P_prefix$((S$u8)(as$(u8*)(self))(bytes)), alignOfLog2$(exec_Preem_Task));
+};
+fn_((exec_Preem_Task__loadState(exec_Preem_Task* self, atom_MemOrd order))(exec_Task_State)) {
+    claim_assert_nonnull(self);
+    return as$(exec_Task_State)(atom_V_load(&self->state, order));
+};
+fn_((exec_Preem_Task__xchgState(
+    exec_Preem_Task* self, exec_Task_State state, atom_MemOrd order
+))(exec_Task_State)) {
+    claim_assert_nonnull(self);
+    return as$(exec_Task_State)(atom_V_fetchXchg(&self->state, as$(u8)(state), order));
+};
+fn_((exec_Preem_Task__tryTransit(
+    exec_Preem_Task* self,
+    exec_Task_State expected,
+    exec_Task_State desired,
+    atom_MemOrd success_order,
+    atom_MemOrd fail_order
+))(bool)) {
+    claim_assert_nonnull(self);
+    return isNone(atom_V_cmpXchgStrong(
+        &self->state,
+        as$(u8)(expected),
+        as$(u8)(desired),
+        success_order,
+        fail_order
+    ));
 };
