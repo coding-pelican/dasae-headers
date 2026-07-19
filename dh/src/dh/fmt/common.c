@@ -154,6 +154,10 @@ fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void
 
     // Parse format string ONCE
     let parsed = try_(fmt__parseFormatSpecOnce(fmt));
+    if (parsed.occurrence_count == 0) {
+        try_(fmt__writeLiteralChunk(writer, fmt, parsed.trailing_literal_start, parsed.trailing_literal_len));
+        return_ok({});
+    }
 
     // STEP 1: Determine the most general type needed for each argument
     // by examining ALL occurrences that use that argument
