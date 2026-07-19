@@ -39,11 +39,6 @@ extern "C" {
 
 #include "io/Evtd.h"
 
-#include "io/CP.h"
-#include "io/Uring.h"
-
-#include "io/Kqueue.h"
-
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
