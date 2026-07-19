@@ -2172,6 +2172,61 @@ static void test_project_detection(void) {
     TEST_ASSERT(!proj->pch_enabled);
     dal_c_Project_cleanup(&proj);
     free(target_root_compat);
+
+    test_reset_temp_root();
+
+    char* original_cwd = env_getCWD();
+    temp_root = test_temp_root();
+    char* workspace_root = path_join(temp_root, "workspace");
+    char* dh_root = path_join(workspace_root, "dh");
+    char* dh_include_dir = path_join(dh_root, "include");
+    char* dh_include_child_dir = path_join(dh_include_dir, "dh");
+    char* dh_src_dir = path_join(dh_root, "src/dh");
+    char* dh_header = path_join(dh_include_dir, "dh.h");
+    char* dh_main_header = path_join(dh_include_dir, "dh-main.h");
+    TEST_ASSERT(original_cwd != NULL);
+    TEST_ASSERT(workspace_root != NULL);
+    TEST_ASSERT(dh_root != NULL);
+    TEST_ASSERT(dh_include_dir != NULL);
+    TEST_ASSERT(dh_include_child_dir != NULL);
+    TEST_ASSERT(dh_src_dir != NULL);
+    TEST_ASSERT(dh_header != NULL);
+    TEST_ASSERT(dh_main_header != NULL);
+    TEST_ASSERT(dir_createRecur(workspace_root));
+    TEST_ASSERT(dir_createRecur(dh_include_child_dir));
+    TEST_ASSERT(dir_createRecur(dh_src_dir));
+    TEST_ASSERT(file_write(dh_header, "\n"));
+    TEST_ASSERT(file_write(dh_main_header, "\n"));
+    TEST_ASSERT(env_setCWD(workspace_root));
+
+    char* detected_dh = dal_c_Project_findDHInstallation(NULL);
+    char* expected_dh = path_abs(dh_root);
+    TEST_ASSERT(detected_dh != NULL);
+    TEST_ASSERT(expected_dh != NULL);
+    TEST_ASSERT(str_eql(detected_dh, expected_dh));
+
+    const char* version_argv[] = { dal_c_tool_name, "--version", "--dh", dh_root, NULL };
+    dal_c_Cmd* version_cmd = dal_c_Cmd_parse(4, version_argv);
+    TEST_ASSERT(version_cmd != NULL);
+    char* version_detected_dh = dal_c_Project_findDHInstallation(version_cmd);
+    TEST_ASSERT(version_detected_dh != NULL);
+    TEST_ASSERT(str_eql(version_detected_dh, expected_dh));
+    free(version_detected_dh);
+    dal_c_Cmd_cleanup(&version_cmd);
+
+    TEST_ASSERT(env_setCWD(original_cwd));
+
+    free(expected_dh);
+    free(detected_dh);
+    free(dh_main_header);
+    free(dh_header);
+    free(dh_src_dir);
+    free(dh_include_child_dir);
+    free(dh_include_dir);
+    free(dh_root);
+    free(workspace_root);
+    free(temp_root);
+    free(original_cwd);
 }
 
 static void test_clean_prefers_local_build_dir(void) {

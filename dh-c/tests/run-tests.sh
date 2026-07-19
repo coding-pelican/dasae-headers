@@ -218,6 +218,7 @@ invoke_external "0" "$repo_root" "$unit_exe"
 
 invoke_external "0" "$repo_root" "$cli_exe" --version
 assert_contains "$LAST_OUTPUT" "dh-c version" "Version output did not contain tool version"
+assert_contains "$LAST_OUTPUT" "dasae-headers path:" "Version output did not contain detected dasae-headers path"
 
 invoke_external "0" "$repo_root" "$cli_exe" --help
 assert_contains "$LAST_OUTPUT" "COMMANDS:" "Help output did not list commands"

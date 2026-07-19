@@ -297,6 +297,24 @@ dal_c_Cmd* dal_c_Cmd_parse(int argc, const char* argv[]) {
             || (arg[0] == dal_c_opt_prefix_short[0] && arg[1] == dal_c_opt_version_short_char && arg[2] == '\0')) {
             cmd->is_version = true;
         }
+        const char* dh_assigned_prefix = dal_c_opt_prefix_long dal_c_opt_dh dal_c_opt_value_sep;
+        size_t dh_assigned_prefix_len = strlen(dh_assigned_prefix);
+        if (strncmp(arg, dh_assigned_prefix, dh_assigned_prefix_len) == 0) {
+            const char* value = arg + dh_assigned_prefix_len;
+            if (!path_isDir(value)) {
+                (void)fprintf(stderr, "Error: Path not found: %s\n", value);
+                dal_c_Cmd_cleanup(&cmd);
+                return NULL;
+            }
+            dal_c_Cmd__setOwnedString(&cmd->dh_path_override, value);
+        } else if (str_eql(arg, dal_c_opt_prefix_long dal_c_opt_dh)) {
+            if (i + 1 >= argc || !path_isDir(argv[i + 1])) {
+                (void)fprintf(stderr, "Error: Path not found: %s\n", i + 1 < argc ? argv[i + 1] : "");
+                dal_c_Cmd_cleanup(&cmd);
+                return NULL;
+            }
+            dal_c_Cmd__setOwnedString(&cmd->dh_path_override, argv[++i]);
+        }
     }
 
     if (cmd->is_help || cmd->is_version) {

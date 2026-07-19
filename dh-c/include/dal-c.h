@@ -1320,6 +1320,7 @@ struct dal_c_Project {
 dal_c_Project* dal_c_Project_detect(const dal_c_Cmd* cmd);
 dal_c_Project* dal_c_Project_detectAt(const char* lib_path, const char* dh_path);
 void dal_c_Project_cleanup(dal_c_Project** self);
+char* dal_c_Project_findDHInstallation(const dal_c_Cmd* cmd);
 char* dal_c_Project_getBuildDir(const dal_c_Project* proj);
 char* dal_c_Project_getLibDir(const dal_c_Project* proj);
 char* dal_c_Project_getSrcDir(const dal_c_Project* proj);

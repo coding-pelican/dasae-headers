@@ -151,6 +151,10 @@ void dal_c_Project_cleanup(dal_c_Project** self) {
     *self = NULL;
 }
 
+char* dal_c_Project_findDHInstallation(const dal_c_Cmd* cmd) {
+    return dal_c_Project__findDHInstallation(cmd);
+}
+
 void dal_c_CompilerOpts_cleanup(dal_c_CompilerOpts* opts) {
     if (!opts) { return; }
     free(opts->compiler);
@@ -702,7 +706,11 @@ static bool dal_c_Project__isDHRoot(const char* path) {
 
 static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd) {
     if (cmd && cmd->dh_path_override) {
-        return dal_c_Project__isDHRoot(cmd->dh_path_override) ? strdup(cmd->dh_path_override) : NULL;
+        if (!dal_c_Project__isDHRoot(cmd->dh_path_override)) {
+            return NULL;
+        }
+        char* abs_path = path_abs(cmd->dh_path_override);
+        return abs_path ? abs_path : strdup(cmd->dh_path_override);
     }
 
     char* current = env_getCWD();

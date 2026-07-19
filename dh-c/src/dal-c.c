@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 static void dal_c__printUsage(void);
-static void dal_c__printVersion(void);
+static void dal_c__printVersion(const dal_c_Cmd* cmd);
 static bool dal_c__needsProject(const dal_c_Cmd* cmd);
 static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd);
 
@@ -17,7 +17,7 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
     if (cmd->is_version || cmd->is_help) {
-        if (cmd->is_version) dal_c__printVersion();
+        if (cmd->is_version) dal_c__printVersion(cmd);
         if (cmd->is_help) dal_c__printUsage();
         return dal_c_Cmd_cleanup(&cmd), 0;
     }
@@ -120,10 +120,13 @@ void dal_c__printUsage(void) {
     printf("  `workspace` and `project` are reserved scaffold commands and are not implemented.\n");
 }
 
-void dal_c__printVersion(void) {
+void dal_c__printVersion(const dal_c_Cmd* cmd) {
     printf("%s version %s\n", dal_c_tool_name, dal_c_ver_str_with_build);
     printf("%s\n", dal_c_tool_description);
     printf("%s\n", dal_c_tool_copyright);
+    char* dh_path = dal_c_Project_findDHInstallation(cmd);
+    printf("dasae-headers path: %s\n", dh_path ? dh_path : "(not found)");
+    free(dh_path);
     char* const exe_path = env_getExecutablePath();
     if (exe_path) {
         printf("Binary path: %s\n", exe_path);
