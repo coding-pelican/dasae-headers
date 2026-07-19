@@ -5,7 +5,7 @@
  * @file    time.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-23 (date of creation)
- * @updated 2026-05-30 (date of last update)
+ * @updated 2026-07-19 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  time
  *
@@ -28,6 +28,7 @@ extern "C" {
 #include "time/cfg.h"
 #include "time/base.h"
 #include "time/common.h"
+#include "time/epoch.h"
 
 #include "time/Dur.h"
 #include "time/Inst.h"

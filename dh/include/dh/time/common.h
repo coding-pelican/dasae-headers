@@ -29,18 +29,46 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Constants --- */
 #define time_nanos_per_nano __comp_const__time_nanos_per_nano
 #define time_nanos_per_micro __comp_const__time_nanos_per_micro
 #define time_nanos_per_milli __comp_const__time_nanos_per_milli
 #define time_nanos_per_sec __comp_const__time_nanos_per_sec
+#define time_nanos_per_min __comp_const__time_nanos_per_min
+#define time_nanos_per_hour __comp_const__time_nanos_per_hour
+#define time_nanos_per_day __comp_const__time_nanos_per_day
+#define time_nanos_per_week __comp_const__time_nanos_per_week
+
+#define time_micros_per_micro __comp_const__time_micros_per_micro
+#define time_micros_per_milli __comp_const__time_micros_per_milli
 #define time_micros_per_sec __comp_const__time_micros_per_sec
+#define time_micros_per_min __comp_const__time_micros_per_min
+#define time_micros_per_hour __comp_const__time_micros_per_hour
+#define time_micros_per_day __comp_const__time_micros_per_day
+#define time_micros_per_week __comp_const__time_micros_per_week
+
+#define time_millis_per_milli __comp_const__time_millis_per_milli
 #define time_millis_per_sec __comp_const__time_millis_per_sec
+#define time_millis_per_min __comp_const__time_millis_per_min
+#define time_millis_per_hour __comp_const__time_millis_per_hour
+#define time_millis_per_day __comp_const__time_millis_per_day
+#define time_millis_per_week __comp_const__time_millis_per_week
 
 #define time_secs_per_sec __comp_const__time_secs_per_sec
 #define time_secs_per_min __comp_const__time_secs_per_min
+#define time_secs_per_hour __comp_const__time_secs_per_hour
+#define time_secs_per_day __comp_const__time_secs_per_day
+#define time_secs_per_week __comp_const__time_secs_per_week
+
+#define time_mins_per_min __comp_const__time_mins_per_min
 #define time_mins_per_hour __comp_const__time_mins_per_hour
+#define time_mins_per_day __comp_const__time_mins_per_day
+#define time_mins_per_week __comp_const__time_mins_per_week
+
+#define time_hours_per_hour __comp_const__time_hours_per_hour
 #define time_hours_per_day __comp_const__time_hours_per_day
+#define time_hours_per_week __comp_const__time_hours_per_week
+
+#define time_days_per_day __comp_const__time_days_per_day
 #define time_days_per_week __comp_const__time_days_per_week
 
 /*========== Macros and Definitions =========================================*/
@@ -53,19 +81,72 @@ extern "C" {
     (u32_(1, 000, 000u))
 #define __comp_const__time_nanos_per_sec \
     (u32_(1, 000, 000, 000u))
+#define __comp_const__time_nanos_per_min \
+    (u64_(60, 000, 000, 000ull))
+#define __comp_const__time_nanos_per_hour \
+    (u64_(3, 600, 000, 000, 000ull))
+#define __comp_const__time_nanos_per_day \
+    (u64_(86, 400, 000, 000, 000ull))
+#define __comp_const__time_nanos_per_week \
+    (u64_(604, 800, 000, 000, 000ull))
+
+#define __comp_const__time_micros_per_micro \
+    (u32_(1u))
+#define __comp_const__time_micros_per_milli \
+    (u32_(1, 000u))
 #define __comp_const__time_micros_per_sec \
     (u32_(1, 000, 000u))
+#define __comp_const__time_micros_per_min \
+    (u64_(60, 000, 000ull))
+#define __comp_const__time_micros_per_hour \
+    (u64_(3, 600, 000, 000ull))
+#define __comp_const__time_micros_per_day \
+    (u64_(86, 400, 000, 000ull))
+#define __comp_const__time_micros_per_week \
+    (u64_(604, 800, 000, 000ull))
+
+#define __comp_const__time_millis_per_milli \
+    (u32_(1u))
 #define __comp_const__time_millis_per_sec \
     (u32_(1, 000u))
+#define __comp_const__time_millis_per_min \
+    (u32_(60, 000u))
+#define __comp_const__time_millis_per_hour \
+    (u32_(3, 600, 000u))
+#define __comp_const__time_millis_per_day \
+    (u32_(86, 400, 000u))
+#define __comp_const__time_millis_per_week \
+    (u32_(604, 800, 000u))
 
 #define __comp_const__time_secs_per_sec \
     (u64_(1ull))
 #define __comp_const__time_secs_per_min \
     (u64_(60ull))
+#define __comp_const__time_secs_per_hour \
+    (u64_(3, 600ull))
+#define __comp_const__time_secs_per_day \
+    (u64_(86, 400ull))
+#define __comp_const__time_secs_per_week \
+    (u64_(604, 800ull))
+
+#define __comp_const__time_mins_per_min \
+    (u64_(1ull))
 #define __comp_const__time_mins_per_hour \
     (u64_(60ull))
+#define __comp_const__time_mins_per_day \
+    (u64_(1, 440ull))
+#define __comp_const__time_mins_per_week \
+    (u64_(10, 080ull))
+
+#define __comp_const__time_hours_per_hour \
+    (u64_(1ull))
 #define __comp_const__time_hours_per_day \
     (u64_(24ull))
+#define __comp_const__time_hours_per_week \
+    (u64_(168ull))
+
+#define __comp_const__time_days_per_day \
+    (u64_(1ull))
 #define __comp_const__time_days_per_week \
     (u64_(7ull))
 
