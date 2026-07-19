@@ -144,6 +144,8 @@ static char* dal_c_Cmd__buildIncludeArgs(const ArrStr* include_dirs);
 static int dal_c_Cmd__runRecursiveBuild(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runRecursiveTest(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runRecursiveClean(const dal_c_Cmd* self, const dal_c_Project* proj);
+static bool dal_c_Cmd__pathIsUnderRoot(const char* root, const char* path);
+static int dal_c_Cmd__cleanDependencyExportsAt(const char* root, bool verbose, bool* cleaned);
 static bool dal_c_Cmd__executeNeedsProjectLock(const dal_c_Cmd* self);
 static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj);
@@ -2574,6 +2576,14 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     free(build_dir);
 
     if (clean_local_build) {
+        if (!cache_only) {
+            int deps_result = dal_c_Cmd__cleanDependencyExportsAt(cwd, self->verbose, &cleaned);
+            if (deps_result != 0) {
+                free(cwd_build_dir);
+                free(cwd);
+                return deps_result;
+            }
+        }
         free(cwd_build_dir);
         free(cwd);
         if (!cleaned) {
@@ -2584,17 +2594,9 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     free(cwd_build_dir);
     free(cwd);
 
-    if (proj->root && !cache_only && !self->profile_explicit) {
-        char* deps_dir = dal_c_Project_getDepsDir(proj);
-        if (deps_dir && path_isDir(deps_dir)) {
-            if (self->verbose) {
-                printf("Removing: %s\n", deps_dir);
-            }
-            dir_removeRecur(deps_dir);
-            printf("Cleaned: %s\n", deps_dir);
-            cleaned = true;
-        }
-        free(deps_dir);
+    if (proj->root && !cache_only) {
+        int deps_result = dal_c_Cmd__cleanDependencyExportsAt(proj->root, self->verbose, &cleaned);
+        if (deps_result != 0) { return deps_result; }
     }
 
     char* cache_dir = dal_c__cacheBaseDir(proj);
@@ -4129,6 +4131,78 @@ static int dal_c_Cmd__applyExcludeContract(ArrStr** sources, const ArrStr* exclu
     ArrStr_fini(sources);
     *sources = filtered;
     return 0;
+}
+
+static bool dal_c_Cmd__pathIsUnderRoot(const char* root, const char* path) {
+    assert(root != NULL);
+    assert(path != NULL);
+
+    char* root_abs = path_abs(root);
+    char* path_abs_value = path_abs(path);
+    if (!root_abs || !path_abs_value) {
+        free(root_abs);
+        free(path_abs_value);
+        return false;
+    }
+
+    char* rel = path_relative(root_abs, path_abs_value);
+    bool ok = rel != NULL && rel[0] != '\0';
+    free(rel);
+    free(path_abs_value);
+    free(root_abs);
+    return ok;
+}
+
+static int dal_c_Cmd__cleanDependencyExportsAt(const char* root, bool verbose, bool* cleaned) {
+    assert(root != NULL);
+    assert(cleaned != NULL);
+
+    char* lib_dir = path_join(root, dal_c_dir_lib);
+    char* deps_dir = lib_dir ? path_join(lib_dir, dal_c_dir_deps) : NULL;
+    char* deps_header = lib_dir ? path_join(lib_dir, "deps.h") : NULL;
+    int result = 0;
+
+    if (deps_dir && path_isDir(deps_dir)) {
+        if (!dal_c_Cmd__pathIsUnderRoot(root, deps_dir)) {
+            (void)fprintf(stderr, "Error: Refusing to clean dependency export outside project root: %s\n", deps_dir);
+            result = 1;
+            goto done;
+        }
+        if (verbose) {
+            printf("Removing: %s\n", deps_dir);
+        }
+        if (!dir_removeRecur(deps_dir)) {
+            (void)fprintf(stderr, "Error: Failed to clean dependency export: %s\n", deps_dir);
+            result = 1;
+            goto done;
+        }
+        printf("Cleaned: %s\n", deps_dir);
+        *cleaned = true;
+    }
+
+    if (deps_header && path_isFile(deps_header)) {
+        if (!dal_c_Cmd__pathIsUnderRoot(root, deps_header)) {
+            (void)fprintf(stderr, "Error: Refusing to clean dependency prelude outside project root: %s\n", deps_header);
+            result = 1;
+            goto done;
+        }
+        if (verbose) {
+            printf("Removing: %s\n", deps_header);
+        }
+        if (remove(deps_header) != 0) {
+            (void)fprintf(stderr, "Error: Failed to clean dependency prelude: %s\n", deps_header);
+            result = 1;
+            goto done;
+        }
+        printf("Cleaned: %s\n", deps_header);
+        *cleaned = true;
+    }
+
+done:
+    free(deps_header);
+    free(deps_dir);
+    free(lib_dir);
+    return result;
 }
 
 static char* dal_c_Cmd__basenameNoExt(const char* path) {

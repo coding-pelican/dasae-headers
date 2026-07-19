@@ -58,6 +58,7 @@ static void test_makefile_mode_contracts(void);
 static void test_pch_dependency_invalidates_linked_plan(void);
 static void test_project_detection(void);
 static void test_clean_prefers_local_build_dir(void);
+static void test_clean_profile_removes_dependency_exports(void);
 static void test_target_request_resolution(void);
 static void test_output_override_generates_target_extensions(void);
 static void test_explicit_file_build_uses_file_project(void);
@@ -98,6 +99,7 @@ int main(void) {
     RUN_TEST(test_pch_dependency_invalidates_linked_plan);
     RUN_TEST(test_project_detection);
     RUN_TEST(test_clean_prefers_local_build_dir);
+    RUN_TEST(test_clean_profile_removes_dependency_exports);
     RUN_TEST(test_target_request_resolution);
     RUN_TEST(test_output_override_generates_target_extensions);
     RUN_TEST(test_explicit_file_build_uses_file_project);
@@ -2406,6 +2408,69 @@ static void test_clean_prefers_local_build_dir(void) {
     free(local_build_dev);
     free(project_build_dev);
     free(local_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+    free(original_cwd);
+}
+
+static void test_clean_profile_removes_dependency_exports(void) {
+    test_reset_temp_root();
+
+    char* original_cwd = env_getCWD();
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "clean-deps-project");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* build_dev = path_join(project_root, "build/dev");
+    char* build_release = path_join(project_root, "build/release");
+    char* lib_dir = path_join(project_root, "lib");
+    char* deps_dir = path_join(lib_dir, "deps");
+    char* stale_archive = path_join(deps_dir, "mad.lib");
+    char* deps_header = path_join(lib_dir, "deps.h");
+
+    TEST_ASSERT(original_cwd != NULL);
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(build_dev != NULL);
+    TEST_ASSERT(build_release != NULL);
+    TEST_ASSERT(lib_dir != NULL);
+    TEST_ASSERT(deps_dir != NULL);
+    TEST_ASSERT(stale_archive != NULL);
+    TEST_ASSERT(deps_header != NULL);
+
+    TEST_ASSERT(dir_createRecur(project_root));
+    TEST_ASSERT(file_write(project_dh, "output=clean-deps-project\n"));
+    TEST_ASSERT(dir_createRecur(build_dev));
+    TEST_ASSERT(dir_createRecur(build_release));
+    TEST_ASSERT(dir_createRecur(deps_dir));
+    TEST_ASSERT(file_write(stale_archive, "stale archive\n"));
+    TEST_ASSERT(file_write(deps_header, "#pragma once\n"));
+    TEST_ASSERT(env_setCWD(project_root));
+
+    const char* argv[] = { dal_c_tool_name, "clean", "dev", NULL };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+    TEST_ASSERT(cmd != NULL);
+    dal_c_Project* proj = dal_c_Project_detect(cmd);
+    TEST_ASSERT(proj != NULL);
+    TEST_ASSERT(proj->root != NULL);
+    TEST_ASSERT(dal_c_Cmd_cleanTarget(cmd, proj) == 0);
+    TEST_ASSERT(!path_exists(build_dev));
+    TEST_ASSERT(path_isDir(build_release));
+    TEST_ASSERT(!path_exists(deps_dir));
+    TEST_ASSERT(!path_exists(deps_header));
+
+    dal_c_Project_cleanup(&proj);
+    dal_c_Cmd_cleanup(&cmd);
+    TEST_ASSERT(env_setCWD(original_cwd));
+    TEST_ASSERT(test_remove_recur(temp_root));
+
+    free(deps_header);
+    free(stale_archive);
+    free(deps_dir);
+    free(lib_dir);
+    free(build_release);
+    free(build_dev);
     free(project_dh);
     free(project_root);
     free(temp_root);
