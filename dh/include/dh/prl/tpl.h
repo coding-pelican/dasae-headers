@@ -232,7 +232,7 @@ extern "C" {
 #define __type__T_apply$__fold(_$TypeStep, _$AccumulatedType...) \
     __type__T_apply$__apply(_$TypeStep, _$AccumulatedType)
 
-/* --- internal foreach --- */
+/*--- internal foreach ---*/
 
 #define __T__foreach(_$Exec, _$Iter, ...) \
     /** \

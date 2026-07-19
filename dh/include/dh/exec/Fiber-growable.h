@@ -13,7 +13,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Growable stack --- */
+/*--- Growable stack ---*/
 
 $extern fn_((exec_Fiber_initStorage(exec_Fiber* self, mem_Alctr gpa, exec_Fiber_StackPolicy policy))(mem_E$void));
 $extern fn_((exec_Fiber_finiStorage(exec_Fiber* self, mem_Alctr gpa))(void));
@@ -24,13 +24,13 @@ $static fn_((exec_Fiber_alignPage(usize size))(usize));
 $attr($inline_always)
 $static fn_((exec_Fiber_usableStack(exec_Fiber* self, usize commit_size))(S$u8));
 
-/* --- Context switch --- */
+/*--- Context switch ---*/
 
 $extern fn_((exec_Fiber_enter(exec_Fiber* self))(O$P$exec_Fiber));
 $extern fn_((exec_Fiber_restore(O$P$exec_Fiber prev))(void));
 
 #if TEST_enabled
-/* --- Diagnostics --- */
+/*--- Diagnostics ---*/
 
 T_alias$((exec_Fiber_EnsureDiag_Stage)(enum exec_Fiber_EnsureDiag_Stage{
     exec_Fiber_EnsureDiag_Stage_none = 0,

@@ -41,7 +41,7 @@ $static fn_((test_exec_Fiber_Stack_asyncReport(S_const$u8 label, time_Awake time
 };
 fn_use_Clsr_((test_exec_Fiber_Stack_asyncReport)(S_const$u8, time_Awake, time_Dur)(i32));
 
-/* --- 16 / 24 / 32-byte struct args across evented fiber yield (exec_Lane_yield path) --- */
+/*--- 16 / 24 / 32-byte struct args across evented fiber yield (exec_Lane_yield path) ---*/
 
 T_alias$((test_exec_Fiber_Stack_Probe16)(struct test_exec_Fiber_Stack_Probe16 {
     var_(w0, u64);

@@ -11,7 +11,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Int32 (i32) Vector --- */
+/*--- Int32 (i32) Vector ---*/
 
 /* Vec2i functions */
 /* Constants */

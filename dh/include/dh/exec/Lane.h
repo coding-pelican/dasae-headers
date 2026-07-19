@@ -11,7 +11,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Types --- */
+/*--- Types ---*/
 
 T_alias$((exec_Lane)(struct exec_Lane {
     var_(gpa, mem_Alctr);
@@ -21,29 +21,29 @@ T_alias$((exec_Lane)(struct exec_Lane {
     var_(tasks_ready, ArrQue$P$exec_Task);
 }));
 
-/* --- Lifecycle --- */
+/*--- Lifecycle ---*/
 
 $extern fn_((exec_Lane_init(mem_Alctr gpa))(exec_Lane));
 $extern fn_((exec_Lane_fini(exec_Lane* self))(void));
 
-/* --- Introspection --- */
+/*--- Introspection ---*/
 
 $extern fn_((exec_Lane_task(exec_Lane* self))(O$P$exec_Task));
 
-/* --- Task creation --- */
+/*--- Task creation ---*/
 
 $extern fn_((exec_Lane_createReadyTask(exec_Lane* self, u_P$raw result, P$$(Clsr$raw) inner))(O$P$exec_Task));
 $extern fn_((exec_Lane_readyTask(exec_Lane* self, exec_Task* task))(bool));
 $extern fn_((exec_Lane_asyncTask(exec_Lane* self, u_P$raw result, P$$(Clsr$raw) inner))(O$P$exec_Task));
 $extern fn_((exec_Lane_spawnTask(exec_Lane* self, u_P$raw result, P$$(Clsr$raw) inner))(O$P$exec_Task));
 
-/* --- Run loop --- */
+/*--- Run loop ---*/
 
 $extern fn_((exec_Lane_runTask(exec_Lane* self, exec_Task* task))(void));
 $extern fn_((exec_Lane_runOneReady(exec_Lane* self))(bool));
 $extern fn_((exec_Lane_yield(exec_Lane* self))(void));
 
-/* --- Cooperative cancel --- */
+/*--- Cooperative cancel ---*/
 
 /// Requeue `task` when a cooperative cancel was requested while it was `waiting`.
 $extern fn_((exec_Lane_deliverCancel(exec_Lane* self, exec_Task* task))(void));

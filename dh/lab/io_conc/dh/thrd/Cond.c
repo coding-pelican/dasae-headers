@@ -230,7 +230,7 @@ fn_((thrd_Cond__common_broadcast(thrd_Cond* self))(void)) {
 
 /* === Definitions === */
 
-/* --- Default --- */
+/*--- Default ---*/
 
 #if !thrd_Cond_has_specialized
 #define thrd_Cond__default_one_waiter (1)
@@ -340,7 +340,7 @@ fn_((thrd_Cond__default_impl_wake(thrd_Cond* self, thrd_Cond__Notify notify))(vo
 };
 #endif /* !thrd_Cond_has_specialized */
 
-/* --- Windows --- */
+/*--- Windows ---*/
 
 #if thrd_Cond_has_specialized && plat_is_windows
 fn_((thrd_Cond__windows_impl_init(void))(thrd_Cond)) {

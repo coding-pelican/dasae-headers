@@ -33,7 +33,7 @@ extern "C" {
 T_alias$((u_HashFn)(fn_(((*)(u_V$raw val))(u64) $T)));
 T_alias$((u_HashCtxFn)(fn_(((*)(u_V$raw val, u_V$raw ctx))(u64) $T)));
 
-/* --- HashMap_Ctrl: Slot Metadata --- */
+/*--- HashMap_Ctrl: Slot Metadata ---*/
 
 #define HashMap_Ctrl_free 0
 #define HashMap_Ctrl_tombstone 1
@@ -77,7 +77,7 @@ $static fn_((HashMap_Ctrl_fill(HashMap_Ctrl* ctrl, u8 fingerprint))(void));
 $attr($inline_always)
 $static fn_((HashMap_Ctrl_remove(HashMap_Ctrl* ctrl))(void));
 
-/* --- HashMap_Header: Internal header stored before metadata --- */
+/*--- HashMap_Header: Internal header stored before metadata ---*/
 
 #define HashMap_Header$$(_K, _V...) __comp_anon__HashMap_Header$$(_K, _V)
 #define HashMap_Header$(_K, _V...) __comp_alias__HashMap_Header$(_K, _V)
@@ -93,7 +93,7 @@ typedef struct HashMap_Header {
     var_(cap, u32);
 } HashMap_Header;
 
-/* --- HashMap_Pair: Key-Value pair type (2-tuple) --- */
+/*--- HashMap_Pair: Key-Value pair type (2-tuple) ---*/
 
 #define HashMap_Pair$$(_K, _V...) __comp_anon__HashMap_Pair$$(_K, _V)
 #define HashMap_Pair$(_K, _V...) __comp_alias__HashMap_Pair$(_K, _V)
@@ -130,7 +130,7 @@ $static let_(u_Fields_type$HashMap_Pair, A$$(count$u_Fields_Idx$HashMap_Pair, Ty
     [u_Fields_Idx_val_$HashMap_Pair] = typeInfo$(FieldType$(HashMap_Pair$raw, val_)),
 });
 
-/* --- HashMap_Entry: Pointers to key and value in map --- */
+/*--- HashMap_Entry: Pointers to key and value in map ---*/
 
 #define HashMap_Entry$$(_K, _V...) __comp_anon__HashMap_Entry$$(_K, _V)
 #define HashMap_Entry$(_K, _V...) __comp_alias__HashMap_Entry$(_K, _V)
@@ -167,7 +167,7 @@ T_use_O$(HashMap_EntryMut);
 $extern fn_((HashMap_EntryMut_key(HashMap_EntryMut self, TypeInfo key_ty))(u_P$raw));
 $extern fn_((HashMap_EntryMut_val(HashMap_EntryMut self, TypeInfo val_ty))(u_P$raw));
 
-/* --- HashMap_Ensured: Result from ensure operations --- */
+/*--- HashMap_Ensured: Result from ensure operations ---*/
 
 #define HashMap_Ensured$$(_K, _V...) __comp_anon__HashMap_Ensured$$(_K, _V)
 #define HashMap_Ensured$(_K, _V...) __comp_alias__HashMap_Ensured$(_K, _V)
@@ -194,7 +194,7 @@ $extern fn_((HashMap_Ensured_foundExistingMut(
     HashMap_Ensured self, TypeInfo key_ty, TypeInfo val_ty
 ))(O$HashMap_EntryMut));
 
-/* --- HashMap_Ctx: Context for hash and equality functions --- */
+/*--- HashMap_Ctx: Context for hash and equality functions ---*/
 
 typedef u_HashCtxFn HashMap_HashFn;
 $extern fn_((HashMap_HashFn_default(u_V$raw val, u_V$raw ctx))(u64));
@@ -259,7 +259,7 @@ $static fn_((HashMap_Ctx_ensureValid(HashMap_Ctx self))(HashMap_Ctx)) {
 };
 $extern fn_((HashMap_Ctx_default(void))(HashMap_Ctx));
 
-/* --- HashMap: Main hash map structure --- */
+/*--- HashMap: Main hash map structure ---*/
 
 #define HashMap$$(_K, _V...) __comp_anon__HashMap$$(_K, _V)
 #define HashMap$(_K, _V...) __comp_alias__HashMap$(_K, _V)
@@ -283,7 +283,7 @@ T_use$((HashMap)(O, E));
 T_use_E$($set(mem_E)(HashMap));
 #define HashMap_default_min_cap (n$(u32)(8))
 
-/* --- Construction/Destruction --- */
+/*--- Construction/Destruction ---*/
 
 $extern fn_((HashMap_empty(
     TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx
@@ -304,7 +304,7 @@ $extern fn_((HashMap_cloneWithCtx(
     HashMap self, TypeInfo key_ty, TypeInfo val_ty, P_const$HashMap_Ctx ctx, mem_Alctr gpa
 ))(mem_E$HashMap));
 
-/* --- Capacity Management --- */
+/*--- Capacity Management ---*/
 
 $extern fn_((HashMap_count(HashMap self))(u32));
 $extern fn_((HashMap_cap(HashMap self))(u32));
@@ -322,7 +322,7 @@ $extern fn_((HashMap_clearAndFree(
     HashMap* self, TypeInfo key_ty, TypeInfo val_ty, mem_Alctr gpa
 ))(void));
 
-/* --- Lookup Operations --- */
+/*--- Lookup Operations ---*/
 
 $extern fn_((HashMap_by(HashMap self, u_V$raw key, u_V$raw ret_mem))(O$u_V$raw));
 $extern fn_((HashMap_ptrBy(HashMap self, TypeInfo val_ty, u_V$raw key))(O$u_P_const$raw));
@@ -337,7 +337,7 @@ $extern fn_((HashMap_entryMut(HashMap self, TypeInfo val_ty, u_V$raw key))(O$Has
 
 $extern fn_((HashMap_contains(HashMap self, u_V$raw key))(bool));
 
-/* --- Insertion Operations --- */
+/*--- Insertion Operations ---*/
 
 /// Insert or update. May allocate.
 $attr($must_check)
@@ -363,7 +363,7 @@ $extern fn_((HashMap_fetchPutWithin(
     HashMap* self, u_V$raw key, u_V$raw val, V$HashMap_Pair$raw ret_mem
 ))(O$V$HashMap_Pair$raw));
 
-/* --- Ensure Operations --- */
+/*--- Ensure Operations ---*/
 
 /// Get existing entry or insert new one. May allocate.
 $attr($must_check)
@@ -380,7 +380,7 @@ $extern fn_((HashMap_ensureValue(
     HashMap* self, mem_Alctr gpa, u_V$raw key, u_V$raw default_val
 ))(mem_E$HashMap_Ensured));
 
-/* --- Removal Operations --- */
+/*--- Removal Operations ---*/
 
 /// Remove entry if present, returning true if removed.
 $extern fn_((HashMap_remove(HashMap* self, u_V$raw key))(bool));
@@ -391,12 +391,12 @@ $extern fn_((HashMap_fetchRemove(
 /// Remove entry by key pointer (must be valid pointer into map).
 $extern fn_((HashMap_removeByPtr(HashMap* self, u_P$raw key_ptr))(void));
 
-/* --- Maintenance Operations --- */
+/*--- Maintenance Operations ---*/
 
 /// Rehash in place to remove tombstones and improve performance.
 $extern fn_((HashMap_rehash(HashMap* self, TypeInfo key_ty, TypeInfo val_ty))(void));
 
-/* --- HashMap_Iter: Iterator over entries --- */
+/*--- HashMap_Iter: Iterator over entries ---*/
 
 #define HashMap_Iter$$(_K, _V...) __comp_anon__HashMap_Iter$$(_K, _V)
 #define HashMap_Iter$(_K, _V...) __comp_alias__HashMap_Iter$(_K, _V)
@@ -414,7 +414,7 @@ $extern fn_((HashMap_iter(const HashMap* self, TypeInfo key_ty, TypeInfo val_ty)
 $extern fn_((HashMap_Iter_next(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))(O$HashMap_Entry));
 $extern fn_((HashMap_Iter_nextMut(HashMap_Iter* self, TypeInfo key_ty, TypeInfo val_ty))(O$HashMap_EntryMut));
 
-/* --- HashMap_KeyIter: Iterator over keys --- */
+/*--- HashMap_KeyIter: Iterator over keys ---*/
 
 #define HashMap_KeyIter$$(_K, _V...) __comp_anon__HashMap_KeyIter$$(_K, _V)
 #define HashMap_KeyIter$(_K, _V...) __comp_alias__HashMap_KeyIter$(_K, _V)
@@ -432,7 +432,7 @@ $extern fn_((HashMap_keyIter(HashMap self, TypeInfo key_ty))(HashMap_KeyIter));
 $extern fn_((HashMap_KeyIter_next(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P_const$raw));
 $extern fn_((HashMap_KeyIter_nextMut(HashMap_KeyIter* self, TypeInfo key_ty))(O$u_P$raw));
 
-/* --- HashMap_ValIter: Iterator over values --- */
+/*--- HashMap_ValIter: Iterator over values ---*/
 
 #define HashMap_ValIter$$(_K, _V...) __comp_anon__HashMap_ValIter$$(_K, _V)
 #define HashMap_ValIter$(_K, _V...) __comp_alias__HashMap_ValIter$(_K, _V)

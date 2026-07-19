@@ -22,7 +22,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- include level --- */
+/*--- include level ---*/
 
 #define eval_include_level __comp_uint__eval_include_level
 
@@ -60,7 +60,7 @@ extern "C" {
 #define eval_include_level_is_14 __comp_bool__eval_include_level_is_14
 #define eval_include_level_is_15 __comp_bool__eval_include_level_is_15
 
-/* --- static evaluation --- */
+/*--- static evaluation ---*/
 
 #if !defined(eval_in_analysis)
 #define eval_in_analysis __comp_bool__eval_in_analysis

@@ -281,7 +281,7 @@ fn_((thrd__startFree(thrd__Start* start))(void)) {
     mem_Alctr_destroy($trace gpa, u_anyP(start));
 };
 
-/* --- Unsupported --- */
+/*--- Unsupported ---*/
 
 fn_((thrd__unsupported_handle(thrd_Self self))(thrd_Handle)) {
     return self.handle;
@@ -326,7 +326,7 @@ fn_((thrd__unsupported_join(thrd_Self self))(Clsr$raw*)) {
     return ensureNonnull(self.clsr);
 };
 
-/* --- Pthreads --- */
+/*--- Pthreads ---*/
 
 #if thrd_use_pthread
 fn_((thrd__pthread_handle(thrd_Self self))(thrd_Handle)) {
@@ -424,7 +424,7 @@ fn_((thrd__pthread_join(thrd_Self self))(Clsr$raw*)) {
 };
 #endif /* thrd_use_pthread */
 
-/* --- Windows --- */
+/*--- Windows ---*/
 
 #if plat_is_windows
 fn_((thrd__windows_handle(thrd_Self self))(thrd_Handle)) {
@@ -510,7 +510,7 @@ fn_((thrd__windows_join(thrd_Self self))(Clsr$raw*)) {
 };
 #endif /* plat_is_windows */
 
-/* --- Linux --- */
+/*--- Linux ---*/
 
 #if plat_is_linux
 #include <sys/syscall.h>
@@ -829,7 +829,7 @@ fn_((thrd__linux_freeAndExit(thrd__linux_Meta* meta))(void)) pp_switch_((arch_fa
 ));
 #endif /* plat_is_linux */
 
-/* --- WASI --- */
+/*--- WASI ---*/
 
 #if plat_is_wasi
 fn_((thrd__wasi_handle(thrd_Self self))(thrd_Handle)) {

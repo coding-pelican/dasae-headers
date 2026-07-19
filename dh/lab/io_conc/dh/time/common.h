@@ -29,7 +29,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Constants --- */
+/*--- Constants ---*/
 #define time_nanos_per_nano __comp_const__time_nanos_per_nano
 #define time_nanos_per_micro __comp_const__time_nanos_per_micro
 #define time_nanos_per_milli __comp_const__time_nanos_per_milli

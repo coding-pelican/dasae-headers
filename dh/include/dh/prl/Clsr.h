@@ -134,7 +134,7 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
         __p_clsr->rtn(ptrCast$((Clsr_Ctx$raw*)(__p_ctx))) \
     ))); \
 })
-/* --- Closure of Function --- */
+/*--- Closure of Function ---*/
 #define Clsr_Fn_Args_(_$rtn...) tpl_(Clsr_Fn_Args, _$rtn)
 // #define fn_use_Clsr_Fn_Args_(_$rtn...) __stmt__fn_use_Clsr_Args_(_$rtn)
 #define __stmt__fn_use_Clsr_(...) __step__fn_use_Clsr_(__step__fn_use_Clsr___parse0 __VA_ARGS__)
@@ -387,7 +387,7 @@ T_alias$((Clsr$raw)(struct Clsr$raw {
     ), \
         _$Arg_T16 $16
 
-/* --- Closure of Coroutine --- */
+/*--- Closure of Coroutine ---*/
 #define Clsr_Co_Frame_(_$rtn...) tpl_(Clsr_Co_Frame, _$rtn)
 // #define co_use_Clsr_Co_Frame_(_$rtn...) __stmt__co_use_Clsr_Co_Frame_(_$rtn)
 #define __stmt__co_use_Clsr_(...) __step__co_use_Clsr_(__step__co_use_Clsr___parse0 __VA_ARGS__)

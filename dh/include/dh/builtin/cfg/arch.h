@@ -27,7 +27,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Architecture Type --- */
+/*--- Architecture Type ---*/
 
 #define arch_type __comp_enum__arch_type
 #define arch_type_unknown __comp_enum__arch_type_unknown
@@ -49,7 +49,7 @@ extern "C" {
 #define arch_is_wasm64 __comp_bool__arch_is_wasm64
 #define arch_is_wasm32 __comp_bool__arch_is_wasm32
 
-/* --- Architecture Name --- */
+/*--- Architecture Name ---*/
 
 #define arch_name __comp_str__arch_name
 #define arch_name_unknown __comp_str__arch_name_unknown
@@ -62,7 +62,7 @@ extern "C" {
 #define arch_name_wasm64 __comp_str__arch_name_wasm64
 #define arch_name_wasm32 __comp_str__arch_name_wasm32
 
-/* --- Architecture Family --- */
+/*--- Architecture Family ---*/
 
 #define arch_family_type __comp_enum__arch_family_type
 #define arch_family_type_unknown __comp_enum__arch_family_type_unknown
@@ -76,7 +76,7 @@ extern "C" {
 #define arch_family_is_riscv __comp_bool__arch_family_is_riscv
 #define arch_family_is_wasm __comp_bool__arch_family_is_wasm
 
-/* --- Architecture Family name */
+/*--- Architecture Family name */
 
 #define arch_family_name __comp_str__arch_family_name
 #define arch_family_name_unknown __comp_str__arch_family_name_unknown
@@ -85,7 +85,7 @@ extern "C" {
 #define arch_family_name_riscv __comp_str__arch_family_name_riscv
 #define arch_family_name_wasm __comp_str__arch_family_name_wasm
 
-/* --- Bit Width --- */
+/*--- Bit Width ---*/
 
 #define arch_bits_unit __comp_enum__arch_bits_unit
 #define arch_bits_unit_unknown __comp_enum__arch_bits_unit_unknown
@@ -105,7 +105,7 @@ extern "C" {
 #define arch_bits_is_64bit __comp_bool__arch_bits_is_64bit
 #define arch_bits_is_32bit __comp_bool__arch_bits_is_32bit
 
-/* --- Endianness --- */
+/*--- Endianness ---*/
 
 #define arch_byte_order __comp_enum__arch_byte_order
 #define arch_byte_order_little_endian __comp_enum__arch_byte_order_little_endian
@@ -113,17 +113,17 @@ extern "C" {
 #define arch_byte_order_is_little_endian __comp_bool__arch_byte_order_is_little_endian
 #define arch_byte_order_is_big_endian __comp_bool__arch_byte_order_is_big_endian
 
-/* --- Cache Line --- */
+/*--- Cache Line ---*/
 
 #define arch_cache_line_bytes __comp_int__arch_cache_line_bytes
 
-/* --- Spin-loop Features --- */
+/*--- Spin-loop Features ---*/
 
 #define arch_has_arm_yield __comp_bool__arch_has_arm_yield
 #define arch_has_riscv_zihintpause __comp_bool__arch_has_riscv_zihintpause
 #define arch_has_spin_loop_hint __comp_bool__arch_has_spin_loop_hint
 
-/* --- SIMD Feature --- */
+/*--- SIMD Feature ---*/
 /* SIMD Intrinsic Headers
  * This is for reference on what headers correspond to what SIMD features:
  *
@@ -142,7 +142,7 @@ extern "C" {
  *   - RVV:           <riscv_vector.h>
  */
 
-/* --- x86/x86_64 SIMD Features --- */
+/*--- x86/x86_64 SIMD Features ---*/
 #define arch_has_sse __comp_bool__arch_has_sse
 #define arch_has_sse2 __comp_bool__arch_has_sse2
 #define arch_has_sse3 __comp_bool__arch_has_sse3
@@ -156,21 +156,21 @@ extern "C" {
 #define arch_has_avx512dq __comp_bool__arch_has_avx512dq
 #define arch_has_avx512vl __comp_bool__arch_has_avx512vl
 #define arch_has_fma __comp_bool__arch_has_fma
-/* --- ARM SIMD Features --- */
+/*--- ARM SIMD Features ---*/
 #define arch_has_neon __comp_bool__arch_has_neon
 #define arch_has_sve __comp_bool__arch_has_sve
 #define arch_has_sve2 __comp_bool__arch_has_sve2
 #define arch_has_fp16_vector_arith __comp_bool__arch_has_fp16_vector_arith
 #define arch_has_dotprod __comp_bool__arch_has_dotprod
 #define arch_has_i8mm __comp_bool__arch_has_i8mm
-/* --- RISC-V Vector Extension --- */
+/*--- RISC-V Vector Extension ---*/
 #define arch_has_rvv __comp_bool__arch_has_rvv
 #define arch_rvv_min_vlen_bits __comp_int__arch_rvv_min_vlen_bits
-/* --- WebAssembly SIMD --- */
+/*--- WebAssembly SIMD ---*/
 #define arch_has_wasm_simd128 __comp_bool__arch_has_wasm_simd128
 #define arch_has_wasm_relaxed_simd __comp_bool__arch_has_wasm_relaxed_simd
 
-/* --- SIMD Availability Summary --- */
+/*--- SIMD Availability Summary ---*/
 
 #define arch_simd_supported __comp_bool__arch_simd_supported
 #define arch_simd_scalable __comp_bool__arch_simd_scalable
@@ -179,7 +179,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* --- Architecture Type --- */
+/*--- Architecture Type ---*/
 
 /* Default: unknown architecture */
 #define __comp_enum__arch_type arch_type_unknown
@@ -246,7 +246,7 @@ extern "C" {
 #warning "Unknown architecture detected. Please check your architecture settings."
 #endif
 
-/* --- Architecture Name --- */
+/*--- Architecture Name ---*/
 
 /* Derive name from type */
 #define __comp_str__arch_name pp_expand( \
@@ -272,7 +272,7 @@ extern "C" {
 #define __comp_str__arch_name_wasm64 "wasm64"
 #define __comp_str__arch_name_wasm32 "wasm32"
 
-/* --- Architecture Family --- */
+/*--- Architecture Family ---*/
 
 /* Derive family from type */
 #define __comp_enum__arch_family_type pp_expand( \
@@ -315,7 +315,7 @@ extern "C" {
 #define __comp_str__arch_family_name_riscv "RISC-V"
 #define __comp_str__arch_family_name_wasm "WebAssembly"
 
-/* --- Bit Width --- */
+/*--- Bit Width ---*/
 
 /* Derive bit width unit from type */
 #define __comp_enum__arch_bits_unit pp_expand( \
@@ -356,7 +356,7 @@ extern "C" {
 #define __comp_bool__arch_bits_is_64bit pp_Tok_eql(arch_bits_unit, arch_bits_unit_64bit)
 #define __comp_bool__arch_bits_is_32bit pp_Tok_eql(arch_bits_unit, arch_bits_unit_32bit)
 
-/* --- Endianness --- */
+/*--- Endianness ---*/
 
 /* Default to little-endian */
 #define __comp_enum__arch_byte_order arch_byte_order_little_endian
@@ -382,7 +382,7 @@ extern "C" {
 #endif
 #endif /* arch_family_type != arch_family_type_wasm */
 
-/* --- Cache Line --- */
+/*--- Cache Line ---*/
 
 /* Conservative false-sharing boundary */
 #define __comp_int__arch_cache_line_bytes pp_expand( \
@@ -400,7 +400,7 @@ extern "C" {
 #define __comp_int__arch_hexagon_cache_line_bytes 32
 #endif
 
-/* --- Spin-loop Features --- */
+/*--- Spin-loop Features ---*/
 
 #if arch_type == arch_type_arm \
     && (defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6M__) \
@@ -440,7 +440,7 @@ extern "C" {
 #error "architecture has an inconsistent default atomic cache-line boundary"
 #endif
 
-/* --- SIMD Feature --- */
+/*--- SIMD Feature ---*/
 
 /* Default: no SIMD features */
 #define __comp_bool__arch_has_sse 0
@@ -467,7 +467,7 @@ extern "C" {
 #define __comp_bool__arch_has_wasm_simd128 0
 #define __comp_bool__arch_has_wasm_relaxed_simd 0
 
-/* --- x86/x86_64 SIMD Detection --- */
+/*--- x86/x86_64 SIMD Detection ---*/
 
 #if arch_family_is_x86
 
@@ -548,7 +548,7 @@ extern "C" {
 
 #endif /* arch_family_is_x86 */
 
-/* --- ARM SIMD Detection --- */
+/*--- ARM SIMD Detection ---*/
 
 #if arch_family_is_arm
 
@@ -586,7 +586,7 @@ extern "C" {
 
 #endif /* arch_family_is_arm */
 
-/* --- RISC-V Vector Extension Detection --- */
+/*--- RISC-V Vector Extension Detection ---*/
 
 #if arch_family_is_riscv
 
@@ -605,7 +605,7 @@ extern "C" {
 
 #endif /* arch_family_is_riscv */
 
-/* --- WebAssembly SIMD Detection --- */
+/*--- WebAssembly SIMD Detection ---*/
 
 #if arch_family_is_wasm
 
@@ -621,7 +621,7 @@ extern "C" {
 
 #endif /* arch_family_is_wasm */
 
-/* --- SIMD Availability Summary --- */
+/*--- SIMD Availability Summary ---*/
 
 /* Determine if any SIMD is available */
 #define __comp_bool__arch_simd_supported pp_or( \

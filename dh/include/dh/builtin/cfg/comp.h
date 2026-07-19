@@ -27,7 +27,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Compiler Type --- */
+/*--- Compiler Type ---*/
 
 #define comp_type __comp_enum__comp_type
 #define comp_type_unknown __comp_enum__comp_type_unknown
@@ -45,14 +45,14 @@ extern "C" {
 #define comp_name_gcc __comp_str__comp_name_gcc
 #define comp_name_msvc __comp_str__comp_name_msvc
 
-/* --- Compiler Version --- */
+/*--- Compiler Version ---*/
 
 #define comp_version __comp_int__comp_version
 #define comp_version_major __comp_int__comp_version_major
 #define comp_version_minor __comp_int__comp_version_minor
 #define comp_version_patch __comp_int__comp_version_patch
 
-/* --- Build Facts --- */
+/*--- Build Facts ---*/
 
 #define comp_env_type __comp_enum__comp_env_type
 #define comp_env_type_unknown __comp_enum__comp_env_type_unknown
@@ -71,7 +71,7 @@ extern "C" {
 /* Derived from start-files + default-libs unless explicitly provided by `COMP_HAS_STDLIB` / `COMP_NO_STDLIB`. */
 #define comp_stdlib_linked __comp_bool__comp_stdlib_linked
 
-/* --- Compiler Attributes --- */
+/*--- Compiler Attributes ---*/
 
 /* Diagnostics & Constraints */
 #define comp_deprecated __comp_attr__comp_deprecated
@@ -136,7 +136,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* --- Compiler Type --- */
+/*--- Compiler Type ---*/
 
 /* Default: unknown compiler */
 #define __comp_enum__comp_type comp_type_unknown
@@ -179,7 +179,7 @@ extern "C" {
 #define __comp_str__comp_name_gcc "GCC"
 #define __comp_str__comp_name_msvc "MSVC"
 
-/* --- Compiler Version --- */
+/*--- Compiler Version ---*/
 
 /* Default: 0.0.0 */
 #define __comp_int__comp_version 0
@@ -216,7 +216,7 @@ extern "C" {
 #define __comp_int__comp_version_minor (_MSC_VER % 100)
 #endif
 
-/* --- Build Facts ---
+/*--- Build Facts ---
  *
  * Inputs from build tool (`dh-c` emits these; hand-written code may also define them):
  *   `COMP_FREESTANDING`    — freestanding env (mutually exclusive with `COMP_HOSTED`)
@@ -357,7 +357,7 @@ extern "C" {
 #define __comp_bool__comp_libc_linked __comp_flag__comp_libc_linked
 #define __comp_bool__comp_stdlib_linked __comp_flag__comp_stdlib_linked
 
-/* --- Compiler Attributes --- */
+/*--- Compiler Attributes ---*/
 
 #if comp_type == comp_type_clang || comp_type == comp_type_gcc
 #define __comp_attr__comp_deprecated __attribute__((deprecated))

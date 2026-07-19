@@ -31,7 +31,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Equality Operators --- */
+/*--- Equality Operators ---*/
 
 #define cmp_eql$(_$T /*)(_$lhs: _$T, _$rhs: _$T) -> (bool*/) tpl_(_$T, eql)
 #define cmp_neq$(_$T /*)(_$lhs: _$T, _$rhs: _$T) -> (bool*/) tpl_(_$T, neq)
@@ -45,7 +45,7 @@ extern "C" {
 #define cmp_u_eqlCtx$(_$T /*)(_$lhs: u_V$raw, _$rhs: u_V$raw, _$ctx: u_V$raw) -> (bool*/) tpl_(_$T, u_eqlCtx)
 #define cmp_u_neqCtx$(_$T /*)(_$lhs: u_V$raw, _$rhs: u_V$raw, _$ctx: u_V$raw) -> (bool*/) tpl_(_$T, u_neqCtx)
 
-/* --- Ordering Operators --- */
+/*--- Ordering Operators ---*/
 
 typedef enum_((cmp_Sgn $fits($packed))(
     cmp_Sgn_neg = -1,
@@ -95,7 +95,7 @@ typedef enum_((cmp_ApxMode $fits($packed))(
  * Same pattern for Ctx and Apx variants: ordCtx/ltCtx, ordApx/ltApx.
  */
 
-/* --- Comparison Operators --- */
+/*--- Comparison Operators ---*/
 
 #define cmp_ord$(_$T /*)(_$lhs: _$T, _$rhs: _$T) -> (cmp_Ord*/) tpl_(_$T, ord)
 #define cmp_eq$(_$T /*)(_$lhs: _$T, _$rhs: _$T) -> (bool*/) tpl_(_$T, eq)
@@ -177,7 +177,7 @@ typedef enum_((cmp_ApxMode $fits($packed))(
 #define cmp_u_leApxRel$(_$T /*)(_$lhs: u_V$raw, _$rhs: u_V$raw, _$threshold: u_V$raw) -> (bool*/) tpl_(_$T, u_leApxRel)
 #define cmp_u_geApxRel$(_$T /*)(_$lhs: u_V$raw, _$rhs: u_V$raw, _$threshold: u_V$raw) -> (bool*/) tpl_(_$T, u_geApxRel)
 
-/* --- Function-like Macros --- */
+/*--- Function-like Macros ---*/
 
 #define cmp_fn_(_$op) pp_cat(tpl_(cmp_fn, _$op), $)
 
@@ -273,7 +273,7 @@ typedef enum_((cmp_ApxMode $fits($packed))(
 #define cmp_fn_u_leApxRel$(/*(_$T)(_$id_lhs, _$id_rhs, _$threshold)*/...) __step__cmp_fn_u_leApxRel$(__step__cmp_fn_u_leApxRel$__parse __VA_ARGS__)
 #define cmp_fn_u_geApxRel$(/*(_$T)(_$id_lhs, _$id_rhs, _$threshold)*/...) __step__cmp_fn_u_geApxRel$(__step__cmp_fn_u_geApxRel$__parse __VA_ARGS__)
 
-/* --- Function-like Macros Default Implementations --- */
+/*--- Function-like Macros Default Implementations ---*/
 /*
  * Ord-related defaults: use cmp_fn_ord_default$ when only cmp_lt$ is defined;
  * use cmp_fn_eq_default$, cmp_fn_lt_default$, etc. when cmp_ord$ is defined (or derived).

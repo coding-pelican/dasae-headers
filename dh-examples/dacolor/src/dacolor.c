@@ -7,7 +7,7 @@ $static fn_((dacolor_HSL__hueToRGBSpace(f64 p, f64 q, f64 t))(f64));
 
 /*========== External Definitions ===========================================*/
 
-/* --- RGBA --- */
+/*--- RGBA ---*/
 
 fn_((dacolor_RGBA_from(u8 r, u8 g, u8 b, u8 a))(dacolor_RGBA)) {
     return dacolor_RGBA_from_static(r, g, b, a);
@@ -53,7 +53,7 @@ fn_((dacolor_RGBA_toHSL(dacolor_RGBA self))(dacolor_HSL)) {
     return dacolor_RGB_toHSL(dacolor_RGBA_toRGB(self));
 };
 
-/* --- RGB --- */
+/*--- RGB ---*/
 
 fn_((dacolor_RGB_from(u8 r, u8 g, u8 b))(dacolor_RGB)) {
     return dacolor_RGB_from_static(r, g, b);
@@ -124,7 +124,7 @@ fn_((dacolor_RGB_toHSL(dacolor_RGB self))(dacolor_HSL)) {
     return dacolor_HSL_from(h * 360.0, s * 100.0, l * 100.0);
 };
 
-/* --- HSL --- */
+/*--- HSL ---*/
 
 fn_((dacolor_HSL_from(f64 h, f64 s, f64 l))(dacolor_HSL)) {
     return dacolor_HSL_from_static(h, s, l);

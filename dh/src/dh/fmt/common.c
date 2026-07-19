@@ -217,7 +217,7 @@ fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void
     return_ok({});
 } $unguarded(fn);
 
-/* --- Direct Type Formatting APIs --- */
+/*--- Direct Type Formatting APIs ---*/
 
 fn_((fmt_formatBool(io_Writer writer, bool val, fmt_Spec spec))(E$void)) {
     // printf("--- debug print: fmt_formatBool ---\n");

@@ -167,7 +167,7 @@ fn_((sort_heap__siftDown(R range, usize target, sort_IdxCmpXchgr idx_ctx))(void)
 
 /*========== External Definitions: PDQ Sort =================================*/
 
-/* --- Internal Declarations --- */
+/*--- Internal Declarations ---*/
 
 /* Break patterns in the slice by shuffling some elements around. */
 $static fn_((sort_pdq__breakPatterns(R range, sort_IdxCmpXchgr idx_ctx))(void));
@@ -190,7 +190,7 @@ $static fn_((sort_pdq__partEq(R range, usize pivot, sort_IdxCmpXchgr idx_ctx))(u
  * Sets the new pivot. Returns `true` if already partitioned. */
 $static fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCmpXchgr idx_ctx))(bool));
 
-/* --- External Definitions --- */
+/*--- External Definitions ---*/
 
 T_alias$((sort_pdq__Frame)(struct sort_pdq__Frame {
     var_(range, R);
@@ -310,7 +310,7 @@ fn_((sort_pdqIdx(R range, sort_IdxCmpXchgr idx_ctx))(void)) {
     }
 };
 
-/* --- Internal Definitions --- */
+/*--- Internal Definitions ---*/
 
 fn_((sort_pdq__breakPatterns(R range, sort_IdxCmpXchgr idx_ctx))(void)) {
     let_(min_partition, usize) = 8;
@@ -533,7 +533,7 @@ fn_((sort_pdq__part(R range, usize* pivot, sort_IdxCmpXchgr idx_ctx))(bool)) {
 
 /*========== External Definitions: Block Sort ===============================*/
 
-/* --- Internal Definitions --- */
+/*--- Internal Definitions ---*/
 
 T_alias$((sort_block__Iter)(struct sort_block__Iter {
     var_(size, usize);
@@ -601,7 +601,7 @@ $static fn_((sort_block__findFirstBackward(u_S$raw seq, u_P_const$raw value, R r
 $static fn_((sort_block__findLastForward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize));
 $static fn_((sort_block__findLastBackward(u_S$raw seq, u_P_const$raw value, R range, usize unique, sort_OrdCtxFn ordFn, u_V$raw ctx))(usize));
 
-/* --- External Definitions --- */
+/*--- External Definitions ---*/
 
 fn_((sort_block(u_S$raw seq, sort_OrdFn ordFn))(void)) {
     let_(no_ctx, cmp_OrdNoCtxFnAsCtx) = { .ordFn = ordFn };
@@ -695,7 +695,7 @@ fn_((sort_block__allocCache(mem_Alctr gpa, TypeInfo type, usize len))(mem_E$u_S$
     return_ok(try_(mem_Alctr_alloc($trace gpa, type, len / 4)));
 } $unscoped(fn);
 
-/* --- Internal Definitions --- */
+/*--- Internal Definitions ---*/
 
 fn_((sort_block__Iter_init(usize size2, usize min_level))(sort_block__Iter)) {
     let pow2 = uint_pow2Floor$((usize)(size2));

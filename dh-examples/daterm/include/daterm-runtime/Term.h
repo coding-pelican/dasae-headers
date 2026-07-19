@@ -48,7 +48,7 @@ $static fn_((daterm_Term_assertValid(P$raw ctx, P_const$$(daterm_Term_VTbl) vtbl
 $attr($inline_always)
 $static fn_((daterm_Term_ensureValid(daterm_Term self))(daterm_Term));
 
-/* --- Event Polling --- */
+/*--- Event Polling ---*/
 
 /// Parse next event from terminal input (non-blocking)
 /// Returns `none` if no event available
@@ -67,7 +67,7 @@ $extern fn_((daterm_Term_waitTimed(daterm_Term self, time_Dur timeout))(daterm_T
 /// Requires terminal to be in raw mode
 $extern fn_((daterm_Term_waitProtcd(daterm_Term self))(daterm_Event));
 
-/* --- IO Contracts --- */
+/*--- IO Contracts ---*/
 
 $extern fn_((daterm_Term_reader(daterm_Term self))(io_Reader));
 $extern fn_((daterm_Term_writer(daterm_Term self))(io_Writer));
@@ -75,7 +75,7 @@ $attr($must_check)
 $extern fn_((daterm_Term_flush(daterm_Term self))(E$void));
 $extern fn_((daterm_Term_caps(daterm_Term self))(daterm_TermCaps));
 
-/* --- Runtime Queries and Transactions --- */
+/*--- Runtime Queries and Transactions ---*/
 
 $attr($must_check)
 $extern fn_((daterm_Term_queryLocal(daterm_Term self, daterm_Query query))(E$daterm_Query_Result));

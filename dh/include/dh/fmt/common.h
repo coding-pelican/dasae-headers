@@ -284,7 +284,7 @@ $extern fn_((fmt_format(io_Writer writer, S_const$u8 fmt, ...))(E$void)) $must_c
 /// Format values using va_list (for wrapper functions)
 $extern fn_((fmt_formatVaArgs(io_Writer writer, S_const$u8 fmt, va_list va_args))(E$void)) $must_check;
 
-/* --- Direct Type Formatting APIs --- */
+/*--- Direct Type Formatting APIs ---*/
 
 /// Format a boolean val with spec
 $extern fn_((fmt_formatBool(io_Writer writer, bool val, fmt_Spec spec))(E$void)) $must_check;

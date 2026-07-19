@@ -1,6 +1,6 @@
 #include "RWLock.h"
 
-/* --- Pthreads --- */
+/*--- Pthreads ---*/
 
 #if thrd_RWLock_use_pthread
 fn_((thrd_RWLock_init(void))(thrd_RWLock)) {
@@ -39,7 +39,7 @@ fn_((thrd_RWLock_unlockShared(thrd_RWLock* self))(void)) {
     claim_assert(rc == (/*SUCCESS*/ 0));
 };
 
-#else /* --- Common --- */
+#else /*--- Common ---*/
 
 /// State bit layout for 64-bit usize:
 /// | bit 63 (unused) | bits 62-32 (reader count, 31 bits) | bits 31-1 (writer count, 31 bits) | bit 0 (is_writing) |

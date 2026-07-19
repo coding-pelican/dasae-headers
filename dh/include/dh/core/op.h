@@ -31,7 +31,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Operators --- */
+/*--- Operators ---*/
 
 #define op_add$(_$T) tpl_(_$T, add)
 #define op_sub$(_$T) tpl_(_$T, sub)
@@ -84,7 +84,7 @@ extern "C" {
 #define op_xorAsgWith$(_$T, _$U) tpl$(tpl_(_$T, xorAsg), _$U)
 #define op_orAsgWith$(_$T, _$U) tpl$(tpl_(_$T, orAsg), _$U)
 
-/* ---- Function-like Macros ---- */
+/*---- Function-like Macros ----*/
 
 #define op_fn_add$(/*((_$T)(_$id_lhs, _$id_rhs))(_$TRet)*/...) op__fn_bin$(add, __VA_ARGS__)
 #define op_fn_sub$(/*((_$T)(_$id_lhs, _$id_rhs))(_$TRet)*/...) op__fn_bin$(sub, __VA_ARGS__)

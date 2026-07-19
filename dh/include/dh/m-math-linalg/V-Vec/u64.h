@@ -11,7 +11,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- UInt64 (u64) Vector --- */
+/*--- UInt64 (u64) Vector ---*/
 
 /* Vec2ul functions */
 /* Constants */

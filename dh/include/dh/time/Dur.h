@@ -29,7 +29,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Structures --- */
+/*--- Structures ---*/
 struct time_Dur {
     u64 secs;
     u32 nanos;
@@ -37,14 +37,14 @@ struct time_Dur {
 T_impl_O$(time_Dur);
 T_impl_E$($set(time_direct_E)(time_Dur));
 
-/* --- Constants --- */
+/*--- Constants ---*/
 #define time_Dur_zero __comp_const__time_Dur_zero
 #define time_Dur_sec __comp_const__time_Dur_sec
 #define time_Dur_milli __comp_const__time_Dur_milli
 #define time_Dur_micro __comp_const__time_Dur_micro
 #define time_Dur_nano __comp_const__time_Dur_nano
 
-/* --- Constructors --- */
+/*--- Constructors ---*/
 #define time_Dur_from_static(_secs, _nanos) __comp_fn__time_Dur_from_static(_secs, _nanos)
 $extern fn_((time_Dur_from(u64 secs, u32 nanos))(time_Dur));
 #define time_Dur_fromSecs_static(_secs) __comp_fn__time_Dur_fromSecs_static(_secs)
@@ -60,7 +60,7 @@ $extern fn_((time_Dur_fromMicros(u64 micros))(time_Dur));
 #define time_Dur_fromNanos_static(_nanos) __comp_fn__time_Dur_fromNanos_static(_nanos)
 $extern fn_((time_Dur_fromNanos(u64 nanos))(time_Dur));
 
-/* --- Accessors --- */
+/*--- Accessors ---*/
 $extern fn_((time_Dur_asSecs(time_Dur self))(u64));
 $extern fn_((time_Dur_asSecs$f64(time_Dur self))(f64));
 $extern fn_((time_Dur_asSecs$f32(time_Dur self))(f32));
@@ -68,10 +68,10 @@ $extern fn_((time_Dur_subsecMillis(time_Dur self))(u32));
 $extern fn_((time_Dur_subsecMicros(time_Dur self))(u32));
 $extern fn_((time_Dur_subsecNanos(time_Dur self))(u32));
 
-/* --- Validation --- */
+/*--- Validation ---*/
 $extern fn_((time_Dur_isZero(time_Dur self))(bool));
 
-/* --- Arithmetic --- */
+/*--- Arithmetic ---*/
 $extern op_fn_add$(((time_Dur)(lhs, rhs))(time_Dur));
 $extern op_fn_addAsg$(((time_Dur)(lhs, rhs))(time_Dur*));
 $extern op_fn_sub$(((time_Dur)(lhs, rhs))(time_Dur));
@@ -88,7 +88,7 @@ $extern fn_((time_Dur_addSat(time_Dur lhs, time_Dur rhs))(time_Dur));
 $extern fn_((time_Dur_subSat(time_Dur lhs, time_Dur rhs))(time_Dur));
 $extern fn_((time_Dur_mulSat$u32(time_Dur lhs, u32 rhs))(time_Dur));
 
-/* --- Comparison --- */
+/*--- Comparison ---*/
 $attr($inline_always)
 $static cmp_fn_ord$((time_Dur)(lhs, rhs));
 $attr($inline_always)

@@ -110,7 +110,7 @@ TEST_fn_("co/Fiber: context switch survives movaps stack copies" $scope) {
     return_ok({});
 } $unscoped(TEST_fn) $suppressed;
 
-/* --- Struct argument preservation (16 / 24 / 32 bytes) across contextSwitch --- */
+/*--- Struct argument preservation (16 / 24 / 32 bytes) across contextSwitch ---*/
 
 T_alias$((test_co_Fiber_Probe16)(struct test_co_Fiber_Probe16 {
     var_(w0, u64);

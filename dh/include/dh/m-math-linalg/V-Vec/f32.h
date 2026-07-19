@@ -11,7 +11,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Float32 (f32) Vector --- */
+/*--- Float32 (f32) Vector ---*/
 
 /* Vec2f functions */
 /* Constants */

@@ -11,16 +11,16 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Data Types --- */
+/*--- Data Types ---*/
 T_alias$((time_Dur)(struct time_Dur));
 T_decl_O$(time_Dur);
 T_alias$((time_Inst)(struct time_Inst));
 T_decl_O$(time_Inst);
 
-/* --- Error Types --- */
+/*--- Error Types ---*/
 errset_((time_direct_E)(time_direct_Unsupported));
 
-/* --- Self Types --- */
+/*--- Self Types ---*/
 T_alias$((time_Real)(struct time_Real));
 T_alias$((time_Real_Inst)(struct time_Real_Inst));
 T_decl_O$(time_Real_Inst);
@@ -46,7 +46,7 @@ T_alias$((time_Thrd_Inst)(struct time_Thrd_Inst));
 T_decl_O$(time_Thrd_Inst);
 T_decl_E$($set(time_direct_E)(time_Thrd));
 
-/* --- Clock Types --- */
+/*--- Clock Types ---*/
 T_alias$((time_Clock)(struct time_Clock));
 T_decl_O$(time_Clock);
 T_alias$((time_Clock_Inst)(struct time_Clock_Inst));

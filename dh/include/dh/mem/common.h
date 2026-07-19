@@ -31,7 +31,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Memory Constants --- */
+/*--- Memory Constants ---*/
 
 #define mem_byte_size (usize_(1))
 #define mem_kb_size (usize_(1) * 1000)
@@ -45,7 +45,7 @@ extern "C" {
     @brief Fixed page size (may be different per platform) \
  */ __val__mem_page_size
 
-/* --- Integer Bit Operations --- */
+/*--- Integer Bit Operations ---*/
 
 $attr($inline_always)
 $static fn_((mem_trailingZerosSize(usize x))(u32));
@@ -73,7 +73,7 @@ $static fn_((mem_leadingZeros16(u16 x))(u32));
 $attr($inline_always)
 $static fn_((mem_leadingZeros8(u8 x))(u32));
 
-/* --- Byte Swap Functions --- */
+/*--- Byte Swap Functions ---*/
 
 $attr($inline_always)
 $static fn_((mem_swapBytesSize(usize x))(usize));
@@ -86,7 +86,7 @@ $static fn_((mem_swapBytes32(u32 x))(u32));
 $attr($inline_always)
 $static fn_((mem_swapBytes16(u16 x))(u16));
 
-/* --- Endian Conversion --- */
+/*--- Endian Conversion ---*/
 
 $attr($inline_always)
 $static fn_((mem_littleToNativeSize(usize x))(usize));
@@ -196,7 +196,7 @@ T_alias$((mem_WriteBE16Buf)(A$$(u16_bytes, u8)));
 $attr($inline_always)
 $static fn_((mem_writeBE16(u16 val))(mem_WriteBE16Buf));
 
-/* --- Alignment Functions --- */
+/*--- Alignment Functions ---*/
 
 T_alias$((mem_Log2Align)(u8));
 T_impl_O$(mem_Log2Align);
@@ -231,7 +231,7 @@ $static fn_((mem_alignToLog2(usize align))(mem_Align));
 $attr($inline_always)
 $static fn_((mem_log2ToAlign(mem_Align log2_align))(usize));
 
-/* --- Memory Utilities --- */
+/*--- Memory Utilities ---*/
 
 $attr($inline_always)
 $static fn_((mem_idxZ$u8(u8 sentinel, const u8* pz))(usize));
@@ -817,7 +817,7 @@ $extern fn_((mem_SplitBwdIter_rest(mem_SplitBwdIter$raw* self, TypeInfo type))(u
 
 /*========== Macros and Definitions =========================================*/
 
-/* --- Memory Constants --- */
+/*--- Memory Constants ---*/
 
 #define __val__mem_page_size (pp_expand( \
     pp_switch_ pp_begin(arch_type)( \
@@ -829,7 +829,7 @@ $extern fn_((mem_SplitBwdIter_rest(mem_SplitBwdIter$raw* self, TypeInfo type))(u
 ))
 
 #if in_analysis_active_only || in_comptime
-/* --- Integer Bit Operations --- */
+/*--- Integer Bit Operations ---*/
 
 fn_((mem_trailingZerosSize(usize x))(u32)) {
     if (x == 0) { return sizeOf$(usize) * 8; }
@@ -982,7 +982,7 @@ fn_((mem_leadingZeros8(u8 x))(u32)) {
 #endif
 };
 
-/* --- Byte Swap Functions --- */
+/*--- Byte Swap Functions ---*/
 
 fn_((mem_swapBytesSize(usize x))(usize)) {
     return pp_if_(arch_bits_is_64bit)(
@@ -1030,7 +1030,7 @@ fn_((mem_swapBytes16(u16 x))(u16)) {
 #endif
 };
 
-/* --- Endian Conversion --- */
+/*--- Endian Conversion ---*/
 
 fn_((mem_littleToNativeSize(usize x))(usize)) {
     return pp_if_(arch_byte_order_is_little_endian)(
@@ -1200,7 +1200,7 @@ fn_((mem_writeBE16(u16 val))(mem_WriteBE16Buf)) {
     return bitCast$((mem_WriteBE16Buf)(mem_nativeToBig16(val)));
 };
 
-/* --- Alignment Functions --- */
+/*--- Alignment Functions ---*/
 
 fn_((mem_isValidAlign(usize align))(bool)) {
     return 0 < align && (align & (align - 1)) == 0;
@@ -1230,7 +1230,7 @@ fn_((mem_log2ToAlign(mem_Align log2_align))(usize)) {
     return usize_(1) << as$(usize)(log2_align);
 };
 
-/* --- Memory Utilities --- */
+/*--- Memory Utilities ---*/
 
 fn_((mem_idxZ$u8(u8 sentinel, const u8* pz))(usize)) {
     claim_assert_nonnull(pz);
@@ -1843,7 +1843,7 @@ fn_((mem_Cutted_after(mem_Cutted self, TypeInfo type))(u_S_const$raw)) {
 };
 #endif /* in_analysis_active_only || in_comptime */
 
-/* --- template --- */
+/*--- template ---*/
 
 #define __stmt__T_use_mem_asBytes$(_T...) \
     $inline_always $static fn_((tpl$(mem_asBytes, _T)(P$$(_T) ptr))(S_const$u8)) { \

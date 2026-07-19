@@ -102,7 +102,7 @@ extern "C" {
      */ \
     pp_exec_foldr(_$Step, _$Init, __VA_ARGS__)
 
-/* --- tok --- */
+/*--- tok ---*/
 
 #define pp_true 1
 #define pp_false 0
@@ -651,7 +651,7 @@ extern "C" {
         ) \
     )
 
-/* --- tok --- */
+/*--- tok ---*/
 
 #define pp_bitCmpl pp_bitNot
 #define pp_bitNot(_$b) pp_cat(__pp_bitNot_, _$b)
@@ -956,7 +956,7 @@ extern "C" {
 #define pp_Tok_cmp$254(_$x) _$x
 #define pp_Tok_cmp$255(_$x) _$x
 
-/* --- const --- */
+/*--- const ---*/
 
 #define pp_Tok_cmp$const(_$x) _$x
 #define ignore_and_end(...) ignore_end ignore_end
@@ -971,7 +971,7 @@ extern "C" {
 #define Tok_removeConst$(_$const_T...) pp_cat(__Tok_removeConst$__remove_, _$const_T)
 #define __Tok_removeConst$__remove_const
 
-/* --- tpl --- */
+/*--- tpl ---*/
 
 #define tpls$(_$tpl, ...) pp_if_(pp_bool(pp_countArg(__VA_ARGS__)))( \
     pp_then_(pp_foldl(__tpls$__join, _$tpl, __VA_ARGS__)), \

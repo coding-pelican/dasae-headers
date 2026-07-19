@@ -26,7 +26,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Platform Detection --- */
+/*--- Platform Detection ---*/
 
 #define plat_type __comp_enum__plat_type
 #define plat_type_unknown __comp_enum__plat_type_unknown
@@ -50,7 +50,7 @@ extern "C" {
 #define plat_based_unix __comp_bool__plat_based_unix
 #define plat_is_posix __comp_bool__plat_is_posix
 
-/* --- Data Model --- */
+/*--- Data Model ---*/
 
 #define plat_data_model __comp_enum__plat_data_model
 #define plat_data_model_unknown __comp_enum__plat_data_model_unknown
@@ -98,7 +98,7 @@ extern "C" {
 
 #define plat_long_needs_distinct_int_cases __comp_bool__plat_long_needs_distinct_int_cases
 
-/* --- Calling Conventions --- */
+/*--- Calling Conventions ---*/
 
 #define plat_callconv_cdecl __comp_attr__plat_callconv_cdecl
 #define plat_callconv_stdcall __comp_attr__plat_callconv_stdcall
@@ -112,7 +112,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* --- Platform Detection --- */
+/*--- Platform Detection ---*/
 
 /* Default: unknown platform */
 #define __comp_enum__plat_type plat_type_unknown
@@ -182,7 +182,7 @@ extern "C" {
 )
 #define __comp_bool__plat_is_posix plat_based_unix
 
-/* --- Data Model --- */
+/*--- Data Model ---*/
 
 #define __comp_enum__plat_data_model plat_data_model_unknown
 #define __comp_enum__plat_data_model_unknown 0
@@ -287,7 +287,7 @@ extern "C" {
 #define __comp_bool__plat_long_needs_distinct_int_cases \
     pp_or(pp_or(plat_data_model_is_llp64, plat_data_model_is_llp32), plat_is_darwin)
 
-/* --- Calling Conventions --- */
+/*--- Calling Conventions ---*/
 
 #if plat_type == plat_type_windows
 #define __comp_attr__plat_callconv_cdecl __cdecl

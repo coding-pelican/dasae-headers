@@ -2,7 +2,7 @@
 
 /*========== External Definitions ===========================================*/
 
-/* --- Constructors --- */
+/*--- Constructors ---*/
 
 fn_((time_Dur_from(u64 secs, u32 nanos))(time_Dur)) {
     return time_Dur_from_static(secs, nanos);
@@ -32,7 +32,7 @@ fn_((time_Dur_fromNanos(u64 nanos))(time_Dur)) {
     return time_Dur_fromNanos_static(nanos);
 };
 
-/* --- Accessors --- */
+/*--- Accessors ---*/
 
 fn_((time_Dur_asSecs(time_Dur self))(u64)) {
     return self.secs;
@@ -58,13 +58,13 @@ fn_((time_Dur_subsecNanos(time_Dur self))(u32)) {
     return self.nanos;
 };
 
-/* --- Validation --- */
+/*--- Validation ---*/
 
 fn_((time_Dur_isZero(time_Dur self))(bool)) {
     return time_Dur_eq(self, time_Dur_zero);
 };
 
-/* --- Arithmetic --- */
+/*--- Arithmetic ---*/
 
 op_fn_add$(((time_Dur)(lhs, rhs))(time_Dur)) {
     return unwrap_(time_Dur_addChkd(lhs, rhs));

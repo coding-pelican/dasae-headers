@@ -91,14 +91,14 @@ fn_((debug_StackTrace__printPanicHeader(S_const$u8 reason, usize code))(void)) {
     }
 };
 
-/* --- Unsupported --- */
+/*--- Unsupported ---*/
 
 fn_((debug_StackTrace__unsupported_setupCrashHandler(void))(void)) $do_nothing;
 fn_((debug_StackTrace__unsupported_print(void))(void)) {
     io_stream_eprintln(u8_l("Stack Trace: Unsupported Platform"));
 };
 
-/* --- Windows --- */
+/*--- Windows ---*/
 
 #if plat_is_windows
 #include "dh/sys/api/windows/base.h"
@@ -184,7 +184,7 @@ fn_((debug_StackTrace__windows_print(void))(void) $guard) {
 } $unguarded(fn);
 #endif /* plat_is_windows */
 
-/* --- Unix --- */
+/*--- Unix ---*/
 
 #if debug_StackTrace__unix_enabled
 #include <execinfo.h>

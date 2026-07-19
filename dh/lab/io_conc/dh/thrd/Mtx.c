@@ -192,7 +192,7 @@ fn_((thrd_Mtx_Recur_unlock(thrd_Mtx_Recur* self))(void)) {
 
 /*========== Internal Definitions ===========================================*/
 
-/* --- Pthreads --- */
+/*--- Pthreads ---*/
 
 #if thrd_Mtx_use_pthread
 fn_((thrd_Mtx__pthread_init(void))(thrd_Mtx)) {
@@ -216,7 +216,7 @@ fn_((thrd_Mtx__pthread_unlock(thrd_Mtx* self))(void)) {
 };
 #endif /* thrd_Mtx_use_pthread */
 
-/* --- Default --- */
+/*--- Default ---*/
 
 #if !thrd_Mtx_has_specialized
 #include "ftx.h"
@@ -304,7 +304,7 @@ fn_((thrd_Mtx__default_lockSlow(thrd_Mtx* self))(void)) {
 };
 #endif /* !thrd_Mtx_has_specialized */
 
-/* --- Windows --- */
+/*--- Windows ---*/
 
 #if thrd_Mtx_has_specialized && plat_is_windows
 fn_((thrd_Mtx__windows_init(void))(thrd_Mtx)) {
@@ -328,7 +328,7 @@ fn_((thrd_Mtx__windows_unlock(thrd_Mtx* self))(void)) {
 };
 #endif /* thrd_Mtx_has_specialized && plat_is_windows */
 
-/* --- Darwin --- */
+/*--- Darwin ---*/
 
 #if thrd_Mtx_has_specialized && plat_is_darwin
 fn_((thrd_Mtx__darwin_init(void))(thrd_Mtx)) {

@@ -61,7 +61,7 @@ typedef struct ArrPQue {
 T_use$((ArrPQue)(O, E));
 T_use_E$($set(mem_E)(ArrPQue));
 
-/* --- Function Prototypes --- */
+/*--- Function Prototypes ---*/
 
 $extern fn_((ArrPQue_empty(TypeInfo type, P_const$ArrPQue_Ctx ctx))(ArrPQue));
 $extern fn_((ArrPQue_fixed(u_S$raw buf, P_const$ArrPQue_Ctx ctx))(ArrPQue));

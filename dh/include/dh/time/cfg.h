@@ -31,7 +31,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Wall-Clock Platform Type (for time_Clock) --- */
+/*--- Wall-Clock Platform Type (for time_Clock) ---*/
 typedef pp_if_(plat_is_windows)(
     pp_then_(FILETIME),
     pp_else_(pp_if_(plat_is_posix)(

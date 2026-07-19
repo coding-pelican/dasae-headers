@@ -13,7 +13,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Fiber context switch --- */
+/*--- Fiber context switch ---*/
 
 $attr($no_return $keep_symbol)
 $extern fn_((exec_callFiber(exec_Fiber_Starter* starter, const co_Fiber* first_switch))(void));

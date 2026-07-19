@@ -15,7 +15,7 @@ extern "C" {
 
 errset_((exec_Fiber_E)(exec_Fiber_Unsupported) $union_errset_(mem_E));
 
-/* --- Stack policy --- */
+/*--- Stack policy ---*/
 
 #define exec_Fiber_stack_reserve_size (usize_(1) * 1024 * 1024)
 #define exec_Fiber_stack_commit_size (usize_(1) * mem_page_size)
@@ -40,7 +40,7 @@ $static fn_((exec_Fiber_StackPolicy_default(void))(exec_Fiber_StackPolicy)) {
     };
 };
 
-/* --- Worker function --- */
+/*--- Worker function ---*/
 
 T_alias$((exec_Fiber_WorkFn)(fn_(((*)(P$raw owner, P$raw task))(void) $T)));
 T_alias$((exec_Fiber_Starter)(struct exec_Fiber_Starter {
@@ -49,7 +49,7 @@ T_alias$((exec_Fiber_Starter)(struct exec_Fiber_Starter {
     var_(workFn, exec_Fiber_WorkFn);
 }));
 
-/* --- Types --- */
+/*--- Types ---*/
 
 T_alias$((exec_Fiber)(struct exec_Fiber {
     var_(storage, S$u8);
@@ -63,7 +63,7 @@ T_alias$((exec_Fiber)(struct exec_Fiber {
 T_use$((exec_Fiber)(P, (O, P)));
 T_use_E$($set(exec_Fiber_E)(P$exec_Fiber));
 
-/* --- Lifecycle --- */
+/*--- Lifecycle ---*/
 
 $attr($must_check)
 $extern fn_((exec_Fiber_init(
@@ -78,7 +78,7 @@ $extern fn_((exec_Fiber_initWithPolicy(
 ))(exec_Fiber_E$P$exec_Fiber));
 $extern fn_((exec_Fiber_fini(exec_Fiber* self, mem_Alctr gpa, TypeInfo result_ty))(void));
 
-/* --- Result access --- */
+/*--- Result access ---*/
 
 $attr($inline_always)
 $static fn_((exec_Fiber_slabBytes(TypeInfo result_ty))(usize));

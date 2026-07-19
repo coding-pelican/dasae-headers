@@ -31,7 +31,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- HashSet_Header: Internal header stored before metadata --- */
+/*--- HashSet_Header: Internal header stored before metadata ---*/
 
 #define HashSet_Header$$(_K...) __comp_anon__HashSet_Header$$(_K)
 #define HashSet_Header$(_K...) __comp_alias__HashSet_Header$(_K)
@@ -45,7 +45,7 @@ typedef struct HashSet_Header {
     var_(cap, u32);
 } HashSet_Header;
 
-/* --- HashSet_Unit: Key single type (1-tuple) */
+/*--- HashSet_Unit: Key single type (1-tuple) */
 
 #define HashSet_Unit$$(_K...) __comp_anon__HashSet_Unit$$(_K)
 #define HashSet_Unit$(_K...) __comp_alias__HashSet_Unit$(_K)
@@ -74,7 +74,7 @@ $static let_(u_Fields_type$HashSet_Unit, A$$(count$u_Fields_Idx$HashSet_Unit, Ty
     [u_Fields_Idx_key_$HashSet_Unit] = typeInfo$(FieldType$(HashSet_Unit$raw, key_)),
 });
 
-/* --- HashSet_Entry: Pointer to key in set --- */
+/*--- HashSet_Entry: Pointer to key in set ---*/
 
 #define HashSet_Entry$$(_K...) __comp_anon__HashSet_Entry$$(_K)
 #define HashSet_Entry$(_K...) __comp_alias__HashSet_Entry$(_K)
@@ -105,7 +105,7 @@ typedef union HashSet_EntryMut {
 T_use_O$(HashSet_EntryMut);
 $extern fn_((HashSet_EntryMut_key(HashSet_EntryMut self, TypeInfo key_ty))(u_P$raw));
 
-/* --- HashSet_Ensured: Result from ensure operations --- */
+/*--- HashSet_Ensured: Result from ensure operations ---*/
 
 #define HashSet_Ensured$$(_K...) __comp_anon__HashSet_Ensured$$(_K)
 #define HashSet_Ensured$(_K...) __comp_alias__HashSet_Ensured$(_K)
@@ -124,7 +124,7 @@ $extern fn_((HashSet_Ensured_keyMut(HashSet_Ensured self, TypeInfo key_ty))(u_P$
 $extern fn_((HashSet_Ensured_foundExisting(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_Entry));
 $extern fn_((HashSet_Ensured_foundExistingMut(HashSet_Ensured self, TypeInfo key_ty))(O$HashSet_EntryMut));
 
-/* --- HashSet_Ctx: Context for hash and equality functions (reuse HashMap_Ctx) --- */
+/*--- HashSet_Ctx: Context for hash and equality functions (reuse HashMap_Ctx) ---*/
 
 typedef HashMap_HashFn HashSet_HashFn;
 $extern fn_((HashSet_HashFn_default(u_V$raw val, u_V$raw ctx))(u64));
@@ -147,7 +147,7 @@ $static let HashSet_Ctx_assertValid = HashMap_Ctx_assertValid;
 $static let HashSet_Ctx_ensureValid = HashMap_Ctx_ensureValid;
 $extern fn_((HashSet_Ctx_default(void))(HashSet_Ctx));
 
-/* --- HashSet: Main hash set structure --- */
+/*--- HashSet: Main hash set structure ---*/
 
 #define HashSet$$(_K...) __comp_anon__HashSet$$(_K)
 #define HashSet$(_K...) __comp_alias__HashSet$(_K)
@@ -170,7 +170,7 @@ T_use$((HashSet)(O, E));
 T_use_E$($set(mem_E)(HashSet));
 #define HashSet_default_min_cap HashMap_default_min_cap
 
-/* --- Construction/Destruction --- */
+/*--- Construction/Destruction ---*/
 
 $extern fn_((HashSet_empty(TypeInfo key_ty, P_const$HashSet_Ctx ctx))(HashSet));
 $attr($must_check)
@@ -181,7 +181,7 @@ $extern fn_((HashSet_clone(HashSet self, TypeInfo key_ty, mem_Alctr gpa))(mem_E$
 $attr($must_check)
 $extern fn_((HashSet_cloneWithCtx(HashSet self, TypeInfo key_ty, P_const$HashSet_Ctx ctx, mem_Alctr gpa))(mem_E$HashSet));
 
-/* --- Capacity Management --- */
+/*--- Capacity Management ---*/
 
 $extern fn_((HashSet_count(HashSet self))(u32));
 $extern fn_((HashSet_cap(HashSet self))(u32));
@@ -193,7 +193,7 @@ $extern fn_((HashSet_ensureUnusedCap(HashSet* self, TypeInfo key_ty, mem_Alctr g
 $extern fn_((HashSet_clearRetainingCap(HashSet* self))(void));
 $extern fn_((HashSet_clearAndFree(HashSet* self, TypeInfo key_ty, mem_Alctr gpa))(void));
 
-/* --- Lookup Operations --- */
+/*--- Lookup Operations ---*/
 
 $extern fn_((HashSet_for(HashSet self, u_V$raw key, u_V$raw ret_mem))(O$u_V$raw));
 $extern fn_((HashSet_ptrFor(HashSet self, u_V$raw key))(O$u_P_const$raw));
@@ -204,7 +204,7 @@ $extern fn_((HashSet_entryMut(HashSet self, u_V$raw key))(O$HashSet_EntryMut));
 
 $extern fn_((HashSet_contains(HashSet self, u_V$raw key))(bool));
 
-/* --- Insertion Operations --- */
+/*--- Insertion Operations ---*/
 
 /// Insert only if not present. May allocate.
 $attr($must_check)
@@ -221,7 +221,7 @@ $extern fn_((HashSet_fetchPutWithin(
     HashSet* self, u_V$raw key, V$HashSet_Unit$raw ret_mem
 ))(O$V$HashSet_Unit$raw));
 
-/* --- Ensure Operations --- */
+/*--- Ensure Operations ---*/
 
 /// Get existing entry or insert new one. May allocate.
 $attr($must_check)
@@ -229,7 +229,7 @@ $extern fn_((HashSet_ensure(HashSet* self, mem_Alctr gpa, u_V$raw key))(mem_E$Ha
 /// Get existing entry or insert new one. Asserts capacity is available.
 $extern fn_((HashSet_ensureWithin(HashSet* self, u_V$raw key))(HashSet_Ensured));
 
-/* --- Removal Operations --- */
+/*--- Removal Operations ---*/
 
 /// Remove element if present, returning true if removed.
 $extern fn_((HashSet_remove(HashSet* self, u_V$raw key))(bool));
@@ -238,12 +238,12 @@ $extern fn_((HashSet_fetchRemove(HashSet* self, u_V$raw key, V$HashSet_Unit$raw 
 /// Remove element by key pointer (must be valid pointer into set).
 $extern fn_((HashSet_removeByPtr(HashSet* self, u_P$raw key_ptr))(void));
 
-/* --- Maintenance Operations --- */
+/*--- Maintenance Operations ---*/
 
 /// Rehash in place to remove tombstones and improve performance.
 $extern fn_((HashSet_rehash(HashSet* self, TypeInfo key_ty))(void));
 
-/* --- Set Operations --- */
+/*--- Set Operations ---*/
 
 /// Returns true if this set is a subset of other.
 $extern fn_((HashSet_isSubset(HashSet self, TypeInfo key_ty, HashSet other))(bool));
@@ -252,7 +252,7 @@ $extern fn_((HashSet_isSuperset(HashSet self, TypeInfo key_ty, HashSet other))(b
 /// Returns true if this set is disjoint from other (no common elements).
 $extern fn_((HashSet_isDisjoint(HashSet self, TypeInfo key_ty, HashSet other))(bool));
 
-/* --- HashSet_Iter: Iterator over entries --- */
+/*--- HashSet_Iter: Iterator over entries ---*/
 
 #define HashSet_Iter$$(_K...) __comp_anon__HashSet_Iter$$(_K)
 #define HashSet_Iter$(_K...) __comp_alias__HashSet_Iter$(_K)
@@ -269,7 +269,7 @@ $extern fn_((HashSet_iter(const HashSet* self, TypeInfo key_ty))(HashSet_Iter));
 $extern fn_((HashSet_Iter_next(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_Entry));
 $extern fn_((HashSet_Iter_nextMut(HashSet_Iter* self, TypeInfo key_ty))(O$HashSet_EntryMut));
 
-/* --- HashSet_KeyIter: Iterator over keys (alias for HashSet_Iter) --- */
+/*--- HashSet_KeyIter: Iterator over keys (alias for HashSet_Iter) ---*/
 
 #define HashSet_KeyIter$$(_K...) __comp_anon__HashSet_KeyIter$$(_K)
 #define HashSet_KeyIter$(_K...) __comp_alias__HashSet_KeyIter$(_K)

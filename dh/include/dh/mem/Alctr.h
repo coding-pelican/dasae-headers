@@ -25,14 +25,14 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Interface VTable --- */
+/*--- Interface VTable ---*/
 
 /// Alctr vtable
 T_alias$((mem_Alctr_VTbl)(struct mem_Alctr_VTbl));
 $extern let_(mem_Alctr_VTbl_noop, mem_Alctr_VTbl);
 $extern let_(mem_Alctr_VTbl_failing, mem_Alctr_VTbl);
 
-/* --- Interface Instance --- */
+/*--- Interface Instance ---*/
 
 /// Alctr instance
 struct mem_Alctr {
@@ -50,7 +50,7 @@ $static fn_((mem_Alctr_assertValid(P$raw ctx, P_const$$(mem_Alctr_VTbl) vtbl))(v
 $attr($inline_always)
 $static fn_((mem_Alctr_ensureValid(mem_Alctr self))(mem_Alctr));
 
-/* --- Core Operations --- */
+/*--- Core Operations ---*/
 
 /// Raw allocation
 $extern fn_((mem_Alctr_rawAlloc($traced mem_Alctr self, usize len, mem_Align align))(O$P$u8));
@@ -61,7 +61,7 @@ $extern fn_((mem_Alctr_rawRemap($traced mem_Alctr self, S$u8 buf, mem_Align buf_
 /// Free mem
 $extern fn_((mem_Alctr_rawFree($traced mem_Alctr self, S$u8 buf, mem_Align buf_align))(void));
 
-/* --- High-level Operations --- */
+/*--- High-level Operations ---*/
 
 /// Single-item allocation
 $attr($must_check)

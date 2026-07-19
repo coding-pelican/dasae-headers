@@ -32,7 +32,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Monotonic Clock Platform Type (for time_Inst) --- */
+/*--- Monotonic Clock Platform Type (for time_Inst) ---*/
 typedef pp_if_(plat_is_windows)(
     pp_then_(LARGE_INTEGER),
     pp_else_(pp_if_(plat_based_unix)(
@@ -41,7 +41,7 @@ typedef pp_if_(plat_is_windows)(
     ))) time_Inst__Impl;
 typedef time_Inst__Impl time_InstPlatform;
 
-/* --- Wall-Clock Platform Type (for time_Clock) --- */
+/*--- Wall-Clock Platform Type (for time_Clock) ---*/
 typedef pp_if_(plat_is_windows)(
     pp_then_(FILETIME),
     pp_else_(pp_if_(plat_based_unix)(

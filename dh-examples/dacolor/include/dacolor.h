@@ -23,12 +23,12 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Types --- */
+/*--- Types ---*/
 T_alias$((dacolor_RGBA)(union dacolor_RGBA));
 T_alias$((dacolor_RGB)(union dacolor_RGB));
 T_alias$((dacolor_HSL)(union dacolor_HSL));
 
-/* --- RGBA --- */
+/*--- RGBA ---*/
 enum_((dacolor_RGBA_Channels $fits($packed))(
     dacolor_RGBA_channels_red = 0,
     dacolor_RGBA_channels_green = 1,
@@ -84,7 +84,7 @@ $extern fn_((dacolor_RGBA_fromBlankHSL(dacolor_HSL hsl))(dacolor_RGBA));
 $extern fn_((dacolor_RGBA_fromOpaqueHSL(dacolor_HSL hsl))(dacolor_RGBA));
 $extern fn_((dacolor_RGBA_toHSL(dacolor_RGBA self))(dacolor_HSL));
 
-/* --- RGB --- */
+/*--- RGB ---*/
 #define dacolor_RGB_channels_count __comp_int__dacolor_RGB_channels_count
 #define __comp_int__dacolor_RGB_channels_count 3
 
@@ -108,7 +108,7 @@ $extern fn_((dacolor_RGB_toOpaqueRGBA(dacolor_RGB self))(dacolor_RGBA));
 $extern fn_((dacolor_RGB_fromHSL(dacolor_HSL hsl))(dacolor_RGB));
 $extern fn_((dacolor_RGB_toHSL(dacolor_RGB self))(dacolor_HSL));
 
-/* --- HSL --- */
+/*--- HSL ---*/
 #define dacolor_HSL_channels_count __comp_int__dacolor_HSL_channels_count
 #define __comp_int__dacolor_HSL_channels_count 3
 
@@ -134,7 +134,7 @@ $extern fn_((dacolor_HSL_toRGB(dacolor_HSL self))(dacolor_RGB));
 
 /*========== Macros and Definitions =========================================*/
 
-/* --- RGBA --- */
+/*--- RGBA ---*/
 #define __const__dacolor_RGBA_blank \
     dacolor_RGBA_from_static(0, 0, 0, dacolor_RGBA_channels_alpha_blank)
 #define __const__dacolor_RGBA_opaque \
@@ -175,14 +175,14 @@ $extern fn_((dacolor_HSL_toRGB(dacolor_HSL self))(dacolor_RGB));
     .a = dacolor_RGBA_channels_alpha_opaque, \
 })
 
-/* --- RGB --- */
+/*--- RGB ---*/
 #define ____dacolor_RGB_from_static(_r, _g, _b...) l$((dacolor_RGB){ \
     .r = (_r), \
     .g = (_g), \
     .b = (_b), \
 })
 
-/* --- HSL --- */
+/*--- HSL ---*/
 #define ____dacolor_HSL_from_static(_h, _s, _l...) l$((dacolor_HSL){ \
     .h = (_h), \
     .s = (_s), \

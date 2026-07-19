@@ -301,7 +301,7 @@ $static fn_((HashSet__growIfNeeded(HashSet* self, TypeInfo key_ty, mem_Alctr gpa
     return_ok({});
 } $unscoped(fn);
 
-/* --- Public API implementation --- */
+/*--- Public API implementation ---*/
 
 fn_((HashSet_empty(TypeInfo key_ty, P_const$HashSet_Ctx ctx))(HashSet)) {
     claim_assert_nonnull(ctx);
@@ -753,7 +753,7 @@ fn_((HashSet_isDisjoint(HashSet self, TypeInfo key_ty, HashSet other))(bool)) {
     return true;
 };
 
-/* --- Iterator implementations --- */
+/*--- Iterator implementations ---*/
 
 fn_((HashSet_iter(const HashSet* self, TypeInfo key_ty))(HashSet_Iter)) {
     claim_assert_nonnull(self);

@@ -11,7 +11,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Int64 (i64) Vector --- */
+/*--- Int64 (i64) Vector ---*/
 
 /* Vec2l functions */
 /* Constants */

@@ -23,7 +23,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Fixed Stream ---*/
+/*--- Fixed Stream ---*/
 
 typedef struct io_Fixed {
     var_(buf, S_const$u8);
@@ -45,7 +45,7 @@ $extern fn_((io_Fixed_written(io_FixedMut self))(S$u8));
 /// Reset position to start
 $extern fn_((io_Fixed_reset(io_Fixed* self))(void));
 
-/* --- Fixed Stream Reader ---*/
+/*--- Fixed Stream Reader ---*/
 
 typedef struct io_Fixed_Reader {
     var_(stream, io_Fixed);
@@ -55,7 +55,7 @@ $extern fn_((io_Fixed_Reader_init(io_Fixed stream))(io_Fixed_Reader));
 /// Get io_Reader interface
 $extern fn_((io_Fixed_reader(io_Fixed_Reader* self))(io_Reader));
 
-/* --- Fixed Stream Writer ---*/
+/*--- Fixed Stream Writer ---*/
 
 typedef struct io_Fixed_Writer {
     var_(stream, io_FixedMut);

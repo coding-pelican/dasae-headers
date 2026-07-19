@@ -11,7 +11,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Types --- */
+/*--- Types ---*/
 /* TODO: Implement */
 T_alias$((exec_Para)(struct exec_Para{}));
 

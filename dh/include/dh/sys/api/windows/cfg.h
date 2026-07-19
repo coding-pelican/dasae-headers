@@ -106,7 +106,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* --- Default Values --- */
+/*--- Default Values ---*/
 
 #define __comp_int__sys_api_windows_pref_target_ver \
     sys_api_windows__pref_target_ver_default
@@ -131,7 +131,7 @@ extern "C" {
 #define __comp_bool__sys_api_windows__pref_nominmax_default \
     pp_true
 
-/* --- Build Options --- */
+/*--- Build Options ---*/
 
 /* apply system macros
  * - _WIN32_WINNT / WINVER: High 16 bits (e.g., 0x0A00)

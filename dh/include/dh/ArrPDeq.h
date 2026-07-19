@@ -59,7 +59,7 @@ typedef struct ArrPDeq {
 T_use$((ArrPDeq)(O, E));
 T_use_E$($set(mem_E)(ArrPDeq));
 
-/* --- Function Prototypes --- */
+/*--- Function Prototypes ---*/
 
 $extern fn_((ArrPDeq_empty(TypeInfo type, P_const$ArrPDeq_Ctx ctx))(ArrPDeq));
 $extern fn_((ArrPDeq_fixed(u_S$raw buf, P_const$ArrPDeq_Ctx ctx))(ArrPDeq));

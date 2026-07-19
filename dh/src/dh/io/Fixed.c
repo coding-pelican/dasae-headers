@@ -1,7 +1,7 @@
 #include "dh/io/Fixed.h"
 #include "dh/mem/common.h"
 
-/* --- Fixed Stream ---*/
+/*--- Fixed Stream ---*/
 
 fn_((io_Fixed_reading(S_const$u8 buf))(io_Fixed)) {
     return (io_Fixed){
@@ -25,7 +25,7 @@ fn_((io_Fixed_reset(io_Fixed* self))(void)) {
     self->pos = 0;
 };
 
-/* --- Fixed Stream Reader ---*/
+/*--- Fixed Stream Reader ---*/
 
 fn_((io_Fixed_Reader_init(io_Fixed stream))(io_Fixed_Reader)) {
     return (io_Fixed_Reader){
@@ -51,7 +51,7 @@ fn_((io_Fixed_reader(io_Fixed_Reader* self))(io_Reader)) {
     };
 };
 
-/* --- Fixed Stream Writer ---*/
+/*--- Fixed Stream Writer ---*/
 
 fn_((io_Fixed_Writer_init(io_FixedMut stream))(io_Fixed_Writer)) {
     return (io_Fixed_Writer){

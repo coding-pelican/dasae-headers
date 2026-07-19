@@ -33,7 +33,7 @@ extern "C" {
 
 /*========== Macros and Definitions =========================================*/
 
-/* --- Constants --- */
+/*--- Constants ---*/
 
 #define fmt__ryu_bit_count (125)
 #define fmt__ryu_special_exponent (0x7fffffff)
@@ -61,7 +61,7 @@ extern "C" {
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
 #endif /* fmt_flt_ryu_table_type */
 
-/* --- Types --- */
+/*--- Types ---*/
 
 /// 128-bit value represented as [low_64bits, high_64bits]
 typedef A$$(2, u64) fmt__ryu_TableEntry;
@@ -81,7 +81,7 @@ typedef A$$(fmt__ryu_table_pow5_inv_offsets_size, u32) fmt__ryu_TablePow5InvOffs
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
 #endif /* fmt_flt_ryu_table_type */
 
-/* --- Tables --- */
+/*--- Tables ---*/
 
 #if fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full
 /// @brief Power of 5 lookup table
@@ -119,13 +119,13 @@ $extern let_(fmt__ryu_table_pow5_inv_offsets, fmt__ryu_TablePow5InvOffsets);
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
 #endif /* fmt_flt_ryu_table_type */
 
-/* --- Helper Functions --- */
+/*--- Helper Functions ---*/
 
 /// if (e == 0) 1 else ceil(log_2(5^e))
 $attr($inline_always)
 $static fn_((fmt__ryu_pow5Bits(u32 e))(u32));
 
-/* --- Table Access Functions --- */
+/*--- Table Access Functions ---*/
 
 #if fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full
 /// Get power of 5 approximation (full version - direct lookup)
@@ -171,7 +171,7 @@ $static fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry));
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
 #endif /* fmt_flt_ryu_table_type */
 
-/* --- 64-bit Arithmetic --- */
+/*--- 64-bit Arithmetic ---*/
 
 /// Multiply two u64 values and get high 64 bits of result
 /// Returns the high 64 bits of (a * b)
@@ -185,13 +185,13 @@ $static fn_((fmt__ryu_mulShift64(u64 m, fmt__ryu_TableEntry mul, u32 shift))(u64
 
 /*========== Macros and Definitions =========================================*/
 
-/* --- Helper Functions --- */
+/*--- Helper Functions ---*/
 
 fn_((fmt__ryu_pow5Bits(u32 e))(u32)) {
     return as$(u32)(((as$(u64)(e) * 163391164108059ull) >> 46) + 1);
 };
 
-/* --- Table Access Functions --- */
+/*--- Table Access Functions ---*/
 
 #if fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_full
 fn_((fmt__ryu_pow5(u32 i))(fmt__ryu_TableEntry)) {
@@ -412,7 +412,7 @@ fn_((fmt__ryu_pow5Inv(u32 i))(fmt__ryu_TableEntry)) {
 #elif fmt_flt_ryu_table_type == fmt_flt_ryu_table_type_unknown
 #endif /* fmt_flt_ryu_table_type */
 
-/* --- 64-bit Arithmetic --- */
+/*--- 64-bit Arithmetic ---*/
 
 fn_((fmt__ryu_mul64High(u64 lhs, u64 rhs))(u64)) {
     // Split into 32-bit parts

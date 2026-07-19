@@ -56,18 +56,18 @@ T_use_prl$(exec_Task);
 T_use_ArrList$(P$exec_Task);
 T_use_ArrQue$(P$exec_Task);
 
-/* --- Clsr mapping --- */
+/*--- Clsr mapping ---*/
 
 $attr($inline_always)
 $static fn_((exec_Task_kind(P_const$$(Clsr$raw) clsr))(exec_Task_Kind));
 #define T_use_exec_Task_kind$(_T...) __stmt__T_use_exec_Task_kind$(_T)
 
-/* --- Completion --- */
+/*--- Completion ---*/
 
 $extern fn_((exec_Task_isDone(P_const$exec_Task task))(bool));
 $extern fn_((exec_Task_copyToResult(P_const$exec_Task task, u_P$raw result))(void));
 
-/* --- Cooperative cancel --- */
+/*--- Cooperative cancel ---*/
 
 $extern fn_((exec_Task_hasCancelRequest(P_const$exec_Task task))(bool));
 $extern fn_((exec_Task_requestCancel(exec_Task* task))(void));

@@ -194,7 +194,7 @@ fn_((thrd_ftx__waitForTimeout(const atom_V$u32* ptr, u32 expect, time_Dur timeou
     return_(thrd_ftx__wait(ptr, expect, some$((O$time_Dur)(timeout))));
 } $unscoped(fn);
 
-/* --- Unsupported --- */
+/*--- Unsupported ---*/
 
 fn_((thrd_ftx__unsupported_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout))(thrd_ftx_E$void) $scope) {
     let_ignore = ptr;
@@ -208,7 +208,7 @@ fn_((thrd_ftx__unsupported_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) 
     let_ignore = max_waiters;
 };
 
-/* --- Pthreads --- */
+/*--- Pthreads ---*/
 
 #if thrd_ftx_use_pthread
 fn_((thrd_ftx__pthread_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout))(thrd_ftx_E$void) $scope) {
@@ -226,7 +226,7 @@ fn_((thrd_ftx__pthread_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 };
 #endif /* thrd_ftx_use_pthread */
 
-/* --- Windows --- */
+/*--- Windows ---*/
 
 #if plat_is_windows
 fn_((thrd_ftx__windows_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout))(thrd_ftx_E$void) $scope) {
@@ -257,7 +257,7 @@ fn_((thrd_ftx__windows_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 };
 #endif /* plat_is_windows */
 
-/* --- Linux --- */
+/*--- Linux ---*/
 
 #if plat_is_linux
 #include "dh/sys/call/linux.h"
@@ -302,7 +302,7 @@ fn_((thrd_ftx__linux_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 };
 #endif /* plat_is_linux */
 
-/* --- Darwin --- */
+/*--- Darwin ---*/
 
 #if plat_is_darwin
 #include "dh/sys/libc/darwin/sync.h"
@@ -354,7 +354,7 @@ fn_((thrd_ftx__darwin_wake(const atom_V$u32* ptr, u32 max_waiters))(void)) {
 };
 #endif /* plat_is_darwin */
 
-/* --- WASI --- */
+/*--- WASI ---*/
 
 #if plat_is_wasi
 fn_((thrd_ftx__wasi_wait(const atom_V$u32* ptr, u32 expect, O$time_Dur timeout))(thrd_ftx_E$void) $scope) {

@@ -11,7 +11,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Epoch Offsets --- */
+/*--- Epoch Offsets ---*/
 #define time_epoch_posix __comp_const__time_epoch_posix
 #define time_epoch_dos __comp_const__time_epoch_dos
 #define time_epoch_ios __comp_const__time_epoch_ios
@@ -23,7 +23,7 @@ extern "C" {
 #define time_epoch_gps __comp_const__time_epoch_gps
 #define time_epoch_clr __comp_const__time_epoch_clr
 
-/* --- Epoch Aliases --- */
+/*--- Epoch Aliases ---*/
 #define time_epoch_unix time_epoch_posix
 #define time_epoch_android time_epoch_posix
 #define time_epoch_os2 time_epoch_dos
@@ -38,11 +38,11 @@ extern "C" {
 #define time_epoch_atsc time_epoch_gps
 #define time_epoch_go time_epoch_clr
 
-/* --- Calendar Constants --- */
+/*--- Calendar Constants ---*/
 #define time_epoch_year __comp_const__time_epoch_year
 #define time_epoch_secs_per_day time_secs_per_day
 
-/* --- Year --- */
+/*--- Year ---*/
 /// Calendar year. Valid epoch decoding starts at `time_epoch_year`.
 T_alias$((time_epoch_Year)(u16));
 
@@ -62,7 +62,7 @@ $static fn_((time_epoch_isLeapYear(time_epoch_Year year))(bool));
 $attr($inline_always)
 $static fn_((time_epoch_daysInYear(time_epoch_Year year))(time_epoch_YearDayCount));
 
-/* --- Month --- */
+/*--- Month ---*/
 /// Calendar month, using the conventional 1-based month number.
 T_alias$((time_epoch_Month)(enum_((time_epoch_Month $fits($packed))(
     time_epoch_Month_jan = 1,
@@ -84,7 +84,7 @@ $static fn_((time_epoch_Month_toNum(time_epoch_Month self))(time_epoch_MonthNum)
 $attr($inline_always)
 $static fn_((time_epoch_daysInMonth(time_epoch_Year year, time_epoch_Month month))(time_epoch_MonthDayCount));
 
-/* --- Month Day --- */
+/*--- Month Day ---*/
 T_alias$((time_epoch_MonthDay)(struct time_epoch_MonthDay {
     /// Calendar month.
     var_(month, time_epoch_Month);
@@ -92,7 +92,7 @@ T_alias$((time_epoch_MonthDay)(struct time_epoch_MonthDay {
     var_(day_idx, time_epoch_MonthDayIdx);
 }));
 
-/* --- Year Day --- */
+/*--- Year Day ---*/
 T_alias$((time_epoch_YearDay)(struct time_epoch_YearDay {
     /// Calendar year.
     var_(year, time_epoch_Year);
@@ -102,7 +102,7 @@ T_alias$((time_epoch_YearDay)(struct time_epoch_YearDay {
 $attr($inline_always)
 $static fn_((time_epoch_YearDay_monthDay(time_epoch_YearDay self))(time_epoch_MonthDay));
 
-/* --- Day --- */
+/*--- Day ---*/
 /// Day count since POSIX epoch. For `u64` epoch seconds this fits in 47 bits.
 T_alias$((time_epoch_DayCount)(u64));
 
@@ -113,7 +113,7 @@ T_alias$((time_epoch_Day)(struct time_epoch_Day {
 $attr($inline_always)
 $static fn_((time_epoch_Day_yearDay(time_epoch_Day self))(time_epoch_YearDay));
 
-/* --- Day Seconds --- */
+/*--- Day Seconds ---*/
 /// Seconds since start of day, in the range 0..86399.
 T_alias$((time_epoch_DaySecCount)(u32));
 /// Hour within day, in the range 0..23.
@@ -134,7 +134,7 @@ $static fn_((time_epoch_DaySecs_mins(time_epoch_DaySecs self))(time_epoch_Min));
 $attr($inline_always)
 $static fn_((time_epoch_DaySecs_secs(time_epoch_DaySecs self))(time_epoch_Sec));
 
-/* --- Seconds --- */
+/*--- Seconds ---*/
 T_alias$((time_epoch_Secs)(struct time_epoch_Secs {
     /// Seconds since POSIX epoch.
     var_(secs, u64);

@@ -11,7 +11,7 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/* --- Isize (isize) Vector --- */
+/*--- Isize (isize) Vector ---*/
 
 /* Vec2z functions */
 /* Constants */
