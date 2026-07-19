@@ -14,10 +14,12 @@
 
 static char* dal_c_Project__findRoot(const char* start);
 static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd);
+static char* dal_c_Project__normalizeDHPath(const char* path);
 static bool dal_c_Project__isDHRoot(const char* path);
 static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj);
 static char* dal_c_Project__depsPreludeHeaderPath(const dal_c_Project* proj);
 static char* dal_c_Project__findIncludeHeader(const dal_c_Project* proj, const char* header);
+static char* dal_c_Project__findDHInstallHeader(const dal_c_Project* proj, const char* header);
 static bool dal_c_Project__usesDHLibraryDefault(const dal_c_Project* proj);
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj);
 static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib);
@@ -84,7 +86,7 @@ dal_c_Project* dal_c_Project_detectAt(const char* lib_path, const char* dh_path)
 
     proj->root = path_abs(lib_path);
     proj->name = path_basename(proj->root);
-    proj->dh_path = dh_path ? strdup(dh_path) : NULL;
+    proj->dh_path = dal_c_Project__normalizeDHPath(dh_path);
     proj->project_dh = path_join(proj->root, dal_c_file_detector_project);
     proj->pch_enabled = true;
     if (proj->project_dh && path_isFile(proj->project_dh)) {
@@ -185,6 +187,10 @@ void dal_c_CompilerOpts_cleanup(dal_c_CompilerOpts* opts) {
         free(opts->link_libs[i]);
     }
     free((void*)opts->link_libs);
+    for (int i = 0; i < opts->link_dir_count; ++i) {
+        free(opts->link_dirs[i]);
+    }
+    free((void*)opts->link_dirs);
     dal_c_VersionSpec_cleanup(&opts->version);
     memset(opts, 0, sizeof(*opts));
 }
@@ -240,6 +246,9 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     }
     for (int i = 0; i < src->link_count; ++i) {
         dal_c_Project__addToArray(&dst->link_libs, &dst->link_count, src->link_libs[i]);
+    }
+    for (int i = 0; i < src->link_dir_count; ++i) {
+        dal_c_Project__addToArray(&dst->link_dirs, &dst->link_dir_count, src->link_dirs[i]);
     }
 }
 
@@ -706,11 +715,7 @@ static bool dal_c_Project__isDHRoot(const char* path) {
 
 static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd) {
     if (cmd && cmd->dh_path_override) {
-        if (!dal_c_Project__isDHRoot(cmd->dh_path_override)) {
-            return NULL;
-        }
-        char* abs_path = path_abs(cmd->dh_path_override);
-        return abs_path ? abs_path : strdup(cmd->dh_path_override);
+        return dal_c_Project__normalizeDHPath(cmd->dh_path_override);
     }
 
     char* current = env_getCWD();
@@ -753,6 +758,16 @@ static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd) {
     }
     free(exe_child_dh);
     free(exe_dir);
+    return NULL;
+}
+
+static char* dal_c_Project__normalizeDHPath(const char* path) {
+    if (!path || path[0] == '\0') { return NULL; }
+    char* abs_path = path_abs(path);
+    if (abs_path && dal_c_Project__isDHRoot(abs_path)) {
+        return abs_path;
+    }
+    free(abs_path);
     return NULL;
 }
 
@@ -946,6 +961,8 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         dal_c_Project__addToArray(&opts->isystem_paths, &opts->isystem_count, value);
     } else if (str_eql(key, dal_c_opt_link)) {
         dal_c_Project__addToArray(&opts->link_libs, &opts->link_count, value);
+    } else if (str_eql(key, dal_c_opt_link_dir)) {
+        dal_c_Project__addToArray(&opts->link_dirs, &opts->link_dir_count, value);
     } else if (str_eql(key, dal_c_opt_define)) {
         dal_c_Project__addToArray(&opts->define_macros, &opts->define_count, value);
     } else if (str_eql(key, dal_c_opt_undef)) {
@@ -1353,6 +1370,17 @@ static char* dal_c_Project__findIncludeHeader(const dal_c_Project* proj, const c
     return NULL;
 }
 
+static char* dal_c_Project__findDHInstallHeader(const dal_c_Project* proj, const char* header) {
+    if (!proj || !proj->dh_path || !header) { return NULL; }
+    char* inc_dir = path_join(proj->dh_path, dal_c_dir_include);
+    if (!inc_dir) { return NULL; }
+    char* header_path = path_join(inc_dir, header);
+    free(inc_dir);
+    if (header_path && path_isFile(header_path)) { return header_path; }
+    free(header_path);
+    return NULL;
+}
+
 static bool dal_c_Project__usesDHLibraryDefault(const dal_c_Project* proj) {
     return proj
         && proj->dh_path
@@ -1393,9 +1421,16 @@ static char* dal_c_Project__detectPCH(const dal_c_Project* proj) {
     char* builtin_header = dal_c_Project__findIncludeHeader(proj, dal_c_pch_header_dh_builtin);
     if (builtin_header) { return builtin_header; }
 
-    if (!dal_c_Project__isDHRoot(proj->root)
-        && (proj->lib_count > 0 || dal_c_Project__usesDHLibraryDefault(proj))) {
-        return dal_c_Project__depsPreludeHeaderPath(proj);
+    if (!dal_c_Project__isDHRoot(proj->root)) {
+        if (proj->lib_count > 0) {
+            return dal_c_Project__depsPreludeHeaderPath(proj);
+        }
+        if (dal_c_Project__usesDHLibraryDefault(proj)) {
+            char* installed_dh_bundle = dal_c_Project__findDHInstallHeader(proj, dal_c_pch_header_dh_bundle);
+            if (installed_dh_bundle) { return installed_dh_bundle; }
+            char* installed_dh_header = dal_c_Project__findDHInstallHeader(proj, dal_c_pch_header_dh);
+            if (installed_dh_header) { return installed_dh_header; }
+        }
     }
 
     return NULL;

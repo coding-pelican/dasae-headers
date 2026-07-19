@@ -95,6 +95,9 @@ Rules:
 - `pch=off` disables PCH
 - `pch=<path>` pins an explicit header
 - `pch-exclude=<header>` declares headers that force no-PCH translation units when included by a source
+- projects that only use `dh` through DSL use the detected `dh/include/dh-bundle.h` as PCH
+- `lib/deps.h` is generated only when dependency headers exist or `pch=deps` explicitly requests it
+- generated `lib/deps.h` includes only top-level headers under `lib/deps`
 - `dh/project.dh` declares:
   - `pch=dh.h`
   - `pch-exclude=dh-main.h`

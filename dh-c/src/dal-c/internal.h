@@ -26,6 +26,7 @@ typedef struct dal_c_CommandIntent {
     const char* target_path;
     const char* target_root_name_hint;
     const char* output_path;
+    const char* output_ext;
     const char* run_args;
     dal_c_Linking linking;
     bool build_all;

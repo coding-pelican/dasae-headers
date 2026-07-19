@@ -354,9 +354,16 @@ still contains historical command forms that should be collapsed later.
 ### Path-like modifiers
 
 - `--output`
+- `--output-ext`
 - `--exclude`
 - `--dh`
 - `--dh-file`
+
+For build-like targets, `--output` is an output stem or directory. Target
+extensions are generated from the selected target kind. For compilation database
+commands, `--output` remains the compilation database file path.
+For single-artifact build targets, `--output-ext=<.ext>` overrides the generated
+extension without falling back to raw compiler/linker output naming.
 
 ## Specific Direction For Existing Tokens
 

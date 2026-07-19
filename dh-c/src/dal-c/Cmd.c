@@ -54,6 +54,8 @@ static char** dal_c_Cmd__targetPathSlot(dal_c_Cmd* cmd);
 static char** dal_c_Cmd__outputPathSlot(dal_c_Cmd* cmd);
 static char** dal_c_Cmd__runArgsSlot(dal_c_Cmd* cmd);
 static bool dal_c_Cmd__buildsLibrary(const dal_c_Cmd* cmd);
+static bool dal_c_Cmd__hasExplicitFileInputs(const dal_c_Cmd* cmd);
+static bool dal_c_Cmd__outputNamesLibraryArtifact(const char* path);
 static double dal_c_Cmd__nowSeconds(void);
 static bool dal_c_Cmd__reportsElapsed(const dal_c_Cmd* cmd);
 static void dal_c_Cmd__reportElapsed(
@@ -69,9 +71,10 @@ static bool dal_c_Cmd__phasesHaveAny(const dal_c_Cmd__ElapsedPhases* phases);
 static void dal_c_Cmd__setPrimaryTargetPath(dal_c_Cmd* cmd, const char* path);
 static void dal_c_Cmd__setOutputPath(dal_c_Cmd* cmd, const char* path);
 static const char* dal_c_Cmd__sampleDirCanonical(dal_c_SampleDir sample_dir);
+static bool dal_c_Cmd__optionNameIs(const char* opt, const char* name);
+static bool dal_c_Cmd__validOutputExt(const char* value);
 static ArrStr* dal_c_Cmd__resolveInputs(const dal_c_Project* proj, const dal_c_Cmd* cmd, const char* dir_name, bool fallback_all);
 static bool dal_c_Cmd__inputsNeedCategoryResolution(const dal_c_Cmd* cmd);
-static bool dal_c_Cmd__hasSingleExplicitFileInput(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectPathSources(const char* path, bool resolved_is_dir, bool skip_auto_paths);
 static ArrStr* dal_c_Cmd__collectExplicitSources(const dal_c_Cmd* cmd);
 static ArrStr* dal_c_Cmd__collectTargetSources(const dal_c_Project* proj, const dal_c_TargetRequest* request);
@@ -368,6 +371,7 @@ void dal_c_Cmd_cleanup(dal_c_Cmd** self) {
     free((void*)cmd->exclude_paths);
     free(cmd->compiler_args);
     free(cmd->link_args);
+    free(cmd->output_ext);
     free(cmd->linker_script);
     free(cmd->objcopy);
     free(cmd->objcopy_format);
@@ -790,6 +794,7 @@ static int dal_c_Cmd__validateCanonicalModifiers(const dal_c_Cmd* cmd) {
     if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.self_boundary) {
         if (cmd->input_count > 0
             || cmd->payload.build.output_path != NULL
+            || cmd->output_ext != NULL
             || cmd->payload.build.sample_dir != dal_c_SampleDir_none
             || cmd->payload.build.build_all
             || cmd->payload.build.recursive
@@ -851,6 +856,7 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
     assert(out != NULL);
     memset(out, 0, sizeof(*out));
     out->action = cmd->action;
+    out->output_ext = cmd->output_ext;
     out->linking = dal_c_LinkMode_toLibraryLinking(cmd->opts.link_mode, dal_c_Linking_static);
 
     switch (cmd->action) {
@@ -917,7 +923,7 @@ void dal_c_Cmd_normalizeIntent(const dal_c_Cmd* cmd, dal_c_CommandIntent* out) {
     }
     out->target_path_is_explicit_file = out->target_root_name_hint == NULL
                                      && out->target_path != NULL
-                                     && dal_c_Cmd__hasSingleExplicitFileInput(cmd);
+                                     && dal_c_Cmd__hasExplicitFileInputs(cmd);
 }
 
 static int dal_c_Cmd__compareDepsHeaderPath(const void* lhs, const void* rhs) {
@@ -999,7 +1005,7 @@ bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_Compil
     bool explicit_deps_pch = proj->pch_header_override && str_eql(proj->pch_header_override, dal_c_pch_value_deps);
 
     int raw_count = 0;
-    char** raw_files = path_isDir(deps_dir) ? dir_listRecur(deps_dir, &raw_count) : NULL;
+    char** raw_files = path_isDir(deps_dir) ? dir_list(deps_dir, &raw_count) : NULL;
     char** rel_headers = NULL;
     int rel_count = 0;
     int rel_cap = 0;
@@ -1009,6 +1015,10 @@ bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_Compil
         char* rel = path_relative(deps_dir, file);
         if (!rel) { continue; }
         dal_c_Cmd__normalizeIncludePath(rel);
+        if (strchr(rel, '/') != NULL) {
+            free(rel);
+            continue;
+        }
         if (str_eql(rel, "deps.h")) {
             free(rel);
             continue;
@@ -1036,7 +1046,9 @@ bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_Compil
     }
     if (rel_count > 1) { qsort(rel_headers, (size_t)rel_count, sizeof(char*), dal_c_Cmd__compareDepsHeaderPath); }
 
-    if (!include_dh_bundle && !explicit_deps_pch && rel_count == 0) {
+    include_dh_bundle = include_dh_bundle && (explicit_deps_pch || rel_count > 0);
+
+    if (!explicit_deps_pch && rel_count == 0) {
         (void)remove(deps_header);
         dal_c_CompilerOpts_cleanup(&effective_opts);
         for (int i = 0; i < rel_count; ++i) { free(rel_headers[i]); }
@@ -2813,11 +2825,80 @@ static const char* dal_c_Cmd__sampleDirCanonical(dal_c_SampleDir sample_dir) {
     }
 }
 
+static bool dal_c_Cmd__optionNameIs(const char* opt, const char* name) {
+    assert(name != NULL);
+    if (!opt) { return false; }
+    size_t len = strlen(name);
+    return strncmp(opt, name, len) == 0
+        && (opt[len] == '\0' || opt[len] == dal_c_opt_value_sep[0]);
+}
+
+static bool dal_c_Cmd__validOutputExt(const char* value) {
+    return value
+        && value[0] != '\0'
+        && !str_eql(value, ".")
+        && strchr(value, '/') == NULL
+        && strchr(value, '\\') == NULL;
+}
+
 static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
     bool build_like = dal_c_Cmd__usesBuildPayload(action);
     bool build_artifact_like = dal_c_Cmd__usesBuildArtifactPayload(action);
+    bool syntax_like = action == dal_c_CmdAction_syntax;
+    bool tidy_like = action == dal_c_CmdAction_tidy;
+    bool format_like = action == dal_c_CmdAction_format_code;
+    bool check_like = syntax_like || tidy_like || format_like;
+    bool output_like = action == dal_c_CmdAction_build
+                    || action == dal_c_CmdAction_compile_db
+                    || action == dal_c_CmdAction_lib
+                    || action == dal_c_CmdAction_run
+                    || action == dal_c_CmdAction_test
+                    || action == dal_c_CmdAction_test_dsl;
+    bool artifact_output_like = action == dal_c_CmdAction_build
+                             || action == dal_c_CmdAction_lib
+                             || action == dal_c_CmdAction_run
+                             || action == dal_c_CmdAction_test
+                             || action == dal_c_CmdAction_test_dsl;
+    bool link_input_like = action == dal_c_CmdAction_build
+                        || action == dal_c_CmdAction_lib
+                        || action == dal_c_CmdAction_run
+                        || action == dal_c_CmdAction_test
+                        || action == dal_c_CmdAction_test_dsl;
     if (str_startsWith(arg, dal_c_opt_prefix_long)) {
         const char* opt = arg + 2;
+        if (dal_c_Cmd__optionNameIs(opt, dal_c_opt_output)) { return output_like; }
+        if (dal_c_Cmd__optionNameIs(opt, dal_c_opt_output_ext)) { return artifact_output_like; }
+        if (dal_c_Cmd__optionNameIs(opt, dal_c_opt_link)
+            || dal_c_Cmd__optionNameIs(opt, dal_c_opt_link_dir)
+            || dal_c_Cmd__optionNameIs(opt, dal_c_opt_link_args)
+            || dal_c_Cmd__optionNameIs(opt, dal_c_opt_link_script)) {
+            return link_input_like;
+        }
+        if (check_like
+            && (dal_c_Cmd__optionNameIs(opt, dal_c_opt_entry)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_objcopy)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_objcopy_format)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_image)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_lib)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_static)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_shared))) {
+            return false;
+        }
+        if (format_like) {
+            return dal_c_Cmd__optionNameIs(opt, dal_c_opt_commands)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_verbose)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_progress)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_elapsed_precision)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_sample)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_example)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_test)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_all)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_recur)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_exclude)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_dh)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_file)
+                || dal_c_Cmd__optionNameIs(opt, dal_c_opt_dh_file);
+        }
         if ((str_eql(opt, dal_c_opt_output) && (build_like || action == dal_c_CmdAction_lib || action == dal_c_CmdAction_run || action == dal_c_CmdAction_test || action == dal_c_CmdAction_test_dsl))
             || str_eql(opt, dal_c_opt_commands)
             || str_eql(opt, dal_c_opt_verbose)
@@ -2969,13 +3050,16 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
 
     if (arg[0] == dal_c_opt_prefix_short[0] && arg[1] != dal_c_opt_prefix_short[0]) {
         char c = arg[1];
-        if (c == dal_c_opt_include_short_char || c == dal_c_opt_link_short_char
-            || c == dal_c_opt_define_short_char || c == dal_c_opt_undef_short_char) {
-            return true;
+        if (c == dal_c_opt_include_short_char
+            || c == dal_c_opt_define_short_char
+            || c == dal_c_opt_undef_short_char) {
+            return !format_like;
+        }
+        if (c == dal_c_opt_link_short_char || c == dal_c_opt_link_dir_short_char) {
+            return link_input_like;
         }
         if (c == dal_c_opt_output_short_char) {
-            return build_like || action == dal_c_CmdAction_run
-                || action == dal_c_CmdAction_test || action == dal_c_CmdAction_test_dsl;
+            return output_like;
         }
     }
 
@@ -3048,6 +3132,12 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     dal_c_Cmd__addToArray(&cmd->opts.isystem_paths, &cmd->opts.isystem_count, value);
                 } else if (strncmp(opt, dal_c_opt_link, opt_len) == 0) {
                     dal_c_Cmd__addToArray(&cmd->opts.link_libs, &cmd->opts.link_count, value);
+                } else if (strncmp(opt, dal_c_opt_link_dir, opt_len) == 0) {
+                    if (!path_isDir(value)) {
+                        (void)fprintf(stderr, "Error: Directory not found: %s\n", value);
+                        return 1;
+                    }
+                    dal_c_Cmd__addToArray(&cmd->opts.link_dirs, &cmd->opts.link_dir_count, value);
                 } else if (strncmp(opt, dal_c_opt_define, opt_len) == 0) {
                     dal_c_Cmd__addToArray(&cmd->opts.define_macros, &cmd->opts.define_count, value);
                 } else if (strncmp(opt, dal_c_opt_undef, opt_len) == 0) {
@@ -3260,6 +3350,12 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     dal_c_Cmd__setPrimaryTargetPath(cmd, abs_path);
                 } else if (strncmp(opt, dal_c_opt_output, opt_len) == 0) {
                     dal_c_Cmd__setOutputPath(cmd, value);
+                } else if (strncmp(opt, dal_c_opt_output_ext, opt_len) == 0) {
+                    if (!dal_c_Cmd__validOutputExt(value)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_output_ext, value);
+                        return 1;
+                    }
+                    dal_c_Cmd__setOwnedString(&cmd->output_ext, value);
                 } else if (strncmp(opt, dal_c_opt_dh_file, opt_len) == 0) {
                     char* abs_path = path_abs(value);
                     if (!abs_path || !path_isFile(abs_path)) {
@@ -3285,6 +3381,17 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     dal_c_Cmd__setOutputPath(cmd, argv[++i]);
+                } else if (str_eql(opt, dal_c_opt_output_ext)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    const char* value = argv[++i];
+                    if (!dal_c_Cmd__validOutputExt(value)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_output_ext, value);
+                        return 1;
+                    }
+                    dal_c_Cmd__setOwnedString(&cmd->output_ext, value);
                 } else if (str_eql(opt, dal_c_opt_comp_args)) {
                     if (i + 1 >= argc) {
                         (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
@@ -3297,6 +3404,17 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     dal_c_Cmd__setOwnedString(&cmd->link_args, argv[++i]);
+                } else if (str_eql(opt, dal_c_opt_link_dir)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    const char* value = argv[++i];
+                    if (!path_isDir(value)) {
+                        (void)fprintf(stderr, "Error: Directory not found: %s\n", value);
+                        return 1;
+                    }
+                    dal_c_Cmd__addToArray(&cmd->opts.link_dirs, &cmd->opts.link_dir_count, value);
                 } else if (str_eql(opt, dal_c_opt_target_arch)) {
                     if (i + 1 >= argc) {
                         (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
@@ -3656,6 +3774,12 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                 dal_c_Cmd__addToArray(&cmd->opts.include_paths, &cmd->opts.include_count, value);
             } else if (c == dal_c_opt_link_short_char) {
                 dal_c_Cmd__addToArray(&cmd->opts.link_libs, &cmd->opts.link_count, value);
+            } else if (c == dal_c_opt_link_dir_short_char) {
+                if (!path_isDir(value)) {
+                    (void)fprintf(stderr, "Error: Directory not found: %s\n", value);
+                    return 1;
+                }
+                dal_c_Cmd__addToArray(&cmd->opts.link_dirs, &cmd->opts.link_dir_count, value);
             } else if (c == dal_c_opt_define_short_char) {
                 dal_c_Cmd__addToArray(&cmd->opts.define_macros, &cmd->opts.define_count, value);
             } else if (c == dal_c_opt_undef_short_char) {
@@ -3754,9 +3878,34 @@ static bool dal_c_Cmd__inputsNeedCategoryResolution(const dal_c_Cmd* cmd) {
     return false;
 }
 
-static bool dal_c_Cmd__hasSingleExplicitFileInput(const dal_c_Cmd* cmd) {
+static bool dal_c_Cmd__hasExplicitFileInputs(const dal_c_Cmd* cmd) {
     assert(cmd != NULL);
-    return cmd->input_count == 1 && path_isFile(cmd->input_files[0]);
+    if (cmd->input_count == 0 || dal_c_Cmd__inputsNeedCategoryResolution(cmd)) {
+        return false;
+    }
+    for (int i = 0; i < cmd->input_count; ++i) {
+        if (!path_isFile(cmd->input_files[i])) { return false; }
+    }
+    return true;
+}
+
+static const char* dal_c_Cmd__basenameView(const char* path) {
+    assert(path != NULL);
+    const char* sep = NULL;
+    for (const char* p = path; *p; ++p) {
+        if (*p == '/' || *p == '\\') { sep = p; }
+    }
+    return sep ? sep + 1 : path;
+}
+
+static bool dal_c_Cmd__outputNamesLibraryArtifact(const char* path) {
+    if (!path || path[0] == '\0') { return false; }
+    const char* base = dal_c_Cmd__basenameView(path);
+    return str_endsWith(base, ".lib")
+        || str_endsWith(base, ".dll")
+        || str_endsWith(base, ".pyd")
+        || str_endsWith(base, ".a")
+        || str_endsWith(base, ".so");
 }
 
 static ArrStr* dal_c_Cmd__collectPathSources(const char* path, bool resolved_is_dir, bool skip_auto_paths) {
@@ -4321,8 +4470,12 @@ static int dal_c_Cmd__buildLibrarySetFromSources(
 
     dal_c_CommandIntent intent = { 0 };
     dal_c_Cmd_normalizeIntent(self, &intent);
-    if (intent.output_path) {
-        (void)fprintf(stderr, "Error: `kind=lib` cannot use one explicit output path for both static and shared libraries\n");
+    if (intent.output_ext) {
+        (void)fprintf(stderr, "Error: `kind=lib` cannot use one output extension for both static and shared libraries: %s\n", intent.output_ext);
+        return 1;
+    }
+    if (dal_c_Cmd__outputNamesLibraryArtifact(intent.output_path)) {
+        (void)fprintf(stderr, "Error: `kind=lib` --output must name an output stem or directory, not one library artifact: %s\n", intent.output_path);
         return 1;
     }
 

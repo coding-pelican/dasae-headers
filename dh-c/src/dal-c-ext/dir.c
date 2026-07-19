@@ -188,6 +188,62 @@ bool dir_removeRecur(const char* path) {
 #endif
 }
 
+char** dir_list(const char* path, int* count) {
+    assert(count != NULL);
+    if (!path) {
+        *count = 0;
+        return NULL;
+    }
+    *count = 0;
+    char** files = NULL;
+    int capacity = 0;
+#ifdef _WIN32
+    WIN32_FIND_DATAA find_data = {};
+    char search_path[MAX_PATH] = {};
+    (void)snprintf(search_path, MAX_PATH, "%s\\*", path);
+    HANDLE const hFind = FindFirstFileA(search_path, &find_data);
+    if (hFind != INVALID_HANDLE_VALUE) {
+        do {
+            if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0) { continue; }
+            char* const full_path = path_join(path, find_data.cFileName);
+            if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                if (!dir__pushPath(&files, count, &capacity, full_path)) {
+                    free(full_path);
+                    dir__freePathArray(files, *count);
+                    FindClose(hFind);
+                    *count = 0;
+                    return NULL;
+                }
+            } else {
+                free(full_path);
+            }
+        } while (FindNextFileA(hFind, &find_data));
+        FindClose(hFind);
+    }
+#else
+    DIR* const dir = opendir(path);
+    if (!dir) { return NULL; }
+    struct dirent* entry = NULL;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) { continue; }
+        char* const full_path = path_join(path, entry->d_name);
+        if (!path_isDir(full_path)) {
+            if (!dir__pushPath(&files, count, &capacity, full_path)) {
+                free(full_path);
+                dir__freePathArray(files, *count);
+                (void)closedir(dir);
+                *count = 0;
+                return NULL;
+            }
+        } else {
+            free(full_path);
+        }
+    }
+    (void)closedir(dir);
+#endif
+    return files;
+}
+
 /* NOLINTNEXTLINE(misc-no-recursion) */
 char** dir_listRecur(const char* path, int* count) {
     assert(count != NULL);

@@ -59,6 +59,7 @@ static void test_pch_dependency_invalidates_linked_plan(void);
 static void test_project_detection(void);
 static void test_clean_prefers_local_build_dir(void);
 static void test_target_request_resolution(void);
+static void test_output_override_generates_target_extensions(void);
 static void test_explicit_file_build_uses_file_project(void);
 static void test_target_root_directory_uses_local_include(void);
 static void test_syntax_arguments_follow_build_compile_contract(void);
@@ -77,9 +78,12 @@ static void test_reset_temp_root(void);
 static void test_free_str_array(char** items, int count);
 static char* test_makefile_var_first_value(const char* makefile_text, const char* var_name);
 static bool test_arrstr_contains(ArrStr* items, const char* value);
+static bool test_path_text_eql(const char* lhs, const char* rhs);
 static const dal_c_HelpProfile* test_find_help_profile(const char* name);
 static const dal_c_HelpCmd* test_find_help_cmd(const char* name, int* count_out);
 static bool test_help_has_option(const dal_c_HelpCmd* cmd, const char* option_name);
+static bool test_help_has_exact_option(const dal_c_HelpCmd* cmd, const char* option_name);
+static bool test_help_has_note(const dal_c_HelpCmd* cmd, const char* text);
 
 int main(void) {
     RUN_TEST(test_str_helpers);
@@ -95,6 +99,7 @@ int main(void) {
     RUN_TEST(test_project_detection);
     RUN_TEST(test_clean_prefers_local_build_dir);
     RUN_TEST(test_target_request_resolution);
+    RUN_TEST(test_output_override_generates_target_extensions);
     RUN_TEST(test_explicit_file_build_uses_file_project);
     RUN_TEST(test_target_root_directory_uses_local_include);
     RUN_TEST(test_syntax_arguments_follow_build_compile_contract);
@@ -210,6 +215,18 @@ static bool test_arrstr_contains(ArrStr* items, const char* value) {
     return false;
 }
 
+static bool test_path_text_eql(const char* lhs, const char* rhs) {
+    if (!lhs || !rhs) { return false; }
+    while (*lhs && *rhs) {
+        char a = (*lhs == '\\') ? '/' : *lhs;
+        char b = (*rhs == '\\') ? '/' : *rhs;
+        if (a != b) { return false; }
+        ++lhs;
+        ++rhs;
+    }
+    return *lhs == '\0' && *rhs == '\0';
+}
+
 static const dal_c_HelpProfile* test_find_help_profile(const char* name) {
     if (!name) { return NULL; }
     for (int i = 0; i < dal_c_help_profiles_count; ++i) {
@@ -242,7 +259,40 @@ static bool test_help_has_option(const dal_c_HelpCmd* cmd, const char* option_na
     }
 
     for (int i = 0; i < cmd->option_count; ++i) {
-        if (strstr(cmd->options[i].name, option_name) != NULL) {
+        if (cmd->options[i].name && strstr(cmd->options[i].name, option_name) != NULL) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool test_help_has_exact_option(const dal_c_HelpCmd* cmd, const char* option_name) {
+    if (!cmd || !option_name) {
+        return false;
+    }
+
+    const size_t option_len = strlen(option_name);
+    for (int i = 0; i < cmd->option_count; ++i) {
+        const char* name = cmd->options[i].name;
+        for (const char* p = strstr(name, option_name); p; p = strstr(p + 1, option_name)) {
+            const bool starts_name = p == name || p[-1] == '-';
+            const char next = p[option_len];
+            const bool ends_name = next == '\0' || next == '=' || next == ' ' || next == ',' || next == '[';
+            if (starts_name && ends_name) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+static bool test_help_has_note(const dal_c_HelpCmd* cmd, const char* text) {
+    if (!cmd || !text) {
+        return false;
+    }
+
+    for (int i = 0; i < cmd->note_count; ++i) {
+        if (cmd->notes[i] && strstr(cmd->notes[i], text) != NULL) {
             return true;
         }
     }
@@ -593,6 +643,12 @@ static void test_meta_tables(void) {
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_version_record));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_loose_errors));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_elapsed_precision));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_link_dir));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_output_ext));
+    TEST_ASSERT(build_cmd->note_count > 0);
+    TEST_ASSERT(test_help_has_note(build_cmd, "--output"));
+    TEST_ASSERT(test_help_has_note(build_cmd, "--output-ext"));
+    TEST_ASSERT(test_help_has_note(build_cmd, "--link-dir"));
 
     const dal_c_HelpCmd* workspace_cmd = test_find_help_cmd(dal_c_cmd_action_workspace, NULL);
     TEST_ASSERT(workspace_cmd != NULL);
@@ -602,22 +658,32 @@ static void test_meta_tables(void) {
     TEST_ASSERT(compile_db_cmd != NULL);
     TEST_ASSERT(compile_db_cmd->implemented);
     TEST_ASSERT(test_help_has_option(compile_db_cmd, dal_c_opt_output));
+    TEST_ASSERT(!test_help_has_option(compile_db_cmd, dal_c_opt_output_ext));
+    TEST_ASSERT(test_help_has_note(compile_db_cmd, "does not compile"));
 
     const dal_c_HelpCmd* syntax_cmd = test_find_help_cmd(dal_c_cmd_action_syntax, NULL);
     TEST_ASSERT(syntax_cmd != NULL);
     TEST_ASSERT(syntax_cmd->implemented);
     TEST_ASSERT(test_help_has_option(syntax_cmd, dal_c_opt_progress));
     TEST_ASSERT(test_help_has_option(syntax_cmd, dal_c_opt_elapsed_precision));
+    TEST_ASSERT(!test_help_has_option(syntax_cmd, dal_c_opt_output));
+    TEST_ASSERT(!test_help_has_exact_option(syntax_cmd, dal_c_opt_link));
+    TEST_ASSERT(test_help_has_note(syntax_cmd, "never links"));
 
     const dal_c_HelpCmd* tidy_cmd = test_find_help_cmd(dal_c_cmd_action_tidy, NULL);
     TEST_ASSERT(tidy_cmd != NULL);
     TEST_ASSERT(tidy_cmd->implemented);
     TEST_ASSERT(test_help_has_option(tidy_cmd, dal_c_opt_commands));
+    TEST_ASSERT(!test_help_has_exact_option(tidy_cmd, dal_c_opt_link));
+    TEST_ASSERT(test_help_has_note(tidy_cmd, "never links"));
 
     const dal_c_HelpCmd* format_cmd = test_find_help_cmd(dal_c_cmd_action_format, NULL);
     TEST_ASSERT(format_cmd != NULL);
     TEST_ASSERT(format_cmd->implemented);
     TEST_ASSERT(test_help_has_option(format_cmd, dal_c_opt_verbose));
+    TEST_ASSERT(!test_help_has_option(format_cmd, dal_c_opt_define));
+    TEST_ASSERT(!test_help_has_option(format_cmd, dal_c_opt_output));
+    TEST_ASSERT(test_help_has_note(format_cmd, "in place"));
 
     const int option_count = dal_c_help_global_options_count;
     TEST_ASSERT(option_count == 2);
@@ -685,6 +751,30 @@ static void test_cmd_parse(void) {
     }
 
     {
+        const char* argv[] = { dal_c_tool_name, "syntax", "dev", "--output=syntax.exe", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "syntax", "dev", "--output-ext=.pyd", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "tidy", "dev", "--link=python311", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "format", "dev", "--define=DEBUG", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
+    {
         char* str_source = test_repo_path("dh-c/src/dal-c-ext/str.c");
         TEST_ASSERT(str_source != NULL);
         char* file_arg = str_format("--file=%s", str_source);
@@ -716,12 +806,34 @@ static void test_cmd_parse(void) {
     }
 
     {
-        const char* argv[] = { dal_c_tool_name, "build", "--comp-args=-Winvalid-offsetof", "--link-args=-pthread", NULL };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        const char* argv[] = { dal_c_tool_name, "build", "--comp-args=-Winvalid-offsetof", "--link-args=-pthread", "--output-ext=pyd", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(5, argv);
         TEST_ASSERT(cmd != NULL);
         TEST_ASSERT(str_eql(cmd->compiler_args, "-Winvalid-offsetof"));
         TEST_ASSERT(str_eql(cmd->link_args, "-pthread"));
+        TEST_ASSERT(str_eql(cmd->output_ext, "pyd"));
         dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        char* link_dir = test_repo_path("dh-c");
+        TEST_ASSERT(link_dir != NULL);
+        char* link_dir_opt = str_format("--link-dir=%s", link_dir);
+        char* short_link_dir_opt = str_format("-L%s", link_dir);
+        TEST_ASSERT(link_dir_opt != NULL);
+        TEST_ASSERT(short_link_dir_opt != NULL);
+        const char* argv[] = { dal_c_tool_name, "build", link_dir_opt, short_link_dir_opt, "--link=python311", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(5, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->opts.link_dir_count == 2);
+        TEST_ASSERT(str_eql(cmd->opts.link_dirs[0], link_dir));
+        TEST_ASSERT(str_eql(cmd->opts.link_dirs[1], link_dir));
+        TEST_ASSERT(cmd->opts.link_count == 1);
+        TEST_ASSERT(str_eql(cmd->opts.link_libs[0], "python311"));
+        dal_c_Cmd_cleanup(&cmd);
+        free(short_link_dir_opt);
+        free(link_dir_opt);
+        free(link_dir);
     }
 
     {
@@ -2184,6 +2296,7 @@ static void test_project_detection(void) {
     char* dh_src_dir = path_join(dh_root, "src/dh");
     char* dh_header = path_join(dh_include_dir, "dh.h");
     char* dh_main_header = path_join(dh_include_dir, "dh-main.h");
+    char* child_project = path_join(workspace_root, "child-project");
     TEST_ASSERT(original_cwd != NULL);
     TEST_ASSERT(workspace_root != NULL);
     TEST_ASSERT(dh_root != NULL);
@@ -2192,6 +2305,7 @@ static void test_project_detection(void) {
     TEST_ASSERT(dh_src_dir != NULL);
     TEST_ASSERT(dh_header != NULL);
     TEST_ASSERT(dh_main_header != NULL);
+    TEST_ASSERT(child_project != NULL);
     TEST_ASSERT(dir_createRecur(workspace_root));
     TEST_ASSERT(dir_createRecur(dh_include_child_dir));
     TEST_ASSERT(dir_createRecur(dh_src_dir));
@@ -2214,8 +2328,27 @@ static void test_project_detection(void) {
     free(version_detected_dh);
     dal_c_Cmd_cleanup(&version_cmd);
 
+    {
+        const char* relative_argv[] = { dal_c_tool_name, "--version", "--dh", "dh", NULL };
+        dal_c_Cmd* relative_cmd = dal_c_Cmd_parse(4, relative_argv);
+        TEST_ASSERT(relative_cmd != NULL);
+        char* relative_detected_dh = dal_c_Project_findDHInstallation(relative_cmd);
+        TEST_ASSERT(relative_detected_dh != NULL);
+        TEST_ASSERT(str_eql(relative_detected_dh, expected_dh));
+        free(relative_detected_dh);
+        dal_c_Cmd_cleanup(&relative_cmd);
+    }
+
+    TEST_ASSERT(dir_createRecur(child_project));
+    dal_c_Project* child_proj = dal_c_Project_detectAt(child_project, "dh");
+    TEST_ASSERT(child_proj != NULL);
+    TEST_ASSERT(child_proj->dh_path != NULL);
+    TEST_ASSERT(str_eql(child_proj->dh_path, expected_dh));
+    dal_c_Project_cleanup(&child_proj);
+
     TEST_ASSERT(env_setCWD(original_cwd));
 
+    free(child_project);
     free(expected_dh);
     free(detected_dh);
     free(dh_main_header);
@@ -2313,6 +2446,113 @@ static void test_target_request_resolution(void) {
     free(root_path);
 }
 
+static void test_output_override_generates_target_extensions(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "output-contract");
+    char* project_dh = path_join(project_root, dal_c_file_detector_project);
+    char* build_dir = path_join(project_root, "build/dev");
+    char* output_stem = path_join(project_root, "artifacts/widget");
+    char* output_dir = path_join(project_root, "dist");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(build_dir != NULL);
+    TEST_ASSERT(output_stem != NULL);
+    TEST_ASSERT(output_dir != NULL);
+    TEST_ASSERT(dir_createRecur(project_root));
+    TEST_ASSERT(file_write(project_dh, "output=widget\nkind=lib\n"));
+    TEST_ASSERT(dir_createRecur(output_dir));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(proj != NULL);
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--output", output_stem, NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(5, argv);
+        TEST_ASSERT(cmd != NULL);
+        char* static_path = dal_c__resolveOutputPath(proj, cmd, build_dir, "widget", dal_c_Target_static_lib);
+        char* shared_path = dal_c__resolveOutputPath(proj, cmd, build_dir, "widget", dal_c_Target_shared_lib);
+#ifdef _WIN32
+        char* expected_static = str_format("%s.lib", output_stem);
+        char* expected_shared = str_format("%s.dll", output_stem);
+#else
+        char* stem_parent = path_parent(output_stem);
+        char* expected_static = stem_parent ? path_join(stem_parent, "libwidget.a") : strdup("libwidget.a");
+        char* expected_shared = stem_parent ? path_join(stem_parent, "libwidget.so") : strdup("libwidget.so");
+        free(stem_parent);
+#endif
+        TEST_ASSERT(static_path != NULL);
+        TEST_ASSERT(shared_path != NULL);
+        TEST_ASSERT(expected_static != NULL);
+        TEST_ASSERT(expected_shared != NULL);
+        TEST_ASSERT(test_path_text_eql(static_path, expected_static));
+        TEST_ASSERT(test_path_text_eql(shared_path, expected_shared));
+        free(expected_shared);
+        free(expected_static);
+        free(shared_path);
+        free(static_path);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--output", output_dir, NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(5, argv);
+        TEST_ASSERT(cmd != NULL);
+        char* static_path = dal_c__resolveOutputPath(proj, cmd, build_dir, "widget", dal_c_Target_static_lib);
+        char* shared_path = dal_c__resolveOutputPath(proj, cmd, build_dir, "widget", dal_c_Target_shared_lib);
+#ifdef _WIN32
+        char* expected_static = path_join(output_dir, "widget.lib");
+        char* expected_shared = path_join(output_dir, "widget.dll");
+#else
+        char* expected_static = path_join(output_dir, "libwidget.a");
+        char* expected_shared = path_join(output_dir, "libwidget.so");
+#endif
+        TEST_ASSERT(static_path != NULL);
+        TEST_ASSERT(shared_path != NULL);
+        TEST_ASSERT(expected_static != NULL);
+        TEST_ASSERT(expected_shared != NULL);
+        TEST_ASSERT(test_path_text_eql(static_path, expected_static));
+        TEST_ASSERT(test_path_text_eql(shared_path, expected_shared));
+        free(expected_shared);
+        free(expected_static);
+        free(shared_path);
+        free(static_path);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        char* pyd_stem = path_join(project_root, "artifacts/_widget");
+        char* pyd_path = path_join(project_root, "artifacts/_widget.pyd");
+        TEST_ASSERT(pyd_stem != NULL);
+        TEST_ASSERT(pyd_path != NULL);
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--shared", "--output", pyd_stem, "--output-ext=.pyd", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(7, argv);
+        TEST_ASSERT(cmd != NULL);
+        char* shared_path = dal_c__resolveOutputPath(proj, cmd, build_dir, "widget", dal_c_Target_shared_lib);
+        TEST_ASSERT(shared_path != NULL);
+#ifdef _WIN32
+        TEST_ASSERT(test_path_text_eql(shared_path, pyd_path));
+#else
+        TEST_ASSERT(strstr(shared_path, "_widget.pyd") != NULL);
+#endif
+        free(shared_path);
+        dal_c_Cmd_cleanup(&cmd);
+        free(pyd_path);
+        free(pyd_stem);
+    }
+
+    dal_c_Project_cleanup(&proj);
+    TEST_ASSERT(test_remove_recur(temp_root));
+    free(output_dir);
+    free(output_stem);
+    free(build_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+}
+
 static void test_explicit_file_build_uses_file_project(void) {
     test_reset_temp_root();
 
@@ -2363,6 +2603,18 @@ static void test_explicit_file_build_uses_file_project(void) {
     TEST_ASSERT(dal_c_TargetRequest_resolve(proj, &intent, &request));
     TEST_ASSERT(request.root == NULL);
     dal_c_TargetRequest_cleanup(&request);
+
+    {
+        const char* multi_argv[] = { dal_c_tool_name, "build", "dev", source, sample_source, NULL };
+        dal_c_Cmd* multi_cmd = dal_c_Cmd_parse(5, multi_argv);
+        TEST_ASSERT(multi_cmd != NULL);
+        dal_c_Cmd_normalizeIntent(multi_cmd, &intent);
+        TEST_ASSERT(intent.target_path_is_explicit_file);
+        TEST_ASSERT(dal_c_TargetRequest_resolve(proj, &intent, &request));
+        TEST_ASSERT(request.root == NULL);
+        dal_c_TargetRequest_cleanup(&request);
+        dal_c_Cmd_cleanup(&multi_cmd);
+    }
 
     {
         const char* sample_argv[] = { dal_c_tool_name, "build", "--sample", sample_source, NULL };
@@ -2780,18 +3032,28 @@ static void test_deps_prelude_tracks_dh_contract(void) {
 
     char* temp_root = test_temp_root();
     char* dh_root = test_repo_path("dh");
+    char* dh_bundle = path_join(dh_root, "include/dh-bundle.h");
     char* project_root = path_join(temp_root, "dh-prelude-project");
     char* project_dh = path_join(project_root, "project.dh");
     char* source_dir = path_join(project_root, "src");
     char* main_source = path_join(source_dir, "main.c");
     char* deps_header = path_join(project_root, "lib/deps.h");
+    char* deps_dir = path_join(project_root, "lib/deps");
+    char* top_dep_header = path_join(deps_dir, "vendor.h");
+    char* nested_dep_dir = path_join(deps_dir, "vendor");
+    char* nested_dep_header = path_join(nested_dep_dir, "detail.h");
     TEST_ASSERT(temp_root != NULL);
     TEST_ASSERT(dh_root != NULL);
+    TEST_ASSERT(dh_bundle != NULL);
     TEST_ASSERT(project_root != NULL);
     TEST_ASSERT(project_dh != NULL);
     TEST_ASSERT(source_dir != NULL);
     TEST_ASSERT(main_source != NULL);
     TEST_ASSERT(deps_header != NULL);
+    TEST_ASSERT(deps_dir != NULL);
+    TEST_ASSERT(top_dep_header != NULL);
+    TEST_ASSERT(nested_dep_dir != NULL);
+    TEST_ASSERT(nested_dep_header != NULL);
     TEST_ASSERT(dir_createRecur(project_root));
     TEST_ASSERT(file_write(project_dh, "output=dh-prelude\n"));
     TEST_ASSERT(dir_createRecur(source_dir));
@@ -2800,18 +3062,48 @@ static void test_deps_prelude_tracks_dh_contract(void) {
     dal_c_Project* proj = dal_c_Project_detectAt(project_root, dh_root);
     TEST_ASSERT(proj != NULL);
     TEST_ASSERT(proj->pch_header != NULL);
+    TEST_ASSERT(test_path_text_eql(proj->pch_header, dh_bundle));
     TEST_ASSERT(dal_c__writeDepsPreludeHeader(proj, &proj->opts));
-    TEST_ASSERT(path_isFile(deps_header));
+    TEST_ASSERT(!path_exists(deps_header));
 
-    char* deps_text = file_read(deps_header);
-    TEST_ASSERT(deps_text != NULL);
-    TEST_ASSERT(strstr(deps_text, "#include <dh-bundle.h>") != NULL);
-    free(deps_text);
-    dal_c_Project_cleanup(&proj);
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "dev", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd != NULL);
 
-    proj = dal_c_Project_detectAt(project_root, dh_root);
-    TEST_ASSERT(proj != NULL);
-    TEST_ASSERT(proj->pch_header != NULL);
+        const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+        char* build_dir = dal_c_Project_getBuildDir(proj);
+        char* profile_dir = path_join(build_dir, profile->name);
+        char* object_dir = path_join(profile_dir, "obj");
+        char* target_path = dal_c__resolveOutputPath(proj, cmd, profile_dir, "dh-prelude", dal_c_Target_executable);
+        char* makefile_path = dal_c__makePlanFilePath(proj, profile, cmd, target_path, dal_c_Target_executable);
+        ArrStr* sources = ArrStr_init();
+        TEST_ASSERT(build_dir != NULL);
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(target_path != NULL);
+        TEST_ASSERT(makefile_path != NULL);
+        TEST_ASSERT(sources != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+        ArrStr_push(sources, main_source);
+        TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 0);
+        char* makefile_text = file_read(makefile_path);
+        TEST_ASSERT(makefile_text != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-include-pch") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "PCH_SRC = ") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "dh-bundle.h") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "lib/deps.h") == NULL);
+        free(makefile_text);
+        ArrStr_fini(&sources);
+        free(makefile_path);
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
     {
         const char* argv[] = { dal_c_tool_name, "build", "dev", "--link-dsl=off", NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
@@ -2853,6 +3145,8 @@ static void test_deps_prelude_tracks_dh_contract(void) {
 
     TEST_ASSERT(test_remove_recur(project_root));
     TEST_ASSERT(dir_createRecur(project_root));
+    TEST_ASSERT(dir_createRecur(source_dir));
+    TEST_ASSERT(file_write(main_source, "int main(void) { return 0; }\n"));
     TEST_ASSERT(file_write(project_dh, "output=dh-prelude\nlink-dsl=off\n"));
     proj = dal_c_Project_detectAt(project_root, dh_root);
     TEST_ASSERT(proj != NULL);
@@ -2861,13 +3155,42 @@ static void test_deps_prelude_tracks_dh_contract(void) {
     TEST_ASSERT(!path_exists(deps_header));
 
     dal_c_Project_cleanup(&proj);
+
+    TEST_ASSERT(test_remove_recur(project_root));
+    TEST_ASSERT(dir_createRecur(project_root));
+    TEST_ASSERT(dir_createRecur(source_dir));
+    TEST_ASSERT(dir_createRecur(nested_dep_dir));
+    TEST_ASSERT(file_write(main_source, "int main(void) { return 0; }\n"));
+    TEST_ASSERT(file_write(project_dh, "output=dh-prelude\npch=deps\n"));
+    TEST_ASSERT(file_write(top_dep_header, "#pragma once\n#define VENDOR_VALUE 1\n"));
+    TEST_ASSERT(file_write(nested_dep_header, "#pragma once\n#define VENDOR_DETAIL 2\n"));
+    proj = dal_c_Project_detectAt(project_root, dh_root);
+    TEST_ASSERT(proj != NULL);
+    TEST_ASSERT(proj->pch_header != NULL);
+    TEST_ASSERT(strstr(proj->pch_header, "deps.h") != NULL);
+    TEST_ASSERT(dal_c__writeDepsPreludeHeader(proj, &proj->opts));
+    TEST_ASSERT(path_isFile(deps_header));
+    {
+        char* deps_text = file_read(deps_header);
+        TEST_ASSERT(deps_text != NULL);
+        TEST_ASSERT(strstr(deps_text, "#include <dh-bundle.h>") != NULL);
+        TEST_ASSERT(strstr(deps_text, "#include <vendor.h>") != NULL);
+        TEST_ASSERT(strstr(deps_text, "vendor/detail.h") == NULL);
+        free(deps_text);
+    }
+    dal_c_Project_cleanup(&proj);
     TEST_ASSERT(test_remove_recur(temp_root));
 
+    free(nested_dep_header);
+    free(nested_dep_dir);
+    free(top_dep_header);
+    free(deps_dir);
     free(deps_header);
     free(main_source);
     free(source_dir);
     free(project_dh);
     free(project_root);
+    free(dh_bundle);
     free(dh_root);
     free(temp_root);
 }

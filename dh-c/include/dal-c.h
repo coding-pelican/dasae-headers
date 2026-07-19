@@ -271,9 +271,9 @@ static inline dal_c_CompileEnv dal_c_CompileEnv_resolve(dal_c_CompileEnv compile
 
 typedef enum dal_c_Target {
     dal_c_Target_invalid = -1,
-    dal_c_Target_executable = 0, // .exe output
-    dal_c_Target_static_lib = 1, // .a (Unix) or .lib (Windows) output
-    dal_c_Target_shared_lib = 2, // .so (Unix) or .dll (Windows) output
+    dal_c_Target_executable = 0, // no-extension or `.out` (Unix), `.exe` (Windows) executable output
+    dal_c_Target_static_lib = 1, // `.a` (Unix), `.lib` (Windows) static library output
+    dal_c_Target_shared_lib = 2, // `.so` (Unix), `.dll` (Windows) shared library output
     dal_c_Target_lib = 3, // abstract library output: build static + shared
     dal_c_Target_image = 4, // raw image output (for example `.bin`)
     dal_c_Target_preprocessed = 5, // preprocessed translation unit output (`.i`)
@@ -843,6 +843,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_include "include"
 #define dal_c_opt_isystem "isystem"
 #define dal_c_opt_link "link"
+#define dal_c_opt_link_dir "link-dir"
 #define dal_c_opt_define "define"
 #define dal_c_opt_undef "undef"
 #define dal_c_opt_lib "lib"
@@ -921,6 +922,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_example "example"
 #define dal_c_opt_test "test"
 #define dal_c_opt_output "output"
+#define dal_c_opt_output_ext "output-ext"
 #define dal_c_opt_file "file"
 #define dal_c_opt_exclude "exclude"
 #define dal_c_opt_dh_file "dh-file"
@@ -930,6 +932,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 // Short option names (string form for concatenation)
 #define dal_c_opt_include_short "I"
 #define dal_c_opt_link_short "l"
+#define dal_c_opt_link_dir_short "L"
 #define dal_c_opt_define_short "D"
 #define dal_c_opt_undef_short "U"
 #define dal_c_opt_output_short "o"
@@ -939,6 +942,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 // Short option characters (for parsing)
 #define dal_c_opt_include_short_char 'I'
 #define dal_c_opt_link_short_char 'l'
+#define dal_c_opt_link_dir_short_char 'L'
 #define dal_c_opt_define_short_char 'D'
 #define dal_c_opt_undef_short_char 'U'
 #define dal_c_opt_output_short_char 'o'
@@ -1044,6 +1048,8 @@ typedef struct dal_c_CompilerOpts {
     int include_count;
     char** link_libs; // --link or -l (array)
     int link_count;
+    char** link_dirs; // --link-dir or -L (array)
+    int link_dir_count;
     char* entry_symbol; // --entry=<symbol>
     dal_c_Profile profile;
     dal_c_CompileEnv compile_env; // --hosted / --freestanding
@@ -1244,6 +1250,7 @@ typedef struct dal_c_Cmd {
 
     char* compiler_args; // --args="..." or --comp-args="..."
     char* link_args; // --link-args="..."
+    char* output_ext; // --output-ext=<.ext>
     char* linker_script; // --link-script=<path>
     char* objcopy; // --objcopy=<name>
     char* objcopy_format; // --objcopy-format=<fmt>
@@ -1429,7 +1436,7 @@ static inline const char* const* dal_c_sourceSkipSegments(void) {
 
 /// === HELP SYSTEM ===
 
-#define dal_c_help_opt_width 28
+#define dal_c_help_opt_width 36
 
 typedef struct dal_c_HelpOption {
     const char* name;
@@ -1444,6 +1451,8 @@ typedef struct dal_c_HelpCmd {
     int option_count;
     const char* const* examples;
     int example_count;
+    const char* const* notes;
+    int note_count;
     bool extends_build_options;
     bool implemented;
 } dal_c_HelpCmd;
@@ -1492,6 +1501,8 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_isystem dal_c_opt_value_sep "<path>", "Add system include path (can be repeated)" },
     { dal_c_opt_prefix_long dal_c_opt_link dal_c_opt_value_sep "<lib>", "Link library (can be repeated)" },
     { dal_c_opt_prefix_short dal_c_opt_link_short "<lib>", "Link library (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_link_dir dal_c_opt_value_sep "<path>", "Add library search directory (can be repeated)" },
+    { dal_c_opt_prefix_short dal_c_opt_link_dir_short "<path>", "Add library search directory (alternative)" },
     { dal_c_opt_prefix_long dal_c_opt_define dal_c_opt_value_sep "<macro>", "Define macro (can be repeated)" },
     { dal_c_opt_prefix_short dal_c_opt_define_short "<macro>", "Define macro (alternative)" },
     { dal_c_opt_prefix_long dal_c_opt_undef dal_c_opt_value_sep "<macro>", "Undefine macro (can be repeated)" },
@@ -1508,8 +1519,9 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_version_record dal_c_opt_value_sep "<none|project|companion>", "Persist CLI version flags into `project.dh` or `{source}.dh`" },
     { dal_c_opt_prefix_long dal_c_opt_args dal_c_opt_value_sep "\"...\"", "Additional compiler flags (context-aware)" },
     { dal_c_opt_prefix_long dal_c_opt_file dal_c_opt_value_sep "<path>", "Add explicit source file (for example `.c` or `.S`) (can be repeated)" },
-    { dal_c_opt_prefix_long dal_c_opt_output dal_c_opt_value_sep "<path>", "Override output name or exact path" },
-    { dal_c_opt_prefix_short dal_c_opt_output_short "<path>", "Override output name or exact path (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_output dal_c_opt_value_sep "<path>", "Override output stem or directory" },
+    { dal_c_opt_prefix_short dal_c_opt_output_short "<path>", "Override output stem or directory (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_output_ext dal_c_opt_value_sep "<.ext>", "Override generated output extension for a single artifact" },
     { dal_c_opt_prefix_long dal_c_opt_exclude dal_c_opt_value_sep "<path>", "Exclude file or directory subtree (can be repeated)" },
     { dal_c_opt_prefix_long dal_c_opt_dh_file dal_c_opt_value_sep "<path>", "Add explicit `.dh` property file (can be repeated)" },
     { dal_c_opt_prefix_long dal_c_opt_loose_errors dal_c_opt_value_sep "<auto|never|warn|suppress>", "Relax warning policy: never preserves strict Werror diagnostics; warn downgrades them; suppress disables warnings" },
@@ -1550,6 +1562,80 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
 };
 #define dal_c_help_build_options_count ((int)(sizeof(dal_c_help_build_options) / sizeof(dal_c_help_build_options[0])))
 
+static const dal_c_HelpOption dal_c_help_compile_check_options[] = {
+    { dal_c_opt_prefix_long dal_c_opt_compiler dal_c_opt_value_sep "<name>", "Compiler (default: " dal_c_default_compiler ")" },
+    { dal_c_opt_prefix_long dal_c_opt_std dal_c_opt_value_sep "<std>", "C standard (default: " dal_c_default_c_std ")" },
+    { dal_c_opt_prefix_long dal_c_opt_arch dal_c_opt_value_sep "<target>", "Target architecture" },
+    { dal_c_opt_prefix_long dal_c_opt_target dal_c_opt_value_sep "<triple>", "Target triple (alternative to " dal_c_opt_prefix_long dal_c_opt_arch ")" },
+    { dal_c_opt_prefix_long dal_c_opt_link_dsl dal_c_opt_value_sep "<on|off>", "Enable or disable automatic DSL/DH library integration (default: " dal_c_default_dsl_mode ")" },
+    { dal_c_opt_prefix_long dal_c_opt_hosted, "Use hosted compile semantics (default: " dal_c_default_compile_env ")" },
+    { dal_c_opt_prefix_long dal_c_opt_freestanding, "Use freestanding compile semantics (`-ffreestanding`)" },
+    { dal_c_opt_prefix_long dal_c_opt_link_libc dal_c_opt_value_sep "<on|off>", "Set libc compile contract macros" },
+    { dal_c_opt_prefix_long dal_c_opt_link_default_libs dal_c_opt_value_sep "<on|off>", "Set default-library compile contract macros" },
+    { dal_c_opt_prefix_long dal_c_opt_link_start_files dal_c_opt_value_sep "<on|off>", "Set startup-file compile contract macros" },
+    { dal_c_opt_prefix_long dal_c_opt_link_compiler_rt dal_c_opt_value_sep "<auto|on|off>", "Set compiler-runtime compile contract macros" },
+    { dal_c_opt_prefix_long dal_c_opt_link_stdlib dal_c_opt_value_sep "<on|off>", "Toggle the start-files + default-libs compile contract bundle" },
+    { dal_c_opt_prefix_long dal_c_opt_link_crt dal_c_opt_value_sep "<on|off>", "Toggle the startup-file compile contract bundle" },
+    { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|off|on|full|thin>", "Override profile LTO policy for compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_omit_frame_pointer dal_c_opt_value_sep "<auto|on|off>", "Emit or omit frame-pointer omission flags" },
+    { dal_c_opt_prefix_long dal_c_opt_function_sections dal_c_opt_value_sep "<auto|on|off>", "Override function section splitting (`-ffunction-sections`)" },
+    { dal_c_opt_prefix_long dal_c_opt_data_sections dal_c_opt_value_sep "<auto|on|off>", "Override data section splitting (`-fdata-sections`)" },
+    { dal_c_opt_prefix_long dal_c_opt_unroll_loops dal_c_opt_value_sep "<auto|on|off>", "Emit or omit loop unrolling flags" },
+    { dal_c_opt_prefix_long dal_c_opt_unwind_tables dal_c_opt_value_sep "<auto|on|off>", "Override unwind table emission" },
+    { dal_c_opt_prefix_long dal_c_opt_async_unwind_tables dal_c_opt_value_sep "<auto|on|off>", "Override asynchronous unwind table emission" },
+    { dal_c_opt_prefix_long dal_c_opt_exceptions dal_c_opt_value_sep "<auto|on|off>", "Emit exception handling flags" },
+    { dal_c_opt_prefix_long dal_c_opt_merge_all_constants dal_c_opt_value_sep "<auto|on|off>", "Emit or omit Clang constant merging flags" },
+    { dal_c_opt_prefix_long dal_c_opt_stack_protector dal_c_opt_value_sep "<auto|on|off>", "Emit stack protector flags" },
+    { dal_c_opt_prefix_long dal_c_opt_target_arch dal_c_opt_value_sep "<arch>", "Target architecture sub-variant passed to compiler" },
+    { dal_c_opt_prefix_long dal_c_opt_target_tune dal_c_opt_value_sep "<cpu>", "Target CPU tuning passed to compiler" },
+    { dal_c_opt_prefix_long dal_c_opt_target_abi dal_c_opt_value_sep "<abi>", "Target ABI passed to compiler" },
+    { dal_c_opt_prefix_long dal_c_opt_sysroot dal_c_opt_value_sep "<path>", "System root directory" },
+    { dal_c_opt_prefix_long dal_c_opt_include dal_c_opt_value_sep "<path>", "Add include path (can be repeated)" },
+    { dal_c_opt_prefix_short dal_c_opt_include_short "<path>", "Add include path (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_isystem dal_c_opt_value_sep "<path>", "Add system include path (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_define dal_c_opt_value_sep "<macro>", "Define macro (can be repeated)" },
+    { dal_c_opt_prefix_short dal_c_opt_define_short "<macro>", "Define macro (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_undef dal_c_opt_value_sep "<macro>", "Undefine macro (can be repeated)" },
+    { dal_c_opt_prefix_short dal_c_opt_undef_short "<macro>", "Undefine macro (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_comp_args dal_c_opt_value_sep "\"...\"", "Additional compiler flags" },
+    { dal_c_opt_prefix_long dal_c_opt_args dal_c_opt_value_sep "\"...\"", "Additional compiler flags (context-aware)" },
+    { dal_c_opt_prefix_long dal_c_opt_file dal_c_opt_value_sep "<path>", "Add explicit source file (for example `.c` or `.S`) (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_exclude dal_c_opt_value_sep "<path>", "Exclude file or directory subtree (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_dh_file dal_c_opt_value_sep "<path>", "Add explicit `.dh` property file (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_loose_errors dal_c_opt_value_sep "<auto|never|warn|suppress>", "Relax warning policy" },
+    { dal_c_opt_prefix_long dal_c_opt_sample, "Select the project `samples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_example, "Select the project `examples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_test, "Select the project `tests` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_all, "Select all source files in " dal_c_dir_src "/" },
+    { dal_c_opt_prefix_long dal_c_opt_recur, "Apply command recursively to descendant `project.dh` projects" },
+    { dal_c_opt_all_alias, "Select all source files (alternative to " dal_c_opt_prefix_long dal_c_opt_all ")" },
+    { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide tool commands" },
+    { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact progress lines" },
+    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
+    { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
+    { dal_c_opt_prefix_long dal_c_opt_jobs dal_c_opt_value_sep "<n>", "Override check parallelism" },
+    { dal_c_opt_prefix_long dal_c_opt_dh dal_c_opt_value_sep "<path>", "Override DH path" },
+};
+#define dal_c_help_compile_check_options_count ((int)(sizeof(dal_c_help_compile_check_options) / sizeof(dal_c_help_compile_check_options[0])))
+
+static const dal_c_HelpOption dal_c_help_format_options[] = {
+    { dal_c_opt_prefix_long dal_c_opt_file dal_c_opt_value_sep "<path>", "Add explicit source file (for example `.c` or `.h`) (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_exclude dal_c_opt_value_sep "<path>", "Exclude file or directory subtree (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_dh_file dal_c_opt_value_sep "<path>", "Add explicit `.dh` property file (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_sample, "Select the project `samples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_example, "Select the project `examples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_test, "Select the project `tests` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_all, "Select all source files in " dal_c_dir_src "/" },
+    { dal_c_opt_prefix_long dal_c_opt_recur, "Apply command recursively to descendant `project.dh` projects" },
+    { dal_c_opt_all_alias, "Select all source files (alternative to " dal_c_opt_prefix_long dal_c_opt_all ")" },
+    { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide clang-format commands" },
+    { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact progress lines" },
+    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
+    { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
+    { dal_c_opt_prefix_long dal_c_opt_dh dal_c_opt_value_sep "<path>", "Override DH path" },
+};
+#define dal_c_help_format_options_count ((int)(sizeof(dal_c_help_format_options) / sizeof(dal_c_help_format_options[0])))
+
 static const char* const dal_c_help_build_examples[] = {
     dal_c_cmd_action_build " " dal_c_profile_dev,
     dal_c_cmd_action_build " " dal_c_profile_release " src/main.c",
@@ -1570,6 +1656,15 @@ static const char* const dal_c_help_build_examples[] = {
 };
 #define dal_c_help_build_examples_count ((int)(sizeof(dal_c_help_build_examples) / sizeof(dal_c_help_build_examples[0])))
 
+static const char* const dal_c_help_build_notes[] = {
+    "Default profile is `dev`; default compiler is `" dal_c_default_compiler "`; default C standard is `" dal_c_default_c_std "`.",
+    "`--output` is interpreted as an existing directory or as an output stem; platform artifact extensions are generated.",
+    "`--output-ext=<.ext>` overrides the generated extension for one artifact, for example `--shared --output _mad --output-ext=.pyd`.",
+    "`kind=lib` / `--lib` with `link-mode=auto` emits both static and shared libraries, so it cannot use one `--output-ext`.",
+    "Use structured `--link-dir`/`-L` plus `--link`/`-l` before falling back to raw `--link-args`.",
+};
+#define dal_c_help_build_notes_count ((int)(sizeof(dal_c_help_build_notes) / sizeof(dal_c_help_build_notes[0])))
+
 static const dal_c_HelpOption dal_c_help_lib_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep "<auto|static|shared>", "Select library artifact kind (default: " dal_c_default_linking ")" },
     { dal_c_opt_prefix_long dal_c_opt_static, "Alias for `" dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep dal_c_link_mode_static "`" },
@@ -1584,6 +1679,14 @@ static const char* const dal_c_help_lib_examples[] = {
 };
 #define dal_c_help_lib_examples_count ((int)(sizeof(dal_c_help_lib_examples) / sizeof(dal_c_help_lib_examples[0])))
 
+static const char* const dal_c_help_lib_notes[] = {
+    "`lib` is an alias for `build --lib`; prefer `build --lib` in new scripts.",
+    "It accepts the same compile, link, selection, output, profile, and diagnostic options as `build`.",
+    "`--static` emits only the static library; `--shared` emits only the shared library; `auto` emits both.",
+    "When both static and shared outputs are emitted, `--output` must be a directory or stem shared by both generated names.",
+};
+#define dal_c_help_lib_notes_count ((int)(sizeof(dal_c_help_lib_notes) / sizeof(dal_c_help_lib_notes[0])))
+
 static const dal_c_HelpOption dal_c_help_run_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_debug, "Launch debugger" },
     { dal_c_opt_prefix_long dal_c_opt_exec_args dal_c_opt_value_sep "\"...\"", "Runtime arguments" },
@@ -1597,6 +1700,14 @@ static const char* const dal_c_help_run_examples[] = {
     dal_c_cmd_action_run " " dal_c_opt_prefix_long dal_c_opt_debug " " dal_c_opt_prefix_long dal_c_opt_exec_args dal_c_opt_value_sep "\"arg1 arg2\"",
 };
 #define dal_c_help_run_examples_count ((int)(sizeof(dal_c_help_run_examples) / sizeof(dal_c_help_run_examples[0])))
+
+static const char* const dal_c_help_run_notes[] = {
+    "`run` first builds the executable target, then starts it once.",
+    "Accepted build-compatible groups: compiler/target/profile flags, `-I`/`-D`/`-U`, `--link-dir`, `--link`, `--link-args`, source selection, and `--output`.",
+    "`--args` means runtime arguments for `run`; use `--comp-args` when you need extra compiler flags.",
+    "Library/image/analysis artifact options are build-only and are not accepted by `run`.",
+};
+#define dal_c_help_run_notes_count ((int)(sizeof(dal_c_help_run_notes) / sizeof(dal_c_help_run_notes[0])))
 
 static const dal_c_HelpOption dal_c_help_test_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_debug, "Launch debugger" },
@@ -1618,6 +1729,14 @@ static const char* const dal_c_help_test_examples[] = {
 };
 #define dal_c_help_test_examples_count ((int)(sizeof(dal_c_help_test_examples) / sizeof(dal_c_help_test_examples[0])))
 
+static const char* const dal_c_help_test_notes[] = {
+    "`test` builds selected tests and runs the generated test executable once.",
+    "Accepted build-compatible groups: compiler/target/profile flags, `-I`/`-D`/`-U`, `--link-dir`, `--link`, `--link-args`, source selection, and `--output`.",
+    "`--sample`, `--example`, and `--test` select which target family is tested.",
+    "`--args` means test runtime arguments for `test`; use `--comp-args` for compiler flags.",
+};
+#define dal_c_help_test_notes_count ((int)(sizeof(dal_c_help_test_notes) / sizeof(dal_c_help_test_notes[0])))
+
 static const dal_c_HelpOption dal_c_help_deps_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
     { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
@@ -1629,6 +1748,13 @@ static const char* const dal_c_help_deps_examples[] = {
     dal_c_cmd_action_deps " " dal_c_opt_prefix_long dal_c_opt_verbose,
 };
 #define dal_c_help_deps_examples_count ((int)(sizeof(dal_c_help_deps_examples) / sizeof(dal_c_help_deps_examples[0])))
+
+static const char* const dal_c_help_deps_notes[] = {
+    "`deps` builds libraries declared in `project.dh`; it does not build the current project output.",
+    "It reads dependency blocks from `project.dh`; direct compile/link/source/output flags are not accepted by `deps`.",
+    "Generated dependency headers and libraries live under `lib/`; PCH files live in the active cache plan.",
+};
+#define dal_c_help_deps_notes_count ((int)(sizeof(dal_c_help_deps_notes) / sizeof(dal_c_help_deps_notes[0])))
 
 static const dal_c_HelpOption dal_c_help_toolchain_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_compiler dal_c_opt_value_sep "<name>", "Compiler to query (default: " dal_c_default_compiler ")" },
@@ -1648,6 +1774,65 @@ static const char* const dal_c_help_toolchain_examples[] = {
 };
 #define dal_c_help_toolchain_examples_count ((int)(sizeof(dal_c_help_toolchain_examples) / sizeof(dal_c_help_toolchain_examples[0])))
 
+static const char* const dal_c_help_toolchain_notes[] = {
+    "`toolchain` asks the compiler driver which implicit CRT/start/runtime/default libraries it would use.",
+    "Use it when freestanding or cross-target link options need to match the compiler's own contract.",
+};
+#define dal_c_help_toolchain_notes_count ((int)(sizeof(dal_c_help_toolchain_notes) / sizeof(dal_c_help_toolchain_notes[0])))
+
+static const dal_c_HelpOption dal_c_help_compile_db_options[] = {
+    { dal_c_opt_prefix_long dal_c_opt_compiler dal_c_opt_value_sep "<name>", "Compiler recorded in compile commands (default: " dal_c_default_compiler ")" },
+    { dal_c_opt_prefix_long dal_c_opt_std dal_c_opt_value_sep "<std>", "C standard recorded in compile commands (default: " dal_c_default_c_std ")" },
+    { dal_c_opt_prefix_long dal_c_opt_arch dal_c_opt_value_sep "<target>", "Target architecture" },
+    { dal_c_opt_prefix_long dal_c_opt_target dal_c_opt_value_sep "<triple>", "Target triple (alternative to " dal_c_opt_prefix_long dal_c_opt_arch ")" },
+    { dal_c_opt_prefix_long dal_c_opt_link_dsl dal_c_opt_value_sep "<on|off>", "Enable or disable automatic DSL/DH include integration (default: " dal_c_default_dsl_mode ")" },
+    { dal_c_opt_prefix_long dal_c_opt_hosted, "Use hosted compile semantics (default: " dal_c_default_compile_env ")" },
+    { dal_c_opt_prefix_long dal_c_opt_freestanding, "Use freestanding compile semantics (`-ffreestanding`)" },
+    { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|off|on|full|thin>", "Record profile LTO compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_omit_frame_pointer dal_c_opt_value_sep "<auto|on|off>", "Record frame-pointer compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_function_sections dal_c_opt_value_sep "<auto|on|off>", "Record function section compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_data_sections dal_c_opt_value_sep "<auto|on|off>", "Record data section compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_unroll_loops dal_c_opt_value_sep "<auto|on|off>", "Record loop unrolling compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_unwind_tables dal_c_opt_value_sep "<auto|on|off>", "Record unwind table compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_async_unwind_tables dal_c_opt_value_sep "<auto|on|off>", "Record asynchronous unwind table compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_exceptions dal_c_opt_value_sep "<auto|on|off>", "Record exception handling compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_merge_all_constants dal_c_opt_value_sep "<auto|on|off>", "Record Clang constant merging compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_stack_protector dal_c_opt_value_sep "<auto|on|off>", "Record stack protector compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_target_arch dal_c_opt_value_sep "<arch>", "Target architecture sub-variant recorded in compile commands" },
+    { dal_c_opt_prefix_long dal_c_opt_target_tune dal_c_opt_value_sep "<cpu>", "Target CPU tuning recorded in compile commands" },
+    { dal_c_opt_prefix_long dal_c_opt_target_abi dal_c_opt_value_sep "<abi>", "Target ABI recorded in compile commands" },
+    { dal_c_opt_prefix_long dal_c_opt_sysroot dal_c_opt_value_sep "<path>", "System root directory" },
+    { dal_c_opt_prefix_long dal_c_opt_include dal_c_opt_value_sep "<path>", "Add include path (can be repeated)" },
+    { dal_c_opt_prefix_short dal_c_opt_include_short "<path>", "Add include path (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_isystem dal_c_opt_value_sep "<path>", "Add system include path (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_define dal_c_opt_value_sep "<macro>", "Define macro (can be repeated)" },
+    { dal_c_opt_prefix_short dal_c_opt_define_short "<macro>", "Define macro (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_undef dal_c_opt_value_sep "<macro>", "Undefine macro (can be repeated)" },
+    { dal_c_opt_prefix_short dal_c_opt_undef_short "<macro>", "Undefine macro (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_comp_args dal_c_opt_value_sep "\"...\"", "Additional compiler flags recorded verbatim" },
+    { dal_c_opt_prefix_long dal_c_opt_args dal_c_opt_value_sep "\"...\"", "Additional compiler flags recorded verbatim (context-aware)" },
+    { dal_c_opt_prefix_long dal_c_opt_file dal_c_opt_value_sep "<path>", "Add explicit source file (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_output dal_c_opt_value_sep "<path>", "Write compilation database to this JSON file path" },
+    { dal_c_opt_prefix_short dal_c_opt_output_short "<path>", "Write compilation database to this JSON file path (alternative)" },
+    { dal_c_opt_prefix_long dal_c_opt_remove, "Remove generated compilation database" },
+    { dal_c_opt_prefix_long dal_c_opt_exclude dal_c_opt_value_sep "<path>", "Exclude file or directory subtree (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_dh_file dal_c_opt_value_sep "<path>", "Add explicit `.dh` property file (can be repeated)" },
+    { dal_c_opt_prefix_long dal_c_opt_loose_errors dal_c_opt_value_sep "<auto|never|warn|suppress>", "Record relaxed warning policy" },
+    { dal_c_opt_prefix_long dal_c_opt_sample, "Select the project `samples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_example, "Select the project `examples` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_test, "Select the project `tests` target family" },
+    { dal_c_opt_prefix_long dal_c_opt_all, "Select all source files in " dal_c_dir_src "/" },
+    { dal_c_opt_prefix_long dal_c_opt_recur, "Apply command recursively to descendant `project.dh` projects" },
+    { dal_c_opt_all_alias, "Select all source files (alternative to " dal_c_opt_prefix_long dal_c_opt_all ")" },
+    { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide generated command lines" },
+    { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact progress lines" },
+    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
+    { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
+    { dal_c_opt_prefix_long dal_c_opt_jobs dal_c_opt_value_sep "<n>", "Override compile-db generation parallelism" },
+    { dal_c_opt_prefix_long dal_c_opt_dh dal_c_opt_value_sep "<path>", "Override DH path" },
+};
+#define dal_c_help_compile_db_options_count ((int)(sizeof(dal_c_help_compile_db_options) / sizeof(dal_c_help_compile_db_options[0])))
+
 static const char* const dal_c_help_compile_db_examples[] = {
     dal_c_cmd_action_compile_db,
     dal_c_cmd_action_compile_db " " dal_c_opt_prefix_long dal_c_opt_remove,
@@ -1657,13 +1842,12 @@ static const char* const dal_c_help_compile_db_examples[] = {
 };
 #define dal_c_help_compile_db_examples_count ((int)(sizeof(dal_c_help_compile_db_examples) / sizeof(dal_c_help_compile_db_examples[0])))
 
-static const dal_c_HelpOption dal_c_help_check_options[] = {
-    { dal_c_opt_prefix_long dal_c_opt_progress "=show|hide", "Show or hide compact check progress lines" },
-    { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
-    { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide tool commands" },
-    { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
+static const char* const dal_c_help_compile_db_notes[] = {
+    "`compile-db` writes `compile_commands.json`; it does not compile, link, run, or emit artifacts.",
+    "`--output` names the JSON file path. `--output-ext`, link inputs, linker scripts, image, and emit-artifact flags are not accepted.",
+    "Compiler, preprocessor, target, DH, and source-selection options are accepted because they change compile commands.",
 };
-#define dal_c_help_check_options_count ((int)(sizeof(dal_c_help_check_options) / sizeof(dal_c_help_check_options[0])))
+#define dal_c_help_compile_db_notes_count ((int)(sizeof(dal_c_help_compile_db_notes) / sizeof(dal_c_help_compile_db_notes[0])))
 
 static const char* const dal_c_help_syntax_examples[] = {
     dal_c_cmd_action_syntax " " dal_c_profile_dev,
@@ -1672,6 +1856,13 @@ static const char* const dal_c_help_syntax_examples[] = {
 };
 #define dal_c_help_syntax_examples_count ((int)(sizeof(dal_c_help_syntax_examples) / sizeof(dal_c_help_syntax_examples[0])))
 
+static const char* const dal_c_help_syntax_notes[] = {
+    "`syntax` runs compiler syntax-only checks and never links.",
+    "Compiler, preprocessor, target, DH, and source-selection options are accepted.",
+    "Output, link input, linker, library kind, image, and emit-artifact options are not accepted.",
+};
+#define dal_c_help_syntax_notes_count ((int)(sizeof(dal_c_help_syntax_notes) / sizeof(dal_c_help_syntax_notes[0])))
+
 static const char* const dal_c_help_tidy_examples[] = {
     dal_c_cmd_action_tidy " " dal_c_profile_dev,
     dal_c_cmd_action_tidy " " dal_c_profile_dev " src/main.c",
@@ -1679,12 +1870,26 @@ static const char* const dal_c_help_tidy_examples[] = {
 };
 #define dal_c_help_tidy_examples_count ((int)(sizeof(dal_c_help_tidy_examples) / sizeof(dal_c_help_tidy_examples[0])))
 
+static const char* const dal_c_help_tidy_notes[] = {
+    "`tidy` runs clang-tidy using dh-c's compile command resolution and never links.",
+    "Compiler, preprocessor, target, DH, and source-selection options are accepted.",
+    "Output, link input, linker, library kind, image, and emit-artifact options are not accepted.",
+};
+#define dal_c_help_tidy_notes_count ((int)(sizeof(dal_c_help_tidy_notes) / sizeof(dal_c_help_tidy_notes[0])))
+
 static const char* const dal_c_help_format_examples[] = {
     dal_c_cmd_action_format,
     dal_c_cmd_action_format " src/main.c",
     dal_c_cmd_action_format " " dal_c_opt_prefix_long dal_c_opt_all,
 };
 #define dal_c_help_format_examples_count ((int)(sizeof(dal_c_help_format_examples) / sizeof(dal_c_help_format_examples[0])))
+
+static const char* const dal_c_help_format_notes[] = {
+    "`format` rewrites selected source/header files in place through clang-format.",
+    "Only source selection, recursion, DH discovery, and output-visibility options are accepted.",
+    "Compiler, preprocessor, linker, output artifact, profile-tuning, and runtime options are not accepted.",
+};
+#define dal_c_help_format_notes_count ((int)(sizeof(dal_c_help_format_notes) / sizeof(dal_c_help_format_notes[0])))
 
 static const dal_c_HelpOption dal_c_help_clean_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_cache, "Clean only cache" },
@@ -1710,6 +1915,12 @@ static const char* const dal_c_help_clean_examples[] = {
 };
 #define dal_c_help_clean_examples_count ((int)(sizeof(dal_c_help_clean_examples) / sizeof(dal_c_help_clean_examples[0])))
 
+static const char* const dal_c_help_clean_notes[] = {
+    "`clean` removes generated build products. With `--recur`, it also cleans descendant projects.",
+    "`--dsl` includes the DH/DSL dependency boundary; `--self` cleans only the dh-c self boundary.",
+};
+#define dal_c_help_clean_notes_count ((int)(sizeof(dal_c_help_clean_notes) / sizeof(dal_c_help_clean_notes[0])))
+
 static const char* const dal_c_help_build_dsl_examples[] = {
     dal_c_cmd_action_build " " dal_c_opt_prefix_long dal_c_opt_dsl,
     dal_c_cmd_action_build " " dal_c_profile_release " " dal_c_opt_prefix_long dal_c_opt_dsl,
@@ -1728,6 +1939,13 @@ static const char* const dal_c_help_clean_dsl_examples[] = {
     dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_dsl " " dal_c_opt_prefix_long dal_c_opt_cache,
 };
 #define dal_c_help_clean_dsl_examples_count ((int)(sizeof(dal_c_help_clean_dsl_examples) / sizeof(dal_c_help_clean_dsl_examples[0])))
+
+static const char* const dal_c_help_dsl_notes[] = {
+    "Compatibility alias. Prefer the canonical command form with `--dsl` in new scripts.",
+    "`--dsl` includes the DH/DSL boundary before the requested project action.",
+    "The canonical command owns the option contract: `build --dsl`, `test --dsl`, or `clean --dsl`.",
+};
+#define dal_c_help_dsl_notes_count ((int)(sizeof(dal_c_help_dsl_notes) / sizeof(dal_c_help_dsl_notes[0])))
 
 static const dal_c_HelpOption dal_c_help_self_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_commands "=show|hide", "Show or hide compiler/link commands" },
@@ -1749,6 +1967,12 @@ static const char* const dal_c_help_clean_self_examples[] = {
 };
 #define dal_c_help_clean_self_examples_count ((int)(sizeof(dal_c_help_clean_self_examples) / sizeof(dal_c_help_clean_self_examples[0])))
 
+static const char* const dal_c_help_self_notes[] = {
+    "Compatibility alias. Prefer `build --self` or `clean --self` in new scripts.",
+    "The self boundary is dh-c itself and does not accept project source, output, link, or DH options.",
+};
+#define dal_c_help_self_notes_count ((int)(sizeof(dal_c_help_self_notes) / sizeof(dal_c_help_self_notes[0])))
+
 static const dal_c_HelpOption dal_c_help_global_options[] = {
     { dal_c_opt_prefix_short dal_c_opt_help_short ", " dal_c_opt_prefix_long dal_c_opt_help, "Show this help message" },
     { dal_c_opt_prefix_short dal_c_opt_version_short ", " dal_c_opt_prefix_long dal_c_opt_version, "Show version information" },
@@ -1769,114 +1993,208 @@ static const dal_c_HelpProfile dal_c_help_profiles[] = {
 #define dal_c_help_profiles_count ((int)(sizeof(dal_c_help_profiles) / sizeof(dal_c_help_profiles[0])))
 
 static const dal_c_HelpCmd dal_c_help_cmds[] = {
-    { dal_c_cmd_action_build,
-      "Build project, path, library target, or self boundary",
-      "[profile] [path] [options]",
-      dal_c_help_build_options, dal_c_help_build_options_count,
-      dal_c_help_build_examples, dal_c_help_build_examples_count,
-      false, true },
-    { dal_c_cmd_action_lib,
-      "Compatibility alias for `build --lib`",
-      "[profile] [path] [options]",
-      dal_c_help_lib_options, dal_c_help_lib_options_count,
-      dal_c_help_lib_examples, dal_c_help_lib_examples_count,
-      true, true },
-    { dal_c_cmd_action_run,
-      "Build and run project, file, or declared target-root path",
-      "[profile] [path] [options]",
-      dal_c_help_run_options, dal_c_help_run_options_count,
-      dal_c_help_run_examples, dal_c_help_run_examples_count,
-      true, true },
-    { dal_c_cmd_action_test,
-      "Build and run tests",
-      "[profile] [path] [options]",
-      dal_c_help_test_options, dal_c_help_test_options_count,
-      dal_c_help_test_examples, dal_c_help_test_examples_count,
-      true, true },
-    { dal_c_cmd_action_deps,
-      "Build dependencies from " dal_c_file_detector_project,
-      "[profile] [options]",
-      dal_c_help_deps_options, dal_c_help_deps_options_count,
-      dal_c_help_deps_examples, dal_c_help_deps_examples_count,
-      true, true },
-    { dal_c_cmd_action_toolchain,
-      "Query compiler driver start files, runtime archive, and default link libraries",
-      "[" dal_c_toolchain_query_all "|" dal_c_toolchain_query_start_files "|" dal_c_toolchain_query_compiler_rt "|" dal_c_toolchain_query_default_libs "|" dal_c_toolchain_query_crt "|" dal_c_toolchain_query_stdlib "|" dal_c_toolchain_query_libc "|" dal_c_toolchain_query_raw_link "] [options]",
-      dal_c_help_toolchain_options, dal_c_help_toolchain_options_count,
-      dal_c_help_toolchain_examples, dal_c_help_toolchain_examples_count,
-      false, true },
-    { dal_c_cmd_action_compile_db,
-      "Write a clang-compatible compilation database without building",
-      "[profile] [path] [options]",
-      dal_c_help_build_options, dal_c_help_build_options_count,
-      dal_c_help_compile_db_examples, dal_c_help_compile_db_examples_count,
-      false, true },
-    { dal_c_cmd_action_syntax,
-      "Run compiler syntax-only checks without linking",
-      "[profile] [path] [options]",
-      dal_c_help_build_options, dal_c_help_build_options_count,
-      dal_c_help_syntax_examples, dal_c_help_syntax_examples_count,
-      false, true },
-    { dal_c_cmd_action_tidy,
-      "Run clang-tidy using dh-c's compilation database",
-      "[profile] [path] [options]",
-      dal_c_help_build_options, dal_c_help_build_options_count,
-      dal_c_help_tidy_examples, dal_c_help_tidy_examples_count,
-      false, true },
-    { dal_c_cmd_action_format,
-      "Run clang-format in-place on selected source files",
-      "[profile] [path] [options]",
-      dal_c_help_build_options, dal_c_help_build_options_count,
-      dal_c_help_format_examples, dal_c_help_format_examples_count,
-      false, true },
-    { dal_c_cmd_action_clean,
-      "Clean build artifacts",
-      "[options]",
-      dal_c_help_clean_options, dal_c_help_clean_options_count,
-      dal_c_help_clean_examples, dal_c_help_clean_examples_count,
-      false, true },
-    { dal_c_cmd_action_build_dsl,
-      "Compatibility alias for `build --dsl`",
-      "[profile] [options]",
-      dal_c_help_build_options, dal_c_help_build_options_count,
-      dal_c_help_build_dsl_examples, dal_c_help_build_dsl_examples_count,
-      false, true },
-    { dal_c_cmd_action_test_dsl,
-      "Compatibility alias for `test --dsl`",
-      "[profile] [path] [options]",
-      dal_c_help_test_options, dal_c_help_test_options_count,
-      dal_c_help_test_dsl_examples, dal_c_help_test_dsl_examples_count,
-      true, true },
-    { dal_c_cmd_action_clean_dsl,
-      "Compatibility alias for `clean --dsl`",
-      "[options]",
-      dal_c_help_clean_dsl_options, dal_c_help_clean_dsl_options_count,
-      dal_c_help_clean_dsl_examples, dal_c_help_clean_dsl_examples_count,
-      false, true },
-    { dal_c_cmd_action_build_self,
-      "Compatibility alias for `build --self`",
-      "[profile] [options]",
-      dal_c_help_self_options, dal_c_help_self_options_count,
-      dal_c_help_build_self_examples, dal_c_help_build_self_examples_count,
-      false, true },
-    { dal_c_cmd_action_clean_self,
-      "Compatibility alias for `clean --self`",
-      "[options]",
-      dal_c_help_self_options, dal_c_help_self_options_count,
-      dal_c_help_clean_self_examples, dal_c_help_clean_self_examples_count,
-      false, true },
-    { dal_c_cmd_action_workspace,
-      "Reserved scaffold command",
-      "[path]",
-      NULL, 0,
-      NULL, 0,
-      false, false },
-    { dal_c_cmd_action_project,
-      "Reserved scaffold command",
-      "[name]",
-      NULL, 0,
-      NULL, 0,
-      false, false },
+    {
+        .name = dal_c_cmd_action_build,
+        .description = "Build project, path, library target, or self boundary",
+        .usage = "[profile] [path] [options]",
+        .options = dal_c_help_build_options,
+        .option_count = dal_c_help_build_options_count,
+        .examples = dal_c_help_build_examples,
+        .example_count = dal_c_help_build_examples_count,
+        .notes = dal_c_help_build_notes,
+        .note_count = dal_c_help_build_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_lib,
+        .description = "Compatibility alias for `build --lib`",
+        .usage = "[profile] [path] [options]",
+        .options = dal_c_help_lib_options,
+        .option_count = dal_c_help_lib_options_count,
+        .examples = dal_c_help_lib_examples,
+        .example_count = dal_c_help_lib_examples_count,
+        .notes = dal_c_help_lib_notes,
+        .note_count = dal_c_help_lib_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_run,
+        .description = "Build and run project, file, or declared target-root path",
+        .usage = "[profile] [path] [options]",
+        .options = dal_c_help_run_options,
+        .option_count = dal_c_help_run_options_count,
+        .examples = dal_c_help_run_examples,
+        .example_count = dal_c_help_run_examples_count,
+        .notes = dal_c_help_run_notes,
+        .note_count = dal_c_help_run_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_test,
+        .description = "Build and run tests",
+        .usage = "[profile] [path] [options]",
+        .options = dal_c_help_test_options,
+        .option_count = dal_c_help_test_options_count,
+        .examples = dal_c_help_test_examples,
+        .example_count = dal_c_help_test_examples_count,
+        .notes = dal_c_help_test_notes,
+        .note_count = dal_c_help_test_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_deps,
+        .description = "Build dependencies from " dal_c_file_detector_project,
+        .usage = "[profile] [options]",
+        .options = dal_c_help_deps_options,
+        .option_count = dal_c_help_deps_options_count,
+        .examples = dal_c_help_deps_examples,
+        .example_count = dal_c_help_deps_examples_count,
+        .notes = dal_c_help_deps_notes,
+        .note_count = dal_c_help_deps_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_toolchain,
+        .description = "Query compiler driver start files, runtime archive, and default link libraries",
+        .usage = "[" dal_c_toolchain_query_all "|" dal_c_toolchain_query_start_files "|" dal_c_toolchain_query_compiler_rt "|" dal_c_toolchain_query_default_libs "|" dal_c_toolchain_query_crt "|" dal_c_toolchain_query_stdlib "|" dal_c_toolchain_query_libc "|" dal_c_toolchain_query_raw_link "] [options]",
+        .options = dal_c_help_toolchain_options,
+        .option_count = dal_c_help_toolchain_options_count,
+        .examples = dal_c_help_toolchain_examples,
+        .example_count = dal_c_help_toolchain_examples_count,
+        .notes = dal_c_help_toolchain_notes,
+        .note_count = dal_c_help_toolchain_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_compile_db,
+        .description = "Write a clang-compatible compilation database without building",
+        .usage = "[profile] [path] [options]",
+        .options = dal_c_help_compile_db_options,
+        .option_count = dal_c_help_compile_db_options_count,
+        .examples = dal_c_help_compile_db_examples,
+        .example_count = dal_c_help_compile_db_examples_count,
+        .notes = dal_c_help_compile_db_notes,
+        .note_count = dal_c_help_compile_db_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_syntax,
+        .description = "Run compiler syntax-only checks without linking",
+        .usage = "[profile] [path] [options]",
+        .options = dal_c_help_compile_check_options,
+        .option_count = dal_c_help_compile_check_options_count,
+        .examples = dal_c_help_syntax_examples,
+        .example_count = dal_c_help_syntax_examples_count,
+        .notes = dal_c_help_syntax_notes,
+        .note_count = dal_c_help_syntax_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_tidy,
+        .description = "Run clang-tidy using dh-c's compilation database",
+        .usage = "[profile] [path] [options]",
+        .options = dal_c_help_compile_check_options,
+        .option_count = dal_c_help_compile_check_options_count,
+        .examples = dal_c_help_tidy_examples,
+        .example_count = dal_c_help_tidy_examples_count,
+        .notes = dal_c_help_tidy_notes,
+        .note_count = dal_c_help_tidy_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_format,
+        .description = "Run clang-format in-place on selected source files",
+        .usage = "[profile] [path] [options]",
+        .options = dal_c_help_format_options,
+        .option_count = dal_c_help_format_options_count,
+        .examples = dal_c_help_format_examples,
+        .example_count = dal_c_help_format_examples_count,
+        .notes = dal_c_help_format_notes,
+        .note_count = dal_c_help_format_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_clean,
+        .description = "Clean build artifacts",
+        .usage = "[options]",
+        .options = dal_c_help_clean_options,
+        .option_count = dal_c_help_clean_options_count,
+        .examples = dal_c_help_clean_examples,
+        .example_count = dal_c_help_clean_examples_count,
+        .notes = dal_c_help_clean_notes,
+        .note_count = dal_c_help_clean_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_build_dsl,
+        .description = "Compatibility alias for `build --dsl`",
+        .usage = "[profile] [options]",
+        .options = dal_c_help_build_options,
+        .option_count = dal_c_help_build_options_count,
+        .examples = dal_c_help_build_dsl_examples,
+        .example_count = dal_c_help_build_dsl_examples_count,
+        .notes = dal_c_help_dsl_notes,
+        .note_count = dal_c_help_dsl_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_test_dsl,
+        .description = "Compatibility alias for `test --dsl`",
+        .usage = "[profile] [path] [options]",
+        .options = dal_c_help_test_options,
+        .option_count = dal_c_help_test_options_count,
+        .examples = dal_c_help_test_dsl_examples,
+        .example_count = dal_c_help_test_dsl_examples_count,
+        .notes = dal_c_help_dsl_notes,
+        .note_count = dal_c_help_dsl_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_clean_dsl,
+        .description = "Compatibility alias for `clean --dsl`",
+        .usage = "[options]",
+        .options = dal_c_help_clean_dsl_options,
+        .option_count = dal_c_help_clean_dsl_options_count,
+        .examples = dal_c_help_clean_dsl_examples,
+        .example_count = dal_c_help_clean_dsl_examples_count,
+        .notes = dal_c_help_dsl_notes,
+        .note_count = dal_c_help_dsl_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_build_self,
+        .description = "Compatibility alias for `build --self`",
+        .usage = "[profile] [options]",
+        .options = dal_c_help_self_options,
+        .option_count = dal_c_help_self_options_count,
+        .examples = dal_c_help_build_self_examples,
+        .example_count = dal_c_help_build_self_examples_count,
+        .notes = dal_c_help_self_notes,
+        .note_count = dal_c_help_self_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_clean_self,
+        .description = "Compatibility alias for `clean --self`",
+        .usage = "[options]",
+        .options = dal_c_help_self_options,
+        .option_count = dal_c_help_self_options_count,
+        .examples = dal_c_help_clean_self_examples,
+        .example_count = dal_c_help_clean_self_examples_count,
+        .notes = dal_c_help_self_notes,
+        .note_count = dal_c_help_self_notes_count,
+        .implemented = true,
+    },
+    {
+        .name = dal_c_cmd_action_workspace,
+        .description = "Reserved scaffold command",
+        .usage = "[path]",
+    },
+    {
+        .name = dal_c_cmd_action_project,
+        .description = "Reserved scaffold command",
+        .usage = "[name]",
+    },
 };
 #define dal_c_help_cmds_count ((int)(sizeof(dal_c_help_cmds) / sizeof(dal_c_help_cmds[0])))
 

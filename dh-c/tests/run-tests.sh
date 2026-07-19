@@ -223,6 +223,20 @@ assert_contains "$LAST_OUTPUT" "dasae-headers path:" "Version output did not con
 invoke_external "0" "$repo_root" "$cli_exe" --help
 assert_contains "$LAST_OUTPUT" "COMMANDS:" "Help output did not list commands"
 assert_contains "$LAST_OUTPUT" "RESERVED COMMANDS:" "Help output did not describe reserved commands"
+assert_contains "$LAST_OUTPUT" "COMMAND OPTION BOUNDARIES:" "Help output did not describe command option boundaries"
+assert_contains "$LAST_OUTPUT" "PROJECT.DH KEYS:" "Help output did not describe project.dh keys"
+
+invoke_external "0" "$repo_root" "$cli_exe" help build
+assert_contains "$LAST_OUTPUT" "USAGE:" "Command help did not show usage"
+assert_contains "$LAST_OUTPUT" "CONTRACT:" "Command help did not show contract"
+assert_contains "$LAST_OUTPUT" "--output-ext" "Build help did not describe explicit output extension"
+
+invoke_external "0" "$repo_root" "$cli_exe" syntax --help
+assert_contains "$LAST_OUTPUT" "never links" "Syntax help did not describe non-linking contract"
+assert_contains "$LAST_OUTPUT" "not accepted" "Syntax help did not describe unavailable options"
+
+invoke_external "1" "$repo_root" "$cli_exe" help no-such-command
+assert_contains "$LAST_OUTPUT" "Unknown help topic" "Unknown help topic did not fail clearly"
 
 invoke_external "1" "$repo_root" "$cli_exe" workspace demo
 assert_contains "$LAST_OUTPUT" "Not implemented: workspace" "Reserved workspace command did not report current status"

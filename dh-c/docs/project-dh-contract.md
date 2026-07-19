@@ -24,6 +24,7 @@ no-dsl=<true|false>
 pch=<auto|off|path>
 pch-exclude=<header>
 self-root=<path>
+link-dir=<path>
 ```
 
 Meaning:
@@ -33,6 +34,7 @@ Meaning:
 - `no-dsl=` disables automatic `dh` linking for that project or target
 - `pch=` and `pch-exclude=` control the PCH contract
 - repeated `self-root=` entries declare reusable self-project source roots
+- repeated `link-dir=` entries add library search directories for linked outputs
 
 ### Target-root blocks
 
@@ -204,6 +206,25 @@ Examples:
 - `build cmd/runner1` -> output name `runner1`
 - `build plugins/render` with `kind=shared-lib` -> output name `render`
 - `build src/main.c` -> output name `main`
+
+`output=` in `.dh` is an output name, not a filename with a required extension.
+The selected target kind generates its own platform extension:
+
+- executable: `.exe` on Windows, no extra suffix on POSIX
+- static library: `.lib` on Windows, `lib*.a` on POSIX
+- shared library: `.dll` on Windows, `lib*.so` on POSIX
+- image, preprocessed, and assembly outputs: `.bin`, `.i`, and `.s`
+
+CLI `--output` accepts either an output stem or an output directory. A path that
+ends with a separator or names an existing directory is treated as a directory;
+the resolved output name is placed inside it. Other path-like values are treated
+as stems and receive the target extension. For `kind=lib`, one stem produces both
+the static and shared library outputs. Values that already name a single library
+artifact such as `.lib`, `.dll`, `.a`, or `.so` are rejected for `kind=lib`.
+Use `--output-ext=<.ext>` with a single artifact target such as `--shared` when
+the default generated extension is not the desired loadable module suffix.
+Use `--link-dir <path>` or `-L<path>` with `--link <name>`/`-l<name>` for
+structured library search paths instead of raw `--link-args="-L... -l..."`.
 
 ## Resolution Rules
 
