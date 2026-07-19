@@ -35,12 +35,14 @@ fn_((thrd_Select_fixed(TypeInfo type, u_S$thrd_Select_Arm$raw arms))(thrd_Select
     arms.type = thrd_Select_Arm_typeInfo(type);
     return (thrd_Select){
         .arms = ArrList_fixed(arms.as_raw),
+        .next_idx = 0,
     };
 };
 fn_((thrd_Select_init(TypeInfo type, mem_Alctr gpa, usize cap))(mem_E$thrd_Select) $scope) {
     let arm_type = thrd_Select_Arm_typeInfo(type);
     return_ok((thrd_Select){
         .arms = try_(ArrList_init(arm_type, gpa, cap)),
+        .next_idx = 0,
     });
 } $unscoped(fn);
 fn_((thrd_Select_fini(thrd_Select* self, TypeInfo type, mem_Alctr gpa))(void)) {
@@ -55,6 +57,7 @@ fn_((thrd_Select_from(TypeInfo type, u_S$thrd_Select_Arm$raw arms))(thrd_Select)
             .cap = arms.len,
             .type = $typing(arms.type),
         },
+        .next_idx = 0,
     };
 };
 
@@ -102,7 +105,13 @@ fn_((thrd_Select_pollMut(
 ))(O$P$thrd_Select_Arm$raw) $scope) {
     claim_assert_nonnull(self);
     let arms = ArrList_itemsMut(self->arms, thrd_Select_Arm_typeInfo(type));
-    for_(($us(arms))(case_ref)) {
+    if (arms.len == 0) {
+        return_none();
+    }
+    let start_idx = self->next_idx % arms.len;
+    for_(($r(0, arms.len))(offset)) {
+        let idx = (start_idx + offset) % arms.len;
+        let case_ref = u_atS(arms, idx);
         let case_ptr = as$(thrd_Select_Arm$raw*)(case_ref.raw);
         let result = (u_P$raw){
             .raw = as$(P$raw)(as$(u8*)(case_ptr) + case_ptr->commit_offset),
@@ -118,6 +127,7 @@ fn_((thrd_Select_pollMut(
             )) {
             continue;
         } else {
+            self->next_idx = (idx + 1) % arms.len;
             return_some(case_ptr);
         }
     } $end(for);

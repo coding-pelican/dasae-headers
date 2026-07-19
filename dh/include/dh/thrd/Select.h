@@ -104,8 +104,15 @@ $extern fn_((thrd_Select_Arm_into(thrd_Select_Arm$raw* self, u_V$raw ret_mem))(u
 $extern fn_((thrd_Select_Arm_take(thrd_Select_Arm$raw* self, u_V$raw ret_mem))(u_V$raw));
 #define T_use_thrd_Select_Arm_take$(_T...) __gen__T_use_thrd_Select_Arm_take$(_T)
 
+/*
+ * Select is a single-owner wait composition object, similar to Go select or
+ * Tokio select!. Its watched operations may be woken by other threads, but the
+ * Select object itself must not be watched, polled, waited, or finalized
+ * concurrently.
+ */
 typedef struct thrd_Select {
     var_(arms, ArrList);
+    var_(next_idx, usize);
 } thrd_Select;
 T_use_E$($set(mem_E)(thrd_Select));
 
