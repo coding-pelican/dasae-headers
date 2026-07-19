@@ -17,6 +17,7 @@ extern "C" {
 #include "io-evtd/reactor.h"
 
 #include "io-evtd/Mpxr.h"
+#include "io-evtd/Batch.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */
