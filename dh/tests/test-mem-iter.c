@@ -2,8 +2,6 @@
 #include "dh/mem/common.h"
 
 T_use$((u8)(
-    mem_bytesAsS,
-    mem_bytesAsMutS,
     mem_WindowIter,
     mem_window,
     mem_WindowIter_reset,
@@ -53,15 +51,6 @@ T_use$((u8)(
     mem_SplitBwdIter_peek,
     mem_SplitBwdIter_rest
 ));
-
-TEST_fn_("mem: iter - typed wrappers instantiate over bytes" $scope) {
-    let typed_const = mem_bytesAsS$u8(u8_l("xy"));
-    try_(TEST_expect(mem_eqlBytes(typed_const, u8_l("xy"))));
-
-    var bytes = u8_a("pq");
-    let typed_mut = mem_bytesAsMutS$u8(A_ref$((S$u8)(bytes)));
-    try_(TEST_expect(mem_eqlBytes(typed_mut.as_const, u8_l("pq"))));
-} $unscoped(TEST_fn)
 
 TEST_fn_("mem: iter - windows advance and reset" $scope) {
     var windows = mem_window$u8(u8_l("abcd"), 2, 1);

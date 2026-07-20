@@ -3,8 +3,6 @@
 #include "dh/mem/common.h"
 
 $attr($inline_always)
-$static fn_((mem_Alctr__emptyAddr(mem_Align align))(u8*));
-$attr($inline_always)
 $static fn_((mem_Alctr__zeroTail(u8* ptr, usize old_len, usize new_len))(void));
 
 let_(mem_Alctr_VTbl_noop, mem_Alctr_VTbl) = {
@@ -33,10 +31,6 @@ let_(mem_Alctr_failing, mem_Alctr) = {
     .vtbl = &mem_Alctr_VTbl_failing,
 };
 
-fn_((mem_Alctr__emptyAddr(mem_Align align))(u8*)) {
-    return intToPtr$((u8*)(usize_limit_max & ~(mem_log2ToAlign(align) - 1)));
-};
-
 fn_((mem_Alctr__zeroTail(u8* ptr, usize old_len, usize new_len))(void)) {
     if (old_len < new_len) {
         mem_set0Bytes(P_slice$((S$u8)(ptr)($r(old_len, new_len))));
@@ -46,7 +40,7 @@ fn_((mem_Alctr__zeroTail(u8* ptr, usize old_len, usize new_len))(void)) {
 fn_((mem_Alctr_rawAlloc($traced mem_Alctr self, usize len, mem_Align align))(O$P$u8) $scope) {
     self = mem_Alctr_ensureValid(self);
     if (len == 0) {
-        let addr = mem_Alctr__emptyAddr(align);
+        let addr = intToPtr$((u8*)mem_emptyAddr(align));
         mem_AlcTrace_registerAlloc($tracing addr, len);
         return_some(addr);
     }
@@ -72,7 +66,7 @@ fn_((mem_Alctr_rawRemap($traced mem_Alctr self, S$u8 buf, mem_Align buf_align, u
     self = mem_Alctr_ensureValid(self);
     if (new_len == 0) {
         mem_Alctr_rawFree($trace self, buf, buf_align);
-        let addr = mem_Alctr__emptyAddr(buf_align);
+        let addr = intToPtr$((u8*)mem_emptyAddr(buf_align));
         mem_AlcTrace_registerRemap($tracing buf.ptr, addr, new_len);
         return_some(addr);
     }
@@ -92,7 +86,7 @@ fn_((mem_Alctr_rawFree($traced mem_Alctr self, S$u8 buf, mem_Align buf_align))(v
 
 fn_((mem_Alctr_create($traced mem_Alctr self, TypeInfo type))(mem_E$u_P$raw) $scope) {
     if (type.size == 0) return_ok({
-        .raw = u_anyP(mem_Alctr__emptyAddr(type.log2_align)).raw,
+        .raw = u_anyP(intToPtr$((u8*)mem_emptyAddr(type.log2_align))).raw,
         .type = type,
     });
     let mem = orelse_((mem_Alctr_rawAlloc($tracing self, type.size, type.log2_align))(
@@ -117,7 +111,7 @@ fn_((mem_Alctr_clone($traced mem_Alctr self, u_P_const$raw ptr))(mem_E$u_P$raw) 
 } $unscoped(fn);
 
 fn_((mem_Alctr_allocBytes($traced mem_Alctr self, usize bytes_count))(mem_E$S$u8) $scope) {
-    if (bytes_count == 0) return_ok(P_prefix$((S$u8)(mem_Alctr__emptyAddr(alignOfLog2$(u8)))(bytes_count)));
+    if (bytes_count == 0) return_ok(P_prefix$((S$u8)(intToPtr$((u8*)mem_emptyAddr(alignOfLog2$(u8))))(bytes_count)));
     let mem = orelse_((mem_Alctr_rawAlloc($tracing self, bytes_count, 0))(
         return_err(E_cause$OutOfMemory())
     ));
@@ -126,7 +120,7 @@ fn_((mem_Alctr_allocBytes($traced mem_Alctr self, usize bytes_count))(mem_E$S$u8
 } $unscoped(fn);
 
 fn_((mem_Alctr_alloc($traced mem_Alctr self, TypeInfo type, usize count))(mem_E$u_S$raw) $scope) {
-    if (type.size == 0 || count == 0) return_ok(u_init$S((type)(u_anyP(mem_Alctr__emptyAddr(type.log2_align)).raw, count)));
+    if (type.size == 0 || count == 0) return_ok(u_init$S((type)(u_anyP(intToPtr$((u8*)mem_emptyAddr(type.log2_align))).raw, count)));
     let byte_count = orelse_((usize_mulChkd(type.size, count))(
         return_err(E_cause$OutOfMemory())
     ));
@@ -169,7 +163,7 @@ fn_((mem_Alctr_resize($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(b
 fn_((mem_Alctr_remapBytes($traced mem_Alctr self, S$u8 old_mem, usize new_len))(O$S$u8) $scope) {
     if (new_len == 0) {
         mem_Alctr_freeBytes($tracing self, old_mem);
-        return_some(P_prefix$((S$u8)(mem_Alctr__emptyAddr(alignOfLog2$(u8)))(0)));
+        return_some(P_prefix$((S$u8)(intToPtr$((u8*)mem_emptyAddr(alignOfLog2$(u8))))(0)));
     }
     if (old_mem.len == 0) return_none();
     let new_ptr = orelse_((mem_Alctr_rawRemap($tracing self, old_mem, alignOfLog2$(u8), new_len))(
@@ -180,10 +174,10 @@ fn_((mem_Alctr_remapBytes($traced mem_Alctr self, S$u8 old_mem, usize new_len))(
 } $unscoped(fn);
 
 fn_((mem_Alctr_remap($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(O$u_S$raw) $scope) {
-    if (old_mem.type.size == 0) return_some(u_init$S((old_mem.type)(u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw, new_len)));
+    if (old_mem.type.size == 0) return_some(u_init$S((old_mem.type)(u_anyP(intToPtr$((u8*)mem_emptyAddr(old_mem.type.log2_align))).raw, new_len)));
     if (new_len == 0) {
         mem_Alctr_free($tracing self, old_mem);
-        return_some(u_init$S((old_mem.type)(u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw, 0)));
+        return_some(u_init$S((old_mem.type)(u_anyP(intToPtr$((u8*)mem_emptyAddr(old_mem.type.log2_align))).raw, 0)));
     }
     if (old_mem.len == 0) return_none();
     // Create byte slice from the old memory
@@ -205,7 +199,7 @@ fn_((mem_Alctr_reallocBytes($traced mem_Alctr self, S$u8 old_mem, usize new_len)
     }
     if (new_len == 0) {
         mem_Alctr_freeBytes($tracing self, old_mem);
-        return_ok(P_prefix$((S$u8)(mem_Alctr__emptyAddr(alignOfLog2$(u8)))(0)));
+        return_ok(P_prefix$((S$u8)(intToPtr$((u8*)mem_emptyAddr(alignOfLog2$(u8))))(0)));
     }
     if_some((mem_Alctr_rawRemap($tracing self, old_mem, alignOfLog2$(u8), new_len))(ptr)) {
         mem_Alctr__zeroTail(ptr, old_mem.len, new_len);
@@ -231,10 +225,10 @@ fn_((mem_Alctr_realloc($traced mem_Alctr self, u_S$raw old_mem, usize new_len))(
     // Special case for zero new length
     if (new_len == 0) {
         mem_Alctr_free($tracing self, old_mem);
-        return_ok(u_init$S((old_mem.type)(u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw, 0)));
+        return_ok(u_init$S((old_mem.type)(u_anyP(intToPtr$((u8*)mem_emptyAddr(old_mem.type.log2_align))).raw, 0)));
     }
     // Special case for zero-sized types
-    if (old_mem.type.size == 0) return_ok(u_init$S((old_mem.type)(u_anyP(mem_Alctr__emptyAddr(old_mem.type.log2_align)).raw, new_len)));
+    if (old_mem.type.size == 0) return_ok(u_init$S((old_mem.type)(u_anyP(intToPtr$((u8*)mem_emptyAddr(old_mem.type.log2_align))).raw, new_len)));
     // Create byte slice from the old memory
     let old_bytes = P_prefix$((S$u8)(old_mem.ptr)(old_mem.type.size * old_mem.len));
     // Check for overflow in multiplication

@@ -233,6 +233,10 @@ $static fn_((mem_log2ToAlign(mem_Align log2_align))(usize));
 
 /*--- Memory Utilities ---*/
 
+/// Return an aligned non-null address for zero-sized storage
+$attr($inline_always)
+$static fn_((mem_emptyAddr(mem_Align log2_align))(usize));
+
 $attr($inline_always)
 $static fn_((mem_idxZ$u8(u8 sentinel, const u8* pz))(usize));
 $attr($inline_always)
@@ -1232,6 +1236,10 @@ fn_((mem_log2ToAlign(mem_Align log2_align))(usize)) {
 
 /*--- Memory Utilities ---*/
 
+fn_((mem_emptyAddr(mem_Align log2_align))(usize)) {
+    return usize_limit_max & ~(mem_log2ToAlign(log2_align) - 1);
+};
+
 fn_((mem_idxZ$u8(u8 sentinel, const u8* pz))(usize)) {
     claim_assert_nonnull(pz);
     var_(idx, usize) = 0;
@@ -1279,6 +1287,9 @@ fn_((mem_bytesAsMut(TypeInfo type, S$u8 bytes))(u_P$raw)) {
 fn_((mem_asBytesS(u_S_const$raw sli))(S_const$u8)) {
     claim_assert_nonnullS(sli.raw);
     /* TODO: add align check */
+    if (sli.len == 0 || sli.type.size == 0) {
+        return (S_const$u8){ .ptr = intToPtr$((const u8*)mem_emptyAddr(sli.type.log2_align)), .len = 0 };
+    }
     return (S_const$u8){
         .ptr = sli.ptr,
         .len = sli.len * sli.type.size,
@@ -1287,6 +1298,9 @@ fn_((mem_asBytesS(u_S_const$raw sli))(S_const$u8)) {
 fn_((mem_asBytesMutS(u_S$raw sli))(S$u8)) {
     claim_assert_nonnullS(sli.raw);
     /* TODO: add align check */
+    if (sli.len == 0 || sli.type.size == 0) {
+        return (S$u8){ .ptr = intToPtr$((u8*)mem_emptyAddr(sli.type.log2_align)), .len = 0 };
+    }
     return (S$u8){
         .ptr = sli.ptr,
         .len = sli.len * sli.type.size,
@@ -1296,12 +1310,18 @@ fn_((mem_asBytesMutS(u_S$raw sli))(S$u8)) {
 fn_((mem_bytesAsS(TypeInfo type, S_const$u8 bytes))(u_S_const$raw)) {
     claim_assert_nonnullS(bytes);
     /* TODO: add align check */
+    if (bytes.len == 0 || type.size == 0) {
+        return (u_S_const$raw){ .type = type, .ptr = intToPtr$((P_const$raw)mem_emptyAddr(type.log2_align)), .len = 0 };
+    }
     let count = type.size == 0 ? 0 : bytes.len / type.size;
     return (u_S_const$raw){ .type = type, .ptr = bytes.ptr, .len = count };
 };
 fn_((mem_bytesAsMutS(TypeInfo type, S$u8 bytes))(u_S$raw)) {
     claim_assert_nonnullS(bytes);
     /* TODO: add align check */
+    if (bytes.len == 0 || type.size == 0) {
+        return (u_S$raw){ .type = type, .ptr = intToPtr$((P$raw)mem_emptyAddr(type.log2_align)), .len = 0 };
+    }
     let count = type.size == 0 ? 0 : bytes.len / type.size;
     return (u_S$raw){ .type = type, .ptr = bytes.ptr, .len = count };
 };
