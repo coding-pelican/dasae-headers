@@ -1918,6 +1918,7 @@ static const char* const dal_c_help_clean_examples[] = {
 static const char* const dal_c_help_clean_notes[] = {
     "`clean` removes generated build products. With `--recur`, it also cleans descendant projects.",
     "Profile-specific clean such as `clean dev` also removes `lib/deps` and `lib/deps.h` because dependency exports are not profile-scoped.",
+    "Do not store durable source assets, checked-in resources, or manual files under `build/`, `build/.cache/`, `lib/deps/`, or `lib/deps.h`; clean owns those generated paths.",
     "`--dsl` includes the DH/DSL dependency boundary; `--self` cleans only the dh-c self boundary.",
 };
 #define dal_c_help_clean_notes_count ((int)(sizeof(dal_c_help_clean_notes) / sizeof(dal_c_help_clean_notes[0])))

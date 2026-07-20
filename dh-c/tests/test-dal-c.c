@@ -61,6 +61,7 @@ static void test_clean_prefers_local_build_dir(void);
 static void test_clean_profile_removes_dependency_exports(void);
 static void test_target_request_resolution(void);
 static void test_output_override_generates_target_extensions(void);
+static void test_output_ext_does_not_rewrite_dependency_artifacts(void);
 static void test_explicit_file_build_uses_file_project(void);
 static void test_target_root_directory_uses_local_include(void);
 static void test_syntax_arguments_follow_build_compile_contract(void);
@@ -102,6 +103,7 @@ int main(void) {
     RUN_TEST(test_clean_profile_removes_dependency_exports);
     RUN_TEST(test_target_request_resolution);
     RUN_TEST(test_output_override_generates_target_extensions);
+    RUN_TEST(test_output_ext_does_not_rewrite_dependency_artifacts);
     RUN_TEST(test_explicit_file_build_uses_file_project);
     RUN_TEST(test_target_root_directory_uses_local_include);
     RUN_TEST(test_syntax_arguments_follow_build_compile_contract);
@@ -2616,6 +2618,142 @@ static void test_output_override_generates_target_extensions(void) {
     free(project_dh);
     free(project_root);
     free(temp_root);
+}
+
+static void test_output_ext_does_not_rewrite_dependency_artifacts(void) {
+    test_reset_temp_root();
+
+    char* original_cwd = env_getCWD();
+    char* temp_root = test_temp_root();
+    char* dep_root = path_join(temp_root, "dep");
+    char* dep_project_dh = path_join(dep_root, "project.dh");
+    char* dep_include_dir = path_join(dep_root, "include");
+    char* dep_src_dir = path_join(dep_root, "src");
+    char* dep_header = path_join(dep_include_dir, "dep.h");
+    char* dep_source = path_join(dep_src_dir, "dep.c");
+    char* app_root = path_join(temp_root, "app");
+    char* app_project_dh = path_join(app_root, "project.dh");
+    char* app_include_dir = path_join(app_root, "include");
+    char* app_src_dir = path_join(app_root, "src");
+    char* app_header = path_join(app_include_dir, "app.h");
+    char* app_source = path_join(app_src_dir, "app.c");
+    char* output_stem = path_join(app_root, "dist/app_module");
+    char* app_build_dir = path_join(app_root, "build/dev");
+    char* dep_build_dir = path_join(dep_root, "build/dev");
+    char* dep_libs_dir = path_join(dep_build_dir, "libs");
+    char* app_deps_dir = path_join(app_root, "lib/deps");
+#ifdef _WIN32
+    char* expected_dep_archive = path_join(dep_libs_dir, "dep.lib");
+    char* expected_staged_archive = path_join(app_deps_dir, "dep.lib");
+    char* unexpected_dep_archive = path_join(dep_libs_dir, "dep.pyd");
+    char* unexpected_staged_archive = path_join(app_deps_dir, "dep.pyd");
+#else
+    char* expected_dep_archive = path_join(dep_libs_dir, "libdep.a");
+    char* expected_staged_archive = path_join(app_deps_dir, "libdep.a");
+    char* unexpected_dep_archive = path_join(dep_libs_dir, "libdep.pyd");
+    char* unexpected_staged_archive = path_join(app_deps_dir, "libdep.pyd");
+#endif
+
+    TEST_ASSERT(original_cwd != NULL);
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(dep_root != NULL);
+    TEST_ASSERT(dep_project_dh != NULL);
+    TEST_ASSERT(dep_include_dir != NULL);
+    TEST_ASSERT(dep_src_dir != NULL);
+    TEST_ASSERT(dep_header != NULL);
+    TEST_ASSERT(dep_source != NULL);
+    TEST_ASSERT(app_root != NULL);
+    TEST_ASSERT(app_project_dh != NULL);
+    TEST_ASSERT(app_include_dir != NULL);
+    TEST_ASSERT(app_src_dir != NULL);
+    TEST_ASSERT(app_header != NULL);
+    TEST_ASSERT(app_source != NULL);
+    TEST_ASSERT(output_stem != NULL);
+    TEST_ASSERT(app_build_dir != NULL);
+    TEST_ASSERT(dep_build_dir != NULL);
+    TEST_ASSERT(dep_libs_dir != NULL);
+    TEST_ASSERT(app_deps_dir != NULL);
+    TEST_ASSERT(expected_dep_archive != NULL);
+    TEST_ASSERT(expected_staged_archive != NULL);
+    TEST_ASSERT(unexpected_dep_archive != NULL);
+    TEST_ASSERT(unexpected_staged_archive != NULL);
+
+    TEST_ASSERT(dir_createRecur(dep_include_dir));
+    TEST_ASSERT(dir_createRecur(dep_src_dir));
+    TEST_ASSERT(file_write(dep_project_dh, "output=dep\npch=off\nlink-dsl=off\n"));
+    TEST_ASSERT(file_write(dep_header, "#pragma once\nint dep_value(void);\n"));
+    TEST_ASSERT(file_write(dep_source, "#include \"dep.h\"\nint dep_value(void) { return 7; }\n"));
+
+    TEST_ASSERT(dir_createRecur(app_include_dir));
+    TEST_ASSERT(dir_createRecur(app_src_dir));
+    TEST_ASSERT(file_write(
+        app_project_dh,
+        "output=app\nkind=shared-lib\npch=off\nlink-dsl=off\n"
+        "[dep]\n"
+        "path=../dep\n"
+        "linking=static\n"
+        "link-dsl=off\n"
+    ));
+    TEST_ASSERT(file_write(app_header, "#pragma once\nint app_value(void);\n"));
+    TEST_ASSERT(file_write(app_source, "#include \"app.h\"\n#include <dep.h>\nint app_value(void) { return dep_value(); }\n"));
+    TEST_ASSERT(env_setCWD(app_root));
+
+    const char* argv[] = {
+        dal_c_tool_name,
+        "build",
+        "dev",
+        "--shared",
+        "--output",
+        output_stem,
+        "--output-ext=.pyd",
+        "--link-dsl=off",
+        NULL
+    };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(8, argv);
+    TEST_ASSERT(cmd != NULL);
+    dal_c_Project* proj = dal_c_Project_detect(cmd);
+    TEST_ASSERT(proj != NULL);
+    TEST_ASSERT(proj->root != NULL);
+    TEST_ASSERT(dal_c_Cmd_makeTarget(cmd, proj) == 0);
+
+    char* final_output = dal_c__resolveOutputPath(proj, cmd, app_build_dir, "app", dal_c_Target_shared_lib);
+    TEST_ASSERT(final_output != NULL);
+    TEST_ASSERT(str_endsWith(final_output, ".pyd"));
+    TEST_ASSERT(path_isFile(final_output));
+    TEST_ASSERT(path_isFile(expected_dep_archive));
+    TEST_ASSERT(path_isFile(expected_staged_archive));
+    TEST_ASSERT(!path_exists(unexpected_dep_archive));
+    TEST_ASSERT(!path_exists(unexpected_staged_archive));
+
+    free(final_output);
+    dal_c_Project_cleanup(&proj);
+    dal_c_Cmd_cleanup(&cmd);
+    TEST_ASSERT(env_setCWD(original_cwd));
+    TEST_ASSERT(test_remove_recur(temp_root));
+
+    free(unexpected_staged_archive);
+    free(unexpected_dep_archive);
+    free(expected_staged_archive);
+    free(expected_dep_archive);
+    free(app_deps_dir);
+    free(dep_libs_dir);
+    free(dep_build_dir);
+    free(app_build_dir);
+    free(output_stem);
+    free(app_source);
+    free(app_header);
+    free(app_src_dir);
+    free(app_include_dir);
+    free(app_project_dh);
+    free(app_root);
+    free(dep_source);
+    free(dep_header);
+    free(dep_src_dir);
+    free(dep_include_dir);
+    free(dep_project_dh);
+    free(dep_root);
+    free(temp_root);
+    free(original_cwd);
 }
 
 static void test_explicit_file_build_uses_file_project(void) {

@@ -1068,6 +1068,10 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     assert(cmd != NULL);
     assert(proj != NULL);
     assert(lib != NULL);
+    dal_c_Cmd dependency_cmd = *cmd;
+    dependency_cmd.output_ext = NULL;
+    cmd = &dependency_cmd;
+
     if (!lib->path) {
         (void)fprintf(stderr, "Error: Library %s has no path specified\n", lib->name);
         return 1;

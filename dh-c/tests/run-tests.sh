@@ -225,11 +225,15 @@ assert_contains "$LAST_OUTPUT" "COMMANDS:" "Help output did not list commands"
 assert_contains "$LAST_OUTPUT" "RESERVED COMMANDS:" "Help output did not describe reserved commands"
 assert_contains "$LAST_OUTPUT" "COMMAND OPTION BOUNDARIES:" "Help output did not describe command option boundaries"
 assert_contains "$LAST_OUTPUT" "PROJECT.DH KEYS:" "Help output did not describe project.dh keys"
+assert_contains "$LAST_OUTPUT" "durable source assets" "Help output did not describe cleanup-owned generated paths"
 
 invoke_external "0" "$repo_root" "$cli_exe" help build
 assert_contains "$LAST_OUTPUT" "USAGE:" "Command help did not show usage"
 assert_contains "$LAST_OUTPUT" "CONTRACT:" "Command help did not show contract"
 assert_contains "$LAST_OUTPUT" "--output-ext" "Build help did not describe explicit output extension"
+
+invoke_external "0" "$repo_root" "$cli_exe" help clean
+assert_contains "$LAST_OUTPUT" "Do not store durable source assets" "Clean help did not describe cleanup-owned generated paths"
 
 invoke_external "0" "$repo_root" "$cli_exe" syntax --help
 assert_contains "$LAST_OUTPUT" "never links" "Syntax help did not describe non-linking contract"

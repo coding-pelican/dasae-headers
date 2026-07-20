@@ -187,7 +187,9 @@ static int dal_c__printUsage(const char* topic) {
     printf("GENERATED DIRECTORIES:\n");
     printf("  `build/` stores artifacts, object files, and generated plan makefiles.\n");
     printf("  `build/.cache/` stores generated unity/test helper sources.\n");
-    printf("  `lib/` stores dependency headers and libraries when project dependencies require them.\n");
+    printf("  `lib/deps/` stores generated dependency headers and libraries when project dependencies require them.\n");
+    printf("  `lib/deps.h` stores the generated dependency prelude when one is needed.\n");
+    printf("  `clean` owns these generated paths; do not place durable source assets, checked-in resources, or manual files there.\n");
     printf("  PCH outputs live in the active build cache plan, not as a global project artifact.\n\n");
 
     printf("PROFILES:\n");
