@@ -24,8 +24,11 @@ extern "C" {
 #include "mem/cfg.h"
 #include "mem/base.h"
 #include "mem/common.h"
-#include "mem/ring.h"
+
 #include "mem/dyn.h"
+#include "mem/seq.h"
+#include "mem/ring.h"
+
 #include "mem/Alctr.h"
 #include "mem/AlcTrace.h"
 

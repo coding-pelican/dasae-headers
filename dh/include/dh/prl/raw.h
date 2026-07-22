@@ -62,7 +62,7 @@ union O$Void {
     var_(as_raw $like_ref, O$raw);
 };
 
-typedef struct E_CtxAny {
+typedef union E_CtxAny {
     var_(inner, const Opaq*);
 } E_CtxAny;
 typedef struct EAny {

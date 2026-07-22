@@ -6,11 +6,9 @@
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-12-08 (date of creation)
  * @updated 2025-12-13 (date of last update)
- * @version v0.1
  * @ingroup dasae-headers(dh)
  * @prefix  u
  */
-
 #pragma once
 #ifndef u_meta__included
 #define u_meta__included 1

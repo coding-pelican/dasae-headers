@@ -24,7 +24,7 @@ T_alias$((thrd_wait_Link_Data)(struct thrd_wait_Link_Data {
 }));
 T_use$((thrd_wait_Link_Data)(ListSgl_Link, ListSgl_Adp, ListSgl));
 
-T_alias$((thrd_wait_Link)(struct thrd_wait_Link {
+T_alias$((thrd_wait_Link)(union thrd_wait_Link {
     var_(inner, ListSgl_Adp$thrd_wait_Link_Data);
 }));
 T_use$((thrd_wait_Link)(P, (O, P)));
@@ -32,7 +32,7 @@ $extern fn_((thrd_wait_Link_from(thrd_Waker waker, usize case_idx))(thrd_wait_Li
 $extern fn_((thrd_wait_Link_data(const thrd_wait_Link* link))(const thrd_wait_Link_Data*));
 $extern fn_((thrd_wait_Link_dataMut(thrd_wait_Link* link))(thrd_wait_Link_Data*));
 
-T_alias$((thrd_wait_Chain)(struct thrd_wait_Chain {
+T_alias$((thrd_wait_Chain)(union thrd_wait_Chain {
     var_(inner, ListSgl$thrd_wait_Link_Data);
 }));
 #define thrd_wait_Chain_init_static(/*void*/) \
