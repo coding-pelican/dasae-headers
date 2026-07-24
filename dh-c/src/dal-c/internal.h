@@ -133,6 +133,8 @@ int dal_c__writeCompileDb(
 );
 char* dal_c__resolveOutputPath(const dal_c_Project* proj, const dal_c_Cmd* cmd, const char* build_dir, const char* output_name, dal_c_Target target_type);
 char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const dal_c_Cmd* cmd, const char* target_path, dal_c_Target target_type);
+char* dal_c__makeLtoStaticLibraryPath(const char* native_path);
+char* dal_c__makeSharedImportLibraryPath(const char* shared_path);
 
 int dal_c__executeMake(const dal_c_Cmd* cmd, const char* makefile_path);
 int dal_c__executeMakeInDir(const dal_c_Cmd* cmd, const char* directory);

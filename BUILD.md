@@ -196,11 +196,11 @@ The built-in profiles are:
 - `dev`: `-g3 -Og`, assertions enabled
 - `test`: `-g -O1`, assertions enabled
 - `profile`: `-g -O2`, assertions enabled
-- `stable`: `-g1 -O2`, assertions disabled
-- `release`: `-g1 -O3`, LTO-oriented release build
-- `optimize`: `-O3 -march=native`, assertions disabled
-- `compact`: `-Os`, size-oriented build
-- `micro`: `-Oz`, smallest-size profile
+- `stable`: `-g1 -O2`, assertions disabled, ThinLTO
+- `release`: `-g1 -O3`, ThinLTO, exceptions/unwind tables disabled, safe ICF
+- `optimize`: `-O3 -march=native -mtune=native`, Full LTO, assertions disabled
+- `compact`: `-Os`, ThinLTO size-oriented build
+- `micro`: `-Oz`, ThinLTO smallest-size profile
 
 ## Important Options
 
@@ -242,6 +242,7 @@ Shared build options:
 - `--show-commands`
 - `--verbose`
 - `--dh=<path>`
+- `--prebuilt=<auto|off|required>`
 
 Build-specific modifiers:
 
@@ -255,6 +256,33 @@ Build-specific modifiers:
 - `--dsl`
 - `--self`
 - `--recur`
+
+
+## Library Artifact Variants
+
+Library kind and optimization profile remain separate contracts.
+
+For a static-library build:
+
+- profiles without effective LTO produce only the native archive
+- profiles with effective LTO produce both the native archive and an LTO archive
+- the native archive is always compiled with LTO disabled
+- the LTO archive uses the effective profile mode (`thin`, `full`, or explicit `on`)
+
+Artifact names:
+
+| Platform | Native static | LTO static | Shared | Import library |
+|---|---|---|---|---|
+| Windows | `mylib.lib` | `mylib.lto.lib` | `mylib.dll` | `mylib.dll.lib` |
+| Linux | `libmylib.a` | `libmylib.lto.a` | `libmylib.so` | not required |
+
+A shared-library build performs its profile LTO while producing the DLL/SO; it does not expose a separate LTO artifact. A project with `kind=lib` produces the applicable static variants and the shared library.
+
+Final linked targets select one static variant automatically:
+
+- effective LTO enabled -> prefer the matching `.lto` archive
+- effective LTO disabled -> use the native archive
+- when no `.lto` peer exists -> fall back to the native archive
 
 Run/test-specific modifiers:
 
@@ -289,6 +317,7 @@ no-dsl=<true|false>
 pch=<auto|off|path>
 pch-exclude=<header>
 self-root=<path>
+prebuilt=<auto|off|required>
 ```
 
 Meaning:
@@ -299,6 +328,7 @@ Meaning:
 - `pch`: auto/off/explicit PCH header contract
 - `pch-exclude`: files that must compile without the project PCH
 - repeated `self-root`: reusable project-owned source roots
+- `prebuilt`: default packaged-artifact policy for `dh` and dependency projects
 
 ### Named Target Roots
 
@@ -337,6 +367,7 @@ profile=default
 linking=static
 no-dsl=true
 test=true
+prebuilt=auto
 ```
 
 Supported dependency keys:
@@ -346,6 +377,7 @@ Supported dependency keys:
 - `linking`
 - `no-dsl`
 - `test`
+- `prebuilt`
 
 Meaning:
 
@@ -354,6 +386,7 @@ Meaning:
 - `linking`: static/shared preference for that dependency
 - `no-dsl`: dependency-local DSL suppression
 - `test`: run that dependency's tests during dependency traversal
+- `prebuilt`: dependency-local `auto`, `off`, or `required` policy; this may override the project-wide policy
 
 ## Directory Layout
 
@@ -370,6 +403,10 @@ my-project/
   lib/
     deps/
   build/
+  prebuilt/
+    stable/
+      libs/
+      deps/
   .cache/
 ```
 
@@ -394,6 +431,13 @@ Only one alias variant per category should exist at the same project level.
 - generated plan makefiles
 - PCH outputs
 
+`prebuilt/<profile>/`
+
+- packaged SDK artifacts that are trusted as immutable inputs
+- `libs/` contains the dependency's own native/LTO/shared artifacts
+- optional `deps/` contains already-staged transitive dependency artifacts
+- this directory is deliberately separate from `build/`, so stale local build caches cannot masquerade as SDK packages
+
 `.cache/`
 
 - generated unity sources
@@ -408,7 +452,17 @@ Only one alias variant per category should exist at the same project level.
 
 ## Dependency Flow
 
-`dh-c deps` builds dependency projects first and then copies their consumable outputs into the consumer project's `lib/deps/`.
+`dh-c deps` first checks the selected packaged-artifact policy and then prepares the consumer project's `lib/deps/`.
+
+Policy modes:
+
+- `auto` (default): use `prebuilt/<profile>` when the required artifact exists; otherwise build from source
+- `off`: ignore packaged artifacts and build from source
+- `required`: use packaged artifacts and fail instead of falling back to source
+
+A normal `dh-c test` may use prebuilt dependencies, which avoids rebuilding them in CI. When recursive dependency tests are explicitly requested, source is required because a packaged binary cannot execute the dependency's own test sources.
+
+After selecting or building the dependency, `dh-c` copies its consumable outputs into the consumer project's `lib/deps/`.
 
 What is copied:
 

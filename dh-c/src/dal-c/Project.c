@@ -216,6 +216,10 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->compiler_rt_linked != dal_c_ToggleState_auto) { dst->compiler_rt_linked = src->compiler_rt_linked; }
     if (src->link_mode != dal_c_LinkMode_auto) { dst->link_mode = src->link_mode; }
     if (src->lto_mode != dal_c_LtoMode_auto) { dst->lto_mode = src->lto_mode; }
+    if (src->prebuilt_mode_set) {
+        dst->prebuilt_mode = src->prebuilt_mode;
+        dst->prebuilt_mode_set = true;
+    }
     if (src->omit_frame_pointer != dal_c_ToggleState_auto) { dst->omit_frame_pointer = src->omit_frame_pointer; }
     if (src->function_sections != dal_c_ToggleState_auto) { dst->function_sections = src->function_sections; }
     if (src->data_sections != dal_c_ToggleState_auto) { dst->data_sections = src->data_sections; }
@@ -1021,6 +1025,14 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
             (void)fprintf(stderr, "Error: Invalid `%s` value `%s`\n", dal_c_opt_lto, value);
         } else {
             opts->lto_mode = mode;
+        }
+    } else if (str_eql(key, dal_c_opt_prebuilt)) {
+        dal_c_PrebuiltMode mode = dal_c_PrebuiltMode_parse(value);
+        if (mode == dal_c_PrebuiltMode_invalid) {
+            (void)fprintf(stderr, "Error: Invalid `%s` value `%s`\n", dal_c_opt_prebuilt, value);
+        } else {
+            opts->prebuilt_mode = mode;
+            opts->prebuilt_mode_set = true;
         }
     } else if (str_eql(key, dal_c_opt_omit_frame_pointer)) {
         opts->omit_frame_pointer = dal_c_Project__toggleStateFromPositiveBool(value);

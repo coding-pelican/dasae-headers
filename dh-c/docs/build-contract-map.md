@@ -46,7 +46,7 @@ Owner:
 
 Rules:
 - Makefiles are plan-scoped under `build/<profile>/.plans/<context>/`
-- object files are shared under `build/<profile>/obj/`
+- object files are shared under `build/<profile>/obj/`, with native-static, LTO-static, and shared compile contracts receiving distinct object hashes
 - generated makefiles are rewritten only when content changes
 - generated unity/test-runner sources are rewritten only when content changes
 - object paths are keyed by compile-contract hash, not by the active plan file
@@ -75,14 +75,60 @@ Rules:
 - reusable self code is declared by repeated `self-root=<path>`
 - when no `self-root` is declared, the resolved project `src` root remains the default
 - target roots declare whether they `link-self`
-- self-project reuse builds a cached local static library from the self roots
-- target-root plans then compile only target-local sources and link the cached self unit when requested
-- `dh` self-project sample/test paths link `dh.lib` directly and skip a second local-project-lib path
+- self-project reuse builds cached native and LTO static variants from the self roots when the profile enables LTO
+- target-root plans then compile only target-local sources and select the cached native or LTO self unit according to the final link contract
+- `dh` self-project sample/test paths select `dh.lib`/`libdh.a` or `dh.lto.lib`/`libdh.lto.a` directly and skip a second local-project-lib path
 - third-party dependency staging still belongs only to `lib/deps`
 
 Why:
 - sibling targets can share one cached self unit without pretending it is a third-party dependency
 - `lib/deps` no longer mixes self-project reuse with external dependencies
+
+## Library Artifact Contract
+Owner:
+- `dh-c/src/dal-c/Cmd.c`
+- `dh-c/src/dal-c/build.c`
+
+Rules:
+- a static-library build always emits a native non-LTO archive
+- when effective LTO is enabled, the same build also emits a `.lto` archive using that LTO mode
+- a shared-library build emits one native DLL/SO after applying the effective profile LTO internally
+- Windows shared outputs use `<name>.dll.lib` as the import-library name
+- `kind=lib` composes the static variants and shared output rather than creating a new profile
+- final links select `.lto` archives only when their own effective LTO is enabled
+- dependency staging preserves both static variants and shared/import artifacts
+
+Names:
+- Windows: `mylib.lib`, `mylib.lto.lib`, `mylib.dll`, `mylib.dll.lib`
+- Linux: `libmylib.a`, `libmylib.lto.a`, `libmylib.so`
+
+Why:
+- profiles describe optimization/debug policy while artifact names describe the consumable representation
+- native consumers remain compatible without LTO, while LTO consumers retain cross-module optimization
+- DLL import libraries no longer collide with native static-library names
+
+## Packaged Prebuilt Contract
+Owner:
+- `dh-c/src/dal-c/Project.c`
+- `dh-c/src/dal-c/Cmd.c`
+- `dh-c/src/dal-c/build.c`
+
+Rules:
+- packaged artifacts live under `<project>/prebuilt/<profile>/`, never under the mutable `build/` cache
+- `libs/` contains the project artifact and `deps/` may contain its transitive staged dependencies
+- `prebuilt=auto` prefers a complete package and falls back to source
+- `prebuilt=off` forces source traversal
+- `prebuilt=required` fails when the matching package is absent
+- the policy is accepted at project scope, command scope, and inside an individual dependency block
+- an explicitly configured `auto` is tracked separately from an inherited default, allowing one dependency to override a project-wide `off` policy
+- ordinary project tests may consume prebuilt dependencies; recursively requested dependency tests require source
+- `dh`, self/static artifacts, and normal dependency links use the same native-versus-LTO selection rule
+- PCH files are not consumed from SDK prebuilt packages
+
+Why:
+- CI can test the current project without rebuilding unchanged dependency graphs
+- individual dependencies can remain source-built when debugging while others use SDK packages
+- immutable SDK inputs cannot silently hide changes in a source checkout
 
 ## PCH Policy
 Owner:

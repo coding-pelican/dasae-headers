@@ -32,6 +32,8 @@ static bool dal_c__copyHeaderFile(const char* src, const char* out_dir);
 static bool dal_c__copyHeaderRelativeTo(const char* src, const char* src_root, const char* dst_dir);
 static bool dal_c__copyHeadersRecursive(const char* src_dir, const char* dst_dir);
 static char* dal_c__resolveDepsTargetDir(const char* deps_dir, const char* lib_name);
+static char* dal_c__makePrebuiltProfileDir(const char* project_root, const char* profile_name);
+static char* dal_c__resolvePrebuiltArtifactPath(const char* prebuilt_profile_dir, const char* name, dal_c_Target target_type, bool is_windows, bool lto_enabled);
 static char* dal_c__makeMakePath(const char* path);
 static char* dal_c__makeTempPath(const char* path);
 static void dal_c__fprintMakePath(FILE* fp, const char* path);
@@ -113,7 +115,8 @@ static bool dal_c__copyLibraryArtifacts(
     const dal_c_Cmd* build_cmd,
     const dal_c_ProfileSpec* build_profile,
     dal_c_Target build_target_type,
-    bool is_windows
+    bool is_windows,
+    bool from_prebuilt
 );
 static char* dal_c__sanitizePathFragment(const char* value);
 static bool dal_c__pathHasSeparator(const char* path);
@@ -138,6 +141,7 @@ static dal_c__noinline dal_c__optnone char* dal_c__queryCompilerRtPath(const dal
 static ArrStr* dal_c__parseQuotedTokens(const char* line);
 static ArrStr* dal_c__queryToolchainLinkTokens(const dal_c_CompilerOpts* opts);
 static void dal_c__printToolchainCategory(const char* title, ArrStr* link_tokens, const char* compiler_rt_path, dal_c_ToolchainQuery query);
+static dal_c_LtoMode dal_c__resolvedLtoState(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile);
 static dal_c_LtoMode dal_c__effectiveLtoState(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static bool dal_c__effectiveLtoEnabled(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static bool dal_c__shouldUseLldForClangLto(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
@@ -1081,22 +1085,10 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         printf("Building library: %s\n", lib->name);
     }
 
-    // 1. Recursively build the library's own dependencies first
     dal_c_Project* lib_proj = dal_c_Project_detectAt(lib->path, proj->dh_path);
     if (lib->test_enabled && !lib_proj) {
         (void)fprintf(stderr, "Error: Dependency %s enables test=on but has no project.dh\n", lib->name);
         return 1;
-    }
-    if (lib_proj && lib_proj->lib_count > 0) {
-        if (cmd->verbose) {
-            printf("Building %d dependencies for %s...\n", lib_proj->lib_count, lib->name);
-        }
-        for (int i = 0; i < lib_proj->lib_count; ++i) {
-            if (dal_c__buildSingleLibrary(cmd, lib_proj, &lib_proj->libraries[i]) != 0) {
-                dal_c_Project_cleanup(&lib_proj);
-                return 1;
-            }
-        }
     }
 
     dal_c_Profile lib_profile_enum = (lib->opts.profile != dal_c_Profile_invalid)
@@ -1111,14 +1103,87 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     if (lib_proj) {
         dal_c_CompilerOpts_merge(&merged.opts, &lib_proj->opts);
     }
+    if (proj->opts.prebuilt_mode_set) {
+        merged.opts.prebuilt_mode = proj->opts.prebuilt_mode;
+        merged.opts.prebuilt_mode_set = true;
+    }
     dal_c_CompilerOpts_merge(&merged.opts, &cmd->opts);
     dal_c_CompilerOpts_merge(&merged.opts, &lib->opts);
     if (merged.opts.profile == dal_c_Profile_invalid) {
         merged.opts.profile = lib_profile_enum;
     }
+    lib_profile_enum = merged.opts.profile;
+    const dal_c_ProfileSpec* lib_profile = dal_c_ProfileSpec_by(lib_profile_enum);
+    assert(lib_profile != NULL);
+    dal_c_Target lib_target_type = lib->is_static ? dal_c_Target_static_lib : dal_c_Target_shared_lib;
+    char* lib_abs_path = lib_proj ? lib_proj->root : lib->path;
+    bool should_run_dependency_tests = lib_proj
+                                    && !dal_c__cmdAggregatesRecursiveTests(cmd)
+                                    && (lib->test_enabled
+                                        || (cmd->action == dal_c_CmdAction_test && cmd->payload.test.recursive));
     int result = 0;
 
-    // 2. Handle header-only libraries
+    // 1. Prefer packaged prebuilt artifacts when allowed. `prebuilt/` is separate
+    // from `build/` so ordinary local caches never hide source changes.
+    bool is_windows = dal_c__platformIsWindows();
+    bool lto_enabled = lib->is_static
+                    && dal_c_LtoMode_isEnabled(dal_c__resolvedLtoState(&merged.opts, lib_profile));
+    char* prebuilt_profile_dir = dal_c__makePrebuiltProfileDir(lib_abs_path, lib_profile->name);
+    char* prebuilt_artifact = prebuilt_profile_dir
+                            ? dal_c__resolvePrebuiltArtifactPath(
+                                  prebuilt_profile_dir, lib->name, lib_target_type, is_windows, lto_enabled
+                              )
+                            : NULL;
+    bool may_use_prebuilt = merged.opts.prebuilt_mode != dal_c_PrebuiltMode_off && !should_run_dependency_tests;
+    if (may_use_prebuilt && prebuilt_artifact) {
+        if (cmd->show_progress) {
+            (void)printf("[PREBUILT] %s %s\n", lib->name, lib_profile->name);
+            (void)fflush(stdout);
+        }
+        bool copied = dal_c__copyLibraryArtifacts(
+            proj, lib_proj, lib, lib_abs_path, prebuilt_profile_dir,
+            &merged, lib_profile, lib_target_type, is_windows, true
+        );
+        free(prebuilt_artifact);
+        free(prebuilt_profile_dir);
+        dal_c_CompilerOpts_cleanup(&merged.opts);
+        dal_c_Project_cleanup(&lib_proj);
+        return copied ? 0 : 1;
+    }
+    free(prebuilt_artifact);
+    free(prebuilt_profile_dir);
+    if (merged.opts.prebuilt_mode == dal_c_PrebuiltMode_required) {
+        if (should_run_dependency_tests) {
+            (void)fprintf(stderr, "Error: Dependency %s requires source because its tests were requested\n", lib->name);
+        } else {
+            (void)fprintf(
+                stderr,
+                "Error: Required prebuilt dependency %s was not found under %s/prebuilt/%s/libs\n",
+                lib->name,
+                lib_abs_path,
+                lib_profile->name
+            );
+        }
+        dal_c_CompilerOpts_cleanup(&merged.opts);
+        dal_c_Project_cleanup(&lib_proj);
+        return 1;
+    }
+
+    // 2. Source mode recursively builds the dependency graph.
+    if (lib_proj && lib_proj->lib_count > 0) {
+        if (cmd->verbose) {
+            printf("Building %d dependencies for %s...\n", lib_proj->lib_count, lib->name);
+        }
+        for (int i = 0; i < lib_proj->lib_count; ++i) {
+            if (dal_c__buildSingleLibrary(cmd, lib_proj, &lib_proj->libraries[i]) != 0) {
+                dal_c_CompilerOpts_cleanup(&merged.opts);
+                dal_c_Project_cleanup(&lib_proj);
+                return 1;
+            }
+        }
+    }
+
+    // 3. Handle header-only libraries
     ArrStr* lib_sources = dal_c__collectLibrarySources(lib, lib_proj);
     bool is_single_header = str_endsWith(lib->path, ".h") && path_isFile(lib->path);
     const char* lib_header_root = lib_proj ? lib_proj->root : lib->path;
@@ -1170,10 +1235,6 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         free(deps_dir);
         free(lib_inc);
         ArrStr_fini(&lib_sources);
-        bool should_run_dependency_tests = lib_proj
-                                        && !dal_c__cmdAggregatesRecursiveTests(cmd)
-                                        && (lib->test_enabled
-                                            || (cmd->action == dal_c_CmdAction_test && cmd->payload.test.recursive));
         if (should_run_dependency_tests && (lib->test_enabled || dal_c__projectHasTestSources(lib_proj))) {
             dal_c__phaseRecord(dal_c_CmdPhase_dependency_build, dal_c__phaseNowSeconds() - dependency_started_at);
             result = dal_c__runDependencyTests(cmd, lib_proj, &merged.opts);
@@ -1201,12 +1262,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         return 1;
     }
 
-    // 4. Build in library's own build/<profile>/ directory
-    const dal_c_ProfileSpec* lib_profile = dal_c_ProfileSpec_by(lib_profile_enum);
-    assert(lib_profile != NULL);
-
-    // Use absolute path from lib_proj (or convert lib->path if no lib_proj)
-    char* lib_abs_path = lib_proj ? lib_proj->root : lib->path;
+    // 5. Build in library's own build/<profile>/ directory
     dal_c_ProjectLock lib_lock = { 0 };
     if (!dal_c__projectLockAcquireAt(lib_abs_path, &lib_lock)) {
         (void)fprintf(stderr, "Error: Failed to acquire library build lock: %s\n", lib->name);
@@ -1242,19 +1298,14 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         .lib_count = lib_proj ? lib_proj->lib_count : 0,
     };
 
-    dal_c_Target lib_target_type = lib->is_static ? dal_c_Target_static_lib : dal_c_Target_shared_lib;
-    char* lib_target_path = dal_c__resolveOutputPath(&build_proj, &merged, lib_build_profile, lib->name, lib_target_type);
     char* lib_object_dir = path_join(lib_build_profile, "obj");
     dir_createRecur(lib_object_dir);
-    char* lib_makefile_path = dal_c__makePlanFilePath(&build_proj, lib_profile, &merged, lib_target_path, lib_target_type);
     char* saved_cwd = env_getCWD();
     if (!saved_cwd || !env_setCWD(build_proj.root)) {
         (void)fprintf(stderr, "Error: Failed to switch to dependency root: %s\n", build_proj.root);
         free(saved_cwd);
         ArrStr_fini(&lib_sources);
-        free(lib_makefile_path);
         free(lib_object_dir);
-        free(lib_target_path);
         dal_c_CompilerOpts_cleanup(&merged.opts);
         free(lib_build_profile);
         dal_c__projectLockRelease(&lib_lock);
@@ -1263,43 +1314,61 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     }
 
     double dependency_started_at = dal_c__phaseNowSeconds();
-    int plan_result = dal_c__generateMakefile(&merged, &build_proj, lib_profile, lib_sources, lib_target_path, lib_object_dir, lib_target_type);
-    if (plan_result != dal_c_generateMakefile_success && plan_result != dal_c_generateMakefile_upToDate) {
-        dal_c__phaseRecord(dal_c_CmdPhase_dependency_build, dal_c__phaseNowSeconds() - dependency_started_at);
-        (void)env_setCWD(saved_cwd);
-        free(saved_cwd);
-        (void)fprintf(stderr, "Error: Failed to generate Makefile for library: %s\n", lib->name);
-        ArrStr_fini(&lib_sources);
-        free(lib_makefile_path);
-        free(lib_object_dir);
-        free(lib_target_path);
-        dal_c_CompilerOpts_cleanup(&merged.opts);
-        free(lib_build_profile);
-        dal_c__projectLockRelease(&lib_lock);
-        dal_c_Project_cleanup(&lib_proj);
-        return 1;
-    }
-    free(lib_target_path);
+    dal_c_LtoMode static_lto_mode = dal_c__resolvedLtoState(&merged.opts, lib_profile);
+    int artifact_count = lib->is_static && dal_c_LtoMode_isEnabled(static_lto_mode) ? 2 : 1;
+    for (int artifact_idx = 0; artifact_idx < artifact_count && result == 0; ++artifact_idx) {
+        bool lto_artifact = lib->is_static && artifact_idx == 1;
+        dal_c_Cmd artifact_cmd = merged;
+        if (lib->is_static) {
+            artifact_cmd.opts.lto_mode = lto_artifact ? static_lto_mode : dal_c_LtoMode_off;
+        }
 
-    if (plan_result == dal_c_generateMakefile_upToDate) {
-        if (cmd->show_progress) {
-            (void)printf("[SKIP] %s is up to date\n", lib->name ? lib->name : "dependency");
-            (void)fflush(stdout);
+        char* lib_target_path = dal_c__resolveOutputPath(
+            &build_proj, &artifact_cmd, lib_build_profile, lib->name, lib_target_type
+        );
+        if (lto_artifact) {
+            char* qualified = dal_c__makeLtoStaticLibraryPath(lib_target_path);
+            free(lib_target_path);
+            lib_target_path = qualified;
         }
-        result = 0;
-    } else {
-        if (cmd->show_progress) {
-            (void)printf("[DEP] %s\n", lib->name ? lib->name : "dependency");
-            (void)fflush(stdout);
+        char* lib_makefile_path = dal_c__makePlanFilePath(
+            &build_proj, lib_profile, &artifact_cmd, lib_target_path, lib_target_type
+        );
+        int plan_result = dal_c__generateMakefile(
+            &artifact_cmd, &build_proj, lib_profile, lib_sources,
+            lib_target_path, lib_object_dir, lib_target_type
+        );
+        if (plan_result != dal_c_generateMakefile_success && plan_result != dal_c_generateMakefile_upToDate) {
+            (void)fprintf(stderr, "Error: Failed to generate Makefile for library: %s\n", lib->name);
+            result = 1;
+        } else if (plan_result == dal_c_generateMakefile_upToDate) {
+            if (cmd->show_progress) {
+                (void)printf(
+                    "[SKIP] %s%s is up to date\n",
+                    lib->name ? lib->name : "dependency",
+                    lto_artifact ? " LTO" : ""
+                );
+                (void)fflush(stdout);
+            }
+        } else {
+            if (cmd->show_progress) {
+                (void)printf(
+                    "[DEP] %s%s\n",
+                    lib->name ? lib->name : "dependency",
+                    lto_artifact ? " LTO" : ""
+                );
+                (void)fflush(stdout);
+            }
+            result = dal_c__executeMake(cmd, lib_makefile_path);
         }
-        result = dal_c__executeMake(cmd, lib_makefile_path);
+        free(lib_makefile_path);
+        free(lib_target_path);
     }
     if (!env_setCWD(saved_cwd)) {
         (void)fprintf(stderr, "Error: Failed to restore working directory: %s\n", saved_cwd);
         result = 1;
     }
     free(saved_cwd);
-    free(lib_makefile_path);
     free(lib_object_dir);
     ArrStr_fini(&lib_sources);
     if (result != 0) {
@@ -1312,17 +1381,12 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         return result;
     }
 
-    // 5. Copy artifacts (headers, libs, PCH) to consumer's lib/deps/
-    bool is_windows = dal_c__platformIsWindows();
-    if (!dal_c__copyLibraryArtifacts(proj, lib_proj, lib, lib_abs_path, lib_build_profile, &merged, lib_profile, lib_target_type, is_windows)) {
+    // 6. Copy artifacts (headers, libs, PCH) to consumer's lib/deps/
+    if (!dal_c__copyLibraryArtifacts(proj, lib_proj, lib, lib_abs_path, lib_build_profile, &merged, lib_profile, lib_target_type, is_windows, false)) {
         (void)fprintf(stderr, "Warning: Failed to copy some artifacts for %s\n", lib->name);
     }
     dal_c__phaseRecord(dal_c_CmdPhase_dependency_build, dal_c__phaseNowSeconds() - dependency_started_at);
 
-    bool should_run_dependency_tests = lib_proj
-                                    && !dal_c__cmdAggregatesRecursiveTests(cmd)
-                                    && (lib->test_enabled
-                                        || (cmd->action == dal_c_CmdAction_test && cmd->payload.test.recursive));
     if (should_run_dependency_tests && (lib->test_enabled || dal_c__projectHasTestSources(lib_proj))) {
         result = dal_c__runDependencyTests(cmd, lib_proj, &merged.opts);
         if (result != 0) {
@@ -1563,15 +1627,6 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
         dal_c_Project_cleanup(&dh_proj);
         return 1;
     }
-    ArrStr* sources = dal_c__collectSourceFiles(dh_proj, NULL);
-    if (ArrStr_len(sources) == 0) {
-        (void)fprintf(stderr, "Error: No source files found for libdh\n");
-        ArrStr_fini(&sources);
-        dal_c__projectLockRelease(&lock);
-        dal_c_Project_cleanup(&dh_proj);
-        return 1;
-    }
-
     char* build_dir = dal_c_Project_getBuildDir(dh_proj);
     char* profile_dir = path_join(build_dir, profile->name);
     char* object_dir = path_join(profile_dir, "obj");
@@ -1583,7 +1638,6 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
         free(object_dir);
         free(profile_dir);
         free(build_dir);
-        ArrStr_fini(&sources);
         dal_c__projectLockRelease(&lock);
         dal_c_Project_cleanup(&dh_proj);
         return 1;
@@ -1620,7 +1674,94 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
         cmd.opts.profile = dal_c_Profile_parse(profile->name);
     }
 
+    bool is_windows = dal_c__platformIsWindows();
+    bool lto_enabled = dh_target_type == dal_c_Target_static_lib
+                    && dal_c_LtoMode_isEnabled(dal_c__effectiveLtoState(&cmd, profile, dh_target_type));
+    char* prebuilt_profile_dir = dal_c__makePrebuiltProfileDir(dh_proj->root, profile->name);
+    char* prebuilt_artifact = prebuilt_profile_dir
+                            ? dal_c__resolvePrebuiltArtifactPath(
+                                  prebuilt_profile_dir, "dh", dh_target_type, is_windows, lto_enabled
+                              )
+                            : NULL;
+    if (cmd.opts.prebuilt_mode != dal_c_PrebuiltMode_off && prebuilt_artifact) {
+        char* output_libs_dir = path_join(profile_dir, "libs");
+        dir_createRecur(output_libs_dir);
+        char* artifact_name = path_basename(prebuilt_artifact);
+        char* artifact_dst = path_join(output_libs_dir, artifact_name);
+        bool copied = file_copy(prebuilt_artifact, artifact_dst);
+        if (copied && is_windows && dh_target_type == dal_c_Target_shared_lib) {
+            char* import_src = dal_c__makeSharedImportLibraryPath(prebuilt_artifact);
+            char* import_name = path_basename(import_src);
+            char* import_dst = path_join(output_libs_dir, import_name);
+            copied = path_isFile(import_src) && file_copy(import_src, import_dst);
+            free(import_dst);
+            free(import_name);
+            free(import_src);
+        }
+        if (copied && cmd.show_progress) {
+            (void)printf("[PREBUILT] dh %s %s\n", profile->name, dal_c_Target_format(dh_target_type));
+            (void)fflush(stdout);
+        }
+        free(artifact_dst);
+        free(artifact_name);
+        free(output_libs_dir);
+        free(prebuilt_artifact);
+        free(prebuilt_profile_dir);
+        if (!env_setCWD(saved_cwd)) {
+            (void)fprintf(stderr, "Error: Failed to restore working directory: %s\n", saved_cwd);
+            copied = false;
+        }
+        free(saved_cwd);
+        dal_c_CompilerOpts_cleanup(&cmd.opts);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c__projectLockRelease(&lock);
+        dal_c_Project_cleanup(&dh_proj);
+        return copied ? 0 : 1;
+    }
+    free(prebuilt_artifact);
+    free(prebuilt_profile_dir);
+    if (cmd.opts.prebuilt_mode == dal_c_PrebuiltMode_required) {
+        (void)fprintf(
+            stderr,
+            "Error: Required prebuilt dh artifact was not found under %s/prebuilt/%s/libs\n",
+            dh_proj->root,
+            profile->name
+        );
+        (void)env_setCWD(saved_cwd);
+        free(saved_cwd);
+        dal_c_CompilerOpts_cleanup(&cmd.opts);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c__projectLockRelease(&lock);
+        dal_c_Project_cleanup(&dh_proj);
+        return 1;
+    }
+
+    ArrStr* sources = dal_c__collectSourceFiles(dh_proj, NULL);
+    if (ArrStr_len(sources) == 0) {
+        (void)fprintf(stderr, "Error: No source files found for libdh\n");
+        ArrStr_fini(&sources);
+        (void)env_setCWD(saved_cwd);
+        free(saved_cwd);
+        dal_c_CompilerOpts_cleanup(&cmd.opts);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c__projectLockRelease(&lock);
+        dal_c_Project_cleanup(&dh_proj);
+        return 1;
+    }
+
     char* lib_target_path = dal_c__resolveOutputPath(dh_proj, &cmd, profile_dir, "dh", dh_target_type);
+    if (dh_target_type == dal_c_Target_static_lib
+        && dal_c_LtoMode_isEnabled(dal_c__effectiveLtoState(&cmd, profile, dh_target_type))) {
+        char* qualified = dal_c__makeLtoStaticLibraryPath(lib_target_path);
+        free(lib_target_path);
+        lib_target_path = qualified;
+    }
     char* makefile_path = dal_c__makePlanFilePath(dh_proj, profile, &cmd, lib_target_path, dh_target_type);
     double dh_started_at = dal_c__phaseNowSeconds();
     int result = dal_c__generateMakefile(&cmd, dh_proj, profile, sources, lib_target_path, object_dir, dh_target_type);
@@ -2055,6 +2196,107 @@ static char* dal_c__makeTargetFileName(const char* name, dal_c_Target type, bool
     return result ? result : strdup(name);
 }
 
+char* dal_c__makeLtoStaticLibraryPath(const char* native_path) {
+    assert(native_path != NULL);
+    const char* dot = strrchr(native_path, '.');
+    if (!dot || dot == native_path) {
+        return str_format("%s.lto", native_path);
+    }
+    size_t stem_len = (size_t)(dot - native_path);
+    return str_format("%.*s.lto%s", (int)stem_len, native_path, dot);
+}
+
+char* dal_c__makeSharedImportLibraryPath(const char* shared_path) {
+    assert(shared_path != NULL);
+    return str_format("%s.lib", shared_path);
+}
+
+static bool dal_c__isLtoStaticLibraryPath(const char* path, bool is_windows) {
+    return path && str_endsWith(path, is_windows ? ".lto.lib" : ".lto.a");
+}
+
+static bool dal_c__isSharedLinkLibraryPath(const char* path, bool is_windows) {
+    return path && str_endsWith(path, is_windows ? ".dll.lib" : ".so");
+}
+
+static bool dal_c__isNativeStaticLibraryPath(const char* path, bool is_windows) {
+    if (!path || dal_c__isLtoStaticLibraryPath(path, is_windows)) { return false; }
+    if (is_windows && dal_c__isSharedLinkLibraryPath(path, true)) { return false; }
+    return str_endsWith(path, is_windows ? ".lib" : ".a");
+}
+
+static bool dal_c__shouldLinkDependencyArtifact(const char* path, bool is_windows, bool lto_enabled) {
+    if (!path) { return false; }
+    if (dal_c__isSharedLinkLibraryPath(path, is_windows)) { return true; }
+    if (dal_c__isLtoStaticLibraryPath(path, is_windows)) { return lto_enabled; }
+    if (!dal_c__isNativeStaticLibraryPath(path, is_windows)) { return false; }
+    if (!lto_enabled) { return true; }
+
+    char* lto_path = dal_c__makeLtoStaticLibraryPath(path);
+    bool has_lto_peer = lto_path && path_isFile(lto_path);
+    free(lto_path);
+    return !has_lto_peer;
+}
+
+static char* dal_c__selectStaticLibraryPath(const char* native_path, bool lto_enabled) {
+    assert(native_path != NULL);
+    if (lto_enabled) {
+        char* lto_path = dal_c__makeLtoStaticLibraryPath(native_path);
+        if (lto_path && path_isFile(lto_path)) {
+            return lto_path;
+        }
+        free(lto_path);
+    }
+    return strdup(native_path);
+}
+
+static char* dal_c__makePrebuiltProfileDir(const char* project_root, const char* profile_name) {
+    assert(project_root != NULL);
+    assert(profile_name != NULL);
+    char* prebuilt_root = path_join(project_root, "prebuilt");
+    char* profile_dir = prebuilt_root ? path_join(prebuilt_root, profile_name) : NULL;
+    free(prebuilt_root);
+    return profile_dir;
+}
+
+static char* dal_c__resolvePrebuiltArtifactPath(
+    const char* prebuilt_profile_dir,
+    const char* name,
+    dal_c_Target target_type,
+    bool is_windows,
+    bool lto_enabled
+) {
+    assert(prebuilt_profile_dir != NULL);
+    assert(name != NULL);
+
+    char* libs_dir = path_join(prebuilt_profile_dir, "libs");
+    char* file_name = dal_c__makeTargetFileName(name, target_type, is_windows, NULL);
+    char* native_path = (libs_dir && file_name) ? path_join(libs_dir, file_name) : NULL;
+    char* selected_path = NULL;
+    bool available = native_path && path_isFile(native_path);
+    if (native_path && target_type == dal_c_Target_static_lib) {
+        selected_path = dal_c__selectStaticLibraryPath(native_path, lto_enabled);
+        available = available && selected_path && path_isFile(selected_path);
+    } else if (native_path) {
+        selected_path = strdup(native_path);
+    }
+
+    if (available && is_windows && target_type == dal_c_Target_shared_lib) {
+        char* import_path = dal_c__makeSharedImportLibraryPath(selected_path);
+        available = import_path && path_isFile(import_path);
+        free(import_path);
+    }
+    if (!available) {
+        free(selected_path);
+        selected_path = NULL;
+    }
+
+    free(native_path);
+    free(file_name);
+    free(libs_dir);
+    return selected_path;
+}
+
 
 static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type) {
     assert(cmd != NULL);
@@ -2067,6 +2309,7 @@ static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal
     }
 
     const bool is_windows = dal_c__platformIsWindows();
+    const bool lto_enabled = dal_c__effectiveLtoEnabled(cmd, profile, target_type);
     const dal_c_CompilerOpts* opts = &cmd->opts;
     dal_c_CommandIntent intent = { 0 };
     dal_c_Cmd_normalizeIntent(cmd, &intent);
@@ -2086,10 +2329,12 @@ static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal
         char* project_profile_dir = project_build_dir ? path_join(project_build_dir, profile->name) : NULL;
         char* project_lib_dir = project_profile_dir ? path_join(project_profile_dir, "libs") : NULL;
         project_lib_name = dal_c__makeTargetFileName(proj->name, dal_c_Target_static_lib, is_windows, NULL);
-        project_lib_path = (project_lib_dir && project_lib_name) ? path_join(project_lib_dir, project_lib_name) : NULL;
+        char* project_native_path = (project_lib_dir && project_lib_name) ? path_join(project_lib_dir, project_lib_name) : NULL;
+        project_lib_path = project_native_path ? dal_c__selectStaticLibraryPath(project_native_path, lto_enabled) : NULL;
         if (project_lib_path && path_isFile(project_lib_path)) {
             ArrStr_push(deps, project_lib_path);
         }
+        free(project_native_path);
         free(project_lib_dir);
         free(project_profile_dir);
         free(project_build_dir);
@@ -2102,11 +2347,20 @@ static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal
         char* dh_build = path_join(proj->dh_path, "build");
         char* dh_profile = dh_build ? path_join(dh_build, profile->name) : NULL;
         char* dh_lib_dir = dh_profile ? path_join(dh_profile, "libs") : NULL;
-        const char* dh_lib_name = is_windows ? "dh.lib" : (target_type == dal_c_Target_shared_lib ? "libdh.so" : "libdh.a");
-        char* dh_lib = dh_lib_dir ? path_join(dh_lib_dir, dh_lib_name) : NULL;
+        const char* dh_lib_name = NULL;
+        if (target_type == dal_c_Target_shared_lib) {
+            dh_lib_name = is_windows ? "dh.dll.lib" : "libdh.so";
+        } else {
+            dh_lib_name = is_windows ? "dh.lib" : "libdh.a";
+        }
+        char* dh_native = dh_lib_dir ? path_join(dh_lib_dir, dh_lib_name) : NULL;
+        char* dh_lib = (dh_native && target_type != dal_c_Target_shared_lib)
+                     ? dal_c__selectStaticLibraryPath(dh_native, lto_enabled)
+                     : (dh_native ? strdup(dh_native) : NULL);
         if (dh_lib && path_isFile(dh_lib)) {
             ArrStr_push(deps, dh_lib);
         }
+        free(dh_native);
         free(dh_lib);
         free(dh_lib_dir);
         free(dh_profile);
@@ -2119,9 +2373,8 @@ static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal
             int lib_count = 0;
             char** lib_files = dir_listRecur(deps_dir, &lib_count);
             if (lib_files) {
-                const char* lib_ext = is_windows ? ".lib" : ".a";
                 for (int i = 0; i < lib_count; ++i) {
-                    if (str_endsWith(lib_files[i], lib_ext)) {
+                    if (dal_c__shouldLinkDependencyArtifact(lib_files[i], is_windows, lto_enabled)) {
                         ArrStr_push(deps, lib_files[i]);
                     }
                 }
@@ -2533,7 +2786,8 @@ static bool dal_c__copyLibraryArtifacts(
     const dal_c_Cmd* build_cmd,
     const dal_c_ProfileSpec* build_profile,
     dal_c_Target build_target_type,
-    bool is_windows
+    bool is_windows,
+    bool from_prebuilt
 ) {
     assert(consumer_proj != NULL);
     assert(lib != NULL);
@@ -2558,56 +2812,72 @@ static bool dal_c__copyLibraryArtifacts(
     }
     free(lib_inc);
 
-    // 2. Copy compiled library: lib/build/<profile>/<name>.lib -> consumer/lib/deps/<subdir>/
-    // For libs with paths like "edition/bar", the .lib is at build/dev/edition/bar.lib
-    const char* lib_ext = is_windows ? ".lib" : ".a";
-    const char* lib_prefix = is_windows ? "" : "lib";
-    const char* lib_basename_tmp = path_basename(lib->name);
-    const char* lib_basename = (lib_basename_tmp && strlen(lib_basename_tmp) > 0) ? lib_basename_tmp : lib->name;
-
-    char* lib_file = str_format("%s%s%s", lib_prefix, lib_basename, lib_ext);
-    char* lib_name_with_ext = str_format("%s%s", lib->name, lib_ext);
-    char* lib_src_path = NULL;
-    const char* candidate_rel_paths[] = {
-        lib_file,
-        lib_name_with_ext,
-        NULL,
-        NULL,
-    };
-    char* libs_file = path_join("libs", lib_file);
-    char* libs_name_with_ext = path_join("libs", lib_name_with_ext);
-    candidate_rel_paths[2] = libs_file;
-    candidate_rel_paths[3] = libs_name_with_ext;
-    for (int i = 0; i < 4; ++i) {
-        char* candidate = path_join(lib_build_dir, candidate_rel_paths[i]);
-        if (path_isFile(candidate)) {
-            lib_src_path = candidate;
-            break;
-        }
-        free(candidate);
-    }
-    if (!lib_src_path) {
-        lib_src_path = path_join(lib_build_dir, libs_name_with_ext);
+    // 2. Copy compiled artifacts from build/<profile>/libs/.
+    char* libs_dir = path_join(lib_build_dir, "libs");
+    char* artifact_rel = dal_c__makeTargetFileName(lib->name, build_target_type, is_windows, NULL);
+    char* artifact_src = path_join(libs_dir, artifact_rel);
+    if (!path_isFile(artifact_src)) {
+        char* artifact_base = path_basename(artifact_rel);
+        free(artifact_src);
+        artifact_src = path_join(libs_dir, artifact_base);
+        free(artifact_base);
     }
 
-    char* lib_dst_path = path_join(target_dir, lib_file);
-
-    if (path_isFile(lib_src_path)) {
-        if (!file_copy(lib_src_path, lib_dst_path)) {
+    if (build_target_type == dal_c_Target_static_lib) {
+        char* artifact_name = path_basename(artifact_src);
+        char* artifact_dst = path_join(target_dir, artifact_name);
+        if (!path_isFile(artifact_src) || !file_copy(artifact_src, artifact_dst)) {
             success = false;
         }
-    }
-    free(libs_name_with_ext);
-    free(libs_file);
-    free(lib_name_with_ext);
-    free(lib_file);
-    free(lib_src_path);
-    free(lib_dst_path);
 
-    // 3. Copy current PCH artifact if present.
-    if (lib_proj && lib_proj->pch_header) {
+        char* lto_src = dal_c__makeLtoStaticLibraryPath(artifact_src);
+        if (path_isFile(lto_src)) {
+            char* lto_name = path_basename(lto_src);
+            char* lto_dst = path_join(target_dir, lto_name);
+            if (!file_copy(lto_src, lto_dst)) {
+                success = false;
+            }
+            free(lto_dst);
+            free(lto_name);
+        }
+        free(lto_src);
+        free(artifact_dst);
+        free(artifact_name);
+    } else if (build_target_type == dal_c_Target_shared_lib) {
+        char* artifact_name = path_basename(artifact_src);
+        char* artifact_dst = path_join(target_dir, artifact_name);
+        if (!path_isFile(artifact_src) || !file_copy(artifact_src, artifact_dst)) {
+            success = false;
+        }
+        if (is_windows) {
+            char* import_src = dal_c__makeSharedImportLibraryPath(artifact_src);
+            char* import_name = path_basename(import_src);
+            char* import_dst = path_join(target_dir, import_name);
+            if (!path_isFile(import_src) || !file_copy(import_src, import_dst)) {
+                success = false;
+            }
+            free(import_dst);
+            free(import_name);
+            free(import_src);
+        }
+        free(artifact_dst);
+        free(artifact_name);
+    }
+    free(artifact_src);
+    free(artifact_rel);
+    free(libs_dir);
+
+    // 3. Copy the PCH matching the consumable artifact variant.
+    if (!from_prebuilt && lib_proj && lib_proj->pch_header) {
+        dal_c_Cmd pch_cmd = *build_cmd;
+        if (build_target_type == dal_c_Target_static_lib) {
+            dal_c_LtoMode artifact_lto_mode = dal_c__resolvedLtoState(&build_cmd->opts, build_profile);
+            pch_cmd.opts.lto_mode = dal_c_LtoMode_isEnabled(artifact_lto_mode)
+                                      ? artifact_lto_mode
+                                      : dal_c_LtoMode_off;
+        }
         char* pch_basename = path_basename(lib_proj->pch_header);
-        char* pch_contract_key = dal_c__makeCompileContractKey(build_cmd, lib_proj, build_profile, build_target_type, true, false);
+        char* pch_contract_key = dal_c__makeCompileContractKey(&pch_cmd, lib_proj, build_profile, build_target_type, true, false);
         char* pch_src_name = str_format("%s_%s.pch", pch_contract_key, pch_basename);
         char* pch_obj_dir = path_join(lib_build_dir, "obj");
         char* pch_src_path = path_join(pch_obj_dir, pch_src_name);
@@ -2627,14 +2897,22 @@ static bool dal_c__copyLibraryArtifacts(
 
     // 4. Copy transitive dependencies: lib/lib/deps/*.lib -> consumer/lib/deps/
     // This ensures all transitive dependencies are available to the consumer
-    char* lib_deps_dir = path_join(lib_abs_path, "lib/deps");
+    char* lib_deps_dir = from_prebuilt ? path_join(lib_build_dir, "deps") : NULL;
+    if (!lib_deps_dir || !path_isDir(lib_deps_dir)) {
+        free(lib_deps_dir);
+        lib_deps_dir = path_join(lib_abs_path, "lib/deps");
+    }
     if (path_isDir(lib_deps_dir)) {
         int dep_count = 0;
         char** dep_files = dir_listRecur(lib_deps_dir, &dep_count);
         if (dep_files) {
             for (int i = 0; i < dep_count; ++i) {
-                // Copy .lib/.a files and .h files
-                if (str_endsWith(dep_files[i], lib_ext) || str_endsWith(dep_files[i], ".h") || str_endsWith(dep_files[i], ".pch")) {
+                // Copy static/LTO archives, shared libraries/import libraries, headers, and PCH files.
+                bool is_link_artifact = str_endsWith(dep_files[i], ".lib")
+                                     || str_endsWith(dep_files[i], ".a")
+                                     || str_endsWith(dep_files[i], ".dll")
+                                     || str_endsWith(dep_files[i], ".so");
+                if (is_link_artifact || str_endsWith(dep_files[i], ".h") || str_endsWith(dep_files[i], ".pch")) {
                     // Preserve relative path structure
                     const char* rel_path = dep_files[i] + strlen(lib_deps_dir) + 1;
                     char* dst_path = path_join(deps_dir, rel_path);
@@ -4481,6 +4759,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     }
 
     dal_c_LtoMode lto_state = dal_c__effectiveLtoState(cmd, profile, target_type);
+    bool lto_enabled = dal_c_LtoMode_isEnabled(lto_state);
     for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
         const char* flag = profile->extra_flags[i];
         if (dal_c__isLtoFlag(flag)) {
@@ -4714,14 +4993,17 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             char* project_profile_dir = path_join(project_build_dir, profile->name);
             char* project_lib_dir = path_join(project_profile_dir, "libs");
             project_lib_name = dal_c__makeTargetFileName(proj->name, dal_c_Target_static_lib, is_windows, NULL);
-            project_lib_path = path_join(project_lib_dir, project_lib_name);
-            link_project_static_lib = path_isFile(project_lib_path);
+            char* project_native_path = path_join(project_lib_dir, project_lib_name);
+            project_lib_path = dal_c__selectStaticLibraryPath(project_native_path, lto_enabled);
+            link_project_static_lib = project_lib_path && path_isFile(project_lib_path);
+            free(project_native_path);
             free(project_lib_dir);
             free(project_profile_dir);
             free(project_build_dir);
         }
         if (link_project_static_lib) {
-            (void)fprintf(fp, " $(PROJECT_ROOT)/build/%s/libs/%s", profile->name, project_lib_name);
+            (void)fprintf(fp, " ");
+            dal_c__fprintMakePath(fp, project_lib_path);
         }
         free(project_lib_path);
         free(project_lib_name);
@@ -4731,24 +5013,41 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         }
         if (dal_c__usesDHLibrary(proj, opts)) {
             (void)fprintf(fp, " -L$(DH_PATH)/build/%s/libs", profile->name);
-            if (is_windows) {
-                (void)fprintf(fp, " $(DH_PATH)/build/%s/libs/dh.lib", profile->name);
-            } else if (target_type == dal_c_Target_shared_lib) {
-                (void)fprintf(fp, " $(DH_PATH)/build/%s/libs/libdh.so", profile->name);
+            if (target_type == dal_c_Target_shared_lib) {
+                (void)fprintf(
+                    fp,
+                    is_windows
+                        ? " $(DH_PATH)/build/%s/libs/dh.dll.lib"
+                        : " $(DH_PATH)/build/%s/libs/libdh.so",
+                    profile->name
+                );
+            } else if (lto_enabled) {
+                (void)fprintf(
+                    fp,
+                    is_windows
+                        ? " $(DH_PATH)/build/%s/libs/dh.lto.lib"
+                        : " $(DH_PATH)/build/%s/libs/libdh.lto.a",
+                    profile->name
+                );
             } else {
-                (void)fprintf(fp, " $(DH_PATH)/build/%s/libs/libdh.a", profile->name);
+                (void)fprintf(
+                    fp,
+                    is_windows
+                        ? " $(DH_PATH)/build/%s/libs/dh.lib"
+                        : " $(DH_PATH)/build/%s/libs/libdh.a",
+                    profile->name
+                );
             }
         }
-        // Link ALL .lib/.a files in lib/deps (includes transitive dependencies)
+        // Select one static variant per dependency; shared import libraries remain linkable.
         if (proj && proj->root) {
             char* deps_dir = dal_c_Project_getDepsDir(proj);
             if (path_isDir(deps_dir)) {
                 int lib_count = 0;
                 char** lib_files = dir_listRecur(deps_dir, &lib_count);
                 if (lib_files) {
-                    const char* lib_ext = is_windows ? ".lib" : ".a";
                     for (int i = 0; i < lib_count; ++i) {
-                        if (str_endsWith(lib_files[i], lib_ext)) {
+                        if (dal_c__shouldLinkDependencyArtifact(lib_files[i], is_windows, lto_enabled)) {
                             (void)fprintf(fp, " ");
                             dal_c__fprintMakePath(fp, lib_files[i]);
                         }
@@ -5458,6 +5757,12 @@ static bool dal_c__linkedPlanIsUpToDate(
 
     time_t target_mt = file_mtime(target_path);
     if (target_mt == 0) { return false; }
+    if (dal_c__platformIsWindows() && target_type == dal_c_Target_shared_lib) {
+        char* import_lib_path = dal_c__makeSharedImportLibraryPath(target_path);
+        bool import_ok = import_lib_path && path_isFile(import_lib_path);
+        free(import_lib_path);
+        if (!import_ok) { return false; }
+    }
     if (link_contract_path) {
         time_t contract_mt = file_mtime(link_contract_path);
         if (contract_mt == 0 || contract_mt > target_mt) { return false; }
@@ -5629,6 +5934,14 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     (void)fprintf(fp, "\n\n");
     dal_c__ensureParentDir(target_path);
     dal_c__writeMakefileTargetVar(fp, target_path);
+    if (is_windows && target_type == dal_c_Target_shared_lib) {
+        char* import_lib_path = dal_c__makeSharedImportLibraryPath(target_path);
+        dal_c__ensureParentDir(import_lib_path);
+        (void)fprintf(fp, "IMPORT_LIB = ");
+        dal_c__fprintMakePath(fp, import_lib_path);
+        (void)fprintf(fp, "\n");
+        free(import_lib_path);
+    }
     (void)fprintf(fp, "EXTRA_TARGETS =\n");
     bool emits_disasm = cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_disasm;
     bool disasm_needs_unstripped_target = emits_disasm && dal_c__resolvedStripMode(&cmd->opts, profile);
@@ -5702,7 +6015,11 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     dal_c__writeMakefileCompilationRules(fp, cmd, proj, profile, sources, has_pch, build_dir, obj_base, target_type);
     dal_c__writeMakefileTargetRule(fp, cmd, profile, target_type, is_windows, link_contract_path);
 
-    (void)fprintf(fp, "clean:\n\trm -f $(TARGET) $(EXTRA_TARGETS)\n\n");
+    if (is_windows && target_type == dal_c_Target_shared_lib) {
+        (void)fprintf(fp, "clean:\n\trm -f $(TARGET) $(IMPORT_LIB) $(EXTRA_TARGETS)\n\n");
+    } else {
+        (void)fprintf(fp, "clean:\n\trm -f $(TARGET) $(EXTRA_TARGETS)\n\n");
+    }
     (void)fprintf(fp, "-include $(DEPS)\n");
 
     (void)fclose(fp);
@@ -5886,7 +6203,11 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
         } else {
             (void)fprintf(fp, "$(TARGET): $(OBJS) $(LINK_DEPS)\n");
         }
-        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) -shared -fPIC $(OBJS) -o $@ $(LDFLAGS)\n");
+        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) -shared -fPIC $(OBJS) -o $@ $(LDFLAGS)");
+        if (is_windows) {
+            (void)fprintf(fp, " -Wl,--out-implib,$(IMPORT_LIB)");
+        }
+        (void)fprintf(fp, "\n");
     } else if (type == dal_c_Target_image) {
         if (link_contract_path) {
             (void)fprintf(fp, "$(LINK_TARGET): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS)\n");

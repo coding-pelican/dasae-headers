@@ -34,16 +34,18 @@ fi
 case "$(uname -s)" in
     MINGW*|MSYS*|CYGWIN*)
         exe_ext=".exe"
-        shared_pattern="render*.dll"
-        lib_kind_shared_pattern="core*.dll"
-        lib_kind_static_pattern="core*.lib"
+        shared_pattern="*render*.dll"
+        lib_kind_shared_pattern="core.dll"
+        lib_kind_static_pattern="core.lib"
+        lib_kind_lto_static_pattern="core.lto.lib"
         static_lib_pattern="*.lib"
         ;;
     *)
         exe_ext=""
-        shared_pattern="render*.so"
-        lib_kind_shared_pattern="libcore*.so"
-        lib_kind_static_pattern="libcore*.a"
+        shared_pattern="*render*.so"
+        lib_kind_shared_pattern="libcore.so"
+        lib_kind_static_pattern="libcore.a"
+        lib_kind_lto_static_pattern="libcore.lto.a"
         static_lib_pattern="*.a"
         ;;
 esac
@@ -163,6 +165,19 @@ assert_build_artifacts_exist() {
     for pattern in "$@"; do
         if ! "$find_bin" "$build_dir" -type f -name "$pattern" | "$grep_bin" . >/dev/null 2>&1; then
             printf "Expected artifact matching '%s' under %s\n" "$pattern" "$build_dir" >&2
+            exit 1
+        fi
+    done
+}
+
+assert_build_artifacts_absent() {
+    project_root=$1
+    shift
+    build_dir="$project_root/build"
+
+    for pattern in "$@"; do
+        if "$find_bin" "$build_dir" -type f -name "$pattern" | "$grep_bin" . >/dev/null 2>&1; then
+            printf "Unexpected artifact matching '%s' under %s\n" "$pattern" "$build_dir" >&2
             exit 1
         fi
     done
@@ -313,6 +328,15 @@ if [ "$integration" -eq 1 ]; then
     invoke_external "0" "$lib_kind_project" "$cli_exe" build
     assert_contains "$LAST_OUTPUT" "Build successful!" "Project kind=lib build did not succeed"
     assert_build_artifacts_exist "$lib_kind_project" "$lib_kind_static_pattern" "$lib_kind_shared_pattern"
+    assert_build_artifacts_absent "$lib_kind_project" "$lib_kind_lto_static_pattern"
+
+    invoke_external "0" "$lib_kind_project" "$cli_exe" build stable
+    assert_contains "$LAST_OUTPUT" "Build successful!" "Stable project kind=lib build did not succeed"
+    assert_build_artifacts_exist \
+        "$lib_kind_project" \
+        "$lib_kind_static_pattern" \
+        "$lib_kind_lto_static_pattern" \
+        "$lib_kind_shared_pattern"
 
     deps_graph_root=$(copy_scenario_project "dh-c/tests/fixture/deps-graph")
     deps_graph_project="$deps_graph_root/C"

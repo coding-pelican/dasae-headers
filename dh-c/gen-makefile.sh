@@ -236,23 +236,25 @@ else ifeq ($(PROFILE),stable)
     PROFILE_CFLAGS += -g1 -O2
     PROFILE_DEBUG_ASSERTIONS = off
     PROFILE_DEBUG_INFO = on
+    PROFILE_LTO = thin
 else ifeq ($(PROFILE),release)
     PROFILE_CFLAGS += -g1 -O3
     PROFILE_DEBUG_ASSERTIONS = off
     PROFILE_DEBUG_INFO = on
-    PROFILE_LTO = on
+    PROFILE_LTO = thin
     PROFILE_FUNCTION_SECTIONS = on
     PROFILE_DATA_SECTIONS = on
     PROFILE_GC_SECTIONS = on
     PROFILE_OMIT_FRAME_POINTER = on
     PROFILE_UNWIND_TABLES = off
     PROFILE_ASYNC_UNWIND_TABLES = off
+    PROFILE_EXCEPTIONS = off
     PROFILE_STRIP = on
-    PROFILE_ICF = all
+    PROFILE_ICF = safe
 else ifeq ($(PROFILE),optimize)
     PROFILE_CFLAGS += -O3
     PROFILE_DEBUG_ASSERTIONS = off
-    PROFILE_LTO = on
+    PROFILE_LTO = full
     PROFILE_FUNCTION_SECTIONS = on
     PROFILE_DATA_SECTIONS = on
     PROFILE_GC_SECTIONS = on
@@ -267,7 +269,7 @@ else ifeq ($(PROFILE),optimize)
 else ifeq ($(PROFILE),compact)
     PROFILE_CFLAGS += -Os
     PROFILE_DEBUG_ASSERTIONS = off
-    PROFILE_LTO = on
+    PROFILE_LTO = thin
     PROFILE_FUNCTION_SECTIONS = on
     PROFILE_DATA_SECTIONS = on
     PROFILE_GC_SECTIONS = on
@@ -279,7 +281,7 @@ else ifeq ($(PROFILE),compact)
 else ifeq ($(PROFILE),micro)
     PROFILE_CFLAGS += -Oz
     PROFILE_DEBUG_ASSERTIONS = off
-    PROFILE_LTO = on
+    PROFILE_LTO = thin
     PROFILE_FUNCTION_SECTIONS = on
     PROFILE_DATA_SECTIONS = on
     PROFILE_GC_SECTIONS = on
@@ -671,7 +673,7 @@ else
     $(error Unsupported EMIT_IR '$(EMIT_IR)')
 endif
 ifeq ($(EMIT_LINKED_ASM),on)
-ifneq ($(RESOLVED_LTO),on)
+ifeq ($(filter on full thin,$(RESOLVED_LTO)),)
     $(error EMIT_LINKED_ASM requires effective LTO to be enabled)
 endif
     EXTRA_TARGETS += $(LINKED_ASM_TARGET)

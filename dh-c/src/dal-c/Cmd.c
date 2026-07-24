@@ -96,6 +96,14 @@ static char* dal_c_Cmd__versionRecordPath(const dal_c_Cmd* cmd, const dal_c_Proj
 static int dal_c_Cmd__writeVersionDHFile(const char* path, const dal_c_VersionSpec* version);
 static int dal_c_Cmd__ensureProjectStaticLibrary(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runBuildDefaultTests(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Profile profile);
+static char* dal_c_Cmd__resolveLibraryOutputName(
+    const dal_c_Cmd* self,
+    const dal_c_Project* proj,
+    ArrStr* sources,
+    const char* fallback_output_name,
+    bool allow_output_defaults
+);
+
 static int dal_c_Cmd__buildFromSources(
     const dal_c_Cmd* self,
     const dal_c_Project* proj,
@@ -105,6 +113,21 @@ static int dal_c_Cmd__buildFromSources(
     const char* extra_compiler_args,
     bool allow_output_defaults,
     bool print_success
+);
+static int dal_c_Cmd__buildOneFromSources(
+    const dal_c_Cmd* self,
+    const dal_c_Project* proj,
+    ArrStr* sources,
+    const char* output_name,
+    dal_c_Target target_type,
+    const char* extra_compiler_args,
+    bool allow_output_defaults,
+    bool print_success
+);
+static dal_c_LtoMode dal_c_Cmd__resolveLibraryLtoMode(
+    const dal_c_Cmd* self,
+    const dal_c_Project* proj,
+    ArrStr* sources
 );
 static void dal_c_Cmd__appendTargetLocalInclude(dal_c_CompilerOpts* opts, const dal_c_Project* proj, const dal_c_Cmd* cmd);
 static char* dal_c_Cmd__compileDbOutputPath(const dal_c_Cmd* self, const dal_c_Project* proj);
@@ -570,6 +593,14 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
             *handled = false;
         } else {
             cmd->opts.lto_mode = mode;
+        }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_prebuilt)) {
+        dal_c_PrebuiltMode mode = dal_c_PrebuiltMode_parse(value);
+        if (mode == dal_c_PrebuiltMode_invalid) {
+            *handled = false;
+        } else {
+            cmd->opts.prebuilt_mode = mode;
+            cmd->opts.prebuilt_mode_set = true;
         }
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_omit_frame_pointer)) {
         if (!has_toggle) {
@@ -2928,6 +2959,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_link_crt)
             || str_eql(opt, dal_c_opt_link_mode)
             || str_eql(opt, dal_c_opt_lto)
+            || str_eql(opt, dal_c_opt_prebuilt)
             || str_eql(opt, dal_c_opt_omit_frame_pointer)
             || str_eql(opt, dal_c_opt_function_sections)
             || str_eql(opt, dal_c_opt_data_sections)
@@ -2978,6 +3010,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_link_crt)
             || str_startsWith(opt, dal_c_opt_link_mode)
             || str_startsWith(opt, dal_c_opt_lto)
+            || str_startsWith(opt, dal_c_opt_prebuilt)
             || str_startsWith(opt, dal_c_opt_omit_frame_pointer)
             || str_startsWith(opt, dal_c_opt_function_sections)
             || str_startsWith(opt, dal_c_opt_data_sections)
@@ -3208,6 +3241,14 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                         return 1;
                     }
                     cmd->opts.lto_mode = mode;
+                } else if (strncmp(opt, dal_c_opt_prebuilt, opt_len) == 0) {
+                    dal_c_PrebuiltMode mode = dal_c_PrebuiltMode_parse(value);
+                    if (mode == dal_c_PrebuiltMode_invalid) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_prebuilt, value);
+                        return 1;
+                    }
+                    cmd->opts.prebuilt_mode = mode;
+                    cmd->opts.prebuilt_mode_set = true;
                 } else if (strncmp(opt, dal_c_opt_icf, opt_len) == 0) {
                     dal_c_IcfMode mode = dal_c_IcfMode_parse(value);
                     if (mode == dal_c_IcfMode_auto && !str_eql(value, dal_c_icf_mode_auto)) {
@@ -3622,6 +3663,9 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     ++i;
                 } else if (str_eql(opt, dal_c_opt_lto)) {
                     cmd->opts.lto_mode = dal_c_LtoMode_on;
+                } else if (str_eql(opt, dal_c_opt_prebuilt)) {
+                    cmd->opts.prebuilt_mode = dal_c_PrebuiltMode_required;
+                    cmd->opts.prebuilt_mode_set = true;
                 } else if (str_eql(opt, dal_c_opt_omit_frame_pointer)) {
                     cmd->opts.omit_frame_pointer = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_function_sections)) {
@@ -4735,7 +4779,124 @@ static char* dal_c_Cmd__generatedSourceDir(const dal_c_Project* proj, const dal_
 }
 
 /* NOLINTNEXTLINE(misc-no-recursion) */
+static dal_c_LtoMode dal_c_Cmd__resolveLibraryLtoMode(
+    const dal_c_Cmd* self,
+    const dal_c_Project* proj,
+    ArrStr* sources
+) {
+    assert(self != NULL);
+    assert(sources != NULL);
+
+    dal_c_CompilerOpts opts = { 0 };
+    dal_c_BuildDefaults defaults = { 0 };
+    opts.profile = dal_c_Profile_invalid;
+    dal_c_Cmd__mergeBuildProperties(&opts, &defaults, proj, sources, self);
+    if (opts.profile == dal_c_Profile_invalid) {
+        opts.profile = self->opts.profile;
+    }
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(opts.profile);
+    dal_c_LtoMode mode = opts.lto_mode != dal_c_LtoMode_auto
+                       ? opts.lto_mode
+                       : (profile ? profile->lto_mode : dal_c_LtoMode_off);
+    dal_c_CompilerOpts_cleanup(&opts);
+    dal_c_BuildDefaults_cleanup(&defaults);
+    return mode;
+}
+
+static char* dal_c_Cmd__resolveLibraryOutputName(
+    const dal_c_Cmd* self,
+    const dal_c_Project* proj,
+    ArrStr* sources,
+    const char* fallback_output_name,
+    bool allow_output_defaults
+) {
+    assert(self != NULL);
+    assert(sources != NULL);
+    assert(fallback_output_name != NULL);
+
+    if (!allow_output_defaults) {
+        return strdup(fallback_output_name);
+    }
+
+    dal_c_CompilerOpts opts = { 0 };
+    dal_c_BuildDefaults defaults = { 0 };
+    opts.profile = dal_c_Profile_invalid;
+    dal_c_Cmd__mergeBuildProperties(&opts, &defaults, proj, sources, self);
+    const char* resolved = defaults.output_name && defaults.output_name[0] != '\0'
+                         ? defaults.output_name
+                         : fallback_output_name;
+    char* result = strdup(resolved);
+    dal_c_CompilerOpts_cleanup(&opts);
+    dal_c_BuildDefaults_cleanup(&defaults);
+    return result;
+}
+
 static int dal_c_Cmd__buildFromSources(
+    const dal_c_Cmd* self,
+    const dal_c_Project* proj,
+    ArrStr* sources,
+    const char* output_name,
+    dal_c_Target target_type,
+    const char* extra_compiler_args,
+    bool allow_output_defaults,
+    bool print_success
+) {
+    assert(self != NULL);
+    assert(sources != NULL);
+    assert(output_name != NULL);
+
+    if (target_type != dal_c_Target_static_lib) {
+        return dal_c_Cmd__buildOneFromSources(
+            self, proj, sources, output_name, target_type,
+            extra_compiler_args, allow_output_defaults, print_success
+        );
+    }
+
+    const dal_c_LtoMode lto_mode = dal_c_Cmd__resolveLibraryLtoMode(self, proj, sources);
+
+    dal_c_Cmd native_cmd = *self;
+    native_cmd.opts.lto_mode = dal_c_LtoMode_off;
+    int result = dal_c_Cmd__buildOneFromSources(
+        &native_cmd, proj, sources, output_name, target_type,
+        extra_compiler_args, allow_output_defaults, false
+    );
+    if (result != 0) { return result; }
+
+    if (dal_c_LtoMode_isEnabled(lto_mode)) {
+        dal_c_Cmd lto_cmd = *self;
+        lto_cmd.opts.lto_mode = lto_mode;
+        char* resolved_output_name = dal_c_Cmd__resolveLibraryOutputName(
+            self, proj, sources, output_name, allow_output_defaults
+        );
+        char* lto_output_name = dal_c__makeLtoStaticLibraryPath(resolved_output_name);
+        free(resolved_output_name);
+        char* lto_output_override = NULL;
+        dal_c_CommandIntent intent = { 0 };
+        dal_c_Cmd_normalizeIntent(self, &intent);
+        if (intent.output_path && intent.output_path[0] != '\0') {
+            lto_output_override = dal_c__makeLtoStaticLibraryPath(intent.output_path);
+            char** output_slot = dal_c_Cmd__outputPathSlot(&lto_cmd);
+            if (output_slot) {
+                *output_slot = lto_output_override;
+            }
+        }
+        result = dal_c_Cmd__buildOneFromSources(
+            &lto_cmd, proj, sources, lto_output_name, target_type,
+            extra_compiler_args, false, false
+        );
+        free(lto_output_override);
+        free(lto_output_name);
+        if (result != 0) { return result; }
+    }
+
+    if (print_success) {
+        printf("Build successful!\n");
+        (void)fflush(stdout);
+    }
+    return 0;
+}
+
+static int dal_c_Cmd__buildOneFromSources(
     const dal_c_Cmd* self,
     const dal_c_Project* proj,
     ArrStr* sources,

@@ -274,7 +274,7 @@ typedef enum dal_c_Target {
     dal_c_Target_executable = 0, // no-extension or `.out` (Unix), `.exe` (Windows) executable output
     dal_c_Target_static_lib = 1, // `.a` (Unix), `.lib` (Windows) static library output
     dal_c_Target_shared_lib = 2, // `.so` (Unix), `.dll` (Windows) shared library output
-    dal_c_Target_lib = 3, // abstract library output: build static + shared
+    dal_c_Target_lib = 3, // abstract library output: native/LTO static variants when enabled + shared
     dal_c_Target_image = 4, // raw image output (for example `.bin`)
     dal_c_Target_preprocessed = 5, // preprocessed translation unit output (`.i`)
     dal_c_Target_assembly = 6, // compiler-emitted assembly output (`.s`)
@@ -640,6 +640,7 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_balanced,
         .debug_level = dal_c_DebugLevel_minimal,
         .debug_assertions = false,
+        .lto_mode = dal_c_LtoMode_thin,
         .extra_flags = { NULL },
     },
     [dal_c_Profile_release] = {
@@ -647,22 +648,23 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_aggressive,
         .debug_level = dal_c_DebugLevel_minimal,
         .debug_assertions = false,
-        .lto_mode = dal_c_LtoMode_on,
+        .lto_mode = dal_c_LtoMode_thin,
         .omit_frame_pointer = dal_c_ToggleState_enabled,
         .function_sections = dal_c_ToggleState_enabled,
         .data_sections = dal_c_ToggleState_enabled,
         .gc_sections = dal_c_ToggleState_enabled,
         .unwind_tables = dal_c_ToggleState_disabled,
         .async_unwind_tables = dal_c_ToggleState_disabled,
+        .exceptions = dal_c_ToggleState_disabled,
         .strip_mode = dal_c_ToggleState_enabled,
-        .icf_mode = dal_c_IcfMode_all,
+        .icf_mode = dal_c_IcfMode_safe,
     },
     [dal_c_Profile_optimize] = {
         .name = dal_c_profile_optimize,
         .opti_level = dal_c_OptiLevel_aggressive,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .lto_mode = dal_c_LtoMode_on,
+        .lto_mode = dal_c_LtoMode_full,
         .omit_frame_pointer = dal_c_ToggleState_enabled,
         .function_sections = dal_c_ToggleState_enabled,
         .data_sections = dal_c_ToggleState_enabled,
@@ -680,7 +682,7 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_compact,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .lto_mode = dal_c_LtoMode_on,
+        .lto_mode = dal_c_LtoMode_thin,
         .omit_frame_pointer = dal_c_ToggleState_enabled,
         .function_sections = dal_c_ToggleState_enabled,
         .data_sections = dal_c_ToggleState_enabled,
@@ -695,7 +697,7 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .opti_level = dal_c_OptiLevel_minimal,
         .debug_level = dal_c_DebugLevel_none,
         .debug_assertions = false,
-        .lto_mode = dal_c_LtoMode_on,
+        .lto_mode = dal_c_LtoMode_thin,
         .omit_frame_pointer = dal_c_ToggleState_enabled,
         .function_sections = dal_c_ToggleState_enabled,
         .data_sections = dal_c_ToggleState_enabled,
@@ -871,6 +873,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_link_crt "link-crt" // start-files bundle
 #define dal_c_opt_link_mode "link-mode"
 #define dal_c_opt_lto "lto"
+#define dal_c_opt_prebuilt "prebuilt"
 #define dal_c_opt_omit_frame_pointer "omit-frame-pointer"
 #define dal_c_opt_function_sections "function-sections"
 #define dal_c_opt_data_sections "data-sections"
@@ -1013,6 +1016,35 @@ static inline const char* dal_c_LooseErrorsMode_format(dal_c_LooseErrorsMode mod
     }
 }
 
+typedef enum dal_c_PrebuiltMode {
+    dal_c_PrebuiltMode_invalid = -1,
+    dal_c_PrebuiltMode_auto = 0,
+    dal_c_PrebuiltMode_off = 1,
+    dal_c_PrebuiltMode_required = 2,
+} dal_c_PrebuiltMode;
+#define dal_c_prebuilt_auto "auto"
+#define dal_c_prebuilt_off "off"
+#define dal_c_prebuilt_required "required"
+static inline dal_c_PrebuiltMode dal_c_PrebuiltMode_parse(const char* str) {
+    if (str_eql(str, dal_c_prebuilt_auto)) { return dal_c_PrebuiltMode_auto; }
+    if (str_eql(str, dal_c_prebuilt_off) || str_eql(str, "source") || str_eql(str, "false") || str_eql(str, "no")) {
+        return dal_c_PrebuiltMode_off;
+    }
+    if (str_eql(str, dal_c_prebuilt_required) || str_eql(str, "on") || str_eql(str, "true") || str_eql(str, "yes")) {
+        return dal_c_PrebuiltMode_required;
+    }
+    return dal_c_PrebuiltMode_invalid;
+}
+static inline const char* dal_c_PrebuiltMode_format(dal_c_PrebuiltMode mode) {
+    switch (mode) {
+    case dal_c_PrebuiltMode_auto: return dal_c_prebuilt_auto;
+    case dal_c_PrebuiltMode_off: return dal_c_prebuilt_off;
+    case dal_c_PrebuiltMode_required: return dal_c_prebuilt_required;
+    case dal_c_PrebuiltMode_invalid:
+    default: return NULL;
+    }
+}
+
 typedef struct dal_c_VersionSpec {
     unsigned core_major;
     unsigned core_minor;
@@ -1060,6 +1092,8 @@ typedef struct dal_c_CompilerOpts {
     dal_c_ToggleState compiler_rt_linked; // --link-compiler-rt=<auto|on|off>
     dal_c_LinkMode link_mode; // --link-mode=<auto|static|shared>
     dal_c_LtoMode lto_mode; // --lto=<auto|off|on|full|thin>
+    dal_c_PrebuiltMode prebuilt_mode; // --prebuilt=<auto|off|required>
+    bool prebuilt_mode_set; // distinguishes explicit auto from inherited/default auto
     dal_c_ToggleState omit_frame_pointer; // --omit-frame-pointer=<auto|on|off>
     dal_c_ToggleState function_sections; // --function-sections=<auto|on|off>
     dal_c_ToggleState data_sections; // --data-sections=<auto|on|off>
@@ -1079,7 +1113,7 @@ typedef struct dal_c_CompilerOpts {
 
 typedef struct dal_c_BuildDefaults {
     char* output_name; // default output name when CLI did not provide one
-    dal_c_Target target_kind; // default artifact kind for plain project builds; `lib` builds static + shared
+    dal_c_Target target_kind; // default artifact kind; `lib` builds native/LTO static variants + shared
     bool build_runs_tests;
     bool target_kind_set;
     bool build_runs_tests_set;
@@ -1478,6 +1512,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_link_crt dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` bundle" },
     { dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep "<auto|static|shared>", "Select link mode for executable dependencies or library artifact kind (default: " dal_c_default_link_mode ")" },
     { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|off|on|full|thin>", "Override profile LTO policy for compile and link flags" },
+    { dal_c_opt_prefix_long dal_c_opt_prebuilt dal_c_opt_value_sep "<auto|off|required>", "Use packaged `prebuilt/<profile>` artifacts, fall back to source, or require them" },
     { dal_c_opt_prefix_long dal_c_opt_omit_frame_pointer dal_c_opt_value_sep "<auto|on|off>", "Emit or omit frame-pointer omission flags" },
     { dal_c_opt_prefix_long dal_c_opt_function_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile function section splitting (`-ffunction-sections`)" },
     { dal_c_opt_prefix_long dal_c_opt_data_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile data section splitting (`-fdata-sections`)" },
@@ -1738,6 +1773,7 @@ static const char* const dal_c_help_test_notes[] = {
 #define dal_c_help_test_notes_count ((int)(sizeof(dal_c_help_test_notes) / sizeof(dal_c_help_test_notes[0])))
 
 static const dal_c_HelpOption dal_c_help_deps_options[] = {
+    { dal_c_opt_prefix_long dal_c_opt_prebuilt dal_c_opt_value_sep "<auto|off|required>", "Use packaged dependency artifacts, force source builds, or require prebuilt artifacts" },
     { dal_c_opt_prefix_long dal_c_opt_verbose "=on|off", "Verbose output" },
     { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
 };
@@ -1753,6 +1789,7 @@ static const char* const dal_c_help_deps_notes[] = {
     "`deps` builds libraries declared in `project.dh`; it does not build the current project output.",
     "It reads dependency blocks from `project.dh`; direct compile/link/source/output flags are not accepted by `deps`.",
     "Generated dependency headers and libraries live under `lib/`; PCH files live in the active cache plan.",
+    "`--prebuilt=auto` reads `prebuilt/<profile>` packages when present; `required` fails instead of compiling source.",
 };
 #define dal_c_help_deps_notes_count ((int)(sizeof(dal_c_help_deps_notes) / sizeof(dal_c_help_deps_notes[0])))
 
@@ -1986,11 +2023,11 @@ static const dal_c_HelpProfile dal_c_help_profiles[] = {
     [dal_c_Profile_fast] = { dal_c_profile_fast, "Fast compile build with assertions (-O0, no debug info)" },
     [dal_c_Profile_test] = { dal_c_profile_test, "Test build with basic optimization (-g -O1)" },
     [dal_c_Profile_profile] = { dal_c_profile_profile, "Profile build with optimization (-g -O2)" },
-    [dal_c_Profile_stable] = { dal_c_profile_stable, "Stable build without debug (-g1 -O2)" },
-    [dal_c_Profile_release] = { dal_c_profile_release, "Release build with LTO (-g1 -O3)" },
-    [dal_c_Profile_optimize] = { dal_c_profile_optimize, "Maximum optimization (-O3 -march=native -mtune=native -fno-exceptions)" },
-    [dal_c_Profile_compact] = { dal_c_profile_compact, "Size-optimized build (-Os)" },
-    [dal_c_Profile_micro] = { dal_c_profile_micro, "Extreme size optimization (-Oz)" },
+    [dal_c_Profile_stable] = { dal_c_profile_stable, "Stable build with ThinLTO (-g1 -O2)" },
+    [dal_c_Profile_release] = { dal_c_profile_release, "Release build with ThinLTO, no exceptions/unwind, and safe ICF (-g1 -O3)" },
+    [dal_c_Profile_optimize] = { dal_c_profile_optimize, "Maximum optimization with Full LTO (-O3 -march=native -mtune=native -fno-exceptions)" },
+    [dal_c_Profile_compact] = { dal_c_profile_compact, "Size-optimized build with ThinLTO (-Os)" },
+    [dal_c_Profile_micro] = { dal_c_profile_micro, "Extreme size optimization with ThinLTO (-Oz)" },
 };
 #define dal_c_help_profiles_count ((int)(sizeof(dal_c_help_profiles) / sizeof(dal_c_help_profiles[0])))
 

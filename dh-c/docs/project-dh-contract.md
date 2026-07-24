@@ -25,6 +25,7 @@ pch=<auto|off|path>
 pch-exclude=<header>
 self-root=<path>
 link-dir=<path>
+prebuilt=<auto|off|required>
 ```
 
 Meaning:
@@ -35,6 +36,7 @@ Meaning:
 - `pch=` and `pch-exclude=` control the PCH contract
 - repeated `self-root=` entries declare reusable self-project source roots
 - repeated `link-dir=` entries add library search directories for linked outputs
+- `prebuilt=` selects whether packaged `prebuilt/<profile>` artifacts are preferred, ignored, or required
 
 ### Target-root blocks
 
@@ -343,6 +345,22 @@ Dependency blocks in `project.dh` may additionally set:
 
 ```txt
 test=true
+prebuilt=auto
 ```
 
-to run that dependency's tests during dependency traversal.
+- `test=true` runs that dependency's tests during dependency traversal.
+- `prebuilt=auto|off|required` selects the packaged-artifact policy for that specific dependency. An explicitly written `auto` remains distinct from an inherited value, so a dependency can opt back into optional prebuilt use even when the consumer project defaults to `prebuilt=off`.
+
+Packaged artifacts live outside the mutable build cache:
+
+```txt
+<dependency>/
+  prebuilt/
+    <profile>/
+      libs/
+        libfoo.a
+        libfoo.lto.a
+      deps/
+```
+
+On Windows the corresponding names are `foo.lib`, `foo.lto.lib`, `foo.dll`, and `foo.dll.lib`. The optional `deps/` directory carries transitive staged headers and libraries.

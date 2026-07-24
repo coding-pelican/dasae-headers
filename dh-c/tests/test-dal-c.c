@@ -57,6 +57,7 @@ static void test_compiler_mode_contracts(void);
 static void test_makefile_mode_contracts(void);
 static void test_pch_dependency_invalidates_linked_plan(void);
 static void test_project_detection(void);
+static void test_prebuilt_dependency_staging(void);
 static void test_clean_prefers_local_build_dir(void);
 static void test_clean_profile_removes_dependency_exports(void);
 static void test_target_request_resolution(void);
@@ -99,6 +100,7 @@ int main(void) {
     RUN_TEST(test_makefile_mode_contracts);
     RUN_TEST(test_pch_dependency_invalidates_linked_plan);
     RUN_TEST(test_project_detection);
+    RUN_TEST(test_prebuilt_dependency_staging);
     RUN_TEST(test_clean_prefers_local_build_dir);
     RUN_TEST(test_clean_profile_removes_dependency_exports);
     RUN_TEST(test_target_request_resolution);
@@ -400,6 +402,18 @@ static void test_path_helpers(void) {
     free(header_path);
     free(abs_root);
     free(repo_root);
+
+    char* windows_lto = dal_c__makeLtoStaticLibraryPath("mylib.lib");
+    TEST_ASSERT(str_eql(windows_lto, "mylib.lto.lib"));
+    free(windows_lto);
+
+    char* unix_lto = dal_c__makeLtoStaticLibraryPath("libmylib.a");
+    TEST_ASSERT(str_eql(unix_lto, "libmylib.lto.a"));
+    free(unix_lto);
+
+    char* import_lib = dal_c__makeSharedImportLibraryPath("mylib.dll");
+    TEST_ASSERT(str_eql(import_lib, "mylib.dll.lib"));
+    free(import_lib);
 }
 
 static void test_file_and_dir_helpers(void) {
@@ -540,6 +554,10 @@ static void test_meta_tables(void) {
     TEST_ASSERT(dal_c_LtoMode_parse("full") == dal_c_LtoMode_full);
     TEST_ASSERT(dal_c_LtoMode_parse("thin") == dal_c_LtoMode_thin);
     TEST_ASSERT(str_eql(dal_c_LtoMode_toFlag(dal_c_LtoMode_full), "-flto=full"));
+    TEST_ASSERT(dal_c_PrebuiltMode_parse("auto") == dal_c_PrebuiltMode_auto);
+    TEST_ASSERT(dal_c_PrebuiltMode_parse("off") == dal_c_PrebuiltMode_off);
+    TEST_ASSERT(dal_c_PrebuiltMode_parse("required") == dal_c_PrebuiltMode_required);
+    TEST_ASSERT(str_eql(dal_c_PrebuiltMode_format(dal_c_PrebuiltMode_required), "required"));
     TEST_ASSERT(dal_c_LooseErrorsMode_parse("warn") == dal_c_LooseErrorsMode_warn);
     TEST_ASSERT(dal_c_LooseErrorsMode_parse("suppress") == dal_c_LooseErrorsMode_suppress);
     TEST_ASSERT(dal_c_LooseErrorsMode_parse("auto") == dal_c_LooseErrorsMode_auto);
@@ -550,6 +568,19 @@ static void test_meta_tables(void) {
     TEST_ASSERT(release_spec != NULL);
     TEST_ASSERT(str_eql(release_spec->name, dal_c_profile_release));
     TEST_ASSERT(release_spec->opti_level == dal_c_OptiLevel_aggressive);
+    TEST_ASSERT(release_spec->lto_mode == dal_c_LtoMode_thin);
+    TEST_ASSERT(release_spec->exceptions == dal_c_ToggleState_disabled);
+    TEST_ASSERT(release_spec->unwind_tables == dal_c_ToggleState_disabled);
+    TEST_ASSERT(release_spec->async_unwind_tables == dal_c_ToggleState_disabled);
+    TEST_ASSERT(release_spec->icf_mode == dal_c_IcfMode_safe);
+
+    const dal_c_ProfileSpec* stable_spec = dal_c_ProfileSpec_by(dal_c_Profile_stable);
+    TEST_ASSERT(stable_spec != NULL);
+    TEST_ASSERT(stable_spec->lto_mode == dal_c_LtoMode_thin);
+
+    const dal_c_ProfileSpec* compact_spec = dal_c_ProfileSpec_by(dal_c_Profile_compact);
+    TEST_ASSERT(compact_spec != NULL);
+    TEST_ASSERT(compact_spec->lto_mode == dal_c_LtoMode_thin);
 
     const dal_c_ProfileSpec* fast_spec = dal_c_ProfileSpec_by(dal_c_Profile_fast);
     TEST_ASSERT(fast_spec != NULL);
@@ -564,7 +595,7 @@ static void test_meta_tables(void) {
 
     const dal_c_ProfileSpec* optimize_spec = dal_c_ProfileSpec_by(dal_c_Profile_optimize);
     TEST_ASSERT(optimize_spec != NULL);
-    TEST_ASSERT(optimize_spec->lto_mode == dal_c_LtoMode_on);
+    TEST_ASSERT(optimize_spec->lto_mode == dal_c_LtoMode_full);
     TEST_ASSERT(optimize_spec->function_sections == dal_c_ToggleState_enabled);
     TEST_ASSERT(optimize_spec->data_sections == dal_c_ToggleState_enabled);
     TEST_ASSERT(optimize_spec->gc_sections == dal_c_ToggleState_enabled);
@@ -580,7 +611,7 @@ static void test_meta_tables(void) {
 
     const dal_c_ProfileSpec* micro_spec = dal_c_ProfileSpec_by(dal_c_Profile_micro);
     TEST_ASSERT(micro_spec != NULL);
-    TEST_ASSERT(micro_spec->lto_mode == dal_c_LtoMode_on);
+    TEST_ASSERT(micro_spec->lto_mode == dal_c_LtoMode_thin);
     TEST_ASSERT(micro_spec->function_sections == dal_c_ToggleState_enabled);
     TEST_ASSERT(micro_spec->data_sections == dal_c_ToggleState_enabled);
     TEST_ASSERT(micro_spec->gc_sections == dal_c_ToggleState_enabled);
@@ -713,6 +744,15 @@ static void test_cmd_parse(void) {
         TEST_ASSERT(str_eql(cmd->payload.build.output_path, "app"));
         TEST_ASSERT(cmd->opts.define_count == 1);
         TEST_ASSERT(str_eql(cmd->opts.define_macros[0], "DEBUG"));
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "stable", "--prebuilt=required", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->opts.prebuilt_mode == dal_c_PrebuiltMode_required);
+        TEST_ASSERT(cmd->opts.prebuilt_mode_set);
         dal_c_Cmd_cleanup(&cmd);
     }
 
@@ -2252,12 +2292,25 @@ static void test_project_detection(void) {
     TEST_ASSERT(lib_kind_root != NULL);
     TEST_ASSERT(lib_kind_project_dh != NULL);
     TEST_ASSERT(dir_createRecur(lib_kind_root));
-    TEST_ASSERT(file_write(lib_kind_project_dh, "kind=lib\noutput=core\n"));
+    TEST_ASSERT(file_write(
+        lib_kind_project_dh,
+        "kind=lib\n"
+        "output=core\n"
+        "prebuilt=off\n"
+        "[dep]\n"
+        "path=../dep\n"
+        "prebuilt=auto\n"
+    ));
 
     dal_c_Project* lib_kind_proj = dal_c_Project_detectAt(lib_kind_root, NULL);
     TEST_ASSERT(lib_kind_proj != NULL);
     TEST_ASSERT(lib_kind_proj->defaults.target_kind_set);
     TEST_ASSERT(lib_kind_proj->defaults.target_kind == dal_c_Target_lib);
+    TEST_ASSERT(lib_kind_proj->opts.prebuilt_mode_set);
+    TEST_ASSERT(lib_kind_proj->opts.prebuilt_mode == dal_c_PrebuiltMode_off);
+    TEST_ASSERT(lib_kind_proj->lib_count == 1);
+    TEST_ASSERT(lib_kind_proj->libraries[0].opts.prebuilt_mode_set);
+    TEST_ASSERT(lib_kind_proj->libraries[0].opts.prebuilt_mode == dal_c_PrebuiltMode_auto);
     dal_c_Project_cleanup(&lib_kind_proj);
     free(lib_kind_project_dh);
     free(lib_kind_root);
@@ -2364,6 +2417,93 @@ static void test_project_detection(void) {
     free(workspace_root);
     free(temp_root);
     free(original_cwd);
+}
+
+static void test_prebuilt_dependency_staging(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* consumer_root = path_join(temp_root, "prebuilt-consumer");
+    char* dependency_root = path_join(temp_root, "prebuilt-dependency");
+    char* dependency_include = path_join(dependency_root, "include");
+    char* dependency_header = path_join(dependency_include, "foo.h");
+    char* dependency_project = path_join(dependency_root, "project.dh");
+    char* prebuilt_libs = path_join(dependency_root, "prebuilt/stable/libs");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(consumer_root != NULL);
+    TEST_ASSERT(dependency_root != NULL);
+    TEST_ASSERT(dependency_include != NULL);
+    TEST_ASSERT(dependency_header != NULL);
+    TEST_ASSERT(dependency_project != NULL);
+    TEST_ASSERT(prebuilt_libs != NULL);
+    TEST_ASSERT(dir_createRecur(consumer_root));
+    TEST_ASSERT(dir_createRecur(dependency_include));
+    TEST_ASSERT(dir_createRecur(prebuilt_libs));
+    TEST_ASSERT(file_write(dependency_header, "#pragma once\n"));
+    TEST_ASSERT(file_write(dependency_project, "output=foo\nkind=lib\n"));
+
+#ifdef _WIN32
+    const char* native_name = "foo.lib";
+    const char* lto_name = "foo.lto.lib";
+#else
+    const char* native_name = "libfoo.a";
+    const char* lto_name = "libfoo.lto.a";
+#endif
+    char* native_path = path_join(prebuilt_libs, native_name);
+    char* lto_path = path_join(prebuilt_libs, lto_name);
+    TEST_ASSERT(native_path != NULL);
+    TEST_ASSERT(lto_path != NULL);
+    TEST_ASSERT(file_write(native_path, "native-prebuilt"));
+    TEST_ASSERT(file_write(lto_path, "lto-prebuilt"));
+
+    dal_c_Project consumer = { 0 };
+    consumer.root = consumer_root;
+    consumer.name = "consumer";
+    consumer.opts.prebuilt_mode = dal_c_PrebuiltMode_off;
+    consumer.opts.prebuilt_mode_set = true;
+
+    dal_c_Lib lib = { 0 };
+    lib.name = "foo";
+    lib.path = dependency_root;
+    lib.is_static = true;
+    lib.opts.profile = dal_c_Profile_stable;
+    // A dependency-local explicit auto overrides the consumer-wide off mode.
+    lib.opts.prebuilt_mode = dal_c_PrebuiltMode_auto;
+    lib.opts.prebuilt_mode_set = true;
+
+    dal_c_Cmd cmd = { 0 };
+    cmd.action = dal_c_CmdAction_deps;
+    cmd.opts.profile = dal_c_Profile_stable;
+    TEST_ASSERT(dal_c__buildSingleLibrary(&cmd, &consumer, &lib) == 0);
+
+    char* staged_root = path_join(consumer_root, "lib/deps");
+    char* staged_header = path_join(staged_root, "foo.h");
+    char* staged_native = path_join(staged_root, native_name);
+    char* staged_lto = path_join(staged_root, lto_name);
+    TEST_ASSERT(path_isFile(staged_header));
+    TEST_ASSERT(path_isFile(staged_native));
+    TEST_ASSERT(path_isFile(staged_lto));
+
+    dal_c_Lib missing = lib;
+    missing.name = "missing";
+    missing.opts.prebuilt_mode = dal_c_PrebuiltMode_required;
+    missing.opts.prebuilt_mode_set = true;
+    TEST_ASSERT(dal_c__buildSingleLibrary(&cmd, &consumer, &missing) != 0);
+
+    free(staged_lto);
+    free(staged_native);
+    free(staged_header);
+    free(staged_root);
+    free(lto_path);
+    free(native_path);
+    free(prebuilt_libs);
+    free(dependency_project);
+    free(dependency_header);
+    free(dependency_include);
+    free(dependency_root);
+    free(consumer_root);
+    free(temp_root);
+    test_reset_temp_root();
 }
 
 static void test_clean_prefers_local_build_dir(void) {
