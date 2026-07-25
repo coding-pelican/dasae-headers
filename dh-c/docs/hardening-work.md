@@ -59,3 +59,16 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | P4-A1-S1-T1 | Step 4.1.1 | P3-A2-S1-T1 | final supported behavior | improved `dh-c --help` | command help covers every supported path, option, and constraint accurately | done |
 | P4-A1-S1-T2 | Step 4.1.1 | P4-A1-S1-T1 | final supported behavior and preferred doc style | rewritten `BUILD.md` | guide is complete, user-friendly, and consistent with actual runtime behavior | done |
+
+## Phase 5. Package Integrity Roadmap
+
+### Activity 5.1. Add integrity only when it has a consumer
+
+| task_id | parent_step | depends_on | input | deliverable | acceptance_criteria | status |
+| --- | --- | --- | --- | --- | --- | --- |
+| P5-A1-S1-T1 | Step 5.1.1 | package verify/publish/install ownership design | final package file inventory | SHA-256 package record | every staged file has a SHA-256 digest and at least one command verifies it | planned |
+| P5-A1-S1-T2 | Step 5.1.1 | P5-A1-S1-T1 | signed distribution requirements | optional signature contract | signing is layered over the SHA-256 record without changing the prebuilt compatibility manifest | planned |
+
+The current `manifest.dh` remains a prebuilt compatibility contract. It does not
+claim cryptographic integrity, and no `package-manifest.dh` is generated merely
+for future-proofing.

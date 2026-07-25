@@ -280,6 +280,53 @@ if [ -e "$no_project_clean/build/dev" ]; then
 fi
 rm -rf "$no_project_clean"
 
+# Dependency resolution contract: fetch preserves lock.dh, update deliberately
+# re-resolves it, and status rejects an unlocked checkout.
+lock_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-lock-contract.XXXXXX")
+lock_origin="$lock_contract_root/origin"
+lock_project="$lock_contract_root/project"
+mkdir -p "$lock_origin" "$lock_project"
+git -C "$lock_origin" init -q -b main
+git -C "$lock_origin" config user.email dh-c-test@example.invalid
+git -C "$lock_origin" config user.name dh-c-test
+printf 'one\n' >"$lock_origin/value.txt"
+git -C "$lock_origin" add value.txt
+git -C "$lock_origin" commit -q -m one
+lock_commit_one=$(git -C "$lock_origin" rev-parse HEAD)
+cat >"$lock_project/project.dh" <<EOF
+[dep]
+source=$lock_origin
+revision=main
+provider=cmake
+EOF
+
+invoke_external "0" "$lock_project" "$cli_exe" fetch
+[ -f "$lock_project/lock.dh" ]
+assert_true $? "fetch did not create project-level lock.dh"
+invoke_external "0" "$lock_project" "$cli_exe" status
+assert_contains "$LAST_OUTPUT" "[READY]" "status did not accept the locked checkout"
+
+printf 'two\n' >"$lock_origin/value.txt"
+git -C "$lock_origin" commit -qam two
+lock_commit_two=$(git -C "$lock_origin" rev-parse HEAD)
+invoke_external "0" "$lock_project" "$cli_exe" fetch
+lock_checkout=$(git -C "$lock_project/.dh-c/deps/src/dep" rev-parse HEAD)
+[ "$lock_checkout" = "$lock_commit_one" ]
+assert_true $? "fetch replaced an existing locked dependency resolution"
+
+invoke_external "0" "$lock_project" "$cli_exe" update
+lock_checkout=$(git -C "$lock_project/.dh-c/deps/src/dep" rev-parse HEAD)
+[ "$lock_checkout" = "$lock_commit_two" ]
+assert_true $? "update did not re-resolve the requested dependency revision"
+lock_recorded=$(awk -F= '/^revision=/{print $2}' "$lock_project/lock.dh")
+[ "$lock_recorded" = "$lock_commit_two" ]
+assert_true $? "update did not rewrite lock.dh with the resolved commit"
+
+rm -f "$lock_project/lock.dh"
+invoke_external "1" "$lock_project" "$cli_exe" status
+assert_contains "$LAST_OUTPUT" "[UNLOCKED]" "status did not report a missing dependency lock"
+rm -rf "$lock_contract_root"
+
 if [ "$integration" -eq 1 ]; then
     reset_temp_root
 

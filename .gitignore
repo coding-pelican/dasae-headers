@@ -236,9 +236,12 @@ CMakeUserPresets.json
 # End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,c,c++,objective-c,cmake
 
 ### DH-C ###
-# Project lock file
-.dh-c.lock
-**/.dh-c.lock
+# Generated project/workspace state and ad-hoc fallback cache.
+# Persistent dependency lock.dh files are intentionally not ignored.
+.dh-c/
+**/.dh-c/
+.dh-c-cache/
+**/.dh-c-cache/
 
 # Log files
 *.log*

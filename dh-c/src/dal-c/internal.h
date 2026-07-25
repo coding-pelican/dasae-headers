@@ -90,6 +90,8 @@ bool dal_c_VersionSpec_parseCore(dal_c_VersionSpec* dst, const char* value);
 bool dal_c_VersionSpec_parsePrefix(dal_c_VersionSpec* dst, const char* value);
 bool dal_c_VersionSpec_parseSuffix(dal_c_VersionSpec* dst, const char* value);
 bool dal_c_VersionSpec_parseBuild(dal_c_VersionSpec* dst, const char* value);
+bool dal_c_Project_readDependencyLock(const dal_c_Project* proj, const dal_c_Lib* lib, char** revision_out, char** reason_out);
+bool dal_c_Project_dependencyCheckoutMatchesLock(const dal_c_Project* proj, const dal_c_Lib* lib, char** reason_out);
 
 void dal_c__printVerbose(const dal_c_Cmd* cmd, const char* fmt, ...) dal_c__printf_format(2, 3);
 void dal_c__printError(const char* fmt, ...) dal_c__printf_format(1, 2);

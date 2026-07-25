@@ -3,16 +3,20 @@
 #include "dal-c-ext/dir.h"
 #include "dal-c-ext/file.h"
 #include "dal-c-ext/env.h"
+#include "dal-c-ext/proc.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #if !defined(_WIN32)
 #include <unistd.h>
 #endif
 
 // === PRIVATE HELPERS ===
 
+static char* dal_c_Project__trimInPlace(char* text);
 static char* dal_c_Project__findRoot(const char* start);
+static char* dal_c_Project__findWorkspaceRoot(const char* start);
 static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd);
 static char* dal_c_Project__normalizeDHPath(const char* path);
 static bool dal_c_Project__isDHRoot(const char* path);
@@ -54,6 +58,7 @@ dal_c_Project* dal_c_Project_detect(const dal_c_Cmd* cmd) {
 
     char* cwd = env_getCWD();
     proj->root = dal_c_Project__findRoot(cwd);
+    proj->workspace_root = dal_c_Project__findWorkspaceRoot(proj->root ? proj->root : cwd);
     free(cwd);
 
     if (proj->root) {
@@ -85,6 +90,7 @@ dal_c_Project* dal_c_Project_detectAt(const char* lib_path, const char* dh_path)
     if (!proj) { return NULL; }
 
     proj->root = path_abs(lib_path);
+    proj->workspace_root = dal_c_Project__findWorkspaceRoot(proj->root);
     proj->name = path_basename(proj->root);
     proj->dh_path = dal_c_Project__normalizeDHPath(dh_path);
     proj->project_dh = path_join(proj->root, dal_c_file_detector_project);
@@ -127,6 +133,7 @@ void dal_c_Project_cleanup(dal_c_Project** self) {
     free(proj->name);
     free(proj->dh_path);
     free(proj->project_dh);
+    free(proj->workspace_root);
     free(proj->src_dir_name);
     free(proj->include_dir_name);
     free(proj->tests_dir_name);
@@ -437,7 +444,7 @@ bool dal_c_BuildDefaults_applyDHFile(dal_c_BuildDefaults* dst, const char* path)
 
     bool applied = false;
     for (int i = 0; i < line_count; ++i) {
-        char* line = str_trim(lines[i]);
+        char* line = dal_c_Project__trimInPlace(lines[i]);
         if (strlen(line) == 0 || line[0] == '#' || line[0] == ';' || line[0] == '[') {
             continue;
         }
@@ -445,7 +452,7 @@ bool dal_c_BuildDefaults_applyDHFile(dal_c_BuildDefaults* dst, const char* path)
         char* eq = strchr(line, '=');
         if (!eq) { continue; }
         *eq = '\0';
-        dal_c_Project__applyBuildDefaultsLine(dst, str_trim(line), str_trim(eq + 1));
+        dal_c_Project__applyBuildDefaultsLine(dst, dal_c_Project__trimInPlace(line), dal_c_Project__trimInPlace(eq + 1));
         applied = true;
     }
 
@@ -463,7 +470,7 @@ bool dal_c_CompilerOpts_applyDHFile(dal_c_CompilerOpts* dst, const char* path) {
 
     bool applied = false;
     for (int i = 0; i < line_count; ++i) {
-        char* line = str_trim(lines[i]);
+        char* line = dal_c_Project__trimInPlace(lines[i]);
         if (strlen(line) == 0 || line[0] == '#' || line[0] == ';' || line[0] == '[') {
             continue;
         }
@@ -471,7 +478,7 @@ bool dal_c_CompilerOpts_applyDHFile(dal_c_CompilerOpts* dst, const char* path) {
         char* eq = strchr(line, '=');
         if (!eq) { continue; }
         *eq = '\0';
-        dal_c_Project__applyPropertyLine(dst, str_trim(line), str_trim(eq + 1));
+        dal_c_Project__applyPropertyLine(dst, dal_c_Project__trimInPlace(line), dal_c_Project__trimInPlace(eq + 1));
         applied = true;
     }
 
@@ -529,6 +536,22 @@ char* dal_c_Project_getBuildDir(const dal_c_Project* proj) {
     assert(proj != NULL);
     assert(proj->root != NULL);
     return path_join(proj->root, dal_c_dir_build);
+}
+
+char* dal_c_Project_getStateRoot(const dal_c_Project* proj) {
+    assert(proj != NULL);
+    /* Mutable dependency checkouts belong to the project that owns lock.dh.
+       A workspace may share build cache, but it must not merge mutable source
+       trees from projects that can resolve the same dependency name differently. */
+    const char* scope = proj->root ? proj->root : proj->workspace_root;
+    if (!scope) { return NULL; }
+    return path_join(scope, ".dh-c");
+}
+
+char* dal_c_Project_getDependencyLockPath(const dal_c_Project* proj) {
+    assert(proj != NULL);
+    if (!proj->root) { return NULL; }
+    return path_join(proj->root, "lock.dh");
 }
 
 const char* dal_c_Project_getCategoryDirName(const dal_c_Project* proj, const char* canonical_name) {
@@ -708,8 +731,20 @@ bool dal_c_TargetRequest_resolve(const dal_c_Project* proj, const dal_c_CommandI
 
 // === PRIVATE IMPLEMENTATIONS ===
 
+static char* dal_c_Project__trimInPlace(char* text) {
+    if (!text) { return NULL; }
+    char* start = text;
+    while (*start && isspace((unsigned char)*start)) { ++start; }
+    char* end = start + strlen(start);
+    while (end > start && isspace((unsigned char)end[-1])) { --end; }
+    size_t len = (size_t)(end - start);
+    if (start != text && len > 0) { memmove(text, start, len); }
+    text[len] = '\0';
+    return text;
+}
+
 static char* dal_c_Project__findRoot(const char* start) {
-    char* current = start ? strdup(start) : NULL;
+    char* current = start ? path_abs(start) : NULL;
     while (current && strlen(current) > 0) {
         char* project_dh = path_join(current, dal_c_file_detector_project);
         bool has_project_dh = path_isFile(project_dh);
@@ -718,16 +753,51 @@ static char* dal_c_Project__findRoot(const char* start) {
             return current;
         }
 
+        /* workspace.dh is a discovery boundary. An ad-hoc build inside a
+           workspace must not inherit an unrelated project.dh above it. */
+        char* workspace_dh = path_join(current, dal_c_file_detector_workspace);
+        bool has_workspace_dh = workspace_dh && path_isFile(workspace_dh);
+        free(workspace_dh);
+        if (has_workspace_dh) {
+            free(current);
+            return NULL;
+        }
+
         char* parent = path_parent(current);
         if (!parent || str_eql(parent, current)) {
-            free(current);
             free(parent);
+            free(current);
+            current = NULL;
             break;
         }
         free(current);
         current = parent;
     }
+    free(current);
+    return NULL;
+}
 
+static char* dal_c_Project__findWorkspaceRoot(const char* start) {
+    char* current = start ? path_abs(start) : NULL;
+    while (current && current[0] != '\0') {
+        char* workspace_dh = path_join(current, dal_c_file_detector_workspace);
+        bool has_workspace_dh = workspace_dh && path_isFile(workspace_dh);
+        free(workspace_dh);
+        if (has_workspace_dh) {
+            return current;
+        }
+
+        char* parent = path_parent(current);
+        if (!parent || str_eql(parent, current)) {
+            free(parent);
+            free(current);
+            current = NULL;
+            break;
+        }
+        free(current);
+        current = parent;
+    }
+    free(current);
     return NULL;
 }
 
@@ -768,13 +838,15 @@ static char* dal_c_Project__findDHInstallation(const dal_c_Cmd* cmd) {
 
         char* parent = path_parent(current);
         if (!parent || str_eql(parent, current)) {
-            free(current);
             free(parent);
+            free(current);
+            current = NULL;
             break;
         }
         free(current);
         current = parent;
     }
+    free(current);
 
     char* dh_home = env_get("DH_HOME");
     if (dal_c_Project__isDHRoot(dh_home)) {
@@ -1105,8 +1177,8 @@ static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
     assert(lib != NULL);
 
     if (!lib->path && lib->source && lib->source[0] != '\0' && lib->name) {
-        char* state_root = path_join(proj->root, ".dh-c");
-        char* deps_root = path_join(state_root, "deps");
+        char* state_root = dal_c_Project_getStateRoot(proj);
+        char* deps_root = state_root ? path_join(state_root, "deps") : NULL;
         char* src_root = path_join(deps_root, "src");
         lib->path = path_join(src_root, lib->name);
         free(src_root);
@@ -1281,6 +1353,138 @@ static void dal_c_Project__applyTargetRootLine(dal_c_TargetRoot* root, const dal
     }
 }
 
+
+static void dal_c_Project__setLockReason(char** reason_out, const char* text) {
+    if (!reason_out) { return; }
+    free(*reason_out);
+    *reason_out = text ? strdup(text) : NULL;
+}
+
+bool dal_c_Project_readDependencyLock(const dal_c_Project* proj, const dal_c_Lib* lib, char** revision_out, char** reason_out) {
+    if (revision_out) { *revision_out = NULL; }
+    if (reason_out) { *reason_out = NULL; }
+    if (!proj || !proj->root || !lib || !lib->name) {
+        dal_c_Project__setLockReason(reason_out, "dependency lock scope is unavailable");
+        return false;
+    }
+
+    char* lock_path = dal_c_Project_getDependencyLockPath(proj);
+    if (!lock_path || !path_isFile(lock_path)) {
+        char* reason = str_format("missing dependency lock: %s", lock_path ? lock_path : "lock.dh");
+        dal_c_Project__setLockReason(reason_out, reason);
+        free(reason);
+        free(lock_path);
+        return false;
+    }
+
+    int line_count = 0;
+    char** lines = file_readLines(lock_path, &line_count);
+    if (!lines) {
+        char* reason = str_format("failed to read dependency lock: %s", lock_path);
+        dal_c_Project__setLockReason(reason_out, reason);
+        free(reason);
+        free(lock_path);
+        return false;
+    }
+
+    bool in_section = false;
+    bool found = false;
+    char* provider = NULL;
+    char* source = NULL;
+    char* revision = NULL;
+    for (int i = 0; i < line_count; ++i) {
+        char* line = dal_c_Project__trimInPlace(lines[i]);
+        if (!line[0] || line[0] == '#' || line[0] == ';') { continue; }
+        if (line[0] == '[') {
+            char* end = strchr(line, ']');
+            if (!end) { continue; }
+            *end = '\0';
+            if (in_section) { break; }
+            in_section = str_eql(dal_c_Project__trimInPlace(line + 1), lib->name);
+            found = found || in_section;
+            continue;
+        }
+        if (!in_section) { continue; }
+        char* eq = strchr(line, '=');
+        if (!eq) { continue; }
+        *eq = '\0';
+        const char* key = dal_c_Project__trimInPlace(line);
+        const char* value = dal_c_Project__trimInPlace(eq + 1);
+        if (str_eql(key, "provider")) {
+            free(provider);
+            provider = strdup(value);
+        } else if (str_eql(key, "source")) {
+            free(source);
+            source = strdup(value);
+        } else if (str_eql(key, "revision")) {
+            free(revision);
+            revision = strdup(value);
+        }
+    }
+    dal_c_Project__freeLines(lines, line_count);
+
+    const char* expected_provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+    bool ok = found && provider && source && revision && revision[0]
+           && str_eql(provider, expected_provider)
+           && lib->source && str_eql(source, lib->source);
+    if (!ok) {
+        char* reason = NULL;
+        if (!found) {
+            reason = str_format("dependency `%s` is not recorded in %s", lib->name, lock_path);
+        } else if (!provider || !str_eql(provider, expected_provider)) {
+            reason = str_format("dependency `%s` provider differs from %s", lib->name, lock_path);
+        } else if (!source || !lib->source || !str_eql(source, lib->source)) {
+            reason = str_format("dependency `%s` source differs from %s", lib->name, lock_path);
+        } else {
+            reason = str_format("dependency `%s` has no resolved revision in %s", lib->name, lock_path);
+        }
+        dal_c_Project__setLockReason(reason_out, reason);
+        free(reason);
+    } else if (revision_out) {
+        *revision_out = strdup(revision);
+    }
+
+    free(revision);
+    free(source);
+    free(provider);
+    free(lock_path);
+    return ok;
+}
+
+bool dal_c_Project_dependencyCheckoutMatchesLock(const dal_c_Project* proj, const dal_c_Lib* lib, char** reason_out) {
+    if (reason_out) { *reason_out = NULL; }
+    if (!lib || !lib->source || !lib->source[0]) { return true; }
+
+    char* locked_revision = NULL;
+    if (!dal_c_Project_readDependencyLock(proj, lib, &locked_revision, reason_out)) {
+        free(locked_revision);
+        return false;
+    }
+    if (!lib->path || !path_isDir(lib->path)) {
+        char* reason = str_format("dependency `%s` source checkout is missing; run `dh-c fetch`", lib->name);
+        dal_c_Project__setLockReason(reason_out, reason);
+        free(reason);
+        free(locked_revision);
+        return false;
+    }
+
+    const char* argv[] = { "git", "-C", lib->path, "rev-parse", "HEAD", NULL };
+    char* head = proc_output(argv);
+    char* trimmed = head ? dal_c_Project__trimInPlace(head) : NULL;
+    bool ok = trimmed && str_eql(trimmed, locked_revision);
+    if (!ok) {
+        char* reason = str_format(
+            "dependency `%s` checkout does not match lock.dh: checkout=%s locked=%s",
+            lib->name, trimmed && trimmed[0] ? trimmed : "(unavailable)", locked_revision
+        );
+        dal_c_Project__setLockReason(reason_out, reason);
+        free(reason);
+    }
+    free(head);
+    free(locked_revision);
+    return ok;
+}
+
 static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj) {
     int line_count = 0;
     char** lines = file_readLines(path, &line_count);
@@ -1291,7 +1495,7 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
     proj->opts.profile = dal_c_Profile_invalid;
 
     for (int i = 0; i < line_count; ++i) {
-        char* line = str_trim(lines[i]);
+        char* line = dal_c_Project__trimInPlace(lines[i]);
         if (strlen(line) == 0 || line[0] == '#' || line[0] == ';') {
             continue;
         }
@@ -1331,9 +1535,9 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
                 return false;
             }
             *end = '\0';
-            char* section = str_trim(line + 1);
+            char* section = dal_c_Project__trimInPlace(line + 1);
             if (str_startsWith(section, dal_c_project_section_target_root " ")) {
-                const char* name = str_trim(section + strlen(dal_c_project_section_target_root));
+                const char* name = dal_c_Project__trimInPlace(section + strlen(dal_c_project_section_target_root));
                 current_target_root = calloc(1, sizeof(dal_c_TargetRoot));
                 assert(current_target_root != NULL);
                 current_target_root->name = strdup(name);
@@ -1354,8 +1558,8 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
         char* eq = strchr(line, '=');
         if (!eq) { continue; }
         *eq = '\0';
-        const char* key = str_trim(line);
-        const char* value = str_trim(eq + 1);
+        const char* key = dal_c_Project__trimInPlace(line);
+        const char* value = dal_c_Project__trimInPlace(eq + 1);
         if (!current_lib && !current_target_root && str_eql(key, dal_c_project_prop_pch)) {
             if (str_eql(value, dal_c_pch_value_off)) {
                 proj->pch_enabled = false;

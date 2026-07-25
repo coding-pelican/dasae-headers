@@ -187,20 +187,42 @@ static int dal_c_Cmd__held_lock_count = 0;
 static double dal_c_Cmd__elapsed_lock_wait_seconds = 0.0;
 static dal_c_Cmd__ElapsedPhases dal_c_Cmd__elapsed_phases = { 0 };
 
-static char* dal_c_Cmd__makeProjectLockPath(const char* root) {
-    char* base_dir = NULL;
-    if (root && root[0] != '\0') {
-        base_dir = strdup(root);
-    } else {
-        char* cwd = env_getCWD();
-        base_dir = cwd ? cwd : strdup(".");
+static unsigned long long dal_c_Cmd__lockPathHash(const char* text) {
+    unsigned long long hash = 1469598103934665603ULL;
+    for (const unsigned char* p = (const unsigned char*)(text ? text : ""); *p; ++p) {
+        hash ^= (unsigned long long)*p;
+        hash *= 1099511628211ULL;
     }
-    if (!base_dir) {
-        return NULL;
+    return hash;
+}
+
+static char* dal_c_Cmd__makeProjectLockPath(const char* root) {
+    if (root && root[0] != '\0') {
+        char* state_dir = path_join(root, ".dh-c");
+        if (!state_dir || !dir_createRecur(state_dir)) {
+            free(state_dir);
+            return NULL;
+        }
+        char* lock_path = path_join(state_dir, "build.lock");
+        free(state_dir);
+        return lock_path;
     }
 
-    char* lock_path = path_join(base_dir, ".dh-c.lock");
-    free(base_dir);
+    char* cwd = env_getCWD();
+    char* cache_root = dal_c__cacheBaseDir(NULL);
+    char* locks_dir = cache_root ? path_join(cache_root, "locks") : NULL;
+    if (!locks_dir || !dir_createRecur(locks_dir)) {
+        free(locks_dir);
+        free(cache_root);
+        free(cwd);
+        return NULL;
+    }
+    char* lock_name = str_format("%016llx.lock", dal_c_Cmd__lockPathHash(cwd ? cwd : "."));
+    char* lock_path = lock_name ? path_join(locks_dir, lock_name) : NULL;
+    free(lock_name);
+    free(locks_dir);
+    free(cache_root);
+    free(cwd);
     return lock_path;
 }
 
@@ -274,7 +296,12 @@ bool dal_c__projectLockAcquireAt(const char* root, dal_c_ProjectLock* lock) {
 }
 
 bool dal_c__projectLockAcquire(const dal_c_Project* proj, dal_c_ProjectLock* lock) {
-    return dal_c__projectLockAcquireAt((proj && proj->root) ? proj->root : NULL, lock);
+    /* The long-lived process lock protects one project's mutable outputs. A
+       workspace-shared cache must not serialize every independent project build;
+       its entries are keyed and materialized independently. Ad-hoc builds use
+       the cwd-derived lock in the global lock directory. */
+    const char* scope = proj ? proj->root : NULL;
+    return dal_c__projectLockAcquireAt(scope, lock);
 }
 
 void dal_c__projectLockRelease(dal_c_ProjectLock* lock) {
@@ -4459,11 +4486,12 @@ static int dal_c_Cmd__writeVersionDHFile(const char* path, const dal_c_VersionSp
         }
 
         char* trimmed = str_trim(scratch);
-        if (trimmed[0] != '\0' && trimmed[0] != '#' && trimmed[0] != ';' && trimmed[0] != '[') {
+        char* key = NULL;
+        if (trimmed && trimmed[0] != '\0' && trimmed[0] != '#' && trimmed[0] != ';' && trimmed[0] != '[') {
             char* eq = strchr(trimmed, '=');
             if (eq) {
                 *eq = '\0';
-                char* key = str_trim(trimmed);
+                key = str_trim(trimmed);
                 const char* replacement_key = NULL;
                 const char* replacement_value = NULL;
 
@@ -4493,12 +4521,16 @@ static int dal_c_Cmd__writeVersionDHFile(const char* path, const dal_c_VersionSp
                     char* next = str_format("%s%s=%s\n", content, replacement_key, replacement_value ? replacement_value : "");
                     free(content);
                     content = next;
+                    free(key);
+                    free(trimmed);
                     free(scratch);
                     continue;
                 }
             }
         }
 
+        free(key);
+        free(trimmed);
         char* next = str_format("%s%s\n", content, preserved);
         free(content);
         content = next;

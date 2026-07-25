@@ -12,18 +12,23 @@ A platform-specific SDK or dependency package uses:
 <project>/
   include/
   prebuilt/
-    dev/
-      libs/
-      deps/
-    test/
-      libs/
-      deps/
-    stable/
-      libs/
-      deps/
-    release/
-      libs/
-      deps/
+    <normalized-target>/
+      dev/
+        manifest.dh
+        libs/
+        deps/
+      test/
+        manifest.dh
+        libs/
+        deps/
+      stable/
+        manifest.dh
+        libs/
+        deps/
+      release/
+        manifest.dh
+        libs/
+        deps/
 ```
 
 `libs/` contains the package's own artifacts. `deps/` is optional and contains transitive headers and link artifacts in the same relative layout that would otherwise be staged under `lib/deps/`.
@@ -95,7 +100,7 @@ There is currently no `compat` build profile. Portability should remain a target
 
 ## Artifact manifest
 
-New packages should include `manifest.dh` in each target/profile directory. dh-c validates
-the normalized target, profile, and effective LTO state before using a packaged artifact.
-See [artifact-manifest.md](artifact-manifest.md). Packages without a manifest remain accepted
-as legacy packages during migration.
+Every target/profile directory must contain `manifest.dh`. dh-c rejects a missing,
+malformed, unknown-key, or incompatible manifest before using the packaged artifact.
+There is no legacy package fallback and no manifest format/version selector.
+See [artifact-manifest.md](artifact-manifest.md).

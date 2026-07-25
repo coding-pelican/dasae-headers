@@ -1347,6 +1347,7 @@ struct dal_c_Project {
     char* name;
     char* dh_path;
     char* project_dh;
+    char* workspace_root;
     char* src_dir_name;
     char* include_dir_name;
     char* tests_dir_name;
@@ -1375,6 +1376,8 @@ dal_c_Project* dal_c_Project_detectAt(const char* lib_path, const char* dh_path)
 void dal_c_Project_cleanup(dal_c_Project** self);
 char* dal_c_Project_findDHInstallation(const dal_c_Cmd* cmd);
 char* dal_c_Project_getBuildDir(const dal_c_Project* proj);
+char* dal_c_Project_getStateRoot(const dal_c_Project* proj);
+char* dal_c_Project_getDependencyLockPath(const dal_c_Project* proj);
 char* dal_c_Project_getLibDir(const dal_c_Project* proj);
 char* dal_c_Project_getSrcDir(const dal_c_Project* proj);
 char* dal_c_Project_getIncludeDir(const dal_c_Project* proj);

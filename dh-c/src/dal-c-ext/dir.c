@@ -295,6 +295,7 @@ char** dir_listRecur(const char* path, int* count) {
                     }
                     free((void*)sub_files);
                 }
+                free(full_path);
             } else {
                 // Add file
                 if (!dir__pushPath(&files, count, &capacity, full_path)) {
@@ -330,6 +331,7 @@ char** dir_listRecur(const char* path, int* count) {
                 }
                 free((void*)sub_files);
             }
+            free(full_path);
         } else {
             // Add file
             if (!dir__pushPath(&files, count, &capacity, full_path)) {
