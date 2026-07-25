@@ -1306,7 +1306,8 @@ typedef struct dal_c_Cmd {
     dal_c_VersionRecordMode version_record_mode; // --version-record=<mode>
     bool show_commands; // --commands=show|hide
     bool dry_run; // plan/explain: generate the real build plan without executing it
-    bool explain_rebuild; // explain whether the generated plan was reused or refreshed
+    bool plan_only; // command was invoked through `plan`
+    bool explain_rebuild; // command was invoked through `explain rebuild`
     bool verbose; // --verbose
     bool show_progress; // --progress=show|hide
     int elapsed_precision; // --elapsed-precision=<0..9>
@@ -1538,7 +1539,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_link_crt dal_c_opt_value_sep "<on|off>", "Toggle the `link-start-files` bundle" },
     { dal_c_opt_prefix_long dal_c_opt_link_mode dal_c_opt_value_sep "<auto|static|shared>", "Select link mode for executable dependencies or library artifact kind (default: " dal_c_default_link_mode ")" },
     { dal_c_opt_prefix_long dal_c_opt_lto dal_c_opt_value_sep "<auto|off|on|full|thin>", "Override profile LTO policy for compile and link flags" },
-    { dal_c_opt_prefix_long dal_c_opt_prebuilt dal_c_opt_value_sep "<auto|off|required>", "Use packaged `prebuilt/<profile>` artifacts, fall back to source, or require them" },
+    { dal_c_opt_prefix_long dal_c_opt_prebuilt dal_c_opt_value_sep "<auto|off|required>", "Use packaged `prebuilt/<normalized-target>/<profile>` artifacts, fall back to source, or require them" },
     { dal_c_opt_prefix_long dal_c_opt_omit_frame_pointer dal_c_opt_value_sep "<auto|on|off>", "Emit or omit frame-pointer omission flags" },
     { dal_c_opt_prefix_long dal_c_opt_function_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile function section splitting (`-ffunction-sections`)" },
     { dal_c_opt_prefix_long dal_c_opt_data_sections dal_c_opt_value_sep "<auto|on|off>", "Override profile data section splitting (`-fdata-sections`)" },
@@ -1721,7 +1722,10 @@ static const char* const dal_c_help_build_notes[] = {
     "Default profile is `dev`; default compiler is `" dal_c_default_compiler "`; default C standard is `" dal_c_default_c_std "`.",
     "`--output` is interpreted as an existing directory or as an output stem; platform artifact extensions are generated.",
     "`--output-ext=<.ext>` overrides the generated extension for one artifact, for example `--shared --output _mad --output-ext=.pyd`.",
-    "`kind=lib` / `--lib` with `link-mode=auto` emits both static and shared libraries, so it cannot use one `--output-ext`.",
+    "A project or target-root declared as `kind=lib` emits native static and shared libraries in every profile; effective LTO additionally emits a `.lto` static archive.",
+    "Explicit `dh-c lib` / `build --lib` remains a single-artifact request by default; use `--shared` for the shared form.",
+    "Windows shared builds also emit the matching `.dll.lib` import library.",
+    "A real implicit-host build exposes its normalized target directory through `build/native`; inspection-only commands do not materialize it.",
     "Use structured `--link-dir`/`-L` plus `--link`/`-l` before falling back to raw `--link-args`.",
 };
 #define dal_c_help_build_notes_count ((int)(sizeof(dal_c_help_build_notes) / sizeof(dal_c_help_build_notes[0])))
@@ -1743,8 +1747,9 @@ static const char* const dal_c_help_lib_examples[] = {
 static const char* const dal_c_help_lib_notes[] = {
     "`lib` is an alias for `build --lib`; prefer `build --lib` in new scripts.",
     "It accepts the same compile, link, selection, output, profile, and diagnostic options as `build`.",
-    "`--static` emits only the static library; `--shared` emits only the shared library; `auto` emits both.",
-    "When both static and shared outputs are emitted, `--output` must be a directory or stem shared by both generated names.",
+    "Without an explicit link mode, `lib` emits the static library selected by the active profile; `--shared` selects the shared form.",
+    "A project or target-root declared as `kind=lib` is different: it always emits the native static and shared artifacts as one library set.",
+    "Profiles with effective LTO additionally emit the `.lto` static archive; Windows shared builds also emit `.dll.lib`.",
 };
 #define dal_c_help_lib_notes_count ((int)(sizeof(dal_c_help_lib_notes) / sizeof(dal_c_help_lib_notes[0])))
 
@@ -1794,6 +1799,8 @@ static const char* const dal_c_help_test_notes[] = {
     "`test` builds selected tests and runs the generated test executable once.",
     "Accepted build-compatible groups: compiler/target/profile flags, `-I`/`-D`/`-U`, `--link-dir`, `--link`, `--link-args`, source selection, and `--output`.",
     "`--sample`, `--example`, and `--test` select which target family is tested.",
+    "For `kind=lib`, test/sample/example consumers first materialize the same complete library set as a normal library build.",
+    "The final `[TEST]` block reports status, child exit code, executable, and elapsed time; per-phase timings are shown with `--verbose`.",
     "`--args` means test runtime arguments for `test`; use `--comp-args` for compiler flags.",
 };
 #define dal_c_help_test_notes_count ((int)(sizeof(dal_c_help_test_notes) / sizeof(dal_c_help_test_notes[0])))
@@ -1821,7 +1828,8 @@ static const char* const dal_c_help_deps_notes[] = {
     "`deps` builds declared dependencies; external providers are built and privately installed into target/profile package caches.",
     "It reads dependency blocks from `project.dh`; direct compile/link/source/output flags are not accepted by `deps`.",
     "Generated dependency headers and libraries live under `lib/`; PCH files live in the active cache plan.",
-    "`--prebuilt=auto` reads `prebuilt/<profile>` packages when present; `required` fails instead of compiling source.",
+    "CMake/Make/custom providers receive the effective target, compiler, archiver, sysroot, and target C flags through their provider contract.",
+    "`--prebuilt=auto` reads `prebuilt/<normalized-target>/<profile>` packages when present; `required` fails instead of compiling source.",
 };
 #define dal_c_help_deps_notes_count ((int)(sizeof(dal_c_help_deps_notes) / sizeof(dal_c_help_deps_notes[0])))
 

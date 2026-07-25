@@ -132,9 +132,15 @@ without either project or workspace use the user/global dh-c cache.
 
 ### CMake
 
-During `dh-c deps`, CMake dependencies are configured and built out-of-source,
-then privately installed with `CMAKE_INSTALL_PREFIX` set to the dependency
-package directory.
+During `dh-c deps`, CMake dependencies are configured and built out-of-source.
+`dh-c package`/provider installation privately installs them with
+`CMAKE_INSTALL_PREFIX` set to the dependency package directory.
+
+The configure contract forwards the effective compiler, archiver, target triple,
+and sysroot through `CMAKE_C_COMPILER`, `CMAKE_AR`,
+`CMAKE_C_COMPILER_TARGET`, and `CMAKE_SYSROOT`. If
+`DH_DEP_CMAKE_TOOLCHAIN_FILE` is set, it is forwarded as
+`CMAKE_TOOLCHAIN_FILE`.
 
 Profile mapping:
 
@@ -145,9 +151,11 @@ Profile mapping:
 
 ### Make
 
-The default build is `make -C <source>`. Installation is
-`make -C <source> install PREFIX=<package>`. `build-command=` or
-`install-command=` overrides the respective command.
+The default build runs `make` from the dependency source directory. Installation
+runs `make install PREFIX=<package>` there. `build-command=` or
+`install-command=` overrides the respective command. The process receives the
+same effective target environment as custom providers, including `CC`, `AR`,
+and `CFLAGS`.
 
 ### Custom
 
@@ -160,6 +168,13 @@ DH_DEP_BUILD
 DH_DEP_PACKAGE
 DH_DEP_PROFILE
 DH_DEP_TARGET
+DH_DEP_CC
+DH_DEP_AR
+DH_DEP_SYSROOT
+DH_DEP_CFLAGS
+CC
+AR
+CFLAGS
 ```
 
 ### Prebuilt

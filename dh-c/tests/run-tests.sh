@@ -38,6 +38,7 @@ case "$(uname -s)" in
         lib_kind_shared_pattern="core.dll"
         lib_kind_static_pattern="core.lib"
         lib_kind_lto_static_pattern="core.lto.lib"
+        lib_kind_import_pattern="core.dll.lib"
         static_lib_pattern="*.lib"
         ;;
     *)
@@ -46,6 +47,7 @@ case "$(uname -s)" in
         lib_kind_shared_pattern="libcore.so"
         lib_kind_static_pattern="libcore.a"
         lib_kind_lto_static_pattern="libcore.lto.a"
+        lib_kind_import_pattern=""
         static_lib_pattern="*.a"
         ;;
 esac
@@ -347,20 +349,123 @@ invoke_external "0" "$lock_project" "$cli_exe" clean --deps --older-than=0s --fo
 assert_true $? "forced dependency cleanup did not remove the dirty checkout"
 rm -rf "$lock_contract_root"
 
+case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) ;;
+    *)
+        provider_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-provider-contract.XXXXXX")
+        provider_bin="$provider_contract_root/bin"
+        provider_source="$provider_contract_root/source"
+        provider_sysroot="$provider_contract_root/sysroot"
+        mkdir -p "$provider_bin" "$provider_source" "$provider_sysroot"
+
+        cat >"$provider_bin/cmake" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$*" >>"$DH_TEST_PROVIDER_LOG"
+exit 0
+EOF
+        chmod +x "$provider_bin/cmake"
+        cmake_project="$provider_contract_root/cmake-project"
+        mkdir -p "$cmake_project"
+        cat >"$cmake_project/project.dh" <<EOF
+output=provider-contract
+link-dsl=off
+
+[dep]
+path=$provider_source
+provider=cmake
+EOF
+        cmake_log="$provider_contract_root/cmake.log"
+        invoke_external "0" "$cmake_project" env             PATH="$provider_bin:$PATH"             DH_TEST_PROVIDER_LOG="$cmake_log"             "$cli_exe" deps dev             --target=aarch64-w64-windows-gnu             --sysroot="$provider_sysroot"             --compiler=clang-cross
+        cmake_text=$(cat "$cmake_log")
+        assert_contains "$cmake_text" "-DCMAKE_C_COMPILER=clang-cross" "CMake provider did not receive the effective compiler"
+        assert_contains "$cmake_text" "-DCMAKE_AR=llvm-ar" "CMake provider did not receive the archiver"
+        assert_contains "$cmake_text" "-DCMAKE_C_COMPILER_TARGET=aarch64-w64-windows-gnu" "CMake provider did not receive the target triple"
+        assert_contains "$cmake_text" "-DCMAKE_SYSROOT=$provider_sysroot" "CMake provider did not receive the sysroot"
+
+        cat >"$provider_bin/make" <<'EOF'
+#!/bin/sh
+{
+    printf 'target=%s\n' "$DH_DEP_TARGET"
+    printf 'cc=%s\n' "$DH_DEP_CC"
+    printf 'ar=%s\n' "$DH_DEP_AR"
+    printf 'sysroot=%s\n' "$DH_DEP_SYSROOT"
+    printf 'cflags=%s\n' "$DH_DEP_CFLAGS"
+    printf 'args=%s\n' "$*"
+} >>"$DH_TEST_PROVIDER_LOG"
+exit 0
+EOF
+        chmod +x "$provider_bin/make"
+        make_project="$provider_contract_root/make-project"
+        mkdir -p "$make_project"
+        cat >"$make_project/project.dh" <<EOF
+output=provider-contract
+link-dsl=off
+
+[dep]
+path=$provider_source
+provider=make
+EOF
+        make_log="$provider_contract_root/make.log"
+        invoke_external "0" "$make_project" env             PATH="$provider_bin:$PATH"             DH_TEST_PROVIDER_LOG="$make_log"             "$cli_exe" deps dev             --target=aarch64-w64-windows-gnu             --sysroot="$provider_sysroot"             --compiler=clang-cross
+        make_text=$(cat "$make_log")
+        assert_contains "$make_text" "target=aarch64-w64-windows-gnu" "Make provider did not receive the target triple"
+        assert_contains "$make_text" "cc=clang-cross" "Make provider did not receive the effective compiler"
+        assert_contains "$make_text" "ar=llvm-ar" "Make provider did not receive the archiver"
+        assert_contains "$make_text" "sysroot=$provider_sysroot" "Make provider did not receive the sysroot"
+        assert_contains "$make_text" "cflags=--target=aarch64-w64-windows-gnu --sysroot=$provider_sysroot" "Make provider did not receive target C flags"
+        rm -rf "$provider_contract_root"
+        ;;
+esac
+
 if [ "$integration" -eq 1 ]; then
     reset_temp_root
 
+    explain_project=$(copy_scenario_project "dh-c/tests/fixture/plain-project")
+    invoke_external "0" "$explain_project" "$cli_exe" explain rebuild --link-dsl=off
+    assert_contains "$LAST_OUTPUT" 'Finished `explain rebuild`' "Explain reported the underlying build action instead of explain rebuild"
+    [ ! -e "$explain_project/build" ]
+    assert_true $? "explain rebuild materialized the build directory"
+    [ ! -e "$explain_project/.dh-c" ]
+    assert_true $? "explain rebuild materialized project state"
+
     plain_project=$(copy_scenario_project "dh-c/tests/fixture/plain-project")
+    invoke_external "0" "$plain_project" "$cli_exe" target show
+    [ ! -e "$plain_project/build" ]
+    assert_true $? "target show materialized build/native"
     invoke_external "0" "$plain_project" "$cli_exe" build
     assert_contains "$LAST_OUTPUT" "Build successful!" "Plain project build did not succeed"
     assert_build_artifacts_exist "$plain_project" "plain-project$exe_ext"
+    [ -d "$plain_project/build/native" ]
+    assert_true $? "Host build did not create build/native"
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*) ;;
+        *)
+            [ -L "$plain_project/build/native" ]
+            assert_true $? "Host build/native is not a symbolic link"
+            native_target=$(readlink "$plain_project/build/native")
+            [ -d "$plain_project/build/$native_target" ]
+            assert_true $? "Host build/native does not point to the normalized target directory"
+            rm "$plain_project/build/native"
+            ln -s stale-target "$plain_project/build/native"
+            invoke_external "0" "$plain_project" "$cli_exe" build
+            [ "$(readlink "$plain_project/build/native")" != "stale-target" ]
+            assert_true $? "Host build did not refresh a stale build/native link"
+            ;;
+    esac
 
     invoke_external "0" "$plain_project" "$cli_exe" run
     assert_contains "$LAST_OUTPUT" "plain-project" "Plain project run output was unexpected"
 
     invoke_external "0" "$plain_project" "$cli_exe" test
     assert_contains "$LAST_OUTPUT" "test-smoke" "Plain project test output was unexpected"
-    assert_contains "$LAST_OUTPUT" "[TEST REPORT] status=PASS" "Test command did not emit a pass report"
+    assert_contains "$LAST_OUTPUT" "[TEST]" "Test command did not emit a test report"
+    assert_contains "$LAST_OUTPUT" "status: PASS" "Test command did not emit a pass status"
+
+    failing_test_project=$(copy_scenario_project "dh-c/tests/fixture/failing-test-project")
+    invoke_external "7" "$failing_test_project" "$cli_exe" test
+    assert_contains "$LAST_OUTPUT" "[TEST]" "Failing test did not emit a test report"
+    assert_contains "$LAST_OUTPUT" "status: FAIL" "Failing test did not report failure"
+    assert_contains "$LAST_OUTPUT" "exit: 7" "Failing test did not preserve the child exit code"
 
     invoke_external "0" "$plain_project" "$cli_exe" clean
     if [ -e "$plain_project/build" ]; then
@@ -389,7 +494,7 @@ if [ "$integration" -eq 1 ]; then
     assert_contains "$LAST_OUTPUT" "Build successful!" "Example target build did not succeed"
 
     invoke_external "0" "$target_root_compat" "$cli_exe" test --example example-usage.c --link-dsl=off
-    assert_contains "$LAST_OUTPUT" "Build successful!" "Selected example test did not succeed"
+    assert_contains "$LAST_OUTPUT" "status: PASS" "Selected example test did not succeed"
 
     invoke_external "0" "$target_root_compat" "$cli_exe" clean
 
@@ -403,6 +508,61 @@ if [ "$integration" -eq 1 ]; then
     assert_contains "$LAST_OUTPUT" "Build successful!" "Project kind=lib build did not succeed"
     assert_build_artifacts_exist "$lib_kind_project" "$lib_kind_static_pattern" "$lib_kind_shared_pattern"
     assert_build_artifacts_absent "$lib_kind_project" "$lib_kind_lto_static_pattern"
+    if [ -n "$lib_kind_import_pattern" ]; then
+        assert_build_artifacts_exist "$lib_kind_project" "$lib_kind_import_pattern"
+    fi
+    dev_manifest=$("$find_bin" "$lib_kind_project/build" -path '*/dev/manifest.dh' -type f | head -n 1)
+    [ -n "$dev_manifest" ]
+    assert_true $? "Development kind=lib build did not generate manifest.dh"
+    assert_contains "$(cat "$dev_manifest")" "artifact=static|" "Manifest did not record the native static library"
+    assert_contains "$(cat "$dev_manifest")" "artifact=shared|" "Manifest did not record the shared library"
+    if [ -n "$lib_kind_import_pattern" ]; then
+        assert_contains "$(cat "$dev_manifest")" "artifact=import|" "Manifest did not record the Windows import library"
+    fi
+    dev_manifest_before=$(cat "$dev_manifest")
+    invoke_external "0" "$lib_kind_project" "$cli_exe" test
+    assert_contains "$LAST_OUTPUT" "[TEST]" "kind=lib test did not emit the structured report"
+    assert_contains "$LAST_OUTPUT" "status: PASS" "kind=lib test did not pass"
+    assert_occurrences "$LAST_OUTPUT" "Build successful!" "0" "kind=lib test repeated generic build-success banners"
+    assert_occurrences "$LAST_OUTPUT" "Finished project library build" "0" "default test output exposed verbose phase timings"
+    assert_build_artifacts_exist "$lib_kind_project" "$lib_kind_static_pattern" "$lib_kind_shared_pattern"
+    [ "$(cat "$dev_manifest")" = "$dev_manifest_before" ]
+    assert_true $? "Test executable overwrote the prebuilt library manifest"
+
+    invoke_external "0" "$lib_kind_project" "$cli_exe" test --verbose
+    assert_contains "$LAST_OUTPUT" "Finished project library build" "verbose test output omitted project-library timing"
+    assert_contains "$LAST_OUTPUT" "Finished executable build" "verbose test output omitted executable timing"
+    assert_contains "$LAST_OUTPUT" "Finished execution" "verbose test output omitted execution timing"
+    [ "$(cat "$dev_manifest")" = "$dev_manifest_before" ]
+    assert_true $? "Verbose test execution changed the prebuilt library manifest"
+
+    invoke_external "0" "$lib_kind_project" "$cli_exe" test --sample sample-core.c
+    assert_contains "$LAST_OUTPUT" "status: PASS" "kind=lib sample consumer did not pass"
+    [ "$(cat "$dev_manifest")" = "$dev_manifest_before" ]
+    assert_true $? "Sample executable overwrote the prebuilt library manifest"
+
+    invoke_external "0" "$lib_kind_project" "$cli_exe" test --example example-core.c
+    assert_contains "$LAST_OUTPUT" "status: PASS" "kind=lib example consumer did not pass"
+    [ "$(cat "$dev_manifest")" = "$dev_manifest_before" ]
+    assert_true $? "Example executable overwrote the prebuilt library manifest"
+
+    invoke_external "0" "$lib_kind_project" "$cli_exe" package
+    if ! "$find_bin" "$lib_kind_project/package" -type f -name "$lib_kind_static_pattern" | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Library package did not stage the native static archive\n' >&2
+        exit 1
+    fi
+    if ! "$find_bin" "$lib_kind_project/package" -type f -name "$lib_kind_shared_pattern" | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Library package did not stage the shared library\n' >&2
+        exit 1
+    fi
+    if [ -n "$lib_kind_import_pattern" ] && ! "$find_bin" "$lib_kind_project/package" -type f -name "$lib_kind_import_pattern" | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Library package did not stage the Windows import library\n' >&2
+        exit 1
+    fi
+    if "$find_bin" "$lib_kind_project/package" -type f -name manifest.dh | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Generic package incorrectly copied the prebuilt-only manifest.dh\n' >&2
+        exit 1
+    fi
 
     invoke_external "0" "$lib_kind_project" "$cli_exe" build stable
     assert_contains "$LAST_OUTPUT" "Build successful!" "Stable project kind=lib build did not succeed"
@@ -411,11 +571,10 @@ if [ "$integration" -eq 1 ]; then
         "$lib_kind_static_pattern" \
         "$lib_kind_lto_static_pattern" \
         "$lib_kind_shared_pattern"
-
-    if ! "$find_bin" "$lib_kind_project/build" -type f -name manifest.dh | "$grep_bin" . >/dev/null 2>&1; then
-        printf 'Build did not generate manifest.dh\n' >&2
-        exit 1
-    fi
+    stable_manifest=$("$find_bin" "$lib_kind_project/build" -path '*/stable/manifest.dh' -type f | head -n 1)
+    [ -n "$stable_manifest" ]
+    assert_true $? "Stable kind=lib build did not generate manifest.dh"
+    assert_contains "$(cat "$stable_manifest")" "artifact=static-lto|" "Stable manifest did not record the LTO static library"
 
     deps_graph_root=$(copy_scenario_project "dh-c/tests/fixture/deps-graph")
     deps_graph_project="$deps_graph_root/C"

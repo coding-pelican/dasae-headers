@@ -36,7 +36,7 @@ Meaning:
 - `pch=` and `pch-exclude=` control the PCH contract
 - repeated `self-root=` entries declare reusable self-project source roots
 - repeated `link-dir=` entries add library search directories for linked outputs
-- `prebuilt=` selects whether packaged `prebuilt/<profile>` artifacts are preferred, ignored, or required
+- `prebuilt=` selects whether packaged `prebuilt/<normalized-target>/<profile>` artifacts are preferred, ignored, or required
 
 ### Target-root blocks
 
@@ -403,7 +403,11 @@ The consuming header owns all packing, formatting, and version semantics. `dh-c`
 A completed `dh-c test` execution emits a final executable-level report:
 
 ```text
-[TEST REPORT] status=PASS exit=0 executable=<path> elapsed=<seconds>s
+[TEST]
+  status: PASS
+  exit: 0
+  executable: <path>
+  elapsed: <seconds>s
 ```
 
 The process exit status remains authoritative. The report is a human- and CI-readable summary of the generated test executable run, not a replacement for test framework case-level output.

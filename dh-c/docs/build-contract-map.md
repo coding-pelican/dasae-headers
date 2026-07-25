@@ -114,7 +114,7 @@ Owner:
 - `dh-c/src/dal-c/build.c`
 
 Rules:
-- packaged artifacts live under `<project>/prebuilt/<profile>/`, never under the mutable `build/` cache
+- packaged artifacts live under `<project>/prebuilt/<normalized-target>/<profile>/`, never under the mutable `build/` cache
 - `libs/` contains the project artifact and `deps/` may contain its transitive staged dependencies
 - `prebuilt=auto` prefers a complete package and falls back to source
 - `prebuilt=off` forces source traversal
@@ -124,6 +124,8 @@ Rules:
 - ordinary project tests may consume prebuilt dependencies; recursively requested dependency tests require source
 - `dh`, self/static artifacts, and normal dependency links use the same native-versus-LTO selection rule
 - PCH files are not consumed from SDK prebuilt packages
+- `manifest.dh` inventories every artifact in the profile `libs/` directory; test/sample/example executables never overwrite it
+- target, profile, compiler, selected artifact role/path, and Windows import-library pairing are validated before use
 
 Why:
 - CI can test the current project without rebuilding unchanged dependency graphs

@@ -1,102 +1,116 @@
 # dh-c prebuilt manifest
 
-`manifest.dh` is the compatibility contract for a concrete prebuilt target/profile
-artifact directory. It is generated with a local build so that the same directory
-can be promoted to `prebuilt/` or copied into a package without reconstructing
-its build properties from `project.dh`.
+`manifest.dh` is the fixed compatibility and artifact-inventory contract for one
+prebuilt target/profile directory. A successful library build writes it beside
+`libs/`, so that the whole profile directory can be promoted to `prebuilt/`
+without reconstructing concrete artifacts from `project.dh`.
 
-`project.dh` describes requested build policy. `manifest.dh` describes the
-concrete artifact that was produced.
+`project.dh` describes requested policy. `manifest.dh` describes the library
+artifacts that actually exist in one concrete target/profile directory.
 
 ## Location
 
-Local builds:
+Local library builds:
 
 ```text
 build/<normalized-target>/<profile>/manifest.dh
+build/<normalized-target>/<profile>/libs/
 ```
 
 Packaged prebuilts:
 
 ```text
 prebuilt/<normalized-target>/<profile>/manifest.dh
+prebuilt/<normalized-target>/<profile>/libs/
 ```
+
+A real implicit-host build also exposes the normalized target directory through
+`build/native`. The alias is not a separate artifact location and is not created
+by read-only inspection commands.
 
 ## Fixed schema
 
 ```ini
 target=x86_64-w64-windows-gnu
 profile=stable
-artifact-kind=static-lib
-artifact=foo.lto.lib
-lto=on
 compiler=clang
+artifact=static|libs/foo.lib
+artifact=static-lto|libs/foo.lto.lib
+artifact=shared|libs/foo.dll
+artifact=import|libs/foo.dll.lib
 ```
 
-All six keys are required. Unknown or duplicate keys are rejected. There is no
-`manifest-version`, `format`, or legacy fallback. This is one dh-c-owned schema,
-not a registry of independently selectable manifest formats.
+Required scalar keys:
 
-When the contract must change incompatibly, dh-c changes the schema and the
-packages together. Old packages are not kept readable merely to preserve
-backward compatibility.
+- `target`
+- `profile`
+- `compiler`
 
-The project/library version declared through `version-*` keys is unrelated. It
-versions the software being built; the manifest describes one concrete prebuilt
-artifact.
+`artifact=` is repeated once for each library artifact in `libs/`. Supported
+roles are `static`, `static-lto`, `shared`, and `import`.
 
-## Prebuilt compatibility
+Unknown keys, duplicate scalar keys, duplicate artifact entries, malformed
+roles, paths outside `libs/`, and manifests without artifacts are rejected.
+There is no `manifest-version`, format selector, or legacy fallback. This is one
+dh-c-owned schema. An incompatible schema change changes dh-c and the produced
+prebuilt packages together; old forms are not retained merely for compatibility.
 
-A prebuilt directory is usable only when `manifest.dh` exists and follows the
-fixed schema. dh-c currently validates the requested:
+The software version declared through `version-*` keys is unrelated. It
+versions the program or library being built; `manifest.dh` records a concrete
+prebuilt artifact set.
 
-- normalized target
-- profile
-- effective LTO state
+## Why the manifest is an inventory
 
-The remaining required fields identify the artifact and compiler that produced
-it and are reserved for stricter compatibility checks as the prebuilt contract
-expands.
+A profile directory can contain more than one legitimate library artifact:
 
-An incompatible package is skipped in `prebuilt=auto` mode and rejected in
-`prebuilt=required` mode. `prebuilt=off` never consumes it.
+- every `kind=lib` profile emits the native static archive and shared library;
+- Windows shared builds also emit an import library;
+- effective-LTO profiles additionally emit a `.lto` static archive;
+- multiple explicitly named library targets may share one target/profile
+  directory.
 
-## Packaging and installation
+Therefore a single `artifact-kind`/`artifact` pair would be overwritten by the
+last successful library build. The repeated inventory preserves all artifacts
+that coexist in `libs/`. Executables created by `test`, `sample`, or `example`
+builds never update this manifest.
 
-`dh-c package <profile>` builds the current project, stages external providers,
-and creates:
+## Compatibility checks
+
+A prebuilt artifact is usable only when:
+
+- `manifest.dh` exists and satisfies the fixed schema;
+- normalized target matches;
+- profile matches;
+- compiler contract matches;
+- the exact selected path is listed with the expected role;
+- on Windows, a selected shared library also has its listed and present import
+  library.
+
+The static role itself records whether the consumer requested native or LTO
+static linkage. `prebuilt=auto` skips an incompatible package and falls back to
+source; `prebuilt=required` fails; `prebuilt=off` never consumes it.
+
+## Promotion and generic packaging
+
+A prebuilt producer promotes or copies the complete build profile directory:
 
 ```text
-package/<normalized-target>/<profile>/
+build/<target>/<profile>/
+    manifest.dh
+    libs/
 ```
 
-The package contains the concrete top-level artifacts and the existing
-`manifest.dh`; compiler intermediates and cache state are not copied.
-Conventional project `assets/` and `resources/` trees are staged, and files
-installed under dependency package `bin/` directories are copied to the package
-`bin/` directory.
+into:
 
-There is no separate `package-manifest.dh` contract at present. A future package
-verification/install inventory must first have a real consumer such as
-`package verify`, install/uninstall ownership, publishing, or package diffing.
+```text
+prebuilt/<target>/<profile>/
+```
 
-### Package layout
+`dh-c package` is a generic install/runtime staging command. It translates
+library artifacts into `lib/` and runtime shared objects into `bin/`; therefore
+it does not copy the prebuilt-only `manifest.dh`, whose paths intentionally
+refer to `libs/`.
 
-Concrete project artifacts are staged by role:
-
-- `.exe` and `.dll` files go to `bin/`.
-- `.lib`, `.a`, `.so`, and `.dylib` files go to `lib/`.
-- `manifest.dh` remains at the package root.
-- public project headers are copied to `include/`.
-- extensionless native executables remain at the package root.
-
-On Windows this keeps a shared library's runtime DLL separate from its import
-library (`foo.dll` in `bin/`, `foo.dll.lib` in `lib/`). Dependency runtime
-exports stage only explicitly named runtime files, so import/static libraries
-are not accidentally copied into the runtime directory.
-
-## Integrity roadmap
-
-The present manifest is a compatibility contract, not a cryptographic integrity
-record. SHA-256 remains an explicit later milestone for a package inventory once
-verification or publishing consumes it. It is not part of the current change.
+There is no separate package file inventory yet. SHA-256 remains an explicit
+roadmap item for a future verification, publishing, install-ownership, or
+package-diff consumer.

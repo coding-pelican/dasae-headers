@@ -168,12 +168,34 @@ static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
     char** artifacts = dir_list(build_dir, &artifact_count);
     for (int i = 0; i < artifact_count; ++i) {
         char* name = path_basename(artifacts[i]);
-        const char* stage = str_eql(name, "manifest.dh") ? NULL : dal_c__artifactStageDir(name);
+        if (str_eql(name, "manifest.dh")) {
+            free(name);
+            free(artifacts[i]);
+            continue; /* manifest.dh describes the prebuilt `libs/` layout, not an install package. */
+        }
+        const char* stage = dal_c__artifactStageDir(name);
         char* dst_dir = stage ? path_join(package_dir, stage) : strdup(package_dir);
         if (!dal_c__copyFileInto(artifacts[i], dst_dir)) ok = false;
         free(dst_dir); free(name); free(artifacts[i]);
     }
     free(artifacts);
+
+    char* build_libs = path_join(build_dir, "libs");
+    int library_count = 0;
+    char** libraries = dir_list(build_libs, &library_count);
+    for (int i = 0; i < library_count; ++i) {
+        char* name = path_basename(libraries[i]);
+        const char* stage = dal_c__artifactStageDir(name);
+        if (stage) {
+            char* dst_dir = path_join(package_dir, stage);
+            if (!dal_c__copyFileInto(libraries[i], dst_dir)) ok = false;
+            free(dst_dir);
+        }
+        free(name);
+        free(libraries[i]);
+    }
+    free(libraries);
+    free(build_libs);
 
     char* include_src = path_join(proj->root, proj->include_dir_name ? proj->include_dir_name : "include");
     if (path_isDir(include_src)) {
@@ -397,6 +419,7 @@ int main(int argc, const char* argv[]) {
     } else {
         if (special_plan || special_explain) {
             cmd->dry_run = true;
+            cmd->plan_only = special_plan;
             cmd->explain_rebuild = special_explain;
         }
         if (cmd->action == dal_c_CmdAction_deps) {
@@ -519,21 +542,57 @@ static char* dal_c__depsResolveRevision(const char* cwd, const char* revision) {
 }
 
 
-static bool dal_c__depsShell(const char* cwd, const char* command, const char* src_dir,
-                             const char* build_dir, const char* package_dir,
-                             const char* profile, const char* target) {
+static char* dal_c__depsTargetCflags(const dal_c_CompilerOpts* opts) {
+    char* flags = NULL;
+    if (opts && opts->arch_target && opts->arch_target[0]) {
+        flags = str_format("--target=%s", opts->arch_target);
+    }
+    if (opts && opts->sysroot && opts->sysroot[0]) {
+        char* next = flags ? str_format("%s --sysroot=%s", flags, opts->sysroot)
+                           : str_format("--sysroot=%s", opts->sysroot);
+        free(flags);
+        flags = next;
+    }
+    return flags ? flags : strdup("");
+}
+
+static bool dal_c__depsShell(
+    const char* cwd,
+    const char* command,
+    const char* src_dir,
+    const char* build_dir,
+    const char* package_dir,
+    const char* profile,
+    const char* target,
+    const dal_c_CompilerOpts* opts
+) {
     if (!command || !command[0]) return true;
+    const char* compiler = opts && opts->compiler && opts->compiler[0] ? opts->compiler : dal_c_default_compiler;
+    const char* sysroot = opts && opts->sysroot ? opts->sysroot : "";
+    char* cflags = dal_c__depsTargetCflags(opts);
 #ifdef _WIN32
-    char* script = str_format("cd /D \"%s\" && set \"DH_DEP_SOURCE=%s\" && set \"DH_DEP_BUILD=%s\" && set \"DH_DEP_PACKAGE=%s\" && set \"DH_DEP_PROFILE=%s\" && set \"DH_DEP_TARGET=%s\" && %s",
-        cwd, src_dir, build_dir, package_dir, profile, target, command);
+    char* script = str_format(
+        "cd /D \"%s\" && set \"DH_DEP_SOURCE=%s\" && set \"DH_DEP_BUILD=%s\" && "
+        "set \"DH_DEP_PACKAGE=%s\" && set \"DH_DEP_PROFILE=%s\" && set \"DH_DEP_TARGET=%s\" && "
+        "set \"DH_DEP_CC=%s\" && set \"DH_DEP_AR=%s\" && set \"DH_DEP_SYSROOT=%s\" && "
+        "set \"DH_DEP_CFLAGS=%s\" && set \"CC=%s\" && set \"AR=%s\" && set \"CFLAGS=%s\" && %s",
+        cwd, src_dir, build_dir, package_dir, profile, target,
+        compiler, dal_c_tool_ar, sysroot, cflags, compiler, dal_c_tool_ar, cflags, command
+    );
     const char* argv[] = { "cmd.exe", "/D", "/S", "/C", script, NULL };
 #else
-    char* script = str_format("cd \"%s\" && export DH_DEP_SOURCE=\"%s\" DH_DEP_BUILD=\"%s\" DH_DEP_PACKAGE=\"%s\" DH_DEP_PROFILE=\"%s\" DH_DEP_TARGET=\"%s\" && %s",
-        cwd, src_dir, build_dir, package_dir, profile, target, command);
+    char* script = str_format(
+        "cd \"%s\" && export DH_DEP_SOURCE=\"%s\" DH_DEP_BUILD=\"%s\" DH_DEP_PACKAGE=\"%s\" "
+        "DH_DEP_PROFILE=\"%s\" DH_DEP_TARGET=\"%s\" DH_DEP_CC=\"%s\" DH_DEP_AR=\"%s\" "
+        "DH_DEP_SYSROOT=\"%s\" DH_DEP_CFLAGS=\"%s\" CC=\"%s\" AR=\"%s\" CFLAGS=\"%s\" && %s",
+        cwd, src_dir, build_dir, package_dir, profile, target,
+        compiler, dal_c_tool_ar, sysroot, cflags, compiler, dal_c_tool_ar, cflags, command
+    );
     const char* argv[] = { "/bin/sh", "-c", script, NULL };
 #endif
     int result = proc_run(argv, true);
     free(script);
+    free(cflags);
     return result == 0;
 }
 
@@ -548,7 +607,7 @@ static const char* dal_c__depsCmakeBuildType(const char* profile) {
 static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
                                      const char* source_dir, const char* build_dir,
                                      const char* package_dir, const char* profile,
-                                     const char* target) {
+                                     const char* target, const dal_c_CompilerOpts* opts) {
     const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
     bool install = str_eql(action, "install");
     if (str_eql(provider, "dh")) {
@@ -557,35 +616,58 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
     }
     if (str_eql(provider, "cmake")) {
         if (!dir_createRecur(build_dir) || !dir_createRecur(package_dir)) return false;
+        const char* compiler = opts && opts->compiler && opts->compiler[0] ? opts->compiler : dal_c_default_compiler;
         char* prefix = str_format("-DCMAKE_INSTALL_PREFIX=%s", package_dir);
         char* build_type = str_format("-DCMAKE_BUILD_TYPE=%s", dal_c__depsCmakeBuildType(profile));
-        const char* configure[] = { "cmake", "-S", source_dir, "-B", build_dir, prefix, build_type, NULL };
+        char* compiler_arg = str_format("-DCMAKE_C_COMPILER=%s", compiler);
+        char* archiver_arg = str_format("-DCMAKE_AR=%s", dal_c_tool_ar);
+        char* target_arg = opts && opts->arch_target && opts->arch_target[0]
+                         ? str_format("-DCMAKE_C_COMPILER_TARGET=%s", opts->arch_target) : NULL;
+        char* sysroot_arg = opts && opts->sysroot && opts->sysroot[0]
+                          ? str_format("-DCMAKE_SYSROOT=%s", opts->sysroot) : NULL;
+        const char* toolchain = getenv("DH_DEP_CMAKE_TOOLCHAIN_FILE");
+        char* toolchain_arg = toolchain && toolchain[0]
+                            ? str_format("-DCMAKE_TOOLCHAIN_FILE=%s", toolchain) : NULL;
+        const char* configure[16] = { 0 };
+        int configure_count = 0;
+        configure[configure_count++] = "cmake";
+        configure[configure_count++] = "-S";
+        configure[configure_count++] = source_dir;
+        configure[configure_count++] = "-B";
+        configure[configure_count++] = build_dir;
+        configure[configure_count++] = prefix;
+        configure[configure_count++] = build_type;
+        configure[configure_count++] = compiler_arg;
+        configure[configure_count++] = archiver_arg;
+        if (target_arg) { configure[configure_count++] = target_arg; }
+        if (sysroot_arg) { configure[configure_count++] = sysroot_arg; }
+        if (toolchain_arg) { configure[configure_count++] = toolchain_arg; }
+        configure[configure_count] = NULL;
         const char* build[] = { "cmake", "--build", build_dir, "--config", dal_c__depsCmakeBuildType(profile), NULL };
         bool ok = proc_run(configure, true) == 0 && proc_run(build, true) == 0;
         if (ok && install) {
             const char* install_argv[] = { "cmake", "--install", build_dir, "--config", dal_c__depsCmakeBuildType(profile), NULL };
             ok = proc_run(install_argv, true) == 0;
         }
-        free(build_type); free(prefix);
+        free(toolchain_arg); free(sysroot_arg); free(target_arg);
+        free(archiver_arg); free(compiler_arg); free(build_type); free(prefix);
         return ok;
     }
     if (str_eql(provider, "make")) {
         if (!dir_createRecur(build_dir) || !dir_createRecur(package_dir)) return false;
         bool ok;
         if (lib->build_command && lib->build_command[0])
-            ok = dal_c__depsShell(source_dir, lib->build_command, source_dir, build_dir, package_dir, profile, target);
+            ok = dal_c__depsShell(source_dir, lib->build_command, source_dir, build_dir, package_dir, profile, target, opts);
         else {
-            const char* build[] = { "make", "-C", source_dir, NULL };
-            ok = proc_run(build, true) == 0;
+            ok = dal_c__depsShell(source_dir, "make", source_dir, build_dir, package_dir, profile, target, opts);
         }
         if (ok && install) {
             if (lib->install_command && lib->install_command[0])
-                ok = dal_c__depsShell(source_dir, lib->install_command, source_dir, build_dir, package_dir, profile, target);
+                ok = dal_c__depsShell(source_dir, lib->install_command, source_dir, build_dir, package_dir, profile, target, opts);
             else {
-                char* prefix = str_format("PREFIX=%s", package_dir);
-                const char* install_argv[] = { "make", "-C", source_dir, "install", prefix, NULL };
-                ok = proc_run(install_argv, true) == 0;
-                free(prefix);
+                char* install_command = str_format("make install PREFIX=\"%s\"", package_dir);
+                ok = dal_c__depsShell(source_dir, install_command, source_dir, build_dir, package_dir, profile, target, opts);
+                free(install_command);
             }
         }
         return ok;
@@ -596,9 +678,9 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
             return false;
         }
         if (!dir_createRecur(build_dir) || !dir_createRecur(package_dir)) return false;
-        bool ok = dal_c__depsShell(source_dir, lib->build_command, source_dir, build_dir, package_dir, profile, target);
+        bool ok = dal_c__depsShell(source_dir, lib->build_command, source_dir, build_dir, package_dir, profile, target, opts);
         if (ok && install && lib->install_command && lib->install_command[0])
-            ok = dal_c__depsShell(source_dir, lib->install_command, source_dir, build_dir, package_dir, profile, target);
+            ok = dal_c__depsShell(source_dir, lib->install_command, source_dir, build_dir, package_dir, profile, target, opts);
         return ok;
     }
     if (str_eql(provider, "prebuilt")) {
@@ -703,13 +785,22 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
         bool exists = source_dir && (path_isDir(source_dir) || path_isFile(source_dir));
 
         if (provider_action) {
-            const char* profile = dal_c_Profile_format(cmd->opts.profile);
+            dal_c_CompilerOpts provider_opts = { 0 };
+            provider_opts.profile = dal_c_Profile_invalid;
+            dal_c_CompilerOpts_merge(&provider_opts, &proj->opts);
+            dal_c_CompilerOpts_merge(&provider_opts, &cmd->opts);
+            dal_c_CompilerOpts_merge(&provider_opts, &lib->opts);
+            if (provider_opts.profile == dal_c_Profile_invalid) {
+                provider_opts.profile = dal_c_default_profile;
+            }
+            const char* profile = dal_c_Profile_format(provider_opts.profile);
             if (!profile) profile = "dev";
-            const char* target = (cmd->opts.arch_target && cmd->opts.arch_target[0]) ? cmd->opts.arch_target : "native";
-            char* target_build = path_join(build_root, target);
+            char* target = dal_c__resolveTargetDirName(&provider_opts);
+            const char* target_key = target ? target : "unknown-target";
+            char* target_build = path_join(build_root, target_key);
             char* profile_build = path_join(target_build, profile);
             char* build_dir = path_join(profile_build, lib->name);
-            char* target_package = path_join(package_root, target);
+            char* target_package = path_join(package_root, target_key);
             char* profile_package = path_join(target_package, profile);
             char* package_dir = path_join(profile_package, lib->name);
 
@@ -731,9 +822,10 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
                 failures++;
             } else {
                 printf("[%s] %-16s provider=%s profile=%s target=%s\n",
-                    str_eql(action, "install") ? "INSTALL" : "BUILD", lib->name, provider, profile, target);
+                    str_eql(action, "install") ? "INSTALL" : "BUILD", lib->name, provider, profile, target_key);
                 bool provider_ok = dal_c__depsBuildProvider(
-                    action, lib, source_dir, build_dir, package_dir, profile, target
+                    action, lib, source_dir, build_dir, package_dir, profile,
+                    target_key, &provider_opts
                 );
                 if (!provider_ok) {
                     failures++;
@@ -746,7 +838,9 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
             }
 
             free(package_dir); free(profile_package); free(target_package);
-            free(build_dir); free(profile_build); free(target_build); free(source_dir);
+            free(build_dir); free(profile_build); free(target_build); free(target);
+            dal_c_CompilerOpts_cleanup(&provider_opts);
+            free(source_dir);
             continue;
         }
 
@@ -945,13 +1039,13 @@ static int dal_c__printUsage(const char* topic) {
         } else if (str_eql(topic, "install")) {
             printf("USAGE:\n  %s install [profile] [build options] [--prefix=<path>]\n\nInstall the current project package into --prefix or DH_PREFIX.\n", dal_c_tool_name);
         } else if (str_eql(topic, "plan")) {
-            printf("USAGE:\n  %s plan [profile] [path] [build options]\n\nGenerate the real build plan and Makefile without compiling or linking.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s plan [profile] [path] [build options]\n\nResolve and print the requested build plan without writing build files, caches, locks, or artifacts.\n", dal_c_tool_name);
         } else if (str_eql(topic, "explain")) {
-            printf("USAGE:\n  %s explain rebuild [profile] [path] [build options]\n\nExplain whether the requested output is missing or its tracked plan is stale.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s explain rebuild [profile] [path] [build options]\n\nRead existing contracts and explain why work is required without building dependencies or mutating build state.\n", dal_c_tool_name);
         } else if (str_eql(topic, "target")) {
-            printf("USAGE:\n  %s target show [profile] [build options]\n\nShow the requested and normalized target, compiler, profile, and target-scoped build directory.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s target show [profile] [build options]\n\nShow the requested and normalized target, compiler, profile, target-scoped build directory, and host `build/native` alias policy without creating it.\n", dal_c_tool_name);
         } else {
-            printf("USAGE:\n  %s doctor [profile] [build options]\n\nCheck compiler, make, archiver, DH installation, project detection, and effective target.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s doctor [profile] [build options]\n\nCheck compiler, make, archiver, DH installation, effective target, and provider tools required by the detected project.\n", dal_c_tool_name);
         }
         return 0;
     }
@@ -999,8 +1093,8 @@ static int dal_c__printUsage(const char* topic) {
     printf("\n");
 
     printf("INSPECTION AND TOOLING:\n");
-    printf("  %-14s %s\n", "plan", "Generate the real build plan without executing it");
-    printf("  %-14s %s\n", "explain", "Explain why a requested build requires work");
+    printf("  %-14s %s\n", "plan", "Resolve a read-only build plan without materializing state");
+    printf("  %-14s %s\n", "explain", "Explain why a build requires work without performing it");
     printf("  %-14s %s\n", "target", "Inspect the effective target and output directory");
     printf("  %-14s %s\n", "doctor", "Check the build environment and DH installation");
     printf("  %-14s %s\n", "toolchain", "Inspect compiler-driver link inputs");
@@ -1309,7 +1403,7 @@ static int dal_c__showTarget(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     char* normalized = dal_c__resolveTargetDirName(&opts);
     dal_c_Profile profile_id = dal_c__effectiveProfile(cmd, proj);
     const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(profile_id);
-    char* profile_dir = (proj && proj->root && profile) ? dal_c__makeBuildProfileDir(proj, &opts, profile) : NULL;
+    char* profile_dir = (proj && proj->root && profile) ? dal_c__makeBuildProfileDirReadOnly(proj, &opts, profile) : NULL;
     printf("TARGET:\n");
     printf("  requested: %s\n", requested ? requested : "(host compiler default)");
     printf("  normalized: %s\n", normalized ? normalized : "(unresolved)");
@@ -1332,23 +1426,49 @@ static bool dal_c__toolResponds(const char* tool, const char* arg) {
     return ok;
 }
 
+static bool dal_c__projectUsesProvider(const dal_c_Project* proj, const char* provider_name) {
+    if (!proj || !provider_name) { return false; }
+    for (int i = 0; i < proj->lib_count; ++i) {
+        const dal_c_Lib* lib = &proj->libraries[i];
+        const char* provider = lib->provider && lib->provider[0] ? lib->provider : "dh";
+        if (str_eql(provider, provider_name)) { return true; }
+    }
+    return false;
+}
+
+static bool dal_c__projectUsesGitSources(const dal_c_Project* proj) {
+    if (!proj) { return false; }
+    for (int i = 0; i < proj->lib_count; ++i) {
+        if (proj->libraries[i].source && proj->libraries[i].source[0]) { return true; }
+    }
+    return false;
+}
+
 static int dal_c__doctor(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     int failures = 0;
     const char* compiler = dal_c__effectiveCompiler(cmd, proj);
     bool compiler_ok = dal_c__toolResponds(compiler, "--version");
     bool make_ok = dal_c__toolResponds("make", "--version") || dal_c__toolResponds("gmake", "--version");
     bool ar_ok = dal_c__toolResponds(dal_c_tool_ar, "--version");
+    bool needs_cmake = dal_c__projectUsesProvider(proj, "cmake");
+    bool cmake_ok = !needs_cmake || dal_c__toolResponds("cmake", "--version");
+    bool needs_git = dal_c__projectUsesGitSources(proj);
+    bool git_ok = !needs_git || dal_c__toolResponds("git", "--version");
     char* dh_path = dal_c_Project_findDHInstallation(cmd);
     bool dh_ok = dh_path && path_isDir(dh_path);
     printf("DOCTOR:\n");
     printf("  compiler: %s [%s]\n", compiler, compiler_ok ? "ok" : "missing or unusable");
     printf("  make: %s\n", make_ok ? "ok" : "missing or unusable");
     printf("  archiver: %s [%s]\n", dal_c_tool_ar, ar_ok ? "ok" : "missing or unusable");
+    if (needs_cmake) printf("  cmake: %s\n", cmake_ok ? "ok" : "missing or unusable");
+    if (needs_git) printf("  git: %s\n", git_ok ? "ok" : "missing or unusable");
     printf("  dh: %s [%s]\n", dh_path ? dh_path : "(not found)", dh_ok ? "ok" : "missing");
     printf("  project: %s\n", proj && proj->root ? proj->root : "(not detected; explicit-file builds remain possible)");
     if (!compiler_ok) failures++;
     if (!make_ok) failures++;
     if (!ar_ok) failures++;
+    if (!cmake_ok) failures++;
+    if (!git_ok) failures++;
     if (!dh_ok) failures++;
     if (compiler_ok) {
         dal_c__showTarget(cmd, proj);

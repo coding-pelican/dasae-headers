@@ -40,7 +40,7 @@ Artifact names follow the normal library contract:
 | Windows | `mylib.lib` | `mylib.lto.lib` | `mylib.dll` | `mylib.dll.lib` |
 | Linux | `libmylib.a` | `libmylib.lto.a` | `libmylib.so` | — |
 
-Profiles without effective LTO require only the native static archive. Profiles with effective LTO package both native and `.lto` static archives so the final consumer link can choose correctly.
+Every `kind=lib` profile contains the native static archive and shared artifact; Windows additionally contains the import library. Profiles with effective LTO also contain the `.lto` static archive so native and LTO consumers can select independently.
 
 ## Selection Modes
 
@@ -86,17 +86,17 @@ The current lookup assumes a platform-specific SDK archive: Windows and Linux pa
 
 ## Recommended SDK Profile Set
 
-For general Windows/Linux SDK packages, the recommended supported set is:
+The artifact family does not change by profile:
 
-- `fast`: developer iteration; native archive only
-- `dev`: dependency debugging with assertions and full debug information; native archive only
-- `test`: CI and project-test builds without rebuilding unchanged dependencies; native archive only
-- `stable`: general optimized SDK use; native and ThinLTO static archives plus shared output
-- `release`: final distribution builds; native and ThinLTO static archives plus shared output
+- native static archive: every profile
+- shared library: every profile
+- Windows import library: every profile
+- LTO static archive: profiles whose effective LTO mode is enabled
 
-`profile` is better shipped as an optional diagnostics package because profiling often requires a deliberate symbol/frame-pointer/tool setup. `optimize` is host-native and must be built for the final machine. `compact` and `micro` are final-size-policy builds whose value depends strongly on the complete link, so they remain source/local-build profiles in the general SDK.
-
-There is currently no `compat` build profile. Portability should remain a target/toolchain/ABI package property rather than another optimization profile. The native non-LTO archive emitted by `stable` already provides the intended portable fallback within a matching platform SDK.
+Profiles still select optimization, diagnostics, assertions, unwind, and LTO
+policy. They do not silently redefine `kind=lib` into static-only output.
+A producer may choose which profile directories to distribute, but any shipped
+`kind=lib` profile follows the same artifact-family contract.
 
 ## Artifact manifest
 

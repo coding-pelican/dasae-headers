@@ -75,15 +75,50 @@ bool dir_linkDir(const char* link_path, const char* target_path) {
     if (!link_path || !target_path) { return false; }
 #ifdef _WIN32
     DWORD attrs = GetFileAttributesA(link_path);
-    if (attrs != INVALID_FILE_ATTRIBUTES) { return true; }
+    if (attrs != INVALID_FILE_ATTRIBUTES) {
+        if ((attrs & FILE_ATTRIBUTE_DIRECTORY) == 0 || (attrs & FILE_ATTRIBUTE_REPARSE_POINT) == 0) {
+            return false; /* Never replace a user-owned real file or directory. */
+        }
+        if (RemoveDirectoryA(link_path) == 0) {
+            return false;
+        }
+    }
     DWORD flags = SYMBOLIC_LINK_FLAG_DIRECTORY;
 #ifdef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE
     flags |= SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
 #endif
-    return CreateSymbolicLinkA(link_path, target_path, flags) != 0;
+    if (CreateSymbolicLinkA(link_path, target_path, flags) != 0) {
+        return true;
+    }
+
+    /* Developer Mode or elevation may be unavailable. A directory junction keeps
+     * build/native usable without changing the build contract. Resolve a relative
+     * target against the link's parent because mklink resolves it against CWD. */
+    char* link_parent = path_parent(link_path);
+    char* joined_target = link_parent ? path_join(link_parent, target_path) : strdup(target_path);
+    char target_full[MAX_PATH * 4] = { 0 };
+    const char* junction_target = joined_target;
+    if (joined_target && GetFullPathNameA(joined_target, (DWORD)sizeof(target_full), target_full, NULL) > 0) {
+        junction_target = target_full;
+    }
+    char* command = str_format("cmd.exe /D /S /C \"mklink /J \"\"%s\"\" \"\"%s\"\" >NUL\"", link_path, junction_target ? junction_target : target_path);
+    int result = command ? system(command) : -1;
+    free(command);
+    free(joined_target);
+    free(link_parent);
+    return result == 0 && path_isDir(link_path);
 #else
     struct stat st = {0};
-    if (lstat(link_path, &st) == 0) { return S_ISLNK(st.st_mode); }
+    if (lstat(link_path, &st) == 0) {
+        if (!S_ISLNK(st.st_mode)) { return false; }
+        char current[PATH_MAX + 1] = {0};
+        ssize_t current_len = readlink(link_path, current, PATH_MAX);
+        if (current_len >= 0) {
+            current[current_len] = '\0';
+            if (str_eql(current, target_path)) { return true; }
+        }
+        if (unlink(link_path) != 0) { return false; }
+    }
     return symlink(target_path, link_path) == 0;
 #endif
 }
@@ -160,8 +195,14 @@ bool dir_createRecur(const char* path) {
 /* NOLINTNEXTLINE(misc-no-recursion) */
 bool dir_removeRecur(const char* path) {
     if (!path) { return false; }
-    if (!path_isDir(path)) { return false; }
 #ifdef _WIN32
+    DWORD root_attrs = GetFileAttributesA(path);
+    if (root_attrs == INVALID_FILE_ATTRIBUTES || (root_attrs & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+        return false;
+    }
+    if (root_attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
+        return dir__removeEmptyDirPath(path); /* Remove the junction/symlink, never its target. */
+    }
     // Windows: Use SHFileOperation or manual recursion
     WIN32_FIND_DATAA find_data = {};
     char search_path[MAX_PATH] = {};
@@ -173,7 +214,10 @@ bool dir_removeRecur(const char* path) {
             if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0) { continue; }
             char* const full_path = path_join(path, find_data.cFileName);
             if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                if (!dir_removeRecur(full_path)) {
+                bool removed = (find_data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+                             ? dir__removeEmptyDirPath(full_path)
+                             : dir_removeRecur(full_path);
+                if (!removed) {
                     success = false;
                 }
             } else {
@@ -187,21 +231,33 @@ bool dir_removeRecur(const char* path) {
     }
     return success && dir__removeEmptyDirPath(path);
 #else
+    struct stat root_st = {0};
+    if (lstat(path, &root_st) != 0) { return false; }
+    if (S_ISLNK(root_st.st_mode)) { return unlink(path) == 0; }
+    if (!S_ISDIR(root_st.st_mode)) { return false; }
     DIR* const dir = opendir(path);
     if (!dir) { return false; }
+    bool success = true;
     struct dirent* entry = NULL;
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) { continue; }
         char* full_path = path_join(path, entry->d_name);
-        if (path_isDir(full_path)) {
-            dir_removeRecur(full_path);
+        struct stat child_st = {0};
+        if (full_path && lstat(full_path, &child_st) == 0) {
+            if (S_ISLNK(child_st.st_mode)) {
+                if (unlink(full_path) != 0) { success = false; }
+            } else if (S_ISDIR(child_st.st_mode)) {
+                if (!dir_removeRecur(full_path)) { success = false; }
+            } else if (remove(full_path) != 0) {
+                success = false;
+            }
         } else {
-            remove(full_path);
+            success = false;
         }
         free(full_path);
     }
     closedir(dir);
-    return rmdir(path) == 0;
+    return success && rmdir(path) == 0;
 #endif
 }
 

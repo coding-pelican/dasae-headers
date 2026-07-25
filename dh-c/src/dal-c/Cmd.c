@@ -68,7 +68,6 @@ static void dal_c_Cmd__reportElapsed(
     const dal_c_Cmd__ElapsedPhases* phases
 );
 static int dal_c_Cmd__validateCanonicalModifiers(const dal_c_Cmd* cmd);
-static bool dal_c_Cmd__phasesHaveAny(const dal_c_Cmd__ElapsedPhases* phases);
 static void dal_c_Cmd__setPrimaryTargetPath(dal_c_Cmd* cmd, const char* path);
 static void dal_c_Cmd__setOutputPath(dal_c_Cmd* cmd, const char* path);
 static const char* dal_c_Cmd__sampleDirCanonical(dal_c_SampleDir sample_dir);
@@ -95,7 +94,7 @@ static bool dal_c_Cmd__hasExplicitVersionFlags(const dal_c_Cmd* cmd);
 static int dal_c_Cmd__recordVersionFlags(const dal_c_Cmd* cmd, const dal_c_Project* proj, ArrStr* sources);
 static char* dal_c_Cmd__versionRecordPath(const dal_c_Cmd* cmd, const dal_c_Project* proj, ArrStr* sources);
 static int dal_c_Cmd__writeVersionDHFile(const char* path, const dal_c_VersionSpec* version);
-static int dal_c_Cmd__ensureProjectStaticLibrary(const dal_c_Cmd* self, const dal_c_Project* proj);
+static int dal_c_Cmd__ensureProjectLibraryForConsumer(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runBuildDefaultTests(const dal_c_Cmd* self, const dal_c_Project* proj, dal_c_Profile profile);
 static char* dal_c_Cmd__resolveLibraryOutputName(
     const dal_c_Cmd* self,
@@ -146,7 +145,8 @@ static int dal_c_Cmd__buildLibrarySetFromSources(
     const dal_c_Project* proj,
     ArrStr* sources,
     const char* output_name,
-    bool allow_output_defaults
+    bool allow_output_defaults,
+    bool print_success
 );
 static char* dal_c_Cmd__mergeCompilerArgs(const char* base, const char* extra);
 static bool dal_c_Cmd__writeFileIfChanged(const char* path, const char* content);
@@ -1206,6 +1206,7 @@ bool dal_c__writeDepsPreludeHeader(const dal_c_Project* proj, const dal_c_Compil
 
 static bool dal_c_Cmd__executeNeedsProjectLock(const dal_c_Cmd* self) {
     assert(self != NULL);
+    if (self->dry_run) { return false; }
     switch (self->action) {
     case dal_c_CmdAction_build:
         return !self->payload.build.self_boundary;
@@ -1316,23 +1317,6 @@ static void dal_c_Cmd__reportFinishedPhaseElapsed(FILE* out, const char* phase, 
     (void)fprintf(out, "Finished %s in %.*fs\n", phase, precision, elapsed_seconds);
 }
 
-static bool dal_c_Cmd__phasesHaveAny(const dal_c_Cmd__ElapsedPhases* phases) {
-    return phases
-        && (phases->project_lib_build > 0.0
-            || phases->dependency_build > 0.0
-            || phases->dh_build > 0.0
-            || phases->self_build > 0.0
-            || phases->test_build > 0.0
-            || phases->run_build > 0.0
-            || phases->test_run > 0.0
-            || phases->run_exec > 0.0
-            || phases->syntax > 0.0
-            || phases->tidy > 0.0
-            || phases->format > 0.0
-            || phases->compile_db > 0.0
-            || phases->clean > 0.0);
-}
-
 static int dal_c_Cmd__phaseCount(const dal_c_Cmd__ElapsedPhases* phases) {
     if (!phases) { return 0; }
     int count = 0;
@@ -1352,17 +1336,6 @@ static int dal_c_Cmd__phaseCount(const dal_c_Cmd__ElapsedPhases* phases) {
     return count;
 }
 
-static double dal_c_Cmd__executionPhaseSeconds(const dal_c_Cmd__ElapsedPhases* phases) {
-    if (!phases) { return 0.0; }
-    return phases->test_run + phases->run_exec;
-}
-
-static double dal_c_Cmd__setupWallSeconds(double active_seconds, const dal_c_Cmd__ElapsedPhases* phases) {
-    double execution_seconds = dal_c_Cmd__executionPhaseSeconds(phases);
-    double setup_seconds = active_seconds - execution_seconds;
-    return setup_seconds > 0.0 ? setup_seconds : 0.0;
-}
-
 static void dal_c_Cmd__reportFinishedPhases(FILE* out, const dal_c_Cmd__ElapsedPhases* phases, int precision) {
     dal_c_Cmd__reportFinishedPhaseElapsed(out, "deps", phases->dependency_build, precision);
     dal_c_Cmd__reportFinishedPhaseElapsed(out, "dh build", phases->dh_build, precision);
@@ -1379,28 +1352,6 @@ static void dal_c_Cmd__reportFinishedPhases(FILE* out, const dal_c_Cmd__ElapsedP
     dal_c_Cmd__reportFinishedPhaseElapsed(out, "clean", phases->clean, precision);
 }
 
-static void dal_c_Cmd__reportElapsedDetails(
-    FILE* out,
-    double active_seconds,
-    double lock_wait_seconds,
-    const dal_c_Cmd__ElapsedPhases* phases,
-    int precision
-) {
-    double setup_seconds = dal_c_Cmd__setupWallSeconds(active_seconds, phases);
-    double execution_seconds = dal_c_Cmd__executionPhaseSeconds(phases);
-    if (execution_seconds > 0.0) {
-        (void)fprintf(out, "Elapsed: setup %.*fs, execution %.*fs", precision, setup_seconds, precision, execution_seconds);
-        if (lock_wait_seconds > 0.0) {
-            (void)fprintf(out, ", lock %.*fs", precision, lock_wait_seconds);
-        }
-        (void)fprintf(out, "\n");
-        return;
-    }
-    if (lock_wait_seconds > 0.0) {
-        (void)fprintf(out, "Elapsed: active %.*fs, lock %.*fs\n", precision, active_seconds, precision, lock_wait_seconds);
-    }
-}
-
 static void dal_c_Cmd__reportElapsed(
     const dal_c_Cmd* cmd,
     int result,
@@ -1410,35 +1361,23 @@ static void dal_c_Cmd__reportElapsed(
     const dal_c_Cmd__ElapsedPhases* phases
 ) {
     assert(cmd != NULL);
-    const char* action = dal_c_CmdAction_format(cmd->action);
+    const char* action = cmd->explain_rebuild ? "explain rebuild"
+                       : (cmd->plan_only ? "plan" : dal_c_CmdAction_format(cmd->action));
     if (!action) { action = "command"; }
     FILE* out = result == 0 ? stdout : stderr;
     const char* state = result == 0 ? "Finished" : "Failed";
-    if (result == 0 && dal_c_Cmd__phaseCount(phases) > 1) {
+    if (cmd->verbose && dal_c_Cmd__phaseCount(phases) > 1) {
         dal_c_Cmd__reportFinishedPhases(out, phases, elapsed_precision);
     }
-    double active_seconds = elapsed_seconds - lock_wait_seconds;
-    if (active_seconds < 0.0) { active_seconds = 0.0; }
-    if (lock_wait_seconds > 0.0) {
-        if (dal_c_Cmd__phasesHaveAny(phases)) {
-            (void)fprintf(out, "%s `%s` in %.*fs\n", state, action, elapsed_precision, elapsed_seconds);
-            dal_c_Cmd__reportElapsedDetails(out, active_seconds, lock_wait_seconds, phases, elapsed_precision);
-            return;
-        }
-        (void)fprintf(out, "%s `%s` in %.*fs\n", state, action, elapsed_precision, elapsed_seconds);
-        dal_c_Cmd__reportElapsedDetails(out, active_seconds, lock_wait_seconds, phases, elapsed_precision);
-        return;
-    }
-    if (dal_c_Cmd__phasesHaveAny(phases)) {
-        (void)fprintf(out, "%s `%s` in %.*fs\n", state, action, elapsed_precision, elapsed_seconds);
-        dal_c_Cmd__reportElapsedDetails(out, active_seconds, 0.0, phases, elapsed_precision);
-        return;
-    }
     (void)fprintf(out, "%s `%s` in %.*fs\n", state, action, elapsed_precision, elapsed_seconds);
+    if (cmd->verbose && lock_wait_seconds > 0.0) {
+        (void)fprintf(out, "  lock wait: %.*fs\n", elapsed_precision, lock_wait_seconds);
+    }
 }
 
 int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
     assert(self != NULL);
+    bool previous_read_only = dal_c__setReadOnlyPlanning(self->dry_run);
     bool report_elapsed = dal_c_Cmd__reportsElapsed(self);
     double started_at = report_elapsed ? dal_c_Cmd__nowSeconds() : 0.0;
     double saved_lock_wait_seconds = dal_c_Cmd__elapsed_lock_wait_seconds;
@@ -1460,6 +1399,7 @@ int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
         }
         dal_c_Cmd__elapsed_lock_wait_seconds = saved_lock_wait_seconds;
         dal_c_Cmd__elapsed_phases = saved_phases;
+        (void)dal_c__setReadOnlyPlanning(previous_read_only);
         return result;
     }
 
@@ -1478,6 +1418,7 @@ int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
         }
         dal_c_Cmd__elapsed_lock_wait_seconds = saved_lock_wait_seconds;
         dal_c_Cmd__elapsed_phases = saved_phases;
+        (void)dal_c__setReadOnlyPlanning(previous_read_only);
         return 1;
     }
     result = dal_c_Cmd__executeUnlocked(self, proj);
@@ -1494,6 +1435,7 @@ int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {
     }
     dal_c_Cmd__elapsed_lock_wait_seconds = saved_lock_wait_seconds;
     dal_c_Cmd__elapsed_phases = saved_phases;
+    (void)dal_c__setReadOnlyPlanning(previous_read_only);
     return result;
 }
 
@@ -1572,6 +1514,7 @@ int dal_c_Cmd_queryToolchain(const dal_c_Cmd* self) {
 int dal_c_Cmd_makeTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     assert(self != NULL);
     assert(proj != NULL);
+    if (self->dry_run) { return dal_c_Cmd__makeTargetUnlocked(self, proj); }
     dal_c_ProjectLock lock = { 0 };
     if (!dal_c__projectLockAcquire(proj, &lock)) {
         (void)fprintf(stderr, "Error: Failed to acquire build lock\n");
@@ -1595,7 +1538,7 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
                                              && !intent.target_path
                                              && (intent.recursive || intent.dsl_first);
 
-    if (intent.dsl_first && self->action != dal_c_CmdAction_test) {
+    if (!self->dry_run && intent.dsl_first && self->action != dal_c_CmdAction_test) {
         int dsl_result = dal_c__buildDSL(self, proj);
         if (dsl_result != 0) { return dsl_result; }
     }
@@ -1629,7 +1572,7 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
                            || self->action == dal_c_CmdAction_test_dsl
                            || (target_request.root && target_request.root->name && str_eql(target_request.root->name, dal_c_dir_tests));
 
-    if (!intent.target_path_is_explicit_file && target_proj->lib_count > 0) {
+    if (!self->dry_run && !intent.target_path_is_explicit_file && target_proj->lib_count > 0) {
         if (self->verbose) {
             printf("Building %d libraries...\n", target_proj->lib_count);
         }
@@ -1645,7 +1588,7 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
         }
     }
 
-    if (!intent.target_path_is_explicit_file && !dal_c__writeDepsPreludeHeader(target_proj, &self->opts)) {
+    if (!self->dry_run && !intent.target_path_is_explicit_file && !dal_c__writeDepsPreludeHeader(target_proj, &self->opts)) {
         ArrStr_fini(&active_excludes);
         dal_c_TargetRequest_cleanup(&target_request);
         (void)fprintf(stderr, "Error: Failed to generate dependency prelude header\n");
@@ -1654,8 +1597,8 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
 
     bool needs_project_static_lib = !intent.target_path_is_explicit_file
                                  && ((target_request.root && target_request.link_project) || is_test_mode);
-    if (needs_project_static_lib) {
-        int lib_result = dal_c_Cmd__ensureProjectStaticLibrary(self, target_proj);
+    if (!self->dry_run && needs_project_static_lib) {
+        int lib_result = dal_c_Cmd__ensureProjectLibraryForConsumer(self, target_proj);
         if (lib_result != 0) {
             ArrStr_fini(&active_excludes);
             dal_c_TargetRequest_cleanup(&target_request);
@@ -1793,7 +1736,7 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
             dal_c_Target_executable,
             extra_compiler_args,
             true,
-            true
+            false
         );
         free(aggregate_compiler_args);
         ArrStr_fini(&sources);
@@ -1854,7 +1797,7 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
             target_type = (linking == dal_c_Linking_shared) ? dal_c_Target_shared_lib : dal_c_Target_static_lib;
         }
         if (target_type == dal_c_Target_lib) {
-            result = dal_c_Cmd__buildLibrarySetFromSources(self, target_proj, sources, output_name, true);
+            result = dal_c_Cmd__buildLibrarySetFromSources(self, target_proj, sources, output_name, true, true);
         } else {
             result = dal_c_Cmd__buildFromSources(self, target_proj, sources, output_name, target_type, NULL, true, true);
         }
@@ -2025,7 +1968,8 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
                     build_proj,
                     sources,
                     output_name,
-                    !intent.target_path_is_explicit_file
+                    !intent.target_path_is_explicit_file,
+                    true
                 );
             } else {
                 result = dal_c_Cmd__buildFromSources(
@@ -4993,7 +4937,7 @@ static int dal_c_Cmd__recordVersionFlags(const dal_c_Cmd* cmd, const dal_c_Proje
 }
 
 /* NOLINTNEXTLINE(misc-no-recursion) */
-static int dal_c_Cmd__ensureProjectStaticLibrary(const dal_c_Cmd* self, const dal_c_Project* proj) {
+static int dal_c_Cmd__ensureProjectLibraryForConsumer(const dal_c_Cmd* self, const dal_c_Project* proj) {
     assert(self != NULL);
     if (!proj || !proj->root || !proj->name) {
         return 0;
@@ -5009,16 +4953,28 @@ static int dal_c_Cmd__ensureProjectStaticLibrary(const dal_c_Cmd* self, const da
     memset(&lib_cmd.payload, 0, sizeof(lib_cmd.payload));
     lib_cmd.action = dal_c_CmdAction_lib;
     lib_cmd.payload.lib.linking = dal_c_Linking_static;
-    int result = dal_c_Cmd__buildFromSources(
-        &lib_cmd,
-        proj,
-        project_sources,
-        proj->name,
-        dal_c_Target_static_lib,
-        NULL,
-        false,
-        false
-    );
+    int result = 0;
+    if (proj->defaults.target_kind_set && proj->defaults.target_kind == dal_c_Target_lib) {
+        result = dal_c_Cmd__buildLibrarySetFromSources(
+            &lib_cmd,
+            proj,
+            project_sources,
+            proj->name,
+            true,
+            false
+        );
+    } else {
+        result = dal_c_Cmd__buildFromSources(
+            &lib_cmd,
+            proj,
+            project_sources,
+            proj->name,
+            dal_c_Target_static_lib,
+            NULL,
+            true,
+            false
+        );
+    }
     ArrStr_fini(&project_sources);
     return result;
 }
@@ -5045,7 +5001,8 @@ static int dal_c_Cmd__buildLibrarySetFromSources(
     const dal_c_Project* proj,
     ArrStr* sources,
     const char* output_name,
-    bool allow_output_defaults
+    bool allow_output_defaults,
+    bool print_success
 ) {
     assert(self != NULL);
     assert(proj != NULL);
@@ -5087,7 +5044,7 @@ static int dal_c_Cmd__buildLibrarySetFromSources(
     );
     if (result != 0) { return result; }
 
-    if (!self->dry_run) { printf("Build successful!\n"); }
+    if (print_success && !self->dry_run) { printf("Build successful!\n"); }
     return 0;
 }
 
@@ -5398,7 +5355,7 @@ static int dal_c_Cmd__buildOneFromSources(
         free(compiler_args);
         return 1;
     }
-    if (dal_c_Cmd__recordVersionFlags(self, proj, sources) != 0) {
+    if (!self->dry_run && dal_c_Cmd__recordVersionFlags(self, proj, sources) != 0) {
         dal_c_CompilerOpts_cleanup(&effective.opts);
         dal_c_BuildDefaults_cleanup(&effective_defaults);
         free(compiler_args);
@@ -5422,7 +5379,9 @@ static int dal_c_Cmd__buildOneFromSources(
     }
     char* profile_dir = NULL;
     if (proj && proj->root) {
-        profile_dir = dal_c__makeBuildProfileDir(proj, &effective.opts, profile);
+        profile_dir = self->dry_run
+                    ? dal_c__makeBuildProfileDirReadOnly(proj, &effective.opts, profile)
+                    : dal_c__makeBuildProfileDir(proj, &effective.opts, profile);
     } else {
         char* target_name = dal_c__resolveTargetDirName(&effective.opts);
         char* target_dir = (base_build_dir && target_name) ? path_join(base_build_dir, target_name) : NULL;
@@ -5432,7 +5391,7 @@ static int dal_c_Cmd__buildOneFromSources(
     }
     free(base_build_dir);
     char* object_dir = path_join(profile_dir, "obj");
-    dir_createRecur(object_dir);
+    if (!self->dry_run) { dir_createRecur(object_dir); }
 
     dal_c_CommandIntent intent = { 0 };
     dal_c_Cmd_normalizeIntent(self, &intent);
@@ -5450,6 +5409,8 @@ static int dal_c_Cmd__buildOneFromSources(
     }
     bool target_existed_before_plan = path_isFile(target_path);
     bool makefile_existed_before_plan = path_isFile(makefile_path);
+    char* stale_contract_diff = dal_c__takeLastContractDiff();
+    free(stale_contract_diff);
     double build_started_at = dal_c_Cmd__nowSeconds();
     int plan_result = dal_c__generateMakefile(&effective, proj, profile, sources, target_path, object_dir, target_type);
     if (plan_result != dal_c_generateMakefile_success && plan_result != dal_c_generateMakefile_upToDate) {
@@ -5499,9 +5460,10 @@ static int dal_c_Cmd__buildOneFromSources(
         result = (plan_result == dal_c_generateMakefile_upToDate) ? 0 : dal_c__executeMake(self, makefile_path);
     }
     dal_c__phaseRecord(build_phase, dal_c_Cmd__nowSeconds() - build_started_at);
-    if (!self->dry_run && result == 0 && path_isFile(target_path)) {
-        if (!dal_c__writeArtifactManifest(profile_dir, &effective, profile, target_type, target_path)) {
-            (void)fprintf(stderr, "Warning: Failed to write artifact manifest for %s\n", target_path);
+    if (!self->dry_run && result == 0 && path_isFile(target_path)
+        && (target_type == dal_c_Target_static_lib || target_type == dal_c_Target_shared_lib)) {
+        if (!dal_c__writePrebuiltManifest(profile_dir, &effective, profile, target_path)) {
+            (void)fprintf(stderr, "Warning: Failed to write prebuilt manifest for %s\n", target_path);
         }
     }
     free(makefile_path);
@@ -5586,8 +5548,17 @@ static int dal_c_Cmd__buildOneFromSources(
                 dal_c__phaseRecord(dal_c_CmdPhase_run_exec, runtime_elapsed);
             } else {
                 dal_c__phaseRecord(dal_c_CmdPhase_test_run, runtime_elapsed);
-                printf("[TEST REPORT] status=%s exit=%d executable=%s elapsed=%.3fs\n",
-                    result == 0 ? "PASS" : "FAIL", result, target_path ? target_path : "(unknown)", runtime_elapsed);
+                printf(
+                    "[TEST]\n"
+                    "  status: %s\n"
+                    "  exit: %d\n"
+                    "  executable: %s\n"
+                    "  elapsed: %.3fs\n",
+                    result == 0 ? "PASS" : "FAIL",
+                    result,
+                    target_path ? target_path : "(unknown)",
+                    runtime_elapsed
+                );
             }
         }
     }

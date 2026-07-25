@@ -276,7 +276,7 @@ Artifact names:
 | Windows | `mylib.lib` | `mylib.lto.lib` | `mylib.dll` | `mylib.dll.lib` |
 | Linux | `libmylib.a` | `libmylib.lto.a` | `libmylib.so` | not required |
 
-A shared-library build performs its profile LTO while producing the DLL/SO; it does not expose a separate LTO artifact. A project with `kind=lib` produces the applicable static variants and the shared library.
+A shared-library build performs its profile LTO while producing the DLL/SO; it does not expose a separate LTO artifact. A project with `kind=lib` produces the native static archive and shared library in every profile, the Windows import library where applicable, and the LTO static archive whenever that profile's effective LTO is enabled. Test/sample/example consumers materialize this same library set before linking their executable.
 
 Final linked targets select one static variant automatically:
 
@@ -452,7 +452,8 @@ and durable dependency resolution.
 `prebuilt/<target>/<profile>/`
 
 - packaged SDK artifacts that are trusted as immutable inputs
-- `manifest.dh` is required and describes the prebuilt compatibility contract
+- `manifest.dh` is required and inventories every concrete library artifact under `libs/`
+- test/sample/example executables do not update the prebuilt manifest
 - this directory is deliberately separate from `build/`, so stale local build caches cannot masquerade as SDK packages
 
 `lib/deps/` and `lib/deps.h`
@@ -480,7 +481,7 @@ dh-c clean --deps --older-than=90d --force
 
 Policy modes:
 
-- `auto` (default): use `prebuilt/<profile>` when the required artifact exists; otherwise build from source
+- `auto` (default): use `prebuilt/<normalized-target>/<profile>` when the required artifact exists; otherwise build from source
 - `off`: ignore packaged artifacts and build from source
 - `required`: use packaged artifacts and fail instead of falling back to source
 
@@ -591,9 +592,9 @@ build/<target>/<profile>/
 prebuilt/<target>/<profile>/
 ```
 
-For an implicit host build, dh-c asks the active compiler for its target triple. `build/native` is created as a best-effort directory link to that host target directory. Failure to create the convenience link does not fail the build.
+For an implicit host build, dh-c asks the active compiler for its target triple. A real materialized build creates or refreshes `build/native` as a directory link to that normalized host target directory. On Windows dh-c falls back from a symbolic link to a directory junction. Read-only inspection commands do not create the alias. Failure to create the convenience link is reported as a warning rather than changing the build contract.
 
-DH tests now return a non-zero process status when one or more test units fail, so CI does not need to parse `[FAIL]` or `Failed: N` output.
+DH tests return the child process status directly. The final report is a multi-line `[TEST]` block containing status, exit code, executable, and execution time; detailed phase timings are reserved for `--verbose`.
 
 ## Build introspection
 
@@ -606,7 +607,7 @@ dh-c explain rebuild dev
 dh-c doctor
 ```
 
-`plan` runs the same target/source/configuration resolution as `build` and writes the real generated Makefile, but does not invoke Make. `explain rebuild` reports missing output and generated-plan staleness. `target show` prints the normalized target-scoped output directory. `doctor` checks the selected compiler, Make, archiver, DH installation, project detection, and target resolution.
+`plan` runs the same target/source/configuration resolution as `build` but is read-only: it does not write Makefiles, cache entries, locks, dependency state, or artifacts. `explain rebuild` compares existing contracts without building dependencies or mutating state. `target show` prints the normalized target-scoped output directory and native-alias policy. `doctor` checks the selected compiler, Make, archiver, DH installation, project detection, target resolution, and provider tools required by the detected project.
 
 ## Structured Build Contracts
 

@@ -484,8 +484,23 @@ static void test_file_and_dir_helpers(void) {
     TEST_ASSERT(file_count >= 3);
     test_free_str_array(listed, file_count);
 
+    char* link_target = path_join(temp_root, "link-target");
+    char* link_target_file = path_join(link_target, "preserved.txt");
+    char* link_alias = path_join(temp_root, "link-alias");
+    TEST_ASSERT(link_target != NULL && link_target_file != NULL && link_alias != NULL);
+    TEST_ASSERT(dir_createRecur(link_target));
+    TEST_ASSERT(file_write(link_target_file, "preserve"));
+    TEST_ASSERT(dir_linkDir(link_alias, link_target));
+    TEST_ASSERT(path_isDir(link_alias));
+    TEST_ASSERT(dir_removeRecur(link_alias));
+    TEST_ASSERT(!path_isDir(link_alias));
+    TEST_ASSERT(path_isFile(link_target_file));
+
     TEST_ASSERT(test_remove_recur(temp_root));
 
+    free(link_alias);
+    free(link_target_file);
+    free(link_target);
     free(long_line_file);
     free(file_copy_path);
     free(file_path);
@@ -1440,6 +1455,7 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_STDLIB") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_CRT") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_CRT") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -fmacro-backtrace-limit=8") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wformat=2") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Werror=uninitialized") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wframe-larger-than=4096") != NULL);
@@ -2612,21 +2628,20 @@ static void test_prebuilt_dependency_staging(void) {
     char* manifest_text = str_format(
         "target=%s\n"
         "profile=stable\n"
-        "artifact-kind=static-lib\n"
-        "artifact=%s\n"
-        "lto=on\n"
-        "compiler=clang\n",
-        target_name, lto_name
+        "compiler=clang\n"
+        "artifact=static|libs/%s\n"
+        "artifact=static-lto|libs/%s\n",
+        target_name, native_name, lto_name
     );
     TEST_ASSERT(manifest_path != NULL);
     TEST_ASSERT(manifest_text != NULL);
     TEST_ASSERT(file_write(manifest_path, manifest_text));
     char* manifest_reason = NULL;
     const dal_c_ProfileSpec* stable_profile = dal_c_ProfileSpec_by(dal_c_Profile_stable);
-    TEST_ASSERT(dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, true, &manifest_reason));
+    TEST_ASSERT(dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
     TEST_ASSERT(manifest_reason == NULL);
     TEST_ASSERT(remove(manifest_path) == 0);
-    TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, true, &manifest_reason));
+    TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
     TEST_ASSERT(manifest_reason != NULL && strstr(manifest_reason, "missing manifest.dh") != NULL);
     free(manifest_reason);
     manifest_reason = NULL;
@@ -2634,24 +2649,39 @@ static void test_prebuilt_dependency_staging(void) {
     char* wrong_manifest_text = str_format(
         "target=wrong-target\n"
         "profile=stable\n"
-        "artifact-kind=static-lib\n"
-        "artifact=%s\n"
-        "lto=on\n"
-        "compiler=clang\n",
-        lto_name
+        "compiler=clang\n"
+        "artifact=static|libs/%s\n"
+        "artifact=static-lto|libs/%s\n",
+        native_name, lto_name
     );
     TEST_ASSERT(wrong_manifest_text != NULL);
     TEST_ASSERT(file_write(manifest_path, wrong_manifest_text));
     free(wrong_manifest_text);
-    TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, true, &manifest_reason));
+    TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
     TEST_ASSERT(manifest_reason != NULL);
+    free(manifest_reason);
+    manifest_reason = NULL;
+
+    char* wrong_compiler_text = str_format(
+        "target=%s\n"
+        "profile=stable\n"
+        "compiler=other-compiler\n"
+        "artifact=static|libs/%s\n"
+        "artifact=static-lto|libs/%s\n",
+        target_name, native_name, lto_name
+    );
+    TEST_ASSERT(wrong_compiler_text != NULL);
+    TEST_ASSERT(file_write(manifest_path, wrong_compiler_text));
+    free(wrong_compiler_text);
+    TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
+    TEST_ASSERT(manifest_reason != NULL && strstr(manifest_reason, "compiler mismatch") != NULL);
     free(manifest_reason);
     manifest_reason = NULL;
 
     char* obsolete_manifest_text = str_format("manifest-version=1\n%s", manifest_text);
     TEST_ASSERT(obsolete_manifest_text != NULL);
     TEST_ASSERT(file_write(manifest_path, obsolete_manifest_text));
-    TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, true, &manifest_reason));
+    TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
     TEST_ASSERT(manifest_reason != NULL && strstr(manifest_reason, "unsupported manifest key") != NULL);
     free(obsolete_manifest_text);
     free(manifest_reason);
