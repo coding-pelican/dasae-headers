@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <limits.h>
 #if !defined(_WIN32)
 #include <unistd.h>
 #endif
@@ -209,6 +210,28 @@ void dal_c_CompilerOpts_cleanup(dal_c_CompilerOpts* opts) {
     memset(opts, 0, sizeof(*opts));
 }
 
+bool dal_c_MacroBacktraceLimit_parse(const char* value, int* out) {
+    if (!value || !value[0] || !out) { return false; }
+    if (str_eql(value, dal_c_macro_backtrace_limit_short)) {
+        *out = dal_c_default_macro_backtrace_limit;
+        return true;
+    }
+    if (str_eql(value, dal_c_macro_backtrace_limit_unlimited)) {
+        *out = 0;
+        return true;
+    }
+
+    int parsed = 0;
+    for (const char* cursor = value; *cursor; ++cursor) {
+        if (*cursor < '0' || *cursor > '9') { return false; }
+        int digit = *cursor - '0';
+        if (parsed > (INT_MAX - digit) / 10) { return false; }
+        parsed = parsed * 10 + digit;
+    }
+    *out = parsed;
+    return true;
+}
+
 void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts* src) {
     assert(dst != NULL);
     if (!src) { return; }
@@ -247,6 +270,10 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
     if (src->icf_mode != dal_c_IcfMode_auto) { dst->icf_mode = src->icf_mode; }
     if (src->merge_all_constants != dal_c_ToggleState_auto) { dst->merge_all_constants = src->merge_all_constants; }
     if (src->stack_protector != dal_c_ToggleState_auto) { dst->stack_protector = src->stack_protector; }
+    if (src->macro_backtrace_limit_set) {
+        dst->macro_backtrace_limit = src->macro_backtrace_limit;
+        dst->macro_backtrace_limit_set = true;
+    }
     if (src->loose_errors != dal_c_LooseErrorsMode_auto) { dst->loose_errors = src->loose_errors; }
     dal_c_VersionSpec_merge(&dst->version, &src->version);
 
@@ -1167,6 +1194,14 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         opts->merge_all_constants = dal_c_Project__toggleStateFromPositiveBool(value);
     } else if (str_eql(key, dal_c_opt_stack_protector)) {
         opts->stack_protector = dal_c_Project__toggleStateFromPositiveBool(value);
+    } else if (str_eql(key, dal_c_opt_macro_backtrace_limit)) {
+        int limit = 0;
+        if (!dal_c_MacroBacktraceLimit_parse(value, &limit)) {
+            (void)fprintf(stderr, "Error: Invalid `%s` value `%s`\n", dal_c_opt_macro_backtrace_limit, value);
+        } else {
+            opts->macro_backtrace_limit = limit;
+            opts->macro_backtrace_limit_set = true;
+        }
     } else if (str_eql(key, dal_c_opt_loose_errors)) {
         opts->loose_errors = dal_c_LooseErrorsMode_parse(value);
     }

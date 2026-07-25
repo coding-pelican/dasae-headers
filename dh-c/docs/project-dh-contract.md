@@ -26,6 +26,7 @@ pch-exclude=<header>
 self-root=<path>
 link-dir=<path>
 prebuilt=<auto|off|required>
+macro-backtrace-limit=<short|unlimited|N>
 ```
 
 Meaning:
@@ -37,6 +38,12 @@ Meaning:
 - repeated `self-root=` entries declare reusable self-project source roots
 - repeated `link-dir=` entries add library search directories for linked outputs
 - `prebuilt=` selects whether packaged `prebuilt/<normalized-target>/<profile>` artifacts are preferred, ignored, or required
+- `macro-backtrace-limit=` controls Clang macro expansion diagnostics:
+  `short` emits at most 8 entries, `unlimited` maps to Clang's `0`, and a
+  nonnegative integer sets the exact limit
+
+The CLI form `--macro-backtrace-limit=<short|unlimited|N>` overrides the
+`project.dh` value for one invocation. The default is `short`.
 
 ### Compile environment and link model
 

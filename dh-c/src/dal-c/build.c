@@ -1363,6 +1363,11 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
     }
     dal_c__pushSelfMakeToggle(argv, "MERGE_ALL_CONSTANTS", cmd->opts.merge_all_constants);
     dal_c__pushSelfMakeToggle(argv, "STACK_PROTECTOR", cmd->opts.stack_protector);
+    if (cmd->opts.macro_backtrace_limit_set) {
+        char* limit = str_format("%d", cmd->opts.macro_backtrace_limit);
+        dal_c__pushSelfMakeKeyValue(argv, "MACRO_BACKTRACE_LIMIT", limit);
+        free(limit);
+    }
     if (cmd->opts.loose_errors != dal_c_LooseErrorsMode_auto) {
         dal_c__pushSelfMakeKeyValue(argv, "LOOSE_ERRORS", dal_c_LooseErrorsMode_format(cmd->opts.loose_errors));
     }
@@ -3968,6 +3973,13 @@ static dal_c_ToggleState dal_c__resolvedStackProtectorState(const dal_c_Compiler
     return opts->stack_protector;
 }
 
+static int dal_c__resolvedMacroBacktraceLimit(const dal_c_CompilerOpts* opts) {
+    assert(opts != NULL);
+    return opts->macro_backtrace_limit_set
+         ? opts->macro_backtrace_limit
+         : dal_c_default_macro_backtrace_limit;
+}
+
 static const char* dal_c__resolvedTargetArch(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
     assert(opts != NULL);
     assert(profile != NULL);
@@ -4660,6 +4672,7 @@ void dal_c__appendCompileDbArguments(
     if (compiler_is_clang) {
         ArrStr_push(argv, "-fgnu-keywords");
         ArrStr_push(argv, "-Wno-microsoft-anon-tag");
+        dal_c__argvPushFormat(argv, "-fmacro-backtrace-limit=%d", dal_c__resolvedMacroBacktraceLimit(opts));
     }
     ArrStr_push(argv, "-fms-extensions");
     ArrStr_push(argv, "-funsigned-char");
@@ -4793,7 +4806,7 @@ void dal_c__appendSyntaxArguments(
         ArrStr_push(argv, "-fgnu-keywords");
         ArrStr_push(argv, "-Wno-microsoft-anon-tag");
         ArrStr_push(argv, "-fcolor-diagnostics");
-        ArrStr_push(argv, "-fmacro-backtrace-limit=8");
+        dal_c__argvPushFormat(argv, "-fmacro-backtrace-limit=%d", dal_c__resolvedMacroBacktraceLimit(opts));
         if (is_windows) {
             ArrStr_push(argv, "-fansi-escape-codes");
         }
@@ -5752,7 +5765,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     (void)fprintf(fp, "CFLAGS_BASE = $(STD)");
     if (compiler_is_clang) {
         (void)fprintf(fp, " -fgnu-keywords -Wno-microsoft-anon-tag");
-        (void)fprintf(fp, " -fcolor-diagnostics -fmacro-backtrace-limit=8");
+        (void)fprintf(fp, " -fcolor-diagnostics -fmacro-backtrace-limit=%d", dal_c__resolvedMacroBacktraceLimit(opts));
         if (is_windows) {
             (void)fprintf(fp, " -fansi-escape-codes");
         }
@@ -6367,7 +6380,8 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     hash = dal_c__hashBool(hash, compiler_is_clang);
     if (compiler_is_clang) {
         hash = dal_c__hashString(hash, "color-diagnostics-v1");
-        hash = dal_c__hashString(hash, "macro-backtrace-limit-8");
+        int macro_backtrace_limit = dal_c__resolvedMacroBacktraceLimit(opts);
+        hash = dal_c__hashBytes(hash, &macro_backtrace_limit, sizeof(macro_backtrace_limit));
     }
     hash = dal_c__hashString(hash, opts->c_std);
     hash = dal_c__hashString(hash, opts->arch_target);
@@ -6693,6 +6707,8 @@ static char* dal_c__makeCompileContractContent(const dal_c_Cmd* cmd, const dal_c
     dal_c__contractAppend(&content, "target-abi", opts->target_abi);
     dal_c__contractAppend(&content, "sysroot", opts->sysroot);
     dal_c__contractAppend(&content, "compiler-args", cmd->compiler_args);
+    (void)snprintf(number, sizeof(number), "%d", dal_c__resolvedMacroBacktraceLimit(opts));
+    dal_c__contractAppend(&content, "macro-backtrace-limit", number);
     dal_c__contractAppend(&content, "compile-env", dal_c_CompileEnv_format(dal_c__resolvedCompileEnv(opts)));
     dal_c__contractAppendBool(&content, "libc-fact", dal_c__resolvedCompileLibcFact(opts));
     dal_c__contractAppendBool(&content, "default-libs-fact", dal_c__resolvedCompileDefaultLibsFact(opts));

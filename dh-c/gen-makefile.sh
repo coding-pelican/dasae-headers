@@ -77,6 +77,7 @@ STRIP ?= profile
 ICF ?= profile
 MERGE_ALL_CONSTANTS ?= auto
 STACK_PROTECTOR ?= auto
+MACRO_BACKTRACE_LIMIT ?= 8
 LOOSE_ERRORS ?= auto
 SAVE_TEMPS ?= off
 EMIT_MAP ?= off
@@ -187,6 +188,7 @@ BASE_CFLAGS = -std=$(C_STD) \
               -I$(INCLUDE_DIR) \
               -fgnu-keywords -fms-extensions -Wno-microsoft-anon-tag \
               -fcolor-diagnostics \
+              -fmacro-backtrace-limit=$(MACRO_BACKTRACE_LIMIT) \
               -funsigned-char \
               -mllvm -enable-dfa-jump-thread \
               $(VERSION_DEFINES) \

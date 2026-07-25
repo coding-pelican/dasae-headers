@@ -887,6 +887,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_icf "icf"
 #define dal_c_opt_merge_all_constants "merge-all-constants"
 #define dal_c_opt_stack_protector "stack-protector"
+#define dal_c_opt_macro_backtrace_limit "macro-backtrace-limit"
 #define dal_c_opt_emit_map "emit-map"
 #define dal_c_opt_emit_linked_asm "emit-linked-asm"
 #define dal_c_opt_emit_disasm "emit-disasm"
@@ -1115,6 +1116,8 @@ typedef struct dal_c_CompilerOpts {
     dal_c_IcfMode icf_mode; // --icf=<off|safe|all>
     dal_c_ToggleState merge_all_constants; // --merge-all-constants=<auto|on|off>
     dal_c_ToggleState stack_protector; // --stack-protector=<auto|on|off>
+    int macro_backtrace_limit; // --macro-backtrace-limit=<short|unlimited|N>
+    bool macro_backtrace_limit_set;
     dal_c_LooseErrorsMode loose_errors; // --loose-errors=<auto|never|warn|suppress>
     dal_c_VersionSpec version; // project/file/CLI version contract
 } dal_c_CompilerOpts;
@@ -1405,6 +1408,9 @@ char* dal_c_Project_getDepsDir(const dal_c_Project* proj);
 #define dal_c_default_compiler "clang"
 #define dal_c_default_objcopy "llvm-objcopy"
 #define dal_c_default_c_std "gnu17"
+#define dal_c_default_macro_backtrace_limit 8
+#define dal_c_macro_backtrace_limit_short "short"
+#define dal_c_macro_backtrace_limit_unlimited "unlimited"
 #define dal_c_default_profile dal_c_Profile_dev
 #define dal_c_default_elapsed_precision 2
 #define dal_c_max_elapsed_precision 9
@@ -1553,6 +1559,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_icf dal_c_opt_value_sep "<auto|off|safe|all>", "Enable linker identical code folding (`-Wl,--icf=<mode>`)" },
     { dal_c_opt_prefix_long dal_c_opt_merge_all_constants dal_c_opt_value_sep "<auto|on|off>", "Emit or omit Clang constant merging flags" },
     { dal_c_opt_prefix_long dal_c_opt_stack_protector dal_c_opt_value_sep "<auto|on|off>", "Emit stack protector flags (`-fstack-protector-strong` or `-fno-stack-protector`)" },
+    { dal_c_opt_prefix_long dal_c_opt_macro_backtrace_limit dal_c_opt_value_sep "<short|unlimited|N>", "Limit Clang macro expansion backtraces (`short` = 8, `unlimited` = 0)" },
     { dal_c_opt_prefix_long dal_c_opt_entry dal_c_opt_value_sep "<symbol>", "Override linker entry symbol" },
     { dal_c_opt_prefix_long dal_c_opt_target_arch dal_c_opt_value_sep "<arch>", "Target architecture sub-variant passed to compiler and linker (for example `rv32im`)" },
     { dal_c_opt_prefix_long dal_c_opt_target_tune dal_c_opt_value_sep "<cpu>", "Target CPU tuning passed to compiler (`-mtune=<cpu>`)" },
@@ -1648,6 +1655,7 @@ static const dal_c_HelpOption dal_c_help_compile_check_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_exceptions dal_c_opt_value_sep "<auto|on|off>", "Emit exception handling flags" },
     { dal_c_opt_prefix_long dal_c_opt_merge_all_constants dal_c_opt_value_sep "<auto|on|off>", "Emit or omit Clang constant merging flags" },
     { dal_c_opt_prefix_long dal_c_opt_stack_protector dal_c_opt_value_sep "<auto|on|off>", "Emit stack protector flags" },
+    { dal_c_opt_prefix_long dal_c_opt_macro_backtrace_limit dal_c_opt_value_sep "<short|unlimited|N>", "Limit Clang macro expansion backtraces (`short` = 8, `unlimited` = 0)" },
     { dal_c_opt_prefix_long dal_c_opt_target_arch dal_c_opt_value_sep "<arch>", "Target architecture sub-variant passed to compiler" },
     { dal_c_opt_prefix_long dal_c_opt_target_tune dal_c_opt_value_sep "<cpu>", "Target CPU tuning passed to compiler" },
     { dal_c_opt_prefix_long dal_c_opt_target_abi dal_c_opt_value_sep "<abi>", "Target ABI passed to compiler" },
@@ -1875,6 +1883,7 @@ static const dal_c_HelpOption dal_c_help_compile_db_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_exceptions dal_c_opt_value_sep "<auto|on|off>", "Record exception handling compile flags" },
     { dal_c_opt_prefix_long dal_c_opt_merge_all_constants dal_c_opt_value_sep "<auto|on|off>", "Record Clang constant merging compile flags" },
     { dal_c_opt_prefix_long dal_c_opt_stack_protector dal_c_opt_value_sep "<auto|on|off>", "Record stack protector compile flags" },
+    { dal_c_opt_prefix_long dal_c_opt_macro_backtrace_limit dal_c_opt_value_sep "<short|unlimited|N>", "Record Clang macro expansion backtrace limit (`short` = 8, `unlimited` = 0)" },
     { dal_c_opt_prefix_long dal_c_opt_target_arch dal_c_opt_value_sep "<arch>", "Target architecture sub-variant recorded in compile commands" },
     { dal_c_opt_prefix_long dal_c_opt_target_tune dal_c_opt_value_sep "<cpu>", "Target CPU tuning recorded in compile commands" },
     { dal_c_opt_prefix_long dal_c_opt_target_abi dal_c_opt_value_sep "<abi>", "Target ABI recorded in compile commands" },

@@ -572,14 +572,27 @@ static bool dal_c__depsShell(
     char* cflags = dal_c__depsTargetCflags(opts);
 #ifdef _WIN32
     char* script = str_format(
-        "cd /D \"%s\" && set \"DH_DEP_SOURCE=%s\" && set \"DH_DEP_BUILD=%s\" && "
-        "set \"DH_DEP_PACKAGE=%s\" && set \"DH_DEP_PROFILE=%s\" && set \"DH_DEP_TARGET=%s\" && "
-        "set \"DH_DEP_CC=%s\" && set \"DH_DEP_AR=%s\" && set \"DH_DEP_SYSROOT=%s\" && "
-        "set \"DH_DEP_CFLAGS=%s\" && set \"CC=%s\" && set \"AR=%s\" && set \"CFLAGS=%s\" && %s",
+        "@echo off\r\n"
+        "cd /D \"%s\"\r\n"
+        "set \"DH_DEP_SOURCE=%s\"\r\n"
+        "set \"DH_DEP_BUILD=%s\"\r\n"
+        "set \"DH_DEP_PACKAGE=%s\"\r\n"
+        "set \"DH_DEP_PROFILE=%s\"\r\n"
+        "set \"DH_DEP_TARGET=%s\"\r\n"
+        "set \"DH_DEP_CC=%s\"\r\n"
+        "set \"DH_DEP_AR=%s\"\r\n"
+        "set \"DH_DEP_SYSROOT=%s\"\r\n"
+        "set \"DH_DEP_CFLAGS=%s\"\r\n"
+        "set \"CC=%s\"\r\n"
+        "set \"AR=%s\"\r\n"
+        "set \"CFLAGS=%s\"\r\n"
+        "%s\r\n",
         cwd, src_dir, build_dir, package_dir, profile, target,
         compiler, dal_c_tool_ar, sysroot, cflags, compiler, dal_c_tool_ar, cflags, command
     );
-    const char* argv[] = { "cmd.exe", "/D", "/S", "/C", script, NULL };
+    char* script_path = path_join(build_dir, ".dh-c-provider.cmd");
+    bool script_written = script && script_path && file_write(script_path, script);
+    const char* argv[] = { "cmd.exe", "/D", "/C", script_path, NULL };
 #else
     char* script = str_format(
         "cd \"%s\" && export DH_DEP_SOURCE=\"%s\" DH_DEP_BUILD=\"%s\" DH_DEP_PACKAGE=\"%s\" "
@@ -590,7 +603,20 @@ static bool dal_c__depsShell(
     );
     const char* argv[] = { "/bin/sh", "-c", script, NULL };
 #endif
-    int result = proc_run(argv, true);
+    int result =
+#ifdef _WIN32
+        script_written
+#else
+        true
+#endif
+            ? proc_run(argv, true)
+            : -1;
+#ifdef _WIN32
+    if (script_path) {
+        (void)remove(script_path);
+    }
+    free(script_path);
+#endif
     free(script);
     free(cflags);
     return result == 0;
@@ -1206,7 +1232,7 @@ static int dal_c__printUsage(const char* topic) {
     printf("PROJECT.DH KEYS:\n");
     printf("  Top level: `output`, `kind=<executable|static-lib|shared-lib|lib>`, `build-runs-tests=<on|off>`, `self-root=<path>`, `exclude=<path>`.\n");
     printf("  Toolchain: `compiler`, `std`, `arch`/`target`, `target-arch`, `target-tune`, `target-abi`, `sysroot`, `entry`.\n");
-    printf("  Compile inputs: `include`, `isystem`, `define`, `undef`, `profile`, `hosted`, `freestanding`, `loose-errors`.\n");
+    printf("  Compile inputs: `include`, `isystem`, `define`, `undef`, `profile`, `hosted`, `freestanding`, `loose-errors`, `macro-backtrace-limit`.\n");
     printf("  Link inputs: `link`, `link-dir`, `link-dsl`, `link-libc`, `link-default-libs`, `link-start-files`, `link-compiler-rt`, `link-stdlib`, `link-crt`, `link-mode`.\n");
     printf("  Optimization/artifacts: `lto`, `omit-frame-pointer`, `function-sections`, `data-sections`, `gc-sections`, `whole-archive`, `unroll-loops`, `unwind-tables`, `async-unwind-tables`, `exceptions`, `strip`, `icf`, `merge-all-constants`, `stack-protector`.\n");
     printf("  Version: `version-core`, `version-prefix=<alpha|beta|rc>`, `version-suffix`, `version-build`.\n");

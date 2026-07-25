@@ -102,6 +102,13 @@ assert_occurrences() {
     fi
 }
 
+native_path() {
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*) cygpath -w "$1" ;;
+        *) printf '%s\n' "$1" ;;
+    esac
+}
+
 invoke_external() {
     expected_codes=$1
     working_directory=$2
@@ -202,7 +209,7 @@ remove_recur() {
 
 remove_generated_dirs() {
     root=$1
-    "$find_bin" "$root" -type d \( -name build -o -name .cache \) -prune -print | while IFS= read -r dir; do
+    "$find_bin" "$root" -type d \( -name build -o -name .cache -o -name .dh-c \) -prune -print | while IFS= read -r dir; do
         remove_recur "$dir" || true
     done
 }
@@ -299,6 +306,7 @@ lock_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-lock-contract.XXXXXX")
 lock_origin="$lock_contract_root/origin"
 lock_project="$lock_contract_root/project"
 mkdir -p "$lock_origin" "$lock_project"
+lock_origin_native=$(native_path "$lock_origin")
 git -C "$lock_origin" init -q -b main
 git -C "$lock_origin" config user.email dh-c-test@example.invalid
 git -C "$lock_origin" config user.name dh-c-test
@@ -308,7 +316,7 @@ git -C "$lock_origin" commit -q -m one
 lock_commit_one=$(git -C "$lock_origin" rev-parse HEAD)
 cat >"$lock_project/project.dh" <<EOF
 [dep]
-source=$lock_origin
+source=$lock_origin_native
 revision=main
 provider=cmake
 EOF
@@ -351,73 +359,59 @@ invoke_external "0" "$lock_project" "$cli_exe" clean --deps --older-than=0s --fo
 assert_true $? "forced dependency cleanup did not remove the dirty checkout"
 rm -rf "$lock_contract_root"
 
-case "$(uname -s)" in
-    MINGW*|MSYS*|CYGWIN*) ;;
-    *)
-        provider_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-provider-contract.XXXXXX")
-        provider_bin="$provider_contract_root/bin"
-        provider_source="$provider_contract_root/source"
-        provider_sysroot="$provider_contract_root/sysroot"
-        mkdir -p "$provider_bin" "$provider_source" "$provider_sysroot"
+provider_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-provider-contract.XXXXXX")
+provider_bin="$provider_contract_root/bin"
+provider_source="$provider_contract_root/source"
+provider_sysroot="$provider_contract_root/sysroot"
+mkdir -p "$provider_bin" "$provider_source" "$provider_sysroot"
+provider_source_native=$(native_path "$provider_source")
+provider_sysroot_native=$(native_path "$provider_sysroot")
+provider_probe="$repo_root/dh-c/tests/provider-probe.c"
+provider_cmake="$provider_bin/cmake$exe_ext"
+provider_make="$provider_bin/make$exe_ext"
+clang -std=gnu17 -Wall -Wextra -Werror -o "$provider_cmake" "$provider_probe"
+cp "$provider_cmake" "$provider_make"
+chmod +x "$provider_cmake" "$provider_make"
 
-        cat >"$provider_bin/cmake" <<'EOF'
-#!/bin/sh
-printf '%s\n' "$*" >>"$DH_TEST_PROVIDER_LOG"
-exit 0
-EOF
-        chmod +x "$provider_bin/cmake"
-        cmake_project="$provider_contract_root/cmake-project"
-        mkdir -p "$cmake_project"
-        cat >"$cmake_project/project.dh" <<EOF
+cmake_project="$provider_contract_root/cmake-project"
+mkdir -p "$cmake_project"
+cat >"$cmake_project/project.dh" <<EOF
 output=provider-contract
 link-dsl=off
 
 [dep]
-path=$provider_source
+path=$provider_source_native
 provider=cmake
 EOF
-        cmake_log="$provider_contract_root/cmake.log"
-        invoke_external "0" "$cmake_project" env             PATH="$provider_bin:$PATH"             DH_TEST_PROVIDER_LOG="$cmake_log"             "$cli_exe" deps dev             --target=aarch64-w64-windows-gnu             --sysroot="$provider_sysroot"             --compiler=clang-cross
-        cmake_text=$(cat "$cmake_log")
-        assert_contains "$cmake_text" "-DCMAKE_C_COMPILER=clang-cross" "CMake provider did not receive the effective compiler"
-        assert_contains "$cmake_text" "-DCMAKE_AR=llvm-ar" "CMake provider did not receive the archiver"
-        assert_contains "$cmake_text" "-DCMAKE_C_COMPILER_TARGET=aarch64-w64-windows-gnu" "CMake provider did not receive the target triple"
-        assert_contains "$cmake_text" "-DCMAKE_SYSROOT=$provider_sysroot" "CMake provider did not receive the sysroot"
+cmake_log="$provider_contract_root/cmake.log"
+cmake_log_native=$(native_path "$cmake_log")
+invoke_external "0" "$cmake_project" env PATH="$provider_bin:$PATH" DH_TEST_PROVIDER_LOG="$cmake_log_native" "$cli_exe" deps dev --target=aarch64-w64-windows-gnu --sysroot="$provider_sysroot_native" --compiler=clang-cross
+cmake_text=$(cat "$cmake_log")
+assert_contains "$cmake_text" "-DCMAKE_C_COMPILER=clang-cross" "CMake provider did not receive the effective compiler"
+assert_contains "$cmake_text" "-DCMAKE_AR=llvm-ar" "CMake provider did not receive the archiver"
+assert_contains "$cmake_text" "-DCMAKE_C_COMPILER_TARGET=aarch64-w64-windows-gnu" "CMake provider did not receive the target triple"
+assert_contains "$cmake_text" "-DCMAKE_SYSROOT=$provider_sysroot_native" "CMake provider did not receive the sysroot"
 
-        cat >"$provider_bin/make" <<'EOF'
-#!/bin/sh
-{
-    printf 'target=%s\n' "$DH_DEP_TARGET"
-    printf 'cc=%s\n' "$DH_DEP_CC"
-    printf 'ar=%s\n' "$DH_DEP_AR"
-    printf 'sysroot=%s\n' "$DH_DEP_SYSROOT"
-    printf 'cflags=%s\n' "$DH_DEP_CFLAGS"
-    printf 'args=%s\n' "$*"
-} >>"$DH_TEST_PROVIDER_LOG"
-exit 0
-EOF
-        chmod +x "$provider_bin/make"
-        make_project="$provider_contract_root/make-project"
-        mkdir -p "$make_project"
-        cat >"$make_project/project.dh" <<EOF
+make_project="$provider_contract_root/make-project"
+mkdir -p "$make_project"
+cat >"$make_project/project.dh" <<EOF
 output=provider-contract
 link-dsl=off
 
 [dep]
-path=$provider_source
+path=$provider_source_native
 provider=make
 EOF
-        make_log="$provider_contract_root/make.log"
-        invoke_external "0" "$make_project" env             PATH="$provider_bin:$PATH"             DH_TEST_PROVIDER_LOG="$make_log"             "$cli_exe" deps dev             --target=aarch64-w64-windows-gnu             --sysroot="$provider_sysroot"             --compiler=clang-cross
-        make_text=$(cat "$make_log")
-        assert_contains "$make_text" "target=aarch64-w64-windows-gnu" "Make provider did not receive the target triple"
-        assert_contains "$make_text" "cc=clang-cross" "Make provider did not receive the effective compiler"
-        assert_contains "$make_text" "ar=llvm-ar" "Make provider did not receive the archiver"
-        assert_contains "$make_text" "sysroot=$provider_sysroot" "Make provider did not receive the sysroot"
-        assert_contains "$make_text" "cflags=--target=aarch64-w64-windows-gnu --sysroot=$provider_sysroot" "Make provider did not receive target C flags"
-        rm -rf "$provider_contract_root"
-        ;;
-esac
+make_log="$provider_contract_root/make.log"
+make_log_native=$(native_path "$make_log")
+invoke_external "0" "$make_project" env PATH="$provider_bin:$PATH" DH_TEST_PROVIDER_LOG="$make_log_native" "$cli_exe" deps dev --target=aarch64-w64-windows-gnu --sysroot="$provider_sysroot_native" --compiler=clang-cross
+make_text=$(cat "$make_log")
+assert_contains "$make_text" "DH_DEP_TARGET=aarch64-w64-windows-gnu" "Make provider did not receive the target triple"
+assert_contains "$make_text" "DH_DEP_CC=clang-cross" "Make provider did not receive the effective compiler"
+assert_contains "$make_text" "DH_DEP_AR=llvm-ar" "Make provider did not receive the archiver"
+assert_contains "$make_text" "DH_DEP_SYSROOT=$provider_sysroot_native" "Make provider did not receive the sysroot"
+assert_contains "$make_text" "DH_DEP_CFLAGS=--target=aarch64-w64-windows-gnu --sysroot=$provider_sysroot_native" "Make provider did not receive target C flags"
+rm -rf "$provider_contract_root"
 
 if [ "$integration" -eq 1 ]; then
     reset_temp_root
@@ -531,11 +525,25 @@ EOF
     esac
 
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
-    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-default-libs=off
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*)
+            invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-default-libs=off --link-start-files=off --entry=dh_entry
+            ;;
+        *)
+            invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-default-libs=off
+            ;;
+    esac
     assert_contains "$LAST_OUTPUT" "Build successful!" "No-default-libraries shared-library contract did not build"
 
     invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
-    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-stdlib=off
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*)
+            invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-stdlib=off --entry=dh_entry
+            ;;
+        *)
+            invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-stdlib=off
+            ;;
+    esac
     assert_contains "$LAST_OUTPUT" "Build successful!" "No-stdlib shared-library contract did not build"
 
     case "$(uname -s)" in

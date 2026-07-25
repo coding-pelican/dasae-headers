@@ -485,9 +485,9 @@ static void test_file_and_dir_helpers(void) {
     TEST_ASSERT(file_count >= 3);
     test_free_str_array(listed, file_count);
 
-    char* link_target = path_join(temp_root, "link-target");
+    char* link_target = path_join(temp_root, "link target");
     char* link_target_file = path_join(link_target, "preserved.txt");
-    char* link_alias = path_join(temp_root, "link-alias");
+    char* link_alias = path_join(temp_root, "link alias");
     TEST_ASSERT(link_target != NULL && link_target_file != NULL && link_alias != NULL);
     TEST_ASSERT(dir_createRecur(link_target));
     TEST_ASSERT(file_write(link_target_file, "preserve"));
@@ -674,6 +674,7 @@ static void test_meta_tables(void) {
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_icf));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_merge_all_constants));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_stack_protector));
+    TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_macro_backtrace_limit));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_entry));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_arch));
     TEST_ASSERT(test_help_has_option(build_cmd, dal_c_opt_target_tune));
@@ -717,6 +718,7 @@ static void test_meta_tables(void) {
     TEST_ASSERT(compile_db_cmd != NULL);
     TEST_ASSERT(compile_db_cmd->implemented);
     TEST_ASSERT(test_help_has_option(compile_db_cmd, dal_c_opt_output));
+    TEST_ASSERT(test_help_has_option(compile_db_cmd, dal_c_opt_macro_backtrace_limit));
     TEST_ASSERT(!test_help_has_option(compile_db_cmd, dal_c_opt_output_ext));
     TEST_ASSERT(test_help_has_note(compile_db_cmd, "does not compile"));
 
@@ -725,6 +727,7 @@ static void test_meta_tables(void) {
     TEST_ASSERT(syntax_cmd->implemented);
     TEST_ASSERT(test_help_has_option(syntax_cmd, dal_c_opt_progress));
     TEST_ASSERT(test_help_has_option(syntax_cmd, dal_c_opt_elapsed_precision));
+    TEST_ASSERT(test_help_has_option(syntax_cmd, dal_c_opt_macro_backtrace_limit));
     TEST_ASSERT(!test_help_has_option(syntax_cmd, dal_c_opt_output));
     TEST_ASSERT(!test_help_has_exact_option(syntax_cmd, dal_c_opt_link));
     TEST_ASSERT(test_help_has_note(syntax_cmd, "never links"));
@@ -1038,6 +1041,45 @@ static void test_cmd_parse(void) {
         dal_c_Cmd_cleanup(&cmd);
     }
 
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--macro-backtrace-limit=short", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->opts.macro_backtrace_limit_set);
+        TEST_ASSERT(cmd->opts.macro_backtrace_limit == dal_c_default_macro_backtrace_limit);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--macro-backtrace-limit=unlimited", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->opts.macro_backtrace_limit_set);
+        TEST_ASSERT(cmd->opts.macro_backtrace_limit == 0);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--macro-backtrace-limit", "37", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->opts.macro_backtrace_limit_set);
+        TEST_ASSERT(cmd->opts.macro_backtrace_limit == 37);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--macro-backtrace-limit=-1", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--macro-backtrace-limit=invalid", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
 
     {
         const char* argv[] = { dal_c_tool_name, "build", "--progress=hide", "--commands=show", "--verbose=off", "--jobs=3", NULL };
@@ -1290,6 +1332,8 @@ static void test_compiler_mode_contracts(void) {
     override.default_libs_linked = dal_c_ToggleState_enabled;
     override.start_files_linked = dal_c_ToggleState_enabled;
     override.loose_errors = dal_c_LooseErrorsMode_warn;
+    override.macro_backtrace_limit = 24;
+    override.macro_backtrace_limit_set = true;
     dal_c_CompilerOpts_merge(&merged, &override);
     TEST_ASSERT(merged.compile_env == dal_c_CompileEnv_hosted);
     TEST_ASSERT(merged.libc_linked == dal_c_ToggleState_enabled);
@@ -1297,6 +1341,8 @@ static void test_compiler_mode_contracts(void) {
     TEST_ASSERT(merged.default_libs_linked == dal_c_ToggleState_enabled);
     TEST_ASSERT(merged.start_files_linked == dal_c_ToggleState_enabled);
     TEST_ASSERT(merged.loose_errors == dal_c_LooseErrorsMode_warn);
+    TEST_ASSERT(merged.macro_backtrace_limit_set);
+    TEST_ASSERT(merged.macro_backtrace_limit == 24);
 
     {
         dal_c_CompilerOpts auto_override = { 0 };
@@ -1329,6 +1375,7 @@ static void test_compiler_mode_contracts(void) {
         "version-build=unit.1\n"
         "target-tune=generic\n"
         "exceptions=off\n"
+        "macro-backtrace-limit=unlimited\n"
         "loose-errors=suppress\n"
     ));
     TEST_ASSERT(dal_c_CompilerOpts_applyDHFile(&file_opts, opts_dh));
@@ -1349,6 +1396,8 @@ static void test_compiler_mode_contracts(void) {
     TEST_ASSERT(str_eql(file_opts.version.build_str, "unit.1"));
     TEST_ASSERT(str_eql(file_opts.target_tune, "generic"));
     TEST_ASSERT(file_opts.exceptions == dal_c_ToggleState_disabled);
+    TEST_ASSERT(file_opts.macro_backtrace_limit_set);
+    TEST_ASSERT(file_opts.macro_backtrace_limit == 0);
     TEST_ASSERT(file_opts.loose_errors == dal_c_LooseErrorsMode_suppress);
     dal_c_CompilerOpts_cleanup(&file_opts);
     free(opts_dh);
@@ -1411,12 +1460,13 @@ static void test_makefile_mode_contracts(void) {
             "--icf=all",
             "--merge-all-constants",
             "--stack-protector=off",
+            "--macro-backtrace-limit=37",
             "--emit-map=build/mode-contract.map",
             "--save-temps=obj",
             "--entry=custom_entry",
             NULL
         };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(21, argv);
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(22, argv);
         const dal_c_ProfileSpec* profile = NULL;
         char* build_dir = NULL;
         char* profile_dir = NULL;
@@ -1456,7 +1506,7 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_STDLIB") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_CRT") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_CRT") == NULL);
-        TEST_ASSERT(strstr(makefile_text, " -fmacro-backtrace-limit=8") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -fmacro-backtrace-limit=37") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wformat=2") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Werror=uninitialized") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -Wframe-larger-than=4096") != NULL);
@@ -3750,12 +3800,13 @@ static void test_syntax_arguments_follow_build_compile_contract(void) {
         "--exceptions=off",
         "--merge-all-constants=on",
         "--stack-protector=off",
+        "--macro-backtrace-limit=unlimited",
         "--version-core=1.2.3",
         "--comp-args=-Wno-unused",
         "--jobs=3",
         NULL
     };
-    dal_c_Cmd* cmd = dal_c_Cmd_parse(12, argv);
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(13, argv);
     TEST_ASSERT(cmd != NULL);
     TEST_ASSERT(dal_c__parallelJobCount(cmd) == 3);
     dal_c_CompilerOpts_merge(&cmd->opts, &proj->opts);
@@ -3775,6 +3826,7 @@ static void test_syntax_arguments_follow_build_compile_contract(void) {
     TEST_ASSERT(test_arrstr_contains(args, "-fno-exceptions"));
     TEST_ASSERT(test_arrstr_contains(args, "-fmerge-all-constants"));
     TEST_ASSERT(test_arrstr_contains(args, "-fno-stack-protector"));
+    TEST_ASSERT(test_arrstr_contains(args, "-fmacro-backtrace-limit=0"));
     TEST_ASSERT(test_arrstr_contains(args, "-Dsyntax_contract_project__NUM__VER_CORE_MAJOR=1"));
     TEST_ASSERT(test_arrstr_contains(args, "-Dsyntax_contract_project__NUM__VER_CORE_MINOR=2"));
     TEST_ASSERT(test_arrstr_contains(args, "-Dsyntax_contract_project__NUM__VER_CORE_PATCH=3"));

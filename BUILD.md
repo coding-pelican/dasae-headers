@@ -233,6 +233,7 @@ Shared build options:
 - `--entry=<symbol>`
 - `--compiler-args="..."`
 - `--comp-args="..."`
+- `--macro-backtrace-limit=<short|unlimited|N>`
 
 The compile environment and link model are independent. `--freestanding` adds
 freestanding C compilation semantics but does not implicitly remove libc, startup
@@ -263,6 +264,11 @@ non-libc libraries explicitly.
 - `--verbose`
 - `--dh=<path>`
 - `--prebuilt=<auto|off|required>`
+
+`--macro-backtrace-limit=short` limits Clang macro expansion diagnostics to 8
+entries and is the default. `unlimited` maps to Clang's `0`; a nonnegative
+integer selects an exact limit. The same key is accepted by `project.dh`, with
+the CLI value taking precedence.
 
 Build-specific modifiers:
 

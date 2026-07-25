@@ -191,6 +191,7 @@ void dal_c__projectLockRelease(dal_c_ProjectLock* lock);
 void dal_c_CompilerOpts_cleanup(dal_c_CompilerOpts* opts);
 void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts* src);
 bool dal_c_CompilerOpts_applyDHFile(dal_c_CompilerOpts* dst, const char* path);
+bool dal_c_MacroBacktraceLimit_parse(const char* value, int* out);
 ArrStr* dal_c__collectDescendantProjects(const dal_c_Project* proj);
 
 #endif /* dal_c_internal__included */

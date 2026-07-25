@@ -762,6 +762,14 @@ static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt
         } else {
             cmd->opts.compile_env = enabled ? dal_c_CompileEnv_hosted : dal_c_CompileEnv_freestanding;
         }
+    } else if (dal_c_Cmd__OPT_IS(dal_c_opt_macro_backtrace_limit)) {
+        int limit = 0;
+        if (!dal_c_MacroBacktraceLimit_parse(value, &limit)) {
+            (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_macro_backtrace_limit, value);
+            return 1;
+        }
+        cmd->opts.macro_backtrace_limit = limit;
+        cmd->opts.macro_backtrace_limit_set = true;
     } else if (dal_c_Cmd__OPT_IS(dal_c_opt_loose_errors)) {
         dal_c_LooseErrorsMode mode = dal_c_LooseErrorsMode_parse(value);
         if (mode == dal_c_LooseErrorsMode_invalid) {
@@ -3387,6 +3395,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_eql(opt, dal_c_opt_icf)
             || str_eql(opt, dal_c_opt_merge_all_constants)
             || str_eql(opt, dal_c_opt_stack_protector)
+            || str_eql(opt, dal_c_opt_macro_backtrace_limit)
             || str_eql(opt, dal_c_opt_loose_errors)
             || (str_eql(opt, dal_c_opt_image) && action == dal_c_CmdAction_build)
             || (str_eql(opt, dal_c_opt_emit_preprocessed) && build_artifact_like)
@@ -3438,6 +3447,7 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
             || str_startsWith(opt, dal_c_opt_icf)
             || str_startsWith(opt, dal_c_opt_merge_all_constants)
             || str_startsWith(opt, dal_c_opt_stack_protector)
+            || str_startsWith(opt, dal_c_opt_macro_backtrace_limit)
             || str_startsWith(opt, dal_c_opt_loose_errors)
             || (action == dal_c_CmdAction_build && str_startsWith(opt, dal_c_opt_image))
             || (build_artifact_like && str_startsWith(opt, dal_c_opt_emit_preprocessed))
@@ -4117,6 +4127,19 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     cmd->opts.merge_all_constants = dal_c_ToggleState_enabled;
                 } else if (str_eql(opt, dal_c_opt_stack_protector)) {
                     cmd->opts.stack_protector = dal_c_ToggleState_enabled;
+                } else if (str_eql(opt, dal_c_opt_macro_backtrace_limit)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    int limit = 0;
+                    if (!dal_c_MacroBacktraceLimit_parse(argv[i + 1], &limit)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_macro_backtrace_limit, argv[i + 1]);
+                        return 1;
+                    }
+                    cmd->opts.macro_backtrace_limit = limit;
+                    cmd->opts.macro_backtrace_limit_set = true;
+                    ++i;
                 } else if (str_eql(opt, dal_c_opt_disasm_demangle)) {
                     if (dal_c_Cmd__usesBuildArtifactPayload(cmd->action)) {
                         cmd->payload.build.disasm_demangle = dal_c_ToggleState_enabled;

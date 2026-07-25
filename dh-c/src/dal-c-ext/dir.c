@@ -101,8 +101,24 @@ bool dir_linkDir(const char* link_path, const char* target_path) {
     if (joined_target && GetFullPathNameA(joined_target, (DWORD)sizeof(target_full), target_full, NULL) > 0) {
         junction_target = target_full;
     }
-    char* command = str_format("cmd.exe /D /S /C \"mklink /J \"\"%s\"\" \"\"%s\"\" >NUL\"", link_path, junction_target ? junction_target : target_path);
-    int result = command ? system(command) : -1;
+    char* command = str_format(
+        "cmd.exe /D /C mklink /J \"%s\" \"%s\"",
+        link_path,
+        junction_target ? junction_target : target_path
+    );
+    STARTUPINFOA startup = { 0 };
+    PROCESS_INFORMATION process = { 0 };
+    startup.cb = sizeof(startup);
+    BOOL started = command && CreateProcessA(NULL, command, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &startup, &process);
+    int result = -1;
+    if (started) {
+        (void)WaitForSingleObject(process.hProcess, INFINITE);
+        DWORD exit_code = 1;
+        (void)GetExitCodeProcess(process.hProcess, &exit_code);
+        result = (int)exit_code;
+        (void)CloseHandle(process.hThread);
+        (void)CloseHandle(process.hProcess);
+    }
     free(command);
     free(joined_target);
     free(link_parent);
