@@ -1332,6 +1332,8 @@ typedef struct dal_c_Lib {
     char* provider;    // dh|cmake|make|custom|prebuilt
     char* build_command;
     char* install_command;
+    char** runtime_files; // package-relative runtime files exported by this dependency
+    int runtime_file_count;
     dal_c_CompilerOpts opts;
     bool is_static;
     bool test_enabled;

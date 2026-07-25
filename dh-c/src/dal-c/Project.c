@@ -118,6 +118,8 @@ void dal_c_Project_cleanup(dal_c_Project** self) {
         free(lib->provider);
         free(lib->build_command);
         free(lib->install_command);
+        for (int j = 0; j < lib->runtime_file_count; ++j) free(lib->runtime_files[j]);
+        free(lib->runtime_files);
         dal_c_CompilerOpts_cleanup(&lib->opts);
     }
     free(proj->libraries);
@@ -1225,6 +1227,8 @@ static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project*
         dal_c_Project__setString(&lib->build_command, value);
     } else if (str_eql(key, "install-command")) {
         dal_c_Project__setString(&lib->install_command, value);
+    } else if (str_eql(key, "runtime-file") || str_eql(key, "runtime-files")) {
+        dal_c_Project__addToArray(&lib->runtime_files, &lib->runtime_file_count, value);
     } else if (str_eql(key, "profile")) {
         dal_c_Profile profile = dal_c_Profile_parse(value);
         if (profile != dal_c_Profile_invalid) {

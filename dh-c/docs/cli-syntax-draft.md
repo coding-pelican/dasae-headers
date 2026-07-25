@@ -668,3 +668,22 @@ dh-c build --exclude src/generated
 
 Bad examples are ones that force selector words into positional repetition or
 hide the real substituted meaning of a token.
+
+## Project state, cache, package, and install commands
+
+The current project remains the implicit subject. Cache is not a command namespace.
+
+Canonical forms:
+
+```sh
+dh-c status [profile]
+dh-c clean [profile]
+dh-c explain rebuild [profile]
+dh-c package [profile]
+dh-c install [profile] --prefix=<path>
+```
+
+Non-canonical forms such as `dh-c cache status`, `dh-c cache clean`, and
+`dh-c cache explain` are rejected. `status` reports dependency, build, cache,
+and package state. `clean` owns generated state. `explain rebuild` explains
+why the current build graph is stale.

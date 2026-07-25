@@ -19,6 +19,115 @@ static dal_c_Cmd* dal_c__parseAsBuild(int argc, const char* argv[], int skip_cou
 static int dal_c__showTarget(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 static int dal_c__doctor(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const dal_c_Project* proj);
+static bool dal_c__copyTree(const char* src, const char* dst);
+
+static bool dal_c__endsWith(const char* text, const char* suffix) {
+    if (!text || !suffix) return false;
+    size_t n = strlen(text), m = strlen(suffix);
+    return n >= m && strcmp(text + n - m, suffix) == 0;
+}
+
+static const char* dal_c__artifactStageDir(const char* name) {
+    if (!name) return NULL;
+    if (dal_c__endsWith(name, ".exe") || dal_c__endsWith(name, ".dll")) return "bin";
+    if (dal_c__endsWith(name, ".lib") || dal_c__endsWith(name, ".a") ||
+        dal_c__endsWith(name, ".so") || dal_c__endsWith(name, ".dylib")) return "lib";
+    return NULL;
+}
+
+static bool dal_c__copyFileInto(const char* src, const char* dst_dir) {
+    if (!src || !dst_dir || !path_isFile(src)) return false;
+    char* name = path_basename(src);
+    char* dst = path_join(dst_dir, name);
+    bool ok = dir_createRecur(dst_dir) && file_copy(src, dst);
+    free(dst); free(name);
+    return ok;
+}
+
+static char* dal_c__packageDir(const dal_c_Cmd* cmd, const dal_c_Project* proj);
+static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    int result = dal_c__depsCommand("install", cmd, proj);
+    if (result != 0) return result;
+    result = dal_c_Cmd_execute(cmd, proj);
+    if (result != 0) return result;
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    if (!profile) return 1;
+    char* build_dir = dal_c__makeBuildProfileDir(proj, &cmd->opts, profile);
+    char* package_dir = dal_c__packageDir(cmd, proj);
+    if (!build_dir || !package_dir || !path_isDir(build_dir)) {
+        (void)fprintf(stderr, "Error: Build profile directory is unavailable for packaging.\n");
+        free(package_dir); free(build_dir); return 1;
+    }
+    if (path_isDir(package_dir)) (void)dir_removeRecur(package_dir);
+    bool ok = dir_createRecur(package_dir);
+
+    int artifact_count = 0;
+    char** artifacts = dir_list(build_dir, &artifact_count);
+    for (int i = 0; i < artifact_count; ++i) {
+        char* name = path_basename(artifacts[i]);
+        const char* stage = str_eql(name, "manifest.dh") ? NULL : dal_c__artifactStageDir(name);
+        char* dst_dir = stage ? path_join(package_dir, stage) : strdup(package_dir);
+        if (!dal_c__copyFileInto(artifacts[i], dst_dir)) ok = false;
+        free(dst_dir); free(name); free(artifacts[i]);
+    }
+    free(artifacts);
+
+    char* include_src = path_join(proj->root, proj->include_dir_name ? proj->include_dir_name : "include");
+    if (path_isDir(include_src)) {
+        char* include_dst = path_join(package_dir, "include");
+        if (!dal_c__copyTree(include_src, include_dst)) ok = false;
+        free(include_dst);
+    }
+    free(include_src);
+
+    char* target = dal_c__resolveTargetDirName(&cmd->opts);
+    char* dep_packages = path_join(proj->root, ".dh-c/deps/packages");
+    char* dep_target = path_join(dep_packages, target ? target : "native");
+    char* dep_profile = path_join(dep_target, profile->name);
+    for (int i = 0; i < proj->lib_count; ++i) {
+        const dal_c_Lib* lib = &proj->libraries[i];
+        const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+        if (str_eql(provider, "dh")) continue;
+        char* lib_package = path_join(dep_profile, lib->name);
+        char* bin_dir = path_join(package_dir, "bin");
+        if (lib->runtime_file_count > 0) {
+            for (int j = 0; j < lib->runtime_file_count; ++j) {
+                char* src = path_join(lib_package, lib->runtime_files[j]);
+                if (path_isDir(src)) {
+                    if (!dal_c__copyTree(src, bin_dir)) ok = false;
+                } else if (!dal_c__copyFileInto(src, bin_dir)) {
+                    (void)fprintf(stderr, "Error: Runtime export `%s` for dependency `%s` was not found in %s.\n",
+                        lib->runtime_files[j], lib->name, lib_package);
+                    ok = false;
+                }
+                free(src);
+            }
+        } else {
+            char* conventional_bin = path_join(lib_package, "bin");
+            if (path_isDir(conventional_bin) && !dal_c__copyTree(conventional_bin, bin_dir)) ok = false;
+            free(conventional_bin);
+        }
+        free(bin_dir); free(lib_package);
+    }
+
+    const char* asset_names[] = { "assets", "resources", NULL };
+    for (int i = 0; asset_names[i]; ++i) {
+        char* src = path_join(proj->root, asset_names[i]);
+        if (path_isDir(src)) {
+            char* dst = path_join(package_dir, asset_names[i]);
+            if (!dal_c__copyTree(src, dst)) ok = false;
+            free(dst);
+        }
+        free(src);
+    }
+    printf("[PACKAGE] %s\n", package_dir);
+    free(dep_profile); free(dep_target); free(dep_packages); free(target);
+    free(package_dir); free(build_dir);
+    return ok ? 0 : 1;
+}
+
+static int dal_c__installProject(const dal_c_Cmd* cmd, const dal_c_Project* proj, const char* prefix);
+static void dal_c__printProjectStatus(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) return dal_c__printUsage(NULL), 1;
@@ -27,7 +136,15 @@ int main(int argc, const char* argv[]) {
         return dal_c__printUsage(argc > 2 ? argv[2] : NULL);
     }
 
+    if (str_eql(argv[1], "cache")) {
+        (void)fprintf(stderr, "Error: `%s cache ...` is not a canonical command.\n", dal_c_tool_name);
+        (void)fprintf(stderr, "  Use `%s status`, `%s clean`, or `%s explain rebuild`.\n",
+            dal_c_tool_name, dal_c_tool_name, dal_c_tool_name);
+        return 1;
+    }
     bool special_project_dep_action = str_eql(argv[1], "fetch") || str_eql(argv[1], "update") || str_eql(argv[1], "status");
+    bool special_package = str_eql(argv[1], "package");
+    bool special_install = str_eql(argv[1], "install");
     if (argc > 2 && str_eql(argv[1], dal_c_cmd_action_deps)
         && (str_eql(argv[2], "fetch") || str_eql(argv[2], "update") || str_eql(argv[2], "status")
             || str_eql(argv[2], "build") || str_eql(argv[2], "install"))) {
@@ -50,9 +167,49 @@ int main(int argc, const char* argv[]) {
             return 1;
         }
         int deps_result = dal_c__depsCommand(argv[1], deps_cmd, deps_proj);
+        if (str_eql(argv[1], "status")) dal_c__printProjectStatus(deps_cmd, deps_proj);
         dal_c_Project_cleanup(&deps_proj);
         dal_c_Cmd_cleanup(&deps_cmd);
         return deps_result;
+    }
+
+    if (special_package || special_install) {
+        const char* prefix = getenv("DH_PREFIX");
+        const char** filtered = calloc((size_t)argc + 1u, sizeof(*filtered));
+        if (!filtered) return 1;
+        int filtered_argc = 0;
+        filtered[filtered_argc++] = argv[0];
+        filtered[filtered_argc++] = "build";
+        for (int i = 2; i < argc; ++i) {
+            if (strncmp(argv[i], "--prefix=", 9) == 0) {
+                prefix = argv[i] + 9;
+                continue;
+            }
+            if (str_eql(argv[i], "--prefix") && i + 1 < argc) {
+                prefix = argv[++i];
+                continue;
+            }
+            filtered[filtered_argc++] = argv[i];
+        }
+        dal_c_Cmd* package_cmd = dal_c_Cmd_parse(filtered_argc, filtered);
+        free(filtered);
+        if (!package_cmd) {
+            (void)fprintf(stderr, "Error: Failed to parse %s command\n", argv[1]);
+            return 1;
+        }
+        dal_c_Project* package_proj = dal_c_Project_detect(package_cmd);
+        if (!package_proj || !package_proj->root) {
+            (void)fprintf(stderr, "Error: Not in a dh-c project directory\n");
+            if (package_proj) dal_c_Project_cleanup(&package_proj);
+            dal_c_Cmd_cleanup(&package_cmd);
+            return 1;
+        }
+        int package_result = special_package
+            ? dal_c__packageProject(package_cmd, package_proj)
+            : dal_c__installProject(package_cmd, package_proj, prefix);
+        dal_c_Project_cleanup(&package_proj);
+        dal_c_Cmd_cleanup(&package_cmd);
+        return package_result;
     }
 
     bool special_plan = str_eql(argv[1], "plan");
@@ -119,6 +276,68 @@ int main(int argc, const char* argv[]) {
     return result;
 }
 
+
+static bool dal_c__copyTree(const char* src, const char* dst) {
+    if (!src || !dst || !path_isDir(src)) return false;
+    if (!dir_createRecur(dst)) return false;
+    int count = 0;
+    char** files = dir_listRecur(src, &count);
+    bool ok = true;
+    size_t src_len = strlen(src);
+    for (int i = 0; i < count; ++i) {
+        const char* rel = files[i] + src_len;
+        while (*rel == '/' || *rel == '\\') ++rel;
+        char* out = path_join(dst, rel);
+        char* parent = path_parent(out);
+        if (!parent || !dir_createRecur(parent) || !file_copy(files[i], out)) ok = false;
+        free(parent); free(out); free(files[i]);
+    }
+    free(files);
+    return ok;
+}
+
+static char* dal_c__packageDir(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    char* target = dal_c__resolveTargetDirName(&cmd->opts);
+    char* package_root = path_join(proj->root, "package");
+    char* target_root = path_join(package_root, target ? target : "native");
+    char* result = path_join(target_root, profile ? profile->name : "dev");
+    free(target_root); free(package_root); free(target);
+    return result;
+}
+
+
+static int dal_c__installProject(const dal_c_Cmd* cmd, const dal_c_Project* proj, const char* prefix) {
+    if (!prefix || !prefix[0]) {
+        (void)fprintf(stderr, "Error: install requires --prefix=<path> or DH_PREFIX.\n");
+        return 1;
+    }
+    int result = dal_c__packageProject(cmd, proj);
+    if (result != 0) return result;
+    char* package_dir = dal_c__packageDir(cmd, proj);
+    if (path_isDir(prefix)) {
+        /* Preserve unrelated prefix contents; copy package tree into it. */
+    } else if (!dir_createRecur(prefix)) {
+        free(package_dir); return 1;
+    }
+    bool ok = dal_c__copyTree(package_dir, prefix);
+    printf("[INSTALL] %s\n", prefix);
+    free(package_dir);
+    return ok ? 0 : 1;
+}
+
+static void dal_c__printProjectStatus(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    char* build_dir = profile ? dal_c__makeBuildProfileDir(proj, &cmd->opts, profile) : NULL;
+    char* package_dir = dal_c__packageDir(cmd, proj);
+    char* manifest = build_dir ? path_join(build_dir, "manifest.dh") : NULL;
+    char* cache = build_dir ? path_join(build_dir, ".cache") : NULL;
+    printf("\nProject:\n  root=%s\n  profile=%s\n", proj->root, profile ? profile->name : "dev");
+    printf("Build:\n  directory=%s\n  manifest=%s\n", build_dir ? build_dir : "(unknown)", manifest && path_isFile(manifest) ? "ready" : "missing");
+    printf("Cache:\n  state=%s\n", cache && path_isDir(cache) ? "present" : "empty");
+    printf("Package:\n  directory=%s\n  state=%s\n", package_dir, path_isDir(package_dir) ? "present" : "missing");
+    free(cache); free(manifest); free(package_dir); free(build_dir);
+}
 
 static bool dal_c__depsGitRun(const char* cwd, const char* a, const char* b, const char* c, const char* d) {
     const char* argv[10] = { "git", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -233,6 +452,35 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
     return false;
 }
 
+
+static bool dal_c__stageExternalPackageForBuild(const dal_c_Project* proj, const dal_c_Lib* lib, const char* package_dir) {
+    if (!proj || !lib || !package_dir) return false;
+    char* deps_dir = dal_c_Project_getDepsDir(proj);
+    if (!deps_dir || !dir_createRecur(deps_dir)) { free(deps_dir); return false; }
+    bool ok = true;
+    char* include_src = path_join(package_dir, "include");
+    if (path_isDir(include_src) && !dal_c__copyTree(include_src, deps_dir)) ok = false;
+    free(include_src);
+
+    char* lib_src = path_join(package_dir, "lib");
+    if (path_isDir(lib_src)) {
+        int count = 0;
+        char** files = dir_listRecur(lib_src, &count);
+        for (int i = 0; files && i < count; ++i) {
+            const char* f = files[i];
+            if (dal_c__endsWith(f, ".lib") || dal_c__endsWith(f, ".a") ||
+                dal_c__endsWith(f, ".so") || dal_c__endsWith(f, ".dylib")) {
+                if (!dal_c__copyFileInto(f, deps_dir)) ok = false;
+            }
+            free(files[i]);
+        }
+        free(files);
+    }
+    free(lib_src);
+    free(deps_dir);
+    return ok;
+}
+
 static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     assert(action != NULL);
     assert(proj != NULL && proj->root != NULL);
@@ -280,7 +528,12 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
             } else {
                 printf("[%s] %-16s provider=%s profile=%s target=%s\n",
                     str_eql(action, "install") ? "INSTALL" : "BUILD", lib->name, provider, profile, target);
-                if (!dal_c__depsBuildProvider(action, lib, source_dir, build_dir, package_dir, profile, target)) failures++;
+                if (!dal_c__depsBuildProvider(action, lib, source_dir, build_dir, package_dir, profile, target)) {
+                    failures++;
+                } else if (str_eql(action, "install") && !dal_c__stageExternalPackageForBuild(proj, lib, package_dir)) {
+                    (void)fprintf(stderr, "Error: Failed to stage exported include/link artifacts for dependency `%s`.\n", lib->name);
+                    failures++;
+                }
             }
             free(package_dir); free(profile_package); free(target_package);
             free(build_dir); free(profile_build); free(target_build); free(source_dir);
@@ -375,7 +628,7 @@ static int dal_c__printUsage(const char* topic) {
             const dal_c_HelpCmd* cmd = &dal_c_help_cmds[i];
             if (cmd->name && cmd->implemented) { printf("%s\n", cmd->name); }
         }
-        printf("fetch\nupdate\nstatus\nplan\nexplain\ntarget\ndoctor\n");
+        printf("fetch\nupdate\nstatus\npackage\ninstall\nplan\nexplain\ntarget\ndoctor\n");
         return 0;
     }
     if (print_all) { topic = NULL; }

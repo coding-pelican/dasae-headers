@@ -1559,7 +1559,10 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
             printf("Building %d libraries...\n", target_proj->lib_count);
         }
         for (int i = 0; i < target_proj->lib_count; ++i) {
-            if (dal_c__buildSingleLibrary(self, target_proj, &target_proj->libraries[i]) != 0) {
+            const dal_c_Lib* lib = &target_proj->libraries[i];
+            const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+            if (!str_eql(provider, "dh")) continue;
+            if (dal_c__buildSingleLibrary(self, target_proj, lib) != 0) {
                 ArrStr_fini(&active_excludes);
                 dal_c_TargetRequest_cleanup(&target_request);
                 return 1;
@@ -2554,7 +2557,10 @@ int dal_c_Cmd_compileDeps(const dal_c_Cmd* self, const dal_c_Project* proj) {
         printf("Building %d libraries...\n", proj->lib_count);
     }
     for (int i = 0; i < proj->lib_count; ++i) {
-        if (dal_c__buildSingleLibrary(self, proj, &proj->libraries[i]) != 0) {
+        const dal_c_Lib* lib = &proj->libraries[i];
+        const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+        if (!str_eql(provider, "dh")) continue;
+        if (dal_c__buildSingleLibrary(self, proj, lib) != 0) {
             return 1;
         }
     }

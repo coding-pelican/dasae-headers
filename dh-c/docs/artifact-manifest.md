@@ -46,3 +46,37 @@ An incompatible package is skipped in `prebuilt=auto` mode and rejected in
 Packages without a manifest are accepted as legacy packages during the migration period.
 This compatibility path is intended to be removable after packaged SDKs have adopted the
 manifest contract.
+
+## Packaging and installation
+
+`dh-c package <profile>` builds the current project, stages external providers,
+and creates:
+
+```text
+package/<normalized-target>/<profile>/
+```
+
+The package contains the concrete top-level artifacts and the existing
+`manifest.dh`; compiler intermediates such as `obj/` and cache state are not
+copied. Conventional project `assets/` and `resources/` trees are staged, and
+files installed under dependency package `bin/` directories are copied to the
+package `bin/` directory.
+
+`dh-c install <profile> --prefix=<path>` packages first, then copies the package
+tree into the requested prefix. `DH_PREFIX` may supply the prefix. No implicit
+system-wide prefix is invented.
+
+### Package layout
+
+Concrete project artifacts are staged by role:
+
+- `.exe` and `.dll` files go to `bin/`.
+- `.lib`, `.a`, `.so`, and `.dylib` files go to `lib/`.
+- `manifest.dh` remains at the package root.
+- public project headers are copied to `include/`.
+- extensionless native executables remain at the package root for compatibility.
+
+On Windows this keeps a shared library's runtime DLL separate from its import
+library (`foo.dll` in `bin/`, `foo.dll.lib` in `lib/`). Dependency runtime
+exports stage only the explicitly named runtime files, so import/static libraries
+are not accidentally copied into the runtime directory.

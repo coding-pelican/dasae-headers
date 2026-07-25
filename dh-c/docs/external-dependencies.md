@@ -76,3 +76,23 @@ DH_DEP_TARGET
 Fetched `provider=dh` projects continue to participate in the existing `dh-c deps` graph. The existing `dh-c deps` graph remains the single dependency-build entry point; provider-specific build/install verbs are not exposed as a second CLI hierarchy.
 
 The lock file represents resolved source state; `project.dh` remains the requested-state contract.
+
+## Runtime exports
+
+External providers may declare package-relative runtime files in their `project.dh`
+dependency block:
+
+```ini
+[SDL]
+provider=cmake
+source=https://github.com/libsdl-org/SDL.git
+revision=...
+runtime-file=bin/SDL3.dll
+```
+
+`runtime-file` may be repeated. During `dh-c package`, declared files are copied
+from the dependency's private package root into the current project's `bin/`
+directory. A missing declared runtime file is an error. When no runtime export is
+declared, the conventional dependency `bin/` tree is staged for compatibility.
+External providers do not participate in the recursive `provider=dh` source build
+graph.
