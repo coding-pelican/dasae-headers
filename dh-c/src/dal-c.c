@@ -1193,6 +1193,8 @@ static int dal_c__printUsage(const char* topic) {
     printf("  `--link-default-libs=off` maps to `-nodefaultlibs`; compiler-rt remains separately controlled and is restored by default.\n");
     printf("  `--link-start-files=off` maps to `-nostartfiles`; executable builds must provide a usable entry/startup contract.\n");
     printf("  `--link-stdlib=off` disables both default libraries and startup files, mapping to `-nostdlib`.\n");
+    printf("  Explicit `--link=<name>`, `--link-dir`, and `--link-args` remain active after defaults are disabled, so custom runtimes are supported.\n");
+    printf("  Use explicit `COMP_HAS_*` / `COMP_NO_*` defines when a manually linked runtime changes compile-time capability facts.\n");
     printf("  `--link-crt=off` is an exact alias of `--link-start-files=off`, not a separate runtime-library switch.\n");
     printf("  dh-c guarantees deterministic flag mapping and tested host contracts; a runnable freestanding executable still requires target startup/runtime code.\n\n");
 

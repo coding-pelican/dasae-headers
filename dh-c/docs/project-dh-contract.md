@@ -58,6 +58,16 @@ A linked freestanding executable still needs a valid entry point and whatever
 startup/runtime implementation its target requires. These switches describe
 what dh-c asks the compiler driver to omit; they do not synthesize a runtime.
 
+Explicit `link=` inputs remain valid when defaults are disabled. For example,
+`link-stdlib=off` may be combined with `link=msvcrt` and `link=user32`, or with
+a fully custom startup/runtime. The explicit libraries and link arguments are
+part of the link-cache contract. If those libraries provide compile-time
+capabilities that differ from the automatic driver facts, state them explicitly
+with `define=COMP_HAS_LIBC`, `define=COMP_HAS_STDLIB`, or the corresponding
+`COMP_NO_*` facts. A public custom runtime ABI should also use a stable
+`target-abi` and/or public define; dh-c does not infer an arbitrary ABI from a
+library filename.
+
 ### Target-root blocks
 
 Target roots are declared with:

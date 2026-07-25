@@ -125,7 +125,7 @@ Rules:
 - `dh`, self/static artifacts, and normal dependency links use the same native-versus-LTO selection rule
 - PCH files are not consumed from SDK prebuilt packages
 - `manifest.dh` inventories every artifact in the profile `libs/` directory; test/sample/example executables never overwrite it
-- target, profile, compiler, selected artifact role/path, and Windows import-library pairing are validated before use
+- target, profile, selected artifact role/path, compiled ABI contract, LTO toolchain contract, and Windows import-library pairing are validated before use
 
 Why:
 - CI can test the current project without rebuilding unchanged dependency graphs

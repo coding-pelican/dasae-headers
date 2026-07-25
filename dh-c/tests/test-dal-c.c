@@ -8,6 +8,7 @@
 #include "dal-c-ext/proc.h"
 #include "dal-c-ext/str.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2264,6 +2265,94 @@ static void test_makefile_mode_contracts(void) {
         dal_c_Cmd_cleanup(&emit_cmd);
     }
 
+    {
+        const char* first_argv[] = {
+            dal_c_tool_name,
+            "lib",
+            "dev",
+            "--shared",
+            "--link-stdlib=off",
+            "--link-compiler-rt=off",
+            "--link=customrt",
+            "--link=user32",
+            "--define=COMP_HAS_LIBC",
+            "--define=COMP_HAS_STDLIB",
+            NULL
+        };
+        const char* second_argv[] = {
+            dal_c_tool_name,
+            "lib",
+            "dev",
+            "--shared",
+            "--link-stdlib=off",
+            "--link-compiler-rt=off",
+            "--link=customrt-v2",
+            "--link=user32",
+            "--define=COMP_HAS_LIBC",
+            "--define=COMP_HAS_STDLIB",
+            NULL
+        };
+        dal_c_Cmd* first_cmd = dal_c_Cmd_parse(10, first_argv);
+        dal_c_Cmd* second_cmd = dal_c_Cmd_parse(10, second_argv);
+        TEST_ASSERT(first_cmd != NULL);
+        TEST_ASSERT(second_cmd != NULL);
+        dal_c_CompilerOpts_merge(&first_cmd->opts, &proj->opts);
+        dal_c_CompilerOpts_merge(&second_cmd->opts, &proj->opts);
+        const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(first_cmd->opts.profile);
+        char* build_dir = dal_c_Project_getBuildDir(proj);
+        char* profile_dir = path_join(build_dir, profile->name);
+        char* object_dir = path_join(profile_dir, "obj-runtime-contract");
+        char* target_path = dal_c__resolveOutputPath(proj, first_cmd, profile_dir, "runtime-contract", dal_c_Target_shared_lib);
+        TEST_ASSERT(profile != NULL);
+        TEST_ASSERT(build_dir != NULL);
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(target_path != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+        TEST_ASSERT(dal_c__generateMakefile(first_cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_shared_lib) == 0);
+        char* link_dir = path_join(object_dir, ".link");
+        int contract_count = 0;
+        char** contracts = dir_listRecur(link_dir, &contract_count);
+        TEST_ASSERT(contract_count == 1);
+        char* first_contract = file_read(contracts[0]);
+        TEST_ASSERT(first_contract != NULL);
+        TEST_ASSERT(strstr(first_contract, "compile-env=hosted") != NULL);
+        TEST_ASSERT(strstr(first_contract, "libc=off") != NULL);
+        TEST_ASSERT(strstr(first_contract, "default-libs=off") != NULL);
+        TEST_ASSERT(strstr(first_contract, "start-files=off") != NULL);
+        TEST_ASSERT(strstr(first_contract, "link-lib.0=customrt") != NULL);
+        TEST_ASSERT(strstr(first_contract, "link-lib.1=user32") != NULL);
+        char* makefile_path = dal_c__makePlanFilePath(proj, profile, first_cmd, target_path, dal_c_Target_shared_lib);
+        char* makefile_text = makefile_path ? file_read(makefile_path) : NULL;
+        TEST_ASSERT(makefile_text != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") == NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_STDLIB") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_STDLIB") == NULL);
+        TEST_ASSERT(strstr(makefile_text, " -nostdlib") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -lcustomrt") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -luser32") != NULL);
+        free(makefile_text);
+        free(makefile_path);
+
+        TEST_ASSERT(dal_c__generateMakefile(second_cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_shared_lib) == 0);
+        char* second_contract = file_read(contracts[0]);
+        TEST_ASSERT(second_contract != NULL);
+        TEST_ASSERT(strstr(second_contract, "link-lib.0=customrt-v2") != NULL);
+        TEST_ASSERT(!str_eql(first_contract, second_contract));
+
+        free(second_contract);
+        free(first_contract);
+        test_free_str_array(contracts, contract_count);
+        free(link_dir);
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c_Cmd_cleanup(&second_cmd);
+        dal_c_Cmd_cleanup(&first_cmd);
+    }
+
     ArrStr_fini(&sources);
     dal_c_Project_cleanup(&proj);
     TEST_ASSERT(test_remove_recur(temp_root));
@@ -2669,19 +2758,37 @@ static void test_prebuilt_dependency_staging(void) {
     TEST_ASSERT(file_write(native_path, "native-prebuilt"));
     TEST_ASSERT(file_write(lto_path, "lto-prebuilt"));
     char* manifest_path = path_join(prebuilt_profile, "manifest.dh");
-    char* manifest_text = str_format(
-        "target=%s\n"
-        "profile=stable\n"
-        "compiler=clang\n"
-        "artifact=static|libs/%s\n"
-        "artifact=static-lto|libs/%s\n",
-        target_name, native_name, lto_name
-    );
     TEST_ASSERT(manifest_path != NULL);
-    TEST_ASSERT(manifest_text != NULL);
-    TEST_ASSERT(file_write(manifest_path, manifest_text));
     char* manifest_reason = NULL;
     const dal_c_ProfileSpec* stable_profile = dal_c_ProfileSpec_by(dal_c_Profile_stable);
+    dal_c_Cmd manifest_cmd = { 0 };
+    manifest_cmd.action = dal_c_CmdAction_lib;
+    manifest_cmd.opts.profile = dal_c_Profile_stable;
+    char* producer_link_libs[] = { "customrt", "user32" };
+    manifest_cmd.opts.link_libs = producer_link_libs;
+    manifest_cmd.opts.link_count = 2;
+    manifest_cmd.opts.lto_mode = dal_c_LtoMode_off;
+    TEST_ASSERT(dal_c__writePrebuiltManifest(prebuilt_profile, &manifest_cmd, stable_profile, native_path, dal_c_Target_static_lib));
+    manifest_cmd.opts.lto_mode = dal_c_LtoMode_auto;
+    TEST_ASSERT(dal_c__writePrebuiltManifest(prebuilt_profile, &manifest_cmd, stable_profile, lto_path, dal_c_Target_static_lib));
+    char* manifest_text = file_read(manifest_path);
+    TEST_ASSERT(manifest_text != NULL);
+    TEST_ASSERT(strstr(manifest_text, "compiler=") == NULL);
+    TEST_ASSERT(strstr(manifest_text, "artifact=static|") != NULL);
+    TEST_ASSERT(strstr(manifest_text, "artifact=static-lto|") != NULL);
+
+    /* Producer link inputs are provenance, not a consumer requirement. A native
+     * archive built while the producer also linked custom runtime libraries must
+     * remain consumable by a caller with a different top-level link surface when
+     * the C ABI contract is unchanged. */
+    char* consumer_link_libs[] = { "different-top-level-runtime" };
+    prebuilt_opts.link_libs = consumer_link_libs;
+    prebuilt_opts.link_count = 1;
+    prebuilt_opts.lto_mode = dal_c_LtoMode_off;
+    TEST_ASSERT(dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, false, native_path, &manifest_reason));
+    TEST_ASSERT(manifest_reason == NULL);
+
+    prebuilt_opts.lto_mode = dal_c_LtoMode_auto;
     TEST_ASSERT(dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
     TEST_ASSERT(manifest_reason == NULL);
     TEST_ASSERT(remove(manifest_path) == 0);
@@ -2690,35 +2797,52 @@ static void test_prebuilt_dependency_staging(void) {
     free(manifest_reason);
     manifest_reason = NULL;
     TEST_ASSERT(file_write(manifest_path, manifest_text));
-    char* wrong_manifest_text = str_format(
-        "target=wrong-target\n"
-        "profile=stable\n"
-        "compiler=clang\n"
-        "artifact=static|libs/%s\n"
-        "artifact=static-lto|libs/%s\n",
-        native_name, lto_name
-    );
+
+    char* wrong_manifest_text = strdup(manifest_text);
     TEST_ASSERT(wrong_manifest_text != NULL);
+    char* target_line = strstr(wrong_manifest_text, "target=");
+    TEST_ASSERT(target_line != NULL);
+    char* target_end = strchr(target_line, '\n');
+    TEST_ASSERT(target_end != NULL);
+    size_t suffix_len = strlen(target_end);
+    memmove(target_line + strlen("target=wrong-target"), target_end, suffix_len + 1);
+    memcpy(target_line, "target=wrong-target", strlen("target=wrong-target"));
     TEST_ASSERT(file_write(manifest_path, wrong_manifest_text));
     free(wrong_manifest_text);
     TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
-    TEST_ASSERT(manifest_reason != NULL);
+    TEST_ASSERT(manifest_reason != NULL && strstr(manifest_reason, "target mismatch") != NULL);
     free(manifest_reason);
     manifest_reason = NULL;
 
-    char* wrong_compiler_text = str_format(
-        "target=%s\n"
-        "profile=stable\n"
-        "compiler=other-compiler\n"
-        "artifact=static|libs/%s\n"
-        "artifact=static-lto|libs/%s\n",
-        target_name, native_name, lto_name
-    );
-    TEST_ASSERT(wrong_compiler_text != NULL);
-    TEST_ASSERT(file_write(manifest_path, wrong_compiler_text));
-    free(wrong_compiler_text);
+    char* wrong_abi_text = strdup(manifest_text);
+    TEST_ASSERT(wrong_abi_text != NULL);
+    char* lto_entry = strstr(wrong_abi_text, "artifact=static-lto|");
+    TEST_ASSERT(lto_entry != NULL);
+    char* field = strchr(lto_entry, '|');
+    field = field ? strchr(field + 1, '|') : NULL;
+    TEST_ASSERT(field != NULL && isxdigit((unsigned char)field[1]));
+    field[1] = field[1] == '0' ? '1' : '0';
+    TEST_ASSERT(file_write(manifest_path, wrong_abi_text));
+    free(wrong_abi_text);
     TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
-    TEST_ASSERT(manifest_reason != NULL && strstr(manifest_reason, "compiler mismatch") != NULL);
+    TEST_ASSERT(manifest_reason != NULL && strstr(manifest_reason, "ABI contract mismatch") != NULL);
+    free(manifest_reason);
+    manifest_reason = NULL;
+
+    char* wrong_toolchain_text = strdup(manifest_text);
+    TEST_ASSERT(wrong_toolchain_text != NULL);
+    lto_entry = strstr(wrong_toolchain_text, "artifact=static-lto|");
+    TEST_ASSERT(lto_entry != NULL);
+    char* line_end = strchr(lto_entry, '\n');
+    TEST_ASSERT(line_end != NULL);
+    char* last_separator = line_end;
+    while (last_separator > lto_entry && *last_separator != '|') { --last_separator; }
+    TEST_ASSERT(last_separator > lto_entry && isxdigit((unsigned char)last_separator[1]));
+    last_separator[1] = last_separator[1] == '0' ? '1' : '0';
+    TEST_ASSERT(file_write(manifest_path, wrong_toolchain_text));
+    free(wrong_toolchain_text);
+    TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, dal_c_Target_static_lib, true, lto_path, &manifest_reason));
+    TEST_ASSERT(manifest_reason != NULL && strstr(manifest_reason, "LTO toolchain mismatch") != NULL);
     free(manifest_reason);
     manifest_reason = NULL;
 

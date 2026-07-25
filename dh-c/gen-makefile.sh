@@ -456,7 +456,7 @@ else ifeq ($(RESOLVED_LINK_START_FILES),on)
         endif
     else ifeq ($(RESOLVED_LINK_LIBC),off)
         ifeq ($(HOST_IS_WINDOWS),on)
-            $(warning LINK_LIBC=off cannot be represented on this host while LINK_DEFAULT_LIBS remains enabled; libc is still treated as linked)
+            $(error LINK_LIBC=off cannot be represented on this host while LINK_DEFAULT_LIBS remains enabled; disable default libs and provide explicit runtime libraries)
         else
             PROFILE_LDFLAGS += -nolibc
         endif
@@ -468,12 +468,24 @@ else
     $(error Unsupported LINK_START_FILES '$(LINK_START_FILES)')
 endif
 
-CONTRACT_DEFINES += $(if $(filter on,$(RESOLVED_LINK_START_FILES)),-DCOMP_HAS_START_FILES,-DCOMP_NO_START_FILES)
-CONTRACT_DEFINES += $(if $(filter on,$(RESOLVED_LINK_START_FILES)),-DCOMP_HAS_CRT,-DCOMP_NO_CRT)
-CONTRACT_DEFINES += $(if $(filter on,$(RESOLVED_LINK_DEFAULT_LIBS)),-DCOMP_HAS_DEFAULT_LIBS,-DCOMP_NO_DEFAULT_LIBS)
-CONTRACT_DEFINES += $(if $(filter off,$(RESOLVED_LINK_COMPILER_RT)),-DCOMP_NO_COMPILER_RT,-DCOMP_HAS_COMPILER_RT)
-CONTRACT_DEFINES += $(if $(filter off,$(RESOLVED_LINK_LIBC)),-DCOMP_NO_LIBC,-DCOMP_HAS_LIBC)
-CONTRACT_DEFINES += $(if $(and $(filter on,$(RESOLVED_LINK_START_FILES)),$(filter on,$(RESOLVED_LINK_DEFAULT_LIBS))),-DCOMP_HAS_STDLIB,-DCOMP_NO_STDLIB)
+ifeq ($(strip $(filter -DCOMP_HAS_START_FILES% -DCOMP_NO_START_FILES%,$(EXTRA_DEFINES))),)
+    CONTRACT_DEFINES += $(if $(filter on,$(RESOLVED_LINK_START_FILES)),-DCOMP_HAS_START_FILES,-DCOMP_NO_START_FILES)
+endif
+ifeq ($(strip $(filter -DCOMP_HAS_CRT% -DCOMP_NO_CRT%,$(EXTRA_DEFINES))),)
+    CONTRACT_DEFINES += $(if $(filter on,$(RESOLVED_LINK_START_FILES)),-DCOMP_HAS_CRT,-DCOMP_NO_CRT)
+endif
+ifeq ($(strip $(filter -DCOMP_HAS_DEFAULT_LIBS% -DCOMP_NO_DEFAULT_LIBS%,$(EXTRA_DEFINES))),)
+    CONTRACT_DEFINES += $(if $(filter on,$(RESOLVED_LINK_DEFAULT_LIBS)),-DCOMP_HAS_DEFAULT_LIBS,-DCOMP_NO_DEFAULT_LIBS)
+endif
+ifeq ($(strip $(filter -DCOMP_HAS_COMPILER_RT% -DCOMP_NO_COMPILER_RT%,$(EXTRA_DEFINES))),)
+    CONTRACT_DEFINES += $(if $(filter off,$(RESOLVED_LINK_COMPILER_RT)),-DCOMP_NO_COMPILER_RT,-DCOMP_HAS_COMPILER_RT)
+endif
+ifeq ($(strip $(filter -DCOMP_HAS_LIBC% -DCOMP_NO_LIBC%,$(EXTRA_DEFINES))),)
+    CONTRACT_DEFINES += $(if $(filter off,$(RESOLVED_LINK_LIBC)),-DCOMP_NO_LIBC,-DCOMP_HAS_LIBC)
+endif
+ifeq ($(strip $(filter -DCOMP_HAS_STDLIB% -DCOMP_NO_STDLIB%,$(EXTRA_DEFINES))),)
+    CONTRACT_DEFINES += $(if $(and $(filter on,$(RESOLVED_LINK_START_FILES)),$(filter on,$(RESOLVED_LINK_DEFAULT_LIBS))),-DCOMP_HAS_STDLIB,-DCOMP_NO_STDLIB)
+endif
 
 ifeq ($(RESOLVED_UNWIND_TABLES),off)
     PROFILE_CFLAGS += -fno-unwind-tables

@@ -5492,7 +5492,7 @@ static int dal_c_Cmd__buildOneFromSources(
     dal_c__phaseRecord(build_phase, dal_c_Cmd__nowSeconds() - build_started_at);
     if (!self->dry_run && result == 0 && path_isFile(target_path)
         && (target_type == dal_c_Target_static_lib || target_type == dal_c_Target_shared_lib)) {
-        if (!dal_c__writePrebuiltManifest(profile_dir, &effective, profile, target_path)) {
+        if (!dal_c__writePrebuiltManifest(profile_dir, &effective, profile, target_path, target_type)) {
             (void)fprintf(stderr, "Warning: Failed to write prebuilt manifest for %s\n", target_path);
         }
     }
