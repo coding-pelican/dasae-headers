@@ -13,6 +13,10 @@ A platform-specific SDK or dependency package uses:
   include/
   prebuilt/
     <normalized-target>/
+      fast/
+        manifest.dh
+        libs/
+        deps/
       dev/
         manifest.dh
         libs/
