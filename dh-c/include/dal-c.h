@@ -919,6 +919,11 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_static "static"
 #define dal_c_opt_shared "shared"
 #define dal_c_opt_cache "cache"
+#define dal_c_opt_deps "deps"
+#define dal_c_opt_unused "unused"
+#define dal_c_opt_older_than "older-than"
+#define dal_c_opt_dry_run "dry-run"
+#define dal_c_opt_force "force"
 #define dal_c_opt_recur "recur"
 #define dal_c_opt_dsl "dsl"
 #define dal_c_opt_all "all"
@@ -1200,7 +1205,13 @@ typedef struct dal_c_TestOpts {
 } dal_c_TestOpts;
 
 typedef struct dal_c_CleanOpts {
-    bool cache_only; // --cache
+    bool cache_only; // --cache: select cache state instead of the default clean scope
+    bool dependencies_only; // --deps: select dependency state under .dh-c/deps
+    bool unused_only; // --unused: restrict dependency cleanup to undeclared names
+    bool dry_run; // --dry-run: report removals without changing the filesystem
+    bool force; // --force: allow removal of dirty dependency source checkouts
+    bool older_than_set; // --older-than=<duration>
+    uint64_t older_than_seconds;
     bool recursive; // --recur
     bool self_boundary; // --self
     bool dsl_first; // --dsl
@@ -1950,10 +1961,15 @@ static const char* const dal_c_help_format_notes[] = {
 #define dal_c_help_format_notes_count ((int)(sizeof(dal_c_help_format_notes) / sizeof(dal_c_help_format_notes[0])))
 
 static const dal_c_HelpOption dal_c_help_clean_options[] = {
-    { dal_c_opt_prefix_long dal_c_opt_cache, "Clean only cache" },
+    { dal_c_opt_prefix_long dal_c_opt_cache, "Select build cache only" },
+    { dal_c_opt_prefix_long dal_c_opt_deps, "Select generated dependency source/build/package state" },
+    { dal_c_opt_prefix_long dal_c_opt_unused, "With `--deps`, remove only dependency names no longer declared" },
+    { dal_c_opt_prefix_long dal_c_opt_older_than dal_c_opt_value_sep "<duration>", "Remove selected state older than a duration such as `30d`, `12h`, or `90m`" },
+    { dal_c_opt_prefix_long dal_c_opt_dry_run, "Print what would be removed without deleting it" },
+    { dal_c_opt_prefix_long dal_c_opt_force, "Allow removal of dirty Git dependency checkouts" },
     { dal_c_opt_prefix_long dal_c_opt_self, "Apply `clean` to the self boundary" },
     { dal_c_opt_prefix_long dal_c_opt_dsl, "Include the DSL boundary in `clean`" },
-    { dal_c_opt_prefix_long dal_c_opt_recur, "Recursive clean" },
+    { dal_c_opt_prefix_long dal_c_opt_recur, "Apply the selected clean scope recursively" },
     { dal_c_opt_prefix_long dal_c_opt_elapsed_precision dal_c_opt_value_sep "<0..9>", "Decimal places for elapsed-time output" },
 };
 #define dal_c_help_clean_options_count ((int)(sizeof(dal_c_help_clean_options) / sizeof(dal_c_help_clean_options[0])))
@@ -1967,16 +1983,23 @@ static const dal_c_HelpOption dal_c_help_clean_dsl_options[] = {
 static const char* const dal_c_help_clean_examples[] = {
     dal_c_cmd_action_clean,
     dal_c_cmd_action_clean " " dal_c_profile_dev,
+    dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_cache,
+    dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_cache " " dal_c_opt_prefix_long dal_c_opt_older_than "=30d",
+    dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_deps " " dal_c_opt_prefix_long dal_c_opt_unused,
+    dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_deps " " dal_c_opt_prefix_long dal_c_opt_older_than "=90d" " " dal_c_opt_prefix_long dal_c_opt_dry_run,
     dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_self,
     dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_dsl,
-    dal_c_cmd_action_clean " " dal_c_opt_prefix_long dal_c_opt_cache " " dal_c_opt_prefix_long dal_c_opt_recur,
 };
 #define dal_c_help_clean_examples_count ((int)(sizeof(dal_c_help_clean_examples) / sizeof(dal_c_help_clean_examples[0])))
 
 static const char* const dal_c_help_clean_notes[] = {
-    "`clean` removes generated build products. With `--recur`, it also cleans descendant projects.",
+    "At a project root, `clean` without an explicit scope removes generated build products, dependency exports, and the active cache scope; a nested local `build/` remains a local-only clean boundary.",
+    "`--cache` and `--deps` are explicit scopes and may be combined. `--older-than` requires one of those scopes.",
+    "Cache age is based on last modification. Dependency age uses dh-c's last-use stamp and falls back to generated-state modification time for older layouts.",
+    "`--unused` applies only to `--deps`; it removes generated state for names no longer declared by the current project and does not rewrite `lock.dh`.",
+    "Dirty Git dependency checkouts are preserved unless `--force` is supplied. Use `--dry-run` to inspect a cleanup first.",
     "Profile-specific clean such as `clean dev` also removes `lib/deps` and `lib/deps.h` because dependency exports are not profile-scoped.",
-    "Do not store durable source assets, checked-in resources, or manual files under `build/`, `build/.cache/`, `lib/deps/`, or `lib/deps.h`; clean owns those generated paths.",
+    "Do not store durable source assets, checked-in resources, or manual files under `build/`, `build/.cache/`, `.dh-c/`, `lib/deps/`, or `lib/deps.h`; clean owns those generated paths.",
     "`--dsl` includes the DH/DSL dependency boundary; `--self` cleans only the dh-c self boundary.",
 };
 #define dal_c_help_clean_notes_count ((int)(sizeof(dal_c_help_clean_notes) / sizeof(dal_c_help_clean_notes[0])))
@@ -2175,7 +2198,7 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
     },
     {
         .name = dal_c_cmd_action_clean,
-        .description = "Clean build artifacts",
+        .description = "Clean build, cache, and generated dependency state",
         .usage = "[options]",
         .options = dal_c_help_clean_options,
         .option_count = dal_c_help_clean_options_count,

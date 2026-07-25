@@ -10,6 +10,8 @@ extern bool dir_create(const char* path);
 extern bool dir_createRecur(const char* path);
 extern bool dir_linkDir(const char* link_path, const char* target_path);
 extern bool dir_removeRecur(const char* path);
+// Returns immediate files and directories as allocated paths; caller frees each string and the array
+extern char** dir_listEntries(const char* path, int* count);
 // Returns: allocated array of strings; caller must `free()` each string and the array
 extern char** dir_list(const char* path, int* count);
 // Returns: allocated array of strings; caller must `free()` each string and the array

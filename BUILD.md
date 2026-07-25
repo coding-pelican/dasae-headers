@@ -291,7 +291,12 @@ Run/test-specific modifiers:
 
 Clean-specific modifiers:
 
-- `--cache`
+- `--cache`: select reusable build-cache state only
+- `--deps`: select fetched/built/staged dependency state under `.dh-c/deps/`
+- `--unused`: with `--deps`, restrict cleanup to names no longer declared
+- `--older-than=<duration>`: restrict cache/dependency cleanup by age (`30d`, `12h`, `90m`)
+- `--dry-run`: preview removals
+- `--force`: permit removal of dirty Git dependency checkouts
 - `--self`
 - `--dsl`
 - `--recur`
@@ -420,35 +425,54 @@ Supported built-in directory aliases:
 
 Only one alias variant per category should exist at the same project level.
 
-## Generated Directories
+## Generated State
 
-`dh-c` writes generated data to three main places:
+`dh-c` separates materialized outputs, reusable cache, mutable dependency state,
+and durable dependency resolution.
 
 `build/`
 
 - final artifacts
 - object files
 - generated plan makefiles
-- PCH outputs
+- project-local cache under `build/.cache/` when no workspace is active
 
-`prebuilt/<profile>/`
+`<workspace>/.dh-c/cache/`
+
+- preferred shared build/PCH/source-list cache for projects discovered inside a workspace
+- disposable and ignored by source control
+
+`<project>/.dh-c/deps/`
+
+- fetched source checkouts under `src/<name>/`
+- provider build trees under `build/<target>/<profile>/<name>/`
+- staged packages under `packages/<target>/<profile>/<name>/`
+- last-use stamps under `usage/<name>.stamp`
+
+`prebuilt/<target>/<profile>/`
 
 - packaged SDK artifacts that are trusted as immutable inputs
-- `libs/` contains the dependency's own native/LTO/shared artifacts
-- optional `deps/` contains already-staged transitive dependency artifacts
+- `manifest.dh` is required and describes the prebuilt compatibility contract
 - this directory is deliberately separate from `build/`, so stale local build caches cannot masquerade as SDK packages
 
-`.cache/`
+`lib/deps/` and `lib/deps.h`
 
-- generated unity sources
-- generated test runner sources
+- generated dependency headers/libraries and dependency prelude consumed by project builds
 
-`lib/deps/`
+`lock.dh`
 
-- copied dependency headers
-- copied dependency libraries
-- copied dependency PCH files
-- copied transitive dependency artifacts
+- durable resolved dependency input beside `project.dh`
+- normally committed; never owned or rewritten by `clean --deps`
+
+Maintenance examples:
+
+```sh
+dh-c clean --cache --older-than=30d
+dh-c clean --deps --unused --dry-run
+dh-c clean --deps --older-than=90d
+dh-c clean --deps --older-than=90d --force
+```
+
 
 ## Dependency Flow
 

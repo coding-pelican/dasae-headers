@@ -45,6 +45,7 @@ static bool dal_c_Cmd__usesBuildArtifactPayload(dal_c_CmdAction action);
 static bool dal_c_Cmd__tryParseBoolValue(const char* value, bool* out);
 static bool dal_c_Cmd__tryParseToggleValue(const char* value, dal_c_ToggleState* out);
 static bool dal_c_Cmd__tryParseElapsedPrecision(const char* value, int* out);
+static bool dal_c_Cmd__tryParseDurationSeconds(const char* value, uint64_t* out);
 static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt, size_t opt_len, const char* value, bool* handled);
 static dal_c_Target dal_c_Cmd__resolveBuildTargetType(const dal_c_Cmd* cmd, dal_c_Linking linking, bool builds_library);
 static void dal_c_Cmd__setStdlibBundle(dal_c_CompilerOpts* opts, bool linked);
@@ -168,7 +169,9 @@ static int dal_c_Cmd__runRecursiveBuild(const dal_c_Cmd* self, const dal_c_Proje
 static int dal_c_Cmd__runRecursiveTest(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__runRecursiveClean(const dal_c_Cmd* self, const dal_c_Project* proj);
 static bool dal_c_Cmd__pathIsUnderRoot(const char* root, const char* path);
-static int dal_c_Cmd__cleanDependencyExportsAt(const char* root, bool verbose, bool* cleaned);
+static int dal_c_Cmd__cleanDependencyExportsAt(const dal_c_Cmd* self, const char* root, bool* cleaned);
+static int dal_c_Cmd__cleanCacheScope(const dal_c_Cmd* self, const dal_c_Project* proj, bool* cleaned);
+static int dal_c_Cmd__cleanDependencyState(const dal_c_Cmd* self, const dal_c_Project* proj, bool* cleaned);
 static bool dal_c_Cmd__executeNeedsProjectLock(const dal_c_Cmd* self);
 static int dal_c_Cmd__executeUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj);
 static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Project* proj);
@@ -554,6 +557,28 @@ static bool dal_c_Cmd__tryParseElapsedPrecision(const char* value, int* out) {
     return true;
 }
 
+
+static bool dal_c_Cmd__tryParseDurationSeconds(const char* value, uint64_t* out) {
+    if (!value || !value[0] || !out) { return false; }
+    char* end = NULL;
+    unsigned long long amount = strtoull(value, &end, 10);
+    if (!end || end == value) { return false; }
+    uint64_t multiplier = 1;
+    if (*end != '\0') {
+        if (end[1] != '\0') { return false; }
+        switch (*end) {
+        case 's': multiplier = 1; break;
+        case 'm': multiplier = 60; break;
+        case 'h': multiplier = 60 * 60; break;
+        case 'd': multiplier = 24 * 60 * 60; break;
+        case 'w': multiplier = 7 * 24 * 60 * 60; break;
+        default: return false;
+        }
+    }
+    if (amount > UINT64_MAX / multiplier) { return false; }
+    *out = (uint64_t)amount * multiplier;
+    return true;
+}
 static int dal_c_Cmd__applyAssignedBooleanOption(dal_c_Cmd* cmd, const char* opt, size_t opt_len, const char* value, bool* handled) {
     assert(cmd != NULL);
     assert(opt != NULL);
@@ -900,12 +925,35 @@ static int dal_c_Cmd__validateCanonicalModifiers(const dal_c_Cmd* cmd) {
 
     if (cmd->action == dal_c_CmdAction_clean && cmd->payload.clean.self_boundary) {
         if (cmd->payload.clean.cache_only
+            || cmd->payload.clean.dependencies_only
+            || cmd->payload.clean.unused_only
+            || cmd->payload.clean.older_than_set
+            || cmd->payload.clean.dry_run
+            || cmd->payload.clean.force
             || cmd->payload.clean.recursive
             || cmd->payload.clean.dsl_first
             || cmd->exclude_count > 0) {
             (void)fprintf(stderr, "Error: `clean --self` does not accept cache, traversal, DSL, or exclude modifiers\n");
             return 1;
         }
+    }
+
+    if ((cmd->action == dal_c_CmdAction_clean || cmd->action == dal_c_CmdAction_clean_dsl)
+        && cmd->payload.clean.unused_only && !cmd->payload.clean.dependencies_only) {
+        (void)fprintf(stderr, "Error: `--%s` requires `--%s`\n", dal_c_opt_unused, dal_c_opt_deps);
+        return 1;
+    }
+    if ((cmd->action == dal_c_CmdAction_clean || cmd->action == dal_c_CmdAction_clean_dsl)
+        && cmd->payload.clean.older_than_set
+        && !cmd->payload.clean.cache_only && !cmd->payload.clean.dependencies_only) {
+        (void)fprintf(stderr, "Error: `--%s` requires `--%s` or `--%s`\n",
+            dal_c_opt_older_than, dal_c_opt_cache, dal_c_opt_deps);
+        return 1;
+    }
+    if ((cmd->action == dal_c_CmdAction_clean || cmd->action == dal_c_CmdAction_clean_dsl)
+        && cmd->payload.clean.force && !cmd->payload.clean.dependencies_only) {
+        (void)fprintf(stderr, "Error: `--%s` applies only to `--%s`\n", dal_c_opt_force, dal_c_opt_deps);
+        return 1;
     }
 
     return 0;
@@ -2598,10 +2646,333 @@ int dal_c_Cmd_compileDeps(const dal_c_Cmd* self, const dal_c_Project* proj) {
     return 0;
 }
 
+
+static bool dal_c_Cmd__removeGeneratedPath(const dal_c_Cmd* self, const char* path, bool* cleaned) {
+    if (!path || (!path_isDir(path) && !path_isFile(path))) { return true; }
+    if (self->payload.clean.dry_run) {
+        printf("[DRY-RUN] remove %s\n", path);
+        if (cleaned) { *cleaned = true; }
+        return true;
+    }
+    if (self->verbose) { printf("Removing: %s\n", path); }
+    bool ok = path_isDir(path) ? dir_removeRecur(path) : remove(path) == 0;
+    if (!ok) {
+        (void)fprintf(stderr, "Error: Failed to remove generated path: %s\n", path);
+        return false;
+    }
+    printf("Cleaned: %s\n", path);
+    if (cleaned) { *cleaned = true; }
+    return true;
+}
+
+static time_t dal_c_Cmd__newestMtime(const char* path) {
+    if (!path || (!path_isDir(path) && !path_isFile(path))) { return 0; }
+    time_t newest = file_mtime(path);
+    if (!path_isDir(path)) { return newest; }
+    int count = 0;
+    char** entries = dir_listEntries(path, &count);
+    for (int i = 0; i < count; ++i) {
+        time_t child = dal_c_Cmd__newestMtime(entries[i]);
+        if (child > newest) { newest = child; }
+        free(entries[i]);
+    }
+    free(entries);
+    return newest;
+}
+
+static bool dal_c_Cmd__pruneOldCacheTree(
+    const dal_c_Cmd* self,
+    const char* path,
+    time_t cutoff,
+    bool is_root,
+    bool* cleaned
+) {
+    if (!path || !path_isDir(path)) { return true; }
+    int count = 0;
+    char** entries = dir_listEntries(path, &count);
+    bool ok = true;
+    for (int i = 0; i < count; ++i) {
+        char* name = path_basename(entries[i]);
+        bool skip = is_root && name && str_eql(name, "locks");
+        free(name);
+        if (skip) { free(entries[i]); continue; }
+        if (path_isDir(entries[i])) {
+            if (!dal_c_Cmd__pruneOldCacheTree(self, entries[i], cutoff, false, cleaned)) { ok = false; }
+            if (path_isDir(entries[i])) {
+                int child_count = 0;
+                char** children = dir_listEntries(entries[i], &child_count);
+                for (int j = 0; j < child_count; ++j) { free(children[j]); }
+                free(children);
+                if (child_count == 0 && file_mtime(entries[i]) <= cutoff
+                    && !dal_c_Cmd__removeGeneratedPath(self, entries[i], cleaned)) {
+                    ok = false;
+                }
+            }
+        } else if (file_mtime(entries[i]) <= cutoff
+                   && !dal_c_Cmd__removeGeneratedPath(self, entries[i], cleaned)) {
+            ok = false;
+        }
+        free(entries[i]);
+    }
+    free(entries);
+    return ok;
+}
+
+static bool dal_c_Cmd__projectDeclaresDependency(const dal_c_Project* proj, const char* name) {
+    if (!proj || !name) { return false; }
+    for (int i = 0; i < proj->lib_count; ++i) {
+        if (proj->libraries[i].name && str_eql(proj->libraries[i].name, name)) { return true; }
+    }
+    return false;
+}
+
+static void dal_c_Cmd__collectDependencyNamesAtDepth(ArrStr* names, const char* root, int depth) {
+    if (!names || !root || !path_isDir(root)) { return; }
+    int count = 0;
+    char** entries = dir_listEntries(root, &count);
+    for (int i = 0; i < count; ++i) {
+        if (!path_isDir(entries[i])) { free(entries[i]); continue; }
+        if (depth <= 1) {
+            char* name = path_basename(entries[i]);
+            if (name && !dal_c_Cmd__arrHasString(names, name)) { ArrStr_push(names, name); }
+            free(name);
+        } else {
+            dal_c_Cmd__collectDependencyNamesAtDepth(names, entries[i], depth - 1);
+        }
+        free(entries[i]);
+    }
+    free(entries);
+}
+
+static char* dal_c_Cmd__dependencyUsageStamp(const char* deps_root, const char* name) {
+    char* usage_root = path_join(deps_root, "usage");
+    char* stamp_name = str_format("%s.stamp", name);
+    char* stamp = stamp_name ? path_join(usage_root, stamp_name) : NULL;
+    free(stamp_name);
+    free(usage_root);
+    return stamp;
+}
+
+static time_t dal_c_Cmd__dependencyLastUse(
+    const char* deps_root,
+    const char* src_root,
+    const char* build_root,
+    const char* package_root,
+    const char* name
+) {
+    char* stamp = dal_c_Cmd__dependencyUsageStamp(deps_root, name);
+    time_t newest = stamp ? file_mtime(stamp) : 0;
+    free(stamp);
+    char* source = path_join(src_root, name);
+    time_t source_mt = dal_c_Cmd__newestMtime(source);
+    if (source_mt > newest) { newest = source_mt; }
+    free(source);
+
+    const char* roots[] = { build_root, package_root, NULL };
+    for (int r = 0; roots[r]; ++r) {
+        int target_count = 0;
+        char** targets = dir_listEntries(roots[r], &target_count);
+        for (int i = 0; i < target_count; ++i) {
+            if (!path_isDir(targets[i])) { free(targets[i]); continue; }
+            int profile_count = 0;
+            char** profiles = dir_listEntries(targets[i], &profile_count);
+            for (int j = 0; j < profile_count; ++j) {
+                if (path_isDir(profiles[j])) {
+                    char* candidate = path_join(profiles[j], name);
+                    time_t mt = dal_c_Cmd__newestMtime(candidate);
+                    if (mt > newest) { newest = mt; }
+                    free(candidate);
+                }
+                free(profiles[j]);
+            }
+            free(profiles);
+            free(targets[i]);
+        }
+        free(targets);
+    }
+    return newest;
+}
+
+static bool dal_c_Cmd__dependencySourceDirty(const char* source_path) {
+    if (!source_path || !path_isDir(source_path)) { return false; }
+    char* dot_git = path_join(source_path, ".git");
+    bool is_git = path_isDir(dot_git) || path_isFile(dot_git);
+    free(dot_git);
+    if (!is_git) { return false; }
+    const char* argv[] = { "git", "-C", source_path, "status", "--porcelain", NULL };
+    char* output = proc_output(argv);
+    char* trimmed = output ? str_trim(output) : NULL;
+    bool dirty = trimmed && trimmed[0] != '\0';
+    free(trimmed);
+    free(output);
+    return dirty;
+}
+
+static bool dal_c_Cmd__removeDependencyNameFromNestedRoot(
+    const dal_c_Cmd* self,
+    const char* root,
+    const char* name,
+    bool* cleaned
+) {
+    if (!root || !path_isDir(root)) { return true; }
+    bool ok = true;
+    int target_count = 0;
+    char** targets = dir_listEntries(root, &target_count);
+    for (int i = 0; i < target_count; ++i) {
+        if (!path_isDir(targets[i])) { free(targets[i]); continue; }
+        int profile_count = 0;
+        char** profiles = dir_listEntries(targets[i], &profile_count);
+        for (int j = 0; j < profile_count; ++j) {
+            if (path_isDir(profiles[j])) {
+                char* candidate = path_join(profiles[j], name);
+                if (!dal_c_Cmd__removeGeneratedPath(self, candidate, cleaned)) { ok = false; }
+                free(candidate);
+            }
+            free(profiles[j]);
+        }
+        free(profiles);
+        free(targets[i]);
+    }
+    free(targets);
+    return ok;
+}
+
+static int dal_c_Cmd__cleanDependencyState(const dal_c_Cmd* self, const dal_c_Project* proj, bool* cleaned) {
+    if (!proj || !proj->root) {
+        (void)fprintf(stderr, "Error: `clean --deps` requires a project scope\n");
+        return 1;
+    }
+    char* state_root = dal_c_Project_getStateRoot(proj);
+    char* deps_root = state_root ? path_join(state_root, "deps") : NULL;
+    char* src_root = deps_root ? path_join(deps_root, "src") : NULL;
+    char* build_root = deps_root ? path_join(deps_root, "build") : NULL;
+    char* package_root = deps_root ? path_join(deps_root, "packages") : NULL;
+    char* usage_root = deps_root ? path_join(deps_root, "usage") : NULL;
+    if (!deps_root || !path_isDir(deps_root)) {
+        free(usage_root); free(package_root); free(build_root); free(src_root); free(deps_root); free(state_root);
+        return 0;
+    }
+
+    ArrStr* names = ArrStr_init();
+    dal_c_Cmd__collectDependencyNamesAtDepth(names, src_root, 1);
+    dal_c_Cmd__collectDependencyNamesAtDepth(names, build_root, 3);
+    dal_c_Cmd__collectDependencyNamesAtDepth(names, package_root, 3);
+    if (path_isDir(usage_root)) {
+        int count = 0;
+        char** entries = dir_listEntries(usage_root, &count);
+        for (int i = 0; i < count; ++i) {
+            char* base = path_basename(entries[i]);
+            if (base && str_endsWith(base, ".stamp")) {
+                base[strlen(base) - strlen(".stamp")] = '\0';
+                if (!dal_c_Cmd__arrHasString(names, base)) { ArrStr_push(names, base); }
+            }
+            free(base);
+            free(entries[i]);
+        }
+        free(entries);
+    }
+
+    time_t cutoff = 0;
+    if (self->payload.clean.older_than_set) {
+        time_t now = time(NULL);
+        uint64_t age = self->payload.clean.older_than_seconds;
+        cutoff = age > (uint64_t)now ? 0 : now - (time_t)age;
+    }
+
+    int failures = 0;
+    for (int i = 0; i < ArrStr_len(names); ++i) {
+        const char* name = ArrStr_at(names, i);
+        bool matches = true;
+        if (self->payload.clean.unused_only && dal_c_Cmd__projectDeclaresDependency(proj, name)) { matches = false; }
+        if (matches && self->payload.clean.older_than_set) {
+            time_t last_use = dal_c_Cmd__dependencyLastUse(deps_root, src_root, build_root, package_root, name);
+            matches = last_use <= cutoff;
+        }
+        if (!matches) { continue; }
+
+        char* source = path_join(src_root, name);
+        if (dal_c_Cmd__dependencySourceDirty(source) && !self->payload.clean.force) {
+            (void)fprintf(stderr, "Preserved dirty dependency checkout `%s`; use `--force` to remove it.\n", name);
+            free(source);
+            failures++;
+            continue;
+        }
+        if (!dal_c_Cmd__removeGeneratedPath(self, source, cleaned)) { failures++; }
+        free(source);
+        if (!dal_c_Cmd__removeDependencyNameFromNestedRoot(self, build_root, name, cleaned)) { failures++; }
+        if (!dal_c_Cmd__removeDependencyNameFromNestedRoot(self, package_root, name, cleaned)) { failures++; }
+        char* stamp = dal_c_Cmd__dependencyUsageStamp(deps_root, name);
+        if (!dal_c_Cmd__removeGeneratedPath(self, stamp, cleaned)) { failures++; }
+        free(stamp);
+    }
+
+    if (!self->payload.clean.unused_only && !self->payload.clean.older_than_set && failures == 0) {
+        if (!dal_c_Cmd__removeGeneratedPath(self, deps_root, cleaned)) { failures++; }
+    }
+
+    ArrStr_fini(&names);
+    free(usage_root); free(package_root); free(build_root); free(src_root); free(deps_root); free(state_root);
+    return failures == 0 ? 0 : 1;
+}
+
+static bool dal_c_Cmd__cleanCacheContentsPreservingLocks(
+    const dal_c_Cmd* self,
+    const char* cache_root,
+    bool* cleaned
+) {
+    if (!cache_root || !path_isDir(cache_root)) { return true; }
+    int count = 0;
+    char** entries = dir_listEntries(cache_root, &count);
+    bool ok = true;
+    for (int i = 0; i < count; ++i) {
+        char* name = path_basename(entries[i]);
+        bool preserve = name && str_eql(name, "locks");
+        free(name);
+        if (!preserve && !dal_c_Cmd__removeGeneratedPath(self, entries[i], cleaned)) { ok = false; }
+        free(entries[i]);
+    }
+    free(entries);
+    return ok;
+}
+
+static int dal_c_Cmd__cleanCacheScope(const dal_c_Cmd* self, const dal_c_Project* proj, bool* cleaned) {
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(self->opts.profile);
+    char* cache_dir = dal_c__cacheBaseDir(proj);
+    char* cache_target = NULL;
+    if (self->profile_explicit && profile) {
+        char* cache_dh_c = path_join(cache_dir, dal_c_tool_name);
+        cache_target = path_join(cache_dh_c, profile->name);
+        free(cache_dh_c);
+    } else {
+        cache_target = strdup(cache_dir);
+    }
+    int result = 0;
+    bool global_cache_root = !self->profile_explicit
+                          && (!proj || (!proj->root && !proj->workspace_root));
+    if (self->payload.clean.older_than_set) {
+        time_t now = time(NULL);
+        uint64_t age = self->payload.clean.older_than_seconds;
+        time_t cutoff = age > (uint64_t)now ? 0 : now - (time_t)age;
+        if (!dal_c_Cmd__pruneOldCacheTree(self, cache_target, cutoff, global_cache_root, cleaned)) { result = 1; }
+    } else if (global_cache_root) {
+        if (!dal_c_Cmd__cleanCacheContentsPreservingLocks(self, cache_target, cleaned)) { result = 1; }
+    } else if (!dal_c_Cmd__removeGeneratedPath(self, cache_target, cleaned)) {
+        result = 1;
+    }
+    free(cache_target);
+    free(cache_dir);
+    return result;
+}
+
 /* NOLINTNEXTLINE(misc-no-recursion) */
 int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
+    assert(self != NULL);
     bool cleaned = false;
-    bool cache_only = self->payload.clean.cache_only;
+    bool explicit_scope = self->payload.clean.cache_only || self->payload.clean.dependencies_only;
+    bool clean_build = !explicit_scope;
+    bool clean_exports = !explicit_scope;
+    bool clean_cache = !explicit_scope || self->payload.clean.cache_only;
+    bool clean_dependencies = self->payload.clean.dependencies_only;
     bool recursive = self->payload.clean.recursive;
     const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(self->opts.profile);
 
@@ -2612,55 +2983,70 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
 
     char* cwd = env_getCWD();
     char* cwd_build_dir = cwd ? path_join(cwd, dal_c_dir_build) : NULL;
-    bool clean_local_build = !self->payload.clean.dsl_first
+    bool clean_local_build = clean_build
+                          && !self->payload.clean.dsl_first
                           && !recursive
                           && cwd_build_dir
                           && path_isDir(cwd_build_dir)
-                          && (!proj->root || !cwd || !str_eql(cwd, proj->root));
+                          && (!proj || !proj->root || !cwd || !str_eql(cwd, proj->root));
 
-    char* build_dir = clean_local_build ? strdup(cwd_build_dir) : (proj->root ? dal_c_Project_getBuildDir(proj) : NULL);
-    if (!build_dir) {
-        build_dir = cwd ? path_join(cwd, dal_c_dir_build) : strdup(dal_c_dir_build);
-    }
-    char* build_target = NULL;
-    if (self->profile_explicit && profile) {
-        char* target_name = dal_c__resolveTargetDirName(&self->opts);
-        char* target_dir = (build_dir && target_name) ? path_join(build_dir, target_name) : NULL;
-        build_target = target_dir ? path_join(target_dir, profile->name) : NULL;
-        free(target_dir);
-        free(target_name);
-    } else {
-        build_target = strdup(build_dir);
-    }
-    if (!self->profile_explicit && build_dir) {
-        char* native_link = path_join(build_dir, "native");
-        if (native_link) { (void)remove(native_link); }
-        free(native_link);
-    }
-    if (build_target && path_isDir(build_target)) {
-        if (self->verbose) {
-            printf("Removing: %s\n", build_target);
+    if (clean_build) {
+        char* build_dir = clean_local_build
+                        ? strdup(cwd_build_dir)
+                        : ((proj && proj->root) ? dal_c_Project_getBuildDir(proj) : NULL);
+        if (!build_dir) {
+            build_dir = cwd ? path_join(cwd, dal_c_dir_build) : strdup(dal_c_dir_build);
         }
-        dir_removeRecur(build_target);
-        printf("Cleaned: %s\n", build_target);
-        cleaned = true;
-    }
-    free(build_target);
-    if (self->profile_explicit && profile) {
-        char* legacy_profile = path_join(build_dir, profile->name);
-        if (legacy_profile && path_isDir(legacy_profile)) {
-            if (self->verbose) { printf("Removing legacy profile: %s\n", legacy_profile); }
-            dir_removeRecur(legacy_profile);
-            printf("Cleaned: %s\n", legacy_profile);
-            cleaned = true;
+        char* build_target = NULL;
+        if (self->profile_explicit && profile) {
+            char* target_name = dal_c__resolveTargetDirName(&self->opts);
+            char* target_dir = (build_dir && target_name) ? path_join(build_dir, target_name) : NULL;
+            build_target = target_dir ? path_join(target_dir, profile->name) : NULL;
+            free(target_dir);
+            free(target_name);
+        } else {
+            build_target = strdup(build_dir);
         }
-        free(legacy_profile);
+
+        if (!self->profile_explicit && build_dir) {
+            char* native_link = path_join(build_dir, "native");
+            if (native_link && (path_isFile(native_link) || path_isDir(native_link))) {
+                if (self->payload.clean.dry_run) {
+                    printf("[DRY-RUN] remove %s\n", native_link);
+                    cleaned = true;
+                } else if (remove(native_link) == 0) {
+                    if (self->verbose) { printf("Removing link: %s\n", native_link); }
+                    cleaned = true;
+                }
+            }
+            free(native_link);
+        }
+        if (!dal_c_Cmd__removeGeneratedPath(self, build_target, &cleaned)) {
+            free(build_target);
+            free(build_dir);
+            free(cwd_build_dir);
+            free(cwd);
+            return 1;
+        }
+        free(build_target);
+
+        if (self->profile_explicit && profile) {
+            char* legacy_profile = path_join(build_dir, profile->name);
+            if (!dal_c_Cmd__removeGeneratedPath(self, legacy_profile, &cleaned)) {
+                free(legacy_profile);
+                free(build_dir);
+                free(cwd_build_dir);
+                free(cwd);
+                return 1;
+            }
+            free(legacy_profile);
+        }
+        free(build_dir);
     }
-    free(build_dir);
 
     if (clean_local_build) {
-        if (!cache_only) {
-            int deps_result = dal_c_Cmd__cleanDependencyExportsAt(cwd, self->verbose, &cleaned);
+        if (clean_exports) {
+            int deps_result = dal_c_Cmd__cleanDependencyExportsAt(self, cwd, &cleaned);
             if (deps_result != 0) {
                 free(cwd_build_dir);
                 free(cwd);
@@ -2669,41 +3055,30 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         }
         free(cwd_build_dir);
         free(cwd);
-        if (!cleaned) {
-            printf("Nothing to clean\n");
-        }
+        if (!cleaned) { printf("Nothing to clean\n"); }
         return 0;
     }
     free(cwd_build_dir);
     free(cwd);
 
-    if (proj->root && !cache_only) {
-        int deps_result = dal_c_Cmd__cleanDependencyExportsAt(proj->root, self->verbose, &cleaned);
+    if (clean_exports && proj && proj->root) {
+        int deps_result = dal_c_Cmd__cleanDependencyExportsAt(self, proj->root, &cleaned);
         if (deps_result != 0) { return deps_result; }
     }
 
-    char* cache_dir = dal_c__cacheBaseDir(proj);
-    char* cache_target = NULL;
-    if (self->profile_explicit && profile) {
-        char* cache_dh_c = path_join(cache_dir, dal_c_tool_name);
-        cache_target = path_join(cache_dh_c, profile->name);
-        free(cache_dh_c);
-    } else {
-        cache_target = strdup(cache_dir);
+    if (clean_cache) {
+        int cache_result = dal_c_Cmd__cleanCacheScope(self, proj, &cleaned);
+        if (cache_result != 0) { return cache_result; }
     }
-    if (cache_target && path_isDir(cache_target)) {
-        if (self->verbose) {
-            printf("Removing: %s\n", cache_target);
-        }
-        dir_removeRecur(cache_target);
-        printf("Cleaned: %s\n", cache_target);
-        cleaned = true;
-    }
-    free(cache_target);
-    free(cache_dir);
 
-    if (proj->root && recursive) {
-        if (proj->lib_count > 0) {
+    if (clean_dependencies) {
+        int deps_state_result = dal_c_Cmd__cleanDependencyState(self, proj, &cleaned);
+        if (deps_state_result != 0) { return deps_state_result; }
+    }
+
+    if (proj && proj->root && recursive) {
+        bool recurse_children = !explicit_scope || clean_dependencies;
+        if (recurse_children && proj->lib_count > 0) {
             for (int i = 0; i < proj->lib_count; ++i) {
                 const dal_c_Lib* lib = &proj->libraries[i];
                 if (!lib->path) { continue; }
@@ -2712,18 +3087,23 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
                     dal_c_Cmd child = *self;
                     child.payload.clean.recursive = false;
                     child.payload.clean.dsl_first = false;
-                    dal_c_Cmd_cleanTarget(&child, lib_proj);
+                    if (explicit_scope) {
+                        child.payload.clean.cache_only = false;
+                        child.payload.clean.dependencies_only = clean_dependencies;
+                    }
+                    int child_result = dal_c_Cmd_cleanTarget(&child, lib_proj);
                     dal_c_Project_cleanup(&lib_proj);
+                    if (child_result != 0) { return child_result; }
                 }
             }
         }
-        int child_result = dal_c_Cmd__runRecursiveClean(self, proj);
-        if (child_result != 0) { return child_result; }
+        if (!explicit_scope) {
+            int child_result = dal_c_Cmd__runRecursiveClean(self, proj);
+            if (child_result != 0) { return child_result; }
+        }
     }
 
-    if (!cleaned) {
-        printf("Nothing to clean\n");
-    }
+    if (!cleaned) { printf("Nothing to clean\n"); }
     return 0;
 }
 
@@ -2951,6 +3331,14 @@ static bool dal_c_Cmd__isValidOption(const char* arg, dal_c_CmdAction action) {
                         || action == dal_c_CmdAction_test_dsl;
     if (str_startsWith(arg, dal_c_opt_prefix_long)) {
         const char* opt = arg + 2;
+        if (dal_c_Cmd__optionNameIs(opt, dal_c_opt_cache)
+            || dal_c_Cmd__optionNameIs(opt, dal_c_opt_deps)
+            || dal_c_Cmd__optionNameIs(opt, dal_c_opt_unused)
+            || dal_c_Cmd__optionNameIs(opt, dal_c_opt_older_than)
+            || dal_c_Cmd__optionNameIs(opt, dal_c_opt_dry_run)
+            || dal_c_Cmd__optionNameIs(opt, dal_c_opt_force)) {
+            return action == dal_c_CmdAction_clean || action == dal_c_CmdAction_clean_dsl;
+        }
         if (dal_c_Cmd__optionNameIs(opt, dal_c_opt_output)) { return output_like; }
         if (dal_c_Cmd__optionNameIs(opt, dal_c_opt_output_ext)) { return artifact_output_like; }
         if (dal_c_Cmd__optionNameIs(opt, dal_c_opt_link)
@@ -3181,6 +3569,17 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
             if (eq) {
                 size_t opt_len = (size_t)(eq - opt);
                 const char* value = eq + 1;
+                if (opt_len == strlen(dal_c_opt_older_than)
+                    && strncmp(opt, dal_c_opt_older_than, opt_len) == 0) {
+                    uint64_t seconds = 0;
+                    if (!dal_c_Cmd__tryParseDurationSeconds(value, &seconds)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_older_than, value);
+                        return 1;
+                    }
+                    cmd->payload.clean.older_than_set = true;
+                    cmd->payload.clean.older_than_seconds = seconds;
+                    continue;
+                }
                 bool handled_bool = false;
                 if (dal_c_Cmd__applyAssignedBooleanOption(cmd, opt, opt_len, value, &handled_bool) != 0) {
                     return 1;
@@ -3812,6 +4211,27 @@ static int dal_c_Cmd__parseOptions(dal_c_Cmd* cmd, int argc, const char* argv[],
                     if (cmd->action == dal_c_CmdAction_clean || cmd->action == dal_c_CmdAction_clean_dsl) {
                         cmd->payload.clean.cache_only = true;
                     }
+                } else if (str_eql(opt, dal_c_opt_deps)) {
+                    cmd->payload.clean.dependencies_only = true;
+                } else if (str_eql(opt, dal_c_opt_unused)) {
+                    cmd->payload.clean.unused_only = true;
+                } else if (str_eql(opt, dal_c_opt_dry_run)) {
+                    cmd->payload.clean.dry_run = true;
+                } else if (str_eql(opt, dal_c_opt_force)) {
+                    cmd->payload.clean.force = true;
+                } else if (str_eql(opt, dal_c_opt_older_than)) {
+                    if (i + 1 >= argc) {
+                        (void)fprintf(stderr, "Error: Missing value for option: %s\n", arg);
+                        return 1;
+                    }
+                    uint64_t seconds = 0;
+                    const char* value = argv[++i];
+                    if (!dal_c_Cmd__tryParseDurationSeconds(value, &seconds)) {
+                        (void)fprintf(stderr, "Error: Invalid value for `%s`: %s\n", dal_c_opt_older_than, value);
+                        return 1;
+                    }
+                    cmd->payload.clean.older_than_set = true;
+                    cmd->payload.clean.older_than_seconds = seconds;
                 } else if (str_eql(opt, dal_c_opt_recur)) {
                     if (cmd->action == dal_c_CmdAction_clean) {
                         cmd->payload.clean.recursive = true;
@@ -4249,7 +4669,8 @@ static bool dal_c_Cmd__pathIsUnderRoot(const char* root, const char* path) {
     return ok;
 }
 
-static int dal_c_Cmd__cleanDependencyExportsAt(const char* root, bool verbose, bool* cleaned) {
+static int dal_c_Cmd__cleanDependencyExportsAt(const dal_c_Cmd* self, const char* root, bool* cleaned) {
+    assert(self != NULL);
     assert(root != NULL);
     assert(cleaned != NULL);
 
@@ -4264,16 +4685,10 @@ static int dal_c_Cmd__cleanDependencyExportsAt(const char* root, bool verbose, b
             result = 1;
             goto done;
         }
-        if (verbose) {
-            printf("Removing: %s\n", deps_dir);
-        }
-        if (!dir_removeRecur(deps_dir)) {
-            (void)fprintf(stderr, "Error: Failed to clean dependency export: %s\n", deps_dir);
+        if (!dal_c_Cmd__removeGeneratedPath(self, deps_dir, cleaned)) {
             result = 1;
             goto done;
         }
-        printf("Cleaned: %s\n", deps_dir);
-        *cleaned = true;
     }
 
     if (deps_header && path_isFile(deps_header)) {
@@ -4282,16 +4697,10 @@ static int dal_c_Cmd__cleanDependencyExportsAt(const char* root, bool verbose, b
             result = 1;
             goto done;
         }
-        if (verbose) {
-            printf("Removing: %s\n", deps_header);
-        }
-        if (remove(deps_header) != 0) {
-            (void)fprintf(stderr, "Error: Failed to clean dependency prelude: %s\n", deps_header);
+        if (!dal_c_Cmd__removeGeneratedPath(self, deps_header, cleaned)) {
             result = 1;
             goto done;
         }
-        printf("Cleaned: %s\n", deps_header);
-        *cleaned = true;
     }
 
 done:

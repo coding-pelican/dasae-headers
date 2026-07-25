@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 
 static int dal_c__printUsage(const char* topic);
 static void dal_c__printVersion(const dal_c_Cmd* cmd);
@@ -646,6 +647,22 @@ static bool dal_c__depsLockAllowsNewEntry(const char* reason) {
     return reason && strstr(reason, "is not recorded") != NULL;
 }
 
+static bool dal_c__depsTouchUsage(const char* deps_root, const char* name) {
+    if (!deps_root || !name || !name[0]) { return false; }
+    char* usage_root = path_join(deps_root, "usage");
+    char* stamp_name = str_format("%s.stamp", name);
+    char* stamp_path = (usage_root && stamp_name) ? path_join(usage_root, stamp_name) : NULL;
+    char* content = str_format("%lld\n", (long long)time(NULL));
+    bool ok = usage_root && stamp_path && content
+           && dir_createRecur(usage_root)
+           && file_writeAtomic(stamp_path, content);
+    free(content);
+    free(stamp_path);
+    free(stamp_name);
+    free(usage_root);
+    return ok;
+}
+
 static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     assert(action != NULL);
     assert(proj != NULL && proj->root != NULL);
@@ -715,11 +732,16 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
             } else {
                 printf("[%s] %-16s provider=%s profile=%s target=%s\n",
                     str_eql(action, "install") ? "INSTALL" : "BUILD", lib->name, provider, profile, target);
-                if (!dal_c__depsBuildProvider(action, lib, source_dir, build_dir, package_dir, profile, target)) {
+                bool provider_ok = dal_c__depsBuildProvider(
+                    action, lib, source_dir, build_dir, package_dir, profile, target
+                );
+                if (!provider_ok) {
                     failures++;
                 } else if (str_eql(action, "install") && !dal_c__stageExternalPackageForBuild(proj, lib, package_dir)) {
                     (void)fprintf(stderr, "Error: Failed to stage exported include/link artifacts for dependency `%s`.\n", lib->name);
                     failures++;
+                } else if (!dal_c__depsTouchUsage(deps_root, lib->name)) {
+                    (void)fprintf(stderr, "Warning: Failed to update dependency usage stamp for `%s`.\n", lib->name);
                 }
             }
 
@@ -855,6 +877,9 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
                     } else {
                         free(lock_text);
                         lock_text = grown;
+                        if (!dal_c__depsTouchUsage(deps_root, lib->name)) {
+                            (void)fprintf(stderr, "Warning: Failed to update dependency usage stamp for `%s`.\n", lib->name);
+                        }
                     }
                     free(entry);
                 }
@@ -904,7 +929,8 @@ static int dal_c__printUsage(const char* topic) {
     const int help_profile_count = dal_c_help_profiles_count;
 
     if (topic && (str_eql(topic, "fetch") || str_eql(topic, "update") || str_eql(topic, "status")
-        || str_eql(topic, "graph") || str_eql(topic, "plan") || str_eql(topic, "explain") || str_eql(topic, "target") || str_eql(topic, "doctor"))) {
+        || str_eql(topic, "graph") || str_eql(topic, "package") || str_eql(topic, "install")
+        || str_eql(topic, "plan") || str_eql(topic, "explain") || str_eql(topic, "target") || str_eql(topic, "doctor"))) {
         printf("%s - %s\n\n", dal_c_tool_name, dal_c_tool_description);
         if (str_eql(topic, "fetch")) {
             printf("USAGE:\n  %s fetch [build options]\n\nFetch missing external dependency sources declared by the current project.dh without changing an existing resolution.\n", dal_c_tool_name);
@@ -914,6 +940,10 @@ static int dal_c__printUsage(const char* topic) {
             printf("USAGE:\n  %s status [build options]\n\nShow source, provider, revision, and dirty-state readiness for dependencies declared by the current project.dh.\n", dal_c_tool_name);
         } else if (str_eql(topic, "graph")) {
             printf("USAGE:\n  %s graph [profile] [build options] [--format=dot]\n\nShow the resolved project dependency graph and its provider metadata.\n", dal_c_tool_name);
+        } else if (str_eql(topic, "package")) {
+            printf("USAGE:\n  %s package [profile] [build options]\n\nBuild and stage the current project with dependency runtime exports.\n", dal_c_tool_name);
+        } else if (str_eql(topic, "install")) {
+            printf("USAGE:\n  %s install [profile] [build options] [--prefix=<path>]\n\nInstall the current project package into --prefix or DH_PREFIX.\n", dal_c_tool_name);
         } else if (str_eql(topic, "plan")) {
             printf("USAGE:\n  %s plan [profile] [path] [build options]\n\nGenerate the real build plan and Makefile without compiling or linking.\n", dal_c_tool_name);
         } else if (str_eql(topic, "explain")) {
@@ -951,20 +981,37 @@ static int dal_c__printUsage(const char* topic) {
     printf("  Options are command-scoped. Unknown or irrelevant options are rejected instead of ignored.\n\n");
 
     printf("COMMANDS:\n");
-    for (int i = 0; i < help_cmd_count; ++i) {
-        const dal_c_HelpCmd* cmd = &dal_c_help_cmds[i];
-        if (!cmd->name || !cmd->implemented) { continue; }
-        printf("  %-14s %s\n", cmd->name, cmd->description);
-    }
-    printf("  %-14s %s\n", "fetch", "Fetch dependency sources for the current project");
-    printf("  %-14s %s\n", "update", "Update the current project's dependency resolution");
-    printf("  %-14s %s\n", "status", "Inspect current project and dependency readiness");
+    printf("\nBUILD AND EXECUTION:\n");
+    printf("  %-14s %s\n", "build", "Build a project, explicit source set, target-root member, or library");
+    printf("  %-14s %s\n", "run", "Build and run a project, explicit file, or declared target");
+    printf("  %-14s %s\n", "test", "Build and run tests");
+    printf("  %-14s %s\n", "clean", "Clean build outputs, caches, or generated dependency state");
+    printf("\n");
+
+    printf("DEPENDENCIES AND DELIVERY:\n");
+    printf("  %-14s %s\n", "deps", "Build dependencies declared by project.dh");
+    printf("  %-14s %s\n", "fetch", "Fetch dependency sources at the locked resolution");
+    printf("  %-14s %s\n", "update", "Resolve dependency requests and rewrite lock.dh");
+    printf("  %-14s %s\n", "status", "Inspect dependency checkout and lock readiness");
     printf("  %-14s %s\n", "graph", "Show the resolved dependency graph");
+    printf("  %-14s %s\n", "package", "Build and stage the current project package");
+    printf("  %-14s %s\n", "install", "Install the staged project package");
+    printf("\n");
+
+    printf("INSPECTION AND TOOLING:\n");
     printf("  %-14s %s\n", "plan", "Generate the real build plan without executing it");
     printf("  %-14s %s\n", "explain", "Explain why a requested build requires work");
     printf("  %-14s %s\n", "target", "Inspect the effective target and output directory");
-    printf("  %-14s %s\n", "doctor", "Check the local build environment and DH installation");
+    printf("  %-14s %s\n", "doctor", "Check the build environment and DH installation");
+    printf("  %-14s %s\n", "toolchain", "Inspect compiler-driver link inputs");
+    printf("  %-14s %s\n", "compile-db", "Write compile_commands.json without building");
+    printf("  %-14s %s\n", "syntax", "Run compiler syntax-only checks");
+    printf("  %-14s %s\n", "tidy", "Run clang-tidy with dh-c's compilation database");
+    printf("  %-14s %s\n", "format", "Run clang-format on selected sources");
     printf("\n");
+
+    printf("ALIASES:\n");
+    printf("  lib -> build --lib; build-dsl/test-dsl/clean-dsl -> --dsl; build-self/clean-self -> --self\n\n");
 
     if (!print_all) {
         printf("Use `%s help <command>` for command details, `%s help --list` for names only, or `%s help --all` for the complete reference.\n", dal_c_tool_name, dal_c_tool_name, dal_c_tool_name);
@@ -1062,13 +1109,14 @@ static int dal_c__printUsage(const char* topic) {
     printf("  `[<dependency-name>]`: `path`, `profile`, `linking=<static|shared>`, `link-dsl`, `test`, and the compile/link keys above.\n");
     printf("  CLI options override project defaults for the current invocation.\n\n");
 
-    printf("GENERATED DIRECTORIES:\n");
-    printf("  `build/` stores artifacts, object files, and generated plan makefiles.\n");
-    printf("  `build/.cache/` stores generated unity/test helper sources.\n");
-    printf("  `lib/deps/` stores generated dependency headers and libraries when project dependencies require them.\n");
-    printf("  `lib/deps.h` stores the generated dependency prelude when one is needed.\n");
-    printf("  `clean` owns these generated paths; do not place durable source assets, checked-in resources, or manual files there.\n");
-    printf("  PCH outputs live in the active build cache plan, not as a global project artifact.\n\n");
+    printf("GENERATED STATE:\n");
+    printf("  `build/` stores materialized artifacts, object files, and generated plan makefiles.\n");
+    printf("  Workspace `.dh-c/cache/` or project `build/.cache/` stores reusable build-cache entries.\n");
+    printf("  Project `.dh-c/deps/` stores fetched sources, provider builds, staged packages, and last-use stamps.\n");
+    printf("  `lib/deps/` and `lib/deps.h` store generated dependency exports consumed by project builds.\n");
+    printf("  `lock.dh` is durable resolved input beside project.dh; `clean --deps` does not rewrite it.\n");
+    printf("  Use `clean --cache --older-than=30d` or `clean --deps --unused --dry-run` for maintenance.\n");
+    printf("  Do not place durable source assets, checked-in resources, or manual files under generated state.\n\n");
 
     printf("PROFILES:\n");
     for (int i = 0; i < help_profile_count; ++i) {

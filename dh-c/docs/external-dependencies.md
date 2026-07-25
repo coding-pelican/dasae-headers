@@ -12,6 +12,7 @@ source/provider state, and staged package output.
       src/<name>/
       build/<target>/<profile>/<name>/
       packages/<target>/<profile>/<name>/
+      usage/<name>.stamp
 ```
 
 `project.dh` and `lock.dh` deliberately live at the same scope level:
@@ -67,6 +68,41 @@ dh-c deps [profile] [build options]
 
 The dependency lock is persistent source state and should normally be committed.
 The `.dh-c/` tree is generated state and should be ignored.
+
+Successful `fetch`, `update`, dependency build, and dependency install operations
+update `.dh-c/deps/usage/<name>.stamp`. The stamp is disposable generated state;
+it exists only so age-based maintenance reflects actual use rather than the age of
+a checkout's internal Git files. Older layouts without a stamp fall back to the
+newest modification time found in the dependency source/build/package state.
+
+## Generated dependency maintenance
+
+Dependency cleanup remains part of the canonical `clean` command:
+
+```sh
+# Preview dependency state that is no longer declared by project.dh.
+dh-c clean --deps --unused --dry-run
+
+# Remove undeclared dependency source/build/package state.
+dh-c clean --deps --unused
+
+# Remove dependency state not used in the last 90 days.
+dh-c clean --deps --older-than=90d
+
+# Apply both filters: only undeclared entries that are also old.
+dh-c clean --deps --unused --older-than=90d
+```
+
+`--unused` compares generated dependency names with the current `project.dh`.
+`--older-than` accepts an integer followed by `s`, `m`, `h`, `d`, or `w`; an
+omitted suffix means seconds. When both filters are supplied, both conditions
+must match.
+
+Dirty Git checkouts are preserved and make the cleanup command fail visibly.
+Use `--force` only when those local changes are intentionally disposable. The
+cleanup never rewrites `lock.dh`: generated state and resolved project input are
+separate ownership domains. Run `dh-c update` later when the dependency contract
+itself should change.
 
 ## Workspace and cache scope
 

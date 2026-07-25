@@ -237,6 +237,10 @@ assert_contains "$LAST_OUTPUT" "dasae-headers path:" "Version output did not con
 
 invoke_external "0" "$repo_root" "$cli_exe" --help
 assert_contains "$LAST_OUTPUT" "COMMANDS:" "Help output did not list commands"
+assert_contains "$LAST_OUTPUT" "BUILD AND EXECUTION:" "Help output did not group build commands"
+assert_contains "$LAST_OUTPUT" "DEPENDENCIES AND DELIVERY:" "Help output did not group dependency commands"
+assert_contains "$LAST_OUTPUT" "INSPECTION AND TOOLING:" "Help output did not group inspection commands"
+assert_contains "$LAST_OUTPUT" "ALIASES:" "Help output did not separate compatibility aliases"
 assert_contains "$LAST_OUTPUT" "help --all" "Concise help did not point to full help"
 
 invoke_external "0" "$repo_root" "$cli_exe" help --list
@@ -256,6 +260,11 @@ assert_contains "$LAST_OUTPUT" "--output-ext" "Build help did not describe expli
 
 invoke_external "0" "$repo_root" "$cli_exe" help clean
 assert_contains "$LAST_OUTPUT" "Do not store durable source assets" "Clean help did not describe cleanup-owned generated paths"
+assert_contains "$LAST_OUTPUT" "--cache" "Clean help did not describe cache scope"
+assert_contains "$LAST_OUTPUT" "--deps" "Clean help did not describe dependency scope"
+assert_contains "$LAST_OUTPUT" "--unused" "Clean help did not describe unused dependency cleanup"
+assert_contains "$LAST_OUTPUT" "--older-than" "Clean help did not describe age-based cleanup"
+assert_contains "$LAST_OUTPUT" "--dry-run" "Clean help did not describe preview mode"
 
 invoke_external "0" "$repo_root" "$cli_exe" syntax --help
 assert_contains "$LAST_OUTPUT" "never links" "Syntax help did not describe non-linking contract"
@@ -303,6 +312,8 @@ EOF
 invoke_external "0" "$lock_project" "$cli_exe" fetch
 [ -f "$lock_project/lock.dh" ]
 assert_true $? "fetch did not create project-level lock.dh"
+[ -f "$lock_project/.dh-c/deps/usage/dep.stamp" ]
+assert_true $? "fetch did not update the dependency last-use stamp"
 invoke_external "0" "$lock_project" "$cli_exe" status
 assert_contains "$LAST_OUTPUT" "[READY]" "status did not accept the locked checkout"
 
@@ -325,6 +336,15 @@ assert_true $? "update did not rewrite lock.dh with the resolved commit"
 rm -f "$lock_project/lock.dh"
 invoke_external "1" "$lock_project" "$cli_exe" status
 assert_contains "$LAST_OUTPUT" "[UNLOCKED]" "status did not report a missing dependency lock"
+
+printf 'local change\n' >>"$lock_project/.dh-c/deps/src/dep/value.txt"
+invoke_external "1" "$lock_project" "$cli_exe" clean --deps --older-than=0s
+assert_contains "$LAST_OUTPUT" "Preserved dirty dependency checkout" "dependency cleanup did not preserve a dirty checkout"
+[ -d "$lock_project/.dh-c/deps/src/dep" ]
+assert_true $? "dependency cleanup removed a dirty checkout without --force"
+invoke_external "0" "$lock_project" "$cli_exe" clean --deps --older-than=0s --force
+[ ! -e "$lock_project/.dh-c/deps/src/dep" ]
+assert_true $? "forced dependency cleanup did not remove the dirty checkout"
 rm -rf "$lock_contract_root"
 
 if [ "$integration" -eq 1 ]; then

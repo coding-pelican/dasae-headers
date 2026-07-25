@@ -678,6 +678,8 @@ Canonical forms:
 ```sh
 dh-c status [profile]
 dh-c clean [profile]
+dh-c clean --cache [--older-than=<duration>] [--dry-run]
+dh-c clean --deps [--unused] [--older-than=<duration>] [--dry-run] [--force]
 dh-c explain rebuild [profile]
 dh-c package [profile]
 dh-c install [profile] --prefix=<path>
@@ -687,3 +689,16 @@ Non-canonical forms such as `dh-c cache status`, `dh-c cache clean`, and
 `dh-c cache explain` are rejected. `status` reports dependency, build, cache,
 and package state. `clean` owns generated state. `explain rebuild` explains
 why the current build graph is stale.
+
+Cleanup scopes are explicit:
+
+- no scope: materialized build outputs, generated dependency exports, and the active build cache
+- `--cache`: cache only; it must not delete materialized build outputs
+- `--deps`: fetched source/provider-build/staged-package dependency state only
+- `--unused`: further restrict dependency cleanup to names absent from the current `project.dh`
+- `--older-than`: further restrict the selected cache or dependency scope by age
+- `--dry-run`: report the exact removals without changing the filesystem
+- `--force`: permit deletion of dirty Git dependency checkouts
+
+`clean --deps` never rewrites the sibling `lock.dh`. A resolved input contract is
+not generated cache state.

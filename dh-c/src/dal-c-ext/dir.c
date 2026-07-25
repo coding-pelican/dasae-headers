@@ -205,6 +205,55 @@ bool dir_removeRecur(const char* path) {
 #endif
 }
 
+char** dir_listEntries(const char* path, int* count) {
+    assert(count != NULL);
+    if (!path) {
+        *count = 0;
+        return NULL;
+    }
+    *count = 0;
+    char** entries = NULL;
+    int capacity = 0;
+#ifdef _WIN32
+    WIN32_FIND_DATAA find_data = {};
+    char search_path[MAX_PATH] = {};
+    (void)snprintf(search_path, MAX_PATH, "%s\\*", path);
+    HANDLE const hFind = FindFirstFileA(search_path, &find_data);
+    if (hFind != INVALID_HANDLE_VALUE) {
+        do {
+            if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0) { continue; }
+            char* const full_path = path_join(path, find_data.cFileName);
+            if (!dir__pushPath(&entries, count, &capacity, full_path)) {
+                free(full_path);
+                dir__freePathArray(entries, *count);
+                FindClose(hFind);
+                *count = 0;
+                return NULL;
+            }
+        } while (FindNextFileA(hFind, &find_data));
+        FindClose(hFind);
+    }
+#else
+    DIR* const dir = opendir(path);
+    if (dir) {
+        struct dirent* entry = NULL;
+        while ((entry = readdir(dir)) != NULL) {
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) { continue; }
+            char* const full_path = path_join(path, entry->d_name);
+            if (!dir__pushPath(&entries, count, &capacity, full_path)) {
+                free(full_path);
+                dir__freePathArray(entries, *count);
+                closedir(dir);
+                *count = 0;
+                return NULL;
+            }
+        }
+        closedir(dir);
+    }
+#endif
+    return entries;
+}
+
 char** dir_list(const char* path, int* count) {
     assert(count != NULL);
     if (!path) {

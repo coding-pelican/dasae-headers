@@ -62,6 +62,8 @@ static void test_dependency_lock_contract(void);
 static void test_prebuilt_dependency_staging(void);
 static void test_clean_prefers_local_build_dir(void);
 static void test_clean_profile_removes_dependency_exports(void);
+static void test_clean_cache_scope(void);
+static void test_clean_unused_dependencies(void);
 static void test_target_request_resolution(void);
 static void test_output_override_generates_target_extensions(void);
 static void test_output_ext_does_not_rewrite_dependency_artifacts(void);
@@ -107,6 +109,8 @@ int main(void) {
     RUN_TEST(test_prebuilt_dependency_staging);
     RUN_TEST(test_clean_prefers_local_build_dir);
     RUN_TEST(test_clean_profile_removes_dependency_exports);
+    RUN_TEST(test_clean_cache_scope);
+    RUN_TEST(test_clean_unused_dependencies);
     RUN_TEST(test_target_request_resolution);
     RUN_TEST(test_output_override_generates_target_extensions);
     RUN_TEST(test_output_ext_does_not_rewrite_dependency_artifacts);
@@ -782,6 +786,44 @@ static void test_cmd_parse(void) {
     {
         const char* argv[] = { dal_c_tool_name, "clean", "--self", "--cache", NULL };
         dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "clean", "--cache", "--older-than=30d", "--dry-run", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(5, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->payload.clean.cache_only);
+        TEST_ASSERT(cmd->payload.clean.older_than_set);
+        TEST_ASSERT(cmd->payload.clean.older_than_seconds == 30u * 24u * 60u * 60u);
+        TEST_ASSERT(cmd->payload.clean.dry_run);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "clean", "--deps", "--unused", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
+        TEST_ASSERT(cmd != NULL);
+        TEST_ASSERT(cmd->payload.clean.dependencies_only);
+        TEST_ASSERT(cmd->payload.clean.unused_only);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "clean", "--unused", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "clean", "--older-than=30d", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+        TEST_ASSERT(cmd == NULL);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "--deps", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
         TEST_ASSERT(cmd == NULL);
     }
 
@@ -2779,6 +2821,151 @@ static void test_clean_profile_removes_dependency_exports(void) {
     free(lib_dir);
     free(build_release);
     free(build_dev);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+    free(original_cwd);
+}
+
+static void test_clean_cache_scope(void) {
+    test_reset_temp_root();
+
+    char* original_cwd = env_getCWD();
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "clean-cache-project");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* build_dir = path_join(project_root, "build");
+    char* build_marker = path_join(build_dir, "keep.txt");
+    char* cache_dir = path_join(build_dir, ".cache");
+    char* cache_marker = path_join(cache_dir, "stale.cache");
+
+    TEST_ASSERT(original_cwd != NULL);
+    TEST_ASSERT(dir_createRecur(cache_dir));
+    TEST_ASSERT(file_write(project_dh, "output=clean-cache-project\n"));
+    TEST_ASSERT(file_write(build_marker, "keep\n"));
+    TEST_ASSERT(file_write(cache_marker, "cache\n"));
+    TEST_ASSERT(env_setCWD(project_root));
+
+    const char* dry_argv[] = { dal_c_tool_name, "clean", "--cache", "--dry-run", NULL };
+    dal_c_Cmd* dry_cmd = dal_c_Cmd_parse(4, dry_argv);
+    TEST_ASSERT(dry_cmd != NULL);
+    dal_c_Project* proj = dal_c_Project_detect(dry_cmd);
+    TEST_ASSERT(proj != NULL && proj->root != NULL);
+    TEST_ASSERT(dal_c_Cmd_cleanTarget(dry_cmd, proj) == 0);
+    TEST_ASSERT(path_isFile(build_marker));
+    TEST_ASSERT(path_isFile(cache_marker));
+    dal_c_Cmd_cleanup(&dry_cmd);
+
+    const char* clean_argv[] = { dal_c_tool_name, "clean", "--cache", "--older-than=0s", NULL };
+    dal_c_Cmd* clean_cmd = dal_c_Cmd_parse(4, clean_argv);
+    TEST_ASSERT(clean_cmd != NULL);
+    TEST_ASSERT(dal_c_Cmd_cleanTarget(clean_cmd, proj) == 0);
+    TEST_ASSERT(path_isFile(build_marker));
+    TEST_ASSERT(!path_exists(cache_marker));
+
+    dal_c_Cmd_cleanup(&clean_cmd);
+    dal_c_Project_cleanup(&proj);
+    TEST_ASSERT(env_setCWD(original_cwd));
+    TEST_ASSERT(test_remove_recur(temp_root));
+
+    free(cache_marker);
+    free(cache_dir);
+    free(build_marker);
+    free(build_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+    free(original_cwd);
+}
+
+static void test_clean_unused_dependencies(void) {
+    test_reset_temp_root();
+
+    char* original_cwd = env_getCWD();
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "clean-unused-deps-project");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* lock_dh = path_join(project_root, "lock.dh");
+    char* used_src = path_join(project_root, ".dh-c/deps/src/used");
+    char* unused_src = path_join(project_root, ".dh-c/deps/src/unused");
+    char* used_build = path_join(project_root, ".dh-c/deps/build/native/dev/used");
+    char* unused_build = path_join(project_root, ".dh-c/deps/build/native/dev/unused");
+    char* used_package = path_join(project_root, ".dh-c/deps/packages/native/dev/used");
+    char* unused_package = path_join(project_root, ".dh-c/deps/packages/native/dev/unused");
+    char* usage_dir = path_join(project_root, ".dh-c/deps/usage");
+    char* used_stamp = path_join(usage_dir, "used.stamp");
+    char* unused_stamp = path_join(usage_dir, "unused.stamp");
+
+    TEST_ASSERT(original_cwd != NULL);
+    TEST_ASSERT(dir_createRecur(project_root));
+    TEST_ASSERT(file_write(project_dh,
+        "output=clean-unused-deps-project\n"
+        "[used]\n"
+        "source=https://example.invalid/used.git\n"
+        "provider=cmake\n"));
+    TEST_ASSERT(file_write(lock_dh, "[unused]\nrevision=deadbeef\n"));
+    TEST_ASSERT(dir_createRecur(used_src));
+    TEST_ASSERT(dir_createRecur(unused_src));
+    TEST_ASSERT(dir_createRecur(used_build));
+    TEST_ASSERT(dir_createRecur(unused_build));
+    TEST_ASSERT(dir_createRecur(used_package));
+    TEST_ASSERT(dir_createRecur(unused_package));
+    TEST_ASSERT(dir_createRecur(usage_dir));
+    TEST_ASSERT(file_write(used_stamp, "1\n"));
+    TEST_ASSERT(file_write(unused_stamp, "1\n"));
+    TEST_ASSERT(env_setCWD(project_root));
+
+    const char* dry_argv[] = { dal_c_tool_name, "clean", "--deps", "--unused", "--dry-run", NULL };
+    dal_c_Cmd* dry_cmd = dal_c_Cmd_parse(5, dry_argv);
+    TEST_ASSERT(dry_cmd != NULL);
+    dal_c_Project* proj = dal_c_Project_detect(dry_cmd);
+    TEST_ASSERT(proj != NULL && proj->root != NULL);
+    TEST_ASSERT(dal_c_Cmd_cleanTarget(dry_cmd, proj) == 0);
+    TEST_ASSERT(path_isDir(unused_src));
+    TEST_ASSERT(path_isDir(unused_build));
+    TEST_ASSERT(path_isDir(unused_package));
+    dal_c_Cmd_cleanup(&dry_cmd);
+
+    const char* clean_argv[] = { dal_c_tool_name, "clean", "--deps", "--unused", NULL };
+    dal_c_Cmd* clean_cmd = dal_c_Cmd_parse(4, clean_argv);
+    TEST_ASSERT(clean_cmd != NULL);
+    TEST_ASSERT(dal_c_Cmd_cleanTarget(clean_cmd, proj) == 0);
+    TEST_ASSERT(path_isDir(used_src));
+    TEST_ASSERT(path_isDir(used_build));
+    TEST_ASSERT(path_isDir(used_package));
+    TEST_ASSERT(path_isFile(used_stamp));
+    TEST_ASSERT(!path_exists(unused_src));
+    TEST_ASSERT(!path_exists(unused_build));
+    TEST_ASSERT(!path_exists(unused_package));
+    TEST_ASSERT(!path_exists(unused_stamp));
+    TEST_ASSERT(path_isFile(lock_dh));
+
+    const char* old_argv[] = { dal_c_tool_name, "clean", "--deps", "--older-than=0s", NULL };
+    dal_c_Cmd* old_cmd = dal_c_Cmd_parse(4, old_argv);
+    TEST_ASSERT(old_cmd != NULL);
+    TEST_ASSERT(dal_c_Cmd_cleanTarget(old_cmd, proj) == 0);
+    TEST_ASSERT(!path_exists(used_src));
+    TEST_ASSERT(!path_exists(used_build));
+    TEST_ASSERT(!path_exists(used_package));
+    TEST_ASSERT(!path_exists(used_stamp));
+    TEST_ASSERT(path_isFile(lock_dh));
+    dal_c_Cmd_cleanup(&old_cmd);
+
+    dal_c_Cmd_cleanup(&clean_cmd);
+    dal_c_Project_cleanup(&proj);
+    TEST_ASSERT(env_setCWD(original_cwd));
+    TEST_ASSERT(test_remove_recur(temp_root));
+
+    free(unused_stamp);
+    free(used_stamp);
+    free(usage_dir);
+    free(unused_package);
+    free(used_package);
+    free(unused_build);
+    free(used_build);
+    free(unused_src);
+    free(used_src);
+    free(lock_dh);
     free(project_dh);
     free(project_root);
     free(temp_root);
