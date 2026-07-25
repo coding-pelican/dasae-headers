@@ -90,6 +90,7 @@ extern "C" {
 
 #include "dh/fmt.h"
 #include "dh/regex.h"
+#include "dh/Ver.h"
 #include "dh/SemVer.h"
 
 #include "dh/log.h"

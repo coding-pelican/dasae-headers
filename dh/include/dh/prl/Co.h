@@ -39,10 +39,15 @@ T_alias$((Co_FlowCtrlPacked)(fn__FlowCursorPacked));
 #define Co_FlowCtrl_line_bits ((arch_bits_wide / 2) - Co_FlowCtrl_State_bits)
 T_alias$((Co_FlowCtrl)(union Co_FlowCtrl {
     T_embed$(struct {
-        var_(line, Co_FlowCtrlPacked)
-            : Co_FlowCtrl_line_bits;
-        var_(state, Co_FlowCtrlPacked)
-            : Co_FlowCtrl_State_bits;
+#if arch_byte_order_is_little_endian
+        var_(line : Co_FlowCtrl_line_bits, Co_FlowCtrlPacked);
+        var_(state : Co_FlowCtrl_State_bits, Co_FlowCtrlPacked);
+#elif arch_byte_order_is_big_endian
+        var_(state : Co_FlowCtrl_State_bits, Co_FlowCtrlPacked);
+        var_(line : Co_FlowCtrl_line_bits, Co_FlowCtrlPacked);
+#else
+#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
+#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
     });
     var_(packed, Co_FlowCtrlPacked);
 }));

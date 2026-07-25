@@ -1,2 +1,4 @@
 kind=lib
 link-dsl=on
+version-namespace=dacolor
+version-core=1.0.0

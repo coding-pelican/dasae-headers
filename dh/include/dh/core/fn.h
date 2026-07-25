@@ -116,10 +116,17 @@ typedef u32 fn__FlowCursorPacked;
 struct fn__FlowCursor {
     union {
         struct {
-            fn__FlowCursorPacked curr_line    : fn__FlowCursor_line_bits;
-            fn__FlowCursorPacked is_returning : fn__FlowCursor_is_returning_bits;
+#if arch_byte_order_is_little_endian
+            var_(curr_line : fn__FlowCursor_line_bits, fn__FlowCursorPacked);
+            var_(is_returning : fn__FlowCursor_is_returning_bits, fn__FlowCursorPacked);
+#elif arch_byte_order_is_big_endian
+            var_(is_returning : fn__FlowCursor_is_returning_bits, fn__FlowCursorPacked);
+            var_(curr_line : fn__FlowCursor_line_bits, fn__FlowCursorPacked);
+#else
+#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
+#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
         };
-        fn__FlowCursorPacked packed;
+        var_(packed, fn__FlowCursorPacked);
     };
 };
 claim_assert_static((fn__FlowCursor_line_bits + fn__FlowCursor_is_returning_bits) == (arch_bits_wide / 2));

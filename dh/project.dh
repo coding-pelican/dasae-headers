@@ -1,2 +1,4 @@
 kind=lib
 pch=dh-bundle.h
+version-namespace=dh
+version-core=0.0.0

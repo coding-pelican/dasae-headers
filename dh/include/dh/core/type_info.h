@@ -118,10 +118,17 @@ claim_assert_static(sizeOf$(TypeInfoPacked) == int_bytes$(TypeInfoPacked));
 
 union TypeInfo {
     struct {
-        TypeInfoPacked size       : TypeInfo_size_bits;
-        TypeInfoPacked log2_align : TypeInfo_align_bits; /* same as `mem_Log2Align`,  */
+#if arch_byte_order_is_little_endian
+        var_(size : TypeInfo_size_bits, TypeInfoPacked);
+        var_(log2_align : TypeInfo_align_bits, TypeInfoPacked); /* same as `mem_Log2Align`,  */
+#elif arch_byte_order_is_big_endian
+        var_(log2_align : TypeInfo_align_bits, TypeInfoPacked); /* same as `mem_Log2Align`,  */
+        var_(size : TypeInfo_size_bits, TypeInfoPacked);
+#else
+#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
+#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
     };
-    TypeInfoPacked packed;
+    var_(packed, TypeInfoPacked);
 };
 
 #define ____typeInfo$(_$T...) l$((TypeInfo){ .size = sizeOf$(_$T), .log2_align = alignOfLog2$(_$T) })

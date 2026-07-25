@@ -482,7 +482,7 @@ extern "C" {
     __VA_ARGS__ \
 )
 
-#if comp_type == comp_type_clang && comp_version_major >= 18
+#if comp_type == comp_type_clang && comp_ver_major >= 18
 #define $suppress_unterminated_string_initialization(...) /* clang-format off */ \
     _Pragma("clang diagnostic push") \
     _Pragma("clang diagnostic ignored \"-Wunterminated-string-initialization\"") \

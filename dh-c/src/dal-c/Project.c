@@ -113,6 +113,11 @@ void dal_c_Project_cleanup(dal_c_Project** self) {
         dal_c_Lib* lib = &proj->libraries[i];
         free(lib->name);
         free(lib->path);
+        free(lib->source);
+        free(lib->revision);
+        free(lib->provider);
+        free(lib->build_command);
+        free(lib->install_command);
         dal_c_CompilerOpts_cleanup(&lib->opts);
     }
     free(proj->libraries);
@@ -258,6 +263,7 @@ void dal_c_CompilerOpts_merge(dal_c_CompilerOpts* dst, const dal_c_CompilerOpts*
 
 void dal_c_VersionSpec_cleanup(dal_c_VersionSpec* version) {
     if (!version) { return; }
+    free(version->namespace_name);
     free(version->label_prefix_str);
     free(version->label_suffix_str);
     free(version->build_str);
@@ -268,6 +274,10 @@ void dal_c_VersionSpec_merge(dal_c_VersionSpec* dst, const dal_c_VersionSpec* sr
     assert(dst != NULL);
     if (!src) { return; }
 
+    if (src->namespace_set) {
+        dal_c_Project__setString(&dst->namespace_name, src->namespace_name ? src->namespace_name : "");
+        dst->namespace_set = true;
+    }
     if (src->core_set) {
         dst->core_major = src->core_major;
         dst->core_minor = src->core_minor;
@@ -288,6 +298,25 @@ void dal_c_VersionSpec_merge(dal_c_VersionSpec* dst, const dal_c_VersionSpec* sr
         dal_c_Project__setString(&dst->build_str, src->build_str ? src->build_str : "");
         dst->build_set = true;
     }
+}
+
+
+bool dal_c_VersionSpec_parseNamespace(dal_c_VersionSpec* dst, const char* value) {
+    assert(dst != NULL);
+    if (!value || value[0] == '\0') { return false; }
+    const unsigned char first = (unsigned char)value[0];
+    if (!((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z') || first == '_')) {
+        return false;
+    }
+    for (const unsigned char* it = (const unsigned char*)value + 1; *it; ++it) {
+        if (!((*it >= 'A' && *it <= 'Z') || (*it >= 'a' && *it <= 'z')
+            || (*it >= '0' && *it <= '9') || *it == '_')) {
+            return false;
+        }
+    }
+    dal_c_Project__setString(&dst->namespace_name, value);
+    dst->namespace_set = true;
+    return true;
 }
 
 bool dal_c_VersionSpec_parseCore(dal_c_VersionSpec* dst, const char* value) {
@@ -971,6 +1000,10 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
         dal_c_Project__addToArray(&opts->define_macros, &opts->define_count, value);
     } else if (str_eql(key, dal_c_opt_undef)) {
         dal_c_Project__addToArray(&opts->undef_macros, &opts->undef_count, value);
+    } else if (str_eql(key, dal_c_opt_version_namespace)) {
+        if (!dal_c_VersionSpec_parseNamespace(&opts->version, value)) {
+            (void)fprintf(stderr, "Error: Invalid `%s` value `%s`\n", dal_c_opt_version_namespace, value);
+        }
     } else if (str_eql(key, dal_c_opt_version_core)) {
         if (!dal_c_VersionSpec_parseCore(&opts->version, value)) {
             (void)fprintf(stderr, "Error: Invalid `%s` value `%s`\n", dal_c_opt_version_core, value);
@@ -1068,6 +1101,19 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
 static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
     assert(proj != NULL);
     assert(lib != NULL);
+
+    if (!lib->path && lib->source && lib->source[0] != '\0' && lib->name) {
+        char* state_root = path_join(proj->root, ".dh-c");
+        char* deps_root = path_join(state_root, "deps");
+        char* src_root = path_join(deps_root, "src");
+        lib->path = path_join(src_root, lib->name);
+        free(src_root);
+        free(deps_root);
+        free(state_root);
+    }
+    if (!lib->provider) {
+        lib->provider = strdup("dh");
+    }
 
     dal_c_Lib* new_libs = (dal_c_Lib*)realloc((void*)proj->libraries, ((size_t)proj->lib_count + 1) * sizeof(dal_c_Lib));
     assert(new_libs != NULL && "Out of memory");
@@ -1169,6 +1215,16 @@ static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project*
         } else {
             lib->path = strdup(value);
         }
+    } else if (str_eql(key, "source")) {
+        dal_c_Project__setString(&lib->source, value);
+    } else if (str_eql(key, "revision")) {
+        dal_c_Project__setString(&lib->revision, value);
+    } else if (str_eql(key, "provider")) {
+        dal_c_Project__setString(&lib->provider, value);
+    } else if (str_eql(key, "build-command")) {
+        dal_c_Project__setString(&lib->build_command, value);
+    } else if (str_eql(key, "install-command")) {
+        dal_c_Project__setString(&lib->install_command, value);
     } else if (str_eql(key, "profile")) {
         dal_c_Profile profile = dal_c_Profile_parse(value);
         if (profile != dal_c_Profile_invalid) {

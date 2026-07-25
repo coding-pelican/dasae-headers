@@ -77,14 +77,10 @@ extern "C" {
 #define lang_ver_in_cpp23 __comp_bool__lang_ver_in_cpp23
 
 /* Language Strict Standards Conformance */
-
-#define lang_is_enabled_strict __comp_bool__lang_is_enabled_strict
-
+#define lang_enabled_strict __comp_bool__lang_enabled_strict
 /* Language Feature Extensions */
-
-#define lang_has_extensions __comp_bool__lang_has_extensions
-#define lang_has_extensions_gnu __comp_bool__lang_has_extensions_gnu
-#define lang_has_extensions_ms __comp_bool__lang_has_extensions_ms
+#define lang_has_extn_gnu __comp_bool__lang_has_extn_gnu
+#define lang_has_extn_ms __comp_bool__lang_has_extn_ms
 
 /*========== Macros and Implementations =====================================*/
 
@@ -150,10 +146,9 @@ extern "C" {
 #define __comp_bool__lang_ver_in_cpp20 0
 #define __comp_bool__lang_ver_in_cpp23 0
 
-#define __comp_bool__lang_is_enabled_strict 0
-#define __comp_bool__lang_has_extensions 0
-#define __comp_bool__lang_has_extensions_gnu 0
-#define __comp_bool__lang_has_extensions_ms 0
+#define __comp_bool__lang_enabled_strict 0
+#define __comp_bool__lang_has_extn_gnu 0
+#define __comp_bool__lang_has_extn_ms 0
 
 /* Language Mode */
 
@@ -228,19 +223,19 @@ extern "C" {
 /* Language Strict Standards Conformance */
 
 #if defined(__STRICT_ANSI__)
-#undef __comp_bool__lang_is_enabled_strict
-#define __comp_bool__lang_is_enabled_strict 1
+#undef __comp_bool__lang_enabled_strict
+#define __comp_bool__lang_enabled_strict 1
 #endif /* defined(__STRICT_ANSI__) */
 
 /* Language Feature Extensions */
 
 #if defined(__GNUC__)
-#undef __comp_bool__lang_has_extensions_gnu
-#define __comp_bool__lang_has_extensions_gnu 1
+#undef __comp_bool__lang_has_extn_gnu
+#define __comp_bool__lang_has_extn_gnu 1
 #endif /* defined(__GNUC__) */
 #if defined(_MSC_EXTENSIONS)
-#undef __comp_bool__lang_has_extensions_ms
-#define __comp_bool__lang_has_extensions_ms 1
+#undef __comp_bool__lang_has_extn_ms
+#define __comp_bool__lang_has_extn_ms 1
 #endif /* defined(_MSC_EXTENSIONS) */
 
 #if defined(__cplusplus)

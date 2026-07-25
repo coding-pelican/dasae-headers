@@ -23,7 +23,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "../pp.h"
+#include "ver.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -47,10 +47,30 @@ extern "C" {
 
 /*--- Compiler Version ---*/
 
-#define comp_version __comp_int__comp_version
-#define comp_version_major __comp_int__comp_version_major
-#define comp_version_minor __comp_int__comp_version_minor
-#define comp_version_patch __comp_int__comp_version_patch
+#define comp_ver __comp_val__comp_ver
+#define comp_ver_major __comp_num__comp_ver_major
+#define comp_ver_minor __comp_num__comp_ver_minor
+#define comp_ver_patch __comp_num__comp_ver_patch
+#define comp_ver_str __comp_str__comp_ver
+
+#define comp_clang_ver __comp_val__comp_clang_ver
+#define comp_clang_ver_major __comp_num__comp_clang_ver_major
+#define comp_clang_ver_minor __comp_num__comp_clang_ver_minor
+#define comp_clang_ver_patch __comp_num__comp_clang_ver_patch
+#define comp_clang_ver_str __comp_str__comp_clang_ver
+
+#define comp_gcc_ver __comp_val__comp_gcc_ver
+#define comp_gcc_ver_major __comp_num__comp_gcc_ver_major
+#define comp_gcc_ver_minor __comp_num__comp_gcc_ver_minor
+#define comp_gcc_ver_patch __comp_num__comp_gcc_ver_patch
+#define comp_gcc_ver_str __comp_str__comp_gcc_ver
+
+/* GNU compatibility version advertised through __GNUC__ macros. */
+#define comp_gnu_ver __comp_val__comp_gnu_ver
+#define comp_gnu_ver_major __comp_num__comp_gnu_ver_major
+#define comp_gnu_ver_minor __comp_num__comp_gnu_ver_minor
+#define comp_gnu_ver_patch __comp_num__comp_gnu_ver_patch
+#define comp_gnu_ver_str __comp_str__comp_gnu_ver
 
 /*--- Build Facts ---*/
 
@@ -181,40 +201,89 @@ extern "C" {
 
 /*--- Compiler Version ---*/
 
-/* Default: 0.0.0 */
-#define __comp_int__comp_version 0
-#define __comp_int__comp_version_major 0
-#define __comp_int__comp_version_minor 0
-#define __comp_int__comp_version_patch 0
-
-#if comp_type == comp_type_clang
-#undef __comp_int__comp_version
-#define __comp_int__comp_version (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
-#undef __comp_int__comp_version_major
-#define __comp_int__comp_version_major __clang_major__
-#undef __comp_int__comp_version_minor
-#define __comp_int__comp_version_minor __clang_minor__
-#undef __comp_int__comp_version_patch
-#define __comp_int__comp_version_patch __clang_patchlevel__
-
-#elif comp_type == comp_type_gcc
-#undef __comp_int__comp_version
-#define __comp_int__comp_version (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#undef __comp_int__comp_version_major
-#define __comp_int__comp_version_major __GNUC__
-#undef __comp_int__comp_version_minor
-#define __comp_int__comp_version_minor __GNUC_MINOR__
-#undef __comp_int__comp_version_patch
-#define __comp_int__comp_version_patch __GNUC_PATCHLEVEL__
-
-#elif comp_type == comp_type_msvc
-#undef __comp_int__comp_version
-#define __comp_int__comp_version _MSC_VER
-#undef __comp_int__comp_version_major
-#define __comp_int__comp_version_major (_MSC_VER / 100)
-#undef __comp_int__comp_version_minor
-#define __comp_int__comp_version_minor (_MSC_VER % 100)
+/* All compiler versions use dh's Ver core encoding and string semantics. */
+#define __comp_num__comp_clang_ver_major 0
+#define __comp_num__comp_clang_ver_minor 0
+#define __comp_num__comp_clang_ver_patch 0
+#if defined(__clang__)
+#undef __comp_num__comp_clang_ver_major
+#define __comp_num__comp_clang_ver_major __clang_major__
+#undef __comp_num__comp_clang_ver_minor
+#define __comp_num__comp_clang_ver_minor __clang_minor__
+#undef __comp_num__comp_clang_ver_patch
+#define __comp_num__comp_clang_ver_patch __clang_patchlevel__
 #endif
+#define __comp_val__comp_clang_ver ver_core_calc( \
+    comp_clang_ver_major, comp_clang_ver_minor, comp_clang_ver_patch \
+)
+#define __comp_str__comp_clang_ver ver_core_strfy( \
+    comp_clang_ver_major, comp_clang_ver_minor, comp_clang_ver_patch, ver_core_sep_default \
+)
+
+/* Actual GCC version. Clang's GNU-compatibility macros do not make it GCC. */
+#define __comp_num__comp_gcc_ver_major 0
+#define __comp_num__comp_gcc_ver_minor 0
+#define __comp_num__comp_gcc_ver_patch 0
+#if defined(__GNUC__) && !defined(__clang__)
+#undef __comp_num__comp_gcc_ver_major
+#define __comp_num__comp_gcc_ver_major __GNUC__
+#undef __comp_num__comp_gcc_ver_minor
+#define __comp_num__comp_gcc_ver_minor __GNUC_MINOR__
+#undef __comp_num__comp_gcc_ver_patch
+#define __comp_num__comp_gcc_ver_patch __GNUC_PATCHLEVEL__
+#endif
+#define __comp_val__comp_gcc_ver ver_core_calc( \
+    comp_gcc_ver_major, comp_gcc_ver_minor, comp_gcc_ver_patch \
+)
+#define __comp_str__comp_gcc_ver ver_core_strfy( \
+    comp_gcc_ver_major, comp_gcc_ver_minor, comp_gcc_ver_patch, ver_core_sep_default \
+)
+
+/* GNU language/extension compatibility level, including under Clang. */
+#define __comp_num__comp_gnu_ver_major 0
+#define __comp_num__comp_gnu_ver_minor 0
+#define __comp_num__comp_gnu_ver_patch 0
+#if defined(__GNUC__)
+#undef __comp_num__comp_gnu_ver_major
+#define __comp_num__comp_gnu_ver_major __GNUC__
+#undef __comp_num__comp_gnu_ver_minor
+#define __comp_num__comp_gnu_ver_minor __GNUC_MINOR__
+#undef __comp_num__comp_gnu_ver_patch
+#define __comp_num__comp_gnu_ver_patch __GNUC_PATCHLEVEL__
+#endif
+#define __comp_val__comp_gnu_ver ver_core_calc( \
+    comp_gnu_ver_major, comp_gnu_ver_minor, comp_gnu_ver_patch \
+)
+#define __comp_str__comp_gnu_ver ver_core_strfy( \
+    comp_gnu_ver_major, comp_gnu_ver_minor, comp_gnu_ver_patch, ver_core_sep_default \
+)
+
+#define __comp_num__comp_ver_major 0
+#define __comp_num__comp_ver_minor 0
+#define __comp_num__comp_ver_patch 0
+#if comp_type == comp_type_clang
+#undef __comp_num__comp_ver_major
+#define __comp_num__comp_ver_major comp_clang_ver_major
+#undef __comp_num__comp_ver_minor
+#define __comp_num__comp_ver_minor comp_clang_ver_minor
+#undef __comp_num__comp_ver_patch
+#define __comp_num__comp_ver_patch comp_clang_ver_patch
+#elif comp_type == comp_type_gcc
+#undef __comp_num__comp_ver_major
+#define __comp_num__comp_ver_major comp_gcc_ver_major
+#undef __comp_num__comp_ver_minor
+#define __comp_num__comp_ver_minor comp_gcc_ver_minor
+#undef __comp_num__comp_ver_patch
+#define __comp_num__comp_ver_patch comp_gcc_ver_patch
+#elif comp_type == comp_type_msvc
+#error "MSVC compiler version detection is unsupported"
+#endif
+#define __comp_val__comp_ver ver_core_calc( \
+    comp_ver_major, comp_ver_minor, comp_ver_patch \
+)
+#define __comp_str__comp_ver ver_core_strfy( \
+    comp_ver_major, comp_ver_minor, comp_ver_patch, ver_core_sep_default \
+)
 
 /*--- Build Facts ---
  *

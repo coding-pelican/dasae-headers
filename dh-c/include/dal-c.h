@@ -908,6 +908,7 @@ static inline const char* dal_c_CmdAction_format(dal_c_CmdAction action) {
 #define dal_c_opt_link_script "link-script"
 #define dal_c_opt_objcopy "objcopy"
 #define dal_c_opt_objcopy_format "objcopy-format"
+#define dal_c_opt_version_namespace "version-namespace"
 #define dal_c_opt_version_core "version-core"
 #define dal_c_opt_version_prefix "version-prefix"
 #define dal_c_opt_version_suffix "version-suffix"
@@ -1046,6 +1047,8 @@ static inline const char* dal_c_PrebuiltMode_format(dal_c_PrebuiltMode mode) {
 }
 
 typedef struct dal_c_VersionSpec {
+    char* namespace_name;
+    bool namespace_set;
     unsigned core_major;
     unsigned core_minor;
     unsigned core_patch;
@@ -1324,6 +1327,11 @@ int dal_c_Cmd_queryToolchain(const dal_c_Cmd* self);
 typedef struct dal_c_Lib {
     char* name;
     char* path;
+    char* source;      // external source URL, currently git URLs are fetchable
+    char* revision;    // immutable tag/commit/branch requested by the project
+    char* provider;    // dh|cmake|make|custom|prebuilt
+    char* build_command;
+    char* install_command;
     dal_c_CompilerOpts opts;
     bool is_static;
     bool test_enabled;
@@ -1549,7 +1557,7 @@ static const dal_c_HelpOption dal_c_help_build_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_link_script dal_c_opt_value_sep "<path>", "Linker script file for freestanding links" },
     { dal_c_opt_prefix_long dal_c_opt_objcopy dal_c_opt_value_sep "<name>", "Objcopy tool for image outputs (default: " dal_c_default_objcopy ")" },
     { dal_c_opt_prefix_long dal_c_opt_objcopy_format dal_c_opt_value_sep "<fmt>", "Objcopy output format for image outputs (default: binary)" },
-    { dal_c_opt_prefix_long dal_c_opt_version_core dal_c_opt_value_sep "<major.minor.patch>", "Export `dal_c__NUM__VER_CORE_*` macros" },
+    { dal_c_opt_prefix_long dal_c_opt_version_core dal_c_opt_value_sep "<major.minor.patch>", "Export `<namespace>__NUM__VER_CORE_*` macros" },
     { dal_c_opt_prefix_long dal_c_opt_version_prefix dal_c_opt_value_sep "<alpha|beta|rc>", "Export prerelease label prefix macros" },
     { dal_c_opt_prefix_long dal_c_opt_version_suffix dal_c_opt_value_sep "<n>", "Export prerelease numeric suffix macros (requires prefix)" },
     { dal_c_opt_prefix_long dal_c_opt_version_build dal_c_opt_value_sep "<id>", "Export `dal_c__STR__VER_BUILD`" },
@@ -1783,12 +1791,16 @@ static const dal_c_HelpOption dal_c_help_deps_options[] = {
 
 static const char* const dal_c_help_deps_examples[] = {
     dal_c_cmd_action_deps,
+    dal_c_cmd_action_deps " fetch",
+    dal_c_cmd_action_deps " update",
+    dal_c_cmd_action_deps " status",
     dal_c_cmd_action_deps " " dal_c_opt_prefix_long dal_c_opt_verbose,
 };
 #define dal_c_help_deps_examples_count ((int)(sizeof(dal_c_help_deps_examples) / sizeof(dal_c_help_deps_examples[0])))
 
 static const char* const dal_c_help_deps_notes[] = {
     "`deps` builds libraries declared in `project.dh`; it does not build the current project output.",
+    "`deps fetch`, `deps update`, and `deps status` manage dependencies that declare `source=`.",
     "It reads dependency blocks from `project.dh`; direct compile/link/source/output flags are not accepted by `deps`.",
     "Generated dependency headers and libraries live under `lib/`; PCH files live in the active cache plan.",
     "`--prebuilt=auto` reads `prebuilt/<profile>` packages when present; `required` fails instead of compiling source.",

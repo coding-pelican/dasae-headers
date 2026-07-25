@@ -583,3 +583,24 @@ dh-c doctor
 ```
 
 `plan` runs the same target/source/configuration resolution as `build` and writes the real generated Makefile, but does not invoke Make. `explain rebuild` reports missing output and generated-plan staleness. `target show` prints the normalized target-scoped output directory. `doctor` checks the selected compiler, Make, archiver, DH installation, project detection, and target resolution.
+
+## Structured Build Contracts
+
+`dh-c` records versioned build contracts under the active target/profile directory:
+
+```txt
+build/<target>/<profile>/.link/*.contract
+build/<target>/<profile>/obj/.contracts/*.contract
+```
+
+Link contracts record effective target, profile, LTO, sysroot, runtime-link choices, link directories, and linked libraries. Compile contracts are recorded per source and include the effective compiler, language standard, optimization/debug profile, target tuning, PCH/test mode, defines, and include paths.
+
+Use:
+
+```sh
+dh-c explain rebuild [profile] [path] [build options]
+```
+
+to compare the previous contract with the requested one. For example, changing `--lto=off` to `--lto=on` or adding `-DFEATURE=1` is reported as a key-level change rather than only as an opaque fingerprint mismatch.
+
+Legacy hash-only link contracts are accepted and upgraded on the next plan generation.

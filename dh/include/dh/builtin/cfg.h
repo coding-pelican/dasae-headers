@@ -7,9 +7,10 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
+#include "cfg/ver.h"
+#include "cfg/lang.h"
 #include "cfg/comp.h"
 #include "cfg/eval.h"
-#include "cfg/lang.h"
 #include "cfg/arch.h"
 #include "cfg/plat.h"
 

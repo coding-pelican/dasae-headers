@@ -56,7 +56,9 @@ self
 
 core
 impl/implement/implementation
-ext/extra/extension
+exnt/extent
+ext/extend/extn/extension
+xtr/extra
 
 pub/public
 mod/module

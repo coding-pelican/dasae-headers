@@ -364,3 +364,30 @@ Packaged artifacts live outside the mutable build cache:
 ```
 
 On Windows the corresponding names are `foo.lib`, `foo.lto.lib`, `foo.dll`, and `foo.dll.lib`. The optional `deps/` directory carries transitive staged headers and libraries.
+
+## Project-local version namespace
+
+A project that declares version fields may also declare an explicit C identifier namespace:
+
+```ini
+version-namespace=dacolor
+version-core=1.4.2
+version-prefix=rc
+version-suffix=2
+version-build=git.a31f9d2
+```
+
+`dh-c` exports only raw constants under that namespace:
+
+```c
+dacolor__NUM__VER_CORE_MAJOR
+dacolor__NUM__VER_CORE_MINOR
+dacolor__NUM__VER_CORE_PATCH
+dacolor__NUM__VER_LABEL_PREFIX
+dacolor__STR__VER_LABEL_PREFIX
+dacolor__NUM__VER_LABEL_SUFFIX
+dacolor__STR__VER_LABEL_SUFFIX
+dacolor__STR__VER_BUILD
+```
+
+The consuming header owns all packing, formatting, and version semantics. `dh-c` does not generate headers or interpret the resulting version. When `version-namespace` is omitted, the detected project directory name is converted to a C identifier by replacing non-identifier characters with `_`.

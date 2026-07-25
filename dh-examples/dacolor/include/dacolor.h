@@ -5,7 +5,7 @@
  * @file    dacolor.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-21 (date of creation)
- * @updated 2026-03-25 (date of last update)
+ * @updated 2026-07-25 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers-examples(dh-examples)
  * @prefix  dacolor
@@ -30,10 +30,19 @@ T_alias$((dacolor_HSL)(union dacolor_HSL));
 
 /*--- RGBA ---*/
 enum_((dacolor_RGBA_Channels $fits($packed))(
+#if arch_byte_order_is_little_endian
+    dacolor_RGBA_channels_red = 3,
+    dacolor_RGBA_channels_green = 2,
+    dacolor_RGBA_channels_blue = 1,
+    dacolor_RGBA_channels_alpha = 0,
+#elif arch_byte_order_is_big_endian
     dacolor_RGBA_channels_red = 0,
     dacolor_RGBA_channels_green = 1,
     dacolor_RGBA_channels_blue = 2,
     dacolor_RGBA_channels_alpha = 3,
+#else
+#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
+#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
     dacolor_RGBA_channels_count = 4,
     dacolor_RGBA_channels_min_value = u8_limit_min,
     dacolor_RGBA_channels_max_value = u8_limit_max,
@@ -53,15 +62,29 @@ enum_((dacolor_RGBA_Channels $fits($packed))(
 #define dacolor_RGBA_magenta __const__dacolor_RGBA_magenta
 
 union dacolor_RGBA {
-    var_(channels, A$$(dacolor_RGBA_channels_count, u8)); // RGBA channel components in [0,255]
+    var_(channels, A$$(dacolor_RGBA_channels_count, u8));
     T_embed$(struct {
+#if arch_byte_order_is_little_endian
+        var_(a, u8); // Alpha channel in [0,255]
+        var_(b, u8); // Blue channel in [0,255]
+        var_(g, u8); // Green channel in [0,255]
+        var_(r, u8); // Red channel in [0,255]
+#elif arch_byte_order_is_big_endian
         var_(r, u8); // Red channel in [0,255]
         var_(g, u8); // Green channel in [0,255]
         var_(b, u8); // Blue channel in [0,255]
         var_(a, u8); // Alpha channel in [0,255]
+#else
+#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
+#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
     });
-    var_(packed, u32); // Packed RGBA value
+    var_(packed, u32); // Packed 0xRRGGBBAA value
 };
+claim_assert_static(sizeOf$(dacolor_RGBA) == sizeOf$(u32));
+claim_assert_static(offsetTo(dacolor_RGBA, r) == dacolor_RGBA_channels_red * sizeOf$(u8));
+claim_assert_static(offsetTo(dacolor_RGBA, g) == dacolor_RGBA_channels_green * sizeOf$(u8));
+claim_assert_static(offsetTo(dacolor_RGBA, b) == dacolor_RGBA_channels_blue * sizeOf$(u8));
+claim_assert_static(offsetTo(dacolor_RGBA, a) == dacolor_RGBA_channels_alpha * sizeOf$(u8));
 T_use_prl$(dacolor_RGBA);
 #define dacolor_RGBA_from_static(_r /*: u8*/, _g /*: u8*/, _b /*: u8*/, _a /*: u8*/... /*(dacolor_RGBA)*/) \
     ____dacolor_RGBA_from_static(_r, _g, _b, _a)
@@ -96,6 +119,10 @@ union dacolor_RGB {
         var_(b, u8); // Blue channel in [0,255]
     });
 };
+claim_assert_static(sizeOf$(dacolor_RGB) == dacolor_RGB_channels_count * sizeOf$(u8));
+claim_assert_static(offsetTo(dacolor_RGB, r) == 0 * sizeOf$(u8));
+claim_assert_static(offsetTo(dacolor_RGB, g) == 1 * sizeOf$(u8));
+claim_assert_static(offsetTo(dacolor_RGB, b) == 2 * sizeOf$(u8));
 T_use_prl$(dacolor_RGB);
 #define dacolor_RGB_from_static(_r /*: u8*/, _g /*: u8*/, _b /*: u8*/... /*(dacolor_RGB)*/) \
     ____dacolor_RGB_from_static(_r, _g, _b)
@@ -120,6 +147,10 @@ union dacolor_HSL {
         var_(l, f64); // Lightness in [0,100]
     });
 };
+claim_assert_static(sizeOf$(dacolor_HSL) == dacolor_HSL_channels_count * sizeOf$(f64));
+claim_assert_static(offsetTo(dacolor_HSL, h) == 0 * sizeOf$(f64));
+claim_assert_static(offsetTo(dacolor_HSL, s) == 1 * sizeOf$(f64));
+claim_assert_static(offsetTo(dacolor_HSL, l) == 2 * sizeOf$(f64));
 T_use_prl$(dacolor_HSL);
 #define dacolor_HSL_from_static(_h /*: f64*/, _s /*: f64*/, _l /*: f64*/... /*(dacolor_HSL)*/) \
     ____dacolor_HSL_from_static(_h, _s, _l)

@@ -2599,6 +2599,11 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     } else {
         build_target = strdup(build_dir);
     }
+    if (!self->profile_explicit && build_dir) {
+        char* native_link = path_join(build_dir, "native");
+        if (native_link) { (void)remove(native_link); }
+        free(native_link);
+    }
     if (build_target && path_isDir(build_target)) {
         if (self->verbose) {
             printf("Removing: %s\n", build_target);
@@ -5034,7 +5039,13 @@ static int dal_c_Cmd__buildOneFromSources(
                 } else {
                     printf("  - generated plan or one of its tracked inputs is stale\n");
                 }
-                printf("  Exact per-key fingerprint diffs are not recorded yet; the concrete plan is at the Makefile path above.\n");
+                char* contract_diff = dal_c__takeLastContractDiff();
+                if (contract_diff) {
+                    printf("  Structured contract changes:\n%s", contract_diff);
+                    free(contract_diff);
+                } else {
+                    printf("  - source, dependency, PCH, or generated-plan timestamp changed\n");
+                }
             }
         }
     } else {

@@ -85,6 +85,7 @@ void dal_c_BuildDefaults_merge(dal_c_BuildDefaults* dst, const dal_c_BuildDefaul
 bool dal_c_BuildDefaults_applyDHFile(dal_c_BuildDefaults* dst, const char* path);
 void dal_c_VersionSpec_cleanup(dal_c_VersionSpec* version);
 void dal_c_VersionSpec_merge(dal_c_VersionSpec* dst, const dal_c_VersionSpec* src);
+bool dal_c_VersionSpec_parseNamespace(dal_c_VersionSpec* dst, const char* value);
 bool dal_c_VersionSpec_parseCore(dal_c_VersionSpec* dst, const char* value);
 bool dal_c_VersionSpec_parsePrefix(dal_c_VersionSpec* dst, const char* value);
 bool dal_c_VersionSpec_parseSuffix(dal_c_VersionSpec* dst, const char* value);
@@ -99,6 +100,7 @@ char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts);
 char* dal_c__makeBuildProfileDir(const dal_c_Project* proj, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile);
 bool dal_c__writeArtifactManifest(const char* profile_dir, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, const char* target_path);
 bool dal_c__prebuiltManifestCompatible(const char* prebuilt_profile_dir, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile, bool lto_enabled, char** reason_out);
+char* dal_c__takeLastContractDiff(void);
 
 
 #define dal_c_generateMakefile_success 0

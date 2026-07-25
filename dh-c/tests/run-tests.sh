@@ -142,7 +142,7 @@ build_binary() {
         -g \
         -O0 \
         "-I$include_dir" \
-        "-I$internal_dir"
+        "-I$internal_dir" \
 
     if [ "$address_sanitizer" -eq 1 ]; then
         set -- "$@" -O1 -fno-omit-frame-pointer -fsanitize=address

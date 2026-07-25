@@ -35,6 +35,8 @@ T_alias$((u_HashCtxFn)(fn_(((*)(u_V$raw val, u_V$raw ctx))(u64) $T)));
 
 /*--- HashMap_Ctrl: Slot Metadata ---*/
 
+#define HashMap_Ctrl_fingerprint_bits 7
+#define HashMap_Ctrl_used_bits 1
 #define HashMap_Ctrl_free 0
 #define HashMap_Ctrl_tombstone 1
 /// Metadata for a slot. It can be in three states: empty, used or
@@ -53,11 +55,19 @@ T_alias$((u_HashCtxFn)(fn_(((*)(u_V$raw val, u_V$raw ctx))(u64) $T)));
 /// costly function call.
 typedef union HashMap_Ctrl {
     T_embed$(struct {
-        u8 fingerprint : 7;
-        u8 used        : 1;
+#if arch_byte_order_is_little_endian
+        var_(fingerprint : HashMap_Ctrl_fingerprint_bits, u8);
+        var_(used : HashMap_Ctrl_used_bits, u8);
+#elif arch_byte_order_is_big_endian
+        var_(used : HashMap_Ctrl_used_bits, u8);
+        var_(fingerprint : HashMap_Ctrl_fingerprint_bits, u8);
+#else
+#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
+#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
     });
-    u8 bits;
+    var_(bits, u8);
 } HashMap_Ctrl;
+claim_assert_static(HashMap_Ctrl_fingerprint_bits + HashMap_Ctrl_used_bits == int_bits$(u8));
 T_use_P$(HashMap_Ctrl);
 T_use_O$(P_const$HashMap_Ctrl);
 T_use_O$(P$HashMap_Ctrl);

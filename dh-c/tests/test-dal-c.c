@@ -1316,7 +1316,7 @@ static void test_makefile_mode_contracts(void) {
     TEST_ASSERT(linker_script != NULL);
     TEST_ASSERT(dir_createRecur(source_dir));
     TEST_ASSERT(dir_createRecur(include_dir));
-    TEST_ASSERT(file_write(project_dh, "output=mode-contract\nversion-core=0.9.1\nversion-prefix=alpha\nversion-suffix=3\nversion-build=proj.7\n"));
+    TEST_ASSERT(file_write(project_dh, "output=mode-contract\nversion-namespace=mode_contract\nversion-core=0.9.1\nversion-prefix=alpha\nversion-suffix=3\nversion-build=proj.7\n"));
     TEST_ASSERT(file_write(pch_header, "#pragma once\n#define FIXTURE_PCH 1\n"));
     TEST_ASSERT(file_write(main_source, "int main(void) { return 0; }\n"));
     TEST_ASSERT(file_write(crt0_source, ".globl _start\n_start:\n  ret\n"));
@@ -1643,14 +1643,14 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -target wasm32-unknown-wasi") == NULL);
         /* compiler-rt query must use $(TARGET_FLAGS) to get the cross-target library */
         TEST_ASSERT(strstr(makefile_text, "$(TARGET_FLAGS) --print-libgcc-file-name") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_CORE_MAJOR=0") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_CORE_MINOR=9") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_CORE_PATCH=1") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_LABEL_PREFIX=0") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__STR__VER_LABEL_PREFIX=\\\"alpha\\\"") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__NUM__VER_LABEL_SUFFIX=3") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__STR__VER_LABEL_SUFFIX=\\\"3\\\"") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-Ddal_c__STR__VER_BUILD=\\\"proj.7\\\"") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Dmode_contract__NUM__VER_CORE_MAJOR=0") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Dmode_contract__NUM__VER_CORE_MINOR=9") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Dmode_contract__NUM__VER_CORE_PATCH=1") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Dmode_contract__NUM__VER_LABEL_PREFIX=0") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Dmode_contract__STR__VER_LABEL_PREFIX=\\\"alpha\\\"") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Dmode_contract__NUM__VER_LABEL_SUFFIX=3") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Dmode_contract__STR__VER_LABEL_SUFFIX=\\\"3\\\"") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-Dmode_contract__STR__VER_BUILD=\\\"proj.7\\\"") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -nolibc") == NULL);
@@ -3253,9 +3253,9 @@ static void test_syntax_arguments_follow_build_compile_contract(void) {
     TEST_ASSERT(test_arrstr_contains(args, "-fno-exceptions"));
     TEST_ASSERT(test_arrstr_contains(args, "-fmerge-all-constants"));
     TEST_ASSERT(test_arrstr_contains(args, "-fno-stack-protector"));
-    TEST_ASSERT(test_arrstr_contains(args, "-Ddal_c__NUM__VER_CORE_MAJOR=1"));
-    TEST_ASSERT(test_arrstr_contains(args, "-Ddal_c__NUM__VER_CORE_MINOR=2"));
-    TEST_ASSERT(test_arrstr_contains(args, "-Ddal_c__NUM__VER_CORE_PATCH=3"));
+    TEST_ASSERT(test_arrstr_contains(args, "-Dsyntax_contract_project__NUM__VER_CORE_MAJOR=1"));
+    TEST_ASSERT(test_arrstr_contains(args, "-Dsyntax_contract_project__NUM__VER_CORE_MINOR=2"));
+    TEST_ASSERT(test_arrstr_contains(args, "-Dsyntax_contract_project__NUM__VER_CORE_PATCH=3"));
     TEST_ASSERT(test_arrstr_contains(args, "-Wno-unused"));
     TEST_ASSERT(test_arrstr_contains(args, source));
     if (opt_flag) {
