@@ -1,13 +1,13 @@
 # External dependency contract
 
-`dh-c` separates immutable source acquisition from build and package outputs.
+`dh-c` separates source acquisition, provider build trees, and staged package outputs.
 
 ```text
 <project>/.dh-c/deps/
-  src/<name>/                 fetched source checkout
-  build/<target>/<profile>/   provider build trees (reserved contract)
-  packages/<target>/<profile>/ staged/installable provider outputs (reserved contract)
-  lock.dh                     resolved Git revisions
+  src/<name>/
+  build/<target>/<profile>/<name>/
+  packages/<target>/<profile>/<name>/
+  lock.dh
 ```
 
 A dependency section may declare:
@@ -19,13 +19,13 @@ revision=release-3.2.0
 provider=cmake
 ```
 
-Supported contract fields:
+Supported fields:
 
-- `path=`: existing local source tree. It remains the direct local dependency form.
-- `source=`: external Git source URL or local Git repository path.
-- `revision=`: tag, commit, or branch to resolve. `fetch` and `update` check it out detached.
-- `provider=dh|cmake|make|custom|prebuilt`: build-provider ownership. Source management accepts every provider; provider build execution is implemented incrementally.
-- `build-command=` and `install-command=`: reserved custom-provider commands.
+- `path=`: local source or package root.
+- `source=`: Git URL or local Git repository.
+- `revision=`: tag, commit, or branch resolved by fetch/update.
+- `provider=dh|cmake|make|custom|prebuilt`.
+- `build-command=` and `install-command=` for custom or overridden make workflows.
 
 Commands:
 
@@ -33,10 +33,47 @@ Commands:
 dh-c deps status
 dh-c deps fetch
 dh-c deps update
+dh-c deps build [profile] [build options]
+dh-c deps install [profile] [build options]
 ```
 
-`fetch` clones missing sources and resolves declared revisions. `update` fetches tags and refs, then either resolves the declared revision or performs a fast-forward-only pull when no revision is declared. Successful fetch/update writes `.dh-c/deps/lock.dh` with the resolved commit for every external dependency.
+`fetch` clones missing sources and records resolved commits in `lock.dh`. `update` fetches tags and refs, then checks out the requested revision or performs a fast-forward-only pull when no revision is declared.
 
-A dependency with `source=` and no `path=` is exposed to the existing dependency graph through `.dh-c/deps/src/<name>`. Therefore a fetched `provider=dh` project can immediately enter the existing `dh-c deps` source build path.
+## Provider execution
 
-The lock file records resolved state; `project.dh` remains the requested-state contract. Moving revisions should be used deliberately. Immutable commit IDs or release tags are recommended for reproducible builds.
+### CMake
+
+`deps build` configures and builds an out-of-source tree. `deps install` additionally runs `cmake --install` with `CMAKE_INSTALL_PREFIX` set to the dependency package directory.
+
+Profile mapping:
+
+- `dev`, `test` -> `Debug`
+- `stable` -> `RelWithDebInfo`
+- `release`, `optimize`, `fast` -> `Release`
+- `compact`, `micro` -> `MinSizeRel`
+
+### Make
+
+The default build is `make -C <source>`. Installation is `make -C <source> install PREFIX=<package>`. `build-command=` or `install-command=` overrides the respective command.
+
+### Custom
+
+`build-command=` is required. `install-command=` is optional. Commands execute from the source directory with these environment variables:
+
+```text
+DH_DEP_SOURCE
+DH_DEP_BUILD
+DH_DEP_PACKAGE
+DH_DEP_PROFILE
+DH_DEP_TARGET
+```
+
+### Prebuilt
+
+`path=` identifies an existing package root. Build/install validates that the directory exists and performs no compilation.
+
+### dh
+
+Fetched `provider=dh` projects continue to participate in the existing `dh-c deps` graph. Direct provider execution through `deps build/install` is intentionally not duplicated yet.
+
+The lock file represents resolved source state; `project.dh` remains the requested-state contract.

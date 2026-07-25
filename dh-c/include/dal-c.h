@@ -1794,6 +1794,8 @@ static const char* const dal_c_help_deps_examples[] = {
     dal_c_cmd_action_deps " fetch",
     dal_c_cmd_action_deps " update",
     dal_c_cmd_action_deps " status",
+    dal_c_cmd_action_deps " build stable",
+    dal_c_cmd_action_deps " install release",
     dal_c_cmd_action_deps " " dal_c_opt_prefix_long dal_c_opt_verbose,
 };
 #define dal_c_help_deps_examples_count ((int)(sizeof(dal_c_help_deps_examples) / sizeof(dal_c_help_deps_examples[0])))
@@ -1801,6 +1803,7 @@ static const char* const dal_c_help_deps_examples[] = {
 static const char* const dal_c_help_deps_notes[] = {
     "`deps` builds libraries declared in `project.dh`; it does not build the current project output.",
     "`deps fetch`, `deps update`, and `deps status` manage dependencies that declare `source=`.",
+    "`deps build` and `deps install` execute cmake, make, custom, and prebuilt provider contracts in target/profile caches.",
     "It reads dependency blocks from `project.dh`; direct compile/link/source/output flags are not accepted by `deps`.",
     "Generated dependency headers and libraries live under `lib/`; PCH files live in the active cache plan.",
     "`--prebuilt=auto` reads `prebuilt/<profile>` packages when present; `required` fails instead of compiling source.",

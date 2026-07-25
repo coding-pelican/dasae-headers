@@ -18,7 +18,7 @@ static void dal_c__printHelpCmd(const dal_c_HelpCmd* cmd);
 static dal_c_Cmd* dal_c__parseAsBuild(int argc, const char* argv[], int skip_count);
 static int dal_c__showTarget(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 static int dal_c__doctor(const dal_c_Cmd* cmd, const dal_c_Project* proj);
-static int dal_c__depsSourceCommand(const char* action, const dal_c_Project* proj);
+static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const dal_c_Project* proj);
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) return dal_c__printUsage(NULL), 1;
@@ -28,10 +28,10 @@ int main(int argc, const char* argv[]) {
     }
 
     bool special_deps_source = argc > 2 && str_eql(argv[1], dal_c_cmd_action_deps)
-                            && (str_eql(argv[2], "fetch") || str_eql(argv[2], "update") || str_eql(argv[2], "status"));
+                            && (str_eql(argv[2], "fetch") || str_eql(argv[2], "update") || str_eql(argv[2], "status")
+                                || str_eql(argv[2], "build") || str_eql(argv[2], "install"));
     if (special_deps_source) {
-        const char* deps_argv[] = { argv[0], dal_c_cmd_action_deps };
-        dal_c_Cmd* deps_cmd = dal_c_Cmd_parse(2, deps_argv);
+        dal_c_Cmd* deps_cmd = dal_c__parseAsBuild(argc, argv, 2);
         if (!deps_cmd) {
             (void)fprintf(stderr, "Error: Failed to initialize dependency command\n");
             return 1;
@@ -43,7 +43,7 @@ int main(int argc, const char* argv[]) {
             dal_c_Cmd_cleanup(&deps_cmd);
             return 1;
         }
-        int deps_result = dal_c__depsSourceCommand(argv[2], deps_proj);
+        int deps_result = dal_c__depsCommand(argv[2], deps_cmd, deps_proj);
         dal_c_Project_cleanup(&deps_proj);
         dal_c_Cmd_cleanup(&deps_cmd);
         return deps_result;
@@ -128,9 +128,108 @@ static char* dal_c__depsGitOutput(const char* cwd, const char* a, const char* b)
     return proc_output(argv);
 }
 
-static int dal_c__depsSourceCommand(const char* action, const dal_c_Project* proj) {
+
+static bool dal_c__depsShell(const char* cwd, const char* command, const char* src_dir,
+                             const char* build_dir, const char* package_dir,
+                             const char* profile, const char* target) {
+    if (!command || !command[0]) return true;
+#ifdef _WIN32
+    char* script = str_format("cd /D \"%s\" && set \"DH_DEP_SOURCE=%s\" && set \"DH_DEP_BUILD=%s\" && set \"DH_DEP_PACKAGE=%s\" && set \"DH_DEP_PROFILE=%s\" && set \"DH_DEP_TARGET=%s\" && %s",
+        cwd, src_dir, build_dir, package_dir, profile, target, command);
+    const char* argv[] = { "cmd.exe", "/D", "/S", "/C", script, NULL };
+#else
+    char* script = str_format("cd \"%s\" && export DH_DEP_SOURCE=\"%s\" DH_DEP_BUILD=\"%s\" DH_DEP_PACKAGE=\"%s\" DH_DEP_PROFILE=\"%s\" DH_DEP_TARGET=\"%s\" && %s",
+        cwd, src_dir, build_dir, package_dir, profile, target, command);
+    const char* argv[] = { "/bin/sh", "-c", script, NULL };
+#endif
+    int result = proc_run(argv, true);
+    free(script);
+    return result == 0;
+}
+
+static const char* dal_c__depsCmakeBuildType(const char* profile) {
+    if (str_eql(profile, "dev") || str_eql(profile, "test")) return "Debug";
+    if (str_eql(profile, "stable")) return "RelWithDebInfo";
+    if (str_eql(profile, "release") || str_eql(profile, "optimize") || str_eql(profile, "fast")) return "Release";
+    if (str_eql(profile, "compact") || str_eql(profile, "micro")) return "MinSizeRel";
+    return "Release";
+}
+
+static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
+                                     const char* source_dir, const char* build_dir,
+                                     const char* package_dir, const char* profile,
+                                     const char* target) {
+    const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+    bool install = str_eql(action, "install");
+    if (str_eql(provider, "dh")) {
+        const char* argv[] = { "dh-c", install ? "lib" : "build", profile, source_dir, NULL };
+        (void)fprintf(stderr, "Error: provider=dh external build must use the owning dh-c dependency graph; direct `%s` is not supported yet for %s.\n", action, lib->name);
+        (void)argv;
+        return false;
+    }
+    if (str_eql(provider, "cmake")) {
+        if (!dir_createRecur(build_dir) || !dir_createRecur(package_dir)) return false;
+        char* prefix = str_format("-DCMAKE_INSTALL_PREFIX=%s", package_dir);
+        char* build_type = str_format("-DCMAKE_BUILD_TYPE=%s", dal_c__depsCmakeBuildType(profile));
+        const char* configure[] = { "cmake", "-S", source_dir, "-B", build_dir, prefix, build_type, NULL };
+        const char* build[] = { "cmake", "--build", build_dir, "--config", dal_c__depsCmakeBuildType(profile), NULL };
+        bool ok = proc_run(configure, true) == 0 && proc_run(build, true) == 0;
+        if (ok && install) {
+            const char* install_argv[] = { "cmake", "--install", build_dir, "--config", dal_c__depsCmakeBuildType(profile), NULL };
+            ok = proc_run(install_argv, true) == 0;
+        }
+        free(build_type); free(prefix);
+        return ok;
+    }
+    if (str_eql(provider, "make")) {
+        if (!dir_createRecur(build_dir) || !dir_createRecur(package_dir)) return false;
+        bool ok;
+        if (lib->build_command && lib->build_command[0])
+            ok = dal_c__depsShell(source_dir, lib->build_command, source_dir, build_dir, package_dir, profile, target);
+        else {
+            const char* build[] = { "make", "-C", source_dir, NULL };
+            ok = proc_run(build, true) == 0;
+        }
+        if (ok && install) {
+            if (lib->install_command && lib->install_command[0])
+                ok = dal_c__depsShell(source_dir, lib->install_command, source_dir, build_dir, package_dir, profile, target);
+            else {
+                char* prefix = str_format("PREFIX=%s", package_dir);
+                const char* install_argv[] = { "make", "-C", source_dir, "install", prefix, NULL };
+                ok = proc_run(install_argv, true) == 0;
+                free(prefix);
+            }
+        }
+        return ok;
+    }
+    if (str_eql(provider, "custom")) {
+        if (!lib->build_command || !lib->build_command[0]) {
+            (void)fprintf(stderr, "Error: custom dependency `%s` requires build-command=.\n", lib->name);
+            return false;
+        }
+        if (!dir_createRecur(build_dir) || !dir_createRecur(package_dir)) return false;
+        bool ok = dal_c__depsShell(source_dir, lib->build_command, source_dir, build_dir, package_dir, profile, target);
+        if (ok && install && lib->install_command && lib->install_command[0])
+            ok = dal_c__depsShell(source_dir, lib->install_command, source_dir, build_dir, package_dir, profile, target);
+        return ok;
+    }
+    if (str_eql(provider, "prebuilt")) {
+        const char* root = (lib->path && lib->path[0]) ? lib->path : source_dir;
+        if (!path_isDir(root)) {
+            (void)fprintf(stderr, "Error: prebuilt dependency `%s` has no package directory: %s\n", lib->name, root);
+            return false;
+        }
+        printf("[PREBUILT] %-16s %s\n", lib->name, root);
+        return true;
+    }
+    (void)fprintf(stderr, "Error: Unknown dependency provider `%s` for `%s`.\n", provider, lib->name);
+    return false;
+}
+
+static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     assert(action != NULL);
     assert(proj != NULL && proj->root != NULL);
+    assert(cmd != NULL);
 
     char* state_root = path_join(proj->root, ".dh-c");
     char* deps_root = path_join(state_root, "deps");
@@ -151,11 +250,35 @@ static int dal_c__depsSourceCommand(const char* action, const dal_c_Project* pro
 
     for (int i = 0; i < proj->lib_count; ++i) {
         const dal_c_Lib* lib = &proj->libraries[i];
-        if (!lib->source || lib->source[0] == '\0') continue;
-        external_count++;
         const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+        bool provider_action = str_eql(action, "build") || str_eql(action, "install");
+        if ((!lib->source || lib->source[0] == '\0') && !(provider_action && str_eql(provider, "prebuilt"))) continue;
+        external_count++;
         char* source_dir = path_join(src_root, lib->name);
         bool exists = path_isDir(source_dir);
+
+        if (provider_action) {
+            const char* profile = dal_c_Profile_format(cmd->opts.profile);
+            if (!profile) profile = "dev";
+            const char* target = (cmd->opts.arch_target && cmd->opts.arch_target[0]) ? cmd->opts.arch_target : "native";
+            char* target_build = path_join(build_root, target);
+            char* profile_build = path_join(target_build, profile);
+            char* build_dir = path_join(profile_build, lib->name);
+            char* target_package = path_join(package_root, target);
+            char* profile_package = path_join(target_package, profile);
+            char* package_dir = path_join(profile_package, lib->name);
+            if (!str_eql(provider, "prebuilt") && !exists) {
+                (void)fprintf(stderr, "Error: Dependency `%s` is not fetched. Run `dh-c deps fetch`.\n", lib->name);
+                failures++;
+            } else {
+                printf("[%s] %-16s provider=%s profile=%s target=%s\n",
+                    str_eql(action, "install") ? "INSTALL" : "BUILD", lib->name, provider, profile, target);
+                if (!dal_c__depsBuildProvider(action, lib, source_dir, build_dir, package_dir, profile, target)) failures++;
+            }
+            free(package_dir); free(profile_package); free(target_package);
+            free(build_dir); free(profile_build); free(target_build); free(source_dir);
+            continue;
+        }
 
         if (str_eql(action, "fetch")) {
             if (!exists) {
@@ -222,8 +345,8 @@ static int dal_c__depsSourceCommand(const char* action, const dal_c_Project* pro
     }
 
     if (external_count == 0) {
-        printf("No external dependencies declare source=.\n");
-    } else if (!str_eql(action, "status") && failures == 0) {
+        printf("No dependencies match this operation.\n");
+    } else if ((str_eql(action, "fetch") || str_eql(action, "update")) && failures == 0) {
         if (!file_writeAtomic(lock_path, lock_text ? lock_text : "")) {
             (void)fprintf(stderr, "Error: Failed to write dependency lock: %s\n", lock_path);
             failures++;
