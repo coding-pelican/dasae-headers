@@ -42,8 +42,8 @@ unguard/unguarded
 
 cfg/config
 
-bti/builtin
-pri/primitive
+bti/btin/builtin/bt-in/built-in
+pri/prim/primitive
 decl/declare/declaration
 base
 cmn/common
@@ -61,7 +61,7 @@ ext/extra/extension
 pub/public
 mod/module
 
-prl/prelude
+prl/prld/prelude
 main
 
 /// module prefix is ​​generally needed.
