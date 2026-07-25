@@ -20,6 +20,108 @@ static int dal_c__showTarget(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 static int dal_c__doctor(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const dal_c_Project* proj);
 static bool dal_c__copyTree(const char* src, const char* dst);
+static int dal_c__printProjectGraph(const dal_c_Cmd* cmd, const dal_c_Project* proj, bool dot);
+
+
+static bool dal_c__pathIsAbsolute(const char* value) {
+    if (!value || !value[0]) return false;
+#ifdef _WIN32
+    return (value[0] == '/' || value[0] == '\\' || (value[1] == ':' && value[2]));
+#else
+    return value[0] == '/';
+#endif
+}
+
+static char* dal_c__graphChildRoot(const dal_c_Project* proj, const dal_c_Lib* lib) {
+    if (!lib->path || !lib->path[0]) return NULL;
+    return dal_c__pathIsAbsolute(lib->path) ? strdup(lib->path) : path_join(proj->root, lib->path);
+}
+
+static bool dal_c__graphSeen(char** seen, int seen_count, const char* value) {
+    for (int i = 0; i < seen_count; ++i) if (str_eql(seen[i], value)) return true;
+    return false;
+}
+
+static void dal_c__graphPrintEscaped(const char* text) {
+    for (const char* p = text ? text : ""; *p; ++p) {
+        if (*p == '"' || *p == '\\') putchar('\\');
+        putchar(*p);
+    }
+}
+
+static void dal_c__graphWalkText(const dal_c_Project* proj, int depth, char*** seen, int* seen_count) {
+    for (int i = 0; i < proj->lib_count; ++i) {
+        const dal_c_Lib* lib = &proj->libraries[i];
+        const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+        for (int j = 0; j < depth; ++j) printf("  ");
+        printf("- %s [provider=%s", lib->name ? lib->name : "(unnamed)", provider);
+        if (lib->revision && lib->revision[0]) printf(", revision=%s", lib->revision);
+        if (lib->path && lib->path[0]) printf(", path=%s", lib->path);
+        if (lib->runtime_file_count > 0) printf(", runtime=%d", lib->runtime_file_count);
+        printf("]\n");
+        if (!str_eql(provider, "dh") || !lib->path || !lib->path[0]) continue;
+        char* child_root = dal_c__graphChildRoot(proj, lib);
+        if (dal_c__graphSeen(*seen, *seen_count, child_root)) {
+            for (int j = 0; j <= depth; ++j) printf("  ");
+            printf("(already visited)\n");
+            free(child_root); continue;
+        }
+        char** grown = realloc(*seen, (size_t)(*seen_count + 1) * sizeof(**seen));
+        if (!grown) { free(child_root); continue; }
+        *seen = grown; (*seen)[(*seen_count)++] = strdup(child_root);
+        dal_c_Project* child = dal_c_Project_detectAt(child_root, proj->dh_path);
+        if (child) { dal_c__graphWalkText(child, depth + 1, seen, seen_count); dal_c_Project_cleanup(&child); }
+        free(child_root);
+    }
+}
+
+static void dal_c__graphWalkDot(const dal_c_Project* proj, const char* parent_id, char*** seen, int* seen_count) {
+    for (int i = 0; i < proj->lib_count; ++i) {
+        const dal_c_Lib* lib = &proj->libraries[i];
+        const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+        char* child_root = (str_eql(provider, "dh") && lib->path && lib->path[0]) ? dal_c__graphChildRoot(proj, lib) : NULL;
+        const char* child_id = child_root ? child_root : lib->name;
+        printf("  \""); dal_c__graphPrintEscaped(child_id); printf("\" [label=\"");
+        dal_c__graphPrintEscaped(lib->name); printf("\\nprovider=%s", provider);
+        if (lib->revision && lib->revision[0]) { printf("\\nrevision="); dal_c__graphPrintEscaped(lib->revision); }
+        printf("\"];\n  \""); dal_c__graphPrintEscaped(parent_id); printf("\" -> \""); dal_c__graphPrintEscaped(child_id); printf("\";\n");
+        if (child_root && !dal_c__graphSeen(*seen, *seen_count, child_root)) {
+            char** grown = realloc(*seen, (size_t)(*seen_count + 1) * sizeof(**seen));
+            if (grown) {
+                *seen = grown; (*seen)[(*seen_count)++] = strdup(child_root);
+                dal_c_Project* child = dal_c_Project_detectAt(child_root, proj->dh_path);
+                if (child) { dal_c__graphWalkDot(child, child_root, seen, seen_count); dal_c_Project_cleanup(&child); }
+            }
+        }
+        free(child_root);
+    }
+}
+
+static int dal_c__printProjectGraph(const dal_c_Cmd* cmd, const dal_c_Project* proj, bool dot) {
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    char* target = dal_c__resolveTargetDirName(&cmd->opts);
+    char** seen = calloc(1, sizeof(*seen));
+    int seen_count = 0;
+    if (seen) seen[seen_count++] = strdup(proj->root);
+    if (dot) {
+        printf("digraph dh_c {\n  rankdir=LR;\n  node [shape=box];\n  \"");
+        dal_c__graphPrintEscaped(proj->root); printf("\" [label=\"");
+        dal_c__graphPrintEscaped(proj->name ? proj->name : "project");
+        printf("\\ntarget=%s\\nprofile=%s\"];\n", target ? target : "native", profile ? profile->name : "dev");
+        dal_c__graphWalkDot(proj, proj->root, &seen, &seen_count);
+        printf("}\n");
+    } else {
+        printf("PROJECT %s\n", proj->name ? proj->name : "(unnamed)");
+        printf("  root: %s\n", proj->root ? proj->root : "(none)");
+        printf("  target: %s\n", target ? target : "native");
+        printf("  profile: %s\n", profile ? profile->name : "dev");
+        printf("  direct-dependencies: %d\n", proj->lib_count);
+        dal_c__graphWalkText(proj, 1, &seen, &seen_count);
+    }
+    for (int i = 0; i < seen_count; ++i) free(seen[i]);
+    free(seen); free(target);
+    return 0;
+}
 
 static bool dal_c__endsWith(const char* text, const char* suffix) {
     if (!text || !suffix) return false;
@@ -143,6 +245,7 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
     bool special_project_dep_action = str_eql(argv[1], "fetch") || str_eql(argv[1], "update") || str_eql(argv[1], "status");
+    bool special_graph = str_eql(argv[1], "graph");
     bool special_package = str_eql(argv[1], "package");
     bool special_install = str_eql(argv[1], "install");
     if (argc > 2 && str_eql(argv[1], dal_c_cmd_action_deps)
@@ -171,6 +274,35 @@ int main(int argc, const char* argv[]) {
         dal_c_Project_cleanup(&deps_proj);
         dal_c_Cmd_cleanup(&deps_cmd);
         return deps_result;
+    }
+
+    if (special_graph) {
+        bool dot = false;
+        const char** filtered = calloc((size_t)argc + 1u, sizeof(*filtered));
+        if (!filtered) return 1;
+        int filtered_argc = 0;
+        filtered[filtered_argc++] = argv[0];
+        filtered[filtered_argc++] = "build";
+        for (int i = 2; i < argc; ++i) {
+            if (str_eql(argv[i], "--format=dot")) { dot = true; continue; }
+            if (strncmp(argv[i], "--format=", 9) == 0) {
+                (void)fprintf(stderr, "Error: Unsupported graph format: %s\n", argv[i] + 9);
+                free(filtered); return 1;
+            }
+            filtered[filtered_argc++] = argv[i];
+        }
+        dal_c_Cmd* graph_cmd = dal_c_Cmd_parse(filtered_argc, filtered);
+        free(filtered);
+        if (!graph_cmd) return 1;
+        dal_c_Project* graph_proj = dal_c_Project_detect(graph_cmd);
+        if (!graph_proj || !graph_proj->root) {
+            (void)fprintf(stderr, "Error: Not in a dh-c project directory\n");
+            if (graph_proj) dal_c_Project_cleanup(&graph_proj);
+            dal_c_Cmd_cleanup(&graph_cmd); return 1;
+        }
+        int graph_result = dal_c__printProjectGraph(graph_cmd, graph_proj, dot);
+        dal_c_Project_cleanup(&graph_proj); dal_c_Cmd_cleanup(&graph_cmd);
+        return graph_result;
     }
 
     if (special_package || special_install) {
@@ -628,7 +760,7 @@ static int dal_c__printUsage(const char* topic) {
             const dal_c_HelpCmd* cmd = &dal_c_help_cmds[i];
             if (cmd->name && cmd->implemented) { printf("%s\n", cmd->name); }
         }
-        printf("fetch\nupdate\nstatus\npackage\ninstall\nplan\nexplain\ntarget\ndoctor\n");
+        printf("fetch\nupdate\nstatus\ngraph\npackage\ninstall\nplan\nexplain\ntarget\ndoctor\n");
         return 0;
     }
     if (print_all) { topic = NULL; }
@@ -638,7 +770,7 @@ static int dal_c__printUsage(const char* topic) {
     const int help_profile_count = dal_c_help_profiles_count;
 
     if (topic && (str_eql(topic, "fetch") || str_eql(topic, "update") || str_eql(topic, "status")
-        || str_eql(topic, "plan") || str_eql(topic, "explain") || str_eql(topic, "target") || str_eql(topic, "doctor"))) {
+        || str_eql(topic, "graph") || str_eql(topic, "plan") || str_eql(topic, "explain") || str_eql(topic, "target") || str_eql(topic, "doctor"))) {
         printf("%s - %s\n\n", dal_c_tool_name, dal_c_tool_description);
         if (str_eql(topic, "fetch")) {
             printf("USAGE:\n  %s fetch [build options]\n\nFetch missing external dependency sources declared by the current project.dh without changing an existing resolution.\n", dal_c_tool_name);
@@ -646,6 +778,8 @@ static int dal_c__printUsage(const char* topic) {
             printf("USAGE:\n  %s update [build options]\n\nRefresh external dependency refs and rewrite the resolved dependency lock for the current project.dh.\n", dal_c_tool_name);
         } else if (str_eql(topic, "status")) {
             printf("USAGE:\n  %s status [build options]\n\nShow source, provider, revision, and dirty-state readiness for dependencies declared by the current project.dh.\n", dal_c_tool_name);
+        } else if (str_eql(topic, "graph")) {
+            printf("USAGE:\n  %s graph [profile] [build options] [--format=dot]\n\nShow the resolved project dependency graph and its provider metadata.\n", dal_c_tool_name);
         } else if (str_eql(topic, "plan")) {
             printf("USAGE:\n  %s plan [profile] [path] [build options]\n\nGenerate the real build plan and Makefile without compiling or linking.\n", dal_c_tool_name);
         } else if (str_eql(topic, "explain")) {
@@ -691,6 +825,7 @@ static int dal_c__printUsage(const char* topic) {
     printf("  %-14s %s\n", "fetch", "Fetch dependency sources for the current project");
     printf("  %-14s %s\n", "update", "Update the current project's dependency resolution");
     printf("  %-14s %s\n", "status", "Inspect current project and dependency readiness");
+    printf("  %-14s %s\n", "graph", "Show the resolved dependency graph");
     printf("  %-14s %s\n", "plan", "Generate the real build plan without executing it");
     printf("  %-14s %s\n", "explain", "Explain why a requested build requires work");
     printf("  %-14s %s\n", "target", "Inspect the effective target and output directory");

@@ -293,6 +293,7 @@ if [ "$integration" -eq 1 ]; then
 
     invoke_external "0" "$plain_project" "$cli_exe" test
     assert_contains "$LAST_OUTPUT" "test-smoke" "Plain project test output was unexpected"
+    assert_contains "$LAST_OUTPUT" "[TEST REPORT] status=PASS" "Test command did not emit a pass report"
 
     invoke_external "0" "$plain_project" "$cli_exe" clean
     if [ -e "$plain_project/build" ]; then
@@ -351,6 +352,15 @@ if [ "$integration" -eq 1 ]; then
 
     deps_graph_root=$(copy_scenario_project "dh-c/tests/fixture/deps-graph")
     deps_graph_project="$deps_graph_root/C"
+
+    invoke_external "0" "$deps_graph_project" "$cli_exe" graph
+    assert_contains "$LAST_OUTPUT" "PROJECT C" "Graph output did not identify the root project"
+    assert_contains "$LAST_OUTPUT" "- B [provider=dh" "Graph output did not contain the direct dependency"
+    assert_contains "$LAST_OUTPUT" "- A [provider=dh" "Graph output did not contain the transitive dependency"
+
+    invoke_external "0" "$deps_graph_project" "$cli_exe" graph --format=dot
+    assert_contains "$LAST_OUTPUT" "digraph dh_c" "DOT graph output did not contain a graph declaration"
+    assert_contains "$LAST_OUTPUT" "[label=\"B" "DOT graph output did not contain the direct dependency"
     deps_graph_dir="$deps_graph_project/lib/deps"
     rm -rf "$deps_graph_dir"
 

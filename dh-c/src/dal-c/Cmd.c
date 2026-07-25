@@ -5145,6 +5145,8 @@ static int dal_c_Cmd__buildOneFromSources(
                 dal_c__phaseRecord(dal_c_CmdPhase_run_exec, runtime_elapsed);
             } else {
                 dal_c__phaseRecord(dal_c_CmdPhase_test_run, runtime_elapsed);
+                printf("[TEST REPORT] status=%s exit=%d executable=%s elapsed=%.3fs\n",
+                    result == 0 ? "PASS" : "FAIL", result, target_path ? target_path : "(unknown)", runtime_elapsed);
             }
         }
     }

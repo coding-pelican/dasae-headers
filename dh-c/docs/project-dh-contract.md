@@ -391,3 +391,19 @@ dacolor__STR__VER_BUILD
 ```
 
 The consuming header owns all packing, formatting, and version semantics. `dh-c` does not generate headers or interpret the resulting version. When `version-namespace` is omitted, the detected project directory name is converted to a C identifier by replacing non-identifier characters with `_`.
+
+## Dependency graph inspection
+
+`dh-c graph [profile]` prints the current project, effective target/profile, direct dependencies, and recursively discovered local `provider=dh` dependencies. Repeated or cyclic local paths are visited only once.
+
+`dh-c graph [profile] --format=dot` emits Graphviz DOT for CI artifacts and visualization. Provider, revision, and runtime-export count remain dependency metadata; `graph` does not fetch, build, or mutate dependency state.
+
+## Test execution report
+
+A completed `dh-c test` execution emits a final executable-level report:
+
+```text
+[TEST REPORT] status=PASS exit=0 executable=<path> elapsed=<seconds>s
+```
+
+The process exit status remains authoritative. The report is a human- and CI-readable summary of the generated test executable run, not a replacement for test framework case-level output.
