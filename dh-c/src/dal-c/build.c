@@ -3901,21 +3901,18 @@ static bool dal_c__targetSupportsNoLibcFlag(const dal_c_CompilerOpts* opts) {
 
 static bool dal_c__requestedLibcLinked(const dal_c_CompilerOpts* opts) {
     assert(opts != NULL);
-    bool default_linked = dal_c__resolvedCompileEnv(opts) != dal_c_CompileEnv_freestanding;
-    return dal_c__resolvedToggle(opts->libc_linked, default_linked);
+    /* Compilation environment and link model are orthogonal. A freestanding
+     * translation unit may still be linked against libc, while a hosted
+     * translation unit may deliberately omit it. */
+    return dal_c__resolvedToggle(opts->libc_linked, true);
 }
 
 static bool dal_c__resolvedLibcLinked(const dal_c_CompilerOpts* opts) {
     assert(opts != NULL);
-    bool default_libs_linked = dal_c__resolvedDefaultLibsLinked(opts);
-    if (!default_libs_linked) {
+    if (!dal_c__resolvedDefaultLibsLinked(opts)) {
         return false;
     }
-    bool requested_linked = dal_c__requestedLibcLinked(opts);
-    if (requested_linked) {
-        return true;
-    }
-    return !dal_c__targetSupportsNoLibcFlag(opts);
+    return dal_c__requestedLibcLinked(opts);
 }
 
 static bool dal_c__resolvedDefaultLibsLinked(const dal_c_CompilerOpts* opts) {
@@ -5086,17 +5083,20 @@ static dal_c__noinline dal_c__optnone bool dal_c__validateLinkToolchain(const da
     }
 
     bool requested_libc_linked = dal_c__requestedLibcLinked(opts);
-    bool effective_libc_linked = dal_c__resolvedLibcLinked(opts);
-    if (!requested_libc_linked && effective_libc_linked && dal_c__resolvedDefaultLibsLinked(opts)) {
+    if (!requested_libc_linked
+        && dal_c__resolvedDefaultLibsLinked(opts)
+        && !dal_c__targetSupportsNoLibcFlag(opts)) {
         const char* target = (opts->arch_target && opts->arch_target[0] != '\0') ? opts->arch_target : "host";
         (void)fprintf(
             stderr,
-            "Warning: `--%s=off` cannot be represented for `%s` while `--%s` remains enabled; libc is still treated as linked. Use `--%s=off` and provide the remaining libraries explicitly for a true no-libc link.\n",
+            "Error: `--%s=off` cannot be represented for `%s` while `--%s` remains enabled.\n"
+            "Use `--%s=off` and provide the required non-libc runtime libraries explicitly.\n",
             dal_c_opt_link_libc,
             target,
             dal_c_opt_link_default_libs,
             dal_c_opt_link_default_libs
         );
+        return false;
     }
     if (!dal_c__targetUsesImplicitCompilerRt(target_type) || !dal_c__linkNeedsCompilerRt(opts, target_type)) {
         return true;

@@ -1312,9 +1312,9 @@ static bool dal_c_Cmd__reportsElapsed(const dal_c_Cmd* cmd) {
     }
 }
 
-static void dal_c_Cmd__reportFinishedPhaseElapsed(FILE* out, const char* phase, double elapsed_seconds, int precision) {
+static void dal_c_Cmd__reportTimingDetail(FILE* out, const char* phase, double elapsed_seconds, int precision) {
     if (elapsed_seconds <= 0.0) { return; }
-    (void)fprintf(out, "Finished %s in %.*fs\n", phase, precision, elapsed_seconds);
+    (void)fprintf(out, "    %s: %.*fs\n", phase, precision, elapsed_seconds);
 }
 
 static int dal_c_Cmd__phaseCount(const dal_c_Cmd__ElapsedPhases* phases) {
@@ -1336,20 +1336,46 @@ static int dal_c_Cmd__phaseCount(const dal_c_Cmd__ElapsedPhases* phases) {
     return count;
 }
 
-static void dal_c_Cmd__reportFinishedPhases(FILE* out, const dal_c_Cmd__ElapsedPhases* phases, int precision) {
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "deps", phases->dependency_build, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "dh build", phases->dh_build, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "self build", phases->self_build, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "project library build", phases->project_lib_build, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "executable build", phases->test_build, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "executable build", phases->run_build, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "execution", phases->test_run, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "execution", phases->run_exec, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "syntax", phases->syntax, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "tidy", phases->tidy, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "format", phases->format, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "compile-db", phases->compile_db, precision);
-    dal_c_Cmd__reportFinishedPhaseElapsed(out, "clean", phases->clean, precision);
+static double dal_c_Cmd__executionElapsed(const dal_c_Cmd__ElapsedPhases* phases) {
+    if (!phases) { return 0.0; }
+    return phases->test_run + phases->run_exec;
+}
+
+static void dal_c_Cmd__reportTimingSummary(
+    FILE* out,
+    const dal_c_Cmd__ElapsedPhases* phases,
+    double elapsed_seconds,
+    double lock_wait_seconds,
+    int precision,
+    bool verbose
+) {
+    if (!phases || dal_c_Cmd__phaseCount(phases) == 0) { return; }
+
+    double execution = dal_c_Cmd__executionElapsed(phases);
+    double setup = elapsed_seconds - execution;
+    if (setup < 0.0) { setup = 0.0; }
+
+    (void)fprintf(out, "[TIMING]\n");
+    if (setup > 0.0) {
+        (void)fprintf(out, "  setup: %.*fs\n", precision, setup);
+        dal_c_Cmd__reportTimingDetail(out, "dependencies", phases->dependency_build, precision);
+        dal_c_Cmd__reportTimingDetail(out, "dh build", phases->dh_build, precision);
+        dal_c_Cmd__reportTimingDetail(out, "self build", phases->self_build, precision);
+        dal_c_Cmd__reportTimingDetail(out, "project library", phases->project_lib_build, precision);
+        dal_c_Cmd__reportTimingDetail(out, "executable", phases->test_build, precision);
+        dal_c_Cmd__reportTimingDetail(out, "executable", phases->run_build, precision);
+        dal_c_Cmd__reportTimingDetail(out, "syntax", phases->syntax, precision);
+        dal_c_Cmd__reportTimingDetail(out, "tidy", phases->tidy, precision);
+        dal_c_Cmd__reportTimingDetail(out, "format", phases->format, precision);
+        dal_c_Cmd__reportTimingDetail(out, "compile-db", phases->compile_db, precision);
+        dal_c_Cmd__reportTimingDetail(out, "clean", phases->clean, precision);
+        if (verbose && lock_wait_seconds > 0.0) {
+            dal_c_Cmd__reportTimingDetail(out, "lock wait", lock_wait_seconds, precision);
+        }
+    }
+    if (execution > 0.0) {
+        (void)fprintf(out, "  execution: %.*fs\n", precision, execution);
+    }
 }
 
 static void dal_c_Cmd__reportElapsed(
@@ -1366,13 +1392,17 @@ static void dal_c_Cmd__reportElapsed(
     if (!action) { action = "command"; }
     FILE* out = result == 0 ? stdout : stderr;
     const char* state = result == 0 ? "Finished" : "Failed";
-    if (cmd->verbose && dal_c_Cmd__phaseCount(phases) > 1) {
-        dal_c_Cmd__reportFinishedPhases(out, phases, elapsed_precision);
+    if (dal_c_Cmd__phaseCount(phases) > 1 || (cmd->verbose && dal_c_Cmd__phaseCount(phases) > 0)) {
+        dal_c_Cmd__reportTimingSummary(
+            out,
+            phases,
+            elapsed_seconds,
+            lock_wait_seconds,
+            elapsed_precision,
+            cmd->verbose
+        );
     }
     (void)fprintf(out, "%s `%s` in %.*fs\n", state, action, elapsed_precision, elapsed_seconds);
-    if (cmd->verbose && lock_wait_seconds > 0.0) {
-        (void)fprintf(out, "  lock wait: %.*fs\n", elapsed_precision, lock_wait_seconds);
-    }
 }
 
 int dal_c_Cmd_execute(const dal_c_Cmd* self, const dal_c_Project* proj) {

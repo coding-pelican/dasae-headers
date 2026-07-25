@@ -253,6 +253,8 @@ invoke_external "0" "$repo_root" "$cli_exe" help --all
 assert_contains "$LAST_OUTPUT" "RESERVED COMMANDS:" "Help output did not describe reserved commands"
 assert_contains "$LAST_OUTPUT" "COMMAND OPTION BOUNDARIES:" "Help output did not describe command option boundaries"
 assert_contains "$LAST_OUTPUT" "PROJECT.DH KEYS:" "Help output did not describe project.dh keys"
+assert_contains "$LAST_OUTPUT" "LINK MODEL:" "Help output did not describe freestanding/link-model separation"
+assert_contains "$LAST_OUTPUT" 'exact alias of `--link-start-files=off`' "Help output did not explain the CRT alias"
 assert_contains "$LAST_OUTPUT" "durable source assets" "Help output did not describe cleanup-owned generated paths"
 
 invoke_external "0" "$repo_root" "$cli_exe" help build
@@ -473,6 +475,78 @@ if [ "$integration" -eq 1 ]; then
         exit 1
     fi
 
+    link_contract_root="$temp_root/link-contracts"
+    mkdir -p "$link_contract_root/freestanding/src" "$link_contract_root/custom-entry/src"
+    cat >"$link_contract_root/freestanding/project.dh" <<'EOF'
+output=freestanding-hosted
+link-dsl=off
+EOF
+    cat >"$link_contract_root/freestanding/src/main.c" <<'EOF'
+int main(void) { return 0; }
+EOF
+    invoke_external "0" "$link_contract_root/freestanding" "$cli_exe" build --freestanding
+    assert_contains "$LAST_OUTPUT" "Build successful!" "Freestanding compilation with the default link model did not build"
+
+    cat >"$link_contract_root/custom-entry/project.dh" <<'EOF'
+output=custom-entry
+link-dsl=off
+EOF
+    cat >"$link_contract_root/custom-entry/src/entry.c" <<'EOF'
+#if defined(_MSC_VER)
+__declspec(noreturn) void dh_entry(void);
+__declspec(noreturn) void dh_entry(void) { for (;;) {} }
+#else
+__attribute__((noreturn)) void dh_entry(void);
+__attribute__((noreturn)) void dh_entry(void) { for (;;) {} }
+#endif
+EOF
+
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-start-files=off --entry=dh_entry
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-start-files executable contract did not build"
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
+
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-crt=off --entry=dh_entry
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-CRT alias contract did not build"
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
+
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-stdlib=off --entry=dh_entry
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-stdlib executable contract did not build"
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
+
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-default-libs=off --link-start-files=off --entry=dh_entry
+    assert_contains "$LAST_OUTPUT" "Build successful!" "Independent default-library/start-file contract did not build"
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
+
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*)
+            invoke_external "1" "$link_contract_root/custom-entry" "$cli_exe" build --link-libc=off --link-start-files=off --entry=dh_entry
+            assert_contains "$LAST_OUTPUT" "cannot be represented" "Windows no-libc contract did not fail explicitly"
+            invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-libc=off --link-default-libs=off --link-start-files=off --entry=dh_entry
+            assert_contains "$LAST_OUTPUT" "Build successful!" "Windows no-libc/no-default-libs contract did not build"
+            ;;
+        *)
+            invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" build --link-libc=off --link-start-files=off --entry=dh_entry
+            assert_contains "$LAST_OUTPUT" "Build successful!" "No-libc executable contract did not build"
+            ;;
+    esac
+
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-default-libs=off
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-default-libraries shared-library contract did not build"
+
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
+    invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-stdlib=off
+    assert_contains "$LAST_OUTPUT" "Build successful!" "No-stdlib shared-library contract did not build"
+
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*) ;;
+        *)
+            invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" clean
+            invoke_external "0" "$link_contract_root/custom-entry" "$cli_exe" lib --shared --link-libc=off
+            assert_contains "$LAST_OUTPUT" "Build successful!" "No-libc shared-library contract did not build"
+            ;;
+    esac
+
     target_root_contract=$(copy_scenario_project "dh-c/lab/target-root-contract")
     invoke_external "0" "$target_root_contract" "$cli_exe" build cmd/runner1 --link-dsl=off
     assert_contains "$LAST_OUTPUT" "Build successful!" "Target-root executable build did not succeed"
@@ -524,15 +598,19 @@ if [ "$integration" -eq 1 ]; then
     assert_contains "$LAST_OUTPUT" "[TEST]" "kind=lib test did not emit the structured report"
     assert_contains "$LAST_OUTPUT" "status: PASS" "kind=lib test did not pass"
     assert_occurrences "$LAST_OUTPUT" "Build successful!" "0" "kind=lib test repeated generic build-success banners"
-    assert_occurrences "$LAST_OUTPUT" "Finished project library build" "0" "default test output exposed verbose phase timings"
+    assert_contains "$LAST_OUTPUT" "[TIMING]" "default test output omitted the timing summary"
+    assert_contains "$LAST_OUTPUT" "project library:" "default test output omitted project-library timing"
+    assert_contains "$LAST_OUTPUT" "executable:" "default test output omitted executable timing"
+    assert_contains "$LAST_OUTPUT" "execution:" "default test output omitted execution timing"
     assert_build_artifacts_exist "$lib_kind_project" "$lib_kind_static_pattern" "$lib_kind_shared_pattern"
     [ "$(cat "$dev_manifest")" = "$dev_manifest_before" ]
     assert_true $? "Test executable overwrote the prebuilt library manifest"
 
     invoke_external "0" "$lib_kind_project" "$cli_exe" test --verbose
-    assert_contains "$LAST_OUTPUT" "Finished project library build" "verbose test output omitted project-library timing"
-    assert_contains "$LAST_OUTPUT" "Finished executable build" "verbose test output omitted executable timing"
-    assert_contains "$LAST_OUTPUT" "Finished execution" "verbose test output omitted execution timing"
+    assert_contains "$LAST_OUTPUT" "[TIMING]" "verbose test output omitted the timing summary"
+    assert_contains "$LAST_OUTPUT" "project library:" "verbose test output omitted project-library timing"
+    assert_contains "$LAST_OUTPUT" "executable:" "verbose test output omitted executable timing"
+    assert_contains "$LAST_OUTPUT" "execution:" "verbose test output omitted execution timing"
     [ "$(cat "$dev_manifest")" = "$dev_manifest_before" ]
     assert_true $? "Verbose test execution changed the prebuilt library manifest"
 

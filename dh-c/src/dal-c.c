@@ -1186,6 +1186,16 @@ static int dal_c__printUsage(const char* topic) {
     printf("  `--link-args \"...\"` is a raw escape hatch for linker flags that do not have structured options.\n");
     printf("  Link inputs are rejected by check/format commands because those commands do not link.\n\n");
 
+    printf("LINK MODEL:\n");
+    printf("  `--freestanding` changes the C compilation environment only; it does not implicitly remove libc, startup files, or default libraries.\n");
+    printf("  `--link-libc=off` removes libc while retaining other default libraries where the compiler driver supports `-nolibc`.\n");
+    printf("  Targets that cannot represent no-libc with default libraries enabled fail explicitly instead of silently linking libc.\n");
+    printf("  `--link-default-libs=off` maps to `-nodefaultlibs`; compiler-rt remains separately controlled and is restored by default.\n");
+    printf("  `--link-start-files=off` maps to `-nostartfiles`; executable builds must provide a usable entry/startup contract.\n");
+    printf("  `--link-stdlib=off` disables both default libraries and startup files, mapping to `-nostdlib`.\n");
+    printf("  `--link-crt=off` is an exact alias of `--link-start-files=off`, not a separate runtime-library switch.\n");
+    printf("  dh-c guarantees deterministic flag mapping and tested host contracts; a runnable freestanding executable still requires target startup/runtime code.\n\n");
+
     printf("PCH CONTRACT:\n");
     printf("  `pch=auto` uses the detected DH bundle when available; `pch=deps` uses generated `lib/deps.h`; `pch=off` disables PCH.\n");
     printf("  PCH files are generated inside the active profile/flag cache plan and are rebuilt when their headers or compile contract change.\n");

@@ -38,6 +38,26 @@ Meaning:
 - repeated `link-dir=` entries add library search directories for linked outputs
 - `prebuilt=` selects whether packaged `prebuilt/<normalized-target>/<profile>` artifacts are preferred, ignored, or required
 
+### Compile environment and link model
+
+The compile environment is independent from the linker runtime contract:
+
+- `freestanding=on` selects freestanding C compilation and emits
+  `COMP_FREESTANDING`; it does not implicitly disable libc, startup files, or
+  default libraries.
+- `link-libc=off` omits libc while retaining other defaults when the target
+  compiler driver can represent that distinction. Unsupported targets fail
+  instead of silently retaining libc.
+- `link-default-libs=off` omits compiler-driver default libraries. Compiler-rt
+  remains independently controlled and is restored by default when available.
+- `link-start-files=off` omits startup objects.
+- `link-stdlib=off` disables both default libraries and startup objects.
+- `link-crt=off` is an exact alias for `link-start-files=off`.
+
+A linked freestanding executable still needs a valid entry point and whatever
+startup/runtime implementation its target requires. These switches describe
+what dh-c asks the compiler driver to omit; they do not synthesize a runtime.
+
 ### Target-root blocks
 
 Target roots are declared with:

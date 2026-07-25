@@ -1541,8 +1541,8 @@ static void test_makefile_mode_contracts(void) {
     }
 
     {
-        const char* argv[] = { dal_c_tool_name, "build", "dev", "--hosted", "--link-libc=off", "--link-stdlib=on", NULL };
-        dal_c_Cmd* cmd = dal_c_Cmd_parse(6, argv);
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--freestanding", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(4, argv);
         const dal_c_ProfileSpec* profile = NULL;
         char* build_dir = NULL;
         char* profile_dir = NULL;
@@ -1569,39 +1569,83 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable) == 0);
         makefile_text = file_read(makefile_path);
         TEST_ASSERT(makefile_text != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HOSTED") != NULL);
-        if (dal_c__platformIsWindows()) {
-            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") == NULL);
-        } else {
-            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") == NULL);
-        }
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_FREESTANDING") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_DEFAULT_LIBS") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_DEFAULT_LIBS") == NULL);
         TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_START_FILES") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_COMPILER_RT") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_COMPILER_RT") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_STDLIB") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_STDLIB") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_CRT") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_CRT") == NULL);
-        TEST_ASSERT(strstr(makefile_text, " -Wformat=2") != NULL);
-        TEST_ASSERT(strstr(makefile_text, " -Werror=uninitialized") != NULL);
-        TEST_ASSERT(strstr(makefile_text, " -Wframe-larger-than=4096") != NULL);
-        TEST_ASSERT(strstr(makefile_text, " -Wno-switch-enum") != NULL);
-        TEST_ASSERT(strstr(makefile_text, " -Wswitch-enum") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -ffreestanding") == NULL);
-        if (dal_c__platformIsWindows()) {
-            TEST_ASSERT(strstr(makefile_text, " -nolibc") == NULL);
-        } else {
-            TEST_ASSERT(strstr(makefile_text, " -nolibc") != NULL);
-        }
+        TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -ffreestanding") != NULL);
+        TEST_ASSERT(strstr(makefile_text, " -nolibc") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") == NULL);
         TEST_ASSERT(strstr(makefile_text, " -nostartfiles") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "--print-libgcc-file-name") == NULL);
+
+        free(makefile_text);
+        free(makefile_path);
+        free(target_path);
+        free(object_dir);
+        free(profile_dir);
+        free(build_dir);
+        dal_c_Cmd_cleanup(&cmd);
+    }
+
+    {
+        const char* argv[] = { dal_c_tool_name, "build", "dev", "--hosted", "--link-libc=off", "--link-stdlib=on", NULL };
+        dal_c_Cmd* cmd = dal_c_Cmd_parse(6, argv);
+        const dal_c_ProfileSpec* profile = NULL;
+        char* build_dir = NULL;
+        char* profile_dir = NULL;
+        char* object_dir = NULL;
+        char* target_path = NULL;
+        char* makefile_path = NULL;
+        char* makefile_text = NULL;
+        TEST_ASSERT(cmd != NULL);
+
+        profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+        TEST_ASSERT(profile != NULL);
+        build_dir = dal_c_Project_getBuildDir(proj);
+        profile_dir = path_join(build_dir, profile->name);
+        object_dir = path_join(profile_dir, "obj");
+        TEST_ASSERT(build_dir != NULL);
+        TEST_ASSERT(profile_dir != NULL);
+        TEST_ASSERT(object_dir != NULL);
+        TEST_ASSERT(dir_createRecur(object_dir));
+
+        target_path = dal_c__resolveOutputPath(proj, cmd, profile_dir, proj->defaults.output_name, dal_c_Target_executable);
+        TEST_ASSERT(target_path != NULL);
+        makefile_path = dal_c__makePlanFilePath(proj, profile, cmd, target_path, dal_c_Target_executable);
+        TEST_ASSERT(makefile_path != NULL);
+        int generate_result = dal_c__generateMakefile(cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable);
+        if (dal_c__platformIsWindows()) {
+            TEST_ASSERT(generate_result == 1);
+        } else {
+            TEST_ASSERT(generate_result == 0);
+            makefile_text = file_read(makefile_path);
+            TEST_ASSERT(makefile_text != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HOSTED") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_LIBC") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_LIBC") == NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_DEFAULT_LIBS") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_DEFAULT_LIBS") == NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_START_FILES") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_START_FILES") == NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_COMPILER_RT") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_COMPILER_RT") == NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_STDLIB") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_STDLIB") == NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_HAS_CRT") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "-DCOMP_NO_CRT") == NULL);
+            TEST_ASSERT(strstr(makefile_text, " -Wformat=2") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -Werror=uninitialized") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -Wframe-larger-than=4096") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -Wno-switch-enum") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -Wswitch-enum") == NULL);
+            TEST_ASSERT(strstr(makefile_text, "CFLAGS_BASE += -ffreestanding") == NULL);
+            TEST_ASSERT(strstr(makefile_text, " -nolibc") != NULL);
+            TEST_ASSERT(strstr(makefile_text, " -nostdlib") == NULL);
+            TEST_ASSERT(strstr(makefile_text, " -nodefaultlibs") == NULL);
+            TEST_ASSERT(strstr(makefile_text, " -nostartfiles") == NULL);
+            TEST_ASSERT(strstr(makefile_text, "--print-libgcc-file-name") == NULL);
+        }
 
         free(makefile_text);
         free(makefile_path);

@@ -233,6 +233,26 @@ Shared build options:
 - `--entry=<symbol>`
 - `--compiler-args="..."`
 - `--comp-args="..."`
+
+The compile environment and link model are independent. `--freestanding` adds
+freestanding C compilation semantics but does not implicitly remove libc, startup
+files, or compiler defaults. Use the link controls explicitly when constructing a
+runtime-free or custom-runtime image:
+
+- `--link-libc=off`: omit libc while retaining other default libraries when the
+  target compiler driver supports that distinction.
+- `--link-default-libs=off`: omit compiler-driver default libraries; compiler-rt
+  remains independently controlled and is restored by default.
+- `--link-start-files=off`: omit compiler startup objects. Executables must provide
+  a valid entry/startup path.
+- `--link-stdlib=off`: shorthand for disabling both default libraries and startup
+  files (`-nostdlib`).
+- `--link-crt=off`: exact alias of `--link-start-files=off`.
+
+On targets such as Windows where libc cannot be removed independently while the
+compiler's default libraries remain enabled, dh-c rejects `link-libc=off` instead
+of silently linking libc. Use `link-default-libs=off` and provide the required
+non-libc libraries explicitly.
 - `--args="..."`
 - `--file=<path>`
 - `--output=<path>` or `-o<path>`
@@ -594,7 +614,7 @@ prebuilt/<target>/<profile>/
 
 For an implicit host build, dh-c asks the active compiler for its target triple. A real materialized build creates or refreshes `build/native` as a directory link to that normalized host target directory. On Windows dh-c falls back from a symbolic link to a directory junction. Read-only inspection commands do not create the alias. Failure to create the convenience link is reported as a warning rather than changing the build contract.
 
-DH tests return the child process status directly. The final report is a multi-line `[TEST]` block containing status, exit code, executable, and execution time; detailed phase timings are reserved for `--verbose`.
+DH tests return the child process status directly. The final report is a multi-line `[TEST]` block containing status, exit code, executable, and execution time. Multi-phase commands also print a compact `[TIMING]` block by default, with setup subphases and execution separated; `--verbose` adds details such as lock wait time.
 
 ## Build introspection
 
