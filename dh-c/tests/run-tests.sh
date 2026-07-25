@@ -237,6 +237,13 @@ assert_contains "$LAST_OUTPUT" "dasae-headers path:" "Version output did not con
 
 invoke_external "0" "$repo_root" "$cli_exe" --help
 assert_contains "$LAST_OUTPUT" "COMMANDS:" "Help output did not list commands"
+assert_contains "$LAST_OUTPUT" "help --all" "Concise help did not point to full help"
+
+invoke_external "0" "$repo_root" "$cli_exe" help --list
+assert_contains "$LAST_OUTPUT" "build" "Help list did not contain build"
+assert_contains "$LAST_OUTPUT" "test" "Help list did not contain test"
+
+invoke_external "0" "$repo_root" "$cli_exe" help --all
 assert_contains "$LAST_OUTPUT" "RESERVED COMMANDS:" "Help output did not describe reserved commands"
 assert_contains "$LAST_OUTPUT" "COMMAND OPTION BOUNDARIES:" "Help output did not describe command option boundaries"
 assert_contains "$LAST_OUTPUT" "PROJECT.DH KEYS:" "Help output did not describe project.dh keys"
@@ -337,6 +344,11 @@ if [ "$integration" -eq 1 ]; then
         "$lib_kind_static_pattern" \
         "$lib_kind_lto_static_pattern" \
         "$lib_kind_shared_pattern"
+
+    if ! "$find_bin" "$lib_kind_project/build" -type f -name manifest.dh | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Build did not generate manifest.dh\n' >&2
+        exit 1
+    fi
 
     deps_graph_root=$(copy_scenario_project "dh-c/tests/fixture/deps-graph")
     deps_graph_project="$deps_graph_root/C"

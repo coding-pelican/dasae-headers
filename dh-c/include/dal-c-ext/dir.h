@@ -8,6 +8,7 @@
 
 extern bool dir_create(const char* path);
 extern bool dir_createRecur(const char* path);
+extern bool dir_linkDir(const char* link_path, const char* target_path);
 extern bool dir_removeRecur(const char* path);
 // Returns: allocated array of strings; caller must `free()` each string and the array
 extern char** dir_list(const char* path, int* count);

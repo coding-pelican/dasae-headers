@@ -2591,7 +2591,11 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
     }
     char* build_target = NULL;
     if (self->profile_explicit && profile) {
-        build_target = path_join(build_dir, profile->name);
+        char* target_name = dal_c__resolveTargetDirName(&self->opts);
+        char* target_dir = (build_dir && target_name) ? path_join(build_dir, target_name) : NULL;
+        build_target = target_dir ? path_join(target_dir, profile->name) : NULL;
+        free(target_dir);
+        free(target_name);
     } else {
         build_target = strdup(build_dir);
     }
@@ -2604,6 +2608,16 @@ int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj) {
         cleaned = true;
     }
     free(build_target);
+    if (self->profile_explicit && profile) {
+        char* legacy_profile = path_join(build_dir, profile->name);
+        if (legacy_profile && path_isDir(legacy_profile)) {
+            if (self->verbose) { printf("Removing legacy profile: %s\n", legacy_profile); }
+            dir_removeRecur(legacy_profile);
+            printf("Cleaned: %s\n", legacy_profile);
+            cleaned = true;
+        }
+        free(legacy_profile);
+    }
     free(build_dir);
 
     if (clean_local_build) {
@@ -4621,7 +4635,7 @@ static int dal_c_Cmd__buildLibrarySetFromSources(
     );
     if (result != 0) { return result; }
 
-    printf("Build successful!\n");
+    if (!self->dry_run) { printf("Build successful!\n"); }
     return 0;
 }
 
@@ -4889,7 +4903,7 @@ static int dal_c_Cmd__buildFromSources(
         if (result != 0) { return result; }
     }
 
-    if (print_success) {
+    if (print_success && !self->dry_run) {
         printf("Build successful!\n");
         (void)fflush(stdout);
     }
@@ -4954,7 +4968,16 @@ static int dal_c_Cmd__buildOneFromSources(
         base_build_dir = cwd ? path_join(cwd, dal_c_dir_build) : strdup(dal_c_dir_build);
         free(cwd);
     }
-    char* profile_dir = path_join(base_build_dir, profile->name);
+    char* profile_dir = NULL;
+    if (proj && proj->root) {
+        profile_dir = dal_c__makeBuildProfileDir(proj, &effective.opts, profile);
+    } else {
+        char* target_name = dal_c__resolveTargetDirName(&effective.opts);
+        char* target_dir = (base_build_dir && target_name) ? path_join(base_build_dir, target_name) : NULL;
+        profile_dir = target_dir ? path_join(target_dir, profile->name) : NULL;
+        free(target_dir);
+        free(target_name);
+    }
     free(base_build_dir);
     char* object_dir = path_join(profile_dir, "obj");
     dir_createRecur(object_dir);
@@ -4973,6 +4996,8 @@ static int dal_c_Cmd__buildOneFromSources(
     } else if (self->action == dal_c_CmdAction_run) {
         build_phase = dal_c_CmdPhase_run_build;
     }
+    bool target_existed_before_plan = path_isFile(target_path);
+    bool makefile_existed_before_plan = path_isFile(makefile_path);
     double build_started_at = dal_c_Cmd__nowSeconds();
     int plan_result = dal_c__generateMakefile(&effective, proj, profile, sources, target_path, object_dir, target_type);
     if (plan_result != dal_c_generateMakefile_success && plan_result != dal_c_generateMakefile_upToDate) {
@@ -4987,8 +5012,40 @@ static int dal_c_Cmd__buildOneFromSources(
         free(profile_dir);
         return 1;
     }
-    int result = (plan_result == dal_c_generateMakefile_upToDate) ? 0 : dal_c__executeMake(self, makefile_path);
+    int result = 0;
+    if (self->dry_run) {
+        printf("PLAN:\n");
+        printf("  target: %s\n", target_path);
+        printf("  makefile: %s\n", makefile_path);
+        printf("  profile: %s\n", profile ? profile->name : "(unknown)");
+        printf("  target-kind: %s\n", dal_c_Target_format(target_type));
+        printf("  sources: %d\n", ArrStr_len(sources));
+        printf("  state: %s\n", plan_result == dal_c_generateMakefile_upToDate ? "up-to-date" : "rebuild-required");
+        if (self->explain_rebuild) {
+            if (plan_result == dal_c_generateMakefile_upToDate) {
+                printf("REBUILD EXPLANATION:\n  The generated build contract and Makefile already match the requested build.\n");
+            } else {
+                printf("REBUILD EXPLANATION:\n");
+                if (!target_existed_before_plan) {
+                    printf("  - output artifact is missing: %s\n", target_path);
+                }
+                if (!makefile_existed_before_plan) {
+                    printf("  - generated Makefile was missing\n");
+                } else {
+                    printf("  - generated plan or one of its tracked inputs is stale\n");
+                }
+                printf("  Exact per-key fingerprint diffs are not recorded yet; the concrete plan is at the Makefile path above.\n");
+            }
+        }
+    } else {
+        result = (plan_result == dal_c_generateMakefile_upToDate) ? 0 : dal_c__executeMake(self, makefile_path);
+    }
     dal_c__phaseRecord(build_phase, dal_c_Cmd__nowSeconds() - build_started_at);
+    if (!self->dry_run && result == 0 && path_isFile(target_path)) {
+        if (!dal_c__writeArtifactManifest(profile_dir, &effective, profile, target_type, target_path)) {
+            (void)fprintf(stderr, "Warning: Failed to write artifact manifest for %s\n", target_path);
+        }
+    }
     free(makefile_path);
     free(object_dir);
     free(profile_dir);
@@ -5000,12 +5057,13 @@ static int dal_c_Cmd__buildOneFromSources(
         (void)fprintf(stderr, "Error: Build failed\n");
         return result;
     }
-    if (print_success) {
+    if (print_success && !self->dry_run) {
         printf("Build successful!\n");
         (void)fflush(stdout);
     }
 
-    if (self->action == dal_c_CmdAction_build
+    if (!self->dry_run
+        && self->action == dal_c_CmdAction_build
         && target_type == dal_c_Target_executable
         && !intent.target_root_name_hint
         && !intent.target_path
@@ -5021,9 +5079,9 @@ static int dal_c_Cmd__buildOneFromSources(
         }
     }
 
-    if (self->action == dal_c_CmdAction_run
+    if (!self->dry_run && (self->action == dal_c_CmdAction_run
         || self->action == dal_c_CmdAction_test
-        || self->action == dal_c_CmdAction_test_dsl) {
+        || self->action == dal_c_CmdAction_test_dsl)) {
         dal_c_Cmd runtime_cmd = *self;
         runtime_cmd.opts.profile = effective.opts.profile;
         switch (runtime_cmd.action) {

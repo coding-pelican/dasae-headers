@@ -186,3 +186,16 @@ Audited fix:
 - `Cmd.c` and `build.c` each owning their own cross-module command interpretation
 - sample/example/test plans recompiling project `src/` on every context build
 - self-project reusable code being staged through third-party dependency paths
+
+
+## Target-scoped Artifact Layout
+
+- Build artifacts: `build/<normalized-target>/<profile>/...`
+- Prebuilt artifacts: `prebuilt/<normalized-target>/<profile>/...`
+- Implicit host target: resolved from the selected compiler (`--print-target-triple`, then `-dumpmachine`)
+- Convenience alias: `build/native` points to the current host-target directory when the platform permits directory links
+- Explicit `--target=<triple>` never resolves through `native`; it uses the normalized triple directly.
+
+## Test Process Contract
+
+The DH test root main returns `0` only when the framework reports zero failed tests. Any failed unit returns a non-zero process status and is propagated by `dh-c test`.

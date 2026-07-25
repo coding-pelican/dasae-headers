@@ -2428,7 +2428,13 @@ static void test_prebuilt_dependency_staging(void) {
     char* dependency_include = path_join(dependency_root, "include");
     char* dependency_header = path_join(dependency_include, "foo.h");
     char* dependency_project = path_join(dependency_root, "project.dh");
-    char* prebuilt_libs = path_join(dependency_root, "prebuilt/stable/libs");
+    dal_c_CompilerOpts prebuilt_opts = { 0 };
+    prebuilt_opts.profile = dal_c_Profile_stable;
+    char* target_name = dal_c__resolveTargetDirName(&prebuilt_opts);
+    char* prebuilt_target = path_join(dependency_root, "prebuilt");
+    char* prebuilt_target_dir = path_join(prebuilt_target, target_name);
+    char* prebuilt_profile = path_join(prebuilt_target_dir, "stable");
+    char* prebuilt_libs = path_join(prebuilt_profile, "libs");
     TEST_ASSERT(temp_root != NULL);
     TEST_ASSERT(consumer_root != NULL);
     TEST_ASSERT(dependency_root != NULL);
@@ -2455,6 +2461,23 @@ static void test_prebuilt_dependency_staging(void) {
     TEST_ASSERT(lto_path != NULL);
     TEST_ASSERT(file_write(native_path, "native-prebuilt"));
     TEST_ASSERT(file_write(lto_path, "lto-prebuilt"));
+    char* manifest_path = path_join(prebuilt_profile, "manifest.dh");
+    char* manifest_text = str_format(
+        "manifest-version=1\ntarget=%s\nprofile=stable\nlto=on\n", target_name
+    );
+    TEST_ASSERT(manifest_path != NULL);
+    TEST_ASSERT(manifest_text != NULL);
+    TEST_ASSERT(file_write(manifest_path, manifest_text));
+    char* manifest_reason = NULL;
+    const dal_c_ProfileSpec* stable_profile = dal_c_ProfileSpec_by(dal_c_Profile_stable);
+    TEST_ASSERT(dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, true, &manifest_reason));
+    TEST_ASSERT(manifest_reason == NULL);
+    TEST_ASSERT(file_write(manifest_path, "manifest-version=1\ntarget=wrong-target\nprofile=stable\nlto=on\n"));
+    TEST_ASSERT(!dal_c__prebuiltManifestCompatible(prebuilt_profile, &prebuilt_opts, stable_profile, true, &manifest_reason));
+    TEST_ASSERT(manifest_reason != NULL);
+    free(manifest_reason);
+    manifest_reason = NULL;
+    TEST_ASSERT(file_write(manifest_path, manifest_text));
 
     dal_c_Project consumer = { 0 };
     consumer.root = consumer_root;
@@ -2494,9 +2517,15 @@ static void test_prebuilt_dependency_staging(void) {
     free(staged_native);
     free(staged_header);
     free(staged_root);
+    free(manifest_text);
+    free(manifest_path);
     free(lto_path);
     free(native_path);
     free(prebuilt_libs);
+    free(prebuilt_profile);
+    free(prebuilt_target_dir);
+    free(prebuilt_target);
+    free(target_name);
     free(dependency_project);
     free(dependency_header);
     free(dependency_include);
@@ -2778,8 +2807,15 @@ static void test_output_ext_does_not_rewrite_dependency_artifacts(void) {
     char* app_header = path_join(app_include_dir, "app.h");
     char* app_source = path_join(app_src_dir, "app.c");
     char* output_stem = path_join(app_root, "dist/app_module");
-    char* app_build_dir = path_join(app_root, "build/dev");
-    char* dep_build_dir = path_join(dep_root, "build/dev");
+    dal_c_CompilerOpts layout_opts = { 0 };
+    layout_opts.profile = dal_c_Profile_dev;
+    char* layout_target = dal_c__resolveTargetDirName(&layout_opts);
+    char* app_build_root = path_join(app_root, "build");
+    char* app_target_root = path_join(app_build_root, layout_target);
+    char* app_build_dir = path_join(app_target_root, "dev");
+    char* dep_build_root = path_join(dep_root, "build");
+    char* dep_target_root = path_join(dep_build_root, layout_target);
+    char* dep_build_dir = path_join(dep_target_root, "dev");
     char* dep_libs_dir = path_join(dep_build_dir, "libs");
     char* app_deps_dir = path_join(app_root, "lib/deps");
 #ifdef _WIN32
@@ -2878,7 +2914,12 @@ static void test_output_ext_does_not_rewrite_dependency_artifacts(void) {
     free(app_deps_dir);
     free(dep_libs_dir);
     free(dep_build_dir);
+    free(dep_target_root);
+    free(dep_build_root);
     free(app_build_dir);
+    free(app_target_root);
+    free(app_build_root);
+    free(layout_target);
     free(output_stem);
     free(app_source);
     free(app_header);
@@ -3067,7 +3108,13 @@ static void test_target_root_directory_uses_local_include(void) {
     char* demo_include_dir = path_join(project_root, "examples/demo/include");
     char* demo_header = path_join(demo_include_dir, "demo.h");
     char* demo_source = path_join(demo_src_dir, "main.c");
-    char* demo_output_dir = path_join(project_root, "build/dev/examples/demo");
+    dal_c_CompilerOpts demo_opts = { 0 };
+    demo_opts.profile = dal_c_Profile_dev;
+    char* demo_target_name = dal_c__resolveTargetDirName(&demo_opts);
+    char* demo_build_root = path_join(project_root, "build");
+    char* demo_target_root = path_join(demo_build_root, demo_target_name);
+    char* demo_profile_root = path_join(demo_target_root, "dev");
+    char* demo_output_dir = path_join(demo_profile_root, "examples/demo");
     char* compile_db_path = path_join(project_root, "build/clangd/compile_commands.json");
     TEST_ASSERT(temp_root != NULL);
     TEST_ASSERT(project_root != NULL);
@@ -3135,6 +3182,10 @@ static void test_target_root_directory_uses_local_include(void) {
 
     free(compile_db_path);
     free(demo_output_dir);
+    free(demo_profile_root);
+    free(demo_target_root);
+    free(demo_build_root);
+    free(demo_target_name);
     free(demo_source);
     free(demo_header);
     free(demo_include_dir);

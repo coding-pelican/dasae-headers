@@ -62,6 +62,7 @@ $extern fn_((TEST_Framework_instance(void))(TEST_Framework*));
 $extern fn_((TEST_Framework_bindUnit(TEST_UnitFn fn, S_const$u8 name))(void));
 /// @brief Run all registered tests
 $extern fn_((TEST_Framework_run(void))(void));
+$extern fn_((TEST_Framework_failedCount(void))(u32));
 
 /*========== Test Macros ====================================================*/
 

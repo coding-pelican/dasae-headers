@@ -547,3 +547,39 @@ Do not build workflows or documentation around them as if they were already impl
 
 - [`README.md`](./README.md)
 - [`PROJECT_TREE.md`](./PROJECT_TREE.md)
+
+
+## Help views
+
+```sh
+dh-c help          # concise command overview
+dh-c help --list   # command names only
+dh-c help --all    # complete reference
+dh-c help build    # one command
+```
+
+## Target-scoped build layout
+
+Build and packaged prebuilt artifacts are separated by normalized target identity:
+
+```text
+build/<target>/<profile>/
+prebuilt/<target>/<profile>/
+```
+
+For an implicit host build, dh-c asks the active compiler for its target triple. `build/native` is created as a best-effort directory link to that host target directory. Failure to create the convenience link does not fail the build.
+
+DH tests now return a non-zero process status when one or more test units fail, so CI does not need to parse `[FAIL]` or `Failed: N` output.
+
+## Build introspection
+
+The current build contract can be inspected without executing a build:
+
+```sh
+dh-c target show
+dh-c plan dev
+dh-c explain rebuild dev
+dh-c doctor
+```
+
+`plan` runs the same target/source/configuration resolution as `build` and writes the real generated Makefile, but does not invoke Make. `explain rebuild` reports missing output and generated-plan staleness. `target show` prints the normalized target-scoped output directory. `doctor` checks the selected compiler, Make, archiver, DH installation, project detection, and target resolution.

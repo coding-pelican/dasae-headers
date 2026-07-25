@@ -94,6 +94,10 @@ fn_((TEST_Framework_run(void))(void) $guard) {
     io_stream_nl();
 } $unguarded(fn);
 
+fn_((TEST_Framework_failedCount(void))(u32)) {
+    return TEST_Framework_instance()->stats.failed;
+};
+
 /* Debug versions of test functions */
 fn_((TEST_skip_test(SrcLoc loc))(TEST_E$void) $scope) {
     /* TODO: Improve this */

@@ -1291,6 +1291,8 @@ typedef struct dal_c_Cmd {
     char* dh_path_override; // --dh=<path>
     dal_c_VersionRecordMode version_record_mode; // --version-record=<mode>
     bool show_commands; // --commands=show|hide
+    bool dry_run; // plan/explain: generate the real build plan without executing it
+    bool explain_rebuild; // explain whether the generated plan was reused or refreshed
     bool verbose; // --verbose
     bool show_progress; // --progress=show|hide
     int elapsed_precision; // --elapsed-precision=<0..9>

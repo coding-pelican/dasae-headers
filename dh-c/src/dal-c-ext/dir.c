@@ -71,6 +71,23 @@ bool dir_create(const char* path) {
 #endif
 }
 
+bool dir_linkDir(const char* link_path, const char* target_path) {
+    if (!link_path || !target_path) { return false; }
+#ifdef _WIN32
+    DWORD attrs = GetFileAttributesA(link_path);
+    if (attrs != INVALID_FILE_ATTRIBUTES) { return true; }
+    DWORD flags = SYMBOLIC_LINK_FLAG_DIRECTORY;
+#ifdef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE
+    flags |= SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
+#endif
+    return CreateSymbolicLinkA(link_path, target_path, flags) != 0;
+#else
+    struct stat st = {0};
+    if (lstat(link_path, &st) == 0) { return S_ISLNK(st.st_mode); }
+    return symlink(target_path, link_path) == 0;
+#endif
+}
+
 static bool dir_isRootPath(const char* path) {
     if (!path) { return false; }
 #ifdef _WIN32

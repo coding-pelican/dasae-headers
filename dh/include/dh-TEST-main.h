@@ -49,7 +49,7 @@ $attr($inline)
 $static fn_((TEST_main__runTESTMain(void))(start_ExitCode)) {
     debug_StackTrace_setupCrashHandler();
     TEST_Framework_run();
-    return 0;
+    return TEST_Framework_failedCount() == 0 ? 0 : 1;
 };
 
 #ifndef main__root_included

@@ -95,6 +95,12 @@ void dal_c__printError(const char* fmt, ...) dal_c__printf_format(1, 2);
 
 /// === BUILD HELPERS ===
 
+char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts);
+char* dal_c__makeBuildProfileDir(const dal_c_Project* proj, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile);
+bool dal_c__writeArtifactManifest(const char* profile_dir, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, const char* target_path);
+bool dal_c__prebuiltManifestCompatible(const char* prebuilt_profile_dir, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile, bool lto_enabled, char** reason_out);
+
+
 #define dal_c_generateMakefile_success 0
 #define dal_c_generateMakefile_upToDate 2
 

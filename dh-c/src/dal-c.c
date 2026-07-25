@@ -1,6 +1,10 @@
-#include "dal-c.h"
+#include "dal-c/internal.h"
 #include "dal-c-ext/str.h"
 #include "dal-c-ext/env.h"
+#include "dal-c-ext/path.h"
+#include "dal-c-ext/proc.h"
+#include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 static int dal_c__printUsage(const char* topic);
@@ -9,6 +13,9 @@ static bool dal_c__needsProject(const dal_c_Cmd* cmd);
 static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd);
 static const dal_c_HelpCmd* dal_c__findHelpCmd(const char* name);
 static void dal_c__printHelpCmd(const dal_c_HelpCmd* cmd);
+static dal_c_Cmd* dal_c__parseAsBuild(int argc, const char* argv[], int skip_count);
+static int dal_c__showTarget(const dal_c_Cmd* cmd, const dal_c_Project* proj);
+static int dal_c__doctor(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) return dal_c__printUsage(NULL), 1;
@@ -17,7 +24,13 @@ int main(int argc, const char* argv[]) {
         return dal_c__printUsage(argc > 2 ? argv[2] : NULL);
     }
 
-    dal_c_Cmd* cmd = dal_c_Cmd_parse(argc, argv);
+    bool special_plan = str_eql(argv[1], "plan");
+    bool special_explain = argc > 2 && str_eql(argv[1], "explain") && str_eql(argv[2], "rebuild");
+    bool special_target = argc > 2 && str_eql(argv[1], "target") && str_eql(argv[2], "show");
+    bool special_doctor = str_eql(argv[1], "doctor");
+    dal_c_Cmd* cmd = (special_plan || special_doctor)
+                   ? dal_c__parseAsBuild(argc, argv, 1)
+                   : ((special_explain || special_target) ? dal_c__parseAsBuild(argc, argv, 2) : dal_c_Cmd_parse(argc, argv));
     if (!cmd) {
         (void)fprintf(stderr, "Error: Failed to parse command\n");
         return 1;
@@ -36,7 +49,12 @@ int main(int argc, const char* argv[]) {
     }
 
     dal_c_Project* proj = NULL;
-    if (dal_c__needsProject(cmd)) {
+    if (special_target || special_doctor) {
+        proj = dal_c_Project_detect(cmd);
+        if (!proj) {
+            proj = NULL;
+        }
+    } else if (dal_c__needsProject(cmd)) {
         proj = dal_c_Project_detect(cmd);
         if (!proj) {
             (void)fprintf(stderr, "Error: Failed to detect project\n");
@@ -50,17 +68,53 @@ int main(int argc, const char* argv[]) {
             }
         }
     }
-    int result = dal_c_Cmd_execute(cmd, proj);
+    int result = 0;
+    if (special_target) {
+        result = dal_c__showTarget(cmd, proj);
+    } else if (special_doctor) {
+        result = dal_c__doctor(cmd, proj);
+    } else {
+        if (special_plan || special_explain) {
+            cmd->dry_run = true;
+            cmd->explain_rebuild = special_explain;
+        }
+        result = dal_c_Cmd_execute(cmd, proj);
+    }
     if (proj) dal_c_Project_cleanup(&proj);
     dal_c_Cmd_cleanup(&cmd);
     return result;
 }
 
 static int dal_c__printUsage(const char* topic) {
+    bool list_only = topic && str_eql(topic, "--list");
+    bool print_all = topic && str_eql(topic, "--all");
+    if (list_only) {
+        for (int i = 0; i < dal_c_help_cmds_count; ++i) {
+            const dal_c_HelpCmd* cmd = &dal_c_help_cmds[i];
+            if (cmd->name && cmd->implemented) { printf("%s\n", cmd->name); }
+        }
+        printf("plan\nexplain\ntarget\ndoctor\n");
+        return 0;
+    }
+    if (print_all) { topic = NULL; }
+
     const int help_cmd_count = dal_c_help_cmds_count;
     const int global_option_count = dal_c_help_global_options_count;
     const int help_profile_count = dal_c_help_profiles_count;
 
+    if (topic && (str_eql(topic, "plan") || str_eql(topic, "explain") || str_eql(topic, "target") || str_eql(topic, "doctor"))) {
+        printf("%s - %s\n\n", dal_c_tool_name, dal_c_tool_description);
+        if (str_eql(topic, "plan")) {
+            printf("USAGE:\n  %s plan [profile] [path] [build options]\n\nGenerate the real build plan and Makefile without compiling or linking.\n", dal_c_tool_name);
+        } else if (str_eql(topic, "explain")) {
+            printf("USAGE:\n  %s explain rebuild [profile] [path] [build options]\n\nExplain whether the requested output is missing or its tracked plan is stale.\n", dal_c_tool_name);
+        } else if (str_eql(topic, "target")) {
+            printf("USAGE:\n  %s target show [profile] [build options]\n\nShow the requested and normalized target, compiler, profile, and target-scoped build directory.\n", dal_c_tool_name);
+        } else {
+            printf("USAGE:\n  %s doctor [profile] [build options]\n\nCheck compiler, make, archiver, DH installation, project detection, and effective target.\n", dal_c_tool_name);
+        }
+        return 0;
+    }
     if (topic) {
         const dal_c_HelpCmd* cmd = dal_c__findHelpCmd(topic);
         if (!cmd) {
@@ -75,6 +129,7 @@ static int dal_c__printUsage(const char* topic) {
     printf("USAGE:\n");
     printf("  %s <command> [profile] [path] [options]\n", dal_c_tool_name);
     printf("  %s help [command]\n", dal_c_tool_name);
+    printf("  %s help --list | --all\n", dal_c_tool_name);
     printf("  %s <command> --help\n", dal_c_tool_name);
     printf("  %s -h | --help\n", dal_c_tool_name);
     printf("  %s -v | --version\n\n", dal_c_tool_name);
@@ -91,7 +146,16 @@ static int dal_c__printUsage(const char* topic) {
         if (!cmd->name || !cmd->implemented) { continue; }
         printf("  %-14s %s\n", cmd->name, cmd->description);
     }
+    printf("  %-14s %s\n", "plan", "Generate the real build plan without executing it");
+    printf("  %-14s %s\n", "explain", "Explain why a requested build requires work");
+    printf("  %-14s %s\n", "target", "Inspect the effective target and output directory");
+    printf("  %-14s %s\n", "doctor", "Check the local build environment and DH installation");
     printf("\n");
+
+    if (!print_all) {
+        printf("Use `%s help <command>` for command details, `%s help --list` for names only, or `%s help --all` for the complete reference.\n", dal_c_tool_name, dal_c_tool_name, dal_c_tool_name);
+        return 0;
+    }
 
     printf("COMMAND DETAILS:\n\n");
 
@@ -340,4 +404,94 @@ static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd) {
     default:
         return false;
     }
+}
+
+
+static dal_c_Cmd* dal_c__parseAsBuild(int argc, const char* argv[], int skip_count) {
+    int out_argc = argc - skip_count + 1;
+    const char** out_argv = (const char**)calloc((size_t)out_argc + 1, sizeof(*out_argv));
+    if (!out_argv) { return NULL; }
+    out_argv[0] = argv[0];
+    out_argv[1] = dal_c_cmd_action_build;
+    int out_i = 2;
+    for (int i = 1 + skip_count; i < argc; ++i) { out_argv[out_i++] = argv[i]; }
+    dal_c_Cmd* result = dal_c_Cmd_parse(out_i, out_argv);
+    free(out_argv);
+    return result;
+}
+
+static const char* dal_c__effectiveCompiler(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    if (cmd && cmd->opts.compiler && cmd->opts.compiler[0]) { return cmd->opts.compiler; }
+    if (proj && proj->opts.compiler && proj->opts.compiler[0]) { return proj->opts.compiler; }
+    return dal_c_default_compiler;
+}
+
+static const char* dal_c__effectiveRequestedTarget(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    if (cmd && cmd->opts.arch_target && cmd->opts.arch_target[0]) { return cmd->opts.arch_target; }
+    if (proj && proj->opts.arch_target && proj->opts.arch_target[0]) { return proj->opts.arch_target; }
+    return NULL;
+}
+
+static dal_c_Profile dal_c__effectiveProfile(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    if (cmd && cmd->profile_explicit && cmd->opts.profile != dal_c_Profile_invalid) { return cmd->opts.profile; }
+    if (proj && proj->opts.profile != dal_c_Profile_invalid) { return proj->opts.profile; }
+    if (cmd && cmd->opts.profile != dal_c_Profile_invalid) { return cmd->opts.profile; }
+    return dal_c_default_profile;
+}
+
+static int dal_c__showTarget(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    dal_c_CompilerOpts opts = {0};
+    opts.compiler = strdup(dal_c__effectiveCompiler(cmd, proj));
+    const char* requested = dal_c__effectiveRequestedTarget(cmd, proj);
+    opts.arch_target = requested ? strdup(requested) : NULL;
+    char* normalized = dal_c__resolveTargetDirName(&opts);
+    dal_c_Profile profile_id = dal_c__effectiveProfile(cmd, proj);
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(profile_id);
+    char* profile_dir = (proj && proj->root && profile) ? dal_c__makeBuildProfileDir(proj, &opts, profile) : NULL;
+    printf("TARGET:\n");
+    printf("  requested: %s\n", requested ? requested : "(host compiler default)");
+    printf("  normalized: %s\n", normalized ? normalized : "(unresolved)");
+    printf("  compiler: %s\n", opts.compiler ? opts.compiler : "(none)");
+    printf("  profile: %s\n", profile ? profile->name : "(unknown)");
+    printf("  build-dir: %s\n", profile_dir ? profile_dir : "(project unavailable)");
+    printf("  native-alias: %s\n", requested ? "not used for explicit target" : "build/native");
+    free(profile_dir);
+    free(normalized);
+    dal_c_CompilerOpts_cleanup(&opts);
+    return 0;
+}
+
+static bool dal_c__toolResponds(const char* tool, const char* arg) {
+    if (!tool || !tool[0]) { return false; }
+    const char* argv[] = { tool, arg, NULL };
+    char* output = proc_output(argv);
+    bool ok = output && output[0];
+    free(output);
+    return ok;
+}
+
+static int dal_c__doctor(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    int failures = 0;
+    const char* compiler = dal_c__effectiveCompiler(cmd, proj);
+    bool compiler_ok = dal_c__toolResponds(compiler, "--version");
+    bool make_ok = dal_c__toolResponds("make", "--version") || dal_c__toolResponds("gmake", "--version");
+    bool ar_ok = dal_c__toolResponds(dal_c_tool_ar, "--version");
+    char* dh_path = dal_c_Project_findDHInstallation(cmd);
+    bool dh_ok = dh_path && path_isDir(dh_path);
+    printf("DOCTOR:\n");
+    printf("  compiler: %s [%s]\n", compiler, compiler_ok ? "ok" : "missing or unusable");
+    printf("  make: %s\n", make_ok ? "ok" : "missing or unusable");
+    printf("  archiver: %s [%s]\n", dal_c_tool_ar, ar_ok ? "ok" : "missing or unusable");
+    printf("  dh: %s [%s]\n", dh_path ? dh_path : "(not found)", dh_ok ? "ok" : "missing");
+    printf("  project: %s\n", proj && proj->root ? proj->root : "(not detected; explicit-file builds remain possible)");
+    if (!compiler_ok) failures++;
+    if (!make_ok) failures++;
+    if (!ar_ok) failures++;
+    if (!dh_ok) failures++;
+    if (compiler_ok) {
+        dal_c__showTarget(cmd, proj);
+    }
+    printf("RESULT: %s\n", failures == 0 ? "healthy" : "issues detected");
+    free(dh_path);
+    return failures == 0 ? 0 : 1;
 }

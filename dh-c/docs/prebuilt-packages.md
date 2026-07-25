@@ -92,3 +92,10 @@ For general Windows/Linux SDK packages, the recommended supported set is:
 `profile` is better shipped as an optional diagnostics package because profiling often requires a deliberate symbol/frame-pointer/tool setup. `optimize` is host-native and must be built for the final machine. `compact` and `micro` are final-size-policy builds whose value depends strongly on the complete link, so they remain source/local-build profiles in the general SDK.
 
 There is currently no `compat` build profile. Portability should remain a target/toolchain/ABI package property rather than another optimization profile. The native non-LTO archive emitted by `stable` already provides the intended portable fallback within a matching platform SDK.
+
+## Artifact manifest
+
+New packages should include `manifest.dh` in each target/profile directory. dh-c validates
+the normalized target, profile, and effective LTO state before using a packaged artifact.
+See [artifact-manifest.md](artifact-manifest.md). Packages without a manifest remain accepted
+as legacy packages during migration.

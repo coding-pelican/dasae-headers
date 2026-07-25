@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <ctype.h>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -21,6 +22,87 @@
 #endif
 
 // === PRIVATE HELPERS (Core Layer - use asserts) ===
+
+static char* dal_c__trimTargetOutput(char* text) {
+    if (!text) { return NULL; }
+    char* begin = text;
+    while (*begin && (*begin == ' ' || *begin == '\t' || *begin == '\r' || *begin == '\n')) { ++begin; }
+    char* end = begin + strlen(begin);
+    while (end > begin && (end[-1] == ' ' || end[-1] == '\t' || end[-1] == '\r' || end[-1] == '\n')) { --end; }
+    *end = '\0';
+    char* result = strdup(begin);
+    free(text);
+    return result;
+}
+
+static char* dal_c__sanitizeTargetDirName(const char* target) {
+    if (!target || !target[0]) { return strdup("unknown-host"); }
+    char* result = strdup(target);
+    if (!result) { return NULL; }
+    for (char* it = result; *it; ++it) {
+        unsigned char c = (unsigned char)*it;
+        if (!(isalnum(c) || c == '-' || c == '_' || c == '.')) { *it = '_'; }
+    }
+    return result;
+}
+
+char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
+    if (opts && opts->arch_target && opts->arch_target[0]) {
+        return dal_c__sanitizeTargetDirName(opts->arch_target);
+    }
+    const char* compiler = (opts && opts->compiler && opts->compiler[0]) ? opts->compiler : "clang";
+    const char* clang_argv[] = { compiler, "--print-target-triple", NULL };
+    char* output = dal_c__trimTargetOutput(proc_output(clang_argv));
+    if (!output || !output[0]) {
+        free(output);
+        const char* generic_argv[] = { compiler, "-dumpmachine", NULL };
+        output = dal_c__trimTargetOutput(proc_output(generic_argv));
+    }
+    if (!output || !output[0]) {
+        free(output);
+#ifdef _WIN32
+# if defined(_M_ARM64) || defined(__aarch64__)
+        output = strdup("aarch64-w64-windows-gnu");
+# else
+        output = strdup("x86_64-w64-windows-gnu");
+# endif
+#elif defined(__APPLE__)
+# if defined(__aarch64__)
+        output = strdup("aarch64-apple-darwin");
+# else
+        output = strdup("x86_64-apple-darwin");
+# endif
+#else
+# if defined(__aarch64__)
+        output = strdup("aarch64-unknown-linux-gnu");
+# else
+        output = strdup("x86_64-unknown-linux-gnu");
+# endif
+#endif
+    }
+    char* result = dal_c__sanitizeTargetDirName(output);
+    free(output);
+    return result;
+}
+
+char* dal_c__makeBuildProfileDir(const dal_c_Project* proj, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
+    assert(proj != NULL && proj->root != NULL && profile != NULL);
+    char* build_root = dal_c_Project_getBuildDir(proj);
+    char* target_name = dal_c__resolveTargetDirName(opts);
+    char* target_root = (build_root && target_name) ? path_join(build_root, target_name) : NULL;
+    if (target_root) { dir_createRecur(target_root); }
+    if (build_root && target_name && (!opts || !opts->arch_target || !opts->arch_target[0])) {
+        char* native_link = path_join(build_root, "native");
+        if (native_link) { (void)dir_linkDir(native_link, target_name); }
+        free(native_link);
+    }
+    char* result = target_root ? path_join(target_root, profile->name) : NULL;
+    free(target_root);
+    free(target_name);
+    free(build_root);
+    return result;
+}
+
 
 static void dal_c__freeFileList(char** files, int file_count);
 static const char** dal_c__makeConstArgvView(ArrStr* argv);
@@ -32,7 +114,87 @@ static bool dal_c__copyHeaderFile(const char* src, const char* out_dir);
 static bool dal_c__copyHeaderRelativeTo(const char* src, const char* src_root, const char* dst_dir);
 static bool dal_c__copyHeadersRecursive(const char* src_dir, const char* dst_dir);
 static char* dal_c__resolveDepsTargetDir(const char* deps_dir, const char* lib_name);
-static char* dal_c__makePrebuiltProfileDir(const char* project_root, const char* profile_name);
+
+static bool dal_c__writeFileIfChanged(const char* path, const char* content);
+static bool dal_c__effectiveLtoEnabled(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
+
+static char* dal_c__manifestValue(const char* manifest_path, const char* key) {
+    int line_count = 0;
+    char** lines = file_readLines(manifest_path, &line_count);
+    if (!lines) { return NULL; }
+    char* result = NULL;
+    size_t key_len = strlen(key);
+    for (int i = 0; i < line_count; ++i) {
+        char* line = lines[i];
+        while (*line == ' ' || *line == '\t') { ++line; }
+        if (strncmp(line, key, key_len) != 0 || line[key_len] != '=') { continue; }
+        const char* value = line + key_len + 1;
+        while (*value == ' ' || *value == '\t') { ++value; }
+        result = strdup(value);
+        if (result) {
+            size_t n = strlen(result);
+            while (n > 0 && (result[n - 1] == '\r' || result[n - 1] == '\n' || result[n - 1] == ' ' || result[n - 1] == '\t')) {
+                result[--n] = '\0';
+            }
+        }
+        break;
+    }
+    for (int i = 0; i < line_count; ++i) { free(lines[i]); }
+    free(lines);
+    return result;
+}
+
+bool dal_c__prebuiltManifestCompatible(const char* prebuilt_profile_dir, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile, bool lto_enabled, char** reason_out) {
+    if (reason_out) { *reason_out = NULL; }
+    if (!prebuilt_profile_dir || !opts || !profile) { return false; }
+    char* manifest_path = path_join(prebuilt_profile_dir, "manifest.dh");
+    if (!manifest_path || !path_isFile(manifest_path)) {
+        free(manifest_path);
+        return true; /* legacy package: accepted during migration */
+    }
+    char* expected_target = dal_c__resolveTargetDirName(opts);
+    char* actual_target = dal_c__manifestValue(manifest_path, "target");
+    char* actual_profile = dal_c__manifestValue(manifest_path, "profile");
+    char* actual_lto = dal_c__manifestValue(manifest_path, "lto");
+    bool ok = true;
+    if (!actual_target || !expected_target || !str_eql(actual_target, expected_target)) {
+        ok = false;
+        if (reason_out) { *reason_out = str_format("target mismatch: package=%s requested=%s", actual_target ? actual_target : "(missing)", expected_target ? expected_target : "(unknown)"); }
+    } else if (!actual_profile || !str_eql(actual_profile, profile->name)) {
+        ok = false;
+        if (reason_out) { *reason_out = str_format("profile mismatch: package=%s requested=%s", actual_profile ? actual_profile : "(missing)", profile->name); }
+    } else if (actual_lto && !str_eql(actual_lto, lto_enabled ? "on" : "off")) {
+        ok = false;
+        if (reason_out) { *reason_out = str_format("LTO mismatch: package=%s requested=%s", actual_lto, lto_enabled ? "on" : "off"); }
+    }
+    free(actual_lto); free(actual_profile); free(actual_target); free(expected_target); free(manifest_path);
+    return ok;
+}
+
+bool dal_c__writeArtifactManifest(const char* profile_dir, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type, const char* target_path) {
+    if (!profile_dir || !cmd || !profile || !target_path) { return false; }
+    char* manifest_path = path_join(profile_dir, "manifest.dh");
+    char* target_name = dal_c__resolveTargetDirName(&cmd->opts);
+    char* artifact_name = path_basename(target_path);
+    bool lto_enabled = dal_c__effectiveLtoEnabled(cmd, profile, target_type);
+    char* content = str_format(
+        "manifest-version=1\n"
+        "target=%s\n"
+        "profile=%s\n"
+        "artifact-kind=%s\n"
+        "artifact=%s\n"
+        "lto=%s\n"
+        "compiler=%s\n",
+        target_name ? target_name : "unknown", profile->name, dal_c_Target_format(target_type),
+        artifact_name ? artifact_name : target_path, lto_enabled ? "on" : "off",
+        cmd->opts.compiler ? cmd->opts.compiler : "auto"
+    );
+    bool ok = manifest_path && content && dal_c__writeFileIfChanged(manifest_path, content);
+    free(content); free(artifact_name); free(target_name); free(manifest_path);
+    return ok;
+}
+
+static char* dal_c__makePrebuiltProfileDir(const char* project_root, const dal_c_CompilerOpts* opts, const char* profile_name);
 static char* dal_c__resolvePrebuiltArtifactPath(const char* prebuilt_profile_dir, const char* name, dal_c_Target target_type, bool is_windows, bool lto_enabled);
 static char* dal_c__makeMakePath(const char* path);
 static char* dal_c__makeTempPath(const char* path);
@@ -1128,14 +1290,18 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     bool is_windows = dal_c__platformIsWindows();
     bool lto_enabled = lib->is_static
                     && dal_c_LtoMode_isEnabled(dal_c__resolvedLtoState(&merged.opts, lib_profile));
-    char* prebuilt_profile_dir = dal_c__makePrebuiltProfileDir(lib_abs_path, lib_profile->name);
+    char* prebuilt_profile_dir = dal_c__makePrebuiltProfileDir(lib_abs_path, &merged.opts, lib_profile->name);
     char* prebuilt_artifact = prebuilt_profile_dir
                             ? dal_c__resolvePrebuiltArtifactPath(
                                   prebuilt_profile_dir, lib->name, lib_target_type, is_windows, lto_enabled
                               )
                             : NULL;
     bool may_use_prebuilt = merged.opts.prebuilt_mode != dal_c_PrebuiltMode_off && !should_run_dependency_tests;
-    if (may_use_prebuilt && prebuilt_artifact) {
+    char* prebuilt_manifest_reason = NULL;
+    bool prebuilt_manifest_ok = !prebuilt_artifact || dal_c__prebuiltManifestCompatible(
+        prebuilt_profile_dir, &merged.opts, lib_profile, lto_enabled, &prebuilt_manifest_reason
+    );
+    if (may_use_prebuilt && prebuilt_artifact && prebuilt_manifest_ok) {
         if (cmd->show_progress) {
             (void)printf("[PREBUILT] %s %s\n", lib->name, lib_profile->name);
             (void)fflush(stdout);
@@ -1144,12 +1310,17 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
             proj, lib_proj, lib, lib_abs_path, prebuilt_profile_dir,
             &merged, lib_profile, lib_target_type, is_windows, true
         );
+        free(prebuilt_manifest_reason);
         free(prebuilt_artifact);
         free(prebuilt_profile_dir);
         dal_c_CompilerOpts_cleanup(&merged.opts);
         dal_c_Project_cleanup(&lib_proj);
         return copied ? 0 : 1;
     }
+    if (prebuilt_artifact && !prebuilt_manifest_ok && cmd->show_progress) {
+        (void)fprintf(stderr, "[PREBUILT-SKIP] %s: %s\n", lib->name, prebuilt_manifest_reason ? prebuilt_manifest_reason : "manifest incompatible");
+    }
+    free(prebuilt_manifest_reason);
     free(prebuilt_artifact);
     free(prebuilt_profile_dir);
     if (merged.opts.prebuilt_mode == dal_c_PrebuiltMode_required) {
@@ -1271,9 +1442,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
         dal_c_Project_cleanup(&lib_proj);
         return 1;
     }
-    char* lib_build_dir = path_join(lib_abs_path, dal_c_dir_build);
-    char* lib_build_profile = path_join(lib_build_dir, lib_profile->name);
-    free(lib_build_dir);
+    char* lib_build_profile = dal_c__makeBuildProfileDir(lib_proj, &merged.opts, lib_profile);
     dir_createRecur(lib_build_profile);
 
     // Use the detected lib_proj for Makefile generation (has absolute paths)
@@ -1446,9 +1615,7 @@ int dal_c__runExecutable(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     assert(cmd != NULL);
     assert(proj != NULL);
     const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
-    char* base_build_dir = dal_c__buildBaseDir(proj);
-    char* build_dir = path_join(base_build_dir, profile->name);
-    free(base_build_dir);
+    char* build_dir = dal_c__makeBuildProfileDir(proj, &cmd->opts, profile);
     assert(build_dir != NULL);
 
     dal_c_CommandIntent intent = { 0 };
@@ -1530,9 +1697,7 @@ int dal_c__runDebugger(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     assert(cmd != NULL);
     assert(proj != NULL);
     const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
-    char* base_build_dir = dal_c__buildBaseDir(proj);
-    char* build_dir = path_join(base_build_dir, profile->name);
-    free(base_build_dir);
+    char* build_dir = dal_c__makeBuildProfileDir(proj, &cmd->opts, profile);
     assert(build_dir != NULL);
 
     dal_c_CommandIntent intent = { 0 };
@@ -1628,7 +1793,8 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
         return 1;
     }
     char* build_dir = dal_c_Project_getBuildDir(dh_proj);
-    char* profile_dir = path_join(build_dir, profile->name);
+    dal_c_CompilerOpts target_opts = *parent_opts;
+    char* profile_dir = dal_c__makeBuildProfileDir(dh_proj, &target_opts, profile);
     char* object_dir = path_join(profile_dir, "obj");
     dir_createRecur(object_dir);
     char* saved_cwd = env_getCWD();
@@ -1677,13 +1843,17 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
     bool is_windows = dal_c__platformIsWindows();
     bool lto_enabled = dh_target_type == dal_c_Target_static_lib
                     && dal_c_LtoMode_isEnabled(dal_c__effectiveLtoState(&cmd, profile, dh_target_type));
-    char* prebuilt_profile_dir = dal_c__makePrebuiltProfileDir(dh_proj->root, profile->name);
+    char* prebuilt_profile_dir = dal_c__makePrebuiltProfileDir(dh_proj->root, &cmd.opts, profile->name);
     char* prebuilt_artifact = prebuilt_profile_dir
                             ? dal_c__resolvePrebuiltArtifactPath(
                                   prebuilt_profile_dir, "dh", dh_target_type, is_windows, lto_enabled
                               )
                             : NULL;
-    if (cmd.opts.prebuilt_mode != dal_c_PrebuiltMode_off && prebuilt_artifact) {
+    char* dh_manifest_reason = NULL;
+    bool dh_manifest_ok = !prebuilt_artifact || dal_c__prebuiltManifestCompatible(
+        prebuilt_profile_dir, &cmd.opts, profile, lto_enabled, &dh_manifest_reason
+    );
+    if (cmd.opts.prebuilt_mode != dal_c_PrebuiltMode_off && prebuilt_artifact && dh_manifest_ok) {
         char* output_libs_dir = path_join(profile_dir, "libs");
         dir_createRecur(output_libs_dir);
         char* artifact_name = path_basename(prebuilt_artifact);
@@ -1705,6 +1875,7 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
         free(artifact_dst);
         free(artifact_name);
         free(output_libs_dir);
+        free(dh_manifest_reason);
         free(prebuilt_artifact);
         free(prebuilt_profile_dir);
         if (!env_setCWD(saved_cwd)) {
@@ -1720,6 +1891,10 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
         dal_c_Project_cleanup(&dh_proj);
         return copied ? 0 : 1;
     }
+    if (prebuilt_artifact && !dh_manifest_ok && cmd.show_progress) {
+        (void)fprintf(stderr, "[PREBUILT-SKIP] dh: %s\n", dh_manifest_reason ? dh_manifest_reason : "manifest incompatible");
+    }
+    free(dh_manifest_reason);
     free(prebuilt_artifact);
     free(prebuilt_profile_dir);
     if (cmd.opts.prebuilt_mode == dal_c_PrebuiltMode_required) {
@@ -2250,11 +2425,15 @@ static char* dal_c__selectStaticLibraryPath(const char* native_path, bool lto_en
     return strdup(native_path);
 }
 
-static char* dal_c__makePrebuiltProfileDir(const char* project_root, const char* profile_name) {
+static char* dal_c__makePrebuiltProfileDir(const char* project_root, const dal_c_CompilerOpts* opts, const char* profile_name) {
     assert(project_root != NULL);
     assert(profile_name != NULL);
     char* prebuilt_root = path_join(project_root, "prebuilt");
-    char* profile_dir = prebuilt_root ? path_join(prebuilt_root, profile_name) : NULL;
+    char* target_name = dal_c__resolveTargetDirName(opts);
+    char* target_root = (prebuilt_root && target_name) ? path_join(prebuilt_root, target_name) : NULL;
+    char* profile_dir = target_root ? path_join(target_root, profile_name) : NULL;
+    free(target_root);
+    free(target_name);
     free(prebuilt_root);
     return profile_dir;
 }
@@ -2577,7 +2756,16 @@ char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec
         base_dir = cwd ? path_join(cwd, dal_c_dir_build) : strdup(dal_c_dir_build);
         free(cwd);
     }
-    char* profile_dir = path_join(base_dir, profile->name);
+    char* profile_dir = NULL;
+    if (proj && proj->root) {
+        profile_dir = dal_c__makeBuildProfileDir(proj, &cmd->opts, profile);
+    } else {
+        char* target_name = dal_c__resolveTargetDirName(&cmd->opts);
+        char* target_dir = (base_dir && target_name) ? path_join(base_dir, target_name) : NULL;
+        profile_dir = target_dir ? path_join(target_dir, profile->name) : NULL;
+        free(target_dir);
+        free(target_name);
+    }
     char* plans_dir = path_join(profile_dir, ".plans");
     dal_c_CommandIntent intent = { 0 };
     dal_c_Cmd_normalizeIntent(cmd, &intent);
