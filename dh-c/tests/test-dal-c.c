@@ -3433,6 +3433,30 @@ static void test_prebuilt_dependency_staging(void) {
     free(manifest_reason);
     manifest_reason = NULL;
 
+    char* compatible_artifact = NULL;
+    bool selected_lto = true;
+#ifdef _WIN32
+    const bool is_windows = true;
+#else
+    const bool is_windows = false;
+#endif
+    TEST_ASSERT(dal_c__resolveCompatiblePrebuiltArtifact(
+        prebuilt_profile,
+        "foo",
+        dal_c_Target_static_lib,
+        is_windows,
+        true,
+        &prebuilt_opts,
+        stable_profile,
+        &compatible_artifact,
+        &selected_lto,
+        &manifest_reason
+    ));
+    TEST_ASSERT(manifest_reason == NULL);
+    TEST_ASSERT(!selected_lto);
+    TEST_ASSERT(test_path_text_eql(compatible_artifact, native_path));
+    free(compatible_artifact);
+
     char* obsolete_manifest_text = str_format("manifest-version=1\n%s", manifest_text);
     TEST_ASSERT(obsolete_manifest_text != NULL);
     TEST_ASSERT(file_write(manifest_path, obsolete_manifest_text));

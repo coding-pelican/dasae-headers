@@ -325,6 +325,13 @@ static bool dal_c__effectiveLtoEnabled(const dal_c_Cmd* cmd, const dal_c_Profile
 static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 char* dal_c__makePrebuiltAbiContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static char* dal_c__makeLtoToolchainContractKey(const dal_c_CompilerOpts* opts);
+static char* dal_c__resolvePrebuiltArtifactPath(
+    const char* prebuilt_profile_dir,
+    const char* name,
+    dal_c_Target target_type,
+    bool is_windows,
+    bool lto_enabled
+);
 
 static char* dal_c__manifestValue(const char* manifest_path, const char* key) {
     int line_count = 0;
@@ -791,6 +798,79 @@ bool dal_c__prebuiltManifestCompatible(
     return ok;
 }
 
+bool dal_c__resolveCompatiblePrebuiltArtifact(
+    const char* prebuilt_profile_dir,
+    const char* name,
+    dal_c_Target target_type,
+    bool is_windows,
+    bool lto_requested,
+    const dal_c_CompilerOpts* opts,
+    const dal_c_ProfileSpec* profile,
+    char** artifact_out,
+    bool* lto_selected_out,
+    char** reason_out
+) {
+    if (artifact_out) { *artifact_out = NULL; }
+    if (lto_selected_out) { *lto_selected_out = false; }
+    if (reason_out) { *reason_out = NULL; }
+    if (!prebuilt_profile_dir || !name || !opts || !profile || !artifact_out) {
+        return false;
+    }
+
+    char* reason = NULL;
+    char* artifact = dal_c__resolvePrebuiltArtifactPath(
+        prebuilt_profile_dir, name, target_type, is_windows, lto_requested
+    );
+    bool compatible = artifact && dal_c__prebuiltManifestCompatible(
+        prebuilt_profile_dir,
+        opts,
+        profile,
+        target_type,
+        lto_requested,
+        artifact,
+        &reason
+    );
+    if (compatible) {
+        *artifact_out = artifact;
+        if (lto_selected_out) { *lto_selected_out = lto_requested; }
+        free(reason);
+        return true;
+    }
+
+    if (lto_requested && target_type == dal_c_Target_static_lib) {
+        free(reason);
+        reason = NULL;
+        free(artifact);
+        artifact = dal_c__resolvePrebuiltArtifactPath(
+            prebuilt_profile_dir, name, target_type, is_windows, false
+        );
+        dal_c_CompilerOpts native_opts = *opts;
+        native_opts.lto_mode = dal_c_LtoMode_off;
+        compatible = artifact && dal_c__prebuiltManifestCompatible(
+            prebuilt_profile_dir,
+            &native_opts,
+            profile,
+            target_type,
+            false,
+            artifact,
+            &reason
+        );
+        if (compatible) {
+            *artifact_out = artifact;
+            free(reason);
+            return true;
+        }
+    }
+
+    free(artifact);
+    if (reason_out) {
+        *reason_out = reason;
+    } else {
+        free(reason);
+    }
+    return false;
+}
+
 static const char* dal_c__manifestRoleForFileName(const char* name, bool is_windows) {
     if (!name) { return NULL; }
     if (is_windows) {
@@ -990,7 +1070,6 @@ bool dal_c__writePrebuiltManifest(
 }
 
 static char* dal_c__makePrebuiltProfileDir(const char* project_root, const dal_c_CompilerOpts* opts, const char* profile_name);
-static char* dal_c__resolvePrebuiltArtifactPath(const char* prebuilt_profile_dir, const char* name, dal_c_Target target_type, bool is_windows, bool lto_enabled);
 static char* dal_c__makeMakePath(const char* path);
 static char* dal_c__makeTempPath(const char* path);
 static void dal_c__fprintMakePath(FILE* fp, const char* path);
@@ -2761,19 +2840,34 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
     bool lto_enabled = dh_target_type == dal_c_Target_static_lib
                     && dal_c_LtoMode_isEnabled(dal_c__effectiveLtoState(&cmd, profile, dh_target_type));
     char* prebuilt_profile_dir = dal_c__makePrebuiltProfileDir(dh_proj->root, &cmd.opts, profile->name);
-    char* prebuilt_artifact = prebuilt_profile_dir
-                                ? dal_c__resolvePrebuiltArtifactPath(
-                                      prebuilt_profile_dir, "dh", dh_target_type, is_windows, lto_enabled
-                                  )
-                                : NULL;
+    char* prebuilt_artifact = NULL;
     char* dh_manifest_reason = NULL;
-    bool dh_manifest_ok = !prebuilt_artifact || dal_c__prebuiltManifestCompatible(prebuilt_profile_dir, &cmd.opts, profile, dh_target_type, lto_enabled, prebuilt_artifact, &dh_manifest_reason);
+    bool selected_lto = false;
+    bool dh_manifest_ok = prebuilt_profile_dir && dal_c__resolveCompatiblePrebuiltArtifact(
+        prebuilt_profile_dir,
+        "dh",
+        dh_target_type,
+        is_windows,
+        lto_enabled,
+        &cmd.opts,
+        profile,
+        &prebuilt_artifact,
+        &selected_lto,
+        &dh_manifest_reason
+    );
     if (cmd.opts.prebuilt_mode != dal_c_PrebuiltMode_off && prebuilt_artifact && dh_manifest_ok) {
         char* output_libs_dir = path_join(profile_dir, "libs");
         dir_createRecur(output_libs_dir);
         char* artifact_name = path_basename(prebuilt_artifact);
         char* artifact_dst = path_join(output_libs_dir, artifact_name);
         bool copied = file_copy(prebuilt_artifact, artifact_dst);
+        if (copied && dh_target_type == dal_c_Target_static_lib && !selected_lto) {
+            char* stale_lto = dal_c__makeLtoStaticLibraryPath(artifact_dst);
+            if (path_isFile(stale_lto) && remove(stale_lto) != 0) {
+                copied = false;
+            }
+            free(stale_lto);
+        }
         if (copied && is_windows && dh_target_type == dal_c_Target_shared_lib) {
             char* import_src = dal_c__makeSharedImportLibraryPath(prebuilt_artifact);
             char* import_name = path_basename(import_src);
@@ -2784,7 +2878,12 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
             free(import_src);
         }
         if (copied && cmd.show_progress) {
-            (void)printf("[PREBUILT] dh %s %s\n", profile->name, dal_c_Target_format(dh_target_type));
+            (void)printf(
+                "[PREBUILT] dh %s %s%s\n",
+                profile->name,
+                dal_c_Target_format(dh_target_type),
+                lto_enabled && !selected_lto ? " (native fallback)" : ""
+            );
             (void)fflush(stdout);
         }
         free(artifact_dst);
@@ -2806,11 +2905,11 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
         dal_c_Project_cleanup(&dh_proj);
         return copied ? 0 : 1;
     }
-    if (prebuilt_artifact && !dh_manifest_ok && cmd.show_progress) {
+    if (!dh_manifest_ok && dh_manifest_reason && cmd.show_progress) {
         (void)fprintf(stderr, "[PREBUILT-SKIP] dh: %s\n", dh_manifest_reason ? dh_manifest_reason : "manifest incompatible");
     }
     if (cmd.opts.prebuilt_mode == dal_c_PrebuiltMode_required) {
-        if (prebuilt_artifact && !dh_manifest_ok) {
+        if (dh_manifest_reason) {
             (void)fprintf(stderr, "Error: Required prebuilt dh artifact is incompatible: %s\n", dh_manifest_reason ? dh_manifest_reason : "invalid manifest.dh");
         } else {
             (void)fprintf(stderr, "Error: Required prebuilt dh artifact was not found under %s\n", prebuilt_profile_dir ? prebuilt_profile_dir : "prebuilt/<target>/<profile>");
@@ -6347,37 +6446,27 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             }
         }
         if (dal_c__usesDHLibrary(proj, opts)) {
-            char* dh_target_name = dal_c__resolveTargetDirName(opts);
-            (void)fprintf(fp, " -L$(DH_PATH)/build/%s/%s/libs", dh_target_name, profile->name);
-            if (target_type == dal_c_Target_shared_lib) {
-                (void)fprintf(
-                    fp,
-                    is_windows
-                        ? " $(DH_PATH)/build/%s/%s/libs/dh.dll.lib"
-                        : " $(DH_PATH)/build/%s/%s/libs/libdh.so",
-                    dh_target_name,
-                    profile->name
-                );
-            } else if (lto_enabled) {
-                (void)fprintf(
-                    fp,
-                    is_windows
-                        ? " $(DH_PATH)/build/%s/%s/libs/dh.lto.lib"
-                        : " $(DH_PATH)/build/%s/%s/libs/libdh.lto.a",
-                    dh_target_name,
-                    profile->name
-                );
-            } else {
-                (void)fprintf(
-                    fp,
-                    is_windows
-                        ? " $(DH_PATH)/build/%s/%s/libs/dh.lib"
-                        : " $(DH_PATH)/build/%s/%s/libs/libdh.a",
-                    dh_target_name,
-                    profile->name
-                );
+            char* dh_profile_dir = dal_c__makeBuildProfileDirAt(proj->dh_path, opts, profile);
+            char* dh_libs_dir = dh_profile_dir ? path_join(dh_profile_dir, "libs") : NULL;
+            const char* dh_native_name = target_type == dal_c_Target_shared_lib
+                                       ? (is_windows ? "dh.dll.lib" : "libdh.so")
+                                       : (is_windows ? "dh.lib" : "libdh.a");
+            char* dh_native_path = dh_libs_dir ? path_join(dh_libs_dir, dh_native_name) : NULL;
+            char* dh_link_path = target_type == dal_c_Target_shared_lib
+                               ? (dh_native_path ? strdup(dh_native_path) : NULL)
+                               : (dh_native_path ? dal_c__selectStaticLibraryPath(dh_native_path, lto_enabled) : NULL);
+            if (dh_libs_dir) {
+                (void)fprintf(fp, " -L");
+                dal_c__fprintMakePath(fp, dh_libs_dir);
             }
-            free(dh_target_name);
+            if (dh_link_path) {
+                (void)fprintf(fp, " ");
+                dal_c__fprintMakePath(fp, dh_link_path);
+            }
+            free(dh_link_path);
+            free(dh_native_path);
+            free(dh_libs_dir);
+            free(dh_profile_dir);
         }
         // Select one static variant per dependency; shared import libraries remain linkable.
         if (proj && proj->lib_count > 0) {

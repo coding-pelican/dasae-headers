@@ -176,6 +176,18 @@ char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec
 char* dal_c__makeLtoStaticLibraryPath(const char* native_path);
 char* dal_c__makeSharedImportLibraryPath(const char* shared_path);
 bool dal_c__shouldLinkDependencyArtifact(const char* path, bool is_windows, bool lto_enabled);
+bool dal_c__resolveCompatiblePrebuiltArtifact(
+    const char* prebuilt_profile_dir,
+    const char* name,
+    dal_c_Target target_type,
+    bool is_windows,
+    bool lto_requested,
+    const dal_c_CompilerOpts* opts,
+    const dal_c_ProfileSpec* profile,
+    char** artifact_out,
+    bool* lto_selected_out,
+    char** reason_out
+);
 char* dal_c__makePrebuiltAbiContractKey(
     const dal_c_Cmd* cmd,
     const dal_c_ProfileSpec* profile,

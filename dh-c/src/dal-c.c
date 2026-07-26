@@ -1540,7 +1540,6 @@ static int dal_c__printUsage(const char* topic) {
     printf("  %-28s %s\n", "dh-c workspace .", "Create a workspace boundary with shared defaults and cache");
     printf("  %-28s %s\n", "dh-c build main.c", "Build one source file; main.dh is loaded automatically when present");
     printf("  %-28s %s\n", "dh-c update main.c", "Resolve dependencies declared by a projectless primary main.dh");
-    printf("  %-28s %s\n", "dh-c update main.c", "Resolve dependencies declared by a projectless primary main.dh");
     printf("  %-28s %s\n", "dh-c build", "Build the detected project.dh project with the dev profile");
     printf("  %-28s %s\n", "dh-c test", "Build the project library contract and run its tests");
     printf("  %-28s %s\n", "dh-c plan", "Inspect the resolved target and configuration without writing state");
