@@ -30,9 +30,8 @@ extern "C" {
 /*((_$Alias $fits($bits(8|16|32|64)))(...))*/
 #define enum_(/*(_$Alias <$fits(...)>)((_$Enum)(_$Val),...) <$T>*/...) \
     __type__enum_(__VA_ARGS__)
-
 #define enum_of$(/*(_$Alias)(_$val)*/...) \
-    pp_expand(pp_defer(block_inline__enum_of$)(comp_param__enum_of$ _$val))
+    __step__enum_of$(__VA_ARGS__)
 
 #define intToEnum$(/*(_$EnumType)(_$val: IntType)*/... /*(_$EnumType)*/) \
     __step__intToEnum$(__VA_ARGS__)
@@ -82,9 +81,7 @@ extern "C" {
 
 #define __step__enum__2(...) __gen__enum_raw(__VA_ARGS__)
 #define __gen__enum_raw(_$Alias, _$T...) enum _$Alias
-
-#define comp_param__enum_of$(_$val...) _$val, pp_expand
-#define block_inline__enum_of$(_$val...) (as$(_$Alias)(_$val))
+#define __step__enum_of$(...) (as$ __VA_ARGS__)
 
 #define __step__enumToInt$(...) __step__enumToInt$__emit(__step__enumToInt$__parse __VA_ARGS__)
 #define __step__enumToInt$__parse(_$IntType...) _$IntType,

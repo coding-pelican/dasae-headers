@@ -2,6 +2,18 @@
 #include "dh/core/cmp.h"
 #include "dh/core/pri.h"
 
+typedef enum_((test_pri_Enum $fits($packed))(
+    test_pri_Enum_zero = 0,
+    test_pri_Enum_answer = 42,
+)) test_pri_Enum;
+
+TEST_fn_("pri: enum construction and integer conversion preserve values" $scope) {
+    let value = enum_of$((test_pri_Enum)(42));
+    try_(TEST_expect(value == test_pri_Enum_answer));
+    try_(TEST_expect(enumToInt$((u8)(value)) == u8_(42)));
+    try_(TEST_expect(intToEnum$((test_pri_Enum)(u8_(0))) == test_pri_Enum_zero));
+} $unscoped(TEST_fn);
+
 TEST_fn_("pri: bool reductions cover any all and none" $scope) {
     try_(TEST_expect(bool_any(false, true, false)));
     try_(TEST_expect(!bool_any(false, false)));
