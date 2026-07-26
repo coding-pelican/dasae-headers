@@ -1171,14 +1171,20 @@ static bool dal_c_Project__isDHRoot(const char* path) {
     char* dh_main_header = path_join(path, "include/dh-main.h");
     char* dh_include_dir = path_join(path, "include/dh");
     char* dh_src_dir = path_join(path, "src/dh");
+    char* sdk_file = path_join(path, "sdk.dh");
+    char* prebuilt_dir = path_join(path, "prebuilt");
+    bool has_source_contract = path_isDir(dh_src_dir);
+    bool has_sdk_contract = path_isFile(sdk_file) && path_isDir(prebuilt_dir);
     bool is_dh_root = path_isFile(dh_header)
                    && path_isFile(dh_main_header)
                    && path_isDir(dh_include_dir)
-                   && path_isDir(dh_src_dir);
+                   && (has_source_contract || has_sdk_contract);
     free(dh_header);
     free(dh_main_header);
     free(dh_include_dir);
     free(dh_src_dir);
+    free(sdk_file);
+    free(prebuilt_dir);
     return is_dh_root;
 }
 

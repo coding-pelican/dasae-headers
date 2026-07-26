@@ -1447,6 +1447,53 @@ static void test_compiler_mode_contracts(void) {
 static void test_makefile_mode_contracts(void) {
     test_reset_temp_root();
 
+    TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("dep.dll.lib", true, false));
+    TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("libdep.dll.a", true, false));
+    TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("libdep.dll.a", false, false));
+    TEST_ASSERT(dal_c__shouldLinkDependencyArtifact("libdep.so", false, false));
+
+    dal_c_CompilerOpts parent_opts = {
+        .compiler = "cross-clang",
+        .arch_target = "aarch64-w64-windows-gnu",
+        .profile = dal_c_Profile_release,
+        .lto_mode = dal_c_LtoMode_thin,
+        .prebuilt_mode = dal_c_PrebuiltMode_required,
+        .prebuilt_mode_set = true,
+        .compiler_args = "-DCONSUMER_ONLY=1",
+        .link_args = "-lconsumer",
+    };
+    char* parent_defines[] = { "CONSUMER_DEFINE=1" };
+    parent_opts.define_macros = parent_defines;
+    parent_opts.define_count = 1;
+    dal_c_CompilerOpts dependency_opts = { .profile = dal_c_Profile_invalid };
+    dal_c__inheritDependencyToolchainOpts(&dependency_opts, &parent_opts);
+    TEST_ASSERT(str_eql(dependency_opts.compiler, "cross-clang"));
+    TEST_ASSERT(str_eql(dependency_opts.arch_target, "aarch64-w64-windows-gnu"));
+    TEST_ASSERT(dependency_opts.profile == dal_c_Profile_release);
+    TEST_ASSERT(dependency_opts.lto_mode == dal_c_LtoMode_thin);
+    TEST_ASSERT(dependency_opts.prebuilt_mode == dal_c_PrebuiltMode_required);
+    TEST_ASSERT(dependency_opts.prebuilt_mode_set);
+    TEST_ASSERT(dependency_opts.compiler_args == NULL);
+    TEST_ASSERT(dependency_opts.link_args == NULL);
+    TEST_ASSERT(dependency_opts.define_count == 0);
+    dal_c_CompilerOpts_cleanup(&dependency_opts);
+
+    const dal_c_ProfileSpec* dev_profile = dal_c_ProfileSpec_by(dal_c_Profile_dev);
+    dal_c_Cmd auto_lto_cmd = { 0 };
+    auto_lto_cmd.opts.profile = dal_c_Profile_dev;
+    dal_c_Cmd off_lto_cmd = { 0 };
+    off_lto_cmd.opts.profile = dal_c_Profile_dev;
+    off_lto_cmd.opts.lto_mode = dal_c_LtoMode_off;
+    char* auto_lto_abi = dal_c__makePrebuiltAbiContractKey(
+        &auto_lto_cmd, dev_profile, dal_c_Target_static_lib
+    );
+    char* off_lto_abi = dal_c__makePrebuiltAbiContractKey(
+        &off_lto_cmd, dev_profile, dal_c_Target_static_lib
+    );
+    TEST_ASSERT(str_eql(auto_lto_abi, off_lto_abi));
+    free(off_lto_abi);
+    free(auto_lto_abi);
+
     char* temp_root = test_temp_root();
     char* project_root = path_join(temp_root, "mode-contract-project");
     char* project_dh = path_join(project_root, "project.dh");
@@ -2661,6 +2708,13 @@ static void test_project_detection(void) {
     char* dh_src_dir = path_join(dh_root, "src/dh");
     char* dh_header = path_join(dh_include_dir, "dh.h");
     char* dh_main_header = path_join(dh_include_dir, "dh-main.h");
+    char* sdk_root = path_join(workspace_root, "dh-sdk");
+    char* sdk_include_dir = path_join(sdk_root, "include");
+    char* sdk_include_child_dir = path_join(sdk_include_dir, "dh");
+    char* sdk_prebuilt_dir = path_join(sdk_root, "prebuilt");
+    char* sdk_file = path_join(sdk_root, "sdk.dh");
+    char* sdk_dh_header = path_join(sdk_include_dir, "dh.h");
+    char* sdk_dh_main_header = path_join(sdk_include_dir, "dh-main.h");
     char* child_project = path_join(workspace_root, "child-project");
     TEST_ASSERT(original_cwd != NULL);
     TEST_ASSERT(workspace_root != NULL);
@@ -2670,12 +2724,24 @@ static void test_project_detection(void) {
     TEST_ASSERT(dh_src_dir != NULL);
     TEST_ASSERT(dh_header != NULL);
     TEST_ASSERT(dh_main_header != NULL);
+    TEST_ASSERT(sdk_root != NULL);
+    TEST_ASSERT(sdk_include_dir != NULL);
+    TEST_ASSERT(sdk_include_child_dir != NULL);
+    TEST_ASSERT(sdk_prebuilt_dir != NULL);
+    TEST_ASSERT(sdk_file != NULL);
+    TEST_ASSERT(sdk_dh_header != NULL);
+    TEST_ASSERT(sdk_dh_main_header != NULL);
     TEST_ASSERT(child_project != NULL);
     TEST_ASSERT(dir_createRecur(workspace_root));
     TEST_ASSERT(dir_createRecur(dh_include_child_dir));
     TEST_ASSERT(dir_createRecur(dh_src_dir));
     TEST_ASSERT(file_write(dh_header, "\n"));
     TEST_ASSERT(file_write(dh_main_header, "\n"));
+    TEST_ASSERT(dir_createRecur(sdk_include_child_dir));
+    TEST_ASSERT(dir_createRecur(sdk_prebuilt_dir));
+    TEST_ASSERT(file_write(sdk_file, "dh-version=0.0.0\n"));
+    TEST_ASSERT(file_write(sdk_dh_header, "\n"));
+    TEST_ASSERT(file_write(sdk_dh_main_header, "\n"));
     TEST_ASSERT(env_setCWD(workspace_root));
 
     char* detected_dh = dal_c_Project_findDHInstallation(NULL);
@@ -2704,6 +2770,20 @@ static void test_project_detection(void) {
         dal_c_Cmd_cleanup(&relative_cmd);
     }
 
+    {
+        const char* sdk_argv[] = { dal_c_tool_name, "--version", "--dh", sdk_root, NULL };
+        dal_c_Cmd* sdk_cmd = dal_c_Cmd_parse(4, sdk_argv);
+        TEST_ASSERT(sdk_cmd != NULL);
+        char* sdk_detected_dh = dal_c_Project_findDHInstallation(sdk_cmd);
+        char* expected_sdk = path_abs(sdk_root);
+        TEST_ASSERT(sdk_detected_dh != NULL);
+        TEST_ASSERT(expected_sdk != NULL);
+        TEST_ASSERT(str_eql(sdk_detected_dh, expected_sdk));
+        free(expected_sdk);
+        free(sdk_detected_dh);
+        dal_c_Cmd_cleanup(&sdk_cmd);
+    }
+
     TEST_ASSERT(dir_createRecur(child_project));
     dal_c_Project* child_proj = dal_c_Project_detectAt(child_project, "dh");
     TEST_ASSERT(child_proj != NULL);
@@ -2718,6 +2798,13 @@ static void test_project_detection(void) {
     free(detected_dh);
     free(dh_main_header);
     free(dh_header);
+    free(sdk_dh_main_header);
+    free(sdk_dh_header);
+    free(sdk_file);
+    free(sdk_prebuilt_dir);
+    free(sdk_include_child_dir);
+    free(sdk_include_dir);
+    free(sdk_root);
     free(dh_src_dir);
     free(dh_include_child_dir);
     free(dh_include_dir);
@@ -3878,7 +3965,15 @@ static void test_output_ext_does_not_rewrite_dependency_artifacts(void) {
 
     TEST_ASSERT(dir_createRecur(dep_include_dir));
     TEST_ASSERT(dir_createRecur(dep_src_dir));
-    TEST_ASSERT(file_write(dep_project_dh, "output=dep\npch=off\nlink-dsl=off\n"));
+    TEST_ASSERT(file_write(
+        dep_project_dh,
+        "output=dep\npch=off\nlink-dsl=off\n"
+        "[external]\n"
+        "archive=https://example.invalid/external.zip\n"
+        "provider=prebuilt\n"
+        "linking=shared\n"
+        "link=external\n"
+    ));
     TEST_ASSERT(file_write(dep_header, "#pragma once\nint dep_value(void);\n"));
     TEST_ASSERT(file_write(dep_source, "#include \"dep.h\"\nint dep_value(void) { return 7; }\n"));
 

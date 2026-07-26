@@ -5486,6 +5486,10 @@ static void dal_c_Cmd__collectRecursiveTestInputs(
     if (recurse_dependencies) {
         for (int i = 0; i < proj->lib_count; ++i) {
             const dal_c_Lib* lib = &proj->libraries[i];
+            const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
+            if (!str_eql(provider, "dh") || (lib->test_enabled_set && !lib->test_enabled)) {
+                continue;
+            }
             if (!lib->path) {
                 continue;
             }

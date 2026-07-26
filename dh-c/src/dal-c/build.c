@@ -323,7 +323,7 @@ static char* dal_c__resolveDepsTargetDir(const char* deps_dir, const char* lib_n
 static bool dal_c__writeFileIfChanged(const char* path, const char* content);
 static bool dal_c__effectiveLtoEnabled(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
-static char* dal_c__makePrebuiltAbiContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
+char* dal_c__makePrebuiltAbiContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static char* dal_c__makeLtoToolchainContractKey(const dal_c_CompilerOpts* opts);
 
 static char* dal_c__manifestValue(const char* manifest_path, const char* key) {
@@ -1033,7 +1033,7 @@ static bool dal_c__shouldAddProjectInclude(const dal_c_Project* proj, const dal_
 static bool dal_c__shouldAddProjectPrivateInclude(const dal_c_Project* proj, const dal_c_Cmd* cmd);
 static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type, bool use_pch, bool test_mode);
 static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
-static char* dal_c__makePrebuiltAbiContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
+char* dal_c__makePrebuiltAbiContractKey(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static char* dal_c__makeLtoToolchainContractKey(const dal_c_CompilerOpts* opts);
 static char* dal_c__makeLinkContractPath(const char* build_dir, const char* target_path);
 static bool dal_c__writeLinkContractFile(const char* path, const char* target_path, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
@@ -2171,6 +2171,7 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     char* lib_abs_path = lib_proj ? lib_proj->root : lib->path;
     bool should_run_dependency_tests = lib_proj
                                     && !dal_c__cmdAggregatesRecursiveTests(cmd)
+                                    && (!lib->test_enabled_set || lib->test_enabled)
                                     && (lib->test_enabled
                                         || (cmd->action == dal_c_CmdAction_test && cmd->payload.test.recursive));
     int result = 0;
@@ -2245,7 +2246,10 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
             printf("Building %d dependencies for %s...\n", lib_proj->lib_count, lib->name);
         }
         for (int i = 0; i < lib_proj->lib_count; ++i) {
-            if (dal_c__buildSingleLibrary(cmd, lib_proj, &lib_proj->libraries[i]) != 0) {
+            const dal_c_Lib* child = &lib_proj->libraries[i];
+            const char* provider = child->provider && child->provider[0] ? child->provider : "dh";
+            if (!str_eql(provider, "dh")) { continue; }
+            if (dal_c__buildSingleLibrary(cmd, lib_proj, child) != 0) {
                 dal_c_CompilerOpts_cleanup(&merged.opts);
                 dal_c_Project_cleanup(&lib_proj);
                 return 1;
@@ -2677,6 +2681,28 @@ int dal_c__runDebugger(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     return result;
 }
 
+void dal_c__inheritDependencyToolchainOpts(
+    dal_c_CompilerOpts* dst,
+    const dal_c_CompilerOpts* src
+) {
+    assert(dst != NULL);
+    if (!src) { return; }
+
+    dal_c_CompilerOpts toolchain = {
+        .compiler = src->compiler,
+        .arch_target = src->arch_target,
+        .target_arch = src->target_arch,
+        .target_tune = src->target_tune,
+        .target_abi = src->target_abi,
+        .sysroot = src->sysroot,
+        .profile = src->profile,
+        .lto_mode = src->lto_mode,
+        .prebuilt_mode = src->prebuilt_mode,
+        .prebuilt_mode_set = src->prebuilt_mode_set,
+    };
+    dal_c_CompilerOpts_merge(dst, &toolchain);
+}
+
 /* NOLINTNEXTLINE(misc-no-recursion) */
 static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const dal_c_CompilerOpts* parent_opts, dal_c_Target consumer_target_type) {
     if (!proj || !proj->dh_path) { return 0; }
@@ -2725,15 +2751,7 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
     }
     cmd.opts.profile = dal_c_Profile_invalid;
     dal_c_CompilerOpts_merge(&cmd.opts, &dh_proj->opts);
-    int dh_include_count = cmd.opts.include_count;
-    if (parent_opts) {
-        dal_c_CompilerOpts_merge(&cmd.opts, parent_opts);
-        for (int i = dh_include_count; i < cmd.opts.include_count; ++i) {
-            free(cmd.opts.include_paths[i]);
-            cmd.opts.include_paths[i] = NULL;
-        }
-        cmd.opts.include_count = dh_include_count;
-    }
+    dal_c__inheritDependencyToolchainOpts(&cmd.opts, parent_opts);
     cmd.opts.dsl_mode = dal_c_ToggleState_disabled;
     if (cmd.opts.profile == dal_c_Profile_invalid) {
         cmd.opts.profile = dal_c_Profile_parse(profile->name);
@@ -3296,7 +3314,10 @@ static bool dal_c__isLtoStaticLibraryPath(const char* path, bool is_windows) {
 }
 
 static bool dal_c__isSharedLinkLibraryPath(const char* path, bool is_windows) {
-    return path && str_endsWith(path, is_windows ? ".dll.lib" : ".so");
+    if (!path) { return false; }
+    if (str_endsWith(path, ".dll.a")) { return true; }
+    if (!is_windows) { return str_endsWith(path, ".so"); }
+    return str_endsWith(path, ".dll.lib");
 }
 
 static bool dal_c__isNativeStaticLibraryPath(const char* path, bool is_windows) {
@@ -3305,7 +3326,7 @@ static bool dal_c__isNativeStaticLibraryPath(const char* path, bool is_windows) 
     return str_endsWith(path, is_windows ? ".lib" : ".a");
 }
 
-static bool dal_c__shouldLinkDependencyArtifact(const char* path, bool is_windows, bool lto_enabled) {
+bool dal_c__shouldLinkDependencyArtifact(const char* path, bool is_windows, bool lto_enabled) {
     if (!path) { return false; }
     if (dal_c__isSharedLinkLibraryPath(path, is_windows)) { return true; }
     if (dal_c__isLtoStaticLibraryPath(path, is_windows)) { return lto_enabled; }
@@ -6869,7 +6890,7 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     return result;
 }
 
-static char* dal_c__makePrebuiltAbiContractKey(
+char* dal_c__makePrebuiltAbiContractKey(
     const dal_c_Cmd* cmd,
     const dal_c_ProfileSpec* profile,
     dal_c_Target target_type
@@ -6884,6 +6905,9 @@ static char* dal_c__makePrebuiltAbiContractKey(
     bool start_files_linked = dal_c__resolvedStartFilesLinked(opts);
     bool compiler_rt_linked = dal_c__resolvedCompilerRtLinked(opts, target_type);
     dal_c_LtoMode lto_state = dal_c__effectiveLtoState(cmd, profile, target_type);
+    if (!dal_c_LtoMode_isEnabled(lto_state)) {
+        lto_state = dal_c_LtoMode_off;
+    }
     bool pic_enabled = !dal_c__platformIsWindows() && target_type == dal_c_Target_shared_lib;
     dal_c_ToggleState omit_frame_pointer = dal_c__resolvedOmitFramePointerState(opts, profile);
     dal_c_ToggleState unwind_tables = dal_c__resolvedUnwindTablesState(opts, profile);

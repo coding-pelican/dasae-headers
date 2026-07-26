@@ -5,3 +5,15 @@ path=fixture-dep
 profile=default
 linking=static
 link-dsl=on
+
+[fixture-skipped]
+path=fixture-skipped
+profile=default
+linking=static
+link-dsl=on
+test=off
+
+[fixture-external]
+path=fixture-external
+provider=prebuilt
+test=off
