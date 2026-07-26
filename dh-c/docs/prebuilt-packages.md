@@ -107,4 +107,29 @@ A producer may choose which profile directories to distribute, but any shipped
 Every target/profile directory must contain `manifest.dh`. dh-c rejects a missing,
 malformed, unknown-key, or incompatible manifest before using the packaged artifact.
 There is no legacy package fallback and no manifest format/version selector.
+
+## Producer command
+
+Run the package command once for each distributable profile:
+
+```sh
+dh-c package dev --layout=prebuilt
+dh-c package fast --layout=prebuilt
+dh-c package test --layout=prebuilt
+dh-c package stable --layout=prebuilt
+dh-c package release --layout=prebuilt
+```
+
+Each command builds the selected profile and replaces only its
+`prebuilt/<normalized-target>/<profile>/` package. Producer object files, plans,
+and other mutable build state remain under `build/` and are not distributed.
+
+```mermaid
+flowchart LR
+    A["project.dh + source"] --> B["dh-c package --layout=prebuilt"]
+    B --> C["build/target/profile"]
+    C --> D["prebuilt/target/profile/manifest.dh"]
+    C --> E["prebuilt/target/profile/libs"]
+    C --> F["prebuilt/target/profile/deps (optional)"]
+```
 See [artifact-manifest.md](artifact-manifest.md).

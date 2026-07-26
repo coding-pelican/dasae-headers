@@ -170,7 +170,13 @@ surface.
 
 ## Promotion and generic packaging
 
-A prebuilt producer promotes or copies the complete build profile directory:
+A prebuilt producer runs:
+
+```sh
+dh-c package <profile> --layout=prebuilt
+```
+
+The command promotes the generated prebuilt contract:
 
 ```text
 build/<target>/<profile>/
@@ -184,10 +190,10 @@ into:
 prebuilt/<target>/<profile>/
 ```
 
-`dh-c package` is a generic install/runtime staging command. It translates
-library artifacts into `lib/` and runtime shared objects into `bin/`; therefore
-it does not copy the prebuilt-only `manifest.dh`, whose paths intentionally
-refer to `libs/`.
+The default `--layout=install` remains the generic install/runtime staging
+contract. It translates library artifacts into `lib/` and runtime shared
+objects into `bin/`; therefore it does not copy the prebuilt-only
+`manifest.dh`, whose paths intentionally refer to `libs/`.
 
 There is no separate package file inventory yet. SHA-256 remains an explicit
 roadmap item for a future verification, publishing, install-ownership, or

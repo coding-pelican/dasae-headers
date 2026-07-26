@@ -302,6 +302,10 @@ assert_contains "$LAST_OUTPUT" "USAGE:" "Command help did not show usage"
 assert_contains "$LAST_OUTPUT" "CONTRACT:" "Command help did not show contract"
 assert_contains "$LAST_OUTPUT" "--output-ext" "Build help did not describe explicit output extension"
 
+invoke_external "0" "$repo_root" "$cli_exe" help package
+assert_contains "$LAST_OUTPUT" "--layout=install|prebuilt" "Package help did not expose prebuilt promotion"
+assert_contains "$LAST_OUTPUT" "prebuilt/<target>/<profile>" "Package help did not describe prebuilt output"
+
 invoke_external "0" "$repo_root" "$cli_exe" help clean
 assert_contains "$LAST_OUTPUT" "Do not store durable source assets" "Clean help did not describe cleanup-owned generated paths"
 assert_contains "$LAST_OUTPUT" "--cache" "Clean help did not describe cache scope"
@@ -417,11 +421,14 @@ rm -rf "$lock_contract_root"
 archive_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-archive-contract.XXXXXX")
 archive_payload_root="$archive_contract_root/payload"
 archive_package="$archive_payload_root/dep-package"
+archive_package_root="$archive_package/targets/x86_64-w64-windows-gnu"
 archive_project="$archive_contract_root/project"
 archive_file="$archive_contract_root/dep.tar.gz"
-mkdir -p "$archive_package/include" "$archive_package/lib" "$archive_project"
-printf '#define ARCHIVE_VALUE 1\n' >"$archive_package/include/archive_dep.h"
-printf 'archive-library-one\n' >"$archive_package/lib/libarchive_dep.a"
+mkdir -p "$archive_package_root/include" "$archive_package_root/lib" "$archive_project"
+printf '#define ARCHIVE_VALUE 1\n' >"$archive_package_root/include/archive_dep.h"
+printf 'archive-import-one\n' >"$archive_package_root/lib/libarchive_dep.dll.a"
+printf 'archive-static-one\n' >"$archive_package_root/lib/libarchive_dep.a"
+printf 'archive-unselected\n' >"$archive_package_root/lib/libunselected.a"
 tar -czf "$archive_file" -C "$archive_payload_root" dep-package
 archive_file_native=$(native_path "$archive_file")
 
@@ -445,10 +452,22 @@ EOF
 invoke_external "1" "$archive_invalid_project" "$cli_exe" fetch
 assert_contains "$LAST_OUTPUT" "cannot declare revision= with archive=" "dependency parser accepted revision= beside archive="
 
+cat >"$archive_invalid_project/project.dh" <<EOF
+[dep]
+archive=$archive_file_native
+package-root=../outside
+provider=prebuilt
+EOF
+invoke_external "1" "$archive_invalid_project" "$cli_exe" fetch
+assert_contains "$LAST_OUTPUT" "package-root must stay within" "dependency parser accepted an escaping package-root"
+
 cat >"$archive_project/project.dh" <<EOF
 [dep]
 archive=$archive_file_native
+package-root=targets/x86_64-w64-windows-gnu
 provider=prebuilt
+linking=shared
+link=archive_dep
 EOF
 
 invoke_external "0" "$archive_project" "$cli_exe" fetch
@@ -456,18 +475,22 @@ assert_contains "$LAST_OUTPUT" "[FETCH] dep" "archive fetch did not download/mat
 assert_contains "$(cat "$archive_project/lock.dh")" "archive=$archive_file_native" "archive lock did not preserve the authored archive location"
 archive_revision_one=$(awk -F= '/^revision=/{print $2}' "$archive_project/lock.dh")
 assert_contains "$archive_revision_one" "sha256:" "archive lock did not record a SHA-256 resolution"
-[ -f "$archive_project/.dh-c/deps/src/dep/include/archive_dep.h" ]
-assert_true $? "archive fetch did not unwrap the single package root"
+[ -f "$archive_project/.dh-c/deps/src/dep/targets/x86_64-w64-windows-gnu/include/archive_dep.h" ]
+assert_true $? "archive fetch did not unwrap the archive before applying package-root"
 invoke_external "0" "$archive_project" "$cli_exe" status
 assert_contains "$LAST_OUTPUT" "[READY]" "archive status did not accept the locked materialization"
 invoke_external "0" "$archive_project" "$cli_exe" deps dev
 [ -f "$archive_project/lib/deps/archive_dep.h" ]
 assert_true $? "prebuilt archive header was not staged for the consumer"
-[ -f "$archive_project/lib/deps/libarchive_dep.a" ]
-assert_true $? "prebuilt archive library was not staged for the consumer"
+[ -f "$archive_project/lib/deps/libarchive_dep.dll.a" ]
+assert_true $? "selected prebuilt archive import library was not staged for the consumer"
+[ ! -f "$archive_project/lib/deps/libarchive_dep.a" ]
+assert_true $? "prebuilt archive staged a static variant for linking=shared"
+[ ! -f "$archive_project/lib/deps/libunselected.a" ]
+assert_true $? "prebuilt archive staged a library absent from link="
 
-printf '#define ARCHIVE_VALUE 2\n' >"$archive_package/include/archive_dep.h"
-printf 'archive-library-two\n' >"$archive_package/lib/libarchive_dep.a"
+printf '#define ARCHIVE_VALUE 2\n' >"$archive_package_root/include/archive_dep.h"
+printf 'archive-import-two\n' >"$archive_package_root/lib/libarchive_dep.dll.a"
 rm -f "$archive_file"
 tar -czf "$archive_file" -C "$archive_payload_root" dep-package
 invoke_external "0" "$archive_project" "$cli_exe" fetch
@@ -626,7 +649,8 @@ EOF
     invoke_external "0" "$adhoc_unit" "$cli_exe" graph main.c --format=dot
     assert_contains "$LAST_OUTPUT" "digraph dh_c" "Projectless DOT graph did not render"
     invoke_external "0" "$adhoc_unit" "$cli_exe" target show main.c
-    assert_contains "$LAST_OUTPUT" "$adhoc_unit/build" "Projectless target show did not report the source-unit build directory"
+    adhoc_build_native=$(native_path "$adhoc_unit/build")
+    assert_contains "$LAST_OUTPUT" "$adhoc_build_native" "Projectless target show did not report the source-unit build directory"
     invoke_external "0" "$adhoc_unit" "$cli_exe" doctor main.c
     assert_contains "$LAST_OUTPUT" "build-unit:" "Projectless doctor did not identify the source unit"
     invoke_external "0" "$adhoc_unit" "$cli_exe" build main.c
@@ -958,6 +982,18 @@ EOF
     fi
     if "$find_bin" "$lib_kind_project/package" -type f -name manifest.dh | "$grep_bin" . >/dev/null 2>&1; then
         printf 'Generic package incorrectly copied the prebuilt-only manifest.dh\n' >&2
+        exit 1
+    fi
+
+    invoke_external "0" "$lib_kind_project" "$cli_exe" package --layout=prebuilt
+    prebuilt_manifest=$("$find_bin" "$lib_kind_project/prebuilt" -path '*/dev/manifest.dh' -type f | head -n 1)
+    [ -n "$prebuilt_manifest" ]
+    assert_true $? "Prebuilt package did not promote manifest.dh"
+    prebuilt_profile=$(dirname "$prebuilt_manifest")
+    [ -d "$prebuilt_profile/libs" ]
+    assert_true $? "Prebuilt package did not promote libs/"
+    if "$find_bin" "$prebuilt_profile" -type d -name obj | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Prebuilt package included producer object state\n' >&2
         exit 1
     fi
 

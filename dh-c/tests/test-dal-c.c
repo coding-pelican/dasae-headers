@@ -93,6 +93,8 @@ static void test_free_str_array(char** items, int count);
 static char* test_makefile_var_first_value(const char* makefile_text, const char* var_name);
 static bool test_arrstr_contains(ArrStr* items, const char* value);
 static bool test_path_text_eql(const char* lhs, const char* rhs);
+static bool test_path_text_has_prefix(const char* text, const char* prefix);
+static bool test_text_contains_path(const char* text, const char* path);
 static const dal_c_HelpProfile* test_find_help_profile(const char* name);
 static const dal_c_HelpCmd* test_find_help_cmd(const char* name, int* count_out);
 static bool test_help_has_option(const dal_c_HelpCmd* cmd, const char* option_name);
@@ -252,6 +254,27 @@ static bool test_path_text_eql(const char* lhs, const char* rhs) {
         ++rhs;
     }
     return *lhs == '\0' && *rhs == '\0';
+}
+
+static bool test_path_text_has_prefix(const char* text, const char* prefix) {
+    if (!text || !prefix) { return false; }
+    while (*prefix) {
+        if (!*text) { return false; }
+        char text_ch = (*text == '\\') ? '/' : *text;
+        char prefix_ch = (*prefix == '\\') ? '/' : *prefix;
+        if (text_ch != prefix_ch) { return false; }
+        ++text;
+        ++prefix;
+    }
+    return true;
+}
+
+static bool test_text_contains_path(const char* text, const char* path) {
+    if (!text || !path) { return false; }
+    for (const char* cursor = text; *cursor; ++cursor) {
+        if (test_path_text_has_prefix(cursor, path)) { return true; }
+    }
+    return *path == '\0';
 }
 
 static const dal_c_HelpProfile* test_find_help_profile(const char* name) {
@@ -2397,6 +2420,26 @@ static void test_makefile_mode_contracts(void) {
         free(makefile_text);
         free(makefile_path);
 
+        char* static_target_path = dal_c__resolveOutputPath(
+            proj, first_cmd, profile_dir, "runtime-contract", dal_c_Target_static_lib
+        );
+        TEST_ASSERT(static_target_path != NULL);
+        TEST_ASSERT(dal_c__generateMakefile(
+            first_cmd, proj, profile, sources, static_target_path, object_dir, dal_c_Target_static_lib
+        ) == 0);
+        char* static_makefile_path = dal_c__makePlanFilePath(
+            proj, profile, first_cmd, static_target_path, dal_c_Target_static_lib
+        );
+        char* static_makefile_text = static_makefile_path ? file_read(static_makefile_path) : NULL;
+        TEST_ASSERT(static_makefile_text != NULL);
+        TEST_ASSERT(strstr(static_makefile_text, "AR_RSP = ") != NULL);
+        TEST_ASSERT(strstr(static_makefile_text, "$(TARGET): $(OBJS) $(AR_RSP)") != NULL);
+        TEST_ASSERT(strstr(static_makefile_text, "$(AR) rcs \"$@\" \"@$(AR_RSP)\"") != NULL);
+        TEST_ASSERT(strstr(static_makefile_text, "$(RM) $(TARGET) $(EXTRA_TARGETS)") != NULL);
+        free(static_makefile_text);
+        free(static_makefile_path);
+        free(static_target_path);
+
         TEST_ASSERT(dal_c__generateMakefile(second_cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_shared_lib) == 0);
         char* second_contract = file_read(contracts[0]);
         TEST_ASSERT(second_contract != NULL);
@@ -2785,7 +2828,7 @@ static void test_adhoc_dependency_scope(void) {
     char* workspace_state = path_join(workspace_root, ".dh-c");
     char* units_root = path_join(workspace_state, "units");
     TEST_ASSERT(state_root != NULL);
-    TEST_ASSERT(strstr(state_root, units_root) == state_root);
+    TEST_ASSERT(test_path_text_has_prefix(state_root, units_root));
     char* deps_dir = dal_c_Project_getDepsDir(project);
     char* expected_exports = path_join(state_root, "exports/deps");
     TEST_ASSERT(test_path_text_eql(deps_dir, expected_exports));
@@ -2914,7 +2957,7 @@ static void test_dh_file_generated_contract(void) {
     TEST_ASSERT(first_makefile != NULL);
     TEST_ASSERT(strstr(first_makefile, "-DCONFIGURED_COMPILER_ARG=1") != NULL);
     TEST_ASSERT(strstr(first_makefile, "-Wl,--configured-link-arg") != NULL);
-    TEST_ASSERT(strstr(first_makefile, linker_script) != NULL);
+    TEST_ASSERT(test_text_contains_path(first_makefile, linker_script));
     char* first_objs = test_makefile_var_first_value(first_makefile, "OBJS");
     char* first_link_contract = test_makefile_var_first_value(first_makefile, "LINK_CONTRACT");
     TEST_ASSERT(first_objs != NULL);
@@ -2922,7 +2965,7 @@ static void test_dh_file_generated_contract(void) {
     char* first_link_text = file_read(first_link_contract);
     TEST_ASSERT(first_link_text != NULL);
     TEST_ASSERT(strstr(first_link_text, "link-args=-Wl,--configured-link-arg") != NULL);
-    TEST_ASSERT(strstr(first_link_text, linker_script) != NULL);
+    TEST_ASSERT(test_text_contains_path(first_link_text, linker_script));
 
     free(cmd->opts.compiler_args);
     cmd->opts.compiler_args = strdup("-DCONFIGURED_COMPILER_ARG=2");

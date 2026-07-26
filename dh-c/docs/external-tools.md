@@ -78,7 +78,8 @@ file and invalidates the archive target through its Make dependency.
 ## Target detection startup
 
 When no explicit `--target`/`target=` is present, dh-c asks the selected compiler
-for its default target triple. The result is cached per compiler for the current
+for its default target triple. The result is cached per compiler, command
+working directory, and executable search path for the bounded lifetime of the
 dh-c process. One command therefore launches at most one
 `--print-target-triple` probe for a given compiler instead of repeating the same
 probe while resolving dependency, library, and test plans.

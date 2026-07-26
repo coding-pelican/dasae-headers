@@ -110,7 +110,7 @@ static const char* const dal_c_help_topic_dh_file_examples[] = {
 
 static const char* const dal_c_help_topic_dependencies_lines[] = {
     "Dependencies are declared in root project.dh, or in the primary <source>.dh of a projectless build unit.",
-    "Core keys: path, source, archive, revision, provider, profile, linking, prebuilt, link-dsl, test.",
+    "Core keys: path, source, archive, package-root, revision, provider, profile, linking, prebuilt, link-dsl, test.",
     "Provider keys: build-command, install-command, runtime-file (repeatable).",
     "Dependency-local compile/link keys use the same property vocabulary as project defaults.",
     "fetch preserves an existing lock; update resolves requests again and rewrites lock.dh or <source>.lock.dh.",
@@ -240,6 +240,7 @@ static void dal_c__graphWalkText(const dal_c_Project* proj, int depth, char*** s
         printf("- %s [provider=%s", lib->name ? lib->name : "(unnamed)", provider);
         if (lib->revision && lib->revision[0]) printf(", revision=%s", lib->revision);
         if (lib->archive && lib->archive[0]) printf(", archive=%s", lib->archive);
+        if (lib->package_root && lib->package_root[0]) printf(", package-root=%s", lib->package_root);
         if (lib->path && lib->path[0]) printf(", path=%s", lib->path);
         if (lib->runtime_file_count > 0) printf(", runtime=%d", lib->runtime_file_count);
         printf("]\n");
@@ -437,6 +438,49 @@ static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
     return ok ? 0 : 1;
 }
 
+static int dal_c__packagePrebuiltProject(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    int result = dal_c__depsCommand("install", cmd, proj);
+    if (result != 0) return result;
+    result = dal_c_Cmd_execute(cmd, proj);
+    if (result != 0) return result;
+
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    char* build_dir = profile ? dal_c__makeBuildProfileDir(proj, &cmd->opts, profile) : NULL;
+    char* target = dal_c__resolveTargetDirName(&cmd->opts);
+    char* prebuilt_root = path_join(proj->root, "prebuilt");
+    char* target_root = path_join(prebuilt_root, target ? target : "native");
+    char* package_dir = path_join(target_root, profile ? profile->name : "dev");
+    char* manifest_src = build_dir ? path_join(build_dir, "manifest.dh") : NULL;
+    char* libs_src = build_dir ? path_join(build_dir, "libs") : NULL;
+    char* deps_src = build_dir ? path_join(build_dir, "deps") : NULL;
+    char* manifest_dst = package_dir ? path_join(package_dir, "manifest.dh") : NULL;
+    char* libs_dst = package_dir ? path_join(package_dir, "libs") : NULL;
+    char* deps_dst = package_dir ? path_join(package_dir, "deps") : NULL;
+
+    bool ok = profile && build_dir && package_dir && manifest_src && libs_src
+           && manifest_dst && libs_dst && path_isFile(manifest_src) && path_isDir(libs_src);
+    if (!ok) {
+        (void)fprintf(stderr, "Error: Build profile does not contain a complete prebuilt package.\n");
+    } else if (path_isDir(package_dir) && !dir_removeRecur(package_dir)) {
+        (void)fprintf(stderr, "Error: Failed to replace prebuilt package directory: %s\n", package_dir);
+        ok = false;
+    } else {
+        ok = dir_createRecur(package_dir)
+          && file_copy(manifest_src, manifest_dst)
+          && dal_c__copyTree(libs_src, libs_dst);
+        if (ok && path_isDir(deps_src)) {
+            ok = dal_c__copyTree(deps_src, deps_dst);
+        }
+    }
+
+    if (ok) printf("[PACKAGE] %s\n", package_dir);
+    free(deps_dst); free(libs_dst); free(manifest_dst);
+    free(deps_src); free(libs_src); free(manifest_src);
+    free(package_dir); free(target_root); free(prebuilt_root);
+    free(target); free(build_dir);
+    return ok ? 0 : 1;
+}
+
 static int dal_c__installProject(const dal_c_Cmd* cmd, const dal_c_Project* proj, const char* prefix);
 static void dal_c__printProjectStatus(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 
@@ -518,12 +562,41 @@ int main(int argc, const char* argv[]) {
 
     if (special_package || special_install) {
         const char* prefix = getenv("DH_PREFIX");
+        bool prebuilt_layout = false;
         const char** filtered = calloc((size_t)argc + 1u, sizeof(*filtered));
         if (!filtered) return 1;
         int filtered_argc = 0;
         filtered[filtered_argc++] = argv[0];
         filtered[filtered_argc++] = "build";
         for (int i = 2; i < argc; ++i) {
+            if (strncmp(argv[i], "--layout=", 9) == 0) {
+                const char* layout = argv[i] + 9;
+                if (special_package && str_eql(layout, "prebuilt")) {
+                    prebuilt_layout = true;
+                    continue;
+                }
+                if (special_package && str_eql(layout, "install")) {
+                    prebuilt_layout = false;
+                    continue;
+                }
+                (void)fprintf(stderr, "Error: Unsupported package layout: %s\n", layout);
+                free(filtered);
+                return 1;
+            }
+            if (str_eql(argv[i], "--layout") && i + 1 < argc) {
+                const char* layout = argv[++i];
+                if (special_package && str_eql(layout, "prebuilt")) {
+                    prebuilt_layout = true;
+                    continue;
+                }
+                if (special_package && str_eql(layout, "install")) {
+                    prebuilt_layout = false;
+                    continue;
+                }
+                (void)fprintf(stderr, "Error: Unsupported package layout: %s\n", layout);
+                free(filtered);
+                return 1;
+            }
             if (strncmp(argv[i], "--prefix=", 9) == 0) {
                 prefix = argv[i] + 9;
                 continue;
@@ -548,7 +621,9 @@ int main(int argc, const char* argv[]) {
             return 1;
         }
         int package_result = special_package
-            ? dal_c__packageProject(package_cmd, package_proj)
+            ? (prebuilt_layout
+                ? dal_c__packagePrebuiltProject(package_cmd, package_proj)
+                : dal_c__packageProject(package_cmd, package_proj))
             : dal_c__installProject(package_cmd, package_proj, prefix);
         dal_c_Project_cleanup(&package_proj);
         dal_c_Cmd_cleanup(&package_cmd);
@@ -924,20 +999,28 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
         return ok;
     }
     if (str_eql(provider, "prebuilt")) {
-        const char* root = (lib->path && lib->path[0]) ? lib->path : source_dir;
+        const char* source_root = (lib->path && lib->path[0]) ? lib->path : source_dir;
+        char* selected_root = lib->package_root && lib->package_root[0]
+                            ? path_join(source_root, lib->package_root)
+                            : NULL;
+        const char* root = selected_root ? selected_root : source_root;
         if (!path_isDir(root)) {
             (void)fprintf(stderr, "Error: prebuilt dependency `%s` has no package directory: %s\n", lib->name, root);
+            free(selected_root);
             return false;
         }
         if (path_isDir(package_dir) && !dir_removeRecur(package_dir)) {
             (void)fprintf(stderr, "Error: Failed to replace private package directory for `%s`: %s\n", lib->name, package_dir);
+            free(selected_root);
             return false;
         }
         if (!dir_createRecur(package_dir) || !dal_c__copyTree(root, package_dir)) {
             (void)fprintf(stderr, "Error: Failed to materialize prebuilt dependency `%s` into %s\n", lib->name, package_dir);
+            free(selected_root);
             return false;
         }
         printf("[PREBUILT] %-16s %s\n", lib->name, root);
+        free(selected_root);
         return true;
     }
     (void)fprintf(stderr, "Error: Unknown dependency provider `%s` for `%s`.\n", provider, lib->name);
@@ -960,10 +1043,36 @@ static bool dal_c__stageExternalPackageForBuild(const dal_c_Project* proj, const
         char** files = dir_listRecur(lib_src, &count);
         for (int i = 0; files && i < count; ++i) {
             const char* f = files[i];
-            if (dal_c__endsWith(f, ".lib") || dal_c__endsWith(f, ".a") ||
-                dal_c__endsWith(f, ".so") || dal_c__endsWith(f, ".dylib")) {
+            bool is_link_file = dal_c__endsWith(f, ".lib") || dal_c__endsWith(f, ".a")
+                             || dal_c__endsWith(f, ".so") || dal_c__endsWith(f, ".dylib");
+            bool selected = lib->opts.link_count == 0;
+            char* name = path_basename(f);
+            for (int link_index = 0; is_link_file && !selected && link_index < lib->opts.link_count; ++link_index) {
+                const char* link = lib->opts.link_libs[link_index];
+                char* static_unix = str_format("lib%s.a", link);
+                char* import_gnu = str_format("lib%s.dll.a", link);
+                char* static_or_import_windows = str_format("%s.lib", link);
+                char* import_dh_windows = str_format("%s.dll.lib", link);
+                char* shared_unix = str_format("lib%s.so", link);
+                char* shared_darwin = str_format("lib%s.dylib", link);
+                selected = lib->is_static
+                         ? (str_eql(name, static_unix) || str_eql(name, static_or_import_windows))
+                         : (str_eql(name, import_gnu)
+                            || str_eql(name, static_or_import_windows)
+                            || str_eql(name, import_dh_windows)
+                            || str_eql(name, shared_unix)
+                            || str_eql(name, shared_darwin));
+                free(shared_darwin);
+                free(shared_unix);
+                free(import_dh_windows);
+                free(static_or_import_windows);
+                free(import_gnu);
+                free(static_unix);
+            }
+            if (is_link_file && selected) {
                 if (!dal_c__copyFileInto(f, deps_dir)) ok = false;
             }
+            free(name);
             free(files[i]);
         }
         free(files);
@@ -1371,7 +1480,12 @@ static int dal_c__printUsage(const char* topic) {
         } else if (str_eql(topic, "graph")) {
             printf("USAGE:\n  %s graph [source] [profile] [build options] [--format=dot]\n\nShow the dependency graph for project.dh or a projectless primary source companion.\n", dal_c_tool_name);
         } else if (str_eql(topic, "package")) {
-            printf("USAGE:\n  %s package [profile] [build options]\n\nBuild and stage the current project with dependency runtime exports.\n", dal_c_tool_name);
+            printf(
+                "USAGE:\n"
+                "  %s package [profile] [build options] [--layout=install|prebuilt]\n\n"
+                "Build and stage the current project. The default install layout contains headers, libraries, executables, assets, and dependency runtime exports under package/<target>/<profile>. The prebuilt layout promotes only generated manifest.dh, libs/, and optional deps/ into prebuilt/<target>/<profile>.\n",
+                dal_c_tool_name
+            );
         } else if (str_eql(topic, "install")) {
             printf("USAGE:\n  %s install [profile] [build options] [--prefix=<path>]\n\nInstall the current project package into --prefix or DH_PREFIX.\n", dal_c_tool_name);
         } else if (str_eql(topic, "plan")) {

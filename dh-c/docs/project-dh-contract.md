@@ -85,6 +85,7 @@ Core keys:
 path
 source
 archive
+package-root
 revision
 provider
 build-command
@@ -97,7 +98,8 @@ test
 
 `source=` and `archive=` are mutually exclusive. `revision=` selects a Git
 branch, tag, or commit and is rejected beside `archive=`; archive content is
-resolved to `sha256:<hex>` in the generated lock. Dependency sections also
+resolved to `sha256:<hex>` in the generated lock. `package-root=` is a safe
+relative subpath used only by `provider=prebuilt`. Dependency sections also
 accept compile/link property keys, including `include`, `define`, `link`,
 `link-dir`, runtime-link toggles, target/ABI settings, and `prebuilt`.
 

@@ -184,6 +184,8 @@ static char* dal_c__sanitizeTargetDirName(const char* target) {
 
 typedef struct dal_c__TargetResolutionCacheEntry {
     char* compiler;
+    char* cwd;
+    char* path_env;
     char* target;
 } dal_c__TargetResolutionCacheEntry;
 
@@ -196,9 +198,15 @@ char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
         return dal_c__sanitizeTargetDirName(opts->arch_target);
     }
     const char* compiler = (opts && opts->compiler && opts->compiler[0]) ? opts->compiler : dal_c_default_compiler;
+    char* cwd = env_getCWD();
+    const char* path_env = getenv("PATH");
     for (int i = 0; i < dal_c__target_resolution_cache_count; ++i) {
-        if (str_eql(dal_c__target_resolution_cache[i].compiler, compiler)) {
-            return strdup(dal_c__target_resolution_cache[i].target);
+        if (str_eql(dal_c__target_resolution_cache[i].compiler, compiler)
+            && str_eql(dal_c__target_resolution_cache[i].cwd, cwd)
+            && str_eql(dal_c__target_resolution_cache[i].path_env, path_env)) {
+            char* cached = strdup(dal_c__target_resolution_cache[i].target);
+            free(cwd);
+            return cached;
         }
     }
 
@@ -237,15 +245,23 @@ char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
         dal_c__TargetResolutionCacheEntry* entry =
             &dal_c__target_resolution_cache[dal_c__target_resolution_cache_count++];
         entry->compiler = strdup(compiler);
+        entry->cwd = cwd;
+        cwd = NULL;
+        entry->path_env = path_env ? strdup(path_env) : strdup("");
         entry->target = strdup(result);
-        if (!entry->compiler || !entry->target) {
+        if (!entry->compiler || !entry->cwd || !entry->path_env || !entry->target) {
             free(entry->target);
+            free(entry->path_env);
+            free(entry->cwd);
             free(entry->compiler);
             entry->target = NULL;
+            entry->path_env = NULL;
+            entry->cwd = NULL;
             entry->compiler = NULL;
             dal_c__target_resolution_cache_count--;
         }
     }
+    free(cwd);
     return result;
 }
 
