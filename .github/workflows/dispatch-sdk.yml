@@ -3,6 +3,11 @@ name: Dispatch DH SDK
 on:
   push:
     branches: [main, redesign-exec-model]
+    paths:
+      - dh/include/**
+      - dh/src/**
+      - dh-c/include/**
+      - dh-c/src/**
 
 permissions:
   contents: read

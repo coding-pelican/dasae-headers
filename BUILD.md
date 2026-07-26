@@ -369,7 +369,8 @@ hand-authored root project file.
 ## 11. SDK release dispatch
 
 Pushes to `main` or `redesign-exec-model` dispatch the exact source commit to
-`coding-pelican/dh-sdk-internal`. Configure the source repository secret
+`coding-pelican/dh-sdk-internal` only when `dh/include`, `dh/src`,
+`dh-c/include`, or `dh-c/src` changes. Configure the source repository secret
 `DH_SDK_DISPATCH_TOKEN` with permission to trigger Actions in that repository.
 The SDK workflow owns cancellation of superseded runs and release publication.
 
