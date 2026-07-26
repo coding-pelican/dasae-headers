@@ -15,13 +15,173 @@ static void dal_c__printVersion(const dal_c_Cmd* cmd);
 static bool dal_c__needsProject(const dal_c_Cmd* cmd);
 static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd);
 static const dal_c_HelpCmd* dal_c__findHelpCmd(const char* name);
+static const dal_c_HelpTopic* dal_c__findHelpTopic(const char* name);
 static void dal_c__printHelpCmd(const dal_c_HelpCmd* cmd);
+static void dal_c__printHelpTopic(const dal_c_HelpTopic* topic);
 static dal_c_Cmd* dal_c__parseAsBuild(int argc, const char* argv[], int skip_count);
 static int dal_c__showTarget(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 static int dal_c__doctor(const dal_c_Cmd* cmd, const dal_c_Project* proj);
 static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const dal_c_Project* proj);
+static bool dal_c__hasDependencyScope(const dal_c_Project* proj);
 static bool dal_c__copyTree(const char* src, const char* dst);
 static int dal_c__printProjectGraph(const dal_c_Cmd* cmd, const dal_c_Project* proj, bool dot);
+
+#define DAL_C_COUNT_OF(a) ((int)(sizeof(a) / sizeof((a)[0])))
+
+static const char* const dal_c_help_topic_files_lines[] = {
+    "User-authored files are layered build input; generated files are never edited by hand.",
+    "workspace.dh: workspace-wide flat defaults and the project-discovery/cache boundary.",
+    "project.dh: complete named-project contract, including dependencies and target roots.",
+    "target.dh: flat defaults for one resolved directory target.",
+    "<source>.dh: source companion; the primary companion may also own dependency sections for an ad-hoc unit.",
+    "--dh-file=<path>: explicit reusable flat overlay loaded after companions.",
+    "lock.dh or <source>.lock.dh and manifest.dh are generated state and should not be authored manually.",
+    "All authored .dh files are strict: unknown keys, malformed lines, and illegal sections are errors.",
+};
+static const char* const dal_c_help_topic_files_examples[] = {
+    "project app",
+    "workspace .",
+    "help project-dh",
+    "help dh-file",
+    "help precedence",
+};
+
+static const char* const dal_c_help_topic_project_lines[] = {
+    "Run `dh-c project [path]` to create a minimal buildable project safely.",
+    "Place project.dh at the named project root.",
+    "Top-level flat keys set project defaults; [target-root <name>] declares selectable target families.",
+    "Any other [name] section declares one dependency and may contain provider/revision/runtime metadata.",
+    "Paths in project.dh are resolved from the project root.",
+    "The durable dependency resolution is written to sibling lock.dh.",
+    "Use target.dh or source companions for local overlays instead of nested project.dh files.",
+    "Run `dh-c plan` to inspect the resolved target without writing build state.",
+};
+static const char* const dal_c_help_topic_project_examples[] = {
+    "project app",
+    "build dev",
+    "graph",
+    "help dependencies",
+};
+
+static const char* const dal_c_help_topic_workspace_lines[] = {
+    "Run `dh-c workspace [path]` to create the boundary without overwriting an existing file.",
+    "workspace.dh is a flat build-default overlay and a discovery boundary.",
+    "Its settings apply to descendant projects before each project.dh.",
+    "The workspace owns the preferred shared build cache at .dh-c/cache/.",
+    "Mutable dependency checkouts remain project- or ad-hoc-unit-owned to avoid name/revision collisions.",
+    "Sections are not allowed; workspace-wide dependencies and target roots belong in project.dh.",
+    "A project may override every workspace scalar setting; repeatable inputs are accumulated.",
+};
+static const char* const dal_c_help_topic_workspace_examples[] = {
+    "workspace .",
+    "help precedence",
+    "clean --cache --older-than=30d --dry-run",
+};
+
+static const char* const dal_c_help_topic_target_lines[] = {
+    "target.dh is discovered only for the resolved directory target.",
+    "It is a strict flat overlay and supports the same keys as source companions/--dh-file.",
+    "Use it for a target-local output name, kind, compiler, include/link contract, or profile policy.",
+    "Sections are forbidden; target-root declarations and dependencies remain in root project.dh.",
+    "target.dh replaces the ambiguous historical use of nested project.dh as a flat overlay.",
+};
+static const char* const dal_c_help_topic_target_examples[] = {
+    "build dev --example demo",
+    "compile-db dev --example demo",
+};
+
+static const char* const dal_c_help_topic_dh_file_lines[] = {
+    "A flat .dh overlay accepts build defaults plus persistent compiler/linker properties.",
+    "A projectless primary <source>.dh may additionally contain dependency sections; secondary companions and --dh-file overlays remain flat.",
+    "Build defaults: output, kind, build-runs-tests.",
+    "Toolchain: compiler, std, arch/target, target-arch, target-tune, target-abi, sysroot, entry.",
+    "Inputs: include, isystem, define, undef, link, link-dir, comp-args, link-args, link-script.",
+    "Runtime/link policy: hosted, freestanding, link-dsl, link-libc, link-default-libs, link-start-files, link-compiler-rt, link-stdlib, link-crt, link-mode.",
+    "Artifact policy: output-ext, objcopy, objcopy-format, lto, prebuilt, strip, icf, section/exception/unwind/stack policies.",
+    "Version properties: version-namespace, version-core, version-prefix, version-suffix, version-build.",
+    "Repeatable keys accumulate in file/config order; scalar keys are replaced by later layers.",
+    "Use --dh-file, not --dh: --dh selects the DH installation path.",
+};
+static const char* const dal_c_help_topic_dh_file_examples[] = {
+    "build main.c util.c",
+    "build main.c --dh-file=windows-runtime.dh",
+    "build main.c --dh-file=freestanding.dh --link=user32",
+};
+
+static const char* const dal_c_help_topic_dependencies_lines[] = {
+    "Dependencies are declared in root project.dh, or in the primary <source>.dh of a projectless build unit.",
+    "Core keys: path, source, revision, provider, profile, linking, prebuilt, link-dsl, test.",
+    "Provider keys: build-command, install-command, runtime-file (repeatable).",
+    "Dependency-local compile/link keys use the same property vocabulary as project defaults.",
+    "fetch preserves an existing lock; update resolves requests again and rewrites lock.dh or <source>.lock.dh.",
+    "status reports READY, DRIFT, or UNLOCKED without mutating resolution.",
+    "Header-only dependencies are valid: they may export include files without producing a linked artifact.",
+};
+static const char* const dal_c_help_topic_dependencies_examples[] = {
+    "fetch",
+    "update main.c",
+    "status main.c",
+    "deps main.c stable",
+    "clean main.c --deps --unused --dry-run",
+};
+
+static const char* const dal_c_help_topic_lock_lines[] = {
+    "lock.dh is generated beside project.dh; <source>.lock.dh is generated beside a projectless primary source companion.",
+    "Both record exact resolved dependency commits, are durable source input, and should normally be committed.",
+    "fetch reads the existing lock; update is the command that intentionally changes it.",
+    "In a multi-source ad-hoc unit, the first source owns the companion dependency sections and lock path.",
+    "clean --deps never removes or rewrites either lock form.",
+};
+static const char* const dal_c_help_topic_manifest_lines[] = {
+    "manifest.dh is generated for library/prebuilt artifacts; users do not hand-author it.",
+    "It inventories all libraries in one target/profile and records ABI, producer-link provenance, and LTO toolchain contracts.",
+    "test/sample/example executables do not replace the library manifest.",
+    "Native non-LTO C artifacts compare ABI contracts; LTO artifacts additionally require matching toolchains.",
+    "Old or structurally invalid manifests are rejected; dh-c does not preserve unnecessary manifest-schema compatibility.",
+};
+static const char* const dal_c_help_topic_precedence_lines[] = {
+    "Configuration is resolved in this order:",
+    "1. dh-c built-in/profile defaults",
+    "2. workspace.dh",
+    "3. root project.dh",
+    "4. resolved target.dh",
+    "5. each selected source companion <source>.dh, in source order",
+    "6. explicit --dh-file overlays, in command-line order",
+    "7. command-line options",
+    "Later scalar values win. Repeatable include/isystem/define/undef/link/link-dir and raw argument inputs accumulate in order.",
+};
+static const char* const dal_c_help_topic_profiles_lines[] = {
+    "Profiles select optimization/debug defaults; explicit file/project/CLI policy may override individual fields.",
+    "dev is the default. stable/release add LTO-oriented library artifacts according to their profile contract.",
+    "Use `dh-c help --all` for the complete profile table.",
+};
+static const char* const dal_c_help_topic_invocation_lines[] = {
+    "Authored .dh files store reproducible build contract, not one invocation's control flow or presentation.",
+    "Keep jobs, verbose/progress/commands, elapsed precision, run arguments, dry-run, recursion, and cleanup selectors on the command line.",
+    "Source/test/sample/example selection and analysis/emit requests are invocation-only because they select work rather than define the produced target's reusable contract.",
+    "Use target.dh, source companions, or --dh-file for persistent compiler, linker, runtime, target, output, optimization, and version properties.",
+    "If a stable target requires the same invocation selector repeatedly, declare a [target-root <name>] in project.dh instead of hiding selection in an overlay.",
+};
+static const char* const dal_c_help_topic_invocation_examples[] = {
+    "build --jobs=8 --progress=hide",
+    "run --exec-args=\"--port 8080\"",
+    "build release --analysis-artifacts=all",
+};
+
+static const dal_c_HelpTopic dal_c_help_topics[] = {
+    { "files", "Choose the correct authored or generated .dh file", dal_c_help_topic_files_lines, DAL_C_COUNT_OF(dal_c_help_topic_files_lines), dal_c_help_topic_files_examples, DAL_C_COUNT_OF(dal_c_help_topic_files_examples) },
+    { "project-dh", "Define a complete named project", dal_c_help_topic_project_lines, DAL_C_COUNT_OF(dal_c_help_topic_project_lines), dal_c_help_topic_project_examples, DAL_C_COUNT_OF(dal_c_help_topic_project_examples) },
+    { "workspace-dh", "Share defaults and cache scope across projects", dal_c_help_topic_workspace_lines, DAL_C_COUNT_OF(dal_c_help_topic_workspace_lines), dal_c_help_topic_workspace_examples, DAL_C_COUNT_OF(dal_c_help_topic_workspace_examples) },
+    { "target-dh", "Configure one directory target", dal_c_help_topic_target_lines, DAL_C_COUNT_OF(dal_c_help_topic_target_lines), dal_c_help_topic_target_examples, DAL_C_COUNT_OF(dal_c_help_topic_target_examples) },
+    { "dh-file", "Write source companions and explicit flat overlays", dal_c_help_topic_dh_file_lines, DAL_C_COUNT_OF(dal_c_help_topic_dh_file_lines), dal_c_help_topic_dh_file_examples, DAL_C_COUNT_OF(dal_c_help_topic_dh_file_examples) },
+    { "dependencies", "Declare, resolve, build, and clean dependencies", dal_c_help_topic_dependencies_lines, DAL_C_COUNT_OF(dal_c_help_topic_dependencies_lines), dal_c_help_topic_dependencies_examples, DAL_C_COUNT_OF(dal_c_help_topic_dependencies_examples) },
+    { "lock-dh", "Understand durable resolved dependency state", dal_c_help_topic_lock_lines, DAL_C_COUNT_OF(dal_c_help_topic_lock_lines), NULL, 0 },
+    { "manifest-dh", "Understand generated prebuilt compatibility metadata", dal_c_help_topic_manifest_lines, DAL_C_COUNT_OF(dal_c_help_topic_manifest_lines), NULL, 0 },
+    { "precedence", "Understand configuration layering and accumulation", dal_c_help_topic_precedence_lines, DAL_C_COUNT_OF(dal_c_help_topic_precedence_lines), NULL, 0 },
+    { "profiles", "Choose an optimization/debug profile", dal_c_help_topic_profiles_lines, DAL_C_COUNT_OF(dal_c_help_topic_profiles_lines), NULL, 0 },
+    { "invocation-only", "Know which controls intentionally stay on the command line", dal_c_help_topic_invocation_lines, DAL_C_COUNT_OF(dal_c_help_topic_invocation_lines), dal_c_help_topic_invocation_examples, DAL_C_COUNT_OF(dal_c_help_topic_invocation_examples) },
+};
+static const int dal_c_help_topics_count = DAL_C_COUNT_OF(dal_c_help_topics);
 
 
 static bool dal_c__pathIsAbsolute(const char* value) {
@@ -35,7 +195,9 @@ static bool dal_c__pathIsAbsolute(const char* value) {
 
 static char* dal_c__graphChildRoot(const dal_c_Project* proj, const dal_c_Lib* lib) {
     if (!lib->path || !lib->path[0]) return NULL;
-    return dal_c__pathIsAbsolute(lib->path) ? strdup(lib->path) : path_join(proj->root, lib->path);
+    if (dal_c__pathIsAbsolute(lib->path)) return strdup(lib->path);
+    const char* owner_root = proj->root ? proj->root : proj->unit_root;
+    return owner_root ? path_join(owner_root, lib->path) : NULL;
 }
 
 static bool dal_c__graphSeen(char** seen, int seen_count, const char* value) {
@@ -101,19 +263,22 @@ static void dal_c__graphWalkDot(const dal_c_Project* proj, const char* parent_id
 static int dal_c__printProjectGraph(const dal_c_Cmd* cmd, const dal_c_Project* proj, bool dot) {
     const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
     char* target = dal_c__resolveTargetDirName(&cmd->opts);
+    const char* graph_root = proj->root ? proj->root : proj->unit_source;
+    const char* graph_kind = proj->root ? "PROJECT" : "BUILD UNIT";
+    if (!graph_root) { free(target); return 1; }
     char** seen = calloc(1, sizeof(*seen));
     int seen_count = 0;
-    if (seen) seen[seen_count++] = strdup(proj->root);
+    if (seen) seen[seen_count++] = strdup(graph_root);
     if (dot) {
         printf("digraph dh_c {\n  rankdir=LR;\n  node [shape=box];\n  \"");
-        dal_c__graphPrintEscaped(proj->root); printf("\" [label=\"");
-        dal_c__graphPrintEscaped(proj->name ? proj->name : "project");
+        dal_c__graphPrintEscaped(graph_root); printf("\" [label=\"");
+        dal_c__graphPrintEscaped(proj->name ? proj->name : "unit");
         printf("\\ntarget=%s\\nprofile=%s\"];\n", target ? target : "native", profile ? profile->name : "dev");
-        dal_c__graphWalkDot(proj, proj->root, &seen, &seen_count);
+        dal_c__graphWalkDot(proj, graph_root, &seen, &seen_count);
         printf("}\n");
     } else {
-        printf("PROJECT %s\n", proj->name ? proj->name : "(unnamed)");
-        printf("  root: %s\n", proj->root ? proj->root : "(none)");
+        printf("%s %s\n", graph_kind, proj->name ? proj->name : "(unnamed)");
+        printf("  root: %s\n", proj->root ? proj->root : proj->unit_source);
         printf("  target: %s\n", target ? target : "native");
         printf("  profile: %s\n", profile ? profile->name : "dev");
         printf("  direct-dependencies: %d\n", proj->lib_count);
@@ -286,8 +451,9 @@ int main(int argc, const char* argv[]) {
             return 1;
         }
         dal_c_Project* deps_proj = dal_c_Project_detect(deps_cmd);
-        if (!deps_proj || !deps_proj->root) {
-            (void)fprintf(stderr, "Error: Not in a dh-c project directory\n");
+        if (!dal_c__hasDependencyScope(deps_proj)) {
+            (void)fprintf(stderr, "Error: No dependency scope was found.\n");
+            (void)fprintf(stderr, "  Use project.dh, or pass a primary source whose <stem>.dh declares dependencies.\n");
             if (deps_proj) dal_c_Project_cleanup(&deps_proj);
             dal_c_Cmd_cleanup(&deps_cmd);
             return 1;
@@ -318,8 +484,9 @@ int main(int argc, const char* argv[]) {
         free(filtered);
         if (!graph_cmd) return 1;
         dal_c_Project* graph_proj = dal_c_Project_detect(graph_cmd);
-        if (!graph_proj || !graph_proj->root) {
-            (void)fprintf(stderr, "Error: Not in a dh-c project directory\n");
+        if (!dal_c__hasDependencyScope(graph_proj)) {
+            (void)fprintf(stderr, "Error: No dependency scope was found for graph.\n");
+            (void)fprintf(stderr, "  Use project.dh, or pass a primary source whose <stem>.dh declares dependencies.\n");
             if (graph_proj) dal_c_Project_cleanup(&graph_proj);
             dal_c_Cmd_cleanup(&graph_cmd); return 1;
         }
@@ -410,6 +577,10 @@ int main(int argc, const char* argv[]) {
                 return dal_c_Project_cleanup(&proj), dal_c_Cmd_cleanup(&cmd), 1;
             }
         }
+        if (cmd->action == dal_c_CmdAction_deps && !dal_c__hasDependencyScope(proj)) {
+            (void)fprintf(stderr, "Error: `deps` requires project.dh or a primary <source>.dh with dependency sections.\n");
+            return dal_c_Project_cleanup(&proj), dal_c_Cmd_cleanup(&cmd), 1;
+        }
     }
     int result = 0;
     if (special_target) {
@@ -483,6 +654,20 @@ static int dal_c__installProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
 }
 
 static void dal_c__printProjectStatus(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
+    if (!proj) { return; }
+    if (proj->is_adhoc) {
+        char* state_root = dal_c_Project_getStateRoot(proj);
+        char* lock_path = dal_c_Project_getDependencyLockPath(proj);
+        printf("\nBuild unit:\n");
+        printf("  source=%s\n", proj->unit_source ? proj->unit_source : "(unknown)");
+        printf("  contract=%s\n", proj->unit_dh ? proj->unit_dh : "(missing)");
+        printf("  lock=%s (%s)\n", lock_path ? lock_path : "(unavailable)",
+            lock_path && path_isFile(lock_path) ? "present" : "missing");
+        printf("Generated state:\n  root=%s\n", state_root ? state_root : "(unavailable)");
+        free(lock_path);
+        free(state_root);
+        return;
+    }
     const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
     char* build_dir = profile ? dal_c__makeBuildProfileDir(proj, &cmd->opts, profile) : NULL;
     char* package_dir = dal_c__packageDir(cmd, proj);
@@ -491,8 +676,12 @@ static void dal_c__printProjectStatus(const dal_c_Cmd* cmd, const dal_c_Project*
     printf("\nProject:\n  root=%s\n  profile=%s\n", proj->root, profile ? profile->name : "dev");
     printf("Build:\n  directory=%s\n  manifest=%s\n", build_dir ? build_dir : "(unknown)", manifest && path_isFile(manifest) ? "ready" : "missing");
     printf("Cache:\n  state=%s\n", cache && path_isDir(cache) ? "present" : "empty");
-    printf("Package:\n  directory=%s\n  state=%s\n", package_dir, path_isDir(package_dir) ? "present" : "missing");
+    printf("Package:\n  directory=%s\n  state=%s\n", package_dir, package_dir && path_isDir(package_dir) ? "present" : "missing");
     free(cache); free(manifest); free(package_dir); free(build_dir);
+}
+
+static bool dal_c__hasDependencyScope(const dal_c_Project* proj) {
+    return proj && (proj->root || (proj->is_adhoc && proj->unit_dh && proj->lib_count > 0));
 }
 
 static bool dal_c__depsGitRun(const char* cwd, const char* a, const char* b, const char* c, const char* d) {
@@ -773,7 +962,7 @@ static bool dal_c__depsTouchUsage(const char* deps_root, const char* name) {
 
 static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     assert(action != NULL);
-    assert(proj != NULL && proj->root != NULL);
+    assert(dal_c__hasDependencyScope(proj));
     assert(cmd != NULL);
 
     char* state_root = dal_c_Project_getStateRoot(proj);
@@ -782,9 +971,10 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
     char* build_root = deps_root ? path_join(deps_root, "build") : NULL;
     char* package_root = deps_root ? path_join(deps_root, "packages") : NULL;
     char* lock_path = dal_c_Project_getDependencyLockPath(proj);
+    bool mutates_state = !str_eql(action, "status");
     if (!state_root || !deps_root || !src_root || !build_root || !package_root || !lock_path
-        || !dir_createRecur(src_root) || !dir_createRecur(build_root) || !dir_createRecur(package_root)) {
-        (void)fprintf(stderr, "Error: Failed to create dependency cache directories under %s\n",
+        || (mutates_state && (!dir_createRecur(src_root) || !dir_createRecur(build_root) || !dir_createRecur(package_root)))) {
+        (void)fprintf(stderr, "Error: Failed to access dependency state under %s\n",
             deps_root ? deps_root : "(unknown)");
         free(lock_path); free(package_root); free(build_root); free(src_root); free(deps_root); free(state_root);
         return 1;
@@ -897,6 +1087,7 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
             if (!exists) {
                 const char* argv[] = { "git", "clone", "--", lib->source, source_dir, NULL };
                 printf("[FETCH] %s <- %s\n", lib->name, lib->source);
+                (void)fflush(stdout);
                 if (proc_run(argv, true) != 0) {
                     failures++;
                     free(locked_revision);
@@ -906,6 +1097,7 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
                 exists = true;
             } else {
                 printf("[HAVE]  %s\n", lib->name);
+                (void)fflush(stdout);
             }
             if (!dal_c__depsGitRun(source_dir, "fetch", "--tags", "--prune", NULL)) {
                 failures++;
@@ -931,6 +1123,7 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
             if (!exists) {
                 const char* argv[] = { "git", "clone", "--", lib->source, source_dir, NULL };
                 printf("[FETCH] %s <- %s\n", lib->name, lib->source);
+                (void)fflush(stdout);
                 if (proc_run(argv, true) != 0) {
                     failures++;
                     free(locked_revision);
@@ -940,6 +1133,7 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
                 exists = true;
             }
             printf("[UPDATE] %s\n", lib->name);
+            (void)fflush(stdout);
             if (!dal_c__depsGitRun(source_dir, "fetch", "--tags", "--prune", NULL)) {
                 failures++;
                 free(locked_revision);
@@ -1035,31 +1229,44 @@ static int dal_c__printUsage(const char* topic) {
     bool list_only = topic && str_eql(topic, "--list");
     bool print_all = topic && str_eql(topic, "--all");
     if (list_only) {
-        for (int i = 0; i < dal_c_help_cmds_count; ++i) {
-            const dal_c_HelpCmd* cmd = &dal_c_help_cmds[i];
-            if (cmd->name && cmd->implemented) { printf("%s\n", cmd->name); }
+        printf("COMMANDS:\n");
+        printf("  setup:         workspace project\n");
+        printf("  everyday:      build run test clean\n");
+        printf("  dependencies:  deps fetch update status graph package install\n");
+        printf("  inspect:       plan explain target doctor toolchain compile-db\n");
+        printf("  code quality:  syntax tidy format\n");
+        printf("  aliases:       lib build-dsl test-dsl clean-dsl build-self clean-self\n\n");
+        printf("CONFIGURATION TOPICS:\n");
+        for (int i = 0; i < dal_c_help_topics_count; ++i) {
+            printf("  %-18s %s\n", dal_c_help_topics[i].name, dal_c_help_topics[i].summary);
         }
-        printf("fetch\nupdate\nstatus\ngraph\npackage\ninstall\nplan\nexplain\ntarget\ndoctor\n");
         return 0;
     }
     if (print_all) { topic = NULL; }
 
-    const int help_cmd_count = dal_c_help_cmds_count;
     const int global_option_count = dal_c_help_global_options_count;
     const int help_profile_count = dal_c_help_profiles_count;
+
+    if (topic) {
+        const dal_c_HelpTopic* help_topic = dal_c__findHelpTopic(topic);
+        if (help_topic) {
+            dal_c__printHelpTopic(help_topic);
+            return 0;
+        }
+    }
 
     if (topic && (str_eql(topic, "fetch") || str_eql(topic, "update") || str_eql(topic, "status")
         || str_eql(topic, "graph") || str_eql(topic, "package") || str_eql(topic, "install")
         || str_eql(topic, "plan") || str_eql(topic, "explain") || str_eql(topic, "target") || str_eql(topic, "doctor"))) {
         printf("%s - %s\n\n", dal_c_tool_name, dal_c_tool_description);
         if (str_eql(topic, "fetch")) {
-            printf("USAGE:\n  %s fetch [build options]\n\nFetch missing external dependency sources declared by the current project.dh without changing an existing resolution.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s fetch [source] [build options]\n\nFetch missing external dependency sources for project.dh or a primary source companion without changing an existing resolution.\n", dal_c_tool_name);
         } else if (str_eql(topic, "update")) {
-            printf("USAGE:\n  %s update [build options]\n\nRefresh external dependency refs and rewrite the resolved dependency lock for the current project.dh.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s update [source] [build options]\n\nRefresh dependency refs and rewrite lock.dh or <source>.lock.dh for the selected dependency scope.\n", dal_c_tool_name);
         } else if (str_eql(topic, "status")) {
-            printf("USAGE:\n  %s status [build options]\n\nShow source, provider, revision, and dirty-state readiness for dependencies declared by the current project.dh.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s status [source] [build options]\n\nShow source, provider, revision, and dirty-state readiness for project or primary-source dependencies.\n", dal_c_tool_name);
         } else if (str_eql(topic, "graph")) {
-            printf("USAGE:\n  %s graph [profile] [build options] [--format=dot]\n\nShow the resolved project dependency graph and its provider metadata.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s graph [source] [profile] [build options] [--format=dot]\n\nShow the dependency graph for project.dh or a projectless primary source companion.\n", dal_c_tool_name);
         } else if (str_eql(topic, "package")) {
             printf("USAGE:\n  %s package [profile] [build options]\n\nBuild and stage the current project with dependency runtime exports.\n", dal_c_tool_name);
         } else if (str_eql(topic, "install")) {
@@ -1088,61 +1295,85 @@ static int dal_c__printUsage(const char* topic) {
     printf("%s - %s\n\n", dal_c_tool_name, dal_c_tool_description);
     printf("USAGE:\n");
     printf("  %s <command> [profile] [path] [options]\n", dal_c_tool_name);
-    printf("  %s help [command]\n", dal_c_tool_name);
+    printf("  %s help [command-or-topic]\n", dal_c_tool_name);
     printf("  %s help --list | --all\n", dal_c_tool_name);
     printf("  %s <command> --help\n", dal_c_tool_name);
     printf("  %s -h | --help\n", dal_c_tool_name);
     printf("  %s -v | --version\n\n", dal_c_tool_name);
 
-    printf("COMMAND MODEL:\n");
-    printf("  A command decides the phase: build, run, test, check, format, clean, or query.\n");
-    printf("  A profile decides the optimization/debug contract; default profile is `dev`.\n");
-    printf("  A path decides the target source, target-root member, directory, or explicit file.\n");
-    printf("  Options are command-scoped. Unknown or irrelevant options are rejected instead of ignored.\n\n");
+    printf("GET STARTED:\n");
+    printf("  %-28s %s\n", "dh-c project app", "Create a minimal buildable project");
+    printf("  %-28s %s\n", "dh-c workspace .", "Create a workspace boundary with shared defaults and cache");
+    printf("  %-28s %s\n", "dh-c build main.c", "Build one source file; main.dh is loaded automatically when present");
+    printf("  %-28s %s\n", "dh-c update main.c", "Resolve dependencies declared by a projectless primary main.dh");
+    printf("  %-28s %s\n", "dh-c update main.c", "Resolve dependencies declared by a projectless primary main.dh");
+    printf("  %-28s %s\n", "dh-c build", "Build the detected project.dh project with the dev profile");
+    printf("  %-28s %s\n", "dh-c test", "Build the project library contract and run its tests");
+    printf("  %-28s %s\n", "dh-c plan", "Inspect the resolved target and configuration without writing state");
+    printf("  %-28s %s\n\n", "dh-c help files", "Choose between workspace.dh, project.dh, target.dh, and source companions");
 
     printf("COMMANDS:\n");
-    printf("\nBUILD AND EXECUTION:\n");
-    printf("  %-14s %s\n", "build", "Build a project, explicit source set, target-root member, or library");
-    printf("  %-14s %s\n", "run", "Build and run a project, explicit file, or declared target");
-    printf("  %-14s %s\n", "test", "Build and run tests");
-    printf("  %-14s %s\n", "clean", "Clean build outputs, caches, or generated dependency state");
-    printf("\n");
+    printf("  SETUP\n");
+    printf("    %-14s %s\n", "workspace", "Create workspace.dh and establish a shared configuration/cache boundary");
+    printf("    %-14s %s\n", "project", "Create a minimal buildable project.dh project");
+    printf("  EVERYDAY\n");
+    printf("    %-14s %s\n", "build", "Build a project, source set, target-root member, or library");
+    printf("    %-14s %s\n", "run", "Build and run an executable target");
+    printf("    %-14s %s\n", "test", "Build and run tests, samples, or examples");
+    printf("    %-14s %s\n", "clean", "Remove generated outputs, caches, or dependency state");
+    printf("  DEPENDENCIES & DELIVERY\n");
+    printf("    %-14s %s\n", "deps", "Build dependencies declared by project.dh or a primary source companion");
+    printf("    %-14s %s\n", "fetch", "Fetch locked dependency sources without changing resolution");
+    printf("    %-14s %s\n", "update", "Resolve dependency requests and rewrite the selected lock");
+    printf("    %-14s %s\n", "status", "Inspect checkout and lock readiness");
+    printf("    %-14s %s\n", "graph", "Show the dependency graph for a project or primary source unit");
+    printf("    %-14s %s\n", "package", "Build and stage the current package");
+    printf("    %-14s %s\n", "install", "Install a staged package");
+    printf("  INSPECT & DEBUG\n");
+    printf("    %-14s %s\n", "plan", "Resolve the build read-only");
+    printf("    %-14s %s\n", "explain", "Explain rebuild decisions read-only");
+    printf("    %-14s %s\n", "target", "Show target normalization and output scope");
+    printf("    %-14s %s\n", "doctor", "Check required tools for the detected project");
+    printf("    %-14s %s\n", "toolchain", "Inspect compiler-driver runtime and default link inputs");
+    printf("    %-14s %s\n", "compile-db", "Write compile_commands.json without building");
+    printf("  CODE QUALITY\n");
+    printf("    %-14s %s\n", "syntax", "Run compiler syntax checks");
+    printf("    %-14s %s\n", "tidy", "Run clang-tidy with dh-c's compile database");
+    printf("    %-14s %s\n\n", "format", "Run clang-format on selected sources");
 
-    printf("DEPENDENCIES AND DELIVERY:\n");
-    printf("  %-14s %s\n", "deps", "Build dependencies declared by project.dh");
-    printf("  %-14s %s\n", "fetch", "Fetch dependency sources at the locked resolution");
-    printf("  %-14s %s\n", "update", "Resolve dependency requests and rewrite lock.dh");
-    printf("  %-14s %s\n", "status", "Inspect dependency checkout and lock readiness");
-    printf("  %-14s %s\n", "graph", "Show the resolved dependency graph");
-    printf("  %-14s %s\n", "package", "Build and stage the current project package");
-    printf("  %-14s %s\n", "install", "Install the staged project package");
-    printf("\n");
-
-    printf("INSPECTION AND TOOLING:\n");
-    printf("  %-14s %s\n", "plan", "Resolve a read-only build plan without materializing state");
-    printf("  %-14s %s\n", "explain", "Explain why a build requires work without performing it");
-    printf("  %-14s %s\n", "target", "Inspect the effective target and output directory");
-    printf("  %-14s %s\n", "doctor", "Check the build environment and DH installation");
-    printf("  %-14s %s\n", "toolchain", "Inspect compiler-driver link inputs");
-    printf("  %-14s %s\n", "compile-db", "Write compile_commands.json without building");
-    printf("  %-14s %s\n", "syntax", "Run compiler syntax-only checks");
-    printf("  %-14s %s\n", "tidy", "Run clang-tidy with dh-c's compilation database");
-    printf("  %-14s %s\n", "format", "Run clang-format on selected sources");
-    printf("\n");
+    printf("CONFIGURATION:\n");
+    printf("  %-18s %s\n", "files", "Which .dh file should I write?");
+    printf("  %-18s %s\n", "project-dh", "Full named-project, dependency, and target-root contract");
+    printf("  %-18s %s\n", "workspace-dh", "Workspace defaults and shared cache boundary");
+    printf("  %-18s %s\n", "target-dh", "One directory target's flat defaults");
+    printf("  %-18s %s\n", "dh-file", "Source companion and explicit overlay keys");
+    printf("  %-18s %s\n", "dependencies", "Dependency section and provider contract");
+    printf("  %-18s %s\n", "precedence", "Exact configuration merge order");
+    printf("  %-18s %s\n", "lock-dh", "Generated durable dependency resolution");
+    printf("  %-18s %s\n", "manifest-dh", "Generated prebuilt compatibility metadata");
+    printf("  %-18s %s\n", "profiles", "Optimization and debug profiles");
+    printf("  %-18s %s\n\n", "invocation-only", "Controls intentionally kept out of .dh files");
 
     printf("ALIASES:\n");
     printf("  lib -> build --lib; build-dsl/test-dsl/clean-dsl -> --dsl; build-self/clean-self -> --self\n\n");
-
     if (!print_all) {
-        printf("Use `%s help <command>` for command details, `%s help --list` for names only, or `%s help --all` for the complete reference.\n", dal_c_tool_name, dal_c_tool_name, dal_c_tool_name);
+        printf("Use `%s help <command-or-topic>`, `%s help --list`, or `%s help --all`.\n", dal_c_tool_name, dal_c_tool_name, dal_c_tool_name);
         return 0;
     }
 
     printf("COMMAND DETAILS:\n\n");
 
-    for (int i = 0; i < help_cmd_count; ++i) {
-        const dal_c_HelpCmd* cmd = &dal_c_help_cmds[i];
-        if (!cmd->name || !cmd->implemented) { continue; }
+    static const char* const command_order[] = {
+        "workspace", "project",
+        "build", "run", "test", "clean",
+        "deps", "fetch", "update", "status", "graph", "package", "install",
+        "plan", "explain", "target", "doctor", "toolchain", "compile-db",
+        "syntax", "tidy", "format",
+        "lib", "build-dsl", "test-dsl", "clean-dsl", "build-self", "clean-self",
+    };
+    for (size_t i = 0; i < sizeof(command_order) / sizeof(command_order[0]); ++i) {
+        const dal_c_HelpCmd* cmd = dal_c__findHelpCmd(command_order[i]);
+        if (!cmd || !cmd->implemented) { continue; }
         printf("  %s %s\n", cmd->name, cmd->usage);
         printf("    %s\n\n", cmd->description);
 
@@ -1171,12 +1402,20 @@ static int dal_c__printUsage(const char* topic) {
         }
     }
 
-    printf("RESERVED COMMANDS:\n");
-    for (int i = 0; i < help_cmd_count; ++i) {
-        const dal_c_HelpCmd* cmd = &dal_c_help_cmds[i];
-        if (!cmd->name || cmd->implemented) continue;
-        printf("  %s %s\n", cmd->name, cmd->usage);
-        printf("    %s\n\n", cmd->description);
+    printf("CONFIGURATION TOPICS:\n\n");
+    for (int i = 0; i < dal_c_help_topics_count; ++i) {
+        const dal_c_HelpTopic* help_topic = &dal_c_help_topics[i];
+        printf("  %s - %s\n", help_topic->name, help_topic->summary);
+        for (int j = 0; j < help_topic->line_count; ++j) {
+            printf("    - %s\n", help_topic->lines[j]);
+        }
+        if (help_topic->example_count > 0) {
+            printf("    Examples:\n");
+            for (int j = 0; j < help_topic->example_count; ++j) {
+                printf("      %s %s\n", dal_c_tool_name, help_topic->examples[j]);
+            }
+        }
+        printf("\n");
     }
 
     printf("GLOBAL OPTIONS:\n");
@@ -1229,24 +1468,16 @@ static int dal_c__printUsage(const char* topic) {
     printf("  PCH files are generated inside the active profile/flag cache plan and are rebuilt when their headers or compile contract change.\n");
     printf("  `lib/deps.h` is generated only when a dependency prelude is needed; it includes top-level headers under `lib/deps/`.\n\n");
 
-    printf("PROJECT.DH KEYS:\n");
-    printf("  Top level: `output`, `kind=<executable|static-lib|shared-lib|lib>`, `build-runs-tests=<on|off>`, `self-root=<path>`, `exclude=<path>`.\n");
-    printf("  Toolchain: `compiler`, `std`, `arch`/`target`, `target-arch`, `target-tune`, `target-abi`, `sysroot`, `entry`.\n");
-    printf("  Compile inputs: `include`, `isystem`, `define`, `undef`, `profile`, `hosted`, `freestanding`, `loose-errors`, `macro-backtrace-limit`.\n");
-    printf("  Link inputs: `link`, `link-dir`, `link-dsl`, `link-libc`, `link-default-libs`, `link-start-files`, `link-compiler-rt`, `link-stdlib`, `link-crt`, `link-mode`.\n");
-    printf("  Optimization/artifacts: `lto`, `omit-frame-pointer`, `function-sections`, `data-sections`, `gc-sections`, `whole-archive`, `unroll-loops`, `unwind-tables`, `async-unwind-tables`, `exceptions`, `strip`, `icf`, `merge-all-constants`, `stack-protector`.\n");
-    printf("  Version: `version-core`, `version-prefix=<alpha|beta|rc>`, `version-suffix`, `version-build`.\n");
-    printf("  PCH: `pch=<auto|off|deps|header>`, `pch-exclude=<header>`.\n");
-    printf("  `[target-root <name>]`: `path`, `kind=<executable|static-lib|shared-lib|lib|image|preprocessed|assembly>`, `selection=<path|file|dir>`, `link-project=<on|off>`, `exclude=<path>`.\n");
-    printf("  `[<dependency-name>]`: `path`, `profile`, `linking=<static|shared>`, `link-dsl`, `test`, and the compile/link keys above.\n");
-    printf("  CLI options override project defaults for the current invocation.\n\n");
+    printf("CONFIGURATION FILES:\n");
+    printf("  Authored configuration is strict and layered: workspace.dh -> project.dh -> target.dh -> source companions -> --dh-file -> CLI.\n");
+    printf("  Use `%s help files` to choose a file, `%s help dh-file` for flat keys, and `%s help project-dh` for sections.\n\n", dal_c_tool_name, dal_c_tool_name, dal_c_tool_name);
 
     printf("GENERATED STATE:\n");
     printf("  `build/` stores materialized artifacts, object files, and generated plan makefiles.\n");
-    printf("  Workspace `.dh-c/cache/` or project `build/.cache/` stores reusable build-cache entries.\n");
-    printf("  Project `.dh-c/deps/` stores fetched sources, provider builds, staged packages, and last-use stamps.\n");
+    printf("  Workspace `.dh-c/cache/` or the project-local cache stores reusable build-cache entries.\n");
+    printf("  Project `.dh-c/deps/` or an ad-hoc unit state root stores fetched sources, provider builds, staged packages, and last-use stamps.\n");
     printf("  `lib/deps/` and `lib/deps.h` store generated dependency exports consumed by project builds.\n");
-    printf("  `lock.dh` is durable resolved input beside project.dh; `clean --deps` does not rewrite it.\n");
+    printf("  `lock.dh` sits beside project.dh; `<source>.lock.dh` sits beside an ad-hoc primary source companion. Cleanup never rewrites either.\n");
     printf("  Use `clean --cache --older-than=30d` or `clean --deps --unused --dry-run` for maintenance.\n");
     printf("  Do not place durable source assets, checked-in resources, or manual files under generated state.\n\n");
 
@@ -1255,8 +1486,6 @@ static int dal_c__printUsage(const char* topic) {
         printf("  %-*s %s\n", 14, dal_c_help_profiles[i].name, dal_c_help_profiles[i].description);
     }
     printf("\n");
-    printf("SUPPORT STATUS:\n");
-    printf("  `workspace` and `project` are reserved scaffold commands and are not implemented.\n");
     return 0;
 }
 
@@ -1268,6 +1497,37 @@ static const dal_c_HelpCmd* dal_c__findHelpCmd(const char* name) {
         }
     }
     return NULL;
+}
+
+static const dal_c_HelpTopic* dal_c__findHelpTopic(const char* name) {
+    if (!name) { return NULL; }
+    const char* canonical = name;
+    if (str_eql(name, "config") || str_eql(name, "configuration")) canonical = "files";
+    else if (str_eql(name, "dependency")) canonical = "dependencies";
+    else if (str_eql(name, "lock")) canonical = "lock-dh";
+    else if (str_eql(name, "manifest")) canonical = "manifest-dh";
+    else if (str_eql(name, "cli-only") || str_eql(name, "command-options")) canonical = "invocation-only";
+    else if (str_eql(name, "companion") || str_eql(name, "source-dh")) canonical = "dh-file";
+    for (int i = 0; i < dal_c_help_topics_count; ++i) {
+        if (str_eql(dal_c_help_topics[i].name, canonical)) return &dal_c_help_topics[i];
+    }
+    return NULL;
+}
+
+static void dal_c__printHelpTopic(const dal_c_HelpTopic* topic) {
+    assert(topic != NULL);
+    printf("%s - %s\n\n", dal_c_tool_name, dal_c_tool_description);
+    printf("TOPIC: %s\n", topic->name);
+    printf("  %s\n\n", topic->summary);
+    for (int i = 0; i < topic->line_count; ++i) {
+        printf("  - %s\n", topic->lines[i]);
+    }
+    if (topic->example_count > 0) {
+        printf("\nEXAMPLES:\n");
+        for (int i = 0; i < topic->example_count; ++i) {
+            printf("  %s %s\n", dal_c_tool_name, topic->examples[i]);
+        }
+    }
 }
 
 static void dal_c__printHelpCmd(const dal_c_HelpCmd* cmd) {
@@ -1382,9 +1642,11 @@ static bool dal_c__allowsNoProject(const dal_c_Cmd* cmd) {
     case dal_c_CmdAction_build_self:
     case dal_c_CmdAction_clean_self:
     case dal_c_CmdAction_toolchain:
+        return false;
     case dal_c_CmdAction_deps:
+        return cmd->input_count > 0;
     case dal_c_CmdAction_clean:
-        return cmd->action == dal_c_CmdAction_clean;
+        return true;
     case dal_c_CmdAction_compile_db:
     case dal_c_CmdAction_syntax:
     case dal_c_CmdAction_tidy:
@@ -1441,7 +1703,7 @@ static int dal_c__showTarget(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     char* normalized = dal_c__resolveTargetDirName(&opts);
     dal_c_Profile profile_id = dal_c__effectiveProfile(cmd, proj);
     const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(profile_id);
-    char* profile_dir = (proj && proj->root && profile) ? dal_c__makeBuildProfileDirReadOnly(proj, &opts, profile) : NULL;
+    char* profile_dir = (proj && (proj->root || proj->is_adhoc) && profile) ? dal_c__makeBuildProfileDirReadOnly(proj, &opts, profile) : NULL;
     printf("TARGET:\n");
     printf("  requested: %s\n", requested ? requested : "(host compiler default)");
     printf("  normalized: %s\n", normalized ? normalized : "(unresolved)");
@@ -1501,7 +1763,9 @@ static int dal_c__doctor(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     if (needs_cmake) printf("  cmake: %s\n", cmake_ok ? "ok" : "missing or unusable");
     if (needs_git) printf("  git: %s\n", git_ok ? "ok" : "missing or unusable");
     printf("  dh: %s [%s]\n", dh_path ? dh_path : "(not found)", dh_ok ? "ok" : "missing");
-    printf("  project: %s\n", proj && proj->root ? proj->root : "(not detected; explicit-file builds remain possible)");
+    if (proj && proj->root) printf("  project: %s\n", proj->root);
+    else if (proj && proj->is_adhoc) printf("  build-unit: %s\n", proj->unit_source ? proj->unit_source : "(unknown)");
+    else printf("  project: (not detected; explicit-file builds remain possible)\n");
     if (!compiler_ok) failures++;
     if (!make_ok) failures++;
     if (!ar_ok) failures++;

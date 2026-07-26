@@ -206,13 +206,17 @@ static char* dal_c__makeBuildProfileDirAt(const char* root, const dal_c_Compiler
 }
 
 char* dal_c__makeBuildProfileDir(const dal_c_Project* proj, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
-    assert(proj != NULL && proj->root != NULL && profile != NULL);
-    return dal_c__makeBuildProfileDirAtMode(proj->root, opts, profile, true);
+    assert(proj != NULL && profile != NULL);
+    const char* root = proj->root ? proj->root : proj->unit_root;
+    assert(root != NULL);
+    return dal_c__makeBuildProfileDirAtMode(root, opts, profile, true);
 }
 
 char* dal_c__makeBuildProfileDirReadOnly(const dal_c_Project* proj, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
-    assert(proj != NULL && proj->root != NULL && profile != NULL);
-    return dal_c__makeBuildProfileDirAtMode(proj->root, opts, profile, false);
+    assert(proj != NULL && profile != NULL);
+    const char* root = proj->root ? proj->root : proj->unit_root;
+    assert(root != NULL);
+    return dal_c__makeBuildProfileDirAtMode(root, opts, profile, false);
 }
 
 
@@ -946,6 +950,36 @@ void dal_c__appendSyntaxArguments(ArrStr* argv, const dal_c_Cmd* cmd, const dal_
 static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_CompilerOpts* opts, bool compiler_is_clang);
 static char* dal_c__jsonEscape(const char* text);
 static void dal_c__fprintJsonString(FILE* fp, const char* text);
+static char* dal_c__mergeConfiguredArgs(const char* property_args, const char* cli_args);
+static const char* dal_c__effectiveLinkerScript(const dal_c_Cmd* cmd);
+static const char* dal_c__effectiveObjcopy(const dal_c_Cmd* cmd);
+static const char* dal_c__effectiveObjcopyFormat(const dal_c_Cmd* cmd);
+
+static char* dal_c__mergeConfiguredArgs(const char* property_args, const char* cli_args) {
+    if (!property_args || property_args[0] == '\0') {
+        return (!cli_args || cli_args[0] == '\0') ? NULL : strdup(cli_args);
+    }
+    if (!cli_args || cli_args[0] == '\0') { return strdup(property_args); }
+    return str_format("%s %s", property_args, cli_args);
+}
+
+static const char* dal_c__effectiveLinkerScript(const dal_c_Cmd* cmd) {
+    return cmd && cmd->linker_script ? cmd->linker_script : (cmd ? cmd->opts.linker_script : NULL);
+}
+
+static const char* dal_c__effectiveObjcopy(const dal_c_Cmd* cmd) {
+    if (!cmd) { return dal_c_default_objcopy; }
+    if (cmd->objcopy) { return cmd->objcopy; }
+    if (cmd->opts.objcopy) { return cmd->opts.objcopy; }
+    return dal_c_default_objcopy;
+}
+
+static const char* dal_c__effectiveObjcopyFormat(const dal_c_Cmd* cmd) {
+    if (!cmd) { return "binary"; }
+    if (cmd->objcopy_format) { return cmd->objcopy_format; }
+    if (cmd->opts.objcopy_format) { return cmd->opts.objcopy_format; }
+    return "binary";
+}
 
 // === PLATFORM ===
 
@@ -1372,9 +1406,13 @@ static int dal_c__runSelfMake(const dal_c_Cmd* cmd, const char* target) {
         dal_c__pushSelfMakeKeyValue(argv, "LOOSE_ERRORS", dal_c_LooseErrorsMode_format(cmd->opts.loose_errors));
     }
     dal_c__pushSelfMakeKeyValue(argv, "ENTRY", cmd->opts.entry_symbol);
-    dal_c__pushSelfMakeKeyValue(argv, "COMP_ARGS", cmd->compiler_args);
-    dal_c__pushSelfMakeKeyValue(argv, "LINK_ARGS", cmd->link_args);
-    dal_c__pushSelfMakeKeyValue(argv, "LINKER_SCRIPT", cmd->linker_script);
+    char* configured_comp_args = dal_c__mergeConfiguredArgs(cmd->opts.compiler_args, cmd->compiler_args);
+    char* configured_link_args = dal_c__mergeConfiguredArgs(cmd->opts.link_args, cmd->link_args);
+    dal_c__pushSelfMakeKeyValue(argv, "COMP_ARGS", configured_comp_args);
+    dal_c__pushSelfMakeKeyValue(argv, "LINK_ARGS", configured_link_args);
+    dal_c__pushSelfMakeKeyValue(argv, "LINKER_SCRIPT", dal_c__effectiveLinkerScript(cmd));
+    free(configured_comp_args);
+    free(configured_link_args);
     bool build_artifact_like = cmd->action == dal_c_CmdAction_build || cmd->action == dal_c_CmdAction_build_self;
     if (build_artifact_like) {
         if (cmd->payload.build.save_temps != dal_c_SaveTempsMode_off) {
@@ -3238,7 +3276,7 @@ static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal
         free(dh_profile);
     }
 
-    if (proj && proj->root) {
+    if (proj && proj->lib_count > 0) {
         char* deps_dir = dal_c_Project_getDepsDir(proj);
         if (deps_dir && path_isDir(deps_dir)) {
             int lib_count = 0;
@@ -4028,7 +4066,9 @@ static bool dal_c__textMentionsLinkerSelection(const char* text) {
 
 static bool dal_c__cmdHasExplicitLinkerSelection(const dal_c_Cmd* cmd) {
     if (!cmd) { return false; }
-    return dal_c__textMentionsLinkerSelection(cmd->compiler_args)
+    return dal_c__textMentionsLinkerSelection(cmd->opts.compiler_args)
+        || dal_c__textMentionsLinkerSelection(cmd->compiler_args)
+        || dal_c__textMentionsLinkerSelection(cmd->opts.link_args)
         || dal_c__textMentionsLinkerSelection(cmd->link_args);
 }
 
@@ -4735,10 +4775,12 @@ void dal_c__appendCompileDbArguments(
         ArrStr_push(argv, proj->dh_path);
         free(dh_include);
     }
-    if (proj && proj->root && proj->lib_count > 0) {
+    if (proj && proj->lib_count > 0) {
         char* deps_dir = dal_c_Project_getDepsDir(proj);
-        ArrStr_push(argv, "-isystem");
-        ArrStr_push(argv, deps_dir);
+        if (deps_dir) {
+            ArrStr_push(argv, "-isystem");
+            ArrStr_push(argv, deps_dir);
+        }
         free(deps_dir);
     }
     for (int i = 0; i < opts->include_count; ++i) {
@@ -4755,6 +4797,7 @@ void dal_c__appendCompileDbArguments(
     for (int i = 0; i < opts->undef_count; ++i) {
         dal_c__argvPushFormat(argv, "-U%s", opts->undef_macros[i]);
     }
+    dal_c__appendCompilerArgsTokens(argv, cmd->opts.compiler_args);
     dal_c__appendCompilerArgsTokens(argv, cmd->compiler_args);
     ArrStr_push(argv, src);
 }
@@ -4954,10 +4997,12 @@ void dal_c__appendSyntaxArguments(
         ArrStr_push(argv, proj->dh_path);
         free(dh_include);
     }
-    if (proj && proj->root && proj->lib_count > 0) {
+    if (proj && proj->lib_count > 0) {
         char* deps_dir = dal_c_Project_getDepsDir(proj);
-        ArrStr_push(argv, "-I");
-        ArrStr_push(argv, deps_dir);
+        if (deps_dir) {
+            ArrStr_push(argv, "-I");
+            ArrStr_push(argv, deps_dir);
+        }
         free(deps_dir);
     }
     for (int i = 0; i < opts->include_count; ++i) {
@@ -4978,6 +5023,7 @@ void dal_c__appendSyntaxArguments(
     for (int i = 0; i < opts->undef_count; ++i) {
         dal_c__argvPushFormat(argv, "-U%s", opts->undef_macros[i]);
     }
+    dal_c__appendCompilerArgsTokens(argv, cmd->opts.compiler_args);
     dal_c__appendCompilerArgsTokens(argv, cmd->compiler_args);
     ArrStr_push(argv, src);
 }
@@ -5970,9 +6016,18 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, " -I$(DH_PATH)/include");
         (void)fprintf(fp, " -I$(DH_PATH)");
     }
-    if (proj && proj->root && proj->lib_count > 0) {
-        // Flat deps structure: all headers in lib/deps/
-        (void)fprintf(fp, " -I$(PROJECT_ROOT)/lib/deps");
+    if (proj && proj->lib_count > 0) {
+        // Flat deps structure: all staged headers share one generated include root.
+        if (proj->root) {
+            (void)fprintf(fp, " -I$(PROJECT_ROOT)/lib/deps");
+        } else {
+            char* deps_dir = dal_c_Project_getDepsDir(proj);
+            if (deps_dir) {
+                (void)fprintf(fp, " -I");
+                dal_c__fprintMakePath(fp, deps_dir);
+            }
+            free(deps_dir);
+        }
     }
     for (int i = 0; i < opts->include_count; ++i) {
         (void)fprintf(fp, " -I");
@@ -5998,6 +6053,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     (void)fprintf(fp, "\n");
 
     (void)fprintf(fp, "CFLAGS_NO_PCH = $(CFLAGS_BASE) $(INCLUDES) $(DEFINES) $(UNDEFS)\n");
+    if (cmd->opts.compiler_args) {
+        (void)fprintf(fp, "CFLAGS_NO_PCH += %s\n", cmd->opts.compiler_args);
+    }
     if (cmd->compiler_args) {
         (void)fprintf(fp, "CFLAGS_NO_PCH += %s\n", cmd->compiler_args);
     }
@@ -6011,8 +6069,8 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             (void)fprintf(fp, "\n");
         }
         if (target_type == dal_c_Target_image) {
-            const char* objcopy = cmd->objcopy ? cmd->objcopy : dal_c_default_objcopy;
-            const char* objcopy_format = cmd->objcopy_format ? cmd->objcopy_format : "binary";
+            const char* objcopy = dal_c__effectiveObjcopy(cmd);
+            const char* objcopy_format = dal_c__effectiveObjcopyFormat(cmd);
             char* link_target = dal_c__makeImageLinkPath(target_path);
             (void)fprintf(fp, "OBJCOPY = %s\n", objcopy);
             (void)fprintf(fp, "OBJCOPY_FORMAT = %s\n", objcopy_format);
@@ -6058,8 +6116,17 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         free(project_lib_path);
         free(project_lib_name);
         dal_c_TargetRequest_cleanup(&request);
-        if (proj && proj->root && proj->lib_count > 0) {
-            (void)fprintf(fp, " -L$(PROJECT_ROOT)/lib/deps");
+        if (proj && proj->lib_count > 0) {
+            if (proj->root) {
+                (void)fprintf(fp, " -L$(PROJECT_ROOT)/lib/deps");
+            } else {
+                char* deps_dir = dal_c_Project_getDepsDir(proj);
+                if (deps_dir) {
+                    (void)fprintf(fp, " -L");
+                    dal_c__fprintMakePath(fp, deps_dir);
+                }
+                free(deps_dir);
+            }
         }
         if (dal_c__usesDHLibrary(proj, opts)) {
             char* dh_target_name = dal_c__resolveTargetDirName(opts);
@@ -6095,9 +6162,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             free(dh_target_name);
         }
         // Select one static variant per dependency; shared import libraries remain linkable.
-        if (proj && proj->root) {
+        if (proj && proj->lib_count > 0) {
             char* deps_dir = dal_c_Project_getDepsDir(proj);
-            if (path_isDir(deps_dir)) {
+            if (deps_dir && path_isDir(deps_dir)) {
                 int lib_count = 0;
                 char** lib_files = dir_listRecur(deps_dir, &lib_count);
                 if (lib_files) {
@@ -6156,9 +6223,13 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         if (icf_mode == dal_c_IcfMode_safe || icf_mode == dal_c_IcfMode_all) {
             (void)fprintf(fp, " -Wl,--icf=%s", dal_c_IcfMode_format(icf_mode));
         }
-        if (cmd->linker_script) {
+        const char* linker_script = dal_c__effectiveLinkerScript(cmd);
+        if (linker_script) {
             (void)fprintf(fp, " -Xlinker -T -Xlinker ");
-            dal_c__fprintMakePath(fp, cmd->linker_script);
+            dal_c__fprintMakePath(fp, linker_script);
+        }
+        if (cmd->opts.link_args) {
+            (void)fprintf(fp, " %s", cmd->opts.link_args);
         }
         if (cmd->link_args) {
             (void)fprintf(fp, " %s", cmd->link_args);
@@ -6389,6 +6460,7 @@ static char* dal_c__makeCompileContractKey(const dal_c_Cmd* cmd, const dal_c_Pro
     hash = dal_c__hashString(hash, target_tune);
     hash = dal_c__hashString(hash, opts->target_abi);
     hash = dal_c__hashString(hash, opts->sysroot);
+    hash = dal_c__hashString(hash, cmd->opts.compiler_args);
     hash = dal_c__hashString(hash, cmd->compiler_args);
     hash = dal_c__hashBytes(hash, &compile_env, sizeof(compile_env));
     hash = dal_c__hashBool(hash, pic_enabled);
@@ -6491,10 +6563,11 @@ static char* dal_c__makeLinkContractKey(const dal_c_Cmd* cmd, const dal_c_Profil
     hash = dal_c__hashString(hash, opts->compiler ? opts->compiler : dal_c_default_compiler);
     hash = dal_c__hashString(hash, target_name);
     hash = dal_c__hashBytes(hash, &compile_env, sizeof(compile_env));
+    hash = dal_c__hashString(hash, cmd->opts.link_args);
     hash = dal_c__hashString(hash, cmd->link_args);
-    hash = dal_c__hashString(hash, cmd->linker_script);
-    hash = dal_c__hashString(hash, cmd->objcopy);
-    hash = dal_c__hashString(hash, cmd->objcopy_format);
+    hash = dal_c__hashString(hash, dal_c__effectiveLinkerScript(cmd));
+    hash = dal_c__hashString(hash, dal_c__effectiveObjcopy(cmd));
+    hash = dal_c__hashString(hash, dal_c__effectiveObjcopyFormat(cmd));
     hash = dal_c__hashBytes(hash, &target_type, sizeof(target_type));
     hash = dal_c__hashString(hash, opts->entry_symbol);
     hash = dal_c__hashBytes(hash, &opts->link_mode, sizeof(opts->link_mode));
@@ -6629,6 +6702,7 @@ static char* dal_c__makePrebuiltAbiContractKey(
     hash = dal_c__hashString(hash, dal_c__resolvedTargetArch(opts, profile));
     hash = dal_c__hashString(hash, dal_c__resolvedTargetTune(opts, profile));
     hash = dal_c__hashString(hash, opts->target_abi);
+    hash = dal_c__hashString(hash, cmd->opts.compiler_args);
     hash = dal_c__hashString(hash, cmd->compiler_args);
     hash = dal_c__hashBytes(hash, &compile_env, sizeof(compile_env));
     hash = dal_c__hashBool(hash, libc_linked);
@@ -6706,7 +6780,9 @@ static char* dal_c__makeCompileContractContent(const dal_c_Cmd* cmd, const dal_c
     dal_c__contractAppend(&content, "target-tune", dal_c__resolvedTargetTune(opts, profile));
     dal_c__contractAppend(&content, "target-abi", opts->target_abi);
     dal_c__contractAppend(&content, "sysroot", opts->sysroot);
-    dal_c__contractAppend(&content, "compiler-args", cmd->compiler_args);
+    char* configured_comp_args = dal_c__mergeConfiguredArgs(cmd->opts.compiler_args, cmd->compiler_args);
+    dal_c__contractAppend(&content, "compiler-args", configured_comp_args);
+    free(configured_comp_args);
     (void)snprintf(number, sizeof(number), "%d", dal_c__resolvedMacroBacktraceLimit(opts));
     dal_c__contractAppend(&content, "macro-backtrace-limit", number);
     dal_c__contractAppend(&content, "compile-env", dal_c_CompileEnv_format(dal_c__resolvedCompileEnv(opts)));
@@ -6791,8 +6867,10 @@ static char* dal_c__makeLinkContractContent(const dal_c_Cmd* cmd, const dal_c_Pr
     dal_c__contractAppend(&content, "target-abi", opts->target_abi);
     dal_c__contractAppend(&content, "sysroot", opts->sysroot);
     dal_c__contractAppend(&content, "entry", opts->entry_symbol);
-    dal_c__contractAppend(&content, "link-args", cmd->link_args);
-    dal_c__contractAppend(&content, "linker-script", cmd->linker_script);
+    char* configured_link_args = dal_c__mergeConfiguredArgs(cmd->opts.link_args, cmd->link_args);
+    dal_c__contractAppend(&content, "link-args", configured_link_args);
+    dal_c__contractAppend(&content, "linker-script", dal_c__effectiveLinkerScript(cmd));
+    free(configured_link_args);
     dal_c__contractAppend(&content, "compile-env", dal_c_CompileEnv_format(dal_c__resolvedCompileEnv(opts)));
     dal_c__contractAppendBool(&content, "test-mode", dal_c__linkUsesTestMode(cmd, target_type));
     dal_c__contractAppendBool(&content, "driver-libc", dal_c__resolvedLibcLinked(opts));

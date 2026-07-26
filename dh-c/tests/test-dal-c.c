@@ -59,6 +59,11 @@ static void test_makefile_mode_contracts(void);
 static void test_pch_dependency_invalidates_linked_plan(void);
 static void test_project_detection(void);
 static void test_workspace_cache_scope(void);
+static void test_adhoc_dependency_scope(void);
+static void test_dh_file_contract(void);
+static void test_dh_file_generated_contract(void);
+static void test_workspace_configuration_precedence(void);
+static void test_scaffold_commands(void);
 static void test_dependency_lock_contract(void);
 static void test_prebuilt_dependency_staging(void);
 static void test_clean_prefers_local_build_dir(void);
@@ -106,6 +111,11 @@ int main(void) {
     RUN_TEST(test_pch_dependency_invalidates_linked_plan);
     RUN_TEST(test_project_detection);
     RUN_TEST(test_workspace_cache_scope);
+    RUN_TEST(test_adhoc_dependency_scope);
+    RUN_TEST(test_dh_file_contract);
+    RUN_TEST(test_dh_file_generated_contract);
+    RUN_TEST(test_workspace_configuration_precedence);
+    RUN_TEST(test_scaffold_commands);
     RUN_TEST(test_dependency_lock_contract);
     RUN_TEST(test_prebuilt_dependency_staging);
     RUN_TEST(test_clean_prefers_local_build_dir);
@@ -712,7 +722,7 @@ static void test_meta_tables(void) {
 
     const dal_c_HelpCmd* workspace_cmd = test_find_help_cmd(dal_c_cmd_action_workspace, NULL);
     TEST_ASSERT(workspace_cmd != NULL);
-    TEST_ASSERT(!workspace_cmd->implemented);
+    TEST_ASSERT(workspace_cmd->implemented);
 
     const dal_c_HelpCmd* compile_db_cmd = test_find_help_cmd(dal_c_cmd_action_compile_db, NULL);
     TEST_ASSERT(compile_db_cmd != NULL);
@@ -2725,6 +2735,379 @@ static void test_workspace_cache_scope(void) {
     free(original_cwd);
 }
 
+static void test_adhoc_dependency_scope(void) {
+    test_reset_temp_root();
+    char* original_cwd = env_getCWD();
+    char* temp_root = test_temp_root();
+    char* workspace_root = path_join(temp_root, "adhoc-workspace");
+    char* workspace_dh = path_join(workspace_root, "workspace.dh");
+    char* unit_root = path_join(workspace_root, "scratch");
+    char* vendor_root = path_join(unit_root, "vendor");
+    char* source_path = path_join(unit_root, "main.c");
+    char* unit_dh = path_join(unit_root, "main.dh");
+    char* unit_lock = path_join(unit_root, "main.lock.dh");
+    char* dep_header = path_join(vendor_root, "dep.h");
+    TEST_ASSERT(original_cwd != NULL);
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(dir_createRecur(vendor_root));
+    TEST_ASSERT(file_write(workspace_dh, "std=c17\n"));
+    TEST_ASSERT(file_write(source_path, "#include <dep.h>\nint main(void) { return DEP_VALUE; }\n"));
+    TEST_ASSERT(file_write(dep_header, "#define DEP_VALUE 0\n"));
+    TEST_ASSERT(file_write(unit_dh,
+        "link-dsl=off\n"
+        "[dep]\n"
+        "path=vendor/dep.h\n"
+        "provider=dh\n"));
+    TEST_ASSERT(env_setCWD(unit_root));
+
+    const char* argv[] = { dal_c_tool_name, dal_c_cmd_action_build, "main.c", NULL };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+    TEST_ASSERT(cmd != NULL);
+    TEST_ASSERT(cmd->input_count == 1);
+    dal_c_Project* project = dal_c_Project_detect(cmd);
+    TEST_ASSERT(project != NULL);
+    TEST_ASSERT(project->root == NULL);
+    TEST_ASSERT(project->is_adhoc);
+    TEST_ASSERT(project->workspace_root != NULL);
+    TEST_ASSERT(test_path_text_eql(project->workspace_root, workspace_root));
+    TEST_ASSERT(test_path_text_eql(project->unit_source, source_path));
+    TEST_ASSERT(test_path_text_eql(project->unit_dh, unit_dh));
+    TEST_ASSERT(test_path_text_eql(project->unit_lock_dh, unit_lock));
+    TEST_ASSERT(project->lib_count == 1);
+    TEST_ASSERT(str_eql(project->libraries[0].name, "dep"));
+    TEST_ASSERT(test_path_text_eql(project->libraries[0].path, dep_header));
+
+    char* lock_path = dal_c_Project_getDependencyLockPath(project);
+    TEST_ASSERT(test_path_text_eql(lock_path, unit_lock));
+    char* state_root = dal_c_Project_getStateRoot(project);
+    char* workspace_state = path_join(workspace_root, ".dh-c");
+    char* units_root = path_join(workspace_state, "units");
+    TEST_ASSERT(state_root != NULL);
+    TEST_ASSERT(strstr(state_root, units_root) == state_root);
+    char* deps_dir = dal_c_Project_getDepsDir(project);
+    char* expected_exports = path_join(state_root, "exports/deps");
+    TEST_ASSERT(test_path_text_eql(deps_dir, expected_exports));
+
+    free(expected_exports);
+    free(deps_dir);
+    free(units_root);
+    free(workspace_state);
+    free(state_root);
+    free(lock_path);
+    dal_c_Project_cleanup(&project);
+    dal_c_Cmd_cleanup(&cmd);
+    TEST_ASSERT(env_setCWD(original_cwd));
+
+    free(dep_header);
+    free(unit_lock);
+    free(unit_dh);
+    free(source_path);
+    free(vendor_root);
+    free(unit_root);
+    free(workspace_dh);
+    free(workspace_root);
+    free(temp_root);
+    free(original_cwd);
+}
+
+static void test_dh_file_contract(void) {
+    test_reset_temp_root();
+    char* temp_root = test_temp_root();
+    char* valid_path = path_join(temp_root, "valid.dh");
+    char* unknown_path = path_join(temp_root, "unknown.dh");
+    char* section_path = path_join(temp_root, "section.dh");
+    char* invalid_value_path = path_join(temp_root, "invalid-value.dh");
+    TEST_ASSERT(dir_createRecur(temp_root));
+    TEST_ASSERT(file_write(valid_path,
+        "output=module\n"
+        "kind=shared-lib\n"
+        "comp-args=-fvisibility=hidden\n"
+        "comp-args=-fno-common\n"
+        "link-args=-Wl,--as-needed\n"
+        "output-ext=.pyd\n"
+        "link-script=layout.ld\n"
+        "objcopy=llvm-objcopy\n"
+        "objcopy-format=binary\n"));
+    TEST_ASSERT(file_write(unknown_path, "not-a-build-key=value\n"));
+    TEST_ASSERT(file_write(section_path, "[dependency]\npath=dep\n"));
+    TEST_ASSERT(file_write(invalid_value_path, "output-ext=not-an-extension\n"));
+
+    dal_c_CompilerOpts opts = { 0 };
+    dal_c_BuildDefaults defaults = { 0 };
+    TEST_ASSERT(dal_c_DHFile_apply(&opts, &defaults, valid_path, "test .dh"));
+    TEST_ASSERT(str_eql(defaults.output_name, "module"));
+    TEST_ASSERT(defaults.target_kind == dal_c_Target_shared_lib);
+    TEST_ASSERT(str_eql(opts.compiler_args, "-fvisibility=hidden -fno-common"));
+    TEST_ASSERT(str_eql(opts.link_args, "-Wl,--as-needed"));
+    TEST_ASSERT(str_eql(opts.output_ext, ".pyd"));
+    char* expected_linker_script = path_join(temp_root, "layout.ld");
+    TEST_ASSERT(test_path_text_eql(opts.linker_script, expected_linker_script));
+    free(expected_linker_script);
+    TEST_ASSERT(str_eql(opts.objcopy, "llvm-objcopy"));
+    TEST_ASSERT(str_eql(opts.objcopy_format, "binary"));
+    TEST_ASSERT(!dal_c_DHFile_apply(&opts, &defaults, unknown_path, "test .dh"));
+    TEST_ASSERT(!dal_c_DHFile_apply(&opts, &defaults, section_path, "test .dh"));
+    TEST_ASSERT(!dal_c_DHFile_apply(&opts, &defaults, invalid_value_path, "test .dh"));
+
+    dal_c_BuildDefaults_cleanup(&defaults);
+    dal_c_CompilerOpts_cleanup(&opts);
+    free(invalid_value_path);
+    free(section_path);
+    free(unknown_path);
+    free(valid_path);
+    free(temp_root);
+}
+
+static void test_dh_file_generated_contract(void) {
+    test_reset_temp_root();
+    char* temp_root = test_temp_root();
+    char* project_root = path_join(temp_root, "dh-file-generated-contract");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* source_dir = path_join(project_root, "src");
+    char* source = path_join(source_dir, "main.c");
+    char* companion = path_join(source_dir, "main.dh");
+    char* linker_script = path_join(source_dir, "layout.ld");
+    TEST_ASSERT(dir_createRecur(source_dir));
+    TEST_ASSERT(file_write(project_dh, "output=contract-app\nlink-dsl=off\n"));
+    TEST_ASSERT(file_write(source, "int main(void) { return 0; }\n"));
+    TEST_ASSERT(file_write(linker_script, "SECTIONS { .text : { *(.text*) } }\n"));
+    TEST_ASSERT(file_write(companion,
+        "comp-args=-DCONFIGURED_COMPILER_ARG=1\n"
+        "link-args=-Wl,--configured-link-arg\n"
+        "link-script=layout.ld\n"));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(proj != NULL);
+    ArrStr* sources = dal_c__collectSourceFiles(proj, NULL);
+    TEST_ASSERT(sources != NULL);
+    TEST_ASSERT(ArrStr_len(sources) == 1);
+
+    const char* argv[] = { dal_c_tool_name, "build", "dev", NULL };
+    dal_c_Cmd* cmd = dal_c_Cmd_parse(3, argv);
+    TEST_ASSERT(cmd != NULL);
+    TEST_ASSERT(dal_c_DHFile_apply(&cmd->opts, NULL, companion, "source companion .dh"));
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(cmd->opts.profile);
+    TEST_ASSERT(profile != NULL);
+
+    char* build_dir = dal_c_Project_getBuildDir(proj);
+    char* profile_dir = path_join(build_dir, profile->name);
+    char* object_dir = path_join(profile_dir, "obj");
+    char* target_path = dal_c__resolveOutputPath(
+        proj, cmd, profile_dir, proj->defaults.output_name, dal_c_Target_executable
+    );
+    TEST_ASSERT(build_dir != NULL);
+    TEST_ASSERT(profile_dir != NULL);
+    TEST_ASSERT(object_dir != NULL);
+    TEST_ASSERT(target_path != NULL);
+    TEST_ASSERT(dir_createRecur(object_dir));
+
+    char* makefile_path = dal_c__makePlanFilePath(
+        proj, profile, cmd, target_path, dal_c_Target_executable
+    );
+    TEST_ASSERT(makefile_path != NULL);
+    TEST_ASSERT(dal_c__generateMakefile(
+        cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable
+    ) == dal_c_generateMakefile_success);
+    char* first_makefile = file_read(makefile_path);
+    TEST_ASSERT(first_makefile != NULL);
+    TEST_ASSERT(strstr(first_makefile, "-DCONFIGURED_COMPILER_ARG=1") != NULL);
+    TEST_ASSERT(strstr(first_makefile, "-Wl,--configured-link-arg") != NULL);
+    TEST_ASSERT(strstr(first_makefile, linker_script) != NULL);
+    char* first_objs = test_makefile_var_first_value(first_makefile, "OBJS");
+    char* first_link_contract = test_makefile_var_first_value(first_makefile, "LINK_CONTRACT");
+    TEST_ASSERT(first_objs != NULL);
+    TEST_ASSERT(first_link_contract != NULL);
+    char* first_link_text = file_read(first_link_contract);
+    TEST_ASSERT(first_link_text != NULL);
+    TEST_ASSERT(strstr(first_link_text, "link-args=-Wl,--configured-link-arg") != NULL);
+    TEST_ASSERT(strstr(first_link_text, linker_script) != NULL);
+
+    free(cmd->opts.compiler_args);
+    cmd->opts.compiler_args = strdup("-DCONFIGURED_COMPILER_ARG=2");
+    free(cmd->opts.link_args);
+    cmd->opts.link_args = strdup("-Wl,--different-link-arg");
+    TEST_ASSERT(dal_c__generateMakefile(
+        cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_executable
+    ) == dal_c_generateMakefile_success);
+    char* second_makefile = file_read(makefile_path);
+    TEST_ASSERT(second_makefile != NULL);
+    char* second_objs = test_makefile_var_first_value(second_makefile, "OBJS");
+    char* second_link_contract = test_makefile_var_first_value(second_makefile, "LINK_CONTRACT");
+    TEST_ASSERT(second_objs != NULL);
+    TEST_ASSERT(second_link_contract != NULL);
+    TEST_ASSERT(!str_eql(first_objs, second_objs));
+    TEST_ASSERT(str_eql(first_link_contract, second_link_contract));
+    char* second_link_text = file_read(second_link_contract);
+    TEST_ASSERT(second_link_text != NULL);
+    TEST_ASSERT(!str_eql(first_link_text, second_link_text));
+    TEST_ASSERT(strstr(second_link_text, "link-args=-Wl,--different-link-arg") != NULL);
+
+    free(second_link_text);
+    free(second_link_contract);
+    free(second_objs);
+    free(second_makefile);
+    free(first_link_text);
+    free(first_link_contract);
+    free(first_objs);
+    free(first_makefile);
+    free(makefile_path);
+    free(target_path);
+    free(object_dir);
+    free(profile_dir);
+    free(build_dir);
+    dal_c_Cmd_cleanup(&cmd);
+    ArrStr_fini(&sources);
+    dal_c_Project_cleanup(&proj);
+    free(linker_script);
+    free(companion);
+    free(source);
+    free(source_dir);
+    free(project_dh);
+    free(project_root);
+    free(temp_root);
+}
+
+static void test_workspace_configuration_precedence(void) {
+    test_reset_temp_root();
+    char* temp_root = test_temp_root();
+    char* workspace_root = path_join(temp_root, "configured-workspace");
+    char* workspace_dh = path_join(workspace_root, "workspace.dh");
+    char* project_root = path_join(workspace_root, "app");
+    char* project_dh = path_join(project_root, "project.dh");
+    char* source_dh = path_join(project_root, "main.dh");
+    TEST_ASSERT(dir_createRecur(project_root));
+    TEST_ASSERT(file_write(workspace_dh,
+        "std=c11\n"
+        "output=workspace-output\n"
+        "define=FROM_WORKSPACE\n"));
+    TEST_ASSERT(file_write(project_dh,
+        "std=c17\n"
+        "output=project-output\n"
+        "define=FROM_PROJECT\n"));
+    TEST_ASSERT(file_write(source_dh,
+        "std=c23\n"
+        "output=source-output\n"
+        "define=FROM_SOURCE\n"));
+
+    dal_c_Project* project = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(project != NULL);
+    TEST_ASSERT(project->workspace_dh != NULL);
+    TEST_ASSERT(str_eql(project->workspace_opts.c_std, "c11"));
+    TEST_ASSERT(str_eql(project->workspace_defaults.output_name, "workspace-output"));
+    TEST_ASSERT(str_eql(project->opts.c_std, "c17"));
+    TEST_ASSERT(str_eql(project->defaults.output_name, "project-output"));
+
+    dal_c_CompilerOpts effective = { 0 };
+    dal_c_BuildDefaults defaults = { 0 };
+    dal_c_CompilerOpts_merge(&effective, &project->workspace_opts);
+    dal_c_BuildDefaults_merge(&defaults, &project->workspace_defaults);
+    dal_c_CompilerOpts_merge(&effective, &project->opts);
+    dal_c_BuildDefaults_merge(&defaults, &project->defaults);
+    TEST_ASSERT(dal_c_DHFile_apply(&effective, &defaults, source_dh, "source companion .dh"));
+    TEST_ASSERT(str_eql(effective.c_std, "c23"));
+    TEST_ASSERT(str_eql(defaults.output_name, "source-output"));
+    TEST_ASSERT(effective.define_count == 3);
+    TEST_ASSERT(str_eql(effective.define_macros[0], "FROM_WORKSPACE"));
+    TEST_ASSERT(str_eql(effective.define_macros[1], "FROM_PROJECT"));
+    TEST_ASSERT(str_eql(effective.define_macros[2], "FROM_SOURCE"));
+
+    dal_c_BuildDefaults_cleanup(&defaults);
+    dal_c_CompilerOpts_cleanup(&effective);
+    dal_c_Project_cleanup(&project);
+    free(source_dh);
+    free(project_dh);
+    free(project_root);
+    free(workspace_dh);
+    free(workspace_root);
+    free(temp_root);
+}
+
+
+static void test_scaffold_commands(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* original_cwd = env_getCWD();
+    char* workspace_root = path_join(temp_root, "scaffold-workspace");
+    char* project_root = path_join(workspace_root, "app");
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(original_cwd != NULL);
+    TEST_ASSERT(workspace_root != NULL);
+    TEST_ASSERT(project_root != NULL);
+
+    const char* workspace_argv[] = { dal_c_tool_name, "workspace", workspace_root, NULL };
+    dal_c_Cmd* workspace_cmd = dal_c_Cmd_parse(3, workspace_argv);
+    TEST_ASSERT(workspace_cmd != NULL);
+    TEST_ASSERT(dal_c_Cmd_execute(workspace_cmd, NULL) == 0);
+    dal_c_Cmd_cleanup(&workspace_cmd);
+
+    char* workspace_dh = path_join(workspace_root, dal_c_file_detector_workspace);
+    TEST_ASSERT(workspace_dh != NULL);
+    TEST_ASSERT(path_isFile(workspace_dh));
+    char* workspace_text = file_read(workspace_dh);
+    TEST_ASSERT(workspace_text != NULL);
+    TEST_ASSERT(strstr(workspace_text, "dh-c workspace boundary") != NULL);
+
+    workspace_cmd = dal_c_Cmd_parse(3, workspace_argv);
+    TEST_ASSERT(workspace_cmd != NULL);
+    TEST_ASSERT(dal_c_Cmd_execute(workspace_cmd, NULL) != 0);
+    dal_c_Cmd_cleanup(&workspace_cmd);
+
+    const char* project_argv[] = { dal_c_tool_name, "project", project_root, NULL };
+    dal_c_Cmd* project_cmd = dal_c_Cmd_parse(3, project_argv);
+    TEST_ASSERT(project_cmd != NULL);
+    TEST_ASSERT(dal_c_Cmd_execute(project_cmd, NULL) == 0);
+    dal_c_Cmd_cleanup(&project_cmd);
+
+    char* project_dh = path_join(project_root, dal_c_file_detector_project);
+    char* main_source = path_join(project_root, "src/main.c");
+    char* include_dir = path_join(project_root, dal_c_dir_include);
+    char* tests_dir = path_join(project_root, dal_c_dir_tests);
+    TEST_ASSERT(project_dh != NULL);
+    TEST_ASSERT(main_source != NULL);
+    TEST_ASSERT(include_dir != NULL);
+    TEST_ASSERT(tests_dir != NULL);
+    TEST_ASSERT(path_isFile(project_dh));
+    TEST_ASSERT(path_isFile(main_source));
+    TEST_ASSERT(path_isDir(include_dir));
+    TEST_ASSERT(path_isDir(tests_dir));
+
+    char* project_text = file_read(project_dh);
+    TEST_ASSERT(project_text != NULL);
+    TEST_ASSERT(strstr(project_text, "kind=executable") != NULL);
+    TEST_ASSERT(strstr(project_text, "link-dsl=off") != NULL);
+
+    dal_c_Project* project = dal_c_Project_detectAt(project_root, NULL);
+    TEST_ASSERT(project != NULL);
+    TEST_ASSERT(project->root != NULL);
+    TEST_ASSERT(project->workspace_root != NULL);
+    TEST_ASSERT(test_path_text_eql(project->workspace_root, workspace_root));
+    dal_c_Project_cleanup(&project);
+
+    project_cmd = dal_c_Cmd_parse(3, project_argv);
+    TEST_ASSERT(project_cmd != NULL);
+    TEST_ASSERT(dal_c_Cmd_execute(project_cmd, NULL) != 0);
+    dal_c_Cmd_cleanup(&project_cmd);
+
+    const char* invalid_argv[] = { dal_c_tool_name, "project", "one", "two", NULL };
+    TEST_ASSERT(dal_c_Cmd_parse(4, invalid_argv) == NULL);
+
+    TEST_ASSERT(env_setCWD(original_cwd));
+    TEST_ASSERT(test_remove_recur(temp_root));
+
+    free(project_text);
+    free(tests_dir);
+    free(include_dir);
+    free(main_source);
+    free(project_dh);
+    free(workspace_text);
+    free(workspace_dh);
+    free(project_root);
+    free(workspace_root);
+    free(original_cwd);
+    free(temp_root);
+}
+
 static void test_dependency_lock_contract(void) {
     test_reset_temp_root();
     char* temp_root = test_temp_root();
@@ -3675,7 +4058,7 @@ static void test_target_root_directory_uses_local_include(void) {
     char* temp_root = test_temp_root();
     char* project_root = path_join(temp_root, "target-local-include-project");
     char* project_dh = path_join(project_root, "project.dh");
-    char* demo_project_dh = path_join(project_root, "examples/demo/project.dh");
+    char* demo_target_dh = path_join(project_root, "examples/demo/target.dh");
     char* demo_src_dir = path_join(project_root, "examples/demo/src");
     char* demo_include_dir = path_join(project_root, "examples/demo/include");
     char* demo_header = path_join(demo_include_dir, "demo.h");
@@ -3691,7 +4074,7 @@ static void test_target_root_directory_uses_local_include(void) {
     TEST_ASSERT(temp_root != NULL);
     TEST_ASSERT(project_root != NULL);
     TEST_ASSERT(project_dh != NULL);
-    TEST_ASSERT(demo_project_dh != NULL);
+    TEST_ASSERT(demo_target_dh != NULL);
     TEST_ASSERT(demo_src_dir != NULL);
     TEST_ASSERT(demo_include_dir != NULL);
     TEST_ASSERT(demo_header != NULL);
@@ -3702,7 +4085,7 @@ static void test_target_root_directory_uses_local_include(void) {
     TEST_ASSERT(dir_createRecur(demo_src_dir));
     TEST_ASSERT(dir_createRecur(demo_include_dir));
     TEST_ASSERT(file_write(project_dh, "output=parent-output\nlink-dsl=off\npch=off\n"));
-    TEST_ASSERT(file_write(demo_project_dh, "output=demo-output\n"));
+    TEST_ASSERT(file_write(demo_target_dh, "output=demo-output\n"));
     TEST_ASSERT(file_write(demo_header, "#pragma once\n#define DEMO_VALUE 7\n"));
     TEST_ASSERT(file_write(demo_source, "#include \"demo.h\"\nint main(void) { return DEMO_VALUE == 7 ? 0 : 1; }\n"));
 
@@ -3762,7 +4145,7 @@ static void test_target_root_directory_uses_local_include(void) {
     free(demo_header);
     free(demo_include_dir);
     free(demo_src_dir);
-    free(demo_project_dh);
+    free(demo_target_dh);
     free(project_dh);
     free(project_root);
     free(temp_root);

@@ -83,6 +83,7 @@ bool dal_c_TargetRequest_resolve(const dal_c_Project* proj, const dal_c_CommandI
 void dal_c_BuildDefaults_cleanup(dal_c_BuildDefaults* defaults);
 void dal_c_BuildDefaults_merge(dal_c_BuildDefaults* dst, const dal_c_BuildDefaults* src);
 bool dal_c_BuildDefaults_applyDHFile(dal_c_BuildDefaults* dst, const char* path);
+bool dal_c_DHFile_apply(dal_c_CompilerOpts* opts, dal_c_BuildDefaults* defaults, const char* path, const char* kind_name);
 void dal_c_VersionSpec_cleanup(dal_c_VersionSpec* version);
 void dal_c_VersionSpec_merge(dal_c_VersionSpec* dst, const dal_c_VersionSpec* src);
 bool dal_c_VersionSpec_parseNamespace(dal_c_VersionSpec* dst, const char* value);

@@ -1,657 +1,376 @@
 # dh-c Build Guide
 
-`dh-c` is the build tool for the `dasae-headers` C workspace.
-
-It does two different jobs:
-
-- build `dh-c` itself
-- use `dh-c` to build C files, C projects, target-root families, tests, and dependency graphs
-
-This guide only documents what is supported now.
-
-`workspace` and `project` are reserved command names. They are intentionally not implemented yet and are not part of the supported flow in this document.
-
-## What `dh-c` Is For
-
-`dh-c` is not only a "project generator".
-
-It is a build contract layer over plain C compilation:
-
-- direct file builds still work
-- project-local defaults can be declared in `project.dh`
-- reusable self code and named target families can be declared in `project.dh`
-- dependency projects can be built and copied into `lib/deps/`
-- tests, sample/example families, and target-root families can all be addressed through one CLI
-
-The practical split is:
-
-- explicit CLI paths are the immediate build target
-- `project.dh` supplies defaults, reusable structure, and dependency contracts
-
-## Current Support
-
-Supported commands:
-
-- `build`
-- `lib`
-- `run`
-- `test`
-- `deps`
-- `clean`
-- `build-dsl`
-- `test-dsl`
-- `clean-dsl`
-- `build-self`
-- `clean-self`
-- `--help`
-- `--version`
-
-Reserved and unsupported commands:
-
-- `workspace`
-- `project`
-
-## Prerequisites
-
-You need these tools in `PATH`:
-
-- `clang`
-- `make`
-
-The default self-build flow expects the same warning/extension model used by this repository's Clang configuration.
-
-## Build `dh-c`
-
-From the repository root:
+`dh-c` is a direct-source and project build tool for dasae-headers. Its usage
+model combines direct compiler-style input with optional workspace/project
+contracts:
 
 ```sh
-cd dh-c
-make PROFILE=release
+dh-c build main.c
+dh-c build main.c util.c
+dh-c build
+dh-c test
+dh-c package release
 ```
 
-The built binary is written to:
+The command line and selected sources always remain first-class build input.
+`project.dh` is optional for direct builds.
 
-```txt
-dh-c/build/dh-c.exe     # Windows
-dh-c/build/dh-c         # Unix-like shells
-```
+## Start here
 
-Useful self-build profiles:
-
-- `PROFILE=dev`
-- `PROFILE=test`
-- `PROFILE=release`
-- `PROFILE=optimize`
-- `PROFILE=compact`
-- `PROFILE=micro`
-
-## Verify `dh-c`
-
-From the repository root:
+Create a minimal named project or a workspace boundary without hand-writing the
+first file:
 
 ```sh
-sh dh-c/tests/run-tests.sh
-sh dh-c/tests/run-tests.sh --integration
-sh dh-c/tests/run-tests.sh --address-sanitizer
-sh dh-c/tests/run-tests.sh --integration --address-sanitizer
+dh-c project app
+dh-c workspace .
 ```
 
-What these cover:
-
-- unit coverage for `dal-c-ext` helpers and `dal-c` contracts
-- CLI help/version/reserved-command behavior
-- project build/run/test scenarios
-- target-root contract scenarios
-- dependency copy scenarios
-- memory checks through AddressSanitizer
-
-On Windows, run these from Git Bash or another `sh` environment rather than PowerShell.
-
-## Quick Start
-
-### 1. Build a Single File
+Both commands refuse to overwrite an existing `project.dh` or `workspace.dh`.
+The generated project is immediately buildable.
 
 ```sh
-dh-c build src/main.c
-dh-c run src/main.c
+dh-c --help
+dh-c help files
+dh-c help build
+dh-c help project-dh
+dh-c help dh-file
+dh-c help precedence
+dh-c help invocation-only
 ```
 
-This path works even outside a `project.dh` project.
+The canonical file contract is
+[`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md).
 
-### 2. Build the Default Project Target
+## 1. Direct builds
+
+```sh
+dh-c build main.c
+dh-c build main.c util.c
+dh-c run main.c
+dh-c test test-main.c
+```
+
+For each selected source, `dh-c` automatically loads a same-stem companion:
+
+```text
+main.c -> main.dh
+util.c -> util.dh
+```
+
+Without a named `project.dh`, the first selected source is the build-unit owner.
+Its companion may declare dependencies and `dh-c update main.c` generates
+`main.lock.dh` beside it. Secondary companions remain flat overlays.
+
+An explicit reusable overlay may be added with:
+
+```sh
+dh-c build main.c --dh-file=windows-runtime.dh
+```
+
+`--dh-file` is not `--dh`; `--dh` overrides the DH installation path.
+
+## 2. Named projects
+
+```text
+my-project/
+├── project.dh
+├── src/
+├── include/
+├── tests/
+├── samples/
+└── examples/
+```
+
+Minimal `project.dh`:
+
+```ini
+output=my-project
+kind=executable
+std=c17
+```
 
 ```sh
 dh-c build
 dh-c run
 dh-c test
-dh-c clean
 ```
 
-This requires running inside a directory where `dh-c` can detect the nearest ancestor `project.dh`.
+`dh-c` detects the nearest ancestor `project.dh`, stopping at a discovered
+`workspace.dh` boundary.
 
-### 3. Build a Target Family
+## 3. Configuration files
+
+| File | Role |
+| --- | --- |
+| `workspace.dh` | shared flat defaults and workspace cache/discovery boundary |
+| `project.dh` | complete project, target-root, and dependency contract |
+| `target.dh` | one resolved directory target's flat defaults |
+| `<source>.dh` | one selected source's companion; the primary projectless companion may also own dependencies |
+| `--dh-file` input | explicit reusable flat overlay |
+| `lock.dh` / `<source>.lock.dh` | generated exact dependency resolution |
+| `manifest.dh` | generated prebuilt compatibility contract |
+
+Merge order:
+
+```text
+built-in/profile
+-> workspace.dh
+-> project.dh
+-> target.dh
+-> selected source companions
+-> explicit --dh-file overlays
+-> CLI
+```
+
+Authored `.dh` files are strict. Unknown keys and illegal sections fail.
+
+## Configuration versus invocation controls
+
+The `.dh` files store reusable compiler, linker, runtime, target, output,
+optimization, dependency, and version contracts. Scheduling and one-off command
+selection stay on the command line: jobs, progress/verbosity, run arguments,
+dry-run/clean scopes, sample/test selection, and analysis/emit requests.
 
 ```sh
-dh-c build cmd/runner1
-dh-c run cmd/runner1
-dh-c build plugins/render
+dh-c help invocation-only
 ```
 
-If the path falls under a declared `[target-root ...]`, the target-root contract decides:
+## 4. Everyday commands
 
-- artifact kind
-- allowed path selection mode
-- whether self code is linked
-
-### 4. Build Compatibility Families
+### Build
 
 ```sh
-dh-c build --sample
-dh-c build --example
-dh-c build --test
+dh-c build [profile] [path] [options]
 ```
 
-These are the built-in compatibility selectors for `samples/`, `examples/`, and `tests/`.
-
-## Command Model
-
-`dh-c` reads each command as:
-
-```txt
-dh-c <verb> [profile] [path] [options]
-```
-
-The tokens play different roles:
-
-- verb: `build`, `run`, `test`, `clean`, `deps`
-- profile: `dev`, `test`, `profile`, `stable`, `release`, `optimize`, `compact`, `micro`
-- path: explicit file path, directory path, or target-root path
-- modifier: `--lib`, `--shared`, `--self`, `--dsl`, `--recur`, `--debug`, `--verbose`
-- selector: `--sample`, `--example`, `--test`
-
-### Path Resolution Rules
-
-`dh-c build`
-
-- builds the default project output
-
-`dh-c build file.c`
-
-- builds that file directly
-
-`dh-c run path/to/target`
-
-- if the path matches a declared target root, the target-root contract applies
-- otherwise `dh-c` treats the path as an explicit file or directory selection
-
-`dh-c build .`
-
-- `.` is a compatibility alias for `--all`
-- it means "build all source files in the project `src` family"
-
-## Profiles
-
-The built-in profiles are:
-
-- `dev`: `-g3 -Og`, assertions enabled
-- `test`: `-g -O1`, assertions enabled
-- `profile`: `-g -O2`, assertions enabled
-- `stable`: `-g1 -O2`, assertions disabled, ThinLTO
-- `release`: `-g1 -O3`, ThinLTO, exceptions/unwind tables disabled, safe ICF
-- `optimize`: `-O3 -march=native -mtune=native`, Full LTO, assertions disabled
-- `compact`: `-Os`, ThinLTO size-oriented build
-- `micro`: `-Oz`, ThinLTO smallest-size profile
-
-## Important Options
-
-Shared build options:
-
-- `--compiler=<name>`
-- `--std=<std>`
-- `--arch=<target>`
-- `--target=<triple>`
-- `--use-dsl`
-- `--no-dsl`
-- `--freestanding`
-- `--hosted`
-- `--has-libc`
-- `--no-libc`
-- `--has-default-libs`
-- `--no-default-libs`
-- `--has-start-files`
-- `--no-start-files`
-- `--std-lib`
-- `--no-std-lib`
-- `--crt`
-- `--no-crt`
-- `--sysroot=<path>`
-- `--include=<path>` or `-I<path>`
-- `--isystem=<path>`
-- `--link=<lib>` or `-l<lib>`
-- `--define=<macro>` or `-D<macro>`
-- `--undef=<macro>` or `-U<macro>`
-- `--entry=<symbol>`
-- `--compiler-args="..."`
-- `--comp-args="..."`
-- `--macro-backtrace-limit=<short|unlimited|N>`
-
-The compile environment and link model are independent. `--freestanding` adds
-freestanding C compilation semantics but does not implicitly remove libc, startup
-files, or compiler defaults. Use the link controls explicitly when constructing a
-runtime-free or custom-runtime image:
-
-- `--link-libc=off`: omit libc while retaining other default libraries when the
-  target compiler driver supports that distinction.
-- `--link-default-libs=off`: omit compiler-driver default libraries; compiler-rt
-  remains independently controlled and is restored by default.
-- `--link-start-files=off`: omit compiler startup objects. Executables must provide
-  a valid entry/startup path.
-- `--link-stdlib=off`: shorthand for disabling both default libraries and startup
-  files (`-nostdlib`).
-- `--link-crt=off`: exact alias of `--link-start-files=off`.
-
-On targets such as Windows where libc cannot be removed independently while the
-compiler's default libraries remain enabled, dh-c rejects `link-libc=off` instead
-of silently linking libc. Use `link-default-libs=off` and provide the required
-non-libc libraries explicitly.
-- `--args="..."`
-- `--file=<path>`
-- `--output=<path>` or `-o<path>`
-- `--exclude=<path>`
-- `--dh-file=<path>`
-- `--loose-errors`
-- `--show-commands`
-- `--verbose`
-- `--dh=<path>`
-- `--prebuilt=<auto|off|required>`
-
-`--macro-backtrace-limit=short` limits Clang macro expansion diagnostics to 8
-entries and is the default. `unlimited` maps to Clang's `0`; a nonnegative
-integer selects an exact limit. The same key is accepted by `project.dh`, with
-the CLI value taking precedence.
-
-Build-specific modifiers:
-
-- `--lib`
-- `--static`
-- `--shared`
-- `--sample`
-- `--example`
-- `--test`
-- `--all`
-- `--dsl`
-- `--self`
-- `--recur`
-
-
-## Library Artifact Variants
-
-Library kind and optimization profile remain separate contracts.
-
-For a static-library build:
-
-- profiles without effective LTO produce only the native archive
-- profiles with effective LTO produce both the native archive and an LTO archive
-- the native archive is always compiled with LTO disabled
-- the LTO archive uses the effective profile mode (`thin`, `full`, or explicit `on`)
-
-Artifact names:
-
-| Platform | Native static | LTO static | Shared | Import library |
-|---|---|---|---|---|
-| Windows | `mylib.lib` | `mylib.lto.lib` | `mylib.dll` | `mylib.dll.lib` |
-| Linux | `libmylib.a` | `libmylib.lto.a` | `libmylib.so` | not required |
-
-A shared-library build performs its profile LTO while producing the DLL/SO; it does not expose a separate LTO artifact. A project with `kind=lib` produces the native static archive and shared library in every profile, the Windows import library where applicable, and the LTO static archive whenever that profile's effective LTO is enabled. Test/sample/example consumers materialize this same library set before linking their executable.
-
-Final linked targets select one static variant automatically:
-
-- effective LTO enabled -> prefer the matching `.lto` archive
-- effective LTO disabled -> use the native archive
-- when no `.lto` peer exists -> fall back to the native archive
-
-Run/test-specific modifiers:
-
-- `--debug`
-- `--exec-args="..."`
-
-Clean-specific modifiers:
-
-- `--cache`: select reusable build-cache state only
-- `--deps`: select fetched/built/staged dependency state under `.dh-c/deps/`
-- `--unused`: with `--deps`, restrict cleanup to names no longer declared
-- `--older-than=<duration>`: restrict cache/dependency cleanup by age (`30d`, `12h`, `90m`)
-- `--dry-run`: preview removals
-- `--force`: permit removal of dirty Git dependency checkouts
-- `--self`
-- `--dsl`
-- `--recur`
-
-## `project.dh`
-
-`project.dh` is the project contract file.
-
-It currently supports three layers:
-
-- project-wide defaults
-- named target-root blocks
-- dependency blocks
-
-### Project-Wide Keys
-
-Supported top-level keys:
-
-```txt
-output=<name>
-build-runs-tests=<true|false>
-no-dsl=<true|false>
-pch=<auto|off|path>
-pch-exclude=<header>
-self-root=<path>
-prebuilt=<auto|off|required>
-```
-
-Meaning:
-
-- `output`: default artifact name when the CLI does not override it
-- `build-runs-tests`: plain `dh-c build` also runs tests afterward
-- `no-dsl`: disables automatic `dh` linking for that project scope
-- `pch`: auto/off/explicit PCH header contract
-- `pch-exclude`: files that must compile without the project PCH
-- repeated `self-root`: reusable project-owned source roots
-- `prebuilt`: default packaged-artifact policy for `dh` and dependency projects
-
-### Named Target Roots
-
-Target roots are declared like this:
-
-```txt
-[target-root cmd]
-path=cmd
-kind=executable
-selection=dir
-link-self=true
-```
-
-Supported target-root keys:
-
-- `path`
-- `kind`
-- `selection`
-- `link-self`
-
-Meaning:
-
-- `path`: root directory for that target family
-- `kind`: `executable`, `static-lib`, or `shared-lib`
-- `selection`: `path`, `file`, or `dir`
-- `link-self`: whether the target links reusable self code
-
-### Dependency Blocks
-
-Dependency blocks use section names such as:
-
-```txt
-[B]
-path=../B
-profile=default
-linking=static
-no-dsl=true
-test=true
-prebuilt=auto
-```
-
-Supported dependency keys:
-
-- `path`
-- `profile`
-- `linking`
-- `no-dsl`
-- `test`
-- `prebuilt`
-
-Meaning:
-
-- `path`: dependency project root
-- `profile`: dependency build profile or `default`
-- `linking`: static/shared preference for that dependency
-- `no-dsl`: dependency-local DSL suppression
-- `test`: run that dependency's tests during dependency traversal
-- `prebuilt`: dependency-local `auto`, `off`, or `required` policy; this may override the project-wide policy
-
-## Directory Layout
-
-A typical project layout is:
-
-```txt
-my-project/
-  project.dh
-  include/
-  src/
-  tests/
-  samples/
-  examples/
-  lib/
-    deps/
-  build/
-  prebuilt/
-    stable/
-      libs/
-      deps/
-  .cache/
-```
-
-Supported built-in directory aliases:
-
-- include: `include`, `includes`, `inc`
-- src: `src`, `source`, `sources`
-- tests: `tests`, `test`
-- samples: `samples`, `sample`
-- examples: `examples`, `example`
-
-Only one alias variant per category should exist at the same project level.
-
-## Generated State
-
-`dh-c` separates materialized outputs, reusable cache, mutable dependency state,
-and durable dependency resolution.
-
-`build/`
-
-- final artifacts
-- object files
-- generated plan makefiles
-- project-local cache under `build/.cache/` when no workspace is active
-
-`<workspace>/.dh-c/cache/`
-
-- preferred shared build/PCH/source-list cache for projects discovered inside a workspace
-- disposable and ignored by source control
-
-`<project>/.dh-c/deps/`
-
-- fetched source checkouts under `src/<name>/`
-- provider build trees under `build/<target>/<profile>/<name>/`
-- staged packages under `packages/<target>/<profile>/<name>/`
-- last-use stamps under `usage/<name>.stamp`
-
-`prebuilt/<target>/<profile>/`
-
-- packaged SDK artifacts that are trusted as immutable inputs
-- `manifest.dh` is required and inventories every concrete library artifact under `libs/`
-- test/sample/example executables do not update the prebuilt manifest
-- this directory is deliberately separate from `build/`, so stale local build caches cannot masquerade as SDK packages
-
-`lib/deps/` and `lib/deps.h`
-
-- generated dependency headers/libraries and dependency prelude consumed by project builds
-
-`lock.dh`
-
-- durable resolved dependency input beside `project.dh`
-- normally committed; never owned or rewritten by `clean --deps`
-
-Maintenance examples:
-
-```sh
-dh-c clean --cache --older-than=30d
-dh-c clean --deps --unused --dry-run
-dh-c clean --deps --older-than=90d
-dh-c clean --deps --older-than=90d --force
-```
-
-
-## Dependency Flow
-
-`dh-c deps` first checks the selected packaged-artifact policy and then prepares the consumer project's `lib/deps/`.
-
-Policy modes:
-
-- `auto` (default): use `prebuilt/<normalized-target>/<profile>` when the required artifact exists; otherwise build from source
-- `off`: ignore packaged artifacts and build from source
-- `required`: use packaged artifacts and fail instead of falling back to source
-
-A normal `dh-c test` may use prebuilt dependencies, which avoids rebuilding them in CI. When recursive dependency tests are explicitly requested, source is required because a packaged binary cannot execute the dependency's own test sources.
-
-After selecting or building the dependency, `dh-c` copies its consumable outputs into the consumer project's `lib/deps/`.
-
-What is copied:
-
-- public headers
-- built static/shared libraries
-- PCH files when present
-- transitive dependency artifacts
-
-This is why `deps` is the command that prepares a project-local consumable dependency boundary rather than only invoking nested builds.
-
-## Examples
-
-Build the default project output:
+Common forms:
 
 ```sh
 dh-c build
+dh-c build release
+dh-c build main.c util.c
+dh-c build --example demo
+dh-c build --lib --shared
+dh-c build --image firmware.c --link-script=layout.ld
 ```
 
-Build and run a target-root executable:
+### Run
 
 ```sh
-dh-c run cmd/runner1
+dh-c run [profile] [path] [options]
 ```
 
-Build a shared plugin:
+### Test
 
 ```sh
-dh-c build plugins/render
+dh-c test [profile] [path] [options]
 ```
 
-Build a static library from an explicit file:
-
-```sh
-dh-c build --lib --static src/mylib.c
-```
-
-Build all project sources:
-
-```sh
-dh-c build --all
-dh-c build .
-```
-
-Run dependency preparation:
-
-```sh
-dh-c deps --verbose
-```
-
-Run tests recursively:
-
-```sh
-dh-c test --recur
-```
-
-Build the DSL boundary explicitly:
-
-```sh
-dh-c build --dsl
-dh-c build-dsl
-```
-
-Operate on the `dh-c` self boundary:
-
-```sh
-dh-c build --self
-dh-c clean --self
-dh-c build-self
-dh-c clean-self
-```
-
-## Current Non-Goals
-
-These names exist but are not supported commands yet:
-
-- `dh-c workspace`
-- `dh-c project`
-
-Do not build workflows or documentation around them as if they were already implemented.
-
-## Related Public Documents
-
-- [`README.md`](./README.md)
-- [`PROJECT_TREE.md`](./PROJECT_TREE.md)
-
-
-## Help views
-
-```sh
-dh-c help          # concise command overview
-dh-c help --list   # command names only
-dh-c help --all    # complete reference
-dh-c help build    # one command
-```
-
-## Target-scoped build layout
-
-Build and packaged prebuilt artifacts are separated by normalized target identity:
+Test output separates result and timing:
 
 ```text
-build/<target>/<profile>/
-prebuilt/<target>/<profile>/
+[TEST]
+  status: PASS
+  exit: 0
+  executable: ...
+  elapsed: 0.012s
+[TIMING]
+  setup: 1.20s
+    project library: 0.80s
+    executable: 0.38s
+  execution: 0.01s
+Finished `test` in 1.21s
 ```
 
-For an implicit host build, dh-c asks the active compiler for its target triple. A real materialized build creates or refreshes `build/native` as a directory link to that normalized host target directory. On Windows dh-c falls back from a symbolic link to a directory junction. Read-only inspection commands do not create the alias. Failure to create the convenience link is reported as a warning rather than changing the build contract.
-
-DH tests return the child process status directly. The final report is a multi-line `[TEST]` block containing status, exit code, executable, and execution time. Multi-phase commands also print a compact `[TIMING]` block by default, with setup subphases and execution separated; `--verbose` adds details such as lock wait time.
-
-## Build introspection
-
-The current build contract can be inspected without executing a build:
+### Clean and prune
 
 ```sh
+dh-c clean
+dh-c clean --cache --older-than=30d --dry-run
+dh-c clean --deps --unused --dry-run
+dh-c clean --deps --older-than=90d
+dh-c clean --deps --unused --force
+```
+
+Git dependency checkouts with user changes are preserved unless `--force` is explicit.
+Untracked `build/`, `.dh-c/`, package staging, and dependency-export state created by dh-c
+do not make an otherwise clean checkout look user-modified. `lock.dh` is never removed
+by dependency cleanup.
+
+## 5. Inspection commands
+
+```sh
+dh-c plan [profile] [path]
+dh-c explain rebuild [profile] [path]
 dh-c target show
-dh-c plan dev
-dh-c explain rebuild dev
 dh-c doctor
+dh-c toolchain all
+dh-c compile-db
+dh-c syntax
+dh-c tidy
+dh-c format
 ```
 
-`plan` runs the same target/source/configuration resolution as `build` but is read-only: it does not write Makefiles, cache entries, locks, dependency state, or artifacts. `explain rebuild` compares existing contracts without building dependencies or mutating state. `target show` prints the normalized target-scoped output directory and native-alias policy. `doctor` checks the selected compiler, Make, archiver, DH installation, project detection, target resolution, and provider tools required by the detected project.
+`plan` and `explain rebuild` are read-only. They do not build dependencies,
+write caches/contracts, acquire project build-state paths, or create
+`build/native`.
 
-## Structured Build Contracts
+## 6. Profiles
 
-`dh-c` records versioned build contracts under the active target/profile directory:
+| Profile | Intended use |
+| --- | --- |
+| `dev` | debug iteration; default |
+| `fast` | fastest compile path |
+| `test` | test-focused optimization/debug balance |
+| `profile` | profiling build |
+| `stable` | stable optimized build with ThinLTO policy |
+| `release` | release optimization and reduced unwind/exception policy |
+| `optimize` | maximum native optimization |
+| `compact` | size optimization |
+| `micro` | extreme size optimization |
 
-```txt
-build/<target>/<profile>/.link/*.contract
-build/<target>/<profile>/obj/.contracts/*.contract
+Use `dh-c help profiles` or `dh-c help --all` for the current exact flags.
+
+## 7. Link and runtime model
+
+These controls are independent build facts:
+
+```ini
+freestanding=on
+link-libc=off
+link-default-libs=off
+link-start-files=off
+link-compiler-rt=auto
+link-stdlib=off
+link-crt=off
 ```
 
-Link contracts record effective target, profile, LTO, sysroot, runtime-link choices, link directories, and linked libraries. Compile contracts are recorded per source and include the effective compiler, language standard, optimization/debug profile, target tuning, PCH/test mode, defines, and include paths.
+`freestanding` changes compilation semantics only.
 
-Use:
+`link-stdlib=off` disables compiler-driver startup files and default libraries,
+but explicit inputs remain:
+
+```ini
+link-stdlib=off
+link=msvcrt
+link=user32
+define=COMP_HAS_LIBC
+define=COMP_HAS_STDLIB
+```
+
+This supports compiler/platform runtimes, glibc or musl target contracts,
+custom runtimes, and fully user-authored startup/runtime code. Cache keys record
+the effective compile and link command contracts. Prebuilt manifests compare
+public ABI facts rather than requiring every consumer to repeat a producer's
+private top-level link list. LTO artifacts additionally require a compatible
+compiler toolchain contract.
+
+## 8. Library and prebuilt behavior
+
+A project with:
+
+```ini
+kind=lib
+output=core
+```
+
+builds the full library set in every profile. Effective LTO determines whether
+an additional LTO static archive is present; shared/static production itself is
+not restricted to stable/release.
+
+The profile directory contains one generated `manifest.dh` that inventories the
+library artifacts. Test/sample/example executables do not overwrite it.
+
+Host builds also provide:
+
+```text
+build/native -> build/<normalized-host-target>
+```
+
+as a symbolic link or Windows junction where supported. Explicit cross-target
+builds do not move the native alias.
+
+See:
+
+- [`dh-c/docs/artifact-manifest.md`](./dh-c/docs/artifact-manifest.md)
+- [`dh-c/docs/prebuilt-packages.md`](./dh-c/docs/prebuilt-packages.md)
+
+## 9. Dependencies
+
+Declare dependencies in root `project.dh`, or in the primary source companion of
+a projectless build unit:
+
+```ini
+[SDL]
+source=https://github.com/libsdl-org/SDL.git
+revision=release-3.2.0
+provider=cmake
+linking=shared
+prebuilt=auto
+runtime-file=bin/SDL3.dll
+```
+
+Named-project commands:
 
 ```sh
-dh-c explain rebuild [profile] [path] [build options]
+dh-c fetch
+dh-c update
+dh-c status
+dh-c deps
 ```
 
-to compare the previous contract with the requested one. For example, changing `--lto=off` to `--lto=on` or adding `-DFEATURE=1` is reported as a key-level change rather than only as an opaque fingerprint mismatch.
+Projectless source-unit commands:
 
-Legacy hash-only link contracts are accepted and upgraded on the next plan generation.
+```sh
+dh-c update main.c
+dh-c fetch main.c
+dh-c status main.c
+dh-c deps main.c
+dh-c graph main.c
+dh-c build main.c util.c
+```
+
+`lock.dh` lives beside `project.dh`; `<source>.lock.dh` lives beside the primary
+projectless source. `fetch` preserves an existing resolution and `update`
+intentionally changes it. `graph` supports both scopes; `package` and `install`
+remain named-project operations.
+
+Provider cross-target contracts include compiler, archiver, target, sysroot,
+and provider-specific toolchain variables where applicable.
+
+See [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md).
+
+## 10. Generated state and source control
+
+Normally tracked:
+
+```text
+workspace.dh
+project.dh
+target.dh
+*.dh source companions
+lock.dh
+*.lock.dh projectless source locks
+source and public assets
+```
+
+Normally ignored:
+
+```text
+build/
+.dh-c/
+prebuilt/   # unless deliberately vendored as source input
+dist/       # generated release output
+```
+
+`manifest.dh` belongs inside generated build/prebuilt packages, not as a
+hand-authored root project file.
+
+## 11. Complete references
+
+- [`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md)
+- [`dh-c/docs/project-dh-contract.md`](./dh-c/docs/project-dh-contract.md)
+- [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md)
+- [`dh-c/docs/artifact-manifest.md`](./dh-c/docs/artifact-manifest.md)
+- [`dh-c/docs/prebuilt-packages.md`](./dh-c/docs/prebuilt-packages.md)
+- `dh-c help --all`

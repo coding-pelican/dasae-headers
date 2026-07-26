@@ -1092,6 +1092,12 @@ typedef struct dal_c_CompilerOpts {
     char** link_dirs; // --link-dir or -L (array)
     int link_dir_count;
     char* entry_symbol; // --entry=<symbol>
+    char* compiler_args; // comp-args=<flags>, merged in configuration order
+    char* link_args; // link-args=<flags>, merged in configuration order
+    char* output_ext; // output-ext=<.ext>, last configuration layer wins
+    char* linker_script; // link-script=<path>, last configuration layer wins
+    char* objcopy; // objcopy=<tool>, last configuration layer wins
+    char* objcopy_format; // objcopy-format=<format>, last configuration layer wins
     dal_c_Profile profile;
     dal_c_CompileEnv compile_env; // --hosted / --freestanding
     dal_c_ToggleState libc_linked; // --link-libc=<auto|on|off>
@@ -1212,7 +1218,7 @@ typedef struct dal_c_CleanOpts {
     bool dependencies_only; // --deps: select dependency state under .dh-c/deps
     bool unused_only; // --unused: restrict dependency cleanup to undeclared names
     bool dry_run; // --dry-run: report removals without changing the filesystem
-    bool force; // --force: allow removal of dirty dependency source checkouts
+    bool force; // --force: allow removal of dependency checkouts with user changes
     bool older_than_set; // --older-than=<duration>
     uint64_t older_than_seconds;
     bool recursive; // --recur
@@ -1333,8 +1339,8 @@ int dal_c_Cmd_runTidy(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_runFormat(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_cleanTarget(const dal_c_Cmd* self, const dal_c_Project* proj);
 int dal_c_Cmd_compileDeps(const dal_c_Cmd* self, const dal_c_Project* proj);
-int dal_c_Cmd_createWorkspace(void);
-int dal_c_Cmd_createProject(void);
+int dal_c_Cmd_createWorkspace(const dal_c_Cmd* self);
+int dal_c_Cmd_createProject(const dal_c_Cmd* self);
 int dal_c_Cmd_queryToolchain(const dal_c_Cmd* self);
 
 /// === LIBRARY (Dependency) ===
@@ -1363,6 +1369,13 @@ struct dal_c_Project {
     char* dh_path;
     char* project_dh;
     char* workspace_root;
+    char* workspace_dh;
+    bool is_adhoc;
+    char* unit_root;
+    char* unit_source;
+    char* unit_dh;
+    char* unit_lock_dh;
+    char* unit_id;
     char* src_dir_name;
     char* include_dir_name;
     char* tests_dir_name;
@@ -1380,6 +1393,8 @@ struct dal_c_Project {
     int target_root_count;
     char** exclude_paths;
     int exclude_count;
+    dal_c_CompilerOpts workspace_opts;
+    dal_c_BuildDefaults workspace_defaults;
     dal_c_CompilerOpts opts;
     dal_c_BuildDefaults defaults;
     dal_c_Lib* libraries;
@@ -1493,6 +1508,7 @@ static inline const char* const* dal_c_sourceSkipSegments(void) {
 #define dal_c_file_detector_ext ".dh"
 #define dal_c_file_detector_project "project" dal_c_file_detector_ext
 #define dal_c_file_detector_workspace "workspace" dal_c_file_detector_ext
+#define dal_c_file_detector_target "target" dal_c_file_detector_ext
 #define dal_c_file_makefile "Makefile"
 
 /// === EXTERNAL TOOLS ===
@@ -1509,6 +1525,15 @@ typedef struct dal_c_HelpOption {
     const char* name;
     const char* description;
 } dal_c_HelpOption;
+
+typedef struct dal_c_HelpTopic {
+    const char* name;
+    const char* summary;
+    const char* const* lines;
+    int line_count;
+    const char* const* examples;
+    int example_count;
+} dal_c_HelpTopic;
 
 typedef struct dal_c_HelpCmd {
     const char* name;
@@ -1823,19 +1848,21 @@ static const dal_c_HelpOption dal_c_help_deps_options[] = {
 static const char* const dal_c_help_deps_examples[] = {
     dal_c_cmd_action_deps,
     dal_c_cmd_action_deps " stable",
-    dal_c_cmd_action_deps " " dal_c_opt_prefix_long dal_c_opt_verbose,
+    dal_c_cmd_action_deps " main.c",
+    dal_c_cmd_action_deps " main.c stable",
     "fetch",
-    "update SDL",
-    "status",
+    "update main.c",
+    "status main.c",
 };
 #define dal_c_help_deps_examples_count ((int)(sizeof(dal_c_help_deps_examples) / sizeof(dal_c_help_deps_examples[0])))
 
 static const char* const dal_c_help_deps_notes[] = {
-    "`deps` builds libraries declared in `project.dh`; it does not build the current project output.",
-    "`fetch`, `update`, and `status` use the current `project.dh` as their implicit subject.",
-    "`deps` builds declared dependencies; external providers are built and privately installed into target/profile package caches.",
-    "It reads dependency blocks from `project.dh`; direct compile/link/source/output flags are not accepted by `deps`.",
-    "Generated dependency headers and libraries live under `lib/`; PCH files live in the active cache plan.",
+    "Without a source argument, dependency commands use the nearest root `project.dh` and its sibling `lock.dh`.",
+    "With a primary source argument, `<source>.dh` may own dependency sections and `<source>.lock.dh` stores its exact resolution.",
+    "In a multi-source ad-hoc build, the first source is the dependency/lock owner; secondary companions and `--dh-file` overlays remain flat.",
+    "`deps` builds declared dependencies only; it does not build the current project or source output.",
+    "External providers are built and privately installed into target/profile package caches, then staged for the owning build unit.",
+    "Generated dependency headers and libraries live under project `lib/deps` or the ad-hoc unit's generated export scope.",
     "CMake/Make/custom providers receive the effective target, compiler, archiver, sysroot, and target C flags through their provider contract.",
     "`--prebuilt=auto` reads `prebuilt/<normalized-target>/<profile>` packages when present; `required` fails instead of compiling source.",
 };
@@ -1983,7 +2010,7 @@ static const dal_c_HelpOption dal_c_help_clean_options[] = {
     { dal_c_opt_prefix_long dal_c_opt_unused, "With `--deps`, remove only dependency names no longer declared" },
     { dal_c_opt_prefix_long dal_c_opt_older_than dal_c_opt_value_sep "<duration>", "Remove selected state older than a duration such as `30d`, `12h`, or `90m`" },
     { dal_c_opt_prefix_long dal_c_opt_dry_run, "Print what would be removed without deleting it" },
-    { dal_c_opt_prefix_long dal_c_opt_force, "Allow removal of dirty Git dependency checkouts" },
+    { dal_c_opt_prefix_long dal_c_opt_force, "Allow removal of Git dependency checkouts with user changes" },
     { dal_c_opt_prefix_long dal_c_opt_self, "Apply `clean` to the self boundary" },
     { dal_c_opt_prefix_long dal_c_opt_dsl, "Include the DSL boundary in `clean`" },
     { dal_c_opt_prefix_long dal_c_opt_recur, "Apply the selected clean scope recursively" },
@@ -2014,7 +2041,7 @@ static const char* const dal_c_help_clean_notes[] = {
     "`--cache` and `--deps` are explicit scopes and may be combined. `--older-than` requires one of those scopes.",
     "Cache age is based on last modification. Dependency age uses dh-c's last-use stamp and falls back to generated-state modification time for older layouts.",
     "`--unused` applies only to `--deps`; it removes generated state for names no longer declared by the current project and does not rewrite `lock.dh`.",
-    "Dirty Git dependency checkouts are preserved unless `--force` is supplied. Use `--dry-run` to inspect a cleanup first.",
+    "Git dependency checkouts with user changes are preserved unless `--force` is supplied; dh-c-generated untracked state is ignored. Use `--dry-run` first.",
     "Profile-specific clean such as `clean dev` also removes `lib/deps` and `lib/deps.h` because dependency exports are not profile-scoped.",
     "Do not store durable source assets, checked-in resources, or manual files under `build/`, `build/.cache/`, `.dh-c/`, `lib/deps/`, or `lib/deps.h`; clean owns those generated paths.",
     "`--dsl` includes the DH/DSL dependency boundary; `--self` cleans only the dh-c self boundary.",
@@ -2072,6 +2099,32 @@ static const char* const dal_c_help_self_notes[] = {
     "The self boundary is dh-c itself and does not accept project source, output, link, or DH options.",
 };
 #define dal_c_help_self_notes_count ((int)(sizeof(dal_c_help_self_notes) / sizeof(dal_c_help_self_notes[0])))
+
+static const char* const dal_c_help_workspace_examples[] = {
+    dal_c_cmd_action_workspace,
+    dal_c_cmd_action_workspace " my-workspace",
+};
+#define dal_c_help_workspace_examples_count ((int)(sizeof(dal_c_help_workspace_examples) / sizeof(dal_c_help_workspace_examples[0])))
+
+static const char* const dal_c_help_workspace_notes[] = {
+    "Creates workspace.dh in the requested directory; the directory is created when necessary.",
+    "The generated file contains comments only, so it establishes a discovery/cache boundary without imposing defaults.",
+    "Existing workspace.dh files are never overwritten.",
+};
+#define dal_c_help_workspace_notes_count ((int)(sizeof(dal_c_help_workspace_notes) / sizeof(dal_c_help_workspace_notes[0])))
+
+static const char* const dal_c_help_project_examples[] = {
+    dal_c_cmd_action_project " my-app",
+    dal_c_cmd_action_project " .",
+};
+#define dal_c_help_project_examples_count ((int)(sizeof(dal_c_help_project_examples) / sizeof(dal_c_help_project_examples[0])))
+
+static const char* const dal_c_help_project_notes[] = {
+    "Creates project.dh, src/, include/, tests/, and a minimal src/main.c when those paths do not already exist.",
+    "The generated executable project is plain C by default (`link-dsl=off`) and can be edited into a DH or library project.",
+    "Existing project.dh and source files are never overwritten.",
+};
+#define dal_c_help_project_notes_count ((int)(sizeof(dal_c_help_project_notes) / sizeof(dal_c_help_project_notes[0])))
 
 static const dal_c_HelpOption dal_c_help_global_options[] = {
     { dal_c_opt_prefix_short dal_c_opt_help_short ", " dal_c_opt_prefix_long dal_c_opt_help, "Show this help message" },
@@ -2143,8 +2196,8 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
     },
     {
         .name = dal_c_cmd_action_deps,
-        .description = "Build dependencies from " dal_c_file_detector_project,
-        .usage = "[profile] [options]",
+        .description = "Build dependencies from project.dh or a primary source companion",
+        .usage = "[source] [profile] [options]",
         .options = dal_c_help_deps_options,
         .option_count = dal_c_help_deps_options_count,
         .examples = dal_c_help_deps_examples,
@@ -2287,13 +2340,23 @@ static const dal_c_HelpCmd dal_c_help_cmds[] = {
     },
     {
         .name = dal_c_cmd_action_workspace,
-        .description = "Reserved scaffold command",
+        .description = "Create a workspace.dh boundary and defaults file",
         .usage = "[path]",
+        .examples = dal_c_help_workspace_examples,
+        .example_count = dal_c_help_workspace_examples_count,
+        .notes = dal_c_help_workspace_notes,
+        .note_count = dal_c_help_workspace_notes_count,
+        .implemented = true,
     },
     {
         .name = dal_c_cmd_action_project,
-        .description = "Reserved scaffold command",
-        .usage = "[name]",
+        .description = "Create a minimal buildable project.dh project",
+        .usage = "[path]",
+        .examples = dal_c_help_project_examples,
+        .example_count = dal_c_help_project_examples_count,
+        .notes = dal_c_help_project_notes,
+        .note_count = dal_c_help_project_notes_count,
+        .implemented = true,
     },
 };
 #define dal_c_help_cmds_count ((int)(sizeof(dal_c_help_cmds) / sizeof(dal_c_help_cmds[0])))

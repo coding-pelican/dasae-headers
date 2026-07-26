@@ -102,7 +102,7 @@ Examples:
 - `--verbose`
 - `--show-commands`
 - `--cache`
-- `--no-dsl`
+- `--link-dsl=off`
 - `--exclude`
 
 When a user reads:
@@ -321,7 +321,7 @@ still contains historical command forms that should be collapsed later.
 - `--dsl`
 - `--recur`
 - `--cache`
-- `--no-dsl`
+- `--link-dsl=off`
 
 ### Artifact modifiers
 
@@ -698,7 +698,7 @@ Cleanup scopes are explicit:
 - `--unused`: further restrict dependency cleanup to names absent from the current `project.dh`
 - `--older-than`: further restrict the selected cache or dependency scope by age
 - `--dry-run`: report the exact removals without changing the filesystem
-- `--force`: permit deletion of dirty Git dependency checkouts
+- `--force`: permit deletion of Git dependency checkouts containing genuine user changes; dh-c-generated untracked state is ignored
 
 `clean --deps` never rewrites the sibling `lock.dh`. A resolved input contract is
 not generated cache state.

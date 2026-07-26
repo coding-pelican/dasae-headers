@@ -153,12 +153,13 @@ dasae-headers: Modern, Better safety and productivity to C
 
 ### 💽 Installation
 
-> **Note:** Currently, Build tool `dh-c` only supports **Clang** as the compiler.
-> GCC support is planned but not yet available.
+> **Note:** `dh-c` supports Clang- and GCC-compatible compiler drivers. Clang
+> remains the recommended toolchain and is required for optional `clang-tidy`
+> and `clang-format` commands.
 
 #### Prerequisites
 
-- **Clang** 16.0.0+ (Recommended: 19.1.0+)
+- **Clang or GCC-compatible C compiler**
 - **Make** (GNU Make or compatible)
 
 #### Step 1: Clone the Repository
@@ -224,13 +225,52 @@ dh-c --version
 dh-c --help
 ```
 
-#### Step 5: Use a `project.dh` Project
+#### Step 5: Build a File or Project
 
-`dh-c` detects the nearest ancestor `project.dh` and uses it as the project
-contract for default builds, tests, and target roots. The `dh-c project` command
-name is reserved but not currently implemented.
+Create a minimal project safely:
 
-For the public `project.dh` contract and supported commands, see [BUILD.md](./BUILD.md).
+```bash
+dh-c project app
+cd app
+dh-c build
+```
+
+For multiple projects sharing defaults and cache scope:
+
+```bash
+dh-c workspace my-workspace
+cd my-workspace
+dh-c project app
+```
+
+The scaffold commands refuse to overwrite existing configuration files.
+Direct-source builds still require no project file.
+
+
+The command line and selected source files are first-class build input:
+
+```sh
+dh-c build main.c
+dh-c build main.c util.c
+```
+
+If `main.dh` or `util.dh` exists beside a selected source, `dh-c` loads it as a
+strict source companion. In a projectless build, the first source is the unit
+owner: its companion may declare dependencies and `dh-c update main.c` creates
+`main.lock.dh` beside it. Secondary companions remain flat. A named project may
+instead add a root `project.dh`; a `workspace.dh` may provide shared defaults and
+the preferred workspace cache.
+
+```sh
+dh-c help files
+dh-c help project-dh
+dh-c help dh-file
+dh-c help dependencies
+dh-c help lock-dh
+```
+
+See [BUILD.md](./BUILD.md) and
+[`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md).
 
 #### Hello, world!
 
@@ -1214,7 +1254,7 @@ Both rely on `TypeInfo` from `core`/`type_info.h`
 | **OS**           | Windows, Unix, Linux, macOS                                                            |
 | **Architecture** | x86 (32-bit), x64 (64-bit)                                                             |
 | **Clang**        | 19.1.0+ (Recommended) / 16.0.0+ (Supported) / 9.0.0+ (Minimum, Requires -std=gnu11)    |
-| **GCC**          | Planned for the build-tool flow; not part of the current `dh-c` support range          |
+| **GCC**          | Supported through GCC-compatible compiler-driver paths; Clang-only tooling remains optional |
 | **MSVC**         | Planned (TBD)                                                                          |
 
 > **Note:** The `dh-c` build tool's support range is [Prerequisites](#prerequisites).
@@ -1480,7 +1520,8 @@ Public project documents:
 | Document | Purpose |
 | --- | --- |
 | [`README.md`](./README.md) | Project overview and entry point. |
-| [`BUILD.md`](./BUILD.md) | Public build guide for `dh-c` and `project.dh` usage. |
+| [`BUILD.md`](./BUILD.md) | Public build guide for direct-source, workspace, project, dependency, and prebuilt flows. |
+| [`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md) | Canonical ownership, grammar, keys, and precedence for every `.dh` file type. |
 | [`PROJECT_TREE.md`](./PROJECT_TREE.md) | Curated repository structure overview. |
 | [`LICENSE`](./LICENSE) | MIT license. |
 

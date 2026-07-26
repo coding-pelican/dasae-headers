@@ -246,23 +246,51 @@ assert_contains "$LAST_OUTPUT" "dasae-headers path:" "Version output did not con
 
 invoke_external "0" "$repo_root" "$cli_exe" --help
 assert_contains "$LAST_OUTPUT" "COMMANDS:" "Help output did not list commands"
-assert_contains "$LAST_OUTPUT" "BUILD AND EXECUTION:" "Help output did not group build commands"
-assert_contains "$LAST_OUTPUT" "DEPENDENCIES AND DELIVERY:" "Help output did not group dependency commands"
-assert_contains "$LAST_OUTPUT" "INSPECTION AND TOOLING:" "Help output did not group inspection commands"
+assert_contains "$LAST_OUTPUT" "SETUP" "Help output did not expose setup commands"
+assert_contains "$LAST_OUTPUT" "EVERYDAY" "Help output did not prioritize everyday commands"
+assert_contains "$LAST_OUTPUT" "DEPENDENCIES & DELIVERY" "Help output did not group dependency commands"
+assert_contains "$LAST_OUTPUT" "INSPECT & DEBUG" "Help output did not group inspection commands"
 assert_contains "$LAST_OUTPUT" "ALIASES:" "Help output did not separate compatibility aliases"
 assert_contains "$LAST_OUTPUT" "help --all" "Concise help did not point to full help"
 
 invoke_external "0" "$repo_root" "$cli_exe" help --list
+assert_contains "$LAST_OUTPUT" "setup:         workspace project" "Help list did not contain setup commands"
 assert_contains "$LAST_OUTPUT" "build" "Help list did not contain build"
 assert_contains "$LAST_OUTPUT" "test" "Help list did not contain test"
 
 invoke_external "0" "$repo_root" "$cli_exe" help --all
-assert_contains "$LAST_OUTPUT" "RESERVED COMMANDS:" "Help output did not describe reserved commands"
 assert_contains "$LAST_OUTPUT" "COMMAND OPTION BOUNDARIES:" "Help output did not describe command option boundaries"
-assert_contains "$LAST_OUTPUT" "PROJECT.DH KEYS:" "Help output did not describe project.dh keys"
+assert_contains "$LAST_OUTPUT" "CONFIGURATION TOPICS:" "Help output did not include configuration topics"
+assert_contains "$LAST_OUTPUT" "target.dh" "Help output did not describe target.dh"
 assert_contains "$LAST_OUTPUT" "LINK MODEL:" "Help output did not describe freestanding/link-model separation"
 assert_contains "$LAST_OUTPUT" 'exact alias of `--link-start-files=off`' "Help output did not explain the CRT alias"
 assert_contains "$LAST_OUTPUT" "durable source assets" "Help output did not describe cleanup-owned generated paths"
+
+invoke_external "0" "$repo_root" "$cli_exe" help files
+assert_contains "$LAST_OUTPUT" "workspace.dh" "File help did not describe workspace.dh"
+assert_contains "$LAST_OUTPUT" "project.dh" "File help did not describe project.dh"
+assert_contains "$LAST_OUTPUT" "target.dh" "File help did not describe target.dh"
+assert_contains "$LAST_OUTPUT" "<source>.dh" "File help did not describe source companions"
+
+invoke_external "0" "$repo_root" "$cli_exe" help dh-file
+assert_contains "$LAST_OUTPUT" "comp-args" "dh-file help did not describe persistent compiler args"
+assert_contains "$LAST_OUTPUT" "link-script" "dh-file help did not describe linker scripts"
+assert_contains "$LAST_OUTPUT" "output-ext" "dh-file help did not describe output extension"
+
+invoke_external "0" "$repo_root" "$cli_exe" help precedence
+assert_contains "$LAST_OUTPUT" "workspace.dh" "Precedence help did not start at workspace configuration"
+assert_contains "$LAST_OUTPUT" "command-line options" "Precedence help did not end at command line"
+
+invoke_external "0" "$repo_root" "$cli_exe" help project
+assert_contains "$LAST_OUTPUT" "Create a minimal buildable project.dh project" "Project scaffold help was not available"
+assert_contains "$LAST_OUTPUT" "never overwritten" "Project scaffold help did not describe overwrite safety"
+
+invoke_external "0" "$repo_root" "$cli_exe" help workspace
+assert_contains "$LAST_OUTPUT" "Create a workspace.dh boundary" "Workspace scaffold help was not available"
+
+invoke_external "0" "$repo_root" "$cli_exe" help invocation-only
+assert_contains "$LAST_OUTPUT" "jobs" "Invocation-only help did not describe scheduling controls"
+assert_contains "$LAST_OUTPUT" "analysis/emit" "Invocation-only help did not describe one-off artifact controls"
 
 invoke_external "0" "$repo_root" "$cli_exe" help build
 assert_contains "$LAST_OUTPUT" "USAGE:" "Command help did not show usage"
@@ -284,11 +312,30 @@ assert_contains "$LAST_OUTPUT" "not accepted" "Syntax help did not describe unav
 invoke_external "1" "$repo_root" "$cli_exe" help no-such-command
 assert_contains "$LAST_OUTPUT" "Unknown help topic" "Unknown help topic did not fail clearly"
 
-invoke_external "1" "$repo_root" "$cli_exe" workspace demo
-assert_contains "$LAST_OUTPUT" "Not implemented: workspace" "Reserved workspace command did not report current status"
+scaffold_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-scaffold.XXXXXX")
+workspace_root="$scaffold_root/workspace"
+project_root="$workspace_root/app"
 
-invoke_external "1" "$repo_root" "$cli_exe" project demo
-assert_contains "$LAST_OUTPUT" "Not implemented: project" "Reserved project command did not report current status"
+invoke_external "0" "$repo_root" "$cli_exe" workspace "$workspace_root"
+assert_contains "$LAST_OUTPUT" "Created workspace:" "Workspace scaffold did not report success"
+if [ ! -f "$workspace_root/workspace.dh" ]; then
+    printf 'Workspace scaffold did not create workspace.dh\n' >&2
+    exit 1
+fi
+
+invoke_external "0" "$repo_root" "$cli_exe" project "$project_root"
+assert_contains "$LAST_OUTPUT" "Created project:" "Project scaffold did not report success"
+if [ ! -f "$project_root/project.dh" ] || [ ! -f "$project_root/src/main.c" ]; then
+    printf 'Project scaffold did not create the expected project files\n' >&2
+    exit 1
+fi
+
+invoke_external "0" "$project_root" "$cli_exe" build
+assert_contains "$LAST_OUTPUT" "Build successful" "Generated project did not build successfully"
+
+invoke_external "1" "$repo_root" "$cli_exe" project "$project_root"
+assert_contains "$LAST_OUTPUT" "Refusing to overwrite" "Project scaffold did not protect existing configuration"
+rm -rf "$scaffold_root"
 
 no_project_clean=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-no-project-clean.XXXXXX")
 mkdir -p "$no_project_clean/build/dev"
@@ -415,6 +462,138 @@ rm -rf "$provider_contract_root"
 
 if [ "$integration" -eq 1 ]; then
     reset_temp_root
+
+    adhoc_workspace="$temp_root/adhoc-workspace"
+    adhoc_unit="$adhoc_workspace/local-unit"
+    mkdir -p "$adhoc_unit/vendor"
+    cat >"$adhoc_workspace/workspace.dh" <<'EOF'
+std=c17
+EOF
+    cat >"$adhoc_unit/vendor/dep.h" <<'EOF'
+#ifndef DEP_H
+#define DEP_H
+#define DEP_VALUE 0
+#endif
+EOF
+    cat >"$adhoc_unit/main.c" <<'EOF'
+#include <dep.h>
+int main(void) { return DEP_VALUE; }
+EOF
+    cat >"$adhoc_unit/main.dh" <<'EOF'
+link-dsl=off
+
+[dep]
+path=vendor/dep.h
+provider=dh
+EOF
+    invoke_external "0" "$adhoc_unit" "$cli_exe" deps main.c
+    assert_contains "$LAST_OUTPUT" "dep" "Projectless deps command did not process the primary companion dependency"
+    invoke_external "0" "$adhoc_unit" "$cli_exe" graph main.c
+    assert_contains "$LAST_OUTPUT" "BUILD UNIT main" "Projectless graph did not identify the primary source unit"
+    assert_contains "$LAST_OUTPUT" "- dep [provider=dh" "Projectless graph did not include the source-owned dependency"
+    invoke_external "0" "$adhoc_unit" "$cli_exe" graph main.c --format=dot
+    assert_contains "$LAST_OUTPUT" "digraph dh_c" "Projectless DOT graph did not render"
+    invoke_external "0" "$adhoc_unit" "$cli_exe" target show main.c
+    assert_contains "$LAST_OUTPUT" "$adhoc_unit/build" "Projectless target show did not report the source-unit build directory"
+    invoke_external "0" "$adhoc_unit" "$cli_exe" doctor main.c
+    assert_contains "$LAST_OUTPUT" "build-unit:" "Projectless doctor did not identify the source unit"
+    invoke_external "0" "$adhoc_unit" "$cli_exe" build main.c
+    assert_contains "$LAST_OUTPUT" "Build successful!" "Projectless header-only dependency build did not succeed"
+    [ ! -e "$adhoc_unit/.dh-c" ]
+    assert_true $? "Projectless dependency build leaked generated state beside the source"
+    if ! "$find_bin" "$adhoc_workspace/.dh-c/units" -type f -path '*/exports/deps/dep.h' | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Projectless dependency header was not staged in the workspace unit state\n' >&2
+        exit 1
+    fi
+    if ! "$find_bin" "$adhoc_unit/build" -type f -name "main$exe_ext" | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Projectless dependency build did not materialize the executable beside the source unit\n' >&2
+        exit 1
+    fi
+
+    cat >"$adhoc_unit/util.c" <<'EOF'
+int util_value(void) { return 0; }
+EOF
+    cat >"$adhoc_unit/util.dh" <<'EOF'
+[illegal-secondary-dependency]
+path=vendor/dep.h
+EOF
+    invoke_external "1" "$adhoc_unit" "$cli_exe" build main.c util.c
+    assert_contains "$LAST_OUTPUT" "sections are not allowed in source companion .dh" "Secondary source companion accepted a dependency section"
+    rm -f "$adhoc_unit/util.c" "$adhoc_unit/util.dh"
+
+    adhoc_remote="$temp_root/adhoc-remote"
+    adhoc_remote_unit="$adhoc_workspace/remote-unit"
+    mkdir -p "$adhoc_remote/include" "$adhoc_remote/src" "$adhoc_remote_unit"
+    invoke_external "0" "$adhoc_remote" git init
+    invoke_external "0" "$adhoc_remote" git config user.email dh-c-tests@example.invalid
+    invoke_external "0" "$adhoc_remote" git config user.name dh-c-tests
+    cat >"$adhoc_remote/project.dh" <<'EOF'
+output=remote
+kind=static-lib
+link-dsl=off
+EOF
+    cat >"$adhoc_remote/include/remote.h" <<'EOF'
+#ifndef REMOTE_H
+#define REMOTE_H
+#define REMOTE_VALUE 0
+int remote_value(void);
+#endif
+EOF
+    cat >"$adhoc_remote/src/remote.c" <<'EOF'
+#include <remote.h>
+int remote_value(void) { return REMOTE_VALUE; }
+EOF
+    invoke_external "0" "$adhoc_remote" git add project.dh include/remote.h src/remote.c
+    invoke_external "0" "$adhoc_remote" git commit -m initial
+    invoke_external "0" "$adhoc_remote" git symbolic-ref --short HEAD
+    adhoc_branch=$(printf '%s\n' "$LAST_OUTPUT" | tail -n 1)
+    adhoc_remote_native=$(native_path "$adhoc_remote")
+    cat >"$adhoc_remote_unit/main.c" <<'EOF'
+#include <remote.h>
+int main(void) { return REMOTE_VALUE; }
+EOF
+    cat >"$adhoc_remote_unit/main.dh" <<EOF
+link-dsl=off
+
+[remote]
+source=$adhoc_remote_native
+revision=$adhoc_branch
+provider=dh
+EOF
+    invoke_external "0" "$adhoc_remote_unit" "$cli_exe" update main.c
+    [ -f "$adhoc_remote_unit/main.lock.dh" ]
+    assert_true $? "Projectless dependency update did not create main.lock.dh"
+    first_lock=$(cat "$adhoc_remote_unit/main.lock.dh")
+    assert_contains "$first_lock" "[remote]" "Projectless lock did not contain the dependency section"
+    invoke_external "0" "$adhoc_remote_unit" "$cli_exe" status main.c
+    assert_contains "$LAST_OUTPUT" "READY" "Projectless dependency status did not report the locked checkout as ready"
+    assert_contains "$LAST_OUTPUT" "main.lock.dh" "Projectless dependency status did not show its source-owned lock"
+
+    cat >"$adhoc_remote/include/remote.h" <<'EOF'
+#ifndef REMOTE_H
+#define REMOTE_H
+#define REMOTE_VALUE 0
+#define REMOTE_GENERATION 2
+int remote_value(void);
+#endif
+EOF
+    invoke_external "0" "$adhoc_remote" git add include/remote.h
+    invoke_external "0" "$adhoc_remote" git commit -m second
+    invoke_external "0" "$adhoc_remote_unit" "$cli_exe" fetch main.c
+    [ "$(cat "$adhoc_remote_unit/main.lock.dh")" = "$first_lock" ]
+    assert_true $? "Projectless fetch changed an existing exact resolution"
+    invoke_external "0" "$adhoc_remote_unit" "$cli_exe" update main.c
+    [ "$(cat "$adhoc_remote_unit/main.lock.dh")" != "$first_lock" ]
+    assert_true $? "Projectless update did not refresh the source-owned lock"
+    invoke_external "0" "$adhoc_remote_unit" "$cli_exe" build main.c
+    assert_contains "$LAST_OUTPUT" "Build successful!" "Projectless locked Git dependency build did not succeed"
+    invoke_external "0" "$adhoc_remote_unit" "$cli_exe" clean main.c --deps --older-than=0s
+    if "$find_bin" "$adhoc_workspace/.dh-c/units" -type d -path '*/deps/src/remote' | "$grep_bin" . >/dev/null 2>&1; then
+        printf '%s\n' "Projectless dependency cleanup preserved generated provider state as a dirty checkout" >&2
+        exit 1
+    fi
+    [ -f "$adhoc_remote_unit/main.lock.dh" ]
+    assert_true $? "Projectless dependency cleanup removed the durable source lock"
 
     explain_project=$(copy_scenario_project "dh-c/tests/fixture/plain-project")
     invoke_external "0" "$explain_project" "$cli_exe" explain rebuild --link-dsl=off
