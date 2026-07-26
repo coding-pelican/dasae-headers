@@ -2292,8 +2292,8 @@ static void test_makefile_mode_contracts(void) {
             TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(IR)") != NULL);
             TEST_ASSERT(strstr(makefile_text, "EXTRA_TARGETS += $(DEBUG_INFO)") != NULL);
             TEST_ASSERT(strstr(makefile_text, " -Wl,--lto-emit-asm") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "$(CC) $(OBJS) -o \"$@\" $(LDFLAGS) -Wl,--lto-emit-asm") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "$(CC) $(OBJS) -o \"$@\" $(LDFLAGS_DISASM)") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "$(CC) \"@$(LINK_RSP)\" -o \"$@\" $(LDFLAGS) -Wl,--lto-emit-asm") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "$(CC) \"@$(LINK_RSP)\" -o \"$@\" $(LDFLAGS_DISASM)") != NULL);
             TEST_ASSERT(strstr(makefile_text, "llvm-objdump -d --demangle --line-numbers --symbolize-operands --no-show-raw-insn -s \"$(DISASM_INPUT)\" > \"$@\"") != NULL);
             TEST_ASSERT(strstr(makefile_text, " -S -emit-llvm \"$(firstword $(SRCS))\" -o \"$@\"") != NULL);
 #ifdef _WIN32
@@ -2422,6 +2422,9 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -lcustomrt") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -luser32") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "LINK_RSP = ") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "$(OBJS) $(LINK_DEPS) $(LINK_RSP)") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "-shared -fPIC \"@$(LINK_RSP)\"") != NULL);
         free(makefile_text);
         free(makefile_path);
 

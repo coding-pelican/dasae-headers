@@ -7165,7 +7165,7 @@ static bool dal_c__archiveResponseReserve(char** content, size_t* capacity, size
     return true;
 }
 
-static bool dal_c__archiveResponseAppend(
+static bool dal_c__objectResponseAppend(
     char** content,
     size_t* length,
     size_t* capacity,
@@ -7557,11 +7557,11 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     bool has_pch = dal_c__pchEnabledForOpts(proj, &cmd->opts);
     bool is_windows = dal_c__platformIsWindows();
     const char* obj_base = (proj && proj->root) ? proj->root : NULL;
-    char* ar_rsp_path = target_type == dal_c_Target_static_lib ? str_format("%s.rsp", target_path) : NULL;
-    char* ar_rsp_content = NULL;
-    size_t ar_rsp_length = 0;
-    size_t ar_rsp_capacity = 0;
-    if (target_type == dal_c_Target_static_lib && !ar_rsp_path) {
+    char* object_rsp_path = str_format("%s.rsp", target_path);
+    char* object_rsp_content = NULL;
+    size_t object_rsp_length = 0;
+    size_t object_rsp_capacity = 0;
+    if (!object_rsp_path) {
         (void)fclose(fp);
         (void)remove(makefile_tmp);
         free(link_contract_path);
@@ -7587,10 +7587,15 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
         dal_c__ensureParentDir(obj_path);
         (void)fprintf(fp, " ");
         dal_c__fprintMakePath(fp, obj_path);
-        if (ar_rsp_path && !dal_c__archiveResponseAppend(&ar_rsp_content, &ar_rsp_length, &ar_rsp_capacity, obj_path)) {
+        if (!dal_c__objectResponseAppend(
+                &object_rsp_content,
+                &object_rsp_length,
+                &object_rsp_capacity,
+                obj_path
+            )) {
             free(obj_path);
-            free(ar_rsp_content);
-            free(ar_rsp_path);
+            free(object_rsp_content);
+            free(object_rsp_path);
             (void)fclose(fp);
             (void)remove(makefile_tmp);
             free(link_contract_path);
@@ -7603,27 +7608,25 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     }
     (void)fprintf(fp, "\n");
 
-    if (ar_rsp_path) {
-        dal_c__ensureParentDir(ar_rsp_path);
-        if (!ar_rsp_content) {
-            ar_rsp_content = strdup("");
-        }
-        if (!ar_rsp_content || !dal_c__writeFileIfChanged(ar_rsp_path, ar_rsp_content)) {
-            free(ar_rsp_content);
-            free(ar_rsp_path);
-            (void)fclose(fp);
-            (void)remove(makefile_tmp);
-            free(link_contract_path);
-            free(makefile_tmp);
-            free(makefile_dir);
-            free(makefile_path);
-            return 1;
-        }
-        (void)fprintf(fp, "AR_RSP = ");
-        dal_c__fprintMakePath(fp, ar_rsp_path);
-        (void)fprintf(fp, "\n");
+    dal_c__ensureParentDir(object_rsp_path);
+    if (!object_rsp_content) {
+        object_rsp_content = strdup("");
     }
-    free(ar_rsp_content);
+    if (!object_rsp_content || !dal_c__writeFileIfChanged(object_rsp_path, object_rsp_content)) {
+        free(object_rsp_content);
+        free(object_rsp_path);
+        (void)fclose(fp);
+        (void)remove(makefile_tmp);
+        free(link_contract_path);
+        free(makefile_tmp);
+        free(makefile_dir);
+        free(makefile_path);
+        return 1;
+    }
+    (void)fprintf(fp, "%s = ", target_type == dal_c_Target_static_lib ? "AR_RSP" : "LINK_RSP");
+    dal_c__fprintMakePath(fp, object_rsp_path);
+    (void)fprintf(fp, "\n");
+    free(object_rsp_content);
 
     (void)fprintf(fp, "DEPS = $(OBJS:.o=.d)\n");
     ArrStr* link_deps = dal_c__collectLinkDependencyPaths(cmd, proj, profile, target_type);
@@ -7736,7 +7739,7 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
         free(makefile_tmp);
         free(makefile_dir);
         free(makefile_path);
-        free(ar_rsp_path);
+        free(object_rsp_path);
         return 1;
     }
 
@@ -7749,7 +7752,7 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     free(makefile_tmp);
     free(makefile_dir);
     free(makefile_path);
-    free(ar_rsp_path);
+    free(object_rsp_path);
     return result;
 }
 
@@ -7844,18 +7847,18 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
 
     if (type == dal_c_Target_executable) {
         if (link_contract_path) {
-            (void)fprintf(fp, "$(TARGET): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS)\n");
+            (void)fprintf(fp, "$(TARGET): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS) $(LINK_RSP)\n");
         } else {
-            (void)fprintf(fp, "$(TARGET): $(OBJS) $(LINK_DEPS)\n");
+            (void)fprintf(fp, "$(TARGET): $(OBJS) $(LINK_DEPS) $(LINK_RSP)\n");
         }
-        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) $(OBJS) -o $@ $(LDFLAGS)\n");
+        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) \"@$(LINK_RSP)\" -o $@ $(LDFLAGS)\n");
         if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_linked_asm) {
             if (link_contract_path) {
                 (void)fprintf(fp, "\n$(LINKED_ASM): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS)\n");
             } else {
                 (void)fprintf(fp, "\n$(LINKED_ASM): $(OBJS) $(LINK_DEPS)\n");
             }
-            (void)fprintf(fp, "\t$(Q)$(call P_GEN,$@)$(CC) $(OBJS) -o \"$@\" $(LDFLAGS) -Wl,--lto-emit-asm\n");
+            (void)fprintf(fp, "\t$(Q)$(call P_GEN,$@)$(CC) \"@$(LINK_RSP)\" -o \"$@\" $(LDFLAGS) -Wl,--lto-emit-asm\n");
         }
         if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_disasm) {
             if (dal_c__resolvedStripMode(&cmd->opts, profile)) {
@@ -7864,7 +7867,7 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
                 } else {
                     (void)fprintf(fp, "\n$(DISASM_TARGET): $(OBJS) $(LINK_DEPS)\n");
                 }
-                (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) $(OBJS) -o \"$@\" $(LDFLAGS_DISASM)");
+                (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) \"@$(LINK_RSP)\" -o \"$@\" $(LDFLAGS_DISASM)");
                 if (is_windows && profile->debug_level != dal_c_DebugLevel_none) {
                     (void)fprintf(fp, " -Wl,--pdb=$(DISASM_PDB)");
                 }
@@ -7905,22 +7908,22 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
         (void)fprintf(fp, "\t$(Q)$(call P_AR,$@)$(AR) rcs \"$@\" \"@$(AR_RSP)\"\n");
     } else if (type == dal_c_Target_shared_lib) {
         if (link_contract_path) {
-            (void)fprintf(fp, "$(TARGET): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS)\n");
+            (void)fprintf(fp, "$(TARGET): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS) $(LINK_RSP)\n");
         } else {
-            (void)fprintf(fp, "$(TARGET): $(OBJS) $(LINK_DEPS)\n");
+            (void)fprintf(fp, "$(TARGET): $(OBJS) $(LINK_DEPS) $(LINK_RSP)\n");
         }
-        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) -shared -fPIC $(OBJS) -o $@ $(LDFLAGS)");
+        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) -shared -fPIC \"@$(LINK_RSP)\" -o $@ $(LDFLAGS)");
         if (is_windows) {
             (void)fprintf(fp, " -Wl,--out-implib,$(IMPORT_LIB)");
         }
         (void)fprintf(fp, "\n");
     } else if (type == dal_c_Target_image) {
         if (link_contract_path) {
-            (void)fprintf(fp, "$(LINK_TARGET): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS)\n");
+            (void)fprintf(fp, "$(LINK_TARGET): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS) $(LINK_RSP)\n");
         } else {
-            (void)fprintf(fp, "$(LINK_TARGET): $(OBJS) $(LINK_DEPS)\n");
+            (void)fprintf(fp, "$(LINK_TARGET): $(OBJS) $(LINK_DEPS) $(LINK_RSP)\n");
         }
-        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) $(OBJS) -o $@ $(LDFLAGS)\n\n");
+        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) \"@$(LINK_RSP)\" -o $@ $(LDFLAGS)\n\n");
         if (link_contract_path) {
             (void)fprintf(fp, "$(TARGET): $(LINK_CONTRACT) $(LINK_TARGET)\n");
         } else {

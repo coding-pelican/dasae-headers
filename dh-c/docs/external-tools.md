@@ -62,18 +62,20 @@ compatibility. `objcopy` affects the produced image format. They are therefore
 part of the authored build contract rather than an incidental host-machine
 helper choice.
 
-## Archive command length
+## Object command length
 
-Static-library plans write one quoted object path per line to a generated
-response file and invoke the archiver as:
+Linked and static-library plans write one quoted object path per line to a
+generated response file. They invoke the compiler driver or archiver as:
 
 ```text
+<compiler> @<response-file> <link-options>
 <archiver> rcs <target> @<response-file>
 ```
 
-The archiver command therefore has constant argument count regardless of source
-count or workspace path length. Changing the object list rewrites the response
-file and invalidates the archive target through its Make dependency.
+The object portion of either command therefore has constant argument count
+regardless of source count or workspace path length. Changing the object list
+rewrites the response file and invalidates the target through its Make
+dependency.
 
 ## Target detection startup
 
