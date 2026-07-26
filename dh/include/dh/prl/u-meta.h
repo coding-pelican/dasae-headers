@@ -16,6 +16,8 @@ extern "C" {
 // Generic Meta Types - The Foundation
 // ============================================================================
 
+T_use$((TypeInfo)(P, S));
+
 typedef struct u_P_const$raw {
     T_embed$(union {
         P_const$raw raw;
@@ -95,6 +97,11 @@ typedef union u_A$raw {
     });
     u_S$raw ref;
 } u_A$raw;
+
+typedef struct u_Tup {
+    S_const$TypeInfo fields;
+    P_const$raw record;
+} u_Tup;
 
 /* Meta wrapper aliases */
 #define u_V$(_$T...) __u_V$(_$T)

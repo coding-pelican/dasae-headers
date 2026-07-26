@@ -1,6 +1,6 @@
 #define main_no_args pp_true
 #include "dh-main.h"
-#include "dh/meta.h"
+#include "dh/u-meta.h"
 #include "dh/ascii.h"
 #include <stdio.h>
 
@@ -40,7 +40,7 @@ $static fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, $va_args))(E$S$u
 $attr($inline_always)
 $static fn_((draft_fmt__Iter_init(S_const$u8 fmt))(draft_fmt__Iter));
 $attr($inline_always)
-$static fn_((draft_fmt__Iter_next(draft_fmt__Iter* iter, S$u8 out, $va_args))(O$usize));
+$static fn_((draft_fmt__Iter_next(draft_fmt__Iter* iter, S$u8 out, u_Tup tup))(O$usize));
 $attr($inline_always)
 $static fn_((draft_fmt__Iter_countNext(draft_fmt__Iter* iter))(usize));
 
@@ -100,21 +100,22 @@ fn_((main(void))(E$void) $scope) {
 } $unscoped(fn);
 
 fn_((draft_fmt__formatRuntime(S$u8 mem, S_const$u8 fmt, $va_args))(E$S$u8) $scope) {
-    claim_assert(TypeInfo_eql($va_ref_tup.type, u_typeInfoRecord($va_ty_tup_fields)));
+    let_ignore = $va_comptime_mask;
+    claim_assert(TypeInfo_eql(u_Tup_type($va_tup), u_typeInfoRecord($va_tup.fields)));
     var iter = draft_fmt__Iter_init(fmt);
     let item_count = draft_fmt__countEventsBounded(fmt);
     claim_assert(item_count <= draft_fmt__max_occ);
     var out = mem;
 
     /// 2^3 = 8
-    if (0 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
-    if (1 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
-    if (2 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
-    if (3 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
-    if (4 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
-    if (5 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
-    if (6 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
-    if (7 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_ty_tup_fields, $va_ref_tup)));
+    if (0 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_tup)));
+    if (1 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_tup)));
+    if (2 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_tup)));
+    if (3 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_tup)));
+    if (4 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_tup)));
+    if (5 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_tup)));
+    if (6 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_tup)));
+    if (7 < item_count) out = S_suffix((out)unwrap_(draft_fmt__Iter_next(&iter, out, $va_tup)));
 
     out = S_suffix((out)(draft_fmt__copyLiteral(out, iter.rest, 0, iter.rest.len)));
     return_ok(S_prefix((mem)(mem.len - out.len)));
@@ -127,7 +128,7 @@ fn_((draft_fmt__Iter_init(S_const$u8 fmt))(draft_fmt__Iter)) {
     };
 };
 
-fn_((draft_fmt__Iter_next(draft_fmt__Iter* iter, S$u8 out, $va_args))(O$usize) $scope) {
+fn_((draft_fmt__Iter_next(draft_fmt__Iter* iter, S$u8 out, u_Tup tup))(O$usize) $scope) {
     claim_assert_nonnull(iter);
     let rest = iter->rest;
     let event = draft_fmt__findEventBounded(rest);
@@ -145,8 +146,8 @@ fn_((draft_fmt__Iter_next(draft_fmt__Iter* iter, S$u8 out, $va_args))(O$usize) $
     let close = unwrap_(draft_fmt__findCloseBraceBounded(S_suffix((rest)spec_start)));
     let spec = S_prefix((S_suffix((rest)spec_start))close);
     let arg_idx = draft_fmt__argIdx(spec, iter->occ_idx);
-    claim_assert(arg_idx < $va_ty_tup_fields.len);
-    let field = u_fieldPtr($va_ref_tup, $va_ty_tup_fields, arg_idx);
+    claim_assert(arg_idx < tup.fields.len);
+    let field = u_Tup_fieldPtr(tup, arg_idx);
     let tag = draft_fmt__argTag(spec);
     written += draft_fmt__writeField(S_suffix((out)written), tag, field);
     iter->rest = S_suffix((rest)(spec_start + close + 1));

@@ -111,6 +111,17 @@ $static fn_((u_recordNPtr(u_S_const$raw field, usize n, S_const$TypeInfo fields,
 $attr($inline_always)
 $static fn_((u_recordNPtrMut(u_S$raw field, usize n, S_const$TypeInfo fields, usize field_idx))(u_P$raw));
 
+// ============================================================================
+// Tuple: {T0, T1, T2, ...}
+// ============================================================================
+
+/// Compute the record TypeInfo represented by a tuple
+$attr($inline_always)
+$static fn_((u_Tup_type(u_Tup tup))(TypeInfo));
+/// Get a tuple field meta pointer from its single layout source
+$attr($inline_always)
+$static fn_((u_Tup_fieldPtr(u_Tup tup, usize field_idx))(u_P_const$raw));
+
 /*========== Macros and Definitions =========================================*/
 
 #if in_analysis_active_only || in_comptime
@@ -402,6 +413,20 @@ fn_((u_recordNPtrMut(u_S$raw field, usize n, S_const$TypeInfo fields, usize fiel
         .raw = as$(P$raw)(as$(u8*)(field.ptr) - offset),
         .type = u_typeInfoRecordN(n, fields)
     };
+};
+
+fn_((u_Tup_type(u_Tup tup))(TypeInfo)) {
+    return u_typeInfoRecord(tup.fields);
+};
+fn_((u_Tup_fieldPtr(u_Tup tup, usize field_idx))(u_P_const$raw)) {
+    return u_fieldPtr(
+        (u_P_const$raw){
+            .raw = tup.record,
+            .type = u_Tup_type(tup),
+        },
+        tup.fields,
+        field_idx
+    );
 };
 #endif /* in_analysis_active_only || in_comptime */
 

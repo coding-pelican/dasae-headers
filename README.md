@@ -803,10 +803,10 @@ hashes. (Safe arithmetic lives in `core/pri.h`.)
   `range_` / `range$` combine them into `R$(_T)`, preserving endpoint
   inclusivity for integer and floating-point domains.
 - **Typed variadic syntax (`prl/va.h`):**
-  `$va_args` declares parameters for a `TypeInfo` field slice and generated
-  tuple storage; `va_` packages up to 16 heterogeneous arguments with their
-  type metadata and invokes the receiving function; `va_clsr_` creates the
-  corresponding typed closure.
+  `$va_args` declares a per-argument compile-time mask and borrowed `u_Tup`
+  view; `va_` materializes up to 16 heterogeneous arguments once, associates
+  their `TypeInfo` fields, and invokes the receiver. The tuple view is valid
+  only until that receiver returns.
 - **Compile-time-capable string hashes (`prl/CompHash.h`):**
   `compHash`, `compHash32`, and `compHash64` hash literals; `CompHash_from`,
   `CompHash_calc`, and their 32/64-bit variants handle slices and explicit

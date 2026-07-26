@@ -50,7 +50,6 @@ extern "C" {
     T_use_prl_vals$(_$T); \
     T_use_prl_exts$(_$T)
 
-T_use$((TypeInfo)(P, S));
 #define typeInfos$(_$T...) ____typeInfos$(_$T)
 #define typeInfosFrom(_$type_infos...) ____typeInfosFrom(_$type_infos)
 
