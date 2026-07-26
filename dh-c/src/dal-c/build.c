@@ -947,7 +947,12 @@ static bool dal_c__shouldUseLldForClangLto(const dal_c_Cmd* cmd, const dal_c_Pro
 static void dal_c__warnIfProfileLtoDisabledByToolchain(const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 void dal_c__appendCompileDbArguments(ArrStr* argv, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* src);
 void dal_c__appendSyntaxArguments(ArrStr* argv, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, const char* src, dal_c_Target target_type);
-static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_CompilerOpts* opts, bool compiler_is_clang);
+static void dal_c__appendCompileDbDiagnostics(
+    ArrStr* argv,
+    const dal_c_CompilerOpts* opts,
+    bool compiler_is_clang,
+    bool stack_frame_diagnostics
+);
 static char* dal_c__jsonEscape(const char* text);
 static void dal_c__fprintJsonString(FILE* fp, const char* text);
 static char* dal_c__mergeConfiguredArgs(const char* property_args, const char* cli_args);
@@ -4716,7 +4721,9 @@ void dal_c__appendCompileDbArguments(
     }
     ArrStr_push(argv, "-fms-extensions");
     ArrStr_push(argv, "-funsigned-char");
-    dal_c__appendCompileDbDiagnostics(argv, opts, compiler_is_clang);
+    dal_c__appendCompileDbDiagnostics(
+        argv, opts, compiler_is_clang, !str_eql(profile->name, dal_c_profile_fast)
+    );
     if (!compiler_is_clang) {
         ArrStr_push(argv, "-Wno-comment");
     }
@@ -4953,7 +4960,9 @@ void dal_c__appendSyntaxArguments(
         ArrStr_push(argv, "-fno-stack-protector");
     }
 
-    dal_c__appendCompileDbDiagnostics(argv, opts, compiler_is_clang);
+    dal_c__appendCompileDbDiagnostics(
+        argv, opts, compiler_is_clang, !str_eql(profile->name, dal_c_profile_fast)
+    );
 
     if (opts->arch_target) {
         ArrStr_push(argv, "-target");
@@ -5028,7 +5037,12 @@ void dal_c__appendSyntaxArguments(
     ArrStr_push(argv, src);
 }
 
-static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_CompilerOpts* opts, bool compiler_is_clang) {
+static void dal_c__appendCompileDbDiagnostics(
+    ArrStr* argv,
+    const dal_c_CompilerOpts* opts,
+    bool compiler_is_clang,
+    bool stack_frame_diagnostics
+) {
     assert(argv != NULL);
     assert(opts != NULL);
 
@@ -5042,12 +5056,15 @@ static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_Compiler
             "-Wall", "-Wextra", "-Wconversion", "-Wsign-conversion",
             "-Wfloat-conversion", "-Wformat=2", "-Wcast-qual", "-Wcast-align",
             "-Wpointer-arith", "-Wbad-function-cast", "-Wnull-dereference",
-            "-Wwrite-strings", "-Wuninitialized", "-Wframe-larger-than=4096",
+            "-Wwrite-strings", "-Wuninitialized",
             "-Wno-switch-enum", "-Wstrict-prototypes", "-Wmissing-prototypes",
             "-Wmissing-variable-declarations", "-Wdiv-by-zero", "-Wno-comment", NULL
         };
         for (int i = 0; gcc_flags[i] != NULL; ++i) {
             ArrStr_push(argv, gcc_flags[i]);
+        }
+        if (stack_frame_diagnostics) {
+            ArrStr_push(argv, "-Wframe-larger-than=4096");
         }
         return;
     }
@@ -5067,7 +5084,6 @@ static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_Compiler
             "-Wnull-dereference",
             "-Wwrite-strings",
             "-Wuninitialized",
-            "-Wframe-larger-than=4096",
             "-Wno-switch-enum",
             "-Winfinite-recursion",
             "-Wno-microsoft-anon-tag",
@@ -5081,6 +5097,9 @@ static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_Compiler
         };
         for (int i = 0; flags[i] != NULL; ++i) {
             ArrStr_push(argv, flags[i]);
+        }
+        if (stack_frame_diagnostics) {
+            ArrStr_push(argv, "-Wframe-larger-than=4096");
         }
         return;
     }
@@ -5099,7 +5118,6 @@ static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_Compiler
         "-Wnull-dereference",
         "-Wwrite-strings",
         "-Werror=uninitialized",
-        "-Wframe-larger-than=4096",
         "-Wno-switch-enum",
         "-Winfinite-recursion",
         "-Wno-microsoft-anon-tag",
@@ -5113,6 +5131,9 @@ static void dal_c__appendCompileDbDiagnostics(ArrStr* argv, const dal_c_Compiler
     };
     for (int i = 0; flags[i] != NULL; ++i) {
         ArrStr_push(argv, flags[i]);
+    }
+    if (stack_frame_diagnostics) {
+        ArrStr_push(argv, "-Wframe-larger-than=4096");
     }
 }
 
@@ -5798,6 +5819,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
 
     const char* compiler = opts->compiler ? opts->compiler : dal_c_default_compiler;
     bool compiler_is_clang = dal_c__compilerLooksLikeClang(compiler);
+    bool stack_frame_diagnostics = !str_eql(profile->name, dal_c_profile_fast);
     (void)fprintf(fp, "CC = %s\n", compiler);
 
     const char* c_std = opts->c_std ? opts->c_std : dal_c_default_c_std;
@@ -5931,7 +5953,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, " -Wpointer-arith -Wbad-function-cast");
         (void)fprintf(fp, " -Wnull-dereference -Wwrite-strings");
         (void)fprintf(fp, " -Wuninitialized");
-        (void)fprintf(fp, " -Wframe-larger-than=4096");
+        if (stack_frame_diagnostics) {
+            (void)fprintf(fp, " -Wframe-larger-than=4096");
+        }
         (void)fprintf(fp, " -Wno-switch-enum -Winfinite-recursion");
         if (compiler_is_clang) {
             (void)fprintf(fp, " -Wno-microsoft-anon-tag");
@@ -5951,7 +5975,10 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             (void)fprintf(fp, " -Wformat=2 -Wcast-qual -Wcast-align");
             (void)fprintf(fp, " -Wpointer-arith -Wbad-function-cast");
             (void)fprintf(fp, " -Wnull-dereference -Wwrite-strings");
-            (void)fprintf(fp, " -Wuninitialized -Wframe-larger-than=4096");
+            (void)fprintf(fp, " -Wuninitialized");
+            if (stack_frame_diagnostics) {
+                (void)fprintf(fp, " -Wframe-larger-than=4096");
+            }
             (void)fprintf(fp, " -Wno-switch-enum -Wstrict-prototypes");
             (void)fprintf(fp, " -Wmissing-prototypes -Wmissing-variable-declarations");
             (void)fprintf(fp, " -Wdiv-by-zero -Wno-comment");
@@ -5963,7 +5990,9 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             (void)fprintf(fp, " -Wpointer-arith -Wbad-function-cast");
             (void)fprintf(fp, " -Wnull-dereference -Wwrite-strings");
             (void)fprintf(fp, " -Werror=uninitialized");
-            (void)fprintf(fp, " -Wframe-larger-than=4096");
+            if (stack_frame_diagnostics) {
+                (void)fprintf(fp, " -Wframe-larger-than=4096");
+            }
             (void)fprintf(fp, " -Wno-switch-enum -Winfinite-recursion");
             (void)fprintf(fp, " -Wno-microsoft-anon-tag");
             (void)fprintf(fp, " -Wloop-analysis -Werror=strict-prototypes");

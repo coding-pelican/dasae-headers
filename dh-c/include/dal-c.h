@@ -2136,7 +2136,7 @@ static const dal_c_HelpOption dal_c_help_global_options[] = {
 
 static const dal_c_HelpProfile dal_c_help_profiles[] = {
     [dal_c_Profile_dev] = { dal_c_profile_dev, "Debug build with assertions (-g3 -Og)" },
-    [dal_c_Profile_fast] = { dal_c_profile_fast, "Fast compile build with assertions (-O0, no debug info)" },
+    [dal_c_Profile_fast] = { dal_c_profile_fast, "Fast compile build with assertions (-O0, no debug info or stack-frame size diagnostics)" },
     [dal_c_Profile_test] = { dal_c_profile_test, "Test build with basic optimization (-g -O1)" },
     [dal_c_Profile_profile] = { dal_c_profile_profile, "Profile build with optimization (-g -O2)" },
     [dal_c_Profile_stable] = { dal_c_profile_stable, "Stable build with ThinLTO (-g1 -O2)" },

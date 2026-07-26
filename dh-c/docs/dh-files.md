@@ -143,6 +143,10 @@ profile=<dev|fast|test|profile|stable|release|optimize|compact|micro>
 
 Repeat these keys to append multiple values.
 
+`fast` prioritizes compilation latency with assertions enabled, no debug
+information, and no stack-frame size diagnostic. Other profiles retain the
+default `-Wframe-larger-than=4096` diagnostic.
+
 ### 4.4 Compile environment and diagnostics
 
 ```ini

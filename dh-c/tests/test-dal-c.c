@@ -4258,6 +4258,7 @@ static void test_syntax_arguments_follow_build_compile_contract(void) {
     TEST_ASSERT(test_arrstr_contains(args, "-Dsyntax_contract_project__NUM__VER_CORE_MINOR=2"));
     TEST_ASSERT(test_arrstr_contains(args, "-Dsyntax_contract_project__NUM__VER_CORE_PATCH=3"));
     TEST_ASSERT(test_arrstr_contains(args, "-Wno-unused"));
+    TEST_ASSERT(test_arrstr_contains(args, "-Wframe-larger-than=4096"));
     TEST_ASSERT(test_arrstr_contains(args, source));
     if (opt_flag) {
         TEST_ASSERT(test_arrstr_contains(args, opt_flag));
@@ -4269,6 +4270,34 @@ static void test_syntax_arguments_follow_build_compile_contract(void) {
 
     ArrStr_fini(&args);
     dal_c_Cmd_cleanup(&cmd);
+
+    const char* fast_argv[] = {
+        dal_c_tool_name,
+        "syntax",
+        "fast",
+        NULL
+    };
+    dal_c_Cmd* fast_cmd = dal_c_Cmd_parse(3, fast_argv);
+    TEST_ASSERT(fast_cmd != NULL);
+    dal_c_CompilerOpts_merge(&fast_cmd->opts, &proj->opts);
+    const dal_c_ProfileSpec* fast_profile = dal_c_ProfileSpec_by(fast_cmd->opts.profile);
+    TEST_ASSERT(fast_profile != NULL);
+
+    ArrStr* fast_syntax_args = ArrStr_init();
+    dal_c__appendSyntaxArguments(
+        fast_syntax_args, fast_cmd, proj, fast_profile, source, dal_c_Target_executable
+    );
+    TEST_ASSERT(!test_arrstr_contains(fast_syntax_args, "-Wframe-larger-than=4096"));
+    ArrStr_fini(&fast_syntax_args);
+
+    ArrStr* fast_compile_db_args = ArrStr_init();
+    dal_c__appendCompileDbArguments(
+        fast_compile_db_args, fast_cmd, proj, fast_profile, source
+    );
+    TEST_ASSERT(!test_arrstr_contains(fast_compile_db_args, "-Wframe-larger-than=4096"));
+    ArrStr_fini(&fast_compile_db_args);
+    dal_c_Cmd_cleanup(&fast_cmd);
+
     dal_c_Project_cleanup(&proj);
     TEST_ASSERT(test_remove_recur(temp_root));
 
