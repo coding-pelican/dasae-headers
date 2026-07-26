@@ -1350,7 +1350,6 @@ typedef struct dal_c_Lib {
     char* path;
     char* source;      // external Git source URL
     char* archive;     // external .zip/.tar* URL or local archive path
-    char* package_root; // package root relative to the materialized source
     char* revision;    // requested Git revision; archive resolution is generated in lock.dh
     char* provider;    // dh|cmake|make|custom|prebuilt
     char* build_command;
@@ -1515,9 +1514,6 @@ static inline const char* const* dal_c_sourceSkipSegments(void) {
 
 /// === EXTERNAL TOOLS ===
 
-#define dal_c_tool_make "make"
-#define dal_c_tool_ar "llvm-ar"
-#define dal_c_tool_debugger "lldb"
 
 /// === HELP SYSTEM ===
 

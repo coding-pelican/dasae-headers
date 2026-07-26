@@ -29,18 +29,6 @@ Projectless source-unit scope:
 <global-cache>/units/<unit-id>/deps/      # otherwise
 ```
 
-```mermaid
-graph TD
-    R["project.dh / primary source.dh"] --> F["fetch or update"]
-    F --> L["lock.dh / source.lock.dh"]
-    F --> S["materialized source"]
-    L --> D["deps profile"]
-    S --> D
-    D --> P["target/profile package"]
-    P --> G["generated lib/deps staging"]
-    G --> B["build / package / install"]
-```
-
 The authored request and generated lock deliberately live at the same durable
 scope level:
 
@@ -65,10 +53,7 @@ or a directly downloadable archive, including a GitHub Release asset:
 ```ini
 [SDL]
 archive=https://github.com/libsdl-org/SDL/releases/download/release-3.2.0/SDL3-devel-3.2.0-mingw.zip
-package-root=x86_64-w64-mingw32
 provider=prebuilt
-linking=shared
-link=SDL3
 ```
 
 Supported fields:
@@ -76,7 +61,6 @@ Supported fields:
 - `path=`: local source, a single header, or a package root.
 - `source=`: Git URL or local Git repository.
 - `archive=`: `.zip` or supported `.tar*` URL, or a local archive path.
-- `package-root=`: safe relative package path inside a materialized prebuilt source.
 - `revision=`: tag, commit, or branch for `source=` dependencies.
 - `provider=dh|cmake|make|custom|prebuilt`.
 - `build-command=` and `install-command=` for custom or overridden make workflows.
@@ -87,8 +71,7 @@ stages those headers without inventing a binary artifact.
 
 `source=` and `archive=` are mutually exclusive. `revision=` is a Git request
 and is rejected beside `archive=`; the exact archive SHA-256 is generated into
-`lock.dh` instead. `package-root=` is accepted only by `provider=prebuilt` and
-cannot be absolute or contain a `..` path segment.
+`lock.dh` instead.
 
 Commands for a named project:
 
@@ -140,35 +123,6 @@ update `.dh-c/deps/usage/<name>.stamp`. The stamp is disposable generated state;
 it exists only so age-based maintenance reflects actual use rather than the age of
 a checkout's internal Git files. Older layouts without a stamp fall back to the
 newest modification time found in the dependency source/build/package state.
-
-```mermaid
-stateDiagram-v2
-    [*] --> UNLOCKED
-    UNLOCKED --> READY: fetch resolves and locks
-    READY --> READY: fetch reuses exact resolution
-    READY --> DRIFT: source or materialization changes
-    DRIFT --> READY: fetch restores locked resolution
-    READY --> READY: update accepts and locks new resolution
-    DRIFT --> READY: update accepts and locks new resolution
-    READY --> MISSING: generated source is removed
-    MISSING --> READY: fetch restores locked resolution
-```
-
-```mermaid
-flowchart TD
-    A["Read authored dependency"] --> B{"Existing compatible lock?"}
-    B -- no --> C["Resolve Git commit or archive SHA-256"]
-    B -- yes --> D["Use locked resolution"]
-    C --> E["Materialize source"]
-    D --> E
-    E --> F{"Provider"}
-    F -- dh --> G["Recursive DH build"]
-    F -- external --> H["Provider build/install"]
-    H --> I["Select package-root"]
-    I --> J["Stage include and declared link artifacts"]
-    G --> K["Consumer build"]
-    J --> K
-```
 
 ## Generated dependency maintenance
 
@@ -285,10 +239,7 @@ CFLAGS
 The root uses the normal `include/`, `lib/`, and optional `bin/` package layout.
 Build/install performs no compilation: it materializes the root into the private
 target/profile package directory and then uses the same staging path as every
-other external provider. When an archive or Git checkout wraps that layout,
-`package-root=` selects its relative location. If `link=` entries are present,
-only their `linking=static|shared` variants are staged; otherwise all recognized
-library artifacts under `lib/` are staged.
+other external provider.
 
 ## Archive acquisition
 
@@ -299,6 +250,10 @@ Supported suffixes are `.zip`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`,
 `.tar.bz2`, `.tbz2`, `.tar.zst`, and `.tzst`. `dh-c` uses `curl` and falls back
 to `wget` for remote downloads. Extraction uses `tar`; `.zip` also falls back to
 `unzip`. A local archive path is copied directly without a downloader.
+
+Tool executable locations are machine-local: `DH_C_CURL`, `DH_C_WGET`,
+`DH_C_TAR`, and `DH_C_UNZIP` override the downloader/extractor defaults. See
+[`external-tools.md`](./external-tools.md) for the complete tool contract.
 
 The generated lock records the archive location and `revision=sha256:<hex>`.
 `fetch` never accepts different bytes for an existing lock. If the materialized

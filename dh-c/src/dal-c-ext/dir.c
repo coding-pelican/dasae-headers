@@ -101,8 +101,16 @@ bool dir_linkDir(const char* link_path, const char* target_path) {
     if (joined_target && GetFullPathNameA(joined_target, (DWORD)sizeof(target_full), target_full, NULL) > 0) {
         junction_target = target_full;
     }
+    const char* command_interpreter = getenv("DH_C_CMD");
+    if (!command_interpreter || !command_interpreter[0]) {
+        command_interpreter = getenv("COMSPEC");
+    }
+    if (!command_interpreter || !command_interpreter[0]) {
+        command_interpreter = "cmd.exe";
+    }
     char* command = str_format(
-        "cmd.exe /D /C mklink /J \"%s\" \"%s\"",
+        "\"%s\" /D /C mklink /J \"%s\" \"%s\"",
+        command_interpreter,
         link_path,
         junction_target ? junction_target : target_path
     );

@@ -163,7 +163,6 @@ void dal_c_Project_cleanup(dal_c_Project** self) {
         free(lib->path);
         free(lib->source);
         free(lib->archive);
-        free(lib->package_root);
         free(lib->revision);
         free(lib->provider);
         free(lib->build_command);
@@ -939,7 +938,6 @@ static void dal_c_Project__freeLibraryDraft(dal_c_Lib* lib) {
     free(lib->path);
     free(lib->source);
     free(lib->archive);
-    free(lib->package_root);
     free(lib->revision);
     free(lib->provider);
     free(lib->build_command);
@@ -1313,26 +1311,6 @@ static bool dal_c_Project__isAbsolutePath(const char* path) {
             || (strlen(path) >= 2 && path[1] == ':'));
 }
 
-static bool dal_c_Project__isSafeRelativeSubpath(const char* path) {
-    if (!path || !path[0] || dal_c_Project__isAbsolutePath(path)) {
-        return false;
-    }
-    const char* segment = path;
-    for (const char* cursor = path;; ++cursor) {
-        if (*cursor != '/' && *cursor != '\\' && *cursor != '\0') {
-            continue;
-        }
-        const size_t length = (size_t)(cursor - segment);
-        if (length == 2u && segment[0] == '.' && segment[1] == '.') {
-            return false;
-        }
-        if (*cursor == '\0') {
-            return true;
-        }
-        segment = cursor + 1;
-    }
-}
-
 static bool dal_c_Project__isTrue(const char* value) {
     return value && dal_c_boolean_parse(value);
 }
@@ -1402,7 +1380,6 @@ static bool dal_c_Project__isLibraryKey(const char* key) {
     return key && (str_eql(key, "path")
         || str_eql(key, "source")
         || str_eql(key, "archive")
-        || str_eql(key, "package-root")
         || str_eql(key, "revision")
         || str_eql(key, "provider")
         || str_eql(key, "build-command")
@@ -1799,9 +1776,6 @@ static bool dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
     assert(proj != NULL);
     assert(lib != NULL);
 
-    if (!lib->provider) {
-        lib->provider = strdup("dh");
-    }
     if (lib->source && lib->source[0] && lib->archive && lib->archive[0]) {
         (void)fprintf(stderr, "Error: Dependency `%s` cannot declare both source= and archive=.\n",
             lib->name ? lib->name : "(unnamed)");
@@ -1811,32 +1785,6 @@ static bool dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
     if (lib->archive && lib->archive[0] && lib->revision && lib->revision[0]) {
         (void)fprintf(stderr,
             "Error: Dependency `%s` cannot declare revision= with archive=; dh-c records the exact SHA-256 in lock.dh.\n",
-            lib->name ? lib->name : "(unnamed)");
-        dal_c_Project__freeLibraryDraft(lib);
-        return false;
-    }
-    if (lib->package_root && lib->package_root[0]
-        && !dal_c_Project__isSafeRelativeSubpath(lib->package_root)) {
-        (void)fprintf(stderr,
-            "Error: Dependency `%s` package-root must stay within its materialized source.\n",
-            lib->name ? lib->name : "(unnamed)");
-        dal_c_Project__freeLibraryDraft(lib);
-        return false;
-    }
-    if (lib->package_root && lib->package_root[0]
-        && !str_eql(lib->provider, "prebuilt")) {
-        (void)fprintf(stderr,
-            "Error: Dependency `%s` package-root requires provider=prebuilt.\n",
-            lib->name ? lib->name : "(unnamed)");
-        dal_c_Project__freeLibraryDraft(lib);
-        return false;
-    }
-    if (lib->package_root && lib->package_root[0]
-        && ((!lib->path || !lib->path[0])
-            && (!lib->source || !lib->source[0])
-            && (!lib->archive || !lib->archive[0]))) {
-        (void)fprintf(stderr,
-            "Error: Dependency `%s` package-root requires path=, source=, or archive=.\n",
             lib->name ? lib->name : "(unnamed)");
         dal_c_Project__freeLibraryDraft(lib);
         return false;
@@ -1851,6 +1799,10 @@ static bool dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
         free(deps_root);
         free(state_root);
     }
+    if (!lib->provider) {
+        lib->provider = strdup("dh");
+    }
+
     dal_c_Lib* new_libs = (dal_c_Lib*)realloc((void*)proj->libraries, ((size_t)proj->lib_count + 1) * sizeof(dal_c_Lib));
     assert(new_libs != NULL && "Out of memory");
     proj->libraries = new_libs;
@@ -1960,8 +1912,6 @@ static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project*
             dal_c_Project__setString(&lib->archive, resolved ? resolved : value);
             free(resolved);
         }
-    } else if (str_eql(key, "package-root")) {
-        dal_c_Project__setString(&lib->package_root, value);
     } else if (str_eql(key, "revision")) {
         dal_c_Project__setString(&lib->revision, value);
     } else if (str_eql(key, "provider")) {
@@ -2159,7 +2109,7 @@ bool dal_c_Project_dependencySourceMatchesLock(const dal_c_Project* proj, const 
         return ok;
     }
 
-    const char* argv[] = { "git", "-C", lib->path, "rev-parse", "HEAD", NULL };
+    const char* argv[] = { dal_c__externalToolPath(dal_c_ExternalTool_git), "-C", lib->path, "rev-parse", "HEAD", NULL };
     char* head = proc_output(argv);
     char* trimmed = head ? dal_c_Project__trimInPlace(head) : NULL;
     bool ok = trimmed && str_eql(trimmed, locked_revision);

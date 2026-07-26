@@ -39,7 +39,6 @@ ifeq ($(OS),Windows_NT)
     RMDIR = rm -rf
 else
     PLATFORM = unix
-    CC ?= clang
     EXE_EXT =
     RM = rm -f
     MKDIR = mkdir -p
@@ -49,7 +48,10 @@ endif
 # Self-build profile (matches `dh-c` runtime profile names)
 PROFILE ?= dev
 
+ifeq ($(origin CC),default)
 CC = clang
+endif
+CC ?= clang
 C_STD ?= gnu17
 COMPILE_ENV ?= auto
 ARCH_TARGET ?= auto

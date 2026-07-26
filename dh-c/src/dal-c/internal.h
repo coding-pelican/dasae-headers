@@ -21,6 +21,28 @@
 
 /// === SHARED UTILITIES ===
 
+typedef enum dal_c_ExternalTool {
+    dal_c_ExternalTool_make,
+    dal_c_ExternalTool_archiver,
+    dal_c_ExternalTool_debugger,
+    dal_c_ExternalTool_cmake,
+    dal_c_ExternalTool_git,
+    dal_c_ExternalTool_curl,
+    dal_c_ExternalTool_wget,
+    dal_c_ExternalTool_tar,
+    dal_c_ExternalTool_unzip,
+    dal_c_ExternalTool_clang_tidy,
+    dal_c_ExternalTool_clang_format,
+    dal_c_ExternalTool_llvm_objdump,
+    dal_c_ExternalTool_llvm_dwarfdump,
+    dal_c_ExternalTool_llvm_pdbutil,
+    dal_c_ExternalTool_posix_shell,
+    dal_c_ExternalTool_windows_command,
+} dal_c_ExternalTool;
+
+const char* dal_c__externalToolPath(dal_c_ExternalTool tool);
+const char* dal_c__externalToolOverrideEnv(dal_c_ExternalTool tool);
+
 typedef struct dal_c_CommandIntent {
     dal_c_CmdAction action;
     const char* target_path;
