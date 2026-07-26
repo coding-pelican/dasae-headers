@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: dispatch-dh-sdk
+  cancel-in-progress: true
+
 jobs:
   dispatch:
     runs-on: ubuntu-latest
