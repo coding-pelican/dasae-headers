@@ -453,28 +453,29 @@ static int dal_c__packagePrebuiltProject(const dal_c_Cmd* cmd, const dal_c_Proje
     char* manifest_src = build_dir ? path_join(build_dir, "manifest.dh") : NULL;
     char* libs_src = build_dir ? path_join(build_dir, "libs") : NULL;
     char* deps_src = build_dir ? path_join(build_dir, "deps") : NULL;
-    char* manifest_dst = package_dir ? path_join(package_dir, "manifest.dh") : NULL;
-    char* libs_dst = package_dir ? path_join(package_dir, "libs") : NULL;
     char* deps_dst = package_dir ? path_join(package_dir, "deps") : NULL;
 
     bool ok = profile && build_dir && package_dir && manifest_src && libs_src
-           && manifest_dst && libs_dst && path_isFile(manifest_src) && path_isDir(libs_src);
+           && path_isFile(manifest_src) && path_isDir(libs_src);
     if (!ok) {
         (void)fprintf(stderr, "Error: Build profile does not contain a complete prebuilt package.\n");
     } else if (path_isDir(package_dir) && !dir_removeRecur(package_dir)) {
         (void)fprintf(stderr, "Error: Failed to replace prebuilt package directory: %s\n", package_dir);
         ok = false;
     } else {
-        ok = dir_createRecur(package_dir)
-          && file_copy(manifest_src, manifest_dst)
-          && dal_c__copyTree(libs_src, libs_dst);
+        char* reason = NULL;
+        ok = dal_c__copyPrebuiltManifestPackage(build_dir, package_dir, &reason);
+        if (!ok) {
+            (void)fprintf(stderr, "Error: Failed to promote prebuilt package: %s\n", reason ? reason : "unknown error");
+        }
+        free(reason);
         if (ok && path_isDir(deps_src)) {
             ok = dal_c__copyTree(deps_src, deps_dst);
         }
     }
 
     if (ok) printf("[PACKAGE] %s\n", package_dir);
-    free(deps_dst); free(libs_dst); free(manifest_dst);
+    free(deps_dst);
     free(deps_src); free(libs_src); free(manifest_src);
     free(package_dir); free(target_root); free(prebuilt_root);
     free(target); free(build_dir);

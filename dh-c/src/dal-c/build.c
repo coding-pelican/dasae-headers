@@ -560,6 +560,77 @@ static bool dal_c__validatePrebuiltManifestSchema(const char* manifest_path, cha
     return ok;
 }
 
+bool dal_c__copyPrebuiltManifestPackage(
+    const char* source_profile_dir,
+    const char* destination_profile_dir,
+    char** reason_out
+) {
+    if (reason_out) { *reason_out = NULL; }
+    if (!source_profile_dir || !destination_profile_dir) {
+        if (reason_out) { *reason_out = strdup("missing prebuilt package path"); }
+        return false;
+    }
+
+    char* manifest_src = path_join(source_profile_dir, "manifest.dh");
+    char* manifest_dst = path_join(destination_profile_dir, "manifest.dh");
+    if (!manifest_src || !manifest_dst || !dal_c__validatePrebuiltManifestSchema(manifest_src, reason_out)) {
+        free(manifest_dst);
+        free(manifest_src);
+        return false;
+    }
+
+    int line_count = 0;
+    char** lines = file_readLines(manifest_src, &line_count);
+    bool ok = lines && dir_createRecur(destination_profile_dir) && file_copy(manifest_src, manifest_dst);
+    for (int i = 0; lines && i < line_count && ok; ++i) {
+        char* line = lines[i];
+        while (*line == ' ' || *line == '\t') { ++line; }
+        char* equals = strchr(line, '=');
+        if (!equals) { continue; }
+        char* key_end = equals;
+        while (key_end > line && (key_end[-1] == ' ' || key_end[-1] == '\t')) { --key_end; }
+        size_t key_len = (size_t)(key_end - line);
+        if (key_len != strlen("artifact") || strncmp(line, "artifact", key_len) != 0) { continue; }
+
+        char* value = equals + 1;
+        while (*value == ' ' || *value == '\t') { ++value; }
+        size_t value_len = strlen(value);
+        while (value_len > 0 && (value[value_len - 1] == '\r' || value[value_len - 1] == '\n'
+            || value[value_len - 1] == ' ' || value[value_len - 1] == '\t')) {
+            value[--value_len] = '\0';
+        }
+
+        char* artifact_path = NULL;
+        if (!dal_c__manifestArtifactParse(value, NULL, &artifact_path, NULL, NULL, NULL, reason_out)) {
+            ok = false;
+            break;
+        }
+        char* artifact_src = path_join(source_profile_dir, artifact_path);
+        char* artifact_dst = path_join(destination_profile_dir, artifact_path);
+        char* artifact_parent = artifact_dst ? path_parent(artifact_dst) : NULL;
+        if (!artifact_src || !artifact_dst || !artifact_parent || !path_isFile(artifact_src)
+            || !dir_createRecur(artifact_parent) || !file_copy(artifact_src, artifact_dst)) {
+            if (reason_out && !*reason_out) {
+                *reason_out = str_format("failed to copy manifest artifact: %s", artifact_path);
+            }
+            ok = false;
+        }
+        free(artifact_parent);
+        free(artifact_dst);
+        free(artifact_src);
+        free(artifact_path);
+    }
+
+    if (!lines && reason_out && !*reason_out) {
+        *reason_out = strdup("failed to read manifest artifacts");
+    }
+    for (int i = 0; i < line_count; ++i) { free(lines[i]); }
+    free(lines);
+    free(manifest_dst);
+    free(manifest_src);
+    return ok;
+}
+
 static const char* dal_c__manifestArtifactRole(dal_c_Target target_type, bool lto_enabled) {
     if (target_type == dal_c_Target_static_lib) {
         return lto_enabled ? "static-lto" : "static";

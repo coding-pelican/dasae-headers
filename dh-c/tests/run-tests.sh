@@ -996,6 +996,10 @@ EOF
         printf 'Prebuilt package included producer object state\n' >&2
         exit 1
     fi
+    if "$find_bin" "$prebuilt_profile" -type f -name '*.rsp' | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Prebuilt package included producer response files\n' >&2
+        exit 1
+    fi
 
     invoke_external "0" "$lib_kind_project" "$cli_exe" build stable
     assert_contains "$LAST_OUTPUT" "Build successful!" "Stable project kind=lib build did not succeed"

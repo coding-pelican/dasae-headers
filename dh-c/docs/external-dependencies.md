@@ -336,6 +336,5 @@ directory. A missing declared runtime file is an error. When no runtime export
 is declared, the conventional dependency `bin/` tree is staged. External
 providers do not participate in the recursive `provider=dh` source build graph.
 
-
 For the complete authored-file ownership and precedence model, see
 [`dh-files.md`](./dh-files.md).

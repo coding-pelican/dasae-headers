@@ -189,7 +189,6 @@ Audited fix:
 - sample/example/test plans recompiling project `src/` on every context build
 - self-project reusable code being staged through third-party dependency paths
 
-
 ## Target-scoped Artifact Layout
 
 - Build artifacts: `build/<normalized-target>/<profile>/...`

@@ -130,6 +130,7 @@ char* dal_c__makeBuildProfileDir(const dal_c_Project* proj, const dal_c_Compiler
 char* dal_c__makeBuildProfileDirReadOnly(const dal_c_Project* proj, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile);
 bool dal_c__writePrebuiltManifest(const char* profile_dir, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, const char* target_path, dal_c_Target target_type);
 bool dal_c__prebuiltManifestCompatible(const char* prebuilt_profile_dir, const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile, dal_c_Target target_type, bool lto_enabled, const char* selected_artifact, char** reason_out);
+bool dal_c__copyPrebuiltManifestPackage(const char* source_profile_dir, const char* destination_profile_dir, char** reason_out);
 char* dal_c__takeLastContractDiff(void);
 bool dal_c__setReadOnlyPlanning(bool enabled);
 

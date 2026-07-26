@@ -40,7 +40,7 @@ A platform-specific SDK or dependency package uses:
 Artifact names follow the normal library contract:
 
 | Platform | Native static | LTO static | Shared | Import library |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Windows | `mylib.lib` | `mylib.lto.lib` | `mylib.dll` | `mylib.dll.lib` |
 | Linux | `libmylib.a` | `libmylib.lto.a` | `libmylib.so` | — |
 

@@ -64,7 +64,7 @@ dasae-headers: Modern, Better safety and productivity to C
       - [Step 2: Build the `dh-c` Tool](#step-2-build-the-dh-c-tool)
       - [Step 3: Set Up Environment Variables](#step-3-set-up-environment-variables)
       - [Step 4: Verify Installation](#step-4-verify-installation)
-      - [Step 5: Use a `project.dh` Project](#step-5-use-a-projectdh-project)
+      - [Step 5: Build a File or Project](#step-5-build-a-file-or-project)
       - [Hello, world!](#hello-world)
     - [🔨 Build and Run](#-build-and-run)
   - [Introduction](#introduction)
@@ -245,7 +245,6 @@ dh-c project app
 
 The scaffold commands refuse to overwrite existing configuration files.
 Direct-source builds still require no project file.
-
 
 The command line and selected source files are first-class build input:
 
@@ -1249,13 +1248,13 @@ Both rely on `TypeInfo` from `core`/`type_info.h`
 
 ## Platform Support
 
-| Category         | Support Range                                                                          |
-| ---------------- | -------------------------------------------------------------------------------------- |
-| **OS**           | Windows, Unix, Linux, macOS                                                            |
-| **Architecture** | x86 (32-bit), x64 (64-bit)                                                             |
-| **Clang**        | 19.1.0+ (Recommended) / 16.0.0+ (Supported) / 9.0.0+ (Minimum, Requires -std=gnu11)    |
+| Category         | Support Range                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| **OS**           | Windows, Unix, Linux, macOS                                                                 |
+| **Architecture** | x86 (32-bit), x64 (64-bit)                                                                  |
+| **Clang**        | 19.1.0+ (Recommended) / 16.0.0+ (Supported) / 9.0.0+ (Minimum, Requires -std=gnu11)         |
 | **GCC**          | Supported through GCC-compatible compiler-driver paths; Clang-only tooling remains optional |
-| **MSVC**         | Planned (TBD)                                                                          |
+| **MSVC**         | Planned (TBD)                                                                               |
 
 > **Note:** The `dh-c` build tool's support range is [Prerequisites](#prerequisites).
 
@@ -1521,8 +1520,6 @@ Public project documents:
 | --- | --- |
 | [`README.md`](./README.md) | Project overview and entry point. |
 | [`BUILD.md`](./BUILD.md) | Public build guide for direct-source, workspace, project, dependency, and prebuilt flows. |
-| [`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md) | Canonical ownership, grammar, keys, and precedence for every `.dh` file type. |
-| [`PROJECT_TREE.md`](./PROJECT_TREE.md) | Curated repository structure overview. |
 | [`LICENSE`](./LICENSE) | MIT license. |
 
 For API details, use the public headers under `dh/include/dh/` and the checked

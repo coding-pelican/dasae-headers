@@ -28,7 +28,6 @@ Authored `.dh` files are strict. Unknown keys, malformed `key=value` lines,
 and sections in a flat file are errors. `dh-c` does not silently ignore a
 misspelled build contract.
 
-
 ## 2. Create a safe starting point
 
 Use the scaffold commands when beginning a named project or workspace:
@@ -328,6 +327,7 @@ exclude=<target-relative path>
 
 ### 6.3 Dependency sections
 
+<!-- markdownlint-disable-next-line MD038 -->
 Every section that does not begin with `target-root ` is a dependency.
 
 ```ini
@@ -452,7 +452,6 @@ Do not confuse it with `--dh`:
 --dh-file=<path>   authored build overlay
 --dh=<path>        DH installation override
 ```
-
 
 ## 10. Persistent contract versus invocation-only controls
 
