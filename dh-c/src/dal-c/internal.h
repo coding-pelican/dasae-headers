@@ -198,6 +198,12 @@ void dal_c__inheritDependencyToolchainOpts(
     dal_c_CompilerOpts* dst,
     const dal_c_CompilerOpts* src
 );
+void dal_c__resolveDependencySourcePrebuiltPolicy(
+    const dal_c_Project* dependency,
+    const dal_c_Cmd* cmd,
+    dal_c_PrebuiltMode* mode,
+    bool* mode_set
+);
 
 int dal_c__executeMake(const dal_c_Cmd* cmd, const char* makefile_path);
 int dal_c__executeMakeInDir(const dal_c_Cmd* cmd, const char* directory);

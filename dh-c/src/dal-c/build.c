@@ -2262,13 +2262,23 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     memset(&merged.opts, 0, sizeof(merged.opts));
     merged.opts.profile = dal_c_Profile_invalid;
     if (lib_proj) {
+        dal_c_CompilerOpts_merge(&merged.opts, &lib_proj->workspace_opts);
         dal_c_CompilerOpts_merge(&merged.opts, &lib_proj->opts);
+    }
+    if (proj->workspace_opts.prebuilt_mode_set) {
+        merged.opts.prebuilt_mode = proj->workspace_opts.prebuilt_mode;
+        merged.opts.prebuilt_mode_set = true;
     }
     if (proj->opts.prebuilt_mode_set) {
         merged.opts.prebuilt_mode = proj->opts.prebuilt_mode;
         merged.opts.prebuilt_mode_set = true;
     }
     dal_c_CompilerOpts_merge(&merged.opts, &cmd->opts);
+    dal_c_PrebuiltMode source_prebuilt_mode = dal_c_PrebuiltMode_auto;
+    bool source_prebuilt_mode_set = false;
+    dal_c__resolveDependencySourcePrebuiltPolicy(
+        lib_proj, cmd, &source_prebuilt_mode, &source_prebuilt_mode_set
+    );
     dal_c_CompilerOpts_merge(&merged.opts, &lib->opts);
     if (merged.opts.profile == dal_c_Profile_invalid) {
         merged.opts.profile = lib_profile_enum;
@@ -2500,6 +2510,8 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     for (int artifact_idx = 0; artifact_idx < artifact_count && result == 0; ++artifact_idx) {
         bool lto_artifact = lib->is_static && artifact_idx == 1;
         dal_c_Cmd artifact_cmd = merged;
+        artifact_cmd.opts.prebuilt_mode = source_prebuilt_mode;
+        artifact_cmd.opts.prebuilt_mode_set = source_prebuilt_mode_set;
         if (lib->is_static) {
             artifact_cmd.opts.lto_mode = lto_artifact ? static_lto_mode : dal_c_LtoMode_off;
         }
@@ -2584,6 +2596,31 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     dal_c__projectLockRelease(&lib_lock);
     dal_c_Project_cleanup(&lib_proj);
     return 0;
+}
+
+void dal_c__resolveDependencySourcePrebuiltPolicy(
+    const dal_c_Project* dependency,
+    const dal_c_Cmd* cmd,
+    dal_c_PrebuiltMode* mode,
+    bool* mode_set
+) {
+    assert(mode != NULL);
+    assert(mode_set != NULL);
+
+    *mode = dal_c_PrebuiltMode_auto;
+    *mode_set = false;
+    if (dependency && dependency->workspace_opts.prebuilt_mode_set) {
+        *mode = dependency->workspace_opts.prebuilt_mode;
+        *mode_set = true;
+    }
+    if (dependency && dependency->opts.prebuilt_mode_set) {
+        *mode = dependency->opts.prebuilt_mode;
+        *mode_set = true;
+    }
+    if (cmd && cmd->opts.prebuilt_mode_set) {
+        *mode = cmd->opts.prebuilt_mode;
+        *mode_set = true;
+    }
 }
 
 static bool dal_c__projectHasTestSources(const dal_c_Project* proj) {

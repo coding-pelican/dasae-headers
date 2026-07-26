@@ -1480,6 +1480,34 @@ static void test_makefile_mode_contracts(void) {
     TEST_ASSERT(dependency_opts.define_count == 0);
     dal_c_CompilerOpts_cleanup(&dependency_opts);
 
+    dal_c_Project dependency_project = { 0 };
+    dependency_project.workspace_opts.prebuilt_mode = dal_c_PrebuiltMode_required;
+    dependency_project.workspace_opts.prebuilt_mode_set = true;
+    dal_c_Cmd dependency_cmd = { 0 };
+    dal_c_PrebuiltMode source_prebuilt_mode = dal_c_PrebuiltMode_invalid;
+    bool source_prebuilt_mode_set = false;
+    dal_c__resolveDependencySourcePrebuiltPolicy(
+        &dependency_project,
+        &dependency_cmd,
+        &source_prebuilt_mode,
+        &source_prebuilt_mode_set
+    );
+    TEST_ASSERT(source_prebuilt_mode_set);
+    TEST_ASSERT(source_prebuilt_mode == dal_c_PrebuiltMode_required);
+
+    dependency_project.opts.prebuilt_mode = dal_c_PrebuiltMode_off;
+    dependency_project.opts.prebuilt_mode_set = true;
+    dependency_cmd.opts.prebuilt_mode = dal_c_PrebuiltMode_auto;
+    dependency_cmd.opts.prebuilt_mode_set = true;
+    dal_c__resolveDependencySourcePrebuiltPolicy(
+        &dependency_project,
+        &dependency_cmd,
+        &source_prebuilt_mode,
+        &source_prebuilt_mode_set
+    );
+    TEST_ASSERT(source_prebuilt_mode_set);
+    TEST_ASSERT(source_prebuilt_mode == dal_c_PrebuiltMode_auto);
+
     const dal_c_ProfileSpec* dev_profile = dal_c_ProfileSpec_by(dal_c_Profile_dev);
     dal_c_Cmd auto_lto_cmd = { 0 };
     auto_lto_cmd.opts.profile = dal_c_Profile_dev;
