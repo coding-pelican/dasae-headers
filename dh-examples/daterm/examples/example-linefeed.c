@@ -10,7 +10,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         io_stream_eprintln(u8_l("Usage: {:s} <on|off>"), *S_at((args)[0]));
         start_exit(1);
     }
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));

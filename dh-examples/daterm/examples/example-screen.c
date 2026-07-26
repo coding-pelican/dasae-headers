@@ -9,7 +9,7 @@
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap))));
     defer_(daterm_ANSI_fini(&ansi));

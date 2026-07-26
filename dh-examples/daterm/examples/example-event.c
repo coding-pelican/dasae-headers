@@ -7,7 +7,7 @@
 fn_((main(S$S_const$u8 args))(E$void) $guard) {
     let_ignore = args;
 
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var cfg = daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap));
     cfg.input_mode = daterm_ANSI_InputMode_vt;
@@ -22,7 +22,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
             .encoding = dansi_xterm_mouse_Encoding_sgr,
         }
     ));
-    defer_(daterm_xterm_disableMouse(&ansi));
+    defer_(catch_((daterm_xterm_disableMouse(&ansi))($ignore, $do_nothing)));
     try_(daterm_xterm_setFocusTracking(&ansi, true));
     defer_(catch_((daterm_xterm_setFocusTracking(&ansi, false))($ignore, $do_nothing)));
 

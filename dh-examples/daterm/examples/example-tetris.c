@@ -434,7 +434,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
 
     tetris_Main_waitForEnter();
 
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var arena = heap_Arena_init(heap_Sys_alctr(&heap));
     defer_(heap_Arena_fini(&arena));

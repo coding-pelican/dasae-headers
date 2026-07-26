@@ -105,7 +105,7 @@ TEST_fn_("daterm-runtime: position and size vocabulary is coordinate-safe" $scop
 } $unscoped(TEST_fn);
 
 TEST_fn_("daterm-context/ANSI: caps match selected input mode" $guard) {
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap))));
     defer_(daterm_ANSI_fini(&ansi));
@@ -129,7 +129,7 @@ TEST_fn_("daterm-context/ANSI: Windows VT mode transfers key ownership to byte i
 #if !plat_is_windows
     try_(TEST_skipMsg(u8_l("Windows console input modes are not available on this platform")));
 #else
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var cfg = daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap));
     cfg.input_mode = daterm_ANSI_InputMode_vt;
@@ -682,7 +682,7 @@ TEST_fn_("daterm-context/ANSI: POSIX processed output keeps output postprocessin
         try_(TEST_skipMsg(u8_l("stdin is not a TTY")));
     }
 
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var ansi = try_(daterm_ANSI_init(daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap))));
     defer_(daterm_ANSI_fini(&ansi));
@@ -704,7 +704,7 @@ TEST_fn_("daterm-context/ANSI: POSIX raw output disables output postprocessing" 
         try_(TEST_skipMsg(u8_l("stdin is not a TTY")));
     }
 
-    var heap = heap_Sys_init();
+    var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
     var cfg = daterm_ANSI_Cfg_default(heap_Sys_alctr(&heap));
     cfg.output_mode = daterm_ANSI_OutputMode_raw;
