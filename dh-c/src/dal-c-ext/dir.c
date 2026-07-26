@@ -127,12 +127,17 @@ bool dir_linkDir(const char* link_path, const char* target_path) {
     struct stat st = {0};
     if (lstat(link_path, &st) == 0) {
         if (!S_ISLNK(st.st_mode)) { return false; }
-        char current[PATH_MAX + 1] = {0};
+        char* current = (char*)malloc((size_t)PATH_MAX + 1u);
+        if (!current) { return false; }
         ssize_t current_len = readlink(link_path, current, PATH_MAX);
         if (current_len >= 0) {
             current[current_len] = '\0';
-            if (str_eql(current, target_path)) { return true; }
+            if (str_eql(current, target_path)) {
+                free(current);
+                return true;
+            }
         }
+        free(current);
         if (unlink(link_path) != 0) { return false; }
     }
     return symlink(target_path, link_path) == 0;
