@@ -356,6 +356,15 @@ static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
     if (path_isDir(package_dir)) (void)dir_removeRecur(package_dir);
     bool ok = dir_createRecur(package_dir);
 
+    dal_c_Target package_kind = proj->defaults.target_kind_set
+                              ? proj->defaults.target_kind
+                              : dal_c_Target_executable;
+    const char* output_name = proj->defaults.output_name && proj->defaults.output_name[0]
+                            ? proj->defaults.output_name
+                            : proj->name;
+    char* executable_output = package_kind == dal_c_Target_executable && output_name
+                            ? dal_c__resolveOutputPath(proj, cmd, build_dir, output_name, package_kind)
+                            : NULL;
     int artifact_count = 0;
     char** artifacts = dir_list(build_dir, &artifact_count);
     for (int i = 0; i < artifact_count; ++i) {
@@ -365,12 +374,15 @@ static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
             free(artifacts[i]);
             continue; /* manifest.dh describes the prebuilt `libs/` layout, not an install package. */
         }
-        const char* stage = dal_c__artifactStageDir(name);
+        const char* stage = executable_output && str_eql(artifacts[i], executable_output)
+                          ? "bin"
+                          : dal_c__artifactStageDir(name);
         char* dst_dir = stage ? path_join(package_dir, stage) : strdup(package_dir);
         if (!dal_c__copyFileInto(artifacts[i], dst_dir)) ok = false;
         free(dst_dir); free(name); free(artifacts[i]);
     }
     free(artifacts);
+    free(executable_output);
 
     char* build_libs = path_join(build_dir, "libs");
     int library_count = 0;

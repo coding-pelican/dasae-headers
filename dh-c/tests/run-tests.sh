@@ -766,6 +766,11 @@ EOF
     invoke_external "0" "$plain_project" "$cli_exe" build
     assert_contains "$LAST_OUTPUT" "Build successful!" "Plain project build did not succeed"
     assert_build_artifacts_exist "$plain_project" "plain-project$exe_ext"
+    invoke_external "0" "$plain_project" "$cli_exe" package
+    if ! "$find_bin" "$plain_project/package" -path "*/dev/bin/plain-project$exe_ext" -type f | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Executable package did not stage its primary output under bin/\n' >&2
+        exit 1
+    fi
     [ -d "$plain_project/build/native" ]
     assert_true $? "Host build did not create build/native"
     case "$(uname -s)" in
