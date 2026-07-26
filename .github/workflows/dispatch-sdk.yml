@@ -1,0 +1,26 @@
+name: Dispatch DH SDK
+
+on:
+  push:
+    branches: [main, redesign-exec-model]
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request exact SDK source release
+        env:
+          GH_TOKEN: ${{ secrets.DH_SDK_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::DH_SDK_DISPATCH_TOKEN is not configured; SDK dispatch was skipped."
+            exit 0
+          fi
+          gh api \
+            --method POST \
+            repos/coding-pelican/dh-sdk-internal/dispatches \
+            -f event_type=dasae-headers-updated \
+            -f client_payload[dasae_headers_revision]="$GITHUB_SHA"

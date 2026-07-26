@@ -127,6 +127,10 @@ shared library for that target. `test`, sample, and example commands prepare the
 same project library set before linking their executable; they do not replace
 its `manifest.dh`.
 
+When a `kind=lib` project has public headers and no C sources, dh-c treats it as
+header-only. Build and package commands stage its `include/` tree without
+creating placeholder archives or shared libraries.
+
 The explicit command `dh-c lib` remains the compatibility alias for
 `dh-c build --lib` and requests one library artifact according to its link mode.
 

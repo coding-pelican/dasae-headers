@@ -344,9 +344,14 @@ static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
     if (!profile) return 1;
     char* build_dir = dal_c__makeBuildProfileDir(proj, &cmd->opts, profile);
     char* package_dir = dal_c__packageDir(cmd, proj);
-    if (!build_dir || !package_dir || !path_isDir(build_dir)) {
+    char* include_src = path_join(proj->root, proj->include_dir_name ? proj->include_dir_name : "include");
+    bool header_only = proj->defaults.target_kind_set
+                    && proj->defaults.target_kind == dal_c_Target_lib
+                    && path_isDir(include_src)
+                    && !path_isDir(build_dir);
+    if (!build_dir || !package_dir || (!path_isDir(build_dir) && !header_only)) {
         (void)fprintf(stderr, "Error: Build profile directory is unavailable for packaging.\n");
-        free(package_dir); free(build_dir); return 1;
+        free(include_src); free(package_dir); free(build_dir); return 1;
     }
     if (path_isDir(package_dir)) (void)dir_removeRecur(package_dir);
     bool ok = dir_createRecur(package_dir);
@@ -384,7 +389,6 @@ static int dal_c__packageProject(const dal_c_Cmd* cmd, const dal_c_Project* proj
     free(libraries);
     free(build_libs);
 
-    char* include_src = path_join(proj->root, proj->include_dir_name ? proj->include_dir_name : "include");
     if (path_isDir(include_src)) {
         char* include_dst = path_join(package_dir, "include");
         if (!dal_c__copyTree(include_src, include_dst)) ok = false;
@@ -909,9 +913,9 @@ static bool dal_c__depsShell(
 }
 
 static const char* dal_c__depsCmakeBuildType(const char* profile) {
-    if (str_eql(profile, "dev") || str_eql(profile, "test")) return "Debug";
+    if (str_eql(profile, "dev") || str_eql(profile, "fast") || str_eql(profile, "test")) return "Debug";
     if (str_eql(profile, "stable")) return "RelWithDebInfo";
-    if (str_eql(profile, "release") || str_eql(profile, "optimize") || str_eql(profile, "fast")) return "Release";
+    if (str_eql(profile, "release") || str_eql(profile, "optimize")) return "Release";
     if (str_eql(profile, "compact") || str_eql(profile, "micro")) return "MinSizeRel";
     return "Release";
 }
@@ -1484,7 +1488,7 @@ static int dal_c__printUsage(const char* topic) {
             printf(
                 "USAGE:\n"
                 "  %s package [profile] [build options] [--layout=install|prebuilt]\n\n"
-                "Build and stage the current project. The default install layout contains headers, libraries, executables, assets, and dependency runtime exports under package/<target>/<profile>. The prebuilt layout promotes only generated manifest.dh, libs/, and optional deps/ into prebuilt/<target>/<profile>.\n",
+                "Build and stage the current project. The default install layout contains headers, libraries, executables, assets, and dependency runtime exports under package/<target>/<profile>; a source-free kind=lib project packages its public headers without inventing binary artifacts. The prebuilt layout promotes only generated manifest.dh, libs/, and optional deps/ into prebuilt/<target>/<profile>.\n",
                 dal_c_tool_name
             );
         } else if (str_eql(topic, "install")) {

@@ -1,0 +1,3 @@
+kind=lib
+version-namespace=fixture_header
+version-core=0.0.0

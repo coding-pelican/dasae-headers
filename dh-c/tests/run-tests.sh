@@ -1001,6 +1001,18 @@ EOF
         exit 1
     fi
 
+    header_only_project=$(copy_scenario_project "dh-c/tests/fixture/header-only-project")
+    invoke_external "0" "$header_only_project" "$cli_exe" build fast
+    invoke_external "0" "$header_only_project" "$cli_exe" package fast
+    if ! "$find_bin" "$header_only_project/package" -path '*/fast/include/fixture_header.h' -type f | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Header-only package did not stage its public include tree\n' >&2
+        exit 1
+    fi
+    if "$find_bin" "$header_only_project/package" -path '*/fast/lib/*' -type f | "$grep_bin" . >/dev/null 2>&1; then
+        printf 'Header-only package incorrectly emitted library artifacts\n' >&2
+        exit 1
+    fi
+
     invoke_external "0" "$lib_kind_project" "$cli_exe" build stable
     assert_contains "$LAST_OUTPUT" "Build successful!" "Stable project kind=lib build did not succeed"
     assert_build_artifacts_exist \

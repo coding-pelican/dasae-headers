@@ -1,0 +1,4 @@
+kind=lib
+link-dsl=on
+version-namespace=x11
+version-core=0.0.0

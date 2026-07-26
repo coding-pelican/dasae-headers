@@ -366,7 +366,23 @@ dist/       # generated release output
 `manifest.dh` belongs inside generated build/prebuilt packages, not as a
 hand-authored root project file.
 
-## 11. Complete references
+## 11. SDK release dispatch
+
+Pushes to `main` or `redesign-exec-model` dispatch the exact source commit to
+`coding-pelican/dh-sdk-internal`. Configure the source repository secret
+`DH_SDK_DISPATCH_TOKEN` with permission to trigger Actions in that repository.
+The SDK workflow owns cancellation of superseded runs and release publication.
+
+```mermaid
+sequenceDiagram
+    participant Source as dasae-headers
+    participant SDK as dh-sdk-internal
+    Source->>SDK: repository_dispatch(exact source SHA)
+    SDK->>SDK: cancel superseded release run
+    SDK->>SDK: package Windows and Linux SDKs
+```
+
+## 12. Complete references
 
 - [`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md)
 - [`dh-c/docs/project-dh-contract.md`](./dh-c/docs/project-dh-contract.md)

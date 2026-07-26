@@ -1883,7 +1883,7 @@ static int dal_c_Cmd__makeTargetUnlocked(const dal_c_Cmd* self, const dal_c_Proj
             }
         }
 
-        if (builds_library && dal_c__isHeaderOnlyBuild(self, proj, sources)) {
+        if (dal_c__isHeaderOnlyBuild(self, proj, sources)) {
             const char* output_name = proj->name;
             char* output_name_alloc = NULL;
             dal_c_CompilerOpts merged_opts = { 0 };

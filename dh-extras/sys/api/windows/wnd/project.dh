@@ -1,0 +1,4 @@
+kind=lib
+link-dsl=on
+version-namespace=wnd
+version-core=0.0.0

@@ -492,16 +492,17 @@ static inline const char* dal_c_DebugLevel_toFlag(dal_c_DebugLevel debug_level) 
 typedef enum dal_c_Profile {
     dal_c_Profile_invalid = -1,
     dal_c_Profile_dev = 0,
-    dal_c_Profile_test = 1,
-    dal_c_Profile_profile = 2,
-    dal_c_Profile_stable = 3,
-    dal_c_Profile_release = 4,
-    dal_c_Profile_optimize = 5,
-    dal_c_Profile_compact = 6,
-    dal_c_Profile_micro = 7,
-    dal_c_Profile_fast = 8
+    dal_c_Profile_fast = 1,
+    dal_c_Profile_test = 2,
+    dal_c_Profile_profile = 3,
+    dal_c_Profile_stable = 4,
+    dal_c_Profile_release = 5,
+    dal_c_Profile_optimize = 6,
+    dal_c_Profile_compact = 7,
+    dal_c_Profile_micro = 8,
 } dal_c_Profile;
 #define dal_c_profile_dev "dev"
+#define dal_c_profile_fast "fast"
 #define dal_c_profile_test "test"
 #define dal_c_profile_profile "profile"
 #define dal_c_profile_stable "stable"
@@ -509,9 +510,9 @@ typedef enum dal_c_Profile {
 #define dal_c_profile_optimize "optimize"
 #define dal_c_profile_compact "compact"
 #define dal_c_profile_micro "micro"
-#define dal_c_profile_fast "fast"
 static inline dal_c_Profile dal_c_Profile_parse(const char* str) {
     if (str_eql(str, dal_c_profile_dev)) { return dal_c_Profile_dev; }
+    if (str_eql(str, dal_c_profile_fast)) { return dal_c_Profile_fast; }
     if (str_eql(str, dal_c_profile_test)) { return dal_c_Profile_test; }
     if (str_eql(str, dal_c_profile_profile)) { return dal_c_Profile_profile; }
     if (str_eql(str, dal_c_profile_stable)) { return dal_c_Profile_stable; }
@@ -519,12 +520,12 @@ static inline dal_c_Profile dal_c_Profile_parse(const char* str) {
     if (str_eql(str, dal_c_profile_optimize)) { return dal_c_Profile_optimize; }
     if (str_eql(str, dal_c_profile_compact)) { return dal_c_Profile_compact; }
     if (str_eql(str, dal_c_profile_micro)) { return dal_c_Profile_micro; }
-    if (str_eql(str, dal_c_profile_fast)) { return dal_c_Profile_fast; }
     return dal_c_Profile_invalid;
 }
 static inline const char* dal_c_Profile_format(dal_c_Profile profile) {
     switch (profile) {
     case dal_c_Profile_dev: return dal_c_profile_dev;
+    case dal_c_Profile_fast: return dal_c_profile_fast;
     case dal_c_Profile_test: return dal_c_profile_test;
     case dal_c_Profile_profile: return dal_c_profile_profile;
     case dal_c_Profile_stable: return dal_c_profile_stable;
@@ -532,7 +533,6 @@ static inline const char* dal_c_Profile_format(dal_c_Profile profile) {
     case dal_c_Profile_optimize: return dal_c_profile_optimize;
     case dal_c_Profile_compact: return dal_c_profile_compact;
     case dal_c_Profile_micro: return dal_c_profile_micro;
-    case dal_c_Profile_fast: return dal_c_profile_fast;
     case dal_c_Profile_invalid:
     default: return NULL;
     }
@@ -621,6 +621,19 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .debug_assertions = true,
         .omit_frame_pointer = dal_c_ToggleState_disabled,
     },
+    [dal_c_Profile_fast] = {
+        .name = dal_c_profile_fast,
+        .opti_level = dal_c_OptiLevel_none,
+        .debug_level = dal_c_DebugLevel_none,
+        .debug_assertions = true,
+        .lto_mode = dal_c_LtoMode_off,
+        .omit_frame_pointer = dal_c_ToggleState_disabled,
+        .function_sections = dal_c_ToggleState_disabled,
+        .data_sections = dal_c_ToggleState_disabled,
+        .gc_sections = dal_c_ToggleState_disabled,
+        .unwind_tables = dal_c_ToggleState_disabled,
+        .async_unwind_tables = dal_c_ToggleState_disabled,
+    },
     [dal_c_Profile_test] = {
         .name = dal_c_profile_test,
         .opti_level = dal_c_OptiLevel_basic,
@@ -707,19 +720,6 @@ static const dal_c_ProfileSpec dal_c_profile_specs[] = {
         .async_unwind_tables = dal_c_ToggleState_disabled,
         .strip_mode = dal_c_ToggleState_enabled,
         .icf_mode = dal_c_IcfMode_all,
-    },
-    [dal_c_Profile_fast] = {
-        .name = dal_c_profile_fast,
-        .opti_level = dal_c_OptiLevel_none,
-        .debug_level = dal_c_DebugLevel_none,
-        .debug_assertions = true,
-        .lto_mode = dal_c_LtoMode_off,
-        .omit_frame_pointer = dal_c_ToggleState_disabled,
-        .function_sections = dal_c_ToggleState_disabled,
-        .data_sections = dal_c_ToggleState_disabled,
-        .gc_sections = dal_c_ToggleState_disabled,
-        .unwind_tables = dal_c_ToggleState_disabled,
-        .async_unwind_tables = dal_c_ToggleState_disabled,
     },
 };
 #define dal_c_profile_specs_count ((int)(sizeof(dal_c_profile_specs) / sizeof(dal_c_profile_specs[0])))

@@ -1,3 +1,5 @@
+kind=executable
+output=dh-c
 version-namespace=dal_c
 version-core=0.3.0
 link-dsl=off

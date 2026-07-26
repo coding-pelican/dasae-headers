@@ -133,6 +133,9 @@ build defines provide further separation for custom or mixed runtime ABIs.
 
 ## Why the manifest is an inventory
 
+`manifest.dh` describes concrete binary library artifacts. A source-free
+`kind=lib` project is header-only and does not invent an empty binary manifest.
+
 A profile directory can contain more than one legitimate library artifact:
 
 - every `kind=lib` profile emits the native static archive and shared library;

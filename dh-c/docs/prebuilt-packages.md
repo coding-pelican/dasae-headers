@@ -102,6 +102,11 @@ policy. They do not silently redefine `kind=lib` into static-only output.
 A producer may choose which profile directories to distribute, but any shipped
 `kind=lib` profile follows the same artifact-family contract.
 
+Header-only projects use `kind=lib` with an `include/` tree and no C sources.
+They can be built and staged with the normal install package layout for every
+profile, but they do not produce target-specific binary prebuilts or an empty
+`manifest.dh`.
+
 ## Artifact manifest
 
 Every target/profile directory must contain `manifest.dh`. dh-c rejects a missing,

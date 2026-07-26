@@ -246,9 +246,9 @@ and sysroot through `CMAKE_C_COMPILER`, `CMAKE_AR`,
 
 Profile mapping:
 
-- `dev`, `test` -> `Debug`
+- `dev`, `fast`, `test` -> `Debug`
 - `stable` -> `RelWithDebInfo`
-- `release`, `optimize`, `fast` -> `Release`
+- `release`, `optimize` -> `Release`
 - `compact`, `micro` -> `MinSizeRel`
 
 ### Make

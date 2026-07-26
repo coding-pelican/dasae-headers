@@ -600,6 +600,11 @@ static void test_meta_tables(void) {
     TEST_ASSERT(dal_c_Profile_parse("fast") == dal_c_Profile_fast);
     TEST_ASSERT(str_eql(dal_c_Profile_format(dal_c_Profile_fast), dal_c_profile_fast));
     TEST_ASSERT(dal_c_Profile_parse("release") == dal_c_Profile_release);
+    TEST_ASSERT(dal_c_Profile_dev < dal_c_Profile_fast);
+    TEST_ASSERT(dal_c_Profile_fast < dal_c_Profile_test);
+    TEST_ASSERT(dal_c_Profile_test < dal_c_Profile_profile);
+    TEST_ASSERT(dal_c_Profile_profile < dal_c_Profile_stable);
+    TEST_ASSERT(dal_c_Profile_stable < dal_c_Profile_release);
     TEST_ASSERT(dal_c_CompileEnv_parse("hosted") == dal_c_CompileEnv_hosted);
     TEST_ASSERT(dal_c_CompileEnv_parse("freestanding") == dal_c_CompileEnv_freestanding);
     TEST_ASSERT(dal_c_CompileEnv_resolve(dal_c_CompileEnv_auto) == dal_c_CompileEnv_hosted);

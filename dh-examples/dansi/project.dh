@@ -1,2 +1,4 @@
 kind=lib
 link-dsl=on
+version-namespace=dansi
+version-core=0.0.0

@@ -2024,7 +2024,12 @@ static ArrStr* dal_c__collectBuildFiles(const char* dir, bool skip_source_paths)
 bool dal_c__isHeaderOnlyBuild(const dal_c_Cmd* cmd, const dal_c_Project* proj, ArrStr* sources) {
     assert(cmd != NULL);
     assert(sources != NULL);
-    if (cmd->action != dal_c_CmdAction_lib) { return false; }
+    bool project_library = proj && proj->defaults.target_kind_set
+                        && proj->defaults.target_kind == dal_c_Target_lib;
+    bool library_build = cmd->action == dal_c_CmdAction_lib
+                      || (cmd->action == dal_c_CmdAction_build
+                          && (cmd->payload.build.as_library || project_library));
+    if (!library_build) { return false; }
 
     if (ArrStr_len(sources) > 0) {
         for (int i = 0; i < ArrStr_len(sources); ++i) {

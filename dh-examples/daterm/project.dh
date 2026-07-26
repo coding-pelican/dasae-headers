@@ -1,5 +1,7 @@
 kind=lib
 link-dsl=on
+version-namespace=daterm
+version-core=0.0.0
 
 [dansi]
 path=../dansi
