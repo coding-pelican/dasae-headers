@@ -335,7 +335,6 @@ Every section that does not begin with `target-root ` is a dependency.
 path=<local path>
 source=<git URL>
 archive=<archive URL or local path>
-package-root=<materialized-source-relative package path>
 revision=<branch|tag|commit>
 provider=<dh|cmake|make|custom|prebuilt>
 build-command=<command>
@@ -350,11 +349,9 @@ test=<on|off>
 
 `source=` and `archive=` are mutually exclusive. `revision=` applies only to Git
 sources and is rejected beside `archive=`; archive SHA-256 values are generated
-into `lock.dh`. `package-root=` is a relative path for `provider=prebuilt` when
-the materialized source wraps the actual `include/`, `lib/`, and `bin/` package
-root. It cannot escape the materialized source. `runtime-file` is repeatable.
-Dependency sections also accept compile/link property keys when the dependency
-requires a local contract override.
+into `lock.dh`. `runtime-file` is repeatable. Dependency sections also accept
+compile/link property keys when the dependency requires a local contract
+override.
 
 Use:
 

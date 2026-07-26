@@ -2031,8 +2031,8 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, "LINK_TARGET = ") != NULL);
         TEST_ASSERT(strstr(makefile_text, "-Xlinker -T -Xlinker ") != NULL);
         TEST_ASSERT(strstr(makefile_text, "--print-libgcc-file-name") == NULL);
-        TEST_ASSERT(strstr(makefile_text, "P_AS = printf") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "P_OBJCOPY = printf") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "P_AS = $(PRINTF)") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "P_OBJCOPY = $(PRINTF)") != NULL);
         TEST_ASSERT(strstr(makefile_text, "$(TARGET): $(LINK_CONTRACT) $(LINK_TARGET)") != NULL);
         TEST_ASSERT(strstr(makefile_text, "$(LINK_TARGET): $(LINK_CONTRACT) $(OBJS)") != NULL);
 
@@ -2208,7 +2208,7 @@ static void test_makefile_mode_contracts(void) {
             TEST_ASSERT(makefile_text != NULL);
             TEST_ASSERT(strstr(makefile_text, "TARGET = ") != NULL);
             TEST_ASSERT(strstr(makefile_text, "SRC = ") != NULL);
-            TEST_ASSERT(strstr(makefile_text, "P_GEN = printf") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "P_GEN = $(PRINTF)") != NULL);
             TEST_ASSERT(strstr(makefile_text, " -E $(SRC) -o $@") != NULL);
             TEST_ASSERT(strstr(makefile_text, "$(TARGET): $(SRC)") != NULL);
             TEST_ASSERT(strstr(makefile_text, "TARGET_ARCH_FLAGS = -march=rv32im") != NULL);
@@ -2308,7 +2308,7 @@ static void test_makefile_mode_contracts(void) {
             TEST_ASSERT(dal_c__generateMakefile(asm_cmd, proj, profile, single_source, target_path, object_dir, dal_c_Target_assembly) == 0);
             makefile_text = file_read(makefile_path);
             TEST_ASSERT(makefile_text != NULL);
-            TEST_ASSERT(strstr(makefile_text, "P_GEN = printf") != NULL);
+            TEST_ASSERT(strstr(makefile_text, "P_GEN = $(PRINTF)") != NULL);
             TEST_ASSERT(strstr(makefile_text, " -S $(SRC) -o $@") != NULL);
             TEST_ASSERT(strstr(makefile_text, "-flto") != NULL);
             TEST_ASSERT(strstr(makefile_text, "-fno-lto") == NULL);
@@ -2394,36 +2394,8 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -lcustomrt") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -luser32") != NULL);
-#ifdef _WIN32
-        TEST_ASSERT(strstr(makefile_text, "OBJECTS_RSP = $(TARGET).objects.rsp") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "$(CC) -shared -fPIC $(OBJECTS_INPUT)") != NULL);
-        TEST_ASSERT(strstr(makefile_text, "rm -f $(TARGET) $(IMPORT_LIB) $(EXTRA_TARGETS) $(OBJECTS_RSP)") != NULL);
-#endif
         free(makefile_text);
         free(makefile_path);
-
-        char* static_target_path = dal_c__resolveOutputPath(
-            proj, first_cmd, profile_dir, "runtime-contract", dal_c_Target_static_lib
-        );
-        TEST_ASSERT(static_target_path != NULL);
-        TEST_ASSERT(dal_c__generateMakefile(
-            first_cmd, proj, profile, sources, static_target_path, object_dir, dal_c_Target_static_lib
-        ) == 0);
-        char* static_makefile_path = dal_c__makePlanFilePath(
-            proj, profile, first_cmd, static_target_path, dal_c_Target_static_lib
-        );
-        char* static_makefile_text = static_makefile_path ? file_read(static_makefile_path) : NULL;
-        TEST_ASSERT(static_makefile_text != NULL);
-#ifdef _WIN32
-        TEST_ASSERT(strstr(static_makefile_text, "$(AR) rcs $@ $(OBJECTS_INPUT)") != NULL);
-        TEST_ASSERT(strstr(static_makefile_text, "$(AR) rcs $@ $(OBJS)") == NULL);
-        TEST_ASSERT(strstr(static_makefile_text, "rm -f $(TARGET) $(EXTRA_TARGETS) $(OBJECTS_RSP)") != NULL);
-#else
-        TEST_ASSERT(strstr(static_makefile_text, "$(AR) rcs $@ $(OBJS)") != NULL);
-#endif
-        free(static_makefile_text);
-        free(static_makefile_path);
-        free(static_target_path);
 
         TEST_ASSERT(dal_c__generateMakefile(second_cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_shared_lib) == 0);
         char* second_contract = file_read(contracts[0]);

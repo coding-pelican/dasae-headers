@@ -110,7 +110,7 @@ static const char* const dal_c_help_topic_dh_file_examples[] = {
 
 static const char* const dal_c_help_topic_dependencies_lines[] = {
     "Dependencies are declared in root project.dh, or in the primary <source>.dh of a projectless build unit.",
-    "Core keys: path, source, archive, package-root, revision, provider, profile, linking, prebuilt, link-dsl, test.",
+    "Core keys: path, source, archive, revision, provider, profile, linking, prebuilt, link-dsl, test.",
     "Provider keys: build-command, install-command, runtime-file (repeatable).",
     "Dependency-local compile/link keys use the same property vocabulary as project defaults.",
     "fetch preserves an existing lock; update resolves requests again and rewrites lock.dh or <source>.lock.dh.",
@@ -168,6 +168,25 @@ static const char* const dal_c_help_topic_invocation_examples[] = {
     "build release --analysis-artifacts=all",
 };
 
+static const char* const dal_c_help_topic_tools_lines[] = {
+    "Compiler selection remains part of the build contract through compiler= or --compiler=.",
+    "Machine-local helper tools are injected through environment variables rather than committed .dh files.",
+    "Precedence is DH_C_<TOOL>, then the conventional variable where one exists, then dh-c's default executable name.",
+    "Core build: DH_C_MAKE/MAKE, DH_C_AR/AR, DH_C_DEBUGGER/DEBUGGER.",
+    "Dependency providers: DH_C_CMAKE/CMAKE and DH_C_GIT/GIT.",
+    "Archive acquisition: DH_C_CURL/CURL, DH_C_WGET/WGET, DH_C_TAR/TAR, DH_C_UNZIP/UNZIP.",
+    "Analysis: DH_C_CLANG_TIDY/CLANG_TIDY, DH_C_CLANG_FORMAT/CLANG_FORMAT, DH_C_LLVM_OBJDUMP/LLVM_OBJDUMP, DH_C_LLVM_DWARFDUMP/LLVM_DWARFDUMP, DH_C_LLVM_PDBUTIL/LLVM_PDBUTIL.",
+    "Provider command interpreters: DH_C_SHELL (default /bin/sh) and DH_C_CMD/COMSPEC (default cmd.exe).",
+    "Generated Makefiles expose RM, MV, and PRINTF as overridable Make variables.",
+    "objcopy remains a target property because its executable and output format belong to image artifact production.",
+    "Example: on POSIX CI, run `DH_C_AR=llvm-ar-22 dh-c build release` when only a versioned archiver is installed.",
+    "Run dh-c doctor to see the effective compiler, make, archiver, and provider tools.",
+};
+static const char* const dal_c_help_topic_tools_examples[] = {
+    "doctor",
+    "build release",
+};
+
 static const dal_c_HelpTopic dal_c_help_topics[] = {
     { "files", "Choose the correct authored or generated .dh file", dal_c_help_topic_files_lines, DAL_C_COUNT_OF(dal_c_help_topic_files_lines), dal_c_help_topic_files_examples, DAL_C_COUNT_OF(dal_c_help_topic_files_examples) },
     { "project-dh", "Define a complete named project", dal_c_help_topic_project_lines, DAL_C_COUNT_OF(dal_c_help_topic_project_lines), dal_c_help_topic_project_examples, DAL_C_COUNT_OF(dal_c_help_topic_project_examples) },
@@ -180,6 +199,7 @@ static const dal_c_HelpTopic dal_c_help_topics[] = {
     { "precedence", "Understand configuration layering and accumulation", dal_c_help_topic_precedence_lines, DAL_C_COUNT_OF(dal_c_help_topic_precedence_lines), NULL, 0 },
     { "profiles", "Choose an optimization/debug profile", dal_c_help_topic_profiles_lines, DAL_C_COUNT_OF(dal_c_help_topic_profiles_lines), NULL, 0 },
     { "invocation-only", "Know which controls intentionally stay on the command line", dal_c_help_topic_invocation_lines, DAL_C_COUNT_OF(dal_c_help_topic_invocation_lines), dal_c_help_topic_invocation_examples, DAL_C_COUNT_OF(dal_c_help_topic_invocation_examples) },
+    { "tools", "Inject machine-local external tool executables", dal_c_help_topic_tools_lines, DAL_C_COUNT_OF(dal_c_help_topic_tools_lines), dal_c_help_topic_tools_examples, DAL_C_COUNT_OF(dal_c_help_topic_tools_examples) },
 };
 static const int dal_c_help_topics_count = DAL_C_COUNT_OF(dal_c_help_topics);
 
@@ -220,7 +240,6 @@ static void dal_c__graphWalkText(const dal_c_Project* proj, int depth, char*** s
         printf("- %s [provider=%s", lib->name ? lib->name : "(unnamed)", provider);
         if (lib->revision && lib->revision[0]) printf(", revision=%s", lib->revision);
         if (lib->archive && lib->archive[0]) printf(", archive=%s", lib->archive);
-        if (lib->package_root && lib->package_root[0]) printf(", package-root=%s", lib->package_root);
         if (lib->path && lib->path[0]) printf(", path=%s", lib->path);
         if (lib->runtime_file_count > 0) printf(", runtime=%d", lib->runtime_file_count);
         printf("]\n");
@@ -687,7 +706,7 @@ static bool dal_c__hasDependencyScope(const dal_c_Project* proj) {
 }
 
 static bool dal_c__depsGitRun(const char* cwd, const char* a, const char* b, const char* c, const char* d) {
-    const char* argv[10] = { "git", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+    const char* argv[10] = { dal_c__externalToolPath(dal_c_ExternalTool_git), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
     int i = 1;
     if (cwd) { argv[i++] = "-C"; argv[i++] = cwd; }
     if (a) argv[i++] = a;
@@ -699,7 +718,7 @@ static bool dal_c__depsGitRun(const char* cwd, const char* a, const char* b, con
 }
 
 static char* dal_c__depsGitOutput(const char* cwd, const char* a, const char* b) {
-    const char* argv[7] = { "git", "-C", cwd, a, b, NULL, NULL };
+    const char* argv[7] = { dal_c__externalToolPath(dal_c_ExternalTool_git), "-C", cwd, a, b, NULL, NULL };
     return proc_output(argv);
 }
 
@@ -716,7 +735,7 @@ static char* dal_c__depsResolveRevision(const char* cwd, const char* revision) {
     const char* candidates[] = { tag_ref, remote_ref, direct_ref, NULL };
     char* resolved = NULL;
     for (int i = 0; candidates[i] && !resolved; ++i) {
-        const char* argv[] = { "git", "-C", cwd, "rev-parse", "--verify", candidates[i], NULL };
+        const char* argv[] = { dal_c__externalToolPath(dal_c_ExternalTool_git), "-C", cwd, "rev-parse", "--verify", candidates[i], NULL };
         if (proc_run(argv, false) != 0) { continue; }
         char* output = proc_output(argv);
         if (output) {
@@ -779,20 +798,20 @@ static bool dal_c__depsShell(
         "set \"CFLAGS=%s\"\r\n"
         "%s\r\n",
         cwd, src_dir, build_dir, package_dir, profile, target,
-        compiler, dal_c_tool_ar, sysroot, cflags, compiler, dal_c_tool_ar, cflags, command
+        compiler, dal_c__externalToolPath(dal_c_ExternalTool_archiver), sysroot, cflags, compiler, dal_c__externalToolPath(dal_c_ExternalTool_archiver), cflags, command
     );
     char* script_path = path_join(build_dir, ".dh-c-provider.cmd");
     bool script_written = script && script_path && file_write(script_path, script);
-    const char* argv[] = { "cmd.exe", "/D", "/C", script_path, NULL };
+    const char* argv[] = { dal_c__externalToolPath(dal_c_ExternalTool_windows_command), "/D", "/C", script_path, NULL };
 #else
     char* script = str_format(
         "cd \"%s\" && export DH_DEP_SOURCE=\"%s\" DH_DEP_BUILD=\"%s\" DH_DEP_PACKAGE=\"%s\" "
         "DH_DEP_PROFILE=\"%s\" DH_DEP_TARGET=\"%s\" DH_DEP_CC=\"%s\" DH_DEP_AR=\"%s\" "
         "DH_DEP_SYSROOT=\"%s\" DH_DEP_CFLAGS=\"%s\" CC=\"%s\" AR=\"%s\" CFLAGS=\"%s\" && %s",
         cwd, src_dir, build_dir, package_dir, profile, target,
-        compiler, dal_c_tool_ar, sysroot, cflags, compiler, dal_c_tool_ar, cflags, command
+        compiler, dal_c__externalToolPath(dal_c_ExternalTool_archiver), sysroot, cflags, compiler, dal_c__externalToolPath(dal_c_ExternalTool_archiver), cflags, command
     );
-    const char* argv[] = { "/bin/sh", "-c", script, NULL };
+    const char* argv[] = { dal_c__externalToolPath(dal_c_ExternalTool_posix_shell), "-c", script, NULL };
 #endif
     int result =
 #ifdef _WIN32
@@ -837,7 +856,7 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
         char* prefix = str_format("-DCMAKE_INSTALL_PREFIX=%s", package_dir);
         char* build_type = str_format("-DCMAKE_BUILD_TYPE=%s", dal_c__depsCmakeBuildType(profile));
         char* compiler_arg = str_format("-DCMAKE_C_COMPILER=%s", compiler);
-        char* archiver_arg = str_format("-DCMAKE_AR=%s", dal_c_tool_ar);
+        char* archiver_arg = str_format("-DCMAKE_AR=%s", dal_c__externalToolPath(dal_c_ExternalTool_archiver));
         char* target_arg = opts && opts->arch_target && opts->arch_target[0]
                          ? str_format("-DCMAKE_C_COMPILER_TARGET=%s", opts->arch_target) : NULL;
         char* sysroot_arg = opts && opts->sysroot && opts->sysroot[0]
@@ -847,7 +866,7 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
                             ? str_format("-DCMAKE_TOOLCHAIN_FILE=%s", toolchain) : NULL;
         const char* configure[16] = { 0 };
         int configure_count = 0;
-        configure[configure_count++] = "cmake";
+        configure[configure_count++] = dal_c__externalToolPath(dal_c_ExternalTool_cmake);
         configure[configure_count++] = "-S";
         configure[configure_count++] = source_dir;
         configure[configure_count++] = "-B";
@@ -860,10 +879,10 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
         if (sysroot_arg) { configure[configure_count++] = sysroot_arg; }
         if (toolchain_arg) { configure[configure_count++] = toolchain_arg; }
         configure[configure_count] = NULL;
-        const char* build[] = { "cmake", "--build", build_dir, "--config", dal_c__depsCmakeBuildType(profile), NULL };
+        const char* build[] = { dal_c__externalToolPath(dal_c_ExternalTool_cmake), "--build", build_dir, "--config", dal_c__depsCmakeBuildType(profile), NULL };
         bool ok = proc_run(configure, true) == 0 && proc_run(build, true) == 0;
         if (ok && install) {
-            const char* install_argv[] = { "cmake", "--install", build_dir, "--config", dal_c__depsCmakeBuildType(profile), NULL };
+            const char* install_argv[] = { dal_c__externalToolPath(dal_c_ExternalTool_cmake), "--install", build_dir, "--config", dal_c__depsCmakeBuildType(profile), NULL };
             ok = proc_run(install_argv, true) == 0;
         }
         free(toolchain_arg); free(sysroot_arg); free(target_arg);
@@ -876,14 +895,18 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
         if (lib->build_command && lib->build_command[0])
             ok = dal_c__depsShell(source_dir, lib->build_command, source_dir, build_dir, package_dir, profile, target, opts);
         else {
-            ok = dal_c__depsShell(source_dir, "make", source_dir, build_dir, package_dir, profile, target, opts);
+            const char* make_tool = dal_c__externalToolPath(dal_c_ExternalTool_make);
+            char* make_command = str_format("\"%s\"", make_tool);
+            ok = make_command && dal_c__depsShell(source_dir, make_command, source_dir, build_dir, package_dir, profile, target, opts);
+            free(make_command);
         }
         if (ok && install) {
             if (lib->install_command && lib->install_command[0])
                 ok = dal_c__depsShell(source_dir, lib->install_command, source_dir, build_dir, package_dir, profile, target, opts);
             else {
-                char* install_command = str_format("make install PREFIX=\"%s\"", package_dir);
-                ok = dal_c__depsShell(source_dir, install_command, source_dir, build_dir, package_dir, profile, target, opts);
+                const char* make_tool = dal_c__externalToolPath(dal_c_ExternalTool_make);
+                char* install_command = str_format("\"%s\" install PREFIX=\"%s\"", make_tool, package_dir);
+                ok = install_command && dal_c__depsShell(source_dir, install_command, source_dir, build_dir, package_dir, profile, target, opts);
                 free(install_command);
             }
         }
@@ -901,28 +924,20 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
         return ok;
     }
     if (str_eql(provider, "prebuilt")) {
-        const char* source_root = (lib->path && lib->path[0]) ? lib->path : source_dir;
-        char* selected_root = lib->package_root && lib->package_root[0]
-                            ? path_join(source_root, lib->package_root)
-                            : NULL;
-        const char* root = selected_root ? selected_root : source_root;
+        const char* root = (lib->path && lib->path[0]) ? lib->path : source_dir;
         if (!path_isDir(root)) {
             (void)fprintf(stderr, "Error: prebuilt dependency `%s` has no package directory: %s\n", lib->name, root);
-            free(selected_root);
             return false;
         }
         if (path_isDir(package_dir) && !dir_removeRecur(package_dir)) {
             (void)fprintf(stderr, "Error: Failed to replace private package directory for `%s`: %s\n", lib->name, package_dir);
-            free(selected_root);
             return false;
         }
         if (!dir_createRecur(package_dir) || !dal_c__copyTree(root, package_dir)) {
             (void)fprintf(stderr, "Error: Failed to materialize prebuilt dependency `%s` into %s\n", lib->name, package_dir);
-            free(selected_root);
             return false;
         }
         printf("[PREBUILT] %-16s %s\n", lib->name, root);
-        free(selected_root);
         return true;
     }
     (void)fprintf(stderr, "Error: Unknown dependency provider `%s` for `%s`.\n", provider, lib->name);
@@ -945,36 +960,10 @@ static bool dal_c__stageExternalPackageForBuild(const dal_c_Project* proj, const
         char** files = dir_listRecur(lib_src, &count);
         for (int i = 0; files && i < count; ++i) {
             const char* f = files[i];
-            bool is_link_file = dal_c__endsWith(f, ".lib") || dal_c__endsWith(f, ".a")
-                             || dal_c__endsWith(f, ".so") || dal_c__endsWith(f, ".dylib");
-            bool selected = lib->opts.link_count == 0;
-            char* name = path_basename(f);
-            for (int link_index = 0; is_link_file && !selected && link_index < lib->opts.link_count; ++link_index) {
-                const char* link = lib->opts.link_libs[link_index];
-                char* static_unix = str_format("lib%s.a", link);
-                char* import_gnu = str_format("lib%s.dll.a", link);
-                char* static_or_import_windows = str_format("%s.lib", link);
-                char* import_dh_windows = str_format("%s.dll.lib", link);
-                char* shared_unix = str_format("lib%s.so", link);
-                char* shared_darwin = str_format("lib%s.dylib", link);
-                selected = lib->is_static
-                         ? (str_eql(name, static_unix) || str_eql(name, static_or_import_windows))
-                         : (str_eql(name, import_gnu)
-                            || str_eql(name, static_or_import_windows)
-                            || str_eql(name, import_dh_windows)
-                            || str_eql(name, shared_unix)
-                            || str_eql(name, shared_darwin));
-                free(shared_darwin);
-                free(shared_unix);
-                free(import_dh_windows);
-                free(static_or_import_windows);
-                free(import_gnu);
-                free(static_unix);
-            }
-            if (is_link_file && selected) {
+            if (dal_c__endsWith(f, ".lib") || dal_c__endsWith(f, ".a") ||
+                dal_c__endsWith(f, ".so") || dal_c__endsWith(f, ".dylib")) {
                 if (!dal_c__copyFileInto(f, deps_dir)) ok = false;
             }
-            free(name);
             free(files[i]);
         }
         free(files);
@@ -1199,7 +1188,7 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
 
         if (str_eql(action, "fetch")) {
             if (!exists) {
-                const char* argv[] = { "git", "clone", "--", lib->source, source_dir, NULL };
+                const char* argv[] = { dal_c__externalToolPath(dal_c_ExternalTool_git), "clone", "--", lib->source, source_dir, NULL };
                 printf("[FETCH] %s <- %s\n", lib->name, lib->source);
                 (void)fflush(stdout);
                 if (proc_run(argv, true) != 0) {
@@ -1235,7 +1224,7 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
             free(revision_to_checkout);
         } else if (str_eql(action, "update")) {
             if (!exists) {
-                const char* argv[] = { "git", "clone", "--", lib->source, source_dir, NULL };
+                const char* argv[] = { dal_c__externalToolPath(dal_c_ExternalTool_git), "clone", "--", lib->source, source_dir, NULL };
                 printf("[FETCH] %s <- %s\n", lib->name, lib->source);
                 (void)fflush(stdout);
                 if (proc_run(argv, true) != 0) {
@@ -1392,7 +1381,7 @@ static int dal_c__printUsage(const char* topic) {
         } else if (str_eql(topic, "target")) {
             printf("USAGE:\n  %s target show [profile] [build options]\n\nShow the requested and normalized target, compiler, profile, target-scoped build directory, and host `build/native` alias policy without creating it.\n", dal_c_tool_name);
         } else {
-            printf("USAGE:\n  %s doctor [profile] [build options]\n\nCheck compiler, make, archiver, DH installation, effective target, and provider tools required by the detected project.\n", dal_c_tool_name);
+            printf("USAGE:\n  %s doctor [profile] [build options]\n\nCheck compiler, injected helper tools, DH installation, effective target, and provider tools required by the detected project.\n", dal_c_tool_name);
         }
         return 0;
     }
@@ -1861,21 +1850,27 @@ static bool dal_c__projectUsesGitSources(const dal_c_Project* proj) {
 static int dal_c__doctor(const dal_c_Cmd* cmd, const dal_c_Project* proj) {
     int failures = 0;
     const char* compiler = dal_c__effectiveCompiler(cmd, proj);
+    const char* make_tool = dal_c__externalToolPath(dal_c_ExternalTool_make);
+    const char* ar_tool = dal_c__externalToolPath(dal_c_ExternalTool_archiver);
+    const char* cmake_tool = dal_c__externalToolPath(dal_c_ExternalTool_cmake);
+    const char* git_tool = dal_c__externalToolPath(dal_c_ExternalTool_git);
     bool compiler_ok = dal_c__toolResponds(compiler, "--version");
-    bool make_ok = dal_c__toolResponds("make", "--version") || dal_c__toolResponds("gmake", "--version");
-    bool ar_ok = dal_c__toolResponds(dal_c_tool_ar, "--version");
+    bool make_ok = dal_c__toolResponds(make_tool, "--version");
+    bool ar_ok = dal_c__toolResponds(ar_tool, "--version");
     bool needs_cmake = dal_c__projectUsesProvider(proj, "cmake");
-    bool cmake_ok = !needs_cmake || dal_c__toolResponds("cmake", "--version");
+    bool cmake_ok = !needs_cmake || dal_c__toolResponds(cmake_tool, "--version");
     bool needs_git = dal_c__projectUsesGitSources(proj);
-    bool git_ok = !needs_git || dal_c__toolResponds("git", "--version");
+    bool git_ok = !needs_git || dal_c__toolResponds(git_tool, "--version");
     char* dh_path = dal_c_Project_findDHInstallation(cmd);
     bool dh_ok = dh_path && path_isDir(dh_path);
     printf("DOCTOR:\n");
     printf("  compiler: %s [%s]\n", compiler, compiler_ok ? "ok" : "missing or unusable");
-    printf("  make: %s\n", make_ok ? "ok" : "missing or unusable");
-    printf("  archiver: %s [%s]\n", dal_c_tool_ar, ar_ok ? "ok" : "missing or unusable");
-    if (needs_cmake) printf("  cmake: %s\n", cmake_ok ? "ok" : "missing or unusable");
-    if (needs_git) printf("  git: %s\n", git_ok ? "ok" : "missing or unusable");
+    printf("  make: %s [%s] (override: %s or MAKE)\n", make_tool, make_ok ? "ok" : "missing or unusable",
+        dal_c__externalToolOverrideEnv(dal_c_ExternalTool_make));
+    printf("  archiver: %s [%s] (override: %s or AR)\n", ar_tool, ar_ok ? "ok" : "missing or unusable",
+        dal_c__externalToolOverrideEnv(dal_c_ExternalTool_archiver));
+    if (needs_cmake) printf("  cmake: %s [%s]\n", cmake_tool, cmake_ok ? "ok" : "missing or unusable");
+    if (needs_git) printf("  git: %s [%s]\n", git_tool, git_ok ? "ok" : "missing or unusable");
     printf("  dh: %s [%s]\n", dh_path ? dh_path : "(not found)", dh_ok ? "ok" : "missing");
     if (proj && proj->root) printf("  project: %s\n", proj->root);
     else if (proj && proj->is_adhoc) printf("  build-unit: %s\n", proj->unit_source ? proj->unit_source : "(unknown)");

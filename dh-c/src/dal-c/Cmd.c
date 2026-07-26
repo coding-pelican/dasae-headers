@@ -2352,8 +2352,9 @@ static int dal_c_Cmd__runTidyPlan(const dal_c_Cmd* self, const dal_c_Project* pr
     assert(self != NULL);
     assert(proj != NULL);
     assert(plan != NULL);
-    if (!dal_c_Cmd__toolAvailable("clang-tidy")) {
-        (void)fprintf(stderr, "Error: clang-tidy not found in PATH\n");
+    const char* tidy_tool = dal_c__externalToolPath(dal_c_ExternalTool_clang_tidy);
+    if (!dal_c_Cmd__toolAvailable(tidy_tool)) {
+        (void)fprintf(stderr, "Error: clang-tidy tool `%s` is unavailable; override it with DH_C_CLANG_TIDY\n", tidy_tool);
         return 1;
     }
 
@@ -2374,9 +2375,9 @@ static int dal_c_Cmd__runTidyPlan(const dal_c_Cmd* self, const dal_c_Project* pr
         if (self->show_progress) {
             printf("[%d/%d] TIDY %s\n", i + 1, total, src);
         }
-        const char* argv[] = { "clang-tidy", src, "-p", project_root, NULL };
+        const char* argv[] = { tidy_tool, src, "-p", project_root, NULL };
         if (self->show_commands) {
-            printf("clang-tidy %s -p %s\n", src, project_root);
+            printf("%s %s -p %s\n", tidy_tool, src, project_root);
         }
         int code = proc_run(argv, true);
         if (code != 0 && result == 0) {
@@ -2393,8 +2394,9 @@ static int dal_c_Cmd__runTidyPlan(const dal_c_Cmd* self, const dal_c_Project* pr
 static int dal_c_Cmd__runFormatPlan(const dal_c_Cmd* self, dal_c_Cmd__CheckPlan* plan) {
     assert(self != NULL);
     assert(plan != NULL);
-    if (!dal_c_Cmd__toolAvailable("clang-format")) {
-        (void)fprintf(stderr, "Error: clang-format not found in PATH\n");
+    const char* format_tool = dal_c__externalToolPath(dal_c_ExternalTool_clang_format);
+    if (!dal_c_Cmd__toolAvailable(format_tool)) {
+        (void)fprintf(stderr, "Error: clang-format tool `%s` is unavailable; override it with DH_C_CLANG_FORMAT\n", format_tool);
         return 1;
     }
     int result = 0;
@@ -2404,9 +2406,9 @@ static int dal_c_Cmd__runFormatPlan(const dal_c_Cmd* self, dal_c_Cmd__CheckPlan*
         if (self->show_progress) {
             printf("[%d/%d] FORMAT %s\n", i + 1, total, src);
         }
-        const char* argv[] = { "clang-format", "-i", src, NULL };
+        const char* argv[] = { format_tool, "-i", src, NULL };
         if (self->show_commands) {
-            printf("clang-format -i %s\n", src);
+            printf("%s -i %s\n", format_tool, src);
         }
         int code = proc_run(argv, true);
         if (code != 0 && result == 0) {
@@ -2851,7 +2853,7 @@ static bool dal_c_Cmd__dependencySourceDirty(const char* source_path) {
     if (!is_git) { return false; }
 
     const char* argv[] = {
-        "git", "-C", source_path,
+        dal_c__externalToolPath(dal_c_ExternalTool_git), "-C", source_path,
         "status", "--porcelain", "--untracked-files=all",
         NULL,
     };

@@ -267,6 +267,10 @@ assert_contains "$LAST_OUTPUT" "LINK MODEL:" "Help output did not describe frees
 assert_contains "$LAST_OUTPUT" 'exact alias of `--link-start-files=off`' "Help output did not explain the CRT alias"
 assert_contains "$LAST_OUTPUT" "durable source assets" "Help output did not describe cleanup-owned generated paths"
 
+invoke_external "0" "$repo_root" "$cli_exe" help tools
+assert_contains "$LAST_OUTPUT" "DH_C_AR" "Tool help did not expose archiver injection"
+assert_contains "$LAST_OUTPUT" "DH_C_SHELL" "Tool help did not expose provider shell injection"
+
 invoke_external "0" "$repo_root" "$cli_exe" help files
 assert_contains "$LAST_OUTPUT" "workspace.dh" "File help did not describe workspace.dh"
 assert_contains "$LAST_OUTPUT" "project.dh" "File help did not describe project.dh"
@@ -413,14 +417,11 @@ rm -rf "$lock_contract_root"
 archive_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-archive-contract.XXXXXX")
 archive_payload_root="$archive_contract_root/payload"
 archive_package="$archive_payload_root/dep-package"
-archive_package_root="$archive_package/targets/x86_64-w64-windows-gnu"
 archive_project="$archive_contract_root/project"
 archive_file="$archive_contract_root/dep.tar.gz"
-mkdir -p "$archive_package_root/include" "$archive_package_root/lib" "$archive_project"
-printf '#define ARCHIVE_VALUE 1\n' >"$archive_package_root/include/archive_dep.h"
-printf 'archive-import-one\n' >"$archive_package_root/lib/libarchive_dep.dll.a"
-printf 'archive-static-one\n' >"$archive_package_root/lib/libarchive_dep.a"
-printf 'archive-unselected\n' >"$archive_package_root/lib/libunselected.a"
+mkdir -p "$archive_package/include" "$archive_package/lib" "$archive_project"
+printf '#define ARCHIVE_VALUE 1\n' >"$archive_package/include/archive_dep.h"
+printf 'archive-library-one\n' >"$archive_package/lib/libarchive_dep.a"
 tar -czf "$archive_file" -C "$archive_payload_root" dep-package
 archive_file_native=$(native_path "$archive_file")
 
@@ -444,22 +445,10 @@ EOF
 invoke_external "1" "$archive_invalid_project" "$cli_exe" fetch
 assert_contains "$LAST_OUTPUT" "cannot declare revision= with archive=" "dependency parser accepted revision= beside archive="
 
-cat >"$archive_invalid_project/project.dh" <<EOF
-[dep]
-archive=$archive_file_native
-package-root=../outside
-provider=prebuilt
-EOF
-invoke_external "1" "$archive_invalid_project" "$cli_exe" fetch
-assert_contains "$LAST_OUTPUT" "package-root must stay within" "dependency parser accepted an escaping package-root"
-
 cat >"$archive_project/project.dh" <<EOF
 [dep]
 archive=$archive_file_native
-package-root=targets/x86_64-w64-windows-gnu
 provider=prebuilt
-linking=shared
-link=archive_dep
 EOF
 
 invoke_external "0" "$archive_project" "$cli_exe" fetch
@@ -474,15 +463,11 @@ assert_contains "$LAST_OUTPUT" "[READY]" "archive status did not accept the lock
 invoke_external "0" "$archive_project" "$cli_exe" deps dev
 [ -f "$archive_project/lib/deps/archive_dep.h" ]
 assert_true $? "prebuilt archive header was not staged for the consumer"
-[ -f "$archive_project/lib/deps/libarchive_dep.dll.a" ]
-assert_true $? "selected prebuilt archive import library was not staged for the consumer"
-[ ! -f "$archive_project/lib/deps/libarchive_dep.a" ]
-assert_true $? "prebuilt archive staged a static variant for linking=shared"
-[ ! -f "$archive_project/lib/deps/libunselected.a" ]
-assert_true $? "prebuilt archive staged a library absent from link="
+[ -f "$archive_project/lib/deps/libarchive_dep.a" ]
+assert_true $? "prebuilt archive library was not staged for the consumer"
 
-printf '#define ARCHIVE_VALUE 2\n' >"$archive_package_root/include/archive_dep.h"
-printf 'archive-import-two\n' >"$archive_package_root/lib/libarchive_dep.dll.a"
+printf '#define ARCHIVE_VALUE 2\n' >"$archive_package/include/archive_dep.h"
+printf 'archive-library-two\n' >"$archive_package/lib/libarchive_dep.a"
 rm -f "$archive_file"
 tar -czf "$archive_file" -C "$archive_payload_root" dep-package
 invoke_external "0" "$archive_project" "$cli_exe" fetch
@@ -509,11 +494,14 @@ mkdir -p "$provider_bin" "$provider_source" "$provider_sysroot"
 provider_source_native=$(native_path "$provider_source")
 provider_sysroot_native=$(native_path "$provider_sysroot")
 provider_probe="$repo_root/dh-c/tests/provider-probe.c"
+tool_probe_source="$repo_root/dh-c/tests/tool-probe.c"
 provider_cmake="$provider_bin/cmake$exe_ext"
 provider_make="$provider_bin/make$exe_ext"
+tool_probe="$provider_bin/tool-probe$exe_ext"
 clang -std=gnu17 -Wall -Wextra -Werror -o "$provider_cmake" "$provider_probe"
+clang -std=gnu17 -Wall -Wextra -Werror -o "$tool_probe" "$tool_probe_source"
 cp "$provider_cmake" "$provider_make"
-chmod +x "$provider_cmake" "$provider_make"
+chmod +x "$provider_cmake" "$provider_make" "$tool_probe"
 
 cmake_project="$provider_contract_root/cmake-project"
 mkdir -p "$cmake_project"
@@ -527,10 +515,10 @@ provider=cmake
 EOF
 cmake_log="$provider_contract_root/cmake.log"
 cmake_log_native=$(native_path "$cmake_log")
-invoke_external "0" "$cmake_project" env PATH="$provider_bin:$PATH" DH_TEST_PROVIDER_LOG="$cmake_log_native" "$cli_exe" deps dev --target=aarch64-w64-windows-gnu --sysroot="$provider_sysroot_native" --compiler=clang-cross
+invoke_external "0" "$cmake_project" env DH_C_CMAKE="$provider_cmake" DH_C_AR=llvm-ar-22 DH_TEST_PROVIDER_LOG="$cmake_log_native" "$cli_exe" deps dev --target=aarch64-w64-windows-gnu --sysroot="$provider_sysroot_native" --compiler=clang-cross
 cmake_text=$(cat "$cmake_log")
 assert_contains "$cmake_text" "-DCMAKE_C_COMPILER=clang-cross" "CMake provider did not receive the effective compiler"
-assert_contains "$cmake_text" "-DCMAKE_AR=llvm-ar" "CMake provider did not receive the archiver"
+assert_contains "$cmake_text" "-DCMAKE_AR=llvm-ar-22" "CMake provider did not receive the injected archiver"
 assert_contains "$cmake_text" "-DCMAKE_C_COMPILER_TARGET=aarch64-w64-windows-gnu" "CMake provider did not receive the target triple"
 assert_contains "$cmake_text" "-DCMAKE_SYSROOT=$provider_sysroot_native" "CMake provider did not receive the sysroot"
 
@@ -546,13 +534,62 @@ provider=make
 EOF
 make_log="$provider_contract_root/make.log"
 make_log_native=$(native_path "$make_log")
-invoke_external "0" "$make_project" env PATH="$provider_bin:$PATH" DH_TEST_PROVIDER_LOG="$make_log_native" "$cli_exe" deps dev --target=aarch64-w64-windows-gnu --sysroot="$provider_sysroot_native" --compiler=clang-cross
+invoke_external "0" "$make_project" env DH_C_MAKE="$provider_make" DH_C_AR=llvm-ar-22 DH_TEST_PROVIDER_LOG="$make_log_native" "$cli_exe" deps dev --target=aarch64-w64-windows-gnu --sysroot="$provider_sysroot_native" --compiler=clang-cross
 make_text=$(cat "$make_log")
 assert_contains "$make_text" "DH_DEP_TARGET=aarch64-w64-windows-gnu" "Make provider did not receive the target triple"
 assert_contains "$make_text" "DH_DEP_CC=clang-cross" "Make provider did not receive the effective compiler"
-assert_contains "$make_text" "DH_DEP_AR=llvm-ar" "Make provider did not receive the archiver"
+assert_contains "$make_text" "DH_DEP_AR=llvm-ar-22" "Make provider did not receive the injected archiver"
 assert_contains "$make_text" "DH_DEP_SYSROOT=$provider_sysroot_native" "Make provider did not receive the sysroot"
 assert_contains "$make_text" "DH_DEP_CFLAGS=--target=aarch64-w64-windows-gnu --sysroot=$provider_sysroot_native" "Make provider did not receive target C flags"
+
+target_probe_project="$provider_contract_root/target-probe-project"
+mkdir -p "$target_probe_project/src"
+cat >"$target_probe_project/project.dh" <<'EOF'
+output=target-probe
+kind=static-lib
+link-dsl=off
+EOF
+cat >"$target_probe_project/src/value.c" <<'EOF'
+int target_probe_value(void);
+int target_probe_value(void) { return 1; }
+EOF
+target_probe_log="$provider_contract_root/target-probe.log"
+target_probe_log_native=$(native_path "$target_probe_log")
+invoke_external "0" "$target_probe_project" env DH_TEST_TOOL_LOG="$target_probe_log_native" DH_TEST_TOOL_TARGET=x86_64-unknown-linux-gnu "$cli_exe" plan dev --compiler="$tool_probe"
+target_probe_count=$("$grep_bin" -F -c 'arg=--print-target-triple' "$target_probe_log" || true)
+[ "$target_probe_count" = "1" ]
+assert_true $? "Target resolution launched the compiler more than once in one command"
+
+archive_rsp_project="$provider_contract_root/long-workspace-path-with-hyphens/archive-response-project"
+mkdir -p "$archive_rsp_project/src"
+cat >"$archive_rsp_project/project.dh" <<'EOF'
+output=archive-response
+kind=static-lib
+link-dsl=off
+EOF
+archive_source_count=24
+i=1
+while [ "$i" -le "$archive_source_count" ]; do
+    number=$(printf '%03d' "$i")
+    cat >"$archive_rsp_project/src/object-file-with-a-long-name-$number.c" <<EOF
+int archive_response_symbol_$number(void);
+int archive_response_symbol_$number(void) { return $i; }
+EOF
+    i=$((i + 1))
+done
+archive_probe_log="$provider_contract_root/archive-probe.log"
+archive_probe_log_native=$(native_path "$archive_probe_log")
+invoke_external "0" "$archive_rsp_project" env DH_C_AR="$tool_probe" DH_TEST_TOOL_LOG="$archive_probe_log_native" DH_TEST_TOOL_TOUCH_ARG=2 "$cli_exe" build dev
+archive_probe_text=$(cat "$archive_probe_log")
+assert_contains "$archive_probe_text" "argc=3" "Archiver received expanded object paths instead of one response file"
+assert_contains "$archive_probe_text" "arg=@" "Archiver did not receive a response-file argument"
+archive_rsp=$("$find_bin" "$archive_rsp_project/build" -type f -name '*.rsp' | head -n 1)
+[ -n "$archive_rsp" ]
+assert_true $? "Static archive response file was not generated"
+archive_rsp_lines=$(wc -l <"$archive_rsp" | tr -d ' ')
+[ "$archive_rsp_lines" = "$archive_source_count" ]
+assert_true $? "Static archive response file did not contain every object"
+
 rm -rf "$provider_contract_root"
 
 if [ "$integration" -eq 1 ]; then

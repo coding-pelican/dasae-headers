@@ -10,10 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #define DAL_C_ARCHIVE_MARKER ".dh-c-archive"
 
 typedef struct dal_c_Sha256 {
@@ -156,24 +152,17 @@ static void dal_c__sha256Final(dal_c_Sha256* ctx, unsigned char digest[32]) {
 char* dal_c__archiveHashFile(const char* path) {
     FILE* fp = path ? fopen(path, "rb") : NULL;
     if (!fp) { return NULL; }
-    const size_t buffer_size = 16384u;
-    unsigned char* buffer = (unsigned char*)malloc(buffer_size);
-    if (!buffer) {
-        (void)fclose(fp);
-        return NULL;
-    }
     dal_c_Sha256 ctx;
     dal_c__sha256Init(&ctx);
+    unsigned char buffer[16384];
     size_t read_count = 0u;
-    while ((read_count = fread(buffer, 1u, buffer_size, fp)) > 0u) {
+    while ((read_count = fread(buffer, 1u, sizeof(buffer), fp)) > 0u) {
         dal_c__sha256Update(&ctx, buffer, read_count);
     }
     if (ferror(fp) != 0) {
-        free(buffer);
         (void)fclose(fp);
         return NULL;
     }
-    free(buffer);
     (void)fclose(fp);
     unsigned char digest[32];
     dal_c__sha256Final(&ctx, digest);
@@ -219,12 +208,12 @@ static const char* dal_c__archiveSuffix(const char* archive) {
 static bool dal_c__archiveDownload(const char* archive, const char* output) {
     if (path_isFile(archive)) { return file_copy(archive, output); }
     const char* curl[] = {
-        "curl", "--fail", "--location", "--silent", "--show-error",
+        dal_c__externalToolPath(dal_c_ExternalTool_curl), "--fail", "--location", "--silent", "--show-error",
         "--output", output, "--", archive, NULL,
     };
     if (proc_run(curl, true) == 0 && path_isFile(output)) { return true; }
     (void)remove(output);
-    const char* wget[] = { "wget", "--quiet", "--output-document", output, "--", archive, NULL };
+    const char* wget[] = { dal_c__externalToolPath(dal_c_ExternalTool_wget), "--quiet", "--output-document", output, "--", archive, NULL };
     if (proc_run(wget, true) == 0 && path_isFile(output)) { return true; }
     (void)remove(output);
     return false;
@@ -232,11 +221,10 @@ static bool dal_c__archiveDownload(const char* archive, const char* output) {
 
 static bool dal_c__archiveExtract(const char* archive, const char* destination, const char* suffix) {
     if (!dir_createRecur(destination)) { return false; }
-    const char* tar[] = { "tar", "-xf", archive, "-C", destination, NULL };
+    const char* tar[] = { dal_c__externalToolPath(dal_c_ExternalTool_tar), "-xf", archive, "-C", destination, NULL };
     if (proc_run(tar, false) == 0) { return true; }
     if (str_eql(suffix, ".zip")) {
-        if (!dir_removeRecur(destination) || !dir_createRecur(destination)) { return false; }
-        const char* unzip[] = { "unzip", "-q", "-o", archive, "-d", destination, NULL };
+        const char* unzip[] = { dal_c__externalToolPath(dal_c_ExternalTool_unzip), "-q", "-o", archive, "-d", destination, NULL };
         if (proc_run(unzip, false) == 0) { return true; }
     }
     return false;
@@ -248,14 +236,6 @@ static void dal_c__archiveFreeEntries(char** entries, int count) {
     free(entries);
 }
 
-static bool dal_c__archiveMovePath(const char* source, const char* destination) {
-#ifdef _WIN32
-    return MoveFileExA(source, destination, MOVEFILE_WRITE_THROUGH) != 0;
-#else
-    return rename(source, destination) == 0;
-#endif
-}
-
 static bool dal_c__archiveReplaceDirectory(const char* materialized, const char* extraction_root, const char* destination) {
     char* backup = str_format("%s.previous", destination);
     if (!backup) { return false; }
@@ -264,14 +244,14 @@ static bool dal_c__archiveReplaceDirectory(const char* materialized, const char*
 
     bool moved_old = false;
     if (path_isDir(destination) || path_isFile(destination)) {
-        if (!dal_c__archiveMovePath(destination, backup)) {
+        if (rename(destination, backup) != 0) {
             free(backup);
             return false;
         }
         moved_old = true;
     }
-    if (!dal_c__archiveMovePath(materialized, destination)) {
-        if (moved_old) { (void)dal_c__archiveMovePath(backup, destination); }
+    if (rename(materialized, destination) != 0) {
+        if (moved_old) { (void)rename(backup, destination); }
         free(backup);
         return false;
     }
