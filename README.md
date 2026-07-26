@@ -23,6 +23,8 @@ dasae-headers: Modern, Better safety and productivity to C
 - testing-framework
  -->
 
+<!-- markdownlint-disable MD060 -->
+
 <div align="center">
   <a href="https://github.com/coding-pelican/dasae-headers">
     <img src="./.github/logo-dasae_headers.svg" alt="dasae-headers Logo" width="150"/>
@@ -85,30 +87,33 @@ dasae-headers: Modern, Better safety and productivity to C
       - [`builtin` — Compiler \& Platform Abstraction](#builtin--compiler--platform-abstraction)
       - [`core` — Language Primitives \& Syntax Extensions](#core--language-primitives--syntax-extensions)
       - [`prl` — Prelude Types](#prl--prelude-types)
+      - [`atom` — Atomic Operations](#atom--atomic-operations)
       - [`simd` — SIMD Vector Operations](#simd--simd-vector-operations)
+      - [`clsr` — Typed Closure Invocation](#clsr--typed-closure-invocation)
       - [`cmp` — Comparison Utilities](#cmp--comparison-utilities)
-      - [`math` — Mathematical Functions](#math--mathematical-functions)
+      - [`m-math` — Mathematical Functions](#m-math--mathematical-functions)
+      - [`mem` — Memory Utilities](#mem--memory-utilities)
+      - [`u-meta` — Runtime Record/Type Reflection](#u-meta--runtime-recordtype-reflection)
       - [`Rand` — Random Number Generation](#rand--random-number-generation)
+      - [`hash` — Hash Utilities](#hash--hash-utilities)
       - [`search` — Searching Algorithms](#search--searching-algorithms)
       - [`sort` — Sorting Algorithms](#sort--sorting-algorithms)
       - [Linked Lists](#linked-lists)
       - [Tree Structures *(planned)*](#tree-structures-planned)
       - [Array-Based Containers](#array-based-containers)
       - [Hash-Based Containers](#hash-based-containers)
-      - [`mem` — Memory Utilities](#mem--memory-utilities)
       - [`heap` — Heap Allocators](#heap--heap-allocators)
-      - [`meta` — Runtime Record/Type Reflection](#meta--runtime-recordtype-reflection)
-      - [`atom` — Atomic Operations](#atom--atomic-operations)
-      - [`Thrd` — Threading](#thrd--threading)
-      - [`Co` / `Clsr` — Coroutine Closures](#co--clsr--coroutine-closures)
+      - [`thrd` — Threading](#thrd--threading)
+      - [`co` — Stackful Fiber Contexts](#co--stackful-fiber-contexts)
+      - [`Future` / `Sched` / `exec` — Execution](#future--sched--exec--execution)
+      - [`conc` — Experimental Concurrency](#conc--experimental-concurrency)
       - [`ascii` — ASCII character utilities](#ascii--ascii-character-utilities)
       - [`utf8` — UTF-8 encoding/decoding](#utf8--utf-8-encodingdecoding)
       - [`utf16` — UTF-16 encoding/decoding](#utf16--utf-16-encodingdecoding)
       - [`wtf8` — WTF-8 (UTF-8 superset for Windows)](#wtf8--wtf-8-utf-8-superset-for-windows)
       - [`wtf16` — WTF-16 encoding](#wtf16--wtf-16-encoding)
       - [`unicode` — Unicode conversion hub](#unicode--unicode-conversion-hub)
-      - [`os` — OS-Specific APIs](#os--os-specific-apis)
-      - [`posix` — POSIX Compatibility](#posix--posix-compatibility)
+      - [`sys` — System and Platform APIs](#sys--system-and-platform-apis)
       - [`proc` — Process Management](#proc--process-management)
       - [`time` — Time \& Duration](#time--time--duration)
       - [`io` — Input/Output](#io--inputoutput)
@@ -118,7 +123,7 @@ dasae-headers: Modern, Better safety and productivity to C
       - [`net` — Networking](#net--networking)
       - [`http` — HTTP *(planned)*](#http--http-planned)
       - [`TEST` — Testing Framework](#test--testing-framework)
-      - [`main` — Entry Point](#main--entry-point)
+      - [`start` / `main` — Entry Points](#start--main--entry-points)
   - [Meta System](#meta-system)
   - [Platform Support](#platform-support)
   - [Code Samples](#code-samples)
@@ -143,14 +148,6 @@ dasae-headers: Modern, Better safety and productivity to C
 
 ## 🚀 Getting Started
 
-<!-- Interactive Quick Start -->
-<!--
-> **"Experience dasae-headers in 10 seconds"**
-> ```sh
-> curl -sSL https://raw.githubusercontent.com/coding-pelican/dasae-headers/main/try.sh | bash
-> ```
- -->
-
 ### 💽 Installation
 
 > **Note:** `dh-c` supports Clang- and GCC-compatible compiler drivers. Clang
@@ -161,6 +158,9 @@ dasae-headers: Modern, Better safety and productivity to C
 
 - **Clang or GCC-compatible C compiler**
 - **Make** (GNU Make or compatible)
+- **POSIX shell and core utilities**
+- **llvm-ar** (or set `DH_C_AR` / `AR` to another archiver)
+- **LLD** on Windows
 
 #### Step 1: Clone the Repository
 
@@ -173,27 +173,30 @@ cd dasae-headers
 
 ```sh
 cd dh-c
+sh gen-makefile.sh
 make PROFILE=release
 ```
 
-This compiles the `dh-c` build tool to `dh-c/build/dh-c`
-(or `dh-c/build/dh-c.exe` on Windows).
+This compiles the `dh-c` build tool to `dh-c/build/release/dh-c`
+(or `dh-c/build/release/dh-c.exe` on Windows).
 
 #### Step 3: Set Up Environment Variables
 
-You need to configure two environment variables:
+Add the selected profile directory to `PATH`. `DH_HOME` is optional when
+working inside this repository because `dh-c` discovers a current or ancestor
+`dh` directory before consulting the environment.
 
-| Variable  | Description                                   | Example Value                       |
-| --------- | --------------------------------------------- | ----------------------------------- |
-| `DH_HOME` | Path to the `dh` directory containing headers | `/path/to/dasae-headers/dh`         |
-| `PATH`    | Add the `dh-c` binary location                | `/path/to/dasae-headers/dh-c/build` |
+| Variable  | Description                                   | Example Value                               |
+| --------- | --------------------------------------------- | ------------------------------------------- |
+| `PATH`    | Add the profile directory containing `dh-c`   | `/path/to/dasae-headers/dh-c/build/release` |
+| `DH_HOME` | Fallback path to the `dh` installation        | `/path/to/dasae-headers/dh`                 |
 
 **Linux/macOS (bash/zsh):**
 
 ```sh
 # Add to ~/.bashrc or ~/.zshrc
 export DH_HOME="/path/to/dasae-headers/dh"
-export PATH="/path/to/dasae-headers/dh-c/build:$PATH"
+export PATH="/path/to/dasae-headers/dh-c/build/release:$PATH"
 ```
 
 Then reload your shell configuration:
@@ -207,7 +210,7 @@ source ~/.bashrc  # or source ~/.zshrc
 ```sh
 # Add to ~/.bashrc
 export DH_HOME="/c/path/to/dasae-headers/dh"
-export PATH="/c/path/to/dasae-headers/dh-c/build:$PATH"
+export PATH="/c/path/to/dasae-headers/dh-c/build/release:$PATH"
 ```
 
 **Windows (PowerShell):**
@@ -215,7 +218,7 @@ export PATH="/c/path/to/dasae-headers/dh-c/build:$PATH"
 ```powershell
 # Add to your PowerShell profile or set as system environment variables
 $env:DH_HOME = "C:\path\to\dasae-headers\dh"
-$env:PATH = "C:\path\to\dasae-headers\dh-c\build;$env:PATH"
+$env:PATH = "C:\path\to\dasae-headers\dh-c\build\release;$env:PATH"
 ```
 
 #### Step 4: Verify Installation
@@ -369,12 +372,12 @@ and fragmented conventions.
 Unifies fragmented language/architecture/OS/compiler-specific APIs and complex syntax
 of standard C into a single interface.
 
-| Aspect                      | Traditional C (Standard C)                                  | dasae-headers                                                                       |
-| --------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Variables and Functions** | Explicit type declarations and repetitive signatures        | `let` (constant), `var` (mutable) type inference and `fn_` modern syntax            |
-| **Lambda/Closures**         | GCC nested functions or Clang blocks, platform-dependent    | `la_` syntax and typed closure adapters through `Clsr`                               |
-| **Platform Support**        | Fragmented branching with `#ifdef`                          | **Unified API** (`{lang/arch/plat/comp}_cfg.h`, `os.h`, `posix.h`) provided         |
-| **Preprocessor Branching**  | Separate `#ifdef` branch definitions even for simple values | Single definition with preprocessor branching via `pp_if_`, `pp_switch_`            |
+| Aspect                      | Traditional C (Standard C)                           | dasae-headers                                                                       |
+| --------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Variables and Functions** | Explicit type declarations and repetitive signatures | `let` (constant), `var` (mutable) inference and `fn_` function syntax               |
+| **Closures**                | Compiler-specific closure extensions                 | Typed function and stackless-coroutine adapters through `Clsr`                     |
+| **Platform Support**        | Fragmented branching with `#ifdef`                   | Unified detection in `builtin/cfg` and system contracts under `sys`                |
+| **Preprocessor Branching**  | Separate `#ifdef` definitions even for simple values | One definition with expression-style branching via `pp_if_` and `pp_switch_`       |
 
 #### 2. Memory & Argument Patterns
 
@@ -383,33 +386,32 @@ via `out` parameters.
 `Optional` and `Error Result` enforce validation of absent values or error conditions
 at the type system level.
 
-| Aspect               | Traditional C (Standard C)                   | dasae-headers                                                      |
-| -------------------- | -------------------------------------------- | ------------------------------------------------------------------ |
-| **Resrc Release** | `goto cleanup` or scattered manual cleanup   | Automatic scope-based cleanup with `defer_`, `errdefer_`           |
-| **Result Return**    | `bool`/error code return + `out` pointer     | **Optional** (`O$`) / **Error Result** (`E$`) return               |
-| **Result Branching** | Manual validation with `if (err)` branches   | Result control with `orelse_`, `unwrap_` / `try_`, `catch_` syntax |
-| **Data Transfer**    | Pointer and length (`len`) passed separately | **Slice** (`S$`) or **array as value** (`A$`) transfer             |
-| **Strings/Arrays**   | `0(NULL)` sentinel-based implicit length     | Explicit length field-based **Boundary Check**                     |
+| Aspect               | Traditional C (Standard C)      | dasae-headers                                       |
+| -------------------- | ------------------------------- | --------------------------------------------------- |
+| **Resource Release** | `goto cleanup` or manual cleanup | Automatic scope cleanup with `defer_` and `errdefer_` |
+| **Result Return**    | Error code plus `out` pointer   | Direct **Optional** (`O$`) or **Error Result** (`E$`) return |
+| **Result Branching** | Manual `if (err)` branches      | Result control with `orelse_`, `unwrap_`, `try_`, and `catch_` |
+| **Data Transfer**    | Separate pointer and length     | **Slice** (`S$`) or value **array** (`A$`) transfer |
+| **Strings/Arrays**   | Sentinel or implicit length     | Explicit lengths with checked indexing and slicing helpers |
 
 #### 3. Concurrency
 
-Provides ultra-lightweight asynchronous environments capable of handling tens of thousands of tasks
-simultaneously without OS thread overhead.
-Expresses state-machine-based control flow with `Co` coroutine frames that can be
-wrapped and invoked through `Clsr`.
+Provides OS threads, typed channels, stackless `Co` coroutine frames, scheduler
+tasks, and fibers. `Clsr` gives functions and coroutine frames a shared typed
+invocation surface. The separate `conc` module remains experimental.
 
-| Aspect              | Traditional C (Standard C)                           | dasae-headers                                                           |
-| ------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| **Async Model**     | OS native thread-centric design                      | OS native threads + **State-machine-based Stackless Coroutines**        |
-| **Sync Primitives** | Reliant on primitive `mutex`, `cond`                 | `RWLock`, `ResetEvent`, `WaitGroup`, etc.                               |
-| **Control Flow**    | Callback hell or manually implemented state machines | Coroutine control with `co_fn_`, `suspend_`, `resume_`, `co_return_` syntax |
+| Aspect              | Traditional C (Standard C)     | dasae-headers                                                   |
+| ------------------- | ------------------------------ | --------------------------------------------------------------- |
+| **Async Model**     | OS-thread-centric design       | Threads, stackless coroutines, schedulers, and fibers           |
+| **Sync Primitives** | Primitive `mutex` and `cond`   | `Mtx`, `RWLock`, `ResetEvt`, `Latch`, `Group`, and channels     |
+| **Control Flow**    | Callbacks or manual state machines | `co_fn_`, `suspend_`, `resume_`, and `co_return_`            |
 
 #### 4. Meta Type & Generic System
 
 Escapes macro hell and validates type safety at compile time through the meta type system.
 Provides a differentiated layer that statically guarantees logical compatibility
 between anonymous user types not allowed in the C standard.
-See [Meta System](#meta-system) for how the meta type system and the `meta` module
+See [Meta System](#meta-system) for how the meta type system and `u-meta`
 (record reflection) work and relate.
 
 | Aspect              | Traditional C (Standard C)                                           | dasae-headers                                                                                     |
@@ -422,13 +424,15 @@ See [Meta System](#meta-system) for how the meta type system and the `meta` modu
 
 Abstracts hardware architecture-specific SIMD instructions and statically detects
 arithmetic overflow and inappropriate type casting.
-All safety features are optimized in release mode to ensure zero runtime overhead.
+Safety validations prioritize compile-time evaluation and remain available as
+assertions during development. Release builds optimize them away, preserving
+the same runtime cost as the underlying primitive operations.
 
 | Aspect                | Traditional C (Standard C)                                                | dasae-headers                                                                             |
 | --------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | **Vector Ops**        | Manual loop-based operations or platform-dependent APIs                   | Architecture-independent accelerated operations via `simd.h`                              |
-| **Arithmetic Safety** | Vulnerable to runtime exceptions like `Overflow`, `DivisionByZero`, `NaN` | Compile-time **Overflow/NaN static detection** layer                                      |
-| **Type Casting**      | Risk of data loss due to implicit type conversion                         | Mismatch tracking for `Signed`/`Unsigned` and size conversion, `int`<->`float` conversion |
+| **Arithmetic Safety** | Unchecked overflow and division edge cases                                | Compile-time validation, development assertions, and zero-overhead release assumptions    |
+| **Type Casting**      | Risk of data loss due to implicit conversion                              | Checked signed/unsigned, width, and integer/floating-point conversions                     |
 
 #### 6. Ecosystem & Infrastructure
 
@@ -437,11 +441,11 @@ and a `project.dh` contract.
 When errors occur, preserves call stack information beyond simple return values
 to immediately pinpoint the cause.
 
-| Aspect                         | Traditional C (Standard C)                             | dasae-headers                                                                    |
-| ------------------------------ | ------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| **Data Structures/Algorithms** | Manual implementation or fragmented external libraries | Standard containers and algorithms like `ArrList`, `ArrPDeq`, `HashMap` provided |
-| **Memory Control**             | Dependent on fixed global allocation                   | **Allocator or memory buffer injection** possible for all APIs                   |
-| **Testing/Analysis**           | External framework integration required                | Sophisticated tracking based on built-in `TEST.h` and `ErrTrace.h`               |
+| Aspect                         | Traditional C (Standard C)        | dasae-headers                                                            |
+| ------------------------------ | --------------------------------- | ------------------------------------------------------------------------ |
+| **Data Structures/Algorithms** | Manual or external implementations | Containers and algorithms such as `ArrList`, `ArrPDeq`, and `HashMap`    |
+| **Memory Control**             | Fixed global allocation patterns | Allocator or caller-buffer injection where supported                     |
+| **Testing/Analysis**           | External framework integration   | Built-in `TEST.h` and optional `ETrace` call-stack tracking              |
 
 </details>
 
@@ -484,7 +488,7 @@ which are blind spots for static analysis.
 Provides a zero-cost abstraction layer that optimizes like inlined code via LTO,
 constant folding, and constant propagation, even without inlining via macros.
 See [Meta System](#meta-system) for the full picture
-(meta type system + `meta` module and their relationship).
+(type-erased values plus `u-meta` record layout and their relationship).
 
 **Structural Anonymous Type Compatibility Validation:**
 
@@ -497,11 +501,11 @@ ensuring safe interaction between anonymous types.
 
 **Compile-time Evaluation Priority for Operations and Casting Validation:**
 
-Statically detects arithmetic `Overflow`, `DivisionByZero`, `NaN`, and inappropriate type casting.
-All safety validations prioritize compile-time evaluation and function as `assertions` at runtime.
-In release mode, these validation items become branch optimization targets,
-securing safety without binary overhead, while allowing faster and more accurate identification
-of problem causes during development compared to traditional C.
+Statically detects arithmetic `Overflow`, `DivisionByZero`, `NaN`, and invalid
+type conversions. Safety validations prioritize compile-time evaluation and
+act as assertions for dynamic inputs during development. In release builds,
+they become optimization assumptions, preserving zero runtime overhead while
+making failures faster and easier to diagnose during development.
 
 </details>
 
@@ -513,15 +517,16 @@ This project was developed with inspiration from the syntax structures
 and standard library designs of Zig and Rust.
 
 - **Memory Safety:**
-  Custom allocators, memory tracking, boundary checking,
-  `defer_`/`errdefer_`-based automatic resource management
+  Custom allocators, optional allocation tracing, checked indexing and slicing,
+  layout-aware meta operations, and `defer_`/`errdefer_`-based automatic
+  resource management
 - **Enhanced Type System:**
   Compile-time validation, meta type system, algebraic data types (Variant), optional types
 - **Explicit Error Handling:**
-  `ok`/`err` keywords, `try_`/`catch_` patterns, error tracing with call stack information
+  `ok`/`err` values, `try_`/`catch_` patterns, optional `ETrace` call-stack tracing
 - **Modern Syntax:**
-  Type inference (`let`/`var`), function definition (`fn_`), lambda expressions (`la_`),
-  and typed closure adapters (`Clsr`)
+  Type inference (`let`/`var`), function definition (`fn_`), typed closure adapters
+  (`Clsr`), and coroutine frames (`Co`)
 - **Development Tools:**
   Built-in testing framework, Clang-centered build tooling,
   and multi-platform environment support
@@ -532,6 +537,8 @@ and standard library designs of Zig and Rust.
 
 > Legend: Items marked with *(planned)* are under development and not yet publicly available.
 
+<!-- markdownlint-disable MD001 -->
+
 <details>
 <summary><strong>Core Language Extensions</strong></summary>
 
@@ -541,8 +548,14 @@ Preprocessor utilities, platform/compiler detection, source location tracking,
 type and container introspection.
 
 - **Submodules:**
-  `pp`, `lang_cfg`, `arch_cfg`, `plat_cfg`, `comp_cfg`, `comp`, `src_loc`,
-  `static_assert`, `auto`, `lambda`, `type_info`, `container_info`, `mem`, `atom`
+  `pp`, `cfg` (`lang`, `arch`, `plat`, `comp`, `eval`, `ver`), `comp`,
+  `src_loc`, `static_assert`, `auto`, `type_info`, `container_info`, `mem`, `atom`
+
+> **Low-level `raw_*` APIs:** `builtin` exposes raw operations for its own
+> low-level implementation boundaries. Source code that uses the `prl` layer or
+> any higher layer should avoid calling them directly. Prefer the corresponding
+> operations in `core/pri.h` or `mem/common.h`.
+
 - **`pp` (preprocessor):** Implements compile-time metaprogramming as preprocessor macros:
   - **Token comparison:**
     `pp_eq`, `pp_ne`, `pp_and`, `pp_or`, `pp_xor`, `pp_not`, `pp_Tok_eq`
@@ -557,7 +570,7 @@ type and container introspection.
     `pp_strfy`, `pp_cat`, `pp_join`, `pp_join2`/`pp_join3`/`pp_join4`, `pp_uniqTok`,
     `pp_overload`, `pp_foreach`, `pp_countArg`, `pp_defer`, `pp_expand`, `nameOf`
 - **Platform/compiler:**
-  `lang_cfg`, `arch_cfg`, `plat_cfg`, `comp_cfg` — detection macros
+  `lang`, `arch`, `plat`, `comp` under `builtin/cfg` — detection macros
 - **Source location:**
   `srcLoc$` — compile-time source location capture
 - **Type introspection (builtin):**
@@ -578,21 +591,53 @@ and safe arithmetic.
 - **Primitive types:**
   `bool`, `i8`..`i64`, `u8`..`u64`, `isize`, `usize`, `f32`, `f64`
 - **Syntax:**
-  `fn_` — function syntax; `la_` — lambda syntax; `Clsr` — typed function and
-  coroutine closure adapter
+  `fn_` — function syntax
 - **Assertions:**
   `claim_assert`, `claim_unreachable`; `debug_assert`, `debug_only`
 - **Control/scope:**
   `R`, `for_` — range iteration; `defer_`, `errdefer_` — scoped cleanup
 - **Chaining:**
   `pipe_`, `chain$`, `each_`, `filter_`, `map$`, `fold_`, `reduce_`, `all_`, `any_`
+- **Comparison contracts:**
+  `cmp_Ord`, `cmp_eql$`, `cmp_ord$`, and their context/approximate variants
+  - **`cmp_Ord`** — Three-way ordering type:
+    `cmp_Ord_lt` (−1), `cmp_Ord_eq` (0), `cmp_Ord_gt` (1).
+    It represents whether the left value is less than, equal to, or greater
+    than the right value.
+  - **`eql` / `neq`** — Primitive equality interfaces for types that may not
+    define an order. They express equivalence directly and may be implemented
+    without an ordering contract.
+  - **`eq` / `ne`** — Equality and inequality derived from `cmp_ord$`.
+    They mean `ord == cmp_Ord_eq` and `ord != cmp_Ord_eq`, respectively.
+  - **Ordering from `ord`:**
+    Implement `cmp_ord$(_T)(lhs, rhs)` and derive `cmp_eq$`, `cmp_ne$`,
+    `cmp_lt$`, `cmp_gt$`, `cmp_le$`, and `cmp_ge$` through the
+    `cmp_fn_*_default$` macros.
+  - **Ordering from `lt`:**
+    Implement `cmp_lt$(_T)(lhs, rhs)` and use `cmp_fn_ord_default$(_T)` to
+    derive three-way ordering:
+    `lt(lhs, rhs) ? cmp_Ord_lt : lt(rhs, lhs) ? cmp_Ord_gt : cmp_Ord_eq`.
+    Its remaining predicates can then be derived from that ordering.
+  - **Context and approximate variants:**
+    The same contract extends to `ordCtx` / `ltCtx`, `ordApx` / `ltApx`,
+    and the absolute/relative forms `ordApxAbs` / `ordApxRel`.
+  - **Equality distinction:**
+    `eql` / `neq` and `eq` / `ne` coincide only when the order is total and
+    consistent with equality. Use the primitive equality interface for types
+    that define equivalence without order; use order-derived equality when an
+    ordering contract is present. Content equality for a slice is one case
+    where an equality contract can exist without defining an ordering.
+  - **Predicates on `cmp_Ord`:**
+    `cmp_Ord_isEq`, `cmp_Ord_isNe`, `cmp_Ord_isLt`, `cmp_Ord_isGt`,
+    `cmp_Ord_isLe`, `cmp_Ord_isGe`, `cmp_Ord_inv`
 - **Core primitives (arithmetic, bitwise, comparison):**
-  `prim_add`, `prim_sub`, `prim_mul`, `prim_div`, `prim_rem`, `prim_neg`, `prim_abs`,
-  `prim_sgn`, `prim_not`, `prim_shl`, `prim_shr`, `prim_and`, `prim_xor`, `prim_or`,
-  `prim_eql`, `prim_neq`, `prim_ord`, `prim_min`, `prim_max`, `prim_clamp`,
-  `prim_bitSet`, `prim_bitReset`, `prim_maskLo$`, `prim_maskHi$`,
-  `prim_memcpy`, `prim_memset`, `prim_memmove`, `prim_memeql`, `bitCast$`
-- **Safe integer ops (overflow-checked, in `prim`):**
+  `pri_add`, `pri_sub`, `pri_mul`, `pri_div`, `pri_rem`, `pri_neg`, `pri_abs`,
+  `pri_sgn`, `pri_not`, `pri_shl`, `pri_shr`, `pri_and`, `pri_xor`, `pri_or`,
+  `pri_eql`, `pri_neq`, `pri_ord`, `pri_min`, `pri_max`, `pri_clamp`, `bitCast$`
+- **Core primitives (memory):**
+  `pri_memset0`, `pri_memset`, `pri_memcpy`, `pri_memmove`, `pri_memeql`,
+  `pri_memord`, and their slice forms
+- **Safe integer ops (overflow-checked, in `core/pri.h`):**
   `int_add`, `int_sub`, `int_mul`, `int_div`, `int_rem`, `int_divTrunc`, `int_divRound`,
   `int_divCeil`, `iint_divFloor`, `iint_divEuclid`, `iint_mod`, `intCast$`
 - **Integer/float division variants:**
@@ -607,100 +652,128 @@ and safe arithmetic.
 #### `prl` — Prelude Types
 
 Core algebraic types: Optional, Error Result, Slice, Array, Variant.
-(Safe arithmetic lives in `core`/`prim`.)
+(Safe arithmetic lives in `core/pri.h`.)
 
 - **Submodules:**
   `base`, `common`, `raw`, `Val`, `Ptr`, `Arr`, `Sli`, `Tup`, `Opt`,
-  `ErrSet`, `ErrRes`, `variant`, `meta`, `int`, `flt`, `Clsr`, `Co`,
-  `Err`, `ErrTrace`, `CompHash`, `simd`, `tpl`
+  `ErrSet`, `ErrRes`, `variant`, `u-meta`, `int`, `flt`, `Clsr`, `Co`,
+  `Err`, `ETrace`, `CompHash`, `simd`, `tpl`
 - **Key Types:**
   - `O$(T)` (Optional) — `some(v)`, `none()`, `if_some((opt)(capture))`, `orelse_((opt)(default))`, `unwrap_(opt)`
   - `E$(T)` (Error Result) — `ok(v)`, `err(e)`, `try_(expr)`, `catch_((expr)(err, block))`, `return_ok`, `return_err`
   - `S$(T)` (Slice) — `S_deref$`, `S_at`, `S_slice`, `S_prefix`, `S_suffix`, `S_len`
   - `A$(N, T)` (Array) — `A_zero`, `A_init$`, `A_from$`, `A_ref$`, `A_len`
   - `variant_` — Tagged union; create with `union_of$`, match with `match_`, `patt_`
-  - `ErrTrace` — Error tracing with call stack information
+  - `simd_V$(N, T)` — Primitive vector type and lane-wise `simd_V_*` operations
+  - `Co` — Stackless coroutine frame representation and control primitives
+  - `Clsr` — Typed common representation for function and coroutine closures
+  - `ETrace` — Optional error tracing with call stack information
+- **SIMD primitive operations:**
+  - **Construction:**
+    `simd_V_init$`, `simd_V_splat$`, `simd_V_from$`, `simd_V_fromA$`,
+    `simd_V_toA$`, `simd_V_cat`
+  - **Arithmetic:**
+    `simd_V_add`, `simd_V_sub`, `simd_V_mul`, `simd_V_div`, `simd_V_neg`,
+    `simd_V_abs`, `simd_V_mulAdd`
+  - **Comparison:**
+    `simd_V_eq`, `simd_V_ne`, `simd_V_lt`, `simd_V_le`, `simd_V_gt`,
+    `simd_V_ge`
+  - **Min, max, and reduction:**
+    `simd_V_min`, `simd_V_max`, `simd_V_clamp`, `simd_V_reduce`,
+    `simd_V_findMin`, `simd_V_findMax`
+  - **Vector and boolean reduction:**
+    `simd_V_dot`, `simd_V_cross3`, `simd_V_bool_any`, `simd_V_bool_all`,
+    `simd_V_bool_none`, `simd_V_bool_bitMask`
+  - **Lane composition:**
+    `simd_V_shuffle`, `simd_V_select`
+  - **Integer specialization:**
+    `simd_V_int_add`, `simd_V_int_addWrap`, `simd_V_int_addSat`,
+    `simd_V_int_div*`, `simd_V_int_mod*`, `simd_V_int_setBit`,
+    `simd_V_int_resetBit`, `simd_V_int_toggleBit`, `simd_V_int_hasBit`
+  - **Floating-point specialization:**
+    `simd_V_flt_add`, `simd_V_flt_div*`, `simd_V_flt_min`,
+    `simd_V_flt_max`, `simd_V_flt_sqrt`, `simd_V_flt_floor`,
+    `simd_V_flt_ceil`, `simd_V_flt_round`, `simd_V_flt_trunc`
+- **Stackless coroutine and closure primitives:**
+  - `co_fn_`, `co_fn_frame_scope`, `co_fn_scope`, `suspend_`, `resume_`,
+    `co_return_` define and drive state-machine-based stackless coroutine frames.
+  - `fn_use_Clsr_`, `co_use_Clsr_`, and `clsr_` adapt functions and coroutine
+    frames to the common typed `Clsr` representation.
+  - `Clsr_Kind_fn` and `Clsr_Kind_co` distinguish the represented routine kind.
 - **prl/int, prl/flt:**
   Per-type safe wrappers (e.g. `u8_add`, `u32_div`, `i64_mod`) with debug overflow checks;
-  see `core`/`prim` for generic `int_add`, `intCast$`, etc.
+  see `core/pri.h` for generic `int_add`, `intCast$`, etc.
 - **Zero-cost meta type system** (`prl/u-meta` and `prl/tpl`):
   Type-erased generic layer over PRL types so algorithms can work on values
   without knowing the concrete type at compile time.
-  How it works and how it relates to the `meta` module (record/type reflection)
+  How it works and how it relates to the `u-meta` record-layout module
   are described in [Meta System](#meta-system).
 
 </details>
 
 <details>
-<summary><strong>SIMD & Math</strong></summary>
+<summary><strong>Foundation Libraries</strong></summary>
+
+#### `atom` — Atomic Operations
+
+C11 atomics and type-safe atomic value wrappers (prefix `atom_`).
+
+- **Ordering:**
+  `atom_MemOrd` — `unordered`, `monotonic`, `acquire`, `release`, `acq_rel`, `seq_cst`
+- **Operations:**
+  `atom_fence`, `atom_load`, `atom_store`, `atom_fetchXchg`,
+  `atom_cmpXchgWeak$`, `atom_cmpXchgStrong$`,
+  `atom_pri_fetchAdd`, `atom_pri_fetchSub`, `atom_int_fetchAnd`, `atom_int_fetchOr`,
+  `atom_int_fetchXor`, `atom_int_fetchNand`
+- **Atomic value wrapper:**
+  `atom_V$(_T)`, `atom_V_zero$`, `atom_V_init$`, `atom_V_from`
+  — generic atomic variable type
 
 #### `simd` — SIMD Vector Operations
 
-Architecture-independent SIMD operations (AVX, SSE, NEON) using compiler vector extensions.
+Architecture-independent vector operations built on compiler vector support.
+`prl/simd.h` supplies the primitive `simd_V$` types and lane-wise operations;
+this module adds higher-level lane, search, and memory operations.
 
-- **Types:**
-  `Vec$(N, T)` — e.g., `Vec$(4, f32)`, `Vec$(8, f32)`, `Vec$(4, i32)`, `Vec$(2, f64)`
-- **Initialization:**
-  `Vec_init$`, `Vec_splat$`, `Vec_from$`, `Vec_fromA$`, `Vec_toA$`, `Vec_cat$`
-- **Arithmetic:**
-  `Vec_add`, `Vec_sub`, `Vec_mul`, `Vec_div`, `Vec_neg`, `Vec_abs`, `Vec_fma`
-- **Comparison:**
-  `Vec_eq`, `Vec_ne`, `Vec_lt`, `Vec_le`, `Vec_gt`, `Vec_ge`
-- **Min/Max:**
-  `Vec_min`, `Vec_max`, `Vec_clamp`
-- **Reduction:**
-  `Vec_reduceAdd`, `Vec_reduceMul`, `Vec_reduceMin`, `Vec_reduceMax`
-- **Shuffle:**
-  `Vec_shuffle$`, `Vec_select`
-- **Math:**
-  `Vec_sqrt`, `Vec_floor`, `Vec_ceil`, `Vec_round`, `Vec_trunc`
+- **Lane sequence:**
+  `simd_shiftElemsLeft`, `simd_shiftElemsRight`, `simd_rotateElemsLeft`,
+  `simd_rotateElemsRight`, `simd_reverseOrder`
+- **Search:**
+  `simd_findFirst`, `simd_findLast`, `simd_count`
+- **Memory:**
+  `simd_gather$`, `simd_scatter`, `simd_loadMask`, `simd_storeMask`
+
+#### `clsr` — Typed Closure Invocation
+
+Typed operations over the common `Clsr$(_T)` representation supplied by
+`prl/Clsr.h`.
+
+- `T_use_clsr_kind$(_T)` provides typed inspection such as `clsr_kind$i32`.
+- `T_use_clsr_invokeToStep$(_T)` provides step-wise invocation such as
+  `clsr_invokeToStep$i32`.
+- `T_use_clsr_invokeToComplete$(_T)` provides invocation to completion such as
+  `clsr_invokeToComplete$i32`.
 
 #### `cmp` — Comparison Utilities
 
-- **`cmp_Ord`** — Three-way ordering type:
-  `cmp_Ord_lt` (−1), `cmp_Ord_eq` (0), `cmp_Ord_gt` (1).
-  Represents the mathematical sign of (lhs − rhs): strictly less, equal, or strictly greater.
-  Used when a total (or partial) order exists;
-  all ordering-derived predicates are defined in terms of `cmp_ord$(_T)(lhs, rhs)`.
-- **`cmp_Eql`** — Equality-only comparison (no order).
-  Used when only equivalence is defined:
-  `cmp_eql$(_T)(lhs, rhs)` and `cmp_neq$(_T)(lhs, rhs)`.
-- **Derived names and defaults:**
-  - **ord** — Three-way comparison; default direction is *ascending* (smaller-first).
-    `cmp_OrdFn_defaultAsc` / `cmp_OrdFn_defaultDesc` (in `cmp.h`)
-    select ascending or descending.
-  - **eql** / **neq** — Equality and its negation; *not* derived from order.
-    Implement `cmp_eql$(_T)` (and optionally `cmp_neq$(_T)`;
-    the other is defaulted as its negation).
-  - **eq** / **ne** — Equality/inequality *derived from* `cmp_ord$`:
-    `eq` ⇔ (ord == cmp_Ord_eq), `ne` ⇔ (ord != cmp_Ord_eq).
-    So for ordered types, `cmp_eq$`/`cmp_ne$` are defaulted from `cmp_ord$`;
-    for equality-only types you implement `cmp_eql$`/`cmp_neq$` only.
-- **Defining ordering (ord vs lt):**
-  You can supply ordering for a type in either of two ways.
-  **(1) ord defined:** Implement `cmp_ord$(_T)(lhs, rhs)` returning `cmp_Ord` (three-way).
-  Then `cmp_eq$`, `cmp_ne$`, `cmp_lt$`, `cmp_gt$`, `cmp_le$`, `cmp_ge$` are defaulted from it
-  via the `cmp_fn_*_default$` macros.
-  **(2) lt only:** Implement only `cmp_lt$(_T)(lhs, rhs)` (strict less-than, returns bool).
-  Use `cmp_fn_ord_default$(_T)` to derive ord from lt
-  (ord = lt(lhs,rhs) ? lt : lt(rhs,lhs) ? gt : eq);
-  then eq/ne/lt/gt/le/ge are defaulted from that ord as in (1).
-  The same pattern applies to context and approximate variants: `ordCtx`/`ltCtx`, `ordApx`/`ltApx`.
-- **Distinction:**
-  **eql**/**neq** are the *primitive* equality interface
-  (reflexive, symmetric, and for consistent types transitive).
-  **eq**/**ne** are the *order-derived* equality:
-  they coincide with eql/neq when the order is total and consistent with equality,
-  but eq/ne are defined only when `cmp_ord$` exists.
-  Use eql/neq for types that have equality but no order (e.g. slices by content);
-  use eq/ne when you have an order and want (ord == cmp_Ord_eq) as equality.
-- **Predicates on `cmp_Ord`:**
-  `cmp_Ord_isLt`, `cmp_Ord_isEq`, `cmp_Ord_isGt`, `cmp_Ord_isLe`, `cmp_Ord_isGe`, `cmp_Ord_inv`
+Runtime comparison over meta values, pointers, and slices. The primitive
+`cmp_Ord` type and compile-time type contracts belong to `core/cmp.h`; this
+module supplies runtime comparator selection and type-erased dispatch.
 
-#### `math` — Mathematical Functions
+- **Equality:**
+  `cmp_EqlFn_default`, `cmp_eql`, `cmp_eqlP`, `cmp_eqlS`, and `cmp_neq*`
+- **Ordering:**
+  `cmp_OrdFn_defaultAsc`, `cmp_OrdFn_defaultDesc`, `cmp_ord`, `cmp_ordP`,
+  `cmp_ordS`, and the derived `cmp_eq*`, `cmp_lt*`, `cmp_ge*` families
+  - `cmp_OrdFn_defaultAsc` places smaller values first.
+  - `cmp_OrdFn_defaultDesc` reverses that ordering.
+- **Context variants:**
+  `cmp_EqlCtxFn_default`, `cmp_OrdCtxFn_default`, `cmp_eqlCtx*`, `cmp_ordCtx*`
+
+#### `m-math` — Mathematical Functions
 
 - **Submodules:**
-  `common`, `vec`/`vec_types`, `mat`/`mat_types`, `quat`/`quat_types`
+  `m-math`, `m-math-linalg`, `m-math-geom`, `m-math-interp`, `m-math-ease`
 - **Common (prefix `math_`):**
   `math_abs`, `math_min`, `math_max`, `math_clamp`, `math_sign`, `math_wrap`,
   `math_floor`, `math_ceil`, `math_round`, `math_trunc`, `math_sqrt`, `math_pow`, `math_rsqrt`,
@@ -716,6 +789,57 @@ Architecture-independent SIMD operations (AVX, SSE, NEON) using compiler vector 
   `m_Q4f32_identity`, `m_Q4f32_of`, `m_Q4f32_mul`, `m_Q4f32_mulQ`, `m_Q4f32_conj`, `m_Q4f32_invQ`,
   `m_Q4f32_norm`, `m_Q4f32_slerp`, `m_Q4f32_fromAxisAngle`, `m_Q4f32_fromM3`/`fromM4`, `m_Q4f32_toM3`/`toM4`
 
+#### `mem` — Memory Utilities
+
+Low-level memory operations with type-safe wrappers.
+
+- **Submodules:** `base`, `common`, `Alctr`, `AlcTrace`, `dyn`
+- **Bit Operations:**
+  `mem_trailingZeros{8,16,32,64,Size}`, `mem_leadingZeros{8,16,32,64,Size}`
+- **Byte Swap:**
+  `mem_byteSwap{16,32,64,Size}`
+- **Endian Conversion:**
+  `mem_littleToNative*`, `mem_bigToNative*`, `mem_nativeToLittle*`, `mem_nativeToBig*`
+- **Alignment:**
+  `mem_isValidAlign`, `mem_isAligned`, `mem_alignFwd`, `mem_alignBwd`, `mem_alignToLog2`
+- **Memory Operations:**
+  - `mem_copy`, `mem_move`, `mem_set`, `mem_set0` — Copy, move, fill
+  - `mem_eql`, `mem_ord`, `mem_eq`, `mem_ne`, `mem_lt`, `mem_gt`, `mem_le`, `mem_ge`
+    — Comparison
+  - `mem_swap`, `mem_reverse`, `mem_rotate` — Manipulation
+  - `mem_startsWith`, `mem_endsWith` — Pattern matching
+- **Iterators:**
+  - `mem_WindowIter` — Window iterator over a buffer
+  - `mem_TokenIter` — Tokenizer with value/pattern/choice delimiters
+  - `mem_SplitIter` — Split iterator over a buffer
+- **Allocator Interface:**
+  `mem_Alctr` — unified allocator interface used by heap allocators and containers
+- **Allocation tracing:**
+  `AlcTrace` — traced allocation context support
+
+#### `u-meta` — Runtime Record/Type Reflection
+
+Record layout and field access from `TypeInfo`, operating on the **meta type system**
+(`u_P$raw`, `u_S$raw`).
+The type-erased value layer lives in `prl/u-meta.h`; record and field layout
+utilities live in `dh/u-meta.h`.
+For the relationship between these layers,
+see [Meta System](#meta-system).
+Compile-time type info is in `builtin`/`core` (`typeInfo$`, `sizeOf$`, `alignOf$`).
+
+- **Record from fields:**
+  `u_typeInfoRecord`, `u_sizeOfRecord`, `u_alignOfRecord`
+- **Field offsets:**
+  `u_offsetTo`, `u_offsets`
+- **Field/record pointers (meta):**
+  `u_fieldPtr`, `u_fieldPtrMut`, `u_fieldPtrs`, `u_fieldPtrsMut`,
+  `u_recordPtr`, `u_recordPtrMut`
+- **Array type info:**
+  `u_typeInfoA`, `u_sizeOfA`, `u_alignOfA`
+- **N-replicated records:**
+  `u_typeInfoRecordN`, `u_offsetToN`, `u_offsetsN`, `u_fieldSli`, `u_fieldSliMut`,
+  `u_fieldSlis`, `u_fieldSlisMut`, `u_recordNPtr`, `u_recordNPtrMut`
+
 #### `Rand` — Random Number Generation
 
 Random number generator (struct `Rand`, prefix `Rand_`).
@@ -728,6 +852,11 @@ Random number generator (struct `Rand`, prefix `Rand_`).
   `Rand_next$i64`/…, `Rand_nextFlt`, `Rand_next$f64`, `Rand_next$f32`
 - **Ranges:**
   `Rand_rangeUInt`, `Rand_rangeIInt`, `Rand_rangeFlt`
+
+#### `hash` — Hash Utilities
+
+Non-cryptographic hash functions used by the hash containers and available for
+direct use, including `hash_fnv1a32` and `hash_wyhash`.
 
 </details>
 
@@ -775,8 +904,8 @@ Optimal stable and unstable sorting functions isolated by auxiliary memory const
 
 | Module        | Description        | Key Functions                                          |
 | ------------- | ------------------ | ------------------------------------------------------ |
-| **`ListSgl`** | Singly linked list | `empty`, `prepend`, `remove`, `shift`                  |
-| **`ListDbl`** | Doubly linked list | `empty`, `prepend`, `append`, `remove`, `shift`, `pop` |
+| **`ListSgl`** | Singly linked list | `ListSgl_empty`, `ListSgl_prepend`, `ListSgl_remove`, `ListSgl_shift` |
+| **`ListDbl`** | Doubly linked list | `ListDbl_empty`, `ListDbl_prepend`, `ListDbl_append`, `ListDbl_remove`, `ListDbl_shift`, `ListDbl_pop` |
 
 #### Tree Structures *(planned)*
 
@@ -800,9 +929,11 @@ Optimal stable and unstable sorting functions isolated by auxiliary memory const
 
 #### Hash-Based Containers
 
+`HashMap` and `HashSet` use the comparison and hashing contracts documented in
+[`hash` — Hash Utilities](#hash--hash-utilities).
+
 | Module           | Description                                             | Key Functions                                                                      |
 | ---------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| **`Hash`**       | Hash utilities                                          | —                                                                                  |
 | **`HashMap`**    | Hash map with open addressing                           | `init`, `fini`, `put`, `by`, `ptrBy`, `for`, `entry`, `contains`, `remove`, `iter` |
 | **`HashSet`**    | Hash set with open addressing                           | `init`, `fini`, `put`, `ensure`, `contains`, `remove`, `iter`                      |
 | **`HashMapSeq`** | Ordered hash map preserving insertion order *(planned)* | —                                                                                  |
@@ -812,34 +943,6 @@ Optimal stable and unstable sorting functions isolated by auxiliary memory const
 
 <details>
 <summary><strong>Memory Management</strong></summary>
-
-#### `mem` — Memory Utilities
-
-Low-level memory operations with type-safe wrappers.
-
-- **Submodules:** `base`, `common`, `Alctr`, `AlcTrace`, `dyn`
-- **Bit Operations:**
-  `mem_trailingZeros{8,16,32,64,Size}`, `mem_leadingZeros{8,16,32,64,Size}`
-- **Byte Swap:**
-  `mem_byteSwap{16,32,64,Size}`
-- **Endian Conversion:**
-  `mem_littleToNative*`, `mem_bigToNative*`, `mem_nativeToLittle*`, `mem_nativeToBig*`
-- **Alignment:**
-  `mem_isValidAlign`, `mem_isAligned`, `mem_alignFwd`, `mem_alignBwd`, `mem_alignToLog2`
-- **Memory Operations:**
-  - `mem_copy`, `mem_move`, `mem_set`, `mem_set0` — Copy, move, fill
-  - `mem_eql`, `mem_ord`, `mem_eq`, `mem_ne`, `mem_lt`, `mem_gt`, `mem_le`, `mem_ge`
-    — Comparison
-  - `mem_swap`, `mem_reverse`, `mem_rotate` — Manipulation
-  - `mem_startsWith`, `mem_endsWith` — Pattern matching
-- **Iterators:**
-  - `mem_WindowIter` — Window iterator over a buffer
-  - `mem_TokenIter` — Tokenizer with value/pattern/choice delimiters
-  - `mem_SplitIter` — Split iterator over a buffer
-- **Allocator Interface:**
-  `mem_Alctr` — unified allocator interface used by heap allocators and containers
-- **Allocation tracing:**
-  `AlcTrace` — traced allocation context support
 
 #### `heap` — Heap Allocators
 
@@ -854,79 +957,75 @@ Low-level memory operations with type-safe wrappers.
 | **`Smp`**      | SMP-aware allocation with per-core caching               |
 | **`Arena`**    | Region-based allocation for bulk operations              |
 | **`Pool`**     | Pool-based allocation for object reuse                   |
-
-#### `meta` — Runtime Record/Type Reflection
-
-Record layout and field access from `TypeInfo`, operating on the **meta type system**
-(`u_P$raw`, `u_S$raw`).
-For the relationship between this module and the meta type system (`prl/u-meta`),
-see [Meta System](#meta-system).
-Compile-time type info is in `builtin`/`core` (`typeInfo$`, `sizeOf$`, `alignOf$`).
-
-- **Record from fields:**
-  `u_typeInfoRecord`, `u_sizeOfRecord`, `u_alignOfRecord`
-- **Field offsets:**
-  `u_offsetTo`, `u_offsets`
-- **Field/record pointers (meta):**
-  `u_fieldPtr`, `u_fieldPtrMut`, `u_fieldPtrs`, `u_fieldPtrsMut`,
-  `u_recordPtr`, `u_recordPtrMut`
-- **Array type info:**
-  `u_typeInfoA`, `u_sizeOfA`, `u_alignOfA`
-- **N-replicated records:**
-  `u_typeInfoRecordN`, `u_offsetToN`, `u_offsetsN`, `u_fieldSli`, `u_fieldSliMut`,
-  `u_fieldSlis`, `u_fieldSlisMut`, `u_recordNPtr`, `u_recordNPtrMut`
+| **`VMap`**     | Virtual address mapping and mapped-region management     |
+| **`VMem`**     | Virtual-memory allocator support                         |
 
 </details>
 
 <details>
 <summary><strong>Concurrency</strong></summary>
 
-#### `atom` — Atomic Operations
-
-C11 atomics and type-safe atomic value wrappers (prefix `atom_`).
-
-- **Ordering:**
-  `atom_MemOrd` — `unordered`, `monotonic`, `acquire`, `release`, `acq_rel`, `seq_cst`
-- **Operations:**
-  `atom_fence`, `atom_load`, `atom_store`, `atom_fetchXchg`,
-  `atom_cmpXchgWeak$`, `atom_cmpXchgStrong$`,
-  `atom_pri_fetchAdd`, `atom_pri_fetchSub`, `atom_int_fetchAnd`, `atom_int_fetchOr`,
-  `atom_int_fetchXor`, `atom_int_fetchNand`
-- **Atomic value wrapper:**
-  `atom_V$(_T)`, `atom_V_zero$`, `atom_V_init$`, `atom_V_from`
-  — generic atomic variable type
-
-#### `Thrd` — Threading
+#### `thrd` — Threading
 
 OS thread management and synchronization primitives.
 
 | Primitive        | Description                          |
 | ---------------- | ------------------------------------ |
-| **`Thrd`**       | Thread creation, spawn, join, detach |
-| **`Ftx`**        | Futex (fast userspace mutex)         |
+| **`thrd`**       | Thread creation, spawn, join, detach |
+| **`thrd_ftx`**   | Futex wait and wake API              |
 | **`Mtx`**        | Mutex                                |
 | **`Sem`**        | Semaphore                            |
 | **`Cond`**       | Condition variable                   |
 | **`RWLock`**     | Read-write lock                      |
-| **`ResetEvent`** | Manual/auto reset event              |
-| **`WaitGroup`**  | Wait for multiple tasks              |
+| **`ResetEvt`**   | Manual/auto reset event              |
+| **`Group`**      | Spawned thread group and latch       |
 
 - **Key Functions:**
-  `thrd_spawn`, `thrd_join`, `thrd_detach`, `thrd_currId`, `thrd_yield`, `thrd_sleep`
+  `thrd_spawn`, `thrd_join`, `thrd_detach`, `thrd_currId`, `thrd_yield`
+- **Channels and coordination:**
+  `SPSC`, `MPSC`, `SPMC`, `MPMC`, `Select`, `Batch`, `Latch`, `Group`
+- **Typed closure integration:**
+  `T_use_thrd_spawn$(_T)` and `T_use_thrd_join$(_T)` expose typed thread
+  boundaries over `Clsr$(_T)` without requiring callers to inspect a concrete
+  function or coroutine closure layout.
 
-#### `Co` / `Clsr` — Coroutine Closures
+#### `co` — Stackful Fiber Contexts
 
-State-machine-based coroutines for lightweight async control flow.
-`Co` provides coroutine frames and control primitives; `Clsr` wraps either a
-normal function or a coroutine frame behind one typed invocation surface.
+`dh/co.h` exposes the `co/Fiber.h` stackful-fiber coroutine layer. The
+stackless `Co` frame primitives and typed `Clsr` representation belong to
+`prl/Co.h` and `prl/Clsr.h`; higher-level typed closure invocation belongs to
+`dh/clsr.h`.
 
-- **Syntax:**
-  `co_fn_`, `co_fn_scope`, `suspend_`, `resume_`, `co_return_`
-- **Closure integration:**
-  `fn_use_Clsr_`, `co_use_Clsr_`, `clsr_`, `Clsr_Kind_fn`, `Clsr_Kind_co`
-- **Thread integration:**
-  `thrd_spawn` accepts typed closures through `T_use_thrd_spawn$(_T)`;
-  those closures can represent normal functions or coroutine frames.
+- **Architecture support:**
+  `co_Fiber_supported` reports the compile-time availability of the context
+  switch implementation for x86_64, AArch64, and RV64 targets.
+- **Context construction and switching:**
+  `co_Fiber_Context_from` initializes a suspended fiber context and
+  `co_Fiber_contextSwitch` saves the active context before restoring another.
+- **Stack preparation:**
+  `co_Fiber_stackAllocArg` places an aligned entry argument in caller-provided
+  stack storage; `co_Fiber_Context_stackPtr` exposes the saved stack pointer.
+
+#### `Future` / `Sched` / `exec` — Execution
+
+- **`Future$(_T)`:**
+  Typed result storage with `Future_await$T`, `Future_cancel$T`,
+  `Future_result$T`, and `Future_resultMut$T`.
+- **`Sched`:**
+  Type-erased scheduler contract for `async`, fallible `spawn`, cancellation,
+  and cooperative idle points. `Sched_seq`, `Sched_coop`, `Sched_preem`, and
+  `Sched_para` adapt concrete executors.
+- **`exec`:**
+  Concrete execution building blocks: `Task`, `Seq`, `Coop`, `Preem`, `Para`,
+  `Lane`, `LaneTimed`, `Timer`, fixed-stack `Fiber`, and growable `Fiber`.
+
+#### `conc` — Experimental Concurrency
+
+`conc` is the scheduler-aware counterpart to the OS-thread synchronization
+layer. It currently contains `Waker`, `Waiter`, `Mtx`, `Cond`, `Sem`, `RWLock`,
+`Once`, `OnceLock`, `LazeLock`, `OnceEvt`, `ResetEvt`, `Latch`, `Group`,
+channels, `Select`, queues, and `Batch`. The module is still in preparation:
+these interfaces are experimental rather than stable public contracts.
 
 </details>
 
@@ -962,15 +1061,16 @@ normal function or a coroutine frame behind one typed invocation surface.
 <details>
 <summary><strong>System & OS</strong></summary>
 
-#### `os` — OS-Specific APIs
+#### `sys` — System and Platform APIs
 
-- **Windows:**
-  `cfg`, `base`, `handle`, `debug`, `nls`, `sysinfo`, `mem`, `file`, `io`, `dll`,
-  `console`, `proc`, `thrd`, `sync`, `nt`, `auth`, `crypt`, `sock`
-
-#### `posix` — POSIX Compatibility
-
-POSIX API compatibility layer for cross-platform code.
+- **Common surfaces:**
+  `sys.h`, `sys/posix.h`, `sys/win32.h`, `sys/wasi.h`
+- **POSIX compatibility:**
+  `sys/posix.h` provides the POSIX-facing contract used by cross-platform
+  system code.
+- **Windows API layer:**
+  `sys/api/windows` contains handle, file, I/O, process, thread, synchronization,
+  console, NLS, networking, and other Windows contracts.
 
 #### `proc` — Process Management
 
@@ -979,16 +1079,17 @@ Process management utilities for cross-platform code.
 #### `time` — Time & Duration
 
 - **Submodules:**
-  `cfg`, `common`, `Duration`, `Instant`, `SysTime`
+  `cfg`, `common`, `Dur`, `Inst`, `Clock`, `epoch`, `self`
 - **Duration:**
   `time_Dur_fromSecs`, `time_Dur_fromMillis`, `time_Dur_fromNanos`,
   `time_Dur_add`, `time_Dur_sub`
-- **Instant:**
-  `time_Inst_now`, `time_Inst_elapsed`, `time_Inst_durSince`
-- **SysTime:**
-  `time_SysTime_now`
+- **Clock and instant:**
+  `time_Clock_now`, `time_Clock_resolution`, `time_Clock_Inst_elapsed`, and
+  `time_Clock_Inst_durSince`
 - **Sleep:**
-  `time_sleep`
+  `time_Clock_sleep` and its seconds, milliseconds, microseconds, and
+  nanoseconds variants return `Sched_Cancelable$void`, making cancellation an
+  explicit part of the clock contract
 
 </details>
 
@@ -1071,13 +1172,16 @@ HTTP client/server utilities for cross-platform code.
 #### `TEST` — Testing Framework
 
 - **Macros:**
-  `TEST_fn_`, `TEST_expect`, `TEST_expectMsg`, `TEST_expectEq`, `TEST_expectNe`
+  `TEST_fn_`, `TEST_expect`, `TEST_expectMsg`
 - **Usage:**
   Define tests with `TEST_fn_`, run with `dh-c test`
 
-#### `main` — Entry Point
+#### `start` / `main` — Entry Points
 
-- **Macro:**
+- `start.h` provides process startup and exit support.
+- `dh-main.h` provides the error-result program entry surface and is included
+  directly when needed.
+- **Main form:**
   `fn_((main(S$S_const$u8 args))(E$void) $scope)`
   — Standard entry point with argument parsing and error handling
 
@@ -1085,10 +1189,12 @@ HTTP client/server utilities for cross-platform code.
 
 ---
 
+<!-- markdownlint-enable MD001 -->
+
 ## Meta System
 
 The meta system has two related parts: the **meta type system** (type-erased generics)
-and the **meta module** (record/type reflection).
+and the **record-layout module** (record/type reflection).
 Both use the same `u_` prefix and share `TypeInfo` from `core`/`type_info.h`.
 
 ---
@@ -1208,7 +1314,7 @@ without knowing the concrete type at compile time.
 
 ---
 
-**2. Meta module** (`dh/meta.h`)
+**2. Record-layout module** (`dh/u-meta.h`)
 
 **Record/type reflection** built on top of the meta type system.
 The module includes `prl.h` (and thus gets `u_P$raw`, `u_S$raw`, etc.)
@@ -1226,7 +1332,7 @@ and provides layout and field access **in terms of meta pointers and slices**.
   and return a meta pointer to the chosen field.
   `u_fieldPtrs` / `u_fieldPtrsMut` fill a slice of meta pointers for all fields.
   `u_recordPtr` / `u_recordPtrMut` go from a field meta pointer back to the record meta pointer.
-  So the meta module is the layer that lets you describe structs by their field types
+  So the record-layout module lets you describe structs by their field types
   and then read/write fields through the same type-erased `u_*` representation
   that the meta type system uses.
 - **N-replicated (SoA-style) access:**
@@ -1237,7 +1343,7 @@ and provides layout and field access **in terms of meta pointers and slices**.
 **Relationship:**
 The meta **type system** defines the generic representation
 (pointer/slice/array/option/result + `TypeInfo`).
-The meta **module** uses that representation for reflection:
+The record-layout **module** uses that representation for reflection:
 it computes layout from field `TypeInfo`s
 and gives you field and record access as `u_P$raw` / `u_S$raw`,
 so generic code can walk records without knowing the concrete struct type.
@@ -1248,15 +1354,17 @@ Both rely on `TypeInfo` from `core`/`type_info.h`
 
 ## Platform Support
 
-| Category         | Support Range                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| **OS**           | Windows, Unix, Linux, macOS                                                                 |
-| **Architecture** | x86 (32-bit), x64 (64-bit)                                                                  |
-| **Clang**        | 19.1.0+ (Recommended) / 16.0.0+ (Supported) / 9.0.0+ (Minimum, Requires -std=gnu11)         |
-| **GCC**          | Supported through GCC-compatible compiler-driver paths; Clang-only tooling remains optional |
-| **MSVC**         | Planned (TBD)                                                                               |
+| Category         | Support Range                                                               |
+| ---------------- | --------------------------------------------------------------------------- |
+| **OS**           | Windows, Linux, Darwin/macOS, and WASI; maturity varies by target           |
+| **Architecture** | x86, x86_64, AArch64, ARM, RISC-V, and WebAssembly detection               |
+| **Clang**        | Primary and recommended compiler                                            |
+| **GCC**          | GCC-compatible paths where selected features permit                        |
+| **MSVC**         | Header detection only; not a supported `dh-c` compiler                     |
 
-> **Note:** The `dh-c` build tool's support range is [Prerequisites](#prerequisites).
+> **Note:** See [Prerequisites](#prerequisites) for host requirements. Use
+> `dh-c doctor`, `dh-c toolchain all`, and `dh-c plan` to inspect effective
+> support for a concrete host, target, and project.
 
 ---
 
@@ -1266,46 +1374,46 @@ Both rely on `TypeInfo` from `core`/`type_info.h`
 
 ```c
 fn_((findValueIndex(i32 value, S_const$i32 items))(O$i32) $scope) {
-    for_(($s(items), $rf(0))(item, index) {
-        if (*item != value) return_some(index);
-    });
+    for_(($s(items), $rf(0))(item, index)) {
+        if (*item == value) return_some(intCast$((i32)(index)));
+    } $end(for);
     return_none();
-} $unscoped_(fn);
+} $unscoped(fn);
 
-fn_((example(void))(void)) {
-    var nums = A_from$((i32){ 10, 20, 30, 40, 50 });
+$static fn_((example(void))(void) $scope) {
+    var_(nums, A$$(5, i32)) = A_init({ 10, 20, 30, 40, 50 });
     let found = findValueIndex(30, A_ref$((S$i32)(nums)).as_const);
 
-    io_stream_println(u8_("found = {:?d}"), found);
     if_some((found)(index)) {
-        io_stream_println(u8_("- Found at: {:d}"), index);
+        io_stream_println(u8_l("Found at: {:d}"), index);
     } else_none {
-        io_stream_println(u8_("- Not found"));
+        io_stream_println(u8_l("Not found"));
     }
 
-    let value = orelse_((found)(-1));
+    let value_or_default = orelse_((found)(-1));
     let value_assumed = unwrap_(found);
-};
+    claim_assert(value_or_default == value_assumed);
+} $unscoped(fn);
 ```
 
 ### Error Results & Defer
 
 ```c
-errset_((math_Err)(
-    DivisionByZero,
-    Overflow,
-    Underflow
+errset_((my_math_E)(
+    my_math_DivisionByZero,
+    my_math_Overflow,
+    my_math_Underflow
 ));
 
-T_use_E$($set(math_Err)(i32));
+T_use_E$($set(my_math_E)(i32));
 $attr($must_check)
-fn_((safeDivide(i32 num, i32 denom))(math_Err$i32) $scope) {
-    if (denom == 0) return_err(math_Err_DivisionByZero());
-    return_ok(num / denom);
-} $unscoped_(fn);
+$static fn_((safeDivide(i32 lhs, i32 rhs))(my_math_E$i32) $scope) {
+    if (rhs == 0) return_err(E_cause$my_math_DivisionByZero());
+    return_ok(lhs / rhs);
+} $unscoped(fn);
 
 $attr($must_check)
-fn_((example(mem_Alctr gpa))(E$void) $guard) {
+$static fn_((example(mem_Alctr gpa))(E$void) $guard) {
     // Allocate resources
     var buffer = try_(mem_Alctr_alloc$i32($trace gpa, 100));
     defer_(mem_Alctr_free$i32($trace gpa, buffer));
@@ -1314,11 +1422,13 @@ fn_((example(mem_Alctr gpa))(E$void) $guard) {
     errdefer_(err, io_stream_eprintln(u8_l("Occurred error!: {:e}"), err));
 
     // Error propagation (try_) and handling (catch_)
-    let divided = try_(safeDivide(10, 0));
-    let divided_handled = catch_((safeDivide(10, 0))($ignore, 1)); // Use default value 1 when error occurs
+    let divided = try_(safeDivide(10, 2));
+    let divided_handled = catch_((safeDivide(10, 0))($ignore, 1));
+    let_ignore = divided;
+    let_ignore = divided_handled;
 
     return_ok({});
-} $unguarded_(fn);
+} $unguarded(fn);
 ```
 
 ### Pattern Matching
@@ -1349,74 +1459,60 @@ fn_((example(void))(void)) {
     } $end(patt);
     fallback_(claim_unreachable);
 } $end(match);
-} $unscoped_(fn);
+} $unscoped(fn);
 ```
 
 ### Chaining - Filter, Map, Fold, Reduce
 
+`fold_` can accumulate into scalar or container state. For example, an
+allocator-backed `ArrList` can be initialized before the chain, appended to
+inside the fold with `try_`, and released with `defer_`; `reduce_` instead
+returns `O$(_T)` because an empty input has no initial accumulator.
+
 ```c
-T_use$((i32)(
-    ArrList,
-    ArrList_init,
-    ArrList_fini,
-    ArrList_append
-));
+$static fn_((example(void))(void) $scope) {
+    let data = A_from$((i32){ 1, 2, 3, 4, 5 });
+    let items = A_ref(data);
 
-fn_((collectEvenSq(S_const$i32 items, mem_Alctr gpa))(mem_Err$ArrList$i32) $scope) {
-    let init = ArrList_init$i32;
-    let append = ArrList_append$i32;
-    return_ok(chain$((ArrList$i32)(items)(
-        filter_((x)(int_isEven(*x))),
-        map$((i32)(x)(int_sq(*x))),
-        fold_(try_(init(gpa, items.len)), (collect, x)(try_(append(&collect, gpa, *x)), collect))
-    )));
-} $unscoped_(fn);
-
-fn_((reduceSumEvenSq(S_const$i32 items))(O$i32)) {
-    return chain$((O$i32)(items)(
-        filter_((x)(int_isEven(*x))),
-        map$((i32)(x)(int_sq(*x))),
-        reduce_((acc, x)(acc + *x))
+    let even_square_sum = chain$((i32)(items)(
+        filter_((item)(*item % 2 == 0)),
+        map$((i32)(item)(*item * *item)),
+        fold_((0), (acc, item)(acc + *item))
     ));
-};
 
-$attr($must_check)
-fn_((example(void))(E$void) $guard) {
-    var heap = heap_Sys_init();
-    defer_(heap_Sys_fini(&heap));
-    let gpa = heap_Sys_alctr(&heap);
-    let nums = A_ref$((S$i32)(A_from$((i32){ 1, 2, 3, 4, 5, 6, 7, 8 }))).as_const;
+    let minimum = chain$((O$u32)(items)(
+        filter_((item)(*item > 0)),
+        map$((u32)(item)(as$(u32)(*item))),
+        reduce_((acc, item)(pri_min(acc, *item)))
+    ));
 
-    let even_sqs = try_(collectEvenSq(nums, gpa));
-    defer_(ArrList_fini$i32(&even_sqs, gpa));
-    let sum = chain$((i32)(even_sqs.items)(fold_((0), (acc, item)(acc + *item))));
-    let sum_even_sqs = orelse_((reduceSumEvenSq(nums))(0));
-    claim_assert(sum == sum_even_sqs);
-
-    return_ok({});
-} $unguarded_(fn);
+    claim_assert(even_square_sum == 20);
+    claim_assert(unwrap_(minimum) == 1);
+} $unscoped(fn);
 ```
 
 ### Threads vs Stackless-Coroutines
 
 Threads run typed closures. A closure can wrap a normal function or a coroutine
 frame, so `thrd_spawn` can execute either shape through the same typed closure
-contract.
+contract. `thrd_join$i32` returns the common typed `Clsr$i32*` surface, so the
+result is read from that returned closure instead of reopening the original
+function-specific or coroutine-specific storage.
 
 ```c
 $static fn_((timesTwo(i32 input))(i32)) {
-    time_sleep(time_Dur_fromMillis(10));
     return input * 2;
 };
 fn_use_Clsr_((timesTwo)(i32)(i32));
 
-co_fn_(sumAfterSuspend, (i32 lhs; i32 rhs), i32);
-co_fn_scope(
+$static co_fn_(sumAfterSuspend, (i32 lhs; i32 rhs), i32);
+co_fn_frame_scope(
     sumAfterSuspend,
     co_locals_({}),
     co_locals_mut_({}),
     co_suspended_({ var_(idle, Void); })
-) {
+);
+co_fn_scope(sumAfterSuspend) {
     suspend_((idle)(Void_()));
     co_return_($co_arg(lhs) + $co_arg(rhs));
 } $unscoped(co_fn);
@@ -1428,12 +1524,19 @@ T_use_thrd_spawn$(i32);
 T_use_thrd_join$(i32);
 
 fn_((example(void))(E$void) $guard) {
+    var heap = try_(heap_Sys_init());
+    defer_(heap_Sys_fini(&heap));
+    let spawn_cfg = (thrd_SpawnCfg){
+        .gpa = heap_Sys_alctr(&heap),
+        .stack_size = thrd_SpawnCfg_default_stack_size,
+    };
+
     var function_clsr = clsr_((timesTwo)(21));
-    let function_thread = try_(thrd_spawn$i32(thrd_SpawnCfg_default, function_clsr.as_base));
+    let function_thread = try_(thrd_spawn$i32(spawn_cfg, function_clsr.as_base));
     let function_joined = thrd_join$i32(function_thread);
 
     var coroutine_clsr = clsr_((sumAfterSuspend)(19, 23));
-    let coroutine_thread = try_(thrd_spawn$i32(thrd_SpawnCfg_default, coroutine_clsr.as_base));
+    let coroutine_thread = try_(thrd_spawn$i32(spawn_cfg, coroutine_clsr.as_base));
     let coroutine_joined = thrd_join$i32(coroutine_thread);
 
     io_stream_println(u8_l("function: {:d}"), function_joined->ctx.ret);
@@ -1487,8 +1590,8 @@ accepting allocators or memory buffers to fully control memory layout.
 #include "dh/TEST.h"
 
 // Define functions to test
-fn_((mathAdd(i32 a, i32 b))(i32)) { return a + b; }
-fn_((mathMul(i32 a, i32 b))(i32)) { return a * b; }
+$static fn_((mathAdd(i32 a, i32 b))(i32)) { return a + b; };
+$static fn_((mathMul(i32 a, i32 b))(i32)) { return a * b; };
 
 TEST_fn_("Basic Math Operations Test" $scope) {
     // Addition test
@@ -1504,10 +1607,14 @@ TEST_fn_("Basic Math Operations Test" $scope) {
     let product = mathMul(a, b);
     try_(TEST_expect(product == 35));
 
-    // Failing test (intentional error)
-    let should_fail = TEST_expect(product == 30); // Fails: 35 != 30
+    // TEST_expect returns an error value, so expected failures can be inspected
+    let should_fail = expr_(TEST_E$void $guard)({
+        ETrace_disable();
+        defer_(ETrace_enable());
+        $break_(TEST_expect(product == 30));
+    }) $unguarded(expr);
     try_(TEST_expect(isErr(should_fail)));
-} $unscoped_(TEST_fn);
+} $unscoped(TEST_fn);
 ```
 
 ---
@@ -1520,6 +1627,12 @@ Public project documents:
 | --- | --- |
 | [`README.md`](./README.md) | Project overview and entry point. |
 | [`BUILD.md`](./BUILD.md) | Public build guide for direct-source, workspace, project, dependency, and prebuilt flows. |
+| [`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md) | Canonical authored and generated `.dh` file contracts. |
+| [`dh-c/docs/project-dh-contract.md`](./dh-c/docs/project-dh-contract.md) | Named project and target-root contract. |
+| [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md) | Dependency providers, locks, fetch, and update behavior. |
+| [`dh-c/docs/external-tools.md`](./dh-c/docs/external-tools.md) | Helper tool resolution and environment overrides. |
+| [`dh-c/docs/artifact-manifest.md`](./dh-c/docs/artifact-manifest.md) | Generated library artifact inventory. |
+| [`dh-c/docs/prebuilt-packages.md`](./dh-c/docs/prebuilt-packages.md) | Prebuilt package layout and consumption. |
 | [`LICENSE`](./LICENSE) | MIT license. |
 
 For API details, use the public headers under `dh/include/dh/` and the checked
