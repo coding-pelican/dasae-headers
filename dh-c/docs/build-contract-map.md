@@ -97,6 +97,9 @@ Rules:
 - `kind=lib` composes the static variants and shared output rather than creating a new profile
 - final links select `.lto` archives only when their own effective LTO is enabled
 - dependency staging preserves both static variants and shared/import artifacts
+- final static links order declared project dependencies by a stable consumer-before-provider topological traversal
+- a dependency shared by multiple consumers is emitted once after all of those consumers
+- the DH runtime archive is emitted after DH-based project and dependency archives
 
 Names:
 - Windows: `mylib.lib`, `mylib.lto.lib`, `mylib.dll`, `mylib.dll.lib`

@@ -106,6 +106,11 @@ accept compile/link property keys, including `include`, `define`, `link`,
 `lock.dh` is generated beside `project.dh`. `fetch` preserves an existing exact
 resolution; `update` intentionally resolves again and rewrites the lock.
 
+Final static links preserve the declared project dependency graph. Consumer
+archives precede their providers, a provider shared by multiple consumers is
+emitted once after those consumers, and the DH runtime archive follows
+DH-based dependency archives.
+
 ## Project library behavior
 
 ```ini

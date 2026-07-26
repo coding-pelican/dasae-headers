@@ -1130,7 +1130,6 @@ static void dal_c__writeVersionDefines(FILE* fp, const dal_c_Project* proj, cons
 static void dal_c__appendVersionDefineArguments(ArrStr* argv, const dal_c_Project* proj, const dal_c_VersionSpec* version);
 static bool dal_c__targetIsEmitOnly(dal_c_Target target_type);
 static bool dal_c__linkedPlanIsUpToDate(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, ArrStr* sources, bool has_pch, const char* object_dir, const char* base, dal_c_Target target_type, const char* target_path, const char* link_contract_path);
-static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 static dal_c__noinline void dal_c__writeMakefileCompilationRules(FILE* fp, const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, ArrStr* sources, bool has_pch, const char* object_dir, const char* base, dal_c_Target target_type);
 static void dal_c__writeMakefileTargetVar(FILE* fp, const char* target_path);
 static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c_Cmd* cmd, const dal_c_ProfileSpec* profile, dal_c_Target type, bool is_windows, const char* link_contract_path);
@@ -1811,6 +1810,37 @@ static void dal_c__arrStrPushUnique(ArrStr* arr, const char* value) {
     assert(arr != NULL);
     if (!value || value[0] == '\0' || dal_c__arrStrContains(arr, value)) { return; }
     ArrStr_push(arr, value);
+}
+
+static bool dal_c__pathTextEquals(const char* lhs, const char* rhs) {
+    if (!lhs || !rhs) { return false; }
+    while (*lhs && *rhs) {
+        char lhs_ch = *lhs == '\\' ? '/' : *lhs;
+        char rhs_ch = *rhs == '\\' ? '/' : *rhs;
+#ifdef _WIN32
+        lhs_ch = (char)tolower((unsigned char)lhs_ch);
+        rhs_ch = (char)tolower((unsigned char)rhs_ch);
+#endif
+        if (lhs_ch != rhs_ch) { return false; }
+        lhs++;
+        rhs++;
+    }
+    return *lhs == '\0' && *rhs == '\0';
+}
+
+static bool dal_c__arrStrContainsPath(const ArrStr* arr, const char* path) {
+    assert(arr != NULL);
+    assert(path != NULL);
+    for (int i = 0; i < ArrStr_len(arr); ++i) {
+        if (dal_c__pathTextEquals(ArrStr_at(arr, i), path)) { return true; }
+    }
+    return false;
+}
+
+static void dal_c__arrStrPushUniquePath(ArrStr* arr, const char* path) {
+    assert(arr != NULL);
+    if (!path || path[0] == '\0' || dal_c__arrStrContainsPath(arr, path)) { return; }
+    ArrStr_push(arr, path);
 }
 
 static char* dal_c__sourceListCachePath(const dal_c_Project* proj, const char* dir, bool skip_source_paths) {
@@ -3502,7 +3532,304 @@ static char* dal_c__resolvePrebuiltArtifactPath(
 }
 
 
-static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type) {
+typedef struct dal_c__LinkGraphNode {
+    char* key;
+    ArrStr* artifacts;
+    int* dependencies;
+    int dependency_count;
+    int dependency_capacity;
+    int visit_state;
+    bool emitted;
+} dal_c__LinkGraphNode;
+
+typedef struct dal_c__LinkGraph {
+    dal_c__LinkGraphNode* nodes;
+    int node_count;
+    int node_capacity;
+    const char* deps_dir;
+    const char* dh_path;
+    bool is_windows;
+    bool lto_enabled;
+    bool cycle;
+    bool failed;
+} dal_c__LinkGraph;
+
+static void dal_c__linkGraphCleanup(dal_c__LinkGraph* graph) {
+    if (!graph) { return; }
+    for (int i = 0; i < graph->node_count; ++i) {
+        dal_c__LinkGraphNode* node = &graph->nodes[i];
+        free(node->key);
+        ArrStr_fini(&node->artifacts);
+        free(node->dependencies);
+    }
+    free(graph->nodes);
+    memset(graph, 0, sizeof(*graph));
+}
+
+static int dal_c__linkGraphFindNode(const dal_c__LinkGraph* graph, const char* key) {
+    if (!graph || !key) { return -1; }
+    for (int i = 0; i < graph->node_count; ++i) {
+        if (str_eql(graph->nodes[i].key, key)) { return i; }
+    }
+    return -1;
+}
+
+static int dal_c__linkGraphAddNode(dal_c__LinkGraph* graph, const char* key) {
+    assert(graph != NULL);
+    assert(key != NULL);
+    int existing = dal_c__linkGraphFindNode(graph, key);
+    if (existing >= 0) { return existing; }
+    if (graph->node_count >= graph->node_capacity) {
+        int capacity = graph->node_capacity > 0 ? graph->node_capacity * 2 : 16;
+        dal_c__LinkGraphNode* nodes = realloc(graph->nodes, (size_t)capacity * sizeof(*nodes));
+        if (!nodes) {
+            graph->failed = true;
+            return -1;
+        }
+        graph->nodes = nodes;
+        graph->node_capacity = capacity;
+    }
+    dal_c__LinkGraphNode* node = &graph->nodes[graph->node_count];
+    memset(node, 0, sizeof(*node));
+    node->key = strdup(key);
+    node->artifacts = ArrStr_init();
+    if (!node->key || !node->artifacts) {
+        free(node->key);
+        ArrStr_fini(&node->artifacts);
+        memset(node, 0, sizeof(*node));
+        graph->failed = true;
+        return -1;
+    }
+    return graph->node_count++;
+}
+
+static void dal_c__linkGraphAddEdge(dal_c__LinkGraph* graph, int consumer, int provider) {
+    assert(graph != NULL);
+    if (consumer < 0 || provider < 0) {
+        graph->failed = true;
+        return;
+    }
+    dal_c__LinkGraphNode* node = &graph->nodes[consumer];
+    for (int i = 0; i < node->dependency_count; ++i) {
+        if (node->dependencies[i] == provider) { return; }
+    }
+    if (node->dependency_count >= node->dependency_capacity) {
+        int capacity = node->dependency_capacity > 0 ? node->dependency_capacity * 2 : 4;
+        int* dependencies = realloc(node->dependencies, (size_t)capacity * sizeof(*dependencies));
+        if (!dependencies) {
+            graph->failed = true;
+            return;
+        }
+        node->dependencies = dependencies;
+        node->dependency_capacity = capacity;
+    }
+    node->dependencies[node->dependency_count++] = provider;
+}
+
+static char* dal_c__linkGraphNodeKey(const dal_c_Project* owner, const dal_c_Lib* lib) {
+    assert(lib != NULL);
+    const char* provider = lib->provider && lib->provider[0] ? lib->provider : "dh";
+    const char* identity = NULL;
+    char* canonical_path = NULL;
+    if (lib->path && lib->path[0]) {
+        canonical_path = path_abs(lib->path);
+        identity = canonical_path ? canonical_path : lib->path;
+    } else if (lib->source && lib->source[0]) {
+        identity = lib->source;
+    } else if (lib->archive && lib->archive[0]) {
+        identity = lib->archive;
+    } else {
+        identity = owner && owner->root ? owner->root : "";
+    }
+    char* key = str_format(
+        "%s:%s:%s:%s:%s",
+        provider,
+        identity,
+        lib->package_root ? lib->package_root : "",
+        lib->name,
+        lib->is_static ? "static" : "shared"
+    );
+    free(canonical_path);
+    return key;
+}
+
+static void dal_c__linkGraphPushExisting(dal_c__LinkGraphNode* node, char* path) {
+    if (node && path && path_isFile(path)) {
+        dal_c__arrStrPushUniquePath(node->artifacts, path);
+    }
+    free(path);
+}
+
+static void dal_c__linkGraphCollectNamedArtifact(
+    dal_c__LinkGraphNode* node,
+    const char* directory,
+    const char* name,
+    bool is_static,
+    bool is_windows,
+    bool lto_enabled
+) {
+    if (!node || !directory || !name || !name[0]) { return; }
+    if (is_static) {
+        char* native_name = is_windows ? str_format("%s.lib", name) : str_format("lib%s.a", name);
+        char* native_path = native_name ? path_join(directory, native_name) : NULL;
+        char* selected = native_path ? dal_c__selectStaticLibraryPath(native_path, lto_enabled) : NULL;
+        dal_c__linkGraphPushExisting(node, selected);
+        free(native_path);
+        free(native_name);
+        return;
+    }
+    if (is_windows) {
+        char* dh_import_name = str_format("%s.dll.lib", name);
+        char* gnu_import_name = str_format("lib%s.dll.a", name);
+        char* generic_import_name = str_format("%s.lib", name);
+        dal_c__linkGraphPushExisting(node, dh_import_name ? path_join(directory, dh_import_name) : NULL);
+        dal_c__linkGraphPushExisting(node, gnu_import_name ? path_join(directory, gnu_import_name) : NULL);
+        dal_c__linkGraphPushExisting(node, generic_import_name ? path_join(directory, generic_import_name) : NULL);
+        free(generic_import_name);
+        free(gnu_import_name);
+        free(dh_import_name);
+    } else {
+        char* so_name = str_format("lib%s.so", name);
+        char* dylib_name = str_format("lib%s.dylib", name);
+        dal_c__linkGraphPushExisting(node, so_name ? path_join(directory, so_name) : NULL);
+        dal_c__linkGraphPushExisting(node, dylib_name ? path_join(directory, dylib_name) : NULL);
+        free(dylib_name);
+        free(so_name);
+    }
+}
+
+static void dal_c__linkGraphCollectArtifacts(
+    dal_c__LinkGraph* graph,
+    dal_c__LinkGraphNode* node,
+    const dal_c_Lib* lib
+) {
+    assert(graph != NULL);
+    assert(node != NULL);
+    assert(lib != NULL);
+    char* target_dir = dal_c__resolveDepsTargetDir(graph->deps_dir, lib->name);
+    char* artifact_name = path_basename(lib->name);
+    dal_c__linkGraphCollectNamedArtifact(
+        node, target_dir, artifact_name, lib->is_static, graph->is_windows, graph->lto_enabled
+    );
+    free(artifact_name);
+    free(target_dir);
+
+    for (int i = 0; i < lib->opts.link_count; ++i) {
+        dal_c__linkGraphCollectNamedArtifact(
+            node,
+            graph->deps_dir,
+            lib->opts.link_libs[i],
+            lib->is_static,
+            graph->is_windows,
+            graph->lto_enabled
+        );
+    }
+}
+
+/* NOLINTNEXTLINE(misc-no-recursion) */
+static int dal_c__linkGraphVisitLibrary(
+    dal_c__LinkGraph* graph,
+    const dal_c_Project* owner,
+    const dal_c_Lib* lib
+) {
+    assert(graph != NULL);
+    assert(lib != NULL);
+    char* key = dal_c__linkGraphNodeKey(owner, lib);
+    int node_index = key ? dal_c__linkGraphAddNode(graph, key) : -1;
+    free(key);
+    if (node_index < 0) {
+        graph->failed = true;
+        return -1;
+    }
+
+    dal_c__LinkGraphNode* node = &graph->nodes[node_index];
+    dal_c__linkGraphCollectArtifacts(graph, node, lib);
+    if (node->visit_state == 1) {
+        graph->cycle = true;
+        return node_index;
+    }
+    if (node->visit_state == 2) { return node_index; }
+
+    node->visit_state = 1;
+    const char* provider = lib->provider && lib->provider[0] ? lib->provider : "dh";
+    if (str_eql(provider, "dh") && lib->path && lib->path[0]) {
+        dal_c_Project* child = dal_c_Project_detectAt(lib->path, graph->dh_path);
+        if (child) {
+            for (int i = 0; i < child->lib_count; ++i) {
+                int dependency = dal_c__linkGraphVisitLibrary(graph, child, &child->libraries[i]);
+                dal_c__linkGraphAddEdge(graph, node_index, dependency);
+            }
+            dal_c_Project_cleanup(&child);
+        }
+    }
+    node->visit_state = 2;
+    return node_index;
+}
+
+static bool dal_c__linkGraphArtifactHasPendingOwner(
+    const dal_c__LinkGraph* graph,
+    int owner_index,
+    const char* artifact
+) {
+    assert(graph != NULL);
+    assert(artifact != NULL);
+    for (int i = 0; i < graph->node_count; ++i) {
+        if (i == owner_index || graph->nodes[i].emitted) { continue; }
+        if (dal_c__arrStrContainsPath(graph->nodes[i].artifacts, artifact)) { return true; }
+    }
+    return false;
+}
+
+static bool dal_c__linkGraphAppendTopological(dal_c__LinkGraph* graph, ArrStr* paths) {
+    assert(graph != NULL);
+    assert(paths != NULL);
+    if (graph->failed) { return false; }
+    if (graph->cycle) {
+        (void)fprintf(stderr, "Error: Dependency graph contains a cycle.\n");
+        return false;
+    }
+
+    int* incoming = calloc((size_t)graph->node_count, sizeof(*incoming));
+    if (graph->node_count > 0 && !incoming) { return false; }
+    for (int i = 0; i < graph->node_count; ++i) {
+        dal_c__LinkGraphNode* node = &graph->nodes[i];
+        for (int j = 0; j < node->dependency_count; ++j) {
+            incoming[node->dependencies[j]]++;
+        }
+    }
+
+    int emitted = 0;
+    while (emitted < graph->node_count) {
+        int next = -1;
+        for (int i = 0; i < graph->node_count; ++i) {
+            if (!graph->nodes[i].emitted && incoming[i] == 0) {
+                next = i;
+                break;
+            }
+        }
+        if (next < 0) {
+            (void)fprintf(stderr, "Error: Dependency graph contains a cycle.\n");
+            free(incoming);
+            return false;
+        }
+        dal_c__LinkGraphNode* node = &graph->nodes[next];
+        for (int i = 0; i < ArrStr_len(node->artifacts); ++i) {
+            const char* artifact = ArrStr_at(node->artifacts, i);
+            if (!dal_c__linkGraphArtifactHasPendingOwner(graph, next, artifact)) {
+                dal_c__arrStrPushUniquePath(paths, artifact);
+            }
+        }
+        node->emitted = true;
+        emitted++;
+        for (int i = 0; i < node->dependency_count; ++i) {
+            incoming[node->dependencies[i]]--;
+        }
+    }
+    free(incoming);
+    return true;
+}
+
+ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type) {
     assert(cmd != NULL);
     assert(profile != NULL);
 
@@ -3532,7 +3859,8 @@ static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal
         char* project_profile_dir = dal_c__makeBuildProfileDir(proj, opts, profile);
         char* project_lib_dir = project_profile_dir ? path_join(project_profile_dir, "libs") : NULL;
         const char* project_output_name = proj->defaults.output_name && proj->defaults.output_name[0]
-                                        ? proj->defaults.output_name : proj->name;
+                                            ? proj->defaults.output_name
+                                            : proj->name;
         project_lib_name = dal_c__makeTargetFileName(project_output_name, dal_c_Target_static_lib, is_windows, NULL);
         char* project_native_path = (project_lib_dir && project_lib_name) ? path_join(project_lib_dir, project_lib_name) : NULL;
         project_lib_path = project_native_path ? dal_c__selectStaticLibraryPath(project_native_path, lto_enabled) : NULL;
@@ -3547,43 +3875,61 @@ static ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal
     free(project_lib_name);
     dal_c_TargetRequest_cleanup(&request);
 
-    if (proj && proj->dh_path && dal_c__usesDHLibrary(proj, opts)) {
-        char* dh_profile = dal_c__makeBuildProfileDirAt(proj->dh_path, opts, profile);
-        char* dh_lib_dir = dh_profile ? path_join(dh_profile, "libs") : NULL;
-        const char* dh_lib_name = NULL;
-        if (target_type == dal_c_Target_shared_lib) {
-            dh_lib_name = is_windows ? "dh.dll.lib" : "libdh.so";
-        } else {
-            dh_lib_name = is_windows ? "dh.lib" : "libdh.a";
-        }
-        char* dh_native = dh_lib_dir ? path_join(dh_lib_dir, dh_lib_name) : NULL;
-        char* dh_lib = (dh_native && target_type != dal_c_Target_shared_lib)
-                         ? dal_c__selectStaticLibraryPath(dh_native, lto_enabled)
-                         : (dh_native ? strdup(dh_native) : NULL);
-        if (dh_lib && path_isFile(dh_lib)) {
-            ArrStr_push(deps, dh_lib);
-        }
-        free(dh_native);
-        free(dh_lib);
-        free(dh_lib_dir);
-        free(dh_profile);
-    }
-
     if (proj && proj->lib_count > 0) {
         char* deps_dir = dal_c_Project_getDepsDir(proj);
         if (deps_dir && path_isDir(deps_dir)) {
+            dal_c__LinkGraph graph = {
+                .deps_dir = deps_dir,
+                .dh_path = proj->dh_path,
+                .is_windows = is_windows,
+                .lto_enabled = lto_enabled,
+            };
+            for (int i = 0; i < proj->lib_count; ++i) {
+                if (dal_c__linkGraphVisitLibrary(&graph, proj, &proj->libraries[i]) < 0) {
+                    break;
+                }
+            }
+            bool graph_ordered = dal_c__linkGraphAppendTopological(&graph, deps);
+
             int lib_count = 0;
-            char** lib_files = dir_listRecur(deps_dir, &lib_count);
+            char** lib_files = graph_ordered ? dir_listRecur(deps_dir, &lib_count) : NULL;
             if (lib_files) {
+                qsort(lib_files, (size_t)lib_count, sizeof(*lib_files), dal_c__compareCStringPointers);
                 for (int i = 0; i < lib_count; ++i) {
-                    if (dal_c__shouldLinkDependencyArtifact(lib_files[i], is_windows, lto_enabled)) {
+                    if (dal_c__shouldLinkDependencyArtifact(lib_files[i], is_windows, lto_enabled)
+                        && !dal_c__arrStrContainsPath(deps, lib_files[i])) {
                         ArrStr_push(deps, lib_files[i]);
                     }
                 }
                 dal_c__freeFileList(lib_files, lib_count);
             }
+            dal_c__linkGraphCleanup(&graph);
+            if (!graph_ordered) {
+                free(deps_dir);
+                ArrStr_fini(&deps);
+                return NULL;
+            }
         }
         free(deps_dir);
+    }
+
+    if (proj && proj->dh_path && dal_c__usesDHLibrary(proj, opts)) {
+        char* dh_profile = dal_c__makeBuildProfileDirAt(proj->dh_path, opts, profile);
+        char* dh_lib_dir = dh_profile ? path_join(dh_profile, "libs") : NULL;
+        const char* dh_lib_name = target_type == dal_c_Target_shared_lib
+                                    ? (is_windows ? "dh.dll.lib" : "libdh.so")
+                                    : (is_windows ? "dh.lib" : "libdh.a");
+        char* dh_native = dh_lib_dir ? path_join(dh_lib_dir, dh_lib_name) : NULL;
+        char* dh_lib = (dh_native && target_type != dal_c_Target_shared_lib)
+                         ? dal_c__selectStaticLibraryPath(dh_native, lto_enabled)
+                         : (dh_native ? strdup(dh_native) : NULL);
+        if (dh_lib && path_isFile(dh_lib)) {
+            dal_c__arrStrPushUnique(deps, dh_lib);
+        }
+        free(dh_native);
+        free(dh_lib);
+        free(dh_lib_dir);
+        free(dh_profile);
     }
 
     return deps;
@@ -3980,7 +4326,7 @@ static char* dal_c__resolveDepsTargetDir(const char* deps_dir, const char* lib_n
     assert(lib_name != NULL);
 
     char* target_subdir = path_parent(lib_name);
-    if (!target_subdir || strlen(target_subdir) == 0) {
+    if (!target_subdir || strlen(target_subdir) == 0 || str_eql(target_subdir, ".")) {
         free(target_subdir);
         return strdup(deps_dir);
     }
@@ -6165,7 +6511,6 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
     }
 
     dal_c_LtoMode lto_state = dal_c__effectiveLtoState(cmd, profile, target_type);
-    bool lto_enabled = dal_c_LtoMode_isEnabled(lto_state);
     for (int i = 0; profile->extra_flags[i] != NULL; ++i) {
         const char* flag = profile->extra_flags[i];
         if (dal_c__isLtoFlag(flag)) {
@@ -6402,37 +6747,6 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         if (whole_archive_enabled) {
             (void)fprintf(fp, " -Wl,--whole-archive");
         }
-        char* project_lib_name = NULL;
-        char* project_lib_path = NULL;
-        dal_c_TargetRequest request = { 0 };
-        bool has_request = proj && dal_c_TargetRequest_resolve(proj, &intent, &request);
-        bool link_project_static_lib = (target_type == dal_c_Target_executable || target_type == dal_c_Target_shared_lib || target_type == dal_c_Target_image)
-                                    && proj
-                                    && proj->root
-                                    && proj->name
-                                    && ((has_request && request.root && request.link_project)
-                                        || intent.action == dal_c_CmdAction_test
-                                        || intent.action == dal_c_CmdAction_test_dsl);
-        if (link_project_static_lib) {
-            char* project_profile_dir = dal_c__makeBuildProfileDir(proj, opts, profile);
-            char* project_lib_dir = project_profile_dir ? path_join(project_profile_dir, "libs") : NULL;
-            const char* project_output_name = proj->defaults.output_name && proj->defaults.output_name[0]
-                                        ? proj->defaults.output_name : proj->name;
-        project_lib_name = dal_c__makeTargetFileName(project_output_name, dal_c_Target_static_lib, is_windows, NULL);
-            char* project_native_path = path_join(project_lib_dir, project_lib_name);
-            project_lib_path = dal_c__selectStaticLibraryPath(project_native_path, lto_enabled);
-            link_project_static_lib = project_lib_path && path_isFile(project_lib_path);
-            free(project_native_path);
-            free(project_lib_dir);
-            free(project_profile_dir);
-        }
-        if (link_project_static_lib) {
-            (void)fprintf(fp, " ");
-            dal_c__fprintMakePath(fp, project_lib_path);
-        }
-        free(project_lib_path);
-        free(project_lib_name);
-        dal_c_TargetRequest_cleanup(&request);
         if (proj && proj->lib_count > 0) {
             if (proj->root) {
                 (void)fprintf(fp, " -L$(PROJECT_ROOT)/lib/deps");
@@ -6448,43 +6762,20 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         if (dal_c__usesDHLibrary(proj, opts)) {
             char* dh_profile_dir = dal_c__makeBuildProfileDirAt(proj->dh_path, opts, profile);
             char* dh_libs_dir = dh_profile_dir ? path_join(dh_profile_dir, "libs") : NULL;
-            const char* dh_native_name = target_type == dal_c_Target_shared_lib
-                                       ? (is_windows ? "dh.dll.lib" : "libdh.so")
-                                       : (is_windows ? "dh.lib" : "libdh.a");
-            char* dh_native_path = dh_libs_dir ? path_join(dh_libs_dir, dh_native_name) : NULL;
-            char* dh_link_path = target_type == dal_c_Target_shared_lib
-                               ? (dh_native_path ? strdup(dh_native_path) : NULL)
-                               : (dh_native_path ? dal_c__selectStaticLibraryPath(dh_native_path, lto_enabled) : NULL);
             if (dh_libs_dir) {
                 (void)fprintf(fp, " -L");
                 dal_c__fprintMakePath(fp, dh_libs_dir);
             }
-            if (dh_link_path) {
-                (void)fprintf(fp, " ");
-                dal_c__fprintMakePath(fp, dh_link_path);
-            }
-            free(dh_link_path);
-            free(dh_native_path);
             free(dh_libs_dir);
             free(dh_profile_dir);
         }
-        // Select one static variant per dependency; shared import libraries remain linkable.
-        if (proj && proj->lib_count > 0) {
-            char* deps_dir = dal_c_Project_getDepsDir(proj);
-            if (deps_dir && path_isDir(deps_dir)) {
-                int lib_count = 0;
-                char** lib_files = dir_listRecur(deps_dir, &lib_count);
-                if (lib_files) {
-                    for (int i = 0; i < lib_count; ++i) {
-                        if (dal_c__shouldLinkDependencyArtifact(lib_files[i], is_windows, lto_enabled)) {
-                            (void)fprintf(fp, " ");
-                            dal_c__fprintMakePath(fp, lib_files[i]);
-                        }
-                    }
-                    dal_c__freeFileList(lib_files, lib_count);
-                }
+        ArrStr* link_dependencies = dal_c__collectLinkDependencyPaths(cmd, proj, profile, target_type);
+        if (link_dependencies) {
+            for (int i = 0; i < ArrStr_len(link_dependencies); ++i) {
+                (void)fprintf(fp, " ");
+                dal_c__fprintMakePath(fp, ArrStr_at(link_dependencies, i));
             }
-            free(deps_dir);
+            ArrStr_fini(&link_dependencies);
         }
         for (int i = 0; i < opts->link_dir_count; ++i) {
             (void)fprintf(fp, " -L");

@@ -176,6 +176,7 @@ char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec
 char* dal_c__makeLtoStaticLibraryPath(const char* native_path);
 char* dal_c__makeSharedImportLibraryPath(const char* shared_path);
 bool dal_c__shouldLinkDependencyArtifact(const char* path, bool is_windows, bool lto_enabled);
+ArrStr* dal_c__collectLinkDependencyPaths(const dal_c_Cmd* cmd, const dal_c_Project* proj, const dal_c_ProfileSpec* profile, dal_c_Target target_type);
 bool dal_c__resolveCompatiblePrebuiltArtifact(
     const char* prebuilt_profile_dir,
     const char* name,

@@ -1864,6 +1864,7 @@ static const char* const dal_c_help_deps_notes[] = {
     "Generated dependency headers and libraries live under project `lib/deps` or the ad-hoc unit's generated export scope.",
     "CMake/Make/custom providers receive the effective target, compiler, archiver, sysroot, and target C flags through their provider contract.",
     "`--prebuilt=auto` reads `prebuilt/<normalized-target>/<profile>` packages when present; `required` fails instead of compiling source.",
+    "Final static links follow the declared dependency graph in stable consumer-before-provider order; providers shared by multiple consumers are emitted once.",
 };
 #define dal_c_help_deps_notes_count ((int)(sizeof(dal_c_help_deps_notes) / sizeof(dal_c_help_deps_notes[0])))
 

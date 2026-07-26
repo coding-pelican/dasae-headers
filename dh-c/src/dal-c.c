@@ -116,6 +116,7 @@ static const char* const dal_c_help_topic_dependencies_lines[] = {
     "fetch preserves an existing lock; update resolves requests again and rewrites lock.dh or <source>.lock.dh.",
     "status reports READY, DRIFT, or UNLOCKED without mutating resolution.",
     "Header-only dependencies are valid: they may export include files without producing a linked artifact.",
+    "Final static links follow the declared dependency graph in stable consumer-before-provider order; providers shared by multiple consumers are emitted once.",
 };
 static const char* const dal_c_help_topic_dependencies_examples[] = {
     "fetch",

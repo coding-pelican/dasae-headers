@@ -56,6 +56,7 @@ static void test_meta_tables(void);
 static void test_cmd_parse(void);
 static void test_compiler_mode_contracts(void);
 static void test_makefile_mode_contracts(void);
+static void test_link_dependencies_follow_project_graph(void);
 static void test_pch_dependency_invalidates_linked_plan(void);
 static void test_project_detection(void);
 static void test_workspace_cache_scope(void);
@@ -111,6 +112,7 @@ int main(void) {
     RUN_TEST(test_cmd_parse);
     RUN_TEST(test_compiler_mode_contracts);
     RUN_TEST(test_makefile_mode_contracts);
+    RUN_TEST(test_link_dependencies_follow_project_graph);
     RUN_TEST(test_pch_dependency_invalidates_linked_plan);
     RUN_TEST(test_project_detection);
     RUN_TEST(test_workspace_cache_scope);
@@ -2525,6 +2527,140 @@ static void test_makefile_mode_contracts(void) {
     free(source_dir);
     free(project_dh);
     free(project_root);
+    free(temp_root);
+}
+
+static void test_link_dependencies_follow_project_graph(void) {
+    test_reset_temp_root();
+
+    char* temp_root = test_temp_root();
+    char* root = path_join(temp_root, "link-order-root");
+    char* a_root = path_join(temp_root, "link-order-a");
+    char* b_root = path_join(temp_root, "link-order-b");
+    char* c_root = path_join(temp_root, "link-order-c");
+    char* root_project = path_join(root, "project.dh");
+    char* a_project = path_join(a_root, "project.dh");
+    char* b_project = path_join(b_root, "project.dh");
+    char* c_project = path_join(c_root, "project.dh");
+    char* deps_dir = path_join(root, "lib/deps");
+#ifdef _WIN32
+    char* a_archive = path_join(deps_dir, "A.lib");
+    char* b_archive = path_join(deps_dir, "B.lib");
+    char* c_archive = path_join(deps_dir, "C.lib");
+    char* common_archive = path_join(deps_dir, "common.lib");
+#else
+    char* a_archive = path_join(deps_dir, "libA.a");
+    char* b_archive = path_join(deps_dir, "libB.a");
+    char* c_archive = path_join(deps_dir, "libC.a");
+    char* common_archive = path_join(deps_dir, "libcommon.a");
+#endif
+
+    TEST_ASSERT(temp_root != NULL);
+    TEST_ASSERT(root != NULL);
+    TEST_ASSERT(a_root != NULL);
+    TEST_ASSERT(b_root != NULL);
+    TEST_ASSERT(c_root != NULL);
+    TEST_ASSERT(root_project != NULL);
+    TEST_ASSERT(a_project != NULL);
+    TEST_ASSERT(b_project != NULL);
+    TEST_ASSERT(c_project != NULL);
+    TEST_ASSERT(deps_dir != NULL);
+    TEST_ASSERT(a_archive != NULL);
+    TEST_ASSERT(b_archive != NULL);
+    TEST_ASSERT(c_archive != NULL);
+    TEST_ASSERT(common_archive != NULL);
+    TEST_ASSERT(dir_createRecur(root));
+    TEST_ASSERT(dir_createRecur(a_root));
+    TEST_ASSERT(dir_createRecur(b_root));
+    TEST_ASSERT(dir_createRecur(c_root));
+    TEST_ASSERT(dir_createRecur(deps_dir));
+    TEST_ASSERT(file_write(
+        root_project,
+        "output=link-order-root\n"
+        "link-dsl=off\n"
+        "[A]\n"
+        "path=../link-order-a\n"
+        "linking=static\n"
+        "[B]\n"
+        "path=../link-order-b\n"
+        "linking=static\n"
+    ));
+    TEST_ASSERT(file_write(
+        a_project,
+        "output=A\n"
+        "link-dsl=off\n"
+        "[C]\n"
+        "path=../link-order-c\n"
+        "linking=static\n"
+        "[ZA]\n"
+        "archive=https://example.invalid/common.zip\n"
+        "provider=prebuilt\n"
+        "linking=static\n"
+        "link=common\n"
+    ));
+    TEST_ASSERT(file_write(
+        b_project,
+        "output=B\n"
+        "link-dsl=off\n"
+        "[C]\n"
+        "path=../link-order-c\n"
+        "linking=static\n"
+        "[ZB]\n"
+        "archive=https://example.invalid/common.zip\n"
+        "provider=prebuilt\n"
+        "linking=static\n"
+        "link=common\n"
+    ));
+    TEST_ASSERT(file_write(c_project, "output=C\nlink-dsl=off\n"));
+    TEST_ASSERT(file_write(a_archive, "A"));
+    TEST_ASSERT(file_write(b_archive, "B"));
+    TEST_ASSERT(file_write(c_archive, "C"));
+    TEST_ASSERT(file_write(common_archive, "common"));
+
+    dal_c_Project* proj = dal_c_Project_detectAt(root, NULL);
+    TEST_ASSERT(proj != NULL);
+    dal_c_Cmd cmd = { 0 };
+    cmd.action = dal_c_CmdAction_build;
+    cmd.opts.profile = dal_c_Profile_dev;
+    cmd.opts.dsl_mode = dal_c_ToggleState_disabled;
+    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(dal_c_Profile_dev);
+    TEST_ASSERT(profile != NULL);
+
+    ArrStr* paths = dal_c__collectLinkDependencyPaths(
+        &cmd, proj, profile, dal_c_Target_executable
+    );
+    TEST_ASSERT(paths != NULL);
+    if (ArrStr_len(paths) != 4) {
+        for (int i = 0; i < ArrStr_len(paths); ++i) {
+            (void)fprintf(stderr, "link dependency %d: %s\n", i, ArrStr_at(paths, i));
+        }
+    }
+    TEST_ASSERT_MSG(
+        ArrStr_len(paths) == 4,
+        "expected four ordered dependency archives, got %d",
+        ArrStr_len(paths)
+    );
+    TEST_ASSERT(test_path_text_eql(ArrStr_at(paths, 0), a_archive));
+    TEST_ASSERT(test_path_text_eql(ArrStr_at(paths, 1), b_archive));
+    TEST_ASSERT(test_path_text_eql(ArrStr_at(paths, 2), c_archive));
+    TEST_ASSERT(test_path_text_eql(ArrStr_at(paths, 3), common_archive));
+
+    ArrStr_fini(&paths);
+    dal_c_Project_cleanup(&proj);
+    TEST_ASSERT(test_remove_recur(temp_root));
+    free(common_archive);
+    free(c_archive);
+    free(b_archive);
+    free(a_archive);
+    free(deps_dir);
+    free(c_project);
+    free(b_project);
+    free(a_project);
+    free(root_project);
+    free(c_root);
+    free(b_root);
+    free(a_root);
+    free(root);
     free(temp_root);
 }
 
