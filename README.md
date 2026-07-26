@@ -548,8 +548,9 @@ Preprocessor utilities, platform/compiler detection, source location tracking,
 type and container introspection.
 
 - **Submodules:**
-  `pp`, `cfg` (`lang`, `arch`, `plat`, `comp`, `eval`, `ver`), `comp`,
-  `src_loc`, `static_assert`, `auto`, `type_info`, `container_info`, `mem`, `atom`
+  `pp`, `cfg` (`ver`, `lang`, `comp`, `eval`, `arch`, `plat`), `auto`, `comp`,
+  `type_info`, `container_info`, `asm`, `wasm`, `mem`, `prefetch`, `atom`,
+  `simd`, `src_loc`, `static_assert`
 
 > **Low-level `raw_*` APIs:** `builtin` exposes raw operations for its own
 > low-level implementation boundaries. Source code that uses the `prl` layer or
@@ -571,6 +572,46 @@ type and container introspection.
     `pp_overload`, `pp_foreach`, `pp_countArg`, `pp_defer`, `pp_expand`, `nameOf`
 - **Platform/compiler:**
   `lang`, `arch`, `plat`, `comp` under `builtin/cfg` — detection macros
+- **Version configuration (`builtin/cfg/ver.h`):**
+  - `ver_self_core_major`, `ver_self_core_minor`, `ver_self_core_patch`,
+    `ver_self_core_num`, `ver_self_core_str` — build-provided `dh` version
+  - `ver_self_num`, `ver_self_str`, `ver_self_str_with_build` — prerelease and
+    build-aware self-version queries
+  - `ver_core_calc`, `ver_calc`, `ver_core_strfy`, `ver_strfy`,
+    `ver_strfyWithBuild` — packed numeric and semantic-version string utilities
+- **Evaluation modes (`builtin/cfg/eval.h`):**
+  - `in_analysis`, `in_analysis_active_only`, `in_analysis_full` distinguish
+    static-analysis expansion from ordinary compilation.
+  - `in_comptime` and `in_runtime` distinguish compile-time implementation
+    passes from runtime builds.
+  - `analysis_only`, `comptime_only`, `runtime_only` and their `*_unless`
+    counterparts select syntax for the active evaluation mode.
+- **Declaration and storage syntax:**
+  `auto`, `var`, `let`, `var_`, `let_`, `var_const`, and `let_const` provide
+  inferred or explicit mutable, immutable, and const-qualified declarations.
+- **Literal and value-update syntax:**
+  - `n_` joins comma-separated numeric fragments into one literal;
+    `n$(_T)` applies an explicit type, allowing readable forms such as
+    `n_(1, 000, 000)` and `n$(usize)(8)`.
+  - `l$`, `l0$`, `from$`, `type$`, `typeO$`, `typeE$`, `asg`, `asg_l`,
+    `move`, and `copy` provide typed literals, representation adaptation,
+    assignment, and value-transfer syntax.
+  - `cleared`, `initial`, `$init`, `$field`, and `$in_field` build explicit
+    initializers; `with_` copies a value, applies designated field updates,
+    and returns the updated value.
+- **Type-directed selection:**
+  `T_switch$` dispatches with C `_Generic`; `T_case$` matches a type across
+  mutable and const-qualified forms, while `T_qual$` preserves an exact
+  qualifier match. `T_default_` supplies the fallback and `T_delim()` provides
+  an unreachable separator for conditionally generated case lists.
+- **Local expression scopes:**
+  `local_`, `local_label`, and `local_return_` name compound expression scopes,
+  block-local labels, and the value produced by such a scope.
+- **Compiler and assembly syntax:**
+  - `$attr`, `$inline`, `$must_check`, `$on_load`, `$branch_likely`, and related
+    macros normalize compiler attributes and optimization hints.
+  - `asm`, `asm_volatile`, `$reg`, `asm_var_`, `asm_let_`, `asm_var_reg`, and
+    `asm_let_reg` normalize inline assembly and register-bound declarations.
 - **Source location:**
   `srcLoc$` — compile-time source location capture
 - **Type introspection (builtin):**
@@ -586,41 +627,93 @@ Primitives, function syntax, assertions, debugging, scoped resource management,
 and safe arithmetic.
 
 - **Submodules:**
-  `claim`, `debug`, `pri`, `scope`, `fn`, `op`, `cmp`, `pipe`, `chain`,
-  `range`, `src_loc`, `type_info`
+  `pri`, `fn`, `claim`, `debug`, `range`, `op`, `cmp`, `pipe`, `chain`,
+  `scope`, `src_loc`, `type_info`
 - **Primitive types:**
   `bool`, `i8`..`i64`, `u8`..`u64`, `isize`, `usize`, `f32`, `f64`
-- **Syntax:**
-  `fn_` — function syntax
+- **Enumeration syntax (`core/pri/enum.h`):**
+  `enum_` defines named enum types and values; `$fits($packed)` or
+  `$fits($bits(8|16|32|64))` controls the generated representation.
+  `enum_of$((_EnumType)(_value))` constructs an explicitly typed enum value.
 - **Assertions:**
   `claim_assert`, `claim_unreachable`; `debug_assert`, `debug_only`
-- **Control/scope:**
-  `R`, `for_` — range iteration; `defer_`, `errdefer_` — scoped cleanup
-- **Chaining:**
-  `pipe_`, `chain$`, `each_`, `filter_`, `map$`, `fold_`, `reduce_`, `all_`, `any_`
+- **Function and scope syntax:**
+  `fn_`, `$scope`, `$guard`, `return_`, `defer_`, and `errdefer_` provide typed
+  functions, expression-aware returns, and deterministic scope cleanup.
+- **Scoped initialization and control:**
+  `using_` and `using_fini_` bind initialization to a nested statement;
+  `if_` / `else_` and `while_` add initializer syntax; `when_` with
+  `provide_` / `instead_` provides expression-form conditional selection.
+- **Iteration and loop control (`core/scope/common.h`):**
+  - `for_` traverses ranges, arrays, slices, and untyped containers, binding up
+    to eight sources in lockstep. `$a`, `$s`, `$ua`, and `$us` tag container
+    sources; `$fwd`, `$bwd`, `$rev`, `$asc`, and `$desc` select direction.
+  - `loop_unroll_`, `loop_inline_`, and `loop_rolled_` apply compiler loop
+    transformation hints to `do`, `while`, `for`, or `for_`.
+  - `loop_labeled`, `loop_continue_`, and `loop_break_` provide explicit
+    continue and break targets for nested loops.
+- **Index range syntax (`core/range.h`):**
+  - `R` is a validated half-open `usize` range `[begin, end)`.
+  - `$r`, `$rf`, and `$rt` construct bounded, from-index, and to-index ranges;
+    `$incl` and `$excl` adjust explicit endpoint bounds.
+  - `R_contains`, `R_len`, `R_at`, `R_slice`, `R_prefix`, and `R_suffix`
+    provide checked range operations used by `for_` and slice traversal.
+- **Pipeline syntax (`core/pipe.h`):**
+  `pipe_` evaluates an initial expression once, binds each step's capture to
+  the preceding result, and returns the final expression.
+- **Functional chaining (`core/chain.h`):**
+  `chain$` composes slice operations without materializing intermediate
+  containers: `each_`, `filter_`, `map$`, `fold_`, `reduce_`, `all_`, `any_`.
+- **Debug layer:**
+  - `debug_enabled`, `debug_only`, `debug_unless`, `debug_break`, and
+    `$debug_point` control debug-only behavior and debugger breakpoints.
+  - `debug_srcLoc()`, `$traced`, `$trace`, `$tracing`, `debug_typeInfo$`,
+    `$typing`, and `$typed` retain source and type metadata only in debug builds.
+  - `debug_StackTrace_setupCrashHandler` installs platform crash handling;
+    `debug_StackTrace_print` emits the current symbolized stack trace.
 - **Comparison contracts:**
-  `cmp_Ord`, `cmp_eql$`, `cmp_ord$`, and their context/approximate variants
-  - **`cmp_Ord`** — Three-way ordering type:
+  - **Mathematical sign (`cmp_Sgn`):**
+    `cmp_Sgn_neg` (−1), `cmp_Sgn_zero` (0), and `cmp_Sgn_pos` (1) represent
+    negative, zero, and positive signs independently of any ordered type.
+  - **Mathematical ordering (`cmp_Ord`):**
     `cmp_Ord_lt` (−1), `cmp_Ord_eq` (0), `cmp_Ord_gt` (1).
-    It represents whether the left value is less than, equal to, or greater
-    than the right value.
-  - **`eql` / `neq`** — Primitive equality interfaces for types that may not
-    define an order. They express equivalence directly and may be implemented
-    without an ordering contract.
-  - **`eq` / `ne`** — Equality and inequality derived from `cmp_ord$`.
-    They mean `ord == cmp_Ord_eq` and `ord != cmp_Ord_eq`, respectively.
-  - **Ordering from `ord`:**
+    It represents the mathematical sign of comparing `lhs` with `rhs`:
+    strictly less, equal, or strictly greater. Where subtraction is meaningful,
+    this is the sign of `lhs - rhs`, not the subtraction result itself.
+    All order-derived predicates are defined in terms of
+    `cmp_ord$(_T)(lhs, rhs)`.
+    A consistent ordering satisfies `ord(x, x) == cmp_Ord_eq`,
+    `ord(x, y) == cmp_Ord_inv(ord(y, x))`, and transitivity of its strict
+    less-than relation.
+  - **Ordering domain:**
+    The three states directly represent a total order or strict-weak-order
+    equivalence classes. A partial order can use the same contract only when
+    incomparable pairs are intentionally represented by `cmp_Ord_eq`, because
+    `cmp_Ord` has no separate unordered state.
+  - **Equality-only contract (`eql` / `neq`):**
+    `cmp_eql$(_T)` defines an equivalence relation without requiring an order;
+    `cmp_neq$(_T)` is its negation. The expected equality laws are reflexivity,
+    symmetry, and transitivity. Implement either operation and derive the other
+    with `cmp_fn_neq_default$` or `cmp_fn_eql_default$`.
+  - **Order-derived equality (`eq` / `ne`):**
+    `cmp_eq$(_T)` means `cmp_ord$(_T)(lhs, rhs) == cmp_Ord_eq`;
+    `cmp_ne$(_T)` means the result is not `cmp_Ord_eq`.
+  - **Defining ordering from `ord`:**
     Implement `cmp_ord$(_T)(lhs, rhs)` and derive `cmp_eq$`, `cmp_ne$`,
     `cmp_lt$`, `cmp_gt$`, `cmp_le$`, and `cmp_ge$` through the
     `cmp_fn_*_default$` macros.
-  - **Ordering from `lt`:**
+  - **Defining ordering from `lt`:**
     Implement `cmp_lt$(_T)(lhs, rhs)` and use `cmp_fn_ord_default$(_T)` to
     derive three-way ordering:
     `lt(lhs, rhs) ? cmp_Ord_lt : lt(rhs, lhs) ? cmp_Ord_gt : cmp_Ord_eq`.
     Its remaining predicates can then be derived from that ordering.
+  - **Runtime default direction (`cmp.h`):**
+    The higher-layer `cmp_OrdFn_defaultAsc` orders smaller values first;
+    `cmp_OrdFn_defaultDesc` reverses that direction.
   - **Context and approximate variants:**
-    The same contract extends to `ordCtx` / `ltCtx`, `ordApx` / `ltApx`,
-    and the absolute/relative forms `ordApxAbs` / `ordApxRel`.
+    The same derivation model extends to `eqlCtx` / `ordCtx` / `ltCtx`,
+    `ordApx` / `ltApx`, and the absolute/relative forms `ordApxAbs` /
+    `ordApxRel`.
   - **Equality distinction:**
     `eql` / `neq` and `eq` / `ne` coincide only when the order is total and
     consistent with equality. Use the primitive equality interface for types
@@ -634,6 +727,23 @@ and safe arithmetic.
   `pri_add`, `pri_sub`, `pri_mul`, `pri_div`, `pri_rem`, `pri_neg`, `pri_abs`,
   `pri_sgn`, `pri_not`, `pri_shl`, `pri_shr`, `pri_and`, `pri_xor`, `pri_or`,
   `pri_eql`, `pri_neq`, `pri_ord`, `pri_min`, `pri_max`, `pri_clamp`, `bitCast$`
+- **Cast hierarchy:**
+  - **Raw language cast:** `as$` expresses an unchecked C cast explicitly.
+  - **Representation and alignment:** `bitCast$` reinterprets equal-sized
+    object representations; `alignCast` asserts a pointer's required alignment.
+  - **Boolean and numeric:** `intToBool` / `boolToInt`, `intCast$`,
+    `intToFlt$` / `fltFromInt$`, `fltToInt$` / `intFromFlt$`, and `fltCast$`
+    distinguish boolean, integer, integer-to-float, float-to-integer, and
+    float-width conversions. `boolFromInt` and `intFromBool` are directional
+    aliases for the boolean conversions.
+  - **Enumeration:** `intToEnum$` / `enumFromInt$` and
+    `enumToInt$` / `intFromEnum$` make integer-enum conversions explicit.
+  - **Pointer and address:** `ptrToInt` / `intFromPtr`,
+    `intToPtr$` / `ptrFromInt$`, `ptrCast$`,
+    `ptrAlignCast$`, `ptrQualCast$`, and `ptrAlignQualCast$` distinguish
+    address conversion, pointee type, alignment, and qualifier changes.
+  - **Mutability:** `mutCast` adds const qualification and `constCast` removes
+    it explicitly.
 - **Core primitives (memory):**
   `pri_memset0`, `pri_memset`, `pri_memcpy`, `pri_memmove`, `pri_memeql`,
   `pri_memord`, and their slice forms
@@ -651,23 +761,69 @@ and safe arithmetic.
 
 #### `prl` — Prelude Types
 
-Core algebraic types: Optional, Error Result, Slice, Array, Variant.
-(Safe arithmetic lives in `core/pri.h`.)
+Prelude type construction and syntax: Optional, Error Result, Slice, Array,
+Tuple, typed Range and Limit, Variant, typed variadics, and compile-time-capable
+hashes. (Safe arithmetic lives in `core/pri.h`.)
 
 - **Submodules:**
-  `base`, `common`, `raw`, `Val`, `Ptr`, `Arr`, `Sli`, `Tup`, `Opt`,
-  `ErrSet`, `ErrRes`, `variant`, `u-meta`, `int`, `flt`, `Clsr`, `Co`,
-  `Err`, `ETrace`, `CompHash`, `simd`, `tpl`
+  `raw`, `tpl`, `u-meta`, `base`, `simd`, `L-Limit`, `R-Range`, `Co`, `Clsr`,
+  `va`, `CompHash`, `E-Err`, `ETrace`, `common`, `int`, `flt`
 - **Key Types:**
   - `O$(T)` (Optional) — `some(v)`, `none()`, `if_some((opt)(capture))`, `orelse_((opt)(default))`, `unwrap_(opt)`
   - `E$(T)` (Error Result) — `ok(v)`, `err(e)`, `try_(expr)`, `catch_((expr)(err, block))`, `return_ok`, `return_err`
   - `S$(T)` (Slice) — `S_deref$`, `S_at`, `S_slice`, `S_prefix`, `S_suffix`, `S_len`
   - `A$(N, T)` (Array) — `A_zero`, `A_init$`, `A_from$`, `A_ref$`, `A_len`
+  - `Tup$(_Ts...)` (Tuple) — positional heterogeneous values `$0` through `$15`
+  - `L$(_T)` / `R$(_T)` — inclusive/exclusive typed limits and typed ranges
   - `variant_` — Tagged union; create with `union_of$`, match with `match_`, `patt_`
   - `simd_V$(N, T)` — Primitive vector type and lane-wise `simd_V_*` operations
   - `Co` — Stackless coroutine frame representation and control primitives
   - `Clsr` — Typed common representation for function and coroutine closures
   - `ETrace` — Optional error tracing with call stack information
+- **Type application layer (`prl/tpl.h`):**
+  `T_alias$`, `T_decl$`, `T_impl$`, `T_use$`, `T_declBy$`, `T_implBy$`, and
+  `T_useBy$` declare, implement, or enable template families for concrete types;
+  `$spec` and `$via` customize an application path.
+- **Tuple and destructuring syntax (`prl/tpl/Tup.h`):**
+  `Tup$`, `Tup$$`, and `T_use_Tup$` define heterogeneous tuples; `tie_` and
+  `tie$` initialize positional fields; `$tup` infers them; `untie_` destructures
+  by position; `bind_` destructures record fields, with `$skip` for omissions.
+- **Tagged variant syntax (`prl/tpl/variant.h`):**
+  - `variant_` defines a tag and its corresponding payload union.
+    `$fits(...)` controls an internally generated tag representation;
+    `$maps(_Tag)` maps payload cases onto an existing tag type and verifies
+    that each case uses the corresponding external tag value.
+  - `union_of` / `union_of$` and `union_with$` construct cases; `matches`,
+    `union_as`, and `union_to` inspect and extract payloads.
+  - `match_`, `case_`, `cases_`, `patt_`, `patts_`, and `default_` provide
+    statement matching, payload capture, and grouped cases; `matchedEnum()` and
+    `union_matched` expose or rebuild the active case inside a match.
+- **Typed limit and range syntax:**
+  `incl_` / `excl_` and `L_incl$` / `L_excl$` construct typed endpoints.
+  `range_` / `range$` combine them into `R$(_T)`, preserving endpoint
+  inclusivity for integer and floating-point domains.
+- **Typed variadic syntax (`prl/va.h`):**
+  `$va_args` declares parameters for a `TypeInfo` field slice and generated
+  tuple storage; `va_` packages up to 16 heterogeneous arguments with their
+  type metadata and invokes the receiving function; `va_clsr_` creates the
+  corresponding typed closure.
+- **Compile-time-capable string hashes (`prl/CompHash.h`):**
+  `compHash`, `compHash32`, and `compHash64` hash literals; `CompHash_from`,
+  `CompHash_calc`, and their 32/64-bit variants handle slices and explicit
+  result widths.
+- **Literal layers (`prl/base.h`):**
+  `T_a$`, `T_s$`, `T_l$`, `NT_a$`, `NT_s$`, and `NT_l$` construct typed arrays
+  and slices; `u8_a`, `u8_s`, `u8_l` and `*Z0` variants distinguish counted
+  byte strings from null-terminated storage.
+- **Prelude cast adapters:**
+  `P_mutCast` / `mutCastP`, `P_constCast` / `constCastP`,
+  `mutCastS` / `S_mutCast`, `constCastS$` / `constCastS` /
+  `S_constCast$` / `S_constCast`, `simd_V_intCast$` /
+  `simd_V_intToFlt$` / `simd_V_fltToInt$` / `simd_V_fltCast$`,
+  `u_cast$` / `u_castP$` / `u_castV$` / `u_castS$` / `u_castA$` /
+  `u_castO$` / `u_castE$`, and `union_cast$` adapt pointer, slice, SIMD,
+  meta-value, optional/result, and variant representations without conflating
+  their contracts.
 - **SIMD primitive operations:**
   - **Construction:**
     `simd_V_init$`, `simd_V_splat$`, `simd_V_from$`, `simd_V_fromA$`,
@@ -948,17 +1104,17 @@ Optimal stable and unstable sorting functions isolated by auxiliary memory const
 
 | Allocator      | Description                                              |
 | -------------- | -------------------------------------------------------- |
+| **`VMap`**     | Virtual address mapping and mapped-region management     |
+| **`VMem`**     | Virtual-memory allocator support                         |
 | **`Classic`**  | Traditional heap allocation (C runtime `malloc`/`free`)  |
 | **`Page`**     | Page-aligned allocation for OS-mapped memory blocks      |
 | **`Sbrk`**     | Sbrk-based allocation for linear memory growth and reuse |
 | **`Sys`**      | System-dependent allocation (Page or Sbrk)               |
 | **`Fixed`**    | Fixed-size block allocator for bulk operations           |
-| **`ThrdSafe`** | Thread-safe wrapper for any allocator                    |
-| **`Smp`**      | SMP-aware allocation with per-core caching               |
 | **`Arena`**    | Region-based allocation for bulk operations              |
 | **`Pool`**     | Pool-based allocation for object reuse                   |
-| **`VMap`**     | Virtual address mapping and mapped-region management     |
-| **`VMem`**     | Virtual-memory allocator support                         |
+| **`ThrdSafe`** | Thread-safe wrapper for any allocator                    |
+| **`Smp`**      | SMP-aware allocation with per-core caching               |
 
 </details>
 
