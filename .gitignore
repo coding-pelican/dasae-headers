@@ -295,3 +295,6 @@ AGENTS.md
 **/.bak*/
 **/.backup*/
 **/.archive*/
+
+# Local extra projects
+dh-examples/extra/*/
