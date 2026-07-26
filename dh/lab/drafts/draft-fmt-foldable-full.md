@@ -110,10 +110,10 @@ zero-terminated strings, sliced strings, and errors. `io_Writer_print*` and
 | task_id | parent_step | depends_on | deliverable | acceptance_criteria | status |
 | --- | --- | --- | --- | --- | --- |
 | FMT-1 | Define replacement contract | none | type-specific spec model | invalid cross-type options are unrepresentable or rejected | done |
-| FMT-2 | Implement constant path | FMT-1 | stateless fold plan | optimized constant calls contain no parser calls | done |
+| FMT-2 | Implement constant path | FMT-1 | stateless fold plan | optimized constant calls contain no parser calls | review |
 | FMT-3 | Implement runtime path | FMT-1 | cold no-inline fallback | runtime formats retain one fallback call | done |
-| FMT-4 | Integrate API layers | FMT-2, FMT-3 | slice format and Writer/stream print paths | naming and ownership match the format/parse and print/scan boundary | done |
-| FMT-5 | Verify replacement proof | FMT-4 | functional, compile-time, and disassembly evidence | output, build cost, and optimized boundaries match the contract | done |
+| FMT-4 | Integrate API layers | FMT-2, FMT-3 | slice format and Writer/stream print paths | naming and ownership match the format/parse and print/scan boundary | review |
+| FMT-5 | Verify replacement proof | FMT-4 | functional, compile-time, and disassembly evidence | output, build cost, and optimized boundaries match the contract | blocked |
 
 ## Verification
 
@@ -125,35 +125,17 @@ dh-c build optimize dh/lab/drafts/draft-fmt-foldable-full.c --lto=off --link-std
 
 Observed optimized boundaries:
 
-- `fmt_test_constantBuffer` calls only `fmt_printU64` and `fmt_printI64`; its
-  format includes a literal segment longer than 16 bytes, an escaped `%{`, and
-  two indexed uses of one argument.
-- `fmt_test_constantWrappedBuffer` calls only the selected `u64`, `f64`,
-  error, and padding primitives. Optional/result parsing and the generic type
-  matrix are absent.
-- `fmt_test_constantWriter` contains exact signed-integer formatting,
-  `fmt__writerWritePadded`, and `fmt__writerWriteAll` calls.
-- `fmt_test_constantStream` contains exact unsigned-integer and bool
-  formatting plus writer calls.
-- No constant observation function calls a scan routine, spec parser,
-  `fmt_printRuntime`, or `fmt_writeRuntime`.
-- `fmt_test_runtimeBuffer` contains one `fmt_printRuntime` call.
-- `fmt_test_runtimeWriter`, `fmt_test_runtimeWriterStr`,
-  `fmt_test_runtimeWriterResultStr`, and
-  `fmt_test_runtimeWriterOptionalU64` each contain one `fmt_writeRuntime`
-  call. `fmt_test_runtimeStream` also contains one `fmt_writeRuntime` call
-  plus its newline write.
-- The four constant observation functions total 790 instructions. The complete
-  linked proof executable is 4,668 instructions / 4,890 disassembly lines;
-  that complete count also includes the runtime parser and dispatcher, all
-  direct formatting primitives, assertions, test harness, startup, and CRT
-  glue. The original measured draft was 17,033 instructions / 17,301 lines.
-- A `dh-c` translation-unit rebuild with link and disassembly generation
-  completed in 11.93 seconds. The earlier measured form required about
-  28.97 seconds.
-- The verified optimized executable completed with exit code `0`. Assertions
-  cover buffer output, escaped and indexed fields, writer output, stream
-  execution, runtime-format output, wrapped arguments, type-specific direct
-  formatting, float precision, rejection of cross-type options, a runtime
-  `O$u64` payload, and a 280-byte string padded to a 300-byte field without
-  whole-message staging.
+- The executable completes with exit code `0`, and constant and runtime tests
+  are separated into `fmt_test_constantPaths` and `fmt_test_runtimePaths`.
+- The linked proof is 4,940 disassembly lines. The constant observation
+  function occupies 1,394 lines, from its symbol through the runtime
+  observation symbol.
+- A clean `dh-c` translation-unit build with link and disassembly generation
+  took about 30.00 seconds and emitted 20 failed-unroll warnings.
+- The call-site format gate and per-argument constant classification now run
+  before tuple values are converted to `u_P_const$raw`.
+- These measurements do not meet the replacement contract. In particular,
+  Writer/stream typed staging duplicates the fold parser, compile time remains
+  excessive, and the constant observation function remains above the intended
+  code-size boundary. FMT-2 and FMT-4 therefore require redesign before FMT-5
+  can resume.
