@@ -265,18 +265,6 @@ char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
     return result;
 }
 
-static bool dal_c__targetUsesArchiveGroups(const dal_c_CompilerOpts* opts) {
-    char* target = dal_c__resolveTargetDirName(opts);
-    if (!target) { return false; }
-
-    bool supported = strstr(target, "-gnu") != NULL
-                  || strstr(target, "mingw") != NULL
-                  || strstr(target, "linux") != NULL
-                  || strstr(target, "wasi") != NULL;
-    free(target);
-    return supported;
-}
-
 static char* dal_c__makeBuildProfileDirAtMode(
     const char* root,
     const dal_c_CompilerOpts* opts,
@@ -6411,14 +6399,8 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, "LDFLAGS = $(TARGET_FLAGS) $(TARGET_ARCH_FLAGS) $(TARGET_ABI_FLAGS) $(SYSROOT_FLAGS)");
         dal_c__writeLinkModelFlags(fp, is_windows, opts, target_type);
         bool whole_archive_enabled = dal_c__resolvedWholeArchive(opts, profile);
-        bool archive_group_enabled = dal_c__targetUsesArchiveGroups(opts)
-                                  && ((proj && (proj->lib_count > 0 || dal_c__usesDHLibrary(proj, opts)))
-                                      || opts->link_count > 0);
         if (whole_archive_enabled) {
             (void)fprintf(fp, " -Wl,--whole-archive");
-        }
-        if (archive_group_enabled) {
-            (void)fprintf(fp, " -Wl,--start-group");
         }
         char* project_lib_name = NULL;
         char* project_lib_path = NULL;
@@ -6510,9 +6492,6 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         }
         for (int i = 0; i < opts->link_count; ++i) {
             (void)fprintf(fp, " -l%s", opts->link_libs[i]);
-        }
-        if (archive_group_enabled) {
-            (void)fprintf(fp, " -Wl,--end-group");
         }
         if (whole_archive_enabled) {
             (void)fprintf(fp, " -Wl,--no-whole-archive");

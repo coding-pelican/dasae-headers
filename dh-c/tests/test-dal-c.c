@@ -4042,19 +4042,6 @@ static void test_output_ext_does_not_rewrite_dependency_artifacts(void) {
     TEST_ASSERT(!path_exists(unexpected_dep_archive));
     TEST_ASSERT(!path_exists(unexpected_staged_archive));
 
-    const dal_c_ProfileSpec* profile = dal_c_ProfileSpec_by(dal_c_Profile_dev);
-    TEST_ASSERT(profile != NULL);
-    char* makefile_path = dal_c__makePlanFilePath(
-        proj, profile, cmd, final_output, dal_c_Target_shared_lib
-    );
-    TEST_ASSERT(makefile_path != NULL);
-    char* makefile_text = file_read(makefile_path);
-    TEST_ASSERT(makefile_text != NULL);
-    TEST_ASSERT(strstr(makefile_text, " -Wl,--start-group") != NULL);
-    TEST_ASSERT(strstr(makefile_text, " -Wl,--end-group") != NULL);
-
-    free(makefile_text);
-    free(makefile_path);
     free(final_output);
     dal_c_Project_cleanup(&proj);
     dal_c_Cmd_cleanup(&cmd);
