@@ -58,6 +58,7 @@ cli_exe="$bin_root/dh-c-cli-test$exe_ext"
 common_sources='
 '"${repo_root}"'/dh-c/src/dal-c/Cmd.c
 '"${repo_root}"'/dh-c/src/dal-c/Project.c
+'"${repo_root}"'/dh-c/src/dal-c/archive.c
 '"${repo_root}"'/dh-c/src/dal-c/build.c
 '"${repo_root}"'/dh-c/src/dal-c-ext/str.c
 '"${repo_root}"'/dh-c/src/dal-c-ext/path.c
@@ -398,13 +399,107 @@ assert_contains "$LAST_OUTPUT" "[UNLOCKED]" "status did not report a missing dep
 
 printf 'local change\n' >>"$lock_project/.dh-c/deps/src/dep/value.txt"
 invoke_external "1" "$lock_project" "$cli_exe" clean --deps --older-than=0s
-assert_contains "$LAST_OUTPUT" "Preserved dirty dependency checkout" "dependency cleanup did not preserve a dirty checkout"
+assert_contains "$LAST_OUTPUT" "Preserved dependency checkout" "dependency cleanup did not preserve a dirty checkout"
 [ -d "$lock_project/.dh-c/deps/src/dep" ]
 assert_true $? "dependency cleanup removed a dirty checkout without --force"
 invoke_external "0" "$lock_project" "$cli_exe" clean --deps --older-than=0s --force
 [ ! -e "$lock_project/.dh-c/deps/src/dep" ]
 assert_true $? "forced dependency cleanup did not remove the dirty checkout"
 rm -rf "$lock_contract_root"
+
+# Archive dependency contract: fetch locks exact archive bytes, fetch preserves the
+# lock, update deliberately accepts new bytes, and provider=prebuilt materializes
+# the extracted package through the normal private package/staging path.
+archive_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-archive-contract.XXXXXX")
+archive_payload_root="$archive_contract_root/payload"
+archive_package="$archive_payload_root/dep-package"
+archive_package_root="$archive_package/targets/x86_64-w64-windows-gnu"
+archive_project="$archive_contract_root/project"
+archive_file="$archive_contract_root/dep.tar.gz"
+mkdir -p "$archive_package_root/include" "$archive_package_root/lib" "$archive_project"
+printf '#define ARCHIVE_VALUE 1\n' >"$archive_package_root/include/archive_dep.h"
+printf 'archive-import-one\n' >"$archive_package_root/lib/libarchive_dep.dll.a"
+printf 'archive-static-one\n' >"$archive_package_root/lib/libarchive_dep.a"
+printf 'archive-unselected\n' >"$archive_package_root/lib/libunselected.a"
+tar -czf "$archive_file" -C "$archive_payload_root" dep-package
+archive_file_native=$(native_path "$archive_file")
+
+archive_invalid_project="$archive_contract_root/invalid-project"
+mkdir -p "$archive_invalid_project"
+cat >"$archive_invalid_project/project.dh" <<EOF
+[dep]
+source=https://example.invalid/dep.git
+archive=$archive_file_native
+provider=prebuilt
+EOF
+invoke_external "1" "$archive_invalid_project" "$cli_exe" fetch
+assert_contains "$LAST_OUTPUT" "cannot declare both source= and archive=" "dependency parser accepted both source= and archive="
+
+cat >"$archive_invalid_project/project.dh" <<EOF
+[dep]
+archive=$archive_file_native
+revision=v1.0.0
+provider=prebuilt
+EOF
+invoke_external "1" "$archive_invalid_project" "$cli_exe" fetch
+assert_contains "$LAST_OUTPUT" "cannot declare revision= with archive=" "dependency parser accepted revision= beside archive="
+
+cat >"$archive_invalid_project/project.dh" <<EOF
+[dep]
+archive=$archive_file_native
+package-root=../outside
+provider=prebuilt
+EOF
+invoke_external "1" "$archive_invalid_project" "$cli_exe" fetch
+assert_contains "$LAST_OUTPUT" "package-root must stay within" "dependency parser accepted an escaping package-root"
+
+cat >"$archive_project/project.dh" <<EOF
+[dep]
+archive=$archive_file_native
+package-root=targets/x86_64-w64-windows-gnu
+provider=prebuilt
+linking=shared
+link=archive_dep
+EOF
+
+invoke_external "0" "$archive_project" "$cli_exe" fetch
+assert_contains "$LAST_OUTPUT" "[FETCH] dep" "archive fetch did not download/materialize the dependency"
+assert_contains "$(cat "$archive_project/lock.dh")" "archive=$archive_file_native" "archive lock did not preserve the authored archive location"
+archive_revision_one=$(awk -F= '/^revision=/{print $2}' "$archive_project/lock.dh")
+assert_contains "$archive_revision_one" "sha256:" "archive lock did not record a SHA-256 resolution"
+[ -f "$archive_project/.dh-c/deps/src/dep/include/archive_dep.h" ]
+assert_true $? "archive fetch did not unwrap the single package root"
+invoke_external "0" "$archive_project" "$cli_exe" status
+assert_contains "$LAST_OUTPUT" "[READY]" "archive status did not accept the locked materialization"
+invoke_external "0" "$archive_project" "$cli_exe" deps dev
+[ -f "$archive_project/lib/deps/archive_dep.h" ]
+assert_true $? "prebuilt archive header was not staged for the consumer"
+[ -f "$archive_project/lib/deps/libarchive_dep.dll.a" ]
+assert_true $? "selected prebuilt archive import library was not staged for the consumer"
+[ ! -f "$archive_project/lib/deps/libarchive_dep.a" ]
+assert_true $? "prebuilt archive staged a static variant for linking=shared"
+[ ! -f "$archive_project/lib/deps/libunselected.a" ]
+assert_true $? "prebuilt archive staged a library absent from link="
+
+printf '#define ARCHIVE_VALUE 2\n' >"$archive_package_root/include/archive_dep.h"
+printf 'archive-import-two\n' >"$archive_package_root/lib/libarchive_dep.dll.a"
+rm -f "$archive_file"
+tar -czf "$archive_file" -C "$archive_payload_root" dep-package
+invoke_external "0" "$archive_project" "$cli_exe" fetch
+assert_contains "$LAST_OUTPUT" "[HAVE]" "archive fetch did not preserve an existing locked materialization"
+archive_revision_preserved=$(awk -F= '/^revision=/{print $2}' "$archive_project/lock.dh")
+[ "$archive_revision_preserved" = "$archive_revision_one" ]
+assert_true $? "archive fetch rewrote an existing lock"
+rm -rf "$archive_project/.dh-c/deps/src/dep"
+invoke_external "1" "$archive_project" "$cli_exe" fetch
+assert_contains "$LAST_OUTPUT" "differs from lock.dh" "archive fetch accepted changed bytes for an existing lock"
+invoke_external "0" "$archive_project" "$cli_exe" update
+archive_revision_two=$(awk -F= '/^revision=/{print $2}' "$archive_project/lock.dh")
+[ "$archive_revision_two" != "$archive_revision_one" ]
+assert_true $? "archive update did not re-resolve changed archive bytes"
+invoke_external "0" "$archive_project" "$cli_exe" status
+assert_contains "$LAST_OUTPUT" "[READY]" "archive status did not accept the updated materialization"
+rm -rf "$archive_contract_root"
 
 provider_contract_root=$(mktemp -d "${TMPDIR:-/tmp}/dh-c-provider-contract.XXXXXX")
 provider_bin="$provider_contract_root/bin"

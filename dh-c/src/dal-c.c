@@ -110,7 +110,7 @@ static const char* const dal_c_help_topic_dh_file_examples[] = {
 
 static const char* const dal_c_help_topic_dependencies_lines[] = {
     "Dependencies are declared in root project.dh, or in the primary <source>.dh of a projectless build unit.",
-    "Core keys: path, source, revision, provider, profile, linking, prebuilt, link-dsl, test.",
+    "Core keys: path, source, archive, package-root, revision, provider, profile, linking, prebuilt, link-dsl, test.",
     "Provider keys: build-command, install-command, runtime-file (repeatable).",
     "Dependency-local compile/link keys use the same property vocabulary as project defaults.",
     "fetch preserves an existing lock; update resolves requests again and rewrites lock.dh or <source>.lock.dh.",
@@ -127,7 +127,7 @@ static const char* const dal_c_help_topic_dependencies_examples[] = {
 
 static const char* const dal_c_help_topic_lock_lines[] = {
     "lock.dh is generated beside project.dh; <source>.lock.dh is generated beside a projectless primary source companion.",
-    "Both record exact resolved dependency commits, are durable source input, and should normally be committed.",
+    "Both record exact resolved Git commits or archive SHA-256 values, are durable source input, and should normally be committed.",
     "fetch reads the existing lock; update is the command that intentionally changes it.",
     "In a multi-source ad-hoc unit, the first source owns the companion dependency sections and lock path.",
     "clean --deps never removes or rewrites either lock form.",
@@ -219,6 +219,8 @@ static void dal_c__graphWalkText(const dal_c_Project* proj, int depth, char*** s
         for (int j = 0; j < depth; ++j) printf("  ");
         printf("- %s [provider=%s", lib->name ? lib->name : "(unnamed)", provider);
         if (lib->revision && lib->revision[0]) printf(", revision=%s", lib->revision);
+        if (lib->archive && lib->archive[0]) printf(", archive=%s", lib->archive);
+        if (lib->package_root && lib->package_root[0]) printf(", package-root=%s", lib->package_root);
         if (lib->path && lib->path[0]) printf(", path=%s", lib->path);
         if (lib->runtime_file_count > 0) printf(", runtime=%d", lib->runtime_file_count);
         printf("]\n");
@@ -899,12 +901,28 @@ static bool dal_c__depsBuildProvider(const char* action, const dal_c_Lib* lib,
         return ok;
     }
     if (str_eql(provider, "prebuilt")) {
-        const char* root = (lib->path && lib->path[0]) ? lib->path : source_dir;
+        const char* source_root = (lib->path && lib->path[0]) ? lib->path : source_dir;
+        char* selected_root = lib->package_root && lib->package_root[0]
+                            ? path_join(source_root, lib->package_root)
+                            : NULL;
+        const char* root = selected_root ? selected_root : source_root;
         if (!path_isDir(root)) {
             (void)fprintf(stderr, "Error: prebuilt dependency `%s` has no package directory: %s\n", lib->name, root);
+            free(selected_root);
+            return false;
+        }
+        if (path_isDir(package_dir) && !dir_removeRecur(package_dir)) {
+            (void)fprintf(stderr, "Error: Failed to replace private package directory for `%s`: %s\n", lib->name, package_dir);
+            free(selected_root);
+            return false;
+        }
+        if (!dir_createRecur(package_dir) || !dal_c__copyTree(root, package_dir)) {
+            (void)fprintf(stderr, "Error: Failed to materialize prebuilt dependency `%s` into %s\n", lib->name, package_dir);
+            free(selected_root);
             return false;
         }
         printf("[PREBUILT] %-16s %s\n", lib->name, root);
+        free(selected_root);
         return true;
     }
     (void)fprintf(stderr, "Error: Unknown dependency provider `%s` for `%s`.\n", provider, lib->name);
@@ -927,10 +945,36 @@ static bool dal_c__stageExternalPackageForBuild(const dal_c_Project* proj, const
         char** files = dir_listRecur(lib_src, &count);
         for (int i = 0; files && i < count; ++i) {
             const char* f = files[i];
-            if (dal_c__endsWith(f, ".lib") || dal_c__endsWith(f, ".a") ||
-                dal_c__endsWith(f, ".so") || dal_c__endsWith(f, ".dylib")) {
+            bool is_link_file = dal_c__endsWith(f, ".lib") || dal_c__endsWith(f, ".a")
+                             || dal_c__endsWith(f, ".so") || dal_c__endsWith(f, ".dylib");
+            bool selected = lib->opts.link_count == 0;
+            char* name = path_basename(f);
+            for (int link_index = 0; is_link_file && !selected && link_index < lib->opts.link_count; ++link_index) {
+                const char* link = lib->opts.link_libs[link_index];
+                char* static_unix = str_format("lib%s.a", link);
+                char* import_gnu = str_format("lib%s.dll.a", link);
+                char* static_or_import_windows = str_format("%s.lib", link);
+                char* import_dh_windows = str_format("%s.dll.lib", link);
+                char* shared_unix = str_format("lib%s.so", link);
+                char* shared_darwin = str_format("lib%s.dylib", link);
+                selected = lib->is_static
+                         ? (str_eql(name, static_unix) || str_eql(name, static_or_import_windows))
+                         : (str_eql(name, import_gnu)
+                            || str_eql(name, static_or_import_windows)
+                            || str_eql(name, import_dh_windows)
+                            || str_eql(name, shared_unix)
+                            || str_eql(name, shared_darwin));
+                free(shared_darwin);
+                free(shared_unix);
+                free(import_dh_windows);
+                free(static_or_import_windows);
+                free(import_gnu);
+                free(static_unix);
+            }
+            if (is_link_file && selected) {
                 if (!dal_c__copyFileInto(f, deps_dir)) ok = false;
             }
+            free(name);
             free(files[i]);
         }
         free(files);
@@ -989,15 +1033,22 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
         const char* provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
         bool provider_action = str_eql(action, "build") || str_eql(action, "install");
         bool has_source = lib->source && lib->source[0] != '\0';
+        bool has_archive = lib->archive && lib->archive[0] != '\0';
+        bool has_remote_input = has_source || has_archive;
         bool has_local_provider_path = provider_action && lib->path && lib->path[0] != '\0'
                                     && !str_eql(provider, "dh");
-        if (!has_source && !has_local_provider_path
+        if (!has_remote_input && !has_local_provider_path
             && !(provider_action && str_eql(provider, "prebuilt"))) {
             continue;
         }
 
         external_count++;
-        char* source_dir = has_source ? path_join(src_root, lib->name) : strdup(lib->path);
+        if (has_source && has_archive) {
+            (void)fprintf(stderr, "Error: Dependency `%s` cannot declare both source= and archive=.\n", lib->name);
+            failures++;
+            continue;
+        }
+        char* source_dir = has_remote_input ? path_join(src_root, lib->name) : strdup(lib->path);
         bool exists = source_dir && (path_isDir(source_dir) || path_isFile(source_dir));
 
         if (provider_action) {
@@ -1021,13 +1072,13 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
             char* package_dir = path_join(profile_package, lib->name);
 
             bool ready = true;
-            if (!str_eql(provider, "prebuilt") && !exists) {
+            if (has_remote_input && !exists) {
                 (void)fprintf(stderr, "Error: Dependency `%s` is not fetched. Run `dh-c fetch`.\n", lib->name);
                 ready = false;
             }
-            if (ready && has_source) {
+            if (ready && has_remote_input) {
                 char* lock_reason = NULL;
-                if (!dal_c_Project_dependencyCheckoutMatchesLock(proj, lib, &lock_reason)) {
+                if (!dal_c_Project_dependencySourceMatchesLock(proj, lib, &lock_reason)) {
                     (void)fprintf(stderr, "Error: Dependency `%s` is not at its locked revision: %s\n",
                         lib->name, lock_reason ? lock_reason : "lock mismatch");
                     ready = false;
@@ -1060,7 +1111,7 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
             continue;
         }
 
-        if (!has_source) {
+        if (!has_remote_input) {
             free(source_dir);
             continue;
         }
@@ -1082,6 +1133,69 @@ static int dal_c__depsCommand(const char* action, const dal_c_Cmd* cmd, const da
             continue;
         }
         free(lock_reason);
+
+        if (has_archive) {
+            char* actual_revision = dal_c__archiveReadRevision(source_dir);
+            bool lock_matches = has_locked_revision && actual_revision
+                             && str_eql(actual_revision, locked_revision);
+            char* resolved_revision = NULL;
+            if (str_eql(action, "status")) {
+                if (!path_isDir(source_dir)) {
+                    printf("[MISSING] %-16s provider=%s archive=%s\n", lib->name, provider, lib->archive);
+                    failures++;
+                } else {
+                    const char* state = lock_matches ? "READY" : (has_locked_revision ? "DRIFT" : "UNLOCKED");
+                    printf("[%s] %-16s provider=%s revision=%s\n",
+                        state, lib->name, provider, actual_revision ? actual_revision : "(unavailable)");
+                    if (!has_locked_revision) {
+                        (void)fprintf(stderr, "Error: Dependency `%s` is not recorded in lock.dh\n", lib->name);
+                        failures++;
+                    } else if (!lock_matches) {
+                        (void)fprintf(stderr, "Error: Dependency `%s` archive materialization differs from lock.dh\n", lib->name);
+                        failures++;
+                    }
+                }
+            } else if (str_eql(action, "fetch") && lock_matches) {
+                printf("[HAVE]  %s\n", lib->name);
+                resolved_revision = strdup(locked_revision);
+            } else {
+                const bool updating = str_eql(action, "update");
+                printf("[%s] %s <- %s\n", updating ? "UPDATE" : "FETCH", lib->name, lib->archive);
+                (void)fflush(stdout);
+                char* archive_reason = NULL;
+                const char* expected = (!updating && has_locked_revision) ? locked_revision : NULL;
+                if (!dal_c__archiveAcquire(
+                        lib->archive, source_dir, expected, &resolved_revision, &archive_reason)) {
+                    (void)fprintf(stderr, "Error: Failed to fetch archive dependency `%s`: %s\n",
+                        lib->name, archive_reason ? archive_reason : "archive acquisition failed");
+                    failures++;
+                }
+                free(archive_reason);
+            }
+
+            if ((str_eql(action, "fetch") || str_eql(action, "update")) && resolved_revision) {
+                char* entry = str_format(
+                    "[%s]\nprovider=%s\narchive=%s\nrevision=%s\n\n",
+                    lib->name, provider, lib->archive, resolved_revision
+                );
+                char* grown = (lock_text && entry) ? str_format("%s%s", lock_text, entry) : NULL;
+                if (!grown) {
+                    failures++;
+                } else {
+                    free(lock_text);
+                    lock_text = grown;
+                    if (!dal_c__depsTouchUsage(deps_root, lib->name)) {
+                        (void)fprintf(stderr, "Warning: Failed to update dependency usage stamp for `%s`.\n", lib->name);
+                    }
+                }
+                free(entry);
+            }
+            free(resolved_revision);
+            free(actual_revision);
+            free(locked_revision);
+            free(source_dir);
+            continue;
+        }
 
         if (str_eql(action, "fetch")) {
             if (!exists) {

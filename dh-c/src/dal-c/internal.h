@@ -92,7 +92,11 @@ bool dal_c_VersionSpec_parsePrefix(dal_c_VersionSpec* dst, const char* value);
 bool dal_c_VersionSpec_parseSuffix(dal_c_VersionSpec* dst, const char* value);
 bool dal_c_VersionSpec_parseBuild(dal_c_VersionSpec* dst, const char* value);
 bool dal_c_Project_readDependencyLock(const dal_c_Project* proj, const dal_c_Lib* lib, char** revision_out, char** reason_out);
-bool dal_c_Project_dependencyCheckoutMatchesLock(const dal_c_Project* proj, const dal_c_Lib* lib, char** reason_out);
+bool dal_c_Project_dependencySourceMatchesLock(const dal_c_Project* proj, const dal_c_Lib* lib, char** reason_out);
+char* dal_c__archiveHashFile(const char* path);
+char* dal_c__archiveReadRevision(const char* source_dir);
+bool dal_c__archiveMaterializationMatches(const char* source_dir, const char* locked_revision, char** reason_out);
+bool dal_c__archiveAcquire(const char* archive, const char* source_dir, const char* expected_revision, char** resolved_revision_out, char** reason_out);
 
 void dal_c__printVerbose(const dal_c_Cmd* cmd, const char* fmt, ...) dal_c__printf_format(2, 3);
 void dal_c__printError(const char* fmt, ...) dal_c__printf_format(1, 2);

@@ -64,6 +64,7 @@ static void test_dh_file_contract(void);
 static void test_dh_file_generated_contract(void);
 static void test_workspace_configuration_precedence(void);
 static void test_scaffold_commands(void);
+static void test_archive_hash_contract(void);
 static void test_dependency_lock_contract(void);
 static void test_prebuilt_dependency_staging(void);
 static void test_clean_prefers_local_build_dir(void);
@@ -116,6 +117,7 @@ int main(void) {
     RUN_TEST(test_dh_file_generated_contract);
     RUN_TEST(test_workspace_configuration_precedence);
     RUN_TEST(test_scaffold_commands);
+    RUN_TEST(test_archive_hash_contract);
     RUN_TEST(test_dependency_lock_contract);
     RUN_TEST(test_prebuilt_dependency_staging);
     RUN_TEST(test_clean_prefers_local_build_dir);
@@ -2392,8 +2394,36 @@ static void test_makefile_mode_contracts(void) {
         TEST_ASSERT(strstr(makefile_text, " -nostdlib") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -lcustomrt") != NULL);
         TEST_ASSERT(strstr(makefile_text, " -luser32") != NULL);
+#ifdef _WIN32
+        TEST_ASSERT(strstr(makefile_text, "OBJECTS_RSP = $(TARGET).objects.rsp") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "$(CC) -shared -fPIC $(OBJECTS_INPUT)") != NULL);
+        TEST_ASSERT(strstr(makefile_text, "rm -f $(TARGET) $(IMPORT_LIB) $(EXTRA_TARGETS) $(OBJECTS_RSP)") != NULL);
+#endif
         free(makefile_text);
         free(makefile_path);
+
+        char* static_target_path = dal_c__resolveOutputPath(
+            proj, first_cmd, profile_dir, "runtime-contract", dal_c_Target_static_lib
+        );
+        TEST_ASSERT(static_target_path != NULL);
+        TEST_ASSERT(dal_c__generateMakefile(
+            first_cmd, proj, profile, sources, static_target_path, object_dir, dal_c_Target_static_lib
+        ) == 0);
+        char* static_makefile_path = dal_c__makePlanFilePath(
+            proj, profile, first_cmd, static_target_path, dal_c_Target_static_lib
+        );
+        char* static_makefile_text = static_makefile_path ? file_read(static_makefile_path) : NULL;
+        TEST_ASSERT(static_makefile_text != NULL);
+#ifdef _WIN32
+        TEST_ASSERT(strstr(static_makefile_text, "$(AR) rcs $@ $(OBJECTS_INPUT)") != NULL);
+        TEST_ASSERT(strstr(static_makefile_text, "$(AR) rcs $@ $(OBJS)") == NULL);
+        TEST_ASSERT(strstr(static_makefile_text, "rm -f $(TARGET) $(EXTRA_TARGETS) $(OBJECTS_RSP)") != NULL);
+#else
+        TEST_ASSERT(strstr(static_makefile_text, "$(AR) rcs $@ $(OBJS)") != NULL);
+#endif
+        free(static_makefile_text);
+        free(static_makefile_path);
+        free(static_target_path);
 
         TEST_ASSERT(dal_c__generateMakefile(second_cmd, proj, profile, sources, target_path, object_dir, dal_c_Target_shared_lib) == 0);
         char* second_contract = file_read(contracts[0]);
@@ -3105,6 +3135,20 @@ static void test_scaffold_commands(void) {
     free(project_root);
     free(workspace_root);
     free(original_cwd);
+    free(temp_root);
+}
+
+static void test_archive_hash_contract(void) {
+    test_reset_temp_root();
+    char* temp_root = test_temp_root();
+    char* input = path_join(temp_root, "sha256.txt");
+    TEST_ASSERT(dir_createRecur(temp_root));
+    TEST_ASSERT(file_write(input, "abc"));
+    char* hash = dal_c__archiveHashFile(input);
+    TEST_ASSERT(hash != NULL);
+    TEST_ASSERT(str_eql(hash, "sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"));
+    free(hash);
+    free(input);
     free(temp_root);
 }
 

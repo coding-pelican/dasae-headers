@@ -43,7 +43,7 @@ static char* dal_c_Project__findIncludeHeader(const dal_c_Project* proj, const c
 static char* dal_c_Project__findDHInstallHeader(const dal_c_Project* proj, const char* header);
 static bool dal_c_Project__usesDHLibraryDefault(const dal_c_Project* proj);
 static char* dal_c_Project__detectPCH(const dal_c_Project* proj);
-static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib);
+static bool dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib);
 static void dal_c_Project__addSelfRoot(dal_c_Project* proj, const char* path);
 static void dal_c_Project__addTargetRoot(dal_c_Project* proj, dal_c_TargetRoot* root);
 static void dal_c_Project__addToArray(char*** arr, int* count, const char* value);
@@ -162,6 +162,8 @@ void dal_c_Project_cleanup(dal_c_Project** self) {
         free(lib->name);
         free(lib->path);
         free(lib->source);
+        free(lib->archive);
+        free(lib->package_root);
         free(lib->revision);
         free(lib->provider);
         free(lib->build_command);
@@ -936,6 +938,8 @@ static void dal_c_Project__freeLibraryDraft(dal_c_Lib* lib) {
     free(lib->name);
     free(lib->path);
     free(lib->source);
+    free(lib->archive);
+    free(lib->package_root);
     free(lib->revision);
     free(lib->provider);
     free(lib->build_command);
@@ -976,7 +980,10 @@ static bool dal_c_Project__parseUnitDH(const char* path, dal_c_Project* proj) {
                     dal_c_Project__freeLines(lines, line_count);
                     return false;
                 }
-                dal_c_Project__addLibrary(proj, current_lib);
+                if (!dal_c_Project__addLibrary(proj, current_lib)) {
+                    dal_c_Project__freeLines(lines, line_count);
+                    return false;
+                }
                 current_lib = NULL;
             }
             char* end = strchr(line, ']');
@@ -1066,7 +1073,10 @@ static bool dal_c_Project__parseUnitDH(const char* path, dal_c_Project* proj) {
             dal_c_Project__freeLines(lines, line_count);
             return false;
         }
-        dal_c_Project__addLibrary(proj, current_lib);
+        if (!dal_c_Project__addLibrary(proj, current_lib)) {
+            dal_c_Project__freeLines(lines, line_count);
+            return false;
+        }
     }
     dal_c_Project__freeLines(lines, line_count);
     return true;
@@ -1303,6 +1313,26 @@ static bool dal_c_Project__isAbsolutePath(const char* path) {
             || (strlen(path) >= 2 && path[1] == ':'));
 }
 
+static bool dal_c_Project__isSafeRelativeSubpath(const char* path) {
+    if (!path || !path[0] || dal_c_Project__isAbsolutePath(path)) {
+        return false;
+    }
+    const char* segment = path;
+    for (const char* cursor = path;; ++cursor) {
+        if (*cursor != '/' && *cursor != '\\' && *cursor != '\0') {
+            continue;
+        }
+        const size_t length = (size_t)(cursor - segment);
+        if (length == 2u && segment[0] == '.' && segment[1] == '.') {
+            return false;
+        }
+        if (*cursor == '\0') {
+            return true;
+        }
+        segment = cursor + 1;
+    }
+}
+
 static bool dal_c_Project__isTrue(const char* value) {
     return value && dal_c_boolean_parse(value);
 }
@@ -1371,6 +1401,8 @@ static bool dal_c_Project__isPropertyKey(const char* key) {
 static bool dal_c_Project__isLibraryKey(const char* key) {
     return key && (str_eql(key, "path")
         || str_eql(key, "source")
+        || str_eql(key, "archive")
+        || str_eql(key, "package-root")
         || str_eql(key, "revision")
         || str_eql(key, "provider")
         || str_eql(key, "build-command")
@@ -1763,11 +1795,54 @@ static void dal_c_Project__applyPropertyLine(dal_c_CompilerOpts* opts, const cha
     }
 }
 
-static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
+static bool dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
     assert(proj != NULL);
     assert(lib != NULL);
 
-    if (!lib->path && lib->source && lib->source[0] != '\0' && lib->name) {
+    if (!lib->provider) {
+        lib->provider = strdup("dh");
+    }
+    if (lib->source && lib->source[0] && lib->archive && lib->archive[0]) {
+        (void)fprintf(stderr, "Error: Dependency `%s` cannot declare both source= and archive=.\n",
+            lib->name ? lib->name : "(unnamed)");
+        dal_c_Project__freeLibraryDraft(lib);
+        return false;
+    }
+    if (lib->archive && lib->archive[0] && lib->revision && lib->revision[0]) {
+        (void)fprintf(stderr,
+            "Error: Dependency `%s` cannot declare revision= with archive=; dh-c records the exact SHA-256 in lock.dh.\n",
+            lib->name ? lib->name : "(unnamed)");
+        dal_c_Project__freeLibraryDraft(lib);
+        return false;
+    }
+    if (lib->package_root && lib->package_root[0]
+        && !dal_c_Project__isSafeRelativeSubpath(lib->package_root)) {
+        (void)fprintf(stderr,
+            "Error: Dependency `%s` package-root must stay within its materialized source.\n",
+            lib->name ? lib->name : "(unnamed)");
+        dal_c_Project__freeLibraryDraft(lib);
+        return false;
+    }
+    if (lib->package_root && lib->package_root[0]
+        && !str_eql(lib->provider, "prebuilt")) {
+        (void)fprintf(stderr,
+            "Error: Dependency `%s` package-root requires provider=prebuilt.\n",
+            lib->name ? lib->name : "(unnamed)");
+        dal_c_Project__freeLibraryDraft(lib);
+        return false;
+    }
+    if (lib->package_root && lib->package_root[0]
+        && ((!lib->path || !lib->path[0])
+            && (!lib->source || !lib->source[0])
+            && (!lib->archive || !lib->archive[0]))) {
+        (void)fprintf(stderr,
+            "Error: Dependency `%s` package-root requires path=, source=, or archive=.\n",
+            lib->name ? lib->name : "(unnamed)");
+        dal_c_Project__freeLibraryDraft(lib);
+        return false;
+    }
+    if (!lib->path && ((lib->source && lib->source[0] != '\0')
+        || (lib->archive && lib->archive[0] != '\0')) && lib->name) {
         char* state_root = dal_c_Project_getStateRoot(proj);
         char* deps_root = state_root ? path_join(state_root, "deps") : NULL;
         char* src_root = deps_root ? path_join(deps_root, "src") : NULL;
@@ -1776,16 +1851,13 @@ static void dal_c_Project__addLibrary(dal_c_Project* proj, dal_c_Lib* lib) {
         free(deps_root);
         free(state_root);
     }
-    if (!lib->provider) {
-        lib->provider = strdup("dh");
-    }
-
     dal_c_Lib* new_libs = (dal_c_Lib*)realloc((void*)proj->libraries, ((size_t)proj->lib_count + 1) * sizeof(dal_c_Lib));
     assert(new_libs != NULL && "Out of memory");
     proj->libraries = new_libs;
     proj->libraries[proj->lib_count] = *lib;
     proj->lib_count++;
     free(lib);
+    return true;
 }
 
 static void dal_c_Project__addSelfRoot(dal_c_Project* proj, const char* path) {
@@ -1880,6 +1952,16 @@ static void dal_c_Project__applyLibraryLine(dal_c_Lib* lib, const dal_c_Project*
         free(resolved);
     } else if (str_eql(key, "source")) {
         dal_c_Project__setString(&lib->source, value);
+    } else if (str_eql(key, "archive")) {
+        if (strstr(value, "://")) {
+            dal_c_Project__setString(&lib->archive, value);
+        } else {
+            char* resolved = dal_c_Project__resolveProjectPath(proj, value);
+            dal_c_Project__setString(&lib->archive, resolved ? resolved : value);
+            free(resolved);
+        }
+    } else if (str_eql(key, "package-root")) {
+        dal_c_Project__setString(&lib->package_root, value);
     } else if (str_eql(key, "revision")) {
         dal_c_Project__setString(&lib->revision, value);
     } else if (str_eql(key, "provider")) {
@@ -1983,6 +2065,7 @@ bool dal_c_Project_readDependencyLock(const dal_c_Project* proj, const dal_c_Lib
     bool found = false;
     char* provider = NULL;
     char* source = NULL;
+    char* archive = NULL;
     char* revision = NULL;
     for (int i = 0; i < line_count; ++i) {
         char* line = dal_c_Project__trimInPlace(lines[i]);
@@ -2008,6 +2091,9 @@ bool dal_c_Project_readDependencyLock(const dal_c_Project* proj, const dal_c_Lib
         } else if (str_eql(key, "source")) {
             free(source);
             source = strdup(value);
+        } else if (str_eql(key, "archive")) {
+            free(archive);
+            archive = strdup(value);
         } else if (str_eql(key, "revision")) {
             free(revision);
             revision = strdup(value);
@@ -2016,16 +2102,22 @@ bool dal_c_Project_readDependencyLock(const dal_c_Project* proj, const dal_c_Lib
     dal_c_Project__freeLines(lines, line_count);
 
     const char* expected_provider = (lib->provider && lib->provider[0]) ? lib->provider : "dh";
-    bool ok = found && provider && source && revision && revision[0]
+    const bool expects_archive = lib->archive && lib->archive[0];
+    const bool locator_matches = expects_archive
+        ? archive && str_eql(archive, lib->archive)
+        : source && lib->source && str_eql(source, lib->source);
+    bool ok = found && provider && revision && revision[0]
            && str_eql(provider, expected_provider)
-           && lib->source && str_eql(source, lib->source);
+           && locator_matches;
     if (!ok) {
         char* reason = NULL;
         if (!found) {
             reason = str_format("dependency `%s` is not recorded in %s", lib->name, lock_path);
         } else if (!provider || !str_eql(provider, expected_provider)) {
             reason = str_format("dependency `%s` provider differs from %s", lib->name, lock_path);
-        } else if (!source || !lib->source || !str_eql(source, lib->source)) {
+        } else if (expects_archive && (!archive || !str_eql(archive, lib->archive))) {
+            reason = str_format("dependency `%s` archive differs from %s", lib->name, lock_path);
+        } else if (!expects_archive && (!source || !lib->source || !str_eql(source, lib->source))) {
             reason = str_format("dependency `%s` source differs from %s", lib->name, lock_path);
         } else {
             reason = str_format("dependency `%s` has no resolved revision in %s", lib->name, lock_path);
@@ -2037,15 +2129,16 @@ bool dal_c_Project_readDependencyLock(const dal_c_Project* proj, const dal_c_Lib
     }
 
     free(revision);
+    free(archive);
     free(source);
     free(provider);
     free(lock_path);
     return ok;
 }
 
-bool dal_c_Project_dependencyCheckoutMatchesLock(const dal_c_Project* proj, const dal_c_Lib* lib, char** reason_out) {
+bool dal_c_Project_dependencySourceMatchesLock(const dal_c_Project* proj, const dal_c_Lib* lib, char** reason_out) {
     if (reason_out) { *reason_out = NULL; }
-    if (!lib || !lib->source || !lib->source[0]) { return true; }
+    if (!lib || ((!lib->source || !lib->source[0]) && (!lib->archive || !lib->archive[0]))) { return true; }
 
     char* locked_revision = NULL;
     if (!dal_c_Project_readDependencyLock(proj, lib, &locked_revision, reason_out)) {
@@ -2053,11 +2146,17 @@ bool dal_c_Project_dependencyCheckoutMatchesLock(const dal_c_Project* proj, cons
         return false;
     }
     if (!lib->path || !path_isDir(lib->path)) {
-        char* reason = str_format("dependency `%s` source checkout is missing; run `dh-c fetch`", lib->name);
+        char* reason = str_format("dependency `%s` source is missing; run `dh-c fetch`", lib->name);
         dal_c_Project__setLockReason(reason_out, reason);
         free(reason);
         free(locked_revision);
         return false;
+    }
+
+    if (lib->archive && lib->archive[0]) {
+        bool ok = dal_c__archiveMaterializationMatches(lib->path, locked_revision, reason_out);
+        free(locked_revision);
+        return ok;
     }
 
     const char* argv[] = { "git", "-C", lib->path, "rev-parse", "HEAD", NULL };
@@ -2094,7 +2193,10 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
 
         if (line[0] == '[') {
             if (current_lib) {
-                dal_c_Project__addLibrary(proj, current_lib);
+                if (!dal_c_Project__addLibrary(proj, current_lib)) {
+                    dal_c_Project__freeLines(lines, line_count);
+                    return false;
+                }
                 current_lib = NULL;
             }
             if (current_target_root) {
@@ -2251,7 +2353,10 @@ static bool dal_c_Project__parseProjectDH(const char* path, dal_c_Project* proj)
     }
 
     if (current_lib) {
-        dal_c_Project__addLibrary(proj, current_lib);
+        if (!dal_c_Project__addLibrary(proj, current_lib)) {
+            dal_c_Project__freeLines(lines, line_count);
+            return false;
+        }
     }
     if (current_target_root) {
         if (!dal_c_Project__targetRootIsValid(current_target_root)) {

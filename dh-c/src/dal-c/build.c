@@ -2054,9 +2054,9 @@ int dal_c__buildSingleLibrary(const dal_c_Cmd* cmd, const dal_c_Project* proj, c
     free(prebuilt_artifact);
     free(prebuilt_profile_dir);
 
-    if (lib->source && lib->source[0]) {
+    if ((lib->source && lib->source[0]) || (lib->archive && lib->archive[0])) {
         char* lock_reason = NULL;
-        if (!dal_c_Project_dependencyCheckoutMatchesLock(proj, lib, &lock_reason)) {
+        if (!dal_c_Project_dependencySourceMatchesLock(proj, lib, &lock_reason)) {
             (void)fprintf(stderr, "Error: Cannot source-build dependency %s: %s\n", lib->name, lock_reason ? lock_reason : "dependency lock mismatch");
             free(lock_reason);
             dal_c_CompilerOpts_cleanup(&merged.opts);
@@ -7348,6 +7348,11 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     (void)fprintf(fp, "\n\n");
     dal_c__ensureParentDir(target_path);
     dal_c__writeMakefileTargetVar(fp, target_path);
+    if (is_windows) {
+        (void)fprintf(fp, "OBJECTS_RSP = $(TARGET).objects.rsp\n");
+        (void)fprintf(fp, "OBJECTS_INPUT = @\"$(OBJECTS_RSP)\"\n");
+        (void)fprintf(fp, "WRITE_OBJECTS_RSP = $(file >$(OBJECTS_RSP),$(OBJS))\n\n");
+    }
     if (is_windows && target_type == dal_c_Target_shared_lib) {
         char* import_lib_path = dal_c__makeSharedImportLibraryPath(target_path);
         dal_c__ensureParentDir(import_lib_path);
@@ -7430,7 +7435,9 @@ static dal_c__noinline int dal_c__writeLinkedMakefile(
     dal_c__writeMakefileTargetRule(fp, cmd, profile, target_type, is_windows, link_contract_path);
 
     if (is_windows && target_type == dal_c_Target_shared_lib) {
-        (void)fprintf(fp, "clean:\n\trm -f $(TARGET) $(IMPORT_LIB) $(EXTRA_TARGETS)\n\n");
+        (void)fprintf(fp, "clean:\n\trm -f $(TARGET) $(IMPORT_LIB) $(EXTRA_TARGETS) $(OBJECTS_RSP)\n\n");
+    } else if (is_windows) {
+        (void)fprintf(fp, "clean:\n\trm -f $(TARGET) $(EXTRA_TARGETS) $(OBJECTS_RSP)\n\n");
     } else {
         (void)fprintf(fp, "clean:\n\trm -f $(TARGET) $(EXTRA_TARGETS)\n\n");
     }
@@ -7549,6 +7556,8 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
     assert(fp != NULL);
     assert(cmd != NULL);
     assert(profile != NULL);
+    const char* write_objects_rsp = is_windows ? "$(WRITE_OBJECTS_RSP)" : "";
+    const char* objects_input = is_windows ? "$(OBJECTS_INPUT)" : "$(OBJS)";
 
     if (type == dal_c_Target_executable) {
         if (link_contract_path) {
@@ -7556,14 +7565,14 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
         } else {
             (void)fprintf(fp, "$(TARGET): $(OBJS) $(LINK_DEPS)\n");
         }
-        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) $(OBJS) -o $@ $(LDFLAGS)\n");
+        (void)fprintf(fp, "\t$(Q)%s$(call P_LD,$@)$(CC) %s -o $@ $(LDFLAGS)\n", write_objects_rsp, objects_input);
         if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_linked_asm) {
             if (link_contract_path) {
                 (void)fprintf(fp, "\n$(LINKED_ASM): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS)\n");
             } else {
                 (void)fprintf(fp, "\n$(LINKED_ASM): $(OBJS) $(LINK_DEPS)\n");
             }
-            (void)fprintf(fp, "\t$(Q)$(call P_GEN,$@)$(CC) $(OBJS) -o \"$@\" $(LDFLAGS) -Wl,--lto-emit-asm\n");
+            (void)fprintf(fp, "\t$(Q)%s$(call P_GEN,$@)$(CC) %s -o \"$@\" $(LDFLAGS) -Wl,--lto-emit-asm\n", write_objects_rsp, objects_input);
         }
         if (cmd->action == dal_c_CmdAction_build && cmd->payload.build.emit_disasm) {
             if (dal_c__resolvedStripMode(&cmd->opts, profile)) {
@@ -7572,7 +7581,7 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
                 } else {
                     (void)fprintf(fp, "\n$(DISASM_TARGET): $(OBJS) $(LINK_DEPS)\n");
                 }
-                (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) $(OBJS) -o \"$@\" $(LDFLAGS_DISASM)");
+                (void)fprintf(fp, "\t$(Q)%s$(call P_LD,$@)$(CC) %s -o \"$@\" $(LDFLAGS_DISASM)", write_objects_rsp, objects_input);
                 if (is_windows && profile->debug_level != dal_c_DebugLevel_none) {
                     (void)fprintf(fp, " -Wl,--pdb=$(DISASM_PDB)");
                 }
@@ -7610,14 +7619,14 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
         }
     } else if (type == dal_c_Target_static_lib) {
         (void)fprintf(fp, "$(TARGET): $(OBJS)\n");
-        (void)fprintf(fp, "\t$(Q)$(call P_AR,$@)$(AR) rcs $@ $(OBJS)\n");
+        (void)fprintf(fp, "\t$(Q)%s$(call P_AR,$@)$(AR) rcs $@ %s\n", write_objects_rsp, objects_input);
     } else if (type == dal_c_Target_shared_lib) {
         if (link_contract_path) {
             (void)fprintf(fp, "$(TARGET): $(LINK_CONTRACT) $(OBJS) $(LINK_DEPS)\n");
         } else {
             (void)fprintf(fp, "$(TARGET): $(OBJS) $(LINK_DEPS)\n");
         }
-        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) -shared -fPIC $(OBJS) -o $@ $(LDFLAGS)");
+        (void)fprintf(fp, "\t$(Q)%s$(call P_LD,$@)$(CC) -shared -fPIC %s -o $@ $(LDFLAGS)", write_objects_rsp, objects_input);
         if (is_windows) {
             (void)fprintf(fp, " -Wl,--out-implib,$(IMPORT_LIB)");
         }
@@ -7628,7 +7637,7 @@ static dal_c__noinline void dal_c__writeMakefileTargetRule(FILE* fp, const dal_c
         } else {
             (void)fprintf(fp, "$(LINK_TARGET): $(OBJS) $(LINK_DEPS)\n");
         }
-        (void)fprintf(fp, "\t$(Q)$(call P_LD,$@)$(CC) $(OBJS) -o $@ $(LDFLAGS)\n\n");
+        (void)fprintf(fp, "\t$(Q)%s$(call P_LD,$@)$(CC) %s -o $@ $(LDFLAGS)\n\n", write_objects_rsp, objects_input);
         if (link_contract_path) {
             (void)fprintf(fp, "$(TARGET): $(LINK_CONTRACT) $(LINK_TARGET)\n");
         } else {

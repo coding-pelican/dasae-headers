@@ -29,16 +29,29 @@ Projectless source-unit scope:
 <global-cache>/units/<unit-id>/deps/      # otherwise
 ```
 
+```mermaid
+graph TD
+    R["project.dh / primary source.dh"] --> F["fetch or update"]
+    F --> L["lock.dh / source.lock.dh"]
+    F --> S["materialized source"]
+    L --> D["deps profile"]
+    S --> D
+    D --> P["target/profile package"]
+    P --> G["generated lib/deps staging"]
+    G --> B["build / package / install"]
+```
+
 The authored request and generated lock deliberately live at the same durable
 scope level:
 
 - `project.dh` or the primary projectless `<source>.dh` contains the requested
-  source, revision, and provider.
-- `lock.dh` or `<source>.lock.dh` contains the exact resolved source commit.
+  local path, Git source/revision, or archive location together with its provider.
+- `lock.dh` or `<source>.lock.dh` contains the exact resolved Git commit or
+  archive SHA-256.
 - `.dh-c/` and global cache trees contain disposable mutable state and must not
   own the persistent lock.
 
-A dependency section may declare:
+A dependency section may declare a Git source:
 
 ```ini
 [SDL]
@@ -47,17 +60,35 @@ revision=release-3.2.0
 provider=cmake
 ```
 
+or a directly downloadable archive, including a GitHub Release asset:
+
+```ini
+[SDL]
+archive=https://github.com/libsdl-org/SDL/releases/download/release-3.2.0/SDL3-devel-3.2.0-mingw.zip
+package-root=x86_64-w64-mingw32
+provider=prebuilt
+linking=shared
+link=SDL3
+```
+
 Supported fields:
 
 - `path=`: local source, a single header, or a package root.
 - `source=`: Git URL or local Git repository.
-- `revision=`: tag, commit, or branch resolved by fetch/update.
+- `archive=`: `.zip` or supported `.tar*` URL, or a local archive path.
+- `package-root=`: safe relative package path inside a materialized prebuilt source.
+- `revision=`: tag, commit, or branch for `source=` dependencies.
 - `provider=dh|cmake|make|custom|prebuilt`.
 - `build-command=` and `install-command=` for custom or overridden make workflows.
 
 Header-only dependencies remain first-class inputs. A dependency may be a single
 header or a directory with public headers and no compilation sources; `dh-c deps`
 stages those headers without inventing a binary artifact.
+
+`source=` and `archive=` are mutually exclusive. `revision=` is a Git request
+and is rejected beside `archive=`; the exact archive SHA-256 is generated into
+`lock.dh` instead. `package-root=` is accepted only by `provider=prebuilt` and
+cannot be absolute or contain a `..` path segment.
 
 Commands for a named project:
 
@@ -89,15 +120,16 @@ companions and `--dh-file` overlays remain flat.
 `project.dh`, or by the primary `<source>.dh` explicitly selected on the command
 line when no project owns the invocation.
 
-- `fetch` reuses an existing compatible `lock.dh` entry and checks out its exact
-  commit. It resolves and records a new entry only when no entry exists.
-- `update` deliberately re-resolves the requested revision and rewrites
-  `lock.dh`.
-- `status` compares each checkout with `lock.dh` and reports `READY`, `DRIFT`, or
-  `UNLOCKED`.
-- source provider build/install requires the checkout to match `lock.dh`.
-- changing a dependency source or provider invalidates the old entry; use
-  `dh-c update` to replace the resolution.
+- `fetch` reuses an existing compatible `lock.dh` entry. Git dependencies are
+  checked out at the locked commit; archive dependencies reuse or reconstruct
+  the locked SHA-256 materialization. A new entry is resolved only when none exists.
+- `update` deliberately re-resolves the requested Git revision or downloads the
+  current archive bytes and rewrites `lock.dh`.
+- `status` compares each checkout/materialization with `lock.dh` and reports
+  `READY`, `DRIFT`, or `UNLOCKED`.
+- provider build/install requires remote dependency state to match `lock.dh`.
+- changing a dependency source, archive, or provider invalidates the old entry;
+  use `dh-c update` to replace the resolution.
 
 The dependency lock is persistent source state and should normally be committed.
 For projectless units this means committing `<source>.lock.dh`. The `.dh-c/` and
@@ -108,6 +140,35 @@ update `.dh-c/deps/usage/<name>.stamp`. The stamp is disposable generated state;
 it exists only so age-based maintenance reflects actual use rather than the age of
 a checkout's internal Git files. Older layouts without a stamp fall back to the
 newest modification time found in the dependency source/build/package state.
+
+```mermaid
+stateDiagram-v2
+    [*] --> UNLOCKED
+    UNLOCKED --> READY: fetch resolves and locks
+    READY --> READY: fetch reuses exact resolution
+    READY --> DRIFT: source or materialization changes
+    DRIFT --> READY: fetch restores locked resolution
+    READY --> READY: update accepts and locks new resolution
+    DRIFT --> READY: update accepts and locks new resolution
+    READY --> MISSING: generated source is removed
+    MISSING --> READY: fetch restores locked resolution
+```
+
+```mermaid
+flowchart TD
+    A["Read authored dependency"] --> B{"Existing compatible lock?"}
+    B -- no --> C["Resolve Git commit or archive SHA-256"]
+    B -- yes --> D["Use locked resolution"]
+    C --> E["Materialize source"]
+    D --> E
+    E --> F{"Provider"}
+    F -- dh --> G["Recursive DH build"]
+    F -- external --> H["Provider build/install"]
+    H --> I["Select package-root"]
+    I --> J["Stage include and declared link artifacts"]
+    G --> K["Consumer build"]
+    J --> K
+```
 
 ## Generated dependency maintenance
 
@@ -220,8 +281,31 @@ CFLAGS
 
 ### Prebuilt
 
-`path=` identifies an existing package root. Build/install validates that the
-directory exists and performs no compilation.
+`path=` identifies an existing package root, while `archive=` may fetch one.
+The root uses the normal `include/`, `lib/`, and optional `bin/` package layout.
+Build/install performs no compilation: it materializes the root into the private
+target/profile package directory and then uses the same staging path as every
+other external provider. When an archive or Git checkout wraps that layout,
+`package-root=` selects its relative location. If `link=` entries are present,
+only their `linking=static|shared` variants are staged; otherwise all recognized
+library artifacts under `lib/` are staged.
+
+## Archive acquisition
+
+`archive=` is intentionally not a provider. The downloaded directory may still
+be consumed by `dh`, `cmake`, `make`, `custom`, or `prebuilt`.
+
+Supported suffixes are `.zip`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`,
+`.tar.bz2`, `.tbz2`, `.tar.zst`, and `.tzst`. `dh-c` uses `curl` and falls back
+to `wget` for remote downloads. Extraction uses `tar`; `.zip` also falls back to
+`unzip`. A local archive path is copied directly without a downloader.
+
+The generated lock records the archive location and `revision=sha256:<hex>`.
+`fetch` never accepts different bytes for an existing lock. If the materialized
+source is missing, it downloads the archive again and verifies the locked hash
+before replacing generated state. `update` is the only command that accepts new
+bytes and writes their new SHA-256. Archives with exactly one top-level directory
+are unwrapped automatically; multi-root archives retain their extracted root.
 
 ### dh
 

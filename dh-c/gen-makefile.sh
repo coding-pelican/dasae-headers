@@ -129,7 +129,8 @@ DAL_C_EXT_DIR = $(SRC_DIR)/dal-c-ext
 # Source files
 DAL_C_SRCS = $(DAL_C_DIR)/build.c \
              $(DAL_C_DIR)/Cmd.c \
-             $(DAL_C_DIR)/Project.c
+             $(DAL_C_DIR)/Project.c \
+             $(DAL_C_DIR)/archive.c
 
 DAL_C_EXT_SRCS = $(DAL_C_EXT_DIR)/str.c \
                  $(DAL_C_EXT_DIR)/path.c \

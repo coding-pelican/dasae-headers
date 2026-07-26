@@ -1348,8 +1348,10 @@ int dal_c_Cmd_queryToolchain(const dal_c_Cmd* self);
 typedef struct dal_c_Lib {
     char* name;
     char* path;
-    char* source;      // external source URL, currently git URLs are fetchable
-    char* revision;    // immutable tag/commit/branch requested by the project
+    char* source;      // external Git source URL
+    char* archive;     // external .zip/.tar* URL or local archive path
+    char* package_root; // package root relative to the materialized source
+    char* revision;    // requested Git revision; archive resolution is generated in lock.dh
     char* provider;    // dh|cmake|make|custom|prebuilt
     char* build_command;
     char* install_command;

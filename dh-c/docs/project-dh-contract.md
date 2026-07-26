@@ -84,6 +84,8 @@ Core keys:
 ```text
 path
 source
+archive
+package-root
 revision
 provider
 build-command
@@ -94,9 +96,12 @@ linking
 test
 ```
 
-Dependency sections also accept compile/link property keys, including
-`include`, `define`, `link`, `link-dir`, runtime-link toggles, target/ABI
-settings, and `prebuilt`.
+`source=` and `archive=` are mutually exclusive. `revision=` selects a Git
+branch, tag, or commit and is rejected beside `archive=`; archive content is
+resolved to `sha256:<hex>` in the generated lock. `package-root=` is a safe
+relative subpath used only by `provider=prebuilt`. Dependency sections also
+accept compile/link property keys, including `include`, `define`, `link`,
+`link-dir`, runtime-link toggles, target/ABI settings, and `prebuilt`.
 
 `lock.dh` is generated beside `project.dh`. `fetch` preserves an existing exact
 resolution; `update` intentionally resolves again and rewrites the lock.
