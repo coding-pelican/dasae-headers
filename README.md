@@ -55,6 +55,7 @@ dasae-headers: Modern, Better safety and productivity to C
   </div>
 </div>
 
+<!-- markdownlint-disable MD007 -->
 <details>
 <summary><strong>Table of Contents</strong></summary>
 
@@ -100,6 +101,7 @@ dasae-headers: Modern, Better safety and productivity to C
       - [`sort` — Sorting Algorithms](#sort--sorting-algorithms)
       - [Linked Lists](#linked-lists)
       - [Tree Structures *(planned)*](#tree-structures-planned)
+      - [Bit Sets *(planned)*](#bit-sets-planned)
       - [Array-Based Containers](#array-based-containers)
       - [Hash-Based Containers](#hash-based-containers)
       - [`heap` — Heap Allocators](#heap--heap-allocators)
@@ -118,10 +120,12 @@ dasae-headers: Modern, Better safety and productivity to C
       - [`time` — Time \& Duration](#time--time--duration)
       - [`io` — Input/Output](#io--inputoutput)
       - [`fmt` — Formatting](#fmt--formatting)
+      - [`Ver` / `SemVer` — Version Values](#ver--semver--version-values)
       - [`log` — Logging](#log--logging)
       - [`fs` — File System](#fs--file-system)
       - [`net` — Networking](#net--networking)
       - [`http` — HTTP *(planned)*](#http--http-planned)
+      - [Planned Module Bundles](#planned-module-bundles)
       - [`TEST` — Testing Framework](#test--testing-framework)
       - [`start` / `main` — Entry Points](#start--main--entry-points)
   - [Meta System](#meta-system)
@@ -143,6 +147,7 @@ dasae-headers: Modern, Better safety and productivity to C
   - [License](#license)
 
 </details>
+<!-- markdownlint-enable MD007 -->
 
 ---
 
@@ -544,8 +549,9 @@ and standard library designs of Zig and Rust.
 
 #### `builtin` — Compiler & Platform Abstraction
 
-Preprocessor utilities, platform/compiler detection, source location tracking,
-type and container introspection.
+The dependency-free compiler boundary used by every higher layer: preprocessor
+metaprogramming, build/target detection, declaration and expression syntax,
+compiler attributes, source locations, and primitive target operations.
 
 - **Submodules:**
   `pp`, `cfg` (`ver`, `lang`, `comp`, `eval`, `arch`, `plat`), `auto`, `comp`,
@@ -559,8 +565,8 @@ type and container introspection.
 
 - **`pp` (preprocessor):** Implements compile-time metaprogramming as preprocessor macros:
   - **Token comparison:**
-    `pp_eq`, `pp_ne`, `pp_and`, `pp_or`, `pp_xor`, `pp_not`, `pp_Tok_eq`
-    — token equality and logic
+    `pp_eql`, `pp_neq`, `pp_and`, `pp_or`, `pp_xor`, `pp_not`,
+    `pp_Tok_eql`, `pp_Tok_neq` — boolean and registered-token comparison
   - **Control flow:**
     `pp_if_` / `pp_then_` / `pp_else_` — conditional;
     `pp_switch_` / `pp_case_` / `pp_default_` — dispatch
@@ -568,37 +574,63 @@ type and container introspection.
     `pp_some`, `pp_none`, `pp_isSome`, `pp_isNone`, `pp_orelse_`
     — preprocessor optional values
   - **Utilities:**
-    `pp_strfy`, `pp_cat`, `pp_join`, `pp_join2`/`pp_join3`/`pp_join4`, `pp_uniqTok`,
-    `pp_overload`, `pp_foreach`, `pp_countArg`, `pp_defer`, `pp_expand`, `nameOf`
-- **Platform/compiler:**
-  `lang`, `arch`, `plat`, `comp` under `builtin/cfg` — detection macros
+    `pp_begin`, `pp_end`, `pp_nothing`, `pp_ignore`, `pp_strfy`, `pp_cat`
+    through `pp_cat5`, `pp_join` through `pp_join5`, `pp_uniqTok`,
+    `pp_uniqTokByLine`, `pp_overload`, `pp_foreach`, `pp_foldl`, `pp_foldr`,
+    `pp_countArg`, `pp_defer`, and `pp_expand`
+  - **Preprocessor tuples:**
+    `pp_Tuple_wrap`, `pp_Tuple_unwrap`, `pp_Tuple_len`,
+    `pp_Tuple_get1st` through `pp_Tuple_get8th`, `pp_Tuple_pushFront`, and
+    `pp_Tuple_pushBack`
+- **Build and target configuration (`builtin/cfg`):**
+  - `lang_*` reports the C/C++ mode, standard version, strict conformance, and
+    GNU or Microsoft extension availability.
+  - `comp_*` reports compiler identity and version, hosted/freestanding and
+    runtime-library linkage facts, and compiler capabilities.
+  - `arch_*` reports architecture/family, word width, byte order, cache-line
+    size, spin-loop support, and SIMD capabilities.
+  - `plat_*` reports operating system, POSIX ancestry, data model, integer and
+    pointer widths, and calling conventions.
+  `builtin/cfg/comp.h` owns these compiler facts; `builtin/comp.h` is the
+  separate syntax/attribute layer described below.
 - **Version configuration (`builtin/cfg/ver.h`):**
   - `ver_self_core_major`, `ver_self_core_minor`, `ver_self_core_patch`,
     `ver_self_core_num`, `ver_self_core_str` — build-provided `dh` version
   - `ver_self_num`, `ver_self_str`, `ver_self_str_with_build` — prerelease and
     build-aware self-version queries
+  - `ver_self_label_*` and `ver_self_build_*` expose the prerelease and build
+    components used by those complete version queries.
   - `ver_core_calc`, `ver_calc`, `ver_core_strfy`, `ver_strfy`,
     `ver_strfyWithBuild` — packed numeric and semantic-version string utilities
 - **Evaluation modes (`builtin/cfg/eval.h`):**
-  - `in_analysis`, `in_analysis_active_only`, `in_analysis_full` distinguish
-    static-analysis expansion from ordinary compilation.
-  - `in_comptime` and `in_runtime` distinguish compile-time implementation
-    passes from runtime builds.
-  - `analysis_only`, `comptime_only`, `runtime_only` and their `*_unless`
-    counterparts select syntax for the active evaluation mode.
+  - `eval_in_analysis`, `eval_in_analysis_active_only`, and
+    `eval_in_analysis_full` distinguish static-analysis expansion from
+    ordinary compilation; `eval_analysis_mode` and `eval_analysis_is_*`
+    identify the selected analysis strategy.
+  - `eval_in_comptime` and `eval_in_runtime` distinguish compile-time
+    implementation passes from runtime builds.
+  - `eval_analysis_only`, `eval_comptime_only`, `eval_runtime_only` and their
+    `*_unless` counterparts select syntax for the active mode.
+  - `builtin/comp.h` exports the shorter `in_*`, `*_enabled`, `*_only`, and
+    `*_unless` aliases used by higher layers.
+  - `eval_include_level` and `eval_include_level_is_0` through
+    `eval_include_level_is_15` expose include depth to analysis-only
+    expansion.
 - **Declaration and storage syntax:**
-  `auto`, `var`, `let`, `var_`, `let_`, `var_const`, and `let_const` provide
-  inferred or explicit mutable, immutable, and const-qualified declarations.
+  `auto`, `var`, `let`, `var_`, `let_`, `var_const`, `let_const`,
+  `var_const_`, and `let_const_` provide inferred or explicit mutable,
+  immutable, and const-qualified declarations.
 - **Literal and value-update syntax:**
   - `n_` joins comma-separated numeric fragments into one literal;
     `n$(_T)` applies an explicit type, allowing readable forms such as
     `n_(1, 000, 000)` and `n$(usize)(8)`.
   - `l$`, `l0$`, `from$`, `type$`, `typeO$`, `typeE$`, `asg`, `asg_l`,
-    `move`, and `copy` provide typed literals, representation adaptation,
-    assignment, and value-transfer syntax.
-  - `cleared`, `initial`, `$init`, `$field`, and `$in_field` build explicit
-    initializers; `with_` copies a value, applies designated field updates,
-    and returns the updated value.
+    `as$`, `comp_const_`, `move`, and `copy` provide typed literals, explicit
+    C casts, representation adaptation, assignment, and value-transfer
+    syntax.
+  - `cleared` / `cleared$`, `initial` / `initial$`, `$init`, `$field`,
+    `$in_field`, and `$asg` build explicit initializers; `with_` copies a
+    value, applies designated field updates, and returns the updated value.
 - **Type-directed selection:**
   `T_switch$` dispatches with C `_Generic`; `T_case$` matches a type across
   mutable and const-qualified forms, while `T_qual$` preserves an exact
@@ -607,19 +639,55 @@ type and container introspection.
 - **Local expression scopes:**
   `local_`, `local_label`, and `local_return_` name compound expression scopes,
   block-local labels, and the value produced by such a scope.
+- **Compile-time expression selection:**
+  `comp_when_` with `comp_provide_` / `comp_instead_` chooses one expression
+  without requiring both branches to be valid.
 - **Compiler and assembly syntax:**
   - `$attr`, `$inline`, `$must_check`, `$on_load`, `$branch_likely`, and related
-    macros normalize compiler attributes and optimization hints.
+    macros normalize compiler attributes, linkage, calling conventions, data
+    layout, branch prediction, lifecycle hooks, and optimization hints.
+  - `$static`, `$extern`, `$thrd_local`, `$import`, `$export`, `$packed`,
+    `$bits`, `$align`, and the `$callconv_*` family make storage, visibility,
+    representation, alignment, and ABI choices explicit.
+  - `not`, `and`, `or`, `$fallthrough`, `$unreachable`, `$loop_unroll`,
+    `$loop_inline`, and `$loop_rolled` provide readable control and loop hints
+    used by the higher-level scope syntax.
+  - `$suppress_`, `$suppressing_`, and `$suppressed` scope compiler diagnostic
+    suppression; `let_ignore`, `$ignore_void`, `$used`, and `$unused` make
+    intentional value handling explicit.
   - `asm`, `asm_volatile`, `$reg`, `asm_var_`, `asm_let_`, `asm_var_reg`, and
     `asm_let_reg` normalize inline assembly and register-bound declarations.
-- **Source location:**
-  `srcLoc$` — compile-time source location capture
-- **Type introspection (builtin):**
-  `typeInfo$`, `sizeOf$`, `alignOf$`, `TypeOf`, `TypeOfUnqual`, `Type_eq$`,
-  `RefType$`, `DerefType$`
+- **Primitive memory and target operations:**
+  - `builtin/mem.h` defines bit-unit constants, `raw_countOnes*`,
+    `raw_leadingRedundantSgnBits*`, `raw_leadingZeros*`,
+    `raw_trailingZeros*`, `raw_firstSetBit*`, `raw_parity*`,
+    `raw_swapBytes*`, `raw_rotateLeft*`, `raw_rotateRight*`,
+    `raw_reverseBits*`, `raw_memset*`, `raw_memcpy`, `raw_memmove`,
+    `raw_memeql`, `raw_memord`, `raw_alloca`, and `raw_allocaAlign`.
+  - `builtin/atom.h` defines `atom_MemOrd`, fences, loads/stores,
+    compare-exchange, exchange, arithmetic min/max, and bitwise atomic
+    primitives. `dh/atom.h` adds spin locks and typed `atom_V$` wrappers.
+  - `builtin/simd.h` exposes `simd_supported`, width/alignment, and per-target
+    capability flags while selecting the matching intrinsic header. Portable
+    vector operations live in `prl/simd.h`.
+  - `prefetch`, `prefetch_read`, and `prefetch_write` express
+    `prefetch_RW` read/write requests with `prefetch_Locality`.
+  - `builtin/wasm.h` exposes WebAssembly capability flags and feature-gated
+    memory, numeric, TLS, exception, atomic, reference, and table builtins.
+- **Source location and static assertions:**
+  `src_loc_filePath`, `src_loc_fileName`, `src_loc_fnName`, `src_loc_line`,
+  and `src_loc_column` expose compiler locations; `static_assert`,
+  `static_assert_msg`, and their trap forms provide portable compile-time
+  assertions. `core/src_loc.h` combines the fields as `srcLoc()`.
+- **Compile-time type introspection:**
+  `nameOf`, `isComptimeExpr`, `isRuntimeExpr`, `TypeOf`, `TypeOfUnqual`,
+  `null`, `null$`, `$ref`, `$deref`, `raw_ref`, `raw_deref`, `RefType$`,
+  `RefTypeUnqual$`, `DerefType$`, `DerefTypeUnqual$`, `eqlType$`,
+  `eqlTypeUnqual$`, `neqType$`, `neqTypeUnqual$`, `sizeOf$`, `countOf$`,
+  `alignOf$`, `alignOfLog2$`, `$alignAs`, and `$alignAsLog2`
 - **Container/field introspection:**
-  `FieldType$`, `FieldTypeUnqual$`, `FieldType_eq$`, `offsetTo`, `fieldPtr`
-  (in `container_info`)
+  `memberName$`, `fieldName$`, `FieldType$`, `FieldTypeUnqual$`,
+  `eqlFieldType$`, `offsetTo`, `fieldPtr`, `recordPtr`, and `fieldPadding$`
 
 #### `core` — Language Primitives & Syntax Extensions
 
@@ -928,8 +996,9 @@ module supplies runtime comparator selection and type-erased dispatch.
 
 #### `m-math` — Mathematical Functions
 
-- **Submodules:**
-  `m-math`, `m-math-linalg`, `m-math-geom`, `m-math-interp`, `m-math-ease`
+- **Current modules:** `m-math`, `m-math-linalg`
+- **Planned modules:** `m-math-geom`, `m-math-interp`, `m-math-ease`
+  currently expose no public implementation contract.
 - **Common (prefix `math_`):**
   `math_abs`, `math_min`, `math_max`, `math_clamp`, `math_sign`, `math_wrap`,
   `math_floor`, `math_ceil`, `math_round`, `math_trunc`, `math_sqrt`, `math_pow`, `math_rsqrt`,
@@ -947,31 +1016,74 @@ module supplies runtime comparator selection and type-erased dispatch.
 
 #### `mem` — Memory Utilities
 
-Low-level memory operations with type-safe wrappers.
+Typed memory representation, sequence algorithms, growth helpers, and
+allocator contracts. Compiler primitives remain in `builtin/mem.h`;
+`core/pri.h` and `prl/u-meta.h` build the `pri_mem*` and `u_mem*` layers, and
+`mem` adds checked byte, pointer, meta-type, and generated typed surfaces.
 
-- **Submodules:** `base`, `common`, `Alctr`, `AlcTrace`, `dyn`
-- **Bit Operations:**
-  `mem_trailingZeros{8,16,32,64,Size}`, `mem_leadingZeros{8,16,32,64,Size}`
-- **Byte Swap:**
-  `mem_byteSwap{16,32,64,Size}`
-- **Endian Conversion:**
-  `mem_littleToNative*`, `mem_bigToNative*`, `mem_nativeToLittle*`, `mem_nativeToBig*`
-- **Alignment:**
-  `mem_isValidAlign`, `mem_isAligned`, `mem_alignFwd`, `mem_alignBwd`, `mem_alignToLog2`
-- **Memory Operations:**
-  - `mem_copy`, `mem_move`, `mem_set`, `mem_set0` — Copy, move, fill
-  - `mem_eql`, `mem_ord`, `mem_eq`, `mem_ne`, `mem_lt`, `mem_gt`, `mem_le`, `mem_ge`
-    — Comparison
-  - `mem_swap`, `mem_reverse`, `mem_rotate` — Manipulation
-  - `mem_startsWith`, `mem_endsWith` — Pattern matching
+- **Submodules:**
+  `cfg`, `base`, `common`, `dyn`, `seq`, `ring`, `Alctr`, `AlcTrace`
+- **Sizes, bits, and byte order:**
+  - `mem_byte_size`, `mem_kb_size`, `mem_kib_size`, `mem_mb_size`,
+    `mem_mib_size`, `mem_gb_size`, `mem_gib_size`, and `mem_page_size`
+  - `mem_trailingZeros*`, `mem_leadingZeros*`, and `mem_swapBytes*` for
+    `8`, `16`, `32`, `Long`, `64`, and `Size` forms where applicable
+  - `mem_littleToNative*`, `mem_bigToNative*`, `mem_nativeToLittle*`, and
+    `mem_nativeToBig*`
+  - `mem_readLE*`, `mem_readBE*`, `mem_writeLE*`, and `mem_writeBE*` convert
+    fixed-width byte arrays without unaligned typed loads
+- **Alignment and empty storage:**
+  `mem_Align` stores log2 alignment; `mem_isValidAlign`, `mem_isAligned`,
+  `mem_isAlignedLog2`, `mem_alignFwd`, `mem_alignBwd`, their `Log2` forms,
+  `mem_alignToLog2`, `mem_log2ToAlign`, and `mem_emptyAddr` validate and
+  construct aligned addresses.
+- **Representation conversion:**
+  `mem_idxZ$u8`, `mem_lenZ0$u8`, `mem_spanZ0$u8`, and
+  `mem_spanZ0Mut$u8` bridge sentinel-terminated bytes and counted slices.
+  `mem_asBytes*` views objects and slices as bytes; `mem_bytesAs*` validates a
+  byte span as typed storage; `mem_Bytes$`, `mem_toBytes`, and `mem_bytesTo`
+  copy value representations through caller-provided storage.
+- **Bulk operations:**
+  - `mem_set0*`, `mem_set*`, `mem_copy*`, and `mem_move*`
+  - `mem_eql*` / `mem_neq*` for representation equality and `mem_ord*` with
+    `mem_eq*`, `mem_ne*`, `mem_lt*`, `mem_gt*`, `mem_le*`, `mem_ge*` for
+    bytewise ordering
+  - `mem_swap*`, `mem_reverse*`, and `mem_rotate*`
+  Each family has byte, object-pointer, meta-slice, and generated typed forms
+  where that shape is meaningful.
+- **Sequence queries and views:**
+  `mem_findFirst*`, `mem_findLast*`, `mem_count*`, `mem_contains*`,
+  `mem_startsWith*`, and `mem_endsWith*` return indices, counts, or
+  predicates. `mem_trim*` returns non-owning subviews; `mem_cut*` returns an
+  optional `mem_Cutted` pair exposing `before` and `after` views.
+- **Sequence composition:**
+  `mem_cat*`, `mem_join*`, `mem_padLeft*`, `mem_padRight*`, and
+  `mem_padCenter*` provide checked caller-buffer, `*Within`, and
+  allocator-backed `*Alloc` forms.
 - **Iterators:**
-  - `mem_WindowIter` — Window iterator over a buffer
-  - `mem_TokenIter` — Tokenizer with value/pattern/choice delimiters
-  - `mem_SplitIter` — Split iterator over a buffer
-- **Allocator Interface:**
-  `mem_Alctr` — unified allocator interface used by heap allocators and containers
+  - `mem_window` creates `mem_WindowIter` values that traverse fixed-size,
+    explicitly advanced windows.
+  - `mem_TokzIter` / `mem_TokzBwdIter` tokenize in either direction with
+    `mem_tokz*` factories and `mem_Delim` unit, sequence, or any-of
+    delimiters.
+  - `mem_SplitIter` / `mem_SplitBwdIter` preserve split boundaries in either
+    direction through the corresponding `mem_split*` factories.
+- **Container support:**
+  `mem_dyn_initCapForSize`, `mem_dyn_initCap`, `mem_dyn_growCapFrom`,
+  `mem_dyn_growCap`, and `mem_dyn_addOrOOM` define dynamic capacity growth;
+  `mem_seq_set0Range`, `mem_seq_copyRange`, `mem_seq_moveRange`, and
+  `mem_seq_swapAt` operate on validated element ranges; `mem_ring_idx` and
+  `mem_ring_idxFrom` map logical ring positions.
+- **Allocator interface:**
+  `mem_Alctr` separates raw allocation, in-place resize, relocating remap, and
+  free operations, then provides typed create/destroy/clone and
+  alloc/resize/remap/realloc/free/duplicate families. Fallible allocation
+  returns `mem_E` with `OutOfMemory`.
 - **Allocation tracing:**
-  `AlcTrace` — traced allocation context support
+  When `mem_tracing_enabled`, `mem_AlcTrace` records allocation, resize,
+  remap, and free source locations through `mem_AlcTrace_register*`.
+  `mem_AlcTrace_initWithLogPath` and `mem_AlcTrace_finiWithGenerateReport`
+  manage the trace and its final leak/invalid-free report.
 
 #### `u-meta` — Runtime Record/Type Reflection
 
@@ -981,7 +1093,8 @@ The type-erased value layer lives in `prl/u-meta.h`; record and field layout
 utilities live in `dh/u-meta.h`.
 For the relationship between these layers,
 see [Meta System](#meta-system).
-Compile-time type info is in `builtin`/`core` (`typeInfo$`, `sizeOf$`, `alignOf$`).
+Compile-time type queries such as `sizeOf$` and `alignOf$` live in `builtin`;
+the runtime `TypeInfo` value and `typeInfo$` constructor live in `core`.
 
 - **Record from fields:**
   `u_typeInfoRecord`, `u_sizeOfRecord`, `u_alignOfRecord`
@@ -1071,6 +1184,12 @@ Optimal stable and unstable sorting functions isolated by auxiliary memory const
 | **`BTreeMap`** | B-tree based ordered map *(planned)* | —             |
 | **`BTreeSet`** | B-tree based ordered set *(planned)* | —             |
 | **`SegTree`**  | Segment tree *(planned)*             | —             |
+| **`Treap`**    | Randomized search tree *(planned)*   | —             |
+
+#### Bit Sets *(planned)*
+
+`BitSet` is included by `dh.h`, but its public header currently contains only
+the planned-module marker and exposes no contract.
 
 #### Array-Based Containers
 
@@ -1296,6 +1415,19 @@ String formatting and parsing with a spec system (prefix `fmt_`).
 - **Float conversion:**
   Ryu-based fast float-to-string (configurable via `fmt_cfg`)
 
+#### `Ver` / `SemVer` — Version Values
+
+- **`Ver`:**
+  Compact `u32` ecosystem version with 8-bit major/minor/patch fields and a
+  packed alpha/beta/rc/release label. `Ver_self`, `Ver_comp`, `Ver_clang`,
+  `Ver_gcc`, and `Ver_gnu` expose current build/compiler versions; comparison
+  follows the packed total order.
+- **`SemVer`:**
+  Semantic Versioning 2.0 value and precedence contract with `u64`
+  major/minor/patch values plus prerelease and build identifier slices.
+  `SemVer` comparison retains build metadata but excludes it from precedence.
+  This is currently a value/comparison layer, not a text parser or formatter.
+
 #### `log` — Logging
 
 - **Levels:** `log_debug`, `log_info`, `log_warn`, `log_error`
@@ -1318,7 +1450,28 @@ Networking utilities for cross-platform code.
 
 #### `http` — HTTP *(planned)*
 
-HTTP client/server utilities for cross-platform code.
+`http` is included by `dh.h`, but its public header currently contains only
+the planned-module marker and exposes no client/server contract.
+
+</details>
+
+<details>
+<summary><strong>Planned Modules</strong></summary>
+
+#### Planned Module Bundles
+
+These remaining names are direct `dh.h` bundles, but do not yet expose a
+current public implementation contract. Their top-level headers contain only
+a planned marker, or only include subheaders that do.
+
+- **Foundation:** `crypt` (`tls`, `ssl`), `cmprs`
+- **System:** `c`, `DynLib`
+- **Text and data formats:** `regex`, `csv`, `ini`, `yaml`, `toml`, `json`
+- **Text/binary codecs:** `base32`, `base64`
+- **Binary and executable formats:**
+  `ar`, `coff`, `pe`, `pdb`, `elf`, `dwarf`, `macho`, `pie`, `wasm`
+- **Archives:** `zip`, `rar`, `tar`
+- **Data and networking:** `db`, `ws`
 
 </details>
 
