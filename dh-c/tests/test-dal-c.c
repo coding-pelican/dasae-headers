@@ -73,6 +73,7 @@ static void test_clean_profile_removes_dependency_exports(void);
 static void test_clean_cache_scope(void);
 static void test_clean_unused_dependencies(void);
 static void test_target_request_resolution(void);
+static void test_linux_gnu_target_vendor_is_canonical(void);
 static void test_output_override_generates_target_extensions(void);
 static void test_output_ext_does_not_rewrite_dependency_artifacts(void);
 static void test_explicit_file_build_uses_file_project(void);
@@ -129,6 +130,7 @@ int main(void) {
     RUN_TEST(test_clean_cache_scope);
     RUN_TEST(test_clean_unused_dependencies);
     RUN_TEST(test_target_request_resolution);
+    RUN_TEST(test_linux_gnu_target_vendor_is_canonical);
     RUN_TEST(test_output_override_generates_target_extensions);
     RUN_TEST(test_output_ext_does_not_rewrite_dependency_artifacts);
     RUN_TEST(test_explicit_file_build_uses_file_project);
@@ -3943,6 +3945,27 @@ static void test_clean_unused_dependencies(void) {
     free(project_root);
     free(temp_root);
     free(original_cwd);
+}
+
+static void test_linux_gnu_target_vendor_is_canonical(void) {
+    dal_c_CompilerOpts opts = { 0 };
+    char x64_unknown[] = "x86_64-unknown-linux-gnu";
+    char arm64_unknown[] = "aarch64-unknown-linux-gnu";
+    char windows_gnu[] = "x86_64-w64-windows-gnu";
+    opts.arch_target = x64_unknown;
+    char* target = dal_c__resolveTargetDirName(&opts);
+    TEST_ASSERT(str_eql(target, "x86_64-pc-linux-gnu"));
+    free(target);
+
+    opts.arch_target = arm64_unknown;
+    target = dal_c__resolveTargetDirName(&opts);
+    TEST_ASSERT(str_eql(target, "aarch64-pc-linux-gnu"));
+    free(target);
+
+    opts.arch_target = windows_gnu;
+    target = dal_c__resolveTargetDirName(&opts);
+    TEST_ASSERT(str_eql(target, "x86_64-w64-windows-gnu"));
+    free(target);
 }
 
 static void test_target_request_resolution(void) {

@@ -182,6 +182,27 @@ static char* dal_c__sanitizeTargetDirName(const char* target) {
     return result;
 }
 
+static char* dal_c__canonicalTargetDirName(const char* target) {
+    char* result = dal_c__sanitizeTargetDirName(target);
+    if (!result) { return NULL; }
+
+    static const char unknown_vendor[] = "-unknown-linux-gnu";
+    static const char canonical_vendor[] = "-pc-linux-gnu";
+    char* vendor = strstr(result, unknown_vendor);
+    if (!vendor) { return result; }
+
+    size_t prefix_len = (size_t)(vendor - result);
+    char* canonical = str_format(
+        "%.*s%s%s",
+        (int)prefix_len,
+        result,
+        canonical_vendor,
+        vendor + sizeof(unknown_vendor) - 1
+    );
+    free(result);
+    return canonical;
+}
+
 typedef struct dal_c__TargetResolutionCacheEntry {
     char* compiler;
     char* cwd;
@@ -195,7 +216,7 @@ static int dal_c__target_resolution_cache_count = 0;
 
 char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
     if (opts && opts->arch_target && opts->arch_target[0]) {
-        return dal_c__sanitizeTargetDirName(opts->arch_target);
+        return dal_c__canonicalTargetDirName(opts->arch_target);
     }
     const char* compiler = (opts && opts->compiler && opts->compiler[0]) ? opts->compiler : dal_c_default_compiler;
     char* cwd = env_getCWD();
@@ -239,7 +260,7 @@ char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
 #endif
 #endif
     }
-    char* result = dal_c__sanitizeTargetDirName(output);
+    char* result = dal_c__canonicalTargetDirName(output);
     free(output);
     if (result && dal_c__target_resolution_cache_count < dal_c__target_resolution_cache_capacity) {
         dal_c__TargetResolutionCacheEntry* entry =

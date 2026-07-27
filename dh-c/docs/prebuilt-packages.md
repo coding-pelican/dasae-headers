@@ -35,6 +35,10 @@ A platform-specific SDK or dependency package uses:
         deps/
 ```
 
+For Linux GNU targets, dh-c canonicalizes the non-semantic `unknown` vendor to
+`pc`, so compiler-reported `x86_64-unknown-linux-gnu` resolves the packaged
+`x86_64-pc-linux-gnu` directory.
+
 `libs/` contains the package's own artifacts. `deps/` is optional and contains transitive headers and link artifacts in the same relative layout that would otherwise be staged under `lib/deps/`.
 
 Artifact names follow the normal library contract:
