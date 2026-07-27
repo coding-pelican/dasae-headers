@@ -1455,7 +1455,9 @@ the planned-module marker and exposes no client/server contract.
 
 </details>
 
+<!-- markdownlint-disable-next-line MD033 -->
 <details>
+<!-- markdownlint-disable-next-line MD033 -->
 <summary><strong>Planned Modules</strong></summary>
 
 #### Planned Module Bundles
