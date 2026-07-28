@@ -23,8 +23,6 @@ dasae-headers: Modern, Better safety and productivity to C
 - testing-framework
  -->
 
-<!-- markdownlint-disable MD060 -->
-
 <div align="center">
   <a href="https://github.com/coding-pelican/dasae-headers">
     <img src="./.github/logo-dasae_headers.svg" alt="dasae-headers Logo" width="150"/>
@@ -55,7 +53,6 @@ dasae-headers: Modern, Better safety and productivity to C
   </div>
 </div>
 
-<!-- markdownlint-disable MD007 -->
 <details>
 <summary><strong>Table of Contents</strong></summary>
 
@@ -147,7 +144,6 @@ dasae-headers: Modern, Better safety and productivity to C
   - [License](#license)
 
 </details>
-<!-- markdownlint-enable MD007 -->
 
 ---
 
@@ -191,10 +187,10 @@ Add the selected profile directory to `PATH`. `DH_HOME` is optional when
 working inside this repository because `dh-c` discovers a current or ancestor
 `dh` directory before consulting the environment.
 
-| Variable  | Description                                   | Example Value                               |
-| --------- | --------------------------------------------- | ------------------------------------------- |
-| `PATH`    | Add the profile directory containing `dh-c`   | `/path/to/dasae-headers/dh-c/build/release` |
-| `DH_HOME` | Fallback path to the `dh` installation        | `/path/to/dasae-headers/dh`                 |
+| Variable  | Description                                 | Example Value                               |
+| --------- | ------------------------------------------- | ------------------------------------------- |
+| `PATH`    | Add the profile directory containing `dh-c` | `/path/to/dasae-headers/dh-c/build/release` |
+| `DH_HOME` | Fallback path to the `dh` installation      | `/path/to/dasae-headers/dh`                 |
 
 **Linux/macOS (bash/zsh):**
 
@@ -377,12 +373,12 @@ and fragmented conventions.
 Unifies fragmented language/architecture/OS/compiler-specific APIs and complex syntax
 of standard C into a single interface.
 
-| Aspect                      | Traditional C (Standard C)                           | dasae-headers                                                                       |
-| --------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Variables and Functions** | Explicit type declarations and repetitive signatures | `let` (constant), `var` (mutable) inference and `fn_` function syntax               |
-| **Closures**                | Compiler-specific closure extensions                 | Typed function and stackless-coroutine adapters through `Clsr`                     |
-| **Platform Support**        | Fragmented branching with `#ifdef`                   | Unified detection in `builtin/cfg` and system contracts under `sys`                |
-| **Preprocessor Branching**  | Separate `#ifdef` definitions even for simple values | One definition with expression-style branching via `pp_if_` and `pp_switch_`       |
+| Aspect                      | Traditional C (Standard C)                           | dasae-headers                                                                |
+| --------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **Variables and Functions** | Explicit type declarations and repetitive signatures | `let` (constant), `var` (mutable) inference and `fn_` function syntax        |
+| **Closures**                | Compiler-specific closure extensions                 | Typed function and stackless-coroutine adapters through `Clsr`               |
+| **Platform Support**        | Fragmented branching with `#ifdef`                   | Unified detection in `builtin/cfg` and system contracts under `sys`          |
+| **Preprocessor Branching**  | Separate `#ifdef` definitions even for simple values | One definition with expression-style branching via `pp_if_` and `pp_switch_` |
 
 #### 2. Memory & Argument Patterns
 
@@ -391,13 +387,13 @@ via `out` parameters.
 `Optional` and `Error Result` enforce validation of absent values or error conditions
 at the type system level.
 
-| Aspect               | Traditional C (Standard C)      | dasae-headers                                       |
-| -------------------- | ------------------------------- | --------------------------------------------------- |
-| **Resource Release** | `goto cleanup` or manual cleanup | Automatic scope cleanup with `defer_` and `errdefer_` |
-| **Result Return**    | Error code plus `out` pointer   | Direct **Optional** (`O$`) or **Error Result** (`E$`) return |
-| **Result Branching** | Manual `if (err)` branches      | Result control with `orelse_`, `unwrap_`, `try_`, and `catch_` |
-| **Data Transfer**    | Separate pointer and length     | **Slice** (`S$`) or value **array** (`A$`) transfer |
-| **Strings/Arrays**   | Sentinel or implicit length     | Explicit lengths with checked indexing and slicing helpers |
+| Aspect               | Traditional C (Standard C)       | dasae-headers                                                  |
+| -------------------- | -------------------------------- | -------------------------------------------------------------- |
+| **Resource Release** | `goto cleanup` or manual cleanup | Automatic scope cleanup with `defer_` and `errdefer_`          |
+| **Result Return**    | Error code plus `out` pointer    | Direct **Optional** (`O$`) or **Error Result** (`E$`) return   |
+| **Result Branching** | Manual `if (err)` branches       | Result control with `orelse_`, `unwrap_`, `try_`, and `catch_` |
+| **Data Transfer**    | Separate pointer and length      | **Slice** (`S$`) or value **array** (`A$`) transfer            |
+| **Strings/Arrays**   | Sentinel or implicit length      | Explicit lengths with checked indexing and slicing helpers     |
 
 #### 3. Concurrency
 
@@ -405,11 +401,11 @@ Provides OS threads, typed channels, stackless `Co` coroutine frames, scheduler
 tasks, and fibers. `Clsr` gives functions and coroutine frames a shared typed
 invocation surface. The separate `conc` module remains experimental.
 
-| Aspect              | Traditional C (Standard C)     | dasae-headers                                                   |
-| ------------------- | ------------------------------ | --------------------------------------------------------------- |
-| **Async Model**     | OS-thread-centric design       | Threads, stackless coroutines, schedulers, and fibers           |
-| **Sync Primitives** | Primitive `mutex` and `cond`   | `Mtx`, `RWLock`, `ResetEvt`, `Latch`, `Group`, and channels     |
-| **Control Flow**    | Callbacks or manual state machines | `co_fn_`, `suspend_`, `resume_`, and `co_return_`            |
+| Aspect              | Traditional C (Standard C)         | dasae-headers                                               |
+| ------------------- | ---------------------------------- | ----------------------------------------------------------- |
+| **Async Model**     | OS-thread-centric design           | Threads, stackless coroutines, schedulers, and fibers       |
+| **Sync Primitives** | Primitive `mutex` and `cond`       | `Mtx`, `RWLock`, `ResetEvt`, `Latch`, `Group`, and channels |
+| **Control Flow**    | Callbacks or manual state machines | `co_fn_`, `suspend_`, `resume_`, and `co_return_`           |
 
 #### 4. Meta Type & Generic System
 
@@ -433,11 +429,11 @@ Safety validations prioritize compile-time evaluation and remain available as
 assertions during development. Release builds optimize them away, preserving
 the same runtime cost as the underlying primitive operations.
 
-| Aspect                | Traditional C (Standard C)                                                | dasae-headers                                                                             |
-| --------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| **Vector Ops**        | Manual loop-based operations or platform-dependent APIs                   | Architecture-independent accelerated operations via `simd.h`                              |
-| **Arithmetic Safety** | Unchecked overflow and division edge cases                                | Compile-time validation, development assertions, and zero-overhead release assumptions    |
-| **Type Casting**      | Risk of data loss due to implicit conversion                              | Checked signed/unsigned, width, and integer/floating-point conversions                     |
+| Aspect                | Traditional C (Standard C)                              | dasae-headers                                                                          |
+| --------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Vector Ops**        | Manual loop-based operations or platform-dependent APIs | Architecture-independent accelerated operations via `simd.h`                           |
+| **Arithmetic Safety** | Unchecked overflow and division edge cases              | Compile-time validation, development assertions, and zero-overhead release assumptions |
+| **Type Casting**      | Risk of data loss due to implicit conversion            | Checked signed/unsigned, width, and integer/floating-point conversions                 |
 
 #### 6. Ecosystem & Infrastructure
 
@@ -446,11 +442,11 @@ and a `project.dh` contract.
 When errors occur, preserves call stack information beyond simple return values
 to immediately pinpoint the cause.
 
-| Aspect                         | Traditional C (Standard C)        | dasae-headers                                                            |
-| ------------------------------ | --------------------------------- | ------------------------------------------------------------------------ |
-| **Data Structures/Algorithms** | Manual or external implementations | Containers and algorithms such as `ArrList`, `ArrPDeq`, and `HashMap`    |
-| **Memory Control**             | Fixed global allocation patterns | Allocator or caller-buffer injection where supported                     |
-| **Testing/Analysis**           | External framework integration   | Built-in `TEST.h` and optional `ETrace` call-stack tracking              |
+| Aspect                         | Traditional C (Standard C)         | dasae-headers                                                         |
+| ------------------------------ | ---------------------------------- | --------------------------------------------------------------------- |
+| **Data Structures/Algorithms** | Manual or external implementations | Containers and algorithms such as `ArrList`, `ArrPDeq`, and `HashMap` |
+| **Memory Control**             | Fixed global allocation patterns   | Allocator or caller-buffer injection where supported                  |
+| **Testing/Analysis**           | External framework integration     | Built-in `TEST.h` and optional `ETrace` call-stack tracking           |
 
 </details>
 
@@ -543,7 +539,6 @@ and standard library designs of Zig and Rust.
 > Legend: Items marked with *(planned)* are under development and not yet publicly available.
 
 <!-- markdownlint-disable MD001 -->
-
 <details>
 <summary><strong>Core Language Extensions</strong></summary>
 
@@ -1171,9 +1166,9 @@ Optimal stable and unstable sorting functions isolated by auxiliary memory const
 
 #### Linked Lists
 
-| Module        | Description        | Key Functions                                          |
-| ------------- | ------------------ | ------------------------------------------------------ |
-| **`ListSgl`** | Singly linked list | `ListSgl_empty`, `ListSgl_prepend`, `ListSgl_remove`, `ListSgl_shift` |
+| Module        | Description        | Key Functions                                                                                          |
+| ------------- | ------------------ | ------------------------------------------------------------------------------------------------------ |
+| **`ListSgl`** | Singly linked list | `ListSgl_empty`, `ListSgl_prepend`, `ListSgl_remove`, `ListSgl_shift`                                  |
 | **`ListDbl`** | Doubly linked list | `ListDbl_empty`, `ListDbl_prepend`, `ListDbl_append`, `ListDbl_remove`, `ListDbl_shift`, `ListDbl_pop` |
 
 #### Tree Structures *(planned)*
@@ -1244,16 +1239,16 @@ the planned-module marker and exposes no contract.
 
 OS thread management and synchronization primitives.
 
-| Primitive        | Description                          |
-| ---------------- | ------------------------------------ |
-| **`thrd`**       | Thread creation, spawn, join, detach |
-| **`thrd_ftx`**   | Futex wait and wake API              |
-| **`Mtx`**        | Mutex                                |
-| **`Sem`**        | Semaphore                            |
-| **`Cond`**       | Condition variable                   |
-| **`RWLock`**     | Read-write lock                      |
-| **`ResetEvt`**   | Manual/auto reset event              |
-| **`Group`**      | Spawned thread group and latch       |
+| Primitive      | Description                          |
+| -------------- | ------------------------------------ |
+| **`thrd`**     | Thread creation, spawn, join, detach |
+| **`thrd_ftx`** | Futex wait and wake API              |
+| **`Mtx`**      | Mutex                                |
+| **`Sem`**      | Semaphore                            |
+| **`Cond`**     | Condition variable                   |
+| **`RWLock`**   | Read-write lock                      |
+| **`ResetEvt`** | Manual/auto reset event              |
+| **`Group`**    | Spawned thread group and latch       |
 
 - **Key Functions:**
   `thrd_spawn`, `thrd_join`, `thrd_detach`, `thrd_currId`, `thrd_yield`
@@ -1455,9 +1450,7 @@ the planned-module marker and exposes no client/server contract.
 
 </details>
 
-<!-- markdownlint-disable-next-line MD033 -->
 <details>
-<!-- markdownlint-disable-next-line MD033 -->
 <summary><strong>Planned Modules</strong></summary>
 
 #### Planned Module Bundles
@@ -1497,10 +1490,9 @@ a planned marker, or only include subheaders that do.
   — Standard entry point with argument parsing and error handling
 
 </details>
+<!-- markdownlint-enable MD001 -->
 
 ---
-
-<!-- markdownlint-enable MD001 -->
 
 ## Meta System
 
@@ -1665,13 +1657,13 @@ Both rely on `TypeInfo` from `core`/`type_info.h`
 
 ## Platform Support
 
-| Category         | Support Range                                                               |
-| ---------------- | --------------------------------------------------------------------------- |
-| **OS**           | Windows, Linux, Darwin/macOS, and WASI; maturity varies by target           |
-| **Architecture** | x86, x86_64, AArch64, ARM, RISC-V, and WebAssembly detection               |
-| **Clang**        | Primary and recommended compiler                                            |
-| **GCC**          | GCC-compatible paths where selected features permit                        |
-| **MSVC**         | Header detection only; not a supported `dh-c` compiler                     |
+| Category         | Support Range                                                     |
+| ---------------- | ----------------------------------------------------------------- |
+| **OS**           | Windows, Linux, Darwin/macOS, and WASI; maturity varies by target |
+| **Architecture** | x86, x86_64, AArch64, ARM, RISC-V, and WebAssembly detection      |
+| **Clang**        | Primary and recommended compiler                                  |
+| **GCC**          | GCC-compatible paths where selected features permit               |
+| **MSVC**         | Header detection only; not a supported `dh-c` compiler            |
 
 > **Note:** See [Prerequisites](#prerequisites) for host requirements. Use
 > `dh-c doctor`, `dh-c toolchain all`, and `dh-c plan` to inspect effective
@@ -1934,17 +1926,17 @@ TEST_fn_("Basic Math Operations Test" $scope) {
 
 Public project documents:
 
-| Document | Purpose |
-| --- | --- |
-| [`README.md`](./README.md) | Project overview and entry point. |
-| [`BUILD.md`](./BUILD.md) | Public build guide for direct-source, workspace, project, dependency, and prebuilt flows. |
-| [`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md) | Canonical authored and generated `.dh` file contracts. |
-| [`dh-c/docs/project-dh-contract.md`](./dh-c/docs/project-dh-contract.md) | Named project and target-root contract. |
-| [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md) | Dependency providers, locks, fetch, and update behavior. |
-| [`dh-c/docs/external-tools.md`](./dh-c/docs/external-tools.md) | Helper tool resolution and environment overrides. |
-| [`dh-c/docs/artifact-manifest.md`](./dh-c/docs/artifact-manifest.md) | Generated library artifact inventory. |
-| [`dh-c/docs/prebuilt-packages.md`](./dh-c/docs/prebuilt-packages.md) | Prebuilt package layout and consumption. |
-| [`LICENSE`](./LICENSE) | MIT license. |
+| Document                                                                     | Purpose                                                                                   |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [`README.md`](./README.md)                                                   | Project overview and entry point.                                                         |
+| [`BUILD.md`](./BUILD.md)                                                     | Public build guide for direct-source, workspace, project, dependency, and prebuilt flows. |
+| [`dh-c/docs/dh-files.md`](./dh-c/docs/dh-files.md)                           | Canonical authored and generated `.dh` file contracts.                                    |
+| [`dh-c/docs/project-dh-contract.md`](./dh-c/docs/project-dh-contract.md)     | Named project and target-root contract.                                                   |
+| [`dh-c/docs/external-dependencies.md`](./dh-c/docs/external-dependencies.md) | Dependency providers, locks, fetch, and update behavior.                                  |
+| [`dh-c/docs/external-tools.md`](./dh-c/docs/external-tools.md)               | Helper tool resolution and environment overrides.                                         |
+| [`dh-c/docs/artifact-manifest.md`](./dh-c/docs/artifact-manifest.md)         | Generated library artifact inventory.                                                     |
+| [`dh-c/docs/prebuilt-packages.md`](./dh-c/docs/prebuilt-packages.md)         | Prebuilt package layout and consumption.                                                  |
+| [`LICENSE`](./LICENSE)                                                       | MIT license.                                                                              |
 
 For API details, use the public headers under `dh/include/dh/` and the checked
 examples and tests in this repository.
@@ -1952,10 +1944,6 @@ examples and tests in this repository.
 ---
 
 ## Naming
-
-<!--
-The project is currently in the early stages of development, and API specifications are experimental.
- -->
 
 The name **"dasae-headers"** originates from the project's roots as a header-only library
 designed to collect frequently used C utility code.
