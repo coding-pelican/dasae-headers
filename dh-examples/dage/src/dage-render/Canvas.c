@@ -48,14 +48,14 @@ fn_((dage_Canvas_clear(dage_Canvas* self, O$dacolor_RGBA other_color))(void)) {
 $attr($inline_always)
 $static fn_((dacolor_RGBA_blendAlpha(dacolor_RGBA src, dacolor_RGBA dst))(dacolor_RGBA)) {
     // Convert [0..255] => [0..1]
-    let s_a = as$(f32)(src.a) / as$(f32)(dacolor_RGBA_channels_max_value);
-    let d_a = as$(f32)(dst.a) / as$(f32)(dacolor_RGBA_channels_max_value);
+    let s_a = as$(f32)(src.a) / as$(f32)(dacolor_RGBA_chans_limit_max);
+    let d_a = as$(f32)(dst.a) / as$(f32)(dacolor_RGBA_chans_limit_max);
 
     // Final alpha = alpha_src + alpha_dst * (1 - alpha_src)
     let out_a = s_a + (d_a * (1.0f - s_a));
 
     // If the result is fully transparent, just return transparent
-    if (out_a <= as$(f32)(dacolor_RGBA_channels_min_value)) { return dacolor_RGBA_blank; }
+    if (out_a <= as$(f32)(dacolor_RGBA_chans_limit_min)) { return dacolor_RGBA_blank; }
 
     // “Source over” for color channels:
     // out.rgb = (src.rgb * src.a) + (dst.rgb * dst.a * (1 - src.a)) / outA
@@ -70,7 +70,7 @@ $static fn_((dacolor_RGBA_blendAlpha(dacolor_RGBA src, dacolor_RGBA dst))(dacolo
         as$(u8)(out_r + 0.5f),
         as$(u8)(out_g + 0.5f),
         as$(u8)(out_b + 0.5f),
-        as$(u8)(out_a * as$(f32)(dacolor_RGBA_channels_max_value) + 0.5f));
+        as$(u8)(out_a * as$(f32)(dacolor_RGBA_chans_limit_max) + 0.5f));
 }
 
 void dage_Canvas_drawPixel(dage_Canvas* self, i32 x, i32 y, dacolor_RGBA color) {
@@ -80,9 +80,9 @@ void dage_Canvas_drawPixel(dage_Canvas* self, i32 x, i32 y, dacolor_RGBA color) 
     if (x < 0 || as$(i32)(Grid_width(self->gird)) <= x) { return; }
     if (y < 0 || as$(i32)(Grid_height(self->gird)) <= y) { return; }
 
-    let is_invisible = color.a == dacolor_RGBA_channels_min_value;
+    let is_invisible = color.a == dacolor_RGBA_chans_limit_min;
     if (is_invisible) { return; }
-    let is_opaque = color.a == dacolor_RGBA_channels_max_value;
+    let is_opaque = color.a == dacolor_RGBA_chans_limit_max;
     if (is_opaque) {
         *Grid_at(self->gird, x, y) = color;
         return;

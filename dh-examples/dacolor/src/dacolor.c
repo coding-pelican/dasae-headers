@@ -89,7 +89,7 @@ fn_((dacolor_RGB_fromHSL(dacolor_HSL hsl))(dacolor_RGB)) {
         b = dacolor_HSL__hueToRGBSpace(p, q, h - 1.0 / 3.0);
     }
 
-    let max_val = intToFlt$((f64)(dacolor_RGBA_channels_max_value));
+    let max_val = intToFlt$((f64)(dacolor_RGBA_chans_limit_max));
     return dacolor_RGB_from(
         fltToInt$((u8)(flt_clamp(r * max_val, 0.0, max_val))),
         fltToInt$((u8)(flt_clamp(g * max_val, 0.0, max_val))),
@@ -97,7 +97,7 @@ fn_((dacolor_RGB_fromHSL(dacolor_HSL hsl))(dacolor_RGB)) {
 };
 
 fn_((dacolor_RGB_toHSL(dacolor_RGB self))(dacolor_HSL)) {
-    let max_val = intToFlt$((f64)(dacolor_RGBA_channels_max_value));
+    let max_val = intToFlt$((f64)(dacolor_RGBA_chans_limit_max));
     let r = self.r / max_val;
     let g = self.g / max_val;
     let b = self.b / max_val;

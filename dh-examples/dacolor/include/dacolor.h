@@ -5,7 +5,7 @@
  * @file    dacolor.h
  * @author  Gyeongtae Kim(dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-21 (date of creation)
- * @updated 2026-07-25 (date of last update)
+ * @updated 2026-07-28 (date of last update)
  * @version v1.0.0
  * @ingroup dasae-headers-examples(dh-examples)
  * @prefix  dacolor
@@ -29,25 +29,16 @@ T_alias$((dacolor_RGB)(union dacolor_RGB));
 T_alias$((dacolor_HSL)(union dacolor_HSL));
 
 /*--- RGBA ---*/
-enum_((dacolor_RGBA_Channels $fits($packed))(
-#if arch_byte_order_is_little_endian
-    dacolor_RGBA_channels_red = 3,
-    dacolor_RGBA_channels_green = 2,
-    dacolor_RGBA_channels_blue = 1,
-    dacolor_RGBA_channels_alpha = 0,
-#elif arch_byte_order_is_big_endian
-    dacolor_RGBA_channels_red = 0,
-    dacolor_RGBA_channels_green = 1,
-    dacolor_RGBA_channels_blue = 2,
-    dacolor_RGBA_channels_alpha = 3,
-#else
-#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
-#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
-    dacolor_RGBA_channels_count = 4,
-    dacolor_RGBA_channels_min_value = u8_limit_min,
-    dacolor_RGBA_channels_max_value = u8_limit_max,
-    dacolor_RGBA_channels_alpha_blank = dacolor_RGBA_channels_min_value,
-    dacolor_RGBA_channels_alpha_opaque = dacolor_RGBA_channels_max_value
+enum_((dacolor_RGBA_Chans $fits($packed))(
+    dacolor_RGBA_chans_red = 0,
+    dacolor_RGBA_chans_green = 1,
+    dacolor_RGBA_chans_blue = 2,
+    dacolor_RGBA_chans_alpha = 3,
+    count$dacolor_RGBA_chans = 4,
+    dacolor_RGBA_chans_limit_min = u8_limit_min,
+    dacolor_RGBA_chans_limit_max = u8_limit_max,
+    dacolor_RGBA_chans_alpha_blank = dacolor_RGBA_chans_limit_min,
+    dacolor_RGBA_chans_alpha_opaque = dacolor_RGBA_chans_limit_max
 ));
 
 #define dacolor_RGBA_blank __const__dacolor_RGBA_blank
@@ -62,29 +53,17 @@ enum_((dacolor_RGBA_Channels $fits($packed))(
 #define dacolor_RGBA_magenta __const__dacolor_RGBA_magenta
 
 union dacolor_RGBA {
-    var_(channels, A$$(dacolor_RGBA_channels_count, u8));
+    /// RGBA channel components.
+    /// Each channel is in [`dacolor_RGBA_chans_limit_min`,`dacolor_RGBA_chans_limit_max`].
+    var_(chans, A$$(count$dacolor_RGBA_chans, u8));
     T_embed$(struct {
-#if arch_byte_order_is_little_endian
-        var_(a, u8); // Alpha channel in [0,255]
-        var_(b, u8); // Blue channel in [0,255]
-        var_(g, u8); // Green channel in [0,255]
-        var_(r, u8); // Red channel in [0,255]
-#elif arch_byte_order_is_big_endian
-        var_(r, u8); // Red channel in [0,255]
-        var_(g, u8); // Green channel in [0,255]
-        var_(b, u8); // Blue channel in [0,255]
-        var_(a, u8); // Alpha channel in [0,255]
-#else
-#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
-#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
+        var_(r, u8); // Red channel in [`dacolor_RGBA_chans_limit_min`,`dacolor_RGBA_chans_limit_max`]
+        var_(g, u8); // Green channel in [`dacolor_RGBA_chans_limit_min`,`dacolor_RGBA_chans_limit_max`]
+        var_(b, u8); // Blue channel in [`dacolor_RGBA_chans_limit_min`,`dacolor_RGBA_chans_limit_max`]
+        var_(a, u8); // Alpha channel in [`dacolor_RGBA_chans_limit_min`,`dacolor_RGBA_chans_limit_max`]
     });
-    var_(packed, u32); // Packed 0xRRGGBBAA value
+    var_(packed, u32);
 };
-claim_assert_static(sizeOf$(dacolor_RGBA) == sizeOf$(u32));
-claim_assert_static(offsetTo(dacolor_RGBA, r) == dacolor_RGBA_channels_red * sizeOf$(u8));
-claim_assert_static(offsetTo(dacolor_RGBA, g) == dacolor_RGBA_channels_green * sizeOf$(u8));
-claim_assert_static(offsetTo(dacolor_RGBA, b) == dacolor_RGBA_channels_blue * sizeOf$(u8));
-claim_assert_static(offsetTo(dacolor_RGBA, a) == dacolor_RGBA_channels_alpha * sizeOf$(u8));
 T_use_prl$(dacolor_RGBA);
 #define dacolor_RGBA_from_static(_r /*: u8*/, _g /*: u8*/, _b /*: u8*/, _a /*: u8*/... /*(dacolor_RGBA)*/) \
     ____dacolor_RGBA_from_static(_r, _g, _b, _a)
@@ -108,21 +87,27 @@ $extern fn_((dacolor_RGBA_fromOpaqueHSL(dacolor_HSL hsl))(dacolor_RGBA));
 $extern fn_((dacolor_RGBA_toHSL(dacolor_RGBA self))(dacolor_HSL));
 
 /*--- RGB ---*/
-#define dacolor_RGB_channels_count __comp_int__dacolor_RGB_channels_count
-#define __comp_int__dacolor_RGB_channels_count 3
+enum_((dacolor_RGB_Chans $fits($packed))(
+    dacolor_RGB_chans_red = dacolor_RGBA_chans_red,
+    dacolor_RGB_chans_green = dacolor_RGBA_chans_green,
+    dacolor_RGB_chans_blue = dacolor_RGBA_chans_blue,
+    count$dacolor_RGB_chans = count$dacolor_RGBA_chans - 1,
+    dacolor_RGB_chans_limit_min = dacolor_RGBA_chans_limit_min,
+    dacolor_RGB_chans_limit_max = dacolor_RGBA_chans_limit_max,
+    dacolor_RGB_chans_alpha_blank = dacolor_RGBA_chans_alpha_blank,
+    dacolor_RGB_chans_alpha_opaque = dacolor_RGBA_chans_alpha_opaque
+));
 
 union dacolor_RGB {
-    var_(channels, A$$(dacolor_RGB_channels_count, u8)); // RGB channel components in [0,255]
+    /// RGB channel components.
+    /// Each channel is in [`dacolor_RGB_chans_limit_min`,`dacolor_RGB_chans_limit_max`].
+    var_(chans, A$$(count$dacolor_RGB_chans, u8));
     T_embed$(struct {
-        var_(r, u8); // Red channel in [0,255]
-        var_(g, u8); // Green channel in [0,255]
-        var_(b, u8); // Blue channel in [0,255]
+        var_(r, u8); // Red channel in [`dacolor_RGB_chans_limit_min`,`dacolor_RGB_chans_limit_max`]
+        var_(g, u8); // Green channel in [`dacolor_RGB_chans_limit_min`,`dacolor_RGB_chans_limit_max`]
+        var_(b, u8); // Blue channel in [`dacolor_RGB_chans_limit_min`,`dacolor_RGB_chans_limit_max`]
     });
 };
-claim_assert_static(sizeOf$(dacolor_RGB) == dacolor_RGB_channels_count * sizeOf$(u8));
-claim_assert_static(offsetTo(dacolor_RGB, r) == 0 * sizeOf$(u8));
-claim_assert_static(offsetTo(dacolor_RGB, g) == 1 * sizeOf$(u8));
-claim_assert_static(offsetTo(dacolor_RGB, b) == 2 * sizeOf$(u8));
 T_use_prl$(dacolor_RGB);
 #define dacolor_RGB_from_static(_r /*: u8*/, _g /*: u8*/, _b /*: u8*/... /*(dacolor_RGB)*/) \
     ____dacolor_RGB_from_static(_r, _g, _b)
@@ -136,21 +121,31 @@ $extern fn_((dacolor_RGB_fromHSL(dacolor_HSL hsl))(dacolor_RGB));
 $extern fn_((dacolor_RGB_toHSL(dacolor_RGB self))(dacolor_HSL));
 
 /*--- HSL ---*/
-#define dacolor_HSL_channels_count __comp_int__dacolor_HSL_channels_count
-#define __comp_int__dacolor_HSL_channels_count 3
+enum_((dacolor_HSL_Chans $fits($packed))(
+    dacolor_HSL_chans_hue = 0,
+    dacolor_HSL_chans_hue_limit_min = 0,
+    dacolor_HSL_chans_hue_limit_max = 360,
+    dacolor_HSL_chans_saturation = 1,
+    dacolor_HSL_chans_saturation_limit_min = 0,
+    dacolor_HSL_chans_saturation_limit_max = 100,
+    dacolor_HSL_chans_lightness = 2,
+    dacolor_HSL_chans_lightness_limit_min = 0,
+    dacolor_HSL_chans_lightness_limit_max = 100,
+    count$dacolor_HSL_chans = 3
+));
 
 union dacolor_HSL {
-    var_(channels, A$$(dacolor_HSL_channels_count, f64)); // HSL color components, Hue in [0,360], Saturation in [0,100], Lightness in [0,100]
+    // HSL color components.
+    // - Hue: [`dacolor_HSL_chans_hue_limit_min`,`dacolor_HSL_chans_hue_limit_max`]
+    // - Saturation: [`dacolor_HSL_chans_saturation_limit_min`,`dacolor_HSL_chans_saturation_limit_max`]
+    // - Lightness: [`dacolor_HSL_chans_lightness_limit_min`,`dacolor_HSL_chans_lightness_limit_max`]
+    var_(chans, A$$(count$dacolor_HSL_chans, f64));
     T_embed$(struct {
-        var_(h, f64); // Hue in [0,360]
-        var_(s, f64); // Saturation in [0,100]
-        var_(l, f64); // Lightness in [0,100]
+        var_(h, f64); // Hue in [`dacolor_HSL_chans_hue_limit_min`,`dacolor_HSL_chans_hue_limit_max`]
+        var_(s, f64); // Saturation in [ `dacolor_HSL_chans_saturation_limit_min`,  `dacolor_HSL_chans_saturation_limit_max`]
+        var_(l, f64); // Lightness in`dacolor_HSL_chans_lightness_limit_min`,`dacolor_HSL_chans_lightness_limit_max`]
     });
 };
-claim_assert_static(sizeOf$(dacolor_HSL) == dacolor_HSL_channels_count * sizeOf$(f64));
-claim_assert_static(offsetTo(dacolor_HSL, h) == 0 * sizeOf$(f64));
-claim_assert_static(offsetTo(dacolor_HSL, s) == 1 * sizeOf$(f64));
-claim_assert_static(offsetTo(dacolor_HSL, l) == 2 * sizeOf$(f64));
 T_use_prl$(dacolor_HSL);
 #define dacolor_HSL_from_static(_h /*: f64*/, _s /*: f64*/, _l /*: f64*/... /*(dacolor_HSL)*/) \
     ____dacolor_HSL_from_static(_h, _s, _l)
@@ -167,9 +162,9 @@ $extern fn_((dacolor_HSL_toRGB(dacolor_HSL self))(dacolor_RGB));
 
 /*--- RGBA ---*/
 #define __const__dacolor_RGBA_blank \
-    dacolor_RGBA_from_static(0, 0, 0, dacolor_RGBA_channels_alpha_blank)
+    dacolor_RGBA_from_static(0, 0, 0, dacolor_RGBA_chans_alpha_blank)
 #define __const__dacolor_RGBA_opaque \
-    dacolor_RGBA_from_static(0, 0, 0, dacolor_RGBA_channels_alpha_opaque)
+    dacolor_RGBA_from_static(0, 0, 0, dacolor_RGBA_chans_alpha_opaque)
 #define __const__dacolor_RGBA_black \
     dacolor_RGBA_fromOpaque_static(0, 0, 0)
 #define __const__dacolor_RGBA_white \
@@ -197,13 +192,13 @@ $extern fn_((dacolor_HSL_toRGB(dacolor_HSL self))(dacolor_RGB));
     .r = (_r), \
     .g = (_g), \
     .b = (_b), \
-    .a = dacolor_RGBA_channels_alpha_blank, \
+    .a = dacolor_RGBA_chans_alpha_blank, \
 })
 #define ____dacolor_RGBA_fromOpaque_static(_r, _g, _b...) l$((dacolor_RGBA){ \
     .r = (_r), \
     .g = (_g), \
     .b = (_b), \
-    .a = dacolor_RGBA_channels_alpha_opaque, \
+    .a = dacolor_RGBA_chans_alpha_opaque, \
 })
 
 /*--- RGB ---*/
