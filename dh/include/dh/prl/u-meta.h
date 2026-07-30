@@ -293,6 +293,7 @@ typedef struct u_E$raw {
     const TypeInfo __type = _$type; \
     const usize __size = TypeInfo_size(__type); \
     const usize __align = TypeInfo_align(__type); \
+    claim_assert(__size + __align - 1 < eval_frame_larger_than); \
     const P$raw __alloced = raw_alloca(__size + __align - 1); \
     const P$raw __aligned = intToPtr$((P$raw)((ptrToInt(__alloced) + (__align - 1)) & ~(__align - 1))); \
     $ignore_void raw_memset0(__aligned, __size); \
@@ -304,6 +305,7 @@ typedef struct u_E$raw {
     const usize __len = _$len; \
     const usize __size = TypeInfo_size(__type); \
     const usize __align = TypeInfo_align(__type); \
+    claim_assert(__len * __size + __align - 1 < eval_frame_larger_than); \
     const P$raw __alloced = raw_alloca(__len * __size + __align - 1); \
     const P$raw __aligned = intToPtr$((P$raw)((ptrToInt(__alloced) + (__align - 1)) & ~(__align - 1))); \
     $ignore_void raw_memset0(__aligned, __len * __size); \

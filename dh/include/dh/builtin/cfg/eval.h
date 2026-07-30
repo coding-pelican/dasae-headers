@@ -5,7 +5,7 @@
  * @file    eval.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2026-06-03 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dal-project/da/foundation/cfg
  * @prefix  eval
  */
@@ -21,44 +21,6 @@ extern "C" {
 #include "../pp.h"
 
 /*========== Macros and Declarations ========================================*/
-
-/*--- include level ---*/
-
-#define eval_include_level __comp_uint__eval_include_level
-
-#define eval_include_level_0 __comp_uint__eval_include_level_0
-#define eval_include_level_1 __comp_uint__eval_include_level_1
-#define eval_include_level_2 __comp_uint__eval_include_level_2
-#define eval_include_level_3 __comp_uint__eval_include_level_3
-#define eval_include_level_4 __comp_uint__eval_include_level_4
-#define eval_include_level_5 __comp_uint__eval_include_level_5
-#define eval_include_level_6 __comp_uint__eval_include_level_6
-#define eval_include_level_7 __comp_uint__eval_include_level_7
-#define eval_include_level_8 __comp_uint__eval_include_level_8
-#define eval_include_level_9 __comp_uint__eval_include_level_9
-#define eval_include_level_10 __comp_uint__eval_include_level_10
-#define eval_include_level_11 __comp_uint__eval_include_level_11
-#define eval_include_level_12 __comp_uint__eval_include_level_12
-#define eval_include_level_13 __comp_uint__eval_include_level_13
-#define eval_include_level_14 __comp_uint__eval_include_level_14
-#define eval_include_level_15 __comp_uint__eval_include_level_15
-
-#define eval_include_level_is_0 __comp_bool__eval_include_level_is_0
-#define eval_include_level_is_1 __comp_bool__eval_include_level_is_1
-#define eval_include_level_is_2 __comp_bool__eval_include_level_is_2
-#define eval_include_level_is_3 __comp_bool__eval_include_level_is_3
-#define eval_include_level_is_4 __comp_bool__eval_include_level_is_4
-#define eval_include_level_is_5 __comp_bool__eval_include_level_is_5
-#define eval_include_level_is_6 __comp_bool__eval_include_level_is_6
-#define eval_include_level_is_7 __comp_bool__eval_include_level_is_7
-#define eval_include_level_is_8 __comp_bool__eval_include_level_is_8
-#define eval_include_level_is_9 __comp_bool__eval_include_level_is_9
-#define eval_include_level_is_10 __comp_bool__eval_include_level_is_10
-#define eval_include_level_is_11 __comp_bool__eval_include_level_is_11
-#define eval_include_level_is_12 __comp_bool__eval_include_level_is_12
-#define eval_include_level_is_13 __comp_bool__eval_include_level_is_13
-#define eval_include_level_is_14 __comp_bool__eval_include_level_is_14
-#define eval_include_level_is_15 __comp_bool__eval_include_level_is_15
 
 /*--- static evaluation ---*/
 
@@ -100,43 +62,50 @@ extern "C" {
 #define eval_runtime_only(_$inner...) __comp_syn__eval_runtime_only(_$inner)
 #define eval_runtime_unless(_$inner...) __comp_syn__eval_runtime_unless(_$inner)
 
+/*--- detection ---*/
+
+#define eval_include_level __comp_uint__eval_include_level
+
+#define eval_include_level_0 __comp_uint__eval_include_level_0
+#define eval_include_level_1 __comp_uint__eval_include_level_1
+#define eval_include_level_2 __comp_uint__eval_include_level_2
+#define eval_include_level_3 __comp_uint__eval_include_level_3
+#define eval_include_level_4 __comp_uint__eval_include_level_4
+#define eval_include_level_5 __comp_uint__eval_include_level_5
+#define eval_include_level_6 __comp_uint__eval_include_level_6
+#define eval_include_level_7 __comp_uint__eval_include_level_7
+#define eval_include_level_8 __comp_uint__eval_include_level_8
+#define eval_include_level_9 __comp_uint__eval_include_level_9
+#define eval_include_level_10 __comp_uint__eval_include_level_10
+#define eval_include_level_11 __comp_uint__eval_include_level_11
+#define eval_include_level_12 __comp_uint__eval_include_level_12
+#define eval_include_level_13 __comp_uint__eval_include_level_13
+#define eval_include_level_14 __comp_uint__eval_include_level_14
+#define eval_include_level_15 __comp_uint__eval_include_level_15
+
+#define eval_include_level_is_0 __comp_bool__eval_include_level_is_0
+#define eval_include_level_is_1 __comp_bool__eval_include_level_is_1
+#define eval_include_level_is_2 __comp_bool__eval_include_level_is_2
+#define eval_include_level_is_3 __comp_bool__eval_include_level_is_3
+#define eval_include_level_is_4 __comp_bool__eval_include_level_is_4
+#define eval_include_level_is_5 __comp_bool__eval_include_level_is_5
+#define eval_include_level_is_6 __comp_bool__eval_include_level_is_6
+#define eval_include_level_is_7 __comp_bool__eval_include_level_is_7
+#define eval_include_level_is_8 __comp_bool__eval_include_level_is_8
+#define eval_include_level_is_9 __comp_bool__eval_include_level_is_9
+#define eval_include_level_is_10 __comp_bool__eval_include_level_is_10
+#define eval_include_level_is_11 __comp_bool__eval_include_level_is_11
+#define eval_include_level_is_12 __comp_bool__eval_include_level_is_12
+#define eval_include_level_is_13 __comp_bool__eval_include_level_is_13
+#define eval_include_level_is_14 __comp_bool__eval_include_level_is_14
+#define eval_include_level_is_15 __comp_bool__eval_include_level_is_15
+
+#if !defined(eval_frame_larger_than)
+#define eval_frame_larger_than __comp_int__eval_frame_larger_than
+#endif /* !defined(eval_frame_larger_than) */
+#define eval_frame_larger_than__default __comp_int__eval_frame_larger_than__default
+
 /*========== Macros and Definitions =========================================*/
-
-#define __comp_uint__eval_include_level __INCLUDE_LEVEL__
-
-#define __comp_uint__eval_include_level_0 0
-#define __comp_uint__eval_include_level_1 1
-#define __comp_uint__eval_include_level_2 2
-#define __comp_uint__eval_include_level_3 3
-#define __comp_uint__eval_include_level_4 4
-#define __comp_uint__eval_include_level_5 5
-#define __comp_uint__eval_include_level_6 6
-#define __comp_uint__eval_include_level_7 7
-#define __comp_uint__eval_include_level_8 8
-#define __comp_uint__eval_include_level_9 9
-#define __comp_uint__eval_include_level_10 10
-#define __comp_uint__eval_include_level_11 11
-#define __comp_uint__eval_include_level_12 12
-#define __comp_uint__eval_include_level_13 13
-#define __comp_uint__eval_include_level_14 14
-#define __comp_uint__eval_include_level_15 15
-
-#define __comp_bool__eval_include_level_is_0 pp_Tok_eql(eval_include_level, 0)
-#define __comp_bool__eval_include_level_is_1 pp_Tok_eql(eval_include_level, 1)
-#define __comp_bool__eval_include_level_is_2 pp_Tok_eql(eval_include_level, 2)
-#define __comp_bool__eval_include_level_is_3 pp_Tok_eql(eval_include_level, 3)
-#define __comp_bool__eval_include_level_is_4 pp_Tok_eql(eval_include_level, 4)
-#define __comp_bool__eval_include_level_is_5 pp_Tok_eql(eval_include_level, 5)
-#define __comp_bool__eval_include_level_is_6 pp_Tok_eql(eval_include_level, 6)
-#define __comp_bool__eval_include_level_is_7 pp_Tok_eql(eval_include_level, 7)
-#define __comp_bool__eval_include_level_is_8 pp_Tok_eql(eval_include_level, 8)
-#define __comp_bool__eval_include_level_is_9 pp_Tok_eql(eval_include_level, 9)
-#define __comp_bool__eval_include_level_is_10 pp_Tok_eql(eval_include_level, 10)
-#define __comp_bool__eval_include_level_is_11 pp_Tok_eql(eval_include_level, 11)
-#define __comp_bool__eval_include_level_is_12 pp_Tok_eql(eval_include_level, 12)
-#define __comp_bool__eval_include_level_is_13 pp_Tok_eql(eval_include_level, 13)
-#define __comp_bool__eval_include_level_is_14 pp_Tok_eql(eval_include_level, 14)
-#define __comp_bool__eval_include_level_is_15 pp_Tok_eql(eval_include_level, 15)
 
 #define __comp_bool__eval_in_analysis eval_in_analysis__default
 #define __comp_flag__eval_in_analysis__default pp_false
@@ -196,6 +165,50 @@ extern "C" {
 #define __comp_bool__eval_runtime_enabled eval_in_runtime
 #define __comp_syn__eval_runtime_only(_$inner...) pp_if_(eval_in_runtime)(pp_then_(_$inner))
 #define __comp_syn__eval_runtime_unless(_$inner...) pp_if_(pp_not(eval_in_runtime))(pp_then_(_$inner))
+
+#define __comp_uint__eval_include_level __INCLUDE_LEVEL__
+
+#define __comp_uint__eval_include_level_0 0
+#define __comp_uint__eval_include_level_1 1
+#define __comp_uint__eval_include_level_2 2
+#define __comp_uint__eval_include_level_3 3
+#define __comp_uint__eval_include_level_4 4
+#define __comp_uint__eval_include_level_5 5
+#define __comp_uint__eval_include_level_6 6
+#define __comp_uint__eval_include_level_7 7
+#define __comp_uint__eval_include_level_8 8
+#define __comp_uint__eval_include_level_9 9
+#define __comp_uint__eval_include_level_10 10
+#define __comp_uint__eval_include_level_11 11
+#define __comp_uint__eval_include_level_12 12
+#define __comp_uint__eval_include_level_13 13
+#define __comp_uint__eval_include_level_14 14
+#define __comp_uint__eval_include_level_15 15
+
+#define __comp_bool__eval_include_level_is_0 pp_Tok_eql(eval_include_level, 0)
+#define __comp_bool__eval_include_level_is_1 pp_Tok_eql(eval_include_level, 1)
+#define __comp_bool__eval_include_level_is_2 pp_Tok_eql(eval_include_level, 2)
+#define __comp_bool__eval_include_level_is_3 pp_Tok_eql(eval_include_level, 3)
+#define __comp_bool__eval_include_level_is_4 pp_Tok_eql(eval_include_level, 4)
+#define __comp_bool__eval_include_level_is_5 pp_Tok_eql(eval_include_level, 5)
+#define __comp_bool__eval_include_level_is_6 pp_Tok_eql(eval_include_level, 6)
+#define __comp_bool__eval_include_level_is_7 pp_Tok_eql(eval_include_level, 7)
+#define __comp_bool__eval_include_level_is_8 pp_Tok_eql(eval_include_level, 8)
+#define __comp_bool__eval_include_level_is_9 pp_Tok_eql(eval_include_level, 9)
+#define __comp_bool__eval_include_level_is_10 pp_Tok_eql(eval_include_level, 10)
+#define __comp_bool__eval_include_level_is_11 pp_Tok_eql(eval_include_level, 11)
+#define __comp_bool__eval_include_level_is_12 pp_Tok_eql(eval_include_level, 12)
+#define __comp_bool__eval_include_level_is_13 pp_Tok_eql(eval_include_level, 13)
+#define __comp_bool__eval_include_level_is_14 pp_Tok_eql(eval_include_level, 14)
+#define __comp_bool__eval_include_level_is_15 pp_Tok_eql(eval_include_level, 15)
+
+#define __comp_int__eval_frame_larger_than eval_frame_larger_than__default
+#define __comp_int__eval_frame_larger_than__default 4096
+
+#if defined(FRAME_LARGER_THAN)
+#undef __comp_int__eval_frame_larger_than__default
+#define __comp_int__eval_frame_larger_than__default FRAME_LARGER_THAN
+#endif /* defined(FRAME_LARGER_THAN) */
 
 #if defined(__cplusplus)
 } /* extern "C" */
