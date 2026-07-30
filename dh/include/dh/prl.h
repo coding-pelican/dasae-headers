@@ -5,7 +5,7 @@
  * @file    prl.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-21 (date of creation)
- * @updated 2026-06-14 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
  *
@@ -26,10 +26,14 @@ extern "C" {
 #include "prl/u-meta.h"
 
 #include "prl/base.h"
+#include "prl/pri.h"
 #include "prl/simd.h"
+
+#include "prl/cmp.h"
 #include "prl/L-Limit.h"
 #include "prl/R-Range.h"
 
+#include "prl/chain.h"
 #include "prl/Co.h"
 #include "prl/Clsr.h"
 #include "prl/va.h"
@@ -38,8 +42,16 @@ extern "C" {
 #include "prl/E-Err.h"
 #include "prl/ETrace.h"
 
+#include "prl/claim.h"
+#include "prl/debug.h"
+
 #include "prl/common.h"
 
+#include "prl/num.h"
+#include "prl/num-int.h"
+#include "prl/num-flt.h"
+#include "prl/num-sgnd.h"
+#include "prl/num-usgnd.h"
 #include "prl/int.h"
 #include "prl/flt.h"
 

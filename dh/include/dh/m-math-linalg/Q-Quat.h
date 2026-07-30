@@ -12,6 +12,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "Q-Quat/base.h"
+
 #include "Q-Quat/f32.h"
 #include "Q-Quat/f64.h"
 

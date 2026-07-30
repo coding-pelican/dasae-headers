@@ -22,8 +22,8 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "pipe.h"
 #include "scope.h"
+#include "pipe.h"
 
 /*========== Macros and Declarations ========================================*/
 

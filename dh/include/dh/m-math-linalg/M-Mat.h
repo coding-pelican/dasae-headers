@@ -12,11 +12,14 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "M-Mat/base.h"
+
 #include "M-Mat/f32.h"
 #include "M-Mat/f64.h"
+
 #include "M-Mat/i32.h"
 #include "M-Mat/i64.h"
 #include "M-Mat/isize.h"
+
 #include "M-Mat/u32.h"
 #include "M-Mat/u64.h"
 #include "M-Mat/usize.h"

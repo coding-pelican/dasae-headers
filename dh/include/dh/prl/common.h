@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    common.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-06-21 (date of creation)
- * @updated 2025-06-21 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)/prl
  * @prefix  (none)
  *
@@ -23,10 +22,14 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "base.h"
+#include "pri.h"
 #include "simd.h"
+
+#include "cmp.h"
 #include "L-Limit.h"
 #include "R-Range.h"
 
+#include "chain.h"
 #include "Co.h"
 #include "Clsr.h"
 #include "va.h"
@@ -34,6 +37,9 @@ extern "C" {
 #include "CompHash.h"
 #include "E-Err.h"
 #include "ETrace.h"
+
+#include "claim.h"
+#include "debug.h"
 
 /*========== Macros and Declarations ========================================*/
 

@@ -12,11 +12,14 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "V-Vec/base.h"
+
 #include "V-Vec/f32.h"
 #include "V-Vec/f64.h"
+
 #include "V-Vec/i32.h"
 #include "V-Vec/i64.h"
 #include "V-Vec/isize.h"
+
 #include "V-Vec/u32.h"
 #include "V-Vec/u64.h"
 #include "V-Vec/usize.h"
