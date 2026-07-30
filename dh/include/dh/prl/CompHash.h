@@ -221,7 +221,7 @@ fn_((CompHash32_val(CompHash32 self))(u32)) {
 
 fn_((CompHash_calc(S_const$u8 str))(usize)) {
     claim_assert_nonnullS(str);
-    return pp_if_(arch_bits_is_64bit)(
+    return pp_if_(abi_size_is_64bit)(
         pp_then_(CompHash64_calc(str)),
         pp_else_(CompHash32_calc(str)));
 };

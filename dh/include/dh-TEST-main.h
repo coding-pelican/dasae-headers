@@ -55,12 +55,12 @@ $static fn_((TEST_main__runTESTMain(void))(start_ExitCode)) {
 #ifndef main__root_included
 #define main__root_included 1
 
-#if comp_start_files_linked
+#if env_start_files_linked
 fn_((main(void))(int)) {
     return TEST_main__runTESTMain();
 };
 
-#else /* !comp_start_files_linked */
+#else /* !env_start_files_linked */
 $attr($maybe_unused $no_return)
 $static fn_((TEST_main__callTESTMainAndExit(P$raw raw_ctx))(void)) {
     let_ignore = raw_ctx;
@@ -71,7 +71,7 @@ $static fn_((TEST_main__callTESTMainAndExit(P$raw raw_ctx))(void)) {
 };
 
 start_emitEntry(TEST_main__callTESTMainAndExit);
-#endif /* comp_start_files_linked || !comp_start_files_linked */
+#endif /* env_start_files_linked, !env_start_files_linked */
 
 #endif /* main__root_included */
 #endif /* TEST_main_enabled */

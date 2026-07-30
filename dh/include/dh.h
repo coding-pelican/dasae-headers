@@ -5,7 +5,7 @@
  * @file    dh.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-21 (date of creation)
- * @updated 2026-07-06 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @version v0.1-alpha
  * @ingroup dasae-headers(dh)
  * @prefix  (none)
@@ -22,6 +22,10 @@ extern "C" {
 #include "dh/builtin.h" /* no prefix, abs path, pch bundle target */
 #include "dh/core.h" /* no prefix, abs path, pch bundle target */
 #include "dh/prl.h" /* no prefix, abs path, pch bundle target */
+
+#include "dh/Ver.h" /* pch bundle target */
+#include "dh/Target.h" /* pch bundle target */
+#include "dh/Cfg.h" /* pch bundle target */
 
 #include "dh/atom.h" /* pch bundle target */
 #include "dh/simd.h" /* pch bundle target */
@@ -90,7 +94,6 @@ extern "C" {
 
 #include "dh/fmt.h"
 #include "dh/regex.h"
-#include "dh/Ver.h"
 #include "dh/SemVer.h"
 
 #include "dh/log.h"

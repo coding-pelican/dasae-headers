@@ -23,7 +23,6 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "cmp.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -34,30 +33,13 @@ T_alias$((Ver_Label)(enum_((Ver_Label $fits($packed))(
     Ver_Label_release = ver_label_prefix_as_num_release
 ))));
 
-#define Ver_label_bits 2
-#define Ver_label_suffix_bits 6
-T_alias$((Ver)(union Ver {
-    T_embed$(struct {
-#if arch_byte_order_is_little_endian
-        var_(label_suffix : Ver_label_suffix_bits, u8);
-        var_(label : Ver_label_bits, u8);
-        var_(patch, u8);
-        var_(minor, u8);
-        var_(major, u8);
-#elif arch_byte_order_is_big_endian
-        var_(major, u8);
-        var_(minor, u8);
-        var_(patch, u8);
-        var_(label : Ver_label_bits, u8);
-        var_(label_suffix : Ver_label_suffix_bits, u8);
-#else
-#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
-#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
-    });
-    var_(packed, u32);
-}));
-claim_assert_static(Ver_label_bits + Ver_label_suffix_bits == int_bits$(u8));
-claim_assert_static(3 * int_bits$(u8) + Ver_label_bits + Ver_label_suffix_bits == int_bits$(u32));
+bitfield_((Ver)(u32)(
+    (major, u8, 8),
+    (minor, u8, 8),
+    (patch, u8, 8),
+    (label, u8, 2),
+    (label_suffix, u8, 6)
+));
 T_use_O$(Ver);
 $extern fn_((Ver_self(void))(Ver));
 $extern fn_((Ver_comp(void))(Ver));
@@ -85,6 +67,7 @@ $extern cmp_fn_ge$((Ver)(lhs, rhs));
 
 /*========== Macros and Definitions =========================================*/
 
+#if in_analysis_active_only || in_comptime
 fn_((Ver_from(u8 major, u8 minor, u8 patch, Ver_Label label, u8 label_suffix))(Ver)) {
     return (Ver){
         .major = major,
@@ -102,6 +85,7 @@ fn_((Ver_fromNum(u32 num))(Ver)) {
 fn_((Ver_intoNum(Ver self))(u32)) {
     return self.packed;
 };
+#endif /* in_analysis_active_only || in_comptime */
 
 #if defined(__cplusplus)
 } /* extern "C" */

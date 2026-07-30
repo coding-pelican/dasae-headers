@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    type_info.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-17 (date of creation)
- * @updated 2025-12-23 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)/core
  * @prefix  (none)
  *
@@ -31,19 +30,18 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
+#define TypeInfo_size_bits_on_16bit 13
+#define TypeInfo_align_bits_on_16bit 3
+claim_assert_static((TypeInfo_size_bits_on_16bit + TypeInfo_align_bits_on_16bit) == abi_bits_16);
+
 #define TypeInfo_size_bits_on_64bit 58
 #define TypeInfo_align_bits_on_64bit 6
-claim_assert_static((TypeInfo_size_bits_on_64bit + TypeInfo_align_bits_on_64bit) == plat_bits_64);
+claim_assert_static((TypeInfo_size_bits_on_64bit + TypeInfo_align_bits_on_64bit) == abi_bits_64);
 #define TypeInfo_size_bits_on_32bit 28
 #define TypeInfo_align_bits_on_32bit 4
-claim_assert_static((TypeInfo_size_bits_on_32bit + TypeInfo_align_bits_on_32bit) == plat_bits_32);
+claim_assert_static((TypeInfo_size_bits_on_32bit + TypeInfo_align_bits_on_32bit) == abi_bits_32);
 
-#define TypeInfo_size_bits __comp_int__TypeInfo_size_bits
-#define TypeInfo_align_bits __comp_int__TypeInfo_align_bits
-#define TypeInfo_bits __comp_const__TypeInfo_bits
-
-/// Core type information (kept minimal size)
-typedef union TypeInfo TypeInfo;
+/// Core type information packed in the native size integer domain.
 typedef usize TypeInfoPacked;
 
 /// Get type information for meta
@@ -91,45 +89,34 @@ typedef usize TypeInfoPacked;
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_int__TypeInfo_size_bits pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_32bit)(TypeInfo_size_bits_on_32bit)), \
-        pp_case_((plat_bits_unit_64bit)(TypeInfo_size_bits_on_64bit)), \
+#define TypeInfo_size_bits pp_expand( \
+    pp_switch_ pp_begin(abi_size_unit)( \
+        pp_case_((abi_bits_unit_16bit)(TypeInfo_size_bits_on_16bit)), \
+        pp_case_((abi_bits_unit_32bit)(TypeInfo_size_bits_on_32bit)), \
+        pp_case_((abi_bits_unit_64bit)(TypeInfo_size_bits_on_64bit)), \
         pp_default_(0) \
     ) pp_end \
 )
-#define __comp_int__TypeInfo_align_bits pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_32bit)(TypeInfo_align_bits_on_32bit)), \
-        pp_case_((plat_bits_unit_64bit)(TypeInfo_align_bits_on_64bit)), \
+#define TypeInfo_align_bits pp_expand( \
+    pp_switch_ pp_begin(abi_size_unit)( \
+        pp_case_((abi_bits_unit_16bit)(TypeInfo_align_bits_on_16bit)), \
+        pp_case_((abi_bits_unit_32bit)(TypeInfo_align_bits_on_32bit)), \
+        pp_case_((abi_bits_unit_64bit)(TypeInfo_align_bits_on_64bit)), \
         pp_default_(0) \
     ) pp_end \
 )
-#define __comp_const__TypeInfo_bits (TypeInfo_size_bits + TypeInfo_align_bits)
-
 claim_assert_static_msg(
-    plat_ptr_is_64bit || plat_ptr_is_32bit,
-    "TypeInfoPacked currently supports only 64-bit and 32-bit flat pointer models"
+    abi_size_is_16bit || abi_size_is_32bit || abi_size_is_64bit,
+    "TypeInfoPacked requires a supported native pointer-size domain"
 );
-claim_assert_static(TypeInfo_bits == plat_ptr_bits);
-claim_assert_static(int_bits$(TypeInfoPacked) == TypeInfo_bits);
+bitfield_((TypeInfo)(TypeInfoPacked)(
+    (size, TypeInfoPacked, TypeInfo_size_bits),
+    (log2_align, TypeInfoPacked, TypeInfo_align_bits)
+));
+claim_assert_static(bitfield_bits$(TypeInfo) == abi_size_bits);
+claim_assert_static(int_bits$(TypeInfoPacked) == bitfield_bits$(TypeInfo));
 claim_assert_static(int_bytes$(TypeInfoPacked) == int_bits$(TypeInfoPacked) / arch_bits_per_byte);
 claim_assert_static(sizeOf$(TypeInfoPacked) == int_bytes$(TypeInfoPacked));
-
-union TypeInfo {
-    struct {
-#if arch_byte_order_is_little_endian
-        var_(size : TypeInfo_size_bits, TypeInfoPacked);
-        var_(log2_align : TypeInfo_align_bits, TypeInfoPacked); /* same as `mem_Log2Align`,  */
-#elif arch_byte_order_is_big_endian
-        var_(log2_align : TypeInfo_align_bits, TypeInfoPacked); /* same as `mem_Log2Align`,  */
-        var_(size : TypeInfo_size_bits, TypeInfoPacked);
-#else
-#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
-#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
-    };
-    var_(packed, TypeInfoPacked);
-};
 
 #define ____typeInfo$(_$T...) l$((TypeInfo){ .size = sizeOf$(_$T), .log2_align = alignOfLog2$(_$T) })
 #define ____TypeInfo_pack(_$type_info...) ((_$type_info).packed)

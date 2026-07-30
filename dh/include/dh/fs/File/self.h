@@ -33,7 +33,7 @@ extern "C" {
 /// process-scoped "umask" setting to adjust this number for file creation.
 $static const fs_File_Mode fs_File_Mode_default = pp_if_(plat_is_posix)(
     pp_then_(0666),
-    pp_else_(0));
+    pp_else_({}));
 
 static const fs_File_OpenFlags fs_File_OpenFlags_default = {
     .mode = fs_OpenMode_read_only,
@@ -54,7 +54,9 @@ static const fs_File_CreateFlags fs_File_CreateFlags_default = {
     .lock = fs_Lock_none,
     .lock_nonblocking = false,
     .nonblocking = false,
-    .mode = fs_File_Mode_default,
+    .mode = pp_if_(plat_is_posix)(
+        pp_then_(0666),
+        pp_else_({})),
 };
 
 typedef fs_Handle fs_File_Handle;

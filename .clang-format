@@ -220,6 +220,7 @@ Macros:
 
   # Switch, Match
   - "enum_(_Expr)=pp_exec_ignore _Expr"
+  - "bitfield_(_Expr)=pp_exec_ignore _Expr"
   - "variant_(_Expr)=pp_exec_ignore _Expr"
   - "switch_(init_cond)=switch (init_cond)"
   - "match_(_Expr)=switch (_Expr)"

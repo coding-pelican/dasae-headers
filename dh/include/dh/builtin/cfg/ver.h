@@ -5,7 +5,7 @@
  * @file    ver.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-07-25 (date of creation)
- * @updated 2026-07-25 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dal-project/da/foundation/cfg
  * @prefix  ver
  *
@@ -190,14 +190,14 @@ extern "C" {
 /*--- Version Utilities ---*/
 
 #define __val__ver_core_calc(_major, _minor, _patch...) ( \
-    (((_major) & 0xFFu) << 24u) \
-    | (((_minor) & 0xFFu) << 16u) \
-    | (((_patch) & 0xFFu) << 8u) \
+    (((_major) & 0xFFUL) << 24u) \
+    | (((_minor) & 0xFFUL) << 16u) \
+    | (((_patch) & 0xFFUL) << 8u) \
 )
 #define __val__ver_calc(_major, _minor, _patch, _label_prefix_as_num, _label_suffix_as_num...) ( \
     __val__ver_core_calc(_major, _minor, _patch) \
-    | (((_label_prefix_as_num) & 0x03u) << 6u) \
-    | (((_label_suffix_as_num) & 0x3Fu) << 0u) \
+    | (((_label_prefix_as_num) & 0x03UL) << 6u) \
+    | (((_label_suffix_as_num) & 0x3FUL) << 0u) \
 )
 
 #define __str__ver_core_strfy(_major, _minor, _patch, _core_sep...) pp_expand( \

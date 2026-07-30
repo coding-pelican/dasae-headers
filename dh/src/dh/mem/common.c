@@ -2,7 +2,7 @@
 #include "dh/mem/Alctr.h"
 #include "dh/u-meta.h"
 
-#if !comp_libc_linked
+#if !env_libc_linked
 $extern fn_((memset(P$raw dst, int val, usize len))(P$raw));
 $extern fn_((memcpy(P$raw dst, P_const$raw src, usize len))(P$raw));
 $extern fn_((memmove(P$raw dst, P_const$raw src, usize len))(P$raw));
@@ -43,7 +43,7 @@ fn_((memcmp(P_const$raw lhs, P_const$raw rhs, usize len))(int)) {
 fn_((strlen(const char* str))(usize)) {
     return mem_lenZ0$u8(as$(const u8*)(str));
 };
-#endif /* !comp_libc_linked */
+#endif /* !env_libc_linked */
 
 $static fn_((mem__swapTmpBytes(S$u8 lhs, S$u8 rhs, S$u8 tmp))(S$u8)) {
     claim_assert_nonnullS(lhs), claim_assert_nonnullS(rhs), claim_assert_nonnullS(tmp);

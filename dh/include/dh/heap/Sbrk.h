@@ -163,11 +163,18 @@ $extern fn_((heap_Sbrk_Arena_ctx(heap_Sbrk_Arena* self))(heap_Sbrk_Ctx));
 #define pp_Tok_cmp$heap_Sbrk_local_Ref_large(_x) _x
 
 /*--- heap_Sbrk__bigpage_size ---*/
-enum {
-    heap_Sbrk_local_Small__bigpage_size = usize_(16) * 1024,
-    heap_Sbrk_local_Medium__bigpage_size = usize_(64) * 1024,
-    heap_Sbrk_local_Large__bigpage_size = usize_(64) * 1024
-};
+enum pp_if_(abi_size_is_16bit)(
+    pp_then_({
+        heap_Sbrk_local_Small__bigpage_size = u16_(4) * 1024,
+        heap_Sbrk_local_Medium__bigpage_size = u16_(8) * 1024,
+        heap_Sbrk_local_Large__bigpage_size = u16_(16) * 1024,
+    }),
+    pp_else_({
+        heap_Sbrk_local_Small__bigpage_size = u16_(16) * 1024,
+        heap_Sbrk_local_Medium__bigpage_size = u32_(64) * 1024,
+        heap_Sbrk_local_Large__bigpage_size = u32_(64) * 1024,
+    })
+);
 #define __pp__heap_Sbrk__bigpage_size_static__expand(...) __VA_ARGS__
 #define heap_Sbrk__bigpage_size_static(_enum_tok...) usize_(__pp__heap_Sbrk__bigpage_size_static__expand( \
     pp_switch_ pp_begin(__pp__heap_Sbrk_local_Ref__enum_fromTok(_enum_tok))( \
@@ -180,11 +187,18 @@ $attr($inline_always)
 $static fn_((heap_Sbrk__bigpage_size(heap_Sbrk self))(usize));
 
 /*--- heap_Sbrk__max_pool_size ---*/
-enum {
-    heap_Sbrk_local_Small__max_pool_size = usize_(1) * 1024 * 1024,
-    heap_Sbrk_local_Medium__max_pool_size = usize_(16) * 1024 * 1024,
-    heap_Sbrk_local_Large__max_pool_size = usize_limit_max
-};
+enum pp_if_(abi_size_is_16bit)(
+    pp_then_({
+        heap_Sbrk_local_Small__max_pool_size = u16_(16) * 1024,
+        heap_Sbrk_local_Medium__max_pool_size = u16_(32) * 1024,
+        heap_Sbrk_local_Large__max_pool_size = u16_(32) * 1024,
+    }),
+    pp_else_({
+        heap_Sbrk_local_Small__max_pool_size = u32_(1) * 1024 * 1024,
+        heap_Sbrk_local_Medium__max_pool_size = u32_(16) * 1024 * 1024,
+        heap_Sbrk_local_Large__max_pool_size = usize_limit_max,
+    })
+);
 #define __pp__heap_Sbrk__max_pool_size_static__expand(...) __VA_ARGS__
 #define heap_Sbrk__max_pool_size_static(_enum_tok...) usize_(__pp__heap_Sbrk__max_pool_size_static__expand( \
     pp_switch_ pp_begin(__pp__heap_Sbrk_local_Ref__enum_fromTok(_enum_tok))( \
@@ -242,7 +256,7 @@ enum {
 
 /*--- heap_Sbrk__size_class_count ---*/
 #define heap_Sbrk_local__size_class_count_static(_enum_tok...) \
-    usize_(uint_log2_static(heap_Sbrk__bigpage_count_static(_enum_tok)) - usize_(heap_Sbrk__min_size_class))
+    usize_(uint_log2_static(heap_Sbrk__bigpage_size_static(_enum_tok)) - usize_(heap_Sbrk__min_size_class))
 enum {
     heap_Sbrk_local_Small__size_class_count = heap_Sbrk_local__size_class_count_static(heap_Sbrk_local_Ref_small),
     heap_Sbrk_local_Medium__size_class_count = heap_Sbrk_local__size_class_count_static(heap_Sbrk_local_Ref_medium),

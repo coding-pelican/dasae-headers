@@ -1103,7 +1103,7 @@ $attr($inline)
 $static fn_((sys_call_linux_siginfo_addr(const sys_call_linux_siginfo* info))(void*));
 $attr($inline)
 $static fn_((sys_call_linux_rt_sigaction(sys_call_linux_signal_t signal, const sys_call_linux_sigaction* act, sys_call_linux_sigaction* old_act))(sys_call_linux_word));
-$attr(comp_naked $no_return $maybe_unused)
+$attr($callconv_naked $no_return $maybe_unused)
 $static fn_((sys_call_linux_rt_sigreturn_trampoline(void))(void));
 
 /*---------- <linux/futex.h> ------------------------------------------------*/
@@ -2209,7 +2209,7 @@ fn_((sys_call_linux_sigemptyset(sys_call_linux_sigset* set))(void)) {
 fn_((sys_call_linux_siginfo_addr(const sys_call_linux_siginfo* info))(void*)) {
     let bytes = as$(const u8*)(info);
     var_(addr, void*) $undefined;
-    let offset = pp_if_(arch_bits_is_64bit)(pp_then_(as$(usize)(16)), pp_else_(as$(usize)(12)));
+    let offset = pp_if_(abi_size_is_64bit)(pp_then_(as$(usize)(16)), pp_else_(as$(usize)(12)));
     raw_memcpy(&addr, bytes + offset, sizeOf$(void*));
     return addr;
 };

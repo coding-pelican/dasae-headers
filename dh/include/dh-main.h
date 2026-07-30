@@ -191,9 +191,9 @@ pp_if_(plat_is_windows)(pp_then_(
         return main__runDHMainArgs(P_prefix$((S$S_const$u8)(args.ptr)(argc)));
     };
 ));
-#endif /* main_no_args || !main_no_args */
+#endif /* main_no_args, !main_no_args */
 
-#if comp_start_files_linked
+#if env_start_files_linked
 fn_((main(pp_if_(pp_not(main_no_args))(
     pp_then_(int argc, const char* argv[]),
     pp_else_(void)
@@ -204,7 +204,7 @@ fn_((main(pp_if_(pp_not(main_no_args))(
     );
 };
 
-#else /* !comp_start_files_linked */
+#else /* !env_start_files_linked */
 $attr($maybe_unused $no_return)
 $static fn_((main__callDHMainAndExit(P$raw raw_ctx))(void)) {
     let_ignore = raw_ctx;
@@ -232,7 +232,7 @@ $static fn_((main__callDHMainAndExit(P$raw raw_ctx))(void)) {
 };
 
 start_emitEntry(main__callDHMainAndExit);
-#endif /* comp_start_files_linked || !comp_start_files_linked */
+#endif /* env_start_files_linked, !env_start_files_linked */
 #endif /* !TEST_enabled */
 #endif /* in_comptime */
 

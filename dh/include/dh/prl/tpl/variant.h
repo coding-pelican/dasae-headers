@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    variant.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-02 (date of creation)
- * @updated 2025-06-15 (date of last update)
- * @version v0.1-alpha.3
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)/prl/types
  * @prefix  (none)
  *

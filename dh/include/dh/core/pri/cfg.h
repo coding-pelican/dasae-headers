@@ -1,11 +1,11 @@
 /**
- * @copyright Copyright (c) 2024 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    cfg.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-27 (date of creation)
- * @updated 2024-11-21 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)/core/pri
  * @prefix  (none)
  *
@@ -32,6 +32,17 @@ extern "C" {
 #endif /* !lang_ver_in_c23 && UNUSED_CODE */
 
 #include <stdint.h>
+
+#if !defined(UINT8_MAX) || !defined(INT8_MIN) || !defined(INT8_MAX) \
+    || !defined(UINT16_MAX) || !defined(INT16_MIN) || !defined(INT16_MAX) \
+    || !defined(UINT32_MAX) || !defined(INT32_MIN) || !defined(INT32_MAX) \
+    || !defined(UINT64_MAX) || !defined(INT64_MIN) || !defined(INT64_MAX)
+#error "DH requires exact-width 8-, 16-, 32-, and 64-bit integer types"
+#endif
+#if !defined(UINTPTR_MAX) || !defined(INTPTR_MIN) || !defined(INTPTR_MAX)
+#error "DH requires uintptr_t and intptr_t for its native pointer-size integer domain"
+#endif
+
 #include <limits.h>
 #include <float.h>
 
@@ -100,40 +111,40 @@ typedef uint32_t u32;
 typedef unsigned long ulong;
 #define ulong_(_$literal...) (as$(ulong)(n_(_$literal)))
 #define ulong_bits pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_bits)), \
-        pp_case_((plat_bits_unit_32bit)(u32_bits)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(u64_bits)), \
+        pp_case_((abi_bits_unit_32bit)(u32_bits)) \
     ) pp_end \
 )
 #define ulong_bytes pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_bytes)), \
-        pp_case_((plat_bits_unit_32bit)(u32_bytes)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(u64_bytes)), \
+        pp_case_((abi_bits_unit_32bit)(u32_bytes)) \
     ) pp_end \
 )
 #define ulong_limit ulong_limit_max
 #define ulong_limit_min pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_limit_min)), \
-        pp_case_((plat_bits_unit_32bit)(u32_limit_min)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(u64_limit_min)), \
+        pp_case_((abi_bits_unit_32bit)(u32_limit_min)) \
     ) pp_end \
 )
 #define ulong_limit_max pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_limit_max)), \
-        pp_case_((plat_bits_unit_32bit)(u32_limit_max)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(u64_limit_max)), \
+        pp_case_((abi_bits_unit_32bit)(u32_limit_max)) \
     ) pp_end \
 )
 #define ulong_limit_flt_min_bound_excl pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_limit_flt_min_bound_excl)), \
-        pp_case_((plat_bits_unit_32bit)(u32_limit_flt_min_bound_excl)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(u64_limit_flt_min_bound_excl)), \
+        pp_case_((abi_bits_unit_32bit)(u32_limit_flt_min_bound_excl)) \
     ) pp_end \
 )
 #define ulong_limit_flt_max_bound_excl pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_limit_flt_max_bound_excl)), \
-        pp_case_((plat_bits_unit_32bit)(u32_limit_flt_max_bound_excl)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(u64_limit_flt_max_bound_excl)), \
+        pp_case_((abi_bits_unit_32bit)(u32_limit_flt_max_bound_excl)) \
     ) pp_end \
 )
 
@@ -149,41 +160,17 @@ typedef uint64_t u64;
 
 typedef uintptr_t usize;
 #define usize_(_$literal...) (as$(usize)(n_(_$literal)))
-#define usize_bits pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_bits)), \
-        pp_case_((plat_bits_unit_32bit)(u32_bits)) \
-    ) pp_end \
-)
-#define usize_bytes pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_bytes)), \
-        pp_case_((plat_bits_unit_32bit)(u32_bytes)) \
-    ) pp_end \
-)
+#define usize_bits (abi_size_bits)
+#define usize_bytes (abi_size_bytes)
 #define usize_limit usize_limit_max
-#define usize_limit_min pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_limit_min)), \
-        pp_case_((plat_bits_unit_32bit)(u32_limit_min)) \
-    ) pp_end \
-)
-#define usize_limit_max pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_limit_max)), \
-        pp_case_((plat_bits_unit_32bit)(u32_limit_max)) \
-    ) pp_end \
-)
-#define usize_limit_flt_min_bound_excl pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_limit_flt_min_bound_excl)), \
-        pp_case_((plat_bits_unit_32bit)(u32_limit_flt_min_bound_excl)) \
-    ) pp_end \
-)
+#define usize_limit_min usize_(0)
+#define usize_limit_max usize_(UINTPTR_MAX)
+#define usize_limit_flt_min_bound_excl (-1.0)
 #define usize_limit_flt_max_bound_excl pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(u64_limit_flt_max_bound_excl)), \
-        pp_case_((plat_bits_unit_32bit)(u32_limit_flt_max_bound_excl)) \
+    pp_switch_ pp_begin(abi_size_unit)( \
+        pp_case_((abi_bits_unit_16bit)(u16_limit_flt_max_bound_excl)), \
+        pp_case_((abi_bits_unit_32bit)(u32_limit_flt_max_bound_excl)), \
+        pp_case_((abi_bits_unit_64bit)(u64_limit_flt_max_bound_excl)) \
     ) pp_end \
 )
 
@@ -241,63 +228,63 @@ typedef int32_t i32;
 typedef long ilong;
 #define ilong_(_$literal...) (as$(ilong)(n_(_$literal)))
 #define ilong_bits pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_bits)), \
-        pp_case_((plat_bits_unit_32bit)(i32_bits)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_bits)), \
+        pp_case_((abi_bits_unit_32bit)(i32_bits)) \
     ) pp_end \
 )
 #define ilong_bytes pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_bytes)), \
-        pp_case_((plat_bits_unit_32bit)(i32_bytes)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_bytes)), \
+        pp_case_((abi_bits_unit_32bit)(i32_bytes)) \
     ) pp_end \
 )
 #define ilong_limit_min pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_min)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_min)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_min)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_min)) \
     ) pp_end \
 )
 #define ilong_limit_max pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_max)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_max)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_max)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_max)) \
     ) pp_end \
 )
 #define ilong_limit_max_ngtv pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_max_ngtv)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_max_ngtv)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_max_ngtv)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_max_ngtv)) \
     ) pp_end \
 )
 #define ilong_limit_min_ngtv pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_min_ngtv)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_min_ngtv)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_min_ngtv)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_min_ngtv)) \
     ) pp_end \
 )
 #define ilong_limit_min_pstv pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_min_pstv)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_min_pstv)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_min_pstv)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_min_pstv)) \
     ) pp_end \
 )
 #define ilong_limit_max_pstv pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_max_pstv)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_max_pstv)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_max_pstv)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_max_pstv)) \
     ) pp_end \
 )
 #define ilong_limit_flt_min_bound_excl pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_flt_min_bound_excl)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_flt_min_bound_excl)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_flt_min_bound_excl)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_flt_min_bound_excl)) \
     ) pp_end \
 )
 #define ilong_limit_flt_max_bound_excl pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_flt_max_bound_excl)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_flt_max_bound_excl)) \
+    pp_switch_ pp_begin(abi_long_unit)( \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_flt_max_bound_excl)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_flt_max_bound_excl)) \
     ) pp_end \
 )
 
@@ -316,64 +303,26 @@ typedef int64_t i64;
 
 typedef intptr_t isize;
 #define isize_(_$literal...) (as$(isize)(n_(_$literal)))
-#define isize_bits pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_bits)), \
-        pp_case_((plat_bits_unit_32bit)(i32_bits)) \
-    ) pp_end \
-)
-#define isize_bytes pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_bytes)), \
-        pp_case_((plat_bits_unit_32bit)(i32_bytes)) \
-    ) pp_end \
-)
-#define isize_limit_min pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_min)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_min)) \
-    ) pp_end \
-)
-#define isize_limit_max pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_max)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_max)) \
-    ) pp_end \
-)
-#define isize_limit_max_ngtv pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_max_ngtv)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_max_ngtv)) \
-    ) pp_end \
-)
-#define isize_limit_min_ngtv pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_min_ngtv)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_min_ngtv)) \
-    ) pp_end \
-)
-#define isize_limit_min_pstv pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_min_pstv)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_min_pstv)) \
-    ) pp_end \
-)
-#define isize_limit_max_pstv pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_max_pstv)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_max_pstv)) \
-    ) pp_end \
-)
+#define isize_bits (abi_size_bits)
+#define isize_bytes (abi_size_bytes)
+#define isize_limit_min isize_(INTPTR_MIN)
+#define isize_limit_max isize_(INTPTR_MAX)
+#define isize_limit_max_ngtv isize_(INTPTR_MIN)
+#define isize_limit_min_ngtv isize_(-1)
+#define isize_limit_min_pstv isize_(+1)
+#define isize_limit_max_pstv isize_(INTPTR_MAX)
 #define isize_limit_flt_min_bound_excl pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_flt_min_bound_excl)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_flt_min_bound_excl)) \
+    pp_switch_ pp_begin(abi_size_unit)( \
+        pp_case_((abi_bits_unit_16bit)(i16_limit_flt_min_bound_excl)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_flt_min_bound_excl)), \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_flt_min_bound_excl)) \
     ) pp_end \
 )
 #define isize_limit_flt_max_bound_excl pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(i64_limit_flt_max_bound_excl)), \
-        pp_case_((plat_bits_unit_32bit)(i32_limit_flt_max_bound_excl)) \
+    pp_switch_ pp_begin(abi_size_unit)( \
+        pp_case_((abi_bits_unit_16bit)(i16_limit_flt_max_bound_excl)), \
+        pp_case_((abi_bits_unit_32bit)(i32_limit_flt_max_bound_excl)), \
+        pp_case_((abi_bits_unit_64bit)(i64_limit_flt_max_bound_excl)) \
     ) pp_end \
 )
 
@@ -438,22 +387,6 @@ typedef double f64;
 #define f64_inf f64_(__builtin_inf())
 #define f64_inf_ngtv f64_(-f64_inf)
 #define f64_inf_pstv f64_(+f64_inf)
-
-// typedef long double f80;
-// #define f80_(_$literal...) (as$(f80)(n_(_$literal)))
-// #define f80_bits           (80u)
-// #define f80_bytes          (10u)
-// #define f80_limit_min      f80_(LDBL_MIN)
-// #define f80_limit_max      f80_(LDBL_MAX)
-// #define f80_limit_max_ngtv f80_(-LDBL_MAX)
-// #define f80_limit_min_ngtv f80_(-LDBL_MIN)
-// #define f80_limit_min_pstv f80_(+LDBL_MIN)
-// #define f80_limit_max_pstv f80_(+LDBL_MAX)
-// #define f80_eps            f80_(LDBL_EPSILON)
-// #define f80_nan            f80_(__builtin_nan(""))
-// #define f80_inf            f80_(__builtin_inf())
-// #define f80_inf_ngtv       f80_(-f80_inf)
-// #define f80_inf_pstv       f80_(+f80_inf)
 
 // typedef __float128 f128;
 // #define f128_(_$literal...) (as$(f128)(n_(_$literal)))
@@ -564,7 +497,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((u8)(true)), \
         T_case$((u16)(true)), \
         T_case$((u32)(true)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(true)), \
         )) T_delim(), \
         T_case$((u64)(true)), \
@@ -576,7 +509,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((i8)(true)), \
         T_case$((i16)(true)), \
         T_case$((i32)(true)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ilong)(true)), \
         )) T_delim(), \
         T_case$((i64)(true)), \
@@ -597,7 +530,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((u8)(u8_bits)), T_case$((i8)(i8_bits)), \
         T_case$((u16)(u16_bits)), T_case$((i16)(i16_bits)), \
         T_case$((u32)(u32_bits)), T_case$((i32)(i32_bits)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(ulong_bits)), T_case$((ilong)(ilong_bits)), \
         )) T_delim(), \
         T_case$((u64)(u64_bits)), T_case$((i64)(i64_bits)) \
@@ -608,7 +541,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((u8)(u8_bytes)), T_case$((i8)(i8_bytes)), \
         T_case$((u16)(u16_bytes)), T_case$((i16)(i16_bytes)), \
         T_case$((u32)(u32_bytes)), T_case$((i32)(i32_bytes)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(ulong_bytes)), T_case$((ilong)(ilong_bytes)), \
         )) T_delim(), \
         T_case$((u64)(u64_bytes)), T_case$((i64)(i64_bytes)) \
@@ -620,7 +553,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((u8)(u8_limit)), \
         T_case$((u16)(u16_limit)), \
         T_case$((u32)(u32_limit)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(ulong_limit)), \
         )) T_delim(), \
         T_case$((u64)(u64_limit)) \
@@ -631,7 +564,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((u8)(u8_limit_min)), T_case$((i8)(i8_limit_min)), \
         T_case$((u16)(u16_limit_min)), T_case$((i16)(i16_limit_min)), \
         T_case$((u32)(u32_limit_min)), T_case$((i32)(i32_limit_min)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(ulong_limit_min)), T_case$((ilong)(ilong_limit_min)), \
         )) T_delim(), \
         T_case$((u64)(u64_limit_min)), T_case$((i64)(i64_limit_min)) \
@@ -642,7 +575,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((u8)(u8_limit_max)), T_case$((i8)(i8_limit_max)), \
         T_case$((u16)(u16_limit_max)), T_case$((i16)(i16_limit_max)), \
         T_case$((u32)(u32_limit_max)), T_case$((i32)(i32_limit_max)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(ulong_limit_max)), T_case$((ilong)(ilong_limit_max)), \
         )) T_delim(), \
         T_case$((u64)(u64_limit_max)), T_case$((i64)(i64_limit_max)) \
@@ -653,7 +586,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((i8)(i8_limit_max_ngtv)), \
         T_case$((i16)(i16_limit_max_ngtv)), \
         T_case$((i32)(i32_limit_max_ngtv)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ilong)(ilong_limit_max_ngtv)), \
         )) T_delim(), \
         T_case$((i64)(i64_limit_max_ngtv)) \
@@ -664,7 +597,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((i8)(i8_limit_min_ngtv)), \
         T_case$((i16)(i16_limit_min_ngtv)), \
         T_case$((i32)(i32_limit_min_ngtv)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ilong)(ilong_limit_min_ngtv)), \
         )) T_delim(), \
         T_case$((i64)(i64_limit_min_ngtv)) \
@@ -675,7 +608,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((i8)(i8_limit_min_pstv)), \
         T_case$((i16)(i16_limit_min_pstv)), \
         T_case$((i32)(i32_limit_min_pstv)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ilong)(ilong_limit_min_pstv)), \
         )) T_delim(), \
         T_case$((i64)(i64_limit_min_pstv)) \
@@ -686,7 +619,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((i8)(i8_limit_max_pstv)), \
         T_case$((i16)(i16_limit_max_pstv)), \
         T_case$((i32)(i32_limit_max_pstv)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ilong)(ilong_limit_max_pstv)), \
         )) T_delim(), \
         T_case$((i64)(i64_limit_max_pstv)) \
@@ -697,7 +630,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((u8)(u8_limit_flt_min_bound_excl)), T_case$((i8)(i8_limit_flt_min_bound_excl)), \
         T_case$((u16)(u16_limit_flt_min_bound_excl)), T_case$((i16)(i16_limit_flt_min_bound_excl)), \
         T_case$((u32)(u32_limit_flt_min_bound_excl)), T_case$((i32)(i32_limit_flt_min_bound_excl)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(ulong_limit_flt_min_bound_excl)), T_case$((ilong)(ilong_limit_flt_min_bound_excl)), \
         )) T_delim(), \
         T_case$((u64)(u64_limit_flt_min_bound_excl)), T_case$((i64)(i64_limit_flt_min_bound_excl)) \
@@ -708,7 +641,7 @@ typedef TypeOf(void*) P$raw;
         T_case$((u8)(u8_limit_flt_max_bound_excl)), T_case$((i8)(i8_limit_flt_max_bound_excl)), \
         T_case$((u16)(u16_limit_flt_max_bound_excl)), T_case$((i16)(i16_limit_flt_max_bound_excl)), \
         T_case$((u32)(u32_limit_flt_max_bound_excl)), T_case$((i32)(i32_limit_flt_max_bound_excl)), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(ulong_limit_flt_max_bound_excl)), T_case$((ilong)(ilong_limit_flt_max_bound_excl)), \
         )) T_delim(), \
         T_case$((u64)(u64_limit_flt_max_bound_excl)), T_case$((i64)(i64_limit_flt_max_bound_excl)) \

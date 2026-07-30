@@ -5,7 +5,7 @@
  * @file    wasm.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-06-28 (date of creation)
- * @updated 2026-06-28 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  wasm
  *
@@ -30,53 +30,14 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-#if defined(__clang__) && arch_family_is_wasm
-#define wasm_builtin_supported 1
-#else
-#define wasm_builtin_supported 0
-#endif
-
-#if defined(__wasm_bulk_memory__)
-#define wasm_has_bulk_memory 1
-#else
-#define wasm_has_bulk_memory 0
-#endif
-
-#if defined(__wasm_exception_handling__)
-#define wasm_has_exception_handling 1
-#else
-#define wasm_has_exception_handling 0
-#endif
-
-#if defined(__wasm_atomics__)
-#define wasm_has_atomics 1
-#else
-#define wasm_has_atomics 0
-#endif
-
-#if defined(__wasm_nontrapping_fptoint__)
-#define wasm_has_nontrapping_fptoint 1
-#else
-#define wasm_has_nontrapping_fptoint 0
-#endif
-
-#if defined(__wasm_reference_types__)
-#define wasm_has_reference_types 1
-#else
-#define wasm_has_reference_types 0
-#endif
-
-#if defined(__wasm_gc__)
-#define wasm_has_gc 1
-#else
-#define wasm_has_gc 0
-#endif
-
-#if defined(__wasm_fp16__)
-#define wasm_has_fp16 1
-#else
-#define wasm_has_fp16 0
-#endif
+#define wasm_builtin_supported pp_and(comp_is_clang, arch_family_is_wasm)
+#define wasm_has_bulk_memory arch_has_wasm_bulk_memory
+#define wasm_has_exception_handling arch_has_wasm_exception_handling
+#define wasm_has_atomics arch_has_wasm_atomics
+#define wasm_has_nontrapping_fptoint arch_has_wasm_nontrapping_fptoint
+#define wasm_has_reference_types arch_has_wasm_reference_types
+#define wasm_has_gc arch_has_wasm_gc
+#define wasm_has_fp16 arch_has_wasm_fp16
 
 #if wasm_builtin_supported
 

@@ -5,7 +5,7 @@
  * @file    pri.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-10-28 (date of creation)
- * @updated 2026-06-21 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)/core/pri
  * @prefix  (none)
  *
@@ -34,6 +34,7 @@ extern "C" {
 #include "pri/cfg.h"
 #include "pri/enum.h"
 #include "pri/switch.h"
+#include "pri/bitfield.h"
 
 /*========== Type Utilities =================================================*/
 
@@ -1255,7 +1256,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
         T_case$((u8)(____uint_addCarry8(__lhs, __rhs, __carry_in, _p_carry_out))), \
         T_case$((u16)(____uint_addCarry16(__lhs, __rhs, __carry_in, _p_carry_out))), \
         T_case$((u32)(____uint_addCarry32(__lhs, __rhs, __carry_in, _p_carry_out))), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(____uint_addCarryLong(__lhs, __rhs, __carry_in, _p_carry_out))), \
         )) T_delim(), \
         T_case$((u64)(____uint_addCarry64(__lhs, __rhs, __carry_in, _p_carry_out))) \
@@ -1358,7 +1359,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
         T_case$((u8)(____uint_subBorrow8(__lhs, __rhs, __borrow_in, _p_borrow_out))), \
         T_case$((u16)(____uint_subBorrow16(__lhs, __rhs, __borrow_in, _p_borrow_out))), \
         T_case$((u32)(____uint_subBorrow32(__lhs, __rhs, __borrow_in, _p_borrow_out))), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(____uint_subBorrowLong(__lhs, __rhs, __borrow_in, _p_borrow_out))), \
         )) T_delim(), \
         T_case$((u64)(____uint_subBorrow64(__lhs, __rhs, __borrow_in, _p_borrow_out))) \
@@ -1506,7 +1507,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
         T_case$((i8)(__builtin_abs(as$(i8)(__x)))), \
         T_case$((i16)(__builtin_abs(as$(i16)(__x)))), \
         T_case$((i32)(__builtin_abs(as$(i32)(__x)))), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ilong)(__builtin_labs(as$(ilong)(__x)))), \
         )) T_delim(), \
         T_case$((i64)(__builtin_llabs(as$(i64)(__x)))) \
@@ -1757,7 +1758,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
               T_case$((u16)(raw_countOnes16(as$(u16)(_$x)))), \
               T_case$((u32)(raw_countOnes32(as$(u32)(_$x)))), \
               T_case$((i32)(raw_countOnes32(as$(i32)(_$x)))), \
-              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+              pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
                   T_case$((ulong)(raw_countOnesLong(as$(ulong)(_$x)))), \
                   T_case$((ilong)(raw_countOnesLong(as$(ilong)(_$x)))), \
               )) T_delim(), \
@@ -1787,7 +1788,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
         T_case$((i8)(raw_leadingRedundantSgnBits8(as$(i8)(_$x)))), \
         T_case$((i16)(raw_leadingRedundantSgnBits16(as$(i16)(_$x)))), \
         T_case$((i32)(raw_leadingRedundantSgnBits32(as$(i32)(_$x)))), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ilong)(raw_leadingRedundantSgnBitsLong(as$(ilong)(_$x)))), \
         )) T_delim(), \
         T_case$((i64)(raw_leadingRedundantSgnBits64(as$(i64)(_$x)))) \
@@ -1820,7 +1821,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
               T_case$((i16)(raw_leadingZeros16(as$(i16)(_$x)))), \
               T_case$((u32)(raw_leadingZeros32(as$(u32)(_$x)))), \
               T_case$((i32)(raw_leadingZeros32(as$(i32)(_$x)))), \
-              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+              pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
                   T_case$((ulong)(raw_leadingZerosLong(as$(ulong)(_$x)))), \
                   T_case$((ilong)(raw_leadingZerosLong(as$(ilong)(_$x)))), \
               )) T_delim(), \
@@ -1854,7 +1855,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
               T_case$((i16)(raw_trailingZeros16(as$(i16)(_$x)))), \
               T_case$((u32)(raw_trailingZeros32(as$(u32)(_$x)))), \
               T_case$((i32)(raw_trailingZeros32(as$(i32)(_$x)))), \
-              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+              pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
                   T_case$((ulong)(raw_trailingZerosLong(as$(ulong)(_$x)))), \
                   T_case$((ilong)(raw_trailingZerosLong(as$(ilong)(_$x)))), \
               )) T_delim(), \
@@ -1877,7 +1878,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
         T_case$((i16)(raw_firstSetBit16(as$(i16)(_$x)))), \
         T_case$((u32)(raw_firstSetBit32(as$(u32)(_$x)))), \
         T_case$((i32)(raw_firstSetBit32(as$(i32)(_$x)))), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(raw_firstSetBitLong(as$(ulong)(_$x)))), \
             T_case$((ilong)(raw_firstSetBitLong(as$(ilong)(_$x)))), \
         )) T_delim(), \
@@ -1910,7 +1911,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
         T_case$((i16)(raw_parity16(as$(i16)(_$x)))), \
         T_case$((u32)(raw_parity32(as$(u32)(_$x)))), \
         T_case$((i32)(raw_parity32(as$(i32)(_$x)))), \
-        pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+        pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
             T_case$((ulong)(raw_parityLong(as$(ulong)(_$x)))), \
             T_case$((ilong)(raw_parityLong(as$(ilong)(_$x)))), \
         )) T_delim(), \
@@ -1966,7 +1967,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
               T_case$((i16)(raw_swapBytes16(as$(i16)(_$x)))), \
               T_case$((u32)(raw_swapBytes32(as$(u32)(_$x)))), \
               T_case$((i32)(raw_swapBytes32(as$(i32)(_$x)))), \
-              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+              pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
                   T_case$((ulong)(raw_swapBytesLong(as$(ulong)(_$x)))), \
                   T_case$((ilong)(raw_swapBytesLong(as$(ilong)(_$x)))), \
               )) T_delim(), \
@@ -1991,7 +1992,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
               T_case$((i16)(raw_rotateLeft16(as$(i16)(_$x), as$(i16)(_$y)))), \
               T_case$((u32)(raw_rotateLeft32(as$(u32)(_$x), as$(u32)(_$y)))), \
               T_case$((i32)(raw_rotateLeft32(as$(i32)(_$x), as$(i32)(_$y)))), \
-              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+              pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
                   T_case$((ulong)(raw_rotateLeftLong(as$(ulong)(_$x), as$(ulong)(_$y)))), \
                   T_case$((ilong)(raw_rotateLeftLong(as$(ilong)(_$x), as$(ilong)(_$y)))), \
               )) T_delim(), \
@@ -2017,7 +2018,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
               T_case$((i16)(raw_rotateRight16(as$(i16)(_$x), as$(i16)(_$y)))), \
               T_case$((u32)(raw_rotateRight32(as$(u32)(_$x), as$(u32)(_$y)))), \
               T_case$((i32)(raw_rotateRight32(as$(i32)(_$x), as$(i32)(_$y)))), \
-              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+              pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
                   T_case$((ulong)(raw_rotateRightLong(as$(ulong)(_$x), as$(ulong)(_$y)))), \
                   T_case$((ilong)(raw_rotateRightLong(as$(ilong)(_$x), as$(ilong)(_$y)))), \
               )) T_delim(), \
@@ -2043,7 +2044,7 @@ $static u8 pri__memcmp(P_const$raw lhs, P_const$raw rhs, usize len) {
               T_case$((i16)(raw_reverseBits16(as$(i16)(_$x)))), \
               T_case$((u32)(raw_reverseBits32(as$(u32)(_$x)))), \
               T_case$((i32)(raw_reverseBits32(as$(i32)(_$x)))), \
-              pp_if_(plat_long_needs_distinct_int_cases)(pp_then_( \
+              pp_if_(abi_long_needs_distinct_int_cases)(pp_then_( \
                   T_case$((ulong)(raw_reverseBitsLong(as$(ulong)(_$x)))), \
                   T_case$((ilong)(raw_reverseBitsLong(as$(ilong)(_$x)))), \
               )) T_delim(), \

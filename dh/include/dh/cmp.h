@@ -33,12 +33,16 @@ T_alias$((cmp_m_T)(enum_((cmp_m_T $fits($packed))(
     cmp_m_T_i32 = 5,
     cmp_m_T_u64 = 6,
     cmp_m_T_i64 = 7,
-    cmp_m_T_usize = pp_if_(arch_bits_is_64bit)(
-        pp_then_(cmp_m_T_u64), pp_else_(cmp_m_T_u32)
-    ),
-    cmp_m_T_isize = pp_if_(arch_bits_is_64bit)(
-        pp_then_(cmp_m_T_i64), pp_else_(cmp_m_T_i32)
-    ),
+    cmp_m_T_usize = pp_switch_((abi_size_unit)(
+        pp_case_((abi_bits_unit_16bit)(cmp_m_T_u16)),
+        pp_case_((abi_bits_unit_32bit)(cmp_m_T_u32)),
+        pp_case_((abi_bits_unit_64bit)(cmp_m_T_u64))
+    )),
+    cmp_m_T_isize = pp_switch_((abi_size_unit)(
+        pp_case_((abi_bits_unit_16bit)(cmp_m_T_i16)),
+        pp_case_((abi_bits_unit_32bit)(cmp_m_T_i32)),
+        pp_case_((abi_bits_unit_64bit)(cmp_m_T_i64))
+    )),
     cmp_m_T_f32 = 8,
     cmp_m_T_f64 = 9
 ))));

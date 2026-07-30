@@ -5,7 +5,7 @@
  * @file    mem.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-02-12 (date of creation)
- * @updated 2026-03-12 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)/builtin
  * @prefix  (none)
  */
@@ -132,72 +132,110 @@ extern "C" {
 #define __comp_int__mem_bits_per_nibble arch_bits_per_nibble
 #define __comp_int__mem_bits_per_crumb arch_bits_per_crumb
 
-#define ____raw_countOnesSize(_$x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_countOnes64(_$x)), \
-    pp_else_(raw_countOnes32(_$x)) \
+#define __comp_mem_sizeSelect(_$on16, _$on32, _$on64) pp_expand( \
+    pp_switch_ pp_begin(abi_size_unit)( \
+        pp_case_((abi_bits_unit_16bit)(_$on16)), \
+        pp_case_((abi_bits_unit_32bit)(_$on32)), \
+        pp_case_((abi_bits_unit_64bit)(_$on64)) \
+    ) pp_end \
 )
+
+#define ____raw_countOnesSize(_$x...) \
+    __comp_mem_sizeSelect(raw_countOnes16(_$x), raw_countOnes32(_$x), raw_countOnes64(_$x))
 #define ____raw_countOnes64(_$x...) (as$(u32)(__builtin_popcountll(as$(u64)(_$x))))
 #define ____raw_countOnesLong(_$x...) (as$(u32)(__builtin_popcountl(as$(ulong)(_$x))))
+#if abi_int_bits >= 32
 #define ____raw_countOnes32(_$x...) (as$(u32)(__builtin_popcount(as$(u32)(_$x))))
-#define ____raw_countOnes16(_$x...) (as$(u32)(__builtin_popcount(as$(u32)(as$(u16)(_$x)))))
-#define ____raw_countOnes8(_$x...) (as$(u32)(__builtin_popcount(as$(u32)(as$(u8)(_$x)))))
+#else
+#define ____raw_countOnes32(_$x...) (as$(u32)(__builtin_popcountl(as$(ulong)(as$(u32)(_$x)))))
+#endif
+#define ____raw_countOnes16(_$x...) (as$(u32)(__builtin_popcount(as$(u16)(_$x))))
+#define ____raw_countOnes8(_$x...) (as$(u32)(__builtin_popcount(as$(u8)(_$x))))
 
-#define ____raw_leadingRedundantSgnBitsSize(_$x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_leadingRedundantSgnBits64(_$x)), \
-    pp_else_(raw_leadingRedundantSgnBits32(_$x)) \
-)
+#define ____raw_leadingRedundantSgnBitsSize(_$x...) \
+    __comp_mem_sizeSelect( \
+        raw_leadingRedundantSgnBits16(_$x), \
+        raw_leadingRedundantSgnBits32(_$x), \
+        raw_leadingRedundantSgnBits64(_$x) \
+    )
 #define ____raw_leadingRedundantSgnBits64(_$x...) (as$(u32)(__builtin_clrsbll(as$(i64)(_$x))))
 #define ____raw_leadingRedundantSgnBitsLong(_$x...) (as$(u32)(__builtin_clrsbl(as$(ilong)(_$x))))
-#define ____raw_leadingRedundantSgnBits32(_$x...) (as$(u32)(__builtin_clrsb(as$(i32)(_$x))))
-#define ____raw_leadingRedundantSgnBits16(_$x...) (as$(u32)(__builtin_clrsb(as$(i32)(as$(i16)(_$x)))) - 16)
-#define ____raw_leadingRedundantSgnBits8(_$x...) (as$(u32)(__builtin_clrsb(as$(i32)(as$(i8)(_$x)))) - 24)
-
-#define ____raw_leadingZerosSize(_$x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_leadingZeros64(_$x)), \
-    pp_else_(raw_leadingZeros32(_$x)) \
+#if abi_int_bits >= 32
+#define ____raw_leadingRedundantSgnBits32(_$x...) ( \
+    as$(u32)(__builtin_clrsb(as$(i32)(_$x))) - (u32_(abi_int_bits) - u32_(32)) \
 )
+#else
+#define ____raw_leadingRedundantSgnBits32(_$x...) ( \
+    as$(u32)(__builtin_clrsbl(as$(ilong)(as$(i32)(_$x)))) - (u32_(abi_long_bits) - u32_(32)) \
+)
+#endif
+#define ____raw_leadingRedundantSgnBits16(_$x...) ( \
+    as$(u32)(__builtin_clrsb(as$(i16)(_$x))) - (u32_(abi_int_bits) - u32_(16)) \
+)
+#define ____raw_leadingRedundantSgnBits8(_$x...) ( \
+    as$(u32)(__builtin_clrsb(as$(i8)(_$x))) - (u32_(abi_int_bits) - u32_(8)) \
+)
+
+#define ____raw_leadingZerosSize(_$x...) \
+    __comp_mem_sizeSelect(raw_leadingZeros16(_$x), raw_leadingZeros32(_$x), raw_leadingZeros64(_$x))
 #define ____raw_leadingZeros64(_$x...) (as$(u32)(__builtin_clzll(as$(u64)(_$x))))
 #define ____raw_leadingZerosLong(_$x...) (as$(u32)(__builtin_clzl(as$(ulong)(_$x))))
-#define ____raw_leadingZeros32(_$x...) (as$(u32)(__builtin_clz(as$(u32)(_$x))))
-#define ____raw_leadingZeros16(_$x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u16)(_$x)))) - 16)
-#define ____raw_leadingZeros8(_$x...) (as$(u32)(__builtin_clz(as$(u32)(as$(u8)(_$x)))) - 24)
-
-#define ____raw_trailingZerosSize(_$x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_trailingZeros64(_$x)), \
-    pp_else_(raw_trailingZeros32(_$x)) \
+#if abi_int_bits >= 32
+#define ____raw_leadingZeros32(_$x...) ( \
+    as$(u32)(__builtin_clz(as$(u32)(_$x))) - (u32_(abi_int_bits) - u32_(32)) \
 )
+#else
+#define ____raw_leadingZeros32(_$x...) ( \
+    as$(u32)(__builtin_clzl(as$(ulong)(as$(u32)(_$x)))) - (u32_(abi_long_bits) - u32_(32)) \
+)
+#endif
+#define ____raw_leadingZeros16(_$x...) ( \
+    as$(u32)(__builtin_clz(as$(u16)(_$x))) - (u32_(abi_int_bits) - u32_(16)) \
+)
+#define ____raw_leadingZeros8(_$x...) ( \
+    as$(u32)(__builtin_clz(as$(u8)(_$x))) - (u32_(abi_int_bits) - u32_(8)) \
+)
+
+#define ____raw_trailingZerosSize(_$x...) \
+    __comp_mem_sizeSelect(raw_trailingZeros16(_$x), raw_trailingZeros32(_$x), raw_trailingZeros64(_$x))
 #define ____raw_trailingZeros64(_$x...) (as$(u32)(__builtin_ctzll(as$(u64)(_$x))))
 #define ____raw_trailingZerosLong(_$x...) (as$(u32)(__builtin_ctzl(as$(ulong)(_$x))))
+#if abi_int_bits >= 32
 #define ____raw_trailingZeros32(_$x...) (as$(u32)(__builtin_ctz(as$(u32)(_$x))))
-#define ____raw_trailingZeros16(_$x...) (as$(u32)(__builtin_ctz(as$(u32)(as$(u16)(_$x)))))
-#define ____raw_trailingZeros8(_$x...) (as$(u32)(__builtin_ctz(as$(u32)(as$(u8)(_$x)))))
+#else
+#define ____raw_trailingZeros32(_$x...) (as$(u32)(__builtin_ctzl(as$(ulong)(as$(u32)(_$x)))))
+#endif
+#define ____raw_trailingZeros16(_$x...) (as$(u32)(__builtin_ctz(as$(u16)(_$x))))
+#define ____raw_trailingZeros8(_$x...) (as$(u32)(__builtin_ctz(as$(u8)(_$x))))
 
-#define ____raw_firstSetBitSize(_$x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_firstSetBit64(_$x)), \
-    pp_else_(raw_firstSetBit32(_$x)) \
-)
+#define ____raw_firstSetBitSize(_$x...) \
+    __comp_mem_sizeSelect(raw_firstSetBit16(_$x), raw_firstSetBit32(_$x), raw_firstSetBit64(_$x))
 #define ____raw_firstSetBit64(_$x...) (as$(u32)(__builtin_ffsll(as$(i64)(_$x))))
 #define ____raw_firstSetBitLong(_$x...) (as$(u32)(__builtin_ffsl(as$(ilong)(_$x))))
+#if abi_int_bits >= 32
 #define ____raw_firstSetBit32(_$x...) (as$(u32)(__builtin_ffs(as$(i32)(_$x))))
-#define ____raw_firstSetBit16(_$x...) (as$(u32)(__builtin_ffs(as$(i32)(as$(u16)(_$x)))))
-#define ____raw_firstSetBit8(_$x...) (as$(u32)(__builtin_ffs(as$(i32)(as$(u8)(_$x)))))
+#else
+#define ____raw_firstSetBit32(_$x...) (as$(u32)(__builtin_ffsl(as$(ilong)(as$(i32)(_$x)))))
+#endif
+#define ____raw_firstSetBit16(_$x...) (as$(u32)(__builtin_ffs(as$(i16)(_$x))))
+#define ____raw_firstSetBit8(_$x...) (as$(u32)(__builtin_ffs(as$(i8)(_$x))))
 
-#define ____raw_paritySize(_$x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_parity64(_$x)), \
-    pp_else_(raw_parity32(_$x)) \
-)
+#define ____raw_paritySize(_$x...) \
+    __comp_mem_sizeSelect(raw_parity16(_$x), raw_parity32(_$x), raw_parity64(_$x))
 #define ____raw_parity64(_$x...) (as$(u32)(__builtin_parityll(as$(u64)(_$x))))
 #define ____raw_parityLong(_$x...) (as$(u32)(__builtin_parityl(as$(ulong)(_$x))))
+#if abi_int_bits >= 32
 #define ____raw_parity32(_$x...) (as$(u32)(__builtin_parity(as$(u32)(_$x))))
-#define ____raw_parity16(_$x...) (as$(u32)(__builtin_parity(as$(u32)(as$(u16)(_$x)))))
-#define ____raw_parity8(_$x...) (as$(u32)(__builtin_parity(as$(u32)(as$(u8)(_$x)))))
+#else
+#define ____raw_parity32(_$x...) (as$(u32)(__builtin_parityl(as$(ulong)(as$(u32)(_$x)))))
+#endif
+#define ____raw_parity16(_$x...) (as$(u32)(__builtin_parity(as$(u16)(_$x))))
+#define ____raw_parity8(_$x...) (as$(u32)(__builtin_parity(as$(u8)(_$x))))
 
-#define ____raw_swapBytesSize(_$x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_swapBytes64(_$x)), \
-    pp_else_(raw_swapBytes32(_$x)) \
-)
+#define ____raw_swapBytesSize(_$x...) \
+    __comp_mem_sizeSelect(raw_swapBytes16(_$x), raw_swapBytes32(_$x), raw_swapBytes64(_$x))
 #define ____raw_swapBytes64(_$x...) (as$(u64)(__builtin_bswap64(as$(u64)(_$x))))
-#define ____raw_swapBytesLong(_$x...) pp_if_(plat_long_is_64bit)( \
+#define ____raw_swapBytesLong(_$x...) pp_if_(abi_long_is_64bit)( \
     pp_then_(raw_swapBytes64(_$x)), \
     pp_else_(raw_swapBytes32(_$x)) \
 )
@@ -276,10 +314,12 @@ static inline __UINT64_TYPE__ __comp_raw_brev64_runtime(__UINT64_TYPE__ x) {
          | (__UINT64_TYPE__)__comp_raw_brev32_runtime((__UINT32_TYPE__)(x >> 32));
 }
 
-#define ____raw_rotateLeftSize(_$x, _$y...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_rotateLeft64(_$x, _$y)), \
-    pp_else_(raw_rotateLeft32(_$x, _$y)) \
-)
+#define ____raw_rotateLeftSize(_$x, _$y...) \
+    __comp_mem_sizeSelect( \
+        raw_rotateLeft16(_$x, _$y), \
+        raw_rotateLeft32(_$x, _$y), \
+        raw_rotateLeft64(_$x, _$y) \
+    )
 #if comp_type == comp_type_clang
 #define ____raw_rotateLeft64(_$x, _$y...) (as$(u64)(__builtin_rotateleft64(as$(u64)(_$x), as$(u64)(_$y))))
 #else
@@ -289,7 +329,7 @@ static inline __UINT64_TYPE__ __comp_raw_brev64_runtime(__UINT64_TYPE__ x) {
     __comp_raw_rotl64_runtime(as$(u64)(_$x), as$(u64)(_$y)) \
 )
 #endif
-#define ____raw_rotateLeftLong(_$x, _$y...) pp_if_(plat_long_is_64bit)( \
+#define ____raw_rotateLeftLong(_$x, _$y...) pp_if_(abi_long_is_64bit)( \
     pp_then_(raw_rotateLeft64(_$x, _$y)), \
     pp_else_(raw_rotateLeft32(_$x, _$y)) \
 )
@@ -321,10 +361,12 @@ static inline __UINT64_TYPE__ __comp_raw_brev64_runtime(__UINT64_TYPE__ x) {
 )
 #endif
 
-#define ____raw_rotateRightSize(_$x, _$y...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_rotateRight64(_$x, _$y)), \
-    pp_else_(raw_rotateRight32(_$x, _$y)) \
-)
+#define ____raw_rotateRightSize(_$x, _$y...) \
+    __comp_mem_sizeSelect( \
+        raw_rotateRight16(_$x, _$y), \
+        raw_rotateRight32(_$x, _$y), \
+        raw_rotateRight64(_$x, _$y) \
+    )
 #if comp_type == comp_type_clang
 #define ____raw_rotateRight64(_$x, _$y...) (as$(u64)(__builtin_rotateright64(as$(u64)(_$x), as$(u64)(_$y))))
 #else
@@ -334,7 +376,7 @@ static inline __UINT64_TYPE__ __comp_raw_brev64_runtime(__UINT64_TYPE__ x) {
     __comp_raw_rotr64_runtime(as$(u64)(_$x), as$(u64)(_$y)) \
 )
 #endif
-#define ____raw_rotateRightLong(_$x, _$y...) pp_if_(plat_long_is_64bit)( \
+#define ____raw_rotateRightLong(_$x, _$y...) pp_if_(abi_long_is_64bit)( \
     pp_then_(raw_rotateRight64(_$x, _$y)), \
     pp_else_(raw_rotateRight32(_$x, _$y)) \
 )
@@ -366,10 +408,8 @@ static inline __UINT64_TYPE__ __comp_raw_brev64_runtime(__UINT64_TYPE__ x) {
 )
 #endif
 
-#define ____raw_reverseBitsSize(_$x...) pp_if_(arch_bits_is_64bit)( \
-    pp_then_(raw_reverseBits64(_$x)), \
-    pp_else_(raw_reverseBits32(_$x)) \
-)
+#define ____raw_reverseBitsSize(_$x...) \
+    __comp_mem_sizeSelect(raw_reverseBits16(_$x), raw_reverseBits32(_$x), raw_reverseBits64(_$x))
 #if comp_type == comp_type_clang
 #define ____raw_reverseBits64(_$x...) (as$(u64)(__builtin_bitreverse64(as$(u64)(_$x))))
 #else
@@ -379,7 +419,7 @@ static inline __UINT64_TYPE__ __comp_raw_brev64_runtime(__UINT64_TYPE__ x) {
     __comp_raw_brev64_runtime(as$(u64)(_$x)) \
 )
 #endif
-#define ____raw_reverseBitsLong(_$x...) pp_if_(plat_long_is_64bit)( \
+#define ____raw_reverseBitsLong(_$x...) pp_if_(abi_long_is_64bit)( \
     pp_then_(raw_reverseBits64(_$x)), \
     pp_else_(raw_reverseBits32(_$x)) \
 )

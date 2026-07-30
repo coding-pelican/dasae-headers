@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2024-2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2024-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    comp.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-03 (date of creation)
- * @updated 2025-03-27 (date of last update)
- * @version v0.1-alpha.4
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dal-project/da/builtin
  * @prefix  (none)
  *
@@ -429,6 +428,7 @@ extern "C" {
 #define $callconv_preserve_all __attr__$callconv_preserve_all
 
 #define $packed __attr__$packed
+#define $section(_$name) __attr__$section(_$name)
 #define $bits(_$width... /*8|16|32|64*/) __attr__$bits(_$width)
 #define $align(_$align...) __attr__$align(_$align)
 
@@ -664,15 +664,30 @@ extern "C" {
 #define __attr__$like_ref [1]
 #define __attr__$like_deref [0]
 
-#define __attr__$callconv_cdecl plat_callconv_cdecl
-#define __attr__$callconv_stdcall plat_callconv_stdcall
-#define __attr__$callconv_fastcall plat_callconv_fastcall
-#define __attr__$callconv_vectorcall plat_callconv_vectorcall
-#define __attr__$callconv_naked plat_callconv_naked
-#define __attr__$callconv_preserve_none plat_callconv_preserve_none
-#define __attr__$callconv_preserve_all plat_callconv_preserve_all
+/* Compiler syntax is owned by cfg/comp; target applicability is assembled
+ * here after cfg/arch and cfg/plat are both available. */
+#define __attr__$callconv_cdecl pp_if_(pp_or(plat_is_windows, arch_family_is_x86))( \
+    pp_then_(comp_callconv_cdecl), \
+    pp_else_() \
+)
+#define __attr__$callconv_stdcall pp_if_(pp_or(plat_is_windows, arch_is_x86))( \
+    pp_then_(comp_callconv_stdcall), \
+    pp_else_() \
+)
+#define __attr__$callconv_fastcall pp_if_(pp_or(plat_is_windows, arch_is_x86))( \
+    pp_then_(comp_callconv_fastcall), \
+    pp_else_() \
+)
+#define __attr__$callconv_vectorcall pp_if_(pp_or(plat_is_windows, arch_family_is_x86))( \
+    pp_then_(comp_callconv_vectorcall), \
+    pp_else_() \
+)
+#define __attr__$callconv_naked comp_callconv_naked
+#define __attr__$callconv_preserve_none comp_callconv_preserve_none
+#define __attr__$callconv_preserve_all comp_callconv_preserve_all
 
 #define __attr__$packed comp_packed
+#define __attr__$section(_$name) comp_section(_$name)
 #define __attr__$bits(_$width... /*8|16|32|64*/) pp_join(_, __attr__$bits, _$width)
 #define __attr__$bits_0 "0 bits is not allowed"
 #define __attr__$bits_8 \

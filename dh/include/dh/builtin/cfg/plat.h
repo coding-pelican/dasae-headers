@@ -5,13 +5,14 @@
  * @file    plat.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2026-06-03 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dal-project/da/foundation/cfg
  * @prefix  plat
  *
- * @brief   Platform detection and configuration
- * @details Detects operating system and platform-specific features.
- *          Focus: Windows, Linux, Darwin, and WASI.
+ * @brief   Native platform facts selected by the compiler
+ * @details Identifies the target operating environment without implying that
+ *          DH ships a native implementation for it.  Native implementation
+ *          selection belongs to the sys layer.
  */
 #pragma once
 #ifndef foundation_cfg_plat__included
@@ -22,289 +23,202 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "../pp.h"
+#include "comp.h"
 
 /*========== Macros and Declarations ========================================*/
 
-/*--- Platform Detection ---*/
+/*--- Platform Type ---*/
 
 #define plat_type __comp_enum__plat_type
 #define plat_type_unknown __comp_enum__plat_type_unknown
 #define plat_type_windows __comp_enum__plat_type_windows
 #define plat_type_linux __comp_enum__plat_type_linux
+#define plat_type_android __comp_enum__plat_type_android
 #define plat_type_darwin __comp_enum__plat_type_darwin
+#define plat_type_freebsd __comp_enum__plat_type_freebsd
+#define plat_type_netbsd __comp_enum__plat_type_netbsd
+#define plat_type_openbsd __comp_enum__plat_type_openbsd
+#define plat_type_dragonfly __comp_enum__plat_type_dragonfly
+#define plat_type_solaris __comp_enum__plat_type_solaris
+#define plat_type_illumos __comp_enum__plat_type_illumos
+#define plat_type_haiku __comp_enum__plat_type_haiku
+#define plat_type_serenity __comp_enum__plat_type_serenity
 #define plat_type_wasi __comp_enum__plat_type_wasi
+#define plat_type_emscripten __comp_enum__plat_type_emscripten
 
+#define plat_is_unknown __comp_bool__plat_is_unknown
 #define plat_is_windows __comp_bool__plat_is_windows
 #define plat_is_linux __comp_bool__plat_is_linux
+#define plat_is_android __comp_bool__plat_is_android
 #define plat_is_darwin __comp_bool__plat_is_darwin
+#define plat_is_freebsd __comp_bool__plat_is_freebsd
+#define plat_is_netbsd __comp_bool__plat_is_netbsd
+#define plat_is_openbsd __comp_bool__plat_is_openbsd
+#define plat_is_dragonfly __comp_bool__plat_is_dragonfly
+#define plat_is_solaris __comp_bool__plat_is_solaris
+#define plat_is_illumos __comp_bool__plat_is_illumos
+#define plat_is_haiku __comp_bool__plat_is_haiku
+#define plat_is_serenity __comp_bool__plat_is_serenity
 #define plat_is_wasi __comp_bool__plat_is_wasi
+#define plat_is_emscripten __comp_bool__plat_is_emscripten
+
+/*--- Platform Name ---*/
 
 #define plat_name __comp_str__plat_name
 #define plat_name_unknown __comp_str__plat_name_unknown
 #define plat_name_windows __comp_str__plat_name_windows
 #define plat_name_linux __comp_str__plat_name_linux
+#define plat_name_android __comp_str__plat_name_android
 #define plat_name_darwin __comp_str__plat_name_darwin
+#define plat_name_freebsd __comp_str__plat_name_freebsd
+#define plat_name_netbsd __comp_str__plat_name_netbsd
+#define plat_name_openbsd __comp_str__plat_name_openbsd
+#define plat_name_dragonfly __comp_str__plat_name_dragonfly
+#define plat_name_solaris __comp_str__plat_name_solaris
+#define plat_name_illumos __comp_str__plat_name_illumos
+#define plat_name_haiku __comp_str__plat_name_haiku
+#define plat_name_serenity __comp_str__plat_name_serenity
 #define plat_name_wasi __comp_str__plat_name_wasi
+#define plat_name_emscripten __comp_str__plat_name_emscripten
 
+/*--- Platform Relations ---*/
+
+#define plat_based_linux __comp_bool__plat_based_linux
+#define plat_based_bsd __comp_bool__plat_based_bsd
 #define plat_based_unix __comp_bool__plat_based_unix
 #define plat_is_posix __comp_bool__plat_is_posix
 
-/*--- Data Model ---*/
-
-#define plat_data_model __comp_enum__plat_data_model
-#define plat_data_model_unknown __comp_enum__plat_data_model_unknown
-#define plat_data_model_lp64 __comp_enum__plat_data_model_lp64
-#define plat_data_model_lp32 __comp_enum__plat_data_model_lp32
-#define plat_data_model_ilp64 __comp_enum__plat_data_model_ilp64
-#define plat_data_model_ilp32 __comp_enum__plat_data_model_ilp32
-#define plat_data_model_llp64 __comp_enum__plat_data_model_llp64
-/* Alias: for this project, `llp32` is kept as a naming handle for the
- * int=32, long=32, pointer=32 family that currently maps to `ilp32`. */
-#define plat_data_model_llp32 plat_data_model_ilp32
-
-#define plat_data_model_is_lp64 __comp_bool__plat_data_model_is_lp64
-#define plat_data_model_is_lp32 __comp_bool__plat_data_model_is_lp32
-#define plat_data_model_is_ilp64 __comp_bool__plat_data_model_is_ilp64
-#define plat_data_model_is_ilp32 __comp_bool__plat_data_model_is_ilp32
-#define plat_data_model_is_llp64 __comp_bool__plat_data_model_is_llp64
-#define plat_data_model_is_llp32 plat_data_model_is_ilp32
-
-#define plat_bits_unit_unknown __comp_enum__plat_bits_unit_unknown
-#define plat_bits_unit_64bit __comp_enum__plat_bits_unit_64bit
-#define plat_bits_unit_32bit __comp_enum__plat_bits_unit_32bit
-#define plat_bits_unit_16bit __comp_enum__plat_bits_unit_16bit
-
-#define plat_bits_unknown __comp_int__plat_bits_unknown
-#define plat_bits_64 __comp_int__plat_bits_64
-#define plat_bits_32 __comp_int__plat_bits_32
-#define plat_bits_16 __comp_int__plat_bits_16
-
-#define plat_int_unit __comp_enum__plat_int_unit
-#define plat_long_unit __comp_enum__plat_long_unit
-#define plat_ptr_unit __comp_enum__plat_ptr_unit
-
-#define plat_int_bits __comp_int__plat_int_bits
-#define plat_long_bits __comp_int__plat_long_bits
-#define plat_ptr_bits __comp_int__plat_ptr_bits
-
-#define plat_int_is_64bit __comp_bool__plat_int_is_64bit
-#define plat_int_is_32bit __comp_bool__plat_int_is_32bit
-#define plat_int_is_16bit __comp_bool__plat_int_is_16bit
-#define plat_long_is_64bit __comp_bool__plat_long_is_64bit
-#define plat_long_is_32bit __comp_bool__plat_long_is_32bit
-#define plat_ptr_is_64bit __comp_bool__plat_ptr_is_64bit
-#define plat_ptr_is_32bit __comp_bool__plat_ptr_is_32bit
-
-#define plat_long_needs_distinct_int_cases __comp_bool__plat_long_needs_distinct_int_cases
-
-/*--- Calling Conventions ---*/
-
-#define plat_callconv_cdecl __comp_attr__plat_callconv_cdecl
-#define plat_callconv_stdcall __comp_attr__plat_callconv_stdcall
-#define plat_callconv_fastcall __comp_attr__plat_callconv_fastcall
-#define plat_callconv_vectorcall __comp_attr__plat_callconv_vectorcall
-/// Fiber entry trampoline; no prologue/epilogue.
-#define plat_callconv_naked __comp_attr__plat_callconv_naked
-/// Fiber yield / context-switch boundary: callee does not preserve platform callee-saved GPRs.
-#define plat_callconv_preserve_none __comp_attr__plat_callconv_preserve_none
-#define plat_callconv_preserve_all __comp_attr__plat_callconv_preserve_all
-
 /*========== Macros and Definitions =========================================*/
 
-/*--- Platform Detection ---*/
+/*--- Platform Type ---*/
 
-/* Default: unknown platform */
 #define __comp_enum__plat_type plat_type_unknown
 #define __comp_enum__plat_type_unknown 0
 #define __comp_enum__plat_type_windows 1
 #define __comp_enum__plat_type_linux 2
-#define __comp_enum__plat_type_darwin 3
-#define __comp_enum__plat_type_wasi 4
+#define __comp_enum__plat_type_android 3
+#define __comp_enum__plat_type_darwin 4
+#define __comp_enum__plat_type_freebsd 5
+#define __comp_enum__plat_type_netbsd 6
+#define __comp_enum__plat_type_openbsd 7
+#define __comp_enum__plat_type_dragonfly 8
+#define __comp_enum__plat_type_solaris 9
+#define __comp_enum__plat_type_illumos 10
+#define __comp_enum__plat_type_haiku 11
+#define __comp_enum__plat_type_serenity 12
+#define __comp_enum__plat_type_wasi 13
+#define __comp_enum__plat_type_emscripten 14
 
-#define __comp_bool__plat_is_windows pp_Tok_eql(plat_type, plat_type_windows)
-#define __comp_bool__plat_is_linux pp_Tok_eql(plat_type, plat_type_linux)
-#define __comp_bool__plat_is_darwin pp_Tok_eql(plat_type, plat_type_darwin)
-#define __comp_bool__plat_is_wasi pp_Tok_eql(plat_type, plat_type_wasi)
-
-/* Detect WASI (WebAssembly System Interface) */
+/* Ordered from more-specific environments to their host-kernel families. */
 #if defined(__wasi__)
 #undef __comp_enum__plat_type
 #define __comp_enum__plat_type plat_type_wasi
-
-/* Detect Windows */
+#elif defined(__EMSCRIPTEN__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_emscripten
 #elif defined(_WIN32) || defined(_WIN64)
 #undef __comp_enum__plat_type
 #define __comp_enum__plat_type plat_type_windows
-
-/* Detect Darwin (macOS, iOS, etc.) */
+#elif defined(__ANDROID__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_android
 #elif defined(__APPLE__)
 #undef __comp_enum__plat_type
 #define __comp_enum__plat_type plat_type_darwin
-
-/* Detect Linux */
+#elif defined(__FreeBSD__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_freebsd
+#elif defined(__NetBSD__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_netbsd
+#elif defined(__OpenBSD__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_openbsd
+#elif defined(__DragonFly__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_dragonfly
+#elif defined(__illumos__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_illumos
+#elif defined(__sun) && defined(__SVR4)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_solaris
+#elif defined(__HAIKU__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_haiku
+#elif defined(__serenity__)
+#undef __comp_enum__plat_type
+#define __comp_enum__plat_type plat_type_serenity
 #elif defined(__linux__)
 #undef __comp_enum__plat_type
 #define __comp_enum__plat_type plat_type_linux
-
-// /* Detect generic Unix */
-// #elif defined(__unix__) || defined(__unix)
-// #undef __comp_enum__plat_type
-// #define __comp_enum__plat_type plat_type_unix
-
-#else
-#warning "Unknown platform detected. Some features may not work as expected."
 #endif
+
+#define __comp_bool__plat_is_unknown pp_Tok_eql(plat_type, plat_type_unknown)
+#define __comp_bool__plat_is_windows pp_Tok_eql(plat_type, plat_type_windows)
+#define __comp_bool__plat_is_linux pp_Tok_eql(plat_type, plat_type_linux)
+#define __comp_bool__plat_is_android pp_Tok_eql(plat_type, plat_type_android)
+#define __comp_bool__plat_is_darwin pp_Tok_eql(plat_type, plat_type_darwin)
+#define __comp_bool__plat_is_freebsd pp_Tok_eql(plat_type, plat_type_freebsd)
+#define __comp_bool__plat_is_netbsd pp_Tok_eql(plat_type, plat_type_netbsd)
+#define __comp_bool__plat_is_openbsd pp_Tok_eql(plat_type, plat_type_openbsd)
+#define __comp_bool__plat_is_dragonfly pp_Tok_eql(plat_type, plat_type_dragonfly)
+#define __comp_bool__plat_is_solaris pp_Tok_eql(plat_type, plat_type_solaris)
+#define __comp_bool__plat_is_illumos pp_Tok_eql(plat_type, plat_type_illumos)
+#define __comp_bool__plat_is_haiku pp_Tok_eql(plat_type, plat_type_haiku)
+#define __comp_bool__plat_is_serenity pp_Tok_eql(plat_type, plat_type_serenity)
+#define __comp_bool__plat_is_wasi pp_Tok_eql(plat_type, plat_type_wasi)
+#define __comp_bool__plat_is_emscripten pp_Tok_eql(plat_type, plat_type_emscripten)
+
+/*--- Platform Name ---*/
 
 #define __comp_str__plat_name pp_expand( \
     pp_switch_ pp_begin(plat_type)( \
         pp_case_((plat_type_windows)(plat_name_windows)), \
         pp_case_((plat_type_linux)(plat_name_linux)), \
+        pp_case_((plat_type_android)(plat_name_android)), \
         pp_case_((plat_type_darwin)(plat_name_darwin)), \
+        pp_case_((plat_type_freebsd)(plat_name_freebsd)), \
+        pp_case_((plat_type_netbsd)(plat_name_netbsd)), \
+        pp_case_((plat_type_openbsd)(plat_name_openbsd)), \
+        pp_case_((plat_type_dragonfly)(plat_name_dragonfly)), \
+        pp_case_((plat_type_solaris)(plat_name_solaris)), \
+        pp_case_((plat_type_illumos)(plat_name_illumos)), \
+        pp_case_((plat_type_haiku)(plat_name_haiku)), \
+        pp_case_((plat_type_serenity)(plat_name_serenity)), \
         pp_case_((plat_type_wasi)(plat_name_wasi)), \
+        pp_case_((plat_type_emscripten)(plat_name_emscripten)), \
         pp_default_(plat_name_unknown) \
     ) pp_end \
 )
 #define __comp_str__plat_name_unknown "Unknown"
 #define __comp_str__plat_name_windows "Windows"
 #define __comp_str__plat_name_linux "Linux"
+#define __comp_str__plat_name_android "Android"
 #define __comp_str__plat_name_darwin "Darwin"
+#define __comp_str__plat_name_freebsd "FreeBSD"
+#define __comp_str__plat_name_netbsd "NetBSD"
+#define __comp_str__plat_name_openbsd "OpenBSD"
+#define __comp_str__plat_name_dragonfly "DragonFly BSD"
+#define __comp_str__plat_name_solaris "Solaris"
+#define __comp_str__plat_name_illumos "illumos"
+#define __comp_str__plat_name_haiku "Haiku"
+#define __comp_str__plat_name_serenity "SerenityOS"
 #define __comp_str__plat_name_wasi "WASI"
+#define __comp_str__plat_name_emscripten "Emscripten"
 
-#define __comp_bool__plat_based_unix pp_expand( \
-    pp_switch_ pp_begin(plat_type)( \
-        pp_case_((plat_type_windows)(pp_false)), \
-        pp_case_((plat_type_linux)(pp_true)), \
-        pp_case_((plat_type_darwin)(pp_true)), \
-        pp_case_((plat_type_wasi)(pp_false)), \
-        pp_default_(pp_false) \
-    ) pp_end \
+/*--- Platform Relations ---*/
+
+#define __comp_bool__plat_based_linux pp_or(plat_is_linux, plat_is_android)
+#define __comp_bool__plat_based_bsd pp_or( \
+    pp_or(plat_is_freebsd, plat_is_netbsd), \
+    pp_or(plat_is_openbsd, plat_is_dragonfly) \
+)
+#define __comp_bool__plat_based_unix pp_or( \
+    pp_or(plat_based_linux, plat_is_darwin), \
+    pp_or(plat_based_bsd, pp_or(plat_is_solaris, pp_or(plat_is_illumos, pp_or(plat_is_haiku, plat_is_serenity)))) \
 )
 #define __comp_bool__plat_is_posix plat_based_unix
-
-/*--- Data Model ---*/
-
-#define __comp_enum__plat_data_model plat_data_model_unknown
-#define __comp_enum__plat_data_model_unknown 0
-#define __comp_enum__plat_data_model_lp64 1
-#define __comp_enum__plat_data_model_lp32 2
-#define __comp_enum__plat_data_model_ilp64 3
-#define __comp_enum__plat_data_model_ilp32 4
-#define __comp_enum__plat_data_model_llp64 5
-
-#if (__SIZEOF_LONG__ == 8) && (__SIZEOF_POINTER__ == 8)
-#if (__SIZEOF_INT__ == 8)
-#undef __comp_enum__plat_data_model
-#define __comp_enum__plat_data_model plat_data_model_ilp64
-#else
-#undef __comp_enum__plat_data_model
-#define __comp_enum__plat_data_model plat_data_model_lp64
-#endif
-#elif (__SIZEOF_LONG__ == 4) && (__SIZEOF_POINTER__ == 8)
-#undef __comp_enum__plat_data_model
-#define __comp_enum__plat_data_model plat_data_model_llp64
-#elif (__SIZEOF_LONG__ == 4) && (__SIZEOF_POINTER__ == 4)
-#if (__SIZEOF_INT__ == 2)
-#undef __comp_enum__plat_data_model
-#define __comp_enum__plat_data_model plat_data_model_lp32
-#else
-#undef __comp_enum__plat_data_model
-#define __comp_enum__plat_data_model plat_data_model_ilp32
-#endif
-#endif
-
-#define __comp_bool__plat_data_model_is_lp64 pp_Tok_eql(plat_data_model, plat_data_model_lp64)
-#define __comp_bool__plat_data_model_is_lp32 pp_Tok_eql(plat_data_model, plat_data_model_lp32)
-#define __comp_bool__plat_data_model_is_ilp32 pp_Tok_eql(plat_data_model, plat_data_model_ilp32)
-#define __comp_bool__plat_data_model_is_ilp64 pp_Tok_eql(plat_data_model, plat_data_model_ilp64)
-#define __comp_bool__plat_data_model_is_llp64 pp_Tok_eql(plat_data_model, plat_data_model_llp64)
-
-#define __comp_enum__plat_bits_unit_unknown 0
-#define __comp_enum__plat_bits_unit_64bit 1
-#define __comp_enum__plat_bits_unit_32bit 2
-#define __comp_enum__plat_bits_unit_16bit 3
-
-#define __comp_int__plat_bits_unknown 0
-#define __comp_int__plat_bits_64 64
-#define __comp_int__plat_bits_32 32
-#define __comp_int__plat_bits_16 16
-
-#define __comp_enum__plat_int_unit pp_expand( \
-    pp_switch_ pp_begin(plat_data_model)( \
-        pp_case_((plat_data_model_lp32)(plat_bits_unit_16bit)), \
-        pp_case_((plat_data_model_ilp64)(plat_bits_unit_64bit)), \
-        pp_default_(plat_bits_unit_32bit) \
-    ) pp_end \
-)
-#define __comp_enum__plat_long_unit pp_expand( \
-    pp_switch_ pp_begin(plat_data_model)( \
-        pp_case_((plat_data_model_lp64)(plat_bits_unit_64bit)), \
-        pp_case_((plat_data_model_ilp64)(plat_bits_unit_64bit)), \
-        pp_default_(plat_bits_unit_32bit) \
-    ) pp_end \
-)
-#define __comp_enum__plat_ptr_unit pp_expand( \
-    pp_switch_ pp_begin(plat_data_model)( \
-        pp_case_((plat_data_model_lp32)(plat_bits_unit_32bit)), \
-        pp_case_((plat_data_model_ilp32)(plat_bits_unit_32bit)), \
-        pp_default_(plat_bits_unit_64bit) \
-    ) pp_end \
-)
-
-#define __comp_int__plat_int_bits pp_expand( \
-    pp_switch_ pp_begin(plat_int_unit)( \
-        pp_case_((plat_bits_unit_64bit)(plat_bits_64)), \
-        pp_case_((plat_bits_unit_32bit)(plat_bits_32)), \
-        pp_case_((plat_bits_unit_16bit)(plat_bits_16)), \
-        pp_default_(plat_bits_unknown) \
-    ) pp_end \
-)
-#define __comp_int__plat_long_bits pp_expand( \
-    pp_switch_ pp_begin(plat_long_unit)( \
-        pp_case_((plat_bits_unit_64bit)(plat_bits_64)), \
-        pp_case_((plat_bits_unit_32bit)(plat_bits_32)), \
-        pp_default_(plat_bits_unknown) \
-    ) pp_end \
-)
-#define __comp_int__plat_ptr_bits pp_expand( \
-    pp_switch_ pp_begin(plat_ptr_unit)( \
-        pp_case_((plat_bits_unit_64bit)(plat_bits_64)), \
-        pp_case_((plat_bits_unit_32bit)(plat_bits_32)), \
-        pp_default_(plat_bits_unknown) \
-    ) pp_end \
-)
-
-#define __comp_bool__plat_int_is_64bit pp_Tok_eql(plat_int_unit, plat_bits_unit_64bit)
-#define __comp_bool__plat_int_is_32bit pp_Tok_eql(plat_int_unit, plat_bits_unit_32bit)
-#define __comp_bool__plat_int_is_16bit pp_Tok_eql(plat_int_unit, plat_bits_unit_16bit)
-/* C requires `long` to provide at least 32 bits of range, so this layer only
- * models `long` as 32-bit or 64-bit and intentionally has no `*_long_is_16bit`. */
-#define __comp_bool__plat_long_is_64bit pp_Tok_eql(plat_long_unit, plat_bits_unit_64bit)
-#define __comp_bool__plat_long_is_32bit pp_Tok_eql(plat_long_unit, plat_bits_unit_32bit)
-#define __comp_bool__plat_ptr_is_64bit pp_Tok_eql(plat_ptr_unit, plat_bits_unit_64bit)
-#define __comp_bool__plat_ptr_is_32bit pp_Tok_eql(plat_ptr_unit, plat_bits_unit_32bit)
-
-#define __comp_bool__plat_long_needs_distinct_int_cases \
-    pp_or(pp_or(plat_data_model_is_llp64, plat_data_model_is_llp32), plat_is_darwin)
-
-/*--- Calling Conventions ---*/
-
-#if plat_type == plat_type_windows
-#define __comp_attr__plat_callconv_cdecl __cdecl
-#define __comp_attr__plat_callconv_stdcall __stdcall
-#define __comp_attr__plat_callconv_fastcall __fastcall
-#define __comp_attr__plat_callconv_vectorcall __vectorcall
-#else /* plat_type != plat_type_windows */
-/* Linux/Unix typically ignores these or they are default */
-#define __comp_attr__plat_callconv_cdecl
-#define __comp_attr__plat_callconv_stdcall
-#define __comp_attr__plat_callconv_fastcall
-#define __comp_attr__plat_callconv_vectorcall
-#endif
-
-#define __comp_attr__plat_callconv_naked comp_naked
-#define __comp_attr__plat_callconv_preserve_none comp_preserve_none
-#define __comp_attr__plat_callconv_preserve_all comp_preserve_all
 
 #if defined(__cplusplus)
 } /* extern "C" */

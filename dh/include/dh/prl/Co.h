@@ -35,23 +35,10 @@ T_alias$((Co_State)(enum_((Co_State $fits($packed))(
 ))));
 claim_assert_static(eqlType$(Co_State, u8));
 T_alias$((Co_FlowCtrlPacked)(fn__FlowCursorPacked));
-#define Co_FlowCtrl_State_bits 2
-#define Co_FlowCtrl_line_bits ((arch_bits_wide / 2) - Co_FlowCtrl_State_bits)
-T_alias$((Co_FlowCtrl)(union Co_FlowCtrl {
-    T_embed$(struct {
-#if arch_byte_order_is_little_endian
-        var_(line : Co_FlowCtrl_line_bits, Co_FlowCtrlPacked);
-        var_(state : Co_FlowCtrl_State_bits, Co_FlowCtrlPacked);
-#elif arch_byte_order_is_big_endian
-        var_(state : Co_FlowCtrl_State_bits, Co_FlowCtrlPacked);
-        var_(line : Co_FlowCtrl_line_bits, Co_FlowCtrlPacked);
-#else
-#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
-#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
-    });
-    var_(packed, Co_FlowCtrlPacked);
-}));
-claim_assert_static((Co_FlowCtrl_line_bits + Co_FlowCtrl_State_bits) == (arch_bits_wide / 2));
+bitfield_((Co_FlowCtrl)(Co_FlowCtrlPacked)(
+    (state, Co_FlowCtrlPacked, 2),
+    (line, Co_FlowCtrlPacked, int_bits$(Co_FlowCtrlPacked) - bitfield_bits_(state, Co_FlowCtrl))
+));
 /*--- Coroutine's Context ---*/
 #define Co_Ctx$(_$T...) __alias__Co_Ctx$(_$T)
 T_alias$((Co_Ctx$raw)(struct Co_Ctx$raw {
@@ -279,7 +266,7 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
         let_const __locals = &__ctx->data.locals; \
         $attr($maybe_unused) \
         let __locals_mut = &__ctx->data.locals_mut; \
-        var_(__flow_cursor, struct fn__FlowCursor) = { \
+        var_(__flow_cursor, fn__FlowCursor) = { \
             .is_returning = __ctx->ctrl.state == Co_State_ready, \
             .curr_line = __ctx->ctrl.line \
         }; \
@@ -366,7 +353,7 @@ T_alias$((Co_Frame$raw)(struct Co_Frame$raw {
         let __deferrable_top = &__ctx->data.deferrable_top; \
         let __deferrable_stack = A_ref(__ctx->data.deferrable_stack); \
         let __deferrable_break_stack = A_ref(__ctx->data.deferrable_break_stack); \
-        var_(__flow_cursor, struct fn__FlowCursor) = { \
+        var_(__flow_cursor, fn__FlowCursor) = { \
             .is_returning = __ctx->ctrl.state == Co_State_ready, \
             .curr_line = __ctx->ctrl.line \
         }; \

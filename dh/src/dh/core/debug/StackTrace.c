@@ -1,8 +1,12 @@
+#if defined(__linux__) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif /* defined(__linux__) && !defined(_GNU_SOURCE) */
+
 #include "dh/core/debug/StackTrace.h"
 #include "dh/io/stream.h"
 #include "dh/thrd.h"
 
-#define debug_StackTrace__unix_enabled pp_and(plat_based_unix, comp_libc_linked)
+#define debug_StackTrace__unix_enabled pp_and(plat_based_unix, env_libc_linked)
 
 /*========== Internal Declarations ==========================================*/
 

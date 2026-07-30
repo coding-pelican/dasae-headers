@@ -1,12 +1,11 @@
 /**
- * @copyright Copyright (c) 2025 Gyeongtae Kim
+ * @copyright Copyright (c) 2025-2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
  * @file    fn.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-04 (date of creation)
- * @updated 2025-04-02 (date of last update)
- * @version v0.1-alpha
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)/core
  * @prefix  (none)
  *
@@ -110,33 +109,21 @@ _$T_Return _$ident_w_Params { \
     } \
 } /* clang-format on */
 
-#define fn__FlowCursor_is_returning_bits 1
-#define fn__FlowCursor_line_bits ((arch_bits_wide / 2) - fn__FlowCursor_is_returning_bits)
-typedef u32 fn__FlowCursorPacked;
-struct fn__FlowCursor {
-    union {
-        struct {
-#if arch_byte_order_is_little_endian
-            var_(curr_line : fn__FlowCursor_line_bits, fn__FlowCursorPacked);
-            var_(is_returning : fn__FlowCursor_is_returning_bits, fn__FlowCursorPacked);
-#elif arch_byte_order_is_big_endian
-            var_(is_returning : fn__FlowCursor_is_returning_bits, fn__FlowCursorPacked);
-            var_(curr_line : fn__FlowCursor_line_bits, fn__FlowCursorPacked);
-#else
-#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
-#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
-        };
-        var_(packed, fn__FlowCursorPacked);
-    };
-};
-claim_assert_static((fn__FlowCursor_line_bits + fn__FlowCursor_is_returning_bits) == (arch_bits_wide / 2));
+typedef pp_switch_((arch_bits_unit)(
+    pp_case_((arch_bits_unit_64bit)(u32)),
+    pp_default_(u16)
+)) fn__FlowCursorPacked;
+bitfield_((fn__FlowCursor)(fn__FlowCursorPacked)(
+    (is_returning, fn__FlowCursorPacked, 1),
+    (curr_line, fn__FlowCursorPacked, int_bits$(fn__FlowCursorPacked) - bitfield_bits_(is_returning, fn__FlowCursor))
+));
 #define comp_syn__fn_$_guard(_$ident_w_Params, _$T_Return...) /* clang-format off */ \
 _$T_Return _$ident_w_Params { \
     $alignAs(alignOf$(_$T_Return)) volatile var_(__reserved_buf, A$$(sizeOf$(_$T_Return), u8)) = A_zero(); \
     let __reserved_return = ptrQualCast$((_$T_Return*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOf(*__reserved_return) ReturnType; \
     $maybe_unused typedef ReturnType ReturnT; \
-    var_(__flow_cursor, struct fn__FlowCursor) = { \
+    var_(__flow_cursor, fn__FlowCursor) = { \
         .is_returning = false, .curr_line = __LINE__ \
     }; \
     if (false) { __step_return: \
@@ -303,7 +290,7 @@ __step_unscope: \
     let __reserved_break = ptrQualCast$((_$T_Break*)(A_ptr(__reserved_buf))); \
     $maybe_unused typedef TypeOfUnqual(*__reserved_break) BreakType; \
     $maybe_unused typedef BreakType BreakT; \
-    var __flow_cursor = (struct fn__FlowCursor){ \
+    var __flow_cursor = (fn__FlowCursor){ \
         .is_returning = false, .curr_line = __LINE__ \
     }; \
     bool __has_broken = false; { \

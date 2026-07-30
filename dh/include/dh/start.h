@@ -46,7 +46,7 @@ $static fn_((start_exit(start_ExitCode status))(void)) {
     claim_unreachable;
 };
 
-pp_if_(pp_not(comp_start_files_linked))((
+pp_if_(pp_not(env_start_files_linked))((
     pp_if_(plat_is_windows)(pp_then_(
         $extern var_(__xi_a, start_InitFn);
         $extern var_(__xi_z, start_InitFn);
@@ -203,19 +203,19 @@ pp_if_(pp_not(comp_start_files_linked))((
     $extern var_(__xt_a, start_Fn); \
     $extern var_(__xt_z, start_Fn); \
     var_(_tls_index, u32) = u32_(0xffffffffu); \
-    var_(_tls_start, P$raw) __attribute__((section(".tls"))) = null; \
-    var_(_tls_end, P$raw) __attribute__((section(".tls$ZZZ"))) = null; \
-    var_(__xl_a, start_win32_TLSCallback) __attribute__((section(".CRT$XLA"))) = null; \
-    var_(__xl_z, start_win32_TLSCallback) __attribute__((section(".CRT$XLZ"))) = null; \
-    var_(__xi_a, start_InitFn) __attribute__((section(".CRT$XIA"))) = null; \
-    var_(__xi_z, start_InitFn) __attribute__((section(".CRT$XIZ"))) = null; \
-    var_(__xc_a, start_Fn) __attribute__((section(".CRT$XCA"))) = null; \
-    var_(__xc_z, start_Fn) __attribute__((section(".CRT$XCZ"))) = null; \
-    var_(__xp_a, start_Fn) __attribute__((section(".CRT$XPA"))) = null; \
-    var_(__xp_z, start_Fn) __attribute__((section(".CRT$XPZ"))) = null; \
-    var_(__xt_a, start_Fn) __attribute__((section(".CRT$XTA"))) = null; \
-    var_(__xt_z, start_Fn) __attribute__((section(".CRT$XTZ"))) = null; \
-    let_(_tls_used, start_win32_IMAGE_TLS_DIRECTORY) __attribute__((used, section(".rdata$T"))) = { \
+    var_(_tls_start, P$raw) $section(".tls") = null; \
+    var_(_tls_end, P$raw) $section(".tls$ZZZ") = null; \
+    var_(__xl_a, start_win32_TLSCallback) $section(".CRT$XLA") = null; \
+    var_(__xl_z, start_win32_TLSCallback) $section(".CRT$XLZ") = null; \
+    var_(__xi_a, start_InitFn) $section(".CRT$XIA") = null; \
+    var_(__xi_z, start_InitFn) $section(".CRT$XIZ") = null; \
+    var_(__xc_a, start_Fn) $section(".CRT$XCA") = null; \
+    var_(__xc_z, start_Fn) $section(".CRT$XCZ") = null; \
+    var_(__xp_a, start_Fn) $section(".CRT$XPA") = null; \
+    var_(__xp_z, start_Fn) $section(".CRT$XPZ") = null; \
+    var_(__xt_a, start_Fn) $section(".CRT$XTA") = null; \
+    var_(__xt_z, start_Fn) $section(".CRT$XTZ") = null; \
+    let_(_tls_used, start_win32_IMAGE_TLS_DIRECTORY) $keep_symbol $section(".rdata$T") = { \
         .StartAddressOfRawData = &_tls_start, \
         .EndAddressOfRawData = &_tls_end, \
         .AddressOfIndex = &_tls_index, \

@@ -35,8 +35,6 @@ T_alias$((u_HashCtxFn)(fn_(((*)(u_V$raw val, u_V$raw ctx))(u64) $T)));
 
 /*--- HashMap_Ctrl: Slot Metadata ---*/
 
-#define HashMap_Ctrl_fingerprint_bits 7
-#define HashMap_Ctrl_used_bits 1
 #define HashMap_Ctrl_free 0
 #define HashMap_Ctrl_tombstone 1
 /// Metadata for a slot. It can be in three states: empty, used or
@@ -53,21 +51,10 @@ T_alias$((u_HashCtxFn)(fn_(((*)(u_V$raw val, u_V$raw ctx))(u64) $T)));
 /// Not using the equality function means we don't have to read into
 /// the entries array, likely avoiding a cache miss and a potentially
 /// costly function call.
-typedef union HashMap_Ctrl {
-    T_embed$(struct {
-#if arch_byte_order_is_little_endian
-        var_(fingerprint : HashMap_Ctrl_fingerprint_bits, u8);
-        var_(used : HashMap_Ctrl_used_bits, u8);
-#elif arch_byte_order_is_big_endian
-        var_(used : HashMap_Ctrl_used_bits, u8);
-        var_(fingerprint : HashMap_Ctrl_fingerprint_bits, u8);
-#else
-#error "arch_byte_order_is_little_endian or arch_byte_order_is_big_endian is required"
-#endif /* arch_byte_order_is_little_endian, arch_byte_order_is_big_endian */
-    });
-    var_(bits, u8);
-} HashMap_Ctrl;
-claim_assert_static(HashMap_Ctrl_fingerprint_bits + HashMap_Ctrl_used_bits == int_bits$(u8));
+bitfield_((HashMap_Ctrl)(u8)(
+    (used, u8, 1),
+    (fingerprint, u8, 7)
+));
 T_use_P$(HashMap_Ctrl);
 T_use_O$(P_const$HashMap_Ctrl);
 T_use_O$(P$HashMap_Ctrl);
@@ -467,10 +454,10 @@ fn_((HashMap_Ctrl_isUsed(HashMap_Ctrl ctrl))(bool)) {
     return ctrl.used == 1;
 };
 fn_((HashMap_Ctrl_isTombstone(HashMap_Ctrl ctrl))(bool)) {
-    return ctrl.bits == HashMap_Ctrl_tombstone;
+    return ctrl.packed == HashMap_Ctrl_tombstone;
 };
 fn_((HashMap_Ctrl_isFree(HashMap_Ctrl ctrl))(bool)) {
-    return ctrl.bits == HashMap_Ctrl_free;
+    return ctrl.packed == HashMap_Ctrl_free;
 };
 fn_((HashMap_Ctrl_takeFingerprint(u64 hash))(u8)) {
     let hash_bits = 64;

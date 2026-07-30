@@ -70,7 +70,7 @@ struct co_Fiber_Context {
             var_(fp, u64);
             var_(pc, u64);
         })),
-        pp_default_(Void),
+        pp_default_(struct { var_(_bytes, u8) $zero_sized; })
     )));
 };
 

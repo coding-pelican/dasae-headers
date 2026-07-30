@@ -42,7 +42,7 @@ $extern fn_((io_unlockStdErr(void))(void));
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_bool__io_using_libc comp_libc_linked
+#define __comp_bool__io_using_libc env_libc_linked
 
 #if defined(__cplusplus)
 } /* extern "C" */

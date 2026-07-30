@@ -36,7 +36,9 @@ typedef struct fs_Dir {
     fs_Dir_Handle handle;
 } fs_Dir;
 T_use_E$(fs_Dir);
-static const fs_File_Mode fs_Dir_default_mode = 0755;
+static const fs_File_Mode fs_Dir_default_mode = pp_if_(plat_is_posix)(
+    pp_then_(0755),
+    pp_else_({}));
 
 struct fs_Dir_OpenOpts {
     bool iterate;

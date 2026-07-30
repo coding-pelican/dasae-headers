@@ -11,6 +11,10 @@ extern "C" {
 #include "dh/core.h" /* no prefix, abs path, pch bundle target*/
 #include "dh/prl.h" /* no prefix, abs path, pch bundle target*/
 
+#include "dh/Ver.h" /* pch bundle target */
+#include "dh/Target.h" /* pch bundle target */
+#include "dh/Cfg.h" /* pch bundle target */
+
 #include "dh/atom.h" /* pch bundle target */
 #include "dh/simd.h" /* pch bundle target */
 #include "dh/clsr.h" /* pch bundle target */

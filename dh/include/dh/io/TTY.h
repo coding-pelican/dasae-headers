@@ -58,7 +58,7 @@ T_alias$((io_TTY_ModeBit)(enum_((io_TTY_ModeBit $fits($packed))(
     io_TTY_ModeBit_vt_auto_return = u64_(1) << 34,
     io_TTY_ModeBit_wrap_output = u64_(1) << 35
 ))));
-claim_assert_static(eqlType$(io_TTY_ModeBit, u64));
+claim_assert_static(sizeOf$(io_TTY_ModeBit) == sizeOf$(u64));
 T_alias$((io_TTY_ModeBits)(u64));
 
 T_alias$((io_TTY_ModePatch)(struct io_TTY_ModePatch {

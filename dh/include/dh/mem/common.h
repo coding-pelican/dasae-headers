@@ -837,9 +837,11 @@ $extern fn_((mem_SplitBwdIter_rest(mem_SplitBwdIter$raw* self, TypeInfo type))(u
 
 fn_((mem_trailingZerosSize(usize x))(u32)) {
     if (x == 0) { return sizeOf$(usize) * 8; }
-    return pp_if_(arch_bits_is_64bit)(
-        pp_then_(mem_trailingZeros64(x)),
-        pp_else_(mem_trailingZeros32(x)));
+    return pp_switch_((abi_size_unit)(
+        pp_case_((abi_bits_unit_16bit)(mem_trailingZeros16(x))),
+        pp_case_((abi_bits_unit_32bit)(mem_trailingZeros32(x))),
+        pp_case_((abi_bits_unit_64bit)(mem_trailingZeros64(x)))
+    ));
 };
 fn_((mem_trailingZeros64(u64 x))(u32)) {
 #if defined(__clang__) || defined(__GNUC__)
@@ -866,7 +868,7 @@ fn_((mem_trailingZerosLong(ulong x))(u32)) {
 #if defined(__clang__) || defined(__GNUC__)
     return int_trailingZeros_static(x);
 #else
-    return pp_if_(plat_long_is_64bit)(
+    return pp_if_(abi_long_is_64bit)(
         pp_then_(mem_trailingZeros64(x)),
         pp_else_(mem_trailingZeros32(x)));
 #endif
@@ -905,9 +907,11 @@ fn_((mem_trailingZeros8(u8 x))(u32)) {
 };
 
 fn_((mem_leadingZerosSize(usize x))(u32)) {
-    return pp_if_(arch_bits_is_64bit)(
-        pp_then_(mem_leadingZeros64(x)),
-        pp_else_(mem_leadingZeros32(x)));
+    return pp_switch_((abi_size_unit)(
+        pp_case_((abi_bits_unit_16bit)(mem_leadingZeros16(x))),
+        pp_case_((abi_bits_unit_32bit)(mem_leadingZeros32(x))),
+        pp_case_((abi_bits_unit_64bit)(mem_leadingZeros64(x)))
+    ));
 };
 fn_((mem_leadingZeros64(u64 x))(u32)) {
 #if defined(__clang__) || defined(__GNUC__)
@@ -937,7 +941,7 @@ fn_((mem_leadingZerosLong(ulong x))(u32)) {
 #if defined(__clang__) || defined(__GNUC__)
     return int_leadingZeros_static(x);
 #else
-    return pp_if_(plat_long_is_64bit)(
+    return pp_if_(abi_long_is_64bit)(
         pp_then_(mem_leadingZeros64(x)),
         pp_else_(mem_leadingZeros32(x)));
 #endif
@@ -989,9 +993,11 @@ fn_((mem_leadingZeros8(u8 x))(u32)) {
 /*--- Byte Swap Functions ---*/
 
 fn_((mem_swapBytesSize(usize x))(usize)) {
-    return pp_if_(arch_bits_is_64bit)(
-        pp_then_(mem_swapBytes64(x)),
-        pp_else_(mem_swapBytes32(x)));
+    return pp_switch_((abi_size_unit)(
+        pp_case_((abi_bits_unit_16bit)(mem_swapBytes16(x))),
+        pp_case_((abi_bits_unit_32bit)(mem_swapBytes32(x))),
+        pp_case_((abi_bits_unit_64bit)(mem_swapBytes64(x)))
+    ));
 };
 fn_((mem_swapBytes64(u64 x))(u64)) {
 #if defined(__GNUC__) || defined(__clang__)
@@ -1011,7 +1017,7 @@ fn_((mem_swapBytesLong(ulong x))(ulong)) {
 #if defined(__GNUC__) || defined(__clang__)
     return int_swapBytes_static(x);
 #else
-    return pp_if_(plat_long_is_64bit)(
+    return pp_if_(abi_long_is_64bit)(
         pp_then_(mem_swapBytes64(x)),
         pp_else_(mem_swapBytes32(x)));
 #endif

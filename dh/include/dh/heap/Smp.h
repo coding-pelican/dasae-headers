@@ -40,7 +40,9 @@ extern "C" {
     usize_(heap_Smp__max_alloc_search)
 enum {
     heap_Smp__max_thrd_count = usize_(128),
-    heap_Smp__slab_len = usize_(pri_max_static(heap_page_size, 64 * 1024)),
+    heap_Smp__slab_len = pp_if_(abi_size_is_16bit)(
+        pp_then_(u32_(pri_max_static(heap_page_size, u32_(32) * 1024))),
+        pp_else_(usize_(pri_max_static(heap_page_size, u32_(64) * 1024)))),
     heap_Smp__min_size_class = usize_(uint_log2_static(sizeOf$(usize))),
     heap_Smp__size_class_count = usize_(uint_log2_static(heap_Smp_slab_len) - heap_Smp_min_size_class),
     heap_Smp__max_alloc_search = usize_(1),

@@ -6,7 +6,6 @@
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-12-07 (date of creation)
  * @updated 2025-03-20 (date of last update)
- * @version v0.1-alpha.1
  * @ingroup dasae-headers(dh)/heap
  * @prefix  heap_Classic
  *
@@ -43,7 +42,7 @@ $extern fn_((heap_Classic_alctr(heap_Classic* self))(heap_Classic_E$mem_Alctr));
 
 /*========== Macros and Definitions =========================================*/
 
-#define __comp_bool__heap_Classic_enabled comp_libc_linked
+#define __comp_bool__heap_Classic_enabled env_libc_linked
 
 #if defined(__cplusplus)
 } /* extern "C" */

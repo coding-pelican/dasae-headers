@@ -3,6 +3,19 @@
 #include "dh/io/stream.h"
 
 #define test_heap_Sbrk__enabled_outstream pp_false
+
+claim_assert_static(
+    heap_Sbrk_local_Small__size_class_count
+    == uint_log2_static(heap_Sbrk_local_Small__bigpage_size) - heap_Sbrk__min_size_class
+);
+claim_assert_static(
+    heap_Sbrk_local_Medium__size_class_count
+    == uint_log2_static(heap_Sbrk_local_Medium__bigpage_size) - heap_Sbrk__min_size_class
+);
+claim_assert_static(
+    heap_Sbrk_local_Large__size_class_count
+    == uint_log2_static(heap_Sbrk_local_Large__bigpage_size) - heap_Sbrk__min_size_class
+);
 $static fn_((ignorePrintln(S_const$u8 fmt, ...))(void)) { let_ignore = fmt; };
 $static let test_println = pp_if_(test_heap_Sbrk__enabled_outstream)(
     pp_then_(io_stream_println),

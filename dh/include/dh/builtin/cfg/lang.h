@@ -5,7 +5,7 @@
  * @file    lang.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2026-06-03 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dal-project/da/foundation/cfg
  * @prefix  lang
  *
@@ -22,7 +22,7 @@ extern "C" {
 
 /*========== Includes =======================================================*/
 
-#include "../pp.h"
+#include "comp.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -83,10 +83,6 @@ extern "C" {
 #define lang_has_extn_ms __comp_bool__lang_has_extn_ms
 
 /*========== Macros and Implementations =====================================*/
-
-#if defined(__linux__) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
-#endif /* defined(__linux__) && !defined(_GNU_SOURCE) */
 
 /* Default Values */
 

@@ -5,7 +5,7 @@
  * @file    comp.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2024-11-22 (date of creation)
- * @updated 2026-06-03 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dal-project/da/foundation/cfg
  * @prefix  comp
  *
@@ -72,24 +72,9 @@ extern "C" {
 #define comp_gnu_ver_patch __comp_num__comp_gnu_ver_patch
 #define comp_gnu_ver_str __comp_str__comp_gnu_ver
 
-/*--- Build Facts ---*/
+/*--- Compiler Feature Queries ---*/
 
-#define comp_env_type __comp_enum__comp_env_type
-#define comp_env_type_unknown __comp_enum__comp_env_type_unknown
-#define comp_env_type_hosted __comp_enum__comp_env_type_hosted
-#define comp_env_type_freestanding __comp_enum__comp_env_type_freestanding
-
-#define comp_env_is_hosted __comp_bool__comp_env_is_hosted
-#define comp_env_is_freestanding __comp_bool__comp_env_is_freestanding
-
-#define comp_start_files_linked __comp_bool__comp_start_files_linked
-/* Derived from start-files unless explicitly provided by `COMP_HAS_CRT` / `COMP_NO_CRT`. */
-#define comp_crt_linked __comp_bool__comp_crt_linked
-#define comp_default_libs_linked __comp_bool__comp_default_libs_linked
-#define comp_compiler_rt_linked __comp_bool__comp_compiler_rt_linked
-#define comp_libc_linked __comp_bool__comp_libc_linked
-/* Derived from start-files + default-libs unless explicitly provided by `COMP_HAS_STDLIB` / `COMP_NO_STDLIB`. */
-#define comp_stdlib_linked __comp_bool__comp_stdlib_linked
+#define comp_has_attribute(_$name) __comp_bool__comp_has_attribute(_$name)
 
 /*--- Compiler Attributes ---*/
 
@@ -100,17 +85,18 @@ extern "C" {
 
 #define comp_must_use __comp_attr__comp_must_use
 #define comp_maybe_unused __comp_attr__comp_maybe_unused
-#define comp_undefined __comp_attr__comp_undefined
-#define comp_undefined_static __comp_attr__comp_undefined_static
-
-/* Data Layout */
-#define comp_packed __comp_attr__comp_packed
-#define comp_align(_$align) __comp_attr__comp_align(_$align)
 
 /* Visibility & Linkage */
 #define comp_export __comp_attr__comp_export
 #define comp_import __comp_attr__comp_import
 #define comp_keep_symbol __comp_attr__comp_keep_symbol
+
+/* Data Layout & Initialization */
+#define comp_packed __comp_attr__comp_packed
+#define comp_align(_$align) __comp_attr__comp_align(_$align)
+#define comp_section(_$name) __comp_attr__comp_section(_$name)
+#define comp_undefined __comp_attr__comp_undefined
+#define comp_undefined_static __comp_attr__comp_undefined_static
 
 /* Semantics & Behavior */
 #define comp_pure __comp_attr__comp_pure
@@ -119,11 +105,15 @@ extern "C" {
 #define comp_must_tail __comp_attr__comp_must_tail
 
 /* Calling conventions & ABI boundaries */
-#define comp_naked __comp_attr__comp_naked
-#define comp_preserve_none __comp_attr__comp_preserve_none
-#define comp_preserve_all __comp_attr__comp_preserve_all
-#define comp_ms_abi __comp_attr__comp_ms_abi
-#define comp_sysv_abi __comp_attr__comp_sysv_abi
+#define comp_callconv_naked __comp_attr__comp_callconv_naked
+#define comp_callconv_preserve_none __comp_attr__comp_callconv_preserve_none
+#define comp_callconv_preserve_all __comp_attr__comp_callconv_preserve_all
+#define comp_callconv_ms_abi __comp_attr__comp_callconv_ms_abi
+#define comp_callconv_sysv_abi __comp_attr__comp_callconv_sysv_abi
+#define comp_callconv_cdecl __comp_attr__comp_callconv_cdecl
+#define comp_callconv_stdcall __comp_attr__comp_callconv_stdcall
+#define comp_callconv_fastcall __comp_attr__comp_callconv_fastcall
+#define comp_callconv_vectorcall __comp_attr__comp_callconv_vectorcall
 
 /* Optimization Hints */
 #define comp_inline __comp_attr__comp_inline
@@ -258,6 +248,12 @@ extern "C" {
     comp_gnu_ver_major, comp_gnu_ver_minor, comp_gnu_ver_patch, ver_core_sep_default \
 )
 
+#define __comp_bool__comp_has_attribute(_$name) 0
+#if defined(__has_attribute)
+#undef __comp_bool__comp_has_attribute
+#define __comp_bool__comp_has_attribute(_$name) __has_attribute(_$name)
+#endif /* defined(__has_attribute) */
+
 #define __comp_num__comp_ver_major 0
 #define __comp_num__comp_ver_minor 0
 #define __comp_num__comp_ver_patch 0
@@ -344,88 +340,6 @@ extern "C" {
 #endif
 
 /* env_type: auto-detect, then allow `COMP_FREESTANDING`/`COMP_HOSTED` to override */
-#define __comp_enum__comp_env_type_unknown 0
-#define __comp_enum__comp_env_type_hosted 1
-#define __comp_enum__comp_env_type_freestanding 2
-
-#if defined(__STDC_HOSTED__) && (__STDC_HOSTED__ + 0) == 0
-#define __comp_enum__comp_env_type comp_env_type_freestanding
-#else
-#define __comp_enum__comp_env_type comp_env_type_hosted
-#endif
-
-#if defined(COMP_FREESTANDING)
-#undef __comp_enum__comp_env_type
-#define __comp_enum__comp_env_type comp_env_type_freestanding
-#elif defined(COMP_HOSTED)
-#undef __comp_enum__comp_env_type
-#define __comp_enum__comp_env_type comp_env_type_hosted
-#endif
-
-/* start_files_linked: explicit fact wins; default = 1. */
-#if defined(COMP_HAS_START_FILES)
-#define __comp_flag__comp_start_files_linked 1
-#elif defined(COMP_NO_START_FILES)
-#define __comp_flag__comp_start_files_linked 0
-#else
-#define __comp_flag__comp_start_files_linked 1
-#endif
-
-/* crt_linked: explicit fact wins; otherwise follows start files. */
-#if defined(COMP_HAS_CRT)
-#define __comp_flag__comp_crt_linked 1
-#elif defined(COMP_NO_CRT)
-#define __comp_flag__comp_crt_linked 0
-#else
-#define __comp_flag__comp_crt_linked comp_start_files_linked
-#endif
-
-/* default_libs_linked: explicit fact wins; default = 1. */
-#if defined(COMP_HAS_DEFAULT_LIBS)
-#define __comp_flag__comp_default_libs_linked 1
-#elif defined(COMP_NO_DEFAULT_LIBS)
-#define __comp_flag__comp_default_libs_linked 0
-#else
-#define __comp_flag__comp_default_libs_linked 1
-#endif
-
-/* compiler_rt_linked: explicit fact wins; otherwise compiler default libs imply it. */
-#if defined(COMP_HAS_COMPILER_RT)
-#define __comp_flag__comp_compiler_rt_linked 1
-#elif defined(COMP_NO_COMPILER_RT) || defined(COMP_NO_DEFAULT_LIBS)
-#define __comp_flag__comp_compiler_rt_linked 0
-#else
-#define __comp_flag__comp_compiler_rt_linked 1
-#endif
-
-/* libc_linked: explicit fact wins; otherwise 0 when freestanding or default libs are absent. */
-#if defined(COMP_HAS_LIBC)
-#define __comp_flag__comp_libc_linked 1
-#elif defined(COMP_NO_LIBC) || defined(COMP_NO_DEFAULT_LIBS) || (comp_env_type == comp_env_type_freestanding)
-#define __comp_flag__comp_libc_linked 0
-#else
-#define __comp_flag__comp_libc_linked 1
-#endif
-
-/* stdlib_linked: explicit fact wins; otherwise follows start files + default libs. */
-#if defined(COMP_HAS_STDLIB)
-#define __comp_flag__comp_stdlib_linked 1
-#elif defined(COMP_NO_STDLIB)
-#define __comp_flag__comp_stdlib_linked 0
-#else
-#define __comp_flag__comp_stdlib_linked (comp_start_files_linked && comp_default_libs_linked)
-#endif
-
-#define __comp_bool__comp_env_is_hosted pp_Tok_eql(comp_env_type, comp_env_type_hosted)
-#define __comp_bool__comp_env_is_freestanding pp_Tok_eql(comp_env_type, comp_env_type_freestanding)
-
-#define __comp_bool__comp_start_files_linked __comp_flag__comp_start_files_linked
-#define __comp_bool__comp_crt_linked __comp_flag__comp_crt_linked
-#define __comp_bool__comp_default_libs_linked __comp_flag__comp_default_libs_linked
-#define __comp_bool__comp_compiler_rt_linked __comp_flag__comp_compiler_rt_linked
-#define __comp_bool__comp_libc_linked __comp_flag__comp_libc_linked
-#define __comp_bool__comp_stdlib_linked __comp_flag__comp_stdlib_linked
-
 /*--- Compiler Attributes ---*/
 
 #if comp_type == comp_type_clang || comp_type == comp_type_gcc
@@ -435,15 +349,16 @@ extern "C" {
 
 #define __comp_attr__comp_must_use __attribute__((warn_unused_result))
 #define __comp_attr__comp_maybe_unused __attribute__((unused))
-#define __comp_attr__comp_undefined __attribute__((uninitialized))
-#define __comp_attr__comp_undefined_static __attribute__((loader_uninitialized))
-
-#define __comp_attr__comp_packed __attribute__((packed))
-#define __comp_attr__comp_align(_$align) __attribute__((aligned(_$align)))
 
 #define __comp_attr__comp_export __attribute__((visibility("default")))
 #define __comp_attr__comp_import
 #define __comp_attr__comp_keep_symbol __attribute__((used))
+
+#define __comp_attr__comp_packed __attribute__((packed))
+#define __comp_attr__comp_align(_$align) __attribute__((aligned(_$align)))
+#define __comp_attr__comp_section(_$name) __attribute__((section(_$name)))
+#define __comp_attr__comp_undefined __attribute__((uninitialized))
+#define __comp_attr__comp_undefined_static __attribute__((loader_uninitialized))
 
 #define __comp_attr__comp_pure __attribute__((const))
 #define __comp_attr__comp_view __attribute__((pure))
@@ -479,11 +394,31 @@ extern "C" {
 
 #define __comp_attr__comp_prefetch(_$addr, _$rw, _$locality...) __builtin_prefetch(_$addr, _$rw, _$locality)
 
-#define __comp_attr__comp_naked __attribute__((naked))
-#define __comp_attr__comp_preserve_none __attribute__((preserve_none))
-#define __comp_attr__comp_preserve_all __attribute__((preserve_all))
-#define __comp_attr__comp_ms_abi __attribute__((ms_abi))
-#define __comp_attr__comp_sysv_abi __attribute__((sysv_abi))
+#define __comp_attr__comp_callconv_naked __attribute__((naked))
+#define __comp_attr__comp_callconv_preserve_none __attribute__((preserve_none))
+#define __comp_attr__comp_callconv_preserve_all __attribute__((preserve_all))
+#define __comp_attr__comp_callconv_ms_abi __attribute__((ms_abi))
+#define __comp_attr__comp_callconv_sysv_abi __attribute__((sysv_abi))
+#if comp_has_attribute(cdecl)
+#define __comp_attr__comp_callconv_cdecl __attribute__((cdecl))
+#else
+#define __comp_attr__comp_callconv_cdecl
+#endif
+#if comp_has_attribute(stdcall)
+#define __comp_attr__comp_callconv_stdcall __attribute__((stdcall))
+#else
+#define __comp_attr__comp_callconv_stdcall
+#endif
+#if comp_has_attribute(fastcall)
+#define __comp_attr__comp_callconv_fastcall __attribute__((fastcall))
+#else
+#define __comp_attr__comp_callconv_fastcall
+#endif
+#if comp_has_attribute(vectorcall)
+#define __comp_attr__comp_callconv_vectorcall __attribute__((vectorcall))
+#else
+#define __comp_attr__comp_callconv_vectorcall
+#endif
 
 #elif comp_type == comp_type_msvc
 #define __comp_attr__comp_deprecated __declspec(deprecated)
@@ -492,11 +427,6 @@ extern "C" {
 
 #define __comp_attr__comp_must_use _Check_return_ /* _Must_inspect_result_ maps to this */
 #define __comp_attr__comp_maybe_unused __pragma(warning(suppress : 4100 4101 4189))
-#define __comp_attr__comp_undefined
-#define __comp_attr__comp_undefined_static
-
-#define __comp_attr__comp_packed /* TODO: Implement MSVC packed attribute with struct scope */
-#define __comp_attr__comp_align(_$align) __declspec(align(_$align))
 
 /* DLL Import/Export */
 #define __comp_attr__comp_export __declspec(dllexport)
@@ -504,6 +434,12 @@ extern "C" {
 /* FIX: MSVC does not strictly support 'used' via declspec. Often ignored or creates warning C4230.
    Usually relies on linker pragmas, but strictly speaking declspec(noinline) is often enough to keep it. */
 #define __comp_attr__comp_keep_symbol
+
+#define __comp_attr__comp_packed /* TODO: Implement MSVC packed attribute with struct scope */
+#define __comp_attr__comp_align(_$align) __declspec(align(_$align))
+#define __comp_attr__comp_section(_$name) __declspec(allocate(_$name))
+#define __comp_attr__comp_undefined
+#define __comp_attr__comp_undefined_static
 
 #define __comp_attr__comp_pure __declspec(const)
 #define __comp_attr__comp_view __declspec(pure)
@@ -537,11 +473,15 @@ extern "C" {
 
 #define __comp_attr__comp_prefetch(_$addr, _$rw, _$locality...) __prefetch(_$addr, _$rw, _$locality)
 
-#define __comp_attr__comp_naked __declspec(naked)
-#define __comp_attr__comp_preserve_none __preserve_none
-#define __comp_attr__comp_preserve_all
-#define __comp_attr__comp_ms_abi
-#define __comp_attr__comp_sysv_abi
+#define __comp_attr__comp_callconv_naked __declspec(naked)
+#define __comp_attr__comp_callconv_preserve_none __preserve_none
+#define __comp_attr__comp_callconv_preserve_all
+#define __comp_attr__comp_callconv_ms_abi
+#define __comp_attr__comp_callconv_sysv_abi
+#define __comp_attr__comp_callconv_cdecl __cdecl
+#define __comp_attr__comp_callconv_stdcall __stdcall
+#define __comp_attr__comp_callconv_fastcall __fastcall
+#define __comp_attr__comp_callconv_vectorcall __vectorcall
 
 #else
 #define __comp_attr__comp_deprecated
@@ -550,15 +490,16 @@ extern "C" {
 
 #define __comp_attr__comp_must_use
 #define __comp_attr__comp_maybe_unused
-#define __comp_attr__comp_undefined
-#define __comp_attr__comp_undefined_static
-
-#define __comp_attr__comp_packed
-#define __comp_attr__comp_align(_$align)
 
 #define __comp_attr__comp_export
 #define __comp_attr__comp_import
 #define __comp_attr__comp_keep_symbol
+
+#define __comp_attr__comp_packed
+#define __comp_attr__comp_align(_$align)
+#define __comp_attr__comp_section(_$name)
+#define __comp_attr__comp_undefined
+#define __comp_attr__comp_undefined_static
 
 #define __comp_attr__comp_pure
 #define __comp_attr__comp_view
@@ -589,11 +530,15 @@ extern "C" {
 
 #define __comp_attr__comp_prefetch(_$addr, _$rw, _$locality...) __prefetch(_$addr, _$rw, _$locality)
 
-#define __comp_attr__comp_naked
-#define __comp_attr__comp_preserve_none
-#define __comp_attr__comp_preserve_all
-#define __comp_attr__comp_ms_abi
-#define __comp_attr__comp_sysv_abi
+#define __comp_attr__comp_callconv_naked
+#define __comp_attr__comp_callconv_preserve_none
+#define __comp_attr__comp_callconv_preserve_all
+#define __comp_attr__comp_callconv_ms_abi
+#define __comp_attr__comp_callconv_sysv_abi
+#define __comp_attr__comp_callconv_cdecl
+#define __comp_attr__comp_callconv_stdcall
+#define __comp_attr__comp_callconv_fastcall
+#define __comp_attr__comp_callconv_vectorcall
 #endif
 
 #if defined(__cplusplus)

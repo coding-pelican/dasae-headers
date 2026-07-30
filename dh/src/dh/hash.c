@@ -20,7 +20,7 @@ $static fn_((hash__readLE64(S_const$u8 bytes))(u64));
 /*========== External Definitions ===========================================*/
 
 fn_((hash_int$usize(usize input))(usize)) {
-    return pp_if_(arch_bits_is_64bit)(
+    return pp_if_(abi_size_is_64bit)(
         pp_then_(as$(usize)(hash_int$u64(as$(u64)(input)))),
         pp_else_(as$(usize)(hash_int$u32(as$(u32)(input)))));
 };

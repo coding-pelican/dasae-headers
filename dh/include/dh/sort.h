@@ -145,13 +145,13 @@ $extern fn_((sort_blockCtxAlloc(u_S$raw seq, sort_OrdCtxFn ordFn, u_V$raw ctx, m
 /*========== Macros and Definitions =========================================*/
 
 #define __const__sort_threshold_fallback_to_insert_sort 24
-#define __const__sort_limit_pdq_stack_frames pp_if_(arch_bits_is_64bit)(pp_then_(64), pp_else_(32))
+#define __const__sort_limit_pdq_stack_frames pp_if_(abi_size_is_64bit)(pp_then_(64), pp_else_(32))
 #define __const__sort_threshold_pdq_tukey_ninther 50
 #define __const__sort_max_swaps_pdq_choose_pivot 12
 #define __const__sort_max_steps_pdq_partial_insert_sort 5
 #define __const__sort_threshold_pdq_partial_insert_sort 50
 #define __const__sort_limit_pdq_offset_blocks 64
-#define __const__sort_limit_block_cache_stack_bytes pp_if_(arch_bits_is_64bit)(pp_then_(2048), pp_else_(1024))
+#define __const__sort_limit_block_cache_stack_bytes pp_if_(abi_size_is_64bit)(pp_then_(2048), pp_else_(1024))
 
 #if in_analysis_active_only || in_comptime
 fn_((sort_IdxCmpr_ord(sort_IdxCmpr self, usize lhs, usize rhs))(cmp_Ord)) {

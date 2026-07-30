@@ -10,9 +10,13 @@ extern "C" {
 #include "cfg/ver.h"
 #include "cfg/lang.h"
 #include "cfg/comp.h"
+#include "cfg/env.h"
+
 #include "cfg/eval.h"
+
 #include "cfg/arch.h"
 #include "cfg/plat.h"
+#include "cfg/abi.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */
