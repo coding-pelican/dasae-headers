@@ -13,7 +13,8 @@ T_use$((u8)(
     mem_TokzIter_next
 ));
 
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(proc_Self self))(E$void) $scope) {
+    let args = self.args.items;
     let_ignore = args;
 
     var_(input_mem, A$$(64, u8)) $undefined;

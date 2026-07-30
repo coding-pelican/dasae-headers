@@ -63,7 +63,8 @@ $static fn_((consumer(SharedBuf* buf))(Void) $scope) {
 } $unscoped(fn);
 fn_use_Clsr_((consumer)(SharedBuf*)(Void));
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(proc_Self self))(E$void) $guard) {
+    let args = self.args.items;
     let_ignore = args;
 
     var heap = try_(heap_Sys_init());

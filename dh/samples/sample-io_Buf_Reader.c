@@ -5,7 +5,8 @@
 #include "dh/io/stream.h"
 #include "dh/fmt/common.h"
 
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(proc_Self self))(E$void) $scope) {
+    let args = self.args.items;
     let_ignore = args;
 
     let in_file = io_handleStdIn();

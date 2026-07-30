@@ -71,7 +71,8 @@ $static fn_((demoThrdDeferCheck(time_Awake time, time_Dur wait, thrd_CancelTok c
 fn_use_Clsr_((demoThrdDeferCheck)(time_Awake, time_Dur, thrd_CancelTok)(i32));
 
 T_use$((i32)(thrd_spawn, thrd_join));
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(proc_Self self))(E$void) $guard) {
+    let args = self.args.items;
     let_ignore = args;
 
     var heap = try_(heap_Sys_init());

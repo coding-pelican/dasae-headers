@@ -2,18 +2,18 @@
  * @copyright Copyright (c) 2026 Gyeongtae Kim
  * @license   MIT License - see LICENSE file for details
  *
- * @file    Env.h
+ * @file    Args.h
  * @author  Gyeongtae Kim (dev-dasae) <codingpelican@gmail.com>
  * @date    2026-07-30 (date of creation)
  * @updated 2026-07-30 (date of last update)
  * @ingroup dasae-headers(dh)/proc
- * @prefix  proc_Env
+ * @prefix  proc_Args
  *
- * @brief   Borrowed environment block supplied to the current process
+ * @brief   Borrowed argument view supplied to the current process
  */
 #pragma once
-#ifndef proc_Env__included
-#define proc_Env__included 1
+#ifndef proc_Args__included
+#define proc_Args__included 1
 #if defined(__cplusplus)
 extern "C" {
 #endif /* defined(__cplusplus) */
@@ -24,16 +24,17 @@ extern "C" {
 
 /*========== Macros and Declarations ========================================*/
 
-/// Unmodified `KEY=VALUE` entries in startup order.
+/// Normalized command-line arguments in startup order.
 ///
-/// This is a block view, not a parsed map. The outer slice storage is borrowed
-/// from the startup bridge and remains valid for the active `dh_main` call.
-T_alias$((proc_Env)(struct proc_Env {
-    var_(block, S_const$S_const$u8);
+/// The outer slice storage is borrowed from the startup bridge and remains
+/// valid for the active `dh_main` invocation. Argument byte strings are opaque
+/// on non-Windows targets and WTF-8 is the intended Windows representation.
+T_alias$((proc_Args)(struct proc_Args {
+    var_(items, S_const$S_const$u8);
 }));
-T_use_prl$(proc_Env);
+T_use_prl$(proc_Args);
 
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
-#endif /* proc_Env__included */
+#endif /* proc_Args__included */

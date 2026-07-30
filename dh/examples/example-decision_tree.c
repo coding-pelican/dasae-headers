@@ -5,7 +5,7 @@
  * @file    example-decision_tree.c
  * @author  Gyeongtae Kim (@dev-dasae) <codingpelican@gmail.com>
  * @date    2025-03-07 (date of creation)
- * @updated 2026-05-22 (date of last update)
+ * @updated 2026-07-30 (date of last update)
  * @ingroup dal-project/examples
  * @prefix  (none)
  *
@@ -75,7 +75,8 @@ $static fn_((Dataset_loadFromCSV(mem_Alctr gpa, S_const$u8 filename, bool has_he
 $static fn_((Dataset_destroy(Dataset* dataset))(void));
 
 // Main function
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(proc_Self self))(E$void) $guard) {
+    let args = self.args.items;
     // Initialize logging to a file
     try_(log_init("log/debug.log"));
     defer_(log_fini());

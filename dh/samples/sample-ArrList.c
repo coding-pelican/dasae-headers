@@ -64,7 +64,8 @@ $static fn_((example(mem_Alctr gpa))(mem_E$void) $guard) {
     return_ok({});
 } $unguarded(fn);
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(proc_Self self))(E$void) $guard) {
+    let args = self.args.items;
     let_ignore = args;
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));

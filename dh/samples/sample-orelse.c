@@ -1,7 +1,8 @@
 #include "dh-main.h"
 #include "dh/io/stream.h"
 
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(proc_Self self))(E$void) $scope) {
+    let args = self.args.items;
     let_(opt, O$(i32)) = none();
 
     let temp = 123;

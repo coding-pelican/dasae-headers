@@ -25,9 +25,9 @@ errset_((proc_E)(
     proc_SystemResources
 ));
 
-T_alias$((proc_ArgExpansion)(enum_((proc_ArgExpansion $fits($packed))(
-    proc_ArgExpansion_no_expand = 0,
-    proc_ArgExpansion_expand
+T_alias$((proc_ArgExpsn)(enum_((proc_ArgExpsn $fits($packed))(
+    proc_ArgExpsn_no_expand = 0,
+    proc_ArgExpsn_expand
 ))));
 
 T_alias$((proc_StdIO_Tag)(enum_((proc_StdIO_Tag $fits($packed))(
@@ -54,18 +54,18 @@ T_alias$((proc_Ter)(struct proc_Ter {
 }));
 T_use_E$(proc_Ter);
 
-T_alias$((proc_Env)(S$S_const$u8));
-T_use_O$(proc_Env);
+T_alias$((proc_Env_Block)(S$S_const$u8));
+T_use_O$(proc_Env_Block);
 T_use_O$(fs_Dir);
 
 T_alias$((proc_Cmd)(struct proc_Cmd {
     var_(argv, S$S_const$u8);
-    var_(env, O$proc_Env);
+    var_(env, O$proc_Env_Block);
     var_(cwd, O$fs_Dir);
     var_(std_in, proc_StdIO);
     var_(std_out, proc_StdIO);
     var_(std_err, proc_StdIO);
-    var_(expand_arg0, proc_ArgExpansion);
+    var_(expand_arg0, proc_ArgExpsn);
     var_(start_suspended, bool);
     var_(create_no_window, bool);
 }));

@@ -5,8 +5,9 @@
 #include "dh/io/Writer.h" /* for `io_Writer_writeBytes()` */
 
 // Define the main function with scope and error handling
-// Takes command line arguments and returns an error result with void payload
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
+// Takes the explicit process startup context and returns an error result with void payload
+fn_((main(proc_Self self))(E$void) $scope) {
+    let args = self.args.items;
     // if you want to ignore variable, you can use let_ignore
     let_ignore = args;
     // Get the standard output file writer

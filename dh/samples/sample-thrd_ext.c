@@ -194,7 +194,8 @@ $static fn_((exampleProducerConsumer(thrd_SpawnCfg spawn_cfg))(void) $guard) {
     io_stream_nl();
 } $unguarded(fn);
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(proc_Self self))(E$void) $guard) {
+    let args = self.args.items;
     let_ignore = args;
 
     var sys_heap = try_(heap_Sys_init());

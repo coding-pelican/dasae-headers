@@ -49,7 +49,7 @@ $static fn_((io_PTY__loadConPtyApi(io_PTY__ConPtyApi* out))(bool));
 $static fn_((io_PTY__mapWindowsOpenError(DWORD error))(io_PTY_E));
 $static fn_((io_PTY__windowsQuoteAppend(io_Writer out, S_const$u8 arg))(E$void));
 $static fn_((io_PTY__windowsMakeCmdLine(mem_Alctr gpa, S$S_const$u8 argv))(E$S$u16));
-$static fn_((io_PTY__windowsMakeEnvBlock(mem_Alctr gpa, O$proc_Env env_opt))(E$io_PTY__windows_EnvBlock));
+$static fn_((io_PTY__windowsMakeEnvBlock(mem_Alctr gpa, O$proc_Env_Block env_opt))(E$io_PTY__windows_EnvBlock));
 $static fn_((io_PTY__windowsFreeWide(mem_Alctr gpa, S$u16 text))(void));
 $static fn_((io_PTY__windowsFreeEnvBlock(mem_Alctr gpa, io_PTY__windows_EnvBlock block))(void));
 $static fn_((io_PTY__windowsHpc(const io_PTY* self))(HPCON));
@@ -230,7 +230,7 @@ fn_((io_PTY__windowsMakeCmdLine(mem_Alctr gpa, S$S_const$u8 argv))(E$S$u16) $gua
     return_ok(wide);
 } $unguarded(fn);
 
-fn_((io_PTY__windowsMakeEnvBlock(mem_Alctr gpa, O$proc_Env env_opt))(E$io_PTY__windows_EnvBlock) $guard) {
+fn_((io_PTY__windowsMakeEnvBlock(mem_Alctr gpa, O$proc_Env_Block env_opt))(E$io_PTY__windows_EnvBlock) $guard) {
     if_none(env_opt) return_ok(none());
     let env = unwrap_(env_opt);
     var_(cap, usize) = 1;
@@ -454,12 +454,12 @@ fn_((io_PTY_spawn(io_PTY_SpawnCfg cfg))(io_PTY_E$io_PTY_Session) $guard) {
         },
     });
 #elif plat_is_linux
-    if (cfg.cmd.expand_arg0 == proc_ArgExpansion_expand) return_err(E_cause$io_PTY_InvalidCommand());
+    if (cfg.cmd.expand_arg0 == proc_ArgExpsn_expand) return_err(E_cause$io_PTY_InvalidCommand());
     var pty = try_(io_PTY_open(cfg.pty));
     errdefer_($ignore, io_PTY_close(&pty));
     var argv = try_(io_PTY__linux_makeStrPZ0List(cfg.gpa, cfg.cmd.argv));
     defer_(io_PTY__linux_freeStrPZ0List(cfg.gpa, &argv));
-    let env_args = orelse_((cfg.cmd.env)((proc_Env){ .ptr = cfg.cmd.argv.ptr, .len = 0 }));
+    let env_args = orelse_((cfg.cmd.env)((proc_Env_Block){ .ptr = cfg.cmd.argv.ptr, .len = 0 }));
     var env = try_(io_PTY__linux_makeStrPZ0List(cfg.gpa, env_args));
     defer_(io_PTY__linux_freeStrPZ0List(cfg.gpa, &env));
 

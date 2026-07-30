@@ -58,6 +58,7 @@ core
 impl/implement/implementation
 exnt/extent
 ext/extend/extn/extension
+expn/expand/expsn/expansion
 xtr/extra
 
 pub/public
@@ -74,9 +75,12 @@ example
 ...
 sys/system
 rt/runtime
+rtn/routine
 ctx/context
 cmd/command
-env/environment
+param/parameter
+arg/argument
+env/environ/environment
 exec/execute/execution
 ...
 */

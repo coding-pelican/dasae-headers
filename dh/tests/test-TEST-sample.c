@@ -31,7 +31,8 @@ TEST_fn_("TEST: Always Fails" $scope) {
 #include "dh-main.h"
 #include "dh/io/stream.h"
 
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(proc_Self self))(E$void) $scope) {
+    let args = self.args.items;
     let_ignore = args;
 
     let a = 1;

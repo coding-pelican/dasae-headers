@@ -89,7 +89,8 @@ $static fn_((performOperation(i32 a, i32 b))(my_math_E$i32) $guard) {
     return_ok(result);
 } $unguarded(fn);
 
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(proc_Self self))(E$void) $scope) {
+    let args = self.args.items;
     let_ignore = args;
     io_stream_println(u8_l("---- Error Handling Examples ----"));
 

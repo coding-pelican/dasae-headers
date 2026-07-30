@@ -21,7 +21,8 @@ fn_use_Clsr_((my_math_add)(i32, i32)(i32));
 $static fn_((my_math_mul(i32 lhs, i32 rhs))(i32)) { return lhs * rhs; };
 fn_use_Clsr_((my_math_mul)(i32, i32)(i32));
 
-fn_((main(S$S_const$u8 args))(E$void) $scope) {
+fn_((main(proc_Self self))(E$void) $scope) {
+    let args = self.args.items;
     let_ignore = args;
 
     let quotient = try_(my_math_divSafe(10, 2));

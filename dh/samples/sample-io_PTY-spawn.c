@@ -15,7 +15,8 @@
 #include "dh/heap/Sys.h"
 #include "dh/io/PTY.h"
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(proc_Self self))(E$void) $guard) {
+    let args = self.args.items;
     let_ignore = args;
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));
@@ -41,7 +42,7 @@ fn_((main(S$S_const$u8 args))(E$void) $guard) {
         .std_in = proc_StdIO_inherit,
         .std_out = proc_StdIO_inherit,
         .std_err = proc_StdIO_inherit,
-        .expand_arg0 = proc_ArgExpansion_no_expand,
+        .expand_arg0 = proc_ArgExpsn_no_expand,
         .start_suspended = false,
         .create_no_window = false,
     };

@@ -150,7 +150,7 @@ $static fn_((proc__windows_resolvePathAlloc(S_const$u8 base, S_const$u8 sub_path
     });
 } $unguarded(fn);
 
-$static fn_((proc__windows_envBlockAlloc(O$proc_Env env_opt))(E$proc__windows_OwnedBuf) $scope) {
+$static fn_((proc__windows_envBlockAlloc(O$proc_Env_Block env_opt))(E$proc__windows_OwnedBuf) $scope) {
     if_none(env_opt) {
         return_ok({
             .ptr = none(),
@@ -565,7 +565,7 @@ $static fn_((proc__linux_buildArgv(S$S_const$u8 args, char* argv[proc__linux_arg
     return_ok({});
 } $unscoped(fn);
 
-$static fn_((proc__linux_buildEnv(O$proc_Env env, char* envp[proc__linux_arg_max], char env_bufs[proc__linux_arg_max][proc__linux_arg_len_max]))(E$proc__linux_Envp) $scope) {
+$static fn_((proc__linux_buildEnv(O$proc_Env_Block env, char* envp[proc__linux_arg_max], char env_bufs[proc__linux_arg_max][proc__linux_arg_len_max]))(E$proc__linux_Envp) $scope) {
     if_none(env) return_ok(null);
     let items = unwrap_(env);
     if (items.len >= proc__linux_arg_max) return_err(E_cause$proc_ResourceLimitReached());

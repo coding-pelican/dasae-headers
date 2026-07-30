@@ -76,7 +76,7 @@ TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
             .std_in = proc_StdIO_ignore,
             .std_out = proc_StdIO_ignore,
             .std_err = proc_StdIO_ignore,
-            .expand_arg0 = proc_ArgExpansion_no_expand,
+            .expand_arg0 = proc_ArgExpsn_no_expand,
             .start_suspended = false,
             .create_no_window = true,
         }

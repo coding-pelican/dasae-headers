@@ -131,7 +131,8 @@ $static let sample_co_exec_sched = pp_if_(sample_co__enable_coop)(
  */
 T_use$((i32)(Future, Future_await, Future_cancel, Sched_spawn));
 T_use$((Sched_Cancelable$i32)(Future, Future_await, Future_cancel, Sched_spawn));
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(proc_Self self))(E$void) $guard) {
+    let args = self.args.items;
     let_ignore = args;
 
     var heap = try_(heap_Sys_init());

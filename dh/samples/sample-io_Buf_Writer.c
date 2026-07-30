@@ -3,7 +3,8 @@
 #include "dh/io/self.h"
 #include "dh/fs/File/self.h"
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(proc_Self self))(E$void) $guard) {
+    let args = self.args.items;
     let_ignore = args;
 
     let out_file = io_handleStdOut();

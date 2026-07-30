@@ -25,9 +25,6 @@ extern "C" {
 
 #include "comp.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 /*========== Macros and Declarations ========================================*/
 
 #define wasm_builtin_supported pp_and(comp_is_clang, arch_family_is_wasm)

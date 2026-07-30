@@ -37,7 +37,7 @@ TEST_fn_("proc: spawn and wait exit code" $scope) {
         .std_in = proc_StdIO_ignore,
         .std_out = proc_StdIO_ignore,
         .std_err = proc_StdIO_ignore,
-        .expand_arg0 = proc_ArgExpansion_no_expand,
+        .expand_arg0 = proc_ArgExpsn_no_expand,
         .start_suspended = false,
         .create_no_window = true,
     }));
@@ -71,7 +71,7 @@ TEST_fn_("proc: stdout pipe captures child output" $guard) {
         .std_in = proc_StdIO_ignore,
         .std_out = proc_StdIO_pipe,
         .std_err = proc_StdIO_ignore,
-        .expand_arg0 = proc_ArgExpansion_no_expand,
+        .expand_arg0 = proc_ArgExpsn_no_expand,
         .start_suspended = false,
         .create_no_window = true,
     }));
@@ -163,7 +163,7 @@ TEST_fn_("proc: custom environment block is passed to child" $guard) {
         .std_in = proc_StdIO_ignore,
         .std_out = proc_StdIO_pipe,
         .std_err = proc_StdIO_ignore,
-        .expand_arg0 = proc_ArgExpansion_no_expand,
+        .expand_arg0 = proc_ArgExpsn_no_expand,
         .start_suspended = false,
         .create_no_window = true,
     }));
@@ -213,7 +213,7 @@ TEST_fn_("proc: cwd handle is passed to child" $guard) {
         .std_in = proc_StdIO_ignore,
         .std_out = proc_StdIO_pipe,
         .std_err = proc_StdIO_ignore,
-        .expand_arg0 = proc_ArgExpansion_no_expand,
+        .expand_arg0 = proc_ArgExpsn_no_expand,
         .start_suspended = false,
         .create_no_window = true,
     }));
@@ -284,7 +284,7 @@ TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
             .std_in = proc_StdIO_ignore,
             .std_out = proc_StdIO_ignore,
             .std_err = proc_StdIO_ignore,
-            .expand_arg0 = proc_ArgExpansion_no_expand,
+            .expand_arg0 = proc_ArgExpsn_no_expand,
             .start_suspended = false,
             .create_no_window = true,
         }
@@ -293,3 +293,57 @@ TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
     let term = try_(proc_Child_wait(&child));
     try_(TEST_expect(term.code == 9));
 } $unguarded(TEST_fn);
+
+TEST_fn_("proc: start info preserves argv environ and auxv boundaries" $scope) {
+#if plat_is_linux
+    var_(raw, A$$(8, usize)) = A_init({
+        [0] = 2,
+        [1] = ptrToInt(as$(const u8*)("proc-test")),
+        [2] = ptrToInt(as$(const u8*)("argument")),
+        [3] = 0,
+        [4] = ptrToInt(as$(const u8*)("PROC_TEST_VALUE=present")),
+        [5] = 0,
+        [6] = 0,
+        [7] = 0,
+    });
+    let info = start_Info_fromRaw(A_ptr(raw));
+    let argv = as$(const char* const*)(info.argv_raw);
+    let envp = as$(const char* const*)(info.envp_raw);
+
+    try_(TEST_expect(info.argc == 2));
+    try_(TEST_expect(info.envc == 1));
+    try_(TEST_expect(mem_eqlBytes(mem_spanZ0$u8(as$(const u8*)(argv[0])), u8_l("proc-test"))));
+    try_(TEST_expect(mem_eqlBytes(mem_spanZ0$u8(as$(const u8*)(argv[1])), u8_l("argument"))));
+    try_(TEST_expect(mem_eqlBytes(mem_spanZ0$u8(as$(const u8*)(envp[0])), u8_l("PROC_TEST_VALUE=present"))));
+    try_(TEST_expect(info.auxv_raw == as$(P_const$raw)(A_ptr(raw) + 6)));
+#else
+    try_(TEST_expect(true));
+#endif /* plat_is_linux */
+} $unscoped(TEST_fn);
+
+TEST_fn_("proc: Self is an explicit startup view" $scope) {
+    var_(args_mem, A$$(2, S_const$u8)) = A_init({
+        [0] = u8_l("proc-test"),
+        [1] = u8_l("argument"),
+    });
+    var_(env_mem, A$$(1, S_const$u8)) = A_init({
+        [0] = u8_l("PROC_TEST_VALUE=present"),
+    });
+    var_(preopen_mem, A$$(1, proc_Preopen)) = A_init({
+        [0] = {
+            .name = u8_l("root"),
+            .tag = proc_Preopen_Tag_dir,
+            .dir = cleared(),
+        },
+    });
+    let self = (proc_Self){
+        .args = { .items = A_ref$((S_const$S_const$u8)(args_mem)) },
+        .environ = { .block = A_ref$((S_const$S_const$u8)(env_mem)) },
+        .preopens = { .items = A_ref$((S_const$proc_Preopen)(preopen_mem)) },
+    };
+
+    try_(TEST_expect(self.args.items.len == 2));
+    try_(TEST_expect(self.environ.block.len == 1));
+    try_(TEST_expect(self.preopens.items.len == 1));
+    try_(TEST_expect(self.preopens.items.ptr[0].tag == proc_Preopen_Tag_dir));
+} $unscoped(TEST_fn);

@@ -14,7 +14,8 @@
 #include "dh-main.h"
 #include "dh/io/TTY.h"
 
-fn_((main(S$S_const$u8 args))(E$void) $guard) {
+fn_((main(proc_Self self))(E$void) $guard) {
+    let args = self.args.items;
     let_ignore = args;
     var tty = io_TTY_init(io_TTY_Cfg_std());
     defer_(io_TTY_fini(&tty));
