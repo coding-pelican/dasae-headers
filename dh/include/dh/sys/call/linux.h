@@ -160,6 +160,9 @@ typedef sys_call_linux_word sys_call_linux_statx_mask_t;
 /*---------- <errno.h> ------------------------------------------------------*/
 
 typedef enum sys_call_linux_Errno {
+    sys_call_linux_EPERM = 1,
+    sys_call_linux_EINVAL = 22,
+    sys_call_linux_ENOMEM = 12,
     sys_call_linux_EAGAIN = 11,
     sys_call_linux_EINPROGRESS = 115,
     sys_call_linux_EINTR = 4,
@@ -317,6 +320,13 @@ typedef enum sys_call_linux_MREMAP {
     sys_call_linux_MREMAP_MAYMOVE = 1,
 } sys_call_linux_MREMAP;
 typedef sys_call_linux_word sys_call_linux_mremap_flags_t;
+
+typedef enum sys_call_linux_MCL {
+    sys_call_linux_MCL_CURRENT = 1,
+    sys_call_linux_MCL_FUTURE = 2,
+    sys_call_linux_MCL_ONFAULT = 4,
+} sys_call_linux_MCL;
+typedef sys_call_linux_word sys_call_linux_mlockall_flags_t;
 
 /*---------- <termios.h> ----------------------------------------------------*/
 
@@ -502,6 +512,42 @@ typedef enum sys_call_linux_SYS {
         pp_case_((arch_type_arm)(144)),
         pp_case_((arch_type_riscv64)(227)),
         pp_case_((arch_type_riscv32)(227)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_mlock = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(149)),
+        pp_case_((arch_type_x86)(150)),
+        pp_case_((arch_type_aarch64)(228)),
+        pp_case_((arch_type_arm)(150)),
+        pp_case_((arch_type_riscv64)(228)),
+        pp_case_((arch_type_riscv32)(228)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_munlock = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(150)),
+        pp_case_((arch_type_x86)(151)),
+        pp_case_((arch_type_aarch64)(229)),
+        pp_case_((arch_type_arm)(151)),
+        pp_case_((arch_type_riscv64)(229)),
+        pp_case_((arch_type_riscv32)(229)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_mlockall = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(151)),
+        pp_case_((arch_type_x86)(152)),
+        pp_case_((arch_type_aarch64)(230)),
+        pp_case_((arch_type_arm)(152)),
+        pp_case_((arch_type_riscv64)(230)),
+        pp_case_((arch_type_riscv32)(230)),
+        pp_default_(0)
+    )),
+    sys_call_linux_SYS_munlockall = pp_switch_((arch_type)(
+        pp_case_((arch_type_x86_64)(152)),
+        pp_case_((arch_type_x86)(153)),
+        pp_case_((arch_type_aarch64)(231)),
+        pp_case_((arch_type_arm)(153)),
+        pp_case_((arch_type_riscv64)(231)),
+        pp_case_((arch_type_riscv32)(231)),
         pp_default_(0)
     )),
     sys_call_linux_SYS_ioctl = pp_switch_((arch_type)(
@@ -1062,6 +1108,14 @@ $attr($inline)
 $static fn_((sys_call_linux_mprotect(void* addr, usize len, sys_call_linux_mmap_prot_t prot))(sys_call_linux_word));
 $attr($inline)
 $static fn_((sys_call_linux_msync(void* addr, usize len, sys_call_linux_msync_flags_t flags))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_mlock(const void* addr, usize len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_munlock(const void* addr, usize len))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_mlockall(sys_call_linux_mlockall_flags_t flags))(sys_call_linux_word));
+$attr($inline)
+$static fn_((sys_call_linux_munlockall(void))(sys_call_linux_word));
 $attr($no_return $inline)
 $static fn_((sys_call_linux_munmap_exit(P$raw addr, usize len, i32 status))(void));
 $attr($inline)
@@ -1825,6 +1879,32 @@ fn_((sys_call_linux_mprotect(void* addr, usize len, sys_call_linux_mmap_prot_t p
 
 fn_((sys_call_linux_msync(void* addr, usize len, sys_call_linux_msync_flags_t flags))(sys_call_linux_word)) {
     return sys_call_linux_syscall3(sys_call_linux_SYS_msync, (sys_call_linux_word)(addr), (sys_call_linux_word)(len), flags);
+};
+
+fn_((sys_call_linux_mlock(const void* addr, usize len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall2(
+        sys_call_linux_SYS_mlock,
+        (sys_call_linux_word)(addr),
+        (sys_call_linux_word)(len)
+    );
+};
+
+fn_((sys_call_linux_munlock(const void* addr, usize len))(sys_call_linux_word)) {
+    return sys_call_linux_syscall2(
+        sys_call_linux_SYS_munlock,
+        (sys_call_linux_word)(addr),
+        (sys_call_linux_word)(len)
+    );
+};
+
+fn_((sys_call_linux_mlockall(
+    sys_call_linux_mlockall_flags_t flags
+))(sys_call_linux_word)) {
+    return sys_call_linux_syscall1(sys_call_linux_SYS_mlockall, flags);
+};
+
+fn_((sys_call_linux_munlockall(void))(sys_call_linux_word)) {
+    return sys_call_linux_syscall0(sys_call_linux_SYS_munlockall);
 };
 
 fn_((sys_call_linux_munmap_exit(P$raw addr, usize len, i32 status))(void)) pp_switch_((arch_type)(

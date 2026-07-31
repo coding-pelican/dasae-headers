@@ -9,13 +9,18 @@ extern "C" {
 
 #include "proc/base.h"
 #include "proc/common.h"
+#include "proc/Mem.h"
 
 #include "proc/Args.h"
 #include "proc/Env.h"
 #include "proc/Preopens.h"
 
-#include "proc/Self.h"
+#include "proc/std.h"
+#include "proc/Cmd.h"
 #include "proc/Child.h"
+#include "proc/Self.h"
+
+#include "proc/Entry.h"
 
 #if defined(__cplusplus)
 } /* extern "C" */

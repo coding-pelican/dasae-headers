@@ -69,6 +69,8 @@ claim_assert_static(arch_byte_order_is_little_endian || arch_byte_order_is_big_e
 #define __alias__bitfield_reserved$(_$Alias...) pp_join2($, bitfield_reserved, _$Alias)
 #define __alias__bitfield_count$(_$Alias...) pp_join2($, bitfield_count, _$Alias)
 
+#define __bitfield___storage$(_$Alias...) pp_join2($, __bitfield_storage, _$Alias)
+
 #define __bitfield___unwrap(...) __VA_ARGS__
 
 #define __bitfield___field_name(_$Field) \
@@ -77,21 +79,60 @@ claim_assert_static(arch_byte_order_is_little_endian || arch_byte_order_is_big_e
     __bitfield___field_name__impl(__VA_ARGS__)
 #define __bitfield___field_name__impl(_$name, _$T, _$bits...) _$name
 
+#define __bitfield___field_type(_$Field) \
+    __bitfield___field_type__emit(__bitfield___unwrap _$Field)
+#define __bitfield___field_type__emit(...) \
+    __bitfield___field_type__impl(__VA_ARGS__)
+#define __bitfield___field_type__impl(_$name, _$T, _$bits...) _$T
+
 #define __bitfield___field_bits(_$Field) \
     __bitfield___field_bits__emit(__bitfield___unwrap _$Field)
 #define __bitfield___field_bits__emit(...) \
     __bitfield___field_bits__impl(__VA_ARGS__)
 #define __bitfield___field_bits__impl(_$name, _$T, _$bits...) (_$bits)
 
-#define __bitfield___field_decl(_$ignored, _$Field) \
-    __bitfield___field_decl__emit(__bitfield___unwrap _$Field)
+/* Self-contained low-bit mask for enum constants. Right-shifting an all-ones
+ * value avoids the full-width left shift special case and keeps bitfield.h
+ * independent from the higher-level integer-operation surface in pri.h. */
+#define __bitfield___mask_lo(_$PackedInt, _$bits) \
+    (as$(_$PackedInt)(~as$(_$PackedInt)(0)) \
+     >> (int_bits$(_$PackedInt) - (_$bits)))
+
+/* Every physical C bit-field uses one declaration type. C does not guarantee
+ * that adjacent bit-fields with different declared types share an allocation
+ * unit. The logical field type is retained only for declaration validation. */
+#define __bitfield___field_decl(_$Alias, _$Field) \
+    __bitfield___field_decl__emit(_$Alias, __bitfield___unwrap _$Field)
 #define __bitfield___field_decl__emit(...) \
     __bitfield___field_decl__impl(__VA_ARGS__)
-#define __bitfield___field_decl__impl(_$name, _$T, _$bits...) \
-    var_(_$name : (_$bits), _$T);
+#define __bitfield___field_decl__impl(_$Alias, _$name, _$T, _$bits...) \
+    var_(_$name : (_$bits), __bitfield___storage$(_$Alias));
 
-#define __bitfield___field_decl_rev(_$acc, _$Field) \
-    __bitfield___field_decl(~, _$Field) _$acc
+#define __bitfield___field_claim(_$Alias, _$Field) \
+    claim_assert_static(__bitfield___field_bits(_$Field) > 0); \
+    claim_assert_static( \
+        __bitfield___field_bits(_$Field) \
+        <= sizeOf$(__bitfield___field_type(_$Field)) * arch_bits_per_byte \
+    );
+
+/* Reverse the source-order declarations while retaining Alias in the fold
+ * accumulator: `(Alias, emitted declarations...)`. */
+#define __bitfield___field_decl_rev_step(_$Acc, _$Field) \
+    __bitfield___field_decl_rev_step__emit(_$Field, __bitfield___unwrap _$Acc)
+#define __bitfield___field_decl_rev_step__emit(...) \
+    __bitfield___field_decl_rev_step__impl(__VA_ARGS__)
+#define __bitfield___field_decl_rev_step__impl(_$Field, _$Alias, ...) ( \
+    _$Alias, __bitfield___field_decl(_$Alias, _$Field) __VA_ARGS__ \
+)
+#define __bitfield___field_decls_rev(_$Alias, ...) \
+    __bitfield___field_decls_rev__emit( \
+        pp_foldl(__bitfield___field_decl_rev_step, (_$Alias, ), __VA_ARGS__) \
+    )
+#define __bitfield___field_decls_rev__emit(_$Acc) \
+    __bitfield___field_decls_rev__expand(__bitfield___unwrap _$Acc)
+#define __bitfield___field_decls_rev__expand(...) \
+    __bitfield___field_decls_rev__impl(__VA_ARGS__)
+#define __bitfield___field_decls_rev__impl(_$Alias, ...) __VA_ARGS__
 
 /* Fold right so each field can use the width of every field to its right as
  * its numeric packed shift. The accumulator is:
@@ -109,7 +150,7 @@ claim_assert_static(arch_byte_order_is_little_endian || arch_byte_order_is_big_e
     bitfield_bits_(__bitfield___field_name(_$Field), _$Alias) = __bitfield___field_bits(_$Field), \
     bitfield_shift_(__bitfield___field_name(_$Field), _$Alias) = (_$tail_bits), \
     bitfield_mask_(__bitfield___field_name(_$Field), _$Alias) \
-    = (int_maskLo_static$((_$PackedInt)(__bitfield___field_bits(_$Field))) << (_$tail_bits)), \
+    = (__bitfield___mask_lo(_$PackedInt, __bitfield___field_bits(_$Field)) << (_$tail_bits)), \
     __VA_ARGS__ \
 )
 
@@ -136,6 +177,7 @@ claim_assert_static(arch_byte_order_is_little_endian || arch_byte_order_is_big_e
 #define __bitfield___emit_parse(...) __bitfield___emit(__VA_ARGS__)
 
 #define __bitfield___emit(_$Alias, _$PackedInt, ...) \
+    typedef _$PackedInt __bitfield___storage$(_$Alias); \
     enum { \
         __bitfield___meta_items(__bitfield___meta(_$Alias, _$PackedInt, __VA_ARGS__)) \
             bitfield_bits$(_$Alias) = __bitfield___meta_bits(__bitfield___meta(_$Alias, _$PackedInt, __VA_ARGS__)), \
@@ -144,20 +186,21 @@ claim_assert_static(arch_byte_order_is_little_endian || arch_byte_order_is_big_e
         bitfield_count$(_$Alias) = pp_countArg(__VA_ARGS__) \
     }; \
     typedef union _$Alias { \
-        struct { \
+        struct $packed { \
             pp_if_(arch_byte_order_is_little_endian)( \
                 pp_then_( \
-                    pp_foldl(__bitfield___field_decl_rev, , __VA_ARGS__) \
-                        _$PackedInt : pp_join2($, bitfield_reserved, _$Alias); \
+                    __bitfield___field_decls_rev(_$Alias, __VA_ARGS__) \
+                        __bitfield___storage$(_$Alias) : bitfield_reserved$(_$Alias); \
                 ), \
                 pp_else_( \
-                    _$PackedInt : pp_join2($, bitfield_reserved, _$Alias); \
-                    pp_foreach(__bitfield___field_decl, ~, __VA_ARGS__) \
+                    __bitfield___storage$(_$Alias) : bitfield_reserved$(_$Alias); \
+                    pp_foreach(__bitfield___field_decl, _$Alias, __VA_ARGS__) \
                 ) \
             ) \
         }; \
         var_(packed, _$PackedInt); \
     } _$Alias; \
+    pp_foreach(__bitfield___field_claim, _$Alias, __VA_ARGS__); \
     claim_assert_static(bitfield_bits$(_$Alias) <= bitfield_storage$(_$Alias)); \
     claim_assert_static(sizeOf$(_$Alias) == sizeOf$(_$PackedInt))
 

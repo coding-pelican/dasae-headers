@@ -19,6 +19,7 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
+#include "start/Entry.h"
 
 #if plat_is_windows
 #include "sys/api/windows/proc.h"
@@ -31,63 +32,6 @@ extern "C" {
 T_alias$((start_ExitCode)(i32));
 T_alias$((start_Fn)(fn_(((*)(void))(void) $T)));
 T_alias$((start_InitFn)(fn_(((*)(void))(i32) $T)));
-
-/** Raw process-entry information normalized without allocating. */
-T_alias$((start_Info)(struct start_Info {
-    var_(raw_ctx, P$raw);
-    var_(argc, usize);
-    var_(argv_raw, P_const$raw);
-    var_(envc, usize);
-    var_(envp_raw, P_const$raw);
-    var_(auxv_raw, P_const$raw);
-}));
-T_use_prl$(start_Info);
-
-$attr($maybe_unused $inline_always)
-$static fn_((start_Info_fromMain(usize argc, P_const$raw argv_raw, P_const$raw envp_raw))(start_Info)) {
-    var_(envc, usize) = 0;
-    if (envp_raw != null) {
-        let envp = as$(const char* const*)(envp_raw);
-        while (envp[envc] != null) ++envc;
-    };
-    return (start_Info){
-        .raw_ctx = null,
-        .argc = argc,
-        .argv_raw = argv_raw,
-        .envc = envc,
-        .envp_raw = envp_raw,
-        .auxv_raw = null,
-    };
-};
-
-$attr($maybe_unused $inline_always)
-$static fn_((start_Info_fromRaw(P$raw raw_ctx))(start_Info)) {
-#if plat_is_linux
-    let words = as$(usize*)(raw_ctx);
-    let argc = words[0];
-    let argv = as$(const char* const*)(words + 1);
-    let envp = argv + argc + 1;
-    var_(envc, usize) = 0;
-    while (envp[envc] != null) ++envc;
-    return (start_Info){
-        .raw_ctx = raw_ctx,
-        .argc = argc,
-        .argv_raw = as$(P_const$raw)(argv),
-        .envc = envc,
-        .envp_raw = as$(P_const$raw)(envp),
-        .auxv_raw = as$(P_const$raw)(envp + envc + 1),
-    };
-#else
-    return (start_Info){
-        .raw_ctx = raw_ctx,
-        .argc = 0,
-        .argv_raw = null,
-        .envc = 0,
-        .envp_raw = null,
-        .auxv_raw = null,
-    };
-#endif /* plat_is_linux */
-};
 
 $attr($maybe_unused $no_return $inline)
 $static fn_((start_exit(start_ExitCode status))(void)) {
@@ -282,10 +226,10 @@ pp_if_(pp_not(env_start_files_linked))((
     }; \
     $attr($no_return) \
     $extern fn_((mainCRTStartup(void))(void)); \
-    fn_((mainCRTStartup(void))(void)) { _$Entry(null); }; \
+    fn_((mainCRTStartup(void))(void)) { _$Entry(); }; \
     $attr($no_return) \
     $extern fn_((WinMainCRTStartup(void))(void)); \
-    fn_((WinMainCRTStartup(void))(void)) { _$Entry(null); }
+    fn_((WinMainCRTStartup(void))(void)) { _$Entry(); }
 
 #define start__linux_emitEntry(_$Entry...) \
     $attr($callconv_naked $no_return) \

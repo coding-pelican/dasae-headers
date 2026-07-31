@@ -73,9 +73,9 @@ TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
             .argv = A_ref$((S$S_const$u8)(argv)),
             .env = none(),
             .cwd = none(),
-            .std_in = proc_StdIO_ignore,
-            .std_out = proc_StdIO_ignore,
-            .std_err = proc_StdIO_ignore,
+            .std_in = union_of((proc_std_IO_ignore){}),
+            .std_out = union_of((proc_std_IO_ignore){}),
+            .std_err = union_of((proc_std_IO_ignore){}),
             .expand_arg0 = proc_ArgExpsn_no_expand,
             .start_suspended = false,
             .create_no_window = true,
@@ -93,6 +93,6 @@ TEST_fn_("io/PTY: spawn session waits for child termination" $guard) {
 
     try_(io_PTY_Session_resize(&session, (io_PTY_Size){ .cols = 100, .rows = 30 }));
     let term = try_(io_PTY_Session_wait(&session));
-    try_(TEST_expect(term.tag == proc_Ter_Tag_exited));
-    try_(TEST_expect(term.code == 5));
+    try_(TEST_expect(matches(term, proc_Child_Ter_Tag_exited)));
+    try_(TEST_expect(union_to((term)(proc_Child_Ter_Tag_exited)) == 5));
 } $unguarded(TEST_fn);

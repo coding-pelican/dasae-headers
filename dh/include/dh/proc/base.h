@@ -13,8 +13,6 @@ extern "C" {
 
 T_alias$((proc_Handle)(usize));
 T_use_prl$(proc_Handle);
-T_alias$((proc_Child)(struct proc_Child));
-T_decl_E$(proc_Child);
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -18,6 +18,7 @@
 #include "dh-main.h"
 #include "dh/io/self.h"
 #include "dh/fs/File.h"
+#include "dh/proc/std.h"
 
 #if plat_is_windows
 #include "dh/sys/api/windows.h"
@@ -27,24 +28,24 @@
 
 /*========== Tests ==========================================================*/
 
-TEST_fn_("io/self: Check `io_handleStdIn` is valid handle" $scope) {
-    let std_in = io_handleStdIn();
+TEST_fn_("proc/std: Check `proc_std_in` is valid handle" $scope) {
+    let std_in = proc_std_in();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
         pp_else_(sys_posix_STDIN_FILENO));
     try_(TEST_expect(std_in.handle == handle));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io/self: Check `io_handleStdOut` is valid handle" $scope) {
-    let std_out = io_handleStdOut();
+TEST_fn_("proc/std: Check `proc_std_out` is valid handle" $scope) {
+    let std_out = proc_std_out();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
         pp_else_(sys_posix_STDOUT_FILENO));
     try_(TEST_expect(std_out.handle == handle));
 } $unscoped(TEST_fn);
 
-TEST_fn_("io/self: Check `io_handleStdErr` is valid handle" $scope) {
-    let std_err = io_handleStdErr();
+TEST_fn_("proc/std: Check `proc_std_err` is valid handle" $scope) {
+    let std_err = proc_std_err();
     let handle = pp_if_(plat_is_windows)(
         pp_then_(GetStdHandle(STD_ERROR_HANDLE)),
         pp_else_(sys_posix_STDERR_FILENO));

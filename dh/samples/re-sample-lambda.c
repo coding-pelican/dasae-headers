@@ -1,5 +1,5 @@
 #if DEPRECATED_CODE
-#define main_no_args 1
+#define main_no_entry 1
 #include "dh-main.h"
 #include "dh/io/stream.h"
 

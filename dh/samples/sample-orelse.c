@@ -1,8 +1,7 @@
 #include "dh-main.h"
 #include "dh/io/stream.h"
 
-fn_((main(proc_Self self))(E$void) $scope) {
-    let args = self.args.items;
+fn_((main(proc_Entry entry))(E$void) $scope) {
     let_(opt, O$(i32)) = none();
 
     let temp = 123;
@@ -19,5 +18,5 @@ fn_((main(proc_Self self))(E$void) $scope) {
     let f = unwrap_(opt);
 
     return_ok({});
-    $unused(args, a, b, c, d, e, f);
+    $unused(entry, a, b, c, d, e, f);
 } $unscoped(fn);

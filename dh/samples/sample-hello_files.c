@@ -49,9 +49,8 @@ $static fn_((createHelloFiles(A$4$S_const$u8 paths))(fs_E$A$4$fs_File) $guard) {
     }));
 } $unguarded(fn);
 
-fn_((main(proc_Self self))(E$void) $guard) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let_ignore = entry;
 
     var_(path_mem_1, A$$(512, u8)) $undefined;
     var_(path_mem_2, A$$(512, u8)) $undefined;

@@ -33,7 +33,7 @@ fn_((io_Fixed_Reader_init(io_Fixed stream))(io_Fixed_Reader)) {
     };
 };
 
-$static fn_((io_Fixed_Reader__read(P$raw ctx, S$u8 output))(E$usize) $scope) {
+$static fn_((io_Fixed_Reader__read(P$raw ctx, S$u8 output))(io_ReadE$usize) $scope) {
     let self = ptrAlignCast$((io_Fixed_Reader*)(ctx));
     let available = self->stream.buf.len - self->stream.pos;
     if (available == 0) { return_ok(0); }
@@ -59,7 +59,7 @@ fn_((io_Fixed_Writer_init(io_FixedMut stream))(io_Fixed_Writer)) {
     };
 };
 
-$static fn_((io_Fixed_Writer__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
+$static fn_((io_Fixed_Writer__write(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize) $scope) {
     let self = ptrAlignCast$((io_Fixed_Writer*)(ctx));
     if (bytes.len == 0) { return_ok(0); }
     if (self->stream.buf.len <= self->stream.pos) return_err(E_cause$TooSmallBuffer());

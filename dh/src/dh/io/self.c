@@ -1,11 +1,9 @@
 #include "dh/io/self.h"
-#include "dh/fs/File/self.h"
 #include "dh/thrd/Mtx.h"
 
-#include "dh/sys/posix.h"
 #if plat_is_windows
-#include "dh/sys/api/windows/proc.h"
 #include "dh/sys/api/windows/console.h"
+#include "dh/sys/api/windows/nls.h"
 #endif /* plat_is_windows */
 #if io_stream_using_libc
 #include <locale.h>
@@ -47,15 +45,6 @@ $static fn_((io__fini(void))(void)) {
 #endif /* io_locked_std_enabled */
 };
 
-fn_((io_handleStdIn(void))(fs_File)) {
-    return fs_File_Handle_promote(
-        pp_if_(plat_is_windows)(
-            pp_then_(GetStdHandle(STD_INPUT_HANDLE)),
-            pp_else_(sys_posix_STDIN_FILENO)),
-        fs_File_Flags_default
-    );
-};
-
 fn_((io_lockStdIn(void))(void)) {
 #if io_locked_std_enabled
     thrd_Mtx_Recur_lockProtcd(&io__s_in_mtx);
@@ -74,15 +63,6 @@ fn_((io_unlockStdIn(void))(void)) {
 #endif /* io_locked_std_enabled */
 };
 
-fn_((io_handleStdOut(void))(fs_File)) {
-    return fs_File_Handle_promote(
-        pp_if_(plat_is_windows)(
-            pp_then_(GetStdHandle(STD_OUTPUT_HANDLE)),
-            pp_else_(sys_posix_STDOUT_FILENO)),
-        fs_File_Flags_default
-    );
-};
-
 fn_((io_lockStdOut(void))(void)) {
 #if io_locked_std_enabled
     thrd_Mtx_Recur_lockProtcd(&io__s_out_mtx);
@@ -99,15 +79,6 @@ fn_((io_unlockStdOut(void))(void)) {
 #if io_locked_std_enabled
     thrd_Mtx_Recur_unlock(&io__s_out_mtx);
 #endif /* io_locked_std_enabled */
-};
-
-fn_((io_handleStdErr(void))(fs_File)) {
-    return fs_File_Handle_promote(
-        pp_if_(plat_is_windows)(
-            pp_then_(GetStdHandle(STD_ERROR_HANDLE)),
-            pp_else_(sys_posix_STDERR_FILENO)),
-        fs_File_Flags_default
-    );
 };
 
 fn_((io_lockStdErr(void))(void)) {

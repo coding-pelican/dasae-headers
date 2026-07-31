@@ -46,7 +46,7 @@ $static fn_((proc_VTbl_failingReplacePath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(
     return_err(E_cause$proc_direct_Unsupported());
 } $unscoped(fn);
 
-$static fn_((proc_VTbl_failingWait(P$raw ctx, proc_Child* child))(E$proc_Ter) $scope) {
+$static fn_((proc_VTbl_failingWait(P$raw ctx, proc_Child* child))(E$proc_Child_Ter) $scope) {
     let_ignore = ctx;
     let_ignore = child;
     return_err(E_cause$proc_direct_Unsupported());

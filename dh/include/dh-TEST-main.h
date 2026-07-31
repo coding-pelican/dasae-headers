@@ -22,8 +22,8 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "dh/prl.h"
-#include "dh/TEST.h"
 #include "dh/start.h"
+#include "dh/TEST.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -61,14 +61,24 @@ fn_((main(void))(int)) {
 };
 
 #else /* !env_start_files_linked */
+#if plat_is_windows
 $attr($maybe_unused $no_return)
-$static fn_((TEST_main__callTESTMainAndExit(P$raw raw_ctx))(void)) {
-    let_ignore = raw_ctx;
+$static fn_((TEST_main__callTESTMainAndExit(void))(void)) {
     start_callInitArray();
     let code = TEST_main__runTESTMain();
     start_callFiniArray();
     start_exit(code);
 };
+#elif plat_is_linux
+$attr($maybe_unused $no_return)
+$static fn_((TEST_main__callTESTMainAndExit(P$raw initial_stack))(void)) {
+    let_ignore = initial_stack;
+    start_callInitArray();
+    let code = TEST_main__runTESTMain();
+    start_callFiniArray();
+    start_exit(code);
+};
+#endif /* no-start platform */
 
 start_emitEntry(TEST_main__callTESTMainAndExit);
 #endif /* env_start_files_linked, !env_start_files_linked */

@@ -24,8 +24,28 @@ claim_assert_static(bitfield_shift_(payload, test_core_pri_bitfield__BitfieldRes
 claim_assert_static(bitfield_mask_(payload, test_core_pri_bitfield__BitfieldReserved) == 0x00007fffu);
 claim_assert_static(bitfield_bits$(test_core_pri_bitfield__BitfieldReserved) == 16);
 claim_assert_static(bitfield_storage$(test_core_pri_bitfield__BitfieldReserved) == 32);
-claim_assert_static(bitfield_reserved$(test_core_pri_bitfield__BitfieldReserved) == 0);
+claim_assert_static(bitfield_reserved$(test_core_pri_bitfield__BitfieldReserved) == 16);
 claim_assert_static(bitfield_count$(test_core_pri_bitfield__BitfieldReserved) == 2);
+
+bitfield_((test_core_pri_bitfield__BitfieldReordered)(u32)(
+    (payload, u16, 15),
+    (tag, u8, 1)
+));
+claim_assert_static(bitfield_shift_(payload, test_core_pri_bitfield__BitfieldReordered) == 1);
+claim_assert_static(bitfield_shift_(tag, test_core_pri_bitfield__BitfieldReordered) == 0);
+claim_assert_static(bitfield_mask_(payload, test_core_pri_bitfield__BitfieldReordered) == 0x0000fffeu);
+claim_assert_static(bitfield_mask_(tag, test_core_pri_bitfield__BitfieldReordered) == 0x00000001u);
+claim_assert_static(sizeOf$(test_core_pri_bitfield__BitfieldReordered) == sizeOf$(u32));
+
+bitfield_((test_core_pri_bitfield__BitfieldResized)(u32)(
+    (tag, u8, 3),
+    (payload, u16, 13)
+));
+claim_assert_static(bitfield_shift_(tag, test_core_pri_bitfield__BitfieldResized) == 13);
+claim_assert_static(bitfield_shift_(payload, test_core_pri_bitfield__BitfieldResized) == 0);
+claim_assert_static(bitfield_mask_(tag, test_core_pri_bitfield__BitfieldResized) == 0x0000e000u);
+claim_assert_static(bitfield_mask_(payload, test_core_pri_bitfield__BitfieldResized) == 0x00001fffu);
+claim_assert_static(sizeOf$(test_core_pri_bitfield__BitfieldResized) == sizeOf$(u32));
 
 TEST_fn_("core/pri/bitfield: packed unions preserve numeric layout" $scope) {
     let bitfield64 = l$((test_core_pri_bitfield__Bitfield64){ .value = u64_limit_max });
@@ -36,35 +56,52 @@ TEST_fn_("core/pri/bitfield: packed unions preserve numeric layout" $scope) {
         .payload = 7,
     });
     try_(TEST_expect(reserved.packed == 0x00008007u));
+
+    let reordered = l$((test_core_pri_bitfield__BitfieldReordered){
+        .payload = 7,
+        .tag = 1,
+    });
+    let reordered_expected = (as$(u32)(7 << bitfield_shift_(payload, test_core_pri_bitfield__BitfieldReordered)))
+                           | (as$(u32)(1 << bitfield_shift_(tag, test_core_pri_bitfield__BitfieldReordered)));
+    try_(TEST_expect(reordered.packed == reordered_expected));
+
+    let resized = l$((test_core_pri_bitfield__BitfieldResized){
+        .tag = 5,
+        .payload = 0x123,
+    });
+    let resized_expected = (as$(u32)(5 << bitfield_shift_(tag, test_core_pri_bitfield__BitfieldResized)))
+                         | (as$(u32)(0x123 << bitfield_shift_(payload, test_core_pri_bitfield__BitfieldResized)));
+    try_(TEST_expect(resized.packed == resized_expected));
     let type_info = l$((TypeInfo){
         .size = 5,
         .log2_align = 3,
     });
-    let type_info_expected = as$(TypeInfoPacked)(5)
-                          | (as$(TypeInfoPacked)(3) << TypeInfo_size_bits);
+    let type_info_expected = (as$(TypeInfoPacked)(5 << bitfield_shift_(size, TypeInfo)))
+                           | (as$(TypeInfoPacked)(3 << bitfield_shift_(log2_align, TypeInfo)));
     try_(TEST_expect(type_info.packed == type_info_expected));
 
     let flow_cursor = l$((fn__FlowCursor){
         .curr_line = 7,
         .is_returning = 1,
     });
-    let flow_cursor_expected = as$(fn__FlowCursorPacked)(7)
-                            | (as$(fn__FlowCursorPacked)(1) << bitfield_shift_(curr_line, fn__FlowCursor));
+    let flow_cursor_expected = (as$(fn__FlowCursorPacked)(7 << bitfield_shift_(curr_line, fn__FlowCursor)))
+                             | (as$(fn__FlowCursorPacked)(1 << bitfield_shift_(is_returning, fn__FlowCursor)));
     try_(TEST_expect(flow_cursor.packed == flow_cursor_expected));
 
     let flow_ctrl = l$((Co_FlowCtrl){
         .line = 7,
         .state = Co_State_ready,
     });
-    let flow_ctrl_expected = as$(Co_FlowCtrlPacked)(7)
-                          | (as$(Co_FlowCtrlPacked)(Co_State_ready) << bitfield_shift_(line, Co_FlowCtrl));
+    let flow_ctrl_expected = (as$(Co_FlowCtrlPacked)(7 << bitfield_shift_(line, Co_FlowCtrl)))
+                           | (as$(Co_FlowCtrlPacked)(Co_State_ready << bitfield_shift_(state, Co_FlowCtrl)));
     try_(TEST_expect(flow_ctrl.packed == flow_ctrl_expected));
 
     let hash_ctrl = l$((HashMap_Ctrl){
         .fingerprint = 0x12,
         .used = 1,
     });
-    let hash_ctrl_expected = as$(u8)(0x12 | (1u << bitfield_shift_(fingerprint, HashMap_Ctrl)));
+    let hash_ctrl_expected = (as$(u8)(0x12 << bitfield_shift_(fingerprint, HashMap_Ctrl)))
+                           | (as$(u8)(1u << bitfield_shift_(used, HashMap_Ctrl)));
     try_(TEST_expect(hash_ctrl.packed == hash_ctrl_expected));
 
     let ver = Ver_from(1, 2, 3, Ver_Label_rc, 4);

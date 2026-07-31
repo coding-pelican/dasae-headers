@@ -1,15 +1,14 @@
 #include "dh-main.h"
 #include "dh/io/Buf.h"
-#include "dh/io/self.h"
+#include "dh/proc/std.h"
 #include "dh/fs/File/self.h"
 #include "dh/io/stream.h"
 #include "dh/fmt/common.h"
 
-fn_((main(proc_Self self))(E$void) $scope) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $scope) {
+    let_ignore = entry;
 
-    let in_file = io_handleStdIn();
+    let in_file = proc_std_in();
     let unbufd = fs_File_reader(in_file);
 
     var_(buf, A$$(4096, u8)) $undefined;

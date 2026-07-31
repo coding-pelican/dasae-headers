@@ -49,16 +49,42 @@ $attr($must_check)
 $extern fn_((proc_direct(void))(proc_direct_E$proc_Self));
 
 struct proc_Self_VTbl {
+    $attr($must_check)
     fn_(((*executablePathFn)(P$raw ctx, S$u8 out_buf))(E$S$u8));
+    $attr($must_check)
     fn_(((*currentPathFn)(P$raw ctx, S$u8 out_buf))(E$S$u8));
+    $attr($must_check)
     fn_(((*setCurrentPathFn)(P$raw ctx, S_const$u8 path))(E$void));
+    $attr($must_check)
     fn_(((*spawnFn)(P$raw ctx, proc_Cmd cmd))(E$proc_Child));
+    $attr($must_check)
     fn_(((*spawnPathFn)(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(E$proc_Child));
+    $attr($must_check)
     fn_(((*replaceFn)(P$raw ctx, proc_Cmd cmd))(E$void));
+    $attr($must_check)
     fn_(((*replacePathFn)(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(E$void));
-    fn_(((*waitFn)(P$raw ctx, proc_Child* child))(E$proc_Ter));
+    $attr($must_check)
+    fn_(((*waitFn)(P$raw ctx, proc_Child* child))(E$proc_Child_Ter));
     fn_(((*killFn)(P$raw ctx, proc_Child* child))(void));
 };
+$attr($must_check)
+$extern fn_((proc_VTbl_failingExecutablePath(P$raw ctx, S$u8 out_buf))(E$S$u8));
+$attr($must_check)
+$extern fn_((proc_VTbl_failingCurrentPath(P$raw ctx, S$u8 out_buf))(E$S$u8));
+$attr($must_check)
+$extern fn_((proc_VTbl_failingSetCurrentPath(P$raw ctx, S_const$u8 path))(E$void));
+$attr($must_check)
+$extern fn_((proc_VTbl_failingSpawn(P$raw ctx, proc_Cmd cmd))(E$proc_Child));
+$attr($must_check)
+$extern fn_((proc_VTbl_failingSpawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(E$proc_Child));
+$attr($must_check)
+$extern fn_((proc_VTbl_failingReplace(P$raw ctx, proc_Cmd cmd))(E$void));
+$attr($must_check)
+$extern fn_((proc_VTbl_failingReplacePath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(E$void));
+$attr($must_check)
+$extern fn_((proc_VTbl_failingWait(P$raw ctx, proc_Child* child))(E$proc_Child_Ter));
+$extern fn_((proc_VTbl_noKill(P$raw ctx, proc_Child* child))(void));
+$extern fn_((proc_VTbl_unreachableKill(P$raw ctx, proc_Child* child))(void));
 
 /*========== Macros and Definitions =========================================*/
 

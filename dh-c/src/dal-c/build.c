@@ -263,8 +263,7 @@ char* dal_c__resolveTargetDirName(const dal_c_CompilerOpts* opts) {
     char* result = dal_c__canonicalTargetDirName(output);
     free(output);
     if (result && dal_c__target_resolution_cache_count < dal_c__target_resolution_cache_capacity) {
-        dal_c__TargetResolutionCacheEntry* entry =
-            &dal_c__target_resolution_cache[dal_c__target_resolution_cache_count++];
+        dal_c__TargetResolutionCacheEntry* entry = &dal_c__target_resolution_cache[dal_c__target_resolution_cache_count++];
         entry->compiler = strdup(compiler);
         entry->cwd = cwd;
         cwd = NULL;
@@ -412,11 +411,26 @@ static void dal_c__manifestArtifactPartsCleanup(
     char** link,
     char** toolchain
 ) {
-    if (role) { free(*role); *role = NULL; }
-    if (path) { free(*path); *path = NULL; }
-    if (abi) { free(*abi); *abi = NULL; }
-    if (link) { free(*link); *link = NULL; }
-    if (toolchain) { free(*toolchain); *toolchain = NULL; }
+    if (role) {
+        free(*role);
+        *role = NULL;
+    }
+    if (path) {
+        free(*path);
+        *path = NULL;
+    }
+    if (abi) {
+        free(*abi);
+        *abi = NULL;
+    }
+    if (link) {
+        free(*link);
+        *link = NULL;
+    }
+    if (toolchain) {
+        free(*toolchain);
+        *toolchain = NULL;
+    }
 }
 
 static bool dal_c__manifestArtifactParse(
@@ -504,7 +518,9 @@ static bool dal_c__manifestArtifactValueValid(const char* value, char** reason_o
 }
 
 static bool dal_c__validatePrebuiltManifestSchema(const char* manifest_path, char** reason_out) {
-    enum { key_target, key_profile, key_count };
+    enum { key_target,
+           key_profile,
+           key_count };
     bool seen[key_count] = { false };
     ArrStr* artifacts = ArrStr_init();
     int line_count = 0;
@@ -543,7 +559,7 @@ static bool dal_c__validatePrebuiltManifestSchema(const char* manifest_path, cha
         }
 
         int key_index = str_eql(line, "target") ? key_target
-                      : (str_eql(line, "profile") ? key_profile : -1);
+                                                : (str_eql(line, "profile") ? key_profile : -1);
         if (key_index >= 0) {
             if (seen[key_index]) {
                 if (reason_out) { *reason_out = str_format("duplicate manifest key: %s", line); }
@@ -623,8 +639,7 @@ bool dal_c__copyPrebuiltManifestPackage(
         char* value = equals + 1;
         while (*value == ' ' || *value == '\t') { ++value; }
         size_t value_len = strlen(value);
-        while (value_len > 0 && (value[value_len - 1] == '\r' || value[value_len - 1] == '\n'
-            || value[value_len - 1] == ' ' || value[value_len - 1] == '\t')) {
+        while (value_len > 0 && (value[value_len - 1] == '\r' || value[value_len - 1] == '\n' || value[value_len - 1] == ' ' || value[value_len - 1] == '\t')) {
             value[--value_len] = '\0';
         }
 
@@ -701,9 +716,18 @@ static bool dal_c__manifestFindArtifact(
         char* toolchain = NULL;
         if (dal_c__manifestArtifactParse(value, &role, &path, &abi, &link, &toolchain, NULL)
             && str_eql(role, expected_role) && str_eql(path, expected_path)) {
-            if (abi_out) { *abi_out = abi; abi = NULL; }
-            if (link_out) { *link_out = link; link = NULL; }
-            if (toolchain_out) { *toolchain_out = toolchain; toolchain = NULL; }
+            if (abi_out) {
+                *abi_out = abi;
+                abi = NULL;
+            }
+            if (link_out) {
+                *link_out = link;
+                link = NULL;
+            }
+            if (toolchain_out) {
+                *toolchain_out = toolchain;
+                toolchain = NULL;
+            }
             found = true;
         }
         dal_c__manifestArtifactPartsCleanup(&role, &path, &abi, &link, &toolchain);
@@ -754,7 +778,7 @@ bool dal_c__prebuiltManifestCompatible(
                             &actual_abi,
                             &actual_link,
                             &actual_toolchain
-                        );
+                     );
     char* expected_abi = dal_c__makePrebuiltAbiContractKey(&compatibility_cmd, profile, target_type);
     char* expected_toolchain = lto_enabled ? dal_c__makeLtoToolchainContractKey(opts) : strdup("native");
     bool ok = true;
@@ -782,13 +806,13 @@ bool dal_c__prebuiltManifestCompatible(
         char* import_toolchain = NULL;
         bool import_ok = import_path && path_isFile(import_path) && import_relative
                       && dal_c__manifestFindArtifact(
-                            manifest_path,
-                            "import",
-                            import_relative,
-                            &import_abi,
-                            &import_link,
-                            &import_toolchain
-                         )
+                             manifest_path,
+                             "import",
+                             import_relative,
+                             &import_abi,
+                             &import_link,
+                             &import_toolchain
+                      )
                       && str_eql(import_abi, actual_abi)
                       && str_eql(import_link, actual_link)
                       && str_eql(import_toolchain, actual_toolchain);
@@ -842,15 +866,7 @@ bool dal_c__resolveCompatiblePrebuiltArtifact(
     char* artifact = dal_c__resolvePrebuiltArtifactPath(
         prebuilt_profile_dir, name, target_type, is_windows, lto_requested
     );
-    bool compatible = artifact && dal_c__prebuiltManifestCompatible(
-        prebuilt_profile_dir,
-        opts,
-        profile,
-        target_type,
-        lto_requested,
-        artifact,
-        &reason
-    );
+    bool compatible = artifact && dal_c__prebuiltManifestCompatible(prebuilt_profile_dir, opts, profile, target_type, lto_requested, artifact, &reason);
     if (compatible) {
         *artifact_out = artifact;
         if (lto_selected_out) { *lto_selected_out = lto_requested; }
@@ -867,15 +883,7 @@ bool dal_c__resolveCompatiblePrebuiltArtifact(
         );
         dal_c_CompilerOpts native_opts = *opts;
         native_opts.lto_mode = dal_c_LtoMode_off;
-        compatible = artifact && dal_c__prebuiltManifestCompatible(
-            prebuilt_profile_dir,
-            &native_opts,
-            profile,
-            target_type,
-            false,
-            artifact,
-            &reason
-        );
+        compatible = artifact && dal_c__prebuiltManifestCompatible(prebuilt_profile_dir, &native_opts, profile, target_type, false, artifact, &reason);
         if (compatible) {
             *artifact_out = artifact;
             free(reason);
@@ -1042,20 +1050,20 @@ bool dal_c__writePrebuiltManifest(
     char* abi_contract = dal_c__makePrebuiltAbiContractKey(cmd, profile, target_type);
     bool is_lto = role && str_eql(role, "static-lto");
     char* toolchain_contract = is_lto
-                             ? dal_c__makeLtoToolchainContractKey(&cmd->opts)
-                             : strdup("native");
+                                 ? dal_c__makeLtoToolchainContractKey(&cmd->opts)
+                                 : strdup("native");
     char* link_contract = target_type == dal_c_Target_shared_lib
-                        ? dal_c__makeLinkContractKey(cmd, profile, target_type)
-                        : strdup("none");
+                            ? dal_c__makeLinkContractKey(cmd, profile, target_type)
+                            : strdup("none");
     bool ok = role && target_relative && abi_contract && toolchain_contract && link_contract
            && dal_c__writeManifestArtifactSidecar(
-                profile_dir,
-                target_relative,
-                role,
-                abi_contract,
-                link_contract,
-                toolchain_contract
-              );
+                  profile_dir,
+                  target_relative,
+                  role,
+                  abi_contract,
+                  link_contract,
+                  toolchain_contract
+           );
 
     if (ok && dal_c__platformIsWindows() && target_type == dal_c_Target_shared_lib) {
         char* import_path = dal_c__makeSharedImportLibraryPath(target_path);
@@ -1063,13 +1071,13 @@ bool dal_c__writePrebuiltManifest(
         char* import_relative = dal_c__manifestNormalizeRelative(import_relative_raw);
         ok = import_path && path_isFile(import_path) && import_relative
           && dal_c__writeManifestArtifactSidecar(
-                profile_dir,
-                import_relative,
-                "import",
-                abi_contract,
-                link_contract,
-                toolchain_contract
-             );
+                 profile_dir,
+                 import_relative,
+                 "import",
+                 abi_contract,
+                 link_contract,
+                 toolchain_contract
+          );
         free(import_relative);
         free(import_relative_raw);
         free(import_path);
@@ -2931,18 +2939,7 @@ static int dal_c__ensureLibDH(const dal_c_Cmd* parent_cmd, const dal_c_Project* 
     char* prebuilt_artifact = NULL;
     char* dh_manifest_reason = NULL;
     bool selected_lto = false;
-    bool dh_manifest_ok = prebuilt_profile_dir && dal_c__resolveCompatiblePrebuiltArtifact(
-        prebuilt_profile_dir,
-        "dh",
-        dh_target_type,
-        is_windows,
-        lto_enabled,
-        &cmd.opts,
-        profile,
-        &prebuilt_artifact,
-        &selected_lto,
-        &dh_manifest_reason
-    );
+    bool dh_manifest_ok = prebuilt_profile_dir && dal_c__resolveCompatiblePrebuiltArtifact(prebuilt_profile_dir, "dh", dh_target_type, is_windows, lto_enabled, &cmd.opts, profile, &prebuilt_artifact, &selected_lto, &dh_manifest_reason);
     if (cmd.opts.prebuilt_mode != dal_c_PrebuiltMode_off && prebuilt_artifact && dh_manifest_ok) {
         char* output_libs_dir = path_join(profile_dir, "libs");
         dir_createRecur(output_libs_dir);
@@ -4186,8 +4183,8 @@ char* dal_c__makePlanFilePath(const dal_c_Project* proj, const dal_c_ProfileSpec
     char* profile_dir = NULL;
     if (proj && proj->root) {
         profile_dir = cmd->dry_run
-                    ? dal_c__makeBuildProfileDirReadOnly(proj, &cmd->opts, profile)
-                    : dal_c__makeBuildProfileDir(proj, &cmd->opts, profile);
+                        ? dal_c__makeBuildProfileDirReadOnly(proj, &cmd->opts, profile)
+                        : dal_c__makeBuildProfileDir(proj, &cmd->opts, profile);
     } else {
         char* target_name = dal_c__resolveTargetDirName(&cmd->opts);
         char* target_dir = (base_dir && target_name) ? path_join(base_dir, target_name) : NULL;
@@ -4711,8 +4708,8 @@ static dal_c_ToggleState dal_c__resolvedStackProtectorState(const dal_c_Compiler
 static int dal_c__resolvedMacroBacktraceLimit(const dal_c_CompilerOpts* opts) {
     assert(opts != NULL);
     return opts->macro_backtrace_limit_set
-         ? opts->macro_backtrace_limit
-         : dal_c_default_macro_backtrace_limit;
+             ? opts->macro_backtrace_limit
+             : dal_c_default_macro_backtrace_limit;
 }
 
 static const char* dal_c__resolvedTargetArch(const dal_c_CompilerOpts* opts, const dal_c_ProfileSpec* profile) {
@@ -5750,7 +5747,7 @@ static void dal_c__appendCompileDbDiagnostics(
             "-Wpointer-arith", "-Wbad-function-cast", "-Wnull-dereference",
             "-Wwrite-strings", "-Wuninitialized",
             "-Wno-switch-enum", "-Wstrict-prototypes", "-Wmissing-prototypes",
-            "-Wmissing-variable-declarations", "-Wdiv-by-zero", "-Wno-comment", NULL
+            "-Wmissing-variable-declarations", "-Wmissing-field-initializers", "-Wdiv-by-zero", "-Wno-comment", NULL
         };
         for (int i = 0; gcc_flags[i] != NULL; ++i) {
             ArrStr_push(argv, gcc_flags[i]);
@@ -5783,6 +5780,7 @@ static void dal_c__appendCompileDbDiagnostics(
             "-Wstrict-prototypes",
             "-Wmissing-prototypes",
             "-Wmissing-variable-declarations",
+            "-Wmissing-field-initializers",
             "-Wdiv-by-zero",
             "-Wthread-safety",
             NULL
@@ -5816,7 +5814,8 @@ static void dal_c__appendCompileDbDiagnostics(
         "-Wloop-analysis",
         "-Werror=strict-prototypes",
         "-Werror=missing-prototypes",
-        "-Wmissing-variable-declarations",
+        "-Werror=missing-variable-declarations",
+        "-Werror=missing-field-initializers",
         "-Werror=div-by-zero",
         "-Wthread-safety",
         NULL
@@ -6655,6 +6654,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
         (void)fprintf(fp, " -Wstrict-prototypes");
         (void)fprintf(fp, " -Wmissing-prototypes");
         (void)fprintf(fp, " -Wmissing-variable-declarations");
+        (void)fprintf(fp, " -Wmissing-field-initializers");
         (void)fprintf(fp, " -Wdiv-by-zero");
         if (compiler_is_clang) {
             (void)fprintf(fp, " -Wthread-safety");
@@ -6671,7 +6671,7 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
                 (void)fprintf(fp, " -Wframe-larger-than=4096");
             }
             (void)fprintf(fp, " -Wno-switch-enum -Wstrict-prototypes");
-            (void)fprintf(fp, " -Wmissing-prototypes -Wmissing-variable-declarations");
+            (void)fprintf(fp, " -Wmissing-prototypes -Wmissing-variable-declarations -Wmissing-field-initializers");
             (void)fprintf(fp, " -Wdiv-by-zero -Wno-comment");
         } else {
             (void)fprintf(fp, " -Werror=all -Werror=extra -Werror=conversion");
@@ -6688,7 +6688,8 @@ static dal_c__noinline void dal_c__writeMakefileVariables(
             (void)fprintf(fp, " -Wno-microsoft-anon-tag");
             (void)fprintf(fp, " -Wloop-analysis -Werror=strict-prototypes");
             (void)fprintf(fp, " -Werror=missing-prototypes");
-            (void)fprintf(fp, " -Wmissing-variable-declarations");
+            (void)fprintf(fp, " -Werror=missing-variable-declarations");
+            (void)fprintf(fp, " -Werror=missing-field-initializers");
             (void)fprintf(fp, " -Werror=div-by-zero -Wthread-safety");
         }
     }
@@ -7399,8 +7400,8 @@ char* dal_c__makePrebuiltAbiContractKey(
 static char* dal_c__makeLtoToolchainContractKey(const dal_c_CompilerOpts* opts) {
     assert(opts != NULL);
     const char* compiler = opts->compiler && opts->compiler[0]
-                         ? opts->compiler
-                         : dal_c_default_compiler;
+                             ? opts->compiler
+                             : dal_c_default_compiler;
     const char* argv[] = { compiler, "--version", NULL };
     char* version = proc_output(argv);
     if (version) {

@@ -367,50 +367,50 @@ fn_((fs_File_io(fs_File self))(fs_File_IO)) {
     return (fs_File_IO){ .file = self };
 }
 
-$static fn_((fs_File_IO__read(P$raw ctx, S$u8 buf))(E$usize) $scope) {
+$static fn_((fs_File_IO__read(P$raw ctx, S$u8 buf))(io_ReadE$usize) $scope) {
     let self = ptrCast$((fs_File_IO*)(ensureNonnull(ctx)));
 #if plat_is_windows
     var_(bytes_read, DWORD) = 0;
     if (!ReadFile(self->file.handle, buf.ptr, as$(DWORD)(buf.len), &bytes_read, null)) {
         let err = GetLastError();
         if (err == ERROR_HANDLE_EOF || err == ERROR_BROKEN_PIPE) return_ok(0);
-        return_err(E_cause$fs_ReadFailed());
+        return_err(E_cause$io_ReadFailed());
     }
     return_ok(as$(usize)(bytes_read));
 #elif plat_is_linux
     let bytes_read = sys_call_linux_read(self->file.handle, buf.ptr, buf.len);
     if (sys_call_linux_syscall_isErr(bytes_read)) {
-        return_err(E_cause$fs_ReadFailed());
+        return_err(E_cause$io_ReadFailed());
     } else {
         return_ok(as$(usize)(bytes_read));
     }
 #else
     let_ignore = self;
     let_ignore = buf;
-    return_err(E_cause$fs_Unsupported());
+    return_err(E_cause$io_ReadFailed());
 #endif
     claim_unreachable;
 } $unscoped(fn);
 
-$static fn_((fs_File_IO__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
+$static fn_((fs_File_IO__write(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize) $scope) {
     let self = ptrCast$((fs_File_IO*)(ensureNonnull(ctx)));
 #if plat_is_windows
     var_(bytes_written, DWORD) = 0;
     if (!WriteFile(self->file.handle, bytes.ptr, as$(DWORD)(bytes.len), &bytes_written, null)) {
-        return_err(E_cause$fs_WriteFailed());
+        return_err(E_cause$io_WriteFailed());
     }
     return_ok(as$(usize)(bytes_written));
 #elif plat_is_linux
     let bytes_written = sys_call_linux_write(self->file.handle, bytes.ptr, bytes.len);
     if (sys_call_linux_syscall_isErr(bytes_written)) {
-        return_err(E_cause$fs_WriteFailed());
+        return_err(E_cause$io_WriteFailed());
     } else {
         return_ok(as$(usize)(bytes_written));
     }
 #else
     let_ignore = self;
     let_ignore = bytes;
-    return_err(E_cause$fs_Unsupported());
+    return_err(E_cause$io_WriteFailed());
 #endif
     claim_unreachable;
 } $unscoped(fn);
@@ -447,7 +447,7 @@ $static fn_((fs__File_handleFromCtx(P$raw ctx))(fs_File_Handle)) {
 #endif
 }
 
-$static fn_((fs_File_handle__read(P$raw ctx, S$u8 buf))(E$usize) $scope) {
+$static fn_((fs_File_handle__read(P$raw ctx, S$u8 buf))(io_ReadE$usize) $scope) {
     var_(file, fs_File) = {
         .handle = fs__File_handleFromCtx(ctx),
         .flags = fs_File_Flags_default,
@@ -457,25 +457,25 @@ $static fn_((fs_File_handle__read(P$raw ctx, S$u8 buf))(E$usize) $scope) {
     if (!ReadFile(file.handle, buf.ptr, as$(DWORD)(buf.len), &bytes_read, null)) {
         let err = GetLastError();
         if (err == ERROR_HANDLE_EOF || err == ERROR_BROKEN_PIPE) return_ok(0);
-        return_err(E_cause$fs_ReadFailed());
+        return_err(E_cause$io_ReadFailed());
     }
     return_ok(as$(usize)(bytes_read));
 #elif plat_is_linux
     let bytes_read = sys_call_linux_read(file.handle, buf.ptr, buf.len);
     if (sys_call_linux_syscall_isErr(bytes_read)) {
-        return_err(E_cause$fs_ReadFailed());
+        return_err(E_cause$io_ReadFailed());
     } else {
         return_ok(as$(usize)(bytes_read));
     }
 #else
     let_ignore = file;
     let_ignore = buf;
-    return_err(E_cause$fs_Unsupported());
+    return_err(E_cause$io_ReadFailed());
 #endif
     claim_unreachable;
 } $unscoped(fn);
 
-$static fn_((fs_File_handle__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
+$static fn_((fs_File_handle__write(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize) $scope) {
     var_(file, fs_File) = {
         .handle = fs__File_handleFromCtx(ctx),
         .flags = fs_File_Flags_default,
@@ -483,20 +483,20 @@ $static fn_((fs_File_handle__write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope
 #if plat_is_windows
     var_(bytes_written, DWORD) = 0;
     if (!WriteFile(file.handle, bytes.ptr, as$(DWORD)(bytes.len), &bytes_written, null)) {
-        return_err(E_cause$fs_WriteFailed());
+        return_err(E_cause$io_WriteFailed());
     }
     return_ok(as$(usize)(bytes_written));
 #elif plat_is_linux
     let bytes_written = sys_call_linux_write(file.handle, bytes.ptr, bytes.len);
     if (sys_call_linux_syscall_isErr(bytes_written)) {
-        return_err(E_cause$fs_WriteFailed());
+        return_err(E_cause$io_WriteFailed());
     } else {
         return_ok(as$(usize)(bytes_written));
     }
 #else
     let_ignore = file;
     let_ignore = bytes;
-    return_err(E_cause$fs_Unsupported());
+    return_err(E_cause$io_WriteFailed());
 #endif
     claim_unreachable;
 } $unscoped(fn);
@@ -505,7 +505,7 @@ typedef union fs_File__Reader {
     io_Reader base;
     T_embed$(struct {
         P$raw ctx;
-        fn_(((*readFn)(P$raw ctx, S$u8 buf))(E$usize)) $must_check;
+        fn_(((*readFn)(P$raw ctx, S$u8 buf))(io_ReadE$usize)) $must_check;
     });
 } fs_File__Reader;
 
@@ -521,7 +521,7 @@ typedef union fs_File__Writer {
     io_Writer base;
     T_embed$(struct {
         P$raw ctx;
-        fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(E$usize)) $must_check;
+        fn_(((*writeFn)(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize)) $must_check;
     });
 } fs_File__Writer;
 

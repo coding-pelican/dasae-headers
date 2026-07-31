@@ -89,9 +89,8 @@ $static fn_((performOperation(i32 a, i32 b))(my_math_E$i32) $guard) {
     return_ok(result);
 } $unguarded(fn);
 
-fn_((main(proc_Self self))(E$void) $scope) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $scope) {
+    let_ignore = entry;
     io_stream_println(u8_l("---- Error Handling Examples ----"));
 
     // Basic error handling

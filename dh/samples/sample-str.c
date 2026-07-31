@@ -2,9 +2,8 @@
 #include "dh/io/stream.h"
 #include "dh/utf8.h"
 
-fn_((main(proc_Self self))(E$void) $scope) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $scope) {
+    let_ignore = entry;
 
     let readonly = u8_l("readonly byte slice");
     var writable_mem = u8_a("writable byte slice");

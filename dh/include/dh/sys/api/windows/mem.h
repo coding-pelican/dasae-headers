@@ -96,6 +96,9 @@ extern "C" {
 /// Documentation:
 /// https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/
 #include <memoryapi.h>
+#if !defined(ERROR_WORKING_SET_QUOTA)
+#define ERROR_WORKING_SET_QUOTA 1453L
+#endif
 /// ==================================================================================
 /// Heap Management API
 /// ==================================================================================

@@ -8,112 +8,75 @@ extern "C" {
 /*========== Includes =======================================================*/
 
 #include "base.h"
-#include "../fs.h"
 
 /*========== Macros and Declarations ========================================*/
 
-errset_((proc_E)(
-    proc_AccessDenied,
-    proc_FileNotFound,
-    proc_InvalidExe,
-    proc_InvalidName,
-    proc_NotDir,
-    proc_OperationUnsupported,
-    proc_PermissionDenied,
-    proc_ProcessAlreadyExited,
-    proc_ResourceLimitReached,
-    proc_SystemResources
+errset_((proc_AccessDenied_E)(proc_AccessDenied));
+errset_((proc_FileNotFound_E)(proc_FileNotFound));
+errset_((proc_InvalidExe_E)(proc_InvalidExe));
+errset_((proc_InvalidName_E)(proc_InvalidName));
+errset_((proc_NotDir_E)(proc_NotDir));
+errset_((proc_OperationUnsupported_E)(proc_OperationUnsupported));
+errset_((proc_PermissionDenied_E)(proc_PermissionDenied));
+errset_((proc_ProcessAlreadyExited_E)(proc_ProcessAlreadyExited));
+errset_((proc_ResourceLimitReached_E)(proc_ResourceLimitReached));
+errset_((proc_SystemResources_E)(proc_SystemResources));
+
+errset_((proc_Path_E)() $union_errset_(
+    proc_AccessDenied_E,
+    proc_FileNotFound_E,
+    proc_InvalidName_E,
+    proc_NotDir_E,
+    proc_OperationUnsupported_E,
+    proc_ResourceLimitReached_E,
+    proc_SystemResources_E
+));
+T_use_E$($set(proc_Path_E)(S$u8));
+
+errset_((proc_Spawn_E)() $union_errset_(
+    proc_Path_E,
+    proc_InvalidExe_E,
+    proc_PermissionDenied_E
 ));
 
-T_alias$((proc_ArgExpsn)(enum_((proc_ArgExpsn $fits($packed))(
-    proc_ArgExpsn_no_expand = 0,
-    proc_ArgExpsn_expand
-))));
+errset_((proc_Child_Wait_E)() $union_errset_(
+    proc_AccessDenied_E,
+    proc_OperationUnsupported_E,
+    proc_ProcessAlreadyExited_E,
+    proc_SystemResources_E
+));
 
-T_alias$((proc_StdIO_Tag)(enum_((proc_StdIO_Tag $fits($packed))(
-    proc_StdIO_Tag_inherit = 0,
-    proc_StdIO_Tag_file,
-    proc_StdIO_Tag_ignore,
-    proc_StdIO_Tag_pipe,
-    proc_StdIO_Tag_close
-))));
-T_alias$((proc_StdIO)(struct proc_StdIO {
-    var_(tag, proc_StdIO_Tag);
-    var_(file, fs_File);
-}));
+errset_((proc_Args_E)() $union_errset_(proc_ResourceLimitReached_E));
+T_useBy$(($spec(E, $set(proc_Args_E)))(O$S_const$u8, bool));
 
-T_alias$((proc_Ter_Tag)(enum_((proc_Ter_Tag $fits($packed))(
-    proc_Ter_Tag_exited = 0,
-    proc_Ter_Tag_signal,
-    proc_Ter_Tag_stopped,
-    proc_Ter_Tag_unknown
-))));
-T_alias$((proc_Ter)(struct proc_Ter {
-    var_(tag, proc_Ter_Tag);
-    var_(code, u32);
-}));
-T_use_E$(proc_Ter);
+errset_((proc_Env_E)() $union_errset_(proc_ResourceLimitReached_E));
+T_use_E$($set(proc_Env_E)(O$S_const$u8));
 
-T_alias$((proc_Env_Block)(S$S_const$u8));
-T_use_O$(proc_Env_Block);
-T_use_O$(fs_Dir);
+errset_((proc_Direct_E)(proc_Direct_Unsupported));
 
-T_alias$((proc_Cmd)(struct proc_Cmd {
-    var_(argv, S$S_const$u8);
-    var_(env, O$proc_Env_Block);
-    var_(cwd, O$fs_Dir);
-    var_(std_in, proc_StdIO);
-    var_(std_out, proc_StdIO);
-    var_(std_err, proc_StdIO);
-    var_(expand_arg0, proc_ArgExpsn);
-    var_(start_suspended, bool);
-    var_(create_no_window, bool);
-}));
+errset_((proc_MemLock_E)(
+    proc_MemLock_Unsupported,
+    proc_MemLock_PermissionDenied,
+    proc_MemLock_LimitExceeded,
+    proc_MemLock_SystemResources
+));
 
-$static let_(proc_StdIO_inherit, proc_StdIO) = {
-    .tag = proc_StdIO_Tag_inherit,
-    .file = cleared(),
-};
-$static let_(proc_StdIO_ignore, proc_StdIO) = {
-    .tag = proc_StdIO_Tag_ignore,
-    .file = cleared(),
-};
-$static let_(proc_StdIO_pipe, proc_StdIO) = {
-    .tag = proc_StdIO_Tag_pipe,
-    .file = cleared(),
-};
-$static let_(proc_StdIO_close, proc_StdIO) = {
-    .tag = proc_StdIO_Tag_close,
-    .file = cleared(),
-};
-$attr($inline_always)
-$static fn_((proc_StdIO_file(fs_File file))(proc_StdIO));
+errset_((proc_MemUnlock_E)(
+    proc_MemUnlock_PermissionDenied,
+    proc_MemUnlock_OutOfMemory,
+    proc_MemUnlock_SystemResources
+));
 
-$attr($must_check)
-$extern fn_((proc_executablePath(S$u8 out_buf))(E$S$u8));
-$attr($must_check)
-$extern fn_((proc_currentPath(S$u8 out_buf))(E$S$u8));
-$attr($must_check)
-$extern fn_((proc_setCurrentPath(S_const$u8 path))(E$void));
-$attr($must_check)
-$extern fn_((proc_spawn(proc_Cmd cmd))(E$proc_Child));
-$attr($must_check)
-$extern fn_((proc_spawnPath(fs_Dir dir, proc_Cmd cmd))(E$proc_Child));
-$attr($must_check)
-$extern fn_((proc_replace(proc_Cmd cmd))(E$void));
-$attr($must_check)
-$extern fn_((proc_replacePath(fs_Dir dir, proc_Cmd cmd))(E$void));
-
-/*========== Macros and Definitions =========================================*/
-
-#if in_analysis_active_only || in_comptime
-fn_((proc_StdIO_file(fs_File file))(proc_StdIO)) {
-    return (proc_StdIO){
-        .tag = proc_StdIO_Tag_file,
-        .file = file,
-    };
-};
-#endif /* in_analysis_active_only || in_comptime */
+errset_((proc_E)() $union_errset_(
+    proc_Path_E,
+    proc_Spawn_E,
+    proc_Child_Wait_E,
+    proc_Args_E,
+    proc_Env_E,
+    proc_Direct_E,
+    proc_MemLock_E,
+    proc_MemUnlock_E
+));
 
 #if defined(__cplusplus)
 } /* extern "C" */

@@ -31,10 +31,10 @@ typedef sys_posix_mode_t fs_Mode;
 typedef u32 fs_BlockSize;
 
 typedef struct fs_Dir fs_Dir;
-T_decl_E$(fs_Dir);
+T_decl_prl$(fs_Dir);
 
 typedef struct fs_File fs_File;
-T_decl_E$(fs_File);
+T_decl_prl$(fs_File);
 
 #if defined(__cplusplus)
 } /* extern "C" */

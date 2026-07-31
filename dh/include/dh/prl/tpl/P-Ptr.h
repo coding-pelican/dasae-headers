@@ -48,13 +48,14 @@ extern "C" {
 #define P_InnerT$(_$T...) TypeOf(*as$(_$T)(null))
 #define P_InnerTUnqual$(_$T...) TypeOfUnqual(*as$(_$T)(null))
 
+#define P_isNull isNull
+#define isNullP P_isNull
+#define P_isNonnull isNonnull
+#define isNonnullP P_isNonnull
+#define P_ensureNonnull ensureNonnull
+#define ensureNonnullP P_ensureNonnull
+
 /* Pointer Operations */
-#define isNullP isNull
-#define P_isNull isNullP
-#define isNonnullP isNonnull
-#define P_isNonnull isNonnullP
-#define ensureNonnullP ensureNonnull
-#define P_ensureNonnull ensureNonnullP
 
 #define P_deref deref
 #define derefP P_deref

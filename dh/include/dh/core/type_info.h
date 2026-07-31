@@ -126,13 +126,15 @@ claim_assert_static(sizeOf$(TypeInfoPacked) == int_bytes$(TypeInfoPacked));
 #define ____TypeInfo_log2_align(_$type_info...) (as$(u8)((_$type_info).log2_align))
 
 #define ____packTypeInfo$(_$T...) ( \
-    (as$(TypeInfoPacked)(sizeOf$(_$T)) & int_maskLo_static$((TypeInfoPacked)(TypeInfo_size_bits))) \
-    | (as$(TypeInfoPacked)(alignOfLog2$(_$T)) << TypeInfo_size_bits) \
+    ((as$(TypeInfoPacked)(sizeOf$(_$T)) << bitfield_shift_(size, TypeInfo)) \
+     & bitfield_mask_(size, TypeInfo)) \
+    | ((as$(TypeInfoPacked)(alignOfLog2$(_$T)) << bitfield_shift_(log2_align, TypeInfo)) \
+       & bitfield_mask_(log2_align, TypeInfo)) \
 )
 #define ____TypeInfoPacked_size(_$packed...) \
-    ((_$packed) & int_maskLo_static$((TypeInfoPacked)(TypeInfo_size_bits)))
+    (((_$packed) & bitfield_mask_(size, TypeInfo)) >> bitfield_shift_(size, TypeInfo))
 #define ____TypeInfoPacked_align(_$packed...) \
-    (as$(u32)((_$packed) >> TypeInfo_size_bits))
+    (as$(u32)(((_$packed) & bitfield_mask_(log2_align, TypeInfo)) >> bitfield_shift_(log2_align, TypeInfo)))
 
 #define ____TypeInfo_eql(_$lhs, _$rhs...) TypeInfoPacked_eql((_$lhs).packed, (_$rhs).packed)
 #define ____TypeInfo_neq(_$lhs, _$rhs...) TypeInfoPacked_neq((_$lhs).packed, (_$rhs).packed)

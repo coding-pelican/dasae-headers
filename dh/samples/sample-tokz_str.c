@@ -5,6 +5,7 @@
 #include "dh/io/Buf.h"
 #include "dh/io/stream.h"
 #include "dh/mem/common.h"
+#include "dh/proc/std.h"
 
 T_use$((u8)(
     mem_Delim,
@@ -13,14 +14,13 @@ T_use$((u8)(
     mem_TokzIter_next
 ));
 
-fn_((main(proc_Self self))(E$void) $scope) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $scope) {
+    let_ignore = entry;
 
     var_(input_mem, A$$(64, u8)) $undefined;
     let input_buf = A_ref$((S$u8)(input_mem));
     var_(read_mem, A$$(256, u8)) $undefined;
-    var stream_in = io_Buf_Reader_init(fs_File_reader(io_handleStdIn()), A_ref$((S$u8)(read_mem)));
+    var stream_in = io_Buf_Reader_init(fs_File_reader(proc_std_in()), A_ref$((S$u8)(read_mem)));
     let whitespace = A_ref$((S_const$u8)(u8_a(ascii_whitespaces)));
 
     io_stream_print(u8_l("tokenizing reading input: "));

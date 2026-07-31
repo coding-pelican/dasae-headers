@@ -767,8 +767,14 @@ fn_((fmt_parse$f32(S_const$u8 str))(E$f32) $scope) {
 
 fn_((fmt__writePadded(io_Writer writer, S_const$u8 content, fmt_Spec spec))(E$void) $scope) {
     // printf("--- debug print: fmt__writePadded ---\n");
-    let width = orelse_((spec.width)(return io_Writer_writeBytes(writer, content)));
-    if (width <= content.len) { return io_Writer_writeBytes(writer, content); }
+    let width = orelse_((spec.width)({
+        try_(io_Writer_writeBytes(writer, content));
+        return_ok({});
+    }));
+    if (width <= content.len) {
+        try_(io_Writer_writeBytes(writer, content));
+        return_ok({});
+    }
     let padding = width - content.len;
     // Use explicit fill or default to space
     let fill = orelse_((spec.fill)(u8_c(' ')));

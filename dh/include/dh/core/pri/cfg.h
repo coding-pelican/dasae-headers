@@ -464,6 +464,9 @@ typedef TypeOf(void*) P$raw;
 #define $P_const$(_$T...) TypeOf(const _$T*)
 #define $P$(_$T...) TypeOf(_$T*)
 
+#define null __val__null
+#define null$(_$T...) __val__null$(_$T)
+
 #define isNull(_$p /*: P(_$T)*/... /*(bool)*/) __expr__ptr__isNull(_$p)
 #define isNonnull(_$p /*: P(_$T)*/... /*(bool)*/) __expr__ptr__isNonnull(_$p)
 #define ensureNonnull(_$p /*: P(_$T)*/... /*(P(_$T))*/) __expr__ptr__ensureNonnull(_$p)
@@ -729,9 +732,11 @@ typedef TypeOf(void*) P$raw;
     ) pp_end \
 )
 
+#define __val__null raw_null
+#define __val__null$(_$T...) raw_null$(_$T)
+
 #define __expr__ptr__isNull(_$p...) (as$(bool)((_$p) == null))
 #define __expr__ptr__isNonnull(_$p...) (as$(bool)((_$p) != null))
-
 #define __expr__ptr__ensureNonnull(_$p...) __expr__ptr__ensureNonnull__bind(pp_uniqTok(p), _$p)
 #define __expr__ptr__ensureNonnull__bind(__p, _$p...) local_({ \
     let_(__p, TypeOf(_$p)) = _$p; \

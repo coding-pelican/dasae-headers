@@ -1,13 +1,12 @@
 #include "dh-main.h"
 #include "dh/io/Buf.h"
-#include "dh/io/self.h"
+#include "dh/proc/std.h"
 #include "dh/fs/File/self.h"
 
-fn_((main(proc_Self self))(E$void) $guard) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let_ignore = entry;
 
-    let out_file = io_handleStdOut();
+    let out_file = proc_std_out();
     let unbufd = fs_File_writer(out_file);
 
     var_(buf, A$$(4096, u8)) $undefined;

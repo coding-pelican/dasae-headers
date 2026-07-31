@@ -118,10 +118,11 @@ $static fn_((Terminal_writeTextAt(u32 x, u32 y, S_const$u8 text))(void)) {
 #include "dh/io/common.h"
 #include "dh/io/stream.h"
 #include "dh/io/Reader.h"
+#include "dh/proc/std.h"
 
 T_use_A$(1024, u8);
 $static fn_((Terminal_readBytes(S$u8 mem))(S$u8)) {
-    let stream_in = fs_File_reader(io_handleStdIn());
+    let stream_in = fs_File_reader(proc_std_in());
     return S_prefix((mem)(catch_((io_Reader_read(stream_in, mem))($ignore, claim_unreachable))));
 };
 

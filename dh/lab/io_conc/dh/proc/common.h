@@ -30,64 +30,64 @@ T_alias$((proc_ArgExpsn)(enum_((proc_ArgExpsn $fits($packed))(
     proc_ArgExpsn_expand,
 ))));
 
-T_alias$((proc_StdIO_Tag)(enum_((proc_StdIO_Tag $fits($packed))(
-    proc_StdIO_Tag_inherit = 0,
-    proc_StdIO_Tag_file,
-    proc_StdIO_Tag_ignore,
-    proc_StdIO_Tag_pipe,
-    proc_StdIO_Tag_close,
+T_alias$((proc_std_IO_Tag)(enum_((proc_std_IO_Tag $fits($packed))(
+    proc_std_IO_Tag_inherit = 0,
+    proc_std_IO_Tag_file,
+    proc_std_IO_Tag_ignore,
+    proc_std_IO_Tag_pipe,
+    proc_std_IO_Tag_close,
 ))));
-T_alias$((proc_StdIO)(struct proc_StdIO {
-    var_(tag, proc_StdIO_Tag);
+T_alias$((proc_std_IO)(struct proc_std_IO {
+    var_(tag, proc_std_IO_Tag);
     var_(file, fs_File);
 }));
 
-T_alias$((proc_Ter_Tag)(enum_((proc_Ter_Tag $fits($packed))(
-    proc_Ter_Tag_exited = 0,
-    proc_Ter_Tag_signal,
-    proc_Ter_Tag_stopped,
-    proc_Ter_Tag_unknown,
+T_alias$((proc_Child_Ter_Tag)(enum_((proc_Child_Ter_Tag $fits($packed))(
+    proc_Child_Ter_Tag_exited = 0,
+    proc_Child_Ter_Tag_signal,
+    proc_Child_Ter_Tag_stopped,
+    proc_Child_Ter_Tag_unknown,
 ))));
-T_alias$((proc_Ter)(struct proc_Ter {
-    var_(tag, proc_Ter_Tag);
+T_alias$((proc_Child_Ter)(struct proc_Child_Ter {
+    var_(tag, proc_Child_Ter_Tag);
     var_(code, u32);
 }));
-T_use_E$(proc_Ter);
+T_use_E$(proc_Child_Ter);
 
 T_alias$((proc_Cmd)(struct proc_Cmd {
     var_(argv, S$S_const$u8);
     var_(env, S$S_const$u8);
     var_(cwd, fs_Dir*);
-    var_(std_in, proc_StdIO);
-    var_(std_out, proc_StdIO);
-    var_(std_err, proc_StdIO);
+    var_(std_in, proc_std_IO);
+    var_(std_out, proc_std_IO);
+    var_(std_err, proc_std_IO);
     var_(expand_arg0, proc_ArgExpsn);
     var_(start_suspended, bool);
     var_(create_no_window, bool);
 }));
 
-$static let_(proc_StdIO_inherit, proc_StdIO) = {
-    .tag = proc_StdIO_Tag_inherit,
+$static let_(proc_std_IO_inherit, proc_std_IO) = {
+    .tag = proc_std_IO_Tag_inherit,
     .file = cleared(),
 };
-$static let_(proc_StdIO_ignore, proc_StdIO) = {
-    .tag = proc_StdIO_Tag_ignore,
+$static let_(proc_std_IO_ignore, proc_std_IO) = {
+    .tag = proc_std_IO_Tag_ignore,
     .file = cleared(),
 };
-$static let_(proc_StdIO_pipe, proc_StdIO) = {
-    .tag = proc_StdIO_Tag_pipe,
+$static let_(proc_std_IO_pipe, proc_std_IO) = {
+    .tag = proc_std_IO_Tag_pipe,
     .file = cleared(),
 };
-$static let_(proc_StdIO_close, proc_StdIO) = {
-    .tag = proc_StdIO_Tag_close,
+$static let_(proc_std_IO_close, proc_std_IO) = {
+    .tag = proc_std_IO_Tag_close,
     .file = cleared(),
 };
 $attr($inline_always)
-$static fn_((proc_StdIO_file(fs_File file))(proc_StdIO));
+$static fn_((proc_std_IO_file(fs_File file))(proc_std_IO));
 
-fn_((proc_StdIO_file(fs_File file))(proc_StdIO)) {
-    return (proc_StdIO){
-        .tag = proc_StdIO_Tag_file,
+fn_((proc_std_IO_file(fs_File file))(proc_std_IO)) {
+    return (proc_std_IO){
+        .tag = proc_std_IO_Tag_file,
         .file = file,
     };
 }

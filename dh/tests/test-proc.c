@@ -1,5 +1,7 @@
 #include "dh-main.h"
 #include "dh/proc.h"
+#include "dh/start/Entry.h"
+#include "dh/mem/common.h"
 #include "dh/fs/File.h"
 #include "dh/fs/Dir.h"
 #include "dh/io/Reader.h"
@@ -8,14 +10,126 @@
 #include "dh/sys/call/linux.h"
 #endif /* plat_is_linux */
 
-TEST_fn_("proc: current path is available" $scope) {
+T_alias$((test_proc__Argv)(A$$(1, P_const$u8)));
+T_alias$((test_proc__Fixture)(struct test_proc__Fixture {
+    var_(start, start_Entry);
+    var_(direct, proc_Direct);
+    var_(argv, test_proc__Argv);
+}));
+
+$static fn_((test_proc__Fixture_init(test_proc__Fixture* self))(proc_Self)) {
+    claim_assert_nonnull(self);
+#if plat_is_windows
+    start_Entry_initWin32(&self->start);
+#else
+    self->argv = (test_proc__Argv)A_init({
+        [0] = as$(P_const$u8)("test-proc"),
+    });
+    start_Entry_initClassic(
+        &self->start,
+        A_len(self->argv),
+        as$(P_const$(P_const$u8))(A_ptr(self->argv))
+    );
+#endif
+    self->direct = proc_Direct_init(start_Entry_env(&self->start));
+    let proc = catch_((proc_Direct_self(&self->direct))($ignore, claim_unreachable));
+    return start_Entry_entry(&self->start, proc).proc;
+};
+
+$static fn_((test_proc__Fixture_fini(test_proc__Fixture* self))(void)) {
+    claim_assert_nonnull(self);
+    start_Entry_fini(&self->start);
+};
+
+
+T_alias$((test_proc__Injected)(struct test_proc__Injected {
+    var_(marker, u8);
+}));
+
+$static fn_((test_proc__Injected_executablePath(P$raw ctx, S$u8 out_buf))(proc_Path_E$S$u8));
+$static fn_((test_proc__Injected_currentPath(P$raw ctx, S$u8 out_buf))(proc_Path_E$S$u8));
+$static fn_((test_proc__Injected_setCurrentPath(P$raw ctx, S_const$u8 path))(proc_Path_E$void));
+$static fn_((test_proc__Injected_spawn(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
+$static fn_((test_proc__Injected_spawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$proc_Child));
+$static fn_((test_proc__Injected_replace(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$void));
+$static fn_((test_proc__Injected_replacePath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$void));
+
+$static let_(test_proc__Injected_self_vtbl, proc_Self_VTbl) = {
+    .executablePathFn = test_proc__Injected_executablePath,
+    .currentPathFn = test_proc__Injected_currentPath,
+    .setCurrentPathFn = test_proc__Injected_setCurrentPath,
+    .spawnFn = test_proc__Injected_spawn,
+    .spawnPathFn = test_proc__Injected_spawnPath,
+    .replaceFn = test_proc__Injected_replace,
+    .replacePathFn = test_proc__Injected_replacePath,
+};
+
+fn_((test_proc__Injected_executablePath(P$raw ctx, S$u8 out_buf))(proc_Path_E$S$u8) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = out_buf;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+fn_((test_proc__Injected_currentPath(P$raw ctx, S$u8 out_buf))(proc_Path_E$S$u8) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = out_buf;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+fn_((test_proc__Injected_setCurrentPath(P$raw ctx, S_const$u8 path))(proc_Path_E$void) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = path;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+fn_((test_proc__Injected_spawn(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$proc_Child) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = cmd;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+fn_((test_proc__Injected_spawnPath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$proc_Child) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = dir;
+    let_ignore = cmd;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+fn_((test_proc__Injected_replace(P$raw ctx, proc_Cmd cmd))(proc_Spawn_E$void) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = cmd;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+fn_((test_proc__Injected_replacePath(P$raw ctx, fs_Dir dir, proc_Cmd cmd))(proc_Spawn_E$void) $scope) {
+    claim_assert_nonnull(ctx);
+    let_ignore = dir;
+    let_ignore = cmd;
+    return_err(E_cause$proc_OperationUnsupported());
+} $unscoped(fn);
+
+$static fn_((test_proc__Injected_self(test_proc__Injected* ctx))(proc_Self)) {
+    claim_assert_nonnull(ctx);
+    return proc_ensureValid((proc_Self){
+        .ctx = ctx,
+        .vtbl = &test_proc__Injected_self_vtbl,
+    });
+};
+
+TEST_fn_("proc: current path is available" $guard) {
+    var_(fixture, test_proc__Fixture) $undefined;
+    let self = test_proc__Fixture_init(&fixture);
+    defer_(test_proc__Fixture_fini(&fixture));
     var_(buf, A$$(512, u8)) $undefined;
-    let path = try_(proc_currentPath(A_ref$((S$u8)(buf))));
+    let path = try_(proc_currentPath(self, A_ref$((S$u8)(buf))));
 
     try_(TEST_expect(path.len != 0));
-} $unscoped(TEST_fn);
+} $unguarded(TEST_fn);
 
-TEST_fn_("proc: spawn and wait exit code" $scope) {
+TEST_fn_("proc: spawn and wait exit code" $guard) {
+    var_(fixture, test_proc__Fixture) $undefined;
+    let self = test_proc__Fixture_init(&fixture);
+    defer_(test_proc__Fixture_fini(&fixture));
 #if plat_is_windows
     var_(argv, A$$(4, S_const$u8)) = A_init({
         [0] = u8_l("cmd.exe"),
@@ -30,24 +144,30 @@ TEST_fn_("proc: spawn and wait exit code" $scope) {
         [2] = u8_l("exit 7"),
     });
 #endif /* plat_is_windows, plat_is_linux */
-    var child = try_(proc_spawn((proc_Cmd){
-        .argv = A_ref$((S$S_const$u8)(argv)),
-        .env = none(),
-        .cwd = none(),
-        .std_in = proc_StdIO_ignore,
-        .std_out = proc_StdIO_ignore,
-        .std_err = proc_StdIO_ignore,
-        .expand_arg0 = proc_ArgExpsn_no_expand,
-        .start_suspended = false,
-        .create_no_window = true,
-    }));
+    var child = try_(proc_spawn(
+        self,
+        (proc_Cmd){
+            .argv = A_ref$((S$S_const$u8)(argv)),
+            .env = none(),
+            .cwd = none(),
+            .std_in = union_of((proc_std_IO_ignore){}),
+            .std_out = union_of((proc_std_IO_ignore){}),
+            .std_err = union_of((proc_std_IO_ignore){}),
+            .expand_arg0 = proc_ArgExpsn_no_expand,
+            .start_suspended = false,
+            .create_no_window = true,
+        }
+    ));
     let term = try_(proc_Child_wait(&child));
 
-    try_(TEST_expect(term.tag == proc_Ter_Tag_exited));
-    try_(TEST_expect(term.code == 7));
-} $unscoped(TEST_fn);
+    try_(TEST_expect(matches(term, proc_Child_Ter_Tag_exited)));
+    try_(TEST_expect(union_to((term)(proc_Child_Ter_Tag_exited)) == 7));
+} $unguarded(TEST_fn);
 
 TEST_fn_("proc: stdout pipe captures child output" $guard) {
+    var_(fixture, test_proc__Fixture) $undefined;
+    let self = test_proc__Fixture_init(&fixture);
+    defer_(test_proc__Fixture_fini(&fixture));
 #if plat_is_windows
     var_(argv, A$$(4, S_const$u8)) = A_init({
         [0] = u8_l("cmd.exe"),
@@ -64,24 +184,27 @@ TEST_fn_("proc: stdout pipe captures child output" $guard) {
     });
     let expected = u8_l("hello\n");
 #endif /* plat_is_windows, plat_is_linux */
-    var child = try_(proc_spawn((proc_Cmd){
-        .argv = A_ref$((S$S_const$u8)(argv)),
-        .env = none(),
-        .cwd = none(),
-        .std_in = proc_StdIO_ignore,
-        .std_out = proc_StdIO_pipe,
-        .std_err = proc_StdIO_ignore,
-        .expand_arg0 = proc_ArgExpsn_no_expand,
-        .start_suspended = false,
-        .create_no_window = true,
-    }));
-    try_(TEST_expect(isSome(child.std_out)));
-    let std_out = unwrap_(child.std_out);
+    var child = try_(proc_spawn(
+        self,
+        (proc_Cmd){
+            .argv = A_ref$((S$S_const$u8)(argv)),
+            .env = none(),
+            .cwd = none(),
+            .std_in = union_of((proc_std_IO_ignore){}),
+            .std_out = union_of((proc_std_IO_pipe){}),
+            .std_err = union_of((proc_std_IO_ignore){}),
+            .expand_arg0 = proc_ArgExpsn_no_expand,
+            .start_suspended = false,
+            .create_no_window = true,
+        }
+    ));
+    try_(TEST_expect(isSome(child.io.out)));
+    let std_out = unwrap_(child.io.out);
     defer_(fs_File_close(std_out));
 
     let term = try_(proc_Child_wait(&child));
-    try_(TEST_expect(term.tag == proc_Ter_Tag_exited));
-    try_(TEST_expect(term.code == 0));
+    try_(TEST_expect(matches(term, proc_Child_Ter_Tag_exited)));
+    try_(TEST_expect(union_to((term)(proc_Child_Ter_Tag_exited)) == 0));
 
     var_(buf, A$$(7, u8)) $undefined;
     let reader = fs_File_reader(std_out);
@@ -131,6 +254,9 @@ $static fn_((test__readPipeAll(fs_File file, S$u8 out))(E$S$u8) $scope) {
 #endif /* !plat_is_windows */
 
 TEST_fn_("proc: custom environment block is passed to child" $guard) {
+    var_(fixture, test_proc__Fixture) $undefined;
+    let self = test_proc__Fixture_init(&fixture);
+    defer_(test_proc__Fixture_fini(&fixture));
 #if plat_is_windows
     var_(comspec_buf, A$$(512, u8)) $undefined;
     let comspec_len = GetEnvironmentVariableA(
@@ -156,23 +282,23 @@ TEST_fn_("proc: custom environment block is passed to child" $guard) {
     var_(env, A$$(1, S_const$u8)) = A_init({
         [0] = u8_l("PROC_TEST_VAR=from-env"),
     });
-    var child = try_(proc_spawn((proc_Cmd){
-        .argv = A_ref$((S$S_const$u8)(argv)),
-        .env = some(A_ref$((S$S_const$u8)(env))),
-        .cwd = none(),
-        .std_in = proc_StdIO_ignore,
-        .std_out = proc_StdIO_pipe,
-        .std_err = proc_StdIO_ignore,
-        .expand_arg0 = proc_ArgExpsn_no_expand,
-        .start_suspended = false,
-        .create_no_window = true,
-    }));
+    var child = try_(proc_spawn(self, (proc_Cmd){
+                                          .argv = A_ref$((S$S_const$u8)(argv)),
+                                          .env = some(A_ref$((S$S_const$u8)(env))),
+                                          .cwd = none(),
+                                          .std_in = union_of((proc_std_IO_ignore){}),
+                                          .std_out = union_of((proc_std_IO_pipe){}),
+                                          .std_err = union_of((proc_std_IO_ignore){}),
+                                          .expand_arg0 = proc_ArgExpsn_no_expand,
+                                          .start_suspended = false,
+                                          .create_no_window = true,
+                                      }));
 
     let term = try_(proc_Child_wait(&child));
-    try_(TEST_expect(term.code == 0));
+    try_(TEST_expect(union_to((term)(proc_Child_Ter_Tag_exited)) == 0));
 
     var_(buf, A$$(64, u8)) $undefined;
-    let std_out = unwrap_(child.std_out);
+    let std_out = unwrap_(child.io.out);
     defer_(fs_File_close(std_out));
 
     let out = try_(test__readPipeAll(std_out, A_ref$((S$u8)(buf))));
@@ -180,6 +306,9 @@ TEST_fn_("proc: custom environment block is passed to child" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("proc: cwd handle is passed to child" $guard) {
+    var_(fixture, test_proc__Fixture) $undefined;
+    let self = test_proc__Fixture_init(&fixture);
+    defer_(test_proc__Fixture_fini(&fixture));
     let dir = fs_path_dirname(mem_spanZ0$u8(src_loc_filePath()));
     var_(dir_z, A$$(1024, u8)) = A_zero();
     mem_copyBytes(S_prefix((A_ref$((S$u8)(dir_z)))(dir.len)), dir);
@@ -206,23 +335,26 @@ TEST_fn_("proc: cwd handle is passed to child" $guard) {
         [0] = u8_l("/bin/pwd"),
     });
 #endif /* plat_is_windows, plat_is_linux */
-    var child = try_(proc_spawn((proc_Cmd){
-        .argv = A_ref$((S$S_const$u8)(argv)),
-        .env = none(),
-        .cwd = some(dir_handle),
-        .std_in = proc_StdIO_ignore,
-        .std_out = proc_StdIO_pipe,
-        .std_err = proc_StdIO_ignore,
-        .expand_arg0 = proc_ArgExpsn_no_expand,
-        .start_suspended = false,
-        .create_no_window = true,
-    }));
+    var child = try_(proc_spawn(
+        self,
+        (proc_Cmd){
+            .argv = A_ref$((S$S_const$u8)(argv)),
+            .env = none(),
+            .cwd = some(dir_handle),
+            .std_in = union_of((proc_std_IO_ignore){}),
+            .std_out = union_of((proc_std_IO_pipe){}),
+            .std_err = union_of((proc_std_IO_ignore){}),
+            .expand_arg0 = proc_ArgExpsn_no_expand,
+            .start_suspended = false,
+            .create_no_window = true,
+        }
+    ));
 
     let term = try_(proc_Child_wait(&child));
-    try_(TEST_expect(term.code == 0));
+    try_(TEST_expect(union_to((term)(proc_Child_Ter_Tag_exited)) == 0));
 
     var_(buf, A$$(640, u8)) $undefined;
-    let std_out = unwrap_(child.std_out);
+    let std_out = unwrap_(child.io.out);
     defer_(fs_File_close(std_out));
     let out = try_(test__readPipeAll(std_out, A_ref$((S$u8)(buf))));
 
@@ -242,6 +374,9 @@ TEST_fn_("proc: cwd handle is passed to child" $guard) {
 } $unguarded(TEST_fn);
 
 TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
+    var_(fixture, test_proc__Fixture) $undefined;
+    let self = test_proc__Fixture_init(&fixture);
+    defer_(test_proc__Fixture_fini(&fixture));
 #if plat_is_windows
     var_(comspec_buf, A$$(512, u8)) $undefined;
     let comspec_len = GetEnvironmentVariableA(
@@ -276,14 +411,15 @@ TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
     });
 #endif /* plat_is_windows, plat_is_linux */
     var child = try_(proc_spawnPath(
+        self,
         dir,
         (proc_Cmd){
             .argv = A_ref$((S$S_const$u8)(argv)),
             .env = none(),
             .cwd = none(),
-            .std_in = proc_StdIO_ignore,
-            .std_out = proc_StdIO_ignore,
-            .std_err = proc_StdIO_ignore,
+            .std_in = union_of((proc_std_IO_ignore){}),
+            .std_out = union_of((proc_std_IO_ignore){}),
+            .std_err = union_of((proc_std_IO_ignore){}),
             .expand_arg0 = proc_ArgExpsn_no_expand,
             .start_suspended = false,
             .create_no_window = true,
@@ -291,59 +427,27 @@ TEST_fn_("proc: spawnPath resolves executable relative to dir handle" $guard) {
     ));
 
     let term = try_(proc_Child_wait(&child));
-    try_(TEST_expect(term.code == 9));
+    try_(TEST_expect(union_to((term)(proc_Child_Ter_Tag_exited)) == 9));
+} $unguarded(TEST_fn);
+TEST_fn_("proc: Self accepts a user-provided implementation" $guard) {
+    var_(ctx, test_proc__Injected) = { .marker = 1 };
+    let self = test_proc__Injected_self(&ctx);
+    try_(TEST_expect(proc_isValid(self)));
 } $unguarded(TEST_fn);
 
-TEST_fn_("proc: start info preserves argv environ and auxv boundaries" $scope) {
-#if plat_is_linux
-    var_(raw, A$$(8, usize)) = A_init({
-        [0] = 2,
-        [1] = ptrToInt(as$(const u8*)("proc-test")),
-        [2] = ptrToInt(as$(const u8*)("argument")),
-        [3] = 0,
-        [4] = ptrToInt(as$(const u8*)("PROC_TEST_VALUE=present")),
-        [5] = 0,
-        [6] = 0,
-        [7] = 0,
-    });
-    let info = start_Info_fromRaw(A_ptr(raw));
-    let argv = as$(const char* const*)(info.argv_raw);
-    let envp = as$(const char* const*)(info.envp_raw);
+TEST_fn_("proc: Entry exposes copyable startup facts" $guard) {
+    var_(fixture, test_proc__Fixture) $undefined;
+    let_ignore = test_proc__Fixture_init(&fixture);
+    defer_(test_proc__Fixture_fini(&fixture));
 
-    try_(TEST_expect(info.argc == 2));
-    try_(TEST_expect(info.envc == 1));
-    try_(TEST_expect(mem_eqlBytes(mem_spanZ0$u8(as$(const u8*)(argv[0])), u8_l("proc-test"))));
-    try_(TEST_expect(mem_eqlBytes(mem_spanZ0$u8(as$(const u8*)(argv[1])), u8_l("argument"))));
-    try_(TEST_expect(mem_eqlBytes(mem_spanZ0$u8(as$(const u8*)(envp[0])), u8_l("PROC_TEST_VALUE=present"))));
-    try_(TEST_expect(info.auxv_raw == as$(P_const$raw)(A_ptr(raw) + 6)));
-#else
-    try_(TEST_expect(true));
-#endif /* plat_is_linux */
-} $unscoped(TEST_fn);
+    let proc = catch_((proc_Direct_self(&fixture.direct))($ignore, claim_unreachable));
+    let entry = start_Entry_entry(&fixture.start, proc);
+    let copied = entry;
+    try_(TEST_expect(proc_isValid(copied.proc)));
 
-TEST_fn_("proc: Self is an explicit startup view" $scope) {
-    var_(args_mem, A$$(2, S_const$u8)) = A_init({
-        [0] = u8_l("proc-test"),
-        [1] = u8_l("argument"),
-    });
-    var_(env_mem, A$$(1, S_const$u8)) = A_init({
-        [0] = u8_l("PROC_TEST_VALUE=present"),
-    });
-    var_(preopen_mem, A$$(1, proc_Preopen)) = A_init({
-        [0] = {
-            .name = u8_l("root"),
-            .tag = proc_Preopen_Tag_dir,
-            .dir = cleared(),
-        },
-    });
-    let self = (proc_Self){
-        .args = { .items = A_ref$((S_const$S_const$u8)(args_mem)) },
-        .environ = { .block = A_ref$((S_const$S_const$u8)(env_mem)) },
-        .preopens = { .items = A_ref$((S_const$proc_Preopen)(preopen_mem)) },
-    };
-
-    try_(TEST_expect(self.args.items.len == 2));
-    try_(TEST_expect(self.environ.block.len == 1));
-    try_(TEST_expect(self.preopens.items.len == 1));
-    try_(TEST_expect(self.preopens.items.ptr[0].tag == proc_Preopen_Tag_dir));
-} $unscoped(TEST_fn);
+    var args = proc_Args_iter(copied.args);
+    var_(scratch, A$$(256, u8)) $undefined;
+    let arg0 = try_(proc_Args_Iter_next(&args, A_ref$((S$u8)(scratch))));
+    try_(TEST_expect(isSome(arg0)));
+    try_(TEST_expect(isSome(proc_Preopens_by(copied.preopens, u8_l("stdin")))));
+} $unguarded(TEST_fn);

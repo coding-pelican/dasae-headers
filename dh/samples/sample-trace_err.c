@@ -20,8 +20,7 @@ $static fn_((func1(void))(E$void) $scope) {
     return_ok(try_(func2()));
 } $unscoped(fn);
 
-fn_((main(proc_Self self))(E$void) $scope) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $scope) {
+    let_ignore = entry;
     return_ok(try_(func1()));
 } $unscoped(fn);

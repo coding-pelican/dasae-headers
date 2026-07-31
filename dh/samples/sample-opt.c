@@ -62,9 +62,8 @@ $static fn_((processNestedOptionals(O$i32 maybe_outer, O$i32 maybe_inner))(i32) 
     claim_unreachable;
 } $unscoped(fn);
 
-fn_((main(proc_Self self))(E$void) $scope) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $scope) {
+    let_ignore = entry;
 
     // Create some optional values
     let opt_with_value = (O$i32)some(42);

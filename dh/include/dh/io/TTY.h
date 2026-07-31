@@ -22,6 +22,7 @@ extern "C" {
 
 #include "self.h"
 #include "../fs/File/self.h"
+#include "../proc/std.h"
 
 /*========== Macros and Declarations ========================================*/
 
@@ -103,6 +104,7 @@ T_alias$((io_TTY_Pos)(struct io_TTY_Pos {
     var_(y, u16);
 }));
 T_use_E$($set(io_TTY_E)(io_TTY_Pos));
+T_use_E$($set(io_TTY_E)(bool));
 
 /*---------- Terminal Instance ----------------------------------------------*/
 
@@ -139,26 +141,26 @@ $extern fn_((io_TTY_writer(const io_TTY* self))(io_Writer));
 $attr($must_check)
 $extern fn_((io_TTY_snapshot(const io_TTY* self))(io_TTY_E$io_TTY_ModeSnapshot));
 $attr($must_check)
-$extern fn_((io_TTY_restore(const io_TTY* self, io_TTY_ModeSnapshot snapshot))(E$void));
+$extern fn_((io_TTY_restore(const io_TTY* self, io_TTY_ModeSnapshot snapshot))(io_TTY_E$void));
 $attr($must_check)
-$extern fn_((io_TTY_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(E$void));
+$extern fn_((io_TTY_applyModePatch(const io_TTY* self, io_TTY_ModePatch patch))(io_TTY_E$void));
 $attr($must_check)
-$extern fn_((io_TTY_enterMode(io_TTY* self, io_TTY_ModePatch patch))(E$void));
+$extern fn_((io_TTY_enterMode(io_TTY* self, io_TTY_ModePatch patch))(io_TTY_E$void));
 $extern fn_((io_TTY_leaveMode(io_TTY* self))(void));
 $extern fn_((io_TTY_isInEnteredMode(const io_TTY* self))(bool));
 
 /*---------- Queries --------------------------------------------------------*/
 
 $attr($must_check)
-$extern fn_((io_TTY_inputIsTTY(const io_TTY* self))(E$bool));
+$extern fn_((io_TTY_inputIsTTY(const io_TTY* self))(io_TTY_E$bool));
 $attr($must_check)
-$extern fn_((io_TTY_outputIsTTY(const io_TTY* self))(E$bool));
+$extern fn_((io_TTY_outputIsTTY(const io_TTY* self))(io_TTY_E$bool));
 $attr($must_check)
 $extern fn_((io_TTY_queryScreenCells(const io_TTY* self))(io_TTY_E$io_TTY_CellSize));
 $attr($must_check)
 $extern fn_((io_TTY_queryCursorPosNative(const io_TTY* self))(io_TTY_E$io_TTY_Pos));
 $attr($must_check)
-$extern fn_((io_TTY_inputReady(const io_TTY* self))(E$bool));
+$extern fn_((io_TTY_inputReady(const io_TTY* self))(io_TTY_E$bool));
 
 /*========== Macros and Definitions =========================================*/
 
@@ -221,8 +223,8 @@ fn_((io_TTY_ModePatch_cbreakVT(void))(io_TTY_ModePatch)) {
 
 fn_((io_TTY_Cfg_std(void))(io_TTY_Cfg)) {
     return (io_TTY_Cfg){
-        .input_file = io_handleStdIn(),
-        .output_file = io_handleStdOut(),
+        .input_file = proc_std_in(),
+        .output_file = proc_std_out(),
     };
 };
 #endif /* in_analysis_active_only || in_comptime */

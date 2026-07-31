@@ -24,6 +24,7 @@ extern "C" {
 
 #include "TTY.h"
 #include "../mem/Alctr.h"
+#include "../proc/Cmd.h"
 #include "../proc/Child.h"
 
 /*========== Macros and Declarations ========================================*/
@@ -38,6 +39,9 @@ errset_((io_PTY_E)(
     io_PTY_InvalidSize,
     io_PTY_ResizeFailed,
     io_PTY_SystemResources
+) $union_errset_(
+    mem_E,
+    io_TTY_E
 ));
 
 /*---------- PTY Configuration ----------------------------------------------*/
@@ -79,7 +83,7 @@ $extern fn_((io_PTY_close(io_PTY* self))(void));
 $extern fn_((io_PTY_reader(io_PTY* self))(io_Reader));
 $extern fn_((io_PTY_writer(io_PTY* self))(io_Writer));
 $attr($must_check)
-$extern fn_((io_PTY_resize(io_PTY* self, io_PTY_Size size))(E$void));
+$extern fn_((io_PTY_resize(io_PTY* self, io_PTY_Size size))(io_PTY_E$void));
 
 /*---------- PTY Session ----------------------------------------------------*/
 
@@ -109,9 +113,11 @@ $extern fn_((io_PTY_Session_close(io_PTY_Session* self))(void));
 $extern fn_((io_PTY_Session_reader(io_PTY_Session* self))(io_Reader));
 $extern fn_((io_PTY_Session_writer(io_PTY_Session* self))(io_Writer));
 $attr($must_check)
-$extern fn_((io_PTY_Session_resize(io_PTY_Session* self, io_PTY_Size size))(E$void));
+$extern fn_((io_PTY_Session_resize(io_PTY_Session* self, io_PTY_Size size))(io_PTY_E$void));
 $attr($must_check)
-$extern fn_((io_PTY_Session_wait(io_PTY_Session* self))(E$proc_Ter));
+$extern fn_((io_PTY_Session_wait(
+    io_PTY_Session* self
+))(proc_Child_Wait_E$proc_Child_Ter));
 $extern fn_((io_PTY_Session_kill(io_PTY_Session* self))(void));
 
 /*========== Macros and Definitions =========================================*/

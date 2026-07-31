@@ -32,10 +32,10 @@ extern "C" {
 /*========== Macros and Declarations ========================================*/
 
 typedef sys_posix_fd_t fs_Dir_Handle;
-typedef struct fs_Dir {
+struct fs_Dir {
     fs_Dir_Handle handle;
-} fs_Dir;
-T_use_E$(fs_Dir);
+};
+T_impl_prl$(fs_Dir);
 static const fs_File_Mode fs_Dir_default_mode = pp_if_(plat_is_posix)(
     pp_then_(0755),
     pp_else_({}));

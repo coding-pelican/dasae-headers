@@ -8,7 +8,7 @@ T_alias$((test_io_ChunkWriter)(struct test_io_ChunkWriter {
     var_(chunk_len, usize);
 }));
 
-$static fn_((test_io_ChunkWriter_write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
+$static fn_((test_io_ChunkWriter_write(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize) $scope) {
     let self = ptrAlignCast$((test_io_ChunkWriter*)(ctx));
     if (bytes.len == 0) return_ok(0);
     if (self->pos == self->out.len) return_err(E_cause$TooSmallBuffer());
@@ -67,7 +67,7 @@ TEST_fn_("io/Writer: writeBytes may leave a written prefix before capacity error
     };
 
     if_err((io_Writer_writeBytes(test_io_ChunkWriter_writer(&writer_impl), u8_l("abcdef")))(err)) {
-        try_(TEST_expect(E_eql(&err, E_cause$TooSmallBuffer().as_any)));
+        try_(TEST_expect(E_eql(err.as_any, E_cause$TooSmallBuffer().as_any)));
     } else_ok(value) {
         let_ignore = value;
         try_(TEST_expect(false));

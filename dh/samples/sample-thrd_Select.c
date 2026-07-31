@@ -77,9 +77,8 @@ T_use$((SelectMsg)(
     thrd_Select_watchWithin,
     thrd_Select_waitMutProtcd
 ));
-fn_((main(proc_Self self))(E$void) $guard) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let_ignore = entry;
 
     var sys_heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&sys_heap));

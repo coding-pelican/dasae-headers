@@ -34,8 +34,8 @@ extern "C" {
 #define TypeOf(_$Expr /*: T*/... /*(T)*/) __type__TypeOf(_$Expr)
 #define TypeOfUnqual(_$Expr /*: T*/... /*(Unqual(T))*/) __type__TypeOfUnqual(_$Expr)
 
-#define null __val__null
-#define null$(_$P_T...) __val__null$(_$P_T)
+#define raw_null __val__raw_null
+#define raw_null$(_$P_T...) __val__raw_null$(_$P_T)
 
 #define $ref __capt__$ref
 #define raw_ref(_$v /*: T*/... /*(P(T))*/) __expr__raw_ref(_$v)
@@ -88,8 +88,8 @@ extern "C" {
 #define __type__TypeOfUnqual(_$Expr...) TypeOf((TypeOf(_$Expr))(l0$((TypeOf(_$Expr)))))
 #endif
 
-#define __val__null null$(void*)
-#define __val__null$(_$P_T...) /* NOLINT(bugprone-casting-through-void) */ ((_$P_T)0)
+#define __val__raw_null raw_null$(void*)
+#define __val__raw_null$(_$P_T...) /* NOLINT(bugprone-casting-through-void) */ ((_$P_T)0)
 
 #define __capt__$ref $_ref,
 #define __expr__raw_ref(_$v...) (&(_$v))
@@ -98,8 +98,8 @@ extern "C" {
 
 #define __capt__$deref $_deref,
 #define __expr__raw_deref(_$p...) (*(_$p))
-#define __type__DerefType$(_$P_T...) TypeOf(raw_deref(null$(_$P_T)))
-#define __type__DerefTypeUnqual$(_$P_T...) TypeOfUnqual(raw_deref(null$(_$P_T)))
+#define __type__DerefType$(_$P_T...) TypeOf(raw_deref(raw_null$(_$P_T)))
+#define __type__DerefTypeUnqual$(_$P_T...) TypeOfUnqual(raw_deref(raw_null$(_$P_T)))
 
 #define __expr__eqlType$(_$T_LHS, _$T_RHS...) __builtin_types_compatible_p(_$T_LHS, _$T_RHS)
 #define __expr__eqlTypeUnqual$(_$T_LHS, _$T_RHS...) eqlType$(TypeOfUnqual(_$T_LHS), TypeOfUnqual(_$T_RHS))
@@ -115,7 +115,7 @@ extern "C" {
     ) pp_end \
 ))
 #define __expr__countOf$(_$T...) ( \
-    !sizeOf$(_$T) ? usize_(0) : (sizeOf$(_$T) / sizeOf$(TypeOf(raw_deref(null$(RefType$(_$T)))[0]))) \
+    !sizeOf$(_$T) ? usize_(0) : (sizeOf$(_$T) / sizeOf$(TypeOf(raw_deref(raw_null$(RefType$(_$T)))[0]))) \
 )
 
 #define __step__alignOf$__expand(...) __VA_ARGS__

@@ -35,10 +35,10 @@ typedef struct io_Buf_Reader {
 $extern fn_((io_Buf_Reader_init(io_Reader inner, S$u8 buf))(io_Buf_Reader));
 /// Fill buffer with more data from inner reader
 $attr($must_check)
-$extern fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(E$void));
+$extern fn_((io_Buf_Reader_fill(io_Buf_Reader* self))(io_ReadE$void));
 /// Buffer at least min_len bytes for local inspection.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_require(io_Buf_Reader* self, usize min_len))(E$void));
+$extern fn_((io_Buf_Reader_require(io_Buf_Reader* self, usize min_len))(io_ReadE$void));
 /// Return currently buffered bytes without reading.
 $extern fn_((io_Buf_Reader_ready(io_Buf_Reader self))(S_const$u8));
 $extern fn_((io_Buf_Reader_readyMut(io_Buf_Reader self))(S$u8));
@@ -49,19 +49,19 @@ $extern fn_((io_Buf_reader(io_Buf_Reader* self))(io_Reader));
 
 /// Peek at next byte without consuming.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_peekByte(io_Buf_Reader* self))(E$u8));
+$extern fn_((io_Buf_Reader_peekByte(io_Buf_Reader* self))(io_ReadE$u8));
 /// Peek at len bytes without consuming.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_peekBytes(io_Buf_Reader* self, usize len))(E$S_const$u8));
+$extern fn_((io_Buf_Reader_peekBytes(io_Buf_Reader* self, usize len))(io_ReadE$S_const$u8));
 /// Take next byte.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_takeByte(io_Buf_Reader* self))(E$u8));
+$extern fn_((io_Buf_Reader_takeByte(io_Buf_Reader* self))(io_ReadE$u8));
 /// Take len bytes.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_takeBytes(io_Buf_Reader* self, usize len))(E$S_const$u8));
+$extern fn_((io_Buf_Reader_takeBytes(io_Buf_Reader* self, usize len))(io_ReadE$S_const$u8));
 /// Skip len bytes.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize len))(E$void));
+$extern fn_((io_Buf_Reader_skip(io_Buf_Reader* self, usize len))(io_ReadE$void));
 /// Consume len bytes from current view.
 $extern fn_((io_Buf_Reader_drop(io_Buf_Reader* self, usize len))(void));
 /// Consume all bytes from current view.
@@ -71,25 +71,25 @@ $extern fn_((io_Buf_Reader_dropAll(io_Buf_Reader* self))(void));
 
 /// Read until delimiter byte; delimiter is consumed and excluded from output.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(E$S$u8));
+$extern fn_((io_Buf_Reader_readUntilByte(io_Buf_Reader* self, u8 delim, S$u8 out_buf))(io_ReadE$S$u8));
 /// Read until delimiter byte sequence; delimiter is consumed and excluded from output.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_readUntilSeq(io_Buf_Reader* self, S_const$u8 delim, S$u8 out_buf))(E$S$u8));
+$extern fn_((io_Buf_Reader_readUntilSeq(io_Buf_Reader* self, S_const$u8 delim, S$u8 out_buf))(io_ReadE$S$u8));
 /// Read until any delimiter byte; delimiter is consumed and excluded from output.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_readUntilAny(io_Buf_Reader* self, S_const$u8 delims, S$u8 out_buf))(E$S$u8));
+$extern fn_((io_Buf_Reader_readUntilAny(io_Buf_Reader* self, S_const$u8 delims, S$u8 out_buf))(io_ReadE$S$u8));
 
 /*--- Reader delimited skip ---*/
 
 /// Skip until delimiter byte; delimiter is consumed.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(E$void));
+$extern fn_((io_Buf_Reader_skipUntilByte(io_Buf_Reader* self, u8 delim))(io_ReadE$void));
 /// Skip until delimiter byte sequence; delimiter is consumed.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_skipUntilSeq(io_Buf_Reader* self, S_const$u8 delim))(E$void));
+$extern fn_((io_Buf_Reader_skipUntilSeq(io_Buf_Reader* self, S_const$u8 delim))(io_ReadE$void));
 /// Skip until any delimiter byte; delimiter is consumed.
 $attr($must_check)
-$extern fn_((io_Buf_Reader_skipUntilAny(io_Buf_Reader* self, S_const$u8 delims))(E$void));
+$extern fn_((io_Buf_Reader_skipUntilAny(io_Buf_Reader* self, S_const$u8 delims))(io_ReadE$void));
 
 /*---------- Buffered Writer ------------------------------------------------*/
 
@@ -105,7 +105,7 @@ $extern fn_((io_Buf_Writer_pending(io_Buf_Writer self))(S_const$u8));
 $extern fn_((io_Buf_Writer_pendingMut(io_Buf_Writer self))(S$u8));
 /// Flush buffered data to inner writer
 $attr($must_check)
-$extern fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(E$void));
+$extern fn_((io_Buf_Writer_flush(io_Buf_Writer* self))(io_WriteE$void));
 /// Get io_Writer interface
 $extern fn_((io_Buf_writer(io_Buf_Writer* self))(io_Writer));
 

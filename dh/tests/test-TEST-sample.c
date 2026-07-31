@@ -31,9 +31,10 @@ TEST_fn_("TEST: Always Fails" $scope) {
 #include "dh-main.h"
 #include "dh/io/stream.h"
 
-fn_((main(proc_Self self))(E$void) $scope) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $scope) {
+    var args = proc_Args_iter(entry.args);
+    var_(arg_scratch, A$$(256, u8)) $undefined;
+    let_ignore = proc_Args_Iter_next(&args, A_ref$((S$u8)(arg_scratch)));
 
     let a = 1;
     let b = 2;

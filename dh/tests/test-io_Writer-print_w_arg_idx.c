@@ -30,7 +30,7 @@ typedef struct test_Buf {
 } test_Buf;
 
 $attr($must_check)
-$static fn_((test_Buf_VT_write(P$raw ctx, S_const$u8 bytes))(E$usize) $scope) {
+$static fn_((test_Buf_VT_write(P$raw ctx, S_const$u8 bytes))(io_WriteE$usize) $scope) {
     let self = ptrAlignCast$((test_Buf*)(ctx));
     let remaining = self->data.len - self->pos;
     let to_write = pri_min(bytes.len, remaining);
@@ -269,7 +269,7 @@ TEST_fn_("io/Writer: print w arg idx - Error handling with indexed arguments" $s
 
     let caught = eval_(bool $scope)(catch_((io_Writer_print(writer, u8_l("{999:d}"), 42))(err, {
         let expected = E_cause$fmt_IdxOutOfBounds();
-        try_(TEST_expect(E_eql(&err, expected.as_any)));
+        try_(TEST_expect(E_eql(err.as_any, expected.as_any)));
         $break_(true);
     }))) eval_(else)({
         $break_(false);

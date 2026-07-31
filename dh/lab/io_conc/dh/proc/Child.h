@@ -26,7 +26,7 @@ struct proc_Child {
 };
 T_use_prl$(proc_Child);
 
-$extern fn_((proc_Child_wait(proc_Child* self, proc_Self proc))(E$proc_Ter));
+$extern fn_((proc_Child_wait(proc_Child* self, proc_Self proc))(E$proc_Child_Ter));
 $extern fn_((proc_Child_kill(proc_Child* self, proc_Self proc))(void));
 
 #if defined(__cplusplus)

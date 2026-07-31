@@ -71,7 +71,7 @@ struct fs_File {
     fs_File_Handle handle;
     fs_File_Flags flags;
 };
-T_use_prl$(fs_File);
+T_impl_prl$(fs_File);
 $attr($inline_always)
 $static fn_((fs_File_handle(fs_File self))(fs_File_Handle)) { return self.handle; };
 $attr($inline_always)

@@ -142,15 +142,27 @@ fn_((net_Stream_write(net_Stream self, S_const$u8 bytes))(E$usize)) {
     return net_Stream__write(self, bytes);
 };
 
-$static fn_((net_Stream_IO__read(P$raw ctx, S$u8 buf))(E$usize)) {
+$static fn_((net_Stream_IO__read(
+    P$raw ctx,
+    S$u8 buf
+))(io_ReadE$usize) $scope) {
     let self = ptrCast$((net_Stream_IO*)(ensureNonnull(ctx)));
-    return net_Stream_read(self->stream, buf);
-};
+    let read = catch_((net_Stream_read(self->stream, buf))($ignore, {
+        return_err(E_cause$io_ReadFailed());
+    }));
+    return_ok(read);
+} $unscoped(fn);
 
-$static fn_((net_Stream_IO__write(P$raw ctx, S_const$u8 bytes))(E$usize)) {
+$static fn_((net_Stream_IO__write(
+    P$raw ctx,
+    S_const$u8 bytes
+))(io_WriteE$usize) $scope) {
     let self = ptrCast$((net_Stream_IO*)(ensureNonnull(ctx)));
-    return net_Stream_write(self->stream, bytes);
-};
+    let written = catch_((net_Stream_write(self->stream, bytes))($ignore, {
+        return_err(E_cause$io_WriteFailed());
+    }));
+    return_ok(written);
+} $unscoped(fn);
 
 fn_((net_Stream_io(net_Stream stream))(net_Stream_IO)) {
     return (net_Stream_IO){

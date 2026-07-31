@@ -21,6 +21,7 @@
 -Werror=strict-prototypes
 -Werror=missing-prototypes
 -Werror=missing-variable-declarations
+-Werror=missing-field-initializers
 -Werror=uninitialized
 -Werror=div-by-zero
 -Wframe-larger-than=4096

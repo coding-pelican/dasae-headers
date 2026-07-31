@@ -8,7 +8,7 @@ T_alias$((test_io_ChunkReader)(struct test_io_ChunkReader {
     var_(chunk_len, usize);
 }));
 
-$static fn_((test_io_ChunkReader_read(P$raw ctx, S$u8 out_buf))(E$usize) $scope) {
+$static fn_((test_io_ChunkReader_read(P$raw ctx, S$u8 out_buf))(io_ReadE$usize) $scope) {
     let self = ptrAlignCast$((test_io_ChunkReader*)(ctx));
     if (self->pos == self->input.len) return_ok(0);
 
@@ -58,7 +58,7 @@ TEST_fn_("io/Reader: readByte reports UnexpectedEOF at EOF" $scope) {
     var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("")));
 
     if_err((io_Reader_readByte(io_Fixed_reader(&reader_impl)))(err)) {
-        try_(TEST_expect(E_eql(&err, E_cause$UnexpectedEOF().as_any)));
+        try_(TEST_expect(E_eql(err.as_any, E_cause$UnexpectedEOF().as_any)));
     } else_ok(byte) {
         let_ignore = byte;
         try_(TEST_expect(false));
@@ -76,7 +76,7 @@ TEST_fn_("io/Reader: skip requires the exact requested length" $scope) {
     var reader_impl = io_Fixed_Reader_init(io_Fixed_reading(u8_l("abc")));
 
     if_err((io_Reader_skip(io_Fixed_reader(&reader_impl), 4))(err)) {
-        try_(TEST_expect(E_eql(&err, E_cause$UnexpectedEOF().as_any)));
+        try_(TEST_expect(E_eql(err.as_any, E_cause$UnexpectedEOF().as_any)));
     } else_ok(value) {
         let_ignore = value;
         try_(TEST_expect(false));

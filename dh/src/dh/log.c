@@ -1,4 +1,5 @@
 #include "dh/log.h"
+#include "dh/proc/std.h"
 #include "dh/fs/Dir.h"
 #include "dh/io/self.h"
 #include "dh/mem/common.h"
@@ -97,7 +98,7 @@ fn_((log_getLevel(void))(log_Level)) {
 };
 
 fn_((log_getOutputFile(void))(fs_File)) {
-    return log__config.has_output_file ? log__config.output_file : io_handleStdErr();
+    return log__config.has_output_file ? log__config.output_file : proc_std_err();
 };
 
 fn_((log_message(log_Level level, const char* file, int line, const char* func, const char* fmt, ...))(void)) {

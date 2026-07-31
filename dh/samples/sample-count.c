@@ -94,9 +94,8 @@ task elapsed sum: 3.8
 wall elapsed: 2.0
 */
 T_use$((f64)(Future, Future_await, Future_cancel, Sched_async));
-fn_((main(proc_Self self))(E$void) $guard) {
-    let args = self.args.items;
-    let_ignore = args;
+fn_((main(proc_Entry entry))(E$void) $guard) {
+    let_ignore = entry;
 
     var heap = try_(heap_Sys_init());
     defer_(heap_Sys_fini(&heap));

@@ -19,15 +19,15 @@ let_(mem_Alctr_VTbl_failing, mem_Alctr_VTbl) = {
     .freeFn = mem_Alctr_VTbl_unreachableFree,
 };
 
-$static var_(mem_Alctr_noop_ctx, Void) $undefined_static;
+$static var_(mem_Alctr__ctx_noop, Void) $undefined_static;
 let_(mem_Alctr_noop, mem_Alctr) = {
-    .ctx = &mem_Alctr_noop_ctx,
+    .ctx = &mem_Alctr__ctx_noop,
     .vtbl = &mem_Alctr_VTbl_noop,
 };
 
-$static var_(mem_Alctr_failing_ctx, Void) $undefined_static;
+$static var_(mem_Alctr__ctx_failing, Void) $undefined_static;
 let_(mem_Alctr_failing, mem_Alctr) = {
-    .ctx = &mem_Alctr_failing_ctx,
+    .ctx = &mem_Alctr__ctx_failing,
     .vtbl = &mem_Alctr_VTbl_failing,
 };
 
